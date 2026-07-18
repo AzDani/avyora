@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AVYORA — V1 locale
 
-## Getting Started
+Copilote rénovation & investissement locatif. Version 100 % locale : aucune dépense, aucun compte cloud.
 
-First, run the development server:
+## Lancer l'app
 
 ```bash
+cd renopilot/app
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Puis ouvrir http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Ce que fait la V1
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Estimateur travaux** — questionnaire guidé (bien, état, finition) → estimation par corps d'état en fourchettes, basée sur le référentiel de prix France 2026 (`lib/referentiel-prix-v0.json`), avec coefficients régionaux (IDF +20 %, métropoles +10 %).
+2. **Rentabilité locative** — prix d'achat + loyer visé → frais de notaire auto (8 %), mensualité de crédit, rendement brut/net, cash-flow.
+3. **Analyseur de devis** — import PDF ou texte collé → extraction des lignes, détection des corps d'état, contrôle des mentions obligatoires (TVA, SIRET, décennale, délai, acompte), note /100, questions à poser à l'artisan.
 
-## Learn More
+## Mode IA (optionnel)
 
-To learn more about Next.js, take a look at the following resources:
+Sans clé API, l'analyse de devis fonctionne en mode « règles » (gratuit).
+Pour activer l'analyse IA complète (postes normalisés, comparaison aux prix du marché, détection d'oublis) :
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+cp .env.local.example .env.local
+# puis renseigner ANTHROPIC_API_KEY et relancer le serveur
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Données
 
-## Deploy on Vercel
+- Base locale SQLite : `db/renopilot.db` (créée automatiquement, ignorée par git)
+- Référentiel de prix : `lib/referentiel-prix-v0.json` — fourchettes agrégées depuis les guides de prix publics France 2026 (sources dans le fichier)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Étape suivante (quand la V1 aura fait ses preuves)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Migration Supabase (auth + cloud), export PDF des rapports, freemium Stripe — voir `../CAHIER-DES-CHARGES.md`.
