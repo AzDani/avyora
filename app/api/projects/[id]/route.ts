@@ -1,32 +1,39 @@
 import { NextResponse } from "next/server";
-import { setArchived, updateProjet, deleteProjet } from "@/lib/data/projects";
+import { setArchived, updateProjet, deleteProjet, getProjet } from "@/lib/data/projects";
+import { getUser } from "@/lib/auth";
+import { valider, jsonBody, projetPatchSchema } from "@/lib/validation";
+
+async function garde(id: string): Promise<NextResponse | null> {
+  const user = await getUser();
+  if (!user) return NextResponse.json({ error: "Authentification requise" }, { status: 401 });
+  if (!(await getProjet(id))) return NextResponse.json({ error: "Projet introuvable" }, { status: 404 });
+  return null;
+}
 
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const body = await req.json();
+  const g = await garde(id);
+  if (g) return g;
 
-  // Archivage / désarchivage
-  if (typeof body.archived === "boolean") {
-    await setArchived(id, body.archived);
+  const v = valider(projetPatchSchema, await jsonBody(req));
+  if (!v.ok) return v.res;
+  const data = v.data;
+
+  if ("archived" in data) {
+    await setArchived(id, data.archived);
     return NextResponse.json({ ok: true });
   }
-
-  // Mise à jour de l'estimation (réponses du questionnaire, bien)
-  if (body.reponses) {
-    await updateProjet(id, {
-      nom: body.nom,
-      typeBien: body.typeBien,
-      surface: body.surface,
-      codePostal: body.codePostal,
-      reponses: body.reponses,
-    });
-    return NextResponse.json({ ok: true });
-  }
-
-  return NextResponse.json({ error: "Rien à mettre à jour" }, { status: 400 });
+  await updateProjet(id, {
+    nom: data.nom,
+    typeBien: data.typeBien,
+    surface: data.surface,
+    codePostal: data.codePostal,
+    reponses: data.reponses,
+  });
+  return NextResponse.json({ ok: true });
 }
 
 export async function DELETE(
@@ -34,6 +41,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const g = await garde(id);
+  if (g) return g;
   await deleteProjet(id); // enfants supprimés par cascade FK
   return NextResponse.json({ ok: true });
 }

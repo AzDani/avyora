@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { analyserDevis } from "@/lib/devis";
-import { addDevis } from "@/lib/data/projects";
+import { addDevis, getProjet } from "@/lib/data/projects";
 import { cheminFichier, uploadFichier } from "@/lib/storage";
+import { getUser } from "@/lib/auth";
+import { verifierLimite, clientIp } from "@/lib/ratelimit";
 
 async function extraireTexte(file: File): Promise<string> {
   const buffer = Buffer.from(await file.arrayBuffer());
@@ -19,6 +21,12 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const user = await getUser();
+  if (!user) return NextResponse.json({ error: "Authentification requise" }, { status: 401 });
+  if (!(await verifierLimite("ia", user.id))) {
+    return NextResponse.json({ error: "Trop d'analyses en peu de temps. Réessaie dans une minute." }, { status: 429 });
+  }
+  if (!(await getProjet(id))) return NextResponse.json({ error: "Projet introuvable" }, { status: 404 });
   const form = await req.formData();
   const file = form.get("fichier") as File | null;
   const texteColle = (form.get("texte") as string | null)?.trim();

@@ -3,6 +3,8 @@ import { estimer, ORDRE_TRAVAUX, type Reponses } from "@/lib/estimation";
 import { calculerMetre } from "@/lib/metre";
 import { getFormConfig } from "@/lib/customq-db";
 import { getProjet, getPieces, countTaches, insertTaches, setTacheStatut } from "@/lib/data/projects";
+import { getUser } from "@/lib/auth";
+import { valider, jsonBody, chantierStatutSchema } from "@/lib/validation";
 
 /** Génère le plan de chantier (tâches ordonnées) depuis l'estimation. */
 export async function POST(
@@ -10,6 +12,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  if (!(await getUser())) return NextResponse.json({ error: "Authentification requise" }, { status: 401 });
   const projet = await getProjet(id);
   if (!projet) return NextResponse.json({ error: "Projet introuvable" }, { status: 404 });
 
@@ -41,10 +44,10 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const { taskId, statut } = await req.json();
-  if (!taskId || !["a_faire", "en_cours", "fait"].includes(statut)) {
-    return NextResponse.json({ error: "Paramètres invalides" }, { status: 400 });
-  }
-  await setTacheStatut(id, String(taskId), statut);
+  if (!(await getUser())) return NextResponse.json({ error: "Authentification requise" }, { status: 401 });
+  if (!(await getProjet(id))) return NextResponse.json({ error: "Projet introuvable" }, { status: 404 });
+  const v = valider(chantierStatutSchema, await jsonBody(req));
+  if (!v.ok) return v.res;
+  await setTacheStatut(id, v.data.taskId, v.data.statut);
   return NextResponse.json({ ok: true });
 }

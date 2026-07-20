@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getKbCategories, getKbPostes, majPostePrix, seedKb, ecrireSnapshot, kbEstVide } from "@/lib/kb-db";
+import { gardeAdmin } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -11,12 +12,16 @@ async function ensureSeed() {
 }
 
 export async function GET() {
+  const garde = await gardeAdmin();
+  if (garde) return garde;
   await ensureSeed();
   const [categories, postes] = await Promise.all([getKbCategories(), getKbPostes()]);
   return NextResponse.json({ categories, postes });
 }
 
 export async function PATCH(req: Request) {
+  const garde = await gardeAdmin();
+  if (garde) return garde;
   const { id, prix_min, prix_moy, prix_max } = await req.json();
   if (!id || ![prix_min, prix_moy, prix_max].every((n) => typeof n === "number" && n >= 0)) {
     return NextResponse.json({ error: "Paramètres invalides" }, { status: 400 });

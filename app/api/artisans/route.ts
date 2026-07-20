@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
 import { createArtisan, deleteArtisan } from "@/lib/data/artisans";
+import { valider, jsonBody, artisanSchema } from "@/lib/validation";
 
 export async function POST(req: Request) {
-  const a = await req.json();
-  if (!a.nom?.trim()) {
-    return NextResponse.json({ error: "Le nom est requis" }, { status: 400 });
-  }
-  const id = await createArtisan(a);
+  const v = valider(artisanSchema, await jsonBody(req));
+  if (!v.ok) return v.res;
+  const id = await createArtisan(v.data);
   if (!id) return NextResponse.json({ error: "Connexion requise" }, { status: 401 });
   return NextResponse.json({ id });
 }

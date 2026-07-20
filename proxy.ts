@@ -50,6 +50,24 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // ── Gating ADMIN (pages) ──
+  // Les pages /admin éditent des données GLOBALES partagées entre tous les tenants
+  // (référentiel de prix, questionnaire) : réservées à l'allow-list ADMIN_EMAILS.
+  // Les routes /api/admin/* et /api/questions sont protégées côté handler (gardeAdmin).
+  if (pathname.startsWith("/admin")) {
+    const allow = (process.env.ADMIN_EMAILS ?? "")
+      .split(",")
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean);
+    const estAdmin = !!user?.email && allow.includes(user.email.toLowerCase());
+    if (!estAdmin) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/mon-espace";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+  }
+
   return response;
 }
 

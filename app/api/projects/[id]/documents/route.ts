@@ -1,13 +1,26 @@
 import { NextResponse } from "next/server";
 import { extrairePiecesDuPlan, analyserPhoto } from "@/lib/vision";
-import { addDocument, getDocument, setDocumentNote, deleteDocument, replacePieces } from "@/lib/data/projects";
-import { cheminFichier, uploadFichier, supprimerFichier } from "@/lib/storage";
+import { addDocument, getDocument, setDocumentNote, deleteDocument, replacePieces, getProjet } from "@/lib/data/projects";
+import { cheminFichier, uploadFichier, supprimerFichier, detecterTypeFichier } from "@/lib/storage";
+import { getUser } from "@/lib/auth";
+import { verifierLimite, clientIp } from "@/lib/ratelimit";
+
+/** Vérifie que l'appelant est authentifié ET peut accéder au projet (RLS). Sinon réponse d'erreur. */
+async function gardeProjet(id: string): Promise<NextResponse | null> {
+  const user = await getUser();
+  if (!user) return NextResponse.json({ error: "Authentification requise" }, { status: 401 });
+  const projet = await getProjet(id); // scopé RLS : null si non accessible
+  if (!projet) return NextResponse.json({ error: "Projet introuvable" }, { status: 404 });
+  return null;
+}
 
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const garde = await gardeProjet(id);
+  if (garde) return garde;
   const form = await req.formData();
   const file = form.get("fichier") as File | null;
   const type = (form.get("type") as string) === "plan" ? "plan" : "photo";
@@ -17,8 +30,13 @@ export async function POST(
   if (file.size > 20 * 1024 * 1024) {
     return NextResponse.json({ error: "Fichier trop volumineux (max 20 Mo)" }, { status: 400 });
   }
+  const octets = await file.arrayBuffer();
+  const vraiType = detecterTypeFichier(octets);
+  if (!vraiType) {
+    return NextResponse.json({ error: "Type de fichier non autorisé (PDF, JPG, PNG, WEBP, GIF uniquement)." }, { status: 400 });
+  }
   const fichier = cheminFichier(id, file.name);
-  await uploadFichier(fichier, await file.arrayBuffer(), file.type);
+  await uploadFichier(fichier, octets, file.type);
   const docId = await addDocument(id, { type, fichier, nom: file.name });
   return NextResponse.json({ id: docId });
 }
@@ -29,6 +47,11 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const garde = await gardeProjet(id);
+  if (garde) return garde;
+  if (!(await verifierLimite("ia", (await getUser())?.id ?? (await clientIp())))) {
+    return NextResponse.json({ error: "Trop d'analyses en peu de temps. Réessaie dans une minute." }, { status: 429 });
+  }
   const { docId } = await req.json();
   const doc = await getDocument(id, String(docId));
   if (!doc) return NextResponse.json({ error: "Document introuvable" }, { status: 404 });

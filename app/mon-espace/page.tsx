@@ -31,6 +31,9 @@ export default async function MonEspacePage() {
             ? "Voici l'avancement de tes projets."
             : "Lance ta première estimation — elle sera enregistrée ici."}
         </p>
+        <Link href="/mon-espace/compte" className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:underline">
+          Mon compte &amp; confidentialité →
+        </Link>
       </header>
 
       {actifs.length > 0 && (

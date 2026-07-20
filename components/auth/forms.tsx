@@ -70,7 +70,7 @@ export function SignupForm() {
       </div>
       <div className={field}>
         <label htmlFor="password" className="field-label">Mot de passe</label>
-        <input id="password" name="password" type="password" autoComplete="new-password" required minLength={8} className="input" placeholder="8 caractères minimum" />
+        <input id="password" name="password" type="password" autoComplete="new-password" required minLength={12} className="input" placeholder="12 caractères minimum" />
       </div>
       <Submit pending={pending}>Créer mon compte</Submit>
     </form>
@@ -100,11 +100,11 @@ export function UpdatePasswordForm() {
       <Feedback state={state} />
       <div className={field}>
         <label htmlFor="password" className="field-label">Nouveau mot de passe</label>
-        <input id="password" name="password" type="password" autoComplete="new-password" required minLength={8} className="input" placeholder="8 caractères minimum" />
+        <input id="password" name="password" type="password" autoComplete="new-password" required minLength={12} className="input" placeholder="12 caractères minimum" />
       </div>
       <div className={field}>
         <label htmlFor="confirm" className="field-label">Confirme le mot de passe</label>
-        <input id="confirm" name="confirm" type="password" autoComplete="new-password" required minLength={8} className="input" placeholder="••••••••" />
+        <input id="confirm" name="confirm" type="password" autoComplete="new-password" required minLength={12} className="input" placeholder="••••••••" />
       </div>
       <Submit pending={pending}>Enregistrer</Submit>
     </form>

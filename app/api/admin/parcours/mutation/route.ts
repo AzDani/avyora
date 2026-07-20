@@ -7,6 +7,7 @@ import {
   deplacerEntite,
   type Entite,
 } from "@/lib/parcours-db";
+import { gardeAdmin } from "@/lib/auth";
 
 /**
  * Endpoint unique de mutation du form-builder (Palier 2).
@@ -14,6 +15,8 @@ import {
  *   action : create | update | archive | restore | delete | move
  */
 export async function POST(req: Request) {
+  const garde = await gardeAdmin();
+  if (garde) return garde;
   const b = (await req.json()) as {
     action: string;
     entity: Entite;
