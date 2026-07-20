@@ -15,10 +15,50 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+
+const description =
+  "Estime le coût de tes travaux de rénovation au prix du marché français, fais analyser tes devis par l'IA et calcule ta rentabilité locative — avant de signer.";
+
 export const metadata: Metadata = {
-  title: "AVYORA — copilote rénovation & investissement",
-  description:
-    "Estime tes travaux, fais analyser tes devis par l'IA, calcule ta rentabilité locative.",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "AVYORA — estime tes travaux avant de signer",
+    template: "%s · AVYORA",
+  },
+  description,
+  applicationName: "AVYORA",
+  keywords: [
+    "estimation travaux",
+    "prix rénovation",
+    "analyse de devis",
+    "rentabilité locative",
+    "investissement immobilier",
+    "coût rénovation maison",
+    "budget travaux",
+  ],
+  authors: [{ name: "AVYORA" }],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    url: siteUrl,
+    siteName: "AVYORA",
+    title: "AVYORA — sache ce que ça coûte. Avant de signer.",
+    description,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AVYORA — estime tes travaux avant de signer",
+    description,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large" },
+  },
   appleWebApp: {
     capable: true,
     title: "AVYORA",

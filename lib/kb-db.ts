@@ -89,10 +89,19 @@ export async function genererSnapshot(): Promise<ReferentielSnapshot> {
   };
 }
 
-/** Écrit le snapshot dans le fichier importé par le moteur. À appeler après seed / édition admin. */
+/**
+ * Écrit le snapshot dans le fichier importé par le moteur. À appeler après seed / édition admin.
+ * ⚠ Serverless (Vercel) = FS en lecture seule : l'écriture échoue → on l'ignore proprement (la
+ * source de vérité kb_postes est déjà à jour ; le snapshot est régénéré au prochain build). En
+ * local/dev l'écriture réussit et le moteur prend les nouveaux prix à chaud.
+ */
 export async function ecrireSnapshot(): Promise<number> {
   const snap = await genererSnapshot();
-  fs.writeFileSync(path.join(process.cwd(), "lib", "referentiel-prix.generated.json"), JSON.stringify(snap, null, 2) + "\n");
+  try {
+    fs.writeFileSync(path.join(process.cwd(), "lib", "referentiel-prix.generated.json"), JSON.stringify(snap, null, 2) + "\n");
+  } catch (e) {
+    console.warn("[kb] snapshot non écrit (FS lecture seule ?) — prix enregistrés en base, régénération au prochain build.", (e as Error)?.message);
+  }
   return snap.postes.length;
 }
 
