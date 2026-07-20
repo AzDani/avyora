@@ -2,9 +2,37 @@ import Link from "next/link";
 import AnimationNeuf from "@/components/AnimationNeuf";
 import AnimationReno from "@/components/AnimationReno";
 
-export default function Accueil() {
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+
+// Données structurées (JSON-LD) : aide les moteurs à comprendre qu'AVYORA est une application web.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "AVYORA",
+  url: siteUrl,
+  applicationCategory: "FinanceApplication",
+  operatingSystem: "Web",
+  inLanguage: "fr-FR",
+  description:
+    "Estime le coût de tes travaux de rénovation au prix du marché français, fais analyser tes devis par l'IA et calcule ta rentabilité locative.",
+  offers: { "@type": "Offer", price: "0", priceCurrency: "EUR", description: "Première estimation gratuite" },
+};
+
+export default async function Accueil({ searchParams }: { searchParams: Promise<{ compte?: string }> }) {
+  const { compte } = await searchParams;
   return (
     <div className="space-y-12">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      {compte === "supprime" && (
+        <div className="card flex items-center gap-3 border-positive/25 bg-positive-soft p-4 text-sm text-positive">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M4 10.5 8 14l8-8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Ton compte et toutes tes données ont bien été supprimés. À bientôt !
+        </div>
+      )}
       {/* Héros — construction neuve */}
       <section className="animate-rise relative overflow-hidden rounded-panel bg-gradient-to-br from-[#1E1B4B] via-[#241f5e] to-[#191640] p-8 text-white shadow-hero sm:p-12">
         <div
