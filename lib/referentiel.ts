@@ -1,4 +1,7 @@
-import ref from "./referentiel-prix-v0.json";
+// Le moteur lit le SNAPSHOT généré depuis la base de connaissances (tables kb_*).
+// Régénéré par lib/kb-db.ts `ecrireSnapshot()` à chaque édition admin. Le v0 reste la
+// graine du premier seed. Le moteur reste pur/client-safe (import statique de JSON).
+import ref from "./referentiel-prix.generated.json";
 
 export type PosteRef = {
   corps_etat: string;
@@ -17,14 +20,21 @@ export const REFERENTIEL = ref as unknown as {
   postes: PosteRef[];
 };
 
+// Le référentiel et les fragments d'appel sont statiques : on met en cache chaque
+// résolution (la page /projets estime tous les projets à chaque affichage).
+const posteCache = new Map<string, PosteRef>();
+
 /** Retrouve un poste du référentiel par corps d'état + fragment de libellé. */
 export function getPoste(corpsEtat: string, fragment: string): PosteRef {
+  const cle = `${corpsEtat}|${fragment.toLowerCase()}`;
+  const enCache = posteCache.get(cle);
+  if (enCache) return enCache;
+  const frag = fragment.toLowerCase();
   const p = REFERENTIEL.postes.find(
-    (p) =>
-      p.corps_etat === corpsEtat &&
-      p.poste.toLowerCase().includes(fragment.toLowerCase())
+    (p) => p.corps_etat === corpsEtat && p.poste.toLowerCase().includes(frag)
   );
   if (!p) throw new Error(`Poste introuvable : ${corpsEtat} / ${fragment}`);
+  posteCache.set(cle, p);
   return p;
 }
 

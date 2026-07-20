@@ -13,9 +13,9 @@ function euros(n: number): string {
 }
 
 const STATUTS: { value: TaskRow["statut"]; label: string; cls: string }[] = [
-  { value: "a_faire", label: "À faire", cls: "bg-slate-100 text-slate-600" },
-  { value: "en_cours", label: "En cours", cls: "bg-amber-100 text-amber-800" },
-  { value: "fait", label: "Fait ✓", cls: "bg-emerald-100 text-emerald-800" },
+  { value: "a_faire", label: "À faire", cls: "bg-surface-2 text-muted" },
+  { value: "en_cours", label: "En cours", cls: "bg-warning-soft text-warning" },
+  { value: "fait", label: "Fait ✓", cls: "bg-positive-soft text-positive" },
 ];
 
 export default function ChantierBudget({
@@ -26,12 +26,12 @@ export default function ChantierBudget({
   corpsOptions,
   depenses,
 }: {
-  projectId: number;
+  projectId: string;
   budget: Budget;
   taches: TaskRow[];
   avancement: number;
   corpsOptions: { value: string; label: string }[];
-  depenses: { id: number; corps_etat: string; libelle: string; montant: number }[];
+  depenses: { id: number | string; corps_etat: string; libelle: string; montant: number }[];
 }) {
   const router = useRouter();
   const [libelle, setLibelle] = useState("");
@@ -53,7 +53,7 @@ export default function ChantierBudget({
     router.refresh();
   }
 
-  async function supprimerDepense(depId: number) {
+  async function supprimerDepense(depId: number | string) {
     await fetch(`/api/projects/${projectId}/depenses?dep=${depId}`, {
       method: "DELETE",
     });
@@ -79,12 +79,12 @@ export default function ChantierBudget({
   }
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 space-y-5">
+    <section className="card space-y-5 p-5">
       <div className="flex items-center justify-between">
-        <h2 className="font-medium">Chantier & budget</h2>
+        <h2 className="font-semibold text-ink">Chantier &amp; budget</h2>
         {taches.length > 0 && (
-          <span className="text-sm text-slate-500">
-            Avancement : <span className="font-semibold text-slate-900">{avancement} %</span>
+          <span className="text-sm text-muted">
+            Avancement : <span className="data font-semibold text-ink">{avancement} %</span>
           </span>
         )}
       </div>
@@ -93,10 +93,7 @@ export default function ChantierBudget({
       {budget.alertes.length > 0 && (
         <div className="space-y-2">
           {budget.alertes.map((a, i) => (
-            <div
-              key={i}
-              className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"
-            >
+            <div key={i} className="rounded-field border border-warning/20 bg-warning-soft px-3 py-2 text-sm text-warning">
               ⚠ {a}
             </div>
           ))}
@@ -105,50 +102,36 @@ export default function ChantierBudget({
 
       {/* Budget prévu vs réel */}
       <div>
-        <div className="grid grid-cols-3 gap-3 text-center mb-3">
-          <div className="rounded-lg bg-slate-50 p-3">
-            <div className="text-xs text-slate-500">Budget prévu</div>
-            <div className="font-semibold mt-0.5">{euros(budget.totalPrevu)}</div>
+        <div className="mb-3 grid grid-cols-3 gap-3 text-center">
+          <div className="rounded-field bg-surface-2 p-3.5">
+            <div className="text-xs text-faint">Budget prévu</div>
+            <div className="data mt-1 font-semibold text-ink">{euros(budget.totalPrevu)}</div>
           </div>
-          <div className="rounded-lg bg-slate-50 p-3">
-            <div className="text-xs text-slate-500">Dépensé</div>
-            <div className="font-semibold mt-0.5">{euros(budget.totalReel)}</div>
+          <div className="rounded-field bg-surface-2 p-3.5">
+            <div className="text-xs text-faint">Dépensé</div>
+            <div className="data mt-1 font-semibold text-ink">{euros(budget.totalReel)}</div>
           </div>
-          <div
-            className={`rounded-lg p-3 ${
-              budget.previsionFinale > budget.totalPrevu ? "bg-red-50" : "bg-emerald-50"
-            }`}
-          >
-            <div className="text-xs text-slate-500">Prévision finale</div>
-            <div
-              className={`font-semibold mt-0.5 ${
-                budget.previsionFinale > budget.totalPrevu
-                  ? "text-red-700"
-                  : "text-emerald-700"
-              }`}
-            >
+          <div className={`rounded-field p-3.5 ${budget.previsionFinale > budget.totalPrevu ? "bg-danger-soft" : "bg-positive-soft"}`}>
+            <div className="text-xs text-faint">Prévision finale</div>
+            <div className={`data mt-1 font-semibold ${budget.previsionFinale > budget.totalPrevu ? "text-danger" : "text-positive"}`}>
               {euros(budget.previsionFinale)}
             </div>
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           {budget.lignes.map((l) => (
             <div key={l.corpsEtat}>
-              <div className="flex justify-between text-xs mb-0.5">
-                <span className="font-medium">{l.label}</span>
-                <span className="text-slate-500">
+              <div className="mb-1 flex justify-between text-xs">
+                <span className="font-medium text-ink">{l.label}</span>
+                <span className="num text-faint">
                   {euros(l.reel)} / {euros(l.prevu)}
                 </span>
               </div>
-              <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+              <div className="h-2 overflow-hidden rounded-full bg-line">
                 <div
-                  className={`h-full rounded-full ${
-                    l.statut === "depasse"
-                      ? "bg-red-500"
-                      : l.statut === "attention"
-                        ? "bg-amber-400"
-                        : "bg-emerald-500"
+                  className={`h-full rounded-full transition-all ${
+                    l.statut === "depasse" ? "bg-danger" : l.statut === "attention" ? "bg-warning" : "bg-positive"
                   }`}
                   style={{ width: `${Math.min(100, Math.round(l.ratio * 100))}%` }}
                 />
@@ -159,14 +142,10 @@ export default function ChantierBudget({
       </div>
 
       {/* Saisie dépense */}
-      <div className="rounded-lg border border-dashed border-slate-300 p-3 space-y-2">
-        <div className="text-sm font-medium">Ajouter une dépense réelle</div>
+      <div className="space-y-2.5 rounded-field border border-dashed border-line-strong bg-surface-2/60 p-3.5">
+        <div className="text-sm font-semibold text-ink">Ajouter une dépense réelle</div>
         <div className="flex flex-wrap gap-2">
-          <select
-            className="rounded-lg border border-slate-300 px-2 py-2 text-sm"
-            value={corps}
-            onChange={(e) => setCorps(e.target.value)}
-          >
+          <select className="input w-auto" value={corps} onChange={(e) => setCorps(e.target.value)}>
             {corpsOptions.map((c) => (
               <option key={c.value} value={c.value}>
                 {c.label}
@@ -174,14 +153,14 @@ export default function ChantierBudget({
             ))}
           </select>
           <input
-            className="flex-1 min-w-32 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="input min-w-32 flex-1"
             placeholder="Libellé (ex. : acompte électricien)"
             value={libelle}
             onChange={(e) => setLibelle(e.target.value)}
           />
           <input
             type="number"
-            className="w-28 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="input num w-28"
             placeholder="Montant €"
             value={montant}
             onChange={(e) => setMontant(e.target.value)}
@@ -189,7 +168,7 @@ export default function ChantierBudget({
           <button
             onClick={ajouterDepense}
             disabled={busy || !libelle.trim() || !(Number(montant) > 0)}
-            className="rounded-lg bg-slate-900 px-4 py-2 text-sm text-white font-medium disabled:opacity-40"
+            className="btn btn-primary py-2"
           >
             Ajouter
           </button>
@@ -197,21 +176,22 @@ export default function ChantierBudget({
         {depenses.length > 0 && (
           <button
             onClick={() => setAfficherDepenses(!afficherDepenses)}
-            className="text-xs text-slate-500 underline"
+            className="text-xs font-medium text-brand-600 hover:text-brand-700"
           >
             {afficherDepenses ? "Masquer" : "Voir"} les {depenses.length} dépenses
           </button>
         )}
         {afficherDepenses && (
-          <ul className="text-sm divide-y divide-slate-100">
+          <ul className="divide-y divide-line text-sm">
             {depenses.map((d) => (
-              <li key={d.id} className="flex justify-between items-center py-1.5">
-                <span>{d.libelle}</span>
+              <li key={d.id} className="flex items-center justify-between py-1.5">
+                <span className="text-muted">{d.libelle}</span>
                 <span className="flex items-center gap-3">
-                  <span className="font-medium">{euros(d.montant)}</span>
+                  <span className="data font-semibold text-ink">{euros(d.montant)}</span>
                   <button
                     onClick={() => supprimerDepense(d.id)}
-                    className="text-xs text-slate-400 hover:text-red-600"
+                    className="text-faint transition-colors hover:text-danger"
+                    aria-label="Supprimer la dépense"
                   >
                     ✕
                   </button>
@@ -224,41 +204,25 @@ export default function ChantierBudget({
 
       {/* Plan de chantier (module 7) */}
       <div>
-        <div className="text-sm font-medium mb-2">Plan de chantier</div>
+        <div className="mb-2 text-sm font-semibold text-ink">Plan de chantier</div>
         {taches.length === 0 ? (
-          <button
-            onClick={genererPlan}
-            disabled={busy}
-            className="rounded-lg bg-[#4F46E5] px-4 py-2.5 text-sm text-white font-medium disabled:opacity-50"
-          >
+          <button onClick={genererPlan} disabled={busy} className="btn btn-primary py-2.5">
             Générer le plan depuis l&apos;estimation
           </button>
         ) : (
           <>
-            <div className="h-2 rounded-full bg-slate-100 overflow-hidden mb-3">
-              <div
-                className="h-full rounded-full bg-indigo-500 transition-all"
-                style={{ width: `${avancement}%` }}
-              />
+            <div className="mb-3 h-2 overflow-hidden rounded-full bg-line">
+              <div className="h-full rounded-full bg-brand-500 transition-all" style={{ width: `${avancement}%` }} />
             </div>
             <ul className="space-y-1.5">
               {taches.map((t) => {
                 const s = STATUTS.find((x) => x.value === t.statut)!;
                 return (
-                  <li
-                    key={t.id}
-                    className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 px-3 py-2"
-                  >
-                    <span
-                      className={`text-sm ${
-                        t.statut === "fait" ? "line-through text-slate-400" : ""
-                      }`}
-                    >
-                      {t.titre}
-                    </span>
+                  <li key={t.id} className="flex items-center justify-between gap-3 rounded-field border border-line px-3 py-2">
+                    <span className={`text-sm ${t.statut === "fait" ? "text-faint line-through" : "text-ink"}`}>{t.titre}</span>
                     <button
                       onClick={() => changerStatut(t)}
-                      className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${s.cls}`}
+                      className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium transition-colors ${s.cls}`}
                       title="Cliquer pour changer le statut"
                     >
                       {s.label}

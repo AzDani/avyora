@@ -5,9 +5,18 @@
     "devise": "EUR",
     "region_base": "France métropolitaine hors Île-de-France",
     "ajustements_regionaux": {
-      "idf_paris": { "coefficient": 1.2, "note": "Paris/IDF : +15 à +25 % constatés (main-d'œuvre, accès, copropriété)" },
-      "grandes_metropoles": { "coefficient": 1.1, "note": "Lyon, Bordeaux, Nice… : +5 à +15 %" },
-      "rural": { "coefficient": 0.95, "note": "Zones rurales : léger retrait possible, mais déplacement facturé" }
+      "idf_paris": {
+        "coefficient": 1.2,
+        "note": "Paris/IDF : +15 à +25 % constatés (main-d'œuvre, accès, copropriété)"
+      },
+      "grandes_metropoles": {
+        "coefficient": 1.1,
+        "note": "Lyon, Bordeaux, Nice… : +5 à +15 %"
+      },
+      "rural": {
+        "coefficient": 0.95,
+        "note": "Zones rurales : léger retrait possible, mais déplacement facturé"
+      }
     },
     "conventions": {
       "prix": "TTC fourniture + pose sauf mention contraire dans 'inclut'",
@@ -36,136 +45,1186 @@
     "avertissement": "Référentiel v0 construit par agrégation de guides de prix publics français (juillet 2026). Fourchettes indicatives destinées à des estimations préliminaires — jamais des chiffres uniques. Sera progressivement remplacé par la base propriétaire issue des devis réels importés."
   },
   "postes": [
-    { "corps_etat": "renovation_globale", "poste": "Rafraîchissement (peintures, sols, petites reprises)", "unite": "m2_habitable", "prix_bas": 360, "prix_median": 500, "prix_haut": 700, "confiance": "haute" },
-    { "corps_etat": "renovation_globale", "poste": "Rénovation complète tous corps d'état", "unite": "m2_habitable", "prix_bas": 1200, "prix_median": 1600, "prix_haut": 2000, "confiance": "haute" },
-    { "corps_etat": "renovation_globale", "poste": "Rénovation lourde (avec gros œuvre / redistribution)", "unite": "m2_habitable", "prix_bas": 2000, "prix_median": 2500, "prix_haut": 3200, "confiance": "haute" },
-
-    { "corps_etat": "demolition_curage", "poste": "Curage léger (dépose revêtements, équipements)", "unite": "m2", "prix_bas": 40, "prix_median": 60, "prix_haut": 90, "confiance": "haute" },
-    { "corps_etat": "demolition_curage", "poste": "Curage complet avec évacuation gravats", "unite": "m2", "prix_bas": 80, "prix_median": 120, "prix_haut": 170, "confiance": "haute" },
-    { "corps_etat": "demolition_curage", "poste": "Dépose ancienne cuisine (avec évacuation)", "unite": "forfait", "prix_bas": 350, "prix_median": 900, "prix_haut": 2000, "confiance": "haute" },
-    { "corps_etat": "demolition_curage", "poste": "Dépose revêtement de sol", "unite": "m2", "prix_bas": 10, "prix_median": 16, "prix_haut": 25, "confiance": "moyenne" },
-
-    { "corps_etat": "gros_oeuvre", "poste": "Ouverture mur porteur (avec IPN, hors étude structure)", "unite": "forfait", "prix_bas": 2000, "prix_median": 3500, "prix_haut": 6000, "confiance": "moyenne" },
-    { "corps_etat": "gros_oeuvre", "poste": "Hérisson + dalle béton armée", "unite": "m2", "prix_bas": 70, "prix_median": 100, "prix_haut": 140, "inclut": "hérisson compacté + film polyane + dalle armée ~12 cm", "confiance": "moyenne" },
-    { "corps_etat": "gros_oeuvre", "poste": "Reprise plancher bois (solivage + panneaux)", "unite": "m2", "prix_bas": 60, "prix_median": 90, "prix_haut": 120, "confiance": "moyenne" },
-    { "corps_etat": "gros_oeuvre", "poste": "Traitement humidité (injection résine / drainage)", "unite": "forfait", "prix_bas": 1500, "prix_median": 3500, "prix_haut": 6000, "confiance": "moyenne" },
-    { "corps_etat": "gros_oeuvre", "poste": "Réfection toiture complète", "unite": "m2", "prix_bas": 120, "prix_median": 200, "prix_haut": 300, "confiance": "haute" },
-    { "corps_etat": "gros_oeuvre", "poste": "Réparation toiture légère (tuiles, nettoyage)", "unite": "m2", "prix_bas": 30, "prix_median": 50, "prix_haut": 70, "confiance": "haute" },
-    { "corps_etat": "gros_oeuvre", "poste": "Ravalement de façade (maison, enduit/peinture)", "unite": "m2", "prix_bas": 40, "prix_median": 80, "prix_haut": 140, "confiance": "haute" },
-
-    { "corps_etat": "facade", "poste": "Nettoyage + hydrofuge façade", "unite": "m2", "prix_bas": 15, "prix_median": 25, "prix_haut": 35, "confiance": "moyenne" },
-    { "corps_etat": "facade", "poste": "Peinture / ravalement façade", "unite": "m2", "prix_bas": 25, "prix_median": 35, "prix_haut": 55, "confiance": "moyenne" },
-    { "corps_etat": "facade", "poste": "Enduit / crépi façade neuf", "unite": "m2", "prix_bas": 40, "prix_median": 65, "prix_haut": 90, "confiance": "moyenne" },
-    { "corps_etat": "facade", "poste": "Isolation thermique par l'extérieur (ITE)", "unite": "m2", "prix_bas": 120, "prix_median": 185, "prix_haut": 250, "inclut": "isolant + enduit ou bardage, éligible aides", "confiance": "moyenne" },
-    { "corps_etat": "facade", "poste": "Reprise fissures / piquage avant façade", "unite": "m2", "prix_bas": 12, "prix_median": 22, "prix_haut": 35, "confiance": "moyenne" },
-
-    { "corps_etat": "assainissement", "poste": "Raccordement au tout-à-l'égout", "unite": "forfait", "prix_bas": 3000, "prix_median": 5000, "prix_haut": 8000, "inclut": "tranchée + branchement, hors taxe de raccordement communale", "confiance": "moyenne" },
-
-    { "corps_etat": "raccordements", "poste": "Raccordement + compteur électrique (Enedis)", "unite": "forfait", "prix_bas": 1000, "prix_median": 1600, "prix_haut": 2500, "inclut": "coffret + branchement + mise en service Enedis", "confiance": "moyenne" },
-    { "corps_etat": "raccordements", "poste": "Raccordement + compteur eau", "unite": "forfait", "prix_bas": 1000, "prix_median": 1700, "prix_haut": 2800, "inclut": "branchement au réseau + regard compteur", "confiance": "moyenne" },
-    { "corps_etat": "raccordements", "poste": "Raccordement gaz (si réseau)", "unite": "forfait", "prix_bas": 400, "prix_median": 900, "prix_haut": 1600, "confiance": "moyenne" },
-    { "corps_etat": "assainissement", "poste": "Fosse toutes eaux + épandage (base 5 EH)", "unite": "forfait", "prix_bas": 9000, "prix_median": 11500, "prix_haut": 14000, "inclut": "cuve + filtre + épandage, terrassement + étude de sol, NF DTU 64.1", "confiance": "moyenne" },
-    { "corps_etat": "assainissement", "poste": "Microstation d'épuration (base 5 EH)", "unite": "forfait", "prix_bas": 9500, "prix_median": 12500, "prix_haut": 16000, "inclut": "installée aux normes SPANC, étude comprise", "confiance": "moyenne" },
-    { "corps_etat": "assainissement", "poste": "Dimensionnement par EH supplémentaire (au-delà de 5)", "unite": "unite", "prix_bas": 600, "prix_median": 850, "prix_haut": 1100, "confiance": "moyenne" },
-
-    { "corps_etat": "platrerie", "poste": "Cloison placo standard (72/48)", "unite": "m2", "prix_bas": 40, "prix_median": 52, "prix_haut": 70, "inclut": "ossature + BA13 + bandes + enduit ; marché 2025 35-70 €/m²", "confiance": "haute" },
-    { "corps_etat": "platrerie", "poste": "Cloison placo isolante", "unite": "m2", "prix_bas": 50, "prix_median": 62, "prix_haut": 80, "confiance": "haute" },
-    { "corps_etat": "platrerie", "poste": "Doublage murs placo + isolant", "unite": "m2", "prix_bas": 50, "prix_median": 80, "prix_haut": 120, "inclut": "référence laine de verre 120 mm (R≈3,7) ; coef appliqué selon type/épaisseur d'isolant ; marché 2025 40-90 €/m²", "confiance": "haute" },
-    { "corps_etat": "platrerie", "poste": "Faux plafond placo", "unite": "m2", "prix_bas": 35, "prix_median": 48, "prix_haut": 65, "confiance": "moyenne" },
-    { "corps_etat": "platrerie", "poste": "Placo simple habillage (BA13 + bandes à joint)", "unite": "m2", "prix_bas": 25, "prix_median": 32, "prix_haut": 42, "inclut": "réf. 4500 € pour 150 m² ; ossature légère + BA13 + bandes/enduit de joint compris", "confiance": "moyenne" },
-    { "corps_etat": "platrerie", "poste": "Enduit plâtre rénovation (murs)", "unite": "m2", "prix_bas": 28, "prix_median": 37, "prix_haut": 48, "part_mo": 0.8, "inclut": "surtout de la main d'œuvre, plâtre bon marché", "confiance": "moyenne" },
-
-    { "corps_etat": "electricite", "poste": "Rénovation électrique partielle (mise en sécurité)", "unite": "m2_habitable", "prix_bas": 90, "prix_median": 105, "prix_haut": 120, "confiance": "haute" },
-    { "corps_etat": "electricite", "poste": "Rénovation électrique totale (hors chauffage)", "unite": "m2_habitable", "prix_bas": 130, "prix_median": 145, "prix_haut": 160, "confiance": "haute" },
-    { "corps_etat": "electricite", "poste": "Rénovation électrique complète avec chauffage élec.", "unite": "m2_habitable", "prix_bas": 200, "prix_median": 225, "prix_haut": 250, "confiance": "haute" },
-    { "corps_etat": "electricite", "poste": "Remplacement tableau électrique (posé)", "unite": "forfait", "prix_bas": 800, "prix_median": 1300, "prix_haut": 2000, "inclut": "logements 35-100 m² : 350-900 € possible en fournitures comprises simples", "confiance": "haute" },
-    { "corps_etat": "electricite", "poste": "Circuit spécialisé supplémentaire", "unite": "unite", "prix_bas": 100, "prix_median": 175, "prix_haut": 250, "confiance": "haute" },
-    { "corps_etat": "electricite", "poste": "Spots LED encastrés (fournis-posés)", "unite": "unite", "prix_bas": 25, "prix_median": 40, "prix_haut": 60, "part_mo": 0.4, "inclut": "spot + découpe + raccordement (hors câblage déjà compté)", "confiance": "moyenne" },
-    { "corps_etat": "electricite", "poste": "Luminaire / point lumineux équipé (fourni-posé)", "unite": "unite", "prix_bas": 50, "prix_median": 90, "prix_haut": 150, "part_mo": 0.35, "confiance": "moyenne" },
-
-    { "corps_etat": "plomberie", "poste": "Taux horaire plombier (HT)", "unite": "heure", "prix_bas": 45, "prix_median": 58, "prix_haut": 80, "inclut": "province ~55 € HT/h (CAPEB), IDF 65-80 € HT/h", "confiance": "haute" },
-    { "corps_etat": "plomberie", "poste": "Rénovation plomberie salle de bain (réseaux)", "unite": "forfait", "prix_bas": 1500, "prix_median": 3000, "prix_haut": 5000, "confiance": "haute" },
-    { "corps_etat": "plomberie", "poste": "Remplacement chauffe-eau électrique (posé)", "unite": "forfait", "prix_bas": 500, "prix_median": 800, "prix_haut": 1200, "confiance": "moyenne" },
-    { "corps_etat": "plomberie", "poste": "Alimentation + évacuation buanderie / cellier", "unite": "forfait", "prix_bas": 300, "prix_median": 450, "prix_haut": 600, "inclut": "arrivée eau + évacuation lave-linge/bac", "confiance": "moyenne" },
-    { "corps_etat": "plomberie", "poste": "Création réseaux d'évacuation (eaux usées + eaux vannes)", "unite": "forfait", "prix_bas": 1800, "prix_median": 3200, "prix_haut": 5000, "inclut": "collecte PVC + raccordement, saignées/tranchées", "confiance": "moyenne" },
-
-    { "corps_etat": "chauffage_ventilation", "poste": "PAC air-air (posée)", "unite": "forfait", "prix_bas": 6000, "prix_median": 7500, "prix_haut": 9000, "confiance": "haute" },
-    { "corps_etat": "chauffage_ventilation", "poste": "PAC air-eau (posée)", "unite": "forfait", "prix_bas": 10000, "prix_median": 12500, "prix_haut": 15000, "confiance": "haute" },
-    { "corps_etat": "chauffage_ventilation", "poste": "Chaudière gaz condensation (posée)", "unite": "forfait", "prix_bas": 3000, "prix_median": 5000, "prix_haut": 7000, "confiance": "haute" },
-    { "corps_etat": "chauffage_ventilation", "poste": "Radiateur électrique (posé)", "unite": "unite", "prix_bas": 200, "prix_median": 450, "prix_haut": 800, "confiance": "moyenne" },
-    { "corps_etat": "chauffage_ventilation", "poste": "VMC simple flux (posée, hygro B)", "unite": "forfait", "prix_bas": 600, "prix_median": 950, "prix_haut": 1300, "inclut": "autoréglable dès 250 €", "confiance": "haute" },
-    { "corps_etat": "chauffage_ventilation", "poste": "VMC double flux (posée)", "unite": "forfait", "prix_bas": 2500, "prix_median": 4500, "prix_haut": 7000, "confiance": "haute" },
-    { "corps_etat": "chauffage_ventilation", "poste": "Ballon électrique (chauffe-eau, posé)", "unite": "forfait", "prix_bas": 500, "prix_median": 800, "prix_haut": 1200, "confiance": "moyenne" },
-    { "corps_etat": "chauffage_ventilation", "poste": "Chauffe-eau thermodynamique (posé)", "unite": "forfait", "prix_bas": 2000, "prix_median": 2750, "prix_haut": 3500, "confiance": "moyenne" },
-    { "corps_etat": "chauffage_ventilation", "poste": "Chauffe-eau solaire CESI (posé)", "unite": "forfait", "prix_bas": 4000, "prix_median": 5500, "prix_haut": 7000, "confiance": "moyenne" },
-
-    { "corps_etat": "isolation", "poste": "Isolation combles perdus (soufflage)", "unite": "m2", "prix_bas": 25, "prix_median": 35, "prix_haut": 50, "confiance": "moyenne" },
-    { "corps_etat": "isolation", "poste": "Aménagement/isolation complète combles 30-50 m²", "unite": "forfait", "prix_bas": 6000, "prix_median": 10000, "prix_haut": 15000, "confiance": "haute" },
-
-    { "corps_etat": "menuiseries_ext", "poste": "Fenêtre PVC double vitrage standard (fournie-posée)", "unite": "unite", "prix_bas": 450, "prix_median": 800, "prix_haut": 1200, "inclut": "remplacement standard ~870-1170 € TTC ; 120x120 2 vantaux 450-800 €", "confiance": "haute" },
-    { "corps_etat": "menuiseries_ext", "poste": "Fenêtre aluminium double vitrage (fournie-posée)", "unite": "unite", "prix_bas": 700, "prix_median": 1050, "prix_haut": 1500, "inclut": "moyenne Tryba/Travaux.com/AlloFenetre 2025 : 550-1500 €", "confiance": "moyenne" },
-    { "corps_etat": "menuiseries_ext", "poste": "Fenêtre bois double vitrage (fournie-posée)", "unite": "unite", "prix_bas": 800, "prix_median": 1150, "prix_haut": 1500, "confiance": "moyenne" },
-    { "corps_etat": "menuiseries_ext", "poste": "Porte d'entrée PVC (fournie-posée)", "unite": "unite", "prix_bas": 900, "prix_median": 1500, "prix_haut": 2200, "confiance": "moyenne" },
-    { "corps_etat": "menuiseries_ext", "poste": "Porte d'entrée aluminium (fournie-posée)", "unite": "unite", "prix_bas": 1500, "prix_median": 2500, "prix_haut": 3800, "confiance": "moyenne" },
-    { "corps_etat": "menuiseries_ext", "poste": "Porte d'entrée bois (fournie-posée)", "unite": "unite", "prix_bas": 1200, "prix_median": 2200, "prix_haut": 3500, "confiance": "moyenne" },
-    { "corps_etat": "menuiseries_ext", "poste": "Pose seule fenêtre (rénovation)", "unite": "unite", "prix_bas": 100, "prix_median": 200, "prix_haut": 300, "inclut": "dépose totale : 200-600 €", "confiance": "haute" },
-    { "corps_etat": "menuiseries_ext", "poste": "Volet roulant intégré manuel (par fenêtre)", "unite": "unite", "prix_bas": 300, "prix_median": 450, "prix_haut": 600, "confiance": "moyenne" },
-    { "corps_etat": "menuiseries_ext", "poste": "Volet roulant intégré électrique (par fenêtre)", "unite": "unite", "prix_bas": 500, "prix_median": 700, "prix_haut": 950, "inclut": "fenêtre PVC + volet élec ≈ 1500-2000 € au total", "confiance": "moyenne" },
-    { "corps_etat": "menuiseries_ext", "poste": "Volet roulant intégré solaire (par fenêtre)", "unite": "unite", "prix_bas": 700, "prix_median": 950, "prix_haut": 1300, "confiance": "moyenne" },
-
-    { "corps_etat": "menuiseries_int", "poste": "Bloc-porte intérieur (fourni-posé)", "unite": "unite", "prix_bas": 180, "prix_median": 350, "prix_haut": 650, "inclut": "porte + huisserie + quincaillerie", "confiance": "moyenne" },
-
-    { "corps_etat": "sols", "poste": "Ragréage", "unite": "m2", "prix_bas": 15, "prix_median": 25, "prix_haut": 35, "part_mo": 0.7, "confiance": "haute" },
-    { "corps_etat": "sols", "poste": "Chape", "unite": "m2", "prix_bas": 20, "prix_median": 30, "prix_haut": 45, "confiance": "moyenne" },
-    { "corps_etat": "sols", "poste": "Chape traditionnelle (ciment, tirée à la règle)", "unite": "m2", "prix_bas": 20, "prix_median": 26, "prix_haut": 32, "part_mo": 0.7, "confiance": "moyenne" },
-    { "corps_etat": "sols", "poste": "Chape liquide (anhydrite/ciment, pompée)", "unite": "m2", "prix_bas": 22, "prix_median": 30, "prix_haut": 38, "part_mo": 0.65, "inclut": "idéale plancher chauffant, séchage plus long", "confiance": "moyenne" },
-    { "corps_etat": "sols", "poste": "Plinthes PVC (fournies-posées)", "unite": "ml", "prix_bas": 8, "prix_median": 12, "prix_haut": 17, "confiance": "moyenne" },
-    { "corps_etat": "sols", "poste": "Plinthes MDF (fournies-posées)", "unite": "ml", "prix_bas": 6, "prix_median": 13, "prix_haut": 22, "confiance": "moyenne" },
-    { "corps_etat": "sols", "poste": "Plinthes bois (fournies-posées)", "unite": "ml", "prix_bas": 10, "prix_median": 18, "prix_haut": 30, "confiance": "moyenne" },
-    { "corps_etat": "sols", "poste": "Plinthes carrelage (fournies-posées)", "unite": "ml", "prix_bas": 12, "prix_median": 22, "prix_haut": 40, "confiance": "moyenne" },
-    { "corps_etat": "sols", "poste": "Carrelage sol grand format (fourni-posé)", "unite": "m2", "prix_bas": 60, "prix_median": 90, "prix_haut": 130, "inclut": "60×60 et plus ; carreau ~30-40 €/m² + pose ~30-50 €/m²", "confiance": "moyenne" },
-    { "corps_etat": "sols", "poste": "Carrelage sol (fourni-posé)", "unite": "m2", "prix_bas": 55, "prix_median": 90, "prix_haut": 150, "inclut": "carreau standard ~20-40 €/m² + pose ~25-45 €/m²", "confiance": "haute" },
-    { "corps_etat": "sols", "poste": "Pose carrelage sol (MO seule)", "unite": "m2", "prix_bas": 25, "prix_median": 45, "prix_haut": 65, "confiance": "haute" },
-    { "corps_etat": "sols", "poste": "Faïence murale (MO seule)", "unite": "m2", "prix_bas": 30, "prix_median": 47, "prix_haut": 65, "confiance": "haute" },
-    { "corps_etat": "sols", "poste": "Faïence murale (fournie-posée)", "unite": "m2", "prix_bas": 60, "prix_median": 85, "prix_haut": 110, "confiance": "moyenne" },
-    { "corps_etat": "sols", "poste": "Parquet stratifié (fourni-posé, flottant)", "unite": "m2", "prix_bas": 45, "prix_median": 70, "prix_haut": 105, "inclut": "marché 2025 45-105 €/m² posé", "confiance": "haute" },
-    { "corps_etat": "sols", "poste": "Pose collée parquet massif (MO seule)", "unite": "m2", "prix_bas": 35, "prix_median": 42, "prix_haut": 50, "confiance": "haute" },
-    { "corps_etat": "sols", "poste": "Parquet massif (fourni-posé)", "unite": "m2", "prix_bas": 70, "prix_median": 100, "prix_haut": 150, "confiance": "moyenne" },
-    { "corps_etat": "sols", "poste": "Béton ciré (fourni-posé)", "unite": "m2", "prix_bas": 80, "prix_median": 120, "prix_haut": 170, "inclut": "préparation support + application + protection", "confiance": "moyenne" },
-    { "corps_etat": "sols", "poste": "Sol PVC / vinyle (fourni-posé)", "unite": "m2", "prix_bas": 30, "prix_median": 45, "prix_haut": 65, "confiance": "moyenne" },
-    { "corps_etat": "sols", "poste": "Plancher bois neuf (création surface)", "unite": "m2", "prix_bas": 70, "prix_median": 100, "prix_haut": 140, "inclut": "solivage + panneaux OSB/aggloméré", "confiance": "moyenne" },
-
-    { "corps_etat": "peinture", "poste": "Peinture murs/plafonds (fourni-posé, HT)", "unite": "m2_surface_traitee", "prix_bas": 25, "prix_median": 35, "prix_haut": 50, "part_mo": 0.72, "inclut": "extrêmes constatés 20-65 € HT ; surtout main d'œuvre (peinture ~3-5 €/m²)", "confiance": "haute" },
-    { "corps_etat": "peinture", "poste": "Peinture (MO seule, HT)", "unite": "m2_surface_traitee", "prix_bas": 15, "prix_median": 25, "prix_haut": 35, "confiance": "haute" },
-
-    { "corps_etat": "cuisine", "poste": "Cuisine équipée entrée/milieu de gamme (posée) — cible locatif", "unite": "forfait", "prix_bas": 3000, "prix_median": 6000, "prix_haut": 12000, "inclut": "moyenne France 9 400 € ; haut de gamme > 20 000 €", "confiance": "haute" },
-    { "corps_etat": "cuisine", "poste": "Pose cuisine seule", "unite": "forfait", "prix_bas": 500, "prix_median": 1800, "prix_haut": 4000, "confiance": "haute" },
-    { "corps_etat": "cuisine", "poste": "Cuisine équipée — entrée de gamme (posée)", "unite": "forfait", "prix_bas": 2500, "prix_median": 3800, "prix_haut": 5500, "inclut": "meubles + électroménager de base + pose", "confiance": "moyenne" },
-    { "corps_etat": "cuisine", "poste": "Cuisine équipée — milieu de gamme (posée)", "unite": "forfait", "prix_bas": 5500, "prix_median": 8500, "prix_haut": 12000, "inclut": "cuisiniste, ~250-900 €/ml posé", "confiance": "moyenne" },
-    { "corps_etat": "cuisine", "poste": "Cuisine équipée — haut de gamme (posée)", "unite": "forfait", "prix_bas": 12000, "prix_median": 17000, "prix_haut": 25000, "confiance": "moyenne" },
-
-    { "corps_etat": "salle_de_bain", "poste": "Rénovation complète salle de bain", "unite": "forfait", "prix_bas": 5000, "prix_median": 9000, "prix_haut": 15000, "inclut": "≈ 1 000-2 500 €/m² selon gamme", "confiance": "haute" },
-    { "corps_etat": "salle_de_bain", "poste": "Réseaux plomberie SDB encastrés", "unite": "forfait", "prix_bas": 2000, "prix_median": 2750, "prix_haut": 3600, "inclut": "alimentation + évacuations encastrées, saignées comprises", "confiance": "moyenne" },
-    { "corps_etat": "salle_de_bain", "poste": "Réseaux plomberie SDB apparents / colonne", "unite": "forfait", "prix_bas": 1200, "prix_median": 1700, "prix_haut": 2300, "confiance": "moyenne" },
-    { "corps_etat": "salle_de_bain", "poste": "Douche à l'italienne complète", "unite": "forfait", "prix_bas": 2500, "prix_median": 3500, "prix_haut": 4800, "inclut": "receveur maçonné, étanchéité SEL/natte, paroi, colonne", "confiance": "moyenne" },
-    { "corps_etat": "salle_de_bain", "poste": "Douche standard (receveur + paroi + colonne)", "unite": "forfait", "prix_bas": 1200, "prix_median": 1800, "prix_haut": 2500, "confiance": "moyenne" },
-    { "corps_etat": "salle_de_bain", "poste": "Baignoire (posée, avec tablier)", "unite": "forfait", "prix_bas": 800, "prix_median": 1300, "prix_haut": 1800, "confiance": "moyenne" },
-    { "corps_etat": "salle_de_bain", "poste": "WC suspendu (bâti-support + cuvette, posé)", "unite": "unite", "prix_bas": 700, "prix_median": 950, "prix_haut": 1300, "confiance": "moyenne" },
-    { "corps_etat": "salle_de_bain", "poste": "WC classique (posé)", "unite": "unite", "prix_bas": 300, "prix_median": 450, "prix_haut": 600, "confiance": "moyenne" },
-    { "corps_etat": "salle_de_bain", "poste": "Meuble simple vasque + robinetterie (posé)", "unite": "unite", "prix_bas": 400, "prix_median": 650, "prix_haut": 950, "confiance": "moyenne" },
-    { "corps_etat": "salle_de_bain", "poste": "Meuble double vasque + robinetterie (posé)", "unite": "unite", "prix_bas": 700, "prix_median": 1100, "prix_haut": 1500, "confiance": "moyenne" },
-    { "corps_etat": "salle_de_bain", "poste": "Sèche-serviettes (posé)", "unite": "unite", "prix_bas": 300, "prix_median": 450, "prix_haut": 650, "confiance": "moyenne" },
-
-    { "corps_etat": "construction_neuve", "poste": "Construction neuve RE2020 — entrée de gamme", "unite": "m2_habitable", "prix_bas": 1400, "prix_median": 1600, "prix_haut": 1800, "inclut": "clé en main hors terrain, hors VRD", "confiance": "moyenne" },
-    { "corps_etat": "construction_neuve", "poste": "Construction neuve RE2020 — standard", "unite": "m2_habitable", "prix_bas": 1800, "prix_median": 2050, "prix_haut": 2300, "inclut": "clé en main hors terrain, hors VRD", "confiance": "moyenne" },
-    { "corps_etat": "construction_neuve", "poste": "Construction neuve RE2020 — haut de gamme", "unite": "m2_habitable", "prix_bas": 2300, "prix_median": 2750, "prix_haut": 3200, "inclut": "clé en main hors terrain, hors VRD", "confiance": "moyenne" },
-    { "corps_etat": "construction_neuve", "poste": "Construction neuve RE2020 — prestige / luxe", "unite": "m2_habitable", "prix_bas": 3200, "prix_median": 3900, "prix_haut": 5000, "inclut": "prestations haut de gamme, architecte, matériaux nobles", "confiance": "moyenne" },
-    { "corps_etat": "construction_neuve", "poste": "Terrassement + VRD (viabilisation terrain)", "unite": "forfait", "prix_bas": 8000, "prix_median": 13000, "prix_haut": 20000, "confiance": "moyenne" },
-    { "corps_etat": "construction_neuve", "poste": "Garage attenant", "unite": "m2", "prix_bas": 600, "prix_median": 800, "prix_haut": 1000, "confiance": "moyenne" },
-    { "corps_etat": "construction_neuve", "poste": "Salle de bain supplémentaire (neuf)", "unite": "unite", "prix_bas": 6000, "prix_median": 7500, "prix_haut": 9000, "confiance": "moyenne" },
-    { "corps_etat": "construction_neuve", "poste": "WC supplémentaire (neuf)", "unite": "unite", "prix_bas": 1500, "prix_median": 2000, "prix_haut": 2500, "confiance": "moyenne" },
-    { "corps_etat": "construction_neuve", "poste": "Terrasse extérieure", "unite": "m2", "prix_bas": 120, "prix_median": 180, "prix_haut": 250, "confiance": "moyenne" },
-    { "corps_etat": "construction_neuve", "poste": "Surcoût eau chaude thermodynamique", "unite": "forfait", "prix_bas": 1200, "prix_median": 1500, "prix_haut": 1800, "confiance": "moyenne" },
-    { "corps_etat": "construction_neuve", "poste": "Surcoût eau chaude solaire", "unite": "forfait", "prix_bas": 3500, "prix_median": 4200, "prix_haut": 5000, "confiance": "moyenne" }
+    {
+      "corps_etat": "renovation_globale",
+      "poste": "Rafraîchissement (peintures, sols, petites reprises)",
+      "unite": "m2_habitable",
+      "prix_bas": 360,
+      "prix_median": 500,
+      "prix_haut": 700,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "renovation_globale",
+      "poste": "Rénovation complète tous corps d'état",
+      "unite": "m2_habitable",
+      "prix_bas": 1200,
+      "prix_median": 1600,
+      "prix_haut": 2000,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "renovation_globale",
+      "poste": "Rénovation lourde (avec gros œuvre / redistribution)",
+      "unite": "m2_habitable",
+      "prix_bas": 2000,
+      "prix_median": 2500,
+      "prix_haut": 3200,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "demolition_curage",
+      "poste": "Curage léger (dépose revêtements, équipements)",
+      "unite": "m2",
+      "prix_bas": 40,
+      "prix_median": 60,
+      "prix_haut": 90,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "demolition_curage",
+      "poste": "Curage complet avec évacuation gravats",
+      "unite": "m2",
+      "prix_bas": 80,
+      "prix_median": 120,
+      "prix_haut": 170,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "demolition_curage",
+      "poste": "Dépose ancienne cuisine (avec évacuation)",
+      "unite": "forfait",
+      "prix_bas": 350,
+      "prix_median": 900,
+      "prix_haut": 2000,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "demolition_curage",
+      "poste": "Dépose revêtement de sol",
+      "unite": "m2",
+      "prix_bas": 10,
+      "prix_median": 16,
+      "prix_haut": 25,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "gros_oeuvre",
+      "poste": "Ouverture mur porteur (avec IPN, hors étude structure)",
+      "unite": "forfait",
+      "prix_bas": 2000,
+      "prix_median": 3500,
+      "prix_haut": 6000,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "gros_oeuvre",
+      "poste": "Hérisson + dalle béton armée",
+      "unite": "m2",
+      "prix_bas": 70,
+      "prix_median": 100,
+      "prix_haut": 140,
+      "inclut": "hérisson compacté + film polyane + dalle armée ~12 cm",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "gros_oeuvre",
+      "poste": "Reprise plancher bois (solivage + panneaux)",
+      "unite": "m2",
+      "prix_bas": 60,
+      "prix_median": 90,
+      "prix_haut": 120,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "gros_oeuvre",
+      "poste": "Traitement humidité (injection résine / drainage)",
+      "unite": "forfait",
+      "prix_bas": 1500,
+      "prix_median": 3500,
+      "prix_haut": 6000,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "gros_oeuvre",
+      "poste": "Réfection toiture complète",
+      "unite": "m2",
+      "prix_bas": 120,
+      "prix_median": 200,
+      "prix_haut": 300,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "gros_oeuvre",
+      "poste": "Réparation toiture légère (tuiles, nettoyage)",
+      "unite": "m2",
+      "prix_bas": 30,
+      "prix_median": 50,
+      "prix_haut": 70,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "gros_oeuvre",
+      "poste": "Ravalement de façade (maison, enduit/peinture)",
+      "unite": "m2",
+      "prix_bas": 40,
+      "prix_median": 80,
+      "prix_haut": 140,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "facade",
+      "poste": "Nettoyage + hydrofuge façade",
+      "unite": "m2",
+      "prix_bas": 15,
+      "prix_median": 25,
+      "prix_haut": 35,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "facade",
+      "poste": "Peinture / ravalement façade",
+      "unite": "m2",
+      "prix_bas": 25,
+      "prix_median": 35,
+      "prix_haut": 55,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "facade",
+      "poste": "Enduit / crépi façade neuf",
+      "unite": "m2",
+      "prix_bas": 40,
+      "prix_median": 65,
+      "prix_haut": 90,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "facade",
+      "poste": "Isolation thermique par l'extérieur (ITE)",
+      "unite": "m2",
+      "prix_bas": 120,
+      "prix_median": 185,
+      "prix_haut": 250,
+      "inclut": "isolant + enduit ou bardage, éligible aides",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "facade",
+      "poste": "Reprise fissures / piquage avant façade",
+      "unite": "m2",
+      "prix_bas": 12,
+      "prix_median": 22,
+      "prix_haut": 35,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "assainissement",
+      "poste": "Raccordement au tout-à-l'égout",
+      "unite": "forfait",
+      "prix_bas": 3000,
+      "prix_median": 5000,
+      "prix_haut": 8000,
+      "inclut": "tranchée + branchement, hors taxe de raccordement communale",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "raccordements",
+      "poste": "Raccordement + compteur électrique (Enedis)",
+      "unite": "forfait",
+      "prix_bas": 1000,
+      "prix_median": 1600,
+      "prix_haut": 2500,
+      "inclut": "coffret + branchement + mise en service Enedis",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "raccordements",
+      "poste": "Raccordement + compteur eau",
+      "unite": "forfait",
+      "prix_bas": 1000,
+      "prix_median": 1700,
+      "prix_haut": 2800,
+      "inclut": "branchement au réseau + regard compteur",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "raccordements",
+      "poste": "Raccordement gaz (si réseau)",
+      "unite": "forfait",
+      "prix_bas": 400,
+      "prix_median": 900,
+      "prix_haut": 1600,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "assainissement",
+      "poste": "Fosse toutes eaux + épandage (base 5 EH)",
+      "unite": "forfait",
+      "prix_bas": 9000,
+      "prix_median": 11500,
+      "prix_haut": 14000,
+      "inclut": "cuve + filtre + épandage, terrassement + étude de sol, NF DTU 64.1",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "assainissement",
+      "poste": "Microstation d'épuration (base 5 EH)",
+      "unite": "forfait",
+      "prix_bas": 9500,
+      "prix_median": 12500,
+      "prix_haut": 16000,
+      "inclut": "installée aux normes SPANC, étude comprise",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "assainissement",
+      "poste": "Dimensionnement par EH supplémentaire (au-delà de 5)",
+      "unite": "unite",
+      "prix_bas": 600,
+      "prix_median": 850,
+      "prix_haut": 1100,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "platrerie",
+      "poste": "Cloison placo standard (72/48)",
+      "unite": "m2",
+      "prix_bas": 40,
+      "prix_median": 52,
+      "prix_haut": 70,
+      "inclut": "ossature + BA13 + bandes + enduit ; marché 2025 35-70 €/m²",
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "platrerie",
+      "poste": "Cloison placo isolante",
+      "unite": "m2",
+      "prix_bas": 50,
+      "prix_median": 62,
+      "prix_haut": 80,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "platrerie",
+      "poste": "Doublage murs placo + isolant",
+      "unite": "m2",
+      "prix_bas": 50,
+      "prix_median": 80,
+      "prix_haut": 120,
+      "inclut": "référence laine de verre 120 mm (R≈3,7) ; coef appliqué selon type/épaisseur d'isolant ; marché 2025 40-90 €/m²",
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "platrerie",
+      "poste": "Faux plafond placo",
+      "unite": "m2",
+      "prix_bas": 35,
+      "prix_median": 48,
+      "prix_haut": 65,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "platrerie",
+      "poste": "Placo simple habillage (BA13 + bandes à joint)",
+      "unite": "m2",
+      "prix_bas": 25,
+      "prix_median": 32,
+      "prix_haut": 42,
+      "inclut": "réf. 4500 € pour 150 m² ; ossature légère + BA13 + bandes/enduit de joint compris",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "platrerie",
+      "poste": "Enduit plâtre rénovation (murs)",
+      "unite": "m2",
+      "prix_bas": 28,
+      "prix_median": 37,
+      "prix_haut": 48,
+      "part_mo": 0.8,
+      "inclut": "surtout de la main d'œuvre, plâtre bon marché",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "electricite",
+      "poste": "Rénovation électrique partielle (mise en sécurité)",
+      "unite": "m2_habitable",
+      "prix_bas": 90,
+      "prix_median": 105,
+      "prix_haut": 120,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "electricite",
+      "poste": "Rénovation électrique totale (hors chauffage)",
+      "unite": "m2_habitable",
+      "prix_bas": 130,
+      "prix_median": 145,
+      "prix_haut": 160,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "electricite",
+      "poste": "Rénovation électrique complète avec chauffage élec.",
+      "unite": "m2_habitable",
+      "prix_bas": 200,
+      "prix_median": 225,
+      "prix_haut": 250,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "electricite",
+      "poste": "Remplacement tableau électrique (posé)",
+      "unite": "forfait",
+      "prix_bas": 800,
+      "prix_median": 1300,
+      "prix_haut": 2000,
+      "inclut": "logements 35-100 m² : 350-900 € possible en fournitures comprises simples",
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "electricite",
+      "poste": "Circuit spécialisé supplémentaire",
+      "unite": "unite",
+      "prix_bas": 100,
+      "prix_median": 175,
+      "prix_haut": 250,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "electricite",
+      "poste": "Spots LED encastrés (fournis-posés)",
+      "unite": "unite",
+      "prix_bas": 25,
+      "prix_median": 40,
+      "prix_haut": 60,
+      "part_mo": 0.4,
+      "inclut": "spot + découpe + raccordement (hors câblage déjà compté)",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "electricite",
+      "poste": "Luminaire / point lumineux équipé (fourni-posé)",
+      "unite": "unite",
+      "prix_bas": 50,
+      "prix_median": 90,
+      "prix_haut": 150,
+      "part_mo": 0.35,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "plomberie",
+      "poste": "Taux horaire plombier (HT)",
+      "unite": "heure",
+      "prix_bas": 45,
+      "prix_median": 58,
+      "prix_haut": 80,
+      "inclut": "province ~55 € HT/h (CAPEB), IDF 65-80 € HT/h",
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "plomberie",
+      "poste": "Rénovation plomberie salle de bain (réseaux)",
+      "unite": "forfait",
+      "prix_bas": 1500,
+      "prix_median": 3000,
+      "prix_haut": 5000,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "plomberie",
+      "poste": "Remplacement chauffe-eau électrique (posé)",
+      "unite": "forfait",
+      "prix_bas": 500,
+      "prix_median": 800,
+      "prix_haut": 1200,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "plomberie",
+      "poste": "Alimentation + évacuation buanderie / cellier",
+      "unite": "forfait",
+      "prix_bas": 300,
+      "prix_median": 450,
+      "prix_haut": 600,
+      "inclut": "arrivée eau + évacuation lave-linge/bac",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "plomberie",
+      "poste": "Création réseaux d'évacuation (eaux usées + eaux vannes)",
+      "unite": "forfait",
+      "prix_bas": 1800,
+      "prix_median": 3200,
+      "prix_haut": 5000,
+      "inclut": "collecte PVC + raccordement, saignées/tranchées",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "chauffage_ventilation",
+      "poste": "PAC air-air (posée)",
+      "unite": "forfait",
+      "prix_bas": 6000,
+      "prix_median": 7500,
+      "prix_haut": 9000,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "chauffage_ventilation",
+      "poste": "PAC air-eau (posée)",
+      "unite": "forfait",
+      "prix_bas": 10000,
+      "prix_median": 12500,
+      "prix_haut": 15000,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "chauffage_ventilation",
+      "poste": "Chaudière gaz condensation (posée)",
+      "unite": "forfait",
+      "prix_bas": 3000,
+      "prix_median": 5000,
+      "prix_haut": 7000,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "chauffage_ventilation",
+      "poste": "Radiateur électrique (posé)",
+      "unite": "unite",
+      "prix_bas": 200,
+      "prix_median": 450,
+      "prix_haut": 800,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "chauffage_ventilation",
+      "poste": "VMC simple flux (posée, hygro B)",
+      "unite": "forfait",
+      "prix_bas": 600,
+      "prix_median": 950,
+      "prix_haut": 1300,
+      "inclut": "autoréglable dès 250 €",
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "chauffage_ventilation",
+      "poste": "VMC double flux (posée)",
+      "unite": "forfait",
+      "prix_bas": 2500,
+      "prix_median": 4500,
+      "prix_haut": 7000,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "chauffage_ventilation",
+      "poste": "Ballon électrique (chauffe-eau, posé)",
+      "unite": "forfait",
+      "prix_bas": 500,
+      "prix_median": 800,
+      "prix_haut": 1200,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "chauffage_ventilation",
+      "poste": "Chauffe-eau thermodynamique (posé)",
+      "unite": "forfait",
+      "prix_bas": 2000,
+      "prix_median": 2750,
+      "prix_haut": 3500,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "chauffage_ventilation",
+      "poste": "Chauffe-eau solaire CESI (posé)",
+      "unite": "forfait",
+      "prix_bas": 4000,
+      "prix_median": 5500,
+      "prix_haut": 7000,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "isolation",
+      "poste": "Isolation combles perdus (soufflage)",
+      "unite": "m2",
+      "prix_bas": 25,
+      "prix_median": 35,
+      "prix_haut": 50,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "isolation",
+      "poste": "Aménagement/isolation complète combles 30-50 m²",
+      "unite": "forfait",
+      "prix_bas": 6000,
+      "prix_median": 10000,
+      "prix_haut": 15000,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "menuiseries_ext",
+      "poste": "Fenêtre PVC double vitrage standard (fournie-posée)",
+      "unite": "unite",
+      "prix_bas": 450,
+      "prix_median": 800,
+      "prix_haut": 1200,
+      "inclut": "remplacement standard ~870-1170 € TTC ; 120x120 2 vantaux 450-800 €",
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "menuiseries_ext",
+      "poste": "Fenêtre aluminium double vitrage (fournie-posée)",
+      "unite": "unite",
+      "prix_bas": 700,
+      "prix_median": 1050,
+      "prix_haut": 1500,
+      "inclut": "moyenne Tryba/Travaux.com/AlloFenetre 2025 : 550-1500 €",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "menuiseries_ext",
+      "poste": "Fenêtre bois double vitrage (fournie-posée)",
+      "unite": "unite",
+      "prix_bas": 800,
+      "prix_median": 1150,
+      "prix_haut": 1500,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "menuiseries_ext",
+      "poste": "Porte d'entrée PVC (fournie-posée)",
+      "unite": "unite",
+      "prix_bas": 900,
+      "prix_median": 1500,
+      "prix_haut": 2200,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "menuiseries_ext",
+      "poste": "Porte d'entrée aluminium (fournie-posée)",
+      "unite": "unite",
+      "prix_bas": 1500,
+      "prix_median": 2500,
+      "prix_haut": 3800,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "menuiseries_ext",
+      "poste": "Porte d'entrée bois (fournie-posée)",
+      "unite": "unite",
+      "prix_bas": 1200,
+      "prix_median": 2200,
+      "prix_haut": 3500,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "menuiseries_ext",
+      "poste": "Pose seule fenêtre (rénovation)",
+      "unite": "unite",
+      "prix_bas": 100,
+      "prix_median": 200,
+      "prix_haut": 300,
+      "inclut": "dépose totale : 200-600 €",
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "menuiseries_ext",
+      "poste": "Volet roulant intégré manuel (par fenêtre)",
+      "unite": "unite",
+      "prix_bas": 300,
+      "prix_median": 450,
+      "prix_haut": 600,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "menuiseries_ext",
+      "poste": "Volet roulant intégré électrique (par fenêtre)",
+      "unite": "unite",
+      "prix_bas": 500,
+      "prix_median": 700,
+      "prix_haut": 950,
+      "inclut": "fenêtre PVC + volet élec ≈ 1500-2000 € au total",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "menuiseries_ext",
+      "poste": "Volet roulant intégré solaire (par fenêtre)",
+      "unite": "unite",
+      "prix_bas": 700,
+      "prix_median": 950,
+      "prix_haut": 1300,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "menuiseries_int",
+      "poste": "Bloc-porte intérieur (fourni-posé)",
+      "unite": "unite",
+      "prix_bas": 180,
+      "prix_median": 350,
+      "prix_haut": 650,
+      "inclut": "porte + huisserie + quincaillerie",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "sols",
+      "poste": "Ragréage",
+      "unite": "m2",
+      "prix_bas": 15,
+      "prix_median": 25,
+      "prix_haut": 35,
+      "part_mo": 0.7,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "sols",
+      "poste": "Chape",
+      "unite": "m2",
+      "prix_bas": 20,
+      "prix_median": 30,
+      "prix_haut": 45,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "sols",
+      "poste": "Chape traditionnelle (ciment, tirée à la règle)",
+      "unite": "m2",
+      "prix_bas": 20,
+      "prix_median": 26,
+      "prix_haut": 32,
+      "part_mo": 0.7,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "sols",
+      "poste": "Chape liquide (anhydrite/ciment, pompée)",
+      "unite": "m2",
+      "prix_bas": 22,
+      "prix_median": 30,
+      "prix_haut": 38,
+      "part_mo": 0.65,
+      "inclut": "idéale plancher chauffant, séchage plus long",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "sols",
+      "poste": "Plinthes PVC (fournies-posées)",
+      "unite": "ml",
+      "prix_bas": 8,
+      "prix_median": 12,
+      "prix_haut": 17,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "sols",
+      "poste": "Plinthes MDF (fournies-posées)",
+      "unite": "ml",
+      "prix_bas": 6,
+      "prix_median": 13,
+      "prix_haut": 22,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "sols",
+      "poste": "Plinthes bois (fournies-posées)",
+      "unite": "ml",
+      "prix_bas": 10,
+      "prix_median": 18,
+      "prix_haut": 30,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "sols",
+      "poste": "Plinthes carrelage (fournies-posées)",
+      "unite": "ml",
+      "prix_bas": 12,
+      "prix_median": 22,
+      "prix_haut": 40,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "sols",
+      "poste": "Carrelage sol grand format (fourni-posé)",
+      "unite": "m2",
+      "prix_bas": 60,
+      "prix_median": 90,
+      "prix_haut": 130,
+      "inclut": "60×60 et plus ; carreau ~30-40 €/m² + pose ~30-50 €/m²",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "sols",
+      "poste": "Carrelage sol (fourni-posé)",
+      "unite": "m2",
+      "prix_bas": 55,
+      "prix_median": 90,
+      "prix_haut": 150,
+      "inclut": "carreau standard ~20-40 €/m² + pose ~25-45 €/m²",
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "sols",
+      "poste": "Pose carrelage sol (MO seule)",
+      "unite": "m2",
+      "prix_bas": 25,
+      "prix_median": 45,
+      "prix_haut": 65,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "sols",
+      "poste": "Faïence murale (MO seule)",
+      "unite": "m2",
+      "prix_bas": 30,
+      "prix_median": 47,
+      "prix_haut": 65,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "sols",
+      "poste": "Faïence murale (fournie-posée)",
+      "unite": "m2",
+      "prix_bas": 60,
+      "prix_median": 85,
+      "prix_haut": 110,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "sols",
+      "poste": "Parquet stratifié (fourni-posé, flottant)",
+      "unite": "m2",
+      "prix_bas": 45,
+      "prix_median": 70,
+      "prix_haut": 105,
+      "inclut": "marché 2025 45-105 €/m² posé",
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "sols",
+      "poste": "Pose collée parquet massif (MO seule)",
+      "unite": "m2",
+      "prix_bas": 35,
+      "prix_median": 42,
+      "prix_haut": 50,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "sols",
+      "poste": "Parquet massif (fourni-posé)",
+      "unite": "m2",
+      "prix_bas": 70,
+      "prix_median": 100,
+      "prix_haut": 150,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "sols",
+      "poste": "Béton ciré (fourni-posé)",
+      "unite": "m2",
+      "prix_bas": 80,
+      "prix_median": 120,
+      "prix_haut": 170,
+      "inclut": "préparation support + application + protection",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "sols",
+      "poste": "Sol PVC / vinyle (fourni-posé)",
+      "unite": "m2",
+      "prix_bas": 30,
+      "prix_median": 45,
+      "prix_haut": 65,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "sols",
+      "poste": "Plancher bois neuf (création surface)",
+      "unite": "m2",
+      "prix_bas": 70,
+      "prix_median": 100,
+      "prix_haut": 140,
+      "inclut": "solivage + panneaux OSB/aggloméré",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "peinture",
+      "poste": "Peinture murs/plafonds (fourni-posé, HT)",
+      "unite": "m2_surface_traitee",
+      "prix_bas": 25,
+      "prix_median": 35,
+      "prix_haut": 50,
+      "part_mo": 0.72,
+      "inclut": "extrêmes constatés 20-65 € HT ; surtout main d'œuvre (peinture ~3-5 €/m²)",
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "peinture",
+      "poste": "Peinture (MO seule, HT)",
+      "unite": "m2_surface_traitee",
+      "prix_bas": 15,
+      "prix_median": 25,
+      "prix_haut": 35,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "cuisine",
+      "poste": "Cuisine équipée entrée/milieu de gamme (posée) — cible locatif",
+      "unite": "forfait",
+      "prix_bas": 3000,
+      "prix_median": 6000,
+      "prix_haut": 12000,
+      "inclut": "moyenne France 9 400 € ; haut de gamme > 20 000 €",
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "cuisine",
+      "poste": "Pose cuisine seule",
+      "unite": "forfait",
+      "prix_bas": 500,
+      "prix_median": 1800,
+      "prix_haut": 4000,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "cuisine",
+      "poste": "Cuisine équipée — entrée de gamme (posée)",
+      "unite": "forfait",
+      "prix_bas": 2500,
+      "prix_median": 3800,
+      "prix_haut": 5500,
+      "inclut": "meubles + électroménager de base + pose",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "cuisine",
+      "poste": "Cuisine équipée — milieu de gamme (posée)",
+      "unite": "forfait",
+      "prix_bas": 5500,
+      "prix_median": 8500,
+      "prix_haut": 12000,
+      "inclut": "meubles + électroménager (four, plaque, hotte, lave-vaisselle) + plan de travail + pose ; ~250-900 €/ml",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "cuisine",
+      "poste": "Cuisine équipée — haut de gamme (posée)",
+      "unite": "forfait",
+      "prix_bas": 12000,
+      "prix_median": 17000,
+      "prix_haut": 25000,
+      "inclut": "électroménager premium (piano, frigo américain, cave à vin) + plan quartz/granit + sur-mesure",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "salle_de_bain",
+      "poste": "Rénovation complète salle de bain",
+      "unite": "forfait",
+      "prix_bas": 5000,
+      "prix_median": 9000,
+      "prix_haut": 15000,
+      "inclut": "≈ 1 000-2 500 €/m² selon gamme",
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "salle_de_bain",
+      "poste": "Réseaux plomberie SDB encastrés",
+      "unite": "forfait",
+      "prix_bas": 2000,
+      "prix_median": 2750,
+      "prix_haut": 3600,
+      "inclut": "alimentation + évacuations encastrées, saignées comprises",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "salle_de_bain",
+      "poste": "Réseaux plomberie SDB apparents / colonne",
+      "unite": "forfait",
+      "prix_bas": 1200,
+      "prix_median": 1700,
+      "prix_haut": 2300,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "salle_de_bain",
+      "poste": "Douche à l'italienne complète",
+      "unite": "forfait",
+      "prix_bas": 2500,
+      "prix_median": 3500,
+      "prix_haut": 4800,
+      "inclut": "receveur maçonné, étanchéité SEL/natte, paroi, colonne",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "salle_de_bain",
+      "poste": "Douche standard (receveur + paroi + colonne)",
+      "unite": "forfait",
+      "prix_bas": 1200,
+      "prix_median": 1800,
+      "prix_haut": 2500,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "salle_de_bain",
+      "poste": "Baignoire (posée, avec tablier)",
+      "unite": "forfait",
+      "prix_bas": 800,
+      "prix_median": 1300,
+      "prix_haut": 1800,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "salle_de_bain",
+      "poste": "WC suspendu (bâti-support + cuvette, posé)",
+      "unite": "unite",
+      "prix_bas": 700,
+      "prix_median": 950,
+      "prix_haut": 1300,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "salle_de_bain",
+      "poste": "WC classique (posé)",
+      "unite": "unite",
+      "prix_bas": 300,
+      "prix_median": 450,
+      "prix_haut": 600,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "salle_de_bain",
+      "poste": "Meuble simple vasque + robinetterie (posé)",
+      "unite": "unite",
+      "prix_bas": 400,
+      "prix_median": 650,
+      "prix_haut": 950,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "salle_de_bain",
+      "poste": "Meuble double vasque + robinetterie (posé)",
+      "unite": "unite",
+      "prix_bas": 700,
+      "prix_median": 1100,
+      "prix_haut": 1500,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "salle_de_bain",
+      "poste": "Sèche-serviettes (posé)",
+      "unite": "unite",
+      "prix_bas": 300,
+      "prix_median": 450,
+      "prix_haut": 650,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "construction_neuve",
+      "poste": "Construction neuve RE2020 — entrée de gamme",
+      "unite": "m2_habitable",
+      "prix_bas": 1400,
+      "prix_median": 1600,
+      "prix_haut": 1800,
+      "inclut": "clé en main hors terrain, hors VRD",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "construction_neuve",
+      "poste": "Construction neuve RE2020 — standard",
+      "unite": "m2_habitable",
+      "prix_bas": 1800,
+      "prix_median": 2050,
+      "prix_haut": 2300,
+      "inclut": "clé en main hors terrain, hors VRD",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "construction_neuve",
+      "poste": "Construction neuve RE2020 — haut de gamme",
+      "unite": "m2_habitable",
+      "prix_bas": 2300,
+      "prix_median": 2750,
+      "prix_haut": 3200,
+      "inclut": "clé en main hors terrain, hors VRD",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "construction_neuve",
+      "poste": "Construction neuve RE2020 — prestige / luxe",
+      "unite": "m2_habitable",
+      "prix_bas": 3200,
+      "prix_median": 3900,
+      "prix_haut": 5000,
+      "inclut": "prestations haut de gamme, architecte, matériaux nobles",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "construction_neuve",
+      "poste": "Terrassement + VRD (viabilisation terrain)",
+      "unite": "forfait",
+      "prix_bas": 8000,
+      "prix_median": 13000,
+      "prix_haut": 20000,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "construction_neuve",
+      "poste": "Garage attenant",
+      "unite": "m2",
+      "prix_bas": 600,
+      "prix_median": 800,
+      "prix_haut": 1000,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "construction_neuve",
+      "poste": "Salle de bain supplémentaire (neuf)",
+      "unite": "unite",
+      "prix_bas": 6000,
+      "prix_median": 7500,
+      "prix_haut": 9000,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "construction_neuve",
+      "poste": "WC supplémentaire (neuf)",
+      "unite": "unite",
+      "prix_bas": 1500,
+      "prix_median": 2000,
+      "prix_haut": 2500,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "construction_neuve",
+      "poste": "Terrasse extérieure",
+      "unite": "m2",
+      "prix_bas": 120,
+      "prix_median": 180,
+      "prix_haut": 250,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "construction_neuve",
+      "poste": "Surcoût eau chaude thermodynamique",
+      "unite": "forfait",
+      "prix_bas": 1200,
+      "prix_median": 1500,
+      "prix_haut": 1800,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "construction_neuve",
+      "poste": "Surcoût eau chaude solaire",
+      "unite": "forfait",
+      "prix_bas": 3500,
+      "prix_median": 4200,
+      "prix_haut": 5000,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "couverture",
+      "poste": "Réfection couverture complète (dépose + tuiles + faîtage)",
+      "unite": "m2",
+      "prix_bas": 120,
+      "prix_median": 200,
+      "prix_haut": 300,
+      "inclut": "dépose, écran sous-toiture, liteaunage, tuiles/ardoises, faîtage, zinguerie",
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "couverture",
+      "poste": "Reprise couverture partielle (tuiles, faîtage, nettoyage)",
+      "unite": "m2",
+      "prix_bas": 30,
+      "prix_median": 50,
+      "prix_haut": 70,
+      "confiance": "haute"
+    },
+    {
+      "corps_etat": "couverture",
+      "poste": "Traitement charpente curatif (insectes / champignons)",
+      "unite": "m2",
+      "prix_bas": 20,
+      "prix_median": 40,
+      "prix_haut": 60,
+      "part_mo": 0.7,
+      "inclut": "bûchage, traitement par pulvérisation/injection, produit xylophène",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "couverture",
+      "poste": "Renforcement / reprise de charpente",
+      "unite": "m2",
+      "prix_bas": 60,
+      "prix_median": 110,
+      "prix_haut": 170,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "couverture",
+      "poste": "Réfection complète de charpente",
+      "unite": "m2",
+      "prix_bas": 90,
+      "prix_median": 150,
+      "prix_haut": 240,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "couverture",
+      "poste": "Zinguerie (gouttières, descentes, solins)",
+      "unite": "ml",
+      "prix_bas": 30,
+      "prix_median": 55,
+      "prix_haut": 90,
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "couverture",
+      "poste": "Isolation toiture par l’intérieur (rampants)",
+      "unite": "m2",
+      "prix_bas": 40,
+      "prix_median": 70,
+      "prix_haut": 110,
+      "inclut": "isolant + pare-vapeur + placo, R ≥ 6 pour aides",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "gros_oeuvre",
+      "poste": "Remblai / forme de mise à niveau du sol",
+      "unite": "m2",
+      "prix_bas": 20,
+      "prix_median": 40,
+      "prix_haut": 70,
+      "part_mo": 0.6,
+      "inclut": "apport, compactage, forme avant dalle/chape",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "gros_oeuvre",
+      "poste": "Isolation sous chape / sous dalle",
+      "unite": "m2",
+      "prix_bas": 20,
+      "prix_median": 35,
+      "prix_haut": 55,
+      "inclut": "panneaux PSE/PU + film, avant chape",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "gros_oeuvre",
+      "poste": "Reprise encadrement / appui / linteau d’ouverture",
+      "unite": "unite",
+      "prix_bas": 150,
+      "prix_median": 350,
+      "prix_haut": 700,
+      "inclut": "reprise tableau, appui/seuil, linteau si besoin — par ouverture",
+      "confiance": "moyenne"
+    },
+    {
+      "corps_etat": "gros_oeuvre",
+      "poste": "Étude structure / expertise fissures (bureau d’études)",
+      "unite": "forfait",
+      "prix_bas": 500,
+      "prix_median": 900,
+      "prix_haut": 1500,
+      "part_mo": 1,
+      "confiance": "moyenne"
+    }
   ]
 }

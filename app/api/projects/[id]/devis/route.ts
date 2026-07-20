@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import path from "path";
-import fs from "fs";
-import { db, uploadsDir } from "@/lib/db";
 import { analyserDevis } from "@/lib/devis";
+import { addDevis } from "@/lib/data/projects";
+import { cheminFichier, uploadFichier } from "@/lib/storage";
 
 async function extraireTexte(file: File): Promise<string> {
   const buffer = Buffer.from(await file.arrayBuffer());
@@ -40,8 +39,8 @@ export async function POST(
         { status: 422 }
       );
     }
-    fichier = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-    fs.writeFileSync(path.join(uploadsDir, fichier), Buffer.from(await file.arrayBuffer()));
+    fichier = cheminFichier(id, file.name);
+    await uploadFichier(fichier, await file.arrayBuffer(), file.type);
   } else if (texteColle) {
     texte = texteColle;
   }
@@ -54,11 +53,6 @@ export async function POST(
   }
 
   const analyse = await analyserDevis(texte);
-  const info = db
-    .prepare(
-      "INSERT INTO quotes (project_id, nom, fichier, texte, analyse_json, note) VALUES (?, ?, ?, ?, ?, ?)"
-    )
-    .run(id, nom, fichier, texte, JSON.stringify(analyse), analyse.note);
-
-  return NextResponse.json({ id: info.lastInsertRowid });
+  const devisId = await addDevis(id, { nom, fichier, texte, analyse, note: analyse.note });
+  return NextResponse.json({ id: devisId });
 }

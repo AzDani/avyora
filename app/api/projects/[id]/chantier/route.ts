@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
 import { estimer, ORDRE_TRAVAUX, type Reponses } from "@/lib/estimation";
-import { calculerMetre, type PieceRow } from "@/lib/metre";
+import { calculerMetre } from "@/lib/metre";
 import { getFormConfig } from "@/lib/customq-db";
+import { getProjet, getPieces, countTaches, insertTaches, setTacheStatut } from "@/lib/data/projects";
 
 /** Génère le plan de chantier (tâches ordonnées) depuis l'estimation. */
 export async function POST(
@@ -10,42 +10,28 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const projet = db.prepare("SELECT * FROM projects WHERE id = ?").get(id) as
-    | { surface: number; code_postal: string; reponses_json: string }
-    | undefined;
+  const projet = await getProjet(id);
   if (!projet) return NextResponse.json({ error: "Projet introuvable" }, { status: 404 });
 
-  const existants = (
-    db.prepare("SELECT COUNT(*) AS n FROM tasks WHERE project_id = ?").get(id) as { n: number }
-  ).n;
-  if (existants > 0)
+  if ((await countTaches(id)) > 0)
     return NextResponse.json({ error: "Plan déjà généré" }, { status: 409 });
 
-  const pieces = db
-    .prepare("SELECT * FROM rooms WHERE project_id = ?")
-    .all(id) as PieceRow[];
+  const pieces = await getPieces(id);
   const est = estimer(
     projet.surface,
     projet.code_postal,
-    JSON.parse(projet.reponses_json) as Reponses,
+    projet.reponses as Reponses,
     pieces.length > 0 ? calculerMetre(pieces) : null,
-    getFormConfig()
-  );
-  const insertStmt = db.prepare(
-    "INSERT INTO tasks (project_id, corps_etat, titre, ordre) VALUES (?, ?, ?, ?)"
+    await getFormConfig()
   );
 
-  const tx = db.transaction(() => {
-    let n = 0;
-    for (const l of est.lignes) {
-      if (l.corpsEtat === "divers") continue;
+  const taches = est.lignes
+    .filter((l) => l.corpsEtat !== "divers")
+    .map((l) => {
       const ordre = ORDRE_TRAVAUX.indexOf(l.corpsEtat);
-      insertStmt.run(id, l.corpsEtat, l.poste, ordre === -1 ? 99 : ordre);
-      n++;
-    }
-    return n;
-  });
-  const n = tx();
+      return { corps_etat: l.corpsEtat, titre: l.poste, ordre: ordre === -1 ? 99 : ordre };
+    });
+  const n = await insertTaches(id, taches);
   return NextResponse.json({ created: n });
 }
 
@@ -59,10 +45,6 @@ export async function PATCH(
   if (!taskId || !["a_faire", "en_cours", "fait"].includes(statut)) {
     return NextResponse.json({ error: "Paramètres invalides" }, { status: 400 });
   }
-  db.prepare("UPDATE tasks SET statut = ? WHERE id = ? AND project_id = ?").run(
-    statut,
-    taskId,
-    id
-  );
+  await setTacheStatut(id, String(taskId), statut);
   return NextResponse.json({ ok: true });
 }

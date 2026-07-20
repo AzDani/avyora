@@ -1,6 +1,6 @@
 import { getPoste, coefRegional } from "./referentiel";
 import type { Metre } from "./metre";
-import { computeCustomLines, type FormConfig, type CustomAnswers } from "./customq";
+import { computeCustomLines, computeSdbLines, CORPS_ORDRE, CORPS_LABEL, type FormConfig, type CustomAnswers, type CustomLine } from "./customq";
 
 export type Reponses = {
   // Type de projet (défaut : rénovation, pour compatibilité anciens projets)
@@ -44,6 +44,27 @@ export type Reponses = {
   solSupport?: "dalle_ok" | "carrelage_existant" | "plancher_bois" | "terre_battue";
   mursEtat?: "ok" | "platre_abime" | "pierre_nue";
   humidite?: boolean;
+
+  // ── Diagnostic « état actuel du bien » (réno) — le constat pilote les travaux ──
+  // Structure / gros œuvre
+  fissuresStructure?: "aucune" | "microfissures" | "traversantes" | "evolutives";
+  // Toiture / charpente / couverture
+  toitureEtat?: "inconnu" | "bon" | "entretien" | "reprise_partielle" | "refaire";
+  charpenteEtat?: "saine" | "traiter" | "renforcer" | "refaire";
+  zinguerieAFaire?: boolean; // gouttières / descentes / solins à reprendre
+  toitureM2?: number; // emprise couverture (si connue), sinon estimée depuis la surface
+  isolationToiture?: boolean; // rampants / sous-toiture à isoler par l'intérieur
+  // Enveloppe extérieure — état constaté de l'enduit / du revêtement
+  enduitExtEtat?: "sain" | "encrasse" | "microfissures" | "a_piquer" | "brut_sans_revetement";
+  // Menuiseries existantes
+  menuiseriesEtat?: "bon" | "simple_vitrage" | "vetuste" | "absentes";
+  encadrementsEtat?: "bon" | "reprise" | "creer";
+  nbEncadrementsReprise?: number; // ouvertures dont l'encadrement/appui/linteau est à reprendre
+  // Sols / niveaux
+  niveauARattraper?: number; // cm de rehausse jusqu'au niveau fini
+  isolationSol?: boolean; // isolation à prévoir sous chape / dalle
+  // Humidité — origine constatée
+  humiditeSource?: "inconnue" | "remontees" | "infiltration" | "condensation" | "toiture";
 
   // Doublage isolant des murs par l'intérieur
   doublageMl?: number; // linéaire de murs à doubler (0 = auto selon état des murs)
@@ -101,6 +122,8 @@ export type Reponses = {
     plomberie: "encastree" | "apparente";
     faienceTouteHauteur: boolean;
     secheServiettes: boolean;
+    // Réponses aux options SDB personnalisées (ex. « Type de miroir »)
+    custom?: Record<string, string | string[] | number>;
   }[];
 
   // Construction neuve
@@ -150,6 +173,7 @@ export type Estimation = {
 const PART_MO: Record<string, number> = {
   demolition_curage: 0.9,
   gros_oeuvre: 0.55,
+  couverture: 0.55,
   construction_neuve: 0.45,
   facade: 0.55,
   assainissement: 0.5,
@@ -170,29 +194,9 @@ const PART_MO: Record<string, number> = {
 
 const COEF_FINITION = { locatif: 0.95, standard: 1, premium: 1.2, luxe: 1.45 };
 
-const CORPS_LABELS: Record<string, string> = {
-  demolition_curage: "Démolition / curage",
-  gros_oeuvre: "Gros œuvre",
-  platrerie: "Plâtrerie / cloisons",
-  electricite: "Électricité",
-  plomberie: "Plomberie",
-  chauffage_ventilation: "Chauffage / ventilation",
-  isolation: "Isolation",
-  menuiseries_ext: "Menuiseries extérieures",
-  menuiseries_int: "Menuiseries intérieures",
-  sols: "Sols",
-  peinture: "Peinture",
-  cuisine: "Cuisine",
-  salle_de_bain: "Salle de bain",
-  facade: "Façade / extérieur",
-  assainissement: "Assainissement",
-  raccordements: "Raccordements & compteurs",
-  construction_neuve: "Construction neuve",
-  divers: "Divers",
-};
-
+// Libellés des corps d'état : source unique dans customq.ts (CORPS_LABEL, client-safe).
 export function corpsLabel(code: string): string {
-  return CORPS_LABELS[code] ?? code;
+  return CORPS_LABEL[code] ?? code;
 }
 
 const UNITE_LABELS: Record<string, string> = {
@@ -254,13 +258,14 @@ export function estimer(
   metre?: Metre | null,
   formConfig?: FormConfig
 ): Estimation {
-  if (r.typeProjet === "neuf") return estimerNeuf(surface, codePostal, r, formConfig);
-  return estimerRenovation(surface, codePostal, r, metre ?? null, formConfig);
+  const reponses = appliquerMasques(r, formConfig); // masqué ⇒ neutre ⇒ pas chiffré
+  if (reponses.typeProjet === "neuf") return estimerNeuf(surface, codePostal, reponses, formConfig);
+  return estimerRenovation(surface, codePostal, reponses, metre ?? null, formConfig);
 }
 
-/** Ajoute au chiffrage les lignes issues des personnalisations (prix fixé par l'utilisateur). */
-function ajouterLignesCustom(ctx: Ctx, r: Reponses, surface: number, formConfig?: FormConfig) {
-  for (const l of computeCustomLines(formConfig, r.custom, surface)) {
+/** Pousse des lignes personnalisées (prix fixé par l'utilisateur) dans le chiffrage, avec le split MO/fournitures. */
+function pushLignesCustom(ctx: Ctx, lignes: CustomLine[]) {
+  for (const l of lignes) {
     const part = PART_MO[l.corps] ?? 0.5;
     ctx.lignes.push({
       corpsEtat: l.corps,
@@ -275,6 +280,67 @@ function ajouterLignesCustom(ctx: Ctx, r: Reponses, surface: number, formConfig?
       fournHaut: Math.round(l.montant * (1 - part)),
     });
   }
+}
+
+/** Ajoute au chiffrage les lignes issues des personnalisations de section. */
+function ajouterLignesCustom(ctx: Ctx, r: Reponses, surface: number, formConfig?: FormConfig) {
+  pushLignesCustom(ctx, computeCustomLines(formConfig, r.custom, surface));
+}
+
+/**
+ * Réponses neutres des blocs intégrés masquables : un bloc que l'utilisateur a retiré
+ * du formulaire ne doit RIEN chiffrer, même si le projet porte une ancienne réponse
+ * (ou un défaut non neutre comme peinture = "complete").
+ */
+const NEUTRE_PAR_BLOC: Record<string, Partial<Reponses>> = {
+  curage: { curage: "aucun" },
+  electricite: { electricite: "ok" },
+  elec_spots: { spotsLumieres: "non", nbPointsLumineux: 0 },
+  plomberie: { plomberie: "ok" },
+  sdb: { sdb: "aucune" },
+  sdb_config: { sdbConfigs: [] },
+  cuisine: { cuisine: "aucune" },
+  sols: { sols: "aucun" },
+  plinthes: { plintheMateriau: "aucune" },
+  doublage: { doublageMl: 0 },
+  peinture: { peinture: "aucune" },
+  fenetres_portes: { fenetres: 0, nbPortesInt: 0 },
+  porteEntree: { porteEntree: "aucune" },
+  volets: { voletRoulant: false },
+  cloisons: { cloisons: "aucune" },
+  chauffage: { chauffage: "aucun" },
+  vmc: { vmc: false },
+  ecs: { ecs: "inchange" },
+  reseauxEvac: { reseauxEvac: false },
+  nouvelleSurface: { nouvelleSurfaceM2: 0 },
+  assainissement: { assainissement: "raccorde" },
+  raccordements: { alimElec: false, alimEau: false, alimGaz: false },
+  facade: { facadeAFaire: false },
+  programme: { cellier: false, buanderie: false },
+  // Diagnostic (état actuel) — masqué = état sain, rien à chiffrer
+  solSupport: { solSupport: "dalle_ok" },
+  mursEtat: { mursEtat: "ok" },
+  humidite: { humidite: false },
+  fissuresStructure: { fissuresStructure: "aucune" },
+  toitureEtat: { toitureEtat: "bon" },
+  charpenteEtat: { charpenteEtat: "saine" },
+  zinguerie_isolToit: { zinguerieAFaire: false, isolationToiture: false },
+  enduitExtEtat: { enduitExtEtat: "sain" },
+  menuiseriesEtat: { menuiseriesEtat: "bon" },
+  encadrementsEtat: { encadrementsEtat: "bon" },
+  niveau_isolSol: { niveauARattraper: 0, isolationSol: false },
+};
+
+/** Neutralise les réponses des blocs masqués par l'utilisateur : masqué ⇒ pas chiffré. */
+function appliquerMasques(r: Reponses, formConfig?: FormConfig): Reponses {
+  const masques = formConfig?.hiddenBlocs ?? [];
+  if (masques.length === 0) return r;
+  let res = r;
+  for (const id of masques) {
+    const neutre = NEUTRE_PAR_BLOC[id];
+    if (neutre) res = { ...res, ...neutre };
+  }
+  return res;
 }
 
 function estimerRenovation(
@@ -391,6 +457,111 @@ function estimerRenovation(
     ctx.conseils.push(
       "Humidité détectée → on traite la CAUSE avant tout (injection résine ou drainage selon diagnostic), sinon chaque euro de finition est perdu. Exige un diagnostic humidité avant de signer ce poste, et ne ferme pas les murs tant que ce n'est pas sec."
     );
+    const srcHum: Record<string, string> = {
+      remontees:
+        "Origine : remontées capillaires → traitement durable = arrêt de la capillarité (injection de résine hydrophobe en pied de mur, parfois drainage périphérique). Une peinture « anti-humidité » ne fait que masquer le symptôme.",
+      infiltration:
+        "Origine : infiltration → trouve et traite le point d'entrée (façade fissurée, joint, appui de fenêtre, terrasse) AVANT l'intérieur. Le point d'entrée relève de la façade ou de la toiture, pas du mur qu'on voit mouillé.",
+      condensation:
+        "Origine : condensation → c'est un défaut de ventilation, pas de maçonnerie. Une VMC performante + une bonne isolation résolvent la plupart des cas ; traiter les murs sans ventiler ne suffira pas.",
+      toiture:
+        "Origine : toiture → priorité absolue à la couverture (voir ci-dessous). Tant que le toit prend l'eau, tout le reste est perdu.",
+    };
+    if (r.humiditeSource && srcHum[r.humiditeSource]) ctx.conseils.push(srcHum[r.humiditeSource]);
+  }
+
+  // ── Diagnostic : fissures / structure ──
+  if (r.fissuresStructure === "microfissures")
+    ctx.conseils.push(
+      "Microfissures superficielles → le plus souvent esthétiques (retrait d'enduit) : on les ouvre, on ponte/rebouche au mortier avant peinture ou ravalement. À surveiller — si elles s'allongent ou s'ouvrent, elles deviennent « évolutives »."
+    );
+  if (r.fissuresStructure === "traversantes" || r.fissuresStructure === "evolutives") {
+    // NB : fragment « expertise fissures » (pas « étude structure ») — « Ouverture mur
+    // porteur (avec IPN, hors étude structure) » matcherait en premier dans le référentiel.
+    add("gros_oeuvre", "expertise fissures", 1);
+    ctx.conseils.push(
+      r.fissuresStructure === "evolutives"
+        ? "Fissures ÉVOLUTIVES (elles bougent, en escalier, > 2 mm) → signal d'alerte structurel : ne lance AUCUNE finition avant une expertise (bureau d'études / expert fissures). La cause (fondations, retrait d'argile, surcharge) doit être identifiée et stabilisée d'abord. Étude chiffrée ci-dessus ; le confortement éventuel (reprise en sous-œuvre, agrafage) se chiffre après diagnostic."
+        : "Fissures traversantes (visibles des deux côtés du mur) → fais confirmer par un bureau d'études qu'elles sont stabilisées avant de refermer les murs. Étude chiffrée ci-dessus."
+    );
+  }
+
+  // ── Diagnostic : toiture / charpente / couverture (le « hors d'eau ») ──
+  const toitureRenseignee = (r.toitureM2 ?? 0) > 0;
+  const toitureM2 = toitureRenseignee ? r.toitureM2! : Math.round(surface * 1.2);
+  const noteToit = toitureRenseignee
+    ? ""
+    : ` (surface de toiture estimée à ${toitureM2} m² ≈ emprise × 1,2 pour la pente — saisis la vraie surface pour affiner)`;
+  if (r.toitureEtat === "entretien" || r.toitureEtat === "reprise_partielle")
+    add("couverture", "Reprise couverture partielle", toitureM2);
+  if (r.toitureEtat === "refaire") {
+    add("couverture", "Réfection couverture complète", toitureM2);
+    ctx.conseils.push(
+      `Toiture à refaire → c'est le poste « hors d'eau » prioritaire : on met le bien à l'abri AVANT d'engager quoi que ce soit à l'intérieur${noteToit}. La dépose est l'occasion idéale de vérifier la charpente.`
+    );
+  }
+  if (r.charpenteEtat === "traiter") {
+    add("couverture", "Traitement charpente", toitureM2);
+    ctx.conseils.push(
+      "Charpente à traiter → traitement curatif (insectes xylophages / champignons) par bûchage puis pulvérisation/injection. Fais identifier l'agent : capricorne/vrillette = traitement classique, mais la mérule impose une procédure lourde et, dans certains départements, une déclaration."
+    );
+  }
+  if (r.charpenteEtat === "renforcer") add("couverture", "Renforcement", toitureM2);
+  if (r.charpenteEtat === "refaire") {
+    add("couverture", "Réfection complète de charpente", toitureM2);
+    ctx.conseils.push(
+      "Charpente à refaire → poste lourd, à coordonner avec la couverture (on ouvre le toit de toute façon). Fais valider le dimensionnement (section des bois, entraxe) par un pro : la charpente porte tout le reste."
+    );
+  }
+  if (r.zinguerieAFaire) add("couverture", "Zinguerie", Math.round(Math.sqrt(surface) * 3));
+  if (r.isolationToiture) {
+    add("couverture", "Isolation toiture", toitureRenseignee ? toitureM2 : surface);
+    ctx.conseils.push(
+      "Isolation de toiture par l'intérieur (rampants) → gros levier thermique (jusqu'à 30 % des pertes passent par le toit) et éligible aux aides si R ≥ 6. À faire tant que les rampants sont ouverts."
+    );
+  }
+
+  // ── Diagnostic : menuiseries existantes ──
+  if (r.menuiseriesEtat === "simple_vitrage")
+    ctx.conseils.push(
+      "Menuiseries en simple vitrage → thermiquement disqualifiantes et pénalisantes pour le DPE. Pour du locatif performant, budgète leur remplacement (renseigne le nombre de fenêtres et la porte d'entrée à l'étape Travaux)."
+    );
+  if (r.menuiseriesEtat === "vetuste")
+    ctx.conseils.push(
+      "Menuiseries vétustes → prévois leur remplacement (fenêtres + porte d'entrée à l'étape Travaux). Vérifie au passage l'état des appuis et linteaux (voir « encadrements »)."
+    );
+  if (r.menuiseriesEtat === "absentes")
+    ctx.conseils.push(
+      "Ouvertures sans menuiserie → à créer entièrement : compte fenêtres et porte d'entrée à l'étape Travaux, et vérifie que les encadrements sont prêts à les recevoir (ci-dessous)."
+    );
+
+  // ── Diagnostic : encadrements (aptitude à recevoir les menuiseries) ──
+  if (r.encadrementsEtat === "reprise" || r.encadrementsEtat === "creer") {
+    const nbEnc =
+      (r.nbEncadrementsReprise ?? 0) > 0
+        ? r.nbEncadrementsReprise!
+        : Math.max(1, r.fenetres || Math.round(surface / 20));
+    add("gros_oeuvre", "Reprise encadrement", nbEnc);
+    ctx.conseils.push(
+      r.encadrementsEtat === "creer"
+        ? `Encadrements à créer (${nbEnc} ouverture${nbEnc > 1 ? "s" : ""}) → percement, linteau et tableaux d'aplomb avant toute pose de menuiserie. Travaux de gros œuvre, jamais après les finitions.`
+        : `Encadrements à reprendre (${nbEnc} ouverture${nbEnc > 1 ? "s" : ""}) → appuis, tableaux et linteaux à remettre sains et d'équerre avant de poser les menuiseries neuves. Une fenêtre posée sur un tableau dégradé ne sera jamais étanche.`
+    );
+  }
+
+  // ── Diagnostic : niveau de sol à rattraper + isolation du sol ──
+  const rattrap = r.niveauARattraper ?? 0;
+  if (rattrap > 0 && solSupport !== "terre_battue") {
+    add("gros_oeuvre", "Remblai", sSol);
+    ctx.conseils.push(
+      `Sol à rehausser d'environ ${rattrap} cm pour atteindre le niveau fini → forme/remblai compacté sous la future chape. Au-delà de ~15 cm, un hérisson ventilé ou du béton allégé (billes d'argile) est souvent plus pertinent qu'un simple remblai : à valider selon la hauteur.`
+    );
+  }
+  if (r.isolationSol) {
+    add("gros_oeuvre", "Isolation sous chape", sSol);
+    ctx.conseils.push(
+      "Isolation du sol → panneaux isolants (PSE/PU) sous la chape ou la dalle. Quasi indispensable sur terre-plein / vide sanitaire pour le confort et le DPE ; intègre son épaisseur dans le calcul du niveau fini (elle rehausse le sol)."
+    );
   }
 
   // ── Module 2 : avant achat — réglementation énergie + diagnostics selon l'âge ──
@@ -467,33 +638,46 @@ function estimerRenovation(
               faienceTouteHauteur: !!r.sdbCarrelageTouteHauteur,
               secheServiettes: r.sdbSecheServiettes !== false,
             }));
+      // Champs SDB masqués (personnalisation) → on saute leur chiffrage.
+      const masqueSdb = (id: string) => (formConfig?.hiddenBlocs ?? []).includes(`sdb:${id}`);
       configs.forEach((c, i) => {
         const n = configs.length > 1 ? ` #${i + 1}` : "";
-        add("salle_de_bain", c.plomberie === "apparente" ? "apparents" : "encastrés", 1, {
-          poste: `Réseaux plomberie SDB${n} (${c.plomberie === "apparente" ? "apparents" : "encastrés"})`,
-        });
-        if (c.douche === "italienne") add("salle_de_bain", "italienne", 1, { poste: `Douche à l'italienne SDB${n}` });
-        if (c.douche === "standard") add("salle_de_bain", "Douche standard", 1, { poste: `Douche standard SDB${n}` });
-        if (c.douche === "baignoire") add("salle_de_bain", "Baignoire", 1, { poste: `Baignoire SDB${n}` });
-        if (c.douche === "douche_et_baignoire") {
-          add("salle_de_bain", "Douche standard", 1, { poste: `Douche SDB${n}` });
-          add("salle_de_bain", "Baignoire", 1, { poste: `Baignoire SDB${n}` });
+        if (!masqueSdb("plomberie"))
+          add("salle_de_bain", c.plomberie === "apparente" ? "apparents" : "encastrés", 1, {
+            poste: `Réseaux plomberie SDB${n} (${c.plomberie === "apparente" ? "apparents" : "encastrés"})`,
+          });
+        if (!masqueSdb("douche")) {
+          if (c.douche === "italienne") add("salle_de_bain", "italienne", 1, { poste: `Douche à l'italienne SDB${n}` });
+          if (c.douche === "standard") add("salle_de_bain", "Douche standard", 1, { poste: `Douche standard SDB${n}` });
+          if (c.douche === "baignoire") add("salle_de_bain", "Baignoire", 1, { poste: `Baignoire SDB${n}` });
+          if (c.douche === "douche_et_baignoire") {
+            add("salle_de_bain", "Douche standard", 1, { poste: `Douche SDB${n}` });
+            add("salle_de_bain", "Baignoire", 1, { poste: `Baignoire SDB${n}` });
+          }
         }
-        if (c.wc === "suspendu") add("salle_de_bain", "WC suspendu", 1, { poste: `WC suspendu SDB${n}` });
-        if (c.wc === "classique") add("salle_de_bain", "WC classique", 1, { poste: `WC classique SDB${n}` });
-        add("salle_de_bain", c.vasque === "double" ? "double vasque" : "simple vasque", 1, {
-          poste: `Meuble ${c.vasque === "double" ? "double" : "simple"} vasque SDB${n}`,
-        });
-        if (c.secheServiettes) add("salle_de_bain", "Sèche-serviettes", 1, { poste: `Sèche-serviettes SDB${n}` });
+        if (!masqueSdb("wc")) {
+          if (c.wc === "suspendu") add("salle_de_bain", "WC suspendu", 1, { poste: `WC suspendu SDB${n}` });
+          if (c.wc === "classique") add("salle_de_bain", "WC classique", 1, { poste: `WC classique SDB${n}` });
+        }
+        if (!masqueSdb("vasque"))
+          add("salle_de_bain", c.vasque === "double" ? "double vasque" : "simple vasque", 1, {
+            poste: `Meuble ${c.vasque === "double" ? "double" : "simple"} vasque SDB${n}`,
+          });
+        if (!masqueSdb("seche") && c.secheServiettes) add("salle_de_bain", "Sèche-serviettes", 1, { poste: `Sèche-serviettes SDB${n}` });
         // Faïence : depuis la taille de la SDB si renseignée, sinon forfait par hauteur
-        const perim = c.surface && c.surface > 0 ? 4 * Math.sqrt(c.surface) : 0;
-        const faienceM2 = perim > 0
-          ? Math.round(perim * (c.faienceTouteHauteur ? 2.4 : 1.3))
-          : c.faienceTouteHauteur ? 16 : 9;
-        add("sols", "Faïence murale (fournie-posée)", faienceM2, {
-          poste: `Faïence SDB${n} — ${c.faienceTouteHauteur ? "toute hauteur" : "mi-hauteur + douche"}${c.surface ? ` (${c.surface} m²)` : ""}`,
-        });
+        if (!masqueSdb("faience")) {
+          const perim = c.surface && c.surface > 0 ? 4 * Math.sqrt(c.surface) : 0;
+          const faienceM2 = perim > 0
+            ? Math.round(perim * (c.faienceTouteHauteur ? 2.4 : 1.3))
+            : c.faienceTouteHauteur ? 16 : 9;
+          add("sols", "Faïence murale (fournie-posée)", faienceM2, {
+            poste: `Faïence SDB${n} — ${c.faienceTouteHauteur ? "toute hauteur" : "mi-hauteur + douche"}${c.surface ? ` (${c.surface} m²)` : ""}`,
+          });
+        }
       });
+      // Options SDB personnalisées (ex. « Type de miroir »), par salle de bain
+      // (le mode €/m² s'applique à la surface de chaque SDB, pas du logement)
+      pushLignesCustom(ctx, computeSdbLines(formConfig?.sdbQuestions, configs));
       ctx.conseils.push(
         `${configs.length} salle${configs.length > 1 ? "s" : ""} de bain chiffrée${configs.length > 1 ? "s" : ""} pièce par pièce (équipements + faïence selon leur taille) — compare chaque ligne à tes propres prix.`
       );
@@ -531,15 +715,6 @@ function estimerRenovation(
     detaille && r.carrelageFormat === "grand"
       ? "Carrelage sol grand format"
       : "Carrelage sol (fourni-posé)";
-  const revetementFragment = (): string => {
-    switch (r.solsType) {
-      case "carrelage": return carrelageFragment;
-      case "massif": return "Parquet massif (fourni-posé)";
-      case "beton_cire": return "Béton ciré (fourni-posé)";
-      case "pvc": return "Sol PVC / vinyle (fourni-posé)";
-      default: return "Parquet stratifié";
-    }
-  };
   const fragmentPour = (type: string): string => {
     switch (type) {
       case "carrelage": return carrelageFragment;
@@ -549,6 +724,7 @@ function estimerRenovation(
       default: return "Parquet stratifié";
     }
   };
+  const revetementFragment = () => fragmentPour(r.solsType);
   const solsDetail = (r.solsDetail ?? []).filter((s) => s.m2 > 0);
   const multiSol = detaille && solsDetail.length > 0;
   if (r.sols !== "aucun" || multiSol) {
@@ -702,8 +878,21 @@ function estimerRenovation(
   if (r.facadeAFaire) {
     const surfaceFacade =
       (r.facadeM2 ?? 0) > 0 ? r.facadeM2! : Math.round(surface * 1.4); // ~1,4 × surface habitable si non renseigné
-    if (r.murExtEtat === "fissure" || r.murExtEtat === "degrade")
-      add("facade", "Reprise fissures", surfaceFacade);
+    const besoinPiquage =
+      r.enduitExtEtat === "a_piquer" || r.murExtEtat === "fissure" || r.murExtEtat === "degrade";
+    if (besoinPiquage) add("facade", "Reprise fissures", surfaceFacade);
+    if (r.enduitExtEtat === "a_piquer")
+      ctx.conseils.push(
+        "Enduit extérieur à piquer → l'ancien enduit sonne creux / se décolle : on le pique jusqu'au support sain avant de ré-enduire, sinon le neuf tombera avec l'ancien. Piquage chiffré ci-dessus."
+      );
+    if (r.enduitExtEtat === "brut_sans_revetement")
+      ctx.conseils.push(
+        "Façade brute (pierre / parpaing sans revêtement) → pas de piquage à prévoir, mais un gobetis d'accroche avant l'enduit de corps. Sur pierre, privilégie un enduit à la chaux (respirant)."
+      );
+    if (r.enduitExtEtat === "encrasse" && (r.facadeReno ?? "peinture") !== "nettoyage")
+      ctx.conseils.push(
+        "Enduit encrassé mais sain → un nettoyage + hydrofuge suffit souvent, inutile de tout refaire. Compare le coût d'un simple ravalement à celui d'un nouvel enduit."
+      );
     const reno = r.facadeReno ?? "peinture";
     if (reno === "nettoyage") add("facade", "Nettoyage + hydrofuge", surfaceFacade);
     if (reno === "peinture") add("facade", "Peinture / ravalement", surfaceFacade);
@@ -722,12 +911,16 @@ function estimerRenovation(
       ctx.conseils.push(
         "Façade dégradée : fais diagnostiquer la cause (infiltrations, fissures structurelles) avant l'embellissement. Un ravalement sur un support qui bouge se refera dans 3 ans."
       );
+  } else if (r.enduitExtEtat === "a_piquer" || r.enduitExtEtat === "microfissures") {
+    ctx.conseils.push(
+      "Tu as signalé un enduit extérieur dégradé à l'état des lieux, mais aucun travail de façade n'est coché à l'étape Travaux : active « façade à refaire » pour le chiffrer (piquage + ré-enduit)."
+    );
   }
 
   ajouterAssainissement(ctx, add, r);
   ajouterLignesCustom(ctx, r, surface, formConfig);
 
-  return finaliser(ctx, region, metreUtilise);
+  return finaliser(ctx, region, metreUtilise, r);
 }
 
 /**
@@ -775,6 +968,7 @@ const LABEL_ISOLANT: Record<string, string> = {
   polystyrene: "polystyrène",
   polyurethane: "polyuréthane",
   biosource: "biosourcé (laine de bois/ouate)",
+  fibre_bois: "fibre de bois",
 };
 
 function coefIsolant(type?: string, ep?: number): number {
@@ -895,36 +1089,102 @@ function estimerNeuf(
   ajouterAssainissement(ctx, add, r);
   ajouterLignesCustom(ctx, r, surface, formConfig);
 
-  const est = finaliser(ctx, region, false);
+  const est = finaliser(ctx, region, false, r);
   // Durée réaliste d'une construction : 12 à 18 mois permis inclus
   est.dureeSemaines = [52, 78];
   return est;
 }
 
-function finaliser(ctx: Ctx, region: string, metreUtilise: boolean): Estimation {
+// ── Ancienneté du bâtiment : coût RÉEL accru sur les lots structurels (rénovation) ──
+// Le bâti ancien coûte plus cher à démolir/reprendre (murs non standard, supports d'origine,
+// dépose plus lourde). Appliqué uniquement aux lots concernés (une cuisine neuve coûte pareil
+// quel que soit l'âge). Valeurs modérées, dérivées des normes de rénovation FR.
+const LOTS_ANCIENNETE = new Set([
+  "demolition_curage", "gros_oeuvre", "maconnerie", "platrerie", "couverture", "charpente",
+]);
+function coefAnciennete(age?: string): number {
+  switch (age) {
+    case "avant_1949": return 1.12;
+    case "1949_1974": return 1.08;
+    case "1975_1997": return 1.03;
+    case "apres_1997": return 1.0;
+    default: return 1.04; // inconnue → prudence modérée (l'inconnu est un risque)
+  }
+}
+
+// ── Provision pour imprévus : DYNAMIQUE selon le risque réel du chantier ──
+// Remplace le forfait 10 % fixe. Plus il y a d'inconnues (bâti ancien, curage lourd, humidité,
+// fissures, terre battue) plus la provision monte ; plus on a d'info (détaillé + métré) plus elle
+// baisse. N'utilise QUE des réponses déjà collectées → aucune donnée inventée. Bornée [7 %, 25 %].
+function tauxImprevus(r: Reponses, metreUtilise: boolean, estReno: boolean): number {
+  let t = 0.08;
+  if (estReno) {
+    switch (r.anneeConstruction) {
+      case "avant_1949": t += 0.07; break;
+      case "1949_1974": t += 0.05; break;
+      case "1975_1997": t += 0.02; break;
+      case "apres_1997": break;
+      default: t += 0.03; // inconnue / absente → risque
+    }
+    if (r.curage === "complet") t += 0.04;
+    else if (r.curage === "leger") t += 0.02;
+    if (r.humidite) t += 0.02;
+    if (r.fissuresStructure === "evolutives" || r.fissuresStructure === "traversantes") t += 0.03;
+    if (r.solSupport === "terre_battue") t += 0.02;
+  }
+  if (r.modeEstimation === "detaille") t -= 0.02; // spec connue → moins d'aléa
+  if (metreUtilise) t -= 0.02;                    // quantités mesurées → moins d'aléa
+  return Math.min(0.25, Math.max(0.07, Math.round(t * 100) / 100));
+}
+
+function finaliser(ctx: Ctx, region: string, metreUtilise: boolean, r: Reponses): Estimation {
   const mode: "rapide" | "detaille" = ctx.serrage ? "detaille" : "rapide";
+  const estReno = r.typeProjet !== "neuf";
+
+  // 1) Prime d'ancienneté sur les lots structurels (rénovation uniquement).
+  const coefAge = estReno ? coefAnciennete(r.anneeConstruction) : 1;
+  if (coefAge !== 1) {
+    for (const l of ctx.lignes) {
+      if (!LOTS_ANCIENNETE.has(l.corpsEtat)) continue;
+      l.bas = Math.round(l.bas * coefAge);
+      l.haut = Math.round(l.haut * coefAge);
+      l.moBas = Math.round(l.moBas * coefAge);
+      l.moHaut = Math.round(l.moHaut * coefAge);
+      l.fournBas = Math.round(l.fournBas * coefAge);
+      l.fournHaut = Math.round(l.fournHaut * coefAge);
+    }
+  }
+
+  // 2) Sommes (après prime d'ancienneté), puis provision imprévus dynamique.
   const sousBas = ctx.lignes.reduce((s, l) => s + l.bas, 0);
   const sousHaut = ctx.lignes.reduce((s, l) => s + l.haut, 0);
   const sousMoBas = ctx.lignes.reduce((s, l) => s + l.moBas, 0);
   const sousMoHaut = ctx.lignes.reduce((s, l) => s + l.moHaut, 0);
   const sousFournBas = ctx.lignes.reduce((s, l) => s + l.fournBas, 0);
   const sousFournHaut = ctx.lignes.reduce((s, l) => s + l.fournHaut, 0);
+
+  const taux = tauxImprevus(r, metreUtilise, estReno);
   if (ctx.lignes.length > 0) {
     ctx.lignes.push({
       corpsEtat: "divers",
-      poste: "Aléas & imprévus (10 %)",
+      poste: `Aléas & imprévus (${Math.round(taux * 100)} %)`,
       quantite: 1,
       unite: "forfait",
-      bas: Math.round(sousBas * 0.1),
-      haut: Math.round(sousHaut * 0.1),
-      moBas: Math.round(sousMoBas * 0.1),
-      moHaut: Math.round(sousMoHaut * 0.1),
-      fournBas: Math.round(sousFournBas * 0.1),
-      fournHaut: Math.round(sousFournHaut * 0.1),
+      bas: Math.round(sousBas * taux),
+      haut: Math.round(sousHaut * taux),
+      moBas: Math.round(sousMoBas * taux),
+      moHaut: Math.round(sousMoHaut * taux),
+      fournBas: Math.round(sousFournBas * taux),
+      fournHaut: Math.round(sousFournHaut * taux),
     });
+    if (taux >= 0.16)
+      ctx.conseils.push(
+        `Provision imprévus portée à ${Math.round(taux * 100)} %${estReno && (r.anneeConstruction === "avant_1949" || r.anneeConstruction === "1949_1974") ? " (bâti ancien)" : ""} : sur ce type de chantier, les surprises (réseaux, supports, reprises) sont la règle — garde ce matelas jusqu'à la réception.`
+      );
   }
-  const totalBas = Math.round(sousBas * 1.1);
-  const totalHaut = Math.round(sousHaut * 1.1);
+  const f = 1 + taux;
+  const totalBas = Math.round(sousBas * f);
+  const totalHaut = Math.round(sousHaut * f);
   const totalMedian = Math.round((totalBas + totalHaut) / 2);
   const semaines = Math.max(2, Math.round(totalMedian / 10000));
   return {
@@ -932,10 +1192,10 @@ function finaliser(ctx: Ctx, region: string, metreUtilise: boolean): Estimation 
     totalBas,
     totalHaut,
     totalMedian,
-    totalMoBas: Math.round(sousMoBas * 1.1),
-    totalMoHaut: Math.round(sousMoHaut * 1.1),
-    totalFournBas: Math.round(sousFournBas * 1.1),
-    totalFournHaut: Math.round(sousFournHaut * 1.1),
+    totalMoBas: Math.round(sousMoBas * f),
+    totalMoHaut: Math.round(sousMoHaut * f),
+    totalFournBas: Math.round(sousFournBas * f),
+    totalFournHaut: Math.round(sousFournHaut * f),
     region,
     dureeSemaines: [semaines, Math.round(semaines * 1.5)],
     conseils: ctx.conseils,
@@ -945,22 +1205,6 @@ function finaliser(ctx: Ctx, region: string, metreUtilise: boolean): Estimation 
 }
 
 /** Ordre conseillé des corps d'état pour le planning. */
-export const ORDRE_TRAVAUX = [
-  "demolition_curage",
-  "gros_oeuvre",
-  "raccordements",
-  "assainissement",
-  "construction_neuve",
-  "platrerie",
-  "electricite",
-  "plomberie",
-  "chauffage_ventilation",
-  "isolation",
-  "menuiseries_ext",
-  "menuiseries_int",
-  "sols",
-  "salle_de_bain",
-  "cuisine",
-  "peinture",
-  "facade",
-];
+// Source unique : CORPS_ORDRE (customq.ts). « divers » en est exclu — les pages
+// qui en ont besoin (artisans, projet) l'ajoutent explicitement en fin de liste.
+export const ORDRE_TRAVAUX = CORPS_ORDRE.filter((c) => c !== "divers");

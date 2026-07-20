@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 type Doc = {
-  id: number;
+  id: number | string;
   type: string;
   nom: string;
   note_ia: string | null;
@@ -16,7 +16,7 @@ export default function DocumentsProjet({
   documents,
   iaDisponible,
 }: {
-  projectId: number;
+  projectId: string;
   documents: Doc[];
   iaDisponible: boolean;
 }) {
@@ -24,7 +24,7 @@ export default function DocumentsProjet({
   const [type, setType] = useState<"plan" | "photo">("plan");
   const [fichier, setFichier] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
-  const [analysing, setAnalysing] = useState<number | null>(null);
+  const [analysing, setAnalysing] = useState<number | string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function envoyer() {
@@ -44,7 +44,7 @@ export default function DocumentsProjet({
     router.refresh();
   }
 
-  async function analyser(docId: number) {
+  async function analyser(docId: number | string) {
     setAnalysing(docId);
     setError(null);
     const res = await fetch(`/api/projects/${projectId}/documents`, {
@@ -57,23 +57,23 @@ export default function DocumentsProjet({
     router.refresh();
   }
 
-  async function supprimer(docId: number) {
+  async function supprimer(docId: number | string) {
     await fetch(`/api/projects/${projectId}/documents?doc=${docId}`, { method: "DELETE" });
     router.refresh();
   }
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
-      <h2 className="font-medium">Plans & photos</h2>
-      <p className="text-xs text-slate-500">
-        Importe un <strong>plan</strong> (PDF/image) : l&apos;IA en extrait les pièces et le
-        métré se calcule automatiquement. Importe des <strong>photos</strong> du bien :
-        l&apos;IA repère ce qui impacte le chiffrage (état du sol, murs, humidité…).
+    <section className="card space-y-4 p-5">
+      <h2 className="font-semibold text-ink">Plans &amp; photos</h2>
+      <p className="text-xs leading-relaxed text-muted">
+        Importe un <strong className="font-semibold text-ink">plan</strong> (PDF/image) : l&apos;IA en extrait les pièces
+        et le métré se calcule automatiquement. Importe des <strong className="font-semibold text-ink">photos</strong> du
+        bien : l&apos;IA repère ce qui impacte le chiffrage (état du sol, murs, humidité…).
       </p>
 
       <div className="flex flex-wrap items-center gap-2">
         <select
-          className="rounded-lg border border-slate-300 px-2 py-2 text-sm"
+          className="input w-auto"
           value={type}
           onChange={(e) => setType(e.target.value as "plan" | "photo")}
         >
@@ -83,43 +83,38 @@ export default function DocumentsProjet({
         <input
           type="file"
           accept={type === "plan" ? ".pdf,.jpg,.jpeg,.png,.webp" : ".jpg,.jpeg,.png,.webp"}
-          className="flex-1 text-sm min-w-40"
+          className="min-w-40 flex-1 text-sm text-muted file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-brand-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-brand-700 hover:file:bg-brand-100"
           onChange={(e) => setFichier(e.target.files?.[0] ?? null)}
         />
-        <button
-          onClick={envoyer}
-          disabled={busy || !fichier}
-          className="rounded-lg bg-slate-900 px-4 py-2 text-sm text-white font-medium disabled:opacity-40"
-        >
+        <button onClick={envoyer} disabled={busy || !fichier} className="btn btn-primary py-2">
           {busy ? "Envoi…" : "Importer"}
         </button>
       </div>
 
       {!iaDisponible && (
-        <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2.5">
-          Les fichiers sont bien stockés, mais l&apos;analyse IA (extraction du plan,
-          lecture des photos) nécessite <code className="font-mono">ANTHROPIC_API_KEY</code>{" "}
-          dans <code className="font-mono">.env.local</code>. En attendant, saisis les pièces
-          à la main dans le métré : le calcul reste identique.
+        <p className="rounded-field border border-warning/20 bg-warning-soft p-2.5 text-xs text-warning">
+          Les fichiers sont bien stockés, mais l&apos;analyse IA (extraction du plan, lecture des photos) nécessite{" "}
+          <code className="font-mono">ANTHROPIC_API_KEY</code> dans <code className="font-mono">.env.local</code>. En
+          attendant, saisis les pièces à la main dans le métré : le calcul reste identique.
         </p>
       )}
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
 
       {documents.length > 0 && (
         <ul className="space-y-2">
           {documents.map((d) => (
-            <li key={d.id} className="rounded-lg border border-slate-100 p-3">
+            <li key={d.id} className="rounded-field border border-line p-3">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-sm">
                   <span className="mr-1.5">{d.type === "plan" ? "📐" : "📷"}</span>
-                  <span className="font-medium">{d.nom}</span>
+                  <span className="font-medium text-ink">{d.nom}</span>
                 </span>
-                <span className="flex items-center gap-2 shrink-0">
+                <span className="flex shrink-0 items-center gap-2">
                   {iaDisponible && (
                     <button
                       onClick={() => analyser(d.id)}
                       disabled={analysing === d.id}
-                      className="rounded-lg border border-indigo-300 text-indigo-700 px-3 py-1 text-xs font-medium disabled:opacity-50"
+                      className="btn btn-outline py-1 text-xs"
                     >
                       {analysing === d.id
                         ? "Analyse…"
@@ -128,13 +123,17 @@ export default function DocumentsProjet({
                           : d.note_ia ? "Ré-analyser" : "Analyser (IA)"}
                     </button>
                   )}
-                  <button onClick={() => supprimer(d.id)} className="text-xs text-slate-400 hover:text-red-600">
+                  <button
+                    onClick={() => supprimer(d.id)}
+                    className="text-faint transition-colors hover:text-danger"
+                    aria-label="Supprimer le document"
+                  >
                     ✕
                   </button>
                 </span>
               </div>
               {d.note_ia && (
-                <div className="mt-2 text-xs text-slate-600 bg-slate-50 rounded-lg p-2.5 whitespace-pre-wrap">
+                <div className="mt-2 whitespace-pre-wrap rounded-field bg-surface-2 p-2.5 text-xs text-muted">
                   {d.note_ia}
                 </div>
               )}

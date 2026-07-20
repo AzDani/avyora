@@ -1,26 +1,24 @@
-import { db } from "@/lib/db";
 import { corpsLabel, ORDRE_TRAVAUX } from "@/lib/estimation";
-import CarnetArtisans, { type ArtisanRow } from "@/components/CarnetArtisans";
+import { listArtisans } from "@/lib/data/artisans";
+import CarnetArtisans from "@/components/CarnetArtisans";
 
 export const dynamic = "force-dynamic";
 
-export default function ArtisansPage() {
-  const artisans = db
-    .prepare("SELECT * FROM artisans ORDER BY corps_etat, nom")
-    .all() as ArtisanRow[];
+export default async function ArtisansPage() {
+  const artisans = await listArtisans();
   const corpsOptions = [...ORDRE_TRAVAUX.filter((c) => c !== "construction_neuve"), "divers"].map(
     (c) => ({ value: c, label: corpsLabel(c) })
   );
 
   return (
-    <div className="space-y-5">
-      <section className="rounded-2xl bg-[#1E1B4B] text-white p-6">
-        <h1 className="text-xl font-semibold">Carnet artisans</h1>
-        <p className="mt-1 text-indigo-200/80 text-sm">
-          Ton réseau, classé par corps d&apos;état — la base du futur réseau
-          AVYORA.
+    <div className="space-y-8">
+      <header className="animate-rise">
+        <p className="eyebrow">Réseau</p>
+        <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-ink">Carnet artisans</h1>
+        <p className="mt-1.5 text-[15px] text-muted">
+          Ton réseau classé par corps d&apos;état — sous la main pour chaque chantier.
         </p>
-      </section>
+      </header>
       <CarnetArtisans artisans={artisans} corpsOptions={corpsOptions} />
     </div>
   );

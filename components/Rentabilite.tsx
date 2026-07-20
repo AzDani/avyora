@@ -27,15 +27,15 @@ function Champ({
 }) {
   return (
     <label className="block">
-      <span className="text-xs font-medium text-slate-600">{label}</span>
-      <div className="mt-1 flex items-center gap-1">
+      <span className="text-xs font-medium text-muted">{label}</span>
+      <div className="mt-1.5 flex items-center gap-1.5">
         <input
           type="number"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="input num"
           value={Number.isFinite(value) ? value : 0}
           onChange={(e) => onChange(Number(e.target.value) || 0)}
         />
-        {suffix && <span className="text-xs text-slate-400">{suffix}</span>}
+        {suffix && <span className="text-xs text-faint">{suffix}</span>}
       </div>
     </label>
   );
@@ -46,7 +46,7 @@ export default function Rentabilite({
   travauxDefaut,
   paramsInitiaux,
 }: {
-  projectId: number;
+  projectId: string;
   travauxDefaut: number;
   paramsInitiaux: ParamsRentabilite | null;
 }) {
@@ -82,8 +82,8 @@ export default function Rentabilite({
   }
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
-      <h2 className="font-medium">Rentabilité locative</h2>
+    <section className="card space-y-4 p-5">
+      <h2 className="font-semibold text-ink">Rentabilité locative</h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         <Champ label="Prix d'achat" value={p.prixAchat} onChange={set("prixAchat")} suffix="€" />
         <Champ label="Travaux (estimation)" value={p.travaux} onChange={set("travaux")} suffix="€" />
@@ -102,38 +102,26 @@ export default function Rentabilite({
 
       {actif ? (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-            <div className="rounded-lg bg-slate-50 p-3">
-              <div className="text-xs text-slate-500">Coût total</div>
-              <div className="font-semibold mt-0.5">{euros(res.coutTotal)}</div>
-              <div className="text-[10px] text-slate-400">
-                dont notaire {euros(res.fraisNotaire)}
-              </div>
+          <div className="grid grid-cols-2 gap-3 text-center sm:grid-cols-4">
+            <div className="rounded-field bg-surface-2 p-3.5">
+              <div className="text-xs text-faint">Coût total</div>
+              <div className="data mt-1 font-semibold text-ink">{euros(res.coutTotal)}</div>
+              <div className="num mt-0.5 text-[10px] text-faint">dont notaire {euros(res.fraisNotaire)}</div>
             </div>
-            <div className="rounded-lg bg-slate-50 p-3">
-              <div className="text-xs text-slate-500">Mensualité</div>
-              <div className="font-semibold mt-0.5">{euros(res.mensualite)}</div>
-              <div className="text-[10px] text-slate-400">
-                emprunt {euros(res.montantEmprunte)}
-              </div>
+            <div className="rounded-field bg-surface-2 p-3.5">
+              <div className="text-xs text-faint">Mensualité</div>
+              <div className="data mt-1 font-semibold text-ink">{euros(res.mensualite)}</div>
+              <div className="num mt-0.5 text-[10px] text-faint">emprunt {euros(res.montantEmprunte)}</div>
             </div>
-            <div className="rounded-lg bg-slate-50 p-3">
-              <div className="text-xs text-slate-500">Rendement brut / net</div>
-              <div className="font-semibold mt-0.5">
+            <div className="rounded-field bg-surface-2 p-3.5">
+              <div className="text-xs text-faint">Rendement brut / net</div>
+              <div className="data mt-1 font-semibold text-ink">
                 {res.rendementBrut} % · {res.rendementNet} %
               </div>
             </div>
-            <div
-              className={`rounded-lg p-3 ${
-                res.cashflowMensuel >= 0 ? "bg-emerald-50" : "bg-red-50"
-              }`}
-            >
-              <div className="text-xs text-slate-500">Cash-flow / mois</div>
-              <div
-                className={`font-semibold mt-0.5 ${
-                  res.cashflowMensuel >= 0 ? "text-emerald-700" : "text-red-700"
-                }`}
-              >
+            <div className={`rounded-field p-3.5 ${res.cashflowMensuel >= 0 ? "bg-positive-soft" : "bg-danger-soft"}`}>
+              <div className="text-xs text-faint">Cash-flow / mois</div>
+              <div className={`data mt-1 font-semibold ${res.cashflowMensuel >= 0 ? "text-positive" : "text-danger"}`}>
                 {euros(res.cashflowMensuel)}
               </div>
             </div>
@@ -141,45 +129,30 @@ export default function Rentabilite({
           {(res.plusValueLatente != null || res.roiApport != null) && (
             <div className="grid grid-cols-2 gap-3 text-center">
               {res.plusValueLatente != null && (
-                <div
-                  className={`rounded-lg p-3 ${
-                    res.plusValueLatente >= 0 ? "bg-emerald-50" : "bg-red-50"
-                  }`}
-                >
-                  <div className="text-xs text-slate-500">
-                    Création de valeur (valeur − coût total)
-                  </div>
-                  <div
-                    className={`font-semibold mt-0.5 ${
-                      res.plusValueLatente >= 0 ? "text-emerald-700" : "text-red-700"
-                    }`}
-                  >
+                <div className={`rounded-field p-3.5 ${res.plusValueLatente >= 0 ? "bg-positive-soft" : "bg-danger-soft"}`}>
+                  <div className="text-xs text-faint">Création de valeur (valeur − coût total)</div>
+                  <div className={`data mt-1 font-semibold ${res.plusValueLatente >= 0 ? "text-positive" : "text-danger"}`}>
                     {res.plusValueLatente >= 0 ? "+" : ""}
                     {euros(res.plusValueLatente)}
                   </div>
                 </div>
               )}
               {res.roiApport != null && (
-                <div className="rounded-lg bg-slate-50 p-3">
-                  <div className="text-xs text-slate-500">
-                    Rendement de l&apos;apport (cash-on-cash)
-                  </div>
-                  <div className="font-semibold mt-0.5">{res.roiApport} % / an</div>
+                <div className="rounded-field bg-surface-2 p-3.5">
+                  <div className="text-xs text-faint">Rendement de l&apos;apport (cash-on-cash)</div>
+                  <div className="data mt-1 font-semibold text-ink">{res.roiApport} % / an</div>
                 </div>
               )}
             </div>
           )}
-          <button
-            onClick={sauvegarder}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium hover:border-indigo-400"
-          >
+          <button onClick={sauvegarder} className="btn btn-outline py-2">
             {saved ? "✓ Scénario sauvegardé" : "Sauvegarder ce scénario"}
           </button>
         </>
       ) : (
-        <p className="text-sm text-slate-500">
-          Renseigne le prix d&apos;achat et le loyer visé pour calculer rendement
-          et cash-flow. Frais de notaire (8 %) calculés automatiquement.
+        <p className="text-sm text-muted">
+          Renseigne le prix d&apos;achat et le loyer visé pour calculer rendement et cash-flow.
+          Frais de notaire (8 %) calculés automatiquement.
         </p>
       )}
     </section>

@@ -1,6 +1,4 @@
-import fs from "fs";
-import path from "path";
-import { uploadsDir } from "./db";
+import { telechargerBase64 } from "@/lib/storage";
 
 /**
  * Analyse IA de documents (plans, photos) — nécessite ANTHROPIC_API_KEY.
@@ -20,10 +18,13 @@ export type PieceExtraite = {
   faience: boolean;
 };
 
-function mediaBlock(fichier: string): Record<string, unknown> | null {
-  const p = path.join(uploadsDir, fichier);
-  if (!fs.existsSync(p)) return null;
-  const data = fs.readFileSync(p).toString("base64");
+async function mediaBlock(fichier: string): Promise<Record<string, unknown> | null> {
+  let data: string;
+  try {
+    data = await telechargerBase64(fichier);
+  } catch {
+    return null;
+  }
   const ext = fichier.toLowerCase().split(".").pop() ?? "";
   if (ext === "pdf")
     return { type: "document", source: { type: "base64", media_type: "application/pdf", data } };
@@ -48,7 +49,7 @@ export async function extrairePiecesDuPlan(
 ): Promise<PieceExtraite[] | { erreur: string }> {
   if (!iaDisponible())
     return { erreur: "Analyse IA indisponible : ajoute ANTHROPIC_API_KEY dans .env.local." };
-  const block = mediaBlock(fichier);
+  const block = await mediaBlock(fichier);
   if (!block) return { erreur: "Format de fichier non pris en charge pour l'analyse (PDF, JPG, PNG, WEBP)." };
 
   const { default: Anthropic } = await import("@anthropic-ai/sdk");
@@ -107,7 +108,7 @@ export async function analyserPhoto(
 ): Promise<string | { erreur: string }> {
   if (!iaDisponible())
     return { erreur: "Analyse IA indisponible : ajoute ANTHROPIC_API_KEY dans .env.local." };
-  const block = mediaBlock(fichier);
+  const block = await mediaBlock(fichier);
   if (!block) return { erreur: "Format d'image non pris en charge (JPG, PNG, WEBP)." };
 
   const { default: Anthropic } = await import("@anthropic-ai/sdk");

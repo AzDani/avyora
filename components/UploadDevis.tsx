@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function UploadDevis({ projectId }: { projectId: number }) {
+export default function UploadDevis({ projectId }: { projectId: string }) {
   const router = useRouter();
   const [nom, setNom] = useState("");
   const [fichier, setFichier] = useState<File | null>(null);
@@ -34,10 +34,10 @@ export default function UploadDevis({ projectId }: { projectId: number }) {
   }
 
   return (
-    <div className="rounded-lg border border-dashed border-slate-300 p-4 space-y-3">
-      <div className="text-sm font-medium">Analyser un devis</div>
+    <div className="space-y-3 rounded-field border border-dashed border-line-strong bg-surface-2/60 p-4">
+      <div className="text-sm font-semibold text-ink">Analyser un devis</div>
       <input
-        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+        className="input"
         placeholder="Nom (ex. : Devis élec — Entreprise Martin)"
         value={nom}
         onChange={(e) => setNom(e.target.value)}
@@ -46,12 +46,12 @@ export default function UploadDevis({ projectId }: { projectId: number }) {
         <input
           type="file"
           accept=".pdf,.txt"
-          className="w-full text-sm"
+          className="w-full text-sm text-muted file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-brand-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-brand-700 hover:file:bg-brand-100"
           onChange={(e) => setFichier(e.target.files?.[0] ?? null)}
         />
       ) : (
         <textarea
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm h-36"
+          className="input h-36"
           placeholder="Colle ici le texte complet du devis…"
           value={texte}
           onChange={(e) => setTexte(e.target.value)}
@@ -60,15 +60,15 @@ export default function UploadDevis({ projectId }: { projectId: number }) {
       <button
         type="button"
         onClick={() => setModeTexte(!modeTexte)}
-        className="text-xs text-slate-500 underline"
+        className="text-xs font-medium text-brand-600 transition-colors hover:text-brand-700"
       >
         {modeTexte ? "Importer un PDF à la place" : "Ou coller le texte du devis"}
       </button>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
       <button
         onClick={envoyer}
         disabled={loading || (!fichier && texte.trim().length < 30)}
-        className="w-full rounded-lg bg-[#4F46E5] py-2.5 text-white font-medium disabled:opacity-40"
+        className="btn btn-primary w-full py-2.5"
       >
         {loading ? "Analyse en cours…" : "Lancer l'analyse"}
       </button>

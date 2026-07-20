@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { createProjet } from "@/lib/data/projects";
 
 export async function POST(req: Request) {
   const body = await req.json();
@@ -7,10 +7,10 @@ export async function POST(req: Request) {
   if (!nom || !surface || !codePostal || !reponses) {
     return NextResponse.json({ error: "Champs manquants" }, { status: 400 });
   }
-  const info = db
-    .prepare(
-      "INSERT INTO projects (nom, type_bien, surface, code_postal, reponses_json) VALUES (?, ?, ?, ?, ?)"
-    )
-    .run(nom, typeBien ?? "appartement", Number(surface), String(codePostal), JSON.stringify(reponses));
-  return NextResponse.json({ id: info.lastInsertRowid });
+  const id = await createProjet({ nom, typeBien, surface, codePostal, reponses });
+  if (!id) {
+    // Pas de session : le funnel anonyme sera rattaché à l'inscription (étape 7).
+    return NextResponse.json({ error: "Connexion requise pour enregistrer le projet" }, { status: 401 });
+  }
+  return NextResponse.json({ id });
 }

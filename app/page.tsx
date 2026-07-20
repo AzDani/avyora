@@ -4,56 +4,66 @@ import AnimationReno from "@/components/AnimationReno";
 
 export default function Accueil() {
   return (
-    <div className="space-y-10">
+    <div className="space-y-12">
       {/* Héros — construction neuve */}
-      <section className="rounded-3xl bg-[#1E1B4B] text-white p-6 sm:p-10 overflow-hidden">
-        <div className="grid md:grid-cols-2 gap-8 items-center">
+      <section className="animate-rise relative overflow-hidden rounded-panel bg-gradient-to-br from-[#1E1B4B] via-[#241f5e] to-[#191640] p-8 text-white shadow-hero sm:p-12">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-[#7C3AED]/25 blur-3xl"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -left-16 bottom-0 h-64 w-64 rounded-full bg-[#4F46E5]/20 blur-3xl"
+        />
+        <div className="relative grid items-center gap-10 md:grid-cols-2">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-[#A78BFA] font-semibold">
-              Copilote travaux & investissement
-            </p>
-            <h1 className="mt-3 text-3xl sm:text-4xl font-semibold leading-tight">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium tracking-wide text-[#C4B5FD]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#A78BFA]" />
+              Copilote travaux &amp; investissement
+            </span>
+            <h1 className="mt-5 text-4xl font-semibold leading-[1.04] tracking-tight sm:text-5xl">
               Sache ce que ça coûte.
               <br />
-              Avant de signer.
+              <span className="text-white/55">Avant de signer.</span>
             </h1>
-            <p className="mt-4 text-indigo-200/90 text-sm sm:text-base leading-relaxed">
-              Estimation par corps d&apos;état au prix du marché français, analyse
-              de devis, métré automatique, suivi de chantier et rentabilité —
-              pour la rénovation comme la construction neuve.
+            <p className="mt-5 max-w-md text-[15px] leading-relaxed text-indigo-100/80">
+              Estimation par corps d&apos;état au prix du marché français, analyse de devis, métré
+              automatique, suivi de chantier et rentabilité — pour la rénovation comme la construction neuve.
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link
-                href="/projets/nouveau"
-                className="rounded-lg bg-[#4F46E5] px-5 py-2.5 font-medium text-white hover:bg-[#4338CA]"
-              >
-                Estimer mon projet
-              </Link>
-              <Link
-                href="/projets"
-                className="rounded-lg border border-indigo-300/40 px-5 py-2.5 font-medium text-indigo-100 hover:border-indigo-300"
-              >
-                Mes projets
-              </Link>
+            <div className="mt-7">
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+                <Link href="/projets/nouveau" className="btn btn-primary px-6 py-3.5 text-[15px]">
+                  Estimer mon projet
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                    <path d="M6 3.5 10.5 8 6 12.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </Link>
+                <Link href="/projets" className="text-sm font-medium text-indigo-200/80 transition-colors hover:text-white">
+                  Voir mes projets →
+                </Link>
+              </div>
+              <p className="mt-3.5 text-xs text-indigo-200/60">≈ 2 min · gratuit · sans compte</p>
             </div>
-            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-xs text-indigo-200/70">
-              <span>78 postes de prix France 2026</span>
-              <span>±15 % en mode détaillé</span>
-              <span>Gratuit pour commencer</span>
-            </div>
+            <dl className="mt-9 grid max-w-md grid-cols-3 gap-4 border-t border-white/10 pt-6">
+              <HeroStat value="78" label="postes de prix · 2026" />
+              <HeroStat value="±15 %" label="précision détaillée" />
+              <HeroStat value="Gratuit" label="pour commencer" />
+            </dl>
           </div>
           <div>
-            <AnimationNeuf />
+            <div className="overflow-hidden rounded-card border border-white/10 bg-white/[0.03] p-2">
+              <AnimationNeuf />
+            </div>
             <div className="mt-3 flex items-center justify-between gap-3">
               <p className="text-xs text-indigo-200/80">
-                <span className="font-semibold text-white">Construction neuve</span>{" "}
-                — du terrassement aux finitions, chiffrée pièce par pièce.
+                <span className="font-semibold text-white">Construction neuve</span> — du terrassement aux
+                finitions, chiffrée pièce par pièce.
               </p>
               <Link
                 href="/projets/nouveau"
-                className="shrink-0 text-xs font-medium text-[#A78BFA] hover:text-[#C4B5FD]"
+                className="shrink-0 text-xs font-medium text-[#A78BFA] transition-colors hover:text-[#C4B5FD]"
               >
-                Estimer une construction →
+                Estimer →
               </Link>
             </div>
           </div>
@@ -61,39 +71,35 @@ export default function Accueil() {
       </section>
 
       {/* Section rénovation */}
-      <section className="rounded-3xl border border-indigo-100 bg-white p-6 sm:p-10 overflow-hidden">
-        <div className="grid md:grid-cols-2 gap-8 items-center">
+      <section className="card overflow-hidden p-8 sm:p-10">
+        <div className="grid items-center gap-10 md:grid-cols-2">
           <div className="order-2 md:order-1">
-            <AnimationReno />
+            <div className="overflow-hidden rounded-card bg-surface-2 p-2">
+              <AnimationReno />
+            </div>
           </div>
           <div className="order-1 md:order-2">
-            <p className="text-xs uppercase tracking-[0.2em] text-[#4F46E5] font-semibold">
-              Rénovation
-            </p>
-            <h2 className="mt-3 text-2xl sm:text-3xl font-semibold leading-tight text-slate-900">
+            <p className="eyebrow">Rénovation</p>
+            <h2 className="mt-2 text-2xl font-semibold leading-tight tracking-tight text-ink sm:text-3xl">
               De la maison fatiguée au bien qui rapporte.
             </h2>
-            <ul className="mt-4 space-y-2.5 text-sm text-slate-600 leading-relaxed">
-              <li className="flex gap-2">
-                <span className="text-[#4F46E5] font-bold">·</span>
-                Questionnaire expert : terre battue, plâtre abîmé, humidité — on
-                chiffre la vraie chaîne de travaux, pas une moyenne.
-              </li>
-              <li className="flex gap-2">
-                <span className="text-[#4F46E5] font-bold">·</span>
-                Métré automatique depuis tes pièces ou ton plan : murs, sols,
-                plafonds, plinthes, faïence.
-              </li>
-              <li className="flex gap-2">
-                <span className="text-[#4F46E5] font-bold">·</span>
-                Analyse de devis : oublis détectés, prix comparés au marché,
-                questions à poser avant de signer.
-              </li>
+            <ul className="mt-5 space-y-3.5">
+              {[
+                "Questionnaire expert : terre battue, plâtre abîmé, humidité — on chiffre la vraie chaîne de travaux, pas une moyenne.",
+                "Métré automatique depuis tes pièces ou ton plan : murs, sols, plafonds, plinthes, faïence.",
+                "Analyse de devis : oublis détectés, prix comparés au marché, questions à poser avant de signer.",
+              ].map((t) => (
+                <li key={t} className="flex gap-3 text-sm leading-relaxed text-muted">
+                  <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-50 text-brand-600">
+                    <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                      <path d="M3 7.5 5.8 10 11 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </span>
+                  {t}
+                </li>
+              ))}
             </ul>
-            <Link
-              href="/projets/nouveau"
-              className="mt-6 inline-block rounded-lg bg-[#4F46E5] px-5 py-2.5 font-medium text-white hover:bg-[#4338CA]"
-            >
+            <Link href="/projets/nouveau" className="btn btn-primary mt-7 px-5 py-3">
               Estimer une rénovation
             </Link>
           </div>
@@ -102,41 +108,48 @@ export default function Accueil() {
 
       {/* Modules */}
       <section>
-        <h2 className="font-semibold text-lg mb-1">La plateforme AVYORA</h2>
-        <p className="text-sm text-slate-500 mb-3">
-          L&apos;OS de l&apos;immobilier et de la rénovation — les modules
-          arrivent dans l&apos;ordre où ils te servent.
+        <p className="eyebrow">La plateforme</p>
+        <h2 className="mt-1.5 text-2xl font-semibold tracking-tight text-ink">L&apos;OS de l&apos;immobilier</h2>
+        <p className="mt-1.5 text-[15px] text-muted">
+          Tous les modules dont tu as besoin, dans l&apos;ordre où ils te servent.
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
           {MODULES.map((m) => (
             <div
               key={m.num}
-              className={`rounded-xl border p-3.5 ${
-                m.statut === "actif"
-                  ? "border-indigo-200 bg-white"
-                  : "border-slate-200 bg-slate-50/60"
-              }`}
+              className={`card p-4 ${m.statut === "actif" ? "card-interactive" : "opacity-75"}`}
             >
-              <div className="flex items-center justify-between gap-2">
-                <div className="text-sm font-medium">
-                  <span className="text-slate-400 mr-1.5">M{m.num}</span>
-                  {m.titre}
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2.5">
+                  <span className="data grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-brand-50 text-xs font-semibold text-brand-600">
+                    {m.num}
+                  </span>
+                  <span className="text-sm font-semibold text-ink">{m.titre}</span>
                 </div>
                 <span
                   className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
                     m.statut === "actif"
-                      ? "bg-indigo-100 text-indigo-700"
-                      : "bg-slate-200 text-slate-500"
+                      ? "bg-positive-soft text-positive"
+                      : "bg-surface-2 text-faint"
                   }`}
                 >
                   {m.statut === "actif" ? "Actif" : "À venir"}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 mt-1 leading-relaxed">{m.desc}</p>
+              <p className="mt-2 text-xs leading-relaxed text-muted">{m.desc}</p>
             </div>
           ))}
         </div>
       </section>
+    </div>
+  );
+}
+
+function HeroStat({ value, label }: { value: string; label: string }) {
+  return (
+    <div>
+      <dd className="data text-2xl font-semibold text-white">{value}</dd>
+      <dt className="mt-1 text-[11px] leading-tight text-indigo-200/60">{label}</dt>
     </div>
   );
 }

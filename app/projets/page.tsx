@@ -1,26 +1,15 @@
 import Link from "next/link";
-import { db } from "@/lib/db";
 import { estimer, type Reponses } from "@/lib/estimation";
 import { getFormConfig } from "@/lib/customq-db";
+import { listProjets, countDevis, type Projet } from "@/lib/data/projects";
 import ListeProjets, { type ProjetCarte } from "@/components/ListeProjets";
+import ClaimDraft from "@/components/ClaimDraft";
 
 export const dynamic = "force-dynamic";
 
-type ProjectRow = {
-  id: number;
-  nom: string;
-  type_bien: string;
-  surface: number;
-  code_postal: string;
-  reponses_json: string;
-  archived: number;
-};
-
-function versCarte(p: ProjectRow, customQ: ReturnType<typeof getFormConfig>): ProjetCarte {
-  const est = estimer(p.surface, p.code_postal, JSON.parse(p.reponses_json) as Reponses, null, customQ);
-  const nbDevis = (
-    db.prepare("SELECT COUNT(*) AS n FROM quotes WHERE project_id = ?").get(p.id) as { n: number }
-  ).n;
+async function versCarte(p: Projet, customQ: Awaited<ReturnType<typeof getFormConfig>>): Promise<ProjetCarte> {
+  const est = estimer(p.surface, p.code_postal, p.reponses as Reponses, null, customQ);
+  const nbDevis = await countDevis(p.id);
   return {
     id: p.id,
     nom: p.nom,
@@ -30,37 +19,65 @@ function versCarte(p: ProjectRow, customQ: ReturnType<typeof getFormConfig>): Pr
     nbDevis,
     totalBas: est.totalBas,
     totalHaut: est.totalHaut,
-    archived: !!p.archived,
+    archived: p.archived,
   };
 }
 
-export default function ProjetsPage() {
-  const customQ = getFormConfig();
-  const projets = (
-    db.prepare("SELECT * FROM projects WHERE archived = 0 ORDER BY created_at DESC").all() as ProjectRow[]
-  ).map((p) => versCarte(p, customQ));
-  const archives = (
-    db.prepare("SELECT * FROM projects WHERE archived = 1 ORDER BY created_at DESC").all() as ProjectRow[]
-  ).map((p) => versCarte(p, customQ));
+function euros(n: number): string {
+  return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
+}
+
+export default async function ProjetsPage() {
+  const customQ = await getFormConfig();
+  const [actifs, archivesRows] = await Promise.all([listProjets(false), listProjets(true)]);
+  const projets = await Promise.all(actifs.map((p) => versCarte(p, customQ)));
+  const archives = await Promise.all(archivesRows.map((p) => versCarte(p, customQ)));
+
+  const sumBas = projets.reduce((s, p) => s + p.totalBas, 0);
+  const sumHaut = projets.reduce((s, p) => s + p.totalHaut, 0);
+  const sumSurface = projets.reduce((s, p) => s + p.surface, 0);
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-2xl bg-[#1E1B4B] text-white p-6 flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-xl font-semibold">Tes projets</h1>
-          <p className="mt-1 text-indigo-200/80 text-sm">
-            Estimation, devis, chantier, rentabilité — tout au même endroit.
-          </p>
+    <div className="space-y-8">
+      <ClaimDraft />
+      <header className="animate-rise">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="eyebrow">Portefeuille</p>
+            <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-ink">Projets</h1>
+            <p className="mt-1.5 text-[15px] text-muted">
+              Estimation, devis, chantier et rentabilité — réunis pour chaque bien.
+            </p>
+          </div>
+          <Link href="/projets/nouveau" className="btn btn-primary py-2.5">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M8 3.25v9.5M3.25 8h9.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+            Nouveau projet
+          </Link>
         </div>
-        <Link
-          href="/projets/nouveau"
-          className="rounded-lg bg-[#4F46E5] px-5 py-2.5 font-medium text-white hover:bg-[#4338CA]"
-        >
-          + Nouveau projet
-        </Link>
-      </section>
+
+        {projets.length > 0 && (
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <StatTile label="Projets actifs" value={`${projets.length}`} />
+            <StatTile label="Valeur travaux estimée" value={`${euros(sumBas)} – ${euros(sumHaut)}`} accent />
+            <StatTile label="Surface cumulée" value={`${sumSurface.toLocaleString("fr-FR")} m²`} />
+          </div>
+        )}
+      </header>
 
       <ListeProjets projets={projets} archives={archives} />
+    </div>
+  );
+}
+
+function StatTile({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div className="card px-4 py-3.5">
+      <div className="text-xs font-medium text-faint">{label}</div>
+      <div className={`data mt-1 text-[15px] font-semibold ${accent ? "text-brand-700" : "text-ink"}`}>
+        {value}
+      </div>
     </div>
   );
 }

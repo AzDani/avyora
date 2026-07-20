@@ -61,29 +61,25 @@ export default function ApresTravaux({
   }
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
-      <h2 className="font-medium">Après travaux — valeur, loyer, annonce</h2>
+    <section className="card space-y-4 p-5">
+      <h2 className="font-semibold text-ink">Après travaux — valeur, loyer, annonce</h2>
       <div className="grid grid-cols-2 gap-3">
         <label className="block">
-          <span className="text-xs font-medium text-slate-600">
-            Prix du marché local (€/m² rénové)
-          </span>
+          <span className="text-xs font-medium text-muted">Prix du marché local (€/m² rénové)</span>
           <input
             type="number"
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="input num mt-1.5"
             placeholder="ex. : 3200"
             value={prixM2 || ""}
             onChange={(e) => setPrixM2(Number(e.target.value) || 0)}
           />
         </label>
         <label className="block">
-          <span className="text-xs font-medium text-slate-600">
-            Loyer du marché (€/m²/mois)
-          </span>
+          <span className="text-xs font-medium text-muted">Loyer du marché (€/m²/mois)</span>
           <input
             type="number"
             step="0.5"
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="input num mt-1.5"
             placeholder="ex. : 13"
             value={loyerM2 || ""}
             onChange={(e) => setLoyerM2(Number(e.target.value) || 0)}
@@ -93,32 +89,27 @@ export default function ApresTravaux({
 
       {(valeur > 0 || loyer > 0) && (
         <div className="grid grid-cols-2 gap-3 text-center">
-          <div className="rounded-lg bg-slate-50 p-3">
-            <div className="text-xs text-slate-500">Valeur estimée après travaux</div>
-            <div className="font-semibold mt-0.5">{valeur > 0 ? euros(valeur) : "—"}</div>
-            <div className="text-[10px] text-slate-400">
-              reporte-la dans la rentabilité pour la création de valeur
-            </div>
+          <div className="rounded-field bg-surface-2 p-3.5">
+            <div className="text-xs text-faint">Valeur estimée après travaux</div>
+            <div className="data mt-1 text-lg font-semibold text-ink">{valeur > 0 ? euros(valeur) : "—"}</div>
+            <div className="mt-0.5 text-[10px] text-faint">reporte-la dans la rentabilité (création de valeur)</div>
           </div>
-          <div className="rounded-lg bg-slate-50 p-3">
-            <div className="text-xs text-slate-500">Loyer estimé</div>
-            <div className="font-semibold mt-0.5">{loyer > 0 ? `${euros(loyer)} /mois` : "—"}</div>
-            <div className="text-[10px] text-slate-400">hors charges, à comparer aux annonces locales</div>
+          <div className="rounded-field bg-surface-2 p-3.5">
+            <div className="text-xs text-faint">Loyer estimé</div>
+            <div className="data mt-1 text-lg font-semibold text-ink">{loyer > 0 ? `${euros(loyer)} /mois` : "—"}</div>
+            <div className="mt-0.5 text-[10px] text-faint">hors charges, à comparer aux annonces locales</div>
           </div>
         </div>
       )}
 
       <div>
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-sm font-medium">Annonce générée</span>
-          <button
-            onClick={copier}
-            className="rounded-lg border border-slate-300 px-3 py-1 text-xs font-medium hover:border-indigo-400"
-          >
+        <div className="mb-1.5 flex items-center justify-between">
+          <span className="text-sm font-medium text-ink">Annonce générée</span>
+          <button onClick={copier} className="btn btn-outline py-1.5 text-xs">
             {copie ? "✓ Copiée" : "Copier l'annonce"}
           </button>
         </div>
-        <pre className="whitespace-pre-wrap rounded-lg bg-slate-50 border border-slate-100 p-3 text-xs text-slate-700 leading-relaxed font-sans">
+        <pre className="whitespace-pre-wrap rounded-field border border-line bg-surface-2 p-3.5 font-sans text-xs leading-relaxed text-muted">
           {annonce}
         </pre>
       </div>

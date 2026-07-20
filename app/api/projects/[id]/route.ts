@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { setArchived, updateProjet, deleteProjet } from "@/lib/data/projects";
 
 export async function PATCH(
   req: Request,
@@ -10,22 +10,19 @@ export async function PATCH(
 
   // Archivage / désarchivage
   if (typeof body.archived === "boolean") {
-    db.prepare("UPDATE projects SET archived = ? WHERE id = ?").run(body.archived ? 1 : 0, id);
+    await setArchived(id, body.archived);
     return NextResponse.json({ ok: true });
   }
 
   // Mise à jour de l'estimation (réponses du questionnaire, bien)
   if (body.reponses) {
-    db.prepare(
-      "UPDATE projects SET nom = ?, type_bien = ?, surface = ?, code_postal = ?, reponses_json = ? WHERE id = ?"
-    ).run(
-      String(body.nom).trim(),
-      body.typeBien ?? "appartement",
-      Number(body.surface),
-      String(body.codePostal),
-      JSON.stringify(body.reponses),
-      id
-    );
+    await updateProjet(id, {
+      nom: body.nom,
+      typeBien: body.typeBien,
+      surface: body.surface,
+      codePostal: body.codePostal,
+      reponses: body.reponses,
+    });
     return NextResponse.json({ ok: true });
   }
 
@@ -37,8 +34,6 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  db.prepare("DELETE FROM quotes WHERE project_id = ?").run(id);
-  db.prepare("DELETE FROM scenarios WHERE project_id = ?").run(id);
-  db.prepare("DELETE FROM projects WHERE id = ?").run(id);
+  await deleteProjet(id); // enfants supprimés par cascade FK
   return NextResponse.json({ ok: true });
 }

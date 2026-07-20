@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export type ArtisanRow = {
-  id: number;
+  id: number | string;
   nom: string;
   corps_etat: string;
   telephone: string | null;
@@ -46,7 +46,7 @@ export default function CarnetArtisans({
     router.refresh();
   }
 
-  async function supprimer(id: number) {
+  async function supprimer(id: number | string) {
     if (!confirm("Retirer cet artisan du carnet ?")) return;
     await fetch(`/api/artisans?id=${id}`, { method: "DELETE" });
     router.refresh();
@@ -56,35 +56,31 @@ export default function CarnetArtisans({
   const visibles = filtre === "tous" ? artisans : artisans.filter((x) => x.corps_etat === filtre);
 
   return (
-    <div className="space-y-5">
-      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
-        <div className="text-sm font-medium">Ajouter un artisan</div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <input className="rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="Nom / entreprise" value={a.nom} onChange={(e) => set("nom", e.target.value)} />
-          <select className="rounded-lg border border-slate-300 px-2 py-2 text-sm" value={a.corpsEtat} onChange={(e) => set("corpsEtat", e.target.value)}>
+    <div className="space-y-6">
+      <div className="card space-y-3 p-5">
+        <div className="text-sm font-semibold text-ink">Ajouter un artisan</div>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <input className="input" placeholder="Nom / entreprise" value={a.nom} onChange={(e) => set("nom", e.target.value)} />
+          <select className="input" value={a.corpsEtat} onChange={(e) => set("corpsEtat", e.target.value)}>
             {corpsOptions.map((c) => (
               <option key={c.value} value={c.value}>{c.label}</option>
             ))}
           </select>
-          <input className="rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="Téléphone" value={a.telephone} onChange={(e) => set("telephone", e.target.value)} />
-          <input className="rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="Email" value={a.email} onChange={(e) => set("email", e.target.value)} />
-          <input className="rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="Ville / zone" value={a.ville} onChange={(e) => set("ville", e.target.value)} />
-          <input className="rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="Note (fiable, prix, délais…)" value={a.note} onChange={(e) => set("note", e.target.value)} />
+          <input className="input" placeholder="Téléphone" value={a.telephone} onChange={(e) => set("telephone", e.target.value)} />
+          <input className="input" placeholder="Email" value={a.email} onChange={(e) => set("email", e.target.value)} />
+          <input className="input" placeholder="Ville / zone" value={a.ville} onChange={(e) => set("ville", e.target.value)} />
+          <input className="input" placeholder="Note (fiable, prix, délais…)" value={a.note} onChange={(e) => set("note", e.target.value)} />
         </div>
-        <button
-          onClick={ajouter}
-          disabled={busy || !a.nom.trim()}
-          className="rounded-lg bg-[#4F46E5] px-4 py-2 text-sm text-white font-medium disabled:opacity-40"
-        >
+        <button onClick={ajouter} disabled={busy || !a.nom.trim()} className="btn btn-primary py-2">
           Ajouter au carnet
         </button>
       </div>
 
       <div className="flex items-center justify-between gap-3">
-        <h2 className="font-semibold">
+        <h2 className="font-semibold text-ink">
           {artisans.length} artisan{artisans.length > 1 ? "s" : ""}
         </h2>
-        <select className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm" value={filtre} onChange={(e) => setFiltre(e.target.value)}>
+        <select className="input w-auto py-1.5" value={filtre} onChange={(e) => setFiltre(e.target.value)}>
           <option value="tous">Tous les corps d&apos;état</option>
           {corpsOptions.map((c) => (
             <option key={c.value} value={c.value}>{c.label}</option>
@@ -93,30 +89,44 @@ export default function CarnetArtisans({
       </div>
 
       {visibles.length === 0 ? (
-        <p className="text-sm text-slate-500">
-          Aucun artisan pour l&apos;instant. Ajoute ton réseau : il sera sous la
-          main à chaque chantier.
-        </p>
+        <div className="card flex flex-col items-center gap-3 px-6 py-12 text-center">
+          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-brand-50 text-brand-600">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M14.7 6.3a4 4 0 0 0-5 5L4 17l3 3 5.7-5.7a4 4 0 0 0 5-5l-2.6 2.6-2.4-.6-.6-2.4 2.6-2.6Z" />
+            </svg>
+          </span>
+          <div>
+            <p className="font-semibold text-ink">Aucun artisan pour l&apos;instant</p>
+            <p className="mt-1 text-sm text-muted">Ajoute ton réseau : il sera sous la main à chaque chantier.</p>
+          </div>
+        </div>
       ) : (
-        <ul className="space-y-2">
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {visibles.map((x) => (
-            <li key={x.id} className="rounded-xl border border-slate-200 bg-white p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="font-medium text-sm">{x.nom}</div>
-                  <div className="text-xs text-slate-500 mt-0.5">
-                    {labelDe(x.corps_etat)}
-                    {x.ville ? ` · ${x.ville}` : ""}
+            <li key={x.id} className="card card-interactive p-4">
+              <div className="flex items-start gap-3">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-600">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M14.7 6.3a4 4 0 0 0-5 5L4 17l3 3 5.7-5.7a4 4 0 0 0 5-5l-2.6 2.6-2.4-.6-.6-2.4 2.6-2.6Z" />
+                  </svg>
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="truncate text-sm font-semibold text-ink">{x.nom}</div>
+                    <button onClick={() => supprimer(x.id)} className="shrink-0 text-faint transition-colors hover:text-danger" aria-label="Retirer l'artisan">
+                      ✕
+                    </button>
                   </div>
-                  <div className="text-xs text-slate-600 mt-1 space-x-3">
-                    {x.telephone && <a className="text-[#4F46E5] hover:underline" href={`tel:${x.telephone}`}>{x.telephone}</a>}
-                    {x.email && <a className="text-[#4F46E5] hover:underline" href={`mailto:${x.email}`}>{x.email}</a>}
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    <span className="badge-brand">{labelDe(x.corps_etat)}</span>
+                    {x.ville && <span className="chip">{x.ville}</span>}
                   </div>
-                  {x.note && <p className="text-xs text-slate-500 mt-1 italic">{x.note}</p>}
+                  <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs">
+                    {x.telephone && <a className="font-medium text-brand-600 hover:text-brand-700" href={`tel:${x.telephone}`}>{x.telephone}</a>}
+                    {x.email && <a className="font-medium text-brand-600 hover:text-brand-700" href={`mailto:${x.email}`}>{x.email}</a>}
+                  </div>
+                  {x.note && <p className="mt-1.5 text-xs italic text-muted">{x.note}</p>}
                 </div>
-                <button onClick={() => supprimer(x.id)} className="text-xs text-slate-400 hover:text-red-600 shrink-0">
-                  ✕
-                </button>
               </div>
             </li>
           ))}

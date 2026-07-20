@@ -16,7 +16,7 @@ export type TypePiece =
   | "autre";
 
 export type PieceRow = {
-  id: number;
+  id: number | string;
   nom: string;
   type_piece: TypePiece;
   longueur: number; // m

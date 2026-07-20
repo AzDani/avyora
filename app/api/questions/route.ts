@@ -4,7 +4,7 @@ import { suggestPrix } from "@/lib/referentiel";
 import type { FormConfig } from "@/lib/customq";
 
 export async function GET() {
-  return NextResponse.json({ config: getFormConfig() });
+  return NextResponse.json({ config: await getFormConfig() });
 }
 
 export async function PUT(req: Request) {
@@ -12,7 +12,7 @@ export async function PUT(req: Request) {
   if (!config || !Array.isArray(config.questions) || typeof config.builtin !== "object") {
     return NextResponse.json({ error: "config invalide" }, { status: 400 });
   }
-  saveFormConfig({ questions: config.questions, builtin: config.builtin });
+  await saveFormConfig({ questions: config.questions, builtin: config.builtin, order: config.order ?? {}, headings: config.headings ?? [], hiddenBlocs: config.hiddenBlocs ?? [], sdbQuestions: config.sdbQuestions ?? [] });
   return NextResponse.json({ ok: true });
 }
 

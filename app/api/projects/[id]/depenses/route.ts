@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { addDepense, deleteDepense } from "@/lib/data/projects";
 
 export async function POST(
   req: Request,
@@ -10,12 +10,8 @@ export async function POST(
   if (!corpsEtat || !libelle || !(Number(montant) > 0)) {
     return NextResponse.json({ error: "Champs manquants" }, { status: 400 });
   }
-  const info = db
-    .prepare(
-      "INSERT INTO expenses (project_id, corps_etat, libelle, montant) VALUES (?, ?, ?, ?)"
-    )
-    .run(id, corpsEtat, String(libelle).trim(), Number(montant));
-  return NextResponse.json({ id: info.lastInsertRowid });
+  const depId = await addDepense(id, { corpsEtat, libelle, montant });
+  return NextResponse.json({ id: depId });
 }
 
 export async function DELETE(
@@ -25,6 +21,6 @@ export async function DELETE(
   const { id } = await params;
   const depId = new URL(req.url).searchParams.get("dep");
   if (!depId) return NextResponse.json({ error: "dep manquant" }, { status: 400 });
-  db.prepare("DELETE FROM expenses WHERE id = ? AND project_id = ?").run(depId, id);
+  await deleteDepense(id, depId);
   return NextResponse.json({ ok: true });
 }

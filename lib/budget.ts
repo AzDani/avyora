@@ -2,7 +2,7 @@ import type { Estimation } from "./estimation";
 import { corpsLabel } from "./estimation";
 
 export type ExpenseRow = {
-  id: number;
+  id: number | string;
   corps_etat: string;
   libelle: string;
   montant: number;
@@ -10,7 +10,7 @@ export type ExpenseRow = {
 };
 
 export type TaskRow = {
-  id: number;
+  id: number | string;
   corps_etat: string;
   titre: string;
   statut: "a_faire" | "en_cours" | "fait";

@@ -37,14 +37,14 @@ export default function MetrePieces({
   pieces,
   metre,
 }: {
-  projectId: number;
+  projectId: string;
   pieces: PieceRow[];
   metre: Metre | null;
 }) {
   const router = useRouter();
   const [ouvert, setOuvert] = useState(pieces.length === 0);
   const [busy, setBusy] = useState(false);
-  const [editId, setEditId] = useState<number | null>(null);
+  const [editId, setEditId] = useState<number | string | null>(null);
   const [p, setP] = useState<Draft>(vide);
 
   const set = (k: keyof Draft, v: string | boolean) => setP((prev) => ({ ...prev, [k]: v }));
@@ -94,7 +94,7 @@ export default function MetrePieces({
     router.refresh();
   }
 
-  async function supprimer(pieceId: number) {
+  async function supprimer(pieceId: number | string) {
     await fetch(`/api/projects/${projectId}/pieces?piece=${pieceId}`, { method: "DELETE" });
     if (editId === pieceId) {
       setEditId(null);
@@ -122,16 +122,40 @@ export default function MetrePieces({
   const formValide = p.nom.trim() && Number(p.longueur) > 0 && Number(p.largeur) > 0;
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
+    <section className="card space-y-4 p-5">
       <div className="flex items-center justify-between">
-        <h2 className="font-medium">Métré pièce par pièce</h2>
-        <button onClick={() => setOuvert(!ouvert)} className="text-xs text-slate-500 underline">
+        <h2 className="font-semibold text-ink">Métré pièce par pièce</h2>
+        <button onClick={() => setOuvert(!ouvert)} className="text-xs font-medium text-brand-600 hover:text-brand-700">
           {ouvert ? "Réduire" : `${pieces.length} pièce${pieces.length > 1 ? "s" : ""} — modifier`}
         </button>
       </div>
 
+      {pieces.length === 0 ? (
+        <div className="flex items-start gap-3 rounded-field border border-brand-100 bg-brand-50/50 p-3.5">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-100 text-brand-700">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="10" cy="10" r="7" /><circle cx="10" cy="10" r="3" /><path d="M10 1v2M10 17v2M1 10h2M17 10h2" />
+            </svg>
+          </span>
+          <div>
+            <p className="text-sm font-semibold text-ink">Gagne en précision — passe au métré réel</p>
+            <p className="mt-0.5 text-xs leading-relaxed text-muted">
+              Ajoute tes pièces : murs, sols, plafonds, plinthes et faïence sont calculés <strong className="font-semibold text-ink">exactement</strong>,
+              au lieu d&apos;être estimés depuis la surface. Ton estimation se recalcule automatiquement. ~2 min.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="inline-flex items-center gap-1.5 rounded-full bg-positive-soft px-2.5 py-1 text-xs font-medium text-positive">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M3 7.5 5.8 10 11 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Précision affinée par le métré réel
+        </div>
+      )}
+
       {metre && metre.pieces.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+        <div className="grid grid-cols-2 gap-2 text-center sm:grid-cols-4">
           {[
             ["Sol", `${metre.totalSol} m²`],
             ["Murs", `${metre.totalMurs} m²`],
@@ -142,9 +166,9 @@ export default function MetrePieces({
             ["Menuiseries", `${metre.totalPortes} portes · ${metre.totalFenetres} fen.`],
             ["Salles d'eau", `${metre.nbSallesDeBain} SDB`],
           ].map(([l, v]) => (
-            <div key={l as string} className="rounded-lg bg-slate-50 p-2.5">
-              <div className="text-[11px] text-slate-500">{l}</div>
-              <div className="text-sm font-semibold mt-0.5">{v}</div>
+            <div key={l as string} className="rounded-field bg-surface-2 p-2.5">
+              <div className="text-[11px] text-faint">{l}</div>
+              <div className="num mt-1 text-sm font-semibold text-ink">{v}</div>
             </div>
           ))}
         </div>
@@ -155,13 +179,13 @@ export default function MetrePieces({
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs text-slate-500 border-b border-slate-100">
+              <tr className="border-b border-line text-left text-xs text-faint">
                 <th className="px-2 py-2 font-medium">Pièce</th>
-                <th className="px-2 py-2 font-medium text-right">Sol</th>
-                <th className="px-2 py-2 font-medium text-right">Murs</th>
-                <th className="px-2 py-2 font-medium text-right">Plafond</th>
-                <th className="px-2 py-2 font-medium text-right">Plinthes</th>
-                <th className="px-2 py-2 font-medium text-right"></th>
+                <th className="px-2 py-2 text-right font-medium">Sol</th>
+                <th className="px-2 py-2 text-right font-medium">Murs</th>
+                <th className="px-2 py-2 text-right font-medium">Plafond</th>
+                <th className="px-2 py-2 text-right font-medium">Plinthes</th>
+                <th className="px-2 py-2 text-right font-medium"></th>
               </tr>
             </thead>
             <tbody>
@@ -177,24 +201,24 @@ export default function MetrePieces({
                   faience: !!pc.faience,
                 });
                 return (
-                  <tr key={pc.id} className="border-b border-slate-50">
+                  <tr key={pc.id} className="border-b border-line/60">
                     <td className="px-2 py-2">
-                      <div className="font-medium">{pc.nom}</div>
-                      <div className="text-[11px] text-slate-400">
+                      <div className="font-medium text-ink">{pc.nom}</div>
+                      <div className="text-[11px] text-faint">
                         {typeLabel(pc.type_piece)} · {pc.longueur}×{pc.largeur} m
                         {pc.carrelage_sol ? " · carrelage" : ""}
                         {pc.faience ? " · faïence" : ""}
                       </div>
                     </td>
-                    <td className="px-2 py-2 text-right whitespace-nowrap">{m.surfaceSol} m²</td>
-                    <td className="px-2 py-2 text-right whitespace-nowrap">{m.surfaceMurs} m²</td>
-                    <td className="px-2 py-2 text-right whitespace-nowrap">{m.surfacePlafond} m²</td>
-                    <td className="px-2 py-2 text-right whitespace-nowrap">{m.plinthesMl} ml</td>
-                    <td className="px-2 py-2 text-right whitespace-nowrap">
-                      <button onClick={() => editer(pc)} className="text-xs text-[#4F46E5] hover:underline mr-2">
+                    <td className="num whitespace-nowrap px-2 py-2 text-right text-muted">{m.surfaceSol} m²</td>
+                    <td className="num whitespace-nowrap px-2 py-2 text-right text-muted">{m.surfaceMurs} m²</td>
+                    <td className="num whitespace-nowrap px-2 py-2 text-right text-muted">{m.surfacePlafond} m²</td>
+                    <td className="num whitespace-nowrap px-2 py-2 text-right text-muted">{m.plinthesMl} ml</td>
+                    <td className="whitespace-nowrap px-2 py-2 text-right">
+                      <button onClick={() => editer(pc)} className="mr-2 text-xs font-medium text-brand-600 hover:text-brand-700">
                         Modifier
                       </button>
-                      <button onClick={() => supprimer(pc.id)} className="text-xs text-slate-400 hover:text-red-600">
+                      <button onClick={() => supprimer(pc.id)} className="text-xs text-faint transition-colors hover:text-danger" aria-label="Supprimer la pièce">
                         ✕
                       </button>
                     </td>
@@ -203,12 +227,12 @@ export default function MetrePieces({
               })}
             </tbody>
             <tfoot>
-              <tr className="font-semibold border-t border-slate-200">
+              <tr className="border-t border-line-strong font-semibold text-ink">
                 <td className="px-2 py-2">Total</td>
-                <td className="px-2 py-2 text-right">{metre.totalSol} m²</td>
-                <td className="px-2 py-2 text-right">{metre.totalMurs} m²</td>
-                <td className="px-2 py-2 text-right">{metre.totalPlafonds} m²</td>
-                <td className="px-2 py-2 text-right">{metre.totalPlinthesMl} ml</td>
+                <td className="num px-2 py-2 text-right">{metre.totalSol} m²</td>
+                <td className="num px-2 py-2 text-right">{metre.totalMurs} m²</td>
+                <td className="num px-2 py-2 text-right">{metre.totalPlafonds} m²</td>
+                <td className="num px-2 py-2 text-right">{metre.totalPlinthesMl} ml</td>
                 <td></td>
               </tr>
             </tfoot>
@@ -217,66 +241,59 @@ export default function MetrePieces({
       )}
 
       {ouvert && (
-        <div className="rounded-lg border border-dashed border-slate-300 p-3 space-y-2">
-          <div className="text-sm font-medium">
+        <div className="space-y-3 rounded-field border border-dashed border-line-strong bg-surface-2/60 p-3.5">
+          <div className="text-sm font-semibold text-ink">
             {editId != null ? "Modifier la pièce" : "Ajouter une pièce"}
           </div>
           <div className="flex flex-wrap gap-2">
             <input
-              className="flex-1 min-w-28 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="input min-w-28 flex-1"
               placeholder="Nom (ex. : Chambre 1)"
               value={p.nom}
               onChange={(e) => set("nom", e.target.value)}
             />
-            <select
-              className="rounded-lg border border-slate-300 px-2 py-2 text-sm"
-              value={p.typePiece}
-              onChange={(e) => onTypeChange(e.target.value)}
-            >
+            <select className="input w-auto" value={p.typePiece} onChange={(e) => onTypeChange(e.target.value)}>
               {TYPES_PIECES.map((t) => (
                 <option key={t.value} value={t.value}>{t.label}</option>
               ))}
             </select>
-            <input type="number" step="0.1" className="w-24 rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="Long. m" value={p.longueur} onChange={(e) => set("longueur", e.target.value)} />
-            <input type="number" step="0.1" className="w-24 rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="Larg. m" value={p.largeur} onChange={(e) => set("largeur", e.target.value)} />
-            <input type="number" step="0.1" className="w-20 rounded-lg border border-slate-300 px-3 py-2 text-sm" title="Hauteur sous plafond" value={p.hauteur} onChange={(e) => set("hauteur", e.target.value)} />
+            <input type="number" step="0.1" className="input num w-24" placeholder="Long. m" value={p.longueur} onChange={(e) => set("longueur", e.target.value)} />
+            <input type="number" step="0.1" className="input num w-24" placeholder="Larg. m" value={p.largeur} onChange={(e) => set("largeur", e.target.value)} />
+            <input type="number" step="0.1" className="input num w-20" title="Hauteur sous plafond" value={p.hauteur} onChange={(e) => set("hauteur", e.target.value)} />
           </div>
-          <div className="flex flex-wrap items-center gap-4 text-sm">
+          <div className="flex flex-wrap items-center gap-4 text-sm text-muted">
             <label className="flex items-center gap-1.5">
               Portes
-              <input type="number" className="w-14 rounded-lg border border-slate-300 px-2 py-1 text-sm" value={p.portes} onChange={(e) => set("portes", e.target.value)} />
+              <input type="number" className="input num w-14 px-2 py-1" value={p.portes} onChange={(e) => set("portes", e.target.value)} />
             </label>
             <label className="flex items-center gap-1.5">
               Fenêtres
-              <input type="number" className="w-14 rounded-lg border border-slate-300 px-2 py-1 text-sm" value={p.fenetres} onChange={(e) => set("fenetres", e.target.value)} />
+              <input type="number" className="input num w-14 px-2 py-1" value={p.fenetres} onChange={(e) => set("fenetres", e.target.value)} />
             </label>
             <label className="flex items-center gap-1.5">
-              <input type="checkbox" checked={p.carrelageSol} onChange={(e) => set("carrelageSol", e.target.checked)} />
+              <input type="checkbox" className="accent-brand-600" checked={p.carrelageSol} onChange={(e) => set("carrelageSol", e.target.checked)} />
               Sol carrelé
             </label>
             <label className="flex items-center gap-1.5">
-              <input type="checkbox" checked={p.faience} onChange={(e) => set("faience", e.target.checked)} />
+              <input type="checkbox" className="accent-brand-600" checked={p.faience} onChange={(e) => set("faience", e.target.checked)} />
               Faïence murale
             </label>
             {editId != null && (
-              <button
-                onClick={() => { setEditId(null); setP(vide); }}
-                className="ml-auto rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium"
-              >
+              <button onClick={() => { setEditId(null); setP(vide); }} className="btn btn-outline ml-auto py-2">
                 Annuler
               </button>
             )}
             <button
               onClick={editId != null ? enregistrer : ajouter}
               disabled={busy || !formValide}
-              className={`rounded-lg bg-[#4F46E5] px-4 py-2 text-sm text-white font-medium disabled:opacity-40 ${editId == null ? "ml-auto" : ""}`}
+              className={`btn btn-primary py-2 ${editId == null ? "ml-auto" : ""}`}
             >
               {editId != null ? "Enregistrer" : "Ajouter"}
             </button>
           </div>
-          <p className="text-xs text-slate-400">
-            Chaque pièce ajoutée est modifiable (bouton « Modifier » dans le tableau).
-            Le métré remplace les ratios dans l&apos;estimation pour un chiffrage précis.
+          <p className="text-xs text-faint">
+            Chaque pièce ajoutée est modifiable (bouton « Modifier » dans le tableau). Le métré remplace les ratios
+            dans l&apos;estimation pour un chiffrage précis.
           </p>
         </div>
       )}

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export type ProjetCarte = {
-  id: number;
+  id: number | string;
   nom: string;
   type_bien: string;
   surface: number;
@@ -24,6 +24,31 @@ function euros(n: number): string {
   }).format(n);
 }
 
+function IconBien({ type }: { type: string }) {
+  const t = type.toLowerCase();
+  if (t.startsWith("appart"))
+    return (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <rect x="4" y="3" width="16" height="18" rx="1.5" />
+        <path d="M8 7h2M14 7h2M8 11h2M14 11h2M8 15h2M14 15h2M10 21v-3h4v3" />
+      </svg>
+    );
+  if (t.startsWith("immeu"))
+    return (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M3 21h18M6 21V6l6-3 6 3v15" />
+        <path d="M10 9h4M10 13h4M10 17h4" />
+      </svg>
+    );
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 11.5 12 4l8 7.5" />
+      <path d="M6 10v10h12V10" />
+      <path d="M10 20v-5h4v5" />
+    </svg>
+  );
+}
+
 export default function ListeProjets({
   projets,
   archives,
@@ -32,14 +57,14 @@ export default function ListeProjets({
   archives: ProjetCarte[];
 }) {
   const router = useRouter();
-  const [selection, setSelection] = useState<Set<number>>(new Set());
+  const [selection, setSelection] = useState<Set<number | string>>(new Set());
   const [modeSelection, setModeSelection] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const archiveIds = new Set(archives.map((a) => a.id));
   const toutArchive = selection.size > 0 && [...selection].every((id) => archiveIds.has(id));
 
-  function toggle(id: number) {
+  function toggle(id: number | string) {
     setSelection((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -56,9 +81,7 @@ export default function ListeProjets({
     )
       return;
     setBusy(true);
-    await Promise.all(
-      [...selection].map((id) => fetch(`/api/projects/${id}`, { method: "DELETE" }))
-    );
+    await Promise.all([...selection].map((id) => fetch(`/api/projects/${id}`, { method: "DELETE" })));
     setSelection(new Set());
     setModeSelection(false);
     setBusy(false);
@@ -85,51 +108,71 @@ export default function ListeProjets({
   function Carte({ p }: { p: ProjetCarte }) {
     const coche = selection.has(p.id);
     const contenu = (
-      <div className="flex items-center gap-3">
-        {modeSelection && (
-          <span
-            className={`shrink-0 w-5 h-5 rounded-md border-2 flex items-center justify-center text-[11px] font-bold ${
-              coche
-                ? "bg-[#4F46E5] border-[#4F46E5] text-white"
-                : "border-slate-300 text-transparent"
-            }`}
-            aria-hidden="true"
-          >
-            ✓
+      <>
+        <div className="flex items-start gap-3">
+          {modeSelection && (
+            <span
+              className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md border-2 text-[11px] font-bold transition-colors ${
+                coche ? "border-brand-600 bg-brand-600 text-white" : "border-line-strong text-transparent"
+              }`}
+              aria-hidden="true"
+            >
+              ✓
+            </span>
+          )}
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-600">
+            <IconBien type={p.type_bien} />
           </span>
-        )}
-        <div className="flex-1 flex items-center justify-between gap-3">
-          <div>
-            <div className="font-medium">{p.nom}</div>
-            <div className="text-xs text-slate-500 mt-0.5">
-              {p.type_bien} · {p.surface} m² · {p.code_postal} · {p.nbDevis} devis
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="truncate font-semibold text-ink">{p.nom}</h3>
+              <span className="chip shrink-0 !text-faint">
+                {p.nbDevis} devis
+              </span>
             </div>
-          </div>
-          <div className="text-right shrink-0">
-            <div className="text-sm font-semibold text-slate-900">
-              {euros(p.totalBas)} – {euros(p.totalHaut)}
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              <span className="chip capitalize">{p.type_bien}</span>
+              <span className="chip num">{p.surface} m²</span>
+              <span className="chip num">{p.code_postal}</span>
             </div>
-            <div className="text-xs text-slate-500">travaux estimés</div>
           </div>
         </div>
-      </div>
+
+        <div className="my-4 h-px bg-line" />
+
+        <div className="flex items-end justify-between gap-3">
+          <div>
+            <p className="eyebrow">Estimation travaux</p>
+            <p className="data mt-1 text-[17px] font-semibold text-ink">
+              {euros(p.totalBas)} <span className="text-faint">–</span> {euros(p.totalHaut)}
+            </p>
+          </div>
+          {!modeSelection && (
+            <svg
+              width="18" height="18" viewBox="0 0 18 18" fill="none"
+              className="shrink-0 text-faint transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-brand-600"
+              aria-hidden="true"
+            >
+              <path d="M6.5 3.5 12 9l-5.5 5.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </div>
+      </>
     );
-    const classes = `block rounded-xl border bg-white p-4 transition-colors ${
-      coche
-        ? "border-[#4F46E5] ring-1 ring-[#4F46E5]"
-        : p.archived
-          ? "border-slate-100 opacity-60 hover:opacity-100"
-          : "border-slate-200 hover:border-indigo-400"
+
+    const base = `group card p-5 ${p.archived ? "opacity-70 hover:opacity-100" : ""} ${
+      coche ? "!border-brand-500 ring-2 ring-brand-500/20" : ""
     }`;
+
     if (modeSelection) {
       return (
-        <button type="button" onClick={() => toggle(p.id)} className={`${classes} w-full text-left cursor-pointer`}>
+        <button type="button" onClick={() => toggle(p.id)} className={`${base} card-interactive w-full cursor-pointer text-left`}>
           {contenu}
         </button>
       );
     }
     return (
-      <Link href={`/projets/${p.id}`} className={classes}>
+      <Link href={`/projets/${p.id}`} className={`${base} card-interactive block`}>
         {contenu}
       </Link>
     );
@@ -137,33 +180,21 @@ export default function ListeProjets({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="font-semibold text-lg">Mes projets</h2>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold text-ink">
+          Mes projets <span className="ml-1 text-sm font-normal text-faint">{projets.length}</span>
+        </h2>
         <div className="flex items-center gap-2">
           {modeSelection && selection.size > 0 && (
             <>
-              {toutArchive ? (
-                <button
-                  onClick={() => archiverSelection(false)}
-                  disabled={busy}
-                  className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium hover:border-indigo-400 disabled:opacity-50"
-                >
-                  Désarchiver ({selection.size})
-                </button>
-              ) : (
-                <button
-                  onClick={() => archiverSelection(true)}
-                  disabled={busy}
-                  className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium hover:border-indigo-400 disabled:opacity-50"
-                >
-                  Archiver ({selection.size})
-                </button>
-              )}
               <button
-                onClick={supprimerSelection}
+                onClick={() => archiverSelection(!toutArchive)}
                 disabled={busy}
-                className="rounded-lg bg-red-600 px-3 py-1.5 text-sm text-white font-medium disabled:opacity-50"
+                className="btn btn-outline py-1.5 text-[13px]"
               >
+                {toutArchive ? "Désarchiver" : "Archiver"} ({selection.size})
+              </button>
+              <button onClick={supprimerSelection} disabled={busy} className="btn btn-danger py-1.5 text-[13px]">
                 {busy ? "…" : `Supprimer (${selection.size})`}
               </button>
             </>
@@ -173,7 +204,7 @@ export default function ListeProjets({
               setModeSelection(!modeSelection);
               setSelection(new Set());
             }}
-            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium hover:border-indigo-400"
+            className="btn btn-ghost py-1.5 text-[13px]"
           >
             {modeSelection ? "Annuler" : "Sélectionner"}
           </button>
@@ -181,12 +212,20 @@ export default function ListeProjets({
       </div>
 
       {projets.length === 0 ? (
-        <p className="text-sm text-slate-500">
-          Aucun projet pour l&apos;instant. Crée ton premier projet pour obtenir
-          une estimation en 2 minutes.
-        </p>
+        <div className="card flex flex-col items-center gap-3 px-6 py-12 text-center">
+          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-brand-50 text-brand-600">
+            <IconBien type="maison" />
+          </span>
+          <div>
+            <p className="font-semibold text-ink">Aucun projet pour l&apos;instant</p>
+            <p className="mt-1 text-sm text-muted">Crée ton premier projet et obtiens une estimation en 2 minutes.</p>
+          </div>
+          <Link href="/projets/nouveau" className="btn btn-primary mt-1 py-2.5">
+            Estimer mon premier projet
+          </Link>
+        </div>
       ) : (
-        <ul className="space-y-3">
+        <ul className="stagger grid grid-cols-1 gap-4 md:grid-cols-2">
           {projets.map((p) => (
             <li key={p.id}>
               <Carte p={p} />
@@ -196,11 +235,14 @@ export default function ListeProjets({
       )}
 
       {archives.length > 0 && (
-        <details className="mt-4">
-          <summary className="text-sm text-slate-500 cursor-pointer select-none">
+        <details className="group mt-6">
+          <summary className="inline-flex cursor-pointer select-none items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-ink">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="transition-transform group-open:rotate-90" aria-hidden="true">
+              <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
             Projets archivés ({archives.length})
           </summary>
-          <ul className="space-y-3 mt-3">
+          <ul className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
             {archives.map((p) => (
               <li key={p.id}>
                 <Carte p={p} />

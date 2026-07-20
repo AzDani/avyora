@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Estimation } from "@/lib/estimation";
 import { corpsLabel, uniteLabel } from "@/lib/estimation";
+import AnimatedEuros from "@/components/AnimatedEuros";
 
 function euros(n: number): string {
   return new Intl.NumberFormat("fr-FR", {
@@ -37,120 +38,147 @@ export default function EstimationTable({ est }: { est: Estimation }) {
       .trim();
   };
 
-  return (
-    <section className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-      <div className="bg-[#1E1B4B] text-white p-4">
-        <div className="text-xs uppercase tracking-wide text-indigo-200/70">
-          Estimation travaux
-        </div>
-        <div className="text-2xl font-semibold mt-1">
-          {euros(totalPourVue[0])} – {euros(totalPourVue[1])}
-        </div>
-        <div className="text-xs text-indigo-200/70 mt-1">
-          {vue === "total" && "Prix « fait faire » — main d'œuvre + fournitures incluses"}
-          {vue === "mo" && "Main d'œuvre seule — ce que facture un artisan pour la pose"}
-          {vue === "fourn" && "Fournitures seules — si tu réalises les travaux toi-même"}
-          <span className="mx-2">·</span>
-          Durée {est.dureeSemaines[0]}–{est.dureeSemaines[1]} sem.
-          {est.mode === "detaille" && (
-            <span className="ml-2 rounded-full bg-[#A78BFA]/20 text-[#C4B5FD] px-2 py-0.5 font-medium">
-              détaillé · ±15 %
-            </span>
-          )}
-        </div>
+  // Regroupement par corps d'état (ordre d'apparition) + sous-total par groupe.
+  const groupes = (() => {
+    const map = new Map<string, Estimation["lignes"]>();
+    for (const l of est.lignes) {
+      const arr = map.get(l.corpsEtat) ?? [];
+      arr.push(l);
+      map.set(l.corpsEtat, arr);
+    }
+    return [...map.entries()].map(([corps, lignes]) => {
+      let sb = 0, sh = 0;
+      for (const l of lignes) { const [b, h] = ligneVals(l); sb += b; sh += h; }
+      return { corps, lignes, sb, sh };
+    });
+  })();
 
-        {/* Bascule */}
-        <div className="mt-3 inline-flex rounded-lg bg-white/10 p-0.5 text-xs">
-          {(
-            [
-              ["total", "Je fais faire"],
-              ["mo", "Main d'œuvre"],
-              ["fourn", "Je fais moi-même"],
-            ] as [Vue, string][]
-          ).map(([v, label]) => (
-            <button
-              key={v}
-              onClick={() => setVue(v)}
-              className={`px-3 py-1.5 rounded-md font-medium transition-colors ${
-                vue === v ? "bg-white text-[#1E1B4B]" : "text-indigo-100 hover:text-white"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+  const vueLabel = vue === "total" ? "Fait faire" : vue === "mo" ? "Main d'œuvre" : "Fournitures";
+
+  return (
+    <section className="card overflow-hidden p-0">
+      {/* En-tête — le chiffre héros */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-[#1E1B4B] via-[#241f5e] to-[#191640] p-6 text-white">
+        <div aria-hidden className="pointer-events-none absolute -right-16 -top-16 h-52 w-52 rounded-full bg-[#7C3AED]/25 blur-3xl" />
+        <div className="relative">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[#C4B5FD]">Estimation travaux</p>
+          <div className="data mt-2 text-3xl font-semibold tracking-tight sm:text-[2.1rem]">
+            <AnimatedEuros value={totalPourVue[0]} /> <span className="text-white/40">–</span>{" "}
+            <AnimatedEuros value={totalPourVue[1]} />
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-indigo-200/75">
+            <span>
+              {vue === "total" && "Prix « fait faire » — main d'œuvre + fournitures"}
+              {vue === "mo" && "Main d'œuvre seule — la pose facturée par l'artisan"}
+              {vue === "fourn" && "Fournitures seules — si tu réalises les travaux"}
+            </span>
+            <span className="text-white/25">·</span>
+            <span className="num">Durée {est.dureeSemaines[0]}–{est.dureeSemaines[1]} sem.</span>
+            {est.mode === "detaille" && (
+              <span className="rounded-full bg-[#A78BFA]/20 px-2 py-0.5 font-medium text-[#C4B5FD]">détaillé · ±15 %</span>
+            )}
+          </div>
+
+          {/* Segmented */}
+          <div className="mt-4 inline-flex rounded-field bg-white/10 p-1 text-xs">
+            {(
+              [
+                ["total", "Je fais faire"],
+                ["mo", "Main d'œuvre"],
+                ["fourn", "Je fais moi-même"],
+              ] as [Vue, string][]
+            ).map(([v, label]) => (
+              <button
+                key={v}
+                onClick={() => setVue(v)}
+                className={`rounded-[0.45rem] px-3 py-1.5 font-medium transition-colors ${
+                  vue === v ? "bg-white text-[#1E1B4B] shadow-sm" : "text-indigo-100 hover:text-white"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Bandeau récap MO / fournitures */}
-      <div className="grid grid-cols-2 divide-x divide-slate-100 border-b border-slate-100 text-center">
-        <div className="p-3">
-          <div className="text-xs text-slate-500">Dont main d&apos;œuvre</div>
-          <div className="text-sm font-semibold mt-0.5">
+      {/* Récap MO / fournitures */}
+      <div className="grid grid-cols-2 divide-x divide-line border-b border-line">
+        <div className="px-4 py-3.5 text-center">
+          <div className="text-xs text-faint">Dont main d&apos;œuvre</div>
+          <div className="data mt-1 text-sm font-semibold text-ink">
             {euros(est.totalMoBas)} – {euros(est.totalMoHaut)}
           </div>
         </div>
-        <div className="p-3">
-          <div className="text-xs text-slate-500">Dont fournitures</div>
-          <div className="text-sm font-semibold mt-0.5">
+        <div className="px-4 py-3.5 text-center">
+          <div className="text-xs text-faint">Dont fournitures</div>
+          <div className="data mt-1 text-sm font-semibold text-ink">
             {euros(est.totalFournBas)} – {euros(est.totalFournHaut)}
           </div>
         </div>
       </div>
 
       {est.lignes.length === 0 ? (
-        <p className="p-4 text-sm text-slate-500">
-          Aucun travaux sélectionné dans le questionnaire.
-        </p>
+        <p className="p-5 text-sm text-muted">Aucun travaux sélectionné dans le questionnaire.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs text-slate-500 border-b border-slate-100">
-                <th className="px-4 py-2 font-medium">Poste</th>
-                <th className="px-4 py-2 font-medium text-right">Quantité</th>
-                <th className="px-4 py-2 font-medium text-right">Prix unitaire</th>
-                <th className="px-4 py-2 font-medium text-right">
-                  {vue === "total" ? "Fait faire" : vue === "mo" ? "Main d'œuvre" : "Fournitures"}
-                </th>
+              <tr className="border-b border-line text-left text-xs text-faint">
+                <th className="px-4 py-2.5 font-medium">Poste</th>
+                <th className="px-4 py-2.5 text-right font-medium">Quantité</th>
+                <th className="hidden px-4 py-2.5 text-right font-medium sm:table-cell">Prix unitaire</th>
+                <th className="px-4 py-2.5 text-right font-medium">{vueLabel}</th>
               </tr>
             </thead>
             <tbody>
-              {est.lignes.map((l, i) => {
-                const [b, h] = ligneVals(l);
-                const pu =
-                  l.unite !== "forfait" && l.quantite > 0
-                    ? `${Math.round(b / l.quantite)}–${Math.round(h / l.quantite)} €/${uniteLabel(l.unite)}`
-                    : "—";
-                return (
-                  <tr key={i} className="border-b border-slate-50">
-                    <td className="px-4 py-2">
-                      <div className="font-medium">{posteLabel(l.poste)}</div>
-                      <div className="text-xs text-slate-400">{corpsLabel(l.corpsEtat)}</div>
+              {groupes.map((g) => (
+                <GroupeCorps key={g.corps}>
+                  <tr className="bg-surface-2">
+                    <td colSpan={3} className="px-4 py-2 text-[11px] font-semibold uppercase tracking-wide text-brand-700">
+                      {corpsLabel(g.corps)}
                     </td>
-                    <td className="px-4 py-2 text-right text-slate-500 whitespace-nowrap">
-                      {l.quantite} {uniteLabel(l.unite)}
-                    </td>
-                    <td className="px-4 py-2 text-right text-slate-500 text-xs whitespace-nowrap">
-                      {pu}
-                    </td>
-                    <td className="px-4 py-2 text-right font-medium whitespace-nowrap">
-                      {euros(b)} – {euros(h)}
+                    <td className="data whitespace-nowrap px-4 py-2 text-right text-xs font-semibold text-brand-700">
+                      {euros(g.sb)} – {euros(g.sh)}
                     </td>
                   </tr>
-                );
-              })}
+                  {g.lignes.map((l, i) => {
+                    const [b, h] = ligneVals(l);
+                    const pu =
+                      l.unite !== "forfait" && l.quantite > 0
+                        ? `${Math.round(b / l.quantite)}–${Math.round(h / l.quantite)} €/${uniteLabel(l.unite)}`
+                        : "—";
+                    return (
+                      <tr key={i} className="border-b border-line/60 last:border-0">
+                        <td className="px-4 py-2.5 font-medium text-ink">{posteLabel(l.poste)}</td>
+                        <td className="num whitespace-nowrap px-4 py-2.5 text-right text-muted">
+                          {l.quantite} {uniteLabel(l.unite)}
+                        </td>
+                        <td className="num hidden whitespace-nowrap px-4 py-2.5 text-right text-xs text-faint sm:table-cell">{pu}</td>
+                        <td className="data whitespace-nowrap px-4 py-2.5 text-right font-semibold text-ink">
+                          {euros(b)} – {euros(h)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </GroupeCorps>
+              ))}
             </tbody>
           </table>
         </div>
       )}
 
-      <p className="px-4 py-3 text-xs text-slate-500 bg-slate-50 border-t border-slate-100">
-        <strong>Fais-le toi-même</strong> = tu paies les fournitures et tu économises
-        la main d&apos;œuvre. Les montants de fournitures sont estimés à partir des
-        tarifs marché tout compris — le chiffrage précis des matériaux (catalogue
-        fournisseur) sera ajouté plus tard. Certains lots exigent un pro certifié
-        (électricité/Consuel, gaz).
+      <p className="border-t border-line bg-surface-2 px-4 py-3.5 text-xs leading-relaxed text-muted">
+        <strong className="font-semibold text-ink">Fais-le toi-même</strong> = tu paies les fournitures et
+        tu économises la main d&apos;œuvre. Les montants de fournitures sont estimés aux tarifs marché tout
+        compris — le chiffrage précis des matériaux (catalogue fournisseur) arrivera plus tard. Certains lots
+        exigent un pro certifié (électricité/Consuel, gaz).
       </p>
     </section>
   );
+}
+
+// Fragment de groupe (évite un wrapper DOM tout en gardant une clé stable).
+function GroupeCorps({ children }: { children: React.ReactNode }) {
+  return <>{children}</>;
 }
