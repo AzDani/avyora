@@ -7,10 +7,11 @@
 import { useMemo, useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  CATALOG, buildDevis, presetRapide, AMPLEURS, ampleurLabel, regionCoef,
+  CATALOG, buildDevis, presetRapide, AMPLEURS, regionCoef,
   type Ampleur, type QuiRealise, type TypeBien, type Finition,
 } from "@/lib/estimateur";
 import { suivre } from "@/lib/track";
+import { useT, useLocale } from "@/components/i18n/LangProvider";
 
 const DRAFT_KEY = "avyora-estim-v2";
 const RAPIDE_CSS = `
@@ -107,7 +108,7 @@ const RAPIDE_CSS = `
 @media (prefers-reduced-motion:reduce){.av-rapide *,.av-rapide-live *{transition:none!important}}
 `;
 
-function CountUp({ value }: { value: number }) {
+function CountUp({ value, nf }: { value: number; nf: string }) {
   const ref = useRef<HTMLSpanElement>(null);
   const prev = useRef(0);
   const raf = useRef<number | null>(null);
@@ -116,13 +117,13 @@ function CountUp({ value }: { value: number }) {
     const target = Math.round(value || 0), start = prev.current;
     const reduce = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion:reduce)").matches;
     if (raf.current) cancelAnimationFrame(raf.current);
-    if (reduce || document.hidden || start === target) { el.textContent = target.toLocaleString("fr-FR"); prev.current = target; return; }
+    if (reduce || document.hidden || start === target) { el.textContent = target.toLocaleString(nf); prev.current = target; return; }
     const dur = Math.min(700, 260 + Math.abs(target - start) / 400); let t0: number | null = null;
     const step = (ts: number) => {
       if (t0 == null) t0 = ts; const p = Math.min(1, (ts - t0) / dur), e = 1 - Math.pow(1 - p, 3);
-      el.textContent = Math.round(start + (target - start) * e).toLocaleString("fr-FR");
+      el.textContent = Math.round(start + (target - start) * e).toLocaleString(nf);
       if (p < 1) raf.current = requestAnimationFrame(step);
-      else { el.textContent = target.toLocaleString("fr-FR"); prev.current = target; raf.current = null; }
+      else { el.textContent = target.toLocaleString(nf); prev.current = target; raf.current = null; }
     };
     raf.current = requestAnimationFrame(step);
     return () => { if (raf.current) cancelAnimationFrame(raf.current); };
@@ -130,18 +131,16 @@ function CountUp({ value }: { value: number }) {
   return <span ref={ref} className="num">0</span>;
 }
 
-// Étape 3 : chaque niveau de finition rattaché à un objectif + description concrète (cartes).
-const FINITIONS: { v: Finition; lvl: number; eye: string; label: string; desc: string }[] = [
-  { v: "eco", lvl: 1, eye: "Locatif · budget maîtrisé", label: "Éco", desc: "Entrée de gamme robuste : sol stratifié, carrelage standard, cuisine en kit, robinetterie basique." },
-  { v: "standard", lvl: 2, eye: "Le plus courant", label: "Standard", desc: "Bon rapport qualité-prix : marques milieu de gamme, finitions soignées. Idéal résidence principale." },
-  { v: "premium", lvl: 3, eye: "Haut de gamme", label: "Premium", desc: "Matériaux nobles : parquet, carrelage grand format, cuisine équipée haut de gamme, prestations soignées." },
+// Ordre + niveau de jauge (le texte des cartes vient du dictionnaire i18n).
+const FINITIONS: { v: Finition; lvl: number }[] = [
+  { v: "eco", lvl: 1 },
+  { v: "standard", lvl: 2 },
+  { v: "premium", lvl: 3 },
 ];
-
-// Étape 4 : qui réalise. Jauge = implication ; description générique (le partage exact se fait dans le détaillé).
-const QUIS: { v: QuiRealise; lvl: number; eye: string; label: string; desc: string }[] = [
-  { v: "pros", lvl: 1, eye: "Clé en main", label: "Tout par des pros", desc: "Des artisans font tout : devis, garanties décennales, zéro effort de ta part." },
-  { v: "partie", lvl: 2, eye: "Le bon compromis", label: "J'en bricole une partie", desc: "Un mix : tu fais une partie, les pros le reste. Estimation moyenne — tu répartiras chaque poste juste après." },
-  { v: "max", lvl: 3, eye: "Budget mini", label: "Je fais un max moi-même", desc: "Tu fais tout ce qui est faisable toi-même ; les pros seulement sur l'obligatoire (élec, gaz…)." },
+const QUIS: { v: QuiRealise; lvl: number }[] = [
+  { v: "pros", lvl: 1 },
+  { v: "partie", lvl: 2 },
+  { v: "max", lvl: 3 },
 ];
 
 export default function EstimateurRapide() {
@@ -155,13 +154,20 @@ export default function EstimateurRapide() {
   const [saving, setSaving] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
 
+  const T = useT();
+  const t = T.rapide;
+  const locale = useLocale();
+  const nf = locale === "en" ? "en-US" : "fr-FR";
+  // Libellé d'ampleur traduit ("Réno totale" pour la lourde en appartement).
+  const ampL = (v: Ampleur) => (v === "lourde" && type !== "Maison" ? t.ampleurs.lourdeAppart : t.ampleurs[v]);
+
   const preset = useMemo(() => presetRapide({ type, surface, codePostal: cp, ampleur, finition, qui }), [type, surface, cp, ampleur, finition, qui]);
   const tot = useMemo(() => buildDevis(CATALOG, preset.ctx, preset.sel).totaux, [preset]);
   const valid = surface > 0;
   const lo = Math.round((tot.ttc * 0.85) / 100) * 100;
   const hi = Math.round((tot.ttc * 1.15) / 100) * 100;
   const m2 = valid ? Math.round(tot.ttc / surface) : 0;
-  const ampName = ampleurLabel(ampleur, type).label.toLowerCase();
+  const ampName = ampL(ampleur).label.toLowerCase();
   // €/m² de chaque ampleur pour les réglages courants (pour l'afficher sur chaque carte).
   const m2ByAmp = useMemo(() => {
     const out: Record<string, number> = {};
@@ -194,7 +200,8 @@ export default function EstimateurRapide() {
   }, [type, surface, cp, ampleur, finition]);
   const reg = regionCoef(cp);
   const regDelta = Math.round((reg.mo - 1) * 100);
-  const regLabel = cp.length >= 2 ? `${reg.zone}${regDelta ? ` · ${regDelta > 0 ? "+" : ""}${regDelta} % MO` : ""}` : "";
+  const zoneLbl = t.zones[reg.zone] ?? reg.zone;
+  const regLabel = cp.length >= 2 ? `${zoneLbl}${regDelta ? ` · ${regDelta > 0 ? "+" : ""}${regDelta} ${t.moSuffix}` : ""}` : "";
 
   function saveDraft() {
     try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ v: "estimateur", ctx: preset.ctx, sel: preset.sel, open: {}, codePostal: cp })); } catch { /* noop */ }
@@ -203,20 +210,21 @@ export default function EstimateurRapide() {
 
   async function enregistrer() {
     setErreur(null);
-    if (!/^\d{5}$/.test(cp)) { setErreur("Renseignez un code postal (5 chiffres)."); return; }
-    if (!valid) { setErreur("Renseignez la surface."); return; }
+    if (!/^\d{5}$/.test(cp)) { setErreur(t.errCp); return; }
+    if (!valid) { setErreur(t.errSurface); return; }
     suivre("estimation_terminee", { action: "enregistrer", type, ampleur });
     setSaving(true);
-    const nom = `Rénovation — ${type} ${surface} m²`.slice(0, 110);
+    const nomType = type === "Maison" ? t.typeMaison : t.typeAppart;
+    const nom = `${t.projetNom} — ${nomType} ${surface} m²`.slice(0, 110);
     const reponses = { v: "estimateur", ctx: preset.ctx, sel: preset.sel, codePostal: cp };
     try {
       const res = await fetch("/api/projects", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nom, typeBien: type, surface, codePostal: cp, reponses }) });
       if (res.status === 401) { try { localStorage.setItem("avyora-estim-claim", "1"); } catch { /* noop */ } saveDraft(); router.push("/inscription"); return; }
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) { setErreur(data?.error || "Enregistrement impossible."); setSaving(false); return; }
+      if (!res.ok) { setErreur(data?.error || t.errSave); setSaving(false); return; }
       try { localStorage.removeItem(DRAFT_KEY); } catch { /* noop */ }
       router.push(`/projets/${data.id}`);
-    } catch { setErreur("Réseau indisponible. Réessayez."); setSaving(false); }
+    } catch { setErreur(t.errReseau); setSaving(false); }
   }
 
   return (
@@ -224,23 +232,23 @@ export default function EstimateurRapide() {
       <style dangerouslySetInnerHTML={{ __html: RAPIDE_CSS }} />
       <div className="av-rapide">
         <div className="q">
-          <div className="qlbl"><span className="n">1</span>Ton bien</div>
+          <div className="qlbl"><span className="n">1</span>{t.step1}</div>
           <div className="seg" style={{ marginBottom: 10 }}>
-            {(["Maison", "Appartement"] as TypeBien[]).map((t) => (
-              <button key={t} className={type === t ? "on" : ""} onClick={() => setType(t)}>{t === "Maison" ? "🏠 Maison" : "🏢 Appartement"}</button>
+            {(["Maison", "Appartement"] as TypeBien[]).map((tb) => (
+              <button key={tb} className={type === tb ? "on" : ""} onClick={() => setType(tb)}>{tb === "Maison" ? t.maison : t.appart}</button>
             ))}
           </div>
           <div className="fields">
-            <div className="fld"><label>Surface habitable (m²)</label><input type="number" inputMode="numeric" min={8} value={surface} onChange={(e) => setSurface(parseFloat(e.target.value) || 0)} /></div>
-            <div className="fld"><label>Code postal</label><input inputMode="numeric" maxLength={5} placeholder="ex. 33000" value={cp} onChange={(e) => setCp(e.target.value.replace(/\D/g, "").slice(0, 5))} /></div>
+            <div className="fld"><label>{t.surfaceLabel}</label><input type="number" inputMode="numeric" min={8} value={surface} onChange={(e) => setSurface(parseFloat(e.target.value) || 0)} /></div>
+            <div className="fld"><label>{t.cpLabel}</label><input inputMode="numeric" maxLength={5} placeholder={t.cpPlaceholder} value={cp} onChange={(e) => setCp(e.target.value.replace(/\D/g, "").slice(0, 5))} /></div>
           </div>
         </div>
 
         <div className="q">
-          <div className="qlbl"><span className="n">2</span>Ampleur des travaux</div>
+          <div className="qlbl"><span className="n">2</span>{t.step2}</div>
           <div className="cards">
             {AMPLEURS.map((a, i) => {
-              const al = ampleurLabel(a.v, type);
+              const al = ampL(a.v);
               return (
                 <button key={a.v} className={"amp" + (ampleur === a.v ? " on" : "")} onClick={() => setAmpleur(a.v)}>
                   <span className="head">
@@ -249,7 +257,7 @@ export default function EstimateurRapide() {
                   </span>
                   <span className="t">{al.label}</span>
                   <span className="d">{al.desc}</span>
-                  <span className="amt">≈ <b>{(m2ByAmp[a.v] || 0).toLocaleString("fr-FR")} €</b> / m²</span>
+                  <span className="amt">≈ <b>{(m2ByAmp[a.v] || 0).toLocaleString(nf)} €</b> / m²</span>
                 </button>
               );
             })}
@@ -257,27 +265,31 @@ export default function EstimateurRapide() {
         </div>
 
         <div className="q">
-          <div className="qlbl"><span className="n">3</span>Niveau de finition</div>
+          <div className="qlbl"><span className="n">3</span>{t.step3}</div>
           <div className="fins">
-            {FINITIONS.map((f) => (
+            {FINITIONS.map((f) => {
+              const fi = t.finitions[f.v];
+              return (
               <button key={f.v} className={"fin" + (finition === f.v ? " on" : "")} onClick={() => setFinition(f.v)}>
                 <span className="head">
                   <span className="g3">{[0, 1, 2].map((k) => <i key={k} className={k < f.lvl ? "f" : ""} />)}</span>
                   <span className="chk" />
                 </span>
-                <span className="eye">{f.eye}</span>
-                <span className="t">{f.label}</span>
-                <span className="d">{f.desc}</span>
-                <span className="amt">≈ <b>{(m2ByFin[f.v] || 0).toLocaleString("fr-FR")} €</b> / m²</span>
+                <span className="eye">{fi.eye}</span>
+                <span className="t">{fi.label}</span>
+                <span className="d">{fi.desc}</span>
+                <span className="amt">≈ <b>{(m2ByFin[f.v] || 0).toLocaleString(nf)} €</b> / m²</span>
               </button>
-            ))}
+              );
+            })}
           </div>
         </div>
 
         <div className="q">
-          <div className="qlbl"><span className="n">4</span>Qui réalise les travaux ?</div>
+          <div className="qlbl"><span className="n">4</span>{t.step4}</div>
           <div className="quis">
             {QUIS.map((q) => {
+              const qi = t.quis[q.v];
               const price = m2ByQui[q.v] || 0;
               const base = m2ByQui.pros || 0;
               const pct = base > 0 && price > 0 ? Math.round((1 - price / base) * 100) : 0;
@@ -287,11 +299,11 @@ export default function EstimateurRapide() {
                     <span className="g3">{[0, 1, 2].map((k) => <i key={k} className={k < q.lvl ? "f" : ""} />)}</span>
                     <span className="chk" />
                   </span>
-                  <span className="eye">{q.eye}</span>
-                  <span className="t">{q.label}</span>
-                  <span className="d">{q.desc}</span>
+                  <span className="eye">{qi.eye}</span>
+                  <span className="t">{qi.label}</span>
+                  <span className="d">{qi.desc}</span>
                   <span className="amt">
-                    <span className="p">≈ <b>{price.toLocaleString("fr-FR")} €</b> / m²</span>
+                    <span className="p">≈ <b>{price.toLocaleString(nf)} €</b> / m²</span>
                     {pct > 0 && <span className="save">−{pct} %</span>}
                   </span>
                 </button>
@@ -300,19 +312,19 @@ export default function EstimateurRapide() {
           </div>
         </div>
 
-        <p className="intro">Estimation indicative, marge ±15 %. « Affiner » ouvre le détail poste par poste.</p>
+        <p className="intro">{t.intro}</p>
       </div>
 
       <div className="av-rapide-live">
         <div className="in">
           <div>
-            <div className="lbl">Estimation rapide · TTC</div>
-            <div className="big">{valid ? <><CountUp value={lo} /> €<span style={{ opacity: .55 }}> – </span><CountUp value={hi} /> €</> : "—"}</div>
-            <div className="sub">{valid ? <>≈ <CountUp value={m2} /> €/m² · {ampName} · ±15 %{regLabel ? <> · {regLabel}</> : ""}</> : "Renseigne la surface"}</div>
+            <div className="lbl">{t.liveLabel}</div>
+            <div className="big">{valid ? <><CountUp value={lo} nf={nf} /> €<span style={{ opacity: .55 }}> – </span><CountUp value={hi} nf={nf} /> €</> : "—"}</div>
+            <div className="sub">{valid ? <>≈ <CountUp value={m2} nf={nf} /> €/m² · {ampName} · ±15 %{regLabel ? <> · {regLabel}</> : ""}</> : t.renseigneSurface}</div>
           </div>
           <div className="btns">
-            <button className="ghost" onClick={affiner}>Affiner</button>
-            <button className="cta" onClick={enregistrer} disabled={saving}>{saving ? "Enregistrement…" : "Enregistrer →"}</button>
+            <button className="ghost" onClick={affiner}>{t.affiner}</button>
+            <button className="cta" onClick={enregistrer} disabled={saving}>{saving ? t.enregistrement : t.enregistrer}</button>
           </div>
           {erreur && <div className="err">{erreur}</div>}
         </div>
