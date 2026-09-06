@@ -73,7 +73,7 @@ const fr = {
     cta: "Voir les offres Pro →",
     rassure: "Sans engagement · résiliable en 3 clics",
   },
-} as const;
+};
 
 const en: Dict = {
   nav: {
