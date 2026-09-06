@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { VILLES, villeBySlug } from "@/lib/villes";
 import { prixVille, regionCoef } from "@/lib/seo-prix";
+import { deptInfo } from "@/lib/geo";
 
 export const dynamic = "force-static";
 // Ensemble fini de villes : tout slug hors liste renvoie un vrai 404 (pas de soft-404 à 200).
@@ -20,9 +21,11 @@ export async function generateMetadata({ params }: { params: Promise<{ ville: st
   if (!v) return { title: "Prix rénovation — AVYORA" };
   const grille = prixVille(v.cp);
   const complete = grille.find((g) => g.v === "complete")?.appartM2 ?? 0;
+  const dep = deptInfo(v.cp);
+  const zone = dep.region ? ` (${dep.region})` : "";
   return {
     title: `Prix rénovation à ${v.nom} (2026) — coût au m² | AVYORA`,
-    description: `Combien coûte une rénovation à ${v.nom} ? Prix au m² par type de travaux : à partir de ${euro(complete)}/m² pour une réno complète. Estimation gratuite en 3 minutes.`,
+    description: `Combien coûte une rénovation à ${v.nom}${zone} ? Prix au m² par type de travaux : à partir de ${euro(complete)}/m² pour une réno complète. Estimation gratuite en 3 minutes.`,
     alternates: { canonical: `/prix-renovation/${v.slug}` },
   };
 }
@@ -54,6 +57,8 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
 
   const grille = prixVille(v.cp);
   const reg = regionCoef(v.cp);
+  const dep = deptInfo(v.cp);
+  const localisation = dep.nom ? `${v.nom} (${dep.num} · ${dep.nom})` : v.nom;
   const moPct = Math.round((reg.mo - 1) * 100);
   const complete = grille.find((g) => g.v === "complete")!;
   const partielle = grille.find((g) => g.v === "partielle")!;
@@ -123,10 +128,11 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
 
       <h1>Prix d&apos;une rénovation à {v.nom} en 2026</h1>
       <p className="lead">
-        À {v.nom} ({reg.zone}), une <strong>rénovation complète</strong> coûte en moyenne{" "}
-        <strong>{euro(complete.appartM2)}/m²</strong> pour un appartement — de{" "}
+        À {localisation}{dep.region ? <>, en {dep.region}</> : null}, une <strong>rénovation complète</strong> coûte en
+        moyenne <strong>{euro(complete.appartM2)}/m²</strong> pour un appartement — de{" "}
         <strong>{euro(partielle.appartM2)}/m²</strong> pour une réno partielle à{" "}
-        <strong>{euro(lourde.maisonM2)}/m²</strong> pour une réno lourde de maison. Ici, {coefPhrase}.
+        <strong>{euro(lourde.maisonM2)}/m²</strong> pour une réno lourde de maison. Zone tarifaire :{" "}
+        « {reg.zone} » — {coefPhrase}.
       </p>
 
       <h2>Prix au m² par type de travaux à {v.nom}</h2>
@@ -156,6 +162,13 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
         À {v.nom} (zone « {reg.zone} »), {coefPhrase}. C&apos;est pourquoi AVYORA ajuste automatiquement
         l&apos;estimation à ton code postal.
       </p>
+      {dep.nom && (
+        <p>
+          {v.nom} se situe en {dep.region} (département {dep.nom}, {dep.num}). Le tarif horaire des artisans y est{" "}
+          {moPct > 0 ? "supérieur à" : moPct < 0 ? "inférieur à" : "proche de"}{" "}la moyenne française, ce qui explique
+          l&apos;écart de prix avec d&apos;autres régions.
+        </p>
+      )}
 
       <div className="card mt-6 border-brand-100 bg-brand-50/40 p-5">
         <p className="font-semibold text-ink">Estime ton projet à {v.nom} en 3 minutes</p>

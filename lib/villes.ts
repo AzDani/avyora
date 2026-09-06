@@ -1,12 +1,14 @@
 /**
  * Villes pour les pages SEO « Prix rénovation à [ville] ».
- * Le code postal (cp) sert au coefficient régional du moteur → chaque page a des prix réels et
- * distincts. Sélection couvrant toutes les zones tarifaires (Paris, zones tendues, grandes agglos,
- * national, Corse) pour un contenu unique par page.
+ * Le code postal (cp) sert au coefficient régional du moteur → chaque page a des prix réels.
+ * Couverture : au moins une ville par département métropolitain (95) + Corse + 4 DOM, plus les
+ * grandes métropoles à fort volume de recherche. Le département + la région (lib/geo.ts) enrichissent
+ * chaque page pour un contenu unique par zone.
  */
 export type Ville = { slug: string; nom: string; cp: string };
 
 export const VILLES: Ville[] = [
+  // ── Grandes métropoles ──
   { slug: "paris", nom: "Paris", cp: "75001" },
   { slug: "marseille", nom: "Marseille", cp: "13001" },
   { slug: "lyon", nom: "Lyon", cp: "69001" },
@@ -31,7 +33,120 @@ export const VILLES: Ville[] = [
   { slug: "nancy", nom: "Nancy", cp: "54000" },
   { slug: "annecy", nom: "Annecy", cp: "74000" },
   { slug: "versailles", nom: "Versailles", cp: "78000" },
+  { slug: "saint-etienne", nom: "Saint-Étienne", cp: "42000" },
+  { slug: "le-mans", nom: "Le Mans", cp: "72000" },
+  { slug: "brest", nom: "Brest", cp: "29200" },
+  { slug: "tours", nom: "Tours", cp: "37000" },
+  { slug: "amiens", nom: "Amiens", cp: "80000" },
+  { slug: "limoges", nom: "Limoges", cp: "87000" },
+  { slug: "villeurbanne", nom: "Villeurbanne", cp: "69100" },
+  { slug: "metz", nom: "Metz", cp: "57000" },
+  { slug: "besancon", nom: "Besançon", cp: "25000" },
+  { slug: "perpignan", nom: "Perpignan", cp: "66000" },
+  { slug: "orleans", nom: "Orléans", cp: "45000" },
+  { slug: "caen", nom: "Caen", cp: "14000" },
+  { slug: "mulhouse", nom: "Mulhouse", cp: "68100" },
+  { slug: "avignon", nom: "Avignon", cp: "84000" },
+  { slug: "poitiers", nom: "Poitiers", cp: "86000" },
+  { slug: "pau", nom: "Pau", cp: "64000" },
+  { slug: "la-rochelle", nom: "La Rochelle", cp: "17000" },
+  // ── Île-de-France (petite couronne & grande couronne) ──
+  { slug: "boulogne-billancourt", nom: "Boulogne-Billancourt", cp: "92100" },
+  { slug: "nanterre", nom: "Nanterre", cp: "92000" },
+  { slug: "montreuil", nom: "Montreuil", cp: "93100" },
+  { slug: "saint-denis", nom: "Saint-Denis", cp: "93200" },
+  { slug: "creteil", nom: "Créteil", cp: "94000" },
+  { slug: "argenteuil", nom: "Argenteuil", cp: "95100" },
+  { slug: "cergy", nom: "Cergy", cp: "95000" },
+  { slug: "evry-courcouronnes", nom: "Évry-Courcouronnes", cp: "91000" },
+  { slug: "meaux", nom: "Meaux", cp: "77100" },
+  { slug: "melun", nom: "Melun", cp: "77000" },
+  // ── Nord & Hauts-de-France ──
+  { slug: "roubaix", nom: "Roubaix", cp: "59100" },
+  { slug: "tourcoing", nom: "Tourcoing", cp: "59200" },
+  { slug: "dunkerque", nom: "Dunkerque", cp: "59140" },
+  { slug: "valenciennes", nom: "Valenciennes", cp: "59300" },
+  { slug: "calais", nom: "Calais", cp: "62100" },
+  { slug: "arras", nom: "Arras", cp: "62000" },
+  { slug: "beauvais", nom: "Beauvais", cp: "60000" },
+  { slug: "compiegne", nom: "Compiègne", cp: "60200" },
+  { slug: "saint-quentin", nom: "Saint-Quentin", cp: "02100" },
+  // ── Sud & PACA / Occitanie ──
+  { slug: "cannes", nom: "Cannes", cp: "06400" },
+  { slug: "antibes", nom: "Antibes", cp: "06600" },
+  { slug: "frejus", nom: "Fréjus", cp: "83600" },
+  { slug: "beziers", nom: "Béziers", cp: "34500" },
+  { slug: "narbonne", nom: "Narbonne", cp: "11100" },
+  { slug: "carcassonne", nom: "Carcassonne", cp: "11000" },
+  { slug: "montauban", nom: "Montauban", cp: "82000" },
+  { slug: "albi", nom: "Albi", cp: "81000" },
+  { slug: "tarbes", nom: "Tarbes", cp: "65000" },
+  { slug: "gap", nom: "Gap", cp: "05000" },
+  { slug: "digne-les-bains", nom: "Digne-les-Bains", cp: "04000" },
+  { slug: "mende", nom: "Mende", cp: "48000" },
+  { slug: "foix", nom: "Foix", cp: "09000" },
+  { slug: "auch", nom: "Auch", cp: "32000" },
+  { slug: "cahors", nom: "Cahors", cp: "46000" },
+  { slug: "rodez", nom: "Rodez", cp: "12000" },
+  { slug: "aubenas", nom: "Aubenas", cp: "07200" },
+  // ── Nouvelle-Aquitaine ──
+  { slug: "bayonne", nom: "Bayonne", cp: "64100" },
+  { slug: "agen", nom: "Agen", cp: "47000" },
+  { slug: "perigueux", nom: "Périgueux", cp: "24000" },
+  { slug: "angouleme", nom: "Angoulême", cp: "16000" },
+  { slug: "niort", nom: "Niort", cp: "79000" },
+  { slug: "brive-la-gaillarde", nom: "Brive-la-Gaillarde", cp: "19100" },
+  { slug: "mont-de-marsan", nom: "Mont-de-Marsan", cp: "40000" },
+  { slug: "gueret", nom: "Guéret", cp: "23000" },
+  // ── Bretagne & Pays de la Loire ──
+  { slug: "quimper", nom: "Quimper", cp: "29000" },
+  { slug: "lorient", nom: "Lorient", cp: "56100" },
+  { slug: "vannes", nom: "Vannes", cp: "56000" },
+  { slug: "saint-malo", nom: "Saint-Malo", cp: "35400" },
+  { slug: "saint-brieuc", nom: "Saint-Brieuc", cp: "22000" },
+  { slug: "saint-nazaire", nom: "Saint-Nazaire", cp: "44600" },
+  { slug: "la-roche-sur-yon", nom: "La Roche-sur-Yon", cp: "85000" },
+  { slug: "laval", nom: "Laval", cp: "53000" },
+  // ── Centre-Val de Loire ──
+  { slug: "bourges", nom: "Bourges", cp: "18000" },
+  { slug: "chartres", nom: "Chartres", cp: "28000" },
+  { slug: "chateauroux", nom: "Châteauroux", cp: "36000" },
+  { slug: "blois", nom: "Blois", cp: "41000" },
+  // ── Auvergne-Rhône-Alpes ──
+  { slug: "valence", nom: "Valence", cp: "26000" },
+  { slug: "chambery", nom: "Chambéry", cp: "73000" },
+  { slug: "bourg-en-bresse", nom: "Bourg-en-Bresse", cp: "01000" },
+  { slug: "montlucon", nom: "Montluçon", cp: "03100" },
+  { slug: "aurillac", nom: "Aurillac", cp: "15000" },
+  { slug: "le-puy-en-velay", nom: "Le Puy-en-Velay", cp: "43000" },
+  // ── Bourgogne-Franche-Comté ──
+  { slug: "chalon-sur-saone", nom: "Chalon-sur-Saône", cp: "71100" },
+  { slug: "macon", nom: "Mâcon", cp: "71000" },
+  { slug: "nevers", nom: "Nevers", cp: "58000" },
+  { slug: "auxerre", nom: "Auxerre", cp: "89000" },
+  { slug: "belfort", nom: "Belfort", cp: "90000" },
+  { slug: "vesoul", nom: "Vesoul", cp: "70000" },
+  { slug: "dole", nom: "Dole", cp: "39100" },
+  // ── Grand Est ──
+  { slug: "colmar", nom: "Colmar", cp: "68000" },
+  { slug: "troyes", nom: "Troyes", cp: "10000" },
+  { slug: "thionville", nom: "Thionville", cp: "57100" },
+  { slug: "epinal", nom: "Épinal", cp: "88000" },
+  { slug: "charleville-mezieres", nom: "Charleville-Mézières", cp: "08000" },
+  { slug: "verdun", nom: "Verdun", cp: "55100" },
+  { slug: "chaumont", nom: "Chaumont", cp: "52000" },
+  // ── Normandie ──
+  { slug: "evreux", nom: "Évreux", cp: "27000" },
+  { slug: "cherbourg-en-cotentin", nom: "Cherbourg-en-Cotentin", cp: "50100" },
+  { slug: "alencon", nom: "Alençon", cp: "61000" },
+  // ── Corse ──
   { slug: "ajaccio", nom: "Ajaccio", cp: "20000" },
+  { slug: "bastia", nom: "Bastia", cp: "20200" },
+  // ── Outre-mer ──
+  { slug: "fort-de-france", nom: "Fort-de-France", cp: "97200" },
+  { slug: "pointe-a-pitre", nom: "Pointe-à-Pitre", cp: "97110" },
+  { slug: "saint-denis-reunion", nom: "Saint-Denis (La Réunion)", cp: "97400" },
+  { slug: "cayenne", nom: "Cayenne", cp: "97300" },
 ];
 
 export function villeBySlug(slug: string): Ville | undefined {
