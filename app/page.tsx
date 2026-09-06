@@ -1,3 +1,5 @@
+import { getT } from "@/lib/i18n/server";
+
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
@@ -237,8 +239,118 @@ const HOME_HTML = `
 </div></section>
 `;
 
+const HOME_HTML_EN = `
+<a href="/tarifs" class="promo"><span class="dot"></span>Launch offer — up to <b>−35&nbsp;%</b> on AVYORA Pro <span class="arr">· limited time →</span></a>
+<div class="wrap"><header class="hero"><div class="in">
+  <div class="eyebrow">Renovation estimator · France</div>
+  <h1>Stop signing your renovation<br><span class="hl">blind.</span></h1>
+  <p class="sub">In 3 minutes, know exactly what your renovation will cost — line by line, at your region's market price. <b style="color:#fff">Before</b> you spend the first euro.</p>
+  <div class="cta">
+    <a href="/projets/nouveau" class="btn btn-p">Estimate for free →</a>
+    <a href="/tarifs" class="btn btn-w">See pricing</a>
+  </div>
+  <div class="trust">
+    <span><b>173</b> price items</span><span><b>19</b> trades</span><span><b>2026</b> market prices</span><span><b>±15 %</b> margin</span>
+  </div>
+</div></header></div>
+
+<section class="blk"><div class="wrap">
+  <div class="center">
+    <p class="eyebrow">The real problem</p>
+    <h2>A renovation means thousands of euros committed in the dark.</h2>
+    <p>You sign quotes you can't really check. That's where budgets slip — fast, and without warning.</p>
+  </div>
+  <div class="pains">
+    <div class="pain"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h6M8 17h4"/></svg></span><h3>Unreadable quotes</h3><p>One lump sum, no way to tell if it's fair.</p></div>
+    <div class="pain"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><h3>Forgotten items</h3><p>They resurface mid-project — always pricier.</p></div>
+    <div class="pain"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M23 6l-9.5 9.5-5-5L1 18M17 6h6v6"/></svg></span><h3>Budgets that blow up</h3><p>+20, +30 % along the way, with no heads-up.</p></div>
+    <div class="pain"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg></span><h3>Zero comparison</h3><p>No market benchmark: you sign and cross your fingers.</p></div>
+  </div>
+</div></section>
+
+<section class="blk" style="padding-top:0"><div class="wrap">
+  <div class="center">
+    <p class="eyebrow">The solution</p>
+    <h2>Know where you're going, from day one.</h2>
+  </div>
+  <div class="steps">
+    <div class="stepc"><div class="n">1</div><h3>Describe your property</h3><p>4 questions, under 3 minutes. Type, area, scope, finish.</p></div>
+    <div class="stepc"><div class="n">2</div><h3>Get your range</h3><p>An instant budget, ±15 %, adjusted to your region's market price.</p></div>
+    <div class="stepc"><div class="n">3</div><h3>Refine line by line</h3><p>All 173 items, DIY vs. hire-out, and the PDF report — with AVYORA&nbsp;Pro.</p></div>
+  </div>
+</div></section>
+
+<section class="blk" style="padding-top:0"><div class="wrap">
+  <div class="center"><p class="eyebrow">Result preview · AVYORA Pro</p><h2>The detailed report, with Pro.</h2><p>A real costed document, line by line, unlocked with AVYORA&nbsp;Pro — example: 110 m² house in Bordeaux. The quick estimate (your range) stays free.</p></div>
+  <div class="doc"><img src="/exemple-rapport.png" alt="Example of a detailed AVYORA estimate report" width="1680" height="2356" loading="lazy"></div>
+  <div class="demo-cta"><a href="/projets/nouveau" class="btn btn-p">Estimate for free →</a></div>
+</div></section>
+
+<section class="blk" style="padding-top:0"><div class="wrap"><div class="roi"><div class="in">
+  <p class="eyebrow">Do the math</p>
+  <h2>€18.85/mo to steer an <span class="g">€80,000</span> project.</h2>
+  <div class="cmp">
+    <div class="cbox"><div class="k">Your renovation</div><div class="v">€80,000</div></div>
+    <div class="vs">vs</div>
+    <div class="cbox small"><div class="k">AVYORA Pro</div><div class="v">€18.85/mo</div></div>
+  </div>
+  <div class="pct">That's <b>0.02 %</b> of the budget to control all of it.</div>
+  <div class="punch">A <em>single forgotten item</em> in a quote often costs more than a <em>whole year</em> of AVYORA.</div>
+</div></div></div></section>
+
+<section class="blk" style="padding-top:0"><div class="wrap">
+  <div class="center">
+    <p class="eyebrow">Return on investment</p>
+    <h2>AVYORA saves you far more than it costs.</h2>
+    <p>Here's exactly where it pays for itself — from the very first project.</p>
+  </div>
+  <div class="eco">
+    <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><h3>Quantify your DIY savings</h3><p>Depending on what you do yourself, AVYORA shows how much you save on labor — <b>up to −55 %</b>.</p></div></div>
+    <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg></div><div><h3>Spot an overpriced quote</h3><p>Compare each item to the market price. A contractor +10 % on €50,000 is €5,000.</p></div></div>
+    <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div><h3>Negotiate — and borrow with confidence</h3><p>A PDF report costed line by line: to negotiate with your contractors, and to back your loan application at the bank.</p></div></div>
+    <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></div><div><h3>Plan for the unexpected</h3><p>A contingency allowance is built in: no more nasty surprises mid-project.</p></div></div>
+  </div>
+</div></section>
+
+<section class="blk" style="padding-top:0"><div class="wrap">
+  <div class="center"><p class="eyebrow">Why it's reliable</p><h2>Real prices, not a guess.</h2></div>
+  <div class="cred">
+    <div class="s"><div class="v">173</div><div class="l">costed price items</div></div>
+    <div class="s"><div class="v">19</div><div class="l">trades covered</div></div>
+    <div class="s"><div class="v">2026</div><div class="l">French market prices</div></div>
+    <div class="s"><div class="v">±15 %</div><div class="l">line-item accuracy</div></div>
+  </div>
+</div></section>
+
+<section class="blk" style="padding-top:0"><div class="wrap">
+  <div class="price">
+    <span class="lance">Launch offer · up to −35 %</span>
+    <h2>Free to estimate. Pro to unlock everything.</h2>
+    <div class="p"><s>€29</s><span class="big">€18.85</span> / month — detailed 173 items, PDF report, saving and project tracking.</div>
+    <div class="cta">
+      <a href="/tarifs" class="btn btn-o">Go Pro</a>
+      <a href="/tarifs" class="btn btn-w">See all plans</a>
+    </div>
+    <div class="reassure">
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Free to try</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>No commitment</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Cancel anytime</span>
+    </div>
+  </div>
+</div></section>
+
+<section class="blk" style="padding-top:0"><div class="wrap">
+  <div class="final">
+    <h2>Your renovation deserves better than a gut-feel quote.</h2>
+    <p>Start your first free estimate. In 3 minutes, you'll know where you're going.</p>
+    <div style="margin-top:26px"><a href="/projets/nouveau" class="btn btn-p" style="font-size:16px;padding:16px 32px">Estimate for free →</a></div>
+  </div>
+</div></section>
+`;
+
 export default async function Accueil({ searchParams }: { searchParams: Promise<{ compte?: string }> }) {
-  const { compte } = await searchParams;
+  const [{ compte }, { locale }] = await Promise.all([searchParams, getT()]);
+  const en = locale === "en";
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
@@ -247,11 +359,11 @@ export default async function Accueil({ searchParams }: { searchParams: Promise<
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
             <path d="M4 10.5 8 14l8-8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          Ton compte et toutes tes données ont bien été supprimés. À bientôt !
+          {en ? "Your account and all your data have been deleted. See you soon!" : "Ton compte et toutes tes données ont bien été supprimés. À bientôt !"}
         </div>
       )}
       <style dangerouslySetInnerHTML={{ __html: HOME_CSS }} />
-      <div className="av-home" dangerouslySetInnerHTML={{ __html: HOME_HTML }} />
+      <div className="av-home" dangerouslySetInnerHTML={{ __html: en ? HOME_HTML_EN : HOME_HTML }} />
     </>
   );
 }
