@@ -5,6 +5,9 @@ import { AuthNav } from "@/components/auth/AuthNav";
 import { MobileNav } from "@/components/MobileNav";
 import { FEATURES } from "@/lib/features";
 import { Analytics } from "@vercel/analytics/react";
+import { getT } from "@/lib/i18n/server";
+import { LangProvider } from "@/components/i18n/LangProvider";
+import LangSwitch from "@/components/i18n/LangSwitch";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -126,14 +129,15 @@ function Wordmark() {
   );
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { locale, t } = await getT();
   return (
     <html
-      lang="fr"
+      lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
@@ -141,6 +145,7 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
         />
+        <LangProvider locale={locale}>
         <header className="sticky top-0 z-40 bg-canvas px-3 pb-2 pt-3 sm:px-4 sm:pt-4">
           <div className="mx-auto flex h-16 max-w-5xl items-center justify-between rounded-2xl border border-white/10 bg-[#1E1B4B] px-4 shadow-[0_10px_30px_-12px_rgba(30,27,75,0.55)] sm:px-6">
             <Wordmark />
@@ -150,7 +155,7 @@ export default function RootLayout({
                 href="/projets"
                 className="rounded-lg px-3 py-1.5 text-indigo-200/90 transition-colors hover:bg-white/10 hover:text-white"
               >
-                Projets
+                {t.nav.projets}
               </Link>
               {FEATURES.artisans && (
                 <Link
@@ -162,7 +167,7 @@ export default function RootLayout({
               )}
               <AuthNav />
               <Link href="/projets/nouveau" className="btn btn-primary ml-1 py-2">
-                Nouveau projet
+                {t.nav.nouveauProjet}
               </Link>
             </nav>
 
@@ -177,23 +182,26 @@ export default function RootLayout({
 
         <footer className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6">
           <div className="border-t border-line pt-6">
-            <nav className="flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-muted">
-              <Link href="/guides" className="transition-colors hover:text-brand-700">Guides des prix</Link>
-              <Link href="/prix-renovation" className="transition-colors hover:text-brand-700">Prix par ville</Link>
-              <Link href="/mentions-legales" className="transition-colors hover:text-brand-700">Mentions légales</Link>
-              <Link href="/cgu" className="transition-colors hover:text-brand-700">CGU</Link>
-              <Link href="/cgv" className="transition-colors hover:text-brand-700">CGV</Link>
-              <Link href="/confidentialite" className="transition-colors hover:text-brand-700">Confidentialité</Link>
-              <Link href="/cookies" className="transition-colors hover:text-brand-700">Cookies</Link>
-              <Link href="/tarifs" className="transition-colors hover:text-brand-700">Tarifs</Link>
-            </nav>
+            <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3">
+              <nav className="flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-muted">
+                <Link href="/guides" className="transition-colors hover:text-brand-700">{t.footer.guides}</Link>
+                <Link href="/prix-renovation" className="transition-colors hover:text-brand-700">{t.footer.prixVille}</Link>
+                <Link href="/mentions-legales" className="transition-colors hover:text-brand-700">{t.footer.mentions}</Link>
+                <Link href="/cgu" className="transition-colors hover:text-brand-700">{t.footer.cgu}</Link>
+                <Link href="/cgv" className="transition-colors hover:text-brand-700">{t.footer.cgv}</Link>
+                <Link href="/confidentialite" className="transition-colors hover:text-brand-700">{t.footer.confidentialite}</Link>
+                <Link href="/cookies" className="transition-colors hover:text-brand-700">{t.footer.cookies}</Link>
+                <Link href="/tarifs" className="transition-colors hover:text-brand-700">{t.footer.tarifs}</Link>
+              </nav>
+              <LangSwitch tone="light" />
+            </div>
             <p className="mt-4 text-xs leading-relaxed text-faint">
-              © {new Date().getFullYear()} AVYORA · Estimations indicatives basées sur le référentiel de prix
-              AVYORA (France&nbsp;2026). À confirmer par des devis d&apos;artisans.
+              © {new Date().getFullYear()} AVYORA · {t.footer.tagline}
             </p>
           </div>
         </footer>
         <Analytics />
+        </LangProvider>
       </body>
     </html>
   );

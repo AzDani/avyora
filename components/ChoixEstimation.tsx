@@ -1,21 +1,23 @@
 import Link from "next/link";
+import { getT } from "@/lib/i18n/server";
 
 /**
  * Écran de choix au lancement d'une estimation : Rapide (gratuit) vs Détaillée (Pro).
  * `isPro` adapte la carte détaillée : accès direct pour les abonnés, upsell vers /tarifs sinon.
  * Point d'entrée du tunnel de vente : la carte Pro est visible par tous.
  */
-export default function ChoixEstimation({ isPro }: { isPro: boolean }) {
+export default async function ChoixEstimation({ isPro }: { isPro: boolean }) {
+  const { t: tr } = await getT();
+  const t = tr.choix;
+
   return (
     <div className="av-choix">
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
       <header className="animate-rise">
-        <p className="eyebrow">Nouvelle estimation</p>
-        <h1 className="ttl">Comment veux-tu estimer&nbsp;?</h1>
-        <p className="sub">
-          Deux façons d&apos;obtenir ton budget travaux. Commence rapide, affine quand tu veux — sans rien ressaisir.
-        </p>
+        <p className="eyebrow">{t.eyebrow}</p>
+        <h1 className="ttl">{t.titre}</h1>
+        <p className="sub">{t.sousTitre}</p>
       </header>
 
       <div className="grid">
@@ -25,18 +27,18 @@ export default function ChoixEstimation({ isPro }: { isPro: boolean }) {
             <span className="ico free" aria-hidden="true">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" fill="currentColor" /></svg>
             </span>
-            <span className="tag gratis">Gratuit</span>
+            <span className="tag gratis">{t.rapideTag}</span>
           </div>
-          <h2>Estimation rapide</h2>
-          <p className="lead">4 questions, une fourchette chiffrée immédiate. Idéal pour un premier ordre de grandeur.</p>
+          <h2>{t.rapideTitre}</h2>
+          <p className="lead">{t.rapideLead}</p>
           <ul>
-            <Li tone="free">Type de bien, surface, ampleur — en 3 min</Li>
-            <Li tone="free">Fourchette ±15 % adaptée à ton code postal</Li>
-            <Li tone="free">Sans inscription, résultat instantané</Li>
+            <Li tone="free">{t.rapideF1}</Li>
+            <Li tone="free">{t.rapideF2}</Li>
+            <Li tone="free">{t.rapideF3}</Li>
           </ul>
           <div className="spacer" />
-          <Link href="/projets/nouveau/rapide" className="btn btn-outline">Commencer gratuitement →</Link>
-          <p className="foot">Aucune carte requise</p>
+          <Link href="/projets/nouveau/rapide" className="btn btn-outline">{t.rapideCta}</Link>
+          <p className="foot">{t.rapideFoot}</p>
         </section>
 
         {/* DÉTAILLÉE — Pro */}
@@ -53,29 +55,29 @@ export default function ChoixEstimation({ isPro }: { isPro: boolean }) {
               Pro
             </span>
           </div>
-          <h2>Estimation détaillée</h2>
-          <p className="lead">Ajuste chaque poste et obtiens un devis précis, prêt à comparer avec les artisans.</p>
+          <h2>{t.detailTitre}</h2>
+          <p className="lead">{t.detailLead}</p>
           <ul>
-            <Li tone="pro">Poste par poste, quantités ajustables en direct</Li>
-            <Li tone="pro">Rapport PDF détaillé — qui fait quoi, budget par corps d&apos;état</Li>
-            <Li tone="pro">Suivi de chantier et modifications illimitées</Li>
+            <Li tone="pro">{t.detailF1}</Li>
+            <Li tone="pro">{t.detailF2}</Li>
+            <Li tone="pro">{t.detailF3}</Li>
           </ul>
           <div className="spacer" />
 
           {isPro ? (
             <>
-              <Link href="/projets/nouveau/detaille" className="btn btn-pro">Ajuster poste par poste →</Link>
+              <Link href="/projets/nouveau/detaille" className="btn btn-pro">{t.detailCtaPro}</Link>
               <p className="foot">
                 <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 1l2 4 4 .5-3 3 .8 4.3L8 11l-3.8 1.8L5 8.5 2 5.5 6 5l2-4Z" fill="var(--color-accent-500)" /></svg>
-                Inclus dans ton abonnement Pro
+                {t.detailFootPro}
               </p>
             </>
           ) : (
             <>
-              <Link href="/tarifs" className="btn btn-pro">Débloquer avec Pro →</Link>
+              <Link href="/tarifs" className="btn btn-pro">{t.detailCtaFree}</Link>
               <p className="foot">
                 <svg width="12" height="13" viewBox="0 0 14 16" fill="none"><path d="M3.5 7V5a3.5 3.5 0 1 1 7 0v2M2.5 7h9v6a1 1 0 0 1-1 1h-7a1 1 0 0 1-1-1V7Z" stroke="var(--color-faint)" strokeWidth="1.3" /></svg>
-                Fonctionnalité AVYORA Pro · <Link href="/tarifs" className="lien">Voir les offres</Link>
+                {t.detailFootFree} <Link href="/tarifs" className="lien">{t.detailFootLien}</Link>
               </p>
             </>
           )}
@@ -84,7 +86,7 @@ export default function ChoixEstimation({ isPro }: { isPro: boolean }) {
 
       <div className="hint">
         <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.4" /><path d="M10 9v5M10 6.2v.2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
-        <span>Pas sûr&nbsp;? Commence par l&apos;<b>estimation rapide</b> — tu pourras passer en détaillée à tout moment, tes réponses sont conservées.</span>
+        <span>{t.hintAvant}<b>{t.hintFort}</b>{t.hintApres}</span>
       </div>
     </div>
   );

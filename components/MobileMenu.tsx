@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { logout } from "@/lib/actions/auth";
+import { useT } from "@/components/i18n/LangProvider";
+import LangSwitch from "@/components/i18n/LangSwitch";
 
 /**
  * Menu de navigation mobile (< sm) : bouton hamburger + panneau déroulant.
@@ -11,12 +13,13 @@ import { logout } from "@/lib/actions/auth";
 export default function MobileMenu({ isLoggedIn, prenom }: { isLoggedIn: boolean; prenom?: string }) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
+  const t = useT();
 
   return (
     <div className="relative">
       <button
         type="button"
-        aria-label="Menu"
+        aria-label={t.nav.menu}
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
         className="grid h-9 w-9 place-items-center rounded-lg text-indigo-100 transition-colors hover:bg-white/10"
@@ -42,34 +45,39 @@ export default function MobileMenu({ isLoggedIn, prenom }: { isLoggedIn: boolean
               onClick={close}
               className="mb-1 flex items-center justify-center rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
             >
-              Nouveau projet
+              {t.nav.nouveauProjet}
             </Link>
             <Link href="/projets" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-surface-2">
-              Projets
+              {t.nav.projets}
             </Link>
             <Link href="/guides" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-surface-2">
-              Guides des prix
+              {t.nav.guides}
             </Link>
             <Link href="/tarifs" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-surface-2">
-              Tarifs
+              {t.nav.tarifs}
             </Link>
             <div className="my-1.5 border-t border-line" />
             {isLoggedIn ? (
               <>
                 <Link href="/mon-espace/compte" onClick={close} className="block truncate rounded-lg px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-surface-2">
-                  Mon compte{prenom ? ` · ${prenom}` : ""}
+                  {t.nav.monCompte}{prenom ? ` · ${prenom}` : ""}
                 </Link>
                 <form action={logout}>
                   <button type="submit" className="block w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium text-muted transition-colors hover:bg-surface-2">
-                    Déconnexion
+                    {t.nav.deconnexion}
                   </button>
                 </form>
               </>
             ) : (
               <Link href="/connexion" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-surface-2">
-                Connexion
+                {t.nav.connexion}
               </Link>
             )}
+            <div className="my-1.5 border-t border-line" />
+            <div className="flex items-center justify-between px-3 py-1.5">
+              <span className="text-xs font-medium text-faint">{t.langue.label}</span>
+              <LangSwitch tone="light" />
+            </div>
           </div>
         </>
       )}

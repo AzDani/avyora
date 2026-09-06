@@ -1,10 +1,13 @@
 import Link from "next/link";
+import { getT } from "@/lib/i18n/server";
 
 /**
  * Bannière d'upsell Pro affichée aux utilisateurs connectés NON abonnés (tunnel de vente).
  * Placée sur le portefeuille : rappelle la valeur du Pro et pousse vers /tarifs.
  */
-export default function ProUpsell() {
+export default async function ProUpsell() {
+  const { t: tr } = await getT();
+  const t = tr.upsell;
   return (
     <aside className="av-upsell">
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
@@ -12,21 +15,20 @@ export default function ProUpsell() {
       <div className="content">
         <span className="eb">
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 1l2 4 4 .5-3 3 .8 4.3L8 11l-3.8 1.8L5 8.5 2 5.5 6 5l2-4Z" fill="currentColor" /></svg>
-          AVYORA Pro
+          {t.eyebrow}
         </span>
-        <h2>Passe au niveau supérieur</h2>
+        <h2>{t.titre}</h2>
         <p className="txt">
-          Débloque l&apos;<b>estimation détaillée poste par poste</b>, le <b>rapport PDF</b> prêt à comparer avec les
-          artisans et le <b>suivi de chantier</b>. Estime juste, négocie mieux.
+          {t.texteAvant}<b>{t.texteFort1}</b>{t.texteMilieu}<b>{t.texteFort2}</b>{t.texteApres}<b>{t.texteFort3}</b>{t.texteFin}
         </p>
         <ul className="feats">
-          <li>Devis précis, poste par poste</li>
-          <li>Rapport PDF détaillé</li>
-          <li>Suivi de chantier illimité</li>
+          <li>{t.f1}</li>
+          <li>{t.f2}</li>
+          <li>{t.f3}</li>
         </ul>
         <div className="actions">
-          <Link href="/tarifs" className="btn-cta">Voir les offres Pro →</Link>
-          <span className="rassure">Sans engagement · résiliable en 3 clics</span>
+          <Link href="/tarifs" className="btn-cta">{t.cta}</Link>
+          <span className="rassure">{t.rassure}</span>
         </div>
       </div>
     </aside>
