@@ -135,8 +135,8 @@ function BodyAppartement() {
   return (
     <>
       <p className="lead">
-        En 2026, rénover un appartement coûte en moyenne <strong>{euro(g("rafraich").appartM2)}/m²</strong> pour un
-        rafraîchissement et jusqu&apos;à <strong>{euro(complete.appartM2)}/m²</strong> pour une{" "}
+        En 2026, rénover un appartement coûte en moyenne <strong>{euro(g("rafraich").appartM2)}/m²</strong>{" "}pour un
+        rafraîchissement et jusqu&apos;à <strong>{euro(complete.appartM2)}/m²</strong>{" "}pour une{" "}
         <strong>rénovation complète</strong> (finition standard, tout confié à des artisans). Le prix dépend surtout de
         l&apos;ampleur des travaux, de la finition et de la région.
       </p>
@@ -241,8 +241,8 @@ function BodyMaison() {
   return (
     <>
       <p className="lead">
-        En 2026, rénover une maison coûte en moyenne <strong>{euro(complete.maisonM2)}/m²</strong> pour une{" "}
-        <strong>rénovation complète</strong>, et jusqu&apos;à <strong>{euro(lourde.maisonM2)}/m²</strong> pour une{" "}
+        En 2026, rénover une maison coûte en moyenne <strong>{euro(complete.maisonM2)}/m²</strong>{" "}pour une{" "}
+        <strong>rénovation complète</strong>, et jusqu&apos;à <strong>{euro(lourde.maisonM2)}/m²</strong>{" "}pour une{" "}
         <strong>rénovation lourde</strong> incluant l&apos;enveloppe (toiture, façade, charpente). Plus cher qu&apos;un
         appartement, car la maison porte tout le bâti.
       </p>

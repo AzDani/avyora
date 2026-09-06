@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import { AuthNav } from "@/components/auth/AuthNav";
+import { MobileNav } from "@/components/MobileNav";
 import { FEATURES } from "@/lib/features";
 import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
@@ -143,7 +144,8 @@ export default function RootLayout({
         <header className="sticky top-0 z-40 bg-canvas px-3 pb-2 pt-3 sm:px-4 sm:pt-4">
           <div className="mx-auto flex h-16 max-w-5xl items-center justify-between rounded-2xl border border-white/10 bg-[#1E1B4B] px-4 shadow-[0_10px_30px_-12px_rgba(30,27,75,0.55)] sm:px-6">
             <Wordmark />
-            <nav className="flex items-center gap-1 text-sm">
+            {/* Desktop (≥ sm) : navigation inline */}
+            <nav className="hidden items-center gap-1 text-sm sm:flex">
               <Link
                 href="/projets"
                 className="rounded-lg px-3 py-1.5 text-indigo-200/90 transition-colors hover:bg-white/10 hover:text-white"
@@ -163,6 +165,11 @@ export default function RootLayout({
                 Nouveau projet
               </Link>
             </nav>
+
+            {/* Mobile (< sm) : menu hamburger */}
+            <div className="sm:hidden">
+              <MobileNav />
+            </div>
           </div>
         </header>
 
