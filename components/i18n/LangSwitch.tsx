@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { LOCALE_COOKIE, type Locale } from "@/lib/i18n/config";
+import { I18N_ENABLED, LOCALE_COOKIE, type Locale } from "@/lib/i18n/config";
 import { useLocale } from "./LangProvider";
 
 /**
@@ -11,6 +11,9 @@ import { useLocale } from "./LangProvider";
 export default function LangSwitch({ tone = "light" }: { tone?: "light" | "dark" }) {
   const router = useRouter();
   const locale = useLocale();
+
+  // i18n désactivée : on ne montre pas le sélecteur (le reste du code i18n reste en place).
+  if (!I18N_ENABLED) return null;
 
   function set(l: Locale) {
     if (l === locale) return;

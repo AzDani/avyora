@@ -5,6 +5,7 @@ import Link from "next/link";
 import { logout } from "@/lib/actions/auth";
 import { useT } from "@/components/i18n/LangProvider";
 import LangSwitch from "@/components/i18n/LangSwitch";
+import { I18N_ENABLED } from "@/lib/i18n/config";
 
 /**
  * Menu de navigation mobile (< sm) : bouton hamburger + panneau déroulant.
@@ -73,11 +74,15 @@ export default function MobileMenu({ isLoggedIn, prenom }: { isLoggedIn: boolean
                 {t.nav.connexion}
               </Link>
             )}
-            <div className="my-1.5 border-t border-line" />
-            <div className="flex items-center justify-between px-3 py-1.5">
-              <span className="text-xs font-medium text-faint">{t.langue.label}</span>
-              <LangSwitch tone="light" />
-            </div>
+            {I18N_ENABLED && (
+              <>
+                <div className="my-1.5 border-t border-line" />
+                <div className="flex items-center justify-between px-3 py-1.5">
+                  <span className="text-xs font-medium text-faint">{t.langue.label}</span>
+                  <LangSwitch tone="light" />
+                </div>
+              </>
+            )}
           </div>
         </>
       )}
