@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { LoginForm } from "@/components/auth/forms";
 import { getUser } from "@/lib/auth";
+import { getT } from "@/lib/i18n/server";
 
 export const metadata = { title: "Connexion — AVYORA" };
 
@@ -12,18 +13,19 @@ export default async function ConnexionPage({
   searchParams: Promise<{ next?: string; erreur?: string }>;
 }) {
   if (await getUser()) redirect("/projets");
-  const { next } = await searchParams;
+  const [{ next }, { t: tr }] = await Promise.all([searchParams, getT()]);
+  const t = tr.auth;
 
   return (
     <AuthShell
-      eyebrow="Ton espace"
-      titre="Connexion"
-      sousTitre="Retrouve tes projets, estimations et devis."
+      eyebrow={t.cxEyebrow}
+      titre={t.cxTitre}
+      sousTitre={t.cxSous}
       bas={
         <>
-          Pas encore de compte ?{" "}
+          {t.cxBasAvant}
           <Link href="/inscription" className="font-medium text-brand-600 hover:underline">
-            Créer un compte
+            {t.cxBasLien}
           </Link>
         </>
       }
