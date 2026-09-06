@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { suivre } from "@/lib/track";
+import { useT } from "@/components/i18n/LangProvider";
 
 /** CTA d'abonnement pour un utilisateur connecté : lance Stripe Checkout pour le plan donné. */
 export default function BoutonCheckout({ plan }: { plan: string }) {
+  const t = useT();
   const [busy, setBusy] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
 
@@ -24,9 +26,9 @@ export default function BoutonCheckout({ plan }: { plan: string }) {
         window.location.href = data.url as string; // redirection vers Stripe Checkout
         return;
       }
-      setErreur(data?.error || "Indisponible pour le moment.");
+      setErreur(data?.error || t.boutons.indisponible);
     } catch {
-      setErreur("Réseau indisponible. Réessaie.");
+      setErreur(t.boutons.reseau);
     } finally {
       setBusy(false);
     }
@@ -35,7 +37,7 @@ export default function BoutonCheckout({ plan }: { plan: string }) {
   return (
     <>
       <button onClick={sabonner} disabled={busy} className="btn btn-primary w-full justify-center py-2.5 disabled:opacity-60">
-        {busy ? "Redirection…" : "S'abonner"}
+        {busy ? t.boutons.redirection : t.boutons.sabonner}
       </button>
       {erreur && <p className="mt-2 text-center text-xs text-danger">{erreur}</p>}
     </>
