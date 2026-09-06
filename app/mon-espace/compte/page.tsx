@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getUser } from "@/lib/auth";
+import { getUser, estPro } from "@/lib/auth";
 import CompteActions from "@/components/CompteActions";
+import AbonnementSection from "@/components/AbonnementSection";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Mon compte — AVYORA" };
@@ -21,8 +22,10 @@ export default async function ComptePage() {
         </Link>
         <p className="eyebrow mt-3">Compte &amp; confidentialité</p>
         <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-ink">Mon compte</h1>
-        <p className="mt-1.5 text-[15px] text-muted">Gère tes données personnelles (portabilité et suppression).</p>
+        <p className="mt-1.5 text-[15px] text-muted">Gère ton compte et la suppression de tes données.</p>
       </header>
+
+      <AbonnementSection isPro={estPro(user)} />
 
       <CompteActions email={user.email ?? ""} />
     </div>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { SignupForm } from "@/components/auth/forms";
+import { EstimationRappel } from "@/components/auth/EstimationRappel";
 import { getUser } from "@/lib/auth";
 
 export const metadata = { title: "Créer un compte — AVYORA" };
@@ -23,6 +24,7 @@ export default async function InscriptionPage() {
         </>
       }
     >
+      <EstimationRappel />
       <SignupForm />
     </AuthShell>
   );

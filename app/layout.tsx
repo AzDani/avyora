@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import { AuthNav } from "@/components/auth/AuthNav";
-import { AdminLink } from "@/components/auth/AdminLink";
+import { FEATURES } from "@/lib/features";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -105,8 +106,8 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <header className="sticky top-0 z-40 bg-[#1E1B4B]/95 backdrop-blur-md supports-[backdrop-filter]:bg-[#1E1B4B]/85">
-          <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
+        <header className="sticky top-0 z-40 bg-canvas px-3 pb-2 pt-3 sm:px-4 sm:pt-4">
+          <div className="mx-auto flex h-16 max-w-5xl items-center justify-between rounded-2xl border border-white/10 bg-[#1E1B4B] px-4 shadow-[0_10px_30px_-12px_rgba(30,27,75,0.55)] sm:px-6">
             <Wordmark />
             <nav className="flex items-center gap-1 text-sm">
               <Link
@@ -115,30 +116,41 @@ export default function RootLayout({
               >
                 Projets
               </Link>
-              <Link
-                href="/artisans"
-                className="rounded-lg px-3 py-1.5 text-indigo-200/90 transition-colors hover:bg-white/10 hover:text-white"
-              >
-                Artisans
-              </Link>
-              <AdminLink />
+              {FEATURES.artisans && (
+                <Link
+                  href="/artisans"
+                  className="rounded-lg px-3 py-1.5 text-indigo-200/90 transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  Artisans
+                </Link>
+              )}
               <AuthNav />
               <Link href="/projets/nouveau" className="btn btn-primary ml-1 py-2">
                 Nouveau projet
               </Link>
             </nav>
           </div>
-          <div className="h-px w-full bg-gradient-to-r from-transparent via-[#8B5CF6]/40 to-transparent" />
         </header>
 
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">{children}</main>
 
         <footer className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6">
-          <div className="border-t border-line pt-6 text-xs leading-relaxed text-faint">
-            Estimations indicatives basées sur le référentiel de prix AVYORA v0
-            (France&nbsp;2026). À confirmer par des devis d&apos;artisans.
+          <div className="border-t border-line pt-6">
+            <nav className="flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-muted">
+              <Link href="/mentions-legales" className="transition-colors hover:text-brand-700">Mentions légales</Link>
+              <Link href="/cgu" className="transition-colors hover:text-brand-700">CGU</Link>
+              <Link href="/cgv" className="transition-colors hover:text-brand-700">CGV</Link>
+              <Link href="/confidentialite" className="transition-colors hover:text-brand-700">Confidentialité</Link>
+              <Link href="/cookies" className="transition-colors hover:text-brand-700">Cookies</Link>
+              <Link href="/tarifs" className="transition-colors hover:text-brand-700">Tarifs</Link>
+            </nav>
+            <p className="mt-4 text-xs leading-relaxed text-faint">
+              © {new Date().getFullYear()} AVYORA · Estimations indicatives basées sur le référentiel de prix
+              AVYORA (France&nbsp;2026). À confirmer par des devis d&apos;artisans.
+            </p>
           </div>
         </footer>
+        <Analytics />
       </body>
     </html>
   );

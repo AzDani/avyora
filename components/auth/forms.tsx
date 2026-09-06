@@ -49,6 +49,16 @@ export function LoginForm({ next }: { next?: string }) {
         </div>
         <input id="password" name="password" type="password" autoComplete="current-password" required className="input" placeholder="••••••••" />
       </div>
+      <label htmlFor="remember" className="flex cursor-pointer items-center gap-2 text-sm text-muted">
+        <input
+          id="remember"
+          name="remember"
+          type="checkbox"
+          defaultChecked
+          className="h-4 w-4 rounded border-line-strong text-brand-600 accent-brand-600"
+        />
+        Rester connecté
+      </label>
       <Submit pending={pending}>Se connecter</Submit>
     </form>
   );
@@ -72,6 +82,13 @@ export function SignupForm() {
         <label htmlFor="password" className="field-label">Mot de passe</label>
         <input id="password" name="password" type="password" autoComplete="new-password" required minLength={12} className="input" placeholder="12 caractères minimum" />
       </div>
+      <label htmlFor="accept" className="flex cursor-pointer items-start gap-2 text-[13px] leading-snug text-muted">
+        <input id="accept" name="accept" type="checkbox" required className="mt-0.5 h-4 w-4 shrink-0 rounded border-line-strong text-brand-600 accent-brand-600" />
+        <span>
+          J&apos;accepte les <Link href="/cgu" className="text-brand-600 hover:underline">conditions d&apos;utilisation</Link>{" "}
+          et la <Link href="/confidentialite" className="text-brand-600 hover:underline">politique de confidentialité</Link>.
+        </span>
+      </label>
       <Submit pending={pending}>Créer mon compte</Submit>
     </form>
   );

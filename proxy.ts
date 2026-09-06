@@ -11,6 +11,17 @@ import { createServerClient } from "@supabase/ssr";
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
+  // « Rester connecté » : si l'utilisateur a décoché (cookie av-remember="0"), les cookies d'auth
+  // rafraîchis restent des cookies de session (effacés à la fermeture du navigateur).
+  const remember = request.cookies.get("av-remember")?.value !== "0";
+  const withRemember = (o: Record<string, unknown>) => {
+    if (remember) return o;
+    const c = { ...o };
+    delete c.maxAge;
+    delete c.expires;
+    return c;
+  };
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -23,7 +34,7 @@ export async function proxy(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           response = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
+            response.cookies.set(name, value, withRemember(options as Record<string, unknown>))
           );
         },
       },

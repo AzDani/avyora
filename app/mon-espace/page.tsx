@@ -37,11 +37,10 @@ export default async function MonEspacePage() {
       </header>
 
       {actifs.length > 0 && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <KpiTile label="Projets actifs" value={`${kpi.nbActifs}`} />
-          <KpiTile label="Valeur travaux" value={`${euros(kpi.sumBas)} – ${euros(kpi.sumHaut)}`} accent />
+          <KpiTile label="Valeur travaux" value={euros(kpi.sumTravaux)} accent />
           <KpiTile label="Surface totale" value={`${kpi.sumSurface.toLocaleString("fr-FR")} m²`} />
-          <KpiTile label="Devis analysés" value={`${kpi.nbDevisTotal}`} />
         </div>
       )}
 
@@ -92,65 +91,28 @@ function KpiTile({ label, value, accent }: { label: string; value: string; accen
   );
 }
 
-const JALONS: { cle: keyof ProjetStatut["avancement"]; label: string }[] = [
-  { cle: "metre", label: "Métré" },
-  { cle: "chantier", label: "Chantier" },
-  { cle: "devis", label: "Devis" },
-  { cle: "rentabilite", label: "Rentabilité" },
-];
-
 function ProjetCard({ s }: { s: ProjetStatut }) {
   const p = s.projet;
   return (
     <Link href={`/projets/${p.id}`} className="card card-interactive group flex flex-col gap-4 p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-field bg-brand-50 text-brand-600">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d={ICONES[p.type_bien] ?? ICONES.appartement} stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </span>
-          <div className="min-w-0">
-            <h3 className="truncate font-semibold text-ink">{p.nom}</h3>
-            <div className="mt-1 flex flex-wrap gap-1.5">
-              <span className="chip capitalize">{p.type_bien}</span>
-              <span className="chip num">{p.surface} m²</span>
-              <span className="chip num">{p.code_postal}</span>
-            </div>
+      <div className="flex items-center gap-3">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-field bg-brand-50 text-brand-600">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d={ICONES[p.type_bien] ?? ICONES.appartement} stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </span>
+        <div className="min-w-0">
+          <h3 className="truncate font-semibold text-ink">{p.nom}</h3>
+          <div className="mt-1 flex flex-wrap gap-1.5">
+            <span className="chip capitalize">{p.type_bien}</span>
+            <span className="chip num">{p.surface} m²</span>
+            <span className="chip num">{p.code_postal}</span>
           </div>
         </div>
-        {s.nbDevis > 0 && <span className="chip shrink-0">{s.nbDevis} devis</span>}
       </div>
-
       <div>
         <p className="eyebrow">Estimation travaux</p>
-        <p className="data mt-0.5 text-lg font-semibold text-ink">
-          {euros(s.totalBas)} <span className="text-faint">–</span> {euros(s.totalHaut)}
-        </p>
-      </div>
-
-      {/* Avancement : barre + jalons */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-faint">Avancement</span>
-          <span className="num font-medium text-muted">{s.pctAvancement}%</span>
-        </div>
-        <div className="h-1.5 overflow-hidden rounded-full bg-line">
-          <div className="h-full rounded-full bg-brand-500 transition-all" style={{ width: `${Math.max(6, s.pctAvancement)}%` }} />
-        </div>
-        <div className="flex flex-wrap gap-1.5 pt-1">
-          {JALONS.map((j) => {
-            const ok = s.avancement[j.cle];
-            return (
-              <span
-                key={j.cle}
-                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${ok ? "bg-positive-soft text-positive" : "bg-surface-2 text-faint"}`}
-              >
-                {ok ? "✓" : "○"} {j.label}
-              </span>
-            );
-          })}
-        </div>
+        <p className="data mt-0.5 text-lg font-semibold text-ink">{euros(s.ttc)} <span className="text-faint text-sm font-normal">TTC</span></p>
       </div>
     </Link>
   );

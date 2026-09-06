@@ -20,9 +20,10 @@ const LIMITERS: Record<LimitKind, Ratelimit | null> = {
   auth: make(Ratelimit.slidingWindow(6, "60 s")), // 6 tentatives / min / IP
   api: make(Ratelimit.slidingWindow(40, "60 s")), // 40 req / min
   ia: make(Ratelimit.slidingWindow(8, "60 s")), // 8 analyses IA / min
+  pdf: make(Ratelimit.slidingWindow(5, "60 s")), // 5 PDF / min (génération Chrome headless = coûteux)
 };
 
-export type LimitKind = "auth" | "api" | "ia";
+export type LimitKind = "auth" | "api" | "ia" | "pdf";
 
 /** IP client (best-effort) depuis les en-têtes de proxy. */
 export async function clientIp(): Promise<string> {

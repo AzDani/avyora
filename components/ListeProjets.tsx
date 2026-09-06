@@ -4,16 +4,20 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+export type StatutChantier = "estimation" | "en_cours" | "termine";
+
 export type ProjetCarte = {
   id: number | string;
   nom: string;
   type_bien: string;
   surface: number;
   code_postal: string;
-  nbDevis: number;
-  totalBas: number;
-  totalHaut: number;
+  ttc: number;
   archived: boolean;
+  eurM2: number;
+  statut: StatutChantier;
+  donePct: number;
+  progPct: number;
 };
 
 function euros(n: number): string {
@@ -49,6 +53,22 @@ function IconBien({ type }: { type: string }) {
   );
 }
 
+function StatutBadge({ statut, archived }: { statut: StatutChantier; archived: boolean }) {
+  const cfg = archived
+    ? { cls: "bg-surface-2 text-faint", dot: "bg-line-strong", label: "Archivé" }
+    : statut === "termine"
+      ? { cls: "bg-positive-soft text-positive", dot: "bg-positive", label: "Terminé" }
+      : statut === "en_cours"
+        ? { cls: "bg-warning-soft text-warning", dot: "bg-[#efb44d]", label: "En cours" }
+        : { cls: "bg-brand-50 text-brand-600", dot: "bg-brand-600", label: "Estimation" };
+  return (
+    <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${cfg.cls}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
+      {cfg.label}
+    </span>
+  );
+}
+
 export default function ListeProjets({
   projets,
   archives,
@@ -60,6 +80,7 @@ export default function ListeProjets({
   const [selection, setSelection] = useState<Set<number | string>>(new Set());
   const [modeSelection, setModeSelection] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [confirmSuppr, setConfirmSuppr] = useState(false);
 
   const archiveIds = new Set(archives.map((a) => a.id));
   const toutArchive = selection.size > 0 && [...selection].every((id) => archiveIds.has(id));
@@ -73,17 +94,14 @@ export default function ListeProjets({
     });
   }
 
+  // Suppression groupée : confirmation EN LIGNE (2 clics), pas de window.confirm (bloqué en iframe sandbox).
   async function supprimerSelection() {
-    if (
-      !confirm(
-        `Supprimer définitivement ${selection.size} projet${selection.size > 1 ? "s" : ""} et tout leur contenu (devis, dépenses, métré) ?`
-      )
-    )
-      return;
+    if (!confirmSuppr) { setConfirmSuppr(true); return; }
     setBusy(true);
     await Promise.all([...selection].map((id) => fetch(`/api/projects/${id}`, { method: "DELETE" })));
     setSelection(new Set());
     setModeSelection(false);
+    setConfirmSuppr(false);
     setBusy(false);
     router.refresh();
   }
@@ -124,28 +142,12 @@ export default function ListeProjets({
             <IconBien type={p.type_bien} />
           </span>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="truncate font-semibold text-ink">{p.nom}</h3>
-              <span className="chip shrink-0 !text-faint">
-                {p.nbDevis} devis
-              </span>
-            </div>
+            <h3 className="truncate font-semibold text-ink">{p.nom}</h3>
             <div className="mt-2 flex flex-wrap gap-1.5">
               <span className="chip capitalize">{p.type_bien}</span>
               <span className="chip num">{p.surface} m²</span>
               <span className="chip num">{p.code_postal}</span>
             </div>
-          </div>
-        </div>
-
-        <div className="my-4 h-px bg-line" />
-
-        <div className="flex items-end justify-between gap-3">
-          <div>
-            <p className="eyebrow">Estimation travaux</p>
-            <p className="data mt-1 text-[17px] font-semibold text-ink">
-              {euros(p.totalBas)} <span className="text-faint">–</span> {euros(p.totalHaut)}
-            </p>
           </div>
           {!modeSelection && (
             <svg
@@ -157,12 +159,42 @@ export default function ListeProjets({
             </svg>
           )}
         </div>
+
+        {!p.archived && p.statut !== "estimation" && (
+          <div className="mt-3.5">
+            <div className="mb-1.5 flex items-center justify-between text-[10.5px] text-faint">
+              <span>{p.statut === "termine" ? "Chantier terminé" : "Chantier en cours"}</span>
+              <b className="data font-semibold text-muted">{p.donePct} %</b>
+            </div>
+            <div className="flex h-1.5 overflow-hidden rounded-full bg-line">
+              <span className="bg-positive" style={{ width: p.donePct + "%" }} />
+              <span className="bg-[#efb44d]" style={{ width: p.progPct + "%" }} />
+            </div>
+          </div>
+        )}
+
+        <div className="my-4 h-px bg-line" />
+
+        <div className="flex items-end justify-between gap-3">
+          <div className="min-w-0">
+            <p className="eyebrow">Estimation travaux</p>
+            <p className="data mt-1 text-[17px] font-semibold text-ink">
+              {euros(p.ttc)} <span className="text-faint text-sm font-normal">TTC</span>
+            </p>
+            {p.surface > 0 && (
+              <p className="mt-0.5 text-[11.5px] text-muted">
+                ≈ <b className="data font-semibold text-ink">{Math.round(p.eurM2).toLocaleString("fr-FR")}</b> €/m²
+              </p>
+            )}
+          </div>
+          <StatutBadge statut={p.statut} archived={p.archived} />
+        </div>
       </>
     );
 
-    const base = `group card p-5 ${p.archived ? "opacity-70 hover:opacity-100" : ""} ${
-      coche ? "!border-brand-500 ring-2 ring-brand-500/20" : ""
-    }`;
+    const base = `group relative overflow-hidden card p-5 transition-all duration-200 before:absolute before:inset-y-0 before:left-0 before:w-[3px] before:bg-gradient-to-b before:from-brand-600 before:to-accent-600 before:opacity-0 before:transition-opacity before:content-[''] hover:before:opacity-100 ${
+      p.archived ? "opacity-70 hover:opacity-100" : ""
+    } ${coche ? "!border-brand-500 ring-2 ring-brand-500/20" : "hover:-translate-y-0.5"}`;
 
     if (modeSelection) {
       return (
@@ -195,7 +227,7 @@ export default function ListeProjets({
                 {toutArchive ? "Désarchiver" : "Archiver"} ({selection.size})
               </button>
               <button onClick={supprimerSelection} disabled={busy} className="btn btn-danger py-1.5 text-[13px]">
-                {busy ? "…" : `Supprimer (${selection.size})`}
+                {busy ? "Suppression…" : confirmSuppr ? `Confirmer la suppression (${selection.size}) ?` : `Supprimer (${selection.size})`}
               </button>
             </>
           )}
@@ -208,6 +240,14 @@ export default function ListeProjets({
           >
             {modeSelection ? "Annuler" : "Sélectionner"}
           </button>
+          {!modeSelection && (
+            <Link href="/projets/nouveau" className="btn btn-primary py-1.5 text-[13px]">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M8 3.2v9.6M3.2 8h9.6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+              </svg>
+              Nouveau projet
+            </Link>
+          )}
         </div>
       </div>
 

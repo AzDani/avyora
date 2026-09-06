@@ -27,6 +27,8 @@ export const projetPatchSchema = z.union([
     codePostal: z.string().regex(/^\d{5}$/),
     reponses,
   }),
+  // Renommage seul (le nom auto « Rénovation — … » peut être remplacé par un libellé libre).
+  z.object({ nom: z.string().trim().min(1).max(120) }).strict(),
 ]);
 
 export const pieceSchema = z.object({

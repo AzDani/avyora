@@ -9,20 +9,6 @@ export default function CompteActions({ email }: { email: string }) {
 
   return (
     <div className="space-y-6">
-      {/* Export RGPD */}
-      <section className="card p-5">
-        <h2 className="font-semibold text-ink">Exporter mes données</h2>
-        <p className="mt-1 text-sm text-muted">
-          Télécharge l&apos;ensemble de tes données (compte, projets, estimations, devis…) au format JSON.
-        </p>
-        <a href="/api/mon-compte/export" className="btn btn-outline mt-3 py-2" download>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M8 2v8m0 0 3-3m-3 3L5 7M3 13h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          Télécharger mes données
-        </a>
-      </section>
-
       {/* Suppression RGPD */}
       <section className="card border-danger/25 p-5">
         <h2 className="font-semibold text-danger">Supprimer mon compte</h2>

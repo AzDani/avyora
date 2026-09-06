@@ -34,6 +34,23 @@ export async function getAdmin() {
 }
 
 /**
+ * Statut Pro (abonné) — débloque l'estimateur détaillé, l'export PDF, la sauvegarde et le suivi.
+ * Ordre : plan Stripe (`app_metadata.plan === 'pro'`, futur webhook) → allow-list PRO_EMAILS
+ * (accès manuel en attendant Stripe) → admins Pro d'office. Sans rien → free (fail-safe).
+ */
+export function estPro(user: User | null): boolean {
+  if (!user) return false;
+  if (estAdmin(user)) return true;
+  const plan = (user.app_metadata as { plan?: string } | undefined)?.plan;
+  if (plan === "pro") return true;
+  const allow = (process.env.PRO_EMAILS ?? "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  return !!user.email && allow.includes(user.email.toLowerCase());
+}
+
+/**
  * Garde pour les route handlers admin : renvoie une réponse 401/403 à retourner tel quel,
  * ou null si l'appelant est bien administrateur. Génériques (pas de fuite d'info).
  */

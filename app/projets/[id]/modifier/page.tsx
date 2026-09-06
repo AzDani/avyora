@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import ParcoursForm from "@/components/ParcoursForm";
-import { getParcoursComplet } from "@/lib/parcours-db";
+import Estimateur from "@/components/Estimateur";
 import { getProjet } from "@/lib/data/projects";
 
 export const dynamic = "force-dynamic";
 
+// Édition = le même parcours v2 que la création, pré-rempli avec les réponses enregistrées.
+// On enregistre par-dessus le projet existant (PATCH) au lieu d'en créer un nouveau.
 export default async function ModifierProjet({
   params,
 }: {
@@ -28,19 +29,9 @@ export default async function ModifierProjet({
           Retour au projet
         </Link>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink">Modifier l&apos;estimation</h1>
-        <p className="mt-1.5 text-[15px] text-muted">{projet.nom}</p>
+        <p className="mt-1.5 text-[15px] text-muted">{projet.nom} — ajuste ta saisie, tes choix sont déjà là.</p>
       </header>
-      <ParcoursForm
-        parcours={await getParcoursComplet()}
-        edit={{
-          id: projet.id,
-          nom: projet.nom,
-          typeBien: projet.type_bien,
-          surface: projet.surface,
-          codePostal: projet.code_postal,
-          reponses: projet.reponses,
-        }}
-      />
+      <Estimateur initialState={(projet.reponses as Record<string, unknown>) ?? {}} projectId={projet.id} />
     </div>
   );
 }

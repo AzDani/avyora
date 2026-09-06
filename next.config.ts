@@ -18,11 +18,11 @@ const supabaseWs = supabaseHost ? `wss://${supabaseHost}` : "";
  */
 const csp = [
   `default-src 'self'`,
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com${isDev ? " 'unsafe-eval'" : ""}`,
   `style-src 'self' 'unsafe-inline'`,
   `img-src 'self' data: blob:`,
   `font-src 'self'`,
-  `connect-src 'self' ${supabaseHttp} ${supabaseWs}${isDev ? " ws: http://localhost:*" : ""}`.trim(),
+  `connect-src 'self' https://va.vercel-scripts.com ${supabaseHttp} ${supabaseWs}${isDev ? " ws: http://localhost:*" : ""}`.trim(),
   `frame-ancestors 'none'`,
   `base-uri 'self'`,
   `form-action 'self'`,
@@ -42,7 +42,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["pdf-parse"],
+  serverExternalPackages: ["pdf-parse", "puppeteer-core", "@sparticuz/chromium"],
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
