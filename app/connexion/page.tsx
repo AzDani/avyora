@@ -11,7 +11,7 @@ export default async function ConnexionPage({
 }: {
   searchParams: Promise<{ next?: string; erreur?: string }>;
 }) {
-  if (await getUser()) redirect("/mon-espace");
+  if (await getUser()) redirect("/projets");
   const { next } = await searchParams;
 
   return (

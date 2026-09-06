@@ -78,13 +78,13 @@ export default function OnboardingForm() {
     setBusy(true);
     const data: ProfilData = { tuEs, objectif, maturite, region, age, canal };
     try { await enregistrerProfil(data); } catch { /* best-effort */ }
-    router.push("/mon-espace");
+    router.push("/projets");
   }
   async function passer() {
     if (busy) return;
     setBusy(true);
     try { await sauterOnboarding(); } catch { /* noop */ }
-    router.push("/mon-espace");
+    router.push("/projets");
   }
 
   return (

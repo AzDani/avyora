@@ -50,7 +50,7 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const estPrive =
     pathname.startsWith("/mon-espace") ||
-    (pathname.startsWith("/projets") && pathname !== "/projets/nouveau") ||
+    (pathname.startsWith("/projets") && !pathname.startsWith("/projets/nouveau")) ||
     pathname.startsWith("/artisans") ||
     pathname.startsWith("/admin");
 
@@ -73,7 +73,7 @@ export async function proxy(request: NextRequest) {
     const estAdmin = !!user?.email && allow.includes(user.email.toLowerCase());
     if (!estAdmin) {
       const url = request.nextUrl.clone();
-      url.pathname = "/mon-espace";
+      url.pathname = "/projets";
       url.search = "";
       return NextResponse.redirect(url);
     }

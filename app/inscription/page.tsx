@@ -8,7 +8,7 @@ import { getUser } from "@/lib/auth";
 export const metadata = { title: "Créer un compte — AVYORA" };
 
 export default async function InscriptionPage() {
-  if (await getUser()) redirect("/mon-espace");
+  if (await getUser()) redirect("/projets");
 
   return (
     <AuthShell

@@ -3,6 +3,8 @@ import { listProjets, type Projet } from "@/lib/data/projects";
 import { estimationProjet, avancementProjet } from "@/lib/estimateur";
 import ListeProjets, { type ProjetCarte } from "@/components/ListeProjets";
 import ClaimDraft from "@/components/ClaimDraft";
+import ProUpsell from "@/components/ProUpsell";
+import { getUser, estPro } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +31,8 @@ function euros(n: number): string {
 }
 
 export default async function ProjetsPage() {
-  const [actifs, archivesRows] = await Promise.all([listProjets(false), listProjets(true)]);
+  const [user, actifs, archivesRows] = await Promise.all([getUser(), listProjets(false), listProjets(true)]);
+  const isPro = !!user && estPro(user);
   const projets = actifs.map(versCarte);
   const archives = archivesRows.map(versCarte);
   const sumTravaux = projets.reduce((s, p) => s + p.ttc, 0);
@@ -72,6 +75,8 @@ export default async function ProjetsPage() {
           </p>
         </header>
       )}
+
+      {!isPro && <ProUpsell />}
 
       <ListeProjets projets={projets} archives={archives} />
 

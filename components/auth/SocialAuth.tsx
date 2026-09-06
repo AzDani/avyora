@@ -8,7 +8,7 @@ import { supabaseBrowser } from "@/lib/supabase/browser";
  * Nécessite que les providers soient activés côté Supabase (Google Cloud / Apple Developer).
  * Tant qu'ils ne le sont pas, le clic affiche un message clair au lieu de planter.
  */
-export function SocialAuth({ next = "/mon-espace" }: { next?: string }) {
+export function SocialAuth({ next = "/projets" }: { next?: string }) {
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState<"google" | "apple" | null>(null);
 

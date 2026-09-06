@@ -33,7 +33,7 @@ function cleanEmail(v: FormDataEntryValue | null) {
 export async function login(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const email = cleanEmail(formData.get("email"));
   const password = String(formData.get("password") ?? "");
-  const next = String(formData.get("next") ?? "/mon-espace");
+  const next = String(formData.get("next") ?? "/projets");
   const remember = String(formData.get("remember") ?? "") === "on"; // case cochée par défaut
   if (!email || !password) return { error: "Renseigne ton email et ton mot de passe." };
   if (!(await limiteAuthOk())) return { error: TROP_DE_TENTATIVES };
@@ -52,7 +52,7 @@ export async function login(_prev: AuthState, formData: FormData): Promise<AuthS
   else cookieStore.set("av-remember", "0", { path: "/", httpOnly: true, sameSite: "lax" }); // cookie de session
 
   await journaliser("connexion_reussie", { userId: data.user?.id, email });
-  redirect(next.startsWith("/") ? next : "/mon-espace");
+  redirect(next.startsWith("/") ? next : "/projets");
 }
 
 // ── Inscription ──
@@ -110,7 +110,7 @@ export async function updatePassword(_prev: AuthState, formData: FormData): Prom
       : error.message };
   }
   await journaliser("mot_de_passe_change", { userId: data.user?.id, email: data.user?.email });
-  redirect("/mon-espace");
+  redirect("/projets");
 }
 
 // ── Déconnexion ──

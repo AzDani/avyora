@@ -14,11 +14,11 @@ export default async function ComptePage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <header className="animate-rise">
-        <Link href="/mon-espace" className="inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-brand-700">
+        <Link href="/projets" className="inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-brand-700">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path d="M10 3.5 5.5 8l4.5 4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          Mon espace
+          Mes projets
         </Link>
         <p className="eyebrow mt-3">Compte &amp; confidentialité</p>
         <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-ink">Mon compte</h1>
