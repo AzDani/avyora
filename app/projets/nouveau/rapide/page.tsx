@@ -1,13 +1,16 @@
 import Link from "next/link";
 import EstimateurRapide from "@/components/EstimateurRapide";
 import { getT } from "@/lib/i18n/server";
+import { getUser, estPro } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 // Estimation rapide (< 3 min), gratuite. « Affiner » ouvre le détaillé (/detaille).
+// L'assemblage multi-pièces (2 types de pièces différents) est réservé au Pro.
 export default async function NouveauProjetRapide() {
-  const { t: tr } = await getT();
+  const [{ t: tr }, user] = await Promise.all([getT(), getUser()]);
   const t = tr.rapide;
+  const isPro = !!user && estPro(user);
   return (
     <div className="space-y-6">
       <header className="animate-rise">
@@ -18,7 +21,7 @@ export default async function NouveauProjetRapide() {
         <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-ink">{t.pageTitre}</h1>
         <p className="mt-1.5 text-[15px] text-muted">{t.pageSous}</p>
       </header>
-      <EstimateurRapide />
+      <EstimateurRapide isPro={isPro} />
     </div>
   );
 }

@@ -6,6 +6,7 @@
  */
 import { useMemo, useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   CATALOG, buildDevis, presetRapide, presetPieces, AMPLEURS, regionCoef,
   type Ampleur, type QuiRealise, type TypeBien, type Finition, type PieceKey, type PieceSel,
@@ -139,6 +140,8 @@ const RAPIDE_CSS = `
 .av-rapide .prm{width:26px;height:26px;border:0;background:transparent;color:var(--faint);font-size:14px;cursor:pointer;border-radius:6px}
 .av-rapide .prm:hover{background:var(--line);color:var(--ink)}
 .av-rapide .psum{padding:9px 12px;font-size:12px;color:var(--muted);background:var(--surface)}
+.av-rapide .amt .lock{font-family:var(--font-geist-sans);font-weight:600;font-size:11px;color:var(--accent-600);background:var(--brand-50);padding:2px 9px;border-radius:999px;letter-spacing:.02em}
+.av-rapide-live a.cta{text-decoration:none;display:inline-flex;align-items:center}
 @media(max-width:520px){.av-rapide .prow{flex-wrap:wrap}.av-rapide .prow .pname{flex-basis:100%}}
 @media (prefers-reduced-motion:reduce){.av-rapide *,.av-rapide-live *{transition:none!important}}
 `;
@@ -178,7 +181,7 @@ const QUIS: { v: QuiRealise; lvl: number }[] = [
   { v: "max", lvl: 3 },
 ];
 
-export default function EstimateurRapide() {
+export default function EstimateurRapide({ isPro = false }: { isPro?: boolean }) {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("bien");
   const [type, setType] = useState<TypeBien>("Maison");
@@ -242,6 +245,9 @@ export default function EstimateurRapide() {
 
   // ── Gestion des pièces (mode multi) ──
   const nbPieces = pieces.reduce((s, r) => s + r.qty, 0);
+  // Assemblage de pièces DIFFÉRENTES (2+ types) = réservé au Pro (paywall doux sur le résultat).
+  const multiPieces = mode === "pieces" && pieces.length >= 2;
+  const locked = multiPieces && !isPro;
   function ajouterPiece(k: PieceKey) {
     setMode("pieces");
     setPieces((prev) => {
@@ -362,7 +368,7 @@ export default function EstimateurRapide() {
                   </span>
                   <span className="t">{al.label}</span>
                   <span className="d">{al.desc}</span>
-                  <span className="amt">≈ <b>{(m2ByAmp[a.v] || 0).toLocaleString(nf)} €</b> / m²</span>
+                  <span className="amt">{locked ? <span className="lock">🔒 Pro</span> : <>≈ <b>{(m2ByAmp[a.v] || 0).toLocaleString(nf)} €</b> / m²</>}</span>
                 </button>
               );
             })}
@@ -383,7 +389,7 @@ export default function EstimateurRapide() {
                 <span className="eye">{fi.eye}</span>
                 <span className="t">{fi.label}</span>
                 <span className="d">{fi.desc}</span>
-                <span className="amt">≈ <b>{(m2ByFin[f.v] || 0).toLocaleString(nf)} €</b> / m²</span>
+                <span className="amt">{locked ? <span className="lock">🔒 Pro</span> : <>≈ <b>{(m2ByFin[f.v] || 0).toLocaleString(nf)} €</b> / m²</>}</span>
               </button>
               );
             })}
@@ -408,8 +414,8 @@ export default function EstimateurRapide() {
                   <span className="t">{qi.label}</span>
                   <span className="d">{qi.desc}</span>
                   <span className="amt">
-                    <span className="p">≈ <b>{price.toLocaleString(nf)} €</b> / m²</span>
-                    {pct > 0 && <span className="save">−{pct} %</span>}
+                    {locked ? <span className="lock">🔒 Pro</span> : <span className="p">≈ <b>{price.toLocaleString(nf)} €</b> / m²</span>}
+                    {!locked && pct > 0 && <span className="save">−{pct} %</span>}
                   </span>
                 </button>
               );
@@ -420,18 +426,33 @@ export default function EstimateurRapide() {
         <p className="intro">{t.intro}</p>
       </div>
 
-      <div className="av-rapide-live">
+      <div className={"av-rapide-live" + (locked ? " lk" : "")}>
         <div className="in">
-          <div>
-            <div className="lbl">{t.liveLabel}</div>
-            <div className="big">{valid ? <><CountUp value={lo} nf={nf} /> €<span style={{ opacity: .55 }}> – </span><CountUp value={hi} nf={nf} /> €</> : "—"}</div>
-            <div className="sub">{valid ? <>≈ <CountUp value={m2} nf={nf} /> €/m² · {ampName} · ±15 %{regLabel ? <> · {regLabel}</> : ""}</> : (mode === "pieces" ? "Ajoute une pièce" : t.renseigneSurface)}</div>
-          </div>
-          <div className="btns">
-            <button className="ghost" onClick={affiner}>{t.affiner}</button>
-            <button className="cta" onClick={enregistrer} disabled={saving}>{saving ? t.enregistrement : t.enregistrer}</button>
-          </div>
-          {erreur && <div className="err">{erreur}</div>}
+          {locked ? (
+            <>
+              <div>
+                <div className="lbl">Multi-pièces · AVYORA Pro</div>
+                <div className="big">🔒 {nbPieces} pièces à chiffrer</div>
+                <div className="sub">Combine plusieurs pièces en un seul projet chiffré avec AVYORA&nbsp;Pro. Une pièce seule reste gratuite.</div>
+              </div>
+              <div className="btns">
+                <Link className="cta" href="/tarifs">Débloquer avec Pro →</Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <div className="lbl">{t.liveLabel}</div>
+                <div className="big">{valid ? <><CountUp value={lo} nf={nf} /> €<span style={{ opacity: .55 }}> – </span><CountUp value={hi} nf={nf} /> €</> : "—"}</div>
+                <div className="sub">{valid ? <>≈ <CountUp value={m2} nf={nf} /> €/m² · {ampName} · ±15 %{regLabel ? <> · {regLabel}</> : ""}</> : (mode === "pieces" ? "Ajoute une pièce" : t.renseigneSurface)}</div>
+              </div>
+              <div className="btns">
+                <button className="ghost" onClick={affiner}>{t.affiner}</button>
+                <button className="cta" onClick={enregistrer} disabled={saving}>{saving ? t.enregistrement : t.enregistrer}</button>
+              </div>
+              {erreur && <div className="err">{erreur}</div>}
+            </>
+          )}
         </div>
       </div>
     </>
