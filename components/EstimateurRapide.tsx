@@ -140,6 +140,7 @@ const RAPIDE_CSS = `
 .av-rapide .prm{width:26px;height:26px;border:0;background:transparent;color:var(--faint);font-size:14px;cursor:pointer;border-radius:6px}
 .av-rapide .prm:hover{background:var(--line);color:var(--ink)}
 .av-rapide .psum{padding:9px 12px;font-size:12px;color:var(--muted);background:var(--surface)}
+.av-rapide .psum .hintadd{color:var(--faint)}
 .av-rapide .amt .lock{font-family:var(--font-geist-sans);font-weight:600;font-size:11px;color:var(--accent-600);background:var(--brand-50);padding:2px 9px;border-radius:999px;letter-spacing:.02em}
 .av-rapide-live a.cta{text-decoration:none;display:inline-flex;align-items:center}
 @media(max-width:520px){.av-rapide .prow{flex-wrap:wrap}.av-rapide .prow .pname{flex-basis:100%}}
@@ -203,7 +204,7 @@ export default function EstimateurRapide({ isPro = false }: { isPro?: boolean })
   const ampCard = (v: Ampleur) => (mode === "pieces" ? PIECES_AMP[v] : ampL(v));
 
   const totalSurface = mode === "pieces"
-    ? pieces.reduce((s, r) => s + (r.surface || 0) * (r.qty || 0), 0)
+    ? pieces.reduce((s, r) => s + (r.surface || 0), 0)
     : surface;
 
   // {ctx, sel} pour le mode courant, réglages éventuellement remplacés (aperçus des cartes 2-3-4).
@@ -243,24 +244,21 @@ export default function EstimateurRapide({ isPro = false }: { isPro?: boolean })
   const zoneLbl = t.zones[reg.zone] ?? reg.zone;
   const regLabel = cp.length >= 2 ? `${zoneLbl}${regDelta ? ` · ${regDelta > 0 ? "+" : ""}${regDelta} ${t.moSuffix}` : ""}` : "";
 
-  // ── Gestion des pièces (mode multi) ──
-  const nbPieces = pieces.reduce((s, r) => s + r.qty, 0);
-  // Assemblage de pièces DIFFÉRENTES (2+ types) = réservé au Pro (paywall doux sur le résultat).
-  const multiPieces = mode === "pieces" && pieces.length >= 2;
-  const locked = multiPieces && !isPro;
+  // ── Gestion des pièces (mode multi) ── chaque ajout = une LIGNE (instance) avec sa propre surface.
+  const nbPieces = pieces.length;
+  const nbTypes = new Set(pieces.map((r) => r.room)).size;
+  // Assembler des pièces de TYPES DIFFÉRENTS (2+) = réservé au Pro (paywall doux). Plusieurs pièces
+  // du même type (ex. 2 chambres) restent gratuites.
+  const locked = mode === "pieces" && nbTypes >= 2 && !isPro;
   function ajouterPiece(k: PieceKey) {
     setMode("pieces");
-    setPieces((prev) => {
-      const i = prev.findIndex((r) => r.room === k);
-      if (i >= 0) { const c = [...prev]; c[i] = { ...c[i], qty: c[i].qty + 1 }; return c; }
-      return [...prev, { room: k, qty: 1, surface: roomLabel(k).surf }];
-    });
+    setPieces((prev) => [...prev, { room: k, surface: roomLabel(k).surf }]);
   }
-  const setPieceQty = (k: PieceKey, q: number) =>
-    setPieces((prev) => prev.flatMap((r) => (r.room === k ? (q <= 0 ? [] : [{ ...r, qty: q }]) : [r])));
-  const setPieceSurf = (k: PieceKey, s: number) =>
-    setPieces((prev) => prev.map((r) => (r.room === k ? { ...r, surface: s } : r)));
-  const retirerPiece = (k: PieceKey) => setPieces((prev) => prev.filter((r) => r.room !== k));
+  const setPieceSurf = (i: number, s: number) =>
+    setPieces((prev) => prev.map((r, idx) => (idx === i ? { ...r, surface: s } : r)));
+  const retirerPiece = (i: number) => setPieces((prev) => prev.filter((_, idx) => idx !== i));
+  // Compteur d'instances par type (badge sur les tuiles) + ordinal d'affichage pour les doublons.
+  const countByRoom = (k: PieceKey) => pieces.filter((r) => r.room === k).length;
 
   function saveDraft() {
     try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ v: "estimateur", ctx: preset.ctx, sel: preset.sel, open: {}, codePostal: cp })); } catch { /* noop */ }
@@ -270,7 +268,9 @@ export default function EstimateurRapide({ isPro = false }: { isPro?: boolean })
   /** Libellé du projet (ex. « Rénovation — Chambre ×2 + Salle de bain » ou « Rénovation — Maison 100 m² »). */
   function nomProjet(): string {
     if (mode === "pieces") {
-      const parts = pieces.map((r) => `${roomLabel(r.room).label}${r.qty > 1 ? ` ×${r.qty}` : ""}`);
+      const counts = new Map<PieceKey, number>();
+      for (const r of pieces) counts.set(r.room, (counts.get(r.room) ?? 0) + 1);
+      const parts = [...counts].map(([k, n]) => `${roomLabel(k).label}${n > 1 ? ` ×${n}` : ""}`);
       return `${t.projetNom} — ${parts.join(" + ")}`.slice(0, 110);
     }
     const nomType = type === "Maison" ? t.typeMaison : t.typeAppart;
@@ -314,38 +314,40 @@ export default function EstimateurRapide({ isPro = false }: { isPro?: boolean })
           <div className="glbl">Une ou plusieurs pièces</div>
           <div className="seg seg-rooms">
             {ROOMS.map((r) => {
-              const sel = pieces.find((p) => p.room === r.key);
+              const n = countByRoom(r.key);
               return (
-                <button key={r.key} className={mode === "pieces" && sel ? "on" : ""} onClick={() => ajouterPiece(r.key)}>
-                  {r.emoji} {r.label}{sel && sel.qty > 1 ? ` ×${sel.qty}` : ""}
+                <button key={r.key} className={mode === "pieces" && n > 0 ? "on" : ""} onClick={() => ajouterPiece(r.key)}>
+                  {r.emoji} {r.label}{n > 1 ? ` ×${n}` : ""}
                 </button>
               );
             })}
           </div>
 
-          {mode === "pieces" && pieces.length > 0 && (
-            <div className="plist">
-              {pieces.map((r) => {
-                const meta = roomLabel(r.room);
-                return (
-                  <div className="prow" key={r.room}>
-                    <span className="pname">{meta.emoji} {meta.label}</span>
-                    <span className="stepper">
-                      <button onClick={() => setPieceQty(r.room, r.qty - 1)} aria-label="Retirer une">−</button>
-                      <span className="num">{r.qty}</span>
-                      <button onClick={() => setPieceQty(r.room, r.qty + 1)} aria-label="Ajouter une">+</button>
-                    </span>
-                    <span className="psurf">
-                      <input type="number" inputMode="numeric" min={2} value={r.surface} onChange={(e) => setPieceSurf(r.room, parseFloat(e.target.value) || 0)} />
-                      <span className="u">m²</span>
-                    </span>
-                    <button className="prm" onClick={() => retirerPiece(r.room)} aria-label="Supprimer">✕</button>
-                  </div>
-                );
-              })}
-              <div className="psum">{nbPieces} pièce{nbPieces > 1 ? "s" : ""} · {totalSurface.toLocaleString(nf)} m² au total</div>
-            </div>
-          )}
+          {mode === "pieces" && pieces.length > 0 && (() => {
+            const totalPer: Record<string, number> = {};
+            pieces.forEach((r) => { totalPer[r.room] = (totalPer[r.room] ?? 0) + 1; });
+            const seen: Record<string, number> = {};
+            return (
+              <div className="plist">
+                {pieces.map((r, i) => {
+                  const meta = roomLabel(r.room);
+                  seen[r.room] = (seen[r.room] ?? 0) + 1;
+                  const ord = totalPer[r.room] > 1 ? ` ${seen[r.room]}` : "";
+                  return (
+                    <div className="prow" key={i}>
+                      <span className="pname">{meta.emoji} {meta.label}{ord}</span>
+                      <span className="psurf">
+                        <input type="number" inputMode="numeric" min={2} value={r.surface} onChange={(e) => setPieceSurf(i, parseFloat(e.target.value) || 0)} />
+                        <span className="u">m²</span>
+                      </span>
+                      <button className="prm" onClick={() => retirerPiece(i)} aria-label="Supprimer">✕</button>
+                    </div>
+                  );
+                })}
+                <div className="psum">{nbPieces} pièce{nbPieces > 1 ? "s" : ""} · {totalSurface.toLocaleString(nf)} m² au total · <span className="hintadd">re-tape une pièce pour en ajouter une autre</span></div>
+              </div>
+            );
+          })()}
 
           <div className="fields">
             {mode === "bien" && (

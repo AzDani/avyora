@@ -127,10 +127,11 @@ function ctxPiece(totalSurface: number, finition: Finition, cp: string): Ctx {
   };
 }
 
-export type PieceSel = { room: PieceKey; qty: number; surface: number };
+/** Une pièce = une instance avec sa propre surface (2 chambres = 2 entrées de surfaces différentes). */
+export type PieceSel = { room: PieceKey; surface: number };
 
 /**
- * Fusionne plusieurs pièces (avec quantités) en un seul { ctx, sel } : additionne les quantités
+ * Fusionne plusieurs pièces (chacune sa surface) en un seul { ctx, sel } : additionne les quantités
  * par poste. Réglages ampleur/finition/qui COMMUNS à toutes les pièces.
  */
 export function presetPieces(
@@ -140,16 +141,15 @@ export function presetPieces(
   qui: QuiRealise,
   codePostal: string,
 ): { ctx: Ctx; sel: Selection } {
-  const totalSurface = rooms.reduce((sum, r) => sum + (r.surface || 0) * (r.qty || 0), 0);
+  const totalSurface = rooms.reduce((sum, r) => sum + (r.surface || 0), 0);
   const ctx = ctxPiece(totalSurface, finition, cp2(codePostal));
   const qtyByKey: Record<string, { corps: string; nom: string; qty: number }> = {};
 
   for (const r of rooms) {
-    const n = Math.max(1, Math.round(r.qty || 1));
     for (const [corps, nom, q] of pieceTasks(r.room, r.surface, ampleur)) {
       const k = key(corps, nom);
       if (!qtyByKey[k]) qtyByKey[k] = { corps, nom, qty: 0 };
-      qtyByKey[k].qty += q * n; // ×quantité de pièces (ex. 2 chambres)
+      qtyByKey[k].qty += q;
     }
   }
 
