@@ -7,11 +7,30 @@
 import { useMemo, useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  CATALOG, buildDevis, presetRapide, AMPLEURS, regionCoef,
-  type Ampleur, type QuiRealise, type TypeBien, type Finition,
+  CATALOG, buildDevis, presetRapide, presetPieces, AMPLEURS, regionCoef,
+  type Ampleur, type QuiRealise, type TypeBien, type Finition, type PieceKey, type PieceSel,
 } from "@/lib/estimateur";
 import { suivre } from "@/lib/track";
 import { useT, useLocale } from "@/components/i18n/LangProvider";
+
+type Mode = "bien" | "pieces";
+// Pièces disponibles (mode « une ou plusieurs pièces ») : emoji, libellé, surface par défaut.
+const ROOMS: { key: PieceKey; emoji: string; label: string; surf: number }[] = [
+  { key: "cuisine", emoji: "🍳", label: "Cuisine", surf: 10 },
+  { key: "sdb", emoji: "🚿", label: "Salle de bain", surf: 5 },
+  { key: "chambre", emoji: "🛏️", label: "Chambre", surf: 12 },
+  { key: "salon", emoji: "🛋️", label: "Salon / séjour", surf: 22 },
+  { key: "suite", emoji: "🛁", label: "Suite parentale", surf: 20 },
+  { key: "buanderie", emoji: "🧺", label: "Buanderie", surf: 6 },
+];
+const roomLabel = (k: PieceKey) => ROOMS.find((r) => r.key === k)!;
+// Descriptions d'ampleur adaptées au mode « pièce » (pas de toiture/façade).
+const PIECES_AMP: Record<Ampleur, { label: string; desc: string }> = {
+  rafraich: { label: "Rafraîchissement", desc: "Peinture, sols, petites reprises." },
+  partielle: { label: "Réno partielle", desc: "Éléments principaux remplacés (sanitaires, meubles…)." },
+  complete: { label: "Réno complète", desc: "Tout refait : revêtements, élec, plomberie." },
+  lourde: { label: "Réno lourde", desc: "Mise à nu : dépose complète puis tout à neuf." },
+};
 
 const DRAFT_KEY = "avyora-estim-v2";
 const RAPIDE_CSS = `
@@ -105,6 +124,22 @@ const RAPIDE_CSS = `
 .av-rapide-live .ghost{font-family:var(--font-geist-sans);font-weight:600;font-size:13.5px;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:11px 16px;cursor:pointer;white-space:nowrap}
 .av-rapide-live .ghost:disabled{opacity:.5;cursor:not-allowed}
 .av-rapide-live .err{width:100%;font-size:12.5px;font-weight:500;color:#ffb1b6}
+.av-rapide .glbl{font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:0 0 8px}
+.av-rapide .plist{margin-top:12px;border:1px solid var(--line);border-radius:.9rem;overflow:hidden;background:#f8f9fd}
+.av-rapide .prow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.av-rapide .prow:last-of-type{border-bottom:0}
+.av-rapide .prow .pname{flex:1;min-width:0;font-size:13.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.av-rapide .stepper{display:inline-flex;align-items:center;border:1px solid var(--line-strong);border-radius:999px;background:var(--surface)}
+.av-rapide .stepper button{width:28px;height:28px;border:0;background:transparent;color:var(--brand);font-size:16px;font-weight:700;cursor:pointer;line-height:1}
+.av-rapide .stepper .num{min-width:22px;text-align:center;font-family:var(--font-geist-mono),monospace;font-size:13px;font-weight:600;color:var(--ink)}
+.av-rapide .psurf{display:inline-flex;align-items:center;gap:5px}
+.av-rapide .psurf input{width:56px;font-family:inherit;font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--line-strong);border-radius:.55rem;padding:7px 8px;text-align:right;outline:none}
+.av-rapide .psurf input:focus{border-color:var(--brand)}
+.av-rapide .psurf .u{font-size:11.5px;color:var(--faint)}
+.av-rapide .prm{width:26px;height:26px;border:0;background:transparent;color:var(--faint);font-size:14px;cursor:pointer;border-radius:6px}
+.av-rapide .prm:hover{background:var(--line);color:var(--ink)}
+.av-rapide .psum{padding:9px 12px;font-size:12px;color:var(--muted);background:var(--surface)}
+@media(max-width:520px){.av-rapide .prow{flex-wrap:wrap}.av-rapide .prow .pname{flex-basis:100%}}
 @media (prefers-reduced-motion:reduce){.av-rapide *,.av-rapide-live *{transition:none!important}}
 `;
 
@@ -145,8 +180,10 @@ const QUIS: { v: QuiRealise; lvl: number }[] = [
 
 export default function EstimateurRapide() {
   const router = useRouter();
+  const [mode, setMode] = useState<Mode>("bien");
   const [type, setType] = useState<TypeBien>("Maison");
   const [surface, setSurface] = useState(100);
+  const [pieces, setPieces] = useState<PieceSel[]>([]);
   const [cp, setCp] = useState("");
   const [ampleur, setAmpleur] = useState<Ampleur>("complete");
   const [finition, setFinition] = useState<Finition>("standard");
@@ -160,65 +197,92 @@ export default function EstimateurRapide() {
   const nf = locale === "en" ? "en-US" : "fr-FR";
   // Libellé d'ampleur traduit ("Réno totale" pour la lourde en appartement).
   const ampL = (v: Ampleur) => (v === "lourde" && type !== "Maison" ? t.ampleurs.lourdeAppart : t.ampleurs[v]);
+  const ampCard = (v: Ampleur) => (mode === "pieces" ? PIECES_AMP[v] : ampL(v));
 
-  const preset = useMemo(() => presetRapide({ type, surface, codePostal: cp, ampleur, finition, qui }), [type, surface, cp, ampleur, finition, qui]);
+  const totalSurface = mode === "pieces"
+    ? pieces.reduce((s, r) => s + (r.surface || 0) * (r.qty || 0), 0)
+    : surface;
+
+  // {ctx, sel} pour le mode courant, réglages éventuellement remplacés (aperçus des cartes 2-3-4).
+  function buildSel(o: { ampleur?: Ampleur; finition?: Finition; qui?: QuiRealise } = {}) {
+    const a = o.ampleur ?? ampleur, f = o.finition ?? finition, q = o.qui ?? qui;
+    return mode === "pieces"
+      ? presetPieces(pieces, a, f, q, cp)
+      : presetRapide({ type, surface, codePostal: cp, ampleur: a, finition: f, qui: q });
+  }
+
+  const preset = useMemo(() => buildSel(), [mode, type, surface, cp, ampleur, finition, qui, pieces]);
   const tot = useMemo(() => buildDevis(CATALOG, preset.ctx, preset.sel).totaux, [preset]);
-  const valid = surface > 0;
+  const valid = mode === "pieces" ? pieces.length > 0 && totalSurface > 0 : surface > 0;
   const lo = Math.round((tot.ttc * 0.85) / 100) * 100;
   const hi = Math.round((tot.ttc * 1.15) / 100) * 100;
-  const m2 = valid ? Math.round(tot.ttc / surface) : 0;
-  const ampName = ampL(ampleur).label.toLowerCase();
-  // €/m² de chaque ampleur pour les réglages courants (pour l'afficher sur chaque carte).
+  const m2 = valid && totalSurface > 0 ? Math.round(tot.ttc / totalSurface) : 0;
+  const ampName = ampCard(ampleur).label.toLowerCase();
+
   const m2ByAmp = useMemo(() => {
     const out: Record<string, number> = {};
-    for (const a of AMPLEURS) {
-      const p = presetRapide({ type, surface, codePostal: cp, ampleur: a.v, finition, qui });
-      const tt = buildDevis(CATALOG, p.ctx, p.sel).totaux;
-      out[a.v] = surface > 0 ? Math.round(tt.ttc / surface) : 0;
-    }
+    for (const a of AMPLEURS) { const p = buildSel({ ampleur: a.v }); out[a.v] = totalSurface > 0 ? Math.round(buildDevis(CATALOG, p.ctx, p.sel).totaux.ttc / totalSurface) : 0; }
     return out;
-  }, [type, surface, cp, finition, qui]);
-  // €/m² de chaque finition pour les réglages courants (affiché sur chaque carte de l'étape 3).
+  }, [mode, type, surface, cp, finition, qui, pieces]);
   const m2ByFin = useMemo(() => {
     const out: Record<string, number> = {};
-    for (const f of ["eco", "standard", "premium"] as Finition[]) {
-      const p = presetRapide({ type, surface, codePostal: cp, ampleur, finition: f, qui });
-      const tt = buildDevis(CATALOG, p.ctx, p.sel).totaux;
-      out[f] = surface > 0 ? Math.round(tt.ttc / surface) : 0;
-    }
+    for (const f of ["eco", "standard", "premium"] as Finition[]) { const p = buildSel({ finition: f }); out[f] = totalSurface > 0 ? Math.round(buildDevis(CATALOG, p.ctx, p.sel).totaux.ttc / totalSurface) : 0; }
     return out;
-  }, [type, surface, cp, ampleur, qui]);
-  // €/m² de chaque option « qui réalise » pour les réglages courants (+ base pros pour l'économie).
+  }, [mode, type, surface, cp, ampleur, qui, pieces]);
   const m2ByQui = useMemo(() => {
     const out: Record<string, number> = {};
-    for (const q of ["pros", "partie", "max"] as QuiRealise[]) {
-      const p = presetRapide({ type, surface, codePostal: cp, ampleur, finition, qui: q });
-      const tt = buildDevis(CATALOG, p.ctx, p.sel).totaux;
-      out[q] = surface > 0 ? Math.round(tt.ttc / surface) : 0;
-    }
+    for (const q of ["pros", "partie", "max"] as QuiRealise[]) { const p = buildSel({ qui: q }); out[q] = totalSurface > 0 ? Math.round(buildDevis(CATALOG, p.ctx, p.sel).totaux.ttc / totalSurface) : 0; }
     return out;
-  }, [type, surface, cp, ampleur, finition]);
+  }, [mode, type, surface, cp, ampleur, finition, pieces]);
+
   const reg = regionCoef(cp);
   const regDelta = Math.round((reg.mo - 1) * 100);
   const zoneLbl = t.zones[reg.zone] ?? reg.zone;
   const regLabel = cp.length >= 2 ? `${zoneLbl}${regDelta ? ` · ${regDelta > 0 ? "+" : ""}${regDelta} ${t.moSuffix}` : ""}` : "";
 
+  // ── Gestion des pièces (mode multi) ──
+  const nbPieces = pieces.reduce((s, r) => s + r.qty, 0);
+  function ajouterPiece(k: PieceKey) {
+    setMode("pieces");
+    setPieces((prev) => {
+      const i = prev.findIndex((r) => r.room === k);
+      if (i >= 0) { const c = [...prev]; c[i] = { ...c[i], qty: c[i].qty + 1 }; return c; }
+      return [...prev, { room: k, qty: 1, surface: roomLabel(k).surf }];
+    });
+  }
+  const setPieceQty = (k: PieceKey, q: number) =>
+    setPieces((prev) => prev.flatMap((r) => (r.room === k ? (q <= 0 ? [] : [{ ...r, qty: q }]) : [r])));
+  const setPieceSurf = (k: PieceKey, s: number) =>
+    setPieces((prev) => prev.map((r) => (r.room === k ? { ...r, surface: s } : r)));
+  const retirerPiece = (k: PieceKey) => setPieces((prev) => prev.filter((r) => r.room !== k));
+
   function saveDraft() {
     try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ v: "estimateur", ctx: preset.ctx, sel: preset.sel, open: {}, codePostal: cp })); } catch { /* noop */ }
   }
-  function affiner() { suivre("estimation_terminee", { action: "affiner", type, ampleur }); saveDraft(); router.push("/projets/nouveau/detaille"); }
+  function affiner() { suivre("estimation_terminee", { action: "affiner", type: mode === "pieces" ? "pieces" : type, ampleur }); saveDraft(); router.push("/projets/nouveau/detaille"); }
+
+  /** Libellé du projet (ex. « Rénovation — Chambre ×2 + Salle de bain » ou « Rénovation — Maison 100 m² »). */
+  function nomProjet(): string {
+    if (mode === "pieces") {
+      const parts = pieces.map((r) => `${roomLabel(r.room).label}${r.qty > 1 ? ` ×${r.qty}` : ""}`);
+      return `${t.projetNom} — ${parts.join(" + ")}`.slice(0, 110);
+    }
+    const nomType = type === "Maison" ? t.typeMaison : t.typeAppart;
+    return `${t.projetNom} — ${nomType} ${surface} m²`.slice(0, 110);
+  }
 
   async function enregistrer() {
     setErreur(null);
     if (!/^\d{5}$/.test(cp)) { setErreur(t.errCp); return; }
+    if (mode === "pieces" && pieces.length === 0) { setErreur("Ajoute au moins une pièce."); return; }
     if (!valid) { setErreur(t.errSurface); return; }
-    suivre("estimation_terminee", { action: "enregistrer", type, ampleur });
+    suivre("estimation_terminee", { action: "enregistrer", type: mode === "pieces" ? "pieces" : type, ampleur });
     setSaving(true);
-    const nomType = type === "Maison" ? t.typeMaison : t.typeAppart;
-    const nom = `${t.projetNom} — ${nomType} ${surface} m²`.slice(0, 110);
+    const nom = nomProjet();
+    const typeBien = (mode === "pieces" ? "Appartement" : type) as TypeBien;
     const reponses = { v: "estimateur", ctx: preset.ctx, sel: preset.sel, codePostal: cp };
     try {
-      const res = await fetch("/api/projects", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nom, typeBien: type, surface, codePostal: cp, reponses }) });
+      const res = await fetch("/api/projects", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nom, typeBien, surface: totalSurface, codePostal: cp, reponses }) });
       if (res.status === 401) { try { localStorage.setItem("avyora-estim-claim", "1"); } catch { /* noop */ } saveDraft(); router.push("/inscription"); return; }
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { setErreur(data?.error || t.errSave); setSaving(false); return; }
@@ -232,15 +296,56 @@ export default function EstimateurRapide() {
       <style dangerouslySetInnerHTML={{ __html: RAPIDE_CSS }} />
       <div className="av-rapide">
         <div className="q">
-          <div className="qlbl"><span className="n">1</span>{t.step1}</div>
-          <div className="seg" style={{ marginBottom: 10 }}>
+          <div className="qlbl"><span className="n">1</span>Qu&apos;est-ce que tu estimes&nbsp;?</div>
+
+          <div className="glbl">Bien entier</div>
+          <div className="seg" style={{ marginBottom: 14 }}>
             {(["Maison", "Appartement"] as TypeBien[]).map((tb) => (
-              <button key={tb} className={type === tb ? "on" : ""} onClick={() => setType(tb)}>{tb === "Maison" ? t.maison : t.appart}</button>
+              <button key={tb} className={mode === "bien" && type === tb ? "on" : ""} onClick={() => { setMode("bien"); setType(tb); }}>{tb === "Maison" ? t.maison : t.appart}</button>
             ))}
           </div>
+
+          <div className="glbl">Une ou plusieurs pièces</div>
+          <div className="seg seg-rooms">
+            {ROOMS.map((r) => {
+              const sel = pieces.find((p) => p.room === r.key);
+              return (
+                <button key={r.key} className={mode === "pieces" && sel ? "on" : ""} onClick={() => ajouterPiece(r.key)}>
+                  {r.emoji} {r.label}{sel && sel.qty > 1 ? ` ×${sel.qty}` : ""}
+                </button>
+              );
+            })}
+          </div>
+
+          {mode === "pieces" && pieces.length > 0 && (
+            <div className="plist">
+              {pieces.map((r) => {
+                const meta = roomLabel(r.room);
+                return (
+                  <div className="prow" key={r.room}>
+                    <span className="pname">{meta.emoji} {meta.label}</span>
+                    <span className="stepper">
+                      <button onClick={() => setPieceQty(r.room, r.qty - 1)} aria-label="Retirer une">−</button>
+                      <span className="num">{r.qty}</span>
+                      <button onClick={() => setPieceQty(r.room, r.qty + 1)} aria-label="Ajouter une">+</button>
+                    </span>
+                    <span className="psurf">
+                      <input type="number" inputMode="numeric" min={2} value={r.surface} onChange={(e) => setPieceSurf(r.room, parseFloat(e.target.value) || 0)} />
+                      <span className="u">m²</span>
+                    </span>
+                    <button className="prm" onClick={() => retirerPiece(r.room)} aria-label="Supprimer">✕</button>
+                  </div>
+                );
+              })}
+              <div className="psum">{nbPieces} pièce{nbPieces > 1 ? "s" : ""} · {totalSurface.toLocaleString(nf)} m² au total</div>
+            </div>
+          )}
+
           <div className="fields">
-            <div className="fld"><label>{t.surfaceLabel}</label><input type="number" inputMode="numeric" min={8} value={surface} onChange={(e) => setSurface(parseFloat(e.target.value) || 0)} /></div>
-            <div className="fld"><label>{t.cpLabel}</label><input inputMode="numeric" maxLength={5} placeholder={t.cpPlaceholder} value={cp} onChange={(e) => setCp(e.target.value.replace(/\D/g, "").slice(0, 5))} /></div>
+            {mode === "bien" && (
+              <div className="fld"><label>{t.surfaceLabel}</label><input type="number" inputMode="numeric" min={8} value={surface} onChange={(e) => setSurface(parseFloat(e.target.value) || 0)} /></div>
+            )}
+            <div className="fld" style={mode === "pieces" ? { gridColumn: "1 / -1" } : undefined}><label>{t.cpLabel}</label><input inputMode="numeric" maxLength={5} placeholder={t.cpPlaceholder} value={cp} onChange={(e) => setCp(e.target.value.replace(/\D/g, "").slice(0, 5))} /></div>
           </div>
         </div>
 
@@ -248,7 +353,7 @@ export default function EstimateurRapide() {
           <div className="qlbl"><span className="n">2</span>{t.step2}</div>
           <div className="cards">
             {AMPLEURS.map((a, i) => {
-              const al = ampL(a.v);
+              const al = ampCard(a.v);
               return (
                 <button key={a.v} className={"amp" + (ampleur === a.v ? " on" : "")} onClick={() => setAmpleur(a.v)}>
                   <span className="head">
@@ -320,7 +425,7 @@ export default function EstimateurRapide() {
           <div>
             <div className="lbl">{t.liveLabel}</div>
             <div className="big">{valid ? <><CountUp value={lo} nf={nf} /> €<span style={{ opacity: .55 }}> – </span><CountUp value={hi} nf={nf} /> €</> : "—"}</div>
-            <div className="sub">{valid ? <>≈ <CountUp value={m2} nf={nf} /> €/m² · {ampName} · ±15 %{regLabel ? <> · {regLabel}</> : ""}</> : t.renseigneSurface}</div>
+            <div className="sub">{valid ? <>≈ <CountUp value={m2} nf={nf} /> €/m² · {ampName} · ±15 %{regLabel ? <> · {regLabel}</> : ""}</> : (mode === "pieces" ? "Ajoute une pièce" : t.renseigneSurface)}</div>
           </div>
           <div className="btns">
             <button className="ghost" onClick={affiner}>{t.affiner}</button>
