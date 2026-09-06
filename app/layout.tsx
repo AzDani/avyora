@@ -71,6 +71,36 @@ export const viewport = {
   themeColor: "#1E1B4B",
 };
 
+/**
+ * Données structurées site (JSON-LD) : Organization + WebSite. Signal de marque/confiance
+ * (E-E-A-T) pour Google, présent sur toutes les pages. Pas de SearchAction : le site n'a pas
+ * de recherche interne, on n'invente pas de fonctionnalité.
+ */
+const orgJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${siteUrl}/#organization`,
+      name: "AVYORA",
+      url: siteUrl,
+      logo: `${siteUrl}/icon-512.png`,
+      description,
+      email: "contact@getavyora.fr",
+      areaServed: "FR",
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      url: siteUrl,
+      name: "AVYORA",
+      description,
+      inLanguage: "fr-FR",
+      publisher: { "@id": `${siteUrl}/#organization` },
+    },
+  ],
+};
+
 function Wordmark() {
   return (
     <Link
@@ -106,6 +136,10 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+        />
         <header className="sticky top-0 z-40 bg-canvas px-3 pb-2 pt-3 sm:px-4 sm:pt-4">
           <div className="mx-auto flex h-16 max-w-5xl items-center justify-between rounded-2xl border border-white/10 bg-[#1E1B4B] px-4 shadow-[0_10px_30px_-12px_rgba(30,27,75,0.55)] sm:px-6">
             <Wordmark />
@@ -137,6 +171,8 @@ export default function RootLayout({
         <footer className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6">
           <div className="border-t border-line pt-6">
             <nav className="flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-muted">
+              <Link href="/guides" className="transition-colors hover:text-brand-700">Guides des prix</Link>
+              <Link href="/prix-renovation" className="transition-colors hover:text-brand-700">Prix par ville</Link>
               <Link href="/mentions-legales" className="transition-colors hover:text-brand-700">Mentions légales</Link>
               <Link href="/cgu" className="transition-colors hover:text-brand-700">CGU</Link>
               <Link href="/cgv" className="transition-colors hover:text-brand-700">CGV</Link>

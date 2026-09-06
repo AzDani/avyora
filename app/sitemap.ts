@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { VILLES } from "@/lib/villes";
+import { GUIDES } from "@/lib/guides";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
@@ -14,9 +15,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: "monthly",
     priority: 0.7,
   }));
+  const guides: MetadataRoute.Sitemap = GUIDES.map((g) => ({
+    url: `${siteUrl}/guides/${g.slug}`,
+    lastModified: now,
+    changeFrequency: "monthly",
+    priority: 0.8,
+  }));
   return [
     { url: `${siteUrl}/`, lastModified: now, changeFrequency: "weekly", priority: 1 },
     { url: `${siteUrl}/projets/nouveau`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${siteUrl}/guides`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+    ...guides,
     { url: `${siteUrl}/prix-renovation`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     ...villes,
     { url: `${siteUrl}/tarifs`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },

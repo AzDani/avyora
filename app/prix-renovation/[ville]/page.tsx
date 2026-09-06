@@ -5,6 +5,8 @@ import { VILLES, villeBySlug } from "@/lib/villes";
 import { prixVille, regionCoef } from "@/lib/seo-prix";
 
 export const dynamic = "force-static";
+// Ensemble fini de villes : tout slug hors liste renvoie un vrai 404 (pas de soft-404 à 200).
+export const dynamicParams = false;
 
 export function generateStaticParams() {
   return VILLES.map((v) => ({ ville: v.slug }));
@@ -84,14 +86,30 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
     },
   ];
 
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faq.map((f) => ({
-      "@type": "Question",
-      name: f.q,
-      acceptedAnswer: { "@type": "Answer", text: f.a },
-    })),
+    "@graph": [
+      {
+        "@type": "FAQPage",
+        mainEntity: faq.map((f) => ({
+          "@type": "Question",
+          name: f.q,
+          acceptedAnswer: { "@type": "Answer", text: f.a },
+        })),
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Accueil", item: `${siteUrl}/` },
+          { "@type": "ListItem", position: 2, name: "Prix rénovation par ville", item: `${siteUrl}/prix-renovation` },
+          { "@type": "ListItem", position: 3, name: v.nom, item: `${siteUrl}/prix-renovation/${v.slug}` },
+        ],
+      },
+    ],
   };
 
   return (
@@ -154,6 +172,14 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
           </details>
         ))}
       </div>
+
+      <h2>Aller plus loin</h2>
+      <p>
+        Prix au m² par type de bien :{" "}
+        <Link href="/guides/prix-renovation-appartement" className="font-medium text-brand-600 hover:underline">rénovation d&apos;appartement</Link>{" "}
+        ·{" "}
+        <Link href="/guides/prix-renovation-maison" className="font-medium text-brand-600 hover:underline">rénovation de maison</Link>.
+      </p>
 
       <h2>Prix rénovation dans d&apos;autres villes</h2>
       <div className="villes">

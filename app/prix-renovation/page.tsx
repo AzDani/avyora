@@ -43,6 +43,13 @@ export default function PrixRenovationHub() {
         Ta ville n&apos;est pas listée ? L&apos;<Link href="/projets/nouveau" className="font-medium text-brand-600 hover:underline">estimateur</Link>{" "}
         s&apos;adapte à n&apos;importe quel code postal en France.
       </p>
+
+      <p className="mt-3 text-sm text-muted">
+        Ou consulte le prix par type de bien :{" "}
+        <Link href="/guides/prix-renovation-appartement" className="font-medium text-brand-600 hover:underline">rénovation d&apos;appartement</Link>{" "}
+        ·{" "}
+        <Link href="/guides/prix-renovation-maison" className="font-medium text-brand-600 hover:underline">rénovation de maison</Link>.
+      </p>
     </div>
   );
 }
