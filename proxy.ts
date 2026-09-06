@@ -8,8 +8,20 @@ import { createServerClient } from "@supabase/ssr";
  *
  * ⚠ Ne rien exécuter entre createServerClient et supabase.auth.getUser() (refresh du token).
  */
+/**
+ * Langue courante → en-tête interne `x-av-locale`. Le middleware a toujours accès à la requête
+ * brute (dev ET prod), contrairement à cookies() dans le layout racine qui, en build de prod,
+ * ne voyait pas le cookie av-lang. Les server components lisent cet en-tête via headers().
+ */
+function withLocale(request: NextRequest): Headers {
+  const lang = request.cookies.get("av-lang")?.value;
+  const h = new Headers(request.headers);
+  h.set("x-av-locale", lang === "en" ? "en" : "fr");
+  return h;
+}
+
 export async function proxy(request: NextRequest) {
-  let response = NextResponse.next({ request });
+  let response = NextResponse.next({ request: { headers: withLocale(request) } });
 
   // « Rester connecté » : si l'utilisateur a décoché (cookie av-remember="0"), les cookies d'auth
   // rafraîchis restent des cookies de session (effacés à la fermeture du navigateur).
@@ -32,7 +44,7 @@ export async function proxy(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({ request });
+          response = NextResponse.next({ request: { headers: withLocale(request) } });
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, withRemember(options as Record<string, unknown>))
           );
