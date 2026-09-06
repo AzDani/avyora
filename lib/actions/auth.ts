@@ -52,7 +52,15 @@ export async function login(_prev: AuthState, formData: FormData): Promise<AuthS
   else cookieStore.set("av-remember", "0", { path: "/", httpOnly: true, sameSite: "lax" }); // cookie de session
 
   await journaliser("connexion_reussie", { userId: data.user?.id, email });
-  redirect(next.startsWith("/") ? next : "/projets");
+  redirect(cheminInterneSur(next));
+}
+
+/**
+ * Anti open-redirect : n'accepte qu'un chemin interne (commence par « / » mais pas « // » ni « /\ »,
+ * qui seraient interprétés comme une URL absolue vers un domaine externe). Sinon → /projets.
+ */
+function cheminInterneSur(next: string): string {
+  return next.startsWith("/") && !next.startsWith("//") && !next.startsWith("/\\") ? next : "/projets";
 }
 
 // ── Inscription ──
