@@ -867,26 +867,26 @@
       {
         "n": "Meuble-vasque simple",
         "u": "u",
-        "fp": 550,
-        "sm": 380
+        "fp": 328,
+        "sm": 220
       },
       {
         "n": "Meuble-vasque double",
         "u": "u",
-        "fp": 980,
-        "sm": 680
+        "fp": 657,
+        "sm": 440
       },
       {
         "n": "Miroir LED",
         "u": "u",
-        "fp": 150,
-        "sm": 110
+        "fp": 164,
+        "sm": 115
       },
       {
         "n": "Grand miroir LED",
         "u": "u",
-        "fp": 250,
-        "sm": 190
+        "fp": 274,
+        "sm": 185
       },
       {
         "n": "Installer une douche (hors carrelage)",
