@@ -461,32 +461,32 @@
         "note": "charpente traditionnelle + ardoise + écran + liteaux + pose"
       },
       {
-        "n": "Toiture tuile — réfection complète (m²)",
+        "n": "Réfection couverture tuiles (dépose + écran + liteaux)",
         "u": "m2",
         "fp": 110,
         "sm": 45,
         "note": "couverture + écran + liteaux + pose"
       },
       {
-        "n": "Toiture ardoise — réfection complète (m²)",
+        "n": "Réfection couverture ardoise (dépose + écran + liteaux)",
         "u": "m2",
         "fp": 160,
         "sm": 65
       },
       {
-        "n": "Toiture en tuiles",
+        "n": "Couverture tuiles (pose seule)",
         "u": "m2",
         "fp": 70,
         "sm": 30
       },
       {
-        "n": "Toiture en ardoise",
+        "n": "Couverture ardoise (pose seule)",
         "u": "m2",
         "fp": 120,
         "sm": 50
       },
       {
-        "n": "Toiture en zinc / bac acier",
+        "n": "Couverture zinc / bac acier",
         "u": "m2",
         "fp": 90,
         "sm": 40,

@@ -66,7 +66,7 @@ const MAISON_COMPLETE: Tache[] = [
 ];
 const MAISON_LOURDE: Tache[] = [
   ["Charpente & structure bois", "Charpente traditionnelle (hors couverture)"], ["Charpente & structure bois", "Traiter la charpente"],
-  ["Toiture", "Toiture tuile — réfection complète (m²)"], ["Toiture", "Gouttières & descentes"],
+  ["Toiture", "Réfection couverture tuiles (dépose + écran + liteaux)"], ["Toiture", "Gouttières & descentes"],
   ["Façade", "Refaire l'enduit / le crépi"],
 ];
 
