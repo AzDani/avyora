@@ -51,7 +51,7 @@ export function pieceTasks(room: PieceKey, s: number, ampleur: Ampleur): Tache[]
   ];
   const curage = (): Tache[] => [
     ["Démolition", "Enlever un revêtement de sol", surf],
-    ["Maçonnerie", "Couler une chape", surf],
+    ["Maçonnerie", "Chape traditionnelle", surf],
   ];
 
   // Base (rafraîchissement) : peinture + sol, selon la pièce.

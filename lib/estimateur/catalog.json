@@ -128,7 +128,7 @@
         "sm": null
       },
       {
-        "n": "Compresseur + cloueur",
+        "n": "Compresseur",
         "u": "jour",
         "fp": 55,
         "sm": null
@@ -247,14 +247,14 @@
       {
         "n": "Abattre une cloison",
         "u": "m2",
-        "fp": 35,
-        "sm": 5
+        "fp": 15,
+        "sm": 4
       },
       {
         "n": "Abattre un mur non porteur",
         "u": "m2",
-        "fp": 20,
-        "sm": 6
+        "fp": 35,
+        "sm": 8
       },
       {
         "n": "Enlever les anciennes portes / fenêtres",
@@ -263,7 +263,7 @@
         "sm": 5
       },
       {
-        "n": "Vider une cuisine / salle de bain",
+        "n": "Dépose complète cuisine / salle de bain (curage)",
         "u": "forfait",
         "fp": 700,
         "sm": 60
@@ -330,27 +330,45 @@
       {
         "n": "Couler une dalle béton",
         "u": "m2",
-        "fp": 70,
+        "fp": 68,
         "sm": 30
       },
       {
-        "n": "Couler une chape",
+        "n": "Chape traditionnelle",
+        "u": "m2",
+        "fp": 33,
+        "sm": 10
+      },
+      {
+        "n": "Chape liquide",
         "u": "m2",
         "fp": 40,
-        "sm": 15
+        "sm": 20
+      },
+      {
+        "n": "Semelle de fondation (50 × 25-30 cm)",
+        "u": "ml",
+        "fp": 140,
+        "sm": 65
       },
       {
         "n": "Consolider fondations / reprise en sous-œuvre",
-        "u": "forfait",
-        "fp": null,
-        "sm": null,
-        "note": "sur devis — prix fondation + majoration accès/complexité"
+        "u": "ml",
+        "fp": 280,
+        "sm": 130,
+        "note": "= semelle filante × 2 — prix très variable selon la tâche exacte"
       },
       {
-        "n": "Monter un mur / cloison en dur",
+        "n": "Monter un mur en parpaings",
         "u": "m2",
-        "fp": 70,
-        "sm": 20
+        "fp": 75,
+        "sm": 25
+      },
+      {
+        "n": "Monter un mur en brique",
+        "u": "m2",
+        "fp": 90,
+        "sm": 35
       },
       {
         "n": "Créer / enlever une cheminée en dur",
@@ -369,12 +387,6 @@
         "u": "m2",
         "fp": 120,
         "sm": 50
-      },
-      {
-        "n": "Reboucher & sceller",
-        "u": "ml",
-        "fp": 10,
-        "sm": 2
       }
     ]
   },

@@ -49,12 +49,12 @@ const COMPLETE_ADD: Tache[] = [
   ["Menuiseries interieures", "Portes intérieures"],
 ];
 const LOURDE_INT: Tache[] = [
-  ["Maçonnerie", "Ouvrir un mur porteur — petite (porte/fenêtre)"], ["Maçonnerie", "Couler une chape"],
+  ["Maçonnerie", "Ouvrir un mur porteur — petite (porte/fenêtre)"], ["Maçonnerie", "Chape traditionnelle"],
 ];
 // Curage / mise à nu (niveau 4, maison ET appartement) : on dépose tout jusqu'au gros œuvre.
 const CURAGE: Tache[] = [
   ["Démolition", "Enlever un revêtement de sol"], ["Démolition", "Enlever un revêtement mural"],
-  ["Démolition", "Enlever les vieux réseaux"], ["Démolition", "Vider une cuisine / salle de bain"],
+  ["Démolition", "Enlever les vieux réseaux"], ["Démolition", "Dépose complète cuisine / salle de bain (curage)"],
   ["Démolition", "Abattre une cloison"], ["Démolition", "Casser une dalle / vieux sol"],
 ];
 
@@ -104,7 +104,7 @@ export function presetRapide(input: RapideInput): { ctx: Ctx; sel: Selection } {
   const qManuel: Record<string, number> = {
     [key("Menuiseries exterieures", "Fenêtres")]: fenetres,
     [key("Cuisine", "Cuisine complète neuve — tout compris")]: Math.max(2.5, Math.round(surface / 28)),
-    [key("Maçonnerie", "Couler une chape")]: surface,
+    [key("Maçonnerie", "Chape traditionnelle")]: surface,
     [key("Maçonnerie", "Ouvrir un mur porteur — petite (porte/fenêtre)")]: lourde ? 2 : 1,
     [key("Démolition", "Enlever un revêtement mural")]: Math.round(surface * 2.2),
     [key("Démolition", "Abattre une cloison")]: Math.round(surface * 0.2),
