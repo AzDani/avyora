@@ -427,11 +427,11 @@
         "sm": 1200
       },
       {
-        "n": "Créer une mezzanine",
-        "u": "m2",
-        "fp": 150,
-        "sm": 60,
-        "note": "= plancher bois + garde-corps + structure porteuse (poteaux/poutres)"
+        "n": "Garde-corps",
+        "u": "ml",
+        "fp": 180,
+        "sm": 90,
+        "note": "bois 60-220, métal/fer 150-400, verre 300-800 €/ml selon matériau"
       },
       {
         "n": "Mur en ossature bois",
