@@ -126,6 +126,17 @@ const RAPIDE_CSS = `
 .av-rapide-live .ghost:disabled{opacity:.5;cursor:not-allowed}
 .av-rapide-live .err{width:100%;font-size:12.5px;font-weight:500;color:#ffb1b6}
 .av-rapide .glbl{font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin:0 0 8px}
+.av-rapide .rgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:520px){.av-rapide .rgrid{grid-template-columns:1fr}}
+.av-rapide .rcard{display:flex;align-items:center;justify-content:space-between;gap:6px;background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--radius-field);padding:4px 6px 4px 4px;transition:.15s var(--ease)}
+.av-rapide .rcard.on{border-color:var(--brand);box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 12%,transparent)}
+.av-rapide .rcard .rname{flex:1;min-width:0;display:flex;align-items:center;gap:7px;background:transparent;border:0;font-family:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;text-align:left;padding:8px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.av-rapide .rcard.on .rname{color:var(--ink)}
+.av-rapide .rcard .rname .rem{font-size:16px;line-height:1}
+.av-rapide .rstep{display:inline-flex;align-items:center;flex:none;border:1px solid var(--line);border-radius:999px;background:#f8f9fd}
+.av-rapide .rstep button{width:26px;height:26px;border:0;background:transparent;color:var(--brand);font-size:16px;font-weight:700;cursor:pointer;line-height:1;border-radius:999px}
+.av-rapide .rstep button:disabled{color:var(--line-strong);cursor:default}
+.av-rapide .rstep .rn{min-width:16px;text-align:center;font-family:var(--font-geist-mono),monospace;font-size:12px;font-weight:600;color:var(--ink)}
 .av-rapide .plist{margin-top:12px;border:1px solid var(--line);border-radius:.9rem;overflow:hidden;background:#f8f9fd}
 .av-rapide .prow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
 .av-rapide .prow:last-of-type{border-bottom:0}
@@ -254,6 +265,13 @@ export default function EstimateurRapide({ isPro = false }: { isPro?: boolean })
     setMode("pieces");
     setPieces((prev) => [...prev, { room: k, surface: roomLabel(k).surf }]);
   }
+  function retirerUne(k: PieceKey) {
+    setPieces((prev) => {
+      let idx = -1;
+      for (let i = prev.length - 1; i >= 0; i--) if (prev[i].room === k) { idx = i; break; }
+      return idx < 0 ? prev : prev.filter((_, i) => i !== idx);
+    });
+  }
   const setPieceSurf = (i: number, s: number) =>
     setPieces((prev) => prev.map((r, idx) => (idx === i ? { ...r, surface: s } : r)));
   const retirerPiece = (i: number) => setPieces((prev) => prev.filter((_, idx) => idx !== i));
@@ -312,13 +330,20 @@ export default function EstimateurRapide({ isPro = false }: { isPro?: boolean })
           </div>
 
           <div className="glbl">Une ou plusieurs pièces</div>
-          <div className="seg seg-rooms">
+          <div className="rgrid">
             {ROOMS.map((r) => {
               const n = countByRoom(r.key);
               return (
-                <button key={r.key} className={mode === "pieces" && n > 0 ? "on" : ""} onClick={() => ajouterPiece(r.key)}>
-                  {r.emoji} {r.label}{n > 1 ? ` ×${n}` : ""}
-                </button>
+                <div key={r.key} className={"rcard" + (mode === "pieces" && n > 0 ? " on" : "")}>
+                  <button type="button" className="rname" onClick={() => ajouterPiece(r.key)}>
+                    <span className="rem">{r.emoji}</span> {r.label}
+                  </button>
+                  <span className="rstep">
+                    <button type="button" onClick={() => retirerUne(r.key)} disabled={n === 0} aria-label={`Retirer une ${r.label}`}>−</button>
+                    <span className="rn">{n}</span>
+                    <button type="button" onClick={() => ajouterPiece(r.key)} aria-label={`Ajouter une ${r.label}`}>+</button>
+                  </span>
+                </div>
               );
             })}
           </div>
@@ -344,7 +369,7 @@ export default function EstimateurRapide({ isPro = false }: { isPro?: boolean })
                     </div>
                   );
                 })}
-                <div className="psum">{nbPieces} pièce{nbPieces > 1 ? "s" : ""} · {totalSurface.toLocaleString(nf)} m² au total · <span className="hintadd">re-tape une pièce pour en ajouter une autre</span></div>
+                <div className="psum">{nbPieces} pièce{nbPieces > 1 ? "s" : ""} · {totalSurface.toLocaleString(nf)} m² au total · <span className="hintadd">ajuste la surface de chaque pièce</span></div>
               </div>
             );
           })()}
