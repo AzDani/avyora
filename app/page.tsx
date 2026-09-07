@@ -172,7 +172,7 @@ const HOME_HTML = `
 </div></section>
 
 <section class="blk" style="padding-top:0"><div class="wrap">
-  <div class="center"><p class="eyebrow">Aperçu du résultat · AVYORA Pro</p><h2>Le rapport détaillé, avec Pro.</h2><p>Un vrai document chiffré poste par poste, à débloquer avec AVYORA&nbsp;Pro — exemple : maison 110 m² à Bordeaux. L'estimation rapide (ta fourchette), elle, reste gratuite.</p></div>
+  <div class="center"><p class="eyebrow">Aperçu du résultat · AVYORA Pro</p><h2>Le rapport détaillé, avec Pro.</h2><p>Un vrai document chiffré poste par poste, à débloquer avec AVYORA&nbsp;Pro — exemple : maison 145 m² à Bordeaux. L'estimation rapide (ta fourchette), elle, reste gratuite.</p></div>
   <div class="doc"><img src="/exemple-rapport.png" alt="Exemple de rapport d'estimation détaillée AVYORA" width="1680" height="2356" loading="lazy"></div>
   <div class="demo-cta"><a href="/projets/nouveau" class="btn btn-p">Estimer gratuitement →</a></div>
 </div></section>
@@ -281,7 +281,7 @@ const HOME_HTML_EN = `
 </div></section>
 
 <section class="blk" style="padding-top:0"><div class="wrap">
-  <div class="center"><p class="eyebrow">Result preview · AVYORA Pro</p><h2>The detailed report, with Pro.</h2><p>A real costed document, line by line, unlocked with AVYORA&nbsp;Pro — example: 110 m² house in Bordeaux. The quick estimate (your range) stays free.</p></div>
+  <div class="center"><p class="eyebrow">Result preview · AVYORA Pro</p><h2>The detailed report, with Pro.</h2><p>A real costed document, line by line, unlocked with AVYORA&nbsp;Pro — example: 145 m² house in Bordeaux. The quick estimate (your range) stays free.</p></div>
   <div class="doc"><img src="/exemple-rapport.png" alt="Example of a detailed AVYORA estimate report" width="1680" height="2356" loading="lazy"></div>
   <div class="demo-cta"><a href="/projets/nouveau" class="btn btn-p">Estimate for free →</a></div>
 </div></section>
