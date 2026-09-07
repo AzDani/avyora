@@ -144,10 +144,14 @@ const RAPIDE_CSS = `
 .av-rapide .stepper{display:inline-flex;align-items:center;border:1px solid var(--line-strong);border-radius:999px;background:var(--surface)}
 .av-rapide .stepper button{width:28px;height:28px;border:0;background:transparent;color:var(--brand);font-size:16px;font-weight:700;cursor:pointer;line-height:1}
 .av-rapide .stepper .num{min-width:22px;text-align:center;font-family:var(--font-geist-mono),monospace;font-size:13px;font-weight:600;color:var(--ink)}
-.av-rapide .psurf{display:inline-flex;align-items:center;gap:5px}
-.av-rapide .psurf input{width:56px;font-family:inherit;font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--line-strong);border-radius:.55rem;padding:7px 8px;text-align:right;outline:none}
-.av-rapide .psurf input:focus{border-color:var(--brand)}
-.av-rapide .psurf .u{font-size:11.5px;color:var(--faint)}
+.av-rapide .psurf{display:inline-flex;align-items:center;flex:none;border:1px solid var(--line-strong);border-radius:999px;background:var(--surface);overflow:hidden}
+.av-rapide .psurf:focus-within{border-color:var(--brand);box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 12%,transparent)}
+.av-rapide .psurf .sstep{width:32px;height:36px;border:0;background:transparent;color:var(--brand);font-size:18px;font-weight:700;cursor:pointer;line-height:1;transition:.12s}
+.av-rapide .psurf .sstep:hover{background:var(--brand-50)}
+.av-rapide .psurf .sstep:active{background:var(--brand-200)}
+.av-rapide .psurf input{width:38px;font-family:var(--font-geist-mono),monospace;font-variant-numeric:tabular-nums;font-size:14.5px;font-weight:600;color:var(--ink);background:transparent;border:0;padding:0;text-align:right;outline:none;-moz-appearance:textfield}
+.av-rapide .psurf input::-webkit-outer-spin-button,.av-rapide .psurf input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.av-rapide .psurf .u{font-size:12px;color:var(--faint);padding:0 8px 0 3px}
 .av-rapide .prm{width:26px;height:26px;border:0;background:transparent;color:var(--faint);font-size:14px;cursor:pointer;border-radius:6px}
 .av-rapide .prm:hover{background:var(--line);color:var(--ink)}
 .av-rapide .psum{padding:9px 12px;font-size:12px;color:var(--muted);background:var(--surface)}
@@ -362,8 +366,10 @@ export default function EstimateurRapide({ isPro = false }: { isPro?: boolean })
                     <div className="prow" key={i}>
                       <span className="pname">{meta.emoji} {meta.label}{ord}</span>
                       <span className="psurf">
+                        <button type="button" className="sstep" onClick={() => setPieceSurf(i, Math.max(2, (r.surface || 0) - 1))} aria-label="Diminuer la surface">−</button>
                         <input type="number" inputMode="numeric" min={2} value={r.surface} onChange={(e) => setPieceSurf(i, parseFloat(e.target.value) || 0)} />
                         <span className="u">m²</span>
+                        <button type="button" className="sstep" onClick={() => setPieceSurf(i, (r.surface || 0) + 1)} aria-label="Augmenter la surface">+</button>
                       </span>
                       <button className="prm" onClick={() => retirerPiece(i)} aria-label="Supprimer">✕</button>
                     </div>
