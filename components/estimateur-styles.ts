@@ -166,10 +166,11 @@ export const EST_CSS = `
 .av-estim .stp{display:flex;align-items:center;justify-content:space-between;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-field);padding:7px 9px 7px 13px}
 .av-estim .stp .l{font-size:12.5px;font-weight:600;color:var(--ink)}
 .av-estim .stp .l small{display:block;font-size:10px;color:var(--faint);font-weight:500;margin-top:1px}
-.av-estim .stp .c{display:flex;align-items:center;gap:4px}
-.av-estim .stp button{width:27px;height:27px;border-radius:7px;border:1px solid var(--line-strong);background:var(--surface);color:var(--brand);font-size:16px;font-weight:600;line-height:1;cursor:pointer;display:grid;place-items:center;transition:.14s var(--ease)}
-.av-estim .stp button:hover{border-color:var(--brand);background:var(--brand-50)}
-.av-estim .stp .v{font-family:var(--font-geist-mono);font-size:15px;font-weight:600;min-width:22px;text-align:center}
+.av-estim .stp .c{display:inline-flex;align-items:center;border:1px solid var(--line-strong);border-radius:999px;background:var(--surface);overflow:hidden}
+.av-estim .stp button{width:29px;height:30px;border-radius:0;border:0;background:transparent;color:var(--brand);font-size:16px;font-weight:700;line-height:1;cursor:pointer;display:grid;place-items:center;transition:background .12s}
+.av-estim .stp button:hover{background:var(--brand-50)}
+.av-estim .stp button:active{background:var(--brand-100)}
+.av-estim .stp .v{font-family:var(--font-geist-mono);font-size:14px;font-weight:600;min-width:26px;text-align:center;color:var(--ink)}
 .av-estim .finc{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 .av-estim .finc .fc{display:flex;flex-direction:column;text-align:left;background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--radius-card);padding:13px 12px;cursor:pointer;transition:.16s var(--ease)}
 .av-estim .finc .fc:hover{border-color:var(--brand-200)}

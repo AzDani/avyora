@@ -10,6 +10,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import NumStepper from "@/components/Stepper";
 import { EST_CSS } from "./estimateur-styles";
 import {
   CATALOG, PHASES, finCoef, ICON, LOC, defaultCtx, key, isLoc, visible,
@@ -203,9 +204,9 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
 
               <div className="gl">Surfaces</div>
               <div className="depart">
-                <Field label="Surface habitable"><div className="uinp"><input type="number" min={1} value={ctx.surface} onChange={(e) => onNum("surface", e.target.value)} /><span className="u">m²</span></div></Field>
-                <Field label={<>Surface au sol <span style={{ color: "var(--faint)" }}>· auto</span></>}><div className="uinp"><input type="number" min={1} value={ctx.surfaceSol} onChange={(e) => onSol(e.target.value)} /><span className="u">m²</span></div></Field>
-                <Field label="Hauteur sous plafond"><div className="uinp"><input type="number" min={2} step={0.1} value={ctx.hauteur} onChange={(e) => onNum("hauteur", e.target.value)} /><span className="u">m</span></div></Field>
+                <Field label="Surface habitable"><NumStepper block value={ctx.surface} min={1} unit="m²" onChange={(n) => onNum("surface", String(n))} /></Field>
+                <Field label={<>Surface au sol <span style={{ color: "var(--faint)" }}>· auto</span></>}><NumStepper block value={ctx.surfaceSol} min={1} unit="m²" onChange={(n) => onSol(String(n))} /></Field>
+                <Field label="Hauteur sous plafond"><NumStepper block value={ctx.hauteur} min={2} step={0.1} unit="m" onChange={(n) => onNum("hauteur", String(n))} /></Field>
                 <Field label="Code postal"><div className="uinp"><input inputMode="numeric" maxLength={5} placeholder="33000" value={codePostal} onChange={(e) => setCodePostal(e.target.value.replace(/\D/g, "").slice(0, 5))} /></div></Field>
               </div>
 
@@ -237,8 +238,8 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
 
               <div className="gl">Budget &amp; imprévus</div>
               <div className="depart">
-                <Field label={<>Budget max <span style={{ color: "var(--faint)" }}>· facultatif</span></>}><div className="uinp"><input type="number" min={0} step={1000} value={ctx.budget} onChange={(e) => onNum("budget", e.target.value)} /><span className="u">€</span></div></Field>
-                <Field label={<>Provision aléas <span style={{ color: "var(--faint)" }}>· reco ≥ 5</span></>}><div className="uinp"><input type="number" min={0} max={20} step={1} value={ctx.aleas} onChange={(e) => onNum("aleas", e.target.value)} /><span className="u">%</span></div></Field>
+                <Field label={<>Budget max <span style={{ color: "var(--faint)" }}>· facultatif</span></>}><NumStepper block value={ctx.budget} min={0} step={1000} unit="€" onChange={(n) => onNum("budget", String(n))} /></Field>
+                <Field label={<>Provision aléas <span style={{ color: "var(--faint)" }}>· reco ≥ 5</span></>}><NumStepper block value={ctx.aleas} min={0} max={20} unit="%" onChange={(n) => onNum("aleas", String(n))} /></Field>
               </div>
               <div className="recap">
                 🏠 <b>{appart ? "Appartement" : "Maison"}</b> · {ctx.surface} m² habitables · <b>{ctx.niveaux} niveau{ctx.niveaux > 1 ? "x" : ""}</b> · emprise au sol ~{SS} m² · plafond {ctx.hauteur} m
@@ -384,7 +385,7 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty }: {
           {t.u !== "forfait" && (au ? (
             <>
               {s.manual
-                ? <input className="qty num" type="number" min={0} value={s.qty != null ? s.qty : autoVal} onChange={(e) => onQty(parseFloat(e.target.value) || 0)} />
+                ? <NumStepper compact value={s.qty != null ? s.qty : autoVal} min={0} onChange={onQty} />
                 : <span className="qauto num" title="calculé automatiquement depuis vos infos de départ">{autoVal}</span>}
               <span className="unit">{t.u}</span>
               <span className="swiwrap">
@@ -394,7 +395,7 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty }: {
             </>
           ) : (
             <>
-              <input className="qty num" type="number" min={0} value={s.qty != null ? s.qty : (loc ? 1 : 0)} onChange={(e) => onQty(parseFloat(e.target.value) || 0)} />
+              <NumStepper compact value={s.qty != null ? s.qty : (loc ? 1 : 0)} min={0} onChange={onQty} />
               <span className="unit">{loc ? "j" : t.u}</span>
             </>
           ))}

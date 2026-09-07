@@ -197,3 +197,23 @@
   html { scroll-behavior: auto; }
   .animate-rise, .animate-fade, .stagger > *, .card-interactive { animation: none !important; transition: none !important; }
 }
+
+/* ── Stepper numérique unifié (surface / quantité) — composant components/Stepper.tsx ── */
+.av-step { display: inline-flex; align-items: center; flex: none; height: 40px;
+  border: 1px solid var(--color-line-strong); border-radius: 999px; background: var(--color-surface); overflow: hidden; }
+.av-step.block { display: flex; height: 44px; }
+.av-step:focus-within { border-color: var(--color-brand-600); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand-600) 14%, transparent); }
+.av-step button { flex: none; width: 38px; height: 100%; border: 0; background: transparent; color: var(--color-brand-600);
+  font-size: 18px; font-weight: 700; line-height: 1; cursor: pointer; transition: background .12s; }
+.av-step button:hover { background: var(--color-brand-50); }
+.av-step button:active { background: var(--color-brand-100); }
+.av-step button:disabled { color: var(--color-line-strong); cursor: default; background: transparent; }
+.av-step input { min-width: 0; width: 46px; border: 0; background: transparent; text-align: center; padding: 0; outline: none;
+  font-family: var(--font-geist-mono), ui-monospace, monospace; font-variant-numeric: tabular-nums; font-size: 14.5px; font-weight: 600;
+  color: var(--color-ink); -moz-appearance: textfield; }
+.av-step.block input { flex: 1; width: auto; }
+.av-step input::-webkit-outer-spin-button, .av-step input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.av-step .u { font-size: 12px; color: var(--color-faint); padding: 0 8px 0 2px; white-space: nowrap; }
+.av-step.compact { height: 34px; }
+.av-step.compact button { width: 28px; font-size: 15px; }
+.av-step.compact input { width: 40px; font-size: 13px; }

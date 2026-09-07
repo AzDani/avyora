@@ -13,6 +13,7 @@ import {
 } from "@/lib/estimateur";
 import { suivre } from "@/lib/track";
 import { useT, useLocale } from "@/components/i18n/LangProvider";
+import Stepper from "@/components/Stepper";
 
 type Mode = "bien" | "pieces";
 // Pièces disponibles (mode « une ou plusieurs pièces ») : emoji, libellé, surface par défaut.
@@ -144,22 +145,6 @@ const RAPIDE_CSS = `
 .av-rapide .stepper{display:inline-flex;align-items:center;border:1px solid var(--line-strong);border-radius:999px;background:var(--surface)}
 .av-rapide .stepper button{width:28px;height:28px;border:0;background:transparent;color:var(--brand);font-size:16px;font-weight:700;cursor:pointer;line-height:1}
 .av-rapide .stepper .num{min-width:22px;text-align:center;font-family:var(--font-geist-mono),monospace;font-size:13px;font-weight:600;color:var(--ink)}
-.av-rapide .psurf{display:inline-flex;align-items:center;flex:none;border:1px solid var(--line-strong);border-radius:999px;background:var(--surface);overflow:hidden}
-.av-rapide .psurf:focus-within{border-color:var(--brand);box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 12%,transparent)}
-.av-rapide .psurf .sstep{width:32px;height:36px;border:0;background:transparent;color:var(--brand);font-size:18px;font-weight:700;cursor:pointer;line-height:1;transition:.12s}
-.av-rapide .psurf .sstep:hover{background:var(--brand-50)}
-.av-rapide .psurf .sstep:active{background:var(--brand-200)}
-.av-rapide .psurf input{width:38px;font-family:var(--font-geist-mono),monospace;font-variant-numeric:tabular-nums;font-size:14.5px;font-weight:600;color:var(--ink);background:transparent;border:0;padding:0;text-align:right;outline:none;-moz-appearance:textfield}
-.av-rapide .psurf input::-webkit-outer-spin-button,.av-rapide .psurf input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-.av-rapide .psurf .u{font-size:12px;color:var(--faint);padding:0 8px 0 3px}
-.av-rapide .surfstep{display:flex;align-items:center;border:1px solid var(--line-strong);border-radius:var(--radius-field);background:var(--surface);overflow:hidden;height:44px}
-.av-rapide .surfstep:focus-within{border-color:var(--brand);box-shadow:0 0 0 4px color-mix(in srgb,var(--brand) 14%,transparent)}
-.av-rapide .surfstep button{width:46px;height:100%;border:0;background:transparent;color:var(--brand);font-size:20px;font-weight:700;cursor:pointer;line-height:1;transition:.12s}
-.av-rapide .surfstep button:hover{background:var(--brand-50)}
-.av-rapide .surfstep button:active{background:var(--brand-200)}
-.av-rapide .surfstep input{flex:1;min-width:0;width:100%;border:0;background:transparent;text-align:center;font-family:var(--font-geist-mono),monospace;font-variant-numeric:tabular-nums;font-size:15px;font-weight:600;color:var(--ink);outline:none;padding:0;-moz-appearance:textfield}
-.av-rapide .surfstep input::-webkit-outer-spin-button,.av-rapide .surfstep input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-.av-rapide .surfstep .u{font-size:12.5px;color:var(--faint);padding-right:12px}
 .av-rapide .prm{width:26px;height:26px;border:0;background:transparent;color:var(--faint);font-size:14px;cursor:pointer;border-radius:6px}
 .av-rapide .prm:hover{background:var(--line);color:var(--ink)}
 .av-rapide .psum{padding:9px 12px;font-size:12px;color:var(--muted);background:var(--surface)}
@@ -373,12 +358,7 @@ export default function EstimateurRapide({ isPro = false }: { isPro?: boolean })
                   return (
                     <div className="prow" key={i}>
                       <span className="pname">{meta.emoji} {meta.label}{ord}</span>
-                      <span className="psurf">
-                        <button type="button" className="sstep" onClick={() => setPieceSurf(i, Math.max(2, (r.surface || 0) - 1))} aria-label="Diminuer la surface">−</button>
-                        <input type="number" inputMode="numeric" min={2} value={r.surface} onChange={(e) => setPieceSurf(i, parseFloat(e.target.value) || 0)} />
-                        <span className="u">m²</span>
-                        <button type="button" className="sstep" onClick={() => setPieceSurf(i, (r.surface || 0) + 1)} aria-label="Augmenter la surface">+</button>
-                      </span>
+                      <Stepper compact value={r.surface} min={2} unit="m²" onChange={(n) => setPieceSurf(i, n)} />
                       <button className="prm" onClick={() => retirerPiece(i)} aria-label="Supprimer">✕</button>
                     </div>
                   );
@@ -392,12 +372,7 @@ export default function EstimateurRapide({ isPro = false }: { isPro?: boolean })
             {mode === "bien" && (
               <div className="fld">
                 <label>{t.surfaceLabel}</label>
-                <div className="surfstep">
-                  <button type="button" onClick={() => setSurface(Math.max(8, (surface || 0) - 1))} aria-label="Diminuer la surface">−</button>
-                  <input type="number" inputMode="numeric" min={8} value={surface} onChange={(e) => setSurface(parseFloat(e.target.value) || 0)} />
-                  <span className="u">m²</span>
-                  <button type="button" onClick={() => setSurface((surface || 0) + 1)} aria-label="Augmenter la surface">+</button>
-                </div>
+                <Stepper block value={surface} min={8} unit="m²" onChange={setSurface} />
               </div>
             )}
             <div className="fld" style={mode === "pieces" ? { gridColumn: "1 / -1" } : undefined}><label>{t.cpLabel}</label><input inputMode="numeric" maxLength={5} placeholder={t.cpPlaceholder} value={cp} onChange={(e) => setCp(e.target.value.replace(/\D/g, "").slice(0, 5))} /></div>
