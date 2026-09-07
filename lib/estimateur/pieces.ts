@@ -72,6 +72,7 @@ export function pieceTasks(room: PieceKey, s: number, ampleur: Ampleur): Tache[]
       ["Plomberie", "Installer une douche (hors carrelage)", 1],
       ["Plomberie", "Installer un WC", 1],
       ["Plomberie", "Installer un lavabo / meuble-vasque", 1],
+      ["Plomberie", "Miroir LED", 1],
       ["Chauffage / VMC", "Ventilation (VMC)", 1],
     );
     if (lvl >= 2) out.push(
@@ -95,6 +96,7 @@ export function pieceTasks(room: PieceKey, s: number, ampleur: Ampleur): Tache[]
       ["Plomberie", "Installer une douche (hors carrelage)", 1],
       ["Plomberie", "Installer un WC", 1],
       ["Plomberie", "Installer un lavabo / meuble-vasque", 1],
+      ["Plomberie", "Miroir LED", 1],
       ["Chauffage / VMC", "Ventilation (VMC)", 1],
     );
     if (lvl >= 2) out.push(
