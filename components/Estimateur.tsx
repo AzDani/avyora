@@ -204,9 +204,9 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
 
               <div className="gl">Surfaces</div>
               <div className="depart">
-                <Field label="Surface habitable"><NumStepper block value={ctx.surface} min={1} unit="m²" onChange={(n) => onNum("surface", String(n))} /></Field>
-                <Field label={<>Surface au sol <span style={{ color: "var(--faint)" }}>· auto</span></>}><NumStepper block value={ctx.surfaceSol} min={1} unit="m²" onChange={(n) => onSol(String(n))} /></Field>
-                <Field label="Hauteur sous plafond"><NumStepper block value={ctx.hauteur} min={2} step={0.1} unit="m" onChange={(n) => onNum("hauteur", String(n))} /></Field>
+                <Field label="Surface habitable"><NumStepper field value={ctx.surface} min={1} unit="m²" onChange={(n) => onNum("surface", String(n))} /></Field>
+                <Field label={<>Surface au sol <span style={{ color: "var(--faint)" }}>· auto</span></>}><NumStepper field value={ctx.surfaceSol} min={1} unit="m²" onChange={(n) => onSol(String(n))} /></Field>
+                <Field label="Hauteur sous plafond"><NumStepper field value={ctx.hauteur} min={2} step={0.1} unit="m" onChange={(n) => onNum("hauteur", String(n))} /></Field>
                 <Field label="Code postal"><div className="uinp"><input inputMode="numeric" maxLength={5} placeholder="33000" value={codePostal} onChange={(e) => setCodePostal(e.target.value.replace(/\D/g, "").slice(0, 5))} /></div></Field>
               </div>
 
@@ -238,8 +238,8 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
 
               <div className="gl">Budget &amp; imprévus</div>
               <div className="depart">
-                <Field label={<>Budget max <span style={{ color: "var(--faint)" }}>· facultatif</span></>}><NumStepper block value={ctx.budget} min={0} step={1000} unit="€" onChange={(n) => onNum("budget", String(n))} /></Field>
-                <Field label={<>Provision aléas <span style={{ color: "var(--faint)" }}>· reco ≥ 5</span></>}><NumStepper block value={ctx.aleas} min={0} max={20} unit="%" onChange={(n) => onNum("aleas", String(n))} /></Field>
+                <Field label={<>Budget max <span style={{ color: "var(--faint)" }}>· facultatif</span></>}><NumStepper field value={ctx.budget} min={0} step={1000} unit="€" onChange={(n) => onNum("budget", String(n))} /></Field>
+                <Field label={<>Provision aléas <span style={{ color: "var(--faint)" }}>· reco ≥ 5</span></>}><NumStepper field value={ctx.aleas} min={0} max={20} unit="%" onChange={(n) => onNum("aleas", String(n))} /></Field>
               </div>
               <div className="recap">
                 🏠 <b>{appart ? "Appartement" : "Maison"}</b> · {ctx.surface} m² habitables · <b>{ctx.niveaux} niveau{ctx.niveaux > 1 ? "x" : ""}</b> · emprise au sol ~{SS} m² · plafond {ctx.hauteur} m

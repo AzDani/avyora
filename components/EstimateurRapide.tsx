@@ -372,7 +372,7 @@ export default function EstimateurRapide({ isPro = false }: { isPro?: boolean })
             {mode === "bien" && (
               <div className="fld">
                 <label>{t.surfaceLabel}</label>
-                <Stepper block value={surface} min={8} unit="m²" onChange={setSurface} />
+                <Stepper field value={surface} min={8} unit="m²" onChange={setSurface} />
               </div>
             )}
             <div className="fld" style={mode === "pieces" ? { gridColumn: "1 / -1" } : undefined}><label>{t.cpLabel}</label><input inputMode="numeric" maxLength={5} placeholder={t.cpPlaceholder} value={cp} onChange={(e) => setCp(e.target.value.replace(/\D/g, "").slice(0, 5))} /></div>
