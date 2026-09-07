@@ -408,13 +408,6 @@
         "sm": 40
       },
       {
-        "n": "Réparer / renforcer une charpente",
-        "u": "forfait",
-        "fp": null,
-        "sm": null,
-        "note": "variable selon ampleur"
-      },
-      {
         "n": "Traiter la charpente",
         "u": "m2",
         "fp": 5,
@@ -428,18 +421,6 @@
         "sm": 45
       },
       {
-        "n": "Renforcer un plancher existant",
-        "u": "m2",
-        "fp": 50,
-        "sm": 20
-      },
-      {
-        "n": "Ouvrir un passage (trémie)",
-        "u": "u",
-        "fp": 800,
-        "sm": 150
-      },
-      {
         "n": "Escalier en bois",
         "u": "u",
         "fp": 2500,
@@ -449,7 +430,8 @@
         "n": "Créer une mezzanine",
         "u": "m2",
         "fp": 150,
-        "sm": 60
+        "sm": 60,
+        "note": "= plancher bois + garde-corps + structure porteuse (poteaux/poutres)"
       },
       {
         "n": "Mur en ossature bois",
