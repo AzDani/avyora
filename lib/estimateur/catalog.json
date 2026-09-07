@@ -901,10 +901,39 @@
         "fixe": true
       },
       {
-        "n": "Installer une douche (hors carrelage)",
+        "n": "Bac de douche classique 120×80",
         "u": "u",
-        "fp": 1100,
-        "sm": 750
+        "fp": 400,
+        "sm": 170,
+        "fixe": true
+      },
+      {
+        "n": "Bac de douche grand 150×90",
+        "u": "u",
+        "fp": 500,
+        "sm": 230,
+        "fixe": true
+      },
+      {
+        "n": "Robinetterie de douche (mitigeur + colonne)",
+        "u": "u",
+        "fp": 300,
+        "sm": 180,
+        "fixe": true
+      },
+      {
+        "n": "Douche à l'italienne 120×80",
+        "u": "u",
+        "fp": 1090,
+        "sm": 440,
+        "fixe": true
+      },
+      {
+        "n": "Douche à l'italienne 150×90",
+        "u": "u",
+        "fp": 1360,
+        "sm": 580,
+        "fixe": true
       },
       {
         "n": "Installer une baignoire",

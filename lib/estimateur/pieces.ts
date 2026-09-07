@@ -69,7 +69,8 @@ export function pieceTasks(room: PieceKey, s: number, ampleur: Ampleur): Tache[]
     const faience = Math.round(4 * Math.sqrt(surf) * 2.2);
     if (lvl >= 1) out.push(
       ["Carrelage / Revetements", "Faïence / carrelage mural", faience],
-      ["Plomberie", "Installer une douche (hors carrelage)", 1],
+      ["Plomberie", "Bac de douche classique 120×80", 1],
+      ["Plomberie", "Robinetterie de douche (mitigeur + colonne)", 1],
       ["Plomberie", "WC classique", 1],
       ["Plomberie", "Meuble-vasque simple", 1],
       ["Plomberie", "Miroir LED", 1],
@@ -93,7 +94,8 @@ export function pieceTasks(room: PieceKey, s: number, ampleur: Ampleur): Tache[]
     if (lvl >= 1) out.push(
       ["Menuiseries interieures", "Portes intérieures", 1],
       ["Carrelage / Revetements", "Faïence / carrelage mural", 16],
-      ["Plomberie", "Installer une douche (hors carrelage)", 1],
+      ["Plomberie", "Bac de douche classique 120×80", 1],
+      ["Plomberie", "Robinetterie de douche (mitigeur + colonne)", 1],
       ["Plomberie", "WC classique", 1],
       ["Plomberie", "Meuble-vasque simple", 1],
       ["Plomberie", "Miroir LED", 1],
