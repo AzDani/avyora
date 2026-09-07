@@ -936,6 +936,27 @@
         "fixe": true
       },
       {
+        "n": "Paroi fixe 120 (walk-in, verre 8 mm)",
+        "u": "u",
+        "fp": 380,
+        "sm": 250,
+        "fixe": true
+      },
+      {
+        "n": "Paroi fixe 150 (walk-in, verre 8 mm)",
+        "u": "u",
+        "fp": 500,
+        "sm": 350,
+        "fixe": true
+      },
+      {
+        "n": "Cabine complète (parois + porte)",
+        "u": "u",
+        "fp": 750,
+        "sm": 500,
+        "fixe": true
+      },
+      {
         "n": "Installer une baignoire",
         "u": "u",
         "fp": 960,

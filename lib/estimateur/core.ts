@@ -205,6 +205,8 @@ export function autoQty(ctx: Ctx, c: string, n: string, sel: Selection): number 
     "Bac de douche classique 120×80": SDB, "Bac de douche grand 150×90": SDB,
     "Robinetterie de douche (mitigeur + colonne)": SDB,
     "Douche à l'italienne 120×80": SDB, "Douche à l'italienne 150×90": SDB,
+    "Paroi fixe 120 (walk-in, verre 8 mm)": SDB, "Paroi fixe 150 (walk-in, verre 8 mm)": SDB,
+    "Cabine complète (parois + porte)": SDB,
     "Meuble-vasque simple": SDB,
     "Ventilation (VMC)": 1, "Sèche-serviette": SDB,
     "Monter une cloison": S * 0.35, "Doubler un mur": facade,
