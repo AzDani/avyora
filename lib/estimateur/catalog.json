@@ -859,34 +859,46 @@
         "sm": 55
       },
       {
-        "n": "Installer un WC",
+        "n": "WC classique",
         "u": "u",
-        "fp": 620,
-        "sm": 350
+        "fp": 410,
+        "sm": 280,
+        "fixe": true
+      },
+      {
+        "n": "WC suspendu",
+        "u": "u",
+        "fp": 850,
+        "sm": 550,
+        "fixe": true
       },
       {
         "n": "Meuble-vasque simple",
         "u": "u",
-        "fp": 526,
-        "sm": 329
+        "fp": 433,
+        "sm": 273,
+        "fixe": true
       },
       {
         "n": "Meuble-vasque double",
         "u": "u",
-        "fp": 986,
-        "sm": 657
+        "fp": 815,
+        "sm": 545,
+        "fixe": true
       },
       {
         "n": "Miroir LED",
         "u": "u",
-        "fp": 213,
-        "sm": 164
+        "fp": 176,
+        "sm": 136,
+        "fixe": true
       },
       {
         "n": "Grand miroir LED",
         "u": "u",
-        "fp": 345,
-        "sm": 274
+        "fp": 282,
+        "sm": 227,
+        "fixe": true
       },
       {
         "n": "Installer une douche (hors carrelage)",
@@ -905,12 +917,6 @@
         "u": "u",
         "fp": 840,
         "sm": 570
-      },
-      {
-        "n": "Raccorder lave-linge / lave-vaisselle",
-        "u": "u",
-        "fp": 150,
-        "sm": 40
       },
       {
         "n": "Installer un adoucisseur d'eau",

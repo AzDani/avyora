@@ -370,7 +370,7 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty }: {
 }) {
   const s = sel[key(l.c, t.n)] || {};
   const on = !!s.on, self = !!s.self;
-  const puv = t.fp != null ? t.fp * coef : null;
+  const puv = t.fp != null ? t.fp * (t.fixe ? 1 : coef) : null;
   let puTxt = puv != null ? fmt(puv) + " HT" + (t.u !== "forfait" && t.u !== "u" ? "/" + t.u : "") : "prix sur devis";
   if (t.note) puTxt += " · " + t.note;
   const au = isAuto(ctx, l.c, t.n);

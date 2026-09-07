@@ -70,7 +70,7 @@ export function pieceTasks(room: PieceKey, s: number, ampleur: Ampleur): Tache[]
     if (lvl >= 1) out.push(
       ["Carrelage / Revetements", "Faïence / carrelage mural", faience],
       ["Plomberie", "Installer une douche (hors carrelage)", 1],
-      ["Plomberie", "Installer un WC", 1],
+      ["Plomberie", "WC classique", 1],
       ["Plomberie", "Meuble-vasque simple", 1],
       ["Plomberie", "Miroir LED", 1],
       ["Chauffage / VMC", "Ventilation (VMC)", 1],
@@ -94,7 +94,7 @@ export function pieceTasks(room: PieceKey, s: number, ampleur: Ampleur): Tache[]
       ["Menuiseries interieures", "Portes intérieures", 1],
       ["Carrelage / Revetements", "Faïence / carrelage mural", 16],
       ["Plomberie", "Installer une douche (hors carrelage)", 1],
-      ["Plomberie", "Installer un WC", 1],
+      ["Plomberie", "WC classique", 1],
       ["Plomberie", "Meuble-vasque simple", 1],
       ["Plomberie", "Miroir LED", 1],
       ["Chauffage / VMC", "Ventilation (VMC)", 1],
@@ -106,7 +106,6 @@ export function pieceTasks(room: PieceKey, s: number, ampleur: Ampleur): Tache[]
     if (lvl >= 3) out.push(...curage());
   } else if (room === "buanderie") {
     if (lvl >= 1) out.push(
-      ["Plomberie", "Raccorder lave-linge / lave-vaisselle", 1],
       ["Chauffage / VMC", "Ventilation (VMC)", 1],
     );
     if (lvl >= 2) out.push(

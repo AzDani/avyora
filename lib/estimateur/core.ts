@@ -22,6 +22,7 @@ export interface Tache {
   sm: number | null;    // sans MO (fourniture) HT ; null = prestation
   tva?: number;         // TVA spécifique à la tâche (sinon celle du lot)
   note?: string;
+  fixe?: boolean;       // prix d'équipement FIXE : non impacté par le niveau de finition
 }
 export interface Lot {
   c: string;            // corps d'état
@@ -87,6 +88,10 @@ export const LOT_FIN: Record<string, Record<Finition, number>> = {
 /** Coefficient de finition pour un lot donné (selon le niveau choisi dans ctx). */
 export function finCoef(ctx: Ctx, corps: string): number {
   return (LOT_FIN[corps] ?? FINCO)[ctx.finition];
+}
+/** Coef finition par tâche : 1 (fixe) pour les équipements à prix fixe, sinon le coef du lot. */
+export function finCoefTask(ctx: Ctx, l: Lot, t: Tache): number {
+  return t.fixe ? 1 : finCoef(ctx, l.c);
 }
 // ── Coefficient régional (main-d'œuvre) ───────────────────────────────────────
 // La MO varie fortement selon la région ; les matériaux sont ~nationaux (sauf outre-mer,
@@ -184,7 +189,7 @@ export function autoQty(ctx: Ctx, c: string, n: string, sel: Selection): number 
   const SS = ctx.surfaceSol || S;
   const roof = SS * 1.4;
   const facade = 4 * Math.sqrt(SS) * ctx.hauteur * (ctx.niveaux || 1) * 1.25;
-  const P = piecesEff(ctx), SDB = sdbEff(ctx), BUA = ctx.buanderie ?? 0;
+  const P = piecesEff(ctx), SDB = sdbEff(ctx);
   if (c === "Cloisons / Platrerie" && n === FINI) return derivedFinitions(ctx, sel);
   const A: Record<string, number> = {
     "Peinture des murs": S * ctx.hauteur, "Peinture des plafonds": S, "Préparation des surfaces": S * ctx.hauteur,
@@ -196,8 +201,7 @@ export function autoQty(ctx: Ctx, c: string, n: string, sel: Selection): number 
     "Faïence / carrelage mural": SDB * 12, "Cloison pièce humide (hydrofuge)": SDB * 12,
     "Portes intérieures": P, "Radiateurs électriques": P,
     "Ajouter un point lumineux": P, "Ajouter / déplacer une prise": Math.round(S / 5),
-    "Installer un WC": ctx.wc, "Installer une douche (hors carrelage)": SDB, "Meuble-vasque simple": SDB,
-    "Raccorder lave-linge / lave-vaisselle": BUA,
+    "WC classique": ctx.wc, "Installer une douche (hors carrelage)": SDB, "Meuble-vasque simple": SDB,
     "Ventilation (VMC)": 1, "Sèche-serviette": SDB,
     "Monter une cloison": S * 0.35, "Doubler un mur": facade,
     "Créer un plancher bois": Math.max(0, S - SS), "Plancher béton (étage créé)": Math.max(0, S - SS),
@@ -245,7 +249,7 @@ export function lineHT(ctx: Ctx, sel: Selection, l: Lot, t: Tache): number {
   const s = sel[key(l.c, t.n)];
   if (!s || !s.on) return 0;
   const R = regCoef(ctx);
-  const base = qtyOf(ctx, sel, l.c, t) * finCoef(ctx, l.c);
+  const base = qtyOf(ctx, sel, l.c, t) * finCoefTask(ctx, l, t);
   // Location : équipement, pas de coef régional MO.
   if (isLoc(l.c)) return t.fp != null ? t.fp * base : 0;
   // « Je le fais » : matériaux achetés par le particulier → coef matériaux uniquement.
@@ -285,11 +289,10 @@ export function bilan(catalog: Lot[], ctx: Ctx, sel: Selection): Bilan {
   let paye = 0, matA = 0, moA = 0, achat = 0, eco = 0;
   const R = regCoef(ctx);
   catalog.filter((l) => visible(ctx, l)).forEach((l) => {
-    const fc = finCoef(ctx, l.c);
     l.t.forEach((t) => {
       const s = sel[key(l.c, t.n)];
       if (!s || !s.on || t.fp == null) return;
-      const q = qtyOf(ctx, sel, l.c, t) * fc;
+      const q = qtyOf(ctx, sel, l.c, t) * finCoefTask(ctx, l, t);
       const fpU = t.fp, smU = t.sm != null ? t.sm : null;
       if (isLoc(l.c)) { achat += fpU * q; return; }
       if (s.self) {                                    // matériaux (part particulier) au coef matériaux
