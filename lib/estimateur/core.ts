@@ -81,17 +81,37 @@ const G2: Record<Finition, number> = { eco: 0.75, standard: 0.83, premium: 1 }; 
 const G3: Record<Finition, number> = { eco: 0.67, standard: 0.78, premium: 1 };  // fort (écart +7 pts)
 export const LOT_FIN: Record<string, Record<Finition, number>> = {
   "Etudes / Conception": G0, "Annexes de chantier": G0, "Location de matériel": G0, "Raccordements aux réseaux": G0, "Démolition": G0,
-  "Maçonnerie": G1, "Charpente & structure bois": G1, "Isolation": G1, "Electricite": G1, "Chauffage / VMC": G1,
-  "Toiture": G2, "Façade": G2, "Cloisons / Platrerie": G2, "Plomberie": G2, "Menuiseries exterieures": G2, "Menuiseries interieures": G2,
+  "Maçonnerie": G1, "Charpente, couverture & structure bois": G1, "Isolation": G1, "Electricite": G1, "Chauffage / VMC": G1,
+  "Façade": G2, "Cloisons / Platrerie": G2, "Plomberie": G2, "Menuiseries exterieures": G2, "Menuiseries interieures": G2,
   "Carrelage / Revetements": G3, "Peinture": G3, "Cuisine": G3,
 };
+
+/** Tâches « couverture / toiture » (fusionnées dans le lot charpente) : barème finition G2 conservé + masquées en appartement. */
+const TOITURE_TASKS = [
+  "Toiture complète tuile (charpente + couverture)",
+  "Toiture complète ardoise (charpente + couverture)",
+  "Réfection couverture tuiles (dépose + écran + liteaux)",
+  "Réfection couverture ardoise (dépose + écran + liteaux)",
+  "Couverture tuiles (pose seule)",
+  "Couverture ardoise (pose seule)",
+  "Couverture zinc / bac acier",
+  "Sous-toiture (écran + liteaux)",
+  "Gouttières & descentes",
+  "Raccords (faîtage, noues, solins)",
+  "Fenêtre de toit (Velux)",
+  "Nettoyer / démousser la toiture",
+  "Toit plat (étanchéité)",
+];
+const TASK_FIN: Record<string, Record<Finition, number>> = Object.fromEntries(TOITURE_TASKS.map((n) => [n, G2]));
 /** Coefficient de finition pour un lot donné (selon le niveau choisi dans ctx). */
 export function finCoef(ctx: Ctx, corps: string): number {
   return (LOT_FIN[corps] ?? FINCO)[ctx.finition];
 }
 /** Coef finition par tâche : 1 (fixe) pour les équipements à prix fixe, sinon le coef du lot. */
 export function finCoefTask(ctx: Ctx, l: Lot, t: Tache): number {
-  return t.fixe ? 1 : finCoef(ctx, l.c);
+  if (t.fixe) return 1;
+  const g = TASK_FIN[t.n];
+  return g ? g[ctx.finition] : finCoef(ctx, l.c);
 }
 // ── Coefficient régional (main-d'œuvre) ───────────────────────────────────────
 // La MO varie fortement selon la région ; les matériaux sont ~nationaux (sauf outre-mer,
@@ -121,12 +141,12 @@ const regCoef = (ctx: Ctx): RegionCoef => regionCoef(ctx.codePostal);
 
 export const FINI = "Finitions plâtrerie (bandes, enduit)";
 export const LOC = "Location de matériel";
-const HIDE_APPART = ["Toiture"];
+const HIDE_APPART: string[] = []; // (le lot Toiture est fusionné dans Charpente ; masquage désormais au niveau tâche)
 
 export const ICON: Record<string, string> = {
   "Etudes / Conception": "📐", "Annexes de chantier": "🚧", "Location de matériel": "🛠️",
   "Raccordements aux réseaux": "🔌", "Démolition": "🧱", "Maçonnerie": "🧱",
-  "Charpente & structure bois": "🪵", "Toiture": "🏠", "Façade": "🎨",
+  "Charpente, couverture & structure bois": "🪵", "Façade": "🎨",
   "Menuiseries exterieures": "🪟", "Isolation": "🧊", "Cloisons / Platrerie": "🧱",
   "Electricite": "⚡", "Plomberie": "🚿", "Chauffage / VMC": "🔥",
   "Carrelage / Revetements": "🎨", "Peinture": "🖌️", "Menuiseries interieures": "🚪", "Cuisine": "🍳",
@@ -134,7 +154,7 @@ export const ICON: Record<string, string> = {
 
 export function defaultCtx(): Ctx {
   return {
-    surface: 80, surfaceSol: 80, surfaceSolManual: false, niveaux: 1, type: "T3",
+    surface: 80, surfaceSol: 80, surfaceSolManual: false, niveaux: 1, type: "Maison",
     hauteur: 2.5, pieces: 6, fenetres: 7, sdb: 1, wc: 1, budget: 60000, aleas: 7, finition: "standard",
     sejour: 1, cuisine: 1, chambres: 3, suites: 0, couloir: 1, buanderie: 0,
   };
@@ -150,6 +170,7 @@ const HIDE_APPART_TASK = new Set<string>([
   "Charpente traditionnelle (hors couverture)",
   "Charpente en fermettes (hors couverture)",
   "Traiter la charpente",
+  ...TOITURE_TASKS,
 ]);
 export const visibleTask = (ctx: Ctx, t: Tache): boolean => !(isAppart(ctx) && HIDE_APPART_TASK.has(t.n));
 

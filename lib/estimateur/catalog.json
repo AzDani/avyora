@@ -391,7 +391,7 @@
     ]
   },
   {
-    "c": "Charpente & structure bois",
+    "c": "Charpente, couverture & structure bois",
     "p": "Gros œuvre & clos-couvert",
     "tva": 10,
     "t": [
@@ -414,38 +414,6 @@
         "sm": 2,
         "note": "préventif (xylophène) ; curatif par injection = 40–70 €/m²"
       },
-      {
-        "n": "Créer un plancher bois",
-        "u": "m2",
-        "fp": 90,
-        "sm": 45
-      },
-      {
-        "n": "Escalier en bois",
-        "u": "u",
-        "fp": 2500,
-        "sm": 1200
-      },
-      {
-        "n": "Garde-corps",
-        "u": "ml",
-        "fp": 180,
-        "sm": 90,
-        "note": "bois 60-220, métal/fer 150-400, verre 300-800 €/ml selon matériau"
-      },
-      {
-        "n": "Mur en ossature bois",
-        "u": "m2",
-        "fp": 90,
-        "sm": 40
-      }
-    ]
-  },
-  {
-    "c": "Toiture",
-    "p": "Gros œuvre & clos-couvert",
-    "tva": 10,
-    "t": [
       {
         "n": "Toiture complète tuile (charpente + couverture)",
         "u": "m2",
@@ -527,6 +495,31 @@
         "u": "m2",
         "fp": 80,
         "sm": 30
+      },
+      {
+        "n": "Créer un plancher bois",
+        "u": "m2",
+        "fp": 90,
+        "sm": 45
+      },
+      {
+        "n": "Escalier en bois",
+        "u": "u",
+        "fp": 2500,
+        "sm": 1200
+      },
+      {
+        "n": "Garde-corps",
+        "u": "ml",
+        "fp": 180,
+        "sm": 90,
+        "note": "bois 60-220, métal/fer 150-400, verre 300-800 €/ml selon matériau"
+      },
+      {
+        "n": "Mur en ossature bois",
+        "u": "m2",
+        "fp": 90,
+        "sm": 40
       }
     ]
   },

@@ -61,12 +61,12 @@ const CURAGE: Tache[] = [
 // ── Enveloppe MAISON uniquement (l'appartement ne les porte pas), cumulatif ──
 const MAISON_COMPLETE: Tache[] = [
   ["Isolation", "Isolation des combles perdus (soufflage)"],
-  ["Toiture", "Nettoyer / démousser la toiture"],
+  ["Charpente, couverture & structure bois", "Nettoyer / démousser la toiture"],
   ["Façade", "Peindre la façade"],
 ];
 const MAISON_LOURDE: Tache[] = [
-  ["Charpente & structure bois", "Charpente traditionnelle (hors couverture)"], ["Charpente & structure bois", "Traiter la charpente"],
-  ["Toiture", "Réfection couverture tuiles (dépose + écran + liteaux)"], ["Toiture", "Gouttières & descentes"],
+  ["Charpente, couverture & structure bois", "Charpente traditionnelle (hors couverture)"], ["Charpente, couverture & structure bois", "Traiter la charpente"],
+  ["Charpente, couverture & structure bois", "Réfection couverture tuiles (dépose + écran + liteaux)"], ["Charpente, couverture & structure bois", "Gouttières & descentes"],
   ["Façade", "Refaire l'enduit / le crépi"],
 ];
 
