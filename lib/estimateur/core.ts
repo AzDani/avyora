@@ -196,7 +196,7 @@ export function autoQty(ctx: Ctx, c: string, n: string, sel: Selection): number 
     "Faïence / carrelage mural": SDB * 12, "Cloison pièce humide (hydrofuge)": SDB * 12,
     "Portes intérieures": P, "Radiateurs électriques": P,
     "Ajouter un point lumineux": P, "Ajouter / déplacer une prise": Math.round(S / 5),
-    "Installer un WC": ctx.wc, "Installer une douche (hors carrelage)": SDB, "Installer un lavabo / meuble-vasque": SDB,
+    "Installer un WC": ctx.wc, "Installer une douche (hors carrelage)": SDB, "Meuble-vasque simple": SDB,
     "Raccorder lave-linge / lave-vaisselle": BUA,
     "Ventilation (VMC)": 1, "Sèche-serviette": SDB,
     "Monter une cloison": S * 0.35, "Doubler un mur": facade,

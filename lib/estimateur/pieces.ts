@@ -71,7 +71,7 @@ export function pieceTasks(room: PieceKey, s: number, ampleur: Ampleur): Tache[]
       ["Carrelage / Revetements", "Faïence / carrelage mural", faience],
       ["Plomberie", "Installer une douche (hors carrelage)", 1],
       ["Plomberie", "Installer un WC", 1],
-      ["Plomberie", "Installer un lavabo / meuble-vasque", 1],
+      ["Plomberie", "Meuble-vasque simple", 1],
       ["Plomberie", "Miroir LED", 1],
       ["Chauffage / VMC", "Ventilation (VMC)", 1],
     );
@@ -95,7 +95,7 @@ export function pieceTasks(room: PieceKey, s: number, ampleur: Ampleur): Tache[]
       ["Carrelage / Revetements", "Faïence / carrelage mural", 16],
       ["Plomberie", "Installer une douche (hors carrelage)", 1],
       ["Plomberie", "Installer un WC", 1],
-      ["Plomberie", "Installer un lavabo / meuble-vasque", 1],
+      ["Plomberie", "Meuble-vasque simple", 1],
       ["Plomberie", "Miroir LED", 1],
       ["Chauffage / VMC", "Ventilation (VMC)", 1],
     );
