@@ -396,13 +396,13 @@
     "tva": 10,
     "t": [
       {
-        "n": "Charpente neuve ou refaite",
+        "n": "Charpente traditionnelle (hors couverture)",
         "u": "m2",
         "fp": 120,
         "sm": 45
       },
       {
-        "n": "Charpente en fermettes",
+        "n": "Charpente en fermettes (hors couverture)",
         "u": "m2",
         "fp": 80,
         "sm": 40
@@ -464,6 +464,20 @@
     "p": "Gros œuvre & clos-couvert",
     "tva": 10,
     "t": [
+      {
+        "n": "Toiture complète tuile (charpente + couverture)",
+        "u": "m2",
+        "fp": 230,
+        "sm": 90,
+        "note": "charpente traditionnelle + tuiles + écran + liteaux + pose"
+      },
+      {
+        "n": "Toiture complète ardoise (charpente + couverture)",
+        "u": "m2",
+        "fp": 280,
+        "sm": 110,
+        "note": "charpente traditionnelle + ardoise + écran + liteaux + pose"
+      },
       {
         "n": "Toiture tuile — réfection complète (m²)",
         "u": "m2",
