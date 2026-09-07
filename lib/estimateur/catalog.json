@@ -396,25 +396,6 @@
     "tva": 10,
     "t": [
       {
-        "n": "Charpente traditionnelle (hors couverture)",
-        "u": "m2",
-        "fp": 120,
-        "sm": 45
-      },
-      {
-        "n": "Charpente en fermettes (hors couverture)",
-        "u": "m2",
-        "fp": 80,
-        "sm": 40
-      },
-      {
-        "n": "Traiter la charpente",
-        "u": "m2",
-        "fp": 5,
-        "sm": 2,
-        "note": "préventif (xylophène) ; curatif par injection = 40–70 €/m²"
-      },
-      {
         "n": "Toiture complète tuile (charpente + couverture)",
         "u": "m2",
         "fp": 230,
@@ -427,6 +408,30 @@
         "fp": 280,
         "sm": 110,
         "note": "charpente traditionnelle + ardoise + écran + liteaux + pose"
+      },
+      {
+        "n": "Charpente traditionnelle (hors couverture)",
+        "u": "m2",
+        "fp": 120,
+        "sm": 45
+      },
+      {
+        "n": "Charpente en fermettes (hors couverture)",
+        "u": "m2",
+        "fp": 80,
+        "sm": 40
+      },
+      {
+        "n": "Couverture tuiles (sur support existant)",
+        "u": "m2",
+        "fp": 70,
+        "sm": 30
+      },
+      {
+        "n": "Couverture ardoise (sur support existant)",
+        "u": "m2",
+        "fp": 120,
+        "sm": 50
       },
       {
         "n": "Réfection couverture tuiles (dépose + écran + liteaux)",
@@ -442,18 +447,6 @@
         "sm": 65
       },
       {
-        "n": "Couverture tuiles (pose seule)",
-        "u": "m2",
-        "fp": 70,
-        "sm": 30
-      },
-      {
-        "n": "Couverture ardoise (pose seule)",
-        "u": "m2",
-        "fp": 120,
-        "sm": 50
-      },
-      {
         "n": "Couverture zinc / bac acier",
         "u": "m2",
         "fp": 90,
@@ -465,6 +458,13 @@
         "u": "m2",
         "fp": 15,
         "sm": 5
+      },
+      {
+        "n": "Traiter la charpente",
+        "u": "m2",
+        "fp": 5,
+        "sm": 2,
+        "note": "préventif (xylophène) ; curatif par injection = 40–70 €/m²"
       },
       {
         "n": "Gouttières & descentes",
