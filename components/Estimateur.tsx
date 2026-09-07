@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import NumStepper from "@/components/Stepper";
 import { EST_CSS } from "./estimateur-styles";
 import {
-  CATALOG, PHASES, finCoef, ICON, LOC, defaultCtx, key, isLoc, visible,
+  CATALOG, PHASES, finCoef, ICON, LOC, defaultCtx, key, isLoc, visible, visibleTask,
   nbFen, nbPieces, deriveSol, autoQty, isAuto, qtyOf, effRate, lineHT, lotHT,
   totals, buildDevis, regionCoef, piecesEff, sdbEff,
   type Ctx, type Selection, type TypeBien, type Finition, type Lot, type Tache,
@@ -270,7 +270,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                 <div key={ph}>
                   <div className="phase-t">{i + 1} · {ph}</div>
                   {lots.map((l) => {
-                    const cnt = l.t.filter((t) => sel[key(l.c, t.n)]?.on).length;
+                    const cnt = l.t.filter((t) => visibleTask(ctx, t) && sel[key(l.c, t.n)]?.on).length;
                     const isOpen = !!open[l.c];
                     const loc = isLoc(l.c);
                     return (
@@ -285,7 +285,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                         {isOpen && (
                           <div className="acc-b">
                             {loc && <div className="locnote">Prix indicatifs <b>/jour</b> — à confirmer auprès du loueur. Indiquez le nombre de jours.</div>}
-                            {l.t.map((t) => (
+                            {l.t.filter((t) => visibleTask(ctx, t)).map((t) => (
                               <Row key={t.n} l={l} t={t} ctx={ctxR} sel={sel} coef={finCoef(ctx, l.c)} loc={loc}
                                 onCheck={() => toggleCheck(l, t)}
                                 onChoice={(self) => upd(l.c, t.n, (s) => ({ ...s, self }))}

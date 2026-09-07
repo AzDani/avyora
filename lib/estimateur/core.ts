@@ -145,6 +145,14 @@ export const isLoc = (c: string): boolean => c === LOC;
 export const isAppart = (ctx: Ctx): boolean => ctx.type !== "Maison";
 export const visible = (ctx: Ctx, l: Lot): boolean => !(isAppart(ctx) && HIDE_APPART.indexOf(l.c) >= 0);
 
+/** Tâches masquées en appartement : charpente/toiture de l'immeuble (on garde plancher, escalier, garde-corps, ossature). */
+const HIDE_APPART_TASK = new Set<string>([
+  "Charpente traditionnelle (hors couverture)",
+  "Charpente en fermettes (hors couverture)",
+  "Traiter la charpente",
+]);
+export const visibleTask = (ctx: Ctx, t: Tache): boolean => !(isAppart(ctx) && HIDE_APPART_TASK.has(t.n));
+
 export function nbFen(type: TypeBien): number {
   return ({ Studio: 3, T2: 5, T3: 7, T4: 9, Maison: 12 } as Record<TypeBien, number>)[type] ?? 6;
 }
@@ -257,6 +265,7 @@ export function effRate(l: Lot, t: Tache, sel: Selection): number {
 export function lineHT(ctx: Ctx, sel: Selection, l: Lot, t: Tache): number {
   const s = sel[key(l.c, t.n)];
   if (!s || !s.on) return 0;
+  if (!visibleTask(ctx, t)) return 0;
   const R = regCoef(ctx);
   const base = qtyOf(ctx, sel, l.c, t) * finCoefTask(ctx, l, t);
   // Location : équipement, pas de coef régional MO.
@@ -301,6 +310,7 @@ export function bilan(catalog: Lot[], ctx: Ctx, sel: Selection): Bilan {
     l.t.forEach((t) => {
       const s = sel[key(l.c, t.n)];
       if (!s || !s.on || t.fp == null) return;
+      if (!visibleTask(ctx, t)) return;
       const q = qtyOf(ctx, sel, l.c, t) * finCoefTask(ctx, l, t);
       const fpU = t.fp, smU = t.sm != null ? t.sm : null;
       if (isLoc(l.c)) { achat += fpU * q; return; }
@@ -331,6 +341,7 @@ export function buildDevis(catalog: Lot[], ctx: Ctx, sel: Selection): Devis {
     l.t.forEach((t) => {
       const s = sel[key(l.c, t.n)];
       if (!s || !s.on) return;
+      if (!visibleTask(ctx, t)) return;
       const ht = lineHT(ctx, sel, l, t);
       const r = effRate(l, t, sel);
       const mode: Mode = isLoc(l.c) ? "location" : s.self ? "je-fais" : "fait-faire";
