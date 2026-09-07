@@ -887,6 +887,13 @@
         "fixe": true
       },
       {
+        "n": "Robinetterie lavabo (mitigeur)",
+        "u": "u",
+        "fp": 160,
+        "sm": 90,
+        "fixe": true
+      },
+      {
         "n": "Miroir LED",
         "u": "u",
         "fp": 176,
@@ -915,10 +922,17 @@
         "fixe": true
       },
       {
-        "n": "Robinetterie de douche (mitigeur + colonne)",
+        "n": "Robinetterie douche — en applique",
         "u": "u",
         "fp": 300,
         "sm": 180,
+        "fixe": true
+      },
+      {
+        "n": "Robinetterie douche — encastrée",
+        "u": "u",
+        "fp": 600,
+        "sm": 320,
         "fixe": true
       },
       {
@@ -961,6 +975,20 @@
         "u": "u",
         "fp": 960,
         "sm": 650
+      },
+      {
+        "n": "Robinetterie baignoire — en applique",
+        "u": "u",
+        "fp": 260,
+        "sm": 160,
+        "fixe": true
+      },
+      {
+        "n": "Robinetterie baignoire — encastrée",
+        "u": "u",
+        "fp": 550,
+        "sm": 300,
+        "fixe": true
       },
       {
         "n": "Installer un chauffe-eau (ballon)",
