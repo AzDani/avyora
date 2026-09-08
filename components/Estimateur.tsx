@@ -279,7 +279,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                           <span className="ic">{ICON[l.c] || "•"}</span>
                           <span className="nm">{l.c}</span>
                           {cnt > 0 && <span className="cnt">{cnt}</span>}
-                          <span className="amt num">{cnt > 0 ? fmt(lotHT(ctx, sel, l)) : ""}</span>
+                          <span className="amt num">{cnt > 0 ? fmt(lotHT(ctx, sel, l)) + " HT" : ""}</span>
                           <span className="car">›</span>
                         </div>
                         {isOpen && (
