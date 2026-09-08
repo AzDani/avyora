@@ -102,7 +102,10 @@ const TOITURE_TASKS = [
   "Nettoyer / démousser la toiture",
   "Toit plat (étanchéité)",
 ];
-const TASK_FIN: Record<string, Record<Finition, number>> = Object.fromEntries(TOITURE_TASKS.map((n) => [n, G2]));
+const TASK_FIN: Record<string, Record<Finition, number>> = {
+  ...Object.fromEntries(TOITURE_TASKS.map((n) => [n, G2])),
+  "Dépose complète de toiture (couverture + charpente)": G0, // démolition : pas de scaling finition
+};
 /** Coefficient de finition pour un lot donné (selon le niveau choisi dans ctx). */
 export function finCoef(ctx: Ctx, corps: string): number {
   return (LOT_FIN[corps] ?? FINCO)[ctx.finition];
@@ -170,6 +173,7 @@ const HIDE_APPART_TASK = new Set<string>([
   "Charpente traditionnelle (hors couverture)",
   "Charpente en fermettes (hors couverture)",
   "Traiter la charpente",
+  "Dépose complète de toiture (couverture + charpente)",
   ...TOITURE_TASKS,
 ]);
 export const visibleTask = (ctx: Ctx, t: Tache): boolean => !(isAppart(ctx) && HIDE_APPART_TASK.has(t.n));
@@ -247,6 +251,7 @@ export function autoQty(ctx: Ctx, c: string, n: string, sel: Selection): number 
     "Plinthes": 4 * Math.sqrt(S * P), "Seuils / barres de seuil": P, "Peinture des boiseries": P,
     "Traiter la charpente": roof, "Charpente traditionnelle (hors couverture)": roof, "Charpente en fermettes (hors couverture)": roof,
     "Toiture complète tuile (charpente + couverture)": roof, "Toiture complète ardoise (charpente + couverture)": roof,
+    "Dépose complète de toiture (couverture + charpente)": roof,
     "Réfection couverture tuiles (dépose + écran + liteaux)": roof, "Réfection couverture ardoise (dépose + écran + liteaux)": roof,
     "Couverture tuiles (sur support existant)": roof, "Couverture ardoise (sur support existant)": roof, "Couverture zinc / bac acier": roof,
     "Sous-toiture (écran + liteaux)": roof, "Nettoyer / démousser la toiture": roof, "Toit plat (étanchéité)": SS,

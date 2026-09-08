@@ -410,6 +410,13 @@
         "note": "charpente traditionnelle + ardoise + écran + liteaux + pose"
       },
       {
+        "n": "Dépose complète de toiture (couverture + charpente)",
+        "u": "m2",
+        "fp": 45,
+        "sm": null,
+        "note": "dépose couverture + charpente + évacuation gravats (couverture seule ≈ 20-30 €/m²)"
+      },
+      {
         "n": "Charpente traditionnelle (hors couverture)",
         "u": "m2",
         "fp": 120,
