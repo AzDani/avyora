@@ -647,7 +647,8 @@
         "u": "u",
         "fp": 650,
         "sm": 450,
-        "mat": true
+        "mat": true,
+        "matPvc": 0.8
       },
       {
         "n": "Volets battants",

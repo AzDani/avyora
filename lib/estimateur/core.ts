@@ -24,6 +24,7 @@ export interface Tache {
   note?: string;
   fixe?: boolean;       // prix d'équipement FIXE : non impacté par le niveau de finition
   mat?: boolean;        // menuiserie : choix matériau PVC/Alu (base catalogue = Alu)
+  matPvc?: number;      // coef PVC spécifique (défaut MAT_COEF.pvc = 0,60 ; ex. volets = 0,80)
   vitrage?: boolean;    // menuiserie vitrée : option Double/Triple vitrage
 }
 export interface Lot {
@@ -74,7 +75,10 @@ const defMat = (ctx?: Ctx): "pvc" | "alu" => (ctx && ctx.finition === "premium" 
 export function effPrices(t: Tache, s?: LigneSel, ctx?: Ctx): { fp: number | null; sm: number | null } {
   if (!t.mat && !t.vitrage) return { fp: t.fp, sm: t.sm };
   let f = 1;
-  if (t.mat) f *= MAT_COEF[(s && s.mat) || defMat(ctx)] ?? 1;
+  if (t.mat) {
+    const m = (s && s.mat) || defMat(ctx);
+    f *= m === "pvc" ? (t.matPvc ?? MAT_COEF.pvc) : MAT_COEF.alu;
+  }
   if (t.vitrage) f *= VIT_COEF[(s && s.vit) || DEFAULT_VIT] ?? 1;
   return { fp: t.fp != null ? Math.round(t.fp * f) : null, sm: t.sm != null ? Math.round(t.sm * f) : null };
 }
