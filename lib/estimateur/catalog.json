@@ -666,8 +666,10 @@
       {
         "n": "Moustiquaires",
         "u": "u",
-        "fp": 150,
-        "sm": 60
+        "fp": 200,
+        "sm": 110,
+        "fixe": true,
+        "note": "enroulable, fenêtre standard — cadre fixe ~100 €, baie/porte plissée 300-500 €"
       },
       {
         "n": "Grilles de sécurité",
