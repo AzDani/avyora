@@ -14,7 +14,7 @@ import NumStepper from "@/components/Stepper";
 import { EST_CSS } from "./estimateur-styles";
 import {
   CATALOG, PHASES, finCoef, ICON, LOC, defaultCtx, key, isLoc, visible, visibleTask,
-  nbFen, nbPieces, deriveSol, autoQty, isAuto, qtyOf, effRate, lineHT, lotHT,
+  nbFen, nbPieces, deriveSol, autoQty, isAuto, qtyOf, effRate, lineHT, lotHT, effPrices,
   totals, buildDevis, regionCoef, piecesEff, sdbEff,
   type Ctx, type Selection, type TypeBien, type Finition, type Lot, type Tache,
 } from "@/lib/estimateur";
@@ -291,6 +291,8 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                                 onChoice={(self) => upd(l.c, t.n, (s) => ({ ...s, self }))}
                                 onAuto={() => toggleAuto(l, t)}
                                 onQty={(v) => upd(l.c, t.n, (s) => ({ ...s, qty: v, manual: isAuto(ctx, l.c, t.n) ? true : s.manual }))}
+                                onMat={(m) => upd(l.c, t.n, (s) => ({ ...s, mat: m }))}
+                                onVit={(v) => upd(l.c, t.n, (s) => ({ ...s, vit: v }))}
                               />
                             ))}
                           </div>
@@ -364,13 +366,19 @@ function Stepper({ label, hint, value, onStep }: { label: string; hint?: string;
   );
 }
 
-function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty }: {
+function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit }: {
   l: Lot; t: Tache; ctx: Ctx; sel: Selection; coef: number; loc: boolean;
   onCheck: () => void; onChoice: (self: boolean) => void; onAuto: () => void; onQty: (v: number) => void;
+  onMat: (m: "pvc" | "alu") => void; onVit: (v: "double" | "triple") => void;
 }) {
   const s = sel[key(l.c, t.n)] || {};
   const on = !!s.on, self = !!s.self;
-  const puv = t.fp != null ? t.fp * (t.fixe ? 1 : coef) : null;
+  const variant = !!(t.mat || t.vitrage);
+  const fcoef = (t.fixe || variant) ? 1 : coef;
+  const ep = effPrices(t, s, ctx);
+  const matSel = s.mat || (ctx.finition === "premium" ? "alu" : "pvc");
+  const vitSel = s.vit || "double";
+  const puv = ep.fp != null ? ep.fp * fcoef : null;
   let puTxt = puv != null ? fmt(puv) + " HT" + (t.u !== "forfait" && t.u !== "u" ? "/" + t.u : "") : "prix sur devis";
   if (t.note) puTxt += " · " + t.note;
   const au = isAuto(ctx, l.c, t.n);
@@ -401,14 +409,34 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty }: {
           ))}
           {!loc && (
             <span className="choice">
-              <button type="button" className={"ch" + (!self ? " onA" : "")} onClick={() => onChoice(false)}>Fait faire<b>{t.fp != null ? fmt(t.fp * coef) : "—"}</b></button>
-              {t.sm != null && <button type="button" className={"ch" + (self ? " onS" : "")} onClick={() => onChoice(true)}>Je le fais<b>{fmt(t.sm * coef)}</b></button>}
+              <button type="button" className={"ch" + (!self ? " onA" : "")} onClick={() => onChoice(false)}>Fait faire<b>{ep.fp != null ? fmt(ep.fp * fcoef) : "—"}</b></button>
+              {ep.sm != null && <button type="button" className={"ch" + (self ? " onS" : "")} onClick={() => onChoice(true)}>Je le fais<b>{fmt(ep.sm * fcoef)}</b></button>}
             </span>
           )}
           <span className="lineamt num">{fmt(lineHT(ctx, sel, l, t))}</span>
         </span>
       ) : (
         <span className="tctl"><span className="unit">{t.u === "forfait" ? "forfait" : loc ? "/jour" : t.u}</span></span>
+      )}
+      {on && variant && (
+        <div className="tvariants">
+          {t.mat && (
+            <span className="vg"><span className="vlab">Matériau</span>
+              <span className="vseg">
+                <button type="button" className={matSel === "pvc" ? "on" : ""} onClick={() => onMat("pvc")}>PVC</button>
+                <button type="button" className={matSel === "alu" ? "on" : ""} onClick={() => onMat("alu")}>Alu</button>
+              </span>
+            </span>
+          )}
+          {t.vitrage && (
+            <span className="vg"><span className="vlab">Vitrage</span>
+              <span className="vseg">
+                <button type="button" className={vitSel === "double" ? "on" : ""} onClick={() => onVit("double")}>Double</button>
+                <button type="button" className={vitSel === "triple" ? "on" : ""} onClick={() => onVit("triple")}>Triple</button>
+              </span>
+            </span>
+          )}
+        </div>
       )}
     </div>
   );

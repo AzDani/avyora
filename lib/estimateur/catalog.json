@@ -608,26 +608,32 @@
       {
         "n": "Fenêtres",
         "u": "u",
-        "fp": 700,
-        "sm": 450
+        "fp": 950,
+        "sm": 700,
+        "mat": true,
+        "vitrage": true
       },
       {
         "n": "Portes-fenêtres",
         "u": "u",
-        "fp": 900,
-        "sm": 600
+        "fp": 1250,
+        "sm": 900,
+        "mat": true,
+        "vitrage": true
       },
       {
         "n": "Baie vitrée (alu)",
         "u": "u",
-        "fp": 1800,
-        "sm": 1200
+        "fp": 2200,
+        "sm": 1600,
+        "vitrage": true
       },
       {
         "n": "Porte d'entrée",
         "u": "u",
-        "fp": 1300,
-        "sm": 850
+        "fp": 1600,
+        "sm": 1150,
+        "mat": true
       },
       {
         "n": "Porte de garage",
@@ -638,14 +644,16 @@
       {
         "n": "Volets roulants",
         "u": "u",
-        "fp": 600,
-        "sm": 350
+        "fp": 650,
+        "sm": 450,
+        "mat": true
       },
       {
         "n": "Volets battants",
         "u": "u",
         "fp": 600,
-        "sm": 350
+        "sm": 400,
+        "mat": true
       },
       {
         "n": "Stores extérieurs / brise-soleil",

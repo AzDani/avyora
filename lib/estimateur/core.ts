@@ -23,6 +23,8 @@ export interface Tache {
   tva?: number;         // TVA spécifique à la tâche (sinon celle du lot)
   note?: string;
   fixe?: boolean;       // prix d'équipement FIXE : non impacté par le niveau de finition
+  mat?: boolean;        // menuiserie : choix matériau PVC/Alu (base catalogue = Alu)
+  vitrage?: boolean;    // menuiserie vitrée : option Double/Triple vitrage
 }
 export interface Lot {
   c: string;            // corps d'état
@@ -56,8 +58,32 @@ export interface LigneSel {
   self?: boolean;             // « Je le fais »
   qty?: number | null;        // quantité saisie (si manuel / non-auto)
   manual?: boolean;           // override manuel d'une quantité auto
+  mat?: "pvc" | "alu";        // menuiserie : matériau choisi
+  vit?: "double" | "triple";  // menuiserie : vitrage choisi
 }
 export type Selection = Record<string, LigneSel>;
+
+/** Menuiseries : matériau (base catalogue = Alu) et vitrage (base = double vitrage inclus). */
+export const MAT_COEF: Record<string, number> = { alu: 1, pvc: 0.60 };
+export const VIT_COEF: Record<string, number> = { double: 1, triple: 1.20 };
+export const DEFAULT_VIT: "double" | "triple" = "double";
+/** Matériau par défaut (aucun choix explicite) : alu en premium, sinon PVC. */
+const defMat = (ctx?: Ctx): "pvc" | "alu" => (ctx && ctx.finition === "premium" ? "alu" : "pvc");
+/** Prix effectifs (fp/sm) selon matériau/vitrage choisis. Sans variante → fp/sm bruts. */
+export function effPrices(t: Tache, s?: LigneSel, ctx?: Ctx): { fp: number | null; sm: number | null } {
+  if (!t.mat && !t.vitrage) return { fp: t.fp, sm: t.sm };
+  let f = 1;
+  if (t.mat) f *= MAT_COEF[(s && s.mat) || defMat(ctx)] ?? 1;
+  if (t.vitrage) f *= VIT_COEF[(s && s.vit) || DEFAULT_VIT] ?? 1;
+  return { fp: t.fp != null ? Math.round(t.fp * f) : null, sm: t.sm != null ? Math.round(t.sm * f) : null };
+}
+/** Suffixe d'étiquette variante (matériau / vitrage) pour l'affichage. */
+export function variantLabel(t: Tache, s?: LigneSel, ctx?: Ctx): string {
+  const p: string[] = [];
+  if (t.mat) p.push(((s && s.mat) || defMat(ctx)) === "alu" ? "alu" : "PVC");
+  if (t.vitrage) p.push(((s && s.vit) || DEFAULT_VIT) === "triple" ? "triple vitrage" : "double vitrage");
+  return p.length ? " (" + p.join(", ") + ")" : "";
+}
 
 export interface Totaux { ht: number; tva: number; aleas: number; ttc: number; }
 export interface Bilan { paye: number; matA: number; moA: number; achat: number; eco: number; }
@@ -112,7 +138,7 @@ export function finCoef(ctx: Ctx, corps: string): number {
 }
 /** Coef finition par tâche : 1 (fixe) pour les équipements à prix fixe, sinon le coef du lot. */
 export function finCoefTask(ctx: Ctx, l: Lot, t: Tache): number {
-  if (t.fixe) return 1;
+  if (t.fixe || t.mat || t.vitrage) return 1; // équipement fixe ou piloté par matériau/vitrage
   const g = TASK_FIN[t.n];
   return g ? g[ctx.finition] : finCoef(ctx, l.c);
 }
@@ -294,17 +320,18 @@ export function lineHT(ctx: Ctx, sel: Selection, l: Lot, t: Tache): number {
   if (!visibleTask(ctx, t)) return 0;
   const R = regCoef(ctx);
   const base = qtyOf(ctx, sel, l.c, t) * finCoefTask(ctx, l, t);
+  const { fp, sm } = effPrices(t, s, ctx);
   // Location : équipement, pas de coef régional MO.
-  if (isLoc(l.c)) return t.fp != null ? t.fp * base : 0;
+  if (isLoc(l.c)) return fp != null ? fp * base : 0;
   // « Je le fais » : matériaux achetés par le particulier → coef matériaux uniquement.
   if (s.self) {
-    const pu = t.sm != null ? t.sm : t.fp;
+    const pu = sm != null ? sm : fp;
     return pu != null ? pu * R.mat * base : 0;
   }
   // Fait-faire : matériaux (×mat) + main-d'œuvre (×mo régional). sm null = prestation pure → MO.
-  if (t.fp == null) return 0;
-  if (t.sm != null) return (t.sm * R.mat + (t.fp - t.sm) * R.mo) * base;
-  return t.fp * R.mo * base;
+  if (fp == null) return 0;
+  if (sm != null) return (sm * R.mat + (fp - sm) * R.mo) * base;
+  return fp * R.mo * base;
 }
 export function lotHT(ctx: Ctx, sel: Selection, l: Lot): number {
   return l.t.reduce((s, t) => s + lineHT(ctx, sel, l, t), 0);
@@ -335,10 +362,11 @@ export function bilan(catalog: Lot[], ctx: Ctx, sel: Selection): Bilan {
   catalog.filter((l) => visible(ctx, l)).forEach((l) => {
     l.t.forEach((t) => {
       const s = sel[key(l.c, t.n)];
-      if (!s || !s.on || t.fp == null) return;
+      if (!s || !s.on) return;
       if (!visibleTask(ctx, t)) return;
+      const { fp: fpU, sm: smU } = effPrices(t, s, ctx);
+      if (fpU == null) return;
       const q = qtyOf(ctx, sel, l.c, t) * finCoefTask(ctx, l, t);
-      const fpU = t.fp, smU = t.sm != null ? t.sm : null;
       if (isLoc(l.c)) { achat += fpU * q; return; }
       if (s.self) {                                    // matériaux (part particulier) au coef matériaux
         achat += (smU != null ? smU : fpU) * R.mat * q;
@@ -372,7 +400,7 @@ export function buildDevis(catalog: Lot[], ctx: Ctx, sel: Selection): Devis {
       const r = effRate(l, t, sel);
       const mode: Mode = isLoc(l.c) ? "location" : s.self ? "je-fais" : "fait-faire";
       lignes.push({
-        corps: l.c, phase: l.p, nom: t.n, unite: t.u,
+        corps: l.c, phase: l.p, nom: t.n + variantLabel(t, s, ctx), unite: t.u,
         qty: qtyOf(ctx, sel, l.c, t), mode, ht, tva: (ht * r) / 100, ttc: ht * (1 + r / 100),
       });
     });

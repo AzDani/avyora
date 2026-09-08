@@ -83,6 +83,13 @@ export const EST_CSS = `
 .av-estim .ch.onA{background:var(--brand);border-color:var(--brand);color:#fff}
 .av-estim .ch.onS{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
 .av-estim .lineamt{font-family:var(--font-geist-mono);font-size:12.5px;font-weight:600;min-width:70px;text-align:right}
+.av-estim .tvariants{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:7px 16px;padding:8px 0 2px 32px}
+.av-estim .vg{display:inline-flex;align-items:center;gap:7px}
+.av-estim .vlab{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--faint)}
+.av-estim .vseg{display:inline-flex;gap:3px;background:var(--surface-2);border:1px solid var(--line-strong);border-radius:999px;padding:3px}
+.av-estim .vseg button{border:0;background:none;cursor:pointer;font-family:var(--font-geist-sans);font-weight:600;font-size:11px;color:var(--muted);padding:4px 11px;border-radius:999px;transition:.14s var(--ease)}
+.av-estim .vseg button:hover{color:var(--brand-700)}
+.av-estim .vseg button.on{background:var(--brand);color:#fff}
 .av-estim .resetbtn{background:none;border:0;color:var(--faint);font-size:12px;cursor:pointer;text-decoration:underline}
 
 .av-estim .hero{border-radius:var(--radius-panel);padding:28px;color:#edebff;background:linear-gradient(140deg,var(--nuit),var(--nuit-2) 55%,var(--nuit-3));box-shadow:var(--shadow-hero);position:relative;overflow:hidden;margin-bottom:16px}
