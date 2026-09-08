@@ -48,6 +48,7 @@ export interface Ctx {
   budget: number;
   aleas: number;              // % provision aléas
   finition: Finition;
+  fiscal?: "habitation" | "pro"; // régime TVA : habitation +2 ans (10/5,5 %) ou neuf/−2 ans/local pro (20 %)
   codePostal?: string;        // sert au coefficient régional (main-d'œuvre)
   // Détail des pièces (estimateur détaillé). Si renseigné, pilote le nb de pièces effectif + les SDB.
   sejour?: number; cuisine?: number; chambres?: number; suites?: number; couloir?: number; buanderie?: number;
@@ -184,7 +185,7 @@ export const ICON: Record<string, string> = {
 export function defaultCtx(): Ctx {
   return {
     surface: 80, surfaceSol: 80, surfaceSolManual: false, niveaux: 1, type: "Maison",
-    hauteur: 2.5, pieces: 6, fenetres: 7, sdb: 1, wc: 1, budget: 60000, aleas: 7, finition: "standard",
+    hauteur: 2.5, pieces: 6, fenetres: 7, sdb: 1, wc: 1, budget: 60000, aleas: 7, finition: "standard", fiscal: "habitation",
     sejour: 1, cuisine: 1, chambres: 3, suites: 0, couloir: 1, buanderie: 0,
   };
 }
@@ -307,10 +308,11 @@ export function qtyOf(ctx: Ctx, sel: Selection, c: string, t: Tache): number {
 // ── TVA / montants ────────────────────────────────────────────────────────────
 export const rate = (l: Lot, t: Tache): number => (t.tva != null ? t.tva : l.tva != null ? l.tva : 10);
 
-/** TVA effective : « Je le fais » = 20 % (matériaux achetés par le particulier), sinon taux réduit. */
-export function effRate(l: Lot, t: Tache, sel: Selection): number {
+/** TVA effective : neuf/local pro = 20 %, « Je le fais » = 20 % (matériaux achetés par le particulier), sinon taux réduit du poste. */
+export function effRate(l: Lot, t: Tache, sel: Selection, ctx?: Ctx): number {
   const s = sel[key(l.c, t.n)];
   if (s && s.self && !isLoc(l.c)) return 20;
+  if (ctx && ctx.fiscal === "pro") return 20; // neuf / logement −2 ans / local professionnel
   return rate(l, t);
 }
 
@@ -337,7 +339,7 @@ export function lotHT(ctx: Ctx, sel: Selection, l: Lot): number {
   return l.t.reduce((s, t) => s + lineHT(ctx, sel, l, t), 0);
 }
 export function lotTTC(ctx: Ctx, sel: Selection, l: Lot): number {
-  return l.t.reduce((s, t) => s + lineHT(ctx, sel, l, t) * (1 + effRate(l, t, sel) / 100), 0);
+  return l.t.reduce((s, t) => s + lineHT(ctx, sel, l, t) * (1 + effRate(l, t, sel, ctx) / 100), 0);
 }
 
 export function totals(catalog: Lot[], ctx: Ctx, sel: Selection): Totaux {
@@ -347,7 +349,7 @@ export function totals(catalog: Lot[], ctx: Ctx, sel: Selection): Totaux {
       const h = lineHT(ctx, sel, l, t);
       if (!h) return;
       ht += h;
-      tva += (h * effRate(l, t, sel)) / 100;
+      tva += (h * effRate(l, t, sel, ctx)) / 100;
       if (l.c !== "Etudes / Conception") aleasBase += h;
     });
   });
@@ -397,7 +399,7 @@ export function buildDevis(catalog: Lot[], ctx: Ctx, sel: Selection): Devis {
       if (!s || !s.on) return;
       if (!visibleTask(ctx, t)) return;
       const ht = lineHT(ctx, sel, l, t);
-      const r = effRate(l, t, sel);
+      const r = effRate(l, t, sel, ctx);
       const mode: Mode = isLoc(l.c) ? "location" : s.self ? "je-fais" : "fait-faire";
       lignes.push({
         corps: l.c, phase: l.p, nom: t.n + variantLabel(t, s, ctx), unite: t.u,

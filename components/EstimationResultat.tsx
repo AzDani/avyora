@@ -163,7 +163,7 @@ export default function EstimationResultat({ reponses, projectId }: { reponses: 
       const q = qtyOf(ctx, sel, l.c, tk), coef = finCoef(ctx, l.c);
       const ht = tk.fp * coef * q;
       ffHT += ht;
-      ffTVA += (ht * rate(l, tk)) / 100;
+      ffTVA += (ht * (ctx.fiscal === "pro" ? 20 : rate(l, tk))) / 100;
       if (l.c !== "Etudes / Conception") ffAleasBase += ht;
     })
   );

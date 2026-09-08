@@ -101,6 +101,7 @@ export const EST_CSS = `
 .av-estim .hero .tt{font-family:var(--font-geist-mono);font-weight:600;font-size:clamp(34px,7vw,52px);margin:14px 0 2px;position:relative;z-index:1;letter-spacing:-.03em}
 .av-estim .hero .tt small{font-size:.42em;color:var(--accent-300);margin-left:8px;letter-spacing:0}
 .av-estim .hero .brk{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;position:relative;z-index:1}
+.av-estim .hero .tvahint{position:relative;z-index:1;margin-top:12px;font-size:11.5px;line-height:1.5;color:rgba(237,235,255,.72);max-width:640px}
 .av-estim .hero .pill{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);border-radius:12px;padding:9px 13px}
 .av-estim .hero .pill .k{font-size:10.5px;color:#a9a4d6}
 .av-estim .hero .pill .v{font-weight:600;color:#fff;font-size:13px}

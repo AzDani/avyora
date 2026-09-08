@@ -236,6 +236,15 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                 ))}
               </div>
 
+              <div className="gl">Régime de TVA</div>
+              <div className="segf">
+                <button type="button" className={ctx.fiscal !== "pro" ? "on" : ""} onClick={() => patchCtx({ fiscal: "habitation" })}>Logement +2 ans</button>
+                <button type="button" className={ctx.fiscal === "pro" ? "on" : ""} onClick={() => patchCtx({ fiscal: "pro" })}>Neuf / −2 ans / local pro</button>
+              </div>
+              <div className="locnote">
+                <b>Logement +2 ans</b> : TVA réduite <b>10 %</b> (et <b>5,5 %</b> sur la rénovation énergétique — isolation, chauffage performant…). <b>Neuf / −2 ans / local pro</b> : tout à <b>20 %</b>. Les matériaux que vous achetez seul (« Je le fais ») restent à <b>20 %</b> dans tous les cas.
+              </div>
+
               <div className="gl">Budget &amp; imprévus</div>
               <div className="depart">
                 <Field label={<>Budget max <span style={{ color: "var(--faint)" }}>· facultatif</span></>}><NumStepper field value={ctx.budget} min={0} step={1000} unit="€" onChange={(n) => onNum("budget", String(n))} /></Field>
@@ -455,10 +464,13 @@ function DevisView({ ctx, sel }: { ctx: Ctx; sel: Selection }) {
         <div className="tt"><CountUp value={t.ttc} /><small>€ TTC</small></div>
         <div className="brk">
           <div className="pill"><span className="k">Travaux HT</span><br /><span className="v num">{fmt(t.ht)}</span></div>
-          <div className="pill"><span className="k">TVA</span><br /><span className="v num">{fmt(t.tva)}</span></div>
+          <div className="pill"><span className="k">TVA {ctx.fiscal === "pro" ? "20 %" : "10 / 5,5 %"}</span><br /><span className="v num">{fmt(t.tva)}</span></div>
           <div className="pill"><span className="k">Aléas {ctx.aleas} %</span><br /><span className="v num">{fmt(t.aleas)}</span></div>
           <div className="pill"><span className="k">Budget max</span><br /><span className="v num">{fmt(ctx.budget)}</span></div>
         </div>
+        <div className="tvahint">{ctx.fiscal === "pro"
+          ? "TVA 20 % — neuf, logement de −2 ans ou local professionnel."
+          : "TVA réduite 10 % (5,5 % sur la rénovation énergétique) — logement de +2 ans. Matériaux achetés seul (« Je le fais ») à 20 %."}</div>
       </div>
 
       <div className="card">
