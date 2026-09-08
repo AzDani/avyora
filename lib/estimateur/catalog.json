@@ -640,7 +640,8 @@
         "n": "Porte de garage",
         "u": "u",
         "fp": 1200,
-        "sm": 800
+        "sm": 800,
+        "note": "sectionnelle motorisée — basculante ~700 €, modèle haut de gamme jusqu'à ~2 500 €"
       },
       {
         "n": "Volets roulants",
@@ -648,20 +649,23 @@
         "fp": 650,
         "sm": 450,
         "mat": true,
-        "matPvc": 0.8
+        "matPvc": 0.8,
+        "note": "motorisé inclus (radio/solaire) — manuel simple ~300-450 €"
       },
       {
         "n": "Volets battants",
         "u": "u",
         "fp": 600,
         "sm": 400,
-        "mat": true
+        "mat": true,
+        "matPvc": 0.8
       },
       {
         "n": "Stores extérieurs / brise-soleil",
         "u": "u",
         "fp": 1000,
-        "sm": 700
+        "sm": 700,
+        "note": "store banne ou brise-soleil orientable (BSO), par module"
       },
       {
         "n": "Moustiquaires",
