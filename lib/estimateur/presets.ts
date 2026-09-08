@@ -67,7 +67,7 @@ const MAISON_COMPLETE: Tache[] = [
 const MAISON_LOURDE: Tache[] = [
   ["Charpente, couverture & structure bois", "Charpente traditionnelle (hors couverture)"], ["Charpente, couverture & structure bois", "Traiter la charpente"],
   ["Charpente, couverture & structure bois", "Réfection couverture tuiles (dépose + écran + liteaux)"], ["Charpente, couverture & structure bois", "Gouttières & descentes"],
-  ["Façade", "Refaire l'enduit / le crépi"],
+  ["Façade", "Enduit monocouche (machine)"],
 ];
 
 export type RapideInput = { type: TypeBien; surface: number; codePostal: string; ampleur: Ampleur; finition: Finition; qui: QuiRealise };

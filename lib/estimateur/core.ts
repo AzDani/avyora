@@ -257,7 +257,7 @@ export function autoQty(ctx: Ctx, c: string, n: string, sel: Selection): number 
     "Sous-toiture (écran + liteaux)": roof, "Nettoyer / démousser la toiture": roof, "Toit plat (étanchéité)": SS,
     "Gouttières & descentes": 4 * Math.sqrt(SS) + 4 * ctx.hauteur * (ctx.niveaux || 1),
     "Nettoyer la façade": facade, "Refaire les joints / rejointoiement (pierre, briquette, moellon)": facade,
-    "Refaire l'enduit / le crépi": facade, "Enduit à la chaux (maison ancienne)": facade, "Peindre la façade": facade,
+    "Enduit monocouche (machine)": facade, "Enduit à la chaux (maison ancienne)": facade, "Peindre la façade": facade,
     "Traitement imperméabilisant": facade, "Isolation par l'extérieur (ITE)": facade, "Bardage": facade,
     "Ravalement façade pierre (tout compris)": facade,
   };
