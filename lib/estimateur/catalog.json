@@ -1236,12 +1236,11 @@
         "tva": 5.5
       },
       {
-        "n": "Climatisation réversible",
+        "n": "Chaudière gaz à condensation",
         "u": "u",
-        "fp": 2400,
-        "sm": 1500,
-        "tva": 20,
-        "note": "par split — gros équipement, TVA 20 %"
+        "fp": 4500,
+        "sm": 2800,
+        "note": "gaz : TVA 10 % (plus éligible au 5,5 %)"
       },
       {
         "n": "Poêle à bois / granulés",
@@ -1249,6 +1248,14 @@
         "fp": 4000,
         "sm": 2500,
         "tva": 5.5
+      },
+      {
+        "n": "Climatisation réversible",
+        "u": "u",
+        "fp": 2400,
+        "sm": 1500,
+        "tva": 20,
+        "note": "par split — gros équipement, TVA 20 %"
       },
       {
         "n": "Radiateurs électriques",
@@ -1274,13 +1281,37 @@
         "u": "u",
         "fp": 800,
         "sm": 450,
-        "note": "simple flux ; double flux ~4 000 € (TVA 5,5)"
+        "vars": [
+          {
+            "k": "flux",
+            "label": "Flux",
+            "opts": [
+              {
+                "k": "simple",
+                "label": "Simple flux",
+                "coef": 1
+              },
+              {
+                "k": "double",
+                "label": "Double flux",
+                "coef": 5
+              }
+            ]
+          }
+        ]
       },
       {
         "n": "Thermostat / pilotage",
         "u": "u",
         "fp": 250,
         "sm": 120
+      },
+      {
+        "n": "Désembouage du réseau de chauffage",
+        "u": "forfait",
+        "fp": 500,
+        "sm": 80,
+        "note": "nettoyage radiateurs/plancher existants"
       }
     ]
   },
