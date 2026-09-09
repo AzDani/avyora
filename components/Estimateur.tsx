@@ -396,7 +396,7 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMa
 }) {
   const s = sel[key(l.c, t.n)] || {};
   const on = !!s.on, self = !!s.self;
-  const [noteOpen, setNoteOpen] = useState<boolean>(!!s.note);
+  const [noteOpen, setNoteOpen] = useState<boolean>(false);
   const variant = !!(t.mat || t.vitrage || t.moto || t.taille || (t.vars && t.vars.length));
   const fcoef = (t.fixe || variant) ? 1 : coef;
   const ep = effPrices(t, s, ctx);
@@ -441,7 +441,8 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMa
               {puMat != null && <button type="button" className={"ch" + (self ? " onS" : "")} onClick={() => onChoice(true)}>Je le fais<b>{fmt(puMat)}</b></button>}
             </span>
           )}
-          <button type="button" className={"notebtn" + (s.note ? " has" : "")} onClick={() => setNoteOpen((o) => !o)} title="Note / lien matériau">📝</button>
+          {s.note && !noteOpen && isUrl(s.note) && <a className="notechip" href={s.note} target="_blank" rel="noopener noreferrer" title={s.note}>🔗</a>}
+          <button type="button" className={"notebtn" + (s.note ? " has" : "")} onClick={() => setNoteOpen((o) => !o)} title={s.note ? "Voir / modifier la note" : "Ajouter une note / un lien"}>📝</button>
           <span className="lineamt num">{fmt(lineHT(ctx, sel, l, t))}</span>
         </span>
       ) : (
@@ -498,8 +499,9 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMa
       {on && noteOpen && (
         <div className="tnote">
           <span className="cl-lk">🔗</span>
-          <input className="cl-note" placeholder="Note ou lien matériau (https://…)" value={s.note || ""} onChange={(e) => onNote(e.target.value)} />
+          <input className="cl-note" autoFocus placeholder="Note ou lien matériau (https://…)" value={s.note || ""} onChange={(e) => onNote(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") setNoteOpen(false); }} />
           {isUrl(s.note) && <a className="cl-open" href={s.note} target="_blank" rel="noopener noreferrer">Ouvrir ↗</a>}
+          <button type="button" className="notedone" onClick={() => setNoteOpen(false)} title="OK">✓</button>
         </div>
       )}
     </div>
