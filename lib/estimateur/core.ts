@@ -388,8 +388,8 @@ export function lotHT(ctx: Ctx, sel: Selection, l: Lot): number {
 }
 
 /** Ligne personnalisée saisie par l'utilisateur (par lot). Prix HT, TVA propre. */
-export interface CustomLine { id: string; lot: string; nom: string; prix: number; unite: string; qte: number; note?: string; tva: number; on?: boolean; }
-const clOn = (x: CustomLine): boolean => x.on !== false; // validée (cochée) — défaut oui
+export interface CustomLine { id: string; lot: string; nom: string; prix: number; unite: string; qte: number; note?: string; tva: number; on?: boolean; draft?: boolean; }
+const clOn = (x: CustomLine): boolean => x.on !== false && !x.draft; // validée (cochée) et non en cours d'édition
 /** Total HT des lignes perso VALIDÉES d'un lot donné. */
 export function customLotHT(lines: CustomLine[], lot: string): number {
   return lines.filter((x) => x.lot === lot && clOn(x)).reduce((s, x) => s + (x.prix || 0) * (x.qte || 0), 0);

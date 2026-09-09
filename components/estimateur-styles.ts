@@ -117,6 +117,13 @@ export const EST_CSS = `
 .av-estim .cl-guide b{color:var(--ink)}
 .av-estim .cl-add{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:8px;padding:10px;border:1.5px dashed var(--brand-200);background:var(--surface);color:var(--brand-700);border-radius:11px;font-family:var(--font-geist-sans);font-weight:600;font-size:13px;cursor:pointer;transition:.15s var(--ease)}
 .av-estim .cl-add:hover{background:var(--brand-50);border-color:var(--brand)}
+.av-estim .cl-actions{margin-top:10px;gap:8px;border-top:1px solid var(--line);padding-top:10px}
+.av-estim .cl-valider{border:0;background:var(--brand);color:#fff;font-family:var(--font-geist-sans);font-weight:600;font-size:12.5px;border-radius:9px;padding:8px 14px;cursor:pointer;transition:.15s var(--ease)}
+.av-estim .cl-valider:hover:not(:disabled){background:var(--brand-700)}
+.av-estim .cl-valider:disabled{opacity:.45;cursor:not-allowed}
+.av-estim .cl-cancel{border:0;background:none;color:var(--faint);font-family:var(--font-geist-sans);font-weight:600;font-size:12.5px;cursor:pointer;text-decoration:underline}
+.av-estim .cl-icon{border:0;background:none;color:var(--faint);cursor:pointer;font-size:14px;padding:2px 4px;line-height:1}
+.av-estim .cl-icon:hover{color:var(--brand)}
 .av-estim .resetbtn{background:none;border:0;color:var(--faint);font-size:12px;cursor:pointer;text-decoration:underline}
 
 .av-estim .hero{border-radius:var(--radius-panel);padding:28px;color:#edebff;background:linear-gradient(140deg,var(--nuit),var(--nuit-2) 55%,var(--nuit-3));box-shadow:var(--shadow-hero);position:relative;overflow:hidden;margin-bottom:16px}
