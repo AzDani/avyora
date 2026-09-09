@@ -15,6 +15,10 @@
 export type Finition = "eco" | "standard" | "premium";
 export type TypeBien = "Studio" | "T2" | "T3" | "T4" | "Maison";
 
+/** Variante générique : un groupe d'options (ex. « Type » → Classique/Suspendu). Le 1ᵉʳ opt = défaut (coef relatif à la base). */
+export interface VarOpt { k: string; label: string; coef: number }
+export interface VarGroup { k: string; label: string; opts: VarOpt[] }
+
 export interface Tache {
   n: string;            // nom
   u: string;            // unité : m2 | ml | u | point | forfait | jour | pct
@@ -30,6 +34,7 @@ export interface Tache {
   moto?: boolean;       // portail : option Manuel / Motorisé
   taille?: boolean;     // équipement : option Petit / Grand (ex. ballon d'eau chaude)
   taillePetit?: number; // coef Petit spécifique (défaut TAILLE_COEF.petit)
+  vars?: VarGroup[];    // variantes génériques (chaque groupe = un sélecteur ; base fp = options par défaut)
 }
 export interface Lot {
   c: string;            // corps d'état
@@ -68,6 +73,7 @@ export interface LigneSel {
   vit?: "double" | "triple";  // menuiserie : vitrage choisi
   mot?: "manuel" | "motorise"; // portail : motorisation choisie
   tai?: "petit" | "grand";     // équipement : taille choisie
+  vsel?: Record<string, string>; // variantes génériques : {groupe → option choisie}
 }
 export type Selection = Record<string, LigneSel>;
 
@@ -83,8 +89,12 @@ export const DEFAULT_TAILLE: "petit" | "grand" = "grand";
 const defMat = (ctx?: Ctx): "pvc" | "alu" => (ctx && ctx.finition === "premium" ? "alu" : "pvc");
 /** Prix effectifs (fp/sm) selon matériau/vitrage choisis. Sans variante → fp/sm bruts. */
 export function effPrices(t: Tache, s?: LigneSel, ctx?: Ctx): { fp: number | null; sm: number | null } {
-  if (!t.mat && !t.vitrage && !t.moto && !t.taille) return { fp: t.fp, sm: t.sm };
+  if (!t.mat && !t.vitrage && !t.moto && !t.taille && !t.vars) return { fp: t.fp, sm: t.sm };
   let f = 1;
+  if (t.vars) for (const g of t.vars) {
+    const chosen = (s && s.vsel && s.vsel[g.k]) || g.opts[0].k;
+    f *= (g.opts.find((o) => o.k === chosen) || g.opts[0]).coef;
+  }
   if (t.mat) {
     const m = (s && s.mat) || t.matDef || defMat(ctx);
     f *= m === "pvc" ? (t.matPvc ?? MAT_COEF.pvc) : MAT_COEF.alu;
@@ -104,6 +114,10 @@ export function variantLabel(t: Tache, s?: LigneSel, ctx?: Ctx): string {
   if (t.vitrage) p.push(((s && s.vit) || DEFAULT_VIT) === "triple" ? "triple vitrage" : "double vitrage");
   if (t.moto) p.push(((s && s.mot) || DEFAULT_MOT) === "motorise" ? "motorisé" : "manuel");
   if (t.taille) p.push(((s && s.tai) || DEFAULT_TAILLE) === "petit" ? "petit" : "grand");
+  if (t.vars) for (const g of t.vars) {
+    const chosen = (s && s.vsel && s.vsel[g.k]) || g.opts[0].k;
+    p.push((g.opts.find((o) => o.k === chosen) || g.opts[0]).label.toLowerCase());
+  }
   return p.length ? " (" + p.join(", ") + ")" : "";
 }
 
@@ -160,7 +174,7 @@ export function finCoef(ctx: Ctx, corps: string): number {
 }
 /** Coef finition par tâche : 1 (fixe) pour les équipements à prix fixe, sinon le coef du lot. */
 export function finCoefTask(ctx: Ctx, l: Lot, t: Tache): number {
-  if (t.fixe || t.mat || t.vitrage || t.moto || t.taille) return 1; // fixe ou piloté par variante (matériau/vitrage/motorisation/taille)
+  if (t.fixe || t.mat || t.vitrage || t.moto || t.taille || t.vars) return 1; // fixe ou piloté par variante
   const g = TASK_FIN[t.n];
   return g ? g[ctx.finition] : finCoef(ctx, l.c);
 }
@@ -283,15 +297,11 @@ export function autoQty(ctx: Ctx, c: string, n: string, sel: Selection): number 
     "Portes intérieures": P, "Radiateurs électriques": P,
     "Ajouter un point lumineux": P, "Ajouter / déplacer une prise": Math.round(S / 5),
     "Spots encastrés (LED)": Math.round(S / 2),
-    "WC classique": ctx.wc,
-    "Bac de douche classique 120×80": SDB, "Bac de douche grand 150×90": SDB,
-    "Robinetterie douche — en applique": SDB, "Robinetterie douche — encastrée": SDB,
-    "Robinetterie baignoire — en applique": SDB, "Robinetterie baignoire — encastrée": SDB,
-    "Robinetterie lavabo (mitigeur)": SDB,
-    "Douche à l'italienne 120×80": SDB, "Douche à l'italienne 150×90": SDB,
-    "Paroi fixe 120 (walk-in, verre 8 mm)": SDB, "Paroi fixe 150 (walk-in, verre 8 mm)": SDB,
-    "Cabine complète (parois + porte)": SDB,
-    "Meuble-vasque simple": SDB,
+    "WC": ctx.wc,
+    "Bac de douche": SDB, "Colonne de douche": SDB, "Douche à l'italienne": SDB,
+    "Paroi de douche": SDB, "Cabine complète (parois + porte)": SDB,
+    "Robinetterie baignoire": SDB, "Robinetterie lavabo": SDB,
+    "Meuble-vasque": SDB, "Miroir": SDB,
     "Ventilation (VMC)": 1, "Sèche-serviette": SDB,
     "Monter une cloison": S * 0.35, "Doubler un mur": facade,
     "Créer un plancher bois": Math.max(0, S - SS), "Plancher béton (étage créé)": Math.max(0, S - SS),

@@ -304,6 +304,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                                 onVit={(v) => upd(l.c, t.n, (s) => ({ ...s, vit: v }))}
                                 onMot={(m) => upd(l.c, t.n, (s) => ({ ...s, mot: m }))}
                                 onTai={(z) => upd(l.c, t.n, (s) => ({ ...s, tai: z }))}
+                                onVar={(g, o) => upd(l.c, t.n, (s) => ({ ...s, vsel: { ...(s.vsel || {}), [g]: o } }))}
                               />
                             ))}
                           </div>
@@ -377,14 +378,14 @@ function Stepper({ label, hint, value, onStep }: { label: string; hint?: string;
   );
 }
 
-function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai }: {
+function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar }: {
   l: Lot; t: Tache; ctx: Ctx; sel: Selection; coef: number; loc: boolean;
   onCheck: () => void; onChoice: (self: boolean) => void; onAuto: () => void; onQty: (v: number) => void;
-  onMat: (m: "pvc" | "alu") => void; onVit: (v: "double" | "triple") => void; onMot: (m: "manuel" | "motorise") => void; onTai: (z: "petit" | "grand") => void;
+  onMat: (m: "pvc" | "alu") => void; onVit: (v: "double" | "triple") => void; onMot: (m: "manuel" | "motorise") => void; onTai: (z: "petit" | "grand") => void; onVar: (g: string, o: string) => void;
 }) {
   const s = sel[key(l.c, t.n)] || {};
   const on = !!s.on, self = !!s.self;
-  const variant = !!(t.mat || t.vitrage || t.moto || t.taille);
+  const variant = !!(t.mat || t.vitrage || t.moto || t.taille || (t.vars && t.vars.length));
   const fcoef = (t.fixe || variant) ? 1 : coef;
   const ep = effPrices(t, s, ctx);
   const matSel = s.mat || t.matDef || (ctx.finition === "premium" ? "alu" : "pvc");
@@ -465,6 +466,18 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMa
               </span>
             </span>
           )}
+          {t.vars && t.vars.map((g) => {
+            const cur = (s.vsel && s.vsel[g.k]) || g.opts[0].k;
+            return (
+              <span className="vg" key={g.k}><span className="vlab">{g.label}</span>
+                <span className="vseg">
+                  {g.opts.map((o) => (
+                    <button type="button" key={o.k} className={cur === o.k ? "on" : ""} onClick={() => onVar(g.k, o.k)}>{o.label}</button>
+                  ))}
+                </span>
+              </span>
+            );
+          })}
         </div>
       )}
     </div>

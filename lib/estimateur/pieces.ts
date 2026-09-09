@@ -69,13 +69,13 @@ export function pieceTasks(room: PieceKey, s: number, ampleur: Ampleur): Tache[]
     const faience = Math.round(4 * Math.sqrt(surf) * 2.2);
     if (lvl >= 1) out.push(
       ["Carrelage / Revetements", "Faïence / carrelage mural", faience],
-      ["Plomberie", "Bac de douche classique 120×80", 1],
-      ["Plomberie", "Robinetterie douche — en applique", 1],
-      ["Plomberie", "Paroi fixe 120 (walk-in, verre 8 mm)", 1],
-      ["Plomberie", "Robinetterie lavabo (mitigeur)", 1],
-      ["Plomberie", "WC classique", 1],
-      ["Plomberie", "Meuble-vasque simple", 1],
-      ["Plomberie", "Miroir LED", 1],
+      ["Plomberie", "Bac de douche", 1],
+      ["Plomberie", "Colonne de douche", 1],
+      ["Plomberie", "Paroi de douche", 1],
+      ["Plomberie", "Robinetterie lavabo", 1],
+      ["Plomberie", "WC", 1],
+      ["Plomberie", "Meuble-vasque", 1],
+      ["Plomberie", "Miroir", 1],
       ["Chauffage / VMC", "Ventilation (VMC)", 1],
     );
     if (lvl >= 2) out.push(
@@ -96,13 +96,13 @@ export function pieceTasks(room: PieceKey, s: number, ampleur: Ampleur): Tache[]
     if (lvl >= 1) out.push(
       ["Menuiseries interieures", "Portes intérieures", 1],
       ["Carrelage / Revetements", "Faïence / carrelage mural", 16],
-      ["Plomberie", "Bac de douche classique 120×80", 1],
-      ["Plomberie", "Robinetterie douche — en applique", 1],
-      ["Plomberie", "Paroi fixe 120 (walk-in, verre 8 mm)", 1],
-      ["Plomberie", "Robinetterie lavabo (mitigeur)", 1],
-      ["Plomberie", "WC classique", 1],
-      ["Plomberie", "Meuble-vasque simple", 1],
-      ["Plomberie", "Miroir LED", 1],
+      ["Plomberie", "Bac de douche", 1],
+      ["Plomberie", "Colonne de douche", 1],
+      ["Plomberie", "Paroi de douche", 1],
+      ["Plomberie", "Robinetterie lavabo", 1],
+      ["Plomberie", "WC", 1],
+      ["Plomberie", "Meuble-vasque", 1],
+      ["Plomberie", "Miroir", 1],
       ["Chauffage / VMC", "Ventilation (VMC)", 1],
     );
     if (lvl >= 2) out.push(

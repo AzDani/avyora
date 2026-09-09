@@ -36,7 +36,7 @@ const RAFRAICH: Tache[] = [
 ];
 const PARTIELLE_ADD: Tache[] = [
   ["Carrelage / Revetements", "Carrelage au sol"], ["Carrelage / Revetements", "Faïence / carrelage mural"],
-  ["Plomberie", "WC classique"], ["Plomberie", "Bac de douche classique 120×80"], ["Plomberie", "Robinetterie douche — en applique"], ["Plomberie", "Paroi fixe 120 (walk-in, verre 8 mm)"], ["Plomberie", "Meuble-vasque simple"], ["Plomberie", "Robinetterie lavabo (mitigeur)"],
+  ["Plomberie", "WC"], ["Plomberie", "Bac de douche"], ["Plomberie", "Colonne de douche"], ["Plomberie", "Paroi de douche"], ["Plomberie", "Meuble-vasque"], ["Plomberie", "Robinetterie lavabo"], ["Plomberie", "Miroir"],
   ["Electricite", "Changer / mettre aux normes le tableau"],
   ["Menuiseries exterieures", "Fenêtres"],
   ["Cuisine", "Cuisine complète neuve — tout compris"],

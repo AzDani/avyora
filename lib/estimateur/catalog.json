@@ -943,109 +943,212 @@
         "sm": 55
       },
       {
-        "n": "WC classique",
+        "n": "WC",
         "u": "u",
         "fp": 410,
         "sm": 280,
-        "fixe": true
+        "vars": [
+          {
+            "k": "type",
+            "label": "Type",
+            "opts": [
+              {
+                "k": "classique",
+                "label": "Classique",
+                "coef": 1
+              },
+              {
+                "k": "suspendu",
+                "label": "Suspendu",
+                "coef": 2.07
+              }
+            ]
+          }
+        ]
       },
       {
-        "n": "WC suspendu",
-        "u": "u",
-        "fp": 850,
-        "sm": 550,
-        "fixe": true
-      },
-      {
-        "n": "Meuble-vasque simple",
+        "n": "Meuble-vasque",
         "u": "u",
         "fp": 433,
         "sm": 273,
-        "fixe": true
+        "vars": [
+          {
+            "k": "config",
+            "label": "Config",
+            "opts": [
+              {
+                "k": "simple",
+                "label": "Simple",
+                "coef": 1
+              },
+              {
+                "k": "double",
+                "label": "Double",
+                "coef": 1.88
+              }
+            ]
+          }
+        ]
       },
       {
-        "n": "Meuble-vasque double",
-        "u": "u",
-        "fp": 815,
-        "sm": 545,
-        "fixe": true
-      },
-      {
-        "n": "Robinetterie lavabo (mitigeur)",
+        "n": "Robinetterie lavabo",
         "u": "u",
         "fp": 160,
         "sm": 90,
-        "fixe": true
+        "vars": [
+          {
+            "k": "pose",
+            "label": "Pose",
+            "opts": [
+              {
+                "k": "classique",
+                "label": "Classique",
+                "coef": 1
+              },
+              {
+                "k": "encastre",
+                "label": "Encastré",
+                "coef": 1.9
+              }
+            ]
+          }
+        ]
       },
       {
-        "n": "Miroir LED",
+        "n": "Miroir",
         "u": "u",
         "fp": 176,
         "sm": 136,
-        "fixe": true
+        "vars": [
+          {
+            "k": "taille",
+            "label": "Taille",
+            "opts": [
+              {
+                "k": "petit",
+                "label": "Petit",
+                "coef": 1
+              },
+              {
+                "k": "grand",
+                "label": "Grand",
+                "coef": 1.6
+              }
+            ]
+          },
+          {
+            "k": "led",
+            "label": "LED",
+            "opts": [
+              {
+                "k": "led",
+                "label": "LED",
+                "coef": 1
+              },
+              {
+                "k": "sans",
+                "label": "Sans LED",
+                "coef": 0.37
+              }
+            ]
+          }
+        ]
       },
       {
-        "n": "Grand miroir LED",
-        "u": "u",
-        "fp": 282,
-        "sm": 227,
-        "fixe": true
-      },
-      {
-        "n": "Bac de douche classique 120×80",
+        "n": "Bac de douche",
         "u": "u",
         "fp": 400,
         "sm": 170,
-        "fixe": true
+        "vars": [
+          {
+            "k": "dim",
+            "label": "Dimension",
+            "opts": [
+              {
+                "k": "120x80",
+                "label": "120×80",
+                "coef": 1
+              },
+              {
+                "k": "150x90",
+                "label": "150×90",
+                "coef": 1.25
+              }
+            ]
+          }
+        ]
       },
       {
-        "n": "Bac de douche grand 150×90",
-        "u": "u",
-        "fp": 500,
-        "sm": 230,
-        "fixe": true
-      },
-      {
-        "n": "Robinetterie douche — en applique",
+        "n": "Colonne de douche",
         "u": "u",
         "fp": 300,
         "sm": 180,
-        "fixe": true
+        "vars": [
+          {
+            "k": "pose",
+            "label": "Pose",
+            "opts": [
+              {
+                "k": "applique",
+                "label": "Applique",
+                "coef": 1
+              },
+              {
+                "k": "encastre",
+                "label": "Encastré",
+                "coef": 2
+              }
+            ]
+          }
+        ]
       },
       {
-        "n": "Robinetterie douche — encastrée",
-        "u": "u",
-        "fp": 600,
-        "sm": 320,
-        "fixe": true
-      },
-      {
-        "n": "Douche à l'italienne 120×80",
+        "n": "Douche à l'italienne",
         "u": "u",
         "fp": 1090,
         "sm": 440,
-        "fixe": true
+        "vars": [
+          {
+            "k": "dim",
+            "label": "Dimension",
+            "opts": [
+              {
+                "k": "120x80",
+                "label": "120×80",
+                "coef": 1
+              },
+              {
+                "k": "150x90",
+                "label": "150×90",
+                "coef": 1.25
+              }
+            ]
+          }
+        ]
       },
       {
-        "n": "Douche à l'italienne 150×90",
-        "u": "u",
-        "fp": 1360,
-        "sm": 580,
-        "fixe": true
-      },
-      {
-        "n": "Paroi fixe 120 (walk-in, verre 8 mm)",
+        "n": "Paroi de douche",
         "u": "u",
         "fp": 380,
         "sm": 250,
-        "fixe": true
-      },
-      {
-        "n": "Paroi fixe 150 (walk-in, verre 8 mm)",
-        "u": "u",
-        "fp": 500,
-        "sm": 350,
-        "fixe": true
+        "vars": [
+          {
+            "k": "dim",
+            "label": "Dimension",
+            "opts": [
+              {
+                "k": "120",
+                "label": "120 cm",
+                "coef": 1
+              },
+              {
+                "k": "150",
+                "label": "150 cm",
+                "coef": 1.32
+              }
+            ]
+          }
+        ]
       },
       {
         "n": "Cabine complète (parois + porte)",
@@ -1061,18 +1164,28 @@
         "sm": 650
       },
       {
-        "n": "Robinetterie baignoire — en applique",
+        "n": "Robinetterie baignoire",
         "u": "u",
         "fp": 260,
         "sm": 160,
-        "fixe": true
-      },
-      {
-        "n": "Robinetterie baignoire — encastrée",
-        "u": "u",
-        "fp": 550,
-        "sm": 300,
-        "fixe": true
+        "vars": [
+          {
+            "k": "pose",
+            "label": "Pose",
+            "opts": [
+              {
+                "k": "applique",
+                "label": "Applique",
+                "coef": 1
+              },
+              {
+                "k": "encastre",
+                "label": "Encastré",
+                "coef": 2.12
+              }
+            ]
+          }
+        ]
       },
       {
         "n": "Chauffe-eau électrique (cumulus)",
