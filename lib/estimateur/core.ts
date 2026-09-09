@@ -285,6 +285,13 @@ export function autoQty(ctx: Ctx, c: string, n: string, sel: Selection): number 
   const roof = SS * 1.4;
   const facade = 4 * Math.sqrt(SS) * ctx.hauteur * (ctx.niveaux || 1) * 1.25;
   const P = piecesEff(ctx), SDB = sdbEff(ctx);
+  const placo = S * (ctx.hauteur + 1); // murs (≈ S×h) + plafond (S) — surface de placo/enduit
+  const rj45 = (ctx.chambres ?? 0) + (ctx.suites ?? 0) + ((ctx.sejour ?? 0) > 0 ? 1 : 0); // 1 / chambre + suite + salon
+  // Robinetterie lavabo = nb de vasques (meuble simple = 1, double = 2) × quantité du meuble-vasque
+  const mv = sel[key("Plomberie", "Meuble-vasque")];
+  const vasques = mv && mv.on
+    ? (mv.manual ? (mv.qty ?? 0) : SDB) * (mv.vsel && mv.vsel["config"] === "double" ? 2 : 1)
+    : SDB;
   if (c === "Cloisons / Platrerie" && n === FINI) return derivedFinitions(ctx, sel);
   const A: Record<string, number> = {
     "Peinture des murs": S * ctx.hauteur, "Peinture des plafonds": S, "Préparation des surfaces": S * ctx.hauteur,
@@ -293,15 +300,17 @@ export function autoQty(ctx: Ctx, c: string, n: string, sel: Selection): number 
     "Isolation des combles perdus (soufflage)": SS, "Isolation des combles aménagés (rampants)": SS,
     "Isolation du sol / plancher bas": SS, "Isolation des murs par l'intérieur": facade,
     "Faux plafond": S, "Préparation du sol (ragréage)": S,
+    "Chape traditionnelle": S, "Chape liquide": S, "Plancher chauffant": S,
+    "Pose d'un pare-vapeur": placo, "Ratissage léger": placo, "Ratissage lourd": placo,
     "Sous-couche / primaire": S * ctx.hauteur,
     "Faïence / carrelage mural": SDB * 12, "Cloison pièce humide (hydrofuge)": SDB * 12,
-    "Portes intérieures": P, "Radiateurs électriques": P,
-    "Ajouter un point lumineux": P, "Ajouter / déplacer une prise": Math.round(S / 5),
+    "Porte intérieure battante": P, "Radiateurs électriques": P,
+    "Prise internet / TV (RJ45)": rj45,
     "Spots encastrés (LED)": Math.round(S / 2),
     "WC": ctx.wc,
     "Bac de douche": SDB, "Colonne de douche": SDB, "Douche à l'italienne": SDB,
     "Paroi de douche": SDB, "Cabine complète (parois + porte)": SDB,
-    "Robinetterie baignoire": SDB, "Robinetterie lavabo": SDB,
+    "Robinetterie baignoire": SDB, "Robinetterie lavabo": vasques,
     "Meuble-vasque": SDB, "Miroir": SDB,
     "Ventilation (VMC)": 1, "Sèche-serviette": SDB,
     "Monter une cloison": S * 0.35, "Doubler un mur": facade,

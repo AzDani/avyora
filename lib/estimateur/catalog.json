@@ -1560,34 +1560,25 @@
     "tva": 10,
     "t": [
       {
-        "n": "Portes intérieures",
+        "n": "Porte intérieure battante",
         "u": "u",
         "fp": 320,
         "sm": 180,
-        "vars": [
-          {
-            "k": "type",
-            "label": "Type",
-            "opts": [
-              {
-                "k": "battante",
-                "label": "Battante",
-                "coef": 1
-              },
-              {
-                "k": "pleine",
-                "label": "Âme pleine",
-                "coef": 1.41
-              },
-              {
-                "k": "coulissante",
-                "label": "Coulissante",
-                "coef": 2.19
-              }
-            ]
-          }
-        ],
-        "note": "battante std / âme pleine (iso) / coulissante (galandage)"
+        "note": "alvéolaire standard"
+      },
+      {
+        "n": "Porte intérieure âme pleine",
+        "u": "u",
+        "fp": 450,
+        "sm": 255,
+        "note": "isophonique / plus lourde"
+      },
+      {
+        "n": "Porte intérieure coulissante",
+        "u": "u",
+        "fp": 700,
+        "sm": 395,
+        "note": "galandage (dans la cloison) ou en applique"
       },
       {
         "n": "Placards & rangements",

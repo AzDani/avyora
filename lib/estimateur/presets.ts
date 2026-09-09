@@ -46,7 +46,7 @@ const COMPLETE_ADD: Tache[] = [
   ["Isolation", "Isolation des murs par l'intérieur"],
   ["Cloisons / Platrerie", "Monter une cloison"], ["Cloisons / Platrerie", "Doubler un mur"], ["Cloisons / Platrerie", "Faux plafond"], ["Cloisons / Platrerie", "Finitions plâtrerie (bandes, enduit)"],
   ["Chauffage / VMC", "Radiateurs électriques"], ["Chauffage / VMC", "Ventilation (VMC)"],
-  ["Menuiseries interieures", "Portes intérieures"],
+  ["Menuiseries interieures", "Porte intérieure battante"],
 ];
 const LOURDE_INT: Tache[] = [
   ["Maçonnerie", "Ouvrir un mur porteur — petite (porte/fenêtre)"], ["Maçonnerie", "Chape traditionnelle"],

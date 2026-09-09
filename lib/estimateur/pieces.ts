@@ -84,17 +84,17 @@ export function pieceTasks(room: PieceKey, s: number, ampleur: Ampleur): Tache[]
     );
     if (lvl >= 3) out.push(...curage());
   } else if (room === "chambre") {
-    if (lvl >= 1) out.push(["Menuiseries interieures", "Portes intérieures", 1]);
+    if (lvl >= 1) out.push(["Menuiseries interieures", "Porte intérieure battante", 1]);
     if (lvl >= 2) out.push(...elec(Math.round(surf / 3) + 2));
     if (lvl >= 3) out.push(...curage());
   } else if (room === "salon") {
-    if (lvl >= 1) out.push(["Menuiseries interieures", "Portes intérieures", 1]);
+    if (lvl >= 1) out.push(["Menuiseries interieures", "Porte intérieure battante", 1]);
     if (lvl >= 2) out.push(...elec(Math.round(surf / 3) + 3));
     if (lvl >= 3) out.push(...curage());
   } else if (room === "suite") {
     // Chambre + petite salle d'eau (douche, WC, vasque, VMC).
     if (lvl >= 1) out.push(
-      ["Menuiseries interieures", "Portes intérieures", 1],
+      ["Menuiseries interieures", "Porte intérieure battante", 1],
       ["Carrelage / Revetements", "Faïence / carrelage mural", 16],
       ["Plomberie", "Bac de douche", 1],
       ["Plomberie", "Colonne de douche", 1],
