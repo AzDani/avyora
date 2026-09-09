@@ -1563,19 +1563,45 @@
         "n": "Portes intérieures",
         "u": "u",
         "fp": 320,
-        "sm": 180
+        "sm": 180,
+        "vars": [
+          {
+            "k": "type",
+            "label": "Type",
+            "opts": [
+              {
+                "k": "battante",
+                "label": "Battante",
+                "coef": 1
+              },
+              {
+                "k": "pleine",
+                "label": "Âme pleine",
+                "coef": 1.41
+              },
+              {
+                "k": "coulissante",
+                "label": "Coulissante",
+                "coef": 2.19
+              }
+            ]
+          }
+        ],
+        "note": "battante std / âme pleine (iso) / coulissante (galandage)"
       },
       {
         "n": "Placards & rangements",
         "u": "ml",
         "fp": 500,
-        "sm": 300
+        "sm": 300,
+        "note": "penderie / placard fermé avec portes"
       },
       {
         "n": "Dressing sur mesure",
         "u": "ml",
         "fp": 750,
-        "sm": 450
+        "sm": 450,
+        "note": "coin ou pièce dressing aménagé (walk-in)"
       },
       {
         "n": "Verrière intérieure",
@@ -1587,7 +1613,8 @@
         "n": "Meuble sur mesure",
         "u": "ml",
         "fp": 600,
-        "sm": 350
+        "sm": 350,
+        "note": "bibliothèque, meuble TV, sous-pente…"
       },
       {
         "n": "Habillages & moulures bois",
