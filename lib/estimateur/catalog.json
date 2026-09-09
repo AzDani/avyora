@@ -1260,10 +1260,28 @@
       {
         "n": "Climatisation gainable (réversible)",
         "u": "forfait",
-        "fp": 7500,
-        "sm": 4500,
+        "fp": 6000,
+        "sm": 3600,
         "tva": 20,
-        "note": "chauffe + rafraîchit (chaud/froid) · soufflage par gaines, maison entière"
+        "note": "chauffe + rafraîchit (chaud/froid) · soufflage par gaines, maison entière",
+        "vars": [
+          {
+            "k": "maison",
+            "label": "Maison",
+            "opts": [
+              {
+                "k": "moy",
+                "label": "≤ 100 m²",
+                "coef": 1
+              },
+              {
+                "k": "grande",
+                "label": "> 100 m²",
+                "coef": 1.67
+              }
+            ]
+          }
+        ]
       },
       {
         "n": "Radiateurs électriques",
