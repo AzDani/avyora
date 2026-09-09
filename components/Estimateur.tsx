@@ -63,7 +63,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
   const [codePostal, setCodePostal] = useState("");
   const [view, setView] = useState<"saisie" | "devis">("saisie");
   const [custom, setCustom] = useState<CustomLine[]>([]);
-  const addCustom = (lot: string) => setCustom((p) => [...p, { id: (crypto.randomUUID?.() ?? String(Date.now() + Math.random())), lot, nom: "", prix: 0, unite: "u", qte: 1, note: "", tva: 10 }]);
+  const addCustom = (lot: string) => setCustom((p) => [...p, { id: (crypto.randomUUID?.() ?? String(Date.now() + Math.random())), lot, nom: "", prix: 0, unite: "u", qte: 1, note: "", tva: 10, on: true }]);
   const updCustom = (id: string, patch: Partial<CustomLine>) => setCustom((p) => p.map((x) => (x.id === id ? { ...x, ...patch } : x)));
   const delCustom = (id: string) => setCustom((p) => p.filter((x) => x.id !== id));
   const [saving, setSaving] = useState(false);
@@ -285,7 +285,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                   <div className="phase-t">{i + 1} · {ph}</div>
                   {lots.map((l) => {
                     const cLines = custom.filter((x) => x.lot === l.c);
-                    const cnt = l.t.filter((t) => visibleTask(ctx, t) && sel[key(l.c, t.n)]?.on).length + cLines.length;
+                    const cnt = l.t.filter((t) => visibleTask(ctx, t) && sel[key(l.c, t.n)]?.on).length + cLines.filter((x) => x.on !== false).length;
                     const isOpen = !!open[l.c];
                     const loc = isLoc(l.c);
                     const canCustom = l.c === "Démolition"; // pilote : ligne perso d'abord sur ce lot
@@ -502,9 +502,12 @@ function CustomLines({ lines, onAdd, onUpd, onDel }: { lines: CustomLine[]; onAd
   const isUrl = (s?: string) => /^https?:\/\//i.test((s || "").trim());
   return (
     <div className="clwrap">
-      {lines.map((l) => (
-        <div className="cl" key={l.id}>
+      {lines.map((l) => {
+        const isOn = l.on !== false;
+        return (
+        <div className={"cl" + (isOn ? "" : " off")} key={l.id}>
           <div className="clr">
+            <button type="button" className={"cbx" + (isOn ? " on" : "")} onClick={() => onUpd(l.id, { on: !isOn })} title={isOn ? "Décocher" : "Valider la tâche"} />
             <span className="clbadge">Perso</span>
             <input className="cl-nom" placeholder="Nom de la tâche…" value={l.nom} onChange={(e) => onUpd(l.id, { nom: e.target.value })} />
             <input className="cl-prix num" type="number" inputMode="decimal" value={l.prix || ""} placeholder="0" onChange={(e) => onUpd(l.id, { prix: parseFloat(e.target.value) || 0 })} title="prix HT" />
@@ -524,7 +527,8 @@ function CustomLines({ lines, onAdd, onUpd, onDel }: { lines: CustomLine[]; onAd
           </div>
           {guide === l.id && <div className="cl-guide"><b>Quelle TVA ?</b> · <b>5,5 %</b> réno énergétique · <b>10 %</b> amélioration logement +2 ans (standard) · <b>20 %</b> neuf, −2 ans, local pro ou matériaux seuls.</div>}
         </div>
-      ))}
+        );
+      })}
       <button type="button" className="cl-add" onClick={onAdd}>＋ Ajouter une ligne personnalisée</button>
     </div>
   );

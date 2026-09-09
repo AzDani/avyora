@@ -93,6 +93,7 @@ export const EST_CSS = `
 /* Ligne personnalisée */
 .av-estim .clwrap{margin-top:6px}
 .av-estim .cl{border:1px dashed var(--brand-200);background:linear-gradient(180deg,var(--brand-50),transparent);border-radius:11px;padding:11px;margin:8px 0}
+.av-estim .cl.off{opacity:.5}
 .av-estim .clr{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .av-estim .clr+.clr{margin-top:8px}
 .av-estim .clbadge{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--brand-700);background:var(--brand-100);border-radius:999px;padding:3px 8px}
