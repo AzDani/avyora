@@ -288,7 +288,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                     const cnt = l.t.filter((t) => visibleTask(ctx, t) && sel[key(l.c, t.n)]?.on).length + cLines.filter((x) => x.on !== false && !x.draft).length;
                     const isOpen = !!open[l.c];
                     const loc = isLoc(l.c);
-                    const canCustom = l.c === "Démolition"; // pilote : ligne perso d'abord sur ce lot
+                    const canCustom = true; // ligne perso disponible sur tous les lots
                     return (
                       <div key={l.c} className={"acc" + (isOpen ? " open" : "")}>
                         <div className="acc-h" onClick={() => setOpen((o) => ({ ...o, [l.c]: !o[l.c] }))}>
