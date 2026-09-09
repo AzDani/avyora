@@ -499,6 +499,8 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMa
 const CL_UNITS = ["m²", "ml", "u", "forfait", "jour", "m³", "tonne"];
 function CustomLines({ lines, onAdd, onUpd, onDel }: { lines: CustomLine[]; onAdd: () => void; onUpd: (id: string, patch: Partial<CustomLine>) => void; onDel: (id: string) => void }) {
   const [guide, setGuide] = useState<string | null>(null);
+  const [confirmDel, setConfirmDel] = useState<string | null>(null);
+  const askDel = (id: string) => { setConfirmDel(id); setTimeout(() => setConfirmDel((c) => (c === id ? null : c)), 3000); };
   const isUrl = (s?: string) => /^https?:\/\//i.test((s || "").trim());
   return (
     <div className="clwrap">
@@ -513,7 +515,9 @@ function CustomLines({ lines, onAdd, onUpd, onDel }: { lines: CustomLine[]; onAd
               <NumStepper compact value={l.qte} min={0} onChange={(v) => onUpd(l.id, { qte: v })} />
               <span className="unit">{l.unite}</span>
               <button type="button" className="cl-icon" onClick={() => onUpd(l.id, { draft: true })} title="Modifier">✎</button>
-              <button type="button" className="cl-icon" onClick={() => onDel(l.id)} title="Supprimer">🗑</button>
+              {confirmDel === l.id
+                ? <button type="button" className="cl-delconfirm" onClick={() => { onDel(l.id); setConfirmDel(null); }}>Supprimer ?</button>
+                : <button type="button" className="cl-icon" onClick={() => askDel(l.id)} title="Supprimer">🗑</button>}
               <span className="lineamt num">{fmt((l.prix || 0) * (l.qte || 0))}</span>
             </span>
           </div>

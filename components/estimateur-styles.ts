@@ -124,6 +124,7 @@ export const EST_CSS = `
 .av-estim .cl-cancel{border:0;background:none;color:var(--faint);font-family:var(--font-geist-sans);font-weight:600;font-size:12.5px;cursor:pointer;text-decoration:underline}
 .av-estim .cl-icon{border:0;background:none;color:var(--faint);cursor:pointer;font-size:14px;padding:2px 4px;line-height:1}
 .av-estim .cl-icon:hover{color:var(--brand)}
+.av-estim .cl-delconfirm{border:1px solid var(--danger);background:var(--danger);color:#fff;font-family:var(--font-geist-sans);font-weight:700;font-size:11px;border-radius:8px;padding:5px 9px;cursor:pointer;white-space:nowrap}
 .av-estim .resetbtn{background:none;border:0;color:var(--faint);font-size:12px;cursor:pointer;text-decoration:underline}
 
 .av-estim .hero{border-radius:var(--radius-panel);padding:28px;color:#edebff;background:linear-gradient(140deg,var(--nuit),var(--nuit-2) 55%,var(--nuit-3));box-shadow:var(--shadow-hero);position:relative;overflow:hidden;margin-bottom:16px}
