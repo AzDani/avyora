@@ -1233,21 +1233,23 @@
         "u": "forfait",
         "fp": 11000,
         "sm": 8000,
-        "tva": 5.5
+        "tva": 5.5,
+        "note": "source de chaleur : chauffage central + eau chaude (radiateurs/plancher)"
       },
       {
         "n": "Chaudière gaz à condensation",
         "u": "u",
         "fp": 4500,
         "sm": 2800,
-        "note": "gaz : TVA 10 % (plus éligible au 5,5 %)"
+        "note": "source de chaleur au gaz : chauffage central + eau chaude · TVA 10 %"
       },
       {
         "n": "Poêle à bois / granulés",
         "u": "u",
         "fp": 4000,
         "sm": 2500,
-        "tva": 5.5
+        "tva": 5.5,
+        "note": "chauffe une pièce/zone (appoint ou principal)"
       },
       {
         "n": "Climatisation réversible (split)",
@@ -1287,20 +1289,31 @@
         "n": "Radiateurs électriques",
         "u": "u",
         "fp": 500,
-        "sm": 320
+        "sm": 320,
+        "note": "émetteur autonome (sans chaudière ni PAC)"
       },
       {
-        "n": "Plancher chauffant",
+        "n": "Plancher chauffant hydraulique (à eau)",
         "u": "m2",
         "fp": 90,
         "sm": 40,
-        "tva": 5.5
+        "tva": 5.5,
+        "note": "émetteur au sol · relié à une PAC/chaudière"
+      },
+      {
+        "n": "Plancher chauffant électrique",
+        "u": "m2",
+        "fp": 55,
+        "sm": 25,
+        "tva": 10,
+        "note": "émetteur au sol · trame/câbles chauffants"
       },
       {
         "n": "Sèche-serviette",
         "u": "u",
         "fp": 500,
-        "sm": 320
+        "sm": 320,
+        "note": "radiateur de salle de bain"
       },
       {
         "n": "Ventilation (VMC)",
@@ -1324,20 +1337,22 @@
               }
             ]
           }
-        ]
+        ],
+        "note": "renouvelle l'air · simple flux (basique) ou double flux (récupère la chaleur)"
       },
       {
         "n": "Thermostat / pilotage",
         "u": "u",
         "fp": 250,
-        "sm": 120
+        "sm": 120,
+        "note": "régulation & programmation du chauffage"
       },
       {
         "n": "Désembouage du réseau de chauffage",
         "u": "forfait",
         "fp": 500,
         "sm": 80,
-        "note": "nettoyage radiateurs/plancher existants"
+        "note": "nettoyage d'un réseau (radiateurs/plancher) existant"
       }
     ]
   },
