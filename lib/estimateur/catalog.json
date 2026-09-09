@@ -1373,13 +1373,13 @@
     "tva": 10,
     "t": [
       {
-        "n": "Carrelage au sol",
+        "n": "Préparation du sol (ragréage)",
         "u": "m2",
-        "fp": 70,
-        "sm": 30
+        "fp": 22,
+        "sm": 8
       },
       {
-        "n": "Faïence / carrelage mural",
+        "n": "Carrelage au sol",
         "u": "m2",
         "fp": 70,
         "sm": 30
@@ -1440,10 +1440,10 @@
         "sm": 30
       },
       {
-        "n": "Préparation du sol (ragréage)",
+        "n": "Faïence / carrelage mural",
         "u": "m2",
-        "fp": 22,
-        "sm": 8
+        "fp": 70,
+        "sm": 30
       },
       {
         "n": "Plinthes",
