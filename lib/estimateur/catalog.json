@@ -1488,6 +1488,25 @@
     "tva": 10,
     "t": [
       {
+        "n": "Retirer l'ancien papier peint",
+        "u": "m2",
+        "fp": 10,
+        "sm": 2
+      },
+      {
+        "n": "Préparation des surfaces",
+        "u": "m2",
+        "fp": 15,
+        "sm": 4
+      },
+      {
+        "n": "Sous-couche / primaire",
+        "u": "m2",
+        "fp": 8,
+        "sm": 3,
+        "note": "impression sur placo neuf / support poreux"
+      },
+      {
         "n": "Peinture des murs",
         "u": "m2",
         "fp": 25,
@@ -1507,30 +1526,6 @@
         "note": "par ouvrant"
       },
       {
-        "n": "Préparation des surfaces",
-        "u": "m2",
-        "fp": 15,
-        "sm": 4
-      },
-      {
-        "n": "Pose de papier peint",
-        "u": "m2",
-        "fp": 30,
-        "sm": 12
-      },
-      {
-        "n": "Pose de toile de verre / fibre",
-        "u": "m2",
-        "fp": 25,
-        "sm": 8
-      },
-      {
-        "n": "Enduit décoratif (béton ciré mural, stuc)",
-        "u": "m2",
-        "fp": 70,
-        "sm": 25
-      },
-      {
         "n": "Lasure / vernis (boiseries)",
         "u": "m2",
         "fp": 30,
@@ -1543,10 +1538,16 @@
         "sm": 10
       },
       {
-        "n": "Retirer l'ancien papier peint",
+        "n": "Pose de papier peint",
         "u": "m2",
-        "fp": 10,
-        "sm": 2
+        "fp": 30,
+        "sm": 12
+      },
+      {
+        "n": "Enduit décoratif (béton ciré mural, stuc)",
+        "u": "m2",
+        "fp": 70,
+        "sm": 25
       }
     ]
   },

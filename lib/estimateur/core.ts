@@ -293,6 +293,7 @@ export function autoQty(ctx: Ctx, c: string, n: string, sel: Selection): number 
     "Isolation des combles perdus (soufflage)": SS, "Isolation des combles aménagés (rampants)": SS,
     "Isolation du sol / plancher bas": SS, "Isolation des murs par l'intérieur": facade,
     "Faux plafond": S, "Préparation du sol (ragréage)": S,
+    "Sous-couche / primaire": S * ctx.hauteur,
     "Faïence / carrelage mural": SDB * 12, "Cloison pièce humide (hydrofuge)": SDB * 12,
     "Portes intérieures": P, "Radiateurs électriques": P,
     "Ajouter un point lumineux": P, "Ajouter / déplacer une prise": Math.round(S / 5),
