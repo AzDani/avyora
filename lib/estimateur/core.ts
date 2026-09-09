@@ -74,6 +74,7 @@ export interface LigneSel {
   mot?: "manuel" | "motorise"; // portail : motorisation choisie
   tai?: "petit" | "grand";     // équipement : taille choisie
   vsel?: Record<string, string>; // variantes génériques : {groupe → option choisie}
+  note?: string;               // note libre / lien matériau (sauvegardé avec le projet)
 }
 export type Selection = Record<string, LigneSel>;
 

@@ -312,6 +312,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                                 onMot={(m) => upd(l.c, t.n, (s) => ({ ...s, mot: m }))}
                                 onTai={(z) => upd(l.c, t.n, (s) => ({ ...s, tai: z }))}
                                 onVar={(g, o) => upd(l.c, t.n, (s) => ({ ...s, vsel: { ...(s.vsel || {}), [g]: o } }))}
+                                onNote={(v) => upd(l.c, t.n, (s) => ({ ...s, note: v }))}
                               />
                             ))}
                             {canCustom && (
@@ -388,13 +389,14 @@ function Stepper({ label, hint, value, onStep }: { label: string; hint?: string;
   );
 }
 
-function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar }: {
+function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar, onNote }: {
   l: Lot; t: Tache; ctx: Ctx; sel: Selection; coef: number; loc: boolean;
   onCheck: () => void; onChoice: (self: boolean) => void; onAuto: () => void; onQty: (v: number) => void;
-  onMat: (m: "pvc" | "alu") => void; onVit: (v: "double" | "triple") => void; onMot: (m: "manuel" | "motorise") => void; onTai: (z: "petit" | "grand") => void; onVar: (g: string, o: string) => void;
+  onMat: (m: "pvc" | "alu") => void; onVit: (v: "double" | "triple") => void; onMot: (m: "manuel" | "motorise") => void; onTai: (z: "petit" | "grand") => void; onVar: (g: string, o: string) => void; onNote: (v: string) => void;
 }) {
   const s = sel[key(l.c, t.n)] || {};
   const on = !!s.on, self = !!s.self;
+  const [noteOpen, setNoteOpen] = useState<boolean>(!!s.note);
   const variant = !!(t.mat || t.vitrage || t.moto || t.taille || (t.vars && t.vars.length));
   const fcoef = (t.fixe || variant) ? 1 : coef;
   const ep = effPrices(t, s, ctx);
@@ -439,6 +441,7 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMa
               {puMat != null && <button type="button" className={"ch" + (self ? " onS" : "")} onClick={() => onChoice(true)}>Je le fais<b>{fmt(puMat)}</b></button>}
             </span>
           )}
+          <button type="button" className={"notebtn" + (s.note ? " has" : "")} onClick={() => setNoteOpen((o) => !o)} title="Note / lien matériau">📝</button>
           <span className="lineamt num">{fmt(lineHT(ctx, sel, l, t))}</span>
         </span>
       ) : (
@@ -492,16 +495,23 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMa
           })}
         </div>
       )}
+      {on && noteOpen && (
+        <div className="tnote">
+          <span className="cl-lk">🔗</span>
+          <input className="cl-note" placeholder="Note ou lien matériau (https://…)" value={s.note || ""} onChange={(e) => onNote(e.target.value)} />
+          {isUrl(s.note) && <a className="cl-open" href={s.note} target="_blank" rel="noopener noreferrer">Ouvrir ↗</a>}
+        </div>
+      )}
     </div>
   );
 }
 
+const isUrl = (s?: string) => /^https?:\/\//i.test((s || "").trim());
 const CL_UNITS = ["m²", "ml", "u", "forfait", "jour", "m³", "tonne"];
 function CustomLines({ lines, onAdd, onUpd, onDel }: { lines: CustomLine[]; onAdd: () => void; onUpd: (id: string, patch: Partial<CustomLine>) => void; onDel: (id: string) => void }) {
   const [guide, setGuide] = useState<string | null>(null);
   const [confirmDel, setConfirmDel] = useState<string | null>(null);
   const askDel = (id: string) => { setConfirmDel(id); setTimeout(() => setConfirmDel((c) => (c === id ? null : c)), 3000); };
-  const isUrl = (s?: string) => /^https?:\/\//i.test((s || "").trim());
   return (
     <div className="clwrap">
       {lines.map((l) => {

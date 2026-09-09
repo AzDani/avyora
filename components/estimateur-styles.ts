@@ -84,6 +84,10 @@ export const EST_CSS = `
 .av-estim .ch.onS{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
 .av-estim .lineamt{font-family:var(--font-geist-mono);font-size:12.5px;font-weight:600;min-width:70px;text-align:right}
 .av-estim .tvariants{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:7px 16px;padding:8px 0 2px 32px}
+.av-estim .notebtn{border:0;background:none;cursor:pointer;font-size:14px;padding:2px 4px;opacity:.5;line-height:1}
+.av-estim .notebtn:hover,.av-estim .notebtn.has{opacity:1}
+.av-estim .tnote{grid-column:1/-1;display:flex;align-items:center;gap:8px;padding:8px 0 2px 32px}
+.av-estim .tnote .cl-note{flex:1;min-width:150px}
 .av-estim .vg{display:inline-flex;align-items:center;gap:7px}
 .av-estim .vlab{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--faint)}
 .av-estim .vseg{display:inline-flex;gap:3px;background:var(--surface-2);border:1px solid var(--line-strong);border-radius:999px;padding:3px}
