@@ -1637,6 +1637,13 @@
         "note": "meubles + plan + crédence + électroménager standard + pose"
       },
       {
+        "n": "Meubles de cuisine",
+        "u": "ml",
+        "fp": 900,
+        "sm": 600,
+        "note": "meubles bas + hauts posés (hors plan, crédence, électroménager)"
+      },
+      {
         "n": "Rafraîchir une cuisine (façades / plan)",
         "u": "ml",
         "fp": 600,
@@ -1647,13 +1654,6 @@
         "u": "u",
         "fp": 2500,
         "sm": 1800
-      },
-      {
-        "n": "Électroménager seul (pack)",
-        "u": "forfait",
-        "fp": 2500,
-        "sm": 2300,
-        "tva": 20
       },
       {
         "n": "Plan de travail seul",
