@@ -1250,12 +1250,20 @@
         "tva": 5.5
       },
       {
-        "n": "Climatisation réversible",
+        "n": "Climatisation réversible (split)",
         "u": "u",
         "fp": 2400,
         "sm": 1500,
         "tva": 20,
-        "note": "par split — gros équipement, TVA 20 %"
+        "note": "chauffe + rafraîchit (chaud/froid) · prix par unité intérieure"
+      },
+      {
+        "n": "Climatisation gainable (réversible)",
+        "u": "forfait",
+        "fp": 7500,
+        "sm": 4500,
+        "tva": 20,
+        "note": "chauffe + rafraîchit (chaud/froid) · soufflage par gaines, maison entière"
       },
       {
         "n": "Radiateurs électriques",
