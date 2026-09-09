@@ -98,6 +98,9 @@ export const EST_CSS = `
 .av-estim .clbadge{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--brand-700);background:var(--brand-100);border-radius:999px;padding:3px 8px}
 .av-estim .cl input,.av-estim .cl select{font-family:var(--font-geist-sans);font-size:12.5px;border:1px solid var(--line-strong);border-radius:8px;padding:7px 9px;background:var(--surface);color:var(--ink);outline:none}
 .av-estim .cl input:focus,.av-estim .cl select:focus{border-color:var(--brand);box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 14%,transparent)}
+.av-estim .cl input[type=number]{-moz-appearance:textfield}
+.av-estim .cl input[type=number]::-webkit-outer-spin-button,.av-estim .cl input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.av-estim .cl-sep{font-size:12px;color:var(--faint);font-weight:600}
 .av-estim .cl-nom{flex:1;min-width:130px}
 .av-estim .cl-prix{width:76px;text-align:right;font-family:var(--font-geist-mono)}
 .av-estim .cl-unite{width:92px}

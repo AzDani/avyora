@@ -508,9 +508,11 @@ function CustomLines({ lines, onAdd, onUpd, onDel }: { lines: CustomLine[]; onAd
             <span className="clbadge">Perso</span>
             <input className="cl-nom" placeholder="Nom de la tâche…" value={l.nom} onChange={(e) => onUpd(l.id, { nom: e.target.value })} />
             <input className="cl-prix num" type="number" inputMode="decimal" value={l.prix || ""} placeholder="0" onChange={(e) => onUpd(l.id, { prix: parseFloat(e.target.value) || 0 })} title="prix HT" />
+            <span className="cl-sep">€ /</span>
             <select className="cl-unite" value={l.unite} onChange={(e) => onUpd(l.id, { unite: e.target.value })}>{CL_UNITS.map((u) => <option key={u}>{u}</option>)}</select>
+            <span className="cl-sep">×</span>
             <NumStepper compact value={l.qte} min={0} onChange={(v) => onUpd(l.id, { qte: v })} />
-            <span className="cl-total num">{fmt((l.prix || 0) * (l.qte || 0))}</span>
+            <span className="cl-total num">= {fmt((l.prix || 0) * (l.qte || 0))}</span>
             <button type="button" className="cl-del" onClick={() => onDel(l.id)} title="Supprimer">🗑</button>
           </div>
           <div className="clr">
