@@ -386,6 +386,19 @@ export function lineHT(ctx: Ctx, sel: Selection, l: Lot, t: Tache): number {
 export function lotHT(ctx: Ctx, sel: Selection, l: Lot): number {
   return l.t.reduce((s, t) => s + lineHT(ctx, sel, l, t), 0);
 }
+
+/** Ligne personnalisée saisie par l'utilisateur (par lot). Prix HT, TVA propre. */
+export interface CustomLine { id: string; lot: string; nom: string; prix: number; unite: string; qte: number; note?: string; tva: number; }
+/** Total HT des lignes perso d'un lot donné. */
+export function customLotHT(lines: CustomLine[], lot: string): number {
+  return lines.filter((x) => x.lot === lot).reduce((s, x) => s + (x.prix || 0) * (x.qte || 0), 0);
+}
+/** Totaux HT / TVA de toutes les lignes perso (TVA au taux de chaque ligne). */
+export function customTotals(lines: CustomLine[]): { ht: number; tva: number } {
+  let ht = 0, tva = 0;
+  for (const x of lines) { const h = (x.prix || 0) * (x.qte || 0); ht += h; tva += (h * (x.tva || 0)) / 100; }
+  return { ht, tva };
+}
 export function lotTTC(ctx: Ctx, sel: Selection, l: Lot): number {
   return l.t.reduce((s, t) => s + lineHT(ctx, sel, l, t) * (1 + effRate(l, t, sel, ctx) / 100), 0);
 }

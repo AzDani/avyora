@@ -7,7 +7,7 @@ export const EST_CSS = `
 .av-estim{
   --canvas:#f5f6fb;--surface:#ffffff;--surface-2:#f8f9fd;--ink:#15172b;--muted:#565a75;--faint:#898ea8;
   --line:#e9eaf3;--line-strong:#dcdeec;
-  --brand:#4f46e5;--brand-700:#4338ca;--brand-50:#eef1ff;--brand-200:#c7ccfe;
+  --brand:#4f46e5;--brand-700:#4338ca;--brand-50:#eef1ff;--brand-100:#e0e4ff;--brand-200:#c7ccfe;--danger:#e0434b;
   --accent-300:#c4b5fd;--accent-400:#a78bfa;--accent-600:#7c3aed;
   --nuit:#1E1B4B;--nuit-2:#241f5e;--nuit-3:#191640;
   --ok:#0f9d6b;--ok-soft:#e6f6ef;
@@ -90,6 +90,29 @@ export const EST_CSS = `
 .av-estim .vseg button{border:0;background:none;cursor:pointer;font-family:var(--font-geist-sans);font-weight:600;font-size:11px;color:var(--muted);padding:4px 11px;border-radius:999px;transition:.14s var(--ease)}
 .av-estim .vseg button:hover{color:var(--brand-700)}
 .av-estim .vseg button.on{background:var(--brand);color:#fff}
+/* Ligne personnalisée */
+.av-estim .clwrap{margin-top:6px}
+.av-estim .cl{border:1px dashed var(--brand-200);background:linear-gradient(180deg,var(--brand-50),transparent);border-radius:11px;padding:11px;margin:8px 0}
+.av-estim .clr{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.av-estim .clr+.clr{margin-top:8px}
+.av-estim .clbadge{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--brand-700);background:var(--brand-100);border-radius:999px;padding:3px 8px}
+.av-estim .cl input,.av-estim .cl select{font-family:var(--font-geist-sans);font-size:12.5px;border:1px solid var(--line-strong);border-radius:8px;padding:7px 9px;background:var(--surface);color:var(--ink);outline:none}
+.av-estim .cl input:focus,.av-estim .cl select:focus{border-color:var(--brand);box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 14%,transparent)}
+.av-estim .cl-nom{flex:1;min-width:130px}
+.av-estim .cl-prix{width:76px;text-align:right;font-family:var(--font-geist-mono)}
+.av-estim .cl-unite{width:92px}
+.av-estim .cl-total{margin-left:auto;font-family:var(--font-geist-mono);font-weight:700;color:var(--brand-700);white-space:nowrap;font-size:13px}
+.av-estim .cl-del{border:0;background:none;color:var(--faint);cursor:pointer;font-size:15px;padding:4px}
+.av-estim .cl-del:hover{color:var(--danger)}
+.av-estim .cl-lk{font-size:14px;color:var(--faint)}
+.av-estim .cl-note{flex:1;min-width:150px}
+.av-estim .cl-open{font-size:11px;font-weight:600;color:var(--brand-700);text-decoration:none;white-space:nowrap;border:1px solid var(--brand-200);border-radius:7px;padding:6px 9px;background:var(--surface)}
+.av-estim .cl-tvalab{font-size:11px;color:var(--muted);font-weight:500;display:inline-flex;align-items:center;gap:5px}
+.av-estim .cl-info{width:18px;height:18px;border-radius:50%;border:1px solid var(--brand-200);color:var(--brand-700);font-size:10px;font-weight:700;cursor:pointer;background:var(--surface);line-height:1}
+.av-estim .cl-guide{font-size:11px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:8px;line-height:1.5}
+.av-estim .cl-guide b{color:var(--ink)}
+.av-estim .cl-add{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:8px;padding:10px;border:1.5px dashed var(--brand-200);background:var(--surface);color:var(--brand-700);border-radius:11px;font-family:var(--font-geist-sans);font-weight:600;font-size:13px;cursor:pointer;transition:.15s var(--ease)}
+.av-estim .cl-add:hover{background:var(--brand-50);border-color:var(--brand)}
 .av-estim .resetbtn{background:none;border:0;color:var(--faint);font-size:12px;cursor:pointer;text-decoration:underline}
 
 .av-estim .hero{border-radius:var(--radius-panel);padding:28px;color:#edebff;background:linear-gradient(140deg,var(--nuit),var(--nuit-2) 55%,var(--nuit-3));box-shadow:var(--shadow-hero);position:relative;overflow:hidden;margin-bottom:16px}

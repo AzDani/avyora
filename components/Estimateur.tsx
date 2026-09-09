@@ -15,14 +15,14 @@ import { EST_CSS } from "./estimateur-styles";
 import {
   CATALOG, PHASES, finCoef, ICON, LOC, defaultCtx, key, isLoc, visible, visibleTask,
   nbFen, nbPieces, deriveSol, autoQty, isAuto, qtyOf, effRate, lineHT, lotHT, effPrices,
-  totals, buildDevis, regionCoef, piecesEff, sdbEff,
-  type Ctx, type Selection, type TypeBien, type Finition, type Lot, type Tache,
+  totals, buildDevis, regionCoef, piecesEff, sdbEff, customLotHT, customTotals,
+  type Ctx, type Selection, type TypeBien, type Finition, type Lot, type Tache, type CustomLine,
 } from "@/lib/estimateur";
 
 const DRAFT_KEY = "avyora-estim-v2";
 const fmt = (n: number): string => Math.round(n).toLocaleString("fr-FR") + " €";
 
-type Persisted = { v?: string; ctx?: Partial<Ctx>; sel?: Selection; open?: Record<string, boolean>; codePostal?: string; statuts?: Record<string, number> };
+type Persisted = { v?: string; ctx?: Partial<Ctx>; sel?: Selection; open?: Record<string, boolean>; codePostal?: string; statuts?: Record<string, number>; custom?: CustomLine[] };
 
 /** Compteur animé (count-up, easeOutCubic) — repart de 0 à chaque montage. */
 function CountUp({ value }: { value: number }) {
@@ -62,6 +62,10 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [codePostal, setCodePostal] = useState("");
   const [view, setView] = useState<"saisie" | "devis">("saisie");
+  const [custom, setCustom] = useState<CustomLine[]>([]);
+  const addCustom = (lot: string) => setCustom((p) => [...p, { id: (crypto.randomUUID?.() ?? String(Date.now() + Math.random())), lot, nom: "", prix: 0, unite: "u", qte: 1, note: "", tva: 10 }]);
+  const updCustom = (id: string, patch: Partial<CustomLine>) => setCustom((p) => p.map((x) => (x.id === id ? { ...x, ...patch } : x)));
+  const delCustom = (id: string) => setCustom((p) => p.filter((x) => x.id !== id));
   const [saving, setSaving] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const hydrated = useRef(false);
@@ -77,6 +81,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
       if (d.sel) setSel(d.sel);
       if (d.open) setOpen(d.open);
       if (d.codePostal) setCodePostal(d.codePostal);
+      if (d.custom) setCustom(d.custom);
       return true;
     };
     if (initialState && (initialState as Persisted).v === "estimateur") { statutsRef.current = (initialState as Persisted).statuts; load(initialState as Persisted); return; }
@@ -86,8 +91,8 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
   // Sauvegarde brouillon local.
   useEffect(() => {
     if (!hydrated.current) return;
-    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ v: "estimateur", ctx, sel, open, codePostal })); } catch { /* noop */ }
-  }, [ctx, sel, open, codePostal]);
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ v: "estimateur", ctx, sel, open, codePostal, custom })); } catch { /* noop */ }
+  }, [ctx, sel, open, codePostal, custom]);
 
   // ctx effectif = ctx + code postal → le moteur applique le coefficient régional (MO).
   const ctxR = useMemo(() => ({ ...ctx, codePostal }), [ctx, codePostal]);
@@ -151,7 +156,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
     if (!(ctx.surface > 0)) { setErreur("Renseignez la surface habitable."); setView("saisie"); return; }
     setSaving(true);
     const nom = `Rénovation — ${ctx.type} ${ctx.surface} m²`.slice(0, 110);
-    const reponses = { v: "estimateur", ctx: ctxR, sel, codePostal, ...(statutsRef.current ? { statuts: statutsRef.current } : {}) };
+    const reponses = { v: "estimateur", ctx: ctxR, sel, codePostal, custom, ...(statutsRef.current ? { statuts: statutsRef.current } : {}) };
     try {
       const res = await fetch(edition ? `/api/projects/${projectId}` : "/api/projects", {
         method: edition ? "PATCH" : "POST",
@@ -279,16 +284,18 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                 <div key={ph}>
                   <div className="phase-t">{i + 1} · {ph}</div>
                   {lots.map((l) => {
-                    const cnt = l.t.filter((t) => visibleTask(ctx, t) && sel[key(l.c, t.n)]?.on).length;
+                    const cLines = custom.filter((x) => x.lot === l.c);
+                    const cnt = l.t.filter((t) => visibleTask(ctx, t) && sel[key(l.c, t.n)]?.on).length + cLines.length;
                     const isOpen = !!open[l.c];
                     const loc = isLoc(l.c);
+                    const canCustom = l.c === "Démolition"; // pilote : ligne perso d'abord sur ce lot
                     return (
                       <div key={l.c} className={"acc" + (isOpen ? " open" : "")}>
                         <div className="acc-h" onClick={() => setOpen((o) => ({ ...o, [l.c]: !o[l.c] }))}>
                           <span className="ic">{ICON[l.c] || "•"}</span>
                           <span className="nm">{l.c}</span>
                           {cnt > 0 && <span className="cnt">{cnt}</span>}
-                          <span className="amt num">{cnt > 0 ? fmt(lotHT(ctx, sel, l)) + " HT" : ""}</span>
+                          <span className="amt num">{cnt > 0 ? fmt(lotHT(ctx, sel, l) + customLotHT(custom, l.c)) + " HT" : ""}</span>
                           <span className="car">›</span>
                         </div>
                         {isOpen && (
@@ -307,6 +314,9 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                                 onVar={(g, o) => upd(l.c, t.n, (s) => ({ ...s, vsel: { ...(s.vsel || {}), [g]: o } }))}
                               />
                             ))}
+                            {canCustom && (
+                              <CustomLines lines={cLines} onAdd={() => addCustom(l.c)} onUpd={updCustom} onDel={delCustom} />
+                            )}
                           </div>
                         )}
                       </div>
@@ -322,7 +332,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
           </div>
         )}
 
-        {view === "devis" && <DevisView ctx={ctxR} sel={sel} />}
+        {view === "devis" && <DevisView ctx={ctxR} sel={sel} custom={custom} />}
       </div>
 
       {/* Barre live sticky */}
@@ -486,9 +496,43 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMa
   );
 }
 
-function DevisView({ ctx, sel }: { ctx: Ctx; sel: Selection }) {
+const CL_UNITS = ["m²", "ml", "u", "forfait", "jour", "m³", "tonne"];
+function CustomLines({ lines, onAdd, onUpd, onDel }: { lines: CustomLine[]; onAdd: () => void; onUpd: (id: string, patch: Partial<CustomLine>) => void; onDel: (id: string) => void }) {
+  const [guide, setGuide] = useState<string | null>(null);
+  const isUrl = (s?: string) => /^https?:\/\//i.test((s || "").trim());
+  return (
+    <div className="clwrap">
+      {lines.map((l) => (
+        <div className="cl" key={l.id}>
+          <div className="clr">
+            <span className="clbadge">Perso</span>
+            <input className="cl-nom" placeholder="Nom de la tâche…" value={l.nom} onChange={(e) => onUpd(l.id, { nom: e.target.value })} />
+            <input className="cl-prix num" type="number" inputMode="decimal" value={l.prix || ""} placeholder="0" onChange={(e) => onUpd(l.id, { prix: parseFloat(e.target.value) || 0 })} title="prix HT" />
+            <select className="cl-unite" value={l.unite} onChange={(e) => onUpd(l.id, { unite: e.target.value })}>{CL_UNITS.map((u) => <option key={u}>{u}</option>)}</select>
+            <NumStepper compact value={l.qte} min={0} onChange={(v) => onUpd(l.id, { qte: v })} />
+            <span className="cl-total num">{fmt((l.prix || 0) * (l.qte || 0))}</span>
+            <button type="button" className="cl-del" onClick={() => onDel(l.id)} title="Supprimer">🗑</button>
+          </div>
+          <div className="clr">
+            <span className="cl-lk">🔗</span>
+            <input className="cl-note" placeholder="Note ou lien matériau (https://…)" value={l.note || ""} onChange={(e) => onUpd(l.id, { note: e.target.value })} />
+            {isUrl(l.note) && <a className="cl-open" href={l.note} target="_blank" rel="noopener noreferrer">Ouvrir ↗</a>}
+            <label className="cl-tvalab">TVA <select value={String(l.tva)} onChange={(e) => onUpd(l.id, { tva: parseFloat(e.target.value) })}><option value="5.5">5,5 %</option><option value="10">10 %</option><option value="20">20 %</option></select></label>
+            <button type="button" className="cl-info" onClick={() => setGuide(guide === l.id ? null : l.id)} title="Guide TVA">i</button>
+          </div>
+          {guide === l.id && <div className="cl-guide"><b>Quelle TVA ?</b> · <b>5,5 %</b> réno énergétique · <b>10 %</b> amélioration logement +2 ans (standard) · <b>20 %</b> neuf, −2 ans, local pro ou matériaux seuls.</div>}
+        </div>
+      ))}
+      <button type="button" className="cl-add" onClick={onAdd}>＋ Ajouter une ligne personnalisée</button>
+    </div>
+  );
+}
+
+function DevisView({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Selection; custom?: CustomLine[] }) {
   const dv = useMemo(() => buildDevis(CATALOG, ctx, sel), [ctx, sel]);
-  const { totaux: t, bilan: b, lots, lignes } = dv;
+  const { totaux: t0, bilan: b, lots, lignes } = dv;
+  const cu = customTotals(custom);
+  const t = { ht: t0.ht + cu.ht, tva: t0.tva + cu.tva, aleas: t0.aleas + cu.ht * ((ctx.aleas || 0) / 100), get ttc() { return this.ht + this.tva + this.aleas; } };
   const max = lots.length ? Math.max(...lots.map((x) => x.ttc)) : 1;
 
   return (
