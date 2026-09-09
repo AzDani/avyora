@@ -1075,10 +1075,32 @@
         "fixe": true
       },
       {
-        "n": "Installer un chauffe-eau (ballon)",
+        "n": "Chauffe-eau électrique (cumulus)",
         "u": "u",
-        "fp": 840,
-        "sm": 570
+        "fp": 950,
+        "sm": 400,
+        "taille": true,
+        "taillePetit": 0.63,
+        "note": "cumulus à accumulation · Petit ~150 L / Grand ~250 L"
+      },
+      {
+        "n": "Chauffe-eau électrique instantané",
+        "u": "u",
+        "fp": 550,
+        "sm": 250,
+        "taille": true,
+        "taillePetit": 0.65,
+        "note": "Petit point d'eau / Grand douche · multi-points"
+      },
+      {
+        "n": "Chauffe-eau thermodynamique",
+        "u": "u",
+        "fp": 3200,
+        "sm": 2200,
+        "taille": true,
+        "taillePetit": 0.81,
+        "tva": 5.5,
+        "note": "PAC · Petit ~200 L / Grand ~270 L"
       },
       {
         "n": "Installer un adoucisseur d'eau",

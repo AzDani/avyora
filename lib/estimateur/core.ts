@@ -28,6 +28,8 @@ export interface Tache {
   matDef?: "pvc" | "alu"; // matériau par défaut du poste (sinon selon finition) ; ex. portail = alu
   vitrage?: boolean;    // menuiserie vitrée : option Double/Triple vitrage
   moto?: boolean;       // portail : option Manuel / Motorisé
+  taille?: boolean;     // équipement : option Petit / Grand (ex. ballon d'eau chaude)
+  taillePetit?: number; // coef Petit spécifique (défaut TAILLE_COEF.petit)
 }
 export interface Lot {
   c: string;            // corps d'état
@@ -65,6 +67,7 @@ export interface LigneSel {
   mat?: "pvc" | "alu";        // menuiserie : matériau choisi
   vit?: "double" | "triple";  // menuiserie : vitrage choisi
   mot?: "manuel" | "motorise"; // portail : motorisation choisie
+  tai?: "petit" | "grand";     // équipement : taille choisie
 }
 export type Selection = Record<string, LigneSel>;
 
@@ -74,11 +77,13 @@ export const VIT_COEF: Record<string, number> = { double: 1, triple: 1.20 };
 export const DEFAULT_VIT: "double" | "triple" = "double";
 export const MOT_COEF: Record<string, number> = { manuel: 1, motorise: 1.60 };
 export const DEFAULT_MOT: "manuel" | "motorise" = "motorise";
+export const TAILLE_COEF: Record<string, number> = { grand: 1, petit: 0.65 };
+export const DEFAULT_TAILLE: "petit" | "grand" = "grand";
 /** Matériau par défaut (aucun choix explicite) : alu en premium, sinon PVC. */
 const defMat = (ctx?: Ctx): "pvc" | "alu" => (ctx && ctx.finition === "premium" ? "alu" : "pvc");
 /** Prix effectifs (fp/sm) selon matériau/vitrage choisis. Sans variante → fp/sm bruts. */
 export function effPrices(t: Tache, s?: LigneSel, ctx?: Ctx): { fp: number | null; sm: number | null } {
-  if (!t.mat && !t.vitrage && !t.moto) return { fp: t.fp, sm: t.sm };
+  if (!t.mat && !t.vitrage && !t.moto && !t.taille) return { fp: t.fp, sm: t.sm };
   let f = 1;
   if (t.mat) {
     const m = (s && s.mat) || t.matDef || defMat(ctx);
@@ -86,6 +91,10 @@ export function effPrices(t: Tache, s?: LigneSel, ctx?: Ctx): { fp: number | nul
   }
   if (t.vitrage) f *= VIT_COEF[(s && s.vit) || DEFAULT_VIT] ?? 1;
   if (t.moto) f *= MOT_COEF[(s && s.mot) || DEFAULT_MOT] ?? 1;
+  if (t.taille) {
+    const z = (s && s.tai) || DEFAULT_TAILLE;
+    f *= z === "petit" ? (t.taillePetit ?? TAILLE_COEF.petit) : 1;
+  }
   return { fp: t.fp != null ? Math.round(t.fp * f) : null, sm: t.sm != null ? Math.round(t.sm * f) : null };
 }
 /** Suffixe d'étiquette variante (matériau / vitrage) pour l'affichage. */
@@ -94,6 +103,7 @@ export function variantLabel(t: Tache, s?: LigneSel, ctx?: Ctx): string {
   if (t.mat) p.push(((s && s.mat) || t.matDef || defMat(ctx)) === "alu" ? "alu" : "PVC");
   if (t.vitrage) p.push(((s && s.vit) || DEFAULT_VIT) === "triple" ? "triple vitrage" : "double vitrage");
   if (t.moto) p.push(((s && s.mot) || DEFAULT_MOT) === "motorise" ? "motorisé" : "manuel");
+  if (t.taille) p.push(((s && s.tai) || DEFAULT_TAILLE) === "petit" ? "petit" : "grand");
   return p.length ? " (" + p.join(", ") + ")" : "";
 }
 
@@ -150,7 +160,7 @@ export function finCoef(ctx: Ctx, corps: string): number {
 }
 /** Coef finition par tâche : 1 (fixe) pour les équipements à prix fixe, sinon le coef du lot. */
 export function finCoefTask(ctx: Ctx, l: Lot, t: Tache): number {
-  if (t.fixe || t.mat || t.vitrage || t.moto) return 1; // équipement fixe ou piloté par matériau/vitrage/motorisation
+  if (t.fixe || t.mat || t.vitrage || t.moto || t.taille) return 1; // fixe ou piloté par variante (matériau/vitrage/motorisation/taille)
   const g = TASK_FIN[t.n];
   return g ? g[ctx.finition] : finCoef(ctx, l.c);
 }

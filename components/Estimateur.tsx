@@ -303,6 +303,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                                 onMat={(m) => upd(l.c, t.n, (s) => ({ ...s, mat: m }))}
                                 onVit={(v) => upd(l.c, t.n, (s) => ({ ...s, vit: v }))}
                                 onMot={(m) => upd(l.c, t.n, (s) => ({ ...s, mot: m }))}
+                                onTai={(z) => upd(l.c, t.n, (s) => ({ ...s, tai: z }))}
                               />
                             ))}
                           </div>
@@ -376,19 +377,20 @@ function Stepper({ label, hint, value, onStep }: { label: string; hint?: string;
   );
 }
 
-function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot }: {
+function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai }: {
   l: Lot; t: Tache; ctx: Ctx; sel: Selection; coef: number; loc: boolean;
   onCheck: () => void; onChoice: (self: boolean) => void; onAuto: () => void; onQty: (v: number) => void;
-  onMat: (m: "pvc" | "alu") => void; onVit: (v: "double" | "triple") => void; onMot: (m: "manuel" | "motorise") => void;
+  onMat: (m: "pvc" | "alu") => void; onVit: (v: "double" | "triple") => void; onMot: (m: "manuel" | "motorise") => void; onTai: (z: "petit" | "grand") => void;
 }) {
   const s = sel[key(l.c, t.n)] || {};
   const on = !!s.on, self = !!s.self;
-  const variant = !!(t.mat || t.vitrage || t.moto);
+  const variant = !!(t.mat || t.vitrage || t.moto || t.taille);
   const fcoef = (t.fixe || variant) ? 1 : coef;
   const ep = effPrices(t, s, ctx);
   const matSel = s.mat || t.matDef || (ctx.finition === "premium" ? "alu" : "pvc");
   const vitSel = s.vit || "double";
   const motSel = s.mot || "motorise";
+  const taiSel = s.tai || "grand";
   const puv = ep.fp != null ? ep.fp * fcoef : null;
   let puTxt = puv != null ? fmt(puv) + " HT" + (t.u !== "forfait" && t.u !== "u" ? "/" + t.u : "") : "prix sur devis";
   if (t.note) puTxt += " · " + t.note;
@@ -452,6 +454,14 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMa
               <span className="vseg">
                 <button type="button" className={motSel === "manuel" ? "on" : ""} onClick={() => onMot("manuel")}>Manuel</button>
                 <button type="button" className={motSel === "motorise" ? "on" : ""} onClick={() => onMot("motorise")}>Motorisé</button>
+              </span>
+            </span>
+          )}
+          {t.taille && (
+            <span className="vg"><span className="vlab">Taille</span>
+              <span className="vseg">
+                <button type="button" className={taiSel === "petit" ? "on" : ""} onClick={() => onTai("petit")}>Petit</button>
+                <button type="button" className={taiSel === "grand" ? "on" : ""} onClick={() => onTai("grand")}>Grand</button>
               </span>
             </span>
           )}
