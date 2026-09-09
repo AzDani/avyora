@@ -1391,11 +1391,35 @@
         "sm": 22
       },
       {
-        "n": "Parquet bois (contrecollé)",
+        "n": "Parquet bois",
         "u": "m2",
         "fp": 90,
         "sm": 45,
-        "note": "massif ~+50 %"
+        "vars": [
+          {
+            "k": "type",
+            "label": "Type",
+            "opts": [
+              {
+                "k": "contrecolle",
+                "label": "Contrecollé",
+                "coef": 1
+              },
+              {
+                "k": "massif",
+                "label": "Massif",
+                "coef": 1.5
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "n": "Ponçage + vitrification parquet",
+        "u": "m2",
+        "fp": 40,
+        "sm": 8,
+        "note": "rénover un parquet existant (ponçage + vitrification/huile)"
       },
       {
         "n": "Sol souple (PVC, lino)",
@@ -1412,7 +1436,7 @@
       {
         "n": "Béton ciré / résine",
         "u": "m2",
-        "fp": 90,
+        "fp": 110,
         "sm": 30
       },
       {
