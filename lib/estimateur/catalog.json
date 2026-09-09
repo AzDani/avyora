@@ -921,13 +921,6 @@
         "u": "forfait",
         "fp": 1500,
         "sm": 800
-      },
-      {
-        "n": "Motorisation de portail",
-        "u": "u",
-        "fp": 1200,
-        "sm": 700,
-        "note": "motoriser un portail existant (kit moteur + pose)"
       }
     ]
   },
