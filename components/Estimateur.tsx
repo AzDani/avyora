@@ -302,6 +302,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                                 onQty={(v) => upd(l.c, t.n, (s) => ({ ...s, qty: v, manual: isAuto(ctx, l.c, t.n) ? true : s.manual }))}
                                 onMat={(m) => upd(l.c, t.n, (s) => ({ ...s, mat: m }))}
                                 onVit={(v) => upd(l.c, t.n, (s) => ({ ...s, vit: v }))}
+                                onMot={(m) => upd(l.c, t.n, (s) => ({ ...s, mot: m }))}
                               />
                             ))}
                           </div>
@@ -375,18 +376,19 @@ function Stepper({ label, hint, value, onStep }: { label: string; hint?: string;
   );
 }
 
-function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit }: {
+function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot }: {
   l: Lot; t: Tache; ctx: Ctx; sel: Selection; coef: number; loc: boolean;
   onCheck: () => void; onChoice: (self: boolean) => void; onAuto: () => void; onQty: (v: number) => void;
-  onMat: (m: "pvc" | "alu") => void; onVit: (v: "double" | "triple") => void;
+  onMat: (m: "pvc" | "alu") => void; onVit: (v: "double" | "triple") => void; onMot: (m: "manuel" | "motorise") => void;
 }) {
   const s = sel[key(l.c, t.n)] || {};
   const on = !!s.on, self = !!s.self;
-  const variant = !!(t.mat || t.vitrage);
+  const variant = !!(t.mat || t.vitrage || t.moto);
   const fcoef = (t.fixe || variant) ? 1 : coef;
   const ep = effPrices(t, s, ctx);
-  const matSel = s.mat || (ctx.finition === "premium" ? "alu" : "pvc");
+  const matSel = s.mat || t.matDef || (ctx.finition === "premium" ? "alu" : "pvc");
   const vitSel = s.vit || "double";
+  const motSel = s.mot || "motorise";
   const puv = ep.fp != null ? ep.fp * fcoef : null;
   let puTxt = puv != null ? fmt(puv) + " HT" + (t.u !== "forfait" && t.u !== "u" ? "/" + t.u : "") : "prix sur devis";
   if (t.note) puTxt += " · " + t.note;
@@ -442,6 +444,14 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMa
               <span className="vseg">
                 <button type="button" className={vitSel === "double" ? "on" : ""} onClick={() => onVit("double")}>Double</button>
                 <button type="button" className={vitSel === "triple" ? "on" : ""} onClick={() => onVit("triple")}>Triple</button>
+              </span>
+            </span>
+          )}
+          {t.moto && (
+            <span className="vg"><span className="vlab">Motorisation</span>
+              <span className="vseg">
+                <button type="button" className={motSel === "manuel" ? "on" : ""} onClick={() => onMot("manuel")}>Manuel</button>
+                <button type="button" className={motSel === "motorise" ? "on" : ""} onClick={() => onMot("motorise")}>Motorisé</button>
               </span>
             </span>
           )}

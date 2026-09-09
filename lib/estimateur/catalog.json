@@ -680,6 +680,28 @@
         "u": "u",
         "fp": 400,
         "sm": 200
+      },
+      {
+        "n": "Portail battant (4 m)",
+        "u": "u",
+        "fp": 2000,
+        "sm": 1400,
+        "mat": true,
+        "matPvc": 0.7,
+        "matDef": "alu",
+        "moto": true,
+        "note": "largeur ~4 m — base alu manuel"
+      },
+      {
+        "n": "Portail coulissant (4 m)",
+        "u": "u",
+        "fp": 2500,
+        "sm": 1800,
+        "mat": true,
+        "matPvc": 0.7,
+        "matDef": "alu",
+        "moto": true,
+        "note": "largeur ~4 m — base alu manuel"
       }
     ],
     "note": "prix base PVC ; alu +30-50 %, bois +40-70 %"
