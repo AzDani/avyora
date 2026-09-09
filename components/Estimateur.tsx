@@ -392,7 +392,9 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMa
   const vitSel = s.vit || "double";
   const motSel = s.mot || "motorise";
   const taiSel = s.tai || "grand";
-  const puv = ep.fp != null ? ep.fp * fcoef : null;
+  // Finition sur MATÉRIAUX uniquement ; MO fixe. Prix unitaires indicatifs (hors coef régional).
+  const puMat = ep.sm != null ? ep.sm * fcoef : null;                                    // matériaux × finition
+  const puv = ep.fp != null ? (ep.sm != null ? ep.sm * fcoef + (ep.fp - ep.sm) : ep.fp) : null; // fait-faire = matériaux + MO
   let puTxt = puv != null ? fmt(puv) + " HT" + (t.u !== "forfait" && t.u !== "u" ? "/" + t.u : "") : "prix sur devis";
   if (t.note) puTxt += " · " + t.note;
   const au = isAuto(ctx, l.c, t.n);
@@ -423,8 +425,8 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMa
           ))}
           {!loc && (
             <span className="choice">
-              <button type="button" className={"ch" + (!self ? " onA" : "")} onClick={() => onChoice(false)}>Fait faire<b>{ep.fp != null ? fmt(ep.fp * fcoef) : "—"}</b></button>
-              {ep.sm != null && <button type="button" className={"ch" + (self ? " onS" : "")} onClick={() => onChoice(true)}>Je le fais<b>{fmt(ep.sm * fcoef)}</b></button>}
+              <button type="button" className={"ch" + (!self ? " onA" : "")} onClick={() => onChoice(false)}>Fait faire<b>{puv != null ? fmt(puv) : "—"}</b></button>
+              {puMat != null && <button type="button" className={"ch" + (self ? " onS" : "")} onClick={() => onChoice(true)}>Je le fais<b>{fmt(puMat)}</b></button>}
             </span>
           )}
           <span className="lineamt num">{fmt(lineHT(ctx, sel, l, t))}</span>
