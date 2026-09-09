@@ -1504,26 +1504,28 @@
         "u": "m2",
         "fp": 8,
         "sm": 3,
-        "note": "impression sur placo neuf / support poreux"
+        "note": "1 couche de primaire · support neuf/poreux"
       },
       {
         "n": "Peinture des murs",
         "u": "m2",
         "fp": 25,
-        "sm": 5
+        "sm": 5,
+        "note": "2 couches de finition"
       },
       {
         "n": "Peinture des plafonds",
         "u": "m2",
         "fp": 28,
-        "sm": 5
+        "sm": 5,
+        "note": "2 couches de finition"
       },
       {
         "n": "Peinture des boiseries",
         "u": "u",
         "fp": 90,
         "sm": 15,
-        "note": "par ouvrant"
+        "note": "2 couches · par ouvrant (porte)"
       },
       {
         "n": "Lasure / vernis (boiseries)",
@@ -1535,7 +1537,8 @@
         "n": "Peinture spéciale (anti-humidité)",
         "u": "m2",
         "fp": 30,
-        "sm": 10
+        "sm": 10,
+        "note": "2 couches · anti-humidité/moisissures"
       },
       {
         "n": "Pose de papier peint",
