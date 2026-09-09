@@ -60,6 +60,13 @@ const HOME_CSS = `
 .av-home .stepc .n{font-family:var(--font-geist-mono),monospace;font-size:14px;font-weight:700;color:#fff;background:var(--brand);width:34px;height:34px;border-radius:10px;display:grid;place-items:center}
 .av-home .stepc h3{font-size:17px;font-weight:600;margin-top:16px}
 .av-home .stepc p{font-size:13.5px;color:var(--muted);margin-top:7px;line-height:1.55}
+.av-home .stepc .ico{font-size:22px;margin-top:14px;display:block}
+.av-home .steps4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;position:relative}
+.av-home .steps4::before{content:"";position:absolute;top:43px;left:12%;right:12%;height:2px;background:linear-gradient(90deg,var(--brand-200),var(--accent));z-index:0}
+.av-home .steps4 .stepc{position:relative;z-index:1}
+.av-home .strip{margin-top:26px;background:var(--brand-weak);border:1px solid var(--brand-200);border-radius:var(--r-lg);padding:22px 26px;text-align:center}
+.av-home .strip .t{font-weight:700;font-size:16px;color:var(--nuit)}
+.av-home .strip .d{color:var(--muted);font-size:14px;margin-top:6px;line-height:1.55;max-width:60ch;margin-inline:auto}
 .av-home .roi{background:linear-gradient(150deg,var(--nuit-2),var(--nuit));color:#fff;border-radius:var(--r-lg);overflow:hidden}
 .av-home .roi .in{padding:60px 24px;text-align:center}
 .av-home .roi .eyebrow{color:var(--accent-300)}
@@ -127,47 +134,51 @@ const HOME_CSS = `
 .av-home .doc::after{content:"";position:absolute;left:0;right:0;bottom:0;height:160px;background:linear-gradient(transparent,var(--canvas));pointer-events:none}
 @media(prefers-reduced-motion:reduce){.av-home .promo .dot{animation:none}}
 @media(max-width:560px){.av-home .demo .tiles{grid-template-columns:1fr}.av-home .demo .bar{grid-template-columns:112px 1fr 74px}}
-@media(max-width:820px){.av-home .pains{grid-template-columns:1fr 1fr}.av-home .steps{grid-template-columns:1fr}.av-home .eco{grid-template-columns:1fr}.av-home .cred{grid-template-columns:1fr 1fr}.av-home .roi .vs{display:none}}
+@media(max-width:820px){.av-home .pains{grid-template-columns:1fr 1fr}.av-home .steps{grid-template-columns:1fr}.av-home .steps4{grid-template-columns:1fr 1fr}.av-home .steps4::before{display:none}.av-home .eco{grid-template-columns:1fr}.av-home .cred{grid-template-columns:1fr 1fr}.av-home .roi .vs{display:none}}
+@media(max-width:440px){.av-home .steps4{grid-template-columns:1fr}}
 `;
 
 const HOME_HTML = `
 <a href="/tarifs" class="promo"><span class="dot"></span>Offre de lancement — jusqu'à <b>−35&nbsp;%</b> sur AVYORA Pro <span class="arr">· durée limitée →</span></a>
 <div class="wrap"><header class="hero"><div class="in">
-  <div class="eyebrow">Estimateur de rénovation · France</div>
-  <h1>Ne signe plus ta rénovation<br><span class="hl">à l'aveugle.</span></h1>
-  <p class="sub">En 3 minutes, sache exactement combien vont coûter tes travaux — au poste près, au prix du marché de ta région. <b style="color:#fff">Avant</b> de dépenser le premier euro.</p>
+  <div class="eyebrow">Gestionnaire de travaux · France</div>
+  <h1>Le copilote de<br><span class="hl">tes travaux.</span></h1>
+  <p class="sub">Estime, choisis, suis et pilote ta rénovation — <b style="color:#fff">du premier chiffrage à la fin du chantier</b>. Pas juste un prix : un vrai carnet de bord.</p>
   <div class="cta">
     <a href="/projets/nouveau" class="btn btn-p">Estimer gratuitement →</a>
     <a href="/tarifs" class="btn btn-w">Voir les tarifs</a>
   </div>
   <div class="trust">
-    <span><b>173</b> postes de prix</span><span><b>19</b> corps d'état</span><span>prix marché <b>2026</b></span><span>marge <b>±15 %</b></span>
+    <span><b>200</b> postes de prix</span><span>suivi de <b>chantier</b></span><span>carnet <b>matériaux</b></span><span><b>multi</b>-projets</span>
   </div>
 </div></header></div>
 
 <section class="blk"><div class="wrap">
   <div class="center">
+    <p class="eyebrow">De l'idée au chantier fini</p>
+    <h2>Un seul outil, tout le projet.</h2>
+    <p>Là où les autres s'arrêtent au devis, AVYORA t'accompagne jusqu'au bout.</p>
+  </div>
+  <div class="steps4">
+    <div class="stepc"><div class="n">1</div><span class="ico">🧮</span><h3>Estimer</h3><p>Un budget précis en quelques clics — 200 postes, prix ajustés à ta région et au niveau de finition.</p></div>
+    <div class="stepc"><div class="n">2</div><span class="ico">🎨</span><h3>Choisir</h3><p>Matériaux, artisan ou « je le fais », et tes liens produits sauvegardés sur chaque poste.</p></div>
+    <div class="stepc"><div class="n">3</div><span class="ico">✅</span><h3>Suivre</h3><p>Coche l'avancement des travaux, garde ton carnet de chantier toujours à jour.</p></div>
+    <div class="stepc"><div class="n">4</div><span class="ico">📊</span><h3>Piloter</h3><p>Garde le cap sur le budget et retrouve tous tes chantiers au même endroit.</p></div>
+  </div>
+  <div class="strip"><div class="t">🏠 Pensé pour ceux qui gèrent vraiment un chantier</div><div class="d">Investisseurs locatifs, auto-rénovateurs, particuliers : garde le contrôle du budget et de tes choix, de A à Z.</div></div>
+</div></section>
+
+<section class="blk" style="padding-top:0"><div class="wrap">
+  <div class="center">
     <p class="eyebrow">Le vrai problème</p>
     <h2>Une rénovation, c'est des milliers d'euros engagés dans le flou.</h2>
-    <p>Tu signes des devis que tu ne peux pas vraiment vérifier. C'est là que les budgets dérapent — vite, et sans prévenir.</p>
+    <p>Tu signes des devis que tu ne peux pas vraiment vérifier, et tu gères ton chantier sur des bouts de papier. C'est là que les budgets dérapent.</p>
   </div>
   <div class="pains">
     <div class="pain"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h6M8 17h4"/></svg></span><h3>Devis illisibles</h3><p>Un prix global, aucune façon de savoir s'il est juste.</p></div>
     <div class="pain"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><h3>Postes oubliés</h3><p>Ils réapparaissent en plein chantier — toujours plus cher.</p></div>
     <div class="pain"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M23 6l-9.5 9.5-5-5L1 18M17 6h6v6"/></svg></span><h3>Budgets qui explosent</h3><p>+20, +30 % en cours de route, sans t'avoir prévenu.</p></div>
-    <div class="pain"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg></span><h3>Zéro comparaison</h3><p>Aucun repère de marché : tu signes en croisant les doigts.</p></div>
-  </div>
-</div></section>
-
-<section class="blk" style="padding-top:0"><div class="wrap">
-  <div class="center">
-    <p class="eyebrow">La solution</p>
-    <h2>Sais où tu vas, dès le premier jour.</h2>
-  </div>
-  <div class="steps">
-    <div class="stepc"><div class="n">1</div><h3>Décris ton bien</h3><p>4 questions, moins de 3 minutes. Type, surface, ampleur, finition.</p></div>
-    <div class="stepc"><div class="n">2</div><h3>Reçois ta fourchette</h3><p>Un budget immédiat, ±15 %, ajusté au prix du marché de ta région.</p></div>
-    <div class="stepc"><div class="n">3</div><h3>Affine au poste près</h3><p>Les 173 postes, fait-faire / je fais, et le rapport PDF — avec AVYORA&nbsp;Pro.</p></div>
+    <div class="pain"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span><h3>Suivi éparpillé</h3><p>Devis, liens, choix de matériaux : tout est dispersé.</p></div>
   </div>
 </div></section>
 
@@ -206,8 +217,8 @@ const HOME_HTML = `
 <section class="blk" style="padding-top:0"><div class="wrap">
   <div class="center"><p class="eyebrow">Pourquoi c'est fiable</p><h2>Des prix réels, pas une approximation.</h2></div>
   <div class="cred">
-    <div class="s"><div class="v">173</div><div class="l">postes de prix chiffrés</div></div>
-    <div class="s"><div class="v">19</div><div class="l">corps d'état couverts</div></div>
+    <div class="s"><div class="v">200</div><div class="l">postes de prix chiffrés</div></div>
+    <div class="s"><div class="v">18</div><div class="l">corps d'état couverts</div></div>
     <div class="s"><div class="v">2026</div><div class="l">prix du marché français</div></div>
     <div class="s"><div class="v">±15 %</div><div class="l">précision au poste près</div></div>
   </div>
@@ -216,8 +227,8 @@ const HOME_HTML = `
 <section class="blk" style="padding-top:0"><div class="wrap">
   <div class="price">
     <span class="lance">Offre de lancement · jusqu'à −35 %</span>
-    <h2>Gratuit pour estimer. Pro pour tout débloquer.</h2>
-    <div class="p"><s>29 €</s><span class="big">18,85 €</span> / mois — détaillé 173 postes, rapport PDF, sauvegarde et suivi de chantier.</div>
+    <h2>Gratuit pour estimer. Pro pour piloter.</h2>
+    <div class="p"><s>29 €</s><span class="big">18,85 €</span> / mois — détaillé 200 postes, rapport PDF, carnet matériaux, suivi de chantier &amp; multi-projets.</div>
     <div class="cta">
       <a href="/tarifs" class="btn btn-o">Passer Pro</a>
       <a href="/tarifs" class="btn btn-w">Voir tous les plans</a>
@@ -242,15 +253,15 @@ const HOME_HTML = `
 const HOME_HTML_EN = `
 <a href="/tarifs" class="promo"><span class="dot"></span>Launch offer — up to <b>−35&nbsp;%</b> on AVYORA Pro <span class="arr">· limited time →</span></a>
 <div class="wrap"><header class="hero"><div class="in">
-  <div class="eyebrow">Renovation estimator · France</div>
-  <h1>Stop signing your renovation<br><span class="hl">blind.</span></h1>
-  <p class="sub">In 3 minutes, know exactly what your renovation will cost — line by line, at your region's market price. <b style="color:#fff">Before</b> you spend the first euro.</p>
+  <div class="eyebrow">Renovation project manager · France</div>
+  <h1>Your renovation's<br><span class="hl">copilot.</span></h1>
+  <p class="sub">Estimate, choose, track and steer your renovation — <b style="color:#fff">from the first quote to the finished site</b>. Not just a price: a real logbook.</p>
   <div class="cta">
     <a href="/projets/nouveau" class="btn btn-p">Estimate for free →</a>
     <a href="/tarifs" class="btn btn-w">See pricing</a>
   </div>
   <div class="trust">
-    <span><b>173</b> price items</span><span><b>19</b> trades</span><span><b>2026</b> market prices</span><span><b>±15 %</b> margin</span>
+    <span><b>200</b> price items</span><span>site <b>tracking</b></span><span>materials <b>notebook</b></span><span><b>multi</b>-projects</span>
   </div>
 </div></header></div>
 
