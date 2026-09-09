@@ -7,7 +7,7 @@
  */
 import { useMemo, useState, useCallback } from "react";
 import { EST_CSS } from "./estimateur-styles";
-import { CATALOG, buildDevis, PHASES, ICON, visible, key, qtyOf, finCoef, rate, regionCoef, type Ctx, type Selection } from "@/lib/estimateur";
+import { CATALOG, buildDevis, PHASES, ICON, visible, visibleTask, key, qtyOf, effPrices, finCoefTask, rate, regionCoef, type Ctx, type Selection } from "@/lib/estimateur";
 
 const fmt = (n: number): string => Math.round(n).toLocaleString("fr-FR") + " €";
 // % lisible : entier au-delà de 1 %, une décimale en dessous → jamais « 0 % » pour un lot chiffré.
@@ -159,9 +159,11 @@ export default function EstimationResultat({ reponses, projectId }: { reponses: 
   CATALOG.filter((l) => visible(ctx, l)).forEach((l) =>
     l.t.forEach((tk) => {
       const s = sel[key(l.c, tk.n)];
-      if (!s || !s.on || tk.fp == null) return;
-      const q = qtyOf(ctx, sel, l.c, tk), coef = finCoef(ctx, l.c);
-      const ht = tk.fp * coef * q;
+      if (!s || !s.on || !visibleTask(ctx, tk)) return;
+      const { fp: fpU, sm: smU } = effPrices(tk, s, ctx);
+      if (fpU == null) return;
+      const q = qtyOf(ctx, sel, l.c, tk), fc = finCoefTask(ctx, l, tk);
+      const ht = (smU != null ? smU * fc + (fpU - smU) : fpU) * q; // finition sur matériaux, MO fixe
       ffHT += ht;
       ffTVA += (ht * (ctx.fiscal === "pro" ? 20 : rate(l, tk))) / 100;
       if (l.c !== "Etudes / Conception") ffAleasBase += ht;

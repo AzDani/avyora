@@ -358,19 +358,20 @@ export function lineHT(ctx: Ctx, sel: Selection, l: Lot, t: Tache): number {
   if (!s || !s.on) return 0;
   if (!visibleTask(ctx, t)) return 0;
   const R = regCoef(ctx);
-  const base = qtyOf(ctx, sel, l.c, t) * finCoefTask(ctx, l, t);
+  const q = qtyOf(ctx, sel, l.c, t);
+  const fc = finCoefTask(ctx, l, t); // finition = qualité des MATÉRIAUX uniquement (la MO ne varie pas)
   const { fp, sm } = effPrices(t, s, ctx);
-  // Location : équipement, pas de coef régional MO.
-  if (isLoc(l.c)) return fp != null ? fp * base : 0;
-  // « Je le fais » : matériaux achetés par le particulier → coef matériaux uniquement.
+  // Location : équipement, pas de coef régional MO ni de finition.
+  if (isLoc(l.c)) return fp != null ? fp * q : 0;
+  // « Je le fais » : matériaux achetés par le particulier → coef matériaux (×mat) × finition.
   if (s.self) {
     const pu = sm != null ? sm : fp;
-    return pu != null ? pu * R.mat * base : 0;
+    return pu != null ? pu * fc * R.mat * q : 0;
   }
-  // Fait-faire : matériaux (×mat) + main-d'œuvre (×mo régional). sm null = prestation pure → MO.
+  // Fait-faire : matériaux (×mat × finition) + main-d'œuvre (×mo régional, FIXE). sm null = prestation pure → MO.
   if (fp == null) return 0;
-  if (sm != null) return (sm * R.mat + (fp - sm) * R.mo) * base;
-  return fp * R.mo * base;
+  if (sm != null) return (sm * fc * R.mat + (fp - sm) * R.mo) * q;
+  return fp * R.mo * q;
 }
 export function lotHT(ctx: Ctx, sel: Selection, l: Lot): number {
   return l.t.reduce((s, t) => s + lineHT(ctx, sel, l, t), 0);
@@ -405,16 +406,17 @@ export function bilan(catalog: Lot[], ctx: Ctx, sel: Selection): Bilan {
       if (!visibleTask(ctx, t)) return;
       const { fp: fpU, sm: smU } = effPrices(t, s, ctx);
       if (fpU == null) return;
-      const q = qtyOf(ctx, sel, l.c, t) * finCoefTask(ctx, l, t);
+      const q = qtyOf(ctx, sel, l.c, t);
+      const fc = finCoefTask(ctx, l, t); // finition = matériaux uniquement (MO fixe)
       if (isLoc(l.c)) { achat += fpU * q; return; }
-      if (s.self) {                                    // matériaux (part particulier) au coef matériaux
-        achat += (smU != null ? smU : fpU) * R.mat * q;
-        if (smU != null) eco += (fpU - smU) * R.mo * q; // MO évitée, au coût régional
-      } else if (smU != null) {                        // fait-faire : matériaux + MO régionale
-        matA += smU * R.mat * q;
+      if (s.self) {                                    // matériaux (part particulier) au coef matériaux × finition
+        achat += (smU != null ? smU * fc : fpU) * R.mat * q;
+        if (smU != null) eco += (fpU - smU) * R.mo * q; // MO évitée, au coût régional (fixe)
+      } else if (smU != null) {                        // fait-faire : matériaux (×finition) + MO régionale (fixe)
+        matA += smU * fc * R.mat * q;
         moA += (fpU - smU) * R.mo * q;
-        paye += (smU * R.mat + (fpU - smU) * R.mo) * q;
-      } else {                                         // prestation pure → MO
+        paye += (smU * fc * R.mat + (fpU - smU) * R.mo) * q;
+      } else {                                         // prestation pure → MO (fixe)
         moA += fpU * R.mo * q;
         paye += fpU * R.mo * q;
       }
