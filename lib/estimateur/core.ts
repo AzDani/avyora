@@ -16,7 +16,7 @@ export type Finition = "eco" | "standard" | "premium";
 export type TypeBien = "Studio" | "T2" | "T3" | "T4" | "Maison";
 
 /** Variante générique : un groupe d'options (ex. « Type » → Classique/Suspendu). Le 1ᵉʳ opt = défaut (coef relatif à la base). */
-export interface VarOpt { k: string; label: string; coef: number }
+export interface VarOpt { k: string; label: string; coef: number; tva?: number }
 export interface VarGroup { k: string; label: string; opts: VarOpt[] }
 
 export interface Tache {
@@ -345,6 +345,10 @@ export function effRate(l: Lot, t: Tache, sel: Selection, ctx?: Ctx): number {
   const s = sel[key(l.c, t.n)];
   if (s && s.self && !isLoc(l.c)) return 20;
   if (ctx && ctx.fiscal === "pro") return 20; // neuf / logement −2 ans / local professionnel
+  if (t.vars) for (const g of t.vars) {          // TVA portée par une option de variante (ex. plancher élec 10 % / à eau 5,5 %)
+    const opt = g.opts.find((o) => o.k === ((s && s.vsel && s.vsel[g.k]) || g.opts[0].k));
+    if (opt && opt.tva != null) return opt.tva;
+  }
   return rate(l, t);
 }
 

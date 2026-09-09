@@ -1293,20 +1293,31 @@
         "note": "émetteur autonome (sans chaudière ni PAC)"
       },
       {
-        "n": "Plancher chauffant hydraulique (à eau)",
+        "n": "Plancher chauffant",
         "u": "m2",
         "fp": 90,
         "sm": 40,
-        "tva": 5.5,
-        "note": "émetteur au sol · relié à une PAC/chaudière"
-      },
-      {
-        "n": "Plancher chauffant électrique",
-        "u": "m2",
-        "fp": 55,
-        "sm": 25,
-        "tva": 10,
-        "note": "émetteur au sol · trame/câbles chauffants"
+        "note": "émetteur au sol · à eau (PAC/chaudière) ou électrique (trame)",
+        "vars": [
+          {
+            "k": "type",
+            "label": "Type",
+            "opts": [
+              {
+                "k": "hydro",
+                "label": "À eau",
+                "coef": 1,
+                "tva": 5.5
+              },
+              {
+                "k": "elec",
+                "label": "Électrique",
+                "coef": 0.61,
+                "tva": 10
+              }
+            ]
+          }
+        ]
       },
       {
         "n": "Sèche-serviette",
