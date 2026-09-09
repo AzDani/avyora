@@ -1448,8 +1448,31 @@
       {
         "n": "Plinthes",
         "u": "ml",
-        "fp": 15,
-        "sm": 5
+        "fp": 13,
+        "sm": 4,
+        "vars": [
+          {
+            "k": "type",
+            "label": "Type",
+            "opts": [
+              {
+                "k": "mdf",
+                "label": "MDF",
+                "coef": 1
+              },
+              {
+                "k": "pvc",
+                "label": "PVC",
+                "coef": 0.92
+              },
+              {
+                "k": "carrelage",
+                "label": "Carrelage",
+                "coef": 1.7
+              }
+            ]
+          }
+        ]
       },
       {
         "n": "Seuils / barres de seuil",
