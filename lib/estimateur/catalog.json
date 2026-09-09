@@ -824,6 +824,27 @@
         "sm": 600
       },
       {
+        "n": "Coffret de communication (VDI)",
+        "u": "forfait",
+        "fp": 250,
+        "sm": 100,
+        "note": "tableau télécom : box, RJ45, TV"
+      },
+      {
+        "n": "Mise à la terre",
+        "u": "forfait",
+        "fp": 500,
+        "sm": 150
+      },
+      {
+        "n": "Consuel (attestation de conformité)",
+        "u": "forfait",
+        "fp": 180,
+        "sm": null,
+        "fixe": true,
+        "note": "obligatoire après une rénovation électrique complète"
+      },
+      {
         "n": "Ajouter / déplacer une prise",
         "u": "u",
         "fp": 100,
@@ -842,10 +863,11 @@
         "sm": 30
       },
       {
-        "n": "Mise à la terre",
-        "u": "forfait",
-        "fp": 500,
-        "sm": 150
+        "n": "Spots encastrés (LED)",
+        "u": "u",
+        "fp": 45,
+        "sm": 15,
+        "note": "≈ 1 spot / 2 m² · LED encastré posé"
       },
       {
         "n": "Prise internet / TV (RJ45)",
@@ -854,16 +876,23 @@
         "sm": 40
       },
       {
-        "n": "Borne de recharge voiture",
-        "u": "u",
-        "fp": 1400,
-        "sm": 700
-      },
-      {
-        "n": "Interphone / visiophone / alarme",
+        "n": "Visiophone / interphone",
         "u": "forfait",
         "fp": 600,
         "sm": 300
+      },
+      {
+        "n": "Alarme / vidéosurveillance",
+        "u": "forfait",
+        "fp": 900,
+        "sm": 450
+      },
+      {
+        "n": "Borne de recharge voiture",
+        "u": "u",
+        "fp": 1400,
+        "sm": 700,
+        "tva": 5.5
       },
       {
         "n": "Maison connectée",

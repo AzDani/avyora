@@ -265,6 +265,7 @@ export function autoQty(ctx: Ctx, c: string, n: string, sel: Selection): number 
     "Faïence / carrelage mural": SDB * 12, "Cloison pièce humide (hydrofuge)": SDB * 12,
     "Portes intérieures": P, "Radiateurs électriques": P,
     "Ajouter un point lumineux": P, "Ajouter / déplacer une prise": Math.round(S / 5),
+    "Spots encastrés (LED)": Math.round(S / 2),
     "WC classique": ctx.wc,
     "Bac de douche classique 120×80": SDB, "Bac de douche grand 150×90": SDB,
     "Robinetterie douche — en applique": SDB, "Robinetterie douche — encastrée": SDB,
