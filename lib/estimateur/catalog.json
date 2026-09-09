@@ -699,14 +699,14 @@
       {
         "n": "Isolation des combles aménagés (rampants)",
         "u": "m2",
-        "fp": 60,
+        "fp": 65,
         "sm": 25,
         "tva": 5.5
       },
       {
         "n": "Isolation des murs par l'intérieur",
         "u": "m2",
-        "fp": 60,
+        "fp": 55,
         "sm": 15,
         "tva": 5.5
       },
