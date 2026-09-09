@@ -1701,7 +1701,12 @@
               },
               {
                 "k": "verre",
-                "label": "Verre/inox",
+                "label": "Verre",
+                "coef": 1.83
+              },
+              {
+                "k": "inox",
+                "label": "Inox",
                 "coef": 1.67
               },
               {
