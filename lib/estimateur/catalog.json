@@ -1658,14 +1658,60 @@
       {
         "n": "Plan de travail seul",
         "u": "ml",
-        "fp": 250,
-        "sm": 120
+        "fp": 150,
+        "sm": 90,
+        "vars": [
+          {
+            "k": "mat",
+            "label": "Matériau",
+            "opts": [
+              {
+                "k": "stratifie",
+                "label": "Stratifié",
+                "coef": 1
+              },
+              {
+                "k": "bois",
+                "label": "Bois",
+                "coef": 1.87
+              },
+              {
+                "k": "quartz",
+                "label": "Quartz/granit",
+                "coef": 3.33
+              }
+            ]
+          }
+        ]
       },
       {
         "n": "Crédence seule",
         "u": "ml",
         "fp": 120,
-        "sm": 50
+        "sm": 50,
+        "vars": [
+          {
+            "k": "mat",
+            "label": "Matériau",
+            "opts": [
+              {
+                "k": "carrelage",
+                "label": "Carrelage",
+                "coef": 1
+              },
+              {
+                "k": "verre",
+                "label": "Verre/inox",
+                "coef": 1.67
+              },
+              {
+                "k": "stratifie",
+                "label": "Stratifié",
+                "coef": 0.67
+              }
+            ]
+          }
+        ]
       },
       {
         "n": "Évier + robinetterie",
