@@ -743,6 +743,18 @@
         "sm": 20
       },
       {
+        "n": "Cloison pièce humide (hydrofuge)",
+        "u": "m2",
+        "fp": 55,
+        "sm": 25
+      },
+      {
+        "n": "Cloison anti-bruit (phonique)",
+        "u": "m2",
+        "fp": 60,
+        "sm": 28
+      },
+      {
         "n": "Doubler un mur",
         "u": "m2",
         "fp": 40,
@@ -767,18 +779,6 @@
         "sm": 10
       },
       {
-        "n": "Cloison pièce humide (hydrofuge)",
-        "u": "m2",
-        "fp": 55,
-        "sm": 25
-      },
-      {
-        "n": "Cloison anti-bruit (phonique)",
-        "u": "m2",
-        "fp": 60,
-        "sm": 28
-      },
-      {
         "n": "Trappe de visite",
         "u": "u",
         "fp": 80,
@@ -789,6 +789,20 @@
         "u": "m2",
         "fp": 15,
         "sm": 5
+      },
+      {
+        "n": "Ratissage léger",
+        "u": "m2",
+        "fp": 12,
+        "sm": 3,
+        "note": "enduit de lissage 1 passe, mur sain"
+      },
+      {
+        "n": "Ratissage lourd",
+        "u": "m2",
+        "fp": 25,
+        "sm": 5,
+        "note": "enduit complet 2 passes + ponçage, mur abîmé / finition soignée"
       }
     ]
   },
