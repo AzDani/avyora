@@ -209,8 +209,14 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
 
               <div className="gl">Surfaces</div>
               <div className="depart">
-                <Field label="Surface habitable"><NumStepper field value={ctx.surface} min={1} unit="m²" onChange={(n) => onNum("surface", String(n))} /></Field>
-                <Field label={<>Surface au sol <span style={{ color: "var(--faint)" }}>· auto</span></>}><NumStepper field value={ctx.surfaceSol} min={1} unit="m²" onChange={(n) => onSol(String(n))} /></Field>
+                <Field label="Surface habitable" hint="Tous les niveaux additionnés — là où tu vis. Si tu crées un étage, ajoute sa surface ici.">
+                  <NumStepper field value={ctx.surface} min={1} unit="m²" onChange={(n) => onNum("surface", String(n))} />
+                </Field>
+                {!appart && (
+                  <Field label="Surface au sol" hint="Empreinte du bâtiment au sol, calculée pour toi (habitable ÷ niveaux). Sert à la toiture et aux fondations — ajuste seulement si besoin.">
+                    <NumStepper field value={ctx.surfaceSol} min={1} unit="m²" onChange={(n) => onSol(String(n))} />
+                  </Field>
+                )}
                 <Field label="Hauteur sous plafond"><NumStepper field value={ctx.hauteur} min={2} step={0.1} unit="m" onChange={(n) => onNum("hauteur", String(n))} /></Field>
                 <Field label="Code postal"><div className="uinp"><input inputMode="numeric" maxLength={5} placeholder="33000" value={codePostal} onChange={(e) => setCodePostal(e.target.value.replace(/\D/g, "").slice(0, 5))} /></div></Field>
               </div>
@@ -365,8 +371,14 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
 }
 
 // ── Sous-composants ───────────────────────────────────────────────────────────
-function Field({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
-  return <div className="fld"><label>{label}</label>{children}</div>;
+function Field({ label, hint, children }: { label: React.ReactNode; hint?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="fld">
+      <label>{label}</label>
+      {children}
+      {hint && <div style={{ fontSize: "11.5px", color: "var(--faint)", lineHeight: 1.45, marginTop: "6px" }}>{hint}</div>}
+    </div>
+  );
 }
 
 // Cartes de finition (mêmes que le mode rapide) : objectif + description.
