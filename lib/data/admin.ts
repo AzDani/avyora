@@ -1,5 +1,6 @@
 import "server-only";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { estAdmin } from "@/lib/auth";
 import { estimationProjet, avancementProjet, type StatutChantier } from "@/lib/estimateur/projet";
 
 /**
@@ -37,7 +38,7 @@ export type AdminInscrit = {
   lastSignIn: string | null;
   onboardingFait: boolean;
   profil: Profil | null;
-  plan: "pro" | "free";
+  plan: "admin" | "pro" | "free";
   projets: AdminProjet[];
 };
 
@@ -95,7 +96,9 @@ export async function listInscrits(): Promise<AdminInscrit[]> {
   return data.users
     .map((u) => {
       const meta = (u.user_metadata ?? {}) as { profil?: Profil; onboarding_fait?: boolean };
-      const plan = ((u.app_metadata as { plan?: string } | undefined)?.plan === "pro") ? "pro" : "free";
+      const plan: "admin" | "pro" | "free" = estAdmin(u)
+        ? "admin"
+        : ((u.app_metadata as { plan?: string } | undefined)?.plan === "pro" ? "pro" : "free");
       return {
         id: u.id,
         email: u.email ?? "—",

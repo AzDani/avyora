@@ -38,8 +38,8 @@ export default async function FicheInscrit({ params }: { params: Promise<{ id: s
             <h2 className="num text-[19px] font-semibold text-ink">{i.email}</h2>
             <p className="mt-1 text-[13px] text-muted">Inscrit le {fdate(i.createdAt)}{i.lastSignIn ? ` · dernière connexion ${fdate(i.lastSignIn)}` : ""}</p>
           </div>
-          <span className={"inline-flex items-center rounded-full px-3 py-1 text-[12px] font-semibold " + (i.plan === "pro" ? "bg-brand-600 text-white" : "border border-line bg-surface-2 text-muted")}>
-            {i.plan === "pro" ? "Pro" : "Free"}
+          <span className={"inline-flex items-center rounded-full px-3 py-1 text-[12px] font-semibold " + (i.plan === "admin" ? "bg-[#1E1B4B] text-white" : i.plan === "pro" ? "bg-brand-600 text-white" : "border border-line bg-surface-2 text-muted")}>
+            {i.plan === "admin" ? "Admin · accès Pro" : i.plan === "pro" ? "Pro" : "Free"}
           </span>
         </div>
       </div>

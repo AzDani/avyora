@@ -12,7 +12,7 @@ export type InscritRow = {
   age: string;
   region: string;
   canal: string;
-  plan: "pro" | "free";
+  plan: "admin" | "pro" | "free";
   nbProjets: number;
 };
 
@@ -33,6 +33,7 @@ function Pill({ tone, children }: { tone: string; children: React.ReactNode }) {
     pro: "text-brand-700 bg-[#eef1ff]",
     "—": "text-muted bg-surface-2 border border-line",
     proAbo: "text-white bg-brand-600",
+    admin: "text-white bg-[#1E1B4B]",
     free: "text-muted bg-surface-2 border border-line",
   };
   return <span className={"inline-flex items-center rounded-full px-2.5 py-0.5 text-[11.5px] font-semibold " + (styles[tone] ?? styles["—"])}>{children}</span>;
@@ -97,7 +98,7 @@ export default function InscritsTable({ rows }: { rows: InscritRow[] }) {
                 <td className="num whitespace-nowrap px-4 py-3">{r.age || "—"}</td>
                 <td className="whitespace-nowrap px-4 py-3">{r.region || "—"}</td>
                 <td className="whitespace-nowrap px-4 py-3">{r.canal || "—"}</td>
-                <td className="px-4 py-3">{r.plan === "pro" ? <Pill tone="proAbo">Pro</Pill> : <Pill tone="free">Free</Pill>}</td>
+                <td className="px-4 py-3">{r.plan === "admin" ? <Pill tone="admin">Admin</Pill> : r.plan === "pro" ? <Pill tone="proAbo">Pro</Pill> : <Pill tone="free">Free</Pill>}</td>
                 <td className="num px-4 py-3">{r.nbProjets}</td>
                 <td className="num whitespace-nowrap px-4 py-3 text-faint">{fdate(r.createdAt)}</td>
               </tr>
