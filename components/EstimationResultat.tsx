@@ -115,7 +115,7 @@ const EXTRA_CSS = `
 .av-estim .hero .jfill.over{background:linear-gradient(90deg,#f59e0b,#e0434b)}
 `;
 
-export default function EstimationResultat({ reponses, projectId }: { reponses: { ctx?: Ctx; sel?: Selection; statuts?: Record<string, number>; codePostal?: string }; projectId?: string }) {
+export default function EstimationResultat({ reponses, projectId, readOnly }: { reponses: { ctx?: Ctx; sel?: Selection; statuts?: Record<string, number>; codePostal?: string }; projectId?: string; readOnly?: boolean }) {
   // Sécurité rétro-compat : le code postal (coef régional) était stocké hors ctx dans d'anciens projets.
   const ctx = reponses?.ctx ? { ...reponses.ctx, codePostal: reponses.ctx.codePostal ?? reponses.codePostal } : undefined;
   const sel = (reponses?.sel || {}) as Selection;
@@ -130,7 +130,7 @@ export default function EstimationResultat({ reponses, projectId }: { reponses: 
       const next = ((prev[k] || 0) + 1) % 3;
       const copy = { ...prev };
       if (next === 0) delete copy[k]; else copy[k] = next;
-      if (projectId) {
+      if (projectId && !readOnly) {
         fetch(`/api/projects/${projectId}/statut`, {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ key: k, state: next }),
@@ -138,7 +138,7 @@ export default function EstimationResultat({ reponses, projectId }: { reponses: 
       }
       return copy;
     });
-  }, [projectId]);
+  }, [projectId, readOnly]);
 
   if (!ctx || !dv) {
     return <div className="card p-5 text-sm text-muted">Estimation indisponible pour ce projet.</div>;
@@ -359,9 +359,15 @@ export default function EstimationResultat({ reponses, projectId }: { reponses: 
                       )}
                     </span>
                     {projectId ? (
-                      <button className={"stbtn st" + st} onClick={() => cycle(k)} aria-label={"Statut : " + stLabel + ", cliquer pour changer"}>
-                        {st === 2 ? <>✓ Terminé</> : <><span className="ic" />{stLabel}</>}
-                      </button>
+                      readOnly ? (
+                        <span className={"stbtn st" + st} aria-label={"Statut : " + stLabel}>
+                          {st === 2 ? <>✓ Terminé</> : <><span className="ic" />{stLabel}</>}
+                        </span>
+                      ) : (
+                        <button className={"stbtn st" + st} onClick={() => cycle(k)} aria-label={"Statut : " + stLabel + ", cliquer pour changer"}>
+                          {st === 2 ? <>✓ Terminé</> : <><span className="ic" />{stLabel}</>}
+                        </button>
+                      )
                     ) : (
                       <>
                         <span className="q">{li.unite === "forfait" ? "—" : li.qty + " " + (li.mode === "location" ? "j" : li.unite)}</span>
