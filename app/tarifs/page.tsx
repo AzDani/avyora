@@ -9,7 +9,6 @@ export const dynamic = "force-dynamic";
 
 const PLAN_KEYS: { key: "mensuel" | "annuel-mois" | "annuel"; featured?: boolean }[] = [
   { key: "mensuel" },
-  { key: "annuel-mois" },
   { key: "annuel", featured: true },
 ];
 
@@ -48,7 +47,7 @@ export default async function TarifsPage() {
         </p>
       )}
 
-      <div className="mt-8 grid gap-4 md:grid-cols-3">
+      <div className="mx-auto mt-8 grid max-w-2xl gap-4 md:grid-cols-2">
         {PLAN_KEYS.map(({ key, featured }) => {
           const p = t.plans[key];
           return (
