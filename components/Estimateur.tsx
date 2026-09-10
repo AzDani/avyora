@@ -319,6 +319,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                                 onTai={(z) => upd(l.c, t.n, (s) => ({ ...s, tai: z }))}
                                 onVar={(g, o) => upd(l.c, t.n, (s) => ({ ...s, vsel: { ...(s.vsel || {}), [g]: o } }))}
                                 onNote={(v) => upd(l.c, t.n, (s) => ({ ...s, note: v }))}
+                                onPu={(v) => upd(l.c, t.n, (s) => { const n = { ...s }; if (v == null) delete n.pu; else n.pu = v; return n; })}
                               />
                             ))}
                             {canCustom && (
@@ -401,14 +402,15 @@ function Stepper({ label, hint, value, onStep }: { label: string; hint?: string;
   );
 }
 
-function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar, onNote }: {
+function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar, onNote, onPu }: {
   l: Lot; t: Tache; ctx: Ctx; sel: Selection; coef: number; loc: boolean;
   onCheck: () => void; onChoice: (self: boolean) => void; onAuto: () => void; onQty: (v: number) => void;
-  onMat: (m: "pvc" | "alu") => void; onVit: (v: "double" | "triple") => void; onMot: (m: "manuel" | "motorise") => void; onTai: (z: "petit" | "grand") => void; onVar: (g: string, o: string) => void; onNote: (v: string) => void;
+  onMat: (m: "pvc" | "alu") => void; onVit: (v: "double" | "triple") => void; onMot: (m: "manuel" | "motorise") => void; onTai: (z: "petit" | "grand") => void; onVar: (g: string, o: string) => void; onNote: (v: string) => void; onPu: (v: number | null) => void;
 }) {
   const s = sel[key(l.c, t.n)] || {};
   const on = !!s.on, self = !!s.self;
   const [noteOpen, setNoteOpen] = useState<boolean>(false);
+  const [puEdit, setPuEdit] = useState<boolean>(false);
   const variant = !!(t.mat || t.vitrage || t.moto || t.taille || (t.vars && t.vars.length));
   const fcoef = (t.fixe || variant) ? 1 : coef;
   const ep = effPrices(t, s, ctx);
@@ -418,16 +420,36 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMa
   const taiSel = s.tai || "grand";
   // Finition sur MATÉRIAUX uniquement ; MO fixe. Prix unitaires indicatifs (hors coef régional).
   const puMat = ep.sm != null ? ep.sm * fcoef : null;                                    // matériaux × finition
-  const puv = ep.fp != null ? (ep.sm != null ? ep.sm * fcoef + (ep.fp - ep.sm) : ep.fp) : null; // fait-faire = matériaux + MO
-  let puTxt = puv != null ? fmt(puv) + " HT" + (t.u !== "forfait" && t.u !== "u" ? "/" + t.u : "") : "prix sur devis";
-  if (t.note) puTxt += " · " + t.note;
+  const puvBase = ep.fp != null ? (ep.sm != null ? ep.sm * fcoef + (ep.fp - ep.sm) : ep.fp) : null; // fait-faire = matériaux + MO
+  const puEdited = s.pu != null;
+  const puv = puEdited ? s.pu! : puvBase;                                                 // prix perso s'il est saisi
+  const uSuffix = " HT" + (t.u !== "forfait" && t.u !== "u" ? "/" + t.u : "");
   const au = isAuto(ctx, l.c, t.n);
   const autoVal = au ? autoQty(ctx, l.c, t.n, sel) ?? 0 : 0;
 
   return (
     <div className="trow">
       <button className={"cbx" + (on ? " on" : "")} onClick={onCheck} aria-label={on ? "Décocher" : "Cocher"} />
-      <span className="tn">{t.n}<span className="pu">{puTxt}</span></span>
+      <span className="tn">{t.n}
+        <span className={"pu" + (puEdited ? " edited" : "")}>
+          {puv == null ? "prix sur devis" : puEdit ? (
+            <input
+              className="puin" type="number" inputMode="decimal" autoFocus defaultValue={Math.round(puv)}
+              onFocus={(e) => e.currentTarget.select()}
+              onClick={(e) => e.stopPropagation()}
+              onBlur={(e) => { const v = parseFloat(e.currentTarget.value); setPuEdit(false); if (!Number.isNaN(v) && v > 0) onPu(v); }}
+              onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") setPuEdit(false); }}
+            />
+          ) : (
+            <>
+              <span className="puval" title="Double-clique pour ajuster à ton prix" onDoubleClick={() => setPuEdit(true)}>{fmt(puv) + uSuffix}</span>
+              {puEdited && <span className="pubadge">perso</span>}
+              {puEdited && <button type="button" className="pureset" title="Rétablir le prix AVYORA par défaut" onClick={() => onPu(null)}>↺</button>}
+            </>
+          )}
+          {t.note && !puEdit && <span className="punote"> · {t.note}</span>}
+        </span>
+      </span>
       {on ? (
         <span className="tctl">
           {t.u !== "forfait" && (au ? (

@@ -64,7 +64,15 @@ export const EST_CSS = `
 .av-estim .cbx.on{background:var(--brand);border-color:var(--brand)}
 .av-estim .cbx.on::after{content:"✓";color:#fff;font-size:12px;font-weight:700}
 .av-estim .tn{font-size:13px}
-.av-estim .tn .pu{display:block;font-size:11px;color:var(--faint)}
+.av-estim .tn .pu{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:11px;color:var(--faint);margin-top:2px}
+.av-estim .puval{cursor:pointer;border-radius:5px;padding:1px 4px;border:1px dashed transparent;transition:.12s var(--ease)}
+.av-estim .puval:hover{border-color:var(--line-strong);background:var(--surface-2)}
+.av-estim .pu.edited .puval{color:var(--brand-700);font-weight:600;font-family:var(--font-geist-mono),monospace;border-color:transparent;background:none}
+.av-estim .pubadge{font-size:9.5px;font-weight:600;color:var(--brand-700);background:var(--brand-50);border-radius:999px;padding:1px 6px}
+.av-estim .pureset{border:0;background:none;cursor:pointer;color:var(--faint);font-size:12px;line-height:1;padding:1px 3px;border-radius:5px}
+.av-estim .pureset:hover{color:var(--brand);background:var(--brand-50)}
+.av-estim .puin{width:74px;font-family:var(--font-geist-mono),monospace;font-size:11px;border:1.5px solid var(--brand);border-radius:6px;padding:1px 5px;outline:none;background:var(--surface)}
+.av-estim .punote{color:var(--faint)}
 .av-estim .tctl{display:flex;align-items:center;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 .av-estim .qty{width:66px;font-family:var(--font-geist-mono);font-size:13px;text-align:right;background:var(--surface);border:1px solid var(--line-strong);border-radius:8px;padding:6px 8px;outline:none;color:var(--ink)}
 .av-estim .qty:focus{border-color:var(--brand)}

@@ -75,6 +75,7 @@ export interface LigneSel {
   tai?: "petit" | "grand";     // équipement : taille choisie
   vsel?: Record<string, string>; // variantes génériques : {groupe → option choisie}
   note?: string;               // note libre / lien matériau (sauvegardé avec le projet)
+  pu?: number;                 // prix unitaire fourni-posé HT PERSONNALISÉ (override du prix AVYORA par défaut)
 }
 export type Selection = Record<string, LigneSel>;
 
@@ -373,13 +374,15 @@ export function lineHT(ctx: Ctx, sel: Selection, l: Lot, t: Tache): number {
   const fc = finCoefTask(ctx, l, t); // finition = qualité des MATÉRIAUX uniquement (la MO ne varie pas)
   const { fp, sm } = effPrices(t, s, ctx);
   // Location : équipement, pas de coef régional MO ni de finition.
-  if (isLoc(l.c)) return fp != null ? fp * q : 0;
+  if (isLoc(l.c)) return (s.pu != null ? s.pu : (fp ?? 0)) * q;
   // « Je le fais » : matériaux achetés par le particulier → coef matériaux (×mat) × finition.
   if (s.self) {
     const pu = sm != null ? sm : fp;
     return pu != null ? pu * fc * R.mat * q : 0;
   }
-  // Fait-faire : matériaux (×mat × finition) + main-d'œuvre (×mo régional, FIXE). sm null = prestation pure → MO.
+  // Fait-faire : prix perso de l'utilisateur s'il l'a saisi (prix fourni-posé pris tel quel, sans coef).
+  if (s.pu != null) return s.pu * q;
+  // Sinon : matériaux (×mat × finition) + main-d'œuvre (×mo régional, FIXE). sm null = prestation pure → MO.
   if (fp == null) return 0;
   if (sm != null) return (sm * fc * R.mat + (fp - sm) * R.mo) * q;
   return fp * R.mo * q;
