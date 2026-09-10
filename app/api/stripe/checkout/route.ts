@@ -39,7 +39,7 @@ export async function POST(req: Request) {
             "J'accepte les conditions générales de vente et je demande l'exécution immédiate du service. AVYORA étant un service numérique fourni dès la souscription, je reconnais renoncer à mon droit de rétractation une fois le service exécuté (art. L221-28 du Code de la consommation).",
         },
       },
-      success_url: `${origin}/mon-espace?abo=ok`,
+      success_url: `${origin}/bienvenue-pro`,
       cancel_url: `${origin}/tarifs?abo=annule`,
     });
     return NextResponse.json({ url: session.url });
