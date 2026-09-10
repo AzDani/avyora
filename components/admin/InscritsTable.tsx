@@ -32,7 +32,7 @@ function Pill({ tone, children }: { tone: string; children: React.ReactNode }) {
     particulier: "text-[#0e7490] bg-[#e0f5f6]",
     pro: "text-brand-700 bg-[#eef1ff]",
     "—": "text-muted bg-surface-2 border border-line",
-    proAbo: "text-white bg-brand",
+    proAbo: "text-white bg-brand-600",
     free: "text-muted bg-surface-2 border border-line",
   };
   return <span className={"inline-flex items-center rounded-full px-2.5 py-0.5 text-[11.5px] font-semibold " + (styles[tone] ?? styles["—"])}>{children}</span>;
@@ -61,13 +61,13 @@ export default function InscritsTable({ rows }: { rows: InscritRow[] }) {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Rechercher (email, région, canal…)"
-          className="min-w-[180px] flex-1 rounded-lg border border-line-strong bg-surface-2 px-3 py-2 text-[13px] outline-none focus:border-brand"
+          className="min-w-[180px] flex-1 rounded-lg border border-line-strong bg-surface-2 px-3 py-2 text-[13px] outline-none focus:border-brand-600"
         />
         {FILTRES.map(([k, l]) => (
           <button
             key={k}
             onClick={() => setF(k)}
-            className={"rounded-full border px-3 py-1.5 text-[12.5px] font-semibold transition-colors " + (f === k ? "border-[#c7ccfe] bg-[#eef1ff] text-brand" : "border-line bg-surface-2 text-muted hover:text-ink")}
+            className={"rounded-full border px-3 py-1.5 text-[12.5px] font-semibold transition-colors " + (f === k ? "border-[#c7ccfe] bg-[#eef1ff] text-brand-700" : "border-line bg-surface-2 text-muted hover:text-ink")}
           >
             {l}
           </button>

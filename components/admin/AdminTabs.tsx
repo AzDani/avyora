@@ -20,7 +20,7 @@ export default function AdminTabs() {
           href={href}
           className={
             "rounded-full px-4 py-2 text-sm font-semibold transition-colors " +
-            (active(href) ? "bg-brand text-white" : "text-muted hover:text-ink")
+            (active(href) ? "bg-brand-600 text-white" : "text-muted hover:text-ink")
           }
         >
           {label}

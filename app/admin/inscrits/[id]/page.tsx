@@ -38,7 +38,7 @@ export default async function FicheInscrit({ params }: { params: Promise<{ id: s
             <h2 className="num text-[19px] font-semibold text-ink">{i.email}</h2>
             <p className="mt-1 text-[13px] text-muted">Inscrit le {fdate(i.createdAt)}{i.lastSignIn ? ` · dernière connexion ${fdate(i.lastSignIn)}` : ""}</p>
           </div>
-          <span className={"inline-flex items-center rounded-full px-3 py-1 text-[12px] font-semibold " + (i.plan === "pro" ? "bg-brand text-white" : "border border-line bg-surface-2 text-muted")}>
+          <span className={"inline-flex items-center rounded-full px-3 py-1 text-[12px] font-semibold " + (i.plan === "pro" ? "bg-brand-600 text-white" : "border border-line bg-surface-2 text-muted")}>
             {i.plan === "pro" ? "Pro" : "Free"}
           </span>
         </div>
@@ -86,7 +86,7 @@ export default async function FicheInscrit({ params }: { params: Promise<{ id: s
                     {STATUT_LABEL[pr.statut]}{pr.statut === "en_cours" ? ` · ${pr.pct} %` : ""}
                   </span>
                   <span className="num font-semibold text-brand-700">{pr.ttc != null ? euros(pr.ttc) : "—"}</span>
-                  <span className="text-[12px] font-semibold text-brand">Voir →</span>
+                  <span className="text-[12px] font-semibold text-brand-700">Voir →</span>
                 </div>
               </Link>
             ))}

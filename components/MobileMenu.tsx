@@ -61,7 +61,7 @@ export default function MobileMenu({ isLoggedIn, prenom, isAdmin }: { isLoggedIn
             {isLoggedIn ? (
               <>
                 {isAdmin && (
-                  <Link href="/admin" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-semibold text-brand transition-colors hover:bg-surface-2">
+                  <Link href="/admin" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-semibold text-brand-700 transition-colors hover:bg-surface-2">
                     🛡 Admin
                   </Link>
                 )}
