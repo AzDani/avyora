@@ -1,11 +1,11 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-const PREUVES = [
-  "Estimation en 3 min, fourchette ±15 %",
-  "Détail sur 173 postes de prix — au poste près",
-  "Prix ajustés à ta région et à ton niveau de finition",
-  "Rapport PDF + suivi de chantier",
+const PARCOURS: { verbe: string; suite: string }[] = [
+  { verbe: "Estime", suite: "ton budget en 3 min — 200 postes, précision ±15 %" },
+  { verbe: "Choisis", suite: "matériaux & artisans, garde tes liens produits" },
+  { verbe: "Suis", suite: "l'avancement de ton chantier, poste par poste" },
+  { verbe: "Pilote", suite: "ton budget et tous tes projets au même endroit" },
 ];
 
 /**
@@ -57,32 +57,34 @@ export function AuthShell({
           <div className="relative max-w-sm">
             <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium tracking-wide text-[#C4B5FD]">
               <span className="h-1.5 w-1.5 rounded-full bg-[#A78BFA]" />
-              Copilote travaux &amp; investissement
+              Gestionnaire de travaux · France
             </span>
             <h2 className="mt-6 text-[28px] font-semibold leading-[1.15] tracking-tight">
-              Estime, compare,
+              De l&apos;idée au
               <br />
-              décide — en confiance.
+              <span className="bg-gradient-to-r from-[#c4b5fd] to-[#a78bfa] bg-clip-text text-transparent">
+                chantier fini.
+              </span>
             </h2>
             <ul className="mt-8 space-y-4">
-              {PREUVES.map((p) => (
-                <li key={p} className="flex items-start gap-3 text-[15px] leading-relaxed text-indigo-100/85">
-                  <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-white/10 text-[#C4B5FD]">
-                    <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                      <path d="M3 7.5 5.8 10 11 4" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+              {PARCOURS.map((p, i) => (
+                <li key={p.verbe} className="flex items-start gap-3 text-[15px] leading-relaxed text-indigo-100/85">
+                  <span className="data mt-0.5 grid h-[22px] w-[22px] shrink-0 place-items-center rounded-[7px] bg-white/10 text-[11px] font-bold text-[#C4B5FD]">
+                    {i + 1}
                   </span>
-                  {p}
+                  <span>
+                    <b className="font-semibold text-white">{p.verbe}</b> {p.suite}
+                  </span>
                 </li>
               ))}
             </ul>
             <dl className="mt-10 grid grid-cols-3 gap-4 border-t border-white/10 pt-6">
               <div>
-                <dd className="data text-xl font-semibold text-white">173</dd>
+                <dd className="data text-xl font-semibold text-white">200</dd>
                 <dt className="mt-1 text-[11px] leading-tight text-indigo-200/60">postes de prix</dt>
               </div>
               <div>
-                <dd className="data text-xl font-semibold text-white">19</dd>
+                <dd className="data text-xl font-semibold text-white">18</dd>
                 <dt className="mt-1 text-[11px] leading-tight text-indigo-200/60">corps d'état</dt>
               </div>
               <div>
