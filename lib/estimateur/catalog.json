@@ -1369,18 +1369,34 @@
         "note": "radiateur de salle de bain",
         "vars": [
           {
-            "k": "modele",
-            "label": "Modèle",
+            "k": "taille",
+            "label": "Taille",
             "opts": [
-              { "k": "ns_petit", "label": "Petit · non soufflant", "coef": 0.725 },
-              { "k": "ns_moyen", "label": "Moyen · non soufflant", "coef": 1 },
-              { "k": "ns_grand", "label": "Grand · non soufflant", "coef": 1.2 },
-              { "k": "s_petit", "label": "Petit · soufflant", "coef": 1.55 },
-              { "k": "s_moyen", "label": "Moyen · soufflant", "coef": 1.7 },
-              { "k": "s_grand", "label": "Grand · soufflant", "coef": 1.85 }
+              { "k": "petit", "label": "Petit", "coef": 1 },
+              { "k": "moyen", "label": "Moyen", "coef": 1 },
+              { "k": "grand", "label": "Grand", "coef": 1 }
+            ]
+          },
+          {
+            "k": "type",
+            "label": "Type",
+            "opts": [
+              { "k": "ns", "label": "Non soufflant", "coef": 1 },
+              { "k": "s", "label": "Soufflant", "coef": 1 }
             ]
           }
-        ]
+        ],
+        "grid": {
+          "dims": ["taille", "type"],
+          "prices": {
+            "petit|ns": { "fp": 145, "sm": 90 },
+            "moyen|ns": { "fp": 200, "sm": 120 },
+            "grand|ns": { "fp": 240, "sm": 145 },
+            "petit|s": { "fp": 310, "sm": 190 },
+            "moyen|s": { "fp": 340, "sm": 210 },
+            "grand|s": { "fp": 370, "sm": 230 }
+          }
+        }
       },
       {
         "n": "Ventilation (VMC)",

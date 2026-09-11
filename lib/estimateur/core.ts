@@ -35,7 +35,11 @@ export interface Tache {
   taille?: boolean;     // équipement : option Petit / Grand (ex. ballon d'eau chaude)
   taillePetit?: number; // coef Petit spécifique (défaut TAILLE_COEF.petit)
   vars?: VarGroup[];    // variantes génériques (chaque groupe = un sélecteur ; base fp = options par défaut)
+  grid?: PrixGrille;    // prix EXACT par combinaison de 2 sélecteurs (quand les prix ne sont pas proportionnels)
 }
+
+/** Grille de prix : dims = [clé groupe A, clé groupe B] ; prices["optA|optB"] = { fp, sm } HT. */
+export interface PrixGrille { dims: [string, string]; prices: Record<string, { fp: number; sm: number }> }
 export interface Lot {
   c: string;            // corps d'état
   p: string;            // phase de chantier
@@ -92,6 +96,15 @@ const defMat = (ctx?: Ctx): "pvc" | "alu" => (ctx && ctx.finition === "premium" 
 /** Prix effectifs (fp/sm) selon matériau/vitrage choisis. Sans variante → fp/sm bruts. */
 export function effPrices(t: Tache, s?: LigneSel, ctx?: Ctx): { fp: number | null; sm: number | null } {
   if (!t.mat && !t.vitrage && !t.moto && !t.taille && !t.vars) return { fp: t.fp, sm: t.sm };
+  // Grille de prix exacts par combinaison (2 sélecteurs aux prix non proportionnels, ex. sèche-serviette).
+  if (t.grid && t.vars) {
+    const [ka, kb] = t.grid.dims;
+    const first = (k: string) => t.vars!.find((g) => g.k === k)?.opts[0].k ?? "";
+    const a = (s && s.vsel && s.vsel[ka]) || first(ka);
+    const b = (s && s.vsel && s.vsel[kb]) || first(kb);
+    const p = t.grid.prices[`${a}|${b}`];
+    if (p) return { fp: p.fp, sm: p.sm };
+  }
   let f = 1;
   if (t.vars) for (const g of t.vars) {
     const chosen = (s && s.vsel && s.vsel[g.k]) || g.opts[0].k;
