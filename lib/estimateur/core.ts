@@ -294,6 +294,22 @@ export function autoQty(ctx: Ctx, c: string, n: string, sel: Selection): number 
   const vasques = mv && mv.on
     ? (mv.manual ? (mv.qty ?? 0) : SDB) * (mv.vsel && mv.vsel["config"] === "double" ? 2 : 1)
     : SDB;
+  // Étanchéité sous carrelage (SPEC) : toute la zone de la douche en contact avec l'eau =
+  // sol du bac + 3 parois jusqu'à ~2 m, calculé depuis la dimension du bac/italienne sélectionné.
+  const specArea = (() => {
+    const dims: Record<string, [number, number]> = { "120x80": [120, 80], "150x90": [150, 90] };
+    let area = 0;
+    for (const nm of ["Bac de douche", "Douche à l'italienne"]) {
+      const p = sel[key("Plomberie", nm)];
+      if (!p?.on) continue;
+      const [w, d] = dims[(p.vsel && p.vsel["dim"]) || "120x80"] || [120, 80];
+      const wm = w / 100, dm = d / 100;
+      const per = wm * dm + (wm + 2 * dm) * 2; // sol + fond + 2 côtés, hauteur 2 m
+      const q = p.manual ? (p.qty ?? 1) : SDB;
+      area += per * (q || 1);
+    }
+    return area > 0 ? area : SDB * 6.5; // pas de bac coché → estimation moyenne par SDB
+  })();
   if (c === "Cloisons / Platrerie" && n === FINI) return derivedFinitions(ctx, sel);
   const A: Record<string, number> = {
     "Peinture des murs": S * ctx.hauteur, "Peinture des plafonds": S, "Préparation des surfaces": S * ctx.hauteur,
@@ -306,6 +322,7 @@ export function autoQty(ctx: Ctx, c: string, n: string, sel: Selection): number 
     "Pose d'un pare-vapeur": placo, "Ratissage léger": placo, "Ratissage lourd": placo,
     "Sous-couche / primaire": S * ctx.hauteur,
     "Faïence / carrelage mural": SDB * 12, "Cloison pièce humide (hydrofuge)": SDB * 12,
+    "Étanchéité sous carrelage (SPEC douche)": specArea,
     "Porte intérieure battante": P, "Radiateurs électriques": P,
     "Prise internet / TV (RJ45)": rj45,
     "Spots encastrés (LED)": Math.round(S / 2),

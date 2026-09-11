@@ -1440,6 +1440,13 @@
         "sm": 30
       },
       {
+        "n": "Étanchéité sous carrelage (SPEC douche)",
+        "u": "m2",
+        "fp": 40,
+        "sm": 15,
+        "note": "natte/résine + bandes d'angle sur placo hydrofuge, avant carrelage"
+      },
+      {
         "n": "Faïence / carrelage mural",
         "u": "m2",
         "fp": 70,
