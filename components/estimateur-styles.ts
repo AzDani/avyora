@@ -90,6 +90,10 @@ export const EST_CSS = `
 .av-estim .ch b{font-family:var(--font-geist-mono);font-size:11px;font-weight:700}
 .av-estim .ch.onA{background:var(--brand);border-color:var(--brand);color:#fff}
 .av-estim .ch.onS{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.av-estim .ch.edited{box-shadow:0 0 0 1.5px var(--brand-200)}
+.av-estim .chin{width:52px;font-family:var(--font-geist-mono),monospace;font-size:11px;font-weight:700;border:1.5px solid var(--brand);border-radius:5px;padding:0 3px;outline:none;text-align:center;margin-top:1px;background:var(--surface);color:var(--ink)}
+.av-estim .chreset{cursor:pointer;color:var(--faint);font-size:11px;line-height:1;margin-top:2px}
+.av-estim .chreset:hover{color:var(--brand)}
 .av-estim .lineamt{font-family:var(--font-geist-mono);font-size:12.5px;font-weight:600;min-width:70px;text-align:right}
 .av-estim .tvariants{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:7px 16px;padding:8px 0 2px 32px}
 .av-estim .notebtn{border:0;background:none;cursor:pointer;font-size:14px;padding:2px 4px;opacity:.5;line-height:1}

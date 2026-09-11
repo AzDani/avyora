@@ -79,7 +79,8 @@ export interface LigneSel {
   tai?: "petit" | "grand";     // équipement : taille choisie
   vsel?: Record<string, string>; // variantes génériques : {groupe → option choisie}
   note?: string;               // note libre / lien matériau (sauvegardé avec le projet)
-  pu?: number;                 // prix unitaire fourni-posé HT PERSONNALISÉ (override du prix AVYORA par défaut)
+  pu?: number;                 // prix unitaire fourni-posé HT PERSONNALISÉ (override « Fait faire » — total figé)
+  pm?: number;                 // prix unitaire MATÉRIAUX HT PERSONNALISÉ (override « Je le fais » ; Fait faire = pm + MO)
 }
 export type Selection = Record<string, LigneSel>;
 
@@ -406,13 +407,15 @@ export function lineHT(ctx: Ctx, sel: Selection, l: Lot, t: Tache): number {
   const { fp, sm } = effPrices(t, s, ctx);
   // Location : équipement, pas de coef régional MO ni de finition.
   if (isLoc(l.c)) return (s.pu != null ? s.pu : (fp ?? 0)) * q;
-  // « Je le fais » : matériaux achetés par le particulier → coef matériaux (×mat) × finition.
+  // « Je le fais » : matériaux — prix perso (s.pm) prioritaire, sinon fourniture × finition × mat.
   if (s.self) {
+    if (s.pm != null) return s.pm * q;
     const pu = sm != null ? sm : fp;
     return pu != null ? pu * fc * R.mat * q : 0;
   }
-  // Fait-faire : prix perso de l'utilisateur s'il l'a saisi (prix fourni-posé pris tel quel, sans coef).
+  // Fait-faire : total perso figé (s.pu) > matériaux perso + MO d'origine (s.pm) > calcul normal.
   if (s.pu != null) return s.pu * q;
+  if (s.pm != null && fp != null && sm != null) return (s.pm + (fp - sm) * R.mo) * q;
   // Sinon : matériaux (×mat × finition) + main-d'œuvre (×mo régional, FIXE). sm null = prestation pure → MO.
   if (fp == null) return 0;
   if (sm != null) return (sm * fc * R.mat + (fp - sm) * R.mo) * q;
@@ -467,17 +470,18 @@ export function bilan(catalog: Lot[], ctx: Ctx, sel: Selection): Bilan {
       if (fpU == null) return;
       const q = qtyOf(ctx, sel, l.c, t);
       const fc = finCoefTask(ctx, l, t); // finition = matériaux uniquement (MO fixe)
-      if (isLoc(l.c)) { achat += fpU * q; return; }
-      if (s.self) {                                    // matériaux (part particulier) au coef matériaux × finition
-        achat += (smU != null ? smU * fc : fpU) * R.mat * q;
-        if (smU != null) eco += (fpU - smU) * R.mo * q; // MO évitée, au coût régional (fixe)
-      } else if (smU != null) {                        // fait-faire : matériaux (×finition) + MO régionale (fixe)
-        matA += smU * fc * R.mat * q;
-        moA += (fpU - smU) * R.mo * q;
-        paye += (smU * fc * R.mat + (fpU - smU) * R.mo) * q;
-      } else {                                         // prestation pure → MO (fixe)
-        moA += fpU * R.mo * q;
-        paye += fpU * R.mo * q;
+      const moU = smU != null ? (fpU - smU) * R.mo : fpU * R.mo; // MO unitaire (régionale)
+      if (isLoc(l.c)) { achat += (s.pu != null ? s.pu : fpU) * q; return; }
+      if (s.self) {                                    // « Je le fais » : matériaux achetés (prix perso s.pm prioritaire)
+        achat += (s.pm != null ? s.pm : smU != null ? smU * fc * R.mat : fpU * R.mat) * q;
+        if (smU != null) eco += moU * q;               // MO évitée
+      } else {                                         // fait-faire : matériaux + MO (total figé s.pu, ou matériaux perso s.pm + MO)
+        const matU = smU == null ? 0
+          : s.pu != null ? Math.max(0, s.pu - moU)
+          : s.pm != null ? s.pm
+          : smU * fc * R.mat;
+        const total = s.pu != null ? s.pu : matU + (smU != null ? moU : fpU * R.mo);
+        matA += matU * q; moA += (total - matU) * q; paye += total * q;
       }
     });
   });

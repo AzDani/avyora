@@ -329,6 +329,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                                 onVar={(g, o) => upd(l.c, t.n, (s) => ({ ...s, vsel: { ...(s.vsel || {}), [g]: o } }))}
                                 onNote={(v) => upd(l.c, t.n, (s) => ({ ...s, note: v }))}
                                 onPu={(v) => upd(l.c, t.n, (s) => { const n = { ...s }; if (v == null) delete n.pu; else n.pu = v; return n; })}
+                                onPm={(v) => upd(l.c, t.n, (s) => { const n = { ...s }; if (v == null) delete n.pm; else { n.pm = v; delete n.pu; } return n; })}
                               />
                             ))}
                             {canCustom && (
@@ -381,6 +382,37 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
 }
 
 // ── Sous-composants ───────────────────────────────────────────────────────────
+/** Prix « Fait faire » / « Je le fais » : clic = choisir le mode, double-clic sur le montant = éditer son prix, ↺ = reset. */
+function ChoicePrice({ label, active, activeCls, amount, edited, onSelect, onEdit, onReset }: {
+  label: string; active: boolean; activeCls: string; amount: number | null; edited: boolean;
+  onSelect: () => void; onEdit: (v: number) => void; onReset: () => void;
+}) {
+  const [ed, setEd] = useState(false);
+  return (
+    <span
+      className={"ch" + (active ? " " + activeCls : "") + (edited ? " edited" : "")}
+      role="button" tabIndex={0}
+      onClick={() => { if (!ed) onSelect(); }}
+      onKeyDown={(e) => { if ((e.key === "Enter" || e.key === " ") && !ed) { e.preventDefault(); onSelect(); } }}
+    >
+      {label}
+      {ed ? (
+        <input
+          className="chin" type="number" inputMode="decimal" autoFocus
+          defaultValue={amount != null ? Math.round(amount) : 0}
+          onFocus={(e) => e.currentTarget.select()}
+          onClick={(e) => e.stopPropagation()}
+          onBlur={(e) => { const v = parseFloat(e.currentTarget.value); setEd(false); if (!Number.isNaN(v) && v > 0) onEdit(v); }}
+          onKeyDown={(e) => { e.stopPropagation(); if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") setEd(false); }}
+        />
+      ) : (
+        <b onDoubleClick={(e) => { e.stopPropagation(); setEd(true); }} title="Double-clique pour mettre ton prix">{amount != null ? fmt(amount) : "—"}</b>
+      )}
+      {edited && !ed && <span className="chreset" role="button" title="Prix AVYORA par défaut" onClick={(e) => { e.stopPropagation(); onReset(); }}>↺</span>}
+    </span>
+  );
+}
+
 function Field({ label, hint, children }: { label: React.ReactNode; hint?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="fld">
@@ -411,10 +443,10 @@ function Stepper({ label, hint, value, onStep }: { label: string; hint?: string;
   );
 }
 
-function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar, onNote, onPu }: {
+function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar, onNote, onPu, onPm }: {
   l: Lot; t: Tache; ctx: Ctx; sel: Selection; coef: number; loc: boolean;
   onCheck: () => void; onChoice: (self: boolean) => void; onAuto: () => void; onQty: (v: number) => void;
-  onMat: (m: "pvc" | "alu") => void; onVit: (v: "double" | "triple") => void; onMot: (m: "manuel" | "motorise") => void; onTai: (z: "petit" | "grand") => void; onVar: (g: string, o: string) => void; onNote: (v: string) => void; onPu: (v: number | null) => void;
+  onMat: (m: "pvc" | "alu") => void; onVit: (v: "double" | "triple") => void; onMot: (m: "manuel" | "motorise") => void; onTai: (z: "petit" | "grand") => void; onVar: (g: string, o: string) => void; onNote: (v: string) => void; onPu: (v: number | null) => void; onPm: (v: number | null) => void;
 }) {
   const s = sel[key(l.c, t.n)] || {};
   const on = !!s.on, self = !!s.self;
@@ -428,10 +460,15 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMa
   const motSel = s.mot || "motorise";
   const taiSel = s.tai || "grand";
   // Finition sur MATÉRIAUX uniquement ; MO fixe. Prix unitaires indicatifs (hors coef régional).
-  const puMat = ep.sm != null ? ep.sm * fcoef : null;                                    // matériaux × finition
+  const puMatBase = ep.sm != null ? ep.sm * fcoef : null;                                 // matériaux × finition
   const puvBase = ep.fp != null ? (ep.sm != null ? ep.sm * fcoef + (ep.fp - ep.sm) : ep.fp) : null; // fait-faire = matériaux + MO
+  const moUnit = ep.fp != null && ep.sm != null ? ep.fp - ep.sm : 0;                       // MO unitaire (pour l'affichage lié)
+  const pmEdited = s.pm != null;
+  const puMat = pmEdited ? s.pm! : puMatBase;                                              // « Je le fais » (matériaux)
   const puEdited = s.pu != null;
-  const puv = puEdited ? s.pu! : puvBase;                                                 // prix perso s'il est saisi
+  const puv = puEdited ? s.pu!                                                             // total figé (devis)
+    : pmEdited && puMatBase != null ? s.pm! + moUnit                                       // matériaux perso + MO
+    : puvBase;                                                                             // calcul normal
   const uSuffix = " HT" + (t.u !== "forfait" && t.u !== "u" ? "/" + t.u : "");
   const au = isAuto(ctx, l.c, t.n);
   const autoVal = au ? autoQty(ctx, l.c, t.n, sel) ?? 0 : 0;
@@ -480,8 +517,12 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMa
           ))}
           {!loc && (
             <span className="choice">
-              <button type="button" className={"ch" + (!self ? " onA" : "")} onClick={() => onChoice(false)}>Fait faire<b>{puv != null ? fmt(puv) : "—"}</b></button>
-              {puMat != null && <button type="button" className={"ch" + (self ? " onS" : "")} onClick={() => onChoice(true)}>Je le fais<b>{fmt(puMat)}</b></button>}
+              <ChoicePrice label="Fait faire" active={!self} activeCls="onA" amount={puv} edited={puEdited}
+                onSelect={() => onChoice(false)} onEdit={(v) => onPu(v)} onReset={() => onPu(null)} />
+              {puMatBase != null && (
+                <ChoicePrice label="Je le fais" active={self} activeCls="onS" amount={puMat} edited={pmEdited}
+                  onSelect={() => onChoice(true)} onEdit={(v) => onPm(v)} onReset={() => onPm(null)} />
+              )}
             </span>
           )}
           {s.note && !noteOpen && isUrl(s.note) && <a className="notechip" href={s.note} target="_blank" rel="noopener noreferrer" title={s.note}>🔗</a>}
