@@ -1364,9 +1364,23 @@
       {
         "n": "Sèche-serviette",
         "u": "u",
-        "fp": 500,
-        "sm": 320,
-        "note": "radiateur de salle de bain"
+        "fp": 200,
+        "sm": 120,
+        "note": "radiateur de salle de bain",
+        "vars": [
+          {
+            "k": "modele",
+            "label": "Modèle",
+            "opts": [
+              { "k": "ns_petit", "label": "Petit · non soufflant", "coef": 0.725 },
+              { "k": "ns_moyen", "label": "Moyen · non soufflant", "coef": 1 },
+              { "k": "ns_grand", "label": "Grand · non soufflant", "coef": 1.2 },
+              { "k": "s_petit", "label": "Petit · soufflant", "coef": 1.55 },
+              { "k": "s_moyen", "label": "Moyen · soufflant", "coef": 1.7 },
+              { "k": "s_grand", "label": "Grand · soufflant", "coef": 1.85 }
+            ]
+          }
+        ]
       },
       {
         "n": "Ventilation (VMC)",
