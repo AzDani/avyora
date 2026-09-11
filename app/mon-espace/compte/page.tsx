@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { getUser, estPro } from "@/lib/auth";
 import CompteActions from "@/components/CompteActions";
 import AbonnementSection from "@/components/AbonnementSection";
+import OnboardingForm from "@/components/OnboardingForm";
+import type { ProfilData } from "@/lib/actions/profil";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Mon compte — AVYORA" };
@@ -10,6 +12,7 @@ export const metadata = { title: "Mon compte — AVYORA" };
 export default async function ComptePage() {
   const user = await getUser();
   if (!user) redirect("/connexion?next=/mon-espace/compte");
+  const profil = (user.user_metadata?.profil ?? undefined) as Partial<ProfilData> | undefined;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -26,6 +29,8 @@ export default async function ComptePage() {
       </header>
 
       <AbonnementSection isPro={estPro(user)} />
+
+      <OnboardingForm contexte="compte" initial={profil} />
 
       <CompteActions email={user.email ?? ""} />
     </div>

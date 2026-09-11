@@ -63,21 +63,31 @@ function Single({ opts, sel, set }: { opts: string[]; sel: string; set: (v: stri
   );
 }
 
-export default function OnboardingForm() {
+/**
+ * Questionnaire de profil. Deux contextes :
+ *  - "onboarding" (défaut) : après inscription — bouton « Passer », redirige vers /projets à la validation.
+ *  - "compte" : réutilisable depuis Mon compte — pré-rempli, reste sur place et confirme l'enregistrement.
+ */
+export default function OnboardingForm({ initial, contexte = "onboarding" }: { initial?: Partial<ProfilData>; contexte?: "onboarding" | "compte" }) {
   const router = useRouter();
-  const [tuEs, setTuEs] = useState<string[]>([]);
-  const [objectif, setObjectif] = useState("");
-  const [maturite, setMaturite] = useState<string[]>([]);
-  const [region, setRegion] = useState("");
-  const [age, setAge] = useState("");
-  const [canal, setCanal] = useState("");
+  const compte = contexte === "compte";
+  const [tuEs, setTuEs] = useState<string[]>(initial?.tuEs ?? []);
+  const [objectif, setObjectif] = useState(initial?.objectif ?? "");
+  const [maturite, setMaturite] = useState<string[]>(initial?.maturite ?? []);
+  const [region, setRegion] = useState(initial?.region ?? "");
+  const [age, setAge] = useState(initial?.age ?? "");
+  const [canal, setCanal] = useState(initial?.canal ?? "");
   const [busy, setBusy] = useState(false);
+  const [ok, setOk] = useState(false);
+  // Reset la confirmation dès qu'on modifie une réponse (mode compte).
+  function wrap<T>(s: (v: T) => void) { return (v: T) => { if (ok) setOk(false); s(v); }; }
 
   async function continuer() {
     if (busy) return;
-    setBusy(true);
+    setBusy(true); setOk(false);
     const data: ProfilData = { tuEs, objectif, maturite, region, age, canal };
     try { await enregistrerProfil(data); } catch { /* best-effort */ }
+    if (compte) { setBusy(false); setOk(true); return; } // reste sur Mon compte
     router.push("/projets");
   }
   async function passer() {
@@ -90,20 +100,34 @@ export default function OnboardingForm() {
   return (
     <div className="av-onb card mx-auto max-w-xl p-6 sm:p-7">
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <div className="eyebrow">● Bienvenue · 30 secondes</div>
-      <h1>Fais-nous mieux te connaître 👋</h1>
-      <p className="sub">Pour adapter AVYORA à ton projet. Tout est optionnel, un simple tap suffit.</p>
+      {compte ? (
+        <>
+          <div className="eyebrow">● Mon profil</div>
+          <h1>Ton profil AVYORA</h1>
+          <p className="sub">Ces infos nous aident à adapter le service. Complète ou modifie-les quand tu veux.</p>
+        </>
+      ) : (
+        <>
+          <div className="eyebrow">● Bienvenue · 30 secondes</div>
+          <h1>Fais-nous mieux te connaître 👋</h1>
+          <p className="sub">Pour adapter AVYORA à ton projet. Tout est optionnel, un simple tap suffit.</p>
+        </>
+      )}
 
-      <div className="q"><div className="lab">Tu es… <span className="multi">plusieurs choix possibles</span></div><Multi opts={TUES} sel={tuEs} set={setTuEs} /></div>
-      <div className="q"><div className="lab">Ton objectif avec ce projet</div><Single opts={OBJECTIF.map((o) => o.l)} sel={OBJECTIF.find((o) => o.v === objectif)?.l ?? ""} set={(l) => setObjectif(OBJECTIF.find((o) => o.l === l)?.v ?? "")} /></div>
-      <div className="q"><div className="lab">Où en es-tu ? <span className="multi">plusieurs choix possibles</span></div><Multi opts={MATURITE} sel={maturite} set={setMaturite} /></div>
-      <div className="q"><div className="lab">Ta région</div><Single opts={REGIONS} sel={region} set={setRegion} /></div>
-      <div className="q"><div className="lab">Ton âge</div><Single opts={AGES} sel={age} set={setAge} /></div>
-      <div className="q"><div className="lab">Comment nous as-tu connus ?</div><Single opts={CANAUX} sel={canal} set={setCanal} /></div>
+      <div className="q"><div className="lab">Tu es… <span className="multi">plusieurs choix possibles</span></div><Multi opts={TUES} sel={tuEs} set={wrap(setTuEs)} /></div>
+      <div className="q"><div className="lab">Ton objectif avec ce projet</div><Single opts={OBJECTIF.map((o) => o.l)} sel={OBJECTIF.find((o) => o.v === objectif)?.l ?? ""} set={(l) => wrap(setObjectif)(OBJECTIF.find((o) => o.l === l)?.v ?? "")} /></div>
+      <div className="q"><div className="lab">Où en es-tu ? <span className="multi">plusieurs choix possibles</span></div><Multi opts={MATURITE} sel={maturite} set={wrap(setMaturite)} /></div>
+      <div className="q"><div className="lab">Ta région</div><Single opts={REGIONS} sel={region} set={wrap(setRegion)} /></div>
+      <div className="q"><div className="lab">Ton âge</div><Single opts={AGES} sel={age} set={wrap(setAge)} /></div>
+      <div className="q"><div className="lab">Comment nous as-tu connus ?</div><Single opts={CANAUX} sel={canal} set={wrap(setCanal)} /></div>
 
       <div className="acts">
-        <button type="button" onClick={passer} disabled={busy} className="text-sm text-faint hover:text-muted">Passer</button>
-        <button type="button" onClick={continuer} disabled={busy} className="btn btn-primary py-2.5">{busy ? "…" : "Continuer →"}</button>
+        {compte ? (
+          <span className="text-sm font-medium" style={{ color: "#0f9d6b", opacity: ok ? 1 : 0, transition: ".2s" }}>✓ Enregistré</span>
+        ) : (
+          <button type="button" onClick={passer} disabled={busy} className="text-sm text-faint hover:text-muted">Passer</button>
+        )}
+        <button type="button" onClick={continuer} disabled={busy} className="btn btn-primary py-2.5">{busy ? "…" : compte ? "Enregistrer" : "Continuer →"}</button>
       </div>
       <p className="note">🔒 Ces infos servent à améliorer le service — jamais revendues.</p>
     </div>
