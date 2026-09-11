@@ -1364,8 +1364,8 @@
       {
         "n": "Sèche-serviette",
         "u": "u",
-        "fp": 200,
-        "sm": 120,
+        "fp": 245,
+        "sm": 145,
         "note": "radiateur de salle de bain",
         "vars": [
           {
@@ -1389,12 +1389,12 @@
         "grid": {
           "dims": ["taille", "type"],
           "prices": {
-            "petit|ns": { "fp": 145, "sm": 90 },
-            "moyen|ns": { "fp": 200, "sm": 120 },
-            "grand|ns": { "fp": 240, "sm": 145 },
-            "petit|s": { "fp": 310, "sm": 190 },
-            "moyen|s": { "fp": 340, "sm": 210 },
-            "grand|s": { "fp": 370, "sm": 230 }
+            "petit|ns": { "fp": 245, "sm": 145 },
+            "moyen|ns": { "fp": 300, "sm": 200 },
+            "grand|ns": { "fp": 340, "sm": 240 },
+            "petit|s": { "fp": 410, "sm": 310 },
+            "moyen|s": { "fp": 440, "sm": 340 },
+            "grand|s": { "fp": 470, "sm": 370 }
           }
         }
       },
