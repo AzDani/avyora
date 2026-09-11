@@ -66,6 +66,9 @@ export interface Ctx {
   codePostal?: string;        // sert au coefficient régional (main-d'œuvre)
   // Détail des pièces (estimateur détaillé). Si renseigné, pilote le nb de pièces effectif + les SDB.
   sejour?: number; cuisine?: number; chambres?: number; suites?: number; couloir?: number; buanderie?: number;
+  // Périmètre du projet (estimateur détaillé) : logement entier (défaut) ou une seule pièce/espace.
+  perimetre?: "entier" | "piece";
+  espace?: string;            // en mode « piece » : clé de l'espace choisi (voir ESPACES)
 }
 
 export interface LigneSel {
@@ -244,7 +247,54 @@ export function defaultCtx(): Ctx {
 export const key = (c: string, n: string): string => c + "|" + n;
 export const isLoc = (c: string): boolean => c === LOC;
 export const isAppart = (ctx: Ctx): boolean => ctx.type !== "Maison";
-export const visible = (ctx: Ctx, l: Lot): boolean => !(isAppart(ctx) && HIDE_APPART.indexOf(l.c) >= 0);
+/**
+ * Mode « Périmètre » (estimateur détaillé) : rénover une seule pièce/espace.
+ * Chaque espace pré-remplit surface + composition (ctx) et restreint les lots affichés (lots).
+ * Les noms de `lots` doivent correspondre EXACTEMENT à `l.c` du catalogue. lots=null → tous les lots.
+ */
+export interface EspaceDef { emoji: string; nom: string; surface: number; ctx: Partial<Ctx>; lots: string[] | null }
+export const ESPACES: Record<string, EspaceDef> = {
+  sdb: {
+    emoji: "🛁", nom: "Salle de bain", surface: 6,
+    ctx: { sdb: 1, wc: 0, suites: 0, chambres: 0, sejour: 0, cuisine: 0, couloir: 0, buanderie: 0, fenetres: 1, niveaux: 1 },
+    lots: ["Démolition", "Cloisons / Platrerie", "Electricite", "Plomberie", "Chauffage / VMC", "Carrelage / Revetements", "Peinture", "Menuiseries interieures", "Location de matériel"],
+  },
+  suite: {
+    emoji: "🛏️", nom: "Suite parentale", surface: 25,
+    ctx: { suites: 1, sdb: 0, wc: 0, chambres: 0, sejour: 0, cuisine: 0, couloir: 0, buanderie: 0, fenetres: 2, niveaux: 1 },
+    lots: ["Démolition", "Isolation", "Cloisons / Platrerie", "Electricite", "Plomberie", "Chauffage / VMC", "Carrelage / Revetements", "Peinture", "Menuiseries interieures", "Location de matériel"],
+  },
+  cuisine: {
+    emoji: "🍳", nom: "Cuisine", surface: 12,
+    ctx: { cuisine: 1, sdb: 0, wc: 0, suites: 0, chambres: 0, sejour: 0, couloir: 0, buanderie: 0, fenetres: 1, niveaux: 1 },
+    lots: ["Démolition", "Cloisons / Platrerie", "Electricite", "Plomberie", "Carrelage / Revetements", "Peinture", "Menuiseries interieures", "Cuisine", "Location de matériel"],
+  },
+  sejour: {
+    emoji: "🛋️", nom: "Séjour", surface: 30,
+    ctx: { sejour: 1, sdb: 0, wc: 0, suites: 0, chambres: 0, cuisine: 0, couloir: 0, buanderie: 0, fenetres: 2, niveaux: 1 },
+    lots: ["Démolition", "Cloisons / Platrerie", "Electricite", "Chauffage / VMC", "Carrelage / Revetements", "Peinture", "Menuiseries interieures", "Location de matériel"],
+  },
+  chambre: {
+    emoji: "🚪", nom: "Chambre", surface: 12,
+    ctx: { chambres: 1, sdb: 0, wc: 0, suites: 0, sejour: 0, cuisine: 0, couloir: 0, buanderie: 0, fenetres: 1, niveaux: 1 },
+    lots: ["Démolition", "Cloisons / Platrerie", "Electricite", "Chauffage / VMC", "Carrelage / Revetements", "Peinture", "Menuiseries interieures", "Location de matériel"],
+  },
+  combles: {
+    emoji: "🪜", nom: "Combles", surface: 40,
+    ctx: { chambres: 1, sdb: 0, wc: 0, suites: 0, sejour: 0, cuisine: 0, couloir: 1, buanderie: 0, fenetres: 2, niveaux: 1 },
+    lots: ["Démolition", "Charpente, couverture & structure bois", "Isolation", "Cloisons / Platrerie", "Electricite", "Chauffage / VMC", "Carrelage / Revetements", "Peinture", "Menuiseries interieures", "Location de matériel"],
+  },
+  autre: { emoji: "➕", nom: "Autre espace", surface: 20, ctx: { niveaux: 1 }, lots: null },
+};
+
+export const visible = (ctx: Ctx, l: Lot): boolean => {
+  if (isAppart(ctx) && HIDE_APPART.indexOf(l.c) >= 0) return false;
+  if (ctx.perimetre === "piece" && ctx.espace) {
+    const e = ESPACES[ctx.espace];
+    if (e && e.lots && !e.lots.includes(l.c)) return false; // mode pièce : on ne montre que les lots pertinents
+  }
+  return true;
+};
 
 /** Tâches masquées en appartement : charpente/toiture de l'immeuble (on garde plancher, escalier, garde-corps, ossature). */
 const HIDE_APPART_TASK = new Set<string>([

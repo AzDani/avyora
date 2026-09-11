@@ -15,7 +15,7 @@ import { EST_CSS } from "./estimateur-styles";
 import {
   CATALOG, PHASES, finCoef, ICON, LOC, defaultCtx, key, isLoc, visible, visibleTask,
   nbFen, nbPieces, deriveSol, autoQty, isAuto, qtyOf, effRate, lineHT, lotHT, effPrices,
-  totals, buildDevis, regionCoef, piecesEff, sdbEff, customLotHT, customTotals,
+  totals, buildDevis, regionCoef, piecesEff, sdbEff, customLotHT, customTotals, ESPACES,
   type Ctx, type Selection, type TypeBien, type Finition, type Lot, type Tache, type CustomLine,
 } from "@/lib/estimateur";
 
@@ -120,6 +120,17 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
   }
   function onSol(raw: string) { patchCtx({ surfaceSol: parseFloat(raw) || 0, surfaceSolManual: true }); }
   function onType(t: TypeBien) { patchCtx({ type: t, pieces: nbPieces(t), fenetres: nbFen(t) }); }
+  // Mode « Périmètre » : bascule logement entier / une pièce (choisit une suite par défaut).
+  function onPerimetre(m: "entier" | "piece") {
+    if (m === "entier") { patchCtx({ perimetre: "entier", espace: undefined }); return; }
+    onEspace(ctx.espace && ESPACES[ctx.espace] ? ctx.espace : "suite");
+  }
+  // Choix d'un espace : pré-remplit surface + composition (ctx) et restreint les lots (via visible).
+  function onEspace(k: string) {
+    const e = ESPACES[k];
+    if (!e) return;
+    patchCtx({ perimetre: "piece", espace: k, type: "Maison", surface: e.surface, surfaceSolManual: true, surfaceSol: e.surface, ...e.ctx });
+  }
   // Compteur simple d'un champ de ctx (niveaux, sdb, wc, fenetres).
   function stepCtx(field: keyof Ctx, delta: number, min: number) { patchCtx({ [field]: Math.max(min, ((ctx[field] as number) || 0) + delta) } as Partial<Ctx>); }
   // Compteurs du détail des pièces : on matérialise tout le détail puis on applique le delta.
@@ -164,7 +175,9 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
     if (!/^\d{5}$/.test(codePostal)) { setErreur("Renseignez un code postal (5 chiffres) dans « Votre projet »."); setView("saisie"); return; }
     if (!(ctx.surface > 0)) { setErreur("Renseignez la surface habitable."); setView("saisie"); return; }
     setSaving(true);
-    const nom = `Rénovation — ${ctx.type} ${ctx.surface} m²`.slice(0, 110);
+    const nom = (piece && ctx.espace && ESPACES[ctx.espace]
+      ? `Rénovation — ${ESPACES[ctx.espace].nom} ${ctx.surface} m²`
+      : `Rénovation — ${ctx.type} ${ctx.surface} m²`).slice(0, 110);
     const reponses = { v: "estimateur", ctx: ctxR, sel, codePostal, custom, ...(statutsRef.current ? { statuts: statutsRef.current } : {}) };
     try {
       const res = await fetch(edition ? `/api/projects/${projectId}` : "/api/projects", {
@@ -182,6 +195,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
 
   // ── Récap du bien ─────────────────────────────────────────────────────────
   const appart = ctx.type !== "Maison";
+  const piece = ctx.perimetre === "piece";
   const pTot = piecesEff(ctx), sdbTot = sdbEff(ctx);
   const SS = ctx.surfaceSol || ctx.surface;
   const facade = Math.round(4 * Math.sqrt(SS) * ctx.hauteur * (ctx.niveaux || 1) * 1.25);
@@ -209,19 +223,39 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
               <div className="eyebrow">Votre projet</div>
               <h2>Parlez-nous du bien</h2>
               <div className="sub">Renseignez ces infos, on pré-remplit les quantités — vous ajustez ensuite.</div>
-              <div className="gl">Type de bien</div>
-              <div className="tpills">
-                {(["Studio", "T2", "T3", "T4", "Maison"] as TypeBien[]).map((t) => (
-                  <button key={t} type="button" className={"tpill" + (ctx.type === t ? " on" : "")} onClick={() => onType(t)}>{t}</button>
-                ))}
+              <div className="gl">Périmètre du projet</div>
+              <div className="segf">
+                <button type="button" className={!piece ? "on" : ""} onClick={() => onPerimetre("entier")}>🏠 Logement entier</button>
+                <button type="button" className={piece ? "on" : ""} onClick={() => onPerimetre("piece")}>🎯 Une pièce / un espace</button>
               </div>
 
-              <div className="gl">Surfaces</div>
+              {piece ? (
+                <>
+                  <div className="gl">Quel espace ?</div>
+                  <div className="tpills">
+                    {Object.entries(ESPACES).map(([k, e]) => (
+                      <button key={k} type="button" className={"tpill" + (ctx.espace === k ? " on" : "")} onClick={() => onEspace(k)}>{e.emoji} {e.nom}</button>
+                    ))}
+                  </div>
+                  <div className="locnote" style={{ marginTop: 10 }}>On cale les quantités sur la surface de l'espace et on n'affiche que les lots concernés. Compo pré-remplie, à ajuster ci-dessous.</div>
+                </>
+              ) : (
+                <>
+                  <div className="gl">Type de bien</div>
+                  <div className="tpills">
+                    {(["Studio", "T2", "T3", "T4", "Maison"] as TypeBien[]).map((t) => (
+                      <button key={t} type="button" className={"tpill" + (ctx.type === t ? " on" : "")} onClick={() => onType(t)}>{t}</button>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              <div className="gl">{piece ? "Dimensions de l'espace" : "Surfaces"}</div>
               <div className="depart">
                 <Field label="Surface habitable" hint="Tous les niveaux additionnés — là où tu vis. Si tu crées un étage, ajoute sa surface ici.">
                   <NumStepper field value={ctx.surface} min={1} unit="m²" onChange={(n) => onNum("surface", String(n))} />
                 </Field>
-                {!appart && (
+                {!appart && !piece && (
                   <Field label="Surface au sol" hint="Empreinte du bâtiment au sol, calculée pour toi (habitable ÷ niveaux). Sert à la toiture et aux fondations — ajuste seulement si besoin.">
                     <NumStepper field value={ctx.surfaceSol} min={1} unit="m²" onChange={(n) => onSol(String(n))} />
                   </Field>
