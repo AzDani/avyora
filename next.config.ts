@@ -43,6 +43,12 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["pdf-parse", "puppeteer-core", "@sparticuz/chromium"],
+  // @sparticuz/chromium charge son binaire Chromium (bin/*.br) via un chemin dynamique : le tracer
+  // de Next ne le détecte pas et l'exclut de la fonction serverless (→ « bin does not exist » sur Vercel).
+  // On force son inclusion pour la route de génération PDF. (`*` couvre le segment dynamique [id].)
+  outputFileTracingIncludes: {
+    "/projets/*/rapport/pdf": ["./node_modules/@sparticuz/chromium/bin/**/*"],
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
