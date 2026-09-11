@@ -991,6 +991,48 @@
         ]
       },
       {
+        "n": "Vasque",
+        "u": "u",
+        "fp": 190,
+        "sm": 110,
+        "vars": [
+          {
+            "k": "type",
+            "label": "Type",
+            "opts": [
+              { "k": "posee", "label": "À poser", "coef": 1 },
+              { "k": "encastree", "label": "Encastrée", "coef": 1.1 }
+            ]
+          },
+          {
+            "k": "nb",
+            "label": "Nombre",
+            "opts": [
+              { "k": "simple", "label": "Simple", "coef": 1 },
+              { "k": "double", "label": "Double", "coef": 1.9 }
+            ]
+          }
+        ]
+      },
+      {
+        "n": "Plan de travail (vasque à poser)",
+        "u": "ml",
+        "fp": 150,
+        "sm": 90,
+        "note": "requis pour une vasque à poser",
+        "vars": [
+          {
+            "k": "mat",
+            "label": "Matériau",
+            "opts": [
+              { "k": "stratifie", "label": "Stratifié", "coef": 1 },
+              { "k": "bois", "label": "Bois", "coef": 1.87 },
+              { "k": "pierre", "label": "Quartz/granit", "coef": 3.33 }
+            ]
+          }
+        ]
+      },
+      {
         "n": "Robinetterie lavabo",
         "u": "u",
         "fp": 160,

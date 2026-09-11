@@ -331,6 +331,7 @@ export function autoQty(ctx: Ctx, c: string, n: string, sel: Selection): number 
     "Paroi de douche": SDB, "Cabine complète (parois + porte)": SDB,
     "Robinetterie baignoire": SDB, "Robinetterie lavabo": vasques,
     "Meuble-vasque": SDB, "Miroir": SDB,
+    "Vasque": SDB, "Plan de travail (vasque à poser)": SDB * 1.2,
     "Ventilation (VMC)": 1, "Sèche-serviette": SDB,
     "Monter une cloison": S * 0.35, "Doubler un mur": facade,
     "Créer un plancher bois": Math.max(0, S - SS), "Plancher béton (étage créé)": Math.max(0, S - SS),
