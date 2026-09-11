@@ -19,7 +19,8 @@ import {
   type Ctx, type Selection, type TypeBien, type Finition, type Lot, type Tache, type CustomLine,
 } from "@/lib/estimateur";
 
-const DRAFT_KEY = "avyora-estim-v2";
+const DRAFT_KEY = "avyora-estim-v2";              // brouillon partagé (mode rapide) — sert de graine « infos du bien »
+const DRAFT_KEY_DETAIL = "avyora-estim-detail-v1"; // brouillon PROPRE au détaillé : ne récupère PAS les postes cochés du rapide
 const fmt = (n: number): string => Math.round(n).toLocaleString("fr-FR") + " €";
 
 type Persisted = { v?: string; ctx?: Partial<Ctx>; sel?: Selection; open?: Record<string, boolean>; codePostal?: string; statuts?: Record<string, number>; custom?: CustomLine[] };
@@ -85,13 +86,21 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
       return true;
     };
     if (initialState && (initialState as Persisted).v === "estimateur") { statutsRef.current = (initialState as Persisted).statuts; load(initialState as Persisted); return; }
-    try { load(JSON.parse(localStorage.getItem(DRAFT_KEY) || "null")); } catch { /* noop */ }
+    // Détaillé : on reprend d'abord MA progression (brouillon propre) si elle existe…
+    try { if (load(JSON.parse(localStorage.getItem(DRAFT_KEY_DETAIL) || "null"))) return; } catch { /* noop */ }
+    // …sinon nouveau projet : on démarre VIERGE (rien coché) en récupérant seulement les infos du bien
+    // depuis une éventuelle estimation rapide (ctx + code postal), jamais les postes cochés.
+    try {
+      const seed = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null") as Persisted | null;
+      if (seed?.ctx) setCtx({ ...defaultCtx(), ...seed.ctx });
+      if (seed?.codePostal) setCodePostal(seed.codePostal);
+    } catch { /* noop */ }
   }, [initialState]);
 
   // Sauvegarde brouillon local.
   useEffect(() => {
     if (!hydrated.current) return;
-    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ v: "estimateur", ctx, sel, open, codePostal, custom })); } catch { /* noop */ }
+    try { localStorage.setItem(DRAFT_KEY_DETAIL, JSON.stringify({ v: "estimateur", ctx, sel, open, codePostal, custom })); } catch { /* noop */ }
   }, [ctx, sel, open, codePostal, custom]);
 
   // ctx effectif = ctx + code postal → le moteur applique le coefficient régional (MO).
@@ -145,8 +154,8 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
     });
   }
   function reset() {
-    try { localStorage.removeItem(DRAFT_KEY); } catch { /* noop */ }
-    setCtx(defaultCtx()); setSel({}); setOpen({}); setCodePostal(""); setView("saisie");
+    try { localStorage.removeItem(DRAFT_KEY_DETAIL); } catch { /* noop */ }
+    setCtx(defaultCtx()); setSel({}); setOpen({}); setCodePostal(""); setCustom([]); setView("saisie");
   }
 
   // ── Sauvegarde projet ─────────────────────────────────────────────────────
@@ -166,7 +175,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
       if (res.status === 401) { try { localStorage.setItem("avyora-estim-claim", "1"); } catch { /* noop */ } router.push("/inscription"); return; }
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { setErreur(data?.error || "Enregistrement impossible."); setSaving(false); return; }
-      if (!edition) { try { localStorage.removeItem(DRAFT_KEY); } catch { /* noop */ } }
+      if (!edition) { try { localStorage.removeItem(DRAFT_KEY_DETAIL); localStorage.removeItem(DRAFT_KEY); } catch { /* noop */ } }
       router.push(edition ? `/projets/${projectId}` : `/projets/${data.id}`);
     } catch { setErreur("Réseau indisponible. Réessayez."); setSaving(false); }
   }
