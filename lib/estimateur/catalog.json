@@ -993,8 +993,8 @@
       {
         "n": "Vasque",
         "u": "u",
-        "fp": 190,
-        "sm": 110,
+        "fp": 150,
+        "sm": 90,
         "vars": [
           {
             "k": "type",
@@ -1015,10 +1015,10 @@
         ]
       },
       {
-        "n": "Plan de travail (vasque à poser)",
+        "n": "Plan de travail",
         "u": "ml",
-        "fp": 150,
-        "sm": 90,
+        "fp": 85,
+        "sm": 35,
         "note": "requis pour une vasque à poser",
         "vars": [
           {
