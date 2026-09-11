@@ -402,7 +402,7 @@ function ChoicePrice({ label, active, activeCls, amount, edited, onSelect, onEdi
           defaultValue={amount != null ? Math.round(amount) : 0}
           onFocus={(e) => e.currentTarget.select()}
           onClick={(e) => e.stopPropagation()}
-          onBlur={(e) => { const v = parseFloat(e.currentTarget.value); setEd(false); if (!Number.isNaN(v) && v > 0) onEdit(v); }}
+          onBlur={(e) => { const v = parseFloat(e.currentTarget.value); setEd(false); if (!Number.isNaN(v) && v > 0 && v !== (amount != null ? Math.round(amount) : null)) onEdit(v); }}
           onKeyDown={(e) => { e.stopPropagation(); if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") setEd(false); }}
         />
       ) : (
@@ -483,7 +483,7 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMa
               className="puin" type="number" inputMode="decimal" autoFocus defaultValue={Math.round(puv)}
               onFocus={(e) => e.currentTarget.select()}
               onClick={(e) => e.stopPropagation()}
-              onBlur={(e) => { const v = parseFloat(e.currentTarget.value); setPuEdit(false); if (!Number.isNaN(v) && v > 0) onPu(v); }}
+              onBlur={(e) => { const v = parseFloat(e.currentTarget.value); setPuEdit(false); if (!Number.isNaN(v) && v > 0 && v !== (puv != null ? Math.round(puv) : null)) onPu(v); }}
               onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") setPuEdit(false); }}
             />
           ) : (
