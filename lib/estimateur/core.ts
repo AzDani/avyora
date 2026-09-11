@@ -69,6 +69,8 @@ export interface Ctx {
   // Périmètre du projet (estimateur détaillé) : logement entier (défaut) ou une seule pièce/espace.
   perimetre?: "entier" | "piece";
   espace?: string;            // en mode « piece » : clé de l'espace choisi (voir ESPACES)
+  // Suite parentale : découpe de la surface par zone (surface totale = zChambre + zSdb + (dressing ? zDressing : 0)).
+  zChambre?: number; zSdb?: number; zDressing?: number; avecDressing?: boolean;
 }
 
 export interface LigneSel {
@@ -260,8 +262,8 @@ export const ESPACES: Record<string, EspaceDef> = {
     lots: ["Démolition", "Cloisons / Platrerie", "Electricite", "Plomberie", "Chauffage / VMC", "Carrelage / Revetements", "Peinture", "Menuiseries interieures", "Location de matériel"],
   },
   suite: {
-    emoji: "🛏️", nom: "Suite parentale", surface: 25,
-    ctx: { suites: 1, sdb: 0, wc: 0, chambres: 0, sejour: 0, cuisine: 0, couloir: 0, buanderie: 0, fenetres: 2, niveaux: 1 },
+    emoji: "🛏️", nom: "Suite parentale", surface: 20,
+    ctx: { suites: 1, sdb: 0, wc: 0, chambres: 0, sejour: 0, cuisine: 0, couloir: 0, buanderie: 0, fenetres: 2, niveaux: 1, zChambre: 14, zSdb: 6, zDressing: 5, avecDressing: false },
     lots: ["Démolition", "Isolation", "Cloisons / Platrerie", "Electricite", "Plomberie", "Chauffage / VMC", "Carrelage / Revetements", "Peinture", "Menuiseries interieures", "Location de matériel"],
   },
   cuisine: {
@@ -375,6 +377,10 @@ export function autoQty(ctx: Ctx, c: string, n: string, sel: Selection): number 
     return area > 0 ? area : SDB * 6.5; // pas de bac coché → estimation moyenne par SDB
   })();
   if (c === "Cloisons / Platrerie" && n === FINI) return derivedFinitions(ctx, sel);
+  // Suite parentale découpée : le sol carrelé cible la SDB, le sol « vivant » la chambre (+ dressing).
+  const suiteZ = ctx.perimetre === "piece" && ctx.espace === "suite";
+  const zSol = ctx.zSdb ?? 0;                                                        // sol SDB (carrelé)
+  const zLiving = (ctx.zChambre ?? 0) + (ctx.avecDressing ? (ctx.zDressing ?? 0) : 0); // sol chambre (+ dressing)
   const A: Record<string, number> = {
     "Peinture des murs": S * ctx.hauteur, "Peinture des plafonds": S, "Préparation des surfaces": S * ctx.hauteur,
     "Rénovation électrique complète": S, "Refaire toute la plomberie (réseau, hors appareils)": S,
@@ -399,9 +405,11 @@ export function autoQty(ctx: Ctx, c: string, n: string, sel: Selection): number 
     "Ventilation (VMC)": 1, "Sèche-serviette": SDB,
     "Monter une cloison": S * 0.35, "Doubler un mur": facade,
     "Créer un plancher bois": Math.max(0, S - SS), "Plancher béton (étage créé)": Math.max(0, S - SS),
-    "Carrelage au sol": S * 0.6, "Sol stratifié (imitation bois)": S * 0.4, "Parquet bois": S * 0.4,
-    "Ponçage + vitrification parquet": S * 0.4,
-    "Sol souple (PVC, lino)": S * 0.4, "Moquette": S * 0.4, "Béton ciré / résine": S * 0.6,
+    "Carrelage au sol": suiteZ ? zSol : S * 0.6,
+    "Sol stratifié (imitation bois)": suiteZ ? zLiving : S * 0.4, "Parquet bois": suiteZ ? zLiving : S * 0.4,
+    "Ponçage + vitrification parquet": suiteZ ? zLiving : S * 0.4,
+    "Sol souple (PVC, lino)": suiteZ ? zLiving : S * 0.4, "Moquette": suiteZ ? zLiving : S * 0.4,
+    "Béton ciré / résine": suiteZ ? zLiving : S * 0.6,
     "Plinthes": 4 * Math.sqrt(S * P), "Seuils / barres de seuil": P, "Peinture des boiseries": P,
     "Traiter la charpente": roof, "Charpente traditionnelle (hors couverture)": roof, "Charpente en fermettes (hors couverture)": roof,
     "Toiture complète tuile (charpente + couverture)": roof, "Toiture complète ardoise (charpente + couverture)": roof,

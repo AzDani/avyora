@@ -94,6 +94,12 @@ export const EST_CSS = `
 .av-estim .chin{width:52px;font-family:var(--font-geist-mono),monospace;font-size:11px;font-weight:700;border:1.5px solid var(--brand);border-radius:5px;padding:0 3px;outline:none;text-align:center;margin-top:1px;background:var(--surface);color:var(--ink)}
 .av-estim .chreset{cursor:pointer;color:var(--faint);font-size:11px;line-height:1;margin-top:2px}
 .av-estim .chreset:hover{color:var(--brand)}
+.av-estim .drtoggle{margin-top:10px;display:inline-flex;align-items:center;gap:8px;font-family:var(--font-geist-sans);font-size:12.5px;font-weight:600;color:var(--muted);background:var(--surface);border:1px solid var(--line-strong);border-radius:999px;padding:8px 14px;cursor:pointer}
+.av-estim .drtoggle .dot{width:16px;height:16px;border-radius:5px;border:2px solid var(--line-strong)}
+.av-estim .drtoggle.on{color:var(--brand-700);border-color:var(--brand-200);background:var(--brand-50)}
+.av-estim .drtoggle.on .dot{background:var(--brand);border-color:var(--brand)}
+.av-estim .suitetotal{margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#1E1B4B;color:#fff;border-radius:12px;padding:12px 16px;font-size:13px}
+.av-estim .suitetotal b{font-family:var(--font-geist-mono),monospace;font-size:18px;font-weight:700}
 .av-estim .lineamt{font-family:var(--font-geist-mono);font-size:12.5px;font-weight:600;min-width:70px;text-align:right}
 .av-estim .tvariants{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:7px 16px;padding:8px 0 2px 32px}
 .av-estim .notebtn{border:0;background:none;cursor:pointer;font-size:14px;padding:2px 4px;opacity:.5;line-height:1}

@@ -131,6 +131,16 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
     if (!e) return;
     patchCtx({ perimetre: "piece", espace: k, type: "Maison", surface: e.surface, surfaceSolManual: true, surfaceSol: e.surface, ...e.ctx });
   }
+  // Suite parentale : surface totale = somme des zones (chambre + SDB + dressing éventuel).
+  function syncSuite(next: Ctx): Ctx {
+    next.surface = (next.zChambre ?? 0) + (next.zSdb ?? 0) + (next.avecDressing ? (next.zDressing ?? 0) : 0);
+    next.surfaceSol = next.surface; next.surfaceSolManual = true;
+    return next;
+  }
+  function setZone(z: "zChambre" | "zSdb" | "zDressing", delta: number) {
+    setCtx((c) => syncSuite({ ...c, [z]: Math.max(z === "zSdb" ? 2 : 1, ((c[z] as number | undefined) ?? 0) + delta) } as Ctx));
+  }
+  function toggleDressing() { setCtx((c) => syncSuite({ ...c, avecDressing: !c.avecDressing } as Ctx)); }
   // Compteur simple d'un champ de ctx (niveaux, sdb, wc, fenetres).
   function stepCtx(field: keyof Ctx, delta: number, min: number) { patchCtx({ [field]: Math.max(min, ((ctx[field] as number) || 0) + delta) } as Partial<Ctx>); }
   // Compteurs du détail des pièces : on matérialise tout le détail puis on applique le delta.
@@ -196,6 +206,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
   // ── Récap du bien ─────────────────────────────────────────────────────────
   const appart = ctx.type !== "Maison";
   const piece = ctx.perimetre === "piece";
+  const suite = piece && ctx.espace === "suite";
   const pTot = piecesEff(ctx), sdbTot = sdbEff(ctx);
   const SS = ctx.surfaceSol || ctx.surface;
   const facade = Math.round(4 * Math.sqrt(SS) * ctx.hauteur * (ctx.niveaux || 1) * 1.25);
@@ -251,10 +262,27 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
               )}
 
               <div className="gl">{piece ? "Dimensions de l'espace" : "Surfaces"}</div>
+
+              {suite && (
+                <div className="suitezones">
+                  <div className="stpg">
+                    <Stepper label="🛏️ Chambre (m²)" value={ctx.zChambre ?? 14} onStep={(d) => setZone("zChambre", d)} />
+                    <Stepper label="🛁 Salle de bain (m²)" hint="carrelage, faïence, étanchéité" value={ctx.zSdb ?? 6} onStep={(d) => setZone("zSdb", d)} />
+                    {ctx.avecDressing && <Stepper label="🚪 Dressing (m²)" value={ctx.zDressing ?? 5} onStep={(d) => setZone("zDressing", d)} />}
+                  </div>
+                  <button type="button" className={"drtoggle" + (ctx.avecDressing ? " on" : "")} onClick={toggleDressing}>
+                    <span className="dot" />{ctx.avecDressing ? "Avec dressing" : "Ajouter un dressing"}
+                  </button>
+                  <div className="suitetotal">Surface totale de la suite<b className="num">{ctx.surface} m²</b></div>
+                </div>
+              )}
+
               <div className="depart">
-                <Field label="Surface habitable" hint="Tous les niveaux additionnés — là où tu vis. Si tu crées un étage, ajoute sa surface ici.">
-                  <NumStepper field value={ctx.surface} min={1} unit="m²" onChange={(n) => onNum("surface", String(n))} />
-                </Field>
+                {!suite && (
+                  <Field label={piece ? "Surface" : "Surface habitable"} hint={piece ? undefined : "Tous les niveaux additionnés — là où tu vis. Si tu crées un étage, ajoute sa surface ici."}>
+                    <NumStepper field value={ctx.surface} min={1} unit="m²" onChange={(n) => onNum("surface", String(n))} />
+                  </Field>
+                )}
                 {!appart && !piece && (
                   <Field label="Surface au sol" hint="Empreinte du bâtiment au sol, calculée pour toi (habitable ÷ niveaux). Sert à la toiture et aux fondations — ajuste seulement si besoin.">
                     <NumStepper field value={ctx.surfaceSol} min={1} unit="m²" onChange={(n) => onSol(String(n))} />
@@ -264,6 +292,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                 <Field label="Code postal"><div className="uinp"><input inputMode="numeric" maxLength={5} placeholder="33000" value={codePostal} onChange={(e) => setCodePostal(e.target.value.replace(/\D/g, "").slice(0, 5))} /></div></Field>
               </div>
 
+              {!suite && (<>
               <div className="gl">Pièces &amp; configuration <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 500 }}>· chaque pièce compte dans le chiffrage</span></div>
               <div className="stpg">
                 <Stepper label="Niveaux" hint="RDC = 1" value={ctx.niveaux} onStep={(d) => stepCtx("niveaux", d, 1)} />
@@ -277,6 +306,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                 <Stepper label="Buanderie / cellier" value={bd("buanderie")} onStep={(d) => stepBd("buanderie", d, 0)} />
                 <Stepper label="Menuiseries ext." hint="fenêtres, baies" value={ctx.fenetres} onStep={(d) => stepCtx("fenetres", d, 0)} />
               </div>
+              </>)}
 
               <div className="gl">Niveau de finition</div>
               <div className="finc">
