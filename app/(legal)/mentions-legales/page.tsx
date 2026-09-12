@@ -4,33 +4,28 @@ export default function MentionsLegales() {
   return (
     <article>
       <h1>Mentions légales</h1>
-      <p className="maj">Dernière mise à jour : 6 septembre 2026</p>
+      <p className="maj">Dernière mise à jour : 12 septembre 2026</p>
 
       <p>
         Conformément à l&apos;article 6 III de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans
         l&apos;économie numérique (LCEN), voici les informations relatives à l&apos;éditeur et à
-        l&apos;hébergeur du site <strong>avyora.fr</strong> (ci-après « le Site »).
+        l&apos;hébergeur du site <strong>getavyora.fr</strong> (ci-après « le Site »).
       </p>
 
       <h2>1. Éditeur du Site</h2>
-      <span className="todo">
-        <b>À compléter</b> — informations légales de la structure qui exploite AVYORA. Sans société créée,
-        indique ton statut (ex. entrepreneur individuel / micro-entreprise) et ton nom complet.
-      </span>
       <div className="box">
-        <p>Dénomination / Nom : <strong>[À COMPLÉTER]</strong></p>
-        <p>Forme juridique : [À COMPLÉTER — ex. SASU, EURL, entreprise individuelle]</p>
-        <p>Capital social : [le cas échéant]</p>
-        <p>Siège social / Adresse : [À COMPLÉTER]</p>
-        <p>SIREN / SIRET : [À COMPLÉTER]</p>
-        <p>RCS / Ville d&apos;immatriculation : [le cas échéant]</p>
-        <p>N° TVA intracommunautaire : [À COMPLÉTER, ou « TVA non applicable, art. 293 B du CGI »]</p>
-        <p>E-mail de contact : <strong>[À COMPLÉTER — ex. contact@avyora.fr]</strong></p>
-        <p>Téléphone : [le cas échéant]</p>
+        <p>Éditeur : <strong>Daniel LEAL — Entrepreneur individuel (EI)</strong></p>
+        <p>Forme juridique : Entrepreneur individuel (micro-entreprise)</p>
+        <p>Capital social : sans objet</p>
+        <p>Siège social : 33620 Marcenais, France <span style={{ opacity: 0.7 }}>(adresse postale complète communiquée sur demande à l&apos;adresse de contact ci-dessous)</span></p>
+        <p>SIREN : 109 670 711 — SIRET : 109 670 711 00018</p>
+        <p>RCS : dispensé d&apos;immatriculation au RCS (entrepreneur individuel)</p>
+        <p>TVA : TVA non applicable, art. 293 B du CGI (franchise en base)</p>
+        <p>E-mail de contact : <strong>contact@getavyora.fr</strong></p>
       </div>
 
       <h2>2. Directeur de la publication</h2>
-      <p>Le directeur de la publication est <strong>[À COMPLÉTER — nom du représentant légal]</strong>.</p>
+      <p>Le directeur de la publication est <strong>Daniel LEAL</strong>.</p>
 
       <h2>3. Hébergement</h2>
       <p>Le Site est hébergé par&nbsp;:</p>
@@ -65,7 +60,7 @@ export default function MentionsLegales() {
 
       <h2>6. Contact</h2>
       <p>
-        Pour toute question relative au Site&nbsp;: <strong>[À COMPLÉTER — e-mail de contact]</strong>.
+        Pour toute question relative au Site&nbsp;: <strong>contact@getavyora.fr</strong>.
       </p>
     </article>
   );

@@ -14,7 +14,7 @@ export default function Confidentialite() {
       <h2>1. Responsable de traitement</h2>
       <p>
         Le responsable de traitement est l&apos;éditeur du Site (voir <a href="/mentions-legales">mentions
-        légales</a>). Contact&nbsp;: <strong>[À COMPLÉTER — e-mail de contact / DPO le cas échéant]</strong>.
+        légales</a>). Contact&nbsp;: <strong>contact@getavyora.fr</strong>.
       </p>
 
       <h2>2. Données collectées</h2>
@@ -51,13 +51,9 @@ export default function Confidentialite() {
         <li><strong>Vercel Inc.</strong> — hébergement du site&nbsp;;</li>
         <li><strong>Supabase</strong> — base de données et authentification&nbsp;;</li>
         <li><strong>Stripe</strong> — traitement des paiements&nbsp;;</li>
-        <li>[À COMPLÉTER — fournisseur d&apos;envoi d&apos;e-mails transactionnels le cas échéant].</li>
+        <li><strong>Resend</strong> — envoi des e-mails transactionnels (confirmation de compte, réinitialisation de mot de passe, confirmation de commande)&nbsp;;</li>
+        <li><strong>Vercel Analytics</strong> — mesure d&apos;audience agrégée et anonyme.</li>
       </ul>
-      <span className="todo">
-        <b>À vérifier</b> — pour un hébergement des données dans l&apos;UE, sélectionne une région européenne
-        pour Supabase et privilégie des sous-traitants offrant des garanties (clauses contractuelles types)
-        pour tout transfert hors UE.
-      </span>
 
       <h2>5. Transferts hors Union européenne</h2>
       <p>
@@ -81,7 +77,7 @@ export default function Confidentialite() {
       </p>
       <ul>
         <li><strong>Effacement</strong> — la suppression du compte et des données associées est possible directement depuis « Mon compte ».</li>
-        <li><strong>Portabilité / accès</strong> — une copie de vos données vous est fournie sur simple demande à [À COMPLÉTER — e-mail de contact].</li>
+        <li><strong>Portabilité / accès</strong> — une copie de vos données vous est fournie sur simple demande à contact@getavyora.fr.</li>
         <li>Les autres droits s&apos;exercent en écrivant à la même adresse&nbsp;; une réponse est apportée dans un délai maximal d&apos;un mois.</li>
       </ul>
       <p>

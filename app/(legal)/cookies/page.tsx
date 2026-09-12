@@ -33,13 +33,6 @@ export default function Cookies() {
         À ce jour, AVYORA n&apos;utilise <strong>aucun cookie de mesure d&apos;audience, de publicité ou de
         réseaux sociaux</strong>.
       </p>
-      <span className="todo">
-        <b>Si tu ajoutes un jour un outil de mesure d&apos;audience ou de tracking</b> (Google Analytics,
-        publicité, etc.)&nbsp;: il deviendra obligatoire d&apos;afficher un <b>bandeau de consentement</b> (CMP)
-        permettant d&apos;accepter/refuser avant tout dépôt, et de compléter le tableau ci-dessus. Des outils
-        « privacy-first » sans cookies (ex. Plausible, Matomo en mode exempté) évitent le bandeau.
-      </span>
-
       <h2>4. Gérer les cookies</h2>
       <p>
         Vous pouvez configurer votre navigateur pour bloquer ou supprimer les cookies. Le blocage des cookies

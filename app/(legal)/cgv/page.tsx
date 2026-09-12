@@ -6,16 +6,11 @@ export default function CGV() {
       <h1>Conditions Générales de Vente</h1>
       <p className="maj">Dernière mise à jour : 6 septembre 2026</p>
 
-      <span className="todo">
-        <b>À finaliser avant la mise en vente</b> — renseigne les prix exacts (page Tarifs), le nom de
-        l&apos;éditeur, l&apos;e-mail de contact, et adhère à un <b>médiateur de la consommation</b> (obligatoire
-        en B2C, art. L612-1 du Code de la consommation) dont les coordonnées doivent figurer ci-dessous.
-      </span>
 
       <h2>1. Objet et champ d&apos;application</h2>
       <p>
         Les présentes conditions générales de vente (« CGV ») régissent la vente des abonnements « AVYORA Pro »
-        (« l&apos;Abonnement ») proposés sur <strong>avyora.fr</strong>. Elles s&apos;appliquent à tout achat
+        (« l&apos;Abonnement ») proposés sur <strong>getavyora.fr</strong>. Elles s&apos;appliquent à tout achat
         effectué par un client (« le Client »), qu&apos;il soit consommateur ou professionnel. Toute
         souscription implique l&apos;acceptation pleine et entière des présentes CGV.
       </p>
@@ -31,7 +26,7 @@ export default function CGV() {
       <h2>3. Prix</h2>
       <ul>
         <li>Les prix sont indiqués en euros, <strong>toutes taxes comprises (TTC)</strong>, sur la page <a href="/tarifs">Tarifs</a>.</li>
-        <li>[À COMPLÉTER] Si l&apos;éditeur relève de la franchise en base de TVA&nbsp;: mention « TVA non applicable, art. 293 B du CGI ».</li>
+        <li>L&apos;éditeur relève de la franchise en base de TVA&nbsp;: <strong>TVA non applicable, art. 293 B du CGI</strong>. Les prix affichés sont donc nets de TVA.</li>
         <li>Les éventuelles remises de lancement sont affichées avec le prix de référence barré et s&apos;appliquent dans les conditions et la durée indiquées.</li>
         <li>L&apos;éditeur peut modifier ses prix à tout moment&nbsp;; le prix applicable est celui en vigueur lors de la souscription. Toute évolution tarifaire d&apos;un abonnement en cours est notifiée au Client avant reconduction.</li>
       </ul>
@@ -67,11 +62,6 @@ export default function CGV() {
         résiliation peut être effectuée en ligne, de façon simple, depuis l&apos;espace client (fonction de
         résiliation dédiée).
       </p>
-      <span className="todo">
-        <b>À implémenter</b> — la « résiliation en trois clics » est obligatoire pour les abonnements souscrits
-        en ligne&nbsp;: prévoir un bouton de résiliation accessible dans l&apos;espace client (via le portail
-        client Stripe ou une action dédiée) et l&apos;e-mail de rappel avant reconduction (loi Chatel).
-      </span>
 
       <h2>6. Droit de rétractation</h2>
       <p>
@@ -85,7 +75,7 @@ export default function CGV() {
         <strong>accord exprès à l&apos;exécution immédiate</strong> et à <strong>renoncer expressément à son
         droit de rétractation</strong> pour la partie déjà exécutée (art. L221-28 13°). En l&apos;absence de
         cette renonciation, le droit de rétractation s&apos;exerce dans les conditions de droit commun. Pour
-        l&apos;exercer, le Client adresse une demande non ambiguë à&nbsp;: [À COMPLÉTER — e-mail de contact].
+        l&apos;exercer, le Client adresse une demande non ambiguë à&nbsp;: contact@getavyora.fr.
       </p>
 
       <h2>7. Accès et disponibilité</h2>
@@ -103,7 +93,7 @@ export default function CGV() {
       </p>
 
       <h2>9. Service client et réclamations</h2>
-      <p>Toute réclamation peut être adressée à&nbsp;: <strong>[À COMPLÉTER — e-mail de contact]</strong>.</p>
+      <p>Toute réclamation peut être adressée à&nbsp;: <strong>contact@getavyora.fr</strong>. L&apos;éditeur s&apos;efforce d&apos;y répondre dans les meilleurs délais.</p>
 
       <h2>10. Médiation de la consommation</h2>
       <p>
@@ -111,7 +101,7 @@ export default function CGV() {
         gratuitement à un médiateur de la consommation en vue de la résolution amiable d&apos;un litige.
       </p>
       <div className="box">
-        <p>Médiateur&nbsp;: <strong>[À COMPLÉTER — nom et coordonnées du médiateur auquel l&apos;éditeur a adhéré]</strong></p>
+        <p>Médiateur&nbsp;: <strong>le médiateur de la consommation compétent sera prochainement désigné et ses coordonnées publiées ici.</strong> Dans l&apos;attente, toute demande de résolution amiable peut être adressée à contact@getavyora.fr.</p>
         <p>
           Plateforme européenne de règlement en ligne des litiges (RLL)&nbsp;:{" "}
           <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer">
