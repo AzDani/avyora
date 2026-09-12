@@ -242,6 +242,21 @@ const HOME_HTML = `
 </div></section>
 
 <section class="blk" style="padding-top:0"><div class="wrap">
+  <div class="center"><p class="eyebrow">Combien ça coûte ?</p><h2>Le prix des travaux, poste par poste.</h2><p>Le budget moyen de chaque chantier, détaillé et ajusté à ta région — avant même de te lancer.</p></div>
+  <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:22px">
+    <a href="/prix-travaux/renovation-salle-de-bain" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">🛁 Salle de bain</a>
+    <a href="/prix-travaux/renovation-cuisine" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">🍳 Cuisine</a>
+    <a href="/prix-travaux/refaire-toiture" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">🏠 Toiture</a>
+    <a href="/prix-travaux/peinture-interieure" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">🎨 Peinture</a>
+    <a href="/prix-travaux/renovation-electrique" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">⚡ Électricité</a>
+    <a href="/prix-travaux/remplacement-fenetres" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">🪟 Fenêtres</a>
+    <a href="/prix-travaux/isolation-combles" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">🧊 Combles</a>
+    <a href="/prix-travaux/remplacer-baignoire-par-douche" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">🚿 Baignoire → douche</a>
+    <a href="/prix-travaux" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand);color:#fff;border-radius:999px;padding:9px 18px;font-size:14px;font-weight:600">Tous les travaux →</a>
+  </div>
+</div></section>
+
+<section class="blk" style="padding-top:0"><div class="wrap">
   <div class="final">
     <h2>Ta rénovation mérite mieux qu'un devis au feeling.</h2>
     <p>Lance ta première estimation gratuite. En 3 minutes, tu sauras où tu vas.</p>
@@ -347,6 +362,21 @@ const HOME_HTML_EN = `
       <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>No commitment</span>
       <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>Cancel anytime</span>
     </div>
+  </div>
+</div></section>
+
+<section class="blk" style="padding-top:0"><div class="wrap">
+  <div class="center"><p class="eyebrow">How much does it cost?</p><h2>Renovation prices, line by line.</h2><p>The average budget for each project, itemised and adjusted to your region — before you even start.</p></div>
+  <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:22px">
+    <a href="/prix-travaux/renovation-salle-de-bain" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">🛁 Bathroom</a>
+    <a href="/prix-travaux/renovation-cuisine" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">🍳 Kitchen</a>
+    <a href="/prix-travaux/refaire-toiture" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">🏠 Roof</a>
+    <a href="/prix-travaux/peinture-interieure" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">🎨 Painting</a>
+    <a href="/prix-travaux/renovation-electrique" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">⚡ Electrics</a>
+    <a href="/prix-travaux/remplacement-fenetres" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">🪟 Windows</a>
+    <a href="/prix-travaux/isolation-combles" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">🧊 Loft insulation</a>
+    <a href="/prix-travaux/remplacer-baignoire-par-douche" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">🚿 Bath → shower</a>
+    <a href="/prix-travaux" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand);color:#fff;border-radius:999px;padding:9px 18px;font-size:14px;font-weight:600">All projects →</a>
   </div>
 </div></section>
 

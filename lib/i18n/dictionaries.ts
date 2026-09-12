@@ -19,6 +19,7 @@ const fr = {
   },
   footer: {
     guides: "Guides des prix",
+    prixTravaux: "Prix des travaux",
     prixVille: "Prix par ville",
     mentions: "Mentions légales",
     cgu: "CGU",
@@ -214,6 +215,7 @@ const en: Dict = {
   },
   footer: {
     guides: "Price guides",
+    prixTravaux: "Renovation costs",
     prixVille: "Prices by city",
     mentions: "Legal notice",
     cgu: "Terms of use",

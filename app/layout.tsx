@@ -185,6 +185,7 @@ export default async function RootLayout({
             <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3">
               <nav className="flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-muted">
                 <Link href="/guides" className="transition-colors hover:text-brand-700">{t.footer.guides}</Link>
+                <Link href="/prix-travaux" className="transition-colors hover:text-brand-700">{t.footer.prixTravaux}</Link>
                 <Link href="/prix-renovation" className="transition-colors hover:text-brand-700">{t.footer.prixVille}</Link>
                 <Link href="/mentions-legales" className="transition-colors hover:text-brand-700">{t.footer.mentions}</Link>
                 <Link href="/cgu" className="transition-colors hover:text-brand-700">{t.footer.cgu}</Link>
