@@ -193,6 +193,13 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
         ·{" "}
         <Link href="/guides/prix-renovation-maison" className="font-medium text-brand-600 hover:underline">rénovation de maison</Link>.
       </p>
+      <p>
+        Prix par type de travaux :{" "}
+        <Link href="/prix-travaux/renovation-salle-de-bain" className="font-medium text-brand-600 hover:underline">salle de bain</Link>{" "}·{" "}
+        <Link href="/prix-travaux/renovation-cuisine" className="font-medium text-brand-600 hover:underline">cuisine</Link>{" "}·{" "}
+        <Link href="/prix-travaux/refaire-toiture" className="font-medium text-brand-600 hover:underline">toiture</Link>{" "}·{" "}
+        <Link href="/prix-travaux" className="font-medium text-brand-600 hover:underline">tous les travaux</Link>.
+      </p>
 
       <h2>Prix rénovation dans d&apos;autres villes</h2>
       <div className="villes">
