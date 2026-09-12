@@ -52,6 +52,19 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  // L'URL technique Vercel (*.vercel.app) sert le même contenu que getavyora.fr → on la redirige
+  // en 308 vers le domaine canonique. On cible l'hôte exact pour NE PAS casser les préversions de
+  // branches (avyora-…-git-….vercel.app), qui gardent leur propre URL.
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "avyora-chi.vercel.app" }],
+        destination: "https://getavyora.fr/:path*",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
