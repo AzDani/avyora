@@ -1,18 +1,61 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth";
+import { getLocale } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Bienvenue dans AVYORA Pro" };
 
-const FEATS = [
-  "Devis détaillé, 200 postes",
-  "Rapport PDF à comparer",
-  "Carnet matériaux & liens",
-  "Suivi de chantier illimité",
-  "Multi-projets",
-  "Budget piloté de A à Z",
-];
+export async function generateMetadata() {
+  const locale = await getLocale();
+  return { title: locale === "en" ? "Welcome to AVYORA Pro" : "Bienvenue dans AVYORA Pro" };
+}
+
+const TR = {
+  fr: {
+    feats: [
+      "Devis détaillé, 200 postes",
+      "Rapport PDF à comparer",
+      "Carnet matériaux & liens",
+      "Suivi de chantier illimité",
+      "Multi-projets",
+      "Budget piloté de A à Z",
+    ],
+    badge: "Bienvenue dans AVYORA Pro",
+    title: "Félicitations, tu es Pro ! 🎉",
+    subPre: "Ton abonnement est actif. Tout le ",
+    subStrong: "gestionnaire de travaux",
+    subPost: " est débloqué.",
+    unlockTitle: "Ce que tu débloques",
+    ctaPrimary: "Lancer mon estimation détaillée →",
+    ctaSecondary: "Voir mes projets",
+    notePre: "Un reçu vient de t'être envoyé par e-mail.",
+    notePost: "Tu gères ton abonnement à tout moment depuis ",
+    noteLink: "Mon compte",
+    noteEnd: ".",
+  },
+  en: {
+    feats: [
+      "Detailed quote, 200 line items",
+      "PDF report to compare",
+      "Materials list & links",
+      "Unlimited project tracking",
+      "Multi-project",
+      "Budget managed from A to Z",
+    ],
+    badge: "Welcome to AVYORA Pro",
+    title: "Congratulations, you're Pro! 🎉",
+    subPre: "Your subscription is active. The whole ",
+    subStrong: "renovation manager",
+    subPost: " is unlocked.",
+    unlockTitle: "What you unlock",
+    ctaPrimary: "Start my detailed estimate →",
+    ctaSecondary: "See my projects",
+    notePre: "A receipt has just been emailed to you.",
+    notePost: "You can manage your subscription anytime from ",
+    noteLink: "My account",
+    noteEnd: ".",
+  },
+} as const;
 
 /**
  * Page de célébration après un paiement réussi (success_url du checkout Stripe).
@@ -22,6 +65,8 @@ const FEATS = [
 export default async function BienvenueProPage() {
   const user = await getUser();
   if (!user) redirect("/connexion?next=/bienvenue-pro");
+  const locale = await getLocale();
+  const s = TR[locale];
 
   return (
     <div className="av-welcome">
@@ -33,27 +78,27 @@ export default async function BienvenueProPage() {
           <div className="wbadge">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke="#fff" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </div>
-          <span className="web">Bienvenue dans AVYORA Pro</span>
-          <h1>Félicitations, tu es Pro ! 🎉</h1>
-          <p>Ton abonnement est actif. Tout le <b>gestionnaire de travaux</b> est débloqué.</p>
+          <span className="web">{s.badge}</span>
+          <h1>{s.title}</h1>
+          <p>{s.subPre}<b>{s.subStrong}</b>{s.subPost}</p>
         </div>
 
         <div className="wbody">
           <div className="unlocked">
-            <div className="u-t">Ce que tu débloques</div>
+            <div className="u-t">{s.unlockTitle}</div>
             <ul className="wfeats">
-              {FEATS.map((f) => <li key={f}>{f}</li>)}
+              {s.feats.map((f) => <li key={f}>{f}</li>)}
             </ul>
           </div>
 
           <div className="wcta">
-            <Link href="/projets/nouveau/detaille" className="wbtn wbtn-p">Lancer mon estimation détaillée →</Link>
-            <Link href="/projets" className="wbtn wbtn-s">Voir mes projets</Link>
+            <Link href="/projets/nouveau/detaille" className="wbtn wbtn-p">{s.ctaPrimary}</Link>
+            <Link href="/projets" className="wbtn wbtn-s">{s.ctaSecondary}</Link>
           </div>
 
           <p className="wnote">
-            Un reçu vient de t'être envoyé par e-mail.<br />
-            Tu gères ton abonnement à tout moment depuis <Link href="/mon-espace/compte">Mon compte</Link>.
+            {s.notePre}<br />
+            {s.notePost}<Link href="/mon-espace/compte">{s.noteLink}</Link>{s.noteEnd}
           </p>
         </div>
       </div>

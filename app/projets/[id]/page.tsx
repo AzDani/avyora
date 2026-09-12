@@ -7,8 +7,14 @@ import EstimationResultat from "@/components/EstimationResultat";
 import { regionLabel, type Ctx, type Selection } from "@/lib/estimateur";
 import RenameTitre from "@/components/RenameTitre";
 import TelechargerRapport from "@/components/TelechargerRapport";
+import { getLocale } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
+
+const TR = {
+  fr: { projets: "Projets" },
+  en: { projets: "Projects" },
+} as const;
 
 // Fiche projet — 100 % moteur estimateur : en-tête + résultat + téléchargement PDF direct.
 export default async function ProjetPage({ params }: { params: Promise<{ id: string }> }) {
@@ -17,6 +23,8 @@ export default async function ProjetPage({ params }: { params: Promise<{ id: str
   if (!projet) notFound();
 
   const user = await getUser();
+  const locale = await getLocale();
+  const s = TR[locale];
   const reponses = projet.reponses as { ctx?: Ctx; sel?: Selection; statuts?: Record<string, number>; codePostal?: string };
   const refCode = "AVY-" + String(projet.id).replace(/-/g, "").slice(0, 8).toUpperCase();
 
@@ -31,7 +39,7 @@ export default async function ProjetPage({ params }: { params: Promise<{ id: str
             <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <path d="M10 3.5 5.5 8l4.5 4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            Projets
+            {s.projets}
           </Link>
           <RenameTitre id={projet.id} nom={projet.nom} />
           <div className="mt-2.5 flex flex-wrap gap-1.5">

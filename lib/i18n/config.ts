@@ -13,7 +13,7 @@ export const LOCALE_COOKIE = "av-lang";
  * Interrupteur global de l'i18n. `false` = tout le site en français, sélecteur masqué
  * (le code de traduction reste en place). Repasser à `true` pour réactiver l'anglais.
  */
-export const I18N_ENABLED = false;
+export const I18N_ENABLED = true;
 
 export function isLocale(v: unknown): v is Locale {
   return typeof v === "string" && (LOCALES as readonly string[]).includes(v);

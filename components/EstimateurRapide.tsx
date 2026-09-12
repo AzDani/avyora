@@ -26,13 +26,7 @@ const ROOMS: { key: PieceKey; emoji: string; label: string; surf: number }[] = [
   { key: "buanderie", emoji: "🧺", label: "Buanderie", surf: 6 },
 ];
 const roomLabel = (k: PieceKey) => ROOMS.find((r) => r.key === k)!;
-// Descriptions d'ampleur adaptées au mode « pièce » (pas de toiture/façade).
-const PIECES_AMP: Record<Ampleur, { label: string; desc: string }> = {
-  rafraich: { label: "Rafraîchissement", desc: "Peinture, sols, petites reprises." },
-  partielle: { label: "Réno partielle", desc: "Éléments principaux remplacés (sanitaires, meubles…)." },
-  complete: { label: "Réno complète", desc: "Tout refait : revêtements, élec, plomberie." },
-  lourde: { label: "Réno lourde", desc: "Mise à nu : dépose complète puis tout à neuf." },
-};
+// Descriptions d'ampleur adaptées au mode « pièce » (traduites : voir t.piecesAmp dans le dictionnaire).
 
 const DRAFT_KEY = "avyora-estim-v2";
 const RAPIDE_CSS = `
@@ -209,7 +203,8 @@ export default function EstimateurRapide({ isPro = false }: { isPro?: boolean })
   const nf = locale === "en" ? "en-US" : "fr-FR";
   // Libellé d'ampleur traduit ("Réno totale" pour la lourde en appartement).
   const ampL = (v: Ampleur) => (v === "lourde" && type !== "Maison" ? t.ampleurs.lourdeAppart : t.ampleurs[v]);
-  const ampCard = (v: Ampleur) => (mode === "pieces" ? PIECES_AMP[v] : ampL(v));
+  const ampCard = (v: Ampleur) => (mode === "pieces" ? t.piecesAmp[v] : ampL(v));
+  const roomName = (k: PieceKey) => t.rooms[k] ?? roomLabel(k).label;
 
   const totalSurface = mode === "pieces"
     ? pieces.reduce((s, r) => s + (r.surface || 0), 0)
@@ -285,7 +280,7 @@ export default function EstimateurRapide({ isPro = false }: { isPro?: boolean })
     if (mode === "pieces") {
       const counts = new Map<PieceKey, number>();
       for (const r of pieces) counts.set(r.room, (counts.get(r.room) ?? 0) + 1);
-      const parts = [...counts].map(([k, n]) => `${roomLabel(k).label}${n > 1 ? ` ×${n}` : ""}`);
+      const parts = [...counts].map(([k, n]) => `${t.rooms[k] ?? roomLabel(k).label}${n > 1 ? ` ×${n}` : ""}`);
       return `${t.projetNom} — ${parts.join(" + ")}`.slice(0, 110);
     }
     const nomType = type === "Maison" ? t.typeMaison : t.typeAppart;
@@ -295,7 +290,7 @@ export default function EstimateurRapide({ isPro = false }: { isPro?: boolean })
   async function enregistrer() {
     setErreur(null);
     if (!/^\d{5}$/.test(cp)) { setErreur(t.errCp); return; }
-    if (mode === "pieces" && pieces.length === 0) { setErreur("Ajoute au moins une pièce."); return; }
+    if (mode === "pieces" && pieces.length === 0) { setErreur(t.auMoinsUnePiece); return; }
     if (!valid) { setErreur(t.errSurface); return; }
     suivre("estimation_terminee", { action: "enregistrer", type: mode === "pieces" ? "pieces" : type, ampleur });
     setSaving(true);
@@ -317,28 +312,28 @@ export default function EstimateurRapide({ isPro = false }: { isPro?: boolean })
       <style dangerouslySetInnerHTML={{ __html: RAPIDE_CSS }} />
       <div className="av-rapide">
         <div className="q">
-          <div className="qlbl"><span className="n">1</span>Qu&apos;est-ce que tu estimes&nbsp;?</div>
+          <div className="qlbl"><span className="n">1</span>{t.step1q}</div>
 
-          <div className="glbl">Bien entier</div>
+          <div className="glbl">{t.bienEntier}</div>
           <div className="seg" style={{ marginBottom: 14 }}>
             {(["Maison", "Appartement"] as TypeBien[]).map((tb) => (
               <button key={tb} className={mode === "bien" && type === tb ? "on" : ""} onClick={() => { setMode("bien"); setType(tb); }}>{tb === "Maison" ? t.maison : t.appart}</button>
             ))}
           </div>
 
-          <div className="glbl">Une ou plusieurs pièces</div>
+          <div className="glbl">{t.uneOuPlusieurs}</div>
           <div className="rgrid">
             {ROOMS.map((r) => {
               const n = countByRoom(r.key);
               return (
                 <div key={r.key} className={"rcard" + (mode === "pieces" && n > 0 ? " on" : "")}>
                   <button type="button" className="rname" onClick={() => ajouterPiece(r.key)}>
-                    <span className="rem">{r.emoji}</span> {r.label}
+                    <span className="rem">{r.emoji}</span> {roomName(r.key)}
                   </button>
                   <span className="rstep">
-                    <button type="button" onClick={() => retirerUne(r.key)} disabled={n === 0} aria-label={`Retirer une ${r.label}`}>−</button>
+                    <button type="button" onClick={() => retirerUne(r.key)} disabled={n === 0} aria-label={`${t.retirerUne} ${roomName(r.key)}`}>−</button>
                     <span className="rn">{n}</span>
-                    <button type="button" onClick={() => ajouterPiece(r.key)} aria-label={`Ajouter une ${r.label}`}>+</button>
+                    <button type="button" onClick={() => ajouterPiece(r.key)} aria-label={`${t.ajouterUne} ${roomName(r.key)}`}>+</button>
                   </span>
                 </div>
               );
@@ -357,13 +352,13 @@ export default function EstimateurRapide({ isPro = false }: { isPro?: boolean })
                   const ord = totalPer[r.room] > 1 ? ` ${seen[r.room]}` : "";
                   return (
                     <div className="prow" key={i}>
-                      <span className="pname">{meta.emoji} {meta.label}{ord}</span>
+                      <span className="pname">{meta.emoji} {roomName(r.room)}{ord}</span>
                       <Stepper compact value={r.surface} min={2} unit="m²" onChange={(n) => setPieceSurf(i, n)} />
-                      <button className="prm" onClick={() => retirerPiece(i)} aria-label="Supprimer">✕</button>
+                      <button className="prm" onClick={() => retirerPiece(i)} aria-label={t.supprimer}>✕</button>
                     </div>
                   );
                 })}
-                <div className="psum">{nbPieces} pièce{nbPieces > 1 ? "s" : ""} · {totalSurface.toLocaleString(nf)} m² au total · <span className="hintadd">ajuste la surface de chaque pièce</span></div>
+                <div className="psum">{nbPieces} {nbPieces > 1 ? t.piecePlur : t.pieceSing} · {totalSurface.toLocaleString(nf)} m² {t.auTotal} · <span className="hintadd">{t.ajusteSurface}</span></div>
               </div>
             );
           })()}
@@ -392,7 +387,7 @@ export default function EstimateurRapide({ isPro = false }: { isPro?: boolean })
                   </span>
                   <span className="t">{al.label}</span>
                   <span className="d">{al.desc}</span>
-                  <span className="amt">{locked ? <span className="lock">🔒 Pro</span> : <>≈ <b>{(m2ByAmp[a.v] || 0).toLocaleString(nf)} €</b> / m²</>}</span>
+                  <span className="amt">{locked ? <span className="lock">{t.proLock}</span> : <>≈ <b>{(m2ByAmp[a.v] || 0).toLocaleString(nf)} €</b> / m²</>}</span>
                 </button>
               );
             })}
@@ -413,7 +408,7 @@ export default function EstimateurRapide({ isPro = false }: { isPro?: boolean })
                 <span className="eye">{fi.eye}</span>
                 <span className="t">{fi.label}</span>
                 <span className="d">{fi.desc}</span>
-                <span className="amt">{locked ? <span className="lock">🔒 Pro</span> : <>≈ <b>{(m2ByFin[f.v] || 0).toLocaleString(nf)} €</b> / m²</>}</span>
+                <span className="amt">{locked ? <span className="lock">{t.proLock}</span> : <>≈ <b>{(m2ByFin[f.v] || 0).toLocaleString(nf)} €</b> / m²</>}</span>
               </button>
               );
             })}
@@ -438,7 +433,7 @@ export default function EstimateurRapide({ isPro = false }: { isPro?: boolean })
                   <span className="t">{qi.label}</span>
                   <span className="d">{qi.desc}</span>
                   <span className="amt">
-                    {locked ? <span className="lock">🔒 Pro</span> : <span className="p">≈ <b>{price.toLocaleString(nf)} €</b> / m²</span>}
+                    {locked ? <span className="lock">{t.proLock}</span> : <span className="p">≈ <b>{price.toLocaleString(nf)} €</b> / m²</span>}
                     {!locked && pct > 0 && <span className="save">−{pct} %</span>}
                   </span>
                 </button>
@@ -455,12 +450,12 @@ export default function EstimateurRapide({ isPro = false }: { isPro?: boolean })
           {locked ? (
             <>
               <div>
-                <div className="lbl">Multi-pièces · AVYORA Pro</div>
-                <div className="big">🔒 {nbPieces} pièces à chiffrer</div>
-                <div className="sub">Combine plusieurs pièces en un seul projet chiffré avec AVYORA&nbsp;Pro. Une pièce seule reste gratuite.</div>
+                <div className="lbl">{t.lockedLabel}</div>
+                <div className="big">{t.lockedBig1}{nbPieces}{nbPieces > 1 ? t.lockedBig2Plur : t.lockedBig2Sing}</div>
+                <div className="sub">{t.lockedSub}</div>
               </div>
               <div className="btns">
-                <Link className="cta" href="/tarifs">Débloquer avec Pro →</Link>
+                <Link className="cta" href="/tarifs">{t.lockedCta}</Link>
               </div>
             </>
           ) : (

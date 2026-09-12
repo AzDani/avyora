@@ -166,6 +166,8 @@ export default async function RootLayout({
                 </Link>
               )}
               <AuthNav />
+              <span className="mx-1 h-4 w-px bg-white/15" aria-hidden="true" />
+              <LangSwitch tone="dark" />
               <Link href="/projets/nouveau" className="btn btn-primary ml-1 py-2">
                 {t.nav.nouveauProjet}
               </Link>

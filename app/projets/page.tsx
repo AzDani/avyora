@@ -5,8 +5,38 @@ import ListeProjets, { type ProjetCarte } from "@/components/ListeProjets";
 import ClaimDraft from "@/components/ClaimDraft";
 import ProUpsell from "@/components/ProUpsell";
 import { getUser, estPro } from "@/lib/auth";
+import { getLocale } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
+
+const TR = {
+  fr: {
+    portefeuille: "Portefeuille",
+    deTravauxEstimes: "de travaux estimés",
+    projetsActifs: "Projets actifs",
+    valeurTravaux: "Valeur travaux",
+    surfaceCumulee: "Surface cumulée",
+    enChantier: "En chantier",
+    projets: "Projets",
+    intro: "Tes estimations de rénovation, retrouvées et modifiables à tout moment.",
+    cap: (n: number, surface: string, nbChantier: number) =>
+      `${n} projet${n > 1 ? "s" : ""} actif${n > 1 ? "s" : ""} · ${surface} m² cumulés` +
+      (nbChantier > 0 ? ` · ${nbChantier} chantier${nbChantier > 1 ? "s" : ""} en cours` : ""),
+  },
+  en: {
+    portefeuille: "Portfolio",
+    deTravauxEstimes: "in estimated work",
+    projetsActifs: "Active projects",
+    valeurTravaux: "Work value",
+    surfaceCumulee: "Total floor area",
+    enChantier: "In progress",
+    projets: "Projects",
+    intro: "Your renovation estimates, saved and editable at any time.",
+    cap: (n: number, surface: string, nbChantier: number) =>
+      `${n} active project${n > 1 ? "s" : ""} · ${surface} m² total` +
+      (nbChantier > 0 ? ` · ${nbChantier} in progress` : ""),
+  },
+} as const;
 
 function versCarte(p: Projet): ProjetCarte {
   const est = estimationProjet(p.reponses);
@@ -31,7 +61,8 @@ function euros(n: number): string {
 }
 
 export default async function ProjetsPage() {
-  const [user, actifs, archivesRows] = await Promise.all([getUser(), listProjets(false), listProjets(true)]);
+  const [user, actifs, archivesRows, locale] = await Promise.all([getUser(), listProjets(false), listProjets(true), getLocale()]);
+  const s = TR[locale];
   const isPro = !!user && estPro(user);
   const projets = actifs.map(versCarte);
   const archives = archivesRows.map(versCarte);
@@ -48,30 +79,28 @@ export default async function ProjetsPage() {
           <span className="glow" aria-hidden="true" />
           <span className="eb">
             <span className="dot" />
-            Portefeuille
+            {s.portefeuille}
           </span>
           <div className="big">
             <span className="data">{euros(sumTravaux)}</span>
-            <small>de travaux estimés</small>
+            <small>{s.deTravauxEstimes}</small>
           </div>
           <p className="cap">
-            {projets.length} projet{projets.length > 1 ? "s" : ""} actif{projets.length > 1 ? "s" : ""} ·{" "}
-            {sumSurface.toLocaleString("fr-FR")} m² cumulés
-            {nbEnChantier > 0 ? ` · ${nbEnChantier} chantier${nbEnChantier > 1 ? "s" : ""} en cours` : ""}
+            {s.cap(projets.length, sumSurface.toLocaleString("fr-FR"), nbEnChantier)}
           </p>
           <div className="pills">
-            <Pill k="Projets actifs" v={`${projets.length}`} />
-            <Pill k="Valeur travaux" v={euros(sumTravaux)} accent />
-            <Pill k="Surface cumulée" v={`${sumSurface.toLocaleString("fr-FR")} m²`} />
-            <Pill k="En chantier" v={`${nbEnChantier}`} />
+            <Pill k={s.projetsActifs} v={`${projets.length}`} />
+            <Pill k={s.valeurTravaux} v={euros(sumTravaux)} accent />
+            <Pill k={s.surfaceCumulee} v={`${sumSurface.toLocaleString("fr-FR")} m²`} />
+            <Pill k={s.enChantier} v={`${nbEnChantier}`} />
           </div>
         </header>
       ) : (
         <header className="animate-rise">
-          <p className="eyebrow">Portefeuille</p>
-          <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-ink">Projets</h1>
+          <p className="eyebrow">{s.portefeuille}</p>
+          <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-ink">{s.projets}</h1>
           <p className="mt-1.5 text-[15px] text-muted">
-            Tes estimations de rénovation, retrouvées et modifiables à tout moment.
+            {s.intro}
           </p>
         </header>
       )}

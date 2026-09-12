@@ -2,6 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useLocale } from "@/components/i18n/LangProvider";
+
+const TR = {
+  fr: { enregistrement: "Enregistrement de ton estimation…" },
+  en: { enregistrement: "Saving your estimate…" },
+} as const;
 
 /**
  * Réclame le brouillon anonyme de l'ESTIMATEUR (localStorage) après connexion/inscription :
@@ -17,6 +23,8 @@ type Draft = { v?: string; ctx?: { type?: string; surface?: number }; sel?: unkn
 
 export default function ClaimDraft() {
   const router = useRouter();
+  const locale = useLocale();
+  const s = TR[locale];
   const done = useRef(false);
   const [etat, setEtat] = useState<"idle" | "claiming">("idle");
 
@@ -69,7 +77,7 @@ export default function ClaimDraft() {
   return (
     <div className="card flex items-center gap-3 p-4 text-sm text-muted">
       <span className="h-2 w-2 animate-pulse rounded-full bg-brand-500" />
-      Enregistrement de ton estimation…
+      {s.enregistrement}
     </div>
   );
 }

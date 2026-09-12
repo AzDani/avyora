@@ -7,7 +7,170 @@
  */
 import { useMemo, useState, useCallback } from "react";
 import { EST_CSS } from "./estimateur-styles";
+import { useLocale } from "@/components/i18n/LangProvider";
 import { CATALOG, buildDevis, PHASES, ICON, visible, visibleTask, key, qtyOf, effPrices, finCoefTask, rate, regionCoef, type Ctx, type Selection } from "@/lib/estimateur";
+
+// Traductions de l'interface (chrome/UI uniquement) — les données (corps d'état, postes) restent telles quelles.
+const TR = {
+  fr: {
+    unavailable: "Estimation indisponible pour ce projet.",
+    badge: "Estimation · rénovation",
+    inclTax: "TTC",
+    mostLikely: "Le plus probable",
+    margin: "marge ±15 %",
+    labor: "main-d’œuvre",
+    workExclTax: "Travaux HT",
+    vat: "TVA",
+    contingency: "Aléas",
+    finish: "Finition",
+    budgetLabel: "Budget",
+    budgetOver: "dépassé",
+    budgetLeft: "reste",
+    pricePerM2: "Prix au m²",
+    realCost: "ton coût réel",
+    diyLot: " · tu poses beaucoup toi-même",
+    scopeLabel: "Ampleur : ",
+    allHiredOut: "tout fait faire",
+    scaleRefresh: "rafraîch.",
+    scalePartial: "partielle",
+    scaleComplete: "complète",
+    scaleHeavy: "lourde",
+    ampleur: { refresh: "Rafraîchissement", partial: "Réno partielle", complete: "Réno complète", heavy: "Réno lourde" },
+    biggestItem: "Poste le plus lourd",
+    ofBudget: "du budget",
+    theSite: "Le chantier",
+    tradeWord: "corps",
+    tradeWordP: "corps",
+    itemWord: "poste",
+    itemWordP: "postes",
+    roomsWord: "pièces",
+    ceiling: "plafond",
+    whoDoesWhat: "Qui fait quoi",
+    exclTaxParen: "(HT)",
+    whoDoesWhatSub: "Comment se répartit ton budget entre les artisans et toi.",
+    laborCap: "Main-d’œuvre",
+    matPros: "Matériaux (pros)",
+    matYou: "Matériaux (toi)",
+    hireOut: "Fait faire",
+    hireOutD1: "confié aux artisans",
+    moAbbr: "MO",
+    supplies: "fournitures",
+    diySelf: "Tu fais toi-même",
+    diyD1: "fournitures achetées",
+    diyD2: "pour les postes que tu réalises",
+    savings: "Économie",
+    savingsD1: "main-d’œuvre évitée",
+    savingsD2: "en réalisant une partie",
+    ecoNoteA: "En réalisant une partie toi-même, tu évites ",
+    ecoNoteB: " de main-d’œuvre.",
+    whereBudget: "Où part le budget",
+    whereBudgetSub1: "Par corps d’état — montants TTC · ",
+    whereBudgetSub2: " corps chiffrés",
+    totalInclTax: "Total TTC",
+    siteTracking: "Suivi du chantier",
+    theDetails: "Le détail",
+    siteTrackingSub: "Marque l’avancement de chaque poste : à démarrer → en cours → terminé",
+    detailsSub: "Chaque poste sélectionné, ligne par ligne",
+    doneWord: "terminé",
+    trackedS: "suivi",
+    trackedP: "suivis",
+    doneS: "terminé",
+    doneP: "terminés",
+    inProgress: "en cours",
+    toStart: "à démarrer",
+    progNoteA: "Avancement en ",
+    progNoteBold: "nombre de postes",
+    progNoteB: " terminés — pas en temps de travail.",
+    stDone: "Terminé",
+    stInProgress: "En cours",
+    stToStart: "À démarrer",
+    statusPrefix: "Statut : ",
+    clickToChange: ", cliquer pour changer",
+    dayAbbr: "j",
+    modeRental: "location",
+    modeDIY: "je fais",
+    modeHireOut: "fait faire",
+  },
+  en: {
+    unavailable: "Estimate unavailable for this project.",
+    badge: "Estimate · renovation",
+    inclTax: "incl. tax",
+    mostLikely: "Most likely",
+    margin: "margin ±15 %",
+    labor: "labor",
+    workExclTax: "Work (excl. tax)",
+    vat: "VAT",
+    contingency: "Contingency",
+    finish: "Finish",
+    budgetLabel: "Budget",
+    budgetOver: "over",
+    budgetLeft: "left",
+    pricePerM2: "Price per m²",
+    realCost: "your real cost",
+    diyLot: " · you do a lot yourself",
+    scopeLabel: "Scope: ",
+    allHiredOut: "all hired out",
+    scaleRefresh: "refresh",
+    scalePartial: "partial",
+    scaleComplete: "complete",
+    scaleHeavy: "heavy",
+    ampleur: { refresh: "Refresh", partial: "Partial reno", complete: "Full reno", heavy: "Heavy reno" },
+    biggestItem: "Biggest line item",
+    ofBudget: "of budget",
+    theSite: "The site",
+    tradeWord: "trade",
+    tradeWordP: "trades",
+    itemWord: "line item",
+    itemWordP: "line items",
+    roomsWord: "rooms",
+    ceiling: "ceiling",
+    whoDoesWhat: "Who does what",
+    exclTaxParen: "(excl. tax)",
+    whoDoesWhatSub: "How your budget splits between the tradespeople and you.",
+    laborCap: "Labor",
+    matPros: "Materials (pros)",
+    matYou: "Materials (you)",
+    hireOut: "Hire out",
+    hireOutD1: "handed to tradespeople",
+    moAbbr: "Labor",
+    supplies: "supplies",
+    diySelf: "You do it yourself",
+    diyD1: "supplies you bought",
+    diyD2: "for the items you do yourself",
+    savings: "Savings",
+    savingsD1: "labor avoided",
+    savingsD2: "by doing part yourself",
+    ecoNoteA: "By doing part yourself, you avoid ",
+    ecoNoteB: " in labor.",
+    whereBudget: "Where the budget goes",
+    whereBudgetSub1: "By trade — amounts incl. tax · ",
+    whereBudgetSub2: " trades costed",
+    totalInclTax: "Total incl. tax",
+    siteTracking: "Site tracking",
+    theDetails: "The details",
+    siteTrackingSub: "Mark the progress of each item: to start → in progress → done",
+    detailsSub: "Each selected item, line by line",
+    doneWord: "done",
+    trackedS: "tracked",
+    trackedP: "tracked",
+    doneS: "done",
+    doneP: "done",
+    inProgress: "in progress",
+    toStart: "to start",
+    progNoteA: "Progress by ",
+    progNoteBold: "number of items",
+    progNoteB: " done — not by work time.",
+    stDone: "Done",
+    stInProgress: "In progress",
+    stToStart: "To start",
+    statusPrefix: "Status: ",
+    clickToChange: ", click to change",
+    dayAbbr: "d",
+    modeRental: "rental",
+    modeDIY: "DIY",
+    modeHireOut: "hire out",
+  },
+} as const;
 
 const fmt = (n: number): string => Math.round(n).toLocaleString("fr-FR") + " €";
 // % lisible : entier au-delà de 1 %, une décimale en dessous → jamais « 0 % » pour un lot chiffré.
@@ -24,9 +187,9 @@ function arcPath(cx: number, cy: number, rOut: number, rIn: number, a0: number, 
 }
 
 // Repère €/m² : rafraîchissement < 500 · partielle 500-800 · complète 800-1500 · lourde 1500+
-function repereM2(e: number): { label: string; posPct: number } {
-  const label = e < 500 ? "Rafraîchissement" : e < 800 ? "Réno partielle" : e < 1500 ? "Réno complète" : "Réno lourde";
-  return { label, posPct: Math.max(2, Math.min(98, (e / 2200) * 100)) };
+function repereM2(e: number): { key: "refresh" | "partial" | "complete" | "heavy"; posPct: number } {
+  const key = e < 500 ? "refresh" : e < 800 ? "partial" : e < 1500 ? "complete" : "heavy";
+  return { key, posPct: Math.max(2, Math.min(98, (e / 2200) * 100)) };
 }
 
 const EXTRA_CSS = `
@@ -116,6 +279,8 @@ const EXTRA_CSS = `
 `;
 
 export default function EstimationResultat({ reponses, projectId, readOnly }: { reponses: { ctx?: Ctx; sel?: Selection; statuts?: Record<string, number>; codePostal?: string }; projectId?: string; readOnly?: boolean }) {
+  const locale = useLocale();
+  const s = TR[locale];
   // Sécurité rétro-compat : le code postal (coef régional) était stocké hors ctx dans d'anciens projets.
   const ctx = reponses?.ctx ? { ...reponses.ctx, codePostal: reponses.ctx.codePostal ?? reponses.codePostal } : undefined;
   const sel = (reponses?.sel || {}) as Selection;
@@ -141,7 +306,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
   }, [projectId, readOnly]);
 
   if (!ctx || !dv) {
-    return <div className="card p-5 text-sm text-muted">Estimation indisponible pour ce projet.</div>;
+    return <div className="card p-5 text-sm text-muted">{s.unavailable}</div>;
   }
   const { totaux: t, bilan: b, lots, lignes } = dv;
   const pc = (n: number) => (t.ht > 0 ? Math.round((n / t.ht) * 100) : 0); // part du coût HT
@@ -203,19 +368,19 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
       {/* Hero */}
       <div className="hero">
         <span className="glow g1" /><span className="glow g2" />
-        <div className="eb"><span className="dot" />Estimation · rénovation</div>
-        <div className="four"><span className="num">{lo.toLocaleString("fr-FR")}</span><span className="s">–</span><span className="num">{hi.toLocaleString("fr-FR")}</span> €<small>TTC</small></div>
-        <div className="cap">Le plus probable <b>{Math.round(t.ttc).toLocaleString("fr-FR")} €</b> · ≈ <b>{Math.round(eurM2).toLocaleString("fr-FR")} €/m²</b> · marge ±15 %</div>
+        <div className="eb"><span className="dot" />{s.badge}</div>
+        <div className="four"><span className="num">{lo.toLocaleString("fr-FR")}</span><span className="s">–</span><span className="num">{hi.toLocaleString("fr-FR")}</span> €<small>{s.inclTax}</small></div>
+        <div className="cap">{s.mostLikely} <b>{Math.round(t.ttc).toLocaleString("fr-FR")} €</b> · ≈ <b>{Math.round(eurM2).toLocaleString("fr-FR")} €/m²</b> · {s.margin}</div>
         {ctx.codePostal && (
-          <div className="zone">📍 {reg.zone}{moPct ? ` · main-d’œuvre ${moPct > 0 ? "+" : ""}${moPct} %` : ""}</div>
+          <div className="zone">📍 {reg.zone}{moPct ? ` · ${s.labor} ${moPct > 0 ? "+" : ""}${moPct} %` : ""}</div>
         )}
         <div className="brk">
-          <div className="pill"><span className="k">Travaux HT</span><br /><span className="v num">{fmt(t.ht)}</span></div>
-          <div className="pill"><span className="k">TVA {tauxPresents.length ? "(" + tauxPresents.map((r) => (r === 5.5 ? "5,5" : r) + " %").join(" · ") + ")" : ""}</span><br /><span className="v num">{fmt(t.tva)}</span></div>
-          <div className="pill"><span className="k">Aléas {ctx.aleas} %</span><br /><span className="v num">{fmt(t.aleas)}</span></div>
-          <div className="pill"><span className="k">Finition</span><br /><span className="v" style={{ textTransform: "capitalize" }}>{ctx.finition}</span></div>
+          <div className="pill"><span className="k">{s.workExclTax}</span><br /><span className="v num">{fmt(t.ht)}</span></div>
+          <div className="pill"><span className="k">{s.vat} {tauxPresents.length ? "(" + tauxPresents.map((r) => (r === 5.5 ? "5,5" : r) + " %").join(" · ") + ")" : ""}</span><br /><span className="v num">{fmt(t.tva)}</span></div>
+          <div className="pill"><span className="k">{s.contingency} {ctx.aleas} %</span><br /><span className="v num">{fmt(t.aleas)}</span></div>
+          <div className="pill"><span className="k">{s.finish}</span><br /><span className="v" style={{ textTransform: "capitalize" }}>{ctx.finition}</span></div>
           {budget > 0 && (
-            <div className="pill"><span className="k">Budget · {over ? "dépassé" : "reste"}</span><br /><span className="v num">{over ? "− " + fmt(t.ttc - budget) : fmt(budget - t.ttc)}</span></div>
+            <div className="pill"><span className="k">{s.budgetLabel} · {over ? s.budgetOver : s.budgetLeft}</span><br /><span className="v num">{over ? "− " + fmt(t.ttc - budget) : fmt(budget - t.ttc)}</span></div>
           )}
         </div>
         {/* Jauge de budget retirée pour le moment (le pill « Budget · reste » suffit). */}
@@ -224,61 +389,61 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
       {/* Stats à connaître */}
       <div className="stats">
         <div className="stat">
-          <div className="k">Prix au m²</div>
+          <div className="k">{s.pricePerM2}</div>
           <div className="v"><span className="num">{Math.round(eurM2).toLocaleString("fr-FR")}</span> €/m²</div>
-          <p className="sub">ton coût réel{diyGap ? " · tu poses beaucoup toi-même" : ""}</p>
+          <p className="sub">{s.realCost}{diyGap ? s.diyLot : ""}</p>
           <div className="rep">
             <div style={{ fontSize: 11.5, fontWeight: 600, color: "var(--ink)", marginBottom: 4 }}>
-              Ampleur : {rep.label}
-              {diyGap && <span style={{ color: "var(--muted)", fontWeight: 500 }}> · ≈ <span className="num">{Math.round(eurM2FF).toLocaleString("fr-FR")}</span> €/m² tout fait faire</span>}
+              {s.scopeLabel}{s.ampleur[rep.key]}
+              {diyGap && <span style={{ color: "var(--muted)", fontWeight: 500 }}> · ≈ <span className="num">{Math.round(eurM2FF).toLocaleString("fr-FR")}</span> €/m² {s.allHiredOut}</span>}
             </div>
             <div className="bar"><span className="mark" style={{ left: rep.posPct + "%" }} /></div>
-            <div className="scale"><span>rafraîch.</span><span>partielle</span><span>complète</span><span>lourde</span></div>
+            <div className="scale"><span>{s.scaleRefresh}</span><span>{s.scalePartial}</span><span>{s.scaleComplete}</span><span>{s.scaleHeavy}</span></div>
           </div>
         </div>
         <div className="stat">
-          <div className="k">Poste le plus lourd</div>
+          <div className="k">{s.biggestItem}</div>
           <div className="v" style={{ fontSize: 20 }}>{top ? `${ICON[top.corps] || ""} ${top.corps}` : "—"}</div>
-          <p className="sub">{top ? `${fmt(top.ttc)} · ${topPct} % du budget` : ""}</p>
+          <p className="sub">{top ? `${fmt(top.ttc)} · ${topPct} % ${s.ofBudget}` : ""}</p>
         </div>
         <div className="stat">
-          <div className="k">Le chantier</div>
-          <div className="v"><span className="num">{nbLots}</span> corps · <span className="num">{nbTaches}</span> postes</div>
-          <p className="sub">{ctx.surface} m² · {ctx.pieces} pièces · plafond {ctx.hauteur} m</p>
+          <div className="k">{s.theSite}</div>
+          <div className="v"><span className="num">{nbLots}</span> {nbLots > 1 ? s.tradeWordP : s.tradeWord} · <span className="num">{nbTaches}</span> {nbTaches > 1 ? s.itemWordP : s.itemWord}</div>
+          <p className="sub">{ctx.surface} m² · {ctx.pieces} {s.roomsWord} · {s.ceiling} {ctx.hauteur} m</p>
         </div>
       </div>
 
       {/* Bilan fait-faire / je fais / économie */}
       <div className="card qfq">
-        <h2>Qui fait quoi <span style={{ fontWeight: 400, color: "var(--muted)", fontSize: 12 }}>(HT)</span></h2>
-        <div className="sub">Comment se répartit ton budget entre les artisans et toi.</div>
+        <h2>{s.whoDoesWhat} <span style={{ fontWeight: 400, color: "var(--muted)", fontSize: 12 }}>{s.exclTaxParen}</span></h2>
+        <div className="sub">{s.whoDoesWhatSub}</div>
         <div className="split">
           <i style={{ width: `${t.ht > 0 ? (b.moA / t.ht) * 100 : 0}%`, background: "var(--brand)" }} />
           <i style={{ width: `${t.ht > 0 ? (b.matA / t.ht) * 100 : 0}%`, background: "var(--accent-300)" }} />
           <i style={{ width: `${t.ht > 0 ? (b.achat / t.ht) * 100 : 0}%`, background: "var(--accent-600)" }} />
         </div>
         <div className="legend">
-          <span><span className="dot" style={{ background: "var(--brand)" }} />Main-d&apos;œuvre <b>{fmt(b.moA)}</b> <span className="pct">{pc(b.moA)}&nbsp;%</span></span>
-          <span><span className="dot" style={{ background: "var(--accent-300)" }} />Matériaux (pros) <b>{fmt(b.matA)}</b> <span className="pct">{pc(b.matA)}&nbsp;%</span></span>
-          <span><span className="dot" style={{ background: "var(--accent-600)" }} />Matériaux (toi) <b>{fmt(b.achat)}</b> <span className="pct">{pc(b.achat)}&nbsp;%</span></span>
+          <span><span className="dot" style={{ background: "var(--brand)" }} />{s.laborCap} <b>{fmt(b.moA)}</b> <span className="pct">{pc(b.moA)}&nbsp;%</span></span>
+          <span><span className="dot" style={{ background: "var(--accent-300)" }} />{s.matPros} <b>{fmt(b.matA)}</b> <span className="pct">{pc(b.matA)}&nbsp;%</span></span>
+          <span><span className="dot" style={{ background: "var(--accent-600)" }} />{s.matYou} <b>{fmt(b.achat)}</b> <span className="pct">{pc(b.achat)}&nbsp;%</span></span>
         </div>
         <div className="cards">
-          <div className="qc"><div className="k">Fait faire <span className="pct">{pc(b.paye)}&nbsp;%</span></div><div className="v">{fmt(b.paye)}</div><div className="d">confié aux artisans<br />MO {fmt(b.moA)} · fournitures {fmt(b.matA)}</div></div>
-          <div className="qc"><div className="k">Tu fais toi-même <span className="pct">{pc(b.achat)}&nbsp;%</span></div><div className="v">{fmt(b.achat)}</div><div className="d">fournitures achetées<br />pour les postes que tu réalises</div></div>
-          <div className="qc good"><div className="k">Économie</div><div className="v">{fmt(b.eco)}</div><div className="d">main-d&apos;œuvre évitée<br />en réalisant une partie</div></div>
+          <div className="qc"><div className="k">{s.hireOut} <span className="pct">{pc(b.paye)}&nbsp;%</span></div><div className="v">{fmt(b.paye)}</div><div className="d">{s.hireOutD1}<br />{s.moAbbr} {fmt(b.moA)} · {s.supplies} {fmt(b.matA)}</div></div>
+          <div className="qc"><div className="k">{s.diySelf} <span className="pct">{pc(b.achat)}&nbsp;%</span></div><div className="v">{fmt(b.achat)}</div><div className="d">{s.diyD1}<br />{s.diyD2}</div></div>
+          <div className="qc good"><div className="k">{s.savings}</div><div className="v">{fmt(b.eco)}</div><div className="d">{s.savingsD1}<br />{s.savingsD2}</div></div>
         </div>
         {b.eco > 0 && (
           <div className="eco-note">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>
-            <span>En réalisant une partie toi-même, tu évites <b>{fmt(b.eco)}</b> de main-d&apos;œuvre.</span>
+            <span>{s.ecoNoteA}<b>{fmt(b.eco)}</b>{s.ecoNoteB}</span>
           </div>
         )}
       </div>
 
       {/* Où part le budget — camembert par corps d'état */}
       <div className="card bud">
-        <h2>Où part le budget</h2>
-        <div className="sub">Par corps d&apos;état — montants TTC · {slices.length} corps chiffrés</div>
+        <h2>{s.whereBudget}</h2>
+        <div className="sub">{s.whereBudgetSub1}{slices.length}{s.whereBudgetSub2}</div>
         <div className="chart">
           <div className="donut">
             <svg viewBox="0 0 200 200" aria-hidden="true">
@@ -288,7 +453,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
                 </path>
               ))}
             </svg>
-            <div className="center"><div className="v">{fmt(budgetTotal)}</div><div className="kk">Total TTC</div></div>
+            <div className="center"><div className="v">{fmt(budgetTotal)}</div><div className="kk">{s.totalInclTax}</div></div>
           </div>
           <div className="legend">
             {slices.map((s) => (
@@ -305,8 +470,8 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
 
       {/* Détail par lot + suivi de chantier (statuts sauvegardés quand projet enregistré) */}
       <div className="card">
-        <h2>{projectId ? "Suivi du chantier" : "Le détail"}</h2>
-        <div className="sub">{projectId ? "Marque l'avancement de chaque poste : à démarrer → en cours → terminé" : "Chaque poste sélectionné, ligne par ligne"}</div>
+        <h2>{projectId ? s.siteTracking : s.theDetails}</h2>
+        <div className="sub">{projectId ? s.siteTrackingSub : s.detailsSub}</div>
         {projectId && (() => {
           const total = lignes.length;
           const done = lignes.filter((li) => statuts[key(li.corps, li.nom)] === 2).length;
@@ -316,19 +481,19 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
           return (
             <div className="prog">
               <div className="prow">
-                <div className="ppct">{pctDone} %<small>terminé</small></div>
-                <div className="plbl">{total} poste{total > 1 ? "s" : ""} suivi{total > 1 ? "s" : ""}</div>
+                <div className="ppct">{pctDone} %<small>{s.doneWord}</small></div>
+                <div className="plbl">{total} {total > 1 ? s.itemWordP : s.itemWord} {total > 1 ? s.trackedP : s.trackedS}</div>
               </div>
               <div className="ptrack">
                 <span className="pfill" style={{ width: pctDone + "%" }} />
                 <span className="pprog" style={{ width: pctProg + "%" }} />
               </div>
               <div className="chips">
-                <span className="chip done"><span className="cd" /><b>{done}</b> terminé{done > 1 ? "s" : ""}</span>
-                <span className="chip cur"><span className="cd" /><b>{prog}</b> en cours</span>
-                <span className="chip wait"><span className="cd" /><b>{total - done - prog}</b> à démarrer</span>
+                <span className="chip done"><span className="cd" /><b>{done}</b> {done > 1 ? s.doneP : s.doneS}</span>
+                <span className="chip cur"><span className="cd" /><b>{prog}</b> {s.inProgress}</span>
+                <span className="chip wait"><span className="cd" /><b>{total - done - prog}</b> {s.toStart}</span>
               </div>
-              <p className="prognote">Avancement en <b>nombre de postes</b> terminés — pas en temps de travail.</p>
+              <p className="prognote">{s.progNoteA}<b>{s.progNoteBold}</b>{s.progNoteB}</p>
             </div>
           );
         })()}
@@ -344,35 +509,35 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </span>
                 <span className="pt-lbl">{ph}</span>
-                <span className="pt-meta">{projectId ? `${donePh}/${lignesPh.length}` : `${lignesPh.length} poste${lignesPh.length > 1 ? "s" : ""}`}</span>
+                <span className="pt-meta">{projectId ? `${donePh}/${lignesPh.length}` : `${lignesPh.length} ${lignesPh.length > 1 ? s.itemWordP : s.itemWord}`}</span>
               </button>
               {open && lignesPh.map((li, i) => {
                 const k = key(li.corps, li.nom);
                 const st = statuts[k] || 0;
-                const stLabel = st === 2 ? "Terminé" : st === 1 ? "En cours" : "À démarrer";
+                const stLabel = st === 2 ? s.stDone : st === 1 ? s.stInProgress : s.stToStart;
                 return (
                   <div key={i} className={"dtl" + (projectId ? " chant" : "")}>
                     <span>
                       {li.nom}
                       {projectId && li.unite !== "forfait" && (
-                        <span style={{ color: "var(--faint)", fontWeight: 400 }}> · {li.qty} {li.mode === "location" ? "j" : li.unite}</span>
+                        <span style={{ color: "var(--faint)", fontWeight: 400 }}> · {li.qty} {li.mode === "location" ? s.dayAbbr : li.unite}</span>
                       )}
                     </span>
                     {projectId ? (
                       readOnly ? (
-                        <span className={"stbtn st" + st} aria-label={"Statut : " + stLabel}>
-                          {st === 2 ? <>✓ Terminé</> : <><span className="ic" />{stLabel}</>}
+                        <span className={"stbtn st" + st} aria-label={s.statusPrefix + stLabel}>
+                          {st === 2 ? <>✓ {s.stDone}</> : <><span className="ic" />{stLabel}</>}
                         </span>
                       ) : (
-                        <button className={"stbtn st" + st} onClick={() => cycle(k)} aria-label={"Statut : " + stLabel + ", cliquer pour changer"}>
-                          {st === 2 ? <>✓ Terminé</> : <><span className="ic" />{stLabel}</>}
+                        <button className={"stbtn st" + st} onClick={() => cycle(k)} aria-label={s.statusPrefix + stLabel + s.clickToChange}>
+                          {st === 2 ? <>✓ {s.stDone}</> : <><span className="ic" />{stLabel}</>}
                         </button>
                       )
                     ) : (
                       <>
-                        <span className="q">{li.unite === "forfait" ? "—" : li.qty + " " + (li.mode === "location" ? "j" : li.unite)}</span>
+                        <span className="q">{li.unite === "forfait" ? "—" : li.qty + " " + (li.mode === "location" ? s.dayAbbr : li.unite)}</span>
                         <span className={"mode " + (li.mode === "location" ? "mL" : li.mode === "je-fais" ? "mS" : "mA")}>
-                          {li.mode === "location" ? "location" : li.mode === "je-fais" ? "je fais" : "fait faire"}
+                          {li.mode === "location" ? s.modeRental : li.mode === "je-fais" ? s.modeDIY : s.modeHireOut}
                         </span>
                       </>
                     )}

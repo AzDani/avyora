@@ -3,6 +3,20 @@
 import { useState } from "react";
 import Link from "next/link";
 import { suivre } from "@/lib/track";
+import { useLocale } from "@/components/i18n/LangProvider";
+
+const TR = {
+  fr: {
+    telecharger: "Télécharger le rapport",
+    generation: "Génération du PDF…",
+    reessayer: "Réessayer",
+  },
+  en: {
+    telecharger: "Download the report",
+    generation: "Generating PDF…",
+    reessayer: "Try again",
+  },
+} as const;
 
 /**
  * Bouton « Télécharger le rapport » — appelle la route serveur qui génère un PDF vectoriel
@@ -17,6 +31,8 @@ export default function TelechargerRapport({
   refCode: string;
   isPro: boolean;
 }) {
+  const locale = useLocale();
+  const s = TR[locale];
   const [busy, setBusy] = useState(false);
   const [erreur, setErreur] = useState(false);
 
@@ -25,7 +41,7 @@ export default function TelechargerRapport({
     return (
       <Link href="/tarifs" className="btn btn-primary py-2">
         <IconeDoc />
-        Télécharger le rapport
+        {s.telecharger}
       </Link>
     );
   }
@@ -59,12 +75,12 @@ export default function TelechargerRapport({
       {busy ? (
         <>
           <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-          Génération du PDF…
+          {s.generation}
         </>
       ) : (
         <>
           <IconeDoc />
-          {erreur ? "Réessayer" : "Télécharger le rapport"}
+          {erreur ? s.reessayer : s.telecharger}
         </>
       )}
     </button>

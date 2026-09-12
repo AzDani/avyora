@@ -2,28 +2,116 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useLocale } from "@/components/i18n/LangProvider";
 import { enregistrerProfil, sauterOnboarding, type ProfilData } from "@/lib/actions/profil";
 
-const TUES = [
-  { v: "particulier", l: "🏠 Particulier" },
-  { v: "investisseur", l: "📈 Investisseur locatif" },
-  { v: "pro", l: "🛠️ Professionnel" },
-];
-const OBJECTIF = [
-  { v: "residence", l: "Résidence principale" },
-  { v: "locatif", l: "Investissement locatif" },
-  { v: "revente", l: "Achat-revente" },
-  { v: "client", l: "Pour un client" },
-];
-const MATURITE = [
-  { v: "renseigne", l: "Je me renseigne" },
-  { v: "bien_en_vue", l: "J'ai un bien en vue" },
-  { v: "proprietaire", l: "Déjà propriétaire" },
-  { v: "travaux", l: "Travaux en cours" },
-];
+// Régions françaises : noms propres conservés tels quels (identiques FR/EN) et utilisés
+// aussi comme valeur enregistrée. On ne traduit que le libellé de la question « Ta région ».
 const REGIONS = ["Île-de-France", "Auvergne-Rhône-Alpes", "Nouvelle-Aquitaine", "Occitanie", "PACA", "Hauts-de-France", "Grand Est", "Pays de la Loire", "Bretagne", "Normandie", "Bourgogne-Franche-Comté", "Centre-Val de Loire", "Corse", "Outre-mer"];
-const AGES = ["–30 ans", "30–45", "45–60", "+60"];
-const CANAUX = ["Google", "Réseaux sociaux", "Bouche-à-oreille", "Autre"];
+
+// Traductions co-localisées. IMPORTANT : les `v` (valeurs enregistrées dans le profil) ne changent
+// jamais ; seuls les `l` (libellés affichés) sont traduits. Pour l'âge et le canal, la valeur
+// enregistrée reste la chaîne française (v), affichée via son libellé traduit.
+const TR = {
+  fr: {
+    tues: [
+      { v: "particulier", l: "🏠 Particulier" },
+      { v: "investisseur", l: "📈 Investisseur locatif" },
+      { v: "pro", l: "🛠️ Professionnel" },
+    ],
+    objectif: [
+      { v: "residence", l: "Résidence principale" },
+      { v: "locatif", l: "Investissement locatif" },
+      { v: "revente", l: "Achat-revente" },
+      { v: "client", l: "Pour un client" },
+    ],
+    maturite: [
+      { v: "renseigne", l: "Je me renseigne" },
+      { v: "bien_en_vue", l: "J'ai un bien en vue" },
+      { v: "proprietaire", l: "Déjà propriétaire" },
+      { v: "travaux", l: "Travaux en cours" },
+    ],
+    ages: [
+      { v: "–30 ans", l: "–30 ans" },
+      { v: "30–45", l: "30–45" },
+      { v: "45–60", l: "45–60" },
+      { v: "+60", l: "+60" },
+    ],
+    canaux: [
+      { v: "Google", l: "Google" },
+      { v: "Réseaux sociaux", l: "Réseaux sociaux" },
+      { v: "Bouche-à-oreille", l: "Bouche-à-oreille" },
+      { v: "Autre", l: "Autre" },
+    ],
+    compteEyebrow: "● Mon profil",
+    compteTitle: "Ton profil AVYORA",
+    compteSub: "Ces infos nous aident à adapter le service. Complète ou modifie-les quand tu veux.",
+    onbEyebrow: "● Bienvenue · 30 secondes",
+    onbTitle: "Fais-nous mieux te connaître 👋",
+    onbSub: "Pour adapter AVYORA à ton projet. Tout est optionnel, un simple tap suffit.",
+    multi: "plusieurs choix possibles",
+    qTuEs: "Tu es…",
+    qObjectif: "Ton objectif avec ce projet",
+    qMaturite: "Où en es-tu ?",
+    qRegion: "Ta région",
+    qAge: "Ton âge",
+    qCanal: "Comment nous as-tu connus ?",
+    saved: "✓ Enregistré",
+    skip: "Passer",
+    save: "Enregistrer",
+    continue: "Continuer →",
+    note: "🔒 Ces infos servent à améliorer le service — jamais revendues.",
+  },
+  en: {
+    tues: [
+      { v: "particulier", l: "🏠 Individual" },
+      { v: "investisseur", l: "📈 Rental investor" },
+      { v: "pro", l: "🛠️ Professional" },
+    ],
+    objectif: [
+      { v: "residence", l: "Primary residence" },
+      { v: "locatif", l: "Rental investment" },
+      { v: "revente", l: "Buy-to-resell" },
+      { v: "client", l: "For a client" },
+    ],
+    maturite: [
+      { v: "renseigne", l: "Just researching" },
+      { v: "bien_en_vue", l: "I have a property in mind" },
+      { v: "proprietaire", l: "Already an owner" },
+      { v: "travaux", l: "Renovation underway" },
+    ],
+    ages: [
+      { v: "–30 ans", l: "Under 30" },
+      { v: "30–45", l: "30–45" },
+      { v: "45–60", l: "45–60" },
+      { v: "+60", l: "60+" },
+    ],
+    canaux: [
+      { v: "Google", l: "Google" },
+      { v: "Réseaux sociaux", l: "Social media" },
+      { v: "Bouche-à-oreille", l: "Word of mouth" },
+      { v: "Autre", l: "Other" },
+    ],
+    compteEyebrow: "● My profile",
+    compteTitle: "Your AVYORA profile",
+    compteSub: "This info helps us tailor the service. Complete or edit it whenever you want.",
+    onbEyebrow: "● Welcome · 30 seconds",
+    onbTitle: "Help us get to know you 👋",
+    onbSub: "To tailor AVYORA to your project. Everything is optional — a single tap is enough.",
+    multi: "multiple choices allowed",
+    qTuEs: "You are…",
+    qObjectif: "Your goal with this project",
+    qMaturite: "Where are you in the process?",
+    qRegion: "Your region",
+    qAge: "Your age",
+    qCanal: "How did you hear about us?",
+    saved: "✓ Saved",
+    skip: "Skip",
+    save: "Save",
+    continue: "Continue →",
+    note: "🔒 This info is used to improve the service — never sold.",
+  },
+} as const;
 
 const CSS = `
 .av-onb .eyebrow{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-violet,#7c3aed);font-weight:600}
@@ -40,7 +128,7 @@ const CSS = `
 .av-onb .note{font-size:11px;color:var(--color-faint);margin-top:14px;text-align:center}
 `;
 
-function Multi({ opts, sel, set }: { opts: { v: string; l: string }[]; sel: string[]; set: (v: string[]) => void }) {
+function Multi({ opts, sel, set }: { opts: readonly { v: string; l: string }[]; sel: string[]; set: (v: string[]) => void }) {
   return (
     <div className="pills">
       {opts.map((o) => {
@@ -70,6 +158,8 @@ function Single({ opts, sel, set }: { opts: string[]; sel: string; set: (v: stri
  */
 export default function OnboardingForm({ initial, contexte = "onboarding" }: { initial?: Partial<ProfilData>; contexte?: "onboarding" | "compte" }) {
   const router = useRouter();
+  const locale = useLocale();
+  const s = TR[locale];
   const compte = contexte === "compte";
   const [tuEs, setTuEs] = useState<string[]>(initial?.tuEs ?? []);
   const [objectif, setObjectif] = useState(initial?.objectif ?? "");
@@ -102,34 +192,34 @@ export default function OnboardingForm({ initial, contexte = "onboarding" }: { i
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       {compte ? (
         <>
-          <div className="eyebrow">● Mon profil</div>
-          <h1>Ton profil AVYORA</h1>
-          <p className="sub">Ces infos nous aident à adapter le service. Complète ou modifie-les quand tu veux.</p>
+          <div className="eyebrow">{s.compteEyebrow}</div>
+          <h1>{s.compteTitle}</h1>
+          <p className="sub">{s.compteSub}</p>
         </>
       ) : (
         <>
-          <div className="eyebrow">● Bienvenue · 30 secondes</div>
-          <h1>Fais-nous mieux te connaître 👋</h1>
-          <p className="sub">Pour adapter AVYORA à ton projet. Tout est optionnel, un simple tap suffit.</p>
+          <div className="eyebrow">{s.onbEyebrow}</div>
+          <h1>{s.onbTitle}</h1>
+          <p className="sub">{s.onbSub}</p>
         </>
       )}
 
-      <div className="q"><div className="lab">Tu es… <span className="multi">plusieurs choix possibles</span></div><Multi opts={TUES} sel={tuEs} set={wrap(setTuEs)} /></div>
-      <div className="q"><div className="lab">Ton objectif avec ce projet</div><Single opts={OBJECTIF.map((o) => o.l)} sel={OBJECTIF.find((o) => o.v === objectif)?.l ?? ""} set={(l) => wrap(setObjectif)(OBJECTIF.find((o) => o.l === l)?.v ?? "")} /></div>
-      <div className="q"><div className="lab">Où en es-tu ? <span className="multi">plusieurs choix possibles</span></div><Multi opts={MATURITE} sel={maturite} set={wrap(setMaturite)} /></div>
-      <div className="q"><div className="lab">Ta région</div><Single opts={REGIONS} sel={region} set={wrap(setRegion)} /></div>
-      <div className="q"><div className="lab">Ton âge</div><Single opts={AGES} sel={age} set={wrap(setAge)} /></div>
-      <div className="q"><div className="lab">Comment nous as-tu connus ?</div><Single opts={CANAUX} sel={canal} set={wrap(setCanal)} /></div>
+      <div className="q"><div className="lab">{s.qTuEs} <span className="multi">{s.multi}</span></div><Multi opts={s.tues} sel={tuEs} set={wrap(setTuEs)} /></div>
+      <div className="q"><div className="lab">{s.qObjectif}</div><Single opts={s.objectif.map((o) => o.l)} sel={s.objectif.find((o) => o.v === objectif)?.l ?? ""} set={(l) => wrap(setObjectif)(s.objectif.find((o) => o.l === l)?.v ?? "")} /></div>
+      <div className="q"><div className="lab">{s.qMaturite} <span className="multi">{s.multi}</span></div><Multi opts={s.maturite} sel={maturite} set={wrap(setMaturite)} /></div>
+      <div className="q"><div className="lab">{s.qRegion}</div><Single opts={REGIONS} sel={region} set={wrap(setRegion)} /></div>
+      <div className="q"><div className="lab">{s.qAge}</div><Single opts={s.ages.map((o) => o.l)} sel={s.ages.find((o) => o.v === age)?.l ?? ""} set={(l) => wrap(setAge)(s.ages.find((o) => o.l === l)?.v ?? "")} /></div>
+      <div className="q"><div className="lab">{s.qCanal}</div><Single opts={s.canaux.map((o) => o.l)} sel={s.canaux.find((o) => o.v === canal)?.l ?? ""} set={(l) => wrap(setCanal)(s.canaux.find((o) => o.l === l)?.v ?? "")} /></div>
 
       <div className="acts">
         {compte ? (
-          <span className="text-sm font-medium" style={{ color: "#0f9d6b", opacity: ok ? 1 : 0, transition: ".2s" }}>✓ Enregistré</span>
+          <span className="text-sm font-medium" style={{ color: "#0f9d6b", opacity: ok ? 1 : 0, transition: ".2s" }}>{s.saved}</span>
         ) : (
-          <button type="button" onClick={passer} disabled={busy} className="text-sm text-faint hover:text-muted">Passer</button>
+          <button type="button" onClick={passer} disabled={busy} className="text-sm text-faint hover:text-muted">{s.skip}</button>
         )}
-        <button type="button" onClick={continuer} disabled={busy} className="btn btn-primary py-2.5">{busy ? "…" : compte ? "Enregistrer" : "Continuer →"}</button>
+        <button type="button" onClick={continuer} disabled={busy} className="btn btn-primary py-2.5">{busy ? "…" : compte ? s.save : s.continue}</button>
       </div>
-      <p className="note">🔒 Ces infos servent à améliorer le service — jamais revendues.</p>
+      <p className="note">{s.note}</p>
     </div>
   );
 }

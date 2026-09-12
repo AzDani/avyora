@@ -2,6 +2,36 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useLocale } from "@/components/i18n/LangProvider";
+
+const TR = {
+  fr: {
+    titre: "Abonnement",
+    proDesc: "Tu profites de toutes les fonctionnalités Pro.",
+    gratuitDesc: "Tu es sur l'offre gratuite.",
+    badgePro: "AVYORA Pro",
+    badgeGratuit: "Gratuit",
+    instant: "Un instant…",
+    gerer: "Gérer / résilier mon abonnement",
+    resiliation: "Résiliation en ligne, sans engagement — effet à la fin de la période en cours.",
+    voirOffres: "Voir les offres Pro",
+    indispo: "Indisponible pour le moment. Réessaie plus tard.",
+    reseau: "Réseau indisponible. Réessaie.",
+  },
+  en: {
+    titre: "Subscription",
+    proDesc: "You have access to all Pro features.",
+    gratuitDesc: "You're on the free plan.",
+    badgePro: "AVYORA Pro",
+    badgeGratuit: "Free",
+    instant: "One moment…",
+    gerer: "Manage / cancel my subscription",
+    resiliation: "Cancel online, no commitment — takes effect at the end of the current period.",
+    voirOffres: "See Pro plans",
+    indispo: "Unavailable right now. Try again later.",
+    reseau: "Network unavailable. Try again.",
+  },
+} as const;
 
 /**
  * Section « Abonnement » de la page compte. Affiche l'offre en cours et, pour les abonnés,
@@ -9,6 +39,8 @@ import Link from "next/link";
  * le paiement sera branché ; affiche un message d'attente d'ici là).
  */
 export default function AbonnementSection({ isPro }: { isPro: boolean }) {
+  const locale = useLocale();
+  const s = TR[locale];
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -23,9 +55,9 @@ export default function AbonnementSection({ isPro }: { isPro: boolean }) {
         window.location.href = data.url as string; // portail Stripe (une fois branché)
         return;
       }
-      setMessage(data?.message || "Indisponible pour le moment. Réessaie plus tard.");
+      setMessage(data?.message || s.indispo);
     } catch {
-      setMessage("Réseau indisponible. Réessaie.");
+      setMessage(s.reseau);
     } finally {
       setBusy(false);
     }
@@ -35,9 +67,9 @@ export default function AbonnementSection({ isPro }: { isPro: boolean }) {
     <section className="card p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="font-semibold text-ink">Abonnement</h2>
+          <h2 className="font-semibold text-ink">{s.titre}</h2>
           <p className="mt-1 text-sm text-muted">
-            {isPro ? "Tu profites de toutes les fonctionnalités Pro." : "Tu es sur l'offre gratuite."}
+            {isPro ? s.proDesc : s.gratuitDesc}
           </p>
         </div>
         <span
@@ -45,7 +77,7 @@ export default function AbonnementSection({ isPro }: { isPro: boolean }) {
             isPro ? "bg-brand-50 text-brand-600" : "bg-surface-2 text-muted"
           }`}
         >
-          {isPro ? "AVYORA Pro" : "Gratuit"}
+          {isPro ? s.badgePro : s.badgeGratuit}
         </span>
       </div>
 
@@ -53,15 +85,15 @@ export default function AbonnementSection({ isPro }: { isPro: boolean }) {
         {isPro ? (
           <>
             <button onClick={gerer} disabled={busy} className="btn btn-outline py-2 text-[13px] disabled:opacity-60">
-              {busy ? "Un instant…" : "Gérer / résilier mon abonnement"}
+              {busy ? s.instant : s.gerer}
             </button>
             <p className="mt-2 text-xs text-faint">
-              Résiliation en ligne, sans engagement — effet à la fin de la période en cours.
+              {s.resiliation}
             </p>
           </>
         ) : (
           <Link href="/tarifs" className="btn btn-primary py-2 text-[13px]">
-            Voir les offres Pro
+            {s.voirOffres}
           </Link>
         )}
         {message && (

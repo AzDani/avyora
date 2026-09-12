@@ -3,6 +3,55 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useLocale } from "@/components/i18n/LangProvider";
+
+const TR = {
+  fr: {
+    statutArchive: "Archivé",
+    statutTermine: "Terminé",
+    statutEnCours: "En cours",
+    statutEstimation: "Estimation",
+    chantierTermine: "Chantier terminé",
+    chantierEnCours: "Chantier en cours",
+    estimationTravaux: "Estimation travaux",
+    mesProjets: "Mes projets",
+    desarchiver: "Désarchiver",
+    archiver: "Archiver",
+    suppression: "Suppression…",
+    confirmerSuppr: (n: number) => `Confirmer la suppression (${n}) ?`,
+    supprimer: (n: number) => `Supprimer (${n})`,
+    annuler: "Annuler",
+    selectionner: "Sélectionner",
+    nouveauProjet: "Nouveau projet",
+    aucunProjet: "Aucun projet pour l'instant",
+    aucunProjetSub: "Crée ton premier projet et obtiens une estimation en 2 minutes.",
+    estimerPremier: "Estimer mon premier projet",
+    projetsArchives: "Projets archivés",
+  },
+  en: {
+    statutArchive: "Archived",
+    statutTermine: "Done",
+    statutEnCours: "In progress",
+    statutEstimation: "Estimate",
+    chantierTermine: "Project done",
+    chantierEnCours: "Project in progress",
+    estimationTravaux: "Work estimate",
+    mesProjets: "My projects",
+    desarchiver: "Unarchive",
+    archiver: "Archive",
+    suppression: "Deleting…",
+    confirmerSuppr: (n: number) => `Confirm deletion (${n})?`,
+    supprimer: (n: number) => `Delete (${n})`,
+    annuler: "Cancel",
+    selectionner: "Select",
+    nouveauProjet: "New project",
+    aucunProjet: "No projects yet",
+    aucunProjetSub: "Create your first project and get an estimate in 2 minutes.",
+    estimerPremier: "Estimate my first project",
+    projetsArchives: "Archived projects",
+  },
+} as const;
+type Str = (typeof TR)[keyof typeof TR];
 
 export type StatutChantier = "estimation" | "en_cours" | "termine";
 
@@ -53,14 +102,14 @@ function IconBien({ type }: { type: string }) {
   );
 }
 
-function StatutBadge({ statut, archived }: { statut: StatutChantier; archived: boolean }) {
+function StatutBadge({ statut, archived, s }: { statut: StatutChantier; archived: boolean; s: Str }) {
   const cfg = archived
-    ? { cls: "bg-surface-2 text-faint", dot: "bg-line-strong", label: "Archivé" }
+    ? { cls: "bg-surface-2 text-faint", dot: "bg-line-strong", label: s.statutArchive }
     : statut === "termine"
-      ? { cls: "bg-positive-soft text-positive", dot: "bg-positive", label: "Terminé" }
+      ? { cls: "bg-positive-soft text-positive", dot: "bg-positive", label: s.statutTermine }
       : statut === "en_cours"
-        ? { cls: "bg-warning-soft text-warning", dot: "bg-[#efb44d]", label: "En cours" }
-        : { cls: "bg-brand-50 text-brand-600", dot: "bg-brand-600", label: "Estimation" };
+        ? { cls: "bg-warning-soft text-warning", dot: "bg-[#efb44d]", label: s.statutEnCours }
+        : { cls: "bg-brand-50 text-brand-600", dot: "bg-brand-600", label: s.statutEstimation };
   return (
     <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${cfg.cls}`}>
       <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
@@ -77,6 +126,8 @@ export default function ListeProjets({
   archives: ProjetCarte[];
 }) {
   const router = useRouter();
+  const locale = useLocale();
+  const s = TR[locale];
   const [selection, setSelection] = useState<Set<number | string>>(new Set());
   const [modeSelection, setModeSelection] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -163,7 +214,7 @@ export default function ListeProjets({
         {!p.archived && p.statut !== "estimation" && (
           <div className="mt-3.5">
             <div className="mb-1.5 flex items-center justify-between text-[10.5px] text-faint">
-              <span>{p.statut === "termine" ? "Chantier terminé" : "Chantier en cours"}</span>
+              <span>{p.statut === "termine" ? s.chantierTermine : s.chantierEnCours}</span>
               <b className="data font-semibold text-muted">{p.donePct} %</b>
             </div>
             <div className="flex h-1.5 overflow-hidden rounded-full bg-line">
@@ -177,7 +228,7 @@ export default function ListeProjets({
 
         <div className="flex items-end justify-between gap-3">
           <div className="min-w-0">
-            <p className="eyebrow">Estimation travaux</p>
+            <p className="eyebrow">{s.estimationTravaux}</p>
             <p className="data mt-1 text-[17px] font-semibold text-ink">
               {euros(p.ttc)} <span className="text-faint text-sm font-normal">TTC</span>
             </p>
@@ -187,7 +238,7 @@ export default function ListeProjets({
               </p>
             )}
           </div>
-          <StatutBadge statut={p.statut} archived={p.archived} />
+          <StatutBadge statut={p.statut} archived={p.archived} s={s} />
         </div>
       </>
     );
@@ -214,7 +265,7 @@ export default function ListeProjets({
     <div>
       <div className="mb-4 flex items-center justify-between gap-3">
         <h2 className="text-lg font-semibold text-ink">
-          Mes projets <span className="ml-1 text-sm font-normal text-faint">{projets.length}</span>
+          {s.mesProjets} <span className="ml-1 text-sm font-normal text-faint">{projets.length}</span>
         </h2>
         <div className="flex items-center gap-2">
           {modeSelection && selection.size > 0 && (
@@ -224,10 +275,10 @@ export default function ListeProjets({
                 disabled={busy}
                 className="btn btn-outline py-1.5 text-[13px]"
               >
-                {toutArchive ? "Désarchiver" : "Archiver"} ({selection.size})
+                {toutArchive ? s.desarchiver : s.archiver} ({selection.size})
               </button>
               <button onClick={supprimerSelection} disabled={busy} className="btn btn-danger py-1.5 text-[13px]">
-                {busy ? "Suppression…" : confirmSuppr ? `Confirmer la suppression (${selection.size}) ?` : `Supprimer (${selection.size})`}
+                {busy ? s.suppression : confirmSuppr ? s.confirmerSuppr(selection.size) : s.supprimer(selection.size)}
               </button>
             </>
           )}
@@ -238,14 +289,14 @@ export default function ListeProjets({
             }}
             className="btn btn-ghost py-1.5 text-[13px]"
           >
-            {modeSelection ? "Annuler" : "Sélectionner"}
+            {modeSelection ? s.annuler : s.selectionner}
           </button>
           {!modeSelection && (
             <Link href="/projets/nouveau" className="btn btn-primary py-1.5 text-[13px]">
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                 <path d="M8 3.2v9.6M3.2 8h9.6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
               </svg>
-              Nouveau projet
+              {s.nouveauProjet}
             </Link>
           )}
         </div>
@@ -257,11 +308,11 @@ export default function ListeProjets({
             <IconBien type="maison" />
           </span>
           <div>
-            <p className="font-semibold text-ink">Aucun projet pour l&apos;instant</p>
-            <p className="mt-1 text-sm text-muted">Crée ton premier projet et obtiens une estimation en 2 minutes.</p>
+            <p className="font-semibold text-ink">{s.aucunProjet}</p>
+            <p className="mt-1 text-sm text-muted">{s.aucunProjetSub}</p>
           </div>
           <Link href="/projets/nouveau" className="btn btn-primary mt-1 py-2.5">
-            Estimer mon premier projet
+            {s.estimerPremier}
           </Link>
         </div>
       ) : (
@@ -280,7 +331,7 @@ export default function ListeProjets({
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="transition-transform group-open:rotate-90" aria-hidden="true">
               <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            Projets archivés ({archives.length})
+            {s.projetsArchives} ({archives.length})
           </summary>
           <ul className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
             {archives.map((p) => (
