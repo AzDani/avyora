@@ -3,7 +3,7 @@ import { getProjet } from "@/lib/data/projects";
 import { getUser, estPro } from "@/lib/auth";
 import { RapportPDF } from "@/components/RapportPDF";
 import { PrintBar } from "@/components/PrintBar";
-import type { Ctx, Selection } from "@/lib/estimateur";
+import type { Ctx, Selection, CustomLine } from "@/lib/estimateur";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Rapport d'estimation — AVYORA" };
@@ -18,7 +18,7 @@ export default async function RapportPage({ params }: { params: Promise<{ id: st
   const projet = await getProjet(id);
   if (!projet) notFound();
 
-  const reponses = projet.reponses as { ctx?: Ctx; sel?: Selection; codePostal?: string };
+  const reponses = projet.reponses as { ctx?: Ctx; sel?: Selection; codePostal?: string; custom?: CustomLine[] };
   const refCode = "AVY-" + String(projet.id).replace(/-/g, "").slice(0, 8).toUpperCase();
 
   return (

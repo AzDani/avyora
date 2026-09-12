@@ -1,4 +1,6 @@
-import { CATALOG, buildDevis, regionCoef, ICON, type Ctx, type Selection } from "@/lib/estimateur";
+import { CATALOG, buildDevis, regionCoef, ICON, customTotals, key, type Ctx, type Selection, type CustomLine } from "@/lib/estimateur";
+
+const estUrl = (s: string) => /^https?:\/\//i.test(s.trim());
 
 /**
  * Rapport d'estimation imprimable (print-to-PDF). Rendu pur depuis les réponses du projet.
@@ -123,7 +125,7 @@ export function RapportPDF({
   nom,
   refCode,
 }: {
-  reponses: { ctx?: Ctx; sel?: Selection; codePostal?: string };
+  reponses: { ctx?: Ctx; sel?: Selection; codePostal?: string; custom?: CustomLine[] };
   nom: string;
   refCode: string;
 }) {
@@ -131,11 +133,16 @@ export function RapportPDF({
     ? { ...reponses.ctx, codePostal: reponses.ctx.codePostal ?? reponses.codePostal }
     : undefined;
   const sel = (reponses?.sel ?? {}) as Selection;
+  const custom = (reponses?.custom ?? []) as CustomLine[];
+  const customVal = custom.filter((x) => x.on !== false && !x.draft); // lignes perso validées
   if (!ctx) return null;
 
   const dv = buildDevis(CATALOG, ctx, sel);
-  const t = dv.totaux;
   const b = dv.bilan;
+  // Totaux = postes par défaut + lignes personnalisées (les aléas s'appliquent aussi au HT perso).
+  const cu = customTotals(custom);
+  const t = { ht: dv.totaux.ht + cu.ht, tva: dv.totaux.tva + cu.tva, aleas: dv.totaux.aleas + cu.ht * ((ctx.aleas || 0) / 100), ttc: 0 };
+  t.ttc = t.ht + t.tva + t.aleas;
   const lo = Math.round((t.ttc * 0.85) / 100) * 100;
   const hi = Math.round((t.ttc * 1.15) / 100) * 100;
   const eurM2 = ctx.surface > 0 ? Math.round(t.ttc / ctx.surface) : 0;
@@ -144,10 +151,22 @@ export function RapportPDF({
   const appart = ctx.type !== "Maison";
   const dateStr = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
 
-  // Camembert + tableau : corps d'état triés par montant.
-  const lots = [...dv.lots].sort((a, c) => c.ttc - a.ttc);
+  // Camembert + tableau : corps d'état (défaut) + lignes perso repliées par lot (comme les postes par défaut).
+  const customTtcByLot: Record<string, number> = {};
+  for (const x of customVal) { const h = (x.prix || 0) * (x.qte || 0); customTtcByLot[x.lot] = (customTtcByLot[x.lot] || 0) + h + (h * (x.tva || 0)) / 100; }
+  const mergedLots = dv.lots.map((l) => ({ corps: l.corps, phase: l.phase, ttc: l.ttc }));
+  for (const [lot, ttc] of Object.entries(customTtcByLot)) {
+    const ex = mergedLots.find((l) => l.corps === lot);
+    if (ex) ex.ttc += ttc; else mergedLots.push({ corps: lot, phase: "Personnalisé", ttc });
+  }
+  const lots = mergedLots.sort((a, c) => c.ttc - a.ttc);
   const budgetTotal = lots.reduce((s, l) => s + l.ttc, 0);
   const maxV = lots.length ? lots[0].ttc : 1;
+
+  // Notes & liens matériaux (postes par défaut + lignes perso).
+  const notes: { poste: string; note: string }[] = [];
+  for (const li of dv.lignes) { const n = sel[key(li.corps, li.nom)]?.note; if (n) notes.push({ poste: li.nom, note: n }); }
+  for (const x of customVal) if (x.note) notes.push({ poste: x.nom, note: x.note });
   let acc = 0;
   const slices = lots.map((l, i) => {
     const a0 = budgetTotal > 0 ? (acc / budgetTotal) * 2 * Math.PI : 0;
@@ -284,9 +303,49 @@ export function RapportPDF({
         </table>
       </div>
 
+      {/* Lignes personnalisées */}
+      {customVal.length > 0 && (
+        <div className="sec">
+          <div className="sec-t">Lignes personnalisées <span className="hint">Ajoutées par vous</span></div>
+          <table>
+            <thead><tr><th>Désignation</th><th>Détail</th><th className="amt">Montant TTC</th></tr></thead>
+            <tbody>
+              {customVal.map((x) => {
+                const h = (x.prix || 0) * (x.qte || 0);
+                const ttc = h + (h * (x.tva || 0)) / 100;
+                return (
+                  <tr key={x.id}>
+                    <td>{x.nom}</td>
+                    <td className="ph">{x.qte} {x.unite} × {euro(x.prix)} · {x.lot}</td>
+                    <td className="amt">{euro(ttc)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Notes & liens matériaux */}
+      {notes.length > 0 && (
+        <div className="sec">
+          <div className="sec-t">Notes &amp; liens matériaux <span className="hint">Vos repères produits</span></div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {notes.map((n, i) => (
+              <div key={i} style={{ display: "flex", gap: 10, fontSize: 12, lineHeight: 1.4, borderBottom: "1px solid #e9eaf3", paddingBottom: 6 }}>
+                <span style={{ fontWeight: 600, minWidth: 150, color: "#15172b" }}>{n.poste}</span>
+                {estUrl(n.note)
+                  ? <a href={n.note} style={{ color: "#4f46e5", wordBreak: "break-all" }}>{n.note}</a>
+                  : <span style={{ color: "#565a75" }}>{n.note}</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="foot">
         <b>Estimation indicative</b> générée par AVYORA à partir des informations saisies — marge ±15 %. Elle ne constitue pas un devis et n&apos;engage aucun artisan. Les prix intègrent un coefficient régional appliqué à la main-d&apos;œuvre (zone : {reg.zone}) et le niveau de finition « {ctx.finition} ». Provision pour aléas de {ctx.aleas} % incluse.<br />
-        <b>AVYORA</b> · estime tes travaux avant de signer · avyora.fr
+        <b>AVYORA</b> · estime tes travaux avant de signer · getavyora.fr
       </div>
     </div>
   );
