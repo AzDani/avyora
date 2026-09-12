@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export type InscritRow = {
@@ -43,17 +43,39 @@ export default function InscritsTable({ rows }: { rows: InscritRow[] }) {
   const router = useRouter();
   const [q, setQ] = useState("");
   const [f, setF] = useState("tous");
+  const [rowsState, setRowsState] = useState(rows);
+  const [confirmId, setConfirmId] = useState<string | null>(null); // inscrit dont on confirme le changement de plan
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => setRowsState(rows), [rows]);
+
+  function askToggle(id: string) {
+    setConfirmId(id);
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => setConfirmId(null), 4000); // auto-annulation
+  }
+  async function togglePlan(id: string, current: "pro" | "free") {
+    const plan = current === "pro" ? "free" : "pro";
+    setConfirmId(null); setBusyId(id);
+    try {
+      const res = await fetch("/api/admin/plan", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: id, plan }),
+      });
+      if (res.ok) setRowsState((rs) => rs.map((r) => (r.id === id ? { ...r, plan } : r)));
+    } finally { setBusyId(null); }
+  }
 
   const filtered = useMemo(() => {
     const j30 = Date.now() - 30 * 864e5;
     const ql = q.trim().toLowerCase();
-    return rows.filter((r) => {
+    return rowsState.filter((r) => {
       if (f === "mois" && +new Date(r.createdAt) < j30) return false;
       if (["investisseur", "particulier", "pro"].includes(f) && r.type !== f) return false;
       if (ql && !(`${r.email} ${r.region} ${r.canal}`.toLowerCase().includes(ql))) return false;
       return true;
     });
-  }, [rows, q, f]);
+  }, [rowsState, q, f]);
 
   return (
     <div className="overflow-hidden rounded-3xl border border-line bg-surface shadow-[0_1px_3px_rgba(30,27,75,.04)]">
@@ -98,7 +120,23 @@ export default function InscritsTable({ rows }: { rows: InscritRow[] }) {
                 <td className="num whitespace-nowrap px-4 py-3">{r.age || "—"}</td>
                 <td className="whitespace-nowrap px-4 py-3">{r.region || "—"}</td>
                 <td className="whitespace-nowrap px-4 py-3">{r.canal || "—"}</td>
-                <td className="px-4 py-3">{r.plan === "admin" ? <Pill tone="admin">Admin</Pill> : r.plan === "pro" ? <Pill tone="proAbo">Pro</Pill> : <Pill tone="free">Free</Pill>}</td>
+                <td className="whitespace-nowrap px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                  {r.plan === "admin" ? (
+                    <Pill tone="admin">Admin</Pill>
+                  ) : busyId === r.id ? (
+                    <span className="text-[12px] text-muted">…</span>
+                  ) : confirmId === r.id ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="text-[11.5px] font-semibold text-ink">{r.plan === "pro" ? "Repasser Free ?" : "Passer Pro ?"}</span>
+                      <button onClick={() => togglePlan(r.id, r.plan as "pro" | "free")} className="rounded-md bg-brand-600 px-2 py-0.5 text-[11px] font-semibold text-white">Oui</button>
+                      <button onClick={() => setConfirmId(null)} className="rounded-md border border-line px-2 py-0.5 text-[11px] font-semibold text-muted">Non</button>
+                    </span>
+                  ) : (
+                    <button onClick={() => askToggle(r.id)} title="Cliquer pour changer le statut" className="transition-opacity hover:opacity-70">
+                      {r.plan === "pro" ? <Pill tone="proAbo">Pro</Pill> : <Pill tone="free">Free</Pill>}
+                    </button>
+                  )}
+                </td>
                 <td className="num px-4 py-3">{r.nbProjets}</td>
                 <td className="num whitespace-nowrap px-4 py-3 text-faint">{fdate(r.createdAt)}</td>
               </tr>
