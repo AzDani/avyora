@@ -10,6 +10,7 @@ export default async function AdminInscrits() {
     return {
       id: i.id,
       email: i.email,
+      username: i.username ?? "",
       createdAt: i.createdAt,
       type,
       typeLabel: type === "—" ? "—" : labelTues(type),

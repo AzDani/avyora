@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getUser, estPro } from "@/lib/auth";
 import CompteActions from "@/components/CompteActions";
 import AbonnementSection from "@/components/AbonnementSection";
+import UsernameForm from "@/components/UsernameForm";
 import OnboardingForm from "@/components/OnboardingForm";
 import type { ProfilData } from "@/lib/actions/profil";
 import { getLocale } from "@/lib/i18n/server";
@@ -35,6 +36,7 @@ export default async function ComptePage() {
   const user = await getUser();
   if (!user) redirect("/connexion?next=/mon-espace/compte");
   const profil = (user.user_metadata?.profil ?? undefined) as Partial<ProfilData> | undefined;
+  const username = (user.user_metadata?.username ?? "") as string;
   const locale = await getLocale();
   const s = TR[locale];
 
@@ -53,6 +55,8 @@ export default async function ComptePage() {
       </header>
 
       <AbonnementSection isPro={estPro(user)} />
+
+      <UsernameForm initial={username} />
 
       <OnboardingForm contexte="compte" initial={profil} />
 

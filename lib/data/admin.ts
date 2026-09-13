@@ -34,6 +34,7 @@ export type AdminProjet = {
 export type AdminInscrit = {
   id: string;
   email: string;
+  username: string | null;
   createdAt: string;
   lastSignIn: string | null;
   onboardingFait: boolean;
@@ -95,13 +96,14 @@ export async function listInscrits(): Promise<AdminInscrit[]> {
   const parOwner = await projetsParOwner();
   return data.users
     .map((u) => {
-      const meta = (u.user_metadata ?? {}) as { profil?: Profil; onboarding_fait?: boolean };
+      const meta = (u.user_metadata ?? {}) as { profil?: Profil; onboarding_fait?: boolean; username?: string };
       const plan: "admin" | "pro" | "free" = estAdmin(u)
         ? "admin"
         : ((u.app_metadata as { plan?: string } | undefined)?.plan === "pro" ? "pro" : "free");
       return {
         id: u.id,
         email: u.email ?? "—",
+        username: meta.username ?? null,
         createdAt: u.created_at,
         lastSignIn: u.last_sign_in_at ?? null,
         onboardingFait: !!meta.onboarding_fait,

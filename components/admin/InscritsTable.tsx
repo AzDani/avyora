@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 export type InscritRow = {
   id: string;
   email: string;
+  username: string;
   createdAt: string;
   type: string;          // clé tuEs[0] : particulier | investisseur | pro | —
   typeLabel: string;
@@ -72,7 +73,7 @@ export default function InscritsTable({ rows }: { rows: InscritRow[] }) {
     return rowsState.filter((r) => {
       if (f === "mois" && +new Date(r.createdAt) < j30) return false;
       if (["investisseur", "particulier", "pro"].includes(f) && r.type !== f) return false;
-      if (ql && !(`${r.email} ${r.region} ${r.canal}`.toLowerCase().includes(ql))) return false;
+      if (ql && !(`${r.email} ${r.username} ${r.region} ${r.canal}`.toLowerCase().includes(ql))) return false;
       return true;
     });
   }, [rowsState, q, f]);
@@ -83,7 +84,7 @@ export default function InscritsTable({ rows }: { rows: InscritRow[] }) {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Rechercher (email, région, canal…)"
+          placeholder="Rechercher (email, pseudo, région, canal…)"
           className="min-w-[180px] flex-1 rounded-lg border border-line-strong bg-surface-2 px-3 py-2 text-[13px] outline-none focus:border-brand-600"
         />
         {FILTRES.map(([k, l]) => (
@@ -101,14 +102,14 @@ export default function InscritsTable({ rows }: { rows: InscritRow[] }) {
         <table className="w-full border-collapse text-[13px]">
           <thead>
             <tr className="text-[11px] uppercase tracking-[0.05em] text-faint">
-              {["Inscrit", "Type", "Âge", "Région", "Canal", "Abo", "Projets", "Inscrit le"].map((h) => (
+              {["Inscrit", "Pseudo", "Type", "Âge", "Région", "Canal", "Abo", "Projets", "Inscrit le"].map((h) => (
                 <th key={h} className="whitespace-nowrap border-b border-line px-4 py-3 text-left font-semibold">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={8} className="px-4 py-10 text-center text-muted">Aucun inscrit ne correspond.</td></tr>
+              <tr><td colSpan={9} className="px-4 py-10 text-center text-muted">Aucun inscrit ne correspond.</td></tr>
             ) : filtered.map((r) => (
               <tr
                 key={r.id}
@@ -116,6 +117,7 @@ export default function InscritsTable({ rows }: { rows: InscritRow[] }) {
                 className="cursor-pointer border-b border-line last:border-0 hover:bg-surface-2"
               >
                 <td className="px-4 py-3"><div className="font-semibold text-ink">{r.email}</div></td>
+                <td className="whitespace-nowrap px-4 py-3">{r.username ? <span className="font-medium text-ink">@{r.username}</span> : <span className="text-faint">—</span>}</td>
                 <td className="px-4 py-3"><Pill tone={r.type}>{r.typeLabel}</Pill></td>
                 <td className="num whitespace-nowrap px-4 py-3">{r.age || "—"}</td>
                 <td className="whitespace-nowrap px-4 py-3">{r.region || "—"}</td>
