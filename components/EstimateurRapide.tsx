@@ -273,7 +273,7 @@ export default function EstimateurRapide({ isPro = false, edit }: { isPro?: bool
   const countByRoom = (k: PieceKey) => pieces.filter((r) => r.room === k).length;
 
   function saveDraft() {
-    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ v: "estimateur", ctx: preset.ctx, sel: preset.sel, open: {}, codePostal: cp })); } catch { /* noop */ }
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ v: "estimateur", mode: "rapide", ampleur, qui, ctx: preset.ctx, sel: preset.sel, open: {}, codePostal: cp })); } catch { /* noop */ }
   }
   function affiner() { suivre("estimation_terminee", { action: "affiner", type: mode === "pieces" ? "pieces" : type, ampleur }); saveDraft(); router.push("/projets/nouveau/detaille"); }
 

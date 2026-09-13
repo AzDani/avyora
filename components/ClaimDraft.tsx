@@ -19,7 +19,7 @@ const TR = {
 const DRAFT_KEY = "avyora-estim-v2";
 const CLAIM_KEY = "avyora-estim-claim";
 
-type Draft = { v?: string; ctx?: { type?: string; surface?: number }; sel?: unknown; codePostal?: string };
+type Draft = { v?: string; mode?: string; ampleur?: string; qui?: string; ctx?: { type?: string; surface?: number }; sel?: unknown; codePostal?: string };
 
 export default function ClaimDraft() {
   const router = useRouter();
@@ -56,7 +56,7 @@ export default function ClaimDraft() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             nom, typeBien: d!.ctx!.type, surface, codePostal,
-            reponses: { v: "estimateur", ctx: d!.ctx, sel: d!.sel ?? {}, codePostal },
+            reponses: { v: "estimateur", mode: d!.mode ?? "rapide", ampleur: d!.ampleur, qui: d!.qui, ctx: d!.ctx, sel: d!.sel ?? {}, codePostal },
           }),
         });
         if (res.ok) {
