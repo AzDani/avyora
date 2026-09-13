@@ -155,7 +155,6 @@ export default async function ResultatRapide({
           <div className="ico">🔒</div>
           <h3>{L.lockH}</h3>
           <p>{L.lockP}</p>
-          <Link href={ctaHref} className="btn btn-primary py-2.5">{ctaLabel}</Link>
         </div>
       </div>
 
