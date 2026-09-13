@@ -184,16 +184,18 @@ const QUIS: { v: QuiRealise; lvl: number }[] = [
   { v: "max", lvl: 3 },
 ];
 
-export default function EstimateurRapide({ isPro = false }: { isPro?: boolean }) {
+export type RapideEdit = { projectId: string; type?: TypeBien; surface?: number; cp?: string; ampleur?: Ampleur; finition?: Finition; qui?: QuiRealise };
+
+export default function EstimateurRapide({ isPro = false, edit }: { isPro?: boolean; edit?: RapideEdit }) {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("bien");
-  const [type, setType] = useState<TypeBien>("Maison");
-  const [surface, setSurface] = useState(100);
+  const [type, setType] = useState<TypeBien>(edit?.type ?? "Maison");
+  const [surface, setSurface] = useState(edit?.surface ?? 100);
   const [pieces, setPieces] = useState<PieceSel[]>([]);
-  const [cp, setCp] = useState("");
-  const [ampleur, setAmpleur] = useState<Ampleur>("complete");
-  const [finition, setFinition] = useState<Finition>("standard");
-  const [qui, setQui] = useState<QuiRealise>("pros");
+  const [cp, setCp] = useState(edit?.cp ?? "");
+  const [ampleur, setAmpleur] = useState<Ampleur>(edit?.ampleur ?? "complete");
+  const [finition, setFinition] = useState<Finition>(edit?.finition ?? "standard");
+  const [qui, setQui] = useState<QuiRealise>(edit?.qui ?? "pros");
   const [saving, setSaving] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
 
@@ -298,12 +300,12 @@ export default function EstimateurRapide({ isPro = false }: { isPro?: boolean })
     const typeBien = (mode === "pieces" ? "Appartement" : type) as TypeBien;
     const reponses = { v: "estimateur", mode: "rapide", ampleur, qui, ctx: preset.ctx, sel: preset.sel, codePostal: cp };
     try {
-      const res = await fetch("/api/projects", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nom, typeBien, surface: totalSurface, codePostal: cp, reponses }) });
+      const res = await fetch(edit ? `/api/projects/${edit.projectId}` : "/api/projects", { method: edit ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nom, typeBien, surface: totalSurface, codePostal: cp, reponses }) });
       if (res.status === 401) { try { localStorage.setItem("avyora-estim-claim", "1"); } catch { /* noop */ } saveDraft(); router.push("/inscription"); return; }
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { setErreur(data?.error || t.errSave); setSaving(false); return; }
       try { localStorage.removeItem(DRAFT_KEY); } catch { /* noop */ }
-      router.push(`/projets/${data.id}`);
+      router.push(`/projets/${edit ? edit.projectId : data.id}`);
     } catch { setErreur(t.errReseau); setSaving(false); }
   }
 
