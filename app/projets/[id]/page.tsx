@@ -4,7 +4,8 @@ import { getProjet } from "@/lib/data/projects";
 import { getUser, estPro } from "@/lib/auth";
 import ProjetActions from "@/components/ProjetActions";
 import EstimationResultat from "@/components/EstimationResultat";
-import { regionLabel, type Ctx, type Selection } from "@/lib/estimateur";
+import ResultatRapide from "@/components/ResultatRapide";
+import { regionLabel, type Ctx, type Selection, type Ampleur, type QuiRealise } from "@/lib/estimateur";
 import RenameTitre from "@/components/RenameTitre";
 import TelechargerRapport from "@/components/TelechargerRapport";
 import { getLocale } from "@/lib/i18n/server";
@@ -25,7 +26,8 @@ export default async function ProjetPage({ params }: { params: Promise<{ id: str
   const user = await getUser();
   const locale = await getLocale();
   const s = TR[locale];
-  const reponses = projet.reponses as { ctx?: Ctx; sel?: Selection; statuts?: Record<string, number>; codePostal?: string };
+  const reponses = projet.reponses as { ctx?: Ctx; sel?: Selection; statuts?: Record<string, number>; codePostal?: string; mode?: string; ampleur?: Ampleur; qui?: QuiRealise };
+  const isRapide = reponses.mode === "rapide";
   const refCode = "AVY-" + String(projet.id).replace(/-/g, "").slice(0, 8).toUpperCase();
 
   return (
@@ -50,12 +52,14 @@ export default async function ProjetPage({ params }: { params: Promise<{ id: str
           </div>
         </div>
         <div className="flex flex-col items-end gap-2">
-          <TelechargerRapport projetId={String(projet.id)} refCode={refCode} isPro={estPro(user)} />
+          {!isRapide && <TelechargerRapport projetId={String(projet.id)} refCode={refCode} isPro={estPro(user)} />}
           <ProjetActions id={projet.id} archived={!!projet.archived} />
         </div>
       </div>
 
-      <EstimationResultat reponses={reponses} projectId={projet.id} />
+      {isRapide
+        ? <ResultatRapide reponses={reponses} projectId={projet.id} isPro={estPro(user)} />
+        : <EstimationResultat reponses={reponses} projectId={projet.id} />}
     </div>
   );
 }

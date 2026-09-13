@@ -296,7 +296,7 @@ export default function EstimateurRapide({ isPro = false }: { isPro?: boolean })
     setSaving(true);
     const nom = nomProjet();
     const typeBien = (mode === "pieces" ? "Appartement" : type) as TypeBien;
-    const reponses = { v: "estimateur", ctx: preset.ctx, sel: preset.sel, codePostal: cp };
+    const reponses = { v: "estimateur", mode: "rapide", ampleur, qui, ctx: preset.ctx, sel: preset.sel, codePostal: cp };
     try {
       const res = await fetch("/api/projects", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nom, typeBien, surface: totalSurface, codePostal: cp, reponses }) });
       if (res.status === 401) { try { localStorage.setItem("avyora-estim-claim", "1"); } catch { /* noop */ } saveDraft(); router.push("/inscription"); return; }

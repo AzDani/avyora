@@ -198,7 +198,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
     const nom = (piece && ctx.espace && ESPACES[ctx.espace]
       ? `Rénovation — ${ESPACES[ctx.espace].nom} ${ctx.surface} m²`
       : `Rénovation — ${ctx.type} ${ctx.surface} m²`).slice(0, 110);
-    const reponses = { v: "estimateur", ctx: ctxR, sel, codePostal, custom, ...(statutsRef.current ? { statuts: statutsRef.current } : {}) };
+    const reponses = { v: "estimateur", mode: "detaille", ctx: ctxR, sel, codePostal, custom, ...(statutsRef.current ? { statuts: statutsRef.current } : {}) };
     try {
       const res = await fetch(edition ? `/api/projects/${projectId}` : "/api/projects", {
         method: edition ? "PATCH" : "POST",
