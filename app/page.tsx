@@ -307,7 +307,7 @@ const HOME_HTML_EN = `
 </div></section>
 
 <section class="blk" style="padding-top:0"><div class="wrap">
-  <div class="center"><p class="eyebrow">Result preview · AVYORA Pro</p><h2>The detailed report, with Pro.</h2><p>A real costed document, line by line, unlocked with AVYORA&nbsp;Pro — example: 145 m² house in Bordeaux. The quick estimate (your range) stays free.</p></div>
+  <div class="center"><p class="eyebrow">Result preview · AVYORA Pro</p><h2>The detailed report, with Pro.</h2><p>A real itemized report, line by line, unlocked with AVYORA&nbsp;Pro — example: 145 m² house in Bordeaux. The quick estimate (your range) stays free.</p></div>
   <div class="doc"><img src="/exemple-rapport.png" alt="Example of a detailed AVYORA estimate report" width="1680" height="2356" loading="lazy"></div>
   <div class="demo-cta"><a href="/projets/nouveau" class="btn btn-p">Estimate for free →</a></div>
 </div></section>
@@ -333,7 +333,7 @@ const HOME_HTML_EN = `
   <div class="eco">
     <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><h3>Quantify your DIY savings</h3><p>Depending on what you do yourself, AVYORA shows how much you save on labor — <b>up to −55 %</b>.</p></div></div>
     <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg></div><div><h3>Spot an overpriced quote</h3><p>Compare each item to the market price. A contractor +10 % on €50,000 is €5,000.</p></div></div>
-    <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div><h3>Negotiate — and borrow with confidence</h3><p>A PDF report costed line by line: to negotiate with your contractors, and to back your loan application at the bank.</p></div></div>
+    <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div><h3>Negotiate — and borrow with confidence</h3><p>A PDF report priced line by line: to negotiate with your contractors, and to back your loan application at the bank.</p></div></div>
     <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></div><div><h3>Plan for the unexpected</h3><p>A contingency allowance is built in: no more nasty surprises mid-project.</p></div></div>
   </div>
 </div></section>
@@ -341,7 +341,7 @@ const HOME_HTML_EN = `
 <section class="blk" style="padding-top:0"><div class="wrap">
   <div class="center"><p class="eyebrow">Why it's reliable</p><h2>Real prices, not a guess.</h2></div>
   <div class="cred">
-    <div class="s"><div class="v">173</div><div class="l">costed price items</div></div>
+    <div class="s"><div class="v">173</div><div class="l">priced items</div></div>
     <div class="s"><div class="v">19</div><div class="l">trades covered</div></div>
     <div class="s"><div class="v">2026</div><div class="l">French market prices</div></div>
     <div class="s"><div class="v">±15 %</div><div class="l">line-item accuracy</div></div>

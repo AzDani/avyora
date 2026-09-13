@@ -145,7 +145,7 @@ const TR = {
     ecoNoteB: " in labor.",
     whereBudget: "Where the budget goes",
     whereBudgetSub1: "By trade — amounts incl. tax · ",
-    whereBudgetSub2: " trades costed",
+    whereBudgetSub2: " trades priced",
     totalInclTax: "Total incl. tax",
     siteTracking: "Site tracking",
     theDetails: "The details",
