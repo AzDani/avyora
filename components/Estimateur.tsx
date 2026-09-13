@@ -18,6 +18,15 @@ import {
   totals, buildDevis, regionCoef, piecesEff, sdbEff, customLotHT, customTotals, ESPACES,
   type Ctx, type Selection, type TypeBien, type Finition, type Lot, type Tache, type CustomLine,
 } from "@/lib/estimateur";
+import { useLocale } from "@/components/i18n/LangProvider";
+import { catT } from "@/lib/estimateur/catalog-i18n";
+
+// Noms des espaces (mode périmètre) traduits pour l'affichage (le FR reste la donnée).
+const ESPACE_EN: Record<string, string> = {
+  "Salle de bain": "Bathroom", "Suite parentale": "Master suite", "Cuisine": "Kitchen",
+  "Séjour": "Living room", "Chambre": "Bedroom", "Combles": "Loft", "Autre espace": "Other space",
+};
+const espaceNom = (locale: string, nom: string) => (locale === "en" ? ESPACE_EN[nom] ?? nom : nom);
 
 const DRAFT_KEY = "avyora-estim-v2";              // brouillon partagé (mode rapide) — sert de graine « infos du bien »
 const DRAFT_KEY_DETAIL = "avyora-estim-detail-v1"; // brouillon PROPRE au détaillé : ne récupère PAS les postes cochés du rapide
@@ -107,6 +116,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
   const ctxR = useMemo(() => ({ ...ctx, codePostal }), [ctx, codePostal]);
   const tot = useMemo(() => totals(CATALOG, ctxR, sel), [ctxR, sel]);
   const reg = regionCoef(codePostal);
+  const locale = useLocale();
 
   // ── Mises à jour du contexte ──────────────────────────────────────────────
   function patchCtx(p: Partial<Ctx>) { setCtx((c) => ({ ...c, ...p })); }
@@ -245,7 +255,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                   <div className="gl">Quel espace ?</div>
                   <div className="tpills">
                     {Object.entries(ESPACES).map(([k, e]) => (
-                      <button key={k} type="button" className={"tpill" + (ctx.espace === k ? " on" : "")} onClick={() => onEspace(k)}>{e.emoji} {e.nom}</button>
+                      <button key={k} type="button" className={"tpill" + (ctx.espace === k ? " on" : "")} onClick={() => onEspace(k)}>{e.emoji} {espaceNom(locale, e.nom)}</button>
                     ))}
                   </div>
                   <div className="locnote" style={{ marginTop: 10 }}>On cale les quantités sur la surface de l'espace et on n'affiche que les lots concernés. Compo pré-remplie, à ajuster ci-dessous.</div>
@@ -361,7 +371,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
               if (!lots.length) return null;
               return (
                 <div key={ph}>
-                  <div className="phase-t">{i + 1} · {ph}</div>
+                  <div className="phase-t">{i + 1} · {catT(locale, "phases", ph)}</div>
                   {lots.map((l) => {
                     const cLines = custom.filter((x) => x.lot === l.c);
                     const cnt = l.t.filter((t) => visibleTask(ctx, t) && sel[key(l.c, t.n)]?.on).length + cLines.filter((x) => x.on !== false && !x.draft).length;
@@ -372,7 +382,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                       <div key={l.c} className={"acc" + (isOpen ? " open" : "")}>
                         <div className="acc-h" onClick={() => setOpen((o) => ({ ...o, [l.c]: !o[l.c] }))}>
                           <span className="ic">{ICON[l.c] || "•"}</span>
-                          <span className="nm">{l.c}</span>
+                          <span className="nm">{catT(locale, "corps", l.c)}</span>
                           {cnt > 0 && <span className="cnt">{cnt}</span>}
                           <span className="amt num">{cnt > 0 ? fmt(lotHT(ctx, sel, l) + customLotHT(custom, l.c)) + " HT" : ""}</span>
                           <span className="car">›</span>
@@ -512,6 +522,7 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMa
   onCheck: () => void; onChoice: (self: boolean) => void; onAuto: () => void; onQty: (v: number) => void;
   onMat: (m: "pvc" | "alu") => void; onVit: (v: "double" | "triple") => void; onMot: (m: "manuel" | "motorise") => void; onTai: (z: "petit" | "grand") => void; onVar: (g: string, o: string) => void; onNote: (v: string) => void; onPu: (v: number | null) => void; onPm: (v: number | null) => void;
 }) {
+  const locale = useLocale();
   const s = sel[key(l.c, t.n)] || {};
   const on = !!s.on, self = !!s.self;
   const [noteOpen, setNoteOpen] = useState<boolean>(false);
@@ -540,9 +551,9 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMa
   return (
     <div className="trow">
       <button className={"cbx" + (on ? " on" : "")} onClick={onCheck} aria-label={on ? "Décocher" : "Cocher"} />
-      <span className="tn">{t.n}
+      <span className="tn">{catT(locale, "postes", t.n)}
         <span className={"pu" + (puEdited ? " edited" : "")}>
-          {puv == null ? "prix sur devis" : puEdit ? (
+          {puv == null ? (locale === "en" ? "price on quote" : "prix sur devis") : puEdit ? (
             <input
               className="puin" type="number" inputMode="decimal" autoFocus defaultValue={Math.round(puv)}
               onFocus={(e) => e.currentTarget.select()}
@@ -557,7 +568,7 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMa
               {puEdited && <button type="button" className="pureset" title="Rétablir le prix AVYORA par défaut" onClick={() => onPu(null)}>↺</button>}
             </>
           )}
-          {t.note && !puEdit && <span className="punote"> · {t.note}</span>}
+          {t.note && !puEdit && <span className="punote"> · {catT(locale, "notes", t.note)}</span>}
         </span>
       </span>
       {on ? (
@@ -567,24 +578,24 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMa
               {s.manual
                 ? <NumStepper compact value={s.qty != null ? s.qty : autoVal} min={0} onChange={onQty} />
                 : <span className="qauto num" title="calculé automatiquement depuis vos infos de départ">{autoVal}</span>}
-              <span className="unit">{t.u}</span>
+              <span className="unit">{catT(locale, "unites", t.u)}</span>
               <span className="swiwrap">
                 <button className={"swi" + (!s.manual ? " on" : "")} onClick={onAuto} title="Auto = quantité calculée. Désactivez pour saisir à la main."><span className="knob" /></button>
-                <span className={"swilbl" + (!s.manual ? " on" : "")}>{!s.manual ? "auto" : "manuel"}</span>
+                <span className={"swilbl" + (!s.manual ? " on" : "")}>{!s.manual ? "auto" : (locale === "en" ? "manual" : "manuel")}</span>
               </span>
             </>
           ) : (
             <>
               <NumStepper compact value={s.qty != null ? s.qty : (loc ? 1 : 0)} min={0} onChange={onQty} />
-              <span className="unit">{loc ? "j" : t.u}</span>
+              <span className="unit">{loc ? (locale === "en" ? "day" : "j") : catT(locale, "unites", t.u)}</span>
             </>
           ))}
           {!loc && (
             <span className="choice">
-              <ChoicePrice label="Fait faire" active={!self} activeCls="onA" amount={puv} edited={puEdited}
+              <ChoicePrice label={locale === "en" ? "Hire out" : "Fait faire"} active={!self} activeCls="onA" amount={puv} edited={puEdited}
                 onSelect={() => onChoice(false)} onEdit={(v) => onPu(v)} onReset={() => onPu(null)} />
               {puMatBase != null && (
-                <ChoicePrice label="Je le fais" active={self} activeCls="onS" amount={puMat} edited={pmEdited}
+                <ChoicePrice label={locale === "en" ? "DIY" : "Je le fais"} active={self} activeCls="onS" amount={puMat} edited={pmEdited}
                   onSelect={() => onChoice(true)} onEdit={(v) => onPm(v)} onReset={() => onPm(null)} />
               )}
             </span>
@@ -594,49 +605,49 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMa
           <span className="lineamt num">{fmt(lineHT(ctx, sel, l, t))}</span>
         </span>
       ) : (
-        <span className="tctl"><span className="unit">{t.u === "forfait" ? "forfait" : loc ? "/jour" : t.u}</span></span>
+        <span className="tctl"><span className="unit">{t.u === "forfait" ? catT(locale, "unites", "forfait") : loc ? (locale === "en" ? "/day" : "/jour") : catT(locale, "unites", t.u)}</span></span>
       )}
       {on && variant && (
         <div className="tvariants">
           {t.mat && (
-            <span className="vg"><span className="vlab">Matériau</span>
+            <span className="vg"><span className="vlab">{locale === "en" ? "Material" : "Matériau"}</span>
               <span className="vseg">
                 <button type="button" className={matSel === "pvc" ? "on" : ""} onClick={() => onMat("pvc")}>PVC</button>
-                <button type="button" className={matSel === "alu" ? "on" : ""} onClick={() => onMat("alu")}>Alu</button>
+                <button type="button" className={matSel === "alu" ? "on" : ""} onClick={() => onMat("alu")}>{locale === "en" ? "Aluminium" : "Alu"}</button>
               </span>
             </span>
           )}
           {t.vitrage && (
-            <span className="vg"><span className="vlab">Vitrage</span>
+            <span className="vg"><span className="vlab">{locale === "en" ? "Glazing" : "Vitrage"}</span>
               <span className="vseg">
-                <button type="button" className={vitSel === "double" ? "on" : ""} onClick={() => onVit("double")}>Double</button>
-                <button type="button" className={vitSel === "triple" ? "on" : ""} onClick={() => onVit("triple")}>Triple</button>
+                <button type="button" className={vitSel === "double" ? "on" : ""} onClick={() => onVit("double")}>{locale === "en" ? "Double" : "Double"}</button>
+                <button type="button" className={vitSel === "triple" ? "on" : ""} onClick={() => onVit("triple")}>{locale === "en" ? "Triple" : "Triple"}</button>
               </span>
             </span>
           )}
           {t.moto && (
-            <span className="vg"><span className="vlab">Motorisation</span>
+            <span className="vg"><span className="vlab">{locale === "en" ? "Motorization" : "Motorisation"}</span>
               <span className="vseg">
-                <button type="button" className={motSel === "manuel" ? "on" : ""} onClick={() => onMot("manuel")}>Manuel</button>
-                <button type="button" className={motSel === "motorise" ? "on" : ""} onClick={() => onMot("motorise")}>Motorisé</button>
+                <button type="button" className={motSel === "manuel" ? "on" : ""} onClick={() => onMot("manuel")}>{locale === "en" ? "Manual" : "Manuel"}</button>
+                <button type="button" className={motSel === "motorise" ? "on" : ""} onClick={() => onMot("motorise")}>{locale === "en" ? "Motorized" : "Motorisé"}</button>
               </span>
             </span>
           )}
           {t.taille && (
-            <span className="vg"><span className="vlab">Taille</span>
+            <span className="vg"><span className="vlab">{locale === "en" ? "Size" : "Taille"}</span>
               <span className="vseg">
-                <button type="button" className={taiSel === "petit" ? "on" : ""} onClick={() => onTai("petit")}>Petit</button>
-                <button type="button" className={taiSel === "grand" ? "on" : ""} onClick={() => onTai("grand")}>Grand</button>
+                <button type="button" className={taiSel === "petit" ? "on" : ""} onClick={() => onTai("petit")}>{locale === "en" ? "Small" : "Petit"}</button>
+                <button type="button" className={taiSel === "grand" ? "on" : ""} onClick={() => onTai("grand")}>{locale === "en" ? "Large" : "Grand"}</button>
               </span>
             </span>
           )}
           {t.vars && t.vars.map((g) => {
             const cur = (s.vsel && s.vsel[g.k]) || g.opts[0].k;
             return (
-              <span className="vg" key={g.k}><span className="vlab">{g.label}</span>
+              <span className="vg" key={g.k}><span className="vlab">{catT(locale, "vgroups", g.label)}</span>
                 <span className="vseg">
                   {g.opts.map((o) => (
-                    <button type="button" key={o.k} className={cur === o.k ? "on" : ""} onClick={() => onVar(g.k, o.k)}>{o.label}</button>
+                    <button type="button" key={o.k} className={cur === o.k ? "on" : ""} onClick={() => onVar(g.k, o.k)}>{catT(locale, "vopts", o.label)}</button>
                   ))}
                 </span>
               </span>

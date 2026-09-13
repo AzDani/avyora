@@ -1,4 +1,6 @@
 import { CATALOG, buildDevis, regionCoef, ICON, customTotals, key, type Ctx, type Selection, type CustomLine } from "@/lib/estimateur";
+import { catT } from "@/lib/estimateur/catalog-i18n";
+import { getLocale } from "@/lib/i18n/server";
 
 const estUrl = (s: string) => /^https?:\/\//i.test(s.trim());
 
@@ -120,7 +122,7 @@ const RAPPORT_CSS = `
 }
 `;
 
-export function RapportPDF({
+export async function RapportPDF({
   reponses,
   nom,
   refCode,
@@ -129,6 +131,7 @@ export function RapportPDF({
   nom: string;
   refCode: string;
 }) {
+  const locale = await getLocale();
   const ctx = reponses?.ctx
     ? { ...reponses.ctx, codePostal: reponses.ctx.codePostal ?? reponses.codePostal }
     : undefined;
@@ -253,7 +256,7 @@ export function RapportPDF({
                 {col.map((s) => (
                   <div key={s.corps} className="lg">
                     <span className="dot" style={{ background: s.color }} />
-                    <span className="nm">{ICON[s.corps] || ""} {s.corps}</span>
+                    <span className="nm">{ICON[s.corps] || ""} {catT(locale, "corps", s.corps)}</span>
                     <span className="am">{euro(s.ttc)}</span>
                     <span className="pc">{pctLabel(s.pct)}</span>
                   </div>
@@ -292,8 +295,8 @@ export function RapportPDF({
           <tbody>
             {slices.map((s) => (
               <tr key={s.corps}>
-                <td><span className="ic">{ICON[s.corps] || ""}</span>{s.corps}</td>
-                <td className="ph">{s.phase}</td>
+                <td><span className="ic">{ICON[s.corps] || ""}</span>{catT(locale, "corps", s.corps)}</td>
+                <td className="ph">{catT(locale, "phases", s.phase)}</td>
                 <td className="barcell"><div className="t"><div className="f" style={{ width: Math.max(6, (s.ttc / maxV) * 100) + "%" }} /></div></td>
                 <td className="amt">{euro(s.ttc)}</td>
               </tr>
@@ -316,7 +319,7 @@ export function RapportPDF({
                 return (
                   <tr key={x.id}>
                     <td>{x.nom}</td>
-                    <td className="ph">{x.qte} {x.unite} × {euro(x.prix)} · {x.lot}</td>
+                    <td className="ph">{x.qte} {catT(locale, "unites", x.unite)} × {euro(x.prix)} · {x.lot}</td>
                     <td className="amt">{euro(ttc)}</td>
                   </tr>
                 );
@@ -333,10 +336,10 @@ export function RapportPDF({
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {notes.map((n, i) => (
               <div key={i} style={{ display: "flex", gap: 10, fontSize: 12, lineHeight: 1.4, borderBottom: "1px solid #e9eaf3", paddingBottom: 6 }}>
-                <span style={{ fontWeight: 600, minWidth: 150, color: "#15172b" }}>{n.poste}</span>
+                <span style={{ fontWeight: 600, minWidth: 150, color: "#15172b" }}>{catT(locale, "postes", n.poste)}</span>
                 {estUrl(n.note)
                   ? <a href={n.note} style={{ color: "#4f46e5", wordBreak: "break-all" }}>{n.note}</a>
-                  : <span style={{ color: "#565a75" }}>{n.note}</span>}
+                  : <span style={{ color: "#565a75" }}>{catT(locale, "notes", n.note)}</span>}
               </div>
             ))}
           </div>

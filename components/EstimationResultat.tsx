@@ -8,6 +8,7 @@
 import { useMemo, useState, useCallback } from "react";
 import { EST_CSS } from "./estimateur-styles";
 import { useLocale } from "@/components/i18n/LangProvider";
+import { catT } from "@/lib/estimateur/catalog-i18n";
 import { CATALOG, buildDevis, PHASES, ICON, visible, visibleTask, key, qtyOf, effPrices, finCoefTask, rate, regionCoef, type Ctx, type Selection } from "@/lib/estimateur";
 
 // Traductions de l'interface (chrome/UI uniquement) — les données (corps d'état, postes) restent telles quelles.
@@ -403,7 +404,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
         </div>
         <div className="stat">
           <div className="k">{s.biggestItem}</div>
-          <div className="v" style={{ fontSize: 20 }}>{top ? `${ICON[top.corps] || ""} ${top.corps}` : "—"}</div>
+          <div className="v" style={{ fontSize: 20 }}>{top ? `${ICON[top.corps] || ""} ${catT(locale, "corps", top.corps)}` : "—"}</div>
           <p className="sub">{top ? `${fmt(top.ttc)} · ${topPct} % ${s.ofBudget}` : ""}</p>
         </div>
         <div className="stat">
@@ -449,7 +450,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
             <svg viewBox="0 0 200 200" aria-hidden="true">
               {slices.map((s) => (
                 <path key={s.corps} d={s.d} fill={s.color} stroke="var(--surface)" strokeWidth={2}>
-                  <title>{`${s.corps} — ${fmt(s.ttc)} · ${pctLabel(s.pct)}`}</title>
+                  <title>{`${catT(locale, "corps", s.corps)} — ${fmt(s.ttc)} · ${pctLabel(s.pct)}`}</title>
                 </path>
               ))}
             </svg>
@@ -459,7 +460,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
             {slices.map((s) => (
               <div key={s.corps} className="lg">
                 <span className="dot" style={{ background: s.color }} />
-                <span className="nm">{ICON[s.corps] || ""} {s.corps}</span>
+                <span className="nm">{ICON[s.corps] || ""} {catT(locale, "corps", s.corps)}</span>
                 <span className="am">{fmt(s.ttc)}</span>
                 <span className="pc">{pctLabel(s.pct)}</span>
               </div>
@@ -508,7 +509,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
                 <span className="chev" aria-hidden="true">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </span>
-                <span className="pt-lbl">{ph}</span>
+                <span className="pt-lbl">{catT(locale, "phases", ph)}</span>
                 <span className="pt-meta">{projectId ? `${donePh}/${lignesPh.length}` : `${lignesPh.length} ${lignesPh.length > 1 ? s.itemWordP : s.itemWord}`}</span>
               </button>
               {open && lignesPh.map((li, i) => {
@@ -518,9 +519,9 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
                 return (
                   <div key={i} className={"dtl" + (projectId ? " chant" : "")}>
                     <span>
-                      {li.nom}
+                      {catT(locale, "postes", li.nom)}
                       {projectId && li.unite !== "forfait" && (
-                        <span style={{ color: "var(--faint)", fontWeight: 400 }}> · {li.qty} {li.mode === "location" ? s.dayAbbr : li.unite}</span>
+                        <span style={{ color: "var(--faint)", fontWeight: 400 }}> · {li.qty} {li.mode === "location" ? s.dayAbbr : catT(locale, "unites", li.unite)}</span>
                       )}
                     </span>
                     {projectId ? (
@@ -535,7 +536,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
                       )
                     ) : (
                       <>
-                        <span className="q">{li.unite === "forfait" ? "—" : li.qty + " " + (li.mode === "location" ? s.dayAbbr : li.unite)}</span>
+                        <span className="q">{li.unite === "forfait" ? "—" : li.qty + " " + (li.mode === "location" ? s.dayAbbr : catT(locale, "unites", li.unite))}</span>
                         <span className={"mode " + (li.mode === "location" ? "mL" : li.mode === "je-fais" ? "mS" : "mA")}>
                           {li.mode === "location" ? s.modeRental : li.mode === "je-fais" ? s.modeDIY : s.modeHireOut}
                         </span>
