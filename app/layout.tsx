@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import Link from "next/link";
+import { AW_ID } from "@/lib/gtag";
 import { AuthNav } from "@/components/auth/AuthNav";
 import { MobileNav } from "@/components/MobileNav";
 import { FEATURES } from "@/lib/features";
@@ -141,6 +143,15 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
+        {/* Google Ads — balise de base (suivi des conversions). Les événements de
+            conversion sont déclenchés via lib/gtag.ts sur les actions clés. */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${AW_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="gtag-init" strategy="afterInteractive">
+          {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${AW_ID}');`}
+        </Script>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}

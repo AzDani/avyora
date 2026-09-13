@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth";
 import { getLocale } from "@/lib/i18n/server";
+import AdConversion from "@/components/AdConversion";
 
 export const dynamic = "force-dynamic";
 
@@ -62,14 +63,26 @@ const TR = {
  * On exige d'être connecté (personnalisation) ; on ne bloque PAS sur le statut Pro pour éviter
  * la course avec le webhook Stripe — le client vient de payer, on le félicite tout de suite.
  */
-export default async function BienvenueProPage() {
+export default async function BienvenueProPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ session_id?: string }>;
+}) {
   const user = await getUser();
   if (!user) redirect("/connexion?next=/bienvenue-pro");
   const locale = await getLocale();
   const s = TR[locale];
+  const { session_id } = await searchParams;
 
   return (
     <div className="av-welcome">
+      {/* Conversion Google Ads « Abonnement » — déclenchée après un paiement Stripe réussi.
+          transactionId = id de session Stripe → Google déduplique si la page est rechargée. */}
+      <AdConversion
+        sendTo="AW-18449681842/BeMSCKqv3vYcELKbv91E"
+        value={1.0}
+        transactionId={session_id}
+      />
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="wcard">
         <div className="whero">
