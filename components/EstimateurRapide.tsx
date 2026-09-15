@@ -12,6 +12,7 @@ import {
   type Ampleur, type QuiRealise, type TypeBien, type Finition, type PieceKey, type PieceSel,
 } from "@/lib/estimateur";
 import { suivre } from "@/lib/track";
+import { conversionEstimation } from "@/lib/gtag";
 import { useT, useLocale } from "@/components/i18n/LangProvider";
 import Stepper from "@/components/Stepper";
 
@@ -275,7 +276,7 @@ export default function EstimateurRapide({ isPro = false, edit }: { isPro?: bool
   function saveDraft() {
     try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ v: "estimateur", mode: "rapide", ampleur, qui, ctx: preset.ctx, sel: preset.sel, open: {}, codePostal: cp })); } catch { /* noop */ }
   }
-  function affiner() { suivre("estimation_terminee", { action: "affiner", type: mode === "pieces" ? "pieces" : type, ampleur }); saveDraft(); router.push("/projets/nouveau/detaille"); }
+  function affiner() { suivre("estimation_terminee", { action: "affiner", type: mode === "pieces" ? "pieces" : type, ampleur }); conversionEstimation(); saveDraft(); router.push("/projets/nouveau/detaille"); }
 
   /** Libellé du projet (ex. « Rénovation — Chambre ×2 + Salle de bain » ou « Rénovation — Maison 100 m² »). */
   function nomProjet(): string {
@@ -295,6 +296,7 @@ export default function EstimateurRapide({ isPro = false, edit }: { isPro?: bool
     if (mode === "pieces" && pieces.length === 0) { setErreur(t.auMoinsUnePiece); return; }
     if (!valid) { setErreur(t.errSurface); return; }
     suivre("estimation_terminee", { action: "enregistrer", type: mode === "pieces" ? "pieces" : type, ampleur });
+    conversionEstimation();
     setSaving(true);
     const nom = nomProjet();
     const typeBien = (mode === "pieces" ? "Appartement" : type) as TypeBien;

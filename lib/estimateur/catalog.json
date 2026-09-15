@@ -807,6 +807,13 @@
         "sm": 30
       },
       {
+        "n": "Caisson à galandage (châssis + habillage)",
+        "u": "u",
+        "fp": 800,
+        "sm": 300,
+        "note": "poche où coulisse une porte/baie à galandage — en plus de la menuiserie coulissante"
+      },
+      {
         "n": "Finitions plâtrerie (bandes, enduit)",
         "u": "m2",
         "fp": 15,

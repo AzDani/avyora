@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth";
 import { getLocale } from "@/lib/i18n/server";
 import AdConversion from "@/components/AdConversion";
+import { CONV } from "@/lib/gtag";
 
 export const dynamic = "force-dynamic";
 
@@ -79,7 +80,7 @@ export default async function BienvenueProPage({
       {/* Conversion Google Ads « Abonnement » — déclenchée après un paiement Stripe réussi.
           transactionId = id de session Stripe → Google déduplique si la page est rechargée. */}
       <AdConversion
-        sendTo="AW-18449681842/BeMSCKqv3vYcELKbv91E"
+        sendTo={CONV.abonnement}
         value={1.0}
         transactionId={session_id}
       />
