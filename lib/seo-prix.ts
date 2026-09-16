@@ -53,3 +53,41 @@ export function posteRef(nom: string, finition: Finition = "standard"): PosteRef
   }
   return null;
 }
+
+export type PartMO = { lot: string; postes: number; avecFourniture: number; partMO: number };
+
+/**
+ * Part de main-d'œuvre par lot, calculée depuis le catalogue : 1 − (somme des prix fourniture seule
+ * / somme des prix fourni-posé), sur les seuls postes qui portent les deux prix.
+ *
+ * C'est la donnée qui permet de chiffrer honnêtement l'auto-rénovation : elle dit, lot par lot,
+ * quelle part du prix est du geste et non de la matière. Calculée à l'exécution — un chiffre écrit
+ * en dur divergerait du catalogue à la première révision de prix.
+ */
+export function partMainOeuvreParLot(): PartMO[] {
+  const out: PartMO[] = [];
+  for (const l of CATALOG) {
+    let n = 0, avec = 0, sfp = 0, ssm = 0;
+    for (const t of l.t) {
+      n++;
+      if (t.sm != null && t.fp != null) { avec++; sfp += t.fp; ssm += t.sm; }
+    }
+    if (avec > 0 && sfp > 0) out.push({ lot: l.c, postes: n, avecFourniture: avec, partMO: Math.round((1 - ssm / sfp) * 100) });
+  }
+  return out.sort((a, b) => b.partMO - a.partMO);
+}
+
+/** Postes sans prix « fourniture seule » : prestations pures, rien à acheter — donc rien à faire soi-même. */
+export function postesSansFourniture(): { lot: string; nom: string }[] {
+  const out: { lot: string; nom: string }[] = [];
+  for (const l of CATALOG) for (const t of l.t) if (t.sm == null) out.push({ lot: l.c, nom: t.n });
+  return out;
+}
+
+/** Compteurs globaux du catalogue, pour ne jamais écrire « 200 postes » ou « 18 lots » en dur. */
+export function catalogueStats() {
+  const postes = CATALOG.reduce((n, l) => n + l.t.length, 0);
+  const avec = CATALOG.reduce((n, l) => n + l.t.filter((t) => t.sm != null).length, 0);
+  return { lots: CATALOG.length, postes, avecFourniture: avec, sansFourniture: postes - avec,
+           pctAvec: Math.round((avec / postes) * 100) };
+}

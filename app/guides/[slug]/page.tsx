@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { GUIDES, guideBySlug } from "@/lib/guides";
 import { VILLES_SEO } from "@/lib/villes";
 import { PRIX_MAJ_FR } from "@/lib/prix-maj";
-import { prixNational, estim, posteRef } from "@/lib/seo-prix";
+import { prixNational, estim, posteRef, partMainOeuvreParLot, postesSansFourniture, catalogueStats } from "@/lib/seo-prix";
 
 export const dynamic = "force-static";
 // Ensemble fini de pages : tout slug hors liste renvoie un vrai 404 (pas de soft-404 à 200).
@@ -104,6 +104,7 @@ function GuidesPratiques({ sauf }: { sauf?: string }) {
   const tous = [
     { slug: "verifier-devis-travaux", txt: "vérifier un devis de travaux" },
     { slug: "ordre-travaux-renovation", txt: "dans quel ordre faire ses travaux" },
+    { slug: "faire-soi-meme-ou-artisan", txt: "faire soi-même ou faire faire" },
   ].filter((g) => g.slug !== sauf);
   return (
     <p>
@@ -196,6 +197,7 @@ function faqDuGuide(slug: string) {
   if (slug === "prix-renovation-appartement") return faqAppartement();
   if (slug === "ordre-travaux-renovation") return faqOrdre();
   if (slug === "verifier-devis-travaux") return faqDevis();
+  if (slug === "faire-soi-meme-ou-artisan") return faqDIY();
   return faqMaison();
 }
 
@@ -669,11 +671,170 @@ function faqDevis() {
   ];
 }
 
+
+/* ── Guide : faire soi-même ou faire faire ─────────────────────────────────────
+   Toutes les valeurs sont LUES dans le catalogue à l'exécution (part de MO par lot, nombre de
+   postes, prix repères). Aucun chiffre en dur : un nombre figé mentirait à la première révision. */
+function BodyDIY() {
+  const stats = catalogueStats();
+  const parLot = partMainOeuvreParLot();
+  const sansF = postesSansFourniture();
+  const top = parLot.slice(0, 6);
+  const bas = parLot.slice(-4).reverse();
+  const peinture = posteRef("Peinture des murs");
+  const carrelage = posteRef("Carrelage au sol");
+  const cuisine = posteRef("Cuisine complète neuve — tout compris");
+  const lotsSansF = [...new Set(sansF.map((x) => x.lot))];
+
+  return (
+    <>
+      <p className="lead">
+        On lit partout qu&apos;on économise « environ 30 % » en faisant ses travaux soi-même. Ce
+        chiffre ne veut rien dire : l&apos;économie dépend entièrement du poste. Sur certains, la
+        main-d&apos;œuvre représente les trois quarts de la facture ; sur d&apos;autres, à peine le
+        tiers. Voici le calcul, lot par lot.
+      </p>
+
+      <h2>La vraie question : quelle part du prix est du geste</h2>
+      <p>
+        Un prix de travaux se décompose en deux choses : ce qu&apos;on achète et ce qu&apos;on fait.
+        Le référentiel AVYORA porte les deux pour <strong>{stats.avecFourniture} postes sur{" "}
+        {stats.postes}</strong> ({stats.pctAvec} %) : un prix fourni-posé et un prix fourniture seule.
+        L&apos;écart entre les deux, c&apos;est exactement ce que vous ne payez pas si vous le faites
+        vous-même.
+      </p>
+      <p>
+        Les {stats.sansFourniture} postes restants n&apos;ont pas de prix fourniture parce
+        qu&apos;il n&apos;y a rien à acheter : ce sont des prestations pures — études, diagnostics,
+        démarches, raccordements. Faire soi-même n&apos;y a aucun sens.
+      </p>
+
+      <h2>La part de main-d&apos;œuvre, lot par lot</h2>
+      <p>
+        Part du prix fourni-posé qui correspond à la pose, calculée sur l&apos;ensemble des postes du
+        lot. Plus le pourcentage est élevé, plus faire soi-même rapporte.
+      </p>
+      <div className="tw">
+        <table>
+          <thead><tr><th>Corps d&apos;état</th><th>Part main-d&apos;œuvre</th><th>Postes concernés</th></tr></thead>
+          <tbody>
+            {parLot.map((l) => (
+              <tr key={l.lot}>
+                <td>{l.lot}</td>
+                <td className="num">{l.partMO} %</td>
+                <td className="num">{l.avecFourniture} / {l.postes}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="note">
+        Calculé depuis le référentiel AVYORA, mis à jour le {PRIX_MAJ_FR} —{" "}
+        <Link href="/methodologie">voir la méthode</Link>.
+      </p>
+
+      <h2>Les postes où faire soi-même rapporte le plus</h2>
+      <p>
+        En tête : {top.map((l, i) => <span key={l.lot}>{i > 0 ? ", " : ""}<strong>{l.lot.toLowerCase()}</strong> ({l.partMO} %)</span>)}.
+        Ce sont des travaux à faible technicité et à forte intensité de temps — exactement ce
+        qu&apos;un particulier motivé peut absorber.
+      </p>
+      <p>
+        Concrètement :{" "}
+        {peinture && <>la peinture des murs revient à <strong>{peinture.fp} €/m²</strong> posée contre <strong>{peinture.sm} €/m²</strong> de fournitures. </>}
+        {carrelage && <>Le carrelage au sol : <strong>{carrelage.fp} €/m²</strong> posé contre <strong>{carrelage.sm} €/m²</strong> de matériaux. </>}
+        Sur un logement entier, l&apos;écart se compte en milliers d&apos;euros — au prix de vos
+        week-ends.
+      </p>
+
+      <h2>Ceux où ça ne rapporte presque rien</h2>
+      <p>
+        À l&apos;autre bout : {bas.map((l, i) => <span key={l.lot}>{i > 0 ? ", " : ""}<strong>{l.lot.toLowerCase()}</strong> ({l.partMO} %)</span>)}.
+        Ici le prix est dominé par le produit, pas par la pose.
+        {cuisine && <> Une cuisine complète est chiffrée <strong>{cuisine.fp} €/ml</strong> posée contre <strong>{cuisine.sm} €/ml</strong> de meubles : monter soi-même ne déplace qu&apos;une petite part du total.</>}
+      </p>
+      <p>
+        La conclusion est contre-intuitive mais solide : <strong>plus un poste est cher, moins il est
+        rentable de le faire soi-même</strong>. On économise sur le temps, pas sur la matière.
+      </p>
+
+      <h2>Les lots à ne pas toucher</h2>
+      <p>
+        Certains travaux ne relèvent pas de l&apos;arbitrage économique. L&apos;électricité et le gaz
+        engagent votre sécurité et la conformité de l&apos;installation ; toucher à la structure
+        (mur porteur, charpente) sans étude met le bâtiment en jeu ; l&apos;amiante et le plomb
+        relèvent d&apos;entreprises certifiées et d&apos;une évacuation réglementée. Ce guide ne
+        donne volontairement aucun mode opératoire sur ces sujets.
+      </p>
+      <p>
+        Point rarement dit : <strong>un poste que vous réalisez vous-même n&apos;est couvert par
+        aucune garantie décennale</strong>. Si le sinistre vient de là, vous en répondez seul, et
+        votre assureur peut vous opposer un défaut de couverture. Cela vaut d&apos;être vérifié
+        auprès de lui avant de commencer, pas après.
+      </p>
+      <p className="note">
+        Lots sans prix fourniture dans le référentiel, donc non basculables en « je le fais » :{" "}
+        {lotsSansF.join(", ")}.
+      </p>
+
+      <h2>Ce que l&apos;économie annoncée oublie</h2>
+      <ul>
+        <li>
+          <strong>La TVA.</strong> C&apos;est le coût caché le plus systématiquement ignoré. Sur une
+          facture d&apos;artisan en rénovation, les travaux relèvent d&apos;un taux réduit. Les
+          matériaux que vous achetez seul sont, eux, à <strong>20 %</strong>. L&apos;estimateur
+          applique cette règle automatiquement : une partie de l&apos;économie de main-d&apos;œuvre
+          est reprise par l&apos;écart de TVA.
+        </li>
+        <li><strong>La location de matériel.</strong> Ponceuse, échafaudage roulant, carrelette, malaxeur : facturés à la journée, ils s&apos;accumulent sur un chantier qui dure.</li>
+        <li><strong>L&apos;évacuation.</strong> Benne, déchetterie, allers-retours : un artisan l&apos;inclut dans son prix, vous non.</li>
+        <li><strong>Les reprises.</strong> Un travail à reprendre coûte deux fois — et un artisan appelé pour rattraper facture plus cher qu&apos;un artisan appelé dès le départ.</li>
+        <li><strong>Votre temps.</strong> Il n&apos;a pas de prix au bilan, mais il en a un dans votre vie. Un logement entier repeint, c&apos;est des dizaines d&apos;heures.</li>
+      </ul>
+
+      <h2>Comment arbitrer, poste par poste</h2>
+      <p>
+        La bonne méthode n&apos;est pas de choisir « tout soi-même » ou « tout artisan », mais de
+        trancher ligne par ligne. Trois critères suffisent : la part de main-d&apos;œuvre du poste
+        (le tableau ci-dessus), votre capacité réelle à le faire proprement, et l&apos;effet sur le
+        planning — un poste que vous retardez bloque les artisans qui viennent après, et{" "}
+        <Link href="/guides/ordre-travaux-renovation">l&apos;ordre des travaux</Link> ne se négocie pas.
+      </p>
+      <p>
+        L&apos;estimateur AVYORA permet exactement cet arbitrage : pour chaque poste, vous choisissez
+        « fait faire » ou « je le fais », et le total se recalcule avec la bonne TVA et la bonne part
+        de main-d&apos;œuvre.
+      </p>
+
+      <Cta label="Comparer les deux scénarios sur votre projet" />
+
+      <Faq items={faqDIY()} />
+      <GuidesPratiques sauf="faire-soi-meme-ou-artisan" />
+      <VillesLink />
+    </>
+  );
+}
+
+function faqDIY() {
+  const s = catalogueStats();
+  const parLot = partMainOeuvreParLot();
+  const meilleur = parLot[0], pire = parLot[parLot.length - 1];
+  return [
+    { q: "Combien économise-t-on en faisant ses travaux soi-même ?", a: `Cela dépend entièrement du poste. Sur le référentiel AVYORA, la part de main-d'œuvre va d'environ ${pire.partMO} % (${pire.lot.toLowerCase()}) à ${meilleur.partMO} % (${meilleur.lot.toLowerCase()}). Un pourcentage unique d'économie n'a donc aucun sens : il faut raisonner poste par poste.` },
+    { q: "Quels travaux peut-on faire soi-même sans risque ?", a: "La peinture, la pose de sols souples ou stratifiés, la dépose et le curage sont accessibles à un particulier soigneux. L'électricité, le gaz, la structure porteuse, la charpente, l'amiante et le plomb ne relèvent pas d'un arbitrage économique : ils engagent la sécurité et la conformité." },
+    { q: "Paie-t-on plus de TVA quand on achète les matériaux soi-même ?", a: "Oui, et c'est le coût caché le plus souvent oublié. Les travaux facturés par un artisan en rénovation relèvent d'un taux réduit, tandis que les matériaux achetés directement par un particulier sont à 20 %. Une partie de l'économie de main-d'œuvre est donc reprise par l'écart de TVA." },
+    { q: "Un travail fait soi-même est-il couvert par la garantie décennale ?", a: "Non. La garantie décennale couvre l'entreprise qui a réalisé l'ouvrage : un poste que vous réalisez vous-même n'est couvert par personne. En cas de sinistre lié à ce poste, vous en répondez seul. Vérifiez votre situation auprès de votre assureur avant de commencer." },
+    { q: "Sur quels postes faire soi-même rapporte-t-il le moins ?", a: `Sur ceux où le prix est dominé par le produit et non par la pose : ${parLot.slice(-3).map((l) => l.lot.toLowerCase()).join(", ")}. Plus un poste est cher à l'achat, moins le faire soi-même déplace le total.` },
+    { q: "Combien de postes du référentiel peut-on basculer en « je le fais » ?", a: `${s.avecFourniture} sur ${s.postes} (${s.pctAvec} %) portent un prix fourniture seule et peuvent donc être arbitrés. Les ${s.sansFourniture} autres sont des prestations pures — études, diagnostics, démarches, raccordements — où il n'y a rien à acheter.` },
+  ];
+}
+
 const BODIES: Record<string, () => React.ReactElement> = {
   "prix-renovation-appartement": BodyAppartement,
   "prix-renovation-maison": BodyMaison,
   "ordre-travaux-renovation": BodyOrdre,
   "verifier-devis-travaux": BodyDevis,
+  "faire-soi-meme-ou-artisan": BodyDIY,
 };
 
 export default async function GuidePage({ params }: { params: Promise<{ slug: string }> }) {

@@ -53,6 +53,15 @@ export const GUIDES: GuideMeta[] = [
       "Comment lire un devis de travaux ligne par ligne, repérer un poste surévalué ou absent, et comparer plusieurs artisans. Avec des prix repères par poste pour situer chaque ligne.",
     eyebrow: "Guide pratique",
     resume: "Ce que doit contenir un devis, les signaux d'alerte, et des prix repères pour situer chaque ligne.",
+  },
+  {
+    slug: "faire-soi-meme-ou-artisan",
+    h1: "Faire ses travaux soi-même : combien on économise vraiment",
+    title: "Travaux soi-même ou artisan : combien on économise",
+    description:
+      "Combien rapporte vraiment l'auto-rénovation ? La part de main-d'œuvre calculée lot par lot, les postes où faire soi-même paie, ceux où ça ne rapporte presque rien, et les coûts que l'économie annoncée oublie.",
+    eyebrow: "Guide pratique",
+    resume: "La part de main-d'œuvre lot par lot, où faire soi-même paie vraiment, et ce que l'économie annoncée oublie.",
   }
 ];
 
