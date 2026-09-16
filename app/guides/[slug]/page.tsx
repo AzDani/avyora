@@ -199,6 +199,71 @@ function faqDuGuide(slug: string) {
   return faqMaison();
 }
 
+/* Section partagée par les deux guides de prix : les leviers qui font réellement bouger la facture.
+   Tout est adossé au moteur — coefficients de finition de lib/estimateur/core.ts et prix
+   « fourniture seule » du catalogue — donc rien d'inventé, et personne d'autre ne peut l'écrire. */
+function LeviersPrix() {
+  const peinture = posteRef("Peinture des murs");
+  const carrelage = posteRef("Carrelage au sol");
+  return (
+    <>
+      <h2>Trois leviers pour faire baisser la facture</h2>
+      <p>
+        À projet identique, le montant final peut varier fortement selon trois décisions. Les voici
+        par ordre d&apos;impact, chiffrés à partir du référentiel AVYORA.
+      </p>
+
+      <h3>1. Le niveau de finition</h3>
+      <p>
+        C&apos;est le levier le plus puissant, et le plus indolore. Passer du premium au standard fait
+        baisser la facture d&apos;environ <strong>12 %</strong> sur les lots techniques (maçonnerie,
+        électricité, isolation) et jusqu&apos;à <strong>22 %</strong> sur les lots où le choix des
+        matériaux domine — carrelage, peinture, cuisine. En éco, l&apos;écart monte respectivement à
+        <strong> 17 %</strong> et <strong>33 %</strong>.
+      </p>
+      <p>
+        Autrement dit : l&apos;essentiel de l&apos;économie se joue sur ce qui se voit, pas sur ce qui
+        tient le bâtiment. C&apos;est plutôt une bonne nouvelle — on peut réduire le budget sans
+        toucher à la qualité technique.
+      </p>
+
+      <h3>2. Ce que vous faites vous-même</h3>
+      <p>
+        Chaque poste du référentiel porte deux prix : fourni-posé, et fourniture seule. L&apos;écart,
+        c&apos;est la main-d&apos;œuvre — et il est spectaculaire sur les postes accessibles.
+        {peinture && (
+          <> La peinture des murs revient à <strong>{peinture.fp} €/m²</strong> posée contre{" "}
+          <strong>{peinture.sm} €/m²</strong> en fournitures seules.</>
+        )}
+        {carrelage && (
+          <> Le carrelage au sol : <strong>{carrelage.fp} €/m²</strong> posé contre{" "}
+          <strong>{carrelage.sm} €/m²</strong> de matériaux.</>
+        )}
+      </p>
+      <p>
+        Attention à ne pas confondre économie et illusion : peindre soi-même est à la portée de
+        beaucoup, refaire une installation électrique ne l&apos;est pas, et certains travaux engagent
+        votre responsabilité comme votre assurance. L&apos;estimateur permet de trancher poste par
+        poste et de voir l&apos;économie réelle avant de s&apos;engager.
+      </p>
+
+      <h3>3. L&apos;ampleur, décidée tôt</h3>
+      <p>
+        Entre un rafraîchissement et une rénovation lourde, le coût au m² est multiplié par environ
+        cinq. La vraie question n&apos;est donc pas « combien coûte le m² » mais « qu&apos;est-ce que je
+        refais vraiment ». Repousser un poste d&apos;un an coûte presque toujours moins cher que de le
+        faire à moitié — sauf s&apos;il faudra rouvrir ce qu&apos;on vient de fermer, et c&apos;est là
+        que{" "}
+        <Link href="/guides/ordre-travaux-renovation">l&apos;ordre des travaux</Link> devient décisif.
+      </p>
+      <p className="note">
+        Coefficients et prix issus du référentiel AVYORA, mis à jour le {PRIX_MAJ_FR} —{" "}
+        <Link href="/methodologie">voir la méthode</Link>.
+      </p>
+    </>
+  );
+}
+
 function BodyAppartement() {
   const grille = prixNational();
   const g = (v: string) => grille.find((x) => x.v === v)!;
@@ -276,6 +341,8 @@ function BodyAppartement() {
       </p>
 
       <VillesLink />
+
+      <LeviersPrix />
 
       <h2>Et une maison ?</h2>
       <p>
@@ -371,6 +438,8 @@ function BodyMaison() {
       </p>
 
       <VillesLink />
+
+      <LeviersPrix />
 
       <h2>Et un appartement ?</h2>
       <p>
