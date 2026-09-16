@@ -227,6 +227,21 @@ export default function EstimateurRapide({ isPro = false, edit }: { isPro?: bool
   const lo = Math.round((tot.ttc * 0.85) / 100) * 100;
   const hi = Math.round((tot.ttc * 1.15) / 100) * 100;
   const m2 = valid && totalSurface > 0 ? Math.round(tot.ttc / totalSurface) : 0;
+
+  // Conversion « Estimation terminée » : l'estimateur rapide affiche le prix EN DIRECT (pas de bouton « calculer »),
+  // donc le moment de valeur = une fourchette valide restée stable ~1,8 s. On déclenche alors la conversion Google Ads
+  // (dédupliquée par session dans conversionEstimation) + l'event Vercel. Une seule fois par visite (convFired).
+  // Affiner / Enregistrer restent des signaux d'intention plus profonds (plus bas), déjà dédupliqués côté Google.
+  const convFired = useRef(false);
+  useEffect(() => {
+    if (convFired.current || !valid || !(tot.ttc > 0)) return;
+    const id = window.setTimeout(() => {
+      convFired.current = true;
+      suivre("estimation_terminee", { action: "affichee", type: mode === "pieces" ? "pieces" : type, ampleur });
+      conversionEstimation();
+    }, 1800);
+    return () => window.clearTimeout(id);
+  }, [valid, tot.ttc, mode, type, ampleur]);
   const ampName = ampCard(ampleur).label.toLowerCase();
 
   const m2ByAmp = useMemo(() => {
