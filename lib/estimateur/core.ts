@@ -68,7 +68,8 @@ export interface Ctx {
   sejour?: number; cuisine?: number; chambres?: number; suites?: number; couloir?: number; buanderie?: number;
   // Périmètre du projet (estimateur détaillé) : logement entier (défaut) ou une seule pièce/espace.
   perimetre?: "entier" | "piece";
-  espace?: string;            // en mode « piece » : clé de l'espace choisi (voir ESPACES)
+  espace?: string;            // legacy / cas « suite seule » : clé de l'espace choisi (voir ESPACES)
+  espaces?: Record<string, { n: number; s: number }>; // mode « pièces ciblées » : plusieurs pièces, chacune n× à s m²
   // Suite parentale : découpe de la surface par zone (surface totale = zChambre + zSdb + (dressing ? zDressing : 0)).
   zChambre?: number; zSdb?: number; zDressing?: number; avecDressing?: boolean;
 }
@@ -289,11 +290,42 @@ export const ESPACES: Record<string, EspaceDef> = {
   autre: { emoji: "➕", nom: "Autre espace", surface: 20, ctx: { niveaux: 1 }, lots: null },
 };
 
+/** Espaces choisis en mode « pièces ciblées », avec compat de l'ancien champ `espace` (une seule pièce). */
+export function selectedEspaces(ctx: Ctx): Array<{ k: string; n: number; s: number }> {
+  if (ctx.espaces && Object.keys(ctx.espaces).length)
+    return Object.entries(ctx.espaces)
+      .filter(([k]) => ESPACES[k])
+      .map(([k, v]) => ({ k, n: Math.max(1, Math.round(v?.n || 1)), s: Math.max(1, v?.s || ESPACES[k].surface) }));
+  if (ctx.espace && ESPACES[ctx.espace]) return [{ k: ctx.espace, n: 1, s: ctx.surface || ESPACES[ctx.espace].surface }];
+  return [];
+}
+/** Lots autorisés en mode « pièces ciblées » = union des lots des espaces choisis (un espace `lots:null` ouvre tout). */
+export function espacesLots(ctx: Ctx): Set<string> | null {
+  const sel = selectedEspaces(ctx);
+  if (!sel.length) return null;
+  const out = new Set<string>();
+  for (const { k } of sel) { const lots = ESPACES[k].lots; if (!lots) return null; lots.forEach((c) => out.add(c)); }
+  return out;
+}
+/** Compo ctx (compteurs de pièces + surface totale) dérivée des espaces choisis. Somme chaque pièce × son nombre. */
+export function espacesCompo(espaces: Record<string, { n: number; s: number }>): Partial<Ctx> {
+  const base: Record<string, number> = { sejour: 0, cuisine: 0, chambres: 0, suites: 0, couloir: 0, buanderie: 0, sdb: 0, wc: 0, fenetres: 0 };
+  let surface = 0;
+  for (const [k, v] of Object.entries(espaces)) {
+    const e = ESPACES[k]; if (!e) continue;
+    const n = Math.max(1, Math.round(v?.n || 1)), s = Math.max(1, v?.s || e.surface);
+    surface += n * s;
+    const ec = e.ctx as Record<string, number>;
+    for (const f of Object.keys(base)) if (typeof ec[f] === "number") base[f] += ec[f] * n;
+  }
+  return { ...base, surface: Math.round(surface), surfaceSol: Math.round(surface), surfaceSolManual: true, niveaux: 1 };
+}
+
 export const visible = (ctx: Ctx, l: Lot): boolean => {
   if (isAppart(ctx) && HIDE_APPART.indexOf(l.c) >= 0) return false;
-  if (ctx.perimetre === "piece" && ctx.espace) {
-    const e = ESPACES[ctx.espace];
-    if (e && e.lots && !e.lots.includes(l.c)) return false; // mode pièce : on ne montre que les lots pertinents
+  if (ctx.perimetre === "piece") {
+    const lots = espacesLots(ctx); // union des lots des pièces choisies
+    if (lots && !lots.has(l.c)) return false;
   }
   return true;
 };

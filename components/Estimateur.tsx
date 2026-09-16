@@ -16,6 +16,7 @@ import {
   CATALOG, PHASES, finCoef, ICON, LOC, defaultCtx, key, isLoc, visible, visibleTask,
   nbFen, nbPieces, deriveSol, autoQty, isAuto, qtyOf, effRate, lineHT, lotHT, effPrices,
   totals, buildDevis, regionCoef, piecesEff, sdbEff, customLotHT, customTotals, ESPACES,
+  espacesCompo, selectedEspaces,
   type Ctx, type Selection, type TypeBien, type Finition, type Lot, type Tache, type CustomLine,
 } from "@/lib/estimateur";
 import { useLocale } from "@/components/i18n/LangProvider";
@@ -130,16 +131,45 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
   }
   function onSol(raw: string) { patchCtx({ surfaceSol: parseFloat(raw) || 0, surfaceSolManual: true }); }
   function onType(t: TypeBien) { patchCtx({ type: t, pieces: nbPieces(t), fenetres: nbFen(t) }); }
-  // Mode « Périmètre » : bascule logement entier / une pièce (choisit une suite par défaut).
-  function onPerimetre(m: "entier" | "piece") {
-    if (m === "entier") { patchCtx({ perimetre: "entier", espace: undefined }); return; }
-    onEspace(ctx.espace && ESPACES[ctx.espace] ? ctx.espace : "suite");
+  // ── Mode « pièces ciblées » : plusieurs pièces, chacune ×N à S m² (compat ancien champ `espace`) ──
+  // Carte {clé espace → {n, s}} courante, reconstruite depuis l'ancien champ `espace` si besoin.
+  function espMap(): Record<string, { n: number; s: number }> {
+    if (ctx.espaces && Object.keys(ctx.espaces).length) return ctx.espaces;
+    const m: Record<string, { n: number; s: number }> = {};
+    for (const e of selectedEspaces(ctx)) m[e.k] = { n: e.n, s: e.s };
+    return m;
   }
-  // Choix d'un espace : pré-remplit surface + composition (ctx) et restreint les lots (via visible).
-  function onEspace(k: string) {
-    const e = ESPACES[k];
-    if (!e) return;
-    patchCtx({ perimetre: "piece", espace: k, type: "Maison", surface: e.surface, surfaceSolManual: true, surfaceSol: e.surface, ...e.ctx });
+  // Applique une sélection : cas « suite seule » = ancien éditeur de zones ; sinon compo multi (sommes).
+  function applyEspaces(map: Record<string, { n: number; s: number }>) {
+    const keys = Object.keys(map);
+    if (!keys.length) return;
+    if (keys.length === 1 && keys[0] === "suite" && map.suite?.n === 1) {
+      const e = ESPACES.suite;
+      patchCtx({ perimetre: "piece", type: "Maison", espaces: undefined, espace: "suite", surface: e.surface, surfaceSol: e.surface, surfaceSolManual: true, ...e.ctx });
+    } else {
+      patchCtx({ perimetre: "piece", type: "Maison", espace: undefined, espaces: map, ...espacesCompo(map) });
+    }
+  }
+  function onPerimetre(m: "entier" | "piece") {
+    if (m === "entier") { patchCtx({ perimetre: "entier", espace: undefined, espaces: undefined }); return; }
+    const cur = espMap();
+    applyEspaces(Object.keys(cur).length ? cur : { chambre: { n: 1, s: ESPACES.chambre.surface } });
+  }
+  function toggleEspace(k: string) {
+    const m = { ...espMap() };
+    if (m[k]) { if (Object.keys(m).length === 1) return; delete m[k]; } // on garde toujours au moins une pièce
+    else m[k] = { n: 1, s: ESPACES[k]?.surface ?? 12 };
+    applyEspaces(m);
+  }
+  function stepEspaceN(k: string, delta: number) {
+    const m = { ...espMap() }; if (!m[k]) return;
+    m[k] = { ...m[k], n: Math.max(1, (m[k].n || 1) + delta) };
+    applyEspaces(m);
+  }
+  function setEspaceS(k: string, val: number) {
+    const m = { ...espMap() }; if (!m[k]) return;
+    m[k] = { ...m[k], s: Math.max(1, Math.round(val) || 1) };
+    applyEspaces(m);
   }
   // Suite parentale : surface totale = somme des zones (chambre + SDB + dressing éventuel).
   function syncSuite(next: Ctx): Ctx {
@@ -195,8 +225,11 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
     if (!/^\d{5}$/.test(codePostal)) { setErreur("Renseignez un code postal (5 chiffres) dans « Votre projet »."); setView("saisie"); return; }
     if (!(ctx.surface > 0)) { setErreur("Renseignez la surface habitable."); setView("saisie"); return; }
     setSaving(true);
-    const nom = (piece && ctx.espace && ESPACES[ctx.espace]
-      ? `Rénovation — ${ESPACES[ctx.espace].nom} ${ctx.surface} m²`
+    const espLabel = ctx.perimetre === "piece"
+      ? selectedEspaces(ctx).map(({ k, n }) => `${n > 1 ? n + " " : ""}${ESPACES[k]?.nom ?? k}`).join(" + ")
+      : "";
+    const nom = (espLabel
+      ? `Rénovation — ${espLabel} · ${ctx.surface} m²`
       : `Rénovation — ${ctx.type} ${ctx.surface} m²`).slice(0, 110);
     const reponses = { v: "estimateur", mode: "detaille", ctx: ctxR, sel, codePostal, custom, ...(statutsRef.current ? { statuts: statutsRef.current } : {}) };
     try {
@@ -217,6 +250,9 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
   const appart = ctx.type !== "Maison";
   const piece = ctx.perimetre === "piece";
   const suite = piece && ctx.espace === "suite";
+  const espSel = piece ? selectedEspaces(ctx) : [];
+  const espKeys = new Set(espSel.map((e) => e.k));
+  const espTotal = espSel.reduce((sum, e) => sum + e.n * e.s, 0);
   const pTot = piecesEff(ctx), sdbTot = sdbEff(ctx);
   const SS = ctx.surfaceSol || ctx.surface;
   const facade = Math.round(4 * Math.sqrt(SS) * ctx.hauteur * (ctx.niveaux || 1) * 1.25);
@@ -247,18 +283,31 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
               <div className="gl">Périmètre du projet</div>
               <div className="segf">
                 <button type="button" className={!piece ? "on" : ""} onClick={() => onPerimetre("entier")}>🏠 Logement entier</button>
-                <button type="button" className={piece ? "on" : ""} onClick={() => onPerimetre("piece")}>🎯 Une pièce / un espace</button>
+                <button type="button" className={piece ? "on" : ""} onClick={() => onPerimetre("piece")}>🎯 Une ou plusieurs pièces</button>
               </div>
 
               {piece ? (
                 <>
-                  <div className="gl">Quel espace ?</div>
+                  <div className="gl">Quelles pièces rénover ?</div>
                   <div className="tpills">
                     {Object.entries(ESPACES).map(([k, e]) => (
-                      <button key={k} type="button" className={"tpill" + (ctx.espace === k ? " on" : "")} onClick={() => onEspace(k)}>{e.emoji} {espaceNom(locale, e.nom)}</button>
+                      <button key={k} type="button" className={"tpill" + (espKeys.has(k) ? " on" : "")} onClick={() => toggleEspace(k)}>{e.emoji} {espaceNom(locale, e.nom)}</button>
                     ))}
                   </div>
-                  <div className="locnote" style={{ marginTop: 10 }}>On cale les quantités sur la surface de l'espace et on n'affiche que les lots concernés. Compo pré-remplie, à ajuster ci-dessous.</div>
+                  <div className="locnote" style={{ marginTop: 10 }}>Coche toutes les pièces concernées (ex. 2 chambres + 1 SDB). On additionne les quantités et on n'affiche que les lots utiles.</div>
+                  {!suite && (
+                    <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
+                      {espSel.map(({ k, n, s }) => (
+                        <div key={k} style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", padding: "8px 10px", border: "1px solid var(--line, #e7e6f0)", borderRadius: 10 }}>
+                          <span style={{ fontWeight: 600, minWidth: 130 }}>{ESPACES[k].emoji} {espaceNom(locale, ESPACES[k].nom)}</span>
+                          <Stepper label="Combien" value={n} onStep={(d) => stepEspaceN(k, d)} />
+                          <Field label="Surface (m²/pièce)"><NumStepper field value={s} min={1} unit="m²" onChange={(v) => setEspaceS(k, v)} /></Field>
+                          <span style={{ marginLeft: "auto", color: "var(--faint)" }}>{n} × {s} = <b style={{ color: "var(--ink, inherit)" }}>{n * s} m²</b></span>
+                        </div>
+                      ))}
+                      <div className="suitetotal">Surface totale du projet<b className="num">{espTotal} m²</b></div>
+                    </div>
+                  )}
                 </>
               ) : (
                 <>
@@ -271,7 +320,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                 </>
               )}
 
-              <div className="gl">{piece ? "Dimensions de l'espace" : "Surfaces"}</div>
+              <div className="gl">{piece ? "Hauteur & localisation" : "Surfaces"}</div>
 
               {suite && (
                 <div className="suitezones">
@@ -288,8 +337,8 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
               )}
 
               <div className="depart">
-                {!suite && (
-                  <Field label={piece ? "Surface" : "Surface habitable"} hint={piece ? undefined : "Tous les niveaux additionnés — là où tu vis. Si tu crées un étage, ajoute sa surface ici."}>
+                {!piece && (
+                  <Field label="Surface habitable" hint="Tous les niveaux additionnés — là où tu vis. Si tu crées un étage, ajoute sa surface ici.">
                     <NumStepper field value={ctx.surface} min={1} unit="m²" onChange={(n) => onNum("surface", String(n))} />
                   </Field>
                 )}
@@ -302,7 +351,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                 <Field label="Code postal"><div className="uinp"><input inputMode="numeric" maxLength={5} placeholder="33000" value={codePostal} onChange={(e) => setCodePostal(e.target.value.replace(/\D/g, "").slice(0, 5))} /></div></Field>
               </div>
 
-              {!suite && (<>
+              {!piece && (<>
               <div className="gl">Pièces &amp; configuration <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 500 }}>· chaque pièce compte dans le chiffrage</span></div>
               <div className="stpg">
                 <Stepper label="Niveaux" hint="RDC = 1" value={ctx.niveaux} onStep={(d) => stepCtx("niveaux", d, 1)} />
@@ -345,13 +394,20 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                 <Field label={<>Provision aléas <span style={{ color: "var(--faint)" }}>· reco ≥ 5</span></>}><NumStepper field value={ctx.aleas} min={0} max={20} unit="%" onChange={(n) => onNum("aleas", String(n))} /></Field>
               </div>
               <div className="recap">
-                🏠 <b>{appart ? "Appartement" : "Maison"}</b> · {ctx.surface} m² habitables · <b>{ctx.niveaux} niveau{ctx.niveaux > 1 ? "x" : ""}</b> · emprise au sol ~{SS} m² · plafond {ctx.hauteur} m
-                {!appart && <> → murs extérieurs ≈ <b>{facade} m²</b> · toiture ≈ <b>{roof} m²</b></>}
-                {etage > 0 && <span style={{ color: "var(--faint)" }}> (dont ~{etage} m² à l’étage)</span>}
-                <div style={{ marginTop: 6 }}>
-                  → <b>{pTot} pièce{pTot > 1 ? "s" : ""}</b> au total · <b>{sdbTot} salle{sdbTot > 1 ? "s" : ""} de bain</b>
-                  {(ctx.suites ?? 0) > 0 && <> (dont {ctx.suites} en suite)</>} · {ctx.fenetres} menuiseries ext.
-                </div>
+                {piece ? (
+                  <>🎯 <b>Pièces ciblées</b> · {ctx.surface} m² · plafond {ctx.hauteur} m
+                    <div style={{ marginTop: 6 }}>→ {espSel.map(({ k, n }) => `${n} ${espaceNom(locale, ESPACES[k]?.nom ?? k)}`).join(" · ")}</div>
+                  </>
+                ) : (
+                  <>🏠 <b>{appart ? "Appartement" : "Maison"}</b> · {ctx.surface} m² habitables · <b>{ctx.niveaux} niveau{ctx.niveaux > 1 ? "x" : ""}</b> · emprise au sol ~{SS} m² · plafond {ctx.hauteur} m
+                    {!appart && <> → murs extérieurs ≈ <b>{facade} m²</b> · toiture ≈ <b>{roof} m²</b></>}
+                    {etage > 0 && <span style={{ color: "var(--faint)" }}> (dont ~{etage} m² à l’étage)</span>}
+                    <div style={{ marginTop: 6 }}>
+                      → <b>{pTot} pièce{pTot > 1 ? "s" : ""}</b> au total · <b>{sdbTot} salle{sdbTot > 1 ? "s" : ""} de bain</b>
+                      {(ctx.suites ?? 0) > 0 && <> (dont {ctx.suites} en suite)</>} · {ctx.fenetres} menuiseries ext.
+                    </div>
+                  </>
+                )}
                 {codePostal.length >= 2 && (
                   <div style={{ marginTop: 6 }}>
                     📍 <b>{reg.zone}</b>
