@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { User } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase/server";
@@ -6,13 +7,19 @@ import { journaliser } from "@/lib/audit";
 /**
  * Utilisateur authentifié courant (server components / route handlers), ou null.
  * Passe par la session cookie → RLS. À utiliser pour gater l'accès et scoper les données.
+ *
+ * Enveloppé dans cache() de React : la coque appelle getUser() deux fois (AuthNav pour la nav
+ * desktop, MobileNav pour la nav mobile), et chaque page protégée l'appelle encore. Sans
+ * mémoïsation, un même rendu payait plusieurs allers-retours vers l'auth Supabase, en série
+ * avant l'envoi du HTML. cache() déduplique à l'échelle d'UNE requête — aucun partage entre
+ * utilisateurs, donc aucun risque de fuite de session.
  */
-export async function getUser() {
+export const getUser = cache(async () => {
   const supabase = await supabaseServer();
   const { data, error } = await supabase.auth.getUser();
   if (error) return null;
   return data.user;
-}
+});
 
 /**
  * Allow-list d'administrateurs (emails), configurée via ADMIN_EMAILS (séparés par des virgules).

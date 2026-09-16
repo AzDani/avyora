@@ -5,11 +5,17 @@ import { getLocale } from "@/lib/i18n/server";
 import AdConversion from "@/components/AdConversion";
 import { CONV } from "@/lib/gtag";
 
+
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   const locale = await getLocale();
-  return { title: locale === "en" ? "Welcome to AVYORA Pro" : "Bienvenue dans AVYORA Pro" };
+  return {
+    title: locale === "en" ? "Welcome to AVYORA Pro" : "Bienvenue dans AVYORA Pro",
+    // Page gatée : la redirection part après le début du streaming, un crawler reçoit un 200
+    // avec une coquille vide (soft 404). Aucune demande de recherche ne la vise.
+    robots: { index: false, follow: false },
+  };
 }
 
 const TR = {

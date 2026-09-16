@@ -2,6 +2,10 @@ import { redirect } from "next/navigation";
 import Estimateur from "@/components/Estimateur";
 import { getUser, estPro } from "@/lib/auth";
 
+// noindex : cette page est gatée (redirection vers /connexion ou /tarifs), mais la redirection
+// intervient après le début du streaming — un crawler reçoit donc un 200 avec une coquille vide,
+// ce que Google interprète comme un soft 404. Aucune demande de recherche ne la vise de toute façon.
+export const metadata = { robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
 // Estimation détaillée (poste par poste) — réservée aux abonnés Pro.

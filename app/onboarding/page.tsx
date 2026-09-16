@@ -3,11 +3,16 @@ import { getUser } from "@/lib/auth";
 import { getLocale } from "@/lib/i18n/server";
 import OnboardingForm from "@/components/OnboardingForm";
 
+
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   const locale = await getLocale();
-  return { title: locale === "en" ? "Welcome — AVYORA" : "Bienvenue — AVYORA" };
+  return {
+    title: locale === "en" ? "Welcome" : "Bienvenue",
+    // Page gatée : redirection après début du streaming → 200 à coquille vide pour un crawler.
+    robots: { index: false, follow: false },
+  };
 }
 
 export default async function OnboardingPage() {
