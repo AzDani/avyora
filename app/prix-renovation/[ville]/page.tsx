@@ -78,12 +78,17 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
   const lourde = grille.find((g) => g.v === "lourde")!;
   const totalCompletAppart = complete.appartM2 * 70;
 
+  // Formulation honnête : ce coefficient est un indice INTERNE AVYORA, sans source publique
+  // (cf. /methodologie). On décrit donc ce que l'outil applique, sans affirmer un fait de marché.
   const coefPhrase =
     moPct > 0
-      ? `la main-d'œuvre y est environ ${moPct} % plus chère que la moyenne nationale`
+      ? `AVYORA y applique un coefficient de +${moPct} % sur la main-d'œuvre`
       : moPct < 0
-        ? `la main-d'œuvre y est environ ${Math.abs(moPct)} % moins chère que la moyenne nationale`
-        : `la main-d'œuvre y est dans la moyenne nationale`;
+        ? `AVYORA y applique un coefficient de −${Math.abs(moPct)} % sur la main-d'œuvre`
+        : `AVYORA n'y applique aucun ajustement de main-d'œuvre`;
+  // Variante courte, pour les phrases qui nomment déjà AVYORA (évite « AVYORA … AVYORA y applique »).
+  const coefCourt =
+    moPct > 0 ? `+${moPct} % sur la main-d'œuvre` : moPct < 0 ? `−${Math.abs(moPct)} % sur la main-d'œuvre` : `aucun ajustement`;
 
   const faq = [
     {
@@ -92,7 +97,7 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
     },
     {
       q: `Pourquoi les prix diffèrent-ils à ${v.nom} ?`,
-      a: `Les fournitures sont à un prix national, mais la main-d'œuvre varie selon la zone : à ${v.nom} (${reg.zone}), ${coefPhrase}.`,
+      a: `Les fournitures sont à un prix national ; c'est la main-d'œuvre qui varie. ${v.nom} est classée « ${reg.zone} » dans le barème régional AVYORA, un indice interne établi par département : ${coefCourt}. La méthode est détaillée sur la page Méthodologie.`,
     },
     {
       q: `Rénover un appartement ou une maison, quelle différence de prix ?`,
@@ -145,7 +150,7 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
         moyenne <strong>{euro(complete.appartM2)}/m²</strong> pour un appartement — de{" "}
         <strong>{euro(partielle.appartM2)}/m²</strong> pour une réno partielle à{" "}
         <strong>{euro(lourde.maisonM2)}/m²</strong> pour une réno lourde de maison. Zone tarifaire :{" "}
-        « {reg.zone} » — {coefPhrase}.
+        « {reg.zone} » — {coefPhrase} (<Link href="/methodologie">barème interne, méthode détaillée ici</Link>).
       </p>
       <p className="prixmaj">Prix mis à jour le {PRIX_MAJ_FR} · <Link href="/methodologie">d&apos;où viennent ces prix ?</Link></p>
 
