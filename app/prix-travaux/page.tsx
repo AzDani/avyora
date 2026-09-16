@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { PROJETS, estimProjet } from "@/lib/seo-projets";
 import { VILLES_SEO } from "@/lib/villes";
+import { PRIX_MAJ_FR } from "@/lib/prix-maj";
 
 export const dynamic = "force-static";
 
@@ -35,6 +36,9 @@ const CSS = `
 .av-card .t{font-weight:600;color:var(--color-ink);margin-top:6px;font-size:15px}
 .av-card .p{font-family:var(--font-geist-mono),monospace;color:var(--color-brand-700);font-size:13.5px;margin-top:2px}
 .av-card .s{font-size:12.5px;color:var(--color-faint);margin-top:4px;line-height:1.5}
+.av-seo .note{font-size:12.5px;color:var(--color-faint)}
+.av-seo p a{color:var(--color-brand-700);font-weight:500}
+@media(max-width:560px){.av-seo p{font-size:16px}}
 .av-seo .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .av-seo .chips a{font-size:13px;color:var(--color-brand-600);background:var(--color-brand-50);border-radius:999px;padding:5px 12px;text-decoration:none}
 .av-seo .chips a:hover{background:var(--color-brand-100)}
@@ -92,6 +96,32 @@ export default function PrixTravauxHub() {
         <p className="mt-1 text-sm text-muted">L&apos;estimateur AVYORA chiffre n&apos;importe quel projet, pièce par pièce, en 3 minutes — gratuit.</p>
         <Link href="/projets/nouveau" className="btn btn-primary mt-3 py-2.5">Estimer mes travaux →</Link>
       </div>
+
+      <h2>Comment lire ces prix</h2>
+      <p>
+        Chaque page donne une <strong>fourchette TTC</strong> pour un projet type, décomposée corps
+        d&apos;état par corps d&apos;état. Trois choses à garder en tête avant de comparer avec un devis.
+      </p>
+      <p>
+        <strong>Le prix dépend d&apos;abord de l&apos;ampleur, pas de la surface.</strong> Refaire les
+        joints d&apos;une salle de bain ou la reprendre à nu n&apos;ont rien à voir, à surface égale.
+        C&apos;est pourquoi chaque page décrit précisément le projet chiffré.
+      </p>
+      <p>
+        <strong>Fournitures et main-d&apos;œuvre ne varient pas de la même façon.</strong> Les
+        matériaux coûtent à peu près pareil partout en France ; la pose suit le marché local. Nos pages
+        affichent les deux séparément quand la donnée existe, ce qui permet aussi de chiffrer ce
+        qu&apos;on ferait soi-même.
+      </p>
+      <p>
+        <strong>Une fourchette n&apos;est pas un devis.</strong> Elle cadre un budget avant de
+        rencontrer des artisans. Pour confronter un devis reçu ligne à ligne, lis{" "}
+        <Link href="/guides/verifier-devis-travaux">comment vérifier un devis de travaux</Link>.
+      </p>
+      <p className="note">
+        Prix mis à jour le {PRIX_MAJ_FR} ·{" "}
+        <Link href="/methodologie">d&apos;où viennent ces prix</Link>
+      </p>
 
       <h2>Prix par type de bien</h2>
       <div className="chips">
