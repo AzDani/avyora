@@ -46,6 +46,13 @@ const REGIONS = [
 export default function MethodologiePage() {
   const jsonLd = {
     "@context": "https://schema.org",
+    "@graph": [{
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Accueil", item: siteUrl },
+        { "@type": "ListItem", position: 2, name: "Méthodologie", item: `${siteUrl}/methodologie` },
+      ],
+    }, {
     "@type": "TechArticle",
     headline: "Méthodologie d'estimation AVYORA",
     description: metadata.description,
@@ -53,6 +60,7 @@ export default function MethodologiePage() {
     inLanguage: "fr-FR",
     dateModified: PRIX_MAJ,
     publisher: { "@type": "Organization", name: "AVYORA", url: siteUrl },
+    }],
   };
 
   return (

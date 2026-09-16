@@ -40,6 +40,8 @@ const CSS = `
 .av-seo h1{font-size:clamp(24px,4vw,32px);font-weight:600;letter-spacing:-.02em;color:var(--color-ink);margin:0}
 .av-seo .tw,.av-guide .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:14px 0}
 .av-seo .tw table,.av-guide .tw table{margin:0;min-width:420px}
+.av-seo .fil{font-size:12.5px;color:var(--color-faint);margin-bottom:12px}
+.av-seo .fil a{color:var(--color-muted)}
 .av-seo .lead{font-size:15px;color:var(--color-muted);margin-top:12px;line-height:1.7}
 .av-seo .prixmaj{font-size:12.5px;color:var(--color-faint);margin-top:10px}
 .av-seo .prixmaj a{color:var(--color-brand-700);font-weight:500}
@@ -153,6 +155,10 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
         <Link href="/prix-renovation" className="text-muted hover:text-brand-700">← Prix rénovation par ville</Link>
       </p>
 
+      <p className="fil">
+        <Link href="/">Accueil</Link> <span aria-hidden="true">›</span>{" "}
+        <Link href="/prix-renovation">Prix par ville</Link> <span aria-hidden="true">›</span> {v.nom}
+      </p>
       <h1>Prix d&apos;une rénovation à {v.nom} en 2026</h1>
       <p className="lead">
         À {localisation}{dep.region ? <>, en {dep.region}</> : null}, une <strong>rénovation complète</strong> coûte en

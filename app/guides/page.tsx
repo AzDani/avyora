@@ -2,6 +2,10 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { GUIDES } from "@/lib/guides";
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+
 export const dynamic = "force-static";
 
 export const metadata: Metadata = {
@@ -11,9 +15,33 @@ export const metadata: Metadata = {
   alternates: { canonical: "/guides" },
 };
 
+
+// Fil d'Ariane balise : aide Google a comprendre la hierarchie du site et enrichit le resultat.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Accueil", item: siteUrl },
+        { "@type": "ListItem", position: 2, name: "Guides des prix de la rénovation", item: `${siteUrl}/guides` },
+      ],
+    },
+    {
+      "@type": "CollectionPage",
+      "@id": `${siteUrl}/guides#page`,
+      url: `${siteUrl}/guides`,
+      name: "Guides des prix de la rénovation",
+      inLanguage: "fr-FR",
+      description: "Guides des prix de la rénovation au m² par type de bien et de travaux.",
+    },
+  ],
+};
+
 export default function GuidesHub() {
   return (
     <div className="mx-auto max-w-3xl">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <header className="animate-rise">
         <p className="eyebrow">Guides des prix</p>
         <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-ink">

@@ -2,6 +2,10 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { VILLES_SEO } from "@/lib/villes";
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+
 export const dynamic = "force-static";
 
 export const metadata: Metadata = {
@@ -11,9 +15,33 @@ export const metadata: Metadata = {
   alternates: { canonical: "/prix-renovation" },
 };
 
+
+// Fil d'Ariane balise : aide Google a comprendre la hierarchie du site et enrichit le resultat.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Accueil", item: siteUrl },
+        { "@type": "ListItem", position: 2, name: "Prix d'une rénovation par ville", item: `${siteUrl}/prix-renovation` },
+      ],
+    },
+    {
+      "@type": "CollectionPage",
+      "@id": `${siteUrl}/prix-renovation#page`,
+      url: `${siteUrl}/prix-renovation`,
+      name: "Prix d'une rénovation par ville",
+      inLanguage: "fr-FR",
+      description: "Coût d'une rénovation au m² selon votre ville en France.",
+    },
+  ],
+};
+
 export default function PrixRenovationHub() {
   return (
     <div className="mx-auto max-w-3xl">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <header className="animate-rise">
         <p className="eyebrow">Guide des prix</p>
         <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-ink">Prix d&apos;une rénovation par ville</h1>
