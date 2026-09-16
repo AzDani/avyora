@@ -50,6 +50,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${siteUrl}/prix-renovation`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     ...villes,
     { url: `${siteUrl}/tarifs`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    // Pages légales : signal de confiance attendu par Google sur un site qui encaisse un abonnement
+    // (E-E-A-T). Elles sont indexables et canoniques depuis le lot 1 — elles ont leur place ici.
+    ...["mentions-legales", "cgu", "cgv", "confidentialite", "cookies"].map((slug) => ({
+      url: `${siteUrl}/${slug}`,
+      lastModified: now,
+      changeFrequency: "yearly" as const,
+      priority: 0.3,
+    })),
     { url: `${siteUrl}/projets/nouveau/rapide`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
   ];
 }
