@@ -1,5 +1,5 @@
 import "server-only";
-import { CATALOG, buildDevis, presetRapide, AMPLEURS, regionCoef, type Ampleur, type TypeBien } from "@/lib/estimateur";
+import { CATALOG, buildDevis, presetRapide, AMPLEURS, regionCoef, effPrices, finCoefTask, defaultCtx, type Ampleur, type TypeBien, type Finition } from "@/lib/estimateur";
 
 export type PrixLigne = { v: Ampleur; label: string; appartM2: number; maisonM2: number };
 
@@ -31,3 +31,25 @@ export function prixNational(): PrixLigne[] {
 }
 
 export { regionCoef };
+
+export type PosteRef = { lot: string; nom: string; unite: string; fp: number; sm: number | null };
+
+/**
+ * Prix de référence d'un poste du catalogue, pour les guides éditoriaux.
+ * Les prix bruts du catalogue sont HT et calés sur la finition PREMIUM (coefficient 1) : les citer
+ * tels quels surestimerait le cas courant. On applique donc le coefficient de finition demandé
+ * (standard par défaut), exactement comme le fait le moteur — le guide ne peut pas diverger du
+ * catalogue, puisqu'il le lit.
+ */
+export function posteRef(nom: string, finition: Finition = "standard"): PosteRef | null {
+  for (const l of CATALOG) {
+    const t = l.t.find((x) => x.n === nom);
+    if (!t) continue;
+    const ctx = { ...defaultCtx(), finition };
+    const { fp, sm } = effPrices(t, undefined, ctx);
+    if (fp == null) return null;
+    const c = finCoefTask(ctx, l, t);
+    return { lot: l.c, nom: t.n, unite: t.u, fp: Math.round(fp * c), sm: sm == null ? null : Math.round(sm * c) };
+  }
+  return null;
+}

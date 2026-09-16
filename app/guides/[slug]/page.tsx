@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { GUIDES, guideBySlug } from "@/lib/guides";
 import { VILLES_SEO } from "@/lib/villes";
 import { PRIX_MAJ_FR } from "@/lib/prix-maj";
-import { prixNational, estim } from "@/lib/seo-prix";
+import { prixNational, estim, posteRef } from "@/lib/seo-prix";
 
 export const dynamic = "force-static";
 // Ensemble fini de pages : tout slug hors liste renvoie un vrai 404 (pas de soft-404 à 200).
@@ -58,6 +58,8 @@ const CSS = `
 .av-guide .faq details{border:1px solid var(--color-line);border-radius:12px;padding:12px 16px;margin-bottom:10px;background:var(--color-surface)}
 .av-guide .faq summary{font-weight:600;color:var(--color-ink);cursor:pointer;font-size:14.5px}
 .av-guide .faq p{margin:8px 0 0}
+.av-guide .phase{border-left:2px solid var(--color-brand-100,#e0e7ff);padding-left:14px;margin:16px 0}
+.av-guide .phase h3{margin-top:0}
 .av-guide .villes{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .av-guide .villes a{font-size:13px;color:var(--color-brand-600);background:var(--color-brand-50);border-radius:999px;padding:5px 12px;text-decoration:none}
 .av-guide .villes a:hover{background:var(--color-brand-100)}
@@ -162,7 +164,10 @@ function faqMaison() {
 }
 
 function faqDuGuide(slug: string) {
-  return slug === "prix-renovation-appartement" ? faqAppartement() : faqMaison();
+  if (slug === "prix-renovation-appartement") return faqAppartement();
+  if (slug === "ordre-travaux-renovation") return faqOrdre();
+  if (slug === "verifier-devis-travaux") return faqDevis();
+  return faqMaison();
 }
 
 function BodyAppartement() {
@@ -342,9 +347,221 @@ function BodyMaison() {
   );
 }
 
+
+/* ── Guide : ordre des travaux ───────────────────────────────────────────────── */
+/* Les 9 phases suivent l'ordre des lots du moteur (lib/seo-projets / chantierTasks) : démolition →
+   gros œuvre → hors d'eau → hors d'air → second œuvre → finitions. Rien d'inventé ici, c'est la
+   séquence que le chiffrage utilise déjà. */
+const PHASES_TRAVAUX = [
+  { n: 1, titre: "Démolition et curage", quoi: "Déposer cloisons, revêtements, anciens réseaux, sanitaires.", pourquoi: "On ne construit rien tant qu'on n'a pas vu ce qu'il y a derrière. C'est là que les mauvaises surprises apparaissent — et il vaut mieux qu'elles apparaissent avant d'avoir commandé la cuisine." },
+  { n: 2, titre: "Gros œuvre et maçonnerie", quoi: "Ouvertures dans les murs, linteaux, reprises de structure, dalle, chape.", pourquoi: "Tout ce qui touche à la structure passe en premier : percer un mur porteur après avoir posé le parquet, c'est refaire le parquet." },
+  { n: 3, titre: "Charpente et couverture", quoi: "Réparer ou refaire la charpente, la couverture, les gouttières.", pourquoi: "C'est la mise hors d'eau. Tant que le toit fuit, tout ce qu'on pose en dessous est menacé." },
+  { n: 4, titre: "Menuiseries extérieures", quoi: "Fenêtres, portes-fenêtres, porte d'entrée, volets.", pourquoi: "C'est la mise hors d'air. Le chantier devient chauffable et sécurisé — condition pour que les enduits et peintures sèchent correctement." },
+  { n: 5, titre: "Cloisons et distribution", quoi: "Monter les nouvelles cloisons, créer les faux plafonds.", pourquoi: "On fige les volumes avant de passer les réseaux : les prises se posent dans des murs qui existent." },
+  { n: 6, titre: "Réseaux et isolation", quoi: "Électricité, plomberie, ventilation, puis isolation et doublage.", pourquoi: "Les gaines passent avant d'être refermées. Une fois le placo posé, chaque oubli devient une saignée." },
+  { n: 7, titre: "Sols", quoi: "Chape, ragréage, carrelage, parquet, sol souple.", pourquoi: "Après les travaux salissants, avant les finitions. Poser le sol trop tôt, c'est le protéger — puis l'abîmer quand même." },
+  { n: 8, titre: "Façade et extérieur", quoi: "Ravalement, enduit, isolation par l'extérieur, bardage.", pourquoi: "Souvent groupé avec la toiture pour mutualiser l'échafaudage — c'est là qu'on économise le plus en anticipant." },
+  { n: 9, titre: "Finitions et équipements", quoi: "Peinture, menuiseries intérieures, cuisine, sanitaires, nettoyage.", pourquoi: "En dernier, quand plus personne ne traverse la pièce avec une disqueuse." },
+];
+
+const ERREURS_ORDRE = [
+  { err: "Poser les sols avant les réseaux", cout: "Saignées dans un sol neuf, ou faux plafond pour rattraper. On refait le sol." },
+  { err: "Peindre avant la fin des travaux salissants", cout: "Reprises généralisées. La peinture est le dernier poste, toujours." },
+  { err: "Installer la cuisine avant la mise hors d'air", cout: "Meubles exposés à l'humidité, panneaux qui gonflent." },
+  { err: "Isoler avant d'avoir traité l'humidité", cout: "L'isolant s'imbibe et perd son efficacité. Il faut le déposer et recommencer." },
+  { err: "Refaire la façade avant la toiture", cout: "Deux échafaudages au lieu d'un, et une façade neuve salie par le chantier du toit." },
+];
+
+function BodyOrdre() {
+  return (
+    <>
+      <p className="lead">
+        L&apos;ordre des travaux n&apos;est pas une question de confort : c&apos;est ce qui décide si vous
+        payez chaque poste une fois ou deux. La règle tient en une phrase — <strong>on va du plus
+        structurel au plus fragile</strong>, et on ne referme jamais un mur avant d&apos;avoir fait passer
+        ce qui doit y passer.
+      </p>
+
+      <h2>Les 9 phases, dans l&apos;ordre</h2>
+      <p>
+        C&apos;est la séquence que suit le chiffrage AVYORA lot par lot. Selon votre projet, certaines
+        phases sautent — mais leur ordre relatif, lui, ne change pas.
+      </p>
+      {PHASES_TRAVAUX.map((p) => (
+        <div key={p.n} className="phase">
+          <h3>{p.n}. {p.titre}</h3>
+          <p><strong>Ce qu&apos;on fait :</strong> {p.quoi}</p>
+          <p><strong>Pourquoi à ce moment :</strong> {p.pourquoi}</p>
+        </div>
+      ))}
+
+      <h2>Les inversions qui coûtent cher</h2>
+      <table>
+        <thead><tr><th>L&apos;erreur</th><th>Ce qu&apos;elle coûte</th></tr></thead>
+        <tbody>
+          {ERREURS_ORDRE.map((e) => (
+            <tr key={e.err}><td><strong>{e.err}</strong></td><td>{e.cout}</td></tr>
+          ))}
+        </tbody>
+      </table>
+
+      <h2>Les trois jalons à retenir</h2>
+      <p>
+        Si vous ne retenez qu&apos;une chose, retenez ces trois portes que le chantier franchit dans
+        cet ordre :
+      </p>
+      <ul>
+        <li><strong>Hors d&apos;eau</strong> — le toit ne fuit plus (phase 3). Rien d&apos;intérieur ne commence sérieusement avant.</li>
+        <li><strong>Hors d&apos;air</strong> — les menuiseries sont posées (phase 4). Le bâtiment devient chauffable, les enduits peuvent sécher.</li>
+        <li><strong>Avant fermeture</strong> — le dernier moment pour faire passer un câble ou un tuyau (phase 6). Après, chaque oubli se paie en démolition.</li>
+      </ul>
+
+      <Cta label="Chiffrer votre rénovation, lot par lot" />
+
+      <h2>Et si vous faites une partie vous-même ?</h2>
+      <p>
+        L&apos;auto-rénovation change le calendrier, pas l&apos;ordre. Deux points d&apos;attention :
+        les postes que vous gardez doivent s&apos;insérer <strong>sans bloquer les artisans</strong> —
+        un plaquiste qui attend votre isolation pendant trois week-ends, c&apos;est un planning qui
+        dérape. Et l&apos;électricité comme le gaz relèvent d&apos;obligations de conformité :
+        l&apos;estimateur vous laisse choisir poste par poste entre « fait faire » et « je le fais »,
+        mais ce choix-là mérite réflexion.
+      </p>
+
+      <Faq items={faqOrdre()} />
+      <VillesLink />
+    </>
+  );
+}
+
+function faqOrdre() {
+  return [
+    { q: "Par quoi commencer une rénovation complète ?", a: "Par la démolition et le curage : déposer cloisons, revêtements et anciens réseaux. C'est ce qui révèle l'état réel du bien, avant d'avoir engagé des commandes." },
+    { q: "Quand poser les fenêtres dans une rénovation ?", a: "Après la toiture et avant le second œuvre intérieur. Les menuiseries assurent la mise hors d'air : le chantier devient chauffable et les enduits peuvent sécher correctement." },
+    { q: "Faut-il isoler avant ou après l'électricité ?", a: "Après. Les gaines électriques et les réseaux passent en premier, l'isolation et le doublage viennent les refermer. L'inverse oblige à rouvrir." },
+    { q: "Quand poser le carrelage ou le parquet ?", a: "En phase 7, après les réseaux et l'isolation, avant les finitions. Assez tard pour ne pas subir les travaux salissants, assez tôt pour que les plinthes et les portes s'ajustent dessus." },
+    { q: "Combien de temps dure une rénovation complète ?", a: "Cela dépend entièrement de l'ampleur et de la coordination des corps d'état. AVYORA chiffre le budget, pas la durée : demandez un planning à chaque artisan et vérifiez qu'ils s'enchaînent." },
+  ];
+}
+
+/* ── Guide : vérifier un devis ───────────────────────────────────────────────── */
+/* Les prix repères sont LUS dans le catalogue via posteRef() (finition standard, HT, fourni-posé).
+   Ils ne peuvent donc pas diverger du moteur. */
+const REPERES = [
+  "Peinture des murs", "Peinture des plafonds", "Sol stratifié (imitation bois)", "Carrelage au sol",
+  "Faïence / carrelage mural", "Monter une cloison", "Isolation des murs par l'intérieur",
+  "Isolation des combles perdus (soufflage)", "Rénovation électrique complète",
+  "Changer / mettre aux normes le tableau", "Porte intérieure battante", "Enlever un revêtement de sol",
+];
+
+const ALERTES = [
+  { t: "Un prix global, sans détail", d: "« Rénovation complète : 48 000 € ». Impossible à vérifier, impossible à comparer, et impossible de retirer un poste pour faire baisser la note. Exigez le détail par poste, avec quantité et prix unitaire." },
+  { t: "Des quantités absentes ou rondes", d: "« Peinture : forfait ». Une peinture se chiffre au m². Si la surface n'apparaît pas, vous ne pouvez pas savoir si elle est juste — et un écart de 30 m² passe inaperçu." },
+  { t: "Un poste que vous n'avez pas demandé", d: "Ça arrive, et c'est parfois justifié (un support à reprendre). Mais cela doit être dit et expliqué, pas glissé dans la liste." },
+  { t: "Un poste manquant", d: "Plus dangereux qu'un poste cher : la dépose de l'ancien sol, l'évacuation des gravats, les raccords après percement. Absents du devis, ils reviendront en cours de chantier au prix fort." },
+  { t: "Un acompte élevé", d: "Un acompte se pratique, mais un artisan qui réclame la moitié avant d'avoir commencé mérite au minimum une question." },
+  { t: "Une TVA à 20 % sur tout", d: "En rénovation d'un logement de plus de deux ans, la plupart des postes relèvent de 10 %, et les travaux d'amélioration énergétique de 5,5 %. Une TVA uniformément à 20 % doit être justifiée." },
+];
+
+function BodyDevis() {
+  const reperes = REPERES.map((n) => posteRef(n)).filter((x): x is NonNullable<typeof x> => x != null);
+  return (
+    <>
+      <p className="lead">
+        Un devis de travaux n&apos;est pas qu&apos;un prix : c&apos;est la description de ce qui sera fait.
+        La plupart des mauvaises surprises ne viennent pas d&apos;une ligne trop chère, mais d&apos;une
+        <strong> ligne absente</strong>. Voici comment lire un devis, et des prix repères pour situer
+        chaque ligne.
+      </p>
+
+      <h2>Ce qu&apos;un devis doit contenir</h2>
+      <p>
+        Avant même de regarder les montants, vérifiez que le document vous permet de comparer. Un devis
+        exploitable identifie clairement l&apos;entreprise (raison sociale, adresse, SIRET, assurance
+        décennale pour les travaux qui la requièrent) et détaille&nbsp;:
+      </p>
+      <ul>
+        <li>chaque poste <strong>décrit précisément</strong> — « peinture murs, 2 couches, acrylique mate » et non « peinture » ;</li>
+        <li>la <strong>quantité et l&apos;unité</strong> (m², ml, unité, forfait) ;</li>
+        <li>le <strong>prix unitaire</strong>, et pas seulement le total de la ligne ;</li>
+        <li>le <strong>taux de TVA</strong> appliqué par poste ;</li>
+        <li>ce qui est <strong>fourni par l&apos;entreprise</strong> et ce qui reste à votre charge ;</li>
+        <li>les <strong>conditions</strong> : durée de validité, délai d&apos;exécution, échéancier de paiement.</li>
+      </ul>
+      <p className="note">
+        Cette liste vous sert à comparer et à vous protéger ; elle ne remplace pas un conseil juridique.
+        Les obligations légales exactes dépendent de la nature et du montant des travaux.
+      </p>
+
+      <h2>Prix repères par poste</h2>
+      <p>
+        Ces montants viennent du référentiel AVYORA : <strong>fourni-posé, hors taxes, finition
+        standard</strong>, au niveau national. Ils servent à situer une ligne — pas à contester un
+        devis au centime. Un écart de 20 % s&apos;explique très bien (accès difficile, support à
+        reprendre, région). Un écart de 200 % mérite une question.
+      </p>
+      <table>
+        <thead><tr><th>Poste</th><th>Prix repère</th><th>Fourniture seule</th></tr></thead>
+        <tbody>
+          {reperes.map((r) => (
+            <tr key={r.nom}>
+              <td>{r.nom}<br /><span className="note">{r.lot}</span></td>
+              <td className="num">{euro(r.fp)} / {r.unite === "m2" ? "m²" : r.unite}</td>
+              <td className="num">{r.sm != null ? `${euro(r.sm)} / ${r.unite === "m2" ? "m²" : r.unite}` : "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="note">
+        Colonne « fourniture seule » : le coût des matériaux si vous posez vous-même. L&apos;écart avec
+        le fourni-posé vous donne la part de main-d&apos;œuvre. Prix mis à jour le {PRIX_MAJ_FR} —{" "}
+        <Link href="/methodologie">comment ils sont établis</Link>.
+      </p>
+
+      <h2>Les six signaux d&apos;alerte</h2>
+      {ALERTES.map((a) => (
+        <div key={a.t} className="phase">
+          <h3>{a.t}</h3>
+          <p>{a.d}</p>
+        </div>
+      ))}
+
+      <Cta label="Chiffrer votre projet pour comparer les devis" />
+
+      <h2>Comparer plusieurs devis sans se tromper</h2>
+      <p>
+        Comparer deux totaux ne veut rien dire tant que les deux devis ne couvrent pas le même
+        périmètre. La méthode qui marche&nbsp;:
+      </p>
+      <ul>
+        <li><strong>Alignez les périmètres d&apos;abord.</strong> Listez les postes du devis le plus détaillé, puis cherchez-les dans l&apos;autre. Les lignes manquantes expliquent souvent tout l&apos;écart.</li>
+        <li><strong>Comparez poste à poste, pas totaux à totaux.</strong> Un devis peut être moins cher sur la peinture et bien plus cher sur l&apos;électricité.</li>
+        <li><strong>Vérifiez qui fournit quoi.</strong> Un devis « pose seule » sera toujours moins cher — et ce n&apos;est pas le même service.</li>
+        <li><strong>Demandez les postes absents par écrit.</strong> « La dépose de l&apos;ancien carrelage est-elle comprise ? » Une réponse écrite vaut engagement.</li>
+        <li><strong>Méfiez-vous du devis nettement le moins cher.</strong> Neuf fois sur dix, il ne contient pas la même chose — le reste arrive en avenant.</li>
+      </ul>
+
+      <Faq items={faqDevis()} />
+      <VillesLink />
+    </>
+  );
+}
+
+function faqDevis() {
+  return [
+    { q: "Comment savoir si un devis de travaux est trop cher ?", a: "Comparez poste par poste à des prix repères plutôt que le total à un autre total. Un écart de 20 % sur une ligne s'explique souvent (accès, support, région) ; un écart de 200 % mérite une explication écrite." },
+    { q: "Que doit obligatoirement contenir un devis ?", a: "L'identification de l'entreprise, le détail de chaque poste avec quantité, unité et prix unitaire, le taux de TVA, ce qui est fourni, la durée de validité et les conditions de paiement. Sans prix unitaires, un devis n'est pas comparable." },
+    { q: "Un devis est-il payant ?", a: "Le plus souvent il est gratuit, mais un devis impliquant un déplacement long ou une étude technique peut être facturé. Cela doit vous être annoncé avant." },
+    { q: "Quel est le poste le plus souvent oublié dans un devis ?", a: "La dépose et l'évacuation : enlever l'ancien sol, sortir les gravats, reboucher après percement. Ces postes existent bel et bien et reviennent en cours de chantier s'ils ne sont pas chiffrés au départ." },
+    { q: "Peut-on négocier un devis de travaux ?", a: "On négocie plus efficacement le périmètre que le prix : retirer un poste, en réaliser un soi-même, décaler une phase. Demander « un geste » sur un total détaillé aboutit rarement." },
+  ];
+}
+
 const BODIES: Record<string, () => React.ReactElement> = {
   "prix-renovation-appartement": BodyAppartement,
   "prix-renovation-maison": BodyMaison,
+  "ordre-travaux-renovation": BodyOrdre,
+  "verifier-devis-travaux": BodyDevis,
 };
 
 export default async function GuidePage({ params }: { params: Promise<{ slug: string }> }) {

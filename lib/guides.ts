@@ -36,6 +36,24 @@ export const GUIDES: GuideMeta[] = [
     eyebrow: "Guide des prix",
     resume: "Coût au m² maison, enveloppe (toiture/façade/charpente) et exemples 100/150 m².",
   },
+  {
+    slug: "ordre-travaux-renovation",
+    h1: "Dans quel ordre faire ses travaux de rénovation",
+    title: "Ordre des travaux de rénovation : le planning complet",
+    description:
+      "L'ordre des travaux de rénovation, étape par étape : démolition, gros œuvre, hors d'eau, hors d'air, second œuvre, finitions. Pourquoi cet ordre, et les inversions qui coûtent cher.",
+    eyebrow: "Guide pratique",
+    resume: "Les 9 phases dans l'ordre, ce qui bloque quoi, et les erreurs de séquence qui font tout refaire.",
+  },
+  {
+    slug: "verifier-devis-travaux",
+    h1: "Comment lire et vérifier un devis de travaux",
+    title: "Vérifier un devis de travaux : la méthode et les prix repères",
+    description:
+      "Comment lire un devis de travaux ligne par ligne, repérer un poste surévalué ou absent, et comparer plusieurs artisans. Avec des prix repères par poste pour situer chaque ligne.",
+    eyebrow: "Guide pratique",
+    resume: "Ce que doit contenir un devis, les signaux d'alerte, et des prix repères pour situer chaque ligne.",
+  }
 ];
 
 export function guideBySlug(slug: string): GuideMeta | undefined {
