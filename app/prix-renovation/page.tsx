@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { VILLES_SEO } from "@/lib/villes";
+import { PROJETS } from "@/lib/seo-projets";
 import { prixNational } from "@/lib/seo-prix";
 import { PRIX_MAJ_FR } from "@/lib/prix-maj";
 
@@ -148,7 +149,7 @@ export default function PrixRenovationHub() {
       </p>
       <p>
         Prix par type de travaux : <Link href="/prix-travaux">cuisine, salle de bain, toiture,
-        électricité et 14 autres postes</Link>.
+        électricité et {PROJETS.length - 4} autres postes</Link>.
       </p>
       <p>
         Guides pratiques :{" "}

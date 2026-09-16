@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { GUIDES } from "@/lib/guides";
+import { PROJETS } from "@/lib/seo-projets";
 import { prixNational } from "@/lib/seo-prix";
 import { PRIX_MAJ_FR } from "@/lib/prix-maj";
 
@@ -134,7 +135,7 @@ export default function GuidesHub() {
       <p>
         <strong>Tu cherches le prix d&apos;un travail précis</strong> → les{" "}
         <Link href="/prix-travaux">prix par type de travaux</Link> (cuisine, salle de bain, toiture,
-        électricité et 14 autres).
+        électricité et {PROJETS.length - 4} autres).
       </p>
     </div>
   );
