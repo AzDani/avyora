@@ -1311,10 +1311,10 @@
       {
         "n": "Climatisation gainable (réversible)",
         "u": "forfait",
-        "fp": 6000,
-        "sm": 3600,
+        "fp": 8000,
+        "sm": 4800,
         "tva": 20,
-        "note": "chauffe + rafraîchit (chaud/froid) · soufflage par gaines, maison entière",
+        "note": "chauffe + rafraîchit (chaud/froid) · soufflage par gaines, maison entière — groupe extérieur, unité gainable, réseau de gaines et pose compris",
         "vars": [
           {
             "k": "maison",
