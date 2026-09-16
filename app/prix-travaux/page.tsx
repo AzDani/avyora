@@ -129,6 +129,7 @@ export default function PrixTravauxHub() {
         <Link href="/guides/prix-renovation-maison">Rénovation de maison</Link>
         <Link href="/guides/verifier-devis-travaux">Vérifier un devis</Link>
         <Link href="/guides/ordre-travaux-renovation">Ordre des travaux</Link>
+        <Link href="/guides/faire-soi-meme-ou-artisan">Faire soi-même ou pas</Link>
       </div>
 
       <h2>Prix de la rénovation par ville</h2>

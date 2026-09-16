@@ -133,6 +133,11 @@ export default function GuidesHub() {
         pas payer deux fois le même poste.
       </p>
       <p>
+        <strong>Tu hésites à mettre la main à la pâte</strong> →{" "}
+        <Link href="/guides/faire-soi-meme-ou-artisan">faire soi-même ou faire faire</Link> : la part
+        de main-d&apos;œuvre lot par lot, et ce que l&apos;économie annoncée oublie.
+      </p>
+      <p>
         <strong>Tu cherches le prix d&apos;un travail précis</strong> → les{" "}
         <Link href="/prix-travaux">prix par type de travaux</Link> (cuisine, salle de bain, toiture,
         électricité et {PROJETS.length - 4} autres).
