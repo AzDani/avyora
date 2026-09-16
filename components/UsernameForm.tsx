@@ -8,7 +8,7 @@ const TR = {
   fr: {
     titre: "Pseudo public",
     aide: "Le nom sous lequel tu apparais. Unique — personne d'autre ne peut avoir le même.",
-    placeholder: "ex. daniel_reno",
+    placeholder: "ex. camille_reno",
     enregistrer: "Enregistrer",
     enregistrement: "…",
     ok: "✓ Pseudo enregistré",
@@ -20,7 +20,7 @@ const TR = {
   en: {
     titre: "Public username",
     aide: "The name you appear under. Unique — no one else can have the same.",
-    placeholder: "e.g. daniel_reno",
+    placeholder: "e.g. alex_reno",
     enregistrer: "Save",
     enregistrement: "…",
     ok: "✓ Username saved",

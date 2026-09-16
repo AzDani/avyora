@@ -43,7 +43,7 @@ const RAPIDE_CSS = `
 .av-rapide .seg button.on{background:var(--brand);border-color:var(--brand);color:#fff}
 .av-rapide .fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .av-rapide .fld label{display:block;font-size:11.5px;color:var(--muted);margin-bottom:5px;font-weight:500}
-.av-rapide .fld input{width:100%;font-family:var(--font-geist-sans);font-size:15px;color:var(--ink);background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--radius-field);padding:11px 12px;outline:none;transition:.15s}
+.av-rapide .fld input{width:100%;font-family:var(--font-geist-sans);font-size:16px;color:var(--ink);background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--radius-field);padding:11px 12px;outline:none;transition:.15s}
 .av-rapide .fld input:focus{border-color:var(--brand);box-shadow:0 0 0 4px color-mix(in srgb,var(--brand) 14%,transparent)}
 .av-rapide .cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .av-rapide .amp{display:flex;flex-direction:column;text-align:left;background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--radius-card);padding:14px;cursor:pointer;transition:.16s var(--ease);position:relative}
@@ -146,7 +146,9 @@ const RAPIDE_CSS = `
 .av-rapide .psum .hintadd{color:var(--faint)}
 .av-rapide .amt .lock{font-family:var(--font-geist-sans);font-weight:600;font-size:11px;color:var(--accent-600);background:var(--brand-50);padding:2px 9px;border-radius:999px;letter-spacing:.02em}
 .av-rapide-live a.cta{text-decoration:none;display:inline-flex;align-items:center}
-@media(max-width:520px){.av-rapide .prow{flex-wrap:wrap}.av-rapide .prow .pname{flex-basis:100%}}
+@media(max-width:520px){.av-rapide .prow{flex-wrap:wrap}.av-rapide .prow .pname{flex-basis:100%}
+/* mobile : cibles tactiles ≥ 36px sur les −/+ et « retirer » (26–28px au doigt, c'est trop petit) */
+.av-rapide .rstep button,.av-rapide .stepper button,.av-rapide .prm{width:36px;height:36px}.av-rapide .rstep .rn{min-width:20px;font-size:13px}.av-rapide .prow input{min-height:36px;font-size:16px}}
 @media (prefers-reduced-motion:reduce){.av-rapide *,.av-rapide-live *{transition:none!important}}
 `;
 

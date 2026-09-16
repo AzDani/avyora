@@ -25,12 +25,12 @@ export default function LangSwitch({ tone = "light" }: { tone?: "light" | "dark"
   const active = tone === "dark" ? "text-white" : "text-ink";
 
   return (
-    <div className="inline-flex items-center gap-1.5 text-xs font-medium" role="group" aria-label="Language">
+    <div className="inline-flex items-center gap-0 text-xs font-medium" role="group" aria-label="Language">
       <button
         type="button"
         onClick={() => set("fr")}
         aria-pressed={locale === "fr"}
-        className={`transition-colors ${locale === "fr" ? `${active} font-semibold` : `${base} hover:${active}`}`}
+        className={`px-2 py-2 transition-colors ${locale === "fr" ? `${active} font-semibold` : `${base} hover:${active}`}`}
       >
         FR
       </button>
@@ -39,7 +39,7 @@ export default function LangSwitch({ tone = "light" }: { tone?: "light" | "dark"
         type="button"
         onClick={() => set("en")}
         aria-pressed={locale === "en"}
-        className={`transition-colors ${locale === "en" ? `${active} font-semibold` : `${base} hover:${active}`}`}
+        className={`px-2 py-2 transition-colors ${locale === "en" ? `${active} font-semibold` : `${base} hover:${active}`}`}
       >
         EN
       </button>

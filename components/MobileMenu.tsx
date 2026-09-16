@@ -23,7 +23,7 @@ export default function MobileMenu({ isLoggedIn, prenom, isAdmin }: { isLoggedIn
         aria-label={t.nav.menu}
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
-        className="grid h-9 w-9 place-items-center rounded-lg text-indigo-100 transition-colors hover:bg-white/10"
+        className="grid h-10 w-10 place-items-center rounded-lg text-indigo-100 transition-colors hover:bg-white/10"
       >
         {open ? (
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">

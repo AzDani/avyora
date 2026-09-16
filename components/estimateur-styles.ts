@@ -256,5 +256,7 @@ export const EST_CSS = `
 .av-estim .finc .fe{font-size:9px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--accent-600)}
 .av-estim .finc .ft{font-size:14px;font-weight:600;margin-top:2px}
 .av-estim .finc .fd{font-size:10.5px;color:var(--muted);margin-top:5px;line-height:1.45;min-height:54px}
-@media(max-width:560px){.av-estim .stpg{grid-template-columns:1fr}.av-estim .finc{grid-template-columns:1fr}.av-estim .finc .fd{min-height:0}}
+@media(max-width:560px){.av-estim .stpg{grid-template-columns:1fr}.av-estim .finc{grid-template-columns:1fr}.av-estim .finc .fd{min-height:0}
+/* mobile : champs ≥ 16px, sinon iOS Safari zoome la page à chaque focus (quantités, prix, coefs…) */
+.av-estim .fld input,.av-estim .fld select,.av-estim .qty,.av-estim .qauto,.av-estim .puin,.av-estim .chin{font-size:16px}}
 `;
