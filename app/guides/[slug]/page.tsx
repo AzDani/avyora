@@ -57,6 +57,12 @@ const CSS = `
 .av-guide th{background:var(--color-surface-2);color:var(--color-ink);font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.05em}
 .av-guide td.num{font-family:var(--font-geist-mono),monospace;text-align:right;color:var(--color-ink)}
 .av-guide .note{font-size:12.5px;color:var(--color-faint)}
+/* Matrice surface x ampleur : 5 colonnes, elle ne peut pas tenir sur un telephone.
+   On assume le scroll horizontal dans son propre conteneur — le corps de page, lui, ne
+   deborde jamais. min-width explicite pour que les en-tetes ne se cassent pas en 3 lignes. */
+.av-guide .tw.matrice table{min-width:580px}
+.av-guide .tw.matrice th,.av-guide .tw.matrice td{padding:9px 10px}
+.av-guide .tw.matrice td.num{white-space:nowrap}
 .av-guide .faq details{border:1px solid var(--color-line);border-radius:12px;padding:12px 16px;margin-bottom:10px;background:var(--color-surface)}
 .av-guide .faq summary{font-weight:600;color:var(--color-ink);cursor:pointer;font-size:14.5px}
 .av-guide .faq p{margin:8px 0 0}
@@ -154,6 +160,10 @@ function faqAppartement() {
       a: `En moyenne nationale, comptez environ ${euro(complete.appartM2)}/m² pour une rénovation complète d'appartement (finition standard, travaux confiés à des artisans), soit une fourchette de ±15 % selon l'état du bien.`,
     },
     {
+      q: "Combien coûte la rénovation d'un appartement de 50 m² ?",
+      a: `Pour un appartement de 50 m², comptez environ ${euro(estim("", "T3", 50, "rafraich").ttc)} pour un rafraîchissement, ${euro(estim("", "T3", 50, "complete").ttc)} pour une rénovation complète et ${euro(estim("", "T3", 50, "lourde").ttc)} pour une rénovation totale (curage et redistribution). Budgets TTC, finition standard, marge ±15 %.`,
+    },
+    {
       q: "Rafraîchissement ou rénovation complète : quelle différence de prix ?",
       a: `Un simple rafraîchissement (peinture + sols) tourne autour de ${euro(g("rafraich").appartM2)}/m², contre ${euro(complete.appartM2)}/m² pour une réno complète (électricité, plomberie, cloisons, cuisine, SDB refaits).`,
     },
@@ -177,6 +187,10 @@ function faqMaison() {
     {
       q: "Combien coûte la rénovation complète d'une maison au m² ?",
       a: `En moyenne nationale, comptez environ ${euro(complete.maisonM2)}/m² pour une rénovation complète de maison, et jusqu'à ${euro(lourde.maisonM2)}/m² pour une rénovation lourde (avec enveloppe : toiture, façade, charpente).`,
+    },
+    {
+      q: "Combien coûte la rénovation d'une maison de 120 m² ?",
+      a: `Pour une maison de 120 m², comptez environ ${euro(estim("", "Maison", 120, "complete").ttc)} pour une rénovation complète et ${euro(estim("", "Maison", 120, "lourde").ttc)} pour une rénovation lourde incluant l'enveloppe (toiture, façade, charpente). Budgets TTC, finition standard, marge ±15 %.`,
     },
     {
       q: "Pourquoi une maison coûte-t-elle plus cher qu'un appartement au m² ?",
@@ -270,11 +284,13 @@ function BodyAppartement() {
   const grille = prixNational();
   const g = (v: string) => grille.find((x) => x.v === v)!;
   const complete = g("complete");
-  const exemples = [
-    { label: "Studio / T2", surface: 45 },
-    { label: "T3", surface: 70 },
-    { label: "T4", surface: 90 },
-  ].map((e) => ({ ...e, ...estim("", "T3", e.surface, "complete") }));
+  // Matrice surface × ampleur : chaque cellule est une estimation complète rejouée par le moteur.
+  // Totaux TTC et non €/m² — les paliers de presetRapide (pièces, niveaux) font localement remonter
+  // le ratio au m² quand la surface augmente, ce qui se lirait comme une erreur de calcul.
+  const matrice = [30, 50, 70, 90, 120].map((surface) => ({
+    surface,
+    cells: grille.map((l) => estim("", "T3", surface, l.v).ttc),
+  }));
 
   const faq = faqAppartement();
 
@@ -295,34 +311,43 @@ function BodyAppartement() {
         </thead>
         <tbody>
           {grille.map((l) => (
-            <tr key={l.v}><td>{l.label}</td><td className="num">{euro(l.appartM2)}</td></tr>
+            <tr key={l.v}><td>{l.labelAppart}</td><td className="num">{euro(l.appartM2)}</td></tr>
           ))}
         </tbody>
       </table>
       </div>
       <p className="note">Prix TTC indicatifs, moyenne nationale, finition standard, marge ±15 %. Base : appartement 70 m².</p>
 
-      <h2>Exemples chiffrés par surface (rénovation complète)</h2>
-      <div className="tw">
+      <h2>Budget total selon la surface et l&apos;ampleur</h2>
+      <p>
+        Le tableau ci-dessus donne un prix au m² calculé sur un appartement de 70 m². Mais ce ratio
+        baisse quand la surface augmente : certains postes (tableau électrique, cuisine, salle de
+        bain) coûtent la même chose à 40 m² qu&apos;à 120 m². Voici donc les budgets totaux, croisés
+        avec l&apos;ampleur des travaux.
+      </p>
+      <div className="tw matrice">
       <table>
         <thead>
-          <tr><th>Type</th><th>Surface</th><th>Budget estimé (TTC)</th></tr>
+          <tr>
+            <th>Surface</th>
+            {grille.map((l) => <th key={l.v}>{l.labelAppart}</th>)}
+          </tr>
         </thead>
         <tbody>
-          {exemples.map((e) => {
-            const f = four(e.ttc);
-            return (
-              <tr key={e.label}>
-                <td>{e.label}</td>
-                <td className="num">{e.surface} m²</td>
-                <td className="num">{euro(f.lo)} – {euro(f.hi)}</td>
-              </tr>
-            );
-          })}
+          {matrice.map((r) => (
+            <tr key={r.surface}>
+              <td>{r.surface} m²</td>
+              {r.cells.map((c, i) => <td key={i} className="num">{euro(c)}</td>)}
+            </tr>
+          ))}
         </tbody>
       </table>
       </div>
-      <p className="note">Fourchettes ±15 %, rénovation complète, finition standard, artisans. À affiner selon l&apos;état réel.</p>
+      <p className="note">
+        Budgets TTC, finition standard, travaux confiés à des artisans, marge ±15 % sur chaque
+        montant. Calculés par le moteur AVYORA, pas recopiés : chaque cellule est une estimation
+        complète rejouée sur la surface et l&apos;ampleur de sa ligne.
+      </p>
 
       <Cta label="Estime ton appartement en 3 minutes" />
 
@@ -365,11 +390,11 @@ function BodyMaison() {
   const g = (v: string) => grille.find((x) => x.v === v)!;
   const complete = g("complete");
   const lourde = g("lourde");
-  const exemples = [
-    { label: "Maison de plain-pied", surface: 100, ampleur: "complete" as const },
-    { label: "Maison à étage", surface: 150, ampleur: "complete" as const },
-    { label: "Maison ancienne (réno lourde)", surface: 120, ampleur: "lourde" as const },
-  ].map((e) => ({ ...e, ...estim("", "Maison", e.surface, e.ampleur) }));
+  // Matrice surface × ampleur (mêmes contraintes que le guide appartement : totaux TTC, pas de €/m²).
+  const matrice = [80, 100, 120, 150, 200].map((surface) => ({
+    surface,
+    cells: grille.map((l) => estim("", "Maison", surface, l.v).ttc),
+  }));
 
   const faq = faqMaison();
 
@@ -390,34 +415,42 @@ function BodyMaison() {
         </thead>
         <tbody>
           {grille.map((l) => (
-            <tr key={l.v}><td>{l.label}</td><td className="num">{euro(l.maisonM2)}</td></tr>
+            <tr key={l.v}><td>{l.labelMaison}</td><td className="num">{euro(l.maisonM2)}</td></tr>
           ))}
         </tbody>
       </table>
       </div>
       <p className="note">Prix TTC indicatifs, moyenne nationale, finition standard, marge ±15 %. Base : maison 100 m².</p>
 
-      <h2>Exemples chiffrés</h2>
-      <div className="tw">
+      <h2>Budget total selon la surface et l&apos;ampleur</h2>
+      <p>
+        Le prix au m² ci-dessus est calculé sur une maison de 100 m². Il baisse quand la surface
+        augmente, parce qu&apos;une partie du budget (cuisine, salles de bain, tableau électrique,
+        chaudière) ne dépend pas de la surface. Voici les budgets totaux, croisés avec l&apos;ampleur.
+      </p>
+      <div className="tw matrice">
       <table>
         <thead>
-          <tr><th>Cas</th><th>Surface</th><th>Budget estimé (TTC)</th></tr>
+          <tr>
+            <th>Surface</th>
+            {grille.map((l) => <th key={l.v}>{l.labelMaison}</th>)}
+          </tr>
         </thead>
         <tbody>
-          {exemples.map((e) => {
-            const f = four(e.ttc);
-            return (
-              <tr key={e.label}>
-                <td>{e.label}</td>
-                <td className="num">{e.surface} m²</td>
-                <td className="num">{euro(f.lo)} – {euro(f.hi)}</td>
-              </tr>
-            );
-          })}
+          {matrice.map((r) => (
+            <tr key={r.surface}>
+              <td>{r.surface} m²</td>
+              {r.cells.map((c, i) => <td key={i} className="num">{euro(c)}</td>)}
+            </tr>
+          ))}
         </tbody>
       </table>
       </div>
-      <p className="note">Fourchettes ±15 %, finition standard, artisans. À affiner selon l&apos;état réel du bien.</p>
+      <p className="note">
+        Budgets TTC, finition standard, travaux confiés à des artisans, marge ±15 % sur chaque
+        montant. Chaque cellule est une estimation complète rejouée par le moteur AVYORA sur la
+        surface et l&apos;ampleur de sa ligne.
+      </p>
 
       <Cta label="Estime ta maison en 3 minutes" />
 

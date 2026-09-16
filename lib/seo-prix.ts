@@ -1,7 +1,21 @@
 import "server-only";
-import { CATALOG, buildDevis, presetRapide, AMPLEURS, regionCoef, effPrices, finCoefTask, defaultCtx, type Ampleur, type TypeBien, type Finition } from "@/lib/estimateur";
+import { CATALOG, buildDevis, presetRapide, AMPLEURS, ampleurLabel, regionCoef, effPrices, finCoefTask, defaultCtx, type Ampleur, type TypeBien, type Finition } from "@/lib/estimateur";
 
-export type PrixLigne = { v: Ampleur; label: string; appartM2: number; maisonM2: number };
+/**
+ * `label` est le libellé NEUTRE, à garder sur les grilles qui affichent côte à côte une colonne
+ * appartement et une colonne maison (hubs, pages villes). `labelAppart` / `labelMaison` sont les
+ * libellés spécialisés d'`ampleurLabel` — le niveau 4 s'appelle « Réno totale » pour un appartement
+ * et « Réno lourde » pour une maison. N'utiliser les seconds que sur une grille mono-type, sinon
+ * une ligne porterait un libellé d'appartement au-dessus d'une valeur maison.
+ */
+export type PrixLigne = {
+  v: Ampleur;
+  label: string;
+  labelAppart: string;
+  labelMaison: string;
+  appartM2: number;
+  maisonM2: number;
+};
 
 /** Estimation TTC (moteur) pour un bien : total et €/m², finition standard, tout confié aux artisans. */
 export function estim(cp: string, type: TypeBien, surface: number, ampleur: Ampleur): { ttc: number; m2: number } {
@@ -20,6 +34,8 @@ export function prixVille(cp: string): PrixLigne[] {
   return AMPLEURS.map((a) => ({
     v: a.v,
     label: a.label,
+    labelAppart: ampleurLabel(a.v, "T3").label,
+    labelMaison: ampleurLabel(a.v, "Maison").label,
     appartM2: eurM2(cp, "T3", 70, a.v),   // appartement type ~70 m²
     maisonM2: eurM2(cp, "Maison", 100, a.v), // maison type ~100 m²
   }));
