@@ -90,7 +90,7 @@ function Faq({ items }: { items: { q: string; a: string }[] }) {
       <h2>Questions fréquentes</h2>
       <div className="faq">
         {items.map((f, i) => (
-          <details key={i} open={i === 0}>
+          <details key={i} open>
             <summary>{f.q}</summary>
             <p>{f.a}</p>
           </details>

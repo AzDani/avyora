@@ -259,7 +259,7 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
       <h2>Questions fréquentes</h2>
       <div className="faq">
         {faq.map((x, i) => (
-          <details key={i} open={i === 0}>
+          <details key={i} open>
             <summary>{x.q}</summary>
             <p>{x.a}</p>
           </details>

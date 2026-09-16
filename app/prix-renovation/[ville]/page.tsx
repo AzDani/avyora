@@ -215,7 +215,7 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
       <h2>Questions fréquentes</h2>
       <div className="faq">
         {faq.map((f, i) => (
-          <details key={i} open={i === 0}>
+          <details key={i} open>
             <summary>{f.q}</summary>
             <p>{f.a}</p>
           </details>
