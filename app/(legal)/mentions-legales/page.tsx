@@ -1,4 +1,4 @@
-export const metadata = { title: "Mentions légales — AVYORA" };
+export const metadata = { title: "Mentions légales", alternates: { canonical: "/mentions-legales" } };
 
 export default function MentionsLegales() {
   return (

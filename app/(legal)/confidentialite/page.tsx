@@ -1,4 +1,4 @@
-export const metadata = { title: "Politique de confidentialité — AVYORA" };
+export const metadata = { title: "Politique de confidentialité", alternates: { canonical: "/confidentialite" } };
 
 export default function Confidentialite() {
   return (

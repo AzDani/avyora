@@ -6,7 +6,7 @@ import { EstimationRappel } from "@/components/auth/EstimationRappel";
 import { getUser } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
 
-export const metadata = { title: "Créer un compte — AVYORA" };
+export const metadata = { title: "Créer un compte", robots: { index: false, follow: true } };
 
 export default async function InscriptionPage() {
   if (await getUser()) redirect("/projets");

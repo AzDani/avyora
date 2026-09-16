@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: { params: Promise<{ projet: s
   const { projet, ville } = await params;
   const p = projetBySlug(projet);
   const v = villeBySlug(ville);
-  if (!p || !v) return { title: "Prix des travaux — AVYORA" };
+  if (!p || !v) return { title: "Prix des travaux" };
   const { ttc } = estimProjet(p, v.cp);
   const f = four(ttc);
   const sujet = titreSansPrefixe(p.h1);

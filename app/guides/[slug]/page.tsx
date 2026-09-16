@@ -27,7 +27,7 @@ const four = (ttc: number) => {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const g = guideBySlug(slug);
-  if (!g) return { title: "Guide des prix — AVYORA" };
+  if (!g) return { title: "Guide des prix" };
   return {
     title: g.title,
     description: g.description,

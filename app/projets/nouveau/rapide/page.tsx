@@ -3,6 +3,12 @@ import EstimateurRapide from "@/components/EstimateurRapide";
 import { getT } from "@/lib/i18n/server";
 import { getUser, estPro } from "@/lib/auth";
 
+export const metadata = {
+  title: "Estimation travaux gratuite — budget rénovation en 3 minutes",
+  description:
+    "Calcule gratuitement le budget de tes travaux de rénovation : 4 questions, une fourchette chiffrée ajustée à ton code postal. Sans inscription.",
+  alternates: { canonical: "/projets/nouveau/rapide" },
+};
 export const dynamic = "force-dynamic";
 
 // Estimation rapide (< 3 min), gratuite. « Affiner » ouvre le détaillé (/detaille).

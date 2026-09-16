@@ -1,4 +1,4 @@
-export const metadata = { title: "Conditions Générales d'Utilisation — AVYORA" };
+export const metadata = { title: "Conditions Générales d'Utilisation", alternates: { canonical: "/cgu" } };
 
 export default function CGU() {
   return (

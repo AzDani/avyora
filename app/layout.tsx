@@ -26,8 +26,10 @@ const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
 
+// Doit décrire ce que le produit fait RÉELLEMENT aujourd'hui (cf. lib/features.ts : devis et
+// rentabilite sont désactivés). Promettre une fonction absente = clic gagné puis retour immédiat.
 const description =
-  "Estime le coût de tes travaux de rénovation au prix du marché français, fais analyser tes devis par l'IA et calcule ta rentabilité locative — avant de signer.";
+  "Estime le coût de tes travaux de rénovation au prix du marché français : 200 postes chiffrés, 18 corps d'état, prix ajustés à ta région — avant de signer.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -47,7 +49,8 @@ export const metadata: Metadata = {
     "budget travaux",
   ],
   authors: [{ name: "AVYORA" }],
-  alternates: { canonical: "/" },
+  // PAS de canonical ici : dans le layout racine il est hérité par toute page qui n'en déclare pas,
+  // qui se signale alors à Google comme un duplicata de l'accueil. Chaque page porte le sien.
   openGraph: {
     type: "website",
     locale: "fr_FR",

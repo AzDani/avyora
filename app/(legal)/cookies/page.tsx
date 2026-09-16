@@ -1,4 +1,4 @@
-export const metadata = { title: "Politique cookies — AVYORA" };
+export const metadata = { title: "Politique cookies", alternates: { canonical: "/cookies" } };
 
 export default function Cookies() {
   return (

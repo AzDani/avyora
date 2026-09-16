@@ -5,7 +5,7 @@ import { LoginForm } from "@/components/auth/forms";
 import { getUser } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
 
-export const metadata = { title: "Connexion — AVYORA" };
+export const metadata = { title: "Connexion", robots: { index: false, follow: true } };
 
 export default async function ConnexionPage({
   searchParams,

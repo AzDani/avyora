@@ -4,7 +4,12 @@ import BoutonCheckout from "@/components/BoutonCheckout";
 import { getUser, estPro } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
 
-export const metadata = { title: "Passer Pro — AVYORA" };
+export const metadata = {
+  title: "Passer Pro — estimation détaillée poste par poste",
+  description:
+    "Débloque l'estimateur détaillé AVYORA : 200 postes chiffrés, quantités ajustables, rapport PDF et sauvegarde de tes projets. Dès 18,85 €/mois, sans engagement.",
+  alternates: { canonical: "/tarifs" },
+};
 export const dynamic = "force-dynamic";
 
 const PLAN_KEYS: { key: "mensuel" | "annuel-mois" | "annuel"; featured?: boolean }[] = [

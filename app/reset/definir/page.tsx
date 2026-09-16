@@ -3,7 +3,7 @@ import { AuthShell } from "@/components/auth/AuthShell";
 import { UpdatePasswordForm } from "@/components/auth/forms";
 import { getUser } from "@/lib/auth";
 
-export const metadata = { title: "Nouveau mot de passe — AVYORA" };
+export const metadata = { title: "Nouveau mot de passe", robots: { index: false, follow: true } };
 
 /**
  * Atterrissage après clic sur le lien de l'email (la route /auth/callback a échangé le code

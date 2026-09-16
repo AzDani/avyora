@@ -18,13 +18,13 @@ const euro = (n: number) => n.toLocaleString("fr-FR") + " €";
 export async function generateMetadata({ params }: { params: Promise<{ ville: string }> }): Promise<Metadata> {
   const { ville } = await params;
   const v = villeBySlug(ville);
-  if (!v) return { title: "Prix rénovation — AVYORA" };
+  if (!v) return { title: "Prix rénovation" };
   const grille = prixVille(v.cp);
   const complete = grille.find((g) => g.v === "complete")?.appartM2 ?? 0;
   const dep = deptInfo(v.cp);
   const zone = dep.region ? ` (${dep.region})` : "";
   return {
-    title: `Prix rénovation à ${v.nom} (2026) — coût au m² | AVYORA`,
+    title: `Prix rénovation à ${v.nom} (2026) — coût au m²`,
     description: `Combien coûte une rénovation à ${v.nom}${zone} ? Prix au m² par type de travaux : à partir de ${euro(complete)}/m² pour une réno complète. Estimation gratuite en 3 minutes.`,
     alternates: { canonical: `/prix-renovation/${v.slug}` },
   };

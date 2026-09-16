@@ -1,4 +1,4 @@
-export const metadata = { title: "Conditions Générales de Vente — AVYORA" };
+export const metadata = { title: "Conditions Générales de Vente", alternates: { canonical: "/cgv" } };
 
 export default function CGV() {
   return (

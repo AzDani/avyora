@@ -36,7 +36,7 @@ const REGIONS = [
 export async function generateMetadata({ params }: { params: Promise<{ projet: string }> }): Promise<Metadata> {
   const { projet } = await params;
   const p = projetBySlug(projet);
-  if (!p) return { title: "Prix des travaux — AVYORA" };
+  if (!p) return { title: "Prix des travaux" };
   const { ttc } = estimProjet(p, "");
   const f = four(ttc);
   return {

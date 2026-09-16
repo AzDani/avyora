@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "AVYORA — copilote rénovation & investissement",
     short_name: "AVYORA",
     description:
-      "Estime tes travaux au prix du marché, fais analyser tes devis, suis ton chantier et ta rentabilité.",
+      "Estime le coût de tes travaux de rénovation au prix du marché français, poste par poste et ajusté à ta région.",
     start_url: "/",
     display: "standalone",
     background_color: "#F8FAFC",

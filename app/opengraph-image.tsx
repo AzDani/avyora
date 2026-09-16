@@ -50,7 +50,7 @@ export default function OpengraphImage() {
           <div style={{ display: "flex", fontSize: "84px", fontWeight: 800, lineHeight: 1.05 }}>Sache ce que ça coûte.</div>
           <div style={{ display: "flex", fontSize: "84px", fontWeight: 800, lineHeight: 1.05, color: "#A78BFA" }}>Avant de signer.</div>
           <div style={{ display: "flex", marginTop: "28px", fontSize: "30px", color: "rgba(199,197,253,0.85)" }}>
-            Estimation travaux · analyse de devis IA · rentabilité locative
+            Estimation travaux · 200 postes chiffrés · prix ajustés à ta région
           </div>
         </div>
 

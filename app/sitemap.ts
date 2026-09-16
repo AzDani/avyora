@@ -49,7 +49,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${siteUrl}/prix-renovation`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     ...villes,
     { url: `${siteUrl}/tarifs`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${siteUrl}/inscription`, lastModified: now, changeFrequency: "yearly", priority: 0.5 },
-    { url: `${siteUrl}/connexion`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
+    { url: `${siteUrl}/projets/nouveau/rapide`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
   ];
 }

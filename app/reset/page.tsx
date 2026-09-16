@@ -2,7 +2,7 @@ import Link from "next/link";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { ResetRequestForm } from "@/components/auth/forms";
 
-export const metadata = { title: "Mot de passe oublié — AVYORA" };
+export const metadata = { title: "Mot de passe oublié", robots: { index: false, follow: true } };
 
 export default function ResetPage() {
   return (

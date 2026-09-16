@@ -6,7 +6,7 @@ import { PrintBar } from "@/components/PrintBar";
 import type { Ctx, Selection, CustomLine } from "@/lib/estimateur";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Rapport d'estimation — AVYORA" };
+export const metadata = { title: "Rapport d'estimation", robots: { index: false, follow: false } };
 
 // Rapport imprimable (print-to-PDF) — réservé aux abonnés Pro, propriétaire du projet.
 export default async function RapportPage({ params }: { params: Promise<{ id: string }> }) {

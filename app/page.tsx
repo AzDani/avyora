@@ -1,4 +1,8 @@
+import type { Metadata } from "next";
 import { getT } from "@/lib/i18n/server";
+
+// Le canonical de l'accueil vit ici (retiré du layout racine où il contaminait toutes les pages).
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
