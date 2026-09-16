@@ -10,6 +10,7 @@ import {
   type TypeBien,
   type DevisLigne,
 } from "@/lib/estimateur";
+import { VILLES } from "./villes";
 
 /** Une tâche du panier représentatif : [corps, nom exact du catalogue, quantité]. */
 export type TacheSel = [corps: string, nom: string, qty: number];
@@ -647,6 +648,27 @@ export const MATRIX_SLUGS = new Set<string>([
 ]);
 
 export const projetsMatrix = (): Projet[] => PROJETS.filter((p) => MATRIX_SLUGS.has(p.slug));
+
+/**
+ * Villes déclinées par la matrice « prix [travaux] à [ville] ». SOURCE DE VÉRITÉ UNIQUE :
+ * le sitemap, generateStaticParams et les liens internes doivent tous partir d'ici. Quand ces
+ * listes divergeaient (40 générées, 24 liées), 160 pages se retrouvaient sans aucun lien entrant.
+ */
+export const MATRIX_CITY_COUNT = 40;
+export const MATRIX_VILLES = VILLES.slice(0, MATRIX_CITY_COUNT);
+
+/**
+ * Liens d'un projet, rendus RÉCIPROQUES automatiquement : aux liens déclarés on ajoute les projets
+ * qui pointent vers celui-ci. Sans ça le graphe manuel laissait des puits (des pages qui émettent
+ * des liens sans jamais en recevoir), et donc des pages sans PageRank interne.
+ */
+export function liensDe(slug: string): string[] {
+  const p = projetBySlug(slug);
+  if (!p) return [];
+  const out = new Set<string>(p.liens);
+  for (const autre of PROJETS) if (autre.slug !== slug && autre.liens.includes(slug)) out.add(autre.slug);
+  return [...out];
+}
 
 export interface LotBreakdown {
   corps: string;

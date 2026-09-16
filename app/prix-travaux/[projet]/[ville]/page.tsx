@@ -2,7 +2,7 @@ import { Fragment } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { projetBySlug, projetsMatrix, estimProjet, MATRIX_SLUGS } from "@/lib/seo-projets";
+import { projetBySlug, projetsMatrix, estimProjet, MATRIX_SLUGS, MATRIX_VILLES, liensDe } from "@/lib/seo-projets";
 import { VILLES, villeBySlug } from "@/lib/villes";
 import { deptInfo } from "@/lib/geo";
 import { regionCoef } from "@/lib/estimateur";
@@ -11,8 +11,7 @@ export const dynamic = "force-static";
 export const dynamicParams = false;
 
 /** Nombre de villes déclinées par projet (les plus gros volumes de recherche). */
-const MATRIX_CITY_COUNT = 40;
-const MATRIX_VILLES = VILLES.slice(0, MATRIX_CITY_COUNT);
+
 
 export function generateStaticParams() {
   const out: { projet: string; ville: string }[] = [];
@@ -249,7 +248,7 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
 
       <h2>Autres travaux à {v.nom}</h2>
       <div className="chips">
-        {p.liens.map((slug) => {
+        {liensDe(p.slug).map((slug) => {
           const rp = projetBySlug(slug);
           if (!rp) return null;
           // Lien vers la page ville si le projet est décliné par ville, sinon vers sa page nationale.

@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { VILLES } from "@/lib/villes";
 import { GUIDES } from "@/lib/guides";
-import { PROJETS, projetsMatrix } from "@/lib/seo-projets";
+import { PROJETS, projetsMatrix, MATRIX_VILLES } from "@/lib/seo-projets";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
@@ -29,9 +29,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
   // Matrice « prix [travaux] à [ville] » : projets déclinés × 40 plus grandes villes.
-  const matrixVilles = VILLES.slice(0, 40);
   const travauxVilles: MetadataRoute.Sitemap = projetsMatrix().flatMap((p) =>
-    matrixVilles.map((v) => ({
+    MATRIX_VILLES.map((v) => ({
       url: `${siteUrl}/prix-travaux/${p.slug}/${v.slug}`,
       lastModified: now,
       changeFrequency: "monthly" as const,

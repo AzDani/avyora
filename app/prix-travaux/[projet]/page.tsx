@@ -2,7 +2,7 @@ import { Fragment } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { PROJETS, projetBySlug, estimProjet, MATRIX_SLUGS } from "@/lib/seo-projets";
+import { PROJETS, projetBySlug, estimProjet, MATRIX_SLUGS, MATRIX_VILLES, liensDe } from "@/lib/seo-projets";
 import { VILLES } from "@/lib/villes";
 
 export const dynamic = "force-static";
@@ -231,7 +231,7 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
           <h2>Prix {p.titre} ville par ville</h2>
           <p>Le prix exact dépend du coût de la main-d&apos;œuvre locale. Consulte la page dédiée à ta ville :</p>
           <div className="chips">
-            {VILLES.slice(0, 24).map((x) => (
+            {MATRIX_VILLES.map((x) => (
               <Link key={x.slug} href={`/prix-travaux/${p.slug}/${x.slug}`}>{x.nom}</Link>
             ))}
           </div>
@@ -250,7 +250,7 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
 
       <h2>Autres types de travaux</h2>
       <div className="chips">
-        {p.liens.map((slug) => {
+        {liensDe(p.slug).map((slug) => {
           const rp = projetBySlug(slug);
           return rp ? <Link key={slug} href={`/prix-travaux/${slug}`}>{rp.emoji} {rp.titre}</Link> : null;
         })}
