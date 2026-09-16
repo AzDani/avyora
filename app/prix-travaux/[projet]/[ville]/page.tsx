@@ -137,6 +137,9 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
     "@graph": [
       {
         "@type": "Article",
+        // Google demande une image pour le résultat enrichi Article (et pour Discover).
+        // On réutilise l'image OG générée par app/opengraph-image.tsx : 1200×630, ratio 1.91:1.
+        image: [`${siteUrl}/opengraph-image`],
         headline: `Prix ${sujet} à ${v.nom} en 2026`,
         description: `Prix de ${p.nom} à ${v.nom}, ajusté à la main-d'œuvre locale et détaillé poste par poste.`,
         inLanguage: "fr-FR",

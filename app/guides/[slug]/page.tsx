@@ -621,6 +621,9 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
     "@graph": [
       {
         "@type": "Article",
+        // Google demande une image pour le résultat enrichi Article (et pour Discover).
+        // On réutilise l'image OG générée par app/opengraph-image.tsx : 1200×630, ratio 1.91:1.
+        image: [`${siteUrl}/opengraph-image`],
         headline: g.h1,
         description: g.description,
         inLanguage: "fr-FR",

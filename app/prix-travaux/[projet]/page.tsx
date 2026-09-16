@@ -124,6 +124,9 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
     "@graph": [
       {
         "@type": "Article",
+        // Google demande une image pour le résultat enrichi Article (et pour Discover).
+        // On réutilise l'image OG générée par app/opengraph-image.tsx : 1200×630, ratio 1.91:1.
+        image: [`${siteUrl}/opengraph-image`],
         headline: p.h1,
         description: `Prix de ${p.nom} en 2026, détaillé poste par poste.`,
         inLanguage: "fr-FR",
