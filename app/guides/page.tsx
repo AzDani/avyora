@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { GUIDES } from "@/lib/guides";
+import { prixNational } from "@/lib/seo-prix";
+import { PRIX_MAJ_FR } from "@/lib/prix-maj";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
@@ -39,8 +41,10 @@ const jsonLd = {
 };
 
 export default function GuidesHub() {
+  const grille = prixNational();
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="av-hub mx-auto max-w-3xl">
+      <style dangerouslySetInnerHTML={{ __html: HUB_CSS }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <header className="animate-rise">
         <p className="eyebrow">Guides des prix</p>
@@ -68,16 +72,84 @@ export default function GuidesHub() {
         ))}
       </div>
 
-      <div className="mt-8 rounded-2xl border border-line bg-surface p-5">
-        <p className="text-[15px] font-semibold text-ink">Cherches-tu un prix par ville ?</p>
-        <p className="mt-1 text-sm text-muted">
-          Les prix varient selon la région. Consulte le{" "}
-          <Link href="/prix-renovation" className="font-medium text-brand-600 hover:underline">
-            coût de la rénovation ville par ville
-          </Link>{" "}
-          (Paris, Lyon, Marseille, Bordeaux…).
-        </p>
+      <h2>Le repère national, en un coup d&apos;œil</h2>
+      <p>
+        Avant d&apos;entrer dans le détail, voici l&apos;ordre de grandeur. Appartement type de 70 m²,
+        maison type de 100 m², finition standard, travaux confiés à des artisans — TTC, fourchette ±15 %.
+      </p>
+      <div className="tw">
+        <table>
+          <thead><tr><th>Ampleur</th><th>Appartement</th><th>Maison</th></tr></thead>
+          <tbody>
+            {grille.map((g) => (
+              <tr key={g.v}>
+                <td>{g.label}</td>
+                <td className="num">{g.appartM2.toLocaleString("fr-FR")} €/m²</td>
+                <td className="num">{g.maisonM2.toLocaleString("fr-FR")} €/m²</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
+      <p className="note">
+        Prix mis à jour le {PRIX_MAJ_FR} ·{" "}
+        <Link href="/methodologie">d&apos;où viennent ces prix</Link>
+      </p>
+
+      <h2>Trois choses à savoir avant de lire un prix au m²</h2>
+      <p>
+        <strong>Un prix au m² n&apos;est qu&apos;un point de départ.</strong> Deux maisons de 100 m² du
+        même âge peuvent coûter du simple au double selon ce que cachent les murs : réseaux hors normes,
+        humidité, plancher à reprendre. Le m² sert à cadrer un budget, pas à le figer.
+      </p>
+      <p>
+        <strong>L&apos;ampleur pèse plus que la surface.</strong> Entre un rafraîchissement et une
+        rénovation lourde, le coût au m² est multiplié par cinq environ. Avant de chercher « le prix au
+        m² », il faut donc savoir ce qu&apos;on refait réellement — et c&apos;est souvent là que le
+        budget se décide.
+      </p>
+      <p>
+        <strong>La main-d&apos;œuvre décide de l&apos;écart régional.</strong> Les fournitures coûtent à
+        peu près pareil partout ; la pose, non. C&apos;est pourquoi un même chantier ne se chiffre pas
+        pareil à Paris et dans la Creuse — voir les{" "}
+        <Link href="/prix-renovation">prix ville par ville</Link>.
+      </p>
+
+      <h2>Par où commencer selon ta situation</h2>
+      <p>
+        <strong>Tu veux un ordre de grandeur pour ton bien</strong> → commence par le guide{" "}
+        <Link href="/guides/prix-renovation-maison">rénovation de maison</Link> ou{" "}
+        <Link href="/guides/prix-renovation-appartement">rénovation d&apos;appartement</Link>.
+      </p>
+      <p>
+        <strong>Tu as un devis sur la table</strong> → lis{" "}
+        <Link href="/guides/verifier-devis-travaux">comment lire et vérifier un devis</Link> : les
+        postes absents coûtent plus cher que les postes chers.
+      </p>
+      <p>
+        <strong>Tu passes à l&apos;action</strong> →{" "}
+        <Link href="/guides/ordre-travaux-renovation">dans quel ordre faire tes travaux</Link>, pour ne
+        pas payer deux fois le même poste.
+      </p>
+      <p>
+        <strong>Tu cherches le prix d&apos;un travail précis</strong> → les{" "}
+        <Link href="/prix-travaux">prix par type de travaux</Link> (cuisine, salle de bain, toiture,
+        électricité et 14 autres).
+      </p>
     </div>
   );
 }
+
+const HUB_CSS = `
+.av-hub h2{font-size:19px;font-weight:600;color:var(--color-ink);margin:34px 0 10px;letter-spacing:-.01em}
+.av-hub p{font-size:15px;line-height:1.7;color:var(--color-muted);margin:10px 0}
+.av-hub strong{color:var(--color-ink);font-weight:600}
+.av-hub .note{font-size:12.5px;color:var(--color-faint)}
+.av-hub p a{color:var(--color-brand-700);font-weight:500;text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px;text-decoration-color:color-mix(in srgb,currentColor 45%,transparent)}
+.av-hub .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:14px 0;border:1px solid var(--color-line);border-radius:12px}
+.av-hub table{width:100%;border-collapse:collapse;font-size:14px;min-width:420px}
+.av-hub th{text-align:left;background:var(--color-surface-2);color:var(--color-ink);font-weight:600;font-size:12.5px;padding:10px 12px}
+.av-hub td{padding:10px 12px;border-top:1px solid var(--color-line);color:var(--color-muted)}
+.av-hub td.num{font-family:var(--font-geist-mono),monospace;text-align:right;color:var(--color-ink);font-weight:600;white-space:nowrap}
+@media(max-width:560px){.av-hub p{font-size:16px}}
+`;
