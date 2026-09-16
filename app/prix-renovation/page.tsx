@@ -46,11 +46,25 @@ export default function PrixRenovationHub() {
         <p className="eyebrow">Guide des prix</p>
         <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-ink">Prix d&apos;une rénovation par ville</h1>
         <p className="mt-2 text-[15px] text-muted">
-          Les prix de la rénovation varient selon la région (surtout la main-d&apos;œuvre). Choisis ta ville
+          Les prix de la rénovation varient selon la région, surtout la main-d&apos;œuvre. Choisis ta ville
           pour voir les coûts au m² par type de travaux — ou lance directement ton estimation.
         </p>
         <Link href="/projets/nouveau" className="btn btn-primary mt-4 py-2.5">Estimer mes travaux →</Link>
       </header>
+
+      <p className="mt-4 rounded-field border border-line bg-surface-2 px-4 py-3 text-[13.5px] leading-relaxed text-muted">
+        <strong className="text-ink">Ta ville n&apos;est pas dans la liste ?</strong> C&apos;est normal, et
+        c&apos;est volontaire : nous ne publions une page dédiée que là où le coût de la main-d&apos;œuvre
+        s&apos;écarte réellement de la moyenne française. Partout ailleurs, cette page dirait exactement la
+        même chose — autant t&apos;envoyer directement au prix national, qui s&apos;applique tel quel chez toi.{" "}
+        <Link href="/methodologie" className="font-medium text-brand-600 hover:underline">
+          Comment nous calculons l&apos;écart régional
+        </Link>
+        {" "}·{" "}
+        <Link href="/projets/nouveau/rapide" className="font-medium text-brand-600 hover:underline">
+          estimer avec mon code postal
+        </Link>
+      </p>
 
       <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
         {VILLES_SEO.map((v) => (
