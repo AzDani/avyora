@@ -518,9 +518,9 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
       </div>
 
       {/* Barre live sticky */}
-      <div className="av-estim-live">
+      <div className={"av-estim-live" + (budget > 0 ? "" : " nobudget")}>
         <div className="live-in">
-          <div>
+          <div className="totb">
             <div className="lbl">Total estimé</div>
             <div className="big"><CountUp value={tot.ttc} /><small>€ TTC</small></div>
           </div>

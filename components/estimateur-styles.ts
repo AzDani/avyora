@@ -216,6 +216,20 @@ export const EST_CSS = `
 .av-estim-live .save:hover:not(:disabled){background:rgba(255,255,255,.2)}
 .av-estim-live .save:disabled{opacity:.5;cursor:not-allowed}
 .av-estim-live .err{width:100%;font-size:12.5px;font-weight:500;color:#ffb1b6}
+/* mobile : la barre sticky mangeait le bas de l'écran — libellé + montant sur une ligne,
+   les deux boutons côte à côte, jauge masquée tant qu'aucun budget n'est défini */
+@media(max-width:560px){
+.av-estim-live{bottom:8px;margin-top:12px}
+.av-estim-live .live-in{padding:10px 13px;gap:8px}
+.av-estim-live .totb{flex-basis:100%;display:flex;align-items:baseline;gap:9px}
+.av-estim-live .lbl{font-size:10px;letter-spacing:.1em}
+.av-estim-live .big{font-size:21px}
+.av-estim-live .jauge{flex-basis:100%;min-width:0}
+.av-estim-live.nobudget .jauge{display:none}
+.av-estim-live .jtext{font-size:11px}
+.av-estim-live .jbar{height:6px;margin-top:4px}
+.av-estim-live .cta,.av-estim-live .save{flex:1;min-width:0;padding:11px 8px;font-size:13px;white-space:nowrap}
+}
 
 @media(prefers-reduced-motion:reduce){.av-estim *,.av-estim-live *{transition:none!important}}
 

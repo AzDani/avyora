@@ -51,12 +51,6 @@ export default function MobileMenu({ isLoggedIn, prenom, isAdmin }: { isLoggedIn
             <Link href="/projets" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-surface-2">
               {t.nav.projets}
             </Link>
-            <Link href="/guides" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-surface-2">
-              {t.nav.guides}
-            </Link>
-            <Link href="/tarifs" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-surface-2">
-              {t.nav.tarifs}
-            </Link>
             <div className="my-1.5 border-t border-line" />
             {isLoggedIn ? (
               <>
