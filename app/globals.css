@@ -35,7 +35,7 @@
   --color-surface-2:   #f8f9fd;
   --color-ink:         #15172b;
   --color-muted:       #565a75;
-  --color-faint:       #898ea8;
+  --color-faint:       #6a6f88; /* 4,59:1 sur canvas — WCAG AA ; était #898ea8 à 2,88:1 */
   --color-line:        #e9eaf3;
   --color-line-strong: #dcdeec;
 
@@ -226,3 +226,23 @@
 .av-step.field .u { padding: 0 6px 0 4px; }
 .av-step.field .st { display: flex; align-items: center; gap: 2px; height: 100%; padding-left: 4px; margin-left: 2px; border-left: 1px solid var(--color-line); }
 .av-step.field .st button { width: 26px; height: 26px; border-radius: 7px; font-size: 15px; }
+
+/* Liens dans la prose des pages SEO : soulignés en permanence, pas seulement au survol.
+   Sans repère non chromatique, un lien à 1,07:1 de contraste avec le texte est invisible
+   (échec WCAG 1.4.1 « l'information ne doit pas passer par la couleur seule »). */
+.av-seo p a, .av-seo li a, .av-guide p a, .av-guide li a, .av-metho p a, .av-metho li a,
+.av-seo .prixmaj a, .av-guide .prixmaj a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+}
+.av-seo p a:hover, .av-guide p a:hover, .av-metho p a:hover,
+.av-seo li a:hover, .av-guide li a:hover, .av-metho li a:hover {
+  text-decoration-color: currentColor;
+}
+
+/* Lien d'évitement : au clavier et au lecteur d'écran, atteindre le contenu sans retraverser l'en-tête. */
+.skip-link{position:absolute;left:-9999px;top:0;z-index:100}
+.skip-link:focus{left:8px;top:8px;background:var(--color-surface);color:var(--color-ink);
+  border:1px solid var(--color-brand-600);border-radius:10px;padding:10px 16px;font-weight:600;font-size:14px}

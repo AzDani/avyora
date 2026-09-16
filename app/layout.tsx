@@ -144,7 +144,13 @@ export default async function RootLayout({
       lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        {/* Le tag Ads est un tiers cross-origin charge pendant la fenetre du LCP :
+            on prepare DNS + TCP + TLS a l'avance plutot que de les payer a ce moment-la. */}
+        <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="" />
+      </head>
       <body className="flex min-h-full flex-col">
+        <a href="#contenu" className="skip-link">Aller au contenu</a>
         {/* Google Ads — balise de base (suivi des conversions). Les événements de
             conversion sont déclenchés via lib/gtag.ts sur les actions clés. */}
         <Script
@@ -163,7 +169,7 @@ export default async function RootLayout({
           <div className="mx-auto flex h-16 max-w-5xl items-center justify-between rounded-2xl border border-white/10 bg-[#1E1B4B] px-4 shadow-[0_10px_30px_-12px_rgba(30,27,75,0.55)] sm:px-6">
             <Wordmark />
             {/* Desktop (≥ sm) : navigation inline */}
-            <nav className="hidden items-center gap-1 text-sm sm:flex">
+            <nav aria-label="Navigation principale" className="hidden items-center gap-1 text-sm sm:flex">
               <Link
                 href="/projets"
                 className="rounded-lg px-3 py-1.5 text-indigo-200/90 transition-colors hover:bg-white/10 hover:text-white"
@@ -193,12 +199,12 @@ export default async function RootLayout({
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">{children}</main>
+        <main id="contenu" tabIndex={-1} className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">{children}</main>
 
         <footer className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6">
           <div className="border-t border-line pt-6">
             <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3">
-              <nav className="flex flex-wrap gap-x-5 gap-y-0 text-xs font-medium text-muted [&>a]:inline-flex [&>a]:items-center [&>a]:py-2.5">
+              <nav aria-label="Liens de bas de page" className="flex flex-wrap gap-x-5 gap-y-0 text-xs font-medium text-muted [&>a]:inline-flex [&>a]:items-center [&>a]:py-2.5">
                 <Link href="/methodologie" className="transition-colors hover:text-brand-700">Méthodologie</Link>
                 <Link href="/guides" className="transition-colors hover:text-brand-700">{t.footer.guides}</Link>
                 <Link href="/prix-travaux" className="transition-colors hover:text-brand-700">{t.footer.prixTravaux}</Link>

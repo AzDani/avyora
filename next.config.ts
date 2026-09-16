@@ -46,7 +46,7 @@ const securityHeaders = [
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()" },
   // HSTS : n'a d'effet qu'en HTTPS (Vercel) ; ignoré sur http://localhost.
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
-  { key: "X-DNS-Prefetch-Control", value: "off" },
+  { key: "X-DNS-Prefetch-Control", value: "on" },
 ];
 
 const nextConfig: NextConfig = {

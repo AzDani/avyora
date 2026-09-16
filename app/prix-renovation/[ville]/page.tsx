@@ -38,9 +38,11 @@ export async function generateMetadata({ params }: { params: Promise<{ ville: st
 const CSS = `
 .av-seo{max-width:760px;margin:0 auto}
 .av-seo h1{font-size:clamp(24px,4vw,32px);font-weight:600;letter-spacing:-.02em;color:var(--color-ink);margin:0}
+.av-seo .tw,.av-guide .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:14px 0}
+.av-seo .tw table,.av-guide .tw table{margin:0;min-width:420px}
 .av-seo .lead{font-size:15px;color:var(--color-muted);margin-top:12px;line-height:1.7}
 .av-seo .prixmaj{font-size:12.5px;color:var(--color-faint);margin-top:10px}
-.av-seo .prixmaj a{color:var(--color-brand-700);font-weight:500;text-decoration:none}
+.av-seo .prixmaj a{color:var(--color-brand-700);font-weight:500}
 .av-seo .prixmaj a:hover{text-decoration:underline}
 .av-seo h2{font-size:19px;font-weight:600;color:var(--color-ink);margin:34px 0 10px}
 .av-seo p{font-size:14.5px;color:var(--color-muted);line-height:1.7;margin:10px 0}
@@ -56,6 +58,13 @@ const CSS = `
 .av-seo .villes{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .av-seo .villes a{font-size:13px;color:var(--color-brand-600);background:var(--color-brand-50);border-radius:999px;padding:5px 12px;text-decoration:none}
 .av-seo .villes a:hover{background:var(--color-brand-100)}
+/* Mobile : le corps de texte passe a 16px (defaut navigateur) — ces pages sont faites pour etre
+   lues longuement sur un telephone, et 14,5px y est inutilement fatigant. */
+@media(max-width:560px){
+.av-seo p,.av-seo li{font-size:16px}
+.av-seo .note{font-size:13.5px}
+.av-seo .lead{font-size:16.5px}
+}
 `;
 
 export default async function PrixVille({ params }: { params: Promise<{ ville: string }> }) {
@@ -155,6 +164,7 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
       <p className="prixmaj">Prix mis à jour le {PRIX_MAJ_FR} · <Link href="/methodologie">d&apos;où viennent ces prix ?</Link></p>
 
       <h2>Prix au m² par type de travaux à {v.nom}</h2>
+      <div className="tw">
       <table>
         <thead>
           <tr><th>Type de travaux</th><th>Appartement (€/m²)</th><th>Maison (€/m²)</th></tr>
@@ -169,6 +179,7 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
           ))}
         </tbody>
       </table>
+      </div>
       <p style={{ fontSize: 12.5, color: "var(--color-faint)" }}>
         Prix TTC indicatifs, travaux confiés à des artisans, finition standard, marge ±15 %. Base :
         appartement 70 m² / maison 100 m². À affiner selon l&apos;état du bien.

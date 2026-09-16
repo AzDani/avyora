@@ -54,6 +54,8 @@ export async function generateMetadata({ params }: { params: Promise<{ projet: s
 const CSS = `
 .av-seo{max-width:760px;margin:0 auto}
 .av-seo h1{font-size:clamp(23px,4vw,31px);font-weight:600;letter-spacing:-.02em;color:var(--color-ink);margin:0}
+.av-seo .tw,.av-guide .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:14px 0}
+.av-seo .tw table,.av-guide .tw table{margin:0;min-width:420px}
 .av-seo .lead{font-size:15px;color:var(--color-muted);margin-top:12px;line-height:1.7}
 .av-seo h2{font-size:19px;font-weight:600;color:var(--color-ink);margin:34px 0 10px}
 .av-seo p{font-size:14.5px;color:var(--color-muted);line-height:1.7;margin:10px 0}
@@ -68,7 +70,7 @@ const CSS = `
 .av-seo tr.lot td.num{color:var(--color-brand-700)}
 .av-seo tr.line td:first-child{padding-left:22px;color:var(--color-muted)}
 .av-seo .big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:6px 0 2px}
-.av-seo .big .v{font-family:var(--font-geist-mono),monospace;font-size:30px;font-weight:700;color:var(--color-ink);letter-spacing:-.02em}
+.av-seo .big .v{font-family:var(--font-geist-mono),monospace;font-size:clamp(23px,6.5vw,30px);font-weight:700;color:var(--color-ink);letter-spacing:-.02em}
 .av-seo .big .sub{font-size:13px;color:var(--color-faint)}
 .av-seo .note{font-size:12.5px;color:var(--color-faint)}
 .av-seo .astuce{border-left:3px solid var(--color-brand-600);background:var(--color-brand-50);border-radius:0 10px 10px 0;padding:12px 16px;margin:16px 0;font-size:14px;color:var(--color-ink)}
@@ -79,6 +81,13 @@ const CSS = `
 .av-seo .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .av-seo .chips a{font-size:13px;color:var(--color-brand-600);background:var(--color-brand-50);border-radius:999px;padding:5px 12px;text-decoration:none}
 .av-seo .chips a:hover{background:var(--color-brand-100)}
+/* Mobile : le corps de texte passe a 16px (defaut navigateur) — ces pages sont faites pour etre
+   lues longuement sur un telephone, et 14,5px y est inutilement fatigant. */
+@media(max-width:560px){
+.av-seo p,.av-seo li{font-size:16px}
+.av-seo .note{font-size:13.5px}
+.av-seo .lead{font-size:16.5px}
+}
 `;
 
 export default async function PrixTravauxVille({ params }: { params: Promise<{ projet: string; ville: string }> }) {
@@ -179,6 +188,7 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
       </p>
 
       <h2>Le détail du budget à {v.nom}, poste par poste</h2>
+      <div className="tw">
       <table>
         <thead>
           <tr><th>Poste</th><th>Quantité</th><th>Budget (TTC)</th></tr>
@@ -207,6 +217,7 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
           </tr>
         </tbody>
       </table>
+      </div>
       <p className="note">Panier représentatif calculé par le moteur AVYORA, ajusté au code postal de {v.nom}. Ton projet réel s&apos;ajuste selon tes choix.</p>
 
       <div className="card mt-6 border-brand-100 bg-brand-50/40 p-5">

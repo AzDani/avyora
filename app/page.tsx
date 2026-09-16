@@ -139,7 +139,8 @@ const HOME_CSS = `
 @media(prefers-reduced-motion:reduce){.av-home .promo .dot{animation:none}}
 @media(max-width:560px){.av-home .demo .tiles{grid-template-columns:1fr}.av-home .demo .bar{grid-template-columns:112px 1fr 74px}}
 @media(max-width:820px){.av-home .pains{grid-template-columns:1fr 1fr}.av-home .steps{grid-template-columns:1fr}.av-home .steps4{grid-template-columns:1fr 1fr}.av-home .steps4::before{display:none}.av-home .eco{grid-template-columns:1fr}.av-home .cred{grid-template-columns:1fr 1fr}.av-home .roi .vs{display:none}}
-@media(max-width:440px){.av-home .steps4{grid-template-columns:1fr}}
+@media (forced-colors: active){.av-home .hero h1 .hl{-webkit-text-fill-color:currentColor;color:CanvasText;background:none}}
+@media(max-width:440px){.av-home .steps4,.av-home .pains,.av-home .cred{grid-template-columns:1fr}}
 `;
 
 const HOME_HTML = `

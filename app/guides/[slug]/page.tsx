@@ -40,9 +40,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 const CSS = `
 .av-guide{max-width:760px;margin:0 auto}
 .av-guide h1{font-size:clamp(24px,4vw,32px);font-weight:600;letter-spacing:-.02em;color:var(--color-ink);margin:0}
+.av-seo .tw,.av-guide .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:14px 0}
+.av-seo .tw table,.av-guide .tw table{margin:0;min-width:420px}
 .av-guide .lead{font-size:15px;color:var(--color-muted);margin-top:12px;line-height:1.7}
 .av-guide .prixmaj{font-size:12.5px;color:var(--color-faint);margin-top:10px}
-.av-guide .prixmaj a{color:var(--color-brand-700);font-weight:500;text-decoration:none}
+.av-guide .prixmaj a{color:var(--color-brand-700);font-weight:500}
 .av-guide .prixmaj a:hover{text-decoration:underline}
 .av-guide h2{font-size:19px;font-weight:600;color:var(--color-ink);margin:34px 0 10px}
 .av-guide h3{font-size:15.5px;font-weight:600;color:var(--color-ink);margin:20px 0 6px}
@@ -63,6 +65,13 @@ const CSS = `
 .av-guide .villes{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .av-guide .villes a{font-size:13px;color:var(--color-brand-600);background:var(--color-brand-50);border-radius:999px;padding:5px 12px;text-decoration:none}
 .av-guide .villes a:hover{background:var(--color-brand-100)}
+/* Mobile : le corps de texte passe a 16px (defaut navigateur) — ces pages sont faites pour etre
+   lues longuement sur un telephone, et 14,5px y est inutilement fatigant. */
+@media(max-width:560px){
+.av-guide p,.av-guide li{font-size:16px}
+.av-guide .note{font-size:13.5px}
+.av-guide .lead{font-size:16.5px}
+}
 `;
 
 function Cta({ label }: { label: string }) {
@@ -192,6 +201,7 @@ function BodyAppartement() {
       </p>
 
       <h2>Prix au m² d&apos;une rénovation d&apos;appartement par ampleur</h2>
+      <div className="tw">
       <table>
         <thead>
           <tr><th>Ampleur des travaux</th><th>Prix au m² (TTC)</th></tr>
@@ -202,9 +212,11 @@ function BodyAppartement() {
           ))}
         </tbody>
       </table>
+      </div>
       <p className="note">Prix TTC indicatifs, moyenne nationale, finition standard, marge ±15 %. Base : appartement 70 m².</p>
 
       <h2>Exemples chiffrés par surface (rénovation complète)</h2>
+      <div className="tw">
       <table>
         <thead>
           <tr><th>Type</th><th>Surface</th><th>Budget estimé (TTC)</th></tr>
@@ -222,6 +234,7 @@ function BodyAppartement() {
           })}
         </tbody>
       </table>
+      </div>
       <p className="note">Fourchettes ±15 %, rénovation complète, finition standard, artisans. À affiner selon l&apos;état réel.</p>
 
       <Cta label="Estime ton appartement en 3 minutes" />
@@ -281,6 +294,7 @@ function BodyMaison() {
       </p>
 
       <h2>Prix au m² d&apos;une rénovation de maison par ampleur</h2>
+      <div className="tw">
       <table>
         <thead>
           <tr><th>Ampleur des travaux</th><th>Prix au m² (TTC)</th></tr>
@@ -291,9 +305,11 @@ function BodyMaison() {
           ))}
         </tbody>
       </table>
+      </div>
       <p className="note">Prix TTC indicatifs, moyenne nationale, finition standard, marge ±15 %. Base : maison 100 m².</p>
 
       <h2>Exemples chiffrés</h2>
+      <div className="tw">
       <table>
         <thead>
           <tr><th>Cas</th><th>Surface</th><th>Budget estimé (TTC)</th></tr>
@@ -311,6 +327,7 @@ function BodyMaison() {
           })}
         </tbody>
       </table>
+      </div>
       <p className="note">Fourchettes ±15 %, finition standard, artisans. À affiner selon l&apos;état réel du bien.</p>
 
       <Cta label="Estime ta maison en 3 minutes" />
@@ -396,6 +413,7 @@ function BodyOrdre() {
       ))}
 
       <h2>Les inversions qui coûtent cher</h2>
+      <div className="tw">
       <table>
         <thead><tr><th>L&apos;erreur</th><th>Ce qu&apos;elle coûte</th></tr></thead>
         <tbody>
@@ -404,6 +422,7 @@ function BodyOrdre() {
           ))}
         </tbody>
       </table>
+      </div>
 
       <h2>Les trois jalons à retenir</h2>
       <p>
@@ -500,6 +519,7 @@ function BodyDevis() {
         devis au centime. Un écart de 20 % s&apos;explique très bien (accès difficile, support à
         reprendre, région). Un écart de 200 % mérite une question.
       </p>
+      <div className="tw">
       <table>
         <thead><tr><th>Poste</th><th>Prix repère</th><th>Fourniture seule</th></tr></thead>
         <tbody>
@@ -512,6 +532,7 @@ function BodyDevis() {
           ))}
         </tbody>
       </table>
+      </div>
       <p className="note">
         Colonne « fourniture seule » : le coût des matériaux si vous posez vous-même. L&apos;écart avec
         le fourni-posé vous donne la part de main-d&apos;œuvre. Prix mis à jour le {PRIX_MAJ_FR} —{" "}
