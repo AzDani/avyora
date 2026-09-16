@@ -132,6 +132,12 @@ export default function PrixTravauxHub() {
         <Link href="/guides/faire-soi-meme-ou-artisan">Faire soi-même ou pas</Link>
       </div>
 
+      <h2>Prix par corps d&apos;état</h2>
+      <p>
+        Pour ouvrir une ligne de devis poste par poste — cloison, doublage, réseau, appareils —
+        consulte les <Link href="/prix-poste">prix par corps d&apos;état</Link>.
+      </p>
+
       <h2>Prix de la rénovation par ville</h2>
       <div className="chips">
         {VILLES_SEO.slice(0, 16).map((x) => (

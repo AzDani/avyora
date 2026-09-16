@@ -627,7 +627,8 @@ function BodyDevis() {
       </div>
       <p className="note">
         Colonne « fourniture seule » : le coût des matériaux si vous posez vous-même. L&apos;écart avec
-        le fourni-posé vous donne la part de main-d&apos;œuvre. Prix mis à jour le {PRIX_MAJ_FR} —{" "}
+        le fourni-posé vous donne la part de main-d&apos;œuvre. Pour le détail d&apos;un corps d&apos;état,
+        voir les <Link href="/prix-poste">prix par corps d&apos;état</Link>. Prix mis à jour le {PRIX_MAJ_FR} —{" "}
         <Link href="/methodologie">comment ils sont établis</Link>.
       </p>
 
@@ -774,7 +775,7 @@ function BodyDIY() {
       </p>
       <p className="note">
         Lots sans prix fourniture dans le référentiel, donc non basculables en « je le fais » :{" "}
-        {lotsSansF.join(", ")}.
+        {lotsSansF.join(", ")}. Détail poste par poste : <Link href="/prix-poste">prix par corps d&apos;état</Link>.
       </p>
 
       <h2>Ce que l&apos;économie annoncée oublie</h2>

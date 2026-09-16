@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { VILLES_SEO } from "@/lib/villes";
 import { PRIX_MAJ } from "@/lib/prix-maj";
+import { POSTES_PAGES } from "@/lib/seo-postes";
 import { GUIDES } from "@/lib/guides";
 import { PROJETS, projetsMatrix, MATRIX_VILLES } from "@/lib/seo-projets";
 
@@ -44,6 +45,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${siteUrl}/methodologie`, lastModified: PRIX_MAJ, changeFrequency: "monthly", priority: 0.7 },
     { url: `${siteUrl}/guides`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     ...guides,
+    { url: `${siteUrl}/prix-poste`, lastModified: PRIX_MAJ, changeFrequency: "monthly", priority: 0.8 },
+    ...POSTES_PAGES.map((x) => ({
+      url: `${siteUrl}/prix-poste/${x.slug}`,
+      lastModified: PRIX_MAJ,
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    })),
     { url: `${siteUrl}/prix-travaux`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
     ...travaux,
     ...travauxVilles,
