@@ -69,7 +69,7 @@ export interface Ctx {
   // Périmètre du projet (estimateur détaillé) : logement entier (défaut) ou une seule pièce/espace.
   perimetre?: "entier" | "piece";
   espace?: string;            // legacy / cas « suite seule » : clé de l'espace choisi (voir ESPACES)
-  espaces?: Record<string, { n: number; s: number }>; // mode « pièces ciblées » : plusieurs pièces, chacune n× à s m²
+  espaces?: Record<string, number[]>; // mode « pièces ciblées » : par pièce, une surface (m²) par exemplaire — ex. sdb:[6,4] = 2 SDB de 6 et 4 m²
   // Suite parentale : découpe de la surface par zone (surface totale = zChambre + zSdb + (dressing ? zDressing : 0)).
   zChambre?: number; zSdb?: number; zDressing?: number; avecDressing?: boolean;
 }
@@ -290,13 +290,22 @@ export const ESPACES: Record<string, EspaceDef> = {
   autre: { emoji: "➕", nom: "Autre espace", surface: 20, ctx: { niveaux: 1 }, lots: null },
 };
 
-/** Espaces choisis en mode « pièces ciblées », avec compat de l'ancien champ `espace` (une seule pièce). */
-export function selectedEspaces(ctx: Ctx): Array<{ k: string; n: number; s: number }> {
-  if (ctx.espaces && Object.keys(ctx.espaces).length)
-    return Object.entries(ctx.espaces)
+/** Espaces choisis en mode « pièces ciblées » : par pièce, la liste des surfaces (une par exemplaire).
+ *  Compat : ancien format `{n,s}` (une surface répétée n fois) et ancien champ `espace` (une seule pièce). */
+export function selectedEspaces(ctx: Ctx): Array<{ k: string; surfaces: number[] }> {
+  const raw = ctx.espaces as Record<string, unknown> | undefined;
+  if (raw && Object.keys(raw).length)
+    return Object.entries(raw)
       .filter(([k]) => ESPACES[k])
-      .map(([k, v]) => ({ k, n: Math.max(1, Math.round(v?.n || 1)), s: Math.max(1, v?.s || ESPACES[k].surface) }));
-  if (ctx.espace && ESPACES[ctx.espace]) return [{ k: ctx.espace, n: 1, s: ctx.surface || ESPACES[ctx.espace].surface }];
+      .map(([k, v]) => {
+        const def = ESPACES[k].surface;
+        let surfaces: number[];
+        if (Array.isArray(v)) surfaces = v.map((s) => Math.max(1, Number(s) || def));
+        else { const o = (v || {}) as { n?: number; s?: number }; surfaces = Array(Math.max(1, Math.round(o.n || 1))).fill(Math.max(1, o.s || def)); } // compat {n,s}
+        if (!surfaces.length) surfaces = [def];
+        return { k, surfaces };
+      });
+  if (ctx.espace && ESPACES[ctx.espace]) return [{ k: ctx.espace, surfaces: [ctx.surface || ESPACES[ctx.espace].surface] }];
   return [];
 }
 /** Lots autorisés en mode « pièces ciblées » = union des lots des espaces choisis (un espace `lots:null` ouvre tout). */
@@ -307,14 +316,15 @@ export function espacesLots(ctx: Ctx): Set<string> | null {
   for (const { k } of sel) { const lots = ESPACES[k].lots; if (!lots) return null; lots.forEach((c) => out.add(c)); }
   return out;
 }
-/** Compo ctx (compteurs de pièces + surface totale) dérivée des espaces choisis. Somme chaque pièce × son nombre. */
-export function espacesCompo(espaces: Record<string, { n: number; s: number }>): Partial<Ctx> {
+/** Compo ctx (compteurs de pièces + surface totale) dérivée des espaces choisis. Somme chaque exemplaire. */
+export function espacesCompo(espaces: Record<string, number[]>): Partial<Ctx> {
   const base: Record<string, number> = { sejour: 0, cuisine: 0, chambres: 0, suites: 0, couloir: 0, buanderie: 0, sdb: 0, wc: 0, fenetres: 0 };
   let surface = 0;
-  for (const [k, v] of Object.entries(espaces)) {
+  for (const [k, arr] of Object.entries(espaces)) {
     const e = ESPACES[k]; if (!e) continue;
-    const n = Math.max(1, Math.round(v?.n || 1)), s = Math.max(1, v?.s || e.surface);
-    surface += n * s;
+    const surfaces = arr && arr.length ? arr : [e.surface];
+    const n = surfaces.length;
+    surface += surfaces.reduce((s, x) => s + Math.max(1, x || e.surface), 0);
     const ec = e.ctx as Record<string, number>;
     for (const f of Object.keys(base)) if (typeof ec[f] === "number") base[f] += ec[f] * n;
   }

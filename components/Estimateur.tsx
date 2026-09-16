@@ -133,17 +133,17 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
   function onType(t: TypeBien) { patchCtx({ type: t, pieces: nbPieces(t), fenetres: nbFen(t) }); }
   // ── Mode « pièces ciblées » : plusieurs pièces, chacune ×N à S m² (compat ancien champ `espace`) ──
   // Carte {clé espace → {n, s}} courante, reconstruite depuis l'ancien champ `espace` si besoin.
-  function espMap(): Record<string, { n: number; s: number }> {
-    if (ctx.espaces && Object.keys(ctx.espaces).length) return ctx.espaces;
-    const m: Record<string, { n: number; s: number }> = {};
-    for (const e of selectedEspaces(ctx)) m[e.k] = { n: e.n, s: e.s };
+  // Carte {clé → surfaces[]} courante, normalisée depuis n'importe quel format stocké (arrays, ancien {n,s}, ancien `espace`).
+  function espMap(): Record<string, number[]> {
+    const m: Record<string, number[]> = {};
+    for (const e of selectedEspaces(ctx)) m[e.k] = [...e.surfaces];
     return m;
   }
   // Applique une sélection : cas « suite seule » = ancien éditeur de zones ; sinon compo multi (sommes).
-  function applyEspaces(map: Record<string, { n: number; s: number }>) {
+  function applyEspaces(map: Record<string, number[]>) {
     const keys = Object.keys(map);
     if (!keys.length) return;
-    if (keys.length === 1 && keys[0] === "suite" && map.suite?.n === 1) {
+    if (keys.length === 1 && keys[0] === "suite" && (map.suite?.length ?? 0) === 1) {
       const e = ESPACES.suite;
       patchCtx({ perimetre: "piece", type: "Maison", espaces: undefined, espace: "suite", surface: e.surface, surfaceSol: e.surface, surfaceSolManual: true, ...e.ctx });
     } else {
@@ -153,22 +153,28 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
   function onPerimetre(m: "entier" | "piece") {
     if (m === "entier") { patchCtx({ perimetre: "entier", espace: undefined, espaces: undefined }); return; }
     const cur = espMap();
-    applyEspaces(Object.keys(cur).length ? cur : { chambre: { n: 1, s: ESPACES.chambre.surface } });
+    applyEspaces(Object.keys(cur).length ? cur : { chambre: [ESPACES.chambre.surface] });
   }
   function toggleEspace(k: string) {
-    const m = { ...espMap() };
+    const m = espMap();
     if (m[k]) { if (Object.keys(m).length === 1) return; delete m[k]; } // on garde toujours au moins une pièce
-    else m[k] = { n: 1, s: ESPACES[k]?.surface ?? 12 };
+    else m[k] = [ESPACES[k]?.surface ?? 12];
     applyEspaces(m);
   }
-  function stepEspaceN(k: string, delta: number) {
-    const m = { ...espMap() }; if (!m[k]) return;
-    m[k] = { ...m[k], n: Math.max(1, (m[k].n || 1) + delta) };
+  function addInstance(k: string) {
+    const m = espMap(); if (!ESPACES[k]) return;
+    m[k] = [...(m[k] || []), ESPACES[k].surface]; // un exemplaire de plus (ex. 2e SDB), à sa propre surface
     applyEspaces(m);
   }
-  function setEspaceS(k: string, val: number) {
-    const m = { ...espMap() }; if (!m[k]) return;
-    m[k] = { ...m[k], s: Math.max(1, Math.round(val) || 1) };
+  function removeInstance(k: string, i: number) {
+    const m = espMap(); if (!m[k]) return;
+    m[k] = m[k].filter((_, j) => j !== i);
+    if (!m[k].length) { if (Object.keys(m).length === 1) m[k] = [ESPACES[k].surface]; else delete m[k]; }
+    applyEspaces(m);
+  }
+  function setInstanceS(k: string, i: number, val: number) {
+    const m = espMap(); if (!m[k]) return;
+    m[k] = m[k].map((s, j) => (j === i ? Math.max(1, Math.round(val) || 1) : s));
     applyEspaces(m);
   }
   // Suite parentale : surface totale = somme des zones (chambre + SDB + dressing éventuel).
@@ -226,7 +232,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
     if (!(ctx.surface > 0)) { setErreur("Renseignez la surface habitable."); setView("saisie"); return; }
     setSaving(true);
     const espLabel = ctx.perimetre === "piece"
-      ? selectedEspaces(ctx).map(({ k, n }) => `${n > 1 ? n + " " : ""}${ESPACES[k]?.nom ?? k}`).join(" + ")
+      ? selectedEspaces(ctx).map(({ k, surfaces }) => `${surfaces.length > 1 ? surfaces.length + " " : ""}${ESPACES[k]?.nom ?? k}`).join(" + ")
       : "";
     const nom = (espLabel
       ? `Rénovation — ${espLabel} · ${ctx.surface} m²`
@@ -252,7 +258,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
   const suite = piece && ctx.espace === "suite";
   const espSel = piece ? selectedEspaces(ctx) : [];
   const espKeys = new Set(espSel.map((e) => e.k));
-  const espTotal = espSel.reduce((sum, e) => sum + e.n * e.s, 0);
+  const espTotal = espSel.reduce((sum, e) => sum + e.surfaces.reduce((a, b) => a + b, 0), 0);
   const pTot = piecesEff(ctx), sdbTot = sdbEff(ctx);
   const SS = ctx.surfaceSol || ctx.surface;
   const facade = Math.round(4 * Math.sqrt(SS) * ctx.hauteur * (ctx.niveaux || 1) * 1.25);
@@ -296,13 +302,21 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                   </div>
                   <div className="locnote" style={{ marginTop: 10 }}>Coche toutes les pièces concernées (ex. 2 chambres + 1 SDB). On additionne les quantités et on n'affiche que les lots utiles.</div>
                   {!suite && (
-                    <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
-                      {espSel.map(({ k, n, s }) => (
-                        <div key={k} style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", padding: "8px 10px", border: "1px solid var(--line, #e7e6f0)", borderRadius: 10 }}>
-                          <span style={{ fontWeight: 600, minWidth: 130 }}>{ESPACES[k].emoji} {espaceNom(locale, ESPACES[k].nom)}</span>
-                          <Stepper label="Combien" value={n} onStep={(d) => stepEspaceN(k, d)} />
-                          <Field label="Surface (m²/pièce)"><NumStepper field value={s} min={1} unit="m²" onChange={(v) => setEspaceS(k, v)} /></Field>
-                          <span style={{ marginLeft: "auto", color: "var(--faint)" }}>{n} × {s} = <b style={{ color: "var(--ink, inherit)" }}>{n * s} m²</b></span>
+                    <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+                      {espSel.map(({ k, surfaces }) => (
+                        <div key={k} style={{ border: "1px solid var(--line, #e7e6f0)", borderRadius: 12, padding: "10px 12px", background: "#fcfcff" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 2 }}>
+                            <span style={{ fontWeight: 700 }}>{ESPACES[k].emoji} {espaceNom(locale, ESPACES[k].nom)}</span>
+                            <span style={{ color: "var(--faint)", fontSize: 12.5 }}>{surfaces.length} exemplaire{surfaces.length > 1 ? "s" : ""}</span>
+                          </div>
+                          {surfaces.map((s, i) => (
+                            <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", padding: "6px 0" }}>
+                              <span style={{ minWidth: 120, color: "var(--faint)", fontSize: 13, fontWeight: 600 }}>{espaceNom(locale, ESPACES[k].nom)} n°{i + 1}</span>
+                              <Field label="Surface"><NumStepper field value={s} min={1} unit="m²" onChange={(v) => setInstanceS(k, i, v)} /></Field>
+                              {surfaces.length > 1 && <button type="button" onClick={() => removeInstance(k, i)} style={{ marginLeft: "auto", border: 0, background: "transparent", color: "#b91c1c", cursor: "pointer", fontSize: 12.5, fontWeight: 600 }}>✕ retirer</button>}
+                            </div>
+                          ))}
+                          <button type="button" onClick={() => addInstance(k)} style={{ marginTop: 6, width: "100%", border: "1px dashed var(--brand-line, #d7d9fb)", background: "#fff", color: "var(--brand, #4f46e5)", borderRadius: 10, padding: "8px 12px", fontWeight: 600, cursor: "pointer" }}>+ Ajouter une {espaceNom(locale, ESPACES[k].nom).toLowerCase()}</button>
                         </div>
                       ))}
                       <div className="suitetotal">Surface totale du projet<b className="num">{espTotal} m²</b></div>
@@ -396,7 +410,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
               <div className="recap">
                 {piece ? (
                   <>🎯 <b>Pièces ciblées</b> · {ctx.surface} m² · plafond {ctx.hauteur} m
-                    <div style={{ marginTop: 6 }}>→ {espSel.map(({ k, n }) => `${n} ${espaceNom(locale, ESPACES[k]?.nom ?? k)}`).join(" · ")}</div>
+                    <div style={{ marginTop: 6 }}>→ {espSel.map(({ k, surfaces }) => `${surfaces.length} ${espaceNom(locale, ESPACES[k]?.nom ?? k)}`).join(" · ")}</div>
                   </>
                 ) : (
                   <>🏠 <b>{appart ? "Appartement" : "Maison"}</b> · {ctx.surface} m² habitables · <b>{ctx.niveaux} niveau{ctx.niveaux > 1 ? "x" : ""}</b> · emprise au sol ~{SS} m² · plafond {ctx.hauteur} m
