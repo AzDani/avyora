@@ -30,13 +30,25 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: "monthly",
     priority: 0.8,
   }));
-  // Matrice « prix [travaux] à [ville] » : projets déclinés × 40 plus grandes villes.
+  /**
+   * Matrice « prix [travaux] à [ville] » : 400 pages, restreintes ici aux 8 plus grandes villes.
+   *
+   * POURQUOI. Search Console (16/09/2026) : sur 511 URL déclarées, 63 indexées et 474 en
+   * « Détectée, actuellement non indexée » — soit EXACTEMENT les 400 pages de matrice + les
+   * 74 pages villes. Google a vu ces URL dans le sitemap et n'en a exploré aucune en trois mois.
+   * Sur un domaine jeune, le budget d'exploration est minuscule : déclarer 400 pages que Google
+   * ignore noie les ~110 pages qui méritent vraiment d'être explorées et recrawlées.
+   * Les pages restent générées, indexables et liées en interne — seule leur déclaration au
+   * sitemap est restreinte. À rouvrir (MATRIX_SITEMAP_CITIES = MATRIX_CITY_COUNT) quand le taux
+   * d'indexation des pages déclarées dépassera durablement ~80 %.
+   */
+  const MATRIX_SITEMAP_CITIES = 8;
   const travauxVilles: MetadataRoute.Sitemap = projetsMatrix().flatMap((p) =>
-    MATRIX_VILLES.map((v) => ({
+    MATRIX_VILLES.slice(0, MATRIX_SITEMAP_CITIES).map((v) => ({
       url: `${siteUrl}/prix-travaux/${p.slug}/${v.slug}`,
       lastModified: PRIX_MAJ,
       changeFrequency: "monthly" as const,
-      priority: 0.6,
+      priority: 0.5,
     })),
   );
   return [
