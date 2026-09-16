@@ -66,7 +66,7 @@ export default async function ChoixEstimation({ isPro }: { isPro: boolean }) {
 
           {isPro ? (
             <>
-              <Link href="/projets/nouveau/detaille" className="btn btn-pro">{t.detailCtaPro}</Link>
+              <Link href="/projets/nouveau/detaille?new=1" className="btn btn-pro">{t.detailCtaPro}</Link>
               <p className="foot">
                 <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 1l2 4 4 .5-3 3 .8 4.3L8 11l-3.8 1.8L5 8.5 2 5.5 6 5l2-4Z" fill="var(--color-accent-500)" /></svg>
                 {t.detailFootPro}

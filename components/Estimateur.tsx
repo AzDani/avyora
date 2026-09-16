@@ -96,15 +96,35 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
       return true;
     };
     if (initialState && (initialState as Persisted).v === "estimateur") { statutsRef.current = (initialState as Persisted).statuts; load(initialState as Persisted); return; }
-    // Détaillé : on reprend d'abord MA progression (brouillon propre) si elle existe…
-    try { if (load(JSON.parse(localStorage.getItem(DRAFT_KEY_DETAIL) || "null"))) return; } catch { /* noop */ }
-    // …sinon nouveau projet : on démarre VIERGE (rien coché) en récupérant seulement les infos du bien
-    // depuis une éventuelle estimation rapide (ctx + code postal), jamais les postes cochés.
+
+    // Signaux de « démarrage frais » : lien Nouveau projet (?new=1) ou retour d'« Affiner » (rapide → détaillé).
+    let isNew = false, fromAffiner = false;
     try {
-      const seed = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null") as Persisted | null;
-      if (seed?.ctx) setCtx({ ...defaultCtx(), ...seed.ctx });
-      if (seed?.codePostal) setCodePostal(seed.codePostal);
+      isNew = new URLSearchParams(window.location.search).get("new") === "1";
+      fromAffiner = sessionStorage.getItem("avyora-affiner") === "1";
+      if (fromAffiner) sessionStorage.removeItem("avyora-affiner");
+      if (isNew) { // on retire ?new de l'URL → un rafraîchissement ultérieur reprend le travail en cours, pas un reset
+        const url = new URL(window.location.href); url.searchParams.delete("new");
+        window.history.replaceState(null, "", url.pathname + url.search);
+      }
     } catch { /* noop */ }
+
+    if (isNew || fromAffiner) {
+      // Nouveau projet → page VIERGE (rien coché, aucun résidu). « Affiner » récupère UNIQUEMENT les infos du bien.
+      try { localStorage.removeItem(DRAFT_KEY_DETAIL); } catch { /* noop */ }
+      if (fromAffiner) {
+        try {
+          const seed = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null") as Persisted | null;
+          if (seed?.ctx) setCtx({ ...defaultCtx(), ...seed.ctx });
+          if (seed?.codePostal) setCodePostal(seed.codePostal);
+        } catch { /* noop */ }
+      }
+      return;
+    }
+
+    // Sinon : reprise d'un travail en cours (rafraîchissement / retour navigateur) sur le même projet.
+    try { if (load(JSON.parse(localStorage.getItem(DRAFT_KEY_DETAIL) || "null"))) return; } catch { /* noop */ }
+    // Première visite sans brouillon en cours : page vierge (on ne sème plus une estimation rapide périmée hors « Affiner »).
   }, [initialState]);
 
   // Sauvegarde brouillon local.

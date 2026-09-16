@@ -291,7 +291,7 @@ export default function EstimateurRapide({ isPro = false, edit }: { isPro?: bool
   function saveDraft() {
     try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ v: "estimateur", mode: "rapide", ampleur, qui, ctx: preset.ctx, sel: preset.sel, open: {}, codePostal: cp })); } catch { /* noop */ }
   }
-  function affiner() { suivre("estimation_terminee", { action: "affiner", type: mode === "pieces" ? "pieces" : type, ampleur }); conversionEstimation(); saveDraft(); router.push("/projets/nouveau/detaille"); }
+  function affiner() { suivre("estimation_terminee", { action: "affiner", type: mode === "pieces" ? "pieces" : type, ampleur }); conversionEstimation(); saveDraft(); try { sessionStorage.setItem("avyora-affiner", "1"); } catch { /* noop */ } router.push("/projets/nouveau/detaille"); }
 
   /** Libellé du projet (ex. « Rénovation — Chambre ×2 + Salle de bain » ou « Rénovation — Maison 100 m² »). */
   function nomProjet(): string {

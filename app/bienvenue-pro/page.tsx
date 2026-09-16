@@ -106,7 +106,7 @@ export default async function BienvenueProPage({
           </div>
 
           <div className="wcta">
-            <Link href="/projets/nouveau/detaille" className="wbtn wbtn-p">{s.ctaPrimary}</Link>
+            <Link href="/projets/nouveau/detaille?new=1" className="wbtn wbtn-p">{s.ctaPrimary}</Link>
             <Link href="/projets" className="wbtn wbtn-s">{s.ctaSecondary}</Link>
           </div>
 

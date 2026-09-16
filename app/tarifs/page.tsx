@@ -43,7 +43,7 @@ export default async function TarifsPage() {
 
       {dejaPro && (
         <p className="mx-auto mt-6 max-w-md rounded-field border border-positive/25 bg-positive-soft px-4 py-3 text-center text-sm text-positive">
-          {t.dejaProAvant}<Link href="/projets/nouveau/detaille" className="font-semibold underline">{t.dejaProLien}</Link>.
+          {t.dejaProAvant}<Link href="/projets/nouveau/detaille?new=1" className="font-semibold underline">{t.dejaProLien}</Link>.
         </p>
       )}
 
