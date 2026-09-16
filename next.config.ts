@@ -16,13 +16,20 @@ const supabaseWs = supabaseHost ? `wss://${supabaseHost}` : "";
  * des scripts inline ; le durcissement par nonce est prévu (Phase 3). D'ici là, frame-ancestors,
  * object-src, base-uri et un connect-src restreint fournissent déjà une défense significative.
  */
+// Google Ads (gtag.js) : le tag est chargé dans app/layout.tsx. Sans ces origines, la CSP bloque le
+// script ET les pings de conversion — window.gtag reste indéfini et AUCUNE conversion ne remonte.
+// Origines documentées par Google pour le Google tag + conversions Ads.
+const gtagScript = "https://www.googletagmanager.com";
+// *.doubleclick.net (pas seulement *.g.doubleclick.net) : la collecte de conversion passe aussi par ad.doubleclick.net.
+const gtagBeacons = "https://www.googletagmanager.com https://*.google.com https://*.doubleclick.net https://*.google-analytics.com";
+
 const csp = [
   `default-src 'self'`,
-  `script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com ${gtagScript}${isDev ? " 'unsafe-eval'" : ""}`,
   `style-src 'self' 'unsafe-inline'`,
-  `img-src 'self' data: blob:`,
+  `img-src 'self' data: blob: ${gtagBeacons}`,
   `font-src 'self'`,
-  `connect-src 'self' https://va.vercel-scripts.com ${supabaseHttp} ${supabaseWs}${isDev ? " ws: http://localhost:*" : ""}`.trim(),
+  `connect-src 'self' https://va.vercel-scripts.com ${gtagBeacons} ${supabaseHttp} ${supabaseWs}${isDev ? " ws: http://localhost:*" : ""}`.trim(),
   `frame-ancestors 'none'`,
   `base-uri 'self'`,
   `form-action 'self'`,
