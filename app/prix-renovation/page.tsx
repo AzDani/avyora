@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { VILLES } from "@/lib/villes";
+import { VILLES_SEO } from "@/lib/villes";
 
 export const dynamic = "force-static";
 
@@ -25,7 +25,7 @@ export default function PrixRenovationHub() {
       </header>
 
       <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {VILLES.map((v) => (
+        {VILLES_SEO.map((v) => (
           <Link
             key={v.slug}
             href={`/prix-renovation/${v.slug}`}

@@ -3,11 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { projetBySlug, projetsMatrix, estimProjet, MATRIX_SLUGS, MATRIX_VILLES, liensDe } from "@/lib/seo-projets";
-import { VILLES, villeBySlug } from "@/lib/villes";
+import { villeBySlug } from "@/lib/villes";
 import { deptInfo } from "@/lib/geo";
 import { regionCoef } from "@/lib/estimateur";
 
 export const dynamic = "force-static";
+// Ensemble fini : hors matrice = 404. Les couples retirés sont redirigés en 308 par next.config.ts.
 export const dynamicParams = false;
 
 /** Nombre de villes déclinées par projet (les plus gros volumes de recherche). */
@@ -85,6 +86,7 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
   const p = projetBySlug(projet);
   const v = villeBySlug(ville);
   if (!p || !v) notFound();
+
 
   const est = estimProjet(p, v.cp);
   const estNat = estimProjet(p, "");

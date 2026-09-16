@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { GUIDES, guideBySlug } from "@/lib/guides";
-import { VILLES } from "@/lib/villes";
+import { VILLES_SEO } from "@/lib/villes";
 import { prixNational, estim } from "@/lib/seo-prix";
 
 export const dynamic = "force-static";
@@ -93,7 +93,7 @@ function VillesLink() {
         La main-d&apos;œuvre varie selon la région. Consulte le prix ajusté à ta ville :
       </p>
       <div className="villes">
-        {VILLES.slice(0, 16).map((x) => (
+        {VILLES_SEO.slice(0, 16).map((x) => (
           <Link key={x.slug} href={`/prix-renovation/${x.slug}`}>{x.nom}</Link>
         ))}
         <Link href="/prix-renovation">Toutes les villes →</Link>

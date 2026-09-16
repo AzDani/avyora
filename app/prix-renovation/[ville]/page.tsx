@@ -1,17 +1,20 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { VILLES, villeBySlug } from "@/lib/villes";
+import { VILLES_SEO, villeBySlug } from "@/lib/villes";
 import { prixVille, regionCoef } from "@/lib/seo-prix";
 import { deptInfo } from "@/lib/geo";
 import { MATRIX_SLUGS, MATRIX_VILLES } from "@/lib/seo-projets";
 
 export const dynamic = "force-static";
 // Ensemble fini de villes : tout slug hors liste renvoie un vrai 404 (pas de soft-404 à 200).
+// Ensemble fini : tout slug hors liste renvoie un vrai 404. Les villes retirées du SEO sont, elles,
+// redirigées en 308 par next.config.ts (avant le routage) — une route force-static ne peut pas
+// rediriger au runtime.
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return VILLES.map((v) => ({ ville: v.slug }));
+  return VILLES_SEO.map((v) => ({ ville: v.slug }));
 }
 
 const euro = (n: number) => n.toLocaleString("fr-FR") + " €";
@@ -209,7 +212,7 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
 
       <h2>Prix rénovation dans d&apos;autres villes</h2>
       <div className="villes">
-        {VILLES.filter((x) => x.slug !== v.slug).slice(0, 16).map((x) => (
+        {VILLES_SEO.filter((x) => x.slug !== v.slug).slice(0, 16).map((x) => (
           <Link key={x.slug} href={`/prix-renovation/${x.slug}`}>{x.nom}</Link>
         ))}
       </div>

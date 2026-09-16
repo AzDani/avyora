@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { PROJETS, estimProjet } from "@/lib/seo-projets";
-import { VILLES } from "@/lib/villes";
+import { VILLES_SEO } from "@/lib/villes";
 
 export const dynamic = "force-static";
 
@@ -101,7 +101,7 @@ export default function PrixTravauxHub() {
 
       <h2>Prix de la rénovation par ville</h2>
       <div className="chips">
-        {VILLES.slice(0, 16).map((x) => (
+        {VILLES_SEO.slice(0, 16).map((x) => (
           <Link key={x.slug} href={`/prix-renovation/${x.slug}`}>{x.nom}</Link>
         ))}
         <Link href="/prix-renovation">Toutes les villes →</Link>

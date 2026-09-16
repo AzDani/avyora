@@ -10,7 +10,7 @@ import {
   type TypeBien,
   type DevisLigne,
 } from "@/lib/estimateur";
-import { VILLES } from "./villes";
+import { VILLES_SEO } from "./villes";
 
 /** Une tâche du panier représentatif : [corps, nom exact du catalogue, quantité]. */
 export type TacheSel = [corps: string, nom: string, qty: number];
@@ -655,7 +655,7 @@ export const projetsMatrix = (): Projet[] => PROJETS.filter((p) => MATRIX_SLUGS.
  * listes divergeaient (40 générées, 24 liées), 160 pages se retrouvaient sans aucun lien entrant.
  */
 export const MATRIX_CITY_COUNT = 40;
-export const MATRIX_VILLES = VILLES.slice(0, MATRIX_CITY_COUNT);
+export const MATRIX_VILLES = VILLES_SEO.slice(0, MATRIX_CITY_COUNT);
 
 /**
  * Liens d'un projet, rendus RÉCIPROQUES automatiquement : aux liens déclarés on ajoute les projets

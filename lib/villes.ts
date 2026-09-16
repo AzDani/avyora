@@ -5,6 +5,8 @@
  * grandes métropoles à fort volume de recherche. Le département + la région (lib/geo.ts) enrichissent
  * chaque page pour un contenu unique par zone.
  */
+import { regionCoef } from "./estimateur/core";
+
 export type Ville = { slug: string; nom: string; cp: string };
 
 export const VILLES: Ville[] = [
@@ -152,3 +154,23 @@ export const VILLES: Ville[] = [
 export function villeBySlug(slug: string): Ville | undefined {
   return VILLES.find((v) => v.slug === slug);
 }
+
+/**
+ * Villes qui méritent une page dédiée : celles dont le coût de main-d'œuvre diffère réellement du
+ * national (écart de -10 % à +20 %). Les 52 autres sont pile sur la moyenne — leur page dirait mot
+ * pour mot ce que dit le hub national, ce que Google qualifie de doorway page. Elles sont
+ * redirigées en 308 vers /prix-renovation plutôt que générées.
+ * Mesuré sur les données : aucune ville ne se situe entre 0 % et 4 % d'écart, la coupure est nette.
+ */
+export const VILLES_SEO: Ville[] = VILLES.filter((v) => regionCoef(v.cp).mo !== 1);
+
+/** Vrai si cette ville a une page dédiée (sinon : slug connu mais volontairement redirigé). */
+export const aPageVille = (slug: string): boolean => VILLES_SEO.some((v) => v.slug === slug);
+
+/** Villes retirées du SEO (écart de prix nul) : leurs URL sont redirigées en 308, pas supprimées. */
+export const VILLES_RETIREES: Ville[] = VILLES.filter((v) => !VILLES_SEO.some((x) => x.slug === v.slug));
+
+/** Villes qui étaient déclinées par la matrice avant le resserrement (top 40 de l'ancienne liste). */
+export const MATRIX_VILLES_RETIREES: Ville[] = VILLES.slice(0, 40).filter(
+  (v) => !VILLES_SEO.some((x) => x.slug === v.slug),
+);

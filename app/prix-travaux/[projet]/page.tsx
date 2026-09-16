@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { PROJETS, projetBySlug, estimProjet, MATRIX_SLUGS, MATRIX_VILLES, liensDe } from "@/lib/seo-projets";
-import { VILLES } from "@/lib/villes";
+import { VILLES_SEO } from "@/lib/villes";
 
 export const dynamic = "force-static";
 // Ensemble fini de pages : tout slug hors liste renvoie un vrai 404 (pas de soft-404 à 200).
@@ -260,7 +260,7 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
       <h2>Prix de la rénovation dans ta ville</h2>
       <p>La main-d&apos;œuvre varie selon la région. Consulte le prix ajusté à ta ville :</p>
       <div className="chips">
-        {VILLES.slice(0, 14).map((x) => (
+        {VILLES_SEO.slice(0, 14).map((x) => (
           <Link key={x.slug} href={`/prix-renovation/${x.slug}`}>{x.nom}</Link>
         ))}
         <Link href="/prix-renovation">Toutes les villes →</Link>

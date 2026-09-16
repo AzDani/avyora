@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { VILLES_RETIREES, MATRIX_VILLES_RETIREES } from "./lib/villes";
 
 const isDev = process.env.NODE_ENV !== "production";
 
@@ -70,6 +71,22 @@ const nextConfig: NextConfig = {
         destination: "https://getavyora.fr/:path*",
         permanent: true,
       },
+      // Resserrement SEO : les villes dont le coût de main-d'œuvre est pile au niveau national
+      // n'ont plus de page (elle aurait répété mot pour mot le hub — doorway page). Leurs URL
+      // étaient indexées : on les redirige en 308 au lieu de les laisser tomber en 404.
+      // Une route `force-static` ne peut pas rediriger au runtime : c'est forcément ici.
+      ...VILLES_RETIREES.map((v) => ({
+        source: `/prix-renovation/${v.slug}`,
+        destination: "/prix-renovation",
+        permanent: true,
+      })),
+      // Idem pour les villes qui sortent de la matrice « prix [travaux] à [ville] » : on renvoie
+      // vers la page nationale du travail, qui contient déjà toute l'information.
+      ...MATRIX_VILLES_RETIREES.map((v) => ({
+        source: `/prix-travaux/:projet/${v.slug}`,
+        destination: "/prix-travaux/:projet",
+        permanent: true,
+      })),
     ];
   },
 };
