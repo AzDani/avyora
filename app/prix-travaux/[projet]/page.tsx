@@ -291,6 +291,12 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
         ·{" "}
         <Link href="/guides/prix-renovation-maison" className="font-medium text-brand-600 hover:underline">rénovation de maison</Link>.
       </p>
+      <p>
+        Guides pratiques :{" "}
+        <Link href="/guides/verifier-devis-travaux" className="font-medium text-brand-600 hover:underline">vérifier un devis de travaux</Link>{" "}
+        ·{" "}
+        <Link href="/guides/ordre-travaux-renovation" className="font-medium text-brand-600 hover:underline">dans quel ordre faire ses travaux</Link>.
+      </p>
     </div>
   );
 }

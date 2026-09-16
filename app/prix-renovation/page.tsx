@@ -91,6 +91,12 @@ export default function PrixRenovationHub() {
         <Link href="/guides/prix-renovation-appartement" className="font-medium text-brand-600 hover:underline">rénovation d&apos;appartement</Link>{" "}
         ·{" "}
         <Link href="/guides/prix-renovation-maison" className="font-medium text-brand-600 hover:underline">rénovation de maison</Link>.
+      <p>
+        Guides pratiques :{" "}
+        <Link href="/guides/verifier-devis-travaux" className="font-medium text-brand-600 hover:underline">vérifier un devis de travaux</Link>{" "}
+        ·{" "}
+        <Link href="/guides/ordre-travaux-renovation" className="font-medium text-brand-600 hover:underline">dans quel ordre faire ses travaux</Link>.
+      </p>
       </p>
     </div>
   );

@@ -97,6 +97,8 @@ export default function PrixTravauxHub() {
       <div className="chips">
         <Link href="/guides/prix-renovation-appartement">Rénovation d&apos;appartement</Link>
         <Link href="/guides/prix-renovation-maison">Rénovation de maison</Link>
+        <Link href="/guides/verifier-devis-travaux">Vérifier un devis</Link>
+        <Link href="/guides/ordre-travaux-renovation">Ordre des travaux</Link>
       </div>
 
       <h2>Prix de la rénovation par ville</h2>

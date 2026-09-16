@@ -100,6 +100,26 @@ function Faq({ items }: { items: { q: string; a: string }[] }) {
   );
 }
 
+function GuidesPratiques({ sauf }: { sauf?: string }) {
+  const tous = [
+    { slug: "verifier-devis-travaux", txt: "vérifier un devis de travaux" },
+    { slug: "ordre-travaux-renovation", txt: "dans quel ordre faire ses travaux" },
+  ].filter((g) => g.slug !== sauf);
+  return (
+    <p>
+      À lire aussi :{" "}
+      {tous.map((g, i) => (
+        <span key={g.slug}>
+          {i > 0 ? " · " : ""}
+          <Link href={`/guides/${g.slug}`}>{g.txt}</Link>
+        </span>
+      ))}
+      {" "}·{" "}
+      <Link href="/methodologie">d&apos;où viennent nos prix</Link>
+    </p>
+  );
+}
+
 function VillesLink() {
   return (
     <>
@@ -448,6 +468,7 @@ function BodyOrdre() {
       </p>
 
       <Faq items={faqOrdre()} />
+      <GuidesPratiques sauf="ordre-travaux-renovation" />
       <VillesLink />
     </>
   );
@@ -563,6 +584,7 @@ function BodyDevis() {
       </ul>
 
       <Faq items={faqDevis()} />
+      <GuidesPratiques sauf="verifier-devis-travaux" />
       <VillesLink />
     </>
   );
