@@ -103,17 +103,16 @@ function VillesLink() {
 }
 
 /** Corps « appartement ». */
-function BodyAppartement() {
+/**
+ * FAQ des guides — SOURCE DE VÉRITÉ UNIQUE, consommée à la fois par le corps de la page et par le
+ * JSON-LD FAQPage. Google exige que question et réponse balisées figurent TELLES QUELLES dans le
+ * rendu : deux copies manuelles finissent toujours par diverger, et le balisage devient inéligible.
+ */
+function faqAppartement() {
   const grille = prixNational();
   const g = (v: string) => grille.find((x) => x.v === v)!;
   const complete = g("complete");
-  const exemples = [
-    { label: "Studio / T2", surface: 45 },
-    { label: "T3", surface: 70 },
-    { label: "T4", surface: 90 },
-  ].map((e) => ({ ...e, ...estim("", "T3", e.surface, "complete") }));
-
-  const faq = [
+  return [
     {
       q: "Combien coûte la rénovation complète d'un appartement au m² ?",
       a: `En moyenne nationale, comptez environ ${euro(complete.appartM2)}/m² pour une rénovation complète d'appartement (finition standard, travaux confiés à des artisans), soit une fourchette de ±15 % selon l'état du bien.`,
@@ -131,6 +130,48 @@ function BodyAppartement() {
       a: "Utilise l'estimateur AVYORA : en 3 minutes, tu obtiens une fourchette chiffrée adaptée à ta surface, tes travaux et ton code postal.",
     },
   ];
+}
+
+function faqMaison() {
+  const grille = prixNational();
+  const g = (v: string) => grille.find((x) => x.v === v)!;
+  const complete = g("complete");
+  const lourde = g("lourde");
+  return [
+    {
+      q: "Combien coûte la rénovation complète d'une maison au m² ?",
+      a: `En moyenne nationale, comptez environ ${euro(complete.maisonM2)}/m² pour une rénovation complète de maison, et jusqu'à ${euro(lourde.maisonM2)}/m² pour une rénovation lourde (avec enveloppe : toiture, façade, charpente).`,
+    },
+    {
+      q: "Pourquoi une maison coûte-t-elle plus cher qu'un appartement au m² ?",
+      a: "Parce qu'elle porte l'enveloppe complète : toiture, façade, charpente, isolation des combles, menuiseries extérieures plus nombreuses — des postes absents en appartement (gérés par la copropriété).",
+    },
+    {
+      q: "Quel budget pour rénover une maison ancienne ?",
+      a: `Une maison ancienne cumule souvent isolation à reprendre, réseaux à refaire et parfois humidité/assainissement : on est plutôt sur une réno lourde, autour de ${euro(lourde.maisonM2)}/m².`,
+    },
+    {
+      q: "Comment obtenir un chiffre précis pour ma maison ?",
+      a: "L'estimateur AVYORA calcule une fourchette adaptée à ta surface, ton type de travaux et ton code postal en 3 minutes.",
+    },
+  ];
+}
+
+function faqDuGuide(slug: string) {
+  return slug === "prix-renovation-appartement" ? faqAppartement() : faqMaison();
+}
+
+function BodyAppartement() {
+  const grille = prixNational();
+  const g = (v: string) => grille.find((x) => x.v === v)!;
+  const complete = g("complete");
+  const exemples = [
+    { label: "Studio / T2", surface: 45 },
+    { label: "T3", surface: 70 },
+    { label: "T4", surface: 90 },
+  ].map((e) => ({ ...e, ...estim("", "T3", e.surface, "complete") }));
+
+  const faq = faqAppartement();
 
   return (
     <>
@@ -219,24 +260,7 @@ function BodyMaison() {
     { label: "Maison ancienne (réno lourde)", surface: 120, ampleur: "lourde" as const },
   ].map((e) => ({ ...e, ...estim("", "Maison", e.surface, e.ampleur) }));
 
-  const faq = [
-    {
-      q: "Combien coûte la rénovation complète d'une maison au m² ?",
-      a: `En moyenne nationale, comptez environ ${euro(complete.maisonM2)}/m² pour une rénovation complète de maison, et jusqu'à ${euro(lourde.maisonM2)}/m² pour une rénovation lourde (avec enveloppe : toiture, façade, charpente).`,
-    },
-    {
-      q: "Pourquoi une maison coûte-t-elle plus cher qu'un appartement au m² ?",
-      a: "Parce qu'elle porte l'enveloppe complète : toiture, façade, charpente, isolation des combles, menuiseries extérieures plus nombreuses — des postes absents en appartement (gérés par la copropriété).",
-    },
-    {
-      q: "Quel budget pour rénover une maison ancienne ?",
-      a: `Une maison ancienne cumule souvent isolation à reprendre, réseaux à refaire et parfois humidité/assainissement : on est plutôt sur une réno lourde, autour de ${euro(lourde.maisonM2)}/m².`,
-    },
-    {
-      q: "Comment obtenir un chiffre précis pour ma maison ?",
-      a: "L'estimateur AVYORA calcule une fourchette adaptée à ta surface, ton type de travaux et ton code postal en 3 minutes.",
-    },
-  ];
+  const faq = faqMaison();
 
   return (
     <>
@@ -325,25 +349,8 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
   const Body = BODIES[slug];
   if (!g || !Body) notFound();
 
-  // Reconstitue la FAQ pour le JSON-LD (identique à celle rendue par le corps).
-  const grille = prixNational();
-  const cpl = grille.find((x) => x.v === "complete")!;
-  const raf = grille.find((x) => x.v === "rafraich")!;
-  const lourde = grille.find((x) => x.v === "lourde")!;
-  const faq =
-    slug === "prix-renovation-appartement"
-      ? [
-          { q: "Combien coûte la rénovation complète d'un appartement au m² ?", a: `En moyenne nationale, environ ${euro(cpl.appartM2)}/m² (finition standard, artisans), fourchette ±15 %.` },
-          { q: "Rafraîchissement ou rénovation complète : quelle différence de prix ?", a: `Un rafraîchissement tourne autour de ${euro(raf.appartM2)}/m², contre ${euro(cpl.appartM2)}/m² pour une réno complète.` },
-          { q: "Qu'est-ce qui fait grimper la facture ?", a: "La finition, l'état initial, la redistribution des pièces et la région." },
-          { q: "Comment avoir un chiffre précis pour mon appartement ?", a: "L'estimateur AVYORA donne une fourchette adaptée en 3 minutes." },
-        ]
-      : [
-          { q: "Combien coûte la rénovation complète d'une maison au m² ?", a: `Environ ${euro(cpl.maisonM2)}/m² pour une réno complète, jusqu'à ${euro(lourde.maisonM2)}/m² en réno lourde (enveloppe comprise).` },
-          { q: "Pourquoi une maison coûte-t-elle plus cher au m² ?", a: "Elle porte l'enveloppe : toiture, façade, charpente, combles, plus de menuiseries." },
-          { q: "Quel budget pour rénover une maison ancienne ?", a: `Plutôt une réno lourde, autour de ${euro(lourde.maisonM2)}/m².` },
-          { q: "Comment obtenir un chiffre précis ?", a: "L'estimateur AVYORA calcule une fourchette adaptée en 3 minutes." },
-        ];
+  // Même FAQ que celle rendue par le corps (source unique) — exigence Google pour FAQPage.
+  const faq = faqDuGuide(slug);
 
   const jsonLd = {
     "@context": "https://schema.org",
