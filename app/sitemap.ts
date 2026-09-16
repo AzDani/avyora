@@ -33,14 +33,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
   /**
    * Matrice « prix [travaux] à [ville] » : 400 pages, restreintes ici aux 8 plus grandes villes.
    *
-   * POURQUOI. Search Console (16/09/2026) : sur 511 URL déclarées, 63 indexées et 474 en
-   * « Détectée, actuellement non indexée » — soit EXACTEMENT les 400 pages de matrice + les
-   * 74 pages villes. Google a vu ces URL dans le sitemap et n'en a exploré aucune en trois mois.
-   * Sur un domaine jeune, le budget d'exploration est minuscule : déclarer 400 pages que Google
-   * ignore noie les ~110 pages qui méritent vraiment d'être explorées et recrawlées.
+   * POURQUOI. C'est un choix de PRIORITÉ, pas une sanction : sur un domaine neuf le budget
+   * d'exploration est minuscule, et le sitemap sert à dire à Google ce qu'on veut lui faire voir
+   * EN PREMIER. Déclarer 400 pages de matrice noie les ~110 pages qui portent le contenu propre.
+   *
+   * ⚠️ NE PAS relire ce choix dans les chiffres d'indexation du 16/09/2026 (63 indexées, 474 en
+   * « Détectée, actuellement non indexée ») : la propriété n'avait alors que DIX JOURS de données
+   * (05→14/09). À cet âge, « détectée non indexée » est une file d'attente d'exploration, pas un
+   * rejet de Google. Aucune conclusion de qualité ne peut en être tirée.
+   *
    * Les pages restent générées, indexables et liées en interne — seule leur déclaration au
    * sitemap est restreinte. À rouvrir (MATRIX_SITEMAP_CITIES = MATRIX_CITY_COUNT) quand le taux
-   * d'indexation des pages déclarées dépassera durablement ~80 %.
+   * d'indexation des pages déclarées dépassera durablement ~80 % sur une fenêtre d'au moins
+   * quelques semaines de données réelles.
    */
   const MATRIX_SITEMAP_CITIES = 8;
   const travauxVilles: MetadataRoute.Sitemap = projetsMatrix().flatMap((p) =>
