@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { VILLES_SEO, villeBySlug } from "@/lib/villes";
 import { prixVille, regionCoef } from "@/lib/seo-prix";
 import { deptInfo } from "@/lib/geo";
+import { PRIX_MAJ_FR } from "@/lib/prix-maj";
 import { MATRIX_SLUGS, MATRIX_VILLES } from "@/lib/seo-projets";
 
 export const dynamic = "force-static";
@@ -38,6 +39,9 @@ const CSS = `
 .av-seo{max-width:760px;margin:0 auto}
 .av-seo h1{font-size:clamp(24px,4vw,32px);font-weight:600;letter-spacing:-.02em;color:var(--color-ink);margin:0}
 .av-seo .lead{font-size:15px;color:var(--color-muted);margin-top:12px;line-height:1.7}
+.av-seo .prixmaj{font-size:12.5px;color:var(--color-faint);margin-top:10px}
+.av-seo .prixmaj a{color:var(--color-brand-700);font-weight:500;text-decoration:none}
+.av-seo .prixmaj a:hover{text-decoration:underline}
 .av-seo h2{font-size:19px;font-weight:600;color:var(--color-ink);margin:34px 0 10px}
 .av-seo p{font-size:14.5px;color:var(--color-muted);line-height:1.7;margin:10px 0}
 .av-seo strong{color:var(--color-ink);font-weight:600}
@@ -143,6 +147,7 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
         <strong>{euro(lourde.maisonM2)}/m²</strong> pour une réno lourde de maison. Zone tarifaire :{" "}
         « {reg.zone} » — {coefPhrase}.
       </p>
+      <p className="prixmaj">Prix mis à jour le {PRIX_MAJ_FR} · <Link href="/methodologie">d&apos;où viennent ces prix ?</Link></p>
 
       <h2>Prix au m² par type de travaux à {v.nom}</h2>
       <table>

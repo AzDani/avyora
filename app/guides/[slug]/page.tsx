@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { GUIDES, guideBySlug } from "@/lib/guides";
 import { VILLES_SEO } from "@/lib/villes";
+import { PRIX_MAJ_FR } from "@/lib/prix-maj";
 import { prixNational, estim } from "@/lib/seo-prix";
 
 export const dynamic = "force-static";
@@ -40,6 +41,9 @@ const CSS = `
 .av-guide{max-width:760px;margin:0 auto}
 .av-guide h1{font-size:clamp(24px,4vw,32px);font-weight:600;letter-spacing:-.02em;color:var(--color-ink);margin:0}
 .av-guide .lead{font-size:15px;color:var(--color-muted);margin-top:12px;line-height:1.7}
+.av-guide .prixmaj{font-size:12.5px;color:var(--color-faint);margin-top:10px}
+.av-guide .prixmaj a{color:var(--color-brand-700);font-weight:500;text-decoration:none}
+.av-guide .prixmaj a:hover{text-decoration:underline}
 .av-guide h2{font-size:19px;font-weight:600;color:var(--color-ink);margin:34px 0 10px}
 .av-guide h3{font-size:15.5px;font-weight:600;color:var(--color-ink);margin:20px 0 6px}
 .av-guide p{font-size:14.5px;color:var(--color-muted);line-height:1.7;margin:10px 0}
@@ -391,6 +395,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
       </p>
 
       <h1>{g.h1}</h1>
+      <p className="prixmaj">Prix mis à jour le {PRIX_MAJ_FR} · <Link href="/methodologie">d&apos;où viennent ces prix ?</Link></p>
       <Body />
     </div>
   );

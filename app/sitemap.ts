@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { VILLES_SEO } from "@/lib/villes";
+import { PRIX_MAJ } from "@/lib/prix-maj";
 import { GUIDES } from "@/lib/guides";
 import { PROJETS, projetsMatrix, MATRIX_VILLES } from "@/lib/seo-projets";
 
@@ -12,7 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
   const villes: MetadataRoute.Sitemap = VILLES_SEO.map((v) => ({
     url: `${siteUrl}/prix-renovation/${v.slug}`,
-    lastModified: now,
+    lastModified: PRIX_MAJ,
     changeFrequency: "monthly",
     priority: 0.7,
   }));
@@ -24,7 +25,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }));
   const travaux: MetadataRoute.Sitemap = PROJETS.map((p) => ({
     url: `${siteUrl}/prix-travaux/${p.slug}`,
-    lastModified: now,
+    lastModified: PRIX_MAJ,
     changeFrequency: "monthly",
     priority: 0.8,
   }));
@@ -32,7 +33,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const travauxVilles: MetadataRoute.Sitemap = projetsMatrix().flatMap((p) =>
     MATRIX_VILLES.map((v) => ({
       url: `${siteUrl}/prix-travaux/${p.slug}/${v.slug}`,
-      lastModified: now,
+      lastModified: PRIX_MAJ,
       changeFrequency: "monthly" as const,
       priority: 0.6,
     })),
@@ -40,6 +41,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     { url: `${siteUrl}/`, lastModified: now, changeFrequency: "weekly", priority: 1 },
     { url: `${siteUrl}/projets/nouveau`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${siteUrl}/methodologie`, lastModified: PRIX_MAJ, changeFrequency: "monthly", priority: 0.7 },
     { url: `${siteUrl}/guides`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     ...guides,
     { url: `${siteUrl}/prix-travaux`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },

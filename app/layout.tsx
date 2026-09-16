@@ -42,11 +42,10 @@ export const metadata: Metadata = {
   keywords: [
     "estimation travaux",
     "prix rénovation",
-    "analyse de devis",
-    "rentabilité locative",
-    "investissement immobilier",
     "coût rénovation maison",
     "budget travaux",
+    "prix rénovation au m2",
+    "devis travaux",
   ],
   authors: [{ name: "AVYORA" }],
   // PAS de canonical ici : dans le layout racine il est hérité par toute page qui n'en déclare pas,
@@ -200,6 +199,7 @@ export default async function RootLayout({
           <div className="border-t border-line pt-6">
             <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3">
               <nav className="flex flex-wrap gap-x-5 gap-y-0 text-xs font-medium text-muted [&>a]:inline-flex [&>a]:items-center [&>a]:py-2.5">
+                <Link href="/methodologie" className="transition-colors hover:text-brand-700">Méthodologie</Link>
                 <Link href="/guides" className="transition-colors hover:text-brand-700">{t.footer.guides}</Link>
                 <Link href="/prix-travaux" className="transition-colors hover:text-brand-700">{t.footer.prixTravaux}</Link>
                 <Link href="/prix-renovation" className="transition-colors hover:text-brand-700">{t.footer.prixVille}</Link>
