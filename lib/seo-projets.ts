@@ -12,8 +12,25 @@ import {
 } from "@/lib/estimateur";
 import { VILLES_SEO } from "./villes";
 
-/** Une tâche du panier représentatif : [corps, nom exact du catalogue, quantité]. */
-export type TacheSel = [corps: string, nom: string, qty: number];
+/**
+ * Options d'une tâche du panier. Un seul 4ᵉ élément partagé, pour que l'ajout d'un régime d'échelle
+ * et l'ajout d'une variante de catalogue ne se marchent pas dessus.
+ */
+export type TacheOpts = {
+  /** Régime d'échelle quand une surface est passée à estimProjet. Absent = inférence par défaut. */
+  regime?: "sol" | "murs" | "unite";
+  /** Variante de catalogue (`LigneSel.vsel`). Absent = option par défaut du poste. */
+  vsel?: Record<string, string>;
+};
+
+/**
+ * Une tâche du panier représentatif : [corps, nom exact du catalogue, quantité, options].
+ *
+ * ⚠️ PIÈGE SILENCIEUX : si `nom` ne correspond pas EXACTEMENT à un poste du catalogue, la ligne est
+ * ignorée sans lever d'erreur — le total est faux et rien ne le signale. Vérifier tout panier écrit
+ * à la main contre `catalog.json`, et re-vérifier après un renommage de poste.
+ */
+export type TacheSel = [corps: string, nom: string, qty: number, opts?: TacheOpts];
 
 export interface Projet {
   slug: string;
@@ -38,6 +55,76 @@ export interface Projet {
   /** Slugs de projets liés (maillage interne). */
   liens: string[];
   tasks: TacheSel[];
+  /**
+   * Surfaces déclinées dans le barème « prix selon la surface ». Renseigné uniquement pour les
+   * projets où la surface de la pièce change réellement le devis (pièce entière), pas pour un lot
+   * ponctuel. `surface` doit figurer dans la liste : c'est la ligne de référence.
+   */
+  surfaces?: number[];
+  /**
+   * Unité dans laquelle un ratio « soit environ X €/u » a un sens. **Omis = aucun ratio affiché.**
+   *
+   * Sans ce champ, la page divisait le total par `surface`, qui décrit pour la moitié des projets
+   * LE LOGEMENT et non l'ouvrage : aménagement de combles affichait 185 €/m² au lieu de 463,
+   * et un projet de 8 fenêtres ou d'un poêle affichait un « €/m² » dépourvu de sens.
+   *
+   * `tache` = nom EXACT d'une tâche de `tasks` ; la quantité est **lue** dans `tasks`, jamais
+   * recopiée. Si le libellé du catalogue change, `find` échoue et la mention **disparaît** au lieu
+   * d'afficher un faux chiffre — c'est la bonne défaillance, ne pas la « réparer » en figeant un
+   * nombre. Omettre `tache` pour utiliser la surface du projet.
+   */
+  uniteBase?: { tache?: string; label: string };
+  /**
+   * Équipements à prix fixe cités dans le texte du barème par surface. Omis = repli sur `espace`.
+   */
+  equipFixes?: string;
+  /**
+   * Libellé court inséré dans le `<title>` quand un barème par surface est publié.
+   * Renseigné À LA MAIN plutôt que dérivé de `h1` : `titreSansPrefixe` produit un groupe verbal sur
+   * certains projets (« Prix pour aménager des combles » → « Prix aménager des combles 2026 »,
+   * agrammatical). Omis = repli sur `titreSansPrefixe(h1)`.
+   */
+  titreSeo?: string;
+  /** Configurations alternatives du même chantier (bac / baignoire / italienne). */
+  variantes?: PanierVariante[];
+  /** Options qui s'ajoutent à la configuration de référence, une par ligne. */
+  options?: PanierVariante[];
+}
+
+/**
+ * Panier alternatif exprimé comme une MUTATION du panier de référence, jamais réécrit en entier :
+ * un panier recopié à la main diverge du jour où on touche à `tasks`, et une faute de frappe dans un
+ * nom de poste se traduit par une ligne silencieusement absente (donc un total faux sans erreur).
+ * `panierVariante()` lève à la place — l'échec devient une erreur de build, pas un chiffre faux.
+ */
+export type PanierVariante = {
+  label: string;
+  /** Détail affiché sous le libellé (facultatif). */
+  detail?: string;
+  /** Noms EXACTS de tâches du panier de référence à retirer. */
+  retirer?: string[];
+  /** Tâches ajoutées (mêmes règles de nommage que `tasks`). */
+  ajouter?: TacheSel[];
+  /** Variante de catalogue appliquée à une tâche existante : nom de tâche → `vsel`. */
+  choix?: Record<string, Record<string, string>>;
+};
+
+/** Applique une mutation au panier de référence. Lève si un nom de poste ne s'y trouve pas. */
+export function panierVariante(p: Projet, v: PanierVariante): TacheSel[] {
+  const noms = new Set(p.tasks.map((t) => t[1]));
+  for (const n of v.retirer ?? [])
+    if (!noms.has(n)) throw new Error(`Variante « ${v.label} » de ${p.slug} : poste à retirer introuvable — « ${n} »`);
+  for (const n of Object.keys(v.choix ?? {}))
+    if (!noms.has(n)) throw new Error(`Variante « ${v.label} » de ${p.slug} : poste à décliner introuvable — « ${n} »`);
+
+  const retire = new Set(v.retirer ?? []);
+  const out: TacheSel[] = p.tasks
+    .filter((t) => !retire.has(t[1]))
+    .map((t) => {
+      const vsel = v.choix?.[t[1]];
+      return vsel ? ([t[0], t[1], t[2], { ...t[3], vsel }] as TacheSel) : t;
+    });
+  return [...out, ...(v.ajouter ?? [])];
 }
 
 export const PROJETS: Projet[] = [
@@ -50,7 +137,10 @@ export const PROJETS: Projet[] = [
     kind: "piece",
     espace: "sdb",
     surface: 6,
+    surfaces: [3, 4, 5, 6, 8, 10],
     type: "T3",
+    titreSeo: "rénovation salle de bain",
+    uniteBase: { label: "m²" },
     base: "une salle de bain de 6 m² refaite entièrement (douche, meuble-vasque, WC, faïence, sol)",
     lead:
       "Refaire entièrement une salle de bain est l'un des postes de rénovation les plus denses : sur seulement quelques m², on cumule plomberie, électricité, carrelage, étanchéité et ventilation. C'est ce qui explique un budget élevé au m².",
@@ -69,7 +159,46 @@ export const PROJETS: Projet[] = [
     ],
     astuce:
       "Le poste qui fait déraper la facture, c'est le déplacement de la plomberie. Garder les arrivées d'eau à leur place peut économiser plusieurs centaines d'euros.",
-    liens: ["renovation-cuisine", "renovation-chambre", "renovation-electrique"],
+    liens: ["renovation-cuisine", "renovation-chambre", "renovation-electrique", "douche-italienne", "remplacer-baignoire-par-douche"],
+    // Mêmes travaux, équipement changé : le moteur rejoue le panier, aucun écart n'est écrit à la main.
+    variantes: [
+      { label: "Douche : bac + paroi + colonne", detail: "la configuration détaillée ci-dessus" },
+      {
+        label: "Baignoire à la place de la douche",
+        detail: "baignoire encastrée et robinetterie bain",
+        retirer: ["Bac de douche", "Paroi de douche", "Colonne de douche"],
+        ajouter: [
+          ["Plomberie", "Installer une baignoire", 1],
+          ["Plomberie", "Robinetterie baignoire", 1],
+        ],
+      },
+      {
+        label: "Douche à l'italienne à la place du bac",
+        detail: "receveur encastré, même surface de pièce",
+        retirer: ["Bac de douche"],
+        ajouter: [["Plomberie", "Douche à l'italienne", 1]],
+      },
+    ],
+    // Une ligne = UNE variante du catalogue, jamais une quantité inventée.
+    options: [
+      { label: "WC suspendu au lieu d'un WC au sol", choix: { WC: { type: "suspendu" } } },
+      { label: "Meuble double vasque au lieu d'un simple", choix: { "Meuble-vasque": { config: "double" } } },
+      { label: "Colonne de douche encastrée", choix: { "Colonne de douche": { pose: "encastre" } } },
+      {
+        label: "Bac et paroi en 150 cm au lieu de 120",
+        choix: { "Bac de douche": { dim: "150x90" }, "Paroi de douche": { dim: "150" } },
+      },
+      {
+        label: "Les quatre options réunies",
+        choix: {
+          WC: { type: "suspendu" },
+          "Meuble-vasque": { config: "double" },
+          "Colonne de douche": { pose: "encastre" },
+          "Bac de douche": { dim: "150x90" },
+          "Paroi de douche": { dim: "150" },
+        },
+      },
+    ],
     tasks: [
       ["Démolition", "Dépose complète cuisine / salle de bain (curage)", 1],
       ["Cloisons / Platrerie", "Faux plafond", 6],
@@ -104,7 +233,10 @@ export const PROJETS: Projet[] = [
     kind: "piece",
     espace: "cuisine",
     surface: 12,
+    surfaces: [6, 8, 10, 12, 15, 20],
     type: "T3",
+    titreSeo: "rénovation cuisine",
+    uniteBase: { label: "m²" },
     base: "une cuisine de 12 m² refaite avec un ensemble neuf de ~5 mètres linéaires",
     lead:
       "Le budget d'une cuisine dépend surtout du meuble et de l'électroménager : c'est le poste dominant, bien avant le sol ou la peinture. Une cuisine équipée neuve représente à elle seule la majorité de la facture.",
@@ -149,7 +281,10 @@ export const PROJETS: Projet[] = [
     kind: "piece",
     espace: "chambre",
     surface: 12,
+    surfaces: [9, 10, 12, 14, 16],
     type: "T3",
+    titreSeo: "rénovation chambre",
+    uniteBase: { label: "m²" },
     base: "une chambre de 12 m² refaite (peinture, sol, électricité, placards)",
     lead:
       "Rénover une chambre est l'un des chantiers les plus abordables : pas d'eau, peu d'équipements. L'essentiel du budget part dans la peinture, le revêtement de sol et, si on en ajoute, les rangements.",
@@ -192,6 +327,7 @@ export const PROJETS: Projet[] = [
     kind: "maison",
     surface: 100,
     type: "Maison",
+    uniteBase: { tache: "Réfection couverture tuiles (dépose + écran + liteaux)", label: "m² de couverture" },
     base: "une réfection de couverture tuiles d'environ 120 m² (maison de 100 m² au sol)",
     lead:
       "Refaire une toiture, c'est protéger tout le reste de la maison. Le prix se calcule au m² de couverture (souvent 20 à 30 % de plus que la surface habitable, à cause de la pente) et dépend fortement du matériau.",
@@ -227,6 +363,7 @@ export const PROJETS: Projet[] = [
     kind: "maison",
     surface: 100,
     type: "Maison",
+    uniteBase: { tache: "Enduit monocouche (machine)", label: "m² de façade" },
     base: "un ravalement d'environ 110 m² de façade (nettoyage + enduit)",
     lead:
       "Le ravalement redonne son étanchéité et son allure à la maison. Le prix au m² dépend de la technique (nettoyage simple, enduit, ou isolation par l'extérieur) et de l'état du support.",
@@ -259,6 +396,7 @@ export const PROJETS: Projet[] = [
     kind: "maison",
     surface: 100,
     type: "Maison",
+    uniteBase: { tache: "Isolation des combles perdus (soufflage)", label: "m² isolé" },
     base: "l'isolation de 70 m² de combles perdus par soufflage",
     lead:
       "L'isolation des combles est le meilleur rapport gain/euro de toute la rénovation énergétique : jusqu'à 30 % des déperditions de chaleur passent par le toit. Le soufflage de combles perdus est la solution la plus économique.",
@@ -287,6 +425,7 @@ export const PROJETS: Projet[] = [
     kind: "appart",
     surface: 70,
     type: "T3",
+    uniteBase: { label: "m²" },
     base: "la remise à neuf complète de l'électricité d'un logement de 70 m²",
     lead:
       "Une installation électrique vétuste est le premier point noir d'une rénovation, pour la sécurité comme pour l'assurance. Une réno électrique complète remet aux normes tableau, réseau et points, avec attestation de conformité.",
@@ -317,6 +456,7 @@ export const PROJETS: Projet[] = [
     kind: "appart",
     surface: 70,
     type: "T3",
+    uniteBase: { label: "m²" },
     base: "la peinture complète d'un logement de 70 m² (murs + plafonds)",
     lead:
       "La peinture est le travaux le plus courant et le plus rentable pour transformer un logement. Le prix au m² dépend surtout de l'état des surfaces : un mur sain se peint vite, un mur abîmé demande de la préparation.",
@@ -426,8 +566,15 @@ export const PROJETS: Projet[] = [
     h1: "Prix pour aménager des combles en 2026",
     emoji: "🪜",
     kind: "maison",
-    surface: 100,
+    // `base` annonce 40 m² de combles et toutes les tâches sont calibrées sur 40 : déclarer 100
+    // (la maison au sol) faisait afficher 185 €/m² au lieu de 463. Neutre sur le prix — toutes
+    // les quantités sont `manual: true`, donc aucune ligne du devis ne bouge.
+    surface: 40,
+    surfaces: [20, 30, 40, 60, 80],
     type: "Maison",
+    titreSeo: "aménagement de combles",
+    equipFixes: "fenêtres de toit, radiateurs, porte",
+    uniteBase: { tache: "Isolation des combles aménagés (rampants)", label: "m² aménagé" },
     base: "l'aménagement de 40 m² de combles en pièce habitable",
     lead:
       "Aménager ses combles, c'est gagner une pièce sans pousser les murs — souvent le mètre carré le moins cher d'une maison. Le budget dépend de l'isolation, des ouvertures de toit et du niveau de finition.",
@@ -452,14 +599,14 @@ export const PROJETS: Projet[] = [
     tasks: [
       ["Isolation", "Isolation des combles aménagés (rampants)", 40],
       ["Cloisons / Platrerie", "Doubler un mur", 40],
-      ["Cloisons / Platrerie", "Faux plafond", 20],
+      ["Cloisons / Platrerie", "Faux plafond", 20, { regime: "sol" }],
       ["Charpente, couverture & structure bois", "Fenêtre de toit (Velux)", 2],
       ["Carrelage / Revetements", "Sol stratifié (imitation bois)", 40],
       ["Electricite", "Ajouter / déplacer une prise", 6],
       ["Electricite", "Ajouter un point lumineux", 2],
       ["Electricite", "Spots encastrés (LED)", 4],
       ["Chauffage / VMC", "Radiateurs électriques", 2],
-      ["Peinture", "Préparation des surfaces", 100],
+      ["Peinture", "Préparation des surfaces", 100, { regime: "murs" }],
       ["Peinture", "Peinture des murs", 100],
       ["Peinture", "Peinture des plafonds", 40],
       ["Menuiseries interieures", "Porte intérieure battante", 1],
@@ -474,6 +621,7 @@ export const PROJETS: Projet[] = [
     kind: "maison",
     surface: 100,
     type: "Maison",
+    uniteBase: { tache: "Fenêtres", label: "fenêtre" },
     base: "le remplacement de 8 fenêtres et de leurs volets roulants",
     lead:
       "Changer ses fenêtres améliore le confort, réduit la facture de chauffage et le bruit. Le prix se compte à l'unité et dépend surtout du matériau (PVC, alu, bois) et du vitrage.",
@@ -508,6 +656,7 @@ export const PROJETS: Projet[] = [
     kind: "appart",
     surface: 40,
     type: "T3",
+    uniteBase: { label: "m²" },
     base: "la pose de 40 m² de carrelage au sol (ragréage inclus)",
     lead:
       "Le carrelage reste le revêtement de sol le plus durable. Le prix au m² dépend du format des carreaux, du type de pose (droite ou diagonale) et de la préparation du support.",
@@ -540,6 +689,7 @@ export const PROJETS: Projet[] = [
     kind: "appart",
     surface: 40,
     type: "T3",
+    uniteBase: { label: "m²" },
     base: "la pose de 40 m² de parquet (plinthes incluses)",
     lead:
       "Le parquet apporte chaleur et cachet. Le prix au m² varie beaucoup selon qu'il s'agit d'un stratifié, d'un contrecollé ou d'un parquet massif à poncer et vitrifier.",
@@ -625,6 +775,20 @@ export const PROJETS: Projet[] = [
   },
 ];
 
+/**
+ * « Prix d'une rénovation de salle de bain en 2026 » → « rénovation de salle de bain ».
+ * SOURCE UNIQUE : le gabarit projet et le gabarit ville doivent composer leurs titles à partir d'ici,
+ * sinon les deux libellés divergent au premier ajustement de `h1`.
+ */
+export const titreSansPrefixe = (h1: string) =>
+  h1
+    .replace("Prix d'une ", "")
+    .replace("Prix d'un ", "")
+    .replace("Prix pour ", "")
+    .replace("Prix de ", "")
+    .replace("Prix ", "")
+    .replace(" en 2026", "");
+
 export function projetBySlug(slug: string): Projet | undefined {
   return PROJETS.find((p) => p.slug === slug);
 }
@@ -681,14 +845,51 @@ export interface ProjetEstim {
   lots: LotBreakdown[];
 }
 
-/** Chiffre le panier représentatif d'un projet via le MÊME moteur que l'estimateur (prix cohérents). */
-export function estimProjet(p: Projet, cp = ""): ProjetEstim {
+/**
+ * Ouvrages qui suivent le DÉVELOPPÉ DES MURS et non la surface au sol : leur quantité varie comme
+ * le périmètre, donc en racine de la surface (un sol deux fois plus grand n'a que ~1,4 fois plus de
+ * murs). Les traiter au prorata du sol surestimerait franchement les grandes pièces.
+ */
+const TACHES_MURS = new Set<string>([
+  "Faïence / carrelage mural",
+  "Peinture des murs",
+  "Doubler un mur",
+]);
+
+/**
+ * Quantité d'une tâche ramenée à une autre surface de pièce. Trois régimes :
+ * — murs : ∝ périmètre, donc ∝ √surface ;
+ * — sol/plafond (la quantité vaut la surface de référence) : ∝ surface ;
+ * — équipements (WC, douche, VMC, porte…) : constants — une pièce plus grande n'a pas deux WC.
+ */
+function qtyPourSurface(t: TacheSel, sRef: number, s: number): number {
+  const [, nom, q, opts] = t;
+  if (s === sRef) return q;
+  const ratio = s / sRef;
+  const sol = () => Math.round(q * ratio * 10) / 10;
+  const murs = () => Math.round(q * Math.sqrt(ratio) * 10) / 10;
+  // Un régime DÉCLARÉ prime sur l'inférence : une tâche dont la quantité ne vaut pas la surface de
+  // référence (faux plafond sur une partie de la pièce, préparation murale au développé) resterait
+  // sinon figée, et le barème afficherait une variation visiblement fausse.
+  if (opts?.regime) return opts.regime === "sol" ? sol() : opts.regime === "murs" ? murs() : q;
+  if (TACHES_MURS.has(nom)) return murs();
+  if (Math.abs(q - sRef) < 0.01) return sol();
+  return q;
+}
+
+/**
+ * Chiffre le panier représentatif d'un projet via le MÊME moteur que l'estimateur (prix cohérents).
+ * `surface` permet de rejouer le même panier sur une autre taille de pièce (barème par surface).
+ */
+export function estimProjet(p: Projet, cp = "", surface?: number, tasks?: TacheSel[]): ProjetEstim {
+  const s = surface && surface > 0 ? surface : p.surface;
+  const paniers = tasks ?? p.tasks;
   const base = defaultCtx();
   let ctx: Ctx = {
     ...base,
     type: p.type,
-    surface: p.surface,
-    surfaceSol: p.surface,
+    surface: s,
+    surfaceSol: s,
     surfaceSolManual: true,
     niveaux: 1,
     finition: "standard",
@@ -697,11 +898,20 @@ export function estimProjet(p: Projet, cp = ""): ProjetEstim {
   };
   if (p.kind === "piece" && p.espace) {
     const e = ESPACES[p.espace];
-    ctx = { ...ctx, ...e.ctx, surface: e.surface, surfaceSol: e.surface, perimetre: "piece", espace: p.espace };
+    ctx = { ...ctx, ...e.ctx, surface: s, surfaceSol: s, perimetre: "piece", espace: p.espace };
   }
 
   const sel: Selection = {};
-  for (const [c, n, q] of p.tasks) sel[key(c, n)] = { on: true, self: false, qty: q, manual: true };
+  for (const t of paniers) {
+    const [c, n, , opts] = t;
+    sel[key(c, n)] = {
+      on: true,
+      self: false,
+      qty: qtyPourSurface(t, p.surface, s),
+      manual: true,
+      ...(opts?.vsel ? { vsel: opts.vsel } : {}),
+    };
+  }
 
   const dv = buildDevis(CATALOG, ctx, sel);
 

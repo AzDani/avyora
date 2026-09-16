@@ -2,7 +2,7 @@ import { Fragment } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { projetBySlug, projetsMatrix, estimProjet, MATRIX_SLUGS, MATRIX_VILLES, liensDe } from "@/lib/seo-projets";
+import { projetBySlug, projetsMatrix, estimProjet, MATRIX_SLUGS, MATRIX_VILLES, liensDe, titreSansPrefixe } from "@/lib/seo-projets";
 import { villeBySlug } from "@/lib/villes";
 import { deptInfo } from "@/lib/geo";
 import { regionCoef } from "@/lib/estimateur";
@@ -31,9 +31,6 @@ const four = (ttc: number) => {
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
-
-const titreSansPrefixe = (h1: string) =>
-  h1.replace("Prix d'une ", "").replace("Prix d'un ", "").replace("Prix pour ", "").replace("Prix de ", "").replace("Prix ", "").replace(" en 2026", "");
 
 export async function generateMetadata({ params }: { params: Promise<{ projet: string; ville: string }> }): Promise<Metadata> {
   const { projet, ville } = await params;
