@@ -20,9 +20,20 @@ const supabaseWs = supabaseHost ? `wss://${supabaseHost}` : "";
 // Google Ads (gtag.js) : le tag est chargé dans app/layout.tsx. Sans ces origines, la CSP bloque le
 // script ET les pings de conversion — window.gtag reste indéfini et AUCUNE conversion ne remonte.
 // Origines documentées par Google pour le Google tag + conversions Ads.
-const gtagScript = "https://www.googletagmanager.com";
-// *.doubleclick.net (pas seulement *.g.doubleclick.net) : la collecte de conversion passe aussi par ad.doubleclick.net.
-const gtagBeacons = "https://www.googletagmanager.com https://*.google.com https://*.doubleclick.net https://*.google-analytics.com";
+const gtagScript = "https://www.googletagmanager.com https://www.googleadservices.com";
+// Origines de collecte des conversions. Trois pièges rencontrés, chacun constaté en navigateur :
+//  1. *.doubleclick.net et NON *.g.doubleclick.net — la collecte passe aussi par ad.doubleclick.net.
+//  2. www.googleadservices.com — point de collecte principal (/pagead/conversion et /ccm/conversion).
+//     Il n'est couvert par AUCUN joker *.google.com : c'est un domaine distinct.
+//  3. www.google.fr — la conversion « first party » (/pagead/1p-conversion) part sur le domaine
+//     Google du PAYS du visiteur, pas sur google.com. Le trafic d'AVYORA étant français, google.fr
+//     est la variante qui compte ; un visiteur depuis un autre pays verra son ccTLD bloqué, ce qui
+//     dégrade la mesure sans casser le site.
+// Vérifier après toute modification : ouvrir une page en navigation privée et confirmer ZÉRO
+// violation CSP en console. Un blocage ici ne casse rien de visible — il fait juste disparaître
+// des conversions, ce qui est exactement le genre de panne qu'on ne remarque pas.
+const gtagBeacons =
+  "https://www.googletagmanager.com https://*.google.com https://www.google.fr https://www.googleadservices.com https://*.doubleclick.net https://*.google-analytics.com";
 
 const csp = [
   `default-src 'self'`,
