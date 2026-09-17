@@ -121,6 +121,26 @@ if (manquants.length) KO(`${manquants.length} poste(s) du catalogue absent(s) du
 if (fantomes.length) KO(`${fantomes.length} ligne(s) du carnet sans poste correspondant`, fantomes.slice(0, 6).join(" · "));
 if (!manquants.length && !fantomes.length) console.log(`  ${dansCarnet.size} postes, correspondance exacte`);
 
+/* ── 3bis. le carnet connaît-il TOUS les postes à quantité automatique ? ──
+   Mon premier extracteur en avait raté 3 : il cassait sur les formules contenant une virgule
+   (Math.max(0, S - SS)) et ignorait le cas spécial FINI. Conséquence, pas cosmétique : sur un
+   poste que le carnet croit manuel alors qu'il est auto, le branchement écrirait une qty SANS
+   manual:true — et qtyOf() préfère alors autoQty, donc la mesure du plan est écrasée en silence. */
+console.log("\n3bis. Postes à quantité automatique connus du carnet");
+{
+  const i = CORE.indexOf("const A: Record<string, number> = {");
+  const amap = CORE.slice(CORE.indexOf("{", i) + 1, CORE.indexOf("\n  };", i));
+  const clesA = [...amap.matchAll(/"((?:[^"\\]|\\.)*)"\s*:/g)].map(m => m[1].replace(/\\"/g, '"'));
+  const fini = CORE.match(/const FINI\s*=\s*"([^"]+)"/)?.[1];
+  const attendus = new Set([...clesA, ...(fini ? [fini] : [])]);
+  const formules = JSON.parse(fs.readFileSync("maquettes/carnet/autoqty-formules.json", "utf8"));
+  const absents = [...attendus].filter(n => !(n in formules));
+  const enTrop = Object.keys(formules).filter(n => !attendus.has(n));
+  if (absents.length) KO(`${absents.length} poste(s) auto absent(s) du carnet`, `${absents.join(" · ")} — leur mesure serait écrasée par autoQty au branchement`);
+  if (enTrop.length) KO(`${enTrop.length} formule(s) du carnet sans équivalent dans autoQty()`, enTrop.join(" · "));
+  if (!absents.length && !enTrop.length) console.log(`  ${attendus.size} postes auto, carnet exact`);
+}
+
 /* ── 4. les nombres de postes annoncés dans « hors plan » ── */
 console.log("\n4. Nombres cités dans le bloc de couverture");
 for (const [lot, attendu] of [["Location de matériel", "Location de matériel"], ["Raccordements aux réseaux", "Raccordements aux réseaux"]]) {

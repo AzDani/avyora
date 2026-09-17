@@ -43,6 +43,8 @@
 "Sèche-serviette": "SDB",
 "Monter une cloison": "S * 0.35",
 "Doubler un mur": "facade",
+"Créer un plancher bois": "Math.max(0, S - SS)",
+"Plancher béton (étage créé)": "Math.max(0, S - SS)",
 "Carrelage au sol": "suiteZ ? zSol : S * 0.6",
 "Sol stratifié (imitation bois)": "suiteZ ? zLiving : S * 0.4",
 "Parquet bois": "suiteZ ? zLiving : S * 0.4",
@@ -76,5 +78,6 @@
 "Traitement imperméabilisant": "facade",
 "Isolation par l'extérieur (ITE)": "facade",
 "Bardage": "facade",
-"Ravalement façade pierre (tout compris)": "facade"
+"Ravalement façade pierre (tout compris)": "facade",
+"Finitions plâtrerie (bandes, enduit)": "derivedFinitions(ctx, sel)"
 }

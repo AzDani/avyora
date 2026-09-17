@@ -54,7 +54,7 @@ Maçonnerie	Monter un mur en parpaings	m2	—	FOURNIT	q.travaux.creerLin.mur / .
 Maçonnerie	Monter un mur en brique	m2	—	FOURNIT	q.travaux.creerLin.mur / .porteur
 Maçonnerie	Créer / enlever une cheminée en dur	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
 Maçonnerie	Escalier en béton	u	—	FOURNIT	q.levels[].escaliers
-Maçonnerie	Plancher béton (étage créé)	m2	—	MESURE	surface de plancher créée par niveau
+Maçonnerie	Plancher béton (étage créé)	m2	Math.max(0, S - SS)	MESURE	surface de plancher créée par niveau
 Charpente, couverture & structure bois	Toiture complète tuile (charpente + couverture)	m2	roof	MESURE	q.toiture (toitureQ) — géométrie réelle : pans, pignons, pentes
 Charpente, couverture & structure bois	Toiture complète ardoise (charpente + couverture)	m2	roof	MESURE	q.toiture (toitureQ) — géométrie réelle : pans, pignons, pentes
 Charpente, couverture & structure bois	Dépose complète de toiture (couverture + charpente)	m2	roof	MESURE	q.toiture (toitureQ) — géométrie réelle : pans, pignons, pentes
@@ -72,7 +72,7 @@ Charpente, couverture & structure bois	Raccords (faîtage, noues, solins)	ml	—
 Charpente, couverture & structure bois	Fenêtre de toit (Velux)	u	—	AJOUT	⚠ objet « fenêtre de toit » ABSENT
 Charpente, couverture & structure bois	Nettoyer / démousser la toiture	m2	roof	MESURE	q.toiture (toitureQ) — géométrie réelle : pans, pignons, pentes
 Charpente, couverture & structure bois	Toit plat (étanchéité)	m2	SS	MESURE	q.toiture (toitureQ) — géométrie réelle : pans, pignons, pentes
-Charpente, couverture & structure bois	Créer un plancher bois	m2	—	MESURE	surface de plancher créée par niveau
+Charpente, couverture & structure bois	Créer un plancher bois	m2	Math.max(0, S - SS)	MESURE	surface de plancher créée par niveau
 Charpente, couverture & structure bois	Escalier en bois	u	—	FOURNIT	q.levels[].escaliers
 Charpente, couverture & structure bois	Garde-corps	ml	—	REGLE	périmètre de trémie (tremieArea existe, périmètre à exporter)
 Charpente, couverture & structure bois	Mur en ossature bois	m2	—	FOURNIT	q.travaux.creerLin.mur / .porteur
@@ -113,7 +113,7 @@ Cloisons / Platrerie	Plafond décoratif (spots, retombées)	m2	—	QUESTION	hors
 Cloisons / Platrerie	Cacher tuyaux / gaines (coffrage)	ml	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
 Cloisons / Platrerie	Trappe de visite	u	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
 Cloisons / Platrerie	Caisson à galandage (châssis + habillage)	u	—	REGLE	porte coulissante intérieure posée dans un mur = un caisson
-Cloisons / Platrerie	Finitions plâtrerie (bandes, enduit)	m2	—	FOURNIT	surface réelle plutôt que S
+Cloisons / Platrerie	Finitions plâtrerie (bandes, enduit)	m2	derivedFinitions(ctx, sel)	FOURNIT	surface réelle plutôt que S
 Cloisons / Platrerie	Ratissage léger	m2	placo	FOURNIT	surface réelle plutôt que S
 Cloisons / Platrerie	Ratissage lourd	m2	placo	FOURNIT	surface réelle plutôt que S
 Electricite	Rénovation électrique complète	m2	S	FOURNIT	surface réelle plutôt que S
