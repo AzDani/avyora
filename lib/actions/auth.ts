@@ -6,6 +6,8 @@ import { supabaseServer } from "@/lib/supabase/server";
 import { verifierLimite, clientIp } from "@/lib/ratelimit";
 import { validerMotDePasse } from "@/lib/password";
 import { journaliser } from "@/lib/audit";
+import { cheminInterne } from "@/lib/next-url";
+import { suivreServeur } from "@/lib/track-server";
 
 /** État renvoyé aux formulaires (useActionState). */
 export type AuthState = { error?: string; message?: string } | undefined;
@@ -52,15 +54,7 @@ export async function login(_prev: AuthState, formData: FormData): Promise<AuthS
   else cookieStore.set("av-remember", "0", { path: "/", httpOnly: true, sameSite: "lax" }); // cookie de session
 
   await journaliser("connexion_reussie", { userId: data.user?.id, email });
-  redirect(cheminInterneSur(next));
-}
-
-/**
- * Anti open-redirect : n'accepte qu'un chemin interne (commence par « / » mais pas « // » ni « /\ »,
- * qui seraient interprétés comme une URL absolue vers un domaine externe). Sinon → /projets.
- */
-function cheminInterneSur(next: string): string {
-  return next.startsWith("/") && !next.startsWith("//") && !next.startsWith("/\\") ? next : "/projets";
+  redirect(cheminInterne(next));
 }
 
 // ── Inscription ──
@@ -68,6 +62,11 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
   const email = cleanEmail(formData.get("email"));
   const password = String(formData.get("password") ?? "");
   const nom = String(formData.get("nom") ?? "").trim();
+  // Où l'on envoie l'inscrit. Par défaut /onboarding : les six questions de profil, avec un
+  // bouton « Passer ». Mais quand l'inscription vient d'une INTENTION D'ACHAT (le visiteur a
+  // cliqué un plan sur /tarifs, donc `next=/tarifs?plan=…`), on ne lui inflige pas un
+  // questionnaire entre son oui et l'écran de paiement : on l'emmène là où il allait.
+  const dest = cheminInterne(String(formData.get("next") ?? ""), "/onboarding");
   if (!email || !password) return { error: "Renseigne ton email et ton mot de passe." };
   if (!(await limiteAuthOk())) return { error: TROP_DE_TENTATIVES };
   const faible = validerMotDePasse(password);
@@ -77,13 +76,22 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { nom }, emailRedirectTo: `${await origin()}/auth/callback?next=/onboarding` },
+    // Le lien de confirmation doit ramener le visiteur À SON INTENTION, pas au questionnaire :
+    // /auth/callback échange le code puis redirige sur ce `next` (app/auth/callback/route.ts:11).
+    options: {
+      data: { nom },
+      emailRedirectTo: `${await origin()}/auth/callback?next=${encodeURIComponent(dest)}`,
+    },
   });
   if (error) return { error: error.message };
 
   await journaliser("inscription", { userId: data.user?.id, email });
+  // `compte_cree` part d'ICI, là où le fait est établi, et non d'une page d'atterrissage.
+  // `confirme` distingue les deux issues ci-dessous : compte utilisable tout de suite, ou
+  // compte en attente d'un clic dans un email — c'est-à-dire un visiteur qui quitte le site.
+  await suivreServeur("compte_cree", { confirme: !!data.session, destination: dest });
   // Selon la config Supabase : si la confirmation email est requise, pas de session tout de suite.
-  if (data.session) redirect("/onboarding");
+  if (data.session) redirect(dest);
   return { message: "Compte créé ! Vérifie ta boîte mail pour confirmer ton adresse, puis connecte-toi." };
 }
 

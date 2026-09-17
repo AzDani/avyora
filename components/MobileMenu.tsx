@@ -11,7 +11,7 @@ import { I18N_ENABLED } from "@/lib/i18n/config";
  * Menu de navigation mobile (< sm) : bouton hamburger + panneau déroulant.
  * Le header inline ne tient pas en 375px ; sur mobile on regroupe tout ici.
  */
-export default function MobileMenu({ isLoggedIn, prenom, isAdmin }: { isLoggedIn: boolean; prenom?: string; isAdmin?: boolean }) {
+export default function MobileMenu({ isLoggedIn, prenom, isAdmin, isPro }: { isLoggedIn: boolean; prenom?: string; isAdmin?: boolean; isPro?: boolean }) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
   const t = useT();
@@ -54,6 +54,11 @@ export default function MobileMenu({ isLoggedIn, prenom, isAdmin }: { isLoggedIn
             <div className="my-1.5 border-t border-line" />
             {isLoggedIn ? (
               <>
+                {!isPro && (
+                  <Link href="/tarifs" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-semibold text-brand-700 transition-colors hover:bg-surface-2">
+                    {t.nav.passerPro}
+                  </Link>
+                )}
                 {isAdmin && (
                   <Link href="/admin" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-semibold text-brand-700 transition-colors hover:bg-surface-2">
                     🛡 Admin

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getUser, estAdmin } from "@/lib/auth";
+import { getUser, estAdmin, estPro } from "@/lib/auth";
 import { logout } from "@/lib/actions/auth";
 import { getT } from "@/lib/i18n/server";
 
@@ -21,6 +21,17 @@ export async function AuthNav() {
   const prenom = (user.user_metadata?.nom as string) || user.email?.split("@")[0] || t.nav.monCompte;
   return (
     <div className="flex items-center gap-1">
+      {/* Un inscrit non abonné n'avait aucun chemin vers le paiement depuis l'en-tête : /tarifs
+          n'était qu'au pied de page. La bannière de /projets (components/ProUpsell.tsx) couvrait
+          cette page-là, et elle seule — d'où ce lien, visible uniquement pour qui peut s'abonner. */}
+      {!estPro(user) && (
+        <Link
+          href="/tarifs"
+          className="rounded-lg px-3 py-1.5 text-sm font-medium text-[#C4B5FD] transition-colors hover:bg-white/10 hover:text-white"
+        >
+          {t.nav.passerPro}
+        </Link>
+      )}
       {estAdmin(user) && (
         <Link
           href="/admin"

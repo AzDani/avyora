@@ -68,12 +68,15 @@ export function LoginForm({ next }: { next?: string }) {
 }
 
 // ── Inscription ──
-export function SignupForm() {
+export function SignupForm({ next }: { next?: string }) {
   const t = useT().auth;
   const [state, action, pending] = useActionState(signup, undefined);
   return (
     <form action={action} className="space-y-4">
       <Feedback state={state} />
+      {/* Transporte l'intention d'achat jusqu'à l'action serveur, comme le fait LoginForm.
+          C'est ce champ qui évite qu'un visiteur venu payer finisse dans sa liste de projets. */}
+      {next && <input type="hidden" name="next" value={next} />}
       <div className={field}>
         <label htmlFor="nom" className="field-label">{t.prenom}</label>
         <input id="nom" name="nom" type="text" autoComplete="given-name" className="input" placeholder={t.prenomPlaceholder} />

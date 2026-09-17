@@ -13,10 +13,16 @@ export const metadata = {
 };
 export const dynamic = "force-dynamic";
 
-const PLAN_KEYS: { key: "mensuel" | "annuel-mois" | "annuel"; featured?: boolean }[] = [
-  { key: "mensuel" },
-  { key: "annuel", featured: true },
-];
+/**
+ * Plans réellement en vente, dans l'ordre d'affichage.
+ *
+ * `annuel-mois` (engagement 12 mois facturé au mois) existe dans le dictionnaire et dans
+ * lib/stripe.ts mais n'est délibérément PAS vendu : Stripe n'a pas de verrou natif « durée
+ * minimale » sur un abonnement mensuel. L'entrée est conservée inutilisée, pas oubliée.
+ */
+const PLANS_AFFICHES = ["mensuel", "annuel"] as const;
+/** Plan mis en avant quand le visiteur n'en a choisi aucun. */
+const PLAN_PAR_DEFAUT: (typeof PLANS_AFFICHES)[number] = "annuel";
 
 function Check() {
   return (
@@ -26,15 +32,26 @@ function Check() {
   );
 }
 
-export default async function TarifsPage() {
-  const [user, { t: tr }] = await Promise.all([getUser(), getT()]);
+export default async function TarifsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ plan?: string }>;
+}) {
+  const [{ plan: planDemande }, user, { t: tr }] = await Promise.all([searchParams, getUser(), getT()]);
   const t = tr.tarifs;
   const dejaPro = estPro(user);
+  // Un visiteur qui revient d'une inscription arrive avec le plan qu'il avait choisi AVANT de
+  // créer son compte (components/BoutonAbo.tsx pose ce paramètre). On met SON plan en avant
+  // plutôt que celui de la maison : il retrouve son choix au lieu de devoir le refaire.
+  const misEnAvant = PLANS_AFFICHES.find((k) => k === planDemande) ?? PLAN_PAR_DEFAUT;
 
   return (
     <div className="animate-rise mx-auto max-w-4xl py-4 sm:py-8">
       {/* Le mur payant : sans cette mesure, on ignore combien de visiteurs y parviennent. */}
-      <SuiviVue evenement="vue_tarifs" props={{ connecte: !!user, deja_pro: dejaPro }} />
+      <SuiviVue
+        evenement="vue_tarifs"
+        props={{ connecte: !!user, deja_pro: dejaPro, venu_pour: planDemande ?? "aucun" }}
+      />
       <header className="text-center">
         <p className="eyebrow">{t.eyebrow}</p>
         <h1 className="mt-2 text-[30px] font-semibold tracking-tight text-ink">{t.titre}</h1>
@@ -56,7 +73,8 @@ export default async function TarifsPage() {
       )}
 
       <div className="mx-auto mt-8 grid max-w-2xl gap-4 md:grid-cols-2">
-        {PLAN_KEYS.map(({ key, featured }) => {
+        {PLANS_AFFICHES.map((key) => {
+          const featured = key === misEnAvant;
           const p = t.plans[key];
           return (
             <div

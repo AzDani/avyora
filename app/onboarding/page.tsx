@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth";
 import { getLocale } from "@/lib/i18n/server";
 import OnboardingForm from "@/components/OnboardingForm";
-import { SuiviVue } from "@/components/SuiviVue";
 
 
 export const dynamic = "force-dynamic";
@@ -21,9 +20,6 @@ export default async function OnboardingPage() {
   if (!user) redirect("/connexion?next=/onboarding");
   return (
     <div className="py-2">
-      {/* Atterrissage juste après la création de compte (lib/actions/auth.ts : signup → /onboarding).
-          `compte_cree` était déclaré dans lib/track.ts mais n'était émis nulle part. */}
-      <SuiviVue evenement="compte_cree" />
       <OnboardingForm />
     </div>
   );
