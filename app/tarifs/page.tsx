@@ -35,9 +35,9 @@ function Check() {
 export default async function TarifsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ plan?: string }>;
+  searchParams: Promise<{ plan?: string; abo?: string }>;
 }) {
-  const [{ plan: planDemande }, user, { t: tr }] = await Promise.all([searchParams, getUser(), getT()]);
+  const [{ plan: planDemande, abo }, user, { t: tr }] = await Promise.all([searchParams, getUser(), getT()]);
   const t = tr.tarifs;
   const dejaPro = estPro(user);
   // Un visiteur qui revient d'une inscription arrive avec le plan qu'il avait choisi AVANT de
@@ -69,6 +69,15 @@ export default async function TarifsPage({
       {dejaPro && (
         <p className="mx-auto mt-6 max-w-md rounded-field border border-positive/25 bg-positive-soft px-4 py-3 text-center text-sm text-positive">
           {t.dejaProAvant}<Link href="/projets/nouveau/detaille?new=1" className="font-semibold underline">{t.dejaProLien}</Link>.
+        </p>
+      )}
+
+      {/* Retour d'un paiement abandonné : `cancel_url` de Stripe renvoie ici avec ?abo=annule
+          (app/api/stripe/checkout/route.ts). La page n'en faisait rien — le visiteur revenait
+          sur un écran muet, sans savoir si quelque chose avait été débité. */}
+      {abo === "annule" && !dejaPro && (
+        <p className="mx-auto mt-6 max-w-md rounded-field border border-line bg-surface-2 px-4 py-3 text-center text-sm text-muted">
+          {t.aboAnnule}
         </p>
       )}
 
@@ -110,16 +119,47 @@ export default async function TarifsPage({
         })}
       </div>
 
-      <div className="mx-auto mt-8 max-w-xl rounded-panel border border-line bg-surface p-6">
-        <div className="eyebrow mb-3">{t.inclus}</div>
-        <ul className="space-y-2.5">
-          {t.features.map((f) => (
-            <li key={f} className="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink">
-              <Check />
-              {f}
-            </li>
-          ))}
-        </ul>
+      {/* « Inclus dans Pro » : la liste de ce qu'on vend — et, à côté, la preuve.
+          Cette page demandait 18,85 € en ne montrant du produit payant que cinq puces de texte.
+          La capture du vrai rapport existait pourtant, et ne servait que sur l'accueil : un clic
+          publicitaire arrivé sur une page ville ne la voyait jamais.
+          Elle est ICI plutôt qu'au-dessus des prix : en portrait, elle repoussait les cartes
+          d'un écran entier sur une page dont l'action EST le prix. À côté de la liste, elle ne
+          coûte aucune hauteur et se trouve exactement en regard de ce qu'elle prouve.
+          Convention du dépôt suivie (webp pré-générés + <picture>), pas next/image : les trois
+          variantes sont déjà dans public/ et rien ici n'a besoin d'être transformé. */}
+      <div className="mx-auto mt-8 grid max-w-3xl gap-6 rounded-panel border border-line bg-surface p-6 sm:grid-cols-[1fr_240px] sm:items-start sm:gap-8">
+        <div>
+          <div className="eyebrow mb-3">{t.inclus}</div>
+          <ul className="space-y-2.5">
+            {t.features.map((f) => (
+              <li key={f} className="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink">
+                <Check />
+                {f}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <figure className="mx-auto w-full max-w-[240px]">
+          <picture>
+            <source
+              type="image/webp"
+              srcSet="/exemple-rapport-760.webp 760w, /exemple-rapport-1040.webp 1040w"
+              sizes="240px"
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/exemple-rapport.png"
+              alt={t.apercuAlt}
+              width={1040}
+              height={1458}
+              loading="lazy"
+              decoding="async"
+              className="w-full rounded-field border border-line shadow-card"
+            />
+          </picture>
+          <figcaption className="mt-2.5 text-center text-[11px] leading-snug text-faint">{t.apercuLegende}</figcaption>
+        </figure>
       </div>
 
       <p className="mt-6 text-center text-[13px] text-muted">

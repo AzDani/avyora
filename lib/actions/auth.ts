@@ -92,7 +92,14 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
   await suivreServeur("compte_cree", { confirme: !!data.session, destination: dest });
   // Selon la config Supabase : si la confirmation email est requise, pas de session tout de suite.
   if (data.session) redirect(dest);
-  return { message: "Compte créé ! Vérifie ta boîte mail pour confirmer ton adresse, puis connecte-toi." };
+  // La confirmation d'email étant active, cet écran est la pièce maîtresse du parcours d'achat :
+  // c'est le seul moment où le visiteur doit quitter le site. Le lien de l'email OUVRE la session
+  // et le ramène à `dest` (cf. emailRedirectTo ci-dessus) — lui dire « puis connecte-toi »
+  // l'envoyait faire une étape dont il n'a pas besoin, juste avant de payer.
+  const suite = dest.startsWith("/tarifs")
+    ? "Le lien te ramènera directement à ton abonnement."
+    : "Le lien te connectera directement.";
+  return { message: `Compte créé ! Ouvre ta boîte mail pour confirmer ton adresse. ${suite}` };
 }
 
 // ── Demande de réinitialisation (envoie l'email) ──

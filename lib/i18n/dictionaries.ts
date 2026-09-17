@@ -90,6 +90,9 @@ const fr = {
     dejaProAvant: "Tu es déjà Pro — ",
     dejaProLien: "ouvrir l'estimateur détaillé",
     offSuffix: "lancement",
+    apercuLegende: "Exemple de rapport détaillé — maison 145 m² à Bordeaux.",
+    apercuAlt: "Exemple de rapport d'estimation détaillée AVYORA",
+    aboAnnule: "Paiement annulé — rien n'a été débité. Tu peux reprendre quand tu veux.",
     inclus: "Inclus dans Pro",
     features: [
       "Estimateur détaillé — les 200 postes, au poste près",
@@ -312,6 +315,9 @@ const en: Dict = {
     dejaProAvant: "You're already Pro — ",
     dejaProLien: "open the detailed estimator",
     offSuffix: "launch",
+    apercuLegende: "Example of a detailed report — 145 m² house in Bordeaux.",
+    apercuAlt: "Example of a detailed AVYORA estimate report",
+    aboAnnule: "Payment cancelled — nothing was charged. You can pick up where you left off.",
     inclus: "Included in Pro",
     features: [
       "Detailed estimator — all 200 items, line by line",
