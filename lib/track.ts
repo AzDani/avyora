@@ -6,7 +6,9 @@ export type EvenementAvyora =
   | "compte_cree"
   | "clic_nouveau_projet"
   | "clic_sabonner"
-  | "clic_telecharger_rapport";
+  | "clic_telecharger_rapport"
+  /** Arrivée sur la page de tarifs — le mur payant. Sans elle, on ignore combien y parviennent. */
+  | "vue_tarifs";
 
 type Props = Record<string, string | number | boolean | null>;
 

@@ -3,6 +3,7 @@ import BoutonAbo from "@/components/BoutonAbo";
 import BoutonCheckout from "@/components/BoutonCheckout";
 import { getUser, estPro } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
+import { SuiviVue } from "@/components/SuiviVue";
 
 export const metadata = {
   title: "Passer Pro — estimation détaillée poste par poste",
@@ -32,6 +33,8 @@ export default async function TarifsPage() {
 
   return (
     <div className="animate-rise mx-auto max-w-4xl py-4 sm:py-8">
+      {/* Le mur payant : sans cette mesure, on ignore combien de visiteurs y parviennent. */}
+      <SuiviVue evenement="vue_tarifs" props={{ connecte: !!user, deja_pro: dejaPro }} />
       <header className="text-center">
         <p className="eyebrow">{t.eyebrow}</p>
         <h1 className="mt-2 text-[30px] font-semibold tracking-tight text-ink">{t.titre}</h1>
