@@ -57,7 +57,7 @@ provision d'aléas de 7 %. La méthode et ses limites sont publiées sur `/metho
 
 ## Les pages publiques
 
-509 pages générées, 192 déclarées au sitemap.
+509 pages générées, 142 déclarées au sitemap.
 
 | Famille | Route |
 |---|---|
@@ -68,9 +68,9 @@ provision d'aléas de 7 %. La méthode et ses limites sont publiées sur `/metho
 | Prix par corps d'état | `/prix-poste`, `/prix-poste/[slug]` |
 | Méthode | `/methodologie` |
 
-Les pages de matrice `/prix-travaux/[projet]/[ville]` sont majoritairement en `noindex, follow` :
-elles ne produisent que 3 réponses distinctes par projet (une par zone de main-d'œuvre) et sont
-identiques entre elles à plus de 95 %. Seules les villes indexables sont déclarées au sitemap.
+Les pages de matrice `/prix-travaux/[projet]/[ville]` sont en `noindex, follow`, sauf **une ville
+par zone de main-d'œuvre** : elles ne produisent que 3 réponses distinctes par projet, et deux
+villes d'une même zone sont identiques à plus de 95 %. Seules les indexables sont au sitemap.
 Le motif, la règle et le critère de réouverture vivent au même endroit : `lib/seo-projets.ts`.
 
 ## Contrôles avant de pousser
