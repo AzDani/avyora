@@ -225,7 +225,7 @@ const HOME_HTML = `
     <div class="s"><div class="v">200</div><div class="l">postes de prix chiffrés</div></div>
     <div class="s"><div class="v">18</div><div class="l">corps d'état couverts</div></div>
     <div class="s"><div class="v">2026</div><div class="l">prix du marché français</div></div>
-    <div class="s"><div class="v">±15 %</div><div class="l">précision au poste près</div></div>
+    <div class="s"><div class="v">±15 %</div><div class="l">marge de la fourchette</div></div>
   </div>
 </div></section>
 
@@ -307,7 +307,7 @@ const HOME_HTML_EN = `
   <div class="steps">
     <div class="stepc"><div class="n">1</div><h3>Describe your property</h3><p>4 questions, under 3 minutes. Type, area, scope, finish.</p></div>
     <div class="stepc"><div class="n">2</div><h3>Get your range</h3><p>An instant budget, ±15 %, adjusted to your region's market price.</p></div>
-    <div class="stepc"><div class="n">3</div><h3>Refine line by line</h3><p>All 173 items, DIY vs. hire-out, and the PDF report — with AVYORA&nbsp;Pro.</p></div>
+    <div class="stepc"><div class="n">3</div><h3>Refine line by line</h3><p>All 200 items, DIY vs. hire-out, and the PDF report — with AVYORA&nbsp;Pro.</p></div>
   </div>
 </div></section>
 
@@ -346,10 +346,10 @@ const HOME_HTML_EN = `
 <section class="blk" style="padding-top:0"><div class="wrap">
   <div class="center"><p class="eyebrow">Why it's reliable</p><h2>Real prices, not a guess.</h2></div>
   <div class="cred">
-    <div class="s"><div class="v">173</div><div class="l">priced items</div></div>
-    <div class="s"><div class="v">19</div><div class="l">trades covered</div></div>
+    <div class="s"><div class="v">200</div><div class="l">priced items</div></div>
+    <div class="s"><div class="v">18</div><div class="l">trades covered</div></div>
     <div class="s"><div class="v">2026</div><div class="l">French market prices</div></div>
-    <div class="s"><div class="v">±15 %</div><div class="l">line-item accuracy</div></div>
+    <div class="s"><div class="v">±15 %</div><div class="l">range on the estimate</div></div>
   </div>
 </div></section>
 
@@ -357,7 +357,7 @@ const HOME_HTML_EN = `
   <div class="price">
     <span class="lance">Launch offer · up to −35 %</span>
     <h2>Free to estimate. Pro to unlock everything.</h2>
-    <div class="p"><s>€29</s><span class="big">€18.85</span> / month — detailed 173 items, PDF report, saving and project tracking.</div>
+    <div class="p"><s>€29</s><span class="big">€18.85</span> / month — detailed 200 items, PDF report, saving and project tracking.</div>
     <div class="cta">
       <a href="/tarifs" class="btn btn-o">Go Pro</a>
       <a href="/tarifs" class="btn btn-w">See all plans</a>
