@@ -39,10 +39,24 @@ node maquettes/tools/review.mjs "$(pwd)/maquettes"
 
 1. **Jamais de `//` à l'intérieur d'une ligne longue** — le reste de la ligne (accolades comprises)
    passe en commentaire. Toujours `/* … */`.
-2. **Aucun barème de prix recopié ici.** Les coefficients de finition, le coefficient régional et
-   les taux de TVA vivent dans `lib/estimateur`. La maquette **collecte et transmet** (`quantities()
-   → contexte`), elle ne chiffre pas. Une copie locale divergerait — c'est l'incident déjà vécu
-   entre `app/sitemap.ts` et la règle d'indexation.
+2. **Aucun COEFFICIENT recopié ici** — finition, région, TVA vivent dans `lib/estimateur` ; la
+   maquette collecte et transmet (`quantities() → contexte`), elle ne les applique pas. Une copie
+   locale divergerait : c'est l'incident déjà vécu entre `app/sitemap.ts` et la règle d'indexation.
+
+   En revanche la maquette **recopie bien des prix** : `PRIX`, `PRIX_TOIT`, `EQUIP_PRIX` et
+   `FACADE_PRIX`, ~85 valeurs €/m² ou €/u, pour alimenter le compteur de budget *indicatif* affiché
+   en bas du panneau. Ces copies dérivent dès que le catalogue bouge, et une dérive ne casse rien de
+   visible : elle fabrique un chiffre faux. D'où le contrôle ci-dessous, à lancer après toute
+   modification de `lib/estimateur/catalog.json` :
+
+   ```bash
+   node maquettes/tools/coherence.mjs     # sort en 1 si une divergence est trouvée
+   ```
+
+   Il vérifie six choses : les prix recopiés contre le fourni-posé du catalogue, les libellés de
+   postes cités en dur (`FACADES[].poste`), la couverture exacte du carnet (200 postes), les
+   nombres annoncés dans le bloc « hors plan », et il rappelle les deux correspondances qui restent
+   à écrire au branchement (`logementPlus2Ans → ctx.fiscal`, les types de pièces sans compteur).
 3. **Toute nouvelle géométrie d'isolant** (nouveau type d'ouverture, angle, refend, ITE) se teste
    sur une **scène propre** — `state=blankState()`, rectangle 6 × 4 + refend, doublage 80 mm des
    deux côtés — et se capture en zoom serré avant publication. Le plan d'exemple a un mur intérieur
@@ -93,6 +107,17 @@ Le point saillant : `autoQty()` estime la façade par `4 × √SurfaceSol × hau
 et la toiture par `SurfaceSol × 1,4`. Ce sont des proxys honnêtes pour un formulaire. Le plan, lui,
 a la géométrie réelle. **Le plan ne remplit pas des cases : il remplace des estimations par des
 mesures.**
+
+---
+
+## `tools/coherence.mjs` — cohérence maquette ↔ estimateur
+
+```bash
+node maquettes/tools/coherence.mjs
+```
+
+À lancer après toute modification du catalogue, et avant chaque publication qui touche aux prix.
+Sort en code 1 si une divergence est trouvée — voir la règle 2 ci-dessus pour ce qu'il couvre.
 
 ---
 

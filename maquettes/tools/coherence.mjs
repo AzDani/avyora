@@ -1,0 +1,152 @@
+/**
+ * Cohérence maquette ↔ estimateur.
+ *
+ * La maquette est un fichier autonome : elle recopie des libellés et des prix du catalogue.
+ * Rien n'empêche le catalogue d'évoluer sans elle — et une divergence ne casse rien de visible,
+ * elle fabrique juste un chiffre faux. C'est le genre de panne qu'on ne remarque pas.
+ *
+ *   node maquettes/tools/coherence.mjs
+ *
+ * Sort en code 1 si une vérification DURE échoue. Les points « à savoir » n'échouent pas :
+ * ils décrivent le travail de correspondance qui reste à faire au branchement.
+ */
+import fs from "node:fs";
+
+const lire = p => fs.readFileSync(new URL(p, import.meta.url).pathname ?? p, "utf8");
+const CAT = JSON.parse(fs.readFileSync("lib/estimateur/catalog.json", "utf8"));
+const CORE = fs.readFileSync("lib/estimateur/core.ts", "utf8");
+const MAQ = fs.readFileSync("maquettes/plan-editor.html", "utf8");
+const CARNET = fs.readFileSync("maquettes/carnet/carnet-detail-vs-plan.tsv", "utf8");
+
+const lots = Array.isArray(CAT) ? CAT : (CAT.lots ?? Object.values(CAT)[0]);
+const postes = new Map();
+const parLot = new Map();
+for (const l of lots) {
+  parLot.set(l.c, l.t.length);
+  for (const t of l.t) postes.set(t.n, { ...t, lot: l.c });
+}
+
+let dur = 0, mou = 0;
+const KO = (quoi, d) => { dur++; console.log(`  ✗ ${quoi}\n      ${d}`); };
+const NB = (quoi, d) => { mou++; console.log(`  · ${quoi}\n      ${d}`); };
+
+/* valeur numérique d'une clé dans une table objet de la maquette */
+const tableVal = (table, cle) => {
+  const i = MAQ.indexOf(`const ${table}=`);
+  if (i < 0) return null;
+  const seg = MAQ.slice(i, MAQ.indexOf("\n};", i));
+  const m = seg.match(new RegExp(`\\b${cle}\\s*:\\s*([0-9.]+)`));
+  return m ? Number(m[1]) : null;
+};
+
+/* ── 1. prix recopiés : chaque valeur doit égaler le « fourni-posé » du poste qu'elle chiffre ──
+   La correspondance est déclarée ici, à la main, parce qu'elle demande de savoir à quel OUVRAGE
+   la maquette applique le prix — pas seulement quel nom lui ressemble. */
+const PRIX_MAP = [
+  ["PRIX", "demolCloison", "Abattre une cloison"],
+  ["PRIX", "demolMur", "Abattre un mur non porteur"],
+  ["PRIX", "cloisonNeuve", "Monter une cloison"],
+  ["PRIX", "chapeTradi", "Chape traditionnelle"],
+  ["PRIX", "chapeLiquide", "Chape liquide"],
+  ["PRIX", "ragreage", "Préparation du sol (ragréage)"],
+  ["PRIX", "dalle", "Couler une dalle béton"],
+  ["PRIX", "deposeSol", "Enlever un revêtement de sol"],
+  ["PRIX", "isoITI", "Isolation des murs par l'intérieur"],
+  ["PRIX", "isoITE", "Isolation par l'extérieur (ITE)"],
+  ["PRIX_TOIT", "demousser", "Nettoyer / démousser la toiture"],
+  ["PRIX_TOIT", "refectionTuile", "Réfection couverture tuiles (dépose + écran + liteaux)"],
+  ["PRIX_TOIT", "refectionArdoise", "Réfection couverture ardoise (dépose + écran + liteaux)"],
+  ["PRIX_TOIT", "couvTuile", "Couverture tuiles (sur support existant)"],
+  ["PRIX_TOIT", "couvArdoise", "Couverture ardoise (sur support existant)"],
+  ["PRIX_TOIT", "couvZinc", "Couverture zinc / bac acier"],
+  ["PRIX_TOIT", "sousToiture", "Sous-toiture (écran + liteaux)"],
+  ["PRIX_TOIT", "deposeComplete", "Dépose complète de toiture (couverture + charpente)"],
+  ["PRIX_TOIT", "completeTuile", "Toiture complète tuile (charpente + couverture)"],
+  ["PRIX_TOIT", "completeArdoise", "Toiture complète ardoise (charpente + couverture)"],
+  ["PRIX_TOIT", "charpTrad", "Charpente traditionnelle (hors couverture)"],
+  ["PRIX_TOIT", "charpFermettes", "Charpente en fermettes (hors couverture)"],
+  ["PRIX_TOIT", "traiter", "Traiter la charpente"],
+  ["PRIX_TOIT", "gouttieres", "Gouttières & descentes"],
+  ["PRIX_TOIT", "raccords", "Raccords (faîtage, noues, solins)"],
+  ["PRIX_TOIT", "velux", "Fenêtre de toit (Velux)"],
+  ["PRIX_TOIT", "plat", "Toit plat (étanchéité)"],
+  ["PRIX_TOIT", "isoPerdus", "Isolation des combles perdus (soufflage)"],
+  ["PRIX_TOIT", "isoRampants", "Isolation des combles aménagés (rampants)"],
+  ["FACADE_PRIX", "nettoyage", "Nettoyer la façade"],
+  ["FACADE_PRIX", "enduit", "Enduit monocouche (machine)"],
+  ["FACADE_PRIX", "enduit_chaux", "Enduit à la chaux (maison ancienne)"],
+  ["FACADE_PRIX", "peinture", "Peindre la façade"],
+  ["FACADE_PRIX", "joints", "Refaire les joints / rejointoiement (pierre, briquette, moellon)"],
+  ["FACADE_PRIX", "ravalement", "Ravalement façade pierre (tout compris)"],
+  ["FACADE_PRIX", "bardage", "Bardage"],
+  ["FACADE_PRIX", "hydrofuge", "Traitement imperméabilisant"],
+  ["EQUIP_PRIX", "baignoire", "Installer une baignoire"],
+  ["EQUIP_PRIX", "wc", "WC"],
+  ["EQUIP_PRIX", "lavabo", "Vasque"],
+  ["EQUIP_PRIX", "chaudiere", "Chaudière gaz à condensation"],
+  ["EQUIP_PRIX", "poele", "Poêle à bois / granulés"],
+  ["EQUIP_PRIX", "clim", "Climatisation réversible (split)"],
+  ["EQUIP_PRIX", "radiateur", "Radiateurs électriques"],
+  ["EQUIP_PRIX", "seche_serviette", "Sèche-serviette"],
+  ["EQUIP_PRIX", "cumulus", "Chauffe-eau électrique (cumulus)"],
+  ["EQUIP_PRIX", "tableau", "Changer / mettre aux normes le tableau"],
+  ["EQUIP_PRIX", "escalier", "Escalier en bois"],
+  ["EQUIP_PRIX", "ilot", "Îlot central"],
+];
+console.log("\n1. Prix recopiés dans la maquette vs catalogue (fourni-posé)");
+let alignes = 0;
+for (const [tbl, cle, nom] of PRIX_MAP) {
+  const m = tableVal(tbl, cle), p = postes.get(nom);
+  if (m === null) { KO(`${tbl}.${cle} introuvable dans la maquette`, "clé renommée ou supprimée ?"); continue; }
+  if (!p) { KO(`poste « ${nom} » absent du catalogue`, `référencé par ${tbl}.${cle}`); continue; }
+  if (Math.abs(m - p.fp) < 0.51) alignes++;
+  else KO(`${tbl}.${cle} = ${m} € · catalogue « ${nom} » = ${p.fp} €`, `écart ${(m - p.fp > 0 ? "+" : "")}${Math.round((m / p.fp - 1) * 100)} % sur le compteur indicatif`);
+}
+console.log(`  ${alignes}/${PRIX_MAP.length} alignés`);
+
+/* ── 2. libellés déclarés « exacts » : FACADES[].poste doit exister au catalogue ── */
+console.log("\n2. Libellés de postes cités en dur");
+const blocFacades = MAQ.slice(MAQ.indexOf("const FACADES={"), MAQ.indexOf("\n};", MAQ.indexOf("const FACADES={")));
+const cites = [...blocFacades.matchAll(/poste:'((?:[^'\\]|\\.)*)'/g)].map(m => m[1].replace(/\\'/g, "'"));
+let okNoms = 0;
+for (const n of cites) postes.has(n) ? okNoms++ : KO(`libellé cité introuvable : « ${n} »`, "poste renommé au catalogue ?");
+console.log(`  ${okNoms}/${cites.length} libellés valides`);
+
+/* ── 3. le carnet couvre-t-il encore exactement le catalogue ? ── */
+console.log("\n3. Carnet de correspondance à jour");
+const dansCarnet = new Set(CARNET.trim().split("\n").slice(1).map(l => l.split("\t")[1]));
+const manquants = [...postes.keys()].filter(n => !dansCarnet.has(n));
+const fantomes = [...dansCarnet].filter(n => !postes.has(n));
+if (manquants.length) KO(`${manquants.length} poste(s) du catalogue absent(s) du carnet`, manquants.slice(0, 6).join(" · "));
+if (fantomes.length) KO(`${fantomes.length} ligne(s) du carnet sans poste correspondant`, fantomes.slice(0, 6).join(" · "));
+if (!manquants.length && !fantomes.length) console.log(`  ${dansCarnet.size} postes, correspondance exacte`);
+
+/* ── 4. les nombres de postes annoncés dans « hors plan » ── */
+console.log("\n4. Nombres cités dans le bloc de couverture");
+for (const [lot, attendu] of [["Location de matériel", "Location de matériel"], ["Raccordements aux réseaux", "Raccordements aux réseaux"]]) {
+  const reel = parLot.get(attendu);
+  const m = MAQ.match(new RegExp(`\\['${lot.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}','(\\d+) postes`));
+  if (!m) { NB(`nombre non trouvé pour « ${lot} »`, "libellé du bloc HORS_PLAN modifié ?"); continue; }
+  Number(m[1]) === reel ? console.log(`  ${lot} : ${reel} ✓`)
+    : KO(`« ${lot} » annonce ${m[1]} postes, le catalogue en a ${reel}`, "chiffre à corriger dans HORS_PLAN");
+}
+
+/* ── 5. contexte : ce que la maquette émet vs ce que le moteur lit ── */
+console.log("\n5. Contexte transmis (correspondance à écrire au branchement)");
+const emis = [...(MAQ.match(/contexte=\{([^}]*)\}/)?.[1] ?? "").matchAll(/(?:^|,)\s*(\w+):/g)].map(m => m[1]);
+const lus = [...new Set([...CORE.matchAll(/ctx\.(\w+)/g)].map(m => m[1]))].sort();
+const communs = emis.filter(e => lus.includes(e));
+NB(`maquette → ${emis.join(", ") || "(rien)"}`,
+  `moteur lit ${lus.length} champs · communs : ${communs.join(", ") || "aucun"} · ` +
+  `à mapper : ${emis.filter(e => !lus.includes(e)).join(", ") || "rien"} (ex. logementPlus2Ans → ctx.fiscal)`);
+
+/* ── 6. types de pièces : la maquette en connaît plus que le moteur n'en compte ── */
+console.log("\n6. Types de pièces");
+const typesMaq = [...(MAQ.match(/const ROOM_TYPES = \[([\s\S]*?)\n\];/)?.[1] ?? "").matchAll(/\['(\w+)'/g)].map(m => m[1]);
+const sansEquivalent = typesMaq.filter(t => !lus.includes(t) && !lus.includes(t + "s"));
+NB(`${typesMaq.length} types dans la maquette, ${typesMaq.length - sansEquivalent.length} avec un compteur au moteur`,
+  `sans compteur direct : ${sansEquivalent.join(", ")}`);
+
+console.log(`\n${"─".repeat(60)}`);
+console.log(dur ? `✗ ${dur} divergence(s) à corriger · ${mou} point(s) à savoir` : `✓ aucune divergence · ${mou} point(s) à savoir`);
+process.exit(dur ? 1 : 0);
