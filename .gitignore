@@ -40,3 +40,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 db/
+
+# captures de revue de la maquette : régénérables par maquettes/tools/review.mjs
+maquettes/review/

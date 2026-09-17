@@ -1,0 +1,201 @@
+lot	poste	unite	autoQty_actuel	classe	source_dans_le_plan
+Etudes / Conception	Relevé + plans de l'existant	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Etudes / Conception	Plans du projet	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Etudes / Conception	Métré & quantitatifs	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Etudes / Conception	Diagnostics obligatoires (amiante, plomb, élec)	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Etudes / Conception	Diagnostic énergétique (DPE)	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Etudes / Conception	Démarches en mairie (DP / permis)	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Etudes / Conception	Étude de structure	forfait	—	REGLE	déclencheur : q.travaux.demolPorteur > 0 → étude obligatoire
+Etudes / Conception	Dossier d'aides (MaPrimeRénov', CEE)	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Etudes / Conception	Étude assainissement individuel (SPANC)	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Annexes de chantier	Installation de chantier	forfait	—	REGLE	déduit de l'ampleur du chantier
+Annexes de chantier	Benne & évacuation des gravats	forfait	—	REGLE	volume déduit de demolM2 + curage
+Annexes de chantier	Sécurité du chantier	forfait	—	REGLE	déduit de l'ampleur du chantier
+Annexes de chantier	Nettoyage de fin de chantier	m2	S	FOURNIT	surface réelle plutôt que S
+Location de matériel	Marteau-piqueur / brise-béton	jour	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Location de matériel	Bétonnière	jour	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Location de matériel	Ponceuse (parquet / placo)	jour	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Location de matériel	Aspirateur de chantier	jour	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Location de matériel	Découpeur / scie (carrelage, béton)	jour	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Location de matériel	Compresseur	jour	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Location de matériel	Groupe électrogène	jour	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Location de matériel	Déshumidificateur / chauffage chantier	jour	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Location de matériel	Mini-pelle (1,5-2,5 t)	jour	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Location de matériel	Livraison mini-pelle (dépose + reprise)	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Location de matériel	Nacelle / plateforme élévatrice	jour	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Location de matériel	Camion benne / utilitaire	jour	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Raccordements aux réseaux	Raccordement eau potable	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Raccordements aux réseaux	Raccordement électrique (Enedis)	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Raccordements aux réseaux	Coffret / tableau de chantier provisoire	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Raccordements aux réseaux	Mise en service provisoire (Enedis)	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Raccordements aux réseaux	Raccordement au tout-à-l'égout	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Raccordements aux réseaux	Assainissement — fosse toutes eaux (5 EH)	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Raccordements aux réseaux	Assainissement — micro-station (5 EH)	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Démolition	Enlever un revêtement de sol	m2	S	FOURNIT	sol de la pièce en état existant
+Démolition	Enlever un revêtement mural	m2	—	FOURNIT	surface réelle plutôt que S
+Démolition	Abattre une cloison	m2	—	FOURNIT	q.travaux.demolLin / demolM2 par type de mur
+Démolition	Abattre un mur non porteur	m2	—	FOURNIT	q.travaux.demolLin / demolM2 par type de mur
+Démolition	Enlever les anciennes portes / fenêtres	u	—	FOURNIT	q.travaux.boucher + deposer
+Démolition	Dépose complète cuisine / salle de bain (curage)	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Démolition	Enlever les vieux réseaux	m2	S	FOURNIT	surface réelle plutôt que S
+Démolition	Creuser tranchées / saignées	ml	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Démolition	Casser une dalle / vieux sol	m2	—	FOURNIT	sol de la pièce en état existant
+Démolition	Retrait amiante / plomb	m2	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Maçonnerie	Ouvrir un mur porteur — petite (porte/fenêtre)	u	—	FOURNIT	q.travaux.percements sur murs porteurs, réparti par largeur d'ouverture
+Maçonnerie	Ouvrir un mur porteur — grande (2,5 m, baie)	u	—	FOURNIT	q.travaux.percements sur murs porteurs, réparti par largeur d'ouverture
+Maçonnerie	Créer un appui de fenêtre	u	—	FOURNIT	ouvertures créées, par catégorie
+Maçonnerie	Créer un seuil de porte	u	—	FOURNIT	ouvertures créées, par catégorie
+Maçonnerie	Couler une dalle béton	m2	—	FOURNIT	surface réelle plutôt que S
+Maçonnerie	Chape traditionnelle	m2	S	FOURNIT	surface réelle plutôt que S
+Maçonnerie	Chape liquide	m2	S	FOURNIT	surface réelle plutôt que S
+Maçonnerie	Semelle de fondation (50 × 25-30 cm)	ml	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Maçonnerie	Consolider fondations / reprise en sous-œuvre	ml	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Maçonnerie	Monter un mur en parpaings	m2	—	FOURNIT	q.travaux.creerLin.mur / .porteur
+Maçonnerie	Monter un mur en brique	m2	—	FOURNIT	q.travaux.creerLin.mur / .porteur
+Maçonnerie	Créer / enlever une cheminée en dur	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Maçonnerie	Escalier en béton	u	—	FOURNIT	q.levels[].escaliers
+Maçonnerie	Plancher béton (étage créé)	m2	—	MESURE	surface de plancher créée par niveau
+Charpente, couverture & structure bois	Toiture complète tuile (charpente + couverture)	m2	roof	MESURE	q.toiture (toitureQ) — géométrie réelle : pans, pignons, pentes
+Charpente, couverture & structure bois	Toiture complète ardoise (charpente + couverture)	m2	roof	MESURE	q.toiture (toitureQ) — géométrie réelle : pans, pignons, pentes
+Charpente, couverture & structure bois	Dépose complète de toiture (couverture + charpente)	m2	roof	MESURE	q.toiture (toitureQ) — géométrie réelle : pans, pignons, pentes
+Charpente, couverture & structure bois	Charpente traditionnelle (hors couverture)	m2	roof	MESURE	q.toiture (toitureQ) — géométrie réelle : pans, pignons, pentes
+Charpente, couverture & structure bois	Charpente en fermettes (hors couverture)	m2	roof	MESURE	q.toiture (toitureQ) — géométrie réelle : pans, pignons, pentes
+Charpente, couverture & structure bois	Couverture tuiles (sur support existant)	m2	roof	MESURE	q.toiture (toitureQ) — géométrie réelle : pans, pignons, pentes
+Charpente, couverture & structure bois	Couverture ardoise (sur support existant)	m2	roof	MESURE	q.toiture (toitureQ) — géométrie réelle : pans, pignons, pentes
+Charpente, couverture & structure bois	Réfection couverture tuiles (dépose + écran + liteaux)	m2	roof	MESURE	q.toiture (toitureQ) — géométrie réelle : pans, pignons, pentes
+Charpente, couverture & structure bois	Réfection couverture ardoise (dépose + écran + liteaux)	m2	roof	MESURE	q.toiture (toitureQ) — géométrie réelle : pans, pignons, pentes
+Charpente, couverture & structure bois	Couverture zinc / bac acier	m2	roof	MESURE	q.toiture (toitureQ) — géométrie réelle : pans, pignons, pentes
+Charpente, couverture & structure bois	Sous-toiture (écran + liteaux)	m2	roof	MESURE	q.toiture (toitureQ) — géométrie réelle : pans, pignons, pentes
+Charpente, couverture & structure bois	Traiter la charpente	m2	roof	MESURE	q.toiture (toitureQ) — géométrie réelle : pans, pignons, pentes
+Charpente, couverture & structure bois	Gouttières & descentes	ml	4 * Math.sqrt(SS) + 4 * ctx.hauteur * (ctx.niveaux || 1)	MESURE	toitureGeo — longueur réelle des rives
+Charpente, couverture & structure bois	Raccords (faîtage, noues, solins)	ml	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Charpente, couverture & structure bois	Fenêtre de toit (Velux)	u	—	AJOUT	⚠ objet « fenêtre de toit » ABSENT
+Charpente, couverture & structure bois	Nettoyer / démousser la toiture	m2	roof	MESURE	q.toiture (toitureQ) — géométrie réelle : pans, pignons, pentes
+Charpente, couverture & structure bois	Toit plat (étanchéité)	m2	SS	MESURE	q.toiture (toitureQ) — géométrie réelle : pans, pignons, pentes
+Charpente, couverture & structure bois	Créer un plancher bois	m2	—	MESURE	surface de plancher créée par niveau
+Charpente, couverture & structure bois	Escalier en bois	u	—	FOURNIT	q.levels[].escaliers
+Charpente, couverture & structure bois	Garde-corps	ml	—	REGLE	périmètre de trémie (tremieArea existe, périmètre à exporter)
+Charpente, couverture & structure bois	Mur en ossature bois	m2	—	FOURNIT	q.travaux.creerLin.mur / .porteur
+Façade	Ravalement façade pierre (tout compris)	m2	facade	MESURE	q.facades — aire réelle par mur et par finition (facadeArea)
+Façade	Nettoyer la façade	m2	facade	MESURE	q.facades — aire réelle par mur et par finition (facadeArea)
+Façade	Refaire les joints / rejointoiement (pierre, briquette, moellon)	m2	facade	MESURE	q.facades — aire réelle par mur et par finition (facadeArea)
+Façade	Enduit monocouche (machine)	m2	facade	MESURE	q.facades — aire réelle par mur et par finition (facadeArea)
+Façade	Enduit à la chaux (maison ancienne)	m2	facade	MESURE	q.facades — aire réelle par mur et par finition (facadeArea)
+Façade	Peindre la façade	m2	facade	MESURE	q.facades — aire réelle par mur et par finition (facadeArea)
+Façade	Traitement imperméabilisant	m2	facade	MESURE	q.facades — aire réelle par mur et par finition (facadeArea)
+Façade	Isolation par l'extérieur (ITE)	m2	facade	MESURE	q.doublage.ite — m² réels par matériau
+Façade	Bardage	m2	facade	MESURE	q.doublage.ite — m² réels par matériau
+Façade	Éléments décoratifs (corniches, bandeaux)	ml	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Menuiseries exterieures	Fenêtres	u	—	FOURNIT	comptage exact par type, avec largeur et hauteur, depuis q.levels[].menuiseries
+Menuiseries exterieures	Portes-fenêtres	u	—	FOURNIT	comptage exact par type, avec largeur et hauteur, depuis q.levels[].menuiseries
+Menuiseries exterieures	Baie vitrée	u	—	FOURNIT	comptage exact par type, avec largeur et hauteur, depuis q.levels[].menuiseries
+Menuiseries exterieures	Porte d'entrée	u	—	FOURNIT	comptage exact par type, avec largeur et hauteur, depuis q.levels[].menuiseries
+Menuiseries exterieures	Porte de garage	u	—	FOURNIT	comptage exact par type, avec largeur et hauteur, depuis q.levels[].menuiseries
+Menuiseries exterieures	Volets roulants	u	—	REGLE	déduit du nombre de fenêtres
+Menuiseries exterieures	Volets battants	u	—	REGLE	déduit du nombre de fenêtres
+Menuiseries exterieures	Stores extérieurs / brise-soleil	u	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Menuiseries exterieures	Moustiquaires	u	—	REGLE	déduit du nombre de fenêtres
+Menuiseries exterieures	Grilles de sécurité	u	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Menuiseries exterieures	Portail battant (4 m)	u	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Menuiseries exterieures	Portail coulissant (4 m)	u	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Isolation	Isolation des combles perdus (soufflage)	m2	SS	FOURNIT	surface réelle plutôt que S
+Isolation	Isolation des combles aménagés (rampants)	m2	SS	FOURNIT	surface réelle plutôt que S
+Isolation	Isolation des murs par l'intérieur	m2	facade	MESURE	q.doublage.iti — m² réels par matériau
+Isolation	Isolation du sol / plancher bas	m2	SS	FOURNIT	surface réelle plutôt que S
+Isolation	Isolation contre le bruit (phonique)	m2	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Isolation	Pose d'un pare-vapeur	m2	placo	FOURNIT	surface réelle plutôt que S
+Cloisons / Platrerie	Monter une cloison	m2	S * 0.35	MESURE	q.travaux.creerLin.cloison × hauteur — ml réels
+Cloisons / Platrerie	Cloison pièce humide (hydrofuge)	m2	SDB * 12	MESURE	wallArea réel de la pièce humide
+Cloisons / Platrerie	Cloison anti-bruit (phonique)	m2	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Cloisons / Platrerie	Doubler un mur	m2	facade	FOURNIT	surface réelle plutôt que S
+Cloisons / Platrerie	Faux plafond	m2	S	MESURE	surface réelle des plafonds par pièce
+Cloisons / Platrerie	Plafond décoratif (spots, retombées)	m2	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Cloisons / Platrerie	Cacher tuyaux / gaines (coffrage)	ml	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Cloisons / Platrerie	Trappe de visite	u	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Cloisons / Platrerie	Caisson à galandage (châssis + habillage)	u	—	REGLE	porte coulissante intérieure posée dans un mur = un caisson
+Cloisons / Platrerie	Finitions plâtrerie (bandes, enduit)	m2	—	FOURNIT	surface réelle plutôt que S
+Cloisons / Platrerie	Ratissage léger	m2	placo	FOURNIT	surface réelle plutôt que S
+Cloisons / Platrerie	Ratissage lourd	m2	placo	FOURNIT	surface réelle plutôt que S
+Electricite	Rénovation électrique complète	m2	S	FOURNIT	surface réelle plutôt que S
+Electricite	Changer / mettre aux normes le tableau	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Electricite	Coffret de communication (VDI)	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Electricite	Mise à la terre	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Electricite	Consuel (attestation de conformité)	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Electricite	Ajouter / déplacer une prise	u	—	FOURNIT	q.electricite — comptage exact des objets posés
+Electricite	Ajouter / déplacer un interrupteur	u	—	FOURNIT	q.electricite — comptage exact des objets posés
+Electricite	Ajouter un point lumineux	u	—	FOURNIT	q.electricite — comptage exact des objets posés
+Electricite	Spots encastrés (LED)	u	Math.round(S / 2)	MESURE	q.electricite.pointsLumineux — ceux réellement posés
+Electricite	Prise internet / TV (RJ45)	u	rj45	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Electricite	Visiophone / interphone	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Electricite	Alarme / vidéosurveillance	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Electricite	Borne de recharge voiture	u	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Electricite	Maison connectée	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Plomberie	Refaire toute la plomberie (réseau, hors appareils)	m2	S	FOURNIT	surface réelle plutôt que S
+Plomberie	Créer / déplacer un point d'eau	u	—	AJOUT	⚠ objet « évier » ABSENT de la maquette
+Plomberie	WC	u	ctx.wc	MESURE	wc réellement posés
+Plomberie	Meuble-vasque	u	SDB	MESURE	équipements sanitaires réellement posés
+Plomberie	Vasque	u	SDB	MESURE	équipements sanitaires réellement posés
+Plomberie	Plan de travail	ml	SDB * 1.2	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Plomberie	Robinetterie lavabo	u	vasques	MESURE	équipements sanitaires réellement posés
+Plomberie	Miroir	u	SDB	MESURE	équipements sanitaires réellement posés
+Plomberie	Bac de douche	u	SDB	MESURE	équipements sanitaires réellement posés
+Plomberie	Colonne de douche	u	SDB	MESURE	équipements sanitaires réellement posés
+Plomberie	Douche à l'italienne	u	SDB	MESURE	équipements sanitaires réellement posés
+Plomberie	Paroi de douche	u	SDB	MESURE	équipements sanitaires réellement posés
+Plomberie	Cabine complète (parois + porte)	u	SDB	MESURE	équipements sanitaires réellement posés
+Plomberie	Installer une baignoire	u	—	FOURNIT	objets posés
+Plomberie	Robinetterie baignoire	u	SDB	MESURE	équipements sanitaires réellement posés
+Plomberie	Chauffe-eau électrique (cumulus)	u	—	FOURNIT	objets posés
+Plomberie	Chauffe-eau électrique instantané	u	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Plomberie	Chauffe-eau thermodynamique	u	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Plomberie	Installer un adoucisseur d'eau	u	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Chauffage / VMC	Pompe à chaleur (air/eau)	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Chauffage / VMC	Chaudière gaz à condensation	u	—	FOURNIT	objets posés
+Chauffage / VMC	Poêle à bois / granulés	u	—	FOURNIT	objets posés
+Chauffage / VMC	Climatisation réversible (split)	u	—	FOURNIT	objets posés
+Chauffage / VMC	Climatisation gainable (réversible)	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Chauffage / VMC	Radiateurs électriques	u	P	MESURE	q.chauffage.radiateurs — ceux réellement posés
+Chauffage / VMC	Plancher chauffant	m2	S	MESURE	floor + surfaceSol par pièce — le revêtement réellement choisi, pièce par pièce
+Chauffage / VMC	Sèche-serviette	u	SDB	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Chauffage / VMC	Ventilation (VMC)	u	1	AJOUT	⚠ objet « VMC » ABSENT — la quantité est figée à 1 dans le moteur
+Chauffage / VMC	Thermostat / pilotage	u	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Chauffage / VMC	Désembouage du réseau de chauffage	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Carrelage / Revetements	Préparation du sol (ragréage)	m2	S	MESURE	floor + surfaceSol par pièce — le revêtement réellement choisi, pièce par pièce
+Carrelage / Revetements	Carrelage au sol	m2	suiteZ ? zSol : S * 0.6	MESURE	floor + surfaceSol par pièce — le revêtement réellement choisi, pièce par pièce
+Carrelage / Revetements	Sol stratifié (imitation bois)	m2	suiteZ ? zLiving : S * 0.4	MESURE	floor + surfaceSol par pièce — le revêtement réellement choisi, pièce par pièce
+Carrelage / Revetements	Parquet bois	m2	suiteZ ? zLiving : S * 0.4	MESURE	floor + surfaceSol par pièce — le revêtement réellement choisi, pièce par pièce
+Carrelage / Revetements	Ponçage + vitrification parquet	m2	suiteZ ? zLiving : S * 0.4	MESURE	floor + surfaceSol par pièce — le revêtement réellement choisi, pièce par pièce
+Carrelage / Revetements	Sol souple (PVC, lino)	m2	suiteZ ? zLiving : S * 0.4	MESURE	floor + surfaceSol par pièce — le revêtement réellement choisi, pièce par pièce
+Carrelage / Revetements	Moquette	m2	suiteZ ? zLiving : S * 0.4	MESURE	floor + surfaceSol par pièce — le revêtement réellement choisi, pièce par pièce
+Carrelage / Revetements	Béton ciré / résine	m2	suiteZ ? zLiving : S * 0.6	MESURE	floor + surfaceSol par pièce — le revêtement réellement choisi, pièce par pièce
+Carrelage / Revetements	Étanchéité sous carrelage (SPEC douche)	m2	specArea	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Carrelage / Revetements	Faïence / carrelage mural	m2	SDB * 12	MESURE	wallArea réel de la pièce humide
+Carrelage / Revetements	Plinthes	ml	4 * Math.sqrt(S * P)	MESURE	q.plinthes — périmètre réel par pièce moins les portes
+Carrelage / Revetements	Seuils / barres de seuil	u	P	MESURE	comptage réel par type dans q.levels[].menuiseries
+Peinture	Retirer l'ancien papier peint	m2	—	FOURNIT	surface réelle plutôt que S
+Peinture	Préparation des surfaces	m2	S * ctx.hauteur	MESURE	q.wallPaint — surface peignable réelle, ouvertures déduites
+Peinture	Sous-couche / primaire	m2	S * ctx.hauteur	MESURE	q.wallPaint — surface peignable réelle, ouvertures déduites
+Peinture	Peinture des murs	m2	S * ctx.hauteur	MESURE	q.wallPaint — surface peignable réelle, ouvertures déduites
+Peinture	Peinture des plafonds	m2	S	MESURE	surface réelle des plafonds par pièce
+Peinture	Peinture des boiseries	u	P	MESURE	nb de portes réel
+Peinture	Lasure / vernis (boiseries)	m2	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Peinture	Peinture spéciale (anti-humidité)	m2	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Peinture	Pose de papier peint	m2	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Peinture	Enduit décoratif (béton ciré mural, stuc)	m2	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Menuiseries interieures	Porte intérieure battante	u	P	MESURE	comptage réel par type dans q.levels[].menuiseries
+Menuiseries interieures	Porte intérieure âme pleine	u	—	FOURNIT	comptage exact par type de porte
+Menuiseries interieures	Porte intérieure coulissante	u	—	FOURNIT	comptage exact par type de porte
+Menuiseries interieures	Placards & rangements	ml	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Menuiseries interieures	Dressing sur mesure	ml	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Menuiseries interieures	Verrière intérieure	m2	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Menuiseries interieures	Meuble sur mesure	ml	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Menuiseries interieures	Habillages & moulures bois	ml	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
+Cuisine	Cuisine complète neuve — tout compris	ml	—	REGLE	déduit du linéaire de cuisine
+Cuisine	Meubles de cuisine	ml	—	FOURNIT	objets cuisine posés (îlot, plan de travail)
+Cuisine	Rafraîchir une cuisine (façades / plan)	ml	—	REGLE	déduit du linéaire de cuisine
+Cuisine	Îlot central	u	—	FOURNIT	objets cuisine posés (îlot, plan de travail)
+Cuisine	Plan de travail seul	ml	—	FOURNIT	objets cuisine posés (îlot, plan de travail)
+Cuisine	Crédence seule	ml	—	REGLE	déduit du linéaire de cuisine
+Cuisine	Évier + robinetterie	u	—	AJOUT	⚠ objet « évier » ABSENT de la maquette
+Cuisine	Hotte	u	—	REGLE	déduit du linéaire de cuisine
+Cuisine	Raccordements (eau, élec, évac)	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake

@@ -1,0 +1,201 @@
+lot	phase	tva	poste	unite	autoQty
+Etudes / Conception	Préparation	20	Relevé + plans de l'existant	forfait	
+Etudes / Conception	Préparation	20	Plans du projet	forfait	
+Etudes / Conception	Préparation	20	Métré & quantitatifs	forfait	
+Etudes / Conception	Préparation	20	Diagnostics obligatoires (amiante, plomb, élec)	forfait	
+Etudes / Conception	Préparation	20	Diagnostic énergétique (DPE)	forfait	
+Etudes / Conception	Préparation	20	Démarches en mairie (DP / permis)	forfait	
+Etudes / Conception	Préparation	20	Étude de structure	forfait	
+Etudes / Conception	Préparation	20	Dossier d'aides (MaPrimeRénov', CEE)	forfait	
+Etudes / Conception	Préparation	20	Étude assainissement individuel (SPANC)	forfait	
+Annexes de chantier	Préparation	10	Installation de chantier	forfait	
+Annexes de chantier	Préparation	10	Benne & évacuation des gravats	forfait	
+Annexes de chantier	Préparation	10	Sécurité du chantier	forfait	
+Annexes de chantier	Préparation	10	Nettoyage de fin de chantier	m2	S
+Location de matériel	Préparation	20	Marteau-piqueur / brise-béton	jour	
+Location de matériel	Préparation	20	Bétonnière	jour	
+Location de matériel	Préparation	20	Ponceuse (parquet / placo)	jour	
+Location de matériel	Préparation	20	Aspirateur de chantier	jour	
+Location de matériel	Préparation	20	Découpeur / scie (carrelage, béton)	jour	
+Location de matériel	Préparation	20	Compresseur	jour	
+Location de matériel	Préparation	20	Groupe électrogène	jour	
+Location de matériel	Préparation	20	Déshumidificateur / chauffage chantier	jour	
+Location de matériel	Préparation	20	Mini-pelle (1,5-2,5 t)	jour	
+Location de matériel	Préparation	20	Livraison mini-pelle (dépose + reprise)	forfait	
+Location de matériel	Préparation	20	Nacelle / plateforme élévatrice	jour	
+Location de matériel	Préparation	20	Camion benne / utilitaire	jour	
+Raccordements aux réseaux	Préparation	20	Raccordement eau potable	forfait	
+Raccordements aux réseaux	Préparation	20	Raccordement électrique (Enedis)	forfait	
+Raccordements aux réseaux	Préparation	20	Coffret / tableau de chantier provisoire	forfait	
+Raccordements aux réseaux	Préparation	20	Mise en service provisoire (Enedis)	forfait	
+Raccordements aux réseaux	Préparation	20	Raccordement au tout-à-l'égout	forfait	
+Raccordements aux réseaux	Préparation	20	Assainissement — fosse toutes eaux (5 EH)	forfait	
+Raccordements aux réseaux	Préparation	20	Assainissement — micro-station (5 EH)	forfait	
+Démolition	Gros œuvre & clos-couvert	10	Enlever un revêtement de sol	m2	S
+Démolition	Gros œuvre & clos-couvert	10	Enlever un revêtement mural	m2	
+Démolition	Gros œuvre & clos-couvert	10	Abattre une cloison	m2	
+Démolition	Gros œuvre & clos-couvert	10	Abattre un mur non porteur	m2	
+Démolition	Gros œuvre & clos-couvert	10	Enlever les anciennes portes / fenêtres	u	
+Démolition	Gros œuvre & clos-couvert	10	Dépose complète cuisine / salle de bain (curage)	forfait	
+Démolition	Gros œuvre & clos-couvert	10	Enlever les vieux réseaux	m2	S
+Démolition	Gros œuvre & clos-couvert	10	Creuser tranchées / saignées	ml	
+Démolition	Gros œuvre & clos-couvert	10	Casser une dalle / vieux sol	m2	
+Démolition	Gros œuvre & clos-couvert	10	Retrait amiante / plomb	m2	
+Maçonnerie	Gros œuvre & clos-couvert	10	Ouvrir un mur porteur — petite (porte/fenêtre)	u	
+Maçonnerie	Gros œuvre & clos-couvert	10	Ouvrir un mur porteur — grande (2,5 m, baie)	u	
+Maçonnerie	Gros œuvre & clos-couvert	10	Créer un appui de fenêtre	u	
+Maçonnerie	Gros œuvre & clos-couvert	10	Créer un seuil de porte	u	
+Maçonnerie	Gros œuvre & clos-couvert	10	Couler une dalle béton	m2	
+Maçonnerie	Gros œuvre & clos-couvert	10	Chape traditionnelle	m2	S
+Maçonnerie	Gros œuvre & clos-couvert	10	Chape liquide	m2	S
+Maçonnerie	Gros œuvre & clos-couvert	10	Semelle de fondation (50 × 25-30 cm)	ml	
+Maçonnerie	Gros œuvre & clos-couvert	10	Consolider fondations / reprise en sous-œuvre	ml	
+Maçonnerie	Gros œuvre & clos-couvert	10	Monter un mur en parpaings	m2	
+Maçonnerie	Gros œuvre & clos-couvert	10	Monter un mur en brique	m2	
+Maçonnerie	Gros œuvre & clos-couvert	10	Créer / enlever une cheminée en dur	forfait	
+Maçonnerie	Gros œuvre & clos-couvert	10	Escalier en béton	u	
+Maçonnerie	Gros œuvre & clos-couvert	10	Plancher béton (étage créé)	m2	
+Charpente, couverture & structure bois	Gros œuvre & clos-couvert	10	Toiture complète tuile (charpente + couverture)	m2	roof
+Charpente, couverture & structure bois	Gros œuvre & clos-couvert	10	Toiture complète ardoise (charpente + couverture)	m2	roof
+Charpente, couverture & structure bois	Gros œuvre & clos-couvert	10	Dépose complète de toiture (couverture + charpente)	m2	roof
+Charpente, couverture & structure bois	Gros œuvre & clos-couvert	10	Charpente traditionnelle (hors couverture)	m2	roof
+Charpente, couverture & structure bois	Gros œuvre & clos-couvert	10	Charpente en fermettes (hors couverture)	m2	roof
+Charpente, couverture & structure bois	Gros œuvre & clos-couvert	10	Couverture tuiles (sur support existant)	m2	roof
+Charpente, couverture & structure bois	Gros œuvre & clos-couvert	10	Couverture ardoise (sur support existant)	m2	roof
+Charpente, couverture & structure bois	Gros œuvre & clos-couvert	10	Réfection couverture tuiles (dépose + écran + liteaux)	m2	roof
+Charpente, couverture & structure bois	Gros œuvre & clos-couvert	10	Réfection couverture ardoise (dépose + écran + liteaux)	m2	roof
+Charpente, couverture & structure bois	Gros œuvre & clos-couvert	10	Couverture zinc / bac acier	m2	roof
+Charpente, couverture & structure bois	Gros œuvre & clos-couvert	10	Sous-toiture (écran + liteaux)	m2	roof
+Charpente, couverture & structure bois	Gros œuvre & clos-couvert	10	Traiter la charpente	m2	roof
+Charpente, couverture & structure bois	Gros œuvre & clos-couvert	10	Gouttières & descentes	ml	4 * Math.sqrt(SS) + 4 * ctx.hauteur * (ctx.niveaux || 1)
+Charpente, couverture & structure bois	Gros œuvre & clos-couvert	10	Raccords (faîtage, noues, solins)	ml	
+Charpente, couverture & structure bois	Gros œuvre & clos-couvert	10	Fenêtre de toit (Velux)	u	
+Charpente, couverture & structure bois	Gros œuvre & clos-couvert	10	Nettoyer / démousser la toiture	m2	roof
+Charpente, couverture & structure bois	Gros œuvre & clos-couvert	10	Toit plat (étanchéité)	m2	SS
+Charpente, couverture & structure bois	Gros œuvre & clos-couvert	10	Créer un plancher bois	m2	
+Charpente, couverture & structure bois	Gros œuvre & clos-couvert	10	Escalier en bois	u	
+Charpente, couverture & structure bois	Gros œuvre & clos-couvert	10	Garde-corps	ml	
+Charpente, couverture & structure bois	Gros œuvre & clos-couvert	10	Mur en ossature bois	m2	
+Façade	Gros œuvre & clos-couvert	10	Ravalement façade pierre (tout compris)	m2	facade
+Façade	Gros œuvre & clos-couvert	10	Nettoyer la façade	m2	facade
+Façade	Gros œuvre & clos-couvert	10	Refaire les joints / rejointoiement (pierre, briquette, moellon)	m2	facade
+Façade	Gros œuvre & clos-couvert	10	Enduit monocouche (machine)	m2	facade
+Façade	Gros œuvre & clos-couvert	10	Enduit à la chaux (maison ancienne)	m2	facade
+Façade	Gros œuvre & clos-couvert	10	Peindre la façade	m2	facade
+Façade	Gros œuvre & clos-couvert	10	Traitement imperméabilisant	m2	facade
+Façade	Gros œuvre & clos-couvert	10	Isolation par l'extérieur (ITE)	m2	facade
+Façade	Gros œuvre & clos-couvert	10	Bardage	m2	facade
+Façade	Gros œuvre & clos-couvert	10	Éléments décoratifs (corniches, bandeaux)	ml	
+Menuiseries exterieures	Gros œuvre & clos-couvert	10	Fenêtres	u	
+Menuiseries exterieures	Gros œuvre & clos-couvert	10	Portes-fenêtres	u	
+Menuiseries exterieures	Gros œuvre & clos-couvert	10	Baie vitrée	u	
+Menuiseries exterieures	Gros œuvre & clos-couvert	10	Porte d'entrée	u	
+Menuiseries exterieures	Gros œuvre & clos-couvert	10	Porte de garage	u	
+Menuiseries exterieures	Gros œuvre & clos-couvert	10	Volets roulants	u	
+Menuiseries exterieures	Gros œuvre & clos-couvert	10	Volets battants	u	
+Menuiseries exterieures	Gros œuvre & clos-couvert	10	Stores extérieurs / brise-soleil	u	
+Menuiseries exterieures	Gros œuvre & clos-couvert	10	Moustiquaires	u	
+Menuiseries exterieures	Gros œuvre & clos-couvert	10	Grilles de sécurité	u	
+Menuiseries exterieures	Gros œuvre & clos-couvert	10	Portail battant (4 m)	u	
+Menuiseries exterieures	Gros œuvre & clos-couvert	10	Portail coulissant (4 m)	u	
+Isolation	Second œuvre	10	Isolation des combles perdus (soufflage)	m2	SS
+Isolation	Second œuvre	10	Isolation des combles aménagés (rampants)	m2	SS
+Isolation	Second œuvre	10	Isolation des murs par l'intérieur	m2	facade
+Isolation	Second œuvre	10	Isolation du sol / plancher bas	m2	SS
+Isolation	Second œuvre	10	Isolation contre le bruit (phonique)	m2	
+Isolation	Second œuvre	10	Pose d'un pare-vapeur	m2	placo
+Cloisons / Platrerie	Second œuvre	10	Monter une cloison	m2	S * 0.35
+Cloisons / Platrerie	Second œuvre	10	Cloison pièce humide (hydrofuge)	m2	SDB * 12
+Cloisons / Platrerie	Second œuvre	10	Cloison anti-bruit (phonique)	m2	
+Cloisons / Platrerie	Second œuvre	10	Doubler un mur	m2	facade
+Cloisons / Platrerie	Second œuvre	10	Faux plafond	m2	S
+Cloisons / Platrerie	Second œuvre	10	Plafond décoratif (spots, retombées)	m2	
+Cloisons / Platrerie	Second œuvre	10	Cacher tuyaux / gaines (coffrage)	ml	
+Cloisons / Platrerie	Second œuvre	10	Trappe de visite	u	
+Cloisons / Platrerie	Second œuvre	10	Caisson à galandage (châssis + habillage)	u	
+Cloisons / Platrerie	Second œuvre	10	Finitions plâtrerie (bandes, enduit)	m2	
+Cloisons / Platrerie	Second œuvre	10	Ratissage léger	m2	placo
+Cloisons / Platrerie	Second œuvre	10	Ratissage lourd	m2	placo
+Electricite	Second œuvre	10	Rénovation électrique complète	m2	S
+Electricite	Second œuvre	10	Changer / mettre aux normes le tableau	forfait	
+Electricite	Second œuvre	10	Coffret de communication (VDI)	forfait	
+Electricite	Second œuvre	10	Mise à la terre	forfait	
+Electricite	Second œuvre	10	Consuel (attestation de conformité)	forfait	
+Electricite	Second œuvre	10	Ajouter / déplacer une prise	u	
+Electricite	Second œuvre	10	Ajouter / déplacer un interrupteur	u	
+Electricite	Second œuvre	10	Ajouter un point lumineux	u	
+Electricite	Second œuvre	10	Spots encastrés (LED)	u	Math.round(S / 2)
+Electricite	Second œuvre	10	Prise internet / TV (RJ45)	u	rj45
+Electricite	Second œuvre	10	Visiophone / interphone	forfait	
+Electricite	Second œuvre	10	Alarme / vidéosurveillance	forfait	
+Electricite	Second œuvre	10	Borne de recharge voiture	u	
+Electricite	Second œuvre	10	Maison connectée	forfait	
+Plomberie	Second œuvre	10	Refaire toute la plomberie (réseau, hors appareils)	m2	S
+Plomberie	Second œuvre	10	Créer / déplacer un point d'eau	u	
+Plomberie	Second œuvre	10	WC	u	ctx.wc
+Plomberie	Second œuvre	10	Meuble-vasque	u	SDB
+Plomberie	Second œuvre	10	Vasque	u	SDB
+Plomberie	Second œuvre	10	Plan de travail	ml	SDB * 1.2
+Plomberie	Second œuvre	10	Robinetterie lavabo	u	vasques
+Plomberie	Second œuvre	10	Miroir	u	SDB
+Plomberie	Second œuvre	10	Bac de douche	u	SDB
+Plomberie	Second œuvre	10	Colonne de douche	u	SDB
+Plomberie	Second œuvre	10	Douche à l'italienne	u	SDB
+Plomberie	Second œuvre	10	Paroi de douche	u	SDB
+Plomberie	Second œuvre	10	Cabine complète (parois + porte)	u	SDB
+Plomberie	Second œuvre	10	Installer une baignoire	u	
+Plomberie	Second œuvre	10	Robinetterie baignoire	u	SDB
+Plomberie	Second œuvre	10	Chauffe-eau électrique (cumulus)	u	
+Plomberie	Second œuvre	10	Chauffe-eau électrique instantané	u	
+Plomberie	Second œuvre	10	Chauffe-eau thermodynamique	u	
+Plomberie	Second œuvre	10	Installer un adoucisseur d'eau	u	
+Chauffage / VMC	Second œuvre	10	Pompe à chaleur (air/eau)	forfait	
+Chauffage / VMC	Second œuvre	10	Chaudière gaz à condensation	u	
+Chauffage / VMC	Second œuvre	10	Poêle à bois / granulés	u	
+Chauffage / VMC	Second œuvre	10	Climatisation réversible (split)	u	
+Chauffage / VMC	Second œuvre	10	Climatisation gainable (réversible)	forfait	
+Chauffage / VMC	Second œuvre	10	Radiateurs électriques	u	P
+Chauffage / VMC	Second œuvre	10	Plancher chauffant	m2	S
+Chauffage / VMC	Second œuvre	10	Sèche-serviette	u	SDB
+Chauffage / VMC	Second œuvre	10	Ventilation (VMC)	u	1
+Chauffage / VMC	Second œuvre	10	Thermostat / pilotage	u	
+Chauffage / VMC	Second œuvre	10	Désembouage du réseau de chauffage	forfait	
+Carrelage / Revetements	Second œuvre	10	Préparation du sol (ragréage)	m2	S
+Carrelage / Revetements	Second œuvre	10	Carrelage au sol	m2	suiteZ ? zSol : S * 0.6
+Carrelage / Revetements	Second œuvre	10	Sol stratifié (imitation bois)	m2	suiteZ ? zLiving : S * 0.4
+Carrelage / Revetements	Second œuvre	10	Parquet bois	m2	suiteZ ? zLiving : S * 0.4
+Carrelage / Revetements	Second œuvre	10	Ponçage + vitrification parquet	m2	suiteZ ? zLiving : S * 0.4
+Carrelage / Revetements	Second œuvre	10	Sol souple (PVC, lino)	m2	suiteZ ? zLiving : S * 0.4
+Carrelage / Revetements	Second œuvre	10	Moquette	m2	suiteZ ? zLiving : S * 0.4
+Carrelage / Revetements	Second œuvre	10	Béton ciré / résine	m2	suiteZ ? zLiving : S * 0.6
+Carrelage / Revetements	Second œuvre	10	Étanchéité sous carrelage (SPEC douche)	m2	specArea
+Carrelage / Revetements	Second œuvre	10	Faïence / carrelage mural	m2	SDB * 12
+Carrelage / Revetements	Second œuvre	10	Plinthes	ml	4 * Math.sqrt(S * P)
+Carrelage / Revetements	Second œuvre	10	Seuils / barres de seuil	u	P
+Peinture	Second œuvre	10	Retirer l'ancien papier peint	m2	
+Peinture	Second œuvre	10	Préparation des surfaces	m2	S * ctx.hauteur
+Peinture	Second œuvre	10	Sous-couche / primaire	m2	S * ctx.hauteur
+Peinture	Second œuvre	10	Peinture des murs	m2	S * ctx.hauteur
+Peinture	Second œuvre	10	Peinture des plafonds	m2	S
+Peinture	Second œuvre	10	Peinture des boiseries	u	P
+Peinture	Second œuvre	10	Lasure / vernis (boiseries)	m2	
+Peinture	Second œuvre	10	Peinture spéciale (anti-humidité)	m2	
+Peinture	Second œuvre	10	Pose de papier peint	m2	
+Peinture	Second œuvre	10	Enduit décoratif (béton ciré mural, stuc)	m2	
+Menuiseries interieures	Second œuvre	10	Porte intérieure battante	u	P
+Menuiseries interieures	Second œuvre	10	Porte intérieure âme pleine	u	
+Menuiseries interieures	Second œuvre	10	Porte intérieure coulissante	u	
+Menuiseries interieures	Second œuvre	10	Placards & rangements	ml	
+Menuiseries interieures	Second œuvre	10	Dressing sur mesure	ml	
+Menuiseries interieures	Second œuvre	10	Verrière intérieure	m2	
+Menuiseries interieures	Second œuvre	10	Meuble sur mesure	ml	
+Menuiseries interieures	Second œuvre	10	Habillages & moulures bois	ml	
+Cuisine	Équipements	10	Cuisine complète neuve — tout compris	ml	
+Cuisine	Équipements	10	Meubles de cuisine	ml	
+Cuisine	Équipements	10	Rafraîchir une cuisine (façades / plan)	ml	
+Cuisine	Équipements	10	Îlot central	u	
+Cuisine	Équipements	10	Plan de travail seul	ml	
+Cuisine	Équipements	10	Crédence seule	ml	
+Cuisine	Équipements	10	Évier + robinetterie	u	
+Cuisine	Équipements	10	Hotte	u	
+Cuisine	Équipements	10	Raccordements (eau, élec, évac)	forfait	
