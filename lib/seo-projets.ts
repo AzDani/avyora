@@ -852,8 +852,39 @@ export const projetsMatrix = (): Projet[] => PROJETS.filter((p) => MATRIX_SLUGS.
  * le sitemap, generateStaticParams et les liens internes doivent tous partir d'ici. Quand ces
  * listes divergeaient (40 générées, 24 liées), 160 pages se retrouvaient sans aucun lien entrant.
  */
+/**
+ * Villes de la matrice déclarées au sitemap ET indexables. Les autres restent générées et liées,
+ * mais portent `noindex, follow`.
+ *
+ * POURQUOI. Mesuré sur le HTML généré : les 400 pages de matrice ne produisent que 30 réponses
+ * distinctes — 10 projets × 3 zones de main-d'œuvre, la seule variable locale du moteur. Deux
+ * villes de la même zone sont identiques à 96,7 % (Lille vs Nantes : sur 748 mots, seuls le nom de
+ * la ville, le département et la région changent). C'est la définition d'une doorway page, et le
+ * cahier des charges l'interdit explicitement.
+ *
+ * Les enrichir demanderait une donnée locale que le produit n'a pas (densité d'artisans, règles
+ * d'urbanisme, prix de marché par ville) : l'inventer est exclu. D'où `noindex` plutôt que du
+ * contenu fabriqué.
+ *
+ * SOURCE UNIQUE : `app/sitemap.ts` et le `robots` de `[projet]/[ville]/page.tsx` lisent tous deux
+ * cette constante. Séparées, les deux listes divergeraient et le sitemap déclarerait des pages
+ * noindex — le pire des deux mondes.
+ *
+ * ⚠️ CRITÈRE DE RÉOUVERTURE — il doit être OBSERVABLE SOUS noindex. Une page noindex ne produit
+ * ni impression ni clic : « attendre que Search Console montre que la longue traîne existe » est
+ * impossible à satisfaire par construction, puisque le noindex empêche précisément la mesure qui
+ * le lèverait. Le critère est donc porté par les pages RESTÉES indexables : si les pages matrice
+ * encore déclarées au sitemap prennent des impressions régulières sur des requêtes contenant un
+ * nom de ville, alors la demande locale existe et on peut élargir. Sinon, elle n'existe pas.
+ */
+export const MATRIX_SITEMAP_CITIES = 8;
+
 export const MATRIX_CITY_COUNT = 40;
 export const MATRIX_VILLES = VILLES_SEO.slice(0, MATRIX_CITY_COUNT);
+
+/** Une page « prix [travaux] à [ville] » est-elle indexable ? Règle écrite UNE fois. */
+export const matriceIndexable = (villeSlug: string): boolean =>
+  MATRIX_VILLES.slice(0, MATRIX_SITEMAP_CITIES).some((v) => v.slug === villeSlug);
 
 /**
  * Liens d'un projet, rendus RÉCIPROQUES automatiquement : aux liens déclarés on ajoute les projets

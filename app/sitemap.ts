@@ -3,7 +3,7 @@ import { VILLES_SEO } from "@/lib/villes";
 import { PRIX_MAJ } from "@/lib/prix-maj";
 import { POSTES_PAGES } from "@/lib/seo-postes";
 import { GUIDES } from "@/lib/guides";
-import { PROJETS, projetsMatrix, MATRIX_VILLES } from "@/lib/seo-projets";
+import { PROJETS, projetsMatrix, MATRIX_VILLES, matriceIndexable } from "@/lib/seo-projets";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
@@ -31,25 +31,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
   /**
-   * Matrice « prix [travaux] à [ville] » : 400 pages, restreintes ici aux 8 plus grandes villes.
+   * Matrice « prix [travaux] à [ville] » : seules les villes indexables y figurent.
    *
-   * POURQUOI. C'est un choix de PRIORITÉ, pas une sanction : sur un domaine neuf le budget
-   * d'exploration est minuscule, et le sitemap sert à dire à Google ce qu'on veut lui faire voir
-   * EN PREMIER. Déclarer 400 pages de matrice noie les ~110 pages qui portent le contenu propre.
-   *
-   * ⚠️ NE PAS relire ce choix dans les chiffres d'indexation du 16/09/2026 (63 indexées, 474 en
-   * « Détectée, actuellement non indexée ») : la propriété n'avait alors que DIX JOURS de données
-   * (05→14/09). À cet âge, « détectée non indexée » est une file d'attente d'exploration, pas un
-   * rejet de Google. Aucune conclusion de qualité ne peut en être tirée.
-   *
-   * Les pages restent générées, indexables et liées en interne — seule leur déclaration au
-   * sitemap est restreinte. À rouvrir (MATRIX_SITEMAP_CITIES = MATRIX_CITY_COUNT) quand le taux
-   * d'indexation des pages déclarées dépassera durablement ~80 % sur une fenêtre d'au moins
-   * quelques semaines de données réelles.
+   * Le MOTIF et le CRITÈRE DE RÉOUVERTURE vivent dans `lib/seo-projets.ts`, avec la règle
+   * elle-même (`matriceIndexable`). Ne pas les redupliquer ici : quand ce fichier portait sa
+   * propre copie du seuil, les deux ont divergé — le sitemap a déclaré des pages devenues
+   * `noindex`, c'est-à-dire le pire des deux mondes.
    */
-  const MATRIX_SITEMAP_CITIES = 8;
   const travauxVilles: MetadataRoute.Sitemap = projetsMatrix().flatMap((p) =>
-    MATRIX_VILLES.slice(0, MATRIX_SITEMAP_CITIES).map((v) => ({
+    MATRIX_VILLES.filter((v) => matriceIndexable(v.slug)).map((v) => ({
       url: `${siteUrl}/prix-travaux/${p.slug}/${v.slug}`,
       lastModified: PRIX_MAJ,
       changeFrequency: "monthly" as const,

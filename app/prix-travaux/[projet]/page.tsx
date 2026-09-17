@@ -2,7 +2,7 @@ import { Fragment } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { PROJETS, projetBySlug, estimProjet, MATRIX_SLUGS, MATRIX_VILLES, liensDe, titreSansPrefixe, panierVariante } from "@/lib/seo-projets";
+import { PROJETS, projetBySlug, estimProjet, MATRIX_SLUGS, MATRIX_VILLES, liensDe, titreSansPrefixe, panierVariante, matriceIndexable } from "@/lib/seo-projets";
 import { PRIX_MAJ, PRIX_MAJ_FR } from "@/lib/prix-maj";
 import { VILLES_SEO } from "@/lib/villes";
 import { og } from "@/lib/seo-og";
@@ -512,11 +512,24 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
       {MATRIX_SLUGS.has(p.slug) && (
         <>
           <h2>Prix {p.titre} ville par ville</h2>
-          <p>Le prix exact dépend du coût de la main-d&apos;œuvre locale. Consulte la page dédiée à ta ville :</p>
+          <p>
+            Le prix dépend de la zone de main-d&apos;œuvre, pas de la ville exacte : deux villes de
+            la même zone affichent le même budget. Voici une ville par zone, puis le prix de la
+            rénovation dans les autres.
+          </p>
+          {/* On ne lie vers la matrice que les villes INDEXABLES : envoyer un lien vers une page
+              noindex depuis une page déclarée au sitemap dépense du crawl pour rien. Les autres
+              villes pointent vers leur page /prix-renovation, qui est indexable. */}
           <div className="chips">
-            {MATRIX_VILLES.map((x) => (
+            {MATRIX_VILLES.filter((x) => matriceIndexable(x.slug)).map((x) => (
               <Link key={x.slug} href={`/prix-travaux/${p.slug}/${x.slug}`}>{x.nom}</Link>
             ))}
+          </div>
+          <div className="chips">
+            {MATRIX_VILLES.filter((x) => !matriceIndexable(x.slug)).slice(0, 14).map((x) => (
+              <Link key={x.slug} href={`/prix-renovation/${x.slug}`}>{x.nom}</Link>
+            ))}
+            <Link href="/prix-renovation">Toutes les villes →</Link>
           </div>
         </>
       )}

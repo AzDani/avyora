@@ -5,7 +5,7 @@ import { VILLES_SEO, villeBySlug, villesProches, nbMemeRegion } from "@/lib/vill
 import { prixVille, regionCoef } from "@/lib/seo-prix";
 import { deptInfo } from "@/lib/geo";
 import { PRIX_MAJ_FR } from "@/lib/prix-maj";
-import { MATRIX_SLUGS, MATRIX_VILLES } from "@/lib/seo-projets";
+import { MATRIX_SLUGS, MATRIX_VILLES, matriceIndexable } from "@/lib/seo-projets";
 import { CtaEstimation } from "@/components/CtaEstimation";
 
 export const dynamic = "force-static";
@@ -86,11 +86,13 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
   const dep = deptInfo(v.cp);
   const localisation = dep.nom ? `${v.nom} (${dep.num} · ${dep.nom})` : v.nom;
   const moPct = Math.round((reg.mo - 1) * 100);
-  // Jonction du silo géographique vers la matrice : si ce travail a une page dédiée à CETTE ville,
-  // on y envoie plutôt que vers la page nationale. C'est l'arête qui désorpheline la matrice.
-  const villeDansMatrice = MATRIX_VILLES.some((x) => x.slug === v.slug);
+  // Jonction du silo géographique vers la matrice — mais UNIQUEMENT vers une page indexable.
+  // L'argument d'origine (« ça désorpheline la matrice ») est mort depuis que 320 de ces pages
+  // sont en noindex : y envoyer un lien depuis une page indexable et déclarée au sitemap dépense
+  // du budget d'exploration pour une cible que Google doit jeter. On retombe alors sur la page
+  // nationale du travail, qui est indexable et contient la même information.
   const lienTravaux = (slug: string) =>
-    villeDansMatrice && MATRIX_SLUGS.has(slug) ? `/prix-travaux/${slug}/${v.slug}` : `/prix-travaux/${slug}`;
+    matriceIndexable(v.slug) && MATRIX_SLUGS.has(slug) ? `/prix-travaux/${slug}/${v.slug}` : `/prix-travaux/${slug}`;
   const complete = grille.find((g) => g.v === "complete")!;
   const partielle = grille.find((g) => g.v === "partielle")!;
   const lourde = grille.find((g) => g.v === "lourde")!;

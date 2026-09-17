@@ -2,7 +2,7 @@ import { Fragment } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { projetBySlug, projetsMatrix, estimProjet, MATRIX_SLUGS, MATRIX_VILLES, liensDe, titreSansPrefixe } from "@/lib/seo-projets";
+import { projetBySlug, projetsMatrix, estimProjet, MATRIX_SLUGS, MATRIX_VILLES, liensDe, titreSansPrefixe, matriceIndexable } from "@/lib/seo-projets";
 import { PRIX_MAJ, PRIX_MAJ_FR } from "@/lib/prix-maj";
 import { villeBySlug } from "@/lib/villes";
 import { deptInfo } from "@/lib/geo";
@@ -15,9 +15,6 @@ import type { PieceKey } from "@/lib/estimateur";
 export const dynamic = "force-static";
 // Ensemble fini : hors matrice = 404. Les couples retirés sont redirigés en 308 par next.config.ts.
 export const dynamicParams = false;
-
-/** Nombre de villes déclinées par projet (les plus gros volumes de recherche). */
-
 
 export function generateStaticParams() {
   const out: { projet: string; ville: string }[] = [];
@@ -63,6 +60,10 @@ export async function generateMetadata({ params }: { params: Promise<{ projet: s
       `Combien coûte ${p.nomQuestion ?? p.nom} à ${v.nom} ? Budget ${euro(f.lo)} à ${euro(f.hi)}, ajusté à la main-d'œuvre locale.`,
     ),
     alternates: { canonical: `/prix-travaux/${p.slug}/${v.slug}` },
+    // `noindex, follow` hors des villes déclarées au sitemap : ces pages sont identiques à 96,7 %
+    // à celles de la même zone de main-d'œuvre (cf. matriceIndexable). `follow` est délibéré —
+    // on veut que Google continue de suivre leurs liens vers le hub et la page nationale.
+    ...(matriceIndexable(v.slug) ? {} : { robots: { index: false, follow: true } }),
     openGraph: og({ title: `Prix ${sujet} à ${v.nom}`, description: `Budget détaillé poste par poste à ${v.nom}.`, path: `/prix-travaux/${p.slug}/${v.slug}` }),
   };
 }
@@ -192,7 +193,10 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
     ],
   };
 
-  const autresVilles = MATRIX_VILLES.filter((x) => x.slug !== v.slug).slice(0, 14);
+  // Villes voisines : on ne propose que des pages INDEXABLES. Lier une page déclarée au sitemap
+  // vers ses jumelles en noindex dépensait du budget d'exploration pour des cibles à jeter
+  // (mesuré : 560 arêtes indexable → noindex, toutes émises depuis ces 80 pages).
+  const autresVilles = MATRIX_VILLES.filter((x) => x.slug !== v.slug && matriceIndexable(x.slug));
 
   return (
     <div className="av-seo">
