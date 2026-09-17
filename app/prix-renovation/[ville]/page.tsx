@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { VILLES_SEO, villeBySlug, villesProches, nbMemeRegion } from "@/lib/villes";
+import { VILLES_SEO, villeBySlug, villesProches, nbMemeRegion, villeIndexable, VILLES_INDEXABLES } from "@/lib/villes";
 import { prixVille, regionCoef } from "@/lib/seo-prix";
 import { deptInfo } from "@/lib/geo";
 import { PRIX_MAJ_FR } from "@/lib/prix-maj";
@@ -35,6 +35,10 @@ export async function generateMetadata({ params }: { params: Promise<{ ville: st
     // tronquait la seule information locale — le prix au m². On garde le chiffre, on coupe le slogan.
     description: `Combien coûte une rénovation à ${v.nom}${zone} ? Prix au m² par ampleur de travaux, à partir de ${euro(complete)}/m² en réno complète.`,
     alternates: { canonical: `/prix-renovation/${v.slug}` },
+    // `noindex, follow` hors des villes retenues : 74 pages pour 6 jeux de prix, deux villes d'un
+    // même jeu étant identiques à 91,7 % (cf. villeIndexable). `follow` est délibéré — ces pages
+    // doivent continuer à transmettre leurs liens vers le hub et les pages travaux.
+    ...(villeIndexable(v.slug) ? {} : { robots: { index: false, follow: true } }),
   };
 }
 
@@ -80,7 +84,11 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
   const grille = prixVille(v.cp);
   // Maillage : région d'abord, puis rotation déterministe. Sans la rotation, chaque page listait
   // les 16 mêmes métropoles et 34 villes sur 74 n'avaient qu'un seul lien entrant.
-  const proches = villesProches(v.slug);
+  // On ne lie que vers des pages INDEXABLES : envoyer un lien vers une page noindex depuis une
+  // page déclarée au sitemap dépense du budget d'exploration pour une cible à jeter. Les villes
+  // retenues étant une par jeu de prix, le bloc devient une comparaison entre zones — ce qui est
+  // plus honnête que « villes proches » quand les prix d'une même zone sont identiques.
+  const proches = VILLES_INDEXABLES.filter((x) => x.slug !== v.slug);
   const nbRegion = nbMemeRegion(v.slug);
   const reg = regionCoef(v.cp);
   const dep = deptInfo(v.cp);
@@ -257,11 +265,9 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
         <Link href="/prix-travaux" className="font-medium text-brand-600 hover:underline">tous les travaux</Link>.
       </p>
 
-      <h2>{nbRegion > 0 ? `Prix de la rénovation autour de ${v.nom}` : "Prix de la rénovation ailleurs en France"}</h2>
+      <h2>Comparer avec d&apos;autres zones</h2>
       <p>
-        {nbRegion > 0
-          ? `Les villes de la même région partagent un marché de la main-d'œuvre proche : leurs prix se comparent mieux à ${v.nom} que ceux d'une métropole à l'autre bout du pays.`
-          : `Quelques repères ailleurs en France, pour situer ${v.nom} dans l'échelle des prix.`}
+        {`Le coût de la main-d'œuvre se joue par zone, pas par ville : deux villes d'une même zone affichent le même budget. Voici une ville par zone, pour situer ${v.nom} dans l'échelle des prix.`}
       </p>
       <div className="villes">
         {proches.map((x) => (

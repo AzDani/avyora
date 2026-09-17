@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { VILLES_SEO } from "@/lib/villes";
+import { VILLES_SEO, villeIndexable } from "@/lib/villes";
 import { PRIX_MAJ } from "@/lib/prix-maj";
 import { POSTES_PAGES } from "@/lib/seo-postes";
 import { GUIDES } from "@/lib/guides";
@@ -12,7 +12,7 @@ const siteUrl =
 /** Sitemap : uniquement les pages publiques (les pages privées sont derrière l'authentification). */
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
-  const villes: MetadataRoute.Sitemap = VILLES_SEO.map((v) => ({
+  const villes: MetadataRoute.Sitemap = VILLES_SEO.filter((v) => villeIndexable(v.slug)).map((v) => ({
     url: `${siteUrl}/prix-renovation/${v.slug}`,
     lastModified: PRIX_MAJ,
     changeFrequency: "monthly",

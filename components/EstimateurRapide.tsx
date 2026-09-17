@@ -231,6 +231,21 @@ export default function EstimateurRapide({
   const [ampleur, setAmpleur] = useState<Ampleur>(edit?.ampleur ?? "complete");
   const [finition, setFinition] = useState<Finition>(edit?.finition ?? "standard");
   const [qui, setQui] = useState<QuiRealise>(edit?.qui ?? "pros");
+  /**
+   * L'utilisateur a-t-il RÉPONDU quelque chose ? Tant que non, l'estimateur n'affiche aucun chiffre
+   * et ne déclenche aucune conversion.
+   *
+   * ⚠️ POURQUOI CE DRAPEAU EXISTE. Le formulaire s'ouvrait sur des valeurs par défaut (Maison,
+   * 100 m², réno complète) qui rendaient l'estimation « valide » AVANT toute action. Deux
+   * conséquences : le visiteur voyait le budget d'une maison que personne n'avait décrite, et la
+   * conversion Google Ads « Estimation terminée » partait 1,8 s après le simple chargement de la
+   * page. Elle mesurait donc « n'a pas fermé l'onglet », pas une intention — et une stratégie
+   * d'enchères branchée dessus apprenait à acheter n'importe quel clic.
+   *
+   * Il n'est PAS mis par `initial` (contexte venu d'une page SEO) : cliquer un lien n'est pas
+   * décrire son projet.
+   */
+  const [demarre, setDemarre] = useState(false);
   const [saving, setSaving] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
 
@@ -257,7 +272,9 @@ export default function EstimateurRapide({
 
   const preset = useMemo(() => buildSel(), [mode, type, surface, cp, ampleur, finition, qui, pieces]);
   const tot = useMemo(() => buildDevis(CATALOG, preset.ctx, preset.sel).totaux, [preset]);
-  const valid = mode === "pieces" ? pieces.length > 0 && totalSurface > 0 : surface > 0;
+  // `demarre` d'abord : sans lui, les valeurs par défaut rendaient l'estimation valide au
+  // chargement, donc affichaient un prix que personne n'avait demandé.
+  const valid = demarre && (mode === "pieces" ? pieces.length > 0 && totalSurface > 0 : surface > 0);
   const lo = Math.round((tot.ttc * 0.85) / 100) * 100;
   const hi = Math.round((tot.ttc * 1.15) / 100) * 100;
   const m2 = valid && totalSurface > 0 ? Math.round(tot.ttc / totalSurface) : 0;
@@ -268,14 +285,17 @@ export default function EstimateurRapide({
   // Affiner / Enregistrer restent des signaux d'intention plus profonds (plus bas), déjà dédupliqués côté Google.
   const convFired = useRef(false);
   useEffect(() => {
-    if (convFired.current || !valid || !(tot.ttc > 0)) return;
+    // Le code postal est exigé en plus : c'est lui qui rend l'estimation propre au visiteur
+    // (ajustement régional) et il signale une intention réelle. Sans lui, on compterait encore
+    // une personne qui a juste cliqué deux cartes.
+    if (convFired.current || !valid || !(tot.ttc > 0) || !/^\d{5}$/.test(cp)) return;
     const id = window.setTimeout(() => {
       convFired.current = true;
       suivre("estimation_terminee", { action: "affichee", type: mode === "pieces" ? "pieces" : type, ampleur, src: initial?.src ?? "direct" });
       conversionEstimation();
     }, 1800);
     return () => window.clearTimeout(id);
-  }, [valid, tot.ttc, mode, type, ampleur]);
+  }, [valid, tot.ttc, mode, type, ampleur, cp]);
   const ampName = ampCard(ampleur).label.toLowerCase();
 
   const m2ByAmp = useMemo(() => {
@@ -370,7 +390,7 @@ export default function EstimateurRapide({
           <div className="glbl">{t.bienEntier}</div>
           <div className="seg" style={{ marginBottom: 14 }}>
             {(["Maison", "Appartement"] as TypeBien[]).map((tb) => (
-              <button key={tb} className={mode === "bien" && type === tb ? "on" : ""} onClick={() => { setMode("bien"); setType(tb); }}>{tb === "Maison" ? t.maison : t.appart}</button>
+              <button key={tb} className={demarre && mode === "bien" && type === tb ? "on" : ""} onClick={() => { setDemarre(true); setMode("bien"); setType(tb); }}>{tb === "Maison" ? t.maison : t.appart}</button>
             ))}
           </div>
 
@@ -380,13 +400,13 @@ export default function EstimateurRapide({
               const n = countByRoom(r.key);
               return (
                 <div key={r.key} className={"rcard" + (mode === "pieces" && n > 0 ? " on" : "")}>
-                  <button type="button" className="rname" onClick={() => ajouterPiece(r.key)}>
+                  <button type="button" className="rname" onClick={() => { setDemarre(true); ajouterPiece(r.key); }}>
                     <span className="rem">{r.emoji}</span> {roomName(r.key)}
                   </button>
                   <span className="rstep">
-                    <button type="button" onClick={() => retirerUne(r.key)} disabled={n === 0} aria-label={`${t.retirerUne} ${roomName(r.key)}`}>−</button>
+                    <button type="button" onClick={() => { setDemarre(true); retirerUne(r.key); }} disabled={n === 0} aria-label={`${t.retirerUne} ${roomName(r.key)}`}>−</button>
                     <span className="rn">{n}</span>
-                    <button type="button" onClick={() => ajouterPiece(r.key)} aria-label={`${t.ajouterUne} ${roomName(r.key)}`}>+</button>
+                    <button type="button" onClick={() => { setDemarre(true); ajouterPiece(r.key); }} aria-label={`${t.ajouterUne} ${roomName(r.key)}`}>+</button>
                   </span>
                 </div>
               );
@@ -406,8 +426,8 @@ export default function EstimateurRapide({
                   return (
                     <div className="prow" key={i}>
                       <span className="pname">{meta.emoji} {roomName(r.room)}{ord}</span>
-                      <Stepper compact value={r.surface} min={2} unit="m²" onChange={(n) => setPieceSurf(i, n)} />
-                      <button className="prm" onClick={() => retirerPiece(i)} aria-label={t.supprimer}>✕</button>
+                      <Stepper compact value={r.surface} min={2} unit="m²" onChange={(n) => { setDemarre(true); setPieceSurf(i, n); }} />
+                      <button className="prm" onClick={() => { setDemarre(true); retirerPiece(i); }} aria-label={t.supprimer}>✕</button>
                     </div>
                   );
                 })}
@@ -420,10 +440,10 @@ export default function EstimateurRapide({
             {mode === "bien" && (
               <div className="fld">
                 <label>{t.surfaceLabel}</label>
-                <Stepper field value={surface} min={8} unit="m²" onChange={setSurface} />
+                <Stepper field value={surface} min={8} unit="m²" onChange={(n) => { setDemarre(true); setSurface(n); }} />
               </div>
             )}
-            <div className="fld" style={mode === "pieces" ? { gridColumn: "1 / -1" } : undefined}><label>{t.cpLabel}</label><input inputMode="numeric" maxLength={5} placeholder={t.cpPlaceholder} value={cp} onChange={(e) => setCp(e.target.value.replace(/\D/g, "").slice(0, 5))} /></div>
+            <div className="fld" style={mode === "pieces" ? { gridColumn: "1 / -1" } : undefined}><label>{t.cpLabel}</label><input inputMode="numeric" maxLength={5} placeholder={t.cpPlaceholder} value={cp} onChange={(e) => { setDemarre(true); setCp(e.target.value.replace(/\D/g, "").slice(0, 5)); }} /></div>
           </div>
         </div>
 
@@ -433,7 +453,7 @@ export default function EstimateurRapide({
             {AMPLEURS.map((a, i) => {
               const al = ampCard(a.v);
               return (
-                <button key={a.v} className={"amp" + (ampleur === a.v ? " on" : "")} onClick={() => setAmpleur(a.v)}>
+                <button key={a.v} className={"amp" + (ampleur === a.v ? " on" : "")} onClick={() => { setDemarre(true); setAmpleur(a.v); }}>
                   <span className="head">
                     <span className="gauge">{[0, 1, 2, 3].map((k) => <i key={k} className={k <= i ? "f" : ""} />)}</span>
                     <span className="chk" />
@@ -453,7 +473,7 @@ export default function EstimateurRapide({
             {FINITIONS.map((f) => {
               const fi = t.finitions[f.v];
               return (
-              <button key={f.v} className={"fin" + (finition === f.v ? " on" : "")} onClick={() => setFinition(f.v)}>
+              <button key={f.v} className={"fin" + (finition === f.v ? " on" : "")} onClick={() => { setDemarre(true); setFinition(f.v); }}>
                 <span className="head">
                   <span className="g3">{[0, 1, 2].map((k) => <i key={k} className={k < f.lvl ? "f" : ""} />)}</span>
                   <span className="chk" />
@@ -477,7 +497,7 @@ export default function EstimateurRapide({
               const base = m2ByQui.pros || 0;
               const pct = base > 0 && price > 0 ? Math.round((1 - price / base) * 100) : 0;
               return (
-                <button key={q.v} className={"qcard" + (qui === q.v ? " on" : "")} onClick={() => setQui(q.v)}>
+                <button key={q.v} className={"qcard" + (qui === q.v ? " on" : "")} onClick={() => { setDemarre(true); setQui(q.v); }}>
                   <span className="head">
                     <span className="g3">{[0, 1, 2].map((k) => <i key={k} className={k < q.lvl ? "f" : ""} />)}</span>
                     <span className="chk" />
@@ -516,7 +536,7 @@ export default function EstimateurRapide({
               <div>
                 <div className="lbl">{t.liveLabel}</div>
                 <div className="big">{valid ? <><CountUp value={lo} nf={nf} /> €<span style={{ opacity: .55 }}> – </span><CountUp value={hi} nf={nf} /> €</> : "—"}</div>
-                <div className="sub">{valid ? <>≈ <CountUp value={m2} nf={nf} /> €/m² · {ampName} · ±15 %{regLabel ? <> · {regLabel}</> : ""}</> : (mode === "pieces" ? "Ajoute une pièce" : t.renseigneSurface)}</div>
+                <div className="sub">{valid ? <>≈ <CountUp value={m2} nf={nf} /> €/m² · {ampName} · ±15 %{regLabel ? <> · {regLabel}</> : ""}</> : !demarre ? t.step1q : (mode === "pieces" ? "Ajoute une pièce" : t.renseigneSurface)}</div>
               </div>
               <div className="btns">
                 <button className="ghost" onClick={affiner}>{t.affiner}</button>
