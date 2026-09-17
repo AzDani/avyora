@@ -284,18 +284,25 @@ export default function EstimateurRapide({
   // (dédupliquée par session dans conversionEstimation) + l'event Vercel. Une seule fois par visite (convFired).
   // Affiner / Enregistrer restent des signaux d'intention plus profonds (plus bas), déjà dédupliqués côté Google.
   const convFired = useRef(false);
+  /**
+   * Ce qui fait une estimation RÉELLE : une saisie valide, un total non nul, et un code postal —
+   * c'est lui qui rend le chiffre propre au visiteur (ajustement régional) et qui signale une
+   * intention. Sans lui, on compterait une personne qui a juste cliqué deux cartes.
+   *
+   * Une seule définition, désormais partagée. Le déclenchement automatique l'appliquait ;
+   * `affiner()` ne l'appliquait PAS et envoyait la conversion Google Ads sans rien vérifier.
+   * Deux portes vers le même compteur, dont une sans serrure.
+   */
+  const estimationReelle = valid && tot.ttc > 0 && /^\d{5}$/.test(cp);
   useEffect(() => {
-    // Le code postal est exigé en plus : c'est lui qui rend l'estimation propre au visiteur
-    // (ajustement régional) et il signale une intention réelle. Sans lui, on compterait encore
-    // une personne qui a juste cliqué deux cartes.
-    if (convFired.current || !valid || !(tot.ttc > 0) || !/^\d{5}$/.test(cp)) return;
+    if (convFired.current || !estimationReelle) return;
     const id = window.setTimeout(() => {
       convFired.current = true;
       suivre("estimation_terminee", { action: "affichee", type: mode === "pieces" ? "pieces" : type, ampleur, src: initial?.src ?? "direct" });
       conversionEstimation();
     }, 1800);
     return () => window.clearTimeout(id);
-  }, [valid, tot.ttc, mode, type, ampleur, cp]);
+  }, [estimationReelle, mode, type, ampleur]);
   const ampName = ampCard(ampleur).label.toLowerCase();
 
   const m2ByAmp = useMemo(() => {
@@ -345,7 +352,17 @@ export default function EstimateurRapide({
   function saveDraft() {
     try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ v: "estimateur", mode: "rapide", ampleur, qui, ctx: preset.ctx, sel: preset.sel, open: {}, codePostal: cp })); } catch { /* noop */ }
   }
-  function affiner() { suivre("estimation_terminee", { action: "affiner", type: mode === "pieces" ? "pieces" : type, ampleur, src: initial?.src ?? "direct" }); conversionEstimation(); saveDraft(); try { sessionStorage.setItem("avyora-affiner", "1"); } catch { /* noop */ } router.push("/projets/nouveau/detaille"); }
+  function affiner() {
+    // Le clic mène toujours à l'estimateur détaillé — mais on ne déclare une estimation terminée,
+    // et surtout pas une conversion payante, que s'il y en a réellement eu une.
+    if (estimationReelle) {
+      suivre("estimation_terminee", { action: "affiner", type: mode === "pieces" ? "pieces" : type, ampleur, src: initial?.src ?? "direct" });
+      conversionEstimation();
+    }
+    saveDraft();
+    try { sessionStorage.setItem("avyora-affiner", "1"); } catch { /* noop */ }
+    router.push("/projets/nouveau/detaille");
+  }
 
   /** Libellé du projet (ex. « Rénovation — Chambre ×2 + Salle de bain » ou « Rénovation — Maison 100 m² »). */
   function nomProjet(): string {
