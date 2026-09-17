@@ -334,6 +334,7 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
       )}
 
       <CtaEstimation
+        src="projet"
         titre={`Estime ${p.nom} en 3 minutes`}
         piece={pieceEstimateur}
         surface={pieceEstimateur ? p.surface : undefined}

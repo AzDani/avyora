@@ -3,6 +3,7 @@ import EstimateurRapide from "@/components/EstimateurRapide";
 import { getT } from "@/lib/i18n/server";
 import { getUser, estPro } from "@/lib/auth";
 import type { PieceKey } from "@/lib/estimateur";
+import { sourceSeoValide } from "@/lib/seo-source";
 
 export const metadata = {
   title: "Estimation travaux gratuite — budget rénovation en 3 minutes",
@@ -34,6 +35,8 @@ function contexte(sp: Record<string, string | string[] | undefined>) {
     cp: typeof cpBrut === "string" && /^(0[1-9]|[1-8]\d|9[0-8])\d{3}$/.test(cpBrut) ? cpBrut : undefined,
     piece: PIECES_OK.has(pieceBrut as PieceKey) ? (pieceBrut as PieceKey) : undefined,
     surface: Number.isFinite(surfBrut) && surfBrut >= 1 && surfBrut <= 500 ? surfBrut : undefined,
+    // Famille de page d'origine : liste fermée, pour qu'un paramètre bricolé ne pollue pas les stats.
+    src: sourceSeoValide(lire("src")),
   };
 }
 

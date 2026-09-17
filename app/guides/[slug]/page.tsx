@@ -84,7 +84,7 @@ const CSS = `
 
 /** Conserve la signature historique des guides, délègue au CTA partagé. */
 function Cta({ label }: { label: string }) {
-  return <CtaEstimation titre={label} />;
+  return <CtaEstimation titre={label} src="guide" />;
 }
 
 function Faq({ items }: { items: { q: string; a: string }[] }) {

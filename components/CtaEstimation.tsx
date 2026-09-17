@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { PieceKey } from "@/lib/estimateur";
+import type { SourceSeo } from "@/lib/seo-source";
 
 /**
  * Appel à l'action des pages SEO, SOURCE UNIQUE (le même bloc était recopié dans 6 gabarits).
@@ -25,6 +26,7 @@ export function CtaEstimation({
   surface,
   libelle,
   sousTitre,
+  src,
 }: {
   titre: string;
   /** Code postal de la ville de la page : l'estimation sort ajustée à la main-d'œuvre locale. */
@@ -34,11 +36,19 @@ export function CtaEstimation({
   surface?: number;
   libelle?: string;
   sousTitre?: string;
+  /**
+   * Famille de page d'origine, reportée sur les événements du tunnel. C'est ce qui permet de
+   * répondre à « quelles pages SEO convertissent ? » — sans elle, on voit des estimations
+   * terminées sans jamais savoir d'où venaient les visiteurs.
+   * Valeur libre ici, mais VALIDÉE contre une liste fermée côté page `rapide`.
+   */
+  src?: SourceSeo;
 }) {
   const q = new URLSearchParams();
   if (cp) q.set("cp", cp);
   if (piece) q.set("piece", piece);
   if (surface && surface > 0) q.set("surface", String(surface));
+  if (src) q.set("src", src);
   const qs = q.toString();
 
   return (

@@ -26,6 +26,7 @@ import { suivre } from "@/lib/track";
 import { conversionEstimation } from "@/lib/gtag";
 import { useT, useLocale } from "@/components/i18n/LangProvider";
 import Stepper from "@/components/Stepper";
+import type { SourceSeo } from "@/lib/seo-source";
 
 type Mode = "bien" | "pieces";
 // Pièces disponibles (mode « une ou plusieurs pièces ») : emoji, libellé, surface par défaut.
@@ -204,7 +205,7 @@ export type RapideEdit = { projectId: string; type?: TypeBien; surface?: number;
  * Contexte d'amorçage venu d'une page SEO (déjà validé côté serveur, cf. la page `rapide`).
  * `edit` reste réservé à la reprise d'un projet EXISTANT — les deux ne se mélangent pas.
  */
-export type RapideInitial = { cp?: string; piece?: PieceKey; surface?: number };
+export type RapideInitial = { cp?: string; piece?: PieceKey; surface?: number; src?: SourceSeo };
 
 export default function EstimateurRapide({
   isPro = false,
@@ -270,7 +271,7 @@ export default function EstimateurRapide({
     if (convFired.current || !valid || !(tot.ttc > 0)) return;
     const id = window.setTimeout(() => {
       convFired.current = true;
-      suivre("estimation_terminee", { action: "affichee", type: mode === "pieces" ? "pieces" : type, ampleur });
+      suivre("estimation_terminee", { action: "affichee", type: mode === "pieces" ? "pieces" : type, ampleur, src: initial?.src ?? "direct" });
       conversionEstimation();
     }, 1800);
     return () => window.clearTimeout(id);
@@ -324,7 +325,7 @@ export default function EstimateurRapide({
   function saveDraft() {
     try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ v: "estimateur", mode: "rapide", ampleur, qui, ctx: preset.ctx, sel: preset.sel, open: {}, codePostal: cp })); } catch { /* noop */ }
   }
-  function affiner() { suivre("estimation_terminee", { action: "affiner", type: mode === "pieces" ? "pieces" : type, ampleur }); conversionEstimation(); saveDraft(); try { sessionStorage.setItem("avyora-affiner", "1"); } catch { /* noop */ } router.push("/projets/nouveau/detaille"); }
+  function affiner() { suivre("estimation_terminee", { action: "affiner", type: mode === "pieces" ? "pieces" : type, ampleur, src: initial?.src ?? "direct" }); conversionEstimation(); saveDraft(); try { sessionStorage.setItem("avyora-affiner", "1"); } catch { /* noop */ } router.push("/projets/nouveau/detaille"); }
 
   /** Libellé du projet (ex. « Rénovation — Chambre ×2 + Salle de bain » ou « Rénovation — Maison 100 m² »). */
   function nomProjet(): string {
@@ -343,7 +344,7 @@ export default function EstimateurRapide({
     if (!/^\d{5}$/.test(cp)) { setErreur(t.errCp); return; }
     if (mode === "pieces" && pieces.length === 0) { setErreur(t.auMoinsUnePiece); return; }
     if (!valid) { setErreur(t.errSurface); return; }
-    suivre("estimation_terminee", { action: "enregistrer", type: mode === "pieces" ? "pieces" : type, ampleur });
+    suivre("estimation_terminee", { action: "enregistrer", type: mode === "pieces" ? "pieces" : type, ampleur, src: initial?.src ?? "direct" });
     conversionEstimation();
     setSaving(true);
     const nom = nomProjet();

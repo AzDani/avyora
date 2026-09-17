@@ -262,6 +262,7 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
       <p className="note">Panier représentatif calculé par le moteur AVYORA, ajusté au code postal de {v.nom}. Ton projet réel s&apos;ajuste selon tes choix.</p>
 
       <CtaEstimation
+        src="matrice"
         titre={`Estime ${p.nom} à ${v.nom} en 3 minutes`}
         cp={v.cp}
         piece={pieceEstimateur}
