@@ -1,5 +1,13 @@
-/** Écran de chargement (App Router) affiché pendant la navigation vers une page async. */
-export default function Loading() {
+/**
+ * Écran de chargement partagé. À ré-exporter depuis un `loading.tsx` placé UNIQUEMENT sur les
+ * sous-arbres applicatifs (espace connecté, tarifs, auth).
+ *
+ * ⚠️ NE JAMAIS remettre de `loading.tsx` à la racine de `app/` : il pose une frontière Suspense
+ * au-dessus des pages SEO, dont le composant est async (il `await params`). Résultat mesuré :
+ * le <main> du HTML prérendu ne contenait QUE ce spinner (831 o), le vrai contenu partant dans un
+ * `<div hidden id="S:0">` que seul JavaScript remet en place — sur 503 pages.
+ */
+export default function EcranChargement() {
   return (
     <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4" role="status" aria-live="polite" aria-label="Loading">
       <span className="relative grid h-12 w-12 place-items-center">

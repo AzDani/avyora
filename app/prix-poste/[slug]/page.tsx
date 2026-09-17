@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { POSTES_PAGES, postePageBySlug } from "@/lib/seo-postes";
 import { posteRef, partMainOeuvreParLot } from "@/lib/seo-prix";
 import { PRIX_MAJ, PRIX_MAJ_FR } from "@/lib/prix-maj";
+import { og } from "@/lib/seo-og";
 
 export const dynamic = "force-static";
 // Ensemble fini : tout slug hors liste renvoie un vrai 404 (pas de soft-404 à 200).
@@ -28,7 +29,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: p.title,
     description: p.description,
     alternates: { canonical: `/prix-poste/${p.slug}` },
-    openGraph: { type: "article", title: p.title, description: p.description, url: `${siteUrl}/prix-poste/${p.slug}` },
+    openGraph: og({ title: p.title, description: p.description, path: `/prix-poste/${p.slug}` }),
   };
 }
 

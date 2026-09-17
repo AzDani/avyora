@@ -208,6 +208,9 @@ export default async function RootLayout({
                 <Link href="/methodologie" className="transition-colors hover:text-brand-700">Méthodologie</Link>
                 <Link href="/guides" className="transition-colors hover:text-brand-700">{t.footer.guides}</Link>
                 <Link href="/prix-travaux" className="transition-colors hover:text-brand-700">{t.footer.prixTravaux}</Link>
+                {/* Seul hub éditorial qui manquait au pied de page : il n'avait que 5 liens entrants
+                    contre ~500 pour les trois autres. Une ligne, et le cluster corps d'état existe. */}
+                <Link href="/prix-poste" className="transition-colors hover:text-brand-700">Prix par corps d&apos;état</Link>
                 <Link href="/prix-renovation" className="transition-colors hover:text-brand-700">{t.footer.prixVille}</Link>
                 <Link href="/mentions-legales" className="transition-colors hover:text-brand-700">{t.footer.mentions}</Link>
                 <Link href="/cgu" className="transition-colors hover:text-brand-700">{t.footer.cgu}</Link>

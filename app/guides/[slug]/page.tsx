@@ -3,8 +3,9 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { GUIDES, guideBySlug } from "@/lib/guides";
 import { VILLES_SEO } from "@/lib/villes";
-import { PRIX_MAJ_FR } from "@/lib/prix-maj";
+import { PRIX_MAJ, PRIX_MAJ_FR } from "@/lib/prix-maj";
 import { prixNational, estim, posteRef, partMainOeuvreParLot, postesSansFourniture, catalogueStats } from "@/lib/seo-prix";
+import { og } from "@/lib/seo-og";
 
 export const dynamic = "force-static";
 // Ensemble fini de pages : tout slug hors liste renvoie un vrai 404 (pas de soft-404 à 200).
@@ -33,7 +34,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: g.title,
     description: g.description,
     alternates: { canonical: `/guides/${g.slug}` },
-    openGraph: { type: "article", title: g.title, description: g.description, url: `${siteUrl}/guides/${g.slug}` },
+    openGraph: og({ title: g.title, description: g.description, path: `/guides/${g.slug}` }),
   };
 }
 
@@ -894,8 +895,10 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
         author: { "@type": "Organization", name: "AVYORA" },
         publisher: { "@id": `${siteUrl}/#organization` },
         mainEntityOfPage: `${siteUrl}/guides/${g.slug}`,
-        datePublished: "2026-09-06",
-        dateModified: "2026-09-06",
+        // Source de vérité de la fraîcheur des prix : lib/prix-maj.ts. Une date figée ici
+        // contredisait la date affichée dans le texte visible de la page.
+        datePublished: PRIX_MAJ,
+        dateModified: PRIX_MAJ,
       },
       {
         "@type": "FAQPage",

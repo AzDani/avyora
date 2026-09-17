@@ -3,8 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { PROJETS, projetBySlug, estimProjet, MATRIX_SLUGS, MATRIX_VILLES, liensDe, titreSansPrefixe, panierVariante } from "@/lib/seo-projets";
-import { PRIX_MAJ_FR } from "@/lib/prix-maj";
+import { PRIX_MAJ, PRIX_MAJ_FR } from "@/lib/prix-maj";
 import { VILLES_SEO } from "@/lib/villes";
+import { og } from "@/lib/seo-og";
 
 export const dynamic = "force-static";
 // Ensemble fini de pages : tout slug hors liste renvoie un vrai 404 (pas de soft-404 à 200).
@@ -55,7 +56,7 @@ export async function generateMetadata({ params }: { params: Promise<{ projet: s
       : `${p.h1.replace(" en 2026", "")} — coût moyen 2026`,
     description: `Combien coûte ${p.nom} ? Budget moyen ${euro(f.lo)} à ${euro(f.hi)}, détaillé poste par poste.${parSurf} Estimation gratuite en 3 minutes.`,
     alternates: { canonical: `/prix-travaux/${p.slug}` },
-    openGraph: { type: "article", title: p.h1, description: `Combien coûte ${p.nom} ? Budget détaillé poste par poste.`, url: `${siteUrl}/prix-travaux/${p.slug}` },
+    openGraph: og({ title: p.h1, description: `Combien coûte ${p.nom} ? Budget détaillé poste par poste.`, path: `/prix-travaux/${p.slug}` }),
   };
 }
 
@@ -207,8 +208,10 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
         author: { "@type": "Organization", name: "AVYORA" },
         publisher: { "@id": `${siteUrl}/#organization` },
         mainEntityOfPage: `${siteUrl}/prix-travaux/${p.slug}`,
-        datePublished: "2026-09-12",
-        dateModified: "2026-09-12",
+        // Source de vérité de la fraîcheur des prix : lib/prix-maj.ts. Une date figée ici
+        // contredisait la date affichée dans le texte visible de la page.
+        datePublished: PRIX_MAJ,
+        dateModified: PRIX_MAJ,
       },
       {
         "@type": "FAQPage",

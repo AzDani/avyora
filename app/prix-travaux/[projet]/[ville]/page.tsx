@@ -3,9 +3,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { projetBySlug, projetsMatrix, estimProjet, MATRIX_SLUGS, MATRIX_VILLES, liensDe, titreSansPrefixe } from "@/lib/seo-projets";
+import { PRIX_MAJ, PRIX_MAJ_FR } from "@/lib/prix-maj";
 import { villeBySlug } from "@/lib/villes";
 import { deptInfo } from "@/lib/geo";
 import { regionCoef } from "@/lib/estimateur";
+import { og } from "@/lib/seo-og";
 
 export const dynamic = "force-static";
 // Ensemble fini : hors matrice = 404. Les couples retirés sont redirigés en 308 par next.config.ts.
@@ -58,7 +60,7 @@ export async function generateMetadata({ params }: { params: Promise<{ projet: s
       `Combien coûte ${p.nom} à ${v.nom} ? Budget ${euro(f.lo)} à ${euro(f.hi)}, ajusté à la main-d'œuvre locale.`,
     ),
     alternates: { canonical: `/prix-travaux/${p.slug}/${v.slug}` },
-    openGraph: { type: "article", title: `Prix ${sujet} à ${v.nom}`, description: `Budget détaillé poste par poste à ${v.nom}.`, url: `${siteUrl}/prix-travaux/${p.slug}/${v.slug}` },
+    openGraph: og({ title: `Prix ${sujet} à ${v.nom}`, description: `Budget détaillé poste par poste à ${v.nom}.`, path: `/prix-travaux/${p.slug}/${v.slug}` }),
   };
 }
 
@@ -67,7 +69,13 @@ const CSS = `
 .av-seo h1{font-size:clamp(23px,4vw,31px);font-weight:600;letter-spacing:-.02em;color:var(--color-ink);margin:0}
 .av-seo .tw,.av-guide .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:14px 0}
 .av-seo .tw table,.av-guide .tw table{margin:0;min-width:420px}
+.av-seo .fil{font-size:12.5px;color:var(--color-faint);margin-bottom:12px}
+.av-seo .fil a{color:var(--color-muted)}
+.av-seo .fil a:hover{color:var(--color-brand-700)}
 .av-seo .lead{font-size:15px;color:var(--color-muted);margin-top:12px;line-height:1.7}
+.av-seo .prixmaj{font-size:12.5px;color:var(--color-faint);margin-top:10px}
+.av-seo .prixmaj a{color:var(--color-brand-700);font-weight:500}
+.av-seo .prixmaj a:hover{text-decoration:underline}
 .av-seo h2{font-size:19px;font-weight:600;color:var(--color-ink);margin:34px 0 10px}
 .av-seo p{font-size:14.5px;color:var(--color-muted);line-height:1.7;margin:10px 0}
 .av-seo strong{color:var(--color-ink);font-weight:600}
@@ -159,8 +167,10 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
         author: { "@type": "Organization", name: "AVYORA" },
         publisher: { "@id": `${siteUrl}/#organization` },
         mainEntityOfPage: `${siteUrl}/prix-travaux/${p.slug}/${v.slug}`,
-        datePublished: "2026-09-12",
-        dateModified: "2026-09-12",
+        // PRIX_MAJ est la source de vérité de la fraîcheur des prix (lib/prix-maj.ts). Une date figée
+        // ici annonçait 2026-09-12 sur 400 pages alors que le catalogue disait autre chose.
+        datePublished: PRIX_MAJ,
+        dateModified: PRIX_MAJ,
       },
       {
         "@type": "FAQPage",
@@ -185,13 +195,24 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <p className="mb-4 text-[13px]">
-        <Link href={`/prix-travaux/${p.slug}`} className="text-muted hover:text-brand-700">← {p.emoji} {sujet.charAt(0).toUpperCase() + sujet.slice(1)}</Link>
+      {/* Fil d'Ariane visible : le BreadcrumbList JSON-LD existait déjà juste au-dessus, mais ces
+          400 pages étaient la seule famille sans fil visible — et sans aucun lien vers le hub
+          /prix-travaux, soit 79 % du site qui n'alimentait pas son propre pilier. */}
+      <p className="fil">
+        <Link href="/">Accueil</Link> <span aria-hidden="true">›</span>{" "}
+        <Link href="/prix-travaux">Prix des travaux</Link> <span aria-hidden="true">›</span>{" "}
+        <Link href={`/prix-travaux/${p.slug}`}>{sujet.charAt(0).toUpperCase() + sujet.slice(1)}</Link>{" "}
+        <span aria-hidden="true">›</span> {v.nom}
       </p>
 
       <h1>{p.emoji} Prix {sujet} à {v.nom} en 2026</h1>
       <p className="lead">
         À {dep.nom ? `${v.nom} (${dep.num} · ${dep.nom})` : v.nom}{dep.region ? `, en ${dep.region}` : ""}, {p.lead.charAt(0).toLowerCase() + p.lead.slice(1)}
+      </p>
+      {/* Provenance et fraîcheur des prix : ces 400 pages sont la famille la plus volumineuse du site
+          et n'en portaient aucune trace, alors que les pages villes et projets l'affichent. */}
+      <p className="prixmaj">
+        Prix mis à jour le {PRIX_MAJ_FR} · <Link href="/methodologie">d&apos;où viennent ces prix ?</Link>
       </p>
 
       <div className="big">
