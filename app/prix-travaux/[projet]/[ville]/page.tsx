@@ -59,8 +59,8 @@ export async function generateMetadata({ params }: { params: Promise<{ projet: s
     // Longueur visée ≤ 160 car. : au-delà, Google tronque en pleine phrase. Les noms de ville longs
     // (Boulogne-Billancourt, Saint-Étienne) pèsent jusqu'à 20 car., d'où une base volontairement courte.
     description: descCourte(
-      `Combien coûte ${p.nom} à ${v.nom} ? Budget ${euro(f.lo)} à ${euro(f.hi)}, ajusté à la main-d'œuvre locale et détaillé poste par poste.`,
-      `Combien coûte ${p.nom} à ${v.nom} ? Budget ${euro(f.lo)} à ${euro(f.hi)}, ajusté à la main-d'œuvre locale.`,
+      `Combien coûte ${p.nomQuestion ?? p.nom} à ${v.nom} ? Budget ${euro(f.lo)} à ${euro(f.hi)}, ajusté à la main-d'œuvre locale et détaillé poste par poste.`,
+      `Combien coûte ${p.nomQuestion ?? p.nom} à ${v.nom} ? Budget ${euro(f.lo)} à ${euro(f.hi)}, ajusté à la main-d'œuvre locale.`,
     ),
     alternates: { canonical: `/prix-travaux/${p.slug}/${v.slug}` },
     openGraph: og({ title: `Prix ${sujet} à ${v.nom}`, description: `Budget détaillé poste par poste à ${v.nom}.`, path: `/prix-travaux/${p.slug}/${v.slug}` }),
@@ -140,7 +140,7 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
 
   const faq = [
     {
-      q: `Combien coûte ${p.nom} à ${v.nom} en 2026 ?`,
+      q: `Combien coûte ${p.nomQuestion ?? p.nom} à ${v.nom} en 2026 ?`,
       a: `À ${v.nom}, comptez en moyenne ${euro(f.lo)} à ${euro(f.hi)} pour ${p.base} (finition standard, artisans, marge ±15 %). Ce budget tient compte du coût local de la main-d'œuvre.`,
     },
     {
@@ -166,7 +166,7 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
         // On réutilise l'image OG générée par app/opengraph-image.tsx : 1200×630, ratio 1.91:1.
         image: [`${siteUrl}/opengraph-image`],
         headline: `Prix ${sujet} à ${v.nom} en 2026`,
-        description: `Prix de ${p.nom} à ${v.nom}, ajusté à la main-d'œuvre locale et détaillé poste par poste.`,
+        description: `Prix de ${p.nomQuestion ?? p.nom} à ${v.nom}, ajusté à la main-d'œuvre locale et détaillé poste par poste.`,
         inLanguage: "fr-FR",
         author: { "@type": "Organization", name: "AVYORA" },
         publisher: { "@id": `${siteUrl}/#organization` },

@@ -57,9 +57,9 @@ export async function generateMetadata({ params }: { params: Promise<{ projet: s
     title: liste
       ? `Prix ${p.titreSeo ?? titreSansPrefixe(p.h1)} 2026 — ${liste} m²`
       : `${p.h1.replace(" en 2026", "")} — coût moyen 2026`,
-    description: `Combien coûte ${p.nom} ? Budget moyen ${euro(f.lo)} à ${euro(f.hi)}, détaillé poste par poste.${parSurf} Estimation gratuite en 3 minutes.`,
+    description: `Combien coûte ${p.nomQuestion ?? p.nom} ? Budget moyen ${euro(f.lo)} à ${euro(f.hi)}, poste par poste.${parSurf} Estimation gratuite en 3 minutes.`,
     alternates: { canonical: `/prix-travaux/${p.slug}` },
-    openGraph: og({ title: p.h1, description: `Combien coûte ${p.nom} ? Budget détaillé poste par poste.`, path: `/prix-travaux/${p.slug}` }),
+    openGraph: og({ title: p.h1, description: `Combien coûte ${p.nomQuestion ?? p.nom} ? Budget détaillé poste par poste.`, path: `/prix-travaux/${p.slug}` }),
   };
 }
 
@@ -120,6 +120,8 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
   const p = projetBySlug(projet);
   if (!p) notFound();
 
+  // `nom` est fait pour « Estime … » ; comme objet d'une question il casse. Cf. Projet.nomQuestion.
+  const nomQ = p.nomQuestion ?? p.nom;
   const est = estimProjet(p, "");
   const f = four(est.ttc);
   // Ratio « soit environ X €/u » : seulement quand `uniteBase` déclare une unité qui a un sens, et
@@ -175,13 +177,13 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
 
   const faq = [
     {
-      q: `Combien coûte ${p.nom} en 2026 ?`,
+      q: `Combien coûte ${nomQ} en 2026 ?`,
       a: `Comptez en moyenne ${euro(f.lo)} à ${euro(f.hi)} pour ${p.base} (finition standard, travaux confiés à des artisans, marge ±15 %). Le prix exact dépend de la surface, des équipements et de la région.`,
     },
     ...(parSurface.length > 1
       ? [
           {
-            q: `Quel budget pour ${p.nom} de ${parSurface[0].s} m² ou de ${parSurface[parSurface.length - 1].s} m² ?`,
+            q: `Quel budget pour ${nomQ} de ${parSurface[0].s} m² ou de ${parSurface[parSurface.length - 1].s} m² ?`,
             a: `Comptez environ ${euro(parSurface[0].lo)} à ${euro(parSurface[0].hi)} pour ${parSurface[0].s} m², et ${euro(parSurface[parSurface.length - 1].lo)} à ${euro(parSurface[parSurface.length - 1].hi)} pour ${parSurface[parSurface.length - 1].s} m². Le prix au m² baisse quand la pièce s'agrandit : les équipements coûtent la même chose quelle que soit la surface, seuls les revêtements suivent.`,
           },
         ]
@@ -209,7 +211,7 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
         // On réutilise l'image OG générée par app/opengraph-image.tsx : 1200×630, ratio 1.91:1.
         image: [`${siteUrl}/opengraph-image`],
         headline: p.h1,
-        description: `Prix de ${p.nom} en 2026, détaillé poste par poste.`,
+        description: `Prix de ${nomQ} en 2026, détaillé poste par poste.`,
         inLanguage: "fr-FR",
         author: { "@type": "Organization", name: "AVYORA" },
         publisher: { "@id": `${siteUrl}/#organization` },
@@ -319,9 +321,9 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
 
           {cles.map((r) => (
             <Fragment key={`s${r.s}`}>
-              <h3>Combien coûte {p.nom} de {r.s} m² ?</h3>
+              <h3>Combien coûte {nomQ} de {r.s} m² ?</h3>
               <p>
-                Pour {p.nom} de {r.s} m², le moteur AVYORA situe le budget entre{" "}
+                Pour {nomQ} de {r.s} m², le moteur AVYORA situe le budget entre{" "}
                 <strong>{euro(r.lo)}</strong> et <strong>{euro(r.hi)}</strong> TTC, soit environ{" "}
                 {euro(r.m2)}/m².{" "}
                 {r.s === p.surface

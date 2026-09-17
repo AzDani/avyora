@@ -85,6 +85,15 @@ export interface Projet {
    * agrammatical). Omis = repli sur `titreSansPrefixe(h1)`.
    */
   titreSeo?: string;
+  /**
+   * Libellé utilisé UNIQUEMENT comme objet d'une tournure interrogative (« Combien coûte … ? »,
+   * « Prix de … »). `nom` sert à des tournures verbales (« Estime … ») où il fonctionne bien, mais
+   * comme objet d'une question il produisait du français cassé ou trompeur sur 12 projets :
+   * « Combien coûte des combles ? », « … de la peinture ? », « … une façade ? » (le mur, pas le
+   * ravalement), « … une toiture ? ». Ces phrases partent dans la meta description, la FAQ visible
+   * ET le JSON-LD : c'est ce que l'internaute lit dans Google. Omis = repli sur `nom`.
+   */
+  nomQuestion?: string;
   /** Configurations alternatives du même chantier (bac / baignoire / italienne). */
   variantes?: PanierVariante[];
   /** Options qui s'ajoutent à la configuration de référence, une par ligne. */
@@ -139,6 +148,7 @@ export const PROJETS: Projet[] = [
     surface: 6,
     surfaces: [3, 4, 5, 6, 8, 10],
     type: "T3",
+    nomQuestion: "la rénovation d'une salle de bain",
     titreSeo: "rénovation salle de bain",
     uniteBase: { label: "m²" },
     base: "une salle de bain de 6 m² refaite entièrement (douche, meuble-vasque, WC, faïence, sol)",
@@ -235,6 +245,7 @@ export const PROJETS: Projet[] = [
     surface: 12,
     surfaces: [6, 8, 10, 12, 15, 20],
     type: "T3",
+    nomQuestion: "la rénovation d'une cuisine",
     titreSeo: "rénovation cuisine",
     uniteBase: { label: "m²" },
     base: "une cuisine de 12 m² refaite avec un ensemble neuf de ~5 mètres linéaires",
@@ -283,6 +294,7 @@ export const PROJETS: Projet[] = [
     surface: 12,
     surfaces: [9, 10, 12, 14, 16],
     type: "T3",
+    nomQuestion: "la rénovation d'une chambre",
     titreSeo: "rénovation chambre",
     uniteBase: { label: "m²" },
     base: "une chambre de 12 m² refaite (peinture, sol, électricité, placards)",
@@ -327,6 +339,7 @@ export const PROJETS: Projet[] = [
     kind: "maison",
     surface: 100,
     type: "Maison",
+    nomQuestion: "une réfection de toiture",
     titreSeo: "réfection de toiture",
     uniteBase: { tache: "Réfection couverture tuiles (dépose + écran + liteaux)", label: "m² de couverture" },
     base: "une réfection de couverture tuiles d'environ 120 m² (maison de 100 m² au sol)",
@@ -364,6 +377,7 @@ export const PROJETS: Projet[] = [
     kind: "maison",
     surface: 100,
     type: "Maison",
+    nomQuestion: "un ravalement de façade",
     uniteBase: { tache: "Enduit monocouche (machine)", label: "m² de façade" },
     base: "un ravalement d'environ 110 m² de façade (nettoyage + enduit)",
     lead:
@@ -397,6 +411,7 @@ export const PROJETS: Projet[] = [
     kind: "maison",
     surface: 100,
     type: "Maison",
+    nomQuestion: "l'isolation de combles perdus",
     uniteBase: { tache: "Isolation des combles perdus (soufflage)", label: "m² isolé" },
     base: "l'isolation de 70 m² de combles perdus par soufflage",
     lead:
@@ -426,6 +441,7 @@ export const PROJETS: Projet[] = [
     kind: "appart",
     surface: 70,
     type: "T3",
+    nomQuestion: "la rénovation électrique d'un logement",
     uniteBase: { label: "m²" },
     base: "la remise à neuf complète de l'électricité d'un logement de 70 m²",
     lead:
@@ -457,6 +473,7 @@ export const PROJETS: Projet[] = [
     kind: "appart",
     surface: 70,
     type: "T3",
+    nomQuestion: "la peinture d'un logement",
     uniteBase: { label: "m²" },
     base: "la peinture complète d'un logement de 70 m² (murs + plafonds)",
     lead:
@@ -491,6 +508,7 @@ export const PROJETS: Projet[] = [
     espace: "sdb",
     surface: 6,
     type: "T3",
+    nomQuestion: "le remplacement d'une baignoire par une douche",
     titreSeo: "remplacement baignoire par douche",
     base: "le remplacement d'une baignoire par une douche (bac, paroi, carrelage de la zone)",
     lead:
@@ -623,6 +641,7 @@ export const PROJETS: Projet[] = [
     kind: "maison",
     surface: 100,
     type: "Maison",
+    nomQuestion: "le remplacement de fenêtres",
     titreSeo: "remplacement de fenêtres",
     uniteBase: { tache: "Fenêtres", label: "fenêtre" },
     base: "le remplacement de 8 fenêtres et de leurs volets roulants",
@@ -659,6 +678,7 @@ export const PROJETS: Projet[] = [
     kind: "appart",
     surface: 40,
     type: "T3",
+    nomQuestion: "la pose de carrelage",
     uniteBase: { label: "m²" },
     base: "la pose de 40 m² de carrelage au sol (ragréage inclus)",
     lead:
@@ -692,6 +712,7 @@ export const PROJETS: Projet[] = [
     kind: "appart",
     surface: 40,
     type: "T3",
+    nomQuestion: "la pose de parquet",
     uniteBase: { label: "m²" },
     base: "la pose de 40 m² de parquet (plinthes incluses)",
     lead:
