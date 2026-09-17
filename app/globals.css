@@ -278,3 +278,28 @@
   .av-step.compact button { width: 36px; }
   .av-step.field .st button { width: 32px; height: 32px; }
 }
+
+/* ---------------------------------------------------------------------------
+   Marqueurs de liste dans le contenu éditorial.
+
+   Le preflight de Tailwind v4 pose `list-style: none` sur ul et ol. Constaté en
+   navigateur : les 8 837 <li> du site s'affichaient SANS puce, avec un
+   padding-left qui creusait un retrait vide. Une liste qui ne ressemble pas à
+   une liste ne se scanne pas — et le brief demande justement des contenus
+   structurés en listes et en étapes.
+
+   Rétabli dans les seuls conteneurs éditoriaux : l'app connectée garde des
+   listes sans marqueur là où elle en utilise pour de la mise en page.
+--------------------------------------------------------------------------- */
+.av-guide ul, .av-seo ul, .av-hub ul, .av-poste ul { list-style: disc outside; }
+.av-guide ol, .av-seo ol, .av-hub ol, .av-poste ol { list-style: decimal outside; }
+.av-guide li, .av-seo li, .av-hub li, .av-poste li { margin-left: 2px; }
+.av-guide li::marker, .av-seo li::marker,
+.av-hub li::marker, .av-poste li::marker { color: var(--color-brand-500); }
+
+/* Liste d'étapes : chaque <li> porte un titre et deux paragraphes. Le marqueur
+   doit s'aligner sur le titre, pas flotter au milieu du bloc. */
+.av-guide ol.etapes { padding-left: 22px; }
+.av-guide ol.etapes > li { margin: 18px 0; padding-left: 4px; }
+.av-guide ol.etapes > li::marker { font-weight: 700; font-size: 15.5px; }
+.av-guide ol.etapes > li > h3 { margin-top: 0; }

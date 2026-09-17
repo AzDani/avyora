@@ -525,13 +525,18 @@ function BodyOrdre() {
         C&apos;est la séquence que suit le chiffrage AVYORA lot par lot. Selon votre projet, certaines
         phases sautent — mais leur ordre relatif, lui, ne change pas.
       </p>
-      {PHASES_TRAVAUX.map((p) => (
-        <div key={p.n} className="phase">
-          <h3>{p.n}. {p.titre}</h3>
-          <p><strong>Ce qu&apos;on fait :</strong> {p.quoi}</p>
-          <p><strong>Pourquoi à ce moment :</strong> {p.pourquoi}</p>
-        </div>
-      ))}
+      {/* Une séquence d'étapes est une liste ORDONNÉE : c'est le balisage que Google attend pour
+          un contenu « étapes », et le site n'avait aucun <ol>. Le numéro vient du marqueur de
+          liste, il n'est donc plus écrit dans le titre — sinon il apparaîtrait deux fois. */}
+      <ol className="etapes">
+        {PHASES_TRAVAUX.map((p) => (
+          <li key={p.n} className="phase">
+            <h3>{p.titre}</h3>
+            <p><strong>Ce qu&apos;on fait :</strong> {p.quoi}</p>
+            <p><strong>Pourquoi à ce moment :</strong> {p.pourquoi}</p>
+          </li>
+        ))}
+      </ol>
 
       <h2>Les inversions qui coûtent cher</h2>
       <div className="tw">
@@ -550,11 +555,11 @@ function BodyOrdre() {
         Si vous ne retenez qu&apos;une chose, retenez ces trois portes que le chantier franchit dans
         cet ordre :
       </p>
-      <ul>
+      <ol>
         <li><strong>Hors d&apos;eau</strong> — le toit ne fuit plus (phase 3). Rien d&apos;intérieur ne commence sérieusement avant.</li>
         <li><strong>Hors d&apos;air</strong> — les menuiseries sont posées (phase 4). Le bâtiment devient chauffable, les enduits peuvent sécher.</li>
         <li><strong>Avant fermeture</strong> — le dernier moment pour faire passer un câble ou un tuyau (phase 6). Après, chaque oubli se paie en démolition.</li>
-      </ul>
+      </ol>
 
       <Cta label="Chiffrer votre rénovation, lot par lot" />
 
