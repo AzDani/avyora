@@ -87,6 +87,32 @@ rapide (`ESPACES` / `presetRapide`) et l'intake du mode détaillé. Le cahier de
 
 ---
 
+### Revenir à un état connu bon
+
+Les états de référence sont des **tags git annotés**, pas des copies de fichier : une copie se
+périme et on ne sait plus laquelle est la vraie.
+
+| tag | état |
+|---|---|
+| `maquette-v1` | 17 sept. 2026 — l'éditeur en V104 (artefact Version 107). Revue headless sans erreur, 46 prix sur 49 alignés, 3 dérives connues et assumées. |
+
+```bash
+git tag -n99 maquette-v1                                              # ce qu'il contient, en détail
+git show maquette-v1:maquettes/plan-editor.html > maquettes/plan-editor.html
+```
+
+Puis republier le fichier sur l'artefact — l'URL est conservée. **Relancer les deux contrôles
+après restauration** : un fichier restauré est un fichier modifié.
+
+Pour poser un nouveau repère :
+
+```bash
+git tag -a maquette-v2 -m "…ce qu'il contient, et ce qui reste imparfait"
+git push origin maquette-v2
+```
+
+---
+
 ## `carnet/` — correspondance catalogue ↔ plan
 
 Relecture des **200 postes / 18 lots** du catalogue détaillé (`lib/estimateur/catalog.json`)
