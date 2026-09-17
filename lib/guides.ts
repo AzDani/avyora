@@ -62,7 +62,16 @@ export const GUIDES: GuideMeta[] = [
       "Combien rapporte vraiment l'auto-rénovation ? La part de main-d'œuvre lot par lot, les postes où faire soi-même paie, et ce que l'économie oublie.",
     eyebrow: "Guide pratique",
     resume: "La part de main-d'œuvre lot par lot, où faire soi-même paie vraiment, et ce que l'économie annoncée oublie.",
-  }
+  },
+  {
+    slug: "calculer-budget-travaux",
+    h1: "Comment calculer un budget travaux : la méthode des quantités",
+    title: "Calculer un budget travaux : la méthode des quantités",
+    description:
+      "D'où sortent les quantités d'un devis ? Les règles réelles qui transforment une surface habitable en m² de peinture, de toiture et de façade.",
+    eyebrow: "Guide pratique",
+    resume: "Comment une surface habitable se transforme en mètres carrés de peinture, de toiture et de façade — les règles, pas des ordres de grandeur.",
+  },
 ];
 
 export function guideBySlug(slug: string): GuideMeta | undefined {

@@ -468,7 +468,8 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
       </p>
       <p className="note">
         L&apos;écart entre matériaux et main-d&apos;œuvre est aussi ce qui décide si faire soi-même
-        vaut le coup : <Link href="/guides/faire-soi-meme-ou-artisan">le calcul lot par lot</Link>.
+        vaut le coup : <Link href="/guides/faire-soi-meme-ou-artisan">le calcul lot par lot</Link>{" "}·{" "}
+        <Link href="/guides/calculer-budget-travaux" className="font-medium text-brand-600 hover:underline">calculer un budget travaux</Link>.
       </p>
 
       <h2>Ce qui est compris</h2>

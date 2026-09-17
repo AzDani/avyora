@@ -244,7 +244,8 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
         ·{" "}
         <Link href="/guides/ordre-travaux-renovation" className="font-medium text-brand-600 hover:underline">dans quel ordre faire ses travaux</Link>{" "}
         ·{" "}
-        <Link href="/guides/faire-soi-meme-ou-artisan" className="font-medium text-brand-600 hover:underline">faire soi-même ou faire faire</Link>.
+        <Link href="/guides/faire-soi-meme-ou-artisan" className="font-medium text-brand-600 hover:underline">faire soi-même ou faire faire</Link>{" "}·{" "}
+        <Link href="/guides/calculer-budget-travaux" className="font-medium text-brand-600 hover:underline">calculer un budget travaux</Link>.
       </p>
       <p>
         Prix par type de travaux :{" "}

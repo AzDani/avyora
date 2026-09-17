@@ -197,7 +197,8 @@ export default function PrixTravauxHub() {
         Parts calculées sur le coût des travaux hors taxes, provision d&apos;imprévus exclue, par le
         moteur AVYORA. Une part de main-d&apos;œuvre élevée veut dire deux choses : le prix dépend
         beaucoup de la région, et l&apos;auto-rénovation peut faire économiser gros — voir{" "}
-        <Link href="/guides/faire-soi-meme-ou-artisan">faire soi-même ou faire faire</Link>.
+        <Link href="/guides/faire-soi-meme-ou-artisan">faire soi-même ou faire faire</Link> ·{" "}
+        <Link href="/guides/calculer-budget-travaux">calculer un budget travaux</Link>.
       </p>
 
       <h2>Comment lire ces prix</h2>

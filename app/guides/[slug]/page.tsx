@@ -5,6 +5,7 @@ import { GUIDES, guideBySlug } from "@/lib/guides";
 import { VILLES_SEO } from "@/lib/villes";
 import { PRIX_MAJ, PRIX_MAJ_FR } from "@/lib/prix-maj";
 import { prixNational, estim, posteRef, partMainOeuvreParLot, postesSansFourniture, catalogueStats } from "@/lib/seo-prix";
+import { autoQty, defaultCtx, type Ctx } from "@/lib/estimateur";
 import { og } from "@/lib/seo-og";
 import { CtaEstimation } from "@/components/CtaEstimation";
 
@@ -108,6 +109,7 @@ function GuidesPratiques({ sauf }: { sauf?: string }) {
     { slug: "verifier-devis-travaux", txt: "vérifier un devis de travaux" },
     { slug: "ordre-travaux-renovation", txt: "dans quel ordre faire ses travaux" },
     { slug: "faire-soi-meme-ou-artisan", txt: "faire soi-même ou faire faire" },
+    { slug: "calculer-budget-travaux", txt: "calculer un budget travaux" },
   ].filter((g) => g.slug !== sauf);
   return (
     <p>
@@ -209,6 +211,7 @@ function faqDuGuide(slug: string) {
   if (slug === "ordre-travaux-renovation") return faqOrdre();
   if (slug === "verifier-devis-travaux") return faqDevis();
   if (slug === "faire-soi-meme-ou-artisan") return faqDIY();
+  if (slug === "calculer-budget-travaux") return faqBudget();
   return faqMaison();
 }
 
@@ -865,12 +868,181 @@ function faqDIY() {
   ];
 }
 
+/* ── Guide « calculer un budget travaux » ────────────────────────────────────
+   Le chapitre qui manque à /methodologie : celle-ci explique d'où viennent les PRIX, pas d'où
+   viennent les QUANTITÉS. Or c'est la moitié du calcul, et c'est la partie que personne d'autre
+   ne publie — parce que personne d'autre ne calcule.
+   ⚠️ Toutes les quantités affichées ici sont REJOUÉES par `autoQty()` au rendu. Aucune n'est
+   écrite en dur : si une règle du moteur change, cette page change avec elle ou elle ment. */
+const CTX_APPART = { ...defaultCtx(), surface: 70, surfaceSol: 70, hauteur: 2.5, niveaux: 1, pieces: 4, sdb: 1, wc: 1 };
+const CTX_MAISON = { ...defaultCtx(), surface: 120, surfaceSol: 80, hauteur: 2.5, niveaux: 2, pieces: 5, sdb: 2, wc: 2 };
+
+const REGLES: { poste: string; regle: string }[] = [
+  { poste: "Peinture des murs", regle: "surface habitable × hauteur sous plafond" },
+  { poste: "Peinture des plafonds", regle: "surface habitable" },
+  { poste: "Ratissage léger", regle: "surface × (hauteur + 1) — les murs plus le plafond" },
+  { poste: "Carrelage au sol", regle: "60 % de la surface (pièces humides et de passage)" },
+  { poste: "Parquet bois", regle: "40 % de la surface (pièces de vie et chambres)" },
+  { poste: "Plinthes", regle: "4 × √(surface × nombre de pièces) — le périmètre cumulé" },
+  { poste: "Spots encastrés (LED)", regle: "un spot pour 2 m²" },
+  { poste: "Faïence / carrelage mural", regle: "12 m² par salle de bain" },
+  { poste: "Monter une cloison", regle: "35 % de la surface" },
+  { poste: "Réfection couverture tuiles (dépose + écran + liteaux)", regle: "emprise au sol × 1,4 (la pente)" },
+  { poste: "Enduit monocouche (machine)", regle: "4 × √emprise × hauteur × niveaux × 1,25" },
+  { poste: "Gouttières & descentes", regle: "4 × √emprise + 4 × hauteur × niveaux" },
+];
+
+function BodyBudget() {
+  const q = (ctx: Ctx, n: string) => autoQty(ctx, "", n, {}) ?? 0;
+  const lignes = REGLES.map((r) => ({ ...r, a: q(CTX_APPART, r.poste), m: q(CTX_MAISON, r.poste) }));
+  const faq = faqBudget();
+
+  return (
+    <>
+      <p className="lead">
+        Un devis d&apos;artisan, c&apos;est des prix unitaires multipliés par des quantités. Tout le
+        monde discute les prix ; presque personne ne vérifie les quantités. C&apos;est pourtant là que
+        se jouent les écarts les plus grossiers — et c&apos;est vérifiable, contrairement à un prix
+        de marché.
+      </p>
+
+      <h2>Pourquoi les quantités ne se devinent pas</h2>
+      <p>
+        Une surface habitable ne dit presque rien des surfaces à traiter. Un logement de{" "}
+        <strong>{CTX_APPART.surface} m²</strong> demande <strong>{lignes.find((l) => l.poste === "Peinture des murs")!.a} m²</strong>{" "}
+        de peinture murale, parce qu&apos;on peint des murs, pas un sol. Une maison de{" "}
+        <strong>{CTX_MAISON.surfaceSol} m² d&apos;emprise au sol</strong> porte{" "}
+        <strong>{lignes.find((l) => l.poste.startsWith("Réfection couverture"))!.m} m²</strong> de toiture,
+        parce qu&apos;un toit est incliné. Ces écarts ne sont pas des détails : ils décident du budget.
+      </p>
+
+      <h2>Les règles utilisées par AVYORA</h2>
+      <p>
+        Voici les règles réelles du moteur, avec ce qu&apos;elles donnent sur deux biens types : un
+        appartement de {CTX_APPART.surface} m² de plain-pied, et une maison de {CTX_MAISON.surface} m²
+        sur {CTX_MAISON.niveaux} niveaux ({CTX_MAISON.surfaceSol} m² au sol).
+      </p>
+      <div className="tw matrice">
+        <table>
+          <thead>
+            <tr>
+              <th>Poste</th><th>Règle</th>
+              <th>Appart. {CTX_APPART.surface} m²</th><th>Maison {CTX_MAISON.surface} m²</th>
+            </tr>
+          </thead>
+          <tbody>
+            {lignes.map((l) => (
+              <tr key={l.poste}>
+                <td>{l.poste}</td>
+                <td>{l.regle}</td>
+                <td className="num">{l.a}</td>
+                <td className="num">{l.m}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="note">
+        Quantités en m², sauf les spots (unités) et les gouttières (mètres linéaires). Elles sont
+        calculées à l&apos;affichage par le moteur AVYORA, pas recopiées : si une règle change, ce
+        tableau change avec elle.
+      </p>
+
+      <h2>Surface habitable et emprise au sol ne sont pas la même chose</h2>
+      <p>
+        C&apos;est la confusion la plus coûteuse. La <strong>surface habitable</strong> est celle qu&apos;on
+        vit : elle commande la peinture, les sols, l&apos;électricité. L&apos;<strong>emprise au sol</strong>{" "}
+        est l&apos;ombre du bâtiment : elle commande la toiture et la façade. Sur une maison à étage,
+        la seconde vaut à peu près la moitié de la première — et se tromper de surface sur un poste
+        d&apos;enveloppe double la facture annoncée.
+      </p>
+      <p>
+        La façade suit la même logique : ce n&apos;est pas une surface, c&apos;est un périmètre multiplié
+        par une hauteur. D&apos;où la racine carrée dans la formule — un bâtiment deux fois plus grand
+        au sol n&apos;a que 1,4 fois plus de murs extérieurs.
+      </p>
+
+      <h2>Les pièces comptent autant que les mètres carrés</h2>
+      <ul>
+        <li>
+          <strong>Salles de bain</strong> — chaque suite parentale porte la sienne : le moteur compte
+          les salles de bain déclarées <em>plus</em> les suites. Une faïence chiffrée sur une seule
+          salle de bain alors que le logement en a deux, c&apos;est {lignes.find((l) => l.poste.startsWith("Faïence"))!.a} m²
+          de carrelage mural manquants.
+        </li>
+        <li>
+          <strong>Portes et radiateurs</strong> — un par pièce. Le nombre de pièces se déduit des
+          espaces déclarés (séjour, cuisine, chambres, suites, couloir, buanderie), pas d&apos;une
+          typologie « T3 » qui ne dit rien de l&apos;agencement réel.
+        </li>
+        <li>
+          <strong>Prises réseau</strong> — une par chambre et par suite, plus une au séjour.
+        </li>
+        <li>
+          <strong>Étanchéité de douche</strong> — calculée depuis les dimensions du receveur choisi :
+          le sol du bac, le fond et les deux côtés sur deux mètres de haut. Pas un forfait.
+        </li>
+      </ul>
+
+      <h2>Ce que ces règles ne savent pas</h2>
+      <p>
+        Elles décrivent un logement ordinaire, pas le vôtre. Elles ignorent une pièce sous comble à
+        la géométrie tordue, un mur de refend qui double les linéaires, un plafond à 3,50 m dans une
+        seule pièce, ou des combles perdus inaccessibles. Elles ne remplacent pas une visite : elles
+        donnent un ordre de grandeur <em>justifiable</em>, et un moyen de repérer une quantité
+        aberrante sur un devis reçu.
+      </p>
+      <p>
+        C&apos;est d&apos;ailleurs leur usage le plus utile : quand un artisan annonce une quantité, vous
+        pouvez la confronter à la règle plutôt qu&apos;à votre intuition. Un écart de 10 % est normal ;
+        un facteur deux mérite une question.
+      </p>
+
+      <Cta label="Chiffrer votre projet avec ces règles" />
+
+      <h2>Aller plus loin</h2>
+      <p>
+        <Link href="/methodologie">D&apos;où viennent les prix</Link> — le pendant de cette page côté
+        prix unitaires, coefficients et TVA ·{" "}
+        <Link href="/guides/verifier-devis-travaux">vérifier un devis de travaux</Link> ·{" "}
+        <Link href="/prix-poste">le prix de chaque corps d&apos;état</Link>
+      </p>
+
+      <GuidesPratiques sauf="calculer-budget-travaux" />
+      <Faq items={faq} />
+    </>
+  );
+}
+
+function faqBudget() {
+  const q = (ctx: Ctx, n: string) => autoQty(ctx, "", n, {}) ?? 0;
+  return [
+    {
+      q: "Comment calculer la surface à peindre dans un logement ?",
+      a: `Les murs se calculent en multipliant la surface habitable par la hauteur sous plafond, et les plafonds valent la surface habitable. Pour un logement de ${CTX_APPART.surface} m² sous ${CTX_APPART.hauteur} m, cela donne ${q(CTX_APPART, "Peinture des murs")} m² de murs et ${q(CTX_APPART, "Peinture des plafonds")} m² de plafonds.`,
+    },
+    {
+      q: "Quelle surface de toiture pour une maison de 80 m² au sol ?",
+      a: `Environ ${q(CTX_MAISON, "Réfection couverture tuiles (dépose + écran + liteaux)")} m². La règle est l'emprise au sol multipliée par 1,4 : un toit est incliné, sa surface dépasse toujours celle qu'il couvre. Attention à ne pas utiliser la surface habitable, qui compte les étages.`,
+    },
+    {
+      q: "Pourquoi la façade ne se calcule-t-elle pas comme une surface ?",
+      a: "Parce que c'est un périmètre multiplié par une hauteur. Le moteur prend quatre fois la racine carrée de l'emprise au sol, multiplie par la hauteur et par le nombre de niveaux, puis ajoute 25 % pour les retours, pignons et débords. Un bâtiment deux fois plus grand au sol n'a que 1,4 fois plus de murs extérieurs.",
+    },
+    {
+      q: "Ces règles remplacent-elles la visite d'un artisan ?",
+      a: "Non. Elles décrivent un logement ordinaire et ignorent les particularités — géométrie complexe, murs de refend, hauteurs inhabituelles. Leur usage est de donner un ordre de grandeur justifiable, et de repérer une quantité aberrante sur un devis reçu : un écart de 10 % est normal, un facteur deux mérite une question.",
+    },
+  ];
+}
+
 const BODIES: Record<string, () => React.ReactElement> = {
   "prix-renovation-appartement": BodyAppartement,
   "prix-renovation-maison": BodyMaison,
   "ordre-travaux-renovation": BodyOrdre,
   "verifier-devis-travaux": BodyDevis,
   "faire-soi-meme-ou-artisan": BodyDIY,
+  "calculer-budget-travaux": BodyBudget,
 };
 
 export default async function GuidePage({ params }: { params: Promise<{ slug: string }> }) {
