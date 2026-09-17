@@ -54,7 +54,7 @@ export default function PrixRenovationHub() {
           Les prix de la rénovation varient selon la région, surtout la main-d&apos;œuvre. Choisis ta ville
           pour voir les coûts au m² par type de travaux — ou lance directement ton estimation.
         </p>
-        <Link href="/projets/nouveau" className="btn btn-primary mt-4 py-2.5">Estimer mes travaux →</Link>
+        <Link href="/projets/nouveau/rapide" className="btn btn-primary mt-4 min-h-[48px] py-2.5">Estimer mes travaux →</Link>
       </header>
 
       <p className="mt-4 rounded-field border border-line bg-surface-2 px-4 py-3 text-[13.5px] leading-relaxed text-muted">

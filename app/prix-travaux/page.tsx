@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { PROJETS, estimProjet } from "@/lib/seo-projets";
 import { VILLES_SEO } from "@/lib/villes";
 import { PRIX_MAJ_FR } from "@/lib/prix-maj";
+import { CtaEstimation } from "@/components/CtaEstimation";
 
 export const dynamic = "force-static";
 
@@ -91,11 +92,10 @@ export default function PrixTravauxHub() {
         ))}
       </div>
 
-      <div className="card mt-6 border-brand-100 bg-brand-50/40 p-5">
-        <p className="font-semibold text-ink">Ton projet n&apos;est pas dans la liste ?</p>
-        <p className="mt-1 text-sm text-muted">L&apos;estimateur AVYORA chiffre n&apos;importe quel projet, pièce par pièce, en 3 minutes — gratuit.</p>
-        <Link href="/projets/nouveau" className="btn btn-primary mt-3 py-2.5">Estimer mes travaux →</Link>
-      </div>
+      <CtaEstimation
+        titre="Ton projet n&apos;est pas dans la liste ?"
+        sousTitre="L&apos;estimateur AVYORA chiffre n&apos;importe quel projet, pièce par pièce, en 3 minutes — gratuit."
+      />
 
       <h2>Comment lire ces prix</h2>
       <p>

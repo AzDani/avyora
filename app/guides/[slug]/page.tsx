@@ -6,6 +6,7 @@ import { VILLES_SEO } from "@/lib/villes";
 import { PRIX_MAJ, PRIX_MAJ_FR } from "@/lib/prix-maj";
 import { prixNational, estim, posteRef, partMainOeuvreParLot, postesSansFourniture, catalogueStats } from "@/lib/seo-prix";
 import { og } from "@/lib/seo-og";
+import { CtaEstimation } from "@/components/CtaEstimation";
 
 export const dynamic = "force-static";
 // Ensemble fini de pages : tout slug hors liste renvoie un vrai 404 (pas de soft-404 à 200).
@@ -81,14 +82,9 @@ const CSS = `
 }
 `;
 
+/** Conserve la signature historique des guides, délègue au CTA partagé. */
 function Cta({ label }: { label: string }) {
-  return (
-    <div className="card mt-6 border-brand-100 bg-brand-50/40 p-5">
-      <p className="font-semibold text-ink">{label}</p>
-      <p className="mt-1 text-sm text-muted">Gratuit, sans inscription — une fourchette chiffrée adaptée à ton bien et ton code postal.</p>
-      <Link href="/projets/nouveau" className="btn btn-primary mt-3 py-2.5">Estimer mes travaux →</Link>
-    </div>
-  );
+  return <CtaEstimation titre={label} />;
 }
 
 function Faq({ items }: { items: { q: string; a: string }[] }) {

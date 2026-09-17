@@ -8,6 +8,9 @@ import { villeBySlug } from "@/lib/villes";
 import { deptInfo } from "@/lib/geo";
 import { regionCoef } from "@/lib/estimateur";
 import { og } from "@/lib/seo-og";
+import { CtaEstimation } from "@/components/CtaEstimation";
+import { PIECES_ESTIMATEUR } from "@/lib/seo-projets";
+import type { PieceKey } from "@/lib/estimateur";
 
 export const dynamic = "force-static";
 // Ensemble fini : hors matrice = 404. Les couples retirés sont redirigés en 308 par next.config.ts.
@@ -125,6 +128,7 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
   // `titreSeo` d'abord : dérivé de `h1`, le sujet est parfois un GROUPE VERBAL, et « Prix refaire une
   // toiture à Strasbourg » est agrammatical. Constaté sur 120 des 400 pages ville.
   const sujet = p.titreSeo ?? titreSansPrefixe(p.h1);
+  const pieceEstimateur = PIECES_ESTIMATEUR.has(p.espace ?? "") ? (p.espace as PieceKey) : undefined;
   const ecart = est.ttc - estNat.ttc;
 
   const coefPhrase =
@@ -257,11 +261,14 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
       </div>
       <p className="note">Panier représentatif calculé par le moteur AVYORA, ajusté au code postal de {v.nom}. Ton projet réel s&apos;ajuste selon tes choix.</p>
 
-      <div className="card mt-6 border-brand-100 bg-brand-50/40 p-5">
-        <p className="font-semibold text-ink">Estime ton projet à {v.nom} en 3 minutes</p>
-        <p className="mt-1 text-sm text-muted">Gratuit, sans inscription — une fourchette chiffrée adaptée à ton bien et ton code postal.</p>
-        <Link href="/projets/nouveau" className="btn btn-primary mt-3 py-2.5">Estimer mes travaux →</Link>
-      </div>
+      <CtaEstimation
+        titre={`Estime ${p.nom} à ${v.nom} en 3 minutes`}
+        cp={v.cp}
+        piece={pieceEstimateur}
+        surface={pieceEstimateur ? p.surface : undefined}
+        libelle={`Estimer ${p.nom} à ${v.nom}`}
+        sousTitre={`Gratuit, sans inscription — l'estimation part déjà ajustée à la main-d'œuvre de ${v.nom}.`}
+      />
 
       <h2>Ce qui est compris</h2>
       <ul>{p.inclus.map((x, i) => <li key={i}>{x}</li>)}</ul>

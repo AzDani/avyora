@@ -8,8 +8,19 @@ import { useMemo, useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  CATALOG, buildDevis, presetRapide, presetPieces, AMPLEURS, regionCoef,
-  type Ampleur, type QuiRealise, type TypeBien, type Finition, type PieceKey, type PieceSel,
+  PIECES,
+  CATALOG,
+  buildDevis,
+  presetRapide,
+  presetPieces,
+  AMPLEURS,
+  regionCoef,
+  type Ampleur,
+  type QuiRealise,
+  type TypeBien,
+  type Finition,
+  type PieceKey,
+  type PieceSel,
 } from "@/lib/estimateur";
 import { suivre } from "@/lib/track";
 import { conversionEstimation } from "@/lib/gtag";
@@ -189,13 +200,33 @@ const QUIS: { v: QuiRealise; lvl: number }[] = [
 
 export type RapideEdit = { projectId: string; type?: TypeBien; surface?: number; cp?: string; ampleur?: Ampleur; finition?: Finition; qui?: QuiRealise };
 
-export default function EstimateurRapide({ isPro = false, edit }: { isPro?: boolean; edit?: RapideEdit }) {
+/**
+ * Contexte d'amorçage venu d'une page SEO (déjà validé côté serveur, cf. la page `rapide`).
+ * `edit` reste réservé à la reprise d'un projet EXISTANT — les deux ne se mélangent pas.
+ */
+export type RapideInitial = { cp?: string; piece?: PieceKey; surface?: number };
+
+export default function EstimateurRapide({
+  isPro = false,
+  edit,
+  initial,
+}: {
+  isPro?: boolean;
+  edit?: RapideEdit;
+  initial?: RapideInitial;
+}) {
   const router = useRouter();
-  const [mode, setMode] = useState<Mode>("bien");
+  // Une pièce transmise par l'URL ouvre directement le mode « pièces » avec cette pièce
+  // présélectionnée : le visiteur venait de lire une page sur cette pièce précise.
+  const [mode, setMode] = useState<Mode>(!edit && initial?.piece ? "pieces" : "bien");
   const [type, setType] = useState<TypeBien>(edit?.type ?? "Maison");
   const [surface, setSurface] = useState(edit?.surface ?? 100);
-  const [pieces, setPieces] = useState<PieceSel[]>([]);
-  const [cp, setCp] = useState(edit?.cp ?? "");
+  const [pieces, setPieces] = useState<PieceSel[]>(
+    !edit && initial?.piece
+      ? [{ room: initial.piece, surface: initial.surface ?? PIECES.find((x) => x.key === initial.piece)!.surfaceDefaut }]
+      : [],
+  );
+  const [cp, setCp] = useState(edit?.cp ?? (!edit ? (initial?.cp ?? "") : ""));
   const [ampleur, setAmpleur] = useState<Ampleur>(edit?.ampleur ?? "complete");
   const [finition, setFinition] = useState<Finition>(edit?.finition ?? "standard");
   const [qui, setQui] = useState<QuiRealise>(edit?.qui ?? "pros");

@@ -6,6 +6,9 @@ import { PROJETS, projetBySlug, estimProjet, MATRIX_SLUGS, MATRIX_VILLES, liensD
 import { PRIX_MAJ, PRIX_MAJ_FR } from "@/lib/prix-maj";
 import { VILLES_SEO } from "@/lib/villes";
 import { og } from "@/lib/seo-og";
+import { CtaEstimation } from "@/components/CtaEstimation";
+import { PIECES_ESTIMATEUR } from "@/lib/seo-projets";
+import type { PieceKey } from "@/lib/estimateur";
 
 export const dynamic = "force-static";
 // Ensemble fini de pages : tout slug hors liste renvoie un vrai 404 (pas de soft-404 à 200).
@@ -131,6 +134,9 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
         ? ` — soit environ ${euro(ratio)}/${u.label}`
         : ` — soit environ ${euro(ratio)} par ${u.label}`
       : "";
+  // Seuls 5 projets ont un `espace` qui correspond à une pièce de l'estimateur rapide. Pour les
+  // autres (toiture, façade, fenêtres…), on ne préremplit RIEN plutôt que de deviner une pièce.
+  const pieceEstimateur = PIECES_ESTIMATEUR.has(p.espace ?? "") ? (p.espace as PieceKey) : undefined;
   const regions = REGIONS.map((r) => ({ ...r, ttc: estimProjet(p, r.cp).ttc }));
   // Barème par surface : le même panier rejoué sur chaque taille de pièce (cf. qtyPourSurface).
   const parSurface = (p.surfaces ?? []).map((s) => {
@@ -327,11 +333,12 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
         </>
       )}
 
-      <div className="card mt-6 border-brand-100 bg-brand-50/40 p-5">
-        <p className="font-semibold text-ink">Estime ton projet en 3 minutes</p>
-        <p className="mt-1 text-sm text-muted">Gratuit, sans inscription — une fourchette chiffrée adaptée à ton bien et ton code postal.</p>
-        <Link href="/projets/nouveau" className="btn btn-primary mt-3 py-2.5">Estimer mes travaux →</Link>
-      </div>
+      <CtaEstimation
+        titre={`Estime ${p.nom} en 3 minutes`}
+        piece={pieceEstimateur}
+        surface={pieceEstimateur ? p.surface : undefined}
+        libelle={pieceEstimateur ? `Estimer ${p.nom}` : "Estimer mes travaux"}
+      />
 
       {variantes.length > 1 && (
         <>

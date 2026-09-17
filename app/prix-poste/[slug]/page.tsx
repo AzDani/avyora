@@ -5,6 +5,7 @@ import { POSTES_PAGES, postePageBySlug } from "@/lib/seo-postes";
 import { posteRef, partMainOeuvreParLot } from "@/lib/seo-prix";
 import { PRIX_MAJ, PRIX_MAJ_FR } from "@/lib/prix-maj";
 import { og } from "@/lib/seo-og";
+import { CtaEstimation } from "@/components/CtaEstimation";
 
 export const dynamic = "force-static";
 // Ensemble fini : tout slug hors liste renvoie un vrai 404 (pas de soft-404 à 200).
@@ -134,10 +135,7 @@ export default async function PrixPostePage({ params }: { params: Promise<{ slug
         </section>
       ))}
 
-      <div className="cta">
-        <p><strong>Besoin du chiffre pour votre projet ?</strong> L&apos;estimation rapide est gratuite et sans inscription : quatre questions, une fourchette ajustée à votre code postal.</p>
-        <Link href="/projets/nouveau/rapide" className="btn">Estimer mes travaux →</Link>
-      </div>
+      <CtaEstimation titre="Besoin du chiffre pour ton projet ?" sousTitre="L&apos;estimation rapide est gratuite et sans inscription : quatre questions, une fourchette ajustée à ton code postal." />
 
       <h2>Questions fréquentes</h2>
       <div className="faq">

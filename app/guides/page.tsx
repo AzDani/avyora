@@ -56,7 +56,7 @@ export default function GuidesHub() {
           Des repères de prix au m² fiables, calculés avec le référentiel AVYORA (France 2026), par type de bien
           et par type de travaux. Puis affine gratuitement pour ton projet.
         </p>
-        <Link href="/projets/nouveau" className="btn btn-primary mt-4 py-2.5">Estimer mes travaux →</Link>
+        <Link href="/projets/nouveau/rapide" className="btn btn-primary mt-4 min-h-[48px] py-2.5">Estimer mes travaux →</Link>
       </header>
 
       <div className="mt-8 grid gap-3 sm:grid-cols-2">

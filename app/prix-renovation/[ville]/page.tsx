@@ -6,6 +6,7 @@ import { prixVille, regionCoef } from "@/lib/seo-prix";
 import { deptInfo } from "@/lib/geo";
 import { PRIX_MAJ_FR } from "@/lib/prix-maj";
 import { MATRIX_SLUGS, MATRIX_VILLES } from "@/lib/seo-projets";
+import { CtaEstimation } from "@/components/CtaEstimation";
 
 export const dynamic = "force-static";
 // Ensemble fini de villes : tout slug hors liste renvoie un vrai 404 (pas de soft-404 à 200).
@@ -208,11 +209,12 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
         </p>
       )}
 
-      <div className="card mt-6 border-brand-100 bg-brand-50/40 p-5">
-        <p className="font-semibold text-ink">Estime ton projet à {v.nom} en 3 minutes</p>
-        <p className="mt-1 text-sm text-muted">Gratuit, sans inscription — une fourchette chiffrée adaptée à ton bien.</p>
-        <Link href="/projets/nouveau" className="btn btn-primary mt-3 py-2.5">Estimer mes travaux →</Link>
-      </div>
+      <CtaEstimation
+        titre={`Estime ton projet à ${v.nom} en 3 minutes`}
+        cp={v.cp}
+        libelle={`Estimer mes travaux à ${v.nom}`}
+        sousTitre={`Gratuit, sans inscription — l'estimation part déjà ajustée à la main-d'œuvre de ${v.nom}.`}
+      />
 
       <h2>Questions fréquentes</h2>
       <div className="faq">

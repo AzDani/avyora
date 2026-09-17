@@ -792,6 +792,13 @@ export const titreSansPrefixe = (h1: string) =>
     .replace("Prix ", "")
     .replace(" en 2026", "");
 
+/**
+ * Espaces de `Projet` qui correspondent à une pièce que l'estimateur rapide sait présélectionner
+ * (`PieceKey`). Les autres projets (toiture, façade, fenêtres, PAC…) ne décrivent pas une pièce :
+ * pour eux on n'amorce rien, plutôt que de deviner.
+ */
+export const PIECES_ESTIMATEUR = new Set<string>(["cuisine", "sdb", "chambre", "salon", "suite", "buanderie"]);
+
 export function projetBySlug(slug: string): Projet | undefined {
   return PROJETS.find((p) => p.slug === slug);
 }
