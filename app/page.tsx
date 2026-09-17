@@ -144,7 +144,7 @@ const HOME_CSS = `
 `;
 
 const HOME_HTML = `
-<a href="/tarifs" class="promo"><span class="dot"></span>Offre de lancement — jusqu'à <b>−35&nbsp;%</b> sur AVYORA Pro <span class="arr">· durée limitée →</span></a>
+<a href="/tarifs" class="promo"><span class="dot"></span>Estimer est <b>gratuit</b> — AVYORA Pro dès 18,85 €/mois <span class="arr">· sans engagement →</span></a>
 <div class="wrap"><header class="hero"><div class="in">
   <div class="eyebrow">Gestionnaire de travaux · France</div>
   <h1>Le copilote de<br><span class="hl">tes travaux.</span></h1>
@@ -231,9 +231,9 @@ const HOME_HTML = `
 
 <section class="blk" style="padding-top:0"><div class="wrap">
   <div class="price">
-    <span class="lance">Offre de lancement · jusqu'à −35 %</span>
+    <span class="lance">Tarif de lancement · bloqué pour les premiers abonnés</span>
     <h2>Gratuit pour estimer. Pro pour piloter.</h2>
-    <div class="p"><s>29 €</s><span class="big">18,85 €</span> / mois — détaillé 200 postes, rapport PDF, carnet matériaux, suivi de chantier &amp; multi-projets.</div>
+    <div class="p"><span class="big">18,85 €</span> / mois — détaillé 200 postes, rapport PDF, carnet matériaux, suivi de chantier &amp; multi-projets.</div>
     <div class="cta">
       <a href="/tarifs" class="btn btn-o">Passer Pro</a>
       <a href="/tarifs" class="btn btn-w">Voir tous les plans</a>
@@ -271,7 +271,7 @@ const HOME_HTML = `
 `;
 
 const HOME_HTML_EN = `
-<a href="/tarifs" class="promo"><span class="dot"></span>Launch offer — up to <b>−35&nbsp;%</b> on AVYORA Pro <span class="arr">· limited time →</span></a>
+<a href="/tarifs" class="promo"><span class="dot"></span>Estimating is <b>free</b> — AVYORA Pro from €18.85/month <span class="arr">· no commitment →</span></a>
 <div class="wrap"><header class="hero"><div class="in">
   <div class="eyebrow">Renovation project manager · France</div>
   <h1>Your renovation's<br><span class="hl">copilot.</span></h1>
@@ -355,9 +355,9 @@ const HOME_HTML_EN = `
 
 <section class="blk" style="padding-top:0"><div class="wrap">
   <div class="price">
-    <span class="lance">Launch offer · up to −35 %</span>
+    <span class="lance">Launch pricing · locked for early subscribers</span>
     <h2>Free to estimate. Pro to unlock everything.</h2>
-    <div class="p"><s>€29</s><span class="big">€18.85</span> / month — detailed 200 items, PDF report, saving and project tracking.</div>
+    <div class="p"><span class="big">€18.85</span> / month — detailed 200 items, PDF report, saving and project tracking.</div>
     <div class="cta">
       <a href="/tarifs" class="btn btn-o">Go Pro</a>
       <a href="/tarifs" class="btn btn-w">See all plans</a>

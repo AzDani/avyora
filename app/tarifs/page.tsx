@@ -108,11 +108,14 @@ export default async function TarifsPage({
                 <span className="data text-3xl font-semibold text-ink">{p.prix}</span>
                 <span className="text-sm text-muted">{p.unite}</span>
               </div>
-              <div className="mt-2 flex items-center gap-2">
-                <span className="text-[16px] font-semibold text-muted line-through decoration-[1.5px]">{p.base}</span>
-                <span className="rounded-full bg-brand-600 px-2 py-0.5 text-[11px] font-bold text-white">{p.off} {t.offSuffix}</span>
-              </div>
-              <div className="mt-1.5 text-xs text-faint">{p.note}</div>
+              {/* PAS de prix barré ici. Le « 29 € » affiché jusqu'au 17 septembre n'avait jamais
+                  été pratiqué : en droit français un prix de référence dans une réduction annoncée
+                  doit être un prix réellement pratiqué, et un détecteur de fausses promotions y voit
+                  exactement ce qu'il cherche (compte Instagram restreint le 17 sept. pour
+                  « pratiques commerciales interdites »). L'argument de lancement est désormais une
+                  promesse vérifiable — le tarif ne bouge pas pour les premiers abonnés — et non une
+                  remise sur un prix fictif. Ne pas réintroduire d'ancrage sans prix réel à l'appui. */}
+              <div className="mt-2 text-xs text-faint">{p.note}</div>
               <div className="mt-5">{user ? <BoutonCheckout plan={key} /> : <BoutonAbo plan={key} />}</div>
             </div>
           );
