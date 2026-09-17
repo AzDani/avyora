@@ -9,10 +9,18 @@ export const metadata = { robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
 // Estimation détaillée (poste par poste) — réservée aux abonnés Pro.
-// Non connecté → connexion ; connecté mais free → page de prix.
+// Destination d'un visiteur qui clique « Détail poste par poste — Pro ».
+//
+// AVANT : un visiteur anonyme était envoyé sur /connexion, c'est-à-dire qu'on lui demandait de se
+// connecter à un compte qu'il n'a pas — puis, une fois créé, il découvrait la page de tarifs.
+// Deux murs d'affilée, sans prévenir, au point du parcours où l'on perd le plus de monde.
+//
+// MAINTENANT : un anonyme va directement sur /tarifs, qui explique l'offre ET propose à la fois de
+// créer un compte et de se connecter. Un seul mur, et c'est le mur honnête — le bouton annonce
+// désormais « Pro », donc personne n'y arrive par surprise.
 export default async function NouveauProjetDetaille() {
   const user = await getUser();
-  if (!user) redirect("/connexion?next=/projets/nouveau/detaille");
+  if (!user) redirect("/tarifs");
   if (!estPro(user)) redirect("/tarifs");
 
   return (
