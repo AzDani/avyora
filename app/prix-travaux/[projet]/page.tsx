@@ -124,6 +124,13 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
   const nomQ = p.nomQuestion ?? p.nom;
   const est = estimProjet(p, "");
   const f = four(est.ttc);
+  // Décomposition du total. Base = travaux + provision : `totaux.ht` EXCLUT les aléas
+  // (core.ts : ttc = ht + tva + aleas), donc rapporter la provision à `ht` donnerait 107 %.
+  // La dernière part est le RESTE, pour que la colonne fasse exactement 100 % malgré les arrondis.
+  const baseHT = est.ht + est.aleas;
+  const pctMat = baseHT > 0 ? Math.round((est.materiaux / baseHT) * 100) : 0;
+  const pctMo = baseHT > 0 ? Math.round((est.mainOeuvre / baseHT) * 100) : 0;
+  const pctAleas = Math.max(0, 100 - pctMat - pctMo);
   // Ratio « soit environ X €/u » : seulement quand `uniteBase` déclare une unité qui a un sens, et
   // sur une quantité LUE dans `tasks`. Sans `uniteBase`, aucun ratio n'est affiché — l'absence de
   // ratio coûte moins cher qu'un ratio faux (un poêle n'a pas de prix au m²).
@@ -418,6 +425,51 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
           </p>
         </>
       )}
+
+      <h2>Ce que contient ce total</h2>
+      <p>
+        Une fourchette ne dit pas grand-chose si on ignore ce qu&apos;il y a dedans. Voici la
+        décomposition que le moteur calcule pour {nomQ}, avant TVA :
+      </p>
+      <div className="tw surf">
+        <table>
+          <thead>
+            <tr><th>Poste</th><th>Montant HT</th><th>Part</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Matériaux et fournitures</td>
+              <td className="num">{euro(est.materiaux)}</td>
+              <td className="num">{pctMat} %</td>
+            </tr>
+            <tr>
+              <td>Main-d&apos;œuvre</td>
+              <td className="num">{euro(est.mainOeuvre)}</td>
+              <td className="num">{pctMo} %</td>
+            </tr>
+            <tr>
+              <td>Provision pour imprévus</td>
+              <td className="num">{euro(est.aleas)}</td>
+              <td className="num">{pctAleas} %</td>
+            </tr>
+            <tr className="lot">
+              <td>Total HT, provision comprise</td>
+              <td className="num">{euro(baseHT)}</td>
+              <td className="num">100 %</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p className="note">
+        La provision pour imprévus est <strong>déjà incluse</strong> dans le budget affiché en haut
+        de page : un chantier de rénovation réserve des surprises une fois les cloisons ouvertes, et
+        un chiffrage qui les ignore est faux par construction. La TVA s&apos;ajoute ensuite au taux
+        applicable à chaque poste (5,5 %, 10 % ou 20 %) — voir <Link href="/methodologie">la méthode</Link>.
+      </p>
+      <p className="note">
+        L&apos;écart entre matériaux et main-d&apos;œuvre est aussi ce qui décide si faire soi-même
+        vaut le coup : <Link href="/guides/faire-soi-meme-ou-artisan">le calcul lot par lot</Link>.
+      </p>
 
       <h2>Ce qui est compris</h2>
       <ul>{p.inclus.map((x, i) => <li key={i}>{x}</li>)}</ul>

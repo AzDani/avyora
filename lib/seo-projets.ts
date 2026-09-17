@@ -873,6 +873,17 @@ export interface LotBreakdown {
 export interface ProjetEstim {
   ttc: number;
   surface: number;
+  /**
+   * Décomposition du total, telle que le moteur la calcule (`bilan()` + `totals()`), en HT.
+   * Publiée nulle part jusqu'ici alors que c'est l'information la plus différenciante du produit :
+   * les comparateurs affichent une fourchette, AVYORA peut dire ce qu'il y a dedans.
+   * `aleas` est la provision pour imprévus (7 %), incluse dans tout total publié — seule
+   * /methodologie la nommait, une page de prix qui l'inclut sans le dire n'est pas honnête.
+   */
+  materiaux: number;
+  mainOeuvre: number;
+  aleas: number;
+  ht: number;
   lots: LotBreakdown[];
 }
 
@@ -962,5 +973,13 @@ export function estimProjet(p: Projet, cp = "", surface?: number, tasks?: TacheS
       lignes: lignes.map((l) => ({ nom: l.nom, qty: l.qty, unite: l.unite, ttc: Math.round(l.ttc) })),
     }));
 
-  return { ttc: Math.round(dv.totaux.ttc), surface: ctx.surface, lots };
+  return {
+    ttc: Math.round(dv.totaux.ttc),
+    surface: ctx.surface,
+    materiaux: Math.round(dv.bilan.matA),
+    mainOeuvre: Math.round(dv.bilan.moA),
+    aleas: Math.round(dv.totaux.aleas),
+    ht: Math.round(dv.totaux.ht),
+    lots,
+  };
 }
