@@ -83,6 +83,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "yearly" as const,
       priority: 0.3,
     })),
-    { url: `${siteUrl}/projets/nouveau/rapide`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
+    { url: `${siteUrl}/estimation-travaux`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
   ];
 }

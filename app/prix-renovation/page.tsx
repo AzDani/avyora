@@ -37,6 +37,19 @@ const jsonLd = {
       name: "Prix d'une rénovation par ville",
       inLanguage: "fr-FR",
       description: "Coût d'une rénovation au m² selon votre ville en France.",
+        // ItemList : dit explicitement à Google ce que ce hub RÉPERTORIE. Sans elle, une
+        // CollectionPage n'annonce qu'un type, pas son contenu. Les entrées sont dérivées de la
+        // même source que la page affiche — elles ne peuvent pas diverger du rendu.
+      mainEntity: {
+        "@type": "ItemList",
+        numberOfItems: VILLES_SEO.length,
+        itemListElement: VILLES_SEO.map((v, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          name: `Prix rénovation à ${v.nom}`,
+          url: `${siteUrl}/prix-renovation/${v.slug}`,
+        })),
+      },
     },
   ],
 };
@@ -54,7 +67,7 @@ export default function PrixRenovationHub() {
           Les prix de la rénovation varient selon la région, surtout la main-d&apos;œuvre. Choisis ta ville
           pour voir les coûts au m² par type de travaux — ou lance directement ton estimation.
         </p>
-        <Link href="/projets/nouveau/rapide" className="btn btn-primary mt-4 min-h-[48px] py-2.5">Estimer mes travaux →</Link>
+        <Link href="/estimation-travaux" className="btn btn-primary mt-4 min-h-[48px] py-2.5">Estimer mes travaux →</Link>
       </header>
 
       <p className="mt-4 rounded-field border border-line bg-surface-2 px-4 py-3 text-[13.5px] leading-relaxed text-muted">
@@ -66,7 +79,7 @@ export default function PrixRenovationHub() {
           Comment nous calculons l&apos;écart régional
         </Link>
         {" "}·{" "}
-        <Link href="/projets/nouveau/rapide" className="font-medium text-brand-600 hover:underline">
+        <Link href="/estimation-travaux" className="font-medium text-brand-600 hover:underline">
           estimer avec mon code postal
         </Link>
       </p>

@@ -34,6 +34,19 @@ const jsonLd = {
       name: "Prix des travaux par corps d'état",
       inLanguage: "fr-FR",
       description: "Prix détaillés par corps d'état, poste par poste, fourni-posé et fourniture seule.",
+        // ItemList : dit explicitement à Google ce que ce hub RÉPERTORIE. Sans elle, une
+        // CollectionPage n'annonce qu'un type, pas son contenu. Les entrées sont dérivées de la
+        // même source que la page affiche — elles ne peuvent pas diverger du rendu.
+      mainEntity: {
+        "@type": "ItemList",
+        numberOfItems: POSTES_PAGES.length,
+        itemListElement: POSTES_PAGES.map((p, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          name: p.h1,
+          url: `${siteUrl}/prix-poste/${p.slug}`,
+        })),
+      },
     },
   ],
 };

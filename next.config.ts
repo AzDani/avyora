@@ -76,6 +76,12 @@ const nextConfig: NextConfig = {
   // branches (avyora-…-git-….vercel.app), qui gardent leur propre URL.
   async redirects() {
     return [
+      // L'estimateur a quitté /projets/nouveau/rapide (une URL qui décrivait une action interne de
+      // l'application) pour /estimation-travaux (qui décrit son sujet). Fait à J+11 du domaine,
+      // c'est-à-dire au moment le moins coûteux : l'ancienne URL était au sitemap, elle ne doit
+      // donc jamais tomber en 404. Sortie du préfixe /projets, elle n'a plus besoin de l'exception
+      // « Allow » de robots.txt.
+      { source: "/projets/nouveau/rapide", destination: "/estimation-travaux", permanent: true },
       {
         source: "/:path*",
         has: [{ type: "host", value: "avyora-chi.vercel.app" }],

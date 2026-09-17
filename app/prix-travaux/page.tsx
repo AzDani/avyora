@@ -111,6 +111,19 @@ export default function PrixTravauxHub() {
         name: "Prix des travaux de rénovation par type",
         inLanguage: "fr-FR",
         url: `${siteUrl}/prix-travaux`,
+        // ItemList : dit explicitement à Google ce que ce hub RÉPERTORIE. Sans elle, une
+        // CollectionPage n'annonce qu'un type, pas son contenu. Les entrées sont dérivées de la
+        // même source que la page affiche — elles ne peuvent pas diverger du rendu.
+        mainEntity: {
+          "@type": "ItemList",
+          numberOfItems: PROJETS.length,
+          itemListElement: PROJETS.map((p, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            name: p.h1.replace(" en 2026", ""),
+            url: `${siteUrl}/prix-travaux/${p.slug}`,
+          })),
+        },
       },
       {
         "@type": "BreadcrumbList",

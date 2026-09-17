@@ -37,6 +37,19 @@ const jsonLd = {
       name: "Guides des prix de la rénovation",
       inLanguage: "fr-FR",
       description: "Guides des prix de la rénovation au m² par type de bien et de travaux.",
+        // ItemList : dit explicitement à Google ce que ce hub RÉPERTORIE. Sans elle, une
+        // CollectionPage n'annonce qu'un type, pas son contenu. Les entrées sont dérivées de la
+        // même source que la page affiche — elles ne peuvent pas diverger du rendu.
+      mainEntity: {
+        "@type": "ItemList",
+        numberOfItems: GUIDES.length,
+        itemListElement: GUIDES.map((g, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          name: g.h1,
+          url: `${siteUrl}/guides/${g.slug}`,
+        })),
+      },
     },
   ],
 };
@@ -56,7 +69,7 @@ export default function GuidesHub() {
           Des repères de prix au m² fiables, calculés avec le référentiel AVYORA (France 2026), par type de bien
           et par type de travaux. Puis affine gratuitement pour ton projet.
         </p>
-        <Link href="/projets/nouveau/rapide" className="btn btn-primary mt-4 min-h-[48px] py-2.5">Estimer mes travaux →</Link>
+        <Link href="/estimation-travaux" className="btn btn-primary mt-4 min-h-[48px] py-2.5">Estimer mes travaux →</Link>
       </header>
 
       <div className="mt-8 grid gap-3 sm:grid-cols-2">

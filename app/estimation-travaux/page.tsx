@@ -2,6 +2,10 @@ import Link from "next/link";
 import EstimateurRapide from "@/components/EstimateurRapide";
 import { getT } from "@/lib/i18n/server";
 import { getUser, estPro } from "@/lib/auth";
+
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
 import type { PieceKey } from "@/lib/estimateur";
 import { sourceSeoValide } from "@/lib/seo-source";
 
@@ -9,7 +13,7 @@ export const metadata = {
   title: "Estimation travaux gratuite — budget rénovation en 3 minutes",
   description:
     "Calcule gratuitement le budget de tes travaux de rénovation : 4 questions, une fourchette chiffrée ajustée à ton code postal. Sans inscription.",
-  alternates: { canonical: "/projets/nouveau/rapide" },
+  alternates: { canonical: "/estimation-travaux" },
 };
 export const dynamic = "force-dynamic";
 
@@ -49,8 +53,43 @@ export default async function NouveauProjetRapide({
   const t = tr.rapide;
   const isPro = !!user && estPro(user);
   const initial = contexte(sp);
+
+  /**
+   * Balisage de l'outil lui-même. La page est en priorité 0.9 au sitemap et c'est là que converge
+   * tout le maillage SEO — elle n'avait pourtant AUCUN JSON-LD.
+   *
+   * ⚠️ Pas d'`aggregateRating` : AVYORA n'a pas d'avis réels, et en inventer serait un faux avis.
+   * `offers` à 0 € est exact — l'estimation rapide est gratuite et sans inscription ; c'est
+   * l'estimation DÉTAILLÉE qui est payante, et elle vit sur une autre URL.
+   */
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        name: "Estimateur de travaux AVYORA",
+        url: `${siteUrl}/estimation-travaux`,
+        applicationCategory: "BusinessApplication",
+        operatingSystem: "Web",
+        inLanguage: "fr-FR",
+        isAccessibleForFree: true,
+        description:
+          "Estime gratuitement le budget de tes travaux de rénovation : quatre questions, une fourchette chiffrée ajustée à ton code postal, sans inscription.",
+        offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+        publisher: { "@id": `${siteUrl}/#organization` },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Accueil", item: `${siteUrl}/` },
+          { "@type": "ListItem", position: 2, name: "Estimation de travaux", item: `${siteUrl}/estimation-travaux` },
+        ],
+      },
+    ],
+  };
   return (
     <div className="space-y-6">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <header className="animate-rise">
         <p className="mb-1 text-[13px]">
           <Link href="/projets/nouveau" className="text-muted hover:text-brand-700">{t.pageBack}</Link>

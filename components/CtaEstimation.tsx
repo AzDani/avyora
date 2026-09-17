@@ -58,7 +58,7 @@ export function CtaEstimation({
         {sousTitre ?? "Gratuit, sans inscription — une fourchette chiffrée adaptée à ton bien et ton code postal."}
       </p>
       <Link
-        href={`/projets/nouveau/rapide${qs ? `?${qs}` : ""}`}
+        href={`/estimation-travaux${qs ? `?${qs}` : ""}`}
         className="btn btn-primary mt-3 min-h-[48px] py-2.5"
       >
         {libelle ?? "Estimer mes travaux"} →

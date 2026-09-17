@@ -37,7 +37,7 @@ export default async function ChoixEstimation({ isPro }: { isPro: boolean }) {
             <Li tone="free">{t.rapideF3}</Li>
           </ul>
           <div className="spacer" />
-          <Link href="/projets/nouveau/rapide" className="btn btn-outline">{t.rapideCta}</Link>
+          <Link href="/estimation-travaux" className="btn btn-outline">{t.rapideCta}</Link>
           <p className="foot">{t.rapideFoot}</p>
         </section>
 
