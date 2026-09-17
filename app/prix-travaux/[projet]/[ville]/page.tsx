@@ -32,6 +32,13 @@ const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
 
+/**
+ * Renvoie la version longue si elle tient dans la limite d'affichage d'une SERP, sinon la courte.
+ * Les combinaisons projet + ville les plus longues (« remplacement d'une baignoire par une douche »
+ * à « Boulogne-Billancourt ») débordaient de 160 car. malgré une base déjà resserrée.
+ */
+const descCourte = (longue: string, courte: string) => (longue.length <= 160 ? longue : courte);
+
 export async function generateMetadata({ params }: { params: Promise<{ projet: string; ville: string }> }): Promise<Metadata> {
   const { projet, ville } = await params;
   const p = projetBySlug(projet);
@@ -39,10 +46,17 @@ export async function generateMetadata({ params }: { params: Promise<{ projet: s
   if (!p || !v) return { title: "Prix des travaux" };
   const { ttc } = estimProjet(p, v.cp);
   const f = four(ttc);
-  const sujet = titreSansPrefixe(p.h1);
+  // `titreSeo` d'abord : dérivé de `h1`, le sujet est parfois un GROUPE VERBAL, et « Prix refaire une
+  // toiture à Strasbourg » est agrammatical. Constaté sur 120 des 400 pages ville.
+  const sujet = p.titreSeo ?? titreSansPrefixe(p.h1);
   return {
     title: `Prix ${sujet} à ${v.nom} (2026)`,
-    description: `Combien coûte ${p.nom} à ${v.nom} ? Budget ${euro(f.lo)} à ${euro(f.hi)}, ajusté au coût de la main-d'œuvre locale, détaillé poste par poste. Estimation gratuite en 3 minutes.`,
+    // Longueur visée ≤ 160 car. : au-delà, Google tronque en pleine phrase. Les noms de ville longs
+    // (Boulogne-Billancourt, Saint-Étienne) pèsent jusqu'à 20 car., d'où une base volontairement courte.
+    description: descCourte(
+      `Combien coûte ${p.nom} à ${v.nom} ? Budget ${euro(f.lo)} à ${euro(f.hi)}, ajusté à la main-d'œuvre locale et détaillé poste par poste.`,
+      `Combien coûte ${p.nom} à ${v.nom} ? Budget ${euro(f.lo)} à ${euro(f.hi)}, ajusté à la main-d'œuvre locale.`,
+    ),
     alternates: { canonical: `/prix-travaux/${p.slug}/${v.slug}` },
     openGraph: { type: "article", title: `Prix ${sujet} à ${v.nom}`, description: `Budget détaillé poste par poste à ${v.nom}.`, url: `${siteUrl}/prix-travaux/${p.slug}/${v.slug}` },
   };
@@ -100,7 +114,9 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
   const reg = regionCoef(v.cp);
   const dep = deptInfo(v.cp);
   const moPct = Math.round((reg.mo - 1) * 100);
-  const sujet = titreSansPrefixe(p.h1);
+  // `titreSeo` d'abord : dérivé de `h1`, le sujet est parfois un GROUPE VERBAL, et « Prix refaire une
+  // toiture à Strasbourg » est agrammatical. Constaté sur 120 des 400 pages ville.
+  const sujet = p.titreSeo ?? titreSansPrefixe(p.h1);
   const ecart = est.ttc - estNat.ttc;
 
   const coefPhrase =

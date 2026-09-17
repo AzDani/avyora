@@ -11,7 +11,7 @@ const siteUrl =
 export const metadata: Metadata = {
   title: "Méthodologie — d'où viennent les prix AVYORA",
   description:
-    "Comment AVYORA calcule le coût de tes travaux : 200 postes chiffrés sur 18 corps d'état, coefficient de finition, ajustement régional de la main-d'œuvre, TVA et provision pour aléas. Ce que l'estimation couvre — et ce qu'elle ne couvre pas.",
+    "Comment AVYORA calcule le coût de tes travaux : 200 postes sur 18 corps d'état, finition, main-d'œuvre régionale, TVA et aléas. Et ses limites.",
   alternates: { canonical: "/methodologie" },
 };
 

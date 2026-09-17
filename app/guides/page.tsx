@@ -14,7 +14,7 @@ export const dynamic = "force-static";
 export const metadata: Metadata = {
   title: "Guides des prix de la rénovation en France (2026)",
   description:
-    "Combien coûte une rénovation en 2026 ? Guides des prix au m² par type de bien (appartement, maison), exemples chiffrés et facteurs de prix. Estimation gratuite en 3 minutes.",
+    "Combien coûte une rénovation en 2026 ? Guides des prix au m² par type de bien, budgets chiffrés par surface et facteurs de prix.",
   alternates: { canonical: "/guides" },
 };
 

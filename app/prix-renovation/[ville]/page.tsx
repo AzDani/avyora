@@ -30,7 +30,9 @@ export async function generateMetadata({ params }: { params: Promise<{ ville: st
   const zone = dep.region ? ` (${dep.region})` : "";
   return {
     title: `Prix rénovation à ${v.nom} (2026) — coût au m²`,
-    description: `Combien coûte une rénovation à ${v.nom}${zone} ? Prix au m² par type de travaux : à partir de ${euro(complete)}/m² pour une réno complète. Estimation gratuite en 3 minutes.`,
+    // ≤ 160 car. : « Estimation gratuite en 3 minutes » poussait toutes les pages au-delà, donc
+    // tronquait la seule information locale — le prix au m². On garde le chiffre, on coupe le slogan.
+    description: `Combien coûte une rénovation à ${v.nom}${zone} ? Prix au m² par ampleur de travaux, à partir de ${euro(complete)}/m² en réno complète.`,
     alternates: { canonical: `/prix-renovation/${v.slug}` },
   };
 }

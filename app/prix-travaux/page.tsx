@@ -19,7 +19,7 @@ const four = (ttc: number) => {
 export const metadata: Metadata = {
   title: "Prix des travaux de rénovation par type (2026)",
   description:
-    "Combien coûtent vos travaux ? Prix moyens 2026 détaillés poste par poste : salle de bain, cuisine, toiture, façade, isolation, électricité, peinture. Estimation gratuite en 3 minutes.",
+    "Combien coûtent vos travaux ? Prix moyens 2026, poste par poste : salle de bain, cuisine, toiture, façade, isolation, électricité, peinture.",
   alternates: { canonical: "/prix-travaux" },
 };
 

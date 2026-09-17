@@ -42,7 +42,7 @@ export const POSTES_PAGES: PostePage[] = [
     h1: "Prix du placo au m² : cloison, doublage et faux plafond",
     title: "Prix du placo au m² : cloison, doublage, plafond",
     description:
-      "Combien coûte le placo au m² en 2026 ? Prix d'une cloison, d'un doublage, d'un faux plafond et des finitions plâtrerie, fourni-posé et fourniture seule. Le détail que les devis regroupent.",
+      "Combien coûte le placo au m² en 2026 ? Prix d'une cloison, d'un doublage, d'un faux plafond et des finitions, ouvrage par ouvrage.",
     resume: "Cloison, doublage, faux plafond et finitions : les prix que les devis regroupent sous « placo ».",
     lead:
       "« Placo » désigne cinq ouvrages différents, qui n'ont ni le même prix ni le même temps de pose. Un devis qui les regroupe sous une seule ligne est impossible à vérifier. Voici le détail, poste par poste.",
@@ -124,7 +124,7 @@ export const POSTES_PAGES: PostePage[] = [
     h1: "Prix de la plomberie : refaire une installation en 2026",
     title: "Prix plomberie 2026 : refaire toute l'installation",
     description:
-      "Combien coûte la plomberie en rénovation ? Le réseau au m², les appareils à l'unité, la production d'eau chaude : prix fourni-posé et fourniture seule, poste par poste.",
+      "Combien coûte la plomberie en rénovation ? Le réseau au m², les appareils à l'unité, et ce que recouvre vraiment une ligne de devis.",
     resume: "Le réseau au m² et les appareils à l'unité : les deux prix que les devis mélangent.",
     lead:
       "Un devis de plomberie mélange presque toujours deux choses qui n'ont rien à voir : le réseau, chiffré à la surface du logement, et les appareils, chiffrés à l'unité. Les séparer est le seul moyen de comparer deux devis.",

@@ -327,6 +327,7 @@ export const PROJETS: Projet[] = [
     kind: "maison",
     surface: 100,
     type: "Maison",
+    titreSeo: "réfection de toiture",
     uniteBase: { tache: "Réfection couverture tuiles (dépose + écran + liteaux)", label: "m² de couverture" },
     base: "une réfection de couverture tuiles d'environ 120 m² (maison de 100 m² au sol)",
     lead:
@@ -490,6 +491,7 @@ export const PROJETS: Projet[] = [
     espace: "sdb",
     surface: 6,
     type: "T3",
+    titreSeo: "remplacement baignoire par douche",
     base: "le remplacement d'une baignoire par une douche (bac, paroi, carrelage de la zone)",
     lead:
       "Transformer une baignoire en douche est l'un des travaux de salle de bain les plus demandés : plus pratique, plus sûr, et cela libère de la place. Le budget reste contenu tant qu'on ne déplace pas les arrivées d'eau.",
@@ -621,6 +623,7 @@ export const PROJETS: Projet[] = [
     kind: "maison",
     surface: 100,
     type: "Maison",
+    titreSeo: "remplacement de fenêtres",
     uniteBase: { tache: "Fenêtres", label: "fenêtre" },
     base: "le remplacement de 8 fenêtres et de leurs volets roulants",
     lead:

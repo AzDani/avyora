@@ -13,7 +13,7 @@ const siteUrl =
 export const metadata: Metadata = {
   title: "Prix des travaux par corps d'état",
   description:
-    "Le prix de chaque corps d'état, poste par poste : plâtrerie, plomberie… Prix fourni-posé et fourniture seule, pour comprendre ce que contient une ligne de devis.",
+    "Le prix de chaque corps d'état, poste par poste : fourni-posé et fourniture seule, pour comprendre ce que contient une ligne de devis.",
   alternates: { canonical: "/prix-poste" },
 };
 
