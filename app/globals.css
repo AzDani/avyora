@@ -246,3 +246,35 @@
 .skip-link{position:absolute;left:-9999px;top:0;z-index:100}
 .skip-link:focus{left:8px;top:8px;background:var(--color-surface);color:var(--color-ink);
   border:1px solid var(--color-brand-600);border-radius:10px;padding:10px 16px;font-weight:600;font-size:14px}
+
+/* ---------------------------------------------------------------------------
+   Tactile : Safari iOS ZOOME la page dès qu'on tape dans un champ dont la
+   police est sous 16px.
+
+   Périmètre exact, mesuré en navigateur : les champs de `.fld` (code postal,
+   surface du bien) étaient DÉJÀ à 16px — rien à corriger de ce côté. Ce sont
+   les <input> du composant Stepper qui posaient problème : 14,5px en normal,
+   14px en variante « field », et 13px en « compact » — ce dernier étant la
+   surface par pièce, que tout visiteur en mode « pièces » manipule, plus les
+   15 usages de Stepper du reste du produit (dont l'estimateur détaillé).
+
+   Ciblé sur les appareils sans survol ET à pointeur grossier (téléphones,
+   tablettes) : le rendu compact reste intact au clavier-souris.
+   Les hauteurs passent aussi au-dessus du seuil tactile de 44px.
+--------------------------------------------------------------------------- */
+@media (hover: none) and (pointer: coarse) {
+  .input,
+  .av-step input,
+  .av-step.compact input,
+  .av-step.field input,
+  textarea,
+  select { font-size: 16px; }
+
+  .av-step { min-height: 44px; }
+  .av-step.compact { height: 40px; }
+  .av-step.compact input { width: 46px; }
+  .av-step.field { height: 44px; }
+  .av-step button { min-width: 44px; }
+  .av-step.compact button { width: 36px; }
+  .av-step.field .st button { width: 32px; height: 32px; }
+}
