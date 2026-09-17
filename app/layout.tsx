@@ -39,14 +39,9 @@ export const metadata: Metadata = {
   },
   description,
   applicationName: "AVYORA",
-  keywords: [
-    "estimation travaux",
-    "prix rénovation",
-    "coût rénovation maison",
-    "budget travaux",
-    "prix rénovation au m2",
-    "devis travaux",
-  ],
+  // PAS de `keywords` : Google l'ignore depuis 2009 et Bing s'en sert au mieux comme signal de
+  // spam. La balise ne faisait que déclarer des intentions que les pages doivent prouver par leur
+  // contenu — ce qu'elles font désormais.
   authors: [{ name: "AVYORA" }],
   // PAS de canonical ici : dans le layout racine il est hérité par toute page qui n'en déclare pas,
   // qui se signale alors à Google comme un duplicata de l'accueil. Chaque page porte le sien.
