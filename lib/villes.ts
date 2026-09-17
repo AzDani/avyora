@@ -6,6 +6,7 @@
  * chaque page pour un contenu unique par zone.
  */
 import { regionCoef } from "./estimateur/core";
+import { deptInfo } from "./geo";
 
 export type Ville = { slug: string; nom: string; cp: string };
 
@@ -174,3 +175,55 @@ export const VILLES_RETIREES: Ville[] = VILLES.filter((v) => !VILLES_SEO.some((x
 export const MATRIX_VILLES_RETIREES: Ville[] = VILLES.slice(0, 40).filter(
   (v) => !VILLES_SEO.some((x) => x.slug === v.slug),
 );
+
+/**
+ * Villes à proposer en maillage depuis la page d'une ville donnée.
+ *
+ * POURQUOI. Chaque page ville listait les 16 PREMIÈRES de `VILLES_SEO`, c'est-à-dire toujours les
+ * mêmes grandes métropoles. Mesuré sur le HTML généré : 34 des 74 pages villes n'avaient qu'UN
+ * SEUL lien entrant, celui du hub — les petites villes n'étaient citées nulle part.
+ *
+ * Deux sources, dans cet ordre :
+ *  1. les villes de la même RÉGION (contexte réel pour le lecteur : mêmes artisans, même marché) ;
+ *  2. une ROTATION déterministe sur la liste complète, décalée par l'index de la ville courante.
+ *     C'est elle qui garantit la couverture : chaque ville apparaît dans la rotation d'autant de
+ *     pages qu'il y a de places, au lieu de dépendre de sa taille.
+ *
+ * Déterministe (aucun aléa) : le rendu statique doit être stable d'un build à l'autre.
+ */
+/** Région d'un code postal. Import RELATIF : next.config.ts lit ce fichier sans l'alias « @/ ». */
+const regionDe = (cp: string): string => deptInfo(cp).region;
+
+export function villesProches(slug: string, n = 12): Ville[] {
+  const i = VILLES_SEO.findIndex((x) => x.slug === slug);
+  if (i < 0) return VILLES_SEO.slice(0, n);
+  const moi = VILLES_SEO[i];
+  const maRegion = regionDe(moi.cp);
+  const out: Ville[] = [];
+  const vu = new Set<string>([slug]);
+
+  if (maRegion) {
+    for (const v of VILLES_SEO) {
+      if (vu.has(v.slug) || regionDe(v.cp) !== maRegion) continue;
+      out.push(v); vu.add(v.slug);
+      if (out.length >= Math.min(6, n)) break;
+    }
+  }
+  for (let k = 1; out.length < n && k <= VILLES_SEO.length; k++) {
+    const v = VILLES_SEO[(i + k) % VILLES_SEO.length];
+    if (vu.has(v.slug)) continue;
+    out.push(v); vu.add(v.slug);
+  }
+  return out;
+}
+
+/** Nombre de villes de la même région que `slug` (hors elle-même), pour formuler la phrase. */
+export function nbMemeRegion(slug: string): number {
+  const moi = VILLES_SEO.find((x) => x.slug === slug);
+  if (!moi) return 0;
+  const r = regionDe(moi.cp);
+  return r ? VILLES_SEO.filter((v) => v.slug !== slug && regionDe(v.cp) === r).length : 0;
+}
+
+export const regionDeVille = (slug: string): string =>
+  regionDe(VILLES_SEO.find((x) => x.slug === slug)?.cp ?? "");

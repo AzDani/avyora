@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { VILLES_SEO, villeBySlug } from "@/lib/villes";
+import { VILLES_SEO, villeBySlug, villesProches, nbMemeRegion } from "@/lib/villes";
 import { prixVille, regionCoef } from "@/lib/seo-prix";
 import { deptInfo } from "@/lib/geo";
 import { PRIX_MAJ_FR } from "@/lib/prix-maj";
@@ -78,6 +78,10 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
   if (!v) notFound();
 
   const grille = prixVille(v.cp);
+  // Maillage : région d'abord, puis rotation déterministe. Sans la rotation, chaque page listait
+  // les 16 mêmes métropoles et 34 villes sur 74 n'avaient qu'un seul lien entrant.
+  const proches = villesProches(v.slug);
+  const nbRegion = nbMemeRegion(v.slug);
   const reg = regionCoef(v.cp);
   const dep = deptInfo(v.cp);
   const localisation = dep.nom ? `${v.nom} (${dep.num} · ${dep.nom})` : v.nom;
@@ -250,11 +254,17 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
         <Link href="/prix-travaux" className="font-medium text-brand-600 hover:underline">tous les travaux</Link>.
       </p>
 
-      <h2>Prix rénovation dans d&apos;autres villes</h2>
+      <h2>{nbRegion > 0 ? `Prix de la rénovation autour de ${v.nom}` : "Prix de la rénovation ailleurs en France"}</h2>
+      <p>
+        {nbRegion > 0
+          ? `Les villes de la même région partagent un marché de la main-d'œuvre proche : leurs prix se comparent mieux à ${v.nom} que ceux d'une métropole à l'autre bout du pays.`
+          : `Quelques repères ailleurs en France, pour situer ${v.nom} dans l'échelle des prix.`}
+      </p>
       <div className="villes">
-        {VILLES_SEO.filter((x) => x.slug !== v.slug).slice(0, 16).map((x) => (
+        {proches.map((x) => (
           <Link key={x.slug} href={`/prix-renovation/${x.slug}`}>{x.nom}</Link>
         ))}
+        <Link href="/prix-renovation">Toutes les villes →</Link>
       </div>
     </div>
   );
