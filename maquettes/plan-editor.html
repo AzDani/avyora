@@ -1578,9 +1578,23 @@ function translateWall(w,d){
 }
 // change la longueur d'un mur : l'extrémité la moins raccordée bouge ; si un seul mur voisin y est attaché,
 // ce voisin est décalé en entier (il reste droit), comme si on l'avait glissé à la souris
+/* Une longueur tapée ne passe pas par l'aimant : elle pose l'extrémité à la distance exacte,
+   quitte à l'enfoncer dans le mur d'en face. Si le point tombe dans l'épaisseur d'un mur
+   (doublage compris), il s'arrête sur sa face — un mur ne rentre pas dans un autre. */
+function clampContreMur(p,vers,w){
+  const o=murTouche(L(),w,p);
+  if(!o)return p;
+  const c=closestOnSeg(p,o.a,o.b);
+  if(dist(p,c.p)<2e-3)return p;
+  return pointSurFace(o,c.p,vers);
+}
 function setWallLength(w,l){
   if(!(l>0.1))return;const u=norm(sub(w.b,w.a));const end=connections(w.b,w)<=connections(w.a,w)?'b':'a';
-  const oldP={...w[end]};const newP=end==='b'?add(w.a,mul(u,l)):sub(w.b,mul(u,l));const d=sub(newP,oldP);
+  const oldP={...w[end]};
+  const vise=end==='b'?add(w.a,mul(u,l)):sub(w.b,mul(u,l));
+  const newP=clampContreMur(vise,end==='b'?w.a:w.b,w);
+  if(dist(vise,newP)>2e-3)toast('La cloison s\'arrête contre le doublage : '+fmt(dist(newP,end==='b'?w.a:w.b))+' m au lieu de '+fmt(l)+' m');
+  const d=sub(newP,oldP);
   const adj=nodeWalls(oldP).filter(x=>x.w!==w);
   if(adj.length===1)translateWall(adj[0].w,d); else moveNode(oldP,newP);
 }
