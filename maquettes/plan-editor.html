@@ -1480,6 +1480,19 @@ function pointSurFace(w,pAxe,vers){
   const cote=((vers.x-w.a.x)*n.x+(vers.y-w.a.y)*n.y)>=0?1:-1;
   return add(pAxe,mul(n,cote*margeAimant(w,vers)));
 }
+/* Jusqu'où le bornage retient une extrémité — 0 quand il ne doit pas retenir du tout.
+   Le bornage existe pour UNE raison : une cloison ne peut pas entrer dans le placo d'un doublage.
+   Sans doublage, il n'a rien à faire : deux murs se rejoignent par leurs traits et le dessin les
+   raccorde. L'appliquer quand même poussait chaque mur tiré en T de la demi-épaisseur de son
+   voisin à chaque mouvement de souris — et un mur dont les DEUX bouts touchent se faisait pousser
+   par les deux côtés à la fois, donc ne gardait aucune position. */
+function margeClamp(w,p){
+  const n=perp(norm(sub(w.b,w.a)));
+  const cote=((p.x-w.a.x)*n.x+(p.y-w.a.y)*n.y)>=0?1:-1;
+  const io=isoOnSide(w,cote);
+  if(!(io&&io.mode!=='ite'&&isoShownIso(io,mode())))return 0;
+  return margeAimant(w,p);   /* face de la plaque, mesurée depuis l'axe comme l'écart ci-dessous */
+}
 function margeAimant(w,p){
   const n=perp(norm(sub(w.b,w.a)));
   const cote=((p.x-w.a.x)*n.x+(p.y-w.a.y)*n.y)>=0?1:-1;
@@ -1601,10 +1614,11 @@ function deplacementBorne(w,d){
     if(!o)continue;
     const c=closestOnSeg(cible,o.a,o.b);
     const n=perp(norm(sub(o.b,o.a)));
+    const marge=margeClamp(o,autre);
+    if(marge<=0)continue;                                          /* rien à traverser : on ne borne pas */
     const cote=((autre.x-o.a.x)*n.x+(autre.y-o.a.y)*n.y)>=0?1:-1;
-    const marge=margeAimant(o,autre);
     const ecart=((cible.x-c.p.x)*n.x+(cible.y-c.p.y)*n.y)*cote;   /* distance au trait, côté pièce */
-    if(ecart<marge-2e-3)out=add(out,mul(n,cote*(marge-ecart)));   /* on retire ce qui traverse */
+    if(ecart<marge-2e-3)out=add(out,mul(n,cote*(marge-ecart)));   /* on retire ce qui entre dans le doublage */
   }
   return out;
 }
@@ -1614,7 +1628,8 @@ function clampContreMur(p,vers,w){
   const c=closestOnSeg(p,o.a,o.b);
   const n=perp(norm(sub(o.b,o.a)));
   const cote=((vers.x-o.a.x)*n.x+(vers.y-o.a.y)*n.y)>=0?1:-1;   /* côté d'où l'on arrive */
-  const marge=margeAimant(o,vers);
+  const marge=margeClamp(o,vers);
+  if(marge<=0)return p;                                         /* pas de doublage : l'axe est atteignable */
   const ecart=((p.x-c.p.x)*n.x+(p.y-c.p.y)*n.y)*cote;           /* distance signée au trait */
   if(ecart>=marge-2e-3)return p;                                /* déjà à la face ou au-delà */
   return add(c.p,mul(n,cote*marge));                            /* ramené sur la face */

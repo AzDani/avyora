@@ -53,6 +53,24 @@ const res = await p.evaluate(() => {
     W([0, 0], [6, 0], "mur"); W([6, 0], [6, 4], "mur"); W([6, 4], [0, 4], "mur"); W([0, 4], [0, 0], "mur"); afterChange();
     setTool("mur"); chain = [v(3, 3.9)]; chainWallIds = []; hover = v(3, 0.5); lenBuf = "3.80"; commitTypedLength();
     const cl = lv.walls[lv.walls.length - 1]; t["sans doublage, la longueur tapée reste exacte"] = Math.abs(wallLen(cl) - 3.8) < 1e-6; }
+  /* Sans le moindre doublage, rien ne doit borner : deux murs se rejoignent par leurs traits, et
+     une extrémité posée sur l'axe d'un autre est une jonction en T tout à fait normale. Le bornage
+     a d'abord confondu « ne pas entrer dans le placo » avec « ne pas entrer dans le mur » : il
+     poussait alors tout mur tiré en T de la demi-épaisseur de son voisin, à chaque mouvement de
+     souris — le mur ne gardait pas sa position. */
+  { const nu = () => { state = blankState(); const lv = L(); lv.height = 2.5;
+      const W = (a, c, ty) => { const x = { id: uid(), a: v(...a), b: v(...c), type: ty }; lv.walls.push(x); return x; };
+      W([0, 0], [6, 0], "mur"); W([6, 0], [6, 4], "mur"); W([6, 4], [0, 4], "mur"); W([0, 4], [0, 0], "mur");
+      const cl = W([3, 0], [3, 4], "cloison"); afterChange(); sel = { kind: "wall", id: cl.id }; return cl; };
+    const rendu = (d) => deplacementBorne(nu(), d);
+    const exact = (d) => { const r = rendu(d); return Math.abs(r.x - d.x) < 1e-9 && Math.abs(r.y - d.y) < 1e-9; };
+    t["sans doublage, glisser le mur entier reste exact"] = exact(v(0.5, 0));
+    t["sans doublage, glisser dans l'autre sens reste exact"] = exact(v(-1.2, 0));
+    t["sans doublage, glisser en oblique reste exact"] = exact(v(0.3, 0.05));
+    t["sans doublage, les flèches du clavier restent exactes"] = exact(v(0.05, 0));
+    /* l'aimant, lui, reste : le bout se pose sur la FACE du mur (0,10 m de son axe), pas au-delà */
+    const cl = nu(); const { p: np } = snapPoint(v(3.2, 0.02), null, cl.a);
+    t["sans doublage, jonction en T : le bout se pose sur la face"] = Math.abs(np.y - 0.10) < 2e-3; }
   return t;
 });
 await b.close();
