@@ -1679,12 +1679,49 @@ function snapPoint(raw,ref,exclude){
 function connections(p,w){const lv=L();return lv.walls.filter(o=>o!==w&&!isVirtual(o)&&(same(o.a,p)||same(o.b,p)||distSeg(p,o.a,o.b)<2e-3||murTouche(lv,w,p)===o)).length;}
 // équipements adossés à un mur (leur dos touche le mur) : ils suivent quand le mur bouge
 function itemsOnWall(w){const n=perp(norm(sub(w.b,w.a)));return L().items.filter(it=>{const back=v(it.x+Math.sin(it.rot)*it.h/2,it.y-Math.cos(it.rot)*it.h/2);const c=closestOnSeg(back,w.a,w.b);const across=(back.x-c.p.x)*n.x+(back.y-c.p.y)*n.y;const s=across>=0?1:-1;return Math.abs(Math.abs(across)-faceDist(w,s))<0.08&&c.t>0.001&&c.t<0.999;});}
+/* Un bout de mur est-il POSÉ sur w ? Sur son axe — la jonction historique — ou sur sa FACE, ce
+   que fait désormais l'aimant : une cloison tape contre le doublage et ne va plus jusqu'au trait.
+   Les deux endroits qui entraînent les T ne regardaient que l'axe, à 2 mm près. Depuis que
+   l'aimant pose les bouts sur la face, ils ne voyaient plus un seul T : le mur partait seul et
+   laissait la cloison derrière lui. */
+function boutSurMur(w,p){
+  if(same(p,w.a)||same(p,w.b))return false;
+  if(distSeg(p,w.a,w.b)<2e-3)return true;
+  const c=closestOnSeg(p,w.a,w.b);
+  return c.t>1e-6&&c.t<1-1e-6&&dist(p,c.p)<=margeAimant(w,p)+2e-3;
+}
+/* Les murs qui arrivent en T sur w. On garde le mur et le bout concerné : le bout d'en face se
+   relit au moment du déplacement, il a pu bouger lui aussi. */
+function tsSurMur(w){
+  const out=[];
+  L().walls.forEach(o=>{if(o===w||isVirtual(o))return;
+    ['a','b'].forEach(e=>{if(boutSurMur(w,o[e]))out.push({o,e,orig:{...o[e]},cur:{...o[e]}});});});
+  return out;
+}
+/* Où va ce bout quand w se translate de d : il GLISSE le long de sa propre cloison, en gardant
+   son écart au mur déplacé. C'est ce qui ALLONGE la cloison au lieu de la déplacer — et qui
+   garde son angle intact quand le T n'est pas à 90°, ce qu'une simple translation lui volait. */
+function suivreT(w,f,d,a0){
+  const n=perp(norm(sub(w.b,w.a)));
+  const k=(f.orig.x-a0.x)*n.x+(f.orig.y-a0.y)*n.y;   /* écart d'origine, à conserver */
+  const fixe=f.o[f.e==='a'?'b':'a'];
+  const u=sub(f.orig,fixe),lu=Math.hypot(u.x,u.y);
+  if(lu<1e-9)return add(f.orig,d);
+  const ub=v(u.x/lu,u.y/lu),den=ub.x*n.x+ub.y*n.y;
+  if(Math.abs(den)<1e-6)return add(f.orig,d);        /* cloison parallèle au mur : rien à glisser */
+  const base=add(a0,d);
+  let t=(k-((fixe.x-base.x)*n.x+(fixe.y-base.y)*n.y))/den;
+  if(t<0.05)t=0.05;                                  /* une cloison ne se retourne pas */
+  return add(fixe,mul(ub,t));
+}
 // translate un mur entier : ses deux nœuds (et les murs qui les partagent) + les cloisons qui arrivent dessus en T + les meubles adossés
 function translateWall(w,d){ /* d peut être borné ci-dessous */
-  const followers=[];L().walls.forEach(o=>{if(o===w)return;[o.a,o.b].forEach(p=>{if(!same(p,w.a)&&!same(p,w.b)&&distSeg(p,w.a,w.b)<2e-3)followers.push({...p});});});
+  const fs=tsSurMur(w);
   const items=itemsOnWall(w);
   d=deplacementBorne(w,d);
-  const oa={...w.a},ob={...w.b};moveNode(oa,add(oa,d));moveNode(ob,add(ob,d));followers.forEach(p=>moveNode(p,add(p,d)));
+  const a0={...w.a};
+  const oa={...w.a},ob={...w.b};moveNode(oa,add(oa,d));moveNode(ob,add(ob,d));
+  fs.forEach(f=>{const np=suivreT(w,f,d,a0);moveNode(f.cur,np);f.cur=np;});
   items.forEach(it=>{it.x+=d.x;it.y+=d.y;});
 }
 // change la longueur d'un mur : l'extrémité la moins raccordée bouge ; si un seul mur voisin y est attaché,
@@ -1803,7 +1840,7 @@ cv.addEventListener('pointerdown',e=>{
     sel=h; renderPanel(); if(isMobile()){draw();return;}
     if(h?.kind==='wall'){const w=findWall(h.id);const u=norm(sub(w.b,w.a)),n=perp(u);
       // cloisons qui arrivent en T sur ce mur : elles suivent le déplacement
-      const followers=[];L().walls.forEach(o=>{if(o===w)return;[o.a,o.b].forEach(p=>{if(!same(p,w.a)&&!same(p,w.b)&&distSeg(p,w.a,w.b)<2e-3)followers.push({orig:{...p},cur:{...p}});});});
+      const followers=tsSurMur(w);
       const connected=followers.length>0||nodeWalls(w.a).length>1||nodeWalls(w.b).length>1;
       const attached=itemsOnWall(w).map(it=>({it,x0:it.x,y0:it.y}));
       drag={kind:'wall',wall:w,start:raw,a0:{...w.a},b0:{...w.b},u,n,followers,attached,constrain:connected,snap:snapshot(),moved:false};}
@@ -1876,7 +1913,10 @@ cv.addEventListener('pointermove',e=>{
         else{const dn=d.x*drag.n.x+d.y*drag.n.y;d=mul(drag.n,Math.round(dn/0.05)*0.05);}}
       const {wall}=drag;d=deplacementBorne(wall,add(d,sub(drag.a0,wall.a)));
       const oldA={...wall.a},oldB={...wall.b};moveNode(oldA,add(wall.a,d));moveNode(oldB,add(wall.b,d));
-      drag.followers.forEach(f=>{const np=add(f.orig,d);moveNode(f.cur,np);f.cur=np;});
+      /* depuis le DÉBUT du glissé, pas depuis l'image précédente : `d` n'est que le pas de cette
+         image-ci, et l'appliquer à la position d'origine décalait les cloisons à chaque souris */
+      const dTot=sub(wall.a,drag.a0);
+      drag.followers.forEach(f=>{const np=suivreT(wall,f,dTot,drag.a0);moveNode(f.cur,np);f.cur=np;});
       drag.attached.forEach(a=>{a.it.x=a.x0+d.x;a.it.y=a.y0+d.y;});
       syncRooms(L());}
     else if(drag.kind==='corner'){
