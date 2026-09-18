@@ -1436,7 +1436,22 @@ function fitView(){let b=bbox(L());if(!b&&state.cur>0&&settings.ghost)b=bbox(sta
 function toggle(k){settings[k]=!settings[k];const b=document.getElementById(k+'Btn');if(b)b.classList.toggle('on',settings[k]);saveView();if(k==='cotes')updLayersBtn();draw();}
 
 // ---------- Accroche ----------
-function nearestWall(p,R,level=L(),realOnly=false){let best=null;for(const w of level.walls){if(!wallDrawn(w)||(realOnly&&(isVirtual(w)||(mode()==='projet'&&wst(w)==='demolir'))))continue;const c=closestOnSeg(p,w.a,w.b);const d=dist(p,c.p);if(d<R&&(!best||d<best.d))best={wall:w,p:c.p,t:c.t,d};}return best;}
+/* Distance entre le TRAIT d'un mur et sa face visible du côté du point : demi-épaisseur (ou
+   l'épaisseur entière si le trait est aligné sur une face), plus le doublage s'il y en a un de
+   ce côté-là. */
+function margeAimant(w,p){
+  const n=perp(norm(sub(w.b,w.a)));
+  const cote=((p.x-w.a.x)*n.x+(p.y-w.a.y)*n.y)>=0?1:-1;
+  const io=isoOnSide(w,cote);
+  return faceDist(w,cote)+(io&&io.mode!=='ite'&&isoShownIso(io,mode())?doublageOf(io):0);
+}
+/* `epais` : un mur est atteint dès que le curseur approche sa FACE VISIBLE, doublage compris, et
+   pas seulement son trait. Sans ça une cloison de 7 cm accroche à 3,5 cm de son trait tandis
+   qu'un mur de 20 cm doublé de 14 cm n'accroche qu'à 24 cm DERRIÈRE sa face : deux cloisons se
+   joignent toutes seules, une cloison sur un mur doublé, jamais. Le point rendu reste sur le
+   trait — c'est lui qui fait la jonction dans le graphe des murs, et le dessin se charge
+   d'arrêter la cloison contre la plaque. */
+function nearestWall(p,R,level=L(),realOnly=false,epais=false){let best=null;for(const w of level.walls){if(!wallDrawn(w)||(realOnly&&(isVirtual(w)||(mode()==='projet'&&wst(w)==='demolir'))))continue;const c=closestOnSeg(p,w.a,w.b);const d=dist(p,c.p);const marge=epais?margeAimant(w,p):0;const de=d-marge;if(de<R&&(!best||de<best.de))best={wall:w,p:c.p,t:c.t,d,de};}return best;}
 // aimante un équipement au mur le plus proche : dos contre le mur, orienté vers la pièce
 // Un équipement ne traverse jamais un mur : on le repousse hors de l'épaisseur du mur (il se colle à la face et s'arrête).
 function itemRects(it,lv){if(it.type==='escalier')return stairGeom(it,lv).rects;return [{x:-it.w/2,y:-it.h/2,w:it.w,h:it.h}];}
@@ -1488,7 +1503,7 @@ function snapPoint(raw,ref,exclude){
     if(keys.shift||(settings.magnet&&diff<7*Math.PI/180)){
       const ll=settings.magnet?Math.round(l/0.05)*0.05:l; p=add(ref,v(Math.cos(sa)*ll,Math.sin(sa)*ll)); kind='angle';
       // prolonger jusqu'à un mur proche (jonction en T propre)
-      const nw=nearestWall(p,R); if(nw&&!(exclude&&(same(nw.wall.a,exclude)||same(nw.wall.b,exclude)))){const far=add(ref,v(Math.cos(sa)*1e4,Math.sin(sa)*1e4));const it=segInter(ref,far,nw.wall.a,nw.wall.b);if(it)p=it.p;}
+      const nw=nearestWall(p,R,L(),false,true); if(nw&&!(exclude&&(same(nw.wall.a,exclude)||same(nw.wall.b,exclude)))){const far=add(ref,v(Math.cos(sa)*1e4,Math.sin(sa)*1e4));const it=segInter(ref,far,nw.wall.a,nw.wall.b);if(it)p=it.p;}
       // alignement avec un coin existant, le long de la direction
       if(Math.abs(Math.cos(sa))>0.99)alignX(p,p); else if(Math.abs(Math.sin(sa))>0.99)alignY(p,p);
       // nœud proche sur cette direction
@@ -1498,7 +1513,7 @@ function snapPoint(raw,ref,exclude){
   }
   if(settings.magnet){
     for(const q of nodes) if(dist(q,raw)<R) return {p:{...q},kind:'node'};
-    const nw=nearestWall(raw,R); if(nw&&!(exclude&&(same(nw.wall.a,exclude)||same(nw.wall.b,exclude)))) return {p:nw.p,kind:'wall'};
+    const nw=nearestWall(raw,R,L(),false,true); if(nw&&!(exclude&&(same(nw.wall.a,exclude)||same(nw.wall.b,exclude)))) return {p:nw.p,kind:'wall'};
     for(const q of gnodes) if(dist(q,raw)<R) return {p:{...q},kind:'ghost'};
     for(const w of ghostWalls){const c=closestOnSeg(raw,w.a,w.b).p;if(dist(c,raw)<R*0.8)return {p:c,kind:'ghost'};}
     const g=settings.gridStep; p=v(Math.round(raw.x/g)*g,Math.round(raw.y/g)*g); kind='grid';
