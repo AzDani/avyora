@@ -1570,9 +1570,10 @@ function connections(p,w){const lv=L();return lv.walls.filter(o=>o!==w&&!isVirtu
 // équipements adossés à un mur (leur dos touche le mur) : ils suivent quand le mur bouge
 function itemsOnWall(w){const n=perp(norm(sub(w.b,w.a)));return L().items.filter(it=>{const back=v(it.x+Math.sin(it.rot)*it.h/2,it.y-Math.cos(it.rot)*it.h/2);const c=closestOnSeg(back,w.a,w.b);const across=(back.x-c.p.x)*n.x+(back.y-c.p.y)*n.y;const s=across>=0?1:-1;return Math.abs(Math.abs(across)-faceDist(w,s))<0.08&&c.t>0.001&&c.t<0.999;});}
 // translate un mur entier : ses deux nœuds (et les murs qui les partagent) + les cloisons qui arrivent dessus en T + les meubles adossés
-function translateWall(w,d){
+function translateWall(w,d){ /* d peut être borné ci-dessous */
   const followers=[];L().walls.forEach(o=>{if(o===w)return;[o.a,o.b].forEach(p=>{if(!same(p,w.a)&&!same(p,w.b)&&distSeg(p,w.a,w.b)<2e-3)followers.push({...p});});});
   const items=itemsOnWall(w);
+  d=deplacementBorne(w,d);
   const oa={...w.a},ob={...w.b};moveNode(oa,add(oa,d));moveNode(ob,add(ob,d));followers.forEach(p=>moveNode(p,add(p,d)));
   items.forEach(it=>{it.x+=d.x;it.y+=d.y;});
 }
@@ -1581,6 +1582,26 @@ function translateWall(w,d){
 /* Une longueur tapée ne passe pas par l'aimant : elle pose l'extrémité à la distance exacte,
    quitte à l'enfoncer dans le mur d'en face. Si le point tombe dans l'épaisseur d'un mur
    (doublage compris), il s'arrête sur sa face — un mur ne rentre pas dans un autre. */
+/* Un mur ne rentre pas dans un autre. On corrige le DÉPLACEMENT plutôt que le point d'arrivée :
+   le mur reste droit et glisse le long de la face au lieu de s'y enfoncer. Même principe que
+   `pushOutOfWalls` pour les équipements. Les deux extrémités sont testées ; l'épaisseur prise en
+   compte est la face visible, doublage compris. */
+function deplacementBorne(w,d){
+  let out={...d};
+  for(const bout of ['a','b']){
+    const autre=w[bout==='a'?'b':'a'];
+    const cible=add(w[bout],out);
+    const o=murTouche(L(),w,cible);
+    if(!o)continue;
+    const c=closestOnSeg(cible,o.a,o.b);
+    const n=perp(norm(sub(o.b,o.a)));
+    const cote=((autre.x-o.a.x)*n.x+(autre.y-o.a.y)*n.y)>=0?1:-1;
+    const marge=margeAimant(o,autre);
+    const ecart=((cible.x-c.p.x)*n.x+(cible.y-c.p.y)*n.y)*cote;   /* distance au trait, côté pièce */
+    if(ecart<marge-2e-3)out=add(out,mul(n,cote*(marge-ecart)));   /* on retire ce qui traverse */
+  }
+  return out;
+}
 function clampContreMur(p,vers,w){
   const o=murTouche(L(),w,p);
   if(!o)return p;
@@ -1737,7 +1758,8 @@ cv.addEventListener('pointermove',e=>{
       if(settings.magnet){const axis=Math.abs(drag.u.x)<1e-6||Math.abs(drag.u.y)<1e-6;const g=settings.gridStep;
         if(axis||free){const na=add(drag.a0,d);const sn=v(Math.round(na.x/g)*g,Math.round(na.y/g)*g);d=sub(sn,drag.a0);if(!free){const dn=d.x*drag.n.x+d.y*drag.n.y;d=mul(drag.n,dn);}}
         else{const dn=d.x*drag.n.x+d.y*drag.n.y;d=mul(drag.n,Math.round(dn/0.05)*0.05);}}
-      const {wall}=drag;const oldA={...wall.a},oldB={...wall.b};moveNode(oldA,add(drag.a0,d));moveNode(oldB,add(drag.b0,d));
+      const {wall}=drag;d=deplacementBorne(wall,add(d,sub(drag.a0,wall.a)));
+      const oldA={...wall.a},oldB={...wall.b};moveNode(oldA,add(wall.a,d));moveNode(oldB,add(wall.b,d));
       drag.followers.forEach(f=>{const np=add(f.orig,d);moveNode(f.cur,np);f.cur=np;});
       drag.attached.forEach(a=>{a.it.x=a.x0+d.x;a.it.y=a.y0+d.y;});
       syncRooms(L());}
@@ -1903,7 +1925,7 @@ window.addEventListener('keydown',e=>{
     if(sel.kind==='item'){selectedItems().forEach(it=>{it.x+=d.x;it.y+=d.y;pushOutOfWalls(it);});}
     if(sel.kind==='dim'){const dm=lv.dims.find(x=>x.id===sel.id);dm.a=add(dm.a,d);dm.b=add(dm.b,d);}
     if(sel.kind==='text'){const t=TX(lv).find(x=>x.id===sel.id);t.x+=d.x;t.y+=d.y;}
-    if(sel.kind==='wall'){const w=findWall(sel.id);const oa={...w.a},ob={...w.b};moveNode(oa,add(oa,d));moveNode(ob,add(ob,d));}
+    if(sel.kind==='wall'){const w=findWall(sel.id);const dd=deplacementBorne(w,d);const oa={...w.a},ob={...w.b};moveNode(oa,add(oa,dd));moveNode(ob,add(ob,dd));}
     afterChange();return;
   }
   if(k==='v')setTool('select');if(k==='m')setTool('mur');if(k==='p')setTool('ouverture');if(k==='e')setTool('equipement');if(k==='c')setTool('cote');if(k==='l')setTool('mesure');if(k==='t')setTool('texte');if(k==='b')setTool('zone');
