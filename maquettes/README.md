@@ -67,7 +67,18 @@ node maquettes/tools/review.mjs "$(pwd)/maquettes"
 5. **Aucune distance annoncée ne doit être approximative.** Les dégagements sont mesurés au
    centimètre (balayage 5 cm puis affinage 1 cm, emprise resserrée d'1 mm) : un chiffre faux, même
    pessimiste, reste un chiffre faux.
-6. **Distinguer conseil et règle.** Les dégagements sont des usages de confort → libellé
+6. **Un seul point de sortie : `contratPlan()`.** `quantities()` est **interne**. Tout ce qui
+   quitte la maquette passe par `contratPlan()`, qui porte un numéro (`CONTRAT_PLAN`, aujourd'hui
+   `1.0.0`) que le consommateur doit vérifier. **Renommer ou retirer une clé émise = changer ce
+   numéro.** Le `<details>` « Voir le JSON envoyé au moteur » affiche exactement ce contrat : ce
+   qu'on y lit est ce qui sortira.
+7. **Deux familles d'identifiants.** `uid()` (7 caractères aléatoires, sans contrôle de collision)
+   est **interne** ; `pidOf(kind,objet)` pose un identifiant **public, typé, persisté et jamais
+   réattribué** (`m` mur, `o` ouverture, `e` équipement, `p` pièce, `n` niveau) — c'est lui qui
+   voyage dans le contrat et dans `provenance`. Ne jamais indexer sur un `uid()`, ni sur un NOM de
+   pièce : deux pièces non renommées sont homonymes par construction (`roomName` retombe sur le
+   label du type).
+8. **Distinguer conseil et règle.** Les dégagements sont des usages de confort → libellé
    « conseillés », niveau `info` (ou `warn` s'il manque plus d'un tiers). Les seuls chiffres
    réglementaires cités dans le fichier : 9 m² et 2,20 m (décret décence), 83 cm (accessibilité),
    le sas des WC (règlement sanitaire).
@@ -81,7 +92,14 @@ export du dossier, plomberie, VMC, fenêtres de toit, déclenchement de l'étude
 contexte de chantier (finition / code postal / TVA), dégagements d'usage, porte qui tape dans un
 équipement, et le bloc « ce que ce chiffrage ne couvre pas encore ».
 
-**Reste à faire : le branchement.** `quantities()` ne parle encore à personne. Cible : le mode
+Phase 2 de l'audit faite : appariement des faces identique dans toutes les vues (plus de fiche
+`tmp`), identifiants publics, emprise au sol du niveau bas indépendante du panneau Toiture, type de
+bien demandé, percements ventilés (porteur petit / grand / léger), travaux détaillés par niveau,
+dimensions des équipements et options des menuiseries émises, bloc `provenance` (quel mur, quelle
+ouverture, quel équipement a produit quelle quantité), collisions de noms tuées
+(`surfaceAuSolPiece`, `detailNiveaux`), une seule hauteur par objet, et la frontière d'export.
+
+**Reste à faire : le branchement.** `contratPlan()` ne parle encore à personne. Cible : le mode
 rapide (`ESPACES` / `presetRapide`) et l'intake du mode détaillé. Le cahier des charges est dans
 `carnet/`.
 

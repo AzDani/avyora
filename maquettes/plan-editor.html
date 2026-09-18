@@ -620,6 +620,13 @@ let history = [], future = [];
 const images = {};          // id -> Image (calques, hors état sérialisé)
 let facesCache = {};        // levelId -> faces
 const uid = () => Math.random().toString(36).slice(2,9);
+/* Identifiant PUBLIC d'un objet du plan : typé, écrit une fois dans l'enregistrement, jamais
+   réattribué. `uid()` (7 caractères aléatoires, sans contrôle de collision) reste l'identifiant
+   INTERNE ; il ne peut pas servir de clé de base ni de provenance dans un devis. */
+function pidOf(kind,o){if(!o)return null;if(!o.pid){state.pidSeq=(state.pidSeq||0)+1;o.pid=kind+state.pidSeq;}return o.pid;}
+/* Pose les pid manquants sur tout le plan, dans l'ordre de l'état : les plans déjà enregistrés
+   (et les exemples) en reçoivent au premier export ; ceux déjà posés ne bougent plus jamais. */
+function garantirPids(){state.levels.forEach(lv=>{pidOf('n',lv);lv.walls.forEach(w=>pidOf('m',w));lv.openings.forEach(o=>pidOf('o',o));lv.items.forEach(i=>pidOf('e',i));lv.rooms.forEach(r=>pidOf('p',r));});}
 
 function newLevel(name){ return {id:uid(), name, height:2.5, walls:[], openings:[], rooms:[], items:[], dims:[], texts:[], bg:null}; }
 const TX=lv=>lv.texts||(lv.texts=[]);
@@ -641,13 +648,14 @@ const FINITIONS={eco:{label:'Éco',desc:'entrée de gamme'},standard:{label:'Sta
    coup : blankState() est rejoué par loadSample(), newPlan() et loadTemplate(), qui effaçaient
    une valeur posée en aval. Le vrai site injectera le contexte du projet en cours. */
 const cpEstimateur=(()=>{try{const d=JSON.parse(localStorage.getItem('avyora-estim-v2')||'null');return (d&&/^\d{5}$/.test(d.codePostal||''))?d.codePostal:'';}catch{return '';}})();
-const CHANTIER_DEF={finition:'standard',cp:cpEstimateur,plus2ans:true};
+const CHANTIER_DEF={finition:'standard',cp:cpEstimateur,plus2ans:true,bien:null};
 const chantier=()=>state.chantier||(state.chantier={...CHANTIER_DEF});
 const cpValide=c=>/^\d{5}$/.test(c||'');
 function setChantier(k,val){history.push(snapshot());const c=chantier();
   if(k==='cp')c.cp=String(val).replace(/\D/g,'').slice(0,5);
   else if(k==='plus2ans')c.plus2ans=(val===true||val==='1');
   else if(k==='finition'&&FINITIONS[val])c.finition=val;
+  else if(k==='bien'&&(val==='maison'||val==='appartement'))c.bien=val;
   afterChange();}
 function blankState(){ return {name:'Mon plan', cur:0, mode:'existant', levels:[newLevel('RDC')], done:{}, groups:[], chantier:{...CHANTIER_DEF} }; }
 // ---------- Groupes de murs : appliquer isolation / revêtement d'un coup, réutilisable ----------
@@ -989,7 +997,7 @@ const PRIX={
   optMoustiquaire:200, optStore:1000, optGrille:400, // €/u fourni-posé
   deposeMenuiserie:40, deposeEquip:60,                      // €/u
   solIso:45, chapeTradi:33, chapeLiquide:40, ragreage:22, dalle:68, // préparation du sol €/m² (catalogue : chape tradi 33, liquide 40, ragréage 22, dalle 68)
-  deposeSol:30, betonFini:45,                               // casser / déposer un vieux sol €/m² (catalogue 30) · finition béton lissé-quartz de la dalle €/m²
+  deposeSol:30, betonFini:45,                               // casser / déposer un vieux sol €/m² (catalogue « Enlever un revêtement de sol » : 20 — la maquette est 50 % au-dessus, à trancher) · finition béton lissé-quartz de la dalle €/m²
   revetement:{'Carrelage':65,'Parquet':75,'Stratifié':50,'Vinyle / PVC':45,'Moquette':40,'Béton ciré':110}, // fourni-posé €/m² (catalogue : stratifié 50, sol souple 45, béton ciré 110)
 };
 // isolants sous chape : uniquement des panneaux rigides (les laines ne vont pas sous une chape)
@@ -1093,9 +1101,12 @@ function detectFaces(level,m=mode()){
 }
 // une pièce qui naît en vue Projet (nouvelle cloison) hérite du sol existant de la pièce qu'elle découpe — elle n'existe pas en vue Existant
 function inheritFloor(level,f){if(mode()==='existant')return FLOORS[0];try{const pf=facesFor(level,'existant').find(g=>pointIn(f.label,g.poly));return (pf&&pf.room&&pf.room.floor)||FLOORS[0];}catch{return FLOORS[0];}}
-function syncRooms(level){
-  const faces=detectFaces(level); facesCache[level.id]=faces;
-  const used=new Set();
+/* Appariement face → fiche de pièce, en 3 passes. Sert à la vue COURANTE (`creer` : la passe 3
+   crée une fiche persistée) et aux AUTRES vues (la passe 3 fabrique une fiche stable dérivée de
+   la géométrie, sans rien écrire dans l'état) : l'agrégation géométrique est ainsi découplée de
+   l'identité de la fiche, et l'export ne dépend plus de la vue affichée. */
+function pairRoomFaces(level,faces,creer){
+  const used=new Set(),typesGeo=[];
   // 1) les petites pièces d'abord : une pièce imbriquée récupère bien sa propre fiche (ancrage dedans)
   const sorted=[...faces].sort((a,b)=>a.gross-b.gross);
   sorted.forEach(f=>{const r=level.rooms.find(r=>!used.has(r.id)&&pointIn(r.anchor,f.poly));if(r){used.add(r.id);f.room=r;}});
@@ -1107,11 +1118,25 @@ function syncRooms(level){
     level.rooms.forEach(r=>{if(used.has(r.id)||!r.poly)return;let s=pts.filter(p=>pointIn(p,r.poly)).length;if(pointIn(f.label,r.poly))s+=2;if(pointIn(r.anchor,f.poly))s+=2;if(s>bs){bs=s;best=r;}});
     if(best){used.add(best.id);f.room=best;}
   });
-  // 3) vraiment nouvelles : fiche neuve avec un type deviné
+  // 3) vraiment nouvelles : fiche neuve avec un type deviné (les types déjà attribués ne sont pas redevinés)
   sorted.filter(f=>!f.room).forEach(f=>{
-    const usedTypes=level.rooms.filter(r=>used.has(r.id)).map(r=>r.type);
-    const r={id:uid(),type:guessType(f.areaInt,usedTypes),name:'',floor:inheritFloor(level,f),anchor:f.label};level.rooms.push(r);used.add(r.id);f.room=r;
+    const usedTypes=level.rooms.filter(r=>used.has(r.id)).map(r=>r.type).concat(typesGeo);
+    const type=guessType(f.areaInt,usedTypes);
+    if(creer){const r={id:uid(),type,name:'',floor:inheritFloor(level,f),anchor:f.label};pidOf('p',r);level.rooms.push(r);used.add(r.id);f.room=r;}
+    else{
+      typesGeo.push(type);
+      /* Fiche géométrique : identifiant déduit de la position du repère de la face, donc stable
+         d'un appel à l'autre. Le sol est repris de la face au même endroit dans la vue courante
+         (lecture du cache : `inheritFloor` rappellerait `facesFor` — récursion). */
+      const cur=(facesCache[level.id]||[]).find(g=>pointIn(f.label,g.poly));
+      f.room={id:'g'+Math.round(f.label.x*100)+'_'+Math.round(f.label.y*100),type,name:'',floor:(cur&&cur.room&&cur.room.floor)||FLOORS[0],anchor:f.label,geo:true};
+    }
   });
+  return used;
+}
+function syncRooms(level){
+  const faces=detectFaces(level); facesCache[level.id]=faces;
+  const used=pairRoomFaces(level,faces,true);
   faces.forEach(f=>{f.room.anchor=f.label;f.room.poly=f.poly.map(p=>({x:p.x,y:p.y}));});
   // on garde les fiches orphelines (mur en cours de déplacement) mais sans les laisser s'accumuler
   if(level.rooms.length>used.size+30) level.rooms=level.rooms.filter(r=>used.has(r.id));
@@ -2611,7 +2636,7 @@ function openingsOfFace(lv,f,m=mode()){const n=f.poly.length;const segs=[];f.edg
 function facesFor(lv,m){
   if(m===mode())return facesCache[lv.id]||[];
   const faces=detectFaces(lv,m);
-  faces.forEach(f=>{const r=lv.rooms.find(r=>pointIn(r.anchor,f.poly));f.room=r||{id:'tmp',type:guessType(f.areaInt,[]),name:'',floor:FLOORS[0]};});
+  pairRoomFaces(lv,faces,false); /* même appariement que la vue courante, sans rien écrire */
   return faces;
 }
 /* Bloc « Le chantier » : placé HAUT dans le panneau, et pas en bas avec les notes, parce que
@@ -2620,7 +2645,10 @@ function facesFor(lv,m){
 function renderChantier(){
   const c=chantier(),ok=cpValide(c.cp);
   return `<div class="ph mt">🧰 Le chantier <span class="chip" style="vertical-align:middle">commande le prix</span></div>
-  <div class="ph" style="margin-bottom:6px">Niveau de finition</div>
+  <div class="ph" style="margin-bottom:6px">Type de bien</div>
+  <div class="seg"><button class="${c.bien==='appartement'?'on':''}" onclick="setChantier('bien','appartement')">Appartement<small>pas de toiture</small></button><button class="${c.bien==='maison'?'on':''}" onclick="setChantier('bien','maison')">Maison<small>toiture &amp; façades</small></button></div>
+  ${!c.bien?`<div class="tip" style="border-color:#fecaca;background:#fff5f5">Réponse manquante : sans elle, le moteur ne sait pas s'il doit chiffrer une toiture — tout le lot couverture resterait à zéro.</div>`:''}
+  <div class="ph mt" style="margin-bottom:6px">Niveau de finition</div>
   <div class="seg">${Object.entries(FINITIONS).map(([k,f])=>`<button class="${c.finition===k?'on':''}" onclick="setChantier('finition','${k}')">${f.label}<small>${f.desc}</small></button>`).join('')}</div>
   <div class="row" style="margin-top:12px"><label>Code postal du chantier</label><span><input class="fin n" inputmode="numeric" maxlength="5" placeholder="33620" value="${esc(c.cp||'')}" onchange="setChantier('cp',this.value)" style="width:82px"></span></div>
   ${c.cp&&!ok?`<div class="tip" style="border-color:#fecaca;background:#fff5f5">Code postal incomplet : il en faut 5 chiffres pour appliquer le coût local de la main-d'œuvre.</div>`:ok?`<div class="tip" style="border-color:#bbf7d0;background:#f0fdf4">Département <b>${esc(c.cp.slice(0,2))}</b> — le coût local de la main-d'œuvre sera appliqué par le moteur.</div>`:`<div class="tip">Sans code postal, le chiffrage part sur la moyenne nationale : l'écart réel entre régions se compte en milliers d'euros.</div>`}
@@ -2731,29 +2759,95 @@ function applyCalib(){const real=parseFloat(document.getElementById('calibVal').
 
 // ---------- Quantités → moteur ----------
 // Quantités : l'état PROJET (ce qui existera après travaux) + les TRAVAUX (différence existant → projet)
+/* ---------- Grandeurs que le plan détenait sans jamais les sortir ---------- */
+/* Emprise au sol d'un niveau, INDÉPENDANTE du panneau Toiture : somme des faces (polygones pris
+   sur l'axe des murs) + la demi-épaisseur des murs extérieurs, qui n'appartient à aucune face.
+   C'est le `surfaceSol` du moteur : 31 formules de quantité et tout le lot toiture en dépendent.
+   Réserve connue, la même que `toitureRect` : `isExteriorWall` s'appuie sur le cache de faces de
+   la vue courante, donc l'emprise est exacte dans la vue affichée. */
+function empriseNiveau(li,m){
+  m=m||'projet';
+  const lv=state.levels[li];if(!lv||!lv.walls.length)return null;
+  const sv=state.cur;state.cur=li;
+  try{
+    let dedans=0,dehors=0;
+    facesFor(lv,m).forEach(f=>{const a=Math.abs(f.gross||0);if(f.room&&RT[f.room.type]&&RT[f.room.type].ext)dehors+=a;else dedans+=a;});
+    let ring=0,x0=1e9,y0=1e9,x1=-1e9,y1=-1e9,n=0;
+    lv.walls.forEach(w=>{
+      if(isVirtual(w)||!wallActive(w,m)||!isExteriorWall(w))return;
+      const t=wallT(w),u=norm(sub(w.b,w.a)),nn=perp(u),off=wallOff(w);
+      ring+=wallLen(w)*t/2;
+      [w.a,w.b].forEach(pt=>[1,-1].forEach(sd=>{const q=add(add(pt,off),mul(nn,sd*t/2));x0=Math.min(x0,q.x);y0=Math.min(y0,q.y);x1=Math.max(x1,q.x);y1=Math.max(y1,q.y);n++;}));
+    });
+    if(!n)return null;
+    const Lx=x1-x0,Ly=y1-y0,emp=dedans+ring;
+    return {emprise:+emp.toFixed(1),rectangle:+(Lx*Ly).toFixed(1),longueur:+Lx.toFixed(2),largeur:+Ly.toFixed(2),exterieurs:+dehors.toFixed(1),approchee:emp<0.85*Lx*Ly};
+  }finally{state.cur=sv;}
+}
+/* Murs qui bordent une face : les arêtes de la face portent déjà l'identifiant interne du mur.
+   Sert à « Cloison pièce humide » (adjacence mur ↔ pièce), côté moteur. */
+function mursDeFace(lv,f){const out=[];(f.edges||[]).forEach(e=>{if(!e)return;const w=lv.walls.find(x=>x.id===e.wall);if(!w)return;const q=pidOf('m',w);if(q&&out.indexOf(q)<0)out.push(q);});return out;}
+/* Périmètre de trémie dans une pièce : silhouette de l'escalier du niveau inférieur qui la
+   traverse — c'est le linéaire du garde-corps. */
+function tremiePerim(lv,f){
+  const i=state.levels.indexOf(lv),below=state.levels[i-1];if(!below)return 0;
+  const per=R=>{const e=unionEdges(R).reduce((sum,seg)=>sum+Math.hypot(seg[2]-seg[0],seg[3]-seg[1]),0);
+    return e>0.01?e:R.reduce((sum,r)=>sum+(r.circle?Math.PI*r.w:2*(r.w+r.h)),0);};
+  return tremies(lv).filter(it=>pointIn(v(it.x,it.y),f.poly)).reduce((sum,it)=>sum+per(itemRects(it,below)),0);
+}
 function quantities(){
   let area=0,areaBefore=0,ext=0,rooms=0,roomsBefore=0,doors=0,windows=0,wallPaint=0,glass=0,plinthes=0;const lin={cloison:0,mur:0,porteur:0};const byType={};const levels=[];
-  const travaux={demolLin:{cloison:0,mur:0,porteur:0},demolM2:0,demolPorteur:0,boucher:0,boucherM2:0,creerLin:{cloison:0,mur:0,porteur:0},creerM2:0,percements:0,ouverturesNeuves:0,remplacer:0,creerPortes:0,creerFenetres:0,poser:[],deposer:[]};
+  const travaux={demolLin:{cloison:0,mur:0,porteur:0},demolM2:0,demolPorteur:0,boucher:0,boucherM2:0,creerLin:{cloison:0,mur:0,porteur:0},creerM2:0,percements:0,percementsDetail:{porteurPetit:0,porteurGrand:0,leger:0},ouverturesNeuves:0,remplacer:0,creerPortes:0,creerFenetres:0,poser:[],deposer:[],parNiveau:[]};
+  /* Traçabilité : chaque élément du plan qui alimente une quantité s'écrit ici avec son id
+     public, son niveau et ce qu'il apporte. C'est ce qui permettra à un devis de dire « cette
+     ligne vient de CE mur ». Les agrégats ci-dessus restent inchangés pour leurs lecteurs. */
+  const provenance={murs:[],ouvertures:[],equipements:[],doublages:[],facades:[]};
   state.levels.forEach(lv=>{
     const faces=facesFor(lv,'projet'); const lr=[];
+    const nvId=pidOf('n',lv);
+    const tn={id:nvId,niveau:lv.name,hauteur:lv.height,demolM2:0,creerM2:0,demolLin:{},creerLin:{}};
+    travaux.parNiveau.push(tn);
     faces.forEach(f=>{if(!f.room)return;rooms++;const isExt=RT[f.room.type].ext,nh=RT[f.room.type].nh;const ops=openingsOfFace(lv,f,'projet');
       const wa=isExt?0:wallPaintArea(lv,f,'projet');const pl=isExt?0:Math.max(0,f.perimReal-ops.filter(o=>OPENINGS[o.type].cat==='porte').reduce((s,o)=>s+o.w,0));
       const an=areaNet(lv,f);
       if(isExt)ext+=an;else{if(!nh)area+=an;wallPaint+=wa;plinthes+=pl;byType[f.room.type]=(byType[f.room.type]||0)+an;}
-      lr.push({name:roomName(f.room),type:f.room.type,exterieur:isExt,horsHabitable:isExt||nh,floor:f.room.floor,area:+an.toFixed(2),surfaceSol:+f.areaInt.toFixed(2),tremie:+tremieArea(lv,f).toFixed(2),sousPentePct:f.room.lowPct||0,perimeter:+f.perimReal.toFixed(2),height:roomHeight(lv,f.room),wallArea:+wa.toFixed(2),plinthes:+pl.toFixed(2),openings:ops.length});});
+      const rr=f.room;
+      /* `surfaceAuSolPiece` : l'ancien nom `surfaceSol` entrait en collision avec le `surfaceSol`
+         du moteur, qui est l'emprise du BÂTIMENT. Ici c'est la surface au sol de CETTE pièce.
+         `hauteur` : une seule hauteur émise, celle qui compte pour la pièce (sa hauteur propre
+         si elle en a une, sinon celle du niveau) — plus deux hauteurs contradictoires. */
+      lr.push({id:pidOf('p',rr),name:roomName(rr),type:rr.type,exterieur:isExt,horsHabitable:isExt||nh,floor:rr.floor,area:+an.toFixed(2),
+        surfaceAuSolPiece:+f.areaInt.toFixed(2),tremie:+tremieArea(lv,f).toFixed(2),tremiePerim:+tremiePerim(lv,f).toFixed(2),
+        sousPentePct:rr.lowPct||0,perimeter:+f.perimReal.toFixed(2),hauteur:roomHeight(lv,rr),wallArea:+wa.toFixed(2),plinthes:+pl.toFixed(2),
+        openings:ops.length,mursAdjacents:mursDeFace(lv,f),note:rr.note||null,
+        produits:(rr.products&&rr.products.length)?rr.products.map(pr=>({poste:pr.poste,nom:pr.nom,url:pr.url,prix:pr.prix,unite:unitOf(pr)})):null});});
     facesFor(lv,'existant').forEach(f=>{if(!f.room)return;roomsBefore++;if(!RT[f.room.type].ext&&!RT[f.room.type].nh)areaBefore+=areaNet(lv,f);});
-    lv.walls.forEach(w=>{if(isVirtual(w))return;const l=wallLen(w),st=wst(w);
+    lv.walls.forEach(w=>{if(isVirtual(w))return;const l=wallLen(w),st=wst(w),m2=l*lv.height;
       if(st!=='demolir')lin[w.type]=(lin[w.type]||0)+l;
-      if(st==='demolir'){travaux.demolLin[w.type]=(travaux.demolLin[w.type]||0)+l;travaux.demolM2+=l*lv.height;if(isPorteur(w))travaux.demolPorteur+=l;}
-      if(st==='creer'){travaux.creerLin[w.type]=(travaux.creerLin[w.type]||0)+l;travaux.creerM2+=l*lv.height;}});
-    lv.openings.forEach(o=>{const d=OPENINGS[o.type],st=ost(o),h=o.h||d.h;
+      if(st==='demolir'){travaux.demolLin[w.type]=(travaux.demolLin[w.type]||0)+l;travaux.demolM2+=m2;tn.demolLin[w.type]=(tn.demolLin[w.type]||0)+l;tn.demolM2=+(tn.demolM2+m2).toFixed(2);if(isPorteur(w))travaux.demolPorteur+=l;}
+      if(st==='creer'){travaux.creerLin[w.type]=(travaux.creerLin[w.type]||0)+l;travaux.creerM2+=m2;tn.creerLin[w.type]=(tn.creerLin[w.type]||0)+l;tn.creerM2=+(tn.creerM2+m2).toFixed(2);}
+      provenance.murs.push({id:pidOf('m',w),niveau:nvId,type:w.type,porteur:isPorteur(w),etat:st,ml:+l.toFixed(2),m2:+m2.toFixed(2)});});
+    lv.openings.forEach(o=>{const d=OPENINGS[o.type],st=ost(o),h=o.h||d.h,wo=lv.walls.find(x=>x.id===o.wallId);
       if(st!=='boucher'){if(d.cat==='porte')doors++;else{windows++;glass+=o.w*h;}}
       if(st==='boucher'){travaux.boucher++;travaux.boucherM2+=o.w*h;}
-      if(st==='creer'){const w=lv.walls.find(x=>x.id===o.wallId);if(w&&wst(w)==='creer')travaux.ouverturesNeuves++;else travaux.percements++;if(d.cat==='porte')travaux.creerPortes++;else travaux.creerFenetres++;}
-      else if(st==='remplacer'){travaux.remplacer++;if(d.cat==='porte')travaux.creerPortes++;else travaux.creerFenetres++;}});
+      if(st==='creer'){
+        if(wo&&wst(wo)==='creer')travaux.ouverturesNeuves++;
+        else{travaux.percements++;
+          /* Même partage que `openingInduits`, qui choisit déjà le prix du percement : trois
+             postes de maçonnerie distincts recevaient un compteur unique. */
+          const grande=d.kind==='bay'||d.kind==='doorwin'||d.w>=1.8;
+          if(wo&&isPorteur(wo))travaux.percementsDetail[grande?'porteurGrand':'porteurPetit']++;else travaux.percementsDetail.leger++;}
+        if(d.cat==='porte')travaux.creerPortes++;else travaux.creerFenetres++;}
+      else if(st==='remplacer'){travaux.remplacer++;if(d.cat==='porte')travaux.creerPortes++;else travaux.creerFenetres++;}
+      provenance.ouvertures.push({id:pidOf('o',o),niveau:nvId,mur:wo?pidOf('m',wo):null,type:o.type,etat:st,l:+o.w.toFixed(2),h:+h.toFixed(2)});});
     lv.items.forEach(it=>{if(ist(it)==='creer')travaux.poser.push(ITEMS[it.type]?.label||it.type);if(ist(it)==='demolir')travaux.deposer.push(ITEMS[it.type]?.label||it.type);});
-    levels.push({name:lv.name,height:lv.height,rooms:lr,items:lv.items.filter(i=>itemActive(i,'projet')).map(i=>i.type),escaliers:lv.items.filter(i=>i.type==='escalier'&&itemActive(i,'projet')).length,
-      menuiseries:lv.openings.filter(o=>opActive(o,'projet')||ost(o)==='boucher').map(o=>({type:o.type,l:+o.w.toFixed(2),h:+(o.h||OPENINGS[o.type].h).toFixed(2),allege:allegeOf(o),etat:ost(o)}))});
+    levels.push({id:nvId,name:lv.name,hauteur:lv.height,rooms:lr,items:lv.items.filter(i=>itemActive(i,'projet')).map(i=>i.type),escaliers:lv.items.filter(i=>i.type==='escalier'&&itemActive(i,'projet')).length,
+      /* largeur (l) et profondeur (p) de chaque équipement : les 5 postes au ml du lot Cuisine et
+         la variante de dimension de la douche les attendaient ; le plan les jetait. */
+      equipements:lv.items.filter(i=>itemActive(i,'projet')).map(i=>({id:pidOf('e',i),type:i.type,l:+(i.w||0).toFixed(2),p:+(i.h||0).toFixed(2),produit:i.product||null,note:i.note||null})),
+      /* matériau, vitrage, ouvrant, options et volet pilotent des coefficients de prix et le
+         poste « caisson à galandage » : émis tels quels, sans interprétation. */
+      menuiseries:lv.openings.filter(o=>opActive(o,'projet')||ost(o)==='boucher').map(o=>({id:pidOf('o',o),type:o.type,l:+o.w.toFixed(2),h:+(o.h||OPENINGS[o.type].h).toFixed(2),allege:allegeOf(o),etat:ost(o),mat:o.mat||null,vitrage:o.vitrage||null,ouvrant:ouvrantOf(o),volet:o.volet||null,options:optsOf(o),produit:o.product||null,note:o.note||null}))});
   });
   travaux.actif=travaux.demolM2>0||travaux.creerM2>0||travaux.boucher>0||travaux.percements>0||travaux.ouverturesNeuves>0||travaux.remplacer>0||travaux.poser.length>0||travaux.deposer.length>0;
   /* Démolir un mur porteur impose une étude de structure (reprise de charge, poutre, IPN).
@@ -2771,26 +2865,52 @@ function quantities(){
     if(pl==='wc')plomberie.wc++;else if(pl==='vasque2')plomberie.vasques+=2;else if(pl==='lavabo')plomberie.vasques++;else if(pl==='douche')plomberie.douches++;else if(pl==='baignoire')plomberie.baignoires++;else if(pl==='evier')plomberie.eviers++;else if(pl==='chauffeEau')plomberie.chauffeEau++;else if(pl==='attente')plomberie.attentes++;
     if(it.type==='vmc')chauffage.vmc++;if(it.type==='velux')velux++;
     if(e==='prise')electricite.prises+=it.type==='prise2'?2:1;else if(e==='interrupteur')electricite.interrupteurs++;else if(e==='lumiere')electricite.pointsLumineux++;else if(e==='tableau')electricite.tableau++;
-    if(it.type==='radiateur')chauffage.radiateurs++;if(it.type==='seche_serviette')chauffage.secheServiettes++;if(it.type==='clim')chauffage.clim++;if(it.type==='pac_ext')chauffage.uniteExt=(chauffage.uniteExt||0)+1;if(it.type==='poele')chauffage.poele++;if(it.type==='chaudiere')chauffage.chaudiere++;if(it.type==='cumulus')chauffage.chauffeEau++;}));
+    if(it.type==='radiateur')chauffage.radiateurs++;if(it.type==='seche_serviette')chauffage.secheServiettes++;if(it.type==='clim')chauffage.clim++;if(it.type==='pac_ext')chauffage.uniteExt=(chauffage.uniteExt||0)+1;if(it.type==='poele')chauffage.poele++;if(it.type==='chaudiere')chauffage.chaudiere++;if(it.type==='cumulus')chauffage.chauffeEau++;
+    provenance.equipements.push({id:pidOf('e',it),niveau:pidOf('n',lv),type:it.type,plomberie:pl||null,electricite:e||null,l:+(it.w||0).toFixed(2),p:+(it.h||0).toFixed(2)});}));
   electricite.points=electricite.prises+electricite.interrupteurs+electricite.pointsLumineux;
   plomberie.pointsEau=plomberie.wc+plomberie.vasques+plomberie.douches+plomberie.baignoires+plomberie.eviers+plomberie.attentes;
   const doublage={iti:0,ite:0,aCreer:0,parMateriau:{},surfacePerdue:0};
-  state.levels.forEach(lv=>lv.walls.forEach(w=>{if(isVirtual(w)||!wallActive(w,'projet'))return;const surf=wallLen(w)*lv.height;isoLayers(w).forEach(io=>{if(!isoShownIso(io,'projet'))return;const ite=io.mode==='ite';if(ite)doublage.ite+=surf;else{doublage.iti+=surf;doublage.surfacePerdue+=wallLen(w)*doublageOf(io);}if(io.st==='creer')doublage.aCreer=+((doublage.aCreer||0)+surf).toFixed(1);const m=(ite?'ITE ':'ITI ')+(ISO_MAT[io.mat]?.label||io.mat);doublage.parMateriau[m]=+( (doublage.parMateriau[m]||0)+surf ).toFixed(2);});}));
+  state.levels.forEach(lv=>lv.walls.forEach(w=>{if(isVirtual(w)||!wallActive(w,'projet'))return;const surf=wallLen(w)*lv.height;isoLayers(w).forEach(io=>{if(!isoShownIso(io,'projet'))return;const ite=io.mode==='ite';if(ite)doublage.ite+=surf;else{doublage.iti+=surf;doublage.surfacePerdue+=wallLen(w)*doublageOf(io);}if(io.st==='creer')doublage.aCreer=+((doublage.aCreer||0)+surf).toFixed(1);const m=(ite?'ITE ':'ITI ')+(ISO_MAT[io.mat]?.label||io.mat);doublage.parMateriau[m]=+( (doublage.parMateriau[m]||0)+surf ).toFixed(2);
+    provenance.doublages.push({niveau:pidOf('n',lv),mur:pidOf('m',w),mode:ite?'ite':'iti',mat:io.mat,etat:io.st||null,m2:+surf.toFixed(2)});});}));
   const facades={aFaire:0,parPoste:{},existant:{}};
-  state.levels.forEach(lv=>lv.walls.forEach(w=>{const fins=facadeFins(w);if(!fins.length||isVirtual(w)||!wallActive(w,'projet'))return;const a=+facadeArea(w,lv).toFixed(2);fins.forEach(k=>{const F=FACADES[k];if(!F)return;if(w.facade.st==='creer'){facades.aFaire=+(facades.aFaire+a).toFixed(1);facades.parPoste[F.poste]=+((facades.parPoste[F.poste]||0)+a).toFixed(2);}else{facades.existant[F.label]=+((facades.existant[F.label]||0)+a).toFixed(2);}});}));
+  state.levels.forEach(lv=>lv.walls.forEach(w=>{const fins=facadeFins(w);if(!fins.length||isVirtual(w)||!wallActive(w,'projet'))return;const a=+facadeArea(w,lv).toFixed(2);fins.forEach(k=>{const F=FACADES[k];if(!F)return;if(w.facade.st==='creer'){facades.aFaire=+(facades.aFaire+a).toFixed(1);facades.parPoste[F.poste]=+((facades.parPoste[F.poste]||0)+a).toFixed(2);}else{facades.existant[F.label]=+((facades.existant[F.label]||0)+a).toFixed(2);}
+    provenance.facades.push({niveau:pidOf('n',lv),mur:pidOf('m',w),poste:F.poste,label:F.label,etat:w.facade.st||null,m2:a});});}));
   doublage.iti=+doublage.iti.toFixed(1);doublage.ite=+doublage.ite.toFixed(1);doublage.surface=+(doublage.iti+doublage.ite).toFixed(1);doublage.surfacePerdue=+doublage.surfacePerdue.toFixed(2);
   // personnalisation : produits repérés (quantités du plan) + notes
   /* Contexte transmis tel quel : la maquette ne calcule NI le coefficient de finition, NI le
      coefficient régional, NI le taux de TVA. Elle pose les trois questions et passe les réponses. */
   const ch=chantier();
-  const contexte={finition:ch.finition||'standard',codePostal:cpValide(ch.cp)?ch.cp:null,logementPlus2Ans:!!ch.plus2ans};
+  const contexte={finition:ch.finition||'standard',codePostal:cpValide(ch.cp)?ch.cp:null,logementPlus2Ans:!!ch.plus2ans,typeBien:ch.bien||null};
   const produits=allProducts();const produitsTotal=produits.reduce((s,p)=>s+(p.total||0),0);
-  levels.forEach((L2,i)=>{const lv=state.levels[i];L2.rooms.forEach(r=>{const rr=lv.rooms.find(x=>roomName(x)===r.name);if(rr){if(rr.note)r.note=rr.note;if(rr.products?.length)r.produits=rr.products.map(p=>({poste:p.poste,nom:p.nom,url:p.url,prix:p.prix,unite:unitOf(p)}));}});
-    L2.annotations=TX(lv).map(t=>t.text).filter(Boolean);
-    L2.equipements=lv.items.filter(i=>i.product||i.note).map(i=>({type:i.type,produit:i.product||null,note:i.note||null}));
-    L2.menuiseries.forEach((m,j)=>{const src=lv.openings.filter(o=>opActive(o,'projet')||ost(o)==='boucher')[j];if(src?.product)m.produit=src.product;if(src?.note)m.note=src.note;});});
+  /* Les notes et les produits sont désormais posés dans la boucle ci-dessus, à même la fiche de
+     pièce, l'équipement et la menuiserie. Le rapprochement par NOM de pièce est supprimé — deux
+     chambres non renommées sont homonymes par défaut (`roomName` retombe sur le label du type),
+     et la seconde héritait de la note et des produits de la première — et celui par INDEX de
+     menuiserie avec lui. Il ne reste ici que les annotations libres du plan. */
+  levels.forEach((L2,i)=>{L2.annotations=TX(state.levels[i]).map(t=>t.text).filter(Boolean);});
   const controles=state.levels.map(lv=>({niveau:lv.name,points:planChecks(lv).map(c=>({niveau:c.lvl,texte:c.msg.replace(/<[^>]+>/g,'')}))})).filter(c=>c.points.length);
-  return {area,areaBefore,ext,rooms,roomsBefore,doors,windows,wallPaint,glass,plinthes,toiture:toitureQ(),lin,byType,levels,travaux,plomberie,velux,etudes,contexte,produits,produitsTotal,notes:state.notes||'',sols:(()=>{const out=[];state.levels.forEach(lv=>facesFor(lv,'projet').forEach(f=>{const r=f.room;if(r&&(r.sol||r.floorNew)){const so=r.sol||{},sp=solPlan(r);out.push({piece:roomName(r),niveau:lv.name,surface:+areaNet(lv,f).toFixed(1),existant:r.floor||null,revetement:r.floorNew||null,depose:sp.sup==='revetement'&&!!r.floorNew,dalle:sp.sup==='terre',betonFini:sp.betonFini,isolant:!sp.betonFini&&so.iso&&so.chape?{mat:solMatLabel(so.iso.mat),ep:so.iso.e}:null,chape:sp.betonFini?null:(so.chape||null),ragreage:!sp.betonFini&&!!so.ragreage,alerte:sp.warn?sp.warn.replace(/<[^>]+>/g,''):null});}}));return out;})(),electricite,chauffage,doublage,facades,controles,suivi:(()=>{const T=chantierTasks();return {total:T.length,faits:T.filter(t=>isDone(t.id)).length,taches:T.map(t=>({id:t.id,lot:t.lot,label:t.label,fait:isDone(t.id)}))};})()};
+  return {area,areaBefore,ext,rooms,roomsBefore,doors,windows,wallPaint,glass,plinthes,toiture:toitureQ(),lin,byType,levels,travaux,plomberie,velux,etudes,contexte,produits,produitsTotal,notes:state.notes||'',sols:(()=>{const out=[];state.levels.forEach(lv=>facesFor(lv,'projet').forEach(f=>{const r=f.room;if(r&&(r.sol||r.floorNew)){const so=r.sol||{},sp=solPlan(r);out.push({piece:roomName(r),niveau:lv.name,surface:+areaNet(lv,f).toFixed(1),existant:r.floor||null,revetement:r.floorNew||null,depose:sp.sup==='revetement'&&!!r.floorNew,dalle:sp.sup==='terre',betonFini:sp.betonFini,isolant:!sp.betonFini&&so.iso&&so.chape?{mat:solMatLabel(so.iso.mat),ep:so.iso.e}:null,chape:sp.betonFini?null:(so.chape||null),ragreage:!sp.betonFini&&!!so.ragreage,alerte:sp.warn?sp.warn.replace(/<[^>]+>/g,''):null});}}));return out;})(),electricite,chauffage,doublage,facades,controles,provenance,suivi:(()=>{const T=chantierTasks();return {total:T.length,faits:T.filter(t=>isDone(t.id)).length,taches:T.map(t=>({id:t.id,lot:t.lot,label:t.label,fait:isDone(t.id)}))};})()};
+}
+/* ---------- La frontière d'export ---------- */
+/* Le SEUL point de sortie du plan vers un consommateur (moteur d'estimation, enregistrement,
+   API). `quantities()` reste interne : tout ce qui sort passe par ici, avec un numéro de contrat
+   que le consommateur doit vérifier. Toute clé renommée ou retirée fait changer ce numéro.
+   Avant, le seul « export » était un <details> de debug — qui n'émettait ni la toiture, ni les
+   sols, ni la plomberie, ni les études, ni les velux. */
+const CONTRAT_PLAN='1.0.0';
+function contratPlan(){
+  garantirPids();
+  const q=quantities(),bas=empriseNiveau(0),ch=chantier();
+  const {levels,...reste}=q;
+  return {contrat:CONTRAT_PLAN,
+    plan:{id:state.id||null,nom:state.name||''},
+    /* `emprise` : l'emprise au sol du niveau bas, dont dépendent 31 formules de quantité —
+       elle ne vient plus du panneau Toiture. Le type de bien (maison / appartement), sans lequel
+       le moteur masque toute la toiture, voyage dans `contexte`, avec les autres réponses. */
+    bien:{niveaux:state.levels.length,hauteurParDefaut:state.levels[0]?.height??null,
+      emprise:bas?bas.emprise:null,empriseRectangle:bas?bas.rectangle:null,empriseApprochee:bas?bas.approchee:null,
+      surfaceExterieure:bas?bas.exterieurs:null},
+    ...reste,detailNiveaux:levels};
 }
 // surface & nb de pièces à afficher selon la vue courante : en Existant on montre l'état existant, en Projet/Final l'état après travaux
 function habView(q){return mode()==='existant'?{area:q.areaBefore,rooms:q.roomsBefore}:{area:q.area,rooms:q.rooms};}
@@ -2888,7 +3008,7 @@ function estimateHTML(q){
     h+=`<tr class="tot"><td>Budget produits repérés (HT)</td><td></td><td></td><td></td><td class="n">${fmtEur(q.produitsTotal)} HT</td></tr></table>`;}
   if(q.notes||q.levels.some(l=>l.rooms.some(r=>r.note)||l.annotations?.length)){h+=`<div class="ph">📝 Notes</div><div class="note" style="margin:0 0 18px;white-space:pre-wrap">${q.notes?'<b>Projet :</b> '+esc(q.notes)+'\n':''}${q.levels.flatMap(l=>l.rooms.filter(r=>r.note).map(r=>'<b>'+esc(r.name)+' :</b> '+esc(r.note))).join('\n')}${q.levels.flatMap(l=>(l.annotations||[]).map(a=>'\n📌 <b>'+esc(l.name)+' :</b> '+esc(a))).join('')}</div>`;}
   h+=`<div class="ph">Pièces (état projet)</div><table class="mtable"><tr><th>Pièce</th><th>Type</th><th>Sol</th><th style="text-align:right">Surface</th><th style="text-align:right">Murs</th></tr>`;
-  q.levels.forEach(lv=>{if(!lv.rooms.length)return;h+=`<tr class="lvl"><td colspan="5">${lv.name} · h. ${fmt(lv.height)} m</td></tr>`;lv.rooms.forEach(r=>{h+=`<tr${r.exterieur?' style="color:#6c6b86"':''}><td>${r.name}</td><td>${RT[r.type].label}${r.exterieur?' <small>(hors habitable)</small>':''}</td><td>${r.exterieur?'—':r.floor}</td><td class="n">${fmtM2(r.area)}</td><td class="n">${r.exterieur?'—':fmtM2(r.wallArea)}</td></tr>`;});});
+  q.levels.forEach(lv=>{if(!lv.rooms.length)return;h+=`<tr class="lvl"><td colspan="5">${lv.name} · h. ${fmt(lv.hauteur)} m</td></tr>`;lv.rooms.forEach(r=>{h+=`<tr${r.exterieur?' style="color:#6c6b86"':''}><td>${r.name}</td><td>${RT[r.type].label}${r.exterieur?' <small>(hors habitable)</small>':''}</td><td>${r.exterieur?'—':r.floor}</td><td class="n">${fmtM2(r.area)}</td><td class="n">${r.exterieur?'—':fmtM2(r.wallArea)}</td></tr>`;});});
   h+=`<tr class="tot"><td>Total habitable</td><td></td><td></td><td class="n">${fmtM2(q.area)}</td><td class="n">${fmtM2(q.wallPaint)}</td></tr></table>
   <div class="ph mt">Autres quantités extraites</div>
   <table class="mtable"><tr><td>Plinthes (périmètres − portes)</td><td class="n">${fmt(q.plinthes,1)} ml</td></tr><tr><td>Plafonds</td><td class="n">${fmtM2(q.area)}</td></tr><tr><td>Cloisons</td><td class="n">${fmt(q.lin.cloison||0,1)} ml</td></tr><tr><td>Murs parpaing</td><td class="n">${fmt(q.lin.mur||0,1)} ml</td></tr><tr><td>Murs pierre / moellon</td><td class="n">${fmt(q.lin.porteur||0,1)} ml</td></tr><tr><td>Vitrage (fenêtres + baies)</td><td class="n">${fmtM2(q.glass)}</td></tr>${q.ext?`<tr><td>Surfaces extérieures (balcon, terrasse)</td><td class="n">${fmtM2(q.ext)}</td></tr>`:''}<tr><td>Équipements posés</td><td class="n">${q.levels.reduce((s,l)=>s+l.items.length,0)}</td></tr>
@@ -2897,7 +3017,7 @@ function estimateHTML(q){
   ${q.toiture&&q.toiture.surface?`<tr><td>🏠 Toiture ${TOIT_FORME[q.toiture.forme]?.label||''} · ${TOIT_COUV[q.toiture.couverture]||''}${q.toiture.projet&&q.toiture.projet.action!=='rien'?' → <b>'+TOIT_ACTION[q.toiture.projet.action].toLowerCase()+'</b>':''}</td><td class="n">${fmtM2(q.toiture.surface)} <small style="color:#6c6b86">emprise ${fmtM2(q.toiture.emprise)}${q.toiture.pente?' · pente '+q.toiture.pente+'°':''}</small></td></tr>`:''}
   ${q.doublage.iti>0?`<tr><td>🧱 Isolation intérieure ITI (isolant + placo)</td><td class="n">${fmtM2(q.doublage.iti)} <small style="color:#6c6b86">− ${fmtM2(q.doublage.surfacePerdue)} au sol</small></td></tr>`:''}${q.doublage.ite>0?`<tr><td>🧱 Isolation extérieure ITE (isolant + finition)</td><td class="n">${fmtM2(q.doublage.ite)}</td></tr>`:''}${q.facades.aFaire>0?`<tr><td>🏠 Façade à refaire</td><td class="n">${fmtM2(q.facades.aFaire)} <small style="color:#6c6b86">${Object.entries(q.facades.parPoste).map(([k,v])=>k+' '+fmtM2(v)).join(' · ')}</small></td></tr>`:''}
   <tr><td>🔥 Chauffage (radiateurs · sèche-serviettes · clim)</td><td class="n">${(q.chauffage.radiateurs+q.chauffage.secheServiettes+q.chauffage.clim)?`${q.chauffage.radiateurs} · ${q.chauffage.secheServiettes} · ${q.chauffage.clim}`:'—'}</td></tr></table>
-  <details><summary>Voir le JSON envoyé au moteur</summary><pre>${JSON.stringify({contexte:q.contexte,surface:+q.area.toFixed(1),surfaceAvant:+q.areaBefore.toFixed(1),exterieur:+q.ext.toFixed(1),pieces:Object.fromEntries(Object.entries(q.byType).map(([k,v])=>[k,+v.toFixed(1)])),portes:q.doors,fenetres:q.windows,mursPeinture:+q.wallPaint.toFixed(1),plafonds:+q.area.toFixed(1),plinthes:+q.plinthes.toFixed(1),vitrage:+q.glass.toFixed(1),lineaires:q.lin,travaux:T.actif?{demolitionM2:+T.demolM2.toFixed(1),demolitionLin:T.demolLin,demolitionPorteurMl:+T.demolPorteur.toFixed(1),ouverturesABoucher:T.boucher,rebouchageM2:+T.boucherM2.toFixed(1),creationM2:+T.creerM2.toFixed(1),creationLin:T.creerLin,percements:T.percements,menuiseriesRemplacees:T.remplacer,ouverturesDansNeuf:T.ouverturesNeuves,portesNeuves:T.creerPortes,fenetresNeuves:T.creerFenetres}:null,electricite:q.electricite,chauffage:q.chauffage,doublage:q.doublage,facades:q.facades,controles:q.controles,suivi:q.suivi,produits:q.produits,budgetProduitsHT:q.produitsTotal,prixProduits:'HT',notes:q.notes,niveaux:q.levels},null,2)}</pre></details>`;
+  <details><summary>Voir le JSON envoyé au moteur</summary><pre>${JSON.stringify(contratPlan(),null,2)}</pre></details>`;
   return h;
 }
 
