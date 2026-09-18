@@ -2177,7 +2177,23 @@ function draw(){
   }
   const faces=facesCache[lv.id]||[];
   // fantôme du niveau du dessous : repère pour caler l'étage sur le RDC (murs porteurs, escalier)
-  if(state.cur>0&&settings.ghost){const below=state.levels[state.cur-1];ctx.save();ctx.globalAlpha=.16;below.walls.forEach(w=>{if(!wallActive(w)||isVirtual(w))return;const off=wallOff(w),a=S(add(w.a,off)),b=S(add(w.b,off));ctx.strokeStyle='#1e1b4b';ctx.lineWidth=Math.max(1.5,wallT(w)*z);ctx.lineCap='butt';ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();});
+  if(state.cur>0&&settings.ghost){const below=state.levels[state.cur-1];
+    /* Le filigrane du niveau du dessous, en UN SEUL tracé rempli une fois.
+       Chaque mur était tracé pour lui-même : là où deux murs se recouvraient, les transparences
+       se cumulaient et laissaient un carré plus sombre à chaque croisement ; et comme le trait
+       s'arrêtait net sur l'axe, il manquait un carré de la demi-épaisseur à chaque angle. Les
+       murs porteurs semblaient mal raccordés — ils l'étaient, au dessin.
+       Un seul remplissage supprime le cumul, et chaque bout relié à un autre mur s'allonge de sa
+       demi-épaisseur pour fermer l'angle. Un bout dans le vide, lui, ne s'allonge pas. */
+    const murs=below.walls.filter(w=>wallActive(w)&&!isVirtual(w));
+    const relie=(p,w)=>murs.some(o=>o!==w&&(same(o.a,p)||same(o.b,p)||distSeg(p,o.a,o.b)<=wallT(o)/2+1e-2));
+    ctx.save();ctx.globalAlpha=.16;ctx.fillStyle='#1e1b4b';ctx.beginPath();
+    murs.forEach(w=>{const t=wallT(w),u=norm(sub(w.b,w.a)),n=perp(u),off=wallOff(w);
+      const A=add(add(w.a,off),mul(u,relie(w.a,w)?-t/2:0)),B=add(add(w.b,off),mul(u,relie(w.b,w)?t/2:0));
+      const h=mul(n,t/2);
+      [add(A,h),add(B,h),sub(B,h),sub(A,h)].map(S).forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y));
+      ctx.closePath();});
+    ctx.fill();
     ctx.globalAlpha=.5;ctx.fillStyle='#1e1b4b';ctx.font='600 10.5px Geist, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';(facesCache[below.id]||[]).forEach(f=>{if(!f.room)return;const s=S(f.label);ctx.fillText(roomName(f.room)+' (dessous)',s.x,s.y+22);});ctx.restore();}
   // pièces (+ motif du sol choisi : parquet / carrelage)
   faces.forEach(f=>{
