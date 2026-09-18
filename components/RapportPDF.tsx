@@ -1,4 +1,4 @@
-import { CATALOG, buildDevis, regionCoef, ICON, customTotals, key, type Ctx, type Selection, type CustomLine } from "@/lib/estimateur";
+import { CATALOG, buildDevis, regionCoef, ICON, customTotals, piecesEff, sdbEff, type Ctx, type Selection, type CustomLine } from "@/lib/estimateur";
 import { catT } from "@/lib/estimateur/catalog-i18n";
 import { getLocale } from "@/lib/i18n/server";
 
@@ -168,7 +168,7 @@ export async function RapportPDF({
 
   // Notes & liens matériaux (postes par défaut + lignes perso).
   const notes: { poste: string; note: string }[] = [];
-  for (const li of dv.lignes) { const n = sel[key(li.corps, li.nom)]?.note; if (n) notes.push({ poste: li.nom, note: n }); }
+  for (const li of dv.lignes) { const n = sel[li.cle]?.note; if (n) notes.push({ poste: li.nom, note: n }); }
   for (const x of customVal) if (x.note) notes.push({ poste: x.nom, note: x.note });
   let acc = 0;
   const slices = lots.map((l, i) => {
@@ -212,8 +212,9 @@ export async function RapportPDF({
             <span>{appart ? "🏢" : "🏠"} <b>{ctx.type}</b></span><span>·</span>
             <span><b className="num">{ctx.surface}</b> m² habitables</span><span>·</span>
             <span><b className="num">{ctx.niveaux}</b> niveau{ctx.niveaux > 1 ? "x" : ""}</span><span>·</span>
-            <span><b className="num">{ctx.pieces}</b> pièces</span><span>·</span>
-            <span><b className="num">{ctx.sdb}</b> SDB</span>
+            <span><b className="num">{piecesEff(ctx) || ctx.pieces}</b> pièces</span><span>·</span>
+            {/* SDB effectives = SDB classiques + suites parentales — c'est ce que le devis chiffre. */}
+            <span><b className="num">{sdbEff(ctx)}</b> SDB</span>
             {ctx.codePostal ? <><span>·</span><span className="num">{ctx.codePostal}</span></> : null}
           </div>
         </div>

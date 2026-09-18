@@ -147,6 +147,10 @@ export interface Totaux { ht: number; tva: number; aleas: number; ttc: number; }
 export interface Bilan { paye: number; matA: number; moA: number; achat: number; eco: number; }
 export type Mode = "fait-faire" | "je-fais" | "location";
 export interface DevisLigne {
+  /** Identité STABLE de la ligne = key(corps, nom du catalogue) — sans le libellé de variante.
+   *  `nom` porte la variante (affichage) et change quand l'utilisateur change d'option ;
+   *  `cle` ne change jamais, c'est elle qui indexe `sel`, les notes et les statuts de chantier. */
+  cle: string;
   corps: string; phase: string; nom: string; unite: string;
   qty: number; mode: Mode; ht: number; tva: number; ttc: number;
 }
@@ -588,6 +592,21 @@ export function bilan(catalog: Lot[], ctx: Ctx, sel: Selection): Bilan {
   return { paye, matA, moA, achat, eco };
 }
 
+/** Ancienne clé d'une ligne (nom + libellé de variante) si elle diffère de la clé stable.
+ *  Sert à relire les projets enregistrés avant l'unification, et à les nettoyer au premier clic. */
+export function cleLegacy(li: DevisLigne): string | null {
+  const k = key(li.corps, li.nom);
+  return k === li.cle ? null : k;
+}
+
+/** Statut de chantier d'une ligne : clé stable d'abord, ancienne clé en repli (0 = à faire). */
+export function statutLigne(statuts: Record<string, number>, li: DevisLigne): number {
+  const v = statuts[li.cle];
+  if (v != null) return v;
+  const old = cleLegacy(li);
+  return (old != null ? statuts[old] : undefined) ?? 0;
+}
+
 /** Devis complet : totaux + bilan + répartition par lot + détail ligne par ligne. */
 export function buildDevis(catalog: Lot[], ctx: Ctx, sel: Selection): Devis {
   const vis = catalog.filter((l) => visible(ctx, l));
@@ -604,6 +623,7 @@ export function buildDevis(catalog: Lot[], ctx: Ctx, sel: Selection): Devis {
       const r = effRate(l, t, sel, ctx);
       const mode: Mode = isLoc(l.c) ? "location" : s.self ? "je-fais" : "fait-faire";
       lignes.push({
+        cle: key(l.c, t.n),
         corps: l.c, phase: l.p, nom: t.n + variantLabel(t, s, ctx), unite: t.u,
         qty: qtyOf(ctx, sel, l.c, t), mode, ht, tva: (ht * r) / 100, ttc: ht * (1 + r / 100),
       });

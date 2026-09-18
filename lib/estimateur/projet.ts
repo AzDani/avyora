@@ -3,7 +3,7 @@
  * (liste, mon-espace, fiche). Tout part de `reponses = { v:"estimateur", ctx, sel }`.
  * Aucune dépendance à l'ancien moteur.
  */
-import { buildDevis, key, type Ctx, type Selection } from "./core";
+import { buildDevis, statutLigne, key, type Ctx, type Selection } from "./core";
 import { CATALOG } from "./catalog";
 
 export type ProjetEstim = {
@@ -30,7 +30,7 @@ export function avancementProjet(reponses: unknown): Avancement {
   const total = dv.lignes.length;
   let done = 0, prog = 0;
   for (const li of dv.lignes) {
-    const s = statuts[key(li.corps, li.nom)];
+    const s = statutLigne(statuts, li);
     if (s === 2) done++;
     else if (s === 1) prog++;
   }

@@ -9,7 +9,7 @@ import { useMemo, useState, useCallback } from "react";
 import { EST_CSS } from "./estimateur-styles";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { catT } from "@/lib/estimateur/catalog-i18n";
-import { CATALOG, buildDevis, PHASES, ICON, visible, visibleTask, key, qtyOf, effPrices, finCoefTask, rate, regionCoef, type Ctx, type Selection } from "@/lib/estimateur";
+import { CATALOG, buildDevis, PHASES, ICON, visible, lineHT, effRate, statutLigne, cleLegacy, regionCoef, piecesEff, type Ctx, type Selection } from "@/lib/estimateur";
 
 // Traductions de l'interface (chrome/UI uniquement) — les données (corps d'état, postes) restent telles quelles.
 const TR = {
@@ -291,16 +291,21 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
   const dv = useMemo(() => (ctx ? buildDevis(CATALOG, ctx, sel) : null), [ctx, sel]);
 
   // Suivi de chantier : statut par tâche (0 à démarrer, 1 en cours, 2 terminé), sauvegardé côté serveur.
-  const cycle = useCallback((k: string) => {
+  const cycle = useCallback((k: string, legacy?: string | null) => {
     setStatuts((prev) => {
-      const next = ((prev[k] || 0) + 1) % 3;
+      const vu = prev[k] != null ? prev[k] : (legacy != null ? prev[legacy] : undefined) || 0;
+      const next = (vu + 1) % 3;
       const copy = { ...prev };
       if (next === 0) delete copy[k]; else copy[k] = next;
+      const purge = legacy != null && copy[legacy] != null;
+      if (purge) delete copy[legacy];
       if (projectId && !readOnly) {
-        fetch(`/api/projects/${projectId}/statut`, {
+        const post = (key: string, state: number) => fetch(`/api/projects/${projectId}/statut`, {
           method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ key: k, state: next }),
+          body: JSON.stringify({ key, state }),
         }).catch(() => {});
+        post(k, next);
+        if (purge) post(legacy, 0); /* l'ancienne clé (avec variante) disparaît de l'enregistrement */
       }
       return copy;
     });
@@ -318,20 +323,26 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
   const reg = regionCoef(ctx.codePostal);
   const moPct = Math.round((reg.mo - 1) * 100);
 
+  // Sélection dérivée « tout fait faire » : même postes, mêmes quantités, mais rien de posé
+  // soi-même et prix perso ignorés → on peut la donner au moteur tel quel (aucun barème recopié).
+  const selFF: Selection = {};
+  for (const k2 of Object.keys(sel)) {
+    const v = sel[k2];
+    if (!v) continue;
+    const { self: _s, pu: _pu, pm: _pm, ...reste } = v;
+    selFF[k2] = { ...reste, self: false };
+  }
+
   // Valeur « tout fait faire » (MO incluse partout) → juge l'AMPLEUR réelle du chantier,
   // indépendamment de ce que l'utilisateur pose lui-même (ce qui fait baisser son €/m² sans
   // réduire l'ampleur des travaux). C'est ce qui est comparable aux repères marché.
   let ffHT = 0, ffTVA = 0, ffAleasBase = 0;
   CATALOG.filter((l) => visible(ctx, l)).forEach((l) =>
     l.t.forEach((tk) => {
-      const s = sel[key(l.c, tk.n)];
-      if (!s || !s.on || !visibleTask(ctx, tk)) return;
-      const { fp: fpU, sm: smU } = effPrices(tk, s, ctx);
-      if (fpU == null) return;
-      const q = qtyOf(ctx, sel, l.c, tk), fc = finCoefTask(ctx, l, tk);
-      const ht = (smU != null ? smU * fc + (fpU - smU) : fpU) * q; // finition sur matériaux, MO fixe
+      const ht = lineHT(ctx, selFF, l, tk); // même calcul que le devis (coef régional, finition, variantes)
+      if (!ht) return;
       ffHT += ht;
-      ffTVA += (ht * (ctx.fiscal === "pro" ? 20 : rate(l, tk))) / 100;
+      ffTVA += (ht * effRate(l, tk, selFF, ctx)) / 100;
       if (l.c !== "Etudes / Conception") ffAleasBase += ht;
     })
   );
@@ -410,7 +421,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
         <div className="stat">
           <div className="k">{s.theSite}</div>
           <div className="v"><span className="num">{nbLots}</span> {nbLots > 1 ? s.tradeWordP : s.tradeWord} · <span className="num">{nbTaches}</span> {nbTaches > 1 ? s.itemWordP : s.itemWord}</div>
-          <p className="sub">{ctx.surface} m² · {ctx.pieces} {s.roomsWord} · {s.ceiling} {ctx.hauteur} m</p>
+          <p className="sub">{ctx.surface} m² · {piecesEff(ctx) || ctx.pieces} {s.roomsWord} · {s.ceiling} {ctx.hauteur} m</p>
         </div>
       </div>
 
@@ -475,8 +486,8 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
         <div className="sub">{projectId ? s.siteTrackingSub : s.detailsSub}</div>
         {projectId && (() => {
           const total = lignes.length;
-          const done = lignes.filter((li) => statuts[key(li.corps, li.nom)] === 2).length;
-          const prog = lignes.filter((li) => statuts[key(li.corps, li.nom)] === 1).length;
+          const done = lignes.filter((li) => statutLigne(statuts, li) === 2).length;
+          const prog = lignes.filter((li) => statutLigne(statuts, li) === 1).length;
           const pctDone = total > 0 ? Math.round((done / total) * 100) : 0;
           const pctProg = total > 0 ? Math.round((prog / total) * 100) : 0;
           return (
@@ -502,7 +513,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
           const lignesPh = lignes.filter((li) => li.phase === ph);
           if (!lignesPh.length) return null;
           const open = !closedPh[ph];
-          const donePh = projectId ? lignesPh.filter((li) => statuts[key(li.corps, li.nom)] === 2).length : 0;
+          const donePh = projectId ? lignesPh.filter((li) => statutLigne(statuts, li) === 2).length : 0;
           return (
             <div key={ph}>
               <button type="button" className={"phase-t" + (open ? " open" : "")} onClick={() => togglePh(ph)} aria-expanded={open}>
@@ -513,8 +524,8 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
                 <span className="pt-meta">{projectId ? `${donePh}/${lignesPh.length}` : `${lignesPh.length} ${lignesPh.length > 1 ? s.itemWordP : s.itemWord}`}</span>
               </button>
               {open && lignesPh.map((li, i) => {
-                const k = key(li.corps, li.nom);
-                const st = statuts[k] || 0;
+                const k = li.cle, kOld = cleLegacy(li);
+                const st = statutLigne(statuts, li);
                 const stLabel = st === 2 ? s.stDone : st === 1 ? s.stInProgress : s.stToStart;
                 return (
                   <div key={i} className={"dtl" + (projectId ? " chant" : "")}>
@@ -530,7 +541,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
                           {st === 2 ? <>✓ {s.stDone}</> : <><span className="ic" />{stLabel}</>}
                         </span>
                       ) : (
-                        <button className={"stbtn st" + st} onClick={() => cycle(k)} aria-label={s.statusPrefix + stLabel + s.clickToChange}>
+                        <button className={"stbtn st" + st} onClick={() => cycle(k, kOld)} aria-label={s.statusPrefix + stLabel + s.clickToChange}>
                           {st === 2 ? <>✓ {s.stDone}</> : <><span className="ic" />{stLabel}</>}
                         </button>
                       )
