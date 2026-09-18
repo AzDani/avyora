@@ -1048,8 +1048,25 @@ const fmt = (m,d=2) => m.toFixed(d).replace('.',',');
 const fmtM2 = a => fmt(a,1)+' m²';
 
 // ---------- Détection des pièces (graphe planaire → faces) ----------
+/* Une cloison s'arrête physiquement CONTRE le doublage : son extrémité ne touche donc plus le
+   trait du mur qu'elle vient buter. Pour la détection des pièces, qui a besoin que les murs se
+   croisent pour refermer un contour, on la prolonge jusqu'à ce trait — le temps du calcul.
+   La géométrie enregistrée, elle, reste celle du chantier : la cloison s'arrête sur la plaque. */
+function segEffectif(level,w,m){
+  if(isVirtual(w))return w;
+  let a=w.a,b=w.b,change=false;
+  for(const bout of ['a','b']){
+    const pt=w[bout];
+    const o=murTouche(level,w,pt,m);
+    if(!o)continue;
+    const c=closestOnSeg(pt,o.a,o.b);
+    if(dist(pt,c.p)<2e-3)continue;                    /* déjà sur le trait : rien à prolonger */
+    if(bout==='a')a=c.p;else b=c.p;change=true;
+  }
+  return change?{...w,a,b}:w;
+}
 function detectFaces(level,m=mode()){
-  const walls=level.walls.filter(w=>wallActive(w,m)); const n=walls.length; if(!n) return [];
+  const walls=level.walls.filter(w=>wallActive(w,m)).map(w=>segEffectif(level,w,m)); const n=walls.length; if(!n) return [];
   const cuts=walls.map(()=>[0,1]);
   for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
     const A=walls[i],B=walls[j];const it=segInter(A.a,A.b,B.a,B.b);
@@ -1356,7 +1373,19 @@ function porteQuiTape(lv,f,out){
       msg:`La <b>${OPENINGS[o.type].label.toLowerCase()}</b> de ${esc(roomName(f.room))} <b>tape dans ${ITEMS[heurte.type].label.toLowerCase()}</b> en s'ouvrant : ${remede}.`,
       sel:{kind:'opening',id:o.id}});});
 }
-function danglingNodes(level){const out=[];const ws=level.walls.filter(w=>wallActive(w));ws.forEach(w=>[w.a,w.b].forEach(p=>{const ok=ws.some(o=>o!==w&&(same(o.a,p)||same(o.b,p)||distSeg(p,o.a,o.b)<2e-3));if(!ok)out.push(p);}));return out;}
+/* Deux murs sont en contact quand ils se touchent — ou quand l'un vient buter contre le
+   DOUBLAGE de l'autre. C'est le mode constructif : la cloison s'arrête sur la plaque, elle n'est
+   pas pour autant en l'air. Rend le mur touché, ou null. */
+function murTouche(level,w,p,m){
+  for(const o of level.walls){
+    if(o===w||isVirtual(o)||!wallActive(o,m))continue;
+    if(same(o.a,p)||same(o.b,p)||distSeg(p,o.a,o.b)<2e-3)return o;
+    const c=closestOnSeg(p,o.a,o.b);
+    if(c.t>1e-6&&c.t<1-1e-6&&dist(p,c.p)<=margeAimant(o,p)+2e-3)return o;
+  }
+  return null;
+}
+function danglingNodes(level){const out=[];level.walls.filter(w=>wallActive(w)).forEach(w=>[w.a,w.b].forEach(p=>{if(!murTouche(level,w,p))out.push(p);}));return out;}
 
 // ---------- Historique / sauvegarde ----------
 function snapshot(){return JSON.stringify(state);}
@@ -1439,6 +1468,12 @@ function toggle(k){settings[k]=!settings[k];const b=document.getElementById(k+'B
 /* Distance entre le TRAIT d'un mur et sa face visible du côté du point : demi-épaisseur (ou
    l'épaisseur entière si le trait est aligné sur une face), plus le doublage s'il y en a un de
    ce côté-là. */
+/* Le point de la FACE visible d'un mur (doublage compris) en regard d'un point de son trait. */
+function pointSurFace(w,pAxe,vers){
+  const n=perp(norm(sub(w.b,w.a)));
+  const cote=((vers.x-w.a.x)*n.x+(vers.y-w.a.y)*n.y)>=0?1:-1;
+  return add(pAxe,mul(n,cote*margeAimant(w,vers)));
+}
 function margeAimant(w,p){
   const n=perp(norm(sub(w.b,w.a)));
   const cote=((p.x-w.a.x)*n.x+(p.y-w.a.y)*n.y)>=0?1:-1;
@@ -1503,7 +1538,15 @@ function snapPoint(raw,ref,exclude){
     if(keys.shift||(settings.magnet&&diff<7*Math.PI/180)){
       const ll=settings.magnet?Math.round(l/0.05)*0.05:l; p=add(ref,v(Math.cos(sa)*ll,Math.sin(sa)*ll)); kind='angle';
       // prolonger jusqu'à un mur proche (jonction en T propre)
-      const nw=nearestWall(p,R,L(),false,true); if(nw&&!(exclude&&(same(nw.wall.a,exclude)||same(nw.wall.b,exclude)))){const far=add(ref,v(Math.cos(sa)*1e4,Math.sin(sa)*1e4));const it=segInter(ref,far,nw.wall.a,nw.wall.b);if(it)p=it.p;}
+      const nw=nearestWall(p,R,L(),false,true); if(nw&&!(exclude&&(same(nw.wall.a,exclude)||same(nw.wall.b,exclude)))){
+        /* on vise la FACE du mur (doublage compris), pas son trait : le tracé s'arrête où la
+           cloison viendra réellement buter. */
+        const far=add(ref,v(Math.cos(sa)*1e4,Math.sin(sa)*1e4));
+        const marge=margeAimant(nw.wall,ref),nn=perp(norm(sub(nw.wall.b,nw.wall.a)));
+        const cote=((ref.x-nw.wall.a.x)*nn.x+(ref.y-nw.wall.a.y)*nn.y)>=0?1:-1;
+        const dec=mul(nn,cote*marge);
+        const it=segInter(ref,far,add(nw.wall.a,dec),add(nw.wall.b,dec))||segInter(ref,far,nw.wall.a,nw.wall.b);
+        if(it)p=it.p;}
       // alignement avec un coin existant, le long de la direction
       if(Math.abs(Math.cos(sa))>0.99)alignX(p,p); else if(Math.abs(Math.sin(sa))>0.99)alignY(p,p);
       // nœud proche sur cette direction
@@ -1513,7 +1556,8 @@ function snapPoint(raw,ref,exclude){
   }
   if(settings.magnet){
     for(const q of nodes) if(dist(q,raw)<R) return {p:{...q},kind:'node'};
-    const nw=nearestWall(raw,R,L(),false,true); if(nw&&!(exclude&&(same(nw.wall.a,exclude)||same(nw.wall.b,exclude)))) return {p:nw.p,kind:'wall'};
+    const nw=nearestWall(raw,R,L(),false,true);
+    if(nw&&!(exclude&&(same(nw.wall.a,exclude)||same(nw.wall.b,exclude)))) return {p:pointSurFace(nw.wall,nw.p,raw),kind:'wall'};
     for(const q of gnodes) if(dist(q,raw)<R) return {p:{...q},kind:'ghost'};
     for(const w of ghostWalls){const c=closestOnSeg(raw,w.a,w.b).p;if(dist(c,raw)<R*0.8)return {p:c,kind:'ghost'};}
     const g=settings.gridStep; p=v(Math.round(raw.x/g)*g,Math.round(raw.y/g)*g); kind='grid';
@@ -1522,7 +1566,7 @@ function snapPoint(raw,ref,exclude){
   return {p,kind};
 }
 // nombre de murs (autres que w) qui touchent le point p
-function connections(p,w){return L().walls.filter(o=>o!==w&&(same(o.a,p)||same(o.b,p)||distSeg(p,o.a,o.b)<2e-3)).length;}
+function connections(p,w){const lv=L();return lv.walls.filter(o=>o!==w&&!isVirtual(o)&&(same(o.a,p)||same(o.b,p)||distSeg(p,o.a,o.b)<2e-3||murTouche(lv,w,p)===o)).length;}
 // équipements adossés à un mur (leur dos touche le mur) : ils suivent quand le mur bouge
 function itemsOnWall(w){const n=perp(norm(sub(w.b,w.a)));return L().items.filter(it=>{const back=v(it.x+Math.sin(it.rot)*it.h/2,it.y-Math.cos(it.rot)*it.h/2);const c=closestOnSeg(back,w.a,w.b);const across=(back.x-c.p.x)*n.x+(back.y-c.p.y)*n.y;const s=across>=0?1:-1;return Math.abs(Math.abs(across)-faceDist(w,s))<0.08&&c.t>0.001&&c.t<0.999;});}
 // translate un mur entier : ses deux nœuds (et les murs qui les partagent) + les cloisons qui arrivent dessus en T + les meubles adossés
