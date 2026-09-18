@@ -18,7 +18,7 @@ l'audit pose les questions, celui-ci porte les réponses.
 | **D11** | Le plan **coche** un poste au forfait, il ne l'alimente **jamais** en quantité. Aucun prix affiché ne bouge. | acquis |
 | **D12** | Une quantité corrigée à la main **épingle la ligne** : le plan cesse de l'alimenter et signale l'écart (« tu as fixé 12 u, le plan en mesure 14 »). | à implémenter |
 | **D13** | L'estimation **reste écrite** ; le plan y écrit, chaque ligne gardant sa provenance. Un projet sans plan continue de fonctionner à l'identique. | acquis |
-| **D14** | Ajouter l'état **« à conserver »**, distinct de « existant » : ce qui est à zéro par décision cesse d'être confondu avec ce qui n'a pas été regardé. | ✅ état « Conservé » sur murs, menuiseries et équipements ; reste à le faire parler dans le bloc de couverture |
+| **D14** | État **« Conservé »** distinct de « rien de prévu » — mais **seulement sur les équipements et les menuiseries**, là où la question « je garde ou je remplace » se pose vraiment. Pas sur les murs : personne n'arbitre un mur qu'il garde, et la rangée y revenait à quatre colonnes pour rien. Le bloc de couverture lit l'écart et l'annonce en euros, pas en nombre d'éléments. | ✅ fait |
 | **D15** | Quand un objet peut alimenter deux postes, **c'est l'objet qui porte l'attribut** — escalier bois / béton, point lumineux spot / plafonnier / suspension. Même mécanique que la douche (D6). | ✅ escalier et point lumineux ; **le plancher créé reste à faire** — c'est une propriété de niveau, pas d'objet |
 | **D16** | **Un identifiant stable pour les 203 postes** ; le libellé devient un affichage, renommable librement. **Sans migration de base** : un renommage s'écrit dans la table d'alias, et les projets enregistrés se relisent tout seuls. | ✅ fait |
 
