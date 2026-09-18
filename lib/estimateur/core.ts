@@ -90,6 +90,9 @@ export interface LigneSel {
   tai?: "petit" | "grand";     // équipement : taille choisie
   vsel?: Record<string, string>; // variantes génériques : {groupe → option choisie}
   note?: string;               // note libre / lien matériau (sauvegardé avec le projet)
+  /** Cette ligne a été écrite par le PLAN. Dès que l'utilisateur corrige la quantité, le drapeau
+   *  tombe et la ligne lui appartient : le plan cesse de l'alimenter (décision D12). */
+  plan?: boolean;
   pu?: number;                 // prix unitaire fourni-posé HT PERSONNALISÉ (override « Fait faire » — total figé)
   pm?: number;                 // prix unitaire MATÉRIAUX HT PERSONNALISÉ (override « Je le fais » ; Fait faire = pm + MO)
 }

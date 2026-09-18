@@ -485,7 +485,8 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                                 onCheck={() => toggleCheck(l, t)}
                                 onChoice={(self) => upd(l.c, t.n, (s) => ({ ...s, self }))}
                                 onAuto={() => toggleAuto(l, t)}
-                                onQty={(v) => upd(l.c, t.n, (s) => ({ ...s, qty: v, manual: isAuto(ctx, l.c, t.n) ? true : s.manual }))}
+                                /* D12 : corriger une quantité à la main épingle la ligne — le plan cesse de l'alimenter. */
+                                onQty={(v) => upd(l.c, t.n, (s) => ({ ...s, qty: v, manual: isAuto(ctx, l.c, t.n) ? true : s.manual, plan: undefined }))}
                                 onMat={(m) => upd(l.c, t.n, (s) => ({ ...s, mat: m }))}
                                 onVit={(v) => upd(l.c, t.n, (s) => ({ ...s, vit: v }))}
                                 onMot={(m) => upd(l.c, t.n, (s) => ({ ...s, mot: m }))}
