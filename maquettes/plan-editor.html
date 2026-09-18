@@ -2119,8 +2119,28 @@ function drawJoins(){
 }
 // hachures blanches à 45° dans le polygone courant (ctx.clip déjà appliqué par l'appelant)
 function hatch(a,b,u,n,t,z,alpha,step){ctx.strokeStyle=`rgba(255,255,255,${alpha})`;ctx.lineWidth=1.2;const L0=Math.hypot(b.x-a.x,b.y-a.y);for(let d=-t*z;d<L0+t*z;d+=step){const px=a.x+u.x*d,py=a.y+u.y*d;ctx.beginPath();ctx.moveTo(px-n.x*t*z+u.x*t*z*0.6,py-n.y*t*z+u.y*t*z*0.6);ctx.lineTo(px+n.x*t*z-u.x*t*z*0.6,py+n.y*t*z-u.y*t*z*0.6);ctx.stroke();}}
+/* MODE CONSTRUCTIF : le doublage des murs extérieurs est posé d'abord, les cloisons viennent
+   buter CONTRE lui — c'est ce qui évite un pont thermique à chaque jonction. Une cloison qui
+   meurt au milieu d'un mur doublé s'arrête donc à la face de la plaque, pas au mur porteur.
+   Uniquement pour une extrémité qui tombe au MILIEU d'un autre mur : deux murs qui se rejoignent
+   par leurs extrémités forment un angle, pas une jonction en T, et ne se raccourcissent pas. */
+function retraitContreDoublage(w,p,autre){
+  let r=0;
+  for(const o of L().walls){
+    if(o===w||isVirtual(o)||!wallDrawn(o))continue;
+    if(same(p,o.a)||same(p,o.b))continue;
+    if(distSeg(p,o.a,o.b)>2e-3)continue;
+    const no=perp(norm(sub(o.b,o.a)));
+    const cote=((autre.x-p.x)*no.x+(autre.y-p.y)*no.y)>=0?1:-1;
+    const io=isoOnSide(o,cote);
+    if(io&&io.mode!=='ite'&&isoShownIso(io,mode()))r=Math.max(r,wallT(o)/2+doublageOf(io));
+  }
+  return r;
+}
 function drawWall(w,isSel,isHov){
-  const z=view.zoom,t=wallT(w),u=norm(sub(w.b,w.a)),n=perp(u);const off=wallOff(w);const a=S(add(w.a,off)),b=S(add(w.b,off));const hx=n.x*t/2*z,hy=n.y*t/2*z;
+  const z=view.zoom,t=wallT(w),u=norm(sub(w.b,w.a)),n=perp(u);const off=wallOff(w);
+  const ra=retraitContreDoublage(w,w.a,w.b),rb=retraitContreDoublage(w,w.b,w.a);
+  const a=S(add(add(w.a,off),mul(u,ra))),b=S(add(add(w.b,off),mul(u,-rb)));const hx=n.x*t/2*z,hy=n.y*t/2*z;
   if(isVirtual(w)){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=isSel?'#4f46e5':isHov?'#7c3aed':'#9d8df0';ctx.lineWidth=isSel||isHov?3:2;ctx.setLineDash([7,6]);ctx.lineCap='round';ctx.stroke();ctx.setLineDash([]);ctx.lineCap='butt';return;}
   ctx.beginPath();ctx.moveTo(a.x+hx,a.y+hy);ctx.lineTo(b.x+hx,b.y+hy);ctx.lineTo(b.x-hx,b.y-hy);ctx.lineTo(a.x-hx,a.y-hy);ctx.closePath();
   const st=wst(w),projet=mode()==='projet';
@@ -2159,8 +2179,22 @@ function cutAtOpenings(poly,w,lv){const u=norm(sub(w.b,w.a));let polys=[poly];
     polys.forEach(P=>{const L2=clipHalf(P,u,sc-hw,true);if(L2.length>=3)next.push(L2);const R=clipHalf(P,u,sc+hw,false);if(R.length>=3)next.push(R);});polys=next;});
   return polys;}
 // ITI : dessiné par pièce, borné par les faces des murs (polyFace) et l'intérieur (polyInt) → s'arrête PROPREMENT à l'angle intérieur
+/* le mur qui porte l'arête j d'une face (les arêtes connaissent leur mur d'origine) */
+function edgeWall(f,j){const e=(f.edges||[])[j];if(!e)return null;for(const lv of state.levels){const w=lv.walls.find(x=>x.id===e.wall);if(w)return w;}return null;}
 function drawDoublageITI(lv){const faces=facesCache[lv.id]||[];faces.forEach(f=>{if(!f.dbl||!f.polyFace||!f.polyInt)return;const N=f.poly.length;
-  for(let i=0;i<N;i++){const w=f.dbl[i];if(!w)continue;const io=f.dblIso[i]||w.iso;const a=(i-1+N)%N;const u=norm(sub(w.b,w.a));const quad=[f.polyFace[a],f.polyFace[i],f.polyInt[i],f.polyInt[a]];
+  for(let i=0;i<N;i++){const w=f.dbl[i];if(!w)continue;const io=f.dblIso[i]||w.iso;const a=(i-1+N)%N;const u=norm(sub(w.b,w.a));
+    /* Le doublage est continu : il passe DERRIÈRE les cloisons qui viennent buter dessus. La
+       bande, bornée par les coins de la pièce, s'arrêtait à la face de chaque cloison et laissait
+       un trou de son épaisseur. On la prolonge jusqu'à l'AXE du mur qui arrive — les deux bandes
+       de part et d'autre s'y rejoignent alors exactement, et la cloison, elle, est raccourcie.
+       Seulement en jonction en T : si le coin est une EXTRÉMITÉ du mur doublé, c'est un angle de
+       bâtiment, la bande s'arrête là. La direction vient du polygone, pas du mur : une face peut
+       parcourir son mur dans un sens ou dans l'autre. */
+    const ue=norm(sub(f.poly[i],f.poly[a]));
+    const enT=(pt)=>dist(pt,w.a)>1e-3&&dist(pt,w.b)>1e-3;
+    const demi=(j,pt)=>{if(f.dbl[j]||!enT(pt))return 0;const v2=edgeWall(f,j);return v2?wallT(v2)/2:0;};
+    const eA=mul(ue,-demi(a,f.poly[a])),eB=mul(ue,demi((i+1)%N,f.poly[i]));
+    const quad=[add(f.polyFace[a],eA),add(f.polyFace[i],eB),add(f.polyInt[i],eB),add(f.polyInt[a],eA)];
     // au droit d'une ouverture où l'isolant fait le retour dans le tableau, le bord de coupe de la bande ne doit PAS être liseré : la périphérie continue dans le retour
     const s=io.side||1,cuts=[];lv.openings.forEach(o=>{if(o.wallId!==w.id||!opDrawn(o)||!revealOnSide(o,w,s))return;const c=add(w.a,mul(sub(w.b,w.a),o.t));const sc=c.x*u.x+c.y*u.y;cuts.push(sc-o.w/2,sc+o.w/2);});
     const skip=cuts.length?(p,q)=>{const sp=p.x*u.x+p.y*u.y,sq=q.x*u.x+q.y*u.y;return Math.abs(sp-sq)<1e-5&&cuts.some(cv=>Math.abs(sp-cv)<1e-4);}:null;
