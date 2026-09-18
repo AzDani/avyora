@@ -39,7 +39,7 @@ export interface PlanPourCorrespondance {
   facades?: { parPoste?: Record<string, number> };
   toiture?: {
     surface?: number; emprise?: number; egouts?: number; raccords?: number;
-    couverture?: string; combles?: string;
+    couverture?: string; combles?: string; forme?: string;
     projet?: { action?: string; charpente?: string; isoCombles?: string; velux?: number; gouttieres?: boolean; raccords?: boolean; traiterCharpente?: boolean };
   } | null;
   sols?: Array<{ id?: string; piece?: string; surface?: number; existant?: string | null; revetement?: string | null;
@@ -48,7 +48,8 @@ export interface PlanPourCorrespondance {
     murs?: Array<{ id: string; type: string; porteur: boolean; etat: string; ml: number; m2: number }>;
   };
   detailNiveaux?: Array<{
-    rooms?: Array<{ id: string; type: string; faience?: string; perimeter?: number; wallArea?: number; plinthes?: number; hauteur?: number; horsHabitable?: boolean; exterieur?: boolean; mursParType?: Record<string, number> }>;
+    id?: string; neuf?: boolean; plancher?: string | null;
+    rooms?: Array<{ id: string; type: string; faience?: string | null; perimeter?: number; wallArea?: number; plinthes?: number; hauteur?: number; horsHabitable?: boolean; exterieur?: boolean; fauxPlafond?: boolean; area?: number; mursParType?: Record<string, number> }>;
     equipements?: Array<{ id: string; type: string; etat: string; piece?: string | null; l?: number; p?: number; douche?: string | null; lumiere?: string | null; materiau?: string | null }>;
     menuiseries?: Array<{ id: string; type: string; etat: string; volet?: string | null; options?: string[] }>;
   }>;
@@ -64,6 +65,12 @@ export interface Contribution {
   raison: string;
   /** Variante du catalogue à sélectionner (ex. meuble-vasque « double »). */
   variante?: Record<string, string>;
+  /**
+   * Renseigné quand la ligne vient d'une DÉDUCTION et non d'une mesure : le plan a choisi à la
+   * place de l'utilisateur, qui n'a peut-être jamais eu conscience du choix. L'écran de validation
+   * doit signaler ces lignes-là — c'est le seul moyen qu'il puisse décider autrement.
+   */
+  deduction?: string;
 }
 
 export interface Ignore {
@@ -146,10 +153,10 @@ const MOBILIER = new Set(["lit", "lit1", "armoire", "canape", "table", "bureau"]
 export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributions: Contribution[]; ignores: Ignore[] } {
   const brut: Contribution[] = [];
   const ignores: Ignore[] = [];
-  const add = (poste: string, quantite: number, sources: string[], raison: string, variante?: Record<string, string>) => {
+  const add = (poste: string, quantite: number, sources: string[], raison: string, variante?: Record<string, string>, deduction?: string) => {
     if (quantite <= 0) return;
     if (!posteParId(poste)) { ignores.push({ quoi: poste, pourquoi: "identifiant inconnu au catalogue", sources }); return; }
-    brut.push({ poste, quantite, sources, raison, variante });
+    brut.push({ poste, quantite, sources, raison, variante, deduction });
   };
 
   // ── Équipements posés ──────────────────────────────────────────────────────
@@ -162,11 +169,12 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
         // D6 : trois branches exclusives. La colonne et la paroi accompagnent le receveur,
         // la cabine est un bloc qui les remplace.
         const t = e.douche || "bac";
+        const dedProduit = e.douche ? undefined : "Type de douche non choisi : receveur + colonne + paroi par défaut. Une douche à l'italienne ou une cabine se chiffrent autrement.";
         if (t === "cabine") add("plo-cabine-complete-parois-porte", 1, src, "Douche dessinée, type « cabine »");
         else {
-          add(t === "italienne" ? "plo-douche-a-l-italienne" : "plo-bac-de-douche", 1, src, `Douche dessinée, type « ${t} »`);
-          add("plo-colonne-de-douche", 1, src, "Colonne de la douche dessinée");
-          add("plo-paroi-de-douche", 1, src, "Paroi de la douche dessinée");
+          add(t === "italienne" ? "plo-douche-a-l-italienne" : "plo-bac-de-douche", 1, src, `Douche dessinée, type « ${t} »`, undefined, dedProduit);
+          add("plo-colonne-de-douche", 1, src, "Colonne de la douche dessinée", undefined, dedProduit);
+          add("plo-paroi-de-douche", 1, src, "Paroi de la douche dessinée", undefined, dedProduit);
         }
         continue;
       }
@@ -183,15 +191,17 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
       if (e.type === "escalier") {
         // D15 : l'objet porte son matériau.
         const m = e.materiau || "bois";
+        const ded = e.materiau ? undefined : "Matériau d'escalier non choisi : bois par défaut. Un escalier béton coûte près du double.";
         if (m === "beton") add("mac-escalier-en-beton", 1, src, "Escalier dessiné, en béton");
-        else if (m === "bois") add("toi-escalier-en-bois", 1, src, "Escalier dessiné, en bois");
+        else if (m === "bois") add("toi-escalier-en-bois", 1, src, "Escalier dessiné, en bois", undefined, ded);
         else ignores.push({ quoi: "escalier métal", pourquoi: "aucun poste « escalier métallique » au catalogue", sources: src });
         continue;
       }
       if (e.type === "lumiere") {
         // D15 : un spot encastré et un plafonnier ne sont pas le même poste.
         const l = e.lumiere || "spot";
-        add(l === "spot" ? "ele-spots-encastres-led" : "ele-ajouter-un-point-lumineux", 1, src, `Point lumineux dessiné, type « ${l} »`);
+        const ded = e.lumiere ? undefined : "Type de point lumineux non choisi : spot encastré par défaut, ce qui suppose un faux plafond ou un plénum.";
+        add(l === "spot" ? "ele-spots-encastres-led" : "ele-ajouter-un-point-lumineux", 1, src, `Point lumineux dessiné, type « ${l} »`, undefined, ded);
         continue;
       }
       if (e.type === "prise" || e.type === "prise2") {
@@ -291,7 +301,10 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
       const ancien = (sol.existant || "").toLowerCase();
       const poncage = ancien.includes("parquet");
       add(poncage ? "rev-poncage-vitrification-parquet" : "rev-parquet-bois", m2, src,
-        poncage ? `Parquet existant poncé et vitrifié${ou}` : `Parquet neuf${ou}`);
+        poncage ? `Parquet existant poncé et vitrifié${ou}` : `Parquet neuf${ou}`, undefined,
+        poncage
+          ? `Déduit du sol existant (${sol.existant}) : on le ponce plutôt que de le remplacer. Si tu veux un parquet neuf, change cette ligne.`
+          : `Déduit du sol existant (${sol.existant || "non renseigné"}) : parquet neuf. Si tu voulais poncer l'ancien, change cette ligne.`);
       continue;
     }
     const poste = SOL[nouveau];
@@ -313,21 +326,35 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
       if (r.exterieur) continue;
       const src = [r.id];
       if (r.plinthes) add("rev-plinthes", +r.plinthes.toFixed(2), src, "Plinthes, au périmètre réel de la pièce");
+      if (r.fauxPlafond && r.area) add("clo-faux-plafond", +r.area.toFixed(2), src, "Faux plafond demandé dans cette pièce");
       const humide = TYPES_HUMIDES.has(r.type) || humides.has(r.id);
       if (!humide) continue;
       // D10 : la hauteur de pose choisie dans la fiche de pièce devient une surface.
       const pEau = Math.min(perimEau.get(r.id) ?? 0, r.perimeter ?? 0);
       const hauteur = r.faience || "mi";
+      const dedFaience = r.faience ? undefined : "Hauteur de faïence non choisie : mi-hauteur par défaut. Pleine hauteur double presque la surface carrelée.";
       const m2 = hauteur === "pleine" ? (r.wallArea ?? 0)
         : hauteur === "douche" ? pEau * 2
         : Math.max(0, (r.perimeter ?? 0) - pEau) * 1.2 + pEau * 2;
       add("rev-faience-carrelage-mural", +m2.toFixed(2), src,
-        hauteur === "pleine" ? "Faïence pleine hauteur" : hauteur === "douche" ? "Faïence sur la zone de douche" : "Faïence à mi-hauteur, 2 m dans la douche");
+        hauteur === "pleine" ? "Faïence pleine hauteur" : hauteur === "douche" ? "Faïence sur la zone de douche" : "Faïence à mi-hauteur, 2 m dans la douche",
+        undefined, dedFaience);
       // La cloison hydrofuge ne concerne que les CLOISONS de la pièce humide : un mur extérieur
       // est doublé, pas hydrofugé.
       const cloisons = r.mursParType?.cloison ?? 0;
       if (cloisons > 0) add("clo-cloison-piece-humide-hydrofuge", +cloisons.toFixed(2), src, "Cloisons de la pièce humide");
     }
+  }
+
+  // ── Plancher d'un étage créé (D15) ────────────────────────────────────────
+  for (const n of plan.detailNiveaux ?? []) {
+    if (!n.neuf) continue;
+    const m2 = (n.rooms ?? []).reduce((t, r) => t + (r.area ?? 0), 0);
+    const src = n.id ? [n.id] : [];
+    const mat = n.plancher || "bois";
+    add(mat === "beton" ? "mac-plancher-beton-etage-cree" : "toi-creer-un-plancher-bois", +m2.toFixed(2), src,
+      `Plancher de l'étage créé (${mat})`, undefined,
+      n.plancher ? undefined : "Matériau du plancher non choisi : bois par défaut. Une dalle béton se chiffre autrement.");
   }
 
   // ── Toiture : une grandeur, et l'action décide des postes ─────────────────
@@ -337,12 +364,15 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
       const S = +t.surface, src: string[] = [];
       const couv = t.couverture || "tuile";
       if (pr.action === "demousser") add("toi-nettoyer-demousser-la-toiture", S, src, "Toiture à démousser");
-      if (pr.action === "refection") {
+      if (t.forme === "plat" && (pr.action === "refection" || pr.action === "complete")) {
+        // Un toit plat n'a ni tuile ni ardoise : c'est une étanchéité, et un seul poste.
+        add("toi-toit-plat-etancheite", S, src, "Toit plat : étanchéité");
+      } else if (pr.action === "refection") {
         const poste = COUVERTURE_REFECTION[couv];
         if (poste) add(poste, S, src, `Réfection de la couverture (${couv})`);
         else ignores.push({ quoi: `réfection ${couv}`, pourquoi: "aucun poste de réfection pour cette couverture", sources: src });
       }
-      if (pr.action === "complete") {
+      if (pr.action === "complete" && t.forme !== "plat") {
         add("toi-depose-complete-de-toiture-couverture-charpent", S, src, "Toiture refaite entièrement : dépose");
         const charp = pr.charpente || "trad";
         if (charp === "trad" && (couv === "tuile" || couv === "ardoise")) {
@@ -363,7 +393,8 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
       // Double source (D15) : les fenêtres de toit POSÉES sur le plan font foi ; le compteur du
       // panneau Toiture n'est qu'un raccourci pour qui ne les a pas dessinées.
       const posees = (plan.detailNiveaux ?? []).flatMap((n) => n.equipements ?? []).filter((e) => e.type === "velux" && e.etat === "creer").length;
-      if (!posees && pr.velux) add("toi-fenetre-de-toit-velux", pr.velux, src, "Fenêtres de toit, comptées au panneau Toiture");
+      if (!posees && pr.velux) add("toi-fenetre-de-toit-velux", pr.velux, src, "Fenêtres de toit, comptées au panneau Toiture",
+        undefined, "Aucune fenêtre de toit n'est dessinée : le nombre vient du panneau Toiture. Pose-les sur le plan pour qu'elles soient situées.");
     }
   }
 
@@ -406,6 +437,7 @@ export function postesCouverts(): string[] {
     "iso-isolation-des-combles-perdus-soufflage", "iso-isolation-des-combles-amenages-rampants",
     "toi-gouttieres-descentes", "toi-raccords-faitage-noues-solins",
     "mac-creer-un-appui-de-fenetre", "mac-creer-un-seuil-de-porte",
+    "clo-faux-plafond", "toi-creer-un-plancher-bois", "mac-plancher-beton-etage-cree", "toi-toit-plat-etancheite",
   ]);
   return [...ids];
 }

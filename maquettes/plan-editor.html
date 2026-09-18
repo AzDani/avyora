@@ -2510,15 +2510,24 @@ function setLevel(i){toitOpen=false;state.cur=i;sel=null;chain=[];syncRooms(L())
 function addLevel(mode){
   closeModal();history.push(snapshot());const cur=L();const nl=newLevel(state.levels.length===1?'R+1':'R+'+state.levels.length);
   if(mode==='copy'){ // même emprise : murs + ouvertures + fiches des pièces (les équipements restent au niveau d'origine)
-    const idMap={};nl.walls=cur.walls.map(w=>{const id=uid();idMap[w.id]=id;return {...w,id,a:{...w.a},b:{...w.b}};});
-    nl.openings=cur.openings.map(o=>({...o,id:uid(),wallId:idMap[o.wallId]}));
-    nl.rooms=cur.rooms.map(r=>({...r,id:uid(),anchor:{...r.anchor}}));nl.height=cur.height;
+    /* La copie reçoit de NOUVEAUX identifiants publics : un `pid` ne doit désigner qu'un seul
+       objet, or `{...w}` recopiait celui du niveau d'origine. Deux pièces différentes portaient
+       alors le même identifiant, et une ligne de devis n'aurait plus su de laquelle elle vient. */
+    const neuf=(o,extra)=>{const c={...o,id:uid(),...extra};delete c.pid;return c;};
+    const idMap={};nl.walls=cur.walls.map(w=>{const c=neuf(w,{a:{...w.a},b:{...w.b}});idMap[w.id]=c.id;return c;});
+    nl.openings=cur.openings.map(o=>neuf(o,{wallId:idMap[o.wallId]}));
+    nl.rooms=cur.rooms.map(r=>neuf(r,{anchor:{...r.anchor}}));nl.height=cur.height;
   }
   state.levels.push(nl);state.cur=state.levels.length-1;sel=null;afterChange();fitView();toast(mode==='copy'?'Niveau copié — ajuste les cloisons et les ouvertures':'Niveau vide créé',true);
 }
 function copyBearingBelow(){const lv=L(),below=state.levels[state.cur-1];if(!below)return;history.push(snapshot());const src=below.walls.filter(w=>wallActive(w)&&!isVirtual(w)&&wallT(w)>=0.15);src.forEach(w=>{const c={...w,id:uid(),a:{...w.a},b:{...w.b}};delete c.st;lv.walls.push(c);});lv.height=below.height;afterChange();fitView();toast(src.length+' mur(s) porteur(s) repris du niveau « '+below.name+' » — trace maintenant les cloisons',true);}
 function deleteLevel(){if(state.levels.length<=1)return;history.push(snapshot());const n=L().name;state.levels.splice(state.cur,1);state.cur=Math.max(0,state.cur-1);sel=null;purgerGroupes();afterChange();toast('Niveau « '+n+' » supprimé — Ctrl+Z pour annuler');}
-function setLevelProp(k,val){history.push(snapshot());L()[k]=k==='height'?Math.max(2,Math.min(5,parseFloat(val)||2.5)):(String(val).trim().slice(0,20)||L().name);afterChange();}
+function setLevelProp(k,val){history.push(snapshot());const lv=L();
+  if(k==='height')lv.height=Math.max(2,Math.min(5,parseFloat(val)||2.5));
+  else if(k==='neuf')lv.neuf=!!val;
+  else if(k==='plancher')lv.plancher=val;
+  else lv.name=String(val).trim().slice(0,20)||lv.name;
+  afterChange();}
 
 function pruneEmptyTexts(){const lv=L();if(!lv.texts||!lv.texts.length)return;lv.texts=lv.texts.filter(t=>(t.text&&t.text.trim())||(sel?.kind==='text'&&sel.id===t.id));}
 const isMobile=()=>window.innerWidth<=600; // téléphone = mode chantier (lecture + suivi) ; tablette = éditeur complet
@@ -2749,6 +2758,7 @@ function renderSelection(lv){
     <div class="ph mt">Quantités</div>
     <div class="row"><label>Surface habitable</label><span class="val b">${fmtM2(areaNet(lv,f))}</span></div>
     ${(tremieArea(lv,f)>0||r.lowPct)?`<div class="row"><label>Surface au sol</label><span class="val">${fmtM2(f.areaInt)}${tremieArea(lv,f)>0?' − trémie '+fmtM2(tremieArea(lv,f)):''}</span></div>`:''}
+    ${mode()!=='existant'?`<label class="chk"><input type="checkbox" ${r.fauxPlafond?'checked':''} onchange="setRoomProp('fauxPlafond',this.checked)"><span>Faux plafond<small>pour cacher des gaines, poser des spots ou rattraper une hauteur</small></span></label>`:''}
     <div class="row"><label>Part sous 1,80 m (combles)</label><span><input class="fin n" type="number" step="5" min="0" max="90" value="${r.lowPct||0}" onchange="setRoomProp('lowPct',Math.max(0,Math.min(90,parseFloat(this.value)||0)))"> %</span></div>
     <div class="row"><label>Périmètre</label><span class="val">${fmt(f.perimReal)} m</span></div>
     <div class="row"><label>Hauteur sous plafond</label><span><input class="fin n" type="number" step="0.05" min="1.8" max="5" value="${roomHeight(lv,r).toFixed(2)}" placeholder="${lv.height.toFixed(2)}" onchange="setRoomHeight(this.value)"> m</span></div>
@@ -2838,6 +2848,9 @@ function renderOverview(lv){
   ${mode()==='projet'?`<div class="tip" style="border-color:#fecaca;background:#fff7f7">${tq.actif?`Travaux marqués : <b>${fmtM2(tq.demolM2)}</b> de murs à démolir, <b>${fmtM2(tq.creerM2)}</b> à créer, <b>${tq.boucher}</b> ouverture(s) à boucher, <b>${tq.percements}</b> percement(s), ${tq.remplacer?`<b>${tq.remplacer}</b> menuiserie(s) à remplacer, `:''}<b>${tq.poser.length}</b> équipement(s) à poser, <b>${tq.deposer.length}</b> à déposer. Bascule en <b>✅ Final</b> pour voir le résultat propre.`:`Aucun travaux marqué. Clique un mur → <b>À&nbsp;démolir</b>, ou trace un nouveau mur : il sera <b>à créer</b>. Même logique pour les équipements : ajouté ici = <b>à poser</b>, existant cliqué → <b>à déposer</b>.`}</div>`:mode()==='final'?`<div class="tip" style="border-color:#bbf7d0;background:#f0fdf4">Le logement <b>après travaux</b>, tel qu'il sera : murs démolis retirés, nouveaux murs et ouvertures intégrés, sans marquage. C'est le plan à montrer aux artisans. Pour changer les travaux, repasse en <b>🛠 Projet</b>.</div>`:(lv.walls.length?`<div class="tip">Ton logement actuel. Quand il est complet, passe en <b>🛠 Projet</b> (en haut à droite du plan) pour dessiner ce que tu démolis et ce que tu crées.</div>`:'')}
   <div class="ph">Nom du niveau</div><input class="fin" value="${lv.name.replace(/"/g,'&quot;')}" maxlength="20" onchange="setLevelProp('name',this.value)">
   <div class="row" style="margin-top:12px"><label>Hauteur sous plafond</label><span><input class="fin n" type="number" step="0.05" min="2" max="5" value="${lv.height.toFixed(2)}" onchange="setLevelProp('height',this.value)"> m</span></div>
+  ${state.levels.indexOf(lv)>0&&mode()!=='existant'?`<label class="chk"><input type="checkbox" ${lv.neuf?'checked':''} onchange="setLevelProp('neuf',this.checked)"><span>Étage créé par le projet<small>il faut alors créer son plancher</small></span></label>
+  ${lv.neuf?`<div class="ph" style="margin-bottom:6px">Plancher de cet étage</div>
+  <div class="seg">${[['bois','Bois','solives + panneaux'],['beton','Béton','dalle coulée']].map(o=>`<button class="${(lv.plancher||'bois')===o[0]?'on':''}" onclick="setLevelProp('plancher','${o[0]}')">${o[1]}<small>${o[2]}</small></button>`).join('')}</div>`:''}`:''}
   ${renderChantier()}
   ${lv.walls.length?renderToiture(lv):''}
   <div class="ph mt">Pièces</div><div class="roomlist">`;
@@ -3016,7 +3029,7 @@ function quantities(){
       lr.push({id:pidOf('p',rr),name:roomName(rr),type:rr.type,exterieur:isExt,horsHabitable:isExt||nh,floor:rr.floor,area:+an.toFixed(2),
         surfaceAuSolPiece:+f.areaInt.toFixed(2),tremie:+tremieArea(lv,f).toFixed(2),tremiePerim:+tremiePerim(lv,f).toFixed(2),
         sousPentePct:rr.lowPct||0,perimeter:+f.perimReal.toFixed(2),hauteur:roomHeight(lv,rr),wallArea:+wa.toFixed(2),plinthes:+pl.toFixed(2),
-        openings:ops.length,mursAdjacents:mursDeFace(lv,f),mursParType:mursParTypeDeFace(lv,f,roomHeight(lv,rr)),faience:rr.faience||'mi',note:rr.note||null,
+        openings:ops.length,fauxPlafond:!!rr.fauxPlafond,mursAdjacents:mursDeFace(lv,f),mursParType:mursParTypeDeFace(lv,f,roomHeight(lv,rr)),faience:rr.faience||null,note:rr.note||null,
         produits:(rr.products&&rr.products.length)?rr.products.map(pr=>({poste:pr.poste,nom:pr.nom,url:pr.url,prix:pr.prix,unite:unitOf(pr)})):null});});
     facesFor(lv,'existant').forEach(f=>{if(!f.room)return;roomsBefore++;if(!RT[f.room.type].ext&&!RT[f.room.type].nh)areaBefore+=areaNet(lv,f);});
     lv.walls.forEach(w=>{if(isVirtual(w))return;const l=wallLen(w),st=wst(w),m2=l*lv.height;
@@ -3038,12 +3051,14 @@ function quantities(){
       else if(st==='remplacer'){travaux.remplacer++;if(d.cat==='porte')travaux.creerPortes++;else travaux.creerFenetres++;}
       provenance.ouvertures.push({id:pidOf('o',o),niveau:nvId,mur:wo?pidOf('m',wo):null,type:o.type,etat:st,l:+o.w.toFixed(2),h:+h.toFixed(2)});});
     lv.items.forEach(it=>{if(ist(it)==='creer')travaux.poser.push(ITEMS[it.type]?.label||it.type);if(ist(it)==='demolir')travaux.deposer.push(ITEMS[it.type]?.label||it.type);});
-    levels.push({id:nvId,name:lv.name,hauteur:lv.height,rooms:lr,items:lv.items.filter(i=>itemActive(i,'projet')).map(i=>i.type),escaliers:lv.items.filter(i=>i.type==='escalier'&&itemActive(i,'projet')).length,
+    levels.push({id:nvId,name:lv.name,hauteur:lv.height,neuf:!!lv.neuf,plancher:lv.neuf?(lv.plancher||null):null,rooms:lr,items:lv.items.filter(i=>itemActive(i,'projet')).map(i=>i.type),escaliers:lv.items.filter(i=>i.type==='escalier'&&itemActive(i,'projet')).length,
       /* largeur (l) et profondeur (p) de chaque équipement : les 5 postes au ml du lot Cuisine et
          la variante de dimension de la douche les attendaient ; le plan les jetait. */
       equipements:lv.items.filter(i=>itemActive(i,'projet')).map(i=>({id:pidOf('e',i),type:i.type,etat:ist(i),piece:pieceDe(i),l:+(i.w||0).toFixed(2),p:+(i.h||0).toFixed(2),
         /* ce qui lève l'ambiguïté entre deux postes du catalogue, répondu en dessinant (D6, D15) */
-        douche:i.type==='douche'?(i.douche||'bac'):null,lumiere:i.type==='lumiere'?(i.lum||'spot'):null,materiau:i.type==='escalier'?(i.materiau||'bois'):null,
+        /* Valeur BRUTE : null quand l'utilisateur n'a rien choisi. C'est au consommateur
+           d'appliquer le défaut — et de signaler qu'il l'a appliqué. */
+        douche:i.type==='douche'?(i.douche||null):null,lumiere:i.type==='lumiere'?(i.lum||null):null,materiau:i.type==='escalier'?(i.materiau||null):null,
         produit:i.product||null,note:i.note||null})),
       /* matériau, vitrage, ouvrant, options et volet pilotent des coefficients de prix et le
          poste « caisson à galandage » : émis tels quels, sans interprétation. */
@@ -3115,7 +3130,7 @@ function quantities(){
    que le consommateur doit vérifier. Toute clé renommée ou retirée fait changer ce numéro.
    Avant, le seul « export » était un <details> de debug — qui n'émettait ni la toiture, ni les
    sols, ni la plomberie, ni les études, ni les velux. */
-const CONTRAT_PLAN='1.2.0'; /* 1.1 : attributs de choix (douche, point lumineux, escalier), hauteur de faïence par pièce, état « conservé ». 1.2 : chaque équipement dit sa pièce. Que des clés en plus, rien de renommé. */
+const CONTRAT_PLAN='1.4.0'; /* 1.1 : attributs de choix (douche, point lumineux, escalier), hauteur de faïence par pièce, état « conservé ». 1.2 : chaque équipement dit sa pièce, et chaque pièce ses murs par type. 1.3 : les choix non tranchés (type de douche, point lumineux, matériau d'escalier, hauteur de faïence) sortent à null au lieu de leur défaut — c'est au consommateur d'appliquer le défaut ET de le signaler. 1.4 : faux plafond par pièce, et un niveau dit s'il est créé par le projet et en quoi est son plancher. */
 function contratPlan(){
   garantirPids();
   const q=quantities(),bas=empriseNiveau(0),ch=chantier();

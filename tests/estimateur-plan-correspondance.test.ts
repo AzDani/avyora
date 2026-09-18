@@ -68,11 +68,11 @@ describe("table de correspondance · ce que le scénario doit produire", () => {
     expect(mv.quantite).toBe(1);
     expect(mv.variante).toEqual({ config: "double" });
   });
-  it("l'escalier en béton et les points lumineux suivent leur attribut (D15)", () => {
-    expect(q("mac-escalier-en-beton")).toBe(1);
-    expect(q("toi-escalier-en-bois")).toBe(0);
+  it("les points lumineux suivent leur attribut, l'escalier retombe sur son défaut (D15)", () => {
     expect(q("ele-spots-encastres-led")).toBe(1);
     expect(q("ele-ajouter-un-point-lumineux")).toBe(1);
+    expect(q("toi-escalier-en-bois")).toBe(1);      // matériau non choisi → bois
+    expect(q("mac-escalier-en-beton")).toBe(0);
   });
   it("une prise double compte deux prises, un plan de travail compte ses mètres", () => {
     expect(q("ele-ajouter-deplacer-une-prise")).toBe(2);
@@ -137,22 +137,23 @@ describe("table de correspondance · les surfaces mesurées (D10)", () => {
     expect(c.sources).toEqual(["p1"]);
   });
   it("les plinthes viennent du périmètre réel, pas d'une racine carrée", () => {
-    expect(q("rev-plinthes")).toBeCloseTo(15.17 + 19.17, 1);
+    expect(q("rev-plinthes")).toBeCloseTo(15.17 + 19.17 + 16, 1); // les deux pièces du bas + celle de l'étage
   });
 });
 
 describe("table de correspondance · la toiture", () => {
   it("une toiture refaite entièrement dépose puis repose, sur la surface mesurée", () => {
-    expect(q("toi-depose-complete-de-toiture-couverture-charpent")).toBeCloseTo(58.9, 1);
-    expect(q("toi-toiture-complete-tuile-charpente-couverture")).toBeCloseTo(58.9, 1);
+    // la toiture se pose sur le DERNIER niveau : ici l'étage de 4 × 4, pas le rez-de-chaussée
+    expect(q("toi-depose-complete-de-toiture-couverture-charpent")).toBeCloseTo(26.6, 1);
+    expect(q("toi-toiture-complete-tuile-charpente-couverture")).toBeCloseTo(26.6, 1);
     expect(q("toi-charpente-traditionnelle-hors-couverture")).toBe(0); // comprise dans le poste complet
   });
   it("l'isolation des combles perdus se compte à l'emprise, pas à la surface de toit", () => {
-    expect(q("iso-isolation-des-combles-perdus-soufflage")).toBeCloseTo(42.6, 1);
+    expect(q("iso-isolation-des-combles-perdus-soufflage")).toBeCloseTo(17.6, 1);
   });
   it("gouttières et raccords suivent les linéaires mesurés", () => {
-    expect(q("toi-gouttieres-descentes")).toBeGreaterThan(10);
-    expect(q("toi-raccords-faitage-noues-solins")).toBeGreaterThan(5);
+    expect(q("toi-gouttieres-descentes")).toBeGreaterThan(5);
+    expect(q("toi-raccords-faitage-noues-solins")).toBeGreaterThan(2);
   });
   it("les fenêtres de toit du panneau comptent quand aucune n'est dessinée (D15)", () => {
     expect(q("toi-fenetre-de-toit-velux")).toBe(2);
@@ -163,5 +164,43 @@ describe("table de correspondance · la maçonnerie induite par une ouverture ne
   it("une fenêtre créée reçoit son appui ; une menuiserie remplacée garde le sien", () => {
     expect(q("mac-creer-un-appui-de-fenetre")).toBe(1); // une seule des deux fenêtres est neuve
     expect(q("mac-creer-un-seuil-de-porte")).toBe(0);
+  });
+});
+
+describe("table de correspondance · les déductions se signalent", () => {
+  const deduites = () => contributions.filter((c) => c.deduction);
+  it("chaque ligne déduite porte une phrase qui dit quoi changer", () => {
+    expect(deduites().length).toBeGreaterThan(0);
+    for (const c of deduites()) expect(c.deduction!.length).toBeGreaterThan(30);
+  });
+  it("le ponçage du parquet est signalé comme déduit du sol existant", () => {
+    const c = contributions.find((x) => x.poste === "rev-poncage-vitrification-parquet")!;
+    expect(c.deduction).toContain("Parquet ancien");
+    expect(c.deduction).toContain("change cette ligne");
+  });
+  it("un matériau d'escalier non choisi est signalé, un type de douche choisi ne l'est pas", () => {
+    expect(contributions.find((x) => x.poste === "toi-escalier-en-bois")!.deduction).toContain("bois par défaut");
+    expect(contributions.find((x) => x.poste === "plo-douche-a-l-italienne")!.deduction).toBeUndefined();
+  });
+  it("les fenêtres de toit comptées au panneau sont signalées comme non dessinées", () => {
+    expect(contributions.find((x) => x.poste === "toi-fenetre-de-toit-velux")!.deduction).toContain("dessin");
+  });
+});
+
+describe("table de correspondance · le reste du périmètre", () => {
+  it("un faux plafond demandé dans une pièce ne sort que pour cette pièce", () => {
+    const c = contributions.find((x) => x.poste === "clo-faux-plafond")!;
+    expect(c.quantite).toBeCloseTo(13.41, 1);
+    expect(c.sources).toEqual(["p1"]);
+  });
+  it("un étage créé apporte son plancher, au défaut bois signalé", () => {
+    const c = contributions.find((x) => x.poste === "toi-creer-un-plancher-bois")!;
+    expect(c.quantite).toBeCloseTo(14.44, 1);
+    expect(c.deduction).toContain("bois par défaut");
+    expect(q("mac-plancher-beton-etage-cree")).toBe(0);
+  });
+  it("le rez-de-chaussée n'est pas un étage créé : il n'apporte aucun plancher", () => {
+    const c = contributions.find((x) => x.poste === "toi-creer-un-plancher-bois")!;
+    expect(c.sources).toEqual([plan.detailNiveaux![1].id]);
   });
 });

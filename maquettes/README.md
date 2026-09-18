@@ -36,7 +36,14 @@ node maquettes/tools/review.mjs "$(pwd)/maquettes"
 
 # 3. jonctions : une cloison ne rentre dans aucun doublage, par aucun des six gestes
 node maquettes/tools/jonctions.mjs "$(pwd)/maquettes"
+
+# 4. contrat : identifiants uniques, provenances qui pointent juste, choix non tranchés à null
+node maquettes/tools/contrat.mjs "$(pwd)/maquettes"
 ```
+
+La scène de référence des tests de correspondance se régénère avec
+`node maquettes/tools/fixture-contrat.mjs "$(pwd)/maquettes" tests/fixtures/plan-contrat.json` —
+à relancer quand le contrat change, puis à relire : les quantités attendues sont dans les tests.
 
 ### Règles d'écriture
 

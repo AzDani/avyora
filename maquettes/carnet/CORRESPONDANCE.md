@@ -5,7 +5,7 @@ tests : `tests/estimateur-plan-correspondance.test.ts` sur un contrat réel fig�
 `tests/fixtures/plan-contrat.json`.
 
 Une fonction pure : elle prend le contrat du plan, elle rend des contributions. Elle ne chiffre
-rien et n'écrit nulle part — c'est la phase 4 qui les transformera en sélection. **97 postes du
+rien et n'écrit nulle part — c'est la phase 4 qui les transformera en sélection. **101 postes du
 catalogue sur 203 sont alimentés**, et chaque contribution porte les identifiants des objets du
 plan qui l'ont produite.
 
@@ -31,6 +31,9 @@ boucher, et des équipements déjà en place qui ne doivent rien produire.
 | **Plinthes** | au périmètre réel de chaque pièce, là où le moteur prenait 4·√(S·P) |
 | **Toiture** | l'action du panneau décide : démousser, réfection selon la couverture, ou dépose puis toiture complète ; plus l'isolation des combles à l'emprise, les gouttières au linéaire d'égout et les raccords au faîtage |
 | **Maçonnerie induite** | l'appui d'une fenêtre neuve, le seuil d'une baie ou d'une porte extérieure neuve — une menuiserie remplacée garde les siens |
+| **Faux plafond** | par pièce, sur demande, à la surface de la pièce — le moteur le prenait sur toute la surface du logement |
+| **Plancher d'un étage créé** (D15) | un niveau dit désormais s'il est créé par le projet, et en quoi est son plancher : bois ou dalle béton |
+| **Toit plat** | une étanchéité, un seul poste — ni tuile ni ardoise n'a de sens dessus |
 
 ## Les deux règles qui ne viennent pas d'une décision
 
@@ -45,25 +48,46 @@ fonction de la surface — « Rénovation électrique complète », « Refaire t
 « Peinture des murs », « Nettoyage de fin de chantier ». Le plan les rend justes **en donnant la
 bonne surface**, pas en envoyant une ligne.
 
+## Les déductions se signalent
+
+Le plan choisit parfois à la place de l'utilisateur. Chaque contribution concernée porte une
+phrase — `deduction` — qui dit ce qui a été déduit et quoi changer, pour que l'écran de validation
+de D1 puisse la mettre en évidence plutôt que de la noyer :
+
+- un **parquet** posé sur un parquet existant est poncé, pas remplacé — 1 151 € d'écart sur 20 m² ;
+- un **type de douche** non choisi retombe sur receveur + colonne + paroi ;
+- un **matériau d'escalier** non choisi retombe sur le bois, qui coûte près de moitié moins que le béton ;
+- une **hauteur de faïence** non choisie retombe sur la mi-hauteur, quand la pleine hauteur double presque la surface ;
+- un **point lumineux** non choisi devient un spot encastré, qui suppose un faux plafond ;
+- des **fenêtres de toit** comptées au panneau plutôt que dessinées ne sont pas situées sur le plan.
+
+Pour que ce soit possible, le contrat émet désormais ces choix **bruts** : `null` quand
+l'utilisateur n'a rien tranché, au lieu du défaut déjà appliqué. C'est au consommateur d'appliquer
+le défaut — et de dire qu'il l'a appliqué.
+
 ## Ce qui n'est pas encore branché
 
-29 postes restent, et presque aucun n'attend une mesure.
+Il reste 102 postes du catalogue hors de la table, et c'est normal : la plupart n'ont rien à
+recevoir du plan.
 
-**Ceux que le moteur calcule déjà correctement** — les lister comme « non couverts » serait
-trompeur. Peinture des murs et des plafonds, préparation des surfaces, sous-couche, rénovation
-électrique complète, réfection du réseau de plomberie, nettoyage de fin de chantier, ratissages :
-tous sont une fonction de la surface. Le plan les rend justes **en donnant la bonne surface**, pas
-en envoyant une ligne. Idem pour « Vasque », « Robinetterie lavabo », « Miroir » et « Finitions
-plâtrerie », que le moteur dérive de ce qui a été injecté.
+**Ceux que le moteur calcule déjà correctement.** Peinture des murs et des plafonds, préparation
+des surfaces, sous-couche, rénovation électrique complète, réfection du réseau de plomberie,
+nettoyage de fin de chantier, ratissages : tous sont une fonction de la surface. Le plan les rend
+justes **en donnant la bonne surface**, pas en envoyant une ligne. Idem pour « Vasque »,
+« Robinetterie lavabo », « Miroir » et « Finitions plâtrerie », que le moteur dérive de ce qui a
+été injecté. Les lister comme « non couverts » serait trompeur.
 
-**Ceux qui attendent une décision**, pas du code : « Doubler un mur » est écarté par D2, le
-matériau du plancher créé est le reste de D15, les meubles de cuisine sont une branche à choisir,
-et « Retirer l'ancien papier peint » comme « Enlever un revêtement mural » supposent une question
-par pièce que le plan ne pose pas encore.
+**Ceux qui attendent une décision**, pas du code : « Doubler un mur » est écarté par D2, les
+meubles de cuisine sont une branche à choisir, et « Retirer l'ancien papier peint » comme
+« Enlever un revêtement mural » supposent une question par pièce que le plan ne pose pas.
 
-**Ceux qui demandent vraiment une mesure de plus** : le faux plafond (un choix par pièce), les
-seuils de porte au sol (il faut savoir où deux revêtements se rencontrent), le toit plat, le mur en
-ossature bois et le plancher béton d'étage créé.
+**Ceux qui demandent une mesure que le plan ne fait pas encore** : les seuils de porte au sol — il
+faudrait savoir où deux revêtements se rencontrent, donc lier chaque ouverture aux deux pièces
+qu'elle sépare — et le mur en ossature bois, qui n'est pas un type de mur du plan.
+
+**Et tout le reste du catalogue** : études, diagnostics, raccordements aux réseaux, location de
+matériel, assainissement. Un plan ne les décrit pas, et c'est pour ça que le bloc « ce que ce
+chiffrage ne couvre pas » existe.
 
 ## Ce que la table refuse de faire
 

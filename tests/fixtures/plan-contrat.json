@@ -1,37 +1,37 @@
 {
- "contrat": "1.2.0",
+ "contrat": "1.4.0",
  "plan": {
   "id": null,
   "nom": "Scène de référence"
  },
  "bien": {
-  "niveaux": 1,
+  "niveaux": 2,
   "hauteurParDefaut": 2.5,
   "emprise": 42.6,
   "empriseRectangle": 42.6,
   "empriseApprochee": false
  },
- "area": 36.176399999999994,
- "areaBefore": 37.104,
+ "area": 50.61639999999999,
+ "areaBefore": 51.544,
  "ext": 0,
- "rooms": 2,
- "roomsBefore": 2,
+ "rooms": 3,
+ "roomsBefore": 3,
  "doors": 1,
  "windows": 3,
- "wallPaint": 82.1136,
+ "wallPaint": 122.1136,
  "glass": 4.5,
- "plinthes": 34.34,
+ "plinthes": 50.34,
  "toiture": {
-  "emprise": 42.6,
-  "perim": 26.8,
-  "surface": 58.9,
+  "emprise": 17.6,
+  "perim": 16.8,
+  "surface": 26.6,
   "pente": 30,
-  "niveau": "RDC",
-  "egouts": 17.6,
-  "faitage": 8.8,
+  "niveau": "Étage",
+  "egouts": 9.6,
+  "faitage": 4.8,
   "aretiers": 0,
-  "raccords": 8.8,
-  "hPignon": 1.67,
+  "raccords": 4.8,
+  "hPignon": 1.39,
   "dir": "x",
   "compose": false,
   "forme": "deuxpans",
@@ -51,12 +51,12 @@
  },
  "lin": {
   "cloison": 5,
-  "mur": 26,
+  "mur": 42,
   "porteur": 0
  },
  "byType": {
   "sdb": 13.408199999999999,
-  "chambre": 22.768199999999997
+  "chambre": 37.20819999999999
  },
  "travaux": {
   "demolLin": {
@@ -107,6 +107,15 @@
      "porteur": 1.4,
      "cloison": 1.5999999999999996
     },
+    "creerLin": {}
+   },
+   {
+    "id": "n28",
+    "niveau": "Étage",
+    "hauteur": 2.5,
+    "demolM2": 0,
+    "creerM2": 0,
+    "demolLin": {},
     "creerLin": {}
    }
   ],
@@ -221,6 +230,15 @@
      "texte": "La porte simple de Salle de bain tape dans baignoire en s'ouvrant : fais-la ouvrir de l'autre côté (bouton ↕) ou déplace l'équipement — changer la charnière ne suffira pas, un vantail balaye le même carré devant l'ouverture."
     }
    ]
+  },
+  {
+   "niveau": "Étage",
+   "points": [
+    {
+     "niveau": "info",
+     "texte": "Ajoute les portes et fenêtres (outil Ouvertures, touche P) : l'accès et l'éclairement des pièces seront contrôlés ensuite."
+    }
+   ]
   }
  ],
  "arbitrage": {
@@ -298,6 +316,42 @@
     "etat": "demolir",
     "ml": 1.6,
     "m2": 4
+   },
+   {
+    "id": "m33",
+    "niveau": "n28",
+    "type": "mur",
+    "porteur": true,
+    "etat": "existant",
+    "ml": 4,
+    "m2": 10
+   },
+   {
+    "id": "m32",
+    "niveau": "n28",
+    "type": "mur",
+    "porteur": true,
+    "etat": "existant",
+    "ml": 4,
+    "m2": 10
+   },
+   {
+    "id": "m31",
+    "niveau": "n28",
+    "type": "mur",
+    "porteur": true,
+    "etat": "existant",
+    "ml": 4,
+    "m2": 10
+   },
+   {
+    "id": "m30",
+    "niveau": "n28",
+    "type": "mur",
+    "porteur": true,
+    "etat": "existant",
+    "ml": 4,
+    "m2": 10
    }
   ],
   "ouvertures": [
@@ -480,33 +534,33 @@
     "fait": false
    },
    {
-    "id": "w:pnv7oef:demolir",
+    "id": "w:ufbu3nv:demolir",
     "lot": "Démolition",
-    "label": "Démolir le mur porteur de 1,40 m",
+    "label": "Démolir le mur porteur de 1,40 m · RDC",
     "fait": false
    },
    {
-    "id": "w:3mt4fih:demolir",
+    "id": "w:i0fa8gw:demolir",
     "lot": "Démolition",
-    "label": "Démolir la cloison de 1,60 m",
+    "label": "Démolir la cloison de 1,60 m · RDC",
     "fait": false
    },
    {
-    "id": "o:jg595gh:depose",
+    "id": "o:ic0iwfh:depose",
     "lot": "Démolition",
-    "label": "Déposer l'ancienne menuiserie · fenêtre",
+    "label": "Déposer l'ancienne menuiserie · fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "sol-depose:cjplwne",
+    "id": "sol-depose:1y968o4",
     "lot": "Démolition",
-    "label": "Déposer l'ancien sol (carrelage) · Salle de bain",
+    "label": "Déposer l'ancien sol (carrelage) · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "sol-depose:spf9ore",
+    "id": "sol-depose:rpnr1z7",
     "lot": "Démolition",
-    "label": "Déposer l'ancien sol (parquet ancien) · Chambre",
+    "label": "Déposer l'ancien sol (parquet ancien) · Chambre · RDC",
     "fait": false
    },
    {
@@ -516,33 +570,33 @@
     "fait": false
    },
    {
-    "id": "w:pnv7oef:poutre",
+    "id": "w:ufbu3nv:poutre",
     "lot": "Maçonnerie",
-    "label": "Poutre de reprise de charge · mur de 1,40 m",
+    "label": "Poutre de reprise de charge · mur de 1,40 m · RDC",
     "fait": false
    },
    {
-    "id": "o:eh1x563:perc",
+    "id": "o:z35bi29:perc",
     "lot": "Maçonnerie",
-    "label": "Ouvrir le mur porteur, linteau & tableaux · fenêtre",
+    "label": "Ouvrir le mur porteur, linteau & tableaux · fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:eh1x563:appui",
+    "id": "o:z35bi29:appui",
     "lot": "Maçonnerie",
-    "label": "Appui de fenêtre · fenêtre",
+    "label": "Appui de fenêtre · fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:kn5nate:boucher",
+    "id": "o:a3hp86t:boucher",
     "lot": "Maçonnerie",
-    "label": "Boucher fenêtre",
+    "label": "Boucher fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:0zqqsyb:perc",
+    "id": "o:ud3i2ou:perc",
     "lot": "Maçonnerie",
-    "label": "Percement, linteau & tableaux · porte simple",
+    "label": "Percement, linteau & tableaux · porte simple · RDC",
     "fait": false
    },
    {
@@ -570,33 +624,33 @@
     "fait": false
    },
    {
-    "id": "o:jg595gh:poser",
+    "id": "o:ic0iwfh:poser",
     "lot": "Menuiseries",
-    "label": "Poser fenêtre",
+    "label": "Poser fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:eh1x563:poser",
+    "id": "o:z35bi29:poser",
     "lot": "Menuiseries",
-    "label": "Poser fenêtre",
+    "label": "Poser fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:eh1x563:volet",
+    "id": "o:z35bi29:volet",
     "lot": "Menuiseries",
-    "label": "Volet roulant · fenêtre",
+    "label": "Volet roulant · fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:0zqqsyb:poser",
+    "id": "o:ud3i2ou:poser",
     "lot": "Menuiseries",
-    "label": "Poser porte simple",
+    "label": "Poser porte simple · RDC",
     "fait": false
    },
    {
-    "id": "iso:g4ph2iw",
+    "id": "iso:x5hq798",
     "lot": "Isolation",
-    "label": "Doubler le mur de 8,00 m",
+    "label": "Doubler le mur de 8,00 m · RDC",
     "fait": false
    },
    {
@@ -606,75 +660,75 @@
     "fait": false
    },
    {
-    "id": "sol-rag:cjplwne",
+    "id": "sol-rag:1y968o4",
     "lot": "Sol",
-    "label": "Ragréage · Salle de bain",
+    "label": "Ragréage · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "sol-rev:cjplwne",
+    "id": "sol-rev:1y968o4",
     "lot": "Sol",
-    "label": "Poser carrelage · Salle de bain",
+    "label": "Poser carrelage · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "sol-rev:spf9ore",
+    "id": "sol-rev:rpnr1z7",
     "lot": "Sol",
-    "label": "Poser parquet · Chambre",
+    "label": "Poser parquet · Chambre · RDC",
     "fait": false
    },
    {
-    "id": "i:bacwue9:creer",
+    "id": "i:f0nnmmo:creer",
     "lot": "Équipements",
-    "label": "Poser douche",
+    "label": "Poser douche · RDC",
     "fait": false
    },
    {
-    "id": "i:05edvc7:creer",
+    "id": "i:y2ji4jt:creer",
     "lot": "Équipements",
-    "label": "Poser double vasque",
+    "label": "Poser double vasque · RDC",
     "fait": false
    },
    {
-    "id": "i:f6j9t6j:creer",
+    "id": "i:qagm7fk:creer",
     "lot": "Équipements",
-    "label": "Poser wc",
+    "label": "Poser wc · RDC",
     "fait": false
    },
    {
-    "id": "i:b5p5tfb:creer",
+    "id": "i:b73xdes:creer",
     "lot": "Équipements",
-    "label": "Poser baignoire",
+    "label": "Poser baignoire · RDC",
     "fait": false
    },
    {
-    "id": "i:rdo0h0x:creer",
+    "id": "i:9wrvceu:creer",
     "lot": "Équipements",
-    "label": "Poser escalier",
+    "label": "Poser escalier · RDC",
     "fait": false
    },
    {
-    "id": "i:r9norgl:creer",
+    "id": "i:nhyd6wj:creer",
     "lot": "Équipements",
-    "label": "Poser point lumineux (plafond)",
+    "label": "Poser point lumineux (plafond) · RDC",
     "fait": false
    },
    {
-    "id": "i:jc798us:creer",
+    "id": "i:loe1wil:creer",
     "lot": "Équipements",
-    "label": "Poser point lumineux (plafond)",
+    "label": "Poser point lumineux (plafond) · RDC",
     "fait": false
    },
    {
-    "id": "i:icflcpe:creer",
+    "id": "i:04weacj:creer",
     "lot": "Équipements",
-    "label": "Poser prise double",
+    "label": "Poser prise double · RDC",
     "fait": false
    },
    {
-    "id": "i:152cn19:creer",
+    "id": "i:id55lit:creer",
     "lot": "Équipements",
-    "label": "Poser plan de travail",
+    "label": "Poser plan de travail · RDC",
     "fait": false
    }
   ]
@@ -684,6 +738,8 @@
    "id": "n3",
    "name": "RDC",
    "hauteur": 2.5,
+   "neuf": false,
+   "plancher": null,
    "rooms": [
     {
      "id": "p1",
@@ -702,6 +758,7 @@
      "wallArea": 38.31,
      "plinthes": 15.17,
      "openings": 1,
+     "fauxPlafond": true,
      "mursAdjacents": [
       "m4",
       "m5",
@@ -733,6 +790,7 @@
      "wallArea": 43.81,
      "plinthes": 19.17,
      "openings": 4,
+     "fauxPlafond": false,
      "mursAdjacents": [
       "m6",
       "m5",
@@ -743,7 +801,7 @@
       "cloison": 12.5,
       "mur": 37.5
      },
-     "faience": "mi",
+     "faience": null,
      "note": null,
      "produits": null
     }
@@ -825,7 +883,7 @@
      "p": 2.5,
      "douche": null,
      "lumiere": null,
-     "materiau": "beton",
+     "materiau": null,
      "produit": null,
      "note": null
     },
@@ -998,6 +1056,51 @@
      "note": null
     }
    ],
+   "annotations": []
+  },
+  {
+   "id": "n28",
+   "name": "Étage",
+   "hauteur": 2.5,
+   "neuf": true,
+   "plancher": null,
+   "rooms": [
+    {
+     "id": "p29",
+     "name": "Chambre",
+     "type": "chambre",
+     "exterieur": false,
+     "horsHabitable": false,
+     "floor": "À définir",
+     "area": 14.44,
+     "surfaceAuSolPiece": 14.44,
+     "tremie": 0,
+     "tremiePerim": 0,
+     "sousPentePct": 0,
+     "perimeter": 16,
+     "hauteur": 2.5,
+     "wallArea": 40,
+     "plinthes": 16,
+     "openings": 0,
+     "fauxPlafond": false,
+     "mursAdjacents": [
+      "m30",
+      "m31",
+      "m32",
+      "m33"
+     ],
+     "mursParType": {
+      "mur": 40
+     },
+     "faience": null,
+     "note": null,
+     "produits": null
+    }
+   ],
+   "items": [],
+   "escaliers": 0,
+   "equipements": [],
+   "menuiseries": [],
    "annotations": []
   }
  ]
