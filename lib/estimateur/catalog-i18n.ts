@@ -291,6 +291,7 @@ const EN: Record<CatKind, Record<string, string>> = {
     "Inox": "Stainless steel"
   },
   "notes": {
+    "isolant + ossature + plaque ; bandes et enduit comptés à part": "insulation + framing + board; taping and skim coat billed separately",
     "par benne": "per skip",
     "~150 € dépose + 150 € reprise": "~€150 drop-off + €150 pickup",
     "variable selon distance au réseau": "varies with distance to the grid",

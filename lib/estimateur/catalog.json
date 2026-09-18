@@ -856,7 +856,8 @@
         "u": "m2",
         "fp": 55,
         "sm": 15,
-        "tva": 5.5
+        "tva": 5.5,
+        "note": "isolant + ossature + plaque ; bandes et enduit comptés à part"
       },
       {
         "id": "iso-isolation-du-sol-plancher-bas",
