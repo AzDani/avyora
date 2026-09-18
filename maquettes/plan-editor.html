@@ -725,11 +725,41 @@ let toitOpen=false; // formulaire toiture (existant) déplié ?
 const topLevelIdx=()=>state.levels.length-1;
 // v1 « simplifiée » : la toiture est calculée et dessinée sur le RECTANGLE ENVELOPPE des murs extérieurs du dernier niveau (+ débord).
 // Un plan en L / T donne une surface approchée (signalée) — l'utilisateur fera de toute façon appel à un pro ; le but est d'être proche du prix.
+/* Décale un contour vers l'EXTÉRIEUR : chaque arête sort de la demi-épaisseur de son mur, plus
+   un supplément commun (le débord de toit). Les coins sont des intersections de droites, donc un
+   décroché reste un décroché — c'est toute la différence avec le rectangle enveloppe, qui comblait
+   les creux avec des mètres carrés inexistants, facturés au prix de la couverture. */
+function contourDecale(C,extra){
+  if(!C||!C.poly||C.poly.length<3)return null;
+  const P=C.poly,N=P.length,d=i=>(((C.edges[i]&&C.edges[i].t)||0)/2)+(extra||0);
+  const trace=sg=>{
+    const ln=P.map((p1,i)=>{const p0=P[(i-1+N)%N],u=norm(sub(p1,p0));return {p:add(p0,mul(perp(u),sg*d(i))),u};});
+    return P.map((p1,i)=>{const A=ln[i],B=ln[(i+1)%N],den=A.u.x*B.u.y-A.u.y*B.u.x;
+      if(Math.abs(den)<1e-6)return add(p1,mul(perp(B.u),sg*d((i+1)%N)));
+      return add(A.p,mul(A.u,((B.p.x-A.p.x)*B.u.y-(B.p.y-A.p.y)*B.u.x)/den));});
+  };
+  const a=trace(1),b=trace(-1);
+  return Math.abs(polyArea(a))>=Math.abs(polyArea(b))?a:b;   /* le sens qui SORT du bâti */
+}
+function contourBati(li,m){
+  const lv=state.levels[li];if(!lv||!lv.walls.length)return null;
+  const sv=state.cur;state.cur=li;
+  try{const fs=facesFor(lv,m||'projet');return (fs&&fs.contour)||null;}finally{state.cur=sv;}
+}
+const perimPoly=P=>{let s=0;for(let i=0;i<P.length;i++)s+=dist(P[i],P[(i+1)%P.length]);return s;};
 function toitureRect(){const li=topLevelIdx(),lv=state.levels[li];if(!lv||!lv.walls.length)return null;const sv=state.cur;state.cur=li;let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9,n=0,faces=0;
   try{if(!facesCache[lv.id])syncRooms(lv);(facesCache[lv.id]||[]).forEach(f=>{faces+=Math.abs(f.gross||f.area||0);});
     lv.walls.forEach(w=>{if(isVirtual(w)||!wallActive(w,'projet')||!isExteriorWall(w))return;const t=wallT(w),u=norm(sub(w.b,w.a)),nn=perp(u),off=wallOff(w);[w.a,w.b].forEach(p=>[1,-1].forEach(s=>{const q=add(add(p,off),mul(nn,s*t/2));x0=Math.min(x0,q.x);y0=Math.min(y0,q.y);x1=Math.max(x1,q.x);y1=Math.max(y1,q.y);n++;}));});}
   finally{state.cur=sv;}
-  if(!n)return null;const L=x1-x0,W=y1-y0;return {x0,y0,x1,y1,L,W,lv,faces,compose:faces<0.85*L*W};}
+  if(!n)return null;const L=x1-x0,W=y1-y0;
+  /* Le rectangle enveloppe reste : il donne le sens du faîtage et la découpe des pans (v1
+     « pans simplifiés »). Mais l'emprise, le périmètre et la surface se lisent désormais sur le
+     contour réel — un plan en L ne paie plus la couverture de son creux. */
+  const C=contourBati(li,'projet'),poly=contourDecale(C,0);
+  const aire=poly?Math.abs(polyArea(poly)):null;
+  return {x0,y0,x1,y1,L,W,lv,faces,C,poly,
+          aire:aire!=null?aire:L*W, perim:poly?perimPoly(poly):2*(L+W),
+          compose:poly?poly.length>4:(faces<0.85*L*W)};}
 function toitureGeom(){const R=toitureRect();if(!R)return null;const t=toiture()||toitureDefaults();const deb=t.debord??0.3,forme=t.forme||'deuxpans',pente=forme==='plat'?0:(t.pente??30),tan=Math.tan(pente*Math.PI/180);
   const ox0=R.x0-deb,oy0=R.y0-deb,ox1=R.x1+deb,oy1=R.y1+deb,Lx=ox1-ox0,Ly=oy1-oy0;
   let dir=t.faitage||'auto';if(dir==='auto')dir=Lx>=Ly?'x':'y'; // faîtage parallèle au grand côté
@@ -740,10 +770,23 @@ function toitureGeom(){const R=toitureRect();if(!R)return null;const t=toiture()
   else if(forme==='quatrepans'){const r0=a0+half,r1=a1-half;if(r1>r0+0.01){lines.push({k:'faitage',a:P(r0,cm),b:P(r1,cm)});faitage=r1-r0;}[[r0,a0],[r1,a1]].forEach(([r,a])=>{lines.push({k:'aretier',a:P(r,cm),b:P(a,c0)},{k:'aretier',a:P(r,cm),b:P(a,c1)});});aretiers=4*Math.sqrt(2*half*half+h*h);egouts=2*along+2*across;const rm=(r0+r1)/2;arrows.push({from:P(rm,cm),to:P(rm,c0)},{from:P(rm,cm),to:P(rm,c1)},{from:P(r0,cm),to:P(a0,cm)},{from:P(r1,cm),to:P(a1,cm)});}
   else if(forme==='mono'){lines.push({k:'faitage',a:P(a0,c0),b:P(a1,c0)});faitage=along;egouts=along;hPignon=across*tan;const am=(a0+a1)/2;arrows.push({from:P(am,c0+across*.12),to:P(am,c1-across*.12)});}
   else{egouts=2*along+2*across;hPignon=0;}
-  const surface=(Lx*Ly)/Math.cos(pente*Math.PI/180);
-  return {R,ox0,oy0,ox1,oy1,dir,forme,pente,deb,faitage:+faitage.toFixed(1),aretiers:+aretiers.toFixed(1),egouts:+egouts.toFixed(1),raccords:+(faitage+aretiers).toFixed(1),hPignon:+hPignon.toFixed(2),surface:+surface.toFixed(1),emprise:+(R.L*R.W).toFixed(1),compose:R.compose,lines,arrows,P,a0,a1,c0,c1,cm};}
+  /* Contour de toit = contour du bâti sorti du débord. Les égouts s'en déduisent par
+     l'orientation de chaque arête, ce qui redonne exactement les valeurs d'avant sur un
+     rectangle (2 pans → les deux côtés parallèles au faîtage) et les corrige ailleurs. */
+  const toitPoly=contourDecale(R.C,deb);
+  const perimToit=toitPoly?perimPoly(toitPoly):2*(Lx+Ly);
+  const longFaitage=toitPoly?toitPoly.reduce((sm,p,i)=>{const q=toitPoly[(i+1)%toitPoly.length];const u=norm(sub(q,p));
+      return sm+(((dir==='x'?Math.abs(u.x):Math.abs(u.y))>0.7)?dist(p,q):0);},0):2*along;
+  if(toitPoly){
+    if(forme==='deuxpans')egouts=longFaitage;
+    else if(forme==='mono')egouts=longFaitage/2;
+    else egouts=perimToit;
+  }
+  const aireToit=toitPoly?Math.abs(polyArea(toitPoly)):Lx*Ly;
+  const surface=aireToit/Math.cos(pente*Math.PI/180);
+  return {R,ox0,oy0,ox1,oy1,dir,forme,pente,deb,faitage:+faitage.toFixed(1),aretiers:+aretiers.toFixed(1),egouts:+egouts.toFixed(1),raccords:+(faitage+aretiers).toFixed(1),hPignon:+hPignon.toFixed(2),surface:+surface.toFixed(1),emprise:+R.aire.toFixed(1),compose:R.compose,toitPoly,perimToit:+perimToit.toFixed(1),lines,arrows,P,a0,a1,c0,c1,cm};}
 function toitureGeo(){const G=toitureGeom();if(!G)return {emprise:0,perim:0,surface:0,pente:30,niveau:'',egouts:0,raccords:0,faitage:0,aretiers:0,hPignon:0,compose:false};
-  return {emprise:G.emprise,perim:+(2*(G.R.L+G.R.W)).toFixed(1),surface:G.surface,pente:G.pente,niveau:G.R.lv.name,egouts:G.egouts,faitage:G.faitage,aretiers:G.aretiers,raccords:G.raccords,hPignon:G.hPignon,dir:G.dir,compose:G.compose};}
+  return {emprise:G.emprise,perim:+G.R.perim.toFixed(1),surface:G.surface,pente:G.pente,niveau:G.R.lv.name,egouts:G.egouts,faitage:G.faitage,aretiers:G.aretiers,raccords:G.raccords,hPignon:G.hPignon,dir:G.dir,compose:G.compose};}
 // murs pignons = murs extérieurs du dernier niveau perpendiculaires au faîtage (2 pans) ; en monopente : côté haut / bas
 function pignonWalls(){const G=toitureGeom();if(!G||!(G.forme==='deuxpans'||G.forme==='mono'))return [];const lv=G.R.lv;const sv=state.cur;state.cur=state.levels.indexOf(lv);const out=[];
   try{lv.walls.forEach(w=>{if(isVirtual(w)||!wallActive(w,'projet')||!isExteriorWall(w))return;const u=norm(sub(w.b,w.a));const alongRidge=G.dir==='x'?Math.abs(u.x):Math.abs(u.y);
@@ -755,7 +798,9 @@ function pignonExtra(w,lv){if(state.levels.indexOf(lv)!==topLevelIdx()||!toiture
   if(pw.role==='pignon')return 0.5*len*(len/2*tan);if(pw.role==='rampant')return 0.5*len*(len*tan);if(pw.role==='haut')return len*G.hPignon;return 0;}
 // dessin 2D de la toiture (dernier niveau) : contour au débord, faîtage, arêtiers, flèches de pente, pignons
 function drawToiture(lv){if(state.levels.indexOf(lv)!==topLevelIdx()||!toiture())return;const G=toitureGeom();if(!G)return;const z=view.zoom;ctx.save();
-  const A=S(v(G.ox0,G.oy0)),B=S(v(G.ox1,G.oy1));ctx.setLineDash([9,6]);ctx.strokeStyle='rgba(30,27,75,.55)';ctx.lineWidth=1.3*uiScale;ctx.strokeRect(A.x,A.y,B.x-A.x,B.y-A.y);
+  ctx.setLineDash([9,6]);ctx.strokeStyle='rgba(30,27,75,.55)';ctx.lineWidth=1.3*uiScale;
+  if(G.toitPoly&&G.toitPoly.length>=3){ctx.beginPath();G.toitPoly.forEach((q,i)=>{const s=S(q);i?ctx.lineTo(s.x,s.y):ctx.moveTo(s.x,s.y);});ctx.closePath();ctx.stroke();}
+  else{const A=S(v(G.ox0,G.oy0)),B=S(v(G.ox1,G.oy1));ctx.strokeRect(A.x,A.y,B.x-A.x,B.y-A.y);}
   G.lines.forEach(l=>{const a=S(l.a),b=S(l.b);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.setLineDash(l.k==='faitage'?[12,6]:[6,5]);ctx.strokeStyle=l.k==='faitage'?'#1e1b4b':'rgba(30,27,75,.6)';ctx.lineWidth=(l.k==='faitage'?2:1.2)*uiScale;ctx.stroke();});
   ctx.setLineDash([]);ctx.strokeStyle='rgba(30,27,75,.55)';ctx.fillStyle='rgba(30,27,75,.55)';ctx.lineWidth=1.2*uiScale;
   G.arrows.forEach(ar=>{const a=S(ar.from),b=S(ar.to);const dx=b.x-a.x,dy=b.y-a.y,L2=Math.hypot(dx,dy)||1;const ux=dx/L2,uy=dy/L2;const e={x:b.x-ux*8*uiScale,y:b.y-uy*8*uiScale};ctx.beginPath();ctx.moveTo(a.x+ux*10*uiScale,a.y+uy*10*uiScale);ctx.lineTo(e.x,e.y);ctx.stroke();ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.lineTo(e.x-uy*4*uiScale,e.y+ux*4*uiScale);ctx.lineTo(e.x+uy*4*uiScale,e.y-ux*4*uiScale);ctx.closePath();ctx.fill();});
@@ -805,7 +850,7 @@ function renderToiture(lv){const li=state.levels.indexOf(lv),top=topLevelIdx();c
     <div class="row" style="margin-top:8px"><label>État couverture</label></div>${seg('etatCouv',TOIT_ETAT_COUV,t.etatCouv)}
     <div class="row" style="margin-top:8px"><label>État charpente</label></div>${seg('etatCharp',TOIT_ETAT_CHARP,t.etatCharp)}
     ${t.forme==='plat'?`<div class="tip" style="margin-top:8px">Toit plat : pas de combles.</div>`:`<div class="row" style="margin-top:8px"><label>Combles</label><span class="seg" style="display:inline-flex"><button class="${t.combles==='perdus'?'on':''}" onclick="setToiture('combles','perdus')">Perdus<small>plafond droit</small></button><button class="${t.combles==='amenages'?'on':''}" onclick="setToiture('combles','amenages')">Aménagés<small>plafond rampant</small></button></span></div>${t.combles==='amenages'?`<div class="tip" style="margin-top:6px">Combles habitables : le plafond suit la pente (rampant). Nécessite une <b>charpente traditionnelle</b> — impossible avec des fermettes.</div>`:`<div class="tip" style="margin-top:6px">Combles non habités : plafond droit, isolés par soufflage au sol des combles.</div>`}`}
-    <div class="blond ${g.compose?'ko':'ok'}" style="margin-top:10px"><b>Surface de toiture ≈ <span>${fmtM2(g.surface)}</span></b><small>rectangle enveloppe ${fmtM2(g.emprise)} + débord ${Math.round((t.debord??0.3)*100)} cm${t.forme!=='plat'?' · pente '+t.pente+'°':''} · égouts ${fmt(g.egouts,1)} ml${g.faitage?' · faîtage '+fmt(g.faitage,1)+' ml':''}${g.aretiers?' · arêtiers '+fmt(g.aretiers,1)+' ml':''}</small>${g.compose?`<small>⚠ Plan non rectangulaire (L / T) : toiture <b>approchée</b> sur le rectangle enveloppe — un couvreur affinera (noues, pans croisés).</small>`:''}</div>
+    <div class="blond ${g.compose?'ko':'ok'}" style="margin-top:10px"><b>Surface de toiture ≈ <span>${fmtM2(g.surface)}</span></b><small>emprise réelle ${fmtM2(g.emprise)} + débord ${Math.round((t.debord??0.3)*100)} cm${t.forme!=='plat'?' · pente '+t.pente+'°':''} · égouts ${fmt(g.egouts,1)} ml${g.faitage?' · faîtage '+fmt(g.faitage,1)+' ml':''}${g.aretiers?' · arêtiers '+fmt(g.aretiers,1)+' ml':''}</small>${g.compose?`<small>⚠ Plan non rectangulaire (L / T) : la <b>surface suit bien ton plan</b>, mais les pans sont <b>simplifiés</b> — les noues et pans croisés ne sont pas dessinés. Un couvreur les affinera ; le prix, lui, est au bon ordre.</small>`:''}</div>
     <div class="row" style="margin-top:6px"><label>Débord de toit</label><span><input class="fin n" type="number" min="0" max="100" step="5" value="${Math.round((t.debord??0.3)*100)}" onchange="setToiture('debord',this.value/100)" style="width:60px"> cm</span></div>
     <div class="btnrow"><button class="ib danger" style="flex:1" onclick="setToiture('off')">Retirer la toiture</button></div>`;}
   // projet
@@ -1141,6 +1186,10 @@ function detectFaces(level,m=mode()){
       f.polyInt=P.map((p1,i)=>{const L1=lines[i],L2=lines[(i+1)%N];const den=L1.u.x*L2.u.y-L1.u.y*L2.u.x;if(Math.abs(den)<1e-6){const q=lines[(i+1)%N];const nn=perp(q.u);const d=insets[(i+1)%N]||insets[i]||0;const sgn=((f.label.x-p1.x)*nn.x+(f.label.y-p1.y)*nn.y)<0?-1:1;return add(p1,mul(nn,d*sgn));}const dx=L2.p.x-L1.p.x,dy=L2.p.y-L1.p.y;const t=(dx*L2.u.y-dy*L2.u.x)/den;return add(L1.p,mul(L1.u,t));});}
   });
   inner.forEach(f=>{inner.forEach(g=>{if(g===f)return;if(g.poly.every(p=>pointIn(p,f.poly)||f.poly.some(q=>same(p,q)))&&g.poly.some(p=>pointIn(p,f.poly))){f.areaInt-=g.gross;f.hasHole=true;}});});
+  /* La face NON BORNÉE — la plus grande en valeur absolue — était jetée : son polygone est
+     pourtant le pourtour exact du bâti, pris aux axes des murs, arêtes portant leur épaisseur.
+     La toiture en a besoin dès qu'un plan n'est pas un simple rectangle. */
+  inner.contour=(outer&&outer.poly&&outer.poly.length>=3)?{poly:outer.poly,edges:outer.edges}:null;
   return inner;
 }
 // une pièce qui naît en vue Projet (nouvelle cloison) hérite du sol existant de la pièce qu'elle découpe — elle n'existe pas en vue Existant
