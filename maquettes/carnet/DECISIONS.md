@@ -10,16 +10,16 @@ l'audit pose les questions, celui-ci porte les réponses.
 | **D3** | Un plan importe **toujours en logement entier**. Le plan n'écrit donc jamais `ctx.espaces` ni `perimetre:"piece"`. | acquis |
 | **D4** | Mappage explicite des 20 types de pièces vers les 8 compteurs. | ✅ fait (`51fbf9a`) |
 | **D5** | La **surface habitable** reste la surface affichée (c'est elle qui donne le €/m² et le repère marché). Garage, cave et combles sont facturés en **lignes propres mesurées** par le plan. Rien à changer dans le moteur. | à implémenter |
-| **D6** | Le plan **demande le type de douche** : bac + colonne + paroi (1 209 €, défaut), à l'italienne (1 228 €) ou cabine (836 €). | à implémenter |
+| **D6** | Le plan **demande le type de douche** : bac + colonne + paroi (1 209 €, défaut), à l'italienne (1 228 €) ou cabine (836 €). | ✅ demandé et émis |
 | **D7** | Une double vasque = **1 meuble en variante « double »** (909 €), jamais 2 unités. Le piège à ne jamais produire : 2 unités **et** la variante = 1 817 € et 4 robinetteries. | à implémenter |
 | **D8** | « Parquet » projeté : le plan **déduit de l'existant** — parquet existant + parquet projeté = ponçage (869 € les 20 m²), sinon parquet neuf (2 020 €). Corrigeable au double check. | à implémenter |
 | **D9** | Trois postes créés : **Abattre un mur porteur** (110 €/m²), **Poutre de reprise de charge IPN/HEA** (480 €/ml) et **Monter un mur en pierre** (250 €/m²). Prix relevés sur le marché et croisés avec trois devis réels, validés le 19/09/2026. | ✅ fait (`48773c7`) |
-| **D10** | La hauteur de faïence est **un réglage par salle de bain** dans le plan : zone douche (4 m²), mi-hauteur (13,4 m², défaut) ou pleine hauteur (22,8 m²) — mesuré, sur l'exemple d'une SDB de 6 m². La cloison hydrofuge suit la surface réelle des cloisons de pièce humide, que le plan mesure déjà. | à implémenter |
+| **D10** | La hauteur de faïence est **un réglage par salle de bain** dans le plan : zone douche (4 m²), mi-hauteur (13,4 m², défaut) ou pleine hauteur (22,8 m²) — mesuré, sur l'exemple d'une SDB de 6 m². La cloison hydrofuge suit la surface réelle des cloisons de pièce humide, que le plan mesure déjà. | ✅ réglage posé et émis ; le calcul de surface vient avec la table de correspondance |
 | **D11** | Le plan **coche** un poste au forfait, il ne l'alimente **jamais** en quantité. Aucun prix affiché ne bouge. | acquis |
 | **D12** | Une quantité corrigée à la main **épingle la ligne** : le plan cesse de l'alimenter et signale l'écart (« tu as fixé 12 u, le plan en mesure 14 »). | à implémenter |
 | **D13** | L'estimation **reste écrite** ; le plan y écrit, chaque ligne gardant sa provenance. Un projet sans plan continue de fonctionner à l'identique. | acquis |
-| **D14** | Ajouter l'état **« à conserver »**, distinct de « existant » : ce qui est à zéro par décision cesse d'être confondu avec ce qui n'a pas été regardé. | à implémenter |
-| **D15** | Quand un objet peut alimenter deux postes, **c'est l'objet qui porte l'attribut** — escalier bois / béton, point lumineux spot / plafonnier / applique, plancher créé bois / béton. Même mécanique que la douche (D6). | à implémenter |
+| **D14** | Ajouter l'état **« à conserver »**, distinct de « existant » : ce qui est à zéro par décision cesse d'être confondu avec ce qui n'a pas été regardé. | ✅ état « Conservé » sur murs, menuiseries et équipements ; reste à le faire parler dans le bloc de couverture |
+| **D15** | Quand un objet peut alimenter deux postes, **c'est l'objet qui porte l'attribut** — escalier bois / béton, point lumineux spot / plafonnier / suspension. Même mécanique que la douche (D6). | ✅ escalier et point lumineux ; **le plancher créé reste à faire** — c'est une propriété de niveau, pas d'objet |
 | **D16** | **Un identifiant stable pour les 203 postes** ; le libellé devient un affichage, renommable librement. **Sans migration de base** : un renommage s'écrit dans la table d'alias, et les projets enregistrés se relisent tout seuls. | ✅ fait |
 
 ---
@@ -34,9 +34,10 @@ Ordre de travail qui découle des décisions :
 1. ~~**D16 d'abord.**~~ Fait. Chaque poste porte un `id` gelé, un renommage se déclare dans
    `ALIAS` (`lib/estimateur/identite.ts`) et trois tests de garde font échouer le build si le
    moteur cite un poste qui n'existe plus. La table de correspondance peut être clée dessus.
-2. **Les attributs d'objet** (D6, D15) et le réglage de faïence (D10), côté maquette — c'est ce qui
-   rend le reste chiffrable.
-3. **L'état « à conserver »** (D14), qui conditionne le delta de D1.
+2. ~~**Les attributs d'objet** (D6, D15) et le réglage de faïence (D10).~~ Faits, contrat 1.1.0.
+   Reste le matériau du plancher créé, qui se règle au niveau et pas sur un objet.
+3. ~~**L'état « Conservé »** (D14).~~ Posé sur les trois familles et émis. Reste à lui faire dire
+   quelque chose dans le bloc « ce que ce chiffrage ne couvre pas ».
 4. **La table de correspondance** (phase 3), puis **l'injection** (phase 4) avec l'épinglage de D12
    et le renvoi vers le double check de D1.
 5. **D5** au passage : sortir les locaux non habitables des agrégats de peinture et de plinthes, et
