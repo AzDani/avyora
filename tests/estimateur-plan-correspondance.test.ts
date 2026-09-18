@@ -27,12 +27,17 @@ describe("table de correspondance · les postes existent et rien n'est inventé"
 });
 
 describe("table de correspondance · D1, seul le delta est facturé", () => {
-  it("les 29 équipements existants du plan ne produisent rien", () => {
+  it("un radiateur et un lavabo déjà en place ne produisent rien", () => {
     const existants = (plan.detailNiveaux ?? []).flatMap((n) => n.equipements ?? []).filter((e) => e.etat === "existant");
-    expect(existants.length).toBeGreaterThan(10);
-    // aucune source de contribution ne vient d'un équipement existant
+    expect(existants.map((e) => e.type).sort()).toEqual(["lavabo", "radiateur"]);
     const src = new Set(contributions.flatMap((c) => c.sources));
     for (const e of existants) expect(src.has(e.id), e.type).toBe(false);
+  });
+  it("un chauffe-eau marqué « conservé » ne produit rien non plus", () => {
+    const garde = (plan.detailNiveaux ?? []).flatMap((n) => n.equipements ?? []).find((e) => e.etat === "garder")!;
+    expect(garde.type).toBe("cumulus");
+    expect(contributions.flatMap((c) => c.sources)).not.toContain(garde.id);
+    expect(q("plo-chauffe-eau-electrique-cumulus")).toBe(0);
   });
   it("une menuiserie conservée ne produit rien", () => {
     const gardee = (plan.detailNiveaux ?? []).flatMap((n) => n.menuiseries ?? []).find((m) => m.etat === "garder")!;
@@ -43,13 +48,13 @@ describe("table de correspondance · D1, seul le delta est facturé", () => {
 
 describe("table de correspondance · ce que le scénario doit produire", () => {
   it("le mur porteur démoli donne ses trois lignes (D9)", () => {
-    expect(q("dem-abattre-un-mur-porteur")).toBeCloseTo(22.5, 1);
-    expect(q("mac-poutre-de-reprise-de-charge-ipn-hea")).toBeCloseTo(9, 1);
+    expect(q("dem-abattre-un-mur-porteur")).toBeCloseTo(3.5, 1);   // 1,40 m × 2,50
+    expect(q("mac-poutre-de-reprise-de-charge-ipn-hea")).toBeCloseTo(1.4, 1);
     expect(q("etu-etude-de-structure")).toBe(1);
   });
   it("cloisons : une démolie, une créée, chacune dans son poste", () => {
-    expect(q("dem-abattre-une-cloison")).toBeCloseTo(3.25, 1);
-    expect(q("clo-monter-une-cloison")).toBeCloseTo(17.5, 1);
+    expect(q("dem-abattre-une-cloison")).toBeCloseTo(4, 1);        // 1,60 m × 2,50
+    expect(q("clo-monter-une-cloison")).toBe(0);                    // aucune cloison à créer ici
   });
   it("la douche à l'italienne prend sa branche, et une seule (D6)", () => {
     expect(q("plo-douche-a-l-italienne")).toBe(1);
@@ -76,12 +81,13 @@ describe("table de correspondance · ce que le scénario doit produire", () => {
   it("la menuiserie remplacée est déposée puis reposée", () => {
     expect(q("dem-enlever-les-anciennes-portes-fenetres")).toBe(1);
     expect(q("min-porte-interieure-battante")).toBe(1);
-    expect(q("mex-fenetres")).toBe(2);
+    expect(q("mex-fenetres")).toBe(2);      // une remplacée, une neuve
     expect(q("mex-volets-roulants")).toBe(1);
+    expect(q("min-porte-interieure-battante")).toBe(1);
   });
   it("le percement du mur porteur et le doublage intérieur remontent", () => {
     expect(q("mac-ouvrir-un-mur-porteur-petite-porte-fenetre")).toBe(1);
-    expect(q("iso-isolation-des-murs-par-l-interieur")).toBeCloseTo(22.5, 1);
+    expect(q("iso-isolation-des-murs-par-l-interieur")).toBeCloseTo(20, 1);
     expect(q("clo-doubler-un-mur")).toBe(0); // D2 : c'est l'ITI qui porte le doublage
   });
   it("la robinetterie de lavabo n'est PAS injectée : le moteur la dérive du meuble", () => {
@@ -97,5 +103,65 @@ describe("table de correspondance · ce qu'elle ne sait pas faire, elle le dit",
   });
   it("chaque ignoré porte une raison lisible", () => {
     for (const i of ignores) expect(i.pourquoi.length).toBeGreaterThan(10);
+  });
+});
+
+describe("table de correspondance · les sols, pièce par pièce (D8)", () => {
+  it("un parquet posé sur un parquet existant se ponce, il ne se remplace pas", () => {
+    expect(q("rev-poncage-vitrification-parquet")).toBeCloseTo(22.8, 1);
+    expect(q("rev-parquet-bois")).toBe(0);
+  });
+  it("le carrelage, la chape, le ragréage et la dépose suivent chacun leur pièce", () => {
+    expect(q("rev-carrelage-au-sol")).toBeCloseTo(13.4, 1);
+    expect(q("mac-chape-traditionnelle")).toBeCloseTo(13.4, 1);
+    expect(q("rev-preparation-du-sol-ragreage")).toBeCloseTo(13.4, 1);
+    expect(q("dem-enlever-un-revetement-de-sol")).toBeCloseTo(13.4 + 22.8, 1);
+  });
+  it("chaque ligne de sol porte l'identifiant de sa pièce", () => {
+    const c = contributions.find((x) => x.poste === "rev-carrelage-au-sol")!;
+    expect(c.sources).toEqual(["p1"]);
+  });
+});
+
+describe("table de correspondance · les surfaces mesurées (D10)", () => {
+  it("la faïence à mi-hauteur : 1,20 m partout, 2,00 m contre la douche et la baignoire", () => {
+    // périmètre 16 m ; receveur 1,2×0,8 et baignoire 1,7×0,75 adossés → 4,45 m à 2 m
+    const attendu = (16 - 4.45) * 1.2 + 4.45 * 2;
+    expect(q("rev-faience-carrelage-mural")).toBeCloseTo(attendu, 1);
+  });
+  it("seules les CLOISONS de la pièce humide sont hydrofugées, pas ses murs extérieurs", () => {
+    expect(q("clo-cloison-piece-humide-hydrofuge")).toBeCloseTo(12.5, 1);
+  });
+  it("la chambre n'est pas carrelée : aucune faïence n'est déclenchée par une pièce sèche", () => {
+    const c = contributions.find((x) => x.poste === "rev-faience-carrelage-mural")!;
+    expect(c.sources).toEqual(["p1"]);
+  });
+  it("les plinthes viennent du périmètre réel, pas d'une racine carrée", () => {
+    expect(q("rev-plinthes")).toBeCloseTo(15.17 + 19.17, 1);
+  });
+});
+
+describe("table de correspondance · la toiture", () => {
+  it("une toiture refaite entièrement dépose puis repose, sur la surface mesurée", () => {
+    expect(q("toi-depose-complete-de-toiture-couverture-charpent")).toBeCloseTo(58.9, 1);
+    expect(q("toi-toiture-complete-tuile-charpente-couverture")).toBeCloseTo(58.9, 1);
+    expect(q("toi-charpente-traditionnelle-hors-couverture")).toBe(0); // comprise dans le poste complet
+  });
+  it("l'isolation des combles perdus se compte à l'emprise, pas à la surface de toit", () => {
+    expect(q("iso-isolation-des-combles-perdus-soufflage")).toBeCloseTo(42.6, 1);
+  });
+  it("gouttières et raccords suivent les linéaires mesurés", () => {
+    expect(q("toi-gouttieres-descentes")).toBeGreaterThan(10);
+    expect(q("toi-raccords-faitage-noues-solins")).toBeGreaterThan(5);
+  });
+  it("les fenêtres de toit du panneau comptent quand aucune n'est dessinée (D15)", () => {
+    expect(q("toi-fenetre-de-toit-velux")).toBe(2);
+  });
+});
+
+describe("table de correspondance · la maçonnerie induite par une ouverture neuve", () => {
+  it("une fenêtre créée reçoit son appui ; une menuiserie remplacée garde le sien", () => {
+    expect(q("mac-creer-un-appui-de-fenetre")).toBe(1); // une seule des deux fenêtres est neuve
+    expect(q("mac-creer-un-seuil-de-porte")).toBe(0);
   });
 });

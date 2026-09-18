@@ -37,11 +37,19 @@ export interface PlanPourCorrespondance {
   etudes?: { structure?: number; mlPorteurDemoli?: number };
   doublage?: { iti?: number; ite?: number };
   facades?: { parPoste?: Record<string, number> };
+  toiture?: {
+    surface?: number; emprise?: number; egouts?: number; raccords?: number;
+    couverture?: string; combles?: string;
+    projet?: { action?: string; charpente?: string; isoCombles?: string; velux?: number; gouttieres?: boolean; raccords?: boolean; traiterCharpente?: boolean };
+  } | null;
+  sols?: Array<{ id?: string; piece?: string; surface?: number; existant?: string | null; revetement?: string | null;
+    depose?: boolean; dalle?: boolean; betonFini?: boolean; isolant?: unknown; chape?: string | null; ragreage?: boolean }>;
   provenance?: {
     murs?: Array<{ id: string; type: string; porteur: boolean; etat: string; ml: number; m2: number }>;
   };
   detailNiveaux?: Array<{
-    equipements?: Array<{ id: string; type: string; etat: string; l?: number; douche?: string | null; lumiere?: string | null; materiau?: string | null }>;
+    rooms?: Array<{ id: string; type: string; faience?: string; perimeter?: number; wallArea?: number; plinthes?: number; hauteur?: number; horsHabitable?: boolean; exterieur?: boolean; mursParType?: Record<string, number> }>;
+    equipements?: Array<{ id: string; type: string; etat: string; piece?: string | null; l?: number; p?: number; douche?: string | null; lumiere?: string | null; materiau?: string | null }>;
     menuiseries?: Array<{ id: string; type: string; etat: string; volet?: string | null; options?: string[] }>;
   }>;
 }
@@ -106,6 +114,31 @@ const OPTION_MENUISERIE: Record<string, string> = {
   store: "mex-stores-exterieurs-brise-soleil",
   grille: "mex-grilles-de-securite",
 };
+
+/** Revêtement de sol projeté → poste. « Béton fini » n'y est pas : aucun poste au catalogue. */
+const SOL: Record<string, string> = {
+  "Carrelage": "rev-carrelage-au-sol",
+  "Stratifié": "rev-sol-stratifie-imitation-bois",
+  "Vinyle / PVC": "rev-sol-souple-pvc-lino",
+  "Moquette": "rev-moquette",
+  "Béton ciré": "rev-beton-cire-resine",
+};
+
+/** Toiture : l'action du projet → les postes, exactement comme la maquette les facture déjà. */
+const COUVERTURE_REFECTION: Record<string, string> = {
+  tuile: "toi-refection-couverture-tuiles-depose-ecran-litea",
+  ardoise: "toi-refection-couverture-ardoise-depose-ecran-lite",
+  zinc: "toi-couverture-zinc-bac-acier",
+};
+const COUVERTURE_NEUVE: Record<string, string> = {
+  tuile: "toi-couverture-tuiles-sur-support-existant",
+  ardoise: "toi-couverture-ardoise-sur-support-existant",
+  zinc: "toi-couverture-zinc-bac-acier",
+};
+
+/** Une pièce est humide si son type le dit, ou si on y a posé une douche ou une baignoire. */
+const TYPES_HUMIDES = new Set(["sdb", "sde"]);
+const APPAREILS_HUMIDES = new Set(["douche", "baignoire"]);
 
 /** Mobilier : de l'aménagement, jamais un travail. */
 const MOBILIER = new Set(["lit", "lit1", "armoire", "canape", "table", "bureau"]);
@@ -188,6 +221,12 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
       if (poste) add(poste, 1, src, m.etat === "remplacer" ? "Menuiserie remplacée" : "Menuiserie neuve");
       else if (m.type !== "passage") ignores.push({ quoi: m.type, pourquoi: "aucun poste au catalogue pour ce type de menuiserie", sources: src });
       if (m.volet) add(m.volet === "roulant" ? "mex-volets-roulants" : "mex-volets-battants", 1, src, `Volet ${m.volet}`);
+      if (m.etat === "creer") {
+        // Maçonnerie induite par une ouverture NEUVE : une fenêtre reçoit un appui, une baie ou
+        // une porte extérieure un seuil. Une menuiserie remplacée garde les siens.
+        if (m.type === "fenetre" || m.type === "fenetre_p") add("mac-creer-un-appui-de-fenetre", 1, src, "Appui de la fenêtre créée");
+        if (m.type === "baie" || m.type === "porte_fenetre" || m.type === "porte_entree") add("mac-creer-un-seuil-de-porte", 1, src, "Seuil de l'ouverture créée");
+      }
       for (const o of m.options ?? []) {
         const po = OPTION_MENUISERIE[o];
         if (po) add(po, 1, src, "Option de la menuiserie");
@@ -234,6 +273,100 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
     else ignores.push({ quoi: label, pourquoi: "libellé de façade sans poste correspondant", sources: [] });
   }
 
+  // ── Sols, pièce par pièce ─────────────────────────────────────────────────
+  for (const sol of plan.sols ?? []) {
+    const src = sol.id ? [sol.id] : [];
+    const m2 = +(sol.surface ?? 0);
+    const ou = sol.piece ? ` · ${sol.piece}` : "";
+    if (sol.depose) add("dem-enlever-un-revetement-de-sol", m2, src, `Ancien sol déposé${ou}`);
+    if (sol.dalle) add("mac-couler-une-dalle-beton", m2, src, `Dalle à couler${ou}`);
+    if (sol.isolant) add("iso-isolation-du-sol-plancher-bas", m2, src, `Isolation sous chape${ou}`);
+    if (sol.chape === "traditionnelle") add("mac-chape-traditionnelle", m2, src, `Chape${ou}`);
+    if (sol.chape === "liquide") add("mac-chape-liquide", m2, src, `Chape liquide${ou}`);
+    if (sol.ragreage) add("rev-preparation-du-sol-ragreage", m2, src, `Ragréage${ou}`);
+    const nouveau = sol.revetement || "";
+    if (!nouveau || sol.betonFini) continue;
+    if (nouveau === "Parquet") {
+      // D8 : parquet posé sur un parquet existant = on le ponce, on ne le remplace pas.
+      const ancien = (sol.existant || "").toLowerCase();
+      const poncage = ancien.includes("parquet");
+      add(poncage ? "rev-poncage-vitrification-parquet" : "rev-parquet-bois", m2, src,
+        poncage ? `Parquet existant poncé et vitrifié${ou}` : `Parquet neuf${ou}`);
+      continue;
+    }
+    const poste = SOL[nouveau];
+    if (poste) add(poste, m2, src, `Sol : ${nouveau.toLowerCase()}${ou}`);
+    else ignores.push({ quoi: nouveau, pourquoi: "aucun poste de sol au catalogue pour ce revêtement", sources: src });
+  }
+
+  // ── Surfaces mesurées pièce par pièce : faïence, cloison humide, plinthes ─
+  {
+    const humides = new Set<string>();
+    const perimEau = new Map<string, number>();
+    for (const n of plan.detailNiveaux ?? []) for (const e of n.equipements ?? []) {
+      if (!APPAREILS_HUMIDES.has(e.type) || !e.piece) continue;
+      humides.add(e.piece);
+      // Un receveur est adossé à deux murs : c'est ce linéaire-là qui monte à 2 m de faïence.
+      perimEau.set(e.piece, (perimEau.get(e.piece) ?? 0) + (e.l ?? 0) + (e.p ?? 0));
+    }
+    for (const n of plan.detailNiveaux ?? []) for (const r of n.rooms ?? []) {
+      if (r.exterieur) continue;
+      const src = [r.id];
+      if (r.plinthes) add("rev-plinthes", +r.plinthes.toFixed(2), src, "Plinthes, au périmètre réel de la pièce");
+      const humide = TYPES_HUMIDES.has(r.type) || humides.has(r.id);
+      if (!humide) continue;
+      // D10 : la hauteur de pose choisie dans la fiche de pièce devient une surface.
+      const pEau = Math.min(perimEau.get(r.id) ?? 0, r.perimeter ?? 0);
+      const hauteur = r.faience || "mi";
+      const m2 = hauteur === "pleine" ? (r.wallArea ?? 0)
+        : hauteur === "douche" ? pEau * 2
+        : Math.max(0, (r.perimeter ?? 0) - pEau) * 1.2 + pEau * 2;
+      add("rev-faience-carrelage-mural", +m2.toFixed(2), src,
+        hauteur === "pleine" ? "Faïence pleine hauteur" : hauteur === "douche" ? "Faïence sur la zone de douche" : "Faïence à mi-hauteur, 2 m dans la douche");
+      // La cloison hydrofuge ne concerne que les CLOISONS de la pièce humide : un mur extérieur
+      // est doublé, pas hydrofugé.
+      const cloisons = r.mursParType?.cloison ?? 0;
+      if (cloisons > 0) add("clo-cloison-piece-humide-hydrofuge", +cloisons.toFixed(2), src, "Cloisons de la pièce humide");
+    }
+  }
+
+  // ── Toiture : une grandeur, et l'action décide des postes ─────────────────
+  {
+    const t = plan.toiture, pr = t?.projet;
+    if (t && pr && t.surface) {
+      const S = +t.surface, src: string[] = [];
+      const couv = t.couverture || "tuile";
+      if (pr.action === "demousser") add("toi-nettoyer-demousser-la-toiture", S, src, "Toiture à démousser");
+      if (pr.action === "refection") {
+        const poste = COUVERTURE_REFECTION[couv];
+        if (poste) add(poste, S, src, `Réfection de la couverture (${couv})`);
+        else ignores.push({ quoi: `réfection ${couv}`, pourquoi: "aucun poste de réfection pour cette couverture", sources: src });
+      }
+      if (pr.action === "complete") {
+        add("toi-depose-complete-de-toiture-couverture-charpent", S, src, "Toiture refaite entièrement : dépose");
+        const charp = pr.charpente || "trad";
+        if (charp === "trad" && (couv === "tuile" || couv === "ardoise")) {
+          add(couv === "tuile" ? "toi-toiture-complete-tuile-charpente-couverture" : "toi-toiture-complete-ardoise-charpente-couverture", S, src,
+            "Toiture complète (charpente traditionnelle + couverture)");
+        } else {
+          add(charp === "fermettes" ? "toi-charpente-en-fermettes-hors-couverture" : "toi-charpente-traditionnelle-hors-couverture", S, src, "Charpente neuve");
+          const poste = COUVERTURE_NEUVE[couv];
+          if (poste) add(poste, S, src, `Couverture neuve (${couv})`);
+          add("toi-sous-toiture-ecran-liteaux", S, src, "Sous-toiture (écran + liteaux)");
+        }
+      }
+      if (pr.action !== "complete" && pr.traiterCharpente) add("toi-traiter-la-charpente", S, src, "Charpente à traiter (préventif)");
+      if (pr.isoCombles === "perdus") add("iso-isolation-des-combles-perdus-soufflage", +(t.emprise ?? 0), src, "Isolation des combles perdus, à l'emprise du niveau");
+      if (pr.isoCombles === "rampants") add("iso-isolation-des-combles-amenages-rampants", S, src, "Isolation des rampants");
+      if (pr.gouttieres && t.egouts) add("toi-gouttieres-descentes", +t.egouts, src, "Gouttières, au linéaire d'égout mesuré");
+      if (pr.raccords && t.raccords) add("toi-raccords-faitage-noues-solins", +t.raccords, src, "Raccords : faîtage, arêtiers, solins");
+      // Double source (D15) : les fenêtres de toit POSÉES sur le plan font foi ; le compteur du
+      // panneau Toiture n'est qu'un raccourci pour qui ne les a pas dessinées.
+      const posees = (plan.detailNiveaux ?? []).flatMap((n) => n.equipements ?? []).filter((e) => e.type === "velux" && e.etat === "creer").length;
+      if (!posees && pr.velux) add("toi-fenetre-de-toit-velux", pr.velux, src, "Fenêtres de toit, comptées au panneau Toiture");
+    }
+  }
+
   // ── Regroupement : un poste, une ligne, toutes ses sources ───────────────
   const parPoste = new Map<string, Contribution>();
   for (const c of brut) {
@@ -261,6 +394,18 @@ export function postesCouverts(): string[] {
     "fac-isolation-par-l-exterieur-ite", "fac-ravalement-facade-pierre-tout-compris", "fac-nettoyer-la-facade",
     "fac-refaire-les-joints-rejointoiement-pierre-briqu", "fac-enduit-monocouche-machine",
     "fac-enduit-a-la-chaux-maison-ancienne", "fac-peindre-la-facade", "fac-traitement-impermeabilisant", "fac-bardage",
+    ...Object.values(SOL), "rev-poncage-vitrification-parquet", "rev-parquet-bois",
+    "dem-enlever-un-revetement-de-sol", "mac-couler-une-dalle-beton", "iso-isolation-du-sol-plancher-bas",
+    "mac-chape-traditionnelle", "mac-chape-liquide", "rev-preparation-du-sol-ragreage",
+    "rev-plinthes", "rev-faience-carrelage-mural", "clo-cloison-piece-humide-hydrofuge",
+    ...Object.values(COUVERTURE_REFECTION), ...Object.values(COUVERTURE_NEUVE),
+    "toi-nettoyer-demousser-la-toiture", "toi-depose-complete-de-toiture-couverture-charpent",
+    "toi-toiture-complete-tuile-charpente-couverture", "toi-toiture-complete-ardoise-charpente-couverture",
+    "toi-charpente-en-fermettes-hors-couverture", "toi-charpente-traditionnelle-hors-couverture",
+    "toi-sous-toiture-ecran-liteaux", "toi-traiter-la-charpente",
+    "iso-isolation-des-combles-perdus-soufflage", "iso-isolation-des-combles-amenages-rampants",
+    "toi-gouttieres-descentes", "toi-raccords-faitage-noues-solins",
+    "mac-creer-un-appui-de-fenetre", "mac-creer-un-seuil-de-porte",
   ]);
   return [...ids];
 }

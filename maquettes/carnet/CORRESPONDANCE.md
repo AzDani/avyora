@@ -1,13 +1,19 @@
-# La table de correspondance — première moitié
+# La table de correspondance
 
 Code : [`lib/estimateur/plan-correspondance.ts`](../../lib/estimateur/plan-correspondance.ts) ·
 tests : `tests/estimateur-plan-correspondance.test.ts` sur un contrat réel figé dans
 `tests/fixtures/plan-contrat.json`.
 
 Une fonction pure : elle prend le contrat du plan, elle rend des contributions. Elle ne chiffre
-rien et n'écrit nulle part — c'est la phase 4 qui les transformera en sélection. **62 postes du
+rien et n'écrit nulle part — c'est la phase 4 qui les transformera en sélection. **97 postes du
 catalogue sur 203 sont alimentés**, et chaque contribution porte les identifiants des objets du
 plan qui l'ont produite.
+
+Elle est testée sur une scène de référence figée dans `tests/fixtures/plan-contrat.json` : deux
+pièces, une salle de bain carrelée à mi-hauteur avec douche à l'italienne et baignoire, une chambre
+au parquet ancien à poncer, un mur porteur et une cloison à démolir, un doublage intérieur, une
+toiture entièrement refaite, une menuiserie remplacée, une neuve avec volet, une conservée, une à
+boucher, et des équipements déjà en place qui ne doivent rien produire.
 
 ## Ce qui est branché
 
@@ -20,12 +26,17 @@ plan qui l'ont produite.
 | **Les attributs qui lèvent une ambiguïté** | douche bac / italienne / cabine (D6), double vasque en variante (D7), escalier bois / béton (D15), spot ou plafonnier (D15) |
 | **Doublage** | ITI vers « Isolation des murs par l'intérieur » (D2), ITE vers le poste de façade |
 | **Façade** | les huit finitions, que la maquette nommait déjà |
+| **Sols**, pièce par pièce | dépose de l'ancien, dalle, isolation sous chape, chape traditionnelle ou liquide, ragréage, puis le revêtement — avec la déduction de D8 : un parquet posé sur un parquet existant se ponce |
+| **Faïence et cloison humide** (D10) | la hauteur choisie devient une surface : pleine hauteur = les murs moins les ouvertures ; mi-hauteur = 1,20 m au périmètre et 2,00 m contre la douche et la baignoire, mesurés sur les appareils dessinés ; zone douche = ces seuls murs. L'hydrofuge ne prend que les CLOISONS de la pièce, pas ses murs extérieurs, qui sont doublés |
+| **Plinthes** | au périmètre réel de chaque pièce, là où le moteur prenait 4·√(S·P) |
+| **Toiture** | l'action du panneau décide : démousser, réfection selon la couverture, ou dépose puis toiture complète ; plus l'isolation des combles à l'emprise, les gouttières au linéaire d'égout et les raccords au faîtage |
+| **Maçonnerie induite** | l'appui d'une fenêtre neuve, le seuil d'une baie ou d'une porte extérieure neuve — une menuiserie remplacée garde les siens |
 
 ## Les deux règles qui ne viennent pas d'une décision
 
-**Seul le delta est facturé.** Un élément `existant` ou `conservé` ne produit rien. Sur le plan
-d'exemple, 29 équipements sont en place et aucun n'apparaît dans les contributions — c'est
-exactement ce que D1 demandait, et c'est ce qu'un test vérifie.
+**Seul le delta est facturé.** Un élément `existant` ou `conservé` ne produit rien. Dans la scène
+de référence, un radiateur et un lavabo sont déjà là et un chauffe-eau est marqué conservé :
+aucun des trois n'apparaît dans les contributions, et trois tests le vérifient à chaque build.
 
 **On n'injecte jamais ce que le moteur dérive correctement.** « Robinetterie lavabo » se calcule
 déjà depuis le meuble-vasque, y compris quand sa quantité est saisie à la main. L'injecter ne la
@@ -36,23 +47,23 @@ bonne surface**, pas en envoyant une ligne.
 
 ## Ce qui n'est pas encore branché
 
-63 postes restent alimentables par le plan. Mais il faut les lire en deux tas.
+29 postes restent, et presque aucun n'attend une mesure.
 
-**Ceux où le plan a une mesure que le moteur n'a pas** — c'est le vrai reste à faire :
+**Ceux que le moteur calcule déjà correctement** — les lister comme « non couverts » serait
+trompeur. Peinture des murs et des plafonds, préparation des surfaces, sous-couche, rénovation
+électrique complète, réfection du réseau de plomberie, nettoyage de fin de chantier, ratissages :
+tous sont une fonction de la surface. Le plan les rend justes **en donnant la bonne surface**, pas
+en envoyant une ligne. Idem pour « Vasque », « Robinetterie lavabo », « Miroir » et « Finitions
+plâtrerie », que le moteur dérive de ce qui a été injecté.
 
-- **Toiture, 17 postes**, tous pilotés par une seule grandeur que le plan calcule déjà. Mécanique,
-  mais il faut traduire l'action du panneau Toiture (réfection, dépose complète, couverture seule)
-  en choix de poste.
-- **Sols, 8 postes**, pièce par pièce, avec la déduction du ponçage décidée en D8.
-- **Faïence et cloison hydrofuge**, qui attendent que la hauteur de pose choisie en D10 devienne
-  une surface.
-- **Plinthes, seuils, faux plafond**, où le plan a le périmètre réel là où le moteur a une racine
-  carrée.
-- **Chape, dalle, ragréage**, qui se lisent dans les couches de sol de chaque pièce.
+**Ceux qui attendent une décision**, pas du code : « Doubler un mur » est écarté par D2, le
+matériau du plancher créé est le reste de D15, les meubles de cuisine sont une branche à choisir,
+et « Retirer l'ancien papier peint » comme « Enlever un revêtement mural » supposent une question
+par pièce que le plan ne pose pas encore.
 
-**Ceux où le plan n'apporte rien de plus** que la surface qu'il a déjà corrigée : peinture,
-électricité au m², plomberie réseau, nettoyage. Les lister comme « non couverts » serait
-trompeur — ils sont justes, et ils le sont grâce au plan.
+**Ceux qui demandent vraiment une mesure de plus** : le faux plafond (un choix par pièce), les
+seuils de porte au sol (il faut savoir où deux revêtements se rencontrent), le toit plat, le mur en
+ossature bois et le plancher béton d'étage créé.
 
 ## Ce que la table refuse de faire
 
