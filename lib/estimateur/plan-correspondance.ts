@@ -50,7 +50,9 @@ export interface PlanPourCorrespondance {
   detailNiveaux?: Array<{
     id?: string; neuf?: boolean; plancher?: string | null;
     rooms?: Array<{ id: string; type: string; faience?: string | null; perimeter?: number; wallArea?: number; plinthes?: number; hauteur?: number; horsHabitable?: boolean; exterieur?: boolean; fauxPlafond?: boolean; area?: number; mursParType?: Record<string, number> }>;
-    equipements?: Array<{ id: string; type: string; etat: string; piece?: string | null; l?: number; p?: number; douche?: string | null; lumiere?: string | null; materiau?: string | null }>;
+    equipements?: Array<{ id: string; type: string; etat: string; piece?: string | null; l?: number; p?: number; douche?: string | null; lumiere?: string | null; materiau?: string | null;
+      /** Contrat 1.5 : poteaux et poutres dessinés. `reprendMurPorteur` porte l'identifiant du mur repris. */
+      ossature?: { role: string; portee?: number | null; reprendMurPorteur?: string | null } | null }>;
     menuiseries?: Array<{ id: string; type: string; etat: string; volet?: string | null; options?: string[] }>;
   }>;
 }
@@ -153,6 +155,10 @@ const MOBILIER = new Set(["lit", "lit1", "armoire", "canape", "table", "bureau"]
 export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributions: Contribution[]; ignores: Ignore[] } {
   const brut: Contribution[] = [];
   const ignores: Ignore[] = [];
+  /* Murs porteurs dont la poutre de reprise est DESSINÉE : leur ligne induite ne doit pas
+     s'ajouter à celle-ci, c'est le même ouvrage. Rempli par la boucle des équipements, qui
+     s'exécute avant celle des murs. */
+  const poutresDessinees = new Set<string>();
   const add = (poste: string, quantite: number, sources: string[], raison: string, variante?: Record<string, string>, deduction?: string) => {
     if (quantite <= 0) return;
     if (!posteParId(poste)) { ignores.push({ quoi: poste, pourquoi: "identifiant inconnu au catalogue", sources }); return; }
@@ -165,6 +171,29 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
       if (MOBILIER.has(e.type)) continue;
       if (e.etat !== "creer") continue;                       // D1 : seul ce qui est à poser
       const src = [e.id];
+      if (e.ossature) {
+        /* Une poutre dessinée est chiffrée au ml de portée, sur le poste de reprise de charge.
+           Si elle longe un mur porteur démoli, c'est SA reprise : la ligne induite plus bas est
+           retirée, sinon le devis paierait deux fois la même poutre.
+           Le catalogue n'a qu'un poste de poutre, en IPN/HEA : un lamellé-collé ou un béton armé
+           sont signalés en déduction plutôt que rangés sous un poste qui n'existe pas. */
+        if (e.ossature.role === "poutre") {
+          const ml = +(e.ossature.portee ?? e.l ?? 0).toFixed(2);
+          if (ml > 0) {
+            if (e.ossature.reprendMurPorteur) poutresDessinees.add(e.ossature.reprendMurPorteur);
+            const mat = e.materiau ?? null;
+            add("mac-poutre-de-reprise-de-charge-ipn-hea", ml, src,
+              `Poutre dessinée${e.ossature.reprendMurPorteur ? ", en reprise du mur porteur démoli" : ""}`,
+              undefined,
+              mat && mat !== "acier"
+                ? `Poutre dessinée en ${mat === "bois" ? "bois lamellé-collé" : "béton armé"} : le catalogue n'a qu'un poste de poutre, en IPN/HEA. La quantité est juste, le prix unitaire est celui de l'acier — à revoir avec l'artisan.`
+                : undefined);
+          }
+        } else {
+          ignores.push({ quoi: `poteau ${e.materiau ?? ""}`.trim(), pourquoi: "aucun poste « poteau » au catalogue — à chiffrer à part", sources: src });
+        }
+        continue;
+      }
       if (e.type === "douche") {
         // D6 : trois branches exclusives. La colonne et la paroi accompagnent le receveur,
         // la cabine est un bloc qui les remplace.
@@ -252,7 +281,7 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
       if (w.porteur) {
         // D9 : la démolition, puis la poutre qui reprend ce que le mur portait.
         add("dem-abattre-un-mur-porteur", +w.m2.toFixed(2), src, "Mur porteur à démolir");
-        add("mac-poutre-de-reprise-de-charge-ipn-hea", +w.ml.toFixed(2), src, "Reprise de charge du mur porteur démoli");
+        if (!poutresDessinees.has(w.id)) add("mac-poutre-de-reprise-de-charge-ipn-hea", +w.ml.toFixed(2), src, "Reprise de charge du mur porteur démoli");
       } else if (w.type === "cloison") add("dem-abattre-une-cloison", +w.m2.toFixed(2), src, "Cloison à démolir");
       else add("dem-abattre-un-mur-non-porteur", +w.m2.toFixed(2), src, "Mur non porteur à démolir");
     }

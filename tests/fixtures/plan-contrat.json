@@ -1,5 +1,5 @@
 {
- "contrat": "1.4.0",
+ "contrat": "1.5.0",
  "plan": {
   "id": null,
   "nom": "Scène de référence"
@@ -135,6 +135,12 @@
  "etudes": {
   "structure": 1,
   "mlPorteurDemoli": 1.4
+ },
+ "ossature": {
+  "poteaux": 0,
+  "poutres": 0,
+  "mlPoutres": 0,
+  "poutresDeReprise": 0
  },
  "contexte": {
   "finition": "standard",
@@ -534,31 +540,31 @@
     "fait": false
    },
    {
-    "id": "w:ufbu3nv:demolir",
+    "id": "w:j9smqd3:demolir",
     "lot": "Démolition",
     "label": "Démolir le mur porteur de 1,40 m · RDC",
     "fait": false
    },
    {
-    "id": "w:i0fa8gw:demolir",
+    "id": "w:rlqbd8d:demolir",
     "lot": "Démolition",
     "label": "Démolir la cloison de 1,60 m · RDC",
     "fait": false
    },
    {
-    "id": "o:ic0iwfh:depose",
+    "id": "o:bdfi9jw:depose",
     "lot": "Démolition",
     "label": "Déposer l'ancienne menuiserie · fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "sol-depose:1y968o4",
+    "id": "sol-depose:12wb6iw",
     "lot": "Démolition",
     "label": "Déposer l'ancien sol (carrelage) · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "sol-depose:rpnr1z7",
+    "id": "sol-depose:c7mgga8",
     "lot": "Démolition",
     "label": "Déposer l'ancien sol (parquet ancien) · Chambre · RDC",
     "fait": false
@@ -570,31 +576,31 @@
     "fait": false
    },
    {
-    "id": "w:ufbu3nv:poutre",
+    "id": "w:j9smqd3:poutre",
     "lot": "Maçonnerie",
     "label": "Poutre de reprise de charge · mur de 1,40 m · RDC",
     "fait": false
    },
    {
-    "id": "o:z35bi29:perc",
+    "id": "o:jl4idwj:perc",
     "lot": "Maçonnerie",
     "label": "Ouvrir le mur porteur, linteau & tableaux · fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:z35bi29:appui",
+    "id": "o:jl4idwj:appui",
     "lot": "Maçonnerie",
     "label": "Appui de fenêtre · fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:a3hp86t:boucher",
+    "id": "o:alv87ns:boucher",
     "lot": "Maçonnerie",
     "label": "Boucher fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:ud3i2ou:perc",
+    "id": "o:5r6abrl:perc",
     "lot": "Maçonnerie",
     "label": "Percement, linteau & tableaux · porte simple · RDC",
     "fait": false
@@ -624,31 +630,31 @@
     "fait": false
    },
    {
-    "id": "o:ic0iwfh:poser",
+    "id": "o:bdfi9jw:poser",
     "lot": "Menuiseries",
     "label": "Poser fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:z35bi29:poser",
+    "id": "o:jl4idwj:poser",
     "lot": "Menuiseries",
     "label": "Poser fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:z35bi29:volet",
+    "id": "o:jl4idwj:volet",
     "lot": "Menuiseries",
     "label": "Volet roulant · fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:ud3i2ou:poser",
+    "id": "o:5r6abrl:poser",
     "lot": "Menuiseries",
     "label": "Poser porte simple · RDC",
     "fait": false
    },
    {
-    "id": "iso:x5hq798",
+    "id": "iso:4fxa82i",
     "lot": "Isolation",
     "label": "Doubler le mur de 8,00 m · RDC",
     "fait": false
@@ -660,73 +666,73 @@
     "fait": false
    },
    {
-    "id": "sol-rag:1y968o4",
+    "id": "sol-rag:12wb6iw",
     "lot": "Sol",
     "label": "Ragréage · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "sol-rev:1y968o4",
+    "id": "sol-rev:12wb6iw",
     "lot": "Sol",
     "label": "Poser carrelage · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "sol-rev:rpnr1z7",
+    "id": "sol-rev:c7mgga8",
     "lot": "Sol",
     "label": "Poser parquet · Chambre · RDC",
     "fait": false
    },
    {
-    "id": "i:f0nnmmo:creer",
+    "id": "i:w9es0ce:creer",
     "lot": "Équipements",
     "label": "Poser douche · RDC",
     "fait": false
    },
    {
-    "id": "i:y2ji4jt:creer",
+    "id": "i:i5w0dfv:creer",
     "lot": "Équipements",
     "label": "Poser double vasque · RDC",
     "fait": false
    },
    {
-    "id": "i:qagm7fk:creer",
+    "id": "i:wi6nxhm:creer",
     "lot": "Équipements",
     "label": "Poser wc · RDC",
     "fait": false
    },
    {
-    "id": "i:b73xdes:creer",
+    "id": "i:3izp8xm:creer",
     "lot": "Équipements",
     "label": "Poser baignoire · RDC",
     "fait": false
    },
    {
-    "id": "i:9wrvceu:creer",
+    "id": "i:du7xlwn:creer",
     "lot": "Équipements",
     "label": "Poser escalier · RDC",
     "fait": false
    },
    {
-    "id": "i:nhyd6wj:creer",
+    "id": "i:fgiewfi:creer",
     "lot": "Équipements",
     "label": "Poser point lumineux (plafond) · RDC",
     "fait": false
    },
    {
-    "id": "i:loe1wil:creer",
+    "id": "i:uillioj:creer",
     "lot": "Équipements",
     "label": "Poser point lumineux (plafond) · RDC",
     "fait": false
    },
    {
-    "id": "i:04weacj:creer",
+    "id": "i:t8brbcq:creer",
     "lot": "Équipements",
     "label": "Poser prise double · RDC",
     "fait": false
    },
    {
-    "id": "i:id55lit:creer",
+    "id": "i:9pkaz90:creer",
     "lot": "Équipements",
     "label": "Poser plan de travail · RDC",
     "fait": false
@@ -832,6 +838,7 @@
      "douche": "italienne",
      "lumiere": null,
      "materiau": null,
+     "ossature": null,
      "produit": null,
      "note": null
     },
@@ -845,6 +852,7 @@
      "douche": null,
      "lumiere": null,
      "materiau": null,
+     "ossature": null,
      "produit": null,
      "note": null
     },
@@ -858,6 +866,7 @@
      "douche": null,
      "lumiere": null,
      "materiau": null,
+     "ossature": null,
      "produit": null,
      "note": null
     },
@@ -871,6 +880,7 @@
      "douche": null,
      "lumiere": null,
      "materiau": null,
+     "ossature": null,
      "produit": null,
      "note": null
     },
@@ -884,6 +894,7 @@
      "douche": null,
      "lumiere": null,
      "materiau": null,
+     "ossature": null,
      "produit": null,
      "note": null
     },
@@ -897,6 +908,7 @@
      "douche": null,
      "lumiere": "spot",
      "materiau": null,
+     "ossature": null,
      "produit": null,
      "note": null
     },
@@ -910,6 +922,7 @@
      "douche": null,
      "lumiere": "plafonnier",
      "materiau": null,
+     "ossature": null,
      "produit": null,
      "note": null
     },
@@ -923,6 +936,7 @@
      "douche": null,
      "lumiere": null,
      "materiau": null,
+     "ossature": null,
      "produit": null,
      "note": null
     },
@@ -936,6 +950,7 @@
      "douche": null,
      "lumiere": null,
      "materiau": null,
+     "ossature": null,
      "produit": null,
      "note": null
     },
@@ -949,6 +964,7 @@
      "douche": null,
      "lumiere": null,
      "materiau": null,
+     "ossature": null,
      "produit": null,
      "note": null
     },
@@ -962,6 +978,7 @@
      "douche": null,
      "lumiere": null,
      "materiau": null,
+     "ossature": null,
      "produit": null,
      "note": null
     },
@@ -975,6 +992,7 @@
      "douche": null,
      "lumiere": null,
      "materiau": null,
+     "ossature": null,
      "produit": null,
      "note": null
     }

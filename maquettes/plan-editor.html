@@ -538,6 +538,8 @@ const ITEMS = {
   table:{label:'Table',w:1.6,h:0.9,cat:'Séjour'},
   bureau:{label:'Bureau',w:1.4,h:0.7,cat:'Séjour'},
   escalier:{label:'Escalier',w:0.9,h:2.7,cat:'Structure'},
+  poteau:{label:'Poteau',w:0.2,h:0.2,cat:'Structure',free:true,struct:'poteau'},
+  poutre:{label:'Poutre',w:3.0,h:0.2,cat:'Structure',free:true,struct:'poutre'},
   velux:{label:'Fenêtre de toit',w:0.78,h:1.18,cat:'Structure',free:true},
   radiateur:{label:'Radiateur',w:1.0,h:0.1,cat:'Chauffage'},
   seche_serviette:{label:'Sèche-serviettes',w:0.55,h:0.1,cat:'Chauffage'},
@@ -707,6 +709,29 @@ const LOTS=['Démolition','Maçonnerie','Toiture','Menuiseries','Cloisons','Isol
 const EQUIP_PRIX={baignoire:960,douche:1090,lavabo:310,vasque2:593,wc:410,plan:985,ilot:2500,frigo:80,lave_vaisselle:190,lave_linge:190,cumulus:950,chaudiere:4500,poele:4000,escalier:2500,radiateur:500,seche_serviette:245,clim:2400,pac_ext:0,prise:100,prise2:100,interrupteur:100,lumiere:110,applique:110,tableau:1150};
 const EQUIP_UNIT={plan:'ml'}; // plan de travail = meubles 900 + plan 85 €/ml
 const isFurniture=t=>['lit','lit1','armoire','canape','table','bureau'].includes(t);
+/* Poteaux & poutres — la structure, enfin dessinable.
+   Une poutre n'existait que comme ligne INDUITE par la démolition d'un mur porteur : impossible
+   d'en poser une ailleurs (mur ouvert sur séjour, trémie, structure poteaux-poutres), ni un
+   poteau. Ce sont des équipements — ils portent déjà leurs dimensions par instance — avec, en
+   plus, un matériau : pour une poutre, `w` est la PORTÉE et `h` la largeur de section ; pour un
+   poteau, `w` et `h` sont les deux côtés de la section. */
+const STRUCT_MAT={acier:'acier',bois:'bois lamellé-collé',beton:'béton armé'};
+const STRUCT_SOUS={acier:'IPN / HEB',bois:'lamellé-collé',beton:'coulé en place'};
+const PRIX_POUTRE={acier:480,bois:190,beton:260};   /* €/ml fourni-posé, étaiement et scellements compris */
+const PRIX_POTEAU={acier:550,bois:350,beton:450};   /* €/unité fourni-posé */
+const structOf=it=>(ITEMS[it.type]&&ITEMS[it.type].struct)||null;
+const structMat=it=>STRUCT_MAT[it.materiau]?it.materiau:'acier';
+/* Segment couvert par une poutre dessinée (son axe, dans le plan). */
+function poutreSeg(it){const u=v(Math.cos(it.rot),Math.sin(it.rot)),c=v(it.x,it.y);return {a:add(c,mul(u,-it.w/2)),b:add(c,mul(u,it.w/2))};}
+/* Une poutre dessinée le long d'un mur porteur démoli EST sa reprise de charge. Sans cette
+   règle, le chantier paierait deux fois la même poutre : une fois induite, une fois dessinée. */
+const poutreLeLongDe=(it,w)=>{const s=poutreSeg(it);return distSeg(s.a,w.a,w.b)<0.4&&distSeg(s.b,w.a,w.b)<0.4;};
+/* Seule une poutre À POSER remplace la ligne induite (D1 : on ne facture que le delta). Une
+   poutre déjà là ne peut de toute façon pas reprendre un mur qu'on n'a pas encore démoli. */
+function poutreSurMur(lv,w){return lv.items.some(it=>structOf(it)==='poutre'&&ist(it)==='creer'&&poutreLeLongDe(it,w));}
+/* Cette poutre reprend-elle un mur porteur démoli ? Émis dans le contrat : c'est ce qui explique
+   au consommateur pourquoi la ligne induite du mur n'apparaît pas. */
+function poutreReprend(lv,it){const w=lv.walls.find(w=>!isVirtual(w)&&wst(w)==='demolir'&&isPorteur(w)&&poutreLeLongDe(it,w));return w?pidOf('m',w):null;}
 // une menuiserie NEUVE suit le doublage du mur (sa tapée n'est pas encore achetée) ; une menuiserie conservée garde la sienne → alerte
 function syncNewDormants(w){if(!w)return;state.levels.forEach(lv=>lv.openings.forEach(o=>{if(o.wallId!==w.id||!(ost(o)==='creer'||ost(o)==='remplacer')||!isExtType(o.type))return;const d=dormantConseille(o);if(d&&d!==dormantOf(o))o.dormant=d;}));}
 // ---------- Toiture & charpente : lot « Toiture » ↔ catalogue « Charpente, couverture & structure bois » ----------
@@ -877,7 +902,7 @@ function chantierTasks(){const T=[];const ml=state.levels.length>1;
     lv.walls.forEach(w=>{if(isVirtual(w))return;const len=wallLen(w),surf=len*lv.height,thick=isPorteur(w);
       if(wst(w)==='demolir'){
         T.push({id:'w:'+w.id+':demolir',lot:'Démolition',label:'Démolir '+(thick?'le mur porteur':'la cloison')+' de '+fmt(len)+' m'+lvn,detail:fmtM2(surf)+(thick?' · dépose, étaiement et évacuation':''),prix:surf*(thick?PRIX.demolPorteur:PRIX.demolCloison)});
-        if(thick)T.push({id:'w:'+w.id+':poutre',lot:'Maçonnerie',label:'Poutre de reprise de charge · mur de '+fmt(len)+' m'+lvn,detail:fmt(len)+' ml · le mur portait la charge, la poutre la reprend',prix:len*PRIX.poutreReprise});
+        if(thick&&!poutreSurMur(lv,w))T.push({id:'w:'+w.id+':poutre',lot:'Maçonnerie',label:'Poutre de reprise de charge · mur de '+fmt(len)+' m'+lvn,detail:fmt(len)+' ml · le mur portait la charge, la poutre la reprend',prix:len*PRIX.poutreReprise});
       }
       if(wst(w)==='creer')T.push({id:'w:'+w.id+':creer',lot:'Cloisons',label:'Monter '+(thick?'le mur':'la cloison')+' de '+fmt(len)+' m'+lvn,detail:fmtM2(surf)+' · '+Math.round(wallT(w)*100)+' cm',prix:surf*(w.type==='porteur'?PRIX.murPierre:thick?PRIX.murNeuf:PRIX.cloisonNeuve)});
       if(w.facade&&w.facade.st==='creer')facadeFins(w).forEach(k=>{const F=FACADES[k];if(F)T.push({id:'fac:'+w.id+':'+k,lot:'Façade',label:F.label+' · mur de '+fmt(len)+' m'+lvn,detail:fmtM2(facadeArea(w,lv))+' hors ouvertures',prix:facadeArea(w,lv)*(FACADE_PRIX[k]||30)});});
@@ -908,6 +933,12 @@ function chantierTasks(){const T=[];const ml=state.levels.length>1;
     lv.items.forEach(it=>{const d=ITEMS[it.type];if(!d)return;
       if(isFurniture(it.type))return; // mobilier : aménagement, pas un travail
       if(ist(it)==='demolir')T.push({id:'i:'+it.id+':demolir',lot:'Démolition',label:'Déposer '+d.label.toLowerCase()+lvn,detail:'',prix:PRIX.deposeEquip});
+      if(structOf(it)){
+        if(ist(it)==='creer'){const mt=structMat(it);
+          if(structOf(it)==='poutre')T.push({id:'i:'+it.id+':poutre',lot:'Maçonnerie',label:'Poutre '+STRUCT_MAT[mt]+' · portée '+fmt(it.w)+' m'+lvn,detail:fmt(it.w)+' ml · fourni-posé, étaiement et scellements compris',prix:it.w*PRIX_POUTRE[mt]});
+          else T.push({id:'i:'+it.id+':poteau',lot:'Maçonnerie',label:'Poteau '+STRUCT_MAT[mt]+lvn,detail:Math.round(it.w*100)+' × '+Math.round(it.h*100)+' cm · fourni-posé',prix:PRIX_POTEAU[mt]});}
+        return;
+      }
       if(ist(it)==='creer'){const pu=EQUIP_PRIX[it.type];const ml=EQUIP_UNIT[it.type]==='ml';const prix=pu==null?0:(ml?pu*it.w:pu);const incl=it.type==='pac_ext';
         T.push({id:'i:'+it.id+':creer',lot:'Équipements',label:'Poser '+d.label.toLowerCase()+lvn,detail:[it.product?.nom||'',ml?fmt(it.w)+' ml':'',incl?'incluse dans le split':''].filter(Boolean).join(' · '),prix,inclus:incl});}});});
   toitureTasks(T);
@@ -2521,7 +2552,21 @@ function drawItem(it,isSel){
   const T=it.type;
   // points électriques : picto seul (pas de boîte), lisible même à petit zoom
   if(ITEMS[T]?.elec){ctx.lineWidth=2/z;const k=Math.max(1,18/(w*z));ctx.scale(k,k);drawElec(it,isSel);if(isSel){ctx.setLineDash([0.04,0.03]);ctx.strokeStyle='#4f46e5';ctx.strokeRect(-w/2-0.05,-h/2-0.05,w+0.1,h+0.1);ctx.setLineDash([]);}ctx.restore();return;}
-  if(T!=='escalier'){rr(-w/2,-h/2,w,h,0.03);ctx.fill();ctx.stroke();}
+  if(T!=='escalier'&&T!=='poutre'){rr(-w/2,-h/2,w,h,0.03);ctx.fill();ctx.stroke();}
+  if(T==='poutre'){
+    /* Convention du dessin d'architecte : un ouvrage situé EN HAUTEUR se trace en trait
+       interrompu — on ne le coupe pas, on le voit au-dessus de soi. */
+    ctx.setLineDash([0.16,0.1]);ctx.strokeStyle=isSel?'#4f46e5':'#b45309';ctx.lineWidth=2.2/z;
+    ctx.strokeRect(-w/2,-h/2,w,h);
+    ctx.setLineDash([]);ctx.lineWidth=1/z;ctx.strokeStyle=isSel?'#4f46e5':'rgba(180,83,9,.55)';
+    ctx.beginPath();ctx.moveTo(-w/2,0);ctx.lineTo(w/2,0);ctx.stroke();
+  }
+  if(T==='poteau'){
+    ctx.strokeStyle=isSel?'#4f46e5':'#b45309';ctx.fillStyle='rgba(180,83,9,.16)';
+    ctx.fillRect(-w/2,-h/2,w,h);ctx.lineWidth=1.8/z;
+    ctx.beginPath();ctx.moveTo(-w/2,-h/2);ctx.lineTo(w/2,h/2);ctx.moveTo(w/2,-h/2);ctx.lineTo(-w/2,h/2);ctx.stroke();
+    ctx.strokeRect(-w/2,-h/2,w,h);
+  }
   if(T==='baignoire'){rr(-w/2+0.08,-h/2+0.08,w-0.16,h-0.16,0.18);ctx.stroke();ctx.beginPath();ctx.arc(w/2-0.25,0,0.04,0,7);ctx.stroke();}
   if(T==='douche'){ctx.beginPath();ctx.moveTo(-w/2,-h/2);ctx.lineTo(w/2,h/2);ctx.stroke();ctx.beginPath();ctx.arc(0,0,0.05,0,7);ctx.stroke();}
   if(T==='lavabo'){ctx.beginPath();ctx.ellipse(0,0.02,w*0.36,h*0.3,0,0,7);ctx.stroke();ctx.beginPath();ctx.arc(0,-h/2+0.08,0.02,0,7);ctx.stroke();}
@@ -2767,11 +2812,17 @@ function renderSelection(lv){
   }
   else if(sel.kind==='item'){const it=lv.items.find(i=>i.id===sel.id);if(!it){sel=null;return renderOverview(lv);}const def=ITEMS[it.type];const above=state.levels[state.cur+1];
     h+=`<div class="ptitle">${def.label}</div><div class="psub">Glisse pour déplacer · poignée ronde ou <b>R</b> pour pivoter.</div>
-    ${it.type!=='escalier'?`<div class="row"><label>Largeur</label><span><input class="fin n" type="number" step="0.05" min="0.1" value="${it.w.toFixed(2)}" onchange="setItemProp('w',+this.value)"> m</span></div>
-    <div class="row"><label>Profondeur</label><span><input class="fin n" type="number" step="0.05" min="0.1" value="${it.h.toFixed(2)}" onchange="setItemProp('h',+this.value)"> m</span></div>`:''}
+    ${it.type!=='escalier'?`<div class="row"><label>${structOf(it)==='poutre'?'Portée':structOf(it)==='poteau'?'Section · côté A':'Largeur'}</label><span><input class="fin n" type="number" step="0.05" min="0.1" value="${it.w.toFixed(2)}" onchange="setItemProp('w',+this.value)"> m</span></div>
+    <div class="row"><label>${structOf(it)==='poutre'?'Largeur de section':structOf(it)==='poteau'?'Section · côté B':'Profondeur'}</label><span><input class="fin n" type="number" step="0.05" min="0.1" value="${it.h.toFixed(2)}" onchange="setItemProp('h',+this.value)"> m</span></div>`:''}
     <div class="row"><label>Angle</label><span><input class="fin n" type="number" step="15" min="-360" max="360" value="${Math.round(it.rot*180/Math.PI)}" onchange="setItemRot(this.value)"> °</span></div>
     ${mode()==='projet'?`<div class="ph mt">État dans le projet</div>
     <div class="seg"><button class="${ist(it)==='existant'?'on':''}" onclick="setItemProp('st','existant')">Existant<small>rien de prévu</small></button><button class="${ist(it)==='garder'?'on':''}" onclick="setItemProp('st','garder')">Conservé<small>vérifié, je le garde</small></button><button class="st-creer ${ist(it)==='creer'?'on':''}" onclick="setItemProp('st','creer')">À&nbsp;poser<small>nouveau</small></button><button class="st-demolir ${ist(it)==='demolir'?'on':''}" onclick="setItemProp('st','demolir')">À&nbsp;déposer<small>enlever</small></button></div>`:''}
+    ${structOf(it)?`<div class="ph mt">Matériau</div>
+    <div class="seg">${Object.entries(STRUCT_MAT).map(([k,l])=>`<button class="${structMat(it)===k?'on':''}" onclick="setItemChoix('materiau','${k}')">${k==='acier'?'Acier':k==='bois'?'Bois':'Béton'}<small>${STRUCT_SOUS[k]}</small></button>`).join('')}</div>
+    <div class="tip" style="margin-top:6px">${structOf(it)==='poutre'
+      ?`Chiffrée <b>au mètre de portée</b> (${fmt(it.w)} m), fourniture et pose, étaiement et scellements compris. <b>Posée le long d'un mur porteur marqué « à démolir », elle remplace la poutre de reprise chiffrée automatiquement</b> — c'est la même poutre, elle ne se paie qu'une fois.`
+      :`Chiffré <b>à l'unité</b>, fourniture et pose. Un poteau reprend une charge ponctuelle — là où une poutre ne peut pas franchir toute la portée d'un seul tenant.`}</div>
+    <div class="tip" style="margin-top:6px">⚠️ Dessiner une poutre ou un poteau ne remplace pas <b>l'étude de structure</b> : c'est un bureau d'études qui dimensionne la section. Ce que tu traces ici sert à chiffrer et à situer l'ouvrage, pas à le calculer.</div>`:''}
     ${it.type==='douche'?`<div class="ph mt">Type de douche</div>
     <div class="seg">${[['bac','Bac + paroi','receveur posé'],['italienne','À l\'italienne','receveur maçonné'],['cabine','Cabine','tout-en-un']].map(o=>`<button class="${(it.douche||'bac')===o[0]?'on':''}" onclick="setItemChoix('douche','${o[0]}')">${o[1]}<small>${o[2]}</small></button>`).join('')}</div>
     <div class="tip" style="margin-top:6px">${(it.douche||'bac')==='italienne'?'Receveur maçonné de plain-pied : chape en pente, étanchéité sous carrelage, évacuation encastrée.':(it.douche||'bac')==='cabine'?'Cabine complète : parois et porte d\'un bloc, la pose la plus rapide.':'Le plus courant : receveur, colonne et paroi, chiffrés en trois lignes.'}</div>`:''}
@@ -3129,7 +3180,8 @@ function quantities(){
         /* ce qui lève l'ambiguïté entre deux postes du catalogue, répondu en dessinant (D6, D15) */
         /* Valeur BRUTE : null quand l'utilisateur n'a rien choisi. C'est au consommateur
            d'appliquer le défaut — et de signaler qu'il l'a appliqué. */
-        douche:i.type==='douche'?(i.douche||null):null,lumiere:i.type==='lumiere'?(i.lum||null):null,materiau:i.type==='escalier'?(i.materiau||null):null,
+        douche:i.type==='douche'?(i.douche||null):null,lumiere:i.type==='lumiere'?(i.lum||null):null,materiau:(i.type==='escalier'||structOf(i))?(i.materiau||null):null,
+        ossature:structOf(i)?{role:structOf(i),portee:structOf(i)==='poutre'?+(i.w||0).toFixed(2):null,reprendMurPorteur:structOf(i)==='poutre'?poutreReprend(lv,i):null}:null,   /* l'identifiant du mur, pas un booléen */
         produit:i.product||null,note:i.note||null})),
       /* matériau, vitrage, ouvrant, options et volet pilotent des coefficients de prix et le
          poste « caisson à galandage » : émis tels quels, sans interprétation. */
@@ -3158,6 +3210,13 @@ function quantities(){
      `travaux.demolPorteur` existait depuis toujours et aucun chiffrage ne le lisait : le plan
      détenait le déclencheur d'un poste à quatre chiffres et le laissait tomber. */
   const etudes={structure:travaux.demolPorteur>0?1:0,mlPorteurDemoli:+travaux.demolPorteur.toFixed(2)};
+  /* Ossature dessinée : ce que le plan pose lui-même, par opposition à la poutre induite par la
+     démolition d'un mur porteur. `poutresDeReprise` dit combien d'entre elles remplacent cette
+     ligne induite — le consommateur sait ainsi qu'elle a été retirée exprès, et non oubliée. */
+  const ossature=(()=>{let poteaux=0,poutres=0,ml=0,reprise=0;
+    state.levels.forEach(lv=>lv.items.forEach(it=>{const k=structOf(it);if(!k||!itemActive(it,'projet'))return;
+      if(k==='poutre'){poutres++;ml+=it.w||0;if(poutreReprend(lv,it))reprise++;}else poteaux++;}));
+    return {poteaux,poutres,mlPoutres:+ml.toFixed(2),poutresDeReprise:reprise};})();
   // électricité & chauffage : comptés depuis les équipements posés (tous niveaux)
   const electricite={prises:0,interrupteurs:0,pointsLumineux:0,tableau:0},chauffage={radiateurs:0,secheServiettes:0,clim:0,uniteExt:0,poele:0,chaudiere:0,chauffeEau:0,vmc:0};
   /* Plomberie : les appareils étaient POSÉS sur le plan sans qu'aucune quantité n'en sorte —
@@ -3193,7 +3252,7 @@ function quantities(){
      menuiserie avec lui. Il ne reste ici que les annotations libres du plan. */
   levels.forEach((L2,i)=>{L2.annotations=TX(state.levels[i]).map(t=>t.text).filter(Boolean);});
   const controles=state.levels.map(lv=>({niveau:lv.name,points:planChecks(lv).map(c=>({niveau:c.lvl,texte:c.msg.replace(/<[^>]+>/g,'')}))})).filter(c=>c.points.length);
-  return {area,areaBefore,ext,rooms,roomsBefore,doors,windows,wallPaint,glass,plinthes,toiture:toitureQ(),lin,byType,levels,travaux,plomberie,velux,etudes,contexte,produits,produitsTotal,notes:state.notes||'',sols:(()=>{const out=[];state.levels.forEach(lv=>facesFor(lv,'projet').forEach(f=>{const r=f.room;if(r&&(r.sol||r.floorNew)){const so=r.sol||{},sp=solPlan(r);out.push({id:pidOf('p',r),piece:roomName(r),niveau:lv.name,surface:+areaNet(lv,f).toFixed(1),existant:r.floor||null,revetement:r.floorNew||null,depose:sp.sup==='revetement'&&!!r.floorNew,dalle:sp.sup==='terre',betonFini:sp.betonFini,isolant:!sp.betonFini&&so.iso&&so.chape?{mat:solMatLabel(so.iso.mat),ep:so.iso.e}:null,chape:sp.betonFini?null:(so.chape||null),ragreage:!sp.betonFini&&!!so.ragreage,alerte:sp.warn?sp.warn.replace(/<[^>]+>/g,''):null});}}));return out;})(),electricite,chauffage,doublage,facades,controles,arbitrage,provenance,suivi:(()=>{const T=chantierTasks();return {total:T.length,faits:T.filter(t=>isDone(t.id)).length,taches:T.map(t=>({id:t.id,lot:t.lot,label:t.label,fait:isDone(t.id)}))};})()};
+  return {area,areaBefore,ext,rooms,roomsBefore,doors,windows,wallPaint,glass,plinthes,toiture:toitureQ(),lin,byType,levels,travaux,plomberie,velux,etudes,ossature,contexte,produits,produitsTotal,notes:state.notes||'',sols:(()=>{const out=[];state.levels.forEach(lv=>facesFor(lv,'projet').forEach(f=>{const r=f.room;if(r&&(r.sol||r.floorNew)){const so=r.sol||{},sp=solPlan(r);out.push({id:pidOf('p',r),piece:roomName(r),niveau:lv.name,surface:+areaNet(lv,f).toFixed(1),existant:r.floor||null,revetement:r.floorNew||null,depose:sp.sup==='revetement'&&!!r.floorNew,dalle:sp.sup==='terre',betonFini:sp.betonFini,isolant:!sp.betonFini&&so.iso&&so.chape?{mat:solMatLabel(so.iso.mat),ep:so.iso.e}:null,chape:sp.betonFini?null:(so.chape||null),ragreage:!sp.betonFini&&!!so.ragreage,alerte:sp.warn?sp.warn.replace(/<[^>]+>/g,''):null});}}));return out;})(),electricite,chauffage,doublage,facades,controles,arbitrage,provenance,suivi:(()=>{const T=chantierTasks();return {total:T.length,faits:T.filter(t=>isDone(t.id)).length,taches:T.map(t=>({id:t.id,lot:t.lot,label:t.label,fait:isDone(t.id)}))};})()};
 }
 /* ---------- La frontière d'export ---------- */
 /* Le SEUL point de sortie du plan vers un consommateur (moteur d'estimation, enregistrement,
@@ -3201,7 +3260,7 @@ function quantities(){
    que le consommateur doit vérifier. Toute clé renommée ou retirée fait changer ce numéro.
    Avant, le seul « export » était un <details> de debug — qui n'émettait ni la toiture, ni les
    sols, ni la plomberie, ni les études, ni les velux. */
-const CONTRAT_PLAN='1.4.0'; /* 1.1 : attributs de choix (douche, point lumineux, escalier), hauteur de faïence par pièce, état « conservé ». 1.2 : chaque équipement dit sa pièce, et chaque pièce ses murs par type. 1.3 : les choix non tranchés (type de douche, point lumineux, matériau d'escalier, hauteur de faïence) sortent à null au lieu de leur défaut — c'est au consommateur d'appliquer le défaut ET de le signaler. 1.4 : faux plafond par pièce, et un niveau dit s'il est créé par le projet et en quoi est son plancher. */
+const CONTRAT_PLAN='1.5.0'; /* 1.1 : attributs de choix (douche, point lumineux, escalier), hauteur de faïence par pièce, état « conservé ». 1.2 : chaque équipement dit sa pièce, et chaque pièce ses murs par type. 1.3 : les choix non tranchés (type de douche, point lumineux, matériau d'escalier, hauteur de faïence) sortent à null au lieu de leur défaut — c'est au consommateur d'appliquer le défaut ET de le signaler. 1.4 : faux plafond par pièce, et un niveau dit s'il est créé par le projet et en quoi est son plancher. 1.5 : poteaux et poutres dessinables — chaque équipement d'ossature porte son rôle, sa portée et le fait qu'il reprend ou non un mur porteur démoli ; agrégat `ossature` au niveau du plan. Ajout pur : rien n'est renommé ni retiré. */
 function contratPlan(){
   garantirPids();
   const q=quantities(),bas=empriseNiveau(0),ch=chantier();

@@ -204,3 +204,45 @@ describe("table de correspondance · le reste du périmètre", () => {
     expect(c.sources).toEqual([plan.detailNiveaux![1].id]);
   });
 });
+
+describe("table de correspondance · poteaux et poutres dessinés (contrat 1.5)", () => {
+  /* Scène minimale : un mur porteur de 4 m démoli, et ce qu'on dessine dessus ou à côté. */
+  const scene = (equipements: NonNullable<PlanPourCorrespondance["detailNiveaux"]>[number]["equipements"]): PlanPourCorrespondance =>
+    ({
+      provenance: { murs: [{ id: "m1", niveau: "n1", type: "mur", porteur: true, etat: "demolir", ml: 4, m2: 10 }] },
+      detailNiveaux: [{ equipements }],
+    }) as unknown as PlanPourCorrespondance;
+  const ml = (p: PlanPourCorrespondance) =>
+    contributionsDuPlan(p).contributions.find((c) => c.poste === "mac-poutre-de-reprise-de-charge-ipn-hea")?.quantite ?? 0;
+
+  it("sans poutre dessinée, la reprise reste induite par le mur", () => {
+    expect(ml(scene([]))).toBe(4);
+  });
+
+  it("une poutre dessinée sur ce mur la remplace, elle ne s'y ajoute pas", () => {
+    const p = scene([{ id: "e1", type: "poutre", etat: "creer", materiau: "acier", ossature: { role: "poutre", portee: 4, reprendMurPorteur: "m1" } }]);
+    expect(ml(p)).toBe(4);                                     // 4, et non 8
+    const c = contributionsDuPlan(p).contributions.find((x) => x.poste === "mac-poutre-de-reprise-de-charge-ipn-hea");
+    expect(c?.sources).toEqual(["e1"]);                        // c'est la poutre dessinée qui parle, plus le mur
+  });
+
+  it("une poutre dessinée ailleurs s'ajoute à la reprise du mur", () => {
+    expect(ml(scene([{ id: "e1", type: "poutre", etat: "creer", materiau: "acier", ossature: { role: "poutre", portee: 2.5, reprendMurPorteur: null } }]))).toBe(6.5);
+  });
+
+  it("un matériau autre que l'acier est signalé, pas rangé sous un poste inexistant", () => {
+    const { contributions } = contributionsDuPlan(scene([{ id: "e1", type: "poutre", etat: "creer", materiau: "bois", ossature: { role: "poutre", portee: 3, reprendMurPorteur: null } }]));
+    const c = contributions.find((x) => x.poste === "mac-poutre-de-reprise-de-charge-ipn-hea");
+    expect(c?.deduction).toMatch(/lamellé-collé/);
+  });
+
+  it("le poteau n'a pas de poste au catalogue : il part dans les ignorés, pas dans une invention", () => {
+    const { contributions, ignores } = contributionsDuPlan(scene([{ id: "e1", type: "poteau", etat: "creer", materiau: "beton", ossature: { role: "poteau" } }]));
+    expect(contributions.some((c) => /poteau/.test(c.poste))).toBe(false);
+    expect(ignores.some((i) => /poteau/.test(i.quoi) && i.sources.includes("e1"))).toBe(true);
+  });
+
+  it("une poutre seulement prévue mais pas à poser ne compte pas (D1)", () => {
+    expect(ml(scene([{ id: "e1", type: "poutre", etat: "existant", materiau: "acier", ossature: { role: "poutre", portee: 4, reprendMurPorteur: "m1" } }]))).toBe(4);
+  });
+});
