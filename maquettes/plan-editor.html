@@ -2385,11 +2385,46 @@ function drawJoins(){
     const reach=Math.max(...ends.map(e=>wallT(e.w)))*1.6+0.02;
     for(let i=0;i<faces.length;i++)for(let j=i+1;j<faces.length;j++){if((i>>1)===(j>>1))continue;const A=faces[i],B=faces[j];const den=A.u.x*B.u.y-A.u.y*B.u.x;if(Math.abs(den)<1e-9)continue;const d=sub(B.p,A.p);const s=(d.x*B.u.y-d.y*B.u.x)/den;const X=add(A.p,mul(A.u,s));if(dist(X,p)<=reach)pts.push(X);}
     const hull=convexHull(pts);if(hull.length<3)return;
-    ctx.beginPath();hull.forEach((q,i)=>{const s=S(q);i?ctx.lineTo(s.x,s.y):ctx.moveTo(s.x,s.y);});ctx.closePath();ctx.fillStyle=allSel?(allNew?'#ef4444':'#4f46e5'):(allNew?CREER:'#2b2857');ctx.fill();
+    ctx.beginPath();const P=hull.map(S);P.forEach((s,i)=>i?ctx.lineTo(s.x,s.y):ctx.moveTo(s.x,s.y));ctx.closePath();
+    ctx.fillStyle=allSel?(allNew?'#ef4444':'#4f46e5'):(allNew?CREER:'#2b2857');ctx.fill();
+    /* le raccord porte le motif de ce qu'il raccorde : sans lui, un angle entre deux cloisons à
+       créer laissait un carré plein au milieu des hachures — l'angle sautait aux yeux */
+    const hach=ends.filter(e=>(mode()==='projet'&&wst(e.w)==='creer')||wallT(e.w)>=0.4);
+    if(hach.length===ends.length){const neuf=allNew;
+      ctx.save();ctx.clip();
+      hachurer(Math.min(...P.map(s=>s.x)),Math.min(...P.map(s=>s.y)),Math.max(...P.map(s=>s.x)),Math.max(...P.map(s=>s.y)),neuf?.45:.14,neuf?7:10);
+      ctx.restore();}
   });
 }
-// hachures blanches à 45° dans le polygone courant (ctx.clip déjà appliqué par l'appelant)
-function hatch(a,b,u,n,t,z,alpha,step){ctx.strokeStyle=`rgba(255,255,255,${alpha})`;ctx.lineWidth=1.2;const L0=Math.hypot(b.x-a.x,b.y-a.y);for(let d=-t*z;d<L0+t*z;d+=step){const px=a.x+u.x*d,py=a.y+u.y*d;ctx.beginPath();ctx.moveTo(px-n.x*t*z+u.x*t*z*0.6,py-n.y*t*z+u.y*t*z*0.6);ctx.lineTo(px+n.x*t*z-u.x*t*z*0.6,py+n.y*t*z-u.y*t*z*0.6);ctx.stroke();}}
+/* Hachures blanches à 45° dans le polygone courant (ctx.clip déjà appliqué par l'appelant).
+   UNE SEULE famille de droites pour tout le plan, ancrée sur l'origine du plan : chaque mur
+   hachurait auparavant dans SON repère, si bien que deux murs perpendiculaires se présentaient
+   des motifs à 90° l'un de l'autre et que le dessin cassait net à chaque jonction. Avec une
+   famille commune, un angle, un T ou un croisement se fondent dans le remplissage. */
+function hachurer(x0,y0,x1,y1,alpha,step){
+  ctx.strokeStyle=`rgba(255,255,255,${alpha})`;ctx.lineWidth=1.2;
+  const c=Math.SQRT1_2,dir={x:c,y:-c},nor={x:c,y:c};
+  const O=S(v(0,0)),q=p=>(p.x-O.x)*nor.x+(p.y-O.y)*nor.y;
+  const C={x:(x0+x1)/2,y:(y0+y1)/2},qc=q(C);
+  const qs=[{x:x0,y:y0},{x:x1,y:y0},{x:x1,y:y1},{x:x0,y:y1}].map(q);
+  const kMin=Math.floor(Math.min(...qs)/step),kMax=Math.ceil(Math.max(...qs)/step);
+  if(kMax-kMin>4000)return;                       /* garde-fou : zoom extrême, pas 100 000 traits */
+  /* Chaque droite est coupée à la boîte AVANT d'être tracée. Sans cela un mur long fait tracer
+     autant de traits, mais chacun aussi long que sa diagonale — le clip les rognait à l'écran,
+     le coût, lui, restait payé. */
+  for(let k=kMin;k<=kMax;k++){
+    const e=k*step-qc,P={x:C.x+nor.x*e,y:C.y+nor.y*e};
+    let t0=-1e9,t1=1e9,vide=false;
+    const borne=(p,d,lo,hi)=>{if(Math.abs(d)<1e-9){if(p<lo||p>hi)vide=true;return;}
+      let a=(lo-p)/d,b=(hi-p)/d;if(a>b){const sw=a;a=b;b=sw;}
+      if(a>t0)t0=a;if(b<t1)t1=b;};
+    borne(P.x,dir.x,x0,x1);borne(P.y,dir.y,y0,y1);
+    if(vide||t1<=t0)continue;
+    ctx.beginPath();ctx.moveTo(P.x+dir.x*t0,P.y+dir.y*t0);ctx.lineTo(P.x+dir.x*t1,P.y+dir.y*t1);ctx.stroke();
+  }
+}
+function hatch(a,b,u,n,t,z,alpha,step){const m=t*z;
+  hachurer(Math.min(a.x,b.x)-m,Math.min(a.y,b.y)-m,Math.max(a.x,b.x)+m,Math.max(a.y,b.y)+m,alpha,step);}
 /* MODE CONSTRUCTIF : le doublage des murs extérieurs est posé d'abord, les cloisons viennent
    buter CONTRE lui — c'est ce qui évite un pont thermique à chaque jonction. Une cloison qui
    meurt au milieu d'un mur doublé s'arrête donc à la face de la plaque, pas au mur porteur.
@@ -2413,14 +2448,28 @@ function drawWall(w,isSel,isHov){
   const ra=retraitContreDoublage(w,w.a,w.b),rb=retraitContreDoublage(w,w.b,w.a);
   const a=S(add(add(w.a,off),mul(u,ra))),b=S(add(add(w.b,off),mul(u,-rb)));const hx=n.x*t/2*z,hy=n.y*t/2*z;
   if(isVirtual(w)){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=isSel?'#4f46e5':isHov?'#7c3aed':'#9d8df0';ctx.lineWidth=isSel||isHov?3:2;ctx.setLineDash([7,6]);ctx.lineCap='round';ctx.stroke();ctx.setLineDash([]);ctx.lineCap='butt';return;}
-  ctx.beginPath();ctx.moveTo(a.x+hx,a.y+hy);ctx.lineTo(b.x+hx,b.y+hy);ctx.lineTo(b.x-hx,b.y-hy);ctx.lineTo(a.x-hx,a.y-hy);ctx.closePath();
+  /* Le quadrilatère du mur, REFAIT à la demande : les hachures appellent beginPath(), donc tout
+     tracé posé avant elles est perdu. Le liseré de cloison, juste après, repassait ainsi sur la
+     dernière ligne de hachure — un éclat oblique en travers du plan à chaque jonction. */
+  const quad=()=>{ctx.beginPath();ctx.moveTo(a.x+hx,a.y+hy);ctx.lineTo(b.x+hx,b.y+hy);ctx.lineTo(b.x-hx,b.y-hy);ctx.lineTo(a.x-hx,a.y-hy);ctx.closePath();};
+  quad();
   const st=wst(w),projet=mode()==='projet';
   if(projet&&st==='demolir'){ // à démolir : jaune, pointillé, transparent
     ctx.fillStyle=isSel?'rgba(245,158,11,.5)':isHov?'rgba(245,158,11,.38)':'rgba(245,158,11,.24)';ctx.fill();ctx.setLineDash([6,4]);ctx.strokeStyle=DEMOLIR;ctx.lineWidth=isSel?2.5:1.5;ctx.stroke();ctx.setLineDash([]);return;}
   const isNew=projet&&st==='creer';
   ctx.fillStyle=isNew?(isSel?'#ef4444':isHov?'#dc2626':CREER):(isSel?'#4f46e5':isHov?'#5b52c9':'#2b2857');ctx.fill();
   if(isNew||t>=0.4){ctx.save();ctx.clip();hatch(a,b,u,n,t,z,isNew?.45:.14,isNew?7:10);ctx.restore();}
-  if(w.type==='cloison'){ctx.strokeStyle=isSel?'#4f46e5':'#2b2857';ctx.lineWidth=1;ctx.stroke();}
+  if(w.type==='cloison'){
+    /* Le liseré suit les deux LONGS côtés, et ne referme une extrémité que si elle est libre.
+       Refermé contre un autre mur, il barrait la jonction d'un trait : la cloison semblait
+       s'arrêter là au lieu de s'y raccorder. */
+    ctx.strokeStyle=isSel?'#4f46e5':'#2b2857';ctx.lineWidth=1;
+    ctx.beginPath();
+    ctx.moveTo(a.x+hx,a.y+hy);ctx.lineTo(b.x+hx,b.y+hy);
+    ctx.moveTo(a.x-hx,a.y-hy);ctx.lineTo(b.x-hx,b.y-hy);
+    if(!murTouche(L(),w,w.a)){ctx.moveTo(a.x+hx,a.y+hy);ctx.lineTo(a.x-hx,a.y-hy);}
+    if(!murTouche(L(),w,w.b)){ctx.moveTo(b.x+hx,b.y+hy);ctx.lineTo(b.x-hx,b.y-hy);}
+    ctx.stroke();}
 }
 // remplit + hachure + liseré une bande d'isolant (quad de 4 sommets en mètres, dernier côté = finition)
 function fillIso(poly,finish,mark,innerRef,u,skipEdge){
