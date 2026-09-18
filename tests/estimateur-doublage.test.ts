@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { CATALOG, buildDevis, presetRapide, derivedFinitions, key, type Selection } from "@/lib/estimateur";
+import { CATALOG, buildDevis, presetRapide, derivedFinitions, isAuto, defaultCtx, key, type Selection } from "@/lib/estimateur";
 
 const base = { type: "T3" as const, surface: 70, codePostal: "33620", ampleur: "complete" as const, finition: "standard" as const, qui: "pros" as const };
 const ITI = key("Isolation", "Isolation des murs par l'intérieur");
@@ -32,5 +32,28 @@ describe("doublage : une seule paroi, un seul poste", () => {
     const avant: Selection = { ...sel, [DOUBLAGE]: { on: true } };
     const ecart = buildDevis(CATALOG, ctx, avant).totaux.ttc - buildDevis(CATALOG, ctx, sel).totaux.ttc;
     expect(ecart).toBeGreaterThan(4000); // ~4 646 € TTC mesurés sur ce cas
+  });
+});
+
+/** D9 : les trois postes créés le 19/09/2026, prix validés par Dani sur relevé de marché. */
+describe("D9 : mur porteur et mur en pierre", () => {
+  const trouve = (lot: string, nom: string) => CATALOG.find((l) => l.c === lot)?.t.find((t) => t.n === nom);
+
+  it("les trois postes existent, avec leur unité et leur prix", () => {
+    expect(trouve("Démolition", "Abattre un mur porteur")).toMatchObject({ u: "m2", fp: 110, sm: 25 });
+    expect(trouve("Maçonnerie", "Poutre de reprise de charge (IPN / HEA)")).toMatchObject({ u: "ml", fp: 480, sm: 180 });
+    expect(trouve("Maçonnerie", "Monter un mur en pierre")).toMatchObject({ u: "m2", fp: 250, sm: 100 });
+  });
+
+  it("aucun des trois n'a de quantité automatique : le plan les alimente, ou personne", () => {
+    for (const [lot, nom] of [["Démolition", "Abattre un mur porteur"], ["Maçonnerie", "Poutre de reprise de charge (IPN / HEA)"], ["Maçonnerie", "Monter un mur en pierre"]] as const) {
+      expect(isAuto(defaultCtx(), lot, nom), nom).toBe(false);
+    }
+  });
+
+  it("ils n'apparaissent dans aucune estimation existante : rien ne change pour personne", () => {
+    const { ctx, sel } = presetRapide(base);
+    const noms = buildDevis(CATALOG, ctx, sel).lignes.map((l) => l.nom);
+    expect(noms.some((n) => n.startsWith("Abattre un mur porteur") || n.startsWith("Poutre de reprise") || n.startsWith("Monter un mur en pierre"))).toBe(false);
   });
 });

@@ -56,6 +56,10 @@ const tableVal = (chemin) => {
 const PRIX_MAP = [
   ["PRIX", "demolCloison", "Abattre une cloison"],
   ["PRIX", "demolMur", "Abattre un mur non porteur"],
+  ["PRIX", "demolPorteur", "Abattre un mur porteur"],
+  ["PRIX", "poutreReprise", "Poutre de reprise de charge (IPN / HEA)"],
+  ["PRIX", "murPierre", "Monter un mur en pierre"],
+  ["PRIX", "etudeStructure", "Étude de structure"],
   ["PRIX", "cloisonNeuve", "Monter une cloison"],
   ["PRIX", "chapeTradi", "Chape traditionnelle"],
   ["PRIX", "chapeLiquide", "Chape liquide"],

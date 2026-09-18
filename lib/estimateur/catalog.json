@@ -257,6 +257,13 @@
         "sm": 8
       },
       {
+        "n": "Abattre un mur porteur",
+        "u": "m2",
+        "fp": 110,
+        "sm": 25,
+        "note": "reprise de charge à chiffrer à part (poutre) + étude BET obligatoire"
+      },
+      {
         "n": "Enlever les anciennes portes / fenêtres",
         "u": "u",
         "fp": 40,
@@ -316,6 +323,13 @@
         "note": "délicat + étude BET obligatoire"
       },
       {
+        "n": "Poutre de reprise de charge (IPN / HEA)",
+        "u": "ml",
+        "fp": 480,
+        "sm": 180,
+        "note": "fourniture, étaiement, appuis et scellement — remplace le mur porteur déposé"
+      },
+      {
         "n": "Créer un appui de fenêtre",
         "u": "u",
         "fp": 250,
@@ -369,6 +383,13 @@
         "u": "m2",
         "fp": 90,
         "sm": 35
+      },
+      {
+        "n": "Monter un mur en pierre",
+        "u": "m2",
+        "fp": 250,
+        "sm": 100,
+        "note": "moellons maçonnés au mortier"
       },
       {
         "n": "Créer / enlever une cheminée en dur",
@@ -1007,16 +1028,32 @@
             "k": "type",
             "label": "Type",
             "opts": [
-              { "k": "posee", "label": "À poser", "coef": 1 },
-              { "k": "encastree", "label": "Encastrée", "coef": 1.1 }
+              {
+                "k": "posee",
+                "label": "À poser",
+                "coef": 1
+              },
+              {
+                "k": "encastree",
+                "label": "Encastrée",
+                "coef": 1.1
+              }
             ]
           },
           {
             "k": "nb",
             "label": "Nombre",
             "opts": [
-              { "k": "simple", "label": "Simple", "coef": 1 },
-              { "k": "double", "label": "Double", "coef": 1.9 }
+              {
+                "k": "simple",
+                "label": "Simple",
+                "coef": 1
+              },
+              {
+                "k": "double",
+                "label": "Double",
+                "coef": 1.9
+              }
             ]
           }
         ]
@@ -1032,9 +1069,21 @@
             "k": "mat",
             "label": "Matériau",
             "opts": [
-              { "k": "stratifie", "label": "Stratifié", "coef": 1 },
-              { "k": "bois", "label": "Bois", "coef": 1.87 },
-              { "k": "pierre", "label": "Quartz/granit", "coef": 3.33 }
+              {
+                "k": "stratifie",
+                "label": "Stratifié",
+                "coef": 1
+              },
+              {
+                "k": "bois",
+                "label": "Bois",
+                "coef": 1.87
+              },
+              {
+                "k": "pierre",
+                "label": "Quartz/granit",
+                "coef": 3.33
+              }
             ]
           }
         ]
@@ -1379,29 +1428,70 @@
             "k": "taille",
             "label": "Taille",
             "opts": [
-              { "k": "petit", "label": "Petit", "coef": 1 },
-              { "k": "moyen", "label": "Moyen", "coef": 1 },
-              { "k": "grand", "label": "Grand", "coef": 1 }
+              {
+                "k": "petit",
+                "label": "Petit",
+                "coef": 1
+              },
+              {
+                "k": "moyen",
+                "label": "Moyen",
+                "coef": 1
+              },
+              {
+                "k": "grand",
+                "label": "Grand",
+                "coef": 1
+              }
             ]
           },
           {
             "k": "type",
             "label": "Type",
             "opts": [
-              { "k": "ns", "label": "Non soufflant", "coef": 1 },
-              { "k": "s", "label": "Soufflant", "coef": 1 }
+              {
+                "k": "ns",
+                "label": "Non soufflant",
+                "coef": 1
+              },
+              {
+                "k": "s",
+                "label": "Soufflant",
+                "coef": 1
+              }
             ]
           }
         ],
         "grid": {
-          "dims": ["taille", "type"],
+          "dims": [
+            "taille",
+            "type"
+          ],
           "prices": {
-            "petit|ns": { "fp": 245, "sm": 145 },
-            "moyen|ns": { "fp": 300, "sm": 200 },
-            "grand|ns": { "fp": 340, "sm": 240 },
-            "petit|s": { "fp": 410, "sm": 310 },
-            "moyen|s": { "fp": 440, "sm": 340 },
-            "grand|s": { "fp": 470, "sm": 370 }
+            "petit|ns": {
+              "fp": 245,
+              "sm": 145
+            },
+            "moyen|ns": {
+              "fp": 300,
+              "sm": 200
+            },
+            "grand|ns": {
+              "fp": 340,
+              "sm": 240
+            },
+            "petit|s": {
+              "fp": 410,
+              "sm": 310
+            },
+            "moyen|s": {
+              "fp": 440,
+              "sm": 340
+            },
+            "grand|s": {
+              "fp": 470,
+              "sm": 370
+            }
           }
         }
       },

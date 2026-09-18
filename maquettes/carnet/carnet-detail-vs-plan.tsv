@@ -35,6 +35,7 @@ Démolition	Enlever un revêtement de sol	m2	S	FOURNIT	sol de la pièce en état
 Démolition	Enlever un revêtement mural	m2	—	FOURNIT	surface réelle plutôt que S
 Démolition	Abattre une cloison	m2	—	FOURNIT	q.travaux.demolLin / demolM2 par type de mur
 Démolition	Abattre un mur non porteur	m2	—	FOURNIT	q.travaux.demolLin / demolM2 par type de mur
+Démolition	Abattre un mur porteur	m2	—	FOURNIT	q.provenance.murs (etat=demolir, porteur=true) → m² ; déclenche aussi la poutre et l'étude
 Démolition	Enlever les anciennes portes / fenêtres	u	—	FOURNIT	q.travaux.boucher + deposer
 Démolition	Dépose complète cuisine / salle de bain (curage)	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
 Démolition	Enlever les vieux réseaux	m2	S	FOURNIT	surface réelle plutôt que S
@@ -43,6 +44,7 @@ Démolition	Casser une dalle / vieux sol	m2	—	FOURNIT	sol de la pièce en éta
 Démolition	Retrait amiante / plomb	m2	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
 Maçonnerie	Ouvrir un mur porteur — petite (porte/fenêtre)	u	—	FOURNIT	q.travaux.percements sur murs porteurs, réparti par largeur d'ouverture
 Maçonnerie	Ouvrir un mur porteur — grande (2,5 m, baie)	u	—	FOURNIT	q.travaux.percements sur murs porteurs, réparti par largeur d'ouverture
+Maçonnerie	Poutre de reprise de charge (IPN / HEA)	ml	—	FOURNIT	q.etudes.mlPorteurDemoli — longueur de mur porteur démoli
 Maçonnerie	Créer un appui de fenêtre	u	—	FOURNIT	ouvertures créées, par catégorie
 Maçonnerie	Créer un seuil de porte	u	—	FOURNIT	ouvertures créées, par catégorie
 Maçonnerie	Couler une dalle béton	m2	—	FOURNIT	surface réelle plutôt que S
@@ -51,6 +53,7 @@ Maçonnerie	Chape liquide	m2	S	FOURNIT	surface réelle plutôt que S
 Maçonnerie	Semelle de fondation (50 × 25-30 cm)	ml	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
 Maçonnerie	Consolider fondations / reprise en sous-œuvre	ml	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
 Maçonnerie	Monter un mur en parpaings	m2	—	FOURNIT	q.travaux.creerLin.mur / .porteur
+Maçonnerie	Monter un mur en pierre	m2	—	FOURNIT	q.travaux.creerLin.porteur × hauteur, quand le type de mur du plan est « Pierre »
 Maçonnerie	Monter un mur en brique	m2	—	FOURNIT	q.travaux.creerLin.mur / .porteur
 Maçonnerie	Créer / enlever une cheminée en dur	forfait	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
 Maçonnerie	Escalier en béton	u	—	FOURNIT	q.levels[].escaliers
