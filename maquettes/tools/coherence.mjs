@@ -30,12 +30,23 @@ let dur = 0, mou = 0;
 const KO = (quoi, d) => { dur++; console.log(`  ✗ ${quoi}\n      ${d}`); };
 const NB = (quoi, d) => { mou++; console.log(`  · ${quoi}\n      ${d}`); };
 
-/* valeur numérique d'une clé dans une table objet de la maquette */
-const tableVal = (table, cle) => {
+/* Valeur numérique d'un chemin dans les tables de prix de la maquette.
+   Gère les objets imbriqués (PRIX.revetement['Carrelage'], PRIX.menuiserie.porte) et les clés
+   citées entre apostrophes — la première version ne lisait que le premier niveau, et laissait
+   donc 40 prix hors contrôle. */
+const tableVal = (chemin) => {
+  const [table, ...reste] = chemin.split(".");
   const i = MAQ.indexOf(`const ${table}=`);
   if (i < 0) return null;
-  const seg = MAQ.slice(i, MAQ.indexOf("\n};", i));
-  const m = seg.match(new RegExp(`\\b${cle}\\s*:\\s*([0-9.]+)`));
+  let seg = MAQ.slice(i, MAQ.indexOf("\n};", i));
+  const cle = reste.pop();
+  for (const sous of reste) {               /* descendre dans le sous-objet nommé */
+    const j = seg.search(new RegExp(`\\b${sous}\\s*:\\s*\\{`));
+    if (j < 0) return null;
+    const ouvre = seg.indexOf("{", j);
+    seg = seg.slice(ouvre + 1, seg.indexOf("}", ouvre));
+  }
+  const m = seg.match(new RegExp(`(?:^|[,{\\s])'?${cle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}'?\\s*:\\s*([0-9.]+)`));
   return m ? Number(m[1]) : null;
 };
 
@@ -92,17 +103,74 @@ const PRIX_MAP = [
   ["EQUIP_PRIX", "tableau", "Changer / mettre aux normes le tableau"],
   ["EQUIP_PRIX", "escalier", "Escalier en bois"],
   ["EQUIP_PRIX", "ilot", "Îlot central"],
+  /* Deuxième vague : les tables imbriquées et les clés scalaires que la première version du
+     contrôle n'atteignait pas. Chaque correspondance a été établie en lisant à quel OUVRAGE la
+     maquette applique le prix (chantierTasks / openingInduits), pas par ressemblance de nom. */
+  ["PRIX", "revetement.Carrelage", "Carrelage au sol"],
+  ["PRIX", "revetement.Parquet", "Parquet bois"],
+  ["PRIX", "revetement.Stratifié", "Sol stratifié (imitation bois)"],
+  ["PRIX", "revetement.Vinyle / PVC", "Sol souple (PVC, lino)"],
+  ["PRIX", "revetement.Moquette", "Moquette"],
+  ["PRIX", "revetement.Béton ciré", "Béton ciré / résine"],
+  ["PRIX", "menuiserie.porte", "Porte intérieure battante"],
+  ["PRIX", "menuiserie.porte_pleine", "Porte intérieure âme pleine"],
+  ["PRIX", "menuiserie.coulissante", "Porte intérieure coulissante"],
+  ["PRIX", "menuiserie.porte_entree", "Porte d'entrée"],
+  ["PRIX", "menuiserie.garage", "Porte de garage"],
+  ["PRIX", "menuiserie.fenetre", "Fenêtres"],
+  ["PRIX", "menuiserie.porte_fenetre", "Portes-fenêtres"],
+  ["PRIX", "menuiserie.baie", "Baie vitrée"],
+  ["PRIX", "percPorteurPetit", "Ouvrir un mur porteur — petite (porte/fenêtre)"],
+  ["PRIX", "percPorteurGrand", "Ouvrir un mur porteur — grande (2,5 m, baie)"],
+  ["PRIX", "appuiFenetre", "Créer un appui de fenêtre"],
+  ["PRIX", "seuil", "Créer un seuil de porte"],
+  ["PRIX", "murNeuf", "Monter un mur en parpaings"],
+  ["PRIX", "voletRoulant", "Volets roulants"],
+  ["PRIX", "voletBattant", "Volets battants"],
+  ["PRIX", "galandage", "Caisson à galandage (châssis + habillage)"],
+  ["PRIX", "optMoustiquaire", "Moustiquaires"],
+  ["PRIX", "optStore", "Stores extérieurs / brise-soleil"],
+  ["PRIX", "optGrille", "Grilles de sécurité"],
+  ["PRIX", "deposeMenuiserie", "Enlever les anciennes portes / fenêtres"],
+  ["PRIX", "solIso", "Isolation du sol / plancher bas"],
+  ["EQUIP_PRIX", "douche", "Douche à l'italienne"],
+  ["EQUIP_PRIX", "vasque2", "Meuble-vasque"],
+  ["EQUIP_PRIX", "plan", "Plan de travail seul"],
+  ["EQUIP_PRIX", "prise", "Ajouter / déplacer une prise"],
+  ["EQUIP_PRIX", "interrupteur", "Ajouter / déplacer un interrupteur"],
+  ["EQUIP_PRIX", "lumiere", "Ajouter un point lumineux"],
+];
+/* Prix de la maquette qui chiffrent un ouvrage SANS poste au catalogue. Ce n'est pas une dérive :
+   c'est la liste des postes à créer ou à abandonner, et elle demande une décision. */
+const SANS_POSTE = [
+  ["PRIX.boucher", "90 €/m² — rebouchage d'une ouverture : aucun poste au catalogue"],
+  ["PRIX.percLeger", "320 €/u — percement d'un mur NON porteur : seul le porteur a ses deux postes"],
+  ["PRIX.jambagesMl", "35 €/ml — linteau et tableaux : inclus dans le forfait percement du catalogue ?"],
+  ["PRIX.retourIso", "28 €/ml — retour d'isolant en tableau : aucun poste"],
+  ["PRIX.deposeEquip", "60 €/u — dépose d'un équipement : aucun poste générique"],
+  ["PRIX.betonFini", "45 €/m² — finition béton lissé / quartzé : aucun poste"],
+  ["PRIX.menuiserie.porte_double", "600 €/u — porte double intérieure : aucun poste distinct"],
+  ["PRIX.menuiserie.passage", "110 €/u — passage sans porte : aucun poste"],
+  ["PRIX.menuiserie.fenetre_p", "350 €/u — petite fenêtre : le catalogue n'a que « Fenêtres »"],
+  ["EQUIP_PRIX.frigo", "80 €/u — pose d'un réfrigérateur : aucun poste"],
+  ["EQUIP_PRIX.lave_linge", "190 €/u — raccordement lave-linge : aucun poste de pose"],
+  ["EQUIP_PRIX.lave_vaisselle", "190 €/u — idem lave-vaisselle"],
 ];
 console.log("\n1. Prix recopiés dans la maquette vs catalogue (fourni-posé)");
 let alignes = 0;
 for (const [tbl, cle, nom] of PRIX_MAP) {
-  const m = tableVal(tbl, cle), p = postes.get(nom);
+  const m = tableVal(`${tbl}.${cle}`), p = postes.get(nom);
   if (m === null) { KO(`${tbl}.${cle} introuvable dans la maquette`, "clé renommée ou supprimée ?"); continue; }
   if (!p) { KO(`poste « ${nom} » absent du catalogue`, `référencé par ${tbl}.${cle}`); continue; }
   if (Math.abs(m - p.fp) < 0.51) alignes++;
   else KO(`${tbl}.${cle} = ${m} € · catalogue « ${nom} » = ${p.fp} €`, `écart ${(m - p.fp > 0 ? "+" : "")}${Math.round((m / p.fp - 1) * 100)} % sur le compteur indicatif`);
 }
 console.log(`  ${alignes}/${PRIX_MAP.length} alignés`);
+console.log(`\n1bis. Prix de la maquette sans poste au catalogue (décision : créer ou abandonner)`);
+for (const [chemin, quoi] of SANS_POSTE) {
+  const v = tableVal(chemin);
+  NB(`${chemin}${v === null ? " (clé introuvable — renommée ?)" : ""}`, quoi);
+}
 
 /* ── 2. libellés déclarés « exacts » : FACADES[].poste doit exister au catalogue ── */
 console.log("\n2. Libellés de postes cités en dur");
