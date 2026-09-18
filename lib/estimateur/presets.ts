@@ -44,7 +44,9 @@ const PARTIELLE_ADD: Tache[] = [
 const COMPLETE_ADD: Tache[] = [
   ["Electricite", "Rénovation électrique complète"], ["Plomberie", "Refaire toute la plomberie (réseau, hors appareils)"],
   ["Isolation", "Isolation des murs par l'intérieur"],
-  ["Cloisons / Platrerie", "Monter une cloison"], ["Cloisons / Platrerie", "Doubler un mur"], ["Cloisons / Platrerie", "Faux plafond"], ["Cloisons / Platrerie", "Finitions plâtrerie (bandes, enduit)"],
+  /* Le doublage de la façade est porté par « Isolation des murs par l'intérieur » (ci-dessus) :
+     cocher AUSSI « Doubler un mur » facturait deux fois la même paroi (décision du 18/09/2026). */
+  ["Cloisons / Platrerie", "Monter une cloison"], ["Cloisons / Platrerie", "Faux plafond"], ["Cloisons / Platrerie", "Finitions plâtrerie (bandes, enduit)"],
   ["Chauffage / VMC", "Radiateurs électriques"], ["Chauffage / VMC", "Ventilation (VMC)"],
   ["Menuiseries interieures", "Porte intérieure battante"],
 ];

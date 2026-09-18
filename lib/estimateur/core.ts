@@ -383,13 +383,17 @@ export function sdbEff(ctx: Ctx): number {
  *  Utilise la quantité EFFECTIVE (auto ou manuelle) des postes parents, pas seulement `qty`
  *  — sinon un poste laissé en « auto » (qty non saisie) compte pour 0. */
 export function derivedFinitions(ctx: Ctx, sel: Selection): number {
-  const eff = (n: string): number => {
-    const s = sel[key("Cloisons / Platrerie", n)];
+  const eff = (c: string, n: string): number => {
+    const s = sel[key(c, n)];
     if (!s || !s.on) return 0;
-    if (!s.manual) return autoQty(ctx, "Cloisons / Platrerie", n, sel) ?? 0;
+    if (!s.manual) return autoQty(ctx, c, n, sel) ?? 0;
     return s.qty ?? 0;
   };
-  return Math.round(eff("Monter une cloison") * 2 + eff("Doubler un mur") + eff("Faux plafond"));
+  const P = "Cloisons / Platrerie";
+  // Un doublage isolé par l'intérieur se ferme au placo lui aussi : ses bandes et son enduit se
+  // chiffrent ici, que le doublage soit porté par « Doubler un mur » ou par l'ITI. `max` et non
+  // `+` : les deux postes décrivent la MÊME paroi, un projet qui coche les deux ne la double pas.
+  return Math.round(eff(P, "Monter une cloison") * 2 + Math.max(eff(P, "Doubler un mur"), eff("Isolation", "Isolation des murs par l'intérieur")) + eff(P, "Faux plafond"));
 }
 
 /** Renvoie la quantité auto d'une tâche, ou null si elle n'est pas calculable de façon fiable. */
