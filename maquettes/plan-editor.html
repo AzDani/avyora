@@ -2909,7 +2909,9 @@ function contratPlan(){
        le moteur masque toute la toiture, voyage dans `contexte`, avec les autres réponses. */
     bien:{niveaux:state.levels.length,hauteurParDefaut:state.levels[0]?.height??null,
       emprise:bas?bas.emprise:null,empriseRectangle:bas?bas.rectangle:null,empriseApprochee:bas?bas.approchee:null,
-      surfaceExterieure:bas?bas.exterieurs:null},
+      /* Pas de surfaceExterieure ici : `ext` (plus haut) somme déjà les balcons et terrasses de
+         TOUS les niveaux, alors que l'emprise ne regarde que le niveau bas. Une seule source. */
+      },
     ...reste,detailNiveaux:levels};
 }
 // surface & nb de pièces à afficher selon la vue courante : en Existant on montre l'état existant, en Projet/Final l'état après travaux
