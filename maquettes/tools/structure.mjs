@@ -72,7 +72,10 @@ const res = await p.evaluate(() => {
     pose(lv, "poutre", 1, 1, 2, 0, "bois");
     pose(lv, "poteau", 5, 3, null, 0, "beton");
     const c = contratPlan();
-    t["contrat en 1.5.0"] = c.contrat === "1.5.0";
+    /* pas le numéro exact — il bouge à chaque ajout — mais le minimum sous lequel l'ossature
+       ne doit pas partir : c'est en 1.5 qu'elle est entrée au contrat. */
+    { const [maj, min] = c.contrat.split(".").map(Number);
+      t["l'ossature ne part pas sous un contrat antérieur à 1.5"] = maj === 1 && min >= 5; }
     const o = c.ossature;
     t["ossature · 2 poutres, 1 poteau"] = o.poteaux === 1 && o.poutres === 2;
     t["ossature · 6,00 ml de poutre"] = Math.abs(o.mlPoutres - 6) < 1e-6;

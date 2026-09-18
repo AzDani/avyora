@@ -1285,7 +1285,11 @@ function guessType(area,used){
 }
 const roomName = r => r.name || RT[r.type].label;
 const roomFace = (level,id) => (facesCache[level.id]||[]).find(f=>f.room?.id===id);
-const roomHeight = (lv,r) => r.height || lv.height;
+/* Hauteur d'une pièce. `hAvant` existe pour un seul cas, mais il est fréquent : un volume de
+   grande hauteur dans lequel le projet crée un plancher. La pièce fait 5,50 m aujourd'hui et
+   2,50 m après — une seule valeur ne peut pas dire les deux, et sans `hAvant` l'existant décrit
+   un logement qui n'a jamais existé. */
+const roomHeight = (lv,r,m) => ((m||mode())==='existant'&&r.hAvant)?r.hAvant:(r.height||lv.height);
 // trémies : escaliers du niveau du dessous reliés à ce niveau → trou dans le plancher
 // ---------- Escalier : loi de Blondel (2h + g = 60–64 cm) ----------
 // it.stair = {type:'droit'|'quart'|'demi', plancher (ép. plancher haut, m), giron (m, sinon auto), marches (nb, sinon auto), sens:'g'|'d'}
@@ -1357,6 +1361,12 @@ function planChecks(lv,opt){
   if(state.levels.indexOf(lv)===topLevelIdx()&&lv.walls.length&&!toiture())out.push({lvl:'info',msg:`<b>Toiture</b> non décrite : forme, couverture et état se règlent sur ce niveau (${esc(lv.name)}) en vue Existant.`});
   faces.forEach(f=>{const r=f.room;if(!r)return;if(r.floor==='Sol brut / terre')out.push({lvl:'info',msg:`<b>${esc(roomName(r))}</b> a un sol en terre / brut : une <b>dalle béton</b> est à couler avant tout revêtement.`,sel:{kind:'room',id:r.id}});
     if(r.floorNew){const sp=solPlan(r);if(sp.warn)out.push({lvl:'warn',msg:`<b>${esc(roomName(r))}</b> · ${sp.warn}`,sel:{kind:'room',id:r.id}});const bad=sp.steps.find(s=>s.state==='warn');if(bad)out.push({lvl:'warn',msg:`<b>${esc(roomName(r))}</b> · ${bad.label} : ${bad.detail}`,sel:{kind:'room',id:r.id}});}});
+  /* Un plancher créé dans un volume existant coupe ce volume en deux : la pièce du dessous
+     n'aura plus sa hauteur d'origine. Sans `hAvant`, la vue Existant décrirait un logement qui
+     n'a jamais existé — et le plancher neuf n'aurait plus l'air d'un ouvrage. */
+  {const iL=state.levels.indexOf(lv),dessus=state.levels[iL+1];
+   if(dessus&&dessus.neuf&&faces.some(f=>f.room)&&!lv.rooms.some(r=>r.hAvant))
+     out.push({lvl:'info',msg:`<b>${esc(dessus.name)}</b> est créé par le projet : son plancher coupe le volume de ce niveau. Si une pièce d'ici était en <b>grande hauteur</b> avant travaux, indique-la dans sa fiche au champ <b>« hauteur avant travaux »</b> — sinon l'existant décrit un logement qui n'a jamais existé.`});}
   if(faces.some(f=>f.room)&&!lv.openings.length)out.push({lvl:'info',msg:`Ajoute les portes et fenêtres (outil <b>Ouvertures</b>, touche <kbd>P</kbd>) : l'accès et l'éclairement des pièces seront contrôlés ensuite.`});
   if(dn)out.push({lvl:'err',msg:`${dn} extrémité${dn>1?'s':''} de mur ne touche${dn>1?'nt':''} rien (cerclée${dn>1?'s':''} en rouge) : aucune pièce ne peut se fermer là.`});
   else if(lv.walls.length&&!faces.length)out.push({lvl:'warn',msg:'Des murs sont tracés mais aucun contour n\'est fermé : les pièces n\'apparaissent pas.'});
@@ -1364,7 +1374,11 @@ function planChecks(lv,opt){
   faces.forEach(f=>{const r=f.room;if(!r||RT[r.type].ext)return;const nm=roomName(r),sr={kind:'room',id:r.id};
     const ops=openingsOfFace(lv,f);const doors=ops.filter(o=>OPENINGS[o.type].cat==='porte');const wins=ops.filter(o=>OPENINGS[o.type].cat==='fenetre');
     const open=f.edges.some(e=>!e||e.t===0);
-    if(lv.openings.length&&!doors.length&&!open)out.push({lvl:'err',msg:`<b>${nm}</b> n'a aucune porte ni passage : pièce inaccessible.`,sel:sr});
+    /* Une porte sur un mur EXTÉRIEUR compte autant qu'une porte intérieure : un garage qui ne
+       communique pas avec le logement mais qui a sa propre porte de service est accessible. Le
+       contrôle l'acceptait déjà ; il ne le disait pas, et laissait croire à une règle plus
+       étroite qu'elle ne l'est. */
+    if(lv.openings.length&&!doors.length&&!open)out.push({lvl:'err',msg:`<b>${nm}</b> n'a aucune porte ni passage : pièce inaccessible. <b>Une porte sur un mur extérieur compte</b> — porte d'entrée, porte de service, porte de garage : si l'accès se fait par l'extérieur, dessine-la et l'alerte disparaît.`,sel:sr});
     if(lv.openings.length&&!open&&['chambre','suite','sejour','bureau','cuisine'].includes(r.type)&&!wins.length)out.push({lvl:'warn',msg:`<b>${nm}</b> n'a pas de fenêtre : pas d'éclairement naturel (une chambre ou un séjour en a besoin).`,sel:sr});
     const a=areaNet(lv,f);if((r.type==='chambre'||r.type==='suite')&&a<9)out.push({lvl:'warn',msg:`<b>${nm}</b> fait ${fmtM2(a)} : en dessous de 9 m², ce n'est pas une chambre au sens du décret décence (location).`,sel:sr});
     const hh=roomHeight(lv,r);if(hh<2.2)out.push({lvl:'warn',msg:`<b>${nm}</b> : hauteur ${fmt(hh)} m sous les 2,20 m réglementaires (décence).`,sel:sr});
@@ -2999,7 +3013,9 @@ function renderSelection(lv){
     ${mode()!=='existant'?`<label class="chk"><input type="checkbox" ${r.fauxPlafond?'checked':''} onchange="setRoomProp('fauxPlafond',this.checked)"><span>Faux plafond<small>pour cacher des gaines, poser des spots ou rattraper une hauteur</small></span></label>`:''}
     <div class="row"><label>Part sous 1,80 m (combles)</label><span><input class="fin n" type="number" step="5" min="0" max="90" value="${r.lowPct||0}" onchange="setRoomProp('lowPct',Math.max(0,Math.min(90,parseFloat(this.value)||0)))"> %</span></div>
     <div class="row"><label>Périmètre</label><span class="val">${fmt(f.perimReal)} m</span></div>
-    <div class="row"><label>Hauteur sous plafond</label><span><input class="fin n" type="number" step="0.05" min="1.8" max="5" value="${roomHeight(lv,r).toFixed(2)}" placeholder="${lv.height.toFixed(2)}" onchange="setRoomHeight(this.value)"> m</span></div>
+    <div class="row"><label>Hauteur sous plafond${r.hAvant?' <span class="chip">après travaux</span>':''}</label><span><input class="fin n" type="number" step="0.05" min="1.8" max="5" value="${(r.height||lv.height).toFixed(2)}" placeholder="${lv.height.toFixed(2)}" onchange="setRoomHeight(this.value)"> m</span></div>
+    <div class="row"><label>Hauteur avant travaux<small style="display:block;color:#8c8ba8;font-weight:400">vide si elle ne change pas</small></label><span><input class="fin n" type="number" step="0.05" min="1.8" max="12" value="${r.hAvant?r.hAvant.toFixed(2):''}" placeholder="—" onchange="setRoomHAvant(this.value)"> m</span></div>
+    ${r.hAvant?`<div class="tip" style="margin-top:6px">Volume de <b>${fmt(r.hAvant)} m</b> aujourd'hui, <b>${fmt(r.height||lv.height)} m</b> après travaux. La vue <b>Existant</b> décrit donc bien le logement tel qu'il est, et le plancher que tu ajoutes au-dessus est compté comme un ouvrage neuf.</div>`:''}
     <div class="row"><label>Murs à peindre ≈</label><span class="val">${fmtM2(wallArea)}</span></div>
     <div class="row"><label>Ouvertures</label><span class="val">${ops.length}</span></div>
     ${productsSection(lv,f,r)}`;
@@ -3086,7 +3102,8 @@ function renderOverview(lv){
   ${mode()==='projet'?`<div class="tip" style="border-color:#fecaca;background:#fff7f7">${tq.actif?`Travaux marqués : <b>${fmtM2(tq.demolM2)}</b> de murs à démolir, <b>${fmtM2(tq.creerM2)}</b> à créer, <b>${tq.boucher}</b> ouverture(s) à boucher, <b>${tq.percements}</b> percement(s), ${tq.remplacer?`<b>${tq.remplacer}</b> menuiserie(s) à remplacer, `:''}<b>${tq.poser.length}</b> équipement(s) à poser, <b>${tq.deposer.length}</b> à déposer. Bascule en <b>✅ Final</b> pour voir le résultat propre.`:`Aucun travaux marqué. Clique un mur → <b>À&nbsp;démolir</b>, ou trace un nouveau mur : il sera <b>à créer</b>. Même logique pour les équipements : ajouté ici = <b>à poser</b>, existant cliqué → <b>à déposer</b>.`}</div>`:mode()==='final'?`<div class="tip" style="border-color:#bbf7d0;background:#f0fdf4">Le logement <b>après travaux</b>, tel qu'il sera : murs démolis retirés, nouveaux murs et ouvertures intégrés, sans marquage. C'est le plan à montrer aux artisans. Pour changer les travaux, repasse en <b>🛠 Projet</b>.</div>`:(lv.walls.length?`<div class="tip">Ton logement actuel. Quand il est complet, passe en <b>🛠 Projet</b> (en haut à droite du plan) pour dessiner ce que tu démolis et ce que tu crées.</div>`:'')}
   <div class="ph">Nom du niveau</div><input class="fin" value="${lv.name.replace(/"/g,'&quot;')}" maxlength="20" onchange="setLevelProp('name',this.value)">
   <div class="row" style="margin-top:12px"><label>Hauteur sous plafond</label><span><input class="fin n" type="number" step="0.05" min="2" max="5" value="${lv.height.toFixed(2)}" onchange="setLevelProp('height',this.value)"> m</span></div>
-  ${state.levels.indexOf(lv)>0&&mode()!=='existant'?`<label class="chk"><input type="checkbox" ${lv.neuf?'checked':''} onchange="setLevelProp('neuf',this.checked)"><span>Étage créé par le projet<small>il faut alors créer son plancher</small></span></label>
+  ${state.levels.indexOf(lv)>0?`<label class="chk"><input type="checkbox" ${lv.neuf?'checked':''} onchange="setLevelProp('neuf',this.checked)"><span>Étage créé par le projet<small>il faut alors créer son plancher</small></span></label>
+  ${lv.neuf&&mode()==='existant'?`<div class="tip" style="border-color:#fde68a;background:#fffbeb;margin-top:8px">🏗️ <b>Cet étage n'existe pas aujourd'hui.</b> Il n'y a donc rien à décrire ici : laisse la vue Existant vide et dessine-le en vue <b>Projet</b>. Si tu le crées dans un volume de grande hauteur, indique la hauteur d'origine de la pièce du dessous, dans sa fiche, au champ <b>« hauteur avant travaux »</b>.</div>`:''}
   ${lv.neuf?`<div class="ph" style="margin-bottom:6px">Plancher de cet étage</div>
   <div class="seg">${[['bois','Bois','solives + panneaux'],['beton','Béton','dalle coulée']].map(o=>`<button class="${(lv.plancher||'bois')===o[0]?'on':''}" onclick="setLevelProp('plancher','${o[0]}')">${o[1]}<small>${o[2]}</small></button>`).join('')}</div>`:''}`:''}
   ${renderChantier()}
@@ -3185,6 +3202,7 @@ function setTextColor(c){const t=TX(L()).find(x=>x.id===sel?.id);if(!t)return;hi
 let lastNoteColor='jaune';
 function setTextProp(val){const t=TX(L()).find(x=>x.id===sel?.id);if(!t)return;if(!t._h){history.push(snapshot());t._h=1;}t.text=String(val).slice(0,200);draw();}
 function setRoomHeight(val){const r=L().rooms.find(r=>r.id===sel.id);const h=parseFloat(val);history.push(snapshot());r.height=(h>=1.8&&h<=5&&Math.abs(h-L().height)>0.001)?h:undefined;afterChange();}
+function setRoomHAvant(val){const r=L().rooms.find(r=>r.id===sel.id);const h=parseFloat(val);history.push(snapshot());r.hAvant=(h>=1.8&&h<=12)?h:undefined;afterChange();}
 
 // ---------- Calque ----------
 function importBg(file){if(!file)return;const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{const id=uid();images[id]=im;history.push(snapshot());const mpp=12/im.width;L().bg={img:id,x:-6,y:-im.height*mpp/2,mpp,opacity:.5,locked:false};afterChange();saveImages();fitView();toast('Calque importé — cale son échelle pour des surfaces justes',true);};im.src=rd.result;};rd.readAsDataURL(file);}
@@ -3267,7 +3285,7 @@ function quantities(){
          si elle en a une, sinon celle du niveau) — plus deux hauteurs contradictoires. */
       lr.push({id:pidOf('p',rr),name:roomName(rr),type:rr.type,exterieur:isExt,horsHabitable:isExt||nh,floor:rr.floor,area:+an.toFixed(2),
         surfaceAuSolPiece:+f.areaInt.toFixed(2),tremie:+tremieArea(lv,f).toFixed(2),tremiePerim:+tremiePerim(lv,f).toFixed(2),
-        sousPentePct:rr.lowPct||0,perimeter:+f.perimReal.toFixed(2),hauteur:roomHeight(lv,rr),wallArea:+wa.toFixed(2),plinthes:+pl.toFixed(2),
+        sousPentePct:rr.lowPct||0,perimeter:+f.perimReal.toFixed(2),hauteur:roomHeight(lv,rr,'projet'),hauteurAvant:rr.hAvant||null,wallArea:+wa.toFixed(2),plinthes:+pl.toFixed(2),
         openings:ops.length,fauxPlafond:!!rr.fauxPlafond,mursAdjacents:mursDeFace(lv,f),mursParType:mursParTypeDeFace(lv,f,roomHeight(lv,rr)),faience:rr.faience||null,note:rr.note||null,
         produits:(rr.products&&rr.products.length)?rr.products.map(pr=>({poste:pr.poste,nom:pr.nom,url:pr.url,prix:pr.prix,unite:unitOf(pr)})):null});});
     facesFor(lv,'existant').forEach(f=>{if(!f.room)return;roomsBefore++;if(!RT[f.room.type].ext&&!RT[f.room.type].nh)areaBefore+=areaNet(lv,f);});
@@ -3377,7 +3395,7 @@ function quantities(){
    que le consommateur doit vérifier. Toute clé renommée ou retirée fait changer ce numéro.
    Avant, le seul « export » était un <details> de debug — qui n'émettait ni la toiture, ni les
    sols, ni la plomberie, ni les études, ni les velux. */
-const CONTRAT_PLAN='1.5.0'; /* 1.1 : attributs de choix (douche, point lumineux, escalier), hauteur de faïence par pièce, état « conservé ». 1.2 : chaque équipement dit sa pièce, et chaque pièce ses murs par type. 1.3 : les choix non tranchés (type de douche, point lumineux, matériau d'escalier, hauteur de faïence) sortent à null au lieu de leur défaut — c'est au consommateur d'appliquer le défaut ET de le signaler. 1.4 : faux plafond par pièce, et un niveau dit s'il est créé par le projet et en quoi est son plancher. 1.5 : poteaux et poutres dessinables — chaque équipement d'ossature porte son rôle, sa portée et le fait qu'il reprend ou non un mur porteur démoli ; agrégat `ossature` au niveau du plan. Ajout pur : rien n'est renommé ni retiré. */
+const CONTRAT_PLAN='1.6.0'; /* 1.1 : attributs de choix (douche, point lumineux, escalier), hauteur de faïence par pièce, état « conservé ». 1.2 : chaque équipement dit sa pièce, et chaque pièce ses murs par type. 1.3 : les choix non tranchés (type de douche, point lumineux, matériau d'escalier, hauteur de faïence) sortent à null au lieu de leur défaut — c'est au consommateur d'appliquer le défaut ET de le signaler. 1.4 : faux plafond par pièce, et un niveau dit s'il est créé par le projet et en quoi est son plancher. 1.5 : poteaux et poutres dessinables — chaque équipement d'ossature porte son rôle, sa portée et le fait qu'il reprend ou non un mur porteur démoli ; agrégat `ossature` au niveau du plan. Ajout pur : rien n'est renommé ni retiré. 1.6 : `hauteurAvant` par pièce — la hauteur du volume AVANT travaux, quand le projet y crée un plancher ; `hauteur` reste celle d'après travaux, comme avant. Ajout pur. */
 function contratPlan(){
   garantirPids();
   const q=quantities(),bas=empriseNiveau(0),ch=chantier();
