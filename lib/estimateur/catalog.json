@@ -376,6 +376,46 @@
         "note": "fourniture, étaiement, appuis et scellement — remplace le mur porteur déposé"
       },
       {
+        "id": "mac-poutre-de-reprise-de-charge-lamelle-colle",
+        "n": "Poutre de reprise de charge (lamellé-collé)",
+        "u": "ml",
+        "fp": 190,
+        "sm": 90,
+        "note": "fourniture, étaiement, appuis et scellement — alternative bois à l'IPN, laissée apparente"
+      },
+      {
+        "id": "mac-poutre-de-reprise-de-charge-beton-arme",
+        "n": "Poutre de reprise de charge (béton armé)",
+        "u": "ml",
+        "fp": 260,
+        "sm": 70,
+        "note": "coffrage, ferraillage, coulage et étaiement — coulée en place"
+      },
+      {
+        "id": "mac-poteau-de-reprise-acier-hea-heb",
+        "n": "Poteau de reprise (acier HEA / HEB)",
+        "u": "u",
+        "fp": 550,
+        "sm": 190,
+        "note": "fourniture, platines, scellement — reprend une charge ponctuelle là où une poutre ne franchit pas la portée"
+      },
+      {
+        "id": "mac-poteau-de-reprise-lamelle-colle",
+        "n": "Poteau de reprise (lamellé-collé)",
+        "u": "u",
+        "fp": 350,
+        "sm": 120,
+        "note": "fourniture, sabots et fixations — alternative bois, laissée apparente"
+      },
+      {
+        "id": "mac-poteau-de-reprise-beton-arme",
+        "n": "Poteau de reprise (béton armé)",
+        "u": "u",
+        "fp": 450,
+        "sm": 110,
+        "note": "coffrage, ferraillage et coulage — coulé en place"
+      },
+      {
         "id": "mac-creer-un-appui-de-fenetre",
         "n": "Créer un appui de fenêtre",
         "u": "u",

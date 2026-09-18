@@ -5,8 +5,8 @@ tests : `tests/estimateur-plan-correspondance.test.ts` sur un contrat réel fig�
 `tests/fixtures/plan-contrat.json`.
 
 Une fonction pure : elle prend le contrat du plan, elle rend des contributions. Elle ne chiffre
-rien et n'écrit nulle part — c'est la phase 4 qui les transformera en sélection. **101 postes du
-catalogue sur 203 sont alimentés**, et chaque contribution porte les identifiants des objets du
+rien et n'écrit nulle part — c'est la phase 4 qui les transformera en sélection. **106 postes du
+catalogue sur 208 sont alimentés**, et chaque contribution porte les identifiants des objets du
 plan qui l'ont produite.
 
 Elle est testée sur une scène de référence figée dans `tests/fixtures/plan-contrat.json` : deux

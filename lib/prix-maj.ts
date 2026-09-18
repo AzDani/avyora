@@ -9,7 +9,7 @@
  * déploiement, y compris celles qui n'ont pas bougé — Google finit par ignorer un lastmod ainsi
  * dilué, et le budget de crawl part sur des pages inchangées.
  */
-export const PRIX_MAJ = "2026-09-16";
+export const PRIX_MAJ = "2026-09-19";
 
 /** Version lisible, pour l'affichage (ex. « 16 septembre 2026 »). */
 export const PRIX_MAJ_FR = new Date(PRIX_MAJ).toLocaleDateString("fr-FR", {

@@ -35,6 +35,7 @@ Démolition	Gros œuvre & clos-couvert	10	Enlever un revêtement de sol	m2	S
 Démolition	Gros œuvre & clos-couvert	10	Enlever un revêtement mural	m2	
 Démolition	Gros œuvre & clos-couvert	10	Abattre une cloison	m2	
 Démolition	Gros œuvre & clos-couvert	10	Abattre un mur non porteur	m2	
+Démolition	Gros œuvre & clos-couvert	10	Abattre un mur porteur	m2	
 Démolition	Gros œuvre & clos-couvert	10	Enlever les anciennes portes / fenêtres	u	
 Démolition	Gros œuvre & clos-couvert	10	Dépose complète cuisine / salle de bain (curage)	forfait	
 Démolition	Gros œuvre & clos-couvert	10	Enlever les vieux réseaux	m2	S
@@ -43,6 +44,12 @@ Démolition	Gros œuvre & clos-couvert	10	Casser une dalle / vieux sol	m2
 Démolition	Gros œuvre & clos-couvert	10	Retrait amiante / plomb	m2	
 Maçonnerie	Gros œuvre & clos-couvert	10	Ouvrir un mur porteur — petite (porte/fenêtre)	u	
 Maçonnerie	Gros œuvre & clos-couvert	10	Ouvrir un mur porteur — grande (2,5 m, baie)	u	
+Maçonnerie	Gros œuvre & clos-couvert	10	Poutre de reprise de charge (IPN / HEA)	ml	
+Maçonnerie	Gros œuvre & clos-couvert	10	Poutre de reprise de charge (lamellé-collé)	ml	
+Maçonnerie	Gros œuvre & clos-couvert	10	Poutre de reprise de charge (béton armé)	ml	
+Maçonnerie	Gros œuvre & clos-couvert	10	Poteau de reprise (acier HEA / HEB)	u	
+Maçonnerie	Gros œuvre & clos-couvert	10	Poteau de reprise (lamellé-collé)	u	
+Maçonnerie	Gros œuvre & clos-couvert	10	Poteau de reprise (béton armé)	u	
 Maçonnerie	Gros œuvre & clos-couvert	10	Créer un appui de fenêtre	u	
 Maçonnerie	Gros œuvre & clos-couvert	10	Créer un seuil de porte	u	
 Maçonnerie	Gros œuvre & clos-couvert	10	Couler une dalle béton	m2	
@@ -52,6 +59,7 @@ Maçonnerie	Gros œuvre & clos-couvert	10	Semelle de fondation (50 × 25-30 cm)	
 Maçonnerie	Gros œuvre & clos-couvert	10	Consolider fondations / reprise en sous-œuvre	ml	
 Maçonnerie	Gros œuvre & clos-couvert	10	Monter un mur en parpaings	m2	
 Maçonnerie	Gros œuvre & clos-couvert	10	Monter un mur en brique	m2	
+Maçonnerie	Gros œuvre & clos-couvert	10	Monter un mur en pierre	m2	
 Maçonnerie	Gros œuvre & clos-couvert	10	Créer / enlever une cheminée en dur	forfait	
 Maçonnerie	Gros œuvre & clos-couvert	10	Escalier en béton	u	
 Maçonnerie	Gros œuvre & clos-couvert	10	Plancher béton (étage créé)	m2	

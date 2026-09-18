@@ -717,8 +717,19 @@ const isFurniture=t=>['lit','lit1','armoire','canape','table','bureau'].includes
    poteau, `w` et `h` sont les deux côtés de la section. */
 const STRUCT_MAT={acier:'acier',bois:'bois lamellé-collé',beton:'béton armé'};
 const STRUCT_SOUS={acier:'IPN / HEB',bois:'lamellé-collé',beton:'coulé en place'};
-const PRIX_POUTRE={acier:480,bois:190,beton:260};   /* €/ml fourni-posé, étaiement et scellements compris */
-const PRIX_POTEAU={acier:550,bois:350,beton:450};   /* €/unité fourni-posé */
+/* Miroir du catalogue de l'estimateur — un poste par matériau. tools/coherence.mjs compare
+   chacune de ces six valeurs au « fourni-posé » de son poste : elles ne peuvent pas diverger
+   en silence. Écrites sur plusieurs lignes parce que c'est ainsi que l'outil les relit. */
+const PRIX_POUTRE={   /* €/ml de portée, fourni-posé, étaiement et scellements compris */
+  acier:480,
+  bois:190,
+  beton:260
+};
+const PRIX_POTEAU={   /* €/unité, fourni-posé */
+  acier:550,
+  bois:350,
+  beton:450
+};
 const structOf=it=>(ITEMS[it.type]&&ITEMS[it.type].struct)||null;
 const structMat=it=>STRUCT_MAT[it.materiau]?it.materiau:'acier';
 /* Segment couvert par une poutre dessinée (son axe, dans le plan). */

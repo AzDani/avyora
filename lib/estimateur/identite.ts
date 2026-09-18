@@ -14,7 +14,7 @@
  * 1. **Un `id` ne change jamais.** Même si le libellé qui l'a engendré n'existe plus. Un id qui
  *    dit « abattre-un-mur-non-porteur » alors que le poste s'appelle désormais « Déposer une
  *    cloison lourde » est parfaitement valide : il est bizarre à lire, il n'est pas faux.
- *    `tests/estimateur-identite.test.ts` fige la liste des 203 : la modifier fait échouer le
+ *    `tests/estimateur-identite.test.ts` fige la liste des 208 : la modifier fait échouer le
  *    build, ce qui est exactement le but.
  *
  * 2. **Renommer un poste, c'est ajouter une ligne dans `ALIAS`.** L'ancien nom continue d'y

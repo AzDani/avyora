@@ -87,8 +87,16 @@ reprise de charge : la ligne induite disparaît. Éloignée, les deux lignes coe
 déjà en place ne remplace rien (D1 : seul le delta est facturé). La maquette et la table de
 correspondance appliquent la même règle — elles divergeaient au premier jet.
 
-**Ce qui reste ouvert.** Le catalogue de l'estimateur n'a **qu'un** poste de poutre, en IPN/HEA :
-un lamellé-collé ou un béton armé sortent avec une déduction disant que la quantité est juste mais
-le prix unitaire celui de l'acier. Et il n'a **aucun poste de poteau** : un poteau dessiné est
-chiffré dans la maquette mais part dans les `ignores` de la correspondance. Les prix ci-dessus
-sont validés, donc la création du poste « Poteau » n'attend plus qu'une décision.
+**Les cinq postes ont été créés** le 19/09/2026 — le catalogue passe de 203 à **208**. La poutre
+acier existait depuis D9 ; s'ajoutent la poutre lamellé-collé, la poutre béton armé et les trois
+poteaux. Chaque matériau a son poste, comme le catalogue distingue déjà « ouvrir un mur porteur »
+petite et grande : ce ne sont pas les mêmes prix, et un seul poste aurait obligé à chiffrer du
+bois au tarif de l'acier.
+
+Part fourniture (`sm`) déduite, non validée séparément : 90 / 70 €/ml pour les poutres bois et
+béton, 190 / 120 / 110 € pour les trois poteaux. L'acier garde ses 180 €/ml d'origine. Elle ne
+sert qu'au mode « je le fais moi-même » ; le fourni-posé, lui, est validé.
+
+Les six valeurs de la maquette sont désormais **comparées automatiquement** au fourni-posé de leur
+poste par `tools/coherence.mjs` : elles ne peuvent plus diverger en silence. La couverture de la
+table de correspondance passe de 101/203 à **106/208**.

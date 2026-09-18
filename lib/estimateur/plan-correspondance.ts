@@ -152,6 +152,22 @@ const APPAREILS_HUMIDES = new Set(["douche", "baignoire"]);
 /** Mobilier : de l'aménagement, jamais un travail. */
 const MOBILIER = new Set(["lit", "lit1", "armoire", "canape", "table", "bureau"]);
 
+/** Rôle d'ossature × matériau → poste du catalogue. Un poste par matériau, comme le catalogue
+ *  distingue déjà « ouvrir un mur porteur » petite et grande : ce ne sont pas les mêmes prix. */
+const POSTE_OSSATURE: Record<string, Record<string, string>> = {
+  poutre: {
+    acier: "mac-poutre-de-reprise-de-charge-ipn-hea",
+    bois: "mac-poutre-de-reprise-de-charge-lamelle-colle",
+    beton: "mac-poutre-de-reprise-de-charge-beton-arme",
+  },
+  poteau: {
+    acier: "mac-poteau-de-reprise-acier-hea-heb",
+    bois: "mac-poteau-de-reprise-lamelle-colle",
+    beton: "mac-poteau-de-reprise-beton-arme",
+  },
+};
+const MAT_OSSATURE: Record<string, string> = { acier: "acier", bois: "bois lamellé-collé", beton: "béton armé" };
+
 export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributions: Contribution[]; ignores: Ignore[] } {
   const brut: Contribution[] = [];
   const ignores: Ignore[] = [];
@@ -172,26 +188,22 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
       if (e.etat !== "creer") continue;                       // D1 : seul ce qui est à poser
       const src = [e.id];
       if (e.ossature) {
-        /* Une poutre dessinée est chiffrée au ml de portée, sur le poste de reprise de charge.
-           Si elle longe un mur porteur démoli, c'est SA reprise : la ligne induite plus bas est
-           retirée, sinon le devis paierait deux fois la même poutre.
-           Le catalogue n'a qu'un poste de poutre, en IPN/HEA : un lamellé-collé ou un béton armé
-           sont signalés en déduction plutôt que rangés sous un poste qui n'existe pas. */
+        /* Poutre au ml de portée, poteau à l'unité, chacun sur le poste de SON matériau.
+           Si la poutre longe un mur porteur démoli, c'est SA reprise : la ligne induite plus bas
+           est retirée, sinon le devis paierait deux fois la même poutre.
+           Le matériau non renseigné vaut acier — le défaut de l'éditeur — et on le dit. */
+        const mat = e.materiau && POSTE_OSSATURE[e.ossature.role]?.[e.materiau] ? e.materiau : "acier";
+        const ded = e.materiau ? undefined : "Matériau non choisi : chiffré en acier, le défaut du dessin. Un lamellé-collé ou un béton armé se chiffrent autrement.";
+        const poste = POSTE_OSSATURE[e.ossature.role]?.[mat];
+        if (!poste) { ignores.push({ quoi: `ossature « ${e.ossature.role} »`, pourquoi: "rôle d'ossature inconnu", sources: src }); continue; }
+        const quoi = MAT_OSSATURE[mat];
         if (e.ossature.role === "poutre") {
           const ml = +(e.ossature.portee ?? e.l ?? 0).toFixed(2);
           if (ml > 0) {
             if (e.ossature.reprendMurPorteur) poutresDessinees.add(e.ossature.reprendMurPorteur);
-            const mat = e.materiau ?? null;
-            add("mac-poutre-de-reprise-de-charge-ipn-hea", ml, src,
-              `Poutre dessinée${e.ossature.reprendMurPorteur ? ", en reprise du mur porteur démoli" : ""}`,
-              undefined,
-              mat && mat !== "acier"
-                ? `Poutre dessinée en ${mat === "bois" ? "bois lamellé-collé" : "béton armé"} : le catalogue n'a qu'un poste de poutre, en IPN/HEA. La quantité est juste, le prix unitaire est celui de l'acier — à revoir avec l'artisan.`
-                : undefined);
+            add(poste, ml, src, `Poutre ${quoi} dessinée${e.ossature.reprendMurPorteur ? ", en reprise du mur porteur démoli" : ""}`, undefined, ded);
           }
-        } else {
-          ignores.push({ quoi: `poteau ${e.materiau ?? ""}`.trim(), pourquoi: "aucun poste « poteau » au catalogue — à chiffrer à part", sources: src });
-        }
+        } else add(poste, 1, src, `Poteau ${quoi} dessiné`, undefined, ded);
         continue;
       }
       if (e.type === "douche") {
@@ -447,7 +459,7 @@ export function postesCouverts(): string[] {
     "plo-paroi-de-douche", "plo-meuble-vasque", "plo-installer-une-baignoire", "plo-robinetterie-baignoire",
     "mac-escalier-en-beton", "toi-escalier-en-bois", "ele-spots-encastres-led", "ele-ajouter-un-point-lumineux",
     "ele-ajouter-deplacer-une-prise", "cui-plan-de-travail-seul", "dem-enlever-les-anciennes-portes-fenetres",
-    "mex-volets-roulants", "mex-volets-battants", "dem-abattre-un-mur-porteur", "mac-poutre-de-reprise-de-charge-ipn-hea",
+    "mex-volets-roulants", "mex-volets-battants", "dem-abattre-un-mur-porteur", ...Object.values(POSTE_OSSATURE).flatMap((m) => Object.values(m)),
     "dem-abattre-une-cloison", "dem-abattre-un-mur-non-porteur", "clo-monter-une-cloison", "mac-monter-un-mur-en-pierre",
     "mac-monter-un-mur-en-parpaings", "mac-ouvrir-un-mur-porteur-petite-porte-fenetre",
     "mac-ouvrir-un-mur-porteur-grande-2-5-m-baie", "etu-etude-de-structure", "iso-isolation-des-murs-par-l-interieur",

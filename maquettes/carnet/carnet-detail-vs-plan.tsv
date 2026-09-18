@@ -44,7 +44,12 @@ Démolition	Casser une dalle / vieux sol	m2	—	FOURNIT	sol de la pièce en éta
 Démolition	Retrait amiante / plomb	m2	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
 Maçonnerie	Ouvrir un mur porteur — petite (porte/fenêtre)	u	—	FOURNIT	q.travaux.percements sur murs porteurs, réparti par largeur d'ouverture
 Maçonnerie	Ouvrir un mur porteur — grande (2,5 m, baie)	u	—	FOURNIT	q.travaux.percements sur murs porteurs, réparti par largeur d'ouverture
-Maçonnerie	Poutre de reprise de charge (IPN / HEA)	ml	—	FOURNIT	q.etudes.mlPorteurDemoli — longueur de mur porteur démoli
+Maçonnerie	Poutre de reprise de charge (IPN / HEA)	ml	—	FOURNIT	poutre dessinée en acier (portée) ; à défaut q.etudes.mlPorteurDemoli — mur porteur démoli
+Maçonnerie	Poutre de reprise de charge (lamellé-collé)	ml	—	FOURNIT	poutre dessinée en bois lamellé-collé — portée
+Maçonnerie	Poutre de reprise de charge (béton armé)	ml	—	FOURNIT	poutre dessinée en béton armé — portée
+Maçonnerie	Poteau de reprise (acier HEA / HEB)	u	—	FOURNIT	poteau dessiné en acier — à l'unité
+Maçonnerie	Poteau de reprise (lamellé-collé)	u	—	FOURNIT	poteau dessiné en bois lamellé-collé — à l'unité
+Maçonnerie	Poteau de reprise (béton armé)	u	—	FOURNIT	poteau dessiné en béton armé — à l'unité
 Maçonnerie	Créer un appui de fenêtre	u	—	FOURNIT	ouvertures créées, par catégorie
 Maçonnerie	Créer un seuil de porte	u	—	FOURNIT	ouvertures créées, par catégorie
 Maçonnerie	Couler une dalle béton	m2	—	FOURNIT	surface réelle plutôt que S

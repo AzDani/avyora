@@ -44,6 +44,11 @@ dem-retrait-amiante-plomb
 mac-ouvrir-un-mur-porteur-petite-porte-fenetre
 mac-ouvrir-un-mur-porteur-grande-2-5-m-baie
 mac-poutre-de-reprise-de-charge-ipn-hea
+mac-poutre-de-reprise-de-charge-lamelle-colle
+mac-poutre-de-reprise-de-charge-beton-arme
+mac-poteau-de-reprise-acier-hea-heb
+mac-poteau-de-reprise-lamelle-colle
+mac-poteau-de-reprise-beton-arme
 mac-creer-un-appui-de-fenetre
 mac-creer-un-seuil-de-porte
 mac-couler-une-dalle-beton

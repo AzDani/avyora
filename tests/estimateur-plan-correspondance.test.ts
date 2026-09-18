@@ -230,16 +230,38 @@ describe("table de correspondance · poteaux et poutres dessinés (contrat 1.5)"
     expect(ml(scene([{ id: "e1", type: "poutre", etat: "creer", materiau: "acier", ossature: { role: "poutre", portee: 2.5, reprendMurPorteur: null } }]))).toBe(6.5);
   });
 
-  it("un matériau autre que l'acier est signalé, pas rangé sous un poste inexistant", () => {
-    const { contributions } = contributionsDuPlan(scene([{ id: "e1", type: "poutre", etat: "creer", materiau: "bois", ossature: { role: "poutre", portee: 3, reprendMurPorteur: null } }]));
-    const c = contributions.find((x) => x.poste === "mac-poutre-de-reprise-de-charge-ipn-hea");
-    expect(c?.deduction).toMatch(/lamellé-collé/);
+  it("chaque matériau va sur SON poste, pas sur celui de l'acier", () => {
+    const poste = (mat: string) =>
+      contributionsDuPlan(scene([{ id: "e1", type: "poutre", etat: "creer", materiau: mat, ossature: { role: "poutre", portee: 3, reprendMurPorteur: null } }]))
+        .contributions.find((c) => /^mac-poutre/.test(c.poste))?.poste;
+    expect(poste("bois")).toBe("mac-poutre-de-reprise-de-charge-lamelle-colle");
+    expect(poste("beton")).toBe("mac-poutre-de-reprise-de-charge-beton-arme");
+    expect(poste("acier")).toBe("mac-poutre-de-reprise-de-charge-ipn-hea");
   });
 
-  it("le poteau n'a pas de poste au catalogue : il part dans les ignorés, pas dans une invention", () => {
-    const { contributions, ignores } = contributionsDuPlan(scene([{ id: "e1", type: "poteau", etat: "creer", materiau: "beton", ossature: { role: "poteau" } }]));
-    expect(contributions.some((c) => /poteau/.test(c.poste))).toBe(false);
-    expect(ignores.some((i) => /poteau/.test(i.quoi) && i.sources.includes("e1"))).toBe(true);
+  it("le poteau se chiffre à l'unité, sur le poste de son matériau", () => {
+    const { contributions } = contributionsDuPlan(scene([{ id: "e1", type: "poteau", etat: "creer", materiau: "beton", ossature: { role: "poteau" } }]));
+    const c = contributions.find((x) => /^mac-poteau/.test(x.poste));
+    expect(c?.poste).toBe("mac-poteau-de-reprise-beton-arme");
+    expect(c?.quantite).toBe(1);
+    expect(c?.sources).toEqual(["e1"]);
+  });
+
+  it("deux poteaux du même matériau se cumulent sur un seul poste", () => {
+    const { contributions } = contributionsDuPlan(scene([
+      { id: "e1", type: "poteau", etat: "creer", materiau: "acier", ossature: { role: "poteau" } },
+      { id: "e2", type: "poteau", etat: "creer", materiau: "acier", ossature: { role: "poteau" } },
+    ]));
+    const c = contributions.find((x) => x.poste === "mac-poteau-de-reprise-acier-hea-heb");
+    expect(c?.quantite).toBe(2);
+    expect(c?.sources).toEqual(["e1", "e2"]);
+  });
+
+  it("sans matériau choisi, on chiffre en acier ET on le dit", () => {
+    const { contributions } = contributionsDuPlan(scene([{ id: "e1", type: "poteau", etat: "creer", ossature: { role: "poteau" } }]));
+    const c = contributions.find((x) => /^mac-poteau/.test(x.poste));
+    expect(c?.poste).toBe("mac-poteau-de-reprise-acier-hea-heb");
+    expect(c?.deduction).toMatch(/non choisi/);
   });
 
   it("une poutre seulement prévue mais pas à poser ne compte pas (D1)", () => {
