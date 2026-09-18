@@ -1603,11 +1603,15 @@ function deplacementBorne(w,d){
   return out;
 }
 function clampContreMur(p,vers,w){
-  const o=murTouche(L(),w,p);
+  const o=murTouche(L(),w||null,p);
   if(!o)return p;
   const c=closestOnSeg(p,o.a,o.b);
-  if(dist(p,c.p)<2e-3)return p;
-  return pointSurFace(o,c.p,vers);
+  const n=perp(norm(sub(o.b,o.a)));
+  const cote=((vers.x-o.a.x)*n.x+(vers.y-o.a.y)*n.y)>=0?1:-1;   /* côté d'où l'on arrive */
+  const marge=margeAimant(o,vers);
+  const ecart=((p.x-c.p.x)*n.x+(p.y-c.p.y)*n.y)*cote;           /* distance signée au trait */
+  if(ecart>=marge-2e-3)return p;                                /* déjà à la face ou au-delà */
+  return add(c.p,mul(n,cote*marge));                            /* ramené sur la face */
 }
 function setWallLength(w,l){
   if(!(l>0.1))return;const u=norm(sub(w.b,w.a));const end=connections(w.b,w)<=connections(w.a,w)?'b':'a';
@@ -1823,7 +1827,11 @@ function commitTypedLength(){
   let dir;
   if(hover){const sp=snapPoint(hover,ref);dir=sub(sp.p,ref);}
   if(!dir||len(dir)<1e-6){dir=chain.length>=2?sub(ref,chain[chain.length-2]):v(1,0);}
-  const p=add(ref,mul(norm(dir),val));
+  const vise=add(ref,mul(norm(dir),val));
+  /* Une longueur tapée pendant le tracé traversait le doublage comme le reste : elle s'arrête
+     sur la face, et on annonce la longueur réellement posée. */
+  const p=clampContreMur(vise,ref,null);
+  if(dist(vise,p)>2e-3)toast('La cloison s\'arrête contre le doublage : '+fmt(dist(p,ref))+' m au lieu de '+fmt(val)+' m');
   // si on retombe sur le point de départ, on ferme
   if(chain.length>=3&&dist(p,chain[0])<0.02){addWall(ref,chain[0]);endChain(true);return;}
   addWall(ref,p);chain.push(p);draw();
@@ -2087,7 +2095,7 @@ function draw(){
   else if(tool==='mur'&&(hover||lenBuf)){
     const ref=chain.length?chain[chain.length-1]:null;const sp=snapPoint(hover||ref||v(0,0),ref);
     let end=sp.p;const typed=parseFloat(lenBuf.replace(',','.'));
-    if(ref&&typed>0){let dir=sub(sp.p,ref);if(len(dir)<1e-6)dir=chain.length>=2?sub(ref,chain[chain.length-2]):v(1,0);end=add(ref,mul(norm(dir),typed));}
+    if(ref&&typed>0){let dir=sub(sp.p,ref);if(len(dir)<1e-6)dir=chain.length>=2?sub(ref,chain[chain.length-2]):v(1,0);end=clampContreMur(add(ref,mul(norm(dir),typed)),ref,null);}
     if(chain.length){ctx.beginPath();chain.forEach((p,i)=>{const s=S(p);i?ctx.lineTo(s.x,s.y):ctx.moveTo(s.x,s.y);});const e=S(end);ctx.lineTo(e.x,e.y);ctx.strokeStyle=wallType==='virtuel'?'rgba(124,58,237,.8)':'rgba(79,70,229,.9)';ctx.lineWidth=Math.max(2,WALL_TYPES.find(t=>t[0]===wallType)[2]*z);ctx.lineCap='round';if(wallType==='virtuel')ctx.setLineDash([6,5]);ctx.stroke();ctx.setLineDash([]);ctx.lineCap='butt';drawDim(ref,end,'#4f46e5',false);const s0=S(chain[0]);if(chain.length>=3&&dist(end,chain[0])<0.02){ctx.beginPath();ctx.arc(s0.x,s0.y,11,0,7);ctx.strokeStyle='#16a34a';ctx.lineWidth=3;ctx.stroke();}
       // angle avec le mur précédent (et angle de fermeture)
       if(chain.length>=2)drawAngle(ref,chain[chain.length-2],end);

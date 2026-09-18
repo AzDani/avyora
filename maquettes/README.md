@@ -33,6 +33,9 @@ node -e 'try{new Function(require("fs").readFileSync("/tmp/pe.js","utf8"));conso
 
 # 2. chargement headless → typeof setMode === "function" et AUCUN pageerror
 node maquettes/tools/review.mjs "$(pwd)/maquettes"
+
+# 3. jonctions : une cloison ne rentre dans aucun doublage, par aucun des six gestes
+node maquettes/tools/jonctions.mjs "$(pwd)/maquettes"
 ```
 
 ### Règles d'écriture
