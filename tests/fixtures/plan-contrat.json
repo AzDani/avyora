@@ -1,0 +1,1627 @@
+{
+ "contrat": "1.1.0",
+ "plan": {
+  "id": null,
+  "nom": "Exemple · T2 de 60 m²"
+ },
+ "bien": {
+  "niveaux": 1,
+  "hauteurParDefaut": 2.5,
+  "emprise": 12.7,
+  "empriseRectangle": 64.9,
+  "empriseApprochee": true
+ },
+ "area": 9.044774999999998,
+ "areaBefore": 21.686799999999998,
+ "ext": 0,
+ "rooms": 2,
+ "roomsBefore": 4,
+ "doors": 4,
+ "windows": 5,
+ "wallPaint": 43.75359999999999,
+ "glass": 10.02,
+ "plinthes": 17.339999999999996,
+ "toiture": null,
+ "lin": {
+  "cloison": 20.5,
+  "mur": 16,
+  "porteur": 0
+ },
+ "byType": {
+  "cellier": 3.3763499999999977,
+  "sdb": 5.668425000000001
+ },
+ "travaux": {
+  "demolLin": {
+   "cloison": 1.2999999999999998,
+   "mur": 0,
+   "porteur": 9
+  },
+  "demolM2": 25.75,
+  "demolPorteur": 9,
+  "boucher": 1,
+  "boucherM2": 1.6932,
+  "creerLin": {
+   "cloison": 7,
+   "mur": 0,
+   "porteur": 0
+  },
+  "creerM2": 17.5,
+  "percements": 1,
+  "percementsDetail": {
+   "porteurPetit": 1,
+   "porteurGrand": 0,
+   "leger": 0
+  },
+  "ouverturesNeuves": 1,
+  "remplacer": 1,
+  "creerPortes": 1,
+  "creerFenetres": 2,
+  "poser": [
+   "Douche",
+   "Double vasque",
+   "WC",
+   "Baignoire",
+   "Escalier",
+   "Point lumineux (plafond)",
+   "Point lumineux (plafond)",
+   "Prise double",
+   "Plan de travail"
+  ],
+  "deposer": [
+   "Lave-linge"
+  ],
+  "parNiveau": [
+   {
+    "id": "n7",
+    "niveau": "RDC",
+    "hauteur": 2.5,
+    "demolM2": 25.75,
+    "creerM2": 17.5,
+    "demolLin": {
+     "porteur": 9,
+     "cloison": 1.2999999999999998
+    },
+    "creerLin": {
+     "cloison": 7
+    }
+   }
+  ],
+  "actif": true
+ },
+ "plomberie": {
+  "wc": 2,
+  "vasques": 3,
+  "douches": 1,
+  "baignoires": 2,
+  "eviers": 0,
+  "chauffeEau": 0,
+  "attentes": 0,
+  "pointsEau": 8
+ },
+ "velux": 0,
+ "etudes": {
+  "structure": 1,
+  "mlPorteurDemoli": 9
+ },
+ "contexte": {
+  "finition": "standard",
+  "codePostal": null,
+  "logementPlus2Ans": true,
+  "typeBien": null
+ },
+ "produits": [
+  {
+   "niveau": "RDC",
+   "element": "Salle de bain",
+   "poste": "Sol",
+   "nom": "Carrelage grès cérame 60×60 gris",
+   "url": "https://www.leroymerlin.fr",
+   "prix": 24.9,
+   "unite": "m²",
+   "qty": 5.67,
+   "total": 141
+  },
+  {
+   "niveau": "RDC",
+   "element": "Salle de bain",
+   "poste": "Peinture / murs",
+   "nom": "Faïence blanche 20×60",
+   "url": "",
+   "prix": 19.9,
+   "unite": "m²",
+   "qty": 23.95,
+   "total": 477
+  }
+ ],
+ "produitsTotal": 618,
+ "notes": "Budget cible 25 000 €. Travaux prévus en août. Électricité à vérifier.",
+ "sols": [],
+ "electricite": {
+  "prises": 11,
+  "interrupteurs": 3,
+  "pointsLumineux": 8,
+  "tableau": 1,
+  "points": 22
+ },
+ "chauffage": {
+  "radiateurs": 2,
+  "secheServiettes": 1,
+  "clim": 0,
+  "uniteExt": 0,
+  "poele": 0,
+  "chaudiere": 0,
+  "chauffeEau": 0,
+  "vmc": 0
+ },
+ "doublage": {
+  "iti": 22.5,
+  "ite": 0,
+  "aCreer": 22.5,
+  "parMateriau": {
+   "ITI Laine de verre": 22.5
+  },
+  "surfacePerdue": 1.08,
+  "surface": 22.5
+ },
+ "facades": {
+  "aFaire": 0,
+  "parPoste": {},
+  "existant": {}
+ },
+ "controles": [
+  {
+   "niveau": "RDC",
+   "points": [
+    {
+     "niveau": "warn",
+     "texte": "1 mur porteur à démolir : une étude de structure est obligatoire avant travaux (reprise de charge, poutre ou IPN). Elle est comptée dans les quantités transmises au chiffrage."
+    },
+    {
+     "niveau": "info",
+     "texte": "Toiture non décrite : forme, couverture et état se règlent sur ce niveau (RDC) en vue Existant."
+    },
+    {
+     "niveau": "err",
+     "texte": "4 extrémités de mur ne touchent rien (cerclées en rouge) : aucune pièce ne peut se fermer là."
+    },
+    {
+     "niveau": "warn",
+     "texte": "La porte simple de Cellier / rangement tape dans wc en s'ouvrant : fais-la ouvrir de l'autre côté (bouton ↕) ou déplace l'équipement — changer la charnière ne suffira pas, un vantail balaye le même carré devant l'ouverture."
+    }
+   ]
+  }
+ ],
+ "arbitrage": {
+  "equipements": {
+   "aTrancher": 7,
+   "conserves": 0
+  },
+  "menuiseries": {
+   "aTrancher": 5,
+   "conservees": 1
+  },
+  "montantSiRemplaces": 9404
+ },
+ "provenance": {
+  "murs": [
+   {
+    "id": "m11",
+    "niveau": "n7",
+    "type": "porteur",
+    "porteur": true,
+    "etat": "demolir",
+    "ml": 9,
+    "m2": 22.5
+   },
+   {
+    "id": "m14",
+    "niveau": "n7",
+    "type": "cloison",
+    "porteur": false,
+    "etat": "creer",
+    "ml": 7,
+    "m2": 17.5
+   },
+   {
+    "id": "m13",
+    "niveau": "n7",
+    "type": "mur",
+    "porteur": true,
+    "etat": "existant",
+    "ml": 9,
+    "m2": 22.5
+   },
+   {
+    "id": "m8",
+    "niveau": "n7",
+    "type": "mur",
+    "porteur": true,
+    "etat": "existant",
+    "ml": 7,
+    "m2": 17.5
+   },
+   {
+    "id": "m10",
+    "niveau": "n7",
+    "type": "cloison",
+    "porteur": false,
+    "etat": "existant",
+    "ml": 4,
+    "m2": 10
+   },
+   {
+    "id": "m9",
+    "niveau": "n7",
+    "type": "cloison",
+    "porteur": false,
+    "etat": "existant",
+    "ml": 3.5,
+    "m2": 8.75
+   },
+   {
+    "id": "m17",
+    "niveau": "n7",
+    "type": "cloison",
+    "porteur": false,
+    "etat": "existant",
+    "ml": 3,
+    "m2": 7.5
+   },
+   {
+    "id": "m12",
+    "niveau": "n7",
+    "type": "cloison",
+    "porteur": false,
+    "etat": "existant",
+    "ml": 3,
+    "m2": 7.5
+   },
+   {
+    "id": "m18",
+    "niveau": "n7",
+    "type": "cloison",
+    "porteur": false,
+    "etat": "demolir",
+    "ml": 1.3,
+    "m2": 3.25
+   }
+  ],
+  "ouvertures": [
+   {
+    "id": "o19",
+    "niveau": "n7",
+    "mur": "m13",
+    "type": "porte",
+    "etat": "remplacer",
+    "l": 0.83,
+    "h": 2.04
+   },
+   {
+    "id": "o20",
+    "niveau": "n7",
+    "mur": "m11",
+    "type": "fenetre",
+    "etat": "creer",
+    "l": 1.2,
+    "h": 1.25
+   },
+   {
+    "id": "o21",
+    "niveau": "n7",
+    "mur": "m11",
+    "type": "fenetre",
+    "etat": "garder",
+    "l": 1.2,
+    "h": 1.25
+   },
+   {
+    "id": "o22",
+    "niveau": "n7",
+    "mur": "m14",
+    "type": "baie",
+    "etat": "existant",
+    "l": 2.4,
+    "h": 2.15
+   },
+   {
+    "id": "o23",
+    "niveau": "n7",
+    "mur": "m8",
+    "type": "fenetre_p",
+    "etat": "existant",
+    "l": 0.6,
+    "h": 0.6
+   },
+   {
+    "id": "o24",
+    "niveau": "n7",
+    "mur": "m10",
+    "type": "porte",
+    "etat": "existant",
+    "l": 0.83,
+    "h": 2.04
+   },
+   {
+    "id": "o25",
+    "niveau": "n7",
+    "mur": "m9",
+    "type": "porte",
+    "etat": "existant",
+    "l": 0.83,
+    "h": 2.04
+   },
+   {
+    "id": "o26",
+    "niveau": "n7",
+    "mur": "m12",
+    "type": "porte",
+    "etat": "existant",
+    "l": 0.83,
+    "h": 2.04
+   },
+   {
+    "id": "o27",
+    "niveau": "n7",
+    "mur": "m12",
+    "type": "porte",
+    "etat": "boucher",
+    "l": 0.83,
+    "h": 2.04
+   },
+   {
+    "id": "o28",
+    "niveau": "n7",
+    "mur": "m14",
+    "type": "fenetre",
+    "etat": "creer",
+    "l": 1.2,
+    "h": 1.25
+   }
+  ],
+  "equipements": [
+   {
+    "id": "e29",
+    "niveau": "n7",
+    "type": "lit",
+    "plomberie": null,
+    "electricite": null,
+    "l": 1.6,
+    "p": 2
+   },
+   {
+    "id": "e30",
+    "niveau": "n7",
+    "type": "armoire",
+    "plomberie": null,
+    "electricite": null,
+    "l": 1.2,
+    "p": 0.6
+   },
+   {
+    "id": "e31",
+    "niveau": "n7",
+    "type": "baignoire",
+    "plomberie": "baignoire",
+    "electricite": null,
+    "l": 1.7,
+    "p": 0.75
+   },
+   {
+    "id": "e32",
+    "niveau": "n7",
+    "type": "lavabo",
+    "plomberie": "lavabo",
+    "electricite": null,
+    "l": 0.6,
+    "p": 0.45
+   },
+   {
+    "id": "e33",
+    "niveau": "n7",
+    "type": "wc",
+    "plomberie": "wc",
+    "electricite": null,
+    "l": 0.4,
+    "p": 0.65
+   },
+   {
+    "id": "e34",
+    "niveau": "n7",
+    "type": "plan",
+    "plomberie": null,
+    "electricite": null,
+    "l": 2.4,
+    "p": 0.6
+   },
+   {
+    "id": "e35",
+    "niveau": "n7",
+    "type": "radiateur",
+    "plomberie": null,
+    "electricite": null,
+    "l": 1,
+    "p": 0.1
+   },
+   {
+    "id": "e36",
+    "niveau": "n7",
+    "type": "radiateur",
+    "plomberie": null,
+    "electricite": null,
+    "l": 1,
+    "p": 0.1
+   },
+   {
+    "id": "e37",
+    "niveau": "n7",
+    "type": "seche_serviette",
+    "plomberie": null,
+    "electricite": null,
+    "l": 0.55,
+    "p": 0.1
+   },
+   {
+    "id": "e38",
+    "niveau": "n7",
+    "type": "tableau",
+    "plomberie": null,
+    "electricite": "tableau",
+    "l": 0.45,
+    "p": 0.12
+   },
+   {
+    "id": "e39",
+    "niveau": "n7",
+    "type": "prise",
+    "plomberie": null,
+    "electricite": "prise",
+    "l": 0.12,
+    "p": 0.06
+   },
+   {
+    "id": "e40",
+    "niveau": "n7",
+    "type": "prise",
+    "plomberie": null,
+    "electricite": "prise",
+    "l": 0.12,
+    "p": 0.06
+   },
+   {
+    "id": "e41",
+    "niveau": "n7",
+    "type": "interrupteur",
+    "plomberie": null,
+    "electricite": "interrupteur",
+    "l": 0.1,
+    "p": 0.06
+   },
+   {
+    "id": "e42",
+    "niveau": "n7",
+    "type": "prise2",
+    "plomberie": null,
+    "electricite": "prise",
+    "l": 0.16,
+    "p": 0.06
+   },
+   {
+    "id": "e43",
+    "niveau": "n7",
+    "type": "prise2",
+    "plomberie": null,
+    "electricite": "prise",
+    "l": 0.16,
+    "p": 0.06
+   },
+   {
+    "id": "e44",
+    "niveau": "n7",
+    "type": "prise",
+    "plomberie": null,
+    "electricite": "prise",
+    "l": 0.12,
+    "p": 0.06
+   },
+   {
+    "id": "e45",
+    "niveau": "n7",
+    "type": "prise",
+    "plomberie": null,
+    "electricite": "prise",
+    "l": 0.12,
+    "p": 0.06
+   },
+   {
+    "id": "e46",
+    "niveau": "n7",
+    "type": "interrupteur",
+    "plomberie": null,
+    "electricite": "interrupteur",
+    "l": 0.1,
+    "p": 0.06
+   },
+   {
+    "id": "e47",
+    "niveau": "n7",
+    "type": "interrupteur",
+    "plomberie": null,
+    "electricite": "interrupteur",
+    "l": 0.1,
+    "p": 0.06
+   },
+   {
+    "id": "e48",
+    "niveau": "n7",
+    "type": "prise",
+    "plomberie": null,
+    "electricite": "prise",
+    "l": 0.12,
+    "p": 0.06
+   },
+   {
+    "id": "e49",
+    "niveau": "n7",
+    "type": "lumiere",
+    "plomberie": null,
+    "electricite": "lumiere",
+    "l": 0.22,
+    "p": 0.22
+   },
+   {
+    "id": "e50",
+    "niveau": "n7",
+    "type": "lumiere",
+    "plomberie": null,
+    "electricite": "lumiere",
+    "l": 0.22,
+    "p": 0.22
+   },
+   {
+    "id": "e51",
+    "niveau": "n7",
+    "type": "lumiere",
+    "plomberie": null,
+    "electricite": "lumiere",
+    "l": 0.22,
+    "p": 0.22
+   },
+   {
+    "id": "e52",
+    "niveau": "n7",
+    "type": "lumiere",
+    "plomberie": null,
+    "electricite": "lumiere",
+    "l": 0.22,
+    "p": 0.22
+   },
+   {
+    "id": "e53",
+    "niveau": "n7",
+    "type": "lumiere",
+    "plomberie": null,
+    "electricite": "lumiere",
+    "l": 0.22,
+    "p": 0.22
+   },
+   {
+    "id": "e54",
+    "niveau": "n7",
+    "type": "lumiere",
+    "plomberie": null,
+    "electricite": "lumiere",
+    "l": 0.22,
+    "p": 0.22
+   },
+   {
+    "id": "e55",
+    "niveau": "n7",
+    "type": "frigo",
+    "plomberie": null,
+    "electricite": null,
+    "l": 0.6,
+    "p": 0.65
+   },
+   {
+    "id": "e56",
+    "niveau": "n7",
+    "type": "canape",
+    "plomberie": null,
+    "electricite": null,
+    "l": 2,
+    "p": 0.9
+   },
+   {
+    "id": "e57",
+    "niveau": "n7",
+    "type": "table",
+    "plomberie": null,
+    "electricite": null,
+    "l": 1.6,
+    "p": 0.9
+   },
+   {
+    "id": "e58",
+    "niveau": "n7",
+    "type": "douche",
+    "plomberie": "douche",
+    "electricite": null,
+    "l": 0.9,
+    "p": 0.9
+   },
+   {
+    "id": "e59",
+    "niveau": "n7",
+    "type": "vasque2",
+    "plomberie": "vasque2",
+    "electricite": null,
+    "l": 0.9,
+    "p": 0.9
+   },
+   {
+    "id": "e60",
+    "niveau": "n7",
+    "type": "wc",
+    "plomberie": "wc",
+    "electricite": null,
+    "l": 0.9,
+    "p": 0.9
+   },
+   {
+    "id": "e61",
+    "niveau": "n7",
+    "type": "baignoire",
+    "plomberie": "baignoire",
+    "electricite": null,
+    "l": 0.9,
+    "p": 0.9
+   },
+   {
+    "id": "e62",
+    "niveau": "n7",
+    "type": "escalier",
+    "plomberie": null,
+    "electricite": null,
+    "l": 1,
+    "p": 2.5
+   },
+   {
+    "id": "e63",
+    "niveau": "n7",
+    "type": "lumiere",
+    "plomberie": null,
+    "electricite": "lumiere",
+    "l": 0.9,
+    "p": 0.9
+   },
+   {
+    "id": "e64",
+    "niveau": "n7",
+    "type": "lumiere",
+    "plomberie": null,
+    "electricite": "lumiere",
+    "l": 0.9,
+    "p": 0.9
+   },
+   {
+    "id": "e65",
+    "niveau": "n7",
+    "type": "prise2",
+    "plomberie": null,
+    "electricite": "prise",
+    "l": 0.9,
+    "p": 0.9
+   },
+   {
+    "id": "e66",
+    "niveau": "n7",
+    "type": "plan",
+    "plomberie": null,
+    "electricite": null,
+    "l": 2.4,
+    "p": 0.9
+   }
+  ],
+  "doublages": [
+   {
+    "niveau": "n7",
+    "mur": "m13",
+    "mode": "iti",
+    "mat": "gv",
+    "etat": "creer",
+    "m2": 22.5
+   }
+  ],
+  "facades": []
+ },
+ "suivi": {
+  "total": 25,
+  "faits": 0,
+  "taches": [
+   {
+    "id": "etude:structure",
+    "lot": "Études",
+    "label": "Étude de structure (bureau d'études)",
+    "fait": false
+   },
+   {
+    "id": "w:574s3lj:demolir",
+    "lot": "Démolition",
+    "label": "Démolir le mur porteur de 9,00 m",
+    "fait": false
+   },
+   {
+    "id": "w:989m4h5:demolir",
+    "lot": "Démolition",
+    "label": "Démolir la cloison de 1,30 m",
+    "fait": false
+   },
+   {
+    "id": "o:ovkttzp:depose",
+    "lot": "Démolition",
+    "label": "Déposer l'ancienne menuiserie · porte simple",
+    "fait": false
+   },
+   {
+    "id": "i:54tn4nk:demolir",
+    "lot": "Démolition",
+    "label": "Déposer lave-linge",
+    "fait": false
+   },
+   {
+    "id": "w:574s3lj:poutre",
+    "lot": "Maçonnerie",
+    "label": "Poutre de reprise de charge · mur de 9,00 m",
+    "fait": false
+   },
+   {
+    "id": "o:0woch86:perc",
+    "lot": "Maçonnerie",
+    "label": "Ouvrir le mur porteur, linteau & tableaux · fenêtre",
+    "fait": false
+   },
+   {
+    "id": "o:0woch86:appui",
+    "lot": "Maçonnerie",
+    "label": "Appui de fenêtre · fenêtre",
+    "fait": false
+   },
+   {
+    "id": "o:vz6gvi6:boucher",
+    "lot": "Maçonnerie",
+    "label": "Boucher porte simple",
+    "fait": false
+   },
+   {
+    "id": "o:ovkttzp:poser",
+    "lot": "Menuiseries",
+    "label": "Poser porte simple",
+    "fait": false
+   },
+   {
+    "id": "o:0woch86:poser",
+    "lot": "Menuiseries",
+    "label": "Poser fenêtre",
+    "fait": false
+   },
+   {
+    "id": "o:0woch86:volet",
+    "lot": "Menuiseries",
+    "label": "Volet roulant · fenêtre",
+    "fait": false
+   },
+   {
+    "id": "o:a431ev1:poser",
+    "lot": "Menuiseries",
+    "label": "Poser fenêtre",
+    "fait": false
+   },
+   {
+    "id": "w:x02q8e2:creer",
+    "lot": "Cloisons",
+    "label": "Monter la cloison de 7,00 m",
+    "fait": false
+   },
+   {
+    "id": "iso:32tuqlw",
+    "lot": "Isolation",
+    "label": "Doubler le mur de 9,00 m",
+    "fait": false
+   },
+   {
+    "id": "o:ovkttzp:retouriso",
+    "lot": "Isolation",
+    "label": "Retour d'isolant en tableau · porte simple",
+    "fait": false
+   },
+   {
+    "id": "i:prepo69:creer",
+    "lot": "Équipements",
+    "label": "Poser douche",
+    "fait": false
+   },
+   {
+    "id": "i:c5kizix:creer",
+    "lot": "Équipements",
+    "label": "Poser double vasque",
+    "fait": false
+   },
+   {
+    "id": "i:cm6o186:creer",
+    "lot": "Équipements",
+    "label": "Poser wc",
+    "fait": false
+   },
+   {
+    "id": "i:wig96pe:creer",
+    "lot": "Équipements",
+    "label": "Poser baignoire",
+    "fait": false
+   },
+   {
+    "id": "i:qfmp9ry:creer",
+    "lot": "Équipements",
+    "label": "Poser escalier",
+    "fait": false
+   },
+   {
+    "id": "i:7txw0rb:creer",
+    "lot": "Équipements",
+    "label": "Poser point lumineux (plafond)",
+    "fait": false
+   },
+   {
+    "id": "i:qtikzn2:creer",
+    "lot": "Équipements",
+    "label": "Poser point lumineux (plafond)",
+    "fait": false
+   },
+   {
+    "id": "i:15me5qv:creer",
+    "lot": "Équipements",
+    "label": "Poser prise double",
+    "fait": false
+   },
+   {
+    "id": "i:vx6duuu:creer",
+    "lot": "Équipements",
+    "label": "Poser plan de travail",
+    "fait": false
+   }
+  ]
+ },
+ "detailNiveaux": [
+  {
+   "id": "n7",
+   "name": "RDC",
+   "hauteur": 2.5,
+   "rooms": [
+    {
+     "id": "p1",
+     "name": "Cellier / rangement",
+     "type": "cellier",
+     "exterieur": false,
+     "horsHabitable": false,
+     "floor": "À définir",
+     "area": 3.38,
+     "surfaceAuSolPiece": 3.38,
+     "tremie": 0,
+     "tremiePerim": 0,
+     "sousPentePct": 0,
+     "perimeter": 8.6,
+     "hauteur": 2.5,
+     "wallArea": 19.81,
+     "plinthes": 7.77,
+     "openings": 1,
+     "mursAdjacents": [
+      "m12",
+      "m9",
+      "m17",
+      "m13"
+     ],
+     "faience": "mi",
+     "note": null,
+     "produits": null
+    },
+    {
+     "id": "p3",
+     "name": "Salle de bain",
+     "type": "sdb",
+     "exterieur": false,
+     "horsHabitable": false,
+     "floor": "Carrelage",
+     "area": 5.67,
+     "surfaceAuSolPiece": 5.67,
+     "tremie": 0,
+     "tremiePerim": 0,
+     "sousPentePct": 0,
+     "perimeter": 10.4,
+     "hauteur": 2.5,
+     "wallArea": 23.95,
+     "plinthes": 9.57,
+     "openings": 2,
+     "mursAdjacents": [
+      "m17",
+      "m9",
+      "m8",
+      "m13"
+     ],
+     "faience": "mi",
+     "note": null,
+     "produits": [
+      {
+       "poste": "sol",
+       "nom": "Carrelage grès cérame 60×60 gris",
+       "url": "https://www.leroymerlin.fr",
+       "prix": 24.9,
+       "unite": "m²"
+      },
+      {
+       "poste": "murs",
+       "nom": "Faïence blanche 20×60",
+       "url": "",
+       "prix": 19.9,
+       "unite": "m²"
+      }
+     ]
+    }
+   ],
+   "items": [
+    "lit",
+    "armoire",
+    "baignoire",
+    "lavabo",
+    "wc",
+    "plan",
+    "radiateur",
+    "radiateur",
+    "seche_serviette",
+    "tableau",
+    "prise",
+    "prise",
+    "interrupteur",
+    "prise2",
+    "prise2",
+    "prise",
+    "prise",
+    "interrupteur",
+    "interrupteur",
+    "prise",
+    "lumiere",
+    "lumiere",
+    "lumiere",
+    "lumiere",
+    "lumiere",
+    "lumiere",
+    "frigo",
+    "canape",
+    "table",
+    "douche",
+    "vasque2",
+    "wc",
+    "baignoire",
+    "escalier",
+    "lumiere",
+    "lumiere",
+    "prise2",
+    "plan"
+   ],
+   "escaliers": 1,
+   "equipements": [
+    {
+     "id": "e29",
+     "type": "lit",
+     "etat": "existant",
+     "l": 1.6,
+     "p": 2,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e30",
+     "type": "armoire",
+     "etat": "existant",
+     "l": 1.2,
+     "p": 0.6,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e31",
+     "type": "baignoire",
+     "etat": "existant",
+     "l": 1.7,
+     "p": 0.75,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e32",
+     "type": "lavabo",
+     "etat": "existant",
+     "l": 0.6,
+     "p": 0.45,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e33",
+     "type": "wc",
+     "etat": "existant",
+     "l": 0.4,
+     "p": 0.65,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e34",
+     "type": "plan",
+     "etat": "existant",
+     "l": 2.4,
+     "p": 0.6,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e35",
+     "type": "radiateur",
+     "etat": "existant",
+     "l": 1,
+     "p": 0.1,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e36",
+     "type": "radiateur",
+     "etat": "existant",
+     "l": 1,
+     "p": 0.1,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e37",
+     "type": "seche_serviette",
+     "etat": "existant",
+     "l": 0.55,
+     "p": 0.1,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e38",
+     "type": "tableau",
+     "etat": "existant",
+     "l": 0.45,
+     "p": 0.12,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e39",
+     "type": "prise",
+     "etat": "existant",
+     "l": 0.12,
+     "p": 0.06,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e40",
+     "type": "prise",
+     "etat": "existant",
+     "l": 0.12,
+     "p": 0.06,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e41",
+     "type": "interrupteur",
+     "etat": "existant",
+     "l": 0.1,
+     "p": 0.06,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e42",
+     "type": "prise2",
+     "etat": "existant",
+     "l": 0.16,
+     "p": 0.06,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e43",
+     "type": "prise2",
+     "etat": "existant",
+     "l": 0.16,
+     "p": 0.06,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e44",
+     "type": "prise",
+     "etat": "existant",
+     "l": 0.12,
+     "p": 0.06,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e45",
+     "type": "prise",
+     "etat": "existant",
+     "l": 0.12,
+     "p": 0.06,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e46",
+     "type": "interrupteur",
+     "etat": "existant",
+     "l": 0.1,
+     "p": 0.06,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e47",
+     "type": "interrupteur",
+     "etat": "existant",
+     "l": 0.1,
+     "p": 0.06,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e48",
+     "type": "prise",
+     "etat": "existant",
+     "l": 0.12,
+     "p": 0.06,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e49",
+     "type": "lumiere",
+     "etat": "existant",
+     "l": 0.22,
+     "p": 0.22,
+     "douche": null,
+     "lumiere": "spot",
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e50",
+     "type": "lumiere",
+     "etat": "existant",
+     "l": 0.22,
+     "p": 0.22,
+     "douche": null,
+     "lumiere": "spot",
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e51",
+     "type": "lumiere",
+     "etat": "existant",
+     "l": 0.22,
+     "p": 0.22,
+     "douche": null,
+     "lumiere": "spot",
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e52",
+     "type": "lumiere",
+     "etat": "existant",
+     "l": 0.22,
+     "p": 0.22,
+     "douche": null,
+     "lumiere": "spot",
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e53",
+     "type": "lumiere",
+     "etat": "existant",
+     "l": 0.22,
+     "p": 0.22,
+     "douche": null,
+     "lumiere": "spot",
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e54",
+     "type": "lumiere",
+     "etat": "existant",
+     "l": 0.22,
+     "p": 0.22,
+     "douche": null,
+     "lumiere": "spot",
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e55",
+     "type": "frigo",
+     "etat": "existant",
+     "l": 0.6,
+     "p": 0.65,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e56",
+     "type": "canape",
+     "etat": "existant",
+     "l": 2,
+     "p": 0.9,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e57",
+     "type": "table",
+     "etat": "existant",
+     "l": 1.6,
+     "p": 0.9,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e58",
+     "type": "douche",
+     "etat": "creer",
+     "l": 0.9,
+     "p": 0.9,
+     "douche": "italienne",
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e59",
+     "type": "vasque2",
+     "etat": "creer",
+     "l": 0.9,
+     "p": 0.9,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e60",
+     "type": "wc",
+     "etat": "creer",
+     "l": 0.9,
+     "p": 0.9,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e61",
+     "type": "baignoire",
+     "etat": "creer",
+     "l": 0.9,
+     "p": 0.9,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e62",
+     "type": "escalier",
+     "etat": "creer",
+     "l": 1,
+     "p": 2.5,
+     "douche": null,
+     "lumiere": null,
+     "materiau": "beton",
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e63",
+     "type": "lumiere",
+     "etat": "creer",
+     "l": 0.9,
+     "p": 0.9,
+     "douche": null,
+     "lumiere": "spot",
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e64",
+     "type": "lumiere",
+     "etat": "creer",
+     "l": 0.9,
+     "p": 0.9,
+     "douche": null,
+     "lumiere": "plafonnier",
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e65",
+     "type": "prise2",
+     "etat": "creer",
+     "l": 0.9,
+     "p": 0.9,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "e66",
+     "type": "plan",
+     "etat": "creer",
+     "l": 2.4,
+     "p": 0.9,
+     "douche": null,
+     "lumiere": null,
+     "materiau": null,
+     "produit": null,
+     "note": null
+    }
+   ],
+   "menuiseries": [
+    {
+     "id": "o19",
+     "type": "porte",
+     "l": 0.83,
+     "h": 2.04,
+     "allege": null,
+     "etat": "remplacer",
+     "mat": null,
+     "vitrage": null,
+     "ouvrant": "battant",
+     "volet": null,
+     "options": [],
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "o20",
+     "type": "fenetre",
+     "l": 1.2,
+     "h": 1.25,
+     "allege": 0.9,
+     "etat": "creer",
+     "mat": null,
+     "vitrage": null,
+     "ouvrant": "battant",
+     "volet": "roulant",
+     "options": [],
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "o21",
+     "type": "fenetre",
+     "l": 1.2,
+     "h": 1.25,
+     "allege": 0.9,
+     "etat": "garder",
+     "mat": null,
+     "vitrage": null,
+     "ouvrant": "battant",
+     "volet": null,
+     "options": [],
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "o22",
+     "type": "baie",
+     "l": 2.4,
+     "h": 2.15,
+     "allege": 0,
+     "etat": "existant",
+     "mat": null,
+     "vitrage": null,
+     "ouvrant": "coulissant",
+     "volet": null,
+     "options": [],
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "o23",
+     "type": "fenetre_p",
+     "l": 0.6,
+     "h": 0.6,
+     "allege": 1.2,
+     "etat": "existant",
+     "mat": null,
+     "vitrage": null,
+     "ouvrant": "battant",
+     "volet": null,
+     "options": [],
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "o24",
+     "type": "porte",
+     "l": 0.83,
+     "h": 2.04,
+     "allege": null,
+     "etat": "existant",
+     "mat": null,
+     "vitrage": null,
+     "ouvrant": "battant",
+     "volet": null,
+     "options": [],
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "o25",
+     "type": "porte",
+     "l": 0.83,
+     "h": 2.04,
+     "allege": null,
+     "etat": "existant",
+     "mat": null,
+     "vitrage": null,
+     "ouvrant": "battant",
+     "volet": null,
+     "options": [],
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "o26",
+     "type": "porte",
+     "l": 0.83,
+     "h": 2.04,
+     "allege": null,
+     "etat": "existant",
+     "mat": null,
+     "vitrage": null,
+     "ouvrant": "battant",
+     "volet": null,
+     "options": [],
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "o27",
+     "type": "porte",
+     "l": 0.83,
+     "h": 2.04,
+     "allege": null,
+     "etat": "boucher",
+     "mat": null,
+     "vitrage": null,
+     "ouvrant": "battant",
+     "volet": null,
+     "options": [],
+     "produit": null,
+     "note": null
+    },
+    {
+     "id": "o28",
+     "type": "fenetre",
+     "l": 1.2,
+     "h": 1.25,
+     "allege": 0.9,
+     "etat": "creer",
+     "mat": null,
+     "vitrage": null,
+     "ouvrant": "battant",
+     "volet": null,
+     "options": [],
+     "produit": null,
+     "note": null
+    }
+   ],
+   "annotations": [
+    "Cloison à vérifier :\nporteuse ou pas ?",
+    "Garder le parquet, poncer + vitrifier"
+   ]
+  }
+ ]
+}
