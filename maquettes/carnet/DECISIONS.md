@@ -13,26 +13,27 @@ l'audit pose les questions, celui-ci porte les réponses.
 | **D6** | Le plan **demande le type de douche** : bac + colonne + paroi (1 209 €, défaut), à l'italienne (1 228 €) ou cabine (836 €). | à implémenter |
 | **D7** | Une double vasque = **1 meuble en variante « double »** (909 €), jamais 2 unités. Le piège à ne jamais produire : 2 unités **et** la variante = 1 817 € et 4 robinetteries. | à implémenter |
 | **D8** | « Parquet » projeté : le plan **déduit de l'existant** — parquet existant + parquet projeté = ponçage (869 € les 20 m²), sinon parquet neuf (2 020 €). Corrigeable au double check. | à implémenter |
-| **D9** | **Créer les postes « Abattre un mur porteur » et « Monter un mur en pierre »** au catalogue. ⚠️ **Le prix reste à fixer par Dani** — c'est le seul point encore bloquant. | ⏳ prix attendu |
+| **D9** | Trois postes créés : **Abattre un mur porteur** (110 €/m²), **Poutre de reprise de charge IPN/HEA** (480 €/ml) et **Monter un mur en pierre** (250 €/m²). Prix relevés sur le marché et croisés avec trois devis réels, validés le 19/09/2026. | ✅ fait (`48773c7`) |
 | **D10** | La hauteur de faïence est **un réglage par salle de bain** dans le plan : zone douche (4 m²), mi-hauteur (13,4 m², défaut) ou pleine hauteur (22,8 m²) — mesuré, sur l'exemple d'une SDB de 6 m². La cloison hydrofuge suit la surface réelle des cloisons de pièce humide, que le plan mesure déjà. | à implémenter |
 | **D11** | Le plan **coche** un poste au forfait, il ne l'alimente **jamais** en quantité. Aucun prix affiché ne bouge. | acquis |
 | **D12** | Une quantité corrigée à la main **épingle la ligne** : le plan cesse de l'alimenter et signale l'écart (« tu as fixé 12 u, le plan en mesure 14 »). | à implémenter |
 | **D13** | L'estimation **reste écrite** ; le plan y écrit, chaque ligne gardant sa provenance. Un projet sans plan continue de fonctionner à l'identique. | acquis |
 | **D14** | Ajouter l'état **« à conserver »**, distinct de « existant » : ce qui est à zéro par décision cesse d'être confondu avec ce qui n'a pas été regardé. | à implémenter |
 | **D15** | Quand un objet peut alimenter deux postes, **c'est l'objet qui porte l'attribut** — escalier bois / béton, point lumineux spot / plafonnier / applique, plancher créé bois / béton. Même mécanique que la douche (D6). | à implémenter |
-| **D16** | **Un identifiant stable pour les 200 postes** du catalogue ; le libellé devient un affichage, renommable librement. Avec migration des projets déjà enregistrés. | à implémenter |
+| **D16** | **Un identifiant stable pour les 203 postes** ; le libellé devient un affichage, renommable librement. **Sans migration de base** : un renommage s'écrit dans la table d'alias, et les projets enregistrés se relisent tout seuls. | ✅ fait |
 
 ---
 
 ## Ce que ça ouvre
 
 L'audit bloquait sa phase 3 (table de correspondance) sur D6, D7, D8, D9, D11 et D15, et sa phase 4
-(injection) sur D1, D3, D4, D12 et D13. **Les deux sont débloquées**, au prix près de D9.
+(injection) sur D1, D3, D4, D12 et D13. **Les deux sont débloquées** : plus aucune décision en attente.
 
 Ordre de travail qui découle des décisions :
 
-1. **D16 d'abord.** La table de correspondance sera clée sur les postes ; la construire sur des
-   phrases françaises qu'on a décidé de remplacer par des identifiants, c'est la construire deux fois.
+1. ~~**D16 d'abord.**~~ Fait. Chaque poste porte un `id` gelé, un renommage se déclare dans
+   `ALIAS` (`lib/estimateur/identite.ts`) et trois tests de garde font échouer le build si le
+   moteur cite un poste qui n'existe plus. La table de correspondance peut être clée dessus.
 2. **Les attributs d'objet** (D6, D15) et le réglage de faïence (D10), côté maquette — c'est ce qui
    rend le reste chiffrable.
 3. **L'état « à conserver »** (D14), qui conditionne le delta de D1.
@@ -40,7 +41,6 @@ Ordre de travail qui découle des décisions :
    et le renvoi vers le double check de D1.
 5. **D5** au passage : sortir les locaux non habitables des agrégats de peinture et de plinthes, et
    les émettre en lignes par pièce — le plan porte déjà `wallArea` et `plinthes` par pièce.
-6. **D9** dès que le prix est fixé.
 
 ## Les chiffres qui ont servi à trancher
 

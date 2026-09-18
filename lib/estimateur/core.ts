@@ -20,6 +20,11 @@ export interface VarOpt { k: string; label: string; coef: number; tva?: number }
 export interface VarGroup { k: string; label: string; opts: VarOpt[] }
 
 export interface Tache {
+  /** Identité STABLE du poste, écrite une fois et jamais modifiée : c'est elle qui indexe la
+   *  correspondance avec le plan, l'édition admin et, à terme, la base. Le libellé `n` est un
+   *  affichage — il peut être réécrit sans rien casser, à condition d'ajouter l'ancien nom aux
+   *  alias de `identite.ts`. Voir la décision D16 du 19/09/2026. */
+  id: string;
   n: string;            // nom
   u: string;            // unité : m2 | ml | u | point | forfait | jour | pct
   fp: number | null;    // fourni-posé HT

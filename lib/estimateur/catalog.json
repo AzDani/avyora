@@ -5,54 +5,63 @@
     "tva": 20,
     "t": [
       {
+        "id": "etu-releve-plans-de-l-existant",
         "n": "Relevé + plans de l'existant",
         "u": "forfait",
         "fp": 350,
         "sm": null
       },
       {
+        "id": "etu-plans-du-projet",
         "n": "Plans du projet",
         "u": "forfait",
         "fp": 700,
         "sm": null
       },
       {
+        "id": "etu-metre-quantitatifs",
         "n": "Métré & quantitatifs",
         "u": "forfait",
         "fp": 400,
         "sm": null
       },
       {
+        "id": "etu-diagnostics-obligatoires-amiante-plomb-elec",
         "n": "Diagnostics obligatoires (amiante, plomb, élec)",
         "u": "forfait",
         "fp": 450,
         "sm": null
       },
       {
+        "id": "etu-diagnostic-energetique-dpe",
         "n": "Diagnostic énergétique (DPE)",
         "u": "forfait",
         "fp": 120,
         "sm": null
       },
       {
+        "id": "etu-demarches-en-mairie-dp-permis",
         "n": "Démarches en mairie (DP / permis)",
         "u": "forfait",
         "fp": 1200,
         "sm": null
       },
       {
+        "id": "etu-etude-de-structure",
         "n": "Étude de structure",
         "u": "forfait",
         "fp": 900,
         "sm": null
       },
       {
+        "id": "etu-dossier-d-aides-maprimerenov-cee",
         "n": "Dossier d'aides (MaPrimeRénov', CEE)",
         "u": "forfait",
         "fp": 200,
         "sm": null
       },
       {
+        "id": "etu-etude-assainissement-individuel-spanc",
         "n": "Étude assainissement individuel (SPANC)",
         "u": "forfait",
         "fp": 600,
@@ -66,12 +75,14 @@
     "tva": 10,
     "t": [
       {
+        "id": "anx-installation-de-chantier",
         "n": "Installation de chantier",
         "u": "forfait",
         "fp": 400,
         "sm": null
       },
       {
+        "id": "anx-benne-evacuation-des-gravats",
         "n": "Benne & évacuation des gravats",
         "u": "forfait",
         "fp": 400,
@@ -79,12 +90,14 @@
         "note": "par benne"
       },
       {
+        "id": "anx-securite-du-chantier",
         "n": "Sécurité du chantier",
         "u": "forfait",
         "fp": 200,
         "sm": null
       },
       {
+        "id": "anx-nettoyage-de-fin-de-chantier",
         "n": "Nettoyage de fin de chantier",
         "u": "m2",
         "fp": 10,
@@ -98,60 +111,70 @@
     "tva": 20,
     "t": [
       {
+        "id": "loc-marteau-piqueur-brise-beton",
         "n": "Marteau-piqueur / brise-béton",
         "u": "jour",
         "fp": 25,
         "sm": null
       },
       {
+        "id": "loc-betonniere",
         "n": "Bétonnière",
         "u": "jour",
         "fp": 35,
         "sm": null
       },
       {
+        "id": "loc-ponceuse-parquet-placo",
         "n": "Ponceuse (parquet / placo)",
         "u": "jour",
         "fp": 55,
         "sm": null
       },
       {
+        "id": "loc-aspirateur-de-chantier",
         "n": "Aspirateur de chantier",
         "u": "jour",
         "fp": 30,
         "sm": null
       },
       {
+        "id": "loc-decoupeur-scie-carrelage-beton",
         "n": "Découpeur / scie (carrelage, béton)",
         "u": "jour",
         "fp": 45,
         "sm": null
       },
       {
+        "id": "loc-compresseur",
         "n": "Compresseur",
         "u": "jour",
         "fp": 55,
         "sm": null
       },
       {
+        "id": "loc-groupe-electrogene",
         "n": "Groupe électrogène",
         "u": "jour",
         "fp": 55,
         "sm": null
       },
       {
+        "id": "loc-deshumidificateur-chauffage-chantier",
         "n": "Déshumidificateur / chauffage chantier",
         "u": "jour",
         "fp": 40,
         "sm": null
       },
       {
+        "id": "loc-mini-pelle-1-5-2-5-t",
         "n": "Mini-pelle (1,5-2,5 t)",
         "u": "jour",
         "fp": 200,
         "sm": null
       },
       {
+        "id": "loc-livraison-mini-pelle-depose-reprise",
         "n": "Livraison mini-pelle (dépose + reprise)",
         "u": "forfait",
         "fp": 300,
@@ -159,12 +182,14 @@
         "note": "~150 € dépose + 150 € reprise"
       },
       {
+        "id": "loc-nacelle-plateforme-elevatrice",
         "n": "Nacelle / plateforme élévatrice",
         "u": "jour",
         "fp": 180,
         "sm": null
       },
       {
+        "id": "loc-camion-benne-utilitaire",
         "n": "Camion benne / utilitaire",
         "u": "jour",
         "fp": 100,
@@ -179,6 +204,7 @@
     "tva": 20,
     "t": [
       {
+        "id": "rac-raccordement-eau-potable",
         "n": "Raccordement eau potable",
         "u": "forfait",
         "fp": 1500,
@@ -186,6 +212,7 @@
         "note": "variable selon distance au réseau"
       },
       {
+        "id": "rac-raccordement-electrique-enedis",
         "n": "Raccordement électrique (Enedis)",
         "u": "forfait",
         "fp": 2000,
@@ -193,18 +220,21 @@
         "note": "très variable : 500–2 200 €, jusqu'à 5 000 €+ si éloigné"
       },
       {
+        "id": "rac-coffret-tableau-de-chantier-provisoire",
         "n": "Coffret / tableau de chantier provisoire",
         "u": "forfait",
         "fp": 300,
         "sm": null
       },
       {
+        "id": "rac-mise-en-service-provisoire-enedis",
         "n": "Mise en service provisoire (Enedis)",
         "u": "forfait",
         "fp": 250,
         "sm": null
       },
       {
+        "id": "rac-raccordement-au-tout-a-l-egout",
         "n": "Raccordement au tout-à-l'égout",
         "u": "forfait",
         "fp": 2500,
@@ -212,6 +242,7 @@
         "tva": 10
       },
       {
+        "id": "rac-assainissement-fosse-toutes-eaux-5-eh",
         "n": "Assainissement — fosse toutes eaux (5 EH)",
         "u": "forfait",
         "fp": 8400,
@@ -219,6 +250,7 @@
         "tva": 10
       },
       {
+        "id": "rac-assainissement-micro-station-5-eh",
         "n": "Assainissement — micro-station (5 EH)",
         "u": "forfait",
         "fp": 12000,
@@ -233,30 +265,35 @@
     "tva": 10,
     "t": [
       {
+        "id": "dem-enlever-un-revetement-de-sol",
         "n": "Enlever un revêtement de sol",
         "u": "m2",
         "fp": 20,
         "sm": 5
       },
       {
+        "id": "dem-enlever-un-revetement-mural",
         "n": "Enlever un revêtement mural",
         "u": "m2",
         "fp": 22,
         "sm": 3
       },
       {
+        "id": "dem-abattre-une-cloison",
         "n": "Abattre une cloison",
         "u": "m2",
         "fp": 15,
         "sm": 4
       },
       {
+        "id": "dem-abattre-un-mur-non-porteur",
         "n": "Abattre un mur non porteur",
         "u": "m2",
         "fp": 35,
         "sm": 8
       },
       {
+        "id": "dem-abattre-un-mur-porteur",
         "n": "Abattre un mur porteur",
         "u": "m2",
         "fp": 110,
@@ -264,18 +301,21 @@
         "note": "reprise de charge à chiffrer à part (poutre) + étude BET obligatoire"
       },
       {
+        "id": "dem-enlever-les-anciennes-portes-fenetres",
         "n": "Enlever les anciennes portes / fenêtres",
         "u": "u",
         "fp": 40,
         "sm": 5
       },
       {
+        "id": "dem-depose-complete-cuisine-salle-de-bain-curage",
         "n": "Dépose complète cuisine / salle de bain (curage)",
         "u": "forfait",
         "fp": 700,
         "sm": 60
       },
       {
+        "id": "dem-enlever-les-vieux-reseaux",
         "n": "Enlever les vieux réseaux",
         "u": "m2",
         "fp": 8,
@@ -283,18 +323,21 @@
         "note": "m² de maison"
       },
       {
+        "id": "dem-creuser-tranchees-saignees",
         "n": "Creuser tranchées / saignées",
         "u": "ml",
         "fp": 38,
         "sm": 6
       },
       {
+        "id": "dem-casser-une-dalle-vieux-sol",
         "n": "Casser une dalle / vieux sol",
         "u": "m2",
         "fp": 30,
         "sm": 8
       },
       {
+        "id": "dem-retrait-amiante-plomb",
         "n": "Retrait amiante / plomb",
         "u": "m2",
         "fp": 80,
@@ -309,6 +352,7 @@
     "tva": 10,
     "t": [
       {
+        "id": "mac-ouvrir-un-mur-porteur-petite-porte-fenetre",
         "n": "Ouvrir un mur porteur — petite (porte/fenêtre)",
         "u": "u",
         "fp": 2500,
@@ -316,6 +360,7 @@
         "note": "délicat + étude BET obligatoire"
       },
       {
+        "id": "mac-ouvrir-un-mur-porteur-grande-2-5-m-baie",
         "n": "Ouvrir un mur porteur — grande (2,5 m, baie)",
         "u": "u",
         "fp": 4500,
@@ -323,6 +368,7 @@
         "note": "délicat + étude BET obligatoire"
       },
       {
+        "id": "mac-poutre-de-reprise-de-charge-ipn-hea",
         "n": "Poutre de reprise de charge (IPN / HEA)",
         "u": "ml",
         "fp": 480,
@@ -330,42 +376,49 @@
         "note": "fourniture, étaiement, appuis et scellement — remplace le mur porteur déposé"
       },
       {
+        "id": "mac-creer-un-appui-de-fenetre",
         "n": "Créer un appui de fenêtre",
         "u": "u",
         "fp": 250,
         "sm": 60
       },
       {
+        "id": "mac-creer-un-seuil-de-porte",
         "n": "Créer un seuil de porte",
         "u": "u",
         "fp": 250,
         "sm": 60
       },
       {
+        "id": "mac-couler-une-dalle-beton",
         "n": "Couler une dalle béton",
         "u": "m2",
         "fp": 68,
         "sm": 30
       },
       {
+        "id": "mac-chape-traditionnelle",
         "n": "Chape traditionnelle",
         "u": "m2",
         "fp": 33,
         "sm": 10
       },
       {
+        "id": "mac-chape-liquide",
         "n": "Chape liquide",
         "u": "m2",
         "fp": 40,
         "sm": 20
       },
       {
+        "id": "mac-semelle-de-fondation-50-25-30-cm",
         "n": "Semelle de fondation (50 × 25-30 cm)",
         "u": "ml",
         "fp": 140,
         "sm": 65
       },
       {
+        "id": "mac-consolider-fondations-reprise-en-sous-uvre",
         "n": "Consolider fondations / reprise en sous-œuvre",
         "u": "ml",
         "fp": 280,
@@ -373,18 +426,21 @@
         "note": "= semelle filante × 2 — prix très variable selon la tâche exacte"
       },
       {
+        "id": "mac-monter-un-mur-en-parpaings",
         "n": "Monter un mur en parpaings",
         "u": "m2",
         "fp": 75,
         "sm": 25
       },
       {
+        "id": "mac-monter-un-mur-en-brique",
         "n": "Monter un mur en brique",
         "u": "m2",
         "fp": 90,
         "sm": 35
       },
       {
+        "id": "mac-monter-un-mur-en-pierre",
         "n": "Monter un mur en pierre",
         "u": "m2",
         "fp": 250,
@@ -392,18 +448,21 @@
         "note": "moellons maçonnés au mortier"
       },
       {
+        "id": "mac-creer-enlever-une-cheminee-en-dur",
         "n": "Créer / enlever une cheminée en dur",
         "u": "forfait",
         "fp": 1500,
         "sm": 600
       },
       {
+        "id": "mac-escalier-en-beton",
         "n": "Escalier en béton",
         "u": "u",
         "fp": 4500,
         "sm": null
       },
       {
+        "id": "mac-plancher-beton-etage-cree",
         "n": "Plancher béton (étage créé)",
         "u": "m2",
         "fp": 120,
@@ -417,6 +476,7 @@
     "tva": 10,
     "t": [
       {
+        "id": "toi-toiture-complete-tuile-charpente-couverture",
         "n": "Toiture complète tuile (charpente + couverture)",
         "u": "m2",
         "fp": 230,
@@ -424,6 +484,7 @@
         "note": "charpente traditionnelle + tuiles + écran + liteaux + pose"
       },
       {
+        "id": "toi-toiture-complete-ardoise-charpente-couverture",
         "n": "Toiture complète ardoise (charpente + couverture)",
         "u": "m2",
         "fp": 280,
@@ -431,6 +492,7 @@
         "note": "charpente traditionnelle + ardoise + écran + liteaux + pose"
       },
       {
+        "id": "toi-depose-complete-de-toiture-couverture-charpent",
         "n": "Dépose complète de toiture (couverture + charpente)",
         "u": "m2",
         "fp": 45,
@@ -438,30 +500,35 @@
         "note": "dépose couverture + charpente + évacuation gravats (couverture seule ≈ 20-30 €/m²)"
       },
       {
+        "id": "toi-charpente-traditionnelle-hors-couverture",
         "n": "Charpente traditionnelle (hors couverture)",
         "u": "m2",
         "fp": 120,
         "sm": 45
       },
       {
+        "id": "toi-charpente-en-fermettes-hors-couverture",
         "n": "Charpente en fermettes (hors couverture)",
         "u": "m2",
         "fp": 80,
         "sm": 40
       },
       {
+        "id": "toi-couverture-tuiles-sur-support-existant",
         "n": "Couverture tuiles (sur support existant)",
         "u": "m2",
         "fp": 70,
         "sm": 30
       },
       {
+        "id": "toi-couverture-ardoise-sur-support-existant",
         "n": "Couverture ardoise (sur support existant)",
         "u": "m2",
         "fp": 120,
         "sm": 50
       },
       {
+        "id": "toi-refection-couverture-tuiles-depose-ecran-litea",
         "n": "Réfection couverture tuiles (dépose + écran + liteaux)",
         "u": "m2",
         "fp": 110,
@@ -469,12 +536,14 @@
         "note": "couverture + écran + liteaux + pose"
       },
       {
+        "id": "toi-refection-couverture-ardoise-depose-ecran-lite",
         "n": "Réfection couverture ardoise (dépose + écran + liteaux)",
         "u": "m2",
         "fp": 160,
         "sm": 65
       },
       {
+        "id": "toi-couverture-zinc-bac-acier",
         "n": "Couverture zinc / bac acier",
         "u": "m2",
         "fp": 90,
@@ -482,12 +551,14 @@
         "note": "bac acier ~60, zinc ~150"
       },
       {
+        "id": "toi-sous-toiture-ecran-liteaux",
         "n": "Sous-toiture (écran + liteaux)",
         "u": "m2",
         "fp": 15,
         "sm": 5
       },
       {
+        "id": "toi-traiter-la-charpente",
         "n": "Traiter la charpente",
         "u": "m2",
         "fp": 5,
@@ -495,48 +566,56 @@
         "note": "préventif (xylophène) ; curatif par injection = 40–70 €/m²"
       },
       {
+        "id": "toi-gouttieres-descentes",
         "n": "Gouttières & descentes",
         "u": "ml",
         "fp": 50,
         "sm": 20
       },
       {
+        "id": "toi-raccords-faitage-noues-solins",
         "n": "Raccords (faîtage, noues, solins)",
         "u": "ml",
         "fp": 40,
         "sm": 15
       },
       {
+        "id": "toi-fenetre-de-toit-velux",
         "n": "Fenêtre de toit (Velux)",
         "u": "u",
         "fp": 1200,
         "sm": 500
       },
       {
+        "id": "toi-nettoyer-demousser-la-toiture",
         "n": "Nettoyer / démousser la toiture",
         "u": "m2",
         "fp": 15,
         "sm": 3
       },
       {
+        "id": "toi-toit-plat-etancheite",
         "n": "Toit plat (étanchéité)",
         "u": "m2",
         "fp": 80,
         "sm": 30
       },
       {
+        "id": "toi-creer-un-plancher-bois",
         "n": "Créer un plancher bois",
         "u": "m2",
         "fp": 90,
         "sm": 45
       },
       {
+        "id": "toi-escalier-en-bois",
         "n": "Escalier en bois",
         "u": "u",
         "fp": 2500,
         "sm": 1200
       },
       {
+        "id": "toi-garde-corps",
         "n": "Garde-corps",
         "u": "ml",
         "fp": 180,
@@ -544,6 +623,7 @@
         "note": "bois 60-220, métal/fer 150-400, verre 300-800 €/ml selon matériau"
       },
       {
+        "id": "toi-mur-en-ossature-bois",
         "n": "Mur en ossature bois",
         "u": "m2",
         "fp": 90,
@@ -557,6 +637,7 @@
     "tva": 10,
     "t": [
       {
+        "id": "fac-ravalement-facade-pierre-tout-compris",
         "n": "Ravalement façade pierre (tout compris)",
         "u": "m2",
         "fp": 130,
@@ -564,42 +645,49 @@
         "note": "déjointement + nettoyage + rejointoiement + remplacement de pierres"
       },
       {
+        "id": "fac-nettoyer-la-facade",
         "n": "Nettoyer la façade",
         "u": "m2",
         "fp": 15,
         "sm": 2
       },
       {
+        "id": "fac-refaire-les-joints-rejointoiement-pierre-briqu",
         "n": "Refaire les joints / rejointoiement (pierre, briquette, moellon)",
         "u": "m2",
         "fp": 50,
         "sm": 10
       },
       {
+        "id": "fac-enduit-monocouche-machine",
         "n": "Enduit monocouche (machine)",
         "u": "m2",
         "fp": 28,
         "sm": 10
       },
       {
+        "id": "fac-enduit-a-la-chaux-maison-ancienne",
         "n": "Enduit à la chaux (maison ancienne)",
         "u": "m2",
         "fp": 70,
         "sm": 15
       },
       {
+        "id": "fac-peindre-la-facade",
         "n": "Peindre la façade",
         "u": "m2",
         "fp": 30,
         "sm": 8
       },
       {
+        "id": "fac-traitement-impermeabilisant",
         "n": "Traitement imperméabilisant",
         "u": "m2",
         "fp": 20,
         "sm": 6
       },
       {
+        "id": "fac-isolation-par-l-exterieur-ite",
         "n": "Isolation par l'extérieur (ITE)",
         "u": "m2",
         "fp": 140,
@@ -607,6 +695,7 @@
         "tva": 5.5
       },
       {
+        "id": "fac-bardage",
         "n": "Bardage",
         "u": "m2",
         "fp": 90,
@@ -614,6 +703,7 @@
         "note": "bois / composite sur ossature ventilée — PVC ~40-80, fibrociment ~60-110, métal/zinc jusqu'à ~200 €/m²"
       },
       {
+        "id": "fac-elements-decoratifs-corniches-bandeaux",
         "n": "Éléments décoratifs (corniches, bandeaux)",
         "u": "ml",
         "fp": 40,
@@ -627,6 +717,7 @@
     "tva": 10,
     "t": [
       {
+        "id": "mex-fenetres",
         "n": "Fenêtres",
         "u": "u",
         "fp": 950,
@@ -635,6 +726,7 @@
         "vitrage": true
       },
       {
+        "id": "mex-portes-fenetres",
         "n": "Portes-fenêtres",
         "u": "u",
         "fp": 1250,
@@ -643,6 +735,7 @@
         "vitrage": true
       },
       {
+        "id": "mex-baie-vitree",
         "n": "Baie vitrée",
         "u": "u",
         "fp": 2200,
@@ -651,6 +744,7 @@
         "vitrage": true
       },
       {
+        "id": "mex-porte-d-entree",
         "n": "Porte d'entrée",
         "u": "u",
         "fp": 1600,
@@ -658,6 +752,7 @@
         "mat": true
       },
       {
+        "id": "mex-porte-de-garage",
         "n": "Porte de garage",
         "u": "u",
         "fp": 1200,
@@ -665,6 +760,7 @@
         "note": "sectionnelle motorisée — basculante ~700 €, modèle haut de gamme jusqu'à ~2 500 €"
       },
       {
+        "id": "mex-volets-roulants",
         "n": "Volets roulants",
         "u": "u",
         "fp": 650,
@@ -674,6 +770,7 @@
         "note": "motorisé inclus (radio/solaire) — manuel simple ~300-450 €"
       },
       {
+        "id": "mex-volets-battants",
         "n": "Volets battants",
         "u": "u",
         "fp": 600,
@@ -682,6 +779,7 @@
         "matPvc": 0.8
       },
       {
+        "id": "mex-stores-exterieurs-brise-soleil",
         "n": "Stores extérieurs / brise-soleil",
         "u": "u",
         "fp": 1000,
@@ -689,6 +787,7 @@
         "note": "store banne ou brise-soleil orientable (BSO), par module"
       },
       {
+        "id": "mex-moustiquaires",
         "n": "Moustiquaires",
         "u": "u",
         "fp": 200,
@@ -697,12 +796,14 @@
         "note": "enroulable, fenêtre standard — cadre fixe ~100 €, baie/porte plissée 300-500 €"
       },
       {
+        "id": "mex-grilles-de-securite",
         "n": "Grilles de sécurité",
         "u": "u",
         "fp": 400,
         "sm": 200
       },
       {
+        "id": "mex-portail-battant-4-m",
         "n": "Portail battant (4 m)",
         "u": "u",
         "fp": 2000,
@@ -714,6 +815,7 @@
         "note": "largeur ~4 m — base alu manuel"
       },
       {
+        "id": "mex-portail-coulissant-4-m",
         "n": "Portail coulissant (4 m)",
         "u": "u",
         "fp": 2500,
@@ -733,6 +835,7 @@
     "tva": 10,
     "t": [
       {
+        "id": "iso-isolation-des-combles-perdus-soufflage",
         "n": "Isolation des combles perdus (soufflage)",
         "u": "m2",
         "fp": 25,
@@ -740,6 +843,7 @@
         "tva": 5.5
       },
       {
+        "id": "iso-isolation-des-combles-amenages-rampants",
         "n": "Isolation des combles aménagés (rampants)",
         "u": "m2",
         "fp": 65,
@@ -747,6 +851,7 @@
         "tva": 5.5
       },
       {
+        "id": "iso-isolation-des-murs-par-l-interieur",
         "n": "Isolation des murs par l'intérieur",
         "u": "m2",
         "fp": 55,
@@ -754,6 +859,7 @@
         "tva": 5.5
       },
       {
+        "id": "iso-isolation-du-sol-plancher-bas",
         "n": "Isolation du sol / plancher bas",
         "u": "m2",
         "fp": 45,
@@ -761,12 +867,14 @@
         "tva": 5.5
       },
       {
+        "id": "iso-isolation-contre-le-bruit-phonique",
         "n": "Isolation contre le bruit (phonique)",
         "u": "m2",
         "fp": 50,
         "sm": 20
       },
       {
+        "id": "iso-pose-d-un-pare-vapeur",
         "n": "Pose d'un pare-vapeur",
         "u": "m2",
         "fp": 8,
@@ -780,54 +888,63 @@
     "tva": 10,
     "t": [
       {
+        "id": "clo-monter-une-cloison",
         "n": "Monter une cloison",
         "u": "m2",
         "fp": 50,
         "sm": 20
       },
       {
+        "id": "clo-cloison-piece-humide-hydrofuge",
         "n": "Cloison pièce humide (hydrofuge)",
         "u": "m2",
         "fp": 55,
         "sm": 25
       },
       {
+        "id": "clo-cloison-anti-bruit-phonique",
         "n": "Cloison anti-bruit (phonique)",
         "u": "m2",
         "fp": 60,
         "sm": 28
       },
       {
+        "id": "clo-doubler-un-mur",
         "n": "Doubler un mur",
         "u": "m2",
         "fp": 40,
         "sm": 18
       },
       {
+        "id": "clo-faux-plafond",
         "n": "Faux plafond",
         "u": "m2",
         "fp": 47,
         "sm": 20
       },
       {
+        "id": "clo-plafond-decoratif-spots-retombees",
         "n": "Plafond décoratif (spots, retombées)",
         "u": "m2",
         "fp": 70,
         "sm": 30
       },
       {
+        "id": "clo-cacher-tuyaux-gaines-coffrage",
         "n": "Cacher tuyaux / gaines (coffrage)",
         "u": "ml",
         "fp": 25,
         "sm": 10
       },
       {
+        "id": "clo-trappe-de-visite",
         "n": "Trappe de visite",
         "u": "u",
         "fp": 80,
         "sm": 30
       },
       {
+        "id": "clo-caisson-a-galandage-chassis-habillage",
         "n": "Caisson à galandage (châssis + habillage)",
         "u": "u",
         "fp": 800,
@@ -835,12 +952,14 @@
         "note": "poche où coulisse une porte/baie à galandage — en plus de la menuiserie coulissante"
       },
       {
+        "id": "clo-finitions-platrerie-bandes-enduit",
         "n": "Finitions plâtrerie (bandes, enduit)",
         "u": "m2",
         "fp": 15,
         "sm": 5
       },
       {
+        "id": "clo-ratissage-leger",
         "n": "Ratissage léger",
         "u": "m2",
         "fp": 12,
@@ -848,6 +967,7 @@
         "note": "enduit de lissage 1 passe, mur sain"
       },
       {
+        "id": "clo-ratissage-lourd",
         "n": "Ratissage lourd",
         "u": "m2",
         "fp": 25,
@@ -862,18 +982,21 @@
     "tva": 10,
     "t": [
       {
+        "id": "ele-renovation-electrique-complete",
         "n": "Rénovation électrique complète",
         "u": "m2",
         "fp": 115,
         "sm": 40
       },
       {
+        "id": "ele-changer-mettre-aux-normes-le-tableau",
         "n": "Changer / mettre aux normes le tableau",
         "u": "forfait",
         "fp": 1150,
         "sm": 600
       },
       {
+        "id": "ele-coffret-de-communication-vdi",
         "n": "Coffret de communication (VDI)",
         "u": "forfait",
         "fp": 250,
@@ -881,12 +1004,14 @@
         "note": "tableau télécom : box, RJ45, TV"
       },
       {
+        "id": "ele-mise-a-la-terre",
         "n": "Mise à la terre",
         "u": "forfait",
         "fp": 500,
         "sm": 150
       },
       {
+        "id": "ele-consuel-attestation-de-conformite",
         "n": "Consuel (attestation de conformité)",
         "u": "forfait",
         "fp": 180,
@@ -895,24 +1020,28 @@
         "note": "obligatoire après une rénovation électrique complète"
       },
       {
+        "id": "ele-ajouter-deplacer-une-prise",
         "n": "Ajouter / déplacer une prise",
         "u": "u",
         "fp": 100,
         "sm": 25
       },
       {
+        "id": "ele-ajouter-deplacer-un-interrupteur",
         "n": "Ajouter / déplacer un interrupteur",
         "u": "u",
         "fp": 100,
         "sm": 25
       },
       {
+        "id": "ele-ajouter-un-point-lumineux",
         "n": "Ajouter un point lumineux",
         "u": "u",
         "fp": 110,
         "sm": 30
       },
       {
+        "id": "ele-spots-encastres-led",
         "n": "Spots encastrés (LED)",
         "u": "u",
         "fp": 45,
@@ -920,24 +1049,28 @@
         "note": "≈ 1 spot / 2 m² · LED encastré posé"
       },
       {
+        "id": "ele-prise-internet-tv-rj45",
         "n": "Prise internet / TV (RJ45)",
         "u": "u",
         "fp": 120,
         "sm": 40
       },
       {
+        "id": "ele-visiophone-interphone",
         "n": "Visiophone / interphone",
         "u": "forfait",
         "fp": 600,
         "sm": 300
       },
       {
+        "id": "ele-alarme-videosurveillance",
         "n": "Alarme / vidéosurveillance",
         "u": "forfait",
         "fp": 900,
         "sm": 450
       },
       {
+        "id": "ele-borne-de-recharge-voiture",
         "n": "Borne de recharge voiture",
         "u": "u",
         "fp": 1400,
@@ -945,6 +1078,7 @@
         "tva": 5.5
       },
       {
+        "id": "ele-maison-connectee",
         "n": "Maison connectée",
         "u": "forfait",
         "fp": 1500,
@@ -958,6 +1092,7 @@
     "tva": 10,
     "t": [
       {
+        "id": "plo-refaire-toute-la-plomberie-reseau-hors-apparei",
         "n": "Refaire toute la plomberie (réseau, hors appareils)",
         "u": "m2",
         "fp": 60,
@@ -965,12 +1100,14 @@
         "note": "m² de maison"
       },
       {
+        "id": "plo-creer-deplacer-un-point-d-eau",
         "n": "Créer / déplacer un point d'eau",
         "u": "u",
         "fp": 190,
         "sm": 55
       },
       {
+        "id": "plo-wc",
         "n": "WC",
         "u": "u",
         "fp": 410,
@@ -995,6 +1132,7 @@
         ]
       },
       {
+        "id": "plo-meuble-vasque",
         "n": "Meuble-vasque",
         "u": "u",
         "fp": 433,
@@ -1019,6 +1157,7 @@
         ]
       },
       {
+        "id": "plo-vasque",
         "n": "Vasque",
         "u": "u",
         "fp": 150,
@@ -1059,6 +1198,7 @@
         ]
       },
       {
+        "id": "plo-plan-de-travail",
         "n": "Plan de travail",
         "u": "ml",
         "fp": 85,
@@ -1089,6 +1229,7 @@
         ]
       },
       {
+        "id": "plo-robinetterie-lavabo",
         "n": "Robinetterie lavabo",
         "u": "u",
         "fp": 160,
@@ -1113,6 +1254,7 @@
         ]
       },
       {
+        "id": "plo-miroir",
         "n": "Miroir",
         "u": "u",
         "fp": 176,
@@ -1153,6 +1295,7 @@
         ]
       },
       {
+        "id": "plo-bac-de-douche",
         "n": "Bac de douche",
         "u": "u",
         "fp": 400,
@@ -1177,6 +1320,7 @@
         ]
       },
       {
+        "id": "plo-colonne-de-douche",
         "n": "Colonne de douche",
         "u": "u",
         "fp": 300,
@@ -1201,6 +1345,7 @@
         ]
       },
       {
+        "id": "plo-douche-a-l-italienne",
         "n": "Douche à l'italienne",
         "u": "u",
         "fp": 1090,
@@ -1225,6 +1370,7 @@
         ]
       },
       {
+        "id": "plo-paroi-de-douche",
         "n": "Paroi de douche",
         "u": "u",
         "fp": 380,
@@ -1249,6 +1395,7 @@
         ]
       },
       {
+        "id": "plo-cabine-complete-parois-porte",
         "n": "Cabine complète (parois + porte)",
         "u": "u",
         "fp": 750,
@@ -1256,12 +1403,14 @@
         "fixe": true
       },
       {
+        "id": "plo-installer-une-baignoire",
         "n": "Installer une baignoire",
         "u": "u",
         "fp": 960,
         "sm": 650
       },
       {
+        "id": "plo-robinetterie-baignoire",
         "n": "Robinetterie baignoire",
         "u": "u",
         "fp": 260,
@@ -1286,6 +1435,7 @@
         ]
       },
       {
+        "id": "plo-chauffe-eau-electrique-cumulus",
         "n": "Chauffe-eau électrique (cumulus)",
         "u": "u",
         "fp": 950,
@@ -1295,6 +1445,7 @@
         "note": "cumulus à accumulation · Petit ~150 L / Grand ~250 L"
       },
       {
+        "id": "plo-chauffe-eau-electrique-instantane",
         "n": "Chauffe-eau électrique instantané",
         "u": "u",
         "fp": 550,
@@ -1304,6 +1455,7 @@
         "note": "Petit point d'eau / Grand douche · multi-points"
       },
       {
+        "id": "plo-chauffe-eau-thermodynamique",
         "n": "Chauffe-eau thermodynamique",
         "u": "u",
         "fp": 3200,
@@ -1314,6 +1466,7 @@
         "note": "PAC · Petit ~200 L / Grand ~270 L"
       },
       {
+        "id": "plo-installer-un-adoucisseur-d-eau",
         "n": "Installer un adoucisseur d'eau",
         "u": "u",
         "fp": 1500,
@@ -1327,6 +1480,7 @@
     "tva": 10,
     "t": [
       {
+        "id": "cha-pompe-a-chaleur-air-eau",
         "n": "Pompe à chaleur (air/eau)",
         "u": "forfait",
         "fp": 11000,
@@ -1335,6 +1489,7 @@
         "note": "source de chaleur : chauffage central + eau chaude (radiateurs/plancher)"
       },
       {
+        "id": "cha-chaudiere-gaz-a-condensation",
         "n": "Chaudière gaz à condensation",
         "u": "u",
         "fp": 4500,
@@ -1342,6 +1497,7 @@
         "note": "source de chaleur au gaz : chauffage central + eau chaude · TVA 10 %"
       },
       {
+        "id": "cha-poele-a-bois-granules",
         "n": "Poêle à bois / granulés",
         "u": "u",
         "fp": 4000,
@@ -1350,6 +1506,7 @@
         "note": "chauffe une pièce/zone (appoint ou principal)"
       },
       {
+        "id": "cha-climatisation-reversible-split",
         "n": "Climatisation réversible (split)",
         "u": "u",
         "fp": 2400,
@@ -1358,6 +1515,7 @@
         "note": "chauffe + rafraîchit (chaud/froid) · prix par unité intérieure"
       },
       {
+        "id": "cha-climatisation-gainable-reversible",
         "n": "Climatisation gainable (réversible)",
         "u": "forfait",
         "fp": 8000,
@@ -1384,6 +1542,7 @@
         ]
       },
       {
+        "id": "cha-radiateurs-electriques",
         "n": "Radiateurs électriques",
         "u": "u",
         "fp": 500,
@@ -1391,6 +1550,7 @@
         "note": "émetteur autonome (sans chaudière ni PAC)"
       },
       {
+        "id": "cha-plancher-chauffant",
         "n": "Plancher chauffant",
         "u": "m2",
         "fp": 90,
@@ -1418,6 +1578,7 @@
         ]
       },
       {
+        "id": "cha-seche-serviette",
         "n": "Sèche-serviette",
         "u": "u",
         "fp": 245,
@@ -1496,6 +1657,7 @@
         }
       },
       {
+        "id": "cha-ventilation-vmc",
         "n": "Ventilation (VMC)",
         "u": "u",
         "fp": 800,
@@ -1521,6 +1683,7 @@
         "note": "renouvelle l'air · simple flux (basique) ou double flux (récupère la chaleur)"
       },
       {
+        "id": "cha-thermostat-pilotage",
         "n": "Thermostat / pilotage",
         "u": "u",
         "fp": 250,
@@ -1528,6 +1691,7 @@
         "note": "régulation & programmation du chauffage"
       },
       {
+        "id": "cha-desembouage-du-reseau-de-chauffage",
         "n": "Désembouage du réseau de chauffage",
         "u": "forfait",
         "fp": 500,
@@ -1542,24 +1706,28 @@
     "tva": 10,
     "t": [
       {
+        "id": "rev-preparation-du-sol-ragreage",
         "n": "Préparation du sol (ragréage)",
         "u": "m2",
         "fp": 22,
         "sm": 8
       },
       {
+        "id": "rev-carrelage-au-sol",
         "n": "Carrelage au sol",
         "u": "m2",
         "fp": 70,
         "sm": 30
       },
       {
+        "id": "rev-sol-stratifie-imitation-bois",
         "n": "Sol stratifié (imitation bois)",
         "u": "m2",
         "fp": 50,
         "sm": 22
       },
       {
+        "id": "rev-parquet-bois",
         "n": "Parquet bois",
         "u": "m2",
         "fp": 90,
@@ -1584,6 +1752,7 @@
         ]
       },
       {
+        "id": "rev-poncage-vitrification-parquet",
         "n": "Ponçage + vitrification parquet",
         "u": "m2",
         "fp": 40,
@@ -1591,24 +1760,28 @@
         "note": "rénover un parquet existant (ponçage + vitrification/huile)"
       },
       {
+        "id": "rev-sol-souple-pvc-lino",
         "n": "Sol souple (PVC, lino)",
         "u": "m2",
         "fp": 45,
         "sm": 20
       },
       {
+        "id": "rev-moquette",
         "n": "Moquette",
         "u": "m2",
         "fp": 35,
         "sm": 15
       },
       {
+        "id": "rev-beton-cire-resine",
         "n": "Béton ciré / résine",
         "u": "m2",
         "fp": 110,
         "sm": 30
       },
       {
+        "id": "rev-etancheite-sous-carrelage-spec-douche",
         "n": "Étanchéité sous carrelage (SPEC douche)",
         "u": "m2",
         "fp": 40,
@@ -1616,12 +1789,14 @@
         "note": "natte/résine + bandes d'angle sur placo hydrofuge, avant carrelage"
       },
       {
+        "id": "rev-faience-carrelage-mural",
         "n": "Faïence / carrelage mural",
         "u": "m2",
         "fp": 70,
         "sm": 30
       },
       {
+        "id": "rev-plinthes",
         "n": "Plinthes",
         "u": "ml",
         "fp": 13,
@@ -1651,6 +1826,7 @@
         ]
       },
       {
+        "id": "rev-seuils-barres-de-seuil",
         "n": "Seuils / barres de seuil",
         "u": "u",
         "fp": 40,
@@ -1664,18 +1840,21 @@
     "tva": 10,
     "t": [
       {
+        "id": "pei-retirer-l-ancien-papier-peint",
         "n": "Retirer l'ancien papier peint",
         "u": "m2",
         "fp": 10,
         "sm": 2
       },
       {
+        "id": "pei-preparation-des-surfaces",
         "n": "Préparation des surfaces",
         "u": "m2",
         "fp": 15,
         "sm": 4
       },
       {
+        "id": "pei-sous-couche-primaire",
         "n": "Sous-couche / primaire",
         "u": "m2",
         "fp": 8,
@@ -1683,6 +1862,7 @@
         "note": "1 couche de primaire · support neuf/poreux"
       },
       {
+        "id": "pei-peinture-des-murs",
         "n": "Peinture des murs",
         "u": "m2",
         "fp": 25,
@@ -1690,6 +1870,7 @@
         "note": "2 couches de finition"
       },
       {
+        "id": "pei-peinture-des-plafonds",
         "n": "Peinture des plafonds",
         "u": "m2",
         "fp": 28,
@@ -1697,6 +1878,7 @@
         "note": "2 couches de finition"
       },
       {
+        "id": "pei-peinture-des-boiseries",
         "n": "Peinture des boiseries",
         "u": "u",
         "fp": 90,
@@ -1704,12 +1886,14 @@
         "note": "2 couches · par ouvrant (porte)"
       },
       {
+        "id": "pei-lasure-vernis-boiseries",
         "n": "Lasure / vernis (boiseries)",
         "u": "m2",
         "fp": 30,
         "sm": 8
       },
       {
+        "id": "pei-peinture-speciale-anti-humidite",
         "n": "Peinture spéciale (anti-humidité)",
         "u": "m2",
         "fp": 30,
@@ -1717,12 +1901,14 @@
         "note": "2 couches · anti-humidité/moisissures"
       },
       {
+        "id": "pei-pose-de-papier-peint",
         "n": "Pose de papier peint",
         "u": "m2",
         "fp": 30,
         "sm": 12
       },
       {
+        "id": "pei-enduit-decoratif-beton-cire-mural-stuc",
         "n": "Enduit décoratif (béton ciré mural, stuc)",
         "u": "m2",
         "fp": 70,
@@ -1736,6 +1922,7 @@
     "tva": 10,
     "t": [
       {
+        "id": "min-porte-interieure-battante",
         "n": "Porte intérieure battante",
         "u": "u",
         "fp": 320,
@@ -1743,6 +1930,7 @@
         "note": "alvéolaire standard"
       },
       {
+        "id": "min-porte-interieure-ame-pleine",
         "n": "Porte intérieure âme pleine",
         "u": "u",
         "fp": 450,
@@ -1750,6 +1938,7 @@
         "note": "isophonique / plus lourde"
       },
       {
+        "id": "min-porte-interieure-coulissante",
         "n": "Porte intérieure coulissante",
         "u": "u",
         "fp": 700,
@@ -1757,6 +1946,7 @@
         "note": "galandage (dans la cloison) ou en applique"
       },
       {
+        "id": "min-placards-rangements",
         "n": "Placards & rangements",
         "u": "ml",
         "fp": 500,
@@ -1764,6 +1954,7 @@
         "note": "penderie / placard fermé avec portes"
       },
       {
+        "id": "min-dressing-sur-mesure",
         "n": "Dressing sur mesure",
         "u": "ml",
         "fp": 750,
@@ -1771,12 +1962,14 @@
         "note": "coin ou pièce dressing aménagé (walk-in)"
       },
       {
+        "id": "min-verriere-interieure",
         "n": "Verrière intérieure",
         "u": "m2",
         "fp": 700,
         "sm": 450
       },
       {
+        "id": "min-meuble-sur-mesure",
         "n": "Meuble sur mesure",
         "u": "ml",
         "fp": 600,
@@ -1784,6 +1977,7 @@
         "note": "bibliothèque, meuble TV, sous-pente…"
       },
       {
+        "id": "min-habillages-moulures-bois",
         "n": "Habillages & moulures bois",
         "u": "ml",
         "fp": 30,
@@ -1797,6 +1991,7 @@
     "tva": 10,
     "t": [
       {
+        "id": "cui-cuisine-complete-neuve-tout-compris",
         "n": "Cuisine complète neuve — tout compris",
         "u": "ml",
         "fp": 2000,
@@ -1804,6 +1999,7 @@
         "note": "meubles + plan + crédence + électroménager standard + pose"
       },
       {
+        "id": "cui-meubles-de-cuisine",
         "n": "Meubles de cuisine",
         "u": "ml",
         "fp": 900,
@@ -1811,18 +2007,21 @@
         "note": "meubles bas + hauts posés (hors plan, crédence, électroménager)"
       },
       {
+        "id": "cui-rafraichir-une-cuisine-facades-plan",
         "n": "Rafraîchir une cuisine (façades / plan)",
         "u": "ml",
         "fp": 600,
         "sm": 350
       },
       {
+        "id": "cui-ilot-central",
         "n": "Îlot central",
         "u": "u",
         "fp": 2500,
         "sm": 1800
       },
       {
+        "id": "cui-plan-de-travail-seul",
         "n": "Plan de travail seul",
         "u": "ml",
         "fp": 150,
@@ -1852,6 +2051,7 @@
         ]
       },
       {
+        "id": "cui-credence-seule",
         "n": "Crédence seule",
         "u": "ml",
         "fp": 120,
@@ -1886,18 +2086,21 @@
         ]
       },
       {
+        "id": "cui-evier-robinetterie",
         "n": "Évier + robinetterie",
         "u": "u",
         "fp": 450,
         "sm": 310
       },
       {
+        "id": "cui-hotte",
         "n": "Hotte",
         "u": "u",
         "fp": 400,
         "sm": 300
       },
       {
+        "id": "cui-raccordements-eau-elec-evac",
         "n": "Raccordements (eau, élec, évac)",
         "u": "forfait",
         "fp": 300,

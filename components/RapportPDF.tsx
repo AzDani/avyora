@@ -1,4 +1,5 @@
 import { CATALOG, buildDevis, regionCoef, ICON, customTotals, piecesEff, sdbEff, type Ctx, type Selection, type CustomLine } from "@/lib/estimateur";
+import { normaliserCles } from "@/lib/estimateur/identite";
 import { catT } from "@/lib/estimateur/catalog-i18n";
 import { getLocale } from "@/lib/i18n/server";
 
@@ -135,7 +136,7 @@ export async function RapportPDF({
   const ctx = reponses?.ctx
     ? { ...reponses.ctx, codePostal: reponses.ctx.codePostal ?? reponses.codePostal }
     : undefined;
-  const sel = (reponses?.sel ?? {}) as Selection;
+  const sel = normaliserCles((reponses?.sel ?? {}) as Selection);
   const custom = (reponses?.custom ?? []) as CustomLine[];
   const customVal = custom.filter((x) => x.on !== false && !x.draft); // lignes perso validées
   if (!ctx) return null;

@@ -4,6 +4,7 @@ import {
   CATALOG, buildDevis, regionCoef,
   type Ctx, type Selection, type Ampleur, type Finition, type QuiRealise,
 } from "@/lib/estimateur";
+import { normaliserCles } from "@/lib/estimateur/identite";
 import { getLocale } from "@/lib/i18n/server";
 import { dict } from "@/lib/i18n/dictionaries";
 
@@ -59,7 +60,7 @@ export default async function ResultatRapide({
   const locale = await getLocale();
   const t = dict(locale).rapide;
   const ctx = (reponses.ctx ?? {}) as Ctx;
-  const sel = (reponses.sel ?? {}) as Selection;
+  const sel = normaliserCles((reponses.sel ?? {}) as Selection);
   const cp = reponses.codePostal ?? ctx.codePostal ?? "";
   const nf = locale === "en" ? "en-US" : "fr-FR";
 

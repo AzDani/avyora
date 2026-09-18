@@ -5,6 +5,7 @@
  */
 import { buildDevis, statutLigne, key, type Ctx, type Selection } from "./core";
 import { CATALOG } from "./catalog";
+import { normaliserCles } from "./identite";
 
 export type ProjetEstim = {
   ttc: number;
@@ -25,8 +26,8 @@ export function avancementProjet(reponses: unknown): Avancement {
   const vide: Avancement = { total: 0, done: 0, prog: 0, pct: 0, statut: "estimation" };
   const r = reponses as Rep;
   if (!estFormatEstimateur(r)) return vide;
-  const dv = buildDevis(CATALOG, r.ctx as Ctx, r.sel || {});
-  const statuts = r.statuts || {};
+  const dv = buildDevis(CATALOG, r.ctx as Ctx, normaliserCles(r.sel));
+  const statuts = normaliserCles(r.statuts);
   const total = dv.lignes.length;
   let done = 0, prog = 0;
   for (const li of dv.lignes) {

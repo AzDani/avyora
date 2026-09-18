@@ -10,6 +10,7 @@ import { EST_CSS } from "./estimateur-styles";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { catT } from "@/lib/estimateur/catalog-i18n";
 import { CATALOG, buildDevis, PHASES, ICON, visible, lineHT, effRate, statutLigne, cleLegacy, regionCoef, piecesEff, type Ctx, type Selection } from "@/lib/estimateur";
+import { normaliserCles } from "@/lib/estimateur/identite";
 
 // Traductions de l'interface (chrome/UI uniquement) — les données (corps d'état, postes) restent telles quelles.
 const TR = {
@@ -284,7 +285,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
   const s = TR[locale];
   // Sécurité rétro-compat : le code postal (coef régional) était stocké hors ctx dans d'anciens projets.
   const ctx = reponses?.ctx ? { ...reponses.ctx, codePostal: reponses.ctx.codePostal ?? reponses.codePostal } : undefined;
-  const sel = (reponses?.sel || {}) as Selection;
+  const sel = normaliserCles((reponses?.sel || {}) as Selection);
   const [statuts, setStatuts] = useState<Record<string, number>>(reponses?.statuts || {});
   const [closedPh, setClosedPh] = useState<Record<string, boolean>>({}); // phases repliées (Suivi / Détail)
   const togglePh = useCallback((ph: string) => setClosedPh((p) => ({ ...p, [ph]: !p[ph] })), []);
