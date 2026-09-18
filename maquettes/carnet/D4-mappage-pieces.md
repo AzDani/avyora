@@ -16,7 +16,7 @@ Mesuré sur un T3 de 70 m² en rénovation complète, CP 33620 :
 
 | | aujourd'hui | après injection des mesures du plan |
 |---|---|---|
-| une pièce de plus | 1 003 € TTC | **149 €** (seuils 41 € + peinture des boiseries 99 €) |
+| une pièce de plus | 1 152 € TTC | **149 €** (seuils 41 € + peinture des boiseries 99 €) |
 | une salle de bain de plus | 3 111 € TTC | **913 €**, dont 858 € de faïence forfaitisée à 12 m² |
 
 Les trois autres postes par pièce — porte, radiateur, plinthes — sont mesurés par le plan et
@@ -24,8 +24,12 @@ injectés en quantité manuelle, donc le compteur ne les pilote plus. **Le mappa
 d'abord une décision de chiffrage : c'est une décision de lisibilité.** La décision D1 renvoie
 l'utilisateur sur l'intake détaillé pour valider ; ce qu'il y lit doit ressembler à son plan.
 
+Les deux colonnes sortent du même devis, mêmes postes cochés : la seule différence est que le
+plan impose ses quantités mesurées (radiateur 516 €, porte 325 €, plinthes 103 €), ce qui éteint
+le calcul automatique de ces lignes.
+
 **Règle de livraison : ce mappage ne part jamais seul.** Livré sans l'injection mesurée, il
-chiffrerait une pièce non classée 1 003 € de moins au lieu de 149 €.
+chiffrerait une pièce non classée 1 152 € de moins au lieu de 149 €.
 
 ---
 

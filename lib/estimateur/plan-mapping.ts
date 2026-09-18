@@ -25,12 +25,14 @@
  *    `compteursDepuisPlan` renvoie donc toujours les huit champs.
  *
  * CE QUE LE MAPPAGE PÈSE, MESURÉ (T3 70 m², rénovation complète, CP 33620) :
- * une pièce de plus vaut 1 003 € TTC aujourd'hui, mais 149 € une fois que le plan injecte ses
- * mesures (porte, radiateur, plinthes) — il ne reste que « Seuils / barres de seuil » (41 €) et
- * « Peinture des boiseries » (99 €), les deux seuls postes par pièce que le plan ne mesure pas.
+ * une pièce de plus vaut 1 152 € TTC aujourd'hui, mais 149 € une fois que le plan injecte ses
+ * mesures (radiateur 516 €, porte 325 €, plinthes 103 €) — il ne reste que « Seuils / barres de
+ * seuil » (41 €) et « Peinture des boiseries » (99 €), les deux seuls postes par pièce que le
+ * plan ne mesure pas.
  * Une salle de bain de plus vaut 3 111 € aujourd'hui et 913 € après injection des appareils —
  * dont 858 € de « Faïence / carrelage mural », forfaitisée à 12 m² par salle de bain.
- * D'où la règle de livraison : ce mappage ne part JAMAIS sans l'injection mesurée.
+ * D'où la règle de livraison : ce mappage ne part JAMAIS sans l'injection mesurée — livré seul,
+ * chaque erreur de case coûte 1 152 € au lieu de 149 €.
  */
 
 /** Les 20 types de pièces de l'éditeur de plan (ROOM_TYPES, maquettes/plan-editor.html). */
