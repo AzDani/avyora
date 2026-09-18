@@ -57,3 +57,38 @@ Tous mesurés sur le vrai catalogue, TTC, finition standard, CP 33620 — aucun 
 - Sols pour 20 m² : moquette 715 · souple 915 · stratifié 1 018 · carrelage 1 430 · parquet neuf
   2 020 · béton ciré 2 345. Ponçage d'un parquet existant : 869.
 - Doublage ITI facturé deux fois (D2, corrigé) : **4 646 €** sur un T3 de 70 m².
+
+## D17 · Ossature dessinée : poteaux et poutres
+
+Une poutre n'existait que comme ligne **induite** par la démolition d'un mur porteur. Elle est
+maintenant dessinable, le poteau aussi, avec portée, section et matériau.
+
+Prix de la maquette, fourni-posé, **validés le 18/09/2026** :
+
+| | acier (IPN/HEB) | bois lamellé-collé | béton armé |
+|---|---|---|---|
+| **Poutre**, €/ml de portée | **480** | **190** | **260** |
+| **Poteau**, €/unité | **550** | **350** | **450** |
+
+D'où ils viennent — aucun n'est inventé :
+
+- **Poutre acier 480 €/ml** : reprend `PRIX.poutreReprise` déjà en place depuis D9, inchangé.
+  Recoupé sur une poutre de 4 m → 1 920 €, à l'intérieur de la fourchette « IPN posé
+  1 500–3 500 € » relevée sur le marché.
+- **Lamellé-collé 190 €/ml** : fourniture relevée à 30–160 €/ml, et la pose coûte à peu près
+  autant que la fourniture. Milieu de fourchette doublé.
+- **Béton armé 260 €/ml** et les trois poteaux : extrapolés du générateur de prix CYPE
+  (1 075–1 177 €/m³ pour un poteau béton armé, coffrage et acier compris), majorés de l'étaiement
+  que ce prix ne couvre pas en rénovation. Ce sont les quatre valeurs les moins directement
+  sourcées du lot.
+
+**Règle du double comptage.** Une poutre **à poser** le long d'un mur marqué « à démolir » EST sa
+reprise de charge : la ligne induite disparaît. Éloignée, les deux lignes coexistent. Une poutre
+déjà en place ne remplace rien (D1 : seul le delta est facturé). La maquette et la table de
+correspondance appliquent la même règle — elles divergeaient au premier jet.
+
+**Ce qui reste ouvert.** Le catalogue de l'estimateur n'a **qu'un** poste de poutre, en IPN/HEA :
+un lamellé-collé ou un béton armé sortent avec une déduction disant que la quantité est juste mais
+le prix unitaire celui de l'acier. Et il n'a **aucun poste de poteau** : un poteau dessiné est
+chiffré dans la maquette mais part dans les `ignores` de la correspondance. Les prix ci-dessus
+sont validés, donc la création du poste « Poteau » n'attend plus qu'une décision.
