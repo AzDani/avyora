@@ -100,3 +100,26 @@ describe("injection · l'ordre de relecture", () => {
     expect(derniereDeduction).toBeLessThan(premiereSansDeduction);
   });
 });
+
+describe("import · le contrat est validé comme une entrée non fiable", () => {
+  it("un plan sans numéro de contrat est refusé, avec la raison", async () => {
+    const { planImportSchema } = await import("@/lib/validation");
+    const r = planImportSchema.safeParse({ detailNiveaux: [] });
+    expect(r.success).toBe(false);
+    expect(r.error!.issues[0].message).toContain("contrat");
+  });
+  it("un plan d'une autre version majeure est refusé en le disant", async () => {
+    const { planImportSchema } = await import("@/lib/validation");
+    const r = planImportSchema.safeParse({ contrat: "2.0.0" });
+    expect(r.success).toBe(false);
+    expect(r.error!.issues[0].message).toContain("autre version");
+  });
+  it("le contrat de la scène de référence passe la validation", async () => {
+    const { planImportSchema } = await import("@/lib/validation");
+    expect(planImportSchema.safeParse(plan).success).toBe(true);
+  });
+  it("une version mineure plus récente passe : on n'ajoute que des clés", async () => {
+    const { planImportSchema } = await import("@/lib/validation");
+    expect(planImportSchema.safeParse({ ...plan, contrat: "1.9.3" }).success).toBe(true);
+  });
+});

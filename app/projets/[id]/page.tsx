@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getProjet } from "@/lib/data/projects";
 import { getUser, estPro } from "@/lib/auth";
 import ProjetActions from "@/components/ProjetActions";
+import { ImporterPlan } from "@/components/ImporterPlan";
 import EstimationResultat from "@/components/EstimationResultat";
 import ResultatRapide from "@/components/ResultatRapide";
 import { regionLabel, type Ctx, type Selection, type Ampleur, type QuiRealise } from "@/lib/estimateur";
@@ -56,6 +57,9 @@ export default async function ProjetPage({ params }: { params: Promise<{ id: str
           <ProjetActions id={projet.id} archived={!!projet.archived} />
         </div>
       </div>
+
+      {/* Le plan dessiné remplit les quantités du devis — après relecture, jamais avant (D1). */}
+      {!isRapide && <div className="card p-4 mb-4"><ImporterPlan projetId={String(projet.id)} /></div>}
 
       {isRapide
         ? <ResultatRapide reponses={reponses} projectId={projet.id} isPro={estPro(user)} />

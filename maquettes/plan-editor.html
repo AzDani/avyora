@@ -443,6 +443,12 @@ pre{background:#14112f;color:#d7d4f2;font-family:"Geist Mono",monospace;font-siz
 <kbd>V</kbd><span>Sélectionner / déplacer</span><kbd>M</kbd><span>Tracer des murs</span><kbd>P</kbd><span>Portes & fenêtres</span><kbd>E</kbd><span>Équipements</span><kbd>C</kbd><span>Cote</span><kbd>L</kbd><span>Mesurer (longueur + surface)</span><kbd>Glisser</kbd><span>Dans le vide = déplacer la vue (tous les outils)</span><kbd>Clic droit</kbd><span>Termine la tâche en cours et revient à la sélection</span>
 <kbd>Maj</kbd><span>Force les angles droits pendant le tracé</span><kbd>Entrée</kbd><span>Ferme la pièce (ou pose la longueur tapée)</span><kbd>Échap</kbd><span>Termine sans fermer / désélectionne</span><kbd>Suppr</kbd><span>Supprime l'élément sélectionné</span><kbd>R</kbd><span>Pivote l'équipement sélectionné (90°)</span><kbd>Flèches</kbd><span>Déplace l'élément de 5 cm (Maj : 50 cm)</span><kbd>Ctrl Z / Y</kbd><span>Annuler / rétablir</span><kbd>Molette</kbd><span>Zoom · <b>clic milieu</b> ou <kbd>Espace</kbd>+glisser = déplacer la vue</span></div><div class="btnrow"><button class="ib" style="flex:1" onclick="closeModal();openModal('welcome')">Revoir le guide en 3 étapes</button></div><button class="mclose" onclick="closeModal()">Fermer</button></div></div>
 <div class="overlay" id="m-level"><div class="modal"><h3>Ajouter un niveau</h3><div class="sub">Comment démarrer ce nouvel étage ?</div><div class="choice"><button onclick="addLevel('copy')"><b>Copier les murs du niveau actuel</b><small>Idéal pour un étage : même emprise, tu ajustes les cloisons.</small></button><button onclick="addLevel('empty')"><b>Niveau vide</b><small>Repartir d'une feuille blanche.</small></button></div><button class="mclose" onclick="closeModal()">Annuler</button></div></div>
+<div class="overlay" id="m-envoi"><div class="modal"><h3>Envoyer ce plan vers mon estimation</h3>
+  <div class="sub">Copie ce bloc, puis colle-le dans AVYORA — <b>Mon projet → Importer un plan</b>. Les quantités remplissent le devis, et tu les vérifies avant qu'elles comptent.</div>
+  <textarea id="envoiJson" readonly spellcheck="false" style="width:100%;height:190px;font-family:var(--font-mono,ui-monospace),monospace;font-size:11px;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--canvas);resize:vertical"></textarea>
+  <div class="btnrow" style="margin-top:12px"><button class="ib primary" style="flex:1" onclick="copierEnvoi()">Copier</button><button class="ib" onclick="telechargerEnvoi()">Télécharger le fichier</button></div>
+  <div class="tip" id="envoiInfo" style="margin-top:10px"></div>
+  <button class="mclose" onclick="closeModal()">Fermer</button></div></div>
 <div class="overlay" id="m-export"><div class="modal wide"><h3>Dossier du plan</h3><div class="sub noprint" id="exportSub">Tous les niveaux, en vue Existant et Projet, plus le récapitulatif des quantités. <b>Imprimer / PDF</b> pour tout sortir en un document ; clic droit sur une image pour l'enregistrer seule.</div><div class="btnrow noprint" style="margin:0 0 14px"><button class="ib primary" style="flex:1" onclick="window.print()">🖨 Imprimer / enregistrer en PDF</button><button class="ib" onclick="closeModal()">Fermer</button></div><div id="exportGallery"></div><button class="mclose noprint" onclick="closeModal()">Fermer</button></div></div>
 <div class="overlay" id="m-calib"><div class="modal"><h3>Caler l'échelle du calque</h3><div class="sub">Tu as marqué deux points sur le calque. Quelle est la distance réelle entre ces deux points ?</div><div class="row"><label>Distance réelle</label><span><input class="fin n" id="calibVal" value="3.00" type="number" step="0.01" min="0.1"> m</span></div><button class="mclose" onclick="applyCalib()">Appliquer</button></div></div>
 
@@ -2884,7 +2890,8 @@ function renderFoot(){
   <div class="tot"><span class="k">Niveaux · pièces</span><span class="v">${state.levels.length} · ${hv.rooms}</span></div>
   <div class="tot"><span class="k">Portes · fenêtres</span><span class="v">${q.doors} · ${q.windows}</span></div>
   <div class="tot"><span class="k">Surface habitable${mode()==='existant'?' · existant':mode()==='projet'?' · projet':''}</span><span class="v big">${fmtM2(hv.area)}</span></div>
-  <button class="estimate" onclick="showEstimate()" ${q.rooms?'':'disabled'}>⚡ Estimer ce plan${pro?'':' · Pro'}</button>`;
+  <button class="estimate" onclick="showEstimate()" ${q.rooms?'':'disabled'}>⚡ Estimer ce plan${pro?'':' · Pro'}</button>
+  <button class="ib" style="width:100%;justify-content:center;margin-top:8px" onclick="ouvrirEnvoi()" ${q.rooms?'':'disabled'}>↗ Envoyer vers mon estimation AVYORA</button>`;
   // compteur qui « monte » de l'ancienne valeur à la nouvelle
   const el=document.getElementById('budgetVal');if(el&&px.total!==_lastPrix){const from=_lastPrix,to=px.total,t0=performance.now();cancelAnimationFrame(_prixRAF);
     const step=t=>{const k=Math.min(1,(t-t0)/450),e=1-Math.pow(1-k,3),val=Math.round(from+(to-from)*e);el.textContent=eur(val);if(k<1)_prixRAF=requestAnimationFrame(step);};_prixRAF=requestAnimationFrame(step);}
@@ -3161,6 +3168,33 @@ function surfaceTable(q,compact){
   order.forEach(k=>{const R=rows[k];h+=`<tr${R.ext?' style="color:#6c6b86"':''}><td>${plural(k)}${R.ext?' <small>(hors habitable)</small>':''}</td>${multi?R.by.map(a=>`<td class="n">${a?fmtM2(a):'—'}</td>`).join(''):''}<td class="n">${fmtM2(R.by.reduce((x,y)=>x+y,0))}</td></tr>`;});
   h+=`<tr class="tot"><td>Surface habitable</td>${multi?lv.map((L2,i)=>`<td class="n">${fmtM2(tot(i))}</td>`).join(''):''}<td class="n">${fmtM2(q.area)}</td></tr></table>`;
   return h;
+}
+/* ---------- Le pont vers l'app ---------- */
+/* Le plan sort par `contratPlan()` et rien d'autre. On propose la copie AVANT le téléchargement :
+   dans une page servie en bac à sable, un téléchargement lancé par la page est bloqué sans rien
+   dire — le bloc de texte, lui, marche partout. */
+function ouvrirEnvoi(){
+  const q=contratPlan();
+  const txt=JSON.stringify(q);
+  const ta=document.getElementById('envoiJson');ta.value=txt;
+  const n=(q.detailNiveaux||[]).reduce((s,l)=>s+(l.rooms||[]).length,0);
+  document.getElementById('envoiInfo').innerHTML=`Contrat <b>${esc(q.contrat)}</b> · ${state.levels.length} niveau${state.levels.length>1?'x':''} · ${n} pièce${n>1?'s':''} · ${Math.round(txt.length/1024)} Ko`;
+  openModal('envoi');
+}
+function copierEnvoi(){
+  const ta=document.getElementById('envoiJson');
+  const fini=ok=>toast(ok?'Plan copié — colle-le dans AVYORA':'Copie refusée par le navigateur : sélectionne le texte et copie-le à la main',ok);
+  try{navigator.clipboard.writeText(ta.value).then(()=>fini(true),()=>{ta.select();fini(false);});}
+  catch{ta.select();fini(false);}
+}
+function telechargerEnvoi(){
+  try{
+    const b=new Blob([document.getElementById('envoiJson').value],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(b);
+    a.download=(state.name||'plan').replace(/[^\w\-]+/g,'-').toLowerCase()+'.avyora-plan.json';
+    document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+    toast('Fichier téléchargé',true);
+  }catch{toast('Téléchargement bloqué ici : utilise « Copier »');}
 }
 function showEstimate(){
   const q=quantities(); if(!q.rooms){toast('Trace d\'abord au moins une pièce fermée');return;}

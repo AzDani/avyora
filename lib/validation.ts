@@ -76,6 +76,33 @@ export function valider<T>(
   return { ok: true, data: r.data };
 }
 
+/**
+ * Contrat émis par l'éditeur de plan. C'est une entrée qui traverse une frontière : elle est
+ * validée comme telle, même si elle vient de notre propre maquette.
+ *
+ * Le numéro de version est vérifié AVANT la forme : c'est à ça qu'il sert. Un contrat d'une
+ * autre version majeure n'est pas « invalide », il est produit par une version du logiciel que
+ * ce code ne sait pas lire — et le message le dit, au lieu du « Données invalides. » générique.
+ *
+ * Le volume est borné à 1,5 Mo sérialisé : une géométrie sur plusieurs niveaux avec sa
+ * traçabilité pèse quelques centaines de kilo-octets ; au-delà, c'est autre chose.
+ */
+export const MAJEURE_CONTRAT_PLAN = 1;
+export const planImportSchema = z
+  .object({
+    contrat: z.string().optional(),
+    plan: z.object({ id: z.string().nullable().optional(), nom: z.string().max(200).optional() }).optional(),
+  })
+  .loose()
+  // Les trois contrôles sont séparés pour que le message dise LEQUEL a échoué : « Données
+  // invalides » n'apprendrait rien à quelqu'un dont le plan vient d'une autre version.
+  .refine((c) => typeof c.contrat === "string" && /^\d+\.\d+\.\d+$/.test(c.contrat),
+    { message: "numéro de contrat absent ou malformé — ce fichier ne vient pas de l'éditeur de plan" })
+  .refine((c) => typeof c.contrat !== "string" || !/^\d+\.\d+\.\d+$/.test(c.contrat)
+    || Number(c.contrat.split(".")[0]) === MAJEURE_CONTRAT_PLAN,
+    { message: `ce plan vient d'une autre version de l'éditeur (contrat ${MAJEURE_CONTRAT_PLAN}.x attendu)` })
+  .refine((c) => JSON.stringify(c).length <= 1_500_000, { message: "plan trop volumineux" });
+
 /** Lit le JSON du body sans jeter (retourne null si invalide → la validation échouera proprement). */
 export async function jsonBody(req: Request): Promise<unknown> {
   try {
