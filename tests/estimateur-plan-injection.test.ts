@@ -23,7 +23,14 @@ describe("injection · ce que le plan écrit", () => {
   it("sur un projet vide, tout est ajouté et rien n'est épinglé", () => {
     expect(r.bilan.ajoutees).toBe(contributions.length);
     expect(r.bilan.epinglees).toBe(0);
-    expect(r.bilan.deductions).toBeGreaterThan(3);
+    /* Les déductions sont les lignes où le PLAN a choisi à la place de l'utilisateur : elles
+       doivent arriver jusqu'au bilan, sinon l'écran de validation ne peut pas les signaler.
+       On compte ce que la correspondance a réellement déduit plutôt qu'un seuil en dur — le
+       seuil « > 3 » cassait dès qu'une déduction disparaissait pour une bonne raison (D21 :
+       le matériau de plancher n'est plus deviné, il est demandé). */
+    const deduites = contributions.filter((c) => c.deduction).length;
+    expect(deduites).toBeGreaterThan(0);
+    expect(r.bilan.deductions).toBe(deduites);
   });
 
   it("la sélection reçue n'est pas modifiée", () => {

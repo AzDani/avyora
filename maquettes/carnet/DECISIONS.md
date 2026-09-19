@@ -257,3 +257,41 @@ du niveau. 1 300 € que le devis porte et que le compteur annonce comme non chi
 - **B** — l'estimateur retire sa règle de repli au niveau : rien n'est facturé tant que
   l'utilisateur n'a pas déclaré le plancher pièce par pièce. C'est ce que dit déjà le contrat 1.3
   (« un choix non tranché sort à null, au consommateur d'appliquer le défaut ET de le signaler »).
+
+## D21 · On ne facture rien tant que ce n'est pas décidé sur le plan
+
+Décidé le 19/09/2026 par Dani, sur le point ouvert de D20 : « oui on facture rien tant que c'est
+pas décidé sur le plan ».
+
+**Il n'y a plus qu'UNE règle qui pose un plancher** : une pièce qui déclare `plancherACreer`
+(contrat 1.8). Le repli qui vivait au niveau — cocher « étage créé » suffisait à facturer le
+plancher du niveau entier, au matériau du niveau ou à **bois par défaut** — est retiré.
+
+Deux raisons, et la seconde est la vraie :
+
+1. **Le contrat 1.3 le disait déjà** : « un choix non tranché sort à null, c'est au consommateur
+   d'appliquer le défaut ET de le signaler ». Le repli fabriquait un choix — bois — que
+   l'utilisateur n'avait jamais fait, sur l'ouvrage le plus cher d'une création d'étage.
+2. **Les deux règles se déclenchaient ensemble sur le chemin normal de l'éditeur.** Cocher
+   « étage créé » passe justement les pièces en « pas de plancher » : le plancher sortait en
+   double, 14,44 m² facturés 28,88.
+
+**Ne rien facturer n'est pas se taire.** Un étage créé dont les pièces ne se prononcent pas
+remonte maintenant à l'écran de validation, avec les pièces concernées, leur surface, et le geste
+exact qui règle la situation — le même que l'éditeur affiche déjà sur le plan :
+
+> plancher de « Étage » — 1 pièce(s), 14.44 m² → étage créé par le projet, mais son plancher n'est
+> pas décidé sur le plan : mets le sol de ces pièces sur « Pas de plancher » et choisis bois ou béton
+
+La maquette n'a pas bougé : elle refusait déjà de chiffrer ce plancher et affichait cet
+avertissement. C'est l'estimateur qui s'aligne sur elle, pour une fois — parce que sur ce point
+c'est la maquette qui appliquait la règle du contrat.
+
+**Effet mesuré** sur la scène de référence : l'écart compteur ↔ devis passe de **+12,7 % à
++9,5 %**, et `couverture.mts` ne signale plus aucune rupture. Le seuil de l'outil descend de 13 à
+**10 %** — il ne remonte jamais.
+
+Ce qui reste dans les 9,5 % est connu et listé en D20 : des ouvrages que l'estimateur dérive et
+que le compteur ignore (plinthes, faïence, faux plafond, chape, cloison hydrofuge, robinetterie,
+colonne et paroi de douche), la règle D8 du ponçage de parquet, la distinction D15 spot /
+plafonnier, et la prise double.

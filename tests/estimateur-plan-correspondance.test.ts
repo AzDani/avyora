@@ -198,15 +198,25 @@ describe("table de correspondance · le reste du périmètre", () => {
     expect(c.quantite).toBeCloseTo(13.41, 1);
     expect(c.sources).toEqual(["p1"]);
   });
-  it("un étage créé apporte son plancher, au défaut bois signalé", () => {
-    const c = contributions.find((x) => x.poste === "toi-creer-un-plancher-bois")!;
-    expect(c.quantite).toBeCloseTo(14.44, 1);
-    expect(c.deduction).toContain("bois par défaut");
+  /* D21 : on ne facture rien tant que le plancher n'est pas décidé SUR LE PLAN. Cocher « étage
+     créé » ne suffit plus — personne ne fabrique le choix à la place de l'utilisateur (contrat
+     1.3). Mais ne rien facturer n'est pas se taire : l'ouvrage le plus cher de l'opération
+     remonte à l'écran de validation avec le geste qui le règle. */
+  it("un étage créé dont les pièces ne se prononcent pas ne facture AUCUN plancher", () => {
+    expect(q("toi-creer-un-plancher-bois")).toBe(0);
     expect(q("mac-plancher-beton-etage-cree")).toBe(0);
   });
-  it("le rez-de-chaussée n'est pas un étage créé : il n'apporte aucun plancher", () => {
-    const c = contributions.find((x) => x.poste === "toi-creer-un-plancher-bois")!;
-    expect(c.sources).toEqual([plan.detailNiveaux![1].id]);
+  it("… mais il le dit, en désignant les pièces à régler", () => {
+    const i = ignores.find((x) => /plancher de/.test(x.quoi))!;
+    expect(i, "aucun signalement pour le plancher non décidé").toBeTruthy();
+    expect(i.quoi).toContain("14.44 m²");
+    expect(i.pourquoi).toContain("Pas de plancher");
+    expect(i.sources).toEqual(plan.detailNiveaux![1].rooms!.map((r) => r.id));
+  });
+  it("le rez-de-chaussée n'est pas un étage créé : il ne signale aucun plancher", () => {
+    const rdc = plan.detailNiveaux![0].rooms!.map((r) => r.id);
+    for (const i of ignores.filter((x) => /plancher de/.test(x.quoi)))
+      expect(i.sources.some((s) => rdc.includes(s))).toBe(false);
   });
   /* Deux règles posent un plancher : celle du NIVEAU (« étage créé ») et celle de la PIÈCE
      (« pas de plancher », contrat 1.8). Cocher « étage créé » sur un étage déjà dessiné passe

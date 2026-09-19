@@ -411,22 +411,30 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
     }
   }
 
-  // ── Plancher d'un étage créé (D15) ────────────────────────────────────────
-  /* ⚠ Cette règle est la SECONDE à poser un plancher : celle d'au-dessus le fait pièce par pièce
-     dès qu'une pièce déclare `plancherACreer` (contrat 1.8). Or cocher « étage créé » dans
-     l'éditeur passe justement toutes ses pièces en « pas de plancher » — les deux règles se
-     déclenchaient donc ensemble et le plancher sortait en DOUBLE (14,44 m² facturés 28,88).
-     On ne compte donc ici que les pièces que la règle pièce par pièce n'a pas déjà prises ; sur
-     un étage dont aucune pièce ne se prononce, le total est inchangé. */
+  // ── Étage créé dont le plancher n'est pas décidé (D21) ───────────────────
+  /* Il n'y a qu'UNE règle qui pose un plancher, et c'est celle d'au-dessus : une pièce qui
+     déclare `plancherACreer`. Le repli qui vivait ici — cocher « étage créé » suffisait à
+     facturer le plancher de tout le niveau, au matériau du niveau ou à bois par défaut — a été
+     retiré le 19/09/2026 (D21) : on ne facture rien tant que ce n'est pas décidé SUR LE PLAN.
+     Deux raisons. Le contrat 1.3 le dit déjà — un choix non tranché sort à null, personne ne
+     fabrique le défaut à la place de l'utilisateur. Et les deux règles se déclenchaient ensemble
+     sur le chemin normal de l'éditeur (cocher « étage créé » passe ses pièces en « pas de
+     plancher »), ce qui sortait le plancher en DOUBLE : 14,44 m² facturés 28,88.
+
+     Ne rien facturer n'est pas se taire : un étage créé dont les pièces ne se prononcent pas est
+     l'ouvrage le plus cher de l'opération qui manque au devis. On le REMONTE donc à l'écran de
+     validation, avec le geste exact qui le règle — c'est le même message que l'éditeur affiche
+     déjà sur le plan. */
   for (const n of plan.detailNiveaux ?? []) {
     if (!n.neuf) continue;
-    const m2 = (n.rooms ?? []).reduce((t, r) => t + (r.plancherACreer ? 0 : (r.area ?? 0)), 0);
-    if (m2 <= 0) continue;
-    const src = n.id ? [n.id] : [];
-    const mat = n.plancher || "bois";
-    add(mat === "beton" ? "mac-plancher-beton-etage-cree" : "toi-creer-un-plancher-bois", +m2.toFixed(2), src,
-      `Plancher de l'étage créé (${mat})`, undefined,
-      n.plancher ? undefined : "Matériau du plancher non choisi : bois par défaut. Une dalle béton se chiffre autrement.");
+    const muettes = (n.rooms ?? []).filter((r) => !r.plancherACreer && (r.area ?? 0) > 0);
+    if (!muettes.length) continue;
+    const m2 = muettes.reduce((t, r) => t + (r.area ?? 0), 0);
+    ignores.push({
+      quoi: `plancher de « ${n.name ?? "l'étage créé"} » — ${muettes.length} pièce(s), ${m2.toFixed(2)} m²`,
+      pourquoi: "étage créé par le projet, mais son plancher n'est pas décidé sur le plan : mets le sol de ces pièces sur « Pas de plancher » et choisis bois ou béton",
+      sources: muettes.map((r) => r.id).filter(Boolean),
+    });
   }
 
   // ── Toiture : une grandeur, et l'action décide des postes ─────────────────

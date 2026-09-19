@@ -27,13 +27,13 @@ const SP = process.argv[2];
 if (!SP) { console.error("usage : npx tsx maquettes/tools/couverture.mts <dossier maquettes>"); process.exit(2); }
 
 /* Seuil d'écart global toléré entre le compteur du plan et le devis, sur la scène de référence.
-   Il n'est pas là pour excuser une dérive : il est là pour qu'une dérive NOUVELLE se voie. 13 %,
-   c'est la DETTE MESURÉE le 19/09/2026, pas une cible — elle vient d'ouvrages que l'estimateur
+   Il n'est pas là pour excuser une dérive : il est là pour qu'une dérive NOUVELLE se voie. 10 %,
+   c'est la DETTE MESURÉE le 19/09/2026 (9,5 %), pas une cible — elle vient d'ouvrages que l'estimateur
    dérive et que le compteur du plan ignore (plinthes, faïence, faux plafond, chape, robinetterie
    de baignoire, colonne et paroi de douche) et de deux règles qui n'existent que d'un côté
    (D8 : parquet sur parquet = ponçage ; D15 : spot ≠ plafonnier). On le baisse à chaque fois
    qu'on aligne un poste — jamais on ne le monte pour faire passer le contrôle. */
-const SEUIL_ECART_PC = 13;
+const SEUIL_ECART_PC = 10;
 
 const CAT = JSON.parse(readFileSync("lib/estimateur/catalog.json", "utf8"));
 const lots = Array.isArray(CAT) ? CAT : (CAT.lots ?? Object.values(CAT)[0]);
