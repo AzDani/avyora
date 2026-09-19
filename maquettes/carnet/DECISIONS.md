@@ -156,3 +156,50 @@ divergences.
 
 Conséquence chiffrée sur la scène de référence : l'arbitrage « si tu les remplaçais » passe de
 810 à **933 €**. Aucun autre champ du contrat ne bouge — les prix n'y ont jamais circulé.
+
+## D19 · Les neuf ouvrages abandonnés
+
+Décidé le 19/09/2026, dans la foulée de D18. Une fois les 14 prix recalés, il restait neuf prix
+de la maquette qui chiffraient un ouvrage **sans poste au catalogue**. Dani a tranché : « met tout
+à 0 dans la maquette, on abandonne ces postes ».
+
+Le mélange qui existait était le pire des trois : la maquette annonçait un montant, la table de
+correspondance n'avait rien à alimenter, et le devis ne portait pas la ligne. Personne ne voyait
+la différence — quatre de ces neuf disparaissaient en remontant une ligne « ignoré » à l'import,
+les cinq autres **en silence**.
+
+| prix | avant | ouvrage abandonné | l'import le signalait ? |
+|---|---|---|---|
+| `PRIX.boucher` | 90 €/m² | rebouchage d'une ouverture | oui |
+| `PRIX.percLeger` | 320 €/u | percement d'un mur non porteur | oui |
+| `PRIX.menuiserie.porte_double` | 600 €/u | porte double intérieure | oui |
+| `EQUIP_PRIX.frigo` | 80 €/u | pose d'un réfrigérateur | oui |
+| `PRIX.deposeEquip` | 60 €/u | dépose d'un équipement | **non** |
+| `PRIX.betonFini` | 45 €/m² | finition béton lissé / quartzé | **non** |
+| `PRIX.jambagesMl` | 35 €/ml | linteau et tableaux | **non** |
+| `PRIX.retourIso` | 28 €/ml | retour d'isolant en tableau | **non** |
+| `PRIX.menuiserie.passage` | 110 €/u | passage sans porte | **non** |
+
+**Le passage sans porte n'était pas un trou, c'était un désaccord.** La table de correspondance
+l'exclut explicitement — « une ouverture sans porte n'a rien à poser ». L'estimateur disait 0, la
+maquette disait 110 : sous D18, c'est la maquette qui avait tort.
+
+**Le linteau et les tableaux** ne manquent pas non plus vraiment : le forfait « Ouvrir un mur
+porteur » (2 500 / 4 500 €) les porte déjà. Les facturer une seconde fois au ml était un double
+comptage.
+
+**Zéro n'est pas un oubli, c'est la décision.** `tools/coherence.mjs` ne se contente plus de
+lister ces neuf prix en « à savoir » : il **vérifie qu'ils valent 0**, et échoue sinon. Pour en
+rouvrir un, il faut d'abord créer son poste au catalogue, puis le déplacer dans `PRIX_MAP`.
+
+**La tâche reste, le prix part.** Un ouvrage abandonné continue d'apparaître dans le suivi de
+chantier — il faudra bien le faire — avec la mention **« non chiffré : aucun poste au catalogue »**.
+Sans ce mot, la ligne figurait au suivi et manquait au total sans que rien ne l'explique, ce qui
+recréait exactement la panne qu'on venait de fermer. `detailTache()` le pose pour toutes les
+tâches à prix nul, sauf celles déjà expliquées autrement (la PAC extérieure, « incluse dans le
+split »).
+
+**Un bug trouvé en vérifiant.** Le prix de pose d'une menuiserie se lisait
+`PRIX.menuiserie[type] || 500` : un prix mis à 0 retombait sur le défaut de 500 €. Un passage sans
+porte repartait donc à 500 € au lieu de 0. Corrigé en `??` ici et sur le revêtement de sol, qui
+portait le même piège en sommeil.

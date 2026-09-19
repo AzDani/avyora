@@ -163,18 +163,22 @@ const PRIX_MAP = [
   ["EQUIP_PRIX", "lave_linge", "Créer / déplacer un point d'eau"],
   ["EQUIP_PRIX", "lave_vaisselle", "Créer / déplacer un point d'eau"],
 ];
-/* Prix de la maquette qui chiffrent un ouvrage SANS poste au catalogue. Ce n'est pas une dérive :
-   c'est la liste des postes à créer ou à abandonner, et elle demande une décision. */
-const SANS_POSTE = [
-  ["PRIX.boucher", "90 €/m² — rebouchage d'une ouverture : aucun poste au catalogue"],
-  ["PRIX.percLeger", "320 €/u — percement d'un mur NON porteur : seul le porteur a ses deux postes"],
-  ["PRIX.jambagesMl", "35 €/ml — linteau et tableaux : inclus dans le forfait percement du catalogue ?"],
-  ["PRIX.retourIso", "28 €/ml — retour d'isolant en tableau : aucun poste"],
-  ["PRIX.deposeEquip", "60 €/u — dépose d'un équipement : aucun poste générique"],
-  ["PRIX.betonFini", "45 €/m² — finition béton lissé / quartzé : aucun poste"],
-  ["PRIX.menuiserie.porte_double", "600 €/u — porte double intérieure : aucun poste distinct"],
-  ["PRIX.menuiserie.passage", "110 €/u — passage sans porte : aucun poste"],
-  ["EQUIP_PRIX.frigo", "80 €/u — pose d'un réfrigérateur : aucun poste"],
+/* Ouvrages ABANDONNÉS (D19, 19/09/2026). Le catalogue de l'estimateur n'a pas de poste pour les
+   chiffrer et Dani a tranché qu'on n'en crée pas : leur prix dans la maquette doit donc valoir 0.
+   Ce n'est plus une note, c'est un contrôle DUR. Un prix qui remonte ici, c'est le compteur du
+   plan qui recommence à promettre ce que le devis ne facturera pas — la panne qu'on vient de
+   fermer. Pour en rouvrir un, il faut d'abord créer son poste au catalogue et le déplacer dans
+   PRIX_MAP ci-dessus. */
+const ABANDONNES = [
+  ["PRIX.boucher", "rebouchage d'une ouverture"],
+  ["PRIX.percLeger", "percement d'un mur NON porteur (seul le porteur a ses deux postes)"],
+  ["PRIX.jambagesMl", "linteau et tableaux (le forfait « ouvrir un mur porteur » les porte déjà)"],
+  ["PRIX.retourIso", "retour d'isolant en tableau"],
+  ["PRIX.deposeEquip", "dépose d'un équipement (l'estimateur ne chiffre que ce qui est à poser)"],
+  ["PRIX.betonFini", "finition béton lissé / quartzé"],
+  ["PRIX.menuiserie.porte_double", "porte double intérieure"],
+  ["PRIX.menuiserie.passage", "passage sans porte — l'estimateur dit qu'il n'y a rien à poser"],
+  ["EQUIP_PRIX.frigo", "pose d'un réfrigérateur"],
 ];
 console.log("\n1. Prix recopiés dans la maquette vs catalogue (fourni-posé)");
 let alignes = 0;
@@ -188,11 +192,15 @@ for (const [tbl, cle, nom, coef] of PRIX_MAP) {
   else KO(`${tbl}.${cle} = ${m} € · catalogue ${dit}`, `écart ${(m - attendu > 0 ? "+" : "")}${Math.round((m / attendu - 1) * 100)} % sur le compteur indicatif`);
 }
 console.log(`  ${alignes}/${PRIX_MAP.length} alignés`);
-console.log(`\n1bis. Prix de la maquette sans poste au catalogue (décision : créer ou abandonner)`);
-for (const [chemin, quoi] of SANS_POSTE) {
+console.log(`\n1bis. Ouvrages abandonnés : leur prix doit valoir 0`);
+let zeros = 0;
+for (const [chemin, quoi] of ABANDONNES) {
   const v = tableVal(chemin);
-  NB(`${chemin}${v === null ? " (clé introuvable — renommée ?)" : ""}`, quoi);
+  if (v === null) KO(`${chemin} introuvable dans la maquette`, `clé renommée ou supprimée ? (${quoi})`);
+  else if (v === 0) zeros++;
+  else KO(`${chemin} = ${v} € · devrait être 0`, `${quoi} : aucun poste au catalogue, l'ouvrage est abandonné (D19)`);
 }
+console.log(`  ${zeros}/${ABANDONNES.length} à 0 — ${ABANDONNES.map(a => a[0].split(".").pop()).join(", ")}`);
 
 /* ── 2. libellés déclarés « exacts » : FACADES[].poste doit exister au catalogue ── */
 console.log("\n2. Libellés de postes cités en dur");

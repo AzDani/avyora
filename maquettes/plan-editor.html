@@ -727,7 +727,7 @@ const LOTS=['Démolition','Maçonnerie','Toiture','Menuiseries','Cloisons','Isol
    variante « double » (433 × 1,88 = 814), un plan de travail le poste Cuisine « Plan de travail
    seul » (150 €/ml). Le compteur indicatif annonce donc exactement ce que le devis facturera.
    Le mobilier n'est pas un travail. */
-const EQUIP_PRIX={baignoire:960,douche:1090,lavabo:433,vasque2:814,wc:410,plan:150,ilot:2500,frigo:80,lave_vaisselle:190,lave_linge:190,cumulus:950,chaudiere:4500,poele:4000,escalier:2500,radiateur:500,seche_serviette:245,clim:2400,pac_ext:0,prise:100,prise2:100,interrupteur:100,lumiere:110,applique:110,tableau:1150};
+const EQUIP_PRIX={baignoire:960,douche:1090,lavabo:433,vasque2:814,wc:410,plan:150,ilot:2500,frigo:0,lave_vaisselle:190,lave_linge:190,cumulus:950,chaudiere:4500,poele:4000,escalier:2500,radiateur:500,seche_serviette:245,clim:2400,pac_ext:0,prise:100,prise2:100,interrupteur:100,lumiere:110,applique:110,tableau:1150};
 const EQUIP_UNIT={plan:'ml'}; // « Plan de travail seul » au catalogue, 150 €/ml — les meubles de cuisine ne sont pas dessinés
 const isFurniture=t=>['lit','lit1','armoire','canape','table','bureau'].includes(t);
 /* Plancher d'un étage créé par le projet. C'est L'ouvrage de l'opération et il n'était chiffré
@@ -1110,7 +1110,7 @@ function chantierTasks(){const T=[];const ml=state.levels.length>1;
       if(ost(o)==='creer'||ost(o)==='remplacer'){ // remplacer = l'ouverture existe : dépose + pose neuve, sans percement ni appui/seuil
         if(ost(o)==='remplacer')T.push({id:'o:'+o.id+':depose',lot:'Démolition',label:'Déposer l\'ancienne menuiserie · '+d.label.toLowerCase()+lvn,detail:dim,prix:PRIX.deposeMenuiserie});
         else if(wst(w)!=='creer')openingInduits(o,w,lv).forEach(ind=>T.push({id:'o:'+o.id+':'+ind.key,lot:ind.lot,label:ind.label+lvn,detail:ind.detail,prix:ind.prix}));
-        {const vc=d.cat==='fenetre'?(VITRAGE_COEF[vitrageOf(o)]||1):1;const vlab=d.cat==='fenetre'?' · '+VITRAGE[vitrageOf(o)].toLowerCase()+' vitrage':'';T.push({id:'o:'+o.id+':poser',lot:'Menuiseries',label:'Poser '+d.label.toLowerCase()+lvn,detail:dim+vlab+(o.product?.nom?' · '+o.product.nom:''),prix:Math.round((PRIX.menuiserie[o.type]||500)*vc)});}
+        {const vc=d.cat==='fenetre'?(VITRAGE_COEF[vitrageOf(o)]||1):1;const vlab=d.cat==='fenetre'?' · '+VITRAGE[vitrageOf(o)].toLowerCase()+' vitrage':'';T.push({id:'o:'+o.id+':poser',lot:'Menuiseries',label:'Poser '+d.label.toLowerCase()+lvn,detail:dim+vlab+(o.product?.nom?' · '+o.product.nom:''),prix:Math.round((PRIX.menuiserie[o.type]??500)*vc)});}
         {const siN=interiorSideN(w);const pOuv=add(w.a,mul(sub(w.b,w.a),o.t));const revSides=[1,-1].filter(s=>{const io=isoOnSideAt(w,s,pOuv);if(!io||io.mode==='ite')return false;return isExtType(o.type)?(s===siN&&poseOf(o)!=='applique'):true;});
           if(revSides.length){const ml=(2*(o.h||d.h)+o.w)*revSides.length;T.push({id:'o:'+o.id+':retouriso',lot:'Isolation',label:'Retour d\'isolant en tableau · '+d.label.toLowerCase()+(revSides.length>1?' (2 faces)':'')+lvn,detail:fmt(ml)+' ml · coupe le pont thermique',prix:Math.round(ml*PRIX.retourIso)});}}
         if(o.volet)T.push({id:'o:'+o.id+':volet',lot:'Menuiseries',label:'Volet '+o.volet+' · '+d.label.toLowerCase()+lvn,detail:dim,prix:o.volet==='roulant'?PRIX.voletRoulant:PRIX.voletBattant});
@@ -1134,7 +1134,7 @@ function chantierTasks(){const T=[];const ml=state.levels.length>1;
       if(so.chape==='tradi')T.push({id:'sol-chape:'+r.id,lot:'Sol',label:'Chape traditionnelle · '+rn+lvn,detail:fmtM2(A),prix:A*PRIX.chapeTradi});
       if(so.chape==='liquide')T.push({id:'sol-chape:'+r.id,lot:'Sol',label:'Chape liquide · '+rn+lvn,detail:fmtM2(A),prix:A*PRIX.chapeLiquide});
       if(so.ragreage)T.push({id:'sol-rag:'+r.id,lot:'Sol',label:'Ragréage · '+rn+lvn,detail:fmtM2(A),prix:A*PRIX.ragreage});
-      if(nw)T.push({id:'sol-rev:'+r.id,lot:'Sol',label:'Poser '+nw.toLowerCase()+' · '+rn+lvn,detail:fmtM2(A)+(sp.warn?' · ⚠ support à vérifier':''),prix:A*(PRIX.revetement[nw]||60)});});
+      if(nw)T.push({id:'sol-rev:'+r.id,lot:'Sol',label:'Poser '+nw.toLowerCase()+' · '+rn+lvn,detail:fmtM2(A)+(sp.warn?' · ⚠ support à vérifier':''),prix:A*(PRIX.revetement[nw]??60)});});
     lv.items.forEach(it=>{const d=ITEMS[it.type];if(!d)return;
       if(isFurniture(it.type))return; // mobilier : aménagement, pas un travail
       if(ist(it)==='demolir')T.push({id:'i:'+it.id+':demolir',lot:'Démolition',label:'Déposer '+d.label.toLowerCase()+lvn,detail:'',prix:PRIX.deposeEquip});
@@ -1151,9 +1151,14 @@ function chantierTasks(){const T=[];const ml=state.levels.length>1;
 const isDone=id=>!!(state.done&&state.done[id]);
 function chantierPrix(){const T=chantierTasks();const parLot={};let total=0;T.forEach(t=>{const px=t.prix||0;total+=px;parLot[t.lot]=(parLot[t.lot]||0)+px;});return {total:Math.round(total),parLot,nb:T.length};}
 function toggleDone(id){history.push(snapshot());state.done=state.done||{};if(state.done[id])delete state.done[id];else state.done[id]=Date.now();save();render();}
-function chantierListHTML(T,editable){let lot='',h='';T.forEach(t=>{if(t.lot!==lot){lot=t.lot;h+=`<div class="lot">${lot}</div>`;}const dn=isDone(t.id);
-  h+=editable?`<label class="task ${dn?'done':''}"><input type="checkbox" ${dn?'checked':''} onchange="toggleDone('${t.id}')"><span><b>${t.label}</b>${t.detail?`<small>${t.detail}</small>`:''}</span></label>`
-   :`<div class="task ${dn?'done':''}"><span class="ck">${dn?'✅':'☐'}</span><span><b>${t.label}</b>${t.detail?`<small>${t.detail}</small>`:''}</span></div>`;});return h;}
+/* Le détail d'une tâche, augmenté du seul cas où le silence mentirait : une tâche que le budget
+   ne compte pas. Sans ce mot, l'ouvrage figure au suivi de chantier et manque au total sans que
+   rien ne l'explique — c'est exactement la panne qu'on vient de corriger côté prix (D19).
+   `inclus` est l'autre cas de prix nul, déjà dit autrement (« incluse dans le split »). */
+function detailTache(t){const nul=!t.prix&&!t.inclus,n='non chiffré : aucun poste au catalogue';return t.detail?(nul?t.detail+' · '+n:t.detail):(nul?n:'');}
+function chantierListHTML(T,editable){let lot='',h='';T.forEach(t=>{if(t.lot!==lot){lot=t.lot;h+=`<div class="lot">${lot}</div>`;}const dn=isDone(t.id),dt=detailTache(t);
+  h+=editable?`<label class="task ${dn?'done':''}"><input type="checkbox" ${dn?'checked':''} onchange="toggleDone('${t.id}')"><span><b>${t.label}</b>${dt?`<small>${dt}</small>`:''}</span></label>`
+   :`<div class="task ${dn?'done':''}"><span class="ck">${dn?'✅':'☐'}</span><span><b>${t.label}</b>${dt?`<small>${dt}</small>`:''}</span></div>`;});return h;}
 // badge ✓ vert sur les éléments dont la tâche est cochée (vue Projet)
 // badge d'avancement sur le plan (vue Projet) : GÉNÉRIQUE — toute tâche du suivi est rattachée à son élément (mur / ouverture / équipement / pièce) par son id.
 // ✓ vert = toutes les tâches de l'élément sont faites ; orange = une partie seulement (ex. percement fait, fenêtre pas encore posée).
@@ -1320,18 +1325,23 @@ function dormantOf(o){return o.dormant||40;} // tapée fixe (40 = standard sans 
 function menuisSousDimensionnees(lv){const out=[];lv.walls.forEach(w=>{if(!w.iso||w.iso.mode==='ite'||!isoShown(w,'projet'))return;const dbl=Math.round(doublageTotal(w)*1000);lv.openings.forEach(o=>{const def=OPENINGS[o.type];if(!def)return;const isExtM=isExtType(o.type);if(o.wallId!==w.id||!isExtM||!opDrawn(o,'projet'))return;const d=dormantOf(o);if(d<dbl-5)out.push({o,def,d,dbl});});});return out;}
 // Prix INDICATIFS (fourchette milieu, base de prix AVYORA) — pour le compteur live ; le chiffrage détaillé passe par le moteur (Pro).
 const PRIX={
-  demolCloison:15, demolMur:35, boucher:90,                 // €/m²
+  /* ⛔ Les valeurs à 0 ci-dessous sont des ouvrages ABANDONNÉS (D19) : le catalogue de
+     l'estimateur n'a pas de poste pour les chiffrer, et Dani a tranché qu'on n'en crée pas.
+     Zéro n'est pas un oubli, c'est la décision : le compteur ne promet rien que le devis ne
+     tiendra pas. La tâche reste dans le suivi de chantier, marquée « non chiffré ».
+     tools/coherence.mjs VÉRIFIE qu'elles valent 0 — y remettre un prix casse le contrôle. */
+  demolCloison:15, demolMur:35, boucher:0,                  // €/m² · boucher : abandonné
   demolPorteur:110, poutreReprise:480, etudeStructure:900,  // porteur : démolition €/m² · poutre de reprise €/ml · étude BET forfait
   cloisonNeuve:50, murNeuf:75, murPierre:250,               // €/m²
-  percPorteurPetit:2500, percPorteurGrand:4500, percLeger:320, // €/u (mur porteur = étude BET incluse)
-  appuiFenetre:250, seuil:250, jambagesMl:35,               // appui/seuil €/u · tableaux €/ml
-  isoITI:55, isoITE:140, retourIso:28,                      // €/m² · retour d'isolant en tableau €/ml
-  menuiserie:{porte:320,porte_pleine:450,porte_double:600,coulissante:700,passage:110,porte_entree:1600,garage:1200,fenetre:950,fenetre_p:950,porte_fenetre:1250,baie:2200},
+  percPorteurPetit:2500, percPorteurGrand:4500, percLeger:0, // €/u (mur porteur = étude BET incluse) · percement d'un mur léger : abandonné
+  appuiFenetre:250, seuil:250, jambagesMl:0,                // appui/seuil €/u · linteau et tableaux : abandonné (le forfait « ouvrir un mur porteur » les porte déjà)
+  isoITI:55, isoITE:140, retourIso:0,                       // €/m² · retour d'isolant en tableau : abandonné
+  menuiserie:{porte:320,porte_pleine:450,porte_double:0,coulissante:700,passage:0,porte_entree:1600,garage:1200,fenetre:950,fenetre_p:950,porte_fenetre:1250,baie:2200}, // porte double : abandonnée · passage sans porte : l'estimateur dit qu'il n'y a rien à poser
   voletRoulant:650, voletBattant:600, galandage:800, // €/u (galandage = caisson + rail, en plus de la menuiserie)
   optMoustiquaire:200, optStore:1000, optGrille:400, // €/u fourni-posé
-  deposeMenuiserie:40, deposeEquip:60,                      // €/u
+  deposeMenuiserie:40, deposeEquip:0,                       // €/u · dépose d'un équipement : abandonnée (l'estimateur ne chiffre que ce qui est à poser)
   solIso:45, chapeTradi:33, chapeLiquide:40, ragreage:22, dalle:68, // préparation du sol €/m² (catalogue : chape tradi 33, liquide 40, ragréage 22, dalle 68)
-  deposeSol:20, betonFini:45,                               // casser / déposer un vieux sol €/m² (catalogue « Enlever un revêtement de sol ») · finition béton lissé-quartz de la dalle €/m²
+  deposeSol:20, betonFini:0,                                // casser / déposer un vieux sol €/m² (catalogue « Enlever un revêtement de sol ») · finition béton lissé-quartz : abandonnée
   revetement:{'Carrelage':70,'Parquet':90,'Stratifié':50,'Vinyle / PVC':45,'Moquette':35,'Béton ciré':110}, // fourni-posé €/m², tous repris du catalogue
 };
 // isolants sous chape : uniquement des panneaux rigides (les laines ne vont pas sous une chape)
