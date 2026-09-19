@@ -90,6 +90,24 @@ describe("table de correspondance · ce que le scénario doit produire", () => {
     expect(q("iso-isolation-des-murs-par-l-interieur")).toBeCloseTo(20, 1);
     expect(q("clo-doubler-un-mur")).toBe(0); // D2 : c'est l'ITI qui porte le doublage
   });
+  /* Le doublage se lit MUR PAR MUR (`provenance.doublages`), pas sur l'agrégat. L'agrégat compte
+     tout ce que la vue Projet montre, un doublage déjà en place compris — il se facturait donc
+     comme neuf, ce que D1 interdit. Et une ligne sans source ne se rattache à aucun objet du
+     plan, ce que D1 exige aussi. */
+  it("le doublage dit de quel mur il vient", () => {
+    const c = contributions.find((x) => x.poste === "iso-isolation-des-murs-par-l-interieur")!;
+    expect(c.sources.length).toBeGreaterThan(0);
+    for (const src of c.sources) expect(src).toMatch(/^m\d+$/);
+  });
+  it("un doublage DÉJÀ EN PLACE ne se facture pas (D1)", () => {
+    const p = JSON.parse(JSON.stringify(plan));
+    const dejaLa = { mur: "m99", mode: "iti", mat: "gv", etat: "existant", m2: 12.5 };
+    p.provenance.doublages = [...p.provenance.doublages, dejaLa];
+    const { contributions: c } = contributionsDuPlan(p);
+    const l = c.find((x) => x.poste === "iso-isolation-des-murs-par-l-interieur")!;
+    expect(l.quantite).toBeCloseTo(20, 1);       // et non 32,5
+    expect(l.sources).not.toContain("m99");
+  });
   it("la robinetterie de lavabo n'est PAS injectée : le moteur la dérive du meuble", () => {
     expect(q("plo-robinetterie-lavabo")).toBe(0);
   });

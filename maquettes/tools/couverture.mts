@@ -87,16 +87,13 @@ const KO = (quoi: string, d: string) => { dur++; console.log(`  ✗ ${quoi}\n   
 /* Deux tableaux de bord par élément : ce que la maquette annonce, ce que le devis facturera.
    Une ligne à plusieurs sources est rangée sous la première — ce qui suffit pour repérer un
    élément TOTALEMENT muet, le seul défaut qu'on veut rendre bloquant ici. */
-/* Ouvrages que le contrat transmet en AGRÉGAT, sans identifiant d'élément : le devis les porte
-   bien, mais sous « (global) ». Leur élément apparaît donc chiffré côté plan et vide côté devis
-   sans que rien ne manque — ce n'est pas une rupture de couverture, c'est un trou de TRAÇABILITÉ,
-   et il se dit autrement. `doublage` est le seul aujourd'hui : le contrat en donne les surfaces
-   par mode, jamais par mur. */
-const AGREGATS = new Map<string, string>([["Isolation", "doublage transmis en agrégat, sans identifiant de mur"]]);
-const lotDe: Record<string, string> = {};
+/* Il y avait ici une exception pour le doublage, que le devis portait sous « (global) » faute
+   d'identifiant de mur. Elle n'a plus lieu d'être : la correspondance lit désormais
+   `provenance.doublages` et chaque ligne dit de quel mur elle vient (D23). Si un jour un autre
+   ouvrage arrive en agrégat, c'est ici qu'il faudra le déclarer — et surtout le corriger. */
 const repartis = new Set<string>();
 const annonce: Record<string, number> = {}, facture: Record<string, number> = {};
-for (const t of taches) { annonce[t.pid] = (annonce[t.pid] ?? 0) + t.prix; if (t.prix) lotDe[t.pid] = t.lot; }
+for (const t of taches) annonce[t.pid] = (annonce[t.pid] ?? 0) + t.prix;
 for (const c of contributions) {
   const v = valoriser(c.poste, c.quantite, c.variante);
   if (v === null) { KO(`poste inconnu au catalogue : ${c.poste}`, "identifiant renommé ?"); continue; }
@@ -124,12 +121,10 @@ const pids = [...new Set([...Object.keys(annonce), ...Object.keys(facture)])].so
 for (const k of pids) {
   const m = Math.round(annonce[k] ?? 0), e = Math.round(facture[k] ?? 0);
   if (Math.abs(e - m) < 50) continue;
-  const agrege = AGREGATS.get(lotDe[k] ?? "");
   const reparti = repartis.has(k);
-  const muet = m > 0 && e === 0 && !agrege && !reparti, invisible = e > 0 && m === 0 && !reparti;
+  const muet = m > 0 && e === 0 && !reparti, invisible = e > 0 && m === 0 && !reparti;
   const ligne = `  ${k.padEnd(9)} plan ${String(m).padStart(7)} €   devis ${String(e).padStart(7)} €   ${e - m > 0 ? "+" : ""}${e - m} €`;
   if (reparti) console.log(`${ligne}   · ligne(s) du devis partagée(s) avec d'autres pièces — sans verdict`);
-  else if (m > 0 && e === 0 && agrege) console.log(`${ligne}   ⚠ ${agrege}`);
   else if (muet) KO(ligne.trim(), "la maquette chiffre cet élément, le devis ne porte AUCUNE ligne pour lui");
   else if (invisible) KO(ligne.trim(), "le devis facture cet élément, le compteur du plan ne l'annonce pas");
   else console.log(ligne);

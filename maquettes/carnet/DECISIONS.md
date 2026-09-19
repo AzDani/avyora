@@ -354,3 +354,45 @@ serait fausse des deux côtés alors que le total est juste :
 
 Les douze nouveaux prix sont tenus par `coherence.mjs` : **110/110 alignés**. L'écart ne peut plus
 se rouvrir en silence.
+
+## D23 · Le doublage se lit mur par mur — et un doublage déjà en place ne se facture pas
+
+Fait le 19/09/2026, sur le dernier point noté en D20 et D22 : « vas-y corrige le doublage aussi ».
+Le trou annoncé était de traçabilité. Il y en avait un second, plus grave, caché derrière.
+
+**Le contrat portait déjà le détail mur par mur.** `provenance.doublages` donne, pour chaque
+couche : le mur, le mode (ITI / ITE), le matériau, **l'état** et la surface. Personne ne le lisait :
+la table de correspondance se servait de l'agrégat `doublage.iti`.
+
+### Le bug : 688 € facturés sur un mur déjà isolé
+
+L'agrégat compte **tout ce que la vue Projet montre**, y compris un doublage déjà en place. Sur
+une scène où un mur de 12,5 m² est déjà isolé et un autre de 20 m² est à doubler, le contrat émet
+`iti: 32,5` — et le devis facturait les 32,5, soit **688 € pour un ouvrage qui existe**. C'est
+exactement ce que D1 interdit : seul le delta se facture.
+
+La maquette, elle, avait toujours raison sur ce point — son compteur filtre `io.st !== 'creer'`.
+Comme pour le plancher (D21), c'est l'estimateur qui s'aligne sur elle.
+
+### Le trou annoncé : des lignes orphelines
+
+Une ligne sans source ne se rattache à aucun objet du plan. D1 exige l'inverse : chaque ligne
+injectée doit dire d'où elle vient, sinon l'écran de validation ne peut pas la montrer sur le
+dessin et l'utilisateur ne peut pas la contester. Le doublage et la façade arrivaient tous deux
+sans source.
+
+**Les deux se lisent désormais par mur**, groupés par mode pour le doublage et par poste pour la
+façade, avec la liste des murs en `sources`. Sans `provenance` — un plan émis par une version
+antérieure de l'éditeur — on retombe sur l'agrégat : moins juste, mais jamais vide.
+
+La façade n'avait pas le bug d'état : son agrégat ne comptait déjà que le neuf. Elle gagne
+seulement la traçabilité.
+
+### Vérifié
+
+Sur la scène de référence augmentée d'un mur déjà doublé : **compteur 44 237 € · devis 44 236 €**.
+Avant le correctif, le devis en aurait annoncé 44 924. Deux tests verrouillent les deux points :
+la ligne de doublage porte des identifiants de mur, et une couche `etat: "existant"` n'ajoute pas
+un m².
+
+`couverture.mts` perd son exception « doublage transmis en agrégat » : elle n'a plus lieu d'être.

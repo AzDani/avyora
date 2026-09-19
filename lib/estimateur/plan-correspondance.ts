@@ -48,8 +48,14 @@ export interface PlanPourCorrespondance {
   } | null;
   sols?: Array<{ id?: string; piece?: string; surface?: number; existant?: string | null; revetement?: string | null;
     depose?: boolean; dalle?: boolean; betonFini?: boolean; isolant?: unknown; chape?: string | null; ragreage?: boolean }>;
+  /* Le détail objet par objet, que le contrat émettait déjà sans que personne lise autre chose
+     que `murs`. Deux choses en dépendent : la TRAÇABILITÉ exigée par D1 — une ligne injectée doit
+     se rattacher à un objet du plan — et l'ÉTAT, sans lequel un doublage déjà en place se
+     facturait comme neuf. */
   provenance?: {
     murs?: Array<{ id: string; type: string; porteur: boolean; etat: string; ml: number; m2: number }>;
+    doublages?: Array<{ mur?: string; mode?: string; mat?: string; etat?: string | null; m2?: number }>;
+    facades?: Array<{ mur?: string; poste?: string; label?: string; etat?: string | null; m2?: number }>;
   };
   detailNiveaux?: Array<{
     id?: string; name?: string; neuf?: boolean; plancher?: string | null;
@@ -338,14 +344,65 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
   if (plan.etudes?.structure) add("etu-etude-de-structure", 1, [], "Un mur porteur est démoli : étude de structure obligatoire");
 
   // ── Doublage (D2 : c'est l'ITI qui porte le doublage) ─────────────────────
-  if (plan.doublage?.iti) add("iso-isolation-des-murs-par-l-interieur", +plan.doublage.iti.toFixed(2), [], "Doublage isolé par l'intérieur, mesuré sur le plan");
-  if (plan.doublage?.ite) add("fac-isolation-par-l-exterieur-ite", +plan.doublage.ite.toFixed(2), [], "Isolation par l'extérieur, mesurée sur le plan");
+  /* On lit le détail MUR PAR MUR, plus l'agrégat `doublage.iti`. Deux raisons, et la première
+     est un bug, pas un raffinement :
+
+     1. L'agrégat compte TOUT ce que la vue Projet montre — y compris un doublage déjà en place.
+        Un mur existant déjà isolé se facturait donc comme neuf, ce que D1 interdit : seul le
+        delta se facture. Sur un mur de 12,5 m², c'était 688 € offerts au devis.
+     2. Une ligne sans source ne se rattache à aucun objet du plan. D1 exige que chaque ligne
+        injectée dise d'où elle vient, sinon l'écran de validation ne peut pas la montrer sur le
+        dessin, et l'utilisateur ne peut pas la contester.
+
+     Sans `provenance` (un plan d'une version antérieure), on retombe sur l'agrégat : moins juste,
+     mais jamais vide. */
+  const couches = plan.provenance?.doublages;
+  if (couches?.length) {
+    const parMode = new Map<string, { m2: number; murs: string[] }>();
+    for (const c of couches) {
+      if (c.etat !== "creer") continue;                      // D1
+      const mode = c.mode === "ite" ? "ite" : "iti";
+      const e = parMode.get(mode) ?? { m2: 0, murs: [] };
+      e.m2 += c.m2 ?? 0;
+      if (c.mur && !e.murs.includes(c.mur)) e.murs.push(c.mur);
+      parMode.set(mode, e);
+    }
+    for (const [mode, e] of parMode) {
+      if (e.m2 <= 0) continue;
+      add(mode === "ite" ? "fac-isolation-par-l-exterieur-ite" : "iso-isolation-des-murs-par-l-interieur",
+        +e.m2.toFixed(2), e.murs,
+        mode === "ite" ? "Isolation par l'extérieur, mesurée mur par mur" : "Doublage isolé par l'intérieur, mesuré mur par mur");
+    }
+  } else {
+    if (plan.doublage?.iti) add("iso-isolation-des-murs-par-l-interieur", +plan.doublage.iti.toFixed(2), [], "Doublage isolé par l'intérieur, mesuré sur le plan");
+    if (plan.doublage?.ite) add("fac-isolation-par-l-exterieur-ite", +plan.doublage.ite.toFixed(2), [], "Isolation par l'extérieur, mesurée sur le plan");
+  }
 
   // ── Façade : la maquette nomme déjà le poste du catalogue ────────────────
-  for (const [label, m2] of Object.entries(plan.facades?.parPoste ?? {})) {
-    const p = posteParNom("Façade", label);
-    if (p) add(p.id, +m2.toFixed(2), [], `Façade : ${label.toLowerCase()}`);
-    else ignores.push({ quoi: label, pourquoi: "libellé de façade sans poste correspondant", sources: [] });
+  /* Même lecture par mur, pour la même raison de traçabilité. L'agrégat `facades.parPoste`, lui,
+     ne comptait déjà que le neuf — il n'y avait pas de bug d'état ici, seulement des lignes
+     orphelines. */
+  const pans = plan.provenance?.facades?.filter((f) => f.etat === "creer");
+  if (pans?.length) {
+    const parPoste = new Map<string, { m2: number; murs: string[]; label: string }>();
+    for (const f of pans) {
+      const label = f.label ?? "";
+      const e = parPoste.get(label) ?? { m2: 0, murs: [], label };
+      e.m2 += f.m2 ?? 0;
+      if (f.mur && !e.murs.includes(f.mur)) e.murs.push(f.mur);
+      parPoste.set(label, e);
+    }
+    for (const [label, e] of parPoste) {
+      const p = posteParNom("Façade", e.label || label);
+      if (p) add(p.id, +e.m2.toFixed(2), e.murs, `Façade : ${(e.label || label).toLowerCase()}`);
+      else ignores.push({ quoi: label, pourquoi: "libellé de façade sans poste correspondant", sources: e.murs });
+    }
+  } else {
+    for (const [label, m2] of Object.entries(plan.facades?.parPoste ?? {})) {
+      const p = posteParNom("Façade", label);
+      if (p) add(p.id, +m2.toFixed(2), [], `Façade : ${label.toLowerCase()}`);
+      else ignores.push({ quoi: label, pourquoi: "libellé de façade sans poste correspondant", sources: [] });
+    }
   }
 
   // ── Sols, pièce par pièce ─────────────────────────────────────────────────
