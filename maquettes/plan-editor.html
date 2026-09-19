@@ -1536,6 +1536,9 @@ function planChecks(lv,opt){
      plus basse. Elle est comptée d'office ; encore faut-il savoir qu'elle existe et la régler. */
   {const iL=state.levels.indexOf(lv);const pa=toiture()?partiesToiture().find(x=>x.li===iL&&!x.principale):null;
    if(pa)out.push({lvl:'info',msg:`<b>${fmtM2(pa.base)}</b> de ce niveau ne sont pas surmontés par « ${esc(state.levels[iL+1].name)} » : ils sont sous une <b>toiture plus basse</b>, comptée pour ${fmtM2(pa.surface)}. Sa forme (${pa.forme==='plat'?'toit plat':TOIT_FORME[pa.forme].label.toLowerCase()}) et sa pente se règlent ici même.`});}
+  /* Un étage créé dont une pièce garde un sol : son plancher n'est chiffré nulle part. */
+  if(lv.neuf){const sans=faces.filter(f=>f.room&&f.room.floor!==SANS_PLANCHER);
+    if(sans.length)out.push({lvl:'warn',msg:`<b>${esc(lv.name)}</b> est créé par le projet, mais ${sans.length===1?'une pièce a':sans.length+' pièces ont'} déjà un sol : <b>${sans.length===1?'son':'leur'} plancher n'est pas chiffré</b>. Mets ${sans.length===1?'son':'leur'} sol existant sur <b>« Pas de plancher »</b> — c'est ce qui fait apparaître la couche « plancher à créer » et son prix.`,sel:{kind:'room',id:sans[0].room.id}});}
   if(faces.some(f=>f.room)&&!lv.openings.length)out.push({lvl:'info',msg:`Ajoute les portes et fenêtres (outil <b>Ouvertures</b>, touche <kbd>P</kbd>) : l'accès et l'éclairement des pièces seront contrôlés ensuite.`});
   if(dn)out.push({lvl:'err',msg:`${dn} extrémité${dn>1?'s':''} de mur ne touche${dn>1?'nt':''} rien (cerclée${dn>1?'s':''} en rouge) : aucune pièce ne peut se fermer là.`});
   else if(lv.walls.length&&!faces.length)out.push({lvl:'warn',msg:'Des murs sont tracés mais aucun contour n\'est fermé : les pièces n\'apparaissent pas.'});
@@ -2963,7 +2966,12 @@ function copyBearingBelow(){const lv=L(),below=state.levels[state.cur-1];if(!bel
 function deleteLevel(){if(state.levels.length<=1)return;history.push(snapshot());const n=L().name;state.levels.splice(state.cur,1);state.cur=Math.max(0,state.cur-1);sel=null;purgerGroupes();afterChange();toast('Niveau « '+n+' » supprimé — Ctrl+Z pour annuler');}
 function setLevelProp(k,val){history.push(snapshot());const lv=L();
   if(k==='height')lv.height=Math.max(2,Math.min(5,parseFloat(val)||2.5));
-  else if(k==='neuf')lv.neuf=!!val;
+  else if(k==='neuf'){lv.neuf=!!val;
+    /* Cocher « étage créé », c'est dire que son plancher est à construire. Le laisser à
+       l'utilisateur pièce par pièce, c'est le laisser oublier — et un plancher oublié, c'est
+       l'ouvrage le plus cher de l'opération qui manque au devis. */
+    if(lv.neuf){let n=0;lv.rooms.forEach(r=>{if(r.floor!==SANS_PLANCHER){r.floor=SANS_PLANCHER;r.plancherNeuf=r.plancherNeuf||'bois';delete r.floorNew;n++;}});
+      if(n)setTimeout(()=>toast(n+' pièce(s) passée(s) en « pas de plancher » : leur plancher est maintenant chiffré. Choisis bois ou béton dans chaque fiche.',true),0);}}
   else if(k==='plancher')lv.plancher=val;
   else lv.name=String(val).trim().slice(0,20)||lv.name;
   afterChange();}
@@ -3187,10 +3195,11 @@ function renderSelection(lv){
       return `<div class="ph mt">Hauteur de faïence</div>
       <div class="seg">${Object.entries(H).map(([k,l])=>`<button class="${cur===k?'on':''}" onclick="setRoomProp('faience','${k}')">${l[0]}<small>${l[1]}</small></button>`).join('')}</div>
       <div class="tip" style="margin-top:6px">C'est ce qui décide la surface carrelée : ${cur==='pleine'?'toute la surface des murs':cur==='douche'?'seulement les murs de la douche':'une bande de 1,20 m, portée à 2,00 m dans la douche'}. Le reste des murs est peint.</div>`;})()}
-    ${mode()==='existant'?`<div class="ph mt">Sol existant</div><select class="fin" onchange="setRoomProp('floor',this.value)">${FLOORS_EX.map(fl=>`<option ${fl===r.floor?'selected':''}>${fl}</option>`).concat(r.floor&&!FLOORS_EX.includes(r.floor)?[`<option selected>${esc(r.floor)}</option>`]:[]).join('')}</select>
+    ${mode()==='existant'?`<div class="ph mt">Sol existant</div><select class="fin" onchange="setRoomProp('floor',this.value)">${FLOORS_EX.map(fl=>`<option value="${esc(fl)}" ${fl===r.floor?'selected':''}>${fl===SANS_PLANCHER?'Pas de plancher — volume ouvert (étage à créer)':fl}</option>`).concat(r.floor&&!FLOORS_EX.includes(r.floor)?[`<option selected>${esc(r.floor)}</option>`]:[]).join('')}</select>
     <div class="tip" style="margin-top:8px">Précise bien l'état : <b>terre / sol brut</b> → il faudra couler une <b>dalle</b> ; <b>dalle brute</b> → il faudra une <b>chape</b> ; <b>chape</b> → prêt pour un revêtement. Le projet s'en déduit.</div>`
     :(()=>{const so=r.sol||{};const A=areaNet(lv,f);const sp=solPlan(r);const nw=r.floorNew||'';return `<div class="ph mt">Revêtement de sol souhaité</div><select class="fin" onchange="setRoomProp('floorNew',this.value)"><option value="" ${!nw?'selected':''}>${sp.sup==='vide'?'À définir — le plancher d\'abord':`Garder l'existant${r.floor&&r.floor!=='À définir'?' ('+esc(r.floor)+')':''} / à définir`}</option>${FLOORS_NEW.map(fl=>`<option value="${fl}" ${fl===nw?'selected':''}>${fl}</option>`).join('')}</select>
       <div class="ph mt">Ordre de réalisation</div>
+      ${sp.sup!=='vide'&&lv.neuf?`<div class="tip" style="border-color:#fde68a;background:#fffbeb">🏗️ <b>${esc(lv.name)} est créé par le projet.</b> Tant que cette pièce a un sol existant, son <b>plancher n'est pas chiffré</b>. Passe son sol existant sur <b>« Pas de plancher »</b> ${mode()==='existant'?'ci-dessus':'en vue Existant'} : la couche « plancher à créer » apparaîtra, avec son prix.</div>`:''}
       ${sp.sup==='vide'?`<div class="ph mt">Plancher à créer</div>
       <div class="seg">${[['bois','Bois','solives + panneaux'],['beton','Béton','dalle coulée']].map(o=>`<button class="${r.plancherNeuf===o[0]?'on':''}" onclick="setRoomProp('plancherNeuf','${o[0]}')">${o[1]}<small>${o[2]}</small></button>`).join('')}</div>
       <div class="tip" style="margin-top:6px">Ce volume est ouvert sur le niveau du dessous : <b>il n'y a rien à poser tant qu'il n'y a pas de plancher</b>. C'est la première couche, et de loin la plus chère — elle est chiffrée sur ${fmtM2(A)}.</div>`:''}

@@ -269,6 +269,10 @@
    "niveau": "Étage",
    "points": [
     {
+     "niveau": "warn",
+     "texte": "Étage est créé par le projet, mais une pièce a déjà un sol : son plancher n'est pas chiffré. Mets son sol existant sur « Pas de plancher » — c'est ce qui fait apparaître la couche « plancher à créer » et son prix."
+    },
+    {
      "niveau": "info",
      "texte": "Ajoute les portes et fenêtres (outil Ouvertures, touche P) : l'accès et l'éclairement des pièces seront contrôlés ensuite."
     }
@@ -568,31 +572,31 @@
     "fait": false
    },
    {
-    "id": "w:i4sdm7y:demolir",
+    "id": "w:346b7jv:demolir",
     "lot": "Démolition",
     "label": "Démolir le mur porteur de 1,40 m · RDC",
     "fait": false
    },
    {
-    "id": "w:1cwmlc2:demolir",
+    "id": "w:cg539er:demolir",
     "lot": "Démolition",
     "label": "Démolir la cloison de 1,60 m · RDC",
     "fait": false
    },
    {
-    "id": "o:d7wkg43:depose",
+    "id": "o:huw27am:depose",
     "lot": "Démolition",
     "label": "Déposer l'ancienne menuiserie · fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "sol-depose:5ojmqxq",
+    "id": "sol-depose:g44es7l",
     "lot": "Démolition",
     "label": "Déposer l'ancien sol (carrelage) · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "sol-depose:59zivaz",
+    "id": "sol-depose:nhf2sgc",
     "lot": "Démolition",
     "label": "Déposer l'ancien sol (parquet ancien) · Chambre · RDC",
     "fait": false
@@ -604,31 +608,31 @@
     "fait": false
    },
    {
-    "id": "w:i4sdm7y:poutre",
+    "id": "w:346b7jv:poutre",
     "lot": "Maçonnerie",
     "label": "Poutre de reprise de charge · mur de 1,40 m · RDC",
     "fait": false
    },
    {
-    "id": "o:sewnxuo:perc",
+    "id": "o:5maydkp:perc",
     "lot": "Maçonnerie",
     "label": "Ouvrir le mur porteur, linteau & tableaux · fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:sewnxuo:appui",
+    "id": "o:5maydkp:appui",
     "lot": "Maçonnerie",
     "label": "Appui de fenêtre · fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:zgecgwl:boucher",
+    "id": "o:jhjs0wd:boucher",
     "lot": "Maçonnerie",
     "label": "Boucher fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:r3s8hfd:perc",
+    "id": "o:8iinxpr:perc",
     "lot": "Maçonnerie",
     "label": "Percement, linteau & tableaux · porte simple · RDC",
     "fait": false
@@ -658,31 +662,31 @@
     "fait": false
    },
    {
-    "id": "o:d7wkg43:poser",
+    "id": "o:huw27am:poser",
     "lot": "Menuiseries",
     "label": "Poser fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:sewnxuo:poser",
+    "id": "o:5maydkp:poser",
     "lot": "Menuiseries",
     "label": "Poser fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:sewnxuo:volet",
+    "id": "o:5maydkp:volet",
     "lot": "Menuiseries",
     "label": "Volet roulant · fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:r3s8hfd:poser",
+    "id": "o:8iinxpr:poser",
     "lot": "Menuiseries",
     "label": "Poser porte simple · RDC",
     "fait": false
    },
    {
-    "id": "iso:abyr4p0",
+    "id": "iso:9ek39ct",
     "lot": "Isolation",
     "label": "Doubler le mur de 8,00 m · RDC",
     "fait": false
@@ -694,73 +698,73 @@
     "fait": false
    },
    {
-    "id": "sol-rag:5ojmqxq",
+    "id": "sol-rag:g44es7l",
     "lot": "Sol",
     "label": "Ragréage · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "sol-rev:5ojmqxq",
+    "id": "sol-rev:g44es7l",
     "lot": "Sol",
     "label": "Poser carrelage · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "sol-rev:59zivaz",
+    "id": "sol-rev:nhf2sgc",
     "lot": "Sol",
     "label": "Poser parquet · Chambre · RDC",
     "fait": false
    },
    {
-    "id": "i:14ls87o:creer",
+    "id": "i:7a1ct48:creer",
     "lot": "Équipements",
     "label": "Poser douche · RDC",
     "fait": false
    },
    {
-    "id": "i:pg3nkzx:creer",
+    "id": "i:hsu8u2z:creer",
     "lot": "Équipements",
     "label": "Poser double vasque · RDC",
     "fait": false
    },
    {
-    "id": "i:awm00lk:creer",
+    "id": "i:dt6nd9e:creer",
     "lot": "Équipements",
     "label": "Poser wc · RDC",
     "fait": false
    },
    {
-    "id": "i:5xa3ltg:creer",
+    "id": "i:c2v9i1i:creer",
     "lot": "Équipements",
     "label": "Poser baignoire · RDC",
     "fait": false
    },
    {
-    "id": "i:zw5helq:creer",
+    "id": "i:x3zj6se:creer",
     "lot": "Équipements",
     "label": "Poser escalier · RDC",
     "fait": false
    },
    {
-    "id": "i:lai9ij5:creer",
+    "id": "i:jgaz083:creer",
     "lot": "Équipements",
     "label": "Poser point lumineux (plafond) · RDC",
     "fait": false
    },
    {
-    "id": "i:qu9b327:creer",
+    "id": "i:gujn05i:creer",
     "lot": "Équipements",
     "label": "Poser point lumineux (plafond) · RDC",
     "fait": false
    },
    {
-    "id": "i:p716pn7:creer",
+    "id": "i:o7dz5u1:creer",
     "lot": "Équipements",
     "label": "Poser prise double · RDC",
     "fait": false
    },
    {
-    "id": "i:cftodu4:creer",
+    "id": "i:7dygs63:creer",
     "lot": "Équipements",
     "label": "Poser plan de travail · RDC",
     "fait": false

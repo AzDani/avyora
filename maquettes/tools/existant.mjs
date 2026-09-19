@@ -130,6 +130,29 @@ const res = await p.evaluate(() => {
       t["le plancher par pièce ne part pas sous un contrat antérieur à 1.8"] = maj === 1 && min >= 8; }
     const p2 = c.detailNiveaux[1].rooms[0];
     t["le contrat dit quelle pièce est à plancher, et en quoi"] = p2.plancherACreer === "bois" && p2.nonHabitableAvant === true; }
+  /* ── « pas de plancher » : ce que ça déclenche, et comment on y est amené ── */
+  { rdc(); addLevel("copy"); const haut = L();          /* étage copié : ses pièces ONT un sol */
+    const r0 = pieces(haut)[0];
+    t["étage copié · les pièces gardent leur sol"] = r0.floor !== SANS_PLANCHER;
+    t["étage copié · aucun plancher chiffré"] = !ligne(/sol-plancher/);
+    /* cocher « étage créé par le projet » doit suffire */
+    setLevelProp("neuf", true);
+    const r1 = pieces(L())[0];
+    t["cocher « étage créé » pose les pièces sans plancher"] = r1.floor === SANS_PLANCHER && r1.plancherNeuf === "bois";
+    t["et le plancher est alors chiffré"] = !!ligne(/sol-plancher/); }
+  { rdc(); addLevel("copy"); const haut = L(); haut.neuf = true; afterChange();
+    /* le drapeau posé à la main, sans passer par la case : le plan doit le dire */
+    t["étage créé dont une pièce garde un sol · le plan alerte"] =
+      planChecks(L()).some((c) => /plancher n'est pas chiffré/.test(c.msg)); }
+  { rdc(); addLevel("plancher"); afterChange();
+    t["étage créé proprement · aucune alerte de plancher oublié"] =
+      !planChecks(L()).some((c) => /plancher n'est pas chiffré/.test(c.msg)); }
+  { rdc(); addLevel("plancher"); const r = pieces(L())[0];
+    delete r.plancherNeuf; afterChange();
+    const sp = solPlan(r);
+    t["sans matériau choisi · la couche est signalée à faire"] = sp.steps.some((x) => x.k === "plancher" && x.state === "choice");
+    t["sans matériau choisi · le plan le dit"] = /pas de plancher/i.test(sp.warn || "");
+    t["sans matériau choisi · rien n'est chiffré au hasard"] = !ligne(/sol-plancher/); }
   return t;
 });
 await b.close();
