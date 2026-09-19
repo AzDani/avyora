@@ -158,6 +158,27 @@ const res = await p.evaluate(() => {
     verifie("rez en L", (bo) => { bo(L(), [[0, 0], [12, 0], [12, 4], [6, 4], [6, 7.5], [0, 7.5]]); afterChange(); addLevel("empty"); bo(L(), [[0, 0], [6, 0], [6, 7.5], [0, 7.5]]); });
     verifie("trois niveaux en retrait", (bo) => { bo(L(), [[0, 0], [12, 0], [12, 7.5], [0, 7.5]]); afterChange(); addLevel("empty"); bo(L(), [[0, 0], [9, 0], [9, 7.5], [0, 7.5]]); afterChange(); addLevel("empty"); bo(L(), [[0, 0], [5, 0], [5, 7.5], [0, 7.5]]); });
   }
+  /* ── le bouton « voir » existe dans TOUTES les vues ──────────────────────
+     Il n'était écrit que dans le formulaire Existant déplié : replié, en Projet ou en Final, la
+     partie haute n'avait aucun bouton alors que les parties basses en avaient un partout. Un
+     panneau se rend dans quatre états, et un bloc ajouté dans un seul n'existe que là. */
+  {
+    state = blankState(); const bas = L(); bas.height = 2.5;
+    const W = (l, a, c) => l.walls.push({ id: uid(), a: v(...a), b: v(...c), type: "mur" });
+    const bo = (l, pts) => { for (let i = 0; i < pts.length; i++) W(l, pts[i], pts[(i + 1) % pts.length]); };
+    bo(bas, [[0, 0], [12, 0], [12, 7.5], [0, 7.5]]); afterChange();
+    addLevel("empty"); bo(L(), [[0, 0], [8, 0], [8, 7.5], [0, 7.5]]); afterChange(); setToiture("init", "");
+    const rendu = (niv, md, open) => { setLevel(niv); setMode(md); closeModal(); toitOpen = !!open; return renderToiture(L()); };
+    const boutons = (h) => (h.match(/setToitVu\(/g) || []).length;
+    const vues = [["existant replié", 1, "existant", false], ["existant déplié", 1, "existant", true],
+                  ["projet", 1, "projet", false], ["final", 1, "final", false]];
+    for (const [nom, niv, md, open] of vues) {
+      const h = rendu(niv, md, open);
+      t[`dernier niveau · les deux parties sont inspectables en vue ${nom}`] = boutons(h) === 2 && /Partie haute/.test(h);
+    }
+    t["niveau bas · sa partie est inspectable"] = boutons(rendu(0, "existant", false)) === 1;
+    setMode("existant");
+  }
   return t;
 });
 await b.close();
