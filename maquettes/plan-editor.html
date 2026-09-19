@@ -778,6 +778,10 @@ const TOIT_ACTION={rien:'Rien',demousser:'Démousser',refection:'Refaire la couv
 const PRIX_TOIT={demousser:15,refectionTuile:110,refectionArdoise:160,couvTuile:70,couvArdoise:120,couvZinc:90,sousToiture:15,deposeComplete:45,deposeCouv:25,completeTuile:230,completeArdoise:280,charpTrad:120,charpFermettes:80,traiter:5,gouttieres:50,raccords:40,velux:1200,plat:80,isoPerdus:25,isoRampants:65};
 const toiture=()=>state.toiture||null;
 let toitOpen=false; // formulaire toiture (existant) déplié ?
+/* Niveau dont on veut VOIR la partie de toiture surlignée sur le plan. Une surface calculée par
+   soustraction d'aires ne se vérifie pas en la lisant : il faut la voir. */
+let toitVu=null;
+function setToitVu(li){toitVu=(toitVu===li)?null:li;if(toitVu!=null&&state.cur!==li)setLevel(li);else{renderPanel();draw();}}
 const topLevelIdx=()=>state.levels.length-1;
 // v1 « simplifiée » : la toiture est calculée et dessinée sur le RECTANGLE ENVELOPPE des murs extérieurs du dernier niveau (+ débord).
 // Un plan en L / T donne une surface approchée (signalée) — l'utilisateur fera de toute façon appel à un pro ; le but est d'être proche du prix.
@@ -868,19 +872,27 @@ function partiesToiture(){
        niveau intermédiaire vide, ou dont les murs ne se ferment pas, ne couvre rien : comparer
        à lui seul faisait déclarer TOUT le niveau du dessous à découvert, et la toiture sortait
        à deux fois l'emprise de la maison. */
-    let couvert=0;for(let j=i+1;j<=top;j++)couvert=Math.max(couvert,mesure(j,0).a);
+    let couvert=0,couvreNom='',jc=-1;
+    for(let j=i+1;j<=top;j++){const m=mesure(j,0);if(m.a>couvert){couvert=m.a;couvreNom=state.levels[j].name;jc=j;}}
     const base=+Math.max(0,nu.a-couvert).toFixed(1);
     if(base<0.5)continue;                                  /* rien à découvert : pas de partie */
-    /* Le débord ne court que sur les bords EXTÉRIEURS de cette partie, pas tout autour du
-       niveau : on applique au découvert le même rapport de débord que le niveau entier. */
-    const deborde=bas.a/nu.a;
-    const aire=base*deborde;
+    /* L'aire comptée EST celle de la zone surlignée sur le plan : le contour de ce niveau au
+       débord, moins celui de l'étage qui le couvre AU DÉBORD lui aussi — cette bande-là relève
+       de la toiture haute, qui déborde par-dessus. Compter autrement donnerait un nombre qu'on
+       ne pourrait pas montrer, et un nombre qu'on ne peut pas montrer ne se vérifie pas. */
+    const couvreD=jc>=0?mesure(jc,deb):{a:0,poly:null};
+    const couvrePoly=couvreD.poly;
+    const aire=Math.max(0,bas.a-couvreD.a);
+    if(aire<0.5)continue;
     const cfg=partieToit(i);
     const forme=cfg.forme||'mono';                         /* un appentis est le cas courant */
     const pente=forme==='plat'?0:(cfg.pente??t.pente??30);
+    /* Le trou est-il bien DANS le contour du dessous ? Si l'étage déborde en porte-à-faux, la
+       soustraction d'aires ment, et il faut le dire plutôt que de laisser croire au dessin. */
+    const contenu=!couvrePoly||!bas.poly||couvrePoly.every(q=>pointIn(q,bas.poly));
     parts.push({li:i,principale:false,nom:state.levels[i].name,forme,pente,base,
       surface:+(aire/Math.cos(pente*Math.PI/180)).toFixed(1),
-      egouts:+(bas.p*(base/nu.a)).toFixed(1),poly:bas.poly});
+      egouts:+(bas.p*(base/nu.a)).toFixed(1),poly:bas.poly,couvrePoly,couvreNom,contenu});
   }
   return parts;
 }
@@ -905,6 +917,40 @@ function pignonWalls(){const G=toitureGeom();if(!G||!(G.forme==='deuxpans'||G.fo
 function pignonExtra(w,lv){if(state.levels.indexOf(lv)!==topLevelIdx()||!toiture())return 0;const G=toitureGeom();if(!G||G.pente<=0)return 0;const pw=pignonWalls().find(p=>p.w===w);if(!pw)return 0;const tan=Math.tan(G.pente*Math.PI/180),len=wallLen(w);
   if(pw.role==='pignon')return 0.5*len*(len/2*tan);if(pw.role==='rampant')return 0.5*len*(len*tan);if(pw.role==='haut')return len*G.hPignon;return 0;}
 // dessin 2D de la toiture (dernier niveau) : contour au débord, faîtage, arêtiers, flèches de pente, pignons
+/* Surligne la zone qu'une partie de toiture compte, trou compris. Le trou est tracé comme un
+   second sous-chemin et rempli en « evenodd » : ce qu'on voit EST ce qui est compté, pas une
+   illustration. */
+function surlignerPartie(pa){
+  if(!pa||!pa.poly||pa.poly.length<3)return;
+  const trace=P=>{P.forEach((q,i)=>{const t=S(q);i?ctx.lineTo(t.x,t.y):ctx.moveTo(t.x,t.y);});ctx.closePath();};
+  ctx.save();
+  ctx.beginPath();trace(pa.poly);
+  if(pa.couvrePoly&&pa.couvrePoly.length>=3)trace(pa.couvrePoly);
+  ctx.fillStyle='rgba(180,83,9,.22)';ctx.fill('evenodd');
+  ctx.strokeStyle='#b45309';ctx.lineWidth=2*uiScale;ctx.setLineDash([8,5]);
+  ctx.beginPath();trace(pa.poly);ctx.stroke();
+  if(pa.couvrePoly&&pa.couvrePoly.length>=3){ctx.strokeStyle='rgba(180,83,9,.6)';ctx.lineWidth=1.4*uiScale;ctx.beginPath();trace(pa.couvrePoly);ctx.stroke();}
+  ctx.setLineDash([]);
+  /* l'étiquette se pose dans la zone comptée, pas dans le trou */
+  let ancre=pa.poly.reduce((a,q)=>({x:a.x+q.x/pa.poly.length,y:a.y+q.y/pa.poly.length}),{x:0,y:0});
+  if(pa.couvrePoly&&pa.couvrePoly.length>=3&&pointIn(ancre,pa.couvrePoly)){
+    let best=null,bd=-1;
+    for(const q of pa.poly){const c={x:(q.x+ancre.x)/2,y:(q.y+ancre.y)/2};if(pointIn(c,pa.couvrePoly))continue;
+      const d=dist(c,ancre);if(d>bd){bd=d;best=c;}}
+    if(best)ancre=best;
+  }
+  const sc=S(ancre);
+  sc.y-=44*uiScale;          /* au-dessus de l'étiquette de la pièce, qui occupe déjà le centre */
+  const l1=(pa.principale?'Partie haute · ':'Partie basse · ')+fmtM2(pa.surface)+' de couverture';
+  const l2=fmtM2(pa.base)+' d\'emprise'+(pa.couvreNom?' · le trou est l\'emprise de '+pa.couvreNom:'');
+  ctx.font=`700 ${12*uiScale}px Geist, sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+  const w=Math.max(ctx.measureText(l1).width,ctx.measureText(l2).width)+18*uiScale;
+  ctx.fillStyle='rgba(255,255,255,.92)';ctx.strokeStyle='#b45309';ctx.lineWidth=1;
+  ctx.beginPath();ctx.roundRect(sc.x-w/2,sc.y-20*uiScale,w,38*uiScale,7);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#b45309';ctx.fillText(l1,sc.x,sc.y-8*uiScale);
+  ctx.font=`500 ${11*uiScale}px Geist, sans-serif`;ctx.fillStyle='#78350f';ctx.fillText(l2,sc.x,sc.y+8*uiScale);
+  ctx.restore();
+}
 function drawToiture(lv){
   if(!toiture())return;
   const li=state.levels.indexOf(lv);
@@ -915,10 +961,12 @@ function drawToiture(lv){
     if(!pa||!pa.poly||pa.poly.length<3)return;
     ctx.save();ctx.setLineDash([7,5]);ctx.strokeStyle='rgba(30,27,75,.38)';ctx.lineWidth=1.2*uiScale;
     ctx.beginPath();pa.poly.forEach((q,i)=>{const t=S(q);i?ctx.lineTo(t.x,t.y):ctx.moveTo(t.x,t.y);});ctx.closePath();ctx.stroke();
-    if(view.zoom>=18){ctx.setLineDash([]);ctx.fillStyle='rgba(30,27,75,.6)';ctx.font=`600 ${10*uiScale}px Geist, sans-serif`;ctx.textAlign='center';
+    if(view.zoom>=18&&toitVu!==li){ctx.setLineDash([]);ctx.fillStyle='rgba(30,27,75,.6)';ctx.font=`600 ${10*uiScale}px Geist, sans-serif`;ctx.textAlign='center';
       const c=pa.poly.reduce((a,q)=>({x:a.x+q.x/pa.poly.length,y:a.y+q.y/pa.poly.length}),{x:0,y:0});const sc=S(c);
       ctx.fillText('toiture basse · '+fmtM2(pa.surface),sc.x,sc.y);}
-    ctx.restore();return;
+    ctx.restore();
+    if(toitVu===li)surlignerPartie(pa);
+    return;
   }
   const G=toitureGeom();if(!G)return;const z=view.zoom;ctx.save();
   ctx.setLineDash([9,6]);ctx.strokeStyle='rgba(30,27,75,.55)';ctx.lineWidth=1.3*uiScale;
@@ -932,7 +980,9 @@ function drawToiture(lv){
     if(G.pente>0){const ar=G.arrows[0];if(ar){const m=S(v((ar.from.x+ar.to.x)/2,(ar.from.y+ar.to.y)/2));ctx.fillStyle='rgba(30,27,75,.7)';ctx.fillText(G.pente+'°',m.x+14*uiScale,m.y);}}
     ctx.fillStyle='rgba(30,27,75,.6)';ctx.font=`600 ${10*uiScale}px Geist, sans-serif`;const c=S(v(G.ox1,G.oy0));ctx.textAlign='right';ctx.fillText('débord '+Math.round(G.deb*100)+' cm',c.x-4*uiScale,c.y+10*uiScale);
     ctx.textAlign='center';ctx.fillStyle='#b45309';pignonWalls().forEach(({w,role})=>{const u=norm(sub(w.b,w.a)),nn=perp(u),off=wallOff(w);const mid=add(mul(add(w.a,w.b),.5),off);const sideOut=wallSideInside(w,1)?-1:1;const p=S(add(mid,mul(nn,sideOut*(wallT(w)/2+Math.min(G.deb,0.35)+0.18))));const ang=Math.atan2(u.y,u.x);ctx.save();ctx.translate(p.x,p.y);ctx.rotate(ang>Math.PI/2||ang<-Math.PI/2?ang+Math.PI:ang);ctx.fillText(role==='pignon'?'PIGNON':role==='haut'?'CÔTÉ HAUT':role==='bas'?'CÔTÉ BAS':'RAMPANT',0,0);ctx.restore();});}
-  ctx.restore();}
+  ctx.restore();
+  if(toitVu===li)surlignerPartie(partiesToiture().find(x=>x.li===li));
+}
 function toitureDefaults(){return {forme:'deuxpans',pente:30,couverture:'tuile',etatCouv:'bon',etatCharp:'bon',combles:'perdus',debord:0.3,projet:{action:'rien',charpente:'trad',isoCombles:'aucune',velux:0,gouttieres:false,raccords:false,traiterCharpente:false,manuel:false}};}
 function setToiture(k,val){history.push(snapshot());if(k==='off'){delete state.toiture;toitOpen=false;afterChange();return;}if(k==='init')toitOpen=true;
   const t=state.toiture=state.toiture||toitureDefaults();t.projet=t.projet||toitureDefaults().projet;
@@ -967,7 +1017,8 @@ function renderToiture(lv){const li=state.levels.indexOf(lv),top=topLevelIdx();c
     <div class="row" style="margin-top:8px"><label>Forme</label></div>
     <div class="seg">${Object.entries(TOIT_FORME).map(([k,d])=>`<button class="${pa.forme===k?'on':''}" onclick="setToitPartie(${li},'forme','${k}')">${d.label}</button>`).join('')}</div>
     ${pa.forme!=='plat'?`<div class="row" style="margin-top:8px"><label>Pente</label><span>${[10,15,25,30].map(d=>`<button class="miniep ${pa.pente===d?'on':''}" onclick="setToitPartie(${li},'pente',${d})">${d}°</button>`).join('')}<input class="fin n" type="number" min="0" max="60" step="1" value="${pa.pente}" onchange="setToitPartie(${li},'pente',this.value)" style="width:56px"> °</span></div>`:''}
-    <div class="blond ok" style="margin-top:10px"><b>Partie basse ≈ <span>${fmtM2(pa.surface)}</span></b><small>${fmtM2(pa.base)} d'emprise découverte · ${pa.forme==='plat'?'toit plat':'pente '+pa.pente+'°'} · égouts ${fmt(pa.egouts,1)} ml</small></div>
+    <div class="blond ${pa.contenu?'ok':'ko'}" style="margin-top:10px"><b>Partie basse ≈ <span>${fmtM2(pa.surface)}</span></b><small>${fmtM2(pa.base)} d'emprise découverte · ${pa.forme==='plat'?'toit plat':'pente '+pa.pente+'°'} · égouts ${fmt(pa.egouts,1)} ml</small><small>${fmtM2(pa.base)} = emprise de ce niveau moins celle de ${esc(pa.couvreNom||'l\'étage')}${pa.contenu?'':' — ⚠ mais cet étage DÉBORDE de ce niveau : la soustraction est alors approchée'}</small></div>
+    <button class="ib" style="width:100%;justify-content:center;margin-top:8px" onclick="setToitVu(${li})">${toitVu===li?'✕ Masquer la zone comptée':'👁 Voir exactement ce qui est compté'}</button>
     <div class="row" style="margin-top:10px"><label>Couverture, état, travaux</label><button class="ib" style="padding:5px 10px" onclick="setLevel(${top})">réglés au niveau ${esc(state.levels[top].name)} →</button></div>`;
   }
   const t=toiture();const g=toitureGeo();const seg=(k,obj,cur,pref)=>`<div class="seg">${Object.entries(obj).map(([v,l])=>`<button class="${cur===v?'on':''}" onclick="setToiture('${pref||''}${k}','${v}')">${typeof l==='string'?l:l.label}</button>`).join('')}</div>`;
@@ -984,6 +1035,7 @@ function renderToiture(lv){const li=state.levels.indexOf(lv),top=topLevelIdx();c
     <div class="row" style="margin-top:8px"><label>État couverture</label></div>${seg('etatCouv',TOIT_ETAT_COUV,t.etatCouv)}
     <div class="row" style="margin-top:8px"><label>État charpente</label></div>${seg('etatCharp',TOIT_ETAT_CHARP,t.etatCharp)}
     ${t.forme==='plat'?`<div class="tip" style="margin-top:8px">Toit plat : pas de combles.</div>`:`<div class="row" style="margin-top:8px"><label>Combles</label><span class="seg" style="display:inline-flex"><button class="${t.combles==='perdus'?'on':''}" onclick="setToiture('combles','perdus')">Perdus<small>plafond droit</small></button><button class="${t.combles==='amenages'?'on':''}" onclick="setToiture('combles','amenages')">Aménagés<small>plafond rampant</small></button></span></div>${t.combles==='amenages'?`<div class="tip" style="margin-top:6px">Combles habitables : le plafond suit la pente (rampant). Nécessite une <b>charpente traditionnelle</b> — impossible avec des fermettes.</div>`:`<div class="tip" style="margin-top:6px">Combles non habités : plafond droit, isolés par soufflage au sol des combles.</div>`}`}
+    ${(()=>{const P=partiesToiture();return P.length?`<div class="ph mt">Ce qui est compté</div>${P.map(x=>`<button class="ib" style="width:100%;justify-content:space-between;margin-bottom:6px" onclick="setToitVu(${x.li})"><span>${toitVu===x.li?'✕':'👁'} ${x.principale?'Partie haute':'Partie basse'} · ${esc(x.nom)}</span><span class="val b">${fmtM2(x.surface)}</span></button>`).join('')}<div class="tip" style="margin-bottom:10px">Chaque bouton surligne sur le plan la zone exactement comptée — le trou, quand il y en a un, est l'emprise de l'étage qui la recouvre.</div>`:'';})()}
     <div class="blond ${g.compose?'ko':'ok'}" style="margin-top:10px"><b>Surface de toiture ≈ <span>${fmtM2(g.surface)}</span></b><small>emprise réelle ${fmtM2(g.emprise)} + débord ${Math.round((t.debord??0.3)*100)} cm${t.forme!=='plat'?' · pente '+t.pente+'°':''} · égouts ${fmt(g.egouts,1)} ml${g.faitage?' · faîtage '+fmt(g.faitage,1)+' ml':''}${g.aretiers?' · arêtiers '+fmt(g.aretiers,1)+' ml':''}</small>${g.parties&&g.parties.length>1?`<small>${g.parties.length} parties : ${g.parties.map(x=>esc(x.niveau)+' '+fmtM2(x.surface)+(x.principale?'':' (basse, '+(x.forme==='plat'?'toit plat':TOIT_FORME[x.forme].label.toLowerCase()+' '+x.pente+'°')+')')).join(' + ')}</small><small>Chaque partie se règle depuis SON niveau — forme et pente. La couverture, l'état et les travaux valent pour toute la toiture.</small>`:''}${g.compose?`<small>⚠ Plan non rectangulaire (L / T) : la <b>surface suit bien ton plan</b>, mais les pans sont <b>simplifiés</b> — les noues et pans croisés ne sont pas dessinés. Un couvreur les affinera ; le prix, lui, est au bon ordre.</small>`:''}</div>
     <div class="row" style="margin-top:6px"><label>Débord de toit</label><span><input class="fin n" type="number" min="0" max="100" step="5" value="${Math.round((t.debord??0.3)*100)}" onchange="setToiture('debord',this.value/100)" style="width:60px"> cm</span></div>
     <div class="btnrow"><button class="ib danger" style="flex:1" onclick="setToiture('off')">Retirer la toiture</button></div>`;}

@@ -82,8 +82,8 @@ const res = await p.evaluate(() => {
     t["deux niveaux · deux parties de toiture"] = g.parties.length === 2;
     t["deux niveaux · l'emprise couvre TOUT le sol (93,9 m²)"] = pres(g.emprise, 93.9, 0.2);
     t["la partie basse existe et vaut ~30,8 m² d'emprise"] = pres(g.parties[1].emprise, 30.8, 0.2) && !g.parties[1].principale;
-    t["la surface totale additionne les deux (124,5 m²)"] = pres(g.surface, 124.5, 0.3);
-    t["sans elle, il manquait 40 m² de couverture"] = g.surface - g.parties[0].surface > 38;
+    t["la surface totale additionne les deux (122,6 m²)"] = pres(g.surface, 122.6, 0.3);
+    t["sans elle, il manquait 38 m² de couverture"] = g.surface - g.parties[0].surface > 36;
     /* garde-fou d'ordre de grandeur : le débord et la pente majorent l'emprise, jamais au-delà
        de moitié. Le double comptage se voyait d'abord là — 207 m² pour 94 m² d'emprise. */
     t["la surface reste plausible face à l'emprise"] = g.surface < g.emprise * 1.5;
@@ -91,9 +91,9 @@ const res = await p.evaluate(() => {
     /* elle a sa propre forme et sa propre pente */
     setToitPartie(0, "forme", "plat");
     const g2 = toitureGeo();
-    t["partie basse en toit plat · plus de coefficient de pente"] = pres(g2.parties[1].surface, 34.8, 0.3) && g2.parties[1].pente === 0;
+    t["partie basse en toit plat · plus de coefficient de pente"] = pres(g2.parties[1].surface, 33.2, 0.3) && g2.parties[1].pente === 0;
     setToitPartie(0, "forme", "mono"); setToitPartie(0, "pente", 10);
-    t["partie basse à 10° · surface recalculée"] = pres(toitureGeo().parties[1].surface, 34.8 / Math.cos(10 * Math.PI / 180), 0.3);
+    t["partie basse à 10° · surface recalculée"] = pres(toitureGeo().parties[1].surface, 33.2 / Math.cos(10 * Math.PI / 180), 0.3);
     /* et le plan le signale au niveau concerné */
     setLevel(0);
     t["le plan signale la toiture basse sur son niveau"] = planChecks(L()).some((c) => /toiture plus basse/.test(c.msg));
@@ -125,13 +125,39 @@ const res = await p.evaluate(() => {
        entièrement à découvert, sinon la toiture sort au double de l'emprise */
     const g = deuxNiveaux((add, bo) => { add("empty"); add("empty"); bo(L(), 8, 7.5); });
     t["niveau vide au milieu · emprise juste (93,9 m²)"] = pres(g.emprise, 93.9, 0.3);
-    t["niveau vide au milieu · surface juste (124,5 m²)"] = pres(g.surface, 124.5, 0.3);
+    t["niveau vide au milieu · surface juste (122,6 m²)"] = pres(g.surface, 122.6, 0.3);
     t["niveau vide au milieu · pas de double comptage"] = g.surface < g.emprise * 1.5; }
   { /* un étage dont les murs ne se ferment pas : même piège, l'emprise retombe sur le rectangle
        enveloppe au lieu de valoir zéro */
     const g = deuxNiveaux((add, bo, W) => { add("empty"); W(L(), [0, 0], [8, 0]); W(L(), [8, 0], [8, 7.5]); });
     t["étage non fermé · emprise juste (~94 m²)"] = pres(g.emprise, 94, 1);
     t["étage non fermé · pas de double comptage"] = g.surface < g.emprise * 1.5; }
+  /* ── ce qui est surligné EST ce qui est compté ───────────────────────────
+     Le contrôle le plus utile du lot : une surface calculée par soustraction d'aires ne se
+     vérifie pas en la lisant. On compare donc l'aire du polygone effectivement tracé — contour
+     extérieur moins trou — à celle que le chiffrage retient. Un écart, et le surlignage
+     montrerait autre chose que la facture. */
+  {
+    const aireDessinee = (pa) => Math.abs(polyArea(pa.poly)) - (pa.couvrePoly ? Math.abs(polyArea(pa.couvrePoly)) : 0);
+    const verifie = (nom, monter) => {
+      state = blankState(); const bas = L(); bas.height = 2.5;
+      const W = (l, a, c) => l.walls.push({ id: uid(), a: v(...a), b: v(...c), type: "mur" });
+      const bo = (l, pts) => { for (let i = 0; i < pts.length; i++) W(l, pts[i], pts[(i + 1) % pts.length]); };
+      monter(bo, W);
+      afterChange(); setToiture("init", "");
+      const P = partiesToiture();
+      const ok = P.length > 0 && P.every((pa) => {
+        const dessine = aireDessinee(pa);
+        const compte = pa.surface * Math.cos(pa.pente * Math.PI / 180);
+        return Math.abs(dessine - compte) < 0.12;
+      });
+      t[`ce qui est surligné est ce qui est compté · ${nom}`] = ok;
+    };
+    verifie("étage plus petit", (bo) => { bo(L(), [[0, 0], [12, 0], [12, 7.5], [0, 7.5]]); afterChange(); addLevel("empty"); bo(L(), [[0, 0], [8, 0], [8, 7.5], [0, 7.5]]); });
+    verifie("niveau unique", (bo) => { bo(L(), [[0, 0], [6, 0], [6, 4], [0, 4]]); });
+    verifie("rez en L", (bo) => { bo(L(), [[0, 0], [12, 0], [12, 4], [6, 4], [6, 7.5], [0, 7.5]]); afterChange(); addLevel("empty"); bo(L(), [[0, 0], [6, 0], [6, 7.5], [0, 7.5]]); });
+    verifie("trois niveaux en retrait", (bo) => { bo(L(), [[0, 0], [12, 0], [12, 7.5], [0, 7.5]]); afterChange(); addLevel("empty"); bo(L(), [[0, 0], [9, 0], [9, 7.5], [0, 7.5]]); afterChange(); addLevel("empty"); bo(L(), [[0, 0], [5, 0], [5, 7.5], [0, 7.5]]); });
+  }
   return t;
 });
 await b.close();
