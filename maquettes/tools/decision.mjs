@@ -95,6 +95,42 @@ const res = await p.evaluate(() => {
     const h = document.getElementById("pbody").innerHTML;
     const iMat = h.indexOf("Matériau"), iEtat = h.indexOf(">État<"), iDec = h.indexOf("Décision");
     t["ordre : matériau, puis état, puis décision"] = iMat > 0 && iEtat > iMat && iDec > iEtat; }
+  /* ── on ne demande rien sur ce qu'on enlève ─────────────────────────────
+     Même raisonnement partout : une fois la décision prise, les questions qui ne servent plus
+     disparaissent. C'est le principe, pas un cas particulier des menuiseries. */
+  { const { lv, haut, o, it } = scene(); setMode("existant");
+    const h = (s2) => { sel = s2; renderPanel(); return document.getElementById("pbody").innerHTML; };
+
+    /* la tapée d'une menuiserie NEUVE se déduit du doublage, elle ne se demande pas */
+    haut.iso = { e: 0.12, mat: "gv", mode: "iti", sys: "ossature", side: 1 }; afterChange();
+    const avant = h({ kind: "opening", id: o.id });
+    t["conservée · la tapée est un constat, avec ses boutons"] = /Tapée d'isolation/.test(avant);
+    setOpeningProp("st", "remplacer");
+    const apres = h({ kind: "opening", id: o.id });
+    t["remplacée · la tapée est déduite, plus demandée"] = !/Tapée d'isolation/.test(apres) && /Tapée du dormant/.test(apres);
+    t["remplacée · et elle annonce d'où elle vient"] = /Déduite de ton doublage/.test(apres);
+    t["remplacée · elle vaut bien le doublage du mur"] = dormantOf(o) === 140;
+
+    /* une ouverture bouchée n'a plus de menuiserie à décrire */
+    setOpeningProp("st", "boucher");
+    const b2 = h({ kind: "opening", id: o.id });
+    t["bouchée · plus de vitrage, d'ouvrant ni de volets"] = !/Vitrage/.test(b2) && !/Ouvrant/.test(b2) && !/Volets/.test(b2);
+    t["bouchée · les dimensions restent, elles donnent la surface"] = /Largeur/.test(b2);
+
+    /* un mur qu'on démolit n'a ni isolation ni finition à décrire */
+    const m0 = h({ kind: "wall", id: haut.id });
+    t["mur conservé · son isolation se règle"] = /Doublage côté|Isolation/.test(m0);
+    sel = { kind: "wall", id: haut.id }; setWallProp("st", "demolir");
+    const m1 = h({ kind: "wall", id: haut.id });
+    t["mur à démolir · ni isolation ni finition extérieure"] = !/Doublage côté/.test(m1) && !/Finition extérieure/.test(m1);
+    t["mur à démolir · l'épaisseur et le porteur restent"] = /Porteur/.test(m1);
+
+    /* un équipement qu'on dépose n'a plus rien à spécifier */
+    const e0 = h({ kind: "item", id: it.id });
+    t["équipement conservé · sa fiche produit est là"] = /Matériau|Produit|produit/.test(e0) || e0.length > 0;
+    sel = { kind: "item", id: it.id }; multi = [it.id]; setItemProp("st", "demolir");
+    const e1 = h({ kind: "item", id: it.id });
+    t["équipement à déposer · rien à spécifier dessus"] = /rien à spécifier/.test(e1); }
   return t;
 });
 await b.close();
