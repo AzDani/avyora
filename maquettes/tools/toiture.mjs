@@ -82,15 +82,18 @@ const res = await p.evaluate(() => {
     t["deux niveaux · deux parties de toiture"] = g.parties.length === 2;
     t["deux niveaux · l'emprise couvre TOUT le sol (93,9 m²)"] = pres(g.emprise, 93.9, 0.2);
     t["la partie basse existe et vaut ~30,8 m² d'emprise"] = pres(g.parties[1].emprise, 30.8, 0.2) && !g.parties[1].principale;
-    t["la surface totale additionne les deux (134,1 m²)"] = pres(g.surface, 134.1, 0.3);
-    t["sans elle, il manquait 50 m² de couverture"] = g.surface - g.parties[0].surface > 45;
+    t["la surface totale additionne les deux (124,5 m²)"] = pres(g.surface, 124.5, 0.3);
+    t["sans elle, il manquait 40 m² de couverture"] = g.surface - g.parties[0].surface > 38;
+    /* garde-fou d'ordre de grandeur : le débord et la pente majorent l'emprise, jamais au-delà
+       de moitié. Le double comptage se voyait d'abord là — 207 m² pour 94 m² d'emprise. */
+    t["la surface reste plausible face à l'emprise"] = g.surface < g.emprise * 1.5;
     t["la partie basse est en appentis par défaut"] = g.parties[1].forme === "mono";
     /* elle a sa propre forme et sa propre pente */
     setToitPartie(0, "forme", "plat");
     const g2 = toitureGeo();
-    t["partie basse en toit plat · plus de coefficient de pente"] = pres(g2.parties[1].surface, 43.1, 0.3) && g2.parties[1].pente === 0;
+    t["partie basse en toit plat · plus de coefficient de pente"] = pres(g2.parties[1].surface, 34.8, 0.3) && g2.parties[1].pente === 0;
     setToitPartie(0, "forme", "mono"); setToitPartie(0, "pente", 10);
-    t["partie basse à 10° · surface recalculée"] = pres(toitureGeo().parties[1].surface, 43.1 / Math.cos(10 * Math.PI / 180), 0.3);
+    t["partie basse à 10° · surface recalculée"] = pres(toitureGeo().parties[1].surface, 34.8 / Math.cos(10 * Math.PI / 180), 0.3);
     /* et le plan le signale au niveau concerné */
     setLevel(0);
     t["le plan signale la toiture basse sur son niveau"] = planChecks(L()).some((c) => /toiture plus basse/.test(c.msg));
@@ -108,6 +111,27 @@ const res = await p.evaluate(() => {
     t["étage de même emprise · une seule partie"] = g.parties.length === 1;
     t["étage de même emprise · surface inchangée (37,7 m²)"] = pres(g.surface, 37.7);
   }
+  /* ── les deux pièges qui faisaient compter la toiture deux fois ─────────── */
+  const deuxNiveaux = (avant) => {
+    state = blankState(); const bas = L(); bas.height = 2.5;
+    const W = (l, a, c) => l.walls.push({ id: uid(), a: v(...a), b: v(...c), type: "mur" });
+    const bo = (l, x, y) => { const P = [[0, 0], [x, 0], [x, y], [0, y]]; for (let i = 0; i < P.length; i++) W(l, P[i], P[(i + 1) % P.length]); };
+    bo(bas, 12, 7.5); afterChange();
+    avant(addLevel, bo, W);
+    afterChange(); setToiture("init", "");
+    return toitureGeo();
+  };
+  { /* un niveau intermédiaire vide ne couvre rien : le niveau du dessous ne doit PAS se croire
+       entièrement à découvert, sinon la toiture sort au double de l'emprise */
+    const g = deuxNiveaux((add, bo) => { add("empty"); add("empty"); bo(L(), 8, 7.5); });
+    t["niveau vide au milieu · emprise juste (93,9 m²)"] = pres(g.emprise, 93.9, 0.3);
+    t["niveau vide au milieu · surface juste (124,5 m²)"] = pres(g.surface, 124.5, 0.3);
+    t["niveau vide au milieu · pas de double comptage"] = g.surface < g.emprise * 1.5; }
+  { /* un étage dont les murs ne se ferment pas : même piège, l'emprise retombe sur le rectangle
+       enveloppe au lieu de valoir zéro */
+    const g = deuxNiveaux((add, bo, W) => { add("empty"); W(L(), [0, 0], [8, 0]); W(L(), [8, 0], [8, 7.5]); });
+    t["étage non fermé · emprise juste (~94 m²)"] = pres(g.emprise, 94, 1);
+    t["étage non fermé · pas de double comptage"] = g.surface < g.emprise * 1.5; }
   return t;
 });
 await b.close();

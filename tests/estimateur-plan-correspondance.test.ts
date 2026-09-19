@@ -145,10 +145,10 @@ describe("table de correspondance · la toiture", () => {
   it("une toiture refaite entièrement dépose puis repose, sur la surface mesurée", () => {
     /* La scène de référence a un étage de 4 × 4 sur un rez-de-chaussée de 8 × 5 : la toiture
        compte DEUX parties — celle de l'étage (26,6 m²) et celle qui couvre les 25 m² du rez
-       laissés à découvert (38,6 m²). Elle ne comptait que la première : 38,6 m² de couverture,
-       soit la moitié du toit, n'étaient chiffrés nulle part. */
-    expect(q("toi-depose-complete-de-toiture-couverture-charpent")).toBeCloseTo(65.2, 1);
-    expect(q("toi-toiture-complete-tuile-charpente-couverture")).toBeCloseTo(65.2, 1);
+       laissés à découvert (34,6 m²). Elle ne comptait que la première : plus de la moitié du
+       toit n'était chiffrée nulle part. */
+    expect(q("toi-depose-complete-de-toiture-couverture-charpent")).toBeCloseTo(61.2, 1);
+    expect(q("toi-toiture-complete-tuile-charpente-couverture")).toBeCloseTo(61.2, 1);
     expect(q("toi-charpente-traditionnelle-hors-couverture")).toBe(0); // comprise dans le poste complet
   });
   it("l'isolation des combles perdus se compte à l'emprise, pas à la surface de toit", () => {
