@@ -158,6 +158,23 @@ const PRIX_MAP = [
   ["EQUIP_PRIX", "prise", "Ajouter / déplacer une prise"],
   ["EQUIP_PRIX", "interrupteur", "Ajouter / déplacer un interrupteur"],
   ["EQUIP_PRIX", "lumiere", "Ajouter un point lumineux"],
+  /* D22 — les ouvrages que le compteur du plan ignorait, et les objets qui valent PLUSIEURS
+     lignes de devis. Chacun est désormais chiffré dans la maquette, donc chacun doit être tenu
+     ici : c'est ce qui empêche l'écart de se rouvrir en silence. */
+  ["PRIX", "plinthes", "Plinthes"],
+  ["PRIX", "fauxPlafond", "Faux plafond"],
+  ["PRIX", "faience", "Faïence / carrelage mural"],
+  ["PRIX", "cloisonHumide", "Cloison pièce humide (hydrofuge)"],
+  ["PRIX", "poncageParquet", "Ponçage + vitrification parquet"],
+  ["PRIX_DOUCHE", "bac", "Bac de douche"],
+  ["PRIX_DOUCHE", "italienne", "Douche à l'italienne"],
+  ["PRIX_DOUCHE", "cabine", "Cabine complète (parois + porte)"],
+  ["PRIX_ACC", "colonneDouche", "Colonne de douche"],
+  ["PRIX_ACC", "paroiDouche", "Paroi de douche"],
+  ["PRIX_ACC", "robBaignoire", "Robinetterie baignoire"],
+  ["PRIX_ACC", "spot", "Spots encastrés (LED)"],
+  /* Une prise double, c'est DEUX prises au devis — pas un poste à part. */
+  ["EQUIP_PRIX", "prise2", "Ajouter / déplacer une prise", 2],
   /* Raccorder une machine, c'est créer un point d'eau — le contrat les envoie tous deux sur ce
      poste. Ils traînaient en « sans poste » et dérivaient donc sans que rien ne le dise. */
   ["EQUIP_PRIX", "lave_linge", "Créer / déplacer un point d'eau"],

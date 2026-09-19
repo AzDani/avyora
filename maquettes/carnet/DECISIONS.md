@@ -295,3 +295,62 @@ Ce qui reste dans les 9,5 % est connu et listé en D20 : des ouvrages que l'esti
 que le compteur ignore (plinthes, faïence, faux plafond, chape, cloison hydrofuge, robinetterie,
 colonne et paroi de douche), la règle D8 du ponçage de parquet, la distinction D15 spot /
 plafonnier, et la prise double.
+
+## D22 · Les 9,5 % refermés
+
+Fait le 19/09/2026 : « oui vas-y, referme les 9,5 % ». Sur la scène de référence, le compteur du
+plan annonçait **40 427 €** et le devis en facturait **44 272 €**. Les deux chiffres s'affichent à
+l'utilisateur, et le compteur était presque toujours **en dessous** — le mauvais sens : un chiffre
+qui sous-estime déçoit plus qu'un chiffre qui surestime.
+
+**Après : 44 271 € contre 44 272 €. Écart 0 %** (1 € d'arrondi). Le seuil de `couverture.mts`
+descend de 13 % à **1 %**.
+
+### Ce qui manquait : des ouvrages que le plan MESURAIT sans jamais les compter — 4 947 €
+
+| ouvrage | quantité mesurée par le plan | prix |
+|---|---|---|
+| Faïence / carrelage mural | hauteur de pose × périmètre (D10) | 1 593 € |
+| Cloisons hydrofuges | les CLOISONS de la pièce humide, pas ses murs extérieurs | 688 € |
+| Plinthes | périmètre réel, hors portes | 654 € |
+| Faux plafond | surface de la pièce | 630 € |
+| Chape traditionnelle | *voir le bug de vocabulaire ci-dessous* | 442 € |
+| Paroi de douche | 1 | 380 € |
+| Colonne de douche | 1 | 300 € |
+| Robinetterie de baignoire | 1 | 260 € |
+
+**Trois objets ne sont pas une ligne de devis.** Une douche, c'est un receveur + une colonne + une
+paroi — sauf la cabine, qui est un bloc. Une baignoire vient avec sa robinetterie. Le devis le
+savait déjà ; le compteur perdait 940 € sans rien dire.
+
+### Trois règles qui n'existaient que d'un côté — −1 102 €
+
+- **D8** : un parquet posé sur un parquet existant se **ponce** (40 €/m²), il ne se remplace pas
+  (90 €/m²). La règle vivait dans la table de correspondance seule. −1 137 €.
+- **D15** : un spot encastré (45 €) n'est pas un plafonnier (110 €). La maquette appliquait un
+  prix unique. −65 €.
+- Une **prise double**, c'est **deux** prises au devis. +100 €.
+
+### Le bug que la fermeture a fait sortir : deux mots pour la même chape
+
+La table de correspondance cherchait `chape === "traditionnelle"`. L'éditeur écrit **`"tradi"`**
+(`setRoomSol('chape','tradi')`). **Une chape traditionnelle dessinée n'était donc jamais
+facturée** — 442 € muets sur chaque salle de bain qui en demande une.
+
+Le contrôle de couverture ne l'avait pas vu, et c'est le plus instructif : la scène de référence
+posait `chape:'traditionnelle'` **à la main**, avec l'orthographe longue que l'éditeur n'écrit
+jamais. Une scène de test qui fabrique ses données au lieu d'emprunter le vocabulaire du produit
+valide le test, pas le produit. La scène utilise désormais `'tradi'`.
+
+### Ce qui reste, et qui n'est pas un écart
+
+`couverture.mts` ne rend plus de verdict sur deux situations où la comparaison élément par élément
+serait fausse des deux côtés alors que le total est juste :
+
+- une ligne du devis **partagée entre plusieurs pièces** (les plinthes de trois pièces fusionnées
+  en un seul linéaire de 50,34 ml) est rangée sous la première ;
+- le **doublage** arrive en agrégat, sans identifiant de mur — trou de traçabilité déjà noté en
+  D20, à corriger au prochain numéro de contrat.
+
+Les douze nouveaux prix sont tenus par `coherence.mjs` : **110/110 alignés**. L'écart ne peut plus
+se rouvrir en silence.

@@ -45,7 +45,7 @@ export function scene() {
   const petite=faces.reduce((m,f)=>f.areaInt<m.areaInt?f:m,faces[0]);
   const sdb=petite.room, autre=faces.find(f=>f.room!==sdb).room;
   sdb.type='sdb'; sdb.name='Salle de bain'; sdb.floor='Carrelage'; sdb.floorNew='Carrelage'; sdb.faience='mi';
-  sdb.sol={chape:'traditionnelle',ragreage:true}; sdb.fauxPlafond=true;
+  sdb.sol={chape:'tradi',ragreage:true}; sdb.fauxPlafond=true;
   autre.type='chambre'; autre.name='Chambre'; autre.floor='Parquet ancien'; autre.floorNew='Parquet';
   const cSdb=petite.label, cCh=faces.find(f=>f.room===autre).label;
   const add=(t,c,o={})=>lv.items.push({id:uid(),type:t,x:c.x,y:c.y,w:.9,h:.9,rot:0,st:'creer',...o});

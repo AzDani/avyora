@@ -27,13 +27,11 @@ const SP = process.argv[2];
 if (!SP) { console.error("usage : npx tsx maquettes/tools/couverture.mts <dossier maquettes>"); process.exit(2); }
 
 /* Seuil d'écart global toléré entre le compteur du plan et le devis, sur la scène de référence.
-   Il n'est pas là pour excuser une dérive : il est là pour qu'une dérive NOUVELLE se voie. 10 %,
-   c'est la DETTE MESURÉE le 19/09/2026 (9,5 %), pas une cible — elle vient d'ouvrages que l'estimateur
-   dérive et que le compteur du plan ignore (plinthes, faïence, faux plafond, chape, robinetterie
-   de baignoire, colonne et paroi de douche) et de deux règles qui n'existent que d'un côté
-   (D8 : parquet sur parquet = ponçage ; D15 : spot ≠ plafonnier). On le baisse à chaque fois
-   qu'on aligne un poste — jamais on ne le monte pour faire passer le contrôle. */
-const SEUIL_ECART_PC = 10;
+   Il n'est pas là pour excuser une dérive : il est là pour qu'une dérive NOUVELLE se voie. Il
+   valait 13 % le matin du 19/09/2026 ; la dette a été refermée le soir même (D22) et il vaut
+   maintenant 1 %, la marge d'arrondi. On le baisse à chaque fois qu'on aligne un poste — jamais
+   on ne le monte pour faire passer le contrôle. */
+const SEUIL_ECART_PC = 1;
 
 const CAT = JSON.parse(readFileSync("lib/estimateur/catalog.json", "utf8"));
 const lots = Array.isArray(CAT) ? CAT : (CAT.lots ?? Object.values(CAT)[0]);
@@ -96,6 +94,7 @@ const KO = (quoi: string, d: string) => { dur++; console.log(`  ✗ ${quoi}\n   
    par mode, jamais par mur. */
 const AGREGATS = new Map<string, string>([["Isolation", "doublage transmis en agrégat, sans identifiant de mur"]]);
 const lotDe: Record<string, string> = {};
+const repartis = new Set<string>();
 const annonce: Record<string, number> = {}, facture: Record<string, number> = {};
 for (const t of taches) { annonce[t.pid] = (annonce[t.pid] ?? 0) + t.prix; if (t.prix) lotDe[t.pid] = t.lot; }
 for (const c of contributions) {
@@ -103,6 +102,11 @@ for (const c of contributions) {
   if (v === null) { KO(`poste inconnu au catalogue : ${c.poste}`, "identifiant renommé ?"); continue; }
   const k = c.sources?.[0] ?? "(global)";
   facture[k] = (facture[k] ?? 0) + v;
+  /* Une ligne qui porte PLUSIEURS sources (les plinthes de trois pièces fusionnées en un seul
+     linéaire) est rangée sous la première : la comparaison par élément devient alors fausse des
+     deux côtés — un excédent sur la première, un manque sur les autres. Le total, lui, reste
+     juste. On note donc ces éléments et on ne rend PAS de verdict sur eux. */
+  if ((c.sources?.length ?? 0) > 1) for (const q of c.sources) repartis.add(q);
 }
 
 const totalPlan = Object.values(annonce).reduce((a, x) => a + x, 0);
@@ -121,9 +125,11 @@ for (const k of pids) {
   const m = Math.round(annonce[k] ?? 0), e = Math.round(facture[k] ?? 0);
   if (Math.abs(e - m) < 50) continue;
   const agrege = AGREGATS.get(lotDe[k] ?? "");
-  const muet = m > 0 && e === 0 && !agrege, invisible = e > 0 && m === 0;
+  const reparti = repartis.has(k);
+  const muet = m > 0 && e === 0 && !agrege && !reparti, invisible = e > 0 && m === 0 && !reparti;
   const ligne = `  ${k.padEnd(9)} plan ${String(m).padStart(7)} €   devis ${String(e).padStart(7)} €   ${e - m > 0 ? "+" : ""}${e - m} €`;
-  if (m > 0 && e === 0 && agrege) console.log(`${ligne}   ⚠ ${agrege}`);
+  if (reparti) console.log(`${ligne}   · ligne(s) du devis partagée(s) avec d'autres pièces — sans verdict`);
+  else if (m > 0 && e === 0 && agrege) console.log(`${ligne}   ⚠ ${agrege}`);
   else if (muet) KO(ligne.trim(), "la maquette chiffre cet élément, le devis ne porte AUCUNE ligne pour lui");
   else if (invisible) KO(ligne.trim(), "le devis facture cet élément, le compteur du plan ne l'annonce pas");
   else console.log(ligne);

@@ -356,7 +356,12 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
     if (sol.depose) add("dem-enlever-un-revetement-de-sol", m2, src, `Ancien sol déposé${ou}`);
     if (sol.dalle) add("mac-couler-une-dalle-beton", m2, src, `Dalle à couler${ou}`);
     if (sol.isolant) add("iso-isolation-du-sol-plancher-bas", m2, src, `Isolation sous chape${ou}`);
-    if (sol.chape === "traditionnelle") add("mac-chape-traditionnelle", m2, src, `Chape${ou}`);
+    /* « tradi », pas « traditionnelle » : c'est le mot que l'éditeur écrit dans le contrat
+       (setRoomSol('chape','tradi')). On attendait ici un mot que le plan n'a jamais émis, donc
+       une chape traditionnelle dessinée n'était JAMAIS facturée — 442 € muets sur une salle de
+       bain. Le contrôle de couverture ne l'avait pas vu parce que la scène de référence posait
+       l'orthographe longue à la main, au lieu du vocabulaire de l'éditeur. */
+    if (sol.chape === "tradi") add("mac-chape-traditionnelle", m2, src, `Chape${ou}`);
     if (sol.chape === "liquide") add("mac-chape-liquide", m2, src, `Chape liquide${ou}`);
     if (sol.ragreage) add("rev-preparation-du-sol-ragreage", m2, src, `Ragréage${ou}`);
     const nouveau = sol.revetement || "";

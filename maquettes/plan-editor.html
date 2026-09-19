@@ -727,7 +727,7 @@ const LOTS=['Démolition','Maçonnerie','Toiture','Menuiseries','Cloisons','Isol
    variante « double » (433 × 1,88 = 814), un plan de travail le poste Cuisine « Plan de travail
    seul » (150 €/ml). Le compteur indicatif annonce donc exactement ce que le devis facturera.
    Le mobilier n'est pas un travail. */
-const EQUIP_PRIX={baignoire:960,douche:1090,lavabo:433,vasque2:814,wc:410,plan:150,ilot:2500,frigo:0,lave_vaisselle:190,lave_linge:190,cumulus:950,chaudiere:4500,poele:4000,escalier:2500,radiateur:500,seche_serviette:245,clim:2400,pac_ext:0,prise:100,prise2:100,interrupteur:100,lumiere:110,applique:110,tableau:1150};
+const EQUIP_PRIX={baignoire:960,douche:1090,lavabo:433,vasque2:814,wc:410,plan:150,ilot:2500,frigo:0,lave_vaisselle:190,lave_linge:190,cumulus:950,chaudiere:4500,poele:4000,escalier:2500,radiateur:500,seche_serviette:245,clim:2400,pac_ext:0,prise:100,prise2:200,interrupteur:100,lumiere:110,applique:110,tableau:1150};
 const EQUIP_UNIT={plan:'ml'}; // « Plan de travail seul » au catalogue, 150 €/ml — les meubles de cuisine ne sont pas dessinés
 const isFurniture=t=>['lit','lit1','armoire','canape','table','bureau'].includes(t);
 /* Plancher d'un étage créé par le projet. C'est L'ouvrage de l'opération et il n'était chiffré
@@ -1134,7 +1134,33 @@ function chantierTasks(){const T=[];const ml=state.levels.length>1;
       if(so.chape==='tradi')T.push({id:'sol-chape:'+r.id,lot:'Sol',label:'Chape traditionnelle · '+rn+lvn,detail:fmtM2(A),prix:A*PRIX.chapeTradi});
       if(so.chape==='liquide')T.push({id:'sol-chape:'+r.id,lot:'Sol',label:'Chape liquide · '+rn+lvn,detail:fmtM2(A),prix:A*PRIX.chapeLiquide});
       if(so.ragreage)T.push({id:'sol-rag:'+r.id,lot:'Sol',label:'Ragréage · '+rn+lvn,detail:fmtM2(A),prix:A*PRIX.ragreage});
-      if(nw)T.push({id:'sol-rev:'+r.id,lot:'Sol',label:'Poser '+nw.toLowerCase()+' · '+rn+lvn,detail:fmtM2(A)+(sp.warn?' · ⚠ support à vérifier':''),prix:A*(PRIX.revetement[nw]??60)});});
+      /* D8 : un parquet posé sur un parquet existant se PONCE, il ne se remplace pas. La règle
+         vivait dans la table de correspondance seule : le compteur annonçait un parquet neuf
+         (90 €/m²) là où le devis vitrifiait l'ancien (40 €/m²). */
+      if(nw){const ponce=nw==='Parquet'&&(r.floor||'').toLowerCase().includes('parquet');
+        T.push({id:'sol-rev:'+r.id,lot:'Sol',label:(ponce?'Poncer et vitrifier le parquet':'Poser '+nw.toLowerCase())+' · '+rn+lvn,
+          detail:fmtM2(A)+(ponce?' · parquet existant conservé':'')+(sp.warn?' · ⚠ support à vérifier':''),
+          prix:A*(ponce?PRIX.poncageParquet:(PRIX.revetement[nw]??60))});}
+      /* Ce que la pièce impose au-delà de son sol : plinthes au périmètre, faux plafond, et —
+         si elle est humide — faïence et cloisons hydrofuges. Le plan mesurait déjà tout cela et
+         le transmettait au devis ; il ne l'additionnait simplement pas dans son propre total.
+         Les formules sont celles de la table de correspondance, au mot près. */
+      if(RT[r.type].ext)return;
+      const H=roomHeight(lv,r),ops=openingsOfFace(lv,f,'projet');
+      const pl=Math.max(0,f.perimReal-ops.filter(o=>OPENINGS[o.type].cat==='porte').reduce((s,o)=>s+o.w,0));
+      if(pl>0)T.push({id:'plinthes:'+r.id,lot:'Sol',label:'Plinthes · '+rn+lvn,detail:fmt(pl)+' ml · périmètre réel, hors portes',prix:pl*PRIX.plinthes});
+      if(r.fauxPlafond)T.push({id:'fauxplaf:'+r.id,lot:'Cloisons',label:'Faux plafond · '+rn+lvn,detail:fmtM2(A),prix:A*PRIX.fauxPlafond});
+      const eaux=lv.items.filter(i=>(i.type==='douche'||i.type==='baignoire')&&ist(i)!=='demolir'&&pointIn(v(i.x,i.y),f.poly));
+      if(!(r.type==='sdb'||r.type==='sde'||eaux.length))return;
+      /* D10 : la hauteur de faïence choisie dans la fiche devient une surface. Un receveur est
+         adossé à deux murs — c'est ce linéaire-là qui monte à 2 m, le reste à 1,20 m. */
+      const pEau=Math.min(eaux.reduce((t,i)=>t+i.w+i.h,0),f.perimReal),haut=r.faience||'mi';
+      const fa=haut==='pleine'?wallPaintArea(lv,f,'projet'):haut==='douche'?pEau*2:Math.max(0,f.perimReal-pEau)*1.2+pEau*2;
+      if(fa>0)T.push({id:'faience:'+r.id,lot:'Sol',label:'Faïence / carrelage mural · '+rn+lvn,
+        detail:fmtM2(fa)+' · '+(haut==='pleine'?'pleine hauteur':haut==='douche'?'zone de douche':'mi-hauteur, 2 m dans la douche'),prix:fa*PRIX.faience});
+      /* Un mur extérieur de pièce humide est doublé, pas hydrofugé : seules les CLOISONS. */
+      const clo=mursParTypeDeFace(lv,f,H).cloison||0;
+      if(clo>0)T.push({id:'clohum:'+r.id,lot:'Cloisons',label:'Cloisons hydrofuges · '+rn+lvn,detail:fmtM2(clo)+' · pièce humide',prix:clo*PRIX.cloisonHumide});});
     lv.items.forEach(it=>{const d=ITEMS[it.type];if(!d)return;
       if(isFurniture(it.type))return; // mobilier : aménagement, pas un travail
       if(ist(it)==='demolir')T.push({id:'i:'+it.id+':demolir',lot:'Démolition',label:'Déposer '+d.label.toLowerCase()+lvn,detail:'',prix:PRIX.deposeEquip});
@@ -1144,6 +1170,19 @@ function chantierTasks(){const T=[];const ml=state.levels.length>1;
           else T.push({id:'i:'+it.id+':poteau',lot:'Maçonnerie',label:'Poteau '+STRUCT_MAT[mt]+lvn,detail:Math.round(it.w*100)+' × '+Math.round(it.h*100)+' cm · fourni-posé',prix:PRIX_POTEAU[mt]});}
         return;
       }
+      /* Trois objets ne sont pas UNE ligne de devis, et la maquette n'en chiffrait qu'une :
+         une douche (receveur + colonne + paroi, sauf la cabine qui est un bloc), une baignoire
+         (+ sa robinetterie), un point lumineux (un spot encastré n'est pas un plafonnier, D15).
+         Le devis les distinguait déjà ; le compteur perdait 940 € sans rien dire. */
+      if(ist(it)==='creer'&&it.type==='douche'){const t=it.douche||'bac';
+        T.push({id:'i:'+it.id+':creer',lot:'Équipements',label:'Poser la douche'+lvn,detail:(t==='bac'?'bac + receveur posé':t==='italienne'?'à l\'italienne, receveur maçonné':'cabine tout-en-un'),prix:PRIX_DOUCHE[t]});
+        if(t!=='cabine'){T.push({id:'i:'+it.id+':colonne',lot:'Équipements',label:'Colonne de douche'+lvn,detail:'',prix:PRIX_ACC.colonneDouche});
+          T.push({id:'i:'+it.id+':paroi',lot:'Équipements',label:'Paroi de douche'+lvn,detail:'',prix:PRIX_ACC.paroiDouche});}
+        return;}
+      if(ist(it)==='creer'&&it.type==='baignoire'){T.push({id:'i:'+it.id+':creer',lot:'Équipements',label:'Poser la baignoire'+lvn,detail:it.product?.nom||'',prix:EQUIP_PRIX.baignoire});
+        T.push({id:'i:'+it.id+':robinet',lot:'Équipements',label:'Robinetterie de la baignoire'+lvn,detail:'',prix:PRIX_ACC.robBaignoire});return;}
+      if(ist(it)==='creer'&&it.type==='lumiere'){const sp=(it.lum||'spot')==='spot';
+        T.push({id:'i:'+it.id+':creer',lot:'Équipements',label:(sp?'Poser les spots encastrés':'Poser le point lumineux')+lvn,detail:sp?'LED encastrées · demande un faux plafond ou un plénum':'en applique',prix:sp?PRIX_ACC.spot:EQUIP_PRIX.lumiere});return;}
       if(ist(it)==='creer'){const pu=EQUIP_PRIX[it.type];const ml=EQUIP_UNIT[it.type]==='ml';const prix=pu==null?0:(ml?pu*it.w:pu);const incl=it.type==='pac_ext';
         T.push({id:'i:'+it.id+':creer',lot:'Équipements',label:'Poser '+d.label.toLowerCase()+lvn,detail:[it.product?.nom||'',ml?fmt(it.w)+' ml':'',incl?'incluse dans le split':''].filter(Boolean).join(' · '),prix,inclus:incl});}});});
   toitureTasks(T);
@@ -1343,6 +1382,25 @@ const PRIX={
   solIso:45, chapeTradi:33, chapeLiquide:40, ragreage:22, dalle:68, // préparation du sol €/m² (catalogue : chape tradi 33, liquide 40, ragréage 22, dalle 68)
   deposeSol:20, betonFini:0,                                // casser / déposer un vieux sol €/m² (catalogue « Enlever un revêtement de sol ») · finition béton lissé-quartz : abandonnée
   revetement:{'Carrelage':70,'Parquet':90,'Stratifié':50,'Vinyle / PVC':45,'Moquette':35,'Béton ciré':110}, // fourni-posé €/m², tous repris du catalogue
+  /* D22 — ouvrages que le plan MESURAIT déjà sans jamais les compter. Le compteur annonçait
+     3 845 € de moins que le devis sur la scène de référence, uniquement là-dessus. */
+  poncageParquet:40,                                        // €/m² · D8 : parquet sur parquet, on ponce au lieu de remplacer
+  faience:70, cloisonHumide:55, fauxPlafond:47, plinthes:13, // €/m², sauf plinthes en €/ml
+};
+/* Une douche n'est pas un objet, c'est trois lignes de devis — sauf la cabine, qui est un bloc.
+   La maquette n'en chiffrait qu'une, et perdait la colonne et la paroi (680 €). */
+/* Sur plusieurs lignes : c'est ainsi que tools/coherence.mjs relit une table de prix, et chacune
+   de ces valeurs est comparée au fourni-posé de son poste au catalogue. */
+const PRIX_DOUCHE={   /* €/u, selon le type choisi dans la fiche */
+  bac:400,
+  italienne:1090,
+  cabine:750
+};
+const PRIX_ACC={      /* €/u — ce qui accompagne un objet sans être l'objet */
+  colonneDouche:300,
+  paroiDouche:380,
+  robBaignoire:260,
+  spot:45
 };
 // isolants sous chape : uniquement des panneaux rigides (les laines ne vont pas sous une chape)
 const SOL_MAT={pu:{label:'Polyuréthane / PIR'},pse:{label:'PSE (polystyrène)'},xps:{label:'Polystyrène extrudé (XPS)'}};
