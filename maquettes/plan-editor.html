@@ -917,6 +917,27 @@ function pignonWalls(){const G=toitureGeom();if(!G||!(G.forme==='deuxpans'||G.fo
 function pignonExtra(w,lv){if(state.levels.indexOf(lv)!==topLevelIdx()||!toiture())return 0;const G=toitureGeom();if(!G||G.pente<=0)return 0;const pw=pignonWalls().find(p=>p.w===w);if(!pw)return 0;const tan=Math.tan(G.pente*Math.PI/180),len=wallLen(w);
   if(pw.role==='pignon')return 0.5*len*(len/2*tan);if(pw.role==='rampant')return 0.5*len*(len*tan);if(pw.role==='haut')return len*G.hPignon;return 0;}
 // dessin 2D de la toiture (dernier niveau) : contour au débord, faîtage, arêtiers, flèches de pente, pignons
+const distPoly=(q,P)=>{let m=1e9;for(let i=0;i<P.length;i++)m=Math.min(m,distSeg(q,P[i],P[(i+1)%P.length]));return m;};
+/* Un point réellement DANS la zone comptée, et aussi loin que possible de ses bords.
+   La moyenne des sommets du contour extérieur tombe dans le trou dès que la zone est un anneau
+   ou un L : l'étiquette se posait alors à côté de sa zone, dans la pièce voisine. On balaie
+   donc la boîte, on ne garde que les points dedans-et-hors-du-trou, et on prend le plus au
+   large — le seul endroit où une étiquette ne ment pas sur ce qu'elle désigne. */
+function ancrePartie(pa){
+  const P=pa.poly;if(!P||P.length<3)return {x:0,y:0};
+  const trou=(pa.couvrePoly&&pa.couvrePoly.length>=3)?pa.couvrePoly:null;
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  P.forEach(q=>{x0=Math.min(x0,q.x);y0=Math.min(y0,q.y);x1=Math.max(x1,q.x);y1=Math.max(y1,q.y);});
+  const N=40;let best=null,bd=-1;
+  for(let i=1;i<N;i++)for(let j=1;j<N;j++){
+    const q=v(x0+(x1-x0)*i/N,y0+(y1-y0)*j/N);
+    if(!pointIn(q,P))continue;
+    if(trou&&pointIn(q,trou))continue;
+    let d=distPoly(q,P);if(trou)d=Math.min(d,distPoly(q,trou));
+    if(d>bd){bd=d;best=q;}
+  }
+  return best||P.reduce((a,q)=>({x:a.x+q.x/P.length,y:a.y+q.y/P.length}),{x:0,y:0});
+}
 /* Surligne la zone qu'une partie de toiture compte, trou compris. Le trou est tracé comme un
    second sous-chemin et rempli en « evenodd » : ce qu'on voit EST ce qui est compté, pas une
    illustration. */
@@ -931,20 +952,20 @@ function surlignerPartie(pa){
   ctx.beginPath();trace(pa.poly);ctx.stroke();
   if(pa.couvrePoly&&pa.couvrePoly.length>=3){ctx.strokeStyle='rgba(180,83,9,.6)';ctx.lineWidth=1.4*uiScale;ctx.beginPath();trace(pa.couvrePoly);ctx.stroke();}
   ctx.setLineDash([]);
-  /* l'étiquette se pose dans la zone comptée, pas dans le trou */
-  let ancre=pa.poly.reduce((a,q)=>({x:a.x+q.x/pa.poly.length,y:a.y+q.y/pa.poly.length}),{x:0,y:0});
-  if(pa.couvrePoly&&pa.couvrePoly.length>=3&&pointIn(ancre,pa.couvrePoly)){
-    let best=null,bd=-1;
-    for(const q of pa.poly){const c={x:(q.x+ancre.x)/2,y:(q.y+ancre.y)/2};if(pointIn(c,pa.couvrePoly))continue;
-      const d=dist(c,ancre);if(d>bd){bd=d;best=c;}}
-    if(best)ancre=best;
-  }
+  const ancre=ancrePartie(pa);
   const sc=S(ancre);
-  sc.y-=44*uiScale;          /* au-dessus de l'étiquette de la pièce, qui occupe déjà le centre */
+  /* on remonte au-dessus de l'étiquette de la pièce, mais SEULEMENT si on reste dans la zone */
+  {const alt=W2(v(sc.x,sc.y-44*uiScale));
+   const trou=(pa.couvrePoly&&pa.couvrePoly.length>=3)?pa.couvrePoly:null;
+   if(pointIn(alt,pa.poly)&&!(trou&&pointIn(alt,trou)))sc.y-=44*uiScale;}
   const l1=(pa.principale?'Partie haute · ':'Partie basse · ')+fmtM2(pa.surface)+' de couverture';
   const l2=fmtM2(pa.base)+' d\'emprise'+(pa.couvreNom?' · le trou est l\'emprise de '+pa.couvreNom:'');
   ctx.font=`700 ${12*uiScale}px Geist, sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';
   const w=Math.max(ctx.measureText(l1).width,ctx.measureText(l2).width)+18*uiScale;
+  /* on garde la pastille entière à l'écran : ancrée dans un coin d'anneau, elle sortait du
+     canevas et devenait illisible — une étiquette coupée ne vaut pas mieux qu'une mal placée */
+  sc.x=Math.max(w/2+8,Math.min(cv.clientWidth-w/2-8,sc.x));
+  sc.y=Math.max(26*uiScale,Math.min(cv.clientHeight-26*uiScale,sc.y));
   ctx.fillStyle='rgba(255,255,255,.92)';ctx.strokeStyle='#b45309';ctx.lineWidth=1;
   ctx.beginPath();ctx.roundRect(sc.x-w/2,sc.y-20*uiScale,w,38*uiScale,7);ctx.fill();ctx.stroke();
   ctx.fillStyle='#b45309';ctx.fillText(l1,sc.x,sc.y-8*uiScale);
@@ -962,7 +983,7 @@ function drawToiture(lv){
     ctx.save();ctx.setLineDash([7,5]);ctx.strokeStyle='rgba(30,27,75,.38)';ctx.lineWidth=1.2*uiScale;
     ctx.beginPath();pa.poly.forEach((q,i)=>{const t=S(q);i?ctx.lineTo(t.x,t.y):ctx.moveTo(t.x,t.y);});ctx.closePath();ctx.stroke();
     if(view.zoom>=18&&toitVu!==li){ctx.setLineDash([]);ctx.fillStyle='rgba(30,27,75,.6)';ctx.font=`600 ${10*uiScale}px Geist, sans-serif`;ctx.textAlign='center';
-      const c=pa.poly.reduce((a,q)=>({x:a.x+q.x/pa.poly.length,y:a.y+q.y/pa.poly.length}),{x:0,y:0});const sc=S(c);
+      const sc=S(ancrePartie(pa));
       ctx.fillText('toiture basse · '+fmtM2(pa.surface),sc.x,sc.y);}
     ctx.restore();
     if(toitVu===li)surlignerPartie(pa);

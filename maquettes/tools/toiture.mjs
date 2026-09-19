@@ -179,6 +179,31 @@ const res = await p.evaluate(() => {
     t["niveau bas · sa partie est inspectable"] = boutons(rendu(0, "existant", false)) === 1;
     setMode("existant");
   }
+  /* ── l'étiquette se pose DANS la zone qu'elle désigne ────────────────────
+     Elle était ancrée sur la moyenne des sommets du contour extérieur : dès que la zone comptée
+     est un anneau ou un L, ce point tombe dans le trou, et « toiture basse · 44 m² » s'affichait
+     à côté de sa zone, dans la pièce voisine. Une étiquette qui désigne autre chose qu'elle-même
+     est pire qu'une absence d'étiquette. */
+  {
+    const W = (l, a, c) => l.walls.push({ id: uid(), a: v(...a), b: v(...c), type: "mur" });
+    const bo = (l, pts) => { for (let i = 0; i < pts.length; i++) W(l, pts[i], pts[(i + 1) % pts.length]); };
+    const pose = (nom, bas, haut) => {
+      state = blankState(); L().height = 2.5; bo(L(), bas); afterChange();
+      if (haut) { addLevel("empty"); bo(L(), haut); afterChange(); }
+      setToiture("init", "");
+      const P = partiesToiture();
+      const ok = P.length > 0 && P.every((pa) => {
+        const a = ancrePartie(pa);
+        const trou = pa.couvrePoly && pa.couvrePoly.length >= 3 ? pa.couvrePoly : null;
+        return pointIn(a, pa.poly) && !(trou && pointIn(a, trou));
+      });
+      t[`l'étiquette se pose dans sa zone · ${nom}`] = ok;
+    };
+    pose("bande sur un côté", [[0, 0], [12, 0], [12, 7.5], [0, 7.5]], [[0, 0], [8, 0], [8, 7.5], [0, 7.5]]);
+    pose("anneau (étage au milieu)", [[0, 0], [12, 0], [12, 9], [0, 9]], [[2, 2], [10, 2], [10, 7], [2, 7]]);
+    pose("rez en L", [[0, 0], [12, 0], [12, 4], [6, 4], [6, 7.5], [0, 7.5]], [[0, 0], [6, 0], [6, 7.5], [0, 7.5]]);
+    pose("niveau unique", [[0, 0], [6, 0], [6, 4], [0, 4]], null);
+  }
   return t;
 });
 await b.close();
