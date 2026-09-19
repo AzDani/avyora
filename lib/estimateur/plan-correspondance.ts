@@ -412,9 +412,16 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
   }
 
   // ── Plancher d'un étage créé (D15) ────────────────────────────────────────
+  /* ⚠ Cette règle est la SECONDE à poser un plancher : celle d'au-dessus le fait pièce par pièce
+     dès qu'une pièce déclare `plancherACreer` (contrat 1.8). Or cocher « étage créé » dans
+     l'éditeur passe justement toutes ses pièces en « pas de plancher » — les deux règles se
+     déclenchaient donc ensemble et le plancher sortait en DOUBLE (14,44 m² facturés 28,88).
+     On ne compte donc ici que les pièces que la règle pièce par pièce n'a pas déjà prises ; sur
+     un étage dont aucune pièce ne se prononce, le total est inchangé. */
   for (const n of plan.detailNiveaux ?? []) {
     if (!n.neuf) continue;
-    const m2 = (n.rooms ?? []).reduce((t, r) => t + (r.area ?? 0), 0);
+    const m2 = (n.rooms ?? []).reduce((t, r) => t + (r.plancherACreer ? 0 : (r.area ?? 0)), 0);
+    if (m2 <= 0) continue;
     const src = n.id ? [n.id] : [];
     const mat = n.plancher || "bois";
     add(mat === "beton" ? "mac-plancher-beton-etage-cree" : "toi-creer-un-plancher-bois", +m2.toFixed(2), src,

@@ -203,3 +203,57 @@ split »).
 `PRIX.menuiserie[type] || 500` : un prix mis à 0 retombait sur le défaut de 500 €. Un passage sans
 porte repartait donc à 500 € au lieu de 0. Corrigé en `??` ici et sur le revêtement de sol, qui
 portait le même piège en sommeil.
+
+## D20 · Les prix sont alignés ; les ACTIONS, pas encore
+
+Mesuré le 19/09/2026, en réponse à une question de Dani : « chaque action de maquette a une
+réponse avec l'estimateur ? » `coherence.mjs` compare des prix unitaires — il ne dit rien de ce
+qu'une action DEVIENT. Nouvel outil : **`maquettes/tools/couverture.mts`**. Il construit la scène
+de référence, lit ce que la maquette ANNONCE (ses tâches et leurs prix) et ce qu'elle ÉMET (son
+contrat), passe le contrat dans la vraie table de correspondance, valorise les lignes au catalogue
+et rapproche les deux **par identifiant d'élément** — jamais par libellé.
+
+Verdict sur la scène de référence : **compteur 40 427 € · devis 45 572 € · +12,7 %.**
+
+L'écart ne vient d'aucun prix — ils sont alignés. Il vient de trois familles :
+
+**1. Des ouvrages que l'estimateur DÉRIVE et que le compteur ignore** (~3 600 €) : plinthes (654),
+faïence (1 593), faux plafond (630), cloison hydrofuge (688), chape traditionnelle (442),
+robinetterie de baignoire (260), colonne et paroi de douche (680). Le plan les MESURE et les
+transmet — il ne les compte simplement pas dans son total.
+
+**2. Deux règles qui n'existent que d'un seul côté.** D8 : un parquet posé sur un parquet existant
+se ponce (912 €) au lieu de se remplacer (2 049 €) — la maquette ne connaît pas la règle, elle
+sur-compte de 1 137 €. D15 : un spot encastré (45 €) n'est pas un plafonnier (110 €) — la maquette
+applique un prix unique.
+
+**3. Une prise double** compte pour 2 unités au devis, pour 1 dans la maquette.
+
+Un seul trou de traçabilité, signalé à part : le **doublage** arrive au devis en AGRÉGAT, sans
+identifiant de mur. La ligne est bien facturée, mais elle ne se rattache à aucun mur dessiné — ce
+que D1 exige pourtant de toute ligne injectée. À corriger au prochain numéro de contrat.
+
+### Le bug que cette mesure a fait sortir : le plancher compté deux fois
+
+**Deux règles posaient un plancher.** Celle du NIVEAU (« étage créé », D15) et celle de la PIÈCE
+(« pas de plancher », contrat 1.8). Or cocher « étage créé » sur un étage déjà dessiné passe
+justement toutes ses pièces en « pas de plancher » : les deux se déclenchaient ensemble et
+`add()` fusionnait les deux lignes en additionnant les quantités. **14,44 m² de plancher sortaient
+facturés 28,88 m²**, soit 1 300 € de trop sur l'ouvrage le plus cher d'une création d'étage.
+
+Même famille que le double comptage de toiture que Dani avait attrapé : deux chemins qui mesurent
+la même chose sans savoir l'un de l'autre. Corrigé — la règle du niveau ne compte plus que les
+pièces que la règle pièce par pièce n'a pas prises — et **verrouillé par un test**.
+
+### ⏳ Point ouvert, à trancher par Dani
+
+Si on coche « étage créé » AVANT de dessiner ses murs, les pièces apparaissent ensuite avec un sol
+« à définir ». La maquette **refuse alors de chiffrer le plancher** et affiche un avertissement
+(« mets son sol sur Pas de plancher »), tandis que l'estimateur, lui, **le facture** via la règle
+du niveau. 1 300 € que le devis porte et que le compteur annonce comme non chiffrés.
+
+- **A** — la maquette le chiffre aussi, au matériau par défaut du niveau, et l'avertissement
+  devient « choisis le matériau » au lieu de « ce n'est pas chiffré ».
+- **B** — l'estimateur retire sa règle de repli au niveau : rien n'est facturé tant que
+  l'utilisateur n'a pas déclaré le plancher pièce par pièce. C'est ce que dit déjà le contrat 1.3
+  (« un choix non tranché sort à null, au consommateur d'appliquer le défaut ET de le signaler »).

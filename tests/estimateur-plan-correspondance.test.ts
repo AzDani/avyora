@@ -208,6 +208,20 @@ describe("table de correspondance · le reste du périmètre", () => {
     const c = contributions.find((x) => x.poste === "toi-creer-un-plancher-bois")!;
     expect(c.sources).toEqual([plan.detailNiveaux![1].id]);
   });
+  /* Deux règles posent un plancher : celle du NIVEAU (« étage créé ») et celle de la PIÈCE
+     (« pas de plancher », contrat 1.8). Cocher « étage créé » sur un étage déjà dessiné passe
+     justement ses pièces en « pas de plancher » — les deux se déclenchaient ensemble et le
+     plancher sortait en double. Le jour où l'une des deux bouge, c'est ici que ça casse. */
+  it("un étage créé DONT les pièces déclarent leur plancher ne le compte qu'une fois", () => {
+    const p = JSON.parse(JSON.stringify(plan));
+    const etage = p.detailNiveaux[1];
+    for (const r of etage.rooms) r.plancherACreer = "bois";
+    const { contributions: c } = contributionsDuPlan(p);
+    const lignes = c.filter((x) => /plancher/.test(x.poste));
+    expect(lignes).toHaveLength(1);
+    expect(lignes[0].quantite).toBeCloseTo(14.44, 1);
+    expect(lignes[0].sources).toEqual(etage.rooms.map((r: { id: string }) => r.id));
+  });
 });
 
 describe("table de correspondance · poteaux et poutres dessinés (contrat 1.5)", () => {
