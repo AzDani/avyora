@@ -698,7 +698,10 @@ function purgerGroupes(){
 }
 function applyIsoToWalls(ids,cfg){history.push(snapshot());ids.forEach(id=>{const r=findWallAny(id);if(!r||isVirtual(r.w))return;const w=r.w;
   if(!cfg){delete w.iso;return;}const si=(()=>{const sv=sel;sel={kind:'wall',id};const s2=interiorSideN(w);sel=sv;return s2;})();
-  w.iso={e:cfg.e,mat:cfg.mat,mode:cfg.mode,sys:cfg.sys,side:cfg.mode==='ite'?-si:si,st:mode()!=='existant'?'creer':undefined};syncNewDormants(w);});afterChange();}
+  /* On garde l'étendue déjà réglée sur ce mur : appliquer un isolant à un groupe change la
+     matière et l'épaisseur, pas le fait qu'un mur n'était doublé qu'en partie. */
+  const av=w.iso,gardeT=av&&!isoEntier(av)?{t0:isoT0(av),t1:isoT1(av)}:{};
+  w.iso={e:cfg.e,mat:cfg.mat,mode:cfg.mode,sys:cfg.sys,side:cfg.mode==='ite'?-si:si,st:mode()!=='existant'?'creer':undefined,...gardeT};syncNewDormants(w);});afterChange();}
 function applyFacadeToWalls(ids,fins){history.push(snapshot());ids.forEach(id=>{const r=findWallAny(id);if(!r)return;const w=r.w;
   const sv=sel;sel={kind:'wall',id};const ext=isExteriorWall(w);sel=sv;if(!ext)return;
   if(!fins.length){delete w.facade;}else{w.facade={fins:[...fins],st:mode()!=='existant'?'creer':undefined};}});afterChange();}
@@ -1372,7 +1375,12 @@ function segEffectif(level,w,m){
 }
 function detectFaces(level,m=mode()){
   const walls=level.walls.filter(w=>wallActive(w,m)).map(w=>segEffectif(level,w,m)); const n=walls.length; if(!n) return [];
-  const cuts=walls.map(()=>[0,1]);
+  /* On coupe les murs à leurs croisements ET aux bornes de leurs doublages : une arête est
+     alors toujours entièrement doublée ou pas du tout, et un doublage peut s'arrêter où l'on
+     veut — contre un conduit, au milieu d'un pan — sans que la surface de la pièce mente. */
+  const cuts=walls.map((_,i)=>{const w0=level.walls.filter(x=>wallActive(x,m))[i];const c=[0,1];
+    if(w0)isoLayers(w0).forEach(io=>{if(!isoShownIso(io,m)||isoEntier(io))return;c.push(isoT0(io),isoT1(io));});
+    return c;});
   for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
     const A=walls[i],B=walls[j];const it=segInter(A.a,A.b,B.a,B.b);
     if(it){cuts[i].push(it.t);cuts[j].push(it.u);continue;}
@@ -3425,6 +3433,10 @@ function setWallIsoSide(side,k,val){const w=findWall(sel.id);if(!w)return;histor
   if(k==='st'){if(val==='existant')delete io.st;else io.st=val;}
   else if(k==='mat')io.mat=val;else if(k==='sys')io.sys=val;else if(k==='e')io.e=Math.max(0.02,Math.min(0.3,val/1000));
   /* étendue : on se cale sur les arrêts du mur, et on garde t0 < t1 */
+  else if(k==='m0'||k==='m1'){const lg=wallLen(w)||1;setWallIsoSide._t=null;
+    const x=Math.max(0,Math.min(1,(parseFloat(val)||0)/lg));
+    if(k==='m0')io.t0=Math.min(x,isoT1(io)-1e-3);else io.t1=Math.max(x,isoT0(io)+1e-3);
+    if(isoT0(io)<=1e-6&&isoT1(io)>=1-1e-6){delete io.t0;delete io.t1;}}
   else if(k==='t0'||k==='t1'){const x=Math.max(0,Math.min(1,parseFloat(val)));
     if(k==='t0')io.t0=Math.min(x,isoT1(io)-1e-3);else io.t1=Math.max(x,isoT0(io)+1e-3);
     if(isoT0(io)<=1e-6&&isoT1(io)>=1-1e-6){delete io.t0;delete io.t1;}}
@@ -3437,15 +3449,16 @@ function isoSideHtml(w,side){const io=isoOnSide(w,side);const room=roomOnSide(w,
     ${io?`<div class="ph mt">Isolant</div><div class="seg">${Object.entries(ISO_MAT).map(([k,m])=>`<button class="${io.mat===k?'on':''}" onclick="setWallIsoSide(${side},'mat','${k}')">${m.label.split(' ')[0]==='Laine'?'Laine '+m.label.split(' ')[2]:m.label.split(' ')[0]}<small>λ ${fmt(m.lambda,3)}</small></button>`).join('')}</div>
     <div class="row" style="margin-top:10px"><label>Épaisseur</label><span>${[40,60,80,100,120].map(mm=>`<button class="miniep ${Math.round(io.e*1000)===mm?'on':''}" onclick="setWallIsoSide(${side},'e',${mm})">${mm/10}</button>`).join('')}<input class="fin n" type="number" step="1" min="20" max="300" value="${Math.round(io.e*1000)}" onchange="setWallIsoSide(${side},'e',+this.value)" style="width:56px"> mm</span></div>
     <div class="row"><label>Finition</label><span class="seg" style="display:inline-flex">${fin.map(([k,l])=>`<button class="${io.sys===k?'on':''}" onclick="setWallIsoSide(${side},'sys','${k}')">${l}</button>`).join('')}</span></div>
-    ${(()=>{if(!io)return '';const A=arretsDoublage(L(),w);if(A.length<3)return '';
-      const Lw=wallLen(w),nom=t=>t<=1e-6?'le début':t>=1-1e-6?'la fin':fmt(t*Lw,2)+' m';
-      const opt=(t,cur)=>`<option value="${t}" ${Math.abs(t-cur)<1e-4?'selected':''}>${nom(t)}</option>`;
-      const t0=isoT0(io),t1=isoT1(io);
-      return `<div class="ph mt">Étendue sur le mur</div>
-      <div class="row"><label>De</label><span><select class="fin" style="width:auto" onchange="setWallIsoSide(${side},'t0',this.value)">${A.filter(t=>t<t1-1e-4).map(t=>opt(t,t0)).join('')}</select></span></div>
-      <div class="row"><label>À</label><span><select class="fin" style="width:auto" onchange="setWallIsoSide(${side},'t1',this.value)">${A.filter(t=>t>t0+1e-4).map(t=>opt(t,t1)).join('')}</select></span></div>
-      <div class="tip" style="margin-top:6px">${isoEntier(io)?`Tout le mur — <b>${fmt(Lw,2)} m</b>. Un doublage s'arrête souvent contre une cloison : limite-le ici, la surface de la pièce et le prix suivent.`:`<b>${fmt((t1-t0)*Lw,2)} m</b> doublés sur ${fmt(Lw,2)} — le reste du mur reste brut. <button class="ib" style="padding:3px 8px;margin-left:6px" onclick="setWallIsoSide(${side},'tout',1)">Tout le mur</button>`}</div>
-      <div class="tip" style="margin-top:6px">Les arrêts proposés sont les <b>jonctions du mur</b> : c'est là qu'un doublage s'arrête, et c'est ce qui garde la surface de la pièce exacte.</div>`;})()}
+    ${(()=>{if(!io)return '';const Lw=wallLen(w),t0=isoT0(io),t1=isoT1(io);
+      const A=arretsDoublage(L(),w).filter(t=>t>1e-3&&t<1-1e-3);
+      const m=t=>fmt(t*Lw,2);
+      return `<div class="ph mt">Étendue sur le mur${isoEntier(io)?'':` <span class="chip">${m(t1-t0)} m sur ${fmt(Lw,2)}</span>`}</div>
+      <div class="row"><label>De</label><span><input class="fin n" type="number" step="0.05" min="0" max="${fmt(Lw,2)}" value="${m(t0)}" onchange="setWallIsoSide(${side},'m0',this.value)"> m</span></div>
+      <div class="row"><label>À</label><span><input class="fin n" type="number" step="0.05" min="0" max="${fmt(Lw,2)}" value="${m(t1)}" onchange="setWallIsoSide(${side},'m1',this.value)"> m</span></div>
+      ${A.length?`<div class="row" style="margin-top:6px"><label>Arrêter à une jonction</label></div><div class="chips">${A.map(t=>`<button class="chip2" onclick="setWallIsoSide(${side},'m1',${(t*Lw).toFixed(3)})">jusqu'à ${m(t)} m</button>`).concat(A.map(t=>`<button class="chip2" onclick="setWallIsoSide(${side},'m0',${(t*Lw).toFixed(3)})">depuis ${m(t)} m</button>`)).join('')}</div>`:''}
+      <div class="tip" style="margin-top:6px">${isoEntier(io)
+        ?`Tout le mur — <b>${fmt(Lw,2)} m</b>. Un doublage s'arrête souvent contre une cloison, un conduit, un décroché : limite-le ici et la surface de la pièce, le prix et la butée des cloisons suivent.`
+        :`<b>${m(t1-t0)} m</b> doublés, le reste du mur reste brut. <button class="ib" style="padding:3px 8px;margin-left:6px" onclick="setWallIsoSide(${side},'tout',1)">Tout le mur</button>`}</div>`;})()}
     ${mode()==='projet'?`<div class="row"><label>Dans le projet</label><span class="seg" style="display:inline-flex"><button class="${io.st!=='creer'?'on':''}" onclick="setWallIsoSide(${side},'st','existant')">Déjà isolé</button><button class="st-creer ${io.st==='creer'?'on':''}" onclick="setWallIsoSide(${side},'st','creer')">À isoler</button></span></div>`:''}
     <div class="blond ok"><b>Épaisseur perdue côté ${label} : <span>${fmt(dt*100,1)} cm</span></b><small>${Math.round(io.e*100)} cm isolant + finition (${io.sys==='colle'?'plaque collée (BA13)':'lame d\'air + BA13 (13 mm)'}). R = ${fmt(R,1)} m².K/W.</small></div>`:''}
   </div></div>`;}

@@ -74,6 +74,39 @@ const res = await p.evaluate(() => {
   { const { lv } = scene({ t0: 0, t1: 0.5 }); garantirPids();
     const c = contratPlan();
     t["le contrat chiffre la moitié doublée"] = pres(c.doublage.iti, 7.5); }
+  /* ── une étendue LIBRE, pas seulement aux jonctions ──────────────────────
+     Le mur est coupé à ses croisements ET aux bornes du doublage : un doublage peut donc
+     s'arrêter contre un conduit, au milieu d'un pan, sans que la surface de la pièce mente. */
+  { const nu = (() => { const { lv } = scene(null); delete lv.walls[0].iso; afterChange();
+      return facesFor(lv, "projet").reduce((a, f) => a + f.areaInt, 0); })();
+    const perte = (ext) => { const { lv } = scene(ext); afterChange();
+      return +(nu - facesFor(lv, "projet").reduce((a, f) => a + f.areaInt, 0)).toFixed(3); };
+    /* Mur du haut de 6 m, coupé en deux par une cloison de 7 cm. Ce que les PIÈCES perdent
+       n'est pas la bande entière : la cloison et les murs de retour en occupent une part, et
+       le polygone intérieur le sait. L'attendu tient donc compte de ces largeurs — sinon on
+       vérifierait une approximation contre une autre. */
+    t["étendue libre au milieu · surface exacte (bande moins la cloison)"] =
+      pres(perte({ t0: 0.25, t1: 0.75 }), (3 - 0.07) * 0.14, 0.004);
+    t["étendue libre courte, dans une seule pièce · surface exacte"] =
+      pres(perte({ t0: 0.30, t1: 0.45 }), 0.9 * 0.14, 0.004);
+    t["du coin à la cloison · surface exacte (moins l'angle et la demi-cloison)"] =
+      pres(perte({ t0: 0, t1: 0.5 }), (3 - 0.10 - 0.035) * 0.14, 0.004);
+    t["mur entier · surface exacte (moins les deux angles et la cloison)"] =
+      pres(perte(null), (6 - 0.10 - 0.10 - 0.07) * 0.14, 0.004);
+    t["le polygone de la pièce se décroche"] = (() => { const { lv } = scene({ t0: 0.3, t1: 0.45 });
+      return facesFor(lv, "projet").some((f) => f.polyInt.length > 4); })(); }
+
+  /* ── les groupes : la matière change, l'étendue non ──────────────────────── */
+  { const { lv, haut } = scene({ t0: 0, t1: 0.5 });
+    const autre = lv.walls[1];
+    applyIsoToWalls([haut.id, autre.id], { e: 0.14, mat: "pse", mode: "iti", sys: "ossature" });
+    const io = lv.walls[0].iso;
+    t["groupe · l'isolant et l'épaisseur sont appliqués"] = io.mat === "pse" && pres(io.e, 0.14, 1e-6);
+    t["groupe · l'étendue déjà réglée est conservée"] = pres(isoT1(io), 0.5, 1e-6);
+    t["groupe · un mur sans étendue reste entier"] = isoEntier(lv.walls[1].iso); }
+  { const { lv, haut } = scene({ t0: 0, t1: 0.5 });
+    applyIsoToWalls([haut.id], null);
+    t["groupe · retirer l'isolation retire tout, étendue comprise"] = !lv.walls[0].iso; }
   return t;
 });
 await b.close();
