@@ -721,9 +721,14 @@ function selectGroup(gid){const g=groupById(gid);if(!g)return;const lv=L();const
 // ---------- Suivi du chantier : les travaux du plan deviennent des tâches à cocher ----------
 // ordre chronologique de chantier : démolition → gros œuvre → hors d'eau → hors d'air → second œuvre → finitions
 const LOTS=['Démolition','Maçonnerie','Toiture','Menuiseries','Cloisons','Isolation','Sol','Façade','Équipements'];
-// pose d'équipements, fourni-posé — repris du catalogue (Plomberie / Électricité / Chauffage-VMC / Cuisine / Charpente). Le mobilier n'est pas un travail.
-const EQUIP_PRIX={baignoire:960,douche:1090,lavabo:310,vasque2:593,wc:410,plan:985,ilot:2500,frigo:80,lave_vaisselle:190,lave_linge:190,cumulus:950,chaudiere:4500,poele:4000,escalier:2500,radiateur:500,seche_serviette:245,clim:2400,pac_ext:0,prise:100,prise2:100,interrupteur:100,lumiere:110,applique:110,tableau:1150};
-const EQUIP_UNIT={plan:'ml'}; // plan de travail = meubles 900 + plan 85 €/ml
+/* Pose d'équipements, fourni-posé. Chaque valeur est CELLE du poste que l'objet dessiné devient
+   au devis (lib/estimateur/plan-correspondance.ts) — pas celle d'un poste qui lui ressemble :
+   un lavabo dessiné devient un « Meuble-vasque » (433), une double vasque le même poste en
+   variante « double » (433 × 1,88 = 814), un plan de travail le poste Cuisine « Plan de travail
+   seul » (150 €/ml). Le compteur indicatif annonce donc exactement ce que le devis facturera.
+   Le mobilier n'est pas un travail. */
+const EQUIP_PRIX={baignoire:960,douche:1090,lavabo:433,vasque2:814,wc:410,plan:150,ilot:2500,frigo:80,lave_vaisselle:190,lave_linge:190,cumulus:950,chaudiere:4500,poele:4000,escalier:2500,radiateur:500,seche_serviette:245,clim:2400,pac_ext:0,prise:100,prise2:100,interrupteur:100,lumiere:110,applique:110,tableau:1150};
+const EQUIP_UNIT={plan:'ml'}; // « Plan de travail seul » au catalogue, 150 €/ml — les meubles de cuisine ne sont pas dessinés
 const isFurniture=t=>['lit','lit1','armoire','canape','table','bureau'].includes(t);
 /* Plancher d'un étage créé par le projet. C'est L'ouvrage de l'opération et il n'était chiffré
    nulle part : la case « étage créé » et son matériau ne servaient qu'à l'export. Prix repris
@@ -1317,17 +1322,17 @@ function menuisSousDimensionnees(lv){const out=[];lv.walls.forEach(w=>{if(!w.iso
 const PRIX={
   demolCloison:15, demolMur:35, boucher:90,                 // €/m²
   demolPorteur:110, poutreReprise:480, etudeStructure:900,  // porteur : démolition €/m² · poutre de reprise €/ml · étude BET forfait
-  cloisonNeuve:55, murNeuf:120, murPierre:250,              // €/m²
+  cloisonNeuve:50, murNeuf:75, murPierre:250,               // €/m²
   percPorteurPetit:2500, percPorteurGrand:4500, percLeger:320, // €/u (mur porteur = étude BET incluse)
   appuiFenetre:250, seuil:250, jambagesMl:35,               // appui/seuil €/u · tableaux €/ml
   isoITI:55, isoITE:140, retourIso:28,                      // €/m² · retour d'isolant en tableau €/ml
-  menuiserie:{porte:320,porte_pleine:450,porte_double:600,coulissante:700,passage:110,porte_entree:1500,garage:1500,fenetre:550,fenetre_p:350,porte_fenetre:1250,baie:1900},
-  voletRoulant:650, voletBattant:600, galandage:900, // €/u (galandage = caisson + rail, en plus de la menuiserie)
+  menuiserie:{porte:320,porte_pleine:450,porte_double:600,coulissante:700,passage:110,porte_entree:1600,garage:1200,fenetre:950,fenetre_p:950,porte_fenetre:1250,baie:2200},
+  voletRoulant:650, voletBattant:600, galandage:800, // €/u (galandage = caisson + rail, en plus de la menuiserie)
   optMoustiquaire:200, optStore:1000, optGrille:400, // €/u fourni-posé
   deposeMenuiserie:40, deposeEquip:60,                      // €/u
   solIso:45, chapeTradi:33, chapeLiquide:40, ragreage:22, dalle:68, // préparation du sol €/m² (catalogue : chape tradi 33, liquide 40, ragréage 22, dalle 68)
-  deposeSol:30, betonFini:45,                               // casser / déposer un vieux sol €/m² (catalogue « Enlever un revêtement de sol » : 20 — la maquette est 50 % au-dessus, à trancher) · finition béton lissé-quartz de la dalle €/m²
-  revetement:{'Carrelage':65,'Parquet':75,'Stratifié':50,'Vinyle / PVC':45,'Moquette':40,'Béton ciré':110}, // fourni-posé €/m² (catalogue : stratifié 50, sol souple 45, béton ciré 110)
+  deposeSol:20, betonFini:45,                               // casser / déposer un vieux sol €/m² (catalogue « Enlever un revêtement de sol ») · finition béton lissé-quartz de la dalle €/m²
+  revetement:{'Carrelage':70,'Parquet':90,'Stratifié':50,'Vinyle / PVC':45,'Moquette':35,'Béton ciré':110}, // fourni-posé €/m², tous repris du catalogue
 };
 // isolants sous chape : uniquement des panneaux rigides (les laines ne vont pas sous une chape)
 const SOL_MAT={pu:{label:'Polyuréthane / PIR'},pse:{label:'PSE (polystyrène)'},xps:{label:'Polystyrène extrudé (XPS)'}};

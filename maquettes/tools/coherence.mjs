@@ -105,7 +105,9 @@ const PRIX_MAP = [
   ["FACADE_PRIX", "hydrofuge", "Traitement imperméabilisant"],
   ["EQUIP_PRIX", "baignoire", "Installer une baignoire"],
   ["EQUIP_PRIX", "wc", "WC"],
-  ["EQUIP_PRIX", "lavabo", "Vasque"],
+  /* Un lavabo dessiné devient « Meuble-vasque » au devis (EQUIPEMENT_DIRECT, plan-correspondance)
+     — pas la « Vasque » nue, qui lui ressemble mais n'est pas ce qui sera facturé. */
+  ["EQUIP_PRIX", "lavabo", "Meuble-vasque"],
   ["EQUIP_PRIX", "chaudiere", "Chaudière gaz à condensation"],
   ["EQUIP_PRIX", "poele", "Poêle à bois / granulés"],
   ["EQUIP_PRIX", "clim", "Climatisation réversible (split)"],
@@ -130,6 +132,9 @@ const PRIX_MAP = [
   ["PRIX", "menuiserie.porte_entree", "Porte d'entrée"],
   ["PRIX", "menuiserie.garage", "Porte de garage"],
   ["PRIX", "menuiserie.fenetre", "Fenêtres"],
+  /* Le contrat mappe `fenetre_p` sur le MÊME poste : une petite fenêtre se chiffre comme une
+     fenêtre. Le compteur ne peut pas promettre une remise que le devis ne fera pas. */
+  ["PRIX", "menuiserie.fenetre_p", "Fenêtres"],
   ["PRIX", "menuiserie.porte_fenetre", "Portes-fenêtres"],
   ["PRIX", "menuiserie.baie", "Baie vitrée"],
   ["PRIX", "percPorteurPetit", "Ouvrir un mur porteur — petite (porte/fenêtre)"],
@@ -146,11 +151,17 @@ const PRIX_MAP = [
   ["PRIX", "deposeMenuiserie", "Enlever les anciennes portes / fenêtres"],
   ["PRIX", "solIso", "Isolation du sol / plancher bas"],
   ["EQUIP_PRIX", "douche", "Douche à l'italienne"],
-  ["EQUIP_PRIX", "vasque2", "Meuble-vasque"],
+  /* D7 : une double vasque est UNE unité du même poste, en variante « double ». Le compteur doit
+     donc porter le prix du poste MULTIPLIÉ par le coefficient de la variante, pas le prix nu. */
+  ["EQUIP_PRIX", "vasque2", "Meuble-vasque", 1.88],
   ["EQUIP_PRIX", "plan", "Plan de travail seul"],
   ["EQUIP_PRIX", "prise", "Ajouter / déplacer une prise"],
   ["EQUIP_PRIX", "interrupteur", "Ajouter / déplacer un interrupteur"],
   ["EQUIP_PRIX", "lumiere", "Ajouter un point lumineux"],
+  /* Raccorder une machine, c'est créer un point d'eau — le contrat les envoie tous deux sur ce
+     poste. Ils traînaient en « sans poste » et dérivaient donc sans que rien ne le dise. */
+  ["EQUIP_PRIX", "lave_linge", "Créer / déplacer un point d'eau"],
+  ["EQUIP_PRIX", "lave_vaisselle", "Créer / déplacer un point d'eau"],
 ];
 /* Prix de la maquette qui chiffrent un ouvrage SANS poste au catalogue. Ce n'est pas une dérive :
    c'est la liste des postes à créer ou à abandonner, et elle demande une décision. */
@@ -163,19 +174,18 @@ const SANS_POSTE = [
   ["PRIX.betonFini", "45 €/m² — finition béton lissé / quartzé : aucun poste"],
   ["PRIX.menuiserie.porte_double", "600 €/u — porte double intérieure : aucun poste distinct"],
   ["PRIX.menuiserie.passage", "110 €/u — passage sans porte : aucun poste"],
-  ["PRIX.menuiserie.fenetre_p", "350 €/u — petite fenêtre : le catalogue n'a que « Fenêtres »"],
   ["EQUIP_PRIX.frigo", "80 €/u — pose d'un réfrigérateur : aucun poste"],
-  ["EQUIP_PRIX.lave_linge", "190 €/u — raccordement lave-linge : aucun poste de pose"],
-  ["EQUIP_PRIX.lave_vaisselle", "190 €/u — idem lave-vaisselle"],
 ];
 console.log("\n1. Prix recopiés dans la maquette vs catalogue (fourni-posé)");
 let alignes = 0;
-for (const [tbl, cle, nom] of PRIX_MAP) {
+for (const [tbl, cle, nom, coef] of PRIX_MAP) {
   const m = tableVal(`${tbl}.${cle}`), p = postes.get(nom);
   if (m === null) { KO(`${tbl}.${cle} introuvable dans la maquette`, "clé renommée ou supprimée ?"); continue; }
   if (!p) { KO(`poste « ${nom} » absent du catalogue`, `référencé par ${tbl}.${cle}`); continue; }
-  if (Math.abs(m - p.fp) < 0.51) alignes++;
-  else KO(`${tbl}.${cle} = ${m} € · catalogue « ${nom} » = ${p.fp} €`, `écart ${(m - p.fp > 0 ? "+" : "")}${Math.round((m / p.fp - 1) * 100)} % sur le compteur indicatif`);
+  const attendu = Math.round(p.fp * (coef ?? 1));
+  const dit = coef ? `« ${nom} » ${p.fp} € × ${coef} = ${attendu} €` : `« ${nom} » = ${p.fp} €`;
+  if (Math.abs(m - attendu) < 0.51) alignes++;
+  else KO(`${tbl}.${cle} = ${m} € · catalogue ${dit}`, `écart ${(m - attendu > 0 ? "+" : "")}${Math.round((m / attendu - 1) * 100)} % sur le compteur indicatif`);
 }
 console.log(`  ${alignes}/${PRIX_MAP.length} alignés`);
 console.log(`\n1bis. Prix de la maquette sans poste au catalogue (décision : créer ou abandonner)`);

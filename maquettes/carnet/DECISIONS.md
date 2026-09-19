@@ -100,3 +100,59 @@ sert qu'au mode « je le fais moi-même » ; le fourni-posé, lui, est validé.
 Les six valeurs de la maquette sont désormais **comparées automatiquement** au fourni-posé de leur
 poste par `tools/coherence.mjs` : elles ne peuvent plus diverger en silence. La couverture de la
 table de correspondance passe de 101/203 à **106/208**.
+
+## D18 · L'estimateur a toujours raison
+
+Décidé le 19/09/2026. La maquette recopiait 94 prix du catalogue ; **14 avaient divergé**. Le plus
+gros écart était un facteur 6,6 (plan de travail), le plus coûteux une fenêtre à 550 € quand le
+devis en facture 950. Comme le compteur du plan et le devis n'étaient pas encore branchés l'un sur
+l'autre, personne ne voyait les deux chiffres côte à côte — le jour du branchement, l'utilisateur
+aurait vu **deux prix différents pour le même ouvrage**.
+
+**La règle, maintenant écrite :** le catalogue de l'estimateur détaillé fait foi. La maquette ne
+discute pas ses prix, elle les recopie. Aucune valeur de la maquette n'est une opinion.
+
+Les 14 valeurs alignées :
+
+| maquette | avant | après | poste du catalogue |
+|---|---|---|---|
+| `PRIX.cloisonNeuve` | 55 | **50** | Monter une cloison |
+| `PRIX.murNeuf` | 120 | **75** | Monter un mur en parpaings |
+| `PRIX.deposeSol` | 30 | **20** | Enlever un revêtement de sol |
+| `PRIX.galandage` | 900 | **800** | Caisson à galandage |
+| `PRIX.revetement.Carrelage` | 65 | **70** | Carrelage au sol |
+| `PRIX.revetement.Parquet` | 75 | **90** | Parquet bois |
+| `PRIX.revetement.Moquette` | 40 | **35** | Moquette |
+| `PRIX.menuiserie.porte_entree` | 1500 | **1600** | Porte d'entrée |
+| `PRIX.menuiserie.garage` | 1500 | **1200** | Porte de garage |
+| `PRIX.menuiserie.fenetre` | 550 | **950** | Fenêtres |
+| `PRIX.menuiserie.baie` | 1900 | **2200** | Baie vitrée |
+| `EQUIP_PRIX.lavabo` | 310 | **433** | Meuble-vasque |
+| `EQUIP_PRIX.vasque2` | 593 | **814** | Meuble-vasque, variante « double » (433 × 1,88) |
+| `EQUIP_PRIX.plan` | 985 | **150** | Plan de travail seul (€/ml) |
+
+**Trois corrections ne sont pas de simples nombres — la correspondance elle-même était fausse.**
+
+- **`lavabo`.** Le contrôle le comparait au poste « Vasque » (150 €). Or la table de
+  correspondance en fait un **« Meuble-vasque »** (433 €) : c'est ce que le devis facturera. Le
+  contrôle validait la ressemblance d'un nom, pas l'ouvrage. Corrigé dans `coherence.mjs`.
+- **`vasque2`.** Une double vasque est UNE unité du même poste en variante « double » (D7), donc
+  433 × 1,88. Le contrôle ne savait pas lire un coefficient de variante ; il en lit un maintenant.
+- **`plan`.** La maquette chiffrait 900 (meubles de cuisine) + 85 (plan de travail *plomberie*,
+  celui d'une vasque à poser) = 985 €/ml. Le contrat, lui, n'envoie qu'un seul poste : « Plan de
+  travail seul », 150 €/ml. Les meubles ne sont pas dessinés, donc ils ne sont pas chiffrés. La
+  maquette facturait une cuisine entière pour un trait de plan de travail.
+
+**Trois prix quittent la liste « sans poste ».** `fenetre_p` (petite fenêtre) part sur le même
+poste « Fenêtres » que les autres : le compteur ne peut pas promettre une remise de 600 € que le
+devis ne fera pas. `lave_linge` et `lave_vaisselle` deviennent « Créer / déplacer un point d'eau »
+(190 €) — ils étaient déjà à 190 par coïncidence, et auraient dérivé sans que rien ne le dise.
+
+Le contrôle passe de 80/94 à **97/97 alignés**, et la liste des prix hors catalogue de 12 à 9
+(rebouchage, percement d'un mur non porteur, linteau/tableaux, retour d'isolant, dépose
+d'équipement, finition béton, porte double, passage sans porte, pose d'un réfrigérateur). Ces
+neuf-là chiffrent de vrais ouvrages que le catalogue ignore : ce sont des postes à créer, pas des
+divergences.
+
+Conséquence chiffrée sur la scène de référence : l'arbitrage « si tu les remplaçais » passe de
+810 à **933 €**. Aucun autre champ du contrat ne bouge — les prix n'y ont jamais circulé.
