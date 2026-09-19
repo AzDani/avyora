@@ -5,9 +5,9 @@ const p = (type: TypePiecePlan, extra: Partial<PiecePlan> = {}): PiecePlan => ({
 /** Ce que le moteur chiffrera réellement en salles de bain : sdbEff = sdb + suites. */
 const sdbEff = (c: { sdb: number; suites: number }) => c.sdb + c.suites;
 
-describe("D4 · les 20 types ont tous une règle", () => {
+describe("D4 · les 22 types ont tous une règle", () => {
   it("aucun type du plan n'est oublié", () => {
-    const attendus: TypePiecePlan[] = ["sejour","cuisine","chambre","suite","sdb","wc","entree","couloir","buanderie","sde","dressing","bureau","cellier","palier","mezzanine","garage","cave","combles","exterieur","autre"];
+    const attendus: TypePiecePlan[] = ["sejour","cuisine","chambre","suite","sdb","wc","entree","couloir","buanderie","sde","dressing","bureau","cellier","palier","mezzanine","garage","cave","combles","grange","atelier","exterieur","autre"];
     expect(Object.keys(MAPPAGE_PIECES).sort()).toEqual([...attendus].sort());
   });
 

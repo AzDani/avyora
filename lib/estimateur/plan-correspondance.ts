@@ -40,6 +40,10 @@ export interface PlanPourCorrespondance {
   toiture?: {
     surface?: number; emprise?: number; egouts?: number; raccords?: number;
     couverture?: string; combles?: string; forme?: string;
+    /** Contrat 1.9 : le détail par partie. `surface`, `emprise` et `egouts` ci-dessus sont les
+     *  TOTAUX — un étage qui ne couvre pas toute l'emprise laisse une toiture plus basse, et
+     *  elle compte. Les postes se chiffrent sur le total ; les parties servent à l'expliquer. */
+    parties?: Array<{ niveau?: string; principale?: boolean; forme?: string; pente?: number; emprise?: number; surface?: number; egouts?: number }>;
     projet?: { action?: string; charpente?: string; isoCombles?: string; velux?: number; gouttieres?: boolean; raccords?: boolean; traiterCharpente?: boolean };
   } | null;
   sols?: Array<{ id?: string; piece?: string; surface?: number; existant?: string | null; revetement?: string | null;

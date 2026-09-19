@@ -68,6 +68,46 @@ const res = await p.evaluate(() => {
   L().walls.length = 0; afterChange();
   g = toitureGeo();
   t["sans mur, l'emprise est nulle"] = g.emprise === 0 && g.surface === 0;
+  /* ── un étage qui ne couvre pas tout : deux parties de toiture ───────────── */
+  {
+    state = blankState(); const bas = L(); bas.height = 2.5;
+    const W = (l, a, c) => l.walls.push({ id: uid(), a: v(...a), b: v(...c), type: "mur" });
+    const P = [[0, 0], [12, 0], [12, 7.5], [0, 7.5]];          /* 90 m² au sol */
+    for (let i = 0; i < P.length; i++) W(bas, P[i], P[(i + 1) % P.length]);
+    afterChange(); addLevel("empty"); const haut = L(); haut.height = 2.5;
+    const Q = [[0, 0], [8, 0], [8, 7.5], [0, 7.5]];            /* 60 m² à l'étage */
+    for (let i = 0; i < Q.length; i++) W(haut, Q[i], Q[(i + 1) % Q.length]);
+    afterChange(); setToiture("init", "");
+    const g = toitureGeo();
+    t["deux niveaux · deux parties de toiture"] = g.parties.length === 2;
+    t["deux niveaux · l'emprise couvre TOUT le sol (93,9 m²)"] = pres(g.emprise, 93.9, 0.2);
+    t["la partie basse existe et vaut ~30,8 m² d'emprise"] = pres(g.parties[1].emprise, 30.8, 0.2) && !g.parties[1].principale;
+    t["la surface totale additionne les deux (134,1 m²)"] = pres(g.surface, 134.1, 0.3);
+    t["sans elle, il manquait 50 m² de couverture"] = g.surface - g.parties[0].surface > 45;
+    t["la partie basse est en appentis par défaut"] = g.parties[1].forme === "mono";
+    /* elle a sa propre forme et sa propre pente */
+    setToitPartie(0, "forme", "plat");
+    const g2 = toitureGeo();
+    t["partie basse en toit plat · plus de coefficient de pente"] = pres(g2.parties[1].surface, 43.1, 0.3) && g2.parties[1].pente === 0;
+    setToitPartie(0, "forme", "mono"); setToitPartie(0, "pente", 10);
+    t["partie basse à 10° · surface recalculée"] = pres(toitureGeo().parties[1].surface, 43.1 / Math.cos(10 * Math.PI / 180), 0.3);
+    /* et le plan le signale au niveau concerné */
+    setLevel(0);
+    t["le plan signale la toiture basse sur son niveau"] = planChecks(L()).some((c) => /toiture plus basse/.test(c.msg));
+    setLevel(1);
+    t["il ne le signale pas sur le niveau du haut"] = !planChecks(L()).some((c) => /toiture plus basse/.test(c.msg));
+  }
+  {
+    /* un étage qui couvre TOUT : une seule partie, rien ne change */
+    state = blankState(); const bas = L(); bas.height = 2.5;
+    const W = (l, a, c) => l.walls.push({ id: uid(), a: v(...a), b: v(...c), type: "mur" });
+    const P = [[0, 0], [6, 0], [6, 4], [0, 4]];
+    for (let i = 0; i < P.length; i++) W(bas, P[i], P[(i + 1) % P.length]);
+    afterChange(); addLevel("copy"); afterChange(); setToiture("init", "");
+    const g = toitureGeo();
+    t["étage de même emprise · une seule partie"] = g.parties.length === 1;
+    t["étage de même emprise · surface inchangée (37,7 m²)"] = pres(g.surface, 37.7);
+  }
   return t;
 });
 await b.close();

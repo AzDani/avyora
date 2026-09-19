@@ -1,5 +1,5 @@
 {
- "contrat": "1.8.0",
+ "contrat": "1.9.0",
  "plan": {
   "id": null,
   "nom": "Scène de référence"
@@ -22,18 +22,38 @@
  "glass": 4.5,
  "plinthes": 50.34,
  "toiture": {
-  "emprise": 17.6,
+  "emprise": 42.6,
   "perim": 16.8,
-  "surface": 26.6,
+  "surface": 65.2,
   "pente": 30,
   "niveau": "Étage",
-  "egouts": 9.6,
+  "egouts": 22,
   "faitage": 4.8,
   "aretiers": 0,
   "raccords": 4.8,
   "hPignon": 1.39,
   "dir": "x",
   "compose": false,
+  "parties": [
+   {
+    "niveau": "Étage",
+    "principale": true,
+    "forme": "deuxpans",
+    "pente": 30,
+    "emprise": 17.6,
+    "surface": 26.6,
+    "egouts": 9.6
+   },
+   {
+    "niveau": "RDC",
+    "principale": false,
+    "forme": "mono",
+    "pente": 30,
+    "emprise": 25,
+    "surface": 38.6,
+    "egouts": 12.4
+   }
+  ],
   "forme": "deuxpans",
   "couverture": "tuile",
   "etatCouverture": "refaire",
@@ -226,6 +246,10 @@
     {
      "niveau": "info",
      "texte": "Étage est créé par le projet : son plancher coupe le volume de ce niveau. Si une pièce d'ici était en grande hauteur avant travaux, indique-la dans sa fiche au champ « hauteur avant travaux » — sinon l'existant décrit un logement qui n'a jamais existé."
+    },
+    {
+     "niveau": "info",
+     "texte": "25,0 m² de ce niveau ne sont pas surmontés par « Étage » : ils sont sous une toiture plus basse, comptée pour 38,6 m². Sa forme (monopente) et sa pente se règlent ici même."
     },
     {
      "niveau": "warn",
@@ -544,31 +568,31 @@
     "fait": false
    },
    {
-    "id": "w:mbnyq0v:demolir",
+    "id": "w:a09m9kp:demolir",
     "lot": "Démolition",
     "label": "Démolir le mur porteur de 1,40 m · RDC",
     "fait": false
    },
    {
-    "id": "w:yd0exel:demolir",
+    "id": "w:1mscprp:demolir",
     "lot": "Démolition",
     "label": "Démolir la cloison de 1,60 m · RDC",
     "fait": false
    },
    {
-    "id": "o:hpvx4ka:depose",
+    "id": "o:cgmmx7k:depose",
     "lot": "Démolition",
     "label": "Déposer l'ancienne menuiserie · fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "sol-depose:vkip7ww",
+    "id": "sol-depose:y015vgt",
     "lot": "Démolition",
     "label": "Déposer l'ancien sol (carrelage) · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "sol-depose:fjp4esi",
+    "id": "sol-depose:gmfdmvf",
     "lot": "Démolition",
     "label": "Déposer l'ancien sol (parquet ancien) · Chambre · RDC",
     "fait": false
@@ -580,31 +604,31 @@
     "fait": false
    },
    {
-    "id": "w:mbnyq0v:poutre",
+    "id": "w:a09m9kp:poutre",
     "lot": "Maçonnerie",
     "label": "Poutre de reprise de charge · mur de 1,40 m · RDC",
     "fait": false
    },
    {
-    "id": "o:rsxzlw1:perc",
+    "id": "o:ciwtryt:perc",
     "lot": "Maçonnerie",
     "label": "Ouvrir le mur porteur, linteau & tableaux · fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:rsxzlw1:appui",
+    "id": "o:ciwtryt:appui",
     "lot": "Maçonnerie",
     "label": "Appui de fenêtre · fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:f1sm0kf:boucher",
+    "id": "o:k7k6f2d:boucher",
     "lot": "Maçonnerie",
     "label": "Boucher fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:j9fon80:perc",
+    "id": "o:dah3l7l:perc",
     "lot": "Maçonnerie",
     "label": "Percement, linteau & tableaux · porte simple · RDC",
     "fait": false
@@ -634,31 +658,31 @@
     "fait": false
    },
    {
-    "id": "o:hpvx4ka:poser",
+    "id": "o:cgmmx7k:poser",
     "lot": "Menuiseries",
     "label": "Poser fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:rsxzlw1:poser",
+    "id": "o:ciwtryt:poser",
     "lot": "Menuiseries",
     "label": "Poser fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:rsxzlw1:volet",
+    "id": "o:ciwtryt:volet",
     "lot": "Menuiseries",
     "label": "Volet roulant · fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:j9fon80:poser",
+    "id": "o:dah3l7l:poser",
     "lot": "Menuiseries",
     "label": "Poser porte simple · RDC",
     "fait": false
    },
    {
-    "id": "iso:pi3wb1x",
+    "id": "iso:3xrtyu4",
     "lot": "Isolation",
     "label": "Doubler le mur de 8,00 m · RDC",
     "fait": false
@@ -670,73 +694,73 @@
     "fait": false
    },
    {
-    "id": "sol-rag:vkip7ww",
+    "id": "sol-rag:y015vgt",
     "lot": "Sol",
     "label": "Ragréage · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "sol-rev:vkip7ww",
+    "id": "sol-rev:y015vgt",
     "lot": "Sol",
     "label": "Poser carrelage · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "sol-rev:fjp4esi",
+    "id": "sol-rev:gmfdmvf",
     "lot": "Sol",
     "label": "Poser parquet · Chambre · RDC",
     "fait": false
    },
    {
-    "id": "i:8nddbe0:creer",
+    "id": "i:5sl2x0t:creer",
     "lot": "Équipements",
     "label": "Poser douche · RDC",
     "fait": false
    },
    {
-    "id": "i:dq1d6qj:creer",
+    "id": "i:7ofqjq3:creer",
     "lot": "Équipements",
     "label": "Poser double vasque · RDC",
     "fait": false
    },
    {
-    "id": "i:ir4aelq:creer",
+    "id": "i:etwyds3:creer",
     "lot": "Équipements",
     "label": "Poser wc · RDC",
     "fait": false
    },
    {
-    "id": "i:xijbev1:creer",
+    "id": "i:l7plpga:creer",
     "lot": "Équipements",
     "label": "Poser baignoire · RDC",
     "fait": false
    },
    {
-    "id": "i:pb1rtfm:creer",
+    "id": "i:em17qgq:creer",
     "lot": "Équipements",
     "label": "Poser escalier · RDC",
     "fait": false
    },
    {
-    "id": "i:xxboybf:creer",
+    "id": "i:aasnm31:creer",
     "lot": "Équipements",
     "label": "Poser point lumineux (plafond) · RDC",
     "fait": false
    },
    {
-    "id": "i:smvc3ck:creer",
+    "id": "i:v09s50x:creer",
     "lot": "Équipements",
     "label": "Poser point lumineux (plafond) · RDC",
     "fait": false
    },
    {
-    "id": "i:s35shhd:creer",
+    "id": "i:dhjcewv:creer",
     "lot": "Équipements",
     "label": "Poser prise double · RDC",
     "fait": false
    },
    {
-    "id": "i:ccw634l:creer",
+    "id": "i:hutquyh:creer",
     "lot": "Équipements",
     "label": "Poser plan de travail · RDC",
     "fait": false

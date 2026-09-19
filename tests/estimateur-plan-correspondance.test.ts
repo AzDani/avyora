@@ -143,13 +143,17 @@ describe("table de correspondance · les surfaces mesurées (D10)", () => {
 
 describe("table de correspondance · la toiture", () => {
   it("une toiture refaite entièrement dépose puis repose, sur la surface mesurée", () => {
-    // la toiture se pose sur le DERNIER niveau : ici l'étage de 4 × 4, pas le rez-de-chaussée
-    expect(q("toi-depose-complete-de-toiture-couverture-charpent")).toBeCloseTo(26.6, 1);
-    expect(q("toi-toiture-complete-tuile-charpente-couverture")).toBeCloseTo(26.6, 1);
+    /* La scène de référence a un étage de 4 × 4 sur un rez-de-chaussée de 8 × 5 : la toiture
+       compte DEUX parties — celle de l'étage (26,6 m²) et celle qui couvre les 25 m² du rez
+       laissés à découvert (38,6 m²). Elle ne comptait que la première : 38,6 m² de couverture,
+       soit la moitié du toit, n'étaient chiffrés nulle part. */
+    expect(q("toi-depose-complete-de-toiture-couverture-charpent")).toBeCloseTo(65.2, 1);
+    expect(q("toi-toiture-complete-tuile-charpente-couverture")).toBeCloseTo(65.2, 1);
     expect(q("toi-charpente-traditionnelle-hors-couverture")).toBe(0); // comprise dans le poste complet
   });
   it("l'isolation des combles perdus se compte à l'emprise, pas à la surface de toit", () => {
-    expect(q("iso-isolation-des-combles-perdus-soufflage")).toBeCloseTo(17.6, 1);
+    /* l'emprise sous toiture, elle aussi, couvre les deux parties : 17,6 + 25,0 */
+    expect(q("iso-isolation-des-combles-perdus-soufflage")).toBeCloseTo(42.6, 1);
   });
   it("gouttières et raccords suivent les linéaires mesurés", () => {
     expect(q("toi-gouttieres-descentes")).toBeGreaterThan(5);
@@ -316,5 +320,28 @@ describe("table de correspondance · le plancher à créer, pièce par pièce (c
     const { contributions } = contributionsDuPlan(p);
     expect(contributions.some((c) => /plancher/.test(c.poste))).toBe(true);
     expect(contributions.some((c) => /monter-un-mur|monter-une-cloison/.test(c.poste))).toBe(false);
+  });
+});
+
+describe("table de correspondance · une toiture en deux parties (contrat 1.9)", () => {
+  /* 90 m² au sol, 60 à l'étage : la partie basse couvre le reste, et elle compte. */
+  const toit = (surface: number, parties?: unknown[]) =>
+    ({ toiture: { surface, couverture: "tuile", parties, projet: { action: "refection" } } }) as unknown as PlanPourCorrespondance;
+
+  it("les postes se chiffrent sur la surface TOTALE, parties comprises", () => {
+    const q1 = contributionsDuPlan(toit(84.3)).contributions.find((c) => /refection|couverture/.test(c.poste))?.quantite ?? 0;
+    const q2 = contributionsDuPlan(toit(134.1)).contributions.find((c) => /refection|couverture/.test(c.poste))?.quantite ?? 0;
+    expect(q1).toBe(84.3);
+    expect(q2).toBe(134.1);          /* les 50 m² de toiture basse ne sont plus perdus */
+  });
+
+  it("le détail par partie voyage sans changer le chiffrage", () => {
+    const parties = [
+      { niveau: "R+1", principale: true, forme: "deuxpans", pente: 30, surface: 84.3 },
+      { niveau: "RDC", principale: false, forme: "mono", pente: 30, surface: 49.8 },
+    ];
+    const avec = contributionsDuPlan(toit(134.1, parties)).contributions;
+    const sans = contributionsDuPlan(toit(134.1)).contributions;
+    expect(avec.map((c) => [c.poste, c.quantite])).toEqual(sans.map((c) => [c.poste, c.quantite]));
   });
 });

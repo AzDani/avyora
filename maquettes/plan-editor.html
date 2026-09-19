@@ -841,8 +841,51 @@ function toitureGeom(){const R=toitureRect();if(!R)return null;const t=toiture()
   const aireToit=toitPoly?Math.abs(polyArea(toitPoly)):Lx*Ly;
   const surface=aireToit/Math.cos(pente*Math.PI/180);
   return {R,ox0,oy0,ox1,oy1,dir,forme,pente,deb,faitage:+faitage.toFixed(1),aretiers:+aretiers.toFixed(1),egouts:+egouts.toFixed(1),raccords:+(faitage+aretiers).toFixed(1),hPignon:+hPignon.toFixed(2),surface:+surface.toFixed(1),emprise:+R.aire.toFixed(1),compose:R.compose,toitPoly,perimToit:+perimToit.toFixed(1),lines,arrows,P,a0,a1,c0,c1,cm};}
-function toitureGeo(){const G=toitureGeom();if(!G)return {emprise:0,perim:0,surface:0,pente:30,niveau:'',egouts:0,raccords:0,faitage:0,aretiers:0,hPignon:0,compose:false};
-  return {emprise:G.emprise,perim:+G.R.perim.toFixed(1),surface:G.surface,pente:G.pente,niveau:G.R.lv.name,egouts:G.egouts,faitage:G.faitage,aretiers:G.aretiers,raccords:G.raccords,hPignon:G.hPignon,dir:G.dir,compose:G.compose};}
+/* Une maison n'a pas UN toit. Dès qu'un étage ne couvre pas toute l'emprise du niveau du
+   dessous, la partie restante est elle aussi sous toiture — plus bas, et souvent d'une autre
+   forme : appentis, monopente, toit-terrasse. La toiture ne regardait que le DERNIER niveau :
+   sur 90 m² au sol dont 60 à l'étage, 30 m² de couverture n'existaient pas du tout.
+   Chaque niveau donne donc une partie, dont l'aire est la sienne MOINS celle du niveau qui la
+   surmonte. Un plan à un seul niveau rend exactement ce qu'il rendait avant. */
+function partieToit(li){return (state.levels[li]&&state.levels[li].toit)||{};}
+function partiesToiture(){
+  const t=toiture();if(!t)return [];
+  const deb=t.debord??0.3,top=topLevelIdx();
+  const mesure=(li,extra)=>{const C=contourBati(li,'projet');if(!C)return {a:0,p:0,poly:null};
+    const P=contourDecale(C,extra);return P?{a:Math.abs(polyArea(P)),p:perimPoly(P),poly:P}:{a:0,p:0,poly:null};};
+  const parts=[];const G=toitureGeom();
+  if(G)parts.push({li:top,principale:true,nom:state.levels[top].name,forme:G.forme,pente:G.pente,
+    base:G.emprise,surface:G.surface,egouts:G.egouts,poly:G.toitPoly||null});
+  for(let i=top-1;i>=0;i--){
+    const bas=mesure(i,deb),haut=mesure(i+1,0),nu=mesure(i,0);
+    /* La part DÉCOUVERTE se mesure à débord égal — sans quoi un étage de même emprise que le
+       niveau du dessous fabriquerait une fausse partie basse, large du seul débord. */
+    const decouvert=nu.a-haut.a;
+    if(decouvert<0.5)continue;
+    /* La toiture basse, elle, court de son débord extérieur jusqu'au mur de l'étage. */
+    const aire=bas.a-haut.a;
+    if(aire<0.5)continue;
+    const cfg=partieToit(i);
+    const forme=cfg.forme||'mono';                         /* un appentis est le cas courant */
+    const pente=forme==='plat'?0:(cfg.pente??t.pente??30);
+    parts.push({li:i,principale:false,nom:state.levels[i].name,forme,pente,
+      base:+Math.max(0,nu.a-haut.a).toFixed(1),
+      surface:+(aire/Math.cos(pente*Math.PI/180)).toFixed(1),
+      egouts:+Math.max(0,bas.p-haut.p).toFixed(1),poly:bas.poly});
+  }
+  return parts;
+}
+function setToitPartie(li,k,val){history.push(snapshot());const lv=state.levels[li];if(!lv)return;
+  lv.toit=lv.toit||{};
+  if(k==='forme')lv.toit.forme=val; else lv.toit.pente=Math.max(0,Math.min(60,parseFloat(val)||0));
+  afterChange();}
+function toitureGeo(){const G=toitureGeom();if(!G)return {emprise:0,perim:0,surface:0,pente:30,niveau:'',egouts:0,raccords:0,faitage:0,aretiers:0,hPignon:0,compose:false,parties:[]};
+  const parts=partiesToiture();
+  const som=(k)=>+parts.reduce((s,x)=>s+(x[k]||0),0).toFixed(1);
+  return {emprise:som('base'),perim:+G.R.perim.toFixed(1),surface:som('surface'),pente:G.pente,niveau:G.R.lv.name,
+    egouts:som('egouts'),faitage:G.faitage,aretiers:G.aretiers,raccords:G.raccords,hPignon:G.hPignon,dir:G.dir,compose:G.compose,
+    /* la principale d'abord, puis les parties plus basses, de haut en bas */
+    parties:parts.map(x=>({niveau:x.nom,principale:x.principale,forme:x.forme,pente:x.pente,emprise:x.base,surface:x.surface,egouts:x.egouts}))};}
 // murs pignons = murs extérieurs du dernier niveau perpendiculaires au faîtage (2 pans) ; en monopente : côté haut / bas
 function pignonWalls(){const G=toitureGeom();if(!G||!(G.forme==='deuxpans'||G.forme==='mono'))return [];const lv=G.R.lv;const sv=state.cur;state.cur=state.levels.indexOf(lv);const out=[];
   try{lv.walls.forEach(w=>{if(isVirtual(w)||!wallActive(w,'projet')||!isExteriorWall(w))return;const u=norm(sub(w.b,w.a));const alongRidge=G.dir==='x'?Math.abs(u.x):Math.abs(u.y);
@@ -853,7 +896,22 @@ function pignonWalls(){const G=toitureGeom();if(!G||!(G.forme==='deuxpans'||G.fo
 function pignonExtra(w,lv){if(state.levels.indexOf(lv)!==topLevelIdx()||!toiture())return 0;const G=toitureGeom();if(!G||G.pente<=0)return 0;const pw=pignonWalls().find(p=>p.w===w);if(!pw)return 0;const tan=Math.tan(G.pente*Math.PI/180),len=wallLen(w);
   if(pw.role==='pignon')return 0.5*len*(len/2*tan);if(pw.role==='rampant')return 0.5*len*(len*tan);if(pw.role==='haut')return len*G.hPignon;return 0;}
 // dessin 2D de la toiture (dernier niveau) : contour au débord, faîtage, arêtiers, flèches de pente, pignons
-function drawToiture(lv){if(state.levels.indexOf(lv)!==topLevelIdx()||!toiture())return;const G=toitureGeom();if(!G)return;const z=view.zoom;ctx.save();
+function drawToiture(lv){
+  if(!toiture())return;
+  const li=state.levels.indexOf(lv);
+  if(li!==topLevelIdx()){
+    /* Niveau intermédiaire : on montre SA partie de toiture — celle qui couvre ce que l'étage
+       du dessus ne recouvre pas. Sans elle, on croit que ce niveau n'a pas de toit. */
+    const pa=partiesToiture().find(x=>x.li===li);
+    if(!pa||!pa.poly||pa.poly.length<3)return;
+    ctx.save();ctx.setLineDash([7,5]);ctx.strokeStyle='rgba(30,27,75,.38)';ctx.lineWidth=1.2*uiScale;
+    ctx.beginPath();pa.poly.forEach((q,i)=>{const t=S(q);i?ctx.lineTo(t.x,t.y):ctx.moveTo(t.x,t.y);});ctx.closePath();ctx.stroke();
+    if(view.zoom>=18){ctx.setLineDash([]);ctx.fillStyle='rgba(30,27,75,.6)';ctx.font=`600 ${10*uiScale}px Geist, sans-serif`;ctx.textAlign='center';
+      const c=pa.poly.reduce((a,q)=>({x:a.x+q.x/pa.poly.length,y:a.y+q.y/pa.poly.length}),{x:0,y:0});const sc=S(c);
+      ctx.fillText('toiture basse · '+fmtM2(pa.surface),sc.x,sc.y);}
+    ctx.restore();return;
+  }
+  const G=toitureGeom();if(!G)return;const z=view.zoom;ctx.save();
   ctx.setLineDash([9,6]);ctx.strokeStyle='rgba(30,27,75,.55)';ctx.lineWidth=1.3*uiScale;
   if(G.toitPoly&&G.toitPoly.length>=3){ctx.beginPath();G.toitPoly.forEach((q,i)=>{const s=S(q);i?ctx.lineTo(s.x,s.y):ctx.moveTo(s.x,s.y);});ctx.closePath();ctx.stroke();}
   else{const A=S(v(G.ox0,G.oy0)),B=S(v(G.ox1,G.oy1));ctx.strokeRect(A.x,A.y,B.x-A.x,B.y-A.y);}
@@ -891,7 +949,18 @@ function toitureTasks(T){const t=toiture();if(!t||!t.projet)return;const p=t.pro
   if(p.raccords&&g.raccords>0)T.push({id:'toit:racc',lot,label:'Raccords (faîtage, arêtiers, solins)',detail:fmt(g.raccords,1)+' ml',prix:g.raccords*PRIX_TOIT.raccords});}
 function toitureQ(){const t=toiture();if(!t)return null;const g=toitureGeo();return {...g,forme:t.forme,couverture:t.couverture,etatCouverture:t.etatCouv,etatCharpente:t.etatCharp,combles:t.combles,projet:t.projet};}
 function renderToiture(lv){const li=state.levels.indexOf(lv),top=topLevelIdx();const m=mode();
-  if(li!==top)return state.levels.length>1?`<div class="row" style="margin-top:12px"><label>🏠 Toiture</label><button class="ib" style="padding:5px 10px" onclick="setLevel(${top})">réglée au niveau ${esc(state.levels[top].name)} →</button></div>`:'';
+  if(li!==top){
+    if(!toiture()||state.levels.length<2)return '';
+    const pa=partiesToiture().find(x=>x.li===li);
+    if(!pa)return `<div class="row" style="margin-top:12px"><label>🏠 Toiture</label><button class="ib" style="padding:5px 10px" onclick="setLevel(${top})">réglée au niveau ${esc(state.levels[top].name)} →</button></div>`;
+    return `<div class="ph mt">🏠 Toiture de ce niveau</div>
+    <div class="tip">${esc(state.levels[li+1].name)} ne couvre pas tout : <b>${fmtM2(pa.base)}</b> de ce niveau sont sous une toiture plus basse. Elle a sa propre forme et sa propre pente.</div>
+    <div class="row" style="margin-top:8px"><label>Forme</label></div>
+    <div class="seg">${Object.entries(TOIT_FORME).map(([k,d])=>`<button class="${pa.forme===k?'on':''}" onclick="setToitPartie(${li},'forme','${k}')">${d.label}</button>`).join('')}</div>
+    ${pa.forme!=='plat'?`<div class="row" style="margin-top:8px"><label>Pente</label><span>${[10,15,25,30].map(d=>`<button class="miniep ${pa.pente===d?'on':''}" onclick="setToitPartie(${li},'pente',${d})">${d}°</button>`).join('')}<input class="fin n" type="number" min="0" max="60" step="1" value="${pa.pente}" onchange="setToitPartie(${li},'pente',this.value)" style="width:56px"> °</span></div>`:''}
+    <div class="blond ok" style="margin-top:10px"><b>Partie basse ≈ <span>${fmtM2(pa.surface)}</span></b><small>${fmtM2(pa.base)} d'emprise découverte · ${pa.forme==='plat'?'toit plat':'pente '+pa.pente+'°'} · égouts ${fmt(pa.egouts,1)} ml</small></div>
+    <div class="row" style="margin-top:10px"><label>Couverture, état, travaux</label><button class="ib" style="padding:5px 10px" onclick="setLevel(${top})">réglés au niveau ${esc(state.levels[top].name)} →</button></div>`;
+  }
   const t=toiture();const g=toitureGeo();const seg=(k,obj,cur,pref)=>`<div class="seg">${Object.entries(obj).map(([v,l])=>`<button class="${cur===v?'on':''}" onclick="setToiture('${pref||''}${k}','${v}')">${typeof l==='string'?l:l.label}</button>`).join('')}</div>`;
   if(m==='final')return t?`<div class="ph mt">🏠 Toiture</div><div class="tip">${TOIT_FORME[t.forme].label} · ${TOIT_COUV[t.couverture]}${t.projet&&t.projet.action!=='rien'?' · '+TOIT_ACTION[t.projet.action].toLowerCase()+' ✓':''} · ${fmtM2(g.surface)}${g.faitage?' · faîtage '+fmt(g.faitage,1)+' m':''}</div>`:'';
   if(m==='existant'){if(!t)return `<div class="ph mt">🏠 Toiture & charpente</div><div class="tip">Décris la toiture (forme, couverture, état) : sa surface se calcule depuis l'emprise de ce niveau, et le projet en déduit les travaux.</div><button class="ib" style="width:100%;justify-content:center;margin-top:8px" onclick="setToiture('init','')">Décrire la toiture</button>`;
@@ -906,7 +975,7 @@ function renderToiture(lv){const li=state.levels.indexOf(lv),top=topLevelIdx();c
     <div class="row" style="margin-top:8px"><label>État couverture</label></div>${seg('etatCouv',TOIT_ETAT_COUV,t.etatCouv)}
     <div class="row" style="margin-top:8px"><label>État charpente</label></div>${seg('etatCharp',TOIT_ETAT_CHARP,t.etatCharp)}
     ${t.forme==='plat'?`<div class="tip" style="margin-top:8px">Toit plat : pas de combles.</div>`:`<div class="row" style="margin-top:8px"><label>Combles</label><span class="seg" style="display:inline-flex"><button class="${t.combles==='perdus'?'on':''}" onclick="setToiture('combles','perdus')">Perdus<small>plafond droit</small></button><button class="${t.combles==='amenages'?'on':''}" onclick="setToiture('combles','amenages')">Aménagés<small>plafond rampant</small></button></span></div>${t.combles==='amenages'?`<div class="tip" style="margin-top:6px">Combles habitables : le plafond suit la pente (rampant). Nécessite une <b>charpente traditionnelle</b> — impossible avec des fermettes.</div>`:`<div class="tip" style="margin-top:6px">Combles non habités : plafond droit, isolés par soufflage au sol des combles.</div>`}`}
-    <div class="blond ${g.compose?'ko':'ok'}" style="margin-top:10px"><b>Surface de toiture ≈ <span>${fmtM2(g.surface)}</span></b><small>emprise réelle ${fmtM2(g.emprise)} + débord ${Math.round((t.debord??0.3)*100)} cm${t.forme!=='plat'?' · pente '+t.pente+'°':''} · égouts ${fmt(g.egouts,1)} ml${g.faitage?' · faîtage '+fmt(g.faitage,1)+' ml':''}${g.aretiers?' · arêtiers '+fmt(g.aretiers,1)+' ml':''}</small>${g.compose?`<small>⚠ Plan non rectangulaire (L / T) : la <b>surface suit bien ton plan</b>, mais les pans sont <b>simplifiés</b> — les noues et pans croisés ne sont pas dessinés. Un couvreur les affinera ; le prix, lui, est au bon ordre.</small>`:''}</div>
+    <div class="blond ${g.compose?'ko':'ok'}" style="margin-top:10px"><b>Surface de toiture ≈ <span>${fmtM2(g.surface)}</span></b><small>emprise réelle ${fmtM2(g.emprise)} + débord ${Math.round((t.debord??0.3)*100)} cm${t.forme!=='plat'?' · pente '+t.pente+'°':''} · égouts ${fmt(g.egouts,1)} ml${g.faitage?' · faîtage '+fmt(g.faitage,1)+' ml':''}${g.aretiers?' · arêtiers '+fmt(g.aretiers,1)+' ml':''}</small>${g.parties&&g.parties.length>1?`<small>${g.parties.length} parties : ${g.parties.map(x=>esc(x.niveau)+' '+fmtM2(x.surface)+(x.principale?'':' (basse, '+(x.forme==='plat'?'toit plat':TOIT_FORME[x.forme].label.toLowerCase()+' '+x.pente+'°')+')')).join(' + ')}</small><small>Chaque partie se règle depuis SON niveau — forme et pente. La couverture, l'état et les travaux valent pour toute la toiture.</small>`:''}${g.compose?`<small>⚠ Plan non rectangulaire (L / T) : la <b>surface suit bien ton plan</b>, mais les pans sont <b>simplifiés</b> — les noues et pans croisés ne sont pas dessinés. Un couvreur les affinera ; le prix, lui, est au bon ordre.</small>`:''}</div>
     <div class="row" style="margin-top:6px"><label>Débord de toit</label><span><input class="fin n" type="number" min="0" max="100" step="5" value="${Math.round((t.debord??0.3)*100)}" onchange="setToiture('debord',this.value/100)" style="width:60px"> cm</span></div>
     <div class="btnrow"><button class="ib danger" style="flex:1" onclick="setToiture('off')">Retirer la toiture</button></div>`;}
   // projet
@@ -1394,6 +1463,10 @@ function planChecks(lv,opt){
   {const iL=state.levels.indexOf(lv),dessus=state.levels[iL+1];
    if(dessus&&dessus.neuf&&faces.some(f=>f.room)&&!lv.rooms.some(r=>r.hAvant))
      out.push({lvl:'info',msg:`<b>${esc(dessus.name)}</b> est créé par le projet : son plancher coupe le volume de ce niveau. Si une pièce d'ici était en <b>grande hauteur</b> avant travaux, indique-la dans sa fiche au champ <b>« hauteur avant travaux »</b> — sinon l'existant décrit un logement qui n'a jamais existé.`});}
+  /* Un étage qui ne couvre pas tout laisse une partie du niveau du dessous sous une toiture
+     plus basse. Elle est comptée d'office ; encore faut-il savoir qu'elle existe et la régler. */
+  {const iL=state.levels.indexOf(lv);const pa=toiture()?partiesToiture().find(x=>x.li===iL&&!x.principale):null;
+   if(pa)out.push({lvl:'info',msg:`<b>${fmtM2(pa.base)}</b> de ce niveau ne sont pas surmontés par « ${esc(state.levels[iL+1].name)} » : ils sont sous une <b>toiture plus basse</b>, comptée pour ${fmtM2(pa.surface)}. Sa forme (${pa.forme==='plat'?'toit plat':TOIT_FORME[pa.forme].label.toLowerCase()}) et sa pente se règlent ici même.`});}
   if(faces.some(f=>f.room)&&!lv.openings.length)out.push({lvl:'info',msg:`Ajoute les portes et fenêtres (outil <b>Ouvertures</b>, touche <kbd>P</kbd>) : l'accès et l'éclairement des pièces seront contrôlés ensuite.`});
   if(dn)out.push({lvl:'err',msg:`${dn} extrémité${dn>1?'s':''} de mur ne touche${dn>1?'nt':''} rien (cerclée${dn>1?'s':''} en rouge) : aucune pièce ne peut se fermer là.`});
   else if(lv.walls.length&&!faces.length)out.push({lvl:'warn',msg:'Des murs sont tracés mais aucun contour n\'est fermé : les pièces n\'apparaissent pas.'});
@@ -3464,7 +3537,7 @@ function quantities(){
    que le consommateur doit vérifier. Toute clé renommée ou retirée fait changer ce numéro.
    Avant, le seul « export » était un <details> de debug — qui n'émettait ni la toiture, ni les
    sols, ni la plomberie, ni les études, ni les velux. */
-const CONTRAT_PLAN='1.8.0'; /* 1.1 : attributs de choix (douche, point lumineux, escalier), hauteur de faïence par pièce, état « conservé ». 1.2 : chaque équipement dit sa pièce, et chaque pièce ses murs par type. 1.3 : les choix non tranchés (type de douche, point lumineux, matériau d'escalier, hauteur de faïence) sortent à null au lieu de leur défaut — c'est au consommateur d'appliquer le défaut ET de le signaler. 1.4 : faux plafond par pièce, et un niveau dit s'il est créé par le projet et en quoi est son plancher. 1.5 : poteaux et poutres dessinables — chaque équipement d'ossature porte son rôle, sa portée et le fait qu'il reprend ou non un mur porteur démoli ; agrégat `ossature` au niveau du plan. Ajout pur : rien n'est renommé ni retiré. 1.6 : `hauteurAvant` par pièce — la hauteur du volume AVANT travaux, quand le projet y crée un plancher ; `hauteur` reste celle d'après travaux, comme avant. Ajout pur. 1.7 : `emprise` par niveau, en m² — sans elle le plancher d'un étage créé n'était pas chiffrable. Ajout pur. 1.8 : par pièce, `plancherACreer` (bois / béton / null) — le plancher se chiffre pièce par pièce, une mezzanine ne couvre pas tout un volume — et `nonHabitableAvant`, vrai pour une grange, une dépendance ou un volume ouvert que le chantier rend habitable. Ajout pur. */
+const CONTRAT_PLAN='1.9.0'; /* 1.1 : attributs de choix (douche, point lumineux, escalier), hauteur de faïence par pièce, état « conservé ». 1.2 : chaque équipement dit sa pièce, et chaque pièce ses murs par type. 1.3 : les choix non tranchés (type de douche, point lumineux, matériau d'escalier, hauteur de faïence) sortent à null au lieu de leur défaut — c'est au consommateur d'appliquer le défaut ET de le signaler. 1.4 : faux plafond par pièce, et un niveau dit s'il est créé par le projet et en quoi est son plancher. 1.5 : poteaux et poutres dessinables — chaque équipement d'ossature porte son rôle, sa portée et le fait qu'il reprend ou non un mur porteur démoli ; agrégat `ossature` au niveau du plan. Ajout pur : rien n'est renommé ni retiré. 1.6 : `hauteurAvant` par pièce — la hauteur du volume AVANT travaux, quand le projet y crée un plancher ; `hauteur` reste celle d'après travaux, comme avant. Ajout pur. 1.7 : `emprise` par niveau, en m² — sans elle le plancher d'un étage créé n'était pas chiffrable. Ajout pur. 1.8 : par pièce, `plancherACreer` (bois / béton / null) — le plancher se chiffre pièce par pièce, une mezzanine ne couvre pas tout un volume — et `nonHabitableAvant`, vrai pour une grange, une dépendance ou un volume ouvert que le chantier rend habitable. Ajout pur. 1.9 : `toiture.parties` — une toiture n'est plus une seule surface. Chaque niveau qu'un étage ne recouvre pas entièrement donne une partie plus basse, avec sa forme, sa pente, son emprise et ses égouts ; `surface`, `emprise` et `egouts` sont désormais les TOTAUX. Sur un plan à un seul niveau, tout est identique. */
 function contratPlan(){
   garantirPids();
   const q=quantities(),bas=empriseNiveau(0),ch=chantier();
