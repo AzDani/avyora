@@ -73,10 +73,42 @@ const res = await p.evaluate(() => {
   /* ── ce que le contrat en dit ───────────────────────────────────────────── */
   { const { lv, r } = volume(); r.hAvant = 5.5; afterChange(); garantirPids();
     const c = contratPlan();
-    t["contrat en 1.6.0"] = c.contrat === "1.6.0";
+    /* le minimum sous lequel la hauteur d'origine ne doit pas partir, pas le numéro du jour */
+    { const [maj, min] = c.contrat.split(".").map(Number);
+      t["la hauteur d'origine ne part pas sous un contrat antérieur à 1.6"] = maj === 1 && min >= 6; }
     const piece = c.detailNiveaux[0].rooms.find((x) => x.hauteurAvant);
     t["le contrat porte les deux hauteurs"] = !!piece && piece.hauteurAvant === 5.5 && piece.hauteur === 2.5;
     t["l'étage créé est signalé, avec son plancher"] = c.detailNiveaux[1].neuf === true && c.detailNiveaux[1].plancher === "bois"; }
+  /* ── créer un étage : les deux situations ne coûtent pas la même chose ──── */
+  const rdc = () => {
+    state = blankState(); const lv = L(); lv.height = 5.5;
+    const W = (a, c) => lv.walls.push({ id: uid(), a: v(...a), b: v(...c), type: "mur" });
+    const P = [[0, 0], [6, 0], [6, 5], [0, 5]];
+    for (let i = 0; i < P.length; i++) W(P[i], P[(i + 1) % P.length]);
+    afterChange(); setMode("projet"); closeModal(); return lv;
+  };
+  const ligne = (re) => chantierTasks().find((x) => re.test(x.id));
+  { rdc(); addLevel("plancher"); const haut = L();
+    t["plancher dans un volume · l'étage est marqué créé"] = haut.neuf === true;
+    t["plancher dans un volume · les murs restent EXISTANTS"] = haut.walls.every((w) => !w.st);
+    const l = ligne(/plancher/);
+    /* emprise hors tout 6,20 × 5,20 = 32,24 m² × 90 €/m² en bois */
+    t["plancher bois chiffré à 90 €/m² sur l'emprise"] = !!l && Math.abs(l.prix - 32.24 * 90) < 60 && l.lot === "Toiture"; }
+  { rdc(); addLevel("surelevation"); const haut = L();
+    t["surélévation · l'étage est marqué créé"] = haut.neuf === true;
+    t["surélévation · les murs sont À CRÉER"] = haut.walls.every((w) => w.st === "creer");
+    t["surélévation · les murs sont chiffrés en plus du plancher"] = !!ligne(/plancher/) && chantierTasks().some((x) => /:creer$/.test(x.id) && x.lot === "Cloisons"); }
+  { rdc(); addLevel("plancher"); setLevelProp("plancher", "beton");
+    const l = ligne(/plancher/);
+    t["plancher béton chiffré à 120 €/m², au lot Maçonnerie"] = !!l && Math.abs(l.prix - 32.24 * 120) < 80 && l.lot === "Maçonnerie"; }
+  { rdc(); addLevel("copy");
+    t["un étage qui existe déjà ne chiffre aucun plancher"] = !ligne(/plancher/) && !L().neuf; }
+  { rdc(); addLevel("plancher"); garantirPids();
+    const c = contratPlan();
+    { const [maj, min] = c.contrat.split(".").map(Number);
+      t["l'emprise du niveau ne part pas sous un contrat antérieur à 1.7"] = maj === 1 && min >= 7; }
+    const n = c.detailNiveaux[1];
+    t["le contrat porte l'emprise du niveau créé"] = n.neuf === true && n.emprise > 30 && n.emprise < 34; }
   return t;
 });
 await b.close();

@@ -64,6 +64,8 @@ const PRIX_MAP = [
   ["PRIX_POTEAU", "acier", "Poteau de reprise (acier HEA / HEB)"],
   ["PRIX_POTEAU", "bois", "Poteau de reprise (lamellé-collé)"],
   ["PRIX_POTEAU", "beton", "Poteau de reprise (béton armé)"],
+  ["PRIX_PLANCHER", "bois", "Créer un plancher bois"],
+  ["PRIX_PLANCHER", "beton", "Plancher béton (étage créé)"],
   ["PRIX", "murPierre", "Monter un mur en pierre"],
   ["PRIX", "etudeStructure", "Étude de structure"],
   ["PRIX", "cloisonNeuve", "Monter une cloison"],

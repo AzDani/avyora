@@ -48,8 +48,10 @@ export interface PlanPourCorrespondance {
     murs?: Array<{ id: string; type: string; porteur: boolean; etat: string; ml: number; m2: number }>;
   };
   detailNiveaux?: Array<{
-    id?: string; neuf?: boolean; plancher?: string | null;
+    id?: string; name?: string; neuf?: boolean; plancher?: string | null;
     rooms?: Array<{ id: string; type: string; faience?: string | null; perimeter?: number; wallArea?: number; plinthes?: number; hauteur?: number; horsHabitable?: boolean; exterieur?: boolean; fauxPlafond?: boolean; area?: number; mursParType?: Record<string, number> }>;
+    /** Contrat 1.7 : l'emprise du niveau, sans laquelle son plancher n'est pas chiffrable. */
+    emprise?: number | null;
     equipements?: Array<{ id: string; type: string; etat: string; piece?: string | null; l?: number; p?: number; douche?: string | null; lumiere?: string | null; materiau?: string | null;
       /** Contrat 1.5 : poteaux et poutres dessinés. `reprendMurPorteur` porte l'identifiant du mur repris. */
       ossature?: { role: string; portee?: number | null; reprendMurPorteur?: string | null } | null }>;
@@ -180,6 +182,21 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
     if (!posteParId(poste)) { ignores.push({ quoi: poste, pourquoi: "identifiant inconnu au catalogue", sources }); return; }
     brut.push({ poste, quantite, sources, raison, variante, deduction });
   };
+
+  // ── Planchers des étages créés par le projet ──────────────────────────────
+  /* Un étage que le projet crée a un plancher à construire, et c'est souvent l'ouvrage le plus
+     cher de l'opération. Les murs, eux, ne suivent pas : un plancher posé dans un volume de
+     grande hauteur trouve des murs déjà debout, et ce sont leurs propres états qui le disent. */
+  for (const niveau of plan.detailNiveaux ?? []) {
+    if (!niveau.neuf) continue;
+    const m2 = +(niveau.emprise ?? 0).toFixed(2);
+    const src = niveau.id ? [niveau.id] : [];
+    if (m2 <= 0) { ignores.push({ quoi: `plancher de « ${niveau.name ?? "étage créé"} »`, pourquoi: "emprise du niveau inconnue", sources: src }); continue; }
+    const beton = niveau.plancher === "beton";
+    add(beton ? "mac-plancher-beton-etage-cree" : "toi-creer-un-plancher-bois", m2, src,
+      `Étage créé par le projet : son plancher est à construire`, undefined,
+      niveau.plancher ? undefined : "Matériau du plancher non choisi : chiffré en bois, le défaut du dessin. Un plancher béton se chiffre autrement.");
+  }
 
   // ── Équipements posés ──────────────────────────────────────────────────────
   for (const niveau of plan.detailNiveaux ?? []) {
@@ -460,6 +477,7 @@ export function postesCouverts(): string[] {
     "mac-escalier-en-beton", "toi-escalier-en-bois", "ele-spots-encastres-led", "ele-ajouter-un-point-lumineux",
     "ele-ajouter-deplacer-une-prise", "cui-plan-de-travail-seul", "dem-enlever-les-anciennes-portes-fenetres",
     "mex-volets-roulants", "mex-volets-battants", "dem-abattre-un-mur-porteur", ...Object.values(POSTE_OSSATURE).flatMap((m) => Object.values(m)),
+    "mac-plancher-beton-etage-cree", "toi-creer-un-plancher-bois",
     "dem-abattre-une-cloison", "dem-abattre-un-mur-non-porteur", "clo-monter-une-cloison", "mac-monter-un-mur-en-pierre",
     "mac-monter-un-mur-en-parpaings", "mac-ouvrir-un-mur-porteur-petite-porte-fenetre",
     "mac-ouvrir-un-mur-porteur-grande-2-5-m-baie", "etu-etude-de-structure", "iso-isolation-des-murs-par-l-interieur",

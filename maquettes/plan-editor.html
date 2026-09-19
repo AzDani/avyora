@@ -442,7 +442,10 @@ pre{background:#14112f;color:#d7d4f2;font-family:"Geist Mono",monospace;font-siz
 <div class="overlay" id="m-keys"><div class="modal"><h3>Raccourcis clavier</h3><div class="sub">Trace vite, ajuste au clavier.</div><div class="keys">
 <kbd>V</kbd><span>Sélectionner / déplacer</span><kbd>M</kbd><span>Tracer des murs</span><kbd>P</kbd><span>Portes & fenêtres</span><kbd>E</kbd><span>Équipements</span><kbd>C</kbd><span>Cote</span><kbd>L</kbd><span>Mesurer (longueur + surface)</span><kbd>Glisser</kbd><span>Dans le vide = déplacer la vue (tous les outils)</span><kbd>Clic droit</kbd><span>Termine la tâche en cours et revient à la sélection</span>
 <kbd>Maj</kbd><span>Force les angles droits pendant le tracé</span><kbd>Entrée</kbd><span>Ferme la pièce (ou pose la longueur tapée)</span><kbd>Échap</kbd><span>Termine sans fermer / désélectionne</span><kbd>Suppr</kbd><span>Supprime l'élément sélectionné</span><kbd>R</kbd><span>Pivote l'équipement sélectionné (90°)</span><kbd>Flèches</kbd><span>Déplace l'élément de 5 cm (Maj : 50 cm)</span><kbd>Ctrl Z / Y</kbd><span>Annuler / rétablir</span><kbd>Molette</kbd><span>Zoom · <b>clic milieu</b> ou <kbd>Espace</kbd>+glisser = déplacer la vue</span></div><div class="btnrow"><button class="ib" style="flex:1" onclick="closeModal();openModal('welcome')">Revoir le guide en 3 étapes</button></div><button class="mclose" onclick="closeModal()">Fermer</button></div></div>
-<div class="overlay" id="m-level"><div class="modal"><h3>Ajouter un niveau</h3><div class="sub">Comment démarrer ce nouvel étage ?</div><div class="choice"><button onclick="addLevel('copy')"><b>Copier les murs du niveau actuel</b><small>Idéal pour un étage : même emprise, tu ajustes les cloisons.</small></button><button onclick="addLevel('empty')"><b>Niveau vide</b><small>Repartir d'une feuille blanche.</small></button></div><button class="mclose" onclick="closeModal()">Annuler</button></div></div>
+<div class="overlay" id="m-level"><div class="modal"><h3>Ajouter un niveau</h3><div class="sub">Cet étage <b>existe-t-il déjà</b>, ou est-ce le projet qui le crée ? C'est ce qui décide de ce qui sera chiffré.</div>
+<div class="ph" style="margin-top:4px">Il existe déjà</div><div class="choice"><button onclick="addLevel('copy')"><b>Copier les murs du niveau actuel</b><small>Même emprise, tu ajustes les cloisons. Rien n'est compté comme travaux.</small></button><button onclick="addLevel('empty')"><b>Niveau vide</b><small>Repartir d'une feuille blanche.</small></button></div>
+<div class="ph" style="margin-top:12px">Le projet le crée</div><div class="choice"><button onclick="addLevel('plancher')"><b>Plancher dans un volume existant</b><small>Une pièce de grande hauteur que tu coupes en deux. Les murs sont déjà là : seul le <b>plancher</b> est chiffré.</small></button><button onclick="addLevel('surelevation')"><b>Surélévation</b><small>Un étage neuf posé sur la maison. <b>Plancher et murs</b> sont chiffrés.</small></button></div>
+<button class="mclose" onclick="closeModal()">Annuler</button></div></div>
 <div class="overlay" id="m-envoi"><div class="modal"><h3>Envoyer ce plan vers mon estimation</h3>
   <div class="sub">Copie ce bloc, puis colle-le dans AVYORA — <b>Mon projet → Importer un plan</b>. Les quantités remplissent le devis, et tu les vérifies avant qu'elles comptent.</div>
   <textarea id="envoiJson" readonly spellcheck="false" style="width:100%;height:190px;font-family:var(--font-mono,ui-monospace),monospace;font-size:11px;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--canvas);resize:vertical"></textarea>
@@ -709,6 +712,13 @@ const LOTS=['Démolition','Maçonnerie','Toiture','Menuiseries','Cloisons','Isol
 const EQUIP_PRIX={baignoire:960,douche:1090,lavabo:310,vasque2:593,wc:410,plan:985,ilot:2500,frigo:80,lave_vaisselle:190,lave_linge:190,cumulus:950,chaudiere:4500,poele:4000,escalier:2500,radiateur:500,seche_serviette:245,clim:2400,pac_ext:0,prise:100,prise2:100,interrupteur:100,lumiere:110,applique:110,tableau:1150};
 const EQUIP_UNIT={plan:'ml'}; // plan de travail = meubles 900 + plan 85 €/ml
 const isFurniture=t=>['lit','lit1','armoire','canape','table','bureau'].includes(t);
+/* Plancher d'un étage créé par le projet. C'est L'ouvrage de l'opération et il n'était chiffré
+   nulle part : la case « étage créé » et son matériau ne servaient qu'à l'export. Prix repris
+   tels quels du catalogue — « Créer un plancher bois » et « Plancher béton (étage créé) ». */
+const PRIX_PLANCHER={
+  bois:90,
+  beton:120
+};
 /* Poteaux & poutres — la structure, enfin dessinable.
    Une poutre n'existait que comme ligne INDUITE par la démolition d'un mur porteur : impossible
    d'en poser une ailleurs (mur ouvert sur séjour, trémie, structure poteaux-poutres), ni un
@@ -952,6 +962,14 @@ function chantierTasks(){const T=[];const ml=state.levels.length>1;
       }
       if(ist(it)==='creer'){const pu=EQUIP_PRIX[it.type];const ml=EQUIP_UNIT[it.type]==='ml';const prix=pu==null?0:(ml?pu*it.w:pu);const incl=it.type==='pac_ext';
         T.push({id:'i:'+it.id+':creer',lot:'Équipements',label:'Poser '+d.label.toLowerCase()+lvn,detail:[it.product?.nom||'',ml?fmt(it.w)+' ml':'',incl?'incluse dans le split':''].filter(Boolean).join(' · '),prix,inclus:incl});}});});
+  /* Le plancher d'un étage que le projet crée, sur l'emprise de ce niveau. */
+  state.levels.forEach((lv,i)=>{if(!lv.neuf)return;
+    const e=empriseNiveau(i,'projet');const surf=e?e.emprise:0;if(surf<=0)return;
+    const mat=lv.plancher==='beton'?'beton':'bois';
+    T.push({id:'niv:'+i+':plancher',lot:mat==='beton'?'Maçonnerie':'Toiture',
+      label:(mat==='beton'?'Plancher béton':'Plancher bois (solives + panneaux)')+' · étage créé · '+lv.name,
+      detail:fmtM2(surf)+' · l\'étage n\'existe pas aujourd\'hui, son plancher est à construire',
+      prix:surf*PRIX_PLANCHER[mat]});});
   toitureTasks(T);
   T.sort((a,b)=>LOTS.indexOf(a.lot)-LOTS.indexOf(b.lot));return T;}
 const isDone=id=>!!(state.done&&state.done[id]);
@@ -2752,9 +2770,17 @@ function setMode(m){toitOpen=false;if(m===mode())return;if(tool==='mur'&&chain.l
   if(m==='projet'){let seen=false;try{seen=!!localStorage.getItem('avyora-plan-projet-tip');localStorage.setItem('avyora-plan-projet-tip','1');}catch{}if(!seen)openModal('projet');else toast('Vue Projet : tout ce que tu ajoutes (murs, ouvertures, équipements) est « à créer / à poser » ; clique un existant pour le marquer « à démolir / à déposer »',true);}
   if(m==='final')toast('Vue Finale : ton logement après travaux, sans les marquages. Pour modifier les travaux, repasse en Projet.',true);}
 function setLevel(i){toitOpen=false;state.cur=i;sel=null;chain=[];syncRooms(L());save();render();}
-function addLevel(mode){
+/* Quatre situations, pas deux. Un étage peut exister déjà, ou être créé — et s'il est créé, les
+   murs peuvent exister DÉJÀ (on coupe un volume de grande hauteur par un plancher : les murs du
+   dessus sont la partie haute des murs du dessous, ils ne sont pas à construire) ou être neufs
+   eux aussi (surélévation). Confondre les deux, c'est soit oublier le plancher, soit facturer
+   des murs qui sont debout depuis toujours. */
+function addLevel(depart){
   closeModal();history.push(snapshot());const cur=L();const nl=newLevel(state.levels.length===1?'R+1':'R+'+state.levels.length);
-  if(mode==='copy'){ // même emprise : murs + ouvertures + fiches des pièces (les équipements restent au niveau d'origine)
+  const creeParLeProjet=(depart==='plancher'||depart==='surelevation');
+  const mursNeufs=(depart==='surelevation');
+  const source=creeParLeProjet?'copy':depart;   /* surtout pas `mode` : ce nom masquerait mode() */
+  if(source==='copy'){ // même emprise : murs + ouvertures + fiches des pièces (les équipements restent au niveau d'origine)
     /* La copie reçoit de NOUVEAUX identifiants publics : un `pid` ne doit désigner qu'un seul
        objet, or `{...w}` recopiait celui du niveau d'origine. Deux pièces différentes portaient
        alors le même identifiant, et une ligne de devis n'aurait plus su de laquelle elle vient. */
@@ -2763,7 +2789,20 @@ function addLevel(mode){
     nl.openings=cur.openings.map(o=>neuf(o,{wallId:idMap[o.wallId]}));
     nl.rooms=cur.rooms.map(r=>neuf(r,{anchor:{...r.anchor}}));nl.height=cur.height;
   }
-  state.levels.push(nl);state.cur=state.levels.length-1;sel=null;afterChange();fitView();toast(mode==='copy'?'Niveau copié — ajuste les cloisons et les ouvertures':'Niveau vide créé',true);
+  if(creeParLeProjet){
+    nl.neuf=true;nl.plancher=nl.plancher||'bois';
+    /* Surélévation : les murs montent avec l'étage, ils sont à construire. Plancher dans un
+       volume existant : ils sont déjà debout, on n'y touche pas — sinon on facturerait des murs
+       qui n'ont jamais eu besoin d'être montés. */
+    if(mursNeufs){nl.walls.forEach(w=>{if(!isVirtual(w))w.st='creer';});nl.openings.forEach(o=>o.st='creer');}
+  }
+  state.levels.push(nl);state.cur=state.levels.length-1;sel=null;
+  if(creeParLeProjet&&mode()!=='projet')setMode('projet');
+  afterChange();fitView();
+  toast(creeParLeProjet
+    ?(mursNeufs?'Surélévation : murs et plancher comptés comme travaux — trace les cloisons en vue Projet'
+               :'Étage créé : seul le PLANCHER est compté, les murs existent déjà — trace les cloisons en vue Projet')
+    :(source==='copy'?'Niveau copié — ajuste les cloisons et les ouvertures':'Niveau vide créé'),true);
 }
 function copyBearingBelow(){const lv=L(),below=state.levels[state.cur-1];if(!below)return;history.push(snapshot());const src=below.walls.filter(w=>wallActive(w)&&!isVirtual(w)&&wallT(w)>=0.15);src.forEach(w=>{const c={...w,id:uid(),a:{...w.a},b:{...w.b}};delete c.st;lv.walls.push(c);});lv.height=below.height;afterChange();fitView();toast(src.length+' mur(s) porteur(s) repris du niveau « '+below.name+' » — trace maintenant les cloisons',true);}
 function deleteLevel(){if(state.levels.length<=1)return;history.push(snapshot());const n=L().name;state.levels.splice(state.cur,1);state.cur=Math.max(0,state.cur-1);sel=null;purgerGroupes();afterChange();toast('Niveau « '+n+' » supprimé — Ctrl+Z pour annuler');}
@@ -3102,8 +3141,8 @@ function renderOverview(lv){
   ${mode()==='projet'?`<div class="tip" style="border-color:#fecaca;background:#fff7f7">${tq.actif?`Travaux marqués : <b>${fmtM2(tq.demolM2)}</b> de murs à démolir, <b>${fmtM2(tq.creerM2)}</b> à créer, <b>${tq.boucher}</b> ouverture(s) à boucher, <b>${tq.percements}</b> percement(s), ${tq.remplacer?`<b>${tq.remplacer}</b> menuiserie(s) à remplacer, `:''}<b>${tq.poser.length}</b> équipement(s) à poser, <b>${tq.deposer.length}</b> à déposer. Bascule en <b>✅ Final</b> pour voir le résultat propre.`:`Aucun travaux marqué. Clique un mur → <b>À&nbsp;démolir</b>, ou trace un nouveau mur : il sera <b>à créer</b>. Même logique pour les équipements : ajouté ici = <b>à poser</b>, existant cliqué → <b>à déposer</b>.`}</div>`:mode()==='final'?`<div class="tip" style="border-color:#bbf7d0;background:#f0fdf4">Le logement <b>après travaux</b>, tel qu'il sera : murs démolis retirés, nouveaux murs et ouvertures intégrés, sans marquage. C'est le plan à montrer aux artisans. Pour changer les travaux, repasse en <b>🛠 Projet</b>.</div>`:(lv.walls.length?`<div class="tip">Ton logement actuel. Quand il est complet, passe en <b>🛠 Projet</b> (en haut à droite du plan) pour dessiner ce que tu démolis et ce que tu crées.</div>`:'')}
   <div class="ph">Nom du niveau</div><input class="fin" value="${lv.name.replace(/"/g,'&quot;')}" maxlength="20" onchange="setLevelProp('name',this.value)">
   <div class="row" style="margin-top:12px"><label>Hauteur sous plafond</label><span><input class="fin n" type="number" step="0.05" min="2" max="5" value="${lv.height.toFixed(2)}" onchange="setLevelProp('height',this.value)"> m</span></div>
-  ${state.levels.indexOf(lv)>0?`<label class="chk"><input type="checkbox" ${lv.neuf?'checked':''} onchange="setLevelProp('neuf',this.checked)"><span>Étage créé par le projet<small>il faut alors créer son plancher</small></span></label>
-  ${lv.neuf&&mode()==='existant'?`<div class="tip" style="border-color:#fde68a;background:#fffbeb;margin-top:8px">🏗️ <b>Cet étage n'existe pas aujourd'hui.</b> Il n'y a donc rien à décrire ici : laisse la vue Existant vide et dessine-le en vue <b>Projet</b>. Si tu le crées dans un volume de grande hauteur, indique la hauteur d'origine de la pièce du dessous, dans sa fiche, au champ <b>« hauteur avant travaux »</b>.</div>`:''}
+  ${state.levels.indexOf(lv)>0?`<label class="chk"><input type="checkbox" ${lv.neuf?'checked':''} onchange="setLevelProp('neuf',this.checked)"><span>Étage créé par le projet<small>son plancher est à construire et sera chiffré</small></span></label>
+  ${lv.neuf?`<div class="tip" style="border-color:#fde68a;background:#fffbeb;margin-top:8px">🏗️ <b>Le plancher de cet étage est compté comme travaux.</b> Les murs, eux, gardent leur propre état : si tu poses un plancher dans un volume de grande hauteur, ils sont <b>déjà debout</b> — laisse-les « existant » et indique la hauteur d'origine de la pièce du dessous, dans sa fiche, au champ <b>« hauteur avant travaux »</b>. Si tu surélèves, passe-les <b>« à créer »</b>.</div>`:''}
   ${lv.neuf?`<div class="ph" style="margin-bottom:6px">Plancher de cet étage</div>
   <div class="seg">${[['bois','Bois','solives + panneaux'],['beton','Béton','dalle coulée']].map(o=>`<button class="${(lv.plancher||'bois')===o[0]?'on':''}" onclick="setLevelProp('plancher','${o[0]}')">${o[1]}<small>${o[2]}</small></button>`).join('')}</div>`:''}`:''}
   ${renderChantier()}
@@ -3308,7 +3347,10 @@ function quantities(){
       else if(st==='remplacer'){travaux.remplacer++;if(d.cat==='porte')travaux.creerPortes++;else travaux.creerFenetres++;}
       provenance.ouvertures.push({id:pidOf('o',o),niveau:nvId,mur:wo?pidOf('m',wo):null,type:o.type,etat:st,l:+o.w.toFixed(2),h:+h.toFixed(2)});});
     lv.items.forEach(it=>{if(ist(it)==='creer')travaux.poser.push(ITEMS[it.type]?.label||it.type);if(ist(it)==='demolir')travaux.deposer.push(ITEMS[it.type]?.label||it.type);});
-    levels.push({id:nvId,name:lv.name,hauteur:lv.height,neuf:!!lv.neuf,plancher:lv.neuf?(lv.plancher||null):null,rooms:lr,items:lv.items.filter(i=>itemActive(i,'projet')).map(i=>i.type),escaliers:lv.items.filter(i=>i.type==='escalier'&&itemActive(i,'projet')).length,
+    levels.push({id:nvId,name:lv.name,hauteur:lv.height,neuf:!!lv.neuf,plancher:lv.neuf?(lv.plancher||null):null,
+      /* emprise du niveau : sans elle, un consommateur sait qu'un plancher est à construire mais
+         pas sur combien de mètres carrés. */
+      emprise:(()=>{const e=empriseNiveau(state.levels.indexOf(lv),'projet');return e?e.emprise:null;})(),rooms:lr,items:lv.items.filter(i=>itemActive(i,'projet')).map(i=>i.type),escaliers:lv.items.filter(i=>i.type==='escalier'&&itemActive(i,'projet')).length,
       /* largeur (l) et profondeur (p) de chaque équipement : les 5 postes au ml du lot Cuisine et
          la variante de dimension de la douche les attendaient ; le plan les jetait. */
       equipements:lv.items.filter(i=>itemActive(i,'projet')).map(i=>({id:pidOf('e',i),type:i.type,etat:ist(i),piece:pieceDe(i),l:+(i.w||0).toFixed(2),p:+(i.h||0).toFixed(2),
@@ -3395,7 +3437,7 @@ function quantities(){
    que le consommateur doit vérifier. Toute clé renommée ou retirée fait changer ce numéro.
    Avant, le seul « export » était un <details> de debug — qui n'émettait ni la toiture, ni les
    sols, ni la plomberie, ni les études, ni les velux. */
-const CONTRAT_PLAN='1.6.0'; /* 1.1 : attributs de choix (douche, point lumineux, escalier), hauteur de faïence par pièce, état « conservé ». 1.2 : chaque équipement dit sa pièce, et chaque pièce ses murs par type. 1.3 : les choix non tranchés (type de douche, point lumineux, matériau d'escalier, hauteur de faïence) sortent à null au lieu de leur défaut — c'est au consommateur d'appliquer le défaut ET de le signaler. 1.4 : faux plafond par pièce, et un niveau dit s'il est créé par le projet et en quoi est son plancher. 1.5 : poteaux et poutres dessinables — chaque équipement d'ossature porte son rôle, sa portée et le fait qu'il reprend ou non un mur porteur démoli ; agrégat `ossature` au niveau du plan. Ajout pur : rien n'est renommé ni retiré. 1.6 : `hauteurAvant` par pièce — la hauteur du volume AVANT travaux, quand le projet y crée un plancher ; `hauteur` reste celle d'après travaux, comme avant. Ajout pur. */
+const CONTRAT_PLAN='1.7.0'; /* 1.1 : attributs de choix (douche, point lumineux, escalier), hauteur de faïence par pièce, état « conservé ». 1.2 : chaque équipement dit sa pièce, et chaque pièce ses murs par type. 1.3 : les choix non tranchés (type de douche, point lumineux, matériau d'escalier, hauteur de faïence) sortent à null au lieu de leur défaut — c'est au consommateur d'appliquer le défaut ET de le signaler. 1.4 : faux plafond par pièce, et un niveau dit s'il est créé par le projet et en quoi est son plancher. 1.5 : poteaux et poutres dessinables — chaque équipement d'ossature porte son rôle, sa portée et le fait qu'il reprend ou non un mur porteur démoli ; agrégat `ossature` au niveau du plan. Ajout pur : rien n'est renommé ni retiré. 1.6 : `hauteurAvant` par pièce — la hauteur du volume AVANT travaux, quand le projet y crée un plancher ; `hauteur` reste celle d'après travaux, comme avant. Ajout pur. 1.7 : `emprise` par niveau, en m² — sans elle le plancher d'un étage créé n'était pas chiffrable. Ajout pur. */
 function contratPlan(){
   garantirPids();
   const q=quantities(),bas=empriseNiveau(0),ch=chantier();
