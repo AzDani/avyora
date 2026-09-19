@@ -468,6 +468,7 @@ const ROOM_TYPES = [
   ['entree','Entrée','#b45309'],['couloir','Couloir / dégagement','#78716c'],['buanderie','Buanderie','#9333ea'],
   ['sde','Salle d\'eau','#0369a1'],['dressing','Dressing','#7c2d12'],['bureau','Bureau','#db2777'],['cellier','Cellier / rangement','#57534e'],
   ['palier','Palier / escalier','#6b7280'],['mezzanine','Mezzanine','#0f766e'],['garage','Garage','#475569',false,true],['cave','Cave / sous-sol','#44403c',false,true],['combles','Combles','#a16207',false,true],
+  ['grange','Grange / dépendance','#92400e',false,true],['atelier','Atelier / local','#57534e',false,true],
   ['exterieur','Balcon / terrasse','#15803d',true],['autre','Autre','#6b7280']
 ];
 // ext = surface extérieure : listée, mais hors surface habitable
@@ -475,15 +476,23 @@ const ROOM_TYPES = [
 const RT = Object.fromEntries(ROOM_TYPES.map(r=>[r[0],{label:r[1],color:r[2],ext:!!r[3],nh:!!r[4]}]));
 const FLOORS = ['À définir','Parquet','Carrelage','Stratifié','Vinyle / PVC','Moquette','Béton ciré'];
 // types de sol qu'on retrouve dans un bien existant (état actuel)
-const FLOORS_EX = ['À définir','Dalle béton brute','Sol brut / terre','Chape (sans revêtement)','Carrelage','Tomettes anciennes','Parquet','Parquet ancien','Stratifié','Vinyle / PVC','Lino','Moquette','Béton ciré'];
+/* « Pas de plancher » : le volume est ouvert sur le niveau du dessous — une grange, un séjour
+   cathédrale, des combles bruts sans plancher. Ce n'est pas un revêtement manquant, c'est la
+   couche porteuse qui manque, et c'est elle qu'on chiffre. */
+const SANS_PLANCHER = 'Pas de plancher (volume ouvert)';
+const FLOORS_EX = ['À définir',SANS_PLANCHER,'Dalle béton brute','Sol brut / terre','Chape (sans revêtement)','Carrelage','Tomettes anciennes','Parquet','Parquet ancien','Stratifié','Vinyle / PVC','Lino','Moquette','Béton ciré'];
 // revêtement souhaité en projet (r.floorNew) — '' = garder l'existant / à définir. « Béton fini » = la dalle lissée/quartzée sert de sol fini (pas de chape, pas de revêtement).
 const FLOORS_NEW = ['Carrelage','Parquet','Stratifié','Vinyle / PVC','Moquette','Béton ciré','Béton fini (dalle lissée / quartz)'];
 const BETON_FINI = 'Béton fini (dalle lissée / quartz)';
 // ---- Sol : guidage en couches, dans l'ordre de réalisation (support existant → dépose → dalle → isolant → chape → ragréage → revêtement) ----
-function solSupport(r){const f=r.floor||'';if(f==='Sol brut / terre')return 'terre';if(f==='Dalle béton brute')return 'dalle';if(f==='Chape (sans revêtement)')return 'chape';if(!f||f==='À définir')return 'inconnu';return 'revetement';}
+function solSupport(r){const f=r.floor||'';if(f===SANS_PLANCHER)return 'vide';if(f==='Sol brut / terre')return 'terre';if(f==='Dalle béton brute')return 'dalle';if(f==='Chape (sans revêtement)')return 'chape';if(!f||f==='À définir')return 'inconnu';return 'revetement';}
 function solPlan(r){
   const sup=solSupport(r),so=r.sol||{},nw=r.floorNew||'',betonFini=nw===BETON_FINI;const steps=[];
   steps.push({k:'support',label:'Sol actuel',state:'exist',detail:sup==='inconnu'?'à préciser en vue Existant':r.floor});
+  /* Rien en dessous : avant toute chape et tout revêtement, il faut un plancher. C'est la
+     première couche, et de loin la plus chère — elle n'existait nulle part. */
+  if(sup==='vide')steps.push({k:'plancher',label:'Plancher à créer',state:r.plancherNeuf?'todo':'choice',
+    detail:r.plancherNeuf==='beton'?'béton · dalle coulée':r.plancherNeuf==='bois'?'bois · solives + panneaux':'bois ou béton, à choisir'});
   if(sup==='revetement'&&nw)steps.push({k:'depose',label:'Dépose de l\'ancien sol',state:'auto',detail:r.floor.toLowerCase()+' · compté automatiquement'});
   if(sup==='terre')steps.push({k:'dalle',label:'Dalle béton',state:'auto',detail:'obligatoire sur terre / sol brut · comptée automatiquement'});
   else if(sup==='dalle')steps.push({k:'dalle',label:'Dalle béton',state:'exist',detail:'existante'});
@@ -498,6 +507,7 @@ function solPlan(r){
   if(nw&&onDalle){if(nw==='Carrelage')warn=so.ragreage?'Carrelage sur dalle avec simple ragréage : acceptable si la dalle est plane et sèche, mais une <b>chape</b> reste recommandée.':'Carreler <b>directement sur la dalle</b> : possible mais <b>déconseillé</b> (planéité, retrait du béton, risque de fissures). Prévois une <b>chape</b> — ou au minimum un ragréage.';
     else if(!so.ragreage)warn=nw+' sur dalle brute : support pas assez plan. Prévois une <b>chape</b> ou au minimum un <b>ragréage</b>.';}
   if(nw&&sup==='inconnu')warn='Précise le <b>sol existant</b> (vue Existant) pour savoir s\'il faut une dalle ou une chape.';
+  if(sup==='vide'&&!r.plancherNeuf)warn='Ce volume n\'a <b>pas de plancher</b> : choisis-le en bois ou en béton, sinon rien ne peut être posé dessus.';
   return {steps,sup,betonFini,warn};}
 const SOL_STATE={exist:['✓','#16a34a','existant'],auto:['🔒','#4f46e5','automatique'],todo:['●','#b91c1c','à faire'],choice:['○','#a5a4bf','à choisir'],warn:['⚠','#b45309','à vérifier']};
 const WALL_TYPES = [['cloison','Cloison',0.07],['mur','Parpaing',0.20],['porteur','Pierre',0.60],['virtuel','Séparation',0]];
@@ -942,6 +952,13 @@ function chantierTasks(){const T=[];const ml=state.levels.length>1;
     facesFor(lv,'projet').forEach(f=>{const r=f.room;if(!r)return;const A=areaNet(lv,f),rn=roomName(r);
       // sol, dans l'ordre de réalisation : dépose → dalle → (béton fini) | isolant → chape → ragréage → revêtement
       const sp=solPlan(r),nw=r.floorNew||'';
+      /* Le plancher se chiffre PIÈCE PAR PIÈCE, et non par niveau : on ne plancher pas toujours
+         tout un volume — une mezzanine n'en couvre qu'une partie. La surface est celle de la
+         pièce, et c'est la première couche, avant toute dalle, chape ou revêtement. */
+      if(sp.sup==='vide'&&r.plancherNeuf){const mt=r.plancherNeuf==='beton'?'beton':'bois';
+        T.push({id:'sol-plancher:'+r.id,lot:mt==='beton'?'Maçonnerie':'Toiture',
+          label:(mt==='beton'?'Plancher béton':'Plancher bois (solives + panneaux)')+' · '+rn+lvn,
+          detail:fmtM2(A)+' · volume ouvert : le plancher est à créer',prix:A*PRIX_PLANCHER[mt]});}
       if(sp.sup==='revetement'&&nw)T.push({id:'sol-depose:'+r.id,lot:'Démolition',label:'Déposer l\'ancien sol ('+r.floor.toLowerCase()+') · '+rn+lvn,detail:fmtM2(A),prix:A*PRIX.deposeSol});
       if(sp.sup==='terre')T.push({id:'sol-dalle:'+r.id,lot:'Maçonnerie',label:'Couler une dalle béton · '+rn+lvn,detail:fmtM2(A)+' · sol actuel en terre / brut',prix:A*PRIX.dalle});
       if(sp.betonFini){T.push({id:'sol-fini:'+r.id,lot:'Maçonnerie',label:'Finition béton lissé / quartz · '+rn+lvn,detail:fmtM2(A)+' · la dalle sert de sol fini',prix:A*PRIX.betonFini});return;}
@@ -962,14 +979,6 @@ function chantierTasks(){const T=[];const ml=state.levels.length>1;
       }
       if(ist(it)==='creer'){const pu=EQUIP_PRIX[it.type];const ml=EQUIP_UNIT[it.type]==='ml';const prix=pu==null?0:(ml?pu*it.w:pu);const incl=it.type==='pac_ext';
         T.push({id:'i:'+it.id+':creer',lot:'Équipements',label:'Poser '+d.label.toLowerCase()+lvn,detail:[it.product?.nom||'',ml?fmt(it.w)+' ml':'',incl?'incluse dans le split':''].filter(Boolean).join(' · '),prix,inclus:incl});}});});
-  /* Le plancher d'un étage que le projet crée, sur l'emprise de ce niveau. */
-  state.levels.forEach((lv,i)=>{if(!lv.neuf)return;
-    const e=empriseNiveau(i,'projet');const surf=e?e.emprise:0;if(surf<=0)return;
-    const mat=lv.plancher==='beton'?'beton':'bois';
-    T.push({id:'niv:'+i+':plancher',lot:mat==='beton'?'Maçonnerie':'Toiture',
-      label:(mat==='beton'?'Plancher béton':'Plancher bois (solives + panneaux)')+' · étage créé · '+lv.name,
-      detail:fmtM2(surf)+' · l\'étage n\'existe pas aujourd\'hui, son plancher est à construire',
-      prix:surf*PRIX_PLANCHER[mat]});});
   toitureTasks(T);
   T.sort((a,b)=>LOTS.indexOf(a.lot)-LOTS.indexOf(b.lot));return T;}
 const isDone=id=>!!(state.done&&state.done[id]);
@@ -2791,6 +2800,10 @@ function addLevel(depart){
   }
   if(creeParLeProjet){
     nl.neuf=true;nl.plancher=nl.plancher||'bois';
+    /* Les pièces de cet étage n'ont pas de sol : c'est ce qui fait apparaître la couche
+       « plancher à créer » dans chacune, et c'est de là que vient son chiffrage. On peut ensuite
+       en retirer une — une mezzanine ne couvre pas tout le volume. */
+    nl.rooms.forEach(r=>{r.floor=SANS_PLANCHER;r.plancherNeuf='bois';delete r.floorNew;});
     /* Surélévation : les murs montent avec l'étage, ils sont à construire. Plancher dans un
        volume existant : ils sont déjà debout, on n'y touche pas — sinon on facturerait des murs
        qui n'ont jamais eu besoin d'être montés. */
@@ -3034,8 +3047,11 @@ function renderSelection(lv){
       <div class="tip" style="margin-top:6px">C'est ce qui décide la surface carrelée : ${cur==='pleine'?'toute la surface des murs':cur==='douche'?'seulement les murs de la douche':'une bande de 1,20 m, portée à 2,00 m dans la douche'}. Le reste des murs est peint.</div>`;})()}
     ${mode()==='existant'?`<div class="ph mt">Sol existant</div><select class="fin" onchange="setRoomProp('floor',this.value)">${FLOORS_EX.map(fl=>`<option ${fl===r.floor?'selected':''}>${fl}</option>`).concat(r.floor&&!FLOORS_EX.includes(r.floor)?[`<option selected>${esc(r.floor)}</option>`]:[]).join('')}</select>
     <div class="tip" style="margin-top:8px">Précise bien l'état : <b>terre / sol brut</b> → il faudra couler une <b>dalle</b> ; <b>dalle brute</b> → il faudra une <b>chape</b> ; <b>chape</b> → prêt pour un revêtement. Le projet s'en déduit.</div>`
-    :(()=>{const so=r.sol||{};const A=areaNet(lv,f);const sp=solPlan(r);const nw=r.floorNew||'';return `<div class="ph mt">Revêtement de sol souhaité</div><select class="fin" onchange="setRoomProp('floorNew',this.value)"><option value="" ${!nw?'selected':''}>Garder l'existant${r.floor&&r.floor!=='À définir'?' ('+esc(r.floor)+')':''} / à définir</option>${FLOORS_NEW.map(fl=>`<option value="${fl}" ${fl===nw?'selected':''}>${fl}</option>`).join('')}</select>
+    :(()=>{const so=r.sol||{};const A=areaNet(lv,f);const sp=solPlan(r);const nw=r.floorNew||'';return `<div class="ph mt">Revêtement de sol souhaité</div><select class="fin" onchange="setRoomProp('floorNew',this.value)"><option value="" ${!nw?'selected':''}>${sp.sup==='vide'?'À définir — le plancher d\'abord':`Garder l'existant${r.floor&&r.floor!=='À définir'?' ('+esc(r.floor)+')':''} / à définir`}</option>${FLOORS_NEW.map(fl=>`<option value="${fl}" ${fl===nw?'selected':''}>${fl}</option>`).join('')}</select>
       <div class="ph mt">Ordre de réalisation</div>
+      ${sp.sup==='vide'?`<div class="ph mt">Plancher à créer</div>
+      <div class="seg">${[['bois','Bois','solives + panneaux'],['beton','Béton','dalle coulée']].map(o=>`<button class="${r.plancherNeuf===o[0]?'on':''}" onclick="setRoomProp('plancherNeuf','${o[0]}')">${o[1]}<small>${o[2]}</small></button>`).join('')}</div>
+      <div class="tip" style="margin-top:6px">Ce volume est ouvert sur le niveau du dessous : <b>il n'y a rien à poser tant qu'il n'y a pas de plancher</b>. C'est la première couche, et de loin la plus chère — elle est chiffrée sur ${fmtM2(A)}.</div>`:''}
       <div class="solstack">${sp.steps.map((s,i)=>{const st=SOL_STATE[s.state];return `<div class="solstep s-${s.state}"><span class="si" style="color:${st[1]}">${st[0]}</span><span class="sl"><b>${s.label}</b><small>${s.detail}</small></span><span class="ss" style="color:${st[1]}">${st[2]}</span></div>`;}).join('')}</div>
       ${sp.betonFini?`<div class="tip" style="margin-top:8px">Béton fini : la dalle est <b>lissée à l'hélicoptère / quartzée</b> et devient le sol définitif. Pas de chape, pas de revêtement — comptée en Maçonnerie.</div>`:`
       <div class="row" style="margin-top:10px"><label>Chape</label><span class="seg" style="display:inline-flex"><button class="${!so.chape?'on':''}" onclick="setRoomSol('chape','')">Aucune</button><button class="${so.chape==='tradi'?'on':''}" onclick="setRoomSol('chape','tradi')">Tradi</button><button class="${so.chape==='liquide'?'on':''}" onclick="setRoomSol('chape','liquide')">Liquide</button></span></div>
@@ -3054,6 +3070,8 @@ function renderSelection(lv){
     <div class="row"><label>Périmètre</label><span class="val">${fmt(f.perimReal)} m</span></div>
     <div class="row"><label>Hauteur sous plafond${r.hAvant?' <span class="chip">après travaux</span>':''}</label><span><input class="fin n" type="number" step="0.05" min="1.8" max="5" value="${(r.height||lv.height).toFixed(2)}" placeholder="${lv.height.toFixed(2)}" onchange="setRoomHeight(this.value)"> m</span></div>
     <div class="row"><label>Hauteur avant travaux<small style="display:block;color:#8c8ba8;font-weight:400">vide si elle ne change pas</small></label><span><input class="fin n" type="number" step="0.05" min="1.8" max="12" value="${r.hAvant?r.hAvant.toFixed(2):''}" placeholder="—" onchange="setRoomHAvant(this.value)"> m</span></div>
+    ${!RT[r.type].ext&&!RT[r.type].nh?`<label class="chk"><input type="checkbox" ${r.nhAvant?'checked':''} onchange="setRoomProp('nhAvant',this.checked)"><span>Non habitable avant travaux<small>grange, dépendance, combles bruts — la pièce le devient grâce au chantier</small></span></label>
+    ${r.nhAvant?`<div class="tip" style="margin-top:6px">Ces ${fmtM2(areaNet(lv,f))} ne comptent pas dans la surface habitable <b>d'aujourd'hui</b> — elles comptent dans celle d'après travaux. C'est tout l'intérêt de l'opération, et ça se voit sur le gain de surface.</div>`:''}`:''}
     ${r.hAvant?`<div class="tip" style="margin-top:6px">Volume de <b>${fmt(r.hAvant)} m</b> aujourd'hui, <b>${fmt(r.height||lv.height)} m</b> après travaux. La vue <b>Existant</b> décrit donc bien le logement tel qu'il est, et le plancher que tu ajoutes au-dessus est compté comme un ouvrage neuf.</div>`:''}
     <div class="row"><label>Murs à peindre ≈</label><span class="val">${fmtM2(wallArea)}</span></div>
     <div class="row"><label>Ouvertures</label><span class="val">${ops.length}</span></div>
@@ -3324,10 +3342,19 @@ function quantities(){
          si elle en a une, sinon celle du niveau) — plus deux hauteurs contradictoires. */
       lr.push({id:pidOf('p',rr),name:roomName(rr),type:rr.type,exterieur:isExt,horsHabitable:isExt||nh,floor:rr.floor,area:+an.toFixed(2),
         surfaceAuSolPiece:+f.areaInt.toFixed(2),tremie:+tremieArea(lv,f).toFixed(2),tremiePerim:+tremiePerim(lv,f).toFixed(2),
-        sousPentePct:rr.lowPct||0,perimeter:+f.perimReal.toFixed(2),hauteur:roomHeight(lv,rr,'projet'),hauteurAvant:rr.hAvant||null,wallArea:+wa.toFixed(2),plinthes:+pl.toFixed(2),
+        sousPentePct:rr.lowPct||0,perimeter:+f.perimReal.toFixed(2),hauteur:roomHeight(lv,rr,'projet'),hauteurAvant:rr.hAvant||null,
+          /* 1.8 : ce que le chantier change du statut de la pièce — un volume sans plancher et
+             une grange à convertir ne sont pas habitables AUJOURD'HUI, ils le deviennent. */
+          plancherACreer:rr.floor===SANS_PLANCHER?(rr.plancherNeuf||null):null,
+          nonHabitableAvant:!!(RT[rr.type].ext||RT[rr.type].nh||rr.nhAvant||rr.floor===SANS_PLANCHER),wallArea:+wa.toFixed(2),plinthes:+pl.toFixed(2),
         openings:ops.length,fauxPlafond:!!rr.fauxPlafond,mursAdjacents:mursDeFace(lv,f),mursParType:mursParTypeDeFace(lv,f,roomHeight(lv,rr)),faience:rr.faience||null,note:rr.note||null,
         produits:(rr.products&&rr.products.length)?rr.products.map(pr=>({poste:pr.poste,nom:pr.nom,url:pr.url,prix:pr.prix,unite:unitOf(pr)})):null});});
-    facesFor(lv,'existant').forEach(f=>{if(!f.room)return;roomsBefore++;if(!RT[f.room.type].ext&&!RT[f.room.type].nh)areaBefore+=areaNet(lv,f);});
+    /* Une pièce sans plancher, ou déclarée non habitable avant travaux, ne compte pas dans la
+       surface habitable de l'EXISTANT : une grange qu'on va convertir n'est pas déjà un
+       logement, et un volume ouvert n'a pas de sol sur lequel vivre. */
+    facesFor(lv,'existant').forEach(f=>{if(!f.room)return;roomsBefore++;const rr=f.room;
+      const horsAvant=RT[rr.type].ext||RT[rr.type].nh||rr.nhAvant||rr.floor===SANS_PLANCHER;
+      if(!horsAvant)areaBefore+=areaNet(lv,f);});
     lv.walls.forEach(w=>{if(isVirtual(w))return;const l=wallLen(w),st=wst(w),m2=l*lv.height;
       if(st!=='demolir')lin[w.type]=(lin[w.type]||0)+l;
       if(st==='demolir'){travaux.demolLin[w.type]=(travaux.demolLin[w.type]||0)+l;travaux.demolM2+=m2;tn.demolLin[w.type]=(tn.demolLin[w.type]||0)+l;tn.demolM2=+(tn.demolM2+m2).toFixed(2);if(isPorteur(w))travaux.demolPorteur+=l;}
@@ -3437,7 +3464,7 @@ function quantities(){
    que le consommateur doit vérifier. Toute clé renommée ou retirée fait changer ce numéro.
    Avant, le seul « export » était un <details> de debug — qui n'émettait ni la toiture, ni les
    sols, ni la plomberie, ni les études, ni les velux. */
-const CONTRAT_PLAN='1.7.0'; /* 1.1 : attributs de choix (douche, point lumineux, escalier), hauteur de faïence par pièce, état « conservé ». 1.2 : chaque équipement dit sa pièce, et chaque pièce ses murs par type. 1.3 : les choix non tranchés (type de douche, point lumineux, matériau d'escalier, hauteur de faïence) sortent à null au lieu de leur défaut — c'est au consommateur d'appliquer le défaut ET de le signaler. 1.4 : faux plafond par pièce, et un niveau dit s'il est créé par le projet et en quoi est son plancher. 1.5 : poteaux et poutres dessinables — chaque équipement d'ossature porte son rôle, sa portée et le fait qu'il reprend ou non un mur porteur démoli ; agrégat `ossature` au niveau du plan. Ajout pur : rien n'est renommé ni retiré. 1.6 : `hauteurAvant` par pièce — la hauteur du volume AVANT travaux, quand le projet y crée un plancher ; `hauteur` reste celle d'après travaux, comme avant. Ajout pur. 1.7 : `emprise` par niveau, en m² — sans elle le plancher d'un étage créé n'était pas chiffrable. Ajout pur. */
+const CONTRAT_PLAN='1.8.0'; /* 1.1 : attributs de choix (douche, point lumineux, escalier), hauteur de faïence par pièce, état « conservé ». 1.2 : chaque équipement dit sa pièce, et chaque pièce ses murs par type. 1.3 : les choix non tranchés (type de douche, point lumineux, matériau d'escalier, hauteur de faïence) sortent à null au lieu de leur défaut — c'est au consommateur d'appliquer le défaut ET de le signaler. 1.4 : faux plafond par pièce, et un niveau dit s'il est créé par le projet et en quoi est son plancher. 1.5 : poteaux et poutres dessinables — chaque équipement d'ossature porte son rôle, sa portée et le fait qu'il reprend ou non un mur porteur démoli ; agrégat `ossature` au niveau du plan. Ajout pur : rien n'est renommé ni retiré. 1.6 : `hauteurAvant` par pièce — la hauteur du volume AVANT travaux, quand le projet y crée un plancher ; `hauteur` reste celle d'après travaux, comme avant. Ajout pur. 1.7 : `emprise` par niveau, en m² — sans elle le plancher d'un étage créé n'était pas chiffrable. Ajout pur. 1.8 : par pièce, `plancherACreer` (bois / béton / null) — le plancher se chiffre pièce par pièce, une mezzanine ne couvre pas tout un volume — et `nonHabitableAvant`, vrai pour une grange, une dépendance ou un volume ouvert que le chantier rend habitable. Ajout pur. */
 function contratPlan(){
   garantirPids();
   const q=quantities(),bas=empriseNiveau(0),ch=chantier();

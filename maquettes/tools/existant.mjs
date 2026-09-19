@@ -88,27 +88,48 @@ const res = await p.evaluate(() => {
     afterChange(); setMode("projet"); closeModal(); return lv;
   };
   const ligne = (re) => chantierTasks().find((x) => re.test(x.id));
+  const pieces = (lv) => facesFor(lv, "projet").map((f) => f.room).filter(Boolean);
+
   { rdc(); addLevel("plancher"); const haut = L();
     t["plancher dans un volume · l'étage est marqué créé"] = haut.neuf === true;
     t["plancher dans un volume · les murs restent EXISTANTS"] = haut.walls.every((w) => !w.st);
-    const l = ligne(/plancher/);
-    /* emprise hors tout 6,20 × 5,20 = 32,24 m² × 90 €/m² en bois */
-    t["plancher bois chiffré à 90 €/m² sur l'emprise"] = !!l && Math.abs(l.prix - 32.24 * 90) < 60 && l.lot === "Toiture"; }
+    t["plancher dans un volume · les pièces naissent SANS plancher"] = pieces(haut).every((r) => r.floor === SANS_PLANCHER && r.plancherNeuf === "bois");
+    const l = ligne(/sol-plancher/);
+    /* surface nette de la pièce, pas l'emprise : c'est ce qu'on plancher réellement */
+    t["plancher bois chiffré à 90 €/m² sur la pièce"] = !!l && Math.abs(l.prix / 90 - areaNet(haut, facesFor(haut, "projet")[0])) < 0.1 && l.lot === "Toiture"; }
   { rdc(); addLevel("surelevation"); const haut = L();
-    t["surélévation · l'étage est marqué créé"] = haut.neuf === true;
     t["surélévation · les murs sont À CRÉER"] = haut.walls.every((w) => w.st === "creer");
-    t["surélévation · les murs sont chiffrés en plus du plancher"] = !!ligne(/plancher/) && chantierTasks().some((x) => /:creer$/.test(x.id) && x.lot === "Cloisons"); }
-  { rdc(); addLevel("plancher"); setLevelProp("plancher", "beton");
-    const l = ligne(/plancher/);
-    t["plancher béton chiffré à 120 €/m², au lot Maçonnerie"] = !!l && Math.abs(l.prix - 32.24 * 120) < 80 && l.lot === "Maçonnerie"; }
+    t["surélévation · les murs sont chiffrés en plus du plancher"] = !!ligne(/sol-plancher/) && chantierTasks().some((x) => /:creer$/.test(x.id) && x.lot === "Cloisons"); }
+  { rdc(); addLevel("plancher"); const haut = L(); const r = pieces(haut)[0];
+    r.plancherNeuf = "beton"; afterChange();
+    const l = ligne(/sol-plancher/);
+    t["plancher béton chiffré à 120 €/m², au lot Maçonnerie"] = !!l && Math.abs(l.prix / 120 - areaNet(haut, facesFor(haut, "projet")[0])) < 0.1 && l.lot === "Maçonnerie"; }
+  { rdc(); addLevel("plancher"); const haut = L(); const r = pieces(haut)[0];
+    r.floor = "Dalle béton brute"; delete r.plancherNeuf; afterChange();
+    t["une pièce qu'on ne plancher pas ne coûte rien (mezzanine partielle)"] = !ligne(/sol-plancher/); }
   { rdc(); addLevel("copy");
-    t["un étage qui existe déjà ne chiffre aucun plancher"] = !ligne(/plancher/) && !L().neuf; }
+    t["un étage qui existe déjà ne chiffre aucun plancher"] = !ligne(/sol-plancher/) && !L().neuf; }
+
+  /* ── grange : non habitable aujourd'hui, habitable après ─────────────────── */
+  { const lv = rdc(); setMode("existant"); afterChange();
+    const r = facesFor(lv, "existant")[0].room; r.type = "grange";
+    afterChange();
+    t["le type « Grange / dépendance » existe"] = !!RT.grange && RT.grange.nh === true;
+    t["le type « Atelier / local » existe"] = !!RT.atelier && RT.atelier.nh === true;
+    t["une grange ne compte pas dans la surface habitable"] = quantities().areaBefore === 0;
+    r.type = "sejour"; r.nhAvant = true; afterChange();
+    const q = quantities();
+    t["convertie en séjour : non habitable AVANT, habitable APRÈS"] = q.areaBefore === 0 && q.area > 25; }
+  { const lv = rdc(); setMode("existant"); afterChange();
+    const r = facesFor(lv, "existant")[0].room; r.floor = SANS_PLANCHER; afterChange();
+    t["un volume sans plancher n'est pas habitable aujourd'hui"] = quantities().areaBefore === 0; }
+
   { rdc(); addLevel("plancher"); garantirPids();
     const c = contratPlan();
     { const [maj, min] = c.contrat.split(".").map(Number);
-      t["l'emprise du niveau ne part pas sous un contrat antérieur à 1.7"] = maj === 1 && min >= 7; }
-    const n = c.detailNiveaux[1];
-    t["le contrat porte l'emprise du niveau créé"] = n.neuf === true && n.emprise > 30 && n.emprise < 34; }
+      t["le plancher par pièce ne part pas sous un contrat antérieur à 1.8"] = maj === 1 && min >= 8; }
+    const p2 = c.detailNiveaux[1].rooms[0];
+    t["le contrat dit quelle pièce est à plancher, et en quoi"] = p2.plancherACreer === "bois" && p2.nonHabitableAvant === true; }
   return t;
 });
 await b.close();

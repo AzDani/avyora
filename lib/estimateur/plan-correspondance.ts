@@ -49,7 +49,9 @@ export interface PlanPourCorrespondance {
   };
   detailNiveaux?: Array<{
     id?: string; name?: string; neuf?: boolean; plancher?: string | null;
-    rooms?: Array<{ id: string; type: string; faience?: string | null; perimeter?: number; wallArea?: number; plinthes?: number; hauteur?: number; horsHabitable?: boolean; exterieur?: boolean; fauxPlafond?: boolean; area?: number; mursParType?: Record<string, number> }>;
+    rooms?: Array<{ id: string; type: string; faience?: string | null; perimeter?: number; wallArea?: number; plinthes?: number; hauteur?: number; horsHabitable?: boolean; exterieur?: boolean; fauxPlafond?: boolean; area?: number; mursParType?: Record<string, number>;
+      /** Contrat 1.8 : le plancher se chiffre pièce par pièce. */
+      plancherACreer?: string | null; nonHabitableAvant?: boolean }>;
     /** Contrat 1.7 : l'emprise du niveau, sans laquelle son plancher n'est pas chiffrable. */
     emprise?: number | null;
     equipements?: Array<{ id: string; type: string; etat: string; piece?: string | null; l?: number; p?: number; douche?: string | null; lumiere?: string | null; materiau?: string | null;
@@ -183,19 +185,20 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
     brut.push({ poste, quantite, sources, raison, variante, deduction });
   };
 
-  // ── Planchers des étages créés par le projet ──────────────────────────────
-  /* Un étage que le projet crée a un plancher à construire, et c'est souvent l'ouvrage le plus
-     cher de l'opération. Les murs, eux, ne suivent pas : un plancher posé dans un volume de
-     grande hauteur trouve des murs déjà debout, et ce sont leurs propres états qui le disent. */
+  // ── Planchers à créer, pièce par pièce ────────────────────────────────────
+  /* Un volume ouvert — grange, séjour cathédrale, combles bruts — n'a pas de plancher, et c'est
+     souvent l'ouvrage le plus cher de l'opération. Pièce par pièce et non par niveau : une
+     mezzanine ne couvre pas tout un volume. Les murs ne suivent pas : un plancher posé dans un
+     volume existant trouve des murs déjà debout, ce sont leurs propres états qui le disent. */
   for (const niveau of plan.detailNiveaux ?? []) {
-    if (!niveau.neuf) continue;
-    const m2 = +(niveau.emprise ?? 0).toFixed(2);
-    const src = niveau.id ? [niveau.id] : [];
-    if (m2 <= 0) { ignores.push({ quoi: `plancher de « ${niveau.name ?? "étage créé"} »`, pourquoi: "emprise du niveau inconnue", sources: src }); continue; }
-    const beton = niveau.plancher === "beton";
-    add(beton ? "mac-plancher-beton-etage-cree" : "toi-creer-un-plancher-bois", m2, src,
-      `Étage créé par le projet : son plancher est à construire`, undefined,
-      niveau.plancher ? undefined : "Matériau du plancher non choisi : chiffré en bois, le défaut du dessin. Un plancher béton se chiffre autrement.");
+    for (const r of niveau.rooms ?? []) {
+      if (!r.plancherACreer) continue;
+      const m2 = +(r.area ?? 0).toFixed(2);
+      const src = [r.id];
+      if (m2 <= 0) { ignores.push({ quoi: `plancher à créer`, pourquoi: "surface de la pièce inconnue", sources: src }); continue; }
+      add(r.plancherACreer === "beton" ? "mac-plancher-beton-etage-cree" : "toi-creer-un-plancher-bois",
+        m2, src, "Volume ouvert : son plancher est à créer");
+    }
   }
 
   // ── Équipements posés ──────────────────────────────────────────────────────

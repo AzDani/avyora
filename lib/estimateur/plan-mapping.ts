@@ -39,7 +39,7 @@
 export type TypePiecePlan =
   | "sejour" | "cuisine" | "chambre" | "suite" | "sdb" | "wc"
   | "entree" | "couloir" | "buanderie" | "sde" | "dressing" | "bureau" | "cellier"
-  | "palier" | "mezzanine" | "garage" | "cave" | "combles" | "exterieur" | "autre";
+  | "palier" | "mezzanine" | "garage" | "cave" | "combles" | "grange" | "atelier" | "exterieur" | "autre";
 
 /** Les compteurs du moteur qu'un type de pièce peut alimenter. `null` = aucun, on écrit 0. */
 export type CompteurPiece = "sejour" | "cuisine" | "chambres" | "suites" | "couloir" | "buanderie" | "sdb" | "wc" | null;
@@ -72,6 +72,8 @@ export const MAPPAGE_PIECES: Record<TypePiecePlan, RegleMappage> = {
   autre:     { compteur: null,        habitable: true,  note: "Type non renseigné : on ne devine pas. Le récapitulatif du plan doit demander à l'utilisateur de préciser." },
   garage:    { compteur: null,        habitable: false, note: "Non habitable : ni porte intérieure, ni radiateur, ni plinthes. Une douche posée dedans reste comptée, par la règle de l'appareil." },
   cave:      { compteur: null,        habitable: false, note: "Idem garage." },
+  grange:    { compteur: null,        habitable: false, note: "Volume non habitable à convertir. Il ne compte pas dans l'habitable TANT QU'IL RESTE une grange : dès qu'il est dessiné pour ce qu'il devient (séjour, chambre), c'est ce type-là qui parle, et la case « non habitable avant travaux » garde l'existant juste." },
+  atelier:   { compteur: null,        habitable: false, note: "Idem grange." },
   combles:   { compteur: null,        habitable: false, note: "Combles non aménagés. Des combles AMÉNAGÉS doivent être dessinés pour ce qu'ils deviennent (chambre, bureau, palier) : sinon leur surface sort de l'habitable et les postes au m² les oublient." },
   exterieur: { compteur: null,        habitable: false, note: "Balcon / terrasse : le catalogue n'a aucun poste extérieur. Surface à signaler comme mesurée et non chiffrée." },
 };

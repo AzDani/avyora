@@ -269,40 +269,50 @@ describe("table de correspondance · poteaux et poutres dessinés (contrat 1.5)"
   });
 });
 
-describe("table de correspondance · le plancher d'un étage créé (contrat 1.7)", () => {
-  const niveau = (n: Record<string, unknown>) => ({ detailNiveaux: [{ id: "n1", name: "RDC" }, { id: "n2", name: "R+1", ...n }] }) as unknown as PlanPourCorrespondance;
+describe("table de correspondance · le plancher à créer, pièce par pièce (contrat 1.8)", () => {
+  const piece = (r: Record<string, unknown>) => ({ detailNiveaux: [{ id: "n1", rooms: [{ id: "p1", type: "sejour", area: 32.24, ...r }] }] }) as unknown as PlanPourCorrespondance;
   const q2 = (p: PlanPourCorrespondance, id: string) => contributionsDuPlan(p).contributions.find((c) => c.poste === id)?.quantite ?? 0;
 
-  it("un étage qui existe déjà ne produit aucun plancher", () => {
-    const { contributions } = contributionsDuPlan(niveau({ emprise: 32 }));
-    expect(contributions.some((c) => /plancher/.test(c.poste))).toBe(false);
+  it("une pièce qui a déjà un plancher n'en produit aucun", () => {
+    expect(contributionsDuPlan(piece({})).contributions.some((c) => /plancher/.test(c.poste))).toBe(false);
   });
 
-  it("un étage créé en bois alimente « Créer un plancher bois », sur son emprise", () => {
-    const p = niveau({ neuf: true, plancher: "bois", emprise: 32.24 });
+  it("un volume ouvert planché en bois alimente « Créer un plancher bois », sur SA surface", () => {
+    const p = piece({ plancherACreer: "bois" });
     expect(q2(p, "toi-creer-un-plancher-bois")).toBe(32.24);
-    expect(contributionsDuPlan(p).contributions.find((c) => c.poste === "toi-creer-un-plancher-bois")?.sources).toEqual(["n2"]);
+    expect(contributionsDuPlan(p).contributions.find((c) => c.poste === "toi-creer-un-plancher-bois")?.sources).toEqual(["p1"]);
   });
 
   it("en béton, c'est l'autre poste — ce ne sont pas les mêmes prix", () => {
-    expect(q2(niveau({ neuf: true, plancher: "beton", emprise: 32.24 }), "mac-plancher-beton-etage-cree")).toBe(32.24);
+    expect(q2(piece({ plancherACreer: "beton" }), "mac-plancher-beton-etage-cree")).toBe(32.24);
   });
 
-  it("sans matériau choisi, on chiffre en bois ET on le dit", () => {
-    const c = contributionsDuPlan(niveau({ neuf: true, emprise: 32 })).contributions.find((x) => /plancher/.test(x.poste));
-    expect(c?.poste).toBe("toi-creer-un-plancher-bois");
-    expect(c?.deduction).toMatch(/non choisi/);
+  it("deux pièces planchées du même matériau se cumulent", () => {
+    const p = { detailNiveaux: [{ id: "n1", rooms: [
+      { id: "p1", type: "sejour", area: 20, plancherACreer: "bois" },
+      { id: "p2", type: "chambre", area: 12, plancherACreer: "bois" },
+    ] }] } as unknown as PlanPourCorrespondance;
+    expect(q2(p, "toi-creer-un-plancher-bois")).toBe(32);
   });
 
-  it("sans emprise, rien n'est inventé : le plancher part dans les ignorés", () => {
-    const { contributions, ignores } = contributionsDuPlan(niveau({ neuf: true, plancher: "bois" }));
+  it("une mezzanine ne plancher qu'une partie du volume : l'autre pièce ne compte pas", () => {
+    const p = { detailNiveaux: [{ id: "n1", rooms: [
+      { id: "p1", type: "mezzanine", area: 14, plancherACreer: "bois" },
+      { id: "p2", type: "sejour", area: 30 },
+    ] }] } as unknown as PlanPourCorrespondance;
+    expect(q2(p, "toi-creer-un-plancher-bois")).toBe(14);
+  });
+
+  it("sans surface, rien n'est inventé : le plancher part dans les ignorés", () => {
+    const { contributions, ignores } = contributionsDuPlan(piece({ plancherACreer: "bois", area: 0 }));
     expect(contributions.some((c) => /plancher/.test(c.poste))).toBe(false);
-    expect(ignores.some((i) => /plancher/.test(i.quoi) && i.sources.includes("n2"))).toBe(true);
+    expect(ignores.some((i) => /plancher/.test(i.quoi) && i.sources.includes("p1"))).toBe(true);
   });
 
-  it("les murs de l'étage ne suivent pas le plancher : ils ont leurs propres états", () => {
+  it("les murs ne suivent pas le plancher : ils ont leurs propres états", () => {
     /* un plancher posé dans un volume de grande hauteur trouve des murs déjà debout */
-    const p = { detailNiveaux: [{ id: "n2", neuf: true, plancher: "bois", emprise: 30 }], provenance: { murs: [{ id: "m1", niveau: "n2", type: "mur", porteur: false, etat: "existant", ml: 6, m2: 15 }] } } as unknown as PlanPourCorrespondance;
+    const p = { detailNiveaux: [{ id: "n1", rooms: [{ id: "p1", type: "sejour", area: 30, plancherACreer: "bois" }] }],
+      provenance: { murs: [{ id: "m1", niveau: "n1", type: "mur", porteur: false, etat: "existant", ml: 6, m2: 15 }] } } as unknown as PlanPourCorrespondance;
     const { contributions } = contributionsDuPlan(p);
     expect(contributions.some((c) => /plancher/.test(c.poste))).toBe(true);
     expect(contributions.some((c) => /monter-un-mur|monter-une-cloison/.test(c.poste))).toBe(false);
