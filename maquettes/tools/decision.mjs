@@ -73,6 +73,28 @@ const res = await p.evaluate(() => {
     t["la consigne vétuste s'affiche là où on décide"] = /vétuste/.test(h) && !/état projet ci-dessus/.test(h);
     setOpeningProp("st", "remplacer"); renderPanel();
     t["une fois décidée, la consigne disparaît"] = !/vétuste/.test(document.getElementById("pbody").innerHTML); }
+  /* ── on ne demande pas l'état de ce qu'on jette ──────────────────────────
+     Décider « je la remplace » répond à la question : l'état de la menuiserie déposée ne
+     change plus rien, ni au dessin ni au prix. Le demander quand même, c'est une information
+     de plus à donner pour rien — et sur quinze fenêtres, quinze de trop. */
+  { const { o } = scene(); setMode("existant"); sel = { kind: "opening", id: o.id };
+    const html = () => { renderPanel(); return document.getElementById("pbody").innerHTML; };
+    const h0 = html();
+    t["avant décision · l'état est demandé"] = /Vétuste/.test(h0);
+    t["avant décision · le bloc parle de la menuiserie actuelle"] = /Menuiserie actuelle/.test(h0);
+    setOpeningProp("st", "remplacer");
+    const h1 = html();
+    t["« je la remplace » · l'état n'est plus demandé"] = !/Vétuste/.test(h1);
+    t["« je la remplace » · le bloc devient la menuiserie neuve"] = /Menuiserie \(neuve\)/.test(h1);
+    t["« je la remplace » · le matériau reste, c'est celui du neuf"] = /Matériau/.test(h1);
+    setOpeningProp("st", "garder");
+    t["repassée en « je la garde » · l'état revient"] = /Vétuste/.test(html()); }
+
+  /* ── l'ordre de lecture : ce que c'est, puis ce qu'on en fait ───────────── */
+  { const { o } = scene(); setMode("existant"); sel = { kind: "opening", id: o.id }; renderPanel();
+    const h = document.getElementById("pbody").innerHTML;
+    const iMat = h.indexOf("Matériau"), iEtat = h.indexOf(">État<"), iDec = h.indexOf("Décision");
+    t["ordre : matériau, puis état, puis décision"] = iMat > 0 && iEtat > iMat && iDec > iEtat; }
   return t;
 });
 await b.close();
