@@ -2063,6 +2063,9 @@ cv.addEventListener('pointerdown',e=>{
       else drag={kind:'node',wall:w,end,from:{...pt},snap:snapshot(),moved:false};
       return;}}}}
     // poignée de rotation d'un équipement seul
+    if(sel?.kind==='wall'){const w=findWall(sel.id);
+      if(w){const h=poigneesDoublage(w).find(g=>dist(g.s,v(sx,sy))<11*hitScale);
+        if(h){drag={kind:'isoEnd',w:h.w,io:h.io,bout:h.k,snap:snapshot(),moved:false};return;}}}
     if(sel?.kind==='item'&&multi.length<=1){const it=L().items.find(i=>i.id===sel.id);if(it){const rh=rotHandle(it);if(dist(rh,v(sx,sy))<10*hitScale){drag={kind:'rotate',it,snap:snapshot(),moved:false};return;}}}
     const h=hitTest(raw);
     // Maj / Cmd / Ctrl + clic : ajoute ou retire l'élément d'une sélection multiple (murs, ouvertures, meubles, notes, cotes)
@@ -2175,6 +2178,17 @@ cv.addEventListener('pointermove',e=>{
       if(drag.group.length>1){ // groupe : tout le monde suit le même décalage (aimanté à la grille)
         if(settings.magnet){const g=0.05;p=v(Math.round(p.x/g)*g,Math.round(p.y/g)*g);}const dd=v(p.x-drag.x0,p.y-drag.y0);drag.group.forEach(gp=>{gp.it.x=gp.x0+dd.x;gp.it.y=gp.y0+dd.y;pushOutOfWalls(gp.it);});}
       else{const sn=snapItemToWall(drag.it,p);if(sn){Object.assign(drag.it,sn);}else{if(settings.magnet){const g=0.05;p=v(Math.round(p.x/g)*g,Math.round(p.y/g)*g);}drag.it.x=p.x;drag.it.y=p.y;}pushOutOfWalls(drag.it);}}
+    else if(drag.kind==='isoEnd'){
+      const {w,io,bout}=drag,Lw=wallLen(w)||1;
+      let t=Math.max(0,Math.min(1,projT(raw,w.a,w.b)));
+      /* on s'accroche aux jonctions du mur quand on passe à moins de 12 px, sinon au 5 cm */
+      const seuil=12/view.zoom/Lw;
+      let acc=null,best=seuil;
+      arretsDoublage(L(),w).forEach(a=>{const d=Math.abs(a-t);if(d<best){best=d;acc=a;}});
+      t=acc!=null?acc:Math.round(t*Lw*20)/20/Lw;
+      if(bout==='t0')io.t0=Math.min(t,isoT1(io)-0.02/Lw);else io.t1=Math.max(t,isoT0(io)+0.02/Lw);
+      if(isoT0(io)<=1e-6&&isoT1(io)>=1-1e-6){delete io.t0;delete io.t1;}
+      drag.moved=true;syncRooms(L());}
     else if(drag.kind==='rotate'){const it=drag.it;let a=Math.atan2(raw.y-it.y,raw.x-it.x)+Math.PI/2;if(settings.magnet&&!keys.alt){const st=Math.PI/12;a=Math.round(a/st)*st;}it.rot=((a%(2*Math.PI))+2*Math.PI)%(2*Math.PI);}
     else if(drag.kind==='band'){drag.cur=raw;}
     else if(drag.kind==='dim'){const d=sub(raw,drag.start);if(drag.free){drag.d.a=add(drag.a0,d);drag.d.b=add(drag.b0,d);}else{const nn=perp(norm(sub(drag.b0,drag.a0)));let off=drag.off0+d.x*nn.x+d.y*nn.y;if(settings.magnet)off=Math.round(off/0.05)*0.05;drag.d.off=off;}}
@@ -2247,6 +2261,7 @@ function updateCursor(){
     else if(h?.kind==='dim'){const d=L().dims.find(x=>x.id===h.id);const u=d?norm(sub(d.b,d.a)):{x:1,y:0};c=keys.alt?'move':(Math.abs(u.x)>Math.abs(u.y)?'ns-resize':'ew-resize');}
     else if(h)c='move';
     if(sel?.kind==='item'&&multi.length<=1){const it=L().items.find(i=>i.id===sel.id);if(it&&dist(rotHandle(it),lastMouse)<10*hitScale)c='grab';}
+    if(sel?.kind==='wall'){const w=findWall(sel.id);if(w&&poigneesDoublage(w).some(g=>dist(g.s,lastMouse)<11*hitScale))c='grab';}
     if(sel?.kind==='wall'){const w=findWall(sel.id);if(w&&['a','b'].some(k=>dist(S(w[k]),lastMouse)<9*hitScale))c='grab';}
     if(coteLabelAt(lastMouse.x,lastMouse.y))c='text';
   }
@@ -2463,6 +2478,17 @@ function draw(){
   // équipements (sélection multiple surlignée)
   lv.items.forEach(it=>{if(itemDrawn(it)&&!itemHidden(it))drawItem(it,(sel?.kind==='item'&&sel.id===it.id)||multi.includes(it.id)||inMsel('item',it.id));});
   // poignée de rotation d'un équipement seul
+  if(sel?.kind==='wall'){const w=lv.walls.find(x=>x.id===sel.id);
+    if(w)poigneesDoublage(w).forEach(g=>{const tire=drag&&drag.kind==='isoEnd'&&drag.io===g.io&&drag.bout===g.k;
+      ctx.beginPath();ctx.arc(g.s.x,g.s.y,tire?7.5:6,0,7);ctx.fillStyle=tire?'#b45309':'#fff';ctx.fill();
+      ctx.strokeStyle='#b45309';ctx.lineWidth=2.2;ctx.stroke();
+      ctx.beginPath();ctx.arc(g.s.x,g.s.y,2.2,0,7);ctx.fillStyle=tire?'#fff':'#b45309';ctx.fill();
+      if(tire){const lg=(isoT1(g.io)-isoT0(g.io))*wallLen(g.w);
+        const txt=fmt(lg,2)+' m doublés';ctx.font='700 12px Geist, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+        const bw=ctx.measureText(txt).width+16;
+        ctx.fillStyle='rgba(255,255,255,.94)';ctx.strokeStyle='#b45309';ctx.lineWidth=1;
+        ctx.beginPath();ctx.roundRect(g.s.x-bw/2,g.s.y-34,bw,22,6);ctx.fill();ctx.stroke();
+        ctx.fillStyle='#b45309';ctx.fillText(txt,g.s.x,g.s.y-23);}});}
   if(sel?.kind==='item'&&multi.length<=1&&!drag){const it=lv.items.find(i=>i.id===sel.id);if(it){const rh=rotHandle(it),c=S(it);ctx.setLineDash([3,3]);ctx.strokeStyle='#4f46e5';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(c.x+Math.sin(it.rot)*it.h/2*z,c.y-Math.cos(it.rot)*it.h/2*z);ctx.lineTo(rh.x,rh.y);ctx.stroke();ctx.setLineDash([]);ctx.beginPath();ctx.arc(rh.x,rh.y,7,0,7);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#4f46e5';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.arc(rh.x,rh.y,3.2,0.3,5.6);ctx.lineWidth=1.5;ctx.stroke();}}
   // rectangle de sélection
   if(sel?.kind==='marquee'){msel.forEach(m=>{if(m.kind==='wall'||m.kind==='opening'||m.kind==='item')return;let pt=null;if(m.kind==='text'){const t=TX(lv).find(x=>x.id===m.id);if(t)pt=v(t.x,t.y);}else if(m.kind==='dim'){const d=lv.dims.find(x=>x.id===m.id);if(d){const L2=dimLine(d);pt=mul(add(L2.a,L2.b),.5);}}if(pt){const s=S(pt);ctx.beginPath();ctx.arc(s.x,s.y,9,0,7);ctx.fillStyle='rgba(79,70,229,.18)';ctx.fill();ctx.strokeStyle='#4f46e5';ctx.lineWidth=2;ctx.stroke();}});}
@@ -3427,6 +3453,24 @@ function setWallIso(k,val){const w=findWall(sel.id);if(!w)return;history.push(sn
 // ----- Mur de séparation intérieur : un doublage indépendant par face (w.iso / w.iso2) -----
 function roomOnSide(w,s){const faces=facesCache[L().id]||[];const u=norm(sub(w.b,w.a)),nn=perp(u),t=wallT(w);const mid=add(mul(add(w.a,w.b),0.5),mul(nn,s*(t/2+0.12)));for(const f of faces){if(f.room&&!RT[f.room.type].ext&&pointIn(mid,f.poly))return f.room;}return null;}
 function isoSlotForSide(w,s){if(w.iso&&(w.iso.side||1)===s)return 'iso';if(w.iso2&&(w.iso2.side||1)===s)return 'iso2';return w.iso?'iso2':'iso';}
+/* Les deux bouts d'un doublage, posés sur sa bande — c'est par là qu'on l'étire.
+   Un formulaire en mètres depuis le début du mur est exact mais impraticable : on ne pense pas
+   un doublage en abscisses, on le voit s'arrêter contre quelque chose et on l'y amène. */
+function poigneesDoublage(w){
+  if(!w||isVirtual(w)||!wallDrawn(w))return [];
+  const u=norm(sub(w.b,w.a)),n=perp(u),off=wallOff(w),Lw=wallLen(w);
+  const out=[];
+  isoLayers(w).forEach(io=>{
+    if(!isoShownIso(io,mode())||io.mode==='ite')return;
+    const cote=(io.side||1),d=faceDist(w,cote)+doublageOf(io)/2;
+    ['t0','t1'].forEach(k=>{
+      const t=k==='t0'?isoT0(io):isoT1(io);
+      const p=add(add(add(w.a,mul(u,t*Lw)),off),mul(n,cote*d));
+      out.push({w,io,k,p,s:S(p)});
+    });
+  });
+  return out;
+}
 function setWallIsoSide(side,k,val){const w=findWall(sel.id);if(!w)return;history.push(snapshot());const slot=isoSlotForSide(w,side);let io=w[slot];
   if(k==='off'){if(io)delete w[slot];if(!w.iso&&w.iso2){w.iso=w.iso2;delete w.iso2;}afterChange();return;}
   if(!io){io=w[slot]={e:0.10,mat:'gv',mode:'iti',sys:'ossature',side};if(mode()!=='existant')io.st='creer';}
@@ -3449,16 +3493,12 @@ function isoSideHtml(w,side){const io=isoOnSide(w,side);const room=roomOnSide(w,
     ${io?`<div class="ph mt">Isolant</div><div class="seg">${Object.entries(ISO_MAT).map(([k,m])=>`<button class="${io.mat===k?'on':''}" onclick="setWallIsoSide(${side},'mat','${k}')">${m.label.split(' ')[0]==='Laine'?'Laine '+m.label.split(' ')[2]:m.label.split(' ')[0]}<small>λ ${fmt(m.lambda,3)}</small></button>`).join('')}</div>
     <div class="row" style="margin-top:10px"><label>Épaisseur</label><span>${[40,60,80,100,120].map(mm=>`<button class="miniep ${Math.round(io.e*1000)===mm?'on':''}" onclick="setWallIsoSide(${side},'e',${mm})">${mm/10}</button>`).join('')}<input class="fin n" type="number" step="1" min="20" max="300" value="${Math.round(io.e*1000)}" onchange="setWallIsoSide(${side},'e',+this.value)" style="width:56px"> mm</span></div>
     <div class="row"><label>Finition</label><span class="seg" style="display:inline-flex">${fin.map(([k,l])=>`<button class="${io.sys===k?'on':''}" onclick="setWallIsoSide(${side},'sys','${k}')">${l}</button>`).join('')}</span></div>
-    ${(()=>{if(!io)return '';const Lw=wallLen(w),t0=isoT0(io),t1=isoT1(io);
-      const A=arretsDoublage(L(),w).filter(t=>t>1e-3&&t<1-1e-3);
-      const m=t=>fmt(t*Lw,2);
-      return `<div class="ph mt">Étendue sur le mur${isoEntier(io)?'':` <span class="chip">${m(t1-t0)} m sur ${fmt(Lw,2)}</span>`}</div>
-      <div class="row"><label>De</label><span><input class="fin n" type="number" step="0.05" min="0" max="${fmt(Lw,2)}" value="${m(t0)}" onchange="setWallIsoSide(${side},'m0',this.value)"> m</span></div>
-      <div class="row"><label>À</label><span><input class="fin n" type="number" step="0.05" min="0" max="${fmt(Lw,2)}" value="${m(t1)}" onchange="setWallIsoSide(${side},'m1',this.value)"> m</span></div>
-      ${A.length?`<div class="row" style="margin-top:6px"><label>Arrêter à une jonction</label></div><div class="chips">${A.map(t=>`<button class="chip2" onclick="setWallIsoSide(${side},'m1',${(t*Lw).toFixed(3)})">jusqu'à ${m(t)} m</button>`).concat(A.map(t=>`<button class="chip2" onclick="setWallIsoSide(${side},'m0',${(t*Lw).toFixed(3)})">depuis ${m(t)} m</button>`)).join('')}</div>`:''}
-      <div class="tip" style="margin-top:6px">${isoEntier(io)
-        ?`Tout le mur — <b>${fmt(Lw,2)} m</b>. Un doublage s'arrête souvent contre une cloison, un conduit, un décroché : limite-le ici et la surface de la pièce, le prix et la butée des cloisons suivent.`
-        :`<b>${m(t1-t0)} m</b> doublés, le reste du mur reste brut. <button class="ib" style="padding:3px 8px;margin-left:6px" onclick="setWallIsoSide(${side},'tout',1)">Tout le mur</button>`}</div>`;})()}
+    ${(()=>{if(!io)return '';const Lw=wallLen(w),lg=(isoT1(io)-isoT0(io))*Lw;
+      /* Pas de champs : on étend un doublage en le tirant, pas en tapant des abscisses. Une
+         seule ligne dit où on en est, et le geste se fait sur le plan. */
+      return `<div class="tip" style="margin-top:8px">${isoEntier(io)
+        ?`Doublage sur <b>tout le mur</b> — ${fmt(Lw,2)} m. Tire les deux <b style="color:#b45309">poignées ●</b> sur le plan pour l'arrêter avant une cloison, un conduit, un décroché.`
+        :`Doublage sur <b>${fmt(lg,2)} m</b> des ${fmt(Lw,2)} m du mur — le reste reste brut. Tire les <b style="color:#b45309">poignées ●</b> pour l'ajuster. <button class="ib" style="padding:3px 8px;margin-left:6px" onclick="setWallIsoSide(${side},'tout',1)">Tout le mur</button>`}</div>`;})()}
     ${mode()==='projet'?`<div class="row"><label>Dans le projet</label><span class="seg" style="display:inline-flex"><button class="${io.st!=='creer'?'on':''}" onclick="setWallIsoSide(${side},'st','existant')">Déjà isolé</button><button class="st-creer ${io.st==='creer'?'on':''}" onclick="setWallIsoSide(${side},'st','creer')">À isoler</button></span></div>`:''}
     <div class="blond ok"><b>Épaisseur perdue côté ${label} : <span>${fmt(dt*100,1)} cm</span></b><small>${Math.round(io.e*100)} cm isolant + finition (${io.sys==='colle'?'plaque collée (BA13)':'lame d\'air + BA13 (13 mm)'}). R = ${fmt(R,1)} m².K/W.</small></div>`:''}
   </div></div>`;}
