@@ -728,3 +728,49 @@ Vérifié : le panneau ne crée plus rien (`setWallIso('mode','iti')` sur un mur
 doublage), l'outil pose bien ses 10 m², le panneau modifie toujours l'épaisseur d'un doublage tracé
 (140 mm), le groupe n'applique pas et retire bien. Quinze contrôles verts, couverture à 0 %,
 contrat inchangé, 151 tests.
+
+## D28 ter · Un mur, plusieurs pièces, plusieurs doublages
+
+Dani, le 20/09/2026 : « tu peux avoir un grand mur, mais quand tu cliques il faut que l'isolation
+se mette seulement sur le mur de la pièce — si un autre mur tape ce même mur, c'est qu'il y a une
+autre pièce, donc il faut pouvoir les traiter indépendamment ».
+
+**Deux choses manquaient**, et la seconde était invisible tant qu'on n'avait pas la première.
+
+**1. Le clic prenait tout le mur.** Il prend maintenant le **tronçon de la pièce cliquée** : entre
+les deux jonctions qui encadrent le point. Un mur de façade longe souvent trois pièces ; en doubler
+une ne dit rien des deux autres. Sur un mur sans jonction, le tronçon est le mur entier — le geste
+garde son sens évident dans le cas simple.
+
+**2. Un mur ne pouvait porter que DEUX doublages**, `iso` et `iso2`, un par face. Donc sur un mur
+qui longe trois pièces, doubler la troisième **effaçait la première**. Le stockage devient une
+liste : autant de doublages que de tronçons, chacun avec son étendue. `iso`/`iso2` restent lus pour
+les plans déjà enregistrés et se convertissent à la première modification.
+
+Ce qui se **chevauche** est remplacé — repasser sur un tronçon le refait, ça n'en empile pas un
+second. Ce qui ne se chevauche pas cohabite : c'est une autre pièce.
+
+Le dessin, le contrat et le suivi de chantier n'ont pas bougé : ils parcouraient déjà `isoLayers`
+ou résolvaient par `isoOnSideAt`, c'est-à-dire « la couche qui est LÀ » et non « la couche de cette
+face ». Seul `isoOnSideAt` a dû apprendre à chercher parmi plusieurs.
+
+Les réglages, eux, portent sur **toute la face** : on isole une pièce avec un seul produit, on ne
+change pas d'isolant tronçon par tronçon.
+
+**Vérifié** sur un mur de 12 m coupé par deux refends :
+
+| | |
+|---|---|
+| arrêts | 0 · ⅓ · ⅔ · 1 |
+| clic dans la 1re pièce | son tronçon seul, 10 m² |
+| clic dans la 3e | 20 m² au total, **la 1re n'est pas effacée** |
+| pièce du milieu | reste nue |
+| repasser sur la 1re | toujours 20 m², toujours deux couches |
+
+### Le contrôle avait raison, pas moi
+
+Le test souris du contrôle doublage est tombé en panne avec ce changement. Mon premier réflexe a
+été de l'accuser d'être fragile — à tort : l'ancienne version passait. Le vrai coupable était
+l'**état laissé par les blocs précédents** (autre vue, autre niveau, panneau d'une autre largeur) :
+un test qui vise des pixels partait d'un écran qui n'était plus celui d'un démarrage, et ratait la
+poignée d'une vingtaine de pixels. Il **recharge la page** avant de viser.

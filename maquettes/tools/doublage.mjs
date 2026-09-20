@@ -96,17 +96,11 @@ const res = await p.evaluate(() => {
     t["le polygone de la pièce se décroche"] = (() => { const { lv } = scene({ t0: 0.3, t1: 0.45 });
       return facesFor(lv, "projet").some((f) => f.polyInt.length > 4); })(); }
 
-  /* ── les groupes : la matière change, l'étendue non ──────────────────────── */
+  /* ── les groupes ne posent plus, ils retirent (D28 bis) ─────────────────── */
   { const { lv, haut } = scene({ t0: 0, t1: 0.5 });
-    const autre = lv.walls[1];
-    applyIsoToWalls([haut.id, autre.id], { e: 0.14, mat: "pse", mode: "iti", sys: "ossature" });
-    const io = lv.walls[0].iso;
-    t["groupe · l'isolant et l'épaisseur sont appliqués"] = io.mat === "pse" && pres(io.e, 0.14, 1e-6);
-    t["groupe · l'étendue déjà réglée est conservée"] = pres(isoT1(io), 0.5, 1e-6);
-    t["groupe · un mur sans étendue reste entier"] = isoEntier(lv.walls[1].iso); }
-  { const { lv, haut } = scene({ t0: 0, t1: 0.5 });
-    applyIsoToWalls([haut.id], null);
-    t["groupe · retirer l'isolation retire tout, étendue comprise"] = !lv.walls[0].iso; }
+    retirerIsoDesMurs([haut.id]);
+    t["groupe · retirer le doublage retire tout, étendue comprise"] = isoLayers(lv.walls[0]).length === 0; }
+
   /* ── le geste : on étire le doublage par ses poignées ────────────────────
      Les champs « de … m / à … m » ont été retirés : on n'étend pas un doublage en tapant des
      abscisses, on le tire jusqu'à ce qu'il s'arrête au bon endroit. Le panneau ne garde qu'une
@@ -135,19 +129,63 @@ const res = await p.evaluate(() => {
       if (bout === "t0") io.t0 = tt; else io.t1 = tt; afterChange(); };
     poser("t0", 0.49);
     t["tiré près d'une jonction, le bout s'y accroche"] = pres(isoT0(haut.iso), 0.5, 1e-6); }
+  /* ── un mur, plusieurs pièces, plusieurs doublages (D28 ter) ─────────────
+     Un long mur longe souvent trois pièces. Une jonction avec un autre mur marque le passage
+     d'une pièce à l'autre : doubler l'une ne doit rien dire des deux autres, et surtout ne pas
+     effacer ce qui a été posé ailleurs sur le même mur. */
+  { state = blankState(); const lv = L(); lv.height = 2.5;
+    const W = (a, c, ty) => { const x = { id: uid(), a: v(...a), b: v(...c), type: ty || "mur" }; lv.walls.push(x); return x; };
+    const nord = W([0, 0], [12, 0]); W([12, 0], [12, 4]); W([12, 4], [0, 4]); W([0, 4], [0, 0]);
+    W([4, 0], [4, 4], "cloison"); W([8, 0], [8, 4], "cloison");
+    setMode("projet"); afterChange();
+    const m2 = () => +contratPlan().doublage.iti.toFixed(1);
+    const A = arretsDoublage(lv, nord);
+    t["trois pièces · quatre arrêts (0 · ⅓ · ⅔ · 1)"] = A.length === 4 && pres(A[1], 1 / 3, 1e-3) && pres(A[2], 2 / 3, 1e-3);
+    const p1 = tronconDeLaPiece(nord, 0.1), p3 = tronconDeLaPiece(nord, 0.9);
+    t["un clic dans la 1re pièce ne prend que son tronçon"] = pres(p1[0], 0) && pres(p1[1], 1 / 3, 1e-3);
+    t["un clic dans la 3e pièce ne prend que le sien"] = pres(p3[0], 2 / 3, 1e-3) && pres(p3[1], 1);
+    poserDoublage(nord, 1, p1[0], p1[1]);
+    t["1re pièce doublée · 10 m² (4 m × 2,5)"] = pres(m2(), 10, 0.1);
+    poserDoublage(nord, 1, p3[0], p3[1]);
+    t["3e pièce doublée · 20 m², la 1re n'a pas été effacée"] = pres(m2(), 20, 0.1);
+    t["deux doublages cohabitent sur la même face"] = isoLayers(nord).filter((io) => (io.side || 1) === 1).length === 2;
+    t["la pièce du milieu reste nue"] = !isoOnSideAt(nord, 1, v(6, 0.05));
+    poserDoublage(nord, 1, p1[0], p1[1]);
+    t["repasser sur un tronçon le refait, ne l'empile pas"] = pres(m2(), 20, 0.1) && isoLayers(nord).length === 2;
+    /* un mur sans jonction : le tronçon EST le mur, le clic simple garde son sens */
+    const seul = lv.walls[1];
+    t["mur sans jonction · le tronçon est le mur entier"] = (() => { const x = tronconDeLaPiece(seul, 0.5); return pres(x[0], 0) && pres(x[1], 1); })(); }
+
   return t;
 });
 /* ── et le vrai geste, à la souris ───────────────────────────────────────────
    Le reste vérifie la mécanique ; ici on tire réellement la poignée, parce que c'est ce que
    fait l'utilisateur et que c'est là que se cachent les surprises (cible manquée, accroche qui
    ne prend pas, tracé qui ne suit pas). */
-const co = await p.evaluate(() => {
+/* Page rechargée : les blocs précédents ont changé de vue, de niveau et de panneau, et la
+   transformation écran n'est plus celle d'un démarrage. Un test qui vise des pixels doit partir
+   d'un écran propre — sinon il rate la poignée de vingt pixels et accuse le produit. */
+await p.goto("file://" + SP + "/plan-editor.html", { waitUntil: "networkidle0" });
+await new Promise((r) => setTimeout(r, 400));
+await p.evaluate(() => {
+  closeWelcome("blank");
   state = blankState(); const lv = L(); lv.height = 2.5;
   const W = (a, c, ty) => { const x = { id: uid(), a: v(...a), b: v(...c), type: ty || "mur" }; lv.walls.push(x); return x; };
   const h = W([0, 0], [6, 0]); W([6, 0], [6, 4]); W([6, 4], [0, 4]); W([0, 4], [0, 0]); W([3, 0], [3, 4], "cloison");
   h.iso = { e: 0.12, mat: "gv", mode: "iti", sys: "ossature", side: 1 };
+  /* On repart de la vue Existant : le bloc précédent laisse la scène en Projet, et une poignée
+     ne se tire pas dans la même vue selon l'état du doublage. */
   afterChange(); setTool("select"); sel = { kind: "wall", id: h.id };
   settings.grid = false; settings.cotes = false; fitView(); renderPanel(); draw();
+});
+/* Les coordonnées écran sont relues DANS UN SECOND TEMPS : `renderPanel()` change la largeur du
+   volet selon ce qu'il affiche, donc la taille du canevas et la transformation écran. Les lire
+   dans le même tour que le rendu donnait des points périmés d'une vingtaine de pixels — le clic
+   tombait à côté de la poignée, et le contrôle accusait le produit d'un défaut qui était le sien. */
+await new Promise((r) => setTimeout(r, 120));
+const co = await p.evaluate(() => {
+  const h = L().walls[0];
+  draw();
   const G = poigneesDoublage(h); const r = document.getElementById("cv").getBoundingClientRect();
   const P = (x, y) => { const s = S(v(x, y)); return { x: r.left + s.x, y: r.top + s.y }; };
   return { droite: { x: r.left + G[1].s.x, y: r.top + G[1].s.y }, cible: P(3, 0), loin: P(1.8, 0) };
@@ -160,6 +198,7 @@ const souris = await p.evaluate(() => {
   const w = L().walls[0], q = quantities();
   const pr = (x, y) => Math.abs(x - y) < 0.02;
   return {
+
     "à la souris · la poignée tirée sur la cloison s'y accroche": pr(isoT1(w.iso), 0.5),
     "à la souris · la quantité tombe à 7,5 m²": pr(q.doublage.iti, 7.5),
     "à la souris · une seule pièce a rétréci": (() => {

@@ -696,12 +696,11 @@ function purgerGroupes(){
   state.groups=state.groups.filter(g=>g.wallIds.length>=2);
   return avant-state.groups.length;
 }
-function applyIsoToWalls(ids,cfg){history.push(snapshot());ids.forEach(id=>{const r=findWallAny(id);if(!r||isVirtual(r.w))return;const w=r.w;
-  if(!cfg){delete w.iso;return;}const si=(()=>{const sv=sel;sel={kind:'wall',id};const s2=interiorSideN(w);sel=sv;return s2;})();
-  /* On garde l'étendue déjà réglée sur ce mur : appliquer un isolant à un groupe change la
-     matière et l'épaisseur, pas le fait qu'un mur n'était doublé qu'en partie. */
-  const av=w.iso,gardeT=av&&!isoEntier(av)?{t0:isoT0(av),t1:isoT1(av)}:{};
-  w.iso={e:cfg.e,mat:cfg.mat,mode:cfg.mode,sys:cfg.sys,side:cfg.mode==='ite'?-si:si,st:mode()!=='existant'?'creer':undefined,...gardeT};syncNewDormants(w);});afterChange();}
+/* Retirer le doublage d'un groupe de murs. La fonction appliquait aussi un isolant — retiré le
+   20/09/2026 avec les autres chemins de création (D28 bis) : un doublage se trace, il ne se
+   déverse plus sur dix murs d'un clic. */
+function retirerIsoDesMurs(ids){history.push(snapshot());ids.forEach(id=>{const r=findWallAny(id);if(!r||isVirtual(r.w))return;
+  const w=r.w;w.isos=[];delete w.iso;delete w.iso2;});afterChange();}
 function applyFacadeToWalls(ids,fins){history.push(snapshot());ids.forEach(id=>{const r=findWallAny(id);if(!r)return;const w=r.w;
   const sv=sel;sel={kind:'wall',id};const ext=isExteriorWall(w);sel=sv;if(!ext)return;
   if(!fins.length){delete w.facade;}else{w.facade={fins:[...fins],st:mode()!=='existant'?'creer':undefined};}});afterChange();}
@@ -712,7 +711,7 @@ function groupById(gid){return (state.groups||[]).find(g=>g.id===gid);}
 /* Un groupe peut RETIRER son doublage d'un coup — c'est sans risque, ça n'invente rien. Il ne
    peut plus en appliquer : poser d'un clic un doublage sur dix murs, c'était s'engager à en
    retirer sur sept. */
-function grpIsoSet(ids,m){if(m!=='off')return;applyIsoToWalls(ids.split(','),null);toast('Doublage retiré du groupe',true);}
+function grpIsoSet(ids,m){if(m!=='off')return;retirerIsoDesMurs(ids.split(','));toast('Doublage retiré du groupe',true);}
 function grpIsoTweak(ids,k,val){history.push(snapshot());ids.split(',').forEach(id=>{const r=findWallAny(id);if(r&&r.w.iso){if(k==='mat')r.w.iso.mat=val;else if(k==='e')r.w.iso.e=val/1000;syncNewDormants(r.w);}});afterChange();}
 function grpFacToggle(ids,k){const arr=ids.split(',');const ws=arr.map(id=>findWallAny(id)?.w).filter(w=>w&&(()=>{const sv=sel;sel={kind:'wall',id:w.id};const e=isExteriorWall(w);sel=sv;return e;})());
   const has=ws.length&&ws.every(w=>facadeFins(w).includes(k));history.push(snapshot());ws.forEach(w=>{w.facade=w.facade||{fins:[],st:mode()!=='existant'?'creer':undefined};const i=w.facade.fins.indexOf(k);if(has){if(i>=0)w.facade.fins.splice(i,1);}else if(i<0)w.facade.fins.push(k);if(!w.facade.fins.length)delete w.facade;});afterChange();}
@@ -1298,8 +1297,17 @@ const doublageOf = iso => iso ? iso.e + isoFinish(iso) : 0;                     
 const doublageTotal = w => doublageOf(w.iso);                                    // doublage de la couche primaire (côté intérieur pour une menuiserie)
 const isoR = iso => iso ? +(iso.e/(ISO_MAT[iso.mat]?.lambda||0.035)).toFixed(2) : 0;
 // un mur peut porter jusqu'à DEUX doublages, un par face (mur de séparation intérieur isolé des deux côtés)
-const isoLayers = w => [w.iso, w.iso2].filter(Boolean);
+/* Un mur porte AUTANT de doublages qu'il traverse de pièces. Il n'y avait que deux emplacements,
+   `iso` et `iso2`, un par face — donc sur un mur qui longe trois pièces, doubler la troisième
+   effaçait la première. Or une jonction avec un autre mur, c'est une autre pièce : les tronçons
+   doivent se traiter séparément. Le stockage devient une LISTE ; `iso`/`iso2` restent lus pour
+   les plans déjà enregistrés, et se convertissent à la première modification. */
+const isoLayers = w => w && w.isos ? w.isos : [w&&w.iso, w&&w.iso2].filter(Boolean);
+function isoList(w){ if(!w.isos){w.isos=[w.iso,w.iso2].filter(Boolean);delete w.iso;delete w.iso2;} return w.isos; }
+/* Le premier doublage de cette face — pour résumer l'état dans un panneau. La géométrie, elle,
+   passe toujours par `isoOnSideAt` : elle a besoin de CELUI QUI EST LÀ, pas d'un représentant. */
 const isoOnSide = (w,s) => isoLayers(w).find(io=>(io.side||1)===s) || null;
+const isosOnSide = (w,s) => isoLayers(w).filter(io=>(io.side||1)===s);
 /* ÉTENDUE d'un doublage le long de son mur, en paramètre [0,1]. Par défaut le mur entier — les
    plans déjà dessinés ne bougent donc pas d'un centimètre. Un doublage s'arrête en pratique
    contre une cloison, un conduit, un décroché : le limiter n'est pas un luxe, c'est le cas
@@ -1314,9 +1322,10 @@ const isoEntier = io => isoT0(io)<=1e-6 && isoT1(io)>=1-1e-6;
 const isoCouvreT = (io,t) => t>=isoT0(io)-1e-6 && t<=isoT1(io)+1e-6;
 /* La couche qui double CE côté À CET ENDROIT du mur, ou null. */
 function isoOnSideAt(w,s,p){
-  const io=isoOnSide(w,s);if(!io)return null;
-  if(isoEntier(io)||!p)return io;
-  return isoCouvreT(io,Math.max(0,Math.min(1,projT(p,w.a,w.b))))?io:null;
+  const l=isosOnSide(w,s);if(!l.length)return null;
+  if(!p)return l[0];
+  const t=Math.max(0,Math.min(1,projT(p,w.a,w.b)));
+  return l.find(io=>isoEntier(io)||isoCouvreT(io,t)) || null;
 }
 /* ── Outil Doublage ────────────────────────────────────────────────────────
    Le doublage était une PROPRIÉTÉ du mur : on sélectionnait le mur, on cliquait « Isoler », et il
@@ -1359,6 +1368,14 @@ function aimanteT(w,t){
   arr.forEach(a=>{const d=Math.abs(a-t);if(d<dmin){dmin=d;best=a;}});
   return Math.max(0,Math.min(1,best));
 }
+/* Le tronçon de mur qui appartient à la pièce cliquée : entre les deux jonctions qui encadrent le
+   point. Un mur sans jonction n'a qu'un tronçon — c'est le mur entier, et le clic simple garde
+   alors son sens évident. */
+function tronconDeLaPiece(w,t){
+  const arr=arretsDoublage(L(),w);
+  for(let i=0;i<arr.length-1;i++) if(t>=arr[i]-1e-6 && t<=arr[i+1]+1e-6) return [arr[i],arr[i+1]];
+  return [0,1];
+}
 /* Pose le doublage tracé sur la face visée. Remplace l'étendue s'il y en avait déjà un : l'outil
    sert à dire OÙ il est, donc le dernier geste fait foi. */
 function poserDoublage(w,side,t0,t1){
@@ -1366,10 +1383,14 @@ function poserDoublage(w,side,t0,t1){
   const a=Math.min(t0,t1),b=Math.max(t0,t1);
   if(b-a<1e-3)return;
   history.push(snapshot());
-  const slot=isoSlotForSide(w,side);
-  const st=mode()!=='existant'?'creer':undefined;
-  w[slot]={e:DBL_CFG.e,mat:DBL_CFG.mat,mode:DBL_CFG.mode,sys:DBL_CFG.mode==='ite'?'enduit':'ossature',side,
-           t0:+a.toFixed(4),t1:+b.toFixed(4),...(st?{st}:{})};
+  const l=isoList(w),st=mode()!=='existant'?'creer':undefined;
+  /* Ce qui se CHEVAUCHE est remplacé — repasser sur un tronçon, c'est le refaire, pas en
+     superposer un second. Ce qui ne se chevauche pas cohabite : c'est une autre pièce. */
+  for(let i=l.length-1;i>=0;i--){const io=l[i];
+    if((io.side||1)!==side)continue;
+    if(isoT0(io)<b-1e-6 && isoT1(io)>a+1e-6) l.splice(i,1);}
+  l.push({e:DBL_CFG.e,mat:DBL_CFG.mat,mode:DBL_CFG.mode,sys:DBL_CFG.mode==='ite'?'enduit':'ossature',side,
+          t0:+a.toFixed(4),t1:+b.toFixed(4),...(st?{st}:{})});
   syncNewDormants(w);
   afterChange();
 }
@@ -2388,9 +2409,11 @@ cv.addEventListener('pointerup',e=>{
   const d=drag; drag=null;
   if(d.kind==='pan'){if(d.pending)clickAction(d.pending.raw);else save();updateCursor();return;}
   if(d.kind==='isoDraw'){
-    /* Un clic sans glisser prend tout le mur : c'est le cas courant, et l'exiger au glissé
-       obligerait à viser deux bouts pour dire « ce mur-là, en entier ». */
-    if(!d.moved||Math.abs(d.t1-d.t0)<1e-3)poserDoublage(d.w,d.side,0,1);
+    /* Un clic sans glisser prend le tronçon de LA PIÈCE cliquée, pas tout le mur. Un mur de
+       façade longe souvent trois pièces : en doubler une ne dit rien des deux autres, et les
+       jonctions disent exactement où elles commencent. Sur un mur sans jonction, le tronçon est
+       le mur entier — le geste reste évident dans le cas simple. */
+    if(!d.moved||Math.abs(d.t1-d.t0)<1e-3){const [a,b]=tronconDeLaPiece(d.w,d.t0);poserDoublage(d.w,d.side,a,b);}
     else poserDoublage(d.w,d.side,d.t0,d.t1);
     sel={kind:'wall',id:d.w.id};renderPanel();draw();return;}
   if(d.kind==='band'){ // rectangle de sélection : tout ce qui est dans le cadre (pour supprimer/déplacer vite)
@@ -3678,15 +3701,18 @@ function setWallProp(k,val){const w=findWall(sel.id);history.push(snapshot());if
 function setCustomT(cm){const t=parseFloat(cm)/100;customT=(t>=0.03&&t<=0.8)?t:null;renderPanel();draw();}
 function setWallLen(l){const w=findWall(sel.id);if(!(l>0.1))return;history.push(snapshot());setWallLength(w,l);afterChange();}
 function setWallIso(k,val){const w=findWall(sel.id);if(!w)return;history.push(snapshot());const si=interiorSideN(w);
-  if(k==='off'){delete w.iso;afterChange();return;}
+  if(k==='off'){w.isos=[];delete w.iso;delete w.iso2;afterChange();return;}
   /* Ce panneau ne CRÉE plus de doublage — il modifie celui qui est là. Le créer ici le posait
      sur tout le mur, et c'est précisément le geste dont on voulait se débarrasser : un doublage
      se trace à l'outil Doublage, sur la longueur voulue. */
-  if(!w.iso){afterChange();return;}
-  if(k==='st'){if(val==='existant')delete w.iso.st;else w.iso.st=val;}
-  else if(k==='mode'){w.iso.mode=val;if(val==='ite'){w.iso.side=-si;if(w.iso.sys!=='enduit'&&w.iso.sys!=='bardage')w.iso.sys='enduit';}else{w.iso.side=si;w.iso.sys='ossature';}}
-  else if(k==='mat')w.iso.mat=val;else if(k==='sys')w.iso.sys=val;else if(k==='e')w.iso.e=Math.max(0.02,Math.min(0.3,val/1000));
-  w.iso.side=w.iso.mode==='ite'?-si:si; // côté déduit du choix ITI / ITE
+  const l=isoList(w);if(!l.length){afterChange();return;}
+  /* Comme pour une face : un réglage vaut pour tous les tronçons du mur. */
+  if(k==='st')l.forEach(io=>{if(val==='existant')delete io.st;else io.st=val;});
+  else if(k==='mode')l.forEach(io=>{io.mode=val;io.sys=val==='ite'?(io.sys==='bardage'?'bardage':'enduit'):'ossature';});
+  else if(k==='mat')l.forEach(io=>io.mat=val);
+  else if(k==='sys')l.forEach(io=>io.sys=val);
+  else if(k==='e')l.forEach(io=>io.e=Math.max(0.02,Math.min(0.3,val/1000)));
+  l.forEach(io=>{io.side=io.mode==='ite'?-si:si;}); // côté déduit du choix ITI / ITE
   syncNewDormants(w);afterChange();}
 // ----- Mur de séparation intérieur : un doublage indépendant par face (w.iso / w.iso2) -----
 function roomOnSide(w,s){const faces=facesCache[L().id]||[];const u=norm(sub(w.b,w.a)),nn=perp(u),t=wallT(w);const mid=add(mul(add(w.a,w.b),0.5),mul(nn,s*(t/2+0.12)));for(const f of faces){if(f.room&&!RT[f.room.type].ext&&pointIn(mid,f.poly))return f.room;}return null;}
@@ -3709,13 +3735,18 @@ function poigneesDoublage(w){
   });
   return out;
 }
-function setWallIsoSide(side,k,val){const w=findWall(sel.id);if(!w)return;history.push(snapshot());const slot=isoSlotForSide(w,side);let io=w[slot];
-  if(k==='off'){if(io)delete w[slot];if(!w.iso&&w.iso2){w.iso=w.iso2;delete w.iso2;}afterChange();return;}
+function setWallIsoSide(side,k,val){const w=findWall(sel.id);if(!w)return;history.push(snapshot());
+  /* Un réglage porte sur TOUTE la face : changer l'isolant ne se fait pas tronçon par tronçon,
+     on isole une pièce avec un seul produit. Le retrait, lui, efface tous ses tronçons. */
+  const l=isoList(w),mine=l.filter(x=>(x.side||1)===side);let io=mine[0];
+  if(k==='off'){w.isos=l.filter(x=>(x.side||1)!==side);afterChange();return;}
   /* Comme `setWallIso` : ce panneau modifie un doublage, il n'en crée plus. Il s'en créait un ici
      couvrant toute la face, et c'est ce geste-là qui produisait les loupés. */
   if(!io){afterChange();return;}
-  if(k==='st'){if(val==='existant')delete io.st;else io.st=val;}
-  else if(k==='mat')io.mat=val;else if(k==='sys')io.sys=val;else if(k==='e')io.e=Math.max(0.02,Math.min(0.3,val/1000));
+  if(k==='st'){mine.forEach(x=>{if(val==='existant')delete x.st;else x.st=val;});}
+  else if(k==='mat')mine.forEach(x=>x.mat=val);
+  else if(k==='sys')mine.forEach(x=>x.sys=val);
+  else if(k==='e')mine.forEach(x=>x.e=Math.max(0.02,Math.min(0.3,val/1000)));
   /* étendue : on se cale sur les arrêts du mur, et on garde t0 < t1 */
   else if(k==='m0'||k==='m1'){const lg=wallLen(w)||1;setWallIsoSide._t=null;
     const x=Math.max(0,Math.min(1,(parseFloat(val)||0)/lg));
