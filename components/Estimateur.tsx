@@ -15,7 +15,6 @@ import { EST_CSS } from "./estimateur-styles";
 import {
   CATALOG, PHASES, finCoef, ICON, LOC, defaultCtx, key, isLoc, visible, visibleTask,
   nbFen, nbPieces, deriveSol, autoQty, isAuto, qtyOf, effRate, lineHT, lotHT, effPrices,
-  prixInduit,
   totals, buildDevis, regionCoef, piecesEff, sdbEff, customLotHT, customTotals, ESPACES,
   espacesCompo, selectedEspaces,
   type Ctx, type Selection, type TypeBien, type Finition, type Lot, type Tache, type CustomLine,
@@ -749,18 +748,12 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMa
             return (
               <span className="vg" key={g.k}><span className="vlab">{catT(locale, "vgroups", g.label)}</span>
                 <span className="vseg">
-                  {g.opts.map((o) => {
-                    /* Le prix d'une option qui déclenche un AUTRE poste. Sans lui, choisir « à
-                       galandage » ne changeait rien à l'écran : le devis montait de 800 €, mais
-                       nulle part au moment du choix. Lu au catalogue à l'exécution — jamais écrit
-                       en dur — et affiché tel que le devis le facturera, finition comprise. */
-                    const sup = o.induit ? prixInduit(o.induit) : null;
-                    return (
-                      <button type="button" key={o.k} className={cur === o.k ? "on" : ""} onClick={() => onVar(g.k, o.k)}>
-                        {catT(locale, "vopts", o.label)}{sup ? <small className="vsup"> +{fmt(sup)}</small> : null}
-                      </button>
-                    );
-                  })}
+                  {/* Aucune option n'affiche son écart de prix — ni le matériau, ni le vitrage,
+                      ni la pose. Le montrer sur une seule laisserait croire que les autres sont
+                      gratuites. Le total, lui, bouge à chaque clic. */}
+                  {g.opts.map((o) => (
+                    <button type="button" key={o.k} className={cur === o.k ? "on" : ""} onClick={() => onVar(g.k, o.k)}>{catT(locale, "vopts", o.label)}</button>
+                  ))}
                 </span>
               </span>
             );

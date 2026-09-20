@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { defaultCtx, effPrices, finCoefTask, key, lineHT, posteParId, prixInduit, qtyOf, supplementVariantes, type Selection } from "@/lib/estimateur/core";
+import { defaultCtx, effPrices, finCoefTask, key, lineHT, posteParId, qtyOf, supplementVariantes, type Selection } from "@/lib/estimateur/core";
 import { CATALOG } from "@/lib/estimateur/catalog";
 
 /**
@@ -27,7 +27,6 @@ describe("galandage · plus-value sur la menuiserie", () => {
   it("le supplément vaut le prix catalogue de la poche", () => {
     const poche = posteParId(POCHE)!;
     expect(poche.t.fp).toBe(800);
-    expect(prixInduit(POCHE)).toBe(800);
     expect(supplementVariantes(BAIE as never, pose("galandage") as never).fp).toBe(800);
     expect(supplementVariantes(BAIE as never, pose("coulissante") as never).fp).toBe(0);
   });
@@ -56,7 +55,6 @@ describe("galandage · plus-value sur la menuiserie", () => {
     expect(lineHT(ctx, sel, lot("Menuiseries exterieures") as never, BAIE as never)).toBe(6000); // 2 × 3 000
   });
   it("un identifiant inconnu ne casse rien", () => {
-    expect(prixInduit("poste-qui-n-existe-pas")).toBeNull();
     expect(posteParId("poste-qui-n-existe-pas")).toBeNull();
   });
 });

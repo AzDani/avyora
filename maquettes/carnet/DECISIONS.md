@@ -637,3 +637,19 @@ le moteur ajoute le prix. Les deux scènes de couverture restent à **0 %**.
 ligne « Baie vitrée · à galandage », ce qui déplace ~800 € du lot Cloisons vers le lot Menuiseries
 dans la répartition par corps d'état. C'est le prix de la lisibilité, et c'est la lisibilité qui a
 été choisie.
+
+## D27 · Deux réglages qui mentaient, retirés
+
+**La finition « Collé » du doublage.** Le plan proposait ossature métallique ou plaque collée
+(Placomur). Aucun poste du catalogue ne les distingue : le choix ne déplaçait que l'épaisseur
+dessinée, jamais un euro. Dans un outil de chiffrage, un réglage qui ne change pas le prix est un
+piège — il laisse croire qu'on affine quelque chose. L'ITI est désormais toujours sur **ossature**,
+et le sélecteur disparaît quand il n'y a qu'un système possible (l'ITE garde enduit / bardage, qui
+eux ont leurs postes). La branche `colle` reste lue pour qu'un plan déjà enregistré garde sa
+géométrie. Si le catalogue gagne un jour un poste « doublage collé », le choix reviendra avec lui.
+
+**Le « +800 € » sur l'option À galandage.** Ajouté le matin même, retiré le soir à la demande de
+Dani : « sur les autres endroits on n'a rien écrit, donc on ne va pas préciser la plus-value à un
+seul endroit ». Argument juste — ni le matériau, ni le vitrage, ni la motorisation n'affichent leur
+écart. En montrer un seul laisse croire que les autres sont gratuits. Le total, lui, bouge à chaque
+clic : c'est lui qui informe.

@@ -462,15 +462,6 @@ export function posteParId(id: string): { lot: string; nom: string; t: Tache; l:
   for (const l of CATALOG) for (const t of l.t) if (t.id === id) return { lot: l.c, nom: t.n, t, l };
   return null;
 }
-/**
- * Ce que l'option ajoutera à la ligne — exactement le montant que `supplementVariantes` additionne,
- * donc le prix catalogue du poste désigné. Lu, jamais recopié : le jour où la poche change de
- * prix, l'étiquette de l'option change avec elle.
- */
-export function prixInduit(id: string): number | null {
-  const p = posteParId(id);
-  return p?.t.fp ?? null;
-}
 /** Renvoie la quantité auto d'une tâche, ou null si elle n'est pas calculable de façon fiable. */
 export function autoQty(ctx: Ctx, c: string, n: string, sel: Selection): number | null {
   const S = ctx.surface || 0;
