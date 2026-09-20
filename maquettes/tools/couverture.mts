@@ -17,8 +17,9 @@
  * absolument aucune réponse au devis (ni l'inverse).
  */
 import { readFileSync } from "node:fs";
-import { ouvrirMaquette, scene } from "./scene-reference.mjs";
+import { ouvrirMaquette, scene, sceneVariantes } from "./scene-reference.mjs";
 import { contributionsDuPlan, type PlanPourCorrespondance } from "../../lib/estimateur/plan-correspondance";
+import { effPrices, defaultCtx } from "../../lib/estimateur/core";
 
 type Tache = { label: string; lot: string; prix: number; inclus: boolean; pid: string };
 type Poste = { n: string; u: string; fp: number; vars?: Array<{ k: string; opts: Array<{ k: string; coef: number }> }> };
@@ -38,17 +39,17 @@ const lots = Array.isArray(CAT) ? CAT : (CAT.lots ?? Object.values(CAT)[0]);
 const postes: Record<string, Poste> = {};
 for (const l of lots as Array<{ t: Array<Poste & { id: string }> }>) for (const t of l.t) postes[t.id] = t;
 
-/* Prix d'une ligne, variante comprise : un meuble-vasque « double » coûte son coefficient, et
-   l'ignorer ferait mentir la comparaison de 381 € sur une seule vasque. */
-const valoriser = (poste: string, q: number, variante?: Record<string, string>) => {
-  const t = postes[poste];
+/* Prix d'une ligne tel que le DEVIS le facturera. On appelle `effPrices`, le calcul du moteur
+   lui-même, au lieu de refaire les coefficients à la main : la première version multipliait les
+   variantes et s'arrêtait là, donc elle ignorait le matériau, le vitrage, la motorisation et la
+   taille — et validait « 0 % d'écart » en comparant à un prix que personne ne facture.
+   Le contexte est celui par défaut, le même que celui d'un projet neuf. */
+const CTX = defaultCtx();
+const valoriser = (c: { poste: string; quantite: number; variante?: Record<string, string>; mat?: string; vit?: string }) => {
+  const t = postes[c.poste];
   if (!t) return null;
-  let coef = 1;
-  for (const [k, v] of Object.entries(variante ?? {})) {
-    const opt = t.vars?.find((x) => x.k === k)?.opts.find((o) => o.k === v);
-    if (opt) coef *= opt.coef;
-  }
-  return t.fp * q * coef;
+  const { fp } = effPrices(t as never, { on: true, vsel: c.variante, mat: c.mat, vit: c.vit } as never, CTX);
+  return (fp ?? 0) * c.quantite;
 };
 
 const LECTURE = `(() => {
@@ -75,11 +76,15 @@ const LECTURE = `(() => {
 
 const { b, p, errs } = await ouvrirMaquette(SP);
 await p.evaluate(scene);
-const { contrat, taches } = (await p.evaluate(LECTURE)) as { contrat: unknown; taches: Tache[] };
+const base = (await p.evaluate(LECTURE)) as { contrat: unknown; taches: Tache[] };
+/* La seconde scène existe parce que la première ne parcourt pas tous les chemins : elle n'a ni
+   bois, ni triple vitrage, ni galandage, ni trémie, ni doublage existant. Le bug de la chape est
+   passé exactement par ce trou-là — un chemin jamais emprunté par le témoin. */
+await p.evaluate(sceneVariantes);
+const variantes = (await p.evaluate(LECTURE)) as { contrat: unknown; taches: Tache[] };
 await b.close();
 if (errs.length) { console.error("erreurs de page :", errs); process.exit(1); }
 
-const { contributions, ignores } = contributionsDuPlan(contrat as PlanPourCorrespondance);
 
 let dur = 0;
 const KO = (quoi: string, d: string) => { dur++; console.log(`  ✗ ${quoi}\n      ${d}`); };
@@ -91,11 +96,14 @@ const KO = (quoi: string, d: string) => { dur++; console.log(`  ✗ ${quoi}\n   
    d'identifiant de mur. Elle n'a plus lieu d'être : la correspondance lit désormais
    `provenance.doublages` et chaque ligne dit de quel mur elle vient (D23). Si un jour un autre
    ouvrage arrive en agrégat, c'est ici qu'il faudra le déclarer — et surtout le corriger. */
+function comparer(nom: string, jeu: { contrat: unknown; taches: Tache[] }) {
+const { contrat, taches } = jeu;
+const { contributions, ignores } = contributionsDuPlan(contrat as PlanPourCorrespondance);
 const repartis = new Set<string>();
 const annonce: Record<string, number> = {}, facture: Record<string, number> = {};
 for (const t of taches) annonce[t.pid] = (annonce[t.pid] ?? 0) + t.prix;
 for (const c of contributions) {
-  const v = valoriser(c.poste, c.quantite, c.variante);
+  const v = valoriser(c);
   if (v === null) { KO(`poste inconnu au catalogue : ${c.poste}`, "identifiant renommé ?"); continue; }
   const k = c.sources?.[0] ?? "(global)";
   facture[k] = (facture[k] ?? 0) + v;
@@ -110,7 +118,7 @@ const totalPlan = Object.values(annonce).reduce((a, x) => a + x, 0);
 const totalDevis = Object.values(facture).reduce((a, x) => a + x, 0);
 const ecartPc = Math.round((totalDevis / totalPlan - 1) * 1000) / 10;
 
-console.log("\n1. Le compteur du plan et le devis, sur la même scène");
+console.log(`\n━━ ${nom}\n\n1. Le compteur du plan et le devis`);
 console.log(`  compteur maquette  ${Math.round(totalPlan).toLocaleString("fr-FR")} €`);
 console.log(`  devis estimateur   ${Math.round(totalDevis).toLocaleString("fr-FR")} €   (fourni-posé, hors finition / région / TVA)`);
 console.log(`  écart              ${ecartPc > 0 ? "+" : ""}${ecartPc} %`);
@@ -139,5 +147,9 @@ console.log("\n4. Ce que la correspondance a explicitement écarté");
 if (!ignores.length) console.log("  aucun");
 for (const i of ignores) console.log(`  · ${i.quoi} → ${i.pourquoi}`);
 
-console.log(`\n${dur ? `✗ ${dur} rupture(s) de couverture` : "✓ couverture cohérente"}`);
+}
+
+comparer("scène de référence", base);
+comparer("scène variantes — bois, triple vitrage, galandage, trémie, doublage existant", variantes);
+console.log(`\n${dur ? `✗ ${dur} rupture(s) de couverture` : "✓ couverture cohérente sur les deux scènes"}`);
 process.exit(dur ? 1 : 0);

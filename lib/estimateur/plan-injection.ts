@@ -95,6 +95,11 @@ export function injecterPlan(selection: Selection, contributions: Contribution[]
     // D11 : un forfait n'a pas de quantité à recevoir — on le coche, et c'est tout.
     if (!forfait) { ligne.qty = quantite; ligne.manual = true; }
     if (c.variante) ligne.vsel = { ...(avantLigne?.vsel ?? {}), ...c.variante };
+    /* Le moteur lit le matériau et le vitrage sur la ligne elle-même (`s.mat` / `s.vit`), pas
+       dans `vsel` : une menuiserie dessinée en bois ou en triple vitrage se chiffrait sinon au
+       défaut du moteur, quel que soit le choix fait sur le plan. */
+    if (c.mat) ligne.mat = c.mat;
+    if (c.vit) ligne.vit = c.vit;
     out[cle] = ligne;
 
     lignes.push({

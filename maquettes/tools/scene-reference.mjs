@@ -67,3 +67,34 @@ export function scene() {
   We([0,0],[4,0],'mur'); We([4,0],[4,4],'mur'); We([4,4],[0,4],'mur'); We([0,4],[0,0],'mur');
   state.cur=0; afterChange(); garantirPids();
 }
+
+/**
+ * Deuxième scène : celle qui exerce ce que la première ignore.
+ *
+ * Le bug de la chape a montré la limite d'une scène unique — elle validait 0 % d'écart sur des
+ * chemins qu'elle ne parcourait jamais. Celle-ci existe pour les faire parcourir : une menuiserie
+ * en BOIS et en TRIPLE vitrage, une porte à GALANDAGE, une baie (alu obligatoire), un volet, un
+ * ESCALIER créé avec sa trémie à l'étage, et un mur DÉJÀ doublé qui ne doit rien coûter.
+ */
+export function sceneVariantes() {
+  closeWelcome('blank');
+  state=blankState(); const lv=L(); lv.height=2.5; state.name='Scène variantes';
+  const W=(a,c,t)=>{const x={id:uid(),a:v(...a),b:v(...c),type:t};lv.walls.push(x);return x;};
+  const nord=W([0,0],[8,0],'mur'), est=W([8,0],[8,6],'mur'), sud=W([8,6],[0,6],'mur'), ouest=W([0,6],[0,0],'mur');
+  const refend=W([4,0],[4,6],'cloison');
+  est.iso={e:0.10,mat:'gv',mode:'iti',sys:'ossature',side:-1,st:'existant'};  /* déjà doublé : 0 € */
+  const O=(mur,t,type,extra={})=>{const d=OPENINGS[type];lv.openings.push({id:uid(),wallId:mur.id,t,type,w:d.w,h:d.h,side:1,hinge:1,st:'creer',...extra});};
+  O(nord,0.3,'fenetre',{mat:'bois',vitrage:'triple'});      /* bois 1,05 × triple 1,20 */
+  O(nord,0.7,'fenetre',{mat:'pvc',vitrage:'double',volet:'roulant'}); /* PVC + volet PVC 0,80 */
+  O(sud,0.5,'baie');                                        /* alu obligatoire */
+  O(refend,0.5,'porte',{ouvrant:'galandage'});              /* porte + caisson à galandage */
+  setMode('projet'); afterChange();
+  const faces=facesCache[lv.id]||[];
+  faces.forEach((f,i)=>{if(f.room){f.room.type=i?'chambre':'sejour';f.room.name=i?'Chambre':'Séjour';}});
+  const c0=faces[0].label;
+  lv.items.push({id:uid(),type:'escalier',x:c0.x,y:c0.y,w:1,h:2.5,rot:0,st:'creer',materiau:'bois',stair:{type:'droit'}});
+  afterChange();
+  /* l'étage reprend l'emprise : la trémie de l'escalier s'y ouvre, donc un garde-corps */
+  addLevel('copy'); const et=L(); et.name='Étage'; et.height=2.5;
+  state.cur=0; afterChange(); garantirPids();
+}

@@ -99,6 +99,62 @@ describe("table de correspondance · ce que le scénario doit produire", () => {
     expect(c.sources.length).toBeGreaterThan(0);
     for (const src of c.sources) expect(src).toMatch(/^m\d+$/);
   });
+  /* Le matériau et le vitrage d'une menuiserie voyagent sur `mat`/`vit` et non dans `variante` :
+     le moteur les lit là, et eux seuls portent les coefficients (alu 1, PVC 0,60, bois 1,05 ·
+     double 1, triple 1,20). Tant qu'ils ne partaient pas, une fenêtre bois en triple vitrage se
+     chiffrait en PVC double — 570 € au lieu de 1 197. */
+  it("une menuiserie transmet son matériau et son vitrage", () => {
+    const p = JSON.parse(JSON.stringify(plan));
+    const m = p.detailNiveaux[0].menuiseries.find((x: { etat: string }) => x.etat === "creer");
+    m.mat = "bois"; m.vitrage = "triple";
+    const { contributions: c } = contributionsDuPlan(p);
+    const l = c.find((x) => x.poste === "mex-fenetres" && x.mat === "bois")!;
+    expect(l, "aucune ligne en bois").toBeTruthy();
+    expect(l.vit).toBe("triple");
+    expect(l.sources).toContain(m.id);
+  });
+  it("deux menuiseries de matériaux différents ne fusionnent pas", () => {
+    const p = JSON.parse(JSON.stringify(plan));
+    const ms = p.detailNiveaux[0].menuiseries.filter((x: { type: string }) => x.type === "fenetre");
+    expect(ms.length).toBeGreaterThan(1);
+    ms[0].mat = "bois"; ms[1].mat = "pvc";
+    const { contributions: c } = contributionsDuPlan(p);
+    const lignes = c.filter((x) => x.poste === "mex-fenetres");
+    expect(lignes.length).toBeGreaterThan(1);
+  });
+  it("un matériau que le moteur ne connaît pas n'est pas transmis", () => {
+    const p = JSON.parse(JSON.stringify(plan));
+    p.detailNiveaux[0].menuiseries.forEach((m: { mat?: string }) => { m.mat = "inox"; });
+    const { contributions: c } = contributionsDuPlan(p);
+    for (const l of c.filter((x) => x.poste === "mex-fenetres")) expect(l.mat).toBeUndefined();
+  });
+  it("une menuiserie à galandage paie AUSSI sa poche dans la cloison", () => {
+    const p = JSON.parse(JSON.stringify(plan));
+    const m = p.detailNiveaux[0].menuiseries.find((x: { etat: string }) => x.etat === "creer");
+    m.ouvrant = "galandage";
+    const { contributions: c } = contributionsDuPlan(p);
+    const poche = c.find((x) => x.poste === "clo-caisson-a-galandage-chassis-habillage")!;
+    expect(poche, "la poche du galandage n'est pas facturée").toBeTruthy();
+    expect(poche.sources).toContain(m.id);
+    expect(c.some((x) => x.poste === "mex-fenetres")).toBe(true);   // la menuiserie reste due
+  });
+  /* Le garde-corps se lit sur `tremiePerimNeuf` : une trémie déjà là a déjà le sien (D1). */
+  it("une trémie créée paie son garde-corps, une trémie existante non", () => {
+    const p = JSON.parse(JSON.stringify(plan));
+    const r = p.detailNiveaux[1].rooms[0];
+    r.tremiePerim = 9; r.tremiePerimNeuf = 0;
+    expect(contributionsDuPlan(p).contributions.find((x) => x.poste === "toi-garde-corps")).toBeUndefined();
+    r.tremiePerimNeuf = 9;
+    const l = contributionsDuPlan(p).contributions.find((x) => x.poste === "toi-garde-corps")!;
+    expect(l.quantite).toBeCloseTo(9, 1);
+    expect(l.sources).toEqual([r.id]);
+  });
+  /* Le percement se rattache à SON ouverture : 19 000 € sans source sur une scène de six. */
+  it("les percements disent de quelle ouverture ils viennent", () => {
+    const l = contributions.find((x) => x.poste === "mac-ouvrir-un-mur-porteur-petite-porte-fenetre");
+    expect(l?.sources.length).toBeGreaterThan(0);
+    for (const src of l!.sources) expect(src).toMatch(/^o\d+$/);
+  });
   it("un doublage DÉJÀ EN PLACE ne se facture pas (D1)", () => {
     const p = JSON.parse(JSON.stringify(plan));
     const dejaLa = { mur: "m99", mode: "iti", mat: "gv", etat: "existant", m2: 12.5 };

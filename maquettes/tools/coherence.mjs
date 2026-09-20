@@ -15,6 +15,21 @@ import fs from "node:fs";
 const lire = p => fs.readFileSync(new URL(p, import.meta.url).pathname ?? p, "utf8");
 const CAT = JSON.parse(fs.readFileSync("lib/estimateur/catalog.json", "utf8"));
 const CORE = fs.readFileSync("lib/estimateur/core.ts", "utf8");
+
+/* Les coefficients que la maquette recopie du MOTEUR (et non du catalogue) : matériau et
+   vitrage d'une menuiserie. Ils ne sont pas des prix, donc §1 ne les voit pas — et la maquette
+   a vécu des mois en appliquant le vitrage sans le matériau, ce qui affichait une fenêtre PVC au
+   prix de l'alu, 40 % trop cher. */
+const COEFS = [
+  ["MAT_COEF", "alu", "MAT_COEF"], ["MAT_COEF", "pvc", "MAT_COEF"], ["MAT_COEF", "bois", "MAT_COEF"],
+  ["VITRAGE_COEF", "double", "VIT_COEF"], ["VITRAGE_COEF", "triple", "VIT_COEF"],
+];
+const coefMoteur = (table, cle) => {
+  const m = CORE.match(new RegExp(`${table}[^=]*=\\s*\\{([^}]*)\\}`));
+  if (!m) return null;
+  const v = m[1].match(new RegExp(`\\b${cle}\\s*:\\s*([0-9.]+)`));
+  return v ? Number(v[1]) : null;
+};
 const MAQ = fs.readFileSync("maquettes/plan-editor.html", "utf8");
 const CARNET = fs.readFileSync("maquettes/carnet/carnet-detail-vs-plan.tsv", "utf8");
 
@@ -166,6 +181,7 @@ const PRIX_MAP = [
   ["PRIX", "faience", "Faïence / carrelage mural"],
   ["PRIX", "cloisonHumide", "Cloison pièce humide (hydrofuge)"],
   ["PRIX", "poncageParquet", "Ponçage + vitrification parquet"],
+  ["PRIX", "gardeCorps", "Garde-corps"],
   ["PRIX_DOUCHE", "bac", "Bac de douche"],
   ["PRIX_DOUCHE", "italienne", "Douche à l'italienne"],
   ["PRIX_DOUCHE", "cabine", "Cabine complète (parois + porte)"],
@@ -220,6 +236,17 @@ for (const [chemin, quoi] of ABANDONNES) {
 console.log(`  ${zeros}/${ABANDONNES.length} à 0 — ${ABANDONNES.map(a => a[0].split(".").pop()).join(", ")}`);
 
 /* ── 2. libellés déclarés « exacts » : FACADES[].poste doit exister au catalogue ── */
+console.log("\n1ter. Coefficients recopiés du moteur (matériau, vitrage)");
+let cok = 0;
+for (const [tbl, cle, tblMoteur] of COEFS) {
+  const m = tableVal(`${tbl}.${cle}`), c = coefMoteur(tblMoteur, cle);
+  if (m === null) KO(`${tbl}.${cle} introuvable dans la maquette`, "clé renommée ?");
+  else if (c === null) KO(`${tblMoteur}.${cle} introuvable dans core.ts`, "coefficient renommé ou retiré ?");
+  else if (Math.abs(m - c) < 1e-9) cok++;
+  else KO(`${tbl}.${cle} = ${m} · moteur ${tblMoteur}.${cle} = ${c}`, "le compteur du plan n'applique pas le coefficient du devis");
+}
+console.log(`  ${cok}/${COEFS.length} alignés`);
+
 console.log("\n2. Libellés de postes cités en dur");
 const blocFacades = MAQ.slice(MAQ.indexOf("const FACADES={"), MAQ.indexOf("\n};", MAQ.indexOf("const FACADES={")));
 const cites = [...blocFacades.matchAll(/poste:'((?:[^'\\]|\\.)*)'/g)].map(m => m[1].replace(/\\'/g, "'"));

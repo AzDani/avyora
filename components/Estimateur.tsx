@@ -611,7 +611,7 @@ function Stepper({ label, hint, value, onStep }: { label: string; hint?: string;
 function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar, onNote, onPu, onPm }: {
   l: Lot; t: Tache; ctx: Ctx; sel: Selection; coef: number; loc: boolean;
   onCheck: () => void; onChoice: (self: boolean) => void; onAuto: () => void; onQty: (v: number) => void;
-  onMat: (m: "pvc" | "alu") => void; onVit: (v: "double" | "triple") => void; onMot: (m: "manuel" | "motorise") => void; onTai: (z: "petit" | "grand") => void; onVar: (g: string, o: string) => void; onNote: (v: string) => void; onPu: (v: number | null) => void; onPm: (v: number | null) => void;
+  onMat: (m: "pvc" | "alu" | "bois") => void; onVit: (v: "double" | "triple") => void; onMot: (m: "manuel" | "motorise") => void; onTai: (z: "petit" | "grand") => void; onVar: (g: string, o: string) => void; onNote: (v: string) => void; onPu: (v: number | null) => void; onPm: (v: number | null) => void;
 }) {
   const locale = useLocale();
   const s = sel[key(l.c, t.n)] || {};
@@ -704,6 +704,7 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMa
             <span className="vg"><span className="vlab">{locale === "en" ? "Material" : "Matériau"}</span>
               <span className="vseg">
                 <button type="button" className={matSel === "pvc" ? "on" : ""} onClick={() => onMat("pvc")}>PVC</button>
+                <button type="button" className={matSel === "bois" ? "on" : ""} onClick={() => onMat("bois")}>Bois</button>
                 <button type="button" className={matSel === "alu" ? "on" : ""} onClick={() => onMat("alu")}>{locale === "en" ? "Aluminium" : "Alu"}</button>
               </span>
             </span>

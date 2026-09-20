@@ -34,7 +34,7 @@ export interface Tache {
   fixe?: boolean;       // prix d'équipement FIXE : non impacté par le niveau de finition
   mat?: boolean;        // menuiserie : choix matériau PVC/Alu (base catalogue = Alu)
   matPvc?: number;      // coef PVC spécifique (défaut MAT_COEF.pvc = 0,60 ; ex. volets = 0,80)
-  matDef?: "pvc" | "alu"; // matériau par défaut du poste (sinon selon finition) ; ex. portail = alu
+  matDef?: "pvc" | "alu" | "bois"; // matériau par défaut du poste (sinon selon finition) ; ex. portail = alu
   vitrage?: boolean;    // menuiserie vitrée : option Double/Triple vitrage
   moto?: boolean;       // portail : option Manuel / Motorisé
   taille?: boolean;     // équipement : option Petit / Grand (ex. ballon d'eau chaude)
@@ -84,7 +84,7 @@ export interface LigneSel {
   self?: boolean;             // « Je le fais »
   qty?: number | null;        // quantité saisie (si manuel / non-auto)
   manual?: boolean;           // override manuel d'une quantité auto
-  mat?: "pvc" | "alu";        // menuiserie : matériau choisi
+  mat?: "pvc" | "alu" | "bois"; // menuiserie : matériau choisi
   vit?: "double" | "triple";  // menuiserie : vitrage choisi
   mot?: "manuel" | "motorise"; // portail : motorisation choisie
   tai?: "petit" | "grand";     // équipement : taille choisie
@@ -98,8 +98,14 @@ export interface LigneSel {
 }
 export type Selection = Record<string, LigneSel>;
 
-/** Menuiseries : matériau (base catalogue = Alu) et vitrage (base = double vitrage inclus). */
-export const MAT_COEF: Record<string, number> = { alu: 1, pvc: 0.60 };
+/** Menuiseries : matériau (base catalogue = Alu) et vitrage (base = double vitrage inclus).
+ *  Le bois (1,05) a été ajouté le 20/09/2026 : l'éditeur de plan le proposait déjà, et une
+ *  menuiserie dessinée en bois se chiffrait donc en PVC. Le rapport vient de trois comparatifs
+ *  2026 qui chiffrent le MÊME produit dans les trois matériaux (architecteo : fenêtre 135×120
+ *  alu 1 000 € / bois 1 030 € · porte-fenêtre alu 1 390 / bois 1 430 · baie alu 1 730 /
+ *  bois 1 850, soit 1,03 · 1,03 · 1,07). Réserve assumée : le bois s'étale plus que les autres
+ *  — un pin d'entrée de gamme passe sous l'alu, un chêne le dépasse de près de 20 %. */
+export const MAT_COEF: Record<string, number> = { alu: 1, pvc: 0.60, bois: 1.05 };
 export const VIT_COEF: Record<string, number> = { double: 1, triple: 1.20 };
 export const DEFAULT_VIT: "double" | "triple" = "double";
 export const MOT_COEF: Record<string, number> = { manuel: 1, motorise: 1.60 };
@@ -107,7 +113,7 @@ export const DEFAULT_MOT: "manuel" | "motorise" = "motorise";
 export const TAILLE_COEF: Record<string, number> = { grand: 1, petit: 0.65 };
 export const DEFAULT_TAILLE: "petit" | "grand" = "grand";
 /** Matériau par défaut (aucun choix explicite) : alu en premium, sinon PVC. */
-const defMat = (ctx?: Ctx): "pvc" | "alu" => (ctx && ctx.finition === "premium" ? "alu" : "pvc");
+const defMat = (ctx?: Ctx): "pvc" | "alu" | "bois" => (ctx && ctx.finition === "premium" ? "alu" : "pvc");
 /** Prix effectifs (fp/sm) selon matériau/vitrage choisis. Sans variante → fp/sm bruts. */
 export function effPrices(t: Tache, s?: LigneSel, ctx?: Ctx): { fp: number | null; sm: number | null } {
   if (!t.mat && !t.vitrage && !t.moto && !t.taille && !t.vars) return { fp: t.fp, sm: t.sm };
@@ -127,7 +133,9 @@ export function effPrices(t: Tache, s?: LigneSel, ctx?: Ctx): { fp: number | nul
   }
   if (t.mat) {
     const m = (s && s.mat) || t.matDef || defMat(ctx);
-    f *= m === "pvc" ? (t.matPvc ?? MAT_COEF.pvc) : MAT_COEF.alu;
+    /* `matPvc` reste l'exception par poste (un volet PVC est à 0,80 et non 0,60) ; les autres
+       matériaux prennent le coefficient commun, et un matériau inconnu ne change rien. */
+    f *= m === "pvc" ? (t.matPvc ?? MAT_COEF.pvc) : (MAT_COEF[m] ?? 1);
   }
   if (t.vitrage) f *= VIT_COEF[(s && s.vit) || DEFAULT_VIT] ?? 1;
   if (t.moto) f *= MOT_COEF[(s && s.mot) || DEFAULT_MOT] ?? 1;
@@ -140,7 +148,7 @@ export function effPrices(t: Tache, s?: LigneSel, ctx?: Ctx): { fp: number | nul
 /** Suffixe d'étiquette variante (matériau / vitrage) pour l'affichage. */
 export function variantLabel(t: Tache, s?: LigneSel, ctx?: Ctx): string {
   const p: string[] = [];
-  if (t.mat) p.push(((s && s.mat) || t.matDef || defMat(ctx)) === "alu" ? "alu" : "PVC");
+  if (t.mat) { const m = (s && s.mat) || t.matDef || defMat(ctx); p.push(m === "alu" ? "alu" : m === "bois" ? "bois" : "PVC"); }
   if (t.vitrage) p.push(((s && s.vit) || DEFAULT_VIT) === "triple" ? "triple vitrage" : "double vitrage");
   if (t.moto) p.push(((s && s.mot) || DEFAULT_MOT) === "motorise" ? "motorisé" : "manuel");
   if (t.taille) p.push(((s && s.tai) || DEFAULT_TAILLE) === "petit" ? "petit" : "grand");

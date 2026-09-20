@@ -396,3 +396,98 @@ la ligne de doublage porte des identifiants de mur, et une couche `etat: "exista
 un m².
 
 `couverture.mts` perd son exception « doublage transmis en agrégat » : elle n'a plus lieu d'être.
+
+## D24 · Revue des étapes de chantier : ce que le plan disait et que le devis n'écoutait pas
+
+Revue du 20/09/2026, lot par lot, sur les 208 postes du catalogue. Le plan en alimente 106 ; le
+reste se partage entre des forfaits que l'utilisateur coche lui-même (diagnostics, mairie, aides,
+benne, location de matériel, raccordements aux réseaux) et des ouvrages qu'un dessin ne peut pas
+connaître. Cinq trouvailles, dont une qui portait sur mes propres outils.
+
+### 0. Le contrôle mesurait à côté
+
+`couverture.mts` valorisait chaque ligne au **prix brut du catalogue**. Or le moteur applique des
+coefficients — matériau, vitrage, motorisation, taille. Il annonçait donc « 0 % d'écart » en
+comparant à un prix que personne ne facture. Il appelle maintenant `effPrices`, le calcul du
+moteur lui-même, au lieu de refaire les coefficients à la main.
+
+**Et il ne tourne plus sur une seule scène.** Le bug de la chape (D22) était passé par un chemin
+que le témoin ne parcourait jamais. Une **seconde scène** exerce désormais le bois, le triple
+vitrage, le galandage, la trémie et le doublage existant. Elle a immédiatement trouvé le point 5.
+
+### 1. Le matériau des menuiseries ne changeait aucun prix
+
+Le plan proposait PVC, alu et bois. Le compteur ignorait le choix, et la table de correspondance
+ne le transmettait pas : le devis retombait sur son défaut. Au catalogue, **l'alu coûte 67 % de
+plus que le PVC** (`MAT_COEF` : alu 1, PVC 0,60). Une fenêtre à 950 € ou à 570 €, selon un choix
+que personne n'écoutait.
+
+Cause technique : `Contribution.variante` écrit dans `s.vsel`, alors que le moteur lit le matériau
+et le vitrage sur `s.mat` / `s.vit`. Passer par `variante` revenait à n'envoyer rien du tout. La
+contribution porte donc maintenant `mat` et `vit` en propre, et le regroupement final les prend
+dans sa clé — deux fenêtres de matériaux différents ne fusionnent plus en une ligne.
+
+### 2. Le bois n'existait pas au moteur
+
+Choix offert sur le plan, absent du catalogue. **`MAT_COEF.bois = 1,05`**, ajouté le 20/09/2026.
+
+Le rapport vient de trois comparatifs 2026 qui chiffrent le **même produit** dans les trois
+matériaux — c'est la seule comparaison honnête, les fourchettes larges mélangeant les essences :
+
+| | alu | bois | rapport |
+|---|---|---|---|
+| Fenêtre 135 × 120 | 1 000 € | 1 030 € | 1,03 |
+| Porte-fenêtre 215 × 120 | 1 390 € | 1 430 € | 1,03 |
+| Baie 215 × 240 | 1 730 € | 1 850 € | 1,07 |
+
+Contrôle de la méthode : les mêmes sources donnent PVC/alu ≈ 0,69, à comparer au 0,60 déjà validé
+au catalogue — même ordre de grandeur, le catalogue restant le plus prudent. **Réserve assumée :**
+le bois s'étale plus que les autres matériaux — un pin d'entrée de gamme passe sous l'alu, un
+chêne le dépasse de près de 20 %. Un coefficient unique sera toujours un peu faux pour quelqu'un.
+
+Sources : [architecteo](https://architecteo.com/prix-fenetre-alu-pvc-bois.html) ·
+[lecoindesartisans](https://lecoindesartisans.fr/blog/comparatif-fenetres-pvc-alu-bois-prix-performance) ·
+[travaux.com](https://www.travaux.com/fenetre-porte/guide-des-prix/comparatif-de-prix-fenetre-pour-bien-choisir)
+
+Le moteur accepte donc un troisième matériau (`effPrices` ne teste plus « PVC ou alu » mais lit le
+coefficient commun), et l'estimateur détaillé affiche le bouton **Bois**. Aucun prix existant ne
+bouge : alu et PVC sont inchangés.
+
+### 3. Le volet ne suivait pas sa fenêtre
+
+Le catalogue donne au volet son propre coefficient PVC (**0,80**, pas 0,60). Le moteur l'appliquait,
+la maquette non : elle affichait un volet alu sur une fenêtre PVC, **130 € de trop par volet**. Le
+volet prend maintenant le matériau de sa menuiserie, des deux côtés.
+
+### 4. Le caisson à galandage n'arrivait jamais au devis
+
+Le contrat portait le choix dans `ouvrant` ; rien ne le lisait. Le compteur annonçait **800 €** que
+le devis ne facturait pas. Une porte à galandage paie désormais sa menuiserie **et** sa poche.
+
+### 5. Le garde-corps de trémie n'était facturé nulle part
+
+Un escalier créé ouvre un vide dans le plancher : le garde-corps est obligatoire, le plan en mesure
+déjà le pourtour exact — et ni le compteur ni le devis ne s'en servaient. **180 €/ml** perdus.
+
+Contrat **1.10** : `tremiePerimNeuf` par pièce. On ne lit pas `tremiePerim` : une trémie qui existe
+déjà a déjà son garde-corps (D1).
+
+### 6. Les percements arrivaient en agrégat
+
+Même motif que le doublage (D23) : `travaux.percementsDetail` n'a pas d'identifiant, donc le devis
+portait jusqu'à **19 000 €** de percements qui ne se rattachaient à aucune ouverture du plan.
+
+Contrat **1.11** : `provenance.ouvertures[].percement` dit, pour chaque ouverture, le percement
+qu'elle provoque. L'agrégat reste le repli pour un plan d'une version antérieure.
+
+### Fausse alerte : la peinture
+
+J'ai d'abord compté 0/10 postes de peinture alimentés et cru à un trou. Le moteur la calcule seul
+(`surface × hauteur`) : elle est bien facturée. Le plan mesure mieux — 122 m² réels, ouvertures
+déduites — mais c'est une amélioration de précision, pas un ouvrage manquant.
+
+### Résultat
+
+Deux scènes, **écart 0 %** dans les deux, aucune rupture de couverture. `coherence.mjs` tient
+désormais **111 prix** et, nouveauté, les **5 coefficients** que la maquette recopie du moteur —
+ce sont eux qui avaient dérivé sans qu'aucun contrôle de prix puisse le voir.

@@ -54,6 +54,8 @@ export interface PlanPourCorrespondance {
      facturait comme neuf. */
   provenance?: {
     murs?: Array<{ id: string; type: string; porteur: boolean; etat: string; ml: number; m2: number }>;
+    /** Contrat 1.11 : le percement que chaque ouverture provoque, pour rattacher ces lignes. */
+    ouvertures?: Array<{ id?: string; percement?: string | null }>;
     doublages?: Array<{ mur?: string; mode?: string; mat?: string; etat?: string | null; m2?: number }>;
     facades?: Array<{ mur?: string; poste?: string; label?: string; etat?: string | null; m2?: number }>;
   };
@@ -61,13 +63,15 @@ export interface PlanPourCorrespondance {
     id?: string; name?: string; neuf?: boolean; plancher?: string | null;
     rooms?: Array<{ id: string; type: string; faience?: string | null; perimeter?: number; wallArea?: number; plinthes?: number; hauteur?: number; horsHabitable?: boolean; exterieur?: boolean; fauxPlafond?: boolean; area?: number; mursParType?: Record<string, number>;
       /** Contrat 1.8 : le plancher se chiffre pièce par pièce. */
-      plancherACreer?: string | null; nonHabitableAvant?: boolean }>;
+      plancherACreer?: string | null; nonHabitableAvant?: boolean; tremiePerimNeuf?: number }>;
     /** Contrat 1.7 : l'emprise du niveau, sans laquelle son plancher n'est pas chiffrable. */
     emprise?: number | null;
     equipements?: Array<{ id: string; type: string; etat: string; piece?: string | null; l?: number; p?: number; douche?: string | null; lumiere?: string | null; materiau?: string | null;
       /** Contrat 1.5 : poteaux et poutres dessinés. `reprendMurPorteur` porte l'identifiant du mur repris. */
       ossature?: { role: string; portee?: number | null; reprendMurPorteur?: string | null } | null }>;
-    menuiseries?: Array<{ id: string; type: string; etat: string; volet?: string | null; options?: string[] }>;
+    menuiseries?: Array<{ id: string; type: string; etat: string; volet?: string | null; options?: string[];
+      /** Le contrat les portait déjà ; rien ne les lisait. Voir `choixMenuiserie` et le galandage. */
+      mat?: string | null; vitrage?: string | null; ouvrant?: string | null }>;
   }>;
 }
 
@@ -81,6 +85,12 @@ export interface Contribution {
   raison: string;
   /** Variante du catalogue à sélectionner (ex. meuble-vasque « double »). */
   variante?: Record<string, string>;
+  /* Matériau et vitrage d'une menuiserie. Ce ne sont PAS des `variante` : le moteur les lit sur
+     `s.mat` / `s.vit`, pas dans `s.vsel`, et ils portent leurs propres coefficients (alu 1,
+     PVC 0,60, bois 1,05 · double 1, triple 1,20). Les faire passer par `variante` revenait à ne
+     rien envoyer du tout — une fenêtre PVC se chiffrait en alu, un triple vitrage en double. */
+  mat?: "pvc" | "alu" | "bois";
+  vit?: "double" | "triple";
   /**
    * Renseigné quand la ligne vient d'une DÉDUCTION et non d'une mesure : le plan a choisi à la
    * place de l'utilisateur, qui n'a peut-être jamais eu conscience du choix. L'écran de validation
@@ -189,11 +199,22 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
      s'ajouter à celle-ci, c'est le même ouvrage. Rempli par la boucle des équipements, qui
      s'exécute avant celle des murs. */
   const poutresDessinees = new Set<string>();
-  const add = (poste: string, quantite: number, sources: string[], raison: string, variante?: Record<string, string>, deduction?: string) => {
+  const add = (poste: string, quantite: number, sources: string[], raison: string,
+               variante?: Record<string, string>, deduction?: string,
+               choix?: Pick<Contribution, "mat" | "vit">) => {
     if (quantite <= 0) return;
     if (!posteParId(poste)) { ignores.push({ quoi: poste, pourquoi: "identifiant inconnu au catalogue", sources }); return; }
-    brut.push({ poste, quantite, sources, raison, variante, deduction });
+    brut.push({ poste, quantite, sources, raison, variante, deduction, ...choix });
   };
+  /* Le matériau et le vitrage tels que le catalogue les connaît. Le plan propose parfois plus que
+     le moteur ne sait chiffrer — on ne laisse alors PAS passer une valeur inconnue, qui vaudrait
+     coefficient 1 en silence : on n'envoie rien, et le moteur applique son défaut. */
+  const MATS = new Set(["pvc", "alu", "bois"]);
+  const VITS = new Set(["double", "triple"]);
+  const choixMenuiserie = (m: { mat?: string | null; vitrage?: string | null }): Pick<Contribution, "mat" | "vit"> => ({
+    mat: m.mat && MATS.has(m.mat) ? (m.mat as Contribution["mat"]) : undefined,
+    vit: m.vitrage && VITS.has(m.vitrage) ? (m.vitrage as Contribution["vit"]) : undefined,
+  });
 
   // ── Planchers à créer, pièce par pièce ────────────────────────────────────
   /* Un volume ouvert — grange, séjour cathédrale, combles bruts — n'a pas de plancher, et c'est
@@ -299,9 +320,21 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
       }
       if (m.etat === "remplacer") add("dem-enlever-les-anciennes-portes-fenetres", 1, src, "Menuiserie remplacée : dépose de l'ancienne");
       const poste = MENUISERIE[m.type];
-      if (poste) add(poste, 1, src, m.etat === "remplacer" ? "Menuiserie remplacée" : "Menuiserie neuve");
+      if (poste) add(poste, 1, src, m.etat === "remplacer" ? "Menuiserie remplacée" : "Menuiserie neuve",
+        undefined,
+        m.mat || m.vitrage ? undefined : "Matériau et vitrage non choisis : le devis applique ses défauts (PVC hors finition premium, double vitrage). L'alu coûte 67 % de plus que le PVC, le bois 75 %.",
+        choixMenuiserie(m));
       else if (m.type !== "passage") ignores.push({ quoi: m.type, pourquoi: "aucun poste au catalogue pour ce type de menuiserie", sources: src });
-      if (m.volet) add(m.volet === "roulant" ? "mex-volets-roulants" : "mex-volets-battants", 1, src, `Volet ${m.volet}`);
+      /* Une porte à galandage n'est pas qu'une porte : c'est une poche maçonnée ou un châssis
+         dans la cloison, et le catalogue en fait un poste à part. Le plan portait déjà le choix
+         dans `ouvrant` — personne ne le lisait, donc le compteur annonçait 800 € que le devis
+         ne facturait pas. Sa condition est INDÉPENDANTE du `else` ci-dessus : un galandage a une
+         menuiserie ET une poche, les deux se facturent. */
+      if (m.ouvrant === "galandage") add("clo-caisson-a-galandage-chassis-habillage", 1, src, "Menuiserie à galandage : sa poche dans la cloison");
+      /* Le volet suit le matériau de sa menuiserie — le catalogue lui donne son propre
+         coefficient PVC (0,80 et non 0,60), le moteur s'en charge. */
+      if (m.volet) add(m.volet === "roulant" ? "mex-volets-roulants" : "mex-volets-battants", 1, src, `Volet ${m.volet}`,
+        undefined, undefined, { mat: choixMenuiserie(m).mat });
       if (m.etat === "creer") {
         // Maçonnerie induite par une ouverture NEUVE : une fenêtre reçoit un appui, une baie ou
         // une porte extérieure un seuil. Une menuiserie remplacée garde les siens.
@@ -335,10 +368,29 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
   }
 
   // ── Percements induits ────────────────────────────────────────────────────
-  const pd = plan.travaux?.percementsDetail ?? {};
-  add("mac-ouvrir-un-mur-porteur-petite-porte-fenetre", pd.porteurPetit ?? 0, [], "Percement d'un mur porteur, petite ouverture");
-  add("mac-ouvrir-un-mur-porteur-grande-2-5-m-baie", pd.porteurGrand ?? 0, [], "Percement d'un mur porteur, grande ouverture");
-  if (pd.leger) ignores.push({ quoi: `${pd.leger} percement(s) en mur léger`, pourquoi: "aucun poste de percement hors mur porteur au catalogue", sources: [] });
+  /* Contrat 1.11 : on compte les percements OUVERTURE PAR OUVERTURE, et non sur l'agrégat
+     `travaux.percementsDetail`. Même raison que pour le doublage (D23) : une ligne sans source
+     ne se rattache à aucun objet du plan, et le percement pèse lourd — jusqu'à 19 000 € sur une
+     scène de six ouvertures. L'agrégat reste le repli pour un plan d'une version antérieure. */
+  const POSTE_PERC: Record<string, string> = {
+    porteurPetit: "mac-ouvrir-un-mur-porteur-petite-porte-fenetre",
+    porteurGrand: "mac-ouvrir-un-mur-porteur-grande-2-5-m-baie",
+  };
+  const percs = plan.provenance?.ouvertures?.filter((o) => o.percement);
+  if (percs?.length) {
+    const parType = new Map<string, string[]>();
+    for (const o of percs) parType.set(o.percement!, [...(parType.get(o.percement!) ?? []), ...(o.id ? [o.id] : [])]);
+    for (const [type, ids] of parType) {
+      if (type === "leger") { ignores.push({ quoi: `${ids.length} percement(s) en mur léger`, pourquoi: "aucun poste de percement hors mur porteur au catalogue", sources: ids }); continue; }
+      const poste = POSTE_PERC[type];
+      if (poste) add(poste, ids.length, ids, type === "porteurGrand" ? "Percement d'un mur porteur, grande ouverture" : "Percement d'un mur porteur, petite ouverture");
+    }
+  } else {
+    const pd = plan.travaux?.percementsDetail ?? {};
+    add("mac-ouvrir-un-mur-porteur-petite-porte-fenetre", pd.porteurPetit ?? 0, [], "Percement d'un mur porteur, petite ouverture");
+    add("mac-ouvrir-un-mur-porteur-grande-2-5-m-baie", pd.porteurGrand ?? 0, [], "Percement d'un mur porteur, grande ouverture");
+    if (pd.leger) ignores.push({ quoi: `${pd.leger} percement(s) en mur léger`, pourquoi: "aucun poste de percement hors mur porteur au catalogue", sources: [] });
+  }
 
   // ── Études (D11 : un forfait se coche, il ne reçoit pas de quantité) ──────
   if (plan.etudes?.structure) add("etu-etude-de-structure", 1, [], "Un mur porteur est démoli : étude de structure obligatoire");
@@ -454,6 +506,11 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
       const src = [r.id];
       if (r.plinthes) add("rev-plinthes", +r.plinthes.toFixed(2), src, "Plinthes, au périmètre réel de la pièce");
       if (r.fauxPlafond && r.area) add("clo-faux-plafond", +r.area.toFixed(2), src, "Faux plafond demandé dans cette pièce");
+      /* Contrat 1.10 : le pourtour d'une trémie dont l'escalier est à CRÉER. Un vide dans un
+         plancher impose un garde-corps, le plan en mesure le linéaire exact, et rien ne le
+         chiffrait — ni le compteur du plan, ni le devis. On lit `tremiePerimNeuf` et non
+         `tremiePerim` : une trémie qui existe déjà a déjà son garde-corps (D1). */
+      if (r.tremiePerimNeuf) add("toi-garde-corps", +r.tremiePerimNeuf.toFixed(2), src, "Garde-corps au pourtour de la trémie créée");
       const humide = TYPES_HUMIDES.has(r.type) || humides.has(r.id);
       if (!humide) continue;
       // D10 : la hauteur de pose choisie dans la fiche de pièce devient une surface.
@@ -543,7 +600,9 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
   // ── Regroupement : un poste, une ligne, toutes ses sources ───────────────
   const parPoste = new Map<string, Contribution>();
   for (const c of brut) {
-    const cle = c.poste + (c.variante ? "|" + JSON.stringify(c.variante) : "");
+    /* Deux fenêtres de matériaux ou de vitrages différents ne sont PAS la même ligne : les
+       fusionner chiffrerait les deux au coefficient de la première. */
+    const cle = c.poste + (c.variante ? "|" + JSON.stringify(c.variante) : "") + (c.mat ? "|m:" + c.mat : "") + (c.vit ? "|v:" + c.vit : "");
     const v = parPoste.get(cle);
     if (!v) { parPoste.set(cle, { ...c, sources: [...c.sources] }); continue; }
     v.quantite = +(v.quantite + c.quantite).toFixed(2);
