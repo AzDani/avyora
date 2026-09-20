@@ -491,3 +491,50 @@ déduites — mais c'est une amélioration de précision, pas un ouvrage manquan
 Deux scènes, **écart 0 %** dans les deux, aucune rupture de couverture. `coherence.mjs` tient
 désormais **111 prix** et, nouveauté, les **5 coefficients** que la maquette recopie du moteur —
 ce sont eux qui avaient dérivé sans qu'aucun contrôle de prix puisse le voir.
+
+## D25 · Le galandage se choisit sur la menuiserie, plus dans la plâtrerie
+
+Décidé le 20/09/2026 par Dani : « il faudrait un truc genre on choisit entre baie vitrée classique
+ou à galandage comme PVC ou alu ou bois, plutôt que dans plâtrerie — comme ça les gens peuvent pas
+le louper ».
+
+**Le constat.** Le « Caisson à galandage » était une ligne du lot **Cloisons / Plâtrerie**, décochée,
+**sans quantité automatique** et qu'**aucun préréglage ne coche** — le mot n'apparaît pas une fois
+dans `presets.ts`. Donc : jamais compté en mode rapide, et en détaillé seulement si l'utilisateur
+savait qu'une baie à galandage a besoin d'une poche dans la cloison. **800 € que personne ne
+cochait.**
+
+**Ce qu'on a fait.** Le choix remonte là où il se fait vraiment — sur la menuiserie, à côté du
+matériau et du vitrage :
+
+- **Baie vitrée** → *Coulissante* / *À galandage*
+- **Porte intérieure coulissante** → *En applique* / *À galandage*
+
+La poche, elle, **reste dans la plâtrerie** : c'est là qu'elle se réalise, et le devis doit garder
+ses corps d'état justes. Elle n'est simplement plus à cocher — `autoQty` la déduit du nombre de
+menuiseries posées à galandage, et cocher « à galandage » l'allume.
+
+**Le piège qu'il a fallu désamorcer d'abord.** `finCoefTask` renvoie 1 dès qu'un poste porte des
+`vars` — « piloté par variante ». Ajouter un simple choix à la porte coulissante lui aurait donc
+retiré son coefficient de finition, c'est-à-dire **changé son prix** pour tous les utilisateurs qui
+ne dessinent aucun plan. Un choix ne « pilote le prix » que s'il le déplace : la règle teste
+maintenant qu'une option au moins ait un coefficient ≠ 1, ou que le poste ait une grille de prix
+exacts (le sèche-serviette, dont toutes les options valent 1 mais dont la grille fixe le prix).
+
+Témoin avant / après, sur les 208 postes :
+
+| | éco | standard | premium |
+|---|---|---|---|
+| somme des coefficients de finition | 177,41 | 187,08 | 208,00 |
+
+Identique dans les deux sens, et la somme des fourni-posé effectifs reste à **138 954 €**. Aucun
+prix existant ne bouge.
+
+**Dans l'éditeur.** Le galandage n'était proposé que sur une baie ; une porte coulissante héritait
+du jeu des portes battantes (*battant, oscillo, coulissant, fixe*), ce qui n'a aucun sens pour
+elle. Elle a désormais son propre choix — *en applique* ou *à galandage* — et le plan transmet la
+pose à l'estimateur, pour qu'une ligne importée affiche le même état que si elle avait été cochée à
+la main.
+
+**Pas de double comptage.** Le plan épingle la poche (quantité manuelle, D12) : sa quantité ne se
+redéduit pas par-dessus. Les deux scènes de `couverture.mts` restent à **0 %**.

@@ -781,7 +781,25 @@
         "fp": 2200,
         "sm": 1600,
         "note": "uniquement en aluminium",
-        "vitrage": true
+        "vitrage": true,
+        "vars": [
+          {
+            "k": "pose",
+            "label": "Pose",
+            "opts": [
+              {
+                "k": "coulissante",
+                "label": "Coulissante",
+                "coef": 1
+              },
+              {
+                "k": "galandage",
+                "label": "À galandage",
+                "coef": 1
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "mex-porte-d-entree",
@@ -1984,7 +2002,25 @@
         "u": "u",
         "fp": 700,
         "sm": 395,
-        "note": "galandage (dans la cloison) ou en applique"
+        "note": "galandage (dans la cloison) ou en applique",
+        "vars": [
+          {
+            "k": "pose",
+            "label": "Pose",
+            "opts": [
+              {
+                "k": "applique",
+                "label": "En applique",
+                "coef": 1
+              },
+              {
+                "k": "galandage",
+                "label": "À galandage",
+                "coef": 1
+              }
+            ]
+          }
+        ]
       },
       {
         "id": "min-placards-rangements",

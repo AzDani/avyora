@@ -1372,16 +1372,20 @@ function matDeOuverture(o){const mats=matsFor(o);if(!mats.length)return null;
   return mats.includes(def)?def:mats[0];}
 const VITRAGE_COEF={simple:0.90,double:1,triple:1.20};
 // simple vitrage : gardé pour décrire l'existant, retiré pour le neuf (ne se pose quasiment plus)
-const vitragesFor=o=>(ost(o)==='creer'||ost(o)==='remplacer')?['double','triple']:['simple','double','triple'];const ouvrantOf=o=>{const def=o.type==='baie'?'coulissant':'battant';return ouvrantsFor(o.type).includes(o.ouvrant)?o.ouvrant:def;};const optsOf=o=>o.opts||[];
+const vitragesFor=o=>(ost(o)==='creer'||ost(o)==='remplacer')?['double','triple']:['simple','double','triple'];const ouvrantOf=o=>{const def=o.type==='baie'?'coulissant':o.type==='coulissante'?'applique':'battant';return ouvrantsFor(o.type).includes(o.ouvrant)?o.ouvrant:def;};const optsOf=o=>o.opts||[];
 const isExtType = k => { const d=OPENINGS[k]; return !!d && (k==='porte_entree'||k==='garage'||d.cat==='fenetre'); };
 const MENUIS_MAT={pvc:'PVC',alu:'Aluminium',bois:'Bois'}; // uniquement les matériaux du catalogue détaillé (base PVC ; alu/bois majorés)
 // matériaux proposés selon le type, aligné sur le catalogue : fenêtres / portes-fenêtres / porte d'entrée = PVC·alu·bois ; baie vitrée = alu uniquement ; portes intérieures & porte de garage = pas de choix matériau
 function matsFor(o){const t=o.type;if(t==='baie')return['alu'];if(t==='fenetre'||t==='fenetre_p'||t==='porte_fenetre'||t==='porte_entree')return['pvc','alu','bois'];return [];}
 const MENUIS_ETAT={bon:'Bon',moyen:'Moyen',vetuste:'Vétuste'};
 const VITRAGE={simple:'Simple',double:'Double',triple:'Triple'};
-const OUVRANTS={battant:'Battant',oscillo:'Oscillo-b.',coulissant:'Coulissant',galandage:'À galandage',fixe:'Fixe'};
+const OUVRANTS={battant:'Battant',oscillo:'Oscillo-b.',coulissant:'Coulissant',applique:'En applique',galandage:'À galandage',fixe:'Fixe'};
 // ouvrants réalistes par type de menuiserie
-function ouvrantsFor(t){if(t==='baie')return['coulissant','galandage','fixe'];if(t==='porte_fenetre')return['battant','coulissant','fixe'];return['battant','oscillo','coulissant','fixe'];}
+/* Une porte coulissante se pose EN APPLIQUE (rail apparent le long du mur) ou À GALANDAGE
+   (elle disparaît dans la cloison, qui reçoit alors une poche — un poste à part, 800 €). Elle
+   héritait du jeu des portes battantes, ce qui n'avait aucun sens pour elle et rendait le
+   galandage indessinable ailleurs que sur une baie. */
+function ouvrantsFor(t){if(t==='baie')return['coulissant','galandage','fixe'];if(t==='coulissante')return['applique','galandage'];if(t==='porte_fenetre')return['battant','coulissant','fixe'];return['battant','oscillo','coulissant','fixe'];}
 const MENUIS_OPTS={moustiquaire:['Moustiquaire',200],store:['Store / brise-soleil',1000],grille:['Grille de sécurité',400]}; // €/u, lot Menuiseries ext.
 const DORMANTS=[40,100,120,140,160]; // tapées d'isolation standard (mm), utilisées EN POSE APPLIQUE : 40 sans doublage, sinon isolant + 10 air + 10 placo
 function wallOfOpening(o){for(const lv of state.levels){const w=lv.walls.find(x=>x.id===o.wallId);if(w)return {w,lv};}return null;}

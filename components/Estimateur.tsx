@@ -491,7 +491,12 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                                 onVit={(v) => upd(l.c, t.n, (s) => ({ ...s, vit: v }))}
                                 onMot={(m) => upd(l.c, t.n, (s) => ({ ...s, mot: m }))}
                                 onTai={(z) => upd(l.c, t.n, (s) => ({ ...s, tai: z }))}
-                                onVar={(g, o) => upd(l.c, t.n, (s) => ({ ...s, vsel: { ...(s.vsel || {}), [g]: o } }))}
+                                onVar={(g, o) => { upd(l.c, t.n, (s) => ({ ...s, vsel: { ...(s.vsel || {}), [g]: o } }));
+                                  /* Choisir « à galandage » coche la poche. Elle vit dans le lot
+                                     plâtrerie — c'est bien là qu'elle se réalise — mais personne
+                                     n'allait la chercher : 800 € oubliés à chaque baie. Sa
+                                     quantité se déduit ensuite (autoQty), on ne la fige pas ici. */
+                                  if (g === "pose" && o === "galandage") upd("Cloisons / Platrerie", "Caisson à galandage (châssis + habillage)", (s) => ({ ...s, on: true })); }}
                                 onNote={(v) => upd(l.c, t.n, (s) => ({ ...s, note: v }))}
                                 onPu={(v) => upd(l.c, t.n, (s) => { const n = { ...s }; if (v == null) delete n.pu; else n.pu = v; return n; })}
                                 onPm={(v) => upd(l.c, t.n, (s) => { const n = { ...s }; if (v == null) delete n.pm; else { n.pm = v; delete n.pu; } return n; })}

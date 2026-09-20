@@ -138,6 +138,14 @@ describe("table de correspondance · ce que le scénario doit produire", () => {
     expect(poche.sources).toContain(m.id);
     expect(c.some((x) => x.poste === "mex-fenetres")).toBe(true);   // la menuiserie reste due
   });
+  it("le choix « à galandage » voyage aussi sur la menuiserie elle-même", () => {
+    const p = JSON.parse(JSON.stringify(plan));
+    const m = p.detailNiveaux[0].menuiseries.find((x: { etat: string }) => x.etat === "creer");
+    m.ouvrant = "galandage";
+    const { contributions: c } = contributionsDuPlan(p);
+    const men = c.find((x) => x.sources.includes(m.id) && /^mex-|^min-/.test(x.poste))!;
+    expect(men.variante).toEqual({ pose: "galandage" });
+  });
   /* Le garde-corps se lit sur `tremiePerimNeuf` : une trémie déjà là a déjà le sien (D1). */
   it("une trémie créée paie son garde-corps, une trémie existante non", () => {
     const p = JSON.parse(JSON.stringify(plan));

@@ -214,9 +214,16 @@ const TASK_FIN: Record<string, Record<Finition, number>> = {
 export function finCoef(ctx: Ctx, corps: string): number {
   return (LOT_FIN[corps] ?? FINCO)[ctx.finition];
 }
+/* Un groupe de variantes ne « pilote le prix » que s'il le déplace vraiment : soit par un
+   coefficient différent de 1, soit par une grille de prix exacts (le sèche-serviette). Une
+   variante NEUTRE — « baie classique ou à galandage », qui ne change pas le prix de la baie mais
+   déclenche un autre poste — ne doit pas, elle, désactiver le coefficient de finition : ce serait
+   changer le prix d'un poste en lui ajoutant un simple choix. */
+const varsPilotentLePrix = (t: Tache): boolean =>
+  !!t.grid || !!t.vars?.some((g) => g.opts.some((o) => o.coef !== 1));
 /** Coef finition par tâche : 1 (fixe) pour les équipements à prix fixe, sinon le coef du lot. */
 export function finCoefTask(ctx: Ctx, l: Lot, t: Tache): number {
-  if (t.fixe || t.mat || t.vitrage || t.moto || t.taille || t.vars) return 1; // fixe ou piloté par variante
+  if (t.fixe || t.mat || t.vitrage || t.moto || t.taille || varsPilotentLePrix(t)) return 1; // fixe ou piloté par variante
   const g = TASK_FIN[t.n];
   return g ? g[ctx.finition] : finCoef(ctx, l.c);
 }
@@ -443,6 +450,19 @@ export function autoQty(ctx: Ctx, c: string, n: string, sel: Selection): number 
     return area > 0 ? area : SDB * 6.5; // pas de bac coché → estimation moyenne par SDB
   })();
   if (c === "Cloisons / Platrerie" && n === FINI) return derivedFinitions(ctx, sel);
+  /* Le caisson à galandage se DÉDUIT de la menuiserie, il ne se coche plus dans son coin. Une
+     baie ou une porte coulissante posée « à galandage » a besoin d'une poche dans la cloison :
+     c'est un poste de plâtrerie, mais le choix appartient à la menuiserie, là où l'utilisateur
+     le fait vraiment. Personne ne pensait à cocher une ligne perdue dans un autre lot — 800 €
+     oubliés à chaque fois. */
+  if (n === "Caisson à galandage (châssis + habillage)") {
+    const poches = (corps: string, tache: string) => {
+      const m = sel[key(corps, tache)];
+      if (!m || !m.on || (m.vsel && m.vsel["pose"]) !== "galandage") return 0;
+      return m.manual ? (m.qty ?? 0) : (autoQty(ctx, corps, tache, sel) ?? 0);
+    };
+    return poches("Menuiseries exterieures", "Baie vitrée") + poches("Menuiseries interieures", "Porte intérieure coulissante");
+  }
   // Suite parentale découpée : le sol carrelé cible la SDB, le sol « vivant » la chambre (+ dressing).
   const suiteZ = ctx.perimetre === "piece" && ctx.espace === "suite";
   const zSol = ctx.zSdb ?? 0;                                                        // sol SDB (carrelé)

@@ -320,8 +320,15 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
       }
       if (m.etat === "remplacer") add("dem-enlever-les-anciennes-portes-fenetres", 1, src, "Menuiserie remplacée : dépose de l'ancienne");
       const poste = MENUISERIE[m.type];
+      /* Le choix de pose voyage AUSSI sur la menuiserie : c'est là que l'estimateur détaillé le
+         montre désormais, et une ligne importée doit afficher le même état que si l'utilisateur
+         l'avait cochée lui-même. La poche reste une ligne à part, épinglée par le plan — sa
+         quantité ne se redéduit donc pas et ne peut pas doubler. */
+      const pose = m.ouvrant === "galandage" ? { pose: "galandage" }
+        : m.type === "baie" ? { pose: "coulissante" }
+        : m.type === "coulissante" ? { pose: "applique" } : undefined;
       if (poste) add(poste, 1, src, m.etat === "remplacer" ? "Menuiserie remplacée" : "Menuiserie neuve",
-        undefined,
+        pose,
         m.mat || m.vitrage ? undefined : "Matériau et vitrage non choisis : le devis applique ses défauts (PVC hors finition premium, double vitrage). L'alu coûte 67 % de plus que le PVC, le bois 75 %.",
         choixMenuiserie(m));
       else if (m.type !== "passage") ignores.push({ quoi: m.type, pourquoi: "aucun poste au catalogue pour ce type de menuiserie", sources: src });
