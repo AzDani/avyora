@@ -801,3 +801,24 @@ CE doublage — le bout est alors franc, perpendiculaire au mur.
 `bandeDoublage(f,i)`, appelée par le dessin ET par le contrôle. Deux nouvelles vérifications : la
 bande garde son épaisseur d'un bout à l'autre, et cette épaisseur est bien celle du doublage. Un
 défaut de tracé ne se verra plus seulement à l'œil.
+
+## D28 quinquies · Retirer un doublage
+
+« Et comment on retire l'isolation, si on veut refaire ? » — Dani, 20/09/2026. Question légitime :
+j'avais livré un outil qui pose et aucun geste pour déposer. Le seul retrait passait par la fiche
+du mur, qui vide **toute la face**.
+
+**`Alt` + clic retire le tronçon visé.** Le même outil pose et dépose — on ne change pas d'outil
+pour défaire ce qu'on vient de faire — et il enlève **le tronçon sous le curseur**, pas toute la
+face : sur un mur qui longe trois pièces, on en refait rarement trois.
+
+Là où il n'y a rien, rien n'est retiré, et l'outil le dit plutôt que de faire semblant.
+
+Les deux autres chemins restent, pour ce qu'ils font mieux : la fiche du mur vide une face entière
+d'un coup, la sélection de groupe vide plusieurs murs.
+
+| geste | portée |
+|---|---|
+| `Alt` + clic à l'outil | le tronçon visé |
+| « Retirer » dans la fiche du mur | toute la face |
+| « Retirer » sur un groupe | tous les murs sélectionnés |

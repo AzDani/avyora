@@ -184,6 +184,23 @@ const res = await p.evaluate(() => {
     t["la bande garde son épaisseur d'un bout à l'autre"] = pres(ep.maxi - ep.mini, 0, 0.002);
     t["l'épaisseur dessinée est celle du doublage (12 cm)"] = pres(ep.maxi, 0.12, 0.002); }
 
+  /* ── retirer : Alt + clic enlève LE tronçon visé ─────────────────────────
+     Le même outil pose et dépose — on ne change pas d'outil pour défaire ce qu'on vient de
+     faire — et il enlève le tronçon sous le curseur, pas toute la face : sur un mur qui longe
+     trois pièces, on en refait rarement trois. */
+  { state = blankState(); const lv = L(); lv.height = 2.5;
+    const W = (a, c, ty) => { const x = { id: uid(), a: v(...a), b: v(...c), type: ty || "mur" }; lv.walls.push(x); return x; };
+    const nord = W([0, 0], [12, 0]); W([12, 0], [12, 4]); W([12, 4], [0, 4]); W([0, 4], [0, 0]);
+    W([4, 0], [4, 4], "cloison"); W([8, 0], [8, 4], "cloison");
+    setMode("projet"); afterChange();
+    const m2 = () => +contratPlan().doublage.iti.toFixed(1);
+    poserDoublage(nord, 1, 0, 1 / 3); poserDoublage(nord, 1, 2 / 3, 1);
+    t["deux tronçons posés · 20 m²"] = pres(m2(), 20, 0.1);
+    t["retirer vise le tronçon sous le curseur"] = retirerDoublageAu(nord, 1, 0.1) && pres(m2(), 10, 0.1);
+    t["les autres tronçons sont intacts"] = isoLayers(nord).length === 1 && !!isoOnSideAt(nord, 1, v(10, 0.05));
+    t["là où il n'y a rien, on ne retire rien"] = retirerDoublageAu(nord, 1, 0.5) === false;
+    t["retirer le dernier vide le mur"] = retirerDoublageAu(nord, 1, 0.9) && pres(m2(), 0, 0.01) && isoLayers(nord).length === 0; }
+
   return t;
 });
 /* ── et le vrai geste, à la souris ───────────────────────────────────────────

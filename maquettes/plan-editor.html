@@ -1376,6 +1376,20 @@ function tronconDeLaPiece(w,t){
   for(let i=0;i<arr.length-1;i++) if(t>=arr[i]-1e-6 && t<=arr[i+1]+1e-6) return [arr[i],arr[i+1]];
   return [0,1];
 }
+/* Retire le doublage qui couvre CE point de CETTE face — un tronçon, pas toute la face. Sur un
+   mur qui longe trois pièces, on refait rarement les trois. Le panneau du mur, lui, garde son
+   bouton « Retirer » pour vider la face entière d'un coup. */
+function retirerDoublageAu(w,side,t){
+  if(!w)return false;
+  const l=isoList(w);
+  const i=l.findIndex(io=>(io.side||1)===side && (isoEntier(io)||isoCouvreT(io,t)));
+  if(i<0)return false;
+  history.push(snapshot());
+  l.splice(i,1);
+  syncNewDormants(w);
+  afterChange();
+  return true;
+}
 /* Pose le doublage tracé sur la face visée. Remplace l'étendue s'il y en avait déjà un : l'outil
    sert à dire OÙ il est, donc le dernier geste fait foi. */
 function poserDoublage(w,side,t0,t1){
@@ -2249,6 +2263,12 @@ cv.addEventListener('pointerdown',e=>{
   if(tool==='doublage'){
     const f=faceSousCurseur(raw);
     if(!f){toast('Vise la face d\'un mur : le doublage se pose contre un mur, il ne flotte pas');return;}
+    /* Alt = retirer. Le même outil pose et dépose : on ne change pas d'outil pour défaire ce
+       qu'on vient de faire, et on retire le tronçon visé, pas toute la face. */
+    if(keys.alt){
+      if(retirerDoublageAu(f.w,f.side,f.t))toast('Doublage retiré',true);
+      else toast('Aucun doublage à cet endroit');
+      return;}
     const t=aimanteT(f.w,f.t);
     drag={kind:'isoDraw',w:f.w,side:f.side,t0:t,t1:t,moved:false};
     draw();return;}
@@ -2624,7 +2644,7 @@ const HINTS={
   murChain:'Clique le coin suivant, ou tape une longueur (ex. <kbd>3,5</kbd>) + <kbd>Entrée</kbd> · <kbd>Entrée</kbd> seule ferme la pièce · <kbd>Échap</kbd> / double-clic termine sans fermer',
   ouverture:'Survole un mur et clique pour poser l\'ouverture · elle s\'aimante au mur · ensuite : glisse-la ou change son sens dans le panneau',
   equipement:'Clique près d\'un mur : l\'équipement se colle au mur tout seul · <kbd>R</kbd> pour pivoter · glisse pour déplacer',
-  doublage:'Glisse le long de la <b>face</b> du mur à doubler : le doublage se pose exactement là · <b>clique</b> sans glisser = tout le mur · il s\'aimante aux jonctions',
+  doublage:'Glisse le long de la <b>face</b> du mur : le doublage se pose exactement là · <b>clique</b> = le tronçon de la pièce · <kbd>Alt</kbd>+clic = <b>retirer</b> · il s\'aimante aux jonctions',
   cote:'Clique les 2 points à coter · la cote <b>flotte</b> avec la souris : écarte-la du mur et <b>clique pour la fixer</b> · <kbd>Échap</kbd> annule',
   cotePlace:'Écarte la ligne de cote à la distance voulue (elle suit la souris) puis <b>clique pour la fixer</b> · <kbd>Échap</kbd> annule',
   mesure:'Les points s\'accrochent aux <b>angles intérieurs</b> des pièces (carré vert) → surface réelle, pas à l\'axe des murs · zoome pour viser · reviens au 1er point pour <b>fermer</b> : périmètre + surface · <kbd>clic droit</kbd>/<kbd>Échap</kbd> efface',
@@ -3355,7 +3375,8 @@ function renderPanel(){pruneEmptyTexts();if(isMobile()){if(sel)toggleSheet(true)
     h+=`<div class="tip"><b>Intérieur</b> : portes entre pièces (comptées en menuiserie intérieure). <b>Extérieur</b> : donne sur dehors → pose, tapée et isolation gérées. En vue <b>Projet</b>, une ouverture ajoutée est un <b>percement</b> ; une existante peut être marquée <b>à boucher</b>.</div>`;
   } else if(tool==='doublage'){
     const ite=DBL_CFG.mode==='ite',ep=DBL_CFG.e+(ite?0.010:0.020),R=+(DBL_CFG.e/(ISO_MAT[DBL_CFG.mat].lambda)).toFixed(2);
-    h+=`<div class="ptitle">Doublage</div><div class="psub">Glisse le long de la <b>face</b> du mur à doubler. Il se pose exactement là où tu l'as tiré — un <b>clic</b> sans glisser prend le mur entier.</div>
+    h+=`<div class="ptitle">Doublage</div><div class="psub">Glisse le long de la <b>face</b> du mur à doubler. Il se pose exactement là où tu l'as tiré — un <b>clic</b> sans glisser prend le tronçon de la pièce.</div>
+      <div class="tip" style="margin-top:0"><kbd>Alt</kbd> + clic sur un doublage le <b>retire</b> — ce tronçon-là seulement. Pour vider toute une face d'un coup, sélectionne le mur et clique <b>Retirer</b> dans sa fiche.</div>
       <div class="ph">Par où</div>
       <div class="seg">
         <button class="${!ite?'on':''}" onclick="setDblCfg('mode','iti')">Par l'intérieur<small>ITI</small></button>
