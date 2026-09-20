@@ -1316,6 +1316,61 @@ function isoOnSideAt(w,s,p){
   if(isoEntier(io)||!p)return io;
   return isoCouvreT(io,Math.max(0,Math.min(1,projT(p,w.a,w.b))))?io:null;
 }
+/* ── Outil Doublage ────────────────────────────────────────────────────────
+   Le doublage était une PROPRIÉTÉ du mur : on sélectionnait le mur, on cliquait « Isoler », et il
+   naissait sur TOUTE sa longueur. Sur un mur qui traverse trois pièces, il s'étalait sur les
+   trois, et on passait son temps à le retirer plutôt qu'à le poser. Avec un outil, on le TRACE :
+   il apparaît là où on l'a tiré, et nulle part ailleurs.
+
+   Il reste ancré à sa face de mur, et ce n'est pas un détail de mise en œuvre — c'est ce qui
+   permet au reste de fonctionner : le retour d'isolant en tableau des ouvertures, la tapée des
+   menuiseries calée sur l'épaisseur, la cloison qui s'arrête contre le doublage, et le devis qui
+   sait que le mur doublé donne sur l'extérieur. Un trait libre ne saurait rien de tout ça. */
+const DBL_CFG={mode:'iti',mat:'gv',e:0.10};
+function setDblCfg(k,val){
+  if(k==='mode'&&(val==='iti'||val==='ite'))DBL_CFG.mode=val;
+  else if(k==='mat'&&ISO_MAT[val])DBL_CFG.mat=val;
+  else if(k==='e')DBL_CFG.e=Math.max(0.02,Math.min(0.30,(parseFloat(val)||100)/1000));
+  renderPanel();draw();
+}
+/* La face de mur sous le point : le mur le plus proche, et de quel côté on est. On vise la FACE,
+   pas l'axe — c'est le geste naturel, on longe le parement qu'on va doubler. */
+function faceSousCurseur(p,tol){
+  const lv=L();let best=null;
+  lv.walls.forEach(w=>{
+    if(isVirtual(w)||!wallDrawn(w)||wst(w)==='demolir')return;
+    const t=projT(p,w.a,w.b);if(t<-0.02||t>1.02)return;
+    const d=distSeg(p,w.a,w.b);
+    const u=norm(sub(w.b,w.a)),n=perp(u);
+    const r=sub(p,add(w.a,mul(u,t*wallLen(w))));const cote=(r.x*n.x+r.y*n.y)>=0?1:-1;
+    const ecart=Math.abs(d-faceDist(w,cote));                 /* distance à la FACE, pas à l'axe */
+    if(d>wallT(w)/2+(tol||0.45))return;
+    if(!best||ecart<best.ecart)best={w,side:cote,t:Math.max(0,Math.min(1,t)),ecart};
+  });
+  return best;
+}
+/* Aimante une abscisse sur les arrêts naturels du mur : ses bouts et chaque jonction. C'est là
+   qu'un doublage s'arrête en vrai, et c'est là que `detectFaces` a déjà coupé. */
+function aimanteT(w,t){
+  const arr=arretsDoublage(L(),w),Lw=wallLen(w)||1;
+  let best=t,dmin=0.30/Lw;                                    /* 30 cm d'aimantation */
+  arr.forEach(a=>{const d=Math.abs(a-t);if(d<dmin){dmin=d;best=a;}});
+  return Math.max(0,Math.min(1,best));
+}
+/* Pose le doublage tracé sur la face visée. Remplace l'étendue s'il y en avait déjà un : l'outil
+   sert à dire OÙ il est, donc le dernier geste fait foi. */
+function poserDoublage(w,side,t0,t1){
+  if(!w)return;
+  const a=Math.min(t0,t1),b=Math.max(t0,t1);
+  if(b-a<1e-3)return;
+  history.push(snapshot());
+  const slot=isoSlotForSide(w,side);
+  const st=mode()!=='existant'?'creer':undefined;
+  w[slot]={e:DBL_CFG.e,mat:DBL_CFG.mat,mode:DBL_CFG.mode,sys:DBL_CFG.mode==='ite'?'enduit':'ossature',side,
+           t0:+a.toFixed(4),t1:+b.toFixed(4),...(st?{st}:{})};
+  syncNewDormants(w);
+  afterChange();
+}
 /* Les points d'arrêt possibles : les deux bouts, et chaque endroit où un autre mur touche. */
 function arretsDoublage(lv,w){
   const out=[0,1];
@@ -2168,6 +2223,12 @@ cv.addEventListener('pointerdown',e=>{
   // clic droit : termine la tâche en cours (pose, tracé, mesure) et revient à l'outil Sélection
   if(e.button===2){ rightClickFinish(); return; }
   if(tool==='zone'){drag={kind:'band',start:raw,cur:raw};return;}
+  if(tool==='doublage'){
+    const f=faceSousCurseur(raw);
+    if(!f){toast('Vise la face d\'un mur : le doublage se pose contre un mur, il ne flotte pas');return;}
+    const t=aimanteT(f.w,f.t);
+    drag={kind:'isoDraw',w:f.w,side:f.side,t0:t,t1:t,moved:false};
+    draw();return;}
   if(tool==='select'){
     closeCoteEdit();
     // clic sans modificateur sur un mur d'un groupe → sélectionne tout le groupe (Alt = ce mur seul)
@@ -2309,6 +2370,8 @@ cv.addEventListener('pointermove',e=>{
       drag.moved=true;syncRooms(L());}
     else if(drag.kind==='rotate'){const it=drag.it;let a=Math.atan2(raw.y-it.y,raw.x-it.x)+Math.PI/2;if(settings.magnet&&!keys.alt){const st=Math.PI/12;a=Math.round(a/st)*st;}it.rot=((a%(2*Math.PI))+2*Math.PI)%(2*Math.PI);}
     else if(drag.kind==='band'){drag.cur=raw;}
+    else if(drag.kind==='isoDraw'){const t=aimanteT(drag.w,projT(raw,drag.w.a,drag.w.b));
+      if(Math.abs(t-drag.t1)>1e-6){drag.t1=t;drag.moved=true;}}
     else if(drag.kind==='dim'){const d=sub(raw,drag.start);if(drag.free){drag.d.a=add(drag.a0,d);drag.d.b=add(drag.b0,d);}else{const nn=perp(norm(sub(drag.b0,drag.a0)));let off=drag.off0+d.x*nn.x+d.y*nn.y;if(settings.magnet)off=Math.round(off/0.05)*0.05;drag.d.off=off;}}
     else if(drag.kind==='text'){const d=sub(raw,drag.start);drag.t.x=drag.x0+d.x;drag.t.y=drag.y0+d.y;}
     else if(drag.kind==='bg'){const d=sub(raw,drag.start);L().bg.x=drag.x0+d.x;L().bg.y=drag.y0+d.y;}
@@ -2322,6 +2385,12 @@ cv.addEventListener('pointerup',e=>{
   if(!drag)return;
   const d=drag; drag=null;
   if(d.kind==='pan'){if(d.pending)clickAction(d.pending.raw);else save();updateCursor();return;}
+  if(d.kind==='isoDraw'){
+    /* Un clic sans glisser prend tout le mur : c'est le cas courant, et l'exiger au glissé
+       obligerait à viser deux bouts pour dire « ce mur-là, en entier ». */
+    if(!d.moved||Math.abs(d.t1-d.t0)<1e-3)poserDoublage(d.w,d.side,0,1);
+    else poserDoublage(d.w,d.side,d.t0,d.t1);
+    sel={kind:'wall',id:d.w.id};renderPanel();draw();return;}
   if(d.kind==='band'){ // rectangle de sélection : tout ce qui est dans le cadre (pour supprimer/déplacer vite)
     const x0=Math.min(d.start.x,d.cur.x),x1=Math.max(d.start.x,d.cur.x),y0=Math.min(d.start.y,d.cur.y),y1=Math.max(d.start.y,d.cur.y);
     const lv=L(),inR=p=>p.x>=x0&&p.x<=x1&&p.y>=y0&&p.y<=y1,sel2=[];
@@ -2370,7 +2439,7 @@ function closeOrEnd(){
 }
 function updateCursor(){
   let c='default';
-  if(tool==='mur'||tool==='cote'||tool==='mesure'||tool==='ouverture'||tool==='equipement'||tool==='texte'||tool==='zone')c='crosshair';
+  if(tool==='mur'||tool==='cote'||tool==='mesure'||tool==='ouverture'||tool==='equipement'||tool==='texte'||tool==='zone'||tool==='doublage')c='crosshair';
   if(keys.space)c='grab';
   if(drag&&(drag.kind!=='pan'||!drag.pending))c='grabbing';
   else if(tool==='select'&&hover){
@@ -2465,7 +2534,7 @@ window.addEventListener('keydown',e=>{
     if(sel.kind==='wall'){const w=findWall(sel.id);const dd=deplacementBorne(w,d);const oa={...w.a},ob={...w.b};moveNode(oa,add(oa,dd));moveNode(ob,add(ob,dd));}
     afterChange();return;
   }
-  if(k==='v')setTool('select');if(k==='m')setTool('mur');if(k==='p')setTool('ouverture');if(k==='e')setTool('equipement');if(k==='c')setTool('cote');if(k==='l')setTool('mesure');if(k==='t')setTool('texte');if(k==='b')setTool('zone');
+  if(k==='v')setTool('select');if(k==='m')setTool('mur');if(k==='p')setTool('ouverture');if(k==='e')setTool('equipement');if(k==='c')setTool('cote');if(k==='l')setTool('mesure');if(k==='t')setTool('texte');if(k==='b')setTool('zone');if(k==='d')setTool('doublage');
   if(k==='r'&&sel?.kind==='item'){rotateItem();}
   if(e.key==='Shift')draw();
 });
@@ -2493,6 +2562,7 @@ const TOOLS=[
   ['zone','Sélection rectangle','B','<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="4 3"/></svg>'],
   ['mur','Murs','M','<svg viewBox="0 0 24 24"><path d="M3 17V7h18v10z"/><path d="M3 12h18M9 7v5M15 12v5"/></svg>'],
   ['ouverture','Ouvertures','P','<svg viewBox="0 0 24 24"><path d="M3 20h18M6 20V4h6"/><path d="M6 4a10 10 0 0 1 10 10"/><path d="M15 20v-5h4v5"/></svg>'],
+  ['doublage','Doublage','D','<svg viewBox="0 0 24 24"><path d="M4 4v16"/><path d="M8 4v16" stroke-dasharray="3 2"/><path d="M4 8h4M4 12h4M4 16h4"/><path d="M12 4v16M12 12h9"/></svg>'],
   ['equipement','Équipements','E','<svg viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="9" rx="2"/><path d="M6 9V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v3M6 18v2M18 18v2"/></svg>'],
   ['cote','Cote','C','<svg viewBox="0 0 24 24"><path d="M3 12h18M3 8v8M21 8v8M8 10v4M13 10v4"/></svg>'],
   ['texte','Texte','T','<svg viewBox="0 0 24 24"><path d="M4 6h16M12 6v14M8 20h8"/></svg>'],
@@ -2502,7 +2572,7 @@ const TOOLS=[
 const TOOL_GROUPS=[
   {cat:'',ids:['select','zone']},
   {cat:'Tracer',ids:['mur']},
-  {cat:'Ajouter',ids:['ouverture','equipement','texte']},
+  {cat:'Ajouter',ids:['ouverture','doublage','equipement','texte']},
   {cat:'Mesures',ids:['cote','mesure']},
   {cat:'Fond',ids:['calque']},
 ];
@@ -2529,6 +2599,7 @@ const HINTS={
   murChain:'Clique le coin suivant, ou tape une longueur (ex. <kbd>3,5</kbd>) + <kbd>Entrée</kbd> · <kbd>Entrée</kbd> seule ferme la pièce · <kbd>Échap</kbd> / double-clic termine sans fermer',
   ouverture:'Survole un mur et clique pour poser l\'ouverture · elle s\'aimante au mur · ensuite : glisse-la ou change son sens dans le panneau',
   equipement:'Clique près d\'un mur : l\'équipement se colle au mur tout seul · <kbd>R</kbd> pour pivoter · glisse pour déplacer',
+  doublage:'Glisse le long de la <b>face</b> du mur à doubler : le doublage se pose exactement là · <b>clique</b> sans glisser = tout le mur · il s\'aimante aux jonctions',
   cote:'Clique les 2 points à coter · la cote <b>flotte</b> avec la souris : écarte-la du mur et <b>clique pour la fixer</b> · <kbd>Échap</kbd> annule',
   cotePlace:'Écarte la ligne de cote à la distance voulue (elle suit la souris) puis <b>clique pour la fixer</b> · <kbd>Échap</kbd> annule',
   mesure:'Les points s\'accrochent aux <b>angles intérieurs</b> des pièces (carré vert) → surface réelle, pas à l\'axe des murs · zoome pour viser · reviens au 1er point pour <b>fermer</b> : périmètre + surface · <kbd>clic droit</kbd>/<kbd>Échap</kbd> efface',
@@ -2610,6 +2681,21 @@ function draw(){
   if(sel?.kind==='item'&&multi.length<=1&&!drag){const it=lv.items.find(i=>i.id===sel.id);if(it){const rh=rotHandle(it),c=S(it);ctx.setLineDash([3,3]);ctx.strokeStyle='#4f46e5';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(c.x+Math.sin(it.rot)*it.h/2*z,c.y-Math.cos(it.rot)*it.h/2*z);ctx.lineTo(rh.x,rh.y);ctx.stroke();ctx.setLineDash([]);ctx.beginPath();ctx.arc(rh.x,rh.y,7,0,7);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#4f46e5';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.arc(rh.x,rh.y,3.2,0.3,5.6);ctx.lineWidth=1.5;ctx.stroke();}}
   // rectangle de sélection
   if(sel?.kind==='marquee'){msel.forEach(m=>{if(m.kind==='wall'||m.kind==='opening'||m.kind==='item')return;let pt=null;if(m.kind==='text'){const t=TX(lv).find(x=>x.id===m.id);if(t)pt=v(t.x,t.y);}else if(m.kind==='dim'){const d=lv.dims.find(x=>x.id===m.id);if(d){const L2=dimLine(d);pt=mul(add(L2.a,L2.b),.5);}}if(pt){const s=S(pt);ctx.beginPath();ctx.arc(s.x,s.y,9,0,7);ctx.fillStyle='rgba(79,70,229,.18)';ctx.fill();ctx.strokeStyle='#4f46e5';ctx.lineWidth=2;ctx.stroke();}});}
+  /* Aperçu du doublage en cours de tracé : la bande exacte qui sera posée, à sa vraie épaisseur
+     et du bon côté — on voit ce qu'on obtient avant de lâcher. */
+  if(drag?.kind==='isoDraw'){
+    const w=drag.w,u=norm(sub(w.b,w.a)),n=perp(u),off=wallOff(w),Lw=wallLen(w);
+    const ep=DBL_CFG.e+(DBL_CFG.mode==='ite'?0.010:0.020),d0=faceDist(w,drag.side);
+    const a=Math.min(drag.t0,drag.t1),b2=Math.max(drag.t0,drag.t1);
+    const P=(t,dd)=>S(add(add(add(w.a,mul(u,t*Lw)),off),mul(n,drag.side*dd)));
+    const q=[P(a,d0),P(b2,d0),P(b2,d0+ep),P(a,d0+ep)];
+    ctx.beginPath();ctx.moveTo(q[0].x,q[0].y);q.slice(1).forEach(pt=>ctx.lineTo(pt.x,pt.y));ctx.closePath();
+    ctx.fillStyle='rgba(14,154,167,.30)';ctx.fill();
+    ctx.strokeStyle='#0e9aa7';ctx.lineWidth=1.5;ctx.stroke();
+    const ml=Math.abs(b2-a)*Lw;
+    if(ml>0.01){const m=P((a+b2)/2,d0+ep+0.12);ctx.fillStyle='#0e7490';ctx.font='700 12px Geist Mono, monospace';
+      ctx.textAlign='center';ctx.fillText(fmt(ml,2)+' m',m.x,m.y);}
+  }
   if(drag?.kind==='band'){const a=S(drag.start),b=S(drag.cur);ctx.fillStyle='rgba(79,70,229,.08)';ctx.fillRect(a.x,a.y,b.x-a.x,b.y-a.y);ctx.setLineDash([5,4]);ctx.strokeStyle='#4f46e5';ctx.lineWidth=1.5;ctx.strokeRect(a.x,a.y,b.x-a.x,b.y-a.y);ctx.setLineDash([]);}
   if(hoverHit?.kind==='item'&&isHover('item',hoverHit.id)){const it=lv.items.find(i=>i.id===hoverHit.id);if(it){const s=S(it);ctx.save();ctx.translate(s.x,s.y);ctx.rotate(it.rot);ctx.scale(z,z);ctx.setLineDash([5/z,4/z]);ctx.strokeStyle='#a78bfa';ctx.lineWidth=1.5/z;strokeRects(itemRects(it,lv),4/z);ctx.restore();}}
   if(hoverHit?.kind==='opening'&&isHover('opening',hoverHit.id)){const o=lv.openings.find(x=>x.id===hoverHit.id);const w=o&&findWall(o.wallId);if(w){const c=S(add(w.a,mul(sub(w.b,w.a),o.t)));ctx.beginPath();ctx.arc(c.x,c.y,Math.max(14,o.w/2*z+6),0,7);ctx.strokeStyle='#a78bfa';ctx.lineWidth=1.5;ctx.setLineDash([5,4]);ctx.stroke();ctx.setLineDash([]);}}
@@ -3221,6 +3307,20 @@ function renderPanel(){pruneEmptyTexts();if(isMobile()){if(sel)toggleSheet(true)
       h+=`<div class="fam" style="--fc:${col};--fbg:${hexA(col,.09)}"><div class="famh"><span class="fic">${ic}</span><b>${label}</b><small>${list.length}</small></div><div class="lib2">`+
         list.map(([k,o])=>`<button class="it ${openingType===k?'on':''}" onclick="openingType='${k}';renderPanel();draw()" title="${o.label}"><span class="th op">${openingIcon(o.kind)}</span><b>${o.label}</b><small>${fmt(o.w)} × ${fmt(o.h)} m</small></button>`).join('')+`</div></div>`;});
     h+=`<div class="tip"><b>Intérieur</b> : portes entre pièces (comptées en menuiserie intérieure). <b>Extérieur</b> : donne sur dehors → pose, tapée et isolation gérées. En vue <b>Projet</b>, une ouverture ajoutée est un <b>percement</b> ; une existante peut être marquée <b>à boucher</b>.</div>`;
+  } else if(tool==='doublage'){
+    const ite=DBL_CFG.mode==='ite',ep=DBL_CFG.e+(ite?0.010:0.020),R=+(DBL_CFG.e/(ISO_MAT[DBL_CFG.mat].lambda)).toFixed(2);
+    h+=`<div class="ptitle">Doublage</div><div class="psub">Glisse le long de la <b>face</b> du mur à doubler. Il se pose exactement là où tu l'as tiré — un <b>clic</b> sans glisser prend le mur entier.</div>
+      <div class="ph">Par où</div>
+      <div class="seg">
+        <button class="${!ite?'on':''}" onclick="setDblCfg('mode','iti')">Par l'intérieur<small>ITI</small></button>
+        <button class="${ite?'on':''}" onclick="setDblCfg('mode','ite')">Par l'extérieur<small>ITE</small></button>
+      </div>
+      <div class="ph mt">Isolant</div>
+      <div class="seg wrap">${Object.entries(ISO_MAT).map(([k,m])=>`<button class="${DBL_CFG.mat===k?'on':''}" onclick="setDblCfg('mat','${k}')">${m.label}<small>λ ${m.lambda}</small></button>`).join('')}</div>
+      <div class="row" style="margin-top:10px"><label>Épaisseur</label><span>${[60,80,100,120,140,160,200].map(mm=>`<button class="miniep ${Math.round(DBL_CFG.e*1000)===mm?'on':''}" onclick="setDblCfg('e',${mm})">${mm}</button>`).join('')}</span></div>
+      <div class="blond ${R>=R_MIN_MUR?'ok':'ko'}"><b>${ite?'Épaisseur ajoutée dehors':'Épaisseur perdue dans la pièce'} : <span>${fmt(ep*100,1)} cm</span> · R = ${fmt(R,1)} m².K/W</b><small>${Math.round(DBL_CFG.e*100)} cm d'isolant + ${ite?'enduit':'lame d\'air + BA13'}.</small><small>${R>=R_MIN_MUR?'✓ Conforme : R ≥ '+R_MIN_MUR+' (seuil MaPrimeRénov\' / CEE mur).':'⚠ R < '+R_MIN_MUR+' : sous le seuil d\'aide.'}</small></div>
+      <div class="tip">Le doublage reste <b>accroché à sa face de mur</b> : c'est ce qui permet le retour d'isolant en tableau des ouvertures, la tapée des menuiseries et l'arrêt des cloisons contre lui. Il s'aimante aux <b>jonctions</b> — un doublage s'arrête contre une cloison, pas au milieu de nulle part.</div>
+      ${mode()==='existant'?`<div class="tip" style="border-color:#fde68a;background:#fffbeb">Tu es en vue <b>Existant</b> : ce doublage sera compté comme <b>déjà en place</b>, donc jamais facturé. Passe en <b>Projet</b> pour le chiffrer.</div>`:''}`;
   } else if(tool==='equipement'){
     h+=`<div class="ptitle">Équipements</div><div class="psub">Choisis un élément puis clique dans le plan : il se colle au mur tout seul. Chaque pièce posée compte pour le chiffrage.</div>`;
     const cats=[...new Set(Object.values(ITEMS).map(i=>i.cat))];

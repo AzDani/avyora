@@ -653,3 +653,50 @@ Dani : « sur les autres endroits on n'a rien écrit, donc on ne va pas précise
 seul endroit ». Argument juste — ni le matériau, ni le vitrage, ni la motorisation n'affichent leur
 écart. En montrer un seul laisse croire que les autres sont gratuits. Le total, lui, bouge à chaque
 clic : c'est lui qui informe.
+
+## D28 · L'outil Doublage : on le trace, il ne se pose plus tout seul
+
+Demandé par Dani le 20/09/2026 : « le fait qu'il soit auto ça fait de la merde, il y a des loupés
+— si on le place nous-même on contrôle ce qui se passe, et le quantitatif n'a qu'à retranscrire ce
+que j'ai dessiné ».
+
+**Ce qui n'allait pas.** Le doublage était une PROPRIÉTÉ du mur : on sélectionnait le mur, on
+cliquait « Isoler », et il naissait sur **toute sa longueur**. Sur un mur qui traverse trois pièces,
+il s'étalait sur les trois ; en groupe, il s'appliquait à tous les murs sélectionnés d'un coup. On
+passait son temps à le retirer plutôt qu'à le poser. Les poignées ● servaient à réparer après coup
+ce qu'on n'avait jamais demandé.
+
+**L'outil.** Un vrai outil dans la barre (raccourci **D**). On glisse le long de la **face** du mur
+à doubler : le doublage se pose exactement sur la longueur tirée, avec un aperçu à la vraie
+épaisseur et le métré en cours de geste. Un **clic sans glisser** prend le mur entier — c'est le
+cas courant, et l'exiger au glissé obligerait à viser deux bouts pour dire « ce mur-là ».
+
+Le panneau de l'outil porte les réglages du prochain doublage : par l'intérieur ou l'extérieur,
+isolant, épaisseur, avec le R et l'épaisseur perdue affichés avant de tracer.
+
+**Il reste ancré à sa face, et ce n'est pas un détail d'implémentation.** C'est ce qui fait
+fonctionner quatre choses qu'un trait libre ne saurait pas :
+
+- le **retour d'isolant en tableau** des ouvertures ;
+- la **tapée des menuiseries**, calée sur l'épaisseur du doublage ;
+- la **cloison qui s'arrête contre le doublage** et non contre le mur ;
+- et le devis, qui a besoin de savoir que le mur doublé donne sur l'**extérieur** pour appliquer
+  l'ITI plutôt qu'autre chose.
+
+**Aimantation aux jonctions.** L'abscisse se cale sur les arrêts naturels du mur — ses bouts et
+chaque point où un autre mur le touche — à 30 cm près. Un doublage s'arrête contre une cloison,
+pas au milieu de nulle part, et `detectFaces` a déjà coupé le mur à ces endroits : une arête est
+donc soit entièrement doublée, soit pas du tout, ce qui garde exactes à la fois la surface de la
+pièce, la quantité chiffrée et le dessin.
+
+**Vérifié** sur une pièce de 8 × 5 avec un refend à 3 m :
+
+| | attendu | obtenu |
+|---|---|---|
+| face visée sous le mur nord | mur nord, côté intérieur, t = 0,625 | ✓ |
+| aimantation de 0,38 | 0,375 (la jonction du refend) | ✓ |
+| doublage tracé de 0 à 3 m | 7,5 m² | ✓ |
+| clic simple sur le mur est | +12,5 m² | ✓ |
+
+L'ancien chemin — sélectionner le mur, régler l'isolation dans son panneau — reste en place : il
+sert à modifier un doublage existant, et les poignées ● gardent leur rôle d'ajustement fin.
