@@ -1337,9 +1337,10 @@ function isoOnSideAt(w,s,p){
    permet au reste de fonctionner : le retour d'isolant en tableau des ouvertures, la tapée des
    menuiseries calée sur l'épaisseur, la cloison qui s'arrête contre le doublage, et le devis qui
    sait que le mur doublé donne sur l'extérieur. Un trait libre ne saurait rien de tout ça. */
-const DBL_CFG={mode:'iti',mat:'gv',e:0.10};
+const DBL_CFG={action:'poser',mode:'iti',mat:'gv',e:0.10};
 function setDblCfg(k,val){
-  if(k==='mode'&&(val==='iti'||val==='ite'))DBL_CFG.mode=val;
+  if(k==='action'&&(val==='poser'||val==='retirer'))DBL_CFG.action=val;
+  else if(k==='mode'&&(val==='iti'||val==='ite'))DBL_CFG.mode=val;
   else if(k==='mat'&&ISO_MAT[val])DBL_CFG.mat=val;
   else if(k==='e')DBL_CFG.e=Math.max(0.02,Math.min(0.30,(parseFloat(val)||100)/1000));
   renderPanel();draw();
@@ -2263,9 +2264,9 @@ cv.addEventListener('pointerdown',e=>{
   if(tool==='doublage'){
     const f=faceSousCurseur(raw);
     if(!f){toast('Vise la face d\'un mur : le doublage se pose contre un mur, il ne flotte pas');return;}
-    /* Alt = retirer. Le même outil pose et dépose : on ne change pas d'outil pour défaire ce
-       qu'on vient de faire, et on retire le tronçon visé, pas toute la face. */
-    if(keys.alt){
+    /* Retirer : par le bouton du volet, ou par Alt pour qui connaît le raccourci. On enlève le
+       tronçon visé, pas toute la face. */
+    if(DBL_CFG.action==='retirer'||keys.alt){
       if(retirerDoublageAu(f.w,f.side,f.t))toast('Doublage retiré',true);
       else toast('Aucun doublage à cet endroit');
       return;}
@@ -2644,7 +2645,7 @@ const HINTS={
   murChain:'Clique le coin suivant, ou tape une longueur (ex. <kbd>3,5</kbd>) + <kbd>Entrée</kbd> · <kbd>Entrée</kbd> seule ferme la pièce · <kbd>Échap</kbd> / double-clic termine sans fermer',
   ouverture:'Survole un mur et clique pour poser l\'ouverture · elle s\'aimante au mur · ensuite : glisse-la ou change son sens dans le panneau',
   equipement:'Clique près d\'un mur : l\'équipement se colle au mur tout seul · <kbd>R</kbd> pour pivoter · glisse pour déplacer',
-  doublage:'Glisse le long de la <b>face</b> du mur : le doublage se pose exactement là · <b>clique</b> = le tronçon de la pièce · <kbd>Alt</kbd>+clic = <b>retirer</b> · il s\'aimante aux jonctions',
+  doublage:'Glisse le long de la <b>face</b> du mur : le doublage se pose exactement là · <b>clique</b> = le tronçon de la pièce · bascule <b>Poser / Retirer</b> dans le volet (ou <kbd>Alt</kbd>+clic) · il s\'aimante aux jonctions',
   cote:'Clique les 2 points à coter · la cote <b>flotte</b> avec la souris : écarte-la du mur et <b>clique pour la fixer</b> · <kbd>Échap</kbd> annule',
   cotePlace:'Écarte la ligne de cote à la distance voulue (elle suit la souris) puis <b>clique pour la fixer</b> · <kbd>Échap</kbd> annule',
   mesure:'Les points s\'accrochent aux <b>angles intérieurs</b> des pièces (carré vert) → surface réelle, pas à l\'axe des murs · zoome pour viser · reviens au 1er point pour <b>fermer</b> : périmètre + surface · <kbd>clic droit</kbd>/<kbd>Échap</kbd> efface',
@@ -3375,9 +3376,24 @@ function renderPanel(){pruneEmptyTexts();if(isMobile()){if(sel)toggleSheet(true)
     h+=`<div class="tip"><b>Intérieur</b> : portes entre pièces (comptées en menuiserie intérieure). <b>Extérieur</b> : donne sur dehors → pose, tapée et isolation gérées. En vue <b>Projet</b>, une ouverture ajoutée est un <b>percement</b> ; une existante peut être marquée <b>à boucher</b>.</div>`;
   } else if(tool==='doublage'){
     const ite=DBL_CFG.mode==='ite',ep=DBL_CFG.e+(ite?0.010:0.020),R=+(DBL_CFG.e/(ISO_MAT[DBL_CFG.mat].lambda)).toFixed(2);
-    h+=`<div class="ptitle">Doublage</div><div class="psub">Glisse le long de la <b>face</b> du mur à doubler. Il se pose exactement là où tu l'as tiré — un <b>clic</b> sans glisser prend le tronçon de la pièce.</div>
-      <div class="tip" style="margin-top:0"><kbd>Alt</kbd> + clic sur un doublage le <b>retire</b> — ce tronçon-là seulement. Pour vider toute une face d'un coup, sélectionne le mur et clique <b>Retirer</b> dans sa fiche.</div>
-      <div class="ph">Par où</div>
+    /* Poser / Retirer est un BOUTON, pas seulement un Alt. Le retrait n'existait que par le
+       raccourci : Dani l'a cherché dans l'outil et ne l'a pas trouvé. Une fonction qu'on ne voit
+       pas est une fonction qui n'existe pas. En mode Retirer, les réglages du prochain doublage
+       disparaissent — ils ne veulent rien dire quand on enlève. */
+    const retire=DBL_CFG.action==='retirer';
+    h+=`<div class="ptitle">Doublage</div>
+      <div class="psub">${retire
+        ?`Clique un doublage sur le plan pour l'enlever — <b>ce tronçon-là seulement</b>.`
+        :`Glisse le long de la <b>face</b> du mur à doubler. Il se pose exactement là où tu l'as tiré — un <b>clic</b> sans glisser prend le tronçon de la pièce.`}</div>
+      <div class="seg">
+        <button class="${!retire?'on':''}" onclick="setDblCfg('action','poser')">Poser<small>tracer</small></button>
+        <button class="${retire?'on':''}" onclick="setDblCfg('action','retirer')">Retirer<small>enlever</small></button>
+      </div>`;
+    if(retire){
+      h+=`<div class="tip" style="margin-top:12px">Raccourci : <kbd>Alt</kbd> + clic retire sans changer de mode.</div>
+      <div class="tip">Pour vider <b>toute une face</b> d'un coup, sélectionne le mur et clique <b>Retirer</b> dans sa fiche. Pour plusieurs murs, sélectionne-les et utilise le bloc du groupe.</div>`;
+    } else {
+      h+=`<div class="ph mt">Par où</div>
       <div class="seg">
         <button class="${!ite?'on':''}" onclick="setDblCfg('mode','iti')">Par l'intérieur<small>ITI</small></button>
         <button class="${ite?'on':''}" onclick="setDblCfg('mode','ite')">Par l'extérieur<small>ITE</small></button>
@@ -3388,6 +3404,7 @@ function renderPanel(){pruneEmptyTexts();if(isMobile()){if(sel)toggleSheet(true)
       <div class="blond ${R>=R_MIN_MUR?'ok':'ko'}"><b>${ite?'Épaisseur ajoutée dehors':'Épaisseur perdue dans la pièce'} : <span>${fmt(ep*100,1)} cm</span> · R = ${fmt(R,1)} m².K/W</b><small>${Math.round(DBL_CFG.e*100)} cm d'isolant + ${ite?'enduit':'lame d\'air + BA13'}.</small><small>${R>=R_MIN_MUR?'✓ Conforme : R ≥ '+R_MIN_MUR+' (seuil MaPrimeRénov\' / CEE mur).':'⚠ R < '+R_MIN_MUR+' : sous le seuil d\'aide.'}</small></div>
       <div class="tip">Le doublage reste <b>accroché à sa face de mur</b> : c'est ce qui permet le retour d'isolant en tableau des ouvertures, la tapée des menuiseries et l'arrêt des cloisons contre lui. Il s'aimante aux <b>jonctions</b> — un doublage s'arrête contre une cloison, pas au milieu de nulle part.</div>
       ${mode()==='existant'?`<div class="tip" style="border-color:#fde68a;background:#fffbeb">Tu es en vue <b>Existant</b> : ce doublage sera compté comme <b>déjà en place</b>, donc jamais facturé. Passe en <b>Projet</b> pour le chiffrer.</div>`:''}`;
+    }
   } else if(tool==='equipement'){
     h+=`<div class="ptitle">Équipements</div><div class="psub">Choisis un élément puis clique dans le plan : il se colle au mur tout seul. Chaque pièce posée compte pour le chiffrage.</div>`;
     const cats=[...new Set(Object.values(ITEMS).map(i=>i.cat))];

@@ -822,3 +822,21 @@ d'un coup, la sélection de groupe vide plusieurs murs.
 | `Alt` + clic à l'outil | le tronçon visé |
 | « Retirer » dans la fiche du mur | toute la face |
 | « Retirer » sur un groupe | tous les murs sélectionnés |
+
+## D28 sexies · Le retrait devient un bouton
+
+« Je ne vois pas l'outil retirer. » — Dani, 20/09/2026, une heure après que je lui aie livré le
+retrait sous forme d'un `Alt` + clic.
+
+Il l'a cherché dans le volet de l'outil et ne l'a pas trouvé, parce qu'il n'y était pas. **Une
+fonction qu'on ne voit pas est une fonction qui n'existe pas** — un raccourci n'est pas une
+interface, c'est une commodité pour qui sait déjà.
+
+Le volet de l'outil Doublage s'ouvre maintenant sur une bascule **Poser / Retirer**. En mode
+Retirer, les réglages du prochain doublage disparaissent : isolant, épaisseur et ITI/ITE ne
+veulent rien dire quand on enlève. `Alt` + clic reste, comme raccourci, et le volet le dit à cet
+endroit-là plutôt que dans un coin.
+
+Leçon à garder : j'ai livré deux fois de suite une fonction sans son entrée visible — l'outil sans
+le retrait, puis le retrait sans son bouton. Quand une capacité existe, la question n'est pas
+« comment l'appeler » mais « où la voit-on ».
