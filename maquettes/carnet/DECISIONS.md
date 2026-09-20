@@ -601,3 +601,39 @@ sélections fabriquées à la main :
 | baie passée à 3 | 6 600 € | 2 247 € (×3) |
 | retour « coulissante » | 6 600 € | 0 € |
 | baie décochée | 0 € | 0 € |
+
+## D26 · Le galandage est une plus-value sur la menuiserie, pas une ligne ailleurs
+
+Dani, le 20/09/2026, après deux tentatives ratées de ma part : « peu importe ce que je mets le prix
+ne change pas — il doit y avoir une plus-value sur le total de la baie vitrée ».
+
+**Ce que j'avais fait, et pourquoi c'était à côté.** J'avais posé la poche comme une ligne du lot
+plâtrerie, cochée automatiquement quand on choisissait « à galandage ». Comptablement exact — une
+poche EST de la plâtrerie — mais le prix de la baie ne bougeait pas d'un euro. Un choix dont le
+prix ne change pas là où on clique est un choix qui a l'air cassé, et c'est l'utilisateur qui a
+raison contre la comptabilité analytique.
+
+**Le prix est maintenant porté par la menuiserie.**
+
+| | coulissante | à galandage |
+|---|---|---|
+| Baie vitrée | 2 200 € HT · 2 420 € TTC | **3 000 € HT · 3 300 € TTC** |
+| Porte intérieure coulissante | 700 € | **1 500 €** |
+
+**Une addition, pas un coefficient.** C'est le point technique qui décide de tout : un coefficient
+est proportionnel, il faudrait donc 1,36 sur une baie à 2 200 € et 2,14 sur une porte à 700 € —
+deux chiffres dérivés qui mentiraient le jour où l'un des deux prix bouge. Le supplément est donc
+**additif**, et son montant est **lu sur le poste désigné** par l'option (`induit`) : il n'y a
+toujours aucun prix écrit en dur.
+
+Il s'ajoute **après** les coefficients de la menuiserie : la poche d'un galandage ne coûte pas
+20 % de plus parce que la baie est en triple vitrage. Vérifié par test.
+
+**Plus de ligne séparée.** Le poste « Caisson à galandage » n'a plus de quantité à lui — la lui
+rendre le facturerait deux fois. Le plan cesse aussi d'injecter cette ligne : il pose la variante,
+le moteur ajoute le prix. Les deux scènes de couverture restent à **0 %**.
+
+**Réserve assumée :** le devis ne montre plus la poche dans le lot plâtrerie. Elle est dans la
+ligne « Baie vitrée · à galandage », ce qui déplace ~800 € du lot Cloisons vers le lot Menuiseries
+dans la répartition par corps d'état. C'est le prix de la lisibilité, et c'est la lisibilité qui a
+été choisie.

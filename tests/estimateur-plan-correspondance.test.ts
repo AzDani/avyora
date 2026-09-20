@@ -128,15 +128,17 @@ describe("table de correspondance · ce que le scénario doit produire", () => {
     const { contributions: c } = contributionsDuPlan(p);
     for (const l of c.filter((x) => x.poste === "mex-fenetres")) expect(l.mat).toBeUndefined();
   });
-  it("une menuiserie à galandage paie AUSSI sa poche dans la cloison", () => {
+  /* La poche du galandage est une PLUS-VALUE sur la menuiserie, pas une ligne à part : le plan
+     pose la variante, le moteur ajoute le prix. Une ligne « Caisson » en plus la facturerait
+     deux fois. */
+  it("une menuiserie à galandage porte sa poche en variante, sans ligne séparée", () => {
     const p = JSON.parse(JSON.stringify(plan));
     const m = p.detailNiveaux[0].menuiseries.find((x: { etat: string }) => x.etat === "creer");
     m.ouvrant = "galandage";
     const { contributions: c } = contributionsDuPlan(p);
-    const poche = c.find((x) => x.poste === "clo-caisson-a-galandage-chassis-habillage")!;
-    expect(poche, "la poche du galandage n'est pas facturée").toBeTruthy();
-    expect(poche.sources).toContain(m.id);
-    expect(c.some((x) => x.poste === "mex-fenetres")).toBe(true);   // la menuiserie reste due
+    expect(c.some((x) => x.poste === "clo-caisson-a-galandage-chassis-habillage")).toBe(false);
+    const men = c.find((x) => x.sources.includes(m.id) && /^mex-|^min-/.test(x.poste))!;
+    expect(men.variante).toEqual({ pose: "galandage" });
   });
   it("le choix « à galandage » voyage aussi sur la menuiserie elle-même", () => {
     const p = JSON.parse(JSON.stringify(plan));

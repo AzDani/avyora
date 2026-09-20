@@ -332,12 +332,10 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
         m.mat || m.vitrage ? undefined : "Matériau et vitrage non choisis : le devis applique ses défauts (PVC hors finition premium, double vitrage). L'alu coûte 67 % de plus que le PVC, le bois 75 %.",
         choixMenuiserie(m));
       else if (m.type !== "passage") ignores.push({ quoi: m.type, pourquoi: "aucun poste au catalogue pour ce type de menuiserie", sources: src });
-      /* Une porte à galandage n'est pas qu'une porte : c'est une poche maçonnée ou un châssis
-         dans la cloison, et le catalogue en fait un poste à part. Le plan portait déjà le choix
-         dans `ouvrant` — personne ne le lisait, donc le compteur annonçait 800 € que le devis
-         ne facturait pas. Sa condition est INDÉPENDANTE du `else` ci-dessus : un galandage a une
-         menuiserie ET une poche, les deux se facturent. */
-      if (m.ouvrant === "galandage") add("clo-caisson-a-galandage-chassis-habillage", 1, src, "Menuiserie à galandage : sa poche dans la cloison");
+      /* La poche du galandage n'a PLUS de ligne : son prix est une plus-value portée par la
+         menuiserie elle-même, via la variante `pose` posée juste au-dessus (le moteur l'ajoute
+         dans `supplementVariantes`). Lui envoyer en plus une ligne « Caisson à galandage »
+         reviendrait à la facturer deux fois. */
       /* Le volet suit le matériau de sa menuiserie — le catalogue lui donne son propre
          coefficient PVC (0,80 et non 0,60), le moteur s'en charge. */
       if (m.volet) add(m.volet === "roulant" ? "mex-volets-roulants" : "mex-volets-battants", 1, src, `Volet ${m.volet}`,
