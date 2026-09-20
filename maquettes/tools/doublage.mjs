@@ -156,6 +156,34 @@ const res = await p.evaluate(() => {
     const seul = lv.walls[1];
     t["mur sans jonction · le tronçon est le mur entier"] = (() => { const x = tronconDeLaPiece(seul, 0.5); return pres(x[0], 0) && pres(x[1], 1); })(); }
 
+  /* ── la bande ne se referme pas en pointe ────────────────────────────────
+     Là où un doublage s'arrête AU MILIEU d'un pan, son sommet est partagé avec une arête
+     alignée et non doublée. Le bord intérieur était lu sur le polygone de la pièce, qui ne
+     porte qu'un décalage par sommet : il tombait sur la face du mur et la bande finissait en
+     triangle. On mesure donc l'épaisseur de la bande à ses DEUX bouts — elle doit être
+     constante. */
+  { state = blankState(); const lv = L(); lv.height = 2.5;
+    const W = (a, c, ty) => { const x = { id: uid(), a: v(...a), b: v(...c), type: ty || "mur" }; lv.walls.push(x); return x; };
+    const nord = W([0, 0], [12, 0]); W([12, 0], [12, 4]); W([12, 4], [0, 4]); W([0, 4], [0, 0]);
+    W([4, 0], [4, 4], "cloison"); W([8, 0], [8, 4], "cloison");
+    setMode("projet"); afterChange();
+    poserDoublage(nord, 1, 0.20, 0.30);            /* deux bouts au milieu d'un pan */
+    afterChange();
+    /* On mesure la BANDE RÉELLEMENT DESSINÉE, pas le polygone de la pièce : c'est justement la
+       grandeur que le correctif n'utilise plus. Le quadrilatère a quatre sommets — face/face
+       puis int/int — donc ses deux bouts sont [0]-[3] et [1]-[2]. */
+    const ep = (() => {
+      let mini = 1e9, maxi = 0, n = 0;
+      (facesCache[lv.id] || []).forEach((f) => { const N = f.poly.length;
+        for (let i = 0; i < N; i++) { const B = bandeDoublage(f, i); if (!B) continue; n++;
+          [dist(B.quad[0], B.quad[3]), dist(B.quad[1], B.quad[2])].forEach((d) => {
+            mini = Math.min(mini, d); maxi = Math.max(maxi, d); }); } });
+      return { mini, maxi, n };
+    })();
+    t["une bande est bien dessinée"] = ep.n > 0;
+    t["la bande garde son épaisseur d'un bout à l'autre"] = pres(ep.maxi - ep.mini, 0, 0.002);
+    t["l'épaisseur dessinée est celle du doublage (12 cm)"] = pres(ep.maxi, 0.12, 0.002); }
+
   return t;
 });
 /* ── et le vrai geste, à la souris ───────────────────────────────────────────

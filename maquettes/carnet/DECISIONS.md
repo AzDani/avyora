@@ -774,3 +774,30 @@ Le test souris du contrôle doublage est tombé en panne avec ce changement. Mon
 l'**état laissé par les blocs précédents** (autre vue, autre niveau, panneau d'une autre largeur) :
 un test qui vise des pixels partait d'un écran qui n'était plus celui d'un démarrage, et ratait la
 poignée d'une vingtaine de pixels. Il **recharge la page** avant de viser.
+
+## D28 quater · Les triangles de doublage
+
+Signalé par Dani le 20/09/2026, capture à l'appui : « l'isolant se met en travers et finit à 0, il
+fait un triangle ».
+
+**Reproduit, et le calcul n'y était pour rien.** Les quantités et les surfaces de pièce étaient
+justes ; c'est le **dessin** qui se refermait en pointe. Un défaut qui ne se voit pas dans les
+chiffres — il a fallu une capture d'écran pour l'attraper, et c'est exactement pour ça que Dani l'a
+vu avant les onze contrôles.
+
+**La cause.** Le bord intérieur de la bande était lu sur `polyInt`, le polygone de la pièce. Or un
+sommet de ce polygone ne porte qu'**un seul décalage**. Là où un doublage s'arrête au milieu d'un
+pan, son sommet est partagé avec une arête **alignée et non doublée** : le coin tombait sur la face
+du mur, et la bande passait de 12 cm à zéro sur toute sa longueur.
+
+Le bug était là avant l'outil — mais l'outil l'a rendu courant : tant que le doublage couvrait le
+mur entier, ses bouts tombaient sur de vrais angles, jamais au milieu d'un pan.
+
+**Le correctif.** Quand l'arête voisine est doublée elle aussi, on garde `polyInt` : c'est un vrai
+angle et la coupe d'onglet y est juste. Sinon on décale depuis la face du mur, de l'épaisseur de
+CE doublage — le bout est alors franc, perpendiculaire au mur.
+
+**Et surtout : la bande est devenue mesurable.** Le quadrilatère dessiné sort maintenant de
+`bandeDoublage(f,i)`, appelée par le dessin ET par le contrôle. Deux nouvelles vérifications : la
+bande garde son épaisseur d'un bout à l'autre, et cette épaisseur est bien celle du doublage. Un
+défaut de tracé ne se verra plus seulement à l'œil.

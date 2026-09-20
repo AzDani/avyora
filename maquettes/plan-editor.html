@@ -3000,6 +3000,23 @@ function cutAtOpenings(poly,w,lv){const u=norm(sub(w.b,w.a));let polys=[poly];
 // ITI : dessiné par pièce, borné par les faces des murs (polyFace) et l'intérieur (polyInt) → s'arrête PROPREMENT à l'angle intérieur
 /* le mur qui porte l'arête j d'une face (les arêtes connaissent leur mur d'origine) */
 function edgeWall(f,j){const e=(f.edges||[])[j];if(!e)return null;for(const lv of state.levels){const w=lv.walls.find(x=>x.id===e.wall);if(w)return w;}return null;}
+/* La bande de doublage de l'arête i d'une face — le quadrilatère réellement dessiné. Sortie de
+   la fonction de dessin pour qu'un contrôle puisse la MESURER : un défaut de tracé ne se voit
+   pas dans les quantités, et il a fallu une capture d'écran pour attraper les triangles. */
+function bandeDoublage(f,i){
+  if(!f.dbl||!f.polyFace||!f.polyInt)return null;
+  const N=f.poly.length,w=f.dbl[i];if(!w)return null;
+  const io=f.dblIso[i]||w.iso,a=(i-1+N)%N;
+  const ue=norm(sub(f.poly[i],f.poly[a]));
+  const enT=(pt)=>dist(pt,w.a)>1e-3&&dist(pt,w.b)>1e-3;
+  const demi=(j,pt)=>{if(f.dbl[j]||!enT(pt))return 0;const v2=edgeWall(f,j);return v2?wallT(v2)/2:0;};
+  const eA=mul(ue,-demi(a,f.poly[a])),eB=mul(ue,demi((i+1)%N,f.poly[i]));
+  const nIn=(()=>{let nn=perp(ue);return (((f.label.x-f.poly[a].x)*nn.x+(f.label.y-f.poly[a].y)*nn.y)<0)?mul(nn,-1):nn;})();
+  const epIso=doublageOf(io);
+  const bordInt=(k,voisin)=>f.dbl[voisin]?f.polyInt[k]:add(f.polyFace[k],mul(nIn,epIso));
+  return {io,w,ue,eA,eB,quad:[add(f.polyFace[a],eA),add(f.polyFace[i],eB),
+                              add(bordInt(i,(i+1)%N),eB),add(bordInt(a,a),eA)]};
+}
 function drawDoublageITI(lv){const faces=facesCache[lv.id]||[];faces.forEach(f=>{if(!f.dbl||!f.polyFace||!f.polyInt)return;const N=f.poly.length;
   for(let i=0;i<N;i++){const w=f.dbl[i];if(!w)continue;const io=f.dblIso[i]||w.iso;const a=(i-1+N)%N;const u=norm(sub(w.b,w.a));
     /* Le doublage est continu : il passe DERRIÈRE les cloisons qui viennent buter dessus. La
@@ -3013,7 +3030,11 @@ function drawDoublageITI(lv){const faces=facesCache[lv.id]||[];faces.forEach(f=>
     const enT=(pt)=>dist(pt,w.a)>1e-3&&dist(pt,w.b)>1e-3;
     const demi=(j,pt)=>{if(f.dbl[j]||!enT(pt))return 0;const v2=edgeWall(f,j);return v2?wallT(v2)/2:0;};
     const eA=mul(ue,-demi(a,f.poly[a])),eB=mul(ue,demi((i+1)%N,f.poly[i]));
-    const quad=[add(f.polyFace[a],eA),add(f.polyFace[i],eB),add(f.polyInt[i],eB),add(f.polyInt[a],eA)];
+    /* Le bord INTÉRIEUR de la bande se calcule dans `bandeDoublage` : on le prenait sur
+       `polyInt`, le polygone de la pièce, or un sommet n'y porte qu'UN décalage. Là où un
+       doublage s'arrête au milieu d'un pan, ce sommet est partagé avec une arête ALIGNÉE et non
+       doublée : il tombait sur la face du mur et la bande se refermait en pointe. */
+    const B=bandeDoublage(f,i);const quad=B.quad;
     // au droit d'une ouverture où l'isolant fait le retour dans le tableau, le bord de coupe de la bande ne doit PAS être liseré : la périphérie continue dans le retour
     const s=io.side||1,cuts=[];lv.openings.forEach(o=>{if(o.wallId!==w.id||!opDrawn(o)||!revealOnSide(o,w,s))return;const c=add(w.a,mul(sub(w.b,w.a),o.t));const sc=c.x*u.x+c.y*u.y;cuts.push(sc-o.w/2,sc+o.w/2);});
     const skip=cuts.length?(p,q)=>{const sp=p.x*u.x+p.y*u.y,sq=q.x*u.x+q.y*u.y;return Math.abs(sp-sq)<1e-5&&cuts.some(cv=>Math.abs(sp-cv)<1e-4);}:null;
