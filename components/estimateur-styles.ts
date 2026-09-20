@@ -116,6 +116,10 @@ export const EST_CSS = `
 .av-estim .vseg button{border:0;background:none;cursor:pointer;font-family:var(--font-geist-sans);font-weight:600;font-size:11px;color:var(--muted);padding:4px 11px;border-radius:999px;transition:.14s var(--ease)}
 .av-estim .vseg button:hover{color:var(--brand-700)}
 .av-estim .vseg button.on{background:var(--brand);color:#fff}
+/* Le surcoût qu'une option déclenche ailleurs (la poche d'un galandage) : lisible sans voler la
+   vedette au libellé, et assez contrasté sur le fond plein quand l'option est active. */
+.av-estim .vseg button .vsup{font-weight:700;font-size:10px;opacity:.72;font-variant-numeric:tabular-nums}
+.av-estim .vseg button.on .vsup{opacity:.9}
 /* Ligne personnalisée */
 .av-estim .clwrap{margin-top:6px}
 .av-estim .cl{border:1px dashed var(--brand-200);background:linear-gradient(180deg,var(--brand-50),transparent);border-radius:11px;padding:11px;margin:8px 0}

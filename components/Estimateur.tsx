@@ -15,6 +15,7 @@ import { EST_CSS } from "./estimateur-styles";
 import {
   CATALOG, PHASES, finCoef, ICON, LOC, defaultCtx, key, isLoc, visible, visibleTask,
   nbFen, nbPieces, deriveSol, autoQty, isAuto, qtyOf, effRate, lineHT, lotHT, effPrices,
+  posteParId, prixInduit,
   totals, buildDevis, regionCoef, piecesEff, sdbEff, customLotHT, customTotals, ESPACES,
   espacesCompo, selectedEspaces,
   type Ctx, type Selection, type TypeBien, type Finition, type Lot, type Tache, type CustomLine,
@@ -492,11 +493,14 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                                 onMot={(m) => upd(l.c, t.n, (s) => ({ ...s, mot: m }))}
                                 onTai={(z) => upd(l.c, t.n, (s) => ({ ...s, tai: z }))}
                                 onVar={(g, o) => { upd(l.c, t.n, (s) => ({ ...s, vsel: { ...(s.vsel || {}), [g]: o } }));
-                                  /* Choisir « à galandage » coche la poche. Elle vit dans le lot
-                                     plâtrerie — c'est bien là qu'elle se réalise — mais personne
-                                     n'allait la chercher : 800 € oubliés à chaque baie. Sa
-                                     quantité se déduit ensuite (autoQty), on ne la fige pas ici. */
-                                  if (g === "pose" && o === "galandage") upd("Cloisons / Platrerie", "Caisson à galandage (châssis + habillage)", (s) => ({ ...s, on: true })); }}
+                                  /* Une option peut DÉCLARER le poste qu'elle déclenche ailleurs
+                                     (`induit`). On le coche alors : il vit dans son vrai lot — la
+                                     poche d'un galandage est de la plâtrerie — mais personne n'y
+                                     allait, et 800 € manquaient à chaque baie. Sa quantité se
+                                     déduit ensuite, on ne la fige pas ici. */
+                                  const induit = t.vars?.find((gr) => gr.k === g)?.opts.find((op) => op.k === o)?.induit;
+                                  const cible = induit ? posteParId(induit) : null;
+                                  if (cible) upd(cible.lot, cible.nom, (s) => ({ ...s, on: true })); }}
                                 onNote={(v) => upd(l.c, t.n, (s) => ({ ...s, note: v }))}
                                 onPu={(v) => upd(l.c, t.n, (s) => { const n = { ...s }; if (v == null) delete n.pu; else n.pu = v; return n; })}
                                 onPm={(v) => upd(l.c, t.n, (s) => { const n = { ...s }; if (v == null) delete n.pm; else { n.pm = v; delete n.pu; } return n; })}
@@ -743,9 +747,18 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMa
             return (
               <span className="vg" key={g.k}><span className="vlab">{catT(locale, "vgroups", g.label)}</span>
                 <span className="vseg">
-                  {g.opts.map((o) => (
-                    <button type="button" key={o.k} className={cur === o.k ? "on" : ""} onClick={() => onVar(g.k, o.k)}>{catT(locale, "vopts", o.label)}</button>
-                  ))}
+                  {g.opts.map((o) => {
+                    /* Le prix d'une option qui déclenche un AUTRE poste. Sans lui, choisir « à
+                       galandage » ne changeait rien à l'écran : le devis montait de 800 €, mais
+                       nulle part au moment du choix. Lu au catalogue à l'exécution — jamais écrit
+                       en dur — et affiché tel que le devis le facturera, finition comprise. */
+                    const sup = o.induit ? prixInduit(o.induit, ctx) : null;
+                    return (
+                      <button type="button" key={o.k} className={cur === o.k ? "on" : ""} onClick={() => onVar(g.k, o.k)}>
+                        {catT(locale, "vopts", o.label)}{sup ? <small className="vsup"> +{fmt(sup)}</small> : null}
+                      </button>
+                    );
+                  })}
                 </span>
               </span>
             );

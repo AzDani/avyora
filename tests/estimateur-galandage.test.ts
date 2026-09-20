@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { autoQty, defaultCtx, effPrices, finCoefTask, key, type Selection } from "@/lib/estimateur/core";
+import { autoQty, defaultCtx, effPrices, finCoefTask, key, posteParId, prixInduit, type Selection } from "@/lib/estimateur/core";
 import { CATALOG } from "@/lib/estimateur/catalog";
 
 /**
@@ -57,5 +57,26 @@ describe("le choix de pose ne déplace aucun prix", () => {
     const eco = finCoefTask({ ...ctx, finition: "eco" }, lot as never, t as never);
     const prem = finCoefTask({ ...ctx, finition: "premium" }, lot as never, t as never);
     expect(eco).not.toBe(prem);          // elle SCALE encore : la variante neutre ne l'a pas figée
+  });
+});
+
+describe("le prix de l'option est lu, jamais recopié", () => {
+  const ID = "clo-caisson-a-galandage-chassis-habillage";
+  it("l'option « à galandage » déclare le poste qu'elle déclenche", () => {
+    const opts = (CATALOG as unknown as Array<{ t: Array<{ n: string; vars?: Array<{ k: string; opts: Array<{ k: string; induit?: string }> }> }> }>)
+      .flatMap((l) => l.t).flatMap((t) => t.vars ?? []).flatMap((g) => g.opts).filter((o) => o.induit);
+    expect(opts.length).toBe(2);                       // la baie et la porte coulissante
+    for (const o of opts) expect(o.induit).toBe(ID);
+    for (const o of opts) expect(posteParId(o.induit!), `poste ${o.induit} absent`).toBeTruthy();
+  });
+  it("le prix affiché est celui que le devis facturera, finition comprise", () => {
+    const p = (f: "eco" | "standard" | "premium") => prixInduit(ID, { ...ctx, finition: f });
+    expect(p("premium")).toBe(800);                    // prix catalogue, finition haute
+    expect(p("eco")).toBeLessThan(p("premium")!);      // il SUIT la finition, il n'est pas figé
+    expect(p("standard")).toBeGreaterThan(p("eco")!);
+  });
+  it("un identifiant inconnu ne casse rien", () => {
+    expect(prixInduit("poste-qui-n-existe-pas", ctx)).toBeNull();
+    expect(posteParId("poste-qui-n-existe-pas")).toBeNull();
   });
 });

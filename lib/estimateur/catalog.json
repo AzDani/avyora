@@ -795,7 +795,8 @@
               {
                 "k": "galandage",
                 "label": "À galandage",
-                "coef": 1
+                "coef": 1,
+                "induit": "clo-caisson-a-galandage-chassis-habillage"
               }
             ]
           }
@@ -2016,7 +2017,8 @@
               {
                 "k": "galandage",
                 "label": "À galandage",
-                "coef": 1
+                "coef": 1,
+                "induit": "clo-caisson-a-galandage-chassis-habillage"
               }
             ]
           }

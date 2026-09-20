@@ -16,7 +16,18 @@ export type Finition = "eco" | "standard" | "premium";
 export type TypeBien = "Studio" | "T2" | "T3" | "T4" | "Maison";
 
 /** Variante générique : un groupe d'options (ex. « Type » → Classique/Suspendu). Le 1ᵉʳ opt = défaut (coef relatif à la base). */
-export interface VarOpt { k: string; label: string; coef: number; tva?: number }
+/* Le catalogue est importé ici pour une seule chose : retrouver le poste qu'une option DÉCLARE
+   induire. `catalog.ts` ne rapatrie de ce fichier qu'un type (`import type { Lot }`), effacé à la
+   compilation — il n'y a donc pas de cycle à l'exécution. */
+import { CATALOG } from "./catalog";
+
+export interface VarOpt { k: string; label: string; coef: number; tva?: number;
+  /** Poste que CETTE option déclenche ailleurs au catalogue, sans changer le prix de la ligne.
+   *  Une baie « à galandage » ne coûte pas plus cher en tant que baie : elle oblige à créer une
+   *  poche dans la cloison, qui est un poste de plâtrerie. L'option le DÉCLARE, ce qui permet à
+   *  la fois d'en déduire la quantité et d'afficher son prix là où le choix se fait. */
+  induit?: string;
+}
 export interface VarGroup { k: string; label: string; opts: VarOpt[] }
 
 export interface Tache {
@@ -419,6 +430,46 @@ export function derivedFinitions(ctx: Ctx, sel: Selection): number {
   return Math.round(eff(P, "Monter une cloison") * 2 + Math.max(eff(P, "Doubler un mur"), eff("Isolation", "Isolation des murs par l'intérieur")) + eff(P, "Faux plafond"));
 }
 
+/**
+ * Somme des quantités qui INDUISENT le poste (c, n) : chaque ligne cochée dont l'option choisie
+ * déclare `induit` pointant vers lui.
+ *
+ * Rend null si AUCUNE option du catalogue ne le désigne — le poste garde alors sa quantité
+ * normale. Mais dès qu'une option le désigne, même non choisie, il devient un poste déduit et
+ * rend 0 plutôt que null : sinon, repasser une baie de « galandage » à « coulissante » laissait
+ * la poche sur sa dernière quantité, saisie à la main et jamais révisée.
+ */
+function quantiteInduite(ctx: Ctx, c: string, n: string, sel: Selection): number | null {
+  const cible = CATALOG.find((l) => l.c === c)?.t.find((t) => t.n === n);
+  if (!cible) return null;
+  let total = 0, inductible = false;
+  for (const l of CATALOG) for (const t of l.t) for (const g of t.vars ?? []) {
+    if (!g.opts.some((o) => o.induit === cible.id)) continue;
+    inductible = true;
+    const s = sel[key(l.c, t.n)];
+    if (!s || !s.on) continue;
+    const choisie = g.opts.find((o) => o.k === ((s.vsel ?? {})[g.k] ?? g.opts[0].k));
+    if (choisie?.induit !== cible.id) continue;
+    total += s.manual ? (s.qty ?? 0) : (autoQty(ctx, l.c, t.n, sel) ?? 0);
+  }
+  return inductible ? total : null;
+}
+/** Le poste du catalogue portant cet identifiant, avec son lot — pour l'afficher ou le cocher. */
+export function posteParId(id: string): { lot: string; nom: string; t: Tache; l: Lot } | null {
+  for (const l of CATALOG) for (const t of l.t) if (t.id === id) return { lot: l.c, nom: t.n, t, l };
+  return null;
+}
+/**
+ * Ce qu'UNE unité du poste induit ajoutera au devis — le chiffre à montrer dans l'option qui le
+ * déclenche. On le calcule comme le devis le calcule (prix effectif × finition × coefficient
+ * régional), et jamais en recopiant un nombre : le jour où la poche change de prix, l'étiquette
+ * change avec elle.
+ */
+export function prixInduit(id: string, ctx: Ctx): number | null {
+  const p = posteParId(id);
+  if (!p) return null;
+  return lineHT(ctx, { [key(p.lot, p.nom)]: { on: true, manual: true, qty: 1 } }, p.l, p.t);
+}
 /** Renvoie la quantité auto d'une tâche, ou null si elle n'est pas calculable de façon fiable. */
 export function autoQty(ctx: Ctx, c: string, n: string, sel: Selection): number | null {
   const S = ctx.surface || 0;
@@ -455,14 +506,12 @@ export function autoQty(ctx: Ctx, c: string, n: string, sel: Selection): number 
      c'est un poste de plâtrerie, mais le choix appartient à la menuiserie, là où l'utilisateur
      le fait vraiment. Personne ne pensait à cocher une ligne perdue dans un autre lot — 800 €
      oubliés à chaque fois. */
-  if (n === "Caisson à galandage (châssis + habillage)") {
-    const poches = (corps: string, tache: string) => {
-      const m = sel[key(corps, tache)];
-      if (!m || !m.on || (m.vsel && m.vsel["pose"]) !== "galandage") return 0;
-      return m.manual ? (m.qty ?? 0) : (autoQty(ctx, corps, tache, sel) ?? 0);
-    };
-    return poches("Menuiseries exterieures", "Baie vitrée") + poches("Menuiseries interieures", "Porte intérieure coulissante");
-  }
+  /* Quantité d'un poste INDUIT par une option : on ne nomme plus les menuiseries une à une, on
+     parcourt le catalogue et on additionne celles dont l'option choisie déclare ce poste. Écrire
+     « baie » et « porte coulissante » en dur ici condamnait le mécanisme à être oublié au
+     troisième cas. */
+  const induit = quantiteInduite(ctx, c, n, sel);
+  if (induit != null) return induit;
   // Suite parentale découpée : le sol carrelé cible la SDB, le sol « vivant » la chambre (+ dressing).
   const suiteZ = ctx.perimetre === "piece" && ctx.espace === "suite";
   const zSol = ctx.zSdb ?? 0;                                                        // sol SDB (carrelé)

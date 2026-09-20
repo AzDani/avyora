@@ -538,3 +538,31 @@ la main.
 
 **Pas de double comptage.** Le plan épingle la poche (quantité manuelle, D12) : sa quantité ne se
 redéduit pas par-dessus. Les deux scènes de `couverture.mts` restent à **0 %**.
+
+## D25 bis · Le prix voyage avec l'option
+
+Dani, le 20/09/2026 : « on choisit sur la baie vitrée mais y a pas de différence de prix haha, il
+faut que tu rajoutes le prix dans l'option ».
+
+Il avait raison et le défaut était réel : cocher « à galandage » faisait bien monter le devis de
+800 €, mais **rien ne bougeait là où le clic se faisait**. Un choix dont on ne voit pas l'effet
+ressemble à un choix cassé.
+
+**Une option peut désormais DÉCLARER le poste qu'elle déclenche** — champ `induit` sur l'option du
+catalogue. Deux choses en découlent, sans qu'aucun nom soit écrit en dur :
+
+- **L'affichage.** L'option porte le surcoût, lu au catalogue à l'exécution et calculé comme le
+  devis le calculera — finition et coefficient régional compris. En éco 725 €, en standard 749 €,
+  en premium 800 €. Le jour où la poche change de prix, l'étiquette change avec elle. C'est la
+  règle du projet : aucun prix écrit en dur.
+- **La quantité.** `autoQty` ne nomme plus « Baie vitrée » et « Porte intérieure coulissante » une
+  à une : il parcourt le catalogue et additionne les lignes dont l'option choisie désigne le poste.
+  La version précédente les citait en dur — le mécanisme aurait été oublié au troisième cas.
+
+Un détail qui a demandé une reprise : un poste désigné par une option devient **déduit**, et rend
+donc 0 plutôt que null même quand aucune ligne ne le déclenche. Sinon, repasser une baie de
+« galandage » à « coulissante » laissait la poche sur sa dernière quantité, saisie à la main et
+plus jamais révisée.
+
+`core.ts` importe maintenant le catalogue. Pas de cycle à l'exécution : `catalog.ts` n'en tire
+qu'un type, effacé à la compilation.
