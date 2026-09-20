@@ -709,8 +709,10 @@ function createGroup(name,ids){state.groups=state.groups||[];const id=uid();stat
 function deleteGroup(gid){state.groups=(state.groups||[]).filter(g=>g.id!==gid);save();render();}
 function renameGroup(gid,name){const g=groupById(gid);if(g){g.name=name;save();}}
 function groupById(gid){return (state.groups||[]).find(g=>g.id===gid);}
-function grpIso(ids,m){applyIsoToWalls(ids.split(','),{e:m==='ite'?0.14:0.10,mat:'gv',mode:m,sys:m==='ite'?'enduit':'ossature'});toast('Isolation '+m.toUpperCase()+' appliquée',true);}
-function grpIsoSet(ids,m){if(m==='off'){applyIsoToWalls(ids.split(','),null);}else{applyIsoToWalls(ids.split(','),{e:m==='ite'?0.14:0.10,mat:'gv',mode:m,sys:m==='ite'?'enduit':'ossature'});}toast(m==='off'?'Isolation retirée':'Isolation '+m.toUpperCase()+' appliquée',true);}
+/* Un groupe peut RETIRER son doublage d'un coup — c'est sans risque, ça n'invente rien. Il ne
+   peut plus en appliquer : poser d'un clic un doublage sur dix murs, c'était s'engager à en
+   retirer sur sept. */
+function grpIsoSet(ids,m){if(m!=='off')return;applyIsoToWalls(ids.split(','),null);toast('Doublage retiré du groupe',true);}
 function grpIsoTweak(ids,k,val){history.push(snapshot());ids.split(',').forEach(id=>{const r=findWallAny(id);if(r&&r.w.iso){if(k==='mat')r.w.iso.mat=val;else if(k==='e')r.w.iso.e=val/1000;syncNewDormants(r.w);}});afterChange();}
 function grpFacToggle(ids,k){const arr=ids.split(',');const ws=arr.map(id=>findWallAny(id)?.w).filter(w=>w&&(()=>{const sv=sel;sel={kind:'wall',id:w.id};const e=isExteriorWall(w);sel=sv;return e;})());
   const has=ws.length&&ws.every(w=>facadeFins(w).includes(k));history.push(snapshot());ws.forEach(w=>{w.facade=w.facade||{fins:[],st:mode()!=='existant'?'creer':undefined};const i=w.facade.fins.indexOf(k);if(has){if(i>=0)w.facade.fins.splice(i,1);}else if(i<0)w.facade.fins.push(k);if(!w.facade.fins.length)delete w.facade;});afterChange();}
@@ -3391,7 +3393,8 @@ function renderSelection(lv){
     <div class="tip" style="margin-top:8px">Pour aligner deux murs d'épaisseurs différentes sur une même face : mets-les tous les deux « d'un côté » du même trait. Le trait de référence apparaît en pointillés blancs.</div>`}
     ${wst(w)==='demolir'?`<div class="tip" style="margin-top:10px">Ce mur part : <b>rien à décrire de son isolation ni de sa finition</b>. Ce qui compte est plus haut — son épaisseur et s'il est porteur, qui décident du prix de la démolition et de la reprise de charge.</div>`:''}
     ${wst(w)==='demolir'||isVirtual(w)?'':(!isExteriorWall(w)?renderWallIsoInterior(w,lv):(()=>{const iso=w.iso;const R=isoR(iso);const dt=doublageTotal(w);const ite=iso&&iso.mode==='ite';const fin=ite?[['enduit','Enduit'],['bardage','Bardage']]:[];return `<div class="ph mt">Isolation</div>
-      <div class="seg"><button class="${!iso?'on':''}" onclick="setWallIso('off')">Aucune<small>mur brut</small></button><button class="${iso&&!ite?'on':''}" onclick="setWallIso('mode','iti')">ITI<small>par l'intérieur</small></button><button class="${ite?'on':''}" onclick="setWallIso('mode','ite')">ITE<small>par l'extérieur</small></button></div>
+      ${iso?`<div class="seg"><button onclick="setWallIso('off')">Retirer<small>mur brut</small></button><button class="${!ite?'on':''}" onclick="setWallIso('mode','iti')">ITI<small>par l'intérieur</small></button><button class="${ite?'on':''}" onclick="setWallIso('mode','ite')">ITE<small>par l'extérieur</small></button></div>`
+        :`<div class="tip">Ce mur n'est pas doublé. Prends l'outil <b>Doublage</b> (<kbd>D</kbd>) et <b>glisse le long de sa face</b> : il se posera là où tu l'auras tiré, et nulle part ailleurs.</div>`}
       ${iso?`<div class="ph mt">Isolant</div><div class="seg">${Object.entries(ISO_MAT).map(([k,m])=>`<button class="${iso.mat===k?'on':''}" onclick="setWallIso('mat','${k}')">${m.label.split(' ')[0]==='Laine'?'Laine '+m.label.split(' ')[2]:m.label.split(' ')[0]}<small>λ ${fmt(m.lambda,3)}</small></button>`).join('')}</div>
       <div class="row" style="margin-top:10px"><label>Épaisseur isolant</label><span>${[80,100,120,140,160].map(mm=>`<button class="miniep ${Math.round(iso.e*1000)===mm?'on':''}" onclick="setWallIso('e',${mm})">${mm/10}</button>`).join('')}<input class="fin n" type="number" step="1" min="20" max="300" value="${Math.round(iso.e*1000)}" onchange="setWallIso('e',+this.value)" style="width:60px"> mm</span></div>
       ${fin.length?`<div class="row"><label>Finition</label><span class="seg" style="display:inline-flex">${fin.map(([k,l])=>`<button class="${iso.sys===k?'on':''}" onclick="setWallIso('sys','${k}')">${l}</button>`).join('')}</span></div>`:''}
@@ -3443,7 +3446,8 @@ function renderSelection(lv){
       const facCommon=common(w=>facadeFins(w).slice().sort().join(','));
       if(grp)h+=`<div class="grouptag"><span class="gdot" style="background:${GROUP_COLORS[(state.groups||[]).indexOf(grp)%GROUP_COLORS.length]}"></span> Groupe « ${esc(grp.name)} »</div>`;
       h+=`<div class="ph mt">Isolation des ${gw.length} murs</div>
-      <div class="seg"><button class="${isoMode==='none'?'on':''}" onclick="grpIsoSet('${ids}','off')">Aucune</button><button class="${isoMode==='iti'?'on':''}" onclick="grpIsoSet('${ids}','iti')">ITI</button><button class="${isoMode==='ite'?'on':''}" onclick="grpIsoSet('${ids}','ite')">ITE</button>${isoMode===null?'<button class="on" disabled>Mixte</button>':''}</div>
+      <div class="seg"><button onclick="grpIsoSet('${ids}','off')">Retirer le doublage</button>${isoMode===null?'<button class="on" disabled>Mixte</button>':isoMode==='none'?'<button class="on" disabled>Aucun</button>':`<button class="on" disabled>${isoMode.toUpperCase()}</button>`}</div>
+      <div class="tip">Appliquer un doublage à tout un groupe d'un coup était le meilleur moyen d'en poser là où il n'en fallait pas. Trace-les à l'outil <b>Doublage</b> (<kbd>D</kbd>), mur par mur.</div>
       ${isoMode&&isoMode!=='none'?`<div class="row" style="margin-top:8px"><label>Isolant</label><select class="fin" style="width:auto" onchange="grpIsoTweak('${ids}','mat',this.value)">${Object.entries(ISO_MAT).map(([k,m])=>`<option value="${k}" ${isoMat===k?'selected':''}>${m.label.split(' ')[0]==='Laine'?'Laine '+m.label.split(' ')[2]:m.label}</option>`).join('')}</select></div><div class="row"><label>Épaisseur</label><span>${[80,100,120,140,160].map(mm=>`<button class="miniep ${isoE===mm?'on':''}" onclick="grpIsoTweak('${ids}','e',${mm})">${mm/10}</button>`).join('')} cm</span></div>`:''}
       <div class="ph mt">Revêtement extérieur</div><div class="chips">${Object.entries(FACADES).map(([k,f])=>`<button class="chip2 ${facCommon!==null&&facCommon.split(',').includes(k)?'on':''}" onclick="grpFacToggle('${ids}','${k}')">${f.label}</button>`).join('')}</div>
       ${!grp?`<div class="pf2" style="margin-top:12px"><input class="fin" id="grpName" placeholder="Nom du groupe (ex. Murs extérieurs)"><button class="ib primary" onclick="grpCreate('${ids}')">💾 Enregistrer le groupe</button></div>`:`<div class="btnrow" style="margin-top:10px"><button class="ib" style="flex:1" onclick="deleteGroup('${grp.id}');clearSel();render()">Dissoudre le groupe</button></div>`}`;}
@@ -3675,7 +3679,10 @@ function setCustomT(cm){const t=parseFloat(cm)/100;customT=(t>=0.03&&t<=0.8)?t:n
 function setWallLen(l){const w=findWall(sel.id);if(!(l>0.1))return;history.push(snapshot());setWallLength(w,l);afterChange();}
 function setWallIso(k,val){const w=findWall(sel.id);if(!w)return;history.push(snapshot());const si=interiorSideN(w);
   if(k==='off'){delete w.iso;afterChange();return;}
-  const wasOff=!w.iso;w.iso=w.iso||{e:0.12,mat:'gv',mode:'iti',sys:'ossature',side:si};if(wasOff&&mode()!=='existant')w.iso.st='creer';
+  /* Ce panneau ne CRÉE plus de doublage — il modifie celui qui est là. Le créer ici le posait
+     sur tout le mur, et c'est précisément le geste dont on voulait se débarrasser : un doublage
+     se trace à l'outil Doublage, sur la longueur voulue. */
+  if(!w.iso){afterChange();return;}
   if(k==='st'){if(val==='existant')delete w.iso.st;else w.iso.st=val;}
   else if(k==='mode'){w.iso.mode=val;if(val==='ite'){w.iso.side=-si;if(w.iso.sys!=='enduit'&&w.iso.sys!=='bardage')w.iso.sys='enduit';}else{w.iso.side=si;w.iso.sys='ossature';}}
   else if(k==='mat')w.iso.mat=val;else if(k==='sys')w.iso.sys=val;else if(k==='e')w.iso.e=Math.max(0.02,Math.min(0.3,val/1000));
@@ -3704,7 +3711,9 @@ function poigneesDoublage(w){
 }
 function setWallIsoSide(side,k,val){const w=findWall(sel.id);if(!w)return;history.push(snapshot());const slot=isoSlotForSide(w,side);let io=w[slot];
   if(k==='off'){if(io)delete w[slot];if(!w.iso&&w.iso2){w.iso=w.iso2;delete w.iso2;}afterChange();return;}
-  if(!io){io=w[slot]={e:0.10,mat:'gv',mode:'iti',sys:'ossature',side};if(mode()!=='existant')io.st='creer';}
+  /* Comme `setWallIso` : ce panneau modifie un doublage, il n'en crée plus. Il s'en créait un ici
+     couvrant toute la face, et c'est ce geste-là qui produisait les loupés. */
+  if(!io){afterChange();return;}
   if(k==='st'){if(val==='existant')delete io.st;else io.st=val;}
   else if(k==='mat')io.mat=val;else if(k==='sys')io.sys=val;else if(k==='e')io.e=Math.max(0.02,Math.min(0.3,val/1000));
   /* étendue : on se cale sur les arrêts du mur, et on garde t0 < t1 */
@@ -3732,7 +3741,8 @@ function blocDecisionExistant(onclick,cur,choix,note){
 }
 function isoSideHtml(w,side){const io=isoOnSide(w,side);const room=roomOnSide(w,side);const label=room?roomName(room):('face '+(side>0?'A':'B'));const R=isoR(io),dt=doublageOf(io);const fin=[];
   return `<div class="fam" style="--fc:#0e9aa7;--fbg:#e6f6f8"><div class="famh" style="--fc:#0e9aa7;--fbg:#e6f6f8"><b>Doublage côté ${label}</b>${io?`<small>${fmt(dt*100,1)} cm</small>`:''}</div><div style="padding:9px 11px">
-    <div class="seg"><button class="${!io?'on':''}" onclick="setWallIsoSide(${side},'off')">Aucune<small>brut</small></button><button class="${io?'on':''}" onclick="setWallIsoSide(${side},'mode','iti')">Doubler<small>ITI cette face</small></button></div>
+    ${io?`<div class="seg"><button onclick="setWallIsoSide(${side},'off')">Retirer<small>face brute</small></button><button class="on" disabled>Doublée<small>ITI</small></button></div>`
+      :`<div class="tip">Face non doublée. Outil <b>Doublage</b> (<kbd>D</kbd>), puis glisse le long de <b>cette face</b>.</div>`}
     ${io?`<div class="ph mt">Isolant</div><div class="seg">${Object.entries(ISO_MAT).map(([k,m])=>`<button class="${io.mat===k?'on':''}" onclick="setWallIsoSide(${side},'mat','${k}')">${m.label.split(' ')[0]==='Laine'?'Laine '+m.label.split(' ')[2]:m.label.split(' ')[0]}<small>λ ${fmt(m.lambda,3)}</small></button>`).join('')}</div>
     <div class="row" style="margin-top:10px"><label>Épaisseur</label><span>${[40,60,80,100,120].map(mm=>`<button class="miniep ${Math.round(io.e*1000)===mm?'on':''}" onclick="setWallIsoSide(${side},'e',${mm})">${mm/10}</button>`).join('')}<input class="fin n" type="number" step="1" min="20" max="300" value="${Math.round(io.e*1000)}" onchange="setWallIsoSide(${side},'e',+this.value)" style="width:56px"> mm</span></div>
     ${fin.length?`<div class="row"><label>Finition</label><span class="seg" style="display:inline-flex">${fin.map(([k,l])=>`<button class="${io.sys===k?'on':''}" onclick="setWallIsoSide(${side},'sys','${k}')">${l}</button>`).join('')}</span></div>`:''}

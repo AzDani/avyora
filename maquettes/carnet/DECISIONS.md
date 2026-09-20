@@ -700,3 +700,31 @@ pièce, la quantité chiffrée et le dessin.
 
 L'ancien chemin — sélectionner le mur, régler l'isolation dans son panneau — reste en place : il
 sert à modifier un doublage existant, et les poignées ● gardent leur rôle d'ajustement fin.
+
+## D28 bis · Un seul chemin pour poser un doublage
+
+Dani, le 20/09/2026, après avoir testé l'outil : « retire le doublage automatique, comme ça on ne
+fait que du placement manuel — le mix des deux ça fait de la merde ».
+
+Il a raison, et c'était ma faute de conception : j'avais **ajouté** l'outil sans **retirer**
+l'ancien chemin. Deux façons de créer la même chose, dont une qui couvre tout le mur sans qu'on le
+demande — on ne savait plus lequel des deux avait posé quoi.
+
+**Désormais, un doublage ne peut naître que d'un tracé.** Trois portes d'entrée ont été fermées :
+
+| | avant | après |
+|---|---|---|
+| panneau du mur | « Aucune / ITI / ITE » — créait sur tout le mur | modifie ou **retire** celui qui est là |
+| panneau d'une face | « Aucune / Doubler » — créait sur toute la face | modifie ou **retire** |
+| groupe de murs | appliquait ITI/ITE à tous d'un coup | **retire** seulement |
+
+Là où il n'y a pas de doublage, le panneau ne propose plus un bouton : il dit où est l'outil.
+Poser d'un clic un doublage sur dix murs, c'était s'engager à en retirer sur sept.
+
+**Le retrait en masse reste**, lui, parce qu'il n'invente rien — effacer d'un coup est sans risque,
+c'est créer d'un coup qui ne l'était pas.
+
+Vérifié : le panneau ne crée plus rien (`setWallIso('mode','iti')` sur un mur nu ne produit aucun
+doublage), l'outil pose bien ses 10 m², le panneau modifie toujours l'épaisseur d'un doublage tracé
+(140 mm), le groupe n'applique pas et retire bien. Quinze contrôles verts, couverture à 0 %,
+contrat inchangé, 151 tests.
