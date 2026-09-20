@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { autoQty, defaultCtx, effPrices, finCoefTask, key, posteParId, prixInduit, type Selection } from "@/lib/estimateur/core";
+import { autoQty, defaultCtx, effPrices, finCoefTask, key, lineHT, posteParId, prixInduit, qtyOf, type Selection } from "@/lib/estimateur/core";
 import { CATALOG } from "@/lib/estimateur/catalog";
 
 /**
@@ -78,5 +78,47 @@ describe("le prix de l'option est lu, jamais recopié", () => {
   it("un identifiant inconnu ne casse rien", () => {
     expect(prixInduit("poste-qui-n-existe-pas", ctx)).toBeNull();
     expect(posteParId("poste-qui-n-existe-pas")).toBeNull();
+  });
+});
+
+/**
+ * Le parcours complet, tel que l'utilisateur le vit : cocher la baie, la passer à galandage, en
+ * mettre trois, revenir en arrière. C'est ce test qui manquait — les précédents vérifiaient la
+ * déduction sur des sélections fabriquées à la main, jamais l'enchaînement réel. La poche restait
+ * à 0 € parce que `quantiteInduite` refaisait le calcul de quantité au lieu de demander `qtyOf`.
+ */
+describe("parcours : cocher une baie et la passer à galandage", () => {
+  const lot = (c: string) => (CATALOG as unknown as Array<{ c: string; t: Array<{ n: string }> }>).find((l) => l.c === c)!;
+  const LB = "Menuiseries exterieures", NB = "Baie vitrée";
+  const LC = "Cloisons / Platrerie", NC = "Caisson à galandage (châssis + habillage)";
+  const tB = lot(LB).t.find((t) => t.n === NB)!, tC = lot(LC).t.find((t) => t.n === NC)!;
+  const poche = (sel: Selection) => lineHT(ctx, sel, lot(LC) as never, tC as never);
+  const baie = (sel: Selection) => lineHT(ctx, sel, lot(LB) as never, tB as never);
+
+  it("cocher la baie la fait coûter quelque chose", () => {
+    // Le lot menuiseries extérieures n'a aucune quantité automatique : cocher posait 0 €.
+    const sel = { [key(LB, NB)]: { on: true, qty: 1 } } as Selection;
+    expect(baie(sel)).toBe(2200);
+  });
+  it("la poche suit la baie, en quantité et en prix", () => {
+    const sel = {
+      [key(LB, NB)]: { on: true, qty: 1, vsel: { pose: "galandage" } },
+      [key(LC, NC)]: { on: true, qty: 1 },
+    } as Selection;
+    expect(qtyOf(ctx, sel, LC, tC as never)).toBe(1);
+    expect(poche(sel)).toBeGreaterThan(0);
+    (sel[key(LB, NB)] as { qty: number }).qty = 3;
+    expect(qtyOf(ctx, sel, LC, tC as never)).toBe(3);
+  });
+  it("revenir en « coulissante » ou décocher la baie remet la poche à zéro", () => {
+    const sel = {
+      [key(LB, NB)]: { on: true, qty: 3, vsel: { pose: "coulissante" } },
+      [key(LC, NC)]: { on: true, qty: 3 },
+    } as Selection;
+    expect(poche(sel)).toBe(0);
+    (sel[key(LB, NB)] as { vsel: Record<string, string>; on: boolean }).vsel = { pose: "galandage" };
+    expect(poche(sel)).toBeGreaterThan(0);
+    (sel[key(LB, NB)] as { on: boolean }).on = false;
+    expect(poche(sel)).toBe(0);
   });
 });

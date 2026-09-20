@@ -450,7 +450,11 @@ function quantiteInduite(ctx: Ctx, c: string, n: string, sel: Selection): number
     if (!s || !s.on) continue;
     const choisie = g.opts.find((o) => o.k === ((s.vsel ?? {})[g.k] ?? g.opts[0].k));
     if (choisie?.induit !== cible.id) continue;
-    total += s.manual ? (s.qty ?? 0) : (autoQty(ctx, l.c, t.n, sel) ?? 0);
+    /* `qtyOf` et rien d'autre : la première version refaisait le calcul à la main
+       (`s.manual ? s.qty : autoQty(...)`) et se trompait sur un poste à quantité SAISIE mais non
+       marqué `manual` — une baie cochée valait 2 200 € et sa poche 0. Deux chemins qui mesurent
+       la même chose finissent toujours par diverger ; il n'y en a plus qu'un. */
+    total += qtyOf(ctx, sel, l.c, t);
   }
   return inductible ? total : null;
 }

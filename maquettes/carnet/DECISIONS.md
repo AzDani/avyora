@@ -566,3 +566,38 @@ plus jamais révisée.
 
 `core.ts` importe maintenant le catalogue. Pas de cycle à l'exécution : `catalog.ts` n'en tire
 qu'un type, effacé à la compilation.
+
+## D25 ter · Cocher une ligne, c'est en demander une
+
+Signalé par Dani le 20/09/2026 : « quand je sélectionne à galandage ça ne s'ajoute pas au
+compteur ». Reproduit, et le galandage n'y était pour rien — **deux** défauts derrière.
+
+**1. Cocher un poste sans quantité automatique ne coûtait rien.** Tout le lot *Menuiseries
+extérieures* est manuel : cocher « Baie vitrée » posait une ligne à **0 €** jusqu'à ce qu'on tape
+un nombre. La poche du galandage suit la baie — 0 baie, 0 poche. Ce n'est donc pas le galandage
+qui ne s'ajoutait pas, c'est la baie qui ne valait rien.
+
+Une ligne cochée qui ne coûte rien ressemble à une panne. Cocher, c'est en demander **au moins
+une** : la quantité par défaut passe à 1 pour les postes sans quantité automatique, comme elle
+l'était déjà pour la location de matériel. Les postes à quantité automatique ne bougent pas — la
+leur est calculée. Et rien n'est rétroactif : le défaut ne s'applique qu'au moment du clic, les
+projets enregistrés gardent leurs quantités.
+
+**2. `quantiteInduite` refaisait le calcul de quantité au lieu de le demander.** Elle testait
+`s.manual ? s.qty : autoQty(...)` — or une baie cochée porte une quantité SAISIE sans être marquée
+`manual`, parce que `qtyOf` ne consulte `manual` que sur les postes automatiques. Résultat : baie à
+2 200 €, poche à 0. Elle appelle maintenant **`qtyOf`, et rien d'autre**.
+
+C'est le motif qu'on traque depuis trois jours — deux chemins qui mesurent la même chose — et je
+venais de l'écrire moi-même, la veille du jour où j'ai fini de le corriger ailleurs.
+
+Le parcours complet est désormais tenu par un test, et non plus seulement la déduction sur des
+sélections fabriquées à la main :
+
+| | baie | poche |
+|---|---|---|
+| baie cochée | 2 200 € | 0 € |
+| pose « à galandage » | 2 200 € | 749 € (×1) |
+| baie passée à 3 | 6 600 € | 2 247 € (×3) |
+| retour « coulissante » | 6 600 € | 0 € |
+| baie décochée | 0 € | 0 € |

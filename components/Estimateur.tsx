@@ -229,7 +229,12 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
     upd(l.c, t.n, (s) => {
       const on = !s.on;
       const next = { ...s, on };
-      if (on && isLoc(l.c) && next.qty == null) next.qty = 1;
+      /* Cocher une ligne, c'est en demander au moins une. Sans quantité automatique — c'est le
+         cas de TOUT le lot menuiseries extérieures — la ligne restait à 0 € jusqu'à ce qu'on
+         tape un nombre : cocher « Baie vitrée » n'ajoutait rien, et la poche du galandage, qui
+         suit la baie, n'ajoutait rien non plus. Une ligne cochée qui ne coûte rien ressemble à
+         une panne. Les postes à quantité automatique ne sont pas touchés : la leur est calculée. */
+      if (on && next.qty == null && (isLoc(l.c) || !isAuto(ctx, l.c, t.n))) next.qty = 1;
       return next;
     });
   }
