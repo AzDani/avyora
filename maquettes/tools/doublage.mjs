@@ -201,6 +201,31 @@ const res = await p.evaluate(() => {
     t["là où il n'y a rien, on ne retire rien"] = retirerDoublageAu(nord, 1, 0.5) === false;
     t["retirer le dernier vide le mur"] = retirerDoublageAu(nord, 1, 0.9) && pres(m2(), 0, 0.01) && isoLayers(nord).length === 0; }
 
+  /* ── la bande n'entre pas dans le mur qui arrive ─────────────────────────
+     Elle passe derrière lui, jusqu'à son axe, pour que les deux bandes de part et d'autre s'y
+     rejoignent — mais seulement quand le doublage CONTINUE de l'autre côté. On prolongeait à
+     chaque jonction en T, y compris là où il s'arrête : la bande entrait alors d'une
+     demi-épaisseur dans la maçonnerie, ce qui se voit à l'œil sur un mur épais. */
+  { const etendue = (arret) => { state = blankState(); const lv = L(); lv.height = 2.5;
+      const W = (a, c, ty) => { const x = { id: uid(), a: v(...a), b: v(...c), type: ty || "mur" }; lv.walls.push(x); return x; };
+      const haut = W([0, 0], [12, 0]); W([12, 0], [12, 4]); W([12, 4], [0, 4]); W([0, 4], [0, 0]);
+      W([5, 0], [5, 4], "mur");                       /* refend ÉPAIS de 20 cm, pas une cloison */
+      setMode("projet"); afterChange();
+      poserDoublage(haut, 1, 0, arret); afterChange();
+      let xmin = 1e9, xmax = -1e9;
+      (facesCache[lv.id] || []).forEach((f) => { const N = f.poly.length;
+        for (let i = 0; i < N; i++) { const B = bandeDoublage(f, i); if (!B) continue;
+          B.quad.forEach((q) => { xmin = Math.min(xmin, q.x); xmax = Math.max(xmax, q.x); }); } });
+      return { xmin, xmax }; };
+    /* s'arrête au refend : la bande va de la face du mur gauche à la face du refend */
+    const stop = etendue(5 / 12);
+    t["arrêtée au refend · la bande ne mord pas le mur de gauche"] = pres(stop.xmin, 0.10, 0.005);
+    t["arrêtée au refend · elle s'arrête à la face du refend"] = pres(stop.xmax, 4.90, 0.005);
+    /* continue au-delà : là, elle rejoint l'AXE du refend pour se raccorder à l'autre bande */
+    const suite = etendue(1);
+    t["continue au-delà · elle passe derrière le refend, jusqu'à son axe"] = pres(suite.xmax, 11.90, 0.005) || pres(suite.xmax, 12, 0.005);
+    t["continue au-delà · toujours pas de morsure à gauche"] = pres(suite.xmin, 0.10, 0.005); }
+
   return t;
 });
 /* ── et le vrai geste, à la souris ───────────────────────────────────────────

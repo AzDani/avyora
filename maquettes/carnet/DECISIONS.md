@@ -840,3 +840,34 @@ endroit-là plutôt que dans un coin.
 Leçon à garder : j'ai livré deux fois de suite une fonction sans son entrée visible — l'outil sans
 le retrait, puis le retrait sans son bouton. Quand une capacité existe, la question n'est pas
 « comment l'appeler » mais « où la voit-on ».
+
+## D28 septies · L'isolant entrait dans le mur
+
+Signalé par Dani le 23/09/2026, capture à l'appui : « l'isolant rentre dans le mur, c'est pas
+normal ».
+
+**La règle était bonne, sa condition était trop large.** Un doublage passe **derrière** le mur qui
+vient buter dessus, jusqu'à son **axe** : c'est ce qui permet aux deux bandes de part et d'autre de
+s'y rejoindre exactement, sans laisser un trou de leur épaisseur. On prolongeait donc à chaque
+jonction en T.
+
+Mais on prolongeait **aussi là où le doublage s'arrête**. La bande entrait alors d'une
+demi-épaisseur dans le mur qui arrive — invisible sur une cloison de 7 cm, criant sur une
+maçonnerie de 20 : de l'isolant dessiné dans le mur.
+
+**La condition devient : on prolonge seulement si le doublage CONTINUE de l'autre côté.** On teste
+un point juste au-delà de la jonction, sur le mur doublé : couvert, on passe derrière ; pas
+couvert, la bande s'arrête net contre la face.
+
+Mesuré sur deux pièces séparées par un refend de 20 cm, mur du haut doublé :
+
+| | bande de x… | à x… |
+|---|---|---|
+| doublage arrêté au refend | **0,10** (face du mur gauche) | **4,90** (face du refend) |
+| doublage continu | 0,10 | 11,90 — il passe derrière et rejoint l'autre bande |
+
+Avant, le premier cas donnait 0,00 → 5,00 : une demi-épaisseur mordue de chaque côté.
+
+C'est le troisième défaut de **tracé** en deux jours, tous invisibles dans les chiffres. Les
+quantités n'ont jamais bougé — seul le dessin mentait. Les contrôles mesurent maintenant la bande
+elle-même (`bandeDoublage`), et c'est ce qui a permis d'écrire celui-ci.

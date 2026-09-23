@@ -3030,8 +3030,20 @@ function bandeDoublage(f,i){
   const io=f.dblIso[i]||w.iso,a=(i-1+N)%N;
   const ue=norm(sub(f.poly[i],f.poly[a]));
   const enT=(pt)=>dist(pt,w.a)>1e-3&&dist(pt,w.b)>1e-3;
-  const demi=(j,pt)=>{if(f.dbl[j]||!enT(pt))return 0;const v2=edgeWall(f,j);return v2?wallT(v2)/2:0;};
-  const eA=mul(ue,-demi(a,f.poly[a])),eB=mul(ue,demi((i+1)%N,f.poly[i]));
+  /* Le doublage passe DERRIÈRE le mur qui vient buter dessus, jusqu'à son axe : les deux bandes
+     de part et d'autre s'y rejoignent exactement. Mais seulement s'il CONTINUE de l'autre côté.
+     On prolongeait à chaque jonction en T, y compris là où le doublage s'arrête — la bande
+     entrait alors d'une demi-épaisseur dans le mur qui arrive, ce qui se voit surtout sur un
+     mur épais : de l'isolant dessiné dans la maçonnerie.
+     On regarde donc un point juste au-delà de la jonction, sur le mur doublé : couvert, on
+     prolonge ; pas couvert, la bande s'arrête net contre la face. */
+  const Lw=wallLen(w)||1;
+  const tDe=(pt)=>projT(pt,w.a,w.b);
+  const tA=tDe(f.poly[a]),tI=tDe(f.poly[i]);
+  const continue_=(pt,vers)=>isoCouvreT(io,Math.max(0,Math.min(1,tDe(pt)+vers*(0.05/Lw))));
+  const demi=(j,pt,vers)=>{if(f.dbl[j]||!enT(pt)||!continue_(pt,vers))return 0;const v2=edgeWall(f,j);return v2?wallT(v2)/2:0;};
+  const sensA=Math.sign(tA-tI)||1,sensI=Math.sign(tI-tA)||1;
+  const eA=mul(ue,-demi(a,f.poly[a],sensA)),eB=mul(ue,demi((i+1)%N,f.poly[i],sensI));
   const nIn=(()=>{let nn=perp(ue);return (((f.label.x-f.poly[a].x)*nn.x+(f.label.y-f.poly[a].y)*nn.y)<0)?mul(nn,-1):nn;})();
   const epIso=doublageOf(io);
   const bordInt=(k,voisin)=>f.dbl[voisin]?f.polyInt[k]:add(f.polyFace[k],mul(nIn,epIso));
