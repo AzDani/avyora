@@ -11,6 +11,11 @@
  *   node maquettes/tools/doublage.mjs "$(pwd)/maquettes"
  */
 import puppeteer from "puppeteer-core";
+import { readFileSync } from "node:fs";
+/* Le plan RÉEL de Dani qui a fait sortir le défaut — gardé tel quel. Aucune scène construite à la
+   main ne le reproduisait : ses murs ne sont pas dessinés d'axe à axe, et ses doublages portaient
+   des bornes arrondies. */
+const PLAN_REFEND = readFileSync(new URL("./fixtures/plan-refend-pierre.json", import.meta.url), "utf8");
 const SP = process.argv[2];
 if (!SP) { console.error("usage : node maquettes/tools/doublage.mjs <dossier maquettes>"); process.exit(2); }
 
@@ -22,7 +27,7 @@ await p.evaluateOnNewDocument(() => { try { localStorage.clear(); } catch {} });
 await p.goto("file://" + SP + "/plan-editor.html", { waitUntil: "networkidle0" });
 await new Promise((r) => setTimeout(r, 400));
 
-const res = await p.evaluate(() => {
+const res = await p.evaluate((PLAN_REFEND) => {
   closeWelcome("blank");
   const t = {};
   const pres = (x, y, tol) => Math.abs(x - y) < (tol ?? 0.02);
@@ -266,8 +271,31 @@ const res = await p.evaluate(() => {
     t["un mur porteur ne recule pas devant un doublage"] = pres(bout("porteur"), 0, 1e-9);
     t["une cloison, si : elle bute sur la plaque"] = bout("cloison") > 0.2; }
 
+  /* ── LE PLAN DE DANI : l'isolant ne doit entrer dans aucun mur ───────────
+     Quatre signalements, trois corrections qui ne réglaient rien, et aucune reconstruction ne
+     reproduisait le défaut. La cause tenait en deux détails que seul un vrai plan réunissait :
+     un mur dessiné AU-DELÀ de son voisin (ramené à l'axe pour la détection des pièces, donc plus
+     court que le mur enregistré), et des bornes de doublage ARRONDIES à 4 décimales. Ensemble,
+     ils faisaient naître une arête d'un millimètre entre la bande et le refend : le coin ne
+     voyait plus le refend, et la bande partait de son axe au lieu de sa face. */
+  { state = JSON.parse(PLAN_REFEND).state; state.cur = 0; setMode("projet"); afterChange();
+    const lv = L();
+    const ref = lv.walls.find((w) => w.pid === "m71");
+    const faces = [ref.a.x - wallT(ref) / 2, ref.a.x + wallT(ref) / 2];     /* 12,3 et 12,9 */
+    let dedans = 0, bandes = 0;
+    (facesCache[lv.id] || []).forEach((f) => { const N = f.poly.length;
+      for (let i = 0; i < N; i++) { const B = bandeDoublage(f, i); if (!B) continue; bandes++;
+        B.quad.forEach((q) => { if (q.x > faces[0] + 0.005 && q.x < faces[1] - 0.005 && q.y > -16.45 && q.y < -11.95) dedans++; }); } });
+    t["plan de Dani · des bandes sont dessinées"] = bandes > 0;
+    t["plan de Dani · aucun point de bande dans le refend en pierre"] = dedans === 0;
+    /* et aucune arête d'un millimètre dans les pièces */
+    let mini = 1e9;
+    (facesCache[lv.id] || []).filter((f) => f.room).forEach((f) => { const N = f.poly.length;
+      for (let i = 0; i < N; i++) mini = Math.min(mini, dist(f.poly[i], f.poly[(i + 1) % N])); });
+    t["plan de Dani · plus d'arête minuscule (> 1 cm)"] = mini > 0.01; }
+
   return t;
-});
+}, PLAN_REFEND);
 /* ── et le vrai geste, à la souris ───────────────────────────────────────────
    Le reste vérifie la mécanique ; ici on tire réellement la poignée, parce que c'est ce que
    fait l'utilisateur et que c'est là que se cachent les surprises (cible manquée, accroche qui

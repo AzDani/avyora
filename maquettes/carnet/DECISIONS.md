@@ -1049,3 +1049,51 @@ Ce qui a débloqué : **regarder mon propre rendu** au lieu de mesurer mes propr
 clair au sommet du refend se voyait en une seconde sur l'image, et aucune mesure ne l'aurait
 montré. Quand un défaut est visuel et que trois mesures disent que tout va bien, la mesure suivante
 doit être une capture d'écran.
+
+## D33 · L'isolant dans le mur : la vraie cause, trouvée sur le vrai plan
+
+Cinquième signalement de Dani, le 24/09/2026. Cette fois il m'a envoyé **son plan exact**, via le
+bouton « Copier le plan complet » ajouté pour l'occasion. Le défaut s'est reproduit au premier
+chargement.
+
+**Aucune de mes reconstructions ne pouvait le produire**, parce qu'il tenait à deux détails qu'elles
+n'avaient pas, et qu'il fallait les deux ensemble :
+
+1. **Un mur dessiné au-delà de son voisin.** Le mur du haut du garage part de x = 6,6 alors que le
+   mur qu'il rejoint est à x = 6,9. Pour détecter les pièces, l'éditeur le ramène à l'axe (6,9 →
+   20) : le segment de calcul fait 13,1 m, le mur enregistré 13,4. Or l'étendue d'un doublage est
+   stockée en **fraction** du mur enregistré. La même fraction appliquée au segment plus court
+   tombait 17 cm plus loin — dans le refend.
+2. **Des bornes arrondies à 4 décimales**, dans la pose du doublage ET dans la liste des jonctions.
+   Sur un mur de 19,9 m, 0,3719 au lieu de 0,371859 : la borne tombait à 12,5992 au lieu de 12,6000.
+   Le graphe des pièces, lui, calcule la jonction exacte. Entre les deux naissait **une arête d'un
+   millimètre** — le coin de la pièce ne voyait plus le refend, n'appliquait pas son épaisseur, et la
+   bande partait de son axe au lieu de sa face.
+
+Mes scènes de test dessinaient toujours les murs d'axe à axe, sur des longueurs rondes : le mur de
+calcul et le mur enregistré avaient la même longueur, et l'arrondi tombait juste. Le défaut était
+invisible par construction.
+
+**Trois corrections, qui tiennent chacune un bout :**
+
+- la borne est reportée sur le segment de calcul **par son point physique**, plus par sa fraction ;
+- une borne à moins de 2 cm d'une jonction **s'y accroche** — ce qui répare les plans déjà
+  enregistrés avec des bornes arrondies ;
+- les bornes et les jonctions sont gardées **en pleine précision**, pour que le millimètre ne se
+  fabrique plus.
+
+Sur le plan de Dani : la bande de la chambre s'arrête à **12,30** (face gauche du refend), celle du
+garage part de **12,90** (face droite), la bande fantôme de 12,30 à 12,60 — entièrement dans la
+pierre — a disparu. Vérifié **à l'image**, en haut et en bas.
+
+**Son plan est désormais un test.** Il est gardé tel quel dans `tools/fixtures/`, et le contrôle
+vérifie qu'aucun point de bande n'entre dans le refend et qu'aucune pièce n'a d'arête de moins d'un
+centimètre. J'ai vérifié que ce test **échoue sur l'ancien code** avant de le déclarer bon.
+
+### Ce que je retiens de ces cinq allers-retours
+
+Les corrections D28 septies, D31 et D32 étaient justes — chacune a fermé un vrai cas — mais aucune
+ne touchait **le sien**, parce que je corrigeais ce que je savais reproduire, pas ce qu'il voyait.
+J'aurais dû lui demander son plan au deuxième signalement, pas au cinquième. Quand un utilisateur
+voit un défaut que je ne reproduis pas, **la donnée qui manque est la sienne**, et aucune quantité
+de reconstruction ne la remplace.

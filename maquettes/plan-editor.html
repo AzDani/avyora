@@ -1412,17 +1412,24 @@ function poserDoublage(w,side,t0,t1){
   for(let i=l.length-1;i>=0;i--){const io=l[i];
     if((io.side||1)!==side)continue;
     if(isoT0(io)<b-1e-6 && isoT1(io)>a+1e-6) l.splice(i,1);}
+  /* t0/t1 gardés en pleine précision. Les arrondir à 4 décimales décalait la borne d'un
+     demi-millimètre sur un mur de 13 m — assez pour la détacher de la jonction où elle était
+     posée, et pour que la bande reparte de l'axe du mur voisin au lieu de sa face. */
   l.push({e:DBL_CFG.e,mat:DBL_CFG.mat,mode:DBL_CFG.mode,sys:DBL_CFG.mode==='ite'?'enduit':'ossature',side,
-          t0:+a.toFixed(4),t1:+b.toFixed(4),...(st?{st}:{})});
+          t0:a,t1:b,...(st?{st}:{})});
   syncNewDormants(w);
   afterChange();
 }
-/* Les points d'arrêt possibles : les deux bouts, et chaque endroit où un autre mur touche. */
+/* Les points d'arrêt possibles : les deux bouts, et chaque endroit où un autre mur touche.
+   En pleine précision : un arrondi à 4 décimales placait l'arrêt à un demi-millimètre de la vraie
+   jonction sur un mur de 13 m, à 0,8 mm sur un mur de 20 m. Le graphe des pièces, lui, calcule la
+   jonction exacte — les deux ne coïncidaient plus, une arête d'un millimètre naissait entre
+   elles, et la bande partait de l'axe du mur voisin au lieu de sa face. */
 function arretsDoublage(lv,w){
   const out=[0,1];
   lv.walls.forEach(o=>{if(o===w||isVirtual(o))return;
     [o.a,o.b].forEach(q=>{if(distSeg(q,w.a,w.b)>Math.max(wallT(o),wallT(w))/2+2e-2)return;
-      const t=projT(q,w.a,w.b);if(t>1e-3&&t<1-1e-3)out.push(+t.toFixed(4));});});
+      const t=projT(q,w.a,w.b);if(t>1e-3&&t<1-1e-3)out.push(t);});});
   return [...new Set(out)].sort((x,y)=>x-y);
 }
 // isolation présente dans une vue : 'creer' (ajoutée en projet) = absente de l'existant, présente en projet/final ; sinon existante partout
@@ -1600,8 +1607,25 @@ function detectFaces(level,m=mode()){
   /* On coupe les murs à leurs croisements ET aux bornes de leurs doublages : une arête est
      alors toujours entièrement doublée ou pas du tout, et un doublage peut s'arrêter où l'on
      veut — contre un conduit, au milieu d'un pan — sans que la surface de la pièce mente. */
-  const cuts=walls.map((_,i)=>{const w0=level.walls.filter(x=>wallActive(x,m))[i];const c=[0,1];
-    if(w0)isoLayers(w0).forEach(io=>{if(!isoShownIso(io,m)||isoEntier(io))return;c.push(isoT0(io),isoT1(io));});
+  /* L'étendue d'un doublage (t0, t1) est une fraction du mur ENREGISTRÉ. Or on coupe ici le
+     segment EFFECTIF (segEffectif), qui peut être plus court ou plus long : un mur dessiné au-delà
+     de son voisin y est ramené à l'axe. Pousser t tel quel coupait donc au mauvais endroit — sur
+     le plan de Dani, 0,5522 × 13,4 m tombait sur l'axe du refend (x = 12,6), mais 0,5522 × 13,1 m
+     tombait 17 cm plus loin, DANS le refend, et la bande entrait dans le mur.
+     On repasse donc par le point physique : fraction → point sur le mur enregistré → fraction
+     sur le segment effectif. */
+  /* Et une borne à une fraction de millimètre d'une jonction EST cette jonction : on l'y accroche.
+     Sinon la coupe crée une arête d'un demi-millimètre entre le doublage et le mur qui arrive, le
+     coin de la pièce ne voit plus ce mur, n'applique pas son épaisseur — et la bande part de son
+     AXE au lieu de sa FACE. C'est ce qui restait sur le plan de Dani après la première correction :
+     une borne à 12,6005 pour une jonction à 12,6000. */
+  const cuts=walls.map((we,i)=>{const w0=level.walls.filter(x=>wallActive(x,m))[i];const c=[0,1];
+    if(!w0)return c;
+    const versEffectif=t=>{const P=add(w0.a,mul(sub(w0.b,w0.a),t));return Math.max(0,Math.min(1,projT(P,we.a,we.b)));};
+    const Le=Math.hypot(we.b.x-we.a.x,we.b.y-we.a.y)||1;
+    const jonctions=arretsDoublage(level,w0).map(versEffectif);
+    const accroche=t=>{let best=t,dmin=0.02/Le;jonctions.forEach(j=>{const d=Math.abs(j-t);if(d<dmin){dmin=d;best=j;}});return best;};
+    isoLayers(w0).forEach(io=>{if(!isoShownIso(io,m)||isoEntier(io))return;c.push(accroche(versEffectif(isoT0(io))),accroche(versEffectif(isoT1(io))));});
     return c;});
   for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){
     const A=walls[i],B=walls[j];const it=segInter(A.a,A.b,B.a,B.b);
