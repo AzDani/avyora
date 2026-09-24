@@ -108,6 +108,22 @@ button,input,select{font:inherit}
 .toast{position:absolute;left:50%;top:14px;transform:translateX(-50%);background:var(--white);border:1px solid var(--line);border-left:4px solid var(--warn);padding:9px 14px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(30,27,75,.12);z-index:3;opacity:0;transition:opacity .2s;pointer-events:none}
 .toast.show{opacity:1}
 .toast.ok{border-left-color:var(--ok)}
+.toast.act{pointer-events:auto;display:flex;align-items:center;gap:12px}
+.toast .tact{border:0;background:var(--brand-l);color:var(--brand);font:inherit;font-weight:700;font-size:12.5px;padding:5px 10px;border-radius:7px;cursor:pointer;white-space:nowrap}
+.toast .tact:hover{background:var(--brand);color:#fff}
+.toast.over{position:fixed;top:20px;z-index:30}
+.tb.ro{opacity:.38}
+.savest{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;margin-left:-6px;min-width:112px;flex:0 0 auto}
+.savest svg{width:14px;height:14px;flex:0 0 14px}
+.overlay.show~#m-confirm.show{background:rgba(20,17,51,.22);backdrop-filter:none}
+.savest.ok svg{color:var(--ok)}
+.savest.err{color:#b45309}
+.confirmrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.confirmrow .ib{flex:0 1 auto}
+.lienSupport{border:0;background:none;color:var(--muted);font:inherit;font-size:12px;text-decoration:underline;cursor:pointer;padding:2px}
+.robanner{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between;background:var(--brand-l);border:1px solid #c7d2fe;border-radius:12px;padding:9px 12px;margin:0 0 12px;font-size:12.5px;font-weight:600;color:var(--ink)}
+fieldset.ro{border:0;padding:0;margin:0;min-width:0}
+fieldset.ro button,fieldset.ro input,fieldset.ro select,fieldset.ro textarea{cursor:default}
 
 /* panneau droit */
 .resizer{flex:0 0 7px;margin:0 -3px;position:relative;z-index:6;cursor:col-resize;background:transparent;user-select:none;touch-action:none}
@@ -260,7 +276,12 @@ textarea.fin{resize:vertical;font-weight:500;line-height:1.4;font-size:13px}
 .overlay.show{display:flex}
 .modal{background:var(--white);border-radius:20px;max-width:560px;width:100%;max-height:90vh;overflow:auto;padding:26px;box-shadow:0 40px 90px -20px rgba(20,17,51,.6)}
 .modal.wide{max-width:900px}
-.modal h3{font-size:20px;font-weight:800;margin-bottom:4px}
+.modal h3{font-size:20px;font-weight:800;margin-bottom:4px;padding-right:34px}
+.modal{position:relative}
+.modal .mx{position:absolute;top:14px;right:14px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:0;background:transparent;color:var(--muted);border-radius:9px;cursor:pointer}
+.modal .mx:hover{background:var(--canvas);color:var(--ink)}
+.modal:focus{outline:0}
+.overlay :focus-visible{outline:2px solid var(--brand);outline-offset:2px}
 .modal .sub{font-size:13.5px;color:var(--muted);margin-bottom:18px;line-height:1.45}
 .mtable{width:100%;border-collapse:collapse;font-size:13px}
 .mtable th{text-align:left;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line)}
@@ -289,7 +310,7 @@ pre{background:#14112f;color:#d7d4f2;font-family:"Geist Mono",monospace;font-siz
 .step kbd{background:var(--canvas);border:1px solid var(--line);padding:0 5px;border-radius:4px;font-family:"Geist Mono",monospace;font-size:11px}
 .sheetHandle{display:none}
 /* tablette / fenêtre étroite : barre du haut compacte, aide au-dessus du zoom */
-@media (max-width:1100px){.chip{display:none}.pname{max-width:120px}.top{gap:8px;padding:0 10px}.top .ib{white-space:nowrap}#undoBtn,#redoBtn{font-size:0;gap:0;padding:7px}#undoBtn svg,#redoBtn svg{width:16px;height:16px}.top button[onclick="openModal('keys')"]{display:none}.hint{max-width:calc(100% - 28px);bottom:62px}}
+@media (max-width:1100px){.savest{min-width:14px;margin-left:0}.savest span{display:none}.chip{display:none}.pname{max-width:120px}.top{gap:8px;padding:0 10px}.top .ib{white-space:nowrap}#undoBtn,#redoBtn{font-size:0;gap:0;padding:7px}#undoBtn svg,#redoBtn svg{width:16px;height:16px}.top button[onclick="openModal('keys')"]{display:none}.hint{max-width:calc(100% - 28px);bottom:62px}}
 @media (max-width:900px){.brand b{display:none}.pname{max-width:100px}}
 .phoneBanner{display:none;position:absolute;left:8px;right:8px;top:92px;z-index:6;align-items:flex-start;gap:8px;background:var(--nuit);color:#fff;border-radius:12px;padding:9px 11px;font-size:12px;line-height:1.4;box-shadow:0 8px 24px rgba(30,27,75,.3)}
 .phoneBanner b{color:#c4b5fd}.phoneBanner button{border:0;background:rgba(255,255,255,.15);color:#fff;border-radius:8px;padding:4px 8px;font:inherit;font-size:12px;cursor:pointer;flex:0 0 auto}
@@ -311,7 +332,7 @@ pre{background:#14112f;color:#d7d4f2;font-family:"Geist Mono",monospace;font-siz
   .sheetHandle .bar{position:absolute;left:50%;top:5px;transform:translateX(-50%);width:38px;height:4px;border-radius:99px;background:var(--line)}
   .sheetHandle #sheetLabel{margin-top:6px;flex:1;text-align:left}.sheetHandle .chev{margin-top:6px;color:var(--muted);transition:transform .2s}.panel.open .sheetHandle .chev{transform:rotate(180deg)}
   .pbody{padding:10px 14px}.pfoot{padding:10px 14px 12px}
-  .hint{display:none}.surfbadge{display:none}#proChip{display:none}#savePlanBtn,#plansBtn{display:none} /* téléphone = consultation : pas d'enregistrement ni de gestion de plans */
+  .hint{display:none}.surfbadge{display:none}#proChip{display:none}.savest{display:none}#savePlanBtn,#plansBtn{display:none} /* téléphone = consultation : pas d'enregistrement ni de gestion de plans */
   .levels{left:8px;top:8px;padding:3px}.levels button{padding:5px 9px;font-size:12px}
   .levels.modes{right:8px;top:50px;left:auto}.levels.modes button{padding:5px 8px;font-size:12px}
   .toast{top:168px;max-width:calc(100% - 24px);font-size:12px}
@@ -368,7 +389,8 @@ pre{background:#14112f;color:#d7d4f2;font-family:"Geist Mono",monospace;font-siz
 <div class="top">
   <div class="brand"><span class="lg"><svg viewBox="0 0 64 64" width="22" height="22"><path d="M15 47 L32 13 L49 47" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="40" r="4.8" fill="#C4B5FD"/></svg></span><b>AVY<i>ORA</i></b></div>
   <div class="vsep"></div>
-  <input class="pname" id="pname" value="Mon plan" spellcheck="false" oninput="state.name=this.value;save()">
+  <input class="pname" id="pname" value="Mon plan" spellcheck="false" aria-label="Nom du plan" oninput="state.name=this.value;save()">
+  <span class="savest ok" id="saveState"></span>
   <span class="chip">📐 Éditeur de plan · maquette 2D</span>
   <button class="chip prochip" id="proChip" onclick="togglePro()" data-tip="Maquette : bascule Pro ↔ Gratuit pour tester les deux parcours (chiffrage, multi-plans, export)">★ Pro</button>
   <div class="spacer"></div>
@@ -396,7 +418,7 @@ pre{background:#14112f;color:#d7d4f2;font-family:"Geist Mono",monospace;font-siz
     <div class="hint" id="hint"></div>
     <div class="phoneBanner" id="phoneBanner"><span>📱 <b>Mode chantier</b> : consulte le plan, tape un élément pour ses détails, coche l'avancement dans le tiroir en bas. Pour <b>dessiner</b>, passe sur ordinateur ou tablette.</span><button onclick="this.parentElement.style.display='none'">OK</button></div>
     <div class="measbox" id="measBox" hidden></div>
-    <div class="toast" id="toast"></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <div class="zoomctl">
       <button onclick="zoomBy(1/1.25)" data-tip="Dézoomer" aria-label="Dézoomer">−</button>
       <span class="z" id="zlabel">100 %</span>
@@ -420,8 +442,8 @@ pre{background:#14112f;color:#d7d4f2;font-family:"Geist Mono",monospace;font-siz
 <!-- Modales -->
 <div class="overlay" id="m-estimate"><div class="modal wide"><h3>Ce plan → le moteur AVYORA</h3><div class="sub">Les quantités ci-dessous sont extraites automatiquement du plan. C'est exactement ce que le moteur d'estimation recevra (mode rapide : surfaces & pièces · mode détaillé : tout le reste).</div><div id="estBody"></div><div class="note">🔌 Maquette : à l'étape suivante, ce bouton lancera directement l'estimation. <b>Dessiner son plan est gratuit</b> ; l'estimation à partir du plan (quantités automatiques, détail poste par poste, suivi de chantier chiffré) fait partie de l'<b>abonnement Pro</b>.</div><button class="mclose" onclick="closeModal()">Fermer</button></div></div>
 <div id="tipbox"></div>
-<div class="overlay" id="m-plans"><div class="modal"><h3>Mes plans</h3><div class="sub">Tes plans enregistrés sur cet appareil. Ouvre-en un, duplique-le ou repars d'un plan vierge. <b>Enregistre</b> régulièrement pour garder tes versions.</div><div class="btnrow" style="margin:0 0 14px"><button class="ib primary" style="flex:1" onclick="savePlanToLibrary()">💾 Enregistrer le plan actuel</button><button class="ib" style="flex:1" onclick="newSavedPlan()">＋ Nouveau plan vierge</button></div><div id="plansList"></div><div class="note">🔒 Maquette : les plans sont stockés dans ce navigateur. Au branchement, ils seront sauvegardés dans ton compte AVYORA (Pro).</div><button class="mclose" onclick="closeModal()">Fermer</button></div></div>
-<div class="overlay" id="m-templates"><div class="modal wide"><h3>Partir d'un plan type</h3><div class="sub">Choisis le logement qui ressemble au tien : tu ajustes ensuite les cotes en glissant les murs, tu déplaces les portes, tu renommes les pièces. Bien plus rapide que de partir de zéro.</div><div class="tpls" id="tplGrid"></div><div class="note">Les plans types remplacent le plan en cours (Ctrl+Z pour revenir en arrière).</div><button class="mclose" onclick="closeModal()">Fermer</button></div></div>
+<div class="overlay" id="m-plans"><div class="modal"><h3>Mes plans</h3><div class="sub">Tes plans, sur cet appareil. Le plan ouvert s'enregistre tout seul ; il est rangé ici avant que tu en ouvres ou en commences un autre.</div><div class="btnrow" style="margin:0 0 14px"><button class="ib primary" style="flex:1" onclick="savePlanToLibrary()">💾 Enregistrer le plan actuel</button><button class="ib" style="flex:1" onclick="newSavedPlan()">＋ Nouveau plan vierge</button></div><div id="plansList"></div><div class="note">🔒 Maquette : les plans sont stockés dans ce navigateur. Au branchement, ils seront sauvegardés dans ton compte AVYORA (Pro).</div><button class="mclose" onclick="closeModal()">Fermer</button></div></div>
+<div class="overlay" id="m-templates"><div class="modal wide"><h3>Partir d'un plan type</h3><div class="sub">Choisis le logement qui ressemble au tien : tu ajustes ensuite les cotes en glissant les murs, tu déplaces les portes, tu renommes les pièces. Bien plus rapide que de partir de zéro.</div><div class="tpls" id="tplGrid"></div><div class="note">Ton plan en cours est d'abord rangé dans « Mes plans ».</div><button class="mclose" onclick="closeModal()">Fermer</button></div></div>
 <div class="overlay" id="m-welcome"><div class="modal"><h3>Dessine ton logement, on chiffre le reste</h3><div class="sub">En 3 étapes, sans rien connaître aux plans.</div>
 <div class="steps">
 <div class="step"><span class="n">1</span><div><b>Trace ton logement tel qu'il est</b><small>Outil <kbd>Murs</kbd> : clique chaque coin. Dès que le contour se ferme, la pièce apparaît avec sa surface. Astuce : tape la longueur (ex. <kbd>3,5</kbd>) puis <kbd>Entrée</kbd> pour être précis au cm. Portes, fenêtres et équipements se collent aux murs tout seuls.</small></div></div>
@@ -431,7 +453,7 @@ pre{background:#14112f;color:#d7d4f2;font-family:"Geist Mono",monospace;font-siz
 <div class="choice"><button onclick="closeWelcome('sample')"><b>Découvrir avec l'exemple</b><small>Un T2 de 60 m² déjà dessiné, à modifier librement.</small></button><button onclick="closeWelcome('templates')"><b>Partir d'un plan type</b><small>Studio, T3, maison 100 m² : je choisis le plus proche de chez moi et j'adapte.</small></button><button onclick="closeWelcome('blank')"><b>Partir d'une feuille blanche</b><small>Je dessine mon logement tout de suite.</small></button></div>
 <details><summary>Voir les raccourcis clavier</summary><div class="keys" style="margin-top:10px">
 <kbd>V</kbd><span>Sélectionner / déplacer</span><kbd>M</kbd><span>Tracer des murs</span><kbd>P</kbd><span>Portes & fenêtres</span><kbd>E</kbd><span>Équipements</span><kbd>C</kbd><span>Cote</span><kbd>L</kbd><span>Mesurer (longueur + surface, accroche aux angles intérieurs)</span><kbd>T</kbd><span>Note texte sur le plan</span><kbd>Glisser</kbd><span>Dans le vide = déplacer la vue (tous les outils)</span><kbd>Clic droit</kbd><span>Termine la tâche en cours et revient à la sélection</span>
-<kbd>Maj</kbd><span>Force les angles droits</span><kbd>Entrée</kbd><span>Ferme la pièce (ou pose la longueur tapée)</span><kbd>Échap</kbd><span>Termine sans fermer / désélectionne / annule un glissement</span><kbd>Suppr</kbd><span>Supprime l'élément sélectionné</span><kbd>R</kbd><span>Pivote l'équipement (poignée ronde = rotation libre, accroche 15°)</span><kbd>Maj + clic</kbd><span>Sélection multiple · Maj + glisser dans le vide = rectangle · Ctrl A = tout</span><kbd>Flèches</kbd><span>Déplace l'élément de 5 cm (Maj : 50 cm)</span><kbd>Ctrl Z / Y</kbd><span>Annuler / rétablir</span><kbd>Ctrl C / V / D</kbd><span>Copier / coller / dupliquer un ou plusieurs équipements</span><kbd>Molette</kbd><span>Zoom (pincer sur tablette)</span></div></details>
+<kbd>Maj</kbd><span>Force les angles droits</span><kbd>Entrée</kbd><span>Ferme la pièce (ou pose la longueur tapée)</span><kbd>Échap</kbd><span>Termine sans fermer / désélectionne / annule un glissement</span><kbd>Suppr</kbd><span>Supprime l'élément sélectionné · en vue Projet, le marque à démolir, à boucher ou à déposer (ce que tu y as créé s'efface)</span><kbd>Ctrl S</kbd><span>Enregistre le plan dans « Mes plans »</span><kbd>R</kbd><span>Pivote l'équipement (poignée ronde = rotation libre, accroche 15°)</span><kbd>Maj + clic</kbd><span>Sélection multiple · Maj + glisser dans le vide = rectangle · Ctrl A = tout</span><kbd>Flèches</kbd><span>Déplace l'élément de 5 cm (Maj : 50 cm)</span><kbd>Ctrl Z / Y</kbd><span>Annuler / rétablir</span><kbd>Ctrl C / V / D</kbd><span>Copier / coller / dupliquer un ou plusieurs équipements</span><kbd>Molette</kbd><span>Zoom (pincer sur tablette)</span></div></details>
 </div></div>
 <div class="overlay" id="m-projet"><div class="modal"><h3>Vue Projet : dessine ta rénovation</h3><div class="sub">Comme sur un plan d'architecte — jaune = on démolit, rouge = on construit.</div>
 <div class="steps">
@@ -441,7 +463,7 @@ pre{background:#14112f;color:#d7d4f2;font-family:"Geist Mono",monospace;font-siz
 </div><button class="mclose" onclick="closeModal()">C'est parti</button></div></div>
 <div class="overlay" id="m-keys"><div class="modal"><h3>Raccourcis clavier</h3><div class="sub">Trace vite, ajuste au clavier.</div><div class="keys">
 <kbd>V</kbd><span>Sélectionner / déplacer</span><kbd>M</kbd><span>Tracer des murs</span><kbd>P</kbd><span>Portes & fenêtres</span><kbd>E</kbd><span>Équipements</span><kbd>C</kbd><span>Cote</span><kbd>L</kbd><span>Mesurer (longueur + surface)</span><kbd>Glisser</kbd><span>Dans le vide = déplacer la vue (tous les outils)</span><kbd>Clic droit</kbd><span>Termine la tâche en cours et revient à la sélection</span>
-<kbd>Maj</kbd><span>Force les angles droits pendant le tracé</span><kbd>Entrée</kbd><span>Ferme la pièce (ou pose la longueur tapée)</span><kbd>Échap</kbd><span>Termine sans fermer / désélectionne</span><kbd>Suppr</kbd><span>Supprime l'élément sélectionné</span><kbd>R</kbd><span>Pivote l'équipement sélectionné (90°)</span><kbd>Flèches</kbd><span>Déplace l'élément de 5 cm (Maj : 50 cm)</span><kbd>Ctrl Z / Y</kbd><span>Annuler / rétablir</span><kbd>Molette</kbd><span>Zoom · <b>clic milieu</b> ou <kbd>Espace</kbd>+glisser = déplacer la vue</span></div><div class="btnrow"><button class="ib" style="flex:1" onclick="closeModal();openModal('welcome')">Revoir le guide en 3 étapes</button></div><button class="mclose" onclick="closeModal()">Fermer</button></div></div>
+<kbd>Maj</kbd><span>Force les angles droits pendant le tracé</span><kbd>Entrée</kbd><span>Ferme la pièce (ou pose la longueur tapée)</span><kbd>Échap</kbd><span>Termine sans fermer / désélectionne / ferme une fenêtre</span><kbd>Suppr</kbd><span>Supprime l'élément sélectionné · en vue Projet, le marque à démolir, à boucher ou à déposer (ce que tu y as créé s'efface)</span><kbd>Ctrl S</kbd><span>Enregistre le plan dans « Mes plans »</span><kbd>R</kbd><span>Pivote l'équipement sélectionné (90°)</span><kbd>Flèches</kbd><span>Déplace l'élément de 5 cm (Maj : 50 cm)</span><kbd>Ctrl Z / Y</kbd><span>Annuler / rétablir</span><kbd>Molette</kbd><span>Zoom · <b>clic milieu</b> ou <kbd>Espace</kbd>+glisser = déplacer la vue</span></div><div class="btnrow"><button class="ib" style="flex:1" onclick="closeModal();openModal('welcome')">Revoir le guide en 3 étapes</button></div><button class="mclose" onclick="closeModal()">Fermer</button></div></div>
 <div class="overlay" id="m-level"><div class="modal"><h3>Ajouter un niveau</h3><div class="sub">Cet étage <b>existe-t-il déjà</b>, ou est-ce le projet qui le crée ? C'est ce qui décide de ce qui sera chiffré.</div>
 <div class="ph" style="margin-top:4px">Il existe déjà</div><div class="choice"><button onclick="addLevel('copy')"><b>Copier les murs du niveau actuel</b><small>Les murs d'aujourd'hui, sans les travaux prévus : tu ajustes les cloisons. Rien n'est compté comme travaux.</small></button><button onclick="addLevel('empty')"><b>Niveau vide</b><small>Repartir d'une feuille blanche.</small></button></div>
 <div class="ph" style="margin-top:12px">Le projet le crée</div><div class="choice"><button onclick="addLevel('plancher')"><b>Plancher dans un volume existant</b><small>Une pièce de grande hauteur que tu coupes en deux. Les murs sont déjà là : seul le <b>plancher</b> est chiffré.</small></button><button onclick="addLevel('surelevation')"><b>Surélévation</b><small>Un étage neuf posé sur la maison. <b>Plancher et murs</b> sont chiffrés.</small></button></div>
@@ -450,10 +472,11 @@ pre{background:#14112f;color:#d7d4f2;font-family:"Geist Mono",monospace;font-siz
   <div class="sub">Copie ce bloc, puis colle-le dans AVYORA — <b>Mon projet → Importer un plan</b>. Les quantités remplissent le devis, et tu les vérifies avant qu'elles comptent.</div>
   <textarea id="envoiJson" readonly spellcheck="false" style="width:100%;height:190px;font-family:var(--font-mono,ui-monospace),monospace;font-size:11px;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--canvas);resize:vertical"></textarea>
   <div class="btnrow" style="margin-top:12px"><button class="ib primary" style="flex:1" onclick="copierEnvoi()">Copier</button><button class="ib" onclick="telechargerEnvoi()">Télécharger le fichier</button></div>
-  <div class="btnrow" style="margin-top:8px"><button class="ib" style="flex:1" onclick="copierPlanComplet()">Copier le plan complet (géométrie, pour le support)</button></div>
+  <div style="margin-top:8px;text-align:right"><button class="lienSupport" onclick="copierPlanComplet()">Un souci de dessin ? Copier le plan complet pour le support</button></div>
   <div class="tip" id="envoiInfo" style="margin-top:10px"></div>
   <button class="mclose" onclick="closeModal()">Fermer</button></div></div>
 <div class="overlay" id="m-export"><div class="modal wide"><h3>Dossier du plan</h3><div class="sub noprint" id="exportSub">Tous les niveaux, en vue Existant et Projet, plus le récapitulatif des quantités. <b>Imprimer / PDF</b> pour tout sortir en un document ; clic droit sur une image pour l'enregistrer seule.</div><div class="btnrow noprint" style="margin:0 0 14px"><button class="ib primary" style="flex:1" onclick="window.print()">🖨 Imprimer / enregistrer en PDF</button><button class="ib" onclick="closeModal()">Fermer</button></div><div id="exportGallery"></div><button class="mclose noprint" onclick="closeModal()">Fermer</button></div></div>
+<div class="overlay" id="m-confirm"><div class="modal"><h3 id="confirmTitre"></h3><div class="sub" id="confirmTexte"></div><div class="btnrow confirmrow" id="confirmChoix"></div></div></div>
 <div class="overlay" id="m-calib"><div class="modal"><h3>Caler l'échelle du calque</h3><div class="sub">Tu as marqué deux points sur le calque. Quelle est la distance réelle entre ces deux points ?</div><div class="row"><label>Distance réelle</label><span><input class="fin n" id="calibVal" value="3.00" type="number" step="0.01" min="0.1"> m</span></div><button class="mclose" onclick="applyCalib()">Appliquer</button></div></div>
 
 <script>
@@ -1345,6 +1368,13 @@ const ist = it => it.st||'existant';
 const itemActive = (it,m=mode()) => m==='existant' ? ist(it)!=='creer' : ist(it)!=='demolir';
 const itemDrawn  = (it,m=mode()) => m==='projet' ? true : (m==='final' ? ist(it)!=='demolir' : ist(it)!=='creer');
 const MODE_LABEL = {existant:'🏠 Existant',projet:'🛠 Projet',final:'✅ Final'};
+/* D38 · Le nom d'une vue dans une phrase, pris à la même source que ses boutons. */
+const nomVue = m => String(MODE_LABEL[m]||m).replace(/^[^A-Za-zÀ-ÿ]+/,'').trim();
+/* D38 (arbitrage J) · La vue finale se lit, elle ne se modifie pas. Elle masque les marquages :
+   un mur tracé là devenait « à créer » et le budget montait sans que rien ne le montre. */
+const OUTILS_LECTURE = ['select','zone','mesure'];
+function enLectureSeule(){if(mode()!=='final')return false;toast(`Vue ${nomVue('final')} : lecture seule. Pour modifier, passe en vue ${nomVue('projet')}.`,false,{action:'Aller en '+nomVue('projet'),fn:modifierEnTravaux});return true;}
+function modifierEnTravaux(){const s0=sel,m0=multi.slice();setMode('projet');if(s0){sel=s0;multi=m0;render();}}
 const CREER='#b91c1c', DEMOLIR='#d97706';
 // allège (hauteur sous la fenêtre) par défaut selon le modèle ; null = sans objet (portes, fenêtre de toit)
 const ALLEGE={fenetre:0.9,fenetre_p:1.2,porte_fenetre:0,baie:0};
@@ -2182,16 +2212,98 @@ function murTouche(level,w,p,m){
   }
   return null;
 }
-function danglingNodes(level){const out=[];level.walls.filter(w=>wallActive(w)).forEach(w=>[w.a,w.b].forEach(p=>{if(!murTouche(level,w,p))out.push(p);}));return out;}
+/* D38 : deux « séparations » (cuisine ouverte) qui se rejoignent en L étaient signalées ⛔ « extrémité
+   qui ne touche rien » — sur l'exemple et tous les plans types, jusque dans le dossier. Une
+   séparation peut s'appuyer sur une autre séparation ; un mur, lui, doit toucher un vrai mur. */
+function separationTouche(level,w,p){return level.walls.some(o=>o!==w&&isVirtual(o)&&wallActive(o)&&(same(o.a,p)||same(o.b,p)||distSeg(p,o.a,o.b)<2e-3));}
+function danglingNodes(level){const out=[];level.walls.filter(w=>wallActive(w)).forEach(w=>[w.a,w.b].forEach(p=>{if(!murTouche(level,w,p)&&!(isVirtual(w)&&separationTouche(level,w,p)))out.push(p);}));return out;}
 
 // ---------- Historique / sauvegarde ----------
 function snapshot(){return JSON.stringify(state);}
 function commit(){history.push(snapshot());if(history.length>80)history.shift();future=[];afterChange();}
 function afterChange(){state.levels.forEach(syncRooms);save();render();}
-function undo(){if(!history.length)return;future.push(snapshot());state=JSON.parse(history.pop());sel=null;afterChange();}
-function redo(){if(!future.length)return;history.push(snapshot());state=JSON.parse(future.pop());sel=null;afterChange();}
-function save(){try{localStorage.setItem('avyora-plan-v2',JSON.stringify({state,view}));}catch{}}
-function saveImages(){try{const used=new Set(state.levels.map(l=>l.bg?.img).filter(Boolean));const o={};let tot=0;for(const id of used){const src=images[id]?.src;if(!src)continue;tot+=src.length;if(tot>3.5e6)break;o[id]=src;}localStorage.setItem('avyora-plan-images',JSON.stringify(o));}catch{}}
+/* D38 : annuler ou rétablir laissait le tracé en cours à l'écran (chain) : le mur annulé restait
+   dessiné et le clic suivant repartait de son bout, en laissant un mur orphelin. Les gestes en
+   cours (tracé, rectangle, cote, sélection multiple, glissement) sont remis à zéro ; pendant un
+   tracé de murs, Ctrl+Z retire seulement le dernier segment, et le tracé continue du point d'avant. */
+function resetGestes(){chain=[];chainWallIds=[];lenBuf='';rectMode=null;dimStart=null;dimPending=null;multi=[];msel=[];drag=null;}
+function undo(){
+  if(tool==='mur'&&chain.length){
+    if(chain.length===1||!chainWallIds.length){chain=[];chainWallIds=[];lenBuf='';render();return;}
+    if(!history.length)return;
+    const suivi=chainWallIds.length===chain.length-1;
+    future.push(snapshot());state=JSON.parse(history.pop());sel=null;
+    if(suivi){chain.pop();chainWallIds.pop();lenBuf='';}else resetGestes();
+    afterChange();return;}
+  if(!history.length)return;future.push(snapshot());state=JSON.parse(history.pop());resetGestes();sel=null;afterChange();}
+function redo(){if(!future.length)return;history.push(snapshot());state=JSON.parse(future.pop());resetGestes();sel=null;afterChange();}
+/* ---------- D38 · Zéro perte de travail ----------
+   Le plan ouvert s'enregistre à chaque changement (clé avyora-plan-v2) — mais rien ne le disait.
+   L'indicateur près du nom le dit maintenant, branché sur la vraie écriture : « Enregistrement… »
+   pendant la mise à jour de « Mes plans », « Enregistré » quand elle a tenu, « Non enregistré »
+   si le navigateur a refusé (espace plein). Un plan déjà rangé dans « Mes plans » y est tenu à jour :
+   rouvrir sa fiche ne fait plus perdre les dernières modifications. */
+let etatEnreg='ok',enregT=0,enregAt=0,enregOk=true;
+const ICO_ENREG={ok:'<path d="M20 6 9 17l-5-5"/>',saving:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',err:'<path d="M12 3 2 21h20L12 3z"/><path d="M12 10v5M12 18h.01"/>'};
+function afficherEnreg(dansLib){const el=document.getElementById('saveState');if(!el)return;
+  const txt={ok:'Enregistré',saving:'Enregistrement…',err:'Non enregistré'}[etatEnreg];
+  const hh=enregAt?new Date(enregAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'';
+  el.className='savest '+etatEnreg;
+  el.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO_ENREG[etatEnreg]}</svg><span>${txt}</span>`;
+  const t=etatEnreg==='err'?'Pas enregistré : l\'espace de ce navigateur est plein. Supprime un plan dans « Mes plans » ou exporte celui-ci.':etatEnreg==='saving'?'Enregistrement en cours…':'Enregistré sur cet appareil'+(hh?' à '+hh:'')+(dansLib?', et à jour dans « Mes plans »':'');
+  el.title=t;el.setAttribute('aria-label',t);}
+function save(){let ok=true;try{localStorage.setItem('avyora-plan-v2',JSON.stringify({state,view}));}catch{ok=false;}
+  enregOk=ok;etatEnreg='saving';afficherEnreg();clearTimeout(enregT);enregT=setTimeout(synchroMesPlans,450);}
+function synchroMesPlans(){enregT=0;let ok=enregOk;const lib=loadPlans();
+  if(state.id&&lib[state.id]){lib[state.id]={...lib[state.id],name:state.name||'Plan sans nom',savedAt:Date.now(),state:JSON.parse(JSON.stringify(state)),view:{...view}};if(!writePlans(lib))ok=false;}
+  const avant=etatEnreg;etatEnreg=ok?'ok':'err';if(ok)enregAt=Date.now();afficherEnreg(!!(state.id&&lib[state.id]));
+  if(!ok&&avant!=='err')toast('Ton plan n\'a pas pu être enregistré : l\'espace de ce navigateur est plein. Supprime un plan dans « Mes plans » ou exporte celui-ci.',false,{ms:7000});}
+function enregistrerMaintenant(){if(enregT){clearTimeout(enregT);synchroMesPlans();}}
+window.addEventListener('pagehide',enregistrerMaintenant);
+/* Empreinte de ce que l'utilisateur a fait : tout l'état, sauf ce qui se recalcule (contour et
+   ancre des pièces, qui changent d'une vue à l'autre), la vue affichée et l'identifiant. */
+function empreinte(st){const {id,origine,mode,cur,...r}=st;const j=JSON.stringify(r,(k,v)=>(k==='poly'||k==='anchor'||k==='pid')?undefined:v);let h=2166136261;for(let i=0;i<j.length;i++){h^=j.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(36)+'.'+j.length;}
+function marquerOrigine(k){state.origine={k,sig:empreinte(state)};save();}
+const planVide=()=>!state.levels.some(l=>l.walls.length||l.items.length||(l.texts||[]).length||(l.dims||[]).length||l.bg);
+const planIntact=()=>!!state.origine&&state.origine.sig===empreinte(state);
+/* Avant tout ce qui remplace le plan ouvert (Nouveau, plan type, feuille blanche, exemple, ouvrir
+   un plan) : s'il porte du travail, il est rangé dans « Mes plans ». En gratuit, si la seule place
+   est prise, on le dit AVANT et on demande — jamais de perte silencieuse. L'exemple retouché ne
+   prend pas cette place : on dit qu'il n'est pas gardé, avec « Annuler ».
+   suite(nomGardé, pourquoi) — pourquoi : 'exemple' | 'perdu' (l'utilisateur a choisi) | undefined. */
+function avantDeRemplacer(suite){enregistrerMaintenant();
+  if(planVide()||planIntact()){suite(null);return;}
+  const lib=loadPlans(),nom=state.name||'Plan sans nom';
+  if(state.id&&lib[state.id]){suite(nom);return;}
+  const exemple=state.origine&&state.origine.k==='exemple';
+  if(isPro()||(!exemple&&Object.keys(lib).length<PLAN_LIMIT_FREE)){if(rangerDansMesPlans()){suite(nom);return;}
+    demander({titre:`Impossible de garder « ${esc(nom)} »`,texte:'L\'espace de ce navigateur est plein. Exporte ce plan ou supprime un plan dans « Mes plans » avant de continuer.',choix:[{t:'Continuer sans le garder',danger:true,fn:()=>suite(null,'perdu')},{t:'Annuler',primaire:true}]});return;}
+  if(exemple){suite(null,'exemple');return;}
+  const autre=Object.values(lib)[0];
+  demander({titre:`« ${esc(nom)} » n'est pas enregistré`,texte:`En version gratuite, « Mes plans » garde un seul plan, et <b>« ${esc(autre?.name||'un autre plan')} »</b> y est déjà. Si tu continues, « ${esc(nom)} » sera perdu. Pour garder plusieurs plans, passe Pro.`,
+    choix:[{t:'Continuer sans le garder',danger:true,fn:()=>suite(null,'perdu')},{t:'Passer Pro',fn:toastPro},{t:'Annuler',primaire:true}]});}
+function rangerDansMesPlans(){const lib=loadPlans();if(!state.id)state.id=uid();lib[state.id]={id:state.id,name:state.name||'Plan sans nom',savedAt:Date.now(),state:JSON.parse(JSON.stringify(state)),view:{...view}};if(!writePlans(lib)){delete state.id;return false;}saveImages();save();return true;}
+/* En gratuit, commencer un 2e plan alors que « Mes plans » est plein : on l'annonce AVANT. */
+function annoncerLimite(pq,suite){const lib=loadPlans();if(isPro()||pq==='perdu'||Object.keys(lib).length<PLAN_LIMIT_FREE){suite();return;}
+  const autre=Object.values(lib)[0];
+  demander({titre:'Version gratuite : 1 plan enregistré',texte:`<b>« ${esc(autre?.name||'Ton plan')} »</b> occupe la place de « Mes plans ». Tu peux commencer un autre plan : il reste sur cet appareil tant que tu n'en ouvres pas un autre, mais il ne pourra pas être rangé à côté. Pour garder plusieurs plans, passe Pro.`,
+    choix:[{t:'Commencer quand même',fn:suite},{t:'Passer Pro',fn:toastPro},{t:'Annuler',primaire:true}]});}
+function toastPro(){toast('Maquette : le bouton Pro mènera à la page Tarifs',true);}
+/* Petite fenêtre de choix, sur le socle des modales. */
+function demander(o){document.getElementById('confirmTitre').innerHTML=o.titre;document.getElementById('confirmTexte').innerHTML=o.texte;
+  const row=document.getElementById('confirmChoix');row.innerHTML='';
+  o.choix.forEach(c=>{const b=document.createElement('button');b.type='button';b.className='ib'+(c.primaire?' primary':'')+(c.danger?' danger':'');b.textContent=c.t;if(c.primaire)b.dataset.autofocus='1';b.onclick=()=>{fermerConfirm();if(c.fn)c.fn();};row.appendChild(b);});
+  openModal('confirm');}
+function fermerConfirm(){const o=document.getElementById('m-confirm');if(document.querySelectorAll('.overlay.show').length<=1){closeModal();return;}
+  o.classList.remove('show');const reste=modaleOuverte();if(reste){const f=focusables(reste.querySelector('.modal')||reste);if(f[0])f[0].focus();}}
+/* D38 : ne gardait que les calques du plan ouvert — ouvrir un autre plan effaçait ceux des plans
+   rangés dans « Mes plans ». Rend false si un calque du plan ouvert n'a pas pu être gardé. */
+function saveImages(){try{let prev={};try{prev=JSON.parse(localStorage.getItem('avyora-plan-images'))||{};}catch{}
+  const cur=new Set(state.levels.map(l=>l.bg?.img).filter(Boolean)),autres=new Set();Object.values(loadPlans()).forEach(e=>(e.state?.levels||[]).forEach(l=>{if(l.bg?.img&&!cur.has(l.bg.img))autres.add(l.bg.img);}));
+  const o={};let tot=0,ok=true;for(const id of [...cur,...autres]){const src=images[id]?.src||prev[id];if(!src)continue;if(tot+src.length>3.5e6){if(cur.has(id))ok=false;continue;}tot+=src.length;o[id]=src;}
+  localStorage.setItem('avyora-plan-images',JSON.stringify(o));return ok;}catch{return false;}}
+function chargerCalques(){let imgs={};try{imgs=JSON.parse(localStorage.getItem('avyora-plan-images'))||{};}catch{}
+  state.levels.forEach(l=>{if(!l.bg)return;if(images[l.bg.img])return;if(imgs[l.bg.img]){const im=new Image();im.onload=()=>draw();im.src=imgs[l.bg.img];images[l.bg.img]=im;}else l.bg=null;});}
 /* D36 : les tâches de doublage s'appelaient 'iso:<mur>' et 'iso2:<mur>' — ce dernier partagé par
    tous les tronçons au-delà du premier. Elles portent maintenant l'id de leur couche : les cases
    déjà cochées sont reportées sur les deux couches que l'ancien nom distinguait. */
@@ -2215,21 +2327,26 @@ const PLAN_LIMIT_FREE=1;
 function isPro(){try{return localStorage.getItem('avyora-plan-pro')!=='0';}catch{return true;}}
 function togglePro(){try{localStorage.setItem('avyora-plan-pro',isPro()?'0':'1');}catch{}toast(isPro()?'Maquette en mode Pro : chiffrage, multi-plans et export sans filigrane':'Maquette en mode Gratuit : dessin seul, 1 plan, export filigrané',true);render();}
 function renderProChip(){const c=document.getElementById('proChip');if(!c)return;const p=isPro();c.textContent=p?'★ Pro':'🔓 Gratuit';c.classList.toggle('pro',p);}
-function planPaywall(){openModal('plans');renderPlans();toast('Version gratuite : 1 plan. Passe Pro pour en enregistrer plusieurs',false);}
+function planPaywall(){renderPlans();openModal('plans');toast('Version gratuite : 1 plan enregistré. Passe Pro pour en garder plusieurs',false);}
 function savePlanToLibrary(){const lib=loadPlans();const exists=state.id&&lib[state.id];
   if(!isPro()&&!exists&&Object.keys(lib).length>=PLAN_LIMIT_FREE){planPaywall();return false;}
   if(!state.id)state.id=uid();lib[state.id]={id:state.id,name:state.name||'Plan sans nom',savedAt:Date.now(),state:JSON.parse(JSON.stringify(state)),view:{...view}};if(writePlans(lib)){save();toast('Plan « '+(state.name||'sans nom')+' » enregistré',true);}else toast('Enregistrement impossible (espace navigateur plein)');if(document.getElementById('m-plans').classList.contains('show'))renderPlans();return true;}
-function openSavedPlan(id){const lib=loadPlans();const e=lib[id];if(!e)return;history.push(snapshot());state=JSON.parse(JSON.stringify(e.state));state.id=id;state.done=state.done||{};migrerDone(state);migrerSols(state);state.groups=state.groups||[];state.chantier={...CHANTIER_DEF,...(state.chantier||{})};state.cur=Math.min(state.cur||0,state.levels.length-1);if(e.view)view={...e.view};sel=null;chain=[];afterChange();fitView();closeModal();toast('Plan « '+(e.name||'')+' » ouvert',true);}
-function deleteSavedPlan(id){const lib=loadPlans();delete lib[id];writePlans(lib);if(state.id===id)delete state.id;renderPlans();}
+function openSavedPlan(id){const lib0=loadPlans();if(!lib0[id])return;
+  if(id===state.id){closeModal();toast('« '+(lib0[id].name||'Ce plan')+' » est déjà ouvert, à jour',true);return;} /* D38 : « Ouvrir » le plan ouvert rechargeait sa version rangée et perdait les dernières modifications */
+  avantDeRemplacer(garde=>ouvrirPlanRange(id,garde));}
+function ouvrirPlanRange(id,garde){const lib=loadPlans();const e=lib[id];if(!e)return;history.push(snapshot());state=JSON.parse(JSON.stringify(e.state));state.id=id;state.done=state.done||{};migrerDone(state);migrerSols(state);state.groups=state.groups||[];state.chantier={...CHANTIER_DEF,...(state.chantier||{})};state.cur=Math.min(state.cur||0,state.levels.length-1);if(e.view)view={...e.view};sel=null;resetGestes();chargerCalques();afterChange();fitView();closeModal();toast('Plan « '+(e.name||'')+' » ouvert'+(garde&&garde!==e.name?' · « '+garde+' » est rangé dans « Mes plans »':''),true);}
+/* D38 : la petite croix effaçait définitivement, sans confirmation ni retour. Le plan supprimé reste
+   récupérable 8 s (« Annuler » dans le message). */
+function deleteSavedPlan(id){const lib=loadPlans();const e=lib[id];if(!e)return;delete lib[id];writePlans(lib);const ouvert=state.id===id;if(ouvert)delete state.id;renderPlans();save();
+  toast(`« ${e.name||'Plan sans nom'} » supprimé de « Mes plans »`,false,{action:'Annuler',fn:()=>{const l2=loadPlans();l2[id]=e;writePlans(l2);if(ouvert&&!state.id)state.id=id;if(document.getElementById('m-plans').classList.contains('show'))renderPlans();save();toast(`« ${e.name||'Plan sans nom'} » est de retour dans « Mes plans »`,true);}});}
 function duplicateSavedPlan(id){const lib=loadPlans();const e=lib[id];if(!e)return;if(!isPro()&&Object.keys(lib).length>=PLAN_LIMIT_FREE){planPaywall();return;}const nid=uid();const copy=JSON.parse(JSON.stringify(e));copy.id=nid;copy.name=(e.name||'Plan')+' (copie)';copy.savedAt=Date.now();copy.state.name=copy.name;copy.state.id=nid;lib[nid]=copy;writePlans(lib);renderPlans();toast('Copie créée',true);}
-function newSavedPlan(){const lib=loadPlans();const exists=state.id&&lib[state.id];
-  if(!isPro()&&!exists&&Object.keys(lib).length>=PLAN_LIMIT_FREE){planPaywall();return;} // en gratuit, on ne peut pas mettre de côté un 2e plan
-  if(state.levels.some(l=>l.walls.length))savePlanToLibrary();history.push(snapshot());state=blankState();state.id=uid();sel=null;chain=[];afterChange();fitView();closeModal();toast('Nouveau plan vierge — l\'ancien reste dans « Mes plans »',true);}
+/* D38 : un seul « Nouveau », qu'on clique en haut ou dans « Mes plans ». */
+function newSavedPlan(){closeModal();newPlan();}
 function openPlansModal(){renderPlans();openModal('plans');}
 function renderPlans(){const lib=loadPlans();const list=Object.values(lib).sort((a,b)=>b.savedAt-a.savedAt);const el=document.getElementById('plansList');
   const fmtDate=t=>{const d=new Date(t);return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});};
   const pro=isPro();const atLimit=!pro&&list.length>=PLAN_LIMIT_FREE;
-  const banner=pro?'':`<div class="budget" style="margin-bottom:12px;cursor:default"><div class="bl"><span>🔓 Version gratuite : 1 plan</span><small>Le dessin est illimité. Pour <b>enregistrer et gérer plusieurs plans</b> (et estimer chacun), passe à <b>AVYORA Pro</b>.</small></div><button class="ib" style="background:#fff;white-space:nowrap" onclick="toast('Maquette : le bouton Pro mènera à la page Tarifs',true)">Passer Pro</button></div>`;
+  const banner=pro?'':`<div class="budget" style="margin-bottom:12px;cursor:default"><div class="bl"><span>Version gratuite : 1 plan enregistré</span><small>Dessiner reste gratuit. Pour <b>garder plusieurs plans</b> (et estimer chacun), passe à <b>AVYORA Pro</b>.</small></div><button class="ib" style="background:#fff;white-space:nowrap" onclick="toastPro()">Passer Pro</button></div>`;
   if(!list.length){el.innerHTML=banner+'<div class="empty">Aucun plan enregistré pour l\'instant. Dessine ton plan puis clique <b>Enregistrer le plan actuel</b>.</div>';return;}
   el.innerHTML=banner+'<div class="grouplist">'+list.map(e=>{const cur=e.id===state.id;const nb=(e.state?.levels||[]).reduce((s,l)=>s+(l.walls?.length||0),0);return `<div class="grp" style="${cur?'border-color:var(--acc3);background:var(--brand-l)':''}">
     <span class="gdot" style="background:${cur?'var(--brand)':'#cbd5e1'}"></span>
@@ -2487,7 +2604,8 @@ function wallCursor(w){let a=Math.atan2(w.b.y-w.a.y,w.b.x-w.a.x);if(a<0)a+=Math.
 // ---------- Tests de survol ----------
 function hitTest(p){
   const lv=L(), tol=4/view.zoom*hitScale;
-  for(const it of [...lv.items].reverse()){if(!itemDrawn(it)||itemHidden(it))continue;const c=Math.cos(-it.rot),s=Math.sin(-it.rot),d=sub(p,it);const lx=d.x*c-d.y*s,ly=d.x*s+d.y*c;const et=ITEMS[it.type]?.elec?Math.max(0,10/view.zoom-it.w/2):0;if(Math.abs(lx)<=it.w/2+tol+et&&Math.abs(ly)<=it.h/2+tol+et){if(it.type!=='escalier'||itemRects(it,lv).some(r=>r.circle?Math.hypot(lx-r.x-r.w/2,ly-r.y-r.h/2)<=r.w/2+tol:(lx>=r.x-tol&&lx<=r.x+r.w+tol&&ly>=r.y-tol&&ly<=r.y+r.h+tol)))return {kind:'item',id:it.id};}}
+  for(const it of [...lv.items].reverse()){if(!itemDrawn(it)||itemHidden(it))continue;const c=Math.cos(-it.rot),s=Math.sin(-it.rot),d=sub(p,it);const lx=d.x*c-d.y*s,ly=d.x*s+d.y*c;const el=!!ITEMS[it.type]?.elec,et=el?Math.max(0,10/view.zoom-it.w/2):0,ti=el?4/view.zoom:tol; /* D38 : zone du symbole, sans l'élargissement « doigt » en plus */
+    if(Math.abs(lx)<=it.w/2+ti+et&&Math.abs(ly)<=it.h/2+ti+et){if(it.type!=='escalier'||itemRects(it,lv).some(r=>r.circle?Math.hypot(lx-r.x-r.w/2,ly-r.y-r.h/2)<=r.w/2+tol:(lx>=r.x-tol&&lx<=r.x+r.w+tol&&ly>=r.y-tol&&ly<=r.y+r.h+tol)))return {kind:'item',id:it.id};}}
   for(const o of lv.openings){if(!opDrawn(o))continue;const w=lv.walls.find(w=>w.id===o.wallId);if(!w||!wallDrawn(w))continue;const c=add(add(w.a,mul(sub(w.b,w.a),o.t)),wallOff(w));const u=norm(sub(w.b,w.a)),d=sub(p,c);const along=d.x*u.x+d.y*u.y,across=-d.x*u.y+d.y*u.x;if(Math.abs(along)<=o.w/2&&Math.abs(across)<=wallT(w)/2+tol*2)return {kind:'opening',id:o.id};}
   for(const w of [...lv.walls].reverse()){if(!wallDrawn(w))continue;const off=wallOff(w);if(distSeg(p,add(w.a,off),add(w.b,off))<=wallT(w)/2+tol)return {kind:'wall',id:w.id};}
   {const sp=S(p);for(const t of [...TX(lv)].reverse()){const b=textBoxes[t.id];if(b&&sp.x>=b.x&&sp.x<=b.x+b.w&&sp.y>=b.y&&sp.y<=b.y+b.h)return {kind:'text',id:t.id};}}
@@ -2505,6 +2623,7 @@ cv.addEventListener('contextmenu',e=>e.preventDefault());
 cv.addEventListener('wheel',e=>{e.preventDefault();const r=cv.getBoundingClientRect();zoomAt(Math.exp(-e.deltaY*0.0012),e.clientX-r.left,e.clientY-r.top);},{passive:false});
 cv.addEventListener('pointerdown',e=>{
   cv.setPointerCapture(e.pointerId);
+  {const ae=document.activeElement;if(ae&&ae!==document.body&&ae.matches&&ae.matches('button,summary,a'))ae.blur();} /* D38 : Entrée ferme la pièce, pas le bouton cliqué avant */
   const r=cv.getBoundingClientRect(),sx=e.clientX-r.left,sy=e.clientY-r.top,raw=W2(v(sx,sy));
   lastMouse={x:sx,y:sy}; hitScale=e.pointerType==='touch'?2.2:1;
   // tactile : deux doigts = pincement (zoom + déplacement), on annule toute autre action
@@ -2537,18 +2656,19 @@ cv.addEventListener('pointerdown',e=>{
     // clic sans modificateur sur un mur d'un groupe → sélectionne tout le groupe (Alt = ce mur seul)
     if(!e.shiftKey&&!e.metaKey&&!e.ctrlKey&&!keys.alt){const hg=hitTest(raw);if(hg?.kind==='wall'){const g=groupOf(hg.id);if(g){const here=g.wallIds.filter(id=>L().walls.some(w=>w.id===id));if(here.length>1){msel=here.map(id=>({kind:'wall',id}));multi=[];sel={kind:'marquee',group:g.id};renderPanel();draw();return;}}}}
     // clic sur une cote → saisie de la longueur
-    const lab=coteLabelAt(sx,sy);if(lab){openCoteEdit(lab);return;}
+    const lecture=mode()==='final';
+    const lab=lecture?null:coteLabelAt(sx,sy);if(lab){openCoteEdit(lab);return;}
     // poignées du mur sélectionné : un coin à 2 murs se tire en gardant les angles (Alt = coin libre)
-    if(sel?.kind==='wall'){const w=findWall(sel.id);if(w){for(const end of ['a','b']){if(dist(S(w[end]),v(sx,sy))<9*hitScale){
+    if(sel?.kind==='wall'&&!lecture){const w=findWall(sel.id);if(w){for(const end of ['a','b']){if(dist(S(w[end]),v(sx,sy))<9*hitScale){
       const pt=w[end];const ws=nodeWalls(pt);
       if(ws.length===2&&!keys.alt&&!ws.some(x=>isVirtual(x.w)))drag={kind:'corner',wall:w,end,walls:ws.map(x=>x.w),orig:{...pt},start:raw,lastD:v(0,0),snap:snapshot(),moved:false};
       else drag={kind:'node',wall:w,end,from:{...pt},snap:snapshot(),moved:false};
       return;}}}}
     // poignée de rotation d'un équipement seul
-    if(sel?.kind==='wall'){const w=findWall(sel.id);
+    if(sel?.kind==='wall'&&!lecture){const w=findWall(sel.id);
       if(w){const h=poigneesDoublage(w).find(g=>dist(g.s,v(sx,sy))<11*hitScale);
         if(h){drag={kind:'isoEnd',w:h.w,io:h.io,bout:h.k,snap:snapshot(),moved:false};return;}}}
-    if(sel?.kind==='item'&&multi.length<=1){const it=L().items.find(i=>i.id===sel.id);if(it){const rh=rotHandle(it);if(dist(rh,v(sx,sy))<10*hitScale){drag={kind:'rotate',it,snap:snapshot(),moved:false};return;}}}
+    if(sel?.kind==='item'&&multi.length<=1&&!lecture){const it=L().items.find(i=>i.id===sel.id);if(it){const rh=rotHandle(it);if(dist(rh,v(sx,sy))<10*hitScale){drag={kind:'rotate',it,snap:snapshot(),moved:false};return;}}}
     const h=hitTest(raw);
     // Maj / Cmd / Ctrl + clic : ajoute ou retire l'élément d'une sélection multiple (murs, ouvertures, meubles, notes, cotes)
     if(e.shiftKey||e.metaKey||e.ctrlKey){
@@ -2567,6 +2687,7 @@ cv.addEventListener('pointerdown',e=>{
     }
     if(!(h?.kind==='item'&&multi.includes(h.id)))multi=[];
     sel=h; renderPanel(); if(isMobile()){draw();return;}
+    if(lecture){drag={kind:'pan',sx,sy,ox:view.ox,oy:view.oy,soft:true};draw();return;} /* vue finale : glisser déplace la vue */
     if(h?.kind==='wall'){const w=findWall(h.id);const u=norm(sub(w.b,w.a)),n=perp(u);
       // cloisons qui arrivent en T sur ce mur : elles suivent le déplacement
       const followers=tsSurMur(w);
@@ -2602,7 +2723,9 @@ function clickAction(raw){
     const ref=chain.length?chain[chain.length-1]:null; const {p}=snapPoint(raw,ref);
     if(chain.length&&dist(p,chain[0])<1e-6&&chain.length>=3){addWall(chain[chain.length-1],p);endChain(true);return;}
     if(ref&&dist(p,ref)<0.05)return;
-    if(ref)addWall(ref,p); chain.push(p); lenBuf=''; draw(); return;
+    /* D38 : la pièce se ferme contre un mur existant → le tracé s'arrête là. Il continuait, et le
+       clic suivant (pour sélectionner la pièce) tirait un mur en diagonale. */
+    if(ref){const n=addWall(ref,p);chain.push(p);lenBuf='';if(n){endChain(false);return;}} else chain.push(p); lenBuf=''; draw(); return;
   }
   if(tool==='ouverture'){const nw=nearestWall(raw,0.6,L(),true);if(!nw){toast('Approche-toi d\'un mur pour poser l\'ouverture');return;}const def=OPENINGS[openingType];const w=nw.wall,Lw=wallLen(w);if(def.w>Lw-0.1){toast('Ce mur est trop court pour cette ouverture');return;}const t=Math.max(def.w/2/Lw,Math.min(1-def.w/2/Lw,nw.t));const dup=ouverturesChevauchees(L(),w.id,t,def.w,null);if(dup.length){sel={kind:'opening',id:dup[0].id};render();toast('Il y a déjà une ouverture ici : je te la sélectionne. Glisse-la pour la déplacer.',true);return;}const side=sideOf(raw,w);history.push(snapshot());const op={id:uid(),wallId:w.id,t,type:openingType,w:def.w,h:def.h,hinge:1,side};const _def=OPENINGS[openingType];if(_def&&(openingType==='porte_entree'||openingType==='garage'||_def.cat==='fenetre')){op.dormant=dormantConseille(op);}if(mode()!=='existant')op.st='creer';L().openings.push(op);sel={kind:'opening',id:op.id};afterChange();if(_def&&_def.cat==='fenetre'&&!isExteriorWall(w))toast('Fenêtre posée sur un mur intérieur : c\'était une porte ? Change son type dans le volet.');return;}
   if(tool==='equipement'){const def=ITEMS[itemType];const {p}=snapPoint(raw,null);history.push(snapshot());const it={id:uid(),type:itemType,x:p.x,y:p.y,w:def.w,h:def.h,rot:0};if(mode()!=='existant')it.st='creer';if(itemType==='escalier'){it.stair={type:'droit'};fitStair(it,L());}const sn=snapItemToWall(it,raw);if(sn)Object.assign(it,sn);pushOutOfWalls(it);L().items.push(it);sel={kind:'item',id:it.id};afterChange();if(mode()!=='existant')toast(def.label+' ajouté « à poser » (travaux). Pour un équipement déjà en place, dessine-le en vue Existant.',true);return;}
@@ -2725,9 +2848,9 @@ cv.addEventListener('dblclick',e=>{
   // double-clic sur une pièce : on renomme directement
   if(tool==='select'){const r=cv.getBoundingClientRect();const h=hitTest(W2(v(e.clientX-r.left,e.clientY-r.top)));if(h?.kind==='room'){sel=h;render();const inp=document.querySelector('#pbody input.fin');if(inp){inp.focus();inp.select();}}}
 });
-function duplicateItem(){const its=selectedItems();if(!its.length)return;history.push(snapshot());const cs=its.map(it=>({...it,id:uid(),x:it.x+0.3,y:it.y+0.3}));L().items.push(...cs);multi=cs.length>1?cs.map(c=>c.id):[];sel={kind:'item',id:cs[0].id};afterChange();}
+function duplicateItem(){if(enLectureSeule())return;const its=selectedItems();if(!its.length)return;history.push(snapshot());const cs=its.map(it=>({...it,id:uid(),x:it.x+0.3,y:it.y+0.3}));L().items.push(...cs);multi=cs.length>1?cs.map(c=>c.id):[];sel={kind:'item',id:cs[0].id};afterChange();}
 function copyItems(){const its=selectedItems();if(!its.length)return;const cx=its.reduce((s,i)=>s+i.x,0)/its.length,cy=its.reduce((s,i)=>s+i.y,0)/its.length;clipboard=its.map(it=>({...it,dx:it.x-cx,dy:it.y-cy}));toast(its.length>1?its.length+' équipements copiés':ITEMS[its[0].type].label+' copié',true);}
-function pasteItems(at){if(!clipboard?.length)return;history.push(snapshot());const cs=clipboard.map(c=>{const {dx,dy,...rest}=c;return {...rest,id:uid(),x:at.x+dx,y:at.y+dy};});L().items.push(...cs);multi=cs.length>1?cs.map(c=>c.id):[];sel={kind:'item',id:cs[0].id};if(tool!=='select')tool='select';afterChange();}
+function pasteItems(at){if(!clipboard?.length)return;if(enLectureSeule())return;history.push(snapshot());const cs=clipboard.map(c=>{const {dx,dy,...rest}=c;return {...rest,id:uid(),x:at.x+dx,y:at.y+dy};});L().items.push(...cs);multi=cs.length>1?cs.map(c=>c.id):[];sel={kind:'item',id:cs[0].id};if(tool!=='select')tool='select';afterChange();}
 // Entrée pendant le tracé : avec une longueur tapée → pose le mur ; sans → ferme la pièce (ou termine)
 function commitTypedLength(){
   const ref=chain[chain.length-1];const val=parseFloat(lenBuf.replace(',','.'));lenBuf='';
@@ -2742,7 +2865,7 @@ function commitTypedLength(){
   if(dist(vise,p)>2e-3)toast('La cloison s\'arrête contre le doublage : '+fmt(dist(p,ref))+' m au lieu de '+fmt(val)+' m');
   // si on retombe sur le point de départ, on ferme
   if(chain.length>=3&&dist(p,chain[0])<0.02){addWall(ref,chain[0]);endChain(true);return;}
-  addWall(ref,p);chain.push(p);draw();
+  const n=addWall(ref,p);chain.push(p);if(n){endChain(false);return;}draw();
 }
 function closeOrEnd(){
   if(chain.length>=3){const a=chain[chain.length-1],b=chain[0];if(dist(a,b)>0.05)addWall(a,b);endChain(true);return;}
@@ -2796,6 +2919,7 @@ function addWall(a,b){
   if(premier){wallType='cloison';customT=null;toast(`Pièce fermée : ${fmtM2(areaNet(lv,fresh[0]))}. Les murs suivants seront des cloisons (7 cm) — change le type dans le volet si besoin.`,true);}
   else if(fresh.length)toast(fresh.length===1?`Pièce fermée : ${fmtM2(areaNet(lv,fresh[0]))} — tu peux la renommer dans le panneau`:`${fresh.length} pièces fermées`,true);
   save();renderPanel();renderLevels();
+  return fresh.length;
 }
 // fin d'un tracé : si le trait représente une face, on oriente le corps des murs (vers l'intérieur de la boucle, ou vers le centre du plan)
 function endChain(closed){
@@ -2815,11 +2939,24 @@ function applyAlign(ids,poly){
     w.side=wallAlign==='ext'?interior:-interior;});
   syncRooms(lv);save();
 }
-function sideLabel(w,s){const lv=L();const faces=(facesCache[lv.id]||[]).filter(f=>f.edges.some(e=>e&&e.wall===w.id));const n=perp(norm(sub(w.b,w.a)));for(const f of faces){const sg=Math.sign((f.label.x-w.a.x)*n.x+(f.label.y-w.a.y)*n.y)||1;if(sg===s)return 'côté '+roomName(f.room);}return 'côté extérieur';}
+/* D38 : un mur à démolir ne borde plus aucune pièce en vue Travaux — ses deux faces se disaient
+   « côté extérieur ». Ses côtés se lisent sur l'existant ; sans pièce d'aucun côté : A / B. */
+function sideLabel(w,s){const lv=L();const faces=facesFor(lv,wst(w)==='demolir'?'existant':mode()).filter(f=>f.room&&f.edges.some(e=>e&&e.wall===w.id));const n=perp(norm(sub(w.b,w.a)));const nom=c=>{for(const f of faces){const sg=Math.sign((f.label.x-w.a.x)*n.x+(f.label.y-w.a.y)*n.y)||1;if(sg===c)return 'côté '+roomName(f.room);}return null;};return nom(s)||(nom(-s)?'côté extérieur':(s===1?'côté A':'côté B'));}
 
 // ---------- Clavier ----------
+/* D38 : d'où vient le focus — de Tab (clavier) ou d'un clic (souris) ? */
+let tabAt=0,pointeurAt=0;
+window.addEventListener('keydown',e=>{if(e.key==='Tab')tabAt=performance.now();},true);
+window.addEventListener('pointerdown',()=>{pointeurAt=performance.now();},true);
 window.addEventListener('keydown',e=>{
-  if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT'||e.target.tagName==='TEXTAREA')return;
+  /* D38 : une fenêtre ouverte garde le clavier. Suppr effaçait le mur sélectionné derrière
+     « Estimer », une lettre changeait d'outil sous l'accueil, Échap ne fermait rien. */
+  const ov=modaleOuverte();if(ov){gardeModale(e,ov);return;}
+  if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT'||e.target.tagName==='TEXTAREA'||e.target.isContentEditable)return;
+  /* Espace ou Entrée sur un bouton atteint au clavier : c'est le bouton qu'on active. Un bouton
+     simplement cliqué à la souris garde le focus sans qu'on le voie : là, Espace reste « Espace +
+     glisser » et Entrée ferme la pièce, comme avant. */
+  if((e.code==='Space'||e.key==='Enter')&&e.target.closest&&e.target.closest('button,a[href],summary,label,[role=button],[role=tab],[role=menuitem]')&&tabAt>=pointeurAt)return;
   if(e.key==='Shift')keys.shift=true; if(e.key==='Alt'){keys.alt=true;e.preventDefault();} if(e.code==='Space'){keys.space=true;updateCursor();e.preventDefault();}
   // Échap pendant un glissement : on remet tout comme avant
   if(e.key==='Escape'&&drag&&drag.snap){state=JSON.parse(drag.snap);drag=null;afterChange();return;}
@@ -2831,6 +2968,9 @@ window.addEventListener('keydown',e=>{
   if((e.ctrlKey||e.metaKey)&&k==='v'&&clipboard?.length){e.preventDefault();const c0=clipboard[0];pasteItems(hover||v(c0.x+0.3,c0.y+0.3));return;}
   if((e.ctrlKey||e.metaKey)&&k==='d'&&sel?.kind==='item'){e.preventDefault();duplicateItem();return;}
   if((e.ctrlKey||e.metaKey)&&k==='a'&&tool==='select'){e.preventDefault();const ids=L().items.map(i=>i.id);if(ids.length){multi=ids;sel={kind:'item',id:ids[0]};render();}return;}
+  /* D38 : Ctrl/Cmd + lettre ne change jamais d'outil — Cmd+C passait sur « Cote » et perdait la
+     sélection, Ctrl+P sur « Ouvertures ». Ctrl/Cmd+S enregistre, comme partout. */
+  if(e.ctrlKey||e.metaKey){if(k==='s'){e.preventDefault();savePlanToLibrary();}return;}
   // longueur tapée pendant le tracé d'un mur
   if(tool==='mur'&&chain.length&&!e.ctrlKey&&!e.metaKey){
     if(/^[0-9]$/.test(e.key)||((e.key==='.'||e.key===',')&&!lenBuf.includes('.'))){lenBuf+=(e.key===','?'.':e.key);if(lenBuf.length>6)lenBuf=lenBuf.slice(0,6);draw();e.preventDefault();return;}
@@ -2842,7 +2982,7 @@ window.addEventListener('keydown',e=>{
   if(e.key==='Delete'||e.key==='Backspace'){deleteSel();return;}
   // flèches : déplacement fin de l'élément sélectionné (5 cm, 50 cm avec Maj)
   if(e.key.startsWith('Arrow')&&sel&&['item','dim','wall','text'].includes(sel.kind)){
-    e.preventDefault();const st=e.shiftKey?0.5:0.05;const d=v(e.key==='ArrowLeft'?-st:e.key==='ArrowRight'?st:0,e.key==='ArrowUp'?-st:e.key==='ArrowDown'?st:0);
+    e.preventDefault();if(enLectureSeule())return;const st=e.shiftKey?0.5:0.05;const d=v(e.key==='ArrowLeft'?-st:e.key==='ArrowRight'?st:0,e.key==='ArrowUp'?-st:e.key==='ArrowDown'?st:0);
     history.push(snapshot());const lv=L();
     if(sel.kind==='item'){selectedItems().forEach(it=>{it.x+=d.x;it.y+=d.y;pushOutOfWalls(it);});}
     if(sel.kind==='dim'){const dm=lv.dims.find(x=>x.id===sel.id);dm.a=add(dm.a,d);dm.b=add(dm.b,d);}
@@ -2857,7 +2997,12 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('keyup',e=>{if(e.key==='Shift'){keys.shift=false;draw();}if(e.key==='Alt')keys.alt=false;if(e.code==='Space'){keys.space=false;updateCursor();}});
 window.addEventListener('blur',()=>{keys.shift=false;keys.alt=false;keys.space=false;});
 function deleteSel(){
-  if(!sel)return; const lv=L(); history.push(snapshot());
+  if(!sel)return;if(enLectureSeule())return;
+  /* D38 (arbitrage J) : en vue Travaux, Suppr sur ce qui existe ne l'efface pas — il le marque.
+     Effacer un mur du relevé faisait disparaître sa démolition du chiffrage : le budget baissait,
+     sans un mot, et l'existant était faux. Seul ce qui a été créé en Travaux s'efface. */
+  if(mode()==='projet'&&marquerAuLieuDEffacer())return;
+  const lv=L(); history.push(snapshot());
   if(sel.kind==='marquee'){const byKind=k=>new Set(msel.filter(m=>m.kind===k).map(m=>m.id));const wS=byKind('wall'),oS=byKind('opening'),iS=byKind('item'),tS=byKind('text'),dS=byKind('dim');
     lv.walls=lv.walls.filter(w=>!wS.has(w.id));lv.openings=lv.openings.filter(o=>!oS.has(o.id)&&!wS.has(o.wallId));lv.items=lv.items.filter(i=>!iS.has(i.id));lv.texts=TX(lv).filter(t=>!tS.has(t.id));lv.dims=lv.dims.filter(d=>!dS.has(d.id));
     const nn=msel.length;sel=null;msel=[];const dis=purgerGroupes();afterChange();toast(nn+' élément(s) supprimé(s)'+(dis?' · '+dis+' groupe(s) dissous':''),true);return;}
@@ -2869,7 +3014,34 @@ function deleteSel(){
   if(sel.kind==='room'){toast('Une pièce se supprime en effaçant un de ses murs');history.pop();return;}
   sel=null; afterChange();
 }
-function rotateItem(){const its=selectedItems();if(!its.length)return;history.push(snapshot());its.forEach(it=>{it.rot=(it.rot+Math.PI/2)%(2*Math.PI);pushOutOfWalls(it);});afterChange();}
+function marquerAuLieuDEffacer(){const lv=L(),annuler={action:'Annuler',fn:()=>undo()};
+  const existe=w=>w&&!isVirtual(w)&&wst(w)!=='creer';
+  if(sel.kind==='wall'){const w=findWall(sel.id);if(!existe(w))return false;
+    if(wst(w)==='demolir'){toast('Ce mur est déjà « À démolir ». Pour le garder, choisis « Je le garde » dans le panneau.');return true;}
+    setWallProp('st','demolir');toast('Mur marqué « À démolir » : il reste sur le plan, en jaune.',true,annuler);return true;}
+  if(sel.kind==='opening'){const o=lv.openings.find(x=>x.id===sel.id);if(!o||ost(o)==='creer')return false;
+    const w=findWall(o.wallId);if(w&&wst(w)==='demolir'){toast('Son mur est à démolir : cette ouverture part avec lui.');return true;}
+    if(ost(o)==='boucher'){toast('Cette ouverture est déjà « À boucher ».');return true;}
+    setOpeningProp('st','boucher');toast('Ouverture marquée « À boucher ».',true,annuler);return true;}
+  if(sel.kind==='item'){const its=selectedItems(),aMarquer=its.filter(i=>ist(i)!=='creer'&&ist(i)!=='demolir'),aEffacer=its.filter(i=>ist(i)==='creer');
+    if(!aMarquer.length&&!aEffacer.length){toast(its.length>1?'Ces équipements sont déjà « À déposer ».':'Cet équipement est déjà « À déposer ».');return true;}
+    if(!aMarquer.length)return false;
+    history.push(snapshot());const ef=new Set(aEffacer.map(i=>i.id));aMarquer.forEach(i=>{i.st='demolir';});
+    lv.items=lv.items.filter(i=>!ef.has(i.id));multi=multi.filter(id=>!ef.has(id));if(ef.has(sel.id))sel={kind:'item',id:aMarquer[0].id};afterChange();
+    toast((aMarquer.length>1?aMarquer.length+' équipements marqués':ITEMS[aMarquer[0].type].label+' marqué')+' « À déposer »'+(aEffacer.length?' · '+aEffacer.length+' posé'+(aEffacer.length>1?'s':'')+' en Travaux, effacé'+(aEffacer.length>1?'s':''):'')+'.',true,annuler);return true;}
+  if(sel.kind==='marquee'){const by=k=>msel.filter(m=>m.kind===k).map(m=>m.id);
+    const ws=by('wall').map(id=>lv.walls.find(w=>w.id===id)).filter(Boolean),os=by('opening').map(id=>lv.openings.find(o=>o.id===id)).filter(Boolean),is=by('item').map(id=>lv.items.find(i=>i.id===id)).filter(Boolean);
+    if(!(ws.some(existe)||os.some(o=>ost(o)!=='creer')||is.some(i=>ist(i)!=='creer')))return false;
+    history.push(snapshot());let nm=0;
+    const effW=new Set(ws.filter(w=>!existe(w)).map(w=>w.id)),effO=new Set(os.filter(o=>ost(o)==='creer').map(o=>o.id)),effI=new Set(is.filter(i=>ist(i)==='creer').map(i=>i.id)),effT=new Set(by('text')),effD=new Set(by('dim'));
+    ws.filter(existe).forEach(w=>{if(wst(w)!=='demolir'){w.st='demolir';nm++;}});
+    os.forEach(o=>{if(effO.has(o.id))return;const w=findWall(o.wallId);if(w&&(wst(w)==='demolir'||effW.has(w.id)))return;if(ost(o)!=='boucher'){o.st='boucher';nm++;}});
+    is.forEach(i=>{if(!effI.has(i.id)&&ist(i)!=='demolir'){i.st='demolir';nm++;}});
+    lv.walls=lv.walls.filter(w=>!effW.has(w.id));lv.openings=lv.openings.filter(o=>!effO.has(o.id)&&!effW.has(o.wallId));lv.items=lv.items.filter(i=>!effI.has(i.id));lv.texts=TX(lv).filter(t=>!effT.has(t.id));lv.dims=lv.dims.filter(d=>!effD.has(d.id));
+    const ne=effW.size+effO.size+effI.size+effT.size+effD.size;sel=null;msel=[];purgerGroupes();afterChange();
+    toast(`${nm} élément${nm>1?'s':''} marqué${nm>1?'s':''} à démolir, à boucher ou à déposer`+(ne?` · ${ne} effacé${ne>1?'s':''} (créé${ne>1?'s':''} en Travaux ou annotation${ne>1?'s':''})`:'')+'.',true,annuler);return true;}
+  return false;}
+function rotateItem(){if(enLectureSeule())return;const its=selectedItems();if(!its.length)return;history.push(snapshot());its.forEach(it=>{it.rot=(it.rot+Math.PI/2)%(2*Math.PI);pushOutOfWalls(it);});afterChange();}
 function setItemRot(deg){const it=L().items.find(i=>i.id===sel?.id);if(!it)return;history.push(snapshot());it.rot=((parseFloat(deg)||0)%360)*Math.PI/180;afterChange();}
 
 // ---------- Outils ----------
@@ -2898,18 +3070,21 @@ function initToolTips(){const box=document.getElementById('tipbox'),tools=docume
   tools.addEventListener('mouseover',e=>{const b=e.target.closest('.tb[data-tip]');if(!b)return;const r=b.getBoundingClientRect();box.textContent=b.dataset.tip;box.style.display='block';box.style.left=(r.right+10)+'px';box.style.top=(r.top+r.height/2)+'px';box.style.transform='translateY(-50%)';});
   tools.addEventListener('mouseout',e=>{if(e.target.closest('.tb[data-tip]'))box.style.display='none';});
   tools.addEventListener('click',()=>{box.style.display='none';});}
-function renderTools(){
+function renderTools(){avecFocus(document.getElementById('tools'),renderToolsBrut);}
+function renderToolsBrut(){
   const D=Object.fromEntries(TOOLS.map(t=>[t[0],t]));
   document.getElementById('tools').innerHTML=TOOL_GROUPS.map(g=>
     (g.cat?`<div class="cat">${g.cat}</div>`:'')+
-    g.ids.map(id=>{const t=D[id];return `<button class="tb ${tool===id?'on':''}" onclick="setTool('${id}')" data-tip="${TOOL_TIP[id]||t[1]}${t[2]?' · '+t[2]:''}" aria-label="${t[1]}">${t[3]}<span>${t[1].split(' ')[0]}</span>${t[2]?`<kbd>${t[2]}</kbd>`:''}</button>`;}).join('')
+    g.ids.map(id=>{const t=D[id],ro=mode()==='final'&&!OUTILS_LECTURE.includes(id);return `<button class="tb ${tool===id?'on':''}${ro?' ro':''}" onclick="setTool('${id}')" data-tip="${ro?'Lecture seule en vue '+nomVue('final')+' · passe en vue '+nomVue('projet')+' pour modifier':(TOOL_TIP[id]||t[1])+(t[2]?' · '+t[2]:'')}" aria-label="${t[1]}"${ro?' aria-disabled="true"':''}>${t[3]}<span>${t[1].split(' ')[0]}</span>${t[2]?`<kbd>${t[2]}</kbd>`:''}</button>`;}).join('')
   ).join('');
 }
 let calibMode=false;
-function setTool(t){if(typeof isMobile==='function'&&isMobile()&&t!=='select'){toast('Le dessin se fait sur ordinateur ou tablette — ici tu consultes le plan et tu coches l\'avancement');t='select';}if(tool==='mur'&&chain.length)endChain(false);tool=t;chain=[];chainWallIds=[];rectMode=null;lenBuf='';guides=[];dimStart=null;dimPending=null;measure=[];measureDone=false;calibMode=false;calib=[];closeCoteEdit();if(t!=='select')clearSel();render();updateCursor();}
+function setTool(t){if(typeof isMobile==='function'&&isMobile()&&t!=='select'){toast('Le dessin se fait sur ordinateur ou tablette — ici tu consultes le plan et tu coches l\'avancement');t='select';}if(mode()==='final'&&!OUTILS_LECTURE.includes(t)){enLectureSeule();if(OUTILS_LECTURE.includes(tool))return;t='select';}if(tool==='mur'&&chain.length)endChain(false);tool=t;chain=[];chainWallIds=[];rectMode=null;lenBuf='';guides=[];dimStart=null;dimPending=null;measure=[];measureDone=false;calibMode=false;calib=[];closeCoteEdit();if(t!=='select')clearSel();render();updateCursor();}
 function startRect(){const Lr=parseFloat(document.getElementById('rectL').value),l=parseFloat(document.getElementById('rectl').value);if(!(Lr>0.5&&l>0.5)){toast('Indique une longueur et une largeur (en m)');return;}rectMode={L:Lr,l};chain=[];chainWallIds=[];renderPanel();draw();toast('Clique dans le plan pour poser le coin haut-gauche de la pièce',true);}
 const HINTS={
   select:'Glisse un mur pour agrandir la pièce · glisse dans le vide pour déplacer la vue · clique une cote pour taper la longueur · <kbd>Suppr</kbd> supprime',
+  select_projet:'Clique un élément pour décider de son sort · <kbd>Suppr</kbd> = à démolir, à boucher ou à déposer (ce que tu as créé ici s\'efface) · glisse dans le vide pour déplacer la vue',
+  select_final:`Lecture seule : ton logement après travaux · clique un élément pour voir sa fiche · pour modifier, passe en vue ${nomVue('projet')}`,
   zone:'Trace un rectangle pour <b>tout sélectionner</b> à l\'intérieur (murs, ouvertures, meubles, notes…) puis <kbd>Suppr</kbd> pour effacer d\'un coup',
   mur:'Clique pour poser le 1er coin · <kbd>Maj</kbd> = angles droits · astuce : tape une longueur (ex. <kbd>3,5</kbd>) puis <kbd>Entrée</kbd>',
   murChain:'Clique le coin suivant, ou tape une longueur (ex. <kbd>3,5</kbd>) + <kbd>Entrée</kbd> · <kbd>Entrée</kbd> seule ferme la pièce · <kbd>Échap</kbd> / double-clic termine sans fermer',
@@ -2920,11 +3095,14 @@ const HINTS={
   cotePlace:'Écarte la ligne de cote à la distance voulue (elle suit la souris) puis <b>clique pour la fixer</b> · <kbd>Échap</kbd> annule',
   mesure:'Les points s\'accrochent aux <b>angles intérieurs</b> des pièces (carré vert) → surface réelle, pas à l\'axe des murs · zoome pour viser · reviens au 1er point pour <b>fermer</b> : périmètre + surface · <kbd>clic droit</kbd>/<kbd>Échap</kbd> efface',
   texte:'Clique dans le plan pour poser une note (ex. « mur porteur ? », « garder le carrelage ») · elle reste attachée au plan et part dans le dossier',
-  calque:'Importe une photo/PDF de ton plan existant, cale son échelle, puis dessine par-dessus · glisse l\'image pour la positionner',
+  calque:'Importe une photo ou une capture de ton plan existant, cale son échelle, puis dessine par-dessus · glisse l\'image pour la positionner',
 };
 
 // ---------- Rendu ----------
 function draw(){
+  /* D38 : la densité de pixels a changé sans 'resize' (fenêtre glissée d'un écran Retina vers un
+     écran standard) : la taille interne du canvas ne correspond plus, on la recale avant de dessiner. */
+  if(!draw.recale&&cv.width!==Math.floor(cv.parentElement.getBoundingClientRect().width*devicePixelRatio)){draw.recale=1;try{resize();}finally{draw.recale=0;}return;}
   const W=cv.clientWidth,H=cv.clientHeight,z=view.zoom; ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
   ctx.fillStyle='#f7f7fc';ctx.fillRect(0,0,W,H);
   const lv=L(); coteLabels=[];
@@ -3078,7 +3256,7 @@ function draw(){
     if(hover){const s=S(sp.p);ctx.beginPath();ctx.arc(s.x,s.y,sp.kind==='node'?6:4.5,0,7);ctx.fillStyle=sp.kind==='node'?'#16a34a':sp.kind==='wall'?'#7c3aed':sp.kind==='ghost'?'#475569':'#a78bfa';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();}
   }
   // aide contextuelle pendant le tracé
-  const hintKey=tool==='mur'&&chain.length?'murChain':(tool==='cote'&&dimPending)?'cotePlace':tool;if(hintKey!==lastHint){lastHint=hintKey;document.getElementById('hint').innerHTML=HINTS[hintKey]||'';}
+  const hintKey=tool==='mur'&&chain.length?'murChain':(tool==='cote'&&dimPending)?'cotePlace':tool==='select'&&mode()!=='existant'?'select_'+mode():tool;if(hintKey!==lastHint){lastHint=hintKey;document.getElementById('hint').innerHTML=HINTS[hintKey]||'';}
   if(tool==='ouverture'&&hover){const nw=nearestWall(hover,0.6);if(nw){const def=OPENINGS[openingType];const Lw=wallLen(nw.wall);const t=Math.max(def.w/2/Lw,Math.min(1-def.w/2/Lw,nw.t));ctx.globalAlpha=.55;drawOpening({wallId:nw.wall.id,t,type:openingType,w:def.w,hinge:1,side:sideOf(hover,nw.wall)},true);ctx.globalAlpha=1;}}
   if(tool==='equipement'&&hover){const def=ITEMS[itemType];const {p}=snapPoint(hover,null);const it={type:itemType,x:p.x,y:p.y,w:def.w,h:def.h,rot:0};if(itemType==='escalier'){it.stair={type:'droit'};fitStair(it,L());}const sn=snapItemToWall(it,hover);if(sn)Object.assign(it,sn);pushOutOfWalls(it);ctx.globalAlpha=.5;drawItem(it,true);ctx.globalAlpha=1;}
   if(tool==='cote'&&hover){
@@ -3623,11 +3801,12 @@ function drawItem(it,isSel){
 // ---------- Panneau droit ----------
 let lastHint=null;
 function render(){renderTools();renderLevels();renderPanel();lastHint=null;draw();document.getElementById('undoBtn').disabled=!history.length;document.getElementById('redoBtn').disabled=!future.length;document.getElementById('pname').value=state.name;}
-function renderLevels(){document.getElementById('levels').innerHTML=state.levels.map((l,i)=>`<button class="${i===state.cur?'on':''}" onclick="setLevel(${i})" title="${l.name}">${l.name}</button>`).join('')+`<button class="add" onclick="openModal('level')" title="Ajouter un niveau">+</button>`;
+function renderLevels(){avecFocus(document.getElementById('stage'),renderLevelsBrut);}
+function renderLevelsBrut(){document.getElementById('levels').innerHTML=state.levels.map((l,i)=>`<button class="${i===state.cur?'on':''}" onclick="setLevel(${i})" title="${l.name}">${l.name}</button>`).join('')+`<button class="add" onclick="openModal('level')" title="Ajouter un niveau">+</button>`;
   document.getElementById('modes').innerHTML=`<button class="${mode()==='existant'?'on':''}" onclick="setMode('existant')" title="L'état actuel du logement">🏠 Existant</button><button class="${mode()==='projet'?'on projet':''}" onclick="setMode('projet')" title="Les travaux : démolir (jaune), créer (rouge), boucher">🛠 Projet</button><button class="${mode()==='final'?'on final':''}" onclick="setMode('final')" title="Le résultat après travaux, tout propre">✅ Final</button>`;}
 function setMode(m){toitOpen=false;if(m===mode())return;if(tool==='mur'&&chain.length)endChain(false);state.mode=m;clearSel();chain=[];rectMode=null;afterChange();
   if(m==='projet'){let seen=false;try{seen=!!localStorage.getItem('avyora-plan-projet-tip');localStorage.setItem('avyora-plan-projet-tip','1');}catch{}if(!seen)openModal('projet');else toast('Vue Projet : tout ce que tu ajoutes (murs, ouvertures, équipements) est « à créer / à poser » ; clique un existant pour le marquer « à démolir / à déposer »',true);}
-  if(m==='final')toast('Vue Finale : ton logement après travaux, sans les marquages. Pour modifier les travaux, repasse en Projet.',true);}
+  if(m==='final'){if(!OUTILS_LECTURE.includes(tool))setTool('select');toast(`Vue ${nomVue('final')} : ton logement après travaux, en lecture seule. Pour modifier, passe en vue ${nomVue('projet')}.`,true);}}
 function setLevel(i){toitOpen=false;state.cur=i;sel=null;chain=[];syncRooms(L());save();render();}
 /* Quatre situations, pas deux. Un étage peut exister déjà, ou être créé — et s'il est créé, les
    murs peuvent exister DÉJÀ (on coupe un volume de grande hauteur par un plancher : les murs du
@@ -3708,11 +3887,21 @@ function suiviPanelHTML(T){
   <div class="prog" style="margin-bottom:10px"><i style="width:${pc}%"></i></div>
   <div class="tasks">${chantierListHTML(T,true)}</div>`;
 }
-function renderPanel(){pruneEmptyTexts();if(isMobile()){if(sel)toggleSheet(true);const lb=document.getElementById('sheetLabel');if(lb){try{lb.textContent=sel?'Élément sélectionné · détails':(tool!=='select'?TOOLS.find(t=>t[0]===tool)?.[1]+' · options':fmtM2(habView(quantities()).area)+' habitable · détails');}catch{}}}
+/* D38 : le panneau, les outils et les boutons de vue se redessinent à chaque clic — le bouton qui
+   avait le focus disparaissait, et quelqu'un au clavier repartait du haut de la page. Le focus est
+   rendu au bouton équivalent (même action) après le redessin. */
+function avecFocus(root,fn){const ae=document.activeElement,sig=ae&&ae.tagName==='BUTTON'&&root&&root.contains(ae)?(ae.getAttribute('onclick')||'')+'|'+(ae.getAttribute('aria-label')||''):null;fn();
+  if(sig&&!root.contains(document.activeElement)&&!modaleOuverte()){const c=[...root.querySelectorAll('button')].find(x=>(x.getAttribute('onclick')||'')+'|'+(x.getAttribute('aria-label')||'')===sig);if(c)try{c.focus({preventScroll:true});}catch{}}}
+/* D38 : une erreur dans le panneau (ex. la sélection de plusieurs équipements, hors Travaux) arrêtait
+   tout ce qui suivait — render() s'interrompait avant draw(), le plan ne se redessinait plus et les
+   gestes suivants agissaient à l'aveugle. Le panneau affiche un message, le reste continue ; l'erreur
+   reste levée à part (console, page) pour que les contrôles la voient. */
+function renderPanel(){try{avecFocus(document.getElementById('pbody'),renderPanelBrut);}catch(err){const P=document.getElementById('pbody');if(P)P.innerHTML='<div class="tip">Ce panneau n\'a pas pu s\'afficher. Clique dans le vide du plan pour revenir à la vue d\'ensemble.</div>';setTimeout(()=>{throw err;});}}
+function renderPanelBrut(){pruneEmptyTexts();if(isMobile()){if(sel)toggleSheet(true);const lb=document.getElementById('sheetLabel');if(lb){try{lb.textContent=sel?'Élément sélectionné · détails':(tool!=='select'?TOOLS.find(t=>t[0]===tool)?.[1]+' · options':fmtM2(habView(quantities()).area)+' habitable · détails');}catch{}}}
   const lv=L(); const P=document.getElementById('pbody'); let h='';
   const _T=chantierTasks();const _done=_T.filter(t=>isDone(t.id)).length;
   const tabBar=`<div class="ptabs"><button class="${panelTab!=='suivi'?'on':''}" onclick="setPanelTab('details')">Détails</button><button class="${panelTab==='suivi'?'on':''}" onclick="setPanelTab('suivi')">🚧 Suivi${_T.length?` <span class="tabn">${_done}/${_T.length}</span>`:''}</button></div>`;
-  if(panelTab==='suivi'){P.innerHTML=tabBar+suiviPanelHTML(_T);renderFoot();return;}
+  if(panelTab==='suivi'){P.innerHTML=tabBar+suiviPanelHTML(_T);panneauEnHaut(P);renderFoot();return;}
   h+=tabBar;
   if(tool==='mur'){
     h+=`<div class="ptitle">Tracer des murs</div><div class="psub">Choisis l'épaisseur, puis clique dans le plan pour poser chaque angle.</div>
@@ -3797,12 +3986,17 @@ function renderPanel(){pruneEmptyTexts();if(isMobile()){if(sel)toggleSheet(true)
       <div class="btnrow"><button class="ib" onclick="startCalib()">📏 Caler l'échelle</button><button class="ib danger" onclick="L().bg=null;save();render()">Retirer</button></div>
       <div class="tip">${calibMode?'<b>Clique 2 points</b> sur le calque dont tu connais la distance réelle (ex. un mur de 3 m).':'Pour que les surfaces soient justes : <b>Caler l\'échelle</b>, clique 2 points sur une longueur connue, entre la distance réelle. Glisse l\'image pour la positionner.'}</div>`;}
   } else if(sel){
-    h+=renderSelection(lv);
+    h+=mode()==='final'?ficheEnLecture(renderSelection(lv)):renderSelection(lv);
   } else {
     h+=renderOverview(lv);
   }
-  P.innerHTML=h; renderFoot();
+  P.innerHTML=h; panneauEnHaut(P); renderFoot();
 }
+/* D38 : le panneau gardait son défilement d'un élément à l'autre — on cliquait un mur et la fiche
+   s'ouvrait au milieu, la décision « À démolir » hors de vue. Il revient en haut quand l'élément,
+   l'outil, la vue ou l'onglet changent ; il reste en place quand on règle un champ du même élément. */
+let clePanneau='';
+function panneauEnHaut(P){const k=panelTab+'|'+tool+'|'+mode()+'|'+(sel?sel.kind+':'+(sel.id||sel.group||'')+':'+(sel.kind==='item'?multi.length:sel.kind==='marquee'?msel.length:''):'');if(k!==clePanneau){P.scrollTop=0;clePanneau=k;}}
 // Symboles de plan (convention architecte) : le mur (deux traits + jambages) est coupé,
 // et l'ouverture est représentée par son mécanisme réel (débattement de porte, vitrage, rail coulissant…).
 function openingIcon(k){
@@ -3831,6 +4025,18 @@ function tipChiffrageOuverture(o,lv){const d=OPENINGS[o.type],w=lv.walls.find(x=
   if(d.kind==='gap')return 'Passage sans porte : rien à poser. Seul le percement compte, s\'il y en a un.';
   if(!(PRIX.menuiserie[o.type]>0))return 'Ce modèle n\'a pas de prix au catalogue : il figure au Suivi à 0 €.';
   return 'Chiffrée en <b>menuiserie '+(isExtType(o.type)?'extérieure':'intérieure')+'</b>'+(st==='remplacer'?', dépose de l\'ancienne comprise.':'.');}
+/* D38 · En vue finale, la fiche d'un élément se lit : ses réglages sont grisés (fieldset désactivé),
+   et un bouton ramène en vue Travaux, sur le même élément, pour le modifier. */
+function ficheEnLecture(x){const dbt='<button class="backbtn"';if(!x.startsWith(dbt))return x;const i=x.indexOf('</button>')+9;
+  return x.slice(0,i)+`<div class="robanner"><span>Vue ${nomVue('final')} : lecture seule.</span><button class="ib" onclick="modifierEnTravaux()">Modifier en vue ${nomVue('projet')}</button></div><fieldset class="ro" disabled>`+x.slice(i)+'</fieldset>';}
+/* D38 · Le bouton rouge dit ce qu'il fera : en vue Travaux, sur ce qui existe, il marque (à démolir,
+   à boucher, à déposer) ; il n'efface que ce qui a été créé en Travaux, et les annotations. */
+function libSuppr(){if(!sel||mode()!=='projet')return sel&&sel.kind==='marquee'?'Tout supprimer':'Supprimer';const lv=L();
+  if(sel.kind==='wall'){const w=findWall(sel.id);return w&&!isVirtual(w)&&wst(w)!=='creer'?'À démolir':'Supprimer';}
+  if(sel.kind==='opening'){const o=lv.openings.find(x=>x.id===sel.id);return o&&ost(o)!=='creer'?'À boucher':'Supprimer';}
+  if(sel.kind==='item')return selectedItems().some(i=>ist(i)!=='creer')?'À déposer':'Supprimer';
+  if(sel.kind==='marquee')return msel.some(m=>{if(m.kind==='wall'){const w=findWall(m.id);return w&&!isVirtual(w)&&wst(w)!=='creer';}if(m.kind==='opening'){const o=lv.openings.find(x=>x.id===m.id);return o&&ost(o)!=='creer';}if(m.kind==='item'){const i=lv.items.find(x=>x.id===m.id);return i&&ist(i)!=='creer';}return false;})?'Démolir, boucher, déposer':'Tout supprimer';
+  return 'Supprimer';}
 function renderSelection(lv){
   const backLabel=sel.kind==='room'?'Toutes les pièces':'Retour';
   let h=`<button class="backbtn" onclick="clearSel();render()"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>${backLabel}</button>`;
@@ -3853,7 +4059,7 @@ function renderSelection(lv){
     ${wst(w)==='demolir'||isVirtual(w)?'':renderWallIsoFaces(w,lv)}
     ${!isVirtual(w)&&wst(w)!=='demolir'&&isExteriorWall(w)?(()=>{const fins=facadeFins(w),creer=w.facade?.st==='creer';return `<div class="ph mt">Finition extérieure</div><div class="chips">${Object.entries(FACADES).filter(([k])=>fins.includes(k)||facadeProposee(w,k)).map(([k,f])=>{const inclus=fins.includes('ravalement')&&(k==='nettoyage'||k==='joints');return `<button class="chip2 ${fins.includes(k)?'on':''}" ${inclus?'disabled title="Compris dans le ravalement pierre"':''} onclick="setWallFacade('fin','${k}')">${f.label}${inclus?' · compris':''}</button>`;}).join('')}</div>
       ${fins.length?`<div class="row" style="margin-top:10px"><label>Superposées</label><span class="val" style="font-weight:600">${fins.map(k=>FACADES[k].label).join(' + ')}</span></div>${mode()==='projet'?`<div class="row"><label>Dans le projet</label><span class="seg" style="display:inline-flex"><button class="${!creer?'on':''}" onclick="setWallFacade('st','existant')">Existant</button><button class="st-creer ${creer?'on':''}" onclick="setWallFacade('st','creer')">À faire</button></span></div>`:creer?`<div class="tip" style="margin-top:6px">🔴 Finition <b>à faire</b> (travaux).</div>`:''}${creer?(()=>{const eff=facadeFinsEffectives(w),hors=fins.filter(k=>!eff.includes(k));return `<div class="tip" style="margin-top:6px">Chiffré au lot <b>Façade</b> : ${eff.map(k=>FACADES[k].label.toLowerCase()).join(' + ')||'rien'} · ${fmtM2(facadeArea(w,lv))} par couche (hors ouvertures).${hors.length?' Pas comptée'+(hors.length>1?'s':'')+' : '+hors.map(k=>FACADES[k].label.toLowerCase()).join(', ')+' — '+facadeRaison(w,hors[0])+'.':''}</div>`;})():''}`:`<div class="tip" style="margin-top:8px">Ce mur donne sur l'extérieur. Choisis sa <b>finition</b> : un seul parement (enduit, enduit à la chaux, bardage ou ravalement pierre), puis ce qui s'y ajoute (peinture, hydrofuge). En vue <b>Projet</b>, une finition choisie devient un <b>ravalement à faire</b>, chiffré au lot Façade de la base de prix.</div>`}`;})():''}
-    <div class="btnrow" style="margin-top:14px"><button class="ib" onclick="splitWall()">✂️ Couper en 2</button><button class="ib danger" onclick="deleteSel()">Supprimer</button></div>
+    <div class="btnrow" style="margin-top:14px"><button class="ib" onclick="splitWall()">✂️ Couper en 2</button><button class="ib danger" onclick="deleteSel()">${libSuppr()}</button></div>
     <div class="tip">↔ <b>Glisse le mur</b> pour agrandir ou réduire la pièce : il reste parallèle, les voisins s'étirent, les cloisons en T et les meubles adossés suivent.<br>◰ <b>Tire un coin</b> (poignée ronde) : les deux murs restent droits, les angles sont conservés. <kbd>Alt</kbd> = déplacement libre.<br>📏 <b>Clique sur sa cote</b> (« ${fmt(wallLen(w))} m ») pour taper une longueur exacte.</div>`;
   }
   if(sel.kind==='opening'){const o=lv.openings.find(o=>o.id===sel.id);if(!o){sel=null;return renderOverview(lv);}const def=OPENINGS[o.type];const isDoor=['door','door2','slide','gap'].includes(def.kind);
@@ -3895,7 +4101,7 @@ function renderSelection(lv){
     <div class="ph mt">${ost(o)==='creer'||ost(o)==='remplacer'?'Options':'Options actuelles'}</div><div class="chips">${Object.entries(MENUIS_OPTS).map(([k,v])=>`<button class="chip2 ${optsOf(o).includes(k)?'on':''}" onclick="toggleOpeningOpt('${k}')">${v[0]}</button>`).join('')}</div>
     <div class="ph mt">${ost(o)==='creer'||ost(o)==='remplacer'?'Volets':'Volets actuels'}</div><div class="seg"><button class="${!o.volet?'on':''}" onclick="setOpeningProp('volet','')">Aucun</button><button class="${o.volet==='roulant'?'on':''}" onclick="setOpeningProp('volet','roulant')">Roulant</button>${o.type!=='baie'?`<button class="${o.volet==='battant'?'on':''}" onclick="setOpeningProp('volet','battant')">Battant</button>`:''}</div>
     ${ost(o)==='creer'||ost(o)==='remplacer'?'':`<div class="tip" style="margin-top:6px">Pas de travaux prévus sur cette fenêtre : ni elle, ni ses volets, ni ses options ne sont chiffrés — c'est ce qui est <b>déjà là</b>. Pour en ajouter, passe-la en <b>À remplacer</b> : tout sera chiffré avec la menuiserie neuve.</div>`}`:''}`}
-    <div class="btnrow"><button class="ib danger" style="flex:1" onclick="deleteSel()">Supprimer</button></div>
+    <div class="btnrow"><button class="ib danger" style="flex:1" onclick="deleteSel()">${libSuppr()}</button></div>
     ${(()=>{const x=tipChiffrageOuverture(o,lv);return x?`<div class="tip">${x}</div>`:'';})()}
     ${ost(o)==='boucher'?'':elemProductSection(o,def.label,isDoor?'porte alvéolaire chêne 83':'fenêtre PVC double vitrage 120×125')}`;
   }
@@ -3913,12 +4119,12 @@ function renderSelection(lv){
       ${isoMode&&isoMode!=='none'&&ISO_MAT_CHOIX.length>1?`<div class="row" style="margin-top:8px"><label>Isolant</label><select class="fin" style="width:auto" onchange="grpIsoTweak('${ids}','mat',this.value)">${Object.entries(ISO_MAT).filter(([k])=>ISO_MAT_CHOIX.includes(k)).map(([k,m])=>`<option value="${k}" ${isoMat===k?'selected':''}>${m.label.split(' ')[0]==='Laine'?'Laine '+m.label.split(' ')[2]:m.label}</option>`).join('')}</select></div><div class="row"><label>Épaisseur (mm)</label><span>${EP_DOUBLAGE.map(mm=>`<button class="miniep ${isoE===mm?'on':''}" onclick="grpIsoTweak('${ids}','e',${mm})">${mm}</button>`).join('')}</span></div>`:''}
       <div class="ph mt">Revêtement extérieur</div><div class="chips">${Object.entries(FACADES).map(([k,f])=>`<button class="chip2 ${facCommon!==null&&facCommon.split(',').includes(k)?'on':''}" onclick="grpFacToggle('${ids}','${k}')">${f.label}</button>`).join('')}</div>
       ${!grp?`<div class="pf2" style="margin-top:12px"><input class="fin" id="grpName" placeholder="Nom du groupe (ex. Murs extérieurs)"><button class="ib primary" onclick="grpCreate('${ids}')">💾 Enregistrer le groupe</button></div>`:`<div class="btnrow" style="margin-top:10px"><button class="ib" style="flex:1" onclick="deleteGroup('${grp.id}');clearSel();render()">Dissoudre le groupe</button></div>`}`;}
-    h+=`<div class="btnrow" style="margin-top:10px"><button class="ib danger" style="flex:1" onclick="deleteSel()">🗑 Tout supprimer</button><button class="ib" style="flex:1" onclick="clearSel();render()">Désélectionner</button></div>`;
+    h+=`<div class="btnrow" style="margin-top:10px"><button class="ib danger" style="flex:1" onclick="deleteSel()">${libSuppr()}</button><button class="ib" style="flex:1" onclick="clearSel();render()">Désélectionner</button></div>`;
   }
   else if(sel.kind==='item'&&multi.length>1){const its=selectedItems();
     h+=`<div class="ptitle">${its.length} équipements</div><div class="psub">${[...new Set(its.map(i=>ITEMS[i.type].label))].slice(0,4).join(', ')}${its.length>4?'…':''}</div>
-    ${mode()==='projet'?(()=>{const e=ist(its[0]),tous=its.every(x=>ist(x)===e);return `<div class="ph mt">État dans le projet</div><div class="seg"><button class="${tous&&e==='existant'?'on':''}" onclick="setItemsEtat('existant')">Existant<small>rien de prévu</small></button><button class="${tous&&e==='garder'?'on':''}" onclick="setItemsEtat('garder')">Conservé<small>vérifié, je le garde</small></button><button class="st-creer ${tous&&e==='creer'?'on':''}" onclick="setItemsEtat('creer')">À&nbsp;poser<small>nouveau</small></button><button class="st-demolir ${tous&&e==='demolir'?'on':''}" onclick="setItemsEtat('demolir')">À&nbsp;déposer<small>enlever</small></button></div>${tous?'':'<div class="tip" style="margin-top:6px">Ces équipements n\'ont pas tous le même état : choisir en applique un seul à tous.</div>'}`;})():ist(it)!=='existant'?`<div class="tip">${ist(it)==='creer'?'🔴 Équipement <b>à poser</b> (travaux) : il n\'apparaît pas en vue Existant.':'🟡 Équipement <b>à déposer</b> : il disparaît en vue Finale.'} Change son état en vue <b>🛠 Projet</b>.</div>`:''}
-    <div class="btnrow"><button class="ib" onclick="rotateItem()">⟳ Pivoter 90°</button><button class="ib" onclick="duplicateItem()">⧉ Dupliquer</button><button class="ib danger" onclick="deleteSel()">Supprimer</button></div>
+    ${mode()==='projet'?(()=>{const e=ist(its[0]),tous=its.every(x=>ist(x)===e);return `<div class="ph mt">État dans le projet</div><div class="seg"><button class="${tous&&e==='existant'?'on':''}" onclick="setItemsEtat('existant')">Existant<small>rien de prévu</small></button><button class="${tous&&e==='garder'?'on':''}" onclick="setItemsEtat('garder')">Conservé<small>vérifié, je le garde</small></button><button class="st-creer ${tous&&e==='creer'?'on':''}" onclick="setItemsEtat('creer')">À&nbsp;poser<small>nouveau</small></button><button class="st-demolir ${tous&&e==='demolir'?'on':''}" onclick="setItemsEtat('demolir')">À&nbsp;déposer<small>enlever</small></button></div>${tous?'':'<div class="tip" style="margin-top:6px">Ces équipements n\'ont pas tous le même état : choisir en applique un seul à tous.</div>'}`;})():(()=>{const nc=its.filter(x=>ist(x)==='creer').length,nd=its.filter(x=>ist(x)==='demolir').length;return nc||nd?`<div class="tip">${nc?nc+' à poser (travaux)':''}${nc&&nd?' · ':''}${nd?nd+' à déposer':''} dans cette sélection. Change leur état en vue <b>${nomVue('projet')}</b>.</div>`:'';})()}
+    <div class="btnrow"><button class="ib" onclick="rotateItem()">⟳ Pivoter 90°</button><button class="ib" onclick="duplicateItem()">⧉ Dupliquer</button><button class="ib danger" onclick="deleteSel()">${libSuppr()}</button></div>
     <div class="btnrow"><button class="ib" style="flex:1" onclick="clearSel();render()">Désélectionner</button></div>
     <div class="tip">Glisse l'un d'eux : tout le groupe suit · flèches pour ajuster · <kbd>Maj</kbd>+clic ajoute ou retire un élément · <kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>V</kbd> copie-colle le groupe.</div>`;
   }
@@ -3957,13 +4163,13 @@ function renderSelection(lv){
     <div class="blond ${c.ok?'ok':'ko'}"><b>Loi de Blondel : 2 × ${(c.hM*100).toFixed(1)} + ${Math.round(c.g*100)} = <span>${(c.blondel*100).toFixed(0)} cm</span></b><small>${c.ok?'✓ confortable (60–64 cm) · '+c.n+' marches de '+(c.hM*100).toFixed(1)+' cm':'⚠ '+c.warn.join(' · ')}</small><small>${c.type==='helico'?'Giron mesuré sur la ligne de foulée (⅔ du rayon) · emprise Ø '+fmt(c.D)+' m':'Reculement '+fmt(c.L)+' m · emprise '+fmt(c.W)+' × '+fmt(c.H)+' m'+(c.type!=='droit'?' · volées de '+c.n1+' + '+c.n2+' marches':'')}</small></div>
     ${st.giron||st.marches?`<button class="ib" style="width:100%;justify-content:center;margin-top:6px" onclick="setStairProp('reset',1)">↺ Revenir au calcul automatique</button>`:''}
     <div class="ph mt">Étage</div>${above?`<div class="row"><label>Relié à « ${above.name} » (trémie)</label><input type="checkbox" ${it.link!==false?'checked':''} onchange="setItemProp('link',this.checked)"></div><div class="tip">La trémie (${fmtM2(stairArea(it,lv))}, emprise réelle des volées et du palier) est déduite de la surface de la pièce du dessus et dessinée dessus.</div>`:`<div class="tip">Ajoute un niveau au-dessus (bouton <b>+</b>) : la trémie sera créée automatiquement à l'étage.</div>`}`;})():''}
-    <div class="btnrow"><button class="ib" onclick="rotateItem()">⟳ Pivoter 90°</button><button class="ib" onclick="duplicateItem()">⧉ Dupliquer</button><button class="ib danger" onclick="deleteSel()">Supprimer</button></div>
+    <div class="btnrow"><button class="ib" onclick="rotateItem()">⟳ Pivoter 90°</button><button class="ib" onclick="duplicateItem()">⧉ Dupliquer</button><button class="ib danger" onclick="deleteSel()">${libSuppr()}</button></div>
     ${ist(it)==='demolir'?'':elemProductSection(it,def.label,it.type==='baignoire'?'baignoire îlot 170 acrylique':it.type==='plan'?'plan stratifié chêne 240':'modèle repéré')}
     <div class="tip"><kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>V</kbd> copie et colle sous la souris · <kbd>Ctrl</kbd>+<kbd>D</kbd> duplique · <kbd>Maj</kbd>+clic ou <kbd>Maj</kbd>+glisser dans le vide pour en sélectionner plusieurs · un meuble adossé à un mur suit le mur.</div>`;
   }
   if(sel.kind==='text'){const t=TX(lv).find(x=>x.id===sel.id);if(!t){sel=null;return renderOverview(lv);}
     h+=`<div class="ptitle">📌 Note sur le plan</div><div class="psub">Glisse-la pour la déplacer · elle part dans le dossier d'export.</div><textarea class="fin" id="txtEdit" rows="4" placeholder="Ex. mur porteur ? à vérifier · garder le carrelage · prise à déplacer ici" oninput="setTextProp(this.value)" onchange="save()">${esc(t.text||'')}</textarea><div class="ph mt">Couleur</div><div class="swatches">${Object.entries(NOTE_COLORS).map(([k,c])=>`<button class="sw ${(t.color||'jaune')===k?'on':''}" style="background:${c[0]};border-color:${c[1]}" title="${k}" onclick="setTextColor('${k}')"></button>`).join('')}<label class="sw custom ${t.color&&!NOTE_COLORS[t.color]?'on':''}" title="Couleur libre" style="${t.color&&!NOTE_COLORS[t.color]?'background:'+hexA(t.color,.3)+';border-color:'+t.color:''}"><input type="color" value="${t.color&&!NOTE_COLORS[t.color]?t.color:'#f59e0b'}" oninput="setTextColor(this.value)">+</label></div><div class="tip" style="margin-top:8px">Crée ton code couleur : par ex. jaune = à vérifier, rose = à démolir, vert = à garder, bleu = plomberie/élec.</div><div class="btnrow"><button class="ib danger" style="flex:1" onclick="deleteSel()">Supprimer la note</button></div><div class="tip">Raccourci <kbd>T</kbd> puis clic dans le plan pour en poser une autre. Les notes servent à toi et aux artisans : questions, choix, points d'attention.</div>`;}
-  if(sel.kind==='dim'){const d=lv.dims.find(x=>x.id===sel.id);h+=`<div class="ptitle">Cote</div><div class="psub">Glisse-la : elle <b>coulisse</b> perpendiculairement, les points mesurés ne bougent pas (lignes d'attache). <kbd>Alt</kbd> + glisser la déplace librement.</div><div class="row"><label>Longueur mesurée</label><span class="val b">${fmt(dist(d.a,d.b))} m</span></div><div class="row"><label>Décalage de la ligne</label><span><input class="fin n" type="number" step="0.05" value="${(d.off||0).toFixed(2)}" onchange="history.push(snapshot());sel&&(lv.dims.find(x=>x.id===sel.id).off=+this.value||0);afterChange()"> m</span></div><div class="btnrow"><button class="ib" style="flex:1" onclick="history.push(snapshot());L().dims.find(x=>x.id===sel.id).off=0;afterChange()">Remettre sur les points</button><button class="ib danger" style="flex:1" onclick="deleteSel()">Supprimer</button></div>`;}
+  if(sel.kind==='dim'){const d=lv.dims.find(x=>x.id===sel.id);h+=`<div class="ptitle">Cote</div><div class="psub">Glisse-la : elle <b>coulisse</b> perpendiculairement, les points mesurés ne bougent pas (lignes d'attache). <kbd>Alt</kbd> + glisser la déplace librement.</div><div class="row"><label>Longueur mesurée</label><span class="val b">${fmt(dist(d.a,d.b))} m</span></div><div class="row"><label>Décalage de la ligne</label><span><input class="fin n" type="number" step="0.05" value="${(d.off||0).toFixed(2)}" onchange="history.push(snapshot());sel&&(lv.dims.find(x=>x.id===sel.id).off=+this.value||0);afterChange()"> m</span></div><div class="btnrow"><button class="ib" style="flex:1" onclick="history.push(snapshot());L().dims.find(x=>x.id===sel.id).off=0;afterChange()">Remettre sur les points</button><button class="ib danger" style="flex:1" onclick="deleteSel()">${libSuppr()}</button></div>`;}
   if(sel.kind==='room'){const r=lv.rooms.find(r=>r.id===sel.id);const f=roomFace(lv,sel.id);if(!r||!f){sel=null;return renderOverview(lv);}
     const ops=openingsOfFace(lv,f);const wallArea=wallPaintArea(lv,f);
     h+=`<div class="ptitle">${roomName(r)}</div><div class="psub">Détectée automatiquement à partir des murs.</div>
@@ -4308,9 +4514,18 @@ function setRoomHeight(val){const r=L().rooms.find(r=>r.id===sel.id);const h=par
 function setRoomHAvant(val){const r=L().rooms.find(r=>r.id===sel.id);const h=parseFloat(val);history.push(snapshot());r.hAvant=(h>=1.8&&h<=12)?h:undefined;afterChange();}
 
 // ---------- Calque ----------
-function importBg(file){if(!file)return;const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{const id=uid();images[id]=im;history.push(snapshot());const mpp=12/im.width;L().bg={img:id,x:-6,y:-im.height*mpp/2,mpp,opacity:.5,locked:false};afterChange();saveImages();fitView();toast('Calque importé — cale son échelle pour des surfaces justes',true);};im.src=rd.result;};rd.readAsDataURL(file);}
+/* D38 : une photo de téléphone (3-4 Mo) dépassait la place réservée : « Calque importé », puis plus
+   rien au rechargement. L'image est réduite à l'import (2000 px de côté, JPEG), et si elle ne peut
+   toujours pas être gardée, on le dit tout de suite. Un PDF n'est pas lu : on le dit aussi. */
+function importBg(file){if(!file)return;if(file.type&&!file.type.startsWith('image/')){toast('Importe une image (photo ou capture d\'écran du plan). Un PDF ne se lit pas encore : fais une capture de la page.');return;}
+  const rd=new FileReader();rd.onload=()=>{const im0=new Image();im0.onload=()=>{
+    const k=Math.min(1,2000/Math.max(im0.width,im0.height));let src=rd.result;
+    if(k<1||src.length>1.2e6){try{const c=document.createElement('canvas');c.width=Math.round(im0.width*k);c.height=Math.round(im0.height*k);const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.drawImage(im0,0,0,c.width,c.height);src=c.toDataURL('image/jpeg',0.82);}catch{}}
+    const im=new Image();im.onload=()=>{const id=uid();images[id]=im;history.push(snapshot());const mpp=12/im.width;L().bg={img:id,x:-6,y:-im.height*mpp/2,mpp,opacity:.5,locked:false};afterChange();const garde=saveImages();fitView();
+      if(garde)toast('Calque importé — cale son échelle pour des surfaces justes',true);else toast('Calque importé, mais trop lourd pour être gardé sur cet appareil : il disparaîtra au rechargement. Essaie une image plus légère.',false,{ms:7000});};
+    im.src=src;};im0.onerror=()=>toast('Cette image ne s\'ouvre pas : essaie une photo JPEG ou PNG.');im0.src=rd.result;};rd.readAsDataURL(file);}
 function startCalib(){calibMode=true;calib=[];renderPanel();toast('Clique 2 points sur une longueur connue');}
-function applyCalib(){const real=parseFloat(document.getElementById('calibVal').value);const pts=calib.slice();document.getElementById('m-calib').classList.remove('show');const bg=L().bg;if(!bg||pts.length<2||!(real>0)){cancelCalib();return;}const measured=dist(pts[0],pts[1]);const k=real/measured;history.push(snapshot());const p0=pts[0];bg.mpp*=k;bg.x=p0.x+(bg.x-p0.x)*k;bg.y=p0.y+(bg.y-p0.y)*k;calib=[];calibMode=false;afterChange();toast('Échelle calée ✓',true);}
+function applyCalib(){const real=parseFloat(document.getElementById('calibVal').value);const pts=calib.slice();closeModal();const bg=L().bg;if(!bg||pts.length<2||!(real>0)){cancelCalib();return;}const measured=dist(pts[0],pts[1]);const k=real/measured;history.push(snapshot());const p0=pts[0];bg.mpp*=k;bg.x=p0.x+(bg.x-p0.x)*k;bg.y=p0.y+(bg.y-p0.y)*k;calib=[];calibMode=false;afterChange();toast('Échelle calée ✓',true);}
 
 // ---------- Quantités → moteur ----------
 // Quantités : l'état PROJET (ce qui existera après travaux) + les TRAVAUX (différence existant → projet)
@@ -4584,11 +4799,13 @@ function copierEnvoi(){
 /* Le contrat ne porte pas la géométrie des murs — ce n'est pas son rôle. Pour reproduire un
    défaut de DESSIN, il faut le plan tel quel : coordonnées, épaisseurs, côtés, doublages. Ce
    bouton met l'état complet dans le même bloc de texte, pour le copier et l'envoyer. */
+/* D38 : il écrivait dans le bloc à envoyer — « Copier » et « Télécharger » partaient ensuite avec la
+   géométrie brute au lieu du contrat. Il copie maintenant sa propre chaîne, sans toucher au bloc. */
 function copierPlanComplet(){
-  const ta=document.getElementById('envoiJson');
-  ta.value=JSON.stringify({plan:'avyora-plan-complet',v:1,state});
-  document.getElementById('envoiInfo').innerHTML=`Plan <b>complet</b> · ${state.levels.length} niveau${state.levels.length>1?'x':''} · ${Math.round(ta.value.length/1024)} Ko — à coller dans la conversation`;
-  copierEnvoi();
+  const txt=JSON.stringify({plan:'avyora-plan-complet',v:1,state}),ko=Math.round(txt.length/1024);
+  const fini=ok=>toast(ok?`Plan complet copié (${ko} Ko) : colle-le dans ton message au support.`:'Copie refusée par le navigateur.',ok);
+  const secours=()=>{try{const t=document.createElement('textarea');t.value=txt;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();const ok=document.execCommand('copy');t.remove();fini(ok);}catch{fini(false);}};
+  try{navigator.clipboard.writeText(txt).then(()=>fini(true),secours);}catch{secours();}
 }
 function telechargerEnvoi(){
   try{
@@ -4659,7 +4876,7 @@ function estimatePaywallHTML(q){
     <div class="chk"><span class="ci">📄</span><span><b>L'export PDF</b> du dossier complet, à présenter aux artisans ou à la banque.</span></div>
   </div>
   <button class="estimate" style="margin-top:16px" onclick="toast('Maquette : ce bouton mènera à la page Tarifs / abonnement Pro',true)">Passer à AVYORA Pro pour estimer ce plan</button>
-  <div class="tip" style="margin-top:10px">Dessiner ton plan et voir tes surfaces reste <b>gratuit et illimité</b>. Seul le chiffrage est réservé à l'abonnement Pro.</div>
+  <div class="tip" style="margin-top:10px">Dessiner ton plan et voir tes surfaces reste <b>gratuit</b> (1 plan enregistré). Seul le chiffrage est réservé à l'abonnement Pro.</div>
   <div style="margin-top:18px">${couvertureHTML(q)}</div>`;
 }
 /* D36 : sous « état projet », le sol d'APRÈS travaux — le revêtement choisi, l'ancien en petit. */
@@ -4732,7 +4949,8 @@ function renderLevelImage(li,m){
 }
 function exportPlan(){
   if(!state.levels.some(l=>l.walls.length)){toast('Rien à exporter pour l\'instant');return;}
-  const hasProjet=state.levels.some(l=>l.walls.some(w=>w.st)||l.openings.some(o=>o.st));
+  /* D38 : un radiateur posé ou un sol neuf chiffrait une page Budget sans le plan de ces travaux. */
+  const hasProjet=state.levels.some(l=>l.walls.some(w=>w.st)||l.openings.some(o=>o.st)||l.items.some(i=>i.st)||(l.rooms||[]).some(r=>r.floorNew))||chantierTasks().length>0;
   // Dossier = une page A4 par élément, même mise en page gratuit/Pro ; gratuit = plans seuls + filigrane ; Pro = plans + Contrôle + Avancement + Budget + Quantités, sans filigrane.
   const pro=isPro();const modes=hasProjet?['existant','projet','final']:['existant'];
   const SUBS={existant:'Le logement tel qu\'il est aujourd\'hui',projet:'Jaune = à démolir · rouge = à créer',final:'Après travaux, propre — à présenter aux artisans'};
@@ -4795,13 +5013,62 @@ function drawRoomDims(lv){
 }
 
 // ---------- Divers UI ----------
-function openModal(id){document.getElementById('m-'+id).classList.add('show');}
-function closeWelcome(mode){try{localStorage.setItem('avyora-plan-welcome','1');}catch{}closeModal();if(mode==='templates'){openTemplates();return;}if(mode==='blank'){newPlan();setTool('mur');}else{if(!state.levels.some(l=>l.walls.length)){loadSample();history=[];render();}}}
-function closeModal(){const wasCalib=document.getElementById('m-calib').classList.contains('show');document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('show'));if(wasCalib)cancelCalib();}
+/* D38 · Un seul socle pour toutes les fenêtres. Avant : Tab passait derrière le voile, Échap ne
+   fermait rien, les raccourcis modifiaient le plan caché, et le focus se perdait à la fermeture.
+   Maintenant : rôle de dialogue, focus dedans à l'ouverture, Tab qui y reste, Échap qui ferme,
+   et le focus rendu à l'élément qui l'avait. */
+let modalRetour=null;
+const modaleOuverte=()=>[...document.querySelectorAll('.overlay.show')].pop()||null;
+function focusables(el){return [...el.querySelectorAll('button,[href],input,select,textarea,summary,[tabindex]:not([tabindex="-1"])')].filter(x=>!x.disabled&&x.getClientRects().length>0);}
+function openModal(id){const o=document.getElementById('m-'+id);if(!o)return;
+  const a=document.activeElement;if(!modaleOuverte()&&a&&a!==document.body&&!a.closest('.overlay'))modalRetour=a;
+  const m=o.querySelector('.modal');m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.tabIndex=-1;
+  const h=m.querySelector('h3');if(h){if(!h.id)h.id='mt-'+id;m.setAttribute('aria-labelledby',h.id);}
+  o.classList.add('show');
+  const cible=m.querySelector('[data-autofocus]')||m.querySelector('.choice button,.ib.primary')||focusables(m).find(x=>!x.classList.contains('mx'))||m;
+  try{cible.focus();if(cible.select&&cible.tagName==='INPUT')cible.select();}catch{}}
+/* Fermer « par le côté » (✕, Échap, clic sur le voile) : l'accueil fermé ainsi ne revient plus. */
+function fermerModale(){if(document.getElementById('m-confirm').classList.contains('show')){fermerConfirm();return;}if(document.getElementById('m-welcome').classList.contains('show'))closeWelcome('fermer');else closeModal();}
+/* Clavier dans une fenêtre ouverte : seuls Échap et Tab la concernent, le reste va à ses champs. */
+function gardeModale(e,ov){
+  if(e.key==='Escape'){e.preventDefault();fermerModale();return;}
+  if(e.key==='Tab'){const m=ov.querySelector('.modal')||ov,f=focusables(m);if(!f.length){e.preventDefault();m.focus();return;}
+    const i=f.indexOf(document.activeElement);
+    if(e.shiftKey&&i<=0){e.preventDefault();f[f.length-1].focus();}
+    else if(!e.shiftKey&&(i===-1||i===f.length-1)){e.preventDefault();f[0].focus();}
+    return;}
+  if(e.key==='Enter'&&e.target&&e.target.id==='calibVal'){e.preventDefault();applyCalib();}
+}
+function closeWelcome(mode){try{localStorage.setItem('avyora-plan-welcome','1');}catch{}closeModal();if(mode==='fermer')return;if(mode==='templates'){openTemplates();return;}if(mode==='blank'){newPlan(()=>setTool('mur'));return;}
+  /* « Découvrir avec l'exemple » : ne faisait rien si un plan existait déjà. Le plan ouvert est d'abord rangé. */
+  if(state.origine&&state.origine.k==='exemple'&&planIntact())return;
+  avantDeRemplacer((garde,pq)=>{const vide=!garde&&!pq;loadSample();if(vide)history=[];render();
+    if(garde)toast(`Exemple ouvert · « ${garde} » est rangé dans « Mes plans »`,true);else if(pq)toast('Exemple ouvert · l\'ancien plan n\'est pas gardé',false,{action:'Annuler',fn:()=>undo()});});}
+function closeModal(){const ouverte=modaleOuverte(),wasCalib=document.getElementById('m-calib').classList.contains('show'),wasWelcome=document.getElementById('m-welcome').classList.contains('show');document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('show'));
+  if(wasWelcome){try{localStorage.setItem('avyora-plan-welcome','1');}catch{}}
+  if(wasCalib)cancelCalib();
+  const r=modalRetour;modalRetour=null;if(ouverte&&r&&document.contains(r)&&r.getClientRects().length){try{r.focus();}catch{}}}
 function cancelCalib(){calib=[];calibMode=false;render();}
-document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)closeModal();}));
-let toastT;function toast(msg,ok){const t=document.getElementById('toast');t.textContent=msg;t.classList.toggle('ok',!!ok);t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600);}
-function newPlan(){history.push(snapshot());state=blankState();sel=null;chain=[];afterChange();fitView();toast('Nouveau plan — Ctrl+Z pour retrouver l\'ancien',true);}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)fermerModale();}));
+/* Chaque fenêtre a sa croix de fermeture (hors impression). */
+document.querySelectorAll('.overlay .modal').forEach(m=>{if(m.querySelector('.mx'))return;const b=document.createElement('button');b.type='button';b.className='mx noprint';b.setAttribute('aria-label','Fermer');b.innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';b.onclick=fermerModale;m.appendChild(b);});
+/* D38 : un toast peut porter une action (« Annuler » une suppression, « Passer en … »). Il reste
+   alors 8 s, et il passe au-dessus d'une fenêtre ouverte au lieu de s'afficher derrière le voile. */
+let toastT;function toast(msg,ok,opt){const t=document.getElementById('toast');t.textContent=msg;const act=!!(opt&&opt.action);
+  if(act){const b=document.createElement('button');b.type='button';b.className='tact';b.textContent=opt.action;b.onclick=ev=>{ev.stopPropagation();clearTimeout(toastT);t.classList.remove('show','act');if(opt.fn)opt.fn();};t.appendChild(b);}
+  t.classList.toggle('ok',!!ok);t.classList.toggle('act',act);t.classList.toggle('over',!!modaleOuverte());t.classList.add('show');clearTimeout(toastT);
+  toastT=setTimeout(()=>t.classList.remove('show','act'),(opt&&opt.ms)||(act?8000:2600));}
+/* D38 : « Nouveau » effaçait le plan ouvert, sans rien demander ; seul un Ctrl+Z en mémoire le
+   retenait, et au rechargement l'exemple revenait à sa place. Il est d'abord rangé dans « Mes plans ».
+   Un plan vide, l'exemple ou un plan type jamais touchés partent sans regret — sans historique non
+   plus : Ctrl+Z ne fait pas réapparaître un exemple qu'on n'a pas demandé. */
+function newPlan(apres){avantDeRemplacer((garde,pq)=>annoncerLimite(pq,()=>{
+  if(!garde&&!pq)history=[];else history.push(snapshot());future=[];
+  state=blankState();sel=null;resetGestes();afterChange();fitView();
+  if(garde)toast(`Nouveau plan · « ${garde} » est rangé dans « Mes plans »`,true);
+  else if(pq)toast(pq==='exemple'?'Nouveau plan · l\'exemple modifié n\'est pas gardé':'Nouveau plan · l\'ancien n\'est pas gardé',false,{action:'Annuler',fn:()=>undo()});
+  else toast('Nouveau plan : clique pour poser le 1er coin de ton logement',true);
+  if(apres)apres();}));}
 
 // ---------- Exemple ----------
 
@@ -4849,8 +5116,10 @@ const TEMPLATES=[
 ];
 function loadTemplate(id){
   const T=TEMPLATES.find(t=>t.id===id);if(!T)return;closeModal();
-  if(!T.build){loadSample();return;}
-  history.push(snapshot());chain=[];lenBuf='';
+  avantDeRemplacer((garde,pq)=>annoncerLimite(pq,()=>chargerModele(T,garde,pq)));}
+function chargerModele(T,garde,pq){const apres=()=>{if(garde)toast(T.name+' chargé · « '+garde+' » est rangé dans « Mes plans »',true);else if(pq)toast(T.name+' chargé · l\'ancien plan n\'est pas gardé',false,{action:'Annuler',fn:()=>undo()});};
+  if(!T.build){loadSample();if(!garde&&!pq)history=[];render();apres();return;}
+  if(!garde&&!pq)history=[];else history.push(snapshot());future=[];resetGestes();
   const lv=newLevel('RDC');lv.height=2.5;
   const W=(a,b,type)=>{const w={id:uid(),a:v(...a),b:v(...b),type};lv.walls.push(w);return w;};
   const O=(w,t,type,side,hinge=1)=>{const d=OPENINGS[type];lv.openings.push({id:uid(),wallId:w.id,t,type,w:d.w,h:d.h,side,hinge});};
@@ -4859,8 +5128,8 @@ function loadTemplate(id){
   state=blankState();state.name=T.name.replace(' · ',' de ');state.levels=[lv];state.cur=0;
   afterChange();
   (facesCache[lv.id]||[]).forEach(f=>{const c=f.label;const r=f.room;const m=spec.find(z=>c.x>=z[0]&&c.x<=z[2]&&c.y>=z[1]&&c.y<=z[3]);if(m&&r){r.type=m[4];if(m[5])r.floor=m[5];}});
-  sel=null;afterChange();fitView();
-  toast(T.name+' chargé — adapte les cotes en glissant les murs, puis passe en Projet',true);
+  sel=null;afterChange();fitView();marquerOrigine('modele');
+  toast(T.name+' chargé — adapte les cotes en glissant les murs, puis passe en vue '+nomVue('projet'),true);apres();
 }
 // aperçu SVG d'un modèle (murs seuls), pour la galerie
 function templateSVG(T){
@@ -4911,12 +5180,17 @@ function loadSample(){
   afterChange();
   const faces=facesCache[lv.id];faces.forEach(f=>{const c=f.label;const r=f.room;if(c.x<3.5&&c.y<4){r.type='chambre';r.note='Garder le parquet, repeindre en blanc cassé.';}else if(c.x<2.2&&c.y>4){r.type='sdb';r.floor='Carrelage';r.products=[{id:uid(),poste:'sol',nom:'Carrelage grès cérame 60×60 gris',url:'https://www.leroymerlin.fr',prix:24.9,qtyManual:null},{id:uid(),poste:'murs',nom:'Faïence blanche 20×60',url:'',prix:19.9,qtyManual:null}];}else if(c.x<3.5&&c.y>4&&c.y<5.5){r.type='wc';}else if(c.x<3.5&&c.y>5.5){r.type='cellier';}else if(c.x>5.5&&c.y<3){r.type='cuisine';r.name='Cuisine ouverte';r.floor='Carrelage';}else{r.type='sejour';r.floor='Parquet';r.products=[{id:uid(),poste:'sol',nom:'Parquet contrecollé chêne 14 mm',url:'https://www.castorama.fr',prix:34.9,qtyManual:null}];}});
   state.notes='Budget cible 25 000 €. Travaux prévus en août. Électricité à vérifier.';
-  sel=null;afterChange();fitView();
+  sel=null;afterChange();fitView();marquerOrigine('exemple');
 }
 
 // ---------- Démarrage ----------
 window.addEventListener('resize',resize);
-if(!load()){state=blankState();}
+/* D38 : glisser la fenêtre d'un écran Retina vers un écran standard change devicePixelRatio sans
+   événement 'resize' : le canvas gardait sa taille interne et le plan s'affichait en double. On suit
+   la densité, et la taille réelle de la zone de dessin (poignées du panneau comprises). */
+(function suivreDensite(){try{const m=matchMedia(`(resolution: ${devicePixelRatio}dppx)`);m.addEventListener('change',()=>{resize();suivreDensite();},{once:true});}catch{}})();
+if(window.ResizeObserver){let roT=0;new ResizeObserver(()=>{cancelAnimationFrame(roT);roT=requestAnimationFrame(()=>{const r=cv.parentElement.getBoundingClientRect();if(Math.abs(r.width*devicePixelRatio-cv.width)>1||Math.abs(r.height*devicePixelRatio-cv.height)>1)resize();});}).observe(document.getElementById('stage'));}
+const planCharge=load();if(!planCharge){state=blankState();}
 loadView();
 state.levels.forEach(syncRooms);
 renderTools();initResizer();initToolTips();resize();updZoom();
@@ -4924,8 +5198,12 @@ renderTools();initResizer();initToolTips();resize();updZoom();
 // clic hors du menu Calques → fermeture
 document.addEventListener('pointerdown',e=>{const el=document.getElementById('layerPop');if(el&&!el.hidden&&!el.contains(e.target)&&e.target.closest('#layersBtn')==null){el.hidden=true;document.getElementById('layersBtn').classList.remove('on');}});
 render();
-let firstVisit=false;try{firstVisit=!localStorage.getItem('avyora-plan-welcome');}catch{}
-if(!state.levels.some(l=>l.walls.length)){loadSample();history=[];render();}
+/* D38 : l'exemple revenait à chaque rechargement dès que le plan était vide — après « Nouveau »,
+   c'est lui qu'on retrouvait à la place de sa feuille blanche. Il n'est chargé qu'à la toute
+   première visite (ou si ce navigateur ne garde rien). */
+let firstVisit=false;try{firstVisit=!localStorage.getItem('avyora-plan-welcome');}catch{firstVisit=true;}
+if(!planCharge&&firstVisit){loadSample();history=[];render();}
 else fitView();
+etatEnreg='ok';enregAt=0;afficherEnreg(!!(state.id&&loadPlans()[state.id]));
 if(firstVisit)openModal('welcome');
 </script>

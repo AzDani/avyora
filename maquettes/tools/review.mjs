@@ -67,7 +67,8 @@ await shot('12-mobile');
 R.mobile=await p.evaluate(()=>{const cvr=cv.getBoundingClientRect();const pn=document.getElementById('panel')?.getBoundingClientRect();const tl=document.getElementById('tools')?.getBoundingClientRect();return {canvasW:Math.round(cvr.width),panelW:Math.round(pn?.width||0),toolsW:Math.round(tl?.width||0),bodyScrollX:document.documentElement.scrollWidth>window.innerWidth};});
 await p.setViewport({width:1400,height:900,deviceScaleFactor:1});await wait(200);
 // 14. raccourcis
-await p.evaluate(()=>{setTool('select');});await p.keyboard.press('m');R.keyM=await p.evaluate(()=>tool);await p.keyboard.press('v');await p.keyboard.press('l');R.keyL=await p.evaluate(()=>tool);await p.keyboard.press('Escape');
+/* D38 : le changement de viewport mobile recharge la page (1re visite → accueil ouvert) ; une fenêtre ouverte garde le clavier, on la ferme d'abord */
+await p.evaluate(()=>{closeModal();setTool('select');});await p.keyboard.press('m');R.keyM=await p.evaluate(()=>tool);await p.keyboard.press('v');await p.keyboard.press('l');R.keyL=await p.evaluate(()=>tool);await p.keyboard.press('Escape');
 // 15. hint bar text lengths (troncature)
 R.hints=await p.evaluate(()=>{const el=document.getElementById('hint');return {w:Math.round(el.getBoundingClientRect().width),overflow:el.scrollWidth>el.clientWidth};});
 console.log(JSON.stringify(R,null,1));console.log("ERRORS",errs.length?errs.join(" | "):"none");console.log("WARNS",warns.slice(0,5).join(" | ")||"none");await b.close();

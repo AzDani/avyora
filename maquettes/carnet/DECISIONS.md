@@ -1402,3 +1402,120 @@ ajoute aussi l'étude, une seule fois), `budget.mjs` (la face extérieure reçoi
 ITI), `coherence.mjs` (+2 prix tenus), `scene-reference.mjs` (chambre en parquet neuf repeinte ;
 scène variantes : parquet poncé, sol gardé, plafond seul), tests de correspondance (+6), fixture du
 contrat régénérée (1.14.0).
+
+## D38 · Robustesse et zéro perte de travail : rien ne se perd, rien n'agit derrière une fenêtre (24/09/2026)
+
+**Constat (jury : chasseur de bugs, accessibilité, rétention, débutant, designer, cohérence, pro).**
+Le plan était juste ; c'est ce qu'on pouvait lui faire *sans le vouloir* qui ne l'était pas.
+- **Pertes de travail** : « Nouveau », un plan type, « Feuille blanche » (depuis le guide rouvert)
+  remplaçaient le plan sans rien demander ; seul un Ctrl+Z en mémoire le retenait, et au
+  rechargement l'exemple T2 revenait à la place (il se rechargeait dès que le plan était vide).
+  Deux « Nouveau » faisaient deux choses différentes. En gratuit, un 2e plan se dessinait, ne
+  pouvait pas s'enregistrer, et disparaissait en rouvrant le 1er — sous le slogan « illimité ».
+  La croix de « Mes plans » effaçait définitivement. « Ouvrir » le plan déjà ouvert rechargeait sa
+  vieille version. La sauvegarde automatique existait, mais rien ne le disait. Une photo de
+  téléphone en calque disparaissait au rechargement (trop lourde), et l'aide promettait les PDF.
+- **Fenêtres** : Tab passait derrière le voile, Échap ne fermait rien, Suppr effaçait le mur
+  sélectionné derrière « Estimer », une lettre changeait d'outil sous l'accueil ; ni rôle de
+  dialogue ni focus. Fermer l'accueil d'un clic à côté le faisait revenir à chaque visite.
+- **Clavier** : Cmd+C passait sur l'outil Cote (sélection perdue), Ctrl+D sur Doublage, Ctrl+S
+  n'enregistrait pas ; Espace n'activait aucun bouton (intercepté par « Espace + glisser »).
+- **Vue Travaux** : Suppr effaçait l'existant — le mur disparaissait aussi du relevé, sa
+  démolition sortait du chiffrage, le budget *baissait*. **Vue finale** : annoncée « pour
+  modifier, repasse en Projet », elle laissait tracer un mur « à créer » invisible (+375 €).
+- **Bugs** : sélectionner plusieurs équipements hors Travaux levait `it is not defined` et figeait
+  le plan (render() s'arrêtait avant draw()) ; Ctrl+Z en plein tracé laissait un mur fantôme ; la
+  2e pièce fermée contre la 1re continuait le tracé (le clic suivant tirait un mur en diagonale) ;
+  le panneau gardait son défilement d'un élément à l'autre (la décision « À démolir » hors de vue) ;
+  deux séparations en L signalées ⛔ « extrémité en l'air » sur l'exemple et tous les plans types ;
+  les deux faces d'un mur démoli « côté extérieur » ; au doigt, le plafonnier captait le toucher
+  destiné à la pièce ; le canvas en double après un changement d'écran (densité de pixels) ;
+  l'export oubliait les pages Travaux / Après travaux quand les travaux étaient des équipements ;
+  « Copier le plan complet » écrasait le bloc à envoyer.
+
+**Décisions.**
+1. **Un seul socle pour les fenêtres** (`openModal` / `closeModal` / `fermerModale` /
+   `gardeModale`) : `role="dialog"`, `aria-modal`, `aria-labelledby` (le titre), focus initial sur
+   le choix recommandé ou le bouton principal, Tab et Maj+Tab qui restent dedans, Échap / croix ✕
+   (ajoutée à chaque fenêtre) / clic sur le voile qui ferment, focus rendu au bouton d'origine.
+   Fermer l'accueil « par le côté » pose le drapeau et ne change pas le plan. Le calage du calque
+   passe par le même socle (Entrée valide).
+2. **Garde en tête du clavier** : fenêtre ouverte → seuls Échap et Tab la concernent, rien
+   n'atteint le plan. Ctrl/Cmd + lettre ne change **jamais** d'outil ; **Ctrl/Cmd+S enregistre**
+   dans « Mes plans ». Espace / Entrée sur un bouton **atteint au clavier** (Tab) l'activent ; un
+   bouton seulement cliqué à la souris laisse Espace à « Espace + glisser » (et un clic sur le plan
+   lui retire le focus). Le focus est rendu au bouton équivalent quand le panneau, les outils ou
+   les vues se redessinent (`avecFocus`).
+3. **Toast avec action** (`toast(msg, ok, {action, fn, ms})`) : « Annuler » (8 s), « Aller en … » ;
+   il passe au-dessus d'une fenêtre ouverte au lieu de s'afficher derrière le voile.
+4. **Suppr en vue Travaux** (arbitrage J, `marquerAuLieuDEffacer`) : sur ce qui existe, il
+   **marque** — mur « À démolir » (avec la question « porteur ? » de D37 si elle se pose),
+   ouverture « À boucher », équipement « À déposer » — avec « Annuler » ; il n'efface que ce qui a
+   été créé en Travaux, et les annotations (notes, cotes). Sélection mixte ou rectangle : chacun
+   selon son état. Le bouton rouge dit ce qu'il fera (`libSuppr`) ; la bulle d'aide aussi.
+5. **Vue finale en lecture seule** : seuls Sélection, Sélection rectangle et Mesurer ; les 7 autres
+   outils grisés (`aria-disabled`), refusés avec un message et « Aller en … » ; Suppr, flèches, R,
+   Ctrl+V/D, glisser un mur ou une poignée, cliquer une cote : refusés (glisser déplace la vue). La
+   fiche d'un élément se lit (réglages dans un `fieldset` désactivé) sous un bandeau « lecture
+   seule » avec « Modifier en vue … », qui garde l'élément sélectionné.
+6. **Zéro perte de travail** (arbitrage D) :
+   - **Indicateur** près du nom (`#saveState`) branché sur la vraie écriture : « Enregistrement… »
+     puis « Enregistré » (heure au survol), « Non enregistré » + message si le navigateur refuse.
+   - Un plan déjà dans « Mes plans » y est **tenu à jour** (écriture groupée, 450 ms ; vidée avant
+     tout remplacement et à la fermeture de la page). « Ouvrir » le plan ouvert ne recharge rien.
+   - **Avant tout remplacement** (Nouveau, plan type, feuille blanche, exemple, ouvrir un plan —
+     `avantDeRemplacer`), un plan qui porte du travail est **rangé dans « Mes plans »** ; le message
+     le dit. Un plan vide, l'exemple ou un plan type **jamais touchés** partent sans regret et sans
+     historique (`empreinte` : tout l'état sauf ce qui se recalcule — contours et ancres des
+     pièces, qui changent d'une vue à l'autre). Ctrl+Z ne ramène plus un exemple qu'on n'a pas
+     demandé, et la 1re « feuille blanche » dit « clique pour poser le 1er coin ».
+   - **Gratuit** : la limite est annoncée **avant** — commencer un 2e plan quand « Mes plans » est
+     plein ouvre « Version gratuite : 1 plan enregistré » (Commencer quand même / Passer Pro /
+     Annuler) ; remplacer un plan non rangé ouvre « « X » n'est pas enregistré » (Continuer sans le
+     garder / Passer Pro / Annuler). L'exemple retouché ne prend pas la seule place : on dit qu'il
+     n'est pas gardé, avec « Annuler ». « illimité » disparaît (« Dessiner reste gratuit · 1 plan
+     enregistré »).
+   - Un seul « Nouveau » (celui de « Mes plans » appelle le même). Supprimer un plan : « Annuler »
+     pendant 8 s. « Découvrir avec l'exemple » range d'abord le plan ouvert, puis ouvre l'exemple.
+   - **Démarrage** : l'exemple n'est chargé qu'à la toute première visite (ou si le navigateur ne
+     garde rien) ; un plan vide enregistré revient vide.
+   - **Calque** : réduit à l'import (2000 px de côté, JPEG) ; s'il ne tient toujours pas, on le dit
+     tout de suite ; un PDF est refusé en le disant. Les calques des plans rangés dans « Mes plans »
+     ne sont plus effacés quand on en ouvre un autre (`chargerCalques`).
+7. **Bugs** : branche multi-équipements corrigée (`its`, plus `it`) et `renderPanel` protégé — une
+   erreur du panneau affiche un message, le plan se redessine, l'erreur reste levée à part pour
+   les contrôles. Ctrl+Z pendant un tracé retire le dernier segment et le tracé repart du point
+   d'avant (`resetGestes` sur annuler / rétablir). Une pièce fermée contre un mur existant termine
+   le tracé. Le panneau revient en haut quand l'élément, l'outil, la vue ou l'onglet changent, et
+   garde sa place quand on règle un champ (`panneauEnHaut`). Une séparation peut s'appuyer sur une
+   autre séparation (`separationTouche`). Les côtés d'un mur démoli se lisent sur l'existant (sinon
+   « côté A / B »). Au doigt, un point électrique ne cumule plus son élargissement et celui du doigt.
+   Le canvas suit la densité de pixels (media query + `ResizeObserver` + recalage au dessin). Export :
+   pages Travaux / Après travaux dès qu'une décision existe (équipements, sols, tâches). « Copier le
+   plan complet » copie sa propre chaîne, derrière un lien discret « pour le support ».
+8. **Vocabulaire** : les nouveaux messages nomment les vues par `nomVue()` (lu dans `MODE_LABEL`) :
+   ils suivront le renommage « Avant travaux / Travaux / Après travaux » sans être réécrits.
+
+**Ce qui n'est pas fait, et pourquoi.**
+- **« Enregistrer » renommé « Créer une copie »** (retention05) : non. « Mes plans » n'est pas
+  devenu la seule source — un plan n'y entre qu'à l'enregistrement ou avant d'être remplacé, pour
+  ne pas consommer la seule place gratuite à l'insu de l'utilisateur. « Enregistrer » (et Ctrl+S)
+  garde donc son sens : ranger ce plan dans « Mes plans ».
+- **`inert` sur l'arrière-plan** (access02) : non posé — il aurait aussi rendu inerte le message
+  « Annuler », qui vit dans la zone du plan. Le piège de tabulation, `aria-modal` et la garde du
+  clavier couvrent le même besoin.
+- **Barre du haut** : l'indicateur est posé près du nom ; la barre sur une ligne dès 1024 px et le
+  menu Fichier relèvent du chantier visuel (elle déborde encore à 1024 px).
+- **Changement de densité de pixels** : le navigateur de test n'émet ni l'événement de la media
+  query ni celui du `ResizeObserver` en émulation ; le contrôle vérifie le recalage au premier
+  dessin qui suit.
+
+**Contrôles.** Nouveau `tools/robustesse.mjs` (96 vérifications, **à ajouter à la batterie**),
+avec de vrais gestes clavier et souris : fenêtres (rôle, focus, Tab, Échap, voile, focus rendu,
+rien derrière), Ctrl/Cmd + lettre, Ctrl+S / Z / Y, Espace, tracé (Ctrl+Z, 2e pièce), Suppr en
+Travaux (mur, fenêtre, meuble, neuf, mixte, rectangle, « Annuler »), vue finale en lecture seule,
+sélection multiple d'équipements dans les trois vues, filet de sécurité du panneau, défilement,
+pertes de travail (Pro et gratuit, rechargement, indicateur, suppression annulable), séparations,
+côtés d'un mur démoli, toucher au doigt, export, calque, densité de pixels. Mis à jour en gardant
+son intention : `review.mjs` (le passage en viewport mobile recharge la page et rouvre l'accueil :
+on le ferme avant de tester les raccourcis, qui ne passent plus sous une fenêtre).
