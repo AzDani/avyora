@@ -153,6 +153,14 @@ const res = await p.evaluate(() => {
     t["sans matériau choisi · la couche est signalée à faire"] = sp.steps.some((x) => x.k === "plancher" && x.state === "choice");
     t["sans matériau choisi · le plan le dit"] = /pas de plancher/i.test(sp.warn || "");
     t["sans matériau choisi · rien n'est chiffré au hasard"] = !ligne(/sol-plancher/); }
+  /* le sol actuel est UNE ligne : une dalle ou une chape existante ne revient pas en dessous */
+  { rdc(); const r = pieces(L())[0];
+    for (const [sol, k] of [["Dalle béton brute", "dalle"], ["Chape (sans revêtement)", "chape"]]) {
+      r.floor = sol; r.floorNew = "Carrelage"; r.sol = { chape: null }; afterChange();
+      const sp = solPlan(r);
+      t["sol · " + k + " existante : une seule ligne"] = sp.steps.filter((x) => x.state === "exist").length === 1 && !sp.steps.some((x) => x.k === k && x.state === "exist"); }
+    r.floor = "Sol brut / terre"; afterChange();
+    t["sol · sur terre, la dalle reste une couche à faire"] = solPlan(r).steps.some((x) => x.k === "dalle" && x.state === "auto"); }
   return t;
 });
 await b.close();

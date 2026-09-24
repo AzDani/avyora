@@ -489,18 +489,18 @@ const BETON_FINI = 'Béton fini (dalle lissée / quartz)';
 function solSupport(r){const f=r.floor||'';if(f===SANS_PLANCHER)return 'vide';if(f==='Sol brut / terre')return 'terre';if(f==='Dalle béton brute')return 'dalle';if(f==='Chape (sans revêtement)')return 'chape';if(!f||f==='À définir')return 'inconnu';return 'revetement';}
 function solPlan(r){
   const sup=solSupport(r),so=r.sol||{},nw=r.floorNew||'',betonFini=nw===BETON_FINI;const steps=[];
-  steps.push({k:'support',label:'Sol actuel',state:'exist',detail:sup==='inconnu'?'à préciser en vue Existant':r.floor});
+  /* Le sol actuel est UNE ligne. Une dalle ou une chape existante revenait juste en dessous en
+     « Dalle béton · existante » : deux lignes pour une seule couche (Dani, 24/09). */
+  steps.push({k:'support',label:'Sol actuel',state:sup==='inconnu'?'choice':'exist',detail:sup==='inconnu'?'à préciser en vue Existant':sup==='dalle'||sup==='chape'?r.floor+' · sert de support':r.floor});
   /* Rien en dessous : avant toute chape et tout revêtement, il faut un plancher. C'est la
      première couche, et de loin la plus chère — elle n'existait nulle part. */
   if(sup==='vide')steps.push({k:'plancher',label:'Plancher à créer',state:r.plancherNeuf?'todo':'choice',
     detail:r.plancherNeuf==='beton'?'béton · dalle coulée':r.plancherNeuf==='bois'?'bois · solives + panneaux':'bois ou béton, à choisir'});
   if(sup==='revetement'&&nw)steps.push({k:'depose',label:'Dépose de l\'ancien sol',state:'auto',detail:r.floor.toLowerCase()+' · compté automatiquement'});
   if(sup==='terre')steps.push({k:'dalle',label:'Dalle béton',state:'auto',detail:'obligatoire sur terre / sol brut · comptée automatiquement'});
-  else if(sup==='dalle')steps.push({k:'dalle',label:'Dalle béton',state:'exist',detail:'existante'});
   if(betonFini){if(sup!=='terre'&&sup!=='dalle')steps.push({k:'dalle',label:'Dalle béton',state:'warn',detail:'le béton fini se fait sur une dalle : ici le support est '+(sup==='chape'?'une chape':'un ancien revêtement')+' → dalle à prévoir ou autre revêtement'});
     steps.push({k:'fini',label:'Finition béton lissé / quartz',state:'auto',detail:'la dalle devient le sol fini · pas de chape ni de revêtement'});return {steps,sup,betonFini,warn:null};}
-  if(sup==='chape')steps.push({k:'chape',label:'Chape',state:'exist',detail:'existante'});
-  else steps.push({k:'chape',label:'Chape',state:so.chape?'todo':'choice',detail:so.chape==='tradi'?'traditionnelle':so.chape==='liquide'?'liquide (auto-nivelante)':'tradi ou liquide — recommandée sur dalle'});
+  if(sup!=='chape')steps.push({k:'chape',label:'Chape',state:so.chape?'todo':'choice',detail:so.chape==='tradi'?'traditionnelle':so.chape==='liquide'?'liquide (auto-nivelante)':'tradi ou liquide — recommandée sur dalle'});
   if(so.iso&&so.chape&&sup!=='chape')steps.splice(steps.length-1,0,{k:'iso',label:'Isolant sous chape',state:'todo',detail:Math.round(so.iso.e*100)+' cm '+solMatLabel(so.iso.mat)});
   if(so.ragreage)steps.push({k:'rag',label:'Ragréage',state:'todo',detail:'mise à niveau avant revêtement'});
   steps.push({k:'rev',label:'Revêtement',state:nw?'todo':'choice',detail:nw||'à choisir ci-dessus'});
