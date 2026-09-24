@@ -1790,3 +1790,137 @@ tâche, aria-live, disparition, annuler, Suppr sans effacer « Annuler », rien 
 type, rien en gratuit) ; plan vide (haut et bas, même phrase, clic, retour à l'actif) ; moins
 d'animation ; téléphone (tiroir Pro / gratuit, barre de zoom). Les contrôles existants passent sans
 modification.
+
+## D41 · Un visuel de produit fini, à toutes les largeurs (24/09/2026)
+
+**Constat (jury : designer produit, accessibilité, chasseur de bugs, débutant, rétention, cohérence).**
+Le plan était juste et riche ; l'écran, lui, faisait prototype dès qu'on quittait le grand écran.
+- **Barre du haut** : onze éléments côte à côte. À 1 440 px, « Plans types », « Mes plans » et
+  « Estimer ce plan » passaient sur deux lignes ; à 1 280 px, la barre débordait (1 409 px de large) ;
+  à 1 024 px, « Estimer ce plan » sortait de l'écran ; à 768 px, « Exporter » et « Mes plans »
+  devenaient inaccessibles (la page ne défile pas). Les bulles d'aide s'ouvraient au-dessus de
+  l'écran.
+- **Emojis** : environ 50 emojis différents dans l'interface (🏠 🛒 📝 ⚠️ ⛔ 💡 🔎 💾 🖨 📎 📏 ✂️ 🧱 🛋️…),
+  à côté d'icônes SVG au trait, et différents d'un système à l'autre ; ⚠️ et 🛒 jusque dans les
+  étiquettes du plan.
+- **Couleurs** : 100 couleurs en dur, dont le gris secondaire écrit 29 fois dans le code ; une encre
+  qui n'était pas celle de la marque ; le rouge servait à « à créer », au bouton de la vue Travaux, aux
+  erreurs et à l'encart « Réponse manquante » de la vue d'ensemble — en Travaux, tout avait l'air
+  d'une erreur. Sous-titres des choix en #a5a4bf (2,25:1), catégories d'outils en 8,5 px (2,32:1),
+  touches en 9 px, cotes intérieures en violet clair (3,3:1), consigne du plan vide à 3,1:1.
+- **Étiquettes de pièces** dessinées *sous* les cotes intérieures (« alle de bain »), nom supprimé
+  quand il ne rentrait pas (le cellier se lisait « 1,7 m² »), étiquette posée sur la cuvette du WC ;
+  sur téléphone « ambre », « isine ouverte ».
+- **Colonne d'outils** : à 1 280 × 800 et 1 024 × 768, « Image » (fond de plan) sortait de l'écran,
+  sans rien qui dise que la colonne défile.
+- **Panneau** : unités passées sous leur champ (« cm », « % »), aide des cases collée au libellé
+  (« Faux plafondpour cacher des gaines »), choix sur trois lignes (« Rien de prévu / pas encore
+  tranché »), cartes de bibliothèque coupées à droite (« Porte coulissante ( »), formulaire produit
+  tassé (« Prix ł », « aut »). Fiche d'une fenêtre qu'on garde : 1 641 px (type de pose, tapée,
+  vitrage, ouvrant, options, volets) ; d'un mur : 2 068 px. Vue d'ensemble : nom et hauteur du niveau
+  d'abord, un encart rose « sans cette réponse… » à la première seconde, les pièces tout en bas.
+- **Messages** en haut du plan, sur le sélecteur de vue, 2,6 s quelle que soit leur longueur ;
+  **légende** de la vue Travaux dessinée dans le plan (le plan passait dessous) ; **bulle d'astuce**
+  sombre affichée en permanence sur les cotes du bas ; icône d'aimantation lue comme un téléphone.
+
+**Décisions.**
+1. **Jetons** (`:root`) : encre `#1E1B4B`, indigo `#4F46E5`, violets `#A78BFA` / `#7C3AED`, neutres
+   froids, `--muted #64627F` (5,8:1 sur blanc, 5,4 sur `--canvas`, 5,2 sur `--brand-l`), sens métier
+   (`--creer` rouge, `--demolir` orange, `--ok`), **erreur distincte** (`--danger #BE123C`, rose, avec
+   icône) — le rouge « à créer » ne sert plus aux erreurs ; rayons, ombres, tailles, `--mono`. Les
+   couleurs en dur du JS les plus visibles passent par des classes : `.tip.q` (question, indigo
+   pâle), `.tip.warn`, `.tip.err`, `.tip.ok`, `.tip.act`, `.chip.vue-projet` / `.vue-final` /
+   `.err` / `.warn` / `.ok`, et `var(--muted)` dans les attributs `style`. Le bouton de la vue
+   Travaux actif est à l'encre, comme les autres (plus de fond rouge). Plancher de **11 px** pour
+   tout texte (y compris un `<small>` sans classe, les catégories et libellés d'outils, les cotes du
+   plan) ; cotes intérieures en `#6d4fc2` (5,9:1) ; consigne du plan vide en `--muted`.
+2. **Barre du haut sur une ligne** (arbitrage F) : logo · nom du plan + « Enregistré » · Annuler /
+   Rétablir (icônes nommées) · menu **Fichier** (Nouveau plan, Plans types, Mes plans, Enregistrer
+   dans Mes plans · Ctrl S, Exporter le dossier) · menu **Aide** (visite, Glossaire, Raccourcis
+   clavier) · **Passer Pro** (en gratuit seulement, lien Tarifs) · **Estimer ce plan** (primaire,
+   `order:99`, jamais coupé). Hauteurs fixes (34 / 36 px), `nowrap`. Menus accessibles : bouton
+   `aria-haspopup="menu"` / `aria-expanded`, liste `role="menu"` / `menuitem`, flèches, Début / Fin,
+   gauche / droite d'un menu à l'autre, Échap (rend le focus au bouton), Tab et clic ailleurs
+   ferment, une lettre ne change pas d'outil derrière ; choisir une entrée rend le focus au bouton
+   **avant** d'agir, donc une fenêtre ouverte depuis le menu le rend au bouton « Fichier » / « Aide ».
+   Sous 1 100 px, « Fichier » et « Aide » deviennent des icônes (le nom reste dans `aria-label`),
+   sous 760 px « Passer Pro » aussi. Sur téléphone (mode chantier), pas de menu Fichier ; l'Aide
+   reste (glossaire). Les bulles de la barre s'ouvrent vers le bas. « Visite guidée » appelle
+   `lancerVisite()` quand elle existera (chantier accueil) ; d'ici là l'entrée s'appelle honnêtement
+   « Guide de démarrage » et ouvre le guide en 3 étapes.
+3. **Un jeu d'icônes** : `ICONS` + `ico(nom, classe)`, tracés 24 × 24 au trait 1,75, `currentColor`,
+   `aria-hidden` (le texte porte le sens). Plus aucun emoji dans l'interface : titres de section
+   (toiture, contrôle du plan, produits), conseils, boutons (couper, importer, caler l'échelle,
+   enregistrer, imprimer), calques d'affichage, couches du sol (`SOL_STATE` : check, cercle, cadenas,
+   point, alerte), cases du Suivi, croix de suppression, bandeau téléphone, badge de surface, marque
+   du dossier exporté (le logo AVYORA). La longueur tapée affiche « 3,5 m · Entrée ». L'aimantation a
+   un aimant en U.
+4. **Étiquettes de pièces** (`mesureEtiquette`, `placerEtiquette`, `drawRoomLabelsEtCotes`) : le nom
+   entier, sinon à 80 %, sinon le nom court connu (`NOM_COURT` : « Cellier / rangement » → « Cellier »),
+   sinon sur deux lignes — **jamais la surface seule**. Place : au point d'étiquette, sinon autour,
+   sinon une grille de la pièce, en évitant les équipements et les notes, et toujours dans la pièce.
+   Les **cotes intérieures évitent les étiquettes** (elles glissent le long de leur ligne, sinon elles
+   s'effacent) ; les étiquettes sont dessinées **en dernier**, sur un cartouche opaque ; la surface
+   prend la couleur de la pièce assombrie jusqu'à 4,5:1. Produits / note (indigo) et contrôle
+   (orange) : une pastille au coin du cartouche. Même rendu dans le dossier exporté.
+5. **Colonne d'outils** : touche retirée des boutons (elle reste dans la bulle et l'Aide), catégories
+   en 11 px `--muted`, boutons compactés sous 780 px de haut ; les dix outils tiennent à 1 280 × 800
+   et 1 024 × 768 ; une ombre haut / bas dit s'il reste des outils à faire défiler.
+6. **Formulaires** : libellé à gauche, champ chiffré à largeur fixe (128 px) à droite, **l'unité
+   dans le champ** ; aide des cases à la ligne ; formulaire produit en grille (libellés au-dessus,
+   « € HT » dans le champ) ; nom de groupe au-dessus de son bouton. **Segmentés** (`segLisibles`,
+   après chaque rendu du panneau) : au-delà de 3 choix, ou dès qu'un choix passe sur plus de deux
+   lignes, **liste radio verticale** (pastille, libellé à gauche, sous-titre à droite) ; chaque
+   bouton porte `aria-pressed`. Bibliothèques : `minmax(0,1fr)`, cartes jamais coupées.
+7. **Fiches : l'essentiel d'abord** (`plie()`, `<details>` dont l'état ouvert / fermé survit aux
+   rendus) : mur — décision, type, porteur, longueur ; « Réglages de dessin » (épaisseur, position
+   par rapport au trait) et « Déplacer, étirer, coter » repliés. Fenêtre — décision puis dimensions ;
+   « Détails de la menuiserie » (pose, tapée, vitrage, ouvrant, options, volets) replié pour une
+   menuiserie qu'on garde (facultatif), ouvert pour une neuve (chiffré). Fenêtre gardée : 887 px au
+   lieu de 1 641 (à 1 280 × 800). **Vue d'ensemble** : titre, pièces, puis la carte **« Le chantier »** qui dit ce qu'il
+   reste à répondre (« à compléter : type de bien, code postal », lu sur l'état réel) et se replie une
+   fois complète, puis « Réglages du niveau » (nom, hauteur) replié ; « Maison ou appartement ? »
+   devient une question (indigo pâle), plus un encart d'erreur.
+8. **Messages** en bas du plan, juste au-dessus de la bulle d'astuce, 45 ms par caractère (2,6 à
+   7 s) ; changement de vue en une ligne. **Légende** de la vue Travaux dans le DOM, sous le
+   sélecteur de vue (déjà là · à créer · à démolir). **Bulle d'astuce** : elle parle de ce qui est
+   sélectionné (mur, ouverture, équipement, pièce, dans chaque vue) et se replie en « ? » après 7 s
+   (sauf pendant un tracé) ; un clic la rouvre. Badge de surface masqué sous 900 px (il passait sous
+   « RDC + » ; la surface reste au pied du panneau).
+
+**Ce qui n'est pas fait, et pourquoi.**
+- **Exemple T2 pré-rempli « appartement »** (design08) : c'est une donnée de l'exemple, qui change ce
+  qu'Estimer demande et ce que le chantier accueil (arbitrage G : « exemple vitrine, 0 alerte »)
+  réglera d'un tenant ; ici l'encart d'erreur devient une question et la carte dit ce qui manque.
+- **Menu sur le nom du plan** (design02) : l'arbitrage F fixe un menu « Fichier ».
+- **Astuce sur une seule ligne avec points de suspension** (design23) : couper une consigne la rend
+  fausse ; elle se replie à la place.
+- **Cotes intérieures seulement au survol / calque dédié** (design00 §3) : l'arbitrage dit « les cotes
+  se décalent ou se masquent » ; elles restent toutes, et s'écartent des étiquettes.
+- **Pose / tapée / volets cachés pour une fenêtre gardée** (novice09) : repliés, pas cachés — la tapée
+  d'une menuiserie conservée est un constat utile (alerte avec le doublage, D34-D35).
+- **Toutes les couleurs du plan en jetons** : le canvas ne lit pas les variables CSS ; ses couleurs
+  (types de pièces, `CREER`, `DEMOLIR`) restent en hex, mêmes valeurs.
+- **Fiche d'une pièce** : les quantités (surface, hauteurs, non habitable) restent visibles —
+  `langage.mjs` y lit « Surface au sol » d'un garage, et ce sont des réglages, pas de la technique.
+
+**Contrôles.** Nouveau `tools/visuel.mjs` (145 vérifications, **à ajouter à la batterie**) : barre du
+haut sur une ligne à 1 440, 1 280, 1 024 et 768 px, en Pro et en gratuit (hauteur, pas de défilement,
+Estimer entier, aucun bouton sur deux lignes, Passer Pro en gratuit seulement, menus nommés, icônes
+sous 1 100 px, nom du plan entier dès 1 024 px) ; menus au clavier et à la souris (focus, flèches,
+Fin, Échap, droite, lettre sans effet, clic ailleurs, Glossaire, focus rendu) ; outils tenant sans
+défiler à 1 280 × 800 et 1 024 × 768, libellés uniques et entiers ; dans les trois vues, pour chaque
+élément, chaque outil, le Suivi, Estimer, Mes plans, l'Aide et l'affichage : aucun emoji (textes,
+bulles, libellés accessibles, étiquettes du plan), aucun « ${ » échappé, **aucun texte sous 11 px**,
+**aucun texte sous 4,5:1** sur son fond ; étiquettes (1 440 / 1 280 / 1 024, avant travaux et
+travaux) : une par pièce, nom entier ou court connu, jamais sous une cote intérieure, pas sur un
+équipement, dans sa pièce, sans chevauchement ; bouton Travaux non rouge, légende DOM ; segmentés
+(liste au-delà de 3, rien sur 3 lignes, `aria-pressed`, sous-titres ≥ 11 px) ; unités dans les champs,
+champs de même largeur ; décision visible sans défiler (mur, fenêtre) ; réglages et détails
+techniques repliés / ouverts selon la décision ; bibliothèques sans débordement ; ordre de la vue
+d'ensemble et carte « Le chantier » fidèle à l'état ; messages en bas et lisibles 4 s ; astuce
+contextuelle, repliée à 7 s, rouverte au clic ; téléphone (Estimer cliquable, pas de menu Fichier).
+Mis à jour en gardant son intention : `robustesse.mjs` (« Mes plans » s'ouvre au clavier depuis le
+menu Fichier ; Échap rend le focus au bouton d'origine, désormais « Fichier »). Les autres contrôles
+passent sans modification ; la fixture du contrat ne change que par ses identifiants (non gardée).
+La barre du haut passe au-dessus du plan (menus) mais sous le voile des fenêtres (vérifié).

@@ -67,10 +67,15 @@ Object.assign(t, await p.evaluate(() => ({
 await p.evaluate(() => { localStorage.removeItem("avyora-plan-welcome"); openModal("welcome"); });
 await p.mouse.click(10, 450); await wait(80);
 t["clic à côté de l'accueil : il se ferme et ne reviendra pas"] = await p.evaluate(() => !modaleOuverte() && localStorage.getItem("avyora-plan-welcome") === "1");
-await p.focus("#plansBtn"); await p.keyboard.press("Enter"); await wait(80);
+/* D41 : « Mes plans » vit dans le menu Fichier — Entrée ouvre le menu, deux flèches descendent jusqu'à
+   « Mes plans », Entrée l'ouvre ; Échap ferme la fenêtre et rend le focus au bouton d'origine (« Fichier »). */
+await p.focus("#fichierBtn"); await p.keyboard.press("Enter"); await wait(80);
+await p.keyboard.press("ArrowDown"); await p.keyboard.press("ArrowDown"); await wait(40);
+t["menu Fichier : les flèches mènent à « Mes plans »"] = await p.evaluate(() => document.activeElement?.id === "plansBtn");
+await p.keyboard.press("Enter"); await wait(80);
 t["Entrée sur « Mes plans » l'ouvre"] = await p.evaluate(() => modaleOuverte()?.id === "m-plans");
 await p.keyboard.press("Escape"); await wait(80);
-t["Échap la ferme, et le focus revient sur le bouton d'origine"] = await p.evaluate(() => !modaleOuverte() && document.activeElement?.id === "plansBtn");
+t["Échap la ferme, et le focus revient sur le bouton d'origine"] = await p.evaluate(() => !modaleOuverte() && document.activeElement?.id === "fichierBtn");
 const nMurs = await p.evaluate(() => { const w = L().walls.find((x) => x.type === "cloison"); sel = { kind: "wall", id: w.id }; render(); showEstimate(); return L().walls.length; });
 await p.keyboard.press("Delete"); await p.keyboard.press("Backspace"); await ctrl(p, "z"); await wait(60);
 t["Suppr et Ctrl+Z derrière « Estimer » : le plan caché ne bouge pas"] = await p.evaluate((n) => L().walls.length === n && !!findWall(sel?.id) && !history.length, nMurs);
