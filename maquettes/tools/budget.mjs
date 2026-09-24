@@ -175,8 +175,8 @@ Object.assign(t, await p.evaluate(() => {
   porte.st = "boucher"; o.st = "boucher"; afterChange();
   const T = chantierTasks();
   const dep = T.find((x) => x.id === "o:" + o.id + ":depose"), bou = T.find((x) => x.id === "o:" + o.id + ":boucher");
-  r["reboucher : dépose de la menuiserie d'abord, sans prix, en le disant"] = !!dep && dep.prix === 0 && /sans prix/.test(detailTache(dep));
-  r["reboucher une porte dans une cloison : lot Cloisons"] = T.find((x) => x.id === "o:" + porte.id + ":boucher")?.lot === "Cloisons" && bou?.lot === "Maçonnerie";
+  r["reboucher : dépose de la menuiserie d'abord, sans prix, en le disant"] = !!dep && dep.prix === 0 && /non comptée dans le budget/.test(detailTache(dep)); /* D39 : même mot partout */
+  r["reboucher une porte dans une cloison : lot Plâtrerie et cloisons"] = T.find((x) => x.id === "o:" + porte.id + ":boucher")?.lot === "Plâtrerie et cloisons" && bou?.lot === "Maçonnerie";
   return r;
 }));
 
@@ -193,7 +193,7 @@ Object.assign(t, await p.evaluate(() => {
   r["fenêtres de toit au panneau seul : comptées"] = chantierTasks().some((x) => x.id === "toit:velux");
   pose("velux"); afterChange();
   r["fenêtre de toit dessinée : elle fait foi, le panneau ne s'ajoute plus"] = !chantierTasks().some((x) => x.id === "toit:velux") &&
-    chantierTasks().some((x) => x.id.endsWith(":creer") && x.label === "Poser fenêtre de toit" && x.prix === EQUIP_PRIX.velux);
+    chantierTasks().some((x) => x.id.endsWith(":creer") && /^Poser la fenêtre de toit/.test(x.label) && x.prix === EQUIP_PRIX.velux); /* D39 : libellé de pro, avec article et pièce */
   return r;
 }));
 

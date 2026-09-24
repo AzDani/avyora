@@ -298,7 +298,8 @@ console.log("\n4. Nombres cités dans le bloc de couverture");
 for (const [lot, attendu] of [["Location de matériel", "Location de matériel"], ["Raccordements aux réseaux", "Raccordements aux réseaux"]]) {
   const reel = parLot.get(attendu);
   const m = MAQ.match(new RegExp(`\\['${lot.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}','(\\d+) postes`));
-  if (!m) { NB(`nombre non trouvé pour « ${lot} »`, "libellé du bloc HORS_PLAN modifié ?"); continue; }
+  /* D39 : le bloc ne cite plus de nombre de « postes » (mot interne) ; s'il en cite un, il doit être juste. */
+  if (!m) { console.log(`  ${lot} : aucun nombre cité, rien à tenir`); continue; }
   Number(m[1]) === reel ? console.log(`  ${lot} : ${reel} ✓`)
     : KO(`« ${lot} » annonce ${m[1]} postes, le catalogue en a ${reel}`, "chiffre à corriger dans HORS_PLAN");
 }

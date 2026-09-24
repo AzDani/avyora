@@ -41,7 +41,8 @@ const res = await p.evaluate(() => {
     t["mur · la décision est proposée en Existant"] = /Décision/.test(html({ kind: "wall", id: haut.id }));
     t["équipement · la décision est proposée en Existant"] = /Décision/.test(html({ kind: "item", id: it.id }));
     setMode("projet"); closeModal();
-    t["en Projet, c'est la liste complète qui parle"] = !/Décision <span/.test(html({ kind: "opening", id: o.id })) && /État dans le projet/.test(html({ kind: "opening", id: o.id })); }
+    /* D39 : même titre « Décision » et mêmes mots dans les deux vues ; en Travaux, la liste est complète (créer, boucher) */
+    t["en Projet, c'est la liste complète qui parle"] = /setOpeningProp\('st','boucher'\)/.test(html({ kind: "opening", id: o.id })) && /setOpeningProp\('st','creer'\)/.test(html({ kind: "opening", id: o.id })) && !/État dans le projet/.test(html({ kind: "opening", id: o.id })); }
 
   /* ── les états sans objet sur de l'existant restent hors du bloc ─────────── */
   { const { o } = scene(); setMode("existant"); sel = { kind: "opening", id: o.id }; renderPanel();
@@ -104,10 +105,10 @@ const res = await p.evaluate(() => {
     /* la tapée d'une menuiserie NEUVE se déduit du doublage, elle ne se demande pas */
     haut.iso = { e: 0.12, mat: "gv", mode: "iti", sys: "ossature", side: 1 }; afterChange();
     const avant = h({ kind: "opening", id: o.id });
-    t["conservée · la tapée est un constat, avec ses boutons"] = /Tapée d'isolation/.test(avant);
+    t["conservée · la tapée est un constat, avec ses boutons"] = /Épaisseur du cadre de fenêtre \(tapée\)/.test(avant); /* D39 : libellé en clair */
     setOpeningProp("st", "remplacer");
     const apres = h({ kind: "opening", id: o.id });
-    t["remplacée · la tapée est déduite, plus demandée"] = !/Tapée d'isolation/.test(apres) && /Tapée du dormant/.test(apres);
+    t["remplacée · la tapée est déduite, plus demandée"] = !/Épaisseur du cadre de fenêtre \(tapée\)/.test(apres) && /Épaisseur du cadre \(tapée\)/.test(apres);
     t["remplacée · et elle annonce d'où elle vient"] = /Déduite de ton doublage/.test(apres);
     t["remplacée · elle vaut bien le doublage du mur"] = dormantOf(o) === 140;
 

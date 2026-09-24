@@ -103,10 +103,10 @@ Object.assign(t, await p.evaluate(() => {
   const haut = L(), room = facesFor(haut, "projet")[0].room;
   setLevelProp("plancher", "beton");
   const pl = () => chantierTasks().find((x) => x.id.startsWith("sol-plancher"));
-  r["niveau « Béton » : ses pièces passent en plancher béton"] = room.plancherNeuf === "beton" && /Plancher béton/.test(pl().label) && pl().lot === "Maçonnerie";
+  r["niveau « Béton » : ses pièces passent en plancher béton"] = room.plancherNeuf === "beton" && /plancher béton/i.test(pl().label) && pl().lot === "Maçonnerie";
   r["niveau « Béton » : le contrat dit béton"] = contratPlan().detailNiveaux[1].rooms[0].plancherACreer === "beton";
   setLevelProp("plancher", "bois");
-  r["niveau « Bois » : plancher bois"] = room.plancherNeuf === "bois" && /Plancher bois/.test(pl().label);
+  r["niveau « Bois » : plancher bois"] = room.plancherNeuf === "bois" && /plancher bois/i.test(pl().label);
   room.floorNew = "Carrelage"; room.sol = { chape: "tradi", iso: { mat: "pu", e: 0.08 } }; afterChange();
   const sp = solPlan(room);
   r["plancher bois : ni chape ciment ni isolant sous chape"] = !sp.steps.some((s) => s.k === "chape" || s.k === "iso") && !chantierTasks().some((x) => /^sol-(chape|iso):/.test(x.id));
@@ -142,13 +142,13 @@ Object.assign(t, await p.evaluate(() => {
   r["bien non dit : Estimer le demande"] = manque().includes("Type de bien");
   setChantier("bien", "appartement");
   r["appartement : plus de « Toiture non décrite »"] = !planChecks(L()).some((c) => /Toiture/.test(c.msg));
-  r["appartement : Estimer ne réclame ni toiture ni façade"] = !manque().includes("Charpente & couverture") && !manque().includes("Façade") && !manque().includes("Type de bien");
+  r["appartement : Estimer ne réclame ni toiture ni façade"] = !manque().includes("Charpente et couverture") && !manque().includes("Façade") && !manque().includes("Type de bien");
   sel = null; renderPanel();
   r["appartement : la fiche du niveau ne propose plus la toiture"] = !/Toiture &amp; charpente|Toiture & charpente|Décrire la toiture/.test(document.getElementById("pbody").innerHTML);
   state.toiture = { forme: "deuxpans", pente: 30, couverture: "tuile", etatCouv: "refaire", etatCharp: "bon", combles: "perdus", debord: 0.3, projet: { action: "refection" } }; afterChange();
-  r["appartement : une toiture déjà saisie n'est ni comptée ni émise"] = !chantierTasks().some((x) => x.lot === "Toiture") && contratPlan().toiture === null;
+  r["appartement : une toiture déjà saisie n'est ni comptée ni émise"] = !chantierTasks().some((x) => x.lot === "Charpente et couverture") && contratPlan().toiture === null;
   setChantier("bien", "maison");
-  r["maison : la toiture revient"] = chantierTasks().some((x) => x.lot === "Toiture") && contratPlan().toiture !== null;
+  r["maison : la toiture revient"] = chantierTasks().some((x) => x.lot === "Charpente et couverture") && contratPlan().toiture !== null;
   return r;
 }));
 

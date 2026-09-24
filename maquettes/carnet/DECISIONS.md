@@ -1519,3 +1519,161 @@ pertes de travail (Pro et gratuit, rechargement, indicateur, suppression annulab
 côtés d'un mur démoli, toucher au doigt, export, calque, densité de pixels. Mis à jour en gardant
 son intention : `review.mjs` (le passage en viewport mobile recharge la page et rouvre l'accueil :
 on le ferme avant de tester les raccourcis, qui ne passent plus sous une fenêtre).
+
+## D39 · Un seul langage, honnête, avec glossaire (24/09/2026)
+
+**Constat (jury : débutant, pro du bâtiment, cohérence, design, rétention, QA, accessibilité).**
+Le plan disait la même chose avec trois mots, et parfois le contraire de ce qu'il faisait.
+- **Vues et états** : « 🏠 Existant / 🛠 Projet / ✅ Final » ; en vue Existant, un mur proposait
+  « Rien de prévu / Je le garde / À démolir », puis, juste en dessous, « l'état de ce mur se règle
+  en vue Projet [Passer en Projet] » ; en Projet, les mêmes boutons s'appelaient « Existant /
+  Conservé ». Estimer demandait de mettre « Conservé », un bouton absent de la vue où l'on était.
+- **Mots internes** : « le moteur », « lot », « poste au catalogue », « base de prix », « BET »,
+  « BA13 », « placo », « Contrat 1.12.0 · 19 Ko », « Voir le JSON envoyé au moteur » ; et des
+  mots de métier jamais expliqués (doublage, tapée, dormant, allège, chape, ragréage, trémie…).
+- **Traces de maquette** : chip « Éditeur de plan · maquette 2D », interrupteur ★ Pro / 🔓 Gratuit
+  cliquable par tous, notes « 🔌 Maquette », « 🔒 Maquette : au branchement… », trois « Passer Pro »
+  qui répondaient par un toast « Maquette : ce bouton mènera… », et « Envoyer vers mon estimation
+  AVYORA » qui menait à un écran d'import que le site n'a pas (ImporterPlan non monté).
+- **Pro incohérent** : un abonné lisait « le détail poste par poste arrive avec Pro » ; le paywall
+  promettait un « suivi de chantier chiffré » et un détail « ajusté à ta région » qui n'existaient
+  pas ; le Suivi n'avait aucun prix ; le gratuit voyait « 10 283 € si tu les remplaçais » sous un
+  budget masqué.
+- **Décence** : « en dessous de 9 m², ce n'est pas une chambre au sens du décret décence » pour
+  chaque chambre, « sous les 2,20 m réglementaires » pour chaque WC ou cellier — c'est inexact : le
+  texte demande qu'**au moins une** pièce principale fasse 9 m² avec 2,20 m, ou 20 m³.
+- **Raccourcis** : deux listes écrites à la main qui divergeaient (R à 90° ou « rotation libre » ;
+  D, B, T absents de l'une). Deux outils affichés « Sélection », « Calque » et « Calques » pour deux
+  choses, un outil « Texte » qui posait des notes.
+- **Suivi** : lots dans le désordre (isolation après cloisons, façade après sols, faïence rangée
+  dans « Sol », plancher bois dans « Toiture ») ; libellés sans article (« Poser fenêtre »,
+  « Poser vmc (caisson) », « Poser lave-linge » pour une arrivée d'eau à créer, « Percement, linteau
+  & tableaux » dans une cloison de 7 cm, « Fenêtres de toit (Velux) »).
+- **Divers** : épaisseurs en mm ici, en cm là ; « λ 0.035 », « m².K/W » ; placeholder « 33620 »
+  lu comme une valeur ; « Surface habitable » sur un garage ; « Parpaing / Pierre » pour dire 20 cm
+  ou 60 cm ; produits de l'exemple avec prix inventés et liens d'enseignes ; « Budget cible
+  25 000 € » ; une pièce tracée baptisée « Chambre » au hasard ; 4 m cliqués = 3,80 m à l'intérieur.
+
+**Décisions.**
+1. **LEX** (en tête du script) : les vues « Avant travaux / Travaux / Après travaux » et les états
+   « À décider · Je garde · À démolir / À déposer · À remplacer · À boucher · À créer / À poser »,
+   avec leur sous-titre. Le code garde ses clés (`existant/projet/final`, `existant/garder/…`).
+   `MODE_LABEL` et `nomVue()` lisent LEX ; les boutons de vue n'ont plus d'emoji ; les textes fixes
+   lisent LEX par `data-lex`. **Un seul composant d'état** (`choixEtat` / `segEtat`) sert les deux
+   vues : en Avant travaux, ce qui a un sens sur l'existant (décider, garder, démolir / remplacer /
+   déposer) ; en Travaux, la liste complète — mêmes mots, même ordre, mêmes couleurs. Titre
+   « Décision » partout ; la consigne contradictoire « se règle en vue Projet » est retirée.
+2. **Glossaire** : `GLOSSAIRE` (42 mots, une phrase chacun) et `gl(clé)`, une pastille ⓘ qui est un
+   vrai bouton (nom accessible « C'est quoi, … ? », `aria-expanded`, `aria-describedby`) : bulle
+   `role="tooltip"` au survol, au focus clavier et au clic (épinglée), fermée par Échap (sans
+   désélectionner) ou un clic ailleurs, recalée pour ne jamais sortir de l'écran (et fermée si sa
+   pastille disparaît). Posée une fois par panneau et par mot : mur (cloison, porteur, linteau,
+   doublage, ravalement), fenêtre (allège, tableau, pose, tapée, dormant, pont thermique,
+   oscillo-battant), pièce (faïence, faux plafond, surface habitable, chape, ragréage, dalle,
+   dépose), outil Doublage (doublage, ITI, ITE, R, λ, aides), toiture (faîtage, pignon, combles,
+   fermettes), chantier (TVA, HT), Suivi et Estimer (corps d'état, HT), escalier, spots, ossature.
+   L'Aide (bouton ?) a deux onglets : Raccourcis et Glossaire (`ouvrirAide('gloss')` pour le futur
+   menu Aide). Le focus d'ouverture d'une fenêtre ne tombe jamais sur une pastille.
+3. **Mode développeur** : `isDev()` (`?dev` dans l'adresse, classe `html.dev`, `.devonly`). Seul
+   lui montre l'interrupteur Pro / Gratuit, la mention « maquette », le contrat, le JSON et
+   « Envoyer vers mon estimation AVYORA ». La note de « Mes plans » dit simplement « Tes plans sont
+   enregistrés dans ce navigateur, sur cet appareil ».
+4. **Gratuit / Pro** : une table `DROITS` (dessin, contrôle, budget, suivi, export, plans), reprise
+   **mot pour mot** par le pied, le paywall (« Ce que Pro ajoute » = `droitsPro()`), le Suivi,
+   l'export, « Mes plans » et les fenêtres de limite (`avecPro(k)`). Elle ne promet que ce qui existe
+   ici (plus de « ajusté à ta région », plus de produits « reliés à la base de prix »). « Passer Pro »
+   est un vrai lien vers `https://getavyora.fr/tarifs` (nouvel onglet ; `passerPro()` dans les
+   fenêtres de choix). Un Pro ne lit jamais « avec Pro » : sa carte budget est un bouton « Voir le
+   détail » qui ouvre Estimer. En gratuit, l'arbitrage n'affiche plus de montant. `isPro()` lit
+   d'abord `window.AVYORA_PRO` si le site l'injecte ; sinon, comme avant (Pro par défaut).
+5. **« Estimer ce plan » = l'écran de la valeur** (arbitrage C) : le montant d'abord (HT ⓘ, indicatif,
+   « ta finition, ta région et la TVA n'y sont pas encore appliquées »), avec tâches, corps d'état
+   et « à décider » ; le détail **par corps d'état** (barre, total, repliable) puis **par tâche** ;
+   **« Encore à décider (n) »** — chaque ligne sélectionne son objet sur le plan (`montrerSurLePlan`,
+   même règle que `quantities().arbitrage`, plus les sols sans décision) ; **« Pas encore chiffré »**
+   (tâches à 0 €, dites) ; ce que le plan ne dit pas encore ; puis **un seul appel principal**
+   (Exporter le dossier) et « Enregistrer dans Mes plans ». Les quantités mesurées sont repliées
+   (`quantitesHTML`, reprises telles quelles par la page « Quantités » de l'export). En gratuit :
+   montant flouté, vrais corps d'état et nombre de tâches, « Ce que Pro ajoute », lien Tarifs.
+   `SEUIL_ARBITRAGE` sort de `quantities()` pour être partagé ; une ouverture dans un mur démoli
+   n'est plus « à trancher » (elle part avec son mur).
+6. **Le Suivi est un planning** (arbitrage L) : `LOTS` = Études → Démolition → Maçonnerie →
+   Charpente et couverture → Menuiseries extérieures → Façade → Isolation → Plâtrerie et cloisons →
+   Électricité et plomberie → Sols → Faïence → Menuiseries intérieures → Peinture → Équipements.
+   Faïence à part, plancher bois en charpente, menuiseries séparées par `isExtType`, points
+   électriques et arrivées d'eau dans leur lot (avec « les gaines et les arrivées d'eau passent
+   avant que les cloisons soient fermées »), mur épais créé en maçonnerie. Libellés de pro : un
+   verbe, un article, la pièce (`OUV_NOM`, `LIB_EQUIP`, `FAC_ACTION`, `POSE_SOL`, `piecesAutour`) —
+   « Poser la fenêtre neuve · Chambre », « Ouvrir la cloison pour la porte entre Séjour et
+   Chambre », « Créer l'arrivée et l'évacuation du lave-linge », « Remplacer le tableau électrique
+   (mise aux normes) », « Poser 2 fenêtres de toit ». En Pro : prix de chaque tâche, total par corps
+   d'état, « X € réalisés sur Y € HT ». Un clic sur le texte d'une tâche sélectionne son objet
+   (vue Travaux, bon niveau, recentrage) ; la case, elle, coche. **Aucun montant ne change** :
+   vérifié tâche par tâche contre la version d'avant sur la scène de référence, les variantes,
+   l'exemple et les quatre plans types.
+7. **Décence dite prudemment** : une petite chambre (< 9 m²) est une info « si tu loues, vérifie » ;
+   une pièce de vie sous 2,20 m aussi ; plus rien sur un WC ou un cellier ; le seul seuil vérifié
+   l'est **sur le logement** (`decenceLogement` : au moins une pièce de vie de 9 m² avec 2,20 m, ou
+   20 m³), une fois, « à vérifier », sans citer de texte. « Réglementaire » et « décret » disparaissent
+   de l'écran ; le sas des WC devient « le règlement sanitaire de ton département demande en
+   général… : à vérifier ».
+8. **Une seule liste de raccourcis** : `keysHTML()` rend l'accueil et l'Aide ; les outils viennent de
+   `TOOLS` + `TOOL_TIP` (D, B, T y sont d'office), les gestes de `KEYS_GESTES` (R = 90°, poignée =
+   pas de 15°, Maj+clic partout). Outils : « Zone » (B), « Note » (T), « Fond de plan » (libellé
+   court « Image »), bouton « Affichage » ; `TOOL_TIP.doublage`.
+9. **Mots justes** : « Travaux décidés », « Pièces après travaux », « Murs maçonnés (20 cm) » /
+   « Murs anciens épais », « Équipements dessinés (mobilier compris) », « non compté dans le
+   budget », « étude de structure », « plaque de plâtre » ; ⚡ réservé à l'électricité (Estimer et
+   Suivi ont une icône SVG) ; épaisseurs en cm partout (`cmDe`), λ et R à la virgule, m²·K/W,
+   Geist Mono sur les nombres seulement ; types de mur « Cloison · Mur (20 cm · béton, parpaing) ·
+   Mur épais (60 cm · pierre) · Séparation » ; « Surface au sol » pour un garage, une cave, des
+   combles, un balcon, et avant travaux pour un volume non habitable (`horsHabitable`) ; code postal
+   « 5 chiffres », champ vide en pointillés ; l'exemple n'a plus ni prix inventé, ni lien
+   d'enseigne, ni budget cible ; plus de nom d'enseigne dans les exemples de saisie.
+10. **Une pièce tracée** garde son type deviné marqué « ? » sur le plan et « deviné d'après la
+    surface » dans sa fiche tant qu'on ne l'a pas choisi (`typeAuto`, hors contrat) ; le message de
+    fermeture propose « Choisir son type ». **Le premier contour** d'un plan vide, en murs épais,
+    suit l'intérieur des pièces (sauf choix explicite de l'alignement) : 4 × 3,5 m cliqués = 14,0 m²
+    à l'intérieur, le mur pousse dehors, et le volet le dit.
+
+**Ce qui n'est pas fait, et pourquoi.**
+- **« À enlever »** pour un équipement (coherence16) : non, l'arbitrage E fixe « À déposer ».
+- **Toast de différence** à chaque décision (« +2 580 € · mur porteur démoli », novice06) : pas fait
+  — il écraserait les messages qui portent une action (« Annuler »). La carte budget ouvre désormais
+  le détail, qui répond à « d'où vient ce montant ».
+- **« Estimer ce plan · Pro » dans la barre du haut** (coherence10) : la barre déborde déjà à
+  1 440 px avec ce suffixe ; le bouton dit « Avec Pro : … » au survol, le pied dit « · Pro ». La
+  barre sur une ligne et le menu Aide relèvent du chantier visuel.
+- **Renommer l'outil « Doublage » en « Isoler un mur »** (novice08) : non — « doublage » est le mot
+  de la fiche, du Suivi et du devis ; il a sa bulle (« Isoler un mur (doublage) : … ») et son ⓘ.
+- **« Corps de métier »** (coherence14) : on garde « corps d'état », le mot de l'arbitrage C et du
+  site, avec son ⓘ.
+- **Mini-palette « C'est quoi ? » posée sur le plan** (novice16) : remplacée par le « ? », la fiche
+  et « Choisir son type » ; une palette dans le canvas demande le chantier visuel.
+- **Cote intérieure pendant le tracé** (novice19) : le tracé reste coté à l'axe jusqu'à la fermeture ;
+  une fois fermé, les cotes intérieures valent ce qu'on a cliqué.
+- **`isPro()` vrai par défaut** : inchangé (le site injectera `window.AVYORA_PRO`). La page publiée
+  seule reste donc en Pro pour qui l'ouvre.
+- **Emojis** hors de ce que ce chantier a touché (couches d'affichage, 🛒, 📝, 🔎, 🏠 de la
+  toiture, bandeau téléphone) : au chantier visuel.
+
+**Contrôles.** Nouveau `tools/langage.mjs` (77 vérifications, **à ajouter à la batterie**) : il lit
+tout ce qui s'affiche (texte, bulles, titres, libellés accessibles, exemples de saisie) dans 375
+états — accueil, chaque mur / ouverture / équipement / pièce et chaque outil dans les trois vues,
+Suivi, Estimer, export, Mes plans, Aide, en Pro, en gratuit et avec `?dev`, sur l'exemple, la scène
+de référence et ses variantes, les fenêtres fixes et les messages des gestes courants — et refuse
+« maquette », « moteur », « catalogue » (hors « prix catalogue »), « poste », « BET », « placo », les
+anciens noms de vues et d'états, « décret / réglementaire », les enseignes, « λ 0.035 »… ; un Pro
+ne lit jamais d'invite Pro. Il vérifie aussi : états identiques dans les deux vues, pastilles par
+panneau (une fois par mot), bulle (survol, clic, clavier, Échap, clic ailleurs, dans l'écran à
+1 400 et 420 px), `?dev`, DROITS mot pour mot et lien Tarifs, raccourcis uniques et complets,
+décence au niveau du logement, Suivi (ordre, verbes, pièce, prix, « réalisés sur », clic), Estimer
+(montant d'abord = budget, corps d'état ordonnés, chaque tâche, « Encore à décider » = arbitrage,
+un seul appel, clic → objet), garage, types de mur, code postal, exemple, unités, premier contour
+et type deviné. Mis à jour en gardant leur intention : `budget.mjs` (« non comptée dans le
+budget », lot « Plâtrerie et cloisons », « Poser la fenêtre de toit »), `metier.mjs` (plancher béton
+/ bois, lot « Charpente et couverture »), `existant.mjs` (même lot ; un mur épais créé va en
+maçonnerie), `decision.mjs` (titre « Décision » dans les deux vues, liste complète en Travaux,
+« Épaisseur du cadre (tapée) »), `robustesse.mjs` (l'outil B s'appelle « Zone »), `coherence.mjs`
+(le bloc « hors plan » ne cite plus de nombre de postes). Fixture du contrat régénérée : seuls les
+libellés et lots du `suivi` et les textes des contrôles changent (contrat 1.14.0 inchangé).

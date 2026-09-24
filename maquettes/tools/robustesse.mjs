@@ -80,7 +80,7 @@ t["Échap ferme « Estimer »"] = await p.evaluate(() => !modaleOuverte());
 await p.evaluate(() => { localStorage.removeItem("avyora-plan-welcome"); openModal("welcome"); });
 await p.keyboard.press("Space"); await wait(80);
 t["Espace sur « Découvrir avec l'exemple » l'active"] = await p.evaluate(() => !modaleOuverte());
-await p.evaluate(() => { clearSel(); setTool("select"); document.querySelector('#tools .tb[aria-label="Sélection rectangle"]').focus(); });
+await p.evaluate(() => { clearSel(); setTool("select"); document.querySelector('#tools .tb[aria-label="Zone"]').focus(); /* D39 : l'outil B s'appelle « Zone » */ });
 await p.keyboard.press("Tab"); await p.keyboard.press("Space"); await wait(60);
 t["Tab jusqu'à l'outil « Murs » puis Espace : il est choisi"] = await p.evaluate(() => tool === "mur" && document.activeElement?.getAttribute("aria-label") === "Murs");
 await p.evaluate(() => { setTool("select"); document.activeElement?.blur?.(); });
