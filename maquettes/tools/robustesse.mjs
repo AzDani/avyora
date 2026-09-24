@@ -56,14 +56,15 @@ t["Tab ×14 : le focus ne quitte pas la fenêtre"] = await p.evaluate(() => docu
 await shift(p, async () => { for (let i = 0; i < 5; i++) await p.keyboard.press("Tab"); });
 t["Maj+Tab ×5 : le focus ne quitte pas la fenêtre"] = await p.evaluate(() => document.querySelector("#m-welcome .modal").contains(document.activeElement));
 const outil0 = await p.evaluate(() => tool);
+const nEx = await p.evaluate(() => L().walls.length); /* D42 : l'exemple a changé de forme (entrée) ; on compte ses murs au lieu de les écrire en dur */
 for (const k of ["d", "m", "p", "Delete"]) await p.keyboard.press(k);
-t["lettres d'outil et Suppr sous l'accueil : ni outil changé, ni plan touché"] = await p.evaluate((o) => tool === o && L().walls.length === 11, outil0);
+t["lettres d'outil et Suppr sous l'accueil : ni outil changé, ni plan touché"] = await p.evaluate(([o, n]) => tool === o && L().walls.length === n && n > 4, [outil0, nEx]);
 await p.keyboard.press("Escape"); await wait(80);
 Object.assign(t, await p.evaluate(() => ({
   "Échap ferme l'accueil": !modaleOuverte(),
   "…il ne reviendra pas (drapeau posé)": localStorage.getItem("avyora-plan-welcome") === "1",
-  "…et le plan n'a pas bougé (l'exemple reste)": /Exemple/.test(state.name) && L().walls.length === 11,
 })));
+t["…et le plan n'a pas bougé (l'exemple reste)"] = await p.evaluate((n) => /Exemple/.test(state.name) && L().walls.length === n, nEx);
 await p.evaluate(() => { localStorage.removeItem("avyora-plan-welcome"); openModal("welcome"); });
 await p.mouse.click(10, 450); await wait(80);
 t["clic à côté de l'accueil : il se ferme et ne reviendra pas"] = await p.evaluate(() => !modaleOuverte() && localStorage.getItem("avyora-plan-welcome") === "1");
@@ -85,6 +86,10 @@ t["Échap ferme « Estimer »"] = await p.evaluate(() => !modaleOuverte());
 await p.evaluate(() => { localStorage.removeItem("avyora-plan-welcome"); openModal("welcome"); });
 await p.keyboard.press("Space"); await wait(80);
 t["Espace sur « Découvrir avec l'exemple » l'active"] = await p.evaluate(() => !modaleOuverte());
+/* D42 : à la première visite, la visite guidée démarre ; elle garde le clavier, Échap la ferme */
+t["…la visite guidée démarre (première visite)"] = await p.evaluate(() => !!visite);
+await p.keyboard.press("Escape"); await wait(80);
+t["…Échap la ferme, et le plan reprend le clavier"] = await p.evaluate(() => !visite && localStorage.getItem("avyora-plan-tuto") === "passe");
 await p.evaluate(() => { clearSel(); setTool("select"); document.querySelector('#tools .tb[aria-label="Zone"]').focus(); /* D39 : l'outil B s'appelle « Zone » */ });
 await p.keyboard.press("Tab"); await p.keyboard.press("Space"); await wait(60);
 t["Tab jusqu'à l'outil « Murs » puis Espace : il est choisi"] = await p.evaluate(() => tool === "mur" && document.activeElement?.getAttribute("aria-label") === "Murs");
@@ -152,7 +157,8 @@ await p.keyboard.press("Delete"); await wait(80);
 Object.assign(t, await p.evaluate((a) => { const r = {}, w = findWall(a.cl);
   r["Suppr sur un mur existant : il reste, marqué « À démolir »"] = !!w && wst(w) === "demolir" && L().walls.length === a.nW;
   r["…il reste au relevé (vue Avant travaux)"] = wallDrawn(w, "existant");
-  r["…et sa démolition entre au chiffrage"] = chantierTasks().length > a.nT && chantierPrix().total >= a.px;
+  /* D42 : la tâche de démolition de CE mur (compter les tâches ne suffit plus : l'exemple rebouche une porte dans cette cloison, qui part avec elle) */
+  r["…et sa démolition entre au chiffrage"] = chantierTasks().some((x) => { const k = tacheCible(x.id); return k && k.kind === "wall" && k.id === a.cl && /^Démolir/.test(x.label); }) && chantierPrix().total >= a.px;
   r["…avec « Annuler » dans le message"] = !!document.querySelector("#toast .tact");
   return r; }, avant));
 await p.evaluate(() => document.querySelector("#toast .tact").click()); await wait(60);

@@ -78,9 +78,10 @@ const VERBE_SRC = "^(Faire|Démolir|Poser|Déposer|Monter|Reboucher|Ouvrir|Perce
 /* ═════════ 1. Parcours complet en Pro, sans ?dev ═════════ */
 let p = await onglet();
 await noter(p, "accueil");
-t["accueil · les raccourcis de l'accueil = ceux de l'Aide (une seule table)"] = await p.evaluate(() => {
-  const a = document.getElementById("welcomeKeys").innerHTML, b2 = document.getElementById("aideKeys").innerHTML;
-  return a.length > 200 && a === b2;
+/* D42 : l'accueil, raccourci, ne liste plus les touches — elles vivent dans l'Aide seulement (une seule table, keysHTML) */
+t["accueil · les raccourcis ne vivent qu'à un endroit : l'Aide (une seule table)"] = await p.evaluate(() => {
+  const a = document.getElementById("welcomeKeys"), b2 = document.getElementById("aideKeys").innerHTML;
+  return !a && !document.querySelector("#m-welcome kbd") && b2.length > 200 && b2 === keysHTML();
 });
 t["raccourcis · chaque touche d'outil y figure (V, B, M, P, D, E, T, C, L) et R dit 90°"] = await p.evaluate(() => {
   const h = document.getElementById("aideKeys").textContent, kbd = [...document.querySelectorAll("#aideKeys kbd")].map((x) => x.textContent.trim());

@@ -1924,3 +1924,142 @@ Mis à jour en gardant son intention : `robustesse.mjs` (« Mes plans » s'ouvre
 menu Fichier ; Échap rend le focus au bouton d'origine, désormais « Fichier »). Les autres contrôles
 passent sans modification ; la fixture du contrat ne change que par ses identifiants (non gardée).
 La barre du haut passe au-dessus du plan (menus) mais sous le voile des fenêtres (vérifié).
+
+## D42 · Onboarding et rétention : un premier contact qui guide, une vitrine sans alerte, une raison de revenir (25/09/2026)
+
+**Constat (jury : débutant, rétention, designer, cohérence, pro du bâtiment, accessibilité).**
+Le produit était juste ; son premier écran ne le montrait pas.
+- **Accueil** : 193 mots en trois étapes (touches clavier, « ajouté en vue Travaux = à créer ou à
+  poser, cliqué → à démolir ou à déposer »), trois choix de même poids, les raccourcis en bas, avant
+  d'avoir vu un seul mur. Rien pour découvrir le produit pas à pas ; « Aide ▸ Visite guidée »
+  rouvrait ce même texte.
+- **Au téléphone** (le trafic des Reels) : l'accueil apprenait à « taper 3,5 puis Entrée » et
+  proposait « Partir d'une feuille blanche » ; le plan vide disait « Commence par tracer les murs »
+  (coupé à droite), le message « le dessin se fait sur ordinateur », le bandeau pareil : une impasse
+  en trois messages contradictoires. La fenêtre « vue Travaux » disait « trace ce que tu ajoutes ».
+  Le bandeau « mode chantier » revenait à chaque visite. L'accueil débordait (806 px pour 760).
+- **L'exemple T2** (la vitrine) : 3 portes qui tapaient dans l'armoire, le lave-linge et la cuvette,
+  des WC qui ouvraient sur le séjour, « Toiture non décrite » pour un T2 (type de bien jamais dit),
+  la faïence repérée comptée en « Peinture / murs » sur 23,9 m² contre 14,4 m² à la tâche ; ni
+  remplacement ni doublage parmi ses travaux ; ouvert en vue Avant travaux, où rien n'explique son
+  budget.
+- **Après la première pièce** : aucune « prochaine étape » ; rien qui dise où en est le projet.
+- **Plan vide** : un texte gris dessiné sur la grille, sans un bouton.
+- **Une pastille orange** sur une étiquette de pièce ne s'expliquait qu'en bas de la vue d'ensemble.
+- **Sol actuel** : en vue Travaux, « à préciser en vue Avant travaux » — changer de vue, retrouver la
+  pièce, revenir. **Doublage** : aucune confirmation ; un glissé imprécis laissait 30 cm sans le dire.
+
+**Déjà réglé avant ce chantier (non refait).** La croix et Échap de l'accueil (D38), « jaune » →
+« orange » (D39), le toast « renomme-la dans le panneau » (D39 : « Choisir son type »), la carte
+budget cliquable et « Estimer » grisé en haut comme en bas (D40), la fausse extrémité « en l'air »
+des séparations en L (D38).
+
+**Décisions.**
+1. **Accueil court** (arbitrage G) : un titre, une phrase, **trois cartes illustrées** (vignettes SVG
+   au trait : l'exemple et ses marques rouge / orange, des plans types, une feuille quadrillée),
+   « Découvrir avec l'exemple » **recommandé** (bordure indigo, badge, focus), « Ton plan
+   s'enregistre tout seul, sur cet appareil ». 74 mots au lieu de 193, cartes comprises ; plus de touches, plus
+   d'étapes numérotées (les raccourcis ne vivent plus que dans l'Aide, une seule table). Sous 760 px,
+   cartes en ligne. `openModal` focalise le premier `[data-autofocus]` **visible**.
+2. **Au téléphone** (arbitrage H), un accueil dédié : « Sur téléphone, tu consultes ton plan, ton
+   budget, et tu coches l'avancement du chantier. Pour dessiner ton logement, ouvre AVYORA sur
+   ordinateur ou tablette. » — **Voir l'exemple** (recommandé), **Ouvrir mes plans**, **Continuer sur
+   ordinateur** (`partagerLien` : partage natif, sinon lien copié). Ni feuille blanche, ni plan type,
+   ni raccourcis ; tient sans défiler. Passer en vue Travaux n'ouvre plus la fenêtre explicative au
+   téléphone (un message court). Le bandeau « mode chantier » a `role="note"` ; fermé une fois (ou
+   après la visite, qui dit la même chose), il ne revient plus (`avyora-plan-phonebanner`).
+3. **Visite guidée** (`lancerVisite`, `etapeVisite`, `placerVisite`, `fermerVisite`, `gardeVisite`) :
+   5 bulles ancrées aux vrais éléments — 1. la colonne d'outils (le plan, tracer, sélectionner),
+   2. les trois vues (elle passe en Travaux, sans la fenêtre), 3. le panneau (elle sélectionne la
+   Chambre de l'exemple : « on garde son parquet, on remplace sa fenêtre, on isole un de ses murs »),
+   4. la carte budget (HT ⓘ, « rien n'est compté tant que tu n'as rien décidé »), 5. « Estimer ce
+   plan » et l'onglet Suivi. Un **halo** (anneau violet et voile) sur la cible, **la bulle jamais sur
+   sa cible** (côtés préférés par étape, dans l'écran, sinon le coin le plus libre), recalée au
+   redimensionnement ; points de progression, « Étape n sur 5 », **Suivant / Retour / Passer** toujours
+   visibles ; Échap ferme, ← → naviguent, Tab reste dans la bulle ; un clic à côté ne fait rien (la
+   bulle frémit), aucune touche n'atteint le plan. Elle ne change que la vue et la sélection ; relancée
+   depuis l'Aide sur son propre plan, elle rend la vue d'avant et le focus au bouton Aide, et ses
+   textes ne parlent plus du T2. **Démarre** au clic sur « Découvrir avec l'exemple » à la première
+   visite ; **mémorisée** (`avyora-plan-tuto` = `fait` | `passe`) ; **relançable** depuis Aide ▸ Visite
+   guidée et depuis la fenêtre d'Aide (« Revoir la visite guidée »). Au téléphone, 4 bulles : le plan
+   (touche, pince), les vues, le tiroir (fiche et Suivi), le budget — « Estimer ce plan » n'est jamais
+   recouvert.
+4. **L'exemple s'ouvre en vue Travaux** (`setMode(m, silencieux)` : ni fenêtre ni message) : ses
+   rouges et ses orange expliquent son montant dès le premier écran.
+5. **« Ton projet à X % »** (`etapesProjet`, `projetHTML`, `allerEtape`), en tête de la vue
+   d'ensemble : 7 étapes lues sur l'état réel — pièces dessinées, portes et fenêtres, type de bien et
+   code postal, sol actuel décrit, un premier travail décidé, les sols décidés pièce par pièce (même
+   règle que « Encore à décider »), l'estimation ouverte (`state.vu.estimer`, hors empreinte : ouvrir
+   Estimer ne « touche » pas l'exemple). **Prochaine étape** mène au bon endroit : outil Murs ou
+   Ouvertures, la carte « Le chantier » ouverte sur sa question, la pièce sélectionnée dans la bonne vue
+   avec sa liste focalisée (`montrerSurLePlan(c, vue)`), Estimer ; à 100 % : « Suis ton chantier dans
+   l'onglet Suivi ». Au téléphone, une étape de dessin dit « sur ordinateur ou tablette » (pas un
+   bouton). Le pourcentage part avec chaque plan dans « Mes plans » (« projet à 57 % »).
+6. **L'exemple T2, vitrine** (arbitrage G) : **zéro alerte dans les trois vues**. Une **entrée**
+   (deux cloisons) : les WC et le cellier y ouvrent, la porte d'entrée aussi, un passage mène au
+   séjour. Portes des WC vers l'entrée, armoire hors du débattement, lave-linge dans l'angle libre.
+   **Appartement** ; sol actuel décrit dans chaque pièce. Un cas de chaque état : **démolition**
+   (cloison WC / cellier, porte rebouchée, lave-linge déposé), **création** (fenêtre de la cuisine),
+   **remplacement** (fenêtre de la chambre), **doublage partiel** (le mur ouest, sur la chambre
+   seulement), plus un **sol gardé** (chambre), un **parquet poncé** (séjour, comme le dit sa note) et
+   la **faïence de la baignoire**. Budget 6 511 € HT, 13 tâches, tout au prix du catalogue ; aucun prix
+   ni lien d'enseigne ; la note d'une cloison « porteuse ou pas ? » (sans objet) devient « Fenêtre
+   neuve : accord de la copropriété à demander ». Ouvrir l'exemple ne montre pas de pastille d'écart.
+   Le séjour est en tête des fiches : abattre une cloison qui le borde le garde, lui et son parquet.
+   Les plans types disent ce qu'ils sont (`bien` : « Maison » = maison, studio = appartement).
+7. **Faïence repérée** (pro14) : un poste « Faïence » dans les produits, dont la quantité est la
+   faïence **décidée** de la pièce (`faienceDe`, la formule de sa tâche) — plus jamais « Peinture /
+   murs » sur toute la surface.
+8. **Plan vide** : une carte DOM « Dessine ton logement » — **Tracer les murs** (M), **Poser une
+   pièce de 4 × 3 m** (`poserPieceRapide`), « ou pars d'un plan type » ; au téléphone : « Ce plan est
+   vide… ordinateur ou tablette », **Voir l'exemple**, **Mes plans**. Le texte du plan ne reste que
+   pendant le tracé (« Clique pour poser le premier coin »), en vue finale et pour un étage sur
+   filigrane. Sur un plan vide, et à chaque nouveau plan, le premier contour repart en murs
+   (arbitrage I) — l'outil pouvait être resté en cloison.
+9. **La pastille orange s'explique** (novice11) : en tête de la fiche de la pièce, les points du
+   contrôle qui la concernent ; au survol de son étiquette, l'infobulle dit le premier (`checkMsgs`,
+   `tipPiece`).
+10. **Sol actuel en vue Travaux** (novice22) : la ligne « Sol actuel » de l'ordre de réalisation est
+    une liste ; la chape ou la dalle se déduisent aussitôt. L'alerte dit « ligne Sol actuel de sa
+    fiche », plus « vue Avant travaux ». En vue Avant travaux, « Sol existant » devient « Sol actuel ».
+11. **Doublage** (novice21) : la consigne commence par le clic (« isolé d'un angle à l'autre »), le
+    glissé ensuite ; chaque pose se confirme (« Doublage posé sur 3,30 m ») ; un glissé qui s'arrête à
+    moins de 50 cm d'un angle (au-delà des 30 cm d'aimantation) propose **« Jusqu'à l'angle »**.
+
+**Ce qui n'est pas fait, et pourquoi.**
+- **Étapes qui avancent sur une vraie action** (« clique la cloison jaune », « choisis Je le garde et
+  regarde le budget ») : la visite avance par « Suivant » et fait elle-même ses gestes (vue,
+  sélection). Une étape qui attend un clic précis se bloque dès qu'on clique à côté ; et une visite
+  qui modifie le plan de l'exemple le « toucherait » (il serait rangé dans Mes plans). La checklist
+  prend le relais : chaque étape mène au geste réel.
+- **Variante « feuille blanche » en 3 bulles contextuelles** : remplacée par la carte du plan vide,
+  le message de la première pièce (D39) et la prochaine étape de la checklist.
+- **Boutons « maison / appartement » dans l'accueil** (novice15) : l'accueil reste à un seul choix ;
+  la question est la première « prochaine étape » d'un plan dessiné, et les plans types la règlent.
+- **Mini-checklist au-dessus du budget** : le pied est tenu à 170 px (D40) ; la checklist vit en tête
+  de la vue d'ensemble, et le pourcentage sur « Mes plans ».
+- **Sélectionner la pièce à la fermeture** (retention14) : le message « Pièce fermée » porte déjà
+  « Choisir son type » (D39) ; sélectionner d'office couperait le tracé de la pièce suivante.
+- **À savoir pour la suite** : quand une démolition réunit deux pièces, la fiche gardée est celle des
+  appareils (WC, puis salle de bain), sinon la première de la liste (`ficheDeFusion`, D37) — ses
+  décisions partent avec l'autre. Abattre la cloison salle de bain / WC de l'exemple garde les WC et
+  perd la faïence décidée (−946 €). Une règle « la pièce la plus grande, ou celle qui porte des
+  décisions » serait plus juste ; elle change le contrat des plans existants, donc hors de ce chantier.
+
+**Contrôles.** Nouveau `tools/onboarding.mjs` (**à ajouter à la batterie**) : accueil (ordinateur et
+téléphone : cartes, recommandé focalisé, court, sans défilement, aucune promesse de dessin au
+téléphone), visite (démarrage, vue Travaux sans fenêtre, 5 bulles ancrées, rien n'atteint le plan,
+Tab, ← →, Passer, Échap, fin mémorisée, à 1 440 / 1 280 / 1 024 px et redimensionnée en cours de route :
+bulle dans l'écran, jamais sur sa cible, halo ; téléphone : 4 bulles, Estimer jamais recouvert ;
+rechargement ; relance depuis l'Aide qui rend vue et focus), checklist (chaque étape, dans l'ordre,
+sur l'état réel, chaque « prochaine étape » à la souris, 100 %, Mes plans, exemple non « touché » par
+Estimer), exemple vitrine (zéro alerte en trois vues, chaque état, WC sur l'entrée, faïence une fois,
+budget = ses tâches, aucun prix inventé, plans types), plan vide (ordinateur, téléphone, pièce
+4 × 3 en murs), pastille orange (fiche, survol), sol actuel en Travaux, doublage à la souris (« Jusqu'à
+l'angle »), bandeau du téléphone, fenêtre Travaux au téléphone. Mis à jour en gardant leur intention :
+`robustesse.mjs` (murs de l'exemple comptés au lieu d'« 11 » ; la visite démarre après Espace sur
+l'exemple et Échap la ferme ; « sa démolition entre au chiffrage » = la tâche de démolition de CE mur
+existe, le nombre de tâches pouvant baisser quand une porte rebouchée part avec sa cloison),
+`langage.mjs` (les raccourcis ne vivent plus qu'à un endroit, l'Aide), `metier.mjs` (l'exemple est un
+appartement : on efface la réponse pour tester « bien non dit » ; la faïence de l'exemple est remise
+à « aucune » avant de mesurer ce qu'elle retire à la peinture).

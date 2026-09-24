@@ -139,6 +139,8 @@ Object.assign(t, await p.evaluate(() => {
   const r = {};
   loadSample(); setMode("projet"); closeModal();
   const manque = () => couvertureManquante(quantities()).map((a) => a[0]);
+  /* D42 : l'exemple est un appartement (vitrine sans alerte) ; on efface la réponse pour tester le cas « non dit » */
+  chantier().bien = null; afterChange();
   r["bien non dit : Estimer le demande"] = manque().includes("Type de bien");
   setChantier("bien", "appartement");
   r["appartement : plus de « Toiture non décrite »"] = !planChecks(L()).some((c) => /Toiture/.test(c.msg));
@@ -255,6 +257,7 @@ Object.assign(t, await p.evaluate(() => {
   r["plafond seul : une tâche"] = px().length === 1 && /plafond/.test(px()[0].label);
   /* la faïence décidée se retire des murs à peindre */
   const fs = facesFor(L(), "projet").find((g) => g.room.type === "sdb"); sel = { kind: "room", id: fs.room.id };
+  setRoomProp("faience", ""); /* D42 : l'exemple décide déjà la faïence de la baignoire ; on part de « aucune » */
   setRoomProp("peinture", "murs"); const m0 = peintureDe(L(), fs).murs;
   setRoomProp("faience", "mi"); const m1 = peintureDe(L(), fs).murs;
   r["faïence décidée : déduite des murs à peindre"] = Math.abs(m0 - m1 - faienceDe(L(), fs).m2) < 0.01;

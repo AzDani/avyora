@@ -320,7 +320,7 @@ div.tot .v.big{font-size:24px}
 .solstep .si{flex:0 0 18px;text-align:center;font-weight:800;font-size:13px}
 .solstep .sl{flex:1;min-width:0}.solstep .sl b{display:block;font-weight:700}.solstep .sl small{display:block;color:var(--muted);font-size:11px;line-height:1.3}
 .solstep .ss{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
-.solstep.s-exist{background:#fafaf7}.solstep.s-garde{background:#f3faf5}.solstep.s-rev{flex-wrap:wrap;row-gap:6px}.solstep .solsel{flex:0 0 calc(100% - 27px);margin:0 0 2px 27px;padding:6px 8px;font-size:12.5px}.solstep.s-auto{background:#f5f4ff}.solstep.s-warn{background:#fffbeb}
+.solstep.s-exist{background:#fafaf7}.solstep.s-garde{background:#f3faf5}.solstep.s-rev,.solstep.s-wrap{flex-wrap:wrap;row-gap:6px}.solstep .solsel{flex:0 0 calc(100% - 27px);margin:0 0 2px 27px;padding:6px 8px;font-size:12.5px}.solstep.s-auto{background:#f5f4ff}.solstep.s-warn{background:#fffbeb}
 .chk{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;line-height:1.45;color:var(--ink);background:var(--white);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
 /* D41 : l'aide d'une case à cocher va à la ligne (« Faux plafondpour cacher des gaines » était collé) */
 .chk small{display:block;color:var(--muted);font-size:11.5px;font-weight:500;margin-top:2px;line-height:1.4}
@@ -619,6 +619,95 @@ html:not(.dev) .devonly{display:none!important}
 #proChip{display:inline-flex}
 .xfree{background:var(--nuit-g);color:#fff;border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
 .xfree span{font-size:13px;line-height:1.4}.xfree span b{color:var(--acc3)}
+/* ---------- D42 · Accueil, visite guidée, « Ton projet à X % », plan vide ---------- */
+.modal.wel{max-width:740px;padding:28px 28px 22px}
+.wel h3{font-size:22px;letter-spacing:-.01em}
+.wel .sub{margin-bottom:20px}
+.wcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.wcard{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;border:1px solid var(--line);background:var(--white);border-radius:var(--r-xl);padding:12px 12px 14px;cursor:pointer;font:inherit;color:var(--ink);transition:border-color .15s,box-shadow .15s,transform .15s}
+.wcard:hover{border-color:var(--acc3);box-shadow:var(--sh-pop);transform:translateY(-1px)}
+.wcard:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.wcard.rec{border:2px solid var(--brand);background:var(--brand-l);padding:11px 11px 13px}
+.wcard .wv{display:block;width:100%;height:112px;border-radius:10px;background:var(--canvas);margin-bottom:8px;overflow:hidden}
+.wcard.rec .wv{background:var(--white)}
+.wcard .wv svg{width:100%;height:100%;display:block}
+.wcard .wt{display:flex;flex-direction:column;gap:4px;min-width:0}
+.wcard b{font-size:14.5px;font-weight:700;line-height:1.3}
+.wcard small{font-size:12.5px;color:var(--muted);line-height:1.4}
+.wcard.rec small{color:var(--ink2)}
+.wbadge{position:absolute;top:10px;right:10px;background:var(--brand);color:#fff;font-size:11px;font-weight:700;letter-spacing:.02em;padding:3px 9px;border-radius:99px;line-height:1.3}
+.wnote{margin-top:16px;font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.wnote .ico{width:15px;height:15px;color:var(--ok)}
+.wphone{display:none}
+@media (max-width:760px){.wcards.wdesk{grid-template-columns:1fr;gap:10px}.wcards.wdesk .wcard{flex-direction:row;align-items:center;gap:14px}.wcards.wdesk .wcard .wv{flex:0 0 116px;width:116px;height:74px;margin:0}.wcards.wdesk .wcard.rec .wt{padding-right:92px}}
+@media (max-width:600px){
+  .wel .wdesk{display:none!important}.wel .sub.wphone{display:block}.wcards.wphone{display:flex;flex-direction:column;gap:8px}
+  .modal.wel{padding:20px 16px 16px}.wel h3{font-size:19px;padding-right:36px}
+  .wcards.wphone .wcard{flex-direction:row;align-items:center;gap:12px;padding:12px;min-height:64px}
+  .wcards.wphone .wcard.rec{padding:11px}
+  .wcards.wphone .wi{flex:0 0 40px;height:40px;border-radius:12px;background:var(--brand-l);color:var(--brand);display:flex;align-items:center;justify-content:center}
+  .wcards.wphone .wcard.rec .wi{background:var(--brand);color:#fff}
+  .wcards.wphone .wi .ico{width:20px;height:20px}
+  .wcards.wphone .wt{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .wcards.wphone .wcard.rec .wt{padding-right:92px}
+  .wcards.wphone .wbadge{top:50%;transform:translateY(-50%);right:10px}
+}
+#visite{position:fixed;inset:0;z-index:80}
+#visite .vblock{position:absolute;inset:0;background:transparent}
+#visite.sanscible .vblock{background:rgba(20,17,51,.5)}
+#visite .vhalo{position:absolute;border-radius:14px;box-shadow:0 0 0 3px var(--acc2),0 0 0 9px rgba(167,139,250,.30),0 0 0 9999px rgba(20,17,51,.5);pointer-events:none;transition:left .25s ease,top .25s ease,width .25s ease,height .25s ease}
+#visite .vbulle{position:absolute;left:0;top:0;width:344px;max-width:calc(100vw - 24px);background:var(--white);color:var(--ink);border-radius:16px;box-shadow:0 24px 60px -16px rgba(20,17,51,.55);padding:18px 18px 14px;outline:0}
+#visite .vbulle.secoue{animation:vSecoue .3s ease}
+@keyframes vSecoue{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+#visite .vk{font:600 11px/1.2 var(--mono);color:var(--brand);letter-spacing:.04em;text-transform:uppercase}
+#visite h4{font-size:17px;font-weight:800;margin:6px 0;letter-spacing:-.01em}
+#visite p{font-size:13.5px;line-height:1.5;color:var(--ink2)}
+#visite p b{color:var(--ink)}
+#visite .vpied{display:flex;align-items:center;gap:6px;margin-top:14px}
+#visite .vpts{display:flex;gap:5px;margin-right:auto}
+#visite .vpts i{width:7px;height:7px;border-radius:99px;background:var(--line);display:block;transition:width .2s}
+#visite .vpts i.fait{background:var(--acc3)}
+#visite .vpts i.on{background:var(--brand);width:18px}
+#visite .vlien{border:0;background:transparent;color:var(--muted);font:inherit;font-size:13px;font-weight:600;padding:8px 8px;cursor:pointer;border-radius:8px;min-height:36px}
+#visite .vlien:hover{color:var(--ink);background:var(--canvas)}
+#visite .vsuiv{border:0;background:var(--brand);color:#fff;font:inherit;font-size:13.5px;font-weight:700;padding:0 14px;min-height:38px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+#visite .vsuiv:hover{background:var(--brand-d)}
+#visite .vsuiv .ico{width:16px;height:16px}
+#visite button:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){#visite .vhalo{transition:none}#visite .vbulle.secoue{animation:none}}
+.pp{border:1px solid var(--line);border-radius:var(--r-lg);padding:12px 12px 4px;margin:12px 0 4px;background:var(--white)}
+.pp .pph{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px}
+.pp .pph b{font-size:14px;font-weight:800}.pp .pph b .mono{color:var(--brand);font-variant-numeric:tabular-nums}
+.pp .pph small{color:var(--muted);font-size:12px}
+.pp .prog{height:6px;margin-bottom:10px}.pp .prog i{background:linear-gradient(90deg,var(--acc2),var(--brand))}
+.pp .ppnext{width:100%;display:flex;align-items:center;gap:8px;border:1px solid var(--brand-b);background:var(--brand-l);color:var(--ink);border-radius:10px;padding:9px 10px;font:inherit;font-size:13px;text-align:left;cursor:pointer;margin-bottom:6px}
+.pp .ppnext .k{display:block;font-size:11px;font-weight:700;color:var(--brand);text-transform:uppercase;letter-spacing:.04em;margin-bottom:1px}
+.pp .ppnext b{font-weight:700;display:block}
+.pp .ppnext small{display:block;color:var(--muted);font-size:11.5px}
+.pp .ppnext:hover{border-color:var(--brand)}
+.pp .ppnext:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.pp .ppnext .ico{margin-left:auto;color:var(--brand);flex:0 0 16px;width:16px;height:16px}
+.pp .ppnext.off{cursor:default;background:var(--canvas);border-color:var(--line)}
+.pp details.plie{margin:0;border:0}
+.pplist{list-style:none;margin:2px 0 8px;padding:0;display:flex;flex-direction:column;gap:1px}
+.pplist .ppi{display:flex;align-items:center;gap:8px;width:100%;border:0;background:transparent;font:inherit;font-size:12.5px;color:var(--ink);text-align:left;padding:5px 4px;border-radius:7px}
+.pplist button.ppi{cursor:pointer}.pplist button.ppi:hover{background:var(--canvas)}
+.pplist .ppi.fait{color:var(--muted)}
+.pplist .ico{width:15px;height:15px;flex:0 0 15px;color:var(--subtle)}
+.pplist .fait .ico{color:var(--ok)}
+.emptyStage{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;z-index:3;padding:16px}
+.emptyCard{pointer-events:auto;width:min(380px,100%);background:var(--white);border:1px solid var(--line);border-radius:var(--r-xl);padding:22px 22px 14px;box-shadow:0 12px 32px -12px rgba(30,27,75,.25);text-align:center}
+.emptyCard .ei{width:44px;height:44px;border-radius:12px;background:var(--brand-l);color:var(--brand);display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px}
+.emptyCard .ei .ico{width:22px;height:22px}
+.emptyCard h4{font-size:18px;font-weight:800;margin-bottom:6px;color:var(--ink)}
+.emptyCard p{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:14px}
+.emptyCard .eact{display:flex;flex-direction:column;gap:8px}
+.emptyCard .eact .ib{justify-content:center;min-height:38px;width:100%}
+.emptyCard kbd{font-family:var(--mono);font-size:11px;background:rgba(255,255,255,.18);border-radius:4px;padding:0 5px;margin-left:4px}
+.emptyCard .elink{margin-top:8px;border:0;background:transparent;color:var(--brand);font:inherit;font-size:13px;font-weight:600;cursor:pointer;padding:6px 8px;border-radius:6px}
+.emptyCard .elink:hover{background:var(--brand-l)}
+.emptyCard .ephone{display:none}
+@media (max-width:600px){.emptyCard .edesk{display:none}.emptyCard p.ephone{display:block}.emptyCard .eact.ephone{display:flex}}
 @media print{
   .xpage{border:0;border-radius:0;page-break-after:always;margin:0;padding:0}
   .xfree,.xnote{display:none!important}
@@ -677,7 +766,8 @@ html:not(.dev) .devonly{display:none!important}
     <div class="levels" id="levels"></div>
     <div class="levels modes" id="modes"></div>
     <div class="hint" id="hint" onclick="montrerAstuce()"></div>
-    <div class="phoneBanner" id="phoneBanner"><span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></svg> <b>Mode chantier</b> : consulte le plan, tape un élément pour ses détails, coche l'avancement dans le tiroir en bas. Pour <b>dessiner</b>, passe sur ordinateur ou tablette.</span><button onclick="this.parentElement.style.display='none'">OK</button></div>
+    <div class="emptyStage" id="emptyStage" hidden><div class="emptyCard" role="region" aria-label="Plan vide"><span class="ei"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/><path d="m15 5 4 4"/></svg></span><h4>Dessine ton logement</h4><p class="edesk">Trace tes pièces telles qu'elles sont aujourd'hui : chaque pièce fermée affiche sa surface, et ton budget suivra tes décisions.</p><p class="ephone">Ce plan est vide. Pour dessiner ton logement, ouvre AVYORA sur ordinateur ou tablette.</p><div class="eact edesk"><button type="button" class="ib primary" onclick="tracerLesMurs()">Tracer les murs<kbd>M</kbd></button><button type="button" class="ib" onclick="poserPieceRapide()">Poser une pièce de 4 × 3 m</button></div><div class="eact ephone"><button type="button" class="ib primary" onclick="closeWelcome('sample')">Voir l'exemple</button><button type="button" class="ib" onclick="openPlansModal()">Mes plans</button></div><button type="button" class="elink edesk" onclick="openTemplates()">ou pars d'un plan type</button></div></div>
+    <div class="phoneBanner" id="phoneBanner" role="note"><span><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></svg> <b>Mode chantier</b> : consulte le plan, tape un élément pour ses détails, coche l'avancement dans le tiroir en bas. Pour <b>dessiner</b>, passe sur ordinateur ou tablette.</span><button type="button" onclick="fermerBandeau()">OK</button></div>
     <div class="measbox" id="measBox" hidden></div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <div class="zoomctl">
@@ -707,14 +797,21 @@ html:not(.dev) .devonly{display:none!important}
 <div id="glossPop" role="tooltip" hidden></div>
 <div class="overlay" id="m-plans"><div class="modal"><h3>Mes plans</h3><div class="sub">Tes plans, sur cet appareil. Le plan ouvert s'enregistre tout seul ; il est rangé ici avant que tu en ouvres ou en commences un autre.</div><div class="btnrow" style="margin:0 0 14px"><button class="ib primary" style="flex:1" onclick="savePlanToLibrary()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Enregistrer le plan actuel</button><button class="ib" style="flex:1" onclick="newSavedPlan()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Nouveau plan vierge</button></div><div id="plansList"></div><div class="note">Tes plans sont enregistrés dans ce navigateur, sur cet appareil.</div><button class="mclose" onclick="closeModal()">Fermer</button></div></div>
 <div class="overlay" id="m-templates"><div class="modal wide"><h3>Partir d'un plan type</h3><div class="sub">Choisis le logement qui ressemble au tien : tu ajustes ensuite les cotes en glissant les murs, tu déplaces les portes, tu renommes les pièces. Bien plus rapide que de partir de zéro.</div><div class="tpls" id="tplGrid"></div><div class="note">Ton plan en cours est d'abord rangé dans « Mes plans ».</div><button class="mclose" onclick="closeModal()">Fermer</button></div></div>
-<div class="overlay" id="m-welcome"><div class="modal"><h3>Dessine ton logement, on chiffre le reste</h3><div class="sub">En 3 étapes, sans rien connaître aux plans.</div>
-<div class="steps">
-<div class="step"><span class="n">1</span><div><b>Trace ton logement tel qu'il est</b><small>Outil <kbd>Murs</kbd> : clique chaque coin. Dès que le contour se ferme, la pièce apparaît avec sa surface. Astuce : tape la longueur (ex. <kbd>3,5</kbd>) puis <kbd>Entrée</kbd> pour être précis au cm. Portes, fenêtres et équipements se collent aux murs tout seuls.</small></div></div>
-<div class="step"><span class="n">2</span><div><b>Passe en vue <span data-lex="vue.projet">Travaux</span> et dessine ce que tu changes</b><small>Clique un mur → <b>À&nbsp;démolir</b> (orange), trace les nouveaux → <b>À&nbsp;créer</b> (rouge). Même règle pour portes, fenêtres et équipements : <b>ajouté en vue <span data-lex="vue.projet">Travaux</span> = à créer ou à poser</b>, cliqué → à démolir ou à déposer. Isole tes murs avec l'outil <b>Doublage</b>. La vue <b data-lex="vue.final">Après travaux</b> montre le résultat, propre.</small></div></div>
-<div class="step"><span class="n">3</span><div><b>Estime</b><small><b>Estimer ce plan</b> rassemble tout ce que ton plan permet de chiffrer : les travaux que tu as décidés, pièce par pièce, et ce qu'il reste à décider.</small></div></div>
+<div class="overlay" id="m-welcome"><div class="modal wel">
+<h3>Dessine ton logement, on chiffre tes travaux</h3>
+<div class="sub wdesk">Trace tes pièces, dis ce que tu changes : ton budget se calcule à chaque décision.</div>
+<div class="sub wphone">Sur téléphone, tu consultes ton plan, ton budget, et tu coches l'avancement du chantier. Pour dessiner ton logement, ouvre AVYORA sur ordinateur ou tablette.</div>
+<div class="wcards wdesk">
+<button type="button" class="wcard rec" data-autofocus onclick="closeWelcome('sample',true)"><span class="wv"><svg viewBox="0 0 160 100" aria-hidden="true"><rect x="10" y="9" width="140" height="82" rx="2" fill="#fff"/><rect x="12" y="11" width="50" height="46" fill="#DDF3F0"/><rect x="62" y="11" width="86" height="78" fill="#ECEBFD"/><rect x="12" y="57" width="28" height="32" fill="#DCEEFB"/><rect x="40" y="57" width="22" height="32" fill="#EEF0F7"/><path d="M62 11v46M12 57h50M40 57v32M62 57v32" stroke="#1E1B4B" stroke-width="2" fill="none"/><path d="M40 73h22" stroke="#D97706" stroke-width="2.4" stroke-dasharray="3.5 2.5"/><rect x="10" y="9" width="140" height="82" rx="2" fill="none" stroke="#1E1B4B" stroke-width="4"/><rect x="146.5" y="22" width="5" height="18" rx="1" fill="#B91C1C"/><rect x="26" y="7" width="18" height="4" fill="#B91C1C"/><rect x="92" y="60" width="48" height="22" rx="5" fill="#4F46E5"/><path d="M99 67h18M99 74h30" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg></span><span class="wbadge">Recommandé</span><span class="wt"><b>Découvrir avec l'exemple</b><small>Un T2 de 60 m² déjà dessiné et chiffré, avec une visite guidée d'une minute.</small></span></button>
+<button type="button" class="wcard" onclick="closeWelcome('templates')"><span class="wv"><svg viewBox="0 0 160 100" aria-hidden="true"><g transform="rotate(-6 50 60)"><rect x="18" y="26" width="64" height="52" rx="3" fill="#fff" stroke="#DCD9FB" stroke-width="1.5"/><path d="M26 34h48v36H26z" fill="none" stroke="#A78BFA" stroke-width="2"/><path d="M48 34v36M26 52h22" stroke="#A78BFA" stroke-width="1.4" fill="none"/></g><g transform="rotate(5 112 56)"><rect x="80" y="20" width="64" height="52" rx="3" fill="#fff" stroke="#DCD9FB" stroke-width="1.5"/><path d="M88 28h48v36H88z" fill="none" stroke="#A78BFA" stroke-width="2"/><path d="M110 28v36M110 46h26" stroke="#A78BFA" stroke-width="1.4" fill="none"/></g><rect x="46" y="30" width="70" height="58" rx="3" fill="#fff" stroke="#DCD9FB" stroke-width="1.5"/><path d="M54 38h54v42H54z" fill="#EEF0FD" stroke="#1E1B4B" stroke-width="2.6"/><path d="M78 38v42M54 60h24M92 60v20M78 60h14" stroke="#1E1B4B" stroke-width="1.6" fill="none"/></svg></span><span class="wt"><b>Partir d'un plan type</b><small>Studio, T2, T3 ou maison : tu ajustes les cotes.</small></span></button>
+<button type="button" class="wcard" onclick="closeWelcome('blank')"><span class="wv"><svg viewBox="0 0 160 100" aria-hidden="true"><defs><pattern id="wgrid" width="10" height="10" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#C9CBE0"/></pattern></defs><rect width="160" height="100" fill="url(#wgrid)"/><path d="M34 76V24h70v34" fill="none" stroke="#1E1B4B" stroke-width="3.2" stroke-linejoin="round"/><path d="M104 58 60 76H34" fill="none" stroke="#4F46E5" stroke-width="1.8" stroke-dasharray="4 3"/><circle cx="34" cy="76" r="3.6" fill="#fff" stroke="#4F46E5" stroke-width="2"/><circle cx="34" cy="24" r="3" fill="#4F46E5"/><circle cx="104" cy="24" r="3" fill="#4F46E5"/><circle cx="104" cy="58" r="3" fill="#4F46E5"/><path d="m112 60 12 26 4-10 10-4z" fill="#1E1B4B" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg></span><span class="wt"><b>Feuille blanche</b><small>Tu traces tes murs toi-même, pièce par pièce.</small></span></button>
 </div>
-<div class="choice"><button onclick="closeWelcome('sample')"><b>Découvrir avec l'exemple</b><small>Un T2 de 60 m² déjà dessiné, à modifier librement.</small></button><button onclick="closeWelcome('templates')"><b>Partir d'un plan type</b><small>Studio, T3, maison 100 m² : je choisis le plus proche de chez moi et j'adapte.</small></button><button onclick="closeWelcome('blank')"><b>Partir d'une feuille blanche</b><small>Je dessine mon logement tout de suite.</small></button></div>
-<details><summary>Voir les raccourcis clavier</summary><div id="welcomeKeys" style="margin-top:6px"></div></details>
+<div class="wcards wphone">
+<button type="button" class="wcard rec" data-autofocus onclick="closeWelcome('sample',true)"><span class="wi"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg></span><span class="wt"><b>Voir l'exemple</b><small>Un T2 de 60 m², son budget et son suivi de chantier.</small></span><span class="wbadge">Recommandé</span></button>
+<button type="button" class="wcard" onclick="closeWelcome('plans')"><span class="wi"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><span class="wt"><b>Ouvrir mes plans</b><small>Ceux enregistrés sur ce téléphone.</small></span></button>
+<button type="button" class="wcard" onclick="partagerLien()"><span class="wi"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4"/></svg></span><span class="wt"><b>Continuer sur ordinateur</b><small>Envoie-toi le lien de cette page pour dessiner.</small></span></button>
+</div>
+<p class="wnote"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Ton plan s'enregistre tout seul, sur cet appareil.</p>
 </div></div>
 <div class="overlay" id="m-projet"><div class="modal"><h3>Vue <span data-lex="vue.projet">Travaux</span> : dessine ta rénovation</h3><div class="sub">Comme sur un plan d'architecte : orange = on démolit, rouge = on construit.</div>
 <div class="steps">
@@ -725,7 +822,7 @@ html:not(.dev) .devonly{display:none!important}
 <div class="overlay" id="m-keys"><div class="modal wide"><h3>Aide</h3><div class="sub">Les raccourcis clavier, et les mots du bâtiment expliqués en une phrase.</div>
 <div class="ptabs" role="tablist" aria-label="Aide"><button type="button" id="aideTabKeys" class="on" role="tab" aria-selected="true" aria-controls="aideKeys" onclick="aideOnglet('keys')">Raccourcis</button><button type="button" id="aideTabGloss" role="tab" aria-selected="false" aria-controls="aideGloss" onclick="aideOnglet('gloss')">Glossaire</button></div>
 <div id="aideKeys" role="tabpanel" aria-labelledby="aideTabKeys"></div><div id="aideGloss" role="tabpanel" aria-labelledby="aideTabGloss" hidden></div>
-<div class="btnrow"><button class="ib" style="flex:1" onclick="closeModal();openModal('welcome')">Revoir le guide en 3 étapes</button></div><button class="mclose" onclick="closeModal()">Fermer</button></div></div>
+<div class="btnrow"><button class="ib" style="flex:1" onclick="closeModal();lancerVisite()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m10 8.5 5.5 3.5-5.5 3.5z"/></svg>Revoir la visite guidée</button></div><button class="mclose" onclick="closeModal()">Fermer</button></div></div>
 <div class="overlay" id="m-level"><div class="modal"><h3>Ajouter un niveau</h3><div class="sub">Cet étage <b>existe-t-il déjà</b>, ou est-ce le projet qui le crée ? C'est ce qui décide de ce qui sera chiffré.</div>
 <div class="ph" style="margin-top:4px">Il existe déjà</div><div class="choice"><button onclick="addLevel('copy')"><b>Copier les murs du niveau actuel</b><small>Les murs d'aujourd'hui, sans les travaux prévus : tu ajustes les cloisons. Rien n'est compté comme travaux.</small></button><button onclick="addLevel('empty')"><b>Niveau vide</b><small>Repartir d'une feuille blanche.</small></button></div>
 <div class="ph" style="margin-top:12px">Le projet le crée</div><div class="choice"><button onclick="addLevel('plancher')"><b>Plancher dans un volume existant</b><small>Une pièce de grande hauteur que tu coupes en deux. Les murs sont déjà là : seul le <b>plancher</b> est chiffré.</small></button><button onclick="addLevel('surelevation')"><b>Surélévation</b><small>Un étage neuf posé sur la maison. <b>Plancher et murs</b> sont chiffrés.</small></button></div>
@@ -779,6 +876,8 @@ const ICONS={
   chevronHaut:'<path d="m6 15 6-6 6 6"/>',
   chevronBas:'<path d="m6 9 6 6 6-6"/>',
   flecheBas:'<path d="M12 5v14M5 12l7 7 7-7"/>',
+  fleche:'<path d="M5 12h14M13 6l6 6-6 6"/>',
+  partager:'<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4"/>',
   clavier:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M10 13h.01M14 13h.01M18 13h.01M8 16.5h8"/>',
   crayon:'<path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/>',
   rect:'<rect x="3" y="6" width="18" height="12" rx="1"/>',
@@ -979,7 +1078,7 @@ function solPlan(r){
   const ponce=nw===PONCAGE&&estParquet(r);
   /* Le sol actuel est UNE ligne. Une dalle ou une chape existante revenait juste en dessous en
      « Dalle béton · existante » : deux lignes pour une seule couche (Dani, 24/09). */
-  steps.push({k:'support',label:'Sol actuel',state:sup==='inconnu'?'choice':'exist',detail:sup==='inconnu'?'à préciser en vue '+nomVue('existant'):sup==='dalle'||sup==='chape'?r.floor+' · sert de support':r.floor});
+  steps.push({k:'support',label:'Sol actuel',state:sup==='inconnu'?'choice':'exist',detail:sup==='inconnu'?'à préciser':sup==='dalle'||sup==='chape'?r.floor+' · sert de support':r.floor});
   /* Rien en dessous : avant toute chape et tout revêtement, il faut un plancher. C'est la
      première couche, et de loin la plus chère — elle n'existait nulle part. */
   if(sup==='vide')steps.push({k:'plancher',label:'Plancher à créer',state:r.plancherNeuf?'todo':'choice',
@@ -1004,7 +1103,7 @@ function solPlan(r){
   if(nw===PONCAGE)warn='Le sol actuel n\'est plus un parquet : il n\'y a rien à poncer. Choisis un autre revêtement.';
   else if(nw&&onDalle){if(nw==='Carrelage')warn=c.ragreage?'Carrelage sur dalle avec simple ragréage : acceptable si la dalle est plane et sèche, mais une <b>chape</b> reste recommandée.':'Carreler <b>directement sur la dalle</b> : possible mais <b>déconseillé</b> (planéité, retrait du béton, risque de fissures). Prévois une <b>chape</b> — ou au minimum un ragréage.';
     else if(!c.ragreage)warn=nw+' sur dalle brute : support pas assez plan. Prévois une <b>chape</b> ou au minimum un <b>ragréage</b>.';}
-  if(nw&&nw!==PONCAGE&&sup==='inconnu')warn='Précise le <b>sol existant</b> (vue '+nomVue('existant')+') pour savoir s\'il faut une dalle ou une chape.';
+  if(nw&&nw!==PONCAGE&&sup==='inconnu')warn='Précise le <b>sol actuel</b> de la pièce (ligne « Sol actuel » de sa fiche) pour savoir s\'il faut une dalle ou une chape.';
   if(sup==='vide'&&!r.plancherNeuf)warn='Ce volume n\'a <b>pas de plancher</b> : choisis-le en bois ou en béton, sinon rien ne peut être posé dessus.';
   return {steps,sup,betonFini,ponce:false,garde:false,warn};}
 /* D41 : chaque état a son icône (ico) et une couleur lisible (≥ 4,5:1) — plus de symboles ni d'emoji */
@@ -1154,7 +1253,7 @@ function garantirPids(){state.levels.forEach(lv=>{pidOf('n',lv);lv.walls.forEach
 
 function newLevel(name){ return {id:uid(), name, height:2.5, walls:[], openings:[], rooms:[], items:[], dims:[], texts:[], bg:null}; }
 const TX=lv=>lv.texts||(lv.texts=[]);
-let textBoxes={}, checkRooms=new Set();
+let textBoxes={}, checkRooms=new Set(), checkMsgs={};
 // couleurs de note : [fond, bord, texte] — un code couleur libre pour l'utilisateur (ex. jaune = à vérifier, rouge = à démolir…)
 const NOTE_COLORS={jaune:['#fff7d6','#f59e0b','#78350f'],rose:['#ffe4e6','#f43f5e','#881337'],vert:['#dcfce7','#22c55e','#14532d'],bleu:['#dbeafe','#3b82f6','#1e3a8a'],violet:['#ede9fe','#8b5cf6','#4c1d95'],gris:['#f1f5f9','#64748b','#1e293b']};
 function noteColors(t){const c=t.color||'jaune';if(NOTE_COLORS[c])return NOTE_COLORS[c];if(/^#[0-9a-f]{6}$/i.test(c))return [hexA(c,.22),c,'#1e1b3a'];return NOTE_COLORS.jaune;}
@@ -1831,12 +1930,12 @@ function tacheCible(id){let m;
 function montrerTache(id){return montrerSurLePlan(tacheCible(id));}
 /* Montre un objet sur le plan : son niveau, la vue Travaux (un mur créé n'existe pas avant travaux),
    l'outil Sélection, l'objet sélectionné et sa fiche ouverte ; la vue se recentre s'il est hors champ. */
-function montrerSurLePlan(c){if(!c)return false;
+function montrerSurLePlan(c,vue='projet'){if(!c)return false; /* D42 : la vue peut être choisie (le sol actuel se décrit Avant travaux) */
   if(c.kind==='toit'){closeModal();state.cur=topLevelIdx();sel=null;multi=[];msel=[];panelTab='details';if(mode()==='final')state.mode='projet';afterChange();return true;}
   const has=lv=>c.kind==='wall'?lv.walls.some(w=>w.id===c.id):c.kind==='opening'?lv.openings.some(o=>o.id===c.id):c.kind==='item'?lv.items.some(i=>i.id===c.id):lv.rooms.some(r=>r.id===c.id);
   const li=state.levels.findIndex(has);if(li<0)return false;
   closeModal();if(tool==='mur'&&chain.length)endChain(false);
-  state.cur=li;if(mode()!=='projet'){state.mode='projet';toitOpen=false;}
+  state.cur=li;if(mode()!==vue){state.mode=vue;toitOpen=false;}
   chain=[];rectMode=null;if(tool!=='select'){tool='select';renderTools();updateCursor();}
   panelTab='details';sel={kind:c.kind,id:c.id};multi=[];msel=[];afterChange();
   const lv=L();let p=null;
@@ -2524,14 +2623,16 @@ function tremiePerimNeuf(lv,f){
 }
 // ---- Produits & notes (personnalisation du projet) ----
 // une pièce porte des choix produits par poste ; la quantité vient du plan (sol → m² habitables, murs → m² à peindre…)
-const POSTES=[['sol','Sol'],['murs','Peinture / murs'],['plafond','Plafond'],['plinthes','Plinthes'],['autre','Autre']];
+const POSTES=[['sol','Sol'],['murs','Peinture / murs'],['faience','Faïence'],['plafond','Plafond'],['plinthes','Plinthes'],['autre','Autre']];
 const POSTE_LABEL=Object.fromEntries(POSTES);
 /* Le linéaire où une plinthe peut aller : périmètre réel moins les portes. Une seule formule, que
    lisent le produit repéré et `plinthesDe` (qui n'en compte que ce qui est décidé). */
 function perimHorsPortes(lv,f){return Math.max(0,f.perimReal-openingsOfFace(lv,f,'projet').filter(o=>OPENINGS[o.type].cat==='porte').reduce((s,o)=>s+o.w,0));}
 function productQty(lv,f,p){
   if(p.qtyManual!=null)return p.qtyManual;
-  switch(p.poste){case 'sol':return areaNet(lv,f);case 'murs':return wallPaintArea(lv,f,'projet');case 'plafond':return f.areaInt;
+  /* D42 (pro14) : la faïence repérée suit la faïence DÉCIDÉE de la pièce (même formule que sa tâche,
+     faienceDe) — elle se lisait « Peinture / murs » sur toute la surface des murs, le double de la tâche. */
+  switch(p.poste){case 'sol':return areaNet(lv,f);case 'murs':return wallPaintArea(lv,f,'projet');case 'faience':{const fa=faienceDe(lv,f);return fa?fa.m2:0;}case 'plafond':return f.areaInt;
     case 'plinthes':return perimHorsPortes(lv,f);
     default:return 1;}
 }
@@ -2786,7 +2887,7 @@ function enregistrerMaintenant(){if(enregT){clearTimeout(enregT);synchroMesPlans
 window.addEventListener('pagehide',enregistrerMaintenant);
 /* Empreinte de ce que l'utilisateur a fait : tout l'état, sauf ce qui se recalcule (contour et
    ancre des pièces, qui changent d'une vue à l'autre), la vue affichée et l'identifiant. */
-function empreinte(st){const {id,origine,mode,cur,...r}=st;const j=JSON.stringify(r,(k,v)=>(k==='poly'||k==='anchor'||k==='pid')?undefined:v);let h=2166136261;for(let i=0;i<j.length;i++){h^=j.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(36)+'.'+j.length;}
+function empreinte(st){const {id,origine,mode,cur,vu,...r}=st; /* D42 : `vu` (estimation ouverte) n'est pas un travail sur le plan */const j=JSON.stringify(r,(k,v)=>(k==='poly'||k==='anchor'||k==='pid')?undefined:v);let h=2166136261;for(let i=0;i<j.length;i++){h^=j.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(36)+'.'+j.length;}
 function marquerOrigine(k){state.origine={k,sig:empreinte(state)};save();}
 const planVide=()=>!state.levels.some(l=>l.walls.length||l.items.length||(l.texts||[]).length||(l.dims||[]).length||l.bg);
 const planIntact=()=>!!state.origine&&state.origine.sig===empreinte(state);
@@ -2870,7 +2971,7 @@ function newSavedPlan(){closeModal();newPlan();}
 function openPlansModal(){renderPlans();openModal('plans');}
 /* D40 · ce qu'une carte de « Mes plans » rappelle : surface, budget, avancement — calculé quand le
    plan est rangé ou tenu à jour (un plan rangé n'est pas rechargé pour s'afficher). */
-function resumePlan(){try{const q=quantities(),px=chantierPrix();return {m2:Math.round(q.area*10)/10,pieces:q.rooms,budget:px.total,taches:px.nb,faites:px.faites};}catch{return null;}}
+function resumePlan(){try{const q=quantities(),px=chantierPrix();return {m2:Math.round(q.area*10)/10,pieces:q.rooms,budget:px.total,taches:px.nb,faites:px.faites,projet:pctProjet()};}catch{return null;}}
 /* Une vignette du plan rangé : ses murs, au trait (niveau affiché, séparations exclues). */
 function miniPlanSVG(st){const L0=(st&&st.levels)||[],lv=L0[Math.min(st&&st.cur||0,L0.length-1)]||L0[0];const ws=((lv&&lv.walls)||[]).filter(w=>w.type!=='virtuel'&&w.a&&w.b);
   if(!ws.length)return '<svg viewBox="0 0 10 10"></svg>';
@@ -2884,7 +2985,7 @@ function renderPlans(){const lib=loadPlans();const list=Object.values(lib).sort(
   el.innerHTML=banner+'<div class="grouplist">'+list.map(e=>{const cur=e.id===state.id;const nb=(e.state?.levels||[]).reduce((s,l)=>s+(l.walls?.length||0),0);
     /* D40 : la carte rappelle ce que le plan vaut — surface, budget (Pro), avancement du chantier. Le plan ouvert se lit en direct. */
     const R=cur?resumePlan():e.resume;
-    const res=R?[R.pieces?fmtM2(R.m2):'aucune pièce',pro?(R.taches?eur(R.budget)+' HT':'rien de décidé'):(R.taches?pluriel(R.taches,'tâche'):'rien de décidé'),R.taches?'chantier '+R.faites+'/'+R.taches:''].filter(Boolean).join(' · '):pluriel(nb,'mur');
+    const res=R?[R.pieces?fmtM2(R.m2):'aucune pièce',pro?(R.taches?eur(R.budget)+' HT':'rien de décidé'):(R.taches?pluriel(R.taches,'tâche'):'rien de décidé'),R.taches?'chantier '+R.faites+'/'+R.taches:'',R.projet!=null?'projet à '+R.projet+' %':''].filter(Boolean).join(' · '):pluriel(nb,'mur');
     return `<div class="grp plancard" style="${cur?'border-color:var(--acc3);background:var(--brand-l)':''}">
     <span class="pmini" aria-hidden="true">${miniPlanSVG(e.state)}</span>
     <button class="glink" onclick="openSavedPlan('${e.id}')"><span class="gname"><b>${(e.name||'Plan').replace(/</g,'&lt;')}</b>${cur?' <span class="gn">· ouvert</span>':''}</span><span class="gres">${res}</span><span class="gn">${fmtDate(e.savedAt)}</span></button>
@@ -3291,9 +3392,19 @@ function rightClickFinish(){
   else if(tool==='select'){clearSel();}               // déjà en sélection : on désélectionne
   if(tool!=='select'){setTool('select');} else {render();}
 }
+/* D42 (novice11) : la pastille orange d'une étiquette de pièce s'explique au survol (infobulle), et
+   dans la fiche de la pièce (en tête). */
+let tipPieceOn=false;
+function tipPiece(sx,sy){const box=document.getElementById('tipbox');if(!box)return;
+  const e=(tool==='select'&&!drag&&sx!=null)?etiquettesVues.find(x=>checkMsgs[x.id]&&sx>=x.box.x&&sx<=x.box.x+x.box.w&&sy>=x.box.y&&sy<=x.box.y+x.box.h):null;
+  if(!e){if(tipPieceOn){box.style.display='none';tipPieceOn=false;}return;}
+  const d=document.createElement('div');d.innerHTML=checkMsgs[e.id];const r=cv.getBoundingClientRect();
+  box.textContent=d.textContent;box.style.display='block';box.style.left=Math.round(r.left+e.box.x+e.box.w+10)+'px';box.style.top=Math.round(r.top+e.box.y+e.box.h/2)+'px';box.style.transform='translateY(-50%)';tipPieceOn=true;}
+cv.addEventListener('pointerleave',()=>tipPiece(null,null));
 cv.addEventListener('pointermove',e=>{
   const r=cv.getBoundingClientRect(),sx=e.clientX-r.left,sy=e.clientY-r.top,raw=W2(v(sx,sy));
   lastMouse={x:sx,y:sy}; hover=raw;
+  if(e.pointerType!=='touch')tipPiece(sx,sy); /* au doigt, la fiche de la pièce le dit (pas de survol) */
   if(pointers.has(e.pointerId))pointers.set(e.pointerId,{x:sx,y:sy});
   if(pinch){if(pointers.size===2){const [a,b]=[...pointers.values()];const d=dist(a,b),mid=v((a.x+b.x)/2,(a.y+b.y)/2);const k=Math.max(12,Math.min(400,pinch.z0*d/pinch.d0))/pinch.z0;view.zoom=pinch.z0*k;view.ox=mid.x-(pinch.mid0.x-pinch.ox0)*k;view.oy=mid.y-(pinch.mid0.y-pinch.oy0)*k;updZoom();draw();}return;}
   if(drag){
@@ -3359,8 +3470,12 @@ cv.addEventListener('pointerup',e=>{
        façade longe souvent trois pièces : en doubler une ne dit rien des deux autres, et les
        jonctions disent exactement où elles commencent. Sur un mur sans jonction, le tronçon est
        le mur entier — le geste reste évident dans le cas simple. */
-    if(!d.moved||Math.abs(d.t1-d.t0)<1e-3){const [a,b]=tronconDeLaPiece(d.w,d.t0);poserDoublage(d.w,d.side,a,b);}
-    else poserDoublage(d.w,d.side,d.t0,d.t1);
+    const clic=!d.moved||Math.abs(d.t1-d.t0)<1e-3,avant=isoList(d.w).map(io=>io.id).join();
+    const [a,b]=clic?tronconDeLaPiece(d.w,d.t0):[Math.min(d.t0,d.t1),Math.max(d.t0,d.t1)];poserDoublage(d.w,d.side,a,b);
+    /* D42 (novice21) : la pose se confirme ; un glissé qui s'arrête à moins de 50 cm d'un angle (au-delà des 30 cm d'aimantation) propose d'aller jusqu'à l'angle */
+    if(isoList(d.w).map(io=>io.id).join()!==avant){const Lw=wallLen(d.w),[ta,tb]=tronconDeLaPiece(d.w,(a+b)/2),g1=(a-ta)*Lw,g2=(tb-b)*Lw,c1=g1>0.005&&g1<0.5,c2=g2>0.005&&g2<0.5;
+      toast(`Doublage posé sur ${fmt((b-a)*Lw)} m`+(!clic&&(c1||c2)?` : il s'arrête à ${Math.round(Math.max(c1?g1:0,c2?g2:0)*100)} cm d'un angle.`:'.'),true,
+        !clic&&(c1||c2)?{action:'Jusqu\'à l\'angle',fn:()=>{poserDoublage(d.w,d.side,c1?ta:a,c2?tb:b);sel={kind:'wall',id:d.w.id};renderPanel();draw();toast(`Doublage posé sur ${fmt(((c2?tb:b)-(c1?ta:a))*Lw)} m, jusqu'à l'angle.`,true);}}:undefined);}
     sel={kind:'wall',id:d.w.id};renderPanel();draw();return;}
   if(d.kind==='band'){ // rectangle de sélection : tout ce qui est dans le cadre (pour supprimer/déplacer vite)
     const x0=Math.min(d.start.x,d.cur.x),x1=Math.max(d.start.x,d.cur.x),y0=Math.min(d.start.y,d.cur.y),y1=Math.max(d.start.y,d.cur.y);
@@ -3505,6 +3620,7 @@ window.addEventListener('keydown',e=>{
   /* D38 : une fenêtre ouverte garde le clavier. Suppr effaçait le mur sélectionné derrière
      « Estimer », une lettre changeait d'outil sous l'accueil, Échap ne fermait rien. */
   const ov=modaleOuverte();if(ov){gardeModale(e,ov);return;}
+  if(visite){gardeVisite(e);return;} /* D42 : pendant la visite guidée, rien n'atteint le plan */
   if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT'||e.target.tagName==='TEXTAREA'||e.target.isContentEditable)return;
   /* Espace ou Entrée sur un bouton atteint au clavier : c'est le bouton qu'on active. Un bouton
      simplement cliqué à la souris garde le focus sans qu'on le voie : là, Espace reste « Espace +
@@ -3617,7 +3733,7 @@ const TOOL_GROUPS=[
   {cat:'Mesures',ids:['cote','mesure']},
   {cat:'Fond',ids:['calque']},
 ];
-const TOOL_TIP={select:'Sélectionner et déplacer les éléments',zone:'Encadrer une zone pour tout sélectionner (puis Suppr)',doublage:'Isoler un mur (doublage) : glisse le long de la face à isoler',mur:'Tracer des murs et cloisons',ouverture:'Ouvertures : portes, fenêtres, baies, porte de garage',equipement:'Ajouter meubles et équipements',cote:'Ajouter une cote fixe au plan',mesure:'Mesurer une longueur ou une surface',calque:'Importer une image de ton plan, pour dessiner par-dessus',texte:'Poser une note sur le plan (remarque, question pour l\'artisan)'};
+const TOOL_TIP={select:'Sélectionner et déplacer les éléments',zone:'Encadrer une zone pour tout sélectionner (puis Suppr)',doublage:'Isoler un mur (doublage) : clique la face à isoler',mur:'Tracer des murs et cloisons',ouverture:'Ouvertures : portes, fenêtres, baies, porte de garage',equipement:'Ajouter meubles et équipements',cote:'Ajouter une cote fixe au plan',mesure:'Mesurer une longueur ou une surface',calque:'Importer une image de ton plan, pour dessiner par-dessus',texte:'Poser une note sur le plan (remarque, question pour l\'artisan)'};
 /* D39 · UNE liste de raccourcis, rendue dans l'accueil et dans l'Aide. Les outils viennent de
    TOOLS (touche, nom) et de TOOL_TIP (ce qu'ils font) : une touche ajoutée à un outil apparaît
    partout d'elle-même. Les gestes sont écrits une seule fois, ici. */
@@ -3696,7 +3812,7 @@ const HINTS={
   murChain:'Clique le coin suivant, ou tape une longueur (ex. <kbd>3,5</kbd>) + <kbd>Entrée</kbd> · <kbd>Entrée</kbd> seule ferme la pièce · <kbd>Échap</kbd> / double-clic termine sans fermer',
   ouverture:'Survole un mur et clique pour poser l\'ouverture · elle s\'aimante au mur · ensuite : glisse-la ou change son sens dans le panneau',
   equipement:'Clique près d\'un mur : l\'équipement se colle au mur tout seul · <kbd>R</kbd> pour pivoter · glisse pour déplacer',
-  doublage:'Glisse le long de la <b>face</b> du mur : le doublage se pose exactement là · <b>clique</b> = le tronçon de la pièce · bascule <b>Poser / Retirer</b> dans le volet (ou <kbd>Alt</kbd>+clic) · il s\'aimante aux jonctions',
+  doublage:'<b>Clique</b> la face d\'un mur : isolé d\'un angle à l\'autre · <b>glisse</b> le long de la face pour n\'en isoler qu\'une partie · bascule <b>Poser / Retirer</b> dans le volet (ou <kbd>Alt</kbd>+clic)',
   cote:'Clique les 2 points à coter · la cote <b>flotte</b> avec la souris : écarte-la du mur et <b>clique pour la fixer</b> · <kbd>Échap</kbd> annule',
   cotePlace:'Écarte la ligne de cote à la distance voulue (elle suit la souris) puis <b>clique pour la fixer</b> · <kbd>Échap</kbd> annule',
   mesure:'Les points s\'accrochent aux <b>angles intérieurs</b> des pièces (carré vert) → surface réelle, pas à l\'axe des murs · zoome pour viser · reviens au 1er point pour <b>fermer</b> : périmètre + surface · <kbd>clic droit</kbd>/<kbd>Échap</kbd> efface',
@@ -3755,8 +3871,18 @@ function draw(){
     ctx.fillStyle=hexA(col,isSel?.26:isHover('room',r.id)?.2:.13);ctx.fill();
     if(isSel){ctx.beginPath();f.poly.forEach((p,i)=>{const s=S(p);i?ctx.lineTo(s.x,s.y):ctx.moveTo(s.x,s.y);});ctx.closePath();ctx.setLineDash([6,4]);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.stroke();ctx.setLineDash([]);}
   });
-  // état vide : on guide
-  if(!lv.walls.length&&!chain.length&&!lv.bg){const ghost=state.cur>0&&settings.ghost&&state.levels[state.cur-1].walls.length;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#64627F';ctx.font='700 18px Geist, sans-serif';ctx.fillText(ghost?'Trace l\'étage par-dessus le niveau du dessous (en filigrane)':'Commence par tracer les murs extérieurs',W/2,ghost?40:H/2-14);ctx.font='500 13.5px Geist, sans-serif';ctx.fillText(ghost?'Les murs porteurs et l\'escalier du dessous te servent de repère · outil « Murs » (M)':'Outil « Murs » (touche M) → clique chaque coin → Entrée pour fermer la pièce · ou pars d\'un plan type (bouton en haut)',W/2,ghost?64:H/2+12);}
+  /* D42 : plan vide → une carte avec des actions (DOM : Tracer les murs, Poser une pièce, plan type ;
+     au téléphone : l'exemple et Mes plans). Le texte dans le plan ne sert plus que pendant le tracé,
+     dans la vue finale et pour l'étage posé sur le filigrane du dessous. */
+  {const vide=!lv.walls.length&&!chain.length&&!lv.bg,ghost=vide&&state.cur>0&&settings.ghost&&state.levels[state.cur-1].walls.length;
+   const carte=vide&&!ghost&&!exporting&&!rectMode&&tool!=='mur'&&mode()!=='final';
+   const es=document.getElementById('emptyStage');if(es&&!exporting&&es.hidden===carte)es.hidden=!carte;
+   if(vide&&!carte&&!exporting){ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#64627F';ctx.font='700 18px Geist, sans-serif';
+     const tx=ghost?['Trace l\'étage par-dessus le niveau du dessous (en filigrane)','Les murs porteurs et l\'escalier du dessous te servent de repère · outil « Murs » (M)']
+       :mode()==='final'?['Ce plan est vide','Dessine ton logement en vue '+nomVue('existant')+'.']
+       :rectMode?['Clique pour poser le coin haut-gauche de la pièce',fmt(rectMode.L)+' × '+fmt(rectMode.l)+' m · Échap pour annuler']
+       :['Clique pour poser le premier coin','Clique chaque coin, puis reviens au premier point pour fermer la pièce'];
+     ctx.fillText(tx[0],W/2,ghost?40:H/2-14);ctx.font='500 13.5px Geist, sans-serif';ctx.fillText(tx[1],W/2,ghost?64:H/2+12);}}
   // murs (le mur survolé est teinté) + raccords en onglet aux nœuds ; en vue Projet les murs à démolir sont dessinés en dernier (jaune pointillé)
   lv.walls.forEach(w=>{if(wallDrawn(w)&&!(mode()==='projet'&&wst(w)==='demolir'))drawWall(w,(sel?.kind==='wall'&&sel.id===w.id)||inMsel('wall',w.id),isHover('wall',w.id));});
   drawJoins();
@@ -3822,7 +3948,9 @@ function draw(){
   // cotes de jambage de l'ouverture sélectionnée (distance aux angles)
   if(sel?.kind==='opening'){const o=lv.openings.find(x=>x.id===sel.id);if(o)drawOpeningDims(o);}
   // pièces en défaut (contrôle du plan) → badge ⚠ sur l'étiquette
-  checkRooms=new Set(planChecks(lv,{espace:false}).filter(c=>c.sel?.kind==='room'&&c.lvl!=='info').map(c=>c.sel.id));
+  {const ck=planChecks(lv,{espace:false}).filter(c=>c.sel?.kind==='room'&&c.lvl!=='info');checkRooms=new Set(ck.map(c=>c.sel.id));
+   /* D42 (novice11) : le message de la pastille orange, pour l'expliquer au survol de l'étiquette */
+   checkMsgs={};ck.forEach(c=>{if(!checkMsgs[c.sel.id])checkMsgs[c.sel.id]=c.msg;});}
   // étiquettes pièces (surbrillance des pièces touchées par le mur / coin en cours de déplacement)
   const movingIds=drag?.kind==='wall'?[drag.wall.id]:drag?.kind==='corner'?drag.walls.map(w=>w.id):[];
   /* cotes : hors-tout extérieur (à la face) + dimensions intérieures œuvre par pièce ; puis les
@@ -4477,8 +4605,11 @@ function renderLevelsBrut(){document.getElementById('levels').innerHTML=state.le
   document.getElementById('modes').innerHTML=['existant','projet','final'].map(m=>`<button class="${mode()===m?(m==='existant'?'on':'on '+m):''}" onclick="setMode('${m}')" title="${LEX.vueBulle[m]}" aria-pressed="${mode()===m}">${LEX.vue[m]}</button>`).join('')
     /* D41 · la légende de la vue Travaux vit sous le sélecteur de vue (DOM, lisible, accessible) ; elle était dessinée dans le plan */
     +(mode()==='projet'?`<div class="vlegend" role="note" aria-label="Légende de la vue ${nomVue('projet')}"><span><i class="lg-exist"></i>déjà là</span><span><i class="lg-creer"></i>${LEX.etat.creer.toLowerCase()}</span><span><i class="lg-demolir"></i>${LEX.etat.demolir.toLowerCase()}</span></div>`:'');}
-function setMode(m){toitOpen=false;if(m===mode())return;if(tool==='mur'&&chain.length)endChain(false);state.mode=m;clearSel();chain=[];rectMode=null;afterChange();
-  if(m==='projet'){let seen=false;try{seen=!!localStorage.getItem('avyora-plan-projet-tip');localStorage.setItem('avyora-plan-projet-tip','1');}catch{}if(!seen)openModal('projet');else toast(`Vue ${nomVue('projet')} : ce que tu ajoutes est à créer, ce que tu cliques peut être démoli`,true);}
+/* D42 : `silencieux` — la visite guidée et l'ouverture de l'exemple changent de vue sans fenêtre ni message.
+   Au téléphone (mode chantier), la fenêtre « dessine ta rénovation » ne s'ouvre pas : un message court suffit. */
+function setMode(m,silencieux){toitOpen=false;if(m===mode())return;if(tool==='mur'&&chain.length)endChain(false);state.mode=m;clearSel();chain=[];rectMode=null;afterChange();
+  if(silencieux){if(m==='final'&&!OUTILS_LECTURE.includes(tool))setTool('select');return;}
+  if(m==='projet'){let seen=false;try{seen=!!localStorage.getItem('avyora-plan-projet-tip');localStorage.setItem('avyora-plan-projet-tip','1');}catch{}if(!seen&&!isMobile())openModal('projet');else toast(`Vue ${nomVue('projet')} : ce que tu ajoutes est à créer, ce que tu cliques peut être démoli`,true);}
   if(m==='final'){if(!OUTILS_LECTURE.includes(tool))setTool('select');toast(`Vue ${nomVue('final')} : lecture seule. Pour modifier, passe en vue ${nomVue('projet')}.`,true);}}
 function setLevel(i){toitOpen=false;state.cur=i;sel=null;chain=[];syncRooms(L());save();render();}
 /* Quatre situations, pas deux. Un étage peut exister déjà, ou être créé — et s'il est créé, les
@@ -4624,7 +4755,7 @@ function renderPanelBrut(){pruneEmptyTexts();if(isMobile()){if(sel)toggleSheet(t
     h+=`<div class="ptitle">Doublage${gl('doublage')}</div>
       <div class="psub">${retire
         ?`Clique un doublage sur le plan pour l'enlever — <b>ce tronçon-là seulement</b>. Un clic dans une ouverture retire l'isolant de ses tableaux.`
-        :`Glisse le long de la <b>face</b> du mur à doubler. Il se pose exactement là où tu l'as tiré — un <b>clic</b> sans glisser prend le tronçon de la pièce. Un clic <b>dans une ouverture</b> isole ses tableaux.`}</div>
+        :`<b>Clique</b> la face du mur à isoler : il est doublé d'un angle à l'autre de la pièce. Pour n'en isoler qu'une partie, <b>glisse</b> le long de la face. Un clic <b>dans une ouverture</b> isole ses tableaux.`}</div>
       <div class="seg">
         <button class="${!retire?'on':''}" onclick="setDblCfg('action','poser')">Poser<small>tracer</small></button>
         <button class="${retire?'on':''}" onclick="setDblCfg('action','retirer')">Retirer<small>enlever</small></button>
@@ -4638,7 +4769,7 @@ function renderPanelBrut(){pruneEmptyTexts();if(isMobile()){if(sel)toggleSheet(t
         <button class="${!ite?'on':''}" onclick="setDblCfg('mode','iti')">Par l'intérieur<small>ITI</small></button>
         <button class="${ite?'on':''}" onclick="setDblCfg('mode','ite')">Par l'extérieur<small>ITE</small></button>
       </div>
-      <div class="tip" style="margin-top:8px">${ite?'Glisse le long de la face <b>côté dehors</b> d\'un mur de façade.':'Glisse le long de la face <b>côté pièce</b> du mur à doubler.'}</div>
+      <div class="tip" style="margin-top:8px">${ite?'Clique (ou glisse le long de) la face <b>côté dehors</b> d\'un mur de façade.':'Clique (ou glisse le long de) la face <b>côté pièce</b> du mur à doubler.'}</div>
       ${ISO_MAT_CHOIX.length>1?`<div class="ph mt">Isolant</div>
       <div class="seg wrap">${Object.entries(ISO_MAT).filter(([k])=>ISO_MAT_CHOIX.includes(k)).map(([k,m])=>`<button class="${DBL_CFG.mat===k?'on':''}" onclick="setDblCfg('mat','${k}')">${m.label}<small>λ <span class="mono">${fmt(m.lambda,3)}</span></small></button>`).join('')}</div>`
         :`<div class="row" style="margin-top:12px"><label>Isolant</label><span class="val" style="font-family:inherit">${ISO_MAT[DBL_CFG.mat].label} · λ${gl('lambda')} <span class="mono">${fmt(ISO_MAT[DBL_CFG.mat].lambda,3)}</span></span></div>`}
@@ -4860,7 +4991,9 @@ function renderSelection(lv){
   if(sel.kind==='dim'){const d=lv.dims.find(x=>x.id===sel.id);h+=`<div class="ptitle">Cote</div><div class="psub">Glisse-la : elle <b>coulisse</b> perpendiculairement, les points mesurés ne bougent pas (lignes d'attache). <kbd>Alt</kbd> + glisser la déplace librement.</div><div class="row"><label>Longueur mesurée</label><span class="val b">${fmt(dist(d.a,d.b))} m</span></div><div class="row"><label>Décalage de la ligne</label><span><input class="fin n" type="number" step="0.05" value="${(d.off||0).toFixed(2)}" onchange="history.push(snapshot());sel&&(lv.dims.find(x=>x.id===sel.id).off=+this.value||0);afterChange()"> m</span></div><div class="btnrow"><button class="ib" style="flex:1" onclick="history.push(snapshot());L().dims.find(x=>x.id===sel.id).off=0;afterChange()">Remettre sur les points</button><button class="ib danger" style="flex:1" onclick="deleteSel()">${libSuppr()}</button></div>`;}
   if(sel.kind==='room'){const r=lv.rooms.find(r=>r.id===sel.id);const f=roomFace(lv,sel.id);if(!r||!f){sel=null;return renderOverview(lv);}
     const ops=openingsOfFace(lv,f);const wallArea=wallPaintArea(lv,f);
-    h+=`<div class="ptitle">${roomName(r)}</div><div class="psub">Détectée automatiquement à partir des murs.</div>
+    /* D42 (novice11) : ce que le contrôle du plan dit de CETTE pièce, en tête de sa fiche */
+    const ckP=planChecks(lv).filter(c=>c.sel&&c.sel.kind==='room'&&c.sel.id===r.id);
+    h+=`<div class="ptitle">${roomName(r)}</div><div class="psub">Détectée automatiquement à partir des murs.</div>${ckP.length?`<div class="chks" style="margin:0 0 12px">${ckP.map(c=>`<div class="chk ${c.lvl}"><span class="ci">${ico(c.lvl==='err'?'erreur':c.lvl==='warn'?'alerte':'idee')}</span><span>${c.msg}</span></div>`).join('')}</div>`:''}
     <div class="ph">Nom</div><input class="fin" value="${r.name.replace(/"/g,'&quot;')}" placeholder="${RT[r.type].label}" oninput="setRoomProp('name',this.value,true)" onchange="save()">
     <div class="ph mt">Type de pièce</div>${r.typeAuto?`<div class="tip act" style="margin:0 0 8px">Type <b>deviné d'après la surface</b>. Choisis le bon : il décide de ce qu'on te propose (sol, faïence, équipements).</div>`:''}<select class="fin${r.typeAuto?' devine':''}" onchange="setRoomProp('type',this.value)" aria-label="Type de pièce">${ROOM_TYPES.map(t=>`<option value="${t[0]}" ${t[0]===r.type?'selected':''}>${t[1]}</option>`).join('')}</select>
     ${(()=>{const humide=r.type==='sdb'||r.type==='sde'||lv.items.some(i=>['douche','baignoire'].includes(i.type)&&itemActive(i,'projet')&&pointIn(v(i.x,i.y),f.poly));
@@ -4872,7 +5005,7 @@ function renderSelection(lv){
       return `<div class="ph mt">Faïence neuve${gl('faience')}</div>
       <div class="seg wrap">${Object.entries(H).map(([k,l])=>`<button class="${cur===k?'on':''}" onclick="setRoomProp('faience','${k}')">${l[0]}<small>${l[1]}</small></button>`).join('')}</div>
       <div class="tip" style="margin-top:6px">${!cur?'Rien de compté : ni faïence, ni cloisons hydrofuges. Choisis une hauteur si tu refais les murs de cette pièce.':'C\'est ce qui décide la surface carrelée : '+(cur==='pleine'?'toute la surface des murs':cur==='douche'?'seulement les murs de la douche':'une bande de 1,20 m, portée à 2,00 m dans la douche')+'. Le reste des murs se repeint si tu choisis « Peinture » plus bas. Les cloisons de la pièce passent en plaques hydrofuges.'}</div>`;})()}
-    ${mode()==='existant'?`<div class="ph mt">Sol existant</div><select class="fin" onchange="setRoomProp('floor',this.value)">${FLOORS_EX.map(fl=>`<option value="${esc(fl)}" ${fl===r.floor?'selected':''}>${fl===SANS_PLANCHER?'Pas de plancher — volume ouvert (étage à créer)':fl}</option>`).concat(r.floor&&!FLOORS_EX.includes(r.floor)?[`<option selected>${esc(r.floor)}</option>`]:[]).join('')}</select>
+    ${mode()==='existant'?`<div class="ph mt">Sol actuel</div><select class="fin" aria-label="Sol actuel" onchange="setRoomProp('floor',this.value)">${FLOORS_EX.map(fl=>`<option value="${esc(fl)}" ${fl===r.floor?'selected':''}>${fl===SANS_PLANCHER?'Pas de plancher — volume ouvert (étage à créer)':fl}</option>`).concat(r.floor&&!FLOORS_EX.includes(r.floor)?[`<option selected>${esc(r.floor)}</option>`]:[]).join('')}</select>
     <div class="tip" style="margin-top:8px">Précise bien l'état : <b>terre / sol brut</b> → il faudra couler une <b>dalle</b> ; <b>dalle brute</b> → il faudra une <b>chape</b> ; <b>chape</b> → prêt pour un revêtement. Le projet s'en déduit.</div>`
     :(()=>{const so=r.sol||{};const A=areaNet(lv,f);const sp=solPlan(r);const nw=r.floorNew||'';const c=solCouches(r);
       /* D37 (décision validée par Dani) : le revêtement se choisit DANS sa ligne de l'ordre de
@@ -4885,6 +5018,8 @@ function renderSelection(lv){
         .concat(FLOORS_NEW.map(fl=>[fl,fl==='Parquet'&&estParquet(r)?'Parquet neuf (à la place de l\'ancien)':fl]));
       const cur=sp.garde?'__garde':nw;
       const revSel=`<select class="fin solsel" aria-label="Revêtement de sol" onchange="setRoomRevetement(this.value)">${opts.map(([k,l])=>`<option value="${esc(k)}" ${k===cur?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
+      /* D42 (novice22) : le sol actuel se règle ICI, sans repasser en vue Avant travaux — la dalle ou la chape se déduisent tout de suite */
+      const supSel=sp.sup==='vide'||r.floor===SANS_PLANCHER?'':`<select class="fin solsel" aria-label="Sol actuel" onchange="setRoomProp('floor',this.value)">${FLOORS_EX.filter(fl=>fl!==SANS_PLANCHER).map(fl=>`<option value="${esc(fl)}" ${fl===(r.floor||FLOORS_EX[0])?'selected':''}>${fl==='À définir'?'À préciser':esc(fl)}</option>`).join('')}</select>`;
       const couches=!sp.garde&&!sp.ponce&&!sp.betonFini&&nw!==PONCAGE&&!!(nw||r.sol);
       const bois=sp.sup==='vide'&&r.plancherNeuf==='bois';
       const reh=solRehausse(r),hsp=roomHeight(lv,r);
@@ -4893,7 +5028,7 @@ function renderSelection(lv){
       ${sp.sup==='vide'?`<div class="ph mt">Plancher à créer</div>
       <div class="seg">${[['bois','Bois','solives + panneaux'],['beton','Béton','dalle coulée']].map(o=>`<button class="${r.plancherNeuf===o[0]?'on':''}" onclick="setRoomProp('plancherNeuf','${o[0]}')">${o[1]}<small>${o[2]}</small></button>`).join('')}</div>
       <div class="tip" style="margin-top:6px">Ce volume est ouvert sur le niveau du dessous : <b>il n'y a rien à poser tant qu'il n'y a pas de plancher</b>. C'est la première couche, et de loin la plus chère — elle est chiffrée sur ${fmtM2(A)}.</div>`:''}
-      <div class="solstack">${sp.steps.map(s=>{const st=SOL_STATE[s.state],rev=s.k==='rev';return `<div class="solstep s-${s.state}${rev?' s-rev':''}"><span class="si" style="color:${st[1]}">${ico(st[0])}</span><span class="sl"><b>${s.label}${GL_SOL[s.k]?gl(GL_SOL[s.k]):''}</b>${rev?'':`<small>${s.detail}</small>`}</span><span class="ss" style="color:${st[1]}">${st[2]}</span>${rev?revSel:''}</div>`;}).join('')}</div>
+      <div class="solstack">${sp.steps.map(s=>{const st=SOL_STATE[s.state],rev=s.k==='rev';return `<div class="solstep s-${s.state}${rev?' s-rev':''}${s.k==='support'&&supSel?' s-wrap':''}"><span class="si" style="color:${st[1]}">${ico(st[0])}</span><span class="sl"><b>${s.label}${GL_SOL[s.k]?gl(GL_SOL[s.k]):''}</b>${rev||(s.k==='support'&&supSel)?'':`<small>${s.detail}</small>`}</span><span class="ss" style="color:${st[1]}">${st[2]}</span>${rev?revSel:s.k==='support'&&supSel?supSel:''}</div>`;}).join('')}</div>
       ${sp.garde?`<div class="tip" style="margin-top:8px">Tu gardes ce sol : <b>rien à faire, rien de compté</b>. La décision est prise.</div>`:''}
       ${sp.ponce?`<div class="tip" style="margin-top:8px">Le parquet actuel est <b>poncé puis vitrifié</b> : une seule couche, sans dépose ni chape, et il garde ses plinthes. Pour le remplacer, choisis « Parquet neuf ».</div>`:''}
       ${sp.betonFini?`<div class="tip" style="margin-top:8px">Béton fini : la dalle est <b>lissée à l'hélicoptère / quartzée</b> et devient le sol définitif. Pas de chape, pas de revêtement — comptée en Maçonnerie.</div>`:''}
@@ -5022,6 +5157,7 @@ function renderOverview(lv){
   const faces=(facesCache[lv.id]||[]);
   const tq=quantities().travaux;
   let h=`<div class="ptitle">${lv.name} <span class="chip vue-${mode()}">Vue ${nomVue(mode()).toLowerCase()}</span></div><div class="psub">${faces.length?faces.length+' pièce(s) détectée(s) sur ce niveau.':'Aucune pièce fermée pour l\'instant. Trace les murs extérieurs avec l\'outil <b>Murs</b>.'}</div>
+  ${projetHTML() /* D42 : « Ton projet à X % » et la prochaine étape, en tête de la vue d'ensemble */}
   ${mode()==='projet'?`<div class="tip q">${tq.actif?`Travaux marqués : ${travauxEnMots(tq)}. Passe en vue <b>${nomVue('final')}</b> pour voir le résultat.`:`Aucun travail marqué pour l'instant. Clique un mur → <b>${LEX.etat.demolir}</b>, ou trace un nouveau mur : il sera <b>${LEX.etat.creer.toLowerCase()}</b>. Même logique pour les équipements : ajouté ici = <b>${LEX.etat.poser.toLowerCase()}</b>, existant cliqué → <b>${LEX.etat.deposer.toLowerCase()}</b>.`}</div>`:mode()==='final'?`<div class="tip ok">Le logement <b>après travaux</b>, tel qu'il sera : murs démolis retirés, nouveaux murs et ouvertures intégrés, sans marquage. C'est le plan à montrer aux artisans. Pour changer les travaux, repasse en vue <b>${nomVue('projet')}</b>.</div>`:(lv.walls.length?`<div class="tip">Ton logement tel qu'il est. Quand il est complet, passe en vue <b>${nomVue('projet')}</b> (boutons en haut du plan) pour dessiner ce que tu démolis et ce que tu crées.</div>`:'')}
   <div class="ph mt">Pièces</div><div class="roomlist">`;
   if(!faces.length)h+=`<div class="empty">Dès qu'un contour de murs se ferme, la pièce apparaît ici avec sa surface.</div>`;
@@ -5555,6 +5691,8 @@ function telechargerEnvoi(){
 function showEstimate(){
   const q=quantities(); if(!q.rooms){toast(ATTENTE_PIECE+(isMobile()?'':' Trace ses murs avec l\'outil Murs (M).'));return;}
   document.getElementById('estBody').innerHTML=isPro()?estimateHTML(q):estimatePaywallHTML(q); openModal('estimate');
+  /* D42 : « Ouvrir ton estimation » est une étape du projet (« Ton projet à X % ») */
+  if(!(state.vu&&state.vu.estimer)){state.vu={...(state.vu||{}),estimer:Date.now()};save();}
   /* D40 : le montant « monte » jusqu'au total (le texte final est déjà là : lecteur d'écran, contrôles) */
   const v=document.getElementById('estTotal');if(v)compter(v,0,chantierPrix().total,700);
 }
@@ -5800,7 +5938,7 @@ function openModal(id){const o=document.getElementById('m-'+id);if(!o)return;
   const m=o.querySelector('.modal');m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.tabIndex=-1;
   const h=m.querySelector('h3');if(h){if(!h.id)h.id='mt-'+id;m.setAttribute('aria-labelledby',h.id);}
   o.classList.add('show');
-  const cible=m.querySelector('[data-autofocus]')||m.querySelector('.choice button,.ib.primary')||focusables(m).find(x=>!x.classList.contains('mx')&&!x.classList.contains('gl'))||m; /* D39 : jamais sur une pastille ⓘ */
+  const cible=[...m.querySelectorAll('[data-autofocus]')].find(x=>x.getClientRects().length)||m.querySelector('.choice button,.ib.primary')||focusables(m).find(x=>!x.classList.contains('mx')&&!x.classList.contains('gl'))||m; /* D39 : jamais sur une pastille ⓘ */
   try{cible.focus();if(cible.select&&cible.tagName==='INPUT')cible.select();}catch{}}
 /* Fermer « par le côté » (✕, Échap, clic sur le voile) : l'accueil fermé ainsi ne revient plus. */
 function fermerModale(){if(document.getElementById('m-confirm').classList.contains('show')){fermerConfirm();return;}if(document.getElementById('m-welcome').classList.contains('show'))closeWelcome('fermer');else closeModal();}
@@ -5814,11 +5952,14 @@ function gardeModale(e,ov){
     return;}
   if(e.key==='Enter'&&e.target&&e.target.id==='calibVal'){e.preventDefault();applyCalib();}
 }
-function closeWelcome(mode){try{localStorage.setItem('avyora-plan-welcome','1');}catch{}closeModal();if(mode==='fermer')return;if(mode==='templates'){openTemplates();return;}if(mode==='blank'){newPlan(()=>setTool('mur'));return;}
+function closeWelcome(choix,avecVisite){try{localStorage.setItem('avyora-plan-welcome','1');}catch{}closeModal();if(choix==='fermer')return;if(choix==='templates'){openTemplates();return;}if(choix==='plans'){openPlansModal();return;}if(choix==='blank'){newPlan(()=>setTool('mur'));return;}
+  /* D42 : l'exemple s'ouvre en vue Travaux — ses couleurs expliquent son budget — et, choisi depuis
+     l'accueil à la première visite, la visite guidée démarre. */
+  const suite=()=>{if(mode()!=='projet')setMode('projet',true);if(avecVisite&&!visiteFaite())lancerVisite(true);};
   /* « Découvrir avec l'exemple » : ne faisait rien si un plan existait déjà. Le plan ouvert est d'abord rangé. */
-  if(state.origine&&state.origine.k==='exemple'&&planIntact())return;
+  if(state.origine&&state.origine.k==='exemple'&&planIntact()){suite();return;}
   avantDeRemplacer((garde,pq)=>{const vide=!garde&&!pq;loadSample();if(vide)history=[];render();
-    if(garde)toast(`Exemple ouvert · « ${garde} » est rangé dans « Mes plans »`,true);else if(pq)toast('Exemple ouvert · l\'ancien plan n\'est pas gardé',false,{action:'Annuler',fn:()=>undo()});});}
+    if(garde)toast(`Exemple ouvert · « ${garde} » est rangé dans « Mes plans »`,true);else if(pq)toast('Exemple ouvert · l\'ancien plan n\'est pas gardé',false,{action:'Annuler',fn:()=>undo()});suite();});}
 function closeModal(){const ouverte=modaleOuverte(),wasCalib=document.getElementById('m-calib').classList.contains('show'),wasWelcome=document.getElementById('m-welcome').classList.contains('show');document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('show'));
   if(wasWelcome){try{localStorage.setItem('avyora-plan-welcome','1');}catch{}}
   if(wasCalib)cancelCalib();
@@ -5842,7 +5983,7 @@ let toastT;function toast(msg,ok,opt){const t=document.getElementById('toast');t
    plus : Ctrl+Z ne fait pas réapparaître un exemple qu'on n'a pas demandé. */
 function newPlan(apres){avantDeRemplacer((garde,pq)=>annoncerLimite(pq,()=>{
   if(!garde&&!pq)history=[];else history.push(snapshot());future=[];
-  state=blankState();sel=null;resetGestes();afterChange();fitView();
+  state=blankState();sel=null;resetGestes();wallType='mur';customT=null; /* D42 : le premier contour d'un nouveau plan est en murs (arbitrage I) */afterChange();fitView();
   if(garde)toast(`Nouveau plan · « ${garde} » est rangé dans « Mes plans »`,true);
   else if(pq)toast(pq==='exemple'?'Nouveau plan · l\'exemple modifié n\'est pas gardé':'Nouveau plan · l\'ancien n\'est pas gardé',false,{action:'Annuler',fn:()=>undo()});
   else toast('Nouveau plan : clique pour poser le 1er coin de ton logement',true);
@@ -5854,7 +5995,7 @@ function newPlan(apres){avantDeRemplacer((garde,pq)=>annoncerLimite(pq,()=>{
 // Chaque modèle construit un niveau (murs, ouvertures, équipements) puis on type les pièces par leur position.
 const TEMPLATES=[
   {id:'t2',name:'T2 · 60 m²',desc:'Chambre, séjour + cuisine ouverte, SdB, WC, cellier. Le plan de démo, avec un mini-projet de travaux.',m2:59,build:null},
-  {id:'studio',name:'Studio · 25 m²',desc:'Pièce à vivre avec coin nuit et kitchenette, salle d\'eau avec WC.',m2:24,
+  {id:'studio',bien:'appartement',name:'Studio · 25 m²',desc:'Pièce à vivre avec coin nuit et kitchenette, salle d\'eau avec WC.',m2:24,
    build(lv,W,O,I){const H=Math.PI;
      const top=W([0,0],[5.5,0],'mur'),right=W([5.5,0],[5.5,5],'mur'),bottom=W([5.5,5],[0,5],'mur'),left=W([0,5],[0,0],'mur');
      const c1=W([0,2.8],[2.1,2.8],'cloison'),c2=W([2.1,2.8],[2.1,5],'cloison');W([3.2,0],[3.2,1.8],'virtuel');W([3.2,1.8],[5.5,1.8],'virtuel');
@@ -5876,7 +6017,7 @@ const TEMPLATES=[
      I('prise',0.8,0.13,0);I('prise',2.7,0.13,0);I('interrupteur',3.37,1.0,H/2);I('prise',0.8,3.63,0);I('prise',2.7,3.63,0);I('interrupteur',3.37,5.5,H/2);I('prise2',9.87,1.0,H/2);I('prise2',9.87,2.4,H/2);I('prise',5.5,6.87,H);I('interrupteur',8.9,6.87,H);I('prise',9.87,4.9,H/2);I('interrupteur',5.0,4.73,0);
      [[1.75,2.4],[1.75,5.9],[4.85,5.8],[6.75,5.8],[6.5,3.2],[8.75,1.5]].forEach(([x,y])=>I('lumiere',x,y,0));
      return [[0,0,3.5,3.5,'chambre','Parquet'],[0,3.5,3.5,7,'chambre','Parquet'],[3.5,4.6,6.2,7,'sdb','Carrelage'],[6.2,4.6,7.3,7,'wc','Carrelage'],[7.5,0,10,3,'cuisine','Carrelage'],[3.5,0,7.5,4.6,'sejour','Parquet']];}},
-  {id:'maison',name:'Maison · 100 m²',desc:'Plain-pied 3 chambres, grand séjour-cuisine, salle de bain, WC, buanderie. Murs parpaing 20 cm.',m2:95,
+  {id:'maison',bien:'maison',name:'Maison · 100 m²',desc:'Plain-pied 3 chambres, grand séjour-cuisine, salle de bain, WC, buanderie. Murs parpaing 20 cm.',m2:95,
    build(lv,W,O,I){const H=Math.PI;
      const top=W([0,0],[12.5,0],'mur'),right=W([12.5,0],[12.5,8],'mur'),bottom=W([12.5,8],[0,8],'mur'),left=W([0,8],[0,0],'mur');
      const c1=W([4,0],[4,8],'cloison'),c2=W([0,4],[4,4],'cloison'),c3=W([7,0],[7,8],'cloison'),c4=W([4,4],[7,4],'cloison'),c5=W([4,6.2],[7,6.2],'cloison'),c6=W([5.3,6.2],[5.3,8],'cloison');
@@ -5904,6 +6045,8 @@ function chargerModele(T,garde,pq){const apres=()=>{if(garde)toast(T.name+' char
   const I=(type,x,y,rot=0)=>{const d=ITEMS[type];lv.items.push({id:uid(),type,x,y,w:d.w,h:d.h,rot});};
   const spec=T.build(lv,W,O,I);
   state=blankState();state.name=T.name.replace(' · ',' de ');state.levels=[lv];state.cur=0;
+  /* D42 (novice15) : « Maison » est une maison, un studio un appartement — on ne redemande pas ce que le modèle dit déjà */
+  if(T.bien)chantier().bien=T.bien;
   afterChange();
   (facesCache[lv.id]||[]).forEach(f=>{const c=f.label;const r=f.room;const m=spec.find(z=>c.x>=z[0]&&c.x<=z[2]&&c.y>=z[1]&&c.y<=z[3]);if(m&&r){r.type=m[4];if(m[5])r.floor=m[5];}});
   sel=null;afterChange();fitView();marquerOrigine('modele');
@@ -5920,46 +6063,202 @@ function openTemplates(){document.getElementById('tplGrid').innerHTML=TEMPLATES.
 
 function loadSample(){
   history.push(snapshot());chain=[];lenBuf='';
+  /* D42 · L'exemple est la vitrine : zéro alerte dans les trois vues, portes sans conflit, WC qui
+     ouvrent sur une entrée (pas sur le séjour), et un cas de chaque état — une démolition (cloison
+     WC / cellier), une création (fenêtre de la cuisine), un remplacement (fenêtre de la chambre), un
+     doublage partiel (mur de la chambre seulement), un sol gardé, un parquet poncé, la faïence de la
+     baignoire. Aucun prix inventé : tout vient du catalogue. */
   const lv=newLevel('RDC');lv.height=2.5;
   const P=(x,y)=>v(x,y);const W=(a,b,type)=>{const w={id:uid(),a:P(...a),b:P(...b),type};lv.walls.push(w);return w;};
   const top=W([0,0],[9,0],'mur'),right=W([9,0],[9,7],'mur'),bottom=W([9,7],[0,7],'mur'),left=W([0,7],[0,0],'mur');
-  const c1=W([3.5,0],[3.5,4],'cloison'),c2=W([0,4],[3.5,4],'cloison'),c3=W([2.2,4],[2.2,7],'cloison'),c4=W([3.5,4],[3.5,7],'cloison'),c5=W([2.2,5.5],[3.5,5.5],'cloison');
-  W([5.5,0],[5.5,3],'virtuel');W([5.5,3],[9,3],'virtuel'); // cuisine ouverte : séparation sans mur
-  const O=(w,t,type,side,hinge=1)=>{const d=OPENINGS[type];lv.openings.push({id:uid(),wallId:w.id,t,type,w:d.w,h:d.h,side,hinge});};
-  O(bottom,0.5,'porte',1,1); O(top,1.75/9,'fenetre',1); O(top,6.6/9,'fenetre',1); O(right,3.5/7,'baie',-1); O(left,(7-5.5)/7,'fenetre_p',1);
-  O(c1,0.85,'porte',1,-1); O(c2,1.1/3.5,'porte',1,1); O(c4,0.25,'porte',1,1); O(c4,0.75,'porte',1,-1);
-  // projet de démo : on ouvre le WC sur le cellier (cloison à démolir, porte du cellier à boucher) et on perce une fenêtre côté cuisine
-  c5.st='demolir'; lv.openings[lv.openings.length-1].st='boucher';
-  lv.openings.push({id:uid(),wallId:right.id,t:1.5/7,type:'fenetre',w:1.2,h:1.25,hinge:1,side:-1,st:'creer'});
-  const I=(type,x,y,rot=0)=>{const d=ITEMS[type];lv.items.push({id:uid(),type,x,y,w:d.w,h:d.h,rot});};
-  // mobilier placé « à l'archi » : dos collé au bon mur, orienté vers la pièce (rot en rad : 0=mur nord, π/2=est, π=sud, 3π/2=ouest)
+  /* c4 (WC / entrée) d'abord : l'abattre ne réunit pas deux pièces déjà décidées — les contrôles prennent la première cloison */
+  const c4=W([3.5,4],[3.5,7],'cloison'),c1=W([3.5,0],[3.5,4],'cloison'),c2=W([0,4],[3.5,4],'cloison'),c3=W([2.2,4],[2.2,7],'cloison'),c5=W([2.2,5.5],[3.5,5.5],'cloison');
+  const e1=W([3.5,4],[4.7,4],'cloison'),e2=W([4.7,4],[4.7,7],'cloison');   /* l'entrée : les WC ouvrent sur elle */
+  W([5.5,0],[5.5,3],'virtuel');W([5.5,3],[9,3],'virtuel');                 /* cuisine ouverte : séparation sans mur */
+  const O=(w,t,type,side,hinge=1,st)=>{const d=OPENINGS[type];const o={id:uid(),wallId:w.id,t,type,w:d.w,h:d.h,side,hinge};if(st)o.st=st;lv.openings.push(o);return o;};
+  O(bottom,(9-4.1)/9,'porte_entree',1,1);
+  O(top,1.75/9,'fenetre',1,1,'remplacer');                                /* chambre : fenêtre à remplacer */
+  O(top,6.6/9,'fenetre',1);O(right,3.5/7,'baie',-1);O(left,(7-5.5)/7,'fenetre_p',1);
+  O(c1,0.85,'porte',1,-1);O(c2,1.1/3.5,'porte',1,1);
+  O(c4,0.25,'porte',-1,1);                                                  /* WC : la porte s'ouvre vers l'entrée */
+  O(c4,(6.15-4)/3,'porte',1,1,'boucher');                                   /* cellier : porte à boucher (il rejoint les WC) */
+  O(e2,0.4,'passage',1,1);                                                  /* entrée → séjour */
+  O(right,1.5/7,'fenetre',-1,1,'creer');                                    /* cuisine : fenêtre à créer */
+  c5.st='demolir';                                                          /* WC agrandis sur le cellier */
+  const I=(type,x,y,rot=0,st)=>{const d=ITEMS[type];const it={id:uid(),type,x,y,w:d.w,h:d.h,rot};if(st)it.st=st;lv.items.push(it);return it;};
+  /* mobilier placé « à l'archi » : dos collé au bon mur, orienté vers la pièce (rot en rad : 0=mur nord, π/2=est, π=sud, 3π/2=ouest), hors du débattement des portes */
   const H=Math.PI;
-  I('lit',1.2,1.1,0);          // chambre : tête de lit contre le mur nord
-  I('armoire',3.15,2.8,H/2);   // chambre : armoire contre la cloison est
-  I('baignoire',0.95,6.525,H); // sdb : baignoire le long du mur sud
-  I('lavabo',0.325,4.5,3*H/2); // sdb : lavabo contre le mur ouest
-  I('wc',2.85,4.375,0);        // wc : contre le mur nord
-  I('lave_linge',2.85,6.6,H);  lv.items[lv.items.length-1].st='demolir'; // cellier : lave-linge à déposer (cloison démolie dans le projet)
-  I('plan',7.2,0.4,0);         // cuisine : plan de travail le long du mur nord
-  // chauffage + points électriques (comptés pour les lots Électricité / Chauffage)
-  I('radiateur',1.75,0.15,0);  I('radiateur',6.5,6.85,H);  I('seche_serviette',0.15,5.5,3*H/2);
-  I('tableau',2.85,5.595,0);   // tableau électrique dans le cellier
-  I('prise',0.6,0.13,0);I('prise',2.6,0.13,0);I('interrupteur',3.435,2.9,H/2);      // chambre
-  I('prise2',8.87,1.0,H/2);I('prise2',8.87,2.2,H/2);                                  // cuisine
-  I('prise',4.5,6.87,H);I('prise',8.87,5.0,H/2);I('interrupteur',4.9,6.87,H);         // séjour, près de l'entrée
-  I('interrupteur',0.13,4.5,3*H/2);I('prise',0.13,6.2,3*H/2);                          // sdb
-  [[1.75,2.9],[1.1,5.2],[2.85,4.45],[2.85,6.0],[6.3,3.9],[7.2,1.9]].forEach(([x,y])=>I('lumiere',x,y,0)); // un point lumineux par pièce
-  lv.texts=[{id:uid(),x:4.0,y:3.2,text:'Cloison à vérifier :\nporteuse ou pas ?'},{id:uid(),x:6.2,y:6.2,text:'Garder le parquet, poncer + vitrifier'}];
-  I('frigo',8.575,1.4,H/2);    // cuisine : frigo contre le mur est
-  I('canape',8.45,5.2,H/2);    // séjour : canapé contre le mur est, face à la pièce
-  I('table',5.6,4.8,0);        // séjour : table à manger au centre (non collée)
+  I('lit',1.2,1.1,0);I('armoire',3.15,1.75,H/2);
+  I('baignoire',0.95,6.525,H);I('lavabo',0.325,4.5,3*H/2);
+  I('wc',2.85,4.375,0);
+  I('lave_linge',2.535,6.6,H,'demolir');                                   /* cellier : lave-linge à déposer */
+  I('plan',7.0,0.4,0);I('frigo',8.55,0.425,0);
+  I('radiateur',1.75,0.15,0);I('radiateur',6.5,6.85,H);I('seche_serviette',0.15,5.5,3*H/2);
+  I('tableau',2.85,5.595,0);
+  I('prise',0.6,0.13,0);I('prise',2.6,0.13,0);I('interrupteur',3.435,2.9,H/2);
+  I('prise2',8.87,0.8,H/2);I('prise2',8.87,2.2,H/2);
+  I('prise',4.5,6.87,H);I('prise',8.87,5.0,H/2);I('interrupteur',4.84,4.6,H/2);
+  I('interrupteur',0.13,4.5,3*H/2);I('prise',0.13,6.2,3*H/2);
+  [[1.75,2.9],[1.1,5.2],[2.85,4.45],[2.85,6.0],[4.1,5.5],[6.3,3.9],[7.2,1.9]].forEach(([x,y])=>I('lumiere',x,y,0));
+  lv.texts=[{id:uid(),x:6.9,y:2.45,text:'Fenêtre neuve : accord de\nla copropriété à demander'},{id:uid(),x:6.2,y:6.2,text:'Garder le parquet, poncer + vitrifier'}];
+  I('canape',8.45,5.75,H/2);I('table',6.4,5.0,0);
   state=blankState();state.name='Exemple · T2 de 60 m²';state.levels=[lv];state.cur=0;
-  // noms & types des pièces après détection
+  chantier().bien='appartement';
+  /* noms, types, sols et décisions des pièces, après détection */
   afterChange();
-  const faces=facesCache[lv.id];faces.forEach(f=>{const c=f.label;const r=f.room;if(c.x<3.5&&c.y<4){r.type='chambre';r.note='Garder le parquet, repeindre en blanc cassé.';}else if(c.x<2.2&&c.y>4){r.type='sdb';r.floor='Carrelage';r.products=[{id:uid(),poste:'sol',nom:'Carrelage grès cérame 60×60 gris',url:'',prix:null,qtyManual:null},{id:uid(),poste:'murs',nom:'Faïence blanche 20×60',url:'',prix:null,qtyManual:null}];}else if(c.x<3.5&&c.y>4&&c.y<5.5){r.type='wc';}else if(c.x<3.5&&c.y>5.5){r.type='cellier';}else if(c.x>5.5&&c.y<3){r.type='cuisine';r.name='Cuisine ouverte';r.floor='Carrelage';}else{r.type='sejour';r.floor='Parquet';r.products=[{id:uid(),poste:'sol',nom:'Parquet contrecollé chêne 14 mm',url:'',prix:null,qtyManual:null}];}});
+  const faces=facesCache[lv.id];faces.forEach(f=>{const c=f.label;const r=f.room;
+    if(c.x<3.5&&c.y<4){r.type='chambre';r.floor='Parquet';r.solGarde=true;r.note='Garder le parquet. Isoler le mur du fond.';}
+    else if(c.x<2.2&&c.y>4){r.type='sdb';r.floor='Carrelage';r.faience='douche';r.products=[{id:uid(),poste:'sol',nom:'Carrelage grès cérame 60×60 gris',url:'',prix:null,qtyManual:null},{id:uid(),poste:'faience',nom:'Faïence blanche 20×60',url:'',prix:null,qtyManual:null}];}
+    else if(c.x<3.5&&c.y>4&&c.y<5.5){r.type='wc';r.floor='Carrelage';}
+    else if(c.x<3.5&&c.y>5.5){r.type='cellier';r.floor='Carrelage';}
+    else if(c.x<4.7&&c.y>4){r.type='entree';r.floor='Carrelage';}
+    else if(c.x>5.5&&c.y<3){r.type='cuisine';r.name='Cuisine ouverte';r.floor='Carrelage';}
+    else{r.type='sejour';r.floor='Parquet';r.floorNew=PONCAGE;r.products=[{id:uid(),poste:'sol',nom:'Vitrificateur mat pour parquet',url:'',prix:null,qtyManual:null}];}});
+  /* le séjour en tête des fiches : abattre une cloison qui le borde le garde, lui et son parquet poncé (fiche retenue par défaut à la fusion) */
+  lv.rooms.sort((a,b)=>(b.type==='sejour')-(a.type==='sejour'));
+  afterChange();
+  /* doublage partiel : le mur ouest, sur le tronçon de la chambre seulement (posé comme en vue Travaux) */
+  {const m0=state.mode,h0=history.length;state.mode='projet';poserDoublage(left,interiorSideN(left),(7-4)/7,1);state.mode=m0;history.length=h0;}
   state.notes='Travaux prévus en août. Électricité à vérifier.';
+  /* ouvrir l'exemple n'est pas une décision : pas de pastille d'écart (D40), même si ses décisions se posent après la détection des pièces */
+  _prixVu=null;_ecartBase=null;
   sel=null;afterChange();fitView();marquerOrigine('exemple');
 }
+
+/* ---------- D42 · « Ton projet à X % » ----------
+   Des étapes lues sur l'état RÉEL du plan (rien de déclaratif, rien d'inventé) et une « prochaine
+   étape » qui amène au bon outil ou au bon objet. C'est la boucle de retour : on revient finir son
+   projet, puis suivre son chantier. Même règle que « Encore à décider » pour les sols. */
+function etapesProjet(){
+  const q=quantities(),c=chantier(),T=chantierTasks();let solInconnu=null,solAChoisir=null;
+  state.levels.forEach((lv,li)=>{
+    if(!solInconnu)facesFor(lv,'existant').some(f=>{const r=f.room;if(r&&!RT[r.type].ext&&(!r.floor||r.floor==='À définir')){solInconnu={li,id:r.id,nom:roomName(r)};return true;}return false;});
+    if(!solAChoisir)facesFor(lv,'projet').some(f=>{const r=f.room;if(r&&!RT[r.type].ext&&!solDecide(r)&&!solGarde(r)){solAChoisir={li,id:r.id,nom:roomName(r)};return true;}return false;});});
+  const n=q.rooms>0;
+  return [
+    {k:'pieces',label:'Dessiner tes pièces',suite:'Dessine ta première pièce',fait:n,dessin:true},
+    {k:'ouvertures',label:'Placer les portes et fenêtres',suite:'Place les portes et fenêtres',fait:q.doors+q.windows>0,dessin:true},
+    {k:'chantier',label:'Dire le type de bien et le code postal',suite:!c.bien?'Dis si c\'est une maison ou un appartement':'Indique le code postal du chantier',fait:!!c.bien&&cpValide(c.cp)},
+    {k:'solActuel',label:'Décrire le sol actuel de chaque pièce',suite:solInconnu?'Décris le sol actuel · '+solInconnu.nom:'Décris le sol actuel de tes pièces',fait:n&&!solInconnu,cible:solInconnu},
+    {k:'travaux',label:'Décider un premier travail',suite:'Décide ton premier travail',fait:T.length>0},
+    {k:'sols',label:'Choisir les sols, pièce par pièce',suite:solAChoisir?'Choisis le sol · '+solAChoisir.nom:'Choisis les sols, pièce par pièce',fait:n&&!solAChoisir,cible:solAChoisir},
+    {k:'estimer',label:'Ouvrir ton estimation',suite:'Ouvre ton estimation',fait:!!(state.vu&&state.vu.estimer)}];}
+function pctProjet(E){E=E||etapesProjet();return Math.round(E.filter(e=>e.fait).length/E.length*100);}
+function projetHTML(){const E=etapesProjet(),nf=E.filter(e=>e.fait).length,pc=pctProjet(E),nx=E.find(e=>!e.fait),mob=isMobile();
+  const ligne=e=>`<li>${e.fait?`<span class="ppi fait">${ico('check')}<span>${e.label}</span></span>`:`<button type="button" class="ppi" onclick="allerEtape('${e.k}')">${ico('cercle')}<span>${e.label}</span></button>`}</li>`;
+  const bouton=!nx?`<button type="button" class="ppnext" onclick="setPanelTab('suivi')"><span><span class="k">Ton plan est complet</span><b>Suis ton chantier dans l'onglet Suivi</b></span>${ico('fleche')}</button>`
+    :nx.dessin&&mob?`<div class="ppnext off"><span><span class="k">Prochaine étape</span><b>${esc(nx.suite)}</b><small>sur ordinateur ou tablette</small></span></div>`
+    :`<button type="button" class="ppnext" onclick="allerEtape('${nx.k}')"><span><span class="k">Prochaine étape</span><b>${esc(nx.suite)}</b></span>${ico('fleche')}</button>`;
+  return `<section class="pp" aria-label="Avancement de ton projet"><div class="pph"><b>Ton projet à <span class="mono">${pc} %</span></b><small>${nf} étape${nf>1?'s':''} sur ${E.length}</small></div><div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pc}" aria-label="Ton projet à ${pc} %"><i style="width:${pc}%"></i></div>${bouton}${plie('etapes','Toutes les étapes','',`<ul class="pplist">${E.map(ligne).join('')}</ul>`)}</section>`;}
+function focusPanneau(q){requestAnimationFrame(()=>{const el=document.querySelector('#pbody '+q);if(!el)return;try{el.scrollIntoView({block:'center',behavior:calme()?'auto':'smooth'});el.focus({preventScroll:true});}catch{}});}
+function allerEtape(k){const e=etapesProjet().find(x=>x.k===k);if(!e)return;
+  if(e.dessin&&isMobile()){toast('Le dessin se fait sur ordinateur ou tablette : ici, tu consultes ton plan et tu coches l\'avancement.');return;}
+  if(k==='pieces'||k==='ouvertures'){if(mode()==='final')setMode('existant',true);setTool(k==='pieces'?'mur':'ouverture');
+    toast(k==='pieces'?'Outil Murs : clique chaque coin de ta pièce, puis reviens au premier point pour la fermer.':'Outil Ouvertures : choisis une porte ou une fenêtre dans le panneau, puis clique sur un mur.',true);return;}
+  if(k==='chantier'){if(tool!=='select')setTool('select');sel=null;multi=[];msel=[];panelTab='details';plisOuverts.chantier=true;render();
+    const d=document.querySelector('#pbody details[data-k="chantier"]');if(d){d.open=true;const f=chantier().bien?d.querySelector('input[aria-label="Code postal du chantier"]'):d.querySelector('.seg button');
+      try{d.scrollIntoView({block:'center',behavior:calme()?'auto':'smooth'});if(f)f.focus({preventScroll:true});}catch{}}return;}
+  if(k==='solActuel'&&e.cible){montrerSurLePlan({kind:'room',id:e.cible.id},'existant');focusPanneau('select[aria-label="Sol actuel"]');return;}
+  if(k==='travaux'){if(tool!=='select')setTool('select');sel=null;multi=[];msel=[];if(mode()!=='projet')setMode('projet');else{render();toast(`Clique un mur, une fenêtre ou un équipement et choisis « ${LEX.etat.demolir} », « ${LEX.etat.remplacer} »… ou trace ce que tu ajoutes.`,true);}return;}
+  if(k==='sols'&&e.cible){montrerSurLePlan({kind:'room',id:e.cible.id},'projet');focusPanneau('.solsel[aria-label="Revêtement de sol"]');return;}
+  if(k==='estimer')showEstimate();}
+
+/* ---------- D42 · Visite guidée ----------
+   Cinq bulles ancrées aux vrais éléments (outils, vues, panneau, budget, Estimer), un halo sur
+   l'élément visé, des points de progression ; « Suivant » et « Passer » toujours visibles ; Échap
+   ferme, ← → naviguent ; la bulle se recale au redimensionnement et ne recouvre jamais sa cible.
+   Rien du plan ne bouge pendant la visite (clics et touches arrêtés) : elle change seulement la vue
+   et la sélection. Mémorisée ('avyora-plan-tuto' = 'fait' | 'passe'), relançable depuis Aide. Au
+   téléphone (mode chantier) : quatre bulles — le plan, les vues, le tiroir, le budget. */
+const VISITE_CLE='avyora-plan-tuto';
+const visiteFaite=()=>{try{return !!localStorage.getItem(VISITE_CLE);}catch{return true;}};
+let visite=null;
+function etapesVisite(){
+  const mob=isMobile(),ex=!!(state.origine&&state.origine.k==='exemple'),rooms=(facesCache[L().id]||[]).filter(f=>f.room),vide=!rooms.length;
+  const vues={cible:'#modes',place:['bas','gauche','droite','haut'],titre:'Avant, pendant, après',
+    texte:`Trois vues du même plan. <b>${LEX.vue.existant}</b> : ton logement aujourd'hui. <b>${LEX.vue.projet}</b> : ce que tu changes, en rouge ce qui est à créer, en orange ce qui est à démolir. <b>${LEX.vue.final}</b> : le résultat, à montrer aux artisans.`,
+    avant:()=>{if(!vide&&mode()!=='projet')setMode('projet',true);try{localStorage.setItem('avyora-plan-projet-tip','1');}catch{}}};
+  if(mob)return [
+    {cible:null,titre:'Ton plan, en mode chantier',texte:(ex?'Voici un T2 de 60 m², déjà dessiné et chiffré. ':'')+'Touche une pièce, un mur ou une fenêtre pour voir sa fiche ; écarte deux doigts pour zoomer. Le dessin, lui, se fait sur ordinateur ou tablette.'},
+    vues,
+    {cible:'#sheetHandle',place:['haut','bas'],titre:'Le tiroir',texte:'Touche-le pour l\'ouvrir : la fiche de ce que tu as touché, et l\'onglet <b>Suivi</b> pour cocher l\'avancement de ton chantier.'},
+    {cible:'#estBtnTop',place:['bas','haut'],titre:'Ton budget',texte:`<b>Estimer ce plan</b> : le montant ${gl('ht','HT')}, le détail par ${gl('corps','corps d\'état')} et ce qu'il te reste à décider.`}];
+  return [
+    {cible:'#tools',place:['droite','bas'],titre:'Ton plan',texte:vide?'Commence par l\'outil <b>Murs</b> : clique chaque coin de ton logement, la pièce apparaît avec sa surface. Les autres outils ajoutent les portes, les fenêtres et les équipements.'
+      :(ex?'Voici un T2 de 60 m², déjà dessiné : chaque pièce affiche sa surface, calculée toute seule. ':'')+'Pour dessiner, choisis un outil dans cette colonne (Murs, Ouvertures, Équipements…). Pour modifier, clique un élément du plan.'},
+    vues,
+    {cible:'#panel',place:['gauche','bas','haut'],titre:'C\'est ici que tu décides',
+      texte:'Clique une pièce, un mur ou une fenêtre : sa fiche s\'ouvre ici. Tu y dis ce que tu en fais : '+[LEX.etat.garder,LEX.etat.demolir,LEX.etat.remplacer].map(x=>'<b>'+x+'</b>').join(', ')+', un nouveau sol…'+(ex&&!vide?' Ici, la Chambre : on garde son parquet, on remplace sa fenêtre et on isole un de ses murs.':''),
+      avant:()=>{const f=rooms.find(g=>g.room.type==='chambre')||rooms[0];if(!f)return;if(tool!=='select')setTool('select');sel={kind:'room',id:f.room.id};multi=[];msel=[];panelTab='details';render();if(visite)visite.aSel=true;}},
+    {cible:'#pfoot',place:['gauche','haut'],titre:'Le budget suit tes décisions',texte:`Chaque décision s'ajoute ici, au prix ${gl('ht','HT')} indicatif. Rien n'est compté tant que tu n'as rien décidé. Clique la carte pour ${isPro()?'voir d\'où vient chaque euro':'un aperçu du détail'}.`},
+    {cible:'#estBtnTop',place:['bas','gauche'],titre:'Estime, puis suis ton chantier',texte:`<b>Estimer ce plan</b> : le montant, le détail par ${gl('corps','corps d\'état')} et ce qu'il te reste à décider. Ensuite, l'onglet <b>Suivi</b> range chaque travail dans l'ordre du chantier : tu coches au fur et à mesure.`}];}
+function lancerVisite(depuisAccueil){if(visite)return;if(modaleOuverte())closeModal();try{fermerMenus(false);}catch{}
+  if(tool==='mur'&&chain.length)endChain(false);
+  visite={i:0,E:etapesVisite(),mob:isMobile(),retour:document.activeElement,mode0:mode(),accueil:!!depuisAccueil,aSel:false};
+  let el=document.getElementById('visite');
+  if(!el){el=document.createElement('div');el.id='visite';el.className='noprint';
+    el.innerHTML='<div class="vblock"></div><div class="vhalo" aria-hidden="true"></div><div class="vbulle" role="dialog" aria-modal="true" aria-labelledby="vTitre" aria-describedby="vTexte" tabindex="-1"></div>';
+    document.body.appendChild(el);
+    /* rien n'atteint le plan pendant la visite : un clic à côté de la bulle ne fait rien */
+    el.querySelector('.vblock').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();const b=el.querySelector('.vbulle');b.classList.remove('secoue');void b.offsetWidth;b.classList.add('secoue');});
+    el.addEventListener('wheel',e=>{if(!e.target.closest('.vbulle'))e.preventDefault();},{passive:false});}
+  el.hidden=false;document.body.classList.add('enVisite');etapeVisite(0);}
+function etapeVisite(i){if(!visite)return;const E=visite.E;i=Math.max(0,Math.min(E.length-1,i));visite.i=i;const e=E[i],der=i===E.length-1;
+  if(e.avant){try{e.avant();}catch(err){setTimeout(()=>{throw err;});}}
+  const b=document.querySelector('#visite .vbulle');if(!b)return;
+  b.innerHTML=`<div class="vk">Étape ${i+1} sur ${E.length}</div><h4 id="vTitre">${e.titre}</h4><p id="vTexte">${e.texte}</p>
+    <div class="vpied"><div class="vpts" aria-hidden="true">${E.map((x,j)=>`<i class="${j===i?'on':j<i?'fait':''}"></i>`).join('')}</div>${i>0?`<button type="button" class="vlien" onclick="etapeVisite(${i-1})">Retour</button>`:''}<button type="button" class="vlien vpasser" onclick="fermerVisite('passe')">Passer</button><button type="button" class="vsuiv" onclick="${der?'fermerVisite(\'fait\')':'etapeVisite('+(i+1)+')'}">${der?'C\'est parti':'Suivant'}${ico('fleche')}</button></div>`;
+  placerVisite();requestAnimationFrame(()=>{placerVisite();const s=b.querySelector('.vsuiv');if(s)try{s.focus({preventScroll:true});}catch{}});
+  setTimeout(placerVisite,320);}
+/* La bulle se pose à côté du halo (côtés préférés de l'étape), dans l'écran, sans jamais le recouvrir. */
+function placerVisite(){if(!visite)return;const root=document.getElementById('visite');if(!root||root.hidden)return;
+  const e=visite.E[visite.i],b=root.querySelector('.vbulle'),h=root.querySelector('.vhalo');
+  const vw=innerWidth,vh=innerHeight,m=12,pad=6,gap=14,cl=(x,a,z)=>Math.max(a,Math.min(z,x));
+  const t=e.cible&&document.querySelector(e.cible),tr=t&&t.getClientRects().length?t.getBoundingClientRect():null;
+  root.classList.toggle('sanscible',!tr);
+  let H=null;
+  if(tr){const x=Math.max(3,tr.left-pad),y=Math.max(3,tr.top-pad),r=Math.min(vw-3,tr.right+pad),bb=Math.min(vh-3,tr.bottom+pad);H={x,y,r,b:bb,w:r-x,h:bb-y};
+    h.style.display='block';h.style.left=x+'px';h.style.top=y+'px';h.style.width=H.w+'px';h.style.height=H.h+'px';}
+  else h.style.display='none';
+  const bw=b.offsetWidth,bh=b.offsetHeight;let pos=null;
+  if(H){const cy=cl(H.y+H.h/2-bh/2,m,vh-m-bh),cx=cl(H.x+H.w/2-bw/2,m,vw-m-bw);
+    const C={droite:{x:H.r+gap,y:cy},gauche:{x:H.x-gap-bw,y:cy},bas:{x:cx,y:H.b+gap},haut:{x:cx,y:H.y-gap-bh}};
+    const couvre=p=>p.x<H.r&&p.x+bw>H.x&&p.y<H.b&&p.y+bh>H.y;
+    const dansEcran=p=>p.x>=m-0.5&&p.y>=m-0.5&&p.x+bw<=vw-m+0.5&&p.y+bh<=vh-m+0.5;
+    const ordre=(e.place||[]).concat(['droite','gauche','bas','haut']);
+    const k=ordre.find(k=>dansEcran(C[k])&&!couvre(C[k]));pos=k?C[k]:null;
+    if(!pos){const coins=[{x:m,y:m},{x:vw-m-bw,y:m},{x:m,y:vh-m-bh},{x:vw-m-bw,y:vh-m-bh}];pos=coins.find(p=>!couvre(p))||coins[3];}}
+  else pos={x:cl(vw/2-bw/2,m,vw-m-bw),y:visite.mob?cl(vh-bh-90,m,vh-m-bh):cl(vh/2-bh/2,m,vh-m-bh)};
+  b.style.left=Math.round(pos.x)+'px';b.style.top=Math.round(pos.y)+'px';}
+function fermerVisite(etat){if(!visite)return;const v=visite;visite=null;try{localStorage.setItem(VISITE_CLE,etat==='fait'?'fait':'passe');}catch{}
+  const root=document.getElementById('visite');if(root)root.hidden=true;document.body.classList.remove('enVisite');
+  /* au téléphone, la visite a dit ce que dit le bandeau « mode chantier » : il ne revient plus */
+  if(v.mob)fermerBandeau();
+  /* relancée depuis Aide sur son propre plan : on rend la vue d'avant ; ce que la visite a sélectionné est relâché */
+  if(!v.accueil&&mode()!==v.mode0)setMode(v.mode0,true);
+  if(v.aSel){sel=null;multi=[];msel=[];render();}
+  const r=v.retour;if(r&&r!==document.body&&document.contains(r)&&r.getClientRects().length){try{r.focus({preventScroll:true});}catch{}}
+  if(etat==='fait'&&v.accueil)toast('À toi de jouer : ta prochaine étape t\'attend dans le panneau.',true);}
+/* Clavier pendant la visite : Échap ferme, ← → naviguent, Tab reste dans la bulle ; rien n'atteint le plan. */
+function gardeVisite(e){
+  if(e.key==='Escape'){e.preventDefault();fermerVisite('passe');return;}
+  if(e.key==='ArrowRight'){e.preventDefault();if(visite.i===visite.E.length-1)fermerVisite('fait');else etapeVisite(visite.i+1);return;}
+  if(e.key==='ArrowLeft'){e.preventDefault();etapeVisite(visite.i-1);return;}
+  if(e.key==='Tab'){const b=document.querySelector('#visite .vbulle'),f=focusables(b);e.preventDefault();if(!f.length)return;const i=f.indexOf(document.activeElement);f[e.shiftKey?(i<=0?f.length-1:i-1):(i===-1||i===f.length-1?0:i+1)].focus();return;}
+  if((e.key==='Enter'||e.code==='Space')&&e.target.closest&&e.target.closest('#visite button'))return;
+  e.preventDefault();}
+window.addEventListener('resize',()=>{if(!visite)return;if(isMobile()!==visite.mob){visite.mob=isMobile();visite.E=etapesVisite();etapeVisite(Math.min(visite.i,visite.E.length-1));}else placerVisite();});
+/* Bandeau « mode chantier » du téléphone : fermé une fois, il ne revient plus (access23). */
+function fermerBandeau(){const b=document.getElementById('phoneBanner');if(b)b.hidden=true;try{localStorage.setItem('avyora-plan-phonebanner','1');}catch{}}
+/* Téléphone : « Continuer sur ordinateur » — partager le lien, sinon le copier. */
+function partagerLien(){const url=String(location.href).split('#')[0];closeWelcome('fermer');
+  if(navigator.share){navigator.share({title:'AVYORA · mon plan',url}).catch(()=>{});return;}
+  const ko=()=>toast('Copie impossible : note l\'adresse de cette page et ouvre-la sur ton ordinateur.');
+  try{navigator.clipboard.writeText(url).then(()=>toast('Lien copié : ouvre-le sur ton ordinateur pour dessiner ton logement.',true),ko);}catch{ko();}}
+/* Plan vide : poser d'un coup une pièce de 4 × 3 m (le rectangle de l'outil Murs). */
+/* Sur un plan vide, le premier contour est fait de murs (arbitrage I) — même si l'outil était resté en cloison. */
+function tracerLesMurs(){if(planVide()){wallType='mur';customT=null;}setTool('mur');}
+function poserPieceRapide(){if(isMobile()){toast('Le dessin se fait sur ordinateur ou tablette.');return;}tracerLesMurs();rectMode={L:4,l:3};chain=[];chainWallIds=[];renderPanel();draw();toast('Clique dans le plan pour poser le coin haut-gauche de la pièce (4 × 3 m).',true);}
 
 // ---------- Démarrage ----------
 window.addEventListener('resize',resize);
@@ -5986,5 +6285,7 @@ let firstVisit=false;try{firstVisit=!localStorage.getItem('avyora-plan-welcome')
 if(!planCharge&&firstVisit){loadSample();history=[];render();}
 else fitView();
 etatEnreg='ok';enregAt=0;afficherEnreg(!!(state.id&&loadPlans()[state.id]));
+/* D42 (access23) : le bandeau « mode chantier » fermé une fois ne revient plus */
+try{if(localStorage.getItem('avyora-plan-phonebanner'))document.getElementById('phoneBanner').hidden=true;}catch{}
 if(firstVisit)openModal('welcome');
 </script>
