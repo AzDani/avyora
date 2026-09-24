@@ -249,6 +249,23 @@ const res = await p.evaluate(() => {
       pres(bandes[1][1], 9, 0.01) && pres(bandes[2][0], 9, 0.01);
     t["et aucune bande ne mord les murs d'extrémité"] = pres(bandes[0][0], 0.10, 0.01) && pres(bandes[2][1], 11.90, 0.01); }
 
+  /* ── un porteur n'est pas raccourci par un doublage ──────────────────────
+     Une CLOISON vient buter sur la plaque : elle recule, et le doublage passe derrière elle.
+     Un mur PORTEUR, lui, arrête le doublage — il ne perd pas une tranche de maçonnerie pour le
+     laisser passer. Les deux règles doivent se répondre : `bandeDoublage` refusait déjà de
+     passer derrière un porteur, mais `retraitContreDoublage` reculait quand même le mur. Le
+     refend perdait donc une tranche à son extrémité, et la bande paraissait entrer dedans. */
+  { const bout = (typeRefend) => { state = blankState(); const lv = L(); lv.height = 2.5;
+      const W = (a, c, ty, ep) => { const x = { id: uid(), a: v(...a), b: v(...c), type: ty || "mur" }; if (ep) x.t = ep; lv.walls.push(x); return x; };
+      const haut = W([0, 0], [12, 0]); W([12, 0], [12, 4]); W([12, 4], [0, 4]); W([0, 4], [0, 0]);
+      const refend = W([5, 0], [5, 4], typeRefend, typeRefend === "porteur" ? 0.44 : undefined);
+      setMode("projet"); afterChange();
+      poserDoublage(haut, 1, 0, 1); afterChange();
+      /* de combien l'extrémité haute du refend a-t-elle reculé ? */
+      return retraitContreDoublage(refend, refend.a, refend.b); };
+    t["un mur porteur ne recule pas devant un doublage"] = pres(bout("porteur"), 0, 1e-9);
+    t["une cloison, si : elle bute sur la plaque"] = bout("cloison") > 0.2; }
+
   return t;
 });
 /* ── et le vrai geste, à la souris ───────────────────────────────────────────

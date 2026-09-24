@@ -2969,6 +2969,12 @@ function hatch(a,b,u,n,t,z,alpha,step){const m=t*z;
    Uniquement pour une extrémité qui tombe au MILIEU d'un autre mur : deux murs qui se rejoignent
    par leurs extrémités forment un angle, pas une jonction en T, et ne se raccourcissent pas. */
 function retraitContreDoublage(w,p,autre){
+  /* Seule une CLOISON se raccourcit contre un doublage : elle vient buter sur la plaque, et le
+     doublage passe derrière elle, continu. Un mur PORTEUR ne recule pas — c'est lui qui arrête le
+     doublage. On raccourcissait n'importe quel mur : un refend en pierre perdait une tranche de
+     maçonnerie à son extrémité, et la bande semblait entrer dedans. C'est la même règle que dans
+     `bandeDoublage`, et les deux doivent se répondre, sinon le dessin se contredit. */
+  if(isPorteur(w))return 0;
   let r=0;
   for(const o of L().walls){
     if(o===w||isVirtual(o)||!wallDrawn(o))continue;

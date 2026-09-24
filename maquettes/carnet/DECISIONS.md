@@ -1013,3 +1013,39 @@ même sujet. Les trois premiers venaient de mes calculs ; celui-ci venait de ma 
 métier** — j'avais codé « passe derrière ce qui arrive » sans distinguer ce qui peut être traversé
 de ce qui ne le peut pas. Aucun contrôle ne pouvait l'attraper : ils vérifiaient que la géométrie
 était cohérente, pas qu'elle était vraie.
+
+## D32 · Ce n'était pas l'isolant qui entrait dans le mur — c'était le mur qui reculait
+
+Troisième signalement de Dani sur le même symptôme, le 24/09/2026, capture zoomée à l'appui :
+« regarde, l'isolant rentre dans l'épaisseur du mur ».
+
+**J'avais cherché du mauvais côté deux fois.** Mes deux corrections précédentes portaient sur la
+BANDE — jusqu'où elle s'étend (D28 septies), et derrière quoi elle a le droit de passer (D31). Les
+deux étaient justes, et aucune ne réglait ce qu'il voyait, parce que le défaut n'était pas dans la
+bande : **il était dans le mur**.
+
+`retraitContreDoublage` raccourcit un mur qui vient buter contre un doublage — c'est la règle qui
+fait qu'une cloison s'arrête sur la plaque et non sur le mur, pendant que le doublage passe
+derrière elle, continu. Elle s'appliquait à **n'importe quel mur**. Un refend en pierre de 44 cm
+perdait donc une tranche de maçonnerie à son extrémité, et la bande occupait la place libérée :
+vu du plan, de l'isolant dans le mur.
+
+**Une cloison recule, un porteur non.** C'est exactement la règle posée en D31 pour la bande, vue
+de l'autre côté — et les deux se contredisaient : `bandeDoublage` refusait déjà de passer derrière
+un porteur, mais le mur reculait quand même. Deux moitiés d'une même règle, dont une seule avait
+été corrigée.
+
+| | la cloison | le mur porteur |
+|---|---|---|
+| recule devant le doublage | oui, de son demi-épaisseur + la plaque | **non** |
+| le doublage passe derrière | oui | **non**, il s'arrête à sa face |
+
+**Ce que je retiens, et c'est le plus utile.** Trois allers-retours pour un seul défaut. J'ai
+mesuré, balayé dix configurations, écrit un invariant — et tout était vert, parce que je vérifiais
+la bande alors que le défaut était dans le mur. Mon invariant demandait « aucun point de bande dans
+un mur » ; il était satisfait, puisque le mur n'était plus là.
+
+Ce qui a débloqué : **regarder mon propre rendu** au lieu de mesurer mes propres chiffres. Le trou
+clair au sommet du refend se voyait en une seconde sur l'image, et aucune mesure ne l'aurait
+montré. Quand un défaut est visuel et que trois mesures disent que tout va bien, la mesure suivante
+doit être une capture d'écran.
