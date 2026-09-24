@@ -450,6 +450,7 @@ pre{background:#14112f;color:#d7d4f2;font-family:"Geist Mono",monospace;font-siz
   <div class="sub">Copie ce bloc, puis colle-le dans AVYORA — <b>Mon projet → Importer un plan</b>. Les quantités remplissent le devis, et tu les vérifies avant qu'elles comptent.</div>
   <textarea id="envoiJson" readonly spellcheck="false" style="width:100%;height:190px;font-family:var(--font-mono,ui-monospace),monospace;font-size:11px;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--canvas);resize:vertical"></textarea>
   <div class="btnrow" style="margin-top:12px"><button class="ib primary" style="flex:1" onclick="copierEnvoi()">Copier</button><button class="ib" onclick="telechargerEnvoi()">Télécharger le fichier</button></div>
+  <div class="btnrow" style="margin-top:8px"><button class="ib" style="flex:1" onclick="copierPlanComplet()">Copier le plan complet (géométrie, pour le support)</button></div>
   <div class="tip" id="envoiInfo" style="margin-top:10px"></div>
   <button class="mclose" onclick="closeModal()">Fermer</button></div></div>
 <div class="overlay" id="m-export"><div class="modal wide"><h3>Dossier du plan</h3><div class="sub noprint" id="exportSub">Tous les niveaux, en vue Existant et Projet, plus le récapitulatif des quantités. <b>Imprimer / PDF</b> pour tout sortir en un document ; clic droit sur une image pour l'enregistrer seule.</div><div class="btnrow noprint" style="margin:0 0 14px"><button class="ib primary" style="flex:1" onclick="window.print()">🖨 Imprimer / enregistrer en PDF</button><button class="ib" onclick="closeModal()">Fermer</button></div><div id="exportGallery"></div><button class="mclose noprint" onclick="closeModal()">Fermer</button></div></div>
@@ -4185,6 +4186,15 @@ function copierEnvoi(){
   const fini=ok=>toast(ok?'Plan copié — colle-le dans AVYORA':'Copie refusée par le navigateur : sélectionne le texte et copie-le à la main',ok);
   try{navigator.clipboard.writeText(ta.value).then(()=>fini(true),()=>{ta.select();fini(false);});}
   catch{ta.select();fini(false);}
+}
+/* Le contrat ne porte pas la géométrie des murs — ce n'est pas son rôle. Pour reproduire un
+   défaut de DESSIN, il faut le plan tel quel : coordonnées, épaisseurs, côtés, doublages. Ce
+   bouton met l'état complet dans le même bloc de texte, pour le copier et l'envoyer. */
+function copierPlanComplet(){
+  const ta=document.getElementById('envoiJson');
+  ta.value=JSON.stringify({plan:'avyora-plan-complet',v:1,state});
+  document.getElementById('envoiInfo').innerHTML=`Plan <b>complet</b> · ${state.levels.length} niveau${state.levels.length>1?'x':''} · ${Math.round(ta.value.length/1024)} Ko — à coller dans la conversation`;
+  copierEnvoi();
 }
 function telechargerEnvoi(){
   try{
