@@ -1125,3 +1125,16 @@ s'arrête **à fleur du tableau**.
 
 Contrôle : `tools/doublage.mjs`, 5 vérifications sur le plan réel de Dani (proposé du seul côté
 doublé, absent par défaut, bande à fleur du tableau, choisi → dessiné et suivi, re-cliqué → retiré).
+
+### D34 bis · La bande s'arrêtait 7 cm avant le tableau (même jour)
+
+Dani : « elle ne s'arrête pas vraiment à fleur mais un peu avant ». Sur son plan, le refend
+séjour/chambre est dessiné jusqu'à −11,80, 10 cm au-delà de l'axe de la façade (−11,90). La
+détection des pièces travaille sur une **copie** du mur ramenée à cet axe, plus courte ; la bande
+reportait la position du passage (`o.t`, fraction du mur **enregistré**) sur cette copie, soit
+7 cm de décalage. Correction : `murReel(w)` — la découpe des bandes aux ouvertures lit toujours le
+mur enregistré. Même famille que D33 : une copie raccourcie qu'on prend pour le vrai mur.
+
+Le contrôle ajouté en D34 ne le voyait pas : il comparait la copie au mur réel, ne trouvait donc
+**aucune** bande, et passait. Il vérifie maintenant qu'une bande est trouvée et qu'elle **touche
+les deux jambages à 2 mm près** — il échoue sur l'ancien code.

@@ -308,11 +308,21 @@ const res = await p.evaluate((PLAN_REFEND) => {
     /* sans retour, la bande s'arrête au jambage : aucun point de bande dans la largeur du passage */
     const c = add(w.a, mul(sub(w.b, w.a), o.t)); const u = norm(sub(w.b, w.a));
     const dansPassage = (P) => P.some((q) => Math.abs((q.x - c.x) * u.x + (q.y - c.y) * u.y) < o.w / 2 - 0.005);
-    let rentre = false;
+    /* …et elle va JUSQU'AU jambage, des deux côtés. Ce mur est dessiné 10 cm au-delà de l'axe de
+       la façade : la bande se calcule sur une copie ramenée à l'axe, et y reporter `o.t` décalait le
+       passage de 7 cm — la bande s'arrêtait avant le tableau (vu par Dani le 24/09). Le premier
+       contrôle ne le voyait pas : s'arrêter trop tôt n'entre pas dans le passage. */
+    const sc = c.x * u.x + c.y * u.y; const touche = [false, false];
+    let rentre = false, bandes = 0;
     (facesCache[lv.id] || []).forEach((f) => { const N = f.poly.length;
-      for (let i = 0; i < N; i++) { const B = bandeDoublage(f, i); if (!B || B.w !== w) continue;
-        cutAtOpenings(B.quad, w, lv).forEach((P) => { if (dansPassage(P)) rentre = true; }); } });
-    t["retour · sans retour, la bande s'arrête à fleur du tableau"] = !rentre;
+      for (let i = 0; i < N; i++) { const B = bandeDoublage(f, i); if (!B || B.w.id !== w.id) continue; bandes++;
+        cutAtOpenings(B.quad, B.w, lv).forEach((P) => { if (dansPassage(P)) rentre = true;
+          P.forEach((q) => { const sq = q.x * u.x + q.y * u.y;
+            if (Math.abs(sq - (sc - o.w / 2)) < 0.002) touche[0] = true;
+            if (Math.abs(sq - (sc + o.w / 2)) < 0.002) touche[1] = true; }); }); } });
+    t["retour · la bande du mur est bien trouvée"] = bandes > 0;
+    t["retour · sans retour, la bande n'entre pas dans le passage"] = !rentre;
+    t["retour · sans retour, la bande touche les deux jambages (à 2 mm)"] = touche[0] && touche[1];
     sel = { kind: "opening", id: o.id }; setRetour(side);
     t["retour · choisi → dessiné et suivi"] = revealOnSide(o, w, side) && tache();
     setRetour(side);
