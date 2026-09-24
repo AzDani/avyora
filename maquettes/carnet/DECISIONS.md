@@ -1181,3 +1181,111 @@ bord-là. La zone déborde maintenant de **10 px dans la masse du mur** autour d
 pas sur la face du mur, d'où l'on trace un doublage qui part du jambage.
 Et au survol, l'outil Doublage **montre** l'isolant de tableau (jaune, ou rouge en mode Retirer) avec
 « Clic : isoler les tableaux » : sans aperçu, rien ne disait que ce clic faisait quelque chose.
+
+## D36 · Chiffrage juste : aucun euro sans geste, une seule formule par ouvrage (24/09/2026)
+
+**Constat (jury, 7 experts).** Le compteur annonçait de l'argent que personne n'avait décidé, et
+comptait certains ouvrages autrement que le contrat.
+- Une pièce tracée en vue Existant, sans rien décider : 182 à 281 € de **plinthes**. Une salle de
+  bain typée : **faïence** mi-hauteur et **cloisons hydrofuges** en plus. Plans types chargés sans
+  rien toucher : Studio 1 766 €, T3 2 829 €, Maison 3 555 €. Dans l'exemple, 2 417 € sur 5 786 €
+  (42 %) ne venaient d'aucune décision. Un sol décrit « en terre » faisait couler une **dalle**.
+- **Doublage** : le Suivi comptait le mur entier (`len × h`), le contrat le seul tronçon tracé
+  (`t0..t1`). Plan réel de Dani : 189,6 m² au Suivi, 75,8 m² au contrat. Au-delà de deux tronçons
+  sur un mur, les tâches partageaient l'id `iso2:<mur>` : cocher l'une en cochait trois.
+- **Copier un niveau** recopiait les murs à démolir, les percements, les sols neufs (budget ×2),
+  et partageait les objets entre niveaux (`{...o}`) : retirer un doublage à l'étage le retirait au RDC.
+- Deux clics au même endroit posaient **deux fenêtres superposées**, invisibles, chiffrées deux fois
+  (+3 320 €).
+- **Démolir un mur** passait ses portes « à boucher » : tâche de rebouchage dans un mur qui n'existe
+  plus. Et boucher une ouverture ne déposait pas sa menuiserie.
+- **Évier, VMC, fenêtre de toit** : « non chiffré, aucun poste au catalogue » au Suivi, alors que
+  l'estimation les facture (450, 800, 1 200 €). La fenêtre de toit se comptait deux fois (panneau
+  Toiture + objet dessiné). Le réfrigérateur devenait une tâche de pose.
+- Le bloc « Le chantier » disait « commande le prix », mais le compteur ne bougeait ni avec la
+  finition ni avec la région, et n'était pas dit HT.
+- Le récap des surfaces de la vue Existant montrait l'après-travaux (58,9 contre 58,8 m²). Le
+  tableau « Pièces (état projet) » d'Estimer affichait le sol d'avant.
+- L'outil Doublage proposait 100 mm, que le même outil signalait aussitôt « sous le seuil d'aide ».
+
+**Vérifié dans l'estimateur avant d'écrire quoi que ce soit.** `fp` est bien du fourni-posé **HT**
+(core.ts). Et la finition s'applique aux matériaux avec un coefficient où **Premium = 1** : le prix
+catalogue que lit le compteur est donc celui d'une finition Premium, moyenne nationale. En Standard
+(0,78 à 0,88 sur la part matériaux selon le lot) l'estimation sera plus basse ; en région chère
+(main-d'œuvre × 1,04 à 1,20) plus haute.
+
+**Décisions.**
+1. **Formules partagées** (juste avant `chantierTasks`) : `plinthesDe`, `faienceDe`,
+   `cloisonsHumidesDe`, `isoLongueur` / `isoSurface`, `solDecide`, `perimHorsPortes`. Le Suivi, le
+   compteur, `quantities()` et donc `contratPlan()` les lisent ; plus aucune copie.
+2. **Plinthes** : seulement avec un revêtement neuf (pas sur un béton fini), et pas là où la faïence
+   descend au sol (mi-hauteur, pleine hauteur ; en « zone douche », le reste du périmètre).
+   **Faïence et cloisons hydrofuges** : seulement si la hauteur de faïence est choisie. La fiche
+   propose désormais **« Aucune — je garde l'existant »**, qui est le défaut. **Dalle sur terre** :
+   seulement si l'on refait ce sol.
+3. **Doublage** : chaque couche compte sa longueur tracée, porte un id `iso:<mur>:<couche>`
+   (chaque couche posée reçoit un `id`), et se nomme par ce qu'elle double : « Doubler 3,15 m du mur
+   de 9,00 m · côté Chambre ». Les cases déjà cochées des anciens plans (`iso:`, `iso2:`) sont
+   reportées au chargement (`migrerDone`).
+4. **Copier un niveau** = l'existant seul, copié en profondeur : pas les murs ni les ouvertures à
+   créer, aucun état, aucune décision de pièce (sol neuf, faïence, faux plafond, produits, notes).
+   La surélévation et le plancher créé partent de cette copie, comme avant.
+5. **Ouvertures** : un clic sur une ouverture existante la sélectionne (« Il y a déjà une ouverture
+   ici ») ; le glisser ne se pose pas sur une autre ; `planChecks` signale un chevauchement. Une
+   ouverture à boucher peut en croiser une neuve (murer une porte, percer une fenêtre au même
+   endroit) : elle ne compte pas.
+6. **Mur démoli** : ses ouvertures partent avec lui — aucune tâche, rien au contrat, plus dessinées
+   en vue Final, et leur fiche le dit. **Reboucher** : « Déposer la menuiserie avant de reboucher »
+   figure au Suivi **à 0 €, en le disant** (l'estimation ne compte cette dépose que pour une
+   menuiserie remplacée : règle B) ; le rebouchage d'une cloison passe au lot Cloisons.
+7. **Prix** : `EQUIP_PRIX.evier/vmc/velux` = fourni-posé des postes que l'estimation leur applique,
+   tenus par `coherence.mjs`. Fenêtres de toit : **une seule source**, comme l'estimation — dessinées,
+   elles font foi et le champ du panneau Toiture devient « n dessinée(s) sur le plan ». Le
+   réfrigérateur rejoint le mobilier.
+8. **Dire ce que vaut le chiffre** : « Budget travaux HT · indicatif · prix catalogue, moyenne
+   nationale ». Tant que rien n'est décidé, la carte le dit, à 0 €, avec le geste à faire. Le bloc
+   « Le chantier » (« affine l'estimation ») dit qui applique ses réponses : l'estimation AVYORA, pas
+   le compteur — et dans quel sens elles le feront bouger. On n'a **pas** recopié les coefficients de
+   finition et de région dans la maquette : il faudrait la part matériaux (`sm`) de chaque poste, et
+   une table recopiée à la main qui dérive en silence, c'est la panne que `coherence.mjs` combat.
+9. **Textes** calculés sur l'état réel : fiche d'une ouverture (gardée → pas chiffrée ; bouchée →
+   sans prix ; passage → rien à poser ; menuiserie intérieure / extérieure), équipement déposé
+   (« figure au Suivi, sans prix »), outil Équipements (le mobilier ne se chiffre pas), repères
+   électriques attribués à la NF C 15-100, seuil R 3,7 nommé (MaPrimeRénov' / CEE) et limité aux
+   murs extérieurs. Une fenêtre gardée dit que ses volets et options sont un constat, non chiffré.
+10. **Récap des surfaces** : celui de la vue affichée, titré « avant » ou « après travaux ». Estimer
+    affiche le sol neuf, l'ancien en petit.
+11. **Doublage 120 mm par défaut** (arbitrage K), une seule liste d'épaisseurs (60 à 200 mm) dans
+    l'outil, la fiche du mur et le bloc de groupe. Pour que 120 mm donne bien R ≥ 3,7, la laine de
+    verre proposée passe de λ 0,035 à **λ 0,032** (laine haute performance, la plus courante en
+    doublage) : R = 3,75. Avec 0,035, il aurait fallu 130 mm. Si Dani préfère garder 0,035, c'est
+    `DBL_CFG.e` à 0,14 — une ligne.
+12. **Contrat 1.13.0** : `plinthes` ne compte que les plinthes neuves, `sols` que les sols décidés,
+    et les ouvertures d'un mur démoli ne sortent plus. Aucune clé renommée ni retirée.
+
+**Ce qui n'est pas fait, et pourquoi.**
+- **L'estimateur applique encore un défaut** : `plan-correspondance.ts` facture une faïence
+  mi-hauteur et des cloisons hydrofuges à toute pièce humide dont la faïence n'est pas choisie
+  (contrat 1.3 : « au consommateur d'appliquer le défaut »). Le plan, lui, n'en compte plus. Aligner
+  l'estimateur sur « aucun euro sans geste » est une ligne (`if (!humide || !r.faience) continue`),
+  mais ce chantier ne touche pas `lib/estimateur`. À trancher.
+- **Isolation des rampants** calculée avec le débord de toit (+15 % environ) : le compteur ne peut
+  pas changer seul, l'estimation lit la même surface. Il faut exposer une surface de rampants hors
+  débord au contrat **et** la faire lire à l'estimateur.
+- **Volet ajouté à une fenêtre gardée** : l'estimation ne chiffre rien sur une menuiserie existante
+  (D1). La fiche le dit et renvoie vers « À remplacer » ; un vrai poste « volet seul » demande
+  l'estimateur.
+- **Toiture** : l'action projet est encore proposée d'après l'état constaté, et comptée tant que
+  l'utilisateur ne l'a pas changée. C'est un euro sans geste au sens strict ; le corriger change le
+  contrat (`projet.action`) et la scène de référence. À trancher avec la toiture.
+
+**Contrôles.** Nouveau `tools/budget.mjs` (56 vérifications, **à ajouter à la batterie**) : pièce
+tracée à la souris, salle de bain typée, sol en terre, plans types chargés → 0 €, 0 tâche, contrat
+muet ; doublage : Suivi = formule = contrat couche par couche, ids uniques, une case = une couche,
+migration des anciennes cases, et Suivi = contrat sur le plan réel de Dani ; copie de niveau sans travaux ni objets partagés ; double-clic, alerte
+de chevauchement ; mur démoli ; dépose avant rebouchage ; évier, VMC, fenêtre de toit, réfrigérateur ;
+HT et honnêteté du bloc « Le chantier » ; 120 mm et R ≥ 3,7 ; récap Existant = `areaBefore`.
+Mis à jour en gardant leur intention : `doublage.mjs` (épaisseur dessinée = celle de la couche posée,
+plus un chiffre figé), `decision.mjs` (« rien à préciser »), `coherence.mjs` (+3 prix tenus), test
+des plinthes (19,17 ml : la salle de bain est faïencée jusqu'au sol, l'étage n'a pas de sol décidé),
+fixture du contrat régénérée (1.13.0).

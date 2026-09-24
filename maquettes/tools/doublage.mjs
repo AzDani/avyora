@@ -187,7 +187,9 @@ const res = await p.evaluate((PLAN_REFEND) => {
     })();
     t["une bande est bien dessinée"] = ep.n > 0;
     t["la bande garde son épaisseur d'un bout à l'autre"] = pres(ep.maxi - ep.mini, 0, 0.002);
-    t["l'épaisseur dessinée est celle du doublage (12 cm)"] = pres(ep.maxi, 0.12, 0.002); }
+    /* l'épaisseur de la couche posée (isolant + parement), et non un chiffre figé : le réglage
+       par défaut de l'outil est passé de 100 à 120 mm d'isolant (D36) */
+    t["l'épaisseur dessinée est celle du doublage posé"] = pres(ep.maxi, doublageOf(isoLayers(nord)[0]), 0.002); }
 
   /* ── retirer : Alt + clic enlève LE tronçon visé ─────────────────────────
      Le même outil pose et dépose — on ne change pas d'outil pour défaire ce qu'on vient de

@@ -130,7 +130,7 @@ const res = await p.evaluate(() => {
     t["équipement conservé · sa fiche produit est là"] = /Matériau|Produit|produit/.test(e0) || e0.length > 0;
     sel = { kind: "item", id: it.id }; multi = [it.id]; setItemProp("st", "demolir");
     const e1 = h({ kind: "item", id: it.id });
-    t["équipement à déposer · rien à spécifier dessus"] = /rien à spécifier/.test(e1); }
+    t["équipement à déposer · rien à préciser dessus"] = /rien à préciser/.test(e1); }
   return t;
 });
 await b.close();

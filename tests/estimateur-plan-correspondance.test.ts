@@ -239,7 +239,10 @@ describe("table de correspondance · les surfaces mesurées (D10)", () => {
     expect(c.sources).toEqual(["p1"]);
   });
   it("les plinthes viennent du périmètre réel, pas d'une racine carrée", () => {
-    expect(q("rev-plinthes")).toBeCloseTo(15.17 + 19.17 + 16, 1); // les deux pièces du bas + celle de l'étage
+    /* D36 : seulement là où un sol neuf est posé, et pas sous une faïence qui descend au sol.
+       La chambre (parquet neuf) : 19,17 ml. La salle de bain est faïencée à mi-hauteur, et la
+       pièce de l'étage n'a aucun sol décidé : ni l'une ni l'autre n'a de plinthes neuves. */
+    expect(q("rev-plinthes")).toBeCloseTo(19.17, 1);
   });
 });
 

@@ -196,6 +196,11 @@ const PRIX_MAP = [
      poste. Ils traînaient en « sans poste » et dérivaient donc sans que rien ne le dise. */
   ["EQUIP_PRIX", "lave_linge", "Créer / déplacer un point d'eau"],
   ["EQUIP_PRIX", "lave_vaisselle", "Créer / déplacer un point d'eau"],
+  /* D36 — trois objets que l'estimation chiffrait (EQUIPEMENT_DIRECT) et que le compteur disait
+     « pas au catalogue ». Même prix que le poste que le devis leur applique. */
+  ["EQUIP_PRIX", "evier", "Évier + robinetterie"],
+  ["EQUIP_PRIX", "vmc", "Ventilation (VMC)"],
+  ["EQUIP_PRIX", "velux", "Fenêtre de toit (Velux)"],
 ];
 /* Ouvrages ABANDONNÉS (D19, 19/09/2026). Le catalogue de l'estimateur n'a pas de poste pour les
    chiffrer et Dani a tranché qu'on n'en crée pas : leur prix dans la maquette doit donc valoir 0.
