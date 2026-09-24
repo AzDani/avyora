@@ -871,3 +871,37 @@ Avant, le premier cas donnait 0,00 → 5,00 : une demi-épaisseur mordue de chaq
 C'est le troisième défaut de **tracé** en deux jours, tous invisibles dans les chiffres. Les
 quantités n'ont jamais bougé — seul le dessin mentait. Les contrôles mesurent maintenant la bande
 elle-même (`bandeDoublage`), et c'est ce qui a permis d'écrire celui-ci.
+
+## D29 · Un seul isolant proposé, tant que le catalogue n'en distingue qu'un
+
+Repéré par Dani le 24/09/2026 : « dans le plan on propose plusieurs types d'isolation alors que
+sur l'estimateur on est que à un type ? ». Exact — et c'est le même piège que la finition
+« Collé » (D27).
+
+Le plan proposait **laine de verre, laine de roche, PSE et polyuréthane**. Le catalogue n'a qu'un
+poste, « Isolation des murs par l'intérieur », **55 €/m² quel que soit l'isolant**. Le matériau
+partait bien dans le contrat (`provenance.doublages[].mat`), la table de correspondance déclarait
+le champ — et ne le lisait jamais. Quatre choix, aucun ne déplaçait un euro.
+
+**Décision de Dani : rester simple, ne proposer que ce que l'estimateur sait chiffrer.** Le plan
+n'offre plus que la **laine de verre**. L'épaisseur reste réglable (6 à 20 cm) et le R se calcule
+comme avant — on perd un choix de matière, pas la logique thermique.
+
+**Ce que le catalogue dit vraiment.** Il ne nomme aucun matériau : sa note dit « isolant + ossature
++ plaque ». À 15 €/m² de fourniture pour ces trois-là, c'est le cas standard d'une laine minérale —
+la lecture de Dani est la bonne, mais elle reste une lecture, pas une mention.
+
+**Mise en œuvre.** `ISO_MAT` garde ses quatre entrées, avec leur λ : un plan déjà enregistré en
+polyuréthane reste lisible et garde son R (vérifié : λ 0,022 → R 4,55 sur 10 cm). C'est la liste
+`ISO_MAT_CHOIX` qui décide de ce qu'on PROPOSE. Et comme pour « Collé », un sélecteur à une seule
+option disparaît : le volet affiche « Isolant · Laine de verre · λ 0,035 » au lieu d'un bouton
+unique qui simule un choix.
+
+Le jour où le catalogue distingue les isolants — un coefficient par matériau sur la fourniture —
+il suffira d'allonger `ISO_MAT_CHOIX`. La recherche de prix est faite et consignée : laine de roche
+≈ 1,06 et PIR ≈ 1,25 sur le poste, calculés sur l'écart de FOURNITURE (la main-d'œuvre, l'ossature
+et la plaque ne bougent pas). Non appliqués : Dani a choisi la simplicité pour l'instant.
+
+⏳ **Reste ouvert : le sol.** `SOL_MAT` propose encore polyuréthane, PSE et XPS pour trois postes
+qui n'en font qu'un (« Isolation du sol / plancher bas », 45 €/m²). Même problème, mais une laine
+ne va pas sous une chape — le choix y a donc une raison technique qu'il n'a pas sur un mur.
