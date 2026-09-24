@@ -209,9 +209,20 @@ describe("table de correspondance · ce qu'elle ne sait pas faire, elle le dit",
 });
 
 describe("table de correspondance · les sols, pièce par pièce (D8)", () => {
-  it("un parquet posé sur un parquet existant se ponce, il ne se remplace pas", () => {
-    expect(q("rev-poncage-vitrification-parquet")).toBeCloseTo(22.8, 1);
-    expect(q("rev-parquet-bois")).toBe(0);
+  /* Contrat 1.14 (D37) : « Parquet » sur un parquet est un parquet NEUF — le plan dit
+     `poncage: false`. Avant, la table en déduisait un ponçage alors que le plan émettait aussi la
+     dépose : l'arrachage ET le ponçage du même parquet. */
+  it("un parquet neuf choisi sur un parquet existant : dépose de l'ancien, pose du neuf", () => {
+    expect(q("rev-parquet-bois")).toBeCloseTo(22.8, 1);
+    expect(q("rev-poncage-vitrification-parquet")).toBe(0);
+    expect(contributions.find((x) => x.poste === "rev-parquet-bois")!.deduction).toBeUndefined();
+  });
+  it("le ponçage CHOISI : une seule couche, sans dépose, et ce n'est pas une déduction", () => {
+    const p = { sols: [{ id: "p9", piece: "Séjour", surface: 20, existant: "Parquet", revetement: "Parquet", poncage: true, depose: false }] } as PlanPourCorrespondance;
+    const { contributions: c } = contributionsDuPlan(p);
+    expect(c.map((x) => x.poste)).toEqual(["rev-poncage-vitrification-parquet"]);
+    expect(c[0].quantite).toBe(20);
+    expect(c[0].deduction).toBeUndefined();
   });
   it("le carrelage, la chape, le ragréage et la dépose suivent chacun leur pièce", () => {
     expect(q("rev-carrelage-au-sol")).toBeCloseTo(13.4, 1);
@@ -283,10 +294,18 @@ describe("table de correspondance · les déductions se signalent", () => {
     expect(deduites().length).toBeGreaterThan(0);
     for (const c of deduites()) expect(c.deduction!.length).toBeGreaterThan(30);
   });
-  it("le ponçage du parquet est signalé comme déduit du sol existant", () => {
-    const c = contributions.find((x) => x.poste === "rev-poncage-vitrification-parquet")!;
+  it("un contrat antérieur à 1.14 (sans `poncage`) garde la déduction D8, et la signale", () => {
+    const p = { sols: [{ id: "p9", surface: 22.8, existant: "Parquet ancien", revetement: "Parquet", depose: true }] } as PlanPourCorrespondance;
+    const c = contributionsDuPlan(p).contributions.find((x) => x.poste === "rev-poncage-vitrification-parquet")!;
     expect(c.deduction).toContain("Parquet ancien");
     expect(c.deduction).toContain("change cette ligne");
+  });
+  it("un mur porteur démoli sans réponse à « porteur ? » est signalé comme à faire vérifier", () => {
+    const c = contributions.find((x) => x.poste === "dem-abattre-un-mur-porteur")!;
+    expect(c.deduction).toMatch(/vérifier par un pro/);
+    const dit = JSON.parse(JSON.stringify(plan));
+    for (const m of dit.provenance.murs) m.porteurAVerifier = false;
+    expect(contributionsDuPlan(dit).contributions.find((x) => x.poste === "dem-abattre-un-mur-porteur")!.deduction).toBeUndefined();
   });
   it("un matériau d'escalier non choisi est signalé, un type de douche choisi ne l'est pas", () => {
     expect(contributions.find((x) => x.poste === "toi-escalier-en-bois")!.deduction).toContain("bois par défaut");
@@ -473,5 +492,37 @@ describe("table de correspondance · une toiture en deux parties (contrat 1.9)",
     const avec = contributionsDuPlan(toit(134.1, parties)).contributions;
     const sans = contributionsDuPlan(toit(134.1)).contributions;
     expect(avec.map((c) => [c.poste, c.quantite])).toEqual(sans.map((c) => [c.poste, c.quantite]));
+  });
+});
+
+describe("table de correspondance · la peinture, pièce par pièce (contrat 1.14)", () => {
+  /* D37 : la peinture n'est jamais un défaut. La chambre de la scène est repeinte, murs et
+     plafond ; la salle de bain ne l'est pas, et ne doit rien produire. */
+  it("la peinture choisie devient des m² mesurés, sur SA pièce", () => {
+    const ch = plan.detailNiveaux![0].rooms!.find((r) => r.type === "chambre")!;
+    expect(ch.peinture?.murs).toBeGreaterThan(20);
+    expect(q("pei-peinture-des-murs")).toBeCloseTo(ch.peinture!.murs!, 2);
+    expect(q("pei-peinture-des-plafonds")).toBeCloseTo(ch.peinture!.plafond!, 2);
+    expect(contributions.find((x) => x.poste === "pei-peinture-des-murs")!.sources).toEqual([ch.id]);
+  });
+  it("une pièce sans peinture choisie ne produit aucune ligne de peinture", () => {
+    const sdb = plan.detailNiveaux![0].rooms!.find((r) => r.type === "sdb")!;
+    expect(sdb.peinture).toBeNull();
+    const src = contributions.filter((x) => /^pei-/.test(x.poste)).flatMap((x) => x.sources);
+    expect(src).not.toContain(sdb.id);
+  });
+  it("plafond seul : aucune ligne de murs", () => {
+    const p = { detailNiveaux: [{ id: "n1", rooms: [{ id: "p1", type: "sejour", peinture: { murs: 0, plafond: 18.5 } }] }] } as unknown as PlanPourCorrespondance;
+    const { contributions: c } = contributionsDuPlan(p);
+    expect(c.map((x) => [x.poste, x.quantite])).toEqual([["pei-peinture-des-plafonds", 18.5]]);
+  });
+});
+
+describe("table de correspondance · l'étude de structure (contrat 1.14)", () => {
+  it("une poutre créée sans mur porteur démoli déclenche aussi l'étude, et dit pourquoi", () => {
+    const p = { etudes: { structure: 1, mlPorteurDemoli: 0, ossatureCreee: 1 } } as PlanPourCorrespondance;
+    const c = contributionsDuPlan(p).contributions.find((x) => x.poste === "etu-etude-de-structure")!;
+    expect(c.quantite).toBe(1);
+    expect(c.raison).toMatch(/poutre ou un poteau/);
   });
 });

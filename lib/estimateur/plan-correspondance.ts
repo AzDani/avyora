@@ -34,7 +34,8 @@ export interface PlanPourCorrespondance {
   travaux?: {
     percementsDetail?: { porteurPetit?: number; porteurGrand?: number; leger?: number };
   };
-  etudes?: { structure?: number; mlPorteurDemoli?: number };
+  /** Contrat 1.14 : `ossatureCreee` — une poutre ou un poteau créé déclenche aussi l'étude. */
+  etudes?: { structure?: number; mlPorteurDemoli?: number; ossatureCreee?: number };
   doublage?: { iti?: number; ite?: number };
   facades?: { parPoste?: Record<string, number> };
   toiture?: {
@@ -47,13 +48,17 @@ export interface PlanPourCorrespondance {
     projet?: { action?: string; charpente?: string; isoCombles?: string; velux?: number; gouttieres?: boolean; raccords?: boolean; traiterCharpente?: boolean };
   } | null;
   sols?: Array<{ id?: string; piece?: string; surface?: number; existant?: string | null; revetement?: string | null;
-    depose?: boolean; dalle?: boolean; betonFini?: boolean; isolant?: unknown; chape?: string | null; ragreage?: boolean }>;
+    depose?: boolean; dalle?: boolean; betonFini?: boolean; isolant?: unknown; chape?: string | null; ragreage?: boolean;
+    /** Contrat 1.14 : le parquet actuel est poncé (vrai) ou remplacé par un neuf (faux). Absent
+     *  dans un contrat antérieur : on retombe alors sur la déduction D8. */
+    poncage?: boolean }>;
   /* Le détail objet par objet, que le contrat émettait déjà sans que personne lise autre chose
      que `murs`. Deux choses en dépendent : la TRAÇABILITÉ exigée par D1 — une ligne injectée doit
      se rattacher à un objet du plan — et l'ÉTAT, sans lequel un doublage déjà en place se
      facturait comme neuf. */
   provenance?: {
-    murs?: Array<{ id: string; type: string; porteur: boolean; etat: string; ml: number; m2: number }>;
+    /** Contrat 1.14 : `porteurAVerifier` — compté porteur sans que l'utilisateur l'ait dit. */
+    murs?: Array<{ id: string; type: string; porteur: boolean; porteurAVerifier?: boolean; etat: string; ml: number; m2: number }>;
     /** Contrat 1.11 : le percement que chaque ouverture provoque, pour rattacher ces lignes. */
     ouvertures?: Array<{ id?: string; percement?: string | null }>;
     doublages?: Array<{ mur?: string; mode?: string; sys?: string | null; mat?: string; etat?: string | null; m2?: number }>;
@@ -63,7 +68,9 @@ export interface PlanPourCorrespondance {
     id?: string; name?: string; neuf?: boolean; plancher?: string | null;
     rooms?: Array<{ id: string; type: string; faience?: string | null; perimeter?: number; wallArea?: number; plinthes?: number; hauteur?: number; horsHabitable?: boolean; exterieur?: boolean; fauxPlafond?: boolean; area?: number; mursParType?: Record<string, number>;
       /** Contrat 1.8 : le plancher se chiffre pièce par pièce. */
-      plancherACreer?: string | null; nonHabitableAvant?: boolean; tremiePerimNeuf?: number }>;
+      plancherACreer?: string | null; nonHabitableAvant?: boolean; tremiePerimNeuf?: number;
+      /** Contrat 1.14 : la peinture choisie dans la pièce, en m² mesurés (null : rien de choisi). */
+      peinture?: { murs?: number; plafond?: number } | null }>;
     /** Contrat 1.7 : l'emprise du niveau, sans laquelle son plancher n'est pas chiffrable. */
     emprise?: number | null;
     equipements?: Array<{ id: string; type: string; etat: string; piece?: string | null; l?: number; p?: number; douche?: string | null; lumiere?: string | null; materiau?: string | null;
@@ -360,7 +367,9 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
     if (w.etat === "demolir") {
       if (w.porteur) {
         // D9 : la démolition, puis la poutre qui reprend ce que le mur portait.
-        add("dem-abattre-un-mur-porteur", +w.m2.toFixed(2), src, "Mur porteur à démolir");
+        /* Contrat 1.14 : « je ne sais pas », ou pas de réponse — le plan chiffre prudemment et le dit. */
+        add("dem-abattre-un-mur-porteur", +w.m2.toFixed(2), src, "Mur porteur à démolir", undefined,
+          w.porteurAVerifier ? "Personne n'a dit si ce mur porte : il est chiffré porteur, par prudence (démolition, poutre, étude). À faire vérifier par un pro — s'il ne porte rien, ces lignes tombent." : undefined);
         if (!poutresDessinees.has(w.id)) add("mac-poutre-de-reprise-de-charge-ipn-hea", +w.ml.toFixed(2), src, "Reprise de charge du mur porteur démoli");
       } else if (w.type === "cloison") add("dem-abattre-une-cloison", +w.m2.toFixed(2), src, "Cloison à démolir");
       else add("dem-abattre-un-mur-non-porteur", +w.m2.toFixed(2), src, "Mur non porteur à démolir");
@@ -398,7 +407,10 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
   }
 
   // ── Études (D11 : un forfait se coche, il ne reçoit pas de quantité) ──────
-  if (plan.etudes?.structure) add("etu-etude-de-structure", 1, [], "Un mur porteur est démoli : étude de structure obligatoire");
+  if (plan.etudes?.structure) add("etu-etude-de-structure", 1, [],
+    (plan.etudes.mlPorteurDemoli ?? 0) > 0 || !plan.etudes.ossatureCreee
+      ? "Un mur porteur est démoli : étude de structure obligatoire"
+      : "Une poutre ou un poteau est créé : étude de structure pour le dimensionner");
 
   // ── Doublage (D2 : c'est l'ITI qui porte le doublage) ─────────────────────
   /* On lit le détail MUR PAR MUR, plus l'agrégat `doublage.iti`. Deux raisons, et la première
@@ -490,12 +502,16 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
     const nouveau = sol.revetement || "";
     if (!nouveau || sol.betonFini) continue;
     if (nouveau === "Parquet") {
-      // D8 : parquet posé sur un parquet existant = on le ponce, on ne le remplace pas.
+      /* Contrat 1.14 : le plan DIT s'il ponce l'ancien parquet ou en pose un neuf — c'est un
+         choix de la ligne Revêtement, plus une déduction. Un contrat antérieur, qui ne le dit pas,
+         garde la règle D8 : parquet posé sur un parquet existant = on le ponce. */
       const ancien = (sol.existant || "").toLowerCase();
-      const poncage = ancien.includes("parquet");
+      const dit = typeof sol.poncage === "boolean";
+      const poncage = dit ? sol.poncage === true : ancien.includes("parquet");
       add(poncage ? "rev-poncage-vitrification-parquet" : "rev-parquet-bois", m2, src,
         poncage ? `Parquet existant poncé et vitrifié${ou}` : `Parquet neuf${ou}`, undefined,
-        poncage
+        dit ? undefined
+        : poncage
           ? `Déduit du sol existant (${sol.existant}) : on le ponce plutôt que de le remplacer. Si tu veux un parquet neuf, change cette ligne.`
           : `Déduit du sol existant (${sol.existant || "non renseigné"}) : parquet neuf. Si tu voulais poncer l'ancien, change cette ligne.`);
       continue;
@@ -525,6 +541,10 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
          chiffrait — ni le compteur du plan, ni le devis. On lit `tremiePerimNeuf` et non
          `tremiePerim` : une trémie qui existe déjà a déjà son garde-corps (D1). */
       if (r.tremiePerimNeuf) add("toi-garde-corps", +r.tremiePerimNeuf.toFixed(2), src, "Garde-corps au pourtour de la trémie créée");
+      /* Contrat 1.14 : la peinture n'est jamais un défaut — seulement ce que la pièce a choisi,
+         en m² mesurés (murs hors ouvertures et faïence, plafond hors trémie). */
+      if (r.peinture?.murs) add("pei-peinture-des-murs", +r.peinture.murs.toFixed(2), src, "Murs à repeindre, mesurés sur le plan");
+      if (r.peinture?.plafond) add("pei-peinture-des-plafonds", +r.peinture.plafond.toFixed(2), src, "Plafond à repeindre, mesuré sur le plan");
       const humide = TYPES_HUMIDES.has(r.type) || humides.has(r.id);
       if (!humide) continue;
       // D10 : la hauteur de pose choisie dans la fiche de pièce devient une surface.
@@ -621,6 +641,9 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
     if (!v) { parPoste.set(cle, { ...c, sources: [...c.sources] }); continue; }
     v.quantite = +(v.quantite + c.quantite).toFixed(2);
     for (const s of c.sources) if (!v.sources.includes(s)) v.sources.push(s);
+    /* Une ligne regroupée reste « déduite » si l'une de ses sources l'est : sinon un seul mur
+       répondu masquait les murs dont personne n'a dit s'ils portaient. */
+    if (!v.deduction && c.deduction) v.deduction = c.deduction;
   }
   return { contributions: [...parPoste.values()], ignores };
 }
@@ -655,6 +678,7 @@ export function postesCouverts(): string[] {
     "toi-gouttieres-descentes", "toi-raccords-faitage-noues-solins",
     "mac-creer-un-appui-de-fenetre", "mac-creer-un-seuil-de-porte",
     "clo-faux-plafond", "toi-creer-un-plancher-bois", "mac-plancher-beton-etage-cree", "toi-toit-plat-etancheite",
+    "pei-peinture-des-murs", "pei-peinture-des-plafonds",
   ]);
   return [...ids];
 }

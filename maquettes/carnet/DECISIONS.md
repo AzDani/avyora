@@ -1289,3 +1289,116 @@ Mis à jour en gardant leur intention : `doublage.mjs` (épaisseur dessinée = c
 plus un chiffre figé), `decision.mjs` (« rien à préciser »), `coherence.mjs` (+3 prix tenus), test
 des plinthes (19,17 ml : la salle de bain est faïencée jusqu'au sol, l'étage n'a pas de sol décidé),
 fixture du contrat régénérée (1.13.0).
+
+## D37 · Justesse métier : le plan parle comme un pro du bâtiment (24/09/2026)
+
+**Constat (jury, pro du bâtiment, débutant, chasseur de bugs, rétention).** Le chiffrage était
+juste au centime, mais sur des ouvrages qu'un artisan n'aurait jamais écrits.
+- **Parquet** : choisir « Parquet » sur un parquet facturait l'arrachage (532 €) **et** le ponçage
+  (1 065 €) du même parquet, avec une chape proposée dessous. Aucun moyen de demander un parquet neuf.
+- **Sol gardé** : garder son carrelage affichait encore « Chape · à choisir / Revêtement · à
+  choisir » ; « garder » et « pas encore décidé » étaient la même option, et Estimer se plaignait
+  « aucun revêtement choisi ». « Recommandée sur dalle » s'affichait sur un carrelage.
+- **Étage créé** : « Plancher de cet étage : Béton » était ignoré — plancher bois chiffré (1 642 €),
+  et une chape ciment proposée sur des solives.
+- **Doublage** : l'outil posait un doublage par l'intérieur côté rue (chiffré), une ITE côté pièce.
+- **Appartement** : « pas de toiture » répondu, toiture et façade toujours réclamées (contrôle,
+  fiche du niveau, couverture d'Estimer).
+- **Fusion** : abattre la cloison WC / cellier de l'exemple laissait un « Cellier » avec la cuvette
+  dedans ; le logement n'avait plus de WC, et l'alerte « WC sur séjour » disparaissait.
+- **Façade** : six finitions empilées sur un mur de parpaing, toutes facturées (7 469 € pour
+  19,5 m²) — ravalement pierre « tout compris » + joints + nettoyage + enduit + chaux + bardage.
+- **Murs** : l'outil restait en « Parpaing 20 cm » après le premier contour ; chaque cloison tracée
+  devenait porteuse, et la démolir ajoutait étude + poutre (353 € → 3 805 €) sans aucune question.
+- **Fenêtre sur une cloison** : elle « éclairait » la pièce et effaçait l'alerte « pas de fenêtre ».
+- **Peinture** : inexistante, alors que le plan mesure les murs et plafonds à peindre.
+- **Rehausse** : 8 cm d'isolant + une chape, jamais annoncés ; **poutre ou poteau créé** sans étude.
+
+**Vérifié avant d'écrire.** Le catalogue a « Peinture des murs » (25 €/m²) et « Peinture des
+plafonds » (28 €/m²), que la correspondance ne reliait à rien ; il n'a **aucun** poste de dépose
+d'un équipement (`PRIX.deposeEquip` est abandonné, D19). Le moteur masque déjà la toiture d'un
+appartement (`HIDE_APPART_TASK`).
+
+**Décisions.**
+1. **Le revêtement se choisit dans sa ligne** (décision validée par Dani) : la liste « Revêtement
+   de sol souhaité » disparaît ; la ligne « Revêtement » de l'ordre de réalisation porte le choix,
+   comme la chape juste en dessous. Options : *À choisir* · *Garder le sol actuel (…)* · *Poncer et
+   vitrifier le parquet actuel* (seulement sur un parquet) · les revêtements neufs (« Parquet neuf
+   (à la place de l'ancien) » sur un parquet).
+2. **Garder est une décision** (`r.solGarde`) : la pile se réduit à « Revêtement · conservé · rien à
+   faire », aucune chape ne reste comptée, la pièce sort des « sans décision » d'Estimer (« Sol — n
+   pièces sans décision : garder le sol ou le refaire »).
+3. **Poncer n'est pas arracher** (`PONCAGE`) : une couche, ni dépose, ni chape, ni plinthes (le
+   parquet garde les siennes). « Parquet » sur un parquet = parquet neuf, après dépose. Les plans
+   enregistrés où « Parquet » était posé sur un parquet (qui voulait dire « poncer », D8) sont
+   repris en ponçage au chargement (`migrerSols`), sans la dépose qui l'accompagnait à tort.
+4. **Une seule lecture des couches** (`solCouches`) pour la fiche, le Suivi, le compteur et le
+   contrat : sol gardé, ponçage, béton fini → aucune couche ; plancher bois → ni chape ciment ni
+   isolant sous chape (la fiche le dit) ; chape liquide → pas de ragréage. « Conseillé » devient un
+   état à part (ni compté, ni « à choisir ») : chape sur une dalle, ragréage après une dépose.
+5. **Rehausse** : isolant + chape (épaisseur courante 5 cm tradi, 4 cm liquide, **modifiable** —
+   ordre de grandeur, pas une norme) → « le sol monte d'environ X cm, hauteur ≈ Y m, portes et seuils
+   à reprendre » ; le contrôle alerte sous 2,20 m.
+6. **Étage créé** : le plancher choisi au niveau s'applique à toutes ses pièces sans plancher (une
+   pièce peut ensuite différer) ; l'étage coché ou créé prend le matériau du niveau.
+7. **Doublage** : ITI seulement sur une face côté pièce, ITE seulement côté dehors
+   (`faceDoublageInterdite`). On ne tranche que ce qu'on sait : un mur sans pièce d'aucun côté reste libre. Le
+   geste refusé le dit (toast) ; un plan déjà enregistré est signalé par le contrôle.
+8. **Appartement** (`estAppart`) : toiture ni réclamée, ni affichée, ni comptée, ni émise
+   (`toiture: null`) ; façade retirée de la couverture d'Estimer. Bien non dit → « Type de bien —
+   appartement ou maison, pas encore dit ».
+9. **Fusion de pièces** (`ficheDeFusion`) : la pièce née d'une démolition garde la fiche que ses
+   appareils désignent (WC, puis salle d'eau / de bain), sinon celle déjà appariée à cette face (un
+   aller-retour entre vues ne permute rien), sinon la première comme avant. Un toast dit « A et B
+   ne font plus qu'une pièce : « C » ». Le contrôle signale des WC, une douche ou une baignoire dans
+   une pièce d'un autre type.
+10. **Façade** (`facadeFinsEffectives`) : un seul parement (enduit, chaux, bardage ou ravalement —
+    cocher l'un retire l'autre) ; le ravalement pierre comprend nettoyage et joints ; joints,
+    ravalement et chaux réservés au mur en pierre ; une ITE à créer comprend son enduit / bardage.
+    La fiche ne propose que ce qui va avec le mur ; un plan ancien qui empilait voit ce qui n'est
+    plus compté, et pourquoi.
+11. **Murs** (arbitrage I) : le premier contour fermé fait passer l'outil en « Cloison 7 cm »
+    (toast). Démolir un mur épais dont personne n'a dit s'il porte pose la question « Ce mur
+    porte-t-il un plancher ou le toit ? Oui / Non / Je ne sais pas » en tête de fiche ; sans réponse
+    ou « je ne sais pas » : chiffrage prudent (porteur) et « à faire vérifier par un pro » (tâche,
+    fiche, contrôle, contrat `porteurAVerifier`, déduction signalée au devis). Le réglage « Auto »
+    devient « Oui / Non / Je ne sais pas », avec la déduction dite en clair.
+12. **Étude de structure** aussi pour une poutre ou un poteau **créé** (forfait unique).
+13. **Fenêtre** : seule une fenêtre sur un mur qui donne dehors éclaire une pièce ; posée sur un mur
+    intérieur, un toast et le contrôle demandent si c'était une porte (une verrière voulue peut rester).
+14. **Peinture** (arbitrage « aucun euro sans geste ») : pastilles « Rien · Murs · Plafond · Les
+    deux » par pièce, **rien par défaut** ; murs hors ouvertures et **moins la faïence décidée**,
+    plafond hors trémie ; lot « Peinture » (avant Équipements) ; prix du catalogue tenus par
+    `coherence.mjs`. La fiche faïence ne dit plus « le reste des murs est peint ».
+15. **Contrat 1.14.0** (ajout pur) : `sols[].poncage`, `rooms[].peinture`, `provenance.murs[].
+    porteurAVerifier`, `etudes.ossatureCreee` ; `toiture` null en appartement. **Estimateur**
+    (`plan-correspondance.ts`, touché pour la peinture) : lit `poncage` quand il est dit (un contrat
+    antérieur garde la déduction D8), relie les deux postes de peinture, signale un porteur à
+    vérifier, dit pourquoi l'étude est comptée, et une ligne regroupée reste « déduite » si l'une de
+    ses sources l'est.
+
+**Ce qui n'est pas fait, et pourquoi.**
+- **« À remplacer » pour les équipements** (pro09) : la pose se chiffrerait (même poste que « à
+  poser »), mais le catalogue n'a **aucun poste de dépose d'un équipement** — `deposeEquip` est un
+  ouvrage abandonné (D19). La condition posée (« dépose + pose, sans poste inventé ») n'est pas
+  remplie. Il faudrait un poste « Déposer un équipement (sanitaire, chauffage) » au catalogue — à
+  décider par Dani —, puis `etat: 'remplacer'` lu comme `creer` + dépose dans la correspondance.
+  En attendant : « À déposer » sur l'ancien, un neuf « À poser » au même endroit.
+- **Lot du plancher bois** : il reste au lot « Toiture » (le catalogue le range en charpente) ; le
+  renommer relève du chantier du Suivi (arbitrage L : « Charpente / couverture »).
+- **Aperçu de l'outil Doublage** : une face interdite n'est pas encore dessinée en rouge au survol ;
+  le refus se lit au lâcher (toast).
+- **Toujours pendant depuis D36** : `plan-correspondance.ts` applique encore une faïence mi-hauteur
+  par défaut à toute pièce humide dont la faïence n'est pas choisie.
+- **L'exemple T2** montre désormais les vraies alertes de sa pièce WC (WC ouvrant sur le séjour,
+  porte qui tape la cuvette) que la fusion en « cellier » cachait : au chantier de l'exemple de les
+  résoudre (arbitrage G : 0 alerte).
+
+**Contrôles.** Nouveau `tools/metier.mjs` (65 vérifications, **à ajouter à la batterie**) : ponçage,
+parquet neuf, sol gardé, conseils, rehausse, migration, plancher d'étage, faces de doublage,
+appartement, fusion WC / cellier, façade, cloison après le premier contour, question « porteur ? »,
+fenêtre intérieure, peinture. Mis à jour en gardant leur intention : `structure.mjs` (une poutre
+ajoute aussi l'étude, une seule fois), `budget.mjs` (la face extérieure reçoit une ITE, plus une
+ITI), `coherence.mjs` (+2 prix tenus), `scene-reference.mjs` (chambre en parquet neuf repeinte ;
+scène variantes : parquet poncé, sol gardé, plafond seul), tests de correspondance (+6), fixture du
+contrat régénérée (1.14.0).

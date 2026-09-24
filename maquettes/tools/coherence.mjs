@@ -201,6 +201,10 @@ const PRIX_MAP = [
   ["EQUIP_PRIX", "evier", "Évier + robinetterie"],
   ["EQUIP_PRIX", "vmc", "Ventilation (VMC)"],
   ["EQUIP_PRIX", "velux", "Fenêtre de toit (Velux)"],
+  /* D37 — la peinture, choisie pièce par pièce : le compteur la chiffre au prix des deux postes
+     que la correspondance lui applique (pei-peinture-des-murs, pei-peinture-des-plafonds). */
+  ["PRIX", "peintureMurs", "Peinture des murs"],
+  ["PRIX", "peinturePlafond", "Peinture des plafonds"],
 ];
 /* Ouvrages ABANDONNÉS (D19, 19/09/2026). Le catalogue de l'estimateur n'a pas de poste pour les
    chiffrer et Dani a tranché qu'on n'en crée pas : leur prix dans la maquette doit donc valoir 0.

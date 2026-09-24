@@ -90,7 +90,11 @@ const res = await p.evaluate(() => {
     const avant = chantierPrix().total;
     pose(lv, "poutre", 3, 2, 4, 0);
     const apres = chantierPrix().total;
-    t["une poutre n'ajoute QUE sa propre ligne"] = apres - avant === 1920; }
+    /* D37 (pro24) : une poutre créée se dimensionne — l'étude de structure vient avec elle, une fois. */
+    t["une poutre ajoute sa ligne et l'étude de structure"] = apres - avant === 1920 + PRIX.etudeStructure;
+    pose(lv, "poteau", 5, 3);
+    t["un poteau de plus : l'étude ne se compte qu'une fois"] = chantierTasks().filter((x) => x.id === "etude:structure").length === 1 && chantierPrix().total - apres === 550;
+    t["le contrat coche l'étude et dit pourquoi"] = contratPlan().etudes.structure === 1 && contratPlan().etudes.ossatureCreee === 2 && contratPlan().etudes.mlPorteurDemoli === 0; }
   return t;
 });
 await b.close();

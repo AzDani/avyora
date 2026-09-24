@@ -1,5 +1,5 @@
 {
- "contrat": "1.13.0",
+ "contrat": "1.14.0",
  "plan": {
   "id": null,
   "nom": "Scène de référence"
@@ -154,7 +154,8 @@
  "velux": 0,
  "etudes": {
   "structure": 1,
-  "mlPorteurDemoli": 1.4
+  "mlPorteurDemoli": 1.4,
+  "ossatureCreee": 0
  },
  "ossature": {
   "poteaux": 0,
@@ -179,6 +180,7 @@
    "surface": 13.4,
    "existant": "Carrelage",
    "revetement": "Carrelage",
+   "poncage": false,
    "depose": true,
    "dalle": false,
    "betonFini": false,
@@ -194,6 +196,7 @@
    "surface": 22.8,
    "existant": "Parquet ancien",
    "revetement": "Parquet",
+   "poncage": false,
    "depose": true,
    "dalle": false,
    "betonFini": false,
@@ -242,6 +245,10 @@
     {
      "niveau": "warn",
      "texte": "1 mur porteur à démolir : une étude de structure est obligatoire avant travaux (reprise de charge, poutre ou IPN). Elle est comptée dans les quantités transmises au chiffrage."
+    },
+    {
+     "niveau": "warn",
+     "texte": "Ce mur porte-t-il un plancher ou le toit ? Un mur à démolir n'a pas de réponse : il est compté porteur par prudence (étude, poutre). Réponds dans sa fiche."
     },
     {
      "niveau": "info",
@@ -297,6 +304,7 @@
     "niveau": "n3",
     "type": "mur",
     "porteur": true,
+    "porteurAVerifier": true,
     "etat": "existant",
     "ml": 8,
     "m2": 20
@@ -306,6 +314,7 @@
     "niveau": "n3",
     "type": "mur",
     "porteur": true,
+    "porteurAVerifier": true,
     "etat": "existant",
     "ml": 5,
     "m2": 12.5
@@ -315,6 +324,7 @@
     "niveau": "n3",
     "type": "mur",
     "porteur": true,
+    "porteurAVerifier": true,
     "etat": "existant",
     "ml": 8,
     "m2": 20
@@ -324,6 +334,7 @@
     "niveau": "n3",
     "type": "mur",
     "porteur": true,
+    "porteurAVerifier": true,
     "etat": "existant",
     "ml": 5,
     "m2": 12.5
@@ -333,6 +344,7 @@
     "niveau": "n3",
     "type": "cloison",
     "porteur": false,
+    "porteurAVerifier": false,
     "etat": "existant",
     "ml": 5,
     "m2": 12.5
@@ -342,6 +354,7 @@
     "niveau": "n3",
     "type": "porteur",
     "porteur": true,
+    "porteurAVerifier": true,
     "etat": "demolir",
     "ml": 1.4,
     "m2": 3.5
@@ -351,6 +364,7 @@
     "niveau": "n3",
     "type": "cloison",
     "porteur": false,
+    "porteurAVerifier": false,
     "etat": "demolir",
     "ml": 1.6,
     "m2": 4
@@ -360,6 +374,7 @@
     "niveau": "n28",
     "type": "mur",
     "porteur": true,
+    "porteurAVerifier": true,
     "etat": "existant",
     "ml": 4,
     "m2": 10
@@ -369,6 +384,7 @@
     "niveau": "n28",
     "type": "mur",
     "porteur": true,
+    "porteurAVerifier": true,
     "etat": "existant",
     "ml": 4,
     "m2": 10
@@ -378,6 +394,7 @@
     "niveau": "n28",
     "type": "mur",
     "porteur": true,
+    "porteurAVerifier": true,
     "etat": "existant",
     "ml": 4,
     "m2": 10
@@ -387,6 +404,7 @@
     "niveau": "n28",
     "type": "mur",
     "porteur": true,
+    "porteurAVerifier": true,
     "etat": "existant",
     "ml": 4,
     "m2": 10
@@ -568,7 +586,7 @@
   "facades": []
  },
  "suivi": {
-  "total": 43,
+  "total": 45,
   "faits": 0,
   "taches": [
    {
@@ -578,37 +596,37 @@
     "fait": false
    },
    {
-    "id": "w:qwwrq2s:demolir",
+    "id": "w:zsar557:demolir",
     "lot": "Démolition",
     "label": "Démolir le mur porteur de 1,40 m · RDC",
     "fait": false
    },
    {
-    "id": "w:n9njjlr:demolir",
+    "id": "w:jnwvc2i:demolir",
     "lot": "Démolition",
     "label": "Démolir la cloison de 1,60 m · RDC",
     "fait": false
    },
    {
-    "id": "o:70qapq1:depose",
+    "id": "o:jw7spsm:depose",
     "lot": "Démolition",
     "label": "Déposer l'ancienne menuiserie · fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:vz2dxer:depose",
+    "id": "o:uxmplio:depose",
     "lot": "Démolition",
     "label": "Déposer la menuiserie avant de reboucher · fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "sol-depose:572ul31",
+    "id": "sol-depose:zdka2m6",
     "lot": "Démolition",
     "label": "Déposer l'ancien sol (carrelage) · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "sol-depose:ap5y6is",
+    "id": "sol-depose:uq2abgm",
     "lot": "Démolition",
     "label": "Déposer l'ancien sol (parquet ancien) · Chambre · RDC",
     "fait": false
@@ -620,31 +638,31 @@
     "fait": false
    },
    {
-    "id": "w:qwwrq2s:poutre",
+    "id": "w:zsar557:poutre",
     "lot": "Maçonnerie",
     "label": "Poutre de reprise de charge · mur de 1,40 m · RDC",
     "fait": false
    },
    {
-    "id": "o:5o6pk5d:perc",
+    "id": "o:ssaui7t:perc",
     "lot": "Maçonnerie",
     "label": "Ouvrir le mur porteur, linteau & tableaux · fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:5o6pk5d:appui",
+    "id": "o:ssaui7t:appui",
     "lot": "Maçonnerie",
     "label": "Appui de fenêtre · fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:vz2dxer:boucher",
+    "id": "o:uxmplio:boucher",
     "lot": "Maçonnerie",
     "label": "Boucher fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:mcq554r:perc",
+    "id": "o:qcnykck:perc",
     "lot": "Maçonnerie",
     "label": "Percement, linteau & tableaux · porte simple · RDC",
     "fait": false
@@ -674,43 +692,43 @@
     "fait": false
    },
    {
-    "id": "o:70qapq1:poser",
+    "id": "o:jw7spsm:poser",
     "lot": "Menuiseries",
     "label": "Poser fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:5o6pk5d:poser",
+    "id": "o:ssaui7t:poser",
     "lot": "Menuiseries",
     "label": "Poser fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:5o6pk5d:volet",
+    "id": "o:ssaui7t:volet",
     "lot": "Menuiseries",
     "label": "Volet roulant · fenêtre · RDC",
     "fait": false
    },
    {
-    "id": "o:mcq554r:poser",
+    "id": "o:qcnykck:poser",
     "lot": "Menuiseries",
     "label": "Poser porte simple · RDC",
     "fait": false
    },
    {
-    "id": "fauxplaf:572ul31",
+    "id": "fauxplaf:zdka2m6",
     "lot": "Cloisons",
     "label": "Faux plafond · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "clohum:572ul31",
+    "id": "clohum:zdka2m6",
     "lot": "Cloisons",
     "label": "Cloisons hydrofuges · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "iso:wp442s5:0",
+    "id": "iso:lj4pyqn:0",
     "lot": "Isolation",
     "label": "Doubler le mur de 8,00 m · côtés Salle de bain et Chambre · RDC",
     "fait": false
@@ -722,109 +740,121 @@
     "fait": false
    },
    {
-    "id": "sol-chape:572ul31",
+    "id": "sol-chape:zdka2m6",
     "lot": "Sol",
     "label": "Chape traditionnelle · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "sol-rag:572ul31",
+    "id": "sol-rag:zdka2m6",
     "lot": "Sol",
     "label": "Ragréage · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "sol-rev:572ul31",
+    "id": "sol-rev:zdka2m6",
     "lot": "Sol",
     "label": "Poser carrelage · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "faience:572ul31",
+    "id": "faience:zdka2m6",
     "lot": "Sol",
     "label": "Faïence / carrelage mural · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "sol-rev:ap5y6is",
+    "id": "sol-rev:uq2abgm",
     "lot": "Sol",
-    "label": "Poncer et vitrifier le parquet · Chambre · RDC",
+    "label": "Poser un parquet neuf · Chambre · RDC",
     "fait": false
    },
    {
-    "id": "plinthes:ap5y6is",
+    "id": "plinthes:uq2abgm",
     "lot": "Sol",
     "label": "Plinthes · Chambre · RDC",
     "fait": false
    },
    {
-    "id": "i:1qq5p5v:creer",
+    "id": "peint-murs:uq2abgm",
+    "lot": "Peinture",
+    "label": "Peindre les murs · Chambre · RDC",
+    "fait": false
+   },
+   {
+    "id": "peint-plafond:uq2abgm",
+    "lot": "Peinture",
+    "label": "Peindre le plafond · Chambre · RDC",
+    "fait": false
+   },
+   {
+    "id": "i:a2lfubm:creer",
     "lot": "Équipements",
     "label": "Poser la douche · RDC",
     "fait": false
    },
    {
-    "id": "i:1qq5p5v:colonne",
+    "id": "i:a2lfubm:colonne",
     "lot": "Équipements",
     "label": "Colonne de douche · RDC",
     "fait": false
    },
    {
-    "id": "i:1qq5p5v:paroi",
+    "id": "i:a2lfubm:paroi",
     "lot": "Équipements",
     "label": "Paroi de douche · RDC",
     "fait": false
    },
    {
-    "id": "i:vdjv792:creer",
+    "id": "i:71oaj58:creer",
     "lot": "Équipements",
     "label": "Poser double vasque · RDC",
     "fait": false
    },
    {
-    "id": "i:0prguvf:creer",
+    "id": "i:zlje6hm:creer",
     "lot": "Équipements",
     "label": "Poser wc · RDC",
     "fait": false
    },
    {
-    "id": "i:kankzaj:creer",
+    "id": "i:5hqodsw:creer",
     "lot": "Équipements",
     "label": "Poser la baignoire · RDC",
     "fait": false
    },
    {
-    "id": "i:kankzaj:robinet",
+    "id": "i:5hqodsw:robinet",
     "lot": "Équipements",
     "label": "Robinetterie de la baignoire · RDC",
     "fait": false
    },
    {
-    "id": "i:jbn6ky2:creer",
+    "id": "i:r961sdl:creer",
     "lot": "Équipements",
     "label": "Poser escalier · RDC",
     "fait": false
    },
    {
-    "id": "i:9zjbl1j:creer",
+    "id": "i:ek2ql9b:creer",
     "lot": "Équipements",
     "label": "Poser les spots encastrés · RDC",
     "fait": false
    },
    {
-    "id": "i:grwp3sp:creer",
+    "id": "i:gh885jo:creer",
     "lot": "Équipements",
     "label": "Poser le point lumineux · RDC",
     "fait": false
    },
    {
-    "id": "i:wv5lmda:creer",
+    "id": "i:hhxb9jj:creer",
     "lot": "Équipements",
     "label": "Poser prise double · RDC",
     "fait": false
    },
    {
-    "id": "i:qcmcd4b:creer",
+    "id": "i:xkrjsny:creer",
     "lot": "Équipements",
     "label": "Poser plan de travail · RDC",
     "fait": false
@@ -873,6 +903,7 @@
       "cloison": 12.5
      },
      "faience": "mi",
+     "peinture": null,
      "note": null,
      "produits": null
     },
@@ -909,6 +940,10 @@
       "mur": 37.5
      },
      "faience": null,
+     "peinture": {
+      "murs": 43.81,
+      "plafond": 22.77
+     },
      "note": null,
      "produits": null
     }
@@ -1217,6 +1252,7 @@
       "mur": 40
      },
      "faience": null,
+     "peinture": null,
      "note": null,
      "produits": null
     }

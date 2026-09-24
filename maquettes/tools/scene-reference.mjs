@@ -46,7 +46,9 @@ export function scene() {
   const sdb=petite.room, autre=faces.find(f=>f.room!==sdb).room;
   sdb.type='sdb'; sdb.name='Salle de bain'; sdb.floor='Carrelage'; sdb.floorNew='Carrelage'; sdb.faience='mi';
   sdb.sol={chape:'tradi',ragreage:true}; sdb.fauxPlafond=true;
-  autre.type='chambre'; autre.name='Chambre'; autre.floor='Parquet ancien'; autre.floorNew='Parquet';
+  /* D37 : « Parquet » sur un parquet = parquet NEUF (dépose + pose). Le ponçage est un choix à
+     part (PONCAGE), exercé par la scène variantes. La chambre est repeinte, murs et plafond. */
+  autre.type='chambre'; autre.name='Chambre'; autre.floor='Parquet ancien'; autre.floorNew='Parquet'; autre.peinture='tout';
   const cSdb=petite.label, cCh=faces.find(f=>f.room===autre).label;
   const add=(t,c,o={})=>lv.items.push({id:uid(),type:t,x:c.x,y:c.y,w:.9,h:.9,rot:0,st:'creer',...o});
   add('douche',cSdb,{douche:'italienne',w:1.2,h:0.8}); add('vasque2',cSdb); add('wc',cSdb); add('baignoire',cSdb,{w:1.7,h:0.75});
@@ -91,6 +93,8 @@ export function sceneVariantes() {
   setMode('projet'); afterChange();
   const faces=facesCache[lv.id]||[];
   faces.forEach((f,i)=>{if(f.room){f.room.type=i?'chambre':'sejour';f.room.name=i?'Chambre':'Séjour';}});
+  /* D37 : un parquet poncé (une couche, sans dépose), un sol GARDÉ (rien), un plafond seul repeint. */
+  faces.forEach((f,i)=>{const r=f.room;if(!r)return;if(i){r.floor='Carrelage';r.solGarde=true;r.peinture='murs';}else{r.floor='Parquet';r.floorNew=PONCAGE;r.peinture='plafond';}});
   const c0=faces[0].label;
   lv.items.push({id:uid(),type:'escalier',x:c0.x,y:c0.y,w:1,h:2.5,rot:0,st:'creer',materiau:'bois',stair:{type:'droit'}});
   afterChange();

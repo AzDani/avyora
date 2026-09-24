@@ -128,7 +128,9 @@ Object.assign(t, await p.evaluate(() => {
   const r = {};
   loadSample(); setMode("projet"); closeModal();
   const bas = L(), mur = bas.walls[0];
-  poserDoublage(mur, 1, 0, 1); poserDoublage(mur, -1, 0, 1); isoList(mur).forEach((io) => { delete io.st; });   /* doublages existants */
+  /* D37 : un doublage par l'intérieur ne se pose plus côté dehors — la face extérieure reçoit une ITE */
+  { const si = interiorSideN(mur); poserDoublage(mur, si, 0, 1); DBL_CFG.mode = "ite"; poserDoublage(mur, -si, 0, 1); DBL_CFG.mode = "iti"; }
+  isoList(mur).forEach((io) => { delete io.st; });   /* doublages existants */
   const r0 = bas.rooms.find((x) => x.type === "sejour"); r0.floorNew = "Parquet"; r0.fauxPlafond = true; afterChange();
   const avant = chantierPrix(), nAvant = chantierTasks().length;
   addLevel("copy"); const haut = L();
