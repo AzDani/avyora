@@ -1097,3 +1097,31 @@ ne touchait **le sien**, parce que je corrigeais ce que je savais reproduire, pa
 J'aurais dû lui demander son plan au deuxième signalement, pas au cinquième. Quand un utilisateur
 voit un défaut que je ne reproduis pas, **la donnée qui manque est la sienne**, et aucune quantité
 de reconstruction ne la remplace.
+
+## D34 · Le retour d'isolant en tableau devient un choix, face par face (24/09/2026)
+
+**Constat de Dani** sur son plan : il double la seule face chambre du passage séjour/chambre (refend
+en pierre de 60) et l'isolant tourne dans le tableau **jusqu'à l'axe du mur**, sans qu'il l'ait
+demandé. Deux défauts : le retour s'imposait, et il s'arrêtait au milieu du tableau.
+
+**Décision (Dani) :** « certaines personnes ne voudront pas isoler côté tableau pour gagner de la
+largeur de passage, donc elles doivent avoir le choix ». Par défaut, **pas de retour** : la bande
+s'arrête **à fleur du tableau**.
+
+- Le choix se fait dans le panneau de l'ouverture, bloc « Retour d'isolant dans le tableau », une
+  ligne **Non / Oui par face doublée** (nommée par sa pièce). Il n'apparaît que là où un retour a du
+  sens (`retourPossible`) : face doublée en ITI, ouverture non bouchée, pas de fenêtre extérieure
+  posée en applique côté intérieur.
+- Stocké dans `o.retour` (liste des côtés). Dessin, découpe des bandes et suivi lisent
+  `revealOnSide`, qui exige ce choix.
+- Retour choisi sur **une seule face** : il habille **tout** le tableau jusqu'à l'autre parement (à
+  l'axe, il laissait un demi-tableau nu). Sur les deux faces : ils se rejoignent à l'axe, comme avant.
+  Fenêtre en tunnel côté intérieur : arrêt au plan de la menuiserie, inchangé.
+- Le suivi compte le retour dès que **le doublage de la face est neuf** — il ne dépendait que d'une
+  menuiserie neuve, alors qu'un passage existant dans un mur qu'on double se retourne aussi. Prix
+  toujours à 0 (`PRIX.retourIso`, poste abandonné) : rien ne change au budget.
+- Les plans enregistrés avant n'ont pas de `o.retour` : ils s'ouvrent **sans retour**, ce qui est le
+  nouveau défaut voulu.
+
+Contrôle : `tools/doublage.mjs`, 5 vérifications sur le plan réel de Dani (proposé du seul côté
+doublé, absent par défaut, bande à fleur du tableau, choisi → dessiné et suivi, re-cliqué → retiré).

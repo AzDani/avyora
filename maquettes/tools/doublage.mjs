@@ -294,6 +294,30 @@ const res = await p.evaluate((PLAN_REFEND) => {
       for (let i = 0; i < N; i++) mini = Math.min(mini, dist(f.poly[i], f.poly[(i + 1) % N])); });
     t["plan de Dani · plus d'arête minuscule (> 1 cm)"] = mini > 0.01; }
 
+  /* ── retour d'isolant en tableau : un CHOIX, face par face ────────────────────
+     Il se faisait tout seul, et jusqu'à l'axe du mur : Dani double la face chambre du passage
+     séjour/chambre (refend en pierre de 60) et voit l'isolant tourner dans le tableau sans l'avoir
+     demandé. Or certains gardent le tableau nu pour la largeur de passage. */
+  { state = JSON.parse(PLAN_REFEND).state; state.cur = 0; setMode("projet"); afterChange();
+    const lv = L(); const w = lv.walls.find((x) => x.pid === "m63"); const o = lv.openings.find((x) => x.pid === "o70");
+    const side = perp(norm(sub(w.b, w.a))).x > 0 ? 1 : -1;               /* côté chambre */
+    poserDoublage(w, side, 0, 1); afterChange();
+    const tache = () => chantierTasks().some((x) => x.id === "o:" + o.id + ":retouriso");
+    t["retour · proposé du côté doublé seulement"] = retourPossible(o, w, side) && !retourPossible(o, w, -side);
+    t["retour · pas de retour tant qu'on ne l'a pas choisi"] = !revealOnSide(o, w, side) && !tache();
+    /* sans retour, la bande s'arrête au jambage : aucun point de bande dans la largeur du passage */
+    const c = add(w.a, mul(sub(w.b, w.a), o.t)); const u = norm(sub(w.b, w.a));
+    const dansPassage = (P) => P.some((q) => Math.abs((q.x - c.x) * u.x + (q.y - c.y) * u.y) < o.w / 2 - 0.005);
+    let rentre = false;
+    (facesCache[lv.id] || []).forEach((f) => { const N = f.poly.length;
+      for (let i = 0; i < N; i++) { const B = bandeDoublage(f, i); if (!B || B.w !== w) continue;
+        cutAtOpenings(B.quad, w, lv).forEach((P) => { if (dansPassage(P)) rentre = true; }); } });
+    t["retour · sans retour, la bande s'arrête à fleur du tableau"] = !rentre;
+    sel = { kind: "opening", id: o.id }; setRetour(side);
+    t["retour · choisi → dessiné et suivi"] = revealOnSide(o, w, side) && tache();
+    setRetour(side);
+    t["retour · re-cliqué → retiré"] = !revealOnSide(o, w, side) && !tache(); }
+
   return t;
 }, PLAN_REFEND);
 /* ── et le vrai geste, à la souris ───────────────────────────────────────────

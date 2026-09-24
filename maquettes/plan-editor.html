@@ -1118,14 +1118,16 @@ function chantierTasks(){const T=[];const ml=state.levels.length>1;
         {const vc=d.cat==='fenetre'?(VITRAGE_COEF[vitrageOf(o)]||1):1;const vlab=d.cat==='fenetre'?' · '+VITRAGE[vitrageOf(o)].toLowerCase()+' vitrage':'';
          const m=matDeOuverture(o),mc=m?(MAT_COEF[m]??1):1,mlab=m&&matsFor(o).length>1?' · '+(m==='pvc'?'PVC':m):'';
          T.push({id:'o:'+o.id+':poser',lot:'Menuiseries',label:'Poser '+d.label.toLowerCase()+lvn,detail:dim+mlab+vlab+(o.product?.nom?' · '+o.product.nom:''),prix:Math.round((PRIX.menuiserie[o.type]??500)*vc*mc)});}
-        {const siN=interiorSideN(w);const pOuv=add(w.a,mul(sub(w.b,w.a),o.t));const revSides=[1,-1].filter(s=>{const io=isoOnSideAt(w,s,pOuv);if(!io||io.mode==='ite')return false;return isExtType(o.type)?(s===siN&&poseOf(o)!=='applique'):true;});
-          if(revSides.length){const ml=(2*(o.h||d.h)+o.w)*revSides.length;T.push({id:'o:'+o.id+':retouriso',lot:'Isolation',label:'Retour d\'isolant en tableau · '+d.label.toLowerCase()+(revSides.length>1?' (2 faces)':'')+lvn,detail:fmt(ml)+' ml · coupe le pont thermique',prix:Math.round(ml*PRIX.retourIso)});}}
         /* Le volet suit le matériau de SA menuiserie, avec l'exception PVC du catalogue. Sans ça
            le compteur annonçait un volet alu sur une fenêtre PVC — 130 € de trop par volet. */
         if(o.volet){const mv=matDeOuverture(o)||'pvc',cv=mv==='pvc'?MAT_PVC_VOLET:(MAT_COEF[mv]??1);
           T.push({id:'o:'+o.id+':volet',lot:'Menuiseries',label:'Volet '+o.volet+' · '+d.label.toLowerCase()+lvn,detail:dim,prix:Math.round((o.volet==='roulant'?PRIX.voletRoulant:PRIX.voletBattant)*cv)});}
         optsOf(o).forEach(k=>{const v=MENUIS_OPTS[k];if(v)T.push({id:'o:'+o.id+':opt:'+k,lot:'Menuiseries',label:v[0]+' · '+d.label.toLowerCase()+lvn,detail:dim,prix:v[1]});});
-        if(ouvrantOf(o)==='galandage')T.push({id:'o:'+o.id+':galandage',lot:'Cloisons',label:'Caisson à galandage · '+d.label.toLowerCase()+lvn,detail:'poche '+fmt(o.w)+' m dans le mur',prix:PRIX.galandage});}});
+        if(ouvrantOf(o)==='galandage')T.push({id:'o:'+o.id+':galandage',lot:'Cloisons',label:'Caisson à galandage · '+d.label.toLowerCase()+lvn,detail:'poche '+fmt(o.w)+' m dans le mur',prix:PRIX.galandage});}
+      /* Retour d'isolant : il suit le DOUBLAGE neuf de la face, pas la menuiserie — un passage
+         existant dans un mur qu'on double se retourne aussi, si on l'a choisi. */
+      if(ost(o)!=='boucher'){const siN=interiorSideN(w);const pOuv=add(w.a,mul(sub(w.b,w.a),o.t));const revSides=[1,-1].filter(s=>{if(!(o.retour||[]).includes(s))return false;const io=isoOnSideAt(w,s,pOuv);if(!io||io.mode==='ite'||io.st!=='creer')return false;return !(isExtType(o.type)&&s===siN&&poseOf(o)==='applique');});
+        if(revSides.length){const ml=(2*(o.h||d.h)+o.w)*revSides.length;T.push({id:'o:'+o.id+':retouriso',lot:'Isolation',label:'Retour d\'isolant en tableau · '+d.label.toLowerCase()+(revSides.length>1?' (2 faces)':'')+lvn,detail:fmt(ml)+' ml · coupe le pont thermique',prix:Math.round(ml*PRIX.retourIso)});}}});
     facesFor(lv,'projet').forEach(f=>{const r=f.room;if(!r)return;const A=areaNet(lv,f),rn=roomName(r);
       // sol, dans l'ordre de réalisation : dépose → dalle → (béton fini) | isolant → chape → ragréage → revêtement
       const sp=solPlan(r),nw=r.floorNew||'';
@@ -3060,7 +3062,14 @@ function fillIso(poly,finish,mark,innerRef,u,skipEdge){
   ctx.restore();
 }
 // un retour d'isolant est-il dessiné dans le tableau de l'ouverture o, côté s du mur w ? (même règle que drawOpening)
-function revealOnSide(o,w,s){const io=isoOnSideAt(w,s,add(w.a,mul(sub(w.b,w.a),o.t)));if(!io||io.mode==='ite'||!isoShownIso(io,mode()))return false;if(ost(o)==='boucher')return false;if(isExtType(o.type)&&s===interiorSideN(w)&&poseOf(o)==='applique')return false;return true;}
+/* Le retour d'isolant dans le tableau est un CHOIX, face par face — il ne se fait plus tout seul.
+   Décidé par Dani le 24/09/2026 : isoler le tableau coûte de la largeur de passage, et certains
+   préfèrent la garder. Le retour se faisait automatiquement dès que la face était doublée, et il
+   allait jusqu'à l'AXE du mur : doubler une seule face laissait une moitié de tableau isolée et
+   l'autre nue. Sans retour choisi, la bande s'arrête à fleur du tableau.
+   `retourPossible` dit si le retour a un sens ici ; `revealOnSide` s'il a été demandé. */
+function retourPossible(o,w,s){const io=isoOnSideAt(w,s,add(w.a,mul(sub(w.b,w.a),o.t)));if(!io||io.mode==='ite'||!isoShownIso(io,mode()))return false;if(ost(o)==='boucher')return false;if(isExtType(o.type)&&s===interiorSideN(w)&&poseOf(o)==='applique')return false;return true;}
+function revealOnSide(o,w,s){return retourPossible(o,w,s)&&(o.retour||[]).includes(s);}
 // découpe d'une bande d'isolant au droit des ouvertures du mur : l'isolant s'arrête contre la menuiserie
 function clipHalf(poly,u,sCut,keepLess){const out=[];const N=poly.length;for(let i=0;i<N;i++){const A=poly[i],B=poly[(i+1)%N];const sa=A.x*u.x+A.y*u.y,sb=B.x*u.x+B.y*u.y;const inA=keepLess?sa<=sCut:sa>=sCut,inB=keepLess?sb<=sCut:sb>=sCut;if(inA)out.push(A);if(inA!==inB&&Math.abs(sb-sa)>1e-9){const t=(sCut-sa)/(sb-sa);out.push(add(A,mul(sub(B,A),t)));}}return out;}
 function cutAtOpenings(poly,w,lv){const u=norm(sub(w.b,w.a));let polys=[poly];
@@ -3252,7 +3261,9 @@ function drawOpening(o,isSel){
   // retour d'isolant en tableau — dessiné en coordonnées MONDE avec fillIso() : EXACTEMENT la même représentation (remplissage + hachures + trait de placo) que le doublage des murs.
   // va jusqu'au bord extérieur du doublage (t/2+dt) → à fleur des bandes latérales, coin rempli ; 2 faces mêmes ép. = une seule gaine continue.
   if(os!=='boucher'&&layOn('iso')){ // rattaché au calque Isolation (masqué avec le doublage ; toujours visible à l'export)
-    const layers=[1,-1].map(s=>{const io=isoOnSide(w,s);if(!io||io.mode==='ite'||!isoShownIso(io,mode()))return null;const dt=doublageOf(io);let yEnd;if(isExtM&&s===siN){if(poseOf(o)==='applique')return null;yEnd=py;}else yEnd=0;return {s,dt,yOuter:s*(t/2+dt),yEnd,L:Math.min(dt,half-0.02),creer:mode()==='projet'&&io.st==='creer'};}).filter(Boolean);
+    /* Seulement les faces où le retour a été CHOISI (revealOnSide). Une seule face choisie : le retour
+       habille tout le tableau jusqu'à l'autre parement — s'arrêter à l'axe laissait un demi-tableau nu. */
+    const layers=[1,-1].map(s=>{if(!revealOnSide(o,w,s))return null;const io=isoOnSideAt(w,s,add(w.a,mul(sub(w.b,w.a),o.t)));const dt=doublageOf(io);let yEnd;if(isExtM&&s===siN)yEnd=py;else yEnd=revealOnSide(o,w,-s)?0:-s*t/2;return {s,dt,yOuter:s*(t/2+dt),yEnd,L:Math.min(dt,half-0.02),creer:mode()==='projet'&&io.st==='creer'};}).filter(Boolean);
     const toW=(lx,ly)=>add(add(c,mul(u,lx)),mul(n,ly)); // local (le long / à travers) → monde
     // retour : remplissage + hachures (sans bord auto), puis la PÉRIPHÉRIE continue tracée à la main = prolongement du bord extérieur de la bande → face intérieure du tableau → retour ; + onglets 45° aux coins.
     // aucun trait ne traverse l'épaisseur de l'isolant (les bords de coupe des bandes sont sautés dans drawDoublageITI).
@@ -3570,6 +3581,16 @@ function renderSelection(lv){
     ${ost(o)!=='creer'&&ost(o)!=='remplacer'?`<div class="row"><label>État</label><span class="seg" style="display:inline-flex">${Object.entries(MENUIS_ETAT).map(([k,l])=>`<button class="${o.etat===k?'on':''}${k==='vetuste'?' st-demolir':''}" onclick="setOpeningProp('etat','${k}')">${l}</button>`).join('')}</span></div>${o.etat==='vetuste'&&ost(o)!=='remplacer'?`<div class="tip" style="margin-top:6px;border-color:#fecaca;background:#fff5f5">🔴 Menuiserie vétuste : passe-la <b>« ${mode()==='existant'?'Je la remplace':'À remplacer'} »</b> pour la chiffrer en neuve.</div>`:''}`:''}
     ${ost(o)!=='creer'&&ost(o)!=='boucher'?blocDecisionExistant(k=>`setOpeningProp('st','${k}')`,ost(o),[['existant','Rien de prévu','pas encore tranché'],['garder','Je la garde','vérifiée, elle reste'],['remplacer','Je la remplace','menuiserie neuve','st-creer']],`Ce que tu décides ici de cette menuiserie.`):''}
     ${ost(o)==='boucher'?`<div class="tip" style="margin-top:10px">Cette ouverture est <b>bouchée</b> : il n'y a plus de menuiserie à décrire, seulement un trou à refermer. Les dimensions ci-dessus donnent la surface à reboucher.</div>`:''}
+    ${(()=>{
+      /* Le retour d'isolant se décide ICI, côté par côté. Il se faisait tout seul ; le
+         rendre au choix sans le montrer aurait refait l'erreur du retrait en Alt+clic. */
+      const wo=lv.walls.find(x=>x.id===o.wallId);if(!wo)return '';
+      const cotes=[1,-1].filter(c=>retourPossible(o,wo,c));if(!cotes.length)return '';
+      const nom=c=>{const u=norm(sub(wo.b,wo.a)),pt=add(add(wo.a,mul(sub(wo.b,wo.a),o.t)),mul(perp(u),c*(wallT(wo)/2+0.12)));const f=(facesCache[lv.id]||[]).find(f=>f.room&&!RT[f.room.type].ext&&pointIn(pt,f.poly));const r=f&&f.room;return r?(r.name||RT[r.type].label):(c===interiorSideN(wo)?'intérieur':'extérieur');};
+      return `<div class="ph mt">Retour d'isolant dans le tableau</div>
+      ${cotes.map(c=>{const on=(o.retour||[]).includes(c);return `<div class="row"><label>Côté ${nom(c).replace(/</g,'&lt;')}</label><span class="seg" style="display:inline-flex"><button class="${!on?'on':''}" onclick="${on?`setRetour(${c})`:''}">Non</button><button class="${on?'on':''}" onclick="${on?'':`setRetour(${c})`}">Oui</button></span></div>`;}).join('')}
+      <div class="tip" style="margin-top:6px">Isoler le tableau coupe le pont thermique, mais réduit la largeur de passage (l'épaisseur du doublage, sur chaque jambage). Sans retour, le doublage s'arrête à fleur du tableau.</div>`;
+    })()}
     ${ost(o)==="boucher"?"":`${isExtType(o.type)?`<div class="ph mt">Type de pose</div>${ouvrantOf(o)==='galandage'?`<div class="tip">Le galandage se loge dans le doublage intérieur → <b>pose en applique</b> imposée.</div>`:`<div class="seg">${Object.entries(POSE).filter(([k])=>POSE_CHOIX.includes(k)).map(([k,pz])=>`<button class="${poseOf(o)===k?'on':''}" onclick="setOpeningProp('pose','${k}')">${pz.short.charAt(0).toUpperCase()+pz.short.slice(1)}</button>`).join('')}</div><div class="tip" style="margin-top:8px">${POSE[poseOf(o)].desc}</div>`}${poseOf(o)!=='applique'?'':(()=>{const d=dormantOf(o),iso=d>=60?d-20:0,rw=wallOfOpening(o),wIso=rw&&rw.w.iso&&rw.w.iso.mode!=='ite'?Math.round(doublageTotal(rw.w)*1000):null;const ok=wIso==null||Math.abs(d-wIso)<=5;const neuve=ost(o)==='creer'||ost(o)==='remplacer';
     /* Sur une menuiserie qu'on POSE, la tapée n'est pas un choix : elle est imposée par le
        doublage du mur, et syncNewDormants la tient déjà à jour. La proposer en boutons, c'est
@@ -3918,6 +3939,8 @@ function isoSideHtml(w,side){const io=isoOnSide(w,side);const room=roomOnSide(w,
 function renderWallIsoInterior(w,lv){return `<div class="ph mt">Isolation — mur de séparation</div><div class="tip" style="margin-bottom:8px">Ce mur est intérieur (une pièce de chaque côté) : tu peux le doubler <b>indépendamment sur chaque face</b> (isolation acoustique ou thermique, pièce par pièce).</div>${[1,-1].map(s=>isoSideHtml(w,s)).join('')}`;}
 function splitWall(){const w=findWall(sel.id);history.push(snapshot());const m=mul(add(w.a,w.b),.5);const w2={id:uid(),a:{...m},b:{...w.b},type:w.type};w.b={...m};L().openings.forEach(o=>{if(o.wallId===w.id){if(o.t>0.5){o.wallId=w2.id;o.t=(o.t-0.5)*2;}else o.t*=2;}});L().walls.push(w2);afterChange();}
 function toggleOpeningOpt(k){const o=L().openings.find(o=>o.id===sel.id);if(!o)return;history.push(snapshot());o.opts=o.opts||[];const i=o.opts.indexOf(k);if(i>=0)o.opts.splice(i,1);else o.opts.push(k);afterChange();}
+function basculerRetour(o,cote){history.push(snapshot());const l=(o.retour||[]).slice();const i=l.indexOf(cote);if(i>=0)l.splice(i,1);else l.push(cote);o.retour=l;afterChange();}
+function setRetour(cote){const o=L().openings.find(x=>x.id===sel.id);if(o)basculerRetour(o,cote);}
 function setOpeningProp(k,val){const o=L().openings.find(o=>o.id===sel.id);if(k==='volet'&&val==='battant'&&o.type==='baie')val='roulant';if(k==='ouvrant'&&val==='galandage')o.pose='applique';if(k==='pose'&&val!=='applique'&&ouvrantOf(o)==='galandage')o.ouvrant='coulissant';if(k==='st'&&(val==='creer'||val==='remplacer')&&o.vitrage==='simple')o.vitrage='double';history.push(snapshot());if(k==='type'){const d=OPENINGS[val];o.type=val;o.w=d.w;o.h=d.h;if(val==='baie')o.mat='alu';else if(!matsFor(o).includes(o.mat))delete o.mat;}else if(k==='st'){if(val==='existant')delete o.st;else o.st=val;
     /* Devenir neuve ou remplacée, c'est hériter de la tapée qu'impose le doublage du mur.
        Elle ne se recalculait qu'en touchant l'isolation : passer une menuiserie en
