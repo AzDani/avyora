@@ -1677,3 +1677,116 @@ maçonnerie), `decision.mjs` (titre « Décision » dans les deux vues, liste co
 « Épaisseur du cadre (tapée) »), `robustesse.mjs` (l'outil B s'appelle « Zone »), `coherence.mjs`
 (le bloc « hors plan » ne cite plus de nombre de postes). Fixture du contrat régénérée : seuls les
 libellés et lots du `suivi` et les textes des contrôles changent (contrat 1.14.0 inchangé).
+
+## D40 · Le budget, héros du produit (24/09/2026)
+
+**Constat (jury : débutant, designer, rétention, cohérence).** Le montant existait, juste au centime
+depuis D36, mais il restait petit, muet et recalculé à plusieurs endroits.
+- **Pied du panneau** : 264 px sur 900 (282 chez le designer), trois lignes de chiffres (niveaux ·
+  pièces, portes · fenêtres, surface en 24 px) au-dessus d'un budget en 19 px, et un deuxième
+  bouton violet « Estimer ce plan » sous celui de la barre du haut. À 1 280 × 800, la fiche de
+  l'élément sélectionné n'avait plus que 480 px.
+- **Le montant bougeait sans rien dire** : démolir une cloison faisait défiler le compteur de
+  3 369 à 3 519 €, sans dire de combien ni pourquoi. C'est pourtant le lien « décision → coût »
+  qui fait la valeur du produit.
+- **Plusieurs totaux** : Estimer, le Suivi et la page Suivi du dossier refaisaient chacun leur
+  somme des tâches ; la page Budget du dossier ne montrait que les corps d'état.
+- **« Estimer ce plan »** (déjà refait en D39) : « Encore à décider » s'arrêtait à 8 lignes, puis
+  « … et 11 autres, à retrouver sur le plan », non cliquable ; les actions n'apparaissaient qu'après
+  7 cartes jaunes et le tableau « hors plan » ; le montant apparaissait d'un coup ; une tâche sans
+  prix s'affichait « 0 € », comme si le travail était gratuit.
+- **Suivi** : une case cochée enregistrait sa date (`state.done[id] = Date.now()`) sans jamais
+  l'afficher.
+- **« Mes plans »** : « 24 sept. 18:45 · 11 mur(s) » — ni surface, ni budget, ni avancement : rien
+  qui rappelle ce que le plan vaut.
+- **Téléphone** : le tiroir fermé disait « 58,8 m² habitable · détails », le budget restait sous
+  l'écran ; tiroir ouvert, la barre de zoom recouvrait le coin droit du pied, là où est le montant.
+- **Plan vide** : « Estimer ce plan » grisé en bas sans un mot, actif en haut (un clic répondait
+  « Trace d'abord au moins une pièce fermée »).
+
+**Vérifié avant d'écrire.** `lib/estimateur/core.ts` : `fp` = fourni-posé **HT** ; le compteur du
+plan lit ces prix, le mot « HT » est donc juste. Aucun prix n'a été touché (`PRIX`, `EQUIP_PRIX`…) :
+`coherence.mjs` reste vert sans divergence. `lib/` et `app/` ne sont pas touchés.
+
+**Décisions.**
+1. **Une seule source** : `chantierPrix(T?)` garde ses champs (`total`, `parLot`, `nb`) et ajoute
+   `taches`, `lots` (corps d'état dans l'ordre du chantier, via `lotsDe`), `fait` (€ des tâches
+   cochées), `faites` et `nonChiffrees`. Le pied, Estimer (Pro et gratuit), le Suivi, les pages
+   Suivi et Budget du dossier, « Mes plans », le tiroir du téléphone et la pastille d'écart la
+   lisent ; plus aucune somme refaite à côté. Le prix d'une tâche se dit partout par `prixTache` :
+   un montant, « inclus », ou **« non chiffré »** — plus jamais « 0 € ».
+2. **Le pied = une carte** (≤ 170 px, mesuré 155 px à 1 440 et 1 280 px) : « Budget travaux HT »,
+   le nombre de tâches, le montant en Geist Mono 28 px, « indicatif · prix catalogue, moyenne
+   nationale » et **« Voir le détail → »** ; toute la carte ouvre Estimer. C'est son **seul appel** :
+   le second bouton « Estimer ce plan » disparaît (celui de la barre du haut reste le primaire). La
+   surface passe sur une ligne de 12 px (« 58,9 m² habitables après travaux · 5 pièces ») ; portes
+   et fenêtres restent dans les quantités d'Estimer. Gratuit : même carte, montant flouté, phrase
+   `avecPro('budget')`, « Aperçu → ». Rien de décidé : la carte le dit (texte D36) et ouvre Estimer,
+   qui liste ce qu'il reste à décider. L'envoi « (dev) » reste derrière `?dev`.
+3. **Plan vide, cohérent en haut et en bas** : une phrase, `ATTENTE_PIECE` (« Ton budget apparaîtra
+   dès ta première pièce fermée. »). En bas, une carte d'attente en pointillés qui la dit ; en haut,
+   le bouton est grisé **sans être désactivé** (`aria-disabled`, classe `attente`) pour garder son
+   `title` au survol et au lecteur d'écran, et un clic redit la même phrase (+ « Trace ses murs avec
+   l'outil Murs (M). » hors téléphone). Dès la première pièce, les deux redeviennent actifs.
+4. **La pastille d'écart** (`ecartBudget`, `#budgetDelta`, `role="status"`, `aria-live="polite"`) :
+   à chaque changement du montant, au-dessus de la carte, 3,2 s : « +150 € · Démolir la cloison entre
+   Chambre et Séjour · 4,00 m ». La tâche nommée est celle de l'objet sélectionné (sinon la plus
+   grosse), avec « · et n autres tâches » ; une tâche disparue s'écrit « −49 € · retiré : … ».
+   L'écart se compte depuis le montant d'avant la série de gestes : glisser un mur montre l'écart
+   cumulé, pas une rafale de « +1 € », et revenir au point de départ l'efface. Ouvrir un plan, un plan
+   type, l'exemple ou une feuille blanche n'en montre pas (rien n'a été décidé) ; annuler / rétablir,
+   si (`_prixSuite`). En gratuit, pas de pastille : le montant est Pro. Sur téléphone, elle se pose
+   au-dessus du tiroir. **Ce n'est pas un toast** : D39 l'avait refusée parce qu'elle aurait écrasé
+   les messages qui portent une action (« Annuler ») ; elle a donc sa propre place, et le message
+   « Annuler » de Suppr reste intact.
+5. **Compteurs** : `compter()` sert le pied (450 ms) et le héros d'Estimer (de 0 au total, 700 ms) ;
+   le texte final est posé d'abord (lecteur d'écran, contrôles), l'animation ne fait que le
+   rejoindre. `prefers-reduced-motion: reduce` → montant affiché d'emblée, pastille sans glissement.
+6. **Estimer** : chaque corps d'état dit sa part (« 2 tâches · 82 % ») ; un lot sans prix dit « non
+   chiffré » ; une phrase explique quoi cliquer. « Encore à décider (n) » : 5 lignes, puis **« Voir
+   les n autres »** (toutes cliquables : chaque ligne sélectionne son objet et ferme la fenêtre),
+   cartes neutres avec « Voir sur le plan », et la pastille « 19 à décider ↓ » du héros y descend.
+   « Ce que ton plan ne dit pas encore » passe du jaune au neutre (le jaune reste aux alertes du
+   contrôle). « Pas encore chiffré » ajoute « Ils seront à chiffrer avec ton artisan ». Les actions
+   **Exporter le dossier** (seul primaire) et **Enregistrer dans « Mes plans »** ont une icône et
+   restent collées en bas de la fenêtre tant qu'on lit au-dessus. Si des tâches sont cochées, le
+   héros dit « X € déjà réalisés ».
+7. **Suivi** : « fait le 24/09 » sous une tâche cochée (date déjà enregistrée ; les anciennes cases
+   sans date n'affichent rien) ; « reste X € » à côté de « n/N tâches faites » ; « non chiffré » dans
+   la colonne prix.
+8. **Dossier exporté** : la page Budget s'ouvre sur le montant (bandeau encre), puis un tableau
+   corps d'état · tâches · part · montant, le total, et deux lignes honnêtes quand il y a lieu :
+   « Pas encore chiffré : n tâches… » et « Encore à décider : n éléments… », hors total.
+9. **« Mes plans »** : chaque plan rangé emporte un `resume` (surface, pièces, budget, tâches,
+   faites), écrit à chaque rangement et à chaque mise à jour automatique ; la carte montre une
+   vignette de ses murs (`miniPlanSVG` : neuf en rouge, démoli en pointillé), « 58,9 m² · 3 369 € HT ·
+   chantier 1/7 » et la date. Le plan ouvert se lit en direct ; un plan rangé avant D40 garde
+   l'ancienne ligne (« 11 murs ») jusqu'à sa prochaine ouverture. En gratuit : surface et nombre de
+   tâches, sans montant.
+10. **Téléphone** : tiroir fermé « 58,8 m² · 3 369 € HT · détails » (Pro, dès une tâche) ; tiroir
+    ouvert, la barre de zoom s'efface (`body.sheetOpen`) et ne couvre plus le montant.
+
+**Ce qui n'est pas fait, et pourquoi.**
+- **« Envoyer vers mon estimation » en un clic** (retention07 : copier en arrière-plan et ouvrir la
+  page d'import) : l'arbitrage C le garde derrière `?dev` tant que l'import n'est pas branché dans
+  le site (ImporterPlan non monté). Rien à brancher ici.
+- **Titre « Ton estimation » / « Pour affiner (7) »** (design01, novice04) : la fenêtre garde « Ton
+  budget travaux » (D39) et « Ce que ton plan ne dit pas encore » ; seules les couleurs changent.
+- **Pastille du budget en haut du plan, à côté de la surface** (proposition du designer) : non — le
+  montant a une seule place à l'écran (la carte), et la pastille d'écart vient s'y poser.
+- **Un plan rangé avant D40** n'a pas de résumé : le recalculer demanderait de recharger chaque plan
+  dans l'éditeur (caches des pièces par niveau) ; il se complète tout seul à sa prochaine ouverture.
+- **Emoji du badge de surface (🏠)**, barre du haut sur une ligne, menu Fichier : chantier visuel.
+
+**Contrôles.** Nouveau `tools/valeur.mjs` (61 vérifications, **à ajouter à la batterie**) : une
+source (`chantierPrix` = somme du Suivi, lots ordonnés, non chiffrées) ; pied (un seul appel, montant
+= source, montant ≥ 2 × la surface, ≤ 170 px à 1 440 × 900 et 1 280 × 800, en Pro, en gratuit et
+« rien de décidé », la carte ouvre Estimer) ; Estimer (texte final dès l'ouverture, compteur qui
+monte puis s'arrête juste, lots avec barre et montant, prix de chaque tâche = `prixTache`, jamais
+« 0 € », toutes les lignes « à décider » cliquables y compris repliées, actions collantes, rien de
+développeur) ; Suivi (« réalisés sur », « fait le jj/mm ») ; dossier (Budget et Suivi = la source) ;
+« Mes plans » (résumé enregistré, carte, date, vignette, plan fermé) ; pastille (décision, signe,
+tâche, aria-live, disparition, annuler, Suppr sans effacer « Annuler », rien au chargement d'un plan
+type, rien en gratuit) ; plan vide (haut et bas, même phrase, clic, retour à l'actif) ; moins
+d'animation ; téléphone (tiroir Pro / gratuit, barre de zoom). Les contrôles existants passent sans
+modification.

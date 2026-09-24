@@ -222,6 +222,12 @@ div.tot .v.big{font-size:24px}
 .grp .gdot{width:10px;height:10px;border-radius:3px;flex:0 0 auto}
 .grp .glink{border:0;background:transparent;font:inherit;font-weight:600;color:var(--ink);cursor:pointer;flex:1;text-align:left}
 .grp .gn{font-size:11px;color:var(--muted);font-family:"Geist Mono",monospace}
+/* D40 · carte de « Mes plans » : vignette, surface · budget · avancement, date */
+.grp.plancard{padding:8px 10px;gap:10px;border-radius:12px}
+.plancard .pmini{flex:0 0 52px;height:44px;border-radius:8px;background:var(--canvas);display:flex;align-items:center;justify-content:center;padding:4px}
+.plancard .pmini svg{width:100%;height:100%}
+.plancard .glink{display:flex;flex-direction:column;gap:1px;min-width:0}
+.plancard .gres{font-family:"Geist Mono",monospace;font-variant-numeric:tabular-nums;font-size:12px;font-weight:600;color:var(--ink)}
 .grp .gx{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:13px}.grp .gx:hover{color:var(--warn)}
 .budget{display:flex;align-items:center;justify-content:space-between;gap:10px;background:linear-gradient(120deg,var(--nuit),#2a2270);color:#fff;border-radius:12px;padding:10px 14px;margin-bottom:12px}
 .budget .bl span{display:block;font-size:12px;font-weight:700}.budget .bl small{display:block;font-size:10.5px;color:var(--acc3);margin-top:2px;line-height:1.3}
@@ -318,6 +324,33 @@ pre{background:#14112f;color:#d7d4f2;font-family:"Geist Mono",monospace;font-siz
 .budgetbtn:hover{filter:brightness(1.08)}
 .budgetbtn:focus-visible{outline:2px solid var(--acc3);outline-offset:2px}
 .budgetbtn .bl{display:block}.budgetbtn .bl small b{color:#fff;text-decoration:underline;text-underline-offset:2px}
+/* D40 · le pied du panneau : une carte budget (son seul appel), une ligne de résumé */
+.panel{position:relative}
+.pfoot{padding:12px 16px 14px}
+.budget.bcard{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:1px;padding:11px 14px;margin-bottom:8px;border-radius:14px}
+.bcard .bk{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12px;font-weight:700;color:#fff}
+.bcard .bn{font-family:"Geist Mono",monospace;font-variant-numeric:tabular-nums;font-size:11px;font-weight:600;color:var(--acc3)}
+.budget.bcard .bv{font-size:28px;letter-spacing:-.02em;line-height:1.2;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bcard .bs{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.bcard .bs small{display:block;font-size:10.5px;color:var(--acc3);line-height:1.35;margin:0}
+.bcard .bs small b{color:#fff}
+.bcard .bs>b{font-size:12px;font-weight:700;color:#fff;white-space:nowrap;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(255,255,255,.45)}
+.budgetbtn.bcard:hover .bs>b{text-decoration-color:#fff}
+.bcard.attente{background:var(--canvas);border:1px dashed #cfcee0;color:var(--muted)}
+.bcard.attente .bk{color:var(--ink)}.bcard.attente .bv{color:#b9b8cc}.bcard.attente .bs small{color:var(--muted);font-size:11.5px}
+.presume{font-size:12px;color:var(--muted);line-height:1.5;padding:0 2px}
+.presume b{font-family:"Geist Mono",monospace;font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink)}
+/* le bouton du haut, sans pièce : grisé, et il dit pourquoi (title + message au clic) */
+.ib.primary.attente{background:#cfcee0;border-color:#cfcee0;color:#fff;cursor:not-allowed}
+.ib.primary.attente:hover{background:#c4c3d8}
+/* la pastille d'écart, au-dessus de la carte budget (sur téléphone : au-dessus du tiroir) */
+.bdelta{position:absolute;left:12px;right:12px;bottom:170px;z-index:4;display:flex;align-items:center;gap:8px;background:var(--white);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:12.5px;font-weight:600;color:var(--ink);box-shadow:0 10px 28px rgba(30,27,75,.16);opacity:0;transform:translateY(6px);transition:opacity .2s,transform .2s;pointer-events:none}
+.bdelta.show{opacity:1;transform:none}
+.bdelta b{font-family:"Geist Mono",monospace;font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap;flex:0 0 auto}
+.bdelta b.plus{color:var(--brand)}.bdelta b.moins{color:#15803d}
+.bdelta span{min-width:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.35;color:var(--muted);font-weight:500}
+@media (prefers-reduced-motion:reduce){.bdelta{transition:none;transform:none}}
+@media (max-width:600px){.bdelta{top:-54px;bottom:auto!important}body.sheetOpen .zoomctl{display:none}}
 a.ib{text-decoration:none}
 .ib.propill{background:#fff;color:var(--nuit);white-space:nowrap}
 /* D39 · « Estimer ce plan » : le montant d'abord */
@@ -357,6 +390,26 @@ button.tline{cursor:pointer}button.tline:hover{background:var(--brand-l)}
 .estactions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0 16px}
 .estactions .estimate{width:auto;flex:1;margin-top:0;text-decoration:none;min-width:200px}
 .qdet{margin-top:8px;border-top:1px solid var(--line);padding-top:4px}
+/* D40 · Estimer : actions toujours à portée, décisions neutres et cliquables, « non chiffré » dit */
+.estactions.colle{position:sticky;bottom:-26px;z-index:3;background:var(--white);margin:6px -26px 16px;padding:12px 26px 16px;border-top:1px solid var(--line);box-shadow:0 -12px 22px -16px rgba(30,27,75,.35)}
+.estactions .estimate .ico,.estactions .ib .ico{width:17px;height:17px;flex-basis:17px}
+.estnote{font-size:12.5px;color:var(--muted);line-height:1.45;margin:-4px 0 10px}
+.chks.adecs{display:flex;flex-direction:column;gap:6px}
+.chk.adec{display:flex;align-items:center;background:var(--white);border:1px solid var(--line);margin:0}
+.chk.adec .ci{color:var(--muted)}
+.chk.adec .at{flex:1;min-width:0}
+.chk.adec .go{flex:0 0 auto;font-size:11.5px;font-weight:700;color:var(--brand);white-space:nowrap}
+.chk.adec:hover{border-color:var(--acc3);background:var(--brand-l)}
+.plusadec{margin-top:6px}.plusadec>summary{cursor:pointer;font-size:12.5px;font-weight:700;color:var(--brand);padding:6px 2px;list-style:none}
+.plusadec>summary::-webkit-details-marker{display:none}.plusadec>summary::before{content:"+ "}.plusadec[open]>summary::before{content:"− "}
+.chk.neutre{background:var(--white);border-color:var(--line)}.chk.neutre .ci{color:var(--muted)}
+.estlot .lv.nul,.tline .n.muted{color:var(--muted);font-weight:500;font-family:Geist,system-ui,sans-serif;font-size:12px}
+.task .tpx.nul{color:var(--muted);font-weight:500;font-family:Geist,system-ui,sans-serif;font-size:11px}
+.esthero .eh2b{display:flex;flex-direction:column;align-items:flex-start;border:0;background:rgba(255,255,255,.08);color:#d9d6f5;font:inherit;font-size:12px;border-radius:10px;padding:4px 8px;margin:-4px -8px;cursor:pointer;text-align:left}
+.esthero .eh2b:hover{background:rgba(255,255,255,.16)}
+.esthero .eh2b b{font-family:"Geist Mono",monospace;font-variant-numeric:tabular-nums;font-size:19px;color:#fff}
+.esthero .eh2b i{font-style:normal;white-space:nowrap}
+@media (max-width:600px){.estactions.colle{bottom:-18px;margin:6px -18px 16px;padding:10px 18px 14px}.chk.adec .go{display:none}}
 .flou{filter:blur(5px);user-select:none}
 ul.droits{list-style:none;padding:0;margin:0 0 12px;display:flex;flex-direction:column;gap:7px;font-size:13px}
 ul.droits li{padding-left:22px;position:relative;line-height:1.4}
@@ -454,6 +507,8 @@ html:not(.dev) .devonly{display:none!important}
 .xpage.pro .xhead{border-bottom-color:var(--brand)}
 .xpage.pro .xpn{color:var(--brand)}
 .xpage .xrecap{position:relative;z-index:1}
+.xbig{display:flex;flex-direction:column;background:linear-gradient(120deg,var(--nuit),#2a2270);color:#fff;border-radius:14px;padding:14px 18px;margin:0 0 14px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.xbig span{font-size:12px;font-weight:700;color:var(--acc3)}.xbig b{font-family:"Geist Mono",monospace;font-variant-numeric:tabular-nums;font-size:30px;letter-spacing:-.02em;line-height:1.2}.xbig small{font-size:12px;color:#d9d6f5}
 .xpage .xrecap .kpis{margin-top:4px}
 .prochip{border:1px solid var(--line);cursor:pointer;font:inherit;font-size:11.5px;font-weight:700}
 .prochip.pro{background:var(--nuit);color:#fff;border-color:var(--nuit)}
@@ -522,6 +577,7 @@ html:not(.dev) .devonly{display:none!important}
   <div class="panel" id="panel">
     <button class="sheetHandle" id="sheetHandle" onclick="toggleSheet()"><span class="bar"></span><span id="sheetLabel">Détails du plan</span><span class="chev">⌃</span></button>
     <div class="pbody" id="pbody"></div>
+    <div class="bdelta" id="budgetDelta" role="status" aria-live="polite" aria-atomic="true"></div>
     <div class="pfoot" id="pfoot"></div>
   </div>
 </div>
@@ -1561,7 +1617,17 @@ function chantierTasks(){const T=[];const ml=state.levels.length>1;
   toitureTasks(T);
   T.sort((a,b)=>LOTS.indexOf(a.lot)-LOTS.indexOf(b.lot));return T;}
 const isDone=id=>!!(state.done&&state.done[id]);
-function chantierPrix(){const T=chantierTasks();const parLot={};let total=0;T.forEach(t=>{const px=t.prix||0;total+=px;parLot[t.lot]=(parLot[t.lot]||0)+px;});return {total:Math.round(total),parLot,nb:T.length};}
+/* D40 · UNE source pour le montant : la somme des tâches du Suivi. Le pied du panneau, « Estimer
+   ce plan », le Suivi, l'export, « Mes plans », le tiroir du téléphone et la pastille d'écart la
+   lisent ; plus aucun total refait à côté. Les champs d'avant (total, parLot, nb) ne changent pas. */
+function chantierPrix(T){T=T||chantierTasks();const parLot={};let total=0,fait=0,faites=0;
+  T.forEach(t=>{const px=t.prix||0;total+=px;parLot[t.lot]=(parLot[t.lot]||0)+px;if(isDone(t.id)){fait+=px;faites++;}});
+  return {total:Math.round(total),parLot,nb:T.length,taches:T,lots:lotsDe(T),fait:Math.round(fait),faites,nonChiffrees:T.filter(t=>!t.prix&&!t.inclus)};}
+/* Le prix d'une tâche, dit pareil partout : un montant, « inclus », ou « non chiffré » (jamais un
+   « 0 € » qui ferait croire que le travail est gratuit). */
+const prixTache=t=>t.prix?eur(Math.round(t.prix)):t.inclus?'inclus':'non chiffré';
+/* « fait le 24/09 » : la date que la case a enregistrée (les cases d'avant n'en ont pas toujours). */
+function faitLe(id){const d=state.done&&state.done[id];if(typeof d!=='number'||d<1e12)return '';try{return 'fait le '+new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'});}catch{return '';}}
 function toggleDone(id){history.push(snapshot());state.done=state.done||{};if(state.done[id])delete state.done[id];else state.done[id]=Date.now();save();render();}
 /* Le détail d'une tâche, augmenté du seul cas où le silence mentirait : une tâche que le budget
    ne compte pas. Sans ce mot, l'ouvrage figure au suivi de chantier et manque au total sans que
@@ -1570,10 +1636,10 @@ function toggleDone(id){history.push(snapshot());state.done=state.done||{};if(st
 function detailTache(t){const nul=!t.prix&&!t.inclus,n=t.pourquoi||'non compté dans le budget';return t.detail?(nul?t.detail+' · '+n:t.detail):(nul?n:'');}
 /* D39 (arbitrage L) : la liste du Suivi. Le prix de chaque tâche en Pro, le total de chaque corps
    d'état, et un clic sur le texte d'une tâche montre son objet sur le plan (la case, elle, coche). */
-function chantierListHTML(T,editable,opt){const pro=!!(opt&&opt.prix);let lot='',h='';const parLot={};T.forEach(t=>{parLot[t.lot]=(parLot[t.lot]||0)+(t.prix||0);});
-  T.forEach(t=>{if(t.lot!==lot){lot=t.lot;h+=`<div class="lot"><span>${esc(lot)}</span>${pro?`<span class="lotpx">${eur(Math.round(parLot[lot]))}</span>`:''}</div>${editable&&lot==='Électricité et plomberie'?'<div class="lotnote">Les gaines et les arrivées d\'eau passent avant que les cloisons soient fermées.</div>':''}`;}
-    const dn=isDone(t.id),dt=detailTache(t),c=editable&&tacheCible(t.id),px=pro?`<span class="tpx">${t.prix?eur(Math.round(t.prix)):t.inclus?'inclus':'0 €'}</span>`:'';
-    const txt=`<b>${esc(t.label)}</b>${dt?`<small>${esc(dt)}</small>`:''}`;
+function chantierListHTML(T,editable,opt){const pro=!!(opt&&opt.prix);let lot='',h='';const parLot=chantierPrix(T).parLot;
+  T.forEach(t=>{if(t.lot!==lot){lot=t.lot;h+=`<div class="lot"><span>${esc(lot)}</span>${pro?`<span class="lotpx">${parLot[lot]?eur(Math.round(parLot[lot])):'non chiffré'}</span>`:''}</div>${editable&&lot==='Électricité et plomberie'?'<div class="lotnote">Les gaines et les arrivées d\'eau passent avant que les cloisons soient fermées.</div>':''}`;}
+    const dn=isDone(t.id),dt=detailTache(t),fl=dn?faitLe(t.id):'',c=editable&&tacheCible(t.id),px=pro?`<span class="tpx${t.prix?'':' nul'}">${prixTache(t)}</span>`:'';
+    const txt=`<b>${esc(t.label)}</b>${dt||fl?`<small>${esc([dt,fl].filter(Boolean).join(' · '))}</small>`:''}`;
     h+=editable?`<div class="task ${dn?'done':''}"><input type="checkbox" ${dn?'checked':''} aria-label="${esc('Fait : '+t.label)}" onchange="toggleDone('${t.id}')">${c?`<button type="button" class="tgo" onclick="montrerTache('${t.id}')" title="Voir sur le plan">${txt}</button>`:`<span class="tgo">${txt}</span>`}${px}</div>`
      :`<div class="task ${dn?'done':''}"><span class="ck">${dn?'✓':'○'}</span><span class="tgo">${txt}</span>${px}</div>`;});return h;}
 /* D39 · Où est l'objet d'une tâche (mur, ouverture, équipement, pièce, toiture), d'après son id. */
@@ -2511,11 +2577,11 @@ function undo(){
     if(chain.length===1||!chainWallIds.length){chain=[];chainWallIds=[];lenBuf='';render();return;}
     if(!history.length)return;
     const suivi=chainWallIds.length===chain.length-1;
-    future.push(snapshot());state=JSON.parse(history.pop());sel=null;
+    future.push(snapshot());_prixSuite=true;state=JSON.parse(history.pop());sel=null;
     if(suivi){chain.pop();chainWallIds.pop();lenBuf='';}else resetGestes();
     afterChange();return;}
-  if(!history.length)return;future.push(snapshot());state=JSON.parse(history.pop());resetGestes();sel=null;afterChange();}
-function redo(){if(!future.length)return;history.push(snapshot());state=JSON.parse(future.pop());resetGestes();sel=null;afterChange();}
+  if(!history.length)return;future.push(snapshot());_prixSuite=true;state=JSON.parse(history.pop());resetGestes();sel=null;afterChange();}
+function redo(){if(!future.length)return;history.push(snapshot());_prixSuite=true;state=JSON.parse(future.pop());resetGestes();sel=null;afterChange();}
 /* ---------- D38 · Zéro perte de travail ----------
    Le plan ouvert s'enregistre à chaque changement (clé avyora-plan-v2) — mais rien ne le disait.
    L'indicateur près du nom le dit maintenant, branché sur la vraie écriture : « Enregistrement… »
@@ -2534,7 +2600,7 @@ function afficherEnreg(dansLib){const el=document.getElementById('saveState');if
 function save(){let ok=true;try{localStorage.setItem('avyora-plan-v2',JSON.stringify({state,view}));}catch{ok=false;}
   enregOk=ok;etatEnreg='saving';afficherEnreg();clearTimeout(enregT);enregT=setTimeout(synchroMesPlans,450);}
 function synchroMesPlans(){enregT=0;let ok=enregOk;const lib=loadPlans();
-  if(state.id&&lib[state.id]){lib[state.id]={...lib[state.id],name:state.name||'Plan sans nom',savedAt:Date.now(),state:JSON.parse(JSON.stringify(state)),view:{...view}};if(!writePlans(lib))ok=false;}
+  if(state.id&&lib[state.id]){lib[state.id]={...lib[state.id],name:state.name||'Plan sans nom',savedAt:Date.now(),state:JSON.parse(JSON.stringify(state)),view:{...view},resume:resumePlan()};if(!writePlans(lib))ok=false;}
   const avant=etatEnreg;etatEnreg=ok?'ok':'err';if(ok)enregAt=Date.now();afficherEnreg(!!(state.id&&lib[state.id]));
   if(!ok&&avant!=='err')toast('Ton plan n\'a pas pu être enregistré : l\'espace de ce navigateur est plein. Supprime un plan dans « Mes plans » ou exporte celui-ci.',false,{ms:7000});}
 function enregistrerMaintenant(){if(enregT){clearTimeout(enregT);synchroMesPlans();}}
@@ -2561,7 +2627,7 @@ function avantDeRemplacer(suite){enregistrerMaintenant();
   const autre=Object.values(lib)[0];
   demander({titre:`« ${esc(nom)} » n'est pas enregistré`,texte:`En version gratuite, « Mes plans » garde un seul plan, et <b>« ${esc(autre?.name||'un autre plan')} »</b> y est déjà. Si tu continues, « ${esc(nom)} » sera perdu. ${avecPro('plans')}`,
     choix:[{t:'Continuer sans le garder',danger:true,fn:()=>suite(null,'perdu')},{t:'Passer Pro',fn:passerPro},{t:'Annuler',primaire:true}]});}
-function rangerDansMesPlans(){const lib=loadPlans();if(!state.id)state.id=uid();lib[state.id]={id:state.id,name:state.name||'Plan sans nom',savedAt:Date.now(),state:JSON.parse(JSON.stringify(state)),view:{...view}};if(!writePlans(lib)){delete state.id;return false;}saveImages();save();return true;}
+function rangerDansMesPlans(){const lib=loadPlans();if(!state.id)state.id=uid();lib[state.id]={id:state.id,name:state.name||'Plan sans nom',savedAt:Date.now(),state:JSON.parse(JSON.stringify(state)),view:{...view},resume:resumePlan()};if(!writePlans(lib)){delete state.id;return false;}saveImages();save();return true;}
 /* En gratuit, commencer un 2e plan alors que « Mes plans » est plein : on l'annonce AVANT. */
 function annoncerLimite(pq,suite){const lib=loadPlans();if(isPro()||pq==='perdu'||Object.keys(lib).length<PLAN_LIMIT_FREE){suite();return;}
   const autre=Object.values(lib)[0];
@@ -2609,7 +2675,7 @@ function renderProChip(){const c=document.getElementById('proChip');if(!c)return
 function planPaywall(){renderPlans();openModal('plans');toast('Version gratuite : '+DROITS.plans.gratuit+'. '+avecPro('plans'),false);}
 function savePlanToLibrary(){const lib=loadPlans();const exists=state.id&&lib[state.id];
   if(!isPro()&&!exists&&Object.keys(lib).length>=PLAN_LIMIT_FREE){planPaywall();return false;}
-  if(!state.id)state.id=uid();lib[state.id]={id:state.id,name:state.name||'Plan sans nom',savedAt:Date.now(),state:JSON.parse(JSON.stringify(state)),view:{...view}};if(writePlans(lib)){save();toast('Plan « '+(state.name||'sans nom')+' » enregistré',true);}else toast('Enregistrement impossible (espace navigateur plein)');if(document.getElementById('m-plans').classList.contains('show'))renderPlans();return true;}
+  if(!state.id)state.id=uid();lib[state.id]={id:state.id,name:state.name||'Plan sans nom',savedAt:Date.now(),state:JSON.parse(JSON.stringify(state)),view:{...view},resume:resumePlan()};if(writePlans(lib)){save();toast('Plan « '+(state.name||'sans nom')+' » enregistré',true);}else toast('Enregistrement impossible (espace navigateur plein)');if(document.getElementById('m-plans').classList.contains('show'))renderPlans();return true;}
 function openSavedPlan(id){const lib0=loadPlans();if(!lib0[id])return;
   if(id===state.id){closeModal();toast('« '+(lib0[id].name||'Ce plan')+' » est déjà ouvert, à jour',true);return;} /* D38 : « Ouvrir » le plan ouvert rechargeait sa version rangée et perdait les dernières modifications */
   avantDeRemplacer(garde=>ouvrirPlanRange(id,garde));}
@@ -2622,14 +2688,26 @@ function duplicateSavedPlan(id){const lib=loadPlans();const e=lib[id];if(!e)retu
 /* D38 : un seul « Nouveau », qu'on clique en haut ou dans « Mes plans ». */
 function newSavedPlan(){closeModal();newPlan();}
 function openPlansModal(){renderPlans();openModal('plans');}
+/* D40 · ce qu'une carte de « Mes plans » rappelle : surface, budget, avancement — calculé quand le
+   plan est rangé ou tenu à jour (un plan rangé n'est pas rechargé pour s'afficher). */
+function resumePlan(){try{const q=quantities(),px=chantierPrix();return {m2:Math.round(q.area*10)/10,pieces:q.rooms,budget:px.total,taches:px.nb,faites:px.faites};}catch{return null;}}
+/* Une vignette du plan rangé : ses murs, au trait (niveau affiché, séparations exclues). */
+function miniPlanSVG(st){const L0=(st&&st.levels)||[],lv=L0[Math.min(st&&st.cur||0,L0.length-1)]||L0[0];const ws=((lv&&lv.walls)||[]).filter(w=>w.type!=='virtuel'&&w.a&&w.b);
+  if(!ws.length)return '<svg viewBox="0 0 10 10"></svg>';
+  const xs=ws.flatMap(w=>[w.a.x,w.b.x]),ys=ws.flatMap(w=>[w.a.y,w.b.y]),x0=Math.min(...xs)-0.5,y0=Math.min(...ys)-0.5,bw=Math.max(...xs)-x0+0.5,bh=Math.max(...ys)-y0+0.5,k=Math.max(bw,bh)/40;
+  return `<svg viewBox="${x0} ${y0} ${bw} ${bh}" preserveAspectRatio="xMidYMid meet">${ws.map(w=>`<line x1="${w.a.x}" y1="${w.a.y}" x2="${w.b.x}" y2="${w.b.y}" stroke="${w.st==='creer'?'#b91c1c':'#1e1b4b'}" stroke-width="${(w.type==='cloison'?1.2:2.2)*k}" stroke-linecap="square"${w.st==='demolir'?` stroke-dasharray="${2*k} ${1.4*k}" opacity=".55"`:''}/>`).join('')}</svg>`;}
 function renderPlans(){const lib=loadPlans();const list=Object.values(lib).sort((a,b)=>b.savedAt-a.savedAt);const el=document.getElementById('plansList');
   const fmtDate=t=>{const d=new Date(t);return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});};
   const pro=isPro();const atLimit=!pro&&list.length>=PLAN_LIMIT_FREE;
   const banner=pro?'':`<div class="budget" style="margin-bottom:12px;cursor:default"><div class="bl"><span>Version gratuite : ${DROITS.plans.gratuit}</span><small>${maj(DROITS.dessin.gratuit)} reste gratuit. ${avecPro('plans')}</small></div>${lienPro('Passer Pro','ib propill')}</div>`;
   if(!list.length){el.innerHTML=banner+'<div class="empty">Aucun plan enregistré pour l\'instant. Dessine ton plan puis clique <b>Enregistrer le plan actuel</b>.</div>';return;}
-  el.innerHTML=banner+'<div class="grouplist">'+list.map(e=>{const cur=e.id===state.id;const nb=(e.state?.levels||[]).reduce((s,l)=>s+(l.walls?.length||0),0);return `<div class="grp" style="${cur?'border-color:var(--acc3);background:var(--brand-l)':''}">
-    <span class="gdot" style="background:${cur?'var(--brand)':'#cbd5e1'}"></span>
-    <button class="glink" onclick="openSavedPlan('${e.id}')"><b>${(e.name||'Plan').replace(/</g,'&lt;')}</b>${cur?' <span class="gn">· ouvert</span>':''}<br><span class="gn">${fmtDate(e.savedAt)} · ${nb} mur(s)</span></button>
+  el.innerHTML=banner+'<div class="grouplist">'+list.map(e=>{const cur=e.id===state.id;const nb=(e.state?.levels||[]).reduce((s,l)=>s+(l.walls?.length||0),0);
+    /* D40 : la carte rappelle ce que le plan vaut — surface, budget (Pro), avancement du chantier. Le plan ouvert se lit en direct. */
+    const R=cur?resumePlan():e.resume;
+    const res=R?[R.pieces?fmtM2(R.m2):'aucune pièce',pro?(R.taches?eur(R.budget)+' HT':'rien de décidé'):(R.taches?pluriel(R.taches,'tâche'):'rien de décidé'),R.taches?'chantier '+R.faites+'/'+R.taches:''].filter(Boolean).join(' · '):pluriel(nb,'mur');
+    return `<div class="grp plancard" style="${cur?'border-color:var(--acc3);background:var(--brand-l)':''}">
+    <span class="pmini" aria-hidden="true">${miniPlanSVG(e.state)}</span>
+    <button class="glink" onclick="openSavedPlan('${e.id}')"><span class="gname"><b>${(e.name||'Plan').replace(/</g,'&lt;')}</b>${cur?' <span class="gn">· ouvert</span>':''}</span><span class="gres">${res}</span><span class="gn">${fmtDate(e.savedAt)}</span></button>
     <button class="ib" style="padding:5px 8px" onclick="openSavedPlan('${e.id}')">Ouvrir</button>
     <button class="ib" style="padding:5px 8px" onclick="duplicateSavedPlan('${e.id}')" data-tip="Dupliquer">⧉</button>
     <button class="gx" onclick="deleteSavedPlan('${e.id}')" data-tip="Supprimer">✕</button>
@@ -4189,16 +4267,19 @@ function setLevelProp(k,val){history.push(snapshot());const lv=L();
 
 function pruneEmptyTexts(){const lv=L();if(!lv.texts||!lv.texts.length)return;lv.texts=lv.texts.filter(t=>(t.text&&t.text.trim())||(sel?.kind==='text'&&sel.id===t.id));}
 const isMobile=()=>window.innerWidth<=600; // téléphone = mode chantier (lecture + suivi) ; tablette = éditeur complet
-function toggleSheet(force){const pn=document.getElementById('panel');pn.classList.toggle('open',force===undefined?!pn.classList.contains('open'):!!force);}
+/* D40 · le tiroir fermé du téléphone montre le budget à côté de la surface (en Pro, dès qu'une tâche existe) */
+function resumeTiroir(){const q=quantities();if(!q.rooms)return 'Détails du plan';const a=fmtM2(habView(q).area),px=chantierPrix();
+  return isPro()&&px.nb?a+' · '+eur(px.total)+' HT · détails':a+' habitables · détails';}
+function toggleSheet(force){const pn=document.getElementById('panel');pn.classList.toggle('open',force===undefined?!pn.classList.contains('open'):!!force);document.body.classList.toggle('sheetOpen',pn.classList.contains('open')); /* D40 : la barre de zoom ne couvre plus le budget du tiroir */}
 let panelTab='details'; // volet du panneau de droite : 'details' | 'suivi'
 function setPanelTab(t){panelTab=t;renderPanel();}
 function suiviPanelHTML(T){
   if(!T.length)return `<div class="ptitle">Suivi de chantier</div><div class="empty" style="margin-top:8px">Aucune tâche pour l'instant.<br>Passe en vue <b>${nomVue('projet')}</b> et décide ce que tu changes (démolir, créer, remplacer, isoler, refaire un sol…) : chaque travail devient ici une tâche, dans l'ordre du chantier.</div>`;
   /* D39 : en Pro, « X € réalisés sur Y € » — l'avancement se lit aussi en euros. */
-  const pro=isPro(),D=T.filter(t=>isDone(t.id)),tot=Math.round(T.reduce((s,t)=>s+(t.prix||0),0)),fait=Math.round(D.reduce((s,t)=>s+(t.prix||0),0));
-  const fini=D.length===T.length,pc=pro&&tot>0?Math.round(fait/tot*100):Math.round(D.length/T.length*100);
+  const pro=isPro(),px=chantierPrix(T),nf=px.faites,tot=px.total,fait=px.fait;
+  const fini=nf===T.length,pc=pro&&tot>0?Math.round(fait/tot*100):Math.round(nf/T.length*100);
   return `<div class="ptitle">Suivi de chantier</div><div class="psub">Les travaux dans l'ordre du chantier, ${gl('corps','corps d\'état')} par corps d'état. Coche au fur et à mesure, clique une tâche pour la voir sur le plan. L'avancement s'affiche aussi sur le plan, en vue ${nomVue('projet')}.</div>
-  <div class="budget" style="cursor:default;background:${fini?'linear-gradient(120deg,#15803d,#16a34a)':'linear-gradient(120deg,var(--nuit),#2a2270)'}"><div class="bl"><span>${pro?eur(fait)+' réalisés sur '+eur(tot)+' HT':D.length+'/'+T.length+' tâches faites'}</span><small>${fini?'Chantier terminé':pro?D.length+'/'+T.length+' tâches faites':'reste '+(T.length-D.length)+' à faire'}</small></div><div class="bv">${pc} %</div></div>
+  <div class="budget" style="cursor:default;background:${fini?'linear-gradient(120deg,#15803d,#16a34a)':'linear-gradient(120deg,var(--nuit),#2a2270)'}"><div class="bl"><span>${pro?eur(fait)+' réalisés sur '+eur(tot)+' HT':nf+'/'+T.length+' tâches faites'}</span><small>${fini?'Chantier terminé':pro?nf+'/'+T.length+' tâches faites · reste '+eur(tot-fait):'reste '+(T.length-nf)+' à faire'}</small></div><div class="bv">${pc} %</div></div>
   <div class="prog" style="margin-bottom:10px"><i style="width:${pc}%"></i></div>
   ${pro?'':`<div class="tip" style="margin:0 0 10px">${avecPro('suivi')} ${lienPro('Passer Pro','lienpro')}</div>`}
   <div class="tasks">${chantierListHTML(T,true,{prix:pro})}</div>`;
@@ -4213,7 +4294,7 @@ function avecFocus(root,fn){const ae=document.activeElement,sig=ae&&ae.tagName==
    gestes suivants agissaient à l'aveugle. Le panneau affiche un message, le reste continue ; l'erreur
    reste levée à part (console, page) pour que les contrôles la voient. */
 function renderPanel(){try{avecFocus(document.getElementById('pbody'),renderPanelBrut);}catch(err){const P=document.getElementById('pbody');if(P)P.innerHTML='<div class="tip">Ce panneau n\'a pas pu s\'afficher. Clique dans le vide du plan pour revenir à la vue d\'ensemble.</div>';setTimeout(()=>{throw err;});}}
-function renderPanelBrut(){pruneEmptyTexts();if(isMobile()){if(sel)toggleSheet(true);const lb=document.getElementById('sheetLabel');if(lb){try{lb.textContent=sel?'Élément sélectionné · détails':(tool!=='select'?TOOLS.find(t=>t[0]===tool)?.[1]+' · options':fmtM2(habView(quantities()).area)+' habitable · détails');}catch{}}}
+function renderPanelBrut(){pruneEmptyTexts();if(isMobile()){if(sel)toggleSheet(true);const lb=document.getElementById('sheetLabel');if(lb){try{lb.textContent=sel?'Élément sélectionné · détails':(tool!=='select'?TOOLS.find(t=>t[0]===tool)?.[1]+' · options':resumeTiroir());}catch{}}}
   const lv=L(); const P=document.getElementById('pbody'); let h='';
   const _T=chantierTasks();const _done=_T.filter(t=>isDone(t.id)).length;
   const tabBar=`<div class="ptabs"><button class="${panelTab!=='suivi'?'on':''}" onclick="setPanelTab('details')">Détails</button><button class="${panelTab==='suivi'?'on':''}" onclick="setPanelTab('suivi')"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 12.5l2 2 4-4"/></svg>Suivi${_T.length?` <span class="tabn">${_done}/${_T.length}</span>`:''}</button></div>`;
@@ -4679,32 +4760,70 @@ function renderOverview(lv){
   if(state.levels.length>1)h+=`<div class="btnrow"><button class="ib danger" style="flex:1" onclick="deleteLevel()">Supprimer ce niveau</button></div>`;
   return h;
 }
-let _lastPrix=0,_prixRAF=0;
+/* ---------- D40 · Le budget, héros du produit ----------
+   Le pied du panneau n'a plus qu'une carte : le budget, en grand, qui est aussi son seul appel (elle
+   ouvre « Estimer ce plan »). La surface tient sur une ligne discrète en dessous. Sans pièce, la
+   carte attend et le dit ; le bouton du haut aussi, avec la même phrase (ATTENTE_PIECE). */
+const ATTENTE_PIECE='Ton budget apparaîtra dès ta première pièce fermée.';
+const calme=()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches;}catch{return false;}};
+/* Un compteur qui « monte » de l'ancienne valeur à la nouvelle ; direct quand le système demande
+   moins d'animation. Le texte final est déjà dans la page : le compteur ne fait que le rejoindre. */
+function compter(el,from,to,ms){if(!el)return;cancelAnimationFrame(el._raf||0);if(from===to||calme()){el.textContent=eur(to);return;}
+  const t0=performance.now(),step=t=>{const k=Math.min(1,(t-t0)/ms),e=1-Math.pow(1-k,3);el.textContent=eur(Math.round(from+(to-from)*e));if(k<1)el._raf=requestAnimationFrame(step);};el._raf=requestAnimationFrame(step);}
+const pluriel=(n,m)=>n+' '+m+(n>1?'s':'');
+let _lastPrix=0;
 function renderFoot(){
   const q=quantities(); const F=document.getElementById('pfoot'); const px=chantierPrix();renderProChip();
   const sb=document.getElementById('surfBadge');const hv=habView(q);
   if(sb){if(hv.area>0){sb.hidden=false;sb.innerHTML=`<span class="s">🏠 <b>${fmtM2(hv.area)}</b> habitables</span><span class="sub">${hv.rooms} pièce${hv.rooms>1?'s':''}${state.levels.length>1?' · '+state.levels.length+' niveaux':''}${mode()==='existant'?' · '+nomVue('existant').toLowerCase():''}</span>`;}else sb.hidden=true;}
-  const pro=isPro();
+  const pro=isPro(),vide=!q.rooms,rien=px.nb===0,avant=mode()==='existant';
   /* D36 : le montant dit ce qu'il est — HT, prix catalogue, moyenne nationale — et, tant que rien
      n'est décidé, il le dit aussi au lieu de disparaître ou de compter des travaux imaginaires. */
-  const rien=px.nb===0;
-  F.innerHTML=`${rien?`<div class="budget" style="cursor:default"><div class="bl"><span>Budget travaux HT</span><small>${mode()==='existant'?'Rien de décidé pour l\'instant. Passe en vue <b>'+nomVue('projet')+'</b> pour marquer ce que tu changes.':'Rien de décidé pour l\'instant. Clique un mur, une ouverture ou une pièce et choisis ce que tu en fais.'}</small></div><div class="bv" id="budgetVal">0 €</div></div>`
-    :pro?`<button type="button" class="budget budgetbtn" onclick="showEstimate()" aria-label="Budget travaux HT : ${eur(px.total)}. Voir le détail"><span class="bl"><span>Budget travaux HT</span><small>indicatif · prix catalogue, moyenne nationale</small><small><b>Voir le détail</b></small></span><span class="bv" id="budgetVal">${eur(px.total)}</span></button>`
-    :`<button type="button" class="budget budgetbtn" onclick="showEstimate()"><span class="bl"><span>Budget travaux HT · Pro</span><small>${avecPro('budget')}</small></span><span class="bv">•••• €</span></button>`}
-  <div class="tot"><span class="k">Niveaux · pièces</span><span class="v">${state.levels.length} · ${hv.rooms}</span></div>
-  <div class="tot"><span class="k">Portes · fenêtres</span><span class="v">${q.doors} · ${q.windows}</span></div>
-  <div class="tot"><span class="k">Surface habitable<small style="display:block;font-weight:500;font-size:11.5px">${mode()==='existant'?'avant travaux':'après travaux'}</small></span><span class="v big">${fmtM2(hv.area)}</span></div>
-  <button class="estimate" onclick="showEstimate()" ${q.rooms?'':'disabled'}>${ICO_ESTIMER}Estimer ce plan${pro?'':' · Pro'}</button>
-  ${isDev()?`<button class="ib devonly" style="width:100%;justify-content:center;margin-top:8px" onclick="ouvrirEnvoi()" ${q.rooms?'':'disabled'}>Envoyer vers mon estimation AVYORA (dev)</button>`:''}`;
-  {const eb=document.getElementById('estBtnTop');if(eb)eb.title=pro?'Ton budget travaux, par corps d\'état et tâche par tâche':'Avec Pro : '+DROITS.budget.pro;}
-  // compteur qui « monte » de l'ancienne valeur à la nouvelle
-  const el=document.getElementById('budgetVal');if(el&&px.total!==_lastPrix){const from=_lastPrix,to=px.total,t0=performance.now();cancelAnimationFrame(_prixRAF);
-    const step=t=>{const k=Math.min(1,(t-t0)/450),e=1-Math.pow(1-k,3),val=Math.round(from+(to-from)*e);el.textContent=eur(val);if(k<1)_prixRAF=requestAnimationFrame(step);};_prixRAF=requestAnimationFrame(step);}
+  const carte=vide?`<div class="budget bcard attente"><span class="bk">Budget travaux HT</span><span class="bv" id="budgetVal">0 €</span><span class="bs"><small>${ATTENTE_PIECE}</small></span></div>`
+    :rien?`<button type="button" class="budget bcard budgetbtn" onclick="showEstimate()"><span class="bk">Budget travaux HT</span><span class="bv" id="budgetVal">0 €</span><span class="bs"><small>${avant?'Rien de décidé pour l\'instant. Passe en vue <b>'+nomVue('projet')+'</b> pour marquer ce que tu changes.':'Rien de décidé pour l\'instant. Clique un mur, une ouverture ou une pièce et choisis ce que tu en fais.'}</small></span></button>`
+    :pro?`<button type="button" class="budget bcard budgetbtn" onclick="showEstimate()" aria-label="Budget travaux HT : ${eur(px.total)}, ${pluriel(px.nb,'tâche')}. Voir le détail"><span class="bk">Budget travaux HT<span class="bn">${pluriel(px.nb,'tâche')}</span></span><span class="bv" id="budgetVal">${eur(px.total)}</span><span class="bs"><small>indicatif · prix catalogue, moyenne nationale</small><b>Voir le détail →</b></span></button>`
+    :`<button type="button" class="budget bcard budgetbtn" onclick="showEstimate()"><span class="bk">Budget travaux HT · Pro<span class="bn">${pluriel(px.nb,'tâche')}</span></span><span class="bv flou" aria-hidden="true">•••• €</span><span class="bs"><small>${avecPro('budget')}</small><b>Aperçu →</b></span></button>`;
+  const resume=vide?'':`<div class="presume"><b>${fmtM2(hv.area)}</b> habitables ${avant?'avant':'après'} travaux · <b>${hv.rooms}</b> pièce${hv.rooms>1?'s':''}${state.levels.length>1?' · <b>'+state.levels.length+'</b> niveaux':''}</div>`;
+  F.innerHTML=carte+resume+(isDev()?`<button class="ib devonly" style="width:100%;justify-content:center;margin-top:8px" onclick="ouvrirEnvoi()" ${q.rooms?'':'disabled'}>Envoyer vers mon estimation AVYORA (dev)</button>`:'');
+  /* le bouton du haut : grisé sans pièce, et il dit pourquoi (survol, lecteur d'écran, clic) */
+  {const eb=document.getElementById('estBtnTop');if(eb){eb.classList.toggle('attente',vide);if(vide)eb.setAttribute('aria-disabled','true');else eb.removeAttribute('aria-disabled');
+    eb.title=vide?ATTENTE_PIECE:pro?'Ton budget travaux, par corps d\'état et tâche par tâche':avecPro('budget');}}
+  const el=document.getElementById('budgetVal');if(el&&px.total!==_lastPrix)compter(el,_lastPrix,px.total,450);
   _lastPrix=px.total;
+  ecartBudget(px);
 }
+/* D40 · La pastille d'écart : chaque décision qui change le montant le dit, 3 s, près du budget
+   (« +2 500 € · Ouvrir le mur porteur… »). Elle ne passe pas par le message du bas (toast) : il
+   porte parfois une action (« Annuler ») qu'elle effacerait. Ouvrir un plan, un plan type, l'exemple :
+   pas d'écart, rien n'a été décidé. Annuler / rétablir : si (_prixSuite). En gratuit, pas de montant. */
+let _prixVu=null,_ecartBase=null,_prixSuite=false,_ecartT=0,_ecartT2=0;
+/* L'écart se compte depuis le montant d'avant la série de gestes (_ecartBase) : glisser un mur ou
+   enchaîner deux réglages montre l'écart cumulé, pas une rafale de « +1 € ». Revenir au montant de
+   départ efface la pastille. */
+function ecartBudget(px){
+  const M=new Map(px.taches.map(t=>[t.id,t])),prev=_prixVu,suite=_prixSuite;_prixSuite=false;
+  _prixVu={st:state,M,total:px.total};
+  if(!prev||(prev.st!==state&&!suite)){_ecartBase=null;cacherEcart(true);return;}
+  if(!isPro()||Math.abs(px.total-prev.total)<1)return;
+  const base=_ecartBase||prev;_ecartBase=base;
+  const d=px.total-base.total;if(Math.abs(d)<1){cacherEcart();return;}
+  const ch=[];
+  M.forEach((t,id)=>{const o=base.M.get(id),dp=(t.prix||0)-((o&&o.prix)||0);if(Math.abs(dp)>=0.5)ch.push({t,dp});});
+  base.M.forEach((o,id)=>{if(!M.has(id)&&Math.abs(o.prix||0)>=0.5)ch.push({t:o,dp:-(o.prix||0),parti:true});});
+  if(!ch.length)return;
+  ch.sort((a,b)=>Math.abs(b.dp)-Math.abs(a.dp));
+  /* la tâche de l'objet sélectionné d'abord : c'est lui qu'on vient de décider */
+  const vise=sel&&ch.find(c=>{const k=tacheCible(c.t.id);return k&&k.kind===sel.kind&&k.id===sel.id;});
+  const p=vise||ch[0],n=ch.length-1;
+  montrerEcart(d,(p.parti?'retiré : ':'')+p.t.label+(n?' · et '+n+' autre'+(n>1?'s':'')+' tâche'+(n>1?'s':''):''));}
+function montrerEcart(d,lib){const el=document.getElementById('budgetDelta'),F=document.getElementById('pfoot');if(!el)return;
+  el.innerHTML=`<b class="${d>0?'plus':'moins'}">${d>0?'+':'−'}${eur(Math.abs(Math.round(d)))}</b><span>${esc(lib)}</span>`;
+  el.style.bottom=F&&!isMobile()?(F.offsetHeight+8)+'px':'';
+  el.classList.add('show');clearTimeout(_ecartT);clearTimeout(_ecartT2);_ecartT=setTimeout(()=>cacherEcart(),3200);}
+function cacherEcart(net){const el=document.getElementById('budgetDelta');clearTimeout(_ecartT);clearTimeout(_ecartT2);_ecartBase=null;if(!el)return;el.classList.remove('show');
+  if(net)el.innerHTML='';else _ecartT2=setTimeout(()=>{if(!el.classList.contains('show'))el.innerHTML='';},400);}
 const eur=n=>n.toLocaleString('fr-FR')+' €';
 const pastille=c=>`<i class="pastille" style="background:${c}"></i>`;
-const ICO_ESTIMER='<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8"/><path d="M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01M8.5 15h.01M12 15h.01M15.5 15h.01M8.5 18h.01M12 18h3.5"/></svg>';
 function setWallProp(k,val){const w=findWall(sel.id);const fus=k==='st'&&val==='demolir'&&wst(w)!=='demolir'&&!isVirtual(w)?piecesDeChaqueCote(w):null;history.push(snapshot());if(k==='porteur'){delete w.porteurDoute;if(val==='auto')delete w.porteur;else if(val==='nsp'){w.porteur=true;w.porteurDoute=true;}else w.porteur=(val==='oui');}else if(k==='type'){w.type=val;delete w.t;}else if(k==='t'){if(val>=0.03&&val<=0.8)w.t=val;}else if(k==='st'){if(val==='existant')delete w.st;else w.st=val;/* D36 : ses ouvertures partent avec lui — les marquer « à boucher » créait une tâche de rebouchage dans un mur qui n'existe plus */}else w[k]=val;afterChange();annonceFusion(w,fus);}
 function setCustomT(cm){const t=parseFloat(cm)/100;customT=(t>=0.03&&t<=0.8)?t:null;renderPanel();draw();}
 function setWallLen(l){const w=findWall(sel.id);if(!(l>0.1))return;history.push(snapshot());setWallLength(w,l);afterChange();}
@@ -5139,8 +5258,10 @@ function telechargerEnvoi(){
   }catch{toast('Téléchargement bloqué ici : utilise « Copier »');}
 }
 function showEstimate(){
-  const q=quantities(); if(!q.rooms){toast('Trace d\'abord au moins une pièce fermée');return;}
+  const q=quantities(); if(!q.rooms){toast(ATTENTE_PIECE+(isMobile()?'':' Trace ses murs avec l\'outil Murs (M).'));return;}
   document.getElementById('estBody').innerHTML=isPro()?estimateHTML(q):estimatePaywallHTML(q); openModal('estimate');
+  /* D40 : le montant « monte » jusqu'au total (le texte final est déjà là : lecteur d'écran, contrôles) */
+  const v=document.getElementById('estTotal');if(v)compter(v,0,chantierPrix().total,700);
 }
 // version gratuite : le dessin et les surfaces sont visibles, mais le chiffrage (budget, détail, estimation) est Pro
 /* ---------- Couverture : dire ce que le chiffrage NE contient PAS ----------
@@ -5183,7 +5304,7 @@ function couvertureHTML(q){
   /* D39 : « Sol » et « Déjà en place » sont listés objet par objet dans « Encore à décider ». */
   const a=couvertureManquante(q).filter(x=>x[0]!=='Sol'&&x[0]!=='Déjà en place');
   return `<div class="ph">Ce que ton plan ne dit pas encore</div>
-  ${a.length?`<div class="chks" style="margin-bottom:10px">${a.map(([lot,quoi,ou])=>`<div class="chk warn"><span class="ci">○</span><span><b>${esc(lot)}</b> — ${esc(quoi)}.<small style="display:block;color:#6c6b86;margin-top:2px">à renseigner : ${esc(ou)}</small></span></div>`).join('')}</div>`
+  ${a.length?`<div class="chks" style="margin-bottom:10px">${a.map(([lot,quoi,ou])=>`<div class="chk neutre"><span class="ci">○</span><span><b>${esc(lot)}</b> — ${esc(quoi)}.<small style="display:block;color:#6c6b86;margin-top:2px">à renseigner : ${esc(ou)}</small></span></div>`).join('')}</div>`
    :`<div class="tip" style="border-color:#bbf7d0;background:#f0fdf4;margin-bottom:10px">Tout ce qu'un plan peut décrire est renseigné.</div>`}
   <table class="mtable" style="margin-bottom:8px">${HORS_PLAN.map(([lot,d])=>`<tr><td><b>${esc(lot)}</b><br><small style="color:#6c6b86">${d}</small></td><td class="n" style="color:#6c6b86;white-space:nowrap">hors plan</td></tr>`).join('')}</table>
   <div class="note" style="margin:0 0 18px">Un plan ne peut pas tout savoir : ces travaux ne sont pas dans le montant.</div>`;
@@ -5206,28 +5327,34 @@ function elementsATrancher(){const out=[];state.levels.forEach(lv=>{const fP=fac
     if(ist(it)==='existant'&&(EQUIP_PRIX[it.type]||0)>=SEUIL_ARBITRAGE)out.push({kind:'item',id:it.id,label:ITEMS[it.type].label+pieceDuPoint(fP,it.x,it.y)+ml,msg:'déjà là, rien n\'est décidé',aide:`Choisis « ${LEX.etat.garder} » ou « ${LEX.etat.deposer} ».`});});
   fP.forEach(f=>{const r=f.room;if(r&&!RT[r.type].ext&&!solDecide(r)&&!solGarde(r))out.push({kind:'room',id:r.id,label:'Sol · '+roomName(r)+ml,msg:'pas encore de décision',aide:'Garde le sol actuel, ou choisis un revêtement neuf (ligne « Revêtement »).'});});});
   return out;}
-function aDecHTML(A){if(!A.length)return '';const N=8;
-  return `<div class="ph">Encore à décider (${A.length})</div><div class="chks" style="margin-bottom:18px">${A.slice(0,N).map(a=>`<button type="button" class="chk warn adec" onclick="montrerSurLePlan({kind:'${a.kind}',id:'${a.id}'})"><span class="ci">○</span><span><b>${esc(a.label)}</b> — ${a.msg}.<small>${a.aide}</small></span></button>`).join('')}${A.length>N?`<div class="empty">… et ${A.length-N} autre${A.length-N>1?'s':''}, à retrouver sur le plan.</div>`:''}</div>`;}
-function ligneTache(t,zero){const c=tacheCible(t.id),dt=detailTache(t),px=`<span class="n${zero?' muted':''}">${t.prix?eur(Math.round(t.prix)):t.inclus?'inclus':'0 €'}</span>`,txt=`<span class="tl">${esc(t.label)}${dt?`<small>${esc(dt)}</small>`:''}</span>`;
+function aDecHTML(A){if(!A.length)return '';const N=5;
+  /* D40 : chaque ligne sélectionne son objet et ferme la fenêtre ; au-delà de 5, les autres se déplient (toutes cliquables). */
+  const li=a=>`<button type="button" class="chk adec" onclick="montrerSurLePlan({kind:'${a.kind}',id:'${a.id}'})"><span class="ci" aria-hidden="true">○</span><span class="at"><b>${esc(a.label)}</b> — ${a.msg}.<small>${a.aide}</small></span><span class="go">Voir sur le plan</span></button>`;
+  return `<div class="ph" id="estAdec">Encore à décider (${A.length})</div><p class="estnote">Ces éléments sont déjà là : dis si tu les gardes ou si tu les changes. Tant que rien n'est décidé, ils ne comptent pas dans le budget.</p><div class="chks adecs">${A.slice(0,N).map(li).join('')}</div>${A.length>N?`<details class="plusadec"><summary>Voir les ${A.length-N} autres</summary><div class="chks adecs">${A.slice(N).map(li).join('')}</div></details>`:''}<div style="height:14px"></div>`;}
+function ligneTache(t,zero){const c=tacheCible(t.id),dt=detailTache(t),px=`<span class="n${zero||!t.prix?' muted':''}">${prixTache(t)}</span>`,txt=`<span class="tl">${esc(t.label)}${dt?`<small>${esc(dt)}</small>`:''}</span>`;
   return c?`<button type="button" class="tline" onclick="montrerTache('${t.id}')" title="Voir sur le plan">${txt}${px}</button>`:`<div class="tline">${txt}${px}</div>`;}
+const ICO_EXPORTER='<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 11v6M9.5 14.5 12 17l2.5-2.5"/></svg>';
+const ICO_RANGER='<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>';
+/* D40 : tout vient de chantierPrix() — le même montant que le pied, le Suivi, l'export et « Mes plans ». */
 function estimateHTML(q){
-  const T=chantierTasks(),tot=Math.round(T.reduce((s,t)=>s+(t.prix||0),0)),lots=lotsDe(T),A=elementsATrancher(),Z=T.filter(t=>!t.prix&&!t.inclus);
+  const px=chantierPrix(),T=px.taches,tot=px.total,lots=px.lots,A=elementsATrancher(),Z=px.nonChiffrees;
   const max=Math.max(1,...lots.map(g=>g.total));
   let h=`<div class="esthero"><div class="eh1"><span class="k">Budget travaux ${gl('ht','HT')}</span><b class="v" id="estTotal">${eur(tot)}</b><small>${T.length?'Indicatif : prix catalogue, moyenne nationale. Ta finition, ta région et la TVA n\'y sont pas encore appliquées.':'Rien de décidé pour l\'instant : passe en vue <b>'+nomVue('projet')+'</b> et choisis ce que tu changes.'}</small></div>
-    <div class="eh2"><span><b>${T.length}</b><i>tâche${T.length>1?'s':''}</i></span><span><b>${lots.length}</b><i>${gl('corps','corps d\'état')}</i></span><span><b>${A.length}</b><i>à décider</i></span></div></div>`;
-  if(lots.length)h+=`<div class="ph">Par corps d'état</div><div class="estlots">${lots.map(g=>`<details class="estlot"><summary><span class="ln">${esc(g.lot)}<small>${g.taches.length} tâche${g.taches.length>1?'s':''}</small></span><span class="lb"><i style="width:${Math.round(g.total/max*100)}%"></i></span><span class="lv">${eur(Math.round(g.total))}</span></summary><div class="estt">${g.taches.map(t=>ligneTache(t)).join('')}</div></details>`).join('')}</div>`;
+    <div class="eh2"><span><b>${T.length}</b><i>tâche${T.length>1?'s':''}</i></span><span><b>${lots.length}</b><i>${gl('corps','corps d\'état')}</i></span>${A.length?`<button type="button" class="eh2b" onclick="allerAuxDecisions()"><b>${A.length}</b><i>à décider ↓</i></button>`:`<span><b>0</b><i>à décider</i></span>`}${px.fait?`<span><b>${eur(px.fait)}</b><i>déjà réalisés</i></span>`:''}</div></div>`;
+  if(lots.length)h+=`<div class="ph">Par corps d'état</div><p class="estnote">Ouvre un corps d'état pour voir ses tâches ; clique une tâche pour la voir sur le plan.</p><div class="estlots">${lots.map(g=>`<details class="estlot"><summary><span class="ln">${esc(g.lot)}<small>${g.taches.length} tâche${g.taches.length>1?'s':''}${tot>0&&g.total>0?' · '+Math.max(1,Math.round(g.total/tot*100))+' %':''}</small></span><span class="lb"><i style="width:${Math.round(g.total/max*100)}%"></i></span><span class="lv${g.total?'':' nul'}">${g.total?eur(Math.round(g.total)):'non chiffré'}</span></summary><div class="estt">${g.taches.map(t=>ligneTache(t)).join('')}</div></details>`).join('')}</div>`;
   h+=aDecHTML(A);
-  if(Z.length)h+=`<div class="ph">Pas encore chiffré (${Z.length})</div><div class="estt nue">${Z.map(t=>ligneTache(t,true)).join('')}</div><div class="note" style="margin:6px 0 18px">Ces travaux sont dans ton suivi de chantier, mais aucun prix ne leur correspond encore : ils ne sont pas dans le montant.</div>`;
+  if(Z.length)h+=`<div class="ph">Pas encore chiffré (${Z.length})</div><div class="estt nue">${Z.map(t=>ligneTache(t,true)).join('')}</div><div class="note" style="margin:6px 0 18px">Ces travaux sont dans ton suivi de chantier, mais aucun prix ne leur correspond encore : ils ne sont <b>pas</b> dans le montant. Ils seront à chiffrer avec ton artisan.</div>`;
   h+=couvertureHTML(q);
-  h+=`<div class="estactions"><button class="estimate" onclick="closeModal();exportPlan()">Exporter le dossier</button><button class="ib" onclick="savePlanToLibrary()">Enregistrer dans « Mes plans »</button></div>`;
+  h+=`<div class="estactions colle"><button class="estimate" onclick="closeModal();exportPlan()">${ICO_EXPORTER}Exporter le dossier</button><button class="ib" onclick="savePlanToLibrary()">${ICO_RANGER}Enregistrer dans « Mes plans »</button></div>`;
   h+=`<details class="qdet"><summary>Toutes les quantités mesurées sur le plan</summary>${quantitesHTML(q)}</details>`;
   if(isDev())h+=`<div class="devbox devonly"><b>Mode développeur</b> · contrat ${esc(CONTRAT_PLAN)} <button class="ib" style="margin-left:8px" onclick="closeModal();ouvrirEnvoi()">Envoyer vers mon estimation AVYORA</button><details><summary>Voir le JSON envoyé au moteur</summary><pre>${esc(JSON.stringify(contratPlan(),null,2))}</pre></details></div>`;
   return h;}
+function allerAuxDecisions(){const a=document.getElementById('estAdec');if(a)a.scrollIntoView({behavior:calme()?'auto':'smooth',block:'start'});}
 const kpisHTML=q=>`<div class="kpis"><div class="kpi"><b>${fmt(q.area,1)}</b><span>m² habitables${q.travaux.actif&&Math.abs(q.areaBefore-q.area)>0.05?' (avant : '+fmt(q.areaBefore,1)+')':''}</span></div><div class="kpi"><b>${q.rooms}</b><span>pièces · ${state.levels.length} niv.</span></div><div class="kpi"><b>${q.doors} / ${q.windows}</b><span>portes / fenêtres</span></div><div class="kpi"><b>${fmt(q.wallPaint,0)}</b><span>m² de murs, hors ouvertures</span></div></div>`;
 /* Version gratuite : le montant est réservé à Pro, le reste est vrai et vient du plan — le nombre
    de tâches, les corps d'état concernés, ce qu'il reste à décider. Pro ne promet que la table DROITS. */
 function estimatePaywallHTML(q){
-  const T=chantierTasks(),lots=lotsDe(T),A=elementsATrancher();
+  const px=chantierPrix(),T=px.taches,lots=px.lots,A=elementsATrancher();
   let h=`<div class="esthero"><div class="eh1"><span class="k">Budget travaux ${gl('ht','HT')} · Pro</span><b class="v flou" aria-hidden="true">•••• €</b><small>${T.length?'Ton plan est prêt à être chiffré : '+T.length+' tâche'+(T.length>1?'s':'')+' dans '+lots.length+' corps d\'état.':'Rien de décidé pour l\'instant : passe en vue <b>'+nomVue('projet')+'</b> et choisis ce que tu changes.'}</small></div>
     <div class="eh2"><span><b>${T.length}</b><i>tâche${T.length>1?'s':''}</i></span><span><b>${lots.length}</b><i>${gl('corps','corps d\'état')}</i></span><span><b>${A.length}</b><i>à décider</i></span></div></div>`;
   if(lots.length)h+=`<div class="ph">Par corps d'état</div><div class="estlots">${lots.map(g=>`<div class="estlot ferme"><span class="ln">${esc(g.lot)}<small>${g.taches.length} tâche${g.taches.length>1?'s':''}</small></span><span class="lv flou" aria-hidden="true">•••• €</span></div>`).join('')}</div>`;
@@ -5313,8 +5440,9 @@ function exportPlan(){
   state.levels.forEach((lv,i)=>modes.forEach(m=>{const src=renderLevelImage(i,m);if(!src)return;pages.push({title:lv.name+' · '+nomVue(m),sub:SUBS[m],body:`<img src="${src}" alt="${esc(lv.name)} ${m}">`,foot:'Plan · '+esc(lv.name)});}));
   if(pro){
     pages.push({title:'Contrôle du plan',sub:'Accessibilité, éclairage, hauteurs, surfaces — vérifiés automatiquement',body:`<div class="xrecap">${q.controles.length?q.controles.map(c=>`<div class="ph">${esc(c.niveau)}</div><div class="chks">${c.points.map(pt=>`<div class="chk ${pt.niveau}"><span class="ci">${pt.niveau==='err'?'⛔':pt.niveau==='warn'?'⚠️':'💡'}</span><span>${esc(pt.texte)}</span></div>`).join('')}</div>`).join(''):'<div class="tip" style="border-color:#bbf7d0;background:#f0fdf4">Rien à signaler sur les points vérifiés : accès des pièces, lumière naturelle, hauteurs, WC.</div>'}</div>`,foot:'Contrôle du plan'});
-    const T=chantierTasks();if(T.length){const done=T.filter(t=>isDone(t.id)),pc=Math.round(done.length/T.length*100),fait=Math.round(done.reduce((s,t)=>s+(t.prix||0),0)),tot=Math.round(T.reduce((s,t)=>s+(t.prix||0),0));pages.push({title:'Suivi du chantier',sub:`${done.length}/${T.length} tâches faites · ${pc} % · ${eur(fait)} réalisés sur ${eur(tot)} HT`,body:`<div class="xrecap"><div class="prog" style="margin-bottom:12px"><i style="width:${pc}%"></i></div><div class="tasks">${chantierListHTML(T,false,{prix:true})}</div></div>`,foot:'Suivi de chantier'});}
-    const px=chantierPrix();if(px.total>0)pages.push({title:'Budget travaux HT',sub:'Indicatif, hors taxes · prix catalogue, moyenne nationale · travaux décidés sur le plan',body:`<div class="xrecap"><table class="mtable"><tr><th>Corps d'état</th><th style="text-align:right">Montant</th></tr>${LOTS.concat(Object.keys(px.parLot).filter(k=>!LOTS.includes(k))).filter(k=>px.parLot[k]>0).map(k=>`<tr><td>${esc(k)}</td><td class="n">${eur(Math.round(px.parLot[k]))}</td></tr>`).join('')}<tr class="tot"><td>Total HT</td><td class="n">${eur(px.total)}</td></tr></table><div class="tip" style="margin-top:10px">Ta finition, ta région et la TVA n'y sont pas encore appliquées.</div></div>`,foot:'Budget · '+eur(px.total)});
+    /* D40 : Suivi et Budget du dossier lisent la même source que l'écran (chantierPrix). */
+    const px=chantierPrix(),T=px.taches;if(T.length){const pc=Math.round(px.faites/T.length*100);pages.push({title:'Suivi du chantier',sub:`${px.faites}/${T.length} tâches faites · ${pc} % · ${eur(px.fait)} réalisés sur ${eur(px.total)} HT`,body:`<div class="xrecap"><div class="prog" style="margin-bottom:12px"><i style="width:${pc}%"></i></div><div class="tasks">${chantierListHTML(T,false,{prix:true})}</div></div>`,foot:'Suivi de chantier'});}
+    if(px.total>0){const A=elementsATrancher(),Z=px.nonChiffrees;pages.push({title:'Budget travaux HT',sub:'Indicatif, hors taxes · prix catalogue, moyenne nationale · travaux décidés sur le plan',body:`<div class="xrecap"><div class="xbig"><span>Budget travaux HT</span><b>${eur(px.total)}</b><small>${pluriel(px.nb,'tâche')} · ${px.lots.length} corps d'état</small></div><table class="mtable"><tr><th>Corps d'état</th><th style="text-align:right">Tâches</th><th style="text-align:right">Part</th><th style="text-align:right">Montant</th></tr>${px.lots.map(g=>`<tr><td>${esc(g.lot)}</td><td class="n">${g.taches.length}</td><td class="n">${g.total>0?Math.max(1,Math.round(g.total/px.total*100))+' %':'—'}</td><td class="n">${g.total>0?eur(Math.round(g.total)):'non chiffré'}</td></tr>`).join('')}<tr class="tot"><td>Total HT</td><td class="n">${px.nb}</td><td></td><td class="n">${eur(px.total)}</td></tr></table>${Z.length?`<div class="tip" style="margin-top:10px">Pas encore chiffré : ${pluriel(Z.length,'tâche')} du suivi, sans prix pour l'instant (${esc(Z.slice(0,3).map(t=>t.label).join(' ; '))}${Z.length>3?'…':''}). Elles ne sont pas dans le total.</div>`:''}${A.length?`<div class="tip" style="margin-top:10px">Encore à décider : ${pluriel(A.length,'élément')} déjà en place sur lesquels rien n'est décidé. Ils ne sont pas dans le total.</div>`:''}<div class="tip" style="margin-top:10px">Ta finition, ta région et la TVA n'y sont pas encore appliquées.</div></div>`,foot:'Budget · '+eur(px.total)});}
     pages.push({title:'Quantités',sub:'Mesurées automatiquement sur le plan',body:`<div class="xrecap">${quantitesHTML(q)}</div>`,foot:'Quantités'});
   }
   const N=pages.length;
