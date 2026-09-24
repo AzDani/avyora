@@ -905,3 +905,27 @@ et la plaque ne bougent pas). Non appliqués : Dani a choisi la simplicité pour
 ⏳ **Reste ouvert : le sol.** `SOL_MAT` propose encore polyuréthane, PSE et XPS pour trois postes
 qui n'en font qu'un (« Isolation du sol / plancher bas », 45 €/m²). Même problème, mais une laine
 ne va pas sous une chape — le choix y a donc une raison technique qu'il n'a pas sur un mur.
+
+## D29 bis · Le sol aussi : un seul isolant
+
+Dani, le 24/09/2026 : « pareil pour le sol, garde qu'un seul isolant, panneau mousse polyuréthane
+(TMS) — je veux rendre plus simple pour le moment, pour faire une première version sans bug et pas
+compliquée à comprendre pour les utilisateurs ».
+
+Le plan proposait polyuréthane, PSE et XPS ; le catalogue n'a qu'un poste (« Isolation du sol /
+plancher bas », **45 €/m²**, quel que soit le produit). Même piège que les murs : trois choix dont
+aucun ne déplace un euro.
+
+Le plan n'offre plus que la **mousse polyuréthane (TMS)** — qui était déjà le défaut. Le nom du
+produit est explicite plutôt que générique : « Mousse polyuréthane (TMS) » et non « Polyuréthane /
+PIR ». L'épaisseur reste réglable (4 à 12 cm).
+
+Même mise en œuvre que D29 : `SOL_MAT` garde ses trois entrées pour que les plans déjà enregistrés
+restent lisibles (vérifié : un sol en XPS s'affiche toujours « Polystyrène extrudé (XPS) » dans sa
+tâche de chantier), et `SOL_MAT_CHOIX` décide de ce qu'on propose. Le sélecteur disparaît, remplacé
+par la mention du produit.
+
+**La raison derrière la décision, et elle vaut au-delà de l'isolant.** Première version sans bug,
+compréhensible sans effort. Chaque choix offert est une occasion de se tromper et une question de
+plus à se poser ; un choix qui ne change pas le prix est un coût pur pour l'utilisateur. On les
+rouvrira un par un, quand le catalogue saura les chiffrer.

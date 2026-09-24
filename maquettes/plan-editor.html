@@ -1540,7 +1540,14 @@ const PRIX_ACC={      /* €/u — ce qui accompagne un objet sans être l'objet
   spot:45
 };
 // isolants sous chape : uniquement des panneaux rigides (les laines ne vont pas sous une chape)
-const SOL_MAT={pu:{label:'Polyuréthane / PIR'},pse:{label:'PSE (polystyrène)'},xps:{label:'Polystyrène extrudé (XPS)'}};
+/* Isolants sous chape : uniquement des panneaux rigides — une laine ne va pas là-dessous.
+   Comme pour les murs (D29), on n'en PROPOSE qu'un tant que le catalogue n'a qu'un poste
+   (« Isolation du sol / plancher bas », 45 €/m², quel que soit le produit) : trois choix dont
+   aucun ne déplace un euro font perdre du temps à l'utilisateur et lui laissent croire qu'il
+   affine quelque chose. La table garde ses trois entrées pour que les plans déjà enregistrés
+   restent lisibles ; c'est `SOL_MAT_CHOIX` qui décide de ce qu'on offre. */
+const SOL_MAT={pu:{label:'Mousse polyuréthane (TMS)'},pse:{label:'PSE (polystyrène)'},xps:{label:'Polystyrène extrudé (XPS)'}};
+const SOL_MAT_CHOIX=['pu'];
 const solMatLabel=k=>SOL_MAT[k]?.label||ISO_MAT[k]?.label||k;
 const FACADE_PRIX={nettoyage:15,enduit:28,enduit_chaux:70,peinture:30,joints:50,ravalement:130,bardage:90,hydrofuge:20}; // €/m²
 // ouvrages induits d'une ouverture percée (linteau/tableaux + appui ou seuil) — utilisé par le suivi ET le compteur
@@ -3630,7 +3637,9 @@ function renderSelection(lv){
       ${sp.sup==='chape'&&so.chape?`<div class="tip" style="margin-top:6px">Une chape existe déjà : n'en refais une que si elle est dégradée.</div>`:''}
       ${so.chape==='liquide'?`<div class="tip" style="margin-top:8px">La chape liquide est <b>auto-nivelante</b> : pas de ragréage à prévoir.</div>`:`<label class="chk"><input type="checkbox" ${so.ragreage?'checked':''} onchange="setRoomSol('ragreage',this.checked)"><span>Ragréage (mise à niveau avant revêtement)${so.chape==='tradi'?' — en plus de la chape':''}</span></label>`}
       ${so.chape&&sp.sup!=='chape'?`<div class="row" style="margin-top:8px"><label>Isolation sous chape</label><span class="seg" style="display:inline-flex"><button class="${!so.iso?'on':''}" onclick="setRoomSol('iso','')">Non</button><button class="${so.iso?'on':''}" onclick="setRoomSol('iso','on')">Oui</button></span></div>
-      ${so.iso?`<div class="row"><label>Isolant</label><select class="fin" style="width:auto" onchange="setRoomSol('isomat',this.value)">${Object.entries(SOL_MAT).map(([k,m])=>`<option value="${k}" ${so.iso.mat===k?'selected':''}>${m.label}</option>`).join('')}</select></div>
+      ${so.iso?`${SOL_MAT_CHOIX.length>1
+        ?`<div class="row"><label>Isolant</label><select class="fin" style="width:auto" onchange="setRoomSol('isomat',this.value)">${Object.entries(SOL_MAT).filter(([k])=>SOL_MAT_CHOIX.includes(k)).map(([k,m])=>`<option value="${k}" ${so.iso.mat===k?'selected':''}>${m.label}</option>`).join('')}</select></div>`
+        :`<div class="row"><label>Isolant</label><span class="val">${solMatLabel(so.iso.mat)}</span></div>`}
       <div class="row"><label>Épaisseur</label><span>${[40,60,80,100,120].map(mm=>`<button class="miniep ${Math.round(so.iso.e*1000)===mm?'on':''}" onclick="setRoomSol('isoe',${mm})">${mm/10}</button>`).join('')}<input class="fin n" type="number" step="1" min="40" max="120" value="${Math.round(so.iso.e*1000)}" onchange="setRoomSol('isoe',+this.value)" style="width:56px"> mm</span></div>`:''}`:''}`}
       ${sp.warn?`<div class="tip" style="margin-top:8px;border-color:#fde68a;background:#fffbeb">⚠ ${sp.warn}</div>`:''}
       <div class="tip" style="margin-top:8px">${fmtM2(A)} · chaque couche est une tâche du suivi et une ligne du budget (dépose/dalle en Démolition/Maçonnerie, chape/ragréage/revêtement au lot Sol).</div>`;})()}
