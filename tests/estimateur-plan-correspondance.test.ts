@@ -165,6 +165,24 @@ describe("table de correspondance · ce que le scénario doit produire", () => {
     expect(l?.sources.length).toBeGreaterThan(0);
     for (const src of l!.sources) expect(src).toMatch(/^o\d+$/);
   });
+  /* Une ITE sous BARDAGE n'est pas une ITE sous enduit : parement ventilé contre enduit sur
+     isolant, 185 contre 140 €/m². Deux postes, et c'est la finition transmise par le contrat
+     (1.12) qui choisit — avant, les deux se facturaient au même prix. */
+  it("l'ITE sous bardage va sur son propre poste", () => {
+    const base = JSON.parse(JSON.stringify(plan));
+    for (const d of base.provenance.doublages) { d.mode = "ite"; d.sys = "enduit"; }
+    const enduit = contributionsDuPlan(base).contributions;
+    expect(enduit.some((x) => x.poste === "fac-isolation-par-l-exterieur-ite")).toBe(true);
+    expect(enduit.some((x) => x.poste === "fac-isolation-par-l-exterieur-ite-sous-bardage")).toBe(false);
+
+    const p = JSON.parse(JSON.stringify(plan));
+    for (const d of p.provenance.doublages) { d.mode = "ite"; d.sys = "bardage"; }
+    const c = contributionsDuPlan(p).contributions;
+    const b = c.find((x) => x.poste === "fac-isolation-par-l-exterieur-ite-sous-bardage")!;
+    expect(b, "aucune ligne d'ITE sous bardage").toBeTruthy();
+    expect(c.some((x) => x.poste === "fac-isolation-par-l-exterieur-ite")).toBe(false);
+    expect(b.sources.length).toBeGreaterThan(0);
+  });
   it("un doublage DÉJÀ EN PLACE ne se facture pas (D1)", () => {
     const p = JSON.parse(JSON.stringify(plan));
     const dejaLa = { mur: "m99", mode: "iti", mat: "gv", etat: "existant", m2: 12.5 };

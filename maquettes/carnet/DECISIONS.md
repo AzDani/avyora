@@ -929,3 +929,52 @@ par la mention du produit.
 compréhensible sans effort. Chaque choix offert est une occasion de se tromper et une question de
 plus à se poser ; un choix qui ne change pas le prix est un coût pur pour l'utilisateur. On les
 rouvrira un par un, quand le catalogue saura les chiffrer.
+
+## D30 · « Rien n'est gratuit » : l'ITE sous bardage devient un poste
+
+Dani, le 24/09/2026, sur la finition d'ITE qui ne changeait aucun prix : « bah rien n'est gratuit,
+donc mets-le correctement et logique ».
+
+**Le problème était double.** La finition ITE proposait *Enduit* ou *Bardage* pour **0 €** — et dans
+le même panneau de mur, dix lignes plus bas, « Finition extérieure » proposait déjà **Bardage**,
+lui **chiffré 90 €/m²**. Le même mot deux fois : une fois gratuit, une fois payant.
+
+**Pourquoi un poste et pas un coefficient.** Le marché 2026 donne ITE sous enduit **120–220 €/m²**
+et sous bardage **180–270** — soit un rapport de **1,32**. Deux pistes se présentaient :
+
+- *ajouter le poste Bardage (90 €) par-dessus l'ITE* → 230 €/m², soit 1,64 × : au-dessus de tout ce
+  que les sources donnent, et ça compterait deux fois la finition déjà incluse dans les 140 € ;
+- *une variante sur le poste ITE* → impossible sans dégât : `finCoefTask` fige à 1 tout poste qui
+  porte des variantes, or l'ITE **suit le coefficient de finition** (0,75 en éco, 0,83 en standard,
+  1 en premium). Lui ajouter une variante aurait **augmenté son prix** pour tous ceux qui ne
+  dessinent aucun plan.
+
+D'où un **poste distinct**, comme le catalogue distingue déjà « toiture complète tuile » et
+« ardoise » : **Isolation par l'extérieur (ITE) sous bardage, 185 €/m²** (140 × 1,32), fourniture
+80 € au même rapport que l'ITE sous enduit, TVA 5,5 %. Le catalogue passe de 208 à **209 postes**.
+
+Contrat **1.12** : `provenance.doublages[].sys` — la finition de chaque couche. Le contrat portait
+déjà le mode mur par mur, pas la finition ; le devis ne pouvait donc pas choisir.
+
+Vérifié des deux côtés sur 25 m² de mur :
+
+| finition | compteur du plan | devis |
+|---|---|---|
+| enduit | 3 500 € | Isolation par l'extérieur (ITE) → **3 500 €** |
+| bardage | 4 625 € | ITE sous bardage → **4 625 €** |
+
+Sources : [dpeclair — prix ITE 2026, enduit vs bardage](https://dpeclair.fr/travaux/isolation-exterieure-ite/prix-ite-m2-2026/) ·
+[cout-isolation-maison — ITE 2026](https://www.cout-isolation-maison.fr/guides/isolation-exterieure-ite-prix/)
+
+## D30 bis · La pose en feuillure retirée
+
+Trois façons de poser un dormant — applique, tunnel, feuillure — pour un seul prix. Dani :
+« on va juste mettre applique et tunnel ». Le plan n'en propose plus que deux ; `POSE` garde ses
+trois entrées pour qu'un plan déjà enregistré en feuillure reste lisible.
+
+## D30 ter · La tapée d'isolation reste
+
+Elle ne change aucun prix non plus, mais Dani la garde : « la variation du prix est minime, ils
+l'auront lorsqu'ils réaliseront un vrai devis ». C'est la bonne limite — l'estimateur donne un
+budget, pas un devis d'exécution, et la tapée sert ici d'**avertissement technique** (un dormant de
+40 mm sur un doublage de 120 est une erreur de chantier), pas de ligne de prix.

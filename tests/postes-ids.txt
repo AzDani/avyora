@@ -91,6 +91,7 @@ fac-enduit-a-la-chaux-maison-ancienne
 fac-peindre-la-facade
 fac-traitement-impermeabilisant
 fac-isolation-par-l-exterieur-ite
+fac-isolation-par-l-exterieur-ite-sous-bardage
 fac-bardage
 fac-elements-decoratifs-corniches-bandeaux
 mex-fenetres

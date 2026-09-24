@@ -735,6 +735,15 @@
         "tva": 5.5
       },
       {
+        "id": "fac-isolation-par-l-exterieur-ite-sous-bardage",
+        "n": "Isolation par l'extérieur (ITE) sous bardage",
+        "u": "m2",
+        "fp": 185,
+        "sm": 80,
+        "tva": 5.5,
+        "note": "ITE avec parement rapporté sur ossature ventilée, au lieu de l'enduit sur isolant"
+      },
+      {
         "id": "fac-bardage",
         "n": "Bardage",
         "u": "m2",

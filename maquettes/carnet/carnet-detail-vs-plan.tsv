@@ -92,6 +92,7 @@ Façade	Enduit à la chaux (maison ancienne)	m2	facade	MESURE	q.facades — aire
 Façade	Peindre la façade	m2	facade	MESURE	q.facades — aire réelle par mur et par finition (facadeArea)
 Façade	Traitement imperméabilisant	m2	facade	MESURE	q.facades — aire réelle par mur et par finition (facadeArea)
 Façade	Isolation par l'extérieur (ITE)	m2	facade	MESURE	q.doublage.ite — m² réels par matériau
+Façade	Isolation par l'extérieur (ITE) sous bardage	m2	—	MESURE	q.provenance.doublages où sys = bardage — mur par mur
 Façade	Bardage	m2	facade	MESURE	q.doublage.ite — m² réels par matériau
 Façade	Éléments décoratifs (corniches, bandeaux)	ml	—	QUESTION	hors de portée d'un plan 2D — reste une question d'intake
 Menuiseries exterieures	Fenêtres	u	—	FOURNIT	comptage exact par type, avec largeur et hauteur, depuis q.levels[].menuiseries

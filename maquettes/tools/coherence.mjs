@@ -91,6 +91,7 @@ const PRIX_MAP = [
   ["PRIX", "deposeSol", "Enlever un revêtement de sol"],
   ["PRIX", "isoITI", "Isolation des murs par l'intérieur"],
   ["PRIX", "isoITE", "Isolation par l'extérieur (ITE)"],
+  ["PRIX", "isoITEBardage", "Isolation par l'extérieur (ITE) sous bardage"],
   ["PRIX_TOIT", "demousser", "Nettoyer / démousser la toiture"],
   ["PRIX_TOIT", "refectionTuile", "Réfection couverture tuiles (dépose + écran + liteaux)"],
   ["PRIX_TOIT", "refectionArdoise", "Réfection couverture ardoise (dépose + écran + liteaux)"],

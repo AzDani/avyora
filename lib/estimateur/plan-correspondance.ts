@@ -56,7 +56,7 @@ export interface PlanPourCorrespondance {
     murs?: Array<{ id: string; type: string; porteur: boolean; etat: string; ml: number; m2: number }>;
     /** Contrat 1.11 : le percement que chaque ouverture provoque, pour rattacher ces lignes. */
     ouvertures?: Array<{ id?: string; percement?: string | null }>;
-    doublages?: Array<{ mur?: string; mode?: string; mat?: string; etat?: string | null; m2?: number }>;
+    doublages?: Array<{ mur?: string; mode?: string; sys?: string | null; mat?: string; etat?: string | null; m2?: number }>;
     facades?: Array<{ mur?: string; poste?: string; label?: string; etat?: string | null; m2?: number }>;
   };
   detailNiveaux?: Array<{
@@ -415,10 +415,18 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
      mais jamais vide. */
   const couches = plan.provenance?.doublages;
   if (couches?.length) {
+    /* Le poste dépend du mode ET de la finition : une ITE sous BARDAGE est un parement rapporté
+       sur ossature ventilée, pas un enduit sur isolant — 185 contre 140 €/m² au catalogue. Le
+       contrat porte la finition depuis 1.12 ; avant, les deux se facturaient au même prix. */
+    const POSTE_DOUBLAGE: Record<string, string> = {
+      iti: "iso-isolation-des-murs-par-l-interieur",
+      ite: "fac-isolation-par-l-exterieur-ite",
+      "ite-bardage": "fac-isolation-par-l-exterieur-ite-sous-bardage",
+    };
     const parMode = new Map<string, { m2: number; murs: string[] }>();
     for (const c of couches) {
       if (c.etat !== "creer") continue;                      // D1
-      const mode = c.mode === "ite" ? "ite" : "iti";
+      const mode = c.mode === "ite" ? (c.sys === "bardage" ? "ite-bardage" : "ite") : "iti";
       const e = parMode.get(mode) ?? { m2: 0, murs: [] };
       e.m2 += c.m2 ?? 0;
       if (c.mur && !e.murs.includes(c.mur)) e.murs.push(c.mur);
@@ -426,9 +434,10 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
     }
     for (const [mode, e] of parMode) {
       if (e.m2 <= 0) continue;
-      add(mode === "ite" ? "fac-isolation-par-l-exterieur-ite" : "iso-isolation-des-murs-par-l-interieur",
-        +e.m2.toFixed(2), e.murs,
-        mode === "ite" ? "Isolation par l'extérieur, mesurée mur par mur" : "Doublage isolé par l'intérieur, mesuré mur par mur");
+      add(POSTE_DOUBLAGE[mode], +e.m2.toFixed(2), e.murs,
+        mode === "iti" ? "Doublage isolé par l'intérieur, mesuré mur par mur"
+          : mode === "ite-bardage" ? "Isolation par l'extérieur sous bardage, mesurée mur par mur"
+          : "Isolation par l'extérieur, mesurée mur par mur");
     }
   } else {
     if (plan.doublage?.iti) add("iso-isolation-des-murs-par-l-interieur", +plan.doublage.iti.toFixed(2), [], "Doublage isolé par l'intérieur, mesuré sur le plan");
@@ -629,7 +638,8 @@ export function postesCouverts(): string[] {
     "dem-abattre-une-cloison", "dem-abattre-un-mur-non-porteur", "clo-monter-une-cloison", "mac-monter-un-mur-en-pierre",
     "mac-monter-un-mur-en-parpaings", "mac-ouvrir-un-mur-porteur-petite-porte-fenetre",
     "mac-ouvrir-un-mur-porteur-grande-2-5-m-baie", "etu-etude-de-structure", "iso-isolation-des-murs-par-l-interieur",
-    "fac-isolation-par-l-exterieur-ite", "fac-ravalement-facade-pierre-tout-compris", "fac-nettoyer-la-facade",
+    "fac-isolation-par-l-exterieur-ite", "fac-isolation-par-l-exterieur-ite-sous-bardage",
+    "fac-ravalement-facade-pierre-tout-compris", "fac-nettoyer-la-facade",
     "fac-refaire-les-joints-rejointoiement-pierre-briqu", "fac-enduit-monocouche-machine",
     "fac-enduit-a-la-chaux-maison-ancienne", "fac-peindre-la-facade", "fac-traitement-impermeabilisant", "fac-bardage",
     ...Object.values(SOL), "rev-poncage-vitrification-parquet", "rev-parquet-bois",
