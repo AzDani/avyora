@@ -303,7 +303,7 @@ const res = await p.evaluate((PLAN_REFEND) => {
     const side = perp(norm(sub(w.b, w.a))).x > 0 ? 1 : -1;               /* côté chambre */
     poserDoublage(w, side, 0, 1); afterChange();
     const tache = () => chantierTasks().some((x) => x.id === "o:" + o.id + ":retouriso");
-    t["retour · proposé du côté doublé seulement"] = retourPossible(o, w, side) && !retourPossible(o, w, -side);
+    t["retour · proposé sur le passage (les deux faces)"] = retourPossible(o, w, side) && retourPossible(o, w, -side);
     t["retour · pas de retour tant qu'on ne l'a pas choisi"] = !revealOnSide(o, w, side) && !tache();
     /* sans retour, la bande s'arrête au jambage : aucun point de bande dans la largeur du passage */
     const c = add(w.a, mul(sub(w.b, w.a), o.t)); const u = norm(sub(w.b, w.a));
@@ -323,10 +323,55 @@ const res = await p.evaluate((PLAN_REFEND) => {
     t["retour · la bande du mur est bien trouvée"] = bandes > 0;
     t["retour · sans retour, la bande n'entre pas dans le passage"] = !rentre;
     t["retour · sans retour, la bande touche les deux jambages (à 2 mm)"] = touche[0] && touche[1];
-    sel = { kind: "opening", id: o.id }; setRetour(side);
+    sel = { kind: "opening", id: o.id }; setTableaux(true);
     t["retour · choisi → dessiné et suivi"] = revealOnSide(o, w, side) && tache();
-    setRetour(side);
-    t["retour · re-cliqué → retiré"] = !revealOnSide(o, w, side) && !tache(); }
+    setTableaux(false);
+    t["retour · retiré → plus rien"] = !revealOnSide(o, w, side) && !tache(); }
+
+  /* ── isoler les tableaux SANS doubler la face (Dani, 24/09) ──────────────────── */
+  { state = JSON.parse(PLAN_REFEND).state; state.cur = 0; setMode("projet"); afterChange();
+    const lv = L(); const w = lv.walls.find((x) => x.pid === "m63"); const o = lv.openings.find((x) => x.pid === "o70");
+    isoList(w).length = 0; afterChange();
+    t["tableau · proposé sans aucun doublage"] = cotesTableau(o, w).length === 2 && !tableauxIsoles(o, w);
+    const c = add(add(w.a, mul(sub(w.b, w.a), o.t)), wallOff(w));
+    const tb = tableauSousCurseur(c);
+    t["tableau · l'outil trouve l'ouverture sous le curseur"] = !!tb && tb.o === o;
+    t["tableau · rien trouvé hors de l'ouverture"] = !tableauSousCurseur(add(c, v(3, 0)));
+    poserTableaux(o, w, true);
+    t["tableau · isolé → suivi"] = tableauxIsoles(o, w) && chantierTasks().some((x) => x.id === "o:" + o.id + ":retouriso");
+    t["tableau · épaisseur = réglage de l'outil (sans doublage)"] = Math.abs(epTableau(o, w, 1) - doublageOf({ e: DBL_CFG.e, mode: "iti", sys: "ossature" })) < 1e-9;
+    poserTableaux(o, w, false);
+    t["tableau · retiré"] = !tableauxIsoles(o, w);
+    /* jamais côté façade, jamais derrière une menuiserie en applique */
+    const pf = lv.openings.find((x) => x.pid === "o77"); const wf = lv.walls.find((x) => x.id === pf.wallId);
+    t["tableau · menuiserie en applique : rien à isoler"] = poseOf(pf) === "applique" && cotesTableau(pf, wf).length === 0;
+    pf.pose = "tunnel"; afterChange();
+    t["tableau · menuiserie en tunnel : côté intérieur seulement"] = cotesTableau(pf, wf).length === 1 && cotesTableau(pf, wf)[0] === interiorSideN(wf); }
+
+  /* ── la tapée suit le doublage RÉEL (w.isos), pas l'ancien w.iso ─────────────── */
+  { state = JSON.parse(PLAN_REFEND).state; state.cur = 0; setMode("projet"); afterChange();
+    const lv = L(); const pf = lv.openings.find((x) => x.pid === "o77");
+    const io = doublageIntAu(pf);
+    t["tapée · la porte-fenêtre voit le doublage de son mur"] = !!io;
+    t["tapée · porte-fenêtre remplacée = épaisseur du doublage"] = !!io && dormantOf(pf) === Math.round(doublageOf(io) * 1000) && dormantOf(pf) > 40;
+    t["tapée · aucune alerte sur une menuiserie qu'on pose"] = !menuisSousDimensionnees(lv).some((m) => m.o === pf);
+    pf.st = "garder"; afterChange();
+    t["tapée · menuiserie conservée à 40 mm → alerte"] = menuisSousDimensionnees(lv).some((m) => m.o === pf);
+    /* le panneau d'un mur de façade doublé ne dit plus « pas doublé » */
+    const wf = lv.walls.find((x) => x.id === pf.wallId); setTool("select"); sel = { kind: "wall", id: wf.id }; renderPanel();
+    t["façade · le panneau voit le doublage posé à l'outil"] = ((h) => /Doublée/.test(h) && !/n'est pas doublé/.test(h))(document.getElementById("panel").innerHTML); }
+
+  /* ── ITE posée à l'outil : dessinée, et réglable sans redevenir ITI ─────────── */
+  { state = JSON.parse(PLAN_REFEND).state; state.cur = 0; setMode("projet"); afterChange();
+    const lv = L(); const m = lv.walls.find((x) => x.pid === "m67"); const dehors = -interiorSideN(m);
+    DBL_CFG.mode = "ite"; poserDoublage(m, dehors, 0, 1); DBL_CFG.mode = "iti";
+    let n = 0; const orig = fillIso; fillIso = (...a) => { n++; }; drawDoublageITE(lv); fillIso = orig;
+    t["ITE · posée à l'outil, elle est dessinée"] = n > 0;
+    setTool("select"); sel = { kind: "wall", id: m.id }; setWallIsoSide(dehors, "e", 140);
+    const io = isoLayers(m).find((x) => (x.side || 1) === dehors);
+    t["ITE · régler l'épaisseur la garde en ITE"] = io.mode === "ite" && Math.round(io.e * 1000) === 140;
+    setWallIsoSide(dehors, "sys", "bardage");
+    t["ITE · finition bardage conservée"] = isoLayers(m).find((x) => (x.side || 1) === dehors).sys === "bardage"; }
 
   return t;
 }, PLAN_REFEND);

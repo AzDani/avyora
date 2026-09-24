@@ -713,7 +713,7 @@ function groupById(gid){return (state.groups||[]).find(g=>g.id===gid);}
    peut plus en appliquer : poser d'un clic un doublage sur dix murs, c'était s'engager à en
    retirer sur sept. */
 function grpIsoSet(ids,m){if(m!=='off')return;retirerIsoDesMurs(ids.split(','));toast('Doublage retiré du groupe',true);}
-function grpIsoTweak(ids,k,val){history.push(snapshot());ids.split(',').forEach(id=>{const r=findWallAny(id);if(r&&r.w.iso){if(k==='mat')r.w.iso.mat=val;else if(k==='e')r.w.iso.e=val/1000;syncNewDormants(r.w);}});afterChange();}
+function grpIsoTweak(ids,k,val){history.push(snapshot());ids.split(',').forEach(id=>{const r=findWallAny(id);if(r){isoLayers(r.w).forEach(io=>{if(k==='mat')io.mat=val;else if(k==='e')io.e=val/1000;});syncNewDormants(r.w);}});afterChange();}
 function grpFacToggle(ids,k){const arr=ids.split(',');const ws=arr.map(id=>findWallAny(id)?.w).filter(w=>w&&(()=>{const sv=sel;sel={kind:'wall',id:w.id};const e=isExteriorWall(w);sel=sv;return e;})());
   const has=ws.length&&ws.every(w=>facadeFins(w).includes(k));history.push(snapshot());ws.forEach(w=>{w.facade=w.facade||{fins:[],st:mode()!=='existant'?'creer':undefined};const i=w.facade.fins.indexOf(k);if(has){if(i>=0)w.facade.fins.splice(i,1);}else if(i<0)w.facade.fins.push(k);if(!w.facade.fins.length)delete w.facade;});afterChange();}
 function grpFacade(ids,fins){applyFacadeToWalls(ids.split(','),fins.split(','));toast('Revêtement appliqué aux murs extérieurs',true);}
@@ -1126,8 +1126,8 @@ function chantierTasks(){const T=[];const ml=state.levels.length>1;
         if(ouvrantOf(o)==='galandage')T.push({id:'o:'+o.id+':galandage',lot:'Cloisons',label:'Caisson à galandage · '+d.label.toLowerCase()+lvn,detail:'poche '+fmt(o.w)+' m dans le mur',prix:PRIX.galandage});}
       /* Retour d'isolant : il suit le DOUBLAGE neuf de la face, pas la menuiserie — un passage
          existant dans un mur qu'on double se retourne aussi, si on l'a choisi. */
-      if(ost(o)!=='boucher'){const siN=interiorSideN(w);const pOuv=add(w.a,mul(sub(w.b,w.a),o.t));const revSides=[1,-1].filter(s=>{if(!(o.retour||[]).includes(s))return false;const io=isoOnSideAt(w,s,pOuv);if(!io||io.mode==='ite'||io.st!=='creer')return false;return !(isExtType(o.type)&&s===siN&&poseOf(o)==='applique');});
-        if(revSides.length){const ml=(2*(o.h||d.h)+o.w)*revSides.length;T.push({id:'o:'+o.id+':retouriso',lot:'Isolation',label:'Retour d\'isolant en tableau · '+d.label.toLowerCase()+(revSides.length>1?' (2 faces)':'')+lvn,detail:fmt(ml)+' ml · coupe le pont thermique',prix:Math.round(ml*PRIX.retourIso)});}}});
+      if(ost(o)!=='boucher'){const pOuv=add(w.a,mul(sub(w.b,w.a),o.t));const revSides=[1,-1].filter(s=>{if(!(o.retour||[]).includes(s)||!retourOK(o,w,s))return false;const io=isoOnSideAt(w,s,pOuv);return !io||io.st==='creer';});
+        if(revSides.length){const ml=2*(o.h||d.h)+o.w;T.push({id:'o:'+o.id+':retouriso',lot:'Isolation',label:'Isoler les tableaux · '+d.label.toLowerCase()+lvn,detail:fmt(ml)+' ml (jambages + linteau)',prix:Math.round(ml*PRIX.retourIso)});}}});
     facesFor(lv,'projet').forEach(f=>{const r=f.room;if(!r)return;const A=areaNet(lv,f),rn=roomName(r);
       // sol, dans l'ordre de réalisation : dépose → dalle → (béton fini) | isolant → chape → ragréage → revêtement
       const sp=solPlan(r),nw=r.floorNew||'';
@@ -1304,7 +1304,6 @@ const ISO_MAT = {gv:{label:'Laine de verre',lambda:0.035},gr:{label:'Laine de ro
    `colle` reste lue pour qu'un plan déjà enregistré garde sa géométrie. */
 const isoFinish = iso => iso.mode==='ite' ? (iso.sys==='bardage'?0.04:0.010) : (iso.sys==='colle'?0.010:0.020);
 const doublageOf = iso => iso ? iso.e + isoFinish(iso) : 0;                      // épaisseur d'une couche de doublage
-const doublageTotal = w => doublageOf(w.iso);                                    // doublage de la couche primaire (côté intérieur pour une menuiserie)
 const isoR = iso => iso ? +(iso.e/(ISO_MAT[iso.mat]?.lambda||0.035)).toFixed(2) : 0;
 // un mur peut porter jusqu'à DEUX doublages, un par face (mur de séparation intérieur isolé des deux côtés)
 /* Un mur porte AUTANT de doublages qu'il traverse de pièces. Il n'y avait que deux emplacements,
@@ -1436,7 +1435,6 @@ function arretsDoublage(lv,w){
 }
 // isolation présente dans une vue : 'creer' (ajoutée en projet) = absente de l'existant, présente en projet/final ; sinon existante partout
 const isoShownIso = (io,m) => { if(!io)return false; m=m||mode(); return (io.st==='creer') ? m!=='existant' : true; };
-const isoShown = (w,m) => isoShownIso(w.iso,m); // résistance thermique R
 // doublage (ITI) présent sur une face donnée du mur, dans la vue courante — épaisseur perdue côté pièce
 const doublageSide = (w,s,m) => { const io=isoOnSide(w,s); return io&&io.mode!=='ite'&&isoShownIso(io,m)?doublageOf(io):0; };
 const R_MIN_MUR = 3.7; // seuil murs ITI éligible MaPrimeRénov' / CEE (m².K/W)
@@ -1508,10 +1506,18 @@ const MENUIS_OPTS={moustiquaire:['Moustiquaire',200],store:['Store / brise-solei
 const DORMANTS=[40,100,120,140,160]; // tapées d'isolation standard (mm), utilisées EN POSE APPLIQUE : 40 sans doublage, sinon isolant + 10 air + 10 placo
 function wallOfOpening(o){for(const lv of state.levels){const w=lv.walls.find(x=>x.id===o.wallId);if(w)return {w,lv};}return null;}
 // tapée conseillée pour être de niveau avec le doublage ITI du mur
-function dormantConseille(o){const r=wallOfOpening(o);if(r&&r.w.iso&&r.w.iso.mode!=='ite')return Math.round(doublageTotal(r.w)*1000);return 40;}
-function dormantOf(o){return o.dormant||40;} // tapée fixe (40 = standard sans doublage) — ne suit pas l'isolation en douce, le contrôle alerte
+/* Le doublage intérieur AU DROIT d'une ouverture — celui dont la menuiserie prend la tapée.
+   On lisait `w.iso`, l'ancien doublage unique du mur. Depuis l'outil Doublage, un mur porte ses
+   doublages dans `w.isos`, tronçon par tronçon, et `w.iso` n'existe plus : la porte-fenêtre de
+   Dani gardait 40 mm de tapée derrière 120 mm de doublage (24/09/2026). */
+function doublageIntAu(o){const r=wallOfOpening(o);if(!r)return null;const w=r.w;const io=isoOnSideAt(w,interiorSideN(w),add(w.a,mul(sub(w.b,w.a),o.t)));return io&&io.mode!=='ite'?io:null;}
+function dormantConseille(o){const io=doublageIntAu(o);return io?Math.round(doublageOf(io)*1000):40;}
+/* Menuiserie qu'on POSE : sa tapée est celle du doublage, toujours — calculée, pas recopiée, pour
+   qu'aucun oubli de synchronisation ne la laisse en retard. Menuiserie conservée : c'est un constat
+   (o.dormant), et l'écart avec le doublage reste une alerte. */
+function dormantOf(o){if(isExtType(o.type)&&(ost(o)==='creer'||ost(o)==='remplacer'))return dormantConseille(o);return o.dormant||40;} // tapée fixe (40 = standard sans doublage) — ne suit pas l'isolation en douce, le contrôle alerte
 // menuiseries extérieures d'un mur ITI dont la tapée < doublage → dormant à agrandir
-function menuisSousDimensionnees(lv){const out=[];lv.walls.forEach(w=>{if(!w.iso||w.iso.mode==='ite'||!isoShown(w,'projet'))return;const dbl=Math.round(doublageTotal(w)*1000);lv.openings.forEach(o=>{const def=OPENINGS[o.type];if(!def)return;const isExtM=isExtType(o.type);if(o.wallId!==w.id||!isExtM||!opDrawn(o,'projet'))return;const d=dormantOf(o);if(d<dbl-5)out.push({o,def,d,dbl});});});return out;}
+function menuisSousDimensionnees(lv){const out=[];lv.openings.forEach(o=>{const def=OPENINGS[o.type];if(!def||!isExtType(o.type)||!opDrawn(o,'projet')||!lv.walls.some(w=>w.id===o.wallId))return;const io=doublageIntAu(o);if(!io||!isoShownIso(io,'projet'))return;const dbl=Math.round(doublageOf(io)*1000);const d=dormantOf(o);if(d<dbl-5)out.push({o,def,d,dbl});});return out;}
 // Prix INDICATIFS (fourchette milieu, base de prix AVYORA) — pour le compteur live ; le chiffrage détaillé passe par le moteur (Pro).
 const PRIX={
   /* ⛔ Les valeurs à 0 ci-dessous sont des ouvrages ABANDONNÉS (D19) : le catalogue de
@@ -2307,6 +2313,11 @@ cv.addEventListener('pointerdown',e=>{
   if(e.button===2){ rightClickFinish(); return; }
   if(tool==='zone'){drag={kind:'band',start:raw,cur:raw};return;}
   if(tool==='doublage'){
+    const tb=tableauSousCurseur(raw);
+    if(tb){const retire=DBL_CFG.action==='retirer'||keys.alt,on=tableauxIsoles(tb.o,tb.w);
+      if(!cotesTableau(tb.o,tb.w).length){toast(ost(tb.o)==='boucher'?'Ouverture bouchée : plus de tableau à isoler':'Menuiserie en applique : le doublage recouvre déjà le dormant');return;}
+      if(retire===!on){toast(on?'Tableaux déjà isolés':'Pas d\'isolant dans ces tableaux');return;}
+      poserTableaux(tb.o,tb.w,!retire);toast(retire?'Isolant des tableaux retiré':'Tableaux isolés',true);return;}
     const f=faceSousCurseur(raw);
     if(!f){toast('Vise la face d\'un mur : le doublage se pose contre un mur, il ne flotte pas');return;}
     /* Retirer : par le bouton du volet, ou par Alt pour qui connaît le raccourci. On enlève le
@@ -3068,7 +3079,22 @@ function fillIso(poly,finish,mark,innerRef,u,skipEdge){
    allait jusqu'à l'AXE du mur : doubler une seule face laissait une moitié de tableau isolée et
    l'autre nue. Sans retour choisi, la bande s'arrête à fleur du tableau.
    `retourPossible` dit si le retour a un sens ici ; `revealOnSide` s'il a été demandé. */
-function retourPossible(o,w,s){const io=isoOnSideAt(w,s,add(w.a,mul(sub(w.b,w.a),o.t)));if(!io||io.mode==='ite'||!isoShownIso(io,mode()))return false;if(ost(o)==='boucher')return false;if(isExtType(o.type)&&s===interiorSideN(w)&&poseOf(o)==='applique')return false;return true;}
+/* Isoler le tableau ne demande plus de doubler la face (Dani, 24/09/2026 : « on doit pouvoir isoler
+   l'épaisseur du mur » dans un grand passage). Sans doublage, l'isolant habille le tableau à fleur
+   des parements ; avec, il rejoint la bande. Jamais côté façade d'un mur extérieur (c'est
+   l'enduit), jamais contre une ITE, jamais derrière une menuiserie posée en applique. */
+function retourOK(o,w,s){if(ost(o)==='boucher'||!OPENINGS[o.type])return false;const io=isoOnSideAt(w,s,add(w.a,mul(sub(w.b,w.a),o.t)));if(io&&io.mode==='ite')return false;const si=interiorSideN(w);if(isExteriorWall(w)&&s!==si)return false;if(isExtType(o.type)&&s===si&&poseOf(o)==='applique')return false;return true;}
+function retourPossible(o,w,s){if(!retourOK(o,w,s))return false;const io=isoOnSideAt(w,s,add(w.a,mul(sub(w.b,w.a),o.t)));return io?isoShownIso(io,mode()):mode()!=='existant';}
+/* Épaisseur de l'isolant de tableau : celle du doublage de la face s'il y en a un (règle V92,
+   même épaisseur), sinon celle du doublage de l'autre face, sinon celle réglée dans l'outil. */
+function epTableau(o,w,s){const P=add(w.a,mul(sub(w.b,w.a),o.t));const io=isoOnSideAt(w,s,P)||isoOnSideAt(w,-s,P);return io&&io.mode!=='ite'?doublageOf(io):doublageOf({e:DBL_CFG.e,mat:DBL_CFG.mat,mode:'iti',sys:'ossature'});}
+function cotesTableau(o,w){return [1,-1].filter(c=>retourPossible(o,w,c));}
+function tableauxIsoles(o,w){return cotesTableau(o,w).some(c=>(o.retour||[]).includes(c));}
+function poserTableaux(o,w,on){history.push(snapshot());o.retour=on?cotesTableau(o,w):[];afterChange();}
+/* L'ouverture sous le curseur, dans l'épaisseur de son mur — là où l'outil Doublage isole le tableau. */
+function tableauSousCurseur(p){const lv=L();for(const o of lv.openings){if(!opDrawn(o))continue;const w=lv.walls.find(x=>x.id===o.wallId);if(!w||!wallDrawn(w))continue;
+  const u=norm(sub(w.b,w.a)),n=perp(u),c=add(add(w.a,mul(sub(w.b,w.a),o.t)),wallOff(w)),d=sub(p,c);
+  if(Math.abs(d.x*u.x+d.y*u.y)<o.w/2&&Math.abs(d.x*n.x+d.y*n.y)<wallT(w)/2)return {o,w};}return null;}
 function revealOnSide(o,w,s){return retourPossible(o,w,s)&&(o.retour||[]).includes(s);}
 // découpe d'une bande d'isolant au droit des ouvertures du mur : l'isolant s'arrête contre la menuiserie
 function clipHalf(poly,u,sCut,keepLess){const out=[];const N=poly.length;for(let i=0;i<N;i++){const A=poly[i],B=poly[(i+1)%N];const sa=A.x*u.x+A.y*u.y,sb=B.x*u.x+B.y*u.y;const inA=keepLess?sa<=sCut:sa>=sCut,inB=keepLess?sb<=sCut:sb>=sCut;if(inA)out.push(A);if(inA!==inB&&Math.abs(sb-sa)>1e-9){const t=(sCut-sa)/(sb-sa);out.push(add(A,mul(sub(B,A),t)));}}return out;}
@@ -3146,18 +3172,23 @@ function drawDoublageITI(lv){const faces=facesCache[lv.id]||[];faces.forEach(f=>
 function drawMenuisWarnings(lv){menuisSousDimensionnees(lv).forEach(({o})=>{const w=lv.walls.find(x=>x.id===o.wallId);if(!w)return;const c=add(add(w.a,mul(sub(w.b,w.a),o.t)),wallOff(w));const s=S(c);const r=Math.max(9,11*uiScale);
   ctx.save();ctx.beginPath();ctx.arc(s.x,s.y,r,0,7);ctx.fillStyle='#dc2626';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2*uiScale;ctx.stroke();
   ctx.fillStyle='#fff';ctx.font=`700 ${Math.round(r*1.15)}px Geist, sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('!',s.x,s.y+0.5);ctx.restore();});}
+/* ITE : enveloppe extérieure continue, dessinée couche par couche (`isoLayers`). Elle lisait
+   `w.iso` : une ITE posée à l'outil était chiffrée mais jamais dessinée. Coins mitrés quand deux
+   ITE se rejoignent au bout de leurs murs ; une ITE partielle s'arrête d'équerre. */
 function drawDoublageITE(lv){
-  const ws=lv.walls.filter(w=>w.iso&&w.iso.mode==='ite'&&!isVirtual(w)&&wallActive(w)&&wallDrawn(w)&&isoShown(w,mode()));
-  if(!ws.length)return;
-  const info=new Map();
-  ws.forEach(w=>{const t=wallT(w),u=norm(sub(w.b,w.a)),n=perp(u),off=wallOff(w),s=w.iso.side||-1,dt=doublageTotal(w);
-    info.set(w,{u,fP:add(add(w.a,off),mul(n,(t/2)*s)),iP:add(add(w.a,off),mul(n,(t/2+dt)*s))});});
-  const other=(w,pt)=>ws.find(o=>o!==w&&(same(o.a,pt)||same(o.b,pt)));
+  const E=[];lv.walls.forEach(w=>{if(isVirtual(w)||!wallActive(w)||!wallDrawn(w))return;isoLayers(w).forEach(io=>{if(io.mode==='ite'&&isoShownIso(io,mode()))E.push({w,io});});});
+  if(!E.length)return;
+  E.forEach(e=>{const w=e.w,t=wallT(w),u=norm(sub(w.b,w.a)),n=perp(u),off=wallOff(w),s=e.io.side||-1,dt=doublageOf(e.io);
+    Object.assign(e,{t,u,n,off,s,dt,pa:add(w.a,mul(sub(w.b,w.a),isoT0(e.io))),pb:add(w.a,mul(sub(w.b,w.a),isoT1(e.io))),
+      fP:add(add(w.a,off),mul(n,(t/2)*s)),iP:add(add(w.a,off),mul(n,(t/2+dt)*s))});});
   const X=(p1,d1,p2,d2)=>{const den=d1.x*d2.y-d1.y*d2.x;if(Math.abs(den)<1e-9)return null;const tt=((p2.x-p1.x)*d2.y-(p2.y-p1.y)*d2.x)/den;return add(p1,mul(d1,tt));};
-  ws.forEach(w=>{const I=info.get(w),t=wallT(w),n=perp(I.u),off=wallOff(w),s=w.iso.side||-1,dt=doublageTotal(w);
-    const cornerAt=(pt,line)=>{const o=other(w,pt);if(o){const J=info.get(o);const r=X(line==='f'?I.fP:I.iP,I.u,line==='f'?J.fP:J.iP,J.u);if(r)return r;}
-      return add(add(pt,off),mul(n,(line==='f'?t/2:t/2+dt)*s));};
-    const quad=[cornerAt(w.a,'f'),cornerAt(w.b,'f'),cornerAt(w.b,'i'),cornerAt(w.a,'i')];cutAtOpenings(quad,w,lv).forEach(P=>fillIso(P,true,mode()==='projet'&&w.iso.st==='creer',quad[3],I.u));});}
+  const bout=(e,pt)=>same(pt,e.w.a)||same(pt,e.w.b);
+  const other=(e,pt)=>bout(e,pt)?E.find(o=>o.w!==e.w&&bout(o,pt)&&(same(o.pa,pt)||same(o.pb,pt))):null;
+  E.forEach(e=>{
+    const cornerAt=(pt,line)=>{const o=other(e,pt);if(o){const r=X(line==='f'?e.fP:e.iP,e.u,line==='f'?o.fP:o.iP,o.u);if(r)return r;}
+      return add(add(pt,e.off),mul(e.n,(line==='f'?e.t/2:e.t/2+e.dt)*e.s));};
+    const quad=[cornerAt(e.pa,'f'),cornerAt(e.pb,'f'),cornerAt(e.pb,'i'),cornerAt(e.pa,'i')];
+    cutAtOpenings(quad,e.w,lv).forEach(P=>fillIso(P,true,mode()==='projet'&&e.io.st==='creer',quad[3],e.u));});}
 let uiScale=1; // >1 pendant l'export haute résolution
 function drawWallCote(w,clickable){
   const z=view.zoom,k=uiScale,t=wallT(w),u=norm(sub(w.b,w.a)),n=perp(u);const L0=wallLen(w);if(L0*z<28*k)return;
@@ -3227,7 +3258,7 @@ function drawOpening(o,isSel){
     }
     jamb(-half);jamb(half);
     // emprise du galandage : 2 vantaux qui coulissent dans le DOUBLAGE (côté intérieur), une poche de chaque côté (largeur o.w/2)
-    if(ouvrantOf(o)==='galandage'){const sN=interiorSideN(w)||1;const pd=(w.iso&&w.iso.mode!=='ite')?doublageTotal(w):0.10;const y0=sN*(t/2),y1=sN*(t/2+pd),lw=o.w/2;
+    if(ouvrantOf(o)==='galandage'){const sN=interiorSideN(w)||1;const ig=doublageIntAu(o),pd=ig?doublageOf(ig):0.10;const y0=sN*(t/2),y1=sN*(t/2+pd),lw=o.w/2;
       ctx.save();ctx.setLineDash([0.07,0.05]);ctx.strokeStyle='#7c3aed';ctx.lineWidth=1.1/view.zoom*(uiScale||1);ctx.fillStyle='rgba(124,58,237,.10)';
       [[-half-lw,-half],[half,half+lw]].forEach(([xa,xb])=>{ctx.beginPath();ctx.moveTo(xa,y0);ctx.lineTo(xb,y0);ctx.lineTo(xb,y1);ctx.lineTo(xa,y1);ctx.closePath();ctx.fill();ctx.stroke();});
       ctx.setLineDash([]);if(o.w*view.zoom>90){ctx.fillStyle='#7c3aed';ctx.font=`${Math.max(0.08,9/view.zoom)}px Geist, sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';const ga=Math.atan2(u.y,u.x);const ym=(y0+y1)/2;[[-half-lw/2],[half+lw/2]].forEach(([xm])=>{ctx.save();ctx.translate(xm,ym);ctx.rotate(-ga);ctx.fillText('galandage',0,0);ctx.restore();});}ctx.restore();}
@@ -3268,7 +3299,7 @@ function drawOpening(o,isSel){
   if(os!=='boucher'&&layOn('iso')){ // rattaché au calque Isolation (masqué avec le doublage ; toujours visible à l'export)
     /* Seulement les faces où le retour a été CHOISI (revealOnSide). Une seule face choisie : le retour
        habille tout le tableau jusqu'à l'autre parement — s'arrêter à l'axe laissait un demi-tableau nu. */
-    const layers=[1,-1].map(s=>{if(!revealOnSide(o,w,s))return null;const io=isoOnSideAt(w,s,add(w.a,mul(sub(w.b,w.a),o.t)));const dt=doublageOf(io);let yEnd;if(isExtM&&s===siN)yEnd=py;else yEnd=revealOnSide(o,w,-s)?0:-s*t/2;return {s,dt,yOuter:s*(t/2+dt),yEnd,L:Math.min(dt,half-0.02),creer:mode()==='projet'&&io.st==='creer'};}).filter(Boolean);
+    const layers=[1,-1].map(s=>{if(!revealOnSide(o,w,s))return null;const io=isoOnSideAt(w,s,add(w.a,mul(sub(w.b,w.a),o.t)));const dt=io?doublageOf(io):0;let yEnd;if(isExtM&&s===siN)yEnd=py;else yEnd=revealOnSide(o,w,-s)?0:-s*t/2;return {s,dt,yOuter:s*(t/2+dt),yEnd,L:Math.min(io?dt:epTableau(o,w,s),half-0.02),creer:mode()==='projet'&&(!io||io.st==='creer')};}).filter(Boolean);
     const toW=(lx,ly)=>add(add(c,mul(u,lx)),mul(n,ly)); // local (le long / à travers) → monde
     // retour : remplissage + hachures (sans bord auto), puis la PÉRIPHÉRIE continue tracée à la main = prolongement du bord extérieur de la bande → face intérieure du tableau → retour ; + onglets 45° aux coins.
     // aucun trait ne traverse l'épaisseur de l'isolant (les bords de coupe des bandes sont sautés dans drawDoublageITI).
@@ -3466,8 +3497,8 @@ function renderPanel(){pruneEmptyTexts();if(isMobile()){if(sel)toggleSheet(true)
     const retire=DBL_CFG.action==='retirer';
     h+=`<div class="ptitle">Doublage</div>
       <div class="psub">${retire
-        ?`Clique un doublage sur le plan pour l'enlever — <b>ce tronçon-là seulement</b>.`
-        :`Glisse le long de la <b>face</b> du mur à doubler. Il se pose exactement là où tu l'as tiré — un <b>clic</b> sans glisser prend le tronçon de la pièce.`}</div>
+        ?`Clique un doublage sur le plan pour l'enlever — <b>ce tronçon-là seulement</b>. Un clic dans une ouverture retire l'isolant de ses tableaux.`
+        :`Glisse le long de la <b>face</b> du mur à doubler. Il se pose exactement là où tu l'as tiré — un <b>clic</b> sans glisser prend le tronçon de la pièce. Un clic <b>dans une ouverture</b> isole ses tableaux.`}</div>
       <div class="seg">
         <button class="${!retire?'on':''}" onclick="setDblCfg('action','poser')">Poser<small>tracer</small></button>
         <button class="${retire?'on':''}" onclick="setDblCfg('action','retirer')">Retirer<small>enlever</small></button>
@@ -3558,15 +3589,7 @@ function renderSelection(lv){
       <button class="${w.side===-1?'on':''}" onclick="setWallProp('side',-1)">De l'autre<small>${sideLabel(w,-1)}</small></button></div>
     <div class="tip" style="margin-top:8px">Pour aligner deux murs d'épaisseurs différentes sur une même face : mets-les tous les deux « d'un côté » du même trait. Le trait de référence apparaît en pointillés blancs.</div>`}
     ${wst(w)==='demolir'?`<div class="tip" style="margin-top:10px">Ce mur part : <b>rien à décrire de son isolation ni de sa finition</b>. Ce qui compte est plus haut — son épaisseur et s'il est porteur, qui décident du prix de la démolition et de la reprise de charge.</div>`:''}
-    ${wst(w)==='demolir'||isVirtual(w)?'':(!isExteriorWall(w)?renderWallIsoInterior(w,lv):(()=>{const iso=w.iso;const R=isoR(iso);const dt=doublageTotal(w);const ite=iso&&iso.mode==='ite';const fin=ite?[['enduit','Enduit'],['bardage','Bardage']]:[];return `<div class="ph mt">Isolation</div>
-      ${iso?`<div class="seg"><button onclick="setWallIso('off')">Retirer<small>mur brut</small></button><button class="${!ite?'on':''}" onclick="setWallIso('mode','iti')">ITI<small>par l'intérieur</small></button><button class="${ite?'on':''}" onclick="setWallIso('mode','ite')">ITE<small>par l'extérieur</small></button></div>`
-        :`<div class="tip">Ce mur n'est pas doublé. Prends l'outil <b>Doublage</b> (<kbd>D</kbd>) et <b>glisse le long de sa face</b> : il se posera là où tu l'auras tiré, et nulle part ailleurs.</div>`}
-      ${iso&&ISO_MAT_CHOIX.length>1?`<div class="ph mt">Isolant</div><div class="seg">${Object.entries(ISO_MAT).filter(([k])=>ISO_MAT_CHOIX.includes(k)).map(([k,m])=>`<button class="${iso.mat===k?'on':''}" onclick="setWallIso('mat','${k}')">${m.label.split(' ')[0]==='Laine'?'Laine '+m.label.split(' ')[2]:m.label.split(' ')[0]}<small>λ ${fmt(m.lambda,3)}</small></button>`).join('')}</div>
-      <div class="row" style="margin-top:10px"><label>Épaisseur isolant</label><span>${[80,100,120,140,160].map(mm=>`<button class="miniep ${Math.round(iso.e*1000)===mm?'on':''}" onclick="setWallIso('e',${mm})">${mm/10}</button>`).join('')}<input class="fin n" type="number" step="1" min="20" max="300" value="${Math.round(iso.e*1000)}" onchange="setWallIso('e',+this.value)" style="width:60px"> mm</span></div>
-      ${fin.length?`<div class="row"><label>Finition</label><span class="seg" style="display:inline-flex">${fin.map(([k,l])=>`<button class="${iso.sys===k?'on':''}" onclick="setWallIso('sys','${k}')">${l}</button>`).join('')}</span></div>`:''}
-      ${mode()==='projet'?`<div class="row"><label>Dans le projet</label><span class="seg" style="display:inline-flex"><button class="${iso.st!=='creer'?'on':''}" onclick="setWallIso('st','existant')">Déjà isolé</button><button class="st-creer ${iso.st==='creer'?'on':''}" onclick="setWallIso('st','creer')">À isoler</button></span></div>`:iso.st==='creer'?`<div class="tip" style="margin-top:6px">🔴 Isolation <b>à réaliser</b> (travaux) : le mur est brut en vue Existant.</div>`:''}
-      ${(!ite&&(()=>{const dbl=Math.round(dt*1000);return lv.openings.some(o=>{const def=OPENINGS[o.type];return o.wallId===w.id&&isExtType(o.type)&&dormantOf(o)<dbl-5;});})())?`<div class="tip" style="margin-top:8px;border-color:#fde68a;background:#fffbeb">⚠ Une ou plusieurs menuiseries de ce mur ont une <b>tapée plus fine que ce doublage (${Math.round(dt*1000)} mm)</b> : leur dormant doit être agrandi (voir la menuiserie).</div>`:''}
-      <div class="blond ${R>=R_MIN_MUR?'ok':'ko'}"><b>${ite?'Épaisseur ajoutée dehors':'Épaisseur perdue'} : <span>${fmt(dt*100,1)} cm</span> · R = ${fmt(R,1)} m².K/W</b><small>${Math.round(iso.e*100)} cm isolant + finition (${ite?(iso.sys==='bardage'?'lame d\'air + bardage':'enduit'):'lame d\'air + BA13 (13 mm)'}).</small><small>${ite?'✅ L\'ITE n\'entame pas la surface habitable et supprime les ponts thermiques : l\'isolant est continu, jusque dans les angles.':'L\'ITI réduit la surface au sol et s\'arrête à chaque angle intérieur.'}</small><small>${R>=R_MIN_MUR?'✓ Conforme : R ≥ '+R_MIN_MUR+' (seuil MaPrimeRénov\' / CEE mur).':'⚠ R < '+R_MIN_MUR+' : sous le seuil d\'aide. Vise ~'+Math.ceil(R_MIN_MUR*(ISO_MAT[iso.mat].lambda)*100)+' cm de cet isolant.'}</small></div>`:`<div class="tip" style="margin-top:8px"><b>ITI</b> (par l'intérieur) : rapide et moins cher, mais réduit la surface habitable. <b>ITE</b> (par l'extérieur) : garde la surface, enveloppe la maison en continu (pas de pont thermique), idéale en ravalement. Recommandé sur les murs donnant sur l'extérieur.</div>`}`;})())}
+    ${wst(w)==='demolir'||isVirtual(w)?'':renderWallIsoFaces(w,lv)}
     ${!isVirtual(w)&&wst(w)!=='demolir'&&isExteriorWall(w)?(()=>{const fins=facadeFins(w),creer=w.facade?.st==='creer';return `<div class="ph mt">Finition extérieure</div><div class="chips">${Object.entries(FACADES).map(([k,f])=>`<button class="chip2 ${fins.includes(k)?'on':''}" onclick="setWallFacade('fin','${k}')">${f.label}</button>`).join('')}</div>
       ${fins.length?`<div class="row" style="margin-top:10px"><label>Superposées</label><span class="val" style="font-weight:600">${fins.map(k=>FACADES[k].label).join(' + ')}</span></div>${mode()==='projet'?`<div class="row"><label>Dans le projet</label><span class="seg" style="display:inline-flex"><button class="${!creer?'on':''}" onclick="setWallFacade('st','existant')">Existant</button><button class="st-creer ${creer?'on':''}" onclick="setWallFacade('st','creer')">À faire</button></span></div>`:creer?`<div class="tip" style="margin-top:6px">🔴 Finition <b>à faire</b> (travaux).</div>`:''}${creer?`<div class="tip" style="margin-top:6px">Chiffré au lot <b>Façade</b> : ${fins.map(k=>FACADES[k].label.toLowerCase()).join(' + ')} · ${fmtM2(facadeArea(w,lv))} par couche (hors ouvertures).</div>`:''}`:`<div class="tip" style="margin-top:8px">Ce mur donne sur l'extérieur. Choisis sa <b>finition</b> — cumulable (ex. enduit <b>puis</b> peinture). En vue <b>Projet</b>, une finition choisie devient un <b>ravalement à faire</b>, chiffré au lot Façade de la base de prix.</div>`}`;})():''}
     <div class="btnrow" style="margin-top:14px"><button class="ib" onclick="splitWall()">✂️ Couper en 2</button><button class="ib danger" onclick="deleteSel()">Supprimer</button></div>
@@ -3587,16 +3610,16 @@ function renderSelection(lv){
     ${ost(o)!=='creer'&&ost(o)!=='boucher'?blocDecisionExistant(k=>`setOpeningProp('st','${k}')`,ost(o),[['existant','Rien de prévu','pas encore tranché'],['garder','Je la garde','vérifiée, elle reste'],['remplacer','Je la remplace','menuiserie neuve','st-creer']],`Ce que tu décides ici de cette menuiserie.`):''}
     ${ost(o)==='boucher'?`<div class="tip" style="margin-top:10px">Cette ouverture est <b>bouchée</b> : il n'y a plus de menuiserie à décrire, seulement un trou à refermer. Les dimensions ci-dessus donnent la surface à reboucher.</div>`:''}
     ${(()=>{
-      /* Le retour d'isolant se décide ICI, côté par côté. Il se faisait tout seul ; le
-         rendre au choix sans le montrer aurait refait l'erreur du retrait en Alt+clic. */
+      /* Isoler les tableaux : UN choix par ouverture. Côté par côté, les deux boutons disaient la même
+         chose — un retour d'une face habille déjà tout le tableau. */
       const wo=lv.walls.find(x=>x.id===o.wallId);if(!wo)return '';
-      const cotes=[1,-1].filter(c=>retourPossible(o,wo,c));if(!cotes.length)return '';
-      const nom=c=>{const u=norm(sub(wo.b,wo.a)),pt=add(add(wo.a,mul(sub(wo.b,wo.a),o.t)),mul(perp(u),c*(wallT(wo)/2+0.12)));const f=(facesCache[lv.id]||[]).find(f=>f.room&&!RT[f.room.type].ext&&pointIn(pt,f.poly));const r=f&&f.room;return r?(r.name||RT[r.type].label):(c===interiorSideN(wo)?'intérieur':'extérieur');};
-      return `<div class="ph mt">Retour d'isolant dans le tableau</div>
-      ${cotes.map(c=>{const on=(o.retour||[]).includes(c);return `<div class="row"><label>Côté ${nom(c).replace(/</g,'&lt;')}</label><span class="seg" style="display:inline-flex"><button class="${!on?'on':''}" onclick="${on?`setRetour(${c})`:''}">Non</button><button class="${on?'on':''}" onclick="${on?'':`setRetour(${c})`}">Oui</button></span></div>`;}).join('')}
-      <div class="tip" style="margin-top:6px">Isoler le tableau coupe le pont thermique, mais réduit la largeur de passage (l'épaisseur du doublage, sur chaque jambage). Sans retour, le doublage s'arrête à fleur du tableau.</div>`;
+      const cotes=cotesTableau(o,wo);if(!cotes.length)return '';
+      const on=tableauxIsoles(o,wo),ep=epTableau(o,wo,cotes[0]),ext=isExtType(o.type);
+      return `<div class="ph mt">Isoler les tableaux</div>
+      <div class="seg"><button class="${!on?'on':''}" onclick="setTableaux(false)">Non<small>tableaux bruts</small></button><button class="${on?'on':''}" onclick="setTableaux(true)">Oui<small>${fmt(ep*100,1)} cm d'isolant</small></button></div>
+      <div class="tip" style="margin-top:6px">${ext?`Isolant côté intérieur, de la face du mur jusqu'à la menuiserie : il coupe le pont thermique du tableau.`:`L'isolant habille les jambages et le linteau sur toute l'épaisseur du mur.`} Il prend <b>${fmt(ep*100,1)} cm de chaque côté</b> : passage de <b>${fmt(Math.max(0,o.w-2*ep),2)} m</b> au lieu de ${fmt(o.w,2)} m. Aussi à l'outil <b>Doublage</b> : clique dans l'ouverture.</div>`;
     })()}
-    ${ost(o)==="boucher"?"":`${isExtType(o.type)?`<div class="ph mt">Type de pose</div>${ouvrantOf(o)==='galandage'?`<div class="tip">Le galandage se loge dans le doublage intérieur → <b>pose en applique</b> imposée.</div>`:`<div class="seg">${Object.entries(POSE).filter(([k])=>POSE_CHOIX.includes(k)).map(([k,pz])=>`<button class="${poseOf(o)===k?'on':''}" onclick="setOpeningProp('pose','${k}')">${pz.short.charAt(0).toUpperCase()+pz.short.slice(1)}</button>`).join('')}</div><div class="tip" style="margin-top:8px">${POSE[poseOf(o)].desc}</div>`}${poseOf(o)!=='applique'?'':(()=>{const d=dormantOf(o),iso=d>=60?d-20:0,rw=wallOfOpening(o),wIso=rw&&rw.w.iso&&rw.w.iso.mode!=='ite'?Math.round(doublageTotal(rw.w)*1000):null;const ok=wIso==null||Math.abs(d-wIso)<=5;const neuve=ost(o)==='creer'||ost(o)==='remplacer';
+    ${ost(o)==="boucher"?"":`${isExtType(o.type)?`<div class="ph mt">Type de pose</div>${ouvrantOf(o)==='galandage'?`<div class="tip">Le galandage se loge dans le doublage intérieur → <b>pose en applique</b> imposée.</div>`:`<div class="seg">${Object.entries(POSE).filter(([k])=>POSE_CHOIX.includes(k)).map(([k,pz])=>`<button class="${poseOf(o)===k?'on':''}" onclick="setOpeningProp('pose','${k}')">${pz.short.charAt(0).toUpperCase()+pz.short.slice(1)}</button>`).join('')}</div><div class="tip" style="margin-top:8px">${POSE[poseOf(o)].desc}</div>`}${poseOf(o)!=='applique'?'':(()=>{const d=dormantOf(o),iso=d>=60?d-20:0,ioI=doublageIntAu(o),wIso=ioI?Math.round(doublageOf(ioI)*1000):null;const ok=wIso==null||Math.abs(d-wIso)<=5;const neuve=ost(o)==='creer'||ost(o)==='remplacer';
     /* Sur une menuiserie qu'on POSE, la tapée n'est pas un choix : elle est imposée par le
        doublage du mur, et syncNewDormants la tient déjà à jour. La proposer en boutons, c'est
        demander de trancher une question déjà tranchée. Sur une menuiserie conservée, en
@@ -3618,7 +3641,7 @@ function renderSelection(lv){
     if(gw.length>1){const ids=gw.join(',');const grp=sel.group?groupById(sel.group):null;
       const wallsG=gw.map(id=>findWallAny(id)?.w).filter(Boolean);
       const common=(f)=>{const vs=wallsG.map(f);return vs.every(x=>x===vs[0])?vs[0]:null;};
-      const isoMode=common(w=>w.iso?w.iso.mode:'none'),isoMat=common(w=>w.iso?.mat||''),isoE=common(w=>w.iso?Math.round(w.iso.e*1000):0);
+      const couches=w=>isoLayers(w);const isoMode=common(w=>{const m=[...new Set(couches(w).map(x=>x.mode||'iti'))];return !m.length?'none':m.length>1?null:m[0];}),isoMat=common(w=>{const m=[...new Set(couches(w).map(x=>x.mat))];return m.length===1?m[0]:'';}),isoE=common(w=>{const m=[...new Set(couches(w).map(x=>Math.round(x.e*1000)))];return m.length===1?m[0]:0;});
       const facCommon=common(w=>facadeFins(w).slice().sort().join(','));
       if(grp)h+=`<div class="grouptag"><span class="gdot" style="background:${GROUP_COLORS[(state.groups||[]).indexOf(grp)%GROUP_COLORS.length]}"></span> Groupe « ${esc(grp.name)} »</div>`;
       h+=`<div class="ph mt">Isolation des ${gw.length} murs</div>
@@ -3855,23 +3878,8 @@ const eur=n=>n.toLocaleString('fr-FR')+' €';
 function setWallProp(k,val){const w=findWall(sel.id);history.push(snapshot());if(k==='porteur'){if(val==='auto')delete w.porteur;else w.porteur=(val==='oui');}else if(k==='type'){w.type=val;delete w.t;}else if(k==='t'){if(val>=0.03&&val<=0.8)w.t=val;}else if(k==='st'){if(val==='existant')delete w.st;else w.st=val;if(val==='demolir')L().openings.forEach(o=>{if(o.wallId===w.id&&ost(o)!=='creer')o.st='boucher';});}else w[k]=val;afterChange();}
 function setCustomT(cm){const t=parseFloat(cm)/100;customT=(t>=0.03&&t<=0.8)?t:null;renderPanel();draw();}
 function setWallLen(l){const w=findWall(sel.id);if(!(l>0.1))return;history.push(snapshot());setWallLength(w,l);afterChange();}
-function setWallIso(k,val){const w=findWall(sel.id);if(!w)return;history.push(snapshot());const si=interiorSideN(w);
-  if(k==='off'){w.isos=[];delete w.iso;delete w.iso2;afterChange();return;}
-  /* Ce panneau ne CRÉE plus de doublage — il modifie celui qui est là. Le créer ici le posait
-     sur tout le mur, et c'est précisément le geste dont on voulait se débarrasser : un doublage
-     se trace à l'outil Doublage, sur la longueur voulue. */
-  const l=isoList(w);if(!l.length){afterChange();return;}
-  /* Comme pour une face : un réglage vaut pour tous les tronçons du mur. */
-  if(k==='st')l.forEach(io=>{if(val==='existant')delete io.st;else io.st=val;});
-  else if(k==='mode')l.forEach(io=>{io.mode=val;io.sys=val==='ite'?(io.sys==='bardage'?'bardage':'enduit'):'ossature';});
-  else if(k==='mat')l.forEach(io=>io.mat=val);
-  else if(k==='sys')l.forEach(io=>io.sys=val);
-  else if(k==='e')l.forEach(io=>io.e=Math.max(0.02,Math.min(0.3,val/1000)));
-  l.forEach(io=>{io.side=io.mode==='ite'?-si:si;}); // côté déduit du choix ITI / ITE
-  syncNewDormants(w);afterChange();}
-// ----- Mur de séparation intérieur : un doublage indépendant par face (w.iso / w.iso2) -----
+// ----- Doublage face par face (w.isos) -----
 function roomOnSide(w,s){const faces=facesCache[L().id]||[];const u=norm(sub(w.b,w.a)),nn=perp(u),t=wallT(w);const mid=add(mul(add(w.a,w.b),0.5),mul(nn,s*(t/2+0.12)));for(const f of faces){if(f.room&&!RT[f.room.type].ext&&pointIn(mid,f.poly))return f.room;}return null;}
-function isoSlotForSide(w,s){if(w.iso&&(w.iso.side||1)===s)return 'iso';if(w.iso2&&(w.iso2.side||1)===s)return 'iso2';return w.iso?'iso2':'iso';}
 /* Les deux bouts d'un doublage, posés sur sa bande — c'est par là qu'on l'étire.
    Un formulaire en mètres depuis le début du mur est exact mais impraticable : on ne pense pas
    un doublage en abscisses, on le voit s'arrêter contre quelque chose et on l'y amène. */
@@ -3911,7 +3919,9 @@ function setWallIsoSide(side,k,val){const w=findWall(sel.id);if(!w)return;histor
     if(k==='t0')io.t0=Math.min(x,isoT1(io)-1e-3);else io.t1=Math.max(x,isoT0(io)+1e-3);
     if(isoT0(io)<=1e-6&&isoT1(io)>=1-1e-6){delete io.t0;delete io.t1;}}
   else if(k==='tout'){delete io.t0;delete io.t1;}
-  io.side=side;io.mode='iti';io.sys='ossature';
+  /* Il forçait ici mode ITI et finition ossature : régler l'épaisseur d'une ITE la changeait en
+     ITI. Chaque couche garde son mode ; la finition n'a de choix qu'en ITE. */
+  mine.forEach(x=>{x.side=side;if(x.mode!=='ite')x.sys='ossature';});
   afterChange();}
 /* La DÉCISION « je le garde / je l'enlève », prise dans la vue Existant.
    Elle n'y déménage pas : c'est le même champ que l'état projet, montré là où naît la pensée.
@@ -3925,11 +3935,11 @@ function blocDecisionExistant(onclick,cur,choix,note){
   <div class="seg">${choix.map(([k,l,sub,cls])=>`<button class="${cls||''} ${cur===k?'on':''}" onclick="${onclick(k)}">${l}${sub?`<small>${sub}</small>`:''}</button>`).join('')}</div>
   <div class="tip" style="margin-top:6px">${note} Tout se relit ensemble en vue <b>Projet</b>.</div>`;
 }
-function isoSideHtml(w,side){const io=isoOnSide(w,side);const room=roomOnSide(w,side);const label=room?roomName(room):('face '+(side>0?'A':'B'));const R=isoR(io),dt=doublageOf(io);const fin=[];
-  return `<div class="fam" style="--fc:#0e9aa7;--fbg:#e6f6f8"><div class="famh" style="--fc:#0e9aa7;--fbg:#e6f6f8"><b>Doublage côté ${label}</b>${io?`<small>${fmt(dt*100,1)} cm</small>`:''}</div><div style="padding:9px 11px">
-    ${io?`<div class="seg"><button onclick="setWallIsoSide(${side},'off')">Retirer<small>face brute</small></button><button class="on" disabled>Doublée<small>ITI</small></button></div>`
-      :`<div class="tip">Face non doublée. Outil <b>Doublage</b> (<kbd>D</kbd>), puis glisse le long de <b>cette face</b>.</div>`}
-    ${io&&ISO_MAT_CHOIX.length>1?`<div class="ph mt">Isolant</div><div class="seg">${Object.entries(ISO_MAT).filter(([k])=>ISO_MAT_CHOIX.includes(k)).map(([k,m])=>`<button class="${io.mat===k?'on':''}" onclick="setWallIsoSide(${side},'mat','${k}')">${m.label.split(' ')[0]==='Laine'?'Laine '+m.label.split(' ')[2]:m.label.split(' ')[0]}<small>λ ${fmt(m.lambda,3)}</small></button>`).join('')}</div>
+function isoSideHtml(w,side){const io=isoOnSide(w,side);const room=roomOnSide(w,side);const dehors=isExteriorWall(w)&&side!==interiorSideN(w);const label=room?roomName(room):dehors?'extérieur':('face '+(side>0?'A':'B'));const R=isoR(io),dt=doublageOf(io);const ite=!!io&&io.mode==='ite';const fin=ite?[['enduit','Enduit'],['bardage','Bardage']]:[];
+  return `<div class="fam" style="--fc:#0e9aa7;--fbg:#e6f6f8"><div class="famh" style="--fc:#0e9aa7;--fbg:#e6f6f8"><b>${ite?'Isolation par l\'extérieur':'Doublage côté '+label}</b>${io?`<small>${fmt(dt*100,1)} cm</small>`:''}</div><div style="padding:9px 11px">
+    ${io?`<div class="seg"><button onclick="setWallIsoSide(${side},'off')">Retirer<small>face brute</small></button><button class="on" disabled>${ite?'Isolée<small>ITE</small>':'Doublée<small>ITI</small>'}</button></div>`
+      :`<div class="tip">${dehors?'Pas d\'isolation extérieure. Outil <b>Doublage</b> (<kbd>D</kbd>) en <b>ITE</b>, puis glisse le long de <b>cette face</b>.':'Face non doublée. Outil <b>Doublage</b> (<kbd>D</kbd>), puis glisse le long de <b>cette face</b>.'}</div>`}
+    ${io&&ISO_MAT_CHOIX.length>1?`<div class="ph mt">Isolant</div><div class="seg">${Object.entries(ISO_MAT).filter(([k])=>ISO_MAT_CHOIX.includes(k)).map(([k,m])=>`<button class="${io.mat===k?'on':''}" onclick="setWallIsoSide(${side},'mat','${k}')">${m.label.split(' ')[0]==='Laine'?'Laine '+m.label.split(' ')[2]:m.label.split(' ')[0]}<small>λ ${fmt(m.lambda,3)}</small></button>`).join('')}</div>`:''}${io?`
     <div class="row" style="margin-top:10px"><label>Épaisseur</label><span>${[40,60,80,100,120].map(mm=>`<button class="miniep ${Math.round(io.e*1000)===mm?'on':''}" onclick="setWallIsoSide(${side},'e',${mm})">${mm/10}</button>`).join('')}<input class="fin n" type="number" step="1" min="20" max="300" value="${Math.round(io.e*1000)}" onchange="setWallIsoSide(${side},'e',+this.value)" style="width:56px"> mm</span></div>
     ${fin.length?`<div class="row"><label>Finition</label><span class="seg" style="display:inline-flex">${fin.map(([k,l])=>`<button class="${io.sys===k?'on':''}" onclick="setWallIsoSide(${side},'sys','${k}')">${l}</button>`).join('')}</span></div>`:''}
     ${(()=>{if(!io)return '';const Lw=wallLen(w),lg=(isoT1(io)-isoT0(io))*Lw;
@@ -3939,13 +3949,20 @@ function isoSideHtml(w,side){const io=isoOnSide(w,side);const room=roomOnSide(w,
         ?`Doublage sur <b>tout le mur</b> — ${fmt(Lw,2)} m. Tire les deux <b style="color:#b45309">poignées ●</b> sur le plan pour l'arrêter avant une cloison, un conduit, un décroché.`
         :`Doublage sur <b>${fmt(lg,2)} m</b> des ${fmt(Lw,2)} m du mur — le reste reste brut. Tire les <b style="color:#b45309">poignées ●</b> pour l'ajuster. <button class="ib" style="padding:3px 8px;margin-left:6px" onclick="setWallIsoSide(${side},'tout',1)">Tout le mur</button>`}</div>`;})()}
     ${mode()==='projet'?`<div class="row"><label>Dans le projet</label><span class="seg" style="display:inline-flex"><button class="${io.st!=='creer'?'on':''}" onclick="setWallIsoSide(${side},'st','existant')">Déjà isolé</button><button class="st-creer ${io.st==='creer'?'on':''}" onclick="setWallIsoSide(${side},'st','creer')">À isoler</button></span></div>`:''}
-    <div class="blond ok"><b>Épaisseur perdue côté ${label} : <span>${fmt(dt*100,1)} cm</span></b><small>${Math.round(io.e*100)} cm isolant + finition (lame d'air + BA13 (13 mm)). R = ${fmt(R,1)} m².K/W.</small></div>`:''}
+    <div class="blond ${!isExteriorWall(w)||R>=R_MIN_MUR?'ok':'ko'}"><b>${ite?'Épaisseur ajoutée dehors':'Épaisseur perdue côté '+label} : <span>${fmt(dt*100,1)} cm</span></b><small>${Math.round(io.e*100)} cm isolant + finition (${ite?(io.sys==='bardage'?'lame d\'air + bardage':'enduit'):'lame d\'air + BA13 (13 mm)'}). R = ${fmt(R,1)} m².K/W.</small>${isExteriorWall(w)?`<small>${R>=R_MIN_MUR?'✓ R ≥ '+R_MIN_MUR+' (seuil MaPrimeRénov\' / CEE mur).':'⚠ R < '+R_MIN_MUR+' : sous le seuil d\'aide.'}</small>`:''}</div>`:''}
   </div></div>`;}
+/* Mur de FAÇADE : même lecture face par face qu'un mur intérieur. Le panneau lisait `w.iso`,
+   l'ancien doublage unique, et annonçait « ce mur n'est pas doublé » sur un mur doublé à l'outil. */
+function renderWallIsoFaces(w,lv){
+  if(!isExteriorWall(w))return renderWallIsoInterior(w,lv);
+  const si=interiorSideN(w),sous=menuisSousDimensionnees(lv).filter(m=>m.o.wallId===w.id);
+  return `<div class="ph mt">Isolation</div>${[si,-si].map(s=>isoSideHtml(w,s)).join('')}
+  ${sous.length?`<div class="tip" style="margin-top:8px;border-color:#fde68a;background:#fffbeb">⚠ ${sous.length>1?sous.length+' menuiseries conservées ont':'Une menuiserie conservée a'} une <b>tapée plus fine que le doublage</b> : ${sous.map(m=>m.def.label.toLowerCase()+' '+m.d+' → '+m.dbl+' mm').join(', ')}. Sans rallonge de tapée, elle ne sera pas au nu du placo.</div>`:''}
+  ${!isoLayers(w).length?`<div class="tip" style="margin-top:8px"><b>ITI</b> (par l'intérieur) : rapide et moins cher, mais réduit la surface habitable. <b>ITE</b> (par l'extérieur) : garde la surface et enveloppe la maison en continu. Les deux se posent à l'outil <b>Doublage</b> (<kbd>D</kbd>).</div>`:''}`;}
 function renderWallIsoInterior(w,lv){return `<div class="ph mt">Isolation — mur de séparation</div><div class="tip" style="margin-bottom:8px">Ce mur est intérieur (une pièce de chaque côté) : tu peux le doubler <b>indépendamment sur chaque face</b> (isolation acoustique ou thermique, pièce par pièce).</div>${[1,-1].map(s=>isoSideHtml(w,s)).join('')}`;}
 function splitWall(){const w=findWall(sel.id);history.push(snapshot());const m=mul(add(w.a,w.b),.5);const w2={id:uid(),a:{...m},b:{...w.b},type:w.type};w.b={...m};L().openings.forEach(o=>{if(o.wallId===w.id){if(o.t>0.5){o.wallId=w2.id;o.t=(o.t-0.5)*2;}else o.t*=2;}});L().walls.push(w2);afterChange();}
 function toggleOpeningOpt(k){const o=L().openings.find(o=>o.id===sel.id);if(!o)return;history.push(snapshot());o.opts=o.opts||[];const i=o.opts.indexOf(k);if(i>=0)o.opts.splice(i,1);else o.opts.push(k);afterChange();}
-function basculerRetour(o,cote){history.push(snapshot());const l=(o.retour||[]).slice();const i=l.indexOf(cote);if(i>=0)l.splice(i,1);else l.push(cote);o.retour=l;afterChange();}
-function setRetour(cote){const o=L().openings.find(x=>x.id===sel.id);if(o)basculerRetour(o,cote);}
+function setTableaux(on){const o=L().openings.find(x=>x.id===sel.id);const w=o&&L().walls.find(x=>x.id===o.wallId);if(w)poserTableaux(o,w,!!on);}
 function setOpeningProp(k,val){const o=L().openings.find(o=>o.id===sel.id);if(k==='volet'&&val==='battant'&&o.type==='baie')val='roulant';if(k==='ouvrant'&&val==='galandage')o.pose='applique';if(k==='pose'&&val!=='applique'&&ouvrantOf(o)==='galandage')o.ouvrant='coulissant';if(k==='st'&&(val==='creer'||val==='remplacer')&&o.vitrage==='simple')o.vitrage='double';history.push(snapshot());if(k==='type'){const d=OPENINGS[val];o.type=val;o.w=d.w;o.h=d.h;if(val==='baie')o.mat='alu';else if(!matsFor(o).includes(o.mat))delete o.mat;}else if(k==='st'){if(val==='existant')delete o.st;else o.st=val;
     /* Devenir neuve ou remplacée, c'est hériter de la tapée qu'impose le doublage du mur.
        Elle ne se recalculait qu'en touchant l'isolation : passer une menuiserie en

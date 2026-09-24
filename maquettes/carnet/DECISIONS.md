@@ -1138,3 +1138,37 @@ mur enregistré. Même famille que D33 : une copie raccourcie qu'on prend pour l
 Le contrôle ajouté en D34 ne le voyait pas : il comparait la copie au mur réel, ne trouvait donc
 **aucune** bande, et passait. Il vérifie maintenant qu'une bande est trouvée et qu'elle **touche
 les deux jambages à 2 mm près** — il échoue sur l'ancien code.
+
+## D35 · Tableaux isolables sans doublage · la tapée et l'ITE relisent les vrais doublages (24/09/2026)
+
+**Tableaux.** Dani : « on doit pouvoir isoler l'épaisseur du mur » dans un grand passage, doublage
+ou pas. Isoler les tableaux devient **un seul choix par ouverture** (Non / Oui) — côté par côté, les
+deux boutons disaient la même chose, puisqu'un retour d'une face habille déjà tout le tableau.
+- Sans doublage : l'isolant habille les jambages sur toute l'épaisseur, à fleur des parements.
+  Avec doublage : il rejoint la bande (règle V92). Épaisseur = celle du doublage, sinon celle
+  réglée dans l'outil Doublage.
+- Jamais côté façade d'un mur extérieur, jamais contre une ITE, jamais derrière une menuiserie en
+  applique (le doublage recouvre le dormant) ; en tunnel, côté intérieur jusqu'à la menuiserie.
+- Deux gestes : le panneau de l'ouverture (qui affiche la largeur de passage restante), ou un
+  **clic dans l'ouverture avec l'outil Doublage** (Poser / Retirer).
+- Suivi : « Isoler les tableaux », en ml (jambages + linteau). Prix toujours 0 : aucun poste au
+  catalogue de l'estimateur (poste abandonné, cf. D-prix « on facture rien tant que… »).
+
+**Même cause, quatre défauts.** Depuis l'outil Doublage, un mur porte ses doublages dans `w.isos`,
+tronçon par tronçon ; `w.iso` (l'ancien doublage unique) n'existe plus. Quatre endroits le lisaient
+encore :
+1. **La tapée** : la porte-fenêtre de Dani gardait 40 mm derrière 120 mm de doublage. Une menuiserie
+   qu'on pose prend désormais la tapée du doublage **au droit de l'ouverture** (`doublageIntAu`),
+   calculée et non recopiée ; une menuiserie conservée garde son constat, et l'écart reste une alerte.
+2. **Le panneau d'un mur de façade** disait « ce mur n'est pas doublé » sur un mur doublé : il se lit
+   maintenant face par face, comme un mur intérieur, et sait dire ITE (finition enduit / bardage, R).
+3. **L'ITE posée à l'outil** était chiffrée mais jamais dessinée : dessin couche par couche.
+4. **Le groupe de murs** affichait « Aucun » et ses réglages ne faisaient rien.
+
+Au passage : `setWallIsoSide` transformait une ITE en ITI au moindre réglage d'épaisseur ; et les
+réglages d'une face (épaisseur, finition, étendue, état) étaient cachés depuis qu'il ne reste qu'un
+isolant — ils étaient accrochés au sélecteur d'isolant. Code mort retiré : `setWallIso`,
+`isoSlotForSide`, `doublageTotal`, `isoShown`.
+
+Contrôles : `tools/doublage.mjs` (+16 vérifications : tableaux sans doublage, clic de l'outil,
+applique/tunnel, tapée, alerte, panneau de façade, ITE dessinée et réglable).
