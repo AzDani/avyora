@@ -2783,6 +2783,21 @@ function draw(){
   if(sel?.kind==='item'&&multi.length<=1&&!drag){const it=lv.items.find(i=>i.id===sel.id);if(it){const rh=rotHandle(it),c=S(it);ctx.setLineDash([3,3]);ctx.strokeStyle='#4f46e5';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(c.x+Math.sin(it.rot)*it.h/2*z,c.y-Math.cos(it.rot)*it.h/2*z);ctx.lineTo(rh.x,rh.y);ctx.stroke();ctx.setLineDash([]);ctx.beginPath();ctx.arc(rh.x,rh.y,7,0,7);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#4f46e5';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.arc(rh.x,rh.y,3.2,0.3,5.6);ctx.lineWidth=1.5;ctx.stroke();}}
   // rectangle de sélection
   if(sel?.kind==='marquee'){msel.forEach(m=>{if(m.kind==='wall'||m.kind==='opening'||m.kind==='item')return;let pt=null;if(m.kind==='text'){const t=TX(lv).find(x=>x.id===m.id);if(t)pt=v(t.x,t.y);}else if(m.kind==='dim'){const d=lv.dims.find(x=>x.id===m.id);if(d){const L2=dimLine(d);pt=mul(add(L2.a,L2.b),.5);}}if(pt){const s=S(pt);ctx.beginPath();ctx.arc(s.x,s.y,9,0,7);ctx.fillStyle='rgba(79,70,229,.18)';ctx.fill();ctx.strokeStyle='#4f46e5';ctx.lineWidth=2;ctx.stroke();}});}
+  /* Survol d'une ouverture avec l'outil Doublage : on montre l'isolant de tableau AVANT le clic —
+     sans aperçu, rien ne disait que ce clic-là faisait quelque chose. */
+  if(tool==='doublage'&&!drag&&hover){const tb=tableauSousCurseur(hover);if(tb){const {o,w}=tb,cotes=cotesTableau(o,w),on=tableauxIsoles(o,w),retire=DBL_CFG.action==='retirer'||keys.alt;
+    const u=norm(sub(w.b,w.a)),n=perp(u),t=wallT(w),half=o.w/2,c=add(add(w.a,mul(sub(w.b,w.a),o.t)),wallOff(w)),P0=add(w.a,mul(sub(w.b,w.a),o.t));
+    const toW=(x,y)=>add(add(c,mul(u,x)),mul(n,y));
+    let msg,ok=false;
+    if(!cotes.length)msg=ost(o)==='boucher'?'Ouverture bouchée':'Menuiserie en applique : rien à isoler';
+    else if(retire)msg=on?'Clic : retirer l\'isolant des tableaux':'Pas d\'isolant dans ces tableaux';
+    else {msg=on?'Tableaux déjà isolés':'Clic : isoler les tableaux';ok=!on;}
+    if(cotes.length){const bord=s=>{if(!cotes.includes(s))return isExtType(o.type)?0:s*t/2;const io=isoOnSideAt(w,s,P0);return s*(t/2+(io&&io.mode!=='ite'?doublageOf(io):0));};
+      const y1=bord(1),y0=bord(-1),ep=Math.min(epTableau(o,w,cotes[0]),half-0.02);
+      ctx.save();ctx.fillStyle=retire?'rgba(185,28,28,.18)':'rgba(250,204,21,.35)';ctx.strokeStyle=retire?'#b91c1c':'#ca8a04';ctx.lineWidth=1.5;ctx.setLineDash([5,4]);
+      [1,-1].forEach(j=>{const Q=[toW(j*half,y0),toW(j*half-j*ep,y0),toW(j*half-j*ep,y1),toW(j*half,y1)].map(S);ctx.beginPath();Q.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y));ctx.closePath();if(ok||retire&&on)ctx.fill();ctx.stroke();});
+      ctx.restore();}
+    const m=S(hover);ctx.save();ctx.font='600 12px Geist, sans-serif';const tw=ctx.measureText(msg).width;ctx.fillStyle='rgba(30,27,58,.92)';ctx.beginPath();ctx.roundRect(m.x+14,m.y+10,tw+16,22,6);ctx.fill();ctx.fillStyle='#fff';ctx.textBaseline='middle';ctx.fillText(msg,m.x+22,m.y+21);ctx.restore();}}
   /* Aperçu du doublage en cours de tracé : la bande exacte qui sera posée, à sa vraie épaisseur
      et du bon côté — on voit ce qu'on obtient avant de lâcher. */
   if(drag?.kind==='isoDraw'){
@@ -3091,10 +3106,17 @@ function epTableau(o,w,s){const P=add(w.a,mul(sub(w.b,w.a),o.t));const io=isoOnS
 function cotesTableau(o,w){return [1,-1].filter(c=>retourPossible(o,w,c));}
 function tableauxIsoles(o,w){return cotesTableau(o,w).some(c=>(o.retour||[]).includes(c));}
 function poserTableaux(o,w,on){history.push(snapshot());o.retour=on?cotesTableau(o,w):[];afterChange();}
-/* L'ouverture sous le curseur, dans l'épaisseur de son mur — là où l'outil Doublage isole le tableau. */
-function tableauSousCurseur(p){const lv=L();for(const o of lv.openings){if(!opDrawn(o))continue;const w=lv.walls.find(x=>x.id===o.wallId);if(!w||!wallDrawn(w))continue;
-  const u=norm(sub(w.b,w.a)),n=perp(u),c=add(add(w.a,mul(sub(w.b,w.a),o.t)),wallOff(w)),d=sub(p,c);
-  if(Math.abs(d.x*u.x+d.y*u.y)<o.w/2&&Math.abs(d.x*n.x+d.y*n.y)<wallT(w)/2)return {o,w};}return null;}
+/* L'ouverture sous le curseur — là où l'outil Doublage isole le tableau. Le tableau, c'est le BORD
+   de l'ouverture : on vise le trait du jambage, souvent quelques pixels dans le mur. N'accepter
+   que le blanc de l'ouverture ratait ce geste (Dani, 24/09). On déborde donc de 10 px dans la
+   masse du mur, mais pas sur sa face : un doublage qui démarre au jambage se trace depuis la face. */
+function tableauSousCurseur(p){const lv=L(),z=view.zoom||60,tol=10*(hitScale||1)/z,lisiere=6/z;
+  for(const o of lv.openings){if(!opDrawn(o))continue;const w=lv.walls.find(x=>x.id===o.wallId);if(!w||!wallDrawn(w))continue;
+    const u=norm(sub(w.b,w.a)),n=perp(u),c=add(add(w.a,mul(sub(w.b,w.a),o.t)),wallOff(w)),d=sub(p,c),t=wallT(w);
+    const le=Math.abs(d.x*u.x+d.y*u.y),tr=Math.abs(d.x*n.x+d.y*n.y);
+    if(le<o.w/2&&tr<t/2+4/z)return {o,w};
+    if(le<o.w/2+tol&&tr<t/2-lisiere)return {o,w};}
+  return null;}
 function revealOnSide(o,w,s){return retourPossible(o,w,s)&&(o.retour||[]).includes(s);}
 // découpe d'une bande d'isolant au droit des ouvertures du mur : l'isolant s'arrête contre la menuiserie
 function clipHalf(poly,u,sCut,keepLess){const out=[];const N=poly.length;for(let i=0;i<N;i++){const A=poly[i],B=poly[(i+1)%N];const sa=A.x*u.x+A.y*u.y,sb=B.x*u.x+B.y*u.y;const inA=keepLess?sa<=sCut:sa>=sCut,inB=keepLess?sb<=sCut:sb>=sCut;if(inA)out.push(A);if(inA!==inB&&Math.abs(sb-sa)>1e-9){const t=(sCut-sa)/(sb-sa);out.push(add(A,mul(sub(B,A),t)));}}return out;}

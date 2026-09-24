@@ -1172,3 +1172,12 @@ isolant — ils étaient accrochés au sélecteur d'isolant. Code mort retiré :
 
 Contrôles : `tools/doublage.mjs` (+16 vérifications : tableaux sans doublage, clic de l'outil,
 applique/tunnel, tapée, alerte, panneau de façade, ITE dessinée et réglable).
+
+### D35 bis · Le clic sur le tableau vise le jambage, et se voit avant (même jour)
+
+Dani cliquait sur le **trait du jambage** pour isoler le tableau : rien ne se passait. Le clic n'était
+reconnu que dans le blanc de l'ouverture ; 3 px dans le mur, c'était le mur. Or le tableau, c'est ce
+bord-là. La zone déborde maintenant de **10 px dans la masse du mur** autour de chaque jambage — mais
+pas sur la face du mur, d'où l'on trace un doublage qui part du jambage.
+Et au survol, l'outil Doublage **montre** l'isolant de tableau (jaune, ou rouge en mode Retirer) avec
+« Clic : isoler les tableaux » : sans aperçu, rien ne disait que ce clic faisait quelque chose.

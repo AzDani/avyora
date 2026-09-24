@@ -337,6 +337,13 @@ const res = await p.evaluate((PLAN_REFEND) => {
     const tb = tableauSousCurseur(c);
     t["tableau · l'outil trouve l'ouverture sous le curseur"] = !!tb && tb.o === o;
     t["tableau · rien trouvé hors de l'ouverture"] = !tableauSousCurseur(add(c, v(3, 0)));
+    /* le tableau, c'est le BORD : un clic sur le trait du jambage, quelques pixels dans le mur,
+       doit le trouver (Dani le visait et rien ne se passait) — mais pas la face du mur, d'où part
+       un doublage qu'on trace depuis le jambage */
+    { const u = norm(sub(w.b, w.a)), n = perp(u), z = view.zoom, jam = add(c, mul(u, -o.w / 2));
+      t["tableau · clic 5 px dans le mur, au jambage → trouvé"] = !!tableauSousCurseur(add(jam, mul(u, -5 / z)));
+      t["tableau · clic sur la face du mur au jambage → pas le tableau"] = !tableauSousCurseur(add(add(jam, mul(u, -5 / z)), mul(n, wallT(w) / 2)));
+      t["tableau · clic 20 px dans le mur → pas le tableau"] = !tableauSousCurseur(add(jam, mul(u, -20 / z))); }
     poserTableaux(o, w, true);
     t["tableau · isolé → suivi"] = tableauxIsoles(o, w) && chantierTasks().some((x) => x.id === "o:" + o.id + ":retouriso");
     t["tableau · épaisseur = réglage de l'outil (sans doublage)"] = Math.abs(epTableau(o, w, 1) - doublageOf({ e: DBL_CFG.e, mode: "iti", sys: "ossature" })) < 1e-9;
