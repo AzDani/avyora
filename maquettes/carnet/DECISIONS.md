@@ -978,3 +978,38 @@ Elle ne change aucun prix non plus, mais Dani la garde : « la variation du prix
 l'auront lorsqu'ils réaliseront un vrai devis ». C'est la bonne limite — l'estimateur donne un
 budget, pas un devis d'exécution, et la tapée sert ici d'**avertissement technique** (un dormant de
 40 mm sur un doublage de 120 est une erreur de chantier), pas de ligne de prix.
+
+## D31 · Un mur porteur interrompt le doublage, une cloison non
+
+Dani, le 24/09/2026, capture à l'appui, pour la **deuxième fois** : « il y a toujours ça qui n'est
+pas bon, l'isolant rentre dans les murs ».
+
+Ma correction précédente (D28 septies) était juste mais **incomplète**. J'avais posé la bonne
+condition — ne prolonger que si le doublage continue de l'autre côté — et raté la vraie règle
+physique.
+
+**Un doublage passe derrière une CLOISON**, qui vient buter contre lui : la bande est continue, les
+deux moitiés se rejoignent à l'axe, et c'est la cloison qui est raccourcie. **Un mur porteur, lui,
+l'INTERROMPT** : on ne double pas par-dessus vingt centimètres de parpaing ni soixante de pierre.
+La bande s'arrête à sa face et reprend de l'autre côté.
+
+On prolongeait derrière **n'importe quel** mur. Sur le plan de Dani — chambre et garage séparés par
+un refend en parpaings — l'isolant entrait donc d'une demi-épaisseur dans la maçonnerie, de chaque
+côté. Invisible sur une cloison de 7 cm, criant sur un refend de 20.
+
+La condition tient maintenant en trois termes : on prolonge si **(1)** le coin est une jonction en
+T, **(2)** le doublage continue au-delà, **(3)** le mur qui arrive n'est **pas porteur**.
+
+**Vérifié** sur un mur de 12 m coupé par un refend parpaing à 5 m et une cloison à 9 m :
+
+| bande | de x | à x | |
+|---|---|---|---|
+| 1 | 0,10 | **4,90** | s'arrête à la face du refend porteur |
+| 2 | **5,10** | 9,00 | reprend à l'autre face · va jusqu'à l'axe de la cloison |
+| 3 | 9,00 | 11,90 | rejoint la 2 exactement, sans trou |
+
+**Ce que je retiens.** C'est le quatrième défaut de tracé en trois jours, et le deuxième sur le
+même sujet. Les trois premiers venaient de mes calculs ; celui-ci venait de ma **connaissance du
+métier** — j'avais codé « passe derrière ce qui arrive » sans distinguer ce qui peut être traversé
+de ce qui ne le peut pas. Aucun contrôle ne pouvait l'attraper : ils vérifiaient que la géométrie
+était cohérente, pas qu'elle était vraie.

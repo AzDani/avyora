@@ -221,10 +221,33 @@ const res = await p.evaluate(() => {
     const stop = etendue(5 / 12);
     t["arrêtée au refend · la bande ne mord pas le mur de gauche"] = pres(stop.xmin, 0.10, 0.005);
     t["arrêtée au refend · elle s'arrête à la face du refend"] = pres(stop.xmax, 4.90, 0.005);
-    /* continue au-delà : là, elle rejoint l'AXE du refend pour se raccorder à l'autre bande */
+    /* continue au-delà : mais le refend est PORTEUR, donc il l'interrompt quand même */
     const suite = etendue(1);
-    t["continue au-delà · elle passe derrière le refend, jusqu'à son axe"] = pres(suite.xmax, 11.90, 0.005) || pres(suite.xmax, 12, 0.005);
     t["continue au-delà · toujours pas de morsure à gauche"] = pres(suite.xmin, 0.10, 0.005); }
+
+  /* ── un porteur interrompt le doublage, une cloison non ──────────────────
+     Une cloison vient buter CONTRE le doublage : celui-ci passe derrière, continu, et les deux
+     bandes se rejoignent à l'axe. Un mur porteur, lui, l'interrompt — on ne double pas par-dessus
+     de la maçonnerie. On prolongeait derrière n'importe quel mur, et l'isolant semblait entrer
+     dans le refend d'une demi-épaisseur de chaque côté. */
+  { state = blankState(); const lv = L(); lv.height = 2.5;
+    const W = (a, c, ty) => { const x = { id: uid(), a: v(...a), b: v(...c), type: ty || "mur" }; lv.walls.push(x); return x; };
+    const haut = W([0, 0], [12, 0]); W([12, 0], [12, 4]); W([12, 4], [0, 4]); W([0, 4], [0, 0]);
+    W([5, 0], [5, 4], "mur");                 /* parpaing 20 cm → porteur */
+    W([9, 0], [9, 4], "cloison");             /* 7 cm → pas porteur */
+    setMode("projet"); afterChange();
+    poserDoublage(haut, 1, 0, 1); afterChange();
+    const bandes = [];
+    (facesCache[lv.id] || []).forEach((f) => { const N = f.poly.length;
+      for (let i = 0; i < N; i++) { const B = bandeDoublage(f, i); if (!B) continue;
+        const xs = B.quad.map((q) => q.x); bandes.push([Math.min(...xs), Math.max(...xs)]); } });
+    bandes.sort((a, c) => a[0] - c[0]);
+    t["trois bandes, une par pièce"] = bandes.length === 3;
+    t["le refend PORTEUR coupe la bande à sa face (4,90)"] = pres(bandes[0][1], 4.90, 0.01);
+    t["…et elle reprend à l'autre face (5,10)"] = pres(bandes[1][0], 5.10, 0.01);
+    t["la CLOISON, elle, est franchie : les deux bandes se rejoignent à son axe"] =
+      pres(bandes[1][1], 9, 0.01) && pres(bandes[2][0], 9, 0.01);
+    t["et aucune bande ne mord les murs d'extrémité"] = pres(bandes[0][0], 0.10, 0.01) && pres(bandes[2][1], 11.90, 0.01); }
 
   return t;
 });
