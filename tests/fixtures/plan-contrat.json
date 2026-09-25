@@ -248,7 +248,7 @@
    "points": [
     {
      "niveau": "warn",
-     "texte": "1 mur porteur à démolir : une étude de structure est obligatoire avant travaux (reprise de charge, poutre ou IPN). Elle est comptée dans les quantités transmises au chiffrage."
+     "texte": "1 mur porteur à démolir : une étude de structure est obligatoire avant travaux : elle dimensionne la poutre qui portera ce que le mur portait. Elle est comptée dans le budget."
     },
     {
      "niveau": "warn",
@@ -256,7 +256,7 @@
     },
     {
      "niveau": "info",
-     "texte": "Étage est créé par le projet : son plancher coupe le volume de ce niveau. Si une pièce d'ici était en grande hauteur avant travaux, indique-la dans sa fiche au champ « hauteur avant travaux » — sinon l'existant décrit un logement qui n'a jamais existé."
+     "texte": "Étage est créé par les travaux : son plancher coupe le volume de ce niveau. Si une pièce d'ici était en grande hauteur avant travaux, indique-la dans sa fiche au champ « hauteur avant travaux » — sinon l'existant décrit un logement qui n'a jamais existé."
     },
     {
      "niveau": "info",
@@ -272,7 +272,7 @@
     },
     {
      "niveau": "warn",
-     "texte": "La porte simple de Salle de bain tape dans la baignoire en s'ouvrant : fais-la ouvrir de l'autre côté (bouton ↕) ou déplace l'équipement — changer la charnière ne suffira pas, un vantail balaye le même carré devant l'ouverture."
+     "texte": "La porte simple de Salle de bain tape dans la baignoire en s'ouvrant : fais-la ouvrir de l'autre côté (bouton « Ouvre de l'autre côté » dans sa fiche) ou déplace l'équipement — changer la charnière ne suffira pas, un vantail balaye le même carré devant l'ouverture."
     }
    ]
   },
@@ -281,7 +281,7 @@
    "points": [
     {
      "niveau": "warn",
-     "texte": "Étage est créé par le projet, mais une pièce a déjà un sol : son plancher n'est pas chiffré. Mets son sol existant sur « Pas de plancher » — c'est ce qui fait apparaître la couche « plancher à créer » et son prix."
+     "texte": "Étage est créé par les travaux, mais une pièce a déjà un sol : son plancher n'est pas chiffré. Mets son sol existant sur « Pas de plancher » — c'est ce qui fait apparaître la couche « plancher à créer » et son prix."
     },
     {
      "niveau": "info",
@@ -611,37 +611,37 @@
     "fait": false
    },
    {
-    "id": "w:zb76v4k:demolir",
+    "id": "w:xnk4j9t:demolir",
     "lot": "Démolition",
     "label": "Démolir le mur porteur · Chambre 1 · 1,40 m · RDC",
     "fait": false
    },
    {
-    "id": "w:bld0yv3:demolir",
+    "id": "w:ubaeboa:demolir",
     "lot": "Démolition",
     "label": "Démolir la cloison · Chambre 1 · 1,60 m · RDC",
     "fait": false
    },
    {
-    "id": "o:vvhk0gh:depose",
+    "id": "o:plrebx7:depose",
     "lot": "Démolition",
     "label": "Déposer l'ancienne menuiserie de la fenêtre · Chambre 1 · RDC",
     "fait": false
    },
    {
-    "id": "o:v8gzcup:depose",
+    "id": "o:8sggyt1:depose",
     "lot": "Démolition",
     "label": "Déposer la fenêtre avant de reboucher · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "sol-depose:z2ha3jy",
+    "id": "sol-depose:cqe2f6x",
     "lot": "Démolition",
     "label": "Déposer l'ancien sol (carrelage) · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "sol-depose:rvft1n3",
+    "id": "sol-depose:5llz9f2",
     "lot": "Démolition",
     "label": "Déposer l'ancien sol (parquet ancien) · Chambre 1 · RDC",
     "fait": false
@@ -653,25 +653,25 @@
     "fait": false
    },
    {
-    "id": "w:zb76v4k:poutre",
+    "id": "w:xnk4j9t:poutre",
     "lot": "Maçonnerie",
     "label": "Poser la poutre de reprise de charge · Chambre 1 · 1,40 m · RDC",
     "fait": false
    },
    {
-    "id": "o:2z9hmyw:perc",
+    "id": "o:ndnkpvb:perc",
     "lot": "Maçonnerie",
     "label": "Ouvrir le mur porteur pour la fenêtre · Chambre 1 · RDC",
     "fait": false
    },
    {
-    "id": "o:2z9hmyw:appui",
+    "id": "o:ndnkpvb:appui",
     "lot": "Maçonnerie",
     "label": "Poser l'appui de la fenêtre · Chambre 1 · RDC",
     "fait": false
    },
    {
-    "id": "o:v8gzcup:boucher",
+    "id": "o:8sggyt1:boucher",
     "lot": "Maçonnerie",
     "label": "Reboucher l'ouverture de la fenêtre · Salle de bain · RDC",
     "fait": false
@@ -701,25 +701,25 @@
     "fait": false
    },
    {
-    "id": "o:vvhk0gh:poser",
+    "id": "o:plrebx7:poser",
     "lot": "Menuiseries extérieures",
     "label": "Poser la fenêtre neuve · Chambre 1 · RDC",
     "fait": false
    },
    {
-    "id": "o:2z9hmyw:poser",
+    "id": "o:ndnkpvb:poser",
     "lot": "Menuiseries extérieures",
     "label": "Poser la fenêtre · Chambre 1 · RDC",
     "fait": false
    },
    {
-    "id": "o:2z9hmyw:volet",
+    "id": "o:ndnkpvb:volet",
     "lot": "Menuiseries extérieures",
     "label": "Poser le volet roulant de la fenêtre · Chambre 1 · RDC",
     "fait": false
    },
    {
-    "id": "iso:raa8lk6:0",
+    "id": "iso:7ckog21:0",
     "lot": "Isolation",
     "label": "Doubler le mur de 8,00 m · côtés Salle de bain et Chambre 1 · RDC",
     "fait": false
@@ -731,139 +731,139 @@
     "fait": false
    },
    {
-    "id": "o:aorlu9e:perc",
+    "id": "o:k4v9zen:perc",
     "lot": "Plâtrerie et cloisons",
     "label": "Ouvrir la cloison pour la porte entre Salle de bain et Chambre 1 · RDC",
     "fait": false
    },
    {
-    "id": "fauxplaf:z2ha3jy",
+    "id": "fauxplaf:cqe2f6x",
     "lot": "Plâtrerie et cloisons",
     "label": "Poser un faux plafond · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "i:tsmbsih:creer",
+    "id": "i:dvg6j0o:creer",
     "lot": "Électricité et plomberie",
     "label": "Poser les spots encastrés · Chambre 1 · RDC",
     "fait": false
    },
    {
-    "id": "i:u36bzhs:creer",
+    "id": "i:rnfvniy:creer",
     "lot": "Électricité et plomberie",
     "label": "Poser le point lumineux · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "i:kj4qy9w:creer",
+    "id": "i:z4n1yfb:creer",
     "lot": "Électricité et plomberie",
     "label": "Ajouter une prise double · Chambre 1 · RDC",
     "fait": false
    },
    {
-    "id": "sol-chape:z2ha3jy",
+    "id": "sol-chape:cqe2f6x",
     "lot": "Sols",
     "label": "Couler une chape traditionnelle · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "sol-rag:z2ha3jy",
+    "id": "sol-rag:cqe2f6x",
     "lot": "Sols",
     "label": "Faire le ragréage · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "sol-rev:z2ha3jy",
+    "id": "sol-rev:cqe2f6x",
     "lot": "Sols",
     "label": "Poser le carrelage · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "sol-rev:rvft1n3",
+    "id": "sol-rev:5llz9f2",
     "lot": "Sols",
     "label": "Poser un parquet neuf · Chambre 1 · RDC",
     "fait": false
    },
    {
-    "id": "plinthes:rvft1n3",
+    "id": "plinthes:5llz9f2",
     "lot": "Sols",
     "label": "Poser les plinthes · Chambre 1 · RDC",
     "fait": false
    },
    {
-    "id": "faience:z2ha3jy",
+    "id": "faience:cqe2f6x",
     "lot": "Faïence",
     "label": "Poser la faïence · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "o:aorlu9e:poser",
+    "id": "o:k4v9zen:poser",
     "lot": "Menuiseries intérieures",
     "label": "Poser la porte entre Salle de bain et Chambre 1 · RDC",
     "fait": false
    },
    {
-    "id": "peint-murs:rvft1n3",
+    "id": "peint-murs:5llz9f2",
     "lot": "Peinture",
     "label": "Peindre les murs · Chambre 1 · RDC",
     "fait": false
    },
    {
-    "id": "peint-plafond:rvft1n3",
+    "id": "peint-plafond:5llz9f2",
     "lot": "Peinture",
     "label": "Peindre le plafond · Chambre 1 · RDC",
     "fait": false
    },
    {
-    "id": "i:bkime6m:creer",
+    "id": "i:ptz6wye:creer",
     "lot": "Équipements",
     "label": "Poser la douche · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "i:bkime6m:colonne",
+    "id": "i:ptz6wye:colonne",
     "lot": "Équipements",
     "label": "Poser la colonne de douche · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "i:bkime6m:paroi",
+    "id": "i:ptz6wye:paroi",
     "lot": "Équipements",
     "label": "Poser la paroi de douche · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "i:2etro8j:creer",
+    "id": "i:dj4sc1q:creer",
     "lot": "Équipements",
     "label": "Poser la double vasque · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "i:kjj3ilg:creer",
+    "id": "i:7f9jjrv:creer",
     "lot": "Équipements",
     "label": "Poser les WC · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "i:831pufv:creer",
+    "id": "i:yvprvgs:creer",
     "lot": "Équipements",
     "label": "Poser la baignoire · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "i:831pufv:robinet",
+    "id": "i:yvprvgs:robinet",
     "lot": "Équipements",
     "label": "Poser la robinetterie de la baignoire · Salle de bain · RDC",
     "fait": false
    },
    {
-    "id": "i:47gq83v:creer",
+    "id": "i:ar3extq:creer",
     "lot": "Équipements",
     "label": "Poser l'escalier · Chambre 1 · RDC",
     "fait": false
    },
    {
-    "id": "i:6eh7fky:creer",
+    "id": "i:9zygar0:creer",
     "lot": "Équipements",
     "label": "Poser le plan de travail · Chambre 1 · RDC",
     "fait": false

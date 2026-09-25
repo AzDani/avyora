@@ -19,6 +19,11 @@
  *     en Pro, « X € réalisés sur Y € », une tâche cliquée montre son objet ;
  *   - « Estimer ce plan » : le montant d'abord, le détail par corps d'état et par tâche, « Encore à
  *     décider » qui sélectionne l'objet, « Pas encore chiffré », un seul appel principal.
+ *   - D49 (contre-jury) : de vrais accords (jamais « (s) »), « jaune » pour la démolition partout, des notes
+ *     qui ne l'imitent pas, la question « porteur ? » posée une fois, le message d'une sélection vrai dans
+ *     chaque vue, « Encore à décider » sans homonymes, « Ton projet à 100 % » impossible tant qu'il reste à
+ *     décider, aucune promesse régionale du compteur, les mots du bâtiment expliqués dans Estimer, le Suivi
+ *     et le dossier, des icônes SVG au lieu des flèches ↔ ↕ ↗, un exemple nommé d'après sa surface.
  *
  *   node maquettes/tools/langage.mjs "$(pwd)/maquettes"
  *
@@ -66,6 +71,19 @@ const INTERDITS = [
   [/Oscillo-b\.|λ 0\.\d|R < 3\.7|m²\.K\/W/, "abréviation ou nombre à point décimal"],
   [/\bplaco\b/i, "jargon non expliqué : placo"],
   [/\bpostes?\b/i, "mot interne : poste"],
+  /* D49 · contre-jury (cj-design08, cj-design12, cj-coherence03/08/09/10, cj-integration07/08, cj-qa11) */
+  [/\p{L}\((?:s|e|es)\)/u, "pluriel « (s) » : un vrai accord (pluriel())"],
+  [/\borange\b/i, "couleur de démolition : on dit « jaune » (LEX.couleur)"],
+  [/(?:rose|vert|bleu|violet|gris) = à démolir/i, "code couleur de note qui imite un état"],
+  [/\bEXISTANTE?S?\b|\bCONSERVÉE?S?\b|\bconserv(?:é|ée|és|ées)\b|« existant »/, "état hors LEX (existant / conservé)"],
+  [/Dans le projet|[Ll]e projet le crée|créé par le projet/, "« le projet » pour dire la vue Travaux"],
+  [/ajusté à ta région|montant ajusté|Coût local/i, "promesse régionale que le compteur ne tient pas"],
+  [/Budget produits repérés \(HT\)\s*0\s*€/, "budget produits à 0 € (prix non renseignés)"],
+  [/[↔↕↗↺⟳⧉✓✔✕●↓]|\p{Extended_Pictographic}/u, "glyphe utilisé comme icône (ico())"],
+  [/Tu la retrouves/, "accord : « Tu retrouves cette décision »"],
+  [/corps d'état\s+par corps d'état/, "mot en double"],
+  [/T2 de 60 m²|T2 · 60 m²|T3 · 70 m²|Maison · 100 m²/, "nom d'exemple ou de plan type ≠ surface mesurée"],
+  [/Menuiserie en applique :|retour de doublage en tableau|ajuster le dormant/, "message en jargon (novice08)"],
 ];
 const AVEC_PRO = /Avec Pro\b|avec Pro\b|Passer Pro|· Pro\b|Budget travaux HT · Pro/;
 
@@ -361,6 +379,106 @@ await p.evaluate(() => closeModal());
 for (const geste of [() => { setMode("existant"); closeModal(); setMode("projet"); }, () => setMode("final"), () => { setMode("projet"); closeModal(); const w = L().walls.find((x) => !isVirtual(x) && !x.st); sel = { kind: "wall", id: w.id }; deleteSel(); }]) {
   await p.evaluate(geste); lus.push(["message", await p.evaluate(() => document.getElementById("toast").textContent)]);
 }
+await p.close();
+
+/* ═════════ 7. D49 · Le langage du contre-jury : accords, jaune, 100 % honnête, homonymes, glossaire où est l'argent ═════════ */
+p = await onglet();
+await p.evaluate(() => closeWelcome("sample")); await wait(150);
+const ecranPt = (x, y) => p.evaluate(([x, y]) => { const s = S(v(x, y)); const rc = cv.getBoundingClientRect(); return { x: rc.left + s.x, y: rc.top + s.y }; }, [x, y]);
+/* une sélection par zone, à la souris, dans les trois vues : le message dit ce que fera Suppr ICI, avec de vrais accords */
+for (const vue of ["existant", "projet", "final"]) {
+  await p.evaluate((m) => { setMode(m); closeModal(); clearSel(); setTool("zone"); }, vue);
+  const z0 = await ecranPt(-0.5, -0.5), z1 = await ecranPt(4.2, 4.6);
+  await p.mouse.move(z0.x, z0.y); await p.mouse.down(); await p.mouse.move(z1.x, z1.y, { steps: 8 }); await p.mouse.up(); await wait(120);
+  const msg = await p.evaluate(() => document.getElementById("toast").textContent); lus.push(["message zone " + vue, msg]);
+  t[`zone · vue ${vue} : « N éléments sélectionnés », et Suppr ${vue === "projet" ? "marque" : vue === "final" ? "ne fait rien (lecture seule)" : "efface"}`] =
+    /^\d+ éléments sélectionnés/.test(msg) && !/\(s\)/.test(msg) && (vue === "projet" ? /marquer à démolir/.test(msg) : vue === "final" ? /lecture seule/.test(msg) && !/Suppr/.test(msg) : /Suppr pour les effacer/.test(msg));
+}
+await p.evaluate(() => { setMode("existant"); closeModal(); setTool("select"); msel = L().items.slice(0, 2).map((i) => ({ kind: "item", id: i.id })).concat(L().dims.slice(0, 1).map((d) => ({ kind: "dim", id: d.id }))); sel = { kind: "marquee" }; deleteSel(); });
+{ const msg = await p.evaluate(() => document.getElementById("toast").textContent); lus.push(["message suppression multiple", msg]); t["suppression multiple · « N éléments supprimés », sans « (s) »"] = /éléments? supprimés?/.test(msg) && !/\(s\)/.test(msg); }
+Object.assign(t, await p.evaluate(() => {
+  const r = {}; loadSample(); setMode("projet"); closeModal(); setTool("select");
+  /* une seule couleur de démolition, celle des plans : jaune */
+  const E = LEX.couleur;
+  r["couleur · LEX nomme la démolition « jaune » et la création « rouge »"] = E.demolir === "jaune" && E.creer === "rouge" && /en jaune/.test(LEX.vueBulle.projet);
+  openModal("projet"); const mp = document.getElementById("m-projet").innerText; closeModal();
+  r["couleur · la fenêtre Travaux dit « jaune = on démolit » et « jaune pointillé »"] = /jaune = on démolit/.test(mp) && /jaune pointillé/.test(mp) && !/orange/i.test(mp);
+  const w = L().walls.find((x) => !isVirtual(x) && !x.st); sel = { kind: "wall", id: w.id }; deleteSel();
+  r["couleur · Suppr sur un mur : « il reste sur le plan, en jaune »"] = /en jaune/.test(document.getElementById("toast").textContent); undo();
+  r["couleur · une note n'est plus jaune par défaut (le jaune est celui des démolitions)"] = noteColors({}) !== NOTE_COLORS.jaune && NOTE_DEFAUT !== "jaune";
+  /* le porteur : une seule question */
+  const m = L().walls.find((x) => !isVirtual(x) && !x.st && wallT(x) >= 0.15); const sv = m.porteur; m.porteur = null; m.st = "demolir"; afterChange(); sel = { kind: "wall", id: m.id }; renderPanel();
+  const t1 = document.getElementById("pbody").innerText;
+  r["porteur · mur à démolir sans réponse : la question est posée UNE fois"] = (t1.match(/porte-t-il un plancher ou le toit/g) || []).length === 1 && (t1.match(/Je ne sais pas/g) || []).length === 1;
+  setWallProp("porteur", "non"); const t2 = document.getElementById("pbody").innerText;
+  r["porteur · une fois répondu, la rangée « Porteur ? » revient (pour changer d'avis)"] = /Porteur \?/i.test(t2) && (t2.match(/Je ne sais pas/g) || []).length === 1;
+  m.st = undefined; m.porteur = sv; delete m.st; afterChange();
+  setMode("existant"); closeModal(); sel = { kind: "wall", id: w.id }; renderPanel();
+  r["mur en Avant travaux : « Tu retrouves cette décision en vue Travaux »"] = /Tu retrouves cette décision en vue Travaux/.test(document.getElementById("pbody").innerText);
+  /* icônes, pas de glyphes */
+  setMode("projet"); closeModal(); const d = L().openings.find((o) => OPENINGS[o.type].kind === "door"); sel = { kind: "opening", id: d.id }; renderPanel();
+  const bs = [...document.querySelectorAll("#pbody .btnrow button")].filter((b) => /Charnière|Ouvre de l'autre côté/.test(b.textContent));
+  r["porte · « Charnière » et « Ouvre de l'autre côté » ont une icône SVG, sans flèche ↔ ↕"] = bs.length === 2 && bs.every((b) => b.querySelector("svg.ico") && !/[↔↕]/.test(b.textContent));
+  /* l'exemple porte le nom de sa surface */
+  loadSample(); const q = quantities(), n = +(state.name.match(/(\d+) m²/) || [])[1];
+  r["exemple · son nom dit sa surface mesurée (« " + state.name + " » pour " + fmt(q.area, 1) + " m²)"] = Math.abs(n - q.areaBefore) < 1 && Math.abs(n - q.area) < 1;
+  r["plans types · chaque nom dit la surface mesurée"] = TEMPLATES.filter((T) => T.build).every((T) => { closeModal(); chargerModele(T, null, null); const a = quantities().area, k = +(T.name.match(/(\d+) m²/) || [])[1]; return Math.abs(k - a) < 1; });
+  loadSample(); setMode("projet"); closeModal();
+  /* aucune promesse régionale, pas de « 0 € » de produits */
+  showEstimate(); const Q = document.querySelector("#estBody details.qdet").textContent;
+  r["Estimer · les quantités disent que le code postal sert à l'estimation détaillée, sans « ajusté à ta région »"] = /estimation détaillée/.test(Q) && !/ajusté/.test(Q);
+  r["Estimer · des produits sans prix : pas de « Budget produits repérés 0 € »"] = allProducts().every((x) => !x.prix) ? !/Budget produits repérés/.test(Q) && /Prix des produits non renseignés/.test(Q) : true;
+  closeModal(); setChantier("cp", "75011"); showEstimate(); const Q2 = document.querySelector("#estBody details.qdet").textContent;
+  r["Estimer · code postal saisi : toujours « moyenne nationale », le code postal attend l'estimation détaillée"] = /moyenne nationale/.test(Q2) && /75011/.test(Q2) && /pour l'estimation détaillée/.test(Q2);
+  closeModal(); setChantier("cp", "");
+  return r;
+}));
+/* « Encore à décider » : jamais deux lignes identiques (deux fenêtres d'une pièce réunie par une démolition) */
+Object.assign(t, await p.evaluate(() => {
+  const r = {}; closeModal(); state = blankState(); setTool("select"); const lv = L(); lv.height = 2.5;
+  const W = (a, c, ty) => { const x = { id: uid(), a: v(...a), b: v(...c), type: ty }; lv.walls.push(x); return x; };
+  const h = W([0, 0], [8, 0], "mur"); W([8, 0], [8, 4], "mur"); const bas = W([8, 4], [0, 4], "mur"); W([0, 4], [0, 0], "mur"); const clo = W([4, 0], [4, 4], "cloison");
+  const O = (w, t) => lv.openings.push({ id: uid(), wallId: w.id, t, type: "fenetre", w: 1.2, h: 1.25, side: 1, hinge: 1 });
+  O(h, 0.25); O(h, 0.75); O(bas, 0.5); lv.openings.push({ id: uid(), wallId: clo.id, t: 0.5, type: "porte", w: 0.83, h: 2.04, side: 1, hinge: 1 });
+  afterChange(); (facesCache[lv.id] || []).forEach((f) => { f.room.type = "chambre"; f.room.name = "Chambre"; }); afterChange();
+  setMode("projet"); closeModal(); clo.st = "demolir"; afterChange();
+  const A = elementsATrancher().filter((a) => a.kind === "opening"), L2 = A.map((a) => a.label);
+  r["à décider · trois fenêtres d'une pièce réunie : trois lignes différentes (" + L2.join(" / ") + ")"] = A.length === 3 && new Set(L2).size === 3 && L2.every((x) => /sur le plan\)|sur 3\)/.test(x));
+  showEstimate(); const lignes = [...document.querySelectorAll("#estBody .adec b")].map((x) => x.textContent); closeModal();
+  r["à décider · Estimer n'affiche jamais deux lignes identiques"] = lignes.length > 0 && new Set(lignes).size === lignes.length;
+  /* 100 % seulement quand tout est décidé et le plan sans erreur */
+  const E = etapesProjet(), dec = E.find((e) => e.k === "decider");
+  r["projet · « Tout décider » lit la liste d'Estimer : pas faite tant qu'il reste un « à décider »"] = !!dec && !dec.fait && pctProjet() < 100 && dec.suite.startsWith("Décide · " + elementsATrancher()[0].label);
+  return r;
+}));
+/* Le glossaire là où est l'argent : Estimer, Suivi, dossier */
+await p.evaluate(scene);
+Object.assign(t, await p.evaluate(() => {
+  const r = {}; setMode("projet"); closeModal(); setTool("select"); sel = null; render();
+  const T = chantierTasks(), txt = T.map((x) => x.lot + " " + x.label + " " + (detailTache(x) || "")), attendus = motsDe(txt, new Set(["ht", "corps"]));
+  showEstimate(); const pe = [...document.querySelectorAll("#estBody .gl")].map((x) => x.dataset.gl);
+  r["glossaire · Estimer : chaque mot du bâtiment des tâches a sa pastille (" + attendus.length + " mots), une seule fois"] = attendus.length >= 6 && attendus.every((k) => pe.includes(k)) && new Set(pe).size === pe.length;
+  r["glossaire · Estimer : aucune pastille dans le bouton d'une tâche"] = !document.querySelector("#estBody button .gl");
+  closeModal(); setPanelTab("suivi"); const ps = [...document.querySelectorAll("#pbody .gl")].map((x) => x.dataset.gl);
+  r["glossaire · Suivi : les mêmes mots, une fois chacun, jamais dans une tâche"] = attendus.every((k) => ps.includes(k)) && new Set(ps).size === ps.length && !document.querySelector("#pbody .task .gl");
+  setPanelTab("details"); exportPlan(); const pages = [...document.querySelectorAll("#exportGallery .xpage")], last = pages[pages.length - 1];
+  r["glossaire · le dossier finit par « Les mots de ce budget », avec ces mots-là"] = /Les mots de ce budget/.test(last.querySelector("h4").textContent) && attendus.every((k) => last.innerText.includes(GLOSSAIRE[k][0]));
+  r["glossaire · entrées ajoutées : appui de fenêtre, vitrification"] = !!GLOSSAIRE.appui && !!GLOSSAIRE.vitrification;
+  closeModal(); return r;
+}));
+await p.evaluate(() => { setMode("projet"); closeModal(); showEstimate(); }); await noter(p, "D49 · scène · estimer");
+await p.evaluate(() => { closeModal(); setPanelTab("suivi"); }); await noter(p, "D49 · scène · suivi");
+await p.evaluate(() => { setPanelTab("details"); closeModal(); openModal("level"); }); await noter(p, "D49 · fenêtre niveau");
+await p.close();
+/* en gratuit : les mots des corps d'état, sous la répartition */
+p = await onglet("", 1400, 900, false);
+await p.evaluate(() => { closeWelcome("fermer"); loadTemplate("maison"); closeModal(); }); await wait(150);
+Object.assign(t, await p.evaluate(() => {
+  const r = {}; setMode("projet"); closeModal(); L().openings.forEach((o) => { o.st = "remplacer"; }); L().walls.filter((w) => w.type === "cloison").slice(0, 1).forEach((w) => { w.st = "demolir"; }); afterChange();
+  showEstimate(); const B = document.getElementById("estBody"), att = motsDe(chantierPrix().lots.map((g) => g.lot), new Set(["ht", "corps"]));
+  r["gratuit · Estimer : les mots des corps d'état ont leur pastille"] = att.every((k) => !!B.querySelector('.gl[data-gl="' + k + '"]'));
+  closeModal(); return r;
+}));
 await p.close();
 
 /* ═════════ 6. Ce qui s'affiche : aucune tournure interdite ═════════ */

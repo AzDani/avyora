@@ -124,7 +124,7 @@ const res = await p.evaluate(() => {
     sel = { kind: "wall", id: haut.id }; setWallProp("st", "demolir");
     const m1 = h({ kind: "wall", id: haut.id });
     t["mur à démolir · ni isolation ni finition extérieure"] = !/Doublage côté/.test(m1) && !/Finition extérieure/.test(m1);
-    t["mur à démolir · l'épaisseur et le porteur restent"] = /Porteur/.test(m1);
+    t["mur à démolir · l'épaisseur et le porteur restent"] = /Porteur|porte-t-il un plancher/.test(m1); /* D49 : sans réponse, la question de tête remplace la rangée « Porteur ? » (une seule question) */
 
     /* un équipement qu'on dépose n'a plus rien à spécifier */
     const e0 = h({ kind: "item", id: it.id });

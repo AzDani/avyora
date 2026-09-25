@@ -2570,3 +2570,133 @@ cj-retention00, cj-coherence01, cj-integration09, cj-retention02 ; jury : retent
 - La carte du plan vide n'est plus montrée après « Nouveau plan » (l'outil Murs est actif, comme le
   demandait cj-integration06) ; elle reste celle d'un plan vide en Sélection (cj-design05 proposait
   l'inverse).
+
+## D49 · Langage : un seul accord, une seule couleur, un 100 % honnête, les mots expliqués là où est l'argent (25/09/2026)
+
+**Constats (contre-jury : cj-novice03, cj-novice04, cj-novice05, cj-novice07, cj-coherence03, cj-coherence04,
+cj-coherence05, cj-coherence08, cj-coherence09, cj-coherence10, cj-design08, cj-design12, cj-integration07,
+cj-integration08, cj-integration10, cj-qa11 ; vérifications « partiel / régression » de novice08,
+coherence05, coherence08, coherence14, coherence16 et integ-8).**
+- **Des pluriels de tableur** au premier écran : « 6 pièce(s) détectée(s) sur ce niveau », « 2 ouverture(s)
+  sur ce mur », « 3 élément(s) sélectionné(s) — Suppr pour effacer », « mur(s) porteur(s) repris »,
+  « élément(s) supprimé(s) · groupe(s) dissous », « Tracé en cours : 4 point(s) », « … et 2 autre(s) ».
+- **Deux noms pour une couleur** : la fenêtre Travaux, la visite, la bulle de la vue et le dossier disaient
+  « orange = à démolir », le message de Suppr « en jaune ». Les notes étaient jaunes par défaut (elles
+  ressemblaient à des démolitions sur la vue Travaux) et l'aide des notes proposait « rose = à démolir ».
+- **« Ton projet à 100 % · Ton plan est complet »** pendant qu'Estimer affichait « Encore à décider (13) »
+  et que le contrôle signalait une pièce inaccessible : l'étape « sols » ne regardait que les sols.
+- **« Encore à décider » affichait deux lignes identiques** (« La fenêtre · Chambre » ×2 après une fusion).
+- **Isoler le tableau d'une fenêtre posée en applique** : refus en jargon (« le doublage recouvre déjà le
+  dormant »), puis une alerte en mm qui conseillait justement « un retour de doublage en tableau » —
+  impossible en applique — et qui restait (avec le « ! » rouge) même après avoir isolé les tableaux d'une
+  fenêtre en tunnel. Autres messages sans ⓘ : « Ouvre-la pour ajuster le dormant », « poutre ou IPN ».
+- **Le glossaire manquait là où est l'argent** : dans Estimer, seuls HT, corps d'état et habitable avaient
+  leur pastille ; linteau, hydrofuge, plinthe, trémie, appui, dépose, étude de structure… restaient nus ;
+  le Suivi n'en avait qu'une ; le dossier aucune.
+- **Une promesse régionale** : les quantités d'Estimer et du dossier disaient « renseigne-le pour un montant
+  ajusté à ta région », puis la ligne disparaissait une fois le code postal saisi, montant inchangé.
+- **La question « porteur ? » posée deux fois** dans la fiche d'un mur à démolir (encadré + rangée).
+- **Message de sélection faux** : « Suppr pour effacer » en Travaux (où Suppr marque) et en Après travaux
+  (lecture seule).
+- **Vitrine** : « Budget produits repérés (HT) 0 € HT » (produits sans prix), et un « T2 de 60 m² » qui en
+  mesure 58,6 avant travaux et 58,1 après.
+- **Restes hors LEX** : « EXISTANT », « CONSERVÉ », « À FAIRE » dans la pile du sol, chip « existant » de la
+  toiture, « Dans le projet : Déjà isolé / À isoler », « Le projet le crée », « créé par le projet »,
+  « Tu la retrouves », « corps d'état ⓘ par corps d'état », « Échelle calée ✓ ».
+- **Glyphes en guise d'icônes** : ↔ Charnière, ↕ Ouvre de l'autre côté, ↔ / ↕ du faîtage, ↺, ↗, ● et
+  « à décider ↓ » — ↔ ↕ ↗ sont des emoji sur Windows et Android.
+
+**Décisions.**
+1. **Un seul accord** : `pluriel(n, 'pièce détectée', 'pièces détectées')` et `accord()`, fonctions hissées
+   près de LEX (un mot seul prend son s ; une expression donne son pluriel ; pluriel à partir de 2). Tous les
+   « (s) » affichés sont réécrits.
+2. **Jaune partout** : `LEX.couleur = {demolir:'jaune', creer:'rouge'}`, lu par la bulle de la vue, la
+   fenêtre Travaux (`data-lex`), la visite, le message de Suppr, le message téléphone et les sous-titres du
+   dossier. La teinte ne change pas (arbitrage). **Les notes sont bleues par défaut** (`NOTE_DEFAUT`) : ni le
+   jaune des démolitions, ni le rouge des créations, ni le violet des cotes ; l'exemple d'aide devient
+   « bleu = question pour l'artisan, vert = validé, rose = à vérifier ».
+3. **100 % honnête** : l'étape « sols » devient **« Tout décider : garder ou changer »**, faite quand
+   `elementsATrancher()` est vide — la même liste qu'« Encore à décider » d'Estimer (menuiseries,
+   équipements, sols, faïence, toiture) ; sa suite dit « Décide · La porte d'entrée · Entrée (et 16 autres) »
+   et y mène (`montrerSurLePlan`, liste Revêtement focalisée pour un sol). Nouvelle étape **« Un plan sans
+   erreur »** (`premiereErreur()` : aucun contrôle de niveau erreur, tous niveaux) ; sa suite « Corrige ·
+   … » sélectionne l'élément fautif. Huit étapes ; « Mes plans » reprend le même pourcentage.
+4. **Pas d'homonymes** : `distinguerHomonymes()` place les éléments de même libellé l'un par rapport à l'autre
+   sur le plan (« La fenêtre (à gauche sur le plan) · Chambre », en haut, en bas, à droite), et les numérote
+   s'ils sont au même endroit (« 2 sur 3 »). Estimer, le dossier et l'étape « Tout décider » lisent ces
+   libellés.
+5. **La fenêtre et son doublage, en mots simples** : `menuisSousDimensionnees()` ne retient plus une fenêtre
+   dont les tableaux sont isolés côté pièce — l'alerte et le « ! » disparaissent dès le geste fait. L'alerte
+   parle en cm et avec LEX, selon la pose : en applique, « son cadre est plus fin que le doublage (4 cm contre
+   12 cm), qui la recouvrirait. Choisis « À remplacer » » ; en tunnel, « Isole ses tableaux (outil Doublage,
+   clic dans l'ouverture), ou choisis « À remplacer » ». Le refus de l'outil dit « Cette fenêtre est posée
+   contre le mur, côté pièce (pose en applique) : le doublage arrive directement sur son cadre, il n'y a pas
+   de tableau à isoler », avec « Voir sa fiche » (où « pose » a sa pastille ⓘ). La fiche du mur dit « cadre
+   plus fin que le doublage ⓘ ». « poutre ou IPN » devient « elle dimensionne la poutre qui portera ce que le
+   mur portait ». Les messages du contrôle sont des boutons : on n'y pose pas de pastille, on y écrit simple.
+6. **Le glossaire où est l'argent** : `GL_MOTS` reconnaît les mots du bâtiment avec leurs accords (menuiserie,
+   linteau, appui, porteur, étude de structure, poutre de reprise, hydrofuge, plinthe, trémie, vitrifier,
+   garde-corps, ml…) ; `motsDe(textes, vus)` et `motsHTML()` posent, sous les tâches de chaque corps d'état,
+   une ligne « Les mots : Linteau ⓘ · Appui de fenêtre ⓘ » — **une fois par écran et par mot**, jamais DANS
+   le bouton d'une tâche (bouton dans un bouton). Dans Estimer (par corps d'état, « Pas encore chiffré »,
+   « Ce que ton plan ne dit pas encore »), en gratuit sous la répartition, et dans le Suivi. Le dossier
+   finit par une page **« Les mots de ce budget »** (HT, corps d'état, surface habitable et les mots de ses
+   tâches, seulement ceux-là). Nouvelles entrées : appui de fenêtre, seuil, menuiserie, poutre de reprise,
+   vitrification, rampants, soufflage, garde-corps, ml.
+7. **Aucune promesse régionale** : la note des quantités (Estimer et dossier) dit toujours « Le montant de
+   ce plan reste au prix catalogue, moyenne nationale, hors taxes. Ta finition, ton code postal et la TVA
+   sont appliqués par l'estimation détaillée du site, pas ici » ; la ligne code postal dit « · pour
+   l'estimation détaillée » ; « Coût local — moyenne nationale appliquée » devient « Code postal — pas
+   encore dit : l'estimation détaillée du site en a besoin » (elle s'efface quand le plan le dit, ce qui
+   est vrai).
+8. **« Porteur ? » une seule fois** : la rangée se masque tant que la question de tête attend sa réponse ;
+   elle revient une fois répondu, pour changer d'avis.
+9. **Le message de sélection dit ce que fera Suppr ici** (`msgSelection`) : « 3 éléments sélectionnés · Suppr
+   pour les effacer » (Avant travaux), « … · Suppr pour les marquer à démolir, à boucher ou à déposer »
+   (Travaux), « … · vue Après travaux : lecture seule ».
+10. **Vitrine** : pas de ligne de total quand aucun produit n'a de prix (« Prix des produits non renseignés :
+    ils ne sont pas dans le montant ») ; l'exemple s'appelle « T2 de 58 m² » (accueil, visite, plan type) et
+    les plans types disent leur surface mesurée (T3 · 65 m², Maison · 94 m²).
+11. **LEX partout** : pile du sol « déjà là · je garde · à poser » (une couche peut dire mieux : à déposer,
+    à couler, à poncer, à créer pour un plancher) ; chip de toiture « avant travaux » ; doublage en Travaux
+    « Décision : Je garde (déjà isolé) / À créer (isolant à poser) » ; « Les travaux le créent », « créé par
+    les travaux » ; « Tu retrouves cette décision en vue Travaux » ; « rangés par corps d'état ⓘ » ;
+    « le parquet actuel, gardé », « sol gardé ». Un modèle de porte sans prix apparaît au Suivi « non
+    chiffré » (plus « à 0 € ») ; l'astuce de l'outil Équipements dit « En vue Travaux, … que tu ajoutes ».
+12. **Icônes SVG** (`flechesH`, `flechesV`, `lienExterne`, `annuler`, `point`, `flecheBas`, classe `.ico.inl`
+    pour une icône dans une ligne de texte) : Charnière, Ouvre de l'autre côté, faîtage (boutons nommés
+    « Faîtage de gauche à droite / de haut en bas »), Revenir au calcul automatique, liens produits,
+    poignées, « à décider ». Les messages du contrôle nomment les boutons (« bouton « Charnière » »).
+
+**Contrôles.**
+- `langage.mjs` : nouvelles tournures refusées sur les 412 états lus — `(s)`, « orange », « rose = à
+  démolir », EXISTANT / CONSERVÉ / conservé, « Dans le projet », « créé par le projet », « ajusté à ta
+  région », « Coût local », « Budget produits repérés 0 € », tout glyphe ↔ ↕ ↗ ↺ ⟳ ⧉ ✓ ✕ ● ↓ et tout
+  `\p{Extended_Pictographic}`, « Tu la retrouves », « corps d'état par corps d'état », les anciens noms
+  d'exemple, le jargon du refus. §7 : sélection par zone à la souris dans les trois vues, suppression
+  multiple, LEX.couleur, fenêtre Travaux, Suppr « en jaune », note pas jaune, porteur une fois puis rangée
+  de retour, « Tu retrouves cette décision », icônes de la porte, nom de l'exemple et des plans types =
+  surface mesurée, quantités (estimation détaillée, pas d'« ajusté », code postal saisi, produits sans
+  prix), trois fenêtres d'une pièce réunie = trois lignes, « Tout décider » = liste d'Estimer, glossaire
+  (chaque mot des tâches a sa pastille dans Estimer et le Suivi, une fois, jamais dans une tâche ; page
+  « Les mots de ce budget » ; en gratuit sous la répartition).
+- `onboarding.mjs` §6 : « Tout décider » nomme et sélectionne le premier « à décider », mène au sol ;
+  une erreur au contrôle retire le 100 % et « Ton plan est complet » ; huit étapes ; l'exemple a
+  « Tout décider » à faire.
+- `doublage.mjs` : à la souris, fenêtre gardée en applique (alerte en cm avec « À remplacer », refus en mots
+  simples avec « Voir sa fiche »), puis en tunnel (l'alerte propose d'isoler les tableaux ; clic de l'outil :
+  « Tableaux isolés », l'alerte disparaît, la tâche est au Suivi).
+- Mis à jour en gardant leur intention : `decision.mjs` (un mur à démolir sans réponse garde la question
+  « porteur », en tête), `metier.mjs` (libellé « je garde »).
+- Fixture du contrat régénérée : seuls les textes de quatre contrôles changent (IPN, « créé par les
+  travaux », « bouton « Ouvre de l'autre côté » ») — contrat 1.16.0 inchangé ; vitest vert.
+
+**Pas fait, et pourquoi.**
+- **Une teinte « vraiment jaune »** (cj-design12 proposait #CA8A04 / #FEF08A) : l'arbitrage dit « écris
+  jaune partout et garde la teinte actuelle ». Le mot est aligné, la couleur reste.
+- **Une pastille ⓘ collée au mot dans le libellé d'une tâche** (cj-coherence05) : une tâche est un bouton
+  (Estimer, Suivi) et la pastille en est un autre ; un bouton dans un bouton casse le clavier et le lecteur
+  d'écran. Les mots sont expliqués sur la ligne « Les mots : » juste sous les tâches de leur corps d'état.
+- **Messages du contrôle avec pastille** : ce sont aussi des boutons (ils sélectionnent l'élément) ; ils
+  sont réécrits en mots simples, sans pastille.
+- **« Isoler un mur » à la place de « Doublage »** et **« corps de métier »** : refus maintenus (D39).

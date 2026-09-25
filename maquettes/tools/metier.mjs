@@ -71,7 +71,7 @@ Object.assign(t, await p.evaluate(() => {
   room.sol = { chape: "tradi" }; afterChange();
   setRoomRevetement("__garde");
   const sp = solPlan(room);
-  r["sol gardé : la pile dit « conservé », sans rien à choisir"] = sp.garde && !sp.steps.some((s) => s.state === "choice" || s.k === "chape") && sp.steps.some((s) => s.state === "garde");
+  r["sol gardé : la pile dit « je garde », sans rien à choisir"] = sp.garde && !sp.steps.some((s) => s.state === "choice" || s.k === "chape") && sp.steps.some((s) => s.state === "garde");
   r["sol gardé : 0 tâche, rien au contrat, la chape oubliée est effacée"] = chantierTasks().length === 0 && contratPlan().sols.length === 0 && !room.sol;
   r["sol gardé : Estimer ne réclame plus le sol"] = !couvertureManquante(quantities()).some((a) => a[0] === "Sol");
   setRoomRevetement("");

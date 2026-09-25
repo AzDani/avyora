@@ -322,24 +322,39 @@ Object.assign(t, await p.evaluate(() => {
   sel = null; render(); document.querySelector("#pbody .pp .ppnext").click();
   r["projet · « premier travail » passe en vue Travaux"] = mode() === "projet";
   const f = facesFor(L(), "projet")[0]; f.room.peinture = "tout"; afterChange();
-  r["projet · une décision : la suivante est « sols »"] = nx() === "sols";
+  /* D49 (cj-novice04, cj-coherence04) : « sols » devient « Tout décider » — la même liste qu'« Encore à décider » d'Estimer */
+  const A0 = elementsATrancher()[0], dec = () => etapesProjet().find((e) => e.k === "decider");
+  r["projet · une décision : la suivante est « tout décider », qui nomme le premier « à décider » d'Estimer"] = nx() === "decider" && !!A0 && dec().suite.startsWith("Décide · " + A0.label);
+  sel = null; render(); document.querySelector("#pbody .pp .ppnext").click();
+  r["projet · « tout décider » : le premier élément à décider est sélectionné, en vue Travaux"] = mode() === "projet" && sel?.kind === A0.kind && sel?.id === A0.id;
+  /* on tranche tout ce qui n'est pas un sol : la prochaine étape mène au sol de la pièce */
+  elementsATrancher().filter((a) => a.kind === "opening").forEach((a) => { const o = L().openings.find((x) => x.id === a.id); o.st = "garder"; });
+  elementsATrancher().filter((a) => a.kind === "item").forEach((a) => { const i = L().items.find((x) => x.id === a.id); i.st = "garder"; }); afterChange();
+  r["projet · il reste le sol : « tout décider » n'est pas fait"] = nx() === "decider" && elementsATrancher()[0].kind === "room" && pctProjet() < 100;
   sel = null; render(); document.querySelector("#pbody .pp .ppnext").click();
   return r;
 }));
 await wait(120);
 Object.assign(t, await p.evaluate(() => {
   const r = {}, nx = () => etapesProjet().find((e) => !e.fait)?.k;
-  r["projet · « sols » : la pièce sélectionnée en vue Travaux, la liste Revêtement focalisée"] = mode() === "projet" && sel?.kind === "room" && document.activeElement?.getAttribute("aria-label") === "Revêtement de sol";
+  r["projet · « tout décider » sur un sol : la pièce sélectionnée en vue Travaux, la liste Revêtement focalisée"] = mode() === "projet" && sel?.kind === "room" && document.activeElement?.getAttribute("aria-label") === "Revêtement de sol";
   setRoomRevetement("__garde");
   r["projet · sol gardé = décision : la suivante est « estimation »"] = nx() === "estimer";
   sel = null; render(); document.querySelector("#pbody .pp .ppnext").click();
   r["projet · « Ouvre ton estimation » ouvre Estimer ; 100 %"] = modaleOuverte()?.id === "m-estimate" && pctProjet() === 100;
   closeModal(); sel = null; render();
   r["projet · 100 % : la suite, c'est le Suivi"] = /Suivi/.test(document.querySelector("#pbody .pp .ppnext").textContent);
+  /* D49 : une erreur au contrôle du plan, et ce n'est plus 100 % */
+  const lvE = L(), bout = { id: uid(), a: v(2, 1.5), b: v(3, 1.5), type: "cloison" }; lvE.walls.push(bout); afterChange();
+  const eE = etapesProjet().find((e) => e.k === "erreurs");
+  r["projet · une erreur au contrôle : « Un plan sans erreur » n'est pas fait, plus de 100 %, la suite dit « Corrige · … »"] = !eE.fait && pctProjet() < 100 && nx() === "erreurs" && /^Corrige · /.test(eE.suite) && planChecks(lvE).some((c) => c.lvl === "err");
+  sel = null; render();
+  r["projet · … et le panneau ne dit plus « Ton plan est complet »"] = !/Ton plan est complet/.test(document.querySelector("#pbody .pp").textContent);
+  lvE.walls = lvE.walls.filter((w) => w !== bout); afterChange(); sel = null; render();
   /* la liste des étapes : chaque étape à faire est un bouton */
   state.chantier.cp = ""; render();
   const L2 = [...document.querySelectorAll("#pbody .pplist li")];
-  r["projet · la liste : 7 étapes, celles à faire sont cliquables"] = L2.length === 7 && L2.filter((x) => x.querySelector("button")).length === etapesProjet().filter((e) => !e.fait).length;
+  r["projet · la liste : 8 étapes, celles à faire sont cliquables"] = L2.length === 8 && L2.filter((x) => x.querySelector("button")).length === etapesProjet().filter((e) => !e.fait).length;
   return r;
 }));
 /* l'exemple : son pourcentage, et ouvrir Estimer ne le « touche » pas */
@@ -347,7 +362,7 @@ Object.assign(t, await p.evaluate(() => {
   const r = {};
   loadSample();
   const E = etapesProjet();
-  r["projet · exemple : pièces, ouvertures, sol actuel, travaux faits ; code postal et sols à faire"] = ["pieces", "ouvertures", "solActuel", "travaux"].every((k) => E.find((e) => e.k === k).fait) && !E.find((e) => e.k === "chantier").fait && !E.find((e) => e.k === "sols").fait;
+  r["projet · exemple : pièces, ouvertures, sol actuel, travaux faits ; code postal et « tout décider » à faire"] = ["pieces", "ouvertures", "solActuel", "travaux"].every((k) => E.find((e) => e.k === k).fait) && !E.find((e) => e.k === "chantier").fait && !E.find((e) => e.k === "decider").fait;
   showEstimate(); closeModal();
   r["projet · ouvrir Estimer : l'étape est faite, l'exemple reste « jamais touché »"] = etapesProjet().find((e) => e.k === "estimer").fait && planIntact();
   savePlanToLibrary(); openPlansModal();

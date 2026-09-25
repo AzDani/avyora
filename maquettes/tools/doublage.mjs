@@ -433,6 +433,31 @@ const souris = await p.evaluate(() => {
     })(),
   };
 });
+/* ── D49 (cj-novice03) · Isoler le tableau d'une fenêtre gardée, à la souris ──────────────────────
+   En applique, le refus se dit en mots simples et mène à la fiche ; en tunnel, isoler les tableaux
+   règle la question : l'alerte du contrôle (et le « ! » sur le plan) disparaissent. */
+await p.evaluate((PLAN_REFEND) => { state = JSON.parse(PLAN_REFEND).state; state.cur = 0; setMode("projet"); closeModal(); afterChange();
+  const pf = L().openings.find((x) => x.pid === "o77"); pf.st = "garder"; pf.pose = "applique"; pf.retour = []; afterChange();
+  settings.grid = false; fitView(); setTool("doublage"); draw(); }, PLAN_REFEND);
+await new Promise((r) => setTimeout(r, 150));
+const centreFenetre = () => p.evaluate(() => { const pf = L().openings.find((x) => x.pid === "o77"), w = L().walls.find((x) => x.id === pf.wallId);
+  const c = add(add(w.a, mul(sub(w.b, w.a), pf.t)), wallOff(w)), s = S(c), r = document.getElementById("cv").getBoundingClientRect(); return { x: r.left + s.x, y: r.top + s.y }; });
+const alerte = () => p.evaluate(() => { const pf = L().openings.find((x) => x.pid === "o77"); return { sous: menuisSousDimensionnees(L()).some((m) => m.o === pf), msg: planChecks(L()).filter((c) => c.sel && c.sel.id === pf.id && /mur à doubler/.test(c.msg)).map((c) => c.msg.replace(/<[^>]+>/g, "")).join(" | ") }; });
+{ const a1 = await alerte();
+  res["fenêtre gardée en applique · alerte en cm et avec « À remplacer », sans jargon"] = a1.sous && /\d+ cm contre \d+ cm/.test(a1.msg) && a1.msg.includes("« " + (await p.evaluate(() => LEX.etat.remplacer)) + " »") && !/mm|tapée|dormant|retour de doublage/.test(a1.msg);
+  const c = await centreFenetre(); await p.mouse.move(c.x, c.y); await new Promise((r) => setTimeout(r, 60)); await p.mouse.click(c.x, c.y); await new Promise((r) => setTimeout(r, 120));
+  const toast = await p.evaluate(() => ({ txt: document.getElementById("toast").textContent, act: !!document.querySelector("#toast .tact") }));
+  res["fenêtre en applique · clic de l'outil Doublage : refus en mots simples, avec « Voir sa fiche »"] = /posée contre le mur/.test(toast.txt) && !/dormant|Menuiserie en applique/.test(toast.txt) && toast.act;
+  await p.evaluate(() => document.querySelector("#toast .tact").click());
+  res["… « Voir sa fiche » ouvre la fiche de la fenêtre, où « pose » a sa pastille ⓘ"] = await p.evaluate(() => sel && sel.kind === "opening" && (document.getElementById("pbody").innerHTML.includes('data-gl="pose"') || !!document.querySelector('#pbody details.plie')));
+  await p.evaluate(() => { const pf = L().openings.find((x) => x.pid === "o77"); pf.pose = "tunnel"; afterChange(); sel = null; setTool("doublage"); draw(); });
+  await new Promise((r) => setTimeout(r, 120));
+  const a2 = await alerte();
+  res["fenêtre gardée en tunnel · l'alerte propose d'isoler ses tableaux (outil Doublage)"] = a2.sous && /Isole ses tableaux/.test(a2.msg);
+  const c2 = await centreFenetre(); await p.mouse.move(c2.x, c2.y); await new Promise((r) => setTimeout(r, 60)); await p.mouse.click(c2.x, c2.y); await new Promise((r) => setTimeout(r, 120));
+  const a3 = await alerte(), t3 = await p.evaluate(() => document.getElementById("toast").textContent);
+  res["tableaux isolés à la souris : l'alerte et le « ! » disparaissent"] = /Tableaux isolés/.test(t3) && !a3.sous && !a3.msg;
+  res["… et la tâche « isoler les tableaux » est au Suivi"] = await p.evaluate(() => { const pf = L().openings.find((x) => x.pid === "o77"); return chantierTasks().some((x) => x.id === "o:" + pf.id + ":retouriso"); }); }
 await b.close();
 
 Object.assign(res, souris);
