@@ -435,6 +435,24 @@ for (const [L, H] of [[1440, 900], [1280, 800], [1024, 768]]) {
   await p.close();
 }
 
+/* ═════════ 11. R6 · La cote d'un mur sélectionné se lit comme les autres (de bas en haut) ═════════
+   Un mur vertical tracé de haut en bas écrivait sa longueur de haut en bas, collée à la cote
+   intérieure de la pièce qui, elle, se lit de bas en haut (D50) : deux « 3,50 m » tête-bêche. */
+{
+  const p = await onglet();
+  Object.assign(t, await p.evaluate(() => {
+    const r = {}, lv = L(); setMode("existant"); closeModal();
+    const verticaux = lv.walls.filter((w) => !isVirtual(w) && Math.abs(w.a.x - w.b.x) < 1e-6 && wallLen(w) * view.zoom > 40);
+    const lu = (w) => { sel = { kind: "wall", id: w.id }; draw(); const c = coteLabels.find((x) => x.wallId === w.id); return c ? c.ang : null; };
+    const angs = verticaux.map(lu);
+    /* le même mur, tracé dans l'autre sens */
+    const w0 = verticaux[0], a0 = { ...w0.a }; w0.a = { ...w0.b }; w0.b = a0; syncRooms(lv); const inv = lu(w0); w0.b = { ...w0.a }; w0.a = a0; syncRooms(lv);
+    r["mur sélectionné · la cote d'un mur vertical se lit de bas en haut, quel que soit le sens du tracé"] = verticaux.length >= 3 && angs.every((a) => a != null && Math.abs(a + Math.PI / 2) < 1e-6) && inv != null && Math.abs(inv + Math.PI / 2) < 1e-6;
+    sel = null; draw(); return r;
+  }));
+  await p.close();
+}
+
 await b.close();
 const echecs = Object.entries(t).filter(([, ok]) => !ok);
 for (const [nom, ok] of Object.entries(t)) console.log(`  ${ok ? "✓" : "✗"} ${nom}`);

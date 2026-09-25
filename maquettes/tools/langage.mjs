@@ -53,7 +53,9 @@ const LIRE = () => {
   const vis = (el) => !!el && el.getClientRects().length > 0;
   const attrs = [...document.querySelectorAll("[data-tip],[title],[aria-label],[placeholder]")].filter(vis)
     .flatMap((el) => ["data-tip", "title", "aria-label", "placeholder"].map((a) => el.getAttribute(a)).filter(Boolean));
-  return [document.body.innerText, ...attrs].join("\n");
+  /* R6 : une flèche dans un bouton ou un lien est une icône — elle se dessine en SVG (ico('fleche')), pas avec le glyphe → */
+  const fleches = [...document.querySelectorAll("button, a, summary, [role=button], [role=menuitem], [role=tab]")].filter(vis).filter((el) => /[→←]/.test(el.innerText || "")).map((el) => "FLECHE-ICONE « " + el.innerText.replace(/\s+/g, " ").slice(0, 50) + " »");
+  return [document.body.innerText, ...attrs, ...fleches].join("\n");
 };
 
 /* Les tournures qui ne doivent plus s'afficher, et pourquoi. */
@@ -84,6 +86,14 @@ const INTERDITS = [
   [/corps d'état\s+par corps d'état/, "mot en double"],
   [/T2 de 60 m²|T2 · 60 m²|T3 · 70 m²|Maison · 100 m²/, "nom d'exemple ou de plan type ≠ surface mesurée"],
   [/Menuiserie en applique :|retour de doublage en tableau|ajuster le dormant/, "message en jargon (novice08)"],
+  /* R6 · recette finale */
+  [/FLECHE-ICONE/, "flèche → dans un bouton ou un lien : icône SVG (ico('fleche'))"],
+  [/\bundefined\b|\bNaN\b|\bnull\b|\[object Object\]/, "valeur brute affichée"],
+  [/\bles 1 autres?\b|\b1 autres\b/, "accord : « Voir les 1 autres »"],
+  [/\d\u202f\d/, "séparateur des milliers en espace fine (U+202F), invisible dans la police du texte"],
+  [/le projet en déduit/, "la toiture décrite ne déduit aucun travaux (arbitrage tour 2)"],
+  [/HT : le montant total/, "deux-points dans une liste (DROITS.total)"],
+  [/— \?/, "choix vide « — ? » : on écrit « À préciser »"],
 ];
 const AVEC_PRO = /Avec Pro\b|avec Pro\b|Passer Pro|· Pro\b|Budget travaux HT · Pro/;
 
@@ -466,6 +476,21 @@ Object.assign(t, await p.evaluate(() => {
   r["glossaire · entrées ajoutées : appui de fenêtre, vitrification"] = !!GLOSSAIRE.appui && !!GLOSSAIRE.vitrification;
   closeModal(); return r;
 }));
+/* R6 · recette finale : ce que le parcours au clic a montré */
+Object.assign(t, await p.evaluate(() => {
+  const r = {};
+  const six = Array.from({ length: 6 }, (_, i) => ({ kind: "wall", id: "x" + i, label: "La porte " + i, msg: "déjà là, rien n'est décidé", aide: "Choisis." }));
+  r["R6 · « Encore à décider » à 6 éléments : tout s'affiche, jamais « Voir les 1 autres »"] = !/1 autres/.test(aDecHTML(six)) && (aDecHTML(six).match(/class="chk adec"/g) || []).length === 6 && /Voir les 2 autres/.test(aDecHTML([...six, six[0]]));
+  r["R6 · les montants s'écrivent avec une espace insécable visible (pas l'espace fine U+202F)"] = eur(6171) === "6\u00a0171 €" && fmtEur(1770.4) === "1\u00a0770 €";
+  r["R6 · DROITS.total se lit dans une liste, sans deux-points"] = !/:/.test(DROITS.total.gratuit) && DROITS.total.gratuit === DROITS.total.pro;
+  /* la pastille ⓘ suit son mot (elle se posait en bout de phrase, deux ⓘ côte à côte) */
+  setMode("projet"); closeModal(); const o = L().openings.find((x) => isExtType(x.type) && OPENINGS[x.type].cat === "fenetre");
+  const avant = o.pose; o.pose = "tunnel"; sel = { kind: "opening", id: o.id }; multi = []; renderPanel(); document.querySelectorAll("#pbody details").forEach((d) => (d.open = true));
+  const gd = document.querySelector('#pbody .gl[data-gl="dormant"]'), gp = document.querySelector('#pbody .gl[data-gl="pont"]');
+  r["R6 · fiche fenêtre : la pastille « dormant » suit le mot Dormant, « pont thermique » suit le sien"] = !!gd && /Dormant\s*$/.test(gd.previousSibling && gd.previousSibling.textContent || "") && !!gp && /pont thermique\s*$/.test(gp.previousSibling && gp.previousSibling.textContent || "");
+  o.pose = avant; afterChange();
+  return r;
+}));
 await p.evaluate(() => { setMode("projet"); closeModal(); showEstimate(); }); await noter(p, "D49 · scène · estimer");
 await p.evaluate(() => { closeModal(); setPanelTab("suivi"); }); await noter(p, "D49 · scène · suivi");
 await p.evaluate(() => { setPanelTab("details"); closeModal(); openModal("level"); }); await noter(p, "D49 · fenêtre niveau");
@@ -479,6 +504,13 @@ Object.assign(t, await p.evaluate(() => {
   r["gratuit · Estimer : les mots des corps d'état ont leur pastille"] = att.every((k) => !!B.querySelector('.gl[data-gl="' + k + '"]'));
   closeModal(); return r;
 }));
+await p.close();
+
+/* R6 · toiture d'une maison, en vue Avant travaux : décrire n'ajoute aucun travaux (arbitrage tour 2) */
+p = await onglet();
+await p.evaluate(() => { closeWelcome("fermer"); loadTemplate("maison"); closeModal(); setMode("existant", true); closeModal(); sel = null; renderPanel(); }); await wait(150);
+t["R6 · toiture à décrire : « ce que tu décris ne coûte rien », plus « le projet en déduit les travaux »"] = await p.evaluate(() => { const inv = document.getElementById("pbody").innerText; return /Décrire la toiture/.test(inv) && /ne coûte rien/.test(inv) && !/en déduit les travaux/.test(inv); });
+await noter(p, "R6 · maison, toiture à décrire");
 await p.close();
 
 /* ═════════ 6. Ce qui s'affiche : aucune tournure interdite ═════════ */

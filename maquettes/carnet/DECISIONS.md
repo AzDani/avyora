@@ -2924,3 +2924,87 @@ cj-access08, cj-access09, cj-access10, cj-access11, cj-access12).**
 - **Déplacer un mur sans glisser** par des boutons : non demandé ; un mur se règle par sa longueur (fiche) et aux
   flèches.
 - **« Voir le détail → »** et autres flèches typographiques dans les liens : hors de ce chantier (langage).
+
+## D52 · Recette finale du tour 2 : le parcours d'un débutant, au clic, au bureau et au téléphone (25/09/2026)
+
+**Ce qui a été refait, comme un débutant.** Batterie complète, couverture, vitest (164) et build : verts avant
+toute retouche. Puis, au clic, à 1 440 × 900 : accueil, visite (5 étapes), exemple, Estimer en Pro puis en gratuit
+(interrupteur de `?dev`), feuille blanche, trois pièces tracées l'une après l'autre le long de la façade, deux portes,
+une porte d'entrée, deux fenêtres, vue Travaux (fenêtre d'explication), mur mitoyen à démolir (question « porteur ? »,
+3 543 € tant qu'elle attend, 306 € une fois « Non »), doublage glissé sur un mur, fenêtre passée en tunnel et
+tableaux isolés à l'outil Doublage, moquette remplacée par un parquet ; **rechargement : même total (1 770 €), mêmes
+6 tâches, mêmes murs, ouvertures, pose, sols, même contrat** ; maison, toiture décrite « à refaire / à traiter » en
+Avant travaux : **0 €, `projet` absent**, puis en Travaux la suggestion « Retenir : refaire la couverture +6 171 € »
+sans rien de présélectionné ; Suivi daté (en retard, cette semaine, ensuite ; une tâche cochée « fait le 25/09 ») ;
+Après travaux en lecture seule (Suppr refusé) ; Fichier › Nouveau plan (l'ancien rangé), Mes plans, Ouvrir ; les
+quatre plans types : **0 €, aucune tâche, aucun point au contrôle dans les trois vues** (la Maison garde l'invitation
+« Toiture non décrite », D50). Au téléphone (390 × 844) : accueil, visite (4 étapes), Mes plans, plan rouvert, fiche
+en lecture (revêtement grisé, budget inchangé), Suivi coché au doigt, Estimer. Zéro erreur de console sur tout le
+parcours. Puis un balayage du DOM (outil temporaire) : 478 états au bureau en Pro, autant en gratuit, 424 à la
+tablette, 203 et 199 au téléphone (Pro, gratuit) — accueil, visite, exemple, scène, variantes, le plan tracé à la
+souris ; chaque vue, chaque fiche, chaque outil, Suivi, Estimer, dossier, fenêtres, menus.
+
+**Constats et décisions.**
+1. **« Pièce fermée : 10,6 m² » pour une pièce de 11,6 m²** (bureau, pièce par pièce). Le message d'une pièce fermée
+   par des murs de façade partait AVANT l'alignement de ces murs (D48) : il disait la surface du tracé brut. Il part
+   désormais à la fin du tracé, après l'alignement (`_piecesAAnnoncer`, lu par `endChain`).
+2. **Deux « Chambre ? » sans numéro** juste après le tracé : la numérotation (D48) se lisait dans un cache vidé par
+   `afterChange` seulement ; un mur tracé ne passe pas par là. `addWall` et `endChain` le vident (`_numPieces`) :
+   « Chambre 1 », « Cuisine », « Chambre 2 » dès la pièce fermée, et le message dit « « Chambre 2 » d'après sa taille ».
+3. **La cote d'un mur sélectionné se lisait de haut en bas** (mur tracé vers le bas), tête-bêche avec la cote
+   intérieure voisine qui, elle, se lit de bas en haut (D50) : même règle pour `drawWallCote`.
+4. **« et 2 autres tâches » invisible** : dans la pastille d'écart, il terminait un libellé coupé à deux lignes. Il a sa
+   propre ligne, jamais coupée (`montrerEcart(…, suite)`).
+5. **Les montants dans la police du texte perdaient leur séparateur** (« +6171 € ») : `toLocaleString` pose une espace
+   fine (U+202F) presque sans largeur dans cette police. `eur()` et `fmtEur()` écrivent une espace insécable ordinaire.
+6. **« Voir les 1 autres »** dans « Encore à décider » (6 éléments) : à 6, tout s'affiche ; « Voir les N autres » à
+   partir de 2.
+7. **Au téléphone, un message devenait une colonne blanche de 195 × 488 px sur le plan** : posé en haut par la feuille
+   de style, il recevait aussi un `bottom` (D41, calé sur la bulle d'astuce). Plus de `bottom` au téléphone ; et un
+   message prend sa largeur utile (`width:max-content`) au lieu de la moitié de l'écran.
+8. **Au téléphone, Estimer défilait de côté** dès qu'une tâche était cochée : le 4e chiffre (« 495 € déjà réalisés »)
+   sortait du cadre. Les chiffres passent à la ligne.
+9. **Au téléphone, « Mes plans »** : le résumé tenait sur 70 px de large, à côté des trois boutons (onze lignes). Les
+   boutons passent dessous ; le résumé est en police de texte (la Mono reste aux seuls nombres, D50) et « 50 % » ne se
+   coupe plus avant le « % ».
+10. **Au téléphone, le menu Aide sortait de l'écran par la gauche** (−29 px) : il occupe la largeur, sous la barre.
+11. **Flèches → dans des boutons** (« Voir le détail → », « Par corps d'état → », « réglés au niveau Étage → ») : une
+    icône SVG (`ico('fleche','inl')`). Les flèches dans une phrase (« Clique un mur → À démolir », « outil
+    Équipements → Technique ») restent : ce sont des mots, pas des icônes, et U+2192 n'est pas un emoji.
+12. **Toiture à décrire** : l'invitation disait encore « et le projet en déduit les travaux » — contraire à
+    l'arbitrage du tour 2 et hors LEX. Elle dit « Ce que tu décris ne coûte rien : en vue Travaux, c'est toi qui
+    décides des travaux ».
+13. **DROITS.total** se lisait « le budget travaux HT : le montant total et sa répartition… » — deux deux-points dans la
+    liste « Gratuit : … » et dans le bandeau de l'exemple. Il devient « le montant total du budget travaux HT et sa
+    répartition par corps d'état » (une seule table, reprise partout, D48).
+14. **Fiche d'une fenêtre** : les deux pastilles ⓘ (dormant, pont thermique) finissaient la phrase, côte à côte ; chacune
+    suit son mot. Le matériau d'une menuiserie non renseigné s'affichait « — ? » : « À préciser », comme le sol.
+
+**Contrôles.**
+- `metier.mjs` §12 : le message de la pièce 2 dit la surface affichée ; §12 bis : trois pièces tracées le long de la
+  façade → « Chambre 1 », « Cuisine », « Chambre 2 » sans autre geste, et le message de la 3e dit sa surface et son nom.
+- `visuel.mjs` §11 : la cote d'un mur vertical sélectionné se lit de bas en haut, dans les deux sens de tracé.
+- `valeur.mjs` : trois tâches qui bougent → « et N autres tâches » sur sa ligne, dans la pastille.
+- `responsive.mjs` (390 et 320) : message court sur une ligne, message long sur la largeur de l'écran, Estimer avec des
+  tâches faites sans défilement horizontal, carte de Mes plans pleine largeur, menu Aide dans l'écran.
+- `langage.mjs` : nouvelles tournures refusées sur les 413 états lus — flèche dans un bouton ou un lien, `undefined`,
+  `NaN`, `null`, « 1 autres », espace fine entre deux chiffres, « le projet en déduit », « HT : le montant total »,
+  « — ? » ; plus : « Encore à décider » à 6 éléments, `eur()`, DROITS.total, pastilles de la fiche fenêtre, invitation
+  de la toiture d'une maison.
+- Mis à jour en gardant son intention : `onboarding.mjs` (« projet à 50 % » avec espace insécable).
+- Chacun de ces contrôles échoue sur le fichier d'avant cette recette. Batterie complète, couverture (45 014 € et
+  30 470 € à 0 %), vitest (164) et build verts ; fixture du contrat : seuls des `id` changent — rendue telle quelle,
+  contrat 1.16.0 inchangé. Rien dans `lib/`.
+
+**Reste imparfait (vu, pas corrigé).**
+- **Tracer pièce par pièce** : le trait est la face intérieure (D39) et le mur mitoyen pousse chez la voisine ; 3,50 m
+  cliqués pour la 2e pièce donnent 3,30 m dedans. Les cotes le montrent, on corrige à la fiche. Changer la règle
+  (le mitoyen centré, ou poussé vers la pièce d'avant) est une décision de Dani.
+- En vue Travaux, un mur ou une fenêtre DÉJÀ LÀ propose aussi « À créer » (liste complète, D39) : déroutant pour un
+  débutant ; à trancher.
+- Petits chevauchements de dessin, sans perte d'information : poignée du mur sélectionné sur l'étiquette de la pièce
+  réunie, coche « fait » du Suivi sur cette même étiquette, symbole d'une fenêtre sélectionnée sur la cote de la
+  pièce, « PIGNON » près de la cote extérieure, cote extérieure droite sous le bouton qui replie le panneau au
+  cadrage automatique, « faîtage » sous une cote au téléphone.
+- Le bouton « Continuer sur ordinateur » ouvre le partage du téléphone (`navigator.share`) : non vérifiable en
+  automatique.

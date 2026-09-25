@@ -171,6 +171,17 @@ Object.assign(t, await p.evaluate(() => ({
   "écart · … sans effacer « Annuler » du message": !!document.querySelector("#toast .tact"),
 })));
 await wait(3700);
+/* R6 : un mur maçonné démoli, porteur pas encore dit : trois tâches bougent. « et 2 autres tâches » tombait
+   au bout d'un libellé coupé à deux lignes — on ne le lisait pas. Il a sa propre ligne. */
+Object.assign(t, await p.evaluate(() => {
+  const w = L().walls.find((x) => !isVirtual(x) && x.type === "mur" && !x.st && !isExteriorWall(x)) || L().walls.find((x) => !isVirtual(x) && x.type === "mur" && !x.st);
+  sel = { kind: "wall", id: w.id }; render(); setWallProp("st", "demolir");
+  const el = document.getElementById("budgetDelta"), em = el.querySelector(".bdl em"), sp = el.querySelector(".bdl span"), b0 = el.getBoundingClientRect();
+  const q = em && em.getBoundingClientRect();
+  const r = { "écart · plusieurs tâches : « et N autres tâches » sur sa propre ligne, lisible": !!em && /^et \d+ autres tâches$/.test(em.textContent) && q.height > 0 && q.bottom <= b0.bottom + 0.5 && !sp.textContent.includes("autres tâches") };
+  undo(); return r;
+}));
+await wait(3700);
 t["écart · rien en chargeant un plan type"] = await p.evaluate(() => { loadTemplate(TEMPLATES[1].id); return !document.getElementById("budgetDelta").classList.contains("show"); });
 await p.close();
 

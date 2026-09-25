@@ -490,6 +490,9 @@ Object.assign(t, await p.evaluate(() => {
     const hauts = L().walls.filter((w) => Math.abs(w.a.y) < 1e-6 && Math.abs(w.b.y) < 1e-6).map((w) => wallOff(w).y);
     r["souris · la façade haute ne fait pas de marche : même alignement que le premier contour"] = hauts.length === 2 && Math.abs(hauts[0] - hauts[1]) < 1e-6 && hauts[0] < 0;
     r["souris · deux pièces fermées, aucune « cloison en façade »"] = (facesCache[L().id] || []).filter((f) => f.room).length === 2 && !planChecks(L()).some((c) => /en façade/.test(c.msg));
+    /* R6 : le message disait la surface d'AVANT l'alignement de la façade (« 10,6 m² » pour 11,6 m²) */
+    const f2 = (facesCache[L().id] || []).filter((f) => f.room).sort((a, b2) => b2.label.x - a.label.x)[0], msg = document.getElementById("toast").textContent;
+    r["souris · pièce 2 : le message « Pièce fermée » dit la surface affichée sur le plan"] = /Pièce fermée/.test(msg) && msg.includes(fmtM2(areaNet(L(), f2)));
     return r; }));
   for (const [x, y] of [[5.5, 0], [5.5, 3.5]]) await clic3(x, y);
   await p3.keyboard.press("Escape"); await wait(150);
@@ -507,6 +510,16 @@ Object.assign(t, await p.evaluate(() => {
   /* le vitrine reste sans alerte */
   t["contrôle : l'exemple et les plans types n'ont aucune cloison en façade"] = await p3.evaluate(() => { loadSample(); const ok = ["existant", "projet"].every((m) => { setMode(m); closeModal(); return !planChecks(L()).some((c) => /en façade/.test(c.msg)); });
     return ok && TEMPLATES.filter((x) => x.build).every((T) => { setMode("existant"); loadTemplate(T.id); closeModal(); return !planChecks(L()).some((c) => /en façade/.test(c.msg)); }); });
+  /* ── 12 bis. R6 · trois pièces tracées le long de la façade : deux « Chambre » numérotées dès le tracé ── */
+  { await p3.evaluate(() => { newPlan(); view.zoom = 60; view.ox = 200; view.oy = 200; draw(); });
+    for (const [x, y] of [[0, 0], [4, 0], [4, 3.5], [0, 3.5], [0, 0]]) await clic3(x, y);
+    for (const [x, y] of [[4, 0], [7.5, 0], [7.5, 3.5], [4, 3.5]]) await clic3(x, y);
+    for (const [x, y] of [[7.5, 0], [10.5, 0], [10.5, 3.5], [7.5, 3.5]]) await clic3(x, y);
+    await wait(150);
+    Object.assign(t, await p3.evaluate(() => { const r = {}, F = (facesCache[L().id] || []).filter((f) => f.room).sort((a, b2) => a.label.x - b2.label.x), noms = F.map((f) => roomName(f.room)), msg = document.getElementById("toast").textContent;
+      r["souris · trois pièces le long de la façade : « Chambre 1 », « Cuisine », « Chambre 2 » dès le tracé (sans autre geste)"] = JSON.stringify(noms) === JSON.stringify(["Chambre 1", "Cuisine", "Chambre 2"]);
+      r["souris · pièce 3 : le message dit sa surface et son nom numéroté"] = msg.includes(fmtM2(areaNet(L(), F[2]))) && msg.includes("« Chambre 2 »");
+      return r; })); }
   /* ── 13. D48 (cj-qa08) · trois « Chambre » : numérotées partout ── */
   Object.assign(t, await p3.evaluate(() => { const r = {};
     setMode("existant"); loadTemplate("maison"); closeModal(); setMode("projet"); closeModal();

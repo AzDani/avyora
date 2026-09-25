@@ -396,7 +396,7 @@ Object.assign(t, await p.evaluate(() => {
   showEstimate(); closeModal();
   r["projet · ouvrir Estimer : l'étape est faite, l'exemple reste « jamais touché »"] = etapesProjet().find((e) => e.k === "estimer").fait && planIntact();
   savePlanToLibrary(); openPlansModal();
-  r["projet · « Mes plans » : le pourcentage sur la carte"] = document.querySelector("#plansList .plancard .gres").textContent.includes("projet à " + pctProjet() + " %");
+  r["projet · « Mes plans » : le pourcentage sur la carte"] = new RegExp("projet à " + pctProjet() + "\u00a0%").test(document.querySelector("#plansList .plancard .gres").textContent); /* R6 : « 50 % » insécable, jamais « 50 » en fin de ligne et « % » à la suivante */
   closeModal();
   return r;
 }));

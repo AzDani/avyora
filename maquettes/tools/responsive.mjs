@@ -186,6 +186,41 @@ for (const [L, H, mob] of [[390, 844, true], [320, 640, true], [768, 1024, false
   await p.close();
 }
 
+/* ═════════ R6 · Recette : ce qu'on a vu au doigt, au téléphone ═════════
+   - un message (toast) posé en haut recevait aussi un « bottom » : une colonne blanche de 488 px sur le plan ;
+   - « Estimer » avec des tâches cochées : le 4e chiffre (« déjà réalisés ») sortait du cadre, la fenêtre défilait ;
+   - « Mes plans » : le résumé du plan tenait sur 70 px de large, à côté des trois boutons ;
+   - le menu Aide sortait de l'écran par la gauche. */
+for (const [L, H] of [[390, 844], [320, 640]]) {
+  const p = await onglet(L, H, true);
+  const tag = `${L} × ${H}`;
+  Object.assign(t, await p.evaluate(async (tag) => {
+    const r = {}, attendre = (ms) => new Promise((ok) => setTimeout(ok, ms));
+    toast("« Mon plan » est déjà ouvert, à jour", true); await attendre(50);
+    const q = document.getElementById("toast").getBoundingClientRect();
+    toast("Pièce fermée : 9,8 m², « Chambre 2 » d'après sa taille. Ses murs donnant dehors sont des murs de façade (20 cm), alignés sur les autres.", true); await attendre(50);
+    const q2 = document.getElementById("toast").getBoundingClientRect();
+    r[`${tag} · un message court tient sur une ligne, jamais étiré sur le plan`] = q.height < 50 && q.left >= 0 && q.right <= innerWidth;
+    r[`${tag} · un message long prend la largeur de l'écran (pas une colonne de la moitié)`] = q2.width >= innerWidth - 60 && q2.height < 130 && q2.left >= 0 && q2.right <= innerWidth;
+    const T = chantierTasks(); T.slice(0, 2).forEach((x) => { state.done[x.id] = Date.now(); }); afterChange();
+    showEstimate(); await attendre(50);
+    const m = document.querySelector(".overlay.show .modal"), h = document.querySelector(".esthero").getBoundingClientRect();
+    const kp = [...document.querySelectorAll(".esthero .eh2 > *")].map((e) => e.getBoundingClientRect());
+    r[`${tag} · Estimer avec des tâches faites : les quatre chiffres dans le cadre, pas de défilement horizontal`] = kp.length === 4 && kp.every((k) => k.left >= h.left - 0.5 && k.right <= h.right + 0.5) && m.scrollWidth <= m.clientWidth + 1;
+    closeModal(); T.slice(0, 2).forEach((x) => { delete state.done[x.id]; }); afterChange();
+    savePlanToLibrary(); openPlansModal(); await attendre(50);
+    const g = document.querySelector("#plansList .plancard .glink").getBoundingClientRect(), c = document.querySelector("#plansList .plancard").getBoundingClientRect();
+    r[`${tag} · Mes plans : le résumé du plan prend la largeur de la carte (boutons dessous)`] = g.width >= c.width - 90;
+    closeModal();
+    document.getElementById("aideBtn").click(); await attendre(50);
+    const a = document.getElementById("aideMenu").getBoundingClientRect();
+    r[`${tag} · le menu Aide tient dans l'écran`] = !document.getElementById("aideMenu").hidden && a.left >= 0 && a.right <= innerWidth;
+    document.getElementById("aideBtn").click();
+    return r;
+  }, tag));
+  await p.close();
+}
+
 await b.close();
 const echecs = Object.entries(t).filter(([, ok]) => !ok);
 for (const [nom, ok] of Object.entries(t)) console.log(`  ${ok ? "✓" : "✗"} ${nom}`);
