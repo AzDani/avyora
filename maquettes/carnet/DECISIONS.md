@@ -2187,3 +2187,18 @@ Mis à jour en gardant son intention : `langage.mjs` (« une seule table de racc
 contenu de l'Aide à `keysHTML()`, plus son HTML : la page y ajoute des rôles de titre). Les autres
 contrôles passent sans modification ; la fixture du contrat ne change que par ses identifiants (non
 gardée).
+
+## D45 · L'estimateur ne tranche plus la faïence à la place de l'utilisateur (25/09/2026)
+
+**Constat (chantiers D36 et D37).** L'éditeur ne compte plus ni faïence ni cloisons hydrofuges tant
+que la hauteur de faïence n'est pas choisie. Mais la traduction plan → estimateur
+(`lib/estimateur/plan-correspondance.ts`) appliquait encore « mi-hauteur » par défaut à toute pièce
+humide : le compteur disait 0 €, le devis facturait la faïence et les cloisons hydrofuges.
+
+**Décision.** Règle de Dani, « on ne facture rien tant que ce n'est pas décidé sur le plan » : sans
+hauteur choisie (`faience: null`), la pièce humide ne produit ni faïence ni cloison hydrofuge. Le
+choix reste signalé dans « Encore à décider » de l'éditeur. Seuls les plans venant de l'éditeur sont
+concernés : l'estimateur détaillé seul ne passe pas par cette table.
+
+**Contrôle.** `tests/estimateur-plan-correspondance.test.ts` : la salle de bain de la fixture, rendue
+sans hauteur, ne produit plus aucune des deux lignes (159 tests). Couverture et cohérence inchangées.

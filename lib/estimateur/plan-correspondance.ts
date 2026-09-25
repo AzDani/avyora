@@ -549,14 +549,17 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
       if (!humide) continue;
       // D10 : la hauteur de pose choisie dans la fiche de pièce devient une surface.
       const pEau = Math.min(perimEau.get(r.id) ?? 0, r.perimeter ?? 0);
-      const hauteur = r.faience || "mi";
-      const dedFaience = r.faience ? undefined : "Hauteur de faïence non choisie : mi-hauteur par défaut. Pleine hauteur double presque la surface carrelée.";
+      /* D45 : « aucun euro sans geste » vaut ici comme dans l'éditeur. Sans hauteur de faïence
+         choisie dans la fiche, ni faïence ni cloison hydrofuge : le défaut « mi-hauteur » facturait
+         une salle de bain que personne n'avait décidé de refaire. L'éditeur la liste dans « Encore
+         à décider » — un choix non tranché sort à null, personne ne le tranche à la place. */
+      if (!r.faience) continue;
+      const hauteur = r.faience;
       const m2 = hauteur === "pleine" ? (r.wallArea ?? 0)
         : hauteur === "douche" ? pEau * 2
         : Math.max(0, (r.perimeter ?? 0) - pEau) * 1.2 + pEau * 2;
       add("rev-faience-carrelage-mural", +m2.toFixed(2), src,
-        hauteur === "pleine" ? "Faïence pleine hauteur" : hauteur === "douche" ? "Faïence sur la zone de douche" : "Faïence à mi-hauteur, 2 m dans la douche",
-        undefined, dedFaience);
+        hauteur === "pleine" ? "Faïence pleine hauteur" : hauteur === "douche" ? "Faïence sur la zone de douche" : "Faïence à mi-hauteur, 2 m dans la douche");
       // La cloison hydrofuge ne concerne que les CLOISONS de la pièce humide : un mur extérieur
       // est doublé, pas hydrofugé.
       const cloisons = r.mursParType?.cloison ?? 0;

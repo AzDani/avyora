@@ -245,6 +245,16 @@ describe("table de correspondance · les surfaces mesurées (D10)", () => {
   it("seules les CLOISONS de la pièce humide sont hydrofugées, pas ses murs extérieurs", () => {
     expect(q("clo-cloison-piece-humide-hydrofuge")).toBeCloseTo(12.5, 1);
   });
+  it("D45 · une salle de bain sans hauteur de faïence choisie : ni faïence ni cloison hydrofuge", () => {
+    const sans = JSON.parse(JSON.stringify(plan)) as PlanPourCorrespondance;
+    const sdb = (sans.detailNiveaux ?? []).flatMap((n) => n.rooms ?? []).find((r) => r.type === "sdb")!;
+    expect(sdb.faience).toBe("mi");
+    sdb.faience = null;
+    const c = contributionsDuPlan(sans).contributions;
+    const de = (id: string) => c.filter((x) => x.poste === id && x.sources.includes(sdb.id));
+    expect(de("rev-faience-carrelage-mural")).toEqual([]);
+    expect(de("clo-cloison-piece-humide-hydrofuge")).toEqual([]);
+  });
   it("la chambre n'est pas carrelée : aucune faïence n'est déclenchée par une pièce sèche", () => {
     const c = contributions.find((x) => x.poste === "rev-faience-carrelage-mural")!;
     expect(c.sources).toEqual(["p1"]);
