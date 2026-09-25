@@ -24,7 +24,9 @@
  *   - D48 : la visite se termine sur « Commencer mon plan » (ou « Continuer l'exemple ») ; l'exemple
  *     montre une carte « À toi » au lieu de la checklist d'un T2 fictif ; le Suivi se date (en retard,
  *     cette semaine, tri) ; la page appelle window.AVYORA_TRACK aux moments clés, sans donnée
- *     personnelle ni appel réseau.
+ *     personnelle ni appel réseau ;
+ *   - D50 : l'accueil fermé par la croix ouvre l'exemple en Travaux et propose la visite ; chaque plan type
+ *     s'ouvre sans point au contrôle, à 0 €, avec son type de bien, et le T2 n'est plus l'exemple.
  *
  *   node maquettes/tools/onboarding.mjs "$(pwd)/maquettes"
  *
@@ -254,6 +256,18 @@ await p.reload({ waitUntil: "networkidle0" }); await wait(300);
 t["téléphone · bandeau fermé : il ne revient pas au rechargement"] = await p.evaluate(() => document.getElementById("phoneBanner").hidden);
 await p.close();
 
+/* D50 (cj-design11, cj-qa10) : fermer l'accueil par la croix ouvre l'exemple en vue Travaux et propose la visite en une ligne */
+{
+  const q = await onglet();
+  await q.evaluate(() => document.querySelector("#m-welcome .mx").click()); await wait(250);
+  Object.assign(t, await q.evaluate(() => { const to = document.getElementById("toast"), a = to.querySelector(".tact");
+    return { "accueil fermé par la croix · l'exemple en vue Travaux (comme la carte)": estExemple() && mode() === "projet" && !modaleOuverte(),
+      "accueil fermé par la croix · une ligne propose la visite guidée (bouton)": to.classList.contains("show") && !!a && /Visite guidée/.test(a.textContent) && to.getBoundingClientRect().height <= 60 }; }));
+  await q.evaluate(() => document.querySelector("#toast .tact").click()); await wait(300);
+  t["accueil fermé par la croix · le bouton lance la visite"] = await q.evaluate(() => !!visite && !document.getElementById("visite").hidden);
+  await q.close();
+}
+
 /* ═════════ 5. L'exemple T2, vitrine ═════════ */
 p = await onglet({ welcomeVu: true });
 Object.assign(t, await p.evaluate(() => {
@@ -280,7 +294,23 @@ Object.assign(t, await p.evaluate(() => {
   r["exemple · chaque pièce a son sol actuel décrit"] = facesFor(lv, "existant").every((f) => f.room.floor && f.room.floor !== "À définir");
   /* les plans types disent ce qu'ils sont (novice15) : on ne redemande pas « maison ou appartement » à une maison */
   const bienDe = (id) => { loadTemplate(id); return chantier().bien; };
-  r["plans types · « Maison » est une maison, le studio un appartement, le T3 ne présume rien"] = bienDe("maison") === "maison" && bienDe("studio") === "appartement" && !bienDe("t3");
+  /* D50 (cj-pro07) : le T3 et le T2 disent aussi ce qu'ils sont — sans type de bien, le T3 réclamait une toiture */
+  r["plans types · chacun dit son type de bien (Maison : maison ; T2, studio, T3 : appartement)"] = bienDe("maison") === "maison" && bienDe("studio") === "appartement" && bienDe("t3") === "appartement" && bienDe("t2") === "appartement";
+  /* D50 (cj-pro07, cj-qa09, cj-integration04, cj-coherence06, cj-pro08) : un plan type chargé → 0 point au contrôle dans
+     les trois vues (la Maison garde la seule invitation à décrire SA toiture), 0 €, aucune tâche, un rectangle sans
+     fausse alerte « plan non rectangulaire » ; le T2 n'est plus l'exemple (ni travaux, ni note, ni produit) */
+  for (const T of TEMPLATES) {
+    closeModal(); state.origine = null; chargerModele(T, null, null); closeModal();
+    const pts = [];
+    for (const m of ["existant", "projet", "final"]) { state.mode = m; afterChange(); planChecks(L()).forEach((c) => { if (!(T.bien === "maison" && /Toiture/.test(c.msg))) pts.push(m + " : " + c.msg.replace(/<[^>]+>/g, "").slice(0, 60)); }); }
+    state.mode = "existant"; afterChange();
+    const lv = L(), st = lv.walls.filter((w) => w.st).length + lv.openings.filter((o) => o.st).length + lv.items.filter((i) => i.st).length + lv.walls.filter((w) => isoList(w).length).length;
+    const tr = toitureRect();
+    r[`plan type ${T.name} · zéro point au contrôle dans les trois vues${pts.length ? " (" + pts.join(" | ") + ")" : ""}`] = pts.length === 0;
+    r[`plan type ${T.name} · 0 €, aucune tâche, aucun travaux ni note ni produit`] = chantierPrix().total === 0 && chantierTasks().length === 0 && st === 0 && TX(lv).length === 0 && allProducts().length === 0 && !state.notes;
+    r[`plan type ${T.name} · type de bien renseigné, pas l'exemple`] = !!chantier().bien && state.origine?.k === "modele" && !/Exemple/.test(state.name);
+    r[`plan type ${T.name} · rectangle : pas de « plan non rectangulaire » (toiture)`] = !!tr && tr.compose === false;
+  }
   return r;
 }));
 await p.close();

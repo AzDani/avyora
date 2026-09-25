@@ -177,6 +177,9 @@ await p.evaluate(() => setTool("select"));
 await p.evaluate(() => document.activeElement.blur());
 { const r = await p.evaluate(() => { const q = cv.getBoundingClientRect(); return { x: q.left + 30, y: q.top + q.height - 30 }; }); await p.mouse.click(r.x, r.y); await wait(60); }
 t["plan · cliqué à la souris : pas d'anneau de focus"] = await p.evaluate(() => !cv.matches(":focus-visible"));
+/* D50 (cj-design02) : cliqué à la souris, puis une touche (Échap, une lettre d'outil) : toujours pas de cadre indigo sur tout le plan */
+await p.keyboard.press("Escape"); await wait(40); await p.keyboard.press("v"); await wait(60);
+t["plan · cliqué à la souris puis Échap / V : pas de cadre indigo autour du plan"] = await p.evaluate(() => document.activeElement === cv && getComputedStyle(cv).outlineStyle === "none");
 { /* une pièce cliquée à la souris, puis Tab : on passe à la suite de la page, la sélection ne saute pas */
   const r = await p.evaluate(() => { const f = (facesCache[L().id] || []).find((x) => x.room && x.room.type === "sejour"); const q = S(f.label), c = cv.getBoundingClientRect(); return { x: c.left + q.x, y: c.top + q.y + 30 }; });
   await p.mouse.click(r.x, r.y); await wait(80);

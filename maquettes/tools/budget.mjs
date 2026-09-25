@@ -66,7 +66,7 @@ Object.assign(t, await p.evaluate(() => {
 /* ── 2. Plans types chargés sans rien toucher : 0 €, 0 tâche, contrat muet ─────────────── */
 Object.assign(t, await p.evaluate(() => {
   const r = {};
-  /* « T2 » est l'exemple : il porte volontairement un mini-projet (arbitrage G). */
+  /* D50 : les QUATRE plans types, T2 compris — il n'est plus l'exemple (la démo et son mini-projet restent sur « Découvrir avec l'exemple »). */
   TEMPLATES.filter((T) => T.build).forEach((T) => {
     loadTemplate(T.id); setMode("existant");
     const a = chantierPrix(); setMode("projet"); closeModal(); const b2 = chantierPrix();

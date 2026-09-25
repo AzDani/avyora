@@ -38,6 +38,9 @@ const res = await p.evaluate(() => {
   t["rectangle · égouts 13,6 ml (les deux longs pans)"] = pres(g.egouts, 13.6);
   t["rectangle · périmètre 20,8 ml"] = pres(g.perim, 20.8);
   t["rectangle · aucun avertissement de forme"] = g.compose === false;
+  /* D50 (cj-pro08) : une cloison qui touche deux façades ajoute des sommets ALIGNÉS au contour — toujours un rectangle */
+  { const lv = L(); lv.walls.push({ id: uid(), a: v(3, 0), b: v(3, 4), type: "cloison" }); lv.walls.push({ id: uid(), a: v(0, 2), b: v(3, 2), type: "cloison" }); afterChange();
+    const R = toitureRect(); t["rectangle recoupé de cloisons en façade · aucun avertissement « plan non rectangulaire »"] = R.compose === false && R.poly.length > 4 && toitureGeo().compose === false; }
 
   /* ── le même bâti amputé d'un coin : un L ────────────────────────────────── */
   /* hors tout 6,20 × 4,20 = 26,04 m², moins le creux qui, lui, se RÉTRÉCIT de 10 cm par côté

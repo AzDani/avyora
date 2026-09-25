@@ -2700,3 +2700,136 @@ coherence05, coherence08, coherence14, coherence16 et integ-8).**
 - **Messages du contrôle avec pastille** : ce sont aussi des boutons (ils sélectionnent l'élément) ; ils
   sont réécrits en mots simples, sans pastille.
 - **« Isoler un mur » à la place de « Doublage »** et **« corps de métier »** : refus maintenus (D39).
+
+## D50 · Visuel et vitrine : un plan qui se lit à toutes les tailles, des plans types sans reproche (25/09/2026)
+
+**Constats (contre-jury : cj-qa10, cj-design06, cj-integration05, cj-access03, cj-novice06, cj-design01,
+cj-integration02, cj-design04, cj-design07, cj-design09, cj-design10, cj-design11, cj-integration12,
+cj-pro07, cj-qa09, cj-integration04, cj-coherence06, cj-pro08, cj-access04, cj-design02 ; vérifications
+« partiel » de novice24, qa21, coherence21, novice09).**
+- **Cotes empilées** dans l'entrée de l'exemple (« 1,13 m » posé sur « 1,20 m »), « 3,40 m » sur la plaque de
+  cuisson, deux « 2,90 m » collés de part et d'autre de la séparation de la cuisine ouverte, des cotes
+  verticales lues tantôt de bas en haut, tantôt de haut en bas, le point lumineux des WC dans la cuvette —
+  jusque dans le dossier. Une cote de la pièce en L du séjour se posait même DANS l'entrée (son côté
+  intérieur se lisait sur le centre de la pièce, hors de certaines faces d'un L).
+- **Au téléphone et à la tablette**, l'étiquette des WC recouvrait celle de l'entrée (« ntrée · 2 m² »), les
+  notes sortaient de l'écran, les chaînes de cotes extérieures se chevauchaient (« 1,30 ¦ 1,20 m ») et le texte
+  du détail se posait sur la ligne du total.
+- **Épaisseur d'isolant** : dans l'outil Doublage le libellé tombait à 0 px sous les pastilles ; dans la fiche
+  d'un mur doublé, 16 et 20 cm sortaient du panneau (la règle « champ de 128 px » de D41 s'appliquait à une
+  rangée de 7 boutons).
+- **Fiches** : « Pivoter 90° », « Dupliquer », « À déposer », « Ouvre de l'autre côté » sur deux lignes ;
+  « À déposer / À démolir / À boucher » en bouton rouge alors que la liste Décision juste au-dessus porte le
+  même choix, et que le rouge veut dire « à créer ».
+- **Visite** : la bulle de la dernière étape couvrait l'onglet Suivi dont elle parle. **Accueil fermé par la
+  croix** : l'exemple restait en Avant travaux, sans guide, avec un budget que rien n'expliquait.
+- **Boutons « Fermer »** pleins dans Plans types, Mes plans et le dossier (plus lourds que la vraie action),
+  discrets dans Estimer. **Estimer** : barres décalées selon la largeur du montant, Mono sur « hors plan »,
+  « Standard », « oui », ronds de sélection sur des lignes sans action.
+- **Noms coupés** dans les bibliothèques (« Porte coulissant… », « Split clim (unité… ») ; au téléphone,
+  les chiffres clés du dossier sortaient de la fenêtre.
+- **Plans types** qui échouaient à leur propre contrôle (portes qui tapent dans la table, le radiateur, le
+  lave-linge, le poêle, la double vasque ; îlot à 80 cm ; lave-linge à 47 cm ; WC du T3 sur le séjour ; T3
+  sans type de bien → « Toiture non décrite ») ; le plan type « T2 » chargeait l'exemple et ses 12 tâches
+  (5 796 €) — un euro sans geste par un second chemin ; fausse alerte « plan non rectangulaire » sur toute
+  maison rectangulaire dont une cloison touche la façade.
+- **Fiche d'un mur en Avant travaux** : 1 857 px, isolation par face, texte ITI/ITE et 5 finitions dépliés.
+- **Tablette, panneau replié** : le plan restait petit à gauche et le budget disparaissait.
+- **Un cadre indigo de 3 px** entourait tout le plan dès qu'un utilisateur souris pressait Échap ou V.
+
+**Décisions.**
+1. **Les cotes intérieures s'évitent** (`drawRoomDims`, `drawDim(…, cout, essai)`) : chaque cote glisse le long
+   de sa ligne ; sans place libre de tout (étiquettes, notes, autres cotes, cotes de l'ouverture
+   sélectionnée, équipements), elle passe du côté opposé de la pièce (largeur en bas, longueur à droite) ;
+   sinon elle prend la place qui couvre le moins d'équipement, sans jamais toucher une étiquette, une note ou
+   une autre cote ; sinon elle s'efface. **Une cote qui double** une cote de même valeur, sur la même portée,
+   à moins de 0,56 m (2 × 0,26 m : les deux côtés d'une séparation SANS mur) n'est pas redessinée ; de part et
+   d'autre d'un vrai mur (≥ 7 cm), les deux restent. Le côté intérieur d'une face de pièce en L se lit sur le
+   polygone. **Toute cote verticale se lit depuis la droite** (de bas en haut), quel que soit le sens du tracé.
+2. **Étiquettes anti-collision** : la taille suit le zoom (jusqu'à 85 %) ; les plus petites pièces se placent
+   d'abord ; une autre étiquette et les cotes extérieures sont des obstacles durs (jamais dessus), un
+   équipement un obstacle souple ; une étiquette qui ne tient pas dans sa pièce essaie plus petit, puis son
+   nom seul (jamais la surface seule), d'abord DANS la pièce, sinon au moins son centre dedans ; une passe
+   de secours fait céder la plus petite. Au bureau, rien ne bouge par rapport à D41.
+3. **Chaînes extérieures** : à petit zoom, les deux rangées s'écartent (26 px au moins) et un texte de détail
+   qui toucherait son voisin glisse, sinon s'efface (la ligne reste).
+4. **Notes** (`noteGeom`) : sous 40 px/m (téléphone, tablette en portrait), une note est une pastille de
+   22 px, dépliée quand on la touche ou la survole ; à l'écran, une note qui sortirait par la droite glisse
+   vers la gauche. Le dossier montre toujours les notes entières.
+5. **Exemple** : le point lumineux des WC passe à côté de la cuvette.
+6. **Rangées de pastilles** (épaisseur d'isolant, pente) : libellé au-dessus, pastilles de 40 × 32 px qui
+   passent à la ligne, le champ libre garde son cadre ; la règle « champ de 128 px » ne s'y applique plus.
+7. **Boutons de fiche** : une rangée passe à la ligne, un bouton jamais (`white-space:nowrap`). « À déposer /
+   À démolir / À boucher » ne sont plus des boutons rouges : la liste Décision porte ce choix. Reste un lien
+   discret « Supprimer du plan » (icône corbeille) en vue Avant travaux et, en Travaux, pour ce qui a été
+   créé en Travaux ; rien en Après travaux ni au téléphone (consultation). La sélection mixte ne prend le
+   rouge que pour « Tout supprimer ».
+8. **Visite, dernière étape** : le halo entoure « Estimer ce plan » ET l'onglet Suivi (`aussi`), la bulle se
+   pose à gauche, hors des deux. **Accueil fermé par la croix / Échap** sur l'exemple : vue Travaux (comme la
+   carte) et une ligne « Tu regardes l'exemple, en vue Travaux. [Visite guidée] ».
+9. **« Fermer »** : partout la même action discrète (sans fond, centrée) ; `.mclose.primaire` quand le bouton
+   du bas EST l'action (« C'est parti », « Appliquer »). Un seul bouton plein par fenêtre.
+10. **Estimer** : colonne du montant à 96 px (les barres partent du même x) ; « hors plan », la finition,
+   « oui / non », « non renseigné » en police de texte (`td.n.mot`) ; « Ce que ton plan ne dit pas encore »
+   porte une icône d'information, plus le rond des lignes cliquables.
+11. **Bibliothèques** : le nom sur deux lignes, jamais de points de suspension. **Dossier au téléphone** :
+   chiffres clés en 2 × 2.
+12. **Plans types** : zéro point au contrôle dans les trois vues, 0 €, aucune tâche, type de bien dit (T2,
+   studio, T3 : appartement ; Maison : maison). Le **T2 a sa propre construction** — la géométrie de l'exemple
+   sans travaux, ni note, ni produit, ni doublage, sans la fenêtre « à créer » de la cuisine ; « Découvrir
+   avec l'exemple » reste la démo. Studio : table et salle d'eau réaménagées (douche, lavabo, WC,
+   sèche-serviettes). T3 : une entrée ouverte devant la porte d'entrée, les WC ouvrent dessus (plus sur le
+   séjour), lave-linge et sèche-serviettes déplacés, baie sur la façade du séjour, canapé contre la cloison.
+   Maison : poêle, buanderie (porte, lave-linge, ballon), double vasque à fleur de cloison, cuisine de 3,5 m
+   pour l'îlot à 90 cm. **Toiture** : `compose` retire les sommets alignés du contour — un rectangle reste un
+   rectangle.
+13. **Fiche d'un mur en Avant travaux** (`replierAvant`) : l'essentiel d'abord (décision, type, porteur,
+   longueur) ; isolation et finition extérieure repliées sous une ligne qui résume ce qui est décrit
+   (ouvertes d'office si quelque chose y est décrit ou signalé). 1 857 → 1 224 px.
+14. **Tablette** : replier / déplier le panneau recadre le plan s'il était vu en entier (sinon le zoom choisi à
+   la main reste) ; replié, une pastille « Budget HT · 5 796 € · Voir le détail » (ou « Répartition » en
+   gratuit) reste au-dessus du zoom et ouvre Estimer ; la bulle d'astuce lui laisse la place.
+15. **Anneau du plan** : cliqué à la souris, le plan garde son focus sans cadre (`#cv.souris`) ; l'anneau
+   revient dès qu'on y arrive par Tab.
+
+**Contrôles.**
+- `visuel.mjs` §5 étendu à 768 × 1024 et 390 × 844 : étiquettes (une par pièce, jamais l'une sur l'autre,
+  centre dans la pièce, ni sur une cote extérieure), aucune cote sur une autre ni sur une note, cotes
+  verticales lues dans le même sens, notes dans l'écran (pastilles sous 40 px/m, entières au-dessus) ; à
+  1 440 : aucune cote sur la plaque de cuisson, « 2,90 m » une seule fois, aucun point lumineux dans la
+  cuvette. Au téléphone et à la tablette, une étiquette couvre au plus 40 % d'équipement (15 % au bureau).
+  §5 bis : chaque plan type à 1 440, 768 et 390, deux vues. §6 : noms de bibliothèque jamais coupés ; les
+  rangées de pastilles ont leur propre contrôle. §10 (1 440, 1 024, 390) : rangée d'épaisseurs (libellé
+  ≥ 40 px au-dessus, rien hors du panneau), boutons de fiche sur une ligne sans rouge métier, « Supprimer du
+  plan » en lien (absent au téléphone), fiche de mur en Avant travaux repliée ≤ 1 400 px, aucun bouton de
+  rangée coupé dans toutes les fiches et outils des trois vues, « Fermer » discret et un seul bouton plein
+  dans 4 fenêtres, barres d'Estimer au même x, Mono seulement sur les nombres, KPI du dossier dans la
+  fenêtre au téléphone ; visite (1 440, 1 280, 1 024) : halo sur Suivi, bulle hors de l'onglet.
+- `onboarding.mjs` : accueil fermé par la croix → exemple en Travaux + ligne « Visite guidée » qui lance la
+  visite ; chaque plan type → 0 point au contrôle dans les trois vues (hors invitation toiture de la Maison),
+  0 €, aucune tâche, aucun travaux / note / produit, type de bien, origine « modèle », `compose` faux.
+- `toiture.mjs` : rectangle recoupé de cloisons en façade → pas d'avertissement de forme (échoue sans le
+  correctif). `accessibilite.mjs` : clic souris puis Échap / V → pas de cadre. `responsive.mjs` (768) :
+  replié → zoom recadré puis rendu, pastille budget hors de la bulle, qui ouvre Estimer ; absente déplié.
+- Mis à jour en gardant leur intention : `robustesse.mjs` (la fiche d'un mur existant en Travaux porte
+  « À démolir » dans la Décision, sans bouton rouge ; un mur créé en Travaux propose « Supprimer du plan ») ;
+  `onboarding.mjs` (le T3 dit « appartement », D42 le laissait sans type : c'est ce qui déclenchait
+  « Toiture non décrite ») ; `visuel.mjs` §6 (les formulaires « unité dans le champ » hors rangées de
+  pastilles).
+- Fixture du contrat régénérée : seuls des `id` changent — rendue telle quelle ; contrat 1.16.0 inchangé,
+  vitest vert.
+
+**Pas fait, et pourquoi.**
+- **Pré-décrire la toiture de la Maison** pour effacer sa dernière ligne au contrôle : ce serait écrire
+  « état : bon » sur le toit de l'utilisateur. L'invitation « Toiture non décrite » reste — elle dit une chose
+  vraie sur SON logement, pas un défaut du modèle.
+- **Traits de rappel** pour les étiquettes sorties de leur pièce : inutiles après les variantes (réduite, nom
+  seul) — sur l'exemple et les plans types, toutes les étiquettes gardent leur centre dans leur pièce, à
+  toutes les tailles contrôlées.
+- **Liens d'action dans « Ce que ton plan ne dit pas encore »** (« Poser une VMC → ») : la ligne dit déjà où
+  renseigner ; le rond trompeur est retiré, l'action directe reste une piste.
+- **Le plan de la Maison** (des chambres qui ne s'ouvrent que sur une autre chambre ou la salle de bain) n'a
+  pas de couloir : aucun contrôle ne le signale et le redessiner dépasse ce chantier — à reprendre avec un
+  contrôle « chaque chambre accessible depuis une circulation ».
+- **La porte-fenêtre du studio** s'ouvre vers l'extérieur : non signalée, et la tourner vers l'intérieur
+  demande de redessiner le coin séjour (canapé) ; laissée.

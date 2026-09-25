@@ -152,6 +152,16 @@ for (const [L, H, mob] of [[390, 844, true], [768, 1024, false], [1024, 768, fal
     /* 4. tablette en portrait : plus de place pour le plan, et un panneau qui se replie */
     t[`${tag} · le plan fait ${P.stage} px de large (378 avant D43)`] = P.stage >= 400;
     await p.evaluate(() => { sel = null; render(); });
+    /* D50 (cj-access04) : replié, le plan vu en entier se recadre (zoom plus grand) et le budget reste à l'écran, sans toucher la bulle d'astuce */
+    { const z = await p.evaluate(async () => { fitView(); const z0 = view.zoom; plierPanneau(true); await new Promise((r) => setTimeout(r, 150));
+        const bp = document.getElementById("budgetPlie"), q = bp.getBoundingClientRect(), h = document.getElementById("hint"), hr = h.getBoundingClientRect(), st = document.getElementById("stage").getBoundingClientRect();
+        const out = { z0, z1: view.zoom, pill: bp.getClientRects().length > 0 && /Budget HT/.test(bp.textContent) && /€/.test(bp.textContent) && q.right <= st.right && q.bottom <= st.bottom,
+          horsBulle: h.hidden || !h.getClientRects().length || !(q.left < hr.right && q.right > hr.left && q.top < hr.bottom && q.bottom > hr.top) };
+        bp.click(); out.estimer = document.getElementById("m-estimate").classList.contains("show"); closeModal();
+        plierPanneau(false); await new Promise((r) => setTimeout(r, 150)); out.z2 = view.zoom; out.sansPill = !bp.getClientRects().length; return out; });
+      t[`${tag} · replié : le plan se recadre (zoom ${Math.round(z.z0)} → ${Math.round(z.z1)} px/m), puis revient déplié`] = z.z1 > z.z0 * 1.2 && Math.abs(z.z2 - z.z0) < 0.5;
+      t[`${tag} · replié : le budget reste visible (pastille « Budget HT », hors de la bulle d'astuce), elle ouvre Estimer`] = z.pill && z.horsBulle && z.estimer;
+      t[`${tag} · déplié : pas de pastille (le budget est dans le panneau)`] = z.sansPill; }
     const f = await p.evaluate(async () => {
       const b = document.getElementById("pfold"), r0 = b.getBoundingClientRect();
       const avant = { exp: b.getAttribute("aria-expanded"), vis: r0.width > 0 && r0.right <= innerWidth };
