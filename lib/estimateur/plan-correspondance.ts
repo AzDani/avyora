@@ -78,7 +78,10 @@ export interface PlanPourCorrespondance {
       /** Contrat 1.8 : le plancher se chiffre pièce par pièce. */
       plancherACreer?: string | null; nonHabitableAvant?: boolean; tremiePerimNeuf?: number;
       /** Contrat 1.14 : la peinture choisie dans la pièce, en m² mesurés (null : rien de choisi). */
-      peinture?: { murs?: number; plafond?: number } | null }>;
+      peinture?: { murs?: number; plafond?: number } | null;
+      /** Contrat 1.17 (D54) : le périmètre au pied des murs moins la largeur des portes — là où
+       *  court la faïence à mi-hauteur, comme les plinthes. Absent d'un contrat plus ancien. */
+      perimetreHorsPortes?: number }>;
     /** Contrat 1.7 : l'emprise du niveau, sans laquelle son plancher n'est pas chiffrable. */
     emprise?: number | null;
     equipements?: Array<{ id: string; type: string; etat: string; piece?: string | null; l?: number; p?: number; douche?: string | null; lumiere?: string | null; materiau?: string | null;
@@ -571,9 +574,13 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
          à décider » — un choix non tranché sort à null, personne ne le tranche à la place. */
       if (!r.faience) continue;
       const hauteur = r.faience;
+      /* Contrat 1.17 (D54) : la bande de 1,20 m court sur le périmètre HORS PORTES, comme les
+         plinthes — elle passait devant les portes (+18 à +28 % sur une salle de bain à 2 ou 3
+         portes). Un contrat plus ancien n'a que `perimeter` : il garde l'ancienne lecture. */
+      const tour = r.perimetreHorsPortes ?? r.perimeter ?? 0;
       const m2 = hauteur === "pleine" ? (r.wallArea ?? 0)
         : hauteur === "douche" ? pEau * 2
-        : Math.max(0, (r.perimeter ?? 0) - pEau) * 1.2 + pEau * 2;
+        : Math.max(0, tour - pEau) * 1.2 + pEau * 2;
       /* D46 : « zone de douche » sans douche dessinée = 0 m² : ni faïence, ni cloison hydrofuge. */
       if (m2 <= 0) continue;
       add("rev-faience-carrelage-mural", +m2.toFixed(2), src,

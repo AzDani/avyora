@@ -615,6 +615,42 @@ Object.assign(t, await p.evaluate(() => {
   await p4.close();
 }
 
+/* ═════════ D54 (jury final) · La faïence à mi-hauteur ne passe pas devant les portes ; l'eau des appareils neufs est dite ═════════
+   pro : la bande de 1,20 m courait sur tout le périmètre (+28 % sur la salle de bain de la Maison, 3 portes). Elle
+   court sur le périmètre hors portes, comme les plinthes — même formule au compteur et au contrat (1.17).
+   novice : une salle de bain créée sans appareil existant ne comptait aucune arrivée ni évacuation d'eau, sans le
+   dire. Ni le compteur ni la traduction n'ont de poste pour ça : « Ce que ton plan ne dit pas encore » le dit. */
+{ const p5 = await b.newPage(); p5.on("pageerror", (e) => errs.push(e.message)); await p5.setViewport({ width: 1440, height: 900 });
+  await p5.evaluateOnNewDocument(() => { try { localStorage.clear(); } catch {} });
+  await p5.goto("file://" + SP + "/plan-editor.html", { waitUntil: "networkidle0" }); await wait(300);
+  Object.assign(t, await p5.evaluate(() => { const r = {};
+    closeWelcome("fermer"); loadTemplate("maison"); closeModal(); setMode("projet"); closeModal(); setTool("select");
+    const lv = L(), f = facesCache[lv.id].find((x) => x.room && x.room.type === "sdb"), sdb = f.room;
+    const portes = openingsOfFace(lv, f, "projet").filter((o) => OPENINGS[o.type].cat === "porte");
+    sdb.faience = "mi"; afterChange();
+    const f2 = facesCache[lv.id].find((x) => x.room === sdb), fa = faienceDe(lv, f2), hp = perimHorsPortes(lv, f2);
+    const attendu = Math.max(0, hp - fa.pEau) * 1.2 + fa.pEau * 2, avant = Math.max(0, f2.perimInt - fa.pEau) * 1.2 + fa.pEau * 2;
+    r["faïence mi-hauteur · les portes sont déduites, comme pour les plinthes (Maison : " + fmtM2(fa.m2) + " au lieu de " + fmtM2(avant) + ")"] = portes.length >= 2 && Math.abs(hp - (f2.perimInt - portes.reduce((s, o) => s + o.w, 0))) < 1e-6 && Math.abs(fa.m2 - attendu) < 1e-6 && fa.m2 < avant - 1;
+    const tf = chantierTasks().find((x) => x.id === "faience:" + sdb.id);
+    r["faïence mi-hauteur · la tâche le dit et se chiffre sur cette surface"] = !!tf && /hors portes/.test(tf.detail) && Math.abs(tf.prix - fa.m2 * PRIX.faience) < 0.01;
+    const cr = contratPlan().detailNiveaux.flatMap((n) => n.rooms || []).find((x) => x.type === "sdb" && Math.abs(x.perimeter - +f2.perimInt.toFixed(2)) < 0.01);
+    r["faïence mi-hauteur · le contrat porte le même périmètre hors portes (1.17)"] = CONTRAT_PLAN === "1.17.0" && !!cr && cr.perimetreHorsPortes === +hp.toFixed(2);
+    /* l'eau des appareils neufs */
+    const manque = () => couvertureManquante(quantities()).find((a) => /^Arrivées et évacuations d'eau/.test(a[0]));
+    const sansEau = !manque();
+    const c = f2.poly.reduce((s, q) => ({ x: s.x + q.x / f2.poly.length, y: s.y + q.y / f2.poly.length }), { x: 0, y: 0 });
+    const dch = { id: uid(), type: "douche", x: c.x, y: c.y, w: 0.9, h: 0.9, rot: 0, st: "creer" }; lv.items.push(dch); afterChange();
+    const m = manque();
+    r["eau · une douche à poser : « Arrivées et évacuations d'eau des appareils neufs : pas dans ce compteur »"] = sansEau && !!m && m[1] === "pas dans ce compteur" && /Douche/.test(m[3]);
+    r["eau · le compteur n'invente pas de ligne d'arrivée pour la douche (la traduction n'en a pas)"] = !chantierTasks().some((x) => x.id.startsWith("i:" + dch.id) && /arrivée|évacuation/i.test(x.label));
+    showEstimate(); const ligne = [...document.querySelectorAll("#estBody .chk.neutre")].find((x) => /Arrivées et évacuations d'eau des appareils neufs/.test(x.innerText));
+    r["eau · Estimer le dit dans « Ce que ton plan ne dit pas encore »"] = !!ligne && /pas dans ce compteur/.test(ligne.innerText) && !/à renseigner/.test(ligne.innerText); closeModal();
+    delete dch.st; afterChange();
+    r["eau · une douche déjà là (gardée) : plus rien à dire"] = !manque();
+    return r; }));
+  await p5.close();
+}
+
 await b.close();
 const echecs = Object.entries(t).filter(([, ok]) => !ok);
 Object.entries(t).forEach(([k, ok]) => console.log((ok ? "  ✓ " : "  ✗ ") + k));

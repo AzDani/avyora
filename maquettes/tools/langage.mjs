@@ -358,6 +358,8 @@ Object.assign(t, await p.evaluate(() => {
     const r = {}, f = (facesCache[L().id] || []).find((x) => x.room);
     r["tracé · 4 × 3,5 m cliqués = 14,0 m² à l'intérieur (le mur pousse dehors)"] = !!f && Math.abs(f.areaInt - 14) < 0.05;
     r["tracé · le message le dit, avec « Choisir son type »"] = /à l'intérieur/.test(document.getElementById("toast").textContent) && /Choisir son type/.test(document.getElementById("toast").textContent);
+    /* D54 (design 3) : deux lignes au plus — la règle cloison / mur de façade est au panneau, pas dans le message */
+    r["tracé · « Pièce fermée » tient en deux lignes, sans répéter la règle du panneau"] = !/cloison|façade|20 cm/.test(document.getElementById("toast").textContent) && document.getElementById("toast").getBoundingClientRect().height <= 64;
     r["pièce tracée · type deviné, marqué"] = f.room.typeAuto === true;
     document.querySelector("#toast .tact").click();
     r["« Choisir son type » ouvre la fiche de la pièce, qui le dit"] = sel && sel.kind === "room" && /deviné d'après la surface/.test(document.getElementById("pbody").innerText);
@@ -538,6 +540,33 @@ for (const [larg, haut] of [[1440, 900], [390, 844]]) {
   await p.close();
 }
 t["résumé · « Aucun travail » n'est jamais lu quand le compteur a des tâches (" + lus.length + " états)"] = lus.every(([, txt, nb]) => !(nb > 0 && /Aucun travail/.test(txt)));
+
+/* D54 (jury final) · Les mots d'un débutant. Un équipement posé en Travaux s'annonce sans faute d'accord
+   (« À poser (travaux) : Douche », plus « Douche ajouté ») ; décrire ne coûte rien, c'est l'utilisateur qui décide
+   (plus « les travaux s'en déduiront ») ; la fenêtre Vue Travaux commence par les gestes d'un débutant ; un message
+   de vue ne reste pas affiché dans une autre vue. */
+p = await onglet();
+Object.assign(t, await p.evaluate(() => { const r = {};
+  closeWelcome("fermer"); loadTemplate("t3"); closeModal(); setMode("projet"); closeModal();
+  const lv = L(), f = facesCache[lv.id].find((x) => x.room && x.room.type === "sdb"), c = f.poly.reduce((s, q) => ({ x: s.x + q.x / f.poly.length, y: s.y + q.y / f.poly.length }), { x: 0, y: 0 });
+  setTool("equipement"); const msgs = [];
+  for (const ty of ["douche", "baignoire", "chaudiere", "applique", "prise", "wc"]) { itemType = ty; clickAction(v(c.x, c.y)); msgs.push([ty, document.getElementById("toast").textContent]); undo(); }
+  r["équipement posé en Travaux · « À poser (travaux) : Douche », jamais « Douche ajouté » (" + msgs.length + " équipements)"] = msgs.every(([ty, m]) => m.startsWith(LEX.etat.poser + " (travaux) : " + ITEMS[ty].label + ".") && !/ajouté/.test(m));
+  setTool("select");
+  /* le code, commentaires retirés : plus aucune phrase qui dit que le projet « se déduit » de ce qu'on décrit */
+  const code = [...document.querySelectorAll("script")].map((s) => s.textContent).join("\n").replace(/\/\*[\s\S]*?\*\//g, "");
+  r["décrire ne coûte rien · plus « s'en déduiront » ni « s'en déduit » à l'écran"] = !/s'en dédui(ront|t)/.test(code) && (code.match(/Ce que tu décris ne coûte rien : c'est toi qui décides en vue/g) || []).length >= 2;
+  openModal("projet"); const st = [...document.querySelectorAll("#m-projet .step")];
+  r["fenêtre Vue Travaux · elle commence par « Clique une pièce : sol, peinture, faïence. Clique une fenêtre ou un équipement : je garde, à remplacer »"] = st.length === 4 && st[0].innerText.includes("Clique une pièce : sol, peinture, faïence. Clique une fenêtre ou un équipement : je garde, à remplacer") && [...document.querySelectorAll("#m-projet .step .n")].map((x) => x.textContent).join() === "1,2,3,4";
+  closeModal();
+  const T = () => document.getElementById("toast");
+  setMode("final");
+  const vuFinal = T().classList.contains("show") && /lecture seule/.test(T().textContent);
+  setMode("existant");
+  r["message de vue · « Vue Après travaux : lecture seule » ne reste pas affiché en vue Avant travaux"] = vuFinal && !T().classList.contains("show");
+  return r; }));
+await noter(p, "D54 · les mots");
+await p.close();
 
 /* ═════════ 6. Ce qui s'affiche : aucune tournure interdite ═════════ */
 const fautes = [];

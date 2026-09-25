@@ -511,6 +511,30 @@ Object.assign(t, await p.evaluate(() => {
 }));
 await p.close();
 
+/* ═════════ 10 bis. D54 · La raison de revenir se voit quand on revient (jury final, retention) ═════════
+   Un plan rouvert dont des tâches datées sont en retard, ou prévues dans la semaine, le dit en tête du panneau,
+   avec « Voir le Suivi » ; l'onglet Suivi porte l'alerte. Seules les dates saisies comptent ; une tâche cochée non plus. */
+p = await onglet({ welcomeVu: true, garder: true });
+await p.evaluate(() => { const f = (x) => x.getFullYear() + "-" + String(x.getMonth() + 1).padStart(2, "0") + "-" + String(x.getDate()).padStart(2, "0");
+  loadSample(); setMode("projet"); closeModal(); sel = null; const lots = [...new Set(chantierTasks().map((x) => x.lot))];
+  const hier = new Date(); hier.setDate(hier.getDate() - 3); const bientot = new Date(); bientot.setDate(bientot.getDate() + 2);
+  state.prevu = { [lots[0]]: f(hier), [lots[1]]: f(bientot) }; setPanelTab("details"); save(); });
+await wait(400);
+await p.reload({ waitUntil: "networkidle0" }); await wait(500);
+Object.assign(t, await p.evaluate(() => { const r = {}, T = chantierTasks(), lots = [...new Set(T.map((x) => x.lot))];
+  const nR = T.filter((x) => x.lot === lots[0] && !isDone(x.id)).length, R = document.querySelector("#pbody .rappel");
+  r["retour · à la réouverture, le panneau dit « N tâches en retard » et ce qui tombe cette semaine"] = !!state.prevu && !!R && R.innerText.includes(pluriel(nR, "tâche") + " en retard") && R.innerText.includes(lots[0]) && /cette semaine/.test(R.innerText) && R.innerText.includes(lots[1]);
+  r["retour · l'onglet Suivi porte l'alerte"] = !!document.querySelector(".ptabs .tabn.retard");
+  R.querySelector("button").click();
+  r["retour · « Voir le Suivi » ouvre le Suivi daté"] = panelTab === "suivi" && !!document.querySelector("#pbody .suivdates");
+  T.filter((x) => x.lot === lots[0]).forEach((x) => { if (!isDone(x.id)) toggleDone(x.id); }); setPanelTab("details");
+  const R2 = document.querySelector("#pbody .rappel");
+  r["retour · un corps d'état fini n'est plus en retard : reste « cette semaine »"] = !!R2 && !/en retard/.test(R2.innerText) && /cette semaine/.test(R2.innerText) && !document.querySelector(".ptabs .tabn.retard");
+  delete state.prevu; render();
+  r["retour · sans date, aucun rappel (rien n'est deviné)"] = !document.querySelector("#pbody .rappel");
+  return r; }));
+await p.close();
+
 /* ═════════ 11. D48 · Mesurer sans réseau : window.AVYORA_TRACK aux moments clés (cj-retention05) ═════════ */
 p = await b.newPage(); p.on("pageerror", (e) => errs.push(e.message)); await p.setViewport({ width: 1440, height: 900 });
 await p.evaluateOnNewDocument(() => { window.__ev = []; window.AVYORA_TRACK = (n, d) => window.__ev.push([n, d]); window.open = () => ({}); try { localStorage.clear(); } catch {} });

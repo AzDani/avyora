@@ -197,6 +197,20 @@ Object.assign(t, await p.evaluate(() => {
   undo(); return r;
 }));
 await wait(3700);
+/* D54 (jury final, novice) : deux décisions rapprochées. La pastille additionnait la série (« +2 633 € · Poser la
+   fenêtre neuve » pour une fenêtre à 610 €) : elle dit d'abord la DERNIÈRE décision, puis « série : +X € ». */
+Object.assign(t, await p.evaluate(() => {
+  const r = {}, el = document.getElementById("budgetDelta"), lv = L();
+  const ch = lv.rooms.find((x) => x.type === "chambre"); sel = { kind: "room", id: ch.id }; render();
+  const a0 = chantierPrix().total; setRoomRevetement("Stratifié"); const a1 = chantierPrix().total;
+  r["écart · une décision seule : son montant, pas de « série »"] = el.classList.contains("show") && el.querySelector("b").textContent === "+" + eur(Math.round(a1 - a0)) && !el.querySelector(".serie");
+  const o = lv.openings.find((x) => OPENINGS[x.type].cat === "fenetre" && ost(x) === "existant"); sel = { kind: "opening", id: o.id }; render(); setOpeningProp("st", "remplacer");
+  const a2 = chantierPrix().total, pose = chantierTasks().find((x) => x.id === "o:" + o.id + ":poser");
+  r["écart · la dernière décision d'abord : son montant et sa tâche (la fenêtre)"] = el.querySelector("b").textContent === "+" + eur(Math.round(a2 - a1)) && !!pose && el.querySelector(".bdl span").textContent.includes(pose.label);
+  r["écart · puis le cumul de la série, en second"] = el.querySelector(".serie")?.textContent === "série : +" + eur(Math.round(a2 - a0));
+  undo(); undo(); return r;
+}));
+await wait(3700);
 t["écart · rien en chargeant un plan type"] = await p.evaluate(() => { loadTemplate(TEMPLATES[1].id); return !document.getElementById("budgetDelta").classList.contains("show"); });
 await p.close();
 

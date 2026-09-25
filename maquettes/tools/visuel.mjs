@@ -453,6 +453,52 @@ for (const [L, H] of [[1440, 900], [1280, 800], [1024, 768]]) {
   await p.close();
 }
 
+/* ═════════ 12. D54 (jury final) · finitions : ce qu'on pose le plus se voit, la lecture seule se lit, rien ne s'empile ═════════ */
+for (const [L0, H0] of [[1280, 800], [1440, 900]]) {
+  const p = await onglet({ larg: L0, haut: H0 });
+  Object.assign(t, await p.evaluate((tag) => {
+    const r = {}; setTool("ouverture");
+    const F = document.getElementById("pfoot").getBoundingClientRect(), P = document.getElementById("pbody").getBoundingClientRect();
+    const vu = (nom) => { const it = [...document.querySelectorAll("#pbody .lib2 .it")].find((x) => x.querySelector("b").textContent === nom); if (!it) return false; const q = it.getBoundingClientRect(); return q.top >= P.top - 0.5 && q.bottom <= F.top + 0.5; };
+    r[`${tag} · Ouvertures : Fenêtre, Porte d'entrée, Porte simple, Porte-fenêtre visibles sans défiler`] = ["Fenêtre", "Porte d'entrée", "Porte simple", "Porte-fenêtre"].every(vu);
+    setTool("equipement");
+    const vuE = (nom) => { const it = [...document.querySelectorAll("#pbody .lib2 .it")].find((x) => x.querySelector("b").textContent === nom); if (!it) return false; const q = it.getBoundingClientRect(); return q.bottom <= document.getElementById("pfoot").getBoundingClientRect().top + 0.5; };
+    r[`${tag} · Équipements : Douche, Lavabo, WC visibles sans défiler`] = ["Douche", "Lavabo", "WC"].every(vuE);
+    setTool("select"); return r;
+  }, `${L0} × ${H0}`));
+  await p.close();
+}
+{
+  const p = await onglet();
+  Object.assign(t, await p.evaluate(() => {
+    const r = {};
+    /* la lecture seule se lit : champs grisés, sans aide gestuelle ni commandes de déplacement */
+    setMode("final"); const it = L().items.find((i) => i.type === "baignoire" && ist(i) !== "demolir") || L().items.find((i) => ITEMS[i.type] && ist(i) !== "demolir" && i.type !== "escalier"); sel = { kind: "item", id: it.id }; render();
+    const P = document.getElementById("pbody"), ch = [...P.querySelectorAll("fieldset.ro .row > span")].filter((x) => x.querySelector(".fin.n"));
+    r["lecture seule · les champs désactivés sont grisés, sans bordure de champ actif"] = ch.length >= 2 && ch.every((x) => { const c = getComputedStyle(x); return x.querySelector(".fin.n").disabled && c.backgroundColor !== "rgb(255, 255, 255)" && c.borderTopColor === "rgba(0, 0, 0, 0)"; });
+    r["lecture seule · ni « Glisse pour déplacer », ni raccourcis, ni Pivoter / Décaler"] = !/Glisse pour déplacer|Ctrl|Pivoter|Décaler/.test(P.innerText);
+    r["lecture seule · « Produit repéré & note » vide : replié (absent)"] = !/Produit repéré/.test(P.innerText);
+    setMode("projet"); closeModal(); sel = { kind: "item", id: it.id }; render();
+    r["vue Travaux · la même fiche garde ses réglages et son aide"] = /Glisse pour déplacer/.test(P.innerText) && /Pivoter/.test(P.innerText);
+    /* un message replie l'astuce ; le plan se cadre au-dessus de la bande du bas */
+    sel = null; render(); const h = document.getElementById("hint"); document.getElementById("toast").classList.remove("show"); montrerAstuce("Une astuce de test");
+    const avant = !h.classList.contains("replie"); toast("Un message de test", true);
+    r["message · il replie la bulle d'astuce en « ? » (plus d'empilement sur le plan)"] = avant && h.classList.contains("replie");
+    fitView(); const b0 = bbox(L()), bas = S(v(0, b0.y1 + 1)).y, H = cv.clientHeight;
+    r["cadrage · le plan s'arrête au-dessus de la bande du bas (zoom, astuce, message)"] = bas <= H - Math.min(120, Math.round(H * 0.16)) + 1;
+    /* les gros montants : pas de Mono (son espace insécable a la largeur d'un chiffre) ; « tâches » dans la police du texte */
+    const bv = document.getElementById("budgetVal"), bn = document.querySelector(".bcard .bn");
+    r["montants · la carte budget n'écrit pas le montant en Mono"] = !/Mono/.test(getComputedStyle(bv).fontFamily) && getComputedStyle(bv).fontVariantNumeric.includes("tabular-nums");
+    r["montants · « 12 tâches » : le nombre en Mono, le mot dans la police du texte"] = !!bn && /Mono/.test(getComputedStyle(bn.querySelector("b")).fontFamily) && !/Mono/.test(getComputedStyle(bn).fontFamily);
+    showEstimate(); r["montants · le haut d'Estimer n'écrit pas le montant en Mono"] = !/Mono/.test(getComputedStyle(document.getElementById("estTotal")).fontFamily); closeModal();
+    /* le dossier : une seule fermeture discrète (plus de bouton bordé « Fermer » à côté d'« Imprimer ») */
+    exportPlan(); const fb = [...document.querySelectorAll("#m-export button")].filter((x) => /^Fermer$/.test(x.textContent.trim()));
+    r["dossier · une seule fermeture « Fermer », discrète, en bas"] = fb.length === 1 && fb[0].classList.contains("mclose") && !document.querySelector("#m-export .btnrow button.ib:not(.primary)");
+    closeModal(); return r;
+  }));
+  await p.close();
+}
+
 await b.close();
 const echecs = Object.entries(t).filter(([, ok]) => !ok);
 for (const [nom, ok] of Object.entries(t)) console.log(`  ${ok ? "✓" : "✗"} ${nom}`);

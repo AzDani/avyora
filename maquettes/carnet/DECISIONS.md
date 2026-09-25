@@ -3108,3 +3108,116 @@ remis.
   — c'est écrit dans la fiche, pas deviné.
 - Un exemple enregistré AVANT cette version, puis coupé à une jonction, n'est plus reconnu comme l'exemple (son
   empreinte d'origine est l'ancienne).
+
+## D54 · Finition F2 : les améliorations rapides communes au jury final (25/09/2026)
+
+**D'où l'on part.** Jury final : 7 à 7,5/10. F1 (D53) a levé les trois bloquants et posé l'arbitrage « un élément déjà
+là n'est jamais « à créer » ». F2 reprend les améliorations rapides que plusieurs jurés ont relevées (`final.json` :
+novice, pro, design, retention). Batterie, couverture et vitest verts avant toute retouche.
+
+**1. Arbitrage « À créer » : vérifié partout, téléphone compris.** Toutes les fiches passent par `segEtat` /
+`choixEtat` (mur, menuiserie, passage, équipement seul ou en groupe, bloc « Décision » d'Avant travaux) ; au téléphone,
+la fiche est la même, en lecture (`ficheEnLecture`). Rien à changer dans le code : contrôles ajoutés (fenêtre, mur,
+équipement déjà là au téléphone : jamais « À créer » ni « À poser »).
+
+**2. « Je garde tout le reste » en tête de « Encore à décider » (novice).** Pour 3 pièces, 6 éléments déjà là se
+tranchaient un par un (« Voir sur le plan », puis « Je garde ») ; sur le T3, 23. Un bouton « Je garde tout le reste (N) »
+passe en UN pas d'historique à « Je garde » ce qui est déjà là et ne coûte rien à garder : menuiseries (`st:'garder'`),
+équipements (`st:'garder'`), sols actuels (`solGarde`) — les entrées marquées `garde` dans `elementsATrancher`. Ce qui
+a un prix à choisir reste listé, et la ligne le dit (« Restent à choisir, parce qu'ils ont un prix : faïence. ») : la
+faïence d'une pièce d'eau refaite, la toiture, le sol / la peinture / le plafond d'une pièce réunie, un sol sans plancher.
+Message « Je garde : 10 menuiseries, 7 équipements, 6 sols actuels, tels quels. Rien ne s'ajoute au budget. » avec
+« Annuler » ; Estimer se redessine sur place (`majEstimer`, même défilement), le focus va au titre de la liste. Au
+téléphone, pas de bouton (on consulte). Budget inchangé : garder ne coûte rien.
+
+**3. Outil Ouvertures : les modèles courants sans défiler (novice).** La Fenêtre tombait sous le pied du budget (à
+1 280 × 800, toute la section Extérieur était cachée). Extérieur d'abord, dans l'ordre de ce qu'on pose le plus
+(Fenêtre, Porte d'entrée, Porte-fenêtre, Baie vitrée, Petite fenêtre, Porte de garage), puis Intérieur (Porte simple en
+tête) ; chaque modèle tient sur une ligne (`.lib2.liste`, vignette à gauche, nom et dimensions à droite). Fenêtre, Porte
+d'entrée, Porte simple et Porte-fenêtre se voient sans défiler à 1 280 × 800 et 1 440 × 900. Équipements : Douche,
+Lavabo et WC se voyaient déjà aux deux tailles — pas touché, un contrôle le garde.
+
+**4. Les mots.**
+- « Douche ajouté « à poser » (travaux) » ne s'accordait pas (Baignoire, Chaudière, Applique…) : « À poser (travaux) :
+  Douche. Pour un équipement déjà en place, dessine-le en vue Avant travaux. »
+- « les travaux s'en déduiront » (toiture à décrire, vue Travaux) et « Le projet s'en déduit » (sol actuel) : « Ce que tu
+  décris ne coûte rien : c'est toi qui décides en vue Travaux. »
+- La fenêtre « Vue Travaux : dessine ta rénovation » commence par une étape 1 « Décide pièce par pièce » : « Clique une
+  pièce : sol, peinture, faïence. Clique une fenêtre ou un équipement : je garde, à remplacer. » (les trois étapes
+  d'avant deviennent 2, 3, 4). Le message de la vue Travaux (fenêtre déjà vue) dit la même chose en une ligne.
+- Un message de vue (`toast(…, {vue:1})`) se retire quand on change de vue (`cacherToastVue`) : « Vue Après travaux :
+  lecture seule » ne reste plus affiché en vue Avant travaux. Un message qui porte une action (« Annuler ») n'est pas
+  concerné.
+
+**5. La pastille d'écart dit la dernière décision d'abord (novice).** Elle additionnait la série de gestes rapprochés
+(« +2 633 € · Poser la fenêtre neuve » pour une fenêtre à 610 €). Elle montre le montant et la tâche de la DERNIÈRE
+décision (écart depuis le montant d'avant ce geste), puis, si la série a compté d'autres gestes, « série : +3 138 € ».
+En gratuit : même règle, sans nom de tâche.
+
+**6. Faïence à mi-hauteur : les portes déduites (pro).** La bande de 1,20 m courait sur tout le périmètre, devant les
+portes. Elle court sur le périmètre hors portes (`perimHorsPortes`, la formule des plinthes) : Maison, 14,1 → 11,1 m².
+Même formule au contrat : **1.17.0**, `rooms[].perimetreHorsPortes` (ajout pur), lu par `plan-correspondance.ts`
+(`perimetreHorsPortes ?? perimeter` : un contrat plus ancien garde l'ancienne lecture) ; vitest mis à jour (14,26 m pour
+la salle de bain de la fixture, 1 porte de 0,83 m) et un test pour le contrat antérieur. La tâche dit « mi-hauteur hors
+portes, 2 m dans la douche », la fiche « une bande de 1,20 m, portes déduites ». Pleine hauteur : déjà hors ouvertures.
+
+**7. L'eau des appareils neufs : dite, pas inventée (novice).** Vérifié : ni `quantities().plomberie` ni
+`plan-correspondance.ts` ne produisent de poste d'arrivée ou d'évacuation pour une douche, une baignoire, un lavabo,
+une double vasque, un WC ou un évier (seuls le lave-linge et le lave-vaisselle ont « Créer l'arrivée et l'évacuation »,
+`plo-creer-deplacer-un-point-d-eau`). Le compteur n'en invente pas. Dès qu'un de ces appareils est à poser, « Ce que ton
+plan ne dit pas encore » affiche « Arrivées et évacuations d'eau des appareils neufs : pas dans ce compteur », avec les
+appareils nommés et « À chiffrer avec ton plombier. » (une ligne de limite, pas « à renseigner »).
+
+**8. La raison de revenir se voit quand on revient (retention).** Un plan dont des tâches datées sont en retard ou
+prévues dans les 7 jours le dit en tête du panneau : « 4 tâches en retard · Démolition, prévu le 22/09 », « 2 tâches
+prévues cette semaine · … », bouton « Voir le Suivi ». L'onglet Suivi porte l'alerte (compteur ambré, lu « tâches en
+retard »). Seules les dates saisies comptent (`state.prevu`, `etatLot`) ; une tâche cochée ne compte plus. Au bureau et
+au téléphone (tiroir).
+
+**9. Finitions design.**
+- Lecture seule (vue Après travaux, téléphone) : les champs désactivés sont grisés (fond #F4F4F9, sans bordure) ; ni
+  « Glisse pour déplacer », ni raccourcis Ctrl, ni Pivoter / Dupliquer / Décaler (`.aidegeste`) ; « Produit repéré &
+  note » vide n'est plus montré.
+- Messages : un message replie la bulle d'astuce en « ? », et une astuce qui arrive avec un message du même geste arrive
+  repliée (le même geste n'est plus annoncé deux fois) ; « Pièce fermée : 13,8 m² à l'intérieur · « Chambre » » tient en
+  deux lignes (la règle cloison / façade est au panneau) ; `fitView` cadre le plan au-dessus d'une bande de 120 px au
+  plus (barre de zoom, astuce, message) : après la visite, à 1 024 et 1 280 px, le bas du plan et ses cotes restent
+  visibles.
+- « Dossier du plan » : le bouton bordé « Fermer » à côté d'« Imprimer » est retiré (restent la croix et « Fermer »
+  discret en bas).
+- Gros montants (carte budget, haut d'Estimer, pastille) en Geist chiffres tabulaires, plus en Mono : « 5 796 € » sans
+  grand blanc ; « 12 tâches » : le nombre en Mono, le mot dans la police du texte.
+- Un mur à démolir sélectionné (vue Travaux) n'a plus ni poignée ronde ni poignées d'extrémité (les badges « 90° »
+  étaient déjà retirés en D53).
+
+**Contrôles.**
+- `decision.mjs` : « Je garde tout le reste » (T3, salle de bain refaite) — bouton en tête avec le nombre, la faïence
+  dite et gardée à décider, menuiseries / équipements / sols passés à « Je garde », budget inchangé, un pas d'historique,
+  Estimer redessiné, message + « Annuler » qui rend tout ; téléphone : fenêtre, mur, équipement déjà là sans « À créer »
+  / « À poser », Estimer sans le bouton.
+- `langage.mjs` : « À poser (travaux) : … » pour 6 équipements ; plus « s'en déduit » dans le code ; la fenêtre Vue
+  Travaux commence par les gestes d'un débutant ; le message de vue Après travaux ne reste pas ; « Pièce fermée » en deux
+  lignes.
+- `valeur.mjs` : une décision seule sans « série » ; deux décisions : la dernière d'abord (montant et tâche de la
+  fenêtre), puis « série : +X € ».
+- `metier.mjs` : faïence mi-hauteur hors portes (Maison), tâche et contrat 1.17 ; douche à poser → la ligne « Arrivées
+  et évacuations d'eau… », aucune ligne inventée, rien une fois la douche gardée.
+- `onboarding.mjs` §10 bis : réouverture (rechargement) → « N tâches en retard », « cette semaine », alerte de l'onglet,
+  « Voir le Suivi » ; tâches cochées ; sans date, rien.
+- `visuel.mjs` §12 : Ouvertures et Équipements sans défiler à 1 280 × 800 et 1 440 × 900 ; lecture seule grisée sans
+  aide ni commandes ; message qui replie l'astuce ; cadrage au-dessus de la bande du bas ; montants hors Mono ; dossier
+  à une seule fermeture.
+- Chaque nouveau contrôle échoue sur le fichier d'avant, ou y lève une erreur (fonctions absentes) — sauf ceux qui
+  gardent un acquis : l'arbitrage (déjà tenu par F1), une décision seule sans « série », aucune ligne d'eau inventée,
+  Équipements sans défiler. Batterie complète, couverture, vitest (165) et `npm run build` verts ; fixture du contrat
+  régénérée (1.17.0 : `perimetreHorsPortes`).
+
+**Pas fait (vu, laissé).**
+- Les autres améliorations du jury final hors de ce chantier : doublage mesuré au nu intérieur, sol des combles compté
+  entier, Suivi dans l'ordre d'un chantier par type de tâche, fusion de pièces (un seul nom, l'habitable l'emporte),
+  tâches homonymes distinguées et prudence du percement dite, plans types sans pièce desservie par une salle d'eau,
+  « À remplacer » pour un WC / une chaudière / un radiateur, fiche de pièce repliée sous « Réglages avancés », tracé
+  pièce par pièce (mur mitoyen), prix à côté de « Passer Pro » (aucune grille tarifaire donnée : rien d'inventé),
+  mesure paywall_vu / dossier_exporte, système de boutons (« C'est parti » en encre, hauteurs 33 / 42 px), ⌘ sur Mac.
+- La porte d'un tronçon démoli reste dessinée en noir « déjà là » (design 2) ; le trait « à démolir » reste #D97706.
+- Le rappel du Suivi s'affiche tant que la date est passée et la tâche non cochée : il ne se ferme pas pour la session.

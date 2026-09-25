@@ -149,6 +149,52 @@ const res = await p.evaluate(() => {
     t["équipement à déposer · rien à préciser dessus"] = /rien à préciser/.test(e1); }
   return t;
 });
+
+/* ── D54 (jury final, novice) · « Je garde tout le reste » : un geste, annulable, pour ce qui est déjà là ── */
+{ const p2 = await b.newPage(); p2.on("pageerror", (e) => errs.push(e.message)); await p2.setViewport({ width: 1440, height: 900 });
+  await p2.evaluateOnNewDocument(() => { try { localStorage.clear(); } catch {} });
+  await p2.goto("file://" + SP + "/plan-editor.html", { waitUntil: "networkidle0" }); await new Promise((r) => setTimeout(r, 300));
+  Object.assign(res, await p2.evaluate(() => { const t = {};
+    closeWelcome("fermer"); loadTemplate("t3"); closeModal(); setMode("projet"); closeModal(); setTool("select"); sel = null; render();
+    /* la salle de bain refaite (sol neuf + douche à poser) : sa faïence est un choix qui a un prix */
+    const lv = L(), sdb = lv.rooms.find((r) => r.type === "sdb"), f = facesCache[lv.id].find((x) => x.room === sdb);
+    sdb.floorNew = "Carrelage"; lv.items.push({ id: uid(), type: "douche", x: f.poly.reduce((s, q) => s + q.x, 0) / f.poly.length, y: f.poly.reduce((s, q) => s + q.y, 0) / f.poly.length, w: 0.9, h: 0.9, rot: 0, st: "creer" }); afterChange();
+    const A0 = elementsATrancher(), G = A0.filter((a) => a.garde), total0 = chantierPrix().total, h0 = history.length;
+    showEstimate(); const btn = document.querySelector("#estBody .garderest button");
+    t["garder le reste · le bouton est en tête de « Encore à décider », avec le nombre d'éléments"] = !!btn && btn.textContent.includes("(" + G.length + ")") && document.getElementById("estAdec").nextElementSibling?.nextElementSibling?.classList.contains("garderest");
+    t["garder le reste · il dit ce qui reste à choisir parce que ça a un prix (la faïence)"] = /faïence/.test(document.querySelector("#estBody .garderest").innerText);
+    btn.click();
+    const A1 = elementsATrancher();
+    t["garder le reste · menuiseries, équipements et sols actuels passent à « Je garde »"] = G.length >= 10 && A1.every((a) => !a.garde)
+      && lv.openings.filter((o) => G.some((g) => g.kind === "opening" && g.id === o.id)).every((o) => o.st === "garder")
+      && lv.items.filter((i) => G.some((g) => g.kind === "item" && g.id === i.id)).every((i) => i.st === "garder")
+      && lv.rooms.filter((r) => G.some((g) => g.kind === "room" && g.id === r.id)).every((r) => solGarde(r));
+    t["garder le reste · la faïence de la pièce d'eau refaite reste à décider"] = A1.length === 1 && /^Faïence/.test(A1[0].label);
+    t["garder le reste · rien ne s'ajoute au budget, un seul pas d'historique"] = chantierPrix().total === total0 && history.length === h0 + 1;
+    t["garder le reste · Estimer se redessine sur place, sans le bouton"] = modaleOuverte()?.id === "m-estimate" && !document.querySelector("#estBody .garderest") && /Encore à décider \(1\)/.test(document.getElementById("estAdec").textContent);
+    const an = document.querySelector("#toast .tact");
+    t["garder le reste · le message le dit, avec « Annuler »"] = /^Je garde : \d+ menuiseries, \d+ équipements, \d+ sols actuels/.test(document.getElementById("toast").textContent) && !!an && an.textContent === "Annuler";
+    an.click();
+    t["garder le reste · « Annuler » rend tout à décider, et Estimer le montre"] = elementsATrancher().length === A0.length && !!document.querySelector("#estBody .garderest") && L().rooms.every((r) => !r.solGarde || !G.some((g) => g.id === r.id)); /* annuler remplace l'état : on relit L() */
+    closeModal(); return t; }));
+  await p2.close(); }
+
+/* ── D54 (arbitrage) · au téléphone aussi, un élément déjà là n'est jamais « à créer » ; pas de « Je garde tout » (on consulte) ── */
+{ const p3 = await b.newPage(); p3.on("pageerror", (e) => errs.push(e.message)); await p3.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true });
+  await p3.evaluateOnNewDocument(() => { try { localStorage.clear(); } catch {} });
+  await p3.goto("file://" + SP + "/plan-editor.html", { waitUntil: "networkidle0" }); await new Promise((r) => setTimeout(r, 300));
+  Object.assign(res, await p3.evaluate(() => { const t = {};
+    closeWelcome("sample"); closeModal(); setMode("projet"); closeModal(); setTool("select");
+    const seg = (s) => { sel = s; render(); return [...document.querySelectorAll("#pbody .segetat button")].map((x) => x.textContent); };
+    const lv = L(), o = lv.openings.find((x) => OPENINGS[x.type].cat === "fenetre" && !x.st), w = lv.walls.find((x) => !isVirtual(x) && !x.st), it = lv.items.find((x) => !x.st && ITEMS[x.type] && !isFurniture(x.type));
+    const so = seg({ kind: "opening", id: o.id }), sw = seg({ kind: "wall", id: w.id }), si = seg({ kind: "item", id: it.id });
+    t["téléphone · une fenêtre déjà là : À décider, Je garde, À remplacer, À boucher — pas « À créer »"] = so.length === 4 && so.every((x) => !/^À créer/.test(x)) && so.some((x) => /^À remplacer/.test(x));
+    t["téléphone · un mur déjà là : pas « À créer »"] = sw.length > 0 && sw.every((x) => !/^À créer/.test(x)) && sw.some((x) => /^À démolir/.test(x));
+    t["téléphone · un équipement déjà là : pas « À poser »"] = si.length > 0 && si.every((x) => !/^À poser/.test(x)) && si.some((x) => /^À déposer/.test(x));
+    sel = null; render(); showEstimate();
+    t["téléphone · Estimer sans « Je garde tout le reste » (on consulte)"] = !document.querySelector("#estBody .garderest");
+    closeModal(); return t; }));
+  await p3.close(); }
 await b.close();
 
 const echecs = Object.entries(res).filter(([, ok]) => !ok);

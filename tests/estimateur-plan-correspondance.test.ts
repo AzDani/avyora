@@ -251,8 +251,17 @@ describe("table de correspondance · les surfaces mesurées (D10)", () => {
        adossés → 4,45 m à 2 m. */
     const sdb = (plan.detailNiveaux ?? []).flatMap((n) => n.rooms ?? []).find((r) => r.type === "sdb")!;
     expect(sdb.perimeter).toBeCloseTo(15.09, 2);
-    const attendu = (15.09 - 4.45) * 1.2 + 4.45 * 2;
+    /* Contrat 1.17 (D54) : la bande de 1,20 m ne passe pas devant la porte (0,83 m), comme les
+       plinthes : 15,09 − 0,83 = 14,26 m. */
+    expect(sdb.perimetreHorsPortes).toBeCloseTo(14.26, 2);
+    const attendu = (14.26 - 4.45) * 1.2 + 4.45 * 2;
     expect(q("rev-faience-carrelage-mural")).toBeCloseTo(attendu, 1);
+  });
+  it("un contrat antérieur à 1.17 (sans `perimetreHorsPortes`) garde la lecture au périmètre entier", () => {
+    const p = JSON.parse(JSON.stringify(plan)) as PlanPourCorrespondance;
+    for (const r of (p.detailNiveaux ?? []).flatMap((n) => n.rooms ?? [])) delete r.perimetreHorsPortes;
+    const l = contributionsDuPlan(p).contributions.find((x) => x.poste === "rev-faience-carrelage-mural")!;
+    expect(l.quantite).toBeCloseTo((15.09 - 4.45) * 1.2 + 4.45 * 2, 1);
   });
   /* D46 (contrat 1.15) : refaire la faïence d'une salle de bain n'est pas remplacer ses cloisons.
      Seule une cloison À CRÉER qui borde la pièce humide se monte en plaques hydrofuges — et ce poste

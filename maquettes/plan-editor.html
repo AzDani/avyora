@@ -177,6 +177,11 @@ button,input,select{font:inherit}
 .robanner{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:space-between;background:var(--brand-l);border:1px solid #c7d2fe;border-radius:12px;padding:9px 12px;margin:0 0 12px;font-size:12.5px;font-weight:600;color:var(--ink)}
 fieldset.ro{border:0;padding:0;margin:0;min-width:0}
 fieldset.ro button,fieldset.ro input,fieldset.ro select,fieldset.ro textarea{cursor:default}
+/* D54 (design 1) : un champ en lecture seule ne ressemble plus à un champ actif (bordure encre, fond blanc) */
+fieldset.ro :is(input,select,textarea):disabled{background:#F4F4F9;border-color:transparent;color:var(--muted);-webkit-text-fill-color:var(--muted);box-shadow:none;opacity:1}
+fieldset.ro .aidegeste,fieldset.ro .row.decal,fieldset.ro .btnrow:has(>button[onclick^="rotateItem"]){display:none} /* en lecture : ni aide gestuelle, ni commandes de déplacement grisées */
+fieldset.ro .row>span:has(>.fin.n:disabled),fieldset.ro .unit:has(>.fin:disabled){background:#F4F4F9;border-color:transparent;box-shadow:none;color:var(--muted)}
+fieldset.ro .row>span:has(>.fin.n:disabled)>.fin.n{background:transparent}
 
 /* panneau droit */
 .resizer{flex:0 0 7px;margin:0 -3px;position:relative;z-index:6;cursor:col-resize;background:transparent;user-select:none;touch-action:none}
@@ -189,6 +194,12 @@ fieldset.ro button,fieldset.ro input,fieldset.ro select,fieldset.ro textarea{cur
 .ptabs button.on{background:var(--white);color:var(--brand);box-shadow:var(--sh-1)}
 .ptabs .tabn{font-family:"Geist Mono",monospace;font-size:11px;background:var(--brand);color:#fff;border-radius:99px;padding:1px 6px}
 .ptabs button:not(.on) .tabn{background:var(--muted)}
+.ptabs .tabn.retard,.ptabs button:not(.on) .tabn.retard{background:#b45309;color:#fff}
+/* D54 : le rappel du Suivi en tête du panneau (tâches en retard ou de la semaine) */
+.rappel{display:flex;flex-direction:column;align-items:flex-start;gap:8px;border-radius:12px;padding:10px 12px;margin:0 0 12px;border:1px solid #fcd34d;background:#fffbeb}
+.rappel.semaine{border-color:#c7d2fe;background:var(--brand-l)}
+.rappel .rpt{min-width:0;display:flex;flex-direction:column;gap:1px}.rappel .rpt b{font-size:13px;color:#92400e}.rappel.semaine .rpt b,.rappel .rpt b+small+b{color:var(--ink)}
+.rappel .rpt small{font-size:11.5px;color:var(--muted);line-height:1.35;margin-bottom:2px}.rappel .ib{white-space:nowrap}
 .pfoot{border-top:1px solid var(--line);padding:14px 18px 16px;background:var(--white)}
 .ph{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
 .ph.mt{margin-top:22px}
@@ -251,6 +262,13 @@ div.seg.stack{display:flex;flex-direction:column;gap:2px}
 .lib2 .it.on .th.op svg .wl{stroke:#b9a6ef}
 .lib2 .it b{font-size:12px;font-weight:700;color:var(--ink);line-height:1.2;white-space:normal;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;min-height:2.4em;overflow-wrap:anywhere} /* D50 (cj-integration12) : le nom sur deux lignes, jamais « Porte coulissant… » */
 .lib2 .it small{font-family:"Geist Mono",monospace;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* D54 : la liste compacte des ouvertures — un modèle par ligne, vignette à gauche */
+.lib2.liste{grid-template-columns:minmax(0,1fr);gap:4px;padding:6px}
+.lib2.liste .it{flex-direction:row;align-items:center;gap:10px;padding:4px 8px 4px 5px;border-radius:9px}
+.lib2.liste .it .th{flex:0 0 54px;width:54px;height:30px;border-radius:6px}
+.lib2.liste .it .th.op svg{width:52px;height:30px}
+.lib2.liste .it .itx{min-width:0;flex:1;display:flex;flex-direction:column;gap:1px}
+.lib2.liste .it b{min-height:0}
 .lib{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .lib button{border:1px solid var(--line);background:var(--white);border-radius:10px;padding:9px 8px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:3px}
 .lib button:hover{border-color:var(--acc3);background:#fbfaff}
@@ -444,8 +462,8 @@ pre{background:#14112f;color:#d7d4f2;font-family:"Geist Mono",monospace;font-siz
 .pfoot{padding:12px 16px 14px}
 .budget.bcard{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:1px;padding:11px 14px;margin-bottom:8px;border-radius:14px}
 .bcard .bk{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12px;font-weight:700;color:#fff}
-.bcard .bn{font-family:"Geist Mono",monospace;font-variant-numeric:tabular-nums;font-size:11px;font-weight:600;color:var(--acc3)}
-.budget.bcard .bv{font-size:28px;letter-spacing:-.02em;line-height:1.2;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bcard .bn{font-family:"Geist",system-ui,sans-serif;font-size:11px;font-weight:600;color:var(--acc3)}.bcard .bn b{font-family:"Geist Mono",monospace;font-variant-numeric:tabular-nums;font-weight:700} /* D54 : la Mono pour le nombre, pas pour « tâches » */
+.budget.bcard .bv{font-size:28px;letter-spacing:-.02em;line-height:1.2;font-variant-numeric:tabular-nums;white-space:nowrap;font-family:"Geist",system-ui,sans-serif} /* D54 (design 7) : en Mono, l'espace insécable prenait la largeur d'un chiffre (« 5  796 € ») */
 .bcard .bs{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
 .bcard .bs small{display:block;font-size:11px;color:var(--acc3);line-height:1.35;margin:0}
 .bcard .bs small b{color:#fff}
@@ -461,10 +479,11 @@ pre{background:#14112f;color:#d7d4f2;font-family:"Geist Mono",monospace;font-siz
 /* la pastille d'écart, au-dessus de la carte budget (sur téléphone : au-dessus du tiroir) */
 .bdelta{position:absolute;left:12px;right:12px;bottom:170px;z-index:4;display:flex;align-items:center;gap:8px;background:var(--white);border:1px solid var(--line);border-radius:12px;padding:8px 12px;font-size:12.5px;font-weight:600;color:var(--ink);box-shadow:0 10px 28px rgba(30,27,75,.16);opacity:0;transform:translateY(6px);transition:opacity .2s,transform .2s;pointer-events:none}
 .bdelta.show{opacity:1;transform:none}
-.bdelta b{font-family:"Geist Mono",monospace;font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap;flex:0 0 auto}
+.bdelta b{font-family:"Geist",system-ui,sans-serif;font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap;flex:0 0 auto}
 .bdelta b.plus{color:var(--brand)}.bdelta b.moins{color:#15803d}
 .bdelta span{min-width:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.35;color:var(--muted);font-weight:500}
 .bdelta .bdl{min-width:0;display:flex;flex-direction:column;gap:1px}.bdelta .bdl em{font-style:normal;font-size:11.5px;font-weight:600;color:var(--ink)}
+.bdelta .bdl small.serie{font-size:11.5px;font-weight:500;color:var(--muted)}.bdelta .bdl small.serie b{font-size:11.5px;font-weight:600}
 @media (prefers-reduced-motion:reduce){.bdelta{transition:none;transform:none}}
 @media (max-width:600px){.bdelta{top:-54px;bottom:auto!important}body.sheetOpen .zoomctl{display:none}}
 a.ib{text-decoration:none}
@@ -473,7 +492,7 @@ a.ib{text-decoration:none}
 .esthero{display:flex;justify-content:space-between;align-items:flex-end;gap:14px 20px;flex-wrap:wrap;background:var(--nuit-g);color:#fff;border-radius:16px;padding:18px 20px;margin:4px 0 18px}
 .esthero .k{display:flex;align-items:center;font-size:12px;font-weight:700;color:var(--acc3);letter-spacing:.02em}
 .esthero .gl{color:var(--acc3)}.esthero .gl:hover,.esthero .gl[aria-expanded="true"]{color:#fff;background:rgba(255,255,255,.12)}
-.esthero .v{display:block;font-family:"Geist Mono",monospace;font-variant-numeric:tabular-nums;font-size:34px;font-weight:700;letter-spacing:-.02em;margin:2px 0 4px;line-height:1.15}
+.esthero .v{display:block;font-family:"Geist",system-ui,sans-serif;font-variant-numeric:tabular-nums;font-size:34px;font-weight:700;letter-spacing:-.02em;margin:2px 0 4px;line-height:1.15}
 .esthero small{display:block;font-size:12.5px;color:#d9d6f5;max-width:520px;line-height:1.45}
 .esthero small b{color:#fff}
 .esthero .eh2{display:flex;flex-wrap:wrap;gap:10px 18px;font-size:12px;color:#d9d6f5} /* R6 : au téléphone, « déjà réalisés » (4e chiffre) sortait du cadre */
@@ -511,6 +530,7 @@ button.tline{cursor:pointer}button.tline:hover{background:var(--brand-l)}
 .estactions .estimate .ico,.estactions .ib .ico{width:17px;height:17px;flex-basis:17px}
 .estnote{font-size:12.5px;color:var(--muted);line-height:1.45;margin:-4px 0 10px}
 .chks.adecs{display:flex;flex-direction:column;gap:6px}
+.garderest{display:flex;flex-direction:column;align-items:flex-start;gap:5px;margin:0 0 10px}.garderest small{font-size:12px;line-height:1.45;color:var(--muted)}.garderest .mono{font-family:"Geist Mono",monospace;font-size:12px}
 .chk.adec{display:flex;align-items:center;background:var(--white);border:1px solid var(--line);margin:0}
 .chk.adec .ci{color:var(--muted)}
 .chk.adec .at{flex:1;min-width:0}
@@ -973,9 +993,10 @@ button.chk{width:100%;font:inherit;text-align:left}
 </div></div>
 <div class="overlay" id="m-projet"><div class="modal"><h3>Vue <span data-lex="vue.projet">Travaux</span> : dessine ta rénovation</h3><div class="sub">Comme sur un plan d'architecte : <span data-lex="couleur.demolir">jaune</span> = on démolit, <span data-lex="couleur.creer">rouge</span> = on construit.</div>
 <div class="steps">
-<div class="step"><span class="n" style="background:#b45309">1</span><div><b>Marque ce que tu enlèves</b><small>Clique un mur ou une porte existante → <b>À&nbsp;démolir</b> / <b>À boucher</b>. Il reste visible en <span data-lex="couleur.demolir">jaune</span> pointillé, et les pièces se recalculent sans lui.</small></div></div>
-<div class="step"><span class="n" style="background:#b91c1c">2</span><div><b>Trace ce que tu ajoutes</b><small>Les murs, portes et fenêtres que tu poses dans cette vue sont automatiquement <b>à créer</b> (rouge hachuré).</small></div></div>
-<div class="step"><span class="n" style="background:#15803D">3</span><div><b>Regarde le résultat et estime</b><small>La vue <b data-lex="vue.final">Après travaux</b> montre le logement une fois les travaux faits, sans marquage (celui à montrer aux artisans). « Estimer ce plan » chiffre les démolitions, percements, rebouchages et créations.</small></div></div>
+<div class="step"><span class="n" style="background:var(--brand)">1</span><div><b>Décide pièce par pièce</b><small>Clique une pièce : sol, peinture, faïence. Clique une fenêtre ou un équipement : je garde, à remplacer. Chaque décision s'ajoute au budget, et rien ne compte tant que tu n'as rien décidé.</small></div></div>
+<div class="step"><span class="n" style="background:#b45309">2</span><div><b>Marque ce que tu enlèves</b><small>Clique un mur ou une porte existante → <b>À&nbsp;démolir</b> / <b>À boucher</b>. Il reste visible en <span data-lex="couleur.demolir">jaune</span> pointillé, et les pièces se recalculent sans lui.</small></div></div>
+<div class="step"><span class="n" style="background:#b91c1c">3</span><div><b>Trace ce que tu ajoutes</b><small>Les murs, portes et fenêtres que tu poses dans cette vue sont automatiquement <b>à créer</b> (rouge hachuré).</small></div></div>
+<div class="step"><span class="n" style="background:#15803D">4</span><div><b>Regarde le résultat et estime</b><small>La vue <b data-lex="vue.final">Après travaux</b> montre le logement une fois les travaux faits, sans marquage (celui à montrer aux artisans). « Estimer ce plan » chiffre les démolitions, percements, rebouchages et créations.</small></div></div>
 </div><button class="mclose primaire" onclick="closeModal()">C'est parti</button></div></div>
 <div class="overlay" id="m-keys"><div class="modal wide"><h3>Aide</h3><div class="sub">Les raccourcis clavier, et les mots du bâtiment expliqués en une phrase.</div>
 <div class="ptabs" role="tablist" aria-label="Aide"><button type="button" id="aideTabKeys" class="on" role="tab" aria-selected="true" aria-controls="aideKeys" onclick="aideOnglet('keys')">Raccourcis</button><button type="button" id="aideTabGloss" role="tab" aria-selected="false" aria-controls="aideGloss" onclick="aideOnglet('gloss')">Glossaire</button></div>
@@ -992,7 +1013,7 @@ button.chk{width:100%;font:inherit;text-align:left}
   <div style="margin-top:8px;text-align:right"><button class="lienSupport" onclick="copierPlanComplet()">Un souci de dessin ? Copier le plan complet pour le support</button></div>
   <div class="tip" id="envoiInfo" style="margin-top:10px"></div>
   <button class="mclose" onclick="closeModal()">Fermer</button></div></div>
-<div class="overlay" id="m-export"><div class="modal wide"><h3>Dossier du plan</h3><div class="sub noprint" id="exportSub">Tous les niveaux, avant et après travaux, plus le récapitulatif des quantités. <b>Imprimer / PDF</b> pour tout sortir en un document ; clic droit sur une image pour l'enregistrer seule.</div><div class="btnrow noprint" style="margin:0 0 14px"><button class="ib primary" style="flex:1" onclick="window.print()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Imprimer / enregistrer en PDF</button><button class="ib" onclick="closeModal()">Fermer</button></div><div id="exportGallery"></div><button class="mclose noprint" onclick="closeModal()">Fermer</button></div></div>
+<div class="overlay" id="m-export"><div class="modal wide"><h3>Dossier du plan</h3><div class="sub noprint" id="exportSub">Tous les niveaux, avant et après travaux, plus le récapitulatif des quantités. <b>Imprimer / PDF</b> pour tout sortir en un document ; clic droit sur une image pour l'enregistrer seule.</div><div class="btnrow noprint" style="margin:0 0 14px"><button class="ib primary" style="flex:1" onclick="window.print()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Imprimer / enregistrer en PDF</button></div><div id="exportGallery"></div><button class="mclose noprint" onclick="closeModal()">Fermer</button></div></div>
 <div class="overlay" id="m-confirm"><div class="modal"><h3 id="confirmTitre"></h3><div class="sub" id="confirmTexte"></div><div class="btnrow confirmrow" id="confirmChoix"></div></div></div>
 <div class="overlay" id="m-calib"><div class="modal"><h3>Caler l'échelle du calque</h3><div class="sub">Tu as marqué deux points sur le calque. Quelle est la distance réelle entre ces deux points ?</div><div class="row"><label>Distance réelle</label><span><input class="fin n" id="calibVal" value="3.00" type="number" step="0.01" min="0.1"> m</span></div><button class="mclose primaire" onclick="applyCalib()">Appliquer</button></div></div>
 
@@ -1969,7 +1990,7 @@ function renderToiture(lv){const li=state.levels.indexOf(lv),top=topLevelIdx();c
     <div class="row" style="margin-top:6px"><label>Débord de toit</label><span><input class="fin n" type="number" min="0" max="100" step="5" value="${Math.round((t.debord??0.3)*100)}" onchange="setToiture('debord',this.value/100)" style="width:60px"> cm</span></div>
     <div class="btnrow"><button class="ib danger" style="flex:1" onclick="setToiture('off')">Retirer la toiture</button></div>`;}
   // projet
-  if(!t)return `<div class="ph mt">${ico('toit')} Toiture</div><div class="tip">Décris d'abord la toiture actuelle en vue <b>${nomVue('existant')}</b> (forme, couverture, état) : les travaux s'en déduiront.</div>`;
+  if(!t)return `<div class="ph mt">${ico('toit')} Toiture</div><div class="tip">Décris d'abord la toiture actuelle en vue <b>${nomVue('existant')}</b> (forme, couverture, état). Ce que tu décris ne coûte rien : c'est toi qui décides en vue <b>${nomVue('projet')}</b>.</div>`; /* D54 : plus « les travaux s'en déduiront » */
   const p=t.projet,cs=toitConseil(t),aDec=toitureADecider();
   /* D47 : le conseil tiré de l'état se RETIENT d'un clic ; rien n'est coché tant que rien n'est choisi */
   const cA=!p.manuel&&cs.action!=='rien'&&p.action!==cs.action,cT=!p.manuel&&cs.traiter&&!p.traiterCharpente&&p.action!=='complete';
@@ -2011,7 +2032,10 @@ function faienceDe(lv,f){const r=f.room;if(!r||RT[r.type].ext||!r.faience)return
   if(!(r.type==='sdb'||r.type==='sde'||eaux.length))return null;
   /* D10 : un receveur est adossé à deux murs, c'est ce linéaire-là qui monte à 2 m. */
   const pEau=Math.min(eaux.reduce((t,i)=>t+i.w+i.h,0),f.perimInt),haut=r.faience;
-  const m2=haut==='pleine'?wallPaintArea(lv,f,'projet'):haut==='douche'?pEau*2:Math.max(0,f.perimInt-pEau)*1.2+pEau*2;
+  /* D54 (jury final, pro) : la bande de 1,20 m passait devant les portes (+18 à +28 % sur les salles de bain des plans
+     types). Elle court sur le périmètre HORS PORTES, comme les plinthes (perimHorsPortes) ; la pleine hauteur retirait
+     déjà les ouvertures. Même formule au contrat (`perimetreHorsPortes`, 1.17) et dans la traduction. */
+  const m2=haut==='pleine'?wallPaintArea(lv,f,'projet'):haut==='douche'?pEau*2:Math.max(0,perimHorsPortes(lv,f)-pEau)*1.2+pEau*2;
   return {haut,pEau,m2};}
 /* D37 · Peinture : seulement si elle est choisie dans la fiche de la pièce (murs, plafond ou les
    deux) — jamais par défaut. Murs = murs de la pièce hors ouvertures, moins la faïence décidée ;
@@ -2158,7 +2182,7 @@ function chantierTasks(){const T=[];const ml=state.levels.length>1;
        if(gc>0)T.push({id:'gardecorps:'+r.id,lot:'Équipements',label:'Poser le garde-corps de la trémie · '+rn+lvn,detail:fmt(gc)+' ml · pourtour de la trémie créée',prix:gc*PRIX.gardeCorps});}
       const fa=faienceDe(lv,f);
       if(fa&&fa.m2>0)T.push({id:'faience:'+r.id,lot:'Faïence',label:'Poser la faïence · '+rn+lvn,
-        detail:fmtM2(fa.m2)+' · '+(fa.haut==='pleine'?'pleine hauteur':fa.haut==='douche'?'zone de douche':'mi-hauteur, 2 m dans la douche'),prix:fa.m2*PRIX.faience});
+        detail:fmtM2(fa.m2)+' · '+(fa.haut==='pleine'?'pleine hauteur':fa.haut==='douche'?'zone de douche':'mi-hauteur hors portes, 2 m dans la douche'),prix:fa.m2*PRIX.faience});
       /* D46 : plus de tâche « Passer les cloisons en plaques hydrofuges » : une cloison neuve de la
          pièce humide est montée en plaques hydrofuges (tâche du mur), une cloison existante reste. */
       {const pe=peintureDe(lv,f);if(pe){
@@ -2224,6 +2248,17 @@ function setTriSuivi(t){triSuivi=t;try{localStorage.setItem('avyora-plan-tri',t)
 /* l'ordre d'affichage : celui du chantier, ou les corps d'état datés d'abord, par date */
 function trierParDate(T){const lots=[...new Set(T.map(t=>t.lot))],cle=l=>prevuDe(l)||'9999',rang=new Map(lots.slice().sort((a,b)=>cle(a)<cle(b)?-1:cle(a)>cle(b)?1:lots.indexOf(a)-lots.indexOf(b)).map((l,i)=>[l,i]));
   return T.map((t,i)=>[t,i]).sort((a,b)=>rang.get(a[0].lot)-rang.get(b[0].lot)||a[1]-b[1]).map(x=>x[0]);}
+/* D54 (jury final, retention) · La raison de revenir se montre quand on revient. Un plan dont des tâches datées
+   sont en retard, ou prévues dans les 7 jours, le dit en tête du panneau (« 2 tâches en retard · Sols, prévu le
+   20/09 »), avec « Voir le Suivi » ; l'onglet Suivi porte la même alerte. Rien n'est deviné : seules les dates
+   saisies (state.prevu) comptent, et une tâche cochée ne compte plus. */
+function rappelSuivi(){const T=chantierTasks();if(!T.length||!state.prevu)return null;const L={retard:[],semaine:[]};
+  [...new Set(T.map(t=>t.lot))].forEach(l=>{const e=etatLot(l,T);if(e==='retard'||e==='semaine')L[e].push(l);});
+  const n=ls=>T.filter(t=>ls.includes(t.lot)&&!isDone(t.id)).length,nr=n(L.retard),ns=n(L.semaine);
+  return nr||ns?{nr,ns,lr:L.retard,ls:L.semaine}:null;}
+function rappelSuiviHTML(){const x=rappelSuivi();if(!x)return '';
+  const quand=ls=>ls.slice().sort((a,b)=>prevuDe(a)<prevuDe(b)?-1:1).slice(0,2).map(l=>esc(l)+', prévu le '+fmtJour(jourLocal(prevuDe(l)))).join(' ; ')+(ls.length>2?' ; …':'');
+  return `<div class="rappel ${x.nr?'retard':'semaine'}" role="status"><span class="rpt">${x.nr?`<b>${pluriel(x.nr,'tâche')} en retard</b><small>${quand(x.lr)}</small>`:''}${x.ns?`<b>${pluriel(x.ns,'tâche prévue','tâches prévues')} cette semaine</b><small>${quand(x.ls)}</small>`:''}</span><button type="button" class="ib" onclick="setPanelTab('suivi')">${ico('calendrier')}Voir le Suivi</button></div>`;}
 /* le haut du Suivi : en retard, cette semaine, ensuite */
 function suiviDatesHTML(T){const lots=[...new Set(T.map(t=>t.lot))],dates=lots.filter(l=>prevuDe(l));
   if(!dates.length)return `<div class="tip" style="margin:0 0 10px">${ico('calendrier','lead')}Ajoute une <b>date prévue</b> à chaque corps d'état (sous son titre) : le Suivi te dira ce qui est pour cette semaine et ce qui est en retard.</div>`;
@@ -3529,7 +3564,9 @@ function zoomAt(k,sx,sy){const z=Math.max(12,Math.min(400,view.zoom*k));const kk
 function zoomBy(k){zoomAt(k,cv.clientWidth/2,cv.clientHeight/2);}
 function updZoom(){document.getElementById('zlabel').textContent=Math.round(view.zoom/60*100)+' %';}
 function bbox(level){const ps=[];level.walls.forEach(w=>ps.push(w.a,w.b));level.items.forEach(i=>ps.push(v(i.x-i.w,i.y-i.h),v(i.x+i.w,i.y+i.h)));if(!ps.length&&level.bg&&images[level.bg.img]){const im=images[level.bg.img];ps.push(v(level.bg.x,level.bg.y),v(level.bg.x+im.width*level.bg.mpp,level.bg.y+im.height*level.bg.mpp));}if(!ps.length)return null;return {x0:Math.min(...ps.map(p=>p.x)),y0:Math.min(...ps.map(p=>p.y)),x1:Math.max(...ps.map(p=>p.x)),y1:Math.max(...ps.map(p=>p.y))};}
-function fitView(){let b=bbox(L());if(!b&&state.cur>0&&settings.ghost)b=bbox(state.levels[state.cur-1]);/* étage vide : on cadre sur le fantôme du niveau du dessous */const W=cv.clientWidth,H=cv.clientHeight;if(!b){view.zoom=60;view.ox=W/2;view.oy=H/2;}else{const bw=b.x1-b.x0+2,bh=b.y1-b.y0+2;view.zoom=Math.max(12,Math.min(400,Math.min(W/bw,H/bh)));view.ox=W/2-(b.x0+b.x1)/2*view.zoom;view.oy=H/2-(b.y0+b.y1)/2*view.zoom;}draw();updZoom();save();}
+function fitView(){let b=bbox(L());if(!b&&state.cur>0&&settings.ghost)b=bbox(state.levels[state.cur-1]);/* étage vide : on cadre sur le fantôme du niveau du dessous */const W=cv.clientWidth,H=cv.clientHeight;
+  /* D54 (design 3) : au bureau, le plan se cadre au-dessus de la bande du bas (barre de zoom, bulle d'astuce, message) */
+  const bas=isMobile()?0:Math.min(120,Math.round(H*0.16)),Hu=H-bas;if(!b){view.zoom=60;view.ox=W/2;view.oy=Hu/2;}else{const bw=b.x1-b.x0+2,bh=b.y1-b.y0+2;view.zoom=Math.max(12,Math.min(400,Math.min(W/bw,Hu/bh)));view.ox=W/2-(b.x0+b.x1)/2*view.zoom;view.oy=Hu/2-(b.y0+b.y1)/2*view.zoom;}draw();updZoom();save();}
 function toggle(k){settings[k]=!settings[k];const b=document.getElementById(k+'Btn');if(b)b.classList.toggle('on',settings[k]);saveView();if(k==='cotes')updLayersBtn();draw();}
 
 // ---------- Accroche ----------
@@ -3880,7 +3917,7 @@ function clickAction(raw){
     if(ref){const n=addWall(ref,p);chain.push(p);lenBuf='';if(n){endChain(false);return;}} else chain.push(p); lenBuf=''; draw(); return;
   }
   if(tool==='ouverture'){const nw=nearestWall(raw,0.6,L(),true);if(!nw){toast('Approche-toi d\'un mur pour poser l\'ouverture');return;}const def=OPENINGS[openingType];const w=nw.wall,Lw=wallLen(w);if(def.w>Lw-0.1){toast('Ce mur est trop court pour cette ouverture');return;}const t=Math.max(def.w/2/Lw,Math.min(1-def.w/2/Lw,nw.t));const dup=ouverturesChevauchees(L(),w.id,t,def.w,null);if(dup.length){sel={kind:'opening',id:dup[0].id};render();toast('Il y a déjà une ouverture ici : je te la sélectionne. Glisse-la pour la déplacer.',true);return;}const side=sideOf(raw,w);history.push(snapshot());const op={id:uid(),wallId:w.id,t,type:openingType,w:def.w,h:def.h,hinge:1,side};const _def=OPENINGS[openingType];if(_def&&(openingType==='porte_entree'||openingType==='garage'||_def.cat==='fenetre')){op.dormant=dormantConseille(op);}if(mode()!=='existant')op.st='creer';L().openings.push(op);sel={kind:'opening',id:op.id};afterChange();if(_def&&_def.cat==='fenetre'&&!isExteriorWall(w))toast('Fenêtre posée sur un mur intérieur : c\'était une porte ? Change son type dans le volet.');return;}
-  if(tool==='equipement'){const def=ITEMS[itemType];const {p}=snapPoint(raw,null);history.push(snapshot());const it={id:uid(),type:itemType,x:p.x,y:p.y,w:def.w,h:def.h,rot:0};if(mode()!=='existant')it.st='creer';if(itemType==='escalier'){it.stair={type:'droit'};fitStair(it,L());}const sn=snapItemToWall(it,raw);if(sn)Object.assign(it,sn);pushOutOfWalls(it);L().items.push(it);sel={kind:'item',id:it.id};afterChange();if(mode()!=='existant')toast(def.label+' ajouté « '+LEX.etat.poser.toLowerCase()+' » (travaux). Pour un équipement déjà en place, dessine-le en vue '+nomVue('existant')+'.',true);return;}
+  if(tool==='equipement'){const def=ITEMS[itemType];const {p}=snapPoint(raw,null);history.push(snapshot());const it={id:uid(),type:itemType,x:p.x,y:p.y,w:def.w,h:def.h,rot:0};if(mode()!=='existant')it.st='creer';if(itemType==='escalier'){it.stair={type:'droit'};fitStair(it,L());}const sn=snapItemToWall(it,raw);if(sn)Object.assign(it,sn);pushOutOfWalls(it);L().items.push(it);sel={kind:'item',id:it.id};afterChange();if(mode()!=='existant')toast(LEX.etat.poser+' (travaux) : '+def.label+'. Pour un équipement déjà en place, dessine-le en vue '+nomVue('existant')+'.',true); /* D54 : « Douche ajouté » ne s'accordait pas ; le libellé d'abord, pour tous les équipements */return;}
   if(tool==='texte'){history.push(snapshot());const t={id:uid(),x:raw.x,y:raw.y,text:'',color:lastNoteColor};TX(L()).push(t);sel={kind:'text',id:t.id};tool='select';afterChange();updateCursor();setTimeout(()=>document.getElementById('txtEdit')?.focus(),30);return;}
   if(tool==='cote'){
     if(dimPending){history.push(snapshot());L().dims.push({id:uid(),a:dimPending.a,b:dimPending.b,off:dimOffAt(dimPending,raw)});dimPending=null;afterChange();toast('Cote posée — glisse-la pour la faire coulisser, Alt pour la déplacer',true);return;}
@@ -4096,8 +4133,10 @@ function typeAuTrace(lv,a,b){const F=(facesCache[lv.id]||[]).filter(f=>f.room);
   return {type:ref?ref.type:'mur',t:ref&&ref.t!=null?ref.t:null,facade:true};}
 /* D39 (novice16) : une pièce qui se ferme dit sa surface et le type deviné, avec « Choisir son type ». */
 function annoncerPiece(lv,fs,premier,facade){const f=fs[0],r=f&&f.room;if(!r)return;_pieceAnnoncee=true;
-  const txt=fs.length>1?`${fs.length} pièces fermées.`:`Pièce fermée : ${fmtM2(areaNet(lv,f))}${premier?' à l\'intérieur':''}, « ${roomName(r)} » d'après sa taille.`;
-  toast(txt+(premier?' Les murs tracés ensuite dans une pièce seront des cloisons de 7 cm ; ceux qui agrandissent le logement, des murs de 20 cm.':facade?' Ses murs donnant dehors sont des murs de façade (20 cm), alignés sur les autres.':''),true,{action:'Choisir son type',fn:()=>{if(!L().rooms.includes(r))return;sel={kind:'room',id:r.id};multi=[];msel=[];if(tool!=='select'){if(tool==='mur'&&chain.length)endChain(false);tool='select';renderTools();updateCursor();}panelTab='details';render();}});}
+  /* D54 (design 3) : deux lignes au plus — la surface et le nom deviné. La règle cloison / mur de façade est dans le
+     panneau (« Automatique ») : le message de 4 lignes la répétait, et restait plus de 10 s sur le plan. */
+  const txt=fs.length>1?`${fs.length} pièces fermées.`:`Pièce fermée : ${fmtM2(areaNet(lv,f))}${premier?' à l\'intérieur':''} · « ${roomName(r)} »`;
+  toast(txt,true,{action:'Choisir son type',fn:()=>{if(!L().rooms.includes(r))return;sel={kind:'room',id:r.id};multi=[];msel=[];if(tool!=='select'){if(tool==='mur'&&chain.length)endChain(false);tool='select';renderTools();updateCursor();}panelTab='details';render();}});}
 function addWall(a,b){
   history.push(snapshot());if(history.length>80)history.shift();future=[];
   const lv=L();const before=new Set(lv.rooms.map(r=>r.id));
@@ -4113,7 +4152,7 @@ function addWall(a,b){
   const premier=!before.size&&fresh.length&&(typ==='mur'||typ==='porteur');
   /* D48 (arbitrage tour 2) : après le premier contour, l'outil passe en « Automatique » — le type se
      lit au tracé (cloison dans une pièce, mur de façade dehors), et après un rechargement aussi. */
-  if(premier){wallType='auto';customT=null;toast(`Pièce fermée : ${fmtM2(areaNet(lv,fresh[0]))}. Les murs tracés ensuite dans une pièce seront des cloisons (7 cm), ceux qui agrandissent le logement des murs de 20 cm — change le type dans le volet si besoin.`,true);}
+  if(premier){wallType='auto';customT=null;toast(`Pièce fermée : ${fmtM2(areaNet(lv,fresh[0]))}. Les murs suivants se règlent seuls (volet « Automatique »).`,true);} /* D54 : deux lignes au plus */
   else if(fresh.length){const fac=chainWallIds.some(id=>murFacade.has(id));
     /* R6 : une pièce fermée par des murs de façade s'annonce à la fin du tracé, APRÈS leur alignement ;
        annoncée ici, elle disait la surface d'avant (« 10,6 m² » pour une pièce de 11,6 m²). */
@@ -4438,6 +4477,10 @@ const HINTS={
    (elle recouvrait les cotes du bas en permanence). Un clic sur le « ? » la rouvre. Pendant un tracé, elle reste. */
 let astuceT;
 function montrerAstuce(html,garder){const h=document.getElementById('hint');if(!h)return;if(typeof html==='string')h.innerHTML=html;h.hidden=!h.innerHTML.trim();h.classList.remove('replie');h.removeAttribute('title');clearTimeout(astuceT);
+  /* D54 (design 3) : une astuce qui arrive avec un message du même geste (« Pièce fermée… », « Nouveau plan… ») arrive
+     repliée en « ? » (un clic la rouvre) : le même geste n'est pas annoncé deux fois. Un message de vue, ou plus ancien,
+     ne la replie pas — une nouvelle sélection a droit à son astuce. */
+  {const t=document.getElementById('toast');if(!garder&&!isMobile()&&t&&t.classList.contains('show')&&!t.classList.contains('over')&&!t._vue&&Date.now()-(t._debut||0)<600){h.classList.add('replie');h.title='Afficher l\'astuce';return;}}
   if(!garder)astuceT=setTimeout(()=>{h.classList.add('replie');h.title='Afficher l\'astuce';},7000);}
 function draw(){
   /* D38 : la densité de pixels a changé sans 'resize' (fenêtre glissée d'un écran Retina vers un
@@ -4589,7 +4632,7 @@ function draw(){
       if(hover&&!drag){const q=nodeAt(lastMouse.x,lastMouse.y);if(q&&!(sel?.kind==='wall'&&(same(findWall(sel.id)?.a,q)||same(findWall(sel.id)?.b,q))))showAt(q);}}
   }
   // poignée centrale du mur sélectionné (glisser = agrandir/réduire la pièce)
-  if(sel?.kind==='wall'&&!drag){const w=findWall(sel.id);if(w&&!isVirtual(w)){const m=S(mul(add(w.a,w.b),.5));const n=perp(norm(sub(w.b,w.a)));ctx.beginPath();ctx.arc(m.x,m.y,9,0,7);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#4f46e5';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.moveTo(m.x-n.x*5,m.y-n.y*5);ctx.lineTo(m.x+n.x*5,m.y+n.y*5);ctx.stroke();[1,-1].forEach(s=>{const tip=v(m.x+n.x*5*s,m.y+n.y*5*s);const u=norm(sub(w.b,w.a));ctx.beginPath();ctx.moveTo(tip.x-n.x*2.5*s+u.x*2.5,tip.y-n.y*2.5*s+u.y*2.5);ctx.lineTo(tip.x,tip.y);ctx.lineTo(tip.x-n.x*2.5*s-u.x*2.5,tip.y-n.y*2.5*s-u.y*2.5);ctx.stroke();});}}
+  if(sel?.kind==='wall'&&!drag){const w=findWall(sel.id);if(w&&!isVirtual(w)&&!(mode()==='projet'&&wst(w)==='demolir')){const m=S(mul(add(w.a,w.b),.5)); /* D54 (design 2) : un mur qui part n'a ni poignée ronde ni poignées d'extrémité (elles coupaient l'étiquette de la pièce réunie) */const n=perp(norm(sub(w.b,w.a)));ctx.beginPath();ctx.arc(m.x,m.y,9,0,7);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#4f46e5';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.moveTo(m.x-n.x*5,m.y-n.y*5);ctx.lineTo(m.x+n.x*5,m.y+n.y*5);ctx.stroke();[1,-1].forEach(s=>{const tip=v(m.x+n.x*5*s,m.y+n.y*5*s);const u=norm(sub(w.b,w.a));ctx.beginPath();ctx.moveTo(tip.x-n.x*2.5*s+u.x*2.5,tip.y-n.y*2.5*s+u.y*2.5);ctx.lineTo(tip.x,tip.y);ctx.lineTo(tip.x-n.x*2.5*s-u.x*2.5,tip.y-n.y*2.5*s-u.y*2.5);ctx.stroke();});}}
   // extrémités non raccordées (hors tracé en cours)
   if(!chain.length&&tool!=='export'){danglingNodes(lv).forEach(p=>{const s=S(p);ctx.beginPath();ctx.arc(s.x,s.y,8,0,7);ctx.strokeStyle='#dc2626';ctx.lineWidth=2.5;ctx.stroke();ctx.fillStyle='rgba(220,38,38,.12)';ctx.fill();});}
   // cotes manuelles
@@ -4624,7 +4667,7 @@ function draw(){
   if(tool==='mesure')drawMeasure();
   if(tool==='calque'&&calib.length){calib.forEach(p=>{const s=S(p);ctx.beginPath();ctx.arc(s.x,s.y,6,0,7);ctx.fillStyle='#c2410c';ctx.fill();});if(calib.length===1&&hover)drawDim(calib[0],hover,'#c2410c',true);}
   // poignées du mur sélectionné
-  if(sel?.kind==='wall'){const w=findWall(sel.id);if(w)[w.a,w.b].forEach(p=>{const s=S(p);ctx.beginPath();ctx.arc(s.x,s.y,6.5*Math.max(1,hitScale*0.7),0,7);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#4f46e5';ctx.lineWidth=2.5;ctx.stroke();});}
+  if(sel?.kind==='wall'){const w=findWall(sel.id);if(w&&!(mode()==='projet'&&wst(w)==='demolir'))[w.a,w.b].forEach(p=>{const s=S(p);ctx.beginPath();ctx.arc(s.x,s.y,6.5*Math.max(1,hitScale*0.7),0,7);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#4f46e5';ctx.lineWidth=2.5;ctx.stroke();});}
   updateMeasBox();
 }
 function hexA(hex,a){const n=parseInt(hex.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;}
@@ -5293,9 +5336,13 @@ function renderLevelsBrut(){majLibellePlan();document.getElementById('levels').i
 /* D42 : `silencieux` — la visite guidée et l'ouverture de l'exemple changent de vue sans fenêtre ni message.
    Au téléphone (mode chantier), la fenêtre « dessine ta rénovation » ne s'ouvre pas : un message court suffit. */
 function setMode(m,silencieux){toitOpen=false;if(m===mode())return;if(tool==='mur'&&chain.length)endChain(false);state.mode=m;clearSel();chain=[];rectMode=null;afterChange();
+  cacherToastVue(); /* D54 (design 4) : « Vue Après travaux : lecture seule… » restait affiché en vue Avant travaux */
   if(silencieux){if(m==='final'&&!OUTILS_LECTURE.includes(tool))setTool('select');return;}
-  if(m==='projet'){let seen=false;try{seen=!!localStorage.getItem('avyora-plan-projet-tip');localStorage.setItem('avyora-plan-projet-tip','1');}catch{}if(!seen&&!isMobile())openModal('projet');else toast(isMobile()?`Vue ${nomVue('projet')} : en ${LEX.couleur.creer} ce qui est à créer, en ${LEX.couleur.demolir} ce qui est à démolir. Touche un élément pour voir sa fiche.`:`Vue ${nomVue('projet')} : ce que tu ajoutes est à créer, ce que tu cliques peut être démoli`,true);}
-  if(m==='final'){if(!OUTILS_LECTURE.includes(tool))setTool('select');toast(`Vue ${nomVue('final')} : lecture seule. Pour modifier, passe en vue ${nomVue('projet')}.`,true);}}
+  if(m==='projet'){let seen=false;try{seen=!!localStorage.getItem('avyora-plan-projet-tip');localStorage.setItem('avyora-plan-projet-tip','1');}catch{}if(!seen&&!isMobile())openModal('projet');else toast(isMobile()?`Vue ${nomVue('projet')} : en ${LEX.couleur.creer} ce qui est à créer, en ${LEX.couleur.demolir} ce qui est à démolir. Touche un élément pour voir sa fiche.`:`Vue ${nomVue('projet')} : clique une pièce (sol, peinture, faïence), une fenêtre (je garde, à remplacer) ou un mur (à démolir).`,true,{vue:1});}
+  if(m==='final'){if(!OUTILS_LECTURE.includes(tool))setTool('select');toast(`Vue ${nomVue('final')} : lecture seule. Pour modifier, passe en vue ${nomVue('projet')}.`,true,{vue:1});}}
+/* D54 : un message qui parle d'une vue (opt.vue) se retire quand on en change ; un message qui porte une action
+   (« Annuler » d'un geste) reste, il concerne encore ce geste. */
+function cacherToastVue(){const t=document.getElementById('toast');if(!t||!t.classList.contains('show')||!t._vue)return;clearTimeout(toastT);t.classList.remove('show','act');t._vue=false;}
 function setLevel(i){toitOpen=false;state.cur=i;sel=null;chain=[];syncRooms(L());save();render();}
 /* Quatre situations, pas deux. Un étage peut exister déjà, ou être créé — et s'il est créé, les
    murs peuvent exister DÉJÀ (on coupe un volume de grande hauteur par un plancher : les murs du
@@ -5426,8 +5473,8 @@ function renderPanel(){try{avecFocus(document.getElementById('pbody'),renderPane
 let _selVu='';
 function renderPanelBrut(){pruneEmptyTexts();{const k=sel?sel.kind+':'+(sel.id||sel.group||'')+':'+msel.length:'';if(k&&k!==_selVu)panelTab='details';_selVu=k;}if(isMobile()){if(sel)toggleSheet(true);const lb=document.getElementById('sheetLabel');if(lb){try{lb.textContent=sel?'Élément sélectionné · détails':(tool!=='select'?TOOLS.find(t=>t[0]===tool)?.[1]+' · options':resumeTiroir());}catch{}}}
   const lv=L(); const P=document.getElementById('pbody'); let h='';
-  const _T=chantierTasks();const _done=_T.filter(t=>isDone(t.id)).length;
-  const tabBar=`<div class="ptabs" role="tablist" aria-label="Panneau"><button type="button" role="tab" aria-selected="${panelTab!=='suivi'}" class="${panelTab!=='suivi'?'on':''}" onclick="setPanelTab('details')">Détails</button><button type="button" role="tab" aria-selected="${panelTab==='suivi'}" class="${panelTab==='suivi'?'on':''}" onclick="setPanelTab('suivi')"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 12.5l2 2 4-4"/></svg>Suivi${_T.length?` <span class="tabn">${_done}/${_T.length}</span>`:''}</button></div>`;
+  const _T=chantierTasks();const _done=_T.filter(t=>isDone(t.id)).length,_retard=!!(rappelSuivi()?.nr); /* D54 : l'onglet Suivi dit le retard */
+  const tabBar=`<div class="ptabs" role="tablist" aria-label="Panneau"><button type="button" role="tab" aria-selected="${panelTab!=='suivi'}" class="${panelTab!=='suivi'?'on':''}" onclick="setPanelTab('details')">Détails</button><button type="button" role="tab" aria-selected="${panelTab==='suivi'}" class="${panelTab==='suivi'?'on':''}" onclick="setPanelTab('suivi')"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 12.5l2 2 4-4"/></svg>Suivi${_T.length?` <span class="tabn${_retard?' retard':''}">${_done}/${_T.length}</span>${_retard?'<span class="sr-only">, tâches en retard</span>':''}`:''}</button></div>`;
   if(panelTab==='suivi'){P.innerHTML=tabBar+suiviPanelHTML(_T);panneauEnHaut(P);renderFoot();return;}
   h+=tabBar;
   if(tool==='mur'){
@@ -5450,10 +5497,16 @@ function renderPanelBrut(){pruneEmptyTexts();{const k=sel?sel.kind+':'+(sel.id||
     ${chain.length?`<div class="tip act">${ico('crayon','lead')}Tracé en cours : ${pluriel(chain.length,'point')}. <b>Entrée</b> ferme la pièce, <b>Échap</b> termine sans fermer.</div>`:''}`;
   } else if(tool==='ouverture'){
     h+=`<div class="ptitle">Ouvertures</div><div class="psub">Choisis un modèle puis clique sur un mur : l'ouverture s'y aimante. Largeur, sens et hauteur se règlent ensuite.</div>`;
-    const cats=[['int','Intérieur','#b45309','<svg viewBox="0 0 24 24"><path d="M4 21h16M6 21V4h9v17M12 12v.5"/></svg>',k=>!isExtType(k)],['ext','Extérieur','#0284c7','<svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/></svg>',k=>isExtType(k)]];
-    cats.forEach(([key,label,col,ic,test])=>{const list=Object.entries(OPENINGS).filter(([k])=>test(k));
-      h+=`<div class="fam" style="--fc:${col};--fbg:${hexA(col,.09)}"><div class="famh"><span class="fic">${ic}</span><b>${label}</b><small>${list.length}</small></div><div class="lib2">`+
-        list.map(([k,o])=>`<button class="it ${openingType===k?'on':''}" onclick="openingType='${k}';renderPanel();draw()" title="${o.label}"><span class="th op">${openingIcon(o.kind)}</span><b>${o.label}</b><small>${fmt(o.w)} × ${fmt(o.h)} m</small></button>`).join('')+`</div></div>`;});
+    /* D54 (jury final, novice) : la Fenêtre, le modèle le plus posé, tombait sous le pied du budget (à 1 280 × 800,
+       toute la section Extérieur était cachée) et le premier clic « sur la Fenêtre » ouvrait le budget. L'extérieur
+       passe d'abord, dans l'ordre de ce qu'on pose le plus (Fenêtre, Porte d'entrée, Porte-fenêtre), puis l'intérieur
+       (Porte simple en tête) ; chaque modèle tient sur une ligne : les quatre plus courants se voient sans défiler. */
+    const ORDRE_OUV=['fenetre','porte_entree','porte_fenetre','baie','fenetre_p','garage','porte','porte_double','coulissante','porte_pleine','passage'];
+    const cats=[['ext','Extérieur','#0284c7','<svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/></svg>',k=>isExtType(k)],['int','Intérieur','#b45309','<svg viewBox="0 0 24 24"><path d="M4 21h16M6 21V4h9v17M12 12v.5"/></svg>',k=>!isExtType(k)]];
+    const rangOuv=k=>{const i=ORDRE_OUV.indexOf(k);return i<0?99:i;};
+    cats.forEach(([key,label,col,ic,test])=>{const list=Object.entries(OPENINGS).filter(([k])=>test(k)).sort((a,b)=>rangOuv(a[0])-rangOuv(b[0]));
+      h+=`<div class="fam" style="--fc:${col};--fbg:${hexA(col,.09)}"><div class="famh"><span class="fic">${ic}</span><b>${label}</b><small>${list.length}</small></div><div class="lib2 liste">`+
+        list.map(([k,o])=>`<button class="it ${openingType===k?'on':''}" onclick="openingType='${k}';renderPanel();draw()" title="${o.label}" aria-pressed="${openingType===k}"><span class="th op">${openingIcon(o.kind)}</span><span class="itx"><b>${o.label}</b><small>${fmt(o.w)} × ${fmt(o.h)} m</small></span></button>`).join('')+`</div></div>`;});
     h+=`<div class="tip"><b>Intérieur</b> : portes entre pièces (comptées en menuiserie intérieure). <b>Extérieur</b> : donne sur dehors → pose, tapée et isolation gérées. En vue <b>${nomVue('projet')}</b>, une ouverture ajoutée est un <b>percement</b> ; une existante peut être marquée <b>à boucher</b>.</div>`;
   } else if(tool==='doublage'){
     const ite=DBL_CFG.mode==='ite',ep=DBL_CFG.e+(ite?0.010:0.020),R=+(DBL_CFG.e/(ISO_MAT[DBL_CFG.mat].lambda)).toFixed(2);
@@ -5582,7 +5635,7 @@ function renderSelection(lv){
   const backLabel=sel.kind==='room'?'Toutes les pièces':'Retour';
   let h=`<button class="backbtn" onclick="clearSel();render()"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>${backLabel}</button>`;
   if(sel.kind==='wall'){const w=findWall(sel.id);if(!w){sel=null;return renderOverview(lv);}const nOp=lv.openings.filter(o=>o.wallId===w.id).length;
-    h+=`<div class="ptitle">${isVirtual(w)?'Séparation (sans mur)':'Mur'}</div><div class="psub">${isVirtual(w)?'Découpe une pièce ouverte en zones. Non comptée dans les travaux.':[nOp?pluriel(nOp,'ouverture')+' sur ce mur':'',isMobile()?'':'glisse ses extrémités · <kbd>Maj</kbd>+clic pour sélectionner plusieurs murs'].filter(Boolean).join(' · ')}</div>
+    h+=`<div class="ptitle">${isVirtual(w)?'Séparation (sans mur)':'Mur'}</div><div class="psub">${isVirtual(w)?'Découpe une pièce ouverte en zones. Non comptée dans les travaux.':[nOp?pluriel(nOp,'ouverture')+' sur ce mur':'',isMobile()?'':'<span class="aidegeste">glisse ses extrémités · <kbd>Maj</kbd>+clic pour sélectionner plusieurs murs</span>'].filter(Boolean).join(mode()==='final'?'':' · ')}</div>
     ${(()=>{const g=groupOf(w.id);return g?`<div class="grouptag"><span class="gdot" style="background:${GROUP_COLORS[(state.groups||[]).indexOf(g)%GROUP_COLORS.length]}"></span> Groupe « ${esc(g.name)} » <button class="gx" style="margin-left:auto" onclick="removeFromGroup('${w.id}')" title="Retirer ce mur du groupe">Dissocier ${ico('x')}</button></div>`:'';})()}
     ${!isVirtual(w)?blocDecisionExistant('wall',k=>`setWallProp('st','${k}')`,wst(w),`Ce que tu décides de ce mur.`)+(mode()==='existant'?tronconsHTML(w):''):''}
     ${mode()==='existant'?questionPorteurHTML(w):''}
@@ -5672,10 +5725,10 @@ function renderSelection(lv){
     ${mode()==='projet'?(()=>{const e=ist(its[0]),tous=its.every(x=>ist(x)===e);return `<div class="ph mt">Décision</div>${segEtat('item',e,k=>`setItemsEtat('${k}')`,null,tous)}${tous?'':'<div class="tip" style="margin-top:6px">Ces équipements n\'ont pas tous le même état : un choix s\'applique à tous.</div>'}`;})():(()=>{const nc=its.filter(x=>ist(x)==='creer').length,nd=its.filter(x=>ist(x)==='demolir').length;return nc||nd?`<div class="tip">${nc?nc+' à poser (travaux)':''}${nc&&nd?' · ':''}${nd?nd+' à déposer':''} dans cette sélection. Change leur état en vue <b>${nomVue('projet')}</b>.</div>`:'';})()}
     <div class="btnrow"><button class="ib" onclick="rotateItem()">${ico('pivoter')}Pivoter 90°</button><button class="ib" onclick="duplicateItem()">${ico('copie')}Dupliquer</button></div>${decalerHTML()}${lienSuppr()}
     <div class="btnrow"><button class="ib" style="flex:1" onclick="clearSel();render()">Désélectionner</button></div>
-    <div class="tip">Glisse l'un d'eux : tout le groupe suit · flèches pour ajuster · <kbd>Maj</kbd>+clic ajoute ou retire un élément · <kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>V</kbd> copie-colle le groupe.</div>`;
+    <div class="tip aidegeste">Glisse l'un d'eux : tout le groupe suit · flèches pour ajuster · <kbd>Maj</kbd>+clic ajoute ou retire un élément · <kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>V</kbd> copie-colle le groupe.</div>`;
   }
   else if(sel.kind==='item'){const it=lv.items.find(i=>i.id===sel.id);if(!it){sel=null;return renderOverview(lv);}const def=ITEMS[it.type];const above=state.levels[state.cur+1];
-    h+=`<div class="ptitle">${def.label}</div><div class="psub">Glisse pour déplacer · poignée ronde ou <b>R</b> pour pivoter.</div>
+    h+=`<div class="ptitle">${def.label}</div><div class="psub aidegeste">Glisse pour déplacer · poignée ronde ou <b>R</b> pour pivoter.</div>
     ${it.type!=='escalier'?`<div class="row"><label>${structOf(it)==='poutre'?'Portée':structOf(it)==='poteau'?'Section · côté A':'Largeur'}</label><span><input class="fin n" type="number" step="0.05" min="0.1" value="${it.w.toFixed(2)}" onchange="setItemProp('w',+this.value)"> m</span></div>
     <div class="row"><label>${structOf(it)==='poutre'?'Largeur de section':structOf(it)==='poteau'?'Section · côté B':'Profondeur'}</label><span><input class="fin n" type="number" step="0.05" min="0.1" value="${it.h.toFixed(2)}" onchange="setItemProp('h',+this.value)"> m</span></div>`:''}
     <div class="row"><label>Angle</label><span><input class="fin n" type="number" step="15" min="-360" max="360" value="${Math.round(it.rot*180/Math.PI)}" onchange="setItemRot(this.value)"> °</span></div>
@@ -5710,7 +5763,7 @@ function renderSelection(lv){
     <div class="ph mt">Étage</div>${above?`<div class="row"><label>Relié à « ${above.name} » (trémie)</label><input type="checkbox" ${it.link!==false?'checked':''} onchange="setItemProp('link',this.checked)"></div><div class="tip">La trémie (${fmtM2(stairArea(it,lv))}, emprise réelle des volées et du palier) est déduite de la surface de la pièce du dessus et dessinée dessus.</div>`:`<div class="tip">Ajoute un niveau au-dessus (bouton <b>+</b>) : la trémie sera créée automatiquement à l'étage.</div>`}`;})():''}
     <div class="btnrow"><button class="ib" onclick="rotateItem()">${ico('pivoter')}Pivoter 90°</button><button class="ib" onclick="duplicateItem()">${ico('copie')}Dupliquer</button></div>${decalerHTML()}${lienSuppr()}
     ${ist(it)==='demolir'?'':elemProductSection(it,def.label,it.type==='baignoire'?'baignoire îlot 170 acrylique':it.type==='plan'?'plan stratifié chêne 240':'modèle repéré')}
-    <div class="tip"><kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>V</kbd> copie et colle sous la souris · <kbd>Ctrl</kbd>+<kbd>D</kbd> duplique · <kbd>Maj</kbd>+clic ou <kbd>Maj</kbd>+glisser dans le vide pour en sélectionner plusieurs · un meuble adossé à un mur suit le mur.</div>`;
+    <div class="tip aidegeste"><kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>V</kbd> copie et colle sous la souris · <kbd>Ctrl</kbd>+<kbd>D</kbd> duplique · <kbd>Maj</kbd>+clic ou <kbd>Maj</kbd>+glisser dans le vide pour en sélectionner plusieurs · un meuble adossé à un mur suit le mur.</div>`;
   }
   if(sel.kind==='text'){const t=TX(lv).find(x=>x.id===sel.id);if(!t){sel=null;return renderOverview(lv);}
     h+=`<div class="ptitle">Note sur le plan</div><div class="psub">Glisse-la pour la déplacer · elle part dans le dossier d'export.</div><textarea class="fin" id="txtEdit" rows="4" placeholder="Ex. mur porteur ? à vérifier · garder le carrelage · prise à déplacer ici" oninput="setTextProp(this.value)" onchange="save()">${esc(t.text||'')}</textarea><div class="ph mt">Couleur</div><div class="swatches">${Object.entries(NOTE_COLORS).map(([k,c])=>`<button class="sw ${(t.color||NOTE_DEFAUT)===k?'on':''}" style="background:${c[0]};border-color:${c[1]}" title="${k}" onclick="setTextColor('${k}')"></button>`).join('')}<label class="sw custom ${t.color&&!NOTE_COLORS[t.color]?'on':''}" title="Couleur libre" style="${t.color&&!NOTE_COLORS[t.color]?'background:'+hexA(t.color,.3)+';border-color:'+t.color:''}"><input type="color" value="${t.color&&!NOTE_COLORS[t.color]?t.color:'#f59e0b'}" oninput="setTextColor(this.value)">+</label></div><div class="tip" style="margin-top:8px">Crée ton code couleur : par ex. bleu = question pour l'artisan, vert = validé, rose = à vérifier.</div><div class="btnrow"><button class="ib danger" style="flex:1" onclick="deleteSel()">Supprimer la note</button></div><div class="tip">Raccourci <kbd>T</kbd> puis clic dans le plan pour en poser une autre. Les notes servent à toi et aux artisans : questions, choix, points d'attention.</div>`;}
@@ -5733,9 +5786,9 @@ function renderSelection(lv){
       const clo=cloisonsHumidesDe(lv,f),fa=faienceDe(lv,f);
       return `<div class="ph mt">Faïence neuve${gl('faience')}</div>
       <div class="seg wrap">${Object.entries(H).map(([k,l])=>{const off=k==='douche'&&!eau&&cur!=='douche';return `<button class="${cur===k?'on':''}"${off?' disabled':''} onclick="setRoomProp('faience','${k}')">${l[0]}<small>${off?'dessine d\'abord la douche':l[1]}</small></button>`;}).join('')}</div>
-      <div class="tip${cur===null&&faienceADecider(lv,f)?' q':''}" style="margin-top:6px">${cur===null?(faienceADecider(lv,f)?'<b>À décider.</b> Tu refais cette pièce d\'eau : choisis une hauteur de faïence, ou « Aucune » si tu gardes les murs tels quels. Tant que ce n\'est pas dit, rien n\'est compté.':'Pas encore décidé : rien de compté. Choisis une hauteur si tu refais les murs de cette pièce, ou « Aucune » si tu les gardes.'):!cur?'Aucune faïence neuve : les murs restent tels quels. Rien de compté, ni faïence ni cloisons hydrofuges.':cur==='douche'&&!eau?'Aucune douche ni baignoire dessinée dans cette pièce : rien à carreler. Pose-la avec l\'outil Équipements, ou choisis une autre hauteur.':'C\'est ce qui décide la surface carrelée'+(fa&&fa.m2>0?' ('+fmtM2(fa.m2)+')':'')+' : '+(cur==='pleine'?'toute la surface des murs':cur==='douche'?'seulement les murs de la douche':'une bande de 1,20 m, portée à 2,00 m dans la douche')+'. Le reste des murs se repeint si tu choisis « Peinture » plus bas.'+(clo>0?' Les cloisons que tu crées autour de cette pièce ('+fmtM2(clo)+') se montent en plaques hydrofuges.':' Les cloisons existantes restent en place ; une cloison à créer autour de cette pièce se monterait en plaques hydrofuges.')}</div>`;})()}
+      <div class="tip${cur===null&&faienceADecider(lv,f)?' q':''}" style="margin-top:6px">${cur===null?(faienceADecider(lv,f)?'<b>À décider.</b> Tu refais cette pièce d\'eau : choisis une hauteur de faïence, ou « Aucune » si tu gardes les murs tels quels. Tant que ce n\'est pas dit, rien n\'est compté.':'Pas encore décidé : rien de compté. Choisis une hauteur si tu refais les murs de cette pièce, ou « Aucune » si tu les gardes.'):!cur?'Aucune faïence neuve : les murs restent tels quels. Rien de compté, ni faïence ni cloisons hydrofuges.':cur==='douche'&&!eau?'Aucune douche ni baignoire dessinée dans cette pièce : rien à carreler. Pose-la avec l\'outil Équipements, ou choisis une autre hauteur.':'C\'est ce qui décide la surface carrelée'+(fa&&fa.m2>0?' ('+fmtM2(fa.m2)+')':'')+' : '+(cur==='pleine'?'toute la surface des murs':cur==='douche'?'seulement les murs de la douche':'une bande de 1,20 m, portes déduites, portée à 2,00 m dans la douche')+'. Le reste des murs se repeint si tu choisis « Peinture » plus bas.'+(clo>0?' Les cloisons que tu crées autour de cette pièce ('+fmtM2(clo)+') se montent en plaques hydrofuges.':' Les cloisons existantes restent en place ; une cloison à créer autour de cette pièce se monterait en plaques hydrofuges.')}</div>`;})()}
     ${mode()==='existant'?`<div class="ph mt">Sol actuel</div><select class="fin" aria-label="Sol actuel" onchange="setRoomProp('floor',this.value)">${FLOORS_EX.map(fl=>`<option value="${esc(fl)}" ${fl===r.floor?'selected':''}>${fl===SANS_PLANCHER?'Pas de plancher — volume ouvert (étage à créer)':fl}</option>`).concat(r.floor&&!FLOORS_EX.includes(r.floor)?[`<option selected>${esc(r.floor)}</option>`]:[]).join('')}</select>
-    <div class="tip" style="margin-top:8px">Précise bien l'état : <b>terre / sol brut</b> → il faudra couler une <b>dalle</b> ; <b>dalle brute</b> → il faudra une <b>chape</b> ; <b>chape</b> → prêt pour un revêtement. Le projet s'en déduit.</div>`
+    <div class="tip" style="margin-top:8px">Précise bien l'état : <b>terre / sol brut</b> → il faudra couler une <b>dalle</b> ; <b>dalle brute</b> → il faudra une <b>chape</b> ; <b>chape</b> → prêt pour un revêtement. Ce que tu décris ne coûte rien : c'est toi qui décides en vue <b>${nomVue('projet')}</b>.</div>`
     :(()=>{const so=r.sol||{};const A=areaNet(lv,f);const solsA=solsActuelsDe(lv,f);const sp=solPlan(r,solsA);const nw=r.floorNew||'';const c=solCouches(r);
       /* D37 (décision validée par Dani) : le revêtement se choisit DANS sa ligne de l'ordre de
          réalisation, comme la chape juste en dessous ; la liste « Revêtement de sol souhaité » du
@@ -5831,6 +5884,7 @@ function delRoomProduct(i){const r=L().rooms.find(r=>r.id===sel?.id);if(!r?.prod
 function elemProductSection(el,label,defaultNote){
   if(mode()==='existant')return '';
   const p=el.product||{};
+  if((mode()==='final'||isMobile())&&!p.nom&&!p.url&&!p.prix&&!String(el.note||'').trim())return ''; /* D54 (design 1) : en lecture, un bloc vide de champs grisés n'a rien à dire */
   return `<div class="ph mt">${ico('panier')} Produit repéré & note</div>
     <label class="pfl">Produit choisi<input class="fin" placeholder="ex. ${esc(defaultNote)}" value="${esc(p.nom||'')}" onchange="setElemProduct('nom',this.value)"></label>
     <div class="pf3" style="margin-top:8px"><label class="pfl" style="margin-top:0">Lien (facultatif)<input class="fin" placeholder="https://…" value="${esc(p.url||'')}" onchange="setElemProduct('url',this.value)"></label><label class="pfl" style="margin-top:0">Prix HT<span class="unit"><input class="fin n" type="number" step="1" min="0" value="${p.prix||''}" onchange="setElemProduct('prix',this.value)">€ HT</span></label></div>
@@ -5902,7 +5956,7 @@ function renderOverview(lv){
   /* D46 (cj-integration00) : une pièce ouverte par une démolition n'est pas une pièce jamais dessinée */
   const ouvertParTravaux=!faces.length&&mode()!=='existant'&&facesFor(lv,'existant').some(f=>f.room);
   const tq=quantities().travaux;
-  let h=`${isMobile()?`<div class="mplan"><span><small>Plan ouvert</small><b>${esc(state.name||'Mon plan')}</b></span><button type="button" class="ib" onclick="openPlansModal()">${ico('mesPlans')}Mes plans</button></div>`:'' /* D43 (qa16) : au téléphone, la barre n'a ni nom ni menu Fichier */}<div class="ptitle">${lv.name} <span class="chip vue-${mode()}">Vue ${nomVue(mode()).toLowerCase()}</span></div><div class="psub">${faces.length?pluriel(faces.length,'pièce détectée','pièces détectées')+' sur ce niveau.':ouvertParTravaux?'Plus aucune pièce fermée après ces travaux : un mur démoli ouvre la pièce. Elle reste en vue <b>'+nomVue('existant')+'</b>.':'Aucune pièce fermée pour l\'instant. Trace les murs extérieurs avec l\'outil <b>Murs</b>.'}</div>
+  let h=`${isMobile()?`<div class="mplan"><span><small>Plan ouvert</small><b>${esc(state.name||'Mon plan')}</b></span><button type="button" class="ib" onclick="openPlansModal()">${ico('mesPlans')}Mes plans</button></div>`:'' /* D43 (qa16) : au téléphone, la barre n'a ni nom ni menu Fichier */}${rappelSuiviHTML()}<div class="ptitle">${lv.name} <span class="chip vue-${mode()}">Vue ${nomVue(mode()).toLowerCase()}</span></div><div class="psub">${faces.length?pluriel(faces.length,'pièce détectée','pièces détectées')+' sur ce niveau.':ouvertParTravaux?'Plus aucune pièce fermée après ces travaux : un mur démoli ouvre la pièce. Elle reste en vue <b>'+nomVue('existant')+'</b>.':'Aucune pièce fermée pour l\'instant. Trace les murs extérieurs avec l\'outil <b>Murs</b>.'}</div>
   ${projetHTML() /* D42 : « Ton projet à X % » et la prochaine étape, en tête de la vue d'ensemble */}
   ${mode()==='projet'?`<div class="tip q" id="resumeTravaux">${resumeTravauxHTML(tq)}</div>`:mode()==='final'?`<div class="tip ok">Le logement <b>après travaux</b>, tel qu'il sera : murs démolis retirés, nouveaux murs et ouvertures intégrés, sans marquage. C'est le plan à montrer aux artisans. Pour changer les travaux, repasse en vue <b>${nomVue('projet')}</b>.</div>`:(lv.walls.length?`<div class="tip">Ton logement tel qu'il est. Quand il est complet, passe en vue <b>${nomVue('projet')}</b> (boutons en haut du plan) pour dessiner ce que tu démolis et ce que tu crées.</div>`:'')}
   <div class="ph mt">Pièces</div><div class="roomlist">`;
@@ -5967,7 +6021,7 @@ function renderFoot(){
   const carte=vide?`<div class="budget bcard attente"><span class="bk">Budget travaux HT</span><span class="bv" id="budgetVal">0 €</span><span class="bs"><small>${ATTENTE_PIECE}</small></span></div>`
     :rien?`<button type="button" class="budget bcard budgetbtn rien" onclick="showEstimate()"><span class="bk">Budget travaux HT</span><span class="bv" id="budgetVal">0 €</span><span class="bs"><small>${avant?'Rien de décidé pour l\'instant. Passe en vue <b>'+nomVue('projet')+'</b> pour marquer ce que tu changes.':'Rien de décidé pour l\'instant. Clique un mur, une ouverture ou une pièce et choisis ce que tu en fais.'}</small></span></button>`
     /* D48 (arbitrage tour 2) : le montant se voit aussi en gratuit ; le détail tâche par tâche est Pro */
-    :`<button type="button" class="budget bcard budgetbtn" onclick="showEstimate()" aria-label="Budget travaux HT : ${eur(px.total)}, ${pluriel(px.nb,'tâche')}. ${tout?'Voir le détail':'Voir la répartition par corps d\'état'}"><span class="bk">Budget travaux HT<span class="bn">${pluriel(px.nb,'tâche')}</span></span><span class="bv" id="budgetVal">${eur(px.total)}</span><span class="bs"><small>indicatif · prix catalogue, moyenne nationale</small><b>${tout?'Voir le détail':'Par corps d\'état'}${ico('fleche','inl')}</b></span></button>`; /* R6 : la flèche est une icône SVG, pas le glyphe → */
+    :`<button type="button" class="budget bcard budgetbtn" onclick="showEstimate()" aria-label="Budget travaux HT : ${eur(px.total)}, ${pluriel(px.nb,'tâche')}. ${tout?'Voir le détail':'Voir la répartition par corps d\'état'}"><span class="bk">Budget travaux HT<span class="bn"><b>${px.nb}</b> ${accord(px.nb,'tâche')}</span></span><span class="bv" id="budgetVal">${eur(px.total)}</span><span class="bs"><small>indicatif · prix catalogue, moyenne nationale</small><b>${tout?'Voir le détail':'Par corps d\'état'}${ico('fleche','inl')}</b></span></button>`; /* R6 : la flèche est une icône SVG, pas le glyphe → */
   const resume=vide?'':`<div class="presume"><b>${fmtM2(hv.area)}</b> habitables ${avant?'avant':'après'} travaux · <b>${hv.rooms}</b> pièce${hv.rooms>1?'s':''}${state.levels.length>1?' · <b>'+state.levels.length+'</b> niveaux':''}</div>`;
   {const bp=document.getElementById('budgetPlie');if(bp){bp.hidden=!!vide;if(!vide){bp.innerHTML=`<span>Budget HT</span><b>${eur(px.total)}</b><small>${tout?'Voir le détail':'Répartition'}</small>`;bp.setAttribute('aria-label',`Budget travaux HT : ${eur(px.total)}. ${tout?'Voir le détail':'Voir la répartition par corps d\'état'}`);}}}
   F.innerHTML=carte+resume+(isDev()?`<button class="ib devonly" style="width:100%;justify-content:center;margin-top:8px" onclick="ouvrirEnvoi()" ${vide?'disabled':''}>Envoyer vers mon estimation AVYORA (dev)</button>`:'');
@@ -5994,21 +6048,26 @@ function ecartBudget(px){
   if(Math.abs(px.total-prev.total)<1)return;
   const base=_ecartBase||prev;_ecartBase=base;
   const d=px.total-base.total;if(Math.abs(d)<1){cacherEcart();return;}
+  /* D54 (jury final, novice) : « +2 633 € · Poser la fenêtre neuve » pour une fenêtre à 610 € — la pastille
+     additionnait toute la série. Elle dit d'abord la DERNIÈRE décision (son montant, sa tâche), puis le cumul
+     de la série en second (« série : +2 633 € »), seulement s'il diffère. */
+  const dl=px.total-prev.total,serie=base!==prev&&Math.abs(d-dl)>=1?d:null;
   const ch=[];
-  M.forEach((t,id)=>{const o=base.M.get(id),dp=(t.prix||0)-((o&&o.prix)||0);if(Math.abs(dp)>=0.5)ch.push({t,dp});});
-  base.M.forEach((o,id)=>{if(!M.has(id)&&Math.abs(o.prix||0)>=0.5)ch.push({t:o,dp:-(o.prix||0),parti:true});});
+  M.forEach((t,id)=>{const o=prev.M.get(id),dp=(t.prix||0)-((o&&o.prix)||0);if(Math.abs(dp)>=0.5)ch.push({t,dp});});
+  prev.M.forEach((o,id)=>{if(!M.has(id)&&Math.abs(o.prix||0)>=0.5)ch.push({t:o,dp:-(o.prix||0),parti:true});});
   if(!ch.length)return;
-  if(!voitTout()){montrerEcart(d,'budget travaux HT mis à jour',px.total);return;} /* D48 : le montant est gratuit, le prix de chaque tâche est Pro */
+  if(!voitTout()){montrerEcart(dl,'budget travaux HT mis à jour',px.total,'',serie);return;} /* D48 : le montant est gratuit, le prix de chaque tâche est Pro */
   ch.sort((a,b)=>Math.abs(b.dp)-Math.abs(a.dp));
   /* la tâche de l'objet sélectionné d'abord : c'est lui qu'on vient de décider */
   const vise=sel&&ch.find(c=>{const k=tacheCible(c.t.id);return k&&k.kind===sel.kind&&k.id===sel.id;});
   const p=vise||ch[0],n=ch.length-1,q=n===1?ch.find(c=>c!==p):null;
   /* D47 : une seule autre tâche touchée se NOMME (« et 1 autre tâche » cachait un ponçage de 509 €) */
   /* R6 : « et N autres tâches » sur sa propre ligne — au bout d'un libellé coupé à deux lignes, il disparaissait */
-  montrerEcart(d,(p.parti?'retiré : ':'')+p.t.label+(q?' · '+(q.parti?'retiré : ':'')+q.t.label:''),px.total,!q&&n?'et '+n+' autres tâches':'');}
-function montrerEcart(d,lib,total,suite){const el=document.getElementById('budgetDelta'),F=document.getElementById('pfoot');if(!el)return;
+  montrerEcart(dl,(p.parti?'retiré : ':'')+p.t.label+(q?' · '+(q.parti?'retiré : ':'')+q.t.label:''),px.total,!q&&n?'et '+n+' autres tâches':'',serie);}
+const signeEur=d=>(d>0?'+':'−')+eur(Math.abs(Math.round(d)));
+function montrerEcart(d,lib,total,suite,serie){const el=document.getElementById('budgetDelta'),F=document.getElementById('pfoot');if(!el)return;
   /* D43 : la pastille est lue par le lecteur d'écran (role=status) ; elle dit aussi le nouveau total */
-  el.innerHTML=`<b class="${d>0?'plus':'moins'}">${d>0?'+':'−'}${eur(Math.abs(Math.round(d)))}</b><div class="bdl"><span>${esc(lib)}</span>${suite?`<em>${esc(suite)}</em>`:''}</div>${total!=null?`<i class="sr-only">. Budget travaux : ${eur(Math.round(total))} HT.</i>`:''}`;
+  el.innerHTML=`<b class="${d>0?'plus':'moins'}">${signeEur(d)}</b><div class="bdl"><span>${esc(lib)}</span>${suite?`<em>${esc(suite)}</em>`:''}${serie!=null?`<small class="serie">série : <b class="${serie>0?'plus':'moins'}">${signeEur(serie)}</b></small>`:''}</div>${total!=null?`<i class="sr-only">. Budget travaux : ${eur(Math.round(total))} HT.</i>`:''}`;
   el.style.bottom=F&&!isMobile()?(F.offsetHeight+8)+'px':'';
   el.classList.add('show');clearTimeout(_ecartT);clearTimeout(_ecartT2);_ecartT=setTimeout(()=>cacherEcart(),3200);}
 function cacherEcart(net){const el=document.getElementById('budgetDelta');clearTimeout(_ecartT);clearTimeout(_ecartT2);_ecartBase=null;if(!el)return;el.classList.remove('show');
@@ -6341,7 +6400,7 @@ function quantities(){
          si elle en a une, sinon celle du niveau) — plus deux hauteurs contradictoires. */
       lr.push({id:pidOf('p',rr),name:roomName(rr),type:rr.type,exterieur:isExt,horsHabitable:isExt||nh,floor:rr.floor,area:+an.toFixed(2),
         surfaceAuSolPiece:+f.areaInt.toFixed(2),tremie:+tremieArea(lv,f).toFixed(2),tremiePerim:+tremiePerim(lv,f).toFixed(2),tremiePerimNeuf:+tremiePerimNeuf(lv,f).toFixed(2),
-        sousPentePct:rr.lowPct||0,perimeter:+f.perimInt.toFixed(2),hauteur:roomHeight(lv,rr,'projet'),hauteurAvant:rr.hAvant||null,
+        sousPentePct:rr.lowPct||0,perimeter:+f.perimInt.toFixed(2),perimetreHorsPortes:+perimHorsPortes(lv,f).toFixed(2),hauteur:roomHeight(lv,rr,'projet'),hauteurAvant:rr.hAvant||null,
           /* 1.8 : ce que le chantier change du statut de la pièce — un volume sans plancher et
              une grange à convertir ne sont pas habitables AUJOURD'HUI, ils le deviennent. */
           plancherACreer:rr.floor===SANS_PLANCHER?(rr.plancherNeuf||null):null,
@@ -6485,7 +6544,7 @@ function quantities(){
    que le consommateur doit vérifier. Toute clé renommée ou retirée fait changer ce numéro.
    Avant, le seul « export » était un <details> de debug — qui n'émettait ni la toiture, ni les
    sols, ni la plomberie, ni les études, ni les velux. */
-const CONTRAT_PLAN='1.16.0'; /* 1.1 : attributs de choix (douche, point lumineux, escalier), hauteur de faïence par pièce, état « conservé ». 1.2 : chaque équipement dit sa pièce, et chaque pièce ses murs par type. 1.3 : les choix non tranchés (type de douche, point lumineux, matériau d'escalier, hauteur de faïence) sortent à null au lieu de leur défaut — c'est au consommateur d'appliquer le défaut ET de le signaler. 1.4 : faux plafond par pièce, et un niveau dit s'il est créé par le projet et en quoi est son plancher. 1.5 : poteaux et poutres dessinables — chaque équipement d'ossature porte son rôle, sa portée et le fait qu'il reprend ou non un mur porteur démoli ; agrégat `ossature` au niveau du plan. Ajout pur : rien n'est renommé ni retiré. 1.6 : `hauteurAvant` par pièce — la hauteur du volume AVANT travaux, quand le projet y crée un plancher ; `hauteur` reste celle d'après travaux, comme avant. Ajout pur. 1.7 : `emprise` par niveau, en m² — sans elle le plancher d'un étage créé n'était pas chiffrable. Ajout pur. 1.8 : par pièce, `plancherACreer` (bois / béton / null) — le plancher se chiffre pièce par pièce, une mezzanine ne couvre pas tout un volume — et `nonHabitableAvant`, vrai pour une grange, une dépendance ou un volume ouvert que le chantier rend habitable. Ajout pur. 1.9 : `toiture.parties` — une toiture n'est plus une seule surface. Chaque niveau qu'un étage ne recouvre pas entièrement donne une partie plus basse, avec sa forme, sa pente, son emprise et ses égouts ; `surface`, `emprise` et `egouts` sont désormais les TOTAUX. Sur un plan à un seul niveau, tout est identique. 1.10 : `tremiePerimNeuf` par pièce — le pourtour de la trémie dont l'escalier est À CRÉER, qui porte le garde-corps. `tremiePerim` reste le pourtour de TOUTES les trémies, comme avant : une trémie déjà là a déjà son garde-corps, la facturer violerait D1. Ajout pur. 1.11 : `provenance.ouvertures[].percement` — le percement que chaque ouverture provoque (porteurPetit / porteurGrand / leger / null). `travaux.percementsDetail` reste le total ; sans identifiant, le devis portait jusqu'à 19 000 € de percements rattachés à aucune ouverture. Ajout pur. 1.12 : provenance.doublages[].sys — la finition du doublage (ossature / enduit / bardage). Une ITE sous bardage est un AUTRE poste qu'une ITE sous enduit, 185 contre 140 EUR/m2 ; sans cette clef le devis ne pouvait pas choisir. Ajout pur. 1.13 (D36, aucun euro sans geste) : `plinthes` — par pièce et au total — ne compte plus que les plinthes NEUVES : une pièce sans revêtement neuf, ou faïencée jusqu'au sol, en porte 0. `sols` n'émet que les pièces dont le sol est décidé (revêtement ou couche choisie). Les ouvertures d'un mur démoli ne sortent plus, ni en menuiseries ni en provenance : elles partent avec le mur. Aucune clé renommée ni retirée. 1.14 (D37, justesse métier) : `sols[].poncage` — le parquet actuel est poncé, pas remplacé (`depose` faux, `revetement` reste « Parquet ») ; « Parquet » sur un parquet veut désormais dire parquet NEUF. `rooms[].peinture` ({murs, plafond} en m², ou null) — la peinture choisie pièce par pièce. `provenance.murs[].porteurAVerifier` — compté porteur sans que l'utilisateur l'ait dit (« je ne sais pas » ou pas de réponse). `etudes.ossatureCreee` — une poutre ou un poteau créé déclenche aussi l'étude. `toiture` est null pour un appartement ; `sols` n'émet pas une pièce dont on garde le sol ; les finitions de façade qui s'excluent ne sortent plus. Ajout pur : rien n'est renommé ni retiré. 1.15 (D46, géométrie et quantités) : `rooms[].perimeter`, `wallArea` et `plinthes` se mesurent à la FACE intérieure des murs (doublage déduit), plus à l'axe ; `provenance.doublages[].m2` et `doublage.iti/ite` déduisent les ouvertures du tronçon doublé ; `provenance.murs[].hydrofuge` — une cloison À CRÉER qui borde une pièce humide faïencée se monte en plaques hydrofuges (le devis prend alors ce poste à la place de « Monter une cloison », et ne facture plus d'hydrofuge sur les cloisons existantes) ; `toiture.surfaceRampants` — la surface sous la pente SANS le débord, pour l'isolation des rampants. Ajout pur : rien n'est renommé ni retiré. 1.16 (D47) : `sols[].surExistant` — le revêtement neuf est posé SUR l'ancien sol, sans dépose (choix de la ligne « Dépose », seulement quand c'est compatible) ; `depose` est alors faux. Ajout pur. */
+const CONTRAT_PLAN='1.17.0'; /* 1.1 : attributs de choix (douche, point lumineux, escalier), hauteur de faïence par pièce, état « conservé ». 1.2 : chaque équipement dit sa pièce, et chaque pièce ses murs par type. 1.3 : les choix non tranchés (type de douche, point lumineux, matériau d'escalier, hauteur de faïence) sortent à null au lieu de leur défaut — c'est au consommateur d'appliquer le défaut ET de le signaler. 1.4 : faux plafond par pièce, et un niveau dit s'il est créé par le projet et en quoi est son plancher. 1.5 : poteaux et poutres dessinables — chaque équipement d'ossature porte son rôle, sa portée et le fait qu'il reprend ou non un mur porteur démoli ; agrégat `ossature` au niveau du plan. Ajout pur : rien n'est renommé ni retiré. 1.6 : `hauteurAvant` par pièce — la hauteur du volume AVANT travaux, quand le projet y crée un plancher ; `hauteur` reste celle d'après travaux, comme avant. Ajout pur. 1.7 : `emprise` par niveau, en m² — sans elle le plancher d'un étage créé n'était pas chiffrable. Ajout pur. 1.8 : par pièce, `plancherACreer` (bois / béton / null) — le plancher se chiffre pièce par pièce, une mezzanine ne couvre pas tout un volume — et `nonHabitableAvant`, vrai pour une grange, une dépendance ou un volume ouvert que le chantier rend habitable. Ajout pur. 1.9 : `toiture.parties` — une toiture n'est plus une seule surface. Chaque niveau qu'un étage ne recouvre pas entièrement donne une partie plus basse, avec sa forme, sa pente, son emprise et ses égouts ; `surface`, `emprise` et `egouts` sont désormais les TOTAUX. Sur un plan à un seul niveau, tout est identique. 1.10 : `tremiePerimNeuf` par pièce — le pourtour de la trémie dont l'escalier est À CRÉER, qui porte le garde-corps. `tremiePerim` reste le pourtour de TOUTES les trémies, comme avant : une trémie déjà là a déjà son garde-corps, la facturer violerait D1. Ajout pur. 1.11 : `provenance.ouvertures[].percement` — le percement que chaque ouverture provoque (porteurPetit / porteurGrand / leger / null). `travaux.percementsDetail` reste le total ; sans identifiant, le devis portait jusqu'à 19 000 € de percements rattachés à aucune ouverture. Ajout pur. 1.12 : provenance.doublages[].sys — la finition du doublage (ossature / enduit / bardage). Une ITE sous bardage est un AUTRE poste qu'une ITE sous enduit, 185 contre 140 EUR/m2 ; sans cette clef le devis ne pouvait pas choisir. Ajout pur. 1.13 (D36, aucun euro sans geste) : `plinthes` — par pièce et au total — ne compte plus que les plinthes NEUVES : une pièce sans revêtement neuf, ou faïencée jusqu'au sol, en porte 0. `sols` n'émet que les pièces dont le sol est décidé (revêtement ou couche choisie). Les ouvertures d'un mur démoli ne sortent plus, ni en menuiseries ni en provenance : elles partent avec le mur. Aucune clé renommée ni retirée. 1.14 (D37, justesse métier) : `sols[].poncage` — le parquet actuel est poncé, pas remplacé (`depose` faux, `revetement` reste « Parquet ») ; « Parquet » sur un parquet veut désormais dire parquet NEUF. `rooms[].peinture` ({murs, plafond} en m², ou null) — la peinture choisie pièce par pièce. `provenance.murs[].porteurAVerifier` — compté porteur sans que l'utilisateur l'ait dit (« je ne sais pas » ou pas de réponse). `etudes.ossatureCreee` — une poutre ou un poteau créé déclenche aussi l'étude. `toiture` est null pour un appartement ; `sols` n'émet pas une pièce dont on garde le sol ; les finitions de façade qui s'excluent ne sortent plus. Ajout pur : rien n'est renommé ni retiré. 1.15 (D46, géométrie et quantités) : `rooms[].perimeter`, `wallArea` et `plinthes` se mesurent à la FACE intérieure des murs (doublage déduit), plus à l'axe ; `provenance.doublages[].m2` et `doublage.iti/ite` déduisent les ouvertures du tronçon doublé ; `provenance.murs[].hydrofuge` — une cloison À CRÉER qui borde une pièce humide faïencée se monte en plaques hydrofuges (le devis prend alors ce poste à la place de « Monter une cloison », et ne facture plus d'hydrofuge sur les cloisons existantes) ; `toiture.surfaceRampants` — la surface sous la pente SANS le débord, pour l'isolation des rampants. Ajout pur : rien n'est renommé ni retiré. 1.16 (D47) : `sols[].surExistant` — le revêtement neuf est posé SUR l'ancien sol, sans dépose (choix de la ligne « Dépose », seulement quand c'est compatible) ; `depose` est alors faux. Ajout pur. 1.17 (D54) : `rooms[].perimetreHorsPortes` — le périmètre au pied des murs moins la largeur des portes, sur lequel court la faïence à mi-hauteur (comme les plinthes). Ajout pur : un contrat plus ancien garde `perimeter`. */
 function contratPlan(){
   garantirPids();
   const q=quantities(),bas=empriseNiveau(0),ch=chantier();
@@ -6591,6 +6650,11 @@ function couvertureManquante(q){
   if(!q.doublage.surface)a.push(['Isolation','aucun mur doublé ni isolé','outil Doublage (D) : glisse le long du mur à isoler']);
   if(!q.electricite.points)a.push(['Électricité','aucun point posé (prises, interrupteurs, lumières)','outil Équipements → Électricité']);
   if(!q.plomberie.pointsEau)a.push(['Plomberie','aucun appareil sanitaire posé','outil Équipements → Salle de bain / Cuisine']);
+  /* D54 (jury final, novice) : une salle de bain créée sans appareil existant ne comptait que la pose des appareils
+     (douche, lavabo, WC…), sans arrivée d'eau ni évacuation — et rien ne le disait. Ni le compteur ni la traduction
+     du contrat (plan-correspondance.ts) n'ont de poste pour les amener : on n'invente rien, on le dit. Le lave-linge
+     et le lave-vaisselle, eux, ont leur ligne « Créer l'arrivée et l'évacuation ». */
+  {const n=appareilsEauNeufs();if(n.length)a.push(['Arrivées et évacuations d\'eau des appareils neufs','pas dans ce compteur',null,`${n.join(', ')} : leur pose est comptée, pas l'eau qui les alimente ni l'évacuation. À chiffrer avec ton plombier.`]);}
   if(!q.chauffage.radiateurs&&!q.chauffage.clim&&!q.chauffage.poele&&!q.chauffage.chaudiere)a.push(['Chauffage','aucun émetteur posé','outil Équipements → Chauffage']);
   if(!q.chauffage.vmc)a.push(['Ventilation','aucune VMC posée','outil Équipements → Technique']);
   if(quelquun(l=>l.rooms.length)&&!q.travaux.actif&&!chantierPrix().nb)a.push(['Travaux','aucun travail décidé','passe en vue '+nomVue('projet')]); /* D53 : sols et peinture décidés sont des travaux */
@@ -6601,11 +6665,13 @@ function couvertureManquante(q){
    if(n&&q.travaux.actif)a.push(['Déjà en place',n+' élément'+(n>1?'s':'')+' existant'+(n>1?'s':'')+' sur lesquels rien n\'est tranché'+(voitTout()?' — '+fmtEur(A.montantSiRemplaces)+' si tu les remplaçais':''),'clique-les et choisis « '+LEX.etat.garder+' » si tu les gardes']);}
   return a;
 }
+const EAU_SANS_RESEAU=['douche','baignoire','lavabo','vasque2','wc','evier'];
+function appareilsEauNeufs(){const s=new Set();state.levels.forEach(lv=>lv.items.forEach(i=>{if(EAU_SANS_RESEAU.includes(i.type)&&ist(i)==='creer'&&ITEMS[i.type])s.add(ITEMS[i.type].label);}));return [...s];}
 function couvertureHTML(q,vus){ /* D49 : `vus` (Set) = les mots déjà expliqués sur cet écran — ceux des lignes ci-dessous ont leur pastille */
   /* D39 : « Sol » et « Déjà en place » sont listés objet par objet dans « Encore à décider ». */
   const a=couvertureManquante(q).filter(x=>x[0]!=='Sol'&&x[0]!=='Déjà en place');
   return `<div class="ph">Ce que ton plan ne dit pas encore</div>
-  ${a.length?`<div class="chks" style="margin-bottom:10px">${a.map(([lot,quoi,ou])=>`<div class="chk neutre"><span class="ci">${ico('info')}</span><span><b>${esc(lot)}</b> — ${esc(quoi)}.<small style="display:block;color:var(--muted);margin-top:2px">à renseigner : ${esc(ou)}</small></span></div>`).join('')}</div>`
+  ${a.length?`<div class="chks" style="margin-bottom:10px">${a.map(([lot,quoi,ou,note])=>`<div class="chk neutre"><span class="ci">${ico('info')}</span><span><b>${esc(lot)}</b>${ou==null?' : ':' — '}${esc(quoi)}.<small style="display:block;color:var(--muted);margin-top:2px">${ou==null?esc(note||''):'à renseigner : '+esc(ou)}</small></span></div>`).join('')}</div>`
    :`<div class="tip ok" style="margin-bottom:10px">Tout ce qu'un plan peut décrire est renseigné.</div>`}${vus&&a.length?motsHTML(motsDe(a.map(x=>x[0]+' '+x[1]),vus)):''}
   <table class="mtable" style="margin-bottom:8px">${HORS_PLAN.map(([lot,d])=>`<tr><td><b>${esc(lot)}</b><br><small style="color:var(--muted)">${d}</small></td><td class="n mot" style="color:var(--muted);white-space:nowrap">hors plan</td></tr>`).join('')}</table>
   <div class="note" style="margin:0 0 18px">Un plan ne peut pas tout savoir : ces travaux ne sont pas dans le montant.</div>`;
@@ -6623,11 +6689,11 @@ function lotsDe(T){const out=[];T.forEach(t=>{let g=out.find(x=>x.lot===t.lot);i
    (SEUIL_ARBITRAGE) — plus les pièces dont le sol n'a pas de décision. */
 function elementsATrancher(){const out=[];state.levels.forEach(lv=>{const fP=facesFor(lv,'projet'),ml=state.levels.length>1?' · '+lv.name:'';
   lv.openings.forEach(o=>{if(ouvertureSurMurDemoli(lv,o))return;const w=lv.walls.find(x=>x.id===o.wallId);
-    if(ost(o)==='existant'&&(PRIX.menuiserie[o.type]||0)>=SEUIL_ARBITRAGE)out.push({kind:'opening',id:o.id,label:maj(ouvNom(o))+(w?ouPieces(piecesAutour(fP,w,o.t)):'')+ml,msg:'déjà là, rien n\'est décidé',aide:`Choisis « ${LEX.etat.garder} » ou « ${LEX.etat.remplacer} ».`});});
+    if(ost(o)==='existant'&&(PRIX.menuiserie[o.type]||0)>=SEUIL_ARBITRAGE)out.push({kind:'opening',id:o.id,garde:true,label:maj(ouvNom(o))+(w?ouPieces(piecesAutour(fP,w,o.t)):'')+ml,msg:'déjà là, rien n\'est décidé',aide:`Choisis « ${LEX.etat.garder} » ou « ${LEX.etat.remplacer} ».`});});
   lv.items.forEach(it=>{if(isFurniture(it.type)||!ITEMS[it.type])return;
-    if(ist(it)==='existant'&&(EQUIP_PRIX[it.type]||0)>=SEUIL_ARBITRAGE)out.push({kind:'item',id:it.id,label:ITEMS[it.type].label+pieceDuPoint(fP,it.x,it.y)+ml,msg:'déjà là, rien n\'est décidé',aide:`Choisis « ${LEX.etat.garder} » ou « ${LEX.etat.deposer} ».`});});
+    if(ist(it)==='existant'&&(EQUIP_PRIX[it.type]||0)>=SEUIL_ARBITRAGE)out.push({kind:'item',id:it.id,garde:true,label:ITEMS[it.type].label+pieceDuPoint(fP,it.x,it.y)+ml,msg:'déjà là, rien n\'est décidé',aide:`Choisis « ${LEX.etat.garder} » ou « ${LEX.etat.deposer} ».`});});
   fP.forEach(f=>{const r=f.room;if(!r||RT[r.type].ext)return;const fu=(r.fusion&&r.fusion.quoi)||[],fn=r.fusion?r.fusion.noms.join(' et '):'';
-    if(!solDecide(r)&&!solGarde(r))out.push({kind:'room',id:r.id,prio:fu.includes('sol'),label:'Sol · '+roomName(r)+ml,msg:fu.includes('sol')?fn+' n\'avaient pas le même sol':'pas encore de décision',aide:fu.includes('sol')?'Choisis le sol de toute la pièce réunie (ligne « Revêtement »).':'Garde le sol actuel, ou choisis un revêtement neuf (ligne « Revêtement »).'});
+    if(!solDecide(r)&&!solGarde(r))out.push({kind:'room',id:r.id,prio:fu.includes('sol'),garde:!fu.includes('sol')&&r.floor!==SANS_PLANCHER,label:'Sol · '+roomName(r)+ml,msg:fu.includes('sol')?fn+' n\'avaient pas le même sol':'pas encore de décision',aide:fu.includes('sol')?'Choisis le sol de toute la pièce réunie (ligne « Revêtement »).':'Garde le sol actuel, ou choisis un revêtement neuf (ligne « Revêtement »).'});
     /* D47 : la faïence d'une pièce d'eau refaite, et ce qu'une démolition a remis à décider */
     if(r.faience==null&&(faienceADecider(lv,f)||(fu.includes('faience')&&pieceHumide(lv,f))))out.push({kind:'room',id:r.id,prio:true,label:'Faïence · '+roomName(r)+ml,msg:fu.includes('faience')?fn+' n\'avaient pas la même faïence':'pièce d\'eau refaite, hauteur pas encore choisie',aide:'Choisis une hauteur de faïence, ou « Aucune » si tu gardes les murs tels quels.'});
     if(fu.includes('peinture'))out.push({kind:'room',id:r.id,prio:true,label:'Peinture · '+roomName(r)+ml,msg:fn+' n\'avaient pas la même peinture',aide:'Choisis ce que tu repeins dans la pièce réunie, ou « Rien ».'});
@@ -6651,7 +6717,31 @@ function distinguerHomonymes(A){const g={};A.forEach(a=>{(g[a.label]=g[a.label]|
 function aDecHTML(A){if(!A.length)return '';const N=A.length===6?6:5; /* R6 : jamais « Voir les 1 autres » : à 6, tout s'affiche */
   /* D40 : chaque ligne sélectionne son objet et ferme la fenêtre ; au-delà de 5, les autres se déplient (toutes cliquables). */
   const li=a=>`<button type="button" class="chk adec" onclick="montrerSurLePlan({kind:'${a.kind}',id:'${a.id}'})"><span class="ci" aria-hidden="true">${ico('cercle')}</span><span class="at"><b>${esc(a.label)}</b> — ${a.msg}.<small>${a.aide}</small></span><span class="go">Voir sur le plan</span></button>`;
-  return `<div class="ph" id="estAdec">Encore à décider (${A.length})</div><p class="estnote">Ces éléments sont déjà là : dis si tu les gardes ou si tu les changes. Tant que rien n'est décidé, ils ne comptent pas dans le budget.</p><div class="chks adecs">${A.slice(0,N).map(li).join('')}</div>${A.length>N?`<details class="plusadec"><summary>Voir les ${A.length-N} autres</summary><div class="chks adecs">${A.slice(N).map(li).join('')}</div></details>`:''}<div style="height:14px"></div>`;}
+  return `<div class="ph" id="estAdec" tabindex="-1">Encore à décider (${A.length})</div><p class="estnote">Ces éléments sont déjà là : dis si tu les gardes ou si tu les changes. Tant que rien n'est décidé, ils ne comptent pas dans le budget.</p>${garderResteHTML(A)}<div class="chks adecs">${A.slice(0,N).map(li).join('')}</div>${A.length>N?`<details class="plusadec"><summary>Voir les ${A.length-N} autres</summary><div class="chks adecs">${A.slice(N).map(li).join('')}</div></details>`:''}<div style="height:14px"></div>`;}
+/* D54 (jury final, novice) · « Je garde tout le reste ». Pour 3 pièces, 6 éléments déjà là se tranchaient un par
+   un (« Voir sur le plan », puis « Je garde ») : sur un vrai logement, c'est ce qui empêchait d'atteindre 100 %.
+   Un seul geste, annulable, passe à « Je garde » ce qui est déjà là et ne coûte rien à garder : menuiseries,
+   équipements, sols actuels (`garde` dans elementsATrancher). Ce qui a un prix à choisir — la faïence d'une pièce
+   d'eau refaite, la toiture, ce qu'une démolition a remis à décider dans une pièce réunie — reste listé : personne
+   ne le tranche à la place de l'utilisateur. Au téléphone, on consulte : pas de bouton. */
+function garderResteHTML(A){if(isMobile())return '';const G=A.filter(a=>a.garde);if(!G.length)return '';
+  const reste=[...new Set(A.filter(a=>!a.garde).map(a=>a.label.split(' · ')[0].replace(/ \(.*\)$/,'').toLowerCase()))];
+  return `<div class="garderest"><button type="button" class="ib" onclick="garderToutLeReste()">${ico('check')}${LEX.etat.garder} tout le reste <span class="mono">(${G.length})</span></button><small>${G.length>1?'Les '+pluriel(G.length,'élément')+' déjà là':'L\'élément déjà là'} ci-dessous (menuiseries, équipements, sols actuels), tels quels : rien ne s'ajoute au budget.${reste.length?' Restent à choisir, parce qu\'ils ont un prix : '+esc(reste.join(', '))+'.':''} Annulable.</small></div>`;}
+function garderToutLeReste(){const G=elementsATrancher().filter(a=>a.garde);if(!G.length)return;history.push(snapshot());
+  const cle=new Set(G.map(a=>a.kind+':'+a.id));let nO=0,nI=0,nS=0;
+  state.levels.forEach(lv=>{lv.openings.forEach(o=>{if(cle.has('opening:'+o.id)){o.st='garder';nO++;}});
+    lv.items.forEach(i=>{if(cle.has('item:'+i.id)){i.st='garder';nI++;}});
+    lv.rooms.forEach(r=>{if(cle.has('room:'+r.id)){r.solGarde=true;delete r.floorNew;delete r.sol;delete r.surExistant;nS++;}});});
+  afterChange();majEstimer();
+  const quoi=[nO?pluriel(nO,'menuiserie'):'',nI?pluriel(nI,'équipement'):'',nS?pluriel(nS,'sol actuel','sols actuels'):''].filter(Boolean).join(', ');
+  const a=annulerCe(),fn0=a.fn;a.fn=()=>{fn0();majEstimer();};
+  toast(`${LEX.etat.garder} : ${quoi}, tels quels. Rien ne s'ajoute au budget.`,true,a);
+  const h=document.getElementById('estAdec')||document.getElementById('estTotal');if(h){if(!h.hasAttribute('tabindex'))h.tabIndex=-1;h.focus({preventScroll:true});}}
+/* D54 : Estimer se redessine sur place après un geste pris dans la fenêtre (le même contenu que showEstimate,
+   sans compter une nouvelle ouverture), à la même hauteur de défilement. */
+function majEstimer(){const o=document.getElementById('m-estimate');if(!o||!o.classList.contains('show'))return;
+  const B=document.getElementById('estBody'),M=B.closest('.modal'),y=M?M.scrollTop:0,q=quantities();
+  B.innerHTML=voitTout()?(isPro()?'':exempleGratuitHTML())+estimateHTML(q):estimatePaywallHTML(q);if(M)M.scrollTop=y;}
 function ligneTache(t,zero){const c=tacheCible(t.id),dt=detailTache(t),px=`<span class="n${zero||!t.prix?' muted':''}">${prixTache(t)}</span>`,txt=`<span class="tl">${esc(t.label)}${dt?`<small>${esc(dt)}</small>`:''}</span>`;
   return c?`<button type="button" class="tline" onclick="montrerTache('${t.id}')" title="Voir sur le plan">${txt}${px}</button>`:`<div class="tline">${txt}${px}</div>`;}
 const ICO_EXPORTER='<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 11v6M9.5 14.5 12 17l2.5-2.5"/></svg>';
@@ -6929,12 +7019,14 @@ document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{
 document.querySelectorAll('.overlay .modal').forEach(m=>{if(m.querySelector('.mx'))return;const b=document.createElement('button');b.type='button';b.className='mx noprint';b.setAttribute('aria-label','Fermer');b.innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';b.onclick=fermerModale;m.appendChild(b);});
 /* D38 : un toast peut porter une action (« Annuler » une suppression, « Passer en … »). Il reste
    alors 8 s, et il passe au-dessus d'une fenêtre ouverte au lieu de s'afficher derrière le voile. */
-let toastT;function toast(msg,ok,opt){const t=document.getElementById('toast');t.textContent=msg;const act=!!(opt&&opt.action);t._geste=act&&opt.geste||null;
+let toastT;function toast(msg,ok,opt){const t=document.getElementById('toast');t.textContent=msg;const act=!!(opt&&opt.action);t._geste=act&&opt.geste||null;t._vue=!!(opt&&opt.vue);t._debut=Date.now();
   /* D53 : un message peut porter une 2e action (`plus`, ex. « Tout le mur » puis « Annuler ») */
   if(act)[opt,...(opt.plus||[])].filter(x=>x&&x.action).forEach(o=>{const b=document.createElement('button');b.type='button';b.className='tact';b.textContent=o.action;b.onclick=ev=>{ev.stopPropagation();clearTimeout(toastT);t.classList.remove('show','act');if(o.fn)o.fn();};t.appendChild(b);});
   t.classList.toggle('ok',!!ok);t.classList.toggle('act',act);t.classList.toggle('over',!!modaleOuverte());t.classList.add('show');clearTimeout(toastT);
   /* D41 : le message se pose juste au-dessus de la bulle d'astuce, sans la recouvrir */
   /* R6 : au téléphone le message est posé en haut (top) ; lui donner aussi un « bottom » l'étirait en une colonne blanche sur tout le plan */
+  /* D54 (design 3) : un message replie la bulle d'astuce en « ? » — les deux, plus la barre de zoom, couvraient le bas du plan */
+  {const h=document.getElementById('hint');if(h&&!h.hidden&&!h.classList.contains('replie')&&!isMobile()&&!['murChain','cotePlace'].includes(lastHint)){clearTimeout(astuceT);h.classList.add('replie');h.title='Afficher l\'astuce';}}
   t.style.bottom='';{const h=document.getElementById('hint'),st=document.getElementById('stage');if(!t.classList.contains('over')&&!isMobile()&&h&&!h.hidden&&h.getClientRects().length&&st){const hr=h.getBoundingClientRect(),sr=st.getBoundingClientRect();t.style.bottom=Math.max(76,Math.round(sr.bottom-hr.top+10))+'px';}else t.style.bottom='';}
   /* D41 : le temps de lire — 45 ms par caractère, entre 2,6 et 7 s (8 s avec une action) */
   const duree=(opt&&opt.ms)||(act?8000:Math.min(7000,Math.max(2600,String(msg).length*45)));t._reste=duree;t._fin=Date.now()+duree;
