@@ -12,8 +12,11 @@
  *     « 0 € », « Encore à décider » où CHAQUE ligne sélectionne son objet et ferme la fenêtre, les
  *     actions Exporter / Enregistrer toujours à portée ;
  *   - la pastille d'écart : chaque décision qui change le montant la montre (signe, montant, tâche),
- *     annoncée (aria-live), 3 s ; jamais en ouvrant un plan ; jamais en gratuit ; elle n'efface pas le
- *     message « Annuler » ;
+ *     annoncée (aria-live), 3 s ; jamais en ouvrant un plan ; elle n'efface pas le message « Annuler » ;
+ *   - D48 (arbitrage tour 2) : en gratuit, le montant total et sa répartition par corps d'état se
+ *     voient (pied, Estimer, pastille sans nom de tâche, Mes plans, tiroir) ; le détail tâche par tâche
+ *     est Pro, avec l'appel à passer Pro à cet endroit et une barre collante visible à l'ouverture ;
+ *     l'exemple, lui, montre tout ;
  *   - le Suivi : prix par tâche, « X € réalisés sur Y € », « fait le jj/mm » ;
  *   - « Mes plans » : surface, budget, avancement, date, vignette.
  *
@@ -201,19 +204,55 @@ Object.assign(t, await p.evaluate(() => {
 }));
 await p.close();
 
-/* ═════════ 4. Gratuit : pas de montant, pas de pastille, un seul appel ═════════ */
+/* ═════════ 4. Gratuit (D48) : le montant et les corps d'état se voient ; le détail est Pro ═════════ */
+/* un plan de l'utilisateur : la maison type, ses fenêtres à remplacer */
+const MAISON = () => { closeWelcome("fermer"); loadTemplate("maison"); closeModal(); setMode("projet"); closeModal(); setTool("select"); sel = null;
+  L().openings.filter((o) => OPENINGS[o.type].cat === "fenetre").forEach((o) => { o.st = "remplacer"; }); afterChange(); sel = null; render(); };
+p = await onglet({ larg: 1280, haut: 800, pro: false });
+await p.evaluate(MAISON); await wait(300);
+Object.assign(t, await p.evaluate(() => {
+  const r = {}, F = document.getElementById("pfoot"), px = chantierPrix();
+  r["gratuit · un plan à soi n'est pas l'exemple : pas de détail"] = !estExemple() && !voitTout();
+  r["gratuit · le pied : le montant total, un seul appel"] = [...F.querySelectorAll("button, a")].length === 1 && document.getElementById("budgetVal").textContent === eur(px.total) && /Par corps d'état/.test(F.innerText);
+  r["gratuit · le pied reste compact (≤ 170 px)"] = F.getBoundingClientRect().height <= 170;
+  const cl = L().walls.find((w) => w.type === "cloison" && !w.st); sel = { kind: "wall", id: cl.id }; render(); setWallProp("st", "demolir");
+  const d = document.getElementById("budgetDelta");
+  r["gratuit · la pastille d'écart montre le montant, sans nommer de tâche (le détail est Pro)"] = d.classList.contains("show") && /€/.test(d.textContent) && /mis à jour/.test(d.textContent) && !/Démolir/.test(d.textContent);
+  savePlanToLibrary(); openPlansModal(); const g = document.querySelector("#plansList .plancard .gres").textContent;
+  r["gratuit · Mes plans : surface et budget"] = g.includes(fmtM2(quantities().area)) && g.includes(eur(chantierPrix().total));
+  closeModal(); return r;
+}));
+await p.evaluate(() => { sel = null; render(); showEstimate(); }); await wait(900);
+Object.assign(t, await p.evaluate(() => {
+  const r = {}, B = document.getElementById("estBody"), px = chantierPrix();
+  r["gratuit · Estimer : le montant total, en clair"] = document.getElementById("estTotal").textContent === eur(px.total) && !B.querySelector(".flou");
+  r["gratuit · Estimer : chaque corps d'état avec son montant"] = px.lots.every((g) => B.innerText.includes(g.lot)) && px.lots.filter((g) => g.total > 0).every((g) => B.innerText.includes(eur(Math.round(g.total))));
+  r["gratuit · Estimer : aucune tâche détaillée (Pro)"] = !B.querySelector(".tline") && !px.taches.some((x) => x.prix && B.innerText.includes(x.label));
+  const cta = B.querySelector(".estpro a");
+  r["gratuit · Estimer : l'appel à passer Pro est à l'endroit du détail, et reprend DROITS"] = !!cta && cta.getAttribute("href") === TARIFS_URL && B.querySelector(".estpro").innerText.includes(maj(DROITS.detail.pro)) && B.querySelector(".estpro").previousElementSibling?.classList.contains("estlots");
+  const bar = B.querySelector(".estactions.colle a.estimate"), rc = bar && bar.getBoundingClientRect();
+  r["gratuit · Estimer (1280 × 800) : « Passer Pro » visible dès l'ouverture (barre collante)"] = !!rc && rc.bottom <= innerHeight && rc.top >= 0 && /Passer Pro/.test(bar.textContent);
+  r["gratuit · Estimer : le lien Pro dit d'où vient le visiteur (?source=editeur-plan)"] = /source=editeur-plan/.test(TARIFS_URL) && [...B.querySelectorAll("a[href]")].every((a) => a.getAttribute("href") === TARIFS_URL);
+  closeModal(); setPanelTab("suivi"); const S2 = document.getElementById("pbody");
+  r["gratuit · Suivi : à cocher, sans prix"] = !S2.querySelector(".tpx") && !!S2.querySelector('.task input[type=checkbox]');
+  setPanelTab("details"); return r;
+}));
+await p.close();
+/* l'exemple, en gratuit : il montre tout, et dit ce qui est Pro sur son propre plan */
 p = await onglet({ pro: false });
 await p.evaluate(EXEMPLE); await wait(300);
 Object.assign(t, await p.evaluate(() => {
-  const r = {}, F = document.getElementById("pfoot");
-  r["gratuit · le pied : un seul appel, qui reprend DROITS"] = [...F.querySelectorAll("button, a")].length === 1 && F.innerText.includes(avecPro("budget"));
-  r["gratuit · aucun montant dans le pied"] = !/\d\s?\d{3} €|\d+ €/.test(F.innerText.replace(/•+ €/g, ""));
-  r["gratuit · le pied reste compact (≤ 170 px)"] = F.getBoundingClientRect().height <= 170;
-  const cl = L().walls.find((w) => w.type === "cloison" && !w.st); sel = { kind: "wall", id: cl.id }; render(); setWallProp("st", "demolir");
-  r["gratuit · pas de pastille d'écart (le montant est Pro)"] = !document.getElementById("budgetDelta").classList.contains("show") && !document.getElementById("budgetDelta").textContent;
-  savePlanToLibrary(); openPlansModal(); const g = document.querySelector("#plansList .plancard .gres").textContent;
-  r["gratuit · Mes plans : surface et tâches, sans montant"] = g.includes(fmtM2(quantities().area)) && /tâche/.test(g) && !/€/.test(g);
-  closeModal(); return r;
+  const r = {};
+  r["gratuit · exemple : tout se voit (montant, pastille, Estimer détaillé, prix du Suivi)"] = estExemple() && voitTout();
+  showEstimate(); const B = document.getElementById("estBody");
+  r["gratuit · exemple : Estimer détaillé, avec le bandeau « C'est l'exemple »"] = !!B.querySelector(".tline") && /C'est l'exemple/.test(B.innerText) && B.innerText.includes(avecPro("detail"));
+  closeModal(); setPanelTab("suivi");
+  r["gratuit · exemple : le Suivi montre les prix"] = !!document.querySelector("#pbody .tpx");
+  setPanelTab("details");
+  /* déplacer un de ses murs en fait un autre logement : le plan de l'utilisateur */
+  setMode("existant"); closeModal(); L().walls[0].b.x += 0.5; afterChange();
+  r["gratuit · exemple redessiné (murs déplacés) : ce n'est plus l'exemple"] = !estExemple() && !voitTout();
+  return r;
 }));
 await p.close();
 
@@ -240,7 +279,7 @@ Object.assign(t, await p.evaluate(() => {
 await p.close();
 p = await onglet({ larg: 390, haut: 844, mobile: true, pro: false });
 await p.evaluate(() => { closeWelcome("sample"); closeModal(); sel = null; render(); }); await wait(250);
-t["téléphone gratuit · tiroir : la surface, pas de montant"] = await p.evaluate(() => !/€/.test(document.getElementById("sheetLabel").textContent));
+t["téléphone gratuit · tiroir : la surface et le montant (D48)"] = await p.evaluate(() => document.getElementById("sheetLabel").textContent.includes(eur(chantierPrix().total) + " HT"));
 await p.close();
 
 await b.close();

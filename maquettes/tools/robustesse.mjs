@@ -11,7 +11,11 @@
  *     ce qui a été créé ; la vue finale se lit sans se modifier ;
  *   - la sélection de plusieurs équipements, dans les trois vues ;
  *   - les pertes de travail : Nouveau, plan type, exemple, ouvrir, supprimer, limite gratuite,
- *     rechargement, indicateur « Enregistré », calque trop lourd.
+ *     rechargement, indicateur « Enregistré », calque trop lourd ;
+ *   - D48 : « Annuler » d'un message annule SON geste ; l'exemple retouché va dans la place libre ;
+ *     « Pas dans Mes plans » plutôt que « Enregistré » sur un plan que le gratuit perdra ; pas deux
+ *     plans du même nom ; deux onglets ne s'écrasent plus ; un clic sur le plan montre la fiche même
+ *     depuis le Suivi ; « Nouveau plan » ouvre réellement l'outil Murs.
  *
  *   node maquettes/tools/robustesse.mjs "$(pwd)/maquettes"
  *
@@ -198,7 +202,8 @@ const m1 = await ecran(p, mur.mx, mur.my); await p.mouse.move(m1.x, m1.y); await
 Object.assign(t, await p.evaluate((m) => { const r = {}, w = findWall(m.id);
   r["vue finale : Suppr, flèches et glisser ne touchent pas le mur"] = !!w && L().walls.length === m.n && Math.abs(w.a.x - m.a.x) + Math.abs(w.a.y - m.a.y) + Math.abs(w.b.x - m.b.x) + Math.abs(w.b.y - m.b.y) < 1e-9 && wst(w) !== "demolir";
   sel = { kind: "wall", id: m.id }; render();
-  r["vue finale : la fiche est en lecture (réglages désactivés, bandeau)"] = !!document.querySelector("#pbody fieldset.ro[disabled]") && !!document.querySelector("#pbody .robanner");
+  r["vue finale : la fiche est en lecture (réglages désactivés, bandeau)"] = !!document.querySelector("#pbody fieldset.ro") && [...document.querySelectorAll("#pbody fieldset.ro input, #pbody fieldset.ro select, #pbody fieldset.ro button:not(.gl)")].every((x) => x.disabled) && !!document.querySelector("#pbody .robanner");
+  r["vue finale : les pastilles du glossaire de la fiche restent actives (D48)"] = [...document.querySelectorAll("#pbody fieldset.ro .gl")].every((x) => !x.disabled);
   const it = L().items.find((i) => itemDrawn(i)), rot = it.rot; sel = { kind: "item", id: it.id }; render(); rotateItem(); duplicateItem();
   r["vue finale : pivoter et dupliquer refusés"] = it.rot === rot && !L().items.some((i) => i !== it && i.x === it.x + 0.3 && i.y === it.y + 0.3);
   sel = { kind: "wall", id: m.id }; render(); modifierEnTravaux();
@@ -295,9 +300,11 @@ p = await onglet();
 await p.evaluate(() => { closeModal(); localStorage.setItem("avyora-plan-pro", "0"); });
 Object.assign(t, await p.evaluate(() => { const r = {};
   L().walls[0].b.x += 0.2; afterChange(); newPlan();
-  r["gratuit · exemple retouché puis « Nouveau » : il ne prend pas la seule place, on le dit (Annuler)"] = Object.keys(loadPlans()).length === 0 && !!document.querySelector("#toast .tact");
-  document.querySelector("#toast .tact").click();
-  r["…« Annuler » ramène l'exemple retouché"] = /Exemple/.test(state.name);
+  /* D48 (cj-qa05) : l'exemple retouché est rangé comme tout autre plan ; la place est alors prise, et le nouveau plan est annoncé avant */
+  r["gratuit · exemple retouché puis « Nouveau » : il va dans la place libre de « Mes plans »"] = Object.values(loadPlans()).some((e) => /Exemple/.test(e.name)) && modaleOuverte()?.id === "m-confirm" && /1 plan/.test(document.getElementById("confirmTitre").textContent);
+  [...document.querySelectorAll("#confirmChoix button")].find((x) => x.textContent === "Annuler").click();
+  r["…« Annuler » : l'exemple retouché reste ouvert"] = /Exemple/.test(state.name) && !modaleOuverte();
+  writePlans({}); delete state.id;
   state = blankState(); state.name = "Plan A"; [[0, 0, 4, 0], [4, 0, 4, 3], [4, 3, 0, 3], [0, 3, 0, 0]].forEach(([a, b2, c, d]) => L().walls.push({ id: uid(), a: v(a, b2), b: v(c, d), type: "mur" })); afterChange();
   newPlan();
   r["gratuit · « Nouveau » avec « Mes plans » plein : on l'annonce avant"] = Object.values(loadPlans()).some((e) => e.name === "Plan A") && modaleOuverte()?.id === "m-confirm" && /1 plan/.test(document.getElementById("confirmTitre").textContent) && L().walls.length === 4;
@@ -312,8 +319,80 @@ Object.assign(t, await p.evaluate(() => { const r = {};
   [...document.querySelectorAll("#confirmChoix button")].find((x) => /sans le garder/.test(x.textContent)).click();
   r["…« Continuer sans le garder » : A s'ouvre (choix explicite)"] = state.name === "Plan A";
   r["gratuit · plus de promesse « illimité »"] = !/illimit/.test(document.documentElement.innerHTML);
+  /* D48 : Mes plans plein, exemple retouché → la même fenêtre de choix qu'un plan ordinaire, jamais un simple message */
+  loadSample(); L().walls[0].b.x += 0.2; afterChange(); newPlan();
+  r["gratuit · Mes plans plein, exemple retouché : fenêtre de choix (continuer sans le garder, Passer Pro, Annuler)"] = modaleOuverte()?.id === "m-confirm" && /n'est pas enregistré/.test(document.getElementById("confirmTitre").textContent) && ["sans le garder", "Passer Pro", "Annuler"].every((k) => [...document.querySelectorAll("#confirmChoix button")].some((x) => x.textContent.includes(k)));
+  [...document.querySelectorAll("#confirmChoix button")].find((x) => x.textContent === "Annuler").click();
   return r; }));
+await wait(700);
+/* D48 (cj-retention07, cj-integration11) : l'indicateur ne dit plus « Enregistré » d'un plan que le gratuit perdra */
+Object.assign(t, await p.evaluate(() => { const r = {}, el = document.getElementById("saveState");
+  r["gratuit · Mes plans plein, plan non rangé : « Pas dans Mes plans », cliquable"] = /Pas dans Mes plans/.test(el.textContent) && el.classList.contains("perdu") && el.getAttribute("role") === "button" && /perdu/.test(el.title);
+  el.click();
+  r["…le clic explique la perte et propose Pro"] = modaleOuverte()?.id === "m-confirm" && [...document.querySelectorAll("#confirmChoix button")].some((x) => /Passer Pro/.test(x.textContent));
+  closeModal(); basculerMenu("fichier");
+  r["…le menu « Nouveau plan » dit ce qui arrivera au plan ouvert"] = /Mes plans est plein/.test(document.querySelector("#newBtn small").textContent);
+  fermerMenus(false); return r; }));
 await p.close();
+
+/* ── 9. D48 · Annuler, noms, onglets, fiche, nouveau plan ─────────────────────────────────── */
+p = await onglet();
+await p.evaluate(() => { closeModal(); setMode("projet"); closeModal(); sel = null; render(); });
+{
+  /* « Annuler » d'un message : son geste, pas le dernier geste quelconque (cj-qa04) */
+  const cl = await p.evaluate(() => { const w = L().walls.find((w) => w.type === "cloison" && !w.st && w.a.x === 3.5 && w.a.y === 0); return { id: w.id, x: 3.5, y: 1 }; });
+  await clic(p, cl.x, cl.y); await p.keyboard.press("Delete"); await wait(120);
+  t["Annuler · Suppr en Travaux : message avec « Annuler »"] = await p.evaluate((id) => findWall(id).st === "demolir" && !!document.querySelector("#toast .tact"), cl.id);
+  const tb = await p.evaluate(() => { const it = L().items.find((i) => i.type === "table"); return { id: it.id, x: it.x, y: it.y }; });
+  await clic(p, tb.x, tb.y); await p.keyboard.press("ArrowLeft"); await wait(120);
+  t["Annuler · un autre geste : le bouton disparaît du message"] = await p.evaluate(() => !document.querySelector("#toast .tact"));
+  Object.assign(t, await p.evaluate(([id, tid, x0]) => { const r = {};
+    const a = annulerCe(); const w = L().walls.find((w) => w.type === "cloison" && !w.st); sel = { kind: "wall", id: w.id }; setWallProp("st", "demolir"); a.fn();
+    r["Annuler · un « Annuler » périmé ne défait pas le geste suivant, il renvoie à Ctrl+Z"] = findWall(w.id).st === "demolir" && findWall(id).st === "demolir" && Math.abs(L().items.find((i) => i.id === tid).x - (x0 - 0.05)) < 1e-6 && /Ctrl\+Z/.test(document.getElementById("toast").textContent);
+    const w2 = L().walls.find((w) => w.type === "cloison" && !w.st); sel = { kind: "wall", id: w2.id }; deleteSel(); document.querySelector("#toast .tact").click();
+    r["Annuler · immédiat : il défait exactement le marquage annoncé"] = !findWall(w2.id).st && findWall(w.id).st === "demolir";
+    addLevel("empty"); const n = state.levels.length; deleteLevel();
+    r["Supprimer un niveau : « Annuler » dans le message, qui le rend"] = !!document.querySelector("#toast .tact") && (document.querySelector("#toast .tact").click(), state.levels.length === n);
+    return r; }, [cl.id, tb.id, tb.x]));
+}
+Object.assign(t, await p.evaluate(() => { const r = {};
+  /* pas deux plans du même nom (cj-integration11) */
+  writePlans({}); state = blankState(); history = []; afterChange();
+  L().walls.push({ id: uid(), a: v(0, 0), b: v(3, 0), type: "mur" }); afterChange(); savePlanToLibrary();
+  newPlan();
+  r["noms · « Nouveau » après « Mon plan » : « Mon plan 2 »"] = state.name === "Mon plan 2";
+  const el = document.getElementById("pname"); el.value = "Mon plan"; el.dispatchEvent(new Event("input")); el.dispatchEvent(new Event("change"));
+  r["noms · renommer en un nom déjà pris : le plan garde un nom unique, et le dit"] = state.name === "Mon plan 2" && el.value === "Mon plan 2" && /déjà dans/.test(document.getElementById("toast").textContent);
+  r["« Nouveau plan » : l'outil Murs est réellement actif (cj-design05)"] = tool === "mur";
+  return r; }));
+await clic(p, 0, 0); await clic(p, 4, 0);
+t["« Nouveau plan » : le clic pose le 1er coin, puis le premier mur"] = await p.evaluate(() => L().walls.length === 1);
+await p.keyboard.press("Escape");
+/* un clic sur le plan, onglet Suivi ouvert : la fiche s'affiche (cj-integration03) */
+await p.evaluate(() => { loadSample(); setMode("projet"); closeModal(); setTool("select"); sel = null; setPanelTab("suivi"); }); await wait(120);
+await clic(p, 4.5, 0);
+t["Suivi ouvert, clic sur un mur : l'onglet Détails et sa fiche"] = await p.evaluate(() => sel?.kind === "wall" && panelTab === "details" && /^Mur/.test(document.querySelector("#pbody .ptitle")?.textContent || ""));
+await p.evaluate(() => setPanelTab("suivi")); await clic(p, 4.5, 0);
+t["…le même mur re-cliqué depuis le Suivi : sa fiche aussi"] = await p.evaluate(() => panelTab === "details");
+await p.evaluate(() => { setPanelTab("suivi"); newPlan(); });
+t["« Nouveau plan » depuis le Suivi : retour aux Détails"] = await p.evaluate(() => panelTab === "details");
+await p.close();
+/* deux onglets sur le même navigateur (cj-qa06) */
+{
+  const A = await onglet(); await A.evaluate(() => closeModal()); await wait(200);
+  const B = await b.newPage(); B.on("pageerror", (e) => errs.push(e.message)); await B.setViewport({ width: 1400, height: 900 });
+  await B.goto("file://" + SP + "/plan-editor.html", { waitUntil: "networkidle0" }); await wait(300);
+  await B.evaluate(() => { closeModal(); newPlan(); state.name = "Plan B"; L().walls.push({ id: uid(), a: v(0, 0), b: v(5, 0), type: "mur" }); afterChange(); }); await wait(400);
+  t["deux onglets · A est prévenu, et n'écrit plus"] = await A.evaluate(() => !!conflitOnglet && modaleOuverte()?.id === "m-confirm" && /autre onglet/.test(document.getElementById("confirmTitre").textContent) && /autre onglet/.test(document.getElementById("saveState").textContent));
+  await A.evaluate(() => { L().walls[0].b.x += 0.2; afterChange(); }); await wait(700);
+  t["deux onglets · un geste dans A n'écrase pas le plan de B"] = await A.evaluate(() => JSON.parse(localStorage.getItem("avyora-plan-v2")).state.name === "Plan B");
+  await A.evaluate(() => [...document.querySelectorAll("#confirmChoix button")].find((x) => /Continuer ici/.test(x.textContent)).click()); await wait(700);
+  t["deux onglets · « Continuer ici » : le plan de B est rangé, A s'enregistre de nouveau"] = await A.evaluate(() => !conflitOnglet && Object.values(loadPlans()).some((e) => e.name === "Plan B") && /Exemple/.test(JSON.parse(localStorage.getItem("avyora-plan-v2")).state.name));
+  t["deux onglets · B est prévenu à son tour"] = await B.evaluate(() => !!conflitOnglet);
+  await B.evaluate(() => [...document.querySelectorAll("#confirmChoix button")].find((x) => /Afficher/.test(x.textContent)).click()); await wait(500);
+  t["deux onglets · « Afficher le plan de l'autre onglet » : B le montre, sans ranger deux fois Plan B"] = await B.evaluate(() => /Exemple/.test(state.name) && !conflitOnglet && Object.values(loadPlans()).filter((e) => /^Plan B/.test(e.name)).length === 1);
+  await A.close(); await B.close();
+}
 
 /* ── 8. Le reste des constats ─────────────────────────────────────────────────────────────── */
 p = await onglet();

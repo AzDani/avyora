@@ -11,6 +11,9 @@
  * rampants sans le débord de toit.
  * D47 : les décisions tiennent au rechargement, poser sur l'ancien sol, la faïence d'une pièce d'eau
  * refaite à décider, une fusion qui n'étend aucune décision, un passage sans menuiserie, « Couper en 2 ».
+ * D48 : le type de mur se lit au tracé (cloison dans une pièce, mur de façade aligné dehors), à la
+ * souris, pièce par pièce le long de la façade, et après un rechargement ; une cloison de 7 cm en
+ * façade est signalée ; deux pièces du même nom sont numérotées dans le Suivi, Estimer et le dossier.
  *
  *   node maquettes/tools/metier.mjs "$(pwd)/maquettes"
  *
@@ -206,7 +209,8 @@ const P = (x, y) => p.evaluate(([x, y]) => { const s = S(v(x, y)); const rc = cv
 for (const [x, y] of [[0, 0], [5, 0], [5, 4], [0, 4], [0, 0]]) { const q = await P(x, y); await p.mouse.move(q.x, q.y); await wait(40); await p.mouse.click(q.x, q.y); await wait(120); }
 Object.assign(t, await p.evaluate(() => {
   const r = {};
-  r["premier contour fermé : l'outil passe en cloison 7 cm"] = wallType === "cloison" && customT === null && L().walls.every((w) => w.type === "mur");
+  /* D48 : l'outil passe en « Automatique » — un mur tracé dans une pièce sera une cloison de 7 cm */
+  r["premier contour fermé : l'outil passe en type au tracé (cloison dans une pièce)"] = wallType === "auto" && customT === null && L().walls.every((w) => w.type === "mur") && typeAuTrace(L(), v(2.5, 0), v(2.5, 4)).type === "cloison";
   setTool("select");
   /* un mur de 20 cm à démolir, jamais dit porteur : la question est posée */
   const lv = L(); const w = { id: uid(), a: v(2.5, 0), b: v(2.5, 4), type: "mur" }; lv.walls.push(w); afterChange();
@@ -465,6 +469,64 @@ Object.assign(t, await p.evaluate(() => {
   t["« Parquet neuf » rechargé : toujours un parquet neuf, même total, mêmes tâches"] = apres.a.fn === "Parquet" && apres.a.tot === avant.tot && apres.a.n === avant.n && avant.n === 3;
   t["… et rouvert depuis « Mes plans » : pareil"] = apres.b.fn === "Parquet" && apres.b.tot === avant.tot;
   await p2.close();
+}
+
+/* ── 12. D48 · Type de mur au tracé, à la souris, pièce par pièce le long de la façade (cj-novice02, cj-novice08) ── */
+{
+  const p3 = await b.newPage(); p3.on("pageerror", (e) => errs.push(e.message));
+  await p3.setViewport({ width: 1400, height: 900 });
+  await p3.evaluateOnNewDocument(() => { try { if (!sessionStorage.getItem("m48")) { localStorage.clear(); localStorage.setItem("avyora-plan-welcome", "1"); localStorage.setItem("avyora-plan-tuto", "fait"); sessionStorage.setItem("m48", "1"); } } catch {} });
+  await p3.goto("file://" + SP + "/plan-editor.html", { waitUntil: "networkidle0" }); await wait(400);
+  const Q = (x, y) => p3.evaluate(([x, y]) => { const s = S(v(x, y)); const rc = cv.getBoundingClientRect(); return { x: rc.left + s.x, y: rc.top + s.y }; }, [x, y]);
+  const clic3 = async (x, y) => { const q = await Q(x, y); await p3.mouse.move(q.x, q.y); await wait(40); await p3.mouse.click(q.x, q.y); await wait(110); };
+  await p3.evaluate(() => { newPlan(); view.zoom = 60; view.ox = 200; view.oy = 200; draw(); });
+  for (const [x, y] of [[0, 0], [4, 0], [4, 3.5], [0, 3.5], [0, 0]]) await clic3(x, y);
+  await wait(150);
+  t["souris · pièce 1 (4 × 3,5) : murs de 20 cm, l'outil passe en « Automatique »"] = await p3.evaluate(() => L().walls.length === 4 && L().walls.every((w) => w.type === "mur") && wallType === "auto");
+  for (const [x, y] of [[4, 0], [7, 0], [7, 3.5], [4, 3.5]]) await clic3(x, y);
+  await p3.keyboard.press("Escape"); await wait(250);
+  Object.assign(t, await p3.evaluate(() => { const r = {}, n = L().walls.slice(4);
+    r["souris · pièce 2 accolée : ses 3 murs de façade sont des murs de 20 cm (pas des cloisons)"] = n.length === 3 && n.every((w) => w.type === "mur" && Math.abs(wallT(w) - 0.2) < 1e-9);
+    const hauts = L().walls.filter((w) => Math.abs(w.a.y) < 1e-6 && Math.abs(w.b.y) < 1e-6).map((w) => wallOff(w).y);
+    r["souris · la façade haute ne fait pas de marche : même alignement que le premier contour"] = hauts.length === 2 && Math.abs(hauts[0] - hauts[1]) < 1e-6 && hauts[0] < 0;
+    r["souris · deux pièces fermées, aucune « cloison en façade »"] = (facesCache[L().id] || []).filter((f) => f.room).length === 2 && !planChecks(L()).some((c) => /en façade/.test(c.msg));
+    return r; }));
+  for (const [x, y] of [[5.5, 0], [5.5, 3.5]]) await clic3(x, y);
+  await p3.keyboard.press("Escape"); await wait(150);
+  t["souris · un mur tracé dans une pièce : cloison de 7 cm"] = await p3.evaluate(() => L().walls[L().walls.length - 1].type === "cloison");
+  await p3.reload({ waitUntil: "networkidle0" }); await wait(400);
+  await p3.evaluate(() => { view.zoom = 60; view.ox = 200; view.oy = 200; draw(); setTool("mur"); });
+  t["rechargement : l'outil Murs reste en « Automatique » (plus de retour au mur 20 cm)"] = await p3.evaluate(() => wallType === "auto");
+  for (const [x, y] of [[0, 1.5], [4, 1.5]]) await clic3(x, y);
+  await p3.keyboard.press("Escape"); await wait(150);
+  t["rechargement : un mur dans une pièce reste une cloison"] = await p3.evaluate(() => L().walls[L().walls.length - 1].type === "cloison");
+  for (const [x, y] of [[0, 3.5], [0, 6], [4, 6], [4, 3.5]]) await clic3(x, y);
+  await p3.keyboard.press("Escape"); await wait(150);
+  t["rechargement : une extension dehors reste en murs de 20 cm"] = await p3.evaluate(() => L().walls.slice(-3).every((w) => w.type === "mur"));
+  t["contrôle : une cloison de 7 cm en façade est signalée"] = await p3.evaluate(() => { const w = L().walls.slice(-3)[1]; w.type = "cloison"; afterChange(); return planChecks(L()).some((c) => /cloison de 7 cm en façade/i.test(c.msg)); });
+  /* le vitrine reste sans alerte */
+  t["contrôle : l'exemple et les plans types n'ont aucune cloison en façade"] = await p3.evaluate(() => { loadSample(); const ok = ["existant", "projet"].every((m) => { setMode(m); closeModal(); return !planChecks(L()).some((c) => /en façade/.test(c.msg)); });
+    return ok && TEMPLATES.filter((x) => x.build).every((T) => { setMode("existant"); loadTemplate(T.id); closeModal(); return !planChecks(L()).some((c) => /en façade/.test(c.msg)); }); });
+  /* ── 13. D48 (cj-qa08) · trois « Chambre » : numérotées partout ── */
+  Object.assign(t, await p3.evaluate(() => { const r = {};
+    setMode("existant"); loadTemplate("maison"); closeModal(); setMode("projet"); closeModal();
+    L().openings.filter((o) => OPENINGS[o.type].cat === "fenetre").forEach((o) => { o.st = "remplacer"; }); afterChange();
+    const noms = (facesCache[L().id] || []).filter((f) => f.room && f.room.type === "chambre").map((f) => roomName(f.room)).sort();
+    r["pièces · trois chambres : « Chambre 1 », « Chambre 2 », « Chambre 3 »"] = JSON.stringify(noms) === JSON.stringify(["Chambre 1", "Chambre 2", "Chambre 3"]);
+    const ids = new Map((facesCache[L().id] || []).filter((f) => f.room && f.room.type === "chambre").map((f) => [f.room.id, roomName(f.room)]));
+    setMode("existant"); closeModal();
+    r["pièces · le même numéro avant et après travaux"] = (facesCache[L().id] || []).filter((f) => ids.has(f.room?.id)).every((f) => roomName(f.room) === ids.get(f.room.id));
+    setMode("projet"); closeModal();
+    const lab = chantierTasks().filter((x) => /Poser la fenêtre neuve/.test(x.label)).map((x) => x.label);
+    r["pièces · le Suivi dit laquelle (« · Chambre 2 »)"] = lab.some((l) => /Chambre 2$/.test(l)) && new Set(lab).size === lab.length;
+    const c = contratPlan(), sols = (c.detailNiveaux || []).flatMap((n) => n.rooms || []).map((x) => x.name);
+    r["pièces · le contrat et le dossier portent le nom numéroté"] = sols.includes("Chambre 3");
+    const f1 = (facesCache[L().id] || []).find((f) => f.room && f.room.type === "sejour"); f1.room.name = "Chambre 1"; _numPieces = null;
+    r["pièces · un nom saisi en double est numéroté aussi, sans toucher au nom saisi"] = f1.room.name === "Chambre 1" && (facesCache[L().id] || []).filter((f) => f.room && /^Chambre \d$/.test(roomName(f.room))).length === 4;
+    f1.room.name = ""; _numPieces = null;
+    loadSample(); r["pièces · un nom unique n'a pas de numéro (l'exemple : « Chambre »)"] = (facesCache[L().id] || []).some((f) => f.room && roomName(f.room) === "Chambre");
+    return r; }));
+  await p3.close();
 }
 
 await b.close();

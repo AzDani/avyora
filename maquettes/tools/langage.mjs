@@ -244,14 +244,16 @@ await p.close();
 
 /* ═════════ 2. En gratuit ═════════ */
 p = await onglet("", 1400, 900, false);
-await p.evaluate(() => closeWelcome("sample")); await wait(150);
+/* D48 : un plan de l'utilisateur (la maison type, fenêtres à remplacer) — l'exemple, lui, montre tout */
+await p.evaluate(() => { closeWelcome("fermer"); loadTemplate("maison"); closeModal(); }); await wait(150);
 Object.assign(t, await p.evaluate(() => {
-  const r = {}; setMode("projet"); closeModal(); sel = null; render();
+  const r = {}; setMode("projet"); closeModal(); L().openings.filter((o) => OPENINGS[o.type].cat === "fenetre").forEach((o) => { o.st = "remplacer"; }); afterChange(); sel = null; render();
+  r["gratuit · le haut du panneau : le plan de l'utilisateur n'est pas l'exemple"] = !estExemple();
   const pied = document.getElementById("pfoot").innerText;
-  r["gratuit · le pied reprend la table DROITS mot pour mot"] = pied.includes(avecPro("budget"));
+  r["gratuit · le pied montre le montant total (DROITS : " + DROITS.total.gratuit + ")"] = pied.includes(eur(chantierPrix().total)) && /Par corps d'état/.test(pied);
   showEstimate(); const B = document.getElementById("estBody");
   r["gratuit · Estimer : ce que Pro ajoute = la table DROITS, mot pour mot"] = JSON.stringify([...B.querySelectorAll("ul.droits li")].map((x) => x.textContent)) === JSON.stringify(droitsPro().map(maj));
-  r["gratuit · Estimer : pas de montant, ni dans l'arbitrage"] = !/\d\s?\d{3} €|\d+ € si tu les/.test(B.innerText.replace(/•+ €/g, ""));
+  r["gratuit · Estimer : le montant et les corps d'état, pas le prix d'une tâche ni du « si tu les remplaçais »"] = B.innerText.includes(eur(chantierPrix().total)) && !B.querySelector(".tline") && !/€ si tu les/.test(B.innerText);
   r["gratuit · « Passer Pro » mène à la page Tarifs"] = B.querySelector("a.estimate")?.getAttribute("href") === TARIFS_URL && B.querySelector("a.estimate").target === "_blank";
   r["gratuit · un aperçu honnête : tâches et corps d'état réels"] = new RegExp(chantierTasks().length + " tâche").test(B.innerText);
   closeModal(); setPanelTab("suivi"); const s = document.getElementById("pbody");
@@ -263,6 +265,8 @@ Object.assign(t, await p.evaluate(() => {
   closeModal(); return r;
 }));
 await p.evaluate(() => { setMode("projet"); closeModal(); showEstimate(); }); await noter(p, "gratuit · estimer");
+await p.evaluate(() => { closeModal(); loadSample(); setMode("projet"); closeModal(); showEstimate(); }); await noter(p, "gratuit · estimer l'exemple");
+await p.evaluate(() => { closeModal(); loadTemplate("maison"); closeModal(); setMode("projet"); closeModal(); L().openings.filter((o) => OPENINGS[o.type].cat === "fenetre").forEach((o) => { o.st = "remplacer"; }); afterChange(); });
 await p.evaluate(() => { closeModal(); exportPlan(); }); await noter(p, "gratuit · export");
 await p.evaluate(() => { closeModal(); openPlansModal(); }); await noter(p, "gratuit · mes plans");
 await p.evaluate(() => { closeModal(); setPanelTab("suivi"); }); await noter(p, "gratuit · suivi");

@@ -163,6 +163,7 @@ button,input,select{font:inherit}
 .overlay.show~#m-confirm.show{background:rgba(20,17,51,.22);backdrop-filter:none}
 .savest.ok svg{color:var(--ok)}
 .savest.err{color:#b45309}
+.savest.perdu,.savest.conflit{color:#b45309;cursor:pointer;border-radius:6px}.savest.perdu:hover span,.savest.conflit:hover span{text-decoration:underline}.savest.perdu:focus-visible,.savest.conflit:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
 .confirmrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .confirmrow .ib{flex:0 1 auto}
 .lienSupport{border:0;background:none;color:var(--muted);font:inherit;font-size:12px;text-decoration:underline;cursor:pointer;padding:2px}
@@ -498,6 +499,13 @@ button.tline{cursor:pointer}button.tline:hover{background:var(--brand-l)}
 .esthero .eh2b i{font-style:normal;white-space:nowrap}
 @media (max-width:600px){.estactions.colle{bottom:-18px;margin:6px -18px 16px;padding:10px 18px 14px}.chk.adec .go{display:none}}
 .flou{filter:blur(5px);user-select:none}
+.estlot.ferme.barre{grid-template-columns:minmax(0,1.5fr) minmax(50px,1fr) auto}
+.estpro{display:flex;align-items:center;gap:12px;border:1px dashed var(--acc3,var(--brand));background:var(--brand-l);border-radius:12px;padding:12px 14px;margin:-8px 0 18px}
+.estpro .epi{flex:0 0 32px;height:32px;border-radius:10px;background:var(--white);color:var(--brand);display:flex;align-items:center;justify-content:center}.estpro .epi .ico{width:17px;height:17px}
+.estpro .ept{flex:1;min-width:0}.estpro .ept b{display:block;font-size:13.5px;color:var(--ink)}.estpro .ept small{display:block;font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4}
+.estpro .ib{flex:0 0 auto;text-decoration:none;white-space:nowrap}
+.tip.exgratuit{display:flex;gap:8px;align-items:flex-start}
+@media (max-width:600px){.estlot.ferme.barre{grid-template-columns:minmax(0,1fr) auto}.estpro{flex-wrap:wrap}.estpro .ib{width:100%;justify-content:center}}
 ul.droits{list-style:none;padding:0;margin:0 0 12px;display:flex;flex-direction:column;gap:7px;font-size:13px}
 ul.droits li{padding-left:22px;position:relative;line-height:1.4}
 ul.droits li::before{content:"";position:absolute;left:4px;top:5px;width:9px;height:5px;border-left:2px solid var(--brand);border-bottom:2px solid var(--brand);transform:rotate(-45deg)}
@@ -511,6 +519,15 @@ ul.droits li::before{content:"";position:absolute;left:4px;top:5px;width:9px;hei
 .tasks .lot{display:flex;justify-content:space-between;gap:8px}
 .tasks .lot .lotpx{font-family:"Geist Mono",monospace;font-variant-numeric:tabular-nums;letter-spacing:0}
 .lotnote{font-size:11.5px;color:var(--muted);margin:2px 0;line-height:1.4}
+.lotdate{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:3px 0 2px}
+.lotdate label{display:inline-flex;align-items:center;gap:6px}.lotdate input.fin{width:auto;min-width:0;padding:3px 6px;font-size:12px;height:28px}
+.lotst{font-size:11px;font-weight:700;border-radius:99px;padding:2px 8px;background:var(--canvas);color:var(--muted)}
+.lotst.retard{background:#fef3c7;color:#92400e}.lotst.semaine{background:var(--brand-l);color:var(--brand)}.lotst.fait{background:#dcfce7;color:#166534}
+.suivdates{display:flex;flex-direction:column;gap:6px;margin:0 0 10px}
+.suivdates .sd{display:flex;gap:8px;align-items:baseline;border-radius:10px;padding:8px 10px;font-size:12.5px;background:var(--canvas);color:var(--ink)}
+.suivdates .sd b{flex:0 0 auto;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.suivdates .sd.retard{background:#fef3c7}.suivdates .sd.retard b{color:#92400e}.suivdates .sd.semaine{background:var(--brand-l)}.suivdates .sd.semaine b{color:var(--brand)}
+.seg.triseg{margin:0 0 8px}
 .task .tgo{flex:1;min-width:0;text-align:left;border:0;background:transparent;padding:0;font:inherit;color:inherit;cursor:pointer}
 .task span.tgo{cursor:default}
 .task button.tgo:hover b{color:var(--brand)}
@@ -570,7 +587,7 @@ html:not(.dev) .devonly{display:none!important}
   .sheetHandle .bar{position:absolute;left:50%;top:5px;transform:translateX(-50%);width:38px;height:4px;border-radius:99px;background:var(--line)}
   .sheetHandle #sheetLabel{margin-top:6px;flex:1;text-align:left}.sheetHandle .chev{margin-top:6px;color:var(--muted);transition:transform .2s}.panel.open .sheetHandle .chev{transform:rotate(180deg)}
   .pbody{padding:10px 14px}.pfoot{padding:10px 14px 12px}
-  .hint{display:none}.surfbadge{display:none}#proChip{display:none}.savest{display:none}#proTop{display:none!important} /* téléphone = consultation (mode chantier) : pas de menu Fichier ni d'enregistrement ; l'Aide reste pour le glossaire */
+  .hint{display:none}.surfbadge{display:none}#proChip{display:none}.savest{display:none}#proTop{display:none!important}#m-plans .btnrow{display:none}.levels .add{display:none} /* D48 : au téléphone, on consulte — ni nouveau plan, ni niveau ajouté */ /* téléphone = consultation (mode chantier) : pas de menu Fichier ni d'enregistrement ; l'Aide reste pour le glossaire */
   body:has(.vlegend) .phoneBanner{top:132px}
   .levels{left:8px;top:8px;padding:3px}.levels button{padding:5px 9px;font-size:12px}
   .levels.modes{right:8px;top:50px;left:auto}.levels.modes button{padding:5px 8px;font-size:12px}
@@ -659,6 +676,7 @@ html:not(.dev) .devonly{display:none!important}
 #visite p{font-size:13.5px;line-height:1.5;color:var(--ink2)}
 #visite p b{color:var(--ink)}
 #visite .vpied{display:flex;align-items:center;gap:6px;margin-top:14px}
+#visite .vfin{display:flex;align-items:center;gap:8px;margin-top:14px;flex-wrap:wrap}#visite .vfin .vsuiv{flex:1 1 auto;justify-content:center}
 #visite .vpts{display:flex;gap:5px;margin-right:auto}
 #visite .vpts i{width:7px;height:7px;border-radius:99px;background:var(--line);display:block;transition:width .2s}
 #visite .vpts i.fait{background:var(--acc3)}
@@ -680,6 +698,9 @@ html:not(.dev) .devonly{display:none!important}
 .pp .ppnext b{font-weight:700;display:block}
 .pp .ppnext small{display:block;color:var(--muted);font-size:11.5px}
 .pp .ppnext:hover{border-color:var(--brand)}
+.pp .ppt{font-size:12.5px;color:var(--muted);margin:0 0 10px;line-height:1.45}
+.pp.ppex .pph{flex-direction:column;align-items:flex-start;gap:1px}
+.pp .ppalt{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 8px}.pp .ppalt .ib{flex:1 1 auto;justify-content:center}
 .pp .ppnext:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
 .pp .ppnext .ico{margin-left:auto;color:var(--brand);flex:0 0 16px;width:16px;height:16px}
 .pp .ppnext.off{cursor:default;background:var(--canvas);border-color:var(--line)}
@@ -810,7 +831,7 @@ button.chk{width:100%;font:inherit;text-align:left}
 <div class="top" role="banner">
   <div class="brand"><span class="lg"><svg viewBox="0 0 64 64" width="22" height="22"><path d="M15 47 L32 13 L49 47" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="40" r="4.8" fill="#C4B5FD"/></svg></span><b>AVY<i>ORA</i></b></div>
   <div class="vsep"></div>
-  <input class="pname" id="pname" value="Mon plan" spellcheck="false" aria-label="Nom du plan" oninput="state.name=this.value;save()">
+  <input class="pname" id="pname" value="Mon plan" spellcheck="false" aria-label="Nom du plan" oninput="state.name=this.value;save()" onchange="nommerPlan(this.value)">
   <span class="savest ok" id="saveState"></span>
   <span class="chip devonly">Maquette · mode développeur</span>
   <button class="chip prochip devonly" id="proChip" onclick="togglePro()" data-tip="Développement : bascule Pro ↔ Gratuit pour tester les deux parcours">Pro</button>
@@ -838,7 +859,7 @@ button.chk{width:100%;font:inherit;text-align:left}
       <button type="button" role="menuitem" tabindex="-1" id="keysBtn" onclick="menuAction(()=>ouvrirAide('keys'))"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M10 13h.01M14 13h.01M18 13h.01M8 16.5h8"/></svg><span>Raccourcis clavier</span></button>
     </div>
   </div>
-  <a class="ib propill" id="proTop" href="https://getavyora.fr/tarifs" target="_blank" rel="noopener" hidden><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5 14.6 9H21l-5.2 4 2 6.5L12 15.6 6.2 19.5l2-6.5L3 9h6.4z"/></svg><span class="lbl">Passer Pro</span></a>
+  <a class="ib propill" id="proTop" href="https://getavyora.fr/tarifs?source=editeur-plan" target="_blank" rel="noopener" onclick="suivre('clic_passer_pro',{origine:'barre'})" hidden><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5 14.6 9H21l-5.2 4 2 6.5L12 15.6 6.2 19.5l2-6.5L3 9h6.4z"/></svg><span class="lbl">Passer Pro</span></a>
   <button class="ib primary" id="estBtnTop" onclick="showEstimate()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8"/><path d="M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01M8.5 15h.01M12 15h.01M15.5 15h.01M8.5 18h.01M12 18h3.5"/></svg>Estimer ce plan</button>
 </div>
 
@@ -889,11 +910,11 @@ button.chk{width:100%;font:inherit;text-align:left}
 <div class="overlay" id="m-welcome"><div class="modal wel">
 <h3>Dessine ton logement, on chiffre tes travaux</h3>
 <div class="sub wdesk">Trace tes pièces, dis ce que tu changes : ton budget se calcule à chaque décision.</div>
-<div class="sub wphone">Sur téléphone, tu consultes ton plan, ton budget, et tu coches l'avancement du chantier. Pour dessiner ton logement, ouvre AVYORA sur ordinateur ou tablette.</div>
+<div class="sub wphone">Sur téléphone, tu consultes ton plan, ton budget, et tu coches l'avancement du chantier. Pour dessiner ton logement, ouvre AVYORA sur ordinateur ou tablette. Pour l'instant, un plan reste enregistré sur l'appareil où il a été dessiné.</div>
 <div class="wcards wdesk">
 <button type="button" class="wcard rec" data-autofocus onclick="closeWelcome('sample',true)"><span class="wv"><svg viewBox="0 0 160 100" aria-hidden="true"><rect x="10" y="9" width="140" height="82" rx="2" fill="#fff"/><rect x="12" y="11" width="50" height="46" fill="#DDF3F0"/><rect x="62" y="11" width="86" height="78" fill="#ECEBFD"/><rect x="12" y="57" width="28" height="32" fill="#DCEEFB"/><rect x="40" y="57" width="22" height="32" fill="#EEF0F7"/><path d="M62 11v46M12 57h50M40 57v32M62 57v32" stroke="#1E1B4B" stroke-width="2" fill="none"/><path d="M40 73h22" stroke="#D97706" stroke-width="2.4" stroke-dasharray="3.5 2.5"/><rect x="10" y="9" width="140" height="82" rx="2" fill="none" stroke="#1E1B4B" stroke-width="4"/><rect x="146.5" y="22" width="5" height="18" rx="1" fill="#B91C1C"/><rect x="26" y="7" width="18" height="4" fill="#B91C1C"/><rect x="92" y="60" width="48" height="22" rx="5" fill="#4F46E5"/><path d="M99 67h18M99 74h30" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg></span><span class="wbadge">Recommandé</span><span class="wt"><b>Découvrir avec l'exemple</b><small>Un T2 de 60 m² déjà dessiné et chiffré, avec une visite guidée d'une minute.</small></span></button>
 <button type="button" class="wcard" onclick="closeWelcome('templates')"><span class="wv"><svg viewBox="0 0 160 100" aria-hidden="true"><g transform="rotate(-6 50 60)"><rect x="18" y="26" width="64" height="52" rx="3" fill="#fff" stroke="#DCD9FB" stroke-width="1.5"/><path d="M26 34h48v36H26z" fill="none" stroke="#A78BFA" stroke-width="2"/><path d="M48 34v36M26 52h22" stroke="#A78BFA" stroke-width="1.4" fill="none"/></g><g transform="rotate(5 112 56)"><rect x="80" y="20" width="64" height="52" rx="3" fill="#fff" stroke="#DCD9FB" stroke-width="1.5"/><path d="M88 28h48v36H88z" fill="none" stroke="#A78BFA" stroke-width="2"/><path d="M110 28v36M110 46h26" stroke="#A78BFA" stroke-width="1.4" fill="none"/></g><rect x="46" y="30" width="70" height="58" rx="3" fill="#fff" stroke="#DCD9FB" stroke-width="1.5"/><path d="M54 38h54v42H54z" fill="#EEF0FD" stroke="#1E1B4B" stroke-width="2.6"/><path d="M78 38v42M54 60h24M92 60v20M78 60h14" stroke="#1E1B4B" stroke-width="1.6" fill="none"/></svg></span><span class="wt"><b>Partir d'un plan type</b><small>Studio, T2, T3 ou maison : tu ajustes les cotes.</small></span></button>
-<button type="button" class="wcard" onclick="closeWelcome('blank')"><span class="wv"><svg viewBox="0 0 160 100" aria-hidden="true"><defs><pattern id="wgrid" width="10" height="10" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#C9CBE0"/></pattern></defs><rect width="160" height="100" fill="url(#wgrid)"/><path d="M34 76V24h70v34" fill="none" stroke="#1E1B4B" stroke-width="3.2" stroke-linejoin="round"/><path d="M104 58 60 76H34" fill="none" stroke="#4F46E5" stroke-width="1.8" stroke-dasharray="4 3"/><circle cx="34" cy="76" r="3.6" fill="#fff" stroke="#4F46E5" stroke-width="2"/><circle cx="34" cy="24" r="3" fill="#4F46E5"/><circle cx="104" cy="24" r="3" fill="#4F46E5"/><circle cx="104" cy="58" r="3" fill="#4F46E5"/><path d="m112 60 12 26 4-10 10-4z" fill="#1E1B4B" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg></span><span class="wt"><b>Feuille blanche</b><small>Tu traces tes murs toi-même, pièce par pièce.</small></span></button>
+<button type="button" class="wcard" onclick="closeWelcome('blank')"><span class="wv"><svg viewBox="0 0 160 100" aria-hidden="true"><defs><pattern id="wgrid" width="10" height="10" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#C9CBE0"/></pattern></defs><rect width="160" height="100" fill="url(#wgrid)"/><path d="M34 76V24h70v34" fill="none" stroke="#1E1B4B" stroke-width="3.2" stroke-linejoin="round"/><path d="M104 58 60 76H34" fill="none" stroke="#4F46E5" stroke-width="1.8" stroke-dasharray="4 3"/><circle cx="34" cy="76" r="3.6" fill="#fff" stroke="#4F46E5" stroke-width="2"/><circle cx="34" cy="24" r="3" fill="#4F46E5"/><circle cx="104" cy="24" r="3" fill="#4F46E5"/><circle cx="104" cy="58" r="3" fill="#4F46E5"/><path d="m112 60 12 26 4-10 10-4z" fill="#1E1B4B" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg></span><span class="wt"><b>Feuille blanche</b><small>Tu traces tes murs toi-même : le contour de ton logement, puis les cloisons.</small></span></button>
 </div>
 <div class="wcards wphone">
 <button type="button" class="wcard rec" data-autofocus onclick="closeWelcome('sample',true)"><span class="wi"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg></span><span class="wt"><b>Voir l'exemple</b><small>Un T2 de 60 m², son budget et son suivi de chantier.</small></span><span class="wbadge">Recommandé</span></button>
@@ -954,6 +975,7 @@ const ICONS={
   oeil:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
   oeilx:'<path d="M3 3l18 18"/><path d="M10.6 5.1A10.8 10.8 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3 3.9M6.6 6.6A17 17 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
   cadenas:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  calendrier:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
   panier:'<circle cx="9" cy="20" r="1.3"/><circle cx="18" cy="20" r="1.3"/><path d="M2 3h3l2.7 12.3a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.2L21 7H6"/>',
   epingle:'<path d="M12 17v5"/><path d="M9 3h6l-1 6 3 3v2H7v-2l3-3z"/>',
   controle:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="m9 12 2 2 4-4"/>',
@@ -1099,13 +1121,18 @@ document.documentElement.classList.toggle('dev',isDev());
 
 /* ---------- Gratuit / Pro : UNE table, reprise mot pour mot partout ----------
    Elle ne promet que ce qui existe dans ce fichier. */
-const TARIFS_URL='https://getavyora.fr/tarifs';
+/* D48 (cj-retention04) : la page Tarifs sait d'où vient le visiteur (?source=editeur-plan). */
+const TARIFS_URL='https://getavyora.fr/tarifs?source=editeur-plan';
+/* D48 (arbitrage tour 2 · cj-retention01) : en gratuit, on VOIT le montant total et sa répartition
+   par corps d'état — le moment où l'on comprend ce que vaut son plan. Pro débloque le détail tâche
+   par tâche avec son prix, les prix du Suivi, le dossier sans filigrane et plusieurs plans. */
 const DROITS={
   dessin:{gratuit:'dessiner ton logement et tes travaux',pro:'dessiner ton logement et tes travaux'},
   controle:{gratuit:'les surfaces et le contrôle du plan',pro:'les surfaces et le contrôle du plan'},
-  budget:{gratuit:null,pro:'le budget travaux HT, par corps d\'état et tâche par tâche'},
+  total:{gratuit:'le budget travaux HT : le montant total et sa répartition par corps d\'état',pro:'le budget travaux HT : le montant total et sa répartition par corps d\'état'},
+  detail:{gratuit:null,pro:'le détail tâche par tâche, avec le prix de chaque tâche'},
   suivi:{gratuit:'le suivi de chantier à cocher',pro:'le suivi de chantier avec le prix de chaque tâche, et ce qui est déjà réalisé'},
-  export:{gratuit:'le dossier PDF de tes plans, avec filigrane',pro:'le dossier PDF sans filigrane, avec le contrôle, le suivi, le budget et les quantités'},
+  export:{gratuit:'le dossier PDF de tes plans et du budget par corps d\'état, avec filigrane',pro:'le dossier PDF sans filigrane, avec le contrôle, le suivi, le détail du budget et les quantités'},
   plans:{gratuit:'1 plan enregistré',pro:'des plans enregistrés sans limite'},
 };
 const maj=s=>s?s.charAt(0).toUpperCase()+s.slice(1):'';
@@ -1113,10 +1140,14 @@ const maj=s=>s?s.charAt(0).toUpperCase()+s.slice(1):'';
 const droitsPro=()=>Object.values(DROITS).filter(d=>d.pro!==d.gratuit).map(d=>d.pro);
 const droitsGratuit=()=>Object.values(DROITS).filter(d=>d.gratuit).map(d=>d.gratuit);
 const avecPro=k=>'Avec Pro : '+DROITS[k].pro+'.';
-const lienPro=(txt,cls)=>`<a class="${cls||'ib primary'}" href="${TARIFS_URL}" target="_blank" rel="noopener">${txt||'Passer Pro'}</a>`;
+const lienPro=(txt,cls,origine)=>`<a class="${cls||'ib primary'}" href="${TARIFS_URL}" target="_blank" rel="noopener" onclick="suivre('clic_passer_pro',{origine:'${origine||'lien'}'})">${txt||'Passer Pro'}</a>`;
+/* D48 (cj-retention05) · Mesurer sans réseau : aux moments clés, l'éditeur appelle
+   window.AVYORA_TRACK(nom, données) si le site l'a injecté — sinon rien. Aucune donnée personnelle
+   (ni nom de plan, ni adresse, ni code postal) : des sortes et des nombres. */
+function suivre(nom,donnees){try{const f=window.AVYORA_TRACK;if(typeof f==='function')f(nom,Object.assign({pro:isPro(),telephone:isMobile()},donnees||{}));}catch{}}
 /* D39 : le seuil d'arbitrage, sorti de quantities() pour être partagé avec « Encore à décider » */
 const SEUIL_ARBITRAGE=300;
-function passerPro(){let w=null;try{w=window.open(TARIFS_URL,'_blank','noopener');}catch{}if(!w){try{location.assign(TARIFS_URL);}catch{}}}
+function passerPro(origine){suivre('clic_passer_pro',{origine:typeof origine==='string'?origine:'fenetre'});let w=null;try{w=window.open(TARIFS_URL,'_blank','noopener');}catch{}if(!w){try{location.assign(TARIFS_URL);}catch{}}}
 
 // ---------- Catalogues ----------
 const ROOM_TYPES = [
@@ -1323,7 +1354,7 @@ function renderLayers(){const el=document.getElementById('layerPop');if(!el)retu
 function showAllLayers(){Object.keys(settings.lay).forEach(k=>settings.lay[k]=true);if(!settings.cotes)toggle('cotes');saveView();draw();renderLayers();updLayersBtn();}
 function toggleLayersPop(){const el=document.getElementById('layerPop');el.hidden=!el.hidden;if(!el.hidden)renderLayers();document.getElementById('layersBtn').classList.toggle('on',!el.hidden);}
 function updLayersBtn(){const b=document.getElementById('layersBtn');if(b)b.classList.toggle('has-hidden',LAYERS.some(([k])=>!layVisible(k)));}
-let tool = 'select', wallType = 'mur', openingType = 'porte', itemType = 'lit';
+let tool = 'select', wallType = 'auto', openingType = 'porte', itemType = 'lit';
 let sel = null;             // {kind:'wall'|'opening'|'item'|'room'|'dim', id}
 let chain = [];             // tracé de murs en cours
 let lenBuf = '';            // longueur tapée au clavier pendant le tracé
@@ -1840,7 +1871,7 @@ function renderToiture(lv){const li=state.levels.indexOf(lv),top=topLevelIdx();c
   const p=t.projet,cs=toitConseil(t),aDec=toitureADecider();
   /* D47 : le conseil tiré de l'état se RETIENT d'un clic ; rien n'est coché tant que rien n'est choisi */
   const cA=!p.manuel&&cs.action!=='rien'&&p.action!==cs.action,cT=!p.manuel&&cs.traiter&&!p.traiterCharpente&&p.action!=='complete';
-  const pxC=(a,tr)=>{if(!isPro())return '';const x=prixConseilToit(a,tr);return x>0?'<span class="val b" style="white-space:nowrap;margin-left:10px">+'+eur(x)+'</span>':'';},bC='class="ib" style="width:100%;justify-content:space-between;text-align:left;margin-top:6px"';
+  const pxC=(a,tr)=>{if(!voitTout())return '';const x=prixConseilToit(a,tr);return x>0?'<span class="val b" style="white-space:nowrap;margin-left:10px">+'+eur(x)+'</span>':'';},bC='class="ib" style="width:100%;justify-content:space-between;text-align:left;margin-top:6px"';
   const conseil=aDec?`<div class="tip q" style="margin-top:6px"><b>À décider.</b> D'après l'état que tu as décrit (couverture ${TOIT_ETAT_COUV[t.etatCouv].toLowerCase()} · charpente ${TOIT_ETAT_CHARP[t.etatCharp].toLowerCase()}), on te conseille : <b>${[cA?TOIT_ACTION[cs.action].toLowerCase():'',cT?'traiter la charpente':''].filter(Boolean).join(' et ')}</b>. Rien n'est compté tant que tu ne l'as pas retenu.
       <div style="margin-top:4px">${cA?`<button ${bC} onclick="setToiture('p.action','${cs.action}')"><span>Retenir : ${TOIT_ACTION[cs.action].toLowerCase()}</span>${pxC(cs.action)}</button>`:''}${cT?`<button ${bC} onclick="setToiture('p.traiterCharpente',true)"><span>Retenir : traiter la charpente</span>${pxC(null,true)}</button>`:''}<button ${bC} onclick="setToiture('p.action','rien')"><span>Je n'y touche pas</span></button></div></div>`:'';
   return `<div class="ph mt">${ico('toit')} Toiture <span class="chip vue-projet">${nomVue('projet').toLowerCase()}</span></div>
@@ -2075,10 +2106,34 @@ function toggleDone(id){history.push(snapshot());state.done=state.done||{};if(st
    rien ne l'explique — c'est exactement la panne qu'on vient de corriger côté prix (D19).
    `inclus` est l'autre cas de prix nul, déjà dit autrement (« incluse dans le split »). */
 function detailTache(t){const nul=!t.prix&&!t.inclus,n=t.pourquoi||'non compté dans le budget';return t.detail?(nul?t.detail+' · '+n:t.detail):(nul?n:'');}
+/* D48 (cj-retention06) · Un Suivi daté. Chaque corps d'état peut recevoir une date prévue, saisie par
+   l'utilisateur et gardée dans le plan (state.prevu) — rien n'est deviné. Le Suivi dit alors ce qui est
+   en retard, ce qui tombe cette semaine, ce qui vient ensuite, et peut se trier par date. */
+const jourLocal=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||'');return m?new Date(+m[1],+m[2]-1,+m[3]):null;};
+const fmtJour=d=>d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'});
+function prevuDe(lot){const p=state.prevu&&state.prevu[lot];return jourLocal(p)?p:'';}
+/* état d'un corps d'état daté : 'fait' | 'retard' | 'semaine' | 'avenir' (null sans date) */
+function etatLot(lot,T){const d=jourLocal(prevuDe(lot));if(!d)return null;const ts=T.filter(t=>t.lot===lot);if(ts.length&&ts.every(t=>isDone(t.id)))return 'fait';
+  const auj=new Date();auj.setHours(0,0,0,0);const j=Math.round((d-auj)/864e5);return j<0?'retard':j<=6?'semaine':'avenir';}
+const ETAT_LOT={fait:'fait',retard:'en retard',semaine:'cette semaine',avenir:'à venir'};
+function setPrevu(lot,v){if(!lot)return;history.push(snapshot());future=[];state.prevu={...(state.prevu||{})};if(jourLocal(v))state.prevu[lot]=v;else delete state.prevu[lot];save();renderPanel();}
+let triSuivi='chantier';try{if(localStorage.getItem('avyora-plan-tri')==='date')triSuivi='date';}catch{}
+function setTriSuivi(t){triSuivi=t;try{localStorage.setItem('avyora-plan-tri',t);}catch{}renderPanel();}
+/* l'ordre d'affichage : celui du chantier, ou les corps d'état datés d'abord, par date */
+function trierParDate(T){const lots=[...new Set(T.map(t=>t.lot))],cle=l=>prevuDe(l)||'9999',rang=new Map(lots.slice().sort((a,b)=>cle(a)<cle(b)?-1:cle(a)>cle(b)?1:lots.indexOf(a)-lots.indexOf(b)).map((l,i)=>[l,i]));
+  return T.map((t,i)=>[t,i]).sort((a,b)=>rang.get(a[0].lot)-rang.get(b[0].lot)||a[1]-b[1]).map(x=>x[0]);}
+/* le haut du Suivi : en retard, cette semaine, ensuite */
+function suiviDatesHTML(T){const lots=[...new Set(T.map(t=>t.lot))],dates=lots.filter(l=>prevuDe(l));
+  if(!dates.length)return `<div class="tip" style="margin:0 0 10px">${ico('calendrier','lead')}Ajoute une <b>date prévue</b> à chaque corps d'état (sous son titre) : le Suivi te dira ce qui est pour cette semaine et ce qui est en retard.</div>`;
+  const par=k=>dates.filter(l=>etatLot(l,T)===k).sort((a,b)=>prevuDe(a)<prevuDe(b)?-1:1),ligne=(k,titre,ls)=>ls.length?`<div class="sd ${k}"><b>${titre}</b><span>${ls.map(l=>esc(l)+' · '+fmtJour(jourLocal(prevuDe(l)))).join(' ; ')}</span></div>`:'';
+  const r=par('retard'),s=par('semaine'),a=par('avenir').slice(0,1);
+  return `<div class="suivdates">${ligne('retard','En retard',r)}${ligne('semaine','Cette semaine',s)}${ligne('avenir','Ensuite',a)}${!r.length&&!s.length&&!a.length?'<div class="sd fait"><b>À jour</b><span>tous les corps d\'état datés sont faits</span></div>':''}</div>
+  <div class="seg triseg" role="group" aria-label="Ordre du Suivi"><button class="${triSuivi!=='date'?'on':''}" onclick="setTriSuivi('chantier')">Ordre du chantier</button><button class="${triSuivi==='date'?'on':''}" onclick="setTriSuivi('date')">Par date prévue</button></div>`;}
 /* D39 (arbitrage L) : la liste du Suivi. Le prix de chaque tâche en Pro, le total de chaque corps
    d'état, et un clic sur le texte d'une tâche montre son objet sur le plan (la case, elle, coche). */
 function chantierListHTML(T,editable,opt){const pro=!!(opt&&opt.prix);let lot='',h='';const parLot=chantierPrix(T).parLot;
-  T.forEach(t=>{if(t.lot!==lot){lot=t.lot;h+=`<div class="lot"><span>${esc(lot)}</span>${pro?`<span class="lotpx">${parLot[lot]?eur(Math.round(parLot[lot])):'non chiffré'}</span>`:''}</div>${editable&&lot==='Électricité et plomberie'?'<div class="lotnote">Les gaines et les arrivées d\'eau passent avant que les cloisons soient fermées.</div>':''}`;}
+  T.forEach(t=>{if(t.lot!==lot){lot=t.lot;const pv=prevuDe(lot),el=etatLot(lot,T);
+    h+=`<div class="lot"><span>${esc(lot)}</span>${pro?`<span class="lotpx">${parLot[lot]?eur(Math.round(parLot[lot])):'non chiffré'}</span>`:''}</div>${editable?`<div class="lotdate"><label>Prévu le <input type="date" class="fin" value="${pv}" data-lot="${esc(lot)}" aria-label="${esc('Date prévue : '+lot)}" onchange="setPrevu(this.dataset.lot,this.value)"></label>${el?`<span class="lotst ${el}">${ETAT_LOT[el]}</span>`:''}</div>`:pv?`<div class="lotdate"><span>Prévu le ${jourLocal(pv).toLocaleDateString('fr-FR')}</span>${el?`<span class="lotst ${el}">${ETAT_LOT[el]}</span>`:''}</div>`:''}${editable&&lot==='Électricité et plomberie'?'<div class="lotnote">Les gaines et les arrivées d\'eau passent avant que les cloisons soient fermées.</div>':''}`;}
     const dn=isDone(t.id),dt=detailTache(t),fl=dn?faitLe(t.id):'',c=editable&&tacheCible(t.id),px=pro?`<span class="tpx${t.prix?'':' nul'}">${prixTache(t)}</span>`:'';
     const txt=`<b>${esc(t.label)}</b>${dt||fl?`<small>${esc([dt,fl].filter(Boolean).join(' · '))}</small>`:''}`;
     h+=editable?`<div class="task ${dn?'done':''}"><input type="checkbox" ${dn?'checked':''} aria-label="${esc('Fait : '+t.label)}" onchange="toggleDone('${t.id}')">${c?`<button type="button" class="tgo" onclick="montrerTache('${t.id}')" title="Voir sur le plan">${txt}</button>`:`<span class="tgo">${txt}</span>`}${px}</div>`
@@ -2149,7 +2204,7 @@ const nomVue = m => LEX.vue[m]||String(m);
 /* D38 (arbitrage J) · La vue finale se lit, elle ne se modifie pas. Elle masque les marquages :
    un mur tracé là devenait « à créer » et le budget montait sans que rien ne le montre. */
 const OUTILS_LECTURE = ['select','zone','mesure'];
-function enLectureSeule(){if(mode()!=='final')return false;toast(`Vue ${nomVue('final')} : lecture seule. Pour modifier, passe en vue ${nomVue('projet')}.`,false,{action:'Aller en '+nomVue('projet'),fn:modifierEnTravaux});return true;}
+function enLectureSeule(){if(isMobile()){toast('Au téléphone, tu consultes ton plan et tu coches l\'avancement. Pour le modifier, ouvre-le sur l\'ordinateur ou la tablette où tu l\'as dessiné.');return true;}if(mode()!=='final')return false;toast(`Vue ${nomVue('final')} : lecture seule. Pour modifier, passe en vue ${nomVue('projet')}.`,false,{action:'Aller en '+nomVue('projet'),fn:modifierEnTravaux});return true;}
 function modifierEnTravaux(){const s0=sel,m0=multi.slice();setMode('projet');if(s0){sel=s0;multi=m0;render();}}
 const CREER='#b91c1c', DEMOLIR='#d97706';
 // allège (hauteur sous la fenêtre) par défaut selon le modèle ; null = sans objet (portes, fenêtre de toit)
@@ -2768,7 +2823,19 @@ function guessType(area,used){
   if(area<16) return used.includes('chambre')&&!used.includes('cuisine')?'cuisine':'chambre';
   return used.includes('sejour')?'chambre':'sejour';
 }
-const roomName = r => r.name || RT[r.type].label;
+/* D48 (cj-qa08) · Trois « Chambre » : le Suivi, Estimer et le dossier ne disaient plus laquelle. Deux
+   pièces du même nom sont numérotées À L'AFFICHAGE (« Chambre 1 », « Chambre 2 »), dans l'ordre de
+   lecture du plan (niveau, puis de haut en bas et de gauche à droite), en comptant les pièces d'avant
+   ET d'après travaux : la même pièce garde le même numéro dans les deux vues. Le nom saisi n'est
+   pas modifié ; un nom unique n'a pas de numéro. Recalculé à chaque changement (afterChange). */
+let _numPieces=null;
+function numerosPieces(){if(_numPieces)return _numPieces;const m=new Map(),G={};_numPieces=m;
+  try{state.levels.forEach((lv,li)=>{const vus=new Set();['existant','projet'].forEach(md=>facesFor(lv,md).forEach(f=>{const r=f.room;if(!r||vus.has(r.id)||!RT[r.type])return;vus.add(r.id);
+    const b=String(r.name||RT[r.type].label).trim(),k=b.toLowerCase();(G[k]=G[k]||[]).push({id:r.id,b,li,x:f.label.x,y:f.label.y});}));});}catch{return m;}
+  Object.values(G).forEach(g=>{if(g.length<2)return;g.sort((a,c)=>a.li-c.li||(Math.abs(a.y-c.y)>0.5?a.y-c.y:a.x-c.x));g.forEach((e,i)=>m.set(e.id,e.b+' '+(i+1)));});
+  return m;}
+const nomBrut = r => r.name || RT[r.type].label;
+const roomName = r => numerosPieces().get(r.id) || nomBrut(r);
 /* D39 (pro23) : garage, cave, combles, balcon — et, avant travaux, un volume sans plancher ou déclaré non habitable. */
 const horsHabitable = r => !!(RT[r.type].nh||RT[r.type].ext||((r.nhAvant||r.floor===SANS_PLANCHER)&&mode()==='existant'));
 const roomFace = (level,id) => (facesCache[level.id]||[]).find(f=>f.room?.id===id);
@@ -2867,6 +2934,9 @@ function planChecks(lv,opt){
   {const fi=lv.openings.filter(o=>OPENINGS[o.type]?.cat==='fenetre'&&opActive(o)&&o.type!=='porte_fenetre'&&o.type!=='baie');
    fi.forEach(o=>{const w=lv.walls.find(x=>x.id===o.wallId);if(!w||!wallActive(w)||isExteriorWall(w,lv))return;
      out.push({lvl:'info',msg:`<b>Fenêtre sur un mur intérieur</b> : elle n'éclaire pas depuis dehors et ne compte pas pour la lumière des pièces. C'était une porte ? Change son type dans sa fiche. Une verrière voulue peut rester.`,sel:{kind:'opening',id:o.id}});});}
+  /* D48 (cj-novice02) : une cloison de 7 cm qui donne dehors — un mur de façade qui s'ignore */
+  {const cf=lv.walls.filter(w=>!isVirtual(w)&&wallActive(w)&&w.type==='cloison'&&wallSideInside(w,1,lv)!==wallSideInside(w,-1,lv));
+   if(cf.length)out.push({lvl:'info',msg:`<b>${cf.length>1?cf.length+' cloisons':'Une cloison'} de 7 cm en façade</b> : ${cf.length>1?'ces murs donnent':'ce mur donne'} sur l'extérieur. Un mur de façade fait d'ordinaire 20 cm ou plus : change son type dans sa fiche, ou garde-le si c'est voulu (véranda, cloison légère).`,sel:{kind:'wall',id:cf[0].id}});}
   {const M=menuisSousDimensionnees(lv);if(M.length){const isNew=o=>ost(o)==='creer'||ost(o)==='remplacer';const neuves=M.filter(m=>isNew(m.o)),gardees=M.filter(m=>!isNew(m.o));
     if(neuves.length)out.push({lvl:'warn',msg:`<b>${neuves.length} menuiserie${neuves.length>1?'s':''} neuve${neuves.length>1?'s':''}</b> avec une tapée plus fine que le doublage : ${neuves.map(m=>m.def.label.toLowerCase()+' '+m.d+'→'+m.dbl+' mm').join(', ')}. Ouvre-la pour ajuster le dormant.`,sel:{kind:'opening',id:neuves[0].o.id}});
     if(gardees.length)out.push({lvl:'warn',msg:`<b>${gardees.length} menuiserie${gardees.length>1?'s':''} conservée${gardees.length>1?'s':''}</b> sur un mur à doubler (${gardees.map(m=>m.def.label.toLowerCase()).join(', ')}) : leur tapée (${gardees[0].d} mm) ne couvrira pas le doublage (${gardees[0].dbl} mm) → les remplacer (« à créer ») ou prévoir un retour de doublage en tableau.`,sel:{kind:'opening',id:gardees[0].o.id}});}}
@@ -3049,7 +3119,9 @@ function danglingNodes(level){const out=[];level.walls.filter(w=>wallActive(w)).
 // ---------- Historique / sauvegarde ----------
 function snapshot(){return JSON.stringify(state);}
 function commit(){history.push(snapshot());if(history.length>80)history.shift();future=[];afterChange();}
-function afterChange(){state.levels.forEach(syncRooms);save();render();}
+/* le message d'un geste précédent perd son « Annuler » dès qu'un autre geste entre dans l'historique */
+function retirerAnnulerPerime(){const t=document.getElementById('toast');if(!t||!t._geste)return;const g=t._geste;if(history.length===g.h&&history[g.h-1]===g.snap)return;t._geste=null;const b=t.querySelector('.tact');if(b)b.remove();t.classList.remove('act');}
+function afterChange(){state.levels.forEach(syncRooms);_numPieces=null;retirerAnnulerPerime();save();render();}
 /* D38 : annuler ou rétablir laissait le tracé en cours à l'écran (chain) : le mur annulé restait
    dessiné et le clic suivant repartait de son bout, en laissant un mur orphelin. Les gestes en
    cours (tracé, rectangle, cote, sélection multiple, glissement) sont remis à zéro ; pendant un
@@ -3064,6 +3136,14 @@ function undo(){
     if(suivi){chain.pop();chainWallIds.pop();lenBuf='';}else resetGestes();
     afterChange();return;}
   if(!history.length)return;future.push(snapshot());_prixSuite=true;state=JSON.parse(history.pop());resetGestes();sel=null;afterChange();}
+/* D48 (cj-qa04) · « Annuler » dans un message annule LE geste qu'il annonce, jamais le dernier geste
+   quelconque. On note l'historique au moment du message : s'il a bougé depuis (un autre geste), le
+   bouton disparaît du message au geste suivant, et un clic tardif renvoie à Ctrl+Z au lieu de
+   défaire autre chose. */
+function annulerCe(){const h=history.length,snap=history[h-1];
+  return {action:'Annuler',geste:{h,snap},fn:()=>{
+    if(history.length!==h||history[h-1]!==snap){toast('Tu as fait d\'autres gestes depuis : utilise Annuler en haut (Ctrl+Z) pour revenir pas à pas.');return;}
+    if(tool==='mur'&&chain.length){chain=[];chainWallIds=[];lenBuf='';}undo();}};}
 function redo(){if(!future.length)return;history.push(snapshot());_prixSuite=true;state=JSON.parse(future.pop());resetGestes();sel=null;afterChange();}
 /* ---------- D38 · Zéro perte de travail ----------
    Le plan ouvert s'enregistre à chaque changement (clé avyora-plan-v2) — mais rien ne le disait.
@@ -3072,45 +3152,111 @@ function redo(){if(!future.length)return;history.push(snapshot());_prixSuite=tru
    si le navigateur a refusé (espace plein). Un plan déjà rangé dans « Mes plans » y est tenu à jour :
    rouvrir sa fiche ne fait plus perdre les dernières modifications. */
 let etatEnreg='ok',enregT=0,enregAt=0,enregOk=true;
-const ICO_ENREG={ok:'<path d="M20 6 9 17l-5-5"/>',saving:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',err:'<path d="M12 3 2 21h20L12 3z"/><path d="M12 10v5M12 18h.01"/>'};
+/* D48 (cj-qa06) · Deux onglets écrivaient la même clé : le dernier effaçait l'autre, sans bruit.
+   Chaque onglet signe ce qu'il écrit ; si un AUTRE onglet écrit un autre plan, celui-ci n'écrit
+   plus rien (ni le plan ouvert, ni « Mes plans ») tant que l'utilisateur n'a pas choisi. */
+const ONGLET=Math.random().toString(36).slice(2,10);
+let conflitOnglet=null;
+const ICO_ENREG={ok:'<path d="M20 6 9 17l-5-5"/>',saving:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',err:'<path d="M12 3 2 21h20L12 3z"/><path d="M12 10v5M12 18h.01"/>',perdu:'<path d="M12 3 2 21h20L12 3z"/><path d="M12 10v5M12 18h.01"/>',conflit:'<rect x="3" y="5" width="13" height="11" rx="1.5"/><path d="M8 19h11a2 2 0 0 0 2-2V9"/>'};
+/* Ce qu'il adviendra du plan ouvert si l'on en ouvre un autre : 'rien' (vide ou jamais touché),
+   'range' (déjà dans « Mes plans »), 'rangera' (il y sera rangé), 'perdu' (gratuit, place prise). */
+function sortDuPlanOuvert(){if(planVide()||planIntact())return 'rien';const lib=loadPlans();if(state.id&&lib[state.id])return 'range';if(isPro()||Object.keys(lib).length<PLAN_LIMIT_FREE)return 'rangera';return 'perdu';}
+/* D48 (cj-retention07, cj-integration11, retention05) : « Enregistré » ne se dit plus d'un plan que
+   la version gratuite perdra à l'ouverture d'un autre (« Pas dans Mes plans », en orange foncé,
+   cliquable), ni d'un plan qu'un autre onglet est en train d'écrire. */
 function afficherEnreg(dansLib){const el=document.getElementById('saveState');if(!el)return;
-  const txt={ok:'Enregistré',saving:'Enregistrement…',err:'Non enregistré'}[etatEnreg];
+  let et=conflitOnglet?'conflit':etatEnreg,sort='';
+  if(et==='ok'){if(dansLib===undefined)dansLib=!!(state.id&&loadPlans()[state.id]);if(!dansLib){sort=sortDuPlanOuvert();if(sort==='perdu')et='perdu';}}
+  const txt={ok:'Enregistré',saving:'Enregistrement…',err:'Non enregistré',perdu:'Pas dans Mes plans',conflit:'Ouvert dans un autre onglet'}[et];
   const hh=enregAt?new Date(enregAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'';
-  el.className='savest '+etatEnreg;
-  el.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO_ENREG[etatEnreg]}</svg><span>${txt}</span>`;
-  const t=etatEnreg==='err'?'Pas enregistré : l\'espace de ce navigateur est plein. Supprime un plan dans « Mes plans » ou exporte celui-ci.':etatEnreg==='saving'?'Enregistrement en cours…':'Enregistré sur cet appareil'+(hh?' à '+hh:'')+(dansLib?', et à jour dans « Mes plans »':'');
-  el.title=t;el.setAttribute('aria-label',t);}
-function save(){let ok=true;try{localStorage.setItem('avyora-plan-v2',JSON.stringify({state,view}));}catch{ok=false;}
+  el.className='savest '+et;
+  el.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO_ENREG[et]}</svg><span>${txt}</span>`;
+  const t=et==='err'?'Pas enregistré : l\'espace de ce navigateur est plein. Supprime un plan dans « Mes plans » ou exporte celui-ci.':et==='saving'?'Enregistrement en cours…'
+    :et==='perdu'?'Version gratuite : '+DROITS.plans.gratuit+'. Ce plan est sur cet appareil, mais « Mes plans » n\'a plus de place : il sera perdu si tu en ouvres un autre. Clique pour voir tes options.'
+    :et==='conflit'?'Ce plan est aussi ouvert dans un autre onglet : cet onglet n\'enregistre plus rien tant que tu n\'as pas choisi. Clique pour choisir.'
+    :'Enregistré sur cet appareil'+(hh?' à '+hh:'')+(dansLib?', et à jour dans « Mes plans »':sort==='rangera'?'. Il sera rangé dans « Mes plans » avant que tu en ouvres un autre.':'');
+  el.title=t;el.setAttribute('aria-label',t);
+  const actif=et==='perdu'||et==='conflit';
+  if(actif){el.setAttribute('role','button');el.tabIndex=0;el.onclick=clicEnreg;el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();clicEnreg();}};}
+  else{el.removeAttribute('role');el.removeAttribute('tabindex');el.onclick=null;el.onkeydown=null;}}
+function clicEnreg(){if(conflitOnglet){alerterOnglet();return;}
+  const autre=Object.values(loadPlans())[0],nom=state.name||'Plan sans nom';
+  demander({titre:`« ${esc(nom)} » n'est pas dans « Mes plans »`,texte:`Version gratuite : ${DROITS.plans.gratuit}, et <b>« ${esc(autre?.name||'un autre plan')} »</b> y est déjà. Ce plan-ci reste sur cet appareil tant que tu n'en ouvres pas un autre ; si tu en ouvres un autre, il sera perdu. ${avecPro('plans')}`,
+    choix:[{t:'Passer Pro',fn:()=>passerPro('enregistrement')},{t:'Voir Mes plans',fn:openPlansModal},{t:'Compris',primaire:true}]});}
+function save(){let ok=true;if(!conflitOnglet){try{localStorage.setItem('avyora-plan-v2',JSON.stringify({state,view,onglet:ONGLET}));}catch{ok=false;}}
   enregOk=ok;etatEnreg='saving';afficherEnreg();clearTimeout(enregT);enregT=setTimeout(synchroMesPlans,450);}
 function synchroMesPlans(){enregT=0;let ok=enregOk;const lib=loadPlans();
-  if(state.id&&lib[state.id]){lib[state.id]={...lib[state.id],name:state.name||'Plan sans nom',savedAt:Date.now(),state:JSON.parse(JSON.stringify(state)),view:{...view},resume:resumePlan()};if(!writePlans(lib))ok=false;}
+  if(!conflitOnglet&&state.id&&lib[state.id]){lib[state.id]={...lib[state.id],name:state.name||'Plan sans nom',savedAt:Date.now(),state:JSON.parse(JSON.stringify(state)),view:{...view},resume:resumePlan()};if(!writePlans(lib))ok=false;}
   const avant=etatEnreg;etatEnreg=ok?'ok':'err';if(ok)enregAt=Date.now();afficherEnreg(!!(state.id&&lib[state.id]));
   if(!ok&&avant!=='err')toast('Ton plan n\'a pas pu être enregistré : l\'espace de ce navigateur est plein. Supprime un plan dans « Mes plans » ou exporte celui-ci.',false,{ms:7000});}
 function enregistrerMaintenant(){if(enregT){clearTimeout(enregT);synchroMesPlans();}}
 window.addEventListener('pagehide',enregistrerMaintenant);
+/* Un autre onglet a écrit : si c'est un autre plan (ou le même, modifié là-bas), on prévient et on
+   n'écrase rien. Une simple vue (zoom, défilement) ou le même contenu ne dérangent personne. */
+window.addEventListener('storage',e=>{
+  if(e.key===PLANS_KEY){if(document.getElementById('m-plans')?.classList.contains('show'))renderPlans();afficherEnreg();return;}
+  if(e.key!=='avyora-plan-v2'||conflitOnglet||!e.newValue)return;
+  let s=null;try{s=JSON.parse(e.newValue);}catch{}if(!s||!s.state||!s.state.levels||s.onglet===ONGLET)return;
+  if(empreinteTravail(s.state)===empreinteTravail(state))return;
+  conflitOnglet={nom:s.state.name||'Plan sans nom'};clearTimeout(enregT);enregT=0;afficherEnreg();alerterOnglet();});
+/* Un plan (pas forcément celui qui est ouvert) porte-t-il du travail ? Même règle que planVide/planIntact. */
+function planPorteTravail(st){return !!st&&(st.levels||[]).some(l=>(l.walls||[]).length||(l.items||[]).length||(l.texts||[]).length||(l.dims||[]).length||l.bg)&&!(st.origine&&st.origine.sig===empreinte(st));}
+/* Ranger dans « Mes plans » un plan qui n'est pas celui de cet onglet (celui d'un autre onglet). */
+function rangerEtat(st,vw){const lib=loadPlans();if(st.id&&lib[st.id])return true;if(!isPro()&&Object.keys(lib).length>=PLAN_LIMIT_FREE)return false;
+  const id=st.id||uid(),c=JSON.parse(JSON.stringify(st));c.id=id;c.name=nomUnique(c.name||'Plan sans nom',id);lib[id]={id,name:c.name,savedAt:Date.now(),state:c,view:{...(vw||view)},resume:null};return writePlans(lib);}
+function alerterOnglet(){if(!conflitOnglet)return;let autre=null;try{autre=JSON.parse(localStorage.getItem('avyora-plan-v2'));}catch{}
+  const lib=loadPlans(),a=autre&&autre.state,placeAutre=!a||!planPorteTravail(a)||(a.id&&lib[a.id]&&a.id!==state.id)||isPro()||Object.keys(lib).length<PLAN_LIMIT_FREE;
+  demander({titre:'Ce plan est aussi ouvert dans un autre onglet',
+    texte:`Un autre onglet vient d'enregistrer <b>« ${esc(conflitOnglet.nom)} »</b> sur cet appareil. Pour que l'un n'efface pas l'autre, cet onglet n'enregistre plus rien tant que tu n'as pas choisi.<br><br><b>Continuer ici</b> : ce plan-ci s'enregistre de nouveau${placeAutre?' ; celui de l\'autre onglet est d\'abord rangé dans « Mes plans »':' ; celui de l\'autre onglet ne peut pas être rangé (version gratuite : '+DROITS.plans.gratuit+') et sera remplacé'}.<br><b>Afficher le plan de l'autre onglet</b> : ce plan-ci est d'abord rangé dans « Mes plans ».`,
+    choix:[{t:'Afficher le plan de l\'autre onglet',fn:reprendreAutreOnglet},{t:'Continuer ici',primaire:true,fn:garderCetOnglet}]});}
+function garderCetOnglet(){let autre=null;try{autre=JSON.parse(localStorage.getItem('avyora-plan-v2'));}catch{}
+  let range=false;const a=autre&&autre.onglet!==ONGLET&&autre.state;
+  if(a&&planPorteTravail(a)&&empreinteTravail(a)!==empreinteTravail(state)){const c=a.id&&a.id===state.id?{...a,id:undefined,name:(a.name||'Plan')+' · autre onglet'}:a;range=rangerEtat(c,autre.view);}
+  conflitOnglet=null;save();enregistrerMaintenant();
+  toast(range?'Ce plan s\'enregistre de nouveau ici · celui de l\'autre onglet est rangé dans « Mes plans »':'Ce plan s\'enregistre de nouveau ici',true);}
+function reprendreAutreOnglet(){avantDeRemplacer(garde=>{conflitOnglet=null;
+  if(!load()){afficherEnreg();toast('Le plan de l\'autre onglet n\'a pas pu être lu.');return;}
+  history=[];future=[];sel=null;resetGestes();panelTab='details';_tachesOuverture=null;afterChange();fitView();baseDecisions();
+  toast('Plan de l\'autre onglet affiché'+(garde?' · « '+garde+' » est rangé dans « Mes plans »':''),true);});}
 /* Empreinte de ce que l'utilisateur a fait : tout l'état, sauf ce qui se recalcule (contour et
    ancre des pièces, qui changent d'une vue à l'autre), la vue affichée et l'identifiant. */
 function empreinte(st){const {id,origine,mode,cur,vu,...r}=st; /* D42 : `vu` (estimation ouverte) n'est pas un travail sur le plan */const j=JSON.stringify(r,(k,v)=>(k==='poly'||k==='anchor'||k==='pid')?undefined:v);let h=2166136261;for(let i=0;i<j.length;i++){h^=j.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(36)+'.'+j.length;}
-function marquerOrigine(k){state.origine={k,sig:empreinte(state)};save();}
+/* le même travail, quel que soit le compteur d'identifiants du contrat (pidSeq avance en lisant le plan) */
+const empreinteTravail=st=>empreinte({...st,pidSeq:0});
+function marquerOrigine(k){state.origine={k,sig:empreinte(state)};if(k==='exemple')state.origine.murs=sigMurs(state);save();}
+/* D48 (arbitrage tour 2) · L'exemple fictif montre tout — budget détaillé, prix du Suivi — même en
+   gratuit : c'est la vitrine. Il reste « l'exemple » tant que ses murs existants sont ceux de
+   l'exemple (décider, démolir, créer ne change rien ; déplacer ou redessiner ses murs en fait un
+   autre logement, donc le plan de l'utilisateur). */
+function sigMurs(st){const j=(st.levels||[]).map(l=>(l.walls||[]).filter(w=>w.st!=='creer').map(w=>[w.a.x,w.a.y,w.b.x,w.b.y].map(n=>Math.round(n*100)).join(',')).sort().join(';')).join('|');let h=2166136261;for(let i=0;i<j.length;i++){h^=j.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(36)+'.'+j.length;}
+function estExemple(){const o=state.origine;if(!o||o.k!=='exemple')return false;return o.murs!=null?o.murs===sigMurs(state):planIntact();}
+const voitTout=()=>isPro()||estExemple();
 const planVide=()=>!state.levels.some(l=>l.walls.length||l.items.length||(l.texts||[]).length||(l.dims||[]).length||l.bg);
 const planIntact=()=>!!state.origine&&state.origine.sig===empreinte(state);
 /* Avant tout ce qui remplace le plan ouvert (Nouveau, plan type, feuille blanche, exemple, ouvrir
    un plan) : s'il porte du travail, il est rangé dans « Mes plans ». En gratuit, si la seule place
-   est prise, on le dit AVANT et on demande — jamais de perte silencieuse. L'exemple retouché ne
-   prend pas cette place : on dit qu'il n'est pas gardé, avec « Annuler ».
-   suite(nomGardé, pourquoi) — pourquoi : 'exemple' | 'perdu' (l'utilisateur a choisi) | undefined. */
+   est prise, on le dit AVANT et on demande — jamais de perte silencieuse.
+   D48 (cj-qa05) : l'exemple retouché est rangé comme tout autre plan (beaucoup l'adaptent à leur
+   logement) ; en gratuit, s'il n'y a plus de place, même fenêtre de choix — plus un simple message.
+   suite(nomGardé, pourquoi) — pourquoi : 'perdu' (l'utilisateur a choisi) | undefined. */
 function avantDeRemplacer(suite){enregistrerMaintenant();
   if(planVide()||planIntact()){suite(null);return;}
   const lib=loadPlans(),nom=state.name||'Plan sans nom';
   if(state.id&&lib[state.id]){suite(nom);return;}
-  const exemple=state.origine&&state.origine.k==='exemple';
-  if(isPro()||(!exemple&&Object.keys(lib).length<PLAN_LIMIT_FREE)){if(rangerDansMesPlans()){suite(nom);return;}
+  /* D48 : déjà rangé à l'identique (par un autre onglet, par exemple) : on ne le range pas deux fois */
+  {const e=empreinteTravail(state),deja=Object.values(lib).find(x=>x.state&&empreinteTravail(x.state)===e);if(deja){suite(deja.name||nom);return;}}
+  if(isPro()||Object.keys(lib).length<PLAN_LIMIT_FREE){if(rangerDansMesPlans()){suite(state.name||nom);return;}
     demander({titre:`Impossible de garder « ${esc(nom)} »`,texte:'L\'espace de ce navigateur est plein. Exporte ce plan ou supprime un plan dans « Mes plans » avant de continuer.',choix:[{t:'Continuer sans le garder',danger:true,fn:()=>suite(null,'perdu')},{t:'Annuler',primaire:true}]});return;}
-  if(exemple){suite(null,'exemple');return;}
   const autre=Object.values(lib)[0];
   demander({titre:`« ${esc(nom)} » n'est pas enregistré`,texte:`En version gratuite, « Mes plans » garde un seul plan, et <b>« ${esc(autre?.name||'un autre plan')} »</b> y est déjà. Si tu continues, « ${esc(nom)} » sera perdu. ${avecPro('plans')}`,
     choix:[{t:'Continuer sans le garder',danger:true,fn:()=>suite(null,'perdu')},{t:'Passer Pro',fn:passerPro},{t:'Annuler',primaire:true}]});}
-function rangerDansMesPlans(){const lib=loadPlans();if(!state.id)state.id=uid();lib[state.id]={id:state.id,name:state.name||'Plan sans nom',savedAt:Date.now(),state:JSON.parse(JSON.stringify(state)),view:{...view},resume:resumePlan()};if(!writePlans(lib)){delete state.id;return false;}saveImages();save();return true;}
+/* D48 (cj-integration11) : deux plans ne portent jamais le même nom dans « Mes plans » —
+   « Mon plan », « Mon plan 2 »… Sinon la fenêtre qui annonce une perte devient illisible. */
+function nomUnique(nom,id){nom=String(nom||'').trim()||'Mon plan';const pris=new Set(Object.values(loadPlans()).filter(e=>e.id!==id).map(e=>String(e.name||'').trim().toLowerCase()));
+  if(!pris.has(nom.toLowerCase()))return nom;const base=nom.replace(/\s\d{1,2}$/,'');for(let n=2;n<100;n++){const c=base+' '+n;if(!pris.has(c.toLowerCase()))return c;}return nom;}
+function nommerPlan(v){const saisi=String(v||'').trim(),n=nomUnique(saisi,state.id);const el=document.getElementById('pname');
+  if(n!==state.name){state.name=n;save();}if(el&&el.value!==n)el.value=n;if(saisi&&saisi!==n)toast(`« ${saisi} » est déjà dans « Mes plans » : ce plan s'appelle « ${n} »`,true);}
+function rangerDansMesPlans(){const lib=loadPlans();if(!state.id)state.id=uid();state.name=nomUnique(state.name||'Plan sans nom',state.id);lib[state.id]={id:state.id,name:state.name||'Plan sans nom',savedAt:Date.now(),state:JSON.parse(JSON.stringify(state)),view:{...view},resume:resumePlan()};if(!writePlans(lib)){delete state.id;return false;}saveImages();save();return true;}
 /* En gratuit, commencer un 2e plan alors que « Mes plans » est plein : on l'annonce AVANT. */
 function annoncerLimite(pq,suite){const lib=loadPlans();if(isPro()||pq==='perdu'||Object.keys(lib).length<PLAN_LIMIT_FREE){suite();return;}
   const autre=Object.values(lib)[0];
@@ -3162,31 +3308,34 @@ function loadPlans(){try{return JSON.parse(localStorage.getItem(PLANS_KEY))||{};
 function writePlans(o){try{localStorage.setItem(PLANS_KEY,JSON.stringify(o));return true;}catch{return false;}}
 // Gratuit = 1 seul plan enregistré ; gérer plusieurs plans = Pro (le vrai site injectera isPro ; ici la maquette lit un flag de test)
 const PLAN_LIMIT_FREE=1;
-// Maquette : PRO PAR DÉFAUT (Dani doit pouvoir tout vérifier) ; l'interrupteur de la barre du haut bascule en Gratuit pour tester le parcours free. Le vrai site remplacera ceci par estPro(user).
+// Maquette : PRO PAR DÉFAUT (arbitrage tour 2 : la page seule reste Pro ; le site injecte window.AVYORA_PRO) ; l'interrupteur (?dev) bascule en Gratuit pour tester le parcours free.
 function isPro(){if(typeof window.AVYORA_PRO==='boolean')return window.AVYORA_PRO; /* D39 : valeur injectée par le site quand l'éditeur y sera monté */
   try{return localStorage.getItem('avyora-plan-pro')!=='0';}catch{return true;}}
-function togglePro(){try{localStorage.setItem('avyora-plan-pro',isPro()?'0':'1');}catch{}toast(isPro()?'Maquette en mode Pro : chiffrage, multi-plans et export sans filigrane':'Maquette en mode Gratuit : dessin seul, 1 plan, export filigrané',true);render();}
+function togglePro(){try{localStorage.setItem('avyora-plan-pro',isPro()?'0':'1');}catch{}toast(isPro()?'Maquette en mode Pro : détail du chiffrage, multi-plans et export sans filigrane':'Maquette en mode Gratuit : montant total et corps d\'état, 1 plan, export filigrané',true);render();}
 function renderProChip(){const p=isPro(),t=document.getElementById('proTop');if(t){t.hidden=p;t.href=TARIFS_URL;} /* D41 : « Passer Pro » dans la barre, en gratuit seulement */
   const c=document.getElementById('proChip');if(!c)return;c.innerHTML=p?ico('etoile')+' Pro':ico('cadenas')+' Gratuit';c.classList.toggle('pro',p);}
 function planPaywall(){renderPlans();openModal('plans');toast('Version gratuite : '+DROITS.plans.gratuit+'. '+avecPro('plans'),false);}
 function savePlanToLibrary(){const lib=loadPlans();const exists=state.id&&lib[state.id];
   if(!isPro()&&!exists&&Object.keys(lib).length>=PLAN_LIMIT_FREE){planPaywall();return false;}
-  if(!state.id)state.id=uid();lib[state.id]={id:state.id,name:state.name||'Plan sans nom',savedAt:Date.now(),state:JSON.parse(JSON.stringify(state)),view:{...view},resume:resumePlan()};if(writePlans(lib)){save();toast('Plan « '+(state.name||'sans nom')+' » enregistré',true);}else toast('Enregistrement impossible (espace navigateur plein)');if(document.getElementById('m-plans').classList.contains('show'))renderPlans();return true;}
+  if(!state.id)state.id=uid();state.name=nomUnique(state.name||'Plan sans nom',state.id);lib[state.id]={id:state.id,name:state.name||'Plan sans nom',savedAt:Date.now(),state:JSON.parse(JSON.stringify(state)),view:{...view},resume:resumePlan()};if(writePlans(lib)){save();render();toast('Plan « '+(state.name||'sans nom')+' » enregistré',true);}else toast('Enregistrement impossible (espace navigateur plein)');if(document.getElementById('m-plans').classList.contains('show'))renderPlans();return true;}
 function openSavedPlan(id){const lib0=loadPlans();if(!lib0[id])return;
   if(id===state.id){closeModal();toast('« '+(lib0[id].name||'Ce plan')+' » est déjà ouvert, à jour',true);return;} /* D38 : « Ouvrir » le plan ouvert rechargeait sa version rangée et perdait les dernières modifications */
   avantDeRemplacer(garde=>ouvrirPlanRange(id,garde));}
-function ouvrirPlanRange(id,garde){const lib=loadPlans();const e=lib[id];if(!e)return;history.push(snapshot());state=JSON.parse(JSON.stringify(e.state));state.id=id;state.done=state.done||{};migrerDone(state);migrerEtat(state);state.groups=state.groups||[];state.chantier={...CHANTIER_DEF,...(state.chantier||{})};state.cur=Math.min(state.cur||0,state.levels.length-1);if(e.view)view={...e.view};sel=null;resetGestes();chargerCalques();afterChange();fitView();closeModal();toast('Plan « '+(e.name||'')+' » ouvert'+(garde&&garde!==e.name?' · « '+garde+' » est rangé dans « Mes plans »':''),true);}
+function ouvrirPlanRange(id,garde){const lib=loadPlans();const e=lib[id];if(!e)return;history.push(snapshot());state=JSON.parse(JSON.stringify(e.state));state.id=id;state.done=state.done||{};migrerDone(state);migrerEtat(state);state.groups=state.groups||[];state.chantier={...CHANTIER_DEF,...(state.chantier||{})};state.cur=Math.min(state.cur||0,state.levels.length-1);if(e.view)view={...e.view};sel=null;resetGestes();panelTab='details';_tachesOuverture=null;chargerCalques();afterChange();fitView();baseDecisions();closeModal();toast('Plan « '+(e.name||'')+' » ouvert'+(garde&&garde!==e.name?' · « '+garde+' » est rangé dans « Mes plans »':''),true);suivre('plan_ouvert',{source:'mes-plans'});}
 /* D38 : la petite croix effaçait définitivement, sans confirmation ni retour. Le plan supprimé reste
    récupérable 8 s (« Annuler » dans le message). */
 function deleteSavedPlan(id){const lib=loadPlans();const e=lib[id];if(!e)return;delete lib[id];writePlans(lib);const ouvert=state.id===id;if(ouvert)delete state.id;renderPlans();save();
   toast(`« ${e.name||'Plan sans nom'} » supprimé de « Mes plans »`,false,{action:'Annuler',fn:()=>{const l2=loadPlans();l2[id]=e;writePlans(l2);if(ouvert&&!state.id)state.id=id;if(document.getElementById('m-plans').classList.contains('show'))renderPlans();save();toast(`« ${e.name||'Plan sans nom'} » est de retour dans « Mes plans »`,true);}});}
-function duplicateSavedPlan(id){const lib=loadPlans();const e=lib[id];if(!e)return;if(!isPro()&&Object.keys(lib).length>=PLAN_LIMIT_FREE){planPaywall();return;}const nid=uid();const copy=JSON.parse(JSON.stringify(e));copy.id=nid;copy.name=(e.name||'Plan')+' (copie)';copy.savedAt=Date.now();copy.state.name=copy.name;copy.state.id=nid;lib[nid]=copy;writePlans(lib);renderPlans();toast('Copie créée',true);}
+function duplicateSavedPlan(id){const lib=loadPlans();const e=lib[id];if(!e)return;if(!isPro()&&Object.keys(lib).length>=PLAN_LIMIT_FREE){planPaywall();return;}const nid=uid();const copy=JSON.parse(JSON.stringify(e));copy.id=nid;copy.name=nomUnique((e.name||'Plan')+' (copie)');copy.savedAt=Date.now();copy.state.name=copy.name;copy.state.id=nid;lib[nid]=copy;writePlans(lib);renderPlans();toast('Copie créée',true);}
 /* D38 : un seul « Nouveau », qu'on clique en haut ou dans « Mes plans ». */
 function newSavedPlan(){closeModal();newPlan();}
 function openPlansModal(){renderPlans();openModal('plans');}
 /* D40 · ce qu'une carte de « Mes plans » rappelle : surface, budget, avancement — calculé quand le
    plan est rangé ou tenu à jour (un plan rangé n'est pas rechargé pour s'afficher). */
-function resumePlan(){try{const q=quantities(),px=chantierPrix();return {m2:Math.round(q.area*10)/10,pieces:q.rooms,budget:px.total,taches:px.nb,faites:px.faites,projet:pctProjet()};}catch{return null;}}
+function resumePlan(){try{const q=quantities(),px=chantierPrix();
+  /* D48 : la prochaine étape datée du chantier (corps d'état pas fini, date la plus proche) */
+  const lots=[...new Set(px.taches.map(t=>t.lot))].filter(l=>prevuDe(l)&&etatLot(l,px.taches)!=='fait').sort((a,b)=>prevuDe(a)<prevuDe(b)?-1:1),nx=lots[0];
+  return {m2:Math.round(q.area*10)/10,pieces:q.rooms,budget:px.total,taches:px.nb,faites:px.faites,projet:pctProjet(),prochain:nx?nx+', le '+fmtJour(jourLocal(prevuDe(nx)))+(etatLot(nx,px.taches)==='retard'?' (en retard)':''):null};}catch{return null;}}
 /* Une vignette du plan rangé : ses murs, au trait (niveau affiché, séparations exclues). */
 function miniPlanSVG(st){const L0=(st&&st.levels)||[],lv=L0[Math.min(st&&st.cur||0,L0.length-1)]||L0[0];const ws=((lv&&lv.walls)||[]).filter(w=>w.type!=='virtuel'&&w.a&&w.b);
   if(!ws.length)return '<svg viewBox="0 0 10 10"></svg>';
@@ -3196,11 +3345,11 @@ function renderPlans(){const lib=loadPlans();const list=Object.values(lib).sort(
   const fmtDate=t=>{const d=new Date(t);return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});};
   const pro=isPro();const atLimit=!pro&&list.length>=PLAN_LIMIT_FREE;
   const banner=pro?'':`<div class="budget" style="margin-bottom:12px;cursor:default"><div class="bl"><span>Version gratuite : ${DROITS.plans.gratuit}</span><small>${maj(DROITS.dessin.gratuit)} reste gratuit. ${avecPro('plans')}</small></div>${lienPro('Passer Pro','ib propill')}</div>`;
-  if(!list.length){el.innerHTML=banner+'<div class="empty">Aucun plan enregistré pour l\'instant. Dessine ton plan puis clique <b>Enregistrer le plan actuel</b>.</div>';return;}
+  if(!list.length){el.innerHTML=banner+(isMobile()?'<div class="empty">Aucun plan sur ce téléphone. Pour l\'instant, un plan reste enregistré sur l\'appareil où il a été dessiné : ouvre-le sur cet ordinateur ou cette tablette.</div>':'<div class="empty">Aucun plan enregistré pour l\'instant. Dessine ton plan puis clique <b>Enregistrer le plan actuel</b>.</div>');return;}
   el.innerHTML=banner+'<div class="grouplist">'+list.map(e=>{const cur=e.id===state.id;const nb=(e.state?.levels||[]).reduce((s,l)=>s+(l.walls?.length||0),0);
     /* D40 : la carte rappelle ce que le plan vaut — surface, budget (Pro), avancement du chantier. Le plan ouvert se lit en direct. */
     const R=cur?resumePlan():e.resume;
-    const res=R?[R.pieces?fmtM2(R.m2):'aucune pièce',pro?(R.taches?eur(R.budget)+' HT':'rien de décidé'):(R.taches?pluriel(R.taches,'tâche'):'rien de décidé'),R.taches?'chantier '+R.faites+'/'+R.taches:'',R.projet!=null?'projet à '+R.projet+' %':''].filter(Boolean).join(' · '):pluriel(nb,'mur');
+    const res=R?[R.pieces?fmtM2(R.m2):'aucune pièce',R.taches?eur(R.budget)+' HT':'rien de décidé',R.taches?'chantier '+R.faites+'/'+R.taches:'',R.projet!=null?'projet à '+R.projet+' %':'',R.prochain?'prochaine étape : '+R.prochain:''].filter(Boolean).join(' · '):pluriel(nb,'mur');
     return `<div class="grp plancard" style="${cur?'border-color:var(--acc3);background:var(--brand-l)':''}">
     <span class="pmini" aria-hidden="true">${miniPlanSVG(e.state)}</span>
     <button class="glink" onclick="openSavedPlan('${e.id}')"><span class="gname"><b>${(e.name||'Plan').replace(/</g,'&lt;')}</b>${cur?' <span class="gn">· ouvert</span>':''}</span><span class="gres">${res}</span><span class="gn">${fmtDate(e.savedAt)}</span></button>
@@ -3513,7 +3662,7 @@ cv.addEventListener('pointerdown',e=>{
     // clic sans modificateur sur un mur d'un groupe → sélectionne tout le groupe (Alt = ce mur seul)
     if(!e.shiftKey&&!e.metaKey&&!e.ctrlKey&&!keys.alt){const hg=hitTest(raw);if(hg?.kind==='wall'){const g=groupOf(hg.id);if(g){const here=g.wallIds.filter(id=>L().walls.some(w=>w.id===id));if(here.length>1){msel=here.map(id=>({kind:'wall',id}));multi=[];sel={kind:'marquee',group:g.id};renderPanel();draw();return;}}}}
     // clic sur une cote → saisie de la longueur
-    const lecture=mode()==='final';
+    const lecture=mode()==='final'||isMobile(); /* D48 : au téléphone, on consulte — rien ne se tire au doigt */
     const lab=lecture?null:coteLabelAt(sx,sy);if(lab){openCoteEdit(lab);return;}
     // poignées du mur sélectionné : un coin à 2 murs se tire en gardant les angles (Alt = coin libre)
     if(sel?.kind==='wall'&&!lecture){const w=findWall(sel.id);if(w){for(const end of ['a','b']){if(dist(S(w[end]),v(sx,sy))<9*hitScale){
@@ -3543,7 +3692,7 @@ cv.addEventListener('pointerdown',e=>{
       if(e.shiftKey&&(!h||h.kind==='room')){drag={kind:'band',start:raw,cur:raw};return;}
     }
     if(!(h?.kind==='item'&&multi.includes(h.id)))multi=[];
-    sel=h; renderPanel(); if(isMobile()){draw();return;}
+    sel=h; if(h)panelTab='details'; /* D48 (cj-integration03) : cliquer un objet montre sa fiche, même depuis l'onglet Suivi */ renderPanel(); if(isMobile()){draw();return;}
     if(lecture){drag={kind:'pan',sx,sy,ox:view.ox,oy:view.oy,soft:true};draw();return;} /* vue finale : glisser déplace la vue */
     if(h?.kind==='wall'){const w=findWall(h.id);const u=norm(sub(w.b,w.a)),n=perp(u);
       // cloisons qui arrivent en T sur ce mur : elles suivent le déplacement
@@ -3781,27 +3930,45 @@ function openCoteEdit(lab){
   requestAnimationFrame(()=>{el.focus();el.select();});
 }
 function closeCoteEdit(){if(coteEditEl){coteEditEl.remove();coteEditEl=null;}}
+/* D48 (arbitrage tour 2, cj-novice02, cj-novice08) · Type de mur au tracé. Tracer pièce par pièce
+   faisait des façades en cloisons de 7 cm, décalées d'une pièce à l'autre. Après le premier contour,
+   un mur tracé À L'INTÉRIEUR d'une pièce est une cloison de 7 cm ; un mur qui prolonge l'enveloppe
+   (hors de toute pièce) garde le type du mur extérieur qu'il continue (mur 20 cm par défaut) et,
+   à la fin du tracé, le même alignement que le premier contour (corps vers l'extérieur). La règle se
+   lit sur le plan, pas sur une mémoire de session : après un rechargement, elle vaut pareil. */
+const murFacade=new Set();let _pieceAnnoncee=false;
+function typeAuTrace(lv,a,b){const F=(facesCache[lv.id]||[]).filter(f=>f.room);
+  if(!F.length)return {type:'mur',t:null};
+  const mid=mul(add(a,b),.5);
+  if(F.some(f=>!RT[f.room.type].ext&&pointIn(mid,f.poly)))return {type:'cloison',t:null};
+  const touche=w=>!isVirtual(w)&&(w.type==='mur'||w.type==='porteur')&&[a,b].some(p=>same(w.a,p,2e-3)||same(w.b,p,2e-3)||distSeg(p,w.a,w.b)<0.03);
+  const ref=lv.walls.find(touche);
+  return {type:ref?ref.type:'mur',t:ref&&ref.t!=null?ref.t:null,facade:true};}
 /* D39 (novice16) : une pièce qui se ferme dit sa surface et le type deviné, avec « Choisir son type ». */
-function annoncerPiece(lv,fs,premier){const f=fs[0],r=f&&f.room;if(!r)return;
+function annoncerPiece(lv,fs,premier,facade){const f=fs[0],r=f&&f.room;if(!r)return;_pieceAnnoncee=true;
   const txt=fs.length>1?`${fs.length} pièces fermées.`:`Pièce fermée : ${fmtM2(areaNet(lv,f))}${premier?' à l\'intérieur':''}, « ${roomName(r)} » d'après sa taille.`;
-  toast(txt+(premier?' Les murs suivants seront des cloisons de 7 cm.':''),true,{action:'Choisir son type',fn:()=>{if(!L().rooms.includes(r))return;sel={kind:'room',id:r.id};multi=[];msel=[];if(tool!=='select'){if(tool==='mur'&&chain.length)endChain(false);tool='select';renderTools();updateCursor();}panelTab='details';render();}});}
+  toast(txt+(premier?' Les murs tracés ensuite dans une pièce seront des cloisons de 7 cm ; ceux qui agrandissent le logement, des murs de 20 cm.':facade?' Ses murs donnant dehors sont des murs de façade (20 cm), alignés sur les autres.':''),true,{action:'Choisir son type',fn:()=>{if(!L().rooms.includes(r))return;sel={kind:'room',id:r.id};multi=[];msel=[];if(tool!=='select'){if(tool==='mur'&&chain.length)endChain(false);tool='select';renderTools();updateCursor();}panelTab='details';render();}});}
 function addWall(a,b){
   history.push(snapshot());if(history.length>80)history.shift();future=[];
   const lv=L();const before=new Set(lv.rooms.map(r=>r.id));
   // mur tracé par-dessus un mur existant (colinéaire et qui se recouvre) : on prévient, ça fausserait les métrés
   const u=norm(sub(b,a));const dup=lv.walls.find(o=>{if(isVirtual(o)||!wallDrawn(o))return false;const uo=norm(sub(o.b,o.a));if(Math.abs(u.x*uo.y-u.y*uo.x)>0.02)return false;if(distSeg(a,o.a,o.b)>0.03&&distSeg(b,o.a,o.b)>0.03&&distSeg(o.a,a,b)>0.03&&distSeg(o.b,a,b)>0.03)return false;const t0=projT(a,o.a,o.b),t1=projT(b,o.a,o.b);return Math.min(t0,t1)<0.98&&Math.max(t0,t1)>0.02&&distSeg(mul(add(a,b),.5),o.a,o.b)<0.03;});
   if(dup)toast('Ce mur se superpose à un mur existant — les longueurs seraient comptées deux fois (Ctrl+Z pour annuler)');
-  const w={id:uid(),a:{...a},b:{...b},type:wallType};if(customT!=null&&wallType!=='virtuel')w.t=customT;if(mode()!=='existant'&&wallType!=='virtuel')w.st='creer';lv.walls.push(w);chainWallIds.push(w.id);syncRooms(lv);
+  const auto=wallType==='auto'?typeAuTrace(lv,a,b):null,typ=auto?auto.type:wallType,ep=auto?auto.t:customT;
+  const w={id:uid(),a:{...a},b:{...b},type:typ};if(ep!=null&&typ!=='virtuel')w.t=ep;if(mode()!=='existant'&&typ!=='virtuel')w.st='creer';lv.walls.push(w);chainWallIds.push(w.id);if(auto&&auto.facade)murFacade.add(w.id);syncRooms(lv);
   const fresh=(facesCache[lv.id]||[]).filter(f=>f.room&&!before.has(f.room.id));
   /* D37 (arbitrage I) : le premier contour, ce sont les murs de façade ; ce qu'on trace ensuite,
      ce sont des cloisons. Laisser l'outil en « Parpaing 20 cm » faisait de chaque cloison un mur
      porteur — et sa démolition coûtait une étude et une poutre que personne n'avait décidées. */
-  const premier=!before.size&&fresh.length&&(wallType==='mur'||wallType==='porteur');
-  if(premier){wallType='cloison';customT=null;toast(`Pièce fermée : ${fmtM2(areaNet(lv,fresh[0]))}. Les murs suivants seront des cloisons (7 cm) — change le type dans le volet si besoin.`,true);}
-  else if(fresh.length)annoncerPiece(lv,fresh);
+  const premier=!before.size&&fresh.length&&(typ==='mur'||typ==='porteur');
+  /* D48 (arbitrage tour 2) : après le premier contour, l'outil passe en « Automatique » — le type se
+     lit au tracé (cloison dans une pièce, mur de façade dehors), et après un rechargement aussi. */
+  if(premier){wallType='auto';customT=null;toast(`Pièce fermée : ${fmtM2(areaNet(lv,fresh[0]))}. Les murs tracés ensuite dans une pièce seront des cloisons (7 cm), ceux qui agrandissent le logement des murs de 20 cm — change le type dans le volet si besoin.`,true);}
+  else if(fresh.length)annoncerPiece(lv,fresh,false,chainWallIds.some(id=>murFacade.has(id)));
   /* D39 (novice16) : le type d'une pièce tracée est deviné d'après sa taille ; il le reste, marqué « ? »,
      tant qu'on ne l'a pas choisi. */
   fresh.forEach(f=>{if(f.room)f.room.typeAuto=true;});
+  if(!before.size&&fresh.length&&state.levels.every(l=>l===lv||!(facesCache[l.id]||[]).some(f=>f.room)))suivre('premiere_piece',{travaux:mode()!=='existant'}); /* D48 (cj-retention05) */
   save();renderPanel();renderLevels();
   return fresh.length;
 }
@@ -3816,7 +3983,11 @@ function endChain(closed){
   const premier=!!closed&&ids.length>=3&&!wallAlignChoisi&&wallAlign==='axe'&&ids.every(id=>{const w=findWall(id);return w&&!isVirtual(w)&&w.type!=='cloison';})&&lv.walls.every(w=>ids.includes(w.id)||isVirtual(w));
   const al=premier?'int':wallAlign;
   if(al!=='axe'&&ids.length)applyAlign(ids,closed?chain.slice():null,al);
+  /* D48 : les murs de façade tracés « en automatique » s'alignent comme le premier contour */
+  const facade=!premier&&al==='axe'&&!wallAlignChoisi?ids.filter(id=>murFacade.has(id)&&findWall(id)):[];
+  if(facade.length){applyAlign(facade,closed?chain.slice():null,'int');if(!_pieceAnnoncee)toast(facade.length>1?'Murs de façade : 20 cm, alignés sur les autres murs extérieurs. Change le type dans le volet si besoin.':'Mur de façade : 20 cm, aligné sur les autres murs extérieurs. Change le type dans le volet si besoin.',true);}
   if(premier){const fs=(facesCache[lv.id]||[]).filter(f=>f.room);if(fs.length)annoncerPiece(lv,fs,true);}
+  murFacade.clear();_pieceAnnoncee=false;
   chain=[];chainWallIds=[];lenBuf='';draw();renderPanel();
 }
 function applyAlign(ids,poly,al){al=al||wallAlign;
@@ -3909,21 +4080,21 @@ function deleteSel(){
   if(sel.kind==='room'){toast('Une pièce se supprime en effaçant un de ses murs');history.pop();return;}
   sel=null; afterChange();
 }
-function marquerAuLieuDEffacer(){const lv=L(),annuler={action:'Annuler',fn:()=>undo()};
+function marquerAuLieuDEffacer(){const lv=L(),annuler=annulerCe;
   const existe=w=>w&&!isVirtual(w)&&wst(w)!=='creer';
   if(sel.kind==='wall'){const w=findWall(sel.id);if(!existe(w))return false;
     if(wst(w)==='demolir'){toast(`Ce mur est déjà « ${LEX.etat.demolir} ». Pour le garder, choisis « ${LEX.etat.garder} » dans le panneau.`);return true;}
-    setWallProp('st','demolir');toast('Mur marqué « À démolir » : il reste sur le plan, en jaune.',true,annuler);return true;}
+    setWallProp('st','demolir');toast('Mur marqué « À démolir » : il reste sur le plan, en jaune.',true,annuler());return true;}
   if(sel.kind==='opening'){const o=lv.openings.find(x=>x.id===sel.id);if(!o||ost(o)==='creer')return false;
     const w=findWall(o.wallId);if(w&&wst(w)==='demolir'){toast('Son mur est à démolir : cette ouverture part avec lui.');return true;}
     if(ost(o)==='boucher'){toast('Cette ouverture est déjà « À boucher ».');return true;}
-    setOpeningProp('st','boucher');toast('Ouverture marquée « À boucher ».',true,annuler);return true;}
+    setOpeningProp('st','boucher');toast('Ouverture marquée « À boucher ».',true,annuler());return true;}
   if(sel.kind==='item'){const its=selectedItems(),aMarquer=its.filter(i=>ist(i)!=='creer'&&ist(i)!=='demolir'),aEffacer=its.filter(i=>ist(i)==='creer');
     if(!aMarquer.length&&!aEffacer.length){toast(its.length>1?'Ces équipements sont déjà « À déposer ».':'Cet équipement est déjà « À déposer ».');return true;}
     if(!aMarquer.length)return false;
     history.push(snapshot());const ef=new Set(aEffacer.map(i=>i.id));aMarquer.forEach(i=>{i.st='demolir';});
     lv.items=lv.items.filter(i=>!ef.has(i.id));multi=multi.filter(id=>!ef.has(id));if(ef.has(sel.id))sel={kind:'item',id:aMarquer[0].id};afterChange();
-    toast((aMarquer.length>1?aMarquer.length+' équipements marqués':ITEMS[aMarquer[0].type].label+' marqué')+' « À déposer »'+(aEffacer.length?' · '+aEffacer.length+' posé'+(aEffacer.length>1?'s':'')+' en Travaux, effacé'+(aEffacer.length>1?'s':''):'')+'.',true,annuler);return true;}
+    toast((aMarquer.length>1?aMarquer.length+' équipements marqués':ITEMS[aMarquer[0].type].label+' marqué')+' « À déposer »'+(aEffacer.length?' · '+aEffacer.length+' posé'+(aEffacer.length>1?'s':'')+' en Travaux, effacé'+(aEffacer.length>1?'s':''):'')+'.',true,annuler());return true;}
   if(sel.kind==='marquee'){const by=k=>msel.filter(m=>m.kind===k).map(m=>m.id);
     const ws=by('wall').map(id=>lv.walls.find(w=>w.id===id)).filter(Boolean),os=by('opening').map(id=>lv.openings.find(o=>o.id===id)).filter(Boolean),is=by('item').map(id=>lv.items.find(i=>i.id===id)).filter(Boolean);
     if(!(ws.some(existe)||os.some(o=>ost(o)!=='creer')||is.some(i=>ist(i)!=='creer')))return false;
@@ -3937,7 +4108,7 @@ function marquerAuLieuDEffacer(){const lv=L(),annuler={action:'Annuler',fn:()=>u
     const ne=effW.size+effO.size+effI.size+effT.size+effD.size;sel=null;msel=[];purgerGroupes();afterChange();
     let nf=0;{const parFace=new Map();fusM.forEach(([w,pc])=>{const m=add(mul(add(w.a,w.b),.5),wallOff(w)),f=facesFor(lv,'projet').find(g=>g.room&&pointIn(m,g.poly));if(!f)return;const e=parFace.get(f)||[];pc.forEach(x=>{if(!e.includes(x))e.push(x);});parFace.set(f,e);});
       parFace.forEach((pc,f)=>{if(reglerFusion(lv,f,pc).length)nf++;});if(nf)afterChange();}
-    toast(`${nm} élément${nm>1?'s':''} marqué${nm>1?'s':''} à démolir, à boucher ou à déposer`+(ne?` · ${ne} effacé${ne>1?'s':''} (créé${ne>1?'s':''} en Travaux ou annotation${ne>1?'s':''})`:'')+'.'+(nf?' Des pièces réunies n\'avaient pas les mêmes décisions : à choisir (Encore à décider).':''),true,annuler);return true;}
+    toast(`${nm} élément${nm>1?'s':''} marqué${nm>1?'s':''} à démolir, à boucher ou à déposer`+(ne?` · ${ne} effacé${ne>1?'s':''} (créé${ne>1?'s':''} en Travaux ou annotation${ne>1?'s':''})`:'')+'.'+(nf?' Des pièces réunies n\'avaient pas les mêmes décisions : à choisir (Encore à décider).':''),true,annuler());return true;}
   return false;}
 function rotateItem(){if(enLectureSeule())return;const its=selectedItems();if(!its.length)return;history.push(snapshot());its.forEach(it=>{it.rot=(it.rot+Math.PI/2)%(2*Math.PI);pushOutOfWalls(it);});afterChange();}
 function setItemRot(deg){const it=L().items.find(i=>i.id===sel?.id);if(!it)return;history.push(snapshot());it.rot=((parseFloat(deg)||0)%360)*Math.PI/180;afterChange();}
@@ -3990,7 +4161,10 @@ function ouvrirMenu(m,focusDernier){fermerMenus();const [b,p]=MENUS[m].map(i=>do
   if(m==='aide'){const l=document.getElementById('visiteLbl');if(l)l.textContent=typeof lancerVisite==='function'?'Visite guidée':'Guide de démarrage';}
   p.hidden=false;b.setAttribute('aria-expanded','true');menuOuvert=m;const it=itemsMenu(m);const c=focusDernier?it[it.length-1]:it[0];if(c)try{c.focus();}catch{}}
 function fermerMenus(rendreFocus){if(!menuOuvert)return;const [b,p]=MENUS[menuOuvert].map(i=>document.getElementById(i));p.hidden=true;b.setAttribute('aria-expanded','false');menuOuvert=null;if(rendreFocus)try{b.focus();}catch{}}
-function basculerMenu(m){if(menuOuvert===m)fermerMenus(true);else ouvrirMenu(m);}
+function basculerMenu(m){if(menuOuvert===m)fermerMenus(true);else{if(m==='fichier')majMenuFichier();ouvrirMenu(m);}}
+/* D48 (cj-qa05) : ce que « Nouveau plan » fera du plan ouvert, dit tel quel — y compris en gratuit. */
+function phraseSortie(){const o=sortDuPlanOuvert();return o==='rien'?'Rien à ranger : le plan ouvert est vide ou jamais modifié':o==='range'?'Le plan ouvert est déjà dans Mes plans, à jour':o==='rangera'?'Le plan ouvert est d\'abord rangé dans Mes plans':'Version gratuite : Mes plans est plein, on te demandera avant';}
+function majMenuFichier(){const s=document.querySelector('#newBtn small');if(s)s.textContent=phraseSortie();}
 function menuAction(fn){fermerMenus(true);fn();}
 /* « Visite guidée » : la visite de 5 bulles si elle existe (chantier onboarding), sinon le guide en 3 étapes. */
 function lancerVisiteOuGuide(){if(typeof lancerVisite==='function')lancerVisite();else openModal('welcome');}
@@ -4024,6 +4198,7 @@ let calibMode=false;
 function setTool(t){if(typeof isMobile==='function'&&isMobile()&&t!=='select'){toast('Le dessin se fait sur ordinateur ou tablette — ici tu consultes le plan et tu coches l\'avancement');t='select';}if(mode()==='final'&&!OUTILS_LECTURE.includes(t)){enLectureSeule();if(OUTILS_LECTURE.includes(tool))return;t='select';}if(tool==='mur'&&chain.length)endChain(false);tool=t;chain=[];chainWallIds=[];rectMode=null;lenBuf='';guides=[];dimStart=null;dimPending=null;measure=[];measureDone=false;calibMode=false;calib=[];closeCoteEdit();if(t!=='select')clearSel();render();updateCursor();}
 function startRect(){const Lr=parseFloat(document.getElementById('rectL').value),l=parseFloat(document.getElementById('rectl').value);if(!(Lr>0.5&&l>0.5)){toast('Indique une longueur et une largeur (en m)');return;}rectMode={L:Lr,l};chain=[];chainWallIds=[];renderPanel();draw();toast('Clique dans le plan pour poser le coin haut-gauche de la pièce',true);}
 const HINTS={
+  vide:'Commence par <b>Tracer les murs</b> ou <b>Poser une pièce de 4 × 3 m</b> : la carte au milieu du plan · ou pars d\'un plan type (menu Fichier)',
   select:'Glisse un mur pour agrandir la pièce · glisse dans le vide pour déplacer la vue · clique une cote pour taper la longueur · <kbd>Suppr</kbd> supprime',
   select_projet:'Clique un élément pour décider de son sort · <kbd>Suppr</kbd> = à démolir, à boucher ou à déposer (ce que tu as créé ici s\'efface) · glisse dans le vide pour déplacer la vue',
   select_final:`Lecture seule : ton logement après travaux · clique un élément pour voir sa fiche · pour modifier, passe en vue ${nomVue('projet')}`,
@@ -4215,7 +4390,7 @@ function draw(){
     const ref=chain.length?chain[chain.length-1]:null;const sp=snapPoint(hover||ref||v(0,0),ref);
     let end=sp.p;const typed=parseFloat(lenBuf.replace(',','.'));
     if(ref&&typed>0){let dir=sub(sp.p,ref);if(len(dir)<1e-6)dir=chain.length>=2?sub(ref,chain[chain.length-2]):v(1,0);end=clampContreMur(add(ref,mul(norm(dir),typed)),ref,null);}
-    if(chain.length){ctx.beginPath();chain.forEach((p,i)=>{const s=S(p);i?ctx.lineTo(s.x,s.y):ctx.moveTo(s.x,s.y);});const e=S(end);ctx.lineTo(e.x,e.y);ctx.strokeStyle=wallType==='virtuel'?'rgba(124,58,237,.8)':'rgba(79,70,229,.9)';ctx.lineWidth=Math.max(2,WALL_TYPES.find(t=>t[0]===wallType)[2]*z);ctx.lineCap='round';if(wallType==='virtuel')ctx.setLineDash([6,5]);ctx.stroke();ctx.setLineDash([]);ctx.lineCap='butt';drawDim(ref,end,'#4f46e5',false);const s0=S(chain[0]);if(chain.length>=3&&dist(end,chain[0])<0.02){ctx.beginPath();ctx.arc(s0.x,s0.y,11,0,7);ctx.strokeStyle='#16a34a';ctx.lineWidth=3;ctx.stroke();}
+    if(chain.length){ctx.beginPath();chain.forEach((p,i)=>{const s=S(p);i?ctx.lineTo(s.x,s.y):ctx.moveTo(s.x,s.y);});const e=S(end);ctx.lineTo(e.x,e.y);ctx.strokeStyle=wallType==='virtuel'?'rgba(124,58,237,.8)':'rgba(79,70,229,.9)';ctx.lineWidth=Math.max(2,(WALL_TYPES.find(t=>t[0]===(wallType==='auto'?typeAuTrace(L(),ref,end).type:wallType))||WALL_TYPES[1])[2]*z);ctx.lineCap='round';if(wallType==='virtuel')ctx.setLineDash([6,5]);ctx.stroke();ctx.setLineDash([]);ctx.lineCap='butt';drawDim(ref,end,'#4f46e5',false);const s0=S(chain[0]);if(chain.length>=3&&dist(end,chain[0])<0.02){ctx.beginPath();ctx.arc(s0.x,s0.y,11,0,7);ctx.strokeStyle='#16a34a';ctx.lineWidth=3;ctx.stroke();}
       // angle avec le mur précédent (et angle de fermeture)
       if(chain.length>=2)drawAngle(ref,chain[chain.length-2],end);
       if(chain.length>=3&&dist(end,chain[0])<0.02)drawAngle(chain[0],chain[1],ref);
@@ -4226,7 +4401,7 @@ function draw(){
   // aide contextuelle pendant le tracé
   /* D41 : l'astuce parle de ce qui est sélectionné (mur, ouverture, équipement, pièce), et se replie en « ? » après quelques secondes */
   const selK=tool==='select'&&sel&&['wall','opening','item','room'].includes(sel.kind)&&mode()!=='final'?'sel_'+sel.kind+(mode()==='projet'?'_projet':''):null;
-  const hintKey=tool==='mur'&&chain.length?'murChain':(tool==='cote'&&dimPending)?'cotePlace':selK&&HINTS[selK]?selK:tool==='select'&&mode()!=='existant'?'select_'+mode():tool;if(hintKey!==lastHint){lastHint=hintKey;montrerAstuce(HINTS[hintKey]||'',hintKey==='murChain'||hintKey==='cotePlace');}
+  const hintKey=tool==='mur'&&chain.length?'murChain':(tool==='cote'&&dimPending)?'cotePlace':selK&&HINTS[selK]?selK:tool==='select'&&planVide()&&!isMobile()?'vide':tool==='select'&&mode()!=='existant'?'select_'+mode():tool;if(hintKey!==lastHint){lastHint=hintKey;montrerAstuce(HINTS[hintKey]||'',hintKey==='murChain'||hintKey==='cotePlace');}
   if(tool==='ouverture'&&hover){const nw=nearestWall(hover,0.6);if(nw){const def=OPENINGS[openingType];const Lw=wallLen(nw.wall);const t=Math.max(def.w/2/Lw,Math.min(1-def.w/2/Lw,nw.t));ctx.globalAlpha=.55;drawOpening({wallId:nw.wall.id,t,type:openingType,w:def.w,hinge:1,side:sideOf(hover,nw.wall)},true);ctx.globalAlpha=1;}}
   if(tool==='equipement'&&hover){const def=ITEMS[itemType];const {p}=snapPoint(hover,null);const it={type:itemType,x:p.x,y:p.y,w:def.w,h:def.h,rot:0};if(itemType==='escalier'){it.stair={type:'droit'};fitStair(it,L());}const sn=snapItemToWall(it,hover);if(sn)Object.assign(it,sn);pushOutOfWalls(it);ctx.globalAlpha=.5;drawItem(it,true);ctx.globalAlpha=1;}
   if(tool==='cote'&&hover){
@@ -4333,7 +4508,7 @@ function mesureEtiquette(f,r,fsName,fsArea,hot){
   const base=roomName(r),suf=(r.typeAuto&&!r.name&&!exporting?' ?':''),area=fmtM2(areaNet(L(),f))+(horsHab?' · hors hab.':'');
   const larg=(ls,fn)=>{ctx.font=`700 ${fn}px Geist, sans-serif`;return Math.max(...ls.map(l=>ctx.measureText(l).width));};
   let fn=fsName,lines=[base+suf];
-  if(!hot&&larg(lines,fn)>roomW){const f2=Math.max(10,Math.round(fsName*0.8)),court=!r.name&&NOM_COURT[base]?[NOM_COURT[base]+suf]:null,deux=coupeEnDeux(base+suf);
+  if(!hot&&larg(lines,fn)>roomW){const f2=Math.max(10,Math.round(fsName*0.8)),court=!r.name&&NOM_COURT[nomBrut(r)]?[NOM_COURT[nomBrut(r)]+base.slice(nomBrut(r).length)+suf]:null,deux=coupeEnDeux(base+suf);
     if(larg(lines,f2)<=roomW)fn=f2;
     else if(court&&larg(court,fn)<=roomW)lines=court;
     else if(court&&larg(court,f2)<=roomW){lines=court;fn=f2;}
@@ -4846,7 +5021,7 @@ function renderLevelsBrut(){majLibellePlan();document.getElementById('levels').i
    Au téléphone (mode chantier), la fenêtre « dessine ta rénovation » ne s'ouvre pas : un message court suffit. */
 function setMode(m,silencieux){toitOpen=false;if(m===mode())return;if(tool==='mur'&&chain.length)endChain(false);state.mode=m;clearSel();chain=[];rectMode=null;afterChange();
   if(silencieux){if(m==='final'&&!OUTILS_LECTURE.includes(tool))setTool('select');return;}
-  if(m==='projet'){let seen=false;try{seen=!!localStorage.getItem('avyora-plan-projet-tip');localStorage.setItem('avyora-plan-projet-tip','1');}catch{}if(!seen&&!isMobile())openModal('projet');else toast(`Vue ${nomVue('projet')} : ce que tu ajoutes est à créer, ce que tu cliques peut être démoli`,true);}
+  if(m==='projet'){let seen=false;try{seen=!!localStorage.getItem('avyora-plan-projet-tip');localStorage.setItem('avyora-plan-projet-tip','1');}catch{}if(!seen&&!isMobile())openModal('projet');else toast(isMobile()?`Vue ${nomVue('projet')} : en rouge ce qui est à créer, en jaune ce qui est à démolir. Touche un élément pour voir sa fiche.`:`Vue ${nomVue('projet')} : ce que tu ajoutes est à créer, ce que tu cliques peut être démoli`,true);}
   if(m==='final'){if(!OUTILS_LECTURE.includes(tool))setTool('select');toast(`Vue ${nomVue('final')} : lecture seule. Pour modifier, passe en vue ${nomVue('projet')}.`,true);}}
 function setLevel(i){toitOpen=false;state.cur=i;sel=null;chain=[];syncRooms(L());save();render();}
 /* Quatre situations, pas deux. Un étage peut exister déjà, ou être créé — et s'il est créé, les
@@ -4905,7 +5080,7 @@ function addLevel(depart){
     :(source==='copy'?'Niveau copié — ajuste les cloisons et les ouvertures':'Niveau vide créé'),true);
 }
 function copyBearingBelow(){const lv=L(),below=state.levels[state.cur-1];if(!below)return;history.push(snapshot());const src=below.walls.filter(w=>!isVirtual(w)&&wst(w)!=='creer'&&wallT(w)>=0.15);src.forEach(w=>lv.walls.push(copieMurExistant(w)));lv.height=below.height;afterChange();fitView();toast(src.length+' mur(s) porteur(s) repris du niveau « '+below.name+' » — trace maintenant les cloisons',true);}
-function deleteLevel(){if(state.levels.length<=1)return;history.push(snapshot());const n=L().name;state.levels.splice(state.cur,1);state.cur=Math.max(0,state.cur-1);sel=null;purgerGroupes();afterChange();toast('Niveau « '+n+' » supprimé — Ctrl+Z pour annuler');}
+function deleteLevel(){if(state.levels.length<=1)return;history.push(snapshot());const n=L().name;state.levels.splice(state.cur,1);state.cur=Math.max(0,state.cur-1);sel=null;purgerGroupes();afterChange();toast('Niveau « '+n+' » supprimé',false,annulerCe());}
 function setLevelProp(k,val){history.push(snapshot());const lv=L();
   if(k==='height')lv.height=Math.max(2,Math.min(5,parseFloat(val)||2.5));
   else if(k==='neuf'){lv.neuf=!!val;
@@ -4926,20 +5101,21 @@ function pruneEmptyTexts(){const lv=L();if(!lv.texts||!lv.texts.length)return;lv
 const isMobile=()=>window.innerWidth<=600; // téléphone = mode chantier (lecture + suivi) ; tablette = éditeur complet
 /* D40 · le tiroir fermé du téléphone montre le budget à côté de la surface (en Pro, dès qu'une tâche existe) */
 function resumeTiroir(){const q=quantities();if(budgetEnAttente(q))return 'Détails du plan';const a=fmtM2(habView(q).area),px=chantierPrix();
-  return isPro()&&px.nb?a+' · '+eur(px.total)+' HT · détails':a+' habitables · détails';}
+  return px.nb?a+' · '+eur(px.total)+' HT · détails':a+' habitables · détails';}
 function toggleSheet(force){const pn=document.getElementById('panel');pn.classList.toggle('open',force===undefined?!pn.classList.contains('open'):!!force);document.body.classList.toggle('sheetOpen',pn.classList.contains('open'));{const sh=document.getElementById('sheetHandle');if(sh)sh.setAttribute('aria-expanded',String(pn.classList.contains('open')));} /* D43 : le lecteur d'écran sait si le tiroir est ouvert */ /* D40 : la barre de zoom ne couvre plus le budget du tiroir */}
 let panelTab='details'; // volet du panneau de droite : 'details' | 'suivi'
 function setPanelTab(t){panelTab=t;renderPanel();}
 function suiviPanelHTML(T){
   if(!T.length)return `<div class="ptitle">Suivi de chantier</div><div class="empty" style="margin-top:8px">Aucune tâche pour l'instant.<br>Passe en vue <b>${nomVue('projet')}</b> et décide ce que tu changes (démolir, créer, remplacer, isoler, refaire un sol…) : chaque travail devient ici une tâche, dans l'ordre du chantier.</div>`;
   /* D39 : en Pro, « X € réalisés sur Y € » — l'avancement se lit aussi en euros. */
-  const pro=isPro(),px=chantierPrix(T),nf=px.faites,tot=px.total,fait=px.fait;
+  const pro=voitTout(),px=chantierPrix(T),nf=px.faites,tot=px.total,fait=px.fait; /* D48 : prix du Suivi en Pro, et sur l'exemple */
   const fini=nf===T.length,pc=pro&&tot>0?Math.round(fait/tot*100):Math.round(nf/T.length*100);
   return `<div class="ptitle">Suivi de chantier</div><div class="psub">Les travaux dans l'ordre du chantier, ${gl('corps','corps d\'état')} par corps d'état. Coche au fur et à mesure, clique une tâche pour la voir sur le plan. L'avancement s'affiche aussi sur le plan, en vue ${nomVue('projet')}.</div>
   <div class="budget" style="cursor:default;background:${fini?'linear-gradient(120deg,#15803d,#16a34a)':'var(--nuit-g)'}"><div class="bl"><span>${pro?eur(fait)+' réalisés sur '+eur(tot)+' HT':nf+'/'+T.length+' tâches faites'}</span><small>${fini?'Chantier terminé':pro?nf+'/'+T.length+' tâches faites · reste '+eur(tot-fait):'reste '+(T.length-nf)+' à faire'}</small></div><div class="bv">${pc} %</div></div>
   <div class="prog" style="margin-bottom:10px"><i style="width:${pc}%"></i></div>
-  ${pro?'':`<div class="tip" style="margin:0 0 10px">${avecPro('suivi')} ${lienPro('Passer Pro','lienpro')}</div>`}
-  <div class="tasks">${chantierListHTML(T,true,{prix:pro})}</div>`;
+  ${pro?(isPro()?'':`<div class="tip" style="margin:0 0 10px">C'est l'exemple : tout s'affiche, même en version gratuite. Sur ton plan à toi — ${avecPro('suivi')} ${lienPro('Passer Pro','lienpro','suivi-exemple')}</div>`):`<div class="tip" style="margin:0 0 10px">${avecPro('suivi')} ${lienPro('Passer Pro','lienpro','suivi')}</div>`}
+  ${suiviDatesHTML(T)}
+  <div class="tasks">${chantierListHTML(triSuivi==='date'?trierParDate(T):T,true,{prix:pro})}</div>`;
 }
 /* D38 : le panneau, les outils et les boutons de vue se redessinent à chaque clic — le bouton qui
    avait le focus disparaissait, et quelqu'un au clavier repartait du haut de la page. Le focus est
@@ -4959,17 +5135,20 @@ function segLisibles(root){if(!root)return;root.querySelectorAll('div.seg').forE
 const plisOuverts={};
 function plie(k,titre,resume,contenu,ouvert){if(!String(contenu||'').trim())return '';const o=k in plisOuverts?plisOuverts[k]:!!ouvert;return `<details class="plie" data-k="${k}"${o?' open':''} ontoggle="plisOuverts[this.dataset.k]=this.open"><summary><span class="st">${titre}${resume?`<small>${resume}</small>`:''}</span>${ico('chevronBas')}</summary><div class="pli">${contenu}</div></details>`;}
 function renderPanel(){try{avecFocus(document.getElementById('pbody'),renderPanelBrut);segLisibles(document.getElementById('pbody'));}catch(err){const P=document.getElementById('pbody');if(P)P.innerHTML='<div class="tip">Ce panneau n\'a pas pu s\'afficher. Clique dans le vide du plan pour revenir à la vue d\'ensemble.</div>';setTimeout(()=>{throw err;});}}
-function renderPanelBrut(){pruneEmptyTexts();if(isMobile()){if(sel)toggleSheet(true);const lb=document.getElementById('sheetLabel');if(lb){try{lb.textContent=sel?'Élément sélectionné · détails':(tool!=='select'?TOOLS.find(t=>t[0]===tool)?.[1]+' · options':resumeTiroir());}catch{}}}
+/* D48 (cj-integration03) : toute NOUVELLE sélection (clic, toucher, rectangle, clavier, collage) ramène
+   à l'onglet Détails ; seul un clic sur l'onglet Suivi, l'objet restant sélectionné, y reste. */
+let _selVu='';
+function renderPanelBrut(){pruneEmptyTexts();{const k=sel?sel.kind+':'+(sel.id||sel.group||'')+':'+msel.length:'';if(k&&k!==_selVu)panelTab='details';_selVu=k;}if(isMobile()){if(sel)toggleSheet(true);const lb=document.getElementById('sheetLabel');if(lb){try{lb.textContent=sel?'Élément sélectionné · détails':(tool!=='select'?TOOLS.find(t=>t[0]===tool)?.[1]+' · options':resumeTiroir());}catch{}}}
   const lv=L(); const P=document.getElementById('pbody'); let h='';
   const _T=chantierTasks();const _done=_T.filter(t=>isDone(t.id)).length;
   const tabBar=`<div class="ptabs" role="tablist" aria-label="Panneau"><button type="button" role="tab" aria-selected="${panelTab!=='suivi'}" class="${panelTab!=='suivi'?'on':''}" onclick="setPanelTab('details')">Détails</button><button type="button" role="tab" aria-selected="${panelTab==='suivi'}" class="${panelTab==='suivi'?'on':''}" onclick="setPanelTab('suivi')"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 12.5l2 2 4-4"/></svg>Suivi${_T.length?` <span class="tabn">${_done}/${_T.length}</span>`:''}</button></div>`;
   if(panelTab==='suivi'){P.innerHTML=tabBar+suiviPanelHTML(_T);panneauEnHaut(P);renderFoot();return;}
   h+=tabBar;
   if(tool==='mur'){
-    const alAuto=(wallType==='mur'||wallType==='porteur')&&contourIntAuto();
+    const alAuto=(wallType==='mur'||wallType==='porteur'||wallType==='auto')&&contourIntAuto();
     h+=`<div class="ptitle">Tracer des murs</div><div class="psub">Choisis l'épaisseur, puis clique dans le plan pour poser chaque angle.</div>
-    <div class="ph">Type de mur</div><div class="seg">${WALL_TYPES.map(t=>`<button class="${wallType===t[0]?'on':''}" onclick="wallType='${t[0]}';customT=null;renderPanel();draw()">${t[1]}<small>${wallTypeSub(t)}</small></button>`).join('')}</div>
-    ${wallType!=='virtuel'?`<div class="row" style="margin-top:12px"><label>Épaisseur des prochains murs</label><span><input class="fin n" type="number" step="1" min="3" max="80" value="${Math.round((customT??WALL_TYPES.find(t=>t[0]===wallType)[2])*100)}" onchange="setCustomT(this.value)"> cm</span></div>
+    <div class="ph">Type de mur</div><div class="seg"><button class="${wallType==='auto'?'on':''}" onclick="wallType='auto';customT=null;renderPanel();draw()">Automatique<small>${(facesCache[lv.id]||[]).some(f=>f.room)?'cloison 7 cm dans une pièce · mur 20 cm en façade':'mur 20 cm pour le contour'}</small></button>${WALL_TYPES.map(t=>`<button class="${wallType===t[0]?'on':''}" onclick="wallType='${t[0]}';customT=null;renderPanel();draw()">${t[1]}<small>${wallTypeSub(t)}</small></button>`).join('')}</div>
+    ${wallType!=='virtuel'?`${wallType==='auto'?`<div class="tip" style="margin-top:12px">${ico('idee','lead')}<b>Automatique</b> : ton premier contour est en murs de 20 cm. Ensuite, un mur tracé <b>dans une pièce</b> devient une cloison de 7 cm ; un mur qui <b>agrandit le logement</b> reste un mur de façade, aligné sur les autres. Choisis un type ci-dessus pour le forcer.</div>`:`<div class="row" style="margin-top:12px"><label>Épaisseur des prochains murs</label><span><input class="fin n" type="number" step="1" min="3" max="80" value="${Math.round((customT??WALL_TYPES.find(t=>t[0]===wallType)[2])*100)}" onchange="setCustomT(this.value)"> cm</span></div>`}
     <div class="tip" style="margin-top:8px">Épaisseurs courantes : cloison en plaques de plâtre <b>7 cm</b> · mur en parpaing ou en béton <b>20 cm</b> · mur ancien en pierre <b>50 à 60 cm</b>. Autres : cloison de 10, brique 15, parpaing + isolation 30 à 35.</div>
     <div class="ph mt">Le trait que je dessine est…</div><div class="seg">
       <button class="${wallAlign==='axe'&&!alAuto?'on':''}" onclick="wallAlign='axe';wallAlignChoisi=true;renderPanel()">L'axe<small>mur centré</small></button>
@@ -5049,11 +5228,11 @@ function renderPanelBrut(){pruneEmptyTexts();if(isMobile()){if(sel)toggleSheet(t
       <div class="btnrow"><button class="ib" onclick="startCalib()">${ico('regle')}Caler l'échelle</button><button class="ib danger" onclick="L().bg=null;save();render()">Retirer</button></div>
       <div class="tip">${calibMode?'<b>Clique 2 points</b> sur le calque dont tu connais la distance réelle (ex. un mur de 3 m).':'Pour que les surfaces soient justes : <b>Caler l\'échelle</b>, clique 2 points sur une longueur connue, entre la distance réelle. Glisse l\'image pour la positionner.'}</div>`;}
   } else if(sel){
-    h+=mode()==='final'?ficheEnLecture(renderSelection(lv)):renderSelection(lv);
+    h+=mode()==='final'||isMobile()?ficheEnLecture(renderSelection(lv)):renderSelection(lv); /* D48 (cj-integration09) : au téléphone, les fiches se lisent */
   } else {
     h+=renderOverview(lv);
   }
-  P.innerHTML=h; panneauEnHaut(P); renderFoot();
+  P.innerHTML=h; griserLecture(P); panneauEnHaut(P); renderFoot();
 }
 /* D38 : le panneau gardait son défilement d'un élément à l'autre — on cliquait un mur et la fiche
    s'ouvrait au milieu, la décision « À démolir » hors de vue. Il revient en haut quand l'élément,
@@ -5092,7 +5271,13 @@ function tipChiffrageOuverture(o,lv){const d=OPENINGS[o.type],w=lv.walls.find(x=
 /* D38 · En vue finale, la fiche d'un élément se lit : ses réglages sont grisés (fieldset désactivé),
    et un bouton ramène en vue Travaux, sur le même élément, pour le modifier. */
 function ficheEnLecture(x){const dbt='<button class="backbtn"';if(!x.startsWith(dbt))return x;const i=x.indexOf('</button>')+9;
-  return x.slice(0,i)+`<div class="robanner"><span>Vue ${nomVue('final')} : lecture seule.</span><button class="ib" onclick="modifierEnTravaux()">Modifier en vue ${nomVue('projet')}</button></div><fieldset class="ro" disabled>`+x.slice(i)+'</fieldset>';}
+  /* D48 (arbitrage tour 2) : le téléphone est le mode chantier en consultation — aucune décision au
+     doigt ne change le budget ; et l'on dit honnêtement où le plan peut se modifier. */
+  if(isMobile())return x.slice(0,i)+`<div class="robanner tel"><span>Au téléphone, tu consultes. Pour modifier, ouvre ce plan sur l'ordinateur ou la tablette où tu l'as dessiné.</span></div><fieldset class="ro">`+x.slice(i)+'</fieldset>';
+  return x.slice(0,i)+`<div class="robanner"><span>Vue ${nomVue('final')} : lecture seule.</span><button class="ib" onclick="modifierEnTravaux()">Modifier en vue ${nomVue('projet')}</button></div><fieldset class="ro">`+x.slice(i)+'</fieldset>';}
+/* D48 : une fiche en lecture grise ses réglages un par un (et plus tout le bloc d'un coup) : les
+   pastilles du glossaire (ⓘ) y restent cliquables — au téléphone comme en vue Après travaux. */
+function griserLecture(P){P.querySelectorAll('fieldset.ro').forEach(f=>f.querySelectorAll('input,select,textarea,button').forEach(x=>{if(!x.classList.contains('gl'))x.disabled=true;}));}
 /* D38 · Le bouton rouge dit ce qu'il fera : en vue Travaux, sur ce qui existe, il marque (à démolir,
    à boucher, à déposer) ; il n'efface que ce qui a été créé en Travaux, et les annotations. */
 function libSuppr(){if(!sel||mode()!=='projet')return sel&&sel.kind==='marquee'?'Tout supprimer':'Supprimer';const lv=L();
@@ -5105,7 +5290,7 @@ function renderSelection(lv){
   const backLabel=sel.kind==='room'?'Toutes les pièces':'Retour';
   let h=`<button class="backbtn" onclick="clearSel();render()"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>${backLabel}</button>`;
   if(sel.kind==='wall'){const w=findWall(sel.id);if(!w){sel=null;return renderOverview(lv);}const nOp=lv.openings.filter(o=>o.wallId===w.id).length;
-    h+=`<div class="ptitle">${isVirtual(w)?'Séparation (sans mur)':'Mur'}</div><div class="psub">${isVirtual(w)?'Découpe une pièce ouverte en zones. Non comptée dans les travaux.':(nOp?nOp+' ouverture(s) sur ce mur · ':'')+'glisse ses extrémités · <kbd>Maj</kbd>+clic pour sélectionner plusieurs murs'}</div>
+    h+=`<div class="ptitle">${isVirtual(w)?'Séparation (sans mur)':'Mur'}</div><div class="psub">${isVirtual(w)?'Découpe une pièce ouverte en zones. Non comptée dans les travaux.':[nOp?nOp+' ouverture(s) sur ce mur':'',isMobile()?'':'glisse ses extrémités · <kbd>Maj</kbd>+clic pour sélectionner plusieurs murs'].filter(Boolean).join(' · ')}</div>
     ${(()=>{const g=groupOf(w.id);return g?`<div class="grouptag"><span class="gdot" style="background:${GROUP_COLORS[(state.groups||[]).indexOf(g)%GROUP_COLORS.length]}"></span> Groupe « ${esc(g.name)} » <button class="gx" style="margin-left:auto" onclick="removeFromGroup('${w.id}')" title="Retirer ce mur du groupe">Dissocier ${ico('x')}</button></div>`:'';})()}
     ${!isVirtual(w)?blocDecisionExistant('wall',k=>`setWallProp('st','${k}')`,wst(w),`Ce que tu décides de ce mur.`):''}
     ${mode()==='existant'?questionPorteurHTML(w):''}
@@ -5240,7 +5425,7 @@ function renderSelection(lv){
     /* D42 (novice11) : ce que le contrôle du plan dit de CETTE pièce, en tête de sa fiche */
     const ckP=planChecks(lv).filter(c=>c.sel&&c.sel.kind==='room'&&c.sel.id===r.id);
     h+=`<div class="ptitle">${roomName(r)}</div><div class="psub">Détectée automatiquement à partir des murs.</div>${ckP.length?`<div class="chks" style="margin:0 0 12px">${ckP.map(c=>`<div class="chk ${c.lvl}"><span class="ci">${ico(c.lvl==='err'?'erreur':c.lvl==='warn'?'alerte':'idee')}</span><span>${c.msg}</span></div>`).join('')}</div>`:''}
-    <div class="ph">Nom</div><input class="fin" value="${r.name.replace(/"/g,'&quot;')}" placeholder="${RT[r.type].label}" oninput="setRoomProp('name',this.value,true)" onchange="save()">
+    <div class="ph">Nom</div><input class="fin" value="${r.name.replace(/"/g,'&quot;')}" placeholder="${esc(roomName(r))}" oninput="setRoomProp('name',this.value,true)" onchange="save()">
     <div class="ph mt">Type de pièce</div>${r.typeAuto?`<div class="tip act" style="margin:0 0 8px">Type <b>deviné d'après la surface</b>. Choisis le bon : il décide de ce qu'on te propose (sol, faïence, équipements).</div>`:''}<select class="fin${r.typeAuto?' devine':''}" onchange="setRoomProp('type',this.value)" aria-label="Type de pièce">${ROOM_TYPES.map(t=>`<option value="${t[0]}" ${t[0]===r.type?'selected':''}>${t[1]}</option>`).join('')}</select>
     ${(()=>{const humide=pieceHumide(lv,f);
       if(!humide||mode()==='existant')return '';
@@ -5419,7 +5604,7 @@ function renderOverview(lv){
   <div class="ph mt">Pièces</div><div class="roomlist">`;
   if(!faces.length)h+=`<div class="empty">${ouvertParTravaux?'Aucune pièce fermée après travaux.':'Dès qu\'un contour de murs se ferme, la pièce apparaît ici avec sa surface.'}</div>`;
   faces.forEach(f=>{const r=f.room;h+=`<button type="button" class="rl" onclick="sel={kind:'room',id:'${r.id}'};render()"><span class="dot" style="background:${RT[r.type].color}"></span><span class="nm">${roomName(r)}<small>${RT[r.type].label}${(mode()!=='existant'&&r.floorNew)?' · '+r.floorNew.replace(/ \(.*\)/,''):(mode()!=='existant'&&solGarde(r))?' · sol conservé':(r.floor!==FLOORS[0]?' · '+r.floor:'')}${tremieArea(lv,f)>0?' · trémie':''}${r.lowPct?' · '+r.lowPct+'% sous pente':''}</small></span><span class="m2">${fmtM2(areaNet(lv,f))}</span></button>`;});
-  h+=`</div>
+  h+=`</div>${isMobile()?'<fieldset class="ro">':'' /* D48 : au téléphone, les réglages se lisent */}
   ${state.levels.indexOf(lv)>0?`<label class="chk"><input type="checkbox" ${lv.neuf?'checked':''} onchange="setLevelProp('neuf',this.checked)"><span>Étage créé par le projet<small>son plancher est à construire et sera chiffré</small></span></label>
   ${lv.neuf?`<div class="tip warn" style="margin-top:8px">${ico('niveaux','lead')}<b>Le plancher de cet étage est compté comme travaux.</b> Les murs, eux, gardent leur propre état : si tu poses un plancher dans un volume de grande hauteur, ils sont <b>déjà debout</b> — laisse-les « existant » et indique la hauteur d'origine de la pièce du dessous, dans sa fiche, au champ <b>« hauteur avant travaux »</b>. Si tu surélèves, passe-les <b>« à créer »</b>.</div>`:''}
   ${lv.neuf?`<div class="ph" style="margin-bottom:6px">Plancher de cet étage</div>
@@ -5428,7 +5613,7 @@ function renderOverview(lv){
   ${renderChantier()}
   ${plie('niveau','Réglages du niveau',esc(lv.name)+' · '+fmt(lv.height)+' m sous plafond',`<div class="ph" style="margin-top:12px">Nom du niveau</div><input class="fin" value="${lv.name.replace(/"/g,'&quot;')}" maxlength="20" onchange="setLevelProp('name',this.value)">
   <div class="row" style="margin-top:12px"><label>Hauteur sous plafond</label><span><input class="fin n" type="number" step="0.05" min="2" max="5" value="${lv.height.toFixed(2)}" onchange="setLevelProp('height',this.value)"> m</span></div>`)}
-  ${lv.walls.length&&!estAppart()?renderToiture(lv):''}`;
+  ${lv.walls.length&&!estAppart()?renderToiture(lv):''}${isMobile()?'</fieldset>':''}`;
   /* D36 : en vue Existant, le récap décrit l'existant — il montrait les surfaces APRÈS travaux,
      juste sous une liste de pièces et au-dessus d'un total qui décrivaient l'avant. */
   if(faces.length){const av=mode()==='existant',qs=av?recapExistant():quantities();h+=`<div class="ph mt">Récap des surfaces · ${av?'avant':'après'} travaux${state.levels.length>1?' <span class="chip">tous niveaux</span>':''}</div>${surfaceTable(qs,true)}`;}
@@ -5462,6 +5647,10 @@ function compter(el,from,to,ms){if(!el)return;cancelAnimationFrame(el._raf||0);i
   const t0=performance.now(),step=t=>{const k=Math.min(1,(t-t0)/ms),e=1-Math.pow(1-k,3);el.textContent=eur(Math.round(from+(to-from)*e));if(k<1)el._raf=requestAnimationFrame(step);};el._raf=requestAnimationFrame(step);}
 const pluriel=(n,m)=>n+' '+m+(n>1?'s':'');
 let _lastPrix=0;
+/* D48 (cj-retention05) : « première décision » = une tâche qui n'existait pas à l'ouverture du plan
+   apparaît par un geste (pas par un Ctrl+Z, ni par l'ouverture d'un autre plan). Une fois par plan ouvert. */
+let _tachesOuverture=null,_decisionSuivie=false;
+function baseDecisions(){try{_tachesOuverture=new Set(chantierTasks().map(t=>t.id));}catch{_tachesOuverture=new Set();}_decisionSuivie=false;}
 function renderFoot(){
   const q=quantities(); const F=document.getElementById('pfoot'); const px=chantierPrix();renderProChip();
   const sb=document.getElementById('surfBadge');const hv=habView(q);
@@ -5469,20 +5658,21 @@ function renderFoot(){
   /* D46 (cj-integration00) : l'attente « première pièce » ne vaut que pour un plan sans pièce (ni avant
      ni après travaux) ET sans tâche. Démolir la façade d'une pièce seule ouvre toutes les pièces : la
      carte tombait à 0 € et « Estimer » se bloquait pendant que le Suivi comptait 3 920 €. */
-  const pro=isPro(),vide=budgetEnAttente(q,px),rien=px.nb===0,avant=mode()==='existant';
+  const pro=isPro(),tout=voitTout(),vide=budgetEnAttente(q,px),rien=px.nb===0,avant=mode()==='existant';
   /* D36 : le montant dit ce qu'il est — HT, prix catalogue, moyenne nationale — et, tant que rien
      n'est décidé, il le dit aussi au lieu de disparaître ou de compter des travaux imaginaires. */
   const carte=vide?`<div class="budget bcard attente"><span class="bk">Budget travaux HT</span><span class="bv" id="budgetVal">0 €</span><span class="bs"><small>${ATTENTE_PIECE}</small></span></div>`
     :rien?`<button type="button" class="budget bcard budgetbtn rien" onclick="showEstimate()"><span class="bk">Budget travaux HT</span><span class="bv" id="budgetVal">0 €</span><span class="bs"><small>${avant?'Rien de décidé pour l\'instant. Passe en vue <b>'+nomVue('projet')+'</b> pour marquer ce que tu changes.':'Rien de décidé pour l\'instant. Clique un mur, une ouverture ou une pièce et choisis ce que tu en fais.'}</small></span></button>`
-    :pro?`<button type="button" class="budget bcard budgetbtn" onclick="showEstimate()" aria-label="Budget travaux HT : ${eur(px.total)}, ${pluriel(px.nb,'tâche')}. Voir le détail"><span class="bk">Budget travaux HT<span class="bn">${pluriel(px.nb,'tâche')}</span></span><span class="bv" id="budgetVal">${eur(px.total)}</span><span class="bs"><small>indicatif · prix catalogue, moyenne nationale</small><b>Voir le détail →</b></span></button>`
-    :`<button type="button" class="budget bcard budgetbtn" onclick="showEstimate()"><span class="bk">Budget travaux HT · Pro<span class="bn">${pluriel(px.nb,'tâche')}</span></span><span class="bv flou" aria-hidden="true">•••• €</span><span class="bs"><small>${avecPro('budget')}</small><b>Aperçu →</b></span></button>`;
+    /* D48 (arbitrage tour 2) : le montant se voit aussi en gratuit ; le détail tâche par tâche est Pro */
+    :`<button type="button" class="budget bcard budgetbtn" onclick="showEstimate()" aria-label="Budget travaux HT : ${eur(px.total)}, ${pluriel(px.nb,'tâche')}. ${tout?'Voir le détail':'Voir la répartition par corps d\'état'}"><span class="bk">Budget travaux HT<span class="bn">${pluriel(px.nb,'tâche')}</span></span><span class="bv" id="budgetVal">${eur(px.total)}</span><span class="bs"><small>indicatif · prix catalogue, moyenne nationale</small><b>${tout?'Voir le détail →':'Par corps d\'état →'}</b></span></button>`;
   const resume=vide?'':`<div class="presume"><b>${fmtM2(hv.area)}</b> habitables ${avant?'avant':'après'} travaux · <b>${hv.rooms}</b> pièce${hv.rooms>1?'s':''}${state.levels.length>1?' · <b>'+state.levels.length+'</b> niveaux':''}</div>`;
   F.innerHTML=carte+resume+(isDev()?`<button class="ib devonly" style="width:100%;justify-content:center;margin-top:8px" onclick="ouvrirEnvoi()" ${vide?'disabled':''}>Envoyer vers mon estimation AVYORA (dev)</button>`:'');
   /* le bouton du haut : grisé sans pièce, et il dit pourquoi (survol, lecteur d'écran, clic) */
   {const eb=document.getElementById('estBtnTop');if(eb){eb.classList.toggle('attente',vide);if(vide)eb.setAttribute('aria-disabled','true');else eb.removeAttribute('aria-disabled');
-    eb.title=vide?ATTENTE_PIECE:pro?'Ton budget travaux, par corps d\'état et tâche par tâche':avecPro('budget');}}
+    eb.title=vide?ATTENTE_PIECE:tout?'Ton budget travaux, par corps d\'état et tâche par tâche':maj(DROITS.total.gratuit)+'. '+avecPro('detail');}}
   const el=document.getElementById('budgetVal');if(el&&px.total!==_lastPrix)compter(el,_lastPrix,px.total,450);
   _lastPrix=px.total;
+  if(_tachesOuverture&&!_decisionSuivie&&!_prixSuite&&px.taches.some(t=>!_tachesOuverture.has(t.id))){_decisionSuivie=true;suivre('premiere_decision',{exemple:estExemple(),taches:px.nb});}
   ecartBudget(px);
 }
 /* D40 · La pastille d'écart : chaque décision qui change le montant le dit, 3 s, près du budget
@@ -5497,13 +5687,14 @@ function ecartBudget(px){
   const M=new Map(px.taches.map(t=>[t.id,t])),prev=_prixVu,suite=_prixSuite;_prixSuite=false;
   _prixVu={st:state,M,total:px.total};
   if(!prev||(prev.st!==state&&!suite)){_ecartBase=null;cacherEcart(true);return;}
-  if(!isPro()||Math.abs(px.total-prev.total)<1)return;
+  if(Math.abs(px.total-prev.total)<1)return;
   const base=_ecartBase||prev;_ecartBase=base;
   const d=px.total-base.total;if(Math.abs(d)<1){cacherEcart();return;}
   const ch=[];
   M.forEach((t,id)=>{const o=base.M.get(id),dp=(t.prix||0)-((o&&o.prix)||0);if(Math.abs(dp)>=0.5)ch.push({t,dp});});
   base.M.forEach((o,id)=>{if(!M.has(id)&&Math.abs(o.prix||0)>=0.5)ch.push({t:o,dp:-(o.prix||0),parti:true});});
   if(!ch.length)return;
+  if(!voitTout()){montrerEcart(d,'budget travaux HT mis à jour',px.total);return;} /* D48 : le montant est gratuit, le prix de chaque tâche est Pro */
   ch.sort((a,b)=>Math.abs(b.dp)-Math.abs(a.dp));
   /* la tâche de l'objet sélectionné d'abord : c'est lui qu'on vient de décider */
   const vise=sel&&ch.find(c=>{const k=tacheCible(c.t.id);return k&&k.kind===sel.kind&&k.id===sel.id;});
@@ -5662,7 +5853,7 @@ function setRoomRevetement(val){const r=L().rooms.find(r=>r.id===sel?.id);if(!r)
   if(!poseSurExistantOK(r))delete r.surExistant; /* D47 : « poser sur l'ancien » ne survit pas à un revêtement qui ne le permet pas */
   retirerFusion(r,'sol');afterChange();}
 function setRoomProp(k,val,light){const r=L().rooms.find(r=>r.id===sel.id);if(!light)history.push(snapshot());if(k==='floor'&&r.floorNew===PONCAGE&&!/parquet/i.test(val||''))delete r.floorNew;r[k]=val;
-  if(k==='surExistant'&&!val)delete r.surExistant;if(['peinture','faience','fauxPlafond','surExistant'].includes(k))retirerFusion(r,k==='surExistant'?'sol':k); /* D47 : décidé dans la pièce réunie */if(k==='type'||(k==='name'&&String(val).trim()))delete r.typeAuto;if(light){draw();renderFoot();}else afterChange();}
+  if(k==='surExistant'&&!val)delete r.surExistant;if(['peinture','faience','fauxPlafond','surExistant'].includes(k))retirerFusion(r,k==='surExistant'?'sol':k); /* D47 : décidé dans la pièce réunie */if(k==='type'||(k==='name'&&String(val).trim()))delete r.typeAuto;if(k==='type'||k==='name')_numPieces=null;if(light){draw();renderFoot();}else afterChange();}
 function setTextColor(c){const t=TX(L()).find(x=>x.id===sel?.id);if(!t)return;history.push(snapshot());t.color=c;lastNoteColor=c;afterChange();}
 let lastNoteColor='jaune';
 function setTextProp(val){const t=TX(L()).find(x=>x.id===sel?.id);if(!t)return;if(!t._h){history.push(snapshot());t._h=1;}t.text=String(val).slice(0,200);draw();}
@@ -5976,7 +6167,8 @@ function telechargerEnvoi(){
 }
 function showEstimate(){
   const q=quantities(); if(budgetEnAttente(q)){toast(ATTENTE_PIECE+(isMobile()?'':' Trace ses murs avec l\'outil Murs (M).'));return;}
-  document.getElementById('estBody').innerHTML=isPro()?estimateHTML(q):estimatePaywallHTML(q); openModal('estimate');
+  const tout=voitTout();document.getElementById('estBody').innerHTML=tout?(isPro()?'':exempleGratuitHTML())+estimateHTML(q):estimatePaywallHTML(q); openModal('estimate');
+  {const px=chantierPrix();suivre('estimer_ouvert',{detail:tout,exemple:estExemple(),taches:px.nb,corpsEtat:px.lots.length});}
   /* D42 : « Ouvrir ton estimation » est une étape du projet (« Ton projet à X % ») */
   if(!(state.vu&&state.vu.estimer)){state.vu={...(state.vu||{}),estimer:Date.now()};save();}
   /* D40 : le montant « monte » jusqu'au total (le texte final est déjà là : lecteur d'écran, contrôles) */
@@ -6016,7 +6208,7 @@ function couvertureManquante(q){
   /* Ce que le plan ne peut pas deviner : garder ou remplacer. Tant que ce n'est pas tranché, le
      chiffrage ne les compte pas — ce qui est juste, mais il ne peut pas le présenter comme un choix. */
   {const A=q.arbitrage,n=A.equipements.aTrancher+A.menuiseries.aTrancher;
-   if(n&&q.travaux.actif)a.push(['Déjà en place',n+' élément'+(n>1?'s':'')+' existant'+(n>1?'s':'')+' sur lesquels rien n\'est tranché'+(isPro()?' — '+fmtEur(A.montantSiRemplaces)+' si tu les remplaçais':''),'clique-les et choisis « '+LEX.etat.garder+' » si tu les gardes']);}
+   if(n&&q.travaux.actif)a.push(['Déjà en place',n+' élément'+(n>1?'s':'')+' existant'+(n>1?'s':'')+' sur lesquels rien n\'est tranché'+(voitTout()?' — '+fmtEur(A.montantSiRemplaces)+' si tu les remplaçais':''),'clique-les et choisis « '+LEX.etat.garder+' » si tu les gardes']);}
   return a;
 }
 function couvertureHTML(q){
@@ -6077,17 +6269,23 @@ function estimateHTML(q){
   return h;}
 function allerAuxDecisions(){const a=document.getElementById('estAdec');if(a)a.scrollIntoView({behavior:calme()?'auto':'smooth',block:'start'});}
 const kpisHTML=q=>`<div class="kpis"><div class="kpi"><b>${fmt(q.area,1)}</b><span>m² habitables${q.travaux.actif&&Math.abs(q.areaBefore-q.area)>0.05?' (avant : '+fmt(q.areaBefore,1)+')':''}</span></div><div class="kpi"><b>${q.rooms}</b><span>pièces · ${state.levels.length} niv.</span></div><div class="kpi"><b>${q.doors} / ${q.windows}</b><span>portes / fenêtres</span></div><div class="kpi"><b>${fmt(q.wallPaint,0)}</b><span>m² de murs, hors ouvertures</span></div></div>`;
-/* Version gratuite : le montant est réservé à Pro, le reste est vrai et vient du plan — le nombre
-   de tâches, les corps d'état concernés, ce qu'il reste à décider. Pro ne promet que la table DROITS. */
+/* D48 · L'exemple, en gratuit : tout s'affiche, et l'on dit ce qui, sur son propre plan, est Pro. */
+function exempleGratuitHTML(){return `<div class="tip exgratuit" style="margin:0 0 14px">${ico('info','lead')}<span>C'est l'exemple : tout s'affiche, même en version gratuite. Sur ton plan à toi, en gratuit : ${DROITS.total.gratuit}. ${avecPro('detail')}</span></div>`;}
+/* D48 (arbitrage tour 2 · cj-retention01, cj-design03, cj-coherence00) · Version gratuite : le montant
+   total et sa répartition par corps d'état, en clair — c'est ce que vaut le plan. Le détail tâche par
+   tâche, avec son prix, est Pro : l'appel à passer Pro est à cet endroit, et reste visible en bas de
+   la fenêtre (barre collante). Pro ne promet que la table DROITS. */
 function estimatePaywallHTML(q){
-  const px=chantierPrix(),T=px.taches,lots=px.lots,A=elementsATrancher();
-  let h=`<div class="esthero"><div class="eh1"><span class="k">Budget travaux ${gl('ht','HT')} · Pro</span><b class="v flou" aria-hidden="true">•••• €</b><small>${T.length?'Ton plan est prêt à être chiffré : '+T.length+' tâche'+(T.length>1?'s':'')+' dans '+lots.length+' corps d\'état.':'Rien de décidé pour l\'instant : passe en vue <b>'+nomVue('projet')+'</b> et choisis ce que tu changes.'}</small></div>
-    <div class="eh2"><span><b>${T.length}</b><i>tâche${T.length>1?'s':''}</i></span><span><b>${lots.length}</b><i>${gl('corps','corps d\'état')}</i></span><span><b>${A.length}</b><i>à décider</i></span></div></div>`;
-  if(lots.length)h+=`<div class="ph">Par corps d'état</div><div class="estlots">${lots.map(g=>`<div class="estlot ferme"><span class="ln">${esc(g.lot)}<small>${g.taches.length} tâche${g.taches.length>1?'s':''}</small></span><span class="lv flou" aria-hidden="true">•••• €</span></div>`).join('')}</div>`;
+  const px=chantierPrix(),T=px.taches,tot=px.total,lots=px.lots,A=elementsATrancher();
+  const max=Math.max(1,...lots.map(g=>g.total));
+  let h=`<div class="esthero"><div class="eh1"><span class="k">Budget travaux ${gl('ht','HT')}</span><b class="v" id="estTotal">${eur(tot)}</b><small>${T.length?'Indicatif : prix catalogue, moyenne nationale. Ta finition, ta région et la TVA n\'y sont pas encore appliquées.':'Rien de décidé pour l\'instant : passe en vue <b>'+nomVue('projet')+'</b> et choisis ce que tu changes.'}</small></div>
+    <div class="eh2"><span><b>${T.length}</b><i>tâche${T.length>1?'s':''}</i></span><span><b>${lots.length}</b><i>${gl('corps','corps d\'état')}</i></span>${A.length?`<button type="button" class="eh2b" onclick="allerAuxDecisions()"><b>${A.length}</b><i>à décider</i></button>`:`<span><b>0</b><i>à décider</i></span>`}</div></div>`;
+  if(lots.length)h+=`<div class="ph">Par corps d'état</div><div class="estlots">${lots.map(g=>`<div class="estlot ferme barre"><span class="ln">${esc(g.lot)}<small>${g.taches.length} tâche${g.taches.length>1?'s':''}${tot>0&&g.total>0?' · '+Math.max(1,Math.round(g.total/tot*100))+' %':''}</small></span><span class="lb"><i style="width:${Math.round(g.total/max*100)}%"></i></span><span class="lv${g.total?'':' nul'}">${g.total?eur(Math.round(g.total)):'non chiffré'}</span></div>`).join('')}</div>
+  <div class="estpro"><span class="epi" aria-hidden="true">${ico('cadenas')}</span><span class="ept"><b>${maj(DROITS.detail.pro)}</b><small>Les ${pluriel(T.length,'tâche')} de ton plan, dans l'ordre du chantier : c'est Pro.</small></span>${lienPro('Voir le détail · Passer Pro','ib primary','estimer-detail')}</div>`;
   h+=`<div class="ph">Ce que Pro ajoute</div><ul class="droits">${droitsPro().map(d=>`<li>${maj(d)}</li>`).join('')}</ul>
-  <div class="estactions">${lienPro('Passer Pro','estimate')}</div>
   <div class="tip" style="margin:0 0 18px">Gratuit : ${droitsGratuit().join(', ')}.</div>`;
   h+=aDecHTML(A)+couvertureHTML(q);
+  h+=`<div class="estactions colle">${lienPro('Passer Pro','estimate','estimer-barre')}<button class="ib" onclick="closeModal();exportPlan()">${ICO_EXPORTER}Exporter le dossier (avec filigrane)</button></div>`;
   h+=`<details class="qdet"><summary>Surfaces mesurées sur le plan</summary>${kpisHTML(q)}<div class="ph">Tableau des surfaces${gl('habitable')}</div>${surfaceTable(q)}</details>`;
   return h;}
 /* Les quantités mesurées sur le plan : repliées sous le budget, et page « Quantités » du dossier. */
@@ -6156,14 +6354,18 @@ function exportPlan(){
   if(!state.levels.some(l=>l.walls.length)){toast('Rien à exporter pour l\'instant');return;}
   /* D38 : un radiateur posé ou un sol neuf chiffrait une page Budget sans le plan de ces travaux. */
   const hasProjet=state.levels.some(l=>l.walls.some(w=>w.st)||l.openings.some(o=>o.st)||l.items.some(i=>i.st)||(l.rooms||[]).some(r=>r.floorNew))||chantierTasks().length>0;
-  // Dossier = une page A4 par élément, même mise en page gratuit/Pro ; gratuit = plans seuls + filigrane ; Pro = plans + Contrôle + Avancement + Budget + Quantités, sans filigrane.
-  const pro=isPro();const modes=hasProjet?['existant','projet','final']:['existant'];
+  /* Dossier = une page A4 par élément, même mise en page gratuit/Pro. D48 : gratuit = plans + budget par
+     corps d'état, avec filigrane ; Pro = plans + Contrôle + Suivi + Budget + Quantités, sans filigrane ;
+     l'exemple en gratuit = tout, avec filigrane. */
+  const pro=isPro(),tout=voitTout();const modes=hasProjet?['existant','projet','final']:['existant'];
   const SUBS={existant:'Le logement tel qu\'il est aujourd\'hui',projet:'Orange = à démolir · rouge = à créer',final:'Après travaux, sans marquage : le plan à montrer aux artisans'};
   const WM=Array.from({length:80}).map(()=>'<span>AVYORA</span>').join('');
-  const sub=document.getElementById('exportSub');if(sub)sub.innerHTML=pro?`Dossier complet : chaque plan (${nomVue('existant')}, ${nomVue('projet')}, ${nomVue('final')}) sur sa page, puis le contrôle du plan, le suivi du chantier, le budget par corps d'état et les quantités, <b>sans filigrane</b>. <b>Imprimer / PDF</b> pour tout sortir en un document.`:`Tes plans (${nomVue('existant')}, ${nomVue('projet')}, ${nomVue('final')}), <b>une page par vue</b>, avec le filigrane AVYORA. <b>Imprimer / PDF</b> pour les enregistrer.`;
+  const sub=document.getElementById('exportSub');if(sub)sub.innerHTML=!tout?`Tes plans (${nomVue('existant')}, ${nomVue('projet')}, ${nomVue('final')}) et le budget par corps d'état, <b>une page par élément</b>, avec le filigrane AVYORA. <b>Imprimer / PDF</b> pour les enregistrer.`:!pro?`C'est l'exemple : le dossier complet (plans, contrôle, suivi, budget, quantités), avec le filigrane AVYORA. <b>Imprimer / PDF</b> pour le voir en un document.`:`Dossier complet : chaque plan (${nomVue('existant')}, ${nomVue('projet')}, ${nomVue('final')}) sur sa page, puis le contrôle du plan, le suivi du chantier, le budget par corps d'état et les quantités, <b>sans filigrane</b>. <b>Imprimer / PDF</b> pour tout sortir en un document.`;
   const pages=[];const q=quantities();
   state.levels.forEach((lv,i)=>modes.forEach(m=>{const src=renderLevelImage(i,m);if(!src)return;pages.push({title:lv.name+' · '+nomVue(m),sub:SUBS[m],body:`<img src="${src}" alt="${esc(lv.name)} ${m}">`,foot:'Plan · '+esc(lv.name)});}));
-  if(pro){
+  /* D48 : en gratuit, le dossier garde le budget par corps d'état (vu à l'écran) ; le reste est Pro, ou l'exemple */
+  if(!tout){const px=chantierPrix();if(px.total>0)pages.push({title:'Budget travaux HT',sub:'Indicatif, hors taxes · prix catalogue, moyenne nationale · travaux décidés sur le plan',body:`<div class="xrecap"><div class="xbig"><span>Budget travaux HT</span><b>${eur(px.total)}</b><small>${pluriel(px.nb,'tâche')} · ${px.lots.length} corps d'état</small></div><table class="mtable"><tr><th>Corps d'état</th><th style="text-align:right">Tâches</th><th style="text-align:right">Part</th><th style="text-align:right">Montant</th></tr>${px.lots.map(g=>`<tr><td>${esc(g.lot)}</td><td class="n">${g.taches.length}</td><td class="n">${g.total>0?Math.max(1,Math.round(g.total/px.total*100))+' %':'—'}</td><td class="n">${g.total>0?eur(Math.round(g.total)):'non chiffré'}</td></tr>`).join('')}<tr class="tot"><td>Total HT</td><td class="n">${px.nb}</td><td></td><td class="n">${eur(px.total)}</td></tr></table><div class="tip" style="margin-top:10px">Ta finition, ta région et la TVA n'y sont pas encore appliquées.</div></div>`,foot:'Budget · '+eur(px.total)});}
+  if(tout){
     pages.push({title:'Contrôle du plan',sub:'Accessibilité, éclairage, hauteurs, surfaces — vérifiés automatiquement',body:`<div class="xrecap">${q.controles.length?q.controles.map(c=>`<div class="ph">${esc(c.niveau)}</div><div class="chks">${c.points.map(pt=>`<div class="chk ${pt.niveau}"><span class="ci">${ico(pt.niveau==='err'?'erreur':pt.niveau==='warn'?'alerte':'idee')}</span><span>${esc(pt.texte)}</span></div>`).join('')}</div>`).join(''):'<div class="tip ok">Rien à signaler sur les points vérifiés : accès des pièces, lumière naturelle, hauteurs, WC.</div>'}</div>`,foot:'Contrôle du plan'});
     /* D40 : Suivi et Budget du dossier lisent la même source que l'écran (chantierPrix). */
     const px=chantierPrix(),T=px.taches;if(T.length){const pc=Math.round(px.faites/T.length*100);pages.push({title:'Suivi du chantier',sub:`${px.faites}/${T.length} tâches faites · ${pc} % · ${eur(px.fait)} réalisés sur ${eur(px.total)} HT`,body:`<div class="xrecap"><div class="prog" style="margin-bottom:12px"><i style="width:${pc}%"></i></div><div class="tasks">${chantierListHTML(T,false,{prix:true})}</div></div>`,foot:'Suivi de chantier'});}
@@ -6265,14 +6467,14 @@ function gardeModale(e,ov){
     return;}
   if(e.key==='Enter'&&e.target&&e.target.id==='calibVal'){e.preventDefault();applyCalib();}
 }
-function closeWelcome(choix,avecVisite){try{localStorage.setItem('avyora-plan-welcome','1');}catch{}closeModal();if(choix==='fermer')return;if(choix==='templates'){openTemplates();return;}if(choix==='plans'){openPlansModal();return;}if(choix==='blank'){newPlan(()=>setTool('mur'));return;}
+function closeWelcome(choix,avecVisite){try{localStorage.setItem('avyora-plan-welcome','1');}catch{}closeModal();if(choix==='fermer')return;if(choix==='templates'){openTemplates();return;}if(choix==='plans'){openPlansModal();return;}if(choix==='blank'){newPlan();return;}
   /* D42 : l'exemple s'ouvre en vue Travaux — ses couleurs expliquent son budget — et, choisi depuis
      l'accueil à la première visite, la visite guidée démarre. */
   const suite=()=>{if(mode()!=='projet')setMode('projet',true);if(avecVisite&&!visiteFaite())lancerVisite(true);};
   /* « Découvrir avec l'exemple » : ne faisait rien si un plan existait déjà. Le plan ouvert est d'abord rangé. */
   if(state.origine&&state.origine.k==='exemple'&&planIntact()){suite();return;}
   avantDeRemplacer((garde,pq)=>{const vide=!garde&&!pq;loadSample();if(vide)history=[];render();
-    if(garde)toast(`Exemple ouvert · « ${garde} » est rangé dans « Mes plans »`,true);else if(pq)toast('Exemple ouvert · l\'ancien plan n\'est pas gardé',false,{action:'Annuler',fn:()=>undo()});suite();});}
+    if(garde)toast(`Exemple ouvert · « ${garde} » est rangé dans « Mes plans »`,true);else if(pq)toast('Exemple ouvert · l\'ancien plan n\'est pas gardé',false,annulerCe());suivre('plan_ouvert',{source:'exemple'});suite();});}
 function closeModal(){const ouverte=modaleOuverte(),wasCalib=document.getElementById('m-calib').classList.contains('show'),wasWelcome=document.getElementById('m-welcome').classList.contains('show');document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('show'));
   if(wasWelcome){try{localStorage.setItem('avyora-plan-welcome','1');}catch{}}
   if(wasCalib)cancelCalib();
@@ -6283,7 +6485,7 @@ document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{
 document.querySelectorAll('.overlay .modal').forEach(m=>{if(m.querySelector('.mx'))return;const b=document.createElement('button');b.type='button';b.className='mx noprint';b.setAttribute('aria-label','Fermer');b.innerHTML='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';b.onclick=fermerModale;m.appendChild(b);});
 /* D38 : un toast peut porter une action (« Annuler » une suppression, « Passer en … »). Il reste
    alors 8 s, et il passe au-dessus d'une fenêtre ouverte au lieu de s'afficher derrière le voile. */
-let toastT;function toast(msg,ok,opt){const t=document.getElementById('toast');t.textContent=msg;const act=!!(opt&&opt.action);
+let toastT;function toast(msg,ok,opt){const t=document.getElementById('toast');t.textContent=msg;const act=!!(opt&&opt.action);t._geste=act&&opt.geste||null;
   if(act){const b=document.createElement('button');b.type='button';b.className='tact';b.textContent=opt.action;b.onclick=ev=>{ev.stopPropagation();clearTimeout(toastT);t.classList.remove('show','act');if(opt.fn)opt.fn();};t.appendChild(b);}
   t.classList.toggle('ok',!!ok);t.classList.toggle('act',act);t.classList.toggle('over',!!modaleOuverte());t.classList.add('show');clearTimeout(toastT);
   /* D41 : le message se pose juste au-dessus de la bulle d'astuce, sans la recouvrir */
@@ -6300,13 +6502,19 @@ let toastT;function toast(msg,ok,opt){const t=document.getElementById('toast');t
    retenait, et au rechargement l'exemple revenait à sa place. Il est d'abord rangé dans « Mes plans ».
    Un plan vide, l'exemple ou un plan type jamais touchés partent sans regret — sans historique non
    plus : Ctrl+Z ne fait pas réapparaître un exemple qu'on n'a pas demandé. */
-function newPlan(apres){avantDeRemplacer((garde,pq)=>annoncerLimite(pq,()=>{
+/* D48 (cj-design05, cj-integration06) : le message disait « clique pour poser le 1er coin » mais
+   l'outil restait sur Sélection — le clic ne faisait rien. Sur ordinateur, un nouveau plan ouvre
+   réellement l'outil Murs (même parcours que « Feuille blanche ») ; au téléphone, pas de dessin. */
+function newPlan(apres){if(isMobile()){toast('Le dessin se fait sur ordinateur ou tablette : ici, tu consultes tes plans et tu coches l\'avancement.');return;}
+  avantDeRemplacer((garde,pq)=>annoncerLimite(pq,()=>{
   if(!garde&&!pq)history=[];else history.push(snapshot());future=[];
-  state=blankState();sel=null;resetGestes();wallType='mur';customT=null; /* D42 : le premier contour d'un nouveau plan est en murs (arbitrage I) */afterChange();fitView();
-  if(garde)toast(`Nouveau plan · « ${garde} » est rangé dans « Mes plans »`,true);
-  else if(pq)toast(pq==='exemple'?'Nouveau plan · l\'exemple modifié n\'est pas gardé':'Nouveau plan · l\'ancien n\'est pas gardé',false,{action:'Annuler',fn:()=>undo()});
-  else toast('Nouveau plan : clique pour poser le 1er coin de ton logement',true);
-  if(apres)apres();}));}
+  _tachesOuverture=null;state=blankState();state.name=nomUnique(state.name);sel=null;resetGestes();panelTab='details';wallType='auto';customT=null; /* D42 : le premier contour d'un nouveau plan est en murs (arbitrage I) ; D48 : ensuite, le type se lit au tracé */afterChange();fitView();
+  baseDecisions();if(apres)apres();else tracerLesMurs();
+  const suite=' Clique pour poser le 1er coin de ton logement.';
+  if(garde)toast(`Nouveau plan · « ${garde} » est rangé dans « Mes plans ».`+suite,true);
+  else if(pq)toast('Nouveau plan · l\'ancien n\'est pas gardé.',false,annulerCe());
+  else toast('Nouveau plan : clique pour poser le 1er coin de ton logement.',true);
+  suivre('plan_ouvert',{source:'nouveau'});}));}
 
 // ---------- Exemple ----------
 
@@ -6355,20 +6563,22 @@ const TEMPLATES=[
 function loadTemplate(id){
   const T=TEMPLATES.find(t=>t.id===id);if(!T)return;closeModal();
   avantDeRemplacer((garde,pq)=>annoncerLimite(pq,()=>chargerModele(T,garde,pq)));}
-function chargerModele(T,garde,pq){const apres=()=>{if(garde)toast(T.name+' chargé · « '+garde+' » est rangé dans « Mes plans »',true);else if(pq)toast(T.name+' chargé · l\'ancien plan n\'est pas gardé',false,{action:'Annuler',fn:()=>undo()});};
-  if(!T.build){loadSample();if(!garde&&!pq)history=[];render();apres();return;}
-  if(!garde&&!pq)history=[];else history.push(snapshot());future=[];resetGestes();
+function chargerModele(T,garde,pq){const apres=()=>{if(garde)toast(T.name+' chargé · « '+garde+' » est rangé dans « Mes plans »',true);else if(pq)toast(T.name+' chargé · l\'ancien plan n\'est pas gardé',false,annulerCe());suivre('plan_ouvert',{source:'plan-type',modele:T.id});};
+  /* D48 : le T2 choisi comme PLAN TYPE est le plan de l'utilisateur, à adapter — pas l'exemple (qui,
+     lui, montre tout en gratuit). Même contenu, autre nom, autre origine. */
+  if(!T.build){loadSample();state.name=nomUnique(T.name.replace(' · ',' de '));marquerOrigine('modele');baseDecisions();if(!garde&&!pq)history=[];render();apres();return;}
+  if(!garde&&!pq)history=[];else history.push(snapshot());future=[];resetGestes();_tachesOuverture=null;
   const lv=newLevel('RDC');lv.height=2.5;
   const W=(a,b,type)=>{const w={id:uid(),a:v(...a),b:v(...b),type};lv.walls.push(w);return w;};
   const O=(w,t,type,side,hinge=1)=>{const d=OPENINGS[type];lv.openings.push({id:uid(),wallId:w.id,t,type,w:d.w,h:d.h,side,hinge});};
   const I=(type,x,y,rot=0)=>{const d=ITEMS[type];lv.items.push({id:uid(),type,x,y,w:d.w,h:d.h,rot});};
   const spec=T.build(lv,W,O,I);
-  state=blankState();state.name=T.name.replace(' · ',' de ');state.levels=[lv];state.cur=0;
+  state=blankState();state.name=nomUnique(T.name.replace(' · ',' de '));state.levels=[lv];state.cur=0;panelTab='details';
   /* D42 (novice15) : « Maison » est une maison, un studio un appartement — on ne redemande pas ce que le modèle dit déjà */
   if(T.bien)chantier().bien=T.bien;
   afterChange();
   (facesCache[lv.id]||[]).forEach(f=>{const c=f.label;const r=f.room;const m=spec.find(z=>c.x>=z[0]&&c.x<=z[2]&&c.y>=z[1]&&c.y<=z[3]);if(m&&r){r.type=m[4];if(m[5])r.floor=m[5];}});
-  sel=null;afterChange();fitView();marquerOrigine('modele');
+  sel=null;afterChange();fitView();marquerOrigine('modele');baseDecisions();
   toast(T.name+' chargé — adapte les cotes en glissant les murs, puis passe en vue '+nomVue('projet'),true);apres();
 }
 // aperçu SVG d'un modèle (murs seuls), pour la galerie
@@ -6378,10 +6588,10 @@ function templateSVG(T){
   const xs=lv.walls.flatMap(w=>[w.a.x,w.b.x]),ys=lv.walls.flatMap(w=>[w.a.y,w.b.y]);const x0=Math.min(...xs)-0.4,y0=Math.min(...ys)-0.4,bw=Math.max(...xs)-x0+0.4,bh=Math.max(...ys)-y0+0.4;
   return `<svg viewBox="${x0} ${y0} ${bw} ${bh}" preserveAspectRatio="xMidYMid meet">${lv.walls.map(w=>`<line x1="${w.a.x}" y1="${w.a.y}" x2="${w.b.x}" y2="${w.b.y}" stroke="${w.type==='virtuel'?'#a78bfa':'#1e1b4b'}" stroke-width="${w.type==='virtuel'?0.06:w.type==='cloison'?0.12:0.24}" ${w.type==='virtuel'?'stroke-dasharray="0.25 0.15"':''} stroke-linecap="square"/>`).join('')}</svg>`;
 }
-function openTemplates(){document.getElementById('tplGrid').innerHTML=TEMPLATES.map(T=>`<button class="tpl" onclick="loadTemplate('${T.id}')"><div class="tv">${templateSVG(T)}</div><b>${T.name}</b><small>${T.desc}</small></button>`).join('');openModal('templates');}
+function openTemplates(){{const n=document.querySelector('#m-templates .note');if(n)n.textContent=phraseSortie()+'.';}document.getElementById('tplGrid').innerHTML=TEMPLATES.map(T=>`<button class="tpl" onclick="loadTemplate('${T.id}')"><div class="tv">${templateSVG(T)}</div><b>${T.name}</b><small>${T.desc}</small></button>`).join('');openModal('templates');}
 
 function loadSample(){
-  history.push(snapshot());chain=[];lenBuf='';
+  history.push(snapshot());chain=[];lenBuf='';_tachesOuverture=null;
   /* D42 · L'exemple est la vitrine : zéro alerte dans les trois vues, portes sans conflit, WC qui
      ouvrent sur une entrée (pas sur le séjour), et un cas de chaque état — une démolition (cloison
      WC / cellier), une création (fenêtre de la cuisine), un remplacement (fenêtre de la chambre), un
@@ -6421,7 +6631,7 @@ function loadSample(){
   [[1.75,2.9],[1.1,5.2],[2.85,4.45],[2.85,6.0],[4.1,5.5],[6.3,3.9],[7.2,1.9]].forEach(([x,y])=>I('lumiere',x,y,0));
   lv.texts=[{id:uid(),x:6.9,y:2.45,text:'Fenêtre neuve : accord de\nla copropriété à demander'},{id:uid(),x:6.2,y:6.2,text:'Garder le parquet, poncer + vitrifier'}];
   I('canape',8.45,5.75,H/2);I('table',6.4,5.0,0);
-  state=blankState();state.name='Exemple · T2 de 60 m²';state.levels=[lv];state.cur=0;
+  state=blankState();state.name='Exemple · T2 de 60 m²';state.levels=[lv];state.cur=0;panelTab='details';
   chantier().bien='appartement';
   /* noms, types, sols et décisions des pièces, après détection */
   afterChange();
@@ -6441,7 +6651,7 @@ function loadSample(){
   state.notes='Travaux prévus en août. Électricité à vérifier.';
   /* ouvrir l'exemple n'est pas une décision : pas de pastille d'écart (D40), même si ses décisions se posent après la détection des pièces */
   _prixVu=null;_ecartBase=null;
-  sel=null;afterChange();fitView();marquerOrigine('exemple');
+  sel=null;afterChange();fitView();marquerOrigine('exemple');baseDecisions();
 }
 
 /* ---------- D42 · « Ton projet à X % » ----------
@@ -6463,15 +6673,19 @@ function etapesProjet(){
     {k:'sols',label:'Choisir les sols, pièce par pièce',suite:solAChoisir?'Choisis le sol · '+solAChoisir.nom:'Choisis les sols, pièce par pièce',fait:n&&!solAChoisir,cible:solAChoisir},
     {k:'estimer',label:'Ouvrir ton estimation',suite:'Ouvre ton estimation',fait:!!(state.vu&&state.vu.estimer)}];}
 function pctProjet(E){E=E||etapesProjet();return Math.round(E.filter(e=>e.fait).length/E.length*100);}
-function projetHTML(){const E=etapesProjet(),nf=E.filter(e=>e.fait).length,pc=pctProjet(E),nx=E.find(e=>!e.fait),mob=isMobile();
+function projetHTML(){const mob=isMobile();
+  /* D48 (cj-retention02) : sur l'exemple, la « prochaine étape » était celle d'un T2 fictif (« Indique le
+     code postal du chantier »). L'étape qui compte, c'est la première pièce de SON logement. */
+  if(estExemple())return `<section class="pp ppex" aria-label="À toi"><div class="pph"><b>À toi : dessine ton logement</b><small>ceci est l'exemple</small></div><p class="ppt">Ton plan se dessine en quelques minutes : son budget et son suivi se construisent pendant que tu décides.</p>${mob?`<button type="button" class="ppnext" onclick="partagerLien()"><span><span class="k">Sur ordinateur ou tablette</span><b>Continuer sur ordinateur</b></span>${ico('fleche')}</button>`:`<button type="button" class="ppnext" onclick="openTemplates()"><span><span class="k">Le plus rapide</span><b>Partir d'un plan type</b></span>${ico('fleche')}</button><div class="ppalt"><button type="button" class="ib" onclick="newPlan()">Feuille blanche</button><button type="button" class="ib" onclick="clearSel();setPanelTab('suivi')">Explorer le Suivi</button></div>`}</section>`;
+  const E=etapesProjet(),nf=E.filter(e=>e.fait).length,pc=pctProjet(E),nx=E.find(e=>!e.fait);
   const ligne=e=>`<li>${e.fait?`<span class="ppi fait">${ico('check')}<span>${e.label}</span></span>`:`<button type="button" class="ppi" onclick="allerEtape('${e.k}')">${ico('cercle')}<span>${e.label}</span></button>`}</li>`;
   const bouton=!nx?`<button type="button" class="ppnext" onclick="setPanelTab('suivi')"><span><span class="k">Ton plan est complet</span><b>Suis ton chantier dans l'onglet Suivi</b></span>${ico('fleche')}</button>`
-    :nx.dessin&&mob?`<div class="ppnext off"><span><span class="k">Prochaine étape</span><b>${esc(nx.suite)}</b><small>sur ordinateur ou tablette</small></span></div>`
+    :mob&&nx.k!=='estimer'?`<div class="ppnext off"><span><span class="k">Prochaine étape</span><b>${esc(nx.suite)}</b><small>sur ordinateur ou tablette</small></span></div>`
     :`<button type="button" class="ppnext" onclick="allerEtape('${nx.k}')"><span><span class="k">Prochaine étape</span><b>${esc(nx.suite)}</b></span>${ico('fleche')}</button>`;
   return `<section class="pp" aria-label="Avancement de ton projet"><div class="pph"><b>Ton projet à <span class="mono">${pc} %</span></b><small>${nf} étape${nf>1?'s':''} sur ${E.length}</small></div><div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pc}" aria-label="Ton projet à ${pc} %"><i style="width:${pc}%"></i></div>${bouton}${plie('etapes','Toutes les étapes','',`<ul class="pplist">${E.map(ligne).join('')}</ul>`)}</section>`;}
 function focusPanneau(q){requestAnimationFrame(()=>{const el=document.querySelector('#pbody '+q);if(!el)return;try{el.scrollIntoView({block:'center',behavior:calme()?'auto':'smooth'});el.focus({preventScroll:true});}catch{}});}
 function allerEtape(k){const e=etapesProjet().find(x=>x.k===k);if(!e)return;
-  if(e.dessin&&isMobile()){toast('Le dessin se fait sur ordinateur ou tablette : ici, tu consultes ton plan et tu coches l\'avancement.');return;}
+  if(isMobile()&&k!=='estimer'){toast(e.dessin?'Le dessin se fait sur ordinateur ou tablette : ici, tu consultes ton plan et tu coches l\'avancement.':'Ça se règle sur ordinateur ou tablette : ici, tu consultes ton plan et tu coches l\'avancement.');return;}
   if(k==='pieces'||k==='ouvertures'){if(mode()==='final')setMode('existant',true);setTool(k==='pieces'?'mur':'ouverture');
     toast(k==='pieces'?'Outil Murs : clique chaque coin de ta pièce, puis reviens au premier point pour la fermer.':'Outil Ouvertures : choisis une porte ou une fenêtre dans le panneau, puis clique sur un mur.',true);return;}
   if(k==='chantier'){if(tool!=='select')setTool('select');sel=null;multi=[];msel=[];panelTab='details';plisOuverts.chantier=true;render();
@@ -6509,7 +6723,7 @@ function etapesVisite(){
     {cible:'#panel',place:['gauche','bas','haut'],titre:'C\'est ici que tu décides',
       texte:'Clique une pièce, un mur ou une fenêtre : sa fiche s\'ouvre ici. Tu y dis ce que tu en fais : '+[LEX.etat.garder,LEX.etat.demolir,LEX.etat.remplacer].map(x=>'<b>'+x+'</b>').join(', ')+', un nouveau sol…'+(ex&&!vide?' Ici, la Chambre : on garde son parquet, on remplace sa fenêtre et on isole un de ses murs.':''),
       avant:()=>{const f=rooms.find(g=>g.room.type==='chambre')||rooms[0];if(!f)return;if(tool!=='select')setTool('select');sel={kind:'room',id:f.room.id};multi=[];msel=[];panelTab='details';render();if(visite)visite.aSel=true;}},
-    {cible:'#pfoot',place:['gauche','haut'],titre:'Le budget suit tes décisions',texte:`Chaque décision s'ajoute ici, au prix ${gl('ht','HT')} indicatif. Rien n'est compté tant que tu n'as rien décidé. Clique la carte pour ${isPro()?'voir d\'où vient chaque euro':'un aperçu du détail'}.`},
+    {cible:'#pfoot',place:['gauche','haut'],titre:'Le budget suit tes décisions',texte:`Chaque décision s'ajoute ici, au prix ${gl('ht','HT')} indicatif. Rien n'est compté tant que tu n'as rien décidé. Clique la carte pour ${voitTout()?'voir d\'où vient chaque euro':'voir sa répartition par corps d\'état'}.`},
     {cible:'#estBtnTop',place:['bas','gauche'],titre:'Estime, puis suis ton chantier',texte:`<b>Estimer ce plan</b> : le montant, le détail par ${gl('corps','corps d\'état')} et ce qu'il te reste à décider. Ensuite, l'onglet <b>Suivi</b> range chaque travail dans l'ordre du chantier : tu coches au fur et à mesure.`}];}
 function lancerVisite(depuisAccueil){if(visite)return;if(modaleOuverte())closeModal();try{fermerMenus(false);}catch{}deplierPanneau(); /* D43 : la visite montre le panneau */
   if(tool==='mur'&&chain.length)endChain(false);
@@ -6526,7 +6740,8 @@ function etapeVisite(i){if(!visite)return;const E=visite.E;i=Math.max(0,Math.min
   if(e.avant){try{e.avant();}catch(err){setTimeout(()=>{throw err;});}}
   const b=document.querySelector('#visite .vbulle');if(!b)return;
   b.innerHTML=`<div class="vk">Étape ${i+1} sur ${E.length}</div><h4 id="vTitre">${e.titre}</h4><p id="vTexte">${e.texte}</p>
-    <div class="vpied"><div class="vpts" aria-hidden="true">${E.map((x,j)=>`<i class="${j===i?'on':j<i?'fait':''}"></i>`).join('')}</div>${i>0?`<button type="button" class="vlien" onclick="etapeVisite(${i-1})">Retour</button>`:''}<button type="button" class="vlien vpasser" onclick="fermerVisite('passe')">Passer</button><button type="button" class="vsuiv" onclick="${der?'fermerVisite(\'fait\')':'etapeVisite('+(i+1)+')'}">${der?'C\'est parti':'Suivant'}${ico('fleche')}</button></div>`;
+    ${der?`<div class="vfin"><button type="button" class="vsuiv" onclick="finirVisite('${visite.mob?'ordinateur':'mon-plan'}')">${visite.mob?'Continuer sur ordinateur':'Commencer mon plan'}${ico('fleche')}</button><button type="button" class="vlien vpasser" onclick="finirVisite('exemple')">Continuer l'exemple</button></div>`:''}
+    <div class="vpied"><div class="vpts" aria-hidden="true">${E.map((x,j)=>`<i class="${j===i?'on':j<i?'fait':''}"></i>`).join('')}</div>${i>0?`<button type="button" class="vlien" onclick="etapeVisite(${i-1})">Retour</button>`:''}${der?'':`<button type="button" class="vlien vpasser" onclick="fermerVisite('passe')">Passer</button><button type="button" class="vsuiv" onclick="etapeVisite(${i+1})">Suivant${ico('fleche')}</button>`}</div>`;
   placerVisite();requestAnimationFrame(()=>{placerVisite();const s=b.querySelector('.vsuiv');if(s)try{s.focus({preventScroll:true});}catch{}});
   setTimeout(placerVisite,320);}
 /* La bulle se pose à côté du halo (côtés préférés de l'étape), dans l'écran, sans jamais le recouvrir. */
@@ -6549,7 +6764,12 @@ function placerVisite(){if(!visite)return;const root=document.getElementById('vi
     if(!pos){const coins=[{x:m,y:m},{x:vw-m-bw,y:m},{x:m,y:vh-m-bh},{x:vw-m-bw,y:vh-m-bh}];pos=coins.find(p=>!couvre(p))||coins[3];}}
   else pos={x:cl(vw/2-bw/2,m,vw-m-bw),y:visite.mob?cl(vh-bh-90,m,vh-m-bh):cl(vh/2-bh/2,m,vh-m-bh)};
   b.style.left=Math.round(pos.x)+'px';b.style.top=Math.round(pos.y)+'px';}
-function fermerVisite(etat){if(!visite)return;const v=visite;visite=null;try{localStorage.setItem(VISITE_CLE,etat==='fait'?'fait':'passe');}catch{}
+/* D48 (cj-retention02) : la visite se termine sur le plan de l'utilisateur, pas sur le T2 fictif —
+   « Commencer mon plan » (nouveau plan, rangement d'abord : avantDeRemplacer) ou « Continuer
+   l'exemple » ; au téléphone, « Continuer sur ordinateur ». */
+function finirVisite(suite){fermerVisite('fait',suite);if(suite==='mon-plan')newPlan();else if(suite==='ordinateur')partagerLien();}
+function fermerVisite(etat,suite){if(!visite)return;const v=visite;visite=null;try{localStorage.setItem(VISITE_CLE,etat==='fait'?'fait':'passe');}catch{}
+  suivre(etat==='fait'?'visite_terminee':'visite_passee',{etape:v.i+1,etapes:v.E.length,suite:suite||null,accueil:v.accueil});
   const root=document.getElementById('visite');if(root)root.hidden=true;document.body.classList.remove('enVisite');
   /* au téléphone, la visite a dit ce que dit le bandeau « mode chantier » : il ne revient plus */
   if(v.mob)fermerBandeau();
@@ -6557,11 +6777,11 @@ function fermerVisite(etat){if(!visite)return;const v=visite;visite=null;try{loc
   if(!v.accueil&&mode()!==v.mode0)setMode(v.mode0,true);
   if(v.aSel){sel=null;multi=[];msel=[];render();}
   const r=v.retour;if(r&&r!==document.body&&document.contains(r)&&r.getClientRects().length){try{r.focus({preventScroll:true});}catch{}}
-  if(etat==='fait'&&v.accueil)toast('À toi de jouer : ta prochaine étape t\'attend dans le panneau.',true);}
+  if(etat==='fait'&&v.accueil&&suite!=='mon-plan'&&suite!=='ordinateur')toast(v.mob?'L\'exemple reste ouvert : touche un élément pour voir sa fiche, et ouvre le tiroir pour le Suivi.':'L\'exemple reste ouvert : essaie une décision, le budget bouge. Ton plan à toi, quand tu veux.',true,v.mob?null:{action:'Commencer mon plan',fn:()=>newPlan()});}
 /* Clavier pendant la visite : Échap ferme, ← → naviguent, Tab reste dans la bulle ; rien n'atteint le plan. */
 function gardeVisite(e){
   if(e.key==='Escape'){e.preventDefault();fermerVisite('passe');return;}
-  if(e.key==='ArrowRight'){e.preventDefault();if(visite.i===visite.E.length-1)fermerVisite('fait');else etapeVisite(visite.i+1);return;}
+  if(e.key==='ArrowRight'){e.preventDefault();if(visite.i===visite.E.length-1)finirVisite('exemple');else etapeVisite(visite.i+1);return;}
   if(e.key==='ArrowLeft'){e.preventDefault();etapeVisite(visite.i-1);return;}
   if(e.key==='Tab'){const b=document.querySelector('#visite .vbulle'),f=focusables(b);e.preventDefault();if(!f.length)return;const i=f.indexOf(document.activeElement);f[e.shiftKey?(i<=0?f.length-1:i-1):(i===-1||i===f.length-1?0:i+1)].focus();return;}
   if((e.key==='Enter'||e.code==='Space')&&e.target.closest&&e.target.closest('#visite button'))return;
@@ -6576,7 +6796,7 @@ function partagerLien(){const url=String(location.href).split('#')[0];closeWelco
   try{navigator.clipboard.writeText(url).then(()=>toast('Lien copié : ouvre-le sur ton ordinateur pour dessiner ton logement.',true),ko);}catch{ko();}}
 /* Plan vide : poser d'un coup une pièce de 4 × 3 m (le rectangle de l'outil Murs). */
 /* Sur un plan vide, le premier contour est fait de murs (arbitrage I) — même si l'outil était resté en cloison. */
-function tracerLesMurs(){if(planVide()){wallType='mur';customT=null;}setTool('mur');}
+function tracerLesMurs(){if(planVide()){wallType='auto';customT=null;}setTool('mur');}
 function poserPieceRapide(){if(isMobile()){toast('Le dessin se fait sur ordinateur ou tablette.');return;}tracerLesMurs();rectMode={L:4,l:3};chain=[];chainWallIds=[];renderPanel();draw();toast('Clique dans le plan pour poser le coin haut-gauche de la pièce (4 × 3 m).',true);}
 
 /* =====================================================================
@@ -6716,5 +6936,7 @@ etatEnreg='ok';enregAt=0;afficherEnreg(!!(state.id&&loadPlans()[state.id]));
 /* D42 (access23) : le bandeau « mode chantier » fermé une fois ne revient plus */
 try{if(localStorage.getItem('avyora-plan-phonebanner'))document.getElementById('phoneBanner').hidden=true;}catch{}
 if(firstVisit)openModal('welcome');
+/* D48 (cj-retention05) : la page s'ouvre sur un plan */
+baseDecisions();suivre('plan_ouvert',{source:'page',premiereVisite:firstVisit,exemple:estExemple(),vide:planVide()});
 </script>
 </html>

@@ -2433,3 +2433,140 @@ Au passage, les boutons « Pivoter » et « Dupliquer » de la fiche d'un équip
 - La pastille d'écart ne nomme la seconde tâche que s'il n'y en a qu'une ; au-delà, « et N autres tâches ».
 - Les autres glyphes utilisés comme icônes (↔ ↕ du faîtage, ↺, ↗) ne sont pas dans les écrans de ce
   chantier : laissés au chantier du langage visuel.
+
+## D48 · Données, modèle gratuit / Pro, rétention : rien ne se perd, la valeur se voit, on revient (25/09/2026)
+
+**Constats (contre-jury : cj-qa04, cj-qa05, cj-retention07, cj-integration11, cj-qa06, cj-qa08,
+cj-retention01, cj-design03, cj-coherence00, cj-integration03, cj-design05, cj-integration06,
+cj-novice08, cj-novice02, cj-retention05, cj-retention04, cj-coherence02, cj-retention06,
+cj-retention00, cj-coherence01, cj-integration09, cj-retention02 ; jury : retention05).**
+- **« Annuler » d'un message défaisait le dernier geste quelconque** : Suppr sur une cloison, puis ←
+  sur la table, puis « Annuler » : la table revenait, le mur restait « à démolir ». « Supprimer ce
+  niveau » n'avait même pas de bouton.
+- **Gratuit, perte silencieuse** : l'exemple retouché (« Mon appart ») partait à la poubelle au
+  « Nouveau plan » alors que « Mes plans » avait sa place libre, avec un simple message ; « ✓ Enregistré »
+  s'affichait sur un plan que la version gratuite allait perdre ; deux plans s'appelaient « Mon plan ».
+- **Deux onglets** écrivaient la même clé : le dernier effaçait l'autre, sans bruit.
+- **Trois « Chambre »** : le Suivi et le dossier disaient trois fois « Poser la fenêtre neuve · Chambre ».
+- **Le visiteur gratuit ne voyait jamais un euro**, même sur l'exemple fictif « déjà chiffré » ; l'appel
+  à passer Pro était sous la ligne de flottaison d'Estimer.
+- **Clic sur le plan avec l'onglet Suivi ouvert** : l'objet se sélectionnait, sa fiche ne s'affichait pas.
+- **« Nouveau plan »** disait « clique pour poser le 1er coin » avec l'outil Sélection : le clic ne
+  faisait rien.
+- **Tracer pièce par pièce**, comme l'accueil le conseillait, faisait des façades en cloisons de 7 cm
+  décalées ; après un rechargement, l'outil Murs repartait en mur de 20 cm.
+- **Rien ne mesurait l'éditeur** ; le lien « Passer Pro » ne disait pas d'où venait le visiteur.
+- **Le Suivi n'avait aucune date** : rien ne donnait rendez-vous.
+- **Téléphone** : l'accueil promettait de consulter, mais deux touchers changeaient le budget (6 511 →
+  12 672 €), avec des consignes de souris ; rien ne disait qu'un plan reste sur l'appareil où il a été
+  dessiné.
+- **Fin de visite** : la « prochaine étape » était celle du T2 fictif (« Indique le code postal »).
+
+**Décisions.**
+1. **Annuler exact** (`annulerCe()`) : le message note l'historique au moment du geste ; au geste
+   suivant, son bouton « Annuler » disparaît (`retirerAnnulerPerime`, dans `afterChange`) ; un clic
+   tardif ne défait rien et renvoie à Ctrl+Z. Utilisé par Suppr en Travaux (mur, ouverture, équipement,
+   lasso), Nouveau / plan type / exemple quand l'ancien plan n'est pas gardé, et « Supprimer ce niveau ».
+2. **Zéro perte en gratuit** : l'exemple retouché est rangé dans la place libre comme tout autre plan ;
+   s'il n'y en a plus, même fenêtre de choix qu'un plan ordinaire. L'indicateur ne dit plus
+   « Enregistré » d'un plan qui sera perdu : « Pas dans Mes plans » (cliquable : pourquoi, Passer Pro,
+   Voir Mes plans) ; sa bulle distingue « sur cet appareil » et « à jour dans Mes plans » / « il y sera
+   rangé ». Le sous-titre de Fichier › Nouveau plan (et la note des plans types) dit ce qui arrivera
+   vraiment au plan ouvert (`phraseSortie`). **Noms uniques** (`nomUnique`) : « Mon plan », « Mon plan 2 »
+   au nouveau plan, au plan type, au rangement, à la copie et au renommage (le message le dit).
+   Un plan déjà rangé à l'identique n'est pas rangé deux fois.
+3. **Deux onglets** : chaque onglet signe ce qu'il écrit (`ONGLET`) ; si un autre onglet écrit un autre
+   plan (événement `storage`, empreinte sans `pidSeq`), cet onglet n'écrit plus rien — ni le plan
+   ouvert, ni « Mes plans » —, l'indicateur dit « Ouvert dans un autre onglet » et une fenêtre propose
+   « Continuer ici » (le plan de l'autre onglet est d'abord rangé, sauf en gratuit plein, et c'est dit)
+   ou « Afficher le plan de l'autre onglet » (celui-ci est d'abord rangé : `avantDeRemplacer`).
+4. **Pièces de même nom numérotées à l'affichage** (`numerosPieces`, `roomName`) : « Chambre 1/2/3 »,
+   dans l'ordre de lecture (niveau, haut → bas, gauche → droite), en comptant les pièces d'avant ET
+   d'après travaux — même numéro dans les deux vues ; sur le plan, dans le Suivi, Estimer, le dossier et
+   le contrat (étiquette seulement : l'estimateur lit les ids). Le nom saisi n'est pas modifié.
+5. **Gratuit / Pro (arbitrage tour 2)** : `DROITS` gagne `total` (gratuit = Pro : le montant total et sa
+   répartition par corps d'état) et `detail` (Pro : le détail tâche par tâche, avec le prix de chaque
+   tâche) ; `budget` disparaît ; l'export gratuit garde le budget par corps d'état. En gratuit : le pied,
+   la pastille d'écart (sans nom de tâche), le tiroir, « Mes plans » et Estimer montrent le montant et
+   les corps d'état avec barres et pourcentages ; sous les corps d'état, la carte « Le détail tâche par
+   tâche… · Voir le détail · Passer Pro » ; et une barre collante « Passer Pro / Exporter le dossier
+   (avec filigrane) », visible dès l'ouverture à 1280 × 800. **L'exemple montre tout** (`voitTout()`,
+   `estExemple()`) — détail, prix du Suivi, prix des conseils de toiture, dossier complet (avec
+   filigrane) — avec un bandeau « C'est l'exemple… » ; il reste l'exemple tant que ses murs existants
+   n'ont pas bougé (`sigMurs`) ; le T2 choisi comme plan type devient « T2 de 60 m² », un plan à soi.
+   `isPro()` reste vrai par défaut pour la page seule (arbitrage) ; l'interrupteur reste sous ?dev.
+6. **Un clic sur le plan montre la fiche** : toute nouvelle sélection (clic, toucher, lasso, clavier)
+   ramène à l'onglet Détails ; recliquer l'objet sélectionné depuis le Suivi aussi ; Nouveau plan, plan
+   type, exemple et plan rangé rouvrent sur Détails.
+7. **« Nouveau plan » ouvre réellement l'outil Murs** (Fichier, Mes plans, Feuille blanche, « Commencer
+   quand même ») et le message le dit ; sur un plan vide en Sélection, l'astuce renvoie à la carte.
+8. **Type de mur au tracé (arbitrage tour 2)** : l'outil Murs a un type « Automatique » (par défaut, et
+   après chaque premier contour) : premier contour en murs de 20 cm ; ensuite, un mur dont le milieu est
+   dans une pièce est une cloison de 7 cm ; un mur hors de toute pièce prolonge l'enveloppe avec le
+   type et l'épaisseur du mur extérieur qu'il touche (mur 20 cm par défaut) et, à la fin du tracé, le
+   même alignement que le premier contour (corps vers l'extérieur) — la façade ne fait plus de marche.
+   La règle se lit sur le plan : après rechargement, elle vaut pareil. Choisir un type le force.
+   Nouveau contrôle (info) : « cloison de 7 cm en façade ». L'accueil dit « le contour de ton
+   logement, puis les cloisons ».
+9. **Suivi daté** : une date prévue par corps d'état, saisie dans le Suivi (`state.prevu`, annulable,
+   rien de deviné) ; en tête « En retard / Cette semaine / Ensuite » ; chaque corps d'état daté porte
+   son état (fait, en retard, cette semaine, à venir) ; tri « Ordre du chantier / Par date prévue » ;
+   « Mes plans » affiche la prochaine étape datée ; le dossier porte les dates.
+10. **Mesure sans réseau** : `suivre(nom, données)` appelle `window.AVYORA_TRACK` s'il est injecté, sinon
+    rien : `plan_ouvert` (page, nouveau, plan type, exemple, Mes plans), `premiere_piece`,
+    `premiere_decision` (une tâche absente à l'ouverture, par un geste), `estimer_ouvert`,
+    `clic_passer_pro` (origine), `visite_terminee` / `visite_passee`. Des sortes et des nombres, jamais
+    un nom de plan. Tous les liens Pro portent `?source=editeur-plan`.
+11. **Téléphone = consultation** : fiches et réglages de la vue d'ensemble en lecture (grisés un par un :
+    le glossaire reste actif, au téléphone comme en vue Après travaux), bandeau « Au téléphone, tu
+    consultes. Pour modifier, ouvre ce plan sur l'ordinateur ou la tablette où tu l'as dessiné » ; rien
+    ne se tire au doigt ; Suppr, flèches, copier, pivoter refusés ; pas de nouveau plan ni de niveau ;
+    étapes « Ton projet » non cliquables sauf Estimer ; message de la vue Travaux sans « ajouter », en
+    jaune / rouge ; consignes de souris retirées de la fiche du mur ; « Mes plans » sans « Nouveau plan
+    vierge » ni « Enregistrer ». L'accueil et « Mes plans » vide disent qu'un plan reste enregistré sur
+    l'appareil où il a été dessiné — sans promettre de synchronisation.
+12. **Fin de visite** : dernière bulle « Commencer mon plan » (focalisé, par `newPlan` donc
+    `avantDeRemplacer`) et « Continuer l'exemple » (→ message avec « Commencer mon plan ») ; au
+    téléphone « Continuer sur ordinateur ». Sur l'exemple, la carte « À toi : dessine ton logement »
+    (Partir d'un plan type, Feuille blanche, Explorer le Suivi) remplace la checklist du T2 fictif.
+
+**Contrôles.**
+- `robustesse.mjs` §7 réécrit (l'exemple retouché va dans la place libre ; Mes plans plein → fenêtre de
+  choix) ; indicateur « Pas dans Mes plans » cliquable, menu Nouveau ; §9 : Annuler exact à la souris
+  (Suppr, ←, bouton retiré, Annuler périmé, Annuler immédiat, niveau), noms uniques, Nouveau → outil
+  Murs et clic qui pose, clic sur le plan depuis le Suivi, deux onglets (prévenu, n'écrase pas,
+  « Continuer ici », « Afficher », pas de double rangement) ; vue finale : glossaire actif.
+- `metier.mjs` §7 mis à jour (« Automatique ») ; §12 à la souris : pièce 1, pièce 2 accolée (façade en
+  20 cm, sans marche), cloison dans une pièce, rechargement (cloison dedans, murs dehors), contrôle
+  « cloison en façade », vitrine sans alerte ; §13 : trois chambres numérotées, même numéro avant /
+  après, Suivi, contrat, nom saisi en double, nom unique sans numéro.
+- `valeur.mjs` §4 réécrit : gratuit sur un plan à soi (montant et corps d'état, pastille sans tâche,
+  Mes plans, aucune tâche détaillée, carte Pro à l'endroit du détail, barre collante visible à
+  1280 × 800, ?source) ; l'exemple montre tout ; exemple redessiné = plan à soi ; tiroir gratuit chiffré.
+- `langage.mjs` §2 : sur un plan à soi, DROITS mot pour mot ; états « gratuit · estimer l'exemple » lus.
+- `onboarding.mjs` : fin de visite (Commencer mon plan, Continuer l'exemple, téléphone), carte « À toi »,
+  §10 Suivi daté (invitation, retard / semaine / ensuite, états, annulable, tri, fini ≠ retard, Mes
+  plans, dossier), §11 mesure (événements, pas de « première décision » à l'ouverture, pas de nom, pas
+  d'appel réseau hors police) ; outil Murs en « Automatique ».
+- `responsive.mjs` : au téléphone, fiche en lecture (glossaire actif), bandeau, pas de consigne souris,
+  Suppr sans effet, réglages grisés, Nouveau refusé, message Travaux, équipement non déplaçable au doigt,
+  Mes plans sans boutons de création.
+
+**Pas fait, et pourquoi.**
+- **« Gratuit par défaut »** (cj-coherence00, point 1) : contredit l'arbitrage (la page seule reste Pro,
+  le site injecte `window.AVYORA_PRO`). Point 2 (ne pas livrer au gratuit de quoi recalculer le montant :
+  prix servis par une route réservée) : hors de ce fichier, au branchement.
+- **Page Tarifs** (cj-retention04, cj-coherence02) : elle vit dans `app/tarifs` et les dictionnaires du
+  site, hors de ce fichier et hors du périmètre (« rien dans app/ »). L'éditeur envoie désormais
+  `?source=editeur-plan` et l'événement `clic_passer_pro` ; reste à la page de lire la source, de
+  reprendre `droitsPro()` mot pour mot et de dire « suivi à cocher gratuit, prix par tâche en Pro ».
+- **Plan sur le téléphone** (cj-retention00, cj-coherence01) : ni lien d'envoi encodé, ni QR code, ni
+  import / export de fichier hors ?dev — une nouvelle fonction de transfert, à arbitrer ; la
+  synchronisation par compte attend le branchement. On le dit honnêtement, sans promesse.
+- **Date de début des travaux et fichier .ics** (cj-retention06) : une date par corps d'état suffit à
+  « en retard / cette semaine » ; un fichier à télécharger est une autre décision.
+- **« Enregistrer » garde son double sens** (retention05) : refus assumé en D38 ; l'indicateur, lui, ne
+  ment plus.
+- La carte du plan vide n'est plus montrée après « Nouveau plan » (l'outil Murs est actif, comme le
+  demandait cj-integration06) ; elle reste celle d'un plan vide en Sélection (cj-design05 proposait
+  l'inverse).

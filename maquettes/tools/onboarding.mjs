@@ -20,7 +20,11 @@
  *   - le plan vide : une carte avec des actions (et sa version téléphone) ;
  *   - la pastille orange d'une pièce s'explique au survol et dans sa fiche ; le sol actuel se règle
  *     en vue Travaux ; le doublage confirme sa pose et propose d'aller jusqu'à l'angle ; le bandeau
- *     du téléphone fermé ne revient pas ; la fenêtre « vue Travaux » ne s'ouvre pas au téléphone.
+ *     du téléphone fermé ne revient pas ; la fenêtre « vue Travaux » ne s'ouvre pas au téléphone ;
+ *   - D48 : la visite se termine sur « Commencer mon plan » (ou « Continuer l'exemple ») ; l'exemple
+ *     montre une carte « À toi » au lieu de la checklist d'un T2 fictif ; le Suivi se date (en retard,
+ *     cette semaine, tri) ; la page appelle window.AVYORA_TRACK aux moments clés, sans donnée
+ *     personnelle ni appel réseau.
  *
  *   node maquettes/tools/onboarding.mjs "$(pwd)/maquettes"
  *
@@ -128,12 +132,31 @@ await p.keyboard.press("ArrowLeft"); await wait(250);
 t["visite · ← revient à l'étape précédente"] = await p.evaluate(() => visite && visite.i === 3);
 await p.keyboard.press("ArrowRight"); await wait(250);
 t["visite · → avance"] = await p.evaluate(() => visite && visite.i === 4);
-await p.keyboard.press("Enter"); await wait(250);
+/* D48 (cj-retention02) : la dernière bulle mène au plan de l'utilisateur */
+t["visite · dernière bulle : « Commencer mon plan » focalisé, « Continuer l'exemple » à côté"] = await p.evaluate(() => /Commencer mon plan/.test(document.activeElement?.textContent || "") && /Continuer l'exemple/.test(document.querySelector("#visite .vpasser")?.textContent || ""));
+await p.keyboard.press("Enter"); await wait(300);
 Object.assign(t, await p.evaluate(() => ({
-  "visite · « C'est parti » la termine, mémorisée « fait »": !visite && document.getElementById("visite").hidden && localStorage.getItem("avyora-plan-tuto") === "fait",
-  "visite · à la fin, plus rien de sélectionné : la vue d'ensemble et sa prochaine étape": !sel && !!document.querySelector("#pbody .pp .ppnext"),
-  "visite · la vue Travaux reste (l'exemple s'explique par ses couleurs)": mode() === "projet",
+  "visite · « Commencer mon plan » la termine, mémorisée « fait »": !visite && document.getElementById("visite").hidden && localStorage.getItem("avyora-plan-tuto") === "fait",
+  "visite · « Commencer mon plan » : un plan vierge, l'outil Murs prêt, l'exemple intact pas rangé": planVide() && tool === "mur" && Object.keys(loadPlans()).length === 0 && !modaleOuverte(),
 })));
+await p.close();
+/* « Continuer l'exemple » : la vue Travaux reste, la carte « À toi » remplace la checklist du T2 fictif */
+p = await onglet();
+await p.evaluate(() => closeWelcome("sample", true)); await wait(300);
+await p.evaluate(() => etapeVisite(4)); await wait(300);
+await p.evaluate(() => document.querySelector("#visite .vpasser").click()); await wait(250);
+Object.assign(t, await p.evaluate(() => ({
+  "visite · « Continuer l'exemple » la termine, mémorisée « fait »": !visite && localStorage.getItem("avyora-plan-tuto") === "fait",
+  "visite · la vue Travaux reste (l'exemple s'explique par ses couleurs)": mode() === "projet" && !sel,
+  "visite · le message propose « Commencer mon plan »": /Commencer mon plan/.test(document.querySelector("#toast .tact")?.textContent || ""),
+  "exemple · une carte « À toi : dessine ton logement » (plan type, feuille blanche), plus la checklist du T2": !!document.querySelector("#pbody .pp.ppex .ppnext") && /plan type/.test(document.querySelector("#pbody .pp.ppex").textContent) && !/code postal/.test(document.querySelector("#pbody .pp").textContent),
+})));
+await p.close();
+/* téléphone : la dernière bulle propose « Continuer sur ordinateur » */
+p = await onglet({ larg: 390, haut: 844, mobile: true });
+await p.evaluate(() => { document.querySelector("#m-welcome .wcards.wphone .wcard.rec").click(); }); await wait(350);
+await p.evaluate(() => etapeVisite(visite.E.length - 1)); await wait(300);
+t["téléphone · dernière bulle : « Continuer sur ordinateur » et « Continuer l'exemple »"] = await p.evaluate(() => /Continuer sur ordinateur/.test(document.querySelector("#visite .vsuiv")?.textContent || "") && /Continuer l'exemple/.test(document.querySelector("#visite .vpasser")?.textContent || ""));
 await p.close();
 
 /* aux autres largeurs, et au redimensionnement en cours de route */
@@ -344,7 +367,7 @@ Object.assign(t, await p.evaluate(() => {
   const r = {}, c = document.getElementById("emptyStage"), vis = (el) => !!el && el.getClientRects().length > 0;
   r["plan vide · une carte « Dessine ton logement » avec trois actions"] = !c.hidden && /Dessine ton logement/.test(c.textContent) && [...c.querySelectorAll("button")].filter(vis).length === 3;
   document.querySelector("#emptyStage .ib.primary").click();
-  r["plan vide · « Tracer les murs » : outil Murs, la carte s'efface"] = tool === "mur" && c.hidden && wallType === "mur";
+  r["plan vide · « Tracer les murs » : outil Murs, la carte s'efface"] = tool === "mur" && c.hidden && wallType === "auto" && typeAuTrace(L(), v(0, 0), v(3, 0)).type === "mur"; /* D48 : automatique, le 1er contour est en murs */
   setTool("select");
   r["plan vide · retour à la sélection : la carte revient"] = !c.hidden;
   return r;
@@ -414,6 +437,53 @@ await wait(150);
     return r;
   }));
 }
+await p.close();
+
+/* ═════════ 10. D48 · Un Suivi daté : rendez-vous, retard, tri (cj-retention06) ═════════ */
+p = await onglet({ welcomeVu: true });
+Object.assign(t, await p.evaluate(() => {
+  const r = {}, f = (x) => x.getFullYear() + "-" + String(x.getMonth() + 1).padStart(2, "0") + "-" + String(x.getDate()).padStart(2, "0");
+  loadSample(); setMode("projet"); closeModal(); sel = null; setPanelTab("suivi");
+  const P = () => document.getElementById("pbody"), lots = [...new Set(chantierTasks().map((x) => x.lot))];
+  r["Suivi · sans date : une invitation à dater, rien d'inventé"] = !state.prevu && /date prévue/.test(P().innerText) && !P().querySelector(".suivdates") && P().querySelectorAll(".lotdate input[type=date]").length === lots.length;
+  const hier = new Date(); hier.setDate(hier.getDate() - 3); const inp = P().querySelector(".lotdate input"); inp.value = f(hier); inp.dispatchEvent(new Event("change"));
+  setPrevu(lots[2], f(new Date())); const loin = new Date(); loin.setDate(loin.getDate() + 20); setPrevu(lots[1], f(loin));
+  const tx = P().querySelector(".suivdates")?.textContent || "";
+  r["Suivi · « En retard », « Cette semaine », « Ensuite », chacun avec sa date"] = /En retard/.test(tx) && tx.includes(lots[0]) && /Cette semaine/.test(tx) && tx.includes(lots[2]) && /Ensuite/.test(tx) && tx.includes(lots[1]);
+  r["Suivi · chaque corps d'état daté porte son état"] = /en retard/.test(P().querySelector(".lotst.retard")?.textContent || "") && !!P().querySelector(".lotst.semaine");
+  r["Suivi · les dates sont dans le plan (state.prevu), annulables"] = Object.keys(state.prevu).length === 3 && (undo(), setPanelTab("suivi"), Object.keys(state.prevu || {}).length === 2);
+  redo(); setPanelTab("suivi"); setTriSuivi("date");
+  r["Suivi · trié par date : le corps d'état le plus tôt en tête"] = P().querySelector(".tasks .lot span").textContent === lots[0] && [...P().querySelectorAll(".tasks .lot span:first-child")].map((x) => x.textContent)[1] === lots[2];
+  setTriSuivi("chantier");
+  r["Suivi · l'ordre du chantier revient"] = P().querySelector(".tasks .lot span").textContent === lots[0] && [...P().querySelectorAll(".tasks .lot span:first-child")].map((x) => x.textContent)[1] === lots[1];
+  chantierTasks().filter((x) => x.lot === lots[0]).forEach((x) => { if (!isDone(x.id)) toggleDone(x.id); }); setPanelTab("suivi");
+  r["Suivi · un corps d'état fini n'est plus « en retard »"] = !/En retard/.test(P().querySelector(".suivdates")?.textContent || "") && !!P().querySelector(".lotst.fait");
+  r["Mes plans · la prochaine étape datée"] = /^.+, le \d{2}\/\d{2}$/.test(resumePlan().prochain || "") && resumePlan().prochain.startsWith(lots[2]);
+  exportPlan(); r["dossier · le Suivi porte les dates prévues"] = /Prévu le/.test(document.getElementById("exportGallery").innerText); closeModal();
+  setPanelTab("details"); return r;
+}));
+await p.close();
+
+/* ═════════ 11. D48 · Mesurer sans réseau : window.AVYORA_TRACK aux moments clés (cj-retention05) ═════════ */
+p = await b.newPage(); p.on("pageerror", (e) => errs.push(e.message)); await p.setViewport({ width: 1440, height: 900 });
+await p.evaluateOnNewDocument(() => { window.__ev = []; window.AVYORA_TRACK = (n, d) => window.__ev.push([n, d]); window.open = () => ({}); try { localStorage.clear(); } catch {} });
+const reseau = []; p.on("request", (q) => { if (!/^(file|data|blob):/.test(q.url()) && !/^https:\/\/fonts\.(googleapis|gstatic)\.com\//.test(q.url())) reseau.push(q.url()); }); /* la police de la page mise à part (elle précède D48) */
+await p.goto("file://" + SP + "/plan-editor.html", { waitUntil: "networkidle0" }); await wait(350);
+await p.evaluate(() => closeWelcome("sample", true)); await wait(300);
+await p.evaluate(() => etapeVisite(4)); await wait(200);
+await p.evaluate(() => document.querySelector("#visite .vpasser").click()); await wait(150);
+await p.evaluate(() => { const w = L().walls.find((x) => x.type === "cloison" && !x.st && x.a.x === 3.5 && x.a.y === 0); sel = { kind: "wall", id: w.id }; setWallProp("st", "demolir"); showEstimate(); closeModal(); passerPro("test"); newPlan(); });
+{ const P2 = (x, y) => p.evaluate(([x, y]) => { const s = S(v(x, y)); const rc = cv.getBoundingClientRect(); return { x: rc.left + s.x, y: rc.top + s.y }; }, [x, y]);
+  for (const [x, y] of [[0, 0], [4, 0], [4, 3], [0, 3], [0, 0]]) { const q = await P2(x, y); await p.mouse.move(q.x, q.y); await wait(40); await p.mouse.click(q.x, q.y); await wait(110); } }
+Object.assign(t, await p.evaluate(() => { const r = {}, ev = window.__ev, noms = ev.map((e) => e[0]);
+  r["mesure · plan ouvert, visite terminée, 1re décision, Estimer ouvert, clic Passer Pro, 1re pièce fermée"] = ["plan_ouvert", "visite_terminee", "premiere_decision", "estimer_ouvert", "clic_passer_pro", "premiere_piece"].every((n) => noms.includes(n));
+  r["mesure · ouvrir l'exemple n'est pas une « première décision »"] = noms.indexOf("premiere_decision") > noms.indexOf("visite_terminee");
+  r["mesure · chaque événement dit Pro / gratuit et téléphone, sans nom de plan"] = ev.every((e) => typeof e[1].pro === "boolean" && typeof e[1].telephone === "boolean") && !/Exemple|T2 de|Mon plan/.test(JSON.stringify(ev));
+  r["mesure · le lien Passer Pro dit d'où il vient"] = ev.some((e) => e[0] === "clic_passer_pro" && e[1].origine === "test") && /source=editeur-plan/.test(TARIFS_URL);
+  delete window.AVYORA_TRACK; let ok = true; try { suivre("x", {}); } catch { ok = false; }
+  r["mesure · sans AVYORA_TRACK injecté : rien, sans erreur"] = ok;
+  return r; }));
+t["mesure · aucun appel réseau (hors police de la page)"] = reseau.length === 0; if (reseau.length) console.log("réseau :", reseau.slice(0, 5));
 await p.close();
 
 await b.close();

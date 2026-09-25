@@ -11,7 +11,10 @@
  *   - la hauteur utile du panneau (fiche d'une pièce) : le pied (budget) n'écrase pas la fiche ;
  *   - pas de défilement horizontal de la page ; les tableaux de l'estimation défilent dans leur cadre ;
  *   - au téléphone (mode chantier), les commandes du chantier font au moins 40 px, les cases du Suivi 24 px ;
- *   - la tablette en portrait : le plan a plus de place, et le panneau se replie d'un bouton (et revient).
+ *   - la tablette en portrait : le plan a plus de place, et le panneau se replie d'un bouton (et revient) ;
+ *   - D48 : le téléphone est le mode chantier en CONSULTATION — fiches et réglages en lecture (le
+ *     glossaire reste actif), rien ne se tire au doigt, Suppr ne marque rien, pas de nouveau plan ;
+ *     le Suivi se coche ; et l'on dit honnêtement qu'un plan reste sur l'appareil où il a été dessiné.
  *
  *   node maquettes/tools/responsive.mjs "$(pwd)/maquettes"
  *
@@ -122,7 +125,28 @@ for (const [L, H, mob] of [[390, 844, true], [768, 1024, false], [1024, 768, fal
     t[`${tag} · vue d'ensemble du tiroir : « Mes plans » à portée de doigt`] = await p.evaluate(() => { const b = [...document.querySelectorAll("#pbody .mplan button")].find((x) => /Mes plans/.test(x.textContent)); return !!b && b.getBoundingClientRect().height >= 40; });
     await p.evaluate(() => { const b = [...document.querySelectorAll("#pbody .mplan button")][0]; b && b.click(); }); await wait(150);
     t[`${tag} · « Mes plans » s'ouvre depuis le tiroir`] = await p.evaluate(() => document.getElementById("m-plans").classList.contains("show"));
+    t[`${tag} · « Mes plans » : ni « Nouveau plan vierge » ni « Enregistrer » au téléphone`] = await p.evaluate(() => !document.querySelector("#m-plans .btnrow").getClientRects().length);
     await p.evaluate(() => closeModal());
+    /* 3 bis. D48 · consultation : les fiches se lisent, rien ne change le budget au doigt */
+    Object.assign(t, await p.evaluate((tag) => { const r = {}, total = chantierPrix().total;
+      setMode("projet"); closeModal(); const w = L().walls.find((x) => x.type === "cloison" && !x.st); sel = { kind: "wall", id: w.id }; render();
+      const P = document.getElementById("pbody"), ctl = [...P.querySelectorAll("fieldset.ro input, fieldset.ro select, fieldset.ro button")];
+      r[`${tag} · fiche : en lecture, réglages grisés, glossaire actif`] = ctl.length > 0 && ctl.every((x) => x.classList.contains("gl") ? !x.disabled : x.disabled);
+      r[`${tag} · fiche : le bandeau dit où modifier (l'appareil où le plan a été dessiné)`] = /ordinateur ou la tablette où tu l'as dessiné/.test(P.querySelector(".robanner")?.textContent || "");
+      r[`${tag} · fiche : pas de consigne de souris (Maj+clic, glisser)`] = !/Maj|glisse ses/.test(P.innerText);
+      deleteSel();
+      r[`${tag} · Suppr ne marque rien, le budget ne bouge pas`] = !findWall(w.id).st && chantierPrix().total === total;
+      sel = null; render(); const cp = P.querySelector('input[aria-label="Code postal du chantier"]');
+      r[`${tag} · vue d'ensemble : les réglages du chantier se lisent, grisés`] = !cp || cp.disabled;
+      newPlan();
+      r[`${tag} · « Nouveau plan » refusé : le dessin se fait sur ordinateur`] = !planVide() && /ordinateur ou tablette/.test(document.getElementById("toast").textContent);
+      setMode("existant"); setMode("projet");
+      r[`${tag} · vue Travaux : le message ne parle pas d'ajouter`] = !/ajoutes/.test(document.getElementById("toast").textContent) && /jaune/.test(document.getElementById("toast").textContent);
+      setMode("existant"); closeModal(); return r; }, tag));
+    { const it = await p.evaluate(() => { const i = L().items.find((x) => x.type === "table"); const s = S(v(i.x, i.y)); const rc = cv.getBoundingClientRect(); return { id: i.id, x: i.x, y: i.y, sx: rc.left + s.x, sy: rc.top + s.y }; });
+      await p.mouse.move(it.sx, it.sy); await p.mouse.down(); for (let k = 1; k <= 6; k++) await p.mouse.move(it.sx + 10 * k, it.sy + 6 * k); await p.mouse.up(); await wait(150);
+      t[`${tag} · au doigt, un équipement touché ne se déplace pas`] = await p.evaluate((it) => { const i = L().items.find((x) => x.id === it.id); return i.x === it.x && i.y === it.y; }, it); }
+    await p.evaluate(() => { sel = null; toggleSheet(false); render(); }); await wait(150);
   }
   if (L === 768) {
     /* 4. tablette en portrait : plus de place pour le plan, et un panneau qui se replie */
