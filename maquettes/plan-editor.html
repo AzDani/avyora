@@ -988,6 +988,7 @@ const ICONS={
   livre:'<path d="M4 19.5V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19.5A2 2 0 0 0 6 21h13"/>',
   annuler:'<path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/>',
   copie:'<rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>',
+  pivoter:'<path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/>',
   chevronDroite:'<path d="m9 6 6 6-6 6"/>',
   retablir:'<path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h3"/>',
   estimer:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8"/><path d="M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01M8.5 15h.01M12 15h.01M15.5 15h.01M8.5 18h.01M12 18h3.5"/>',
@@ -1013,7 +1014,7 @@ const LEX={
    ordre, mêmes couleurs dans les deux vues. */
 function choixEtat(kind,vue,sous){const E=LEX.etat,Sb={...LEX.sous,...(sous||{})},L=[['existant',E.aDecider,Sb.aDecider],['garder',E.garder,Sb.garder]];
   if(kind==='wall'){if(vue==='projet')L.push(['creer',E.creer,Sb.creer,'st-creer']);L.push(['demolir',E.demolir,Sb.demolir,'st-demolir']);}
-  else if(kind==='opening'){L.push(['remplacer',E.remplacer,Sb.remplacer,'st-creer']);if(vue==='projet'){L.push(['creer',E.creer,Sb.creer,'st-creer']);L.push(['boucher',E.boucher,Sb.boucher,'st-demolir']);}}
+  else if(kind==='opening'||kind==='passage'){if(kind==='opening')L.push(['remplacer',E.remplacer,Sb.remplacer,'st-creer']);if(vue==='projet'){ /* D47 : « passage » = ouverture sans menuiserie */L.push(['creer',E.creer,Sb.creer,'st-creer']);L.push(['boucher',E.boucher,Sb.boucher,'st-demolir']);}}
   else{if(vue==='projet')L.push(['creer',E.poser,Sb.poser,'st-creer']);L.push(['demolir',E.deposer,Sb.deposer,'st-demolir']);}
   return L;}
 function segEtat(kind,cur,onclick,sous,marque){const vue=mode()==='projet'?'projet':'existant';
@@ -1164,9 +1165,27 @@ function solCouches(r){const so=r.sol||{},nw=r.floorNew||'',sup=solSupport(r);
   return {chape,iso:chape&&sup!=='chape'&&so.iso?so.iso:null,ragreage:chape==='liquide'?false:!!so.ragreage};}
 /* Ce que les couches ajoutées font monter le sol fini (isolant + chape, hors revêtement), en m. */
 function solRehausse(r){const c=solCouches(r);return +((c.iso?c.iso.e:0)+(c.chape?((r.sol&&r.sol.chapeE)||CHAPE_E[c.chape]||0.05):0)).toFixed(3);}
-function solPlan(r){
+/* D47 (cj-pro05) · Poser le revêtement neuf SUR l'ancien, sans dépose — seulement quand ça se fait :
+   un sol dur (carrelage, béton ciré) qui reçoit un sol flottant, un vinyle, un carrelage ou un béton
+   ciré ; un parquet qui reçoit un sol flottant ou un vinyle. Ailleurs (moquette, lino, stratifié,
+   tomettes…), la dépose reste obligatoire. Par défaut on dépose : c'est un CHOIX de la ligne
+   « Dépose », pas une déduction. Rien de plus n'est chiffré : le primaire d'accrochage n'a pas de
+   poste au catalogue ; le ragréage, lui, reste une couche à cocher. */
+const SUR_EXISTANT={'Carrelage':['Carrelage','Stratifié','Vinyle / PVC','Parquet','Béton ciré'],'Béton ciré':['Carrelage','Stratifié','Vinyle / PVC','Parquet','Béton ciré'],'Parquet':['Stratifié','Vinyle / PVC'],'Parquet ancien':['Stratifié','Vinyle / PVC']};
+function poseSurExistantOK(r,sols){const nw=r&&r.floorNew||'';if(!nw||solSupport(r)!=='revetement')return false;sols=sols&&sols.length?sols:[r.floor];
+  return sols.every(x=>(SUR_EXISTANT[x]||[]).includes(nw));}
+/* D47 (cj-novice09) · Les sols d'AVANT travaux sous une pièce d'après travaux : ceux des pièces
+   qu'une démolition réunit (chambre en parquet + cuisine en carrelage), sinon le sien. La fiche, la
+   dépose et le ponçage les lisent : on ne ponce pas un carrelage, on ne « garde » pas un seul sol. */
+function solsActuelsDe(lv,f,fE){const r=f&&f.room;if(!r)return [];const out=[],ok=x=>x&&x!=='À définir'&&x!==SANS_PLANCHER;
+  try{(fE||facesFor(lv,'existant')).forEach(g=>{const x=g.room&&g.room.floor;if(ok(x)&&pointIn(g.label,f.poly)&&!out.includes(x))out.push(x);});}catch{}
+  if(!out.length&&ok(r.floor))out.push(r.floor);return out;}
+const solsTxt=(sols,r)=>((sols&&sols.length?sols:[r.floor||'']).map(x=>String(x).toLowerCase()).join(' et '));
+function solPlan(r,sols){
   const sup=solSupport(r),nw=r.floorNew||'',betonFini=nw===BETON_FINI,garde=solGarde(r),c=solCouches(r);const steps=[];
-  const ponce=nw===PONCAGE&&estParquet(r);
+  sols=sols&&sols.length?sols:[r.floor||''];const toutParquet=sols.every(x=>/parquet/i.test(x||''));
+  const ponce=nw===PONCAGE&&estParquet(r)&&toutParquet;
+  const okSur=poseSurExistantOK(r,sols),sur=okSur&&!!r.surExistant,depose=sup==='revetement'&&!!nw&&nw!==PONCAGE&&!sur;
   /* Le sol actuel est UNE ligne. Une dalle ou une chape existante revenait juste en dessous en
      « Dalle béton · existante » : deux lignes pour une seule couche (Dani, 24/09). */
   steps.push({k:'support',label:'Sol actuel',state:sup==='inconnu'?'choice':'exist',detail:sup==='inconnu'?'à préciser':sup==='dalle'||sup==='chape'?r.floor+' · sert de support':r.floor});
@@ -1175,12 +1194,13 @@ function solPlan(r){
   if(sup==='vide')steps.push({k:'plancher',label:'Plancher à créer',state:r.plancherNeuf?'todo':'choice',
     detail:r.plancherNeuf==='beton'?'béton · dalle coulée':r.plancherNeuf==='bois'?'bois · solives + panneaux':'bois ou béton, à choisir'});
   /* D37 : garder le sol est une décision prise — rien à faire, et rien « à choisir » en dessous. */
-  if(garde){steps.push({k:'rev',label:'Revêtement',state:'garde',detail:'sol actuel conservé · rien à faire'});return {steps,sup,betonFini:false,ponce:false,garde:true,warn:null};}
-  if(ponce){steps.push({k:'rev',label:'Revêtement',state:'todo',detail:'ponçage + vitrification du parquet actuel'});return {steps,sup,betonFini:false,ponce:true,garde:false,warn:null};}
-  if(sup==='revetement'&&nw&&nw!==PONCAGE)steps.push({k:'depose',label:'Dépose de l\'ancien sol',state:'auto',detail:r.floor.toLowerCase()+' · compté automatiquement'});
+  if(garde){steps.push({k:'rev',label:'Revêtement',state:'garde',detail:'sol actuel conservé · rien à faire'});return {steps,depose,surExistant:sur,sup,betonFini:false,ponce:false,garde:true,warn:null};}
+  if(ponce){steps.push({k:'rev',label:'Revêtement',state:'todo',detail:'ponçage + vitrification du parquet actuel'});return {steps,depose,surExistant:sur,sup,betonFini:false,ponce:true,garde:false,warn:null};}
+  if(sup==='revetement'&&nw&&nw!==PONCAGE)steps.push(okSur?{k:'depose',label:sur?'Ancien sol':'Dépose de l\'ancien sol',state:sur?'garde':'todo',detail:sur?'posé sur l\'ancien sol ('+solsTxt(sols,r)+')':solsTxt(sols,r),choix:true}
+    :{k:'depose',label:'Dépose de l\'ancien sol',state:'auto',detail:solsTxt(sols,r)+' · à enlever avant de poser '+(nw===BETON_FINI?'le béton fini':nw.toLowerCase())});
   if(sup==='terre')steps.push({k:'dalle',label:'Dalle béton',state:'auto',detail:'obligatoire sur terre / sol brut · '+(nw||r.sol?'comptée automatiquement':'comptée dès que tu refais ce sol')});
   if(betonFini){if(sup!=='terre'&&sup!=='dalle')steps.push({k:'dalle',label:'Dalle béton',state:'warn',detail:'le béton fini se fait sur une dalle : ici le support est '+(sup==='chape'?'une chape':'un ancien revêtement')+' → dalle à prévoir ou autre revêtement'});
-    steps.push({k:'rev',label:'Revêtement',state:'todo',detail:'béton lissé / quartzé · la dalle devient le sol fini'});return {steps,sup,betonFini,ponce:false,garde:false,warn:null};}
+    steps.push({k:'rev',label:'Revêtement',state:'todo',detail:'béton lissé / quartzé · la dalle devient le sol fini'});return {steps,depose,surExistant:sur,sup,betonFini,ponce:false,garde:false,warn:null};}
   /* « Conseillé » n'est pas « à choisir » : une chape sur une dalle brute, un ragréage après une
      dépose. Ni l'un ni l'autre n'est compté tant qu'il n'est pas coché — mais on le dit. */
   const surDalle=sup==='dalle'||sup==='terre'||(sup==='vide'&&r.plancherNeuf==='beton');
@@ -1188,15 +1208,15 @@ function solPlan(r){
   if(c.chape)steps.push({k:'chape',label:'Chape',state:'todo',detail:c.chape==='tradi'?'traditionnelle':'liquide (auto-nivelante)'});
   else if(nw&&surDalle)steps.push({k:'chape',label:'Chape',state:'conseil',detail:'tradi ou liquide · conseillée sur une dalle'});
   if(c.ragreage)steps.push({k:'rag',label:'Ragréage',state:'todo',detail:'mise à niveau avant revêtement'});
-  else if(nw&&sup==='revetement'&&!c.chape)steps.push({k:'rag',label:'Ragréage',state:'conseil',detail:'conseillé après une dépose, pour un support bien plan'});
+  else if(nw&&sup==='revetement'&&!c.chape)steps.push({k:'rag',label:'Ragréage',state:'conseil',detail:sur?'conseillé si l\'ancien sol n\'est pas bien plan':'conseillé après une dépose, pour un support bien plan'});
   steps.push({k:'rev',label:'Revêtement',state:nw&&nw!==PONCAGE?'todo':'choice',detail:nw&&nw!==PONCAGE?nw:'à choisir'});
   let warn=null;const onDalle=(sup==='terre'||sup==='dalle')&&!c.chape;
-  if(nw===PONCAGE)warn='Le sol actuel n\'est plus un parquet : il n\'y a rien à poncer. Choisis un autre revêtement.';
+  if(nw===PONCAGE)warn=estParquet(r)&&!toutParquet?'Cette pièce réunit plusieurs sols ('+solsTxt(sols,r)+') : on ne ponce que du parquet. Choisis un autre revêtement.':'Le sol actuel n\'est plus un parquet : il n\'y a rien à poncer. Choisis un autre revêtement.';
   else if(nw&&onDalle){if(nw==='Carrelage')warn=c.ragreage?'Carrelage sur dalle avec simple ragréage : acceptable si la dalle est plane et sèche, mais une <b>chape</b> reste recommandée.':'Carreler <b>directement sur la dalle</b> : possible mais <b>déconseillé</b> (planéité, retrait du béton, risque de fissures). Prévois une <b>chape</b> — ou au minimum un ragréage.';
     else if(!c.ragreage)warn=nw+' sur dalle brute : support pas assez plan. Prévois une <b>chape</b> ou au minimum un <b>ragréage</b>.';}
   if(nw&&nw!==PONCAGE&&sup==='inconnu')warn='Précise le <b>sol actuel</b> de la pièce (ligne « Sol actuel » de sa fiche) pour savoir s\'il faut une dalle ou une chape.';
   if(sup==='vide'&&!r.plancherNeuf)warn='Ce volume n\'a <b>pas de plancher</b> : choisis-le en bois ou en béton, sinon rien ne peut être posé dessus.';
-  return {steps,sup,betonFini,ponce:false,garde:false,warn};}
+  return {steps,depose,surExistant:sur,sup,betonFini,ponce:false,garde:false,warn};}
 /* D41 : chaque état a son icône (ico) et une couleur lisible (≥ 4,5:1) — plus de symboles ni d'emoji */
 const SOL_STATE={garde:['check','#15803D','conservé'],conseil:['cercle','#64627F','conseillé'],exist:['check','#15803D','existant'],auto:['cadenas','#4F46E5','automatique'],todo:['point','#B91C1C','à faire'],choice:['cercle','#64627F','à choisir'],warn:['alerte','#B45309','à vérifier']};
 /* D39 : le nom dit l'épaisseur, le matériau n'est qu'un exemple — une façade d'appartement en béton n'est pas « Parpaing ». */
@@ -1375,7 +1395,7 @@ function setChantier(k,val){history.push(snapshot());const c=chantier();
   else if(k==='finition'&&FINITIONS[val])c.finition=val;
   else if(k==='bien'&&(val==='maison'||val==='appartement'))c.bien=val;
   afterChange();}
-function blankState(){ return {name:'Mon plan', cur:0, mode:'existant', levels:[newLevel('RDC')], done:{}, groups:[], chantier:{...CHANTIER_DEF} }; }
+function blankState(){ return {name:'Mon plan', cur:0, mode:'existant', levels:[newLevel('RDC')], done:{}, groups:[], chantier:{...CHANTIER_DEF}, schema:SCHEMA }; }
 // ---------- Groupes de murs : appliquer isolation / revêtement d'un coup, réutilisable ----------
 const GROUP_COLORS=['#4f46e5','#0891b2','#16a34a','#ea580c','#db2777','#7c3aed'];
 function allWalls(){const out=[];state.levels.forEach((lv,li)=>lv.walls.forEach(w=>{if(!isVirtual(w))out.push({w,lv,li});}));return out;}
@@ -1743,8 +1763,9 @@ function setToiture(k,val){history.push(snapshot());if(k==='off'){delete state.t
   if(k.startsWith('p.')){const kk=k.slice(2);if(kk==='velux')t.projet.velux=Math.max(0,Math.min(20,parseInt(val)||0));else if(kk==='gouttieres'||kk==='raccords'||kk==='traiterCharpente')t.projet[kk]=!!val;else t.projet[kk]=val;if(kk==='action')t.projet.manuel=true;if(kk==='charpente'&&val==='fermettes'&&t.projet.isoCombles==='rampants')t.projet.isoCombles='perdus';/* fermettes = plafond droit, pas de rampant possible */}
   else if(k==='pente')t.pente=Math.max(5,Math.min(60,parseFloat(val)||30));else if(k==='debord')t.debord=Math.max(0,Math.min(1,parseFloat(val)||0));
   else{t[k]=val;if(k==='forme'&&val==='plat'){t.couverture='plat';t.combles='aucun';t.projet.isoCombles='aucune';}if(k==='forme'&&val!=='plat'&&t.couverture==='plat')t.couverture='tuile';if(k==='forme'&&val!=='plat'&&t.combles==='aucun')t.combles='perdus';if(k==='couverture'&&val==='plat'){t.forme='plat';t.combles='aucun';}if(k==='couverture'&&val!=='plat'&&t.forme==='plat'){t.forme='deuxpans';t.combles='perdus';}}
-  // l'état constaté propose l'action projet (tant que l'utilisateur ne l'a pas fixée lui-même)
-  if((k==='etatCouv'||k==='etatCharp'||k==='init')&&!t.projet.manuel){t.projet.action=t.etatCharp==='refaire'?'complete':t.etatCouv==='refaire'?'refection':t.etatCouv==='mousse'?'demousser':'rien';t.projet.traiterCharpente=t.etatCharp==='traiter';}
+  /* D47 (cj-pro04, cj-qa07) · L'état constaté ne commande AUCUN travaux : il en devenait un (jusqu'à
+     37 000 € d'un clic sur « À refaire » en vue Avant travaux). Il se lit en conseil (toitConseil),
+     adoptable en un clic en vue Travaux ; projet.action reste « rien » tant que rien n'est choisi. */
   if(k==='combles'&&t.projet.isoCombles!=='aucune')t.projet.isoCombles=val==='amenages'?'rampants':val==='perdus'?'perdus':'aucune';
   afterChange();}
 function toitureTasks(T){const t=toiture();if(!t||!t.projet||estAppart())return;const p=t.projet,g=toitureGeo();if(!g.surface)return;const S=g.surface,lot='Charpente et couverture',couv=t.couverture||'tuile',sfx=fmtM2(S);
@@ -1762,6 +1783,16 @@ function toitureTasks(T){const t=toiture();if(!t||!t.projet||estAppart())return;
   if(p.velux>0&&!veluxDessines())T.push({id:'toit:velux',lot,label:p.velux>1?'Poser '+p.velux+' fenêtres de toit':'Poser une fenêtre de toit',detail:'fourni-posé',prix:p.velux*PRIX_TOIT.velux});
   if(p.gouttieres&&g.egouts>0)T.push({id:'toit:gout',lot,label:'Poser les gouttières et les descentes',detail:fmt(g.egouts,1)+' ml d\'égout',prix:g.egouts*PRIX_TOIT.gouttieres});
   if(p.raccords&&g.raccords>0)T.push({id:'toit:racc',lot,label:'Refaire les raccords (faîtage, arêtiers, solins)',detail:fmt(g.raccords,1)+' ml',prix:g.raccords*PRIX_TOIT.raccords});}
+/* D47 · Ce que l'état décrit CONSEILLE, sans rien retenir : refaire toute la toiture si la charpente
+   est à refaire, la couverture si elle l'est, un démoussage si elle est moussue ; traiter une
+   charpente « à traiter ». */
+function toitConseil(t){if(!t)return null;return {action:t.etatCharp==='refaire'?'complete':t.etatCouv==='refaire'?'refection':t.etatCouv==='mousse'?'demousser':'rien',traiter:t.etatCharp==='traiter'};}
+/* À décider : un état qui conseille quelque chose, et aucun choix fait en vue Travaux. */
+function toitureADecider(){const t=toiture();if(!t||!t.projet||estAppart()||t.projet.manuel)return false;const c=toitConseil(t);return c.action!=='rien'||(c.traiter&&!t.projet.traiterCharpente);}
+/* Le montant du conseil, s'il était retenu (Pro) — calculé, jamais ajouté au budget. */
+function prixConseilToit(action,traiter){const t=toiture();if(!t||!t.projet)return 0;const sv=t.projet,A=[],B=[];toitureTasks(A);
+  t.projet={...sv,action:action||sv.action,traiterCharpente:traiter?true:sv.traiterCharpente};try{toitureTasks(B);}finally{t.projet=sv;}
+  const s=T=>T.reduce((x,y)=>x+(y.prix||0),0);return Math.round(s(B)-s(A));}
 const veluxDessines=()=>state.levels.reduce((n,lv)=>n+lv.items.filter(i=>i.type==='velux'&&ist(i)==='creer').length,0);
 function toitureQ(){const t=toiture();if(!t||estAppart())return null;const g=toitureGeo();return {...g,forme:t.forme,couverture:t.couverture,etatCouverture:t.etatCouv,etatCharpente:t.etatCharp,combles:t.combles,projet:t.projet};}
 /* « Ce qui est compté » — le même bloc dans les trois vues du dernier niveau. Il n'était écrit
@@ -1798,6 +1829,7 @@ function renderToiture(lv){const li=state.levels.indexOf(lv),top=topLevelIdx();c
     <div class="row" style="margin-top:8px"><label>Couverture</label></div>${seg('couverture',TOIT_COUV,t.couverture)}
     <div class="row" style="margin-top:8px"><label>État couverture</label></div>${seg('etatCouv',TOIT_ETAT_COUV,t.etatCouv)}
     <div class="row" style="margin-top:8px"><label>État charpente</label></div>${seg('etatCharp',TOIT_ETAT_CHARP,t.etatCharp)}
+    <div class="tip" style="margin-top:6px">Tu décris ce que tu vois : <b>aucun travaux n'est compté</b> ici. En vue <b>${nomVue('projet')}</b>, on te dit ce que cet état conseille, et c'est toi qui décides.</div>
     ${t.forme==='plat'?`<div class="tip" style="margin-top:8px">Toit plat : pas de combles.</div>`:`<div class="row" style="margin-top:8px"><label>Combles${gl('combles')}</label><span class="seg" style="display:inline-flex"><button class="${t.combles==='perdus'?'on':''}" onclick="setToiture('combles','perdus')">Perdus<small>plafond droit</small></button><button class="${t.combles==='amenages'?'on':''}" onclick="setToiture('combles','amenages')">Aménagés<small>plafond rampant</small></button></span></div>${t.combles==='amenages'?`<div class="tip" style="margin-top:6px">Combles habitables : le plafond suit la pente (rampant). Nécessite une <b>charpente traditionnelle</b> — impossible avec des fermettes.</div>`:`<div class="tip" style="margin-top:6px">Combles non habités : plafond droit, isolés par soufflage au sol des combles.</div>`}`}
     ${blocPartiesToit()}
     <div class="blond ${g.compose?'ko':'ok'}" style="margin-top:10px"><b>Surface de toiture ≈ <span>${fmtM2(g.surface)}</span></b><small>emprise réelle ${fmtM2(g.emprise)} + débord ${Math.round((t.debord??0.3)*100)} cm${t.forme!=='plat'?' · pente '+t.pente+'°':''} · égouts ${fmt(g.egouts,1)} ml${g.faitage?' · faîtage '+fmt(g.faitage,1)+' ml':''}${g.aretiers?' · arêtiers '+fmt(g.aretiers,1)+' ml':''}</small>${g.parties&&g.parties.length>1?`<small>${g.parties.length} parties : ${g.parties.map(x=>esc(x.niveau)+' '+fmtM2(x.surface)+(x.principale?'':' (basse, '+(x.forme==='plat'?'toit plat':TOIT_FORME[x.forme].label.toLowerCase()+' '+x.pente+'°')+')')).join(' + ')}</small><small>Chaque partie se règle depuis SON niveau — forme et pente. La couverture, l'état et les travaux valent pour toute la toiture.</small>`:''}${g.compose?`<small>${ico('alerte')} Plan non rectangulaire (L / T) : la <b>surface suit bien ton plan</b>, mais les pans sont <b>simplifiés</b> — les noues et pans croisés ne sont pas dessinés. Un couvreur les affinera ; le prix, lui, est au bon ordre.</small>`:''}</div>
@@ -1805,11 +1837,16 @@ function renderToiture(lv){const li=state.levels.indexOf(lv),top=topLevelIdx();c
     <div class="btnrow"><button class="ib danger" style="flex:1" onclick="setToiture('off')">Retirer la toiture</button></div>`;}
   // projet
   if(!t)return `<div class="ph mt">${ico('toit')} Toiture</div><div class="tip">Décris d'abord la toiture actuelle en vue <b>${nomVue('existant')}</b> (forme, couverture, état) : les travaux s'en déduiront.</div>`;
-  const p=t.projet;const sugg=!p.manuel&&p.action!=='rien';
+  const p=t.projet,cs=toitConseil(t),aDec=toitureADecider();
+  /* D47 : le conseil tiré de l'état se RETIENT d'un clic ; rien n'est coché tant que rien n'est choisi */
+  const cA=!p.manuel&&cs.action!=='rien'&&p.action!==cs.action,cT=!p.manuel&&cs.traiter&&!p.traiterCharpente&&p.action!=='complete';
+  const pxC=(a,tr)=>{if(!isPro())return '';const x=prixConseilToit(a,tr);return x>0?'<span class="val b" style="white-space:nowrap;margin-left:10px">+'+eur(x)+'</span>':'';},bC='class="ib" style="width:100%;justify-content:space-between;text-align:left;margin-top:6px"';
+  const conseil=aDec?`<div class="tip q" style="margin-top:6px"><b>À décider.</b> D'après l'état que tu as décrit (couverture ${TOIT_ETAT_COUV[t.etatCouv].toLowerCase()} · charpente ${TOIT_ETAT_CHARP[t.etatCharp].toLowerCase()}), on te conseille : <b>${[cA?TOIT_ACTION[cs.action].toLowerCase():'',cT?'traiter la charpente':''].filter(Boolean).join(' et ')}</b>. Rien n'est compté tant que tu ne l'as pas retenu.
+      <div style="margin-top:4px">${cA?`<button ${bC} onclick="setToiture('p.action','${cs.action}')"><span>Retenir : ${TOIT_ACTION[cs.action].toLowerCase()}</span>${pxC(cs.action)}</button>`:''}${cT?`<button ${bC} onclick="setToiture('p.traiterCharpente',true)"><span>Retenir : traiter la charpente</span>${pxC(null,true)}</button>`:''}<button ${bC} onclick="setToiture('p.action','rien')"><span>Je n'y touche pas</span></button></div></div>`:'';
   return `<div class="ph mt">${ico('toit')} Toiture <span class="chip vue-projet">${nomVue('projet').toLowerCase()}</span></div>
     ${blocPartiesToit()}
-    ${seg('action',TOIT_ACTION,p.action,'p.')}
-    ${sugg?`<div class="tip" style="margin-top:6px">Proposé d'après l'état constaté (${TOIT_ETAT_COUV[t.etatCouv].toLowerCase()} · charpente ${TOIT_ETAT_CHARP[t.etatCharp].toLowerCase()}). Tu peux changer.</div>`:''}
+    ${conseil}
+    ${seg('action',TOIT_ACTION,aDec&&!p.manuel&&p.action==='rien'?null:p.action,'p.')}
     ${p.action==='complete'?`<div class="row" style="margin-top:8px"><label>Charpente neuve${gl('fermettes')}</label><span class="seg" style="display:inline-flex"><button class="${p.charpente!=='fermettes'?'on':''}" onclick="setToiture('p.charpente','trad')">Traditionnelle<small>plafond rampant possible</small></button><button class="${p.charpente==='fermettes'?'on':''}" onclick="setToiture('p.charpente','fermettes')">Fermettes<small>plafond droit</small></button></span></div>${p.charpente==='fermettes'?`<div class="tip" style="margin-top:6px">Fermettes : plus économique mais combles perdus (plafond droit). Pour aménager les combles avec un plafond rampant, choisis <b>Traditionnelle</b>.</div>`:`<div class="tip" style="margin-top:6px">Charpente traditionnelle : permet d'aménager les combles (plafond rampant sous pente).</div>`}`:''}
     ${p.action!=='rien'?`<div class="row" style="margin-top:8px"><label>Couverture après travaux</label></div>${seg('couverture',TOIT_COUV,t.couverture)}`:''}
     ${p.action!=='complete'?`<label class="chk"><input type="checkbox" ${p.traiterCharpente?'checked':''} onchange="setToiture('p.traiterCharpente',this.checked)"><span>Traiter la charpente (préventif insectes / champignons)</span></label>`:''}
@@ -1827,6 +1864,14 @@ function renderToiture(lv){const li=state.levels.indexOf(lv),top=topLevelIdx();c
 /* Une décision de sol : un revêtement neuf, ou une couche choisie (chape, ragréage, isolant).
    Un sol en terre décrit en vue Existant est un constat, pas une commande. */
 const solDecide=r=>!!(r&&!solGarde(r)&&(r.floorNew||r.sol));
+/* D47 · Pièce d'eau : salle de bain ou d'eau, ou une douche / baignoire qui reste après travaux. */
+function pieceHumide(lv,f){const r=f&&f.room;return !!r&&(r.type==='sdb'||r.type==='sde'||lv.items.some(i=>['douche','baignoire'].includes(i.type)&&itemActive(i,'projet')&&pointIn(v(i.x,i.y),f.poly)));}
+/* D47 (cj-pro06) · Une pièce d'eau REFAITE — un sol décidé, ou un appareil sanitaire à poser — dont
+   la faïence n'a jamais été décidée (ni une hauteur, ni « Aucune ») va dans « Encore à décider » :
+   aucun pro ne chiffre une baignoire neuve sans rien autour, et le budget ne le dit pas seul. */
+const SANITAIRES=['douche','baignoire','lavabo','vasque2','wc'];
+function faienceADecider(lv,f){const r=f&&f.room;if(!r||RT[r.type].ext||r.faience!=null||!pieceHumide(lv,f))return false;
+  return solDecide(r)||lv.items.some(i=>SANITAIRES.includes(i.type)&&ist(i)==='creer'&&pointIn(v(i.x,i.y),f.poly));}
 /* Faïence : seulement si sa hauteur est choisie dans la fiche. null sinon. */
 function faienceDe(lv,f){const r=f.room;if(!r||RT[r.type].ext||!r.faience)return null;
   const eaux=lv.items.filter(i=>(i.type==='douche'||i.type==='baignoire')&&ist(i)!=='demolir'&&pointIn(v(i.x,i.y),f.poly));
@@ -1943,7 +1988,7 @@ function chantierTasks(){const T=[];const ml=state.levels.length>1;
         if(revSides.length){const ml=2*(o.h||d.h)+o.w;T.push({id:'o:'+o.id+':retouriso',lot:'Isolation',label:'Isoler les tableaux '+ouvNom(o,'de')+ou+lvn,detail:fmt(ml)+' ml (jambages + linteau)',prix:Math.round(ml*PRIX.retourIso)});}}});
     facesP.forEach(f=>{const r=f.room;if(!r)return;const A=areaNet(lv,f),rn=roomName(r);
       /* sol, dans l'ordre de réalisation : dépose, dalle, (béton fini) ou isolant, chape, ragréage, revêtement */
-      const sp=solPlan(r),nw=r.floorNew||'';
+      const nw=r.floorNew||'',sols=nw?solsActuelsDe(lv,f,facesE()):null,sp=solPlan(r,sols); /* D47 : les sols d'avant sous la pièce, la dépose choisie */
       /* Le plancher se chiffre PIÈCE PAR PIÈCE, et non par niveau : on ne plancher pas toujours
          tout un volume — une mezzanine n'en couvre qu'une partie. La surface est celle de la
          pièce, et c'est la première couche, avant toute dalle, chape ou revêtement. */
@@ -1951,7 +1996,7 @@ function chantierTasks(){const T=[];const ml=state.levels.length>1;
         T.push({id:'sol-plancher:'+r.id,lot:mt==='beton'?'Maçonnerie':'Charpente et couverture',
           label:(mt==='beton'?'Couler un plancher béton':'Créer un plancher bois (solives et panneaux)')+' · '+rn+lvn,
           detail:fmtM2(A)+' · volume ouvert : le plancher est à créer',prix:A*PRIX_PLANCHER[mt]});}
-      if(sp.sup==='revetement'&&nw&&nw!==PONCAGE)T.push({id:'sol-depose:'+r.id,lot:'Démolition',label:'Déposer l\'ancien sol ('+r.floor.toLowerCase()+') · '+rn+lvn,detail:fmtM2(A),prix:A*PRIX.deposeSol});
+      if(sp.depose)T.push({id:'sol-depose:'+r.id,lot:'Démolition',label:'Déposer l\'ancien sol ('+solsTxt(sols,r)+') · '+rn+lvn,detail:fmtM2(A),prix:A*PRIX.deposeSol});
       /* D36 : un sol en terre ne commande une dalle que si l'on refait ce sol. Décrit en vue
          Existant sans autre décision, c'est un constat — et le contrat ne l'émet pas non plus. */
       if(sp.sup==='terre'&&solDecide(r))T.push({id:'sol-dalle:'+r.id,lot:'Maçonnerie',label:'Couler une dalle béton · '+rn+lvn,detail:fmtM2(A)+' · sol actuel en terre / brut',prix:A*PRIX.dalle});
@@ -1965,7 +2010,7 @@ function chantierTasks(){const T=[];const ml=state.levels.length>1;
          choix de la ligne Revêtement. « Parquet » sur un parquet = parquet neuf, après dépose. */
       if(nw&&(nw!==PONCAGE||sp.ponce)){const ponce=!!sp.ponce,neuf=nw==='Parquet'&&estParquet(r);
         T.push({id:'sol-rev:'+r.id,lot:'Sols',label:(ponce?'Poncer et vitrifier le parquet':neuf?'Poser un parquet neuf':(POSE_SOL[nw]||'Poser '+nw.toLowerCase()))+' · '+rn+lvn,
-          detail:fmtM2(A)+(ponce?' · parquet actuel conservé':neuf?' · à la place de l\'ancien':'')+(sp.warn?' · support à vérifier':''),
+          detail:fmtM2(A)+(ponce?' · parquet actuel conservé':sp.surExistant?' · posé sur l\'ancien sol':neuf?' · à la place de l\'ancien':'')+(sp.warn?' · support à vérifier':''),
           prix:A*(ponce?PRIX.poncageParquet:(PRIX.revetement[nw]??60))});}}
       /* Ce que la pièce ajoute au-delà de son sol — plinthes, faux plafond, garde-corps, faïence,
          cloisons hydrofuges — et SEULEMENT sur décision (D36) : un logement dessiné tel qu'il est
@@ -2084,7 +2129,7 @@ function drawDoneBadges(lv){if(mode()!=='projet'||!state.done)return;const G=don
 const L = () => state.levels[state.cur];
 // ---- Existant / Projet ----
 // état d'un mur : 'existant' (gardé) | 'creer' (nouveau) | 'demolir' ; d'une ouverture : 'existant' | 'creer' (percement) | 'boucher'
-const wst = w => w.st||'existant', ost = o => o.st||'existant';
+const wst = w => w.st||'existant', ost = o => (o.st==='remplacer'&&OPENINGS[o.type]&&OPENINGS[o.type].kind==='gap')?'existant':(o.st||'existant'); /* D47 : un passage sans porte n'a pas de menuiserie à remplacer */
 // trois vues : 'existant' (avant), 'projet' (les travaux : jaune/rouge), 'final' (le résultat propre, après travaux)
 const mode = () => state.mode||'existant';
 const wallActive = (w,m=mode()) => m==='existant' ? wst(w)!=='creer' : wst(w)!=='demolir';                         // participe aux pièces
@@ -2649,16 +2694,37 @@ function inheritFloor(level,f){if(mode()==='existant')return FLOORS[0];try{const
    dedans, et le logement n'avait plus de WC. D'abord la pièce que ses appareils désignent (WC,
    puis salle d'eau / de bain) ; sinon la fiche déjà appariée à cette face (son repère est pile sur
    l'étiquette) — un aller-retour entre les vues ne permute rien ; sinon la première, comme avant. */
+/* D47 (pro13) : la salle de bain d'abord — une salle de bain avec WC reste une salle de bain ; abattre
+   la cloison salle de bain / WC la retypait « WC », baignoire dedans. */
 function ficheDeFusion(level,f,c){
   const a=t=>level.items.some(i=>t.includes(i.type)&&ist(i)!=='demolir'&&pointIn(v(i.x,i.y),f.poly));
-  for(const [types,app] of [[['wc'],['wc']],[['sdb','sde'],['douche','baignoire']]]){const r=c.find(x=>types.includes(x.type));if(r&&a(app))return r;}
+  for(const [types,app] of [[['sdb','sde'],['douche','baignoire']],[['wc'],['wc']]]){const r=c.find(x=>types.includes(x.type));if(r&&a(app))return r;}
   return c.find(x=>x.anchor&&Math.hypot(x.anchor.x-f.label.x,x.anchor.y-f.label.y)<0.01)||c[0];}
 /* Les pièces de part et d'autre d'un mur, dans l'état après travaux — pour annoncer une fusion. */
 function piecesDeChaqueCote(w){const pf=facesFor(L(),'projet'),u=norm(sub(w.b,w.a)),nn=perp(u),m=add(mul(add(w.a,w.b),.5),wallOff(w));
   const cote=s=>{const p=add(m,mul(nn,s*(wallT(w)/2+0.12)));const g=pf.find(g=>g.room&&!RT[g.room.type].ext&&pointIn(p,g.poly));return g?g.room:null;};
   const a=cote(1),b=cote(-1);return a&&b&&a!==b?[a,b]:null;}
+/* D47 (cj-novice09, cj-retention03) · La fiche retenue étendait SES décisions à toute la pièce
+   réunie : le ponçage du séjour gagnait le parquet « Je garde » de la chambre (+509 €), le carrelage
+   de la cuisine devenait un parquet à poncer. Une décision qui n'était pas la même des deux côtés —
+   sol, peinture, faïence, faux plafond — repasse « à décider » dans la pièce réunie, et c'est dit
+   (message, « Encore à décider ») ; une décision identique reste. */
+const DECISIONS_FUSION=[
+  ['sol',r=>solGarde(r)?'garde':JSON.stringify([r.floorNew||'',r.sol||null,!!r.surExistant]),r=>{delete r.floorNew;delete r.solGarde;delete r.sol;delete r.surExistant;}],
+  ['peinture',r=>r.peinture||'',r=>{delete r.peinture;}],
+  ['faience',r=>r.faience==null?null:r.faience,r=>{delete r.faience;}],
+  ['fauxPlafond',r=>!!r.fauxPlafond,r=>{delete r.fauxPlafond;}]];
+const MOT_FUSION={sol:'le même sol',peinture:'la même peinture',faience:'la même faïence',fauxPlafond:'le même plafond'};
+function reglerFusion(lv,f,pieces){const r=f&&f.room;const autres=(pieces||[]).filter(x=>x&&x!==r);if(!r||!autres.length)return [];const quoi=[];
+  DECISIONS_FUSION.forEach(([k,sig,vider])=>{if(k==='faience'&&!pieceHumide(lv,f))return;const s0=JSON.stringify(sig(r));
+    if(autres.some(o=>JSON.stringify(sig(o))!==s0)){vider(r);quoi.push(k);}});
+  if(quoi.length){const noms=[...new Set([r,...autres].map(roomName))],av=r.fusion||{quoi:[]};r.fusion={noms,quoi:[...new Set([...(av.quoi||[]),...quoi])]};}
+  return quoi;}
+function retirerFusion(r,k){if(!r||!r.fusion)return;r.fusion.quoi=(r.fusion.quoi||[]).filter(x=>x!==k);if(!r.fusion.quoi.length)delete r.fusion;}
+const phraseFusion=quoi=>quoi.map(k=>MOT_FUSION[k]).join(', ').replace(/, ([^,]*)$/,' ni $1');
 function annonceFusion(w,avant){if(!avant)return;const m=add(mul(add(w.a,w.b),.5),wallOff(w));const f=facesFor(L(),'projet').find(g=>g.room&&pointIn(m,g.poly));if(!f)return;
-  toast(`${roomName(avant[0])} et ${roomName(avant[1])} ne font plus qu'une pièce : « ${roomName(f.room)} ». Change son type dans sa fiche si besoin.`,true);}
+  const quoi=reglerFusion(L(),f,avant);if(quoi.length)afterChange();
+  toast(`${roomName(avant[0])} et ${roomName(avant[1])} ne font plus qu'une pièce : « ${roomName(f.room)} ».`+(quoi.length?` Elles n'avaient pas ${phraseFusion(quoi)} : à choisir pour la pièce réunie (Encore à décider).`:' Change son type dans sa fiche si besoin.'),true);}
 function pairRoomFaces(level,faces,creer){
   const used=new Set(),typesGeo=[];
   // 1) les petites pièces d'abord : une pièce imbriquée récupère bien sa propre fiche (ancrage dedans)
@@ -3074,7 +3140,19 @@ function migrerDone(st){const d=st&&st.done;if(!d)return;Object.keys(d).forEach(
 /* D37 : un « Parquet » posé sur un parquet voulait dire « poncer » (règle D8, déduite) — c'est ce
    que le Suivi affichait. Il devient le choix explicite, sans la dépose qui l'accompagnait à tort. */
 function migrerSols(st){(st&&st.levels||[]).forEach(lv=>(lv.rooms||[]).forEach(r=>{if(r.floorNew==='Parquet'&&estParquet(r)){r.floorNew=PONCAGE;delete r.sol;}}));}
-function load(){try{const s=JSON.parse(localStorage.getItem('avyora-plan-v2'));if(s?.state?.levels){state=s.state;state.done=state.done||{};migrerDone(state);migrerSols(state);state.groups=state.groups||[];state.chantier={...CHANTIER_DEF,...(state.chantier||{})};if(s.view)view=s.view;
+/* D47 (cj-novice01) · migrerSols tournait à CHAQUE chargement et à chaque réouverture depuis « Mes
+   plans » : un « Parquet neuf (à la place de l'ancien) » choisi la veille redevenait « Poncer et
+   vitrifier » — la dépose, le parquet neuf et les plinthes disparaissaient du Suivi, sans un mot. Une migration ne passe qu'une fois :
+   `state.schema` dit jusqu'où l'état a été migré (un plan neuf naît au dernier schéma). Un plan
+   enregistré avant D47 sans ce numéro est migré une dernière fois, puis marqué.
+   Toiture (D47, cj-pro04) : l'état décrit ne commande plus aucun travaux. Un plan d'avant, dont
+   l'action venait de l'état et non d'un choix (manuel faux), repart sur « Rien » — le conseil
+   s'affiche en vue Travaux, avec un bouton pour le retenir. */
+const SCHEMA=47;
+function migrerToiture(st){const t=st&&st.toiture,p=t&&t.projet;if(!p||p.manuel)return;
+  p.action='rien';if(t.etatCharp==='traiter')p.traiterCharpente=false;}
+function migrerEtat(st){if(!st)return;const v=+st.schema||0;if(v<37)migrerSols(st);if(v<47)migrerToiture(st);st.schema=SCHEMA;}
+function load(){try{const s=JSON.parse(localStorage.getItem('avyora-plan-v2'));if(s?.state?.levels){state=s.state;state.done=state.done||{};migrerDone(state);migrerEtat(state);state.groups=state.groups||[];state.chantier={...CHANTIER_DEF,...(state.chantier||{})};if(s.view)view=s.view;
   let imgs={};try{imgs=JSON.parse(localStorage.getItem('avyora-plan-images'))||{};}catch{}
   state.levels.forEach(l=>{if(l.bg&&imgs[l.bg.img]){const im=new Image();im.onload=()=>draw();im.src=imgs[l.bg.img];images[l.bg.img]=im;}else if(l.bg)l.bg=null;});
   return true;}}catch{}return false;}
@@ -3097,7 +3175,7 @@ function savePlanToLibrary(){const lib=loadPlans();const exists=state.id&&lib[st
 function openSavedPlan(id){const lib0=loadPlans();if(!lib0[id])return;
   if(id===state.id){closeModal();toast('« '+(lib0[id].name||'Ce plan')+' » est déjà ouvert, à jour',true);return;} /* D38 : « Ouvrir » le plan ouvert rechargeait sa version rangée et perdait les dernières modifications */
   avantDeRemplacer(garde=>ouvrirPlanRange(id,garde));}
-function ouvrirPlanRange(id,garde){const lib=loadPlans();const e=lib[id];if(!e)return;history.push(snapshot());state=JSON.parse(JSON.stringify(e.state));state.id=id;state.done=state.done||{};migrerDone(state);migrerSols(state);state.groups=state.groups||[];state.chantier={...CHANTIER_DEF,...(state.chantier||{})};state.cur=Math.min(state.cur||0,state.levels.length-1);if(e.view)view={...e.view};sel=null;resetGestes();chargerCalques();afterChange();fitView();closeModal();toast('Plan « '+(e.name||'')+' » ouvert'+(garde&&garde!==e.name?' · « '+garde+' » est rangé dans « Mes plans »':''),true);}
+function ouvrirPlanRange(id,garde){const lib=loadPlans();const e=lib[id];if(!e)return;history.push(snapshot());state=JSON.parse(JSON.stringify(e.state));state.id=id;state.done=state.done||{};migrerDone(state);migrerEtat(state);state.groups=state.groups||[];state.chantier={...CHANTIER_DEF,...(state.chantier||{})};state.cur=Math.min(state.cur||0,state.levels.length-1);if(e.view)view={...e.view};sel=null;resetGestes();chargerCalques();afterChange();fitView();closeModal();toast('Plan « '+(e.name||'')+' » ouvert'+(garde&&garde!==e.name?' · « '+garde+' » est rangé dans « Mes plans »':''),true);}
 /* D38 : la petite croix effaçait définitivement, sans confirmation ni retour. Le plan supprimé reste
    récupérable 8 s (« Annuler » dans le message). */
 function deleteSavedPlan(id){const lib=loadPlans();const e=lib[id];if(!e)return;delete lib[id];writePlans(lib);const ouvert=state.id===id;if(ouvert)delete state.id;renderPlans();save();
@@ -3641,9 +3719,15 @@ cv.addEventListener('dblclick',e=>{
   // double-clic sur une pièce : on renomme directement
   if(tool==='select'){const r=cv.getBoundingClientRect();const h=hitTest(W2(v(e.clientX-r.left,e.clientY-r.top)));if(h?.kind==='room'){sel=h;render();const inp=document.querySelector('#pbody input.fin');if(inp){inp.focus();inp.select();}}}
 });
-function duplicateItem(){if(enLectureSeule())return;const its=selectedItems();if(!its.length)return;history.push(snapshot());const cs=its.map(it=>({...it,id:uid(),x:it.x+0.3,y:it.y+0.3}));L().items.push(...cs);multi=cs.length>1?cs.map(c=>c.id):[];sel={kind:'item',id:cs[0].id};afterChange();}
+/* D47 (cj-qa02) · Une copie est un NOUVEL objet : copie profonde, sans l'identifiant public de
+   l'original (garantirPids en donne un), et, en vue Travaux, « À poser » — la copie d'un radiateur
+   existant naissait existante, gratuite, visible en Avant travaux, avec le même id au contrat. En vue
+   Avant travaux, c'est un autre objet relevé : sans la décision de l'original. */
+function copieEquip(it,extra){const c={...JSON.parse(JSON.stringify(it)),id:uid(),...(extra||{})};delete c.pid;
+  if(mode()==='projet')c.st='creer';else if(c.st!=='creer')delete c.st;return c;}
+function duplicateItem(){if(enLectureSeule())return;const its=selectedItems();if(!its.length)return;history.push(snapshot());const cs=its.map(it=>copieEquip(it,{x:it.x+0.3,y:it.y+0.3}));L().items.push(...cs);multi=cs.length>1?cs.map(c=>c.id):[];sel={kind:'item',id:cs[0].id};afterChange();}
 function copyItems(){const its=selectedItems();if(!its.length)return;const cx=its.reduce((s,i)=>s+i.x,0)/its.length,cy=its.reduce((s,i)=>s+i.y,0)/its.length;clipboard=its.map(it=>({...it,dx:it.x-cx,dy:it.y-cy}));toast(its.length>1?its.length+' équipements copiés':ITEMS[its[0].type].label+' copié',true);}
-function pasteItems(at){if(!clipboard?.length)return;if(enLectureSeule())return;history.push(snapshot());const cs=clipboard.map(c=>{const {dx,dy,...rest}=c;return {...rest,id:uid(),x:at.x+dx,y:at.y+dy};});L().items.push(...cs);multi=cs.length>1?cs.map(c=>c.id):[];sel={kind:'item',id:cs[0].id};if(tool!=='select')tool='select';afterChange();}
+function pasteItems(at){if(!clipboard?.length)return;if(enLectureSeule())return;history.push(snapshot());const cs=clipboard.map(c=>{const {dx,dy,...rest}=c;return copieEquip(rest,{x:at.x+dx,y:at.y+dy});});L().items.push(...cs);multi=cs.length>1?cs.map(c=>c.id):[];sel={kind:'item',id:cs[0].id};if(tool!=='select')tool='select';afterChange();}
 // Entrée pendant le tracé : avec une longueur tapée → pose le mur ; sans → ferme la pièce (ou termine)
 function commitTypedLength(){
   const ref=chain[chain.length-1];const val=parseFloat(lenBuf.replace(',','.'));lenBuf='';
@@ -3843,6 +3927,7 @@ function marquerAuLieuDEffacer(){const lv=L(),annuler={action:'Annuler',fn:()=>u
   if(sel.kind==='marquee'){const by=k=>msel.filter(m=>m.kind===k).map(m=>m.id);
     const ws=by('wall').map(id=>lv.walls.find(w=>w.id===id)).filter(Boolean),os=by('opening').map(id=>lv.openings.find(o=>o.id===id)).filter(Boolean),is=by('item').map(id=>lv.items.find(i=>i.id===id)).filter(Boolean);
     if(!(ws.some(existe)||os.some(o=>ost(o)!=='creer')||is.some(i=>ist(i)!=='creer')))return false;
+    const fusM=ws.filter(w=>existe(w)&&wst(w)!=='demolir').map(w=>[w,piecesDeChaqueCote(w)]).filter(x=>x[1]); /* D47 : les pièces que ces démolitions réunissent */
     history.push(snapshot());let nm=0;
     const effW=new Set(ws.filter(w=>!existe(w)).map(w=>w.id)),effO=new Set(os.filter(o=>ost(o)==='creer').map(o=>o.id)),effI=new Set(is.filter(i=>ist(i)==='creer').map(i=>i.id)),effT=new Set(by('text')),effD=new Set(by('dim'));
     ws.filter(existe).forEach(w=>{if(wst(w)!=='demolir'){w.st='demolir';nm++;}});
@@ -3850,7 +3935,9 @@ function marquerAuLieuDEffacer(){const lv=L(),annuler={action:'Annuler',fn:()=>u
     is.forEach(i=>{if(!effI.has(i.id)&&ist(i)!=='demolir'){i.st='demolir';nm++;}});
     lv.walls=lv.walls.filter(w=>!effW.has(w.id));lv.openings=lv.openings.filter(o=>!effO.has(o.id)&&!effW.has(o.wallId));lv.items=lv.items.filter(i=>!effI.has(i.id));lv.texts=TX(lv).filter(t=>!effT.has(t.id));lv.dims=lv.dims.filter(d=>!effD.has(d.id));
     const ne=effW.size+effO.size+effI.size+effT.size+effD.size;sel=null;msel=[];purgerGroupes();afterChange();
-    toast(`${nm} élément${nm>1?'s':''} marqué${nm>1?'s':''} à démolir, à boucher ou à déposer`+(ne?` · ${ne} effacé${ne>1?'s':''} (créé${ne>1?'s':''} en Travaux ou annotation${ne>1?'s':''})`:'')+'.',true,annuler);return true;}
+    let nf=0;{const parFace=new Map();fusM.forEach(([w,pc])=>{const m=add(mul(add(w.a,w.b),.5),wallOff(w)),f=facesFor(lv,'projet').find(g=>g.room&&pointIn(m,g.poly));if(!f)return;const e=parFace.get(f)||[];pc.forEach(x=>{if(!e.includes(x))e.push(x);});parFace.set(f,e);});
+      parFace.forEach((pc,f)=>{if(reglerFusion(lv,f,pc).length)nf++;});if(nf)afterChange();}
+    toast(`${nm} élément${nm>1?'s':''} marqué${nm>1?'s':''} à démolir, à boucher ou à déposer`+(ne?` · ${ne} effacé${ne>1?'s':''} (créé${ne>1?'s':''} en Travaux ou annotation${ne>1?'s':''})`:'')+'.'+(nf?' Des pièces réunies n\'avaient pas les mêmes décisions : à choisir (Encore à décider).':''),true,annuler);return true;}
   return false;}
 function rotateItem(){if(enLectureSeule())return;const its=selectedItems();if(!its.length)return;history.push(snapshot());its.forEach(it=>{it.rot=(it.rot+Math.PI/2)%(2*Math.PI);pushOutOfWalls(it);});afterChange();}
 function setItemRot(deg){const it=L().items.find(i=>i.id===sel?.id);if(!it)return;history.push(snapshot());it.rot=((parseFloat(deg)||0)%360)*Math.PI/180;afterChange();}
@@ -4767,6 +4854,15 @@ function setLevel(i){toitOpen=false;state.cur=i;sel=null;chain=[];syncRooms(L())
    dessus sont la partie haute des murs du dessous, ils ne sont pas à construire) ou être neufs
    eux aussi (surélévation). Confondre les deux, c'est soit oublier le plancher, soit facturer
    des murs qui sont debout depuis toujours. */
+/* D47 (cj-qa03, qa14) · UNE copie de mur vers un autre niveau, pour « copier le niveau » comme pour
+   « Reprendre les murs porteurs du dessous » (qui faisait encore `{...w}` : le tableau des doublages
+   restait PARTAGÉ entre les deux niveaux — en retirer un à l'étage le retirait au RDC — et un
+   doublage à créer en bas se chiffrait une seconde fois en haut). Copie profonde, sans identifiant
+   public, de l'EXISTANT seulement : ni état, ni doublage, façade ou isolant à créer ; « porteur » et
+   épaisseur conservés. */
+function copieMurExistant(w,extra){const c={...JSON.parse(JSON.stringify(w)),id:uid(),a:{...w.a},b:{...w.b},...(extra||{})};delete c.pid;delete c.st;
+  if(c.isos){c.isos=c.isos.filter(io=>io.st!=='creer');c.isos.forEach(io=>{if(io.id)io.id=uid();});}if(c.iso&&c.iso.st==='creer')delete c.iso;if(c.iso2&&c.iso2.st==='creer')delete c.iso2;
+  if(c.facade&&c.facade.st==='creer')delete c.facade;return c;}
 function addLevel(depart){
   closeModal();history.push(snapshot());const cur=L();const nl=newLevel(state.levels.length===1?'R+1':'R+'+state.levels.length);
   const creeParLeProjet=(depart==='plancher'||depart==='surelevation');
@@ -4783,13 +4879,11 @@ function addLevel(depart){
        le budget doublait sans un geste. Ce qui est à créer en bas n'existe pas en haut ; ce qui
        est à démolir en bas existe encore en haut. */
     const neuf=(o,extra)=>{const c={...JSON.parse(JSON.stringify(o)),id:uid(),...extra};delete c.pid;return c;};
-    const idMap={};nl.walls=cur.walls.filter(w=>wst(w)!=='creer').map(w=>{const c=neuf(w,{a:{...w.a},b:{...w.b}});idMap[w.id]=c.id;
-      delete c.st;if(c.isos)c.isos=c.isos.filter(io=>io.st!=='creer');if(c.iso&&c.iso.st==='creer')delete c.iso;if(c.iso2&&c.iso2.st==='creer')delete c.iso2;
-      if(c.facade&&c.facade.st==='creer')delete c.facade;return c;});
+    const idMap={};nl.walls=cur.walls.filter(w=>wst(w)!=='creer').map(w=>{const c=copieMurExistant(w);idMap[w.id]=c.id;return c;});
     nl.openings=cur.openings.filter(o=>ost(o)!=='creer'&&idMap[o.wallId]).map(o=>{const c=neuf(o,{wallId:idMap[o.wallId]});
       ['st','retour','tableaux','product','note'].forEach(k=>delete c[k]);return c;});
     nl.rooms=cur.rooms.map(r=>{const c=neuf(r,{anchor:{...r.anchor}});
-      ['floorNew','sol','solGarde','peinture','products','faience','fauxPlafond','plancherNeuf','note','hAvant'].forEach(k=>delete c[k]);return c;});nl.height=cur.height;
+      ['floorNew','sol','solGarde','surExistant','fusion','peinture','products','faience','fauxPlafond','plancherNeuf','note','hAvant'].forEach(k=>delete c[k]);return c;});nl.height=cur.height;
   }
   if(creeParLeProjet){
     nl.neuf=true;nl.plancher=nl.plancher||'bois';
@@ -4810,7 +4904,7 @@ function addLevel(depart){
                :'Étage créé : seul le plancher est compté, les murs existent déjà. Trace les cloisons en vue '+nomVue('projet')+'.')
     :(source==='copy'?'Niveau copié — ajuste les cloisons et les ouvertures':'Niveau vide créé'),true);
 }
-function copyBearingBelow(){const lv=L(),below=state.levels[state.cur-1];if(!below)return;history.push(snapshot());const src=below.walls.filter(w=>wallActive(w)&&!isVirtual(w)&&wallT(w)>=0.15);src.forEach(w=>{const c={...w,id:uid(),a:{...w.a},b:{...w.b}};delete c.st;lv.walls.push(c);});lv.height=below.height;afterChange();fitView();toast(src.length+' mur(s) porteur(s) repris du niveau « '+below.name+' » — trace maintenant les cloisons',true);}
+function copyBearingBelow(){const lv=L(),below=state.levels[state.cur-1];if(!below)return;history.push(snapshot());const src=below.walls.filter(w=>!isVirtual(w)&&wst(w)!=='creer'&&wallT(w)>=0.15);src.forEach(w=>lv.walls.push(copieMurExistant(w)));lv.height=below.height;afterChange();fitView();toast(src.length+' mur(s) porteur(s) repris du niveau « '+below.name+' » — trace maintenant les cloisons',true);}
 function deleteLevel(){if(state.levels.length<=1)return;history.push(snapshot());const n=L().name;state.levels.splice(state.cur,1);state.cur=Math.max(0,state.cur-1);sel=null;purgerGroupes();afterChange();toast('Niveau « '+n+' » supprimé — Ctrl+Z pour annuler');}
 function setLevelProp(k,val){history.push(snapshot());const lv=L();
   if(k==='height')lv.height=Math.max(2,Math.min(5,parseFloat(val)||2.5));
@@ -4990,6 +5084,7 @@ function openingIcon(k){
 function tipChiffrageOuverture(o,lv){const d=OPENINGS[o.type],w=lv.walls.find(x=>x.id===o.wallId),st=ost(o);
   if(w&&wst(w)==='demolir')return 'Son mur est à démolir : elle part avec lui, rien à chiffrer dessus.';
   if(st==='boucher')return 'À boucher : le rebouchage apparaît dans le suivi, sans être compté dans le budget (pas encore de prix).';
+  if(d.kind==='gap'&&st!=='creer')return 'Passage sans porte : rien à chiffrer. Pour y mettre une porte, change son modèle.'; /* D47 : ni dépose ni « à remplacer » sur un passage */
   if(st!=='creer'&&st!=='remplacer')return d.cat==='fenetre'?'':'Pas de travaux prévus : elle n\'est pas chiffrée. Choisis <b>À remplacer</b> pour la chiffrer en neuve.'; /* fenêtre : dit sous ses volets */
   if(d.kind==='gap')return 'Passage sans porte : rien à poser. Seul le percement compte, s\'il y en a un.';
   if(!(PRIX.menuiserie[o.type]>0))return 'Ce modèle n\'a pas encore de prix : il apparaît dans le suivi, à 0 €.';
@@ -5034,13 +5129,13 @@ function renderSelection(lv){
   if(sel.kind==='opening'){const o=lv.openings.find(o=>o.id===sel.id);if(!o){sel=null;return renderOverview(lv);}const def=OPENINGS[o.type];const isDoor=['door','door2','slide','gap'].includes(def.kind);
     h+=`<div class="ptitle">${def.label}</div><div class="psub">Glisse-la le long du mur pour la repositionner.</div>
     ${mode()==='projet'&&wst(findWall(o.wallId))==='demolir'?`<div class="tip warn">Son mur est <b>à démolir</b> : cette ouverture part avec lui. Rien à décider dessus.</div>`:''}
-    ${mode()==='projet'&&wst(findWall(o.wallId))!=='demolir'?`<div class="ph">Décision</div>${segEtat('opening',ost(o),k=>`setOpeningProp('st','${k}')`,{creer:wst(findWall(o.wallId))==='creer'?'dans un mur neuf':'percement'})}<div class="ph mt"></div>`:''}
+    ${mode()==='projet'&&wst(findWall(o.wallId))!=='demolir'?`<div class="ph">Décision</div>${segEtat(OPENINGS[o.type].kind==='gap'?'passage':'opening',ost(o),k=>`setOpeningProp('st','${k}')`,{creer:wst(findWall(o.wallId))==='creer'?'dans un mur neuf':'percement'})}<div class="ph mt"></div>`:''}
     <div class="ph">Modèle</div><select class="fin" onchange="setOpeningProp('type',this.value)">${Object.entries(OPENINGS).map(([k,d])=>`<option value="${k}" ${k===o.type?'selected':''}>${d.label}</option>`).join('')}</select>
     <!-- La menuiserie telle qu'elle est se remplit d'abord : c'est de là que part la décision. -->
     <div class="ph mt">Menuiserie ${ost(o)==='creer'||ost(o)==='remplacer'?'(neuve)':'actuelle'}</div>
     ${matsFor(o).length?(matsFor(o).length===1?`<div class="row"><label>Matériau</label><span class="chip">${MENUIS_MAT[matsFor(o)[0]]}</span></div><div class="tip" style="margin-top:4px">Une baie vitrée se réalise <b>en aluminium</b> (seul profil qui tient les grandes dimensions).</div>`:`<div class="row"><label>Matériau</label><select class="fin" style="width:auto" onchange="setOpeningProp('mat',this.value)"><option value="" ${!o.mat?'selected':''}>— ?</option>${matsFor(o).map(k=>`<option value="${k}" ${o.mat===k?'selected':''}>${MENUIS_MAT[k]}</option>`).join('')}</select></div>`):''}
     ${ost(o)!=='creer'&&ost(o)!=='remplacer'?`<div class="row"><label>État</label><span class="seg" style="display:inline-flex">${Object.entries(MENUIS_ETAT).map(([k,l])=>`<button class="${o.etat===k?'on':''}${k==='vetuste'?' st-demolir':''}" onclick="setOpeningProp('etat','${k}')">${l}</button>`).join('')}</span></div>${o.etat==='vetuste'&&ost(o)!=='remplacer'?`<div class="tip q" style="margin-top:6px">Menuiserie vétuste : passe-la <b>« ${LEX.etat.remplacer} »</b> pour la chiffrer en neuve.</div>`:''}`:''}
-    ${ost(o)!=='creer'&&ost(o)!=='boucher'?blocDecisionExistant('opening',k=>`setOpeningProp('st','${k}')`,ost(o),`Ce que tu décides de cette menuiserie.`):''}
+    ${ost(o)!=='creer'&&ost(o)!=='boucher'?blocDecisionExistant(OPENINGS[o.type].kind==='gap'?'passage':'opening',k=>`setOpeningProp('st','${k}')`,ost(o),OPENINGS[o.type].kind==='gap'?`Ce que tu décides de ce passage.`:`Ce que tu décides de cette menuiserie.`):''}
     ${ost(o)==='boucher'?`<div class="tip" style="margin-top:10px">Cette ouverture est <b>bouchée</b> : il n'y a plus de menuiserie à décrire, seulement un trou à refermer. Ses dimensions donnent la surface à reboucher.</div>`:''}
     <!-- D41 : les dimensions viennent APRÈS la décision — elles se règlent surtout en glissant sur le plan, et la décision doit se voir sans défiler. -->
     <div class="ph mt">Dimensions</div>
@@ -5095,7 +5190,7 @@ function renderSelection(lv){
   else if(sel.kind==='item'&&multi.length>1){const its=selectedItems();
     h+=`<div class="ptitle">${its.length} équipements</div><div class="psub">${[...new Set(its.map(i=>ITEMS[i.type].label))].slice(0,4).join(', ')}${its.length>4?'…':''}</div>
     ${mode()==='projet'?(()=>{const e=ist(its[0]),tous=its.every(x=>ist(x)===e);return `<div class="ph mt">Décision</div>${segEtat('item',e,k=>`setItemsEtat('${k}')`,null,tous)}${tous?'':'<div class="tip" style="margin-top:6px">Ces équipements n\'ont pas tous le même état : un choix s\'applique à tous.</div>'}`;})():(()=>{const nc=its.filter(x=>ist(x)==='creer').length,nd=its.filter(x=>ist(x)==='demolir').length;return nc||nd?`<div class="tip">${nc?nc+' à poser (travaux)':''}${nc&&nd?' · ':''}${nd?nd+' à déposer':''} dans cette sélection. Change leur état en vue <b>${nomVue('projet')}</b>.</div>`:'';})()}
-    <div class="btnrow"><button class="ib" onclick="rotateItem()">⟳ Pivoter 90°</button><button class="ib" onclick="duplicateItem()">⧉ Dupliquer</button><button class="ib danger" onclick="deleteSel()">${libSuppr()}</button></div>
+    <div class="btnrow"><button class="ib" onclick="rotateItem()">${ico('pivoter')}Pivoter 90°</button><button class="ib" onclick="duplicateItem()">${ico('copie')}Dupliquer</button><button class="ib danger" onclick="deleteSel()">${libSuppr()}</button></div>
     <div class="btnrow"><button class="ib" style="flex:1" onclick="clearSel();render()">Désélectionner</button></div>
     <div class="tip">Glisse l'un d'eux : tout le groupe suit · flèches pour ajuster · <kbd>Maj</kbd>+clic ajoute ou retire un élément · <kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>V</kbd> copie-colle le groupe.</div>`;
   }
@@ -5133,7 +5228,7 @@ function renderSelection(lv){
     <div class="blond ${c.ok?'ok':'ko'}"><b>Loi de Blondel${gl('blondel')} : 2 × ${(c.hM*100).toFixed(1)} + ${Math.round(c.g*100)} = <span>${(c.blondel*100).toFixed(0)} cm</span></b><small>${c.ok?ico('check','lead ok')+'confortable (60–64 cm) · '+c.n+' marches de '+(c.hM*100).toFixed(1)+' cm':ico('alerte','lead')+c.warn.join(' · ')}</small><small>${c.type==='helico'?'Giron mesuré sur la ligne de foulée (⅔ du rayon) · emprise Ø '+fmt(c.D)+' m':'Reculement '+fmt(c.L)+' m · emprise '+fmt(c.W)+' × '+fmt(c.H)+' m'+(c.type!=='droit'?' · volées de '+c.n1+' + '+c.n2+' marches':'')}</small></div>
     ${st.giron||st.marches?`<button class="ib" style="width:100%;justify-content:center;margin-top:6px" onclick="setStairProp('reset',1)">↺ Revenir au calcul automatique</button>`:''}
     <div class="ph mt">Étage</div>${above?`<div class="row"><label>Relié à « ${above.name} » (trémie)</label><input type="checkbox" ${it.link!==false?'checked':''} onchange="setItemProp('link',this.checked)"></div><div class="tip">La trémie (${fmtM2(stairArea(it,lv))}, emprise réelle des volées et du palier) est déduite de la surface de la pièce du dessus et dessinée dessus.</div>`:`<div class="tip">Ajoute un niveau au-dessus (bouton <b>+</b>) : la trémie sera créée automatiquement à l'étage.</div>`}`;})():''}
-    <div class="btnrow"><button class="ib" onclick="rotateItem()">⟳ Pivoter 90°</button><button class="ib" onclick="duplicateItem()">⧉ Dupliquer</button><button class="ib danger" onclick="deleteSel()">${libSuppr()}</button></div>
+    <div class="btnrow"><button class="ib" onclick="rotateItem()">${ico('pivoter')}Pivoter 90°</button><button class="ib" onclick="duplicateItem()">${ico('copie')}Dupliquer</button><button class="ib danger" onclick="deleteSel()">${libSuppr()}</button></div>
     ${ist(it)==='demolir'?'':elemProductSection(it,def.label,it.type==='baignoire'?'baignoire îlot 170 acrylique':it.type==='plan'?'plan stratifié chêne 240':'modèle repéré')}
     <div class="tip"><kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>V</kbd> copie et colle sous la souris · <kbd>Ctrl</kbd>+<kbd>D</kbd> duplique · <kbd>Maj</kbd>+clic ou <kbd>Maj</kbd>+glisser dans le vide pour en sélectionner plusieurs · un meuble adossé à un mur suit le mur.</div>`;
   }
@@ -5147,29 +5242,30 @@ function renderSelection(lv){
     h+=`<div class="ptitle">${roomName(r)}</div><div class="psub">Détectée automatiquement à partir des murs.</div>${ckP.length?`<div class="chks" style="margin:0 0 12px">${ckP.map(c=>`<div class="chk ${c.lvl}"><span class="ci">${ico(c.lvl==='err'?'erreur':c.lvl==='warn'?'alerte':'idee')}</span><span>${c.msg}</span></div>`).join('')}</div>`:''}
     <div class="ph">Nom</div><input class="fin" value="${r.name.replace(/"/g,'&quot;')}" placeholder="${RT[r.type].label}" oninput="setRoomProp('name',this.value,true)" onchange="save()">
     <div class="ph mt">Type de pièce</div>${r.typeAuto?`<div class="tip act" style="margin:0 0 8px">Type <b>deviné d'après la surface</b>. Choisis le bon : il décide de ce qu'on te propose (sol, faïence, équipements).</div>`:''}<select class="fin${r.typeAuto?' devine':''}" onchange="setRoomProp('type',this.value)" aria-label="Type de pièce">${ROOM_TYPES.map(t=>`<option value="${t[0]}" ${t[0]===r.type?'selected':''}>${t[1]}</option>`).join('')}</select>
-    ${(()=>{const humide=r.type==='sdb'||r.type==='sde'||lv.items.some(i=>['douche','baignoire'].includes(i.type)&&itemActive(i,'projet')&&pointIn(v(i.x,i.y),f.poly));
+    ${(()=>{const humide=pieceHumide(lv,f);
       if(!humide||mode()==='existant')return '';
       /* D36 : sans choix, pas de faïence neuve — ni faïence ni cloisons hydrofuges ne se comptent.
          L'ancien défaut « mi-hauteur » facturait une salle de bain que personne n'avait décidé de refaire. */
       const H={'':['Aucune','je garde l\'existant'],douche:['Zone douche','les murs de la douche'],mi:['Mi-hauteur','1,20 m · 2,00 m douche'],pleine:['Pleine hauteur','du sol au plafond']};
-      const cur=r.faience||'';
+      const cur=r.faience==null?null:r.faience; /* D47 : null = jamais décidé (rien de sélectionné) ; '' = « Aucune », choisie */
       /* D46 : « Zone douche » sans douche ni baignoire dessinée ne carrelle rien : on le dit au lieu de le laisser choisir */
       const eau=lv.items.some(i=>['douche','baignoire'].includes(i.type)&&ist(i)!=='demolir'&&pointIn(v(i.x,i.y),f.poly));
       const clo=cloisonsHumidesDe(lv,f),fa=faienceDe(lv,f);
       return `<div class="ph mt">Faïence neuve${gl('faience')}</div>
       <div class="seg wrap">${Object.entries(H).map(([k,l])=>{const off=k==='douche'&&!eau&&cur!=='douche';return `<button class="${cur===k?'on':''}"${off?' disabled':''} onclick="setRoomProp('faience','${k}')">${l[0]}<small>${off?'dessine d\'abord la douche':l[1]}</small></button>`;}).join('')}</div>
-      <div class="tip" style="margin-top:6px">${!cur?'Rien de compté : ni faïence, ni cloisons hydrofuges. Choisis une hauteur si tu refais les murs de cette pièce.':cur==='douche'&&!eau?'Aucune douche ni baignoire dessinée dans cette pièce : rien à carreler. Pose-la avec l\'outil Équipements, ou choisis une autre hauteur.':'C\'est ce qui décide la surface carrelée'+(fa&&fa.m2>0?' ('+fmtM2(fa.m2)+')':'')+' : '+(cur==='pleine'?'toute la surface des murs':cur==='douche'?'seulement les murs de la douche':'une bande de 1,20 m, portée à 2,00 m dans la douche')+'. Le reste des murs se repeint si tu choisis « Peinture » plus bas.'+(clo>0?' Les cloisons que tu crées autour de cette pièce ('+fmtM2(clo)+') se montent en plaques hydrofuges.':' Les cloisons existantes restent en place ; une cloison à créer autour de cette pièce se monterait en plaques hydrofuges.')}</div>`;})()}
+      <div class="tip${cur===null&&faienceADecider(lv,f)?' q':''}" style="margin-top:6px">${cur===null?(faienceADecider(lv,f)?'<b>À décider.</b> Tu refais cette pièce d\'eau : choisis une hauteur de faïence, ou « Aucune » si tu gardes les murs tels quels. Tant que ce n\'est pas dit, rien n\'est compté.':'Pas encore décidé : rien de compté. Choisis une hauteur si tu refais les murs de cette pièce, ou « Aucune » si tu les gardes.'):!cur?'Aucune faïence neuve : les murs restent tels quels. Rien de compté, ni faïence ni cloisons hydrofuges.':cur==='douche'&&!eau?'Aucune douche ni baignoire dessinée dans cette pièce : rien à carreler. Pose-la avec l\'outil Équipements, ou choisis une autre hauteur.':'C\'est ce qui décide la surface carrelée'+(fa&&fa.m2>0?' ('+fmtM2(fa.m2)+')':'')+' : '+(cur==='pleine'?'toute la surface des murs':cur==='douche'?'seulement les murs de la douche':'une bande de 1,20 m, portée à 2,00 m dans la douche')+'. Le reste des murs se repeint si tu choisis « Peinture » plus bas.'+(clo>0?' Les cloisons que tu crées autour de cette pièce ('+fmtM2(clo)+') se montent en plaques hydrofuges.':' Les cloisons existantes restent en place ; une cloison à créer autour de cette pièce se monterait en plaques hydrofuges.')}</div>`;})()}
     ${mode()==='existant'?`<div class="ph mt">Sol actuel</div><select class="fin" aria-label="Sol actuel" onchange="setRoomProp('floor',this.value)">${FLOORS_EX.map(fl=>`<option value="${esc(fl)}" ${fl===r.floor?'selected':''}>${fl===SANS_PLANCHER?'Pas de plancher — volume ouvert (étage à créer)':fl}</option>`).concat(r.floor&&!FLOORS_EX.includes(r.floor)?[`<option selected>${esc(r.floor)}</option>`]:[]).join('')}</select>
     <div class="tip" style="margin-top:8px">Précise bien l'état : <b>terre / sol brut</b> → il faudra couler une <b>dalle</b> ; <b>dalle brute</b> → il faudra une <b>chape</b> ; <b>chape</b> → prêt pour un revêtement. Le projet s'en déduit.</div>`
-    :(()=>{const so=r.sol||{};const A=areaNet(lv,f);const sp=solPlan(r);const nw=r.floorNew||'';const c=solCouches(r);
+    :(()=>{const so=r.sol||{};const A=areaNet(lv,f);const solsA=solsActuelsDe(lv,f);const sp=solPlan(r,solsA);const nw=r.floorNew||'';const c=solCouches(r);
       /* D37 (décision validée par Dani) : le revêtement se choisit DANS sa ligne de l'ordre de
          réalisation, comme la chape juste en dessous ; la liste « Revêtement de sol souhaité » du
          haut disparaît. « Garder le sol actuel » est un choix explicite, distinct de « À choisir ». */
-      const actuel=r.floor&&r.floor!=='À définir'&&r.floor!==SANS_PLANCHER?r.floor:'';
+      /* D47 : une pièce réunie par une démolition garde SES sols d'avant — tous, pas celui d'une seule fiche */
+      const actuel=solsA.length?solsTxt(solsA,r):'',mele=solsA.length>1,toutParquet=estParquet(r)&&solsA.every(x=>/parquet/i.test(x));
       const opts=[['',sp.sup==='vide'?'À choisir (après le plancher)':'À choisir']]
-        .concat(sp.sup==='vide'?[]:[['__garde','Garder le sol actuel'+(actuel?' ('+actuel.toLowerCase()+')':'')]])
-        .concat(estParquet(r)?[[PONCAGE,'Poncer et vitrifier le parquet actuel']]:[])
-        .concat(FLOORS_NEW.map(fl=>[fl,fl==='Parquet'&&estParquet(r)?'Parquet neuf (à la place de l\'ancien)':fl]));
+        .concat(sp.sup==='vide'?[]:[['__garde',(mele?'Garder les sols actuels':'Garder le sol actuel')+(actuel?' ('+actuel+')':'')]])
+        .concat(toutParquet?[[PONCAGE,'Poncer et vitrifier le parquet actuel']]:[])
+        .concat(FLOORS_NEW.map(fl=>[fl,fl==='Parquet'&&estParquet(r)?(toutParquet?'Parquet neuf (à la place de l\'ancien)':'Parquet neuf'):fl]));
       const cur=sp.garde?'__garde':nw;
       const revSel=`<select class="fin solsel" aria-label="Revêtement de sol" onchange="setRoomRevetement(this.value)">${opts.map(([k,l])=>`<option value="${esc(k)}" ${k===cur?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
       /* D42 (novice22) : le sol actuel se règle ICI, sans repasser en vue Avant travaux — la dalle ou la chape se déduisent tout de suite */
@@ -5182,7 +5278,12 @@ function renderSelection(lv){
       ${sp.sup==='vide'?`<div class="ph mt">Plancher à créer</div>
       <div class="seg">${[['bois','Bois','solives + panneaux'],['beton','Béton','dalle coulée']].map(o=>`<button class="${r.plancherNeuf===o[0]?'on':''}" onclick="setRoomProp('plancherNeuf','${o[0]}')">${o[1]}<small>${o[2]}</small></button>`).join('')}</div>
       <div class="tip" style="margin-top:6px">Ce volume est ouvert sur le niveau du dessous : <b>il n'y a rien à poser tant qu'il n'y a pas de plancher</b>. C'est la première couche, et de loin la plus chère — elle est chiffrée sur ${fmtM2(A)}.</div>`:''}
-      <div class="solstack">${sp.steps.map(s=>{const st=SOL_STATE[s.state],rev=s.k==='rev';return `<div class="solstep s-${s.state}${rev?' s-rev':''}${s.k==='support'&&supSel?' s-wrap':''}"><span class="si" style="color:${st[1]}">${ico(st[0])}</span><span class="sl"><b>${s.label}${GL_SOL[s.k]?gl(GL_SOL[s.k]):''}</b>${rev||(s.k==='support'&&supSel)?'':`<small>${s.detail}</small>`}</span><span class="ss" style="color:${st[1]}">${st[2]}</span>${rev?revSel:s.k==='support'&&supSel?supSel:''}</div>`;}).join('')}</div>
+      ${mele?`<div class="tip" style="margin-top:6px">Cette pièce réunit des sols différents d'avant travaux (<b>${esc(actuel)}</b>) : ce que tu choisis vaut pour toute sa surface.</div>`:''}
+      <div class="solstack">${sp.steps.map(s=>{const st=SOL_STATE[s.state],rev=s.k==='rev',dep=s.k==='depose'&&s.choix;
+        /* D47 (cj-pro05) : la dépose est une couche DÉCIDÉE quand on peut poser sur l'ancien sol */
+        const depSel=dep?`<select class="fin solsel" aria-label="Ancien sol" onchange="setRoomProp('surExistant',this.value==='1')"><option value="0"${sp.surExistant?'':' selected'}>Déposer l'ancien sol (${esc(actuel||solsTxt(null,r))})</option><option value="1"${sp.surExistant?' selected':''}>Poser sur l'ancien sol</option></select>`:'';
+        return `<div class="solstep s-${s.state}${rev?' s-rev':''}${(s.k==='support'&&supSel)||dep?' s-wrap':''}"><span class="si" style="color:${st[1]}">${ico(st[0])}</span><span class="sl"><b>${s.label}${GL_SOL[s.k]?gl(GL_SOL[s.k]):''}</b>${rev||(s.k==='support'&&supSel)||dep?'':`<small>${s.detail}</small>`}</span><span class="ss" style="color:${st[1]}">${st[2]}</span>${rev?revSel:s.k==='support'&&supSel?supSel:depSel}</div>`;}).join('')}</div>
+      ${sp.surExistant?`<div class="tip" style="margin-top:8px">Posé <b>sur l'ancien sol</b> : pas de dépose. Il faut un support sain, plan et bien adhérent — ton artisan le vérifie sur place ; coche le ragréage s'il n'est pas plan.${nw==='Parquet'?' Le parquet se pose alors en flottant.':''}${nw==='Carrelage'||nw==='Béton ciré'?' Le primaire d\'accrochage n\'a pas encore de prix : il n\'est pas compté.':''}</div>`:''}
       ${sp.garde?`<div class="tip" style="margin-top:8px">Tu gardes ce sol : <b>rien à faire, rien de compté</b>. La décision est prise.</div>`:''}
       ${sp.ponce?`<div class="tip" style="margin-top:8px">Le parquet actuel est <b>poncé puis vitrifié</b> : une seule couche, sans dépose ni chape, et il garde ses plinthes. Pour le remplacer, choisis « Parquet neuf ».</div>`:''}
       ${sp.betonFini?`<div class="tip" style="margin-top:8px">Béton fini : la dalle est <b>lissée à l'hélicoptère / quartzée</b> et devient le sol définitif. Pas de chape, pas de revêtement — comptée en Maçonnerie.</div>`:''}
@@ -5406,8 +5507,9 @@ function ecartBudget(px){
   ch.sort((a,b)=>Math.abs(b.dp)-Math.abs(a.dp));
   /* la tâche de l'objet sélectionné d'abord : c'est lui qu'on vient de décider */
   const vise=sel&&ch.find(c=>{const k=tacheCible(c.t.id);return k&&k.kind===sel.kind&&k.id===sel.id;});
-  const p=vise||ch[0],n=ch.length-1;
-  montrerEcart(d,(p.parti?'retiré : ':'')+p.t.label+(n?' · et '+n+' autre'+(n>1?'s':'')+' tâche'+(n>1?'s':''):''),px.total);}
+  const p=vise||ch[0],n=ch.length-1,q=n===1?ch.find(c=>c!==p):null;
+  /* D47 : une seule autre tâche touchée se NOMME (« et 1 autre tâche » cachait un ponçage de 509 €) */
+  montrerEcart(d,(p.parti?'retiré : ':'')+p.t.label+(q?' · '+(q.parti?'retiré : ':'')+q.t.label:n?' · et '+n+' autres tâches':''),px.total);}
 function montrerEcart(d,lib,total){const el=document.getElementById('budgetDelta'),F=document.getElementById('pfoot');if(!el)return;
   /* D43 : la pastille est lue par le lecteur d'écran (role=status) ; elle dit aussi le nouveau total */
   el.innerHTML=`<b class="${d>0?'plus':'moins'}">${d>0?'+':'−'}${eur(Math.abs(Math.round(d)))}</b><span>${esc(lib)}</span>${total!=null?`<i class="sr-only">. Budget travaux : ${eur(Math.round(total))} HT.</i>`:''}`;
@@ -5417,7 +5519,8 @@ function cacherEcart(net){const el=document.getElementById('budgetDelta');clearT
   if(net)el.innerHTML='';else _ecartT2=setTimeout(()=>{if(!el.classList.contains('show'))el.innerHTML='';},400);}
 const eur=n=>n.toLocaleString('fr-FR')+' €';
 const pastille=c=>`<i class="pastille" style="background:${c}"></i>`;
-function setWallProp(k,val){const w=findWall(sel.id);const fus=k==='st'&&val==='demolir'&&wst(w)!=='demolir'&&!isVirtual(w)?piecesDeChaqueCote(w):null;history.push(snapshot());if(k==='porteur'){delete w.porteurDoute;if(val==='auto')delete w.porteur;else if(val==='nsp'){w.porteur=true;w.porteurDoute=true;}else w.porteur=(val==='oui');}else if(k==='type'){w.type=val;delete w.t;}else if(k==='t'){if(val>=0.03&&val<=0.8)w.t=val;}else if(k==='st'){if(val==='existant')delete w.st;else w.st=val;/* D36 : ses ouvertures partent avec lui — les marquer « à boucher » créait une tâche de rebouchage dans un mur qui n'existe plus */}else w[k]=val;afterChange();annonceFusion(w,fus);}
+function setWallProp(k,val){const w=findWall(sel.id);const fus=k==='st'&&val==='demolir'&&wst(w)!=='demolir'&&!isVirtual(w)?piecesDeChaqueCote(w):null,defus=k==='st'&&val!=='demolir'&&wst(w)==='demolir';history.push(snapshot());if(k==='porteur'){delete w.porteurDoute;if(val==='auto')delete w.porteur;else if(val==='nsp'){w.porteur=true;w.porteurDoute=true;}else w.porteur=(val==='oui');}else if(k==='type'){w.type=val;delete w.t;}else if(k==='t'){if(val>=0.03&&val<=0.8)w.t=val;}else if(k==='st'){if(val==='existant')delete w.st;else w.st=val;/* D36 : ses ouvertures partent avec lui — les marquer « à boucher » créait une tâche de rebouchage dans un mur qui n'existe plus */}else w[k]=val;afterChange();annonceFusion(w,fus);
+  if(defus){const pc=piecesDeChaqueCote(w);if(pc&&pc.some(r=>r.fusion)){pc.forEach(r=>delete r.fusion);afterChange();}}}
 function setCustomT(cm){const t=parseFloat(cm)/100;customT=(t>=0.03&&t<=0.8)?t:null;renderPanel();draw();}
 function setWallLen(l){const w=findWall(sel.id);if(!(l>0.1))return;history.push(snapshot());setWallLength(w,l);afterChange();}
 // ----- Doublage face par face (w.isos) -----
@@ -5507,10 +5610,27 @@ function renderWallIsoFaces(w,lv){
   ${sous.length?`<div class="tip warn" style="margin-top:8px">${ico('alerte','lead')}${sous.length>1?sous.length+' menuiseries conservées ont':'Une menuiserie conservée a'} une <b>tapée plus fine que le doublage</b> : ${sous.map(m=>m.def.label.toLowerCase()+' '+cmDe(m.d)+' → '+cmDe(m.dbl)).join(', ')}. Sans rallonge de tapée, elle ne sera pas au ras de la plaque de plâtre.</div>`:''}
   ${!isoLayers(w).length?`<div class="tip" style="margin-top:8px"><b>ITI</b> (par l'intérieur) : rapide et moins cher, mais réduit la surface habitable. <b>ITE</b> (par l'extérieur) : garde la surface et enveloppe la maison en continu. Les deux se posent à l'outil <b>Doublage</b> (<kbd>D</kbd>).</div>`:''}`;}
 function renderWallIsoInterior(w,lv){return `<div class="ph mt">Isolation (doublage)${gl('doublage')} — mur de séparation</div><div class="tip" style="margin-bottom:8px">Ce mur est intérieur (une pièce de chaque côté) : tu peux le doubler <b>indépendamment sur chaque face</b> (isolation acoustique ou thermique, pièce par pièce).</div>${[1,-1].map(s=>isoSideHtml(w,s)).join('')}`;}
-function splitWall(){const w=findWall(sel.id);history.push(snapshot());const m=mul(add(w.a,w.b),.5);const w2={id:uid(),a:{...m},b:{...w.b},type:w.type};w.b={...m};L().openings.forEach(o=>{if(o.wallId===w.id){if(o.t>0.5){o.wallId=w2.id;o.t=(o.t-0.5)*2;}else o.t*=2;}});L().walls.push(w2);afterChange();}
+/* D47 (cj-qa01) · Couper un mur en deux ne change ni le budget ni la place des travaux. La seconde
+   moitié ne recevait que ses deux bouts et son type : elle perdait l'état (« À démolir »), la réponse
+   « porteur », l'épaisseur, le côté, la façade — et le doublage restait sur la première moitié, étiré
+   au mauvais endroit. Elle est maintenant une copie PROFONDE du mur (nouvel id, sans identifiant
+   public), chaque couche de doublage est répartie de part et d'autre de la coupe, la seconde moitié
+   rejoint le groupe du mur, et les cases déjà cochées du Suivi valent pour les deux moitiés. */
+function splitWall(){const w=findWall(sel.id);if(!w)return;history.push(snapshot());const m=mul(add(w.a,w.b),.5);
+  const w2=JSON.parse(JSON.stringify(w));w2.id=uid();delete w2.pid;w2.a={...m};w.b={...m};
+  const d=state.done=state.done||{},couches=isoLayers(w).map(io=>({...io}));
+  const part=(io,dec)=>{const t0=Math.max(0,Math.min(1,2*isoT0(io)-dec)),t1=Math.max(0,Math.min(1,2*isoT1(io)-dec));if(t1-t0<1e-3)return null;
+    const c={...io};delete c.t0;delete c.t1;if(t0>1e-6)c.t0=t0;if(t1<1-1e-6)c.t1=t1;return c;};
+  const n1=[],n2=[];couches.forEach((io,li)=>{const k0=isoTacheId(w,io,li),fait=d[k0];
+    const c1=part(io,0),c2=part(io,1);if(c1){if(!c1.id)c1.id=uid();n1.push(c1);}if(c2){c2.id=uid();n2.push(c2);}
+    if(fait){delete d[k0];if(c1)d['iso:'+w.id+':'+c1.id]=fait;if(c2)d['iso:'+w2.id+':'+c2.id]=fait;}});
+  w.isos=n1;w2.isos=n2;delete w.iso;delete w.iso2;delete w2.iso;delete w2.iso2;
+  Object.keys(d).forEach(k=>{if(k.startsWith('w:'+w.id+':')||k.startsWith('fac:'+w.id+':'))d[k.replace(':'+w.id+':',':'+w2.id+':')]=d[k];});
+  (state.groups||[]).forEach(g=>{if(g.wallIds.includes(w.id)&&!g.wallIds.includes(w2.id))g.wallIds.push(w2.id);});
+  L().openings.forEach(o=>{if(o.wallId===w.id){if(o.t>0.5){o.wallId=w2.id;o.t=(o.t-0.5)*2;}else o.t*=2;}});L().walls.push(w2);afterChange();}
 function toggleOpeningOpt(k){const o=L().openings.find(o=>o.id===sel.id);if(!o)return;history.push(snapshot());o.opts=o.opts||[];const i=o.opts.indexOf(k);if(i>=0)o.opts.splice(i,1);else o.opts.push(k);afterChange();}
 function setTableaux(on){const o=L().openings.find(x=>x.id===sel.id);const w=o&&L().walls.find(x=>x.id===o.wallId);if(w)poserTableaux(o,w,!!on);}
-function setOpeningProp(k,val){const o=L().openings.find(o=>o.id===sel.id);if(k==='volet'&&val==='battant'&&o.type==='baie')val='roulant';if(k==='ouvrant'&&val==='galandage')o.pose='applique';if(k==='pose'&&val!=='applique'&&ouvrantOf(o)==='galandage')o.ouvrant='coulissant';if(k==='st'&&(val==='creer'||val==='remplacer')&&o.vitrage==='simple')o.vitrage='double';history.push(snapshot());if(k==='type'){const d=OPENINGS[val];o.type=val;o.w=d.w;o.h=d.h;if(val==='baie')o.mat='alu';else if(!matsFor(o).includes(o.mat))delete o.mat;}else if(k==='st'){if(val==='existant')delete o.st;else o.st=val;
+function setOpeningProp(k,val){const o=L().openings.find(o=>o.id===sel.id);if(k==='volet'&&val==='battant'&&o.type==='baie')val='roulant';if(k==='ouvrant'&&val==='galandage')o.pose='applique';if(k==='pose'&&val!=='applique'&&ouvrantOf(o)==='galandage')o.ouvrant='coulissant';if(k==='st'&&(val==='creer'||val==='remplacer')&&o.vitrage==='simple')o.vitrage='double';history.push(snapshot());if(k==='type'){const d=OPENINGS[val];o.type=val;o.w=d.w;o.h=d.h;if(d.kind==='gap'&&o.st==='remplacer')delete o.st;if(val==='baie')o.mat='alu';else if(!matsFor(o).includes(o.mat))delete o.mat;}else if(k==='st'){if(val==='existant')delete o.st;else o.st=val;
     /* Devenir neuve ou remplacée, c'est hériter de la tapée qu'impose le doublage du mur.
        Elle ne se recalculait qu'en touchant l'isolation : passer une menuiserie en
        « remplacer » la laissait donc à 40 mm sur un mur doublé de 140, sans rien dire. */
@@ -5524,7 +5644,7 @@ function setItemProp(k,val){const it=L().items.find(i=>i.id===sel.id);history.pu
    nature du point lumineux. C'est l'objet qui lève l'ambiguïté entre deux postes du catalogue,
    pas une règle cachée. `setItemProp` force un nombre : il ne peut pas les stocker. */
 function setItemChoix(k,val){const it=L().items.find(i=>i.id===sel.id);if(!it)return;history.push(snapshot());it[k]=val;afterChange();}
-function setRoomSol(k,val){const r=L().rooms.find(r=>r.id===sel.id);if(!r)return;history.push(snapshot());r.sol=r.sol||{};
+function setRoomSol(k,val){const r=L().rooms.find(r=>r.id===sel.id);if(!r)return;history.push(snapshot());r.sol=r.sol||{};retirerFusion(r,'sol');
   if(k==='chape'){r.sol.chape=val||null;if(val==='liquide')r.sol.ragreage=false;}
   else if(k==='ragreage')r.sol.ragreage=!!val;
   else if(k==='iso')r.sol.iso=val?(r.sol.iso||{mat:'pu',e:0.08}):null;
@@ -5539,8 +5659,10 @@ function setRoomSol(k,val){const r=L().rooms.find(r=>r.id===sel.id);if(!r)return
 function setRoomRevetement(val){const r=L().rooms.find(r=>r.id===sel?.id);if(!r)return;history.push(snapshot());
   if(val==='__garde'){r.solGarde=true;delete r.floorNew;delete r.sol;}
   else{delete r.solGarde;if(val)r.floorNew=val;else delete r.floorNew;if(val===PONCAGE||val===BETON_FINI)delete r.sol;}
-  afterChange();}
-function setRoomProp(k,val,light){const r=L().rooms.find(r=>r.id===sel.id);if(!light)history.push(snapshot());if(k==='floor'&&r.floorNew===PONCAGE&&!/parquet/i.test(val||''))delete r.floorNew;r[k]=val;if(k==='type'||(k==='name'&&String(val).trim()))delete r.typeAuto;if(light){draw();renderFoot();}else afterChange();}
+  if(!poseSurExistantOK(r))delete r.surExistant; /* D47 : « poser sur l'ancien » ne survit pas à un revêtement qui ne le permet pas */
+  retirerFusion(r,'sol');afterChange();}
+function setRoomProp(k,val,light){const r=L().rooms.find(r=>r.id===sel.id);if(!light)history.push(snapshot());if(k==='floor'&&r.floorNew===PONCAGE&&!/parquet/i.test(val||''))delete r.floorNew;r[k]=val;
+  if(k==='surExistant'&&!val)delete r.surExistant;if(['peinture','faience','fauxPlafond','surExistant'].includes(k))retirerFusion(r,k==='surExistant'?'sol':k); /* D47 : décidé dans la pièce réunie */if(k==='type'||(k==='name'&&String(val).trim()))delete r.typeAuto;if(light){draw();renderFoot();}else afterChange();}
 function setTextColor(c){const t=TX(L()).find(x=>x.id===sel?.id);if(!t)return;history.push(snapshot());t.color=c;lastNoteColor=c;afterChange();}
 let lastNoteColor='jaune';
 function setTextProp(val){const t=TX(L()).find(x=>x.id===sel?.id);if(!t)return;if(!t._h){history.push(snapshot());t._h=1;}t.text=String(val).slice(0,200);draw();}
@@ -5771,10 +5893,10 @@ function quantities(){
      menuiserie avec lui. Il ne reste ici que les annotations libres du plan. */
   levels.forEach((L2,i)=>{L2.annotations=TX(state.levels[i]).map(t=>t.text).filter(Boolean);});
   const controles=state.levels.map(lv=>({niveau:lv.name,points:planChecks(lv).map(c=>({niveau:c.lvl,texte:c.msg.replace(/<[^>]+>/g,'')}))})).filter(c=>c.points.length);
-  return {area,areaBefore,ext,rooms,roomsBefore,doors,windows,wallPaint,glass,plinthes,toiture:toitureQ(),lin,byType,levels,travaux,plomberie,velux,etudes,ossature,contexte,produits,produitsTotal,notes:state.notes||'',sols:(()=>{const out=[];state.levels.forEach(lv=>facesFor(lv,'projet').forEach(f=>{const r=f.room;if(r&&solDecide(r)){const sp=solPlan(r),c=solCouches(r),nw=r.floorNew||'';
+  return {area,areaBefore,ext,rooms,roomsBefore,doors,windows,wallPaint,glass,plinthes,toiture:toitureQ(),lin,byType,levels,travaux,plomberie,velux,etudes,ossature,contexte,produits,produitsTotal,notes:state.notes||'',sols:(()=>{const out=[];state.levels.forEach(lv=>{let fE=null;facesFor(lv,'projet').forEach(f=>{const r=f.room;if(r&&solDecide(r)){const nw=r.floorNew||'',sp=solPlan(r,nw?solsActuelsDe(lv,f,fE||(fE=facesFor(lv,'existant'))):null),c=solCouches(r);
       /* 1.14 (D37) : `poncage` — le parquet actuel est poncé, pas remplacé. `revetement` reste
          « Parquet » pour qu'un lecteur antérieur retombe sur la même ligne ; `depose` est faux. */
-      out.push({id:pidOf('p',r),piece:roomName(r),niveau:lv.name,surface:+areaNet(lv,f).toFixed(1),existant:r.floor||null,revetement:nw===PONCAGE?(sp.ponce?'Parquet':null):(nw||null),poncage:!!sp.ponce,depose:sp.sup==='revetement'&&!!nw&&nw!==PONCAGE,dalle:sp.sup==='terre',betonFini:sp.betonFini,isolant:c.iso?{mat:solMatLabel(c.iso.mat),ep:c.iso.e}:null,chape:c.chape,ragreage:c.ragreage,alerte:sp.warn?sp.warn.replace(/<[^>]+>/g,''):null});}}));return out;})(),electricite,chauffage,doublage,facades,controles,arbitrage,provenance,suivi:(()=>{const T=chantierTasks();return {total:T.length,faits:T.filter(t=>isDone(t.id)).length,taches:T.map(t=>({id:t.id,lot:t.lot,label:t.label,fait:isDone(t.id)}))};})()};
+      out.push({id:pidOf('p',r),piece:roomName(r),niveau:lv.name,surface:+areaNet(lv,f).toFixed(1),existant:r.floor||null,revetement:nw===PONCAGE?(sp.ponce?'Parquet':null):(nw||null),poncage:!!sp.ponce,depose:!!sp.depose,surExistant:!!sp.surExistant,dalle:sp.sup==='terre',betonFini:sp.betonFini,isolant:c.iso?{mat:solMatLabel(c.iso.mat),ep:c.iso.e}:null,chape:c.chape,ragreage:c.ragreage,alerte:sp.warn?sp.warn.replace(/<[^>]+>/g,''):null});}});});return out;})(),electricite,chauffage,doublage,facades,controles,arbitrage,provenance,suivi:(()=>{const T=chantierTasks();return {total:T.length,faits:T.filter(t=>isDone(t.id)).length,taches:T.map(t=>({id:t.id,lot:t.lot,label:t.label,fait:isDone(t.id)}))};})()};
 }
 /* ---------- La frontière d'export ---------- */
 /* Le SEUL point de sortie du plan vers un consommateur (moteur d'estimation, enregistrement,
@@ -5782,7 +5904,7 @@ function quantities(){
    que le consommateur doit vérifier. Toute clé renommée ou retirée fait changer ce numéro.
    Avant, le seul « export » était un <details> de debug — qui n'émettait ni la toiture, ni les
    sols, ni la plomberie, ni les études, ni les velux. */
-const CONTRAT_PLAN='1.15.0'; /* 1.1 : attributs de choix (douche, point lumineux, escalier), hauteur de faïence par pièce, état « conservé ». 1.2 : chaque équipement dit sa pièce, et chaque pièce ses murs par type. 1.3 : les choix non tranchés (type de douche, point lumineux, matériau d'escalier, hauteur de faïence) sortent à null au lieu de leur défaut — c'est au consommateur d'appliquer le défaut ET de le signaler. 1.4 : faux plafond par pièce, et un niveau dit s'il est créé par le projet et en quoi est son plancher. 1.5 : poteaux et poutres dessinables — chaque équipement d'ossature porte son rôle, sa portée et le fait qu'il reprend ou non un mur porteur démoli ; agrégat `ossature` au niveau du plan. Ajout pur : rien n'est renommé ni retiré. 1.6 : `hauteurAvant` par pièce — la hauteur du volume AVANT travaux, quand le projet y crée un plancher ; `hauteur` reste celle d'après travaux, comme avant. Ajout pur. 1.7 : `emprise` par niveau, en m² — sans elle le plancher d'un étage créé n'était pas chiffrable. Ajout pur. 1.8 : par pièce, `plancherACreer` (bois / béton / null) — le plancher se chiffre pièce par pièce, une mezzanine ne couvre pas tout un volume — et `nonHabitableAvant`, vrai pour une grange, une dépendance ou un volume ouvert que le chantier rend habitable. Ajout pur. 1.9 : `toiture.parties` — une toiture n'est plus une seule surface. Chaque niveau qu'un étage ne recouvre pas entièrement donne une partie plus basse, avec sa forme, sa pente, son emprise et ses égouts ; `surface`, `emprise` et `egouts` sont désormais les TOTAUX. Sur un plan à un seul niveau, tout est identique. 1.10 : `tremiePerimNeuf` par pièce — le pourtour de la trémie dont l'escalier est À CRÉER, qui porte le garde-corps. `tremiePerim` reste le pourtour de TOUTES les trémies, comme avant : une trémie déjà là a déjà son garde-corps, la facturer violerait D1. Ajout pur. 1.11 : `provenance.ouvertures[].percement` — le percement que chaque ouverture provoque (porteurPetit / porteurGrand / leger / null). `travaux.percementsDetail` reste le total ; sans identifiant, le devis portait jusqu'à 19 000 € de percements rattachés à aucune ouverture. Ajout pur. 1.12 : provenance.doublages[].sys — la finition du doublage (ossature / enduit / bardage). Une ITE sous bardage est un AUTRE poste qu'une ITE sous enduit, 185 contre 140 EUR/m2 ; sans cette clef le devis ne pouvait pas choisir. Ajout pur. 1.13 (D36, aucun euro sans geste) : `plinthes` — par pièce et au total — ne compte plus que les plinthes NEUVES : une pièce sans revêtement neuf, ou faïencée jusqu'au sol, en porte 0. `sols` n'émet que les pièces dont le sol est décidé (revêtement ou couche choisie). Les ouvertures d'un mur démoli ne sortent plus, ni en menuiseries ni en provenance : elles partent avec le mur. Aucune clé renommée ni retirée. 1.14 (D37, justesse métier) : `sols[].poncage` — le parquet actuel est poncé, pas remplacé (`depose` faux, `revetement` reste « Parquet ») ; « Parquet » sur un parquet veut désormais dire parquet NEUF. `rooms[].peinture` ({murs, plafond} en m², ou null) — la peinture choisie pièce par pièce. `provenance.murs[].porteurAVerifier` — compté porteur sans que l'utilisateur l'ait dit (« je ne sais pas » ou pas de réponse). `etudes.ossatureCreee` — une poutre ou un poteau créé déclenche aussi l'étude. `toiture` est null pour un appartement ; `sols` n'émet pas une pièce dont on garde le sol ; les finitions de façade qui s'excluent ne sortent plus. Ajout pur : rien n'est renommé ni retiré. 1.15 (D46, géométrie et quantités) : `rooms[].perimeter`, `wallArea` et `plinthes` se mesurent à la FACE intérieure des murs (doublage déduit), plus à l'axe ; `provenance.doublages[].m2` et `doublage.iti/ite` déduisent les ouvertures du tronçon doublé ; `provenance.murs[].hydrofuge` — une cloison À CRÉER qui borde une pièce humide faïencée se monte en plaques hydrofuges (le devis prend alors ce poste à la place de « Monter une cloison », et ne facture plus d'hydrofuge sur les cloisons existantes) ; `toiture.surfaceRampants` — la surface sous la pente SANS le débord, pour l'isolation des rampants. Ajout pur : rien n'est renommé ni retiré. */
+const CONTRAT_PLAN='1.16.0'; /* 1.1 : attributs de choix (douche, point lumineux, escalier), hauteur de faïence par pièce, état « conservé ». 1.2 : chaque équipement dit sa pièce, et chaque pièce ses murs par type. 1.3 : les choix non tranchés (type de douche, point lumineux, matériau d'escalier, hauteur de faïence) sortent à null au lieu de leur défaut — c'est au consommateur d'appliquer le défaut ET de le signaler. 1.4 : faux plafond par pièce, et un niveau dit s'il est créé par le projet et en quoi est son plancher. 1.5 : poteaux et poutres dessinables — chaque équipement d'ossature porte son rôle, sa portée et le fait qu'il reprend ou non un mur porteur démoli ; agrégat `ossature` au niveau du plan. Ajout pur : rien n'est renommé ni retiré. 1.6 : `hauteurAvant` par pièce — la hauteur du volume AVANT travaux, quand le projet y crée un plancher ; `hauteur` reste celle d'après travaux, comme avant. Ajout pur. 1.7 : `emprise` par niveau, en m² — sans elle le plancher d'un étage créé n'était pas chiffrable. Ajout pur. 1.8 : par pièce, `plancherACreer` (bois / béton / null) — le plancher se chiffre pièce par pièce, une mezzanine ne couvre pas tout un volume — et `nonHabitableAvant`, vrai pour une grange, une dépendance ou un volume ouvert que le chantier rend habitable. Ajout pur. 1.9 : `toiture.parties` — une toiture n'est plus une seule surface. Chaque niveau qu'un étage ne recouvre pas entièrement donne une partie plus basse, avec sa forme, sa pente, son emprise et ses égouts ; `surface`, `emprise` et `egouts` sont désormais les TOTAUX. Sur un plan à un seul niveau, tout est identique. 1.10 : `tremiePerimNeuf` par pièce — le pourtour de la trémie dont l'escalier est À CRÉER, qui porte le garde-corps. `tremiePerim` reste le pourtour de TOUTES les trémies, comme avant : une trémie déjà là a déjà son garde-corps, la facturer violerait D1. Ajout pur. 1.11 : `provenance.ouvertures[].percement` — le percement que chaque ouverture provoque (porteurPetit / porteurGrand / leger / null). `travaux.percementsDetail` reste le total ; sans identifiant, le devis portait jusqu'à 19 000 € de percements rattachés à aucune ouverture. Ajout pur. 1.12 : provenance.doublages[].sys — la finition du doublage (ossature / enduit / bardage). Une ITE sous bardage est un AUTRE poste qu'une ITE sous enduit, 185 contre 140 EUR/m2 ; sans cette clef le devis ne pouvait pas choisir. Ajout pur. 1.13 (D36, aucun euro sans geste) : `plinthes` — par pièce et au total — ne compte plus que les plinthes NEUVES : une pièce sans revêtement neuf, ou faïencée jusqu'au sol, en porte 0. `sols` n'émet que les pièces dont le sol est décidé (revêtement ou couche choisie). Les ouvertures d'un mur démoli ne sortent plus, ni en menuiseries ni en provenance : elles partent avec le mur. Aucune clé renommée ni retirée. 1.14 (D37, justesse métier) : `sols[].poncage` — le parquet actuel est poncé, pas remplacé (`depose` faux, `revetement` reste « Parquet ») ; « Parquet » sur un parquet veut désormais dire parquet NEUF. `rooms[].peinture` ({murs, plafond} en m², ou null) — la peinture choisie pièce par pièce. `provenance.murs[].porteurAVerifier` — compté porteur sans que l'utilisateur l'ait dit (« je ne sais pas » ou pas de réponse). `etudes.ossatureCreee` — une poutre ou un poteau créé déclenche aussi l'étude. `toiture` est null pour un appartement ; `sols` n'émet pas une pièce dont on garde le sol ; les finitions de façade qui s'excluent ne sortent plus. Ajout pur : rien n'est renommé ni retiré. 1.15 (D46, géométrie et quantités) : `rooms[].perimeter`, `wallArea` et `plinthes` se mesurent à la FACE intérieure des murs (doublage déduit), plus à l'axe ; `provenance.doublages[].m2` et `doublage.iti/ite` déduisent les ouvertures du tronçon doublé ; `provenance.murs[].hydrofuge` — une cloison À CRÉER qui borde une pièce humide faïencée se monte en plaques hydrofuges (le devis prend alors ce poste à la place de « Monter une cloison », et ne facture plus d'hydrofuge sur les cloisons existantes) ; `toiture.surfaceRampants` — la surface sous la pente SANS le débord, pour l'isolation des rampants. Ajout pur : rien n'est renommé ni retiré. 1.16 (D47) : `sols[].surExistant` — le revêtement neuf est posé SUR l'ancien sol, sans dépose (choix de la ligne « Dépose », seulement quand c'est compatible) ; `depose` est alors faux. Ajout pur. */
 function contratPlan(){
   garantirPids();
   const q=quantities(),bas=empriseNiveau(0),ch=chantier();
@@ -5922,8 +6044,15 @@ function elementsATrancher(){const out=[];state.levels.forEach(lv=>{const fP=fac
     if(ost(o)==='existant'&&(PRIX.menuiserie[o.type]||0)>=SEUIL_ARBITRAGE)out.push({kind:'opening',id:o.id,label:maj(ouvNom(o))+(w?ouPieces(piecesAutour(fP,w,o.t)):'')+ml,msg:'déjà là, rien n\'est décidé',aide:`Choisis « ${LEX.etat.garder} » ou « ${LEX.etat.remplacer} ».`});});
   lv.items.forEach(it=>{if(isFurniture(it.type)||!ITEMS[it.type])return;
     if(ist(it)==='existant'&&(EQUIP_PRIX[it.type]||0)>=SEUIL_ARBITRAGE)out.push({kind:'item',id:it.id,label:ITEMS[it.type].label+pieceDuPoint(fP,it.x,it.y)+ml,msg:'déjà là, rien n\'est décidé',aide:`Choisis « ${LEX.etat.garder} » ou « ${LEX.etat.deposer} ».`});});
-  fP.forEach(f=>{const r=f.room;if(r&&!RT[r.type].ext&&!solDecide(r)&&!solGarde(r))out.push({kind:'room',id:r.id,label:'Sol · '+roomName(r)+ml,msg:'pas encore de décision',aide:'Garde le sol actuel, ou choisis un revêtement neuf (ligne « Revêtement »).'});});});
-  return out;}
+  fP.forEach(f=>{const r=f.room;if(!r||RT[r.type].ext)return;const fu=(r.fusion&&r.fusion.quoi)||[],fn=r.fusion?r.fusion.noms.join(' et '):'';
+    if(!solDecide(r)&&!solGarde(r))out.push({kind:'room',id:r.id,prio:fu.includes('sol'),label:'Sol · '+roomName(r)+ml,msg:fu.includes('sol')?fn+' n\'avaient pas le même sol':'pas encore de décision',aide:fu.includes('sol')?'Choisis le sol de toute la pièce réunie (ligne « Revêtement »).':'Garde le sol actuel, ou choisis un revêtement neuf (ligne « Revêtement »).'});
+    /* D47 : la faïence d'une pièce d'eau refaite, et ce qu'une démolition a remis à décider */
+    if(r.faience==null&&(faienceADecider(lv,f)||(fu.includes('faience')&&pieceHumide(lv,f))))out.push({kind:'room',id:r.id,prio:true,label:'Faïence · '+roomName(r)+ml,msg:fu.includes('faience')?fn+' n\'avaient pas la même faïence':'pièce d\'eau refaite, hauteur pas encore choisie',aide:'Choisis une hauteur de faïence, ou « Aucune » si tu gardes les murs tels quels.'});
+    if(fu.includes('peinture'))out.push({kind:'room',id:r.id,prio:true,label:'Peinture · '+roomName(r)+ml,msg:fn+' n\'avaient pas la même peinture',aide:'Choisis ce que tu repeins dans la pièce réunie, ou « Rien ».'});
+    if(fu.includes('fauxPlafond'))out.push({kind:'room',id:r.id,prio:true,label:'Faux plafond · '+roomName(r)+ml,msg:fn+' n\'avaient pas le même plafond',aide:'Coche « Faux plafond » s\'il en faut un dans toute la pièce réunie ; sinon, décoche-le.'});});});
+  /* D47 (cj-pro04) : l'état décrit de la toiture conseille, il ne décide pas */
+  if(toitureADecider()){const t=toiture(),c=toitConseil(t);out.push({kind:'toit',id:'',prio:true,label:'Toiture',msg:'état décrit (couverture '+TOIT_ETAT_COUV[t.etatCouv].toLowerCase()+', charpente '+TOIT_ETAT_CHARP[t.etatCharp].toLowerCase()+'), travaux pas encore décidés',aide:'En vue '+nomVue('projet')+', retiens le conseil ('+[c.action!=='rien'?TOIT_ACTION[c.action].toLowerCase():'',c.traiter?'traiter la charpente':''].filter(Boolean).join(', ')+') ou choisis « Je n\'y touche pas ».'});}
+  return out.filter(a=>a.prio).concat(out.filter(a=>!a.prio));}
 function aDecHTML(A){if(!A.length)return '';const N=5;
   /* D40 : chaque ligne sélectionne son objet et ferme la fenêtre ; au-delà de 5, les autres se déplient (toutes cliquables). */
   const li=a=>`<button type="button" class="chk adec" onclick="montrerSurLePlan({kind:'${a.kind}',id:'${a.id}'})"><span class="ci" aria-hidden="true">${ico('cercle')}</span><span class="at"><b>${esc(a.label)}</b> — ${a.msg}.<small>${a.aide}</small></span><span class="go">Voir sur le plan</span></button>`;

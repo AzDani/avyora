@@ -234,6 +234,14 @@ describe("table de correspondance · les sols, pièce par pièce (D8)", () => {
     const c = contributions.find((x) => x.poste === "rev-carrelage-au-sol")!;
     expect(c.sources).toEqual(["p1"]);
   });
+  /* Contrat 1.16 (D47) : un stratifié posé SUR l'ancien carrelage — pas de dépose, et la ligne le dit. */
+  it("un revêtement posé sur l'ancien sol : aucune dépose, et la raison le dit", () => {
+    const p = { sols: [{ id: "p9", piece: "Séjour", surface: 18.2, existant: "Carrelage", revetement: "Stratifié", depose: false, surExistant: true }] } as PlanPourCorrespondance;
+    const { contributions: c } = contributionsDuPlan(p);
+    expect(c.map((x) => x.poste)).toEqual(["rev-sol-stratifie-imitation-bois"]);
+    expect(c[0].quantite).toBeCloseTo(18.2, 1);
+    expect(c[0].raison).toMatch(/posé sur l'ancien sol/);
+  });
 });
 
 describe("table de correspondance · les surfaces mesurées (D10)", () => {

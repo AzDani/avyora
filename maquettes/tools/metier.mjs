@@ -9,6 +9,8 @@
  * D46 : plinthes, peinture et faïence au pied des murs (plus à l'axe), doublage hors ouvertures,
  * hydrofuge des seules cloisons à créer, mur non porteur démoli au poste de la traduction,
  * rampants sans le débord de toit.
+ * D47 : les décisions tiennent au rechargement, poser sur l'ancien sol, la faïence d'une pièce d'eau
+ * refaite à décider, une fusion qui n'étend aucune décision, un passage sans menuiserie, « Couper en 2 ».
  *
  *   node maquettes/tools/metier.mjs "$(pwd)/maquettes"
  *
@@ -347,6 +349,123 @@ Object.assign(t, await p.evaluate(() => {
   r["… au compteur et au contrat"] = proche(ti.prix, g.surfaceRampants * PRIX_TOIT.isoRampants) && proche(ct.surfaceRampants, g.surfaceRampants) && proche(ct.surface, g.surface);
   return r;
 }));
+
+/* ── 11. D47 · décisions et états ─────────────────────────────────────────────────────── */
+Object.assign(t, await p.evaluate(() => {
+  const r = {};
+  const proche = (a, b2, e = 0.01) => Math.abs(a - b2) < e;
+  const ids = () => chantierTasks().map((x) => x.id.split(":")[0]);
+  const boite = (sol, type) => { state = blankState(); const lv = L(); lv.height = 2.5;
+    [[0, 0, 5, 0], [5, 0, 5, 4], [5, 4, 0, 4], [0, 4, 0, 0]].forEach(([a, b2, c, d]) => lv.walls.push({ id: uid(), a: v(a, b2), b: v(c, d), type: "mur" }));
+    afterChange(); const f = facesCache[lv.id][0]; f.room.type = type || "sejour"; f.room.floor = sol; setMode("projet"); closeModal(); afterChange();
+    sel = { kind: "room", id: f.room.id }; renderPanel(); return f.room; };
+  const solC = () => contratPlan().sols[0];
+  const depSel = () => document.querySelector('#pbody select[aria-label="Ancien sol"]');
+
+  /* cj-novice01 : une migration ne passe qu'une fois */
+  r["plan neuf : né au dernier schéma (pas de migration à rejouer)"] = blankState().schema === SCHEMA;
+  const leg = { levels: [{ rooms: [{ floor: "Parquet", floorNew: "Parquet" }] }] }; migrerEtat(leg);
+  r["plan d'avant D37 : « Parquet » sur un parquet migré une fois en ponçage, puis marqué"] = leg.levels[0].rooms[0].floorNew === PONCAGE && leg.schema === SCHEMA;
+  const neuf = { schema: SCHEMA, levels: [{ rooms: [{ floor: "Parquet", floorNew: "Parquet" }] }] }; migrerEtat(neuf); migrerEtat(neuf);
+  r["plan marqué : « Parquet neuf » reste un parquet neuf, migré ou non"] = neuf.levels[0].rooms[0].floorNew === "Parquet";
+
+  /* cj-pro05 : poser sur l'ancien sol quand c'est compatible */
+  let room = boite("Carrelage"); setRoomRevetement("Stratifié");
+  r["stratifié sur carrelage : la dépose est un choix de sa ligne, « Déposer » par défaut"] = !!depSel() && depSel().value === "0" && ids().includes("sol-depose") && solC().depose === true;
+  const px0 = chantierPrix().total; setRoomProp("surExistant", true);
+  r["poser sur l'ancien sol : plus de dépose, au Suivi et au contrat"] = !ids().includes("sol-depose") && ids().includes("sol-rev") && solC().depose === false && solC().surExistant === true;
+  r["… le compteur baisse du prix de la dépose, rien d'autre"] = proche(px0 - chantierPrix().total, areaNet(L(), facesCache[L().id][0]) * PRIX.deposeSol, 1);
+  r["… et la ligne du revêtement le dit"] = /posé sur l'ancien sol/.test(chantierTasks().find((x) => x.id.startsWith("sol-rev")).detail);
+  setRoomRevetement("Moquette");
+  r["moquette : pas de choix, la dépose est obligatoire"] = !depSel() && ids().includes("sol-depose") && room.surExistant === undefined;
+  room = boite("Moquette"); setRoomRevetement("Stratifié");
+  r["sur une moquette : pas de pose sur l'ancien sol"] = !depSel() && !poseSurExistantOK(room);
+  room = boite("Parquet"); setRoomRevetement("Carrelage");
+  r["carrelage sur parquet : dépose obligatoire ; stratifié sur parquet : au choix"] = !poseSurExistantOK(room) && (setRoomRevetement("Stratifié"), poseSurExistantOK(room));
+
+  /* cj-pro06 : une pièce d'eau refaite sans hauteur de faïence est à décider */
+  room = boite("Carrelage", "sdb");
+  const fai = () => elementsATrancher().some((a) => /^Faïence/.test(a.label));
+  r["salle de bain décrite, rien de refait : pas de faïence à décider"] = !fai();
+  setRoomRevetement("Carrelage");
+  const onF = () => [...document.querySelectorAll("#pbody .seg button.on")].some((x) => /^Aucune/.test(x.textContent) && /existant/.test(x.textContent));
+  r["sol refait, faïence jamais choisie : « Encore à décider », rien de présélectionné"] = fai() && !onF();
+  setRoomProp("faience", "");
+  r["« Aucune » choisie : décidé, et sélectionné"] = !fai() && onF() && !chantierTasks().some((x) => x.id.startsWith("faience:"));
+  room = boite("Carrelage", "sde"); L().items.push({ id: uid(), type: "douche", x: 1, y: 1, w: 0.9, h: 0.9, rot: 0, st: "creer", douche: "bac" }); afterChange();
+  r["douche à poser, faïence jamais choisie : à décider"] = fai();
+
+  /* cj-novice09, cj-retention03 : une fusion n'étend aucune décision en silence */
+  loadSample(); closeModal(); setMode("projet"); closeModal();
+  const c1 = L().walls.find((w) => w.type === "cloison" && Math.abs(w.a.x - 3.5) < 1e-6 && Math.abs(w.a.y) < 1e-6 && Math.abs(w.b.y - 4) < 1e-6);
+  sel = { kind: "wall", id: c1.id }; render(); setWallProp("st", "demolir");
+  const fus = facesFor(L(), "projet").find((g) => g.room && pointIn(v(3.5, 2), g.poly));
+  r["chambre (je garde) + séjour (poncé) réunis : aucun ponçage sur 35 m²"] = !chantierTasks().some((x) => /Poncer/.test(x.label));
+  r["… le sol de la pièce réunie repasse « à décider », et c'est dit"] = !solDecide(fus.room) && !solGarde(fus.room) && elementsATrancher().some((a) => /^Sol · Séjour/.test(a.label) && /pas le même sol/.test(a.msg)) && /pas le même sol/.test(document.getElementById("toast").textContent);
+  sel = { kind: "room", id: fus.room.id }; renderPanel(); setRoomRevetement("__garde");
+  r["… décider dans la pièce réunie efface l'avis"] = !fus.room.fusion && !elementsATrancher().some((a) => /pas le même sol/.test(a.msg));
+  undo(); undo();
+  /* deux pièces aux sols différents (parquet / carrelage), même décision « Je garde » : elle reste */
+  const deux = (dA, dB) => { state = blankState(); const lv = L(); lv.height = 2.5;
+    [[0, 0, 8, 0], [8, 0, 8, 4], [8, 4, 0, 4], [0, 4, 0, 0]].forEach(([a, b2, c, d]) => lv.walls.push({ id: uid(), a: v(a, b2), b: v(c, d), type: "mur" }));
+    const cl = { id: uid(), a: v(4, 0), b: v(4, 4), type: "cloison" }; lv.walls.push(cl); afterChange();
+    const fa = facesCache[lv.id].find((g) => pointIn(v(2, 2), g.poly)), fb = facesCache[lv.id].find((g) => pointIn(v(6, 2), g.poly));
+    fa.room.type = "chambre"; fa.room.floor = "Parquet"; fb.room.type = "cuisine"; fb.room.floor = "Carrelage"; Object.assign(fa.room, dA); Object.assign(fb.room, dB);
+    setMode("projet"); closeModal(); afterChange(); sel = { kind: "wall", id: cl.id }; render(); setWallProp("st", "demolir");
+    return facesFor(lv, "projet").find((g) => g.room && pointIn(v(4, 2), g.poly)); };
+  let F = deux({ solGarde: true, peinture: "tout" }, { solGarde: true, peinture: "tout" });
+  r["même décision des deux côtés (je garde, peinture) : elle reste"] = solGarde(F.room) && F.room.peinture === "tout" && !F.room.fusion;
+  F = deux({ solGarde: true, peinture: "tout" }, { solGarde: true, peinture: "murs" });
+  r["peintures différentes : la peinture repasse à décider, le sol reste"] = solGarde(F.room) && !F.room.peinture && elementsATrancher().some((a) => /^Peinture/.test(a.label));
+  F = deux({}, {}); sel = { kind: "room", id: F.room.id }; renderPanel();
+  const opts = [...document.querySelectorAll("#pbody .solstep.s-rev select option")].map((o) => o.textContent);
+  r["parquet + carrelage réunis : « Garder les sols actuels (parquet et carrelage) », pas de ponçage proposé"] = opts.some((o) => /Garder les sols actuels \(parquet et carrelage\)/.test(o)) && !opts.some((o) => /Poncer/.test(o));
+  setRoomRevetement("Stratifié");
+  r["… la dépose nomme les deux sols, sur toute la pièce"] = /Déposer l'ancien sol \(parquet et carrelage\)/.test(chantierTasks().find((x) => x.id.startsWith("sol-depose")).label);
+  r["… et on ne pose pas sur un parquet ET un carrelage sans le dire : choix proposé (les deux le permettent)"] = !!depSel();
+
+  /* pro13 : salle de bain + WC réunis = une salle de bain */
+  loadSample(); closeModal(); setMode("projet"); closeModal();
+  const sdbWc = L().walls.find((w) => w.type === "cloison" && Math.abs(w.a.x - 2.2) < 1e-6 && Math.abs(w.a.y - 4) < 1e-6);
+  sel = { kind: "wall", id: sdbWc.id }; render(); setWallProp("st", "demolir");
+  const Fs = facesFor(L(), "projet").find((g) => g.room && pointIn(v(1, 5.5), g.poly));
+  r["salle de bain + WC réunis : la pièce reste une salle de bain (baignoire dedans)"] = Fs.room.type === "sdb";
+
+  /* cj-coherence07 : un passage sans porte ne se remplace pas */
+  loadSample(); closeModal(); setMode("projet"); closeModal();
+  const pa = L().openings.find((o) => o.type === "passage"); sel = { kind: "opening", id: pa.id }; renderPanel();
+  r["passage : « À remplacer » n'est pas proposé"] = ![...document.querySelectorAll("#pbody .segetat button")].some((x) => /remplacer/i.test(x.textContent)) && !/À remplacer/.test(tipChiffrageOuverture(pa, L()));
+  pa.st = "remplacer"; afterChange();
+  r["passage marqué « remplacer » (plan d'avant) : aucune dépose, aucune tâche"] = !chantierTasks().some((x) => x.id.startsWith("o:" + pa.id));
+  delete pa.st; afterChange();
+
+  /* cj-qa01 : couper un mur en deux ne change pas le budget */
+  const t0 = chantierPrix().total;
+  const dbl = L().walls.find((w) => isoLayers(w).some((io) => io.st === "creer")); sel = { kind: "wall", id: dbl.id }; splitWall();
+  const lg = chantierTasks().filter((x) => x.id.startsWith("iso")).reduce((s2, x) => s2 + (+(x.label.match(/Doubler (?:le mur de )?([\d,]+) m/) || [0, "0"])[1].replace(",", ".")), 0);
+  r["couper en 2 un mur doublé : même budget, 4 m doublés côté Chambre"] = chantierPrix().total === t0 && proche(lg, 4, 0.02) && chantierTasks().filter((x) => x.id.startsWith("iso")).every((x) => /Chambre/.test(x.label));
+  const dem = L().walls.find((w) => wst(w) === "demolir"); sel = { kind: "wall", id: dem.id }; splitWall();
+  r["couper en 2 une cloison à démolir : les deux moitiés restent à démolir"] = chantierPrix().total === t0 && L().walls.filter((w) => wst(w) === "demolir").length === 2;
+  return r;
+}));
+
+/* cj-novice01 : un « Parquet neuf » tient au rechargement et à la réouverture depuis « Mes plans » */
+{
+  const p2 = await b.newPage(); p2.on("pageerror", (e) => errs.push(e.message));
+  await p2.setViewport({ width: 1400, height: 900 });
+  await p2.evaluateOnNewDocument(() => { try { if (!sessionStorage.getItem("m47")) { localStorage.clear(); sessionStorage.setItem("m47", "1"); } } catch {} });
+  await p2.goto("file://" + SP + "/plan-editor.html", { waitUntil: "networkidle0" }); await wait(400);
+  const avant = await p2.evaluate(() => { closeWelcome("blank"); state = blankState(); const lv = L(); lv.height = 2.5;
+    [[0, 0, 4, 0], [4, 0, 4, 3], [4, 3, 0, 3], [0, 3, 0, 0]].forEach(([a, b2, c, d]) => lv.walls.push({ id: uid(), a: v(a, b2), b: v(c, d), type: "mur" }));
+    afterChange(); const f = facesCache[lv.id][0]; f.room.floor = "Parquet"; setMode("projet"); closeModal(); afterChange(); sel = { kind: "room", id: f.room.id }; setRoomRevetement("Parquet");
+    savePlanToLibrary(); save(); return { tot: chantierPrix().total, n: chantierTasks().length }; });
+  await p2.reload({ waitUntil: "networkidle0" }); await wait(400);
+  const apres = await p2.evaluate(() => { try { closeModal(); } catch {} const r0 = L().rooms.find((x) => x.floorNew); const a = { fn: r0 && r0.floorNew, tot: chantierPrix().total, n: chantierTasks().length };
+    ouvrirPlanRange(state.id); try { closeModal(); } catch {} const r1 = L().rooms.find((x) => x.floorNew); return { a, b: { fn: r1 && r1.floorNew, tot: chantierPrix().total } }; });
+  t["« Parquet neuf » rechargé : toujours un parquet neuf, même total, mêmes tâches"] = apres.a.fn === "Parquet" && apres.a.tot === avant.tot && apres.a.n === avant.n && avant.n === 3;
+  t["… et rouvert depuis « Mes plans » : pareil"] = apres.b.fn === "Parquet" && apres.b.tot === avant.tot;
+  await p2.close();
+}
 
 await b.close();
 const echecs = Object.entries(t).filter(([, ok]) => !ok);

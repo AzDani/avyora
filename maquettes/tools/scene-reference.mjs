@@ -38,8 +38,9 @@ export function scene() {
   const O=(mur,t,type,st,extra={})=>{const d=OPENINGS[type];lv.openings.push({id:uid(),wallId:mur.id,t,type,w:d.w,h:d.h,side:1,hinge:1,st,...extra});};
   O(sud,0.30,'fenetre','remplacer'); O(sud,0.60,'fenetre','creer',{volet:'roulant'});
   O(est,0.5,'fenetre','garder'); O(ouest,0.5,'fenetre','boucher'); O(refend,0.5,'porte','creer');
+  /* D47 : l'état décrit ne commande rien — la toiture complète est un CHOIX (manuel), pas une déduction */
   state.toiture={forme:'deuxpans',pente:30,couverture:'tuile',etatCouv:'refaire',etatCharp:'refaire',combles:'perdus',debord:0.3,
-    projet:{action:'complete',charpente:'trad',isoCombles:'perdus',velux:2,gouttieres:true,raccords:true,traiterCharpente:false}};
+    projet:{action:'complete',charpente:'trad',isoCombles:'perdus',velux:2,gouttieres:true,raccords:true,traiterCharpente:false,manuel:true}};
   setMode('projet'); afterChange();
   const faces=facesCache[lv.id]||[];
   const petite=faces.reduce((m,f)=>f.areaInt<m.areaInt?f:m,faces[0]);
@@ -106,16 +107,18 @@ export function sceneVariantes() {
      porteur », pas une cloison), une salle d'eau créée dans la chambre (ses cloisons neuves se
      montent en plaques hydrofuges, à la place d'une cloison ordinaire), un doublage sur le mur des
      deux fenêtres (ouvertures déduites), des combles aménagés isolés sous les rampants (sans le
-     débord de toit). */
+     débord de toit). D47 : le sol de la salle d'eau est posé sur l'ancien carrelage (sans dépose). */
   const lv0=L(), W0=(a,c,t,x={})=>{const w={id:uid(),a:v(...a),b:v(...c),type:t,...x};lv0.walls.push(w);return w;};
   W0([6,4.2],[6,5.2],'mur',{porteur:false,st:'demolir'});
   W0([6.5,0],[6.5,2],'cloison',{st:'creer'}); W0([6.5,2],[8,2],'cloison',{st:'creer'});
   nord.iso={e:0.12,mat:'gv',mode:'iti',sys:'ossature',side:1,st:'creer'};
   state.toiture={forme:'deuxpans',pente:35,couverture:'tuile',etatCouv:'bon',etatCharp:'bon',combles:'amenages',debord:0.4,
-    projet:{action:'demousser',isoCombles:'rampants',velux:0,gouttieres:false,raccords:false,traiterCharpente:false}};
+    projet:{action:'demousser',isoCombles:'rampants',velux:0,gouttieres:false,raccords:false,traiterCharpente:false,manuel:true}};
   afterChange();
   const sde=facesFor(lv0,'projet').find(f=>f.room&&pointIn(v(7.2,1),f.poly));
   sde.room.type='sde'; sde.room.name="Salle d'eau"; sde.room.typeAuto=false; sde.room.faience='mi';
+  /* D47 : un carrelage posé SUR l'ancien carrelage — ni dépose au compteur, ni au devis */
+  sde.room.floor='Carrelage'; sde.room.floorNew='Carrelage'; sde.room.surExistant=true;
   lv0.items.push({id:uid(),type:'douche',x:7.5,y:0.6,w:0.9,h:0.9,rot:0,st:'creer',douche:'bac'});
   afterChange(); garantirPids();
 }

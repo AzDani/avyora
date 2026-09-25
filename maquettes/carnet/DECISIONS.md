@@ -2196,9 +2196,14 @@ que la hauteur de faïence n'est pas choisie. Mais la traduction plan → estima
 humide : le compteur disait 0 €, le devis facturait la faïence et les cloisons hydrofuges.
 
 **Décision.** Règle de Dani, « on ne facture rien tant que ce n'est pas décidé sur le plan » : sans
-hauteur choisie (`faience: null`), la pièce humide ne produit ni faïence ni cloison hydrofuge. Le
-choix reste signalé dans « Encore à décider » de l'éditeur. Seuls les plans venant de l'éditeur sont
-concernés : l'estimateur détaillé seul ne passe pas par cette table.
+hauteur choisie (`faience: null`), la pièce humide ne produit ni faïence ni cloison hydrofuge. Seuls
+les plans venant de l'éditeur sont concernés : l'estimateur détaillé seul ne passe pas par cette table.
+
+*Correction (D47, cj-integration13).* Ce paragraphe disait aussi « le choix reste signalé dans
+« Encore à décider » de l'éditeur » : c'était faux à l'écriture — `faience: null` s'affichait comme
+« Aucune — je garde l'existant », présélectionné, et rien ne le signalait. C'est vrai depuis D47, pour
+une pièce d'eau refaite (sol décidé ou appareil sanitaire à poser) dont la faïence n'a jamais été
+choisie.
 
 **Contrôle.** `tests/estimateur-plan-correspondance.test.ts` : la salle de bain de la fixture, rendue
 sans hauteur, ne produit plus aucune des deux lignes (159 tests). Couverture et cohérence inchangées.
@@ -2313,3 +2318,118 @@ pro16, cj-integration00, integ-15).**
   variantes (« Démolir le mur · Salle d'eau » pour un mur de la chambre). Hors géométrie ; signalé.
 - La cote extérieure s'arrête à la face du mur, pas à celle d'une ITE ; elle suit toujours les lignes
   extrêmes du plan (un plan en L n'a qu'une chaîne par côté), comme avant.
+
+## D47 · Décisions et états : ce qui est choisi tient, ce qui ne l'est pas ne coûte rien (25/09/2026)
+
+**Constats (contre-jury : cj-novice01, cj-pro04, cj-qa07, cj-pro03, cj-integration01, cj-pro05,
+cj-pro06, cj-integration13, cj-novice09, cj-retention03, cj-coherence07, cj-qa01, cj-qa02, cj-qa03 ;
+jury : pro13, qa14).**
+- **« Parquet neuf » redevenait « Poncer et vitrifier » à chaque rechargement** (bloquant).
+  `migrerSols()` (D37) tournait sans condition dans `load()` et `ouvrirPlanRange()` : tout « Parquet »
+  posé sur un parquet — précisément la valeur de l'option « Parquet neuf (à la place de l'ancien) » —
+  redevenait un ponçage. Une pièce de 4 × 3 m (1 342 €, 3 tâches : dépose, parquet neuf, plinthes) se
+  rouvrait avec un ponçage seul, sans un mot, au Suivi, dans « Mes plans » et au contrat.
+- **Décrire la toiture en vue Avant travaux ajoutait jusqu'à 37 000 €** : `setToiture` déduisait
+  l'action (démousser, refaire la couverture, toiture complète, traiter la charpente) de l'état décrit.
+- **Aucune pose sur l'ancien sol** : la dépose était imposée (cadenas) sous tout revêtement neuf.
+- **Une salle de bain refaite sans faïence n'était signalée nulle part** (et D45 disait le contraire) :
+  `faience` absent s'affichait « Aucune — je garde l'existant », présélectionné.
+- **Fusion de pièces** : la fiche retenue étendait ses décisions à toute la pièce réunie — le ponçage du
+  Séjour gagnait le parquet « Je garde » de la Chambre (+509 €, résumé en « et 1 autre tâche »), le
+  carrelage d'une cuisine devenait un parquet à poncer ; salle de bain + WC donnaient une pièce « WC »
+  avec la baignoire dedans.
+- **Passage sans porte** : « À remplacer · menuiserie neuve » proposé, puis 40 € de dépose d'une
+  menuiserie qui n'existe pas.
+- **Copies** : « Couper en 2 » perdait l'état, le doublage et la démolition de la seconde moitié ;
+  Ctrl+D / Ctrl+V d'un équipement en vue Travaux créait un existant gratuit avec le même id au contrat ;
+  « Reprendre les murs porteurs du dessous » partageait le tableau des doublages entre les niveaux et
+  recopiait un doublage à créer, chiffré une seconde fois à l'étage.
+
+**Décisions.**
+1. **Une migration ne passe qu'une fois** : `state.schema` (47) dit jusqu'où l'état a été migré ;
+   `blankState()` naît au dernier schéma, `migrerEtat()` remplace les appels directs. Un plan enregistré
+   avant D47 sans ce numéro est migré une dernière fois (on ne peut pas distinguer, dans un vieux plan,
+   un « Parquet » de D8 d'un « Parquet neuf » choisi après D37), puis marqué. Toutes les décisions de sol
+   sont des champs de la fiche, sérialisés tels quels : c'est la migration seule qui les réécrivait.
+2. **Toiture : l'état décrit est un constat.** `projet.action` reste « rien » tant que rien n'est
+   choisi. En vue Travaux, la fiche dit « À décider. D'après l'état que tu as décrit…, on te conseille :
+   refaire la couverture », avec « Retenir : … » (le montant qu'il ajouterait, en Pro) et « Je n'y touche
+   pas » ; aucun bouton de l'action n'est présélectionné. La toiture entre dans « Encore à décider »
+   (`toitureADecider`). En vue Avant travaux : « aucun travaux n'est compté ici ». Un plan d'avant dont
+   l'action venait de l'état (`manuel` faux) repart sur « Rien » (`migrerToiture`) ; un choix fait reste.
+   Contrat inchangé (`projet.action`).
+3. **Mur maçonné non porteur démoli** : déjà aligné par D46 (« Démolir le mur », `PRIX.demolMur`, le poste
+   de la traduction ; `coherence.mjs` §1quater, `metier.mjs` §10). Rien refait ici.
+4. **Poser sur l'ancien sol** (`r.surExistant`, contrat 1.16 `sols[].surExistant`, `depose` alors faux) :
+   un CHOIX de la ligne « Dépose » de l'ordre de réalisation, proposé seulement quand ça se fait —
+   carrelage ou béton ciré sous un stratifié, un vinyle, un carrelage, un parquet (flottant) ou un béton
+   ciré ; parquet sous un stratifié ou un vinyle. Par défaut « Déposer l'ancien sol » (couche « à faire »,
+   plus « compté automatiquement ») ; ailleurs (moquette, lino, stratifié, tomettes…) la dépose reste
+   obligatoire et la ligne dit pourquoi. Rien de plus n'est chiffré : le primaire d'accrochage n'a pas de
+   poste au catalogue (la fiche le dit) ; le ragréage reste une couche à cocher. Séjour de 18,2 m² en
+   carrelage, stratifié : 1 500 € → 1 136 € posé sur l'ancien sol. La traduction ne crée pas de dépose et
+   dit « posé sur l'ancien sol » dans la raison de la ligne.
+5. **Faïence : « jamais décidée » ≠ « Aucune »** (`faience` absent / `''`). Une pièce d'eau refaite (sol
+   décidé, ou douche, baignoire, lavabo, vasque, WC à poser) sans hauteur choisie entre dans « Encore à
+   décider » ; rien n'est présélectionné dans sa fiche tant que rien n'est choisi. La phrase de D45 est
+   corrigée.
+6. **Fusion** (`reglerFusion`, à la démolition d'un mur, seule ou au lasso) : sol, peinture, faïence (pièce
+   d'eau) et faux plafond sont comparés entre les pièces réunies ; ce qui diffère repasse « à décider »
+   dans la pièce réunie, avec un avis (`r.fusion`) : message « Chambre et Séjour ne font plus qu'une
+   pièce… Elles n'avaient pas le même sol : à choisir pour la pièce réunie », ligne « Encore à décider »
+   en tête de liste ; décider dans la pièce efface l'avis ; une décision identique reste (deux « Je
+   garde » restent « Je garde »). La pièce réunie lit TOUS ses sols d'avant (`solsActuelsDe`) : « Garder
+   les sols actuels (parquet et carrelage) », pas de ponçage proposé si tout n'est pas en parquet, dépose
+   « (parquet et carrelage) ». Salle de bain + WC : la salle de bain l'emporte (pro13, priorité inversée).
+   La pastille d'écart nomme la seconde tâche quand il n'y en a qu'une (« … · retiré : Poncer et
+   vitrifier le parquet · Séjour »). Exemple, cloison Chambre / Séjour démolie : 5 796 → 5 022 € (plus de
+   ponçage décidé à la place de personne ; +150 € de démolition).
+7. **Passage sans porte** : ni « À remplacer » proposé (`choixEtat('passage')`), ni dépose, ni tâche ;
+   l'astuce dit « rien à chiffrer. Pour y mettre une porte, change son modèle » ; un vieux plan marqué
+   « remplacer » se lit comme existant (`ost`) ; passer une porte « à remplacer » en passage efface l'état.
+8. **Couper en 2** : copie profonde du mur (nouvel id, sans `pid`) ; chaque couche de doublage répartie
+   de part et d'autre de la coupe ; la seconde moitié rejoint le groupe ; les cases cochées du Suivi
+   valent pour les deux moitiés. Budget identique (mur doublé ou cloison à démolir).
+9. **Dupliquer / coller un équipement** (`copieEquip`) : copie profonde, sans `pid` ; « À poser » en vue
+   Travaux ; en vue Avant travaux, un autre objet relevé, sans la décision de l'original.
+10. **Copie de murs vers un autre niveau** (`copieMurExistant`, partagée par « Copier le niveau » et
+    « Reprendre les murs porteurs ») : profonde, sans `pid`, de l'existant seulement (ni état, ni
+    doublage, façade ou isolant à créer ; ids de couches neufs) ; un mur créé en Travaux au RDC n'est
+    plus repris comme existant à l'étage.
+Au passage, les boutons « Pivoter » et « Dupliquer » de la fiche d'un équipement prennent une icône SVG
+(`ico('pivoter')`, `ico('copie')`) au lieu des glyphes ⟳ et ⧉.
+
+**Contrôles.**
+- `metier.mjs` §11 : plan neuf au dernier schéma, plan d'avant D37 migré une fois, plan marqué jamais
+  remigré ; « Parquet neuf » rechargé puis rouvert depuis « Mes plans » : même revêtement, même total,
+  mêmes 3 tâches (onglet dédié, stockage gardé) ; stratifié sur carrelage : choix « Déposer » par défaut,
+  puis « Poser sur l'ancien sol » → plus de dépose au Suivi ni au contrat (`depose` faux, `surExistant`
+  vrai), le compteur baisse du seul prix de la dépose ; moquette : pas de choix ; carrelage sur parquet :
+  dépose obligatoire ; salle de bain refaite sans faïence → à décider, rien de présélectionné ; « Aucune »
+  → décidé ; douche à poser → à décider ; fusion de l'exemple : aucun ponçage, sol à décider et dit, puis
+  décidé ; même décision des deux côtés → gardée ; peintures différentes → à décider ; parquet + carrelage
+  → « Garder les sols actuels (parquet et carrelage) », pas de ponçage, dépose des deux ; salle de bain +
+  WC → salle de bain ; passage : pas d'« À remplacer », aucune tâche ; couper en 2 un mur doublé ou une
+  cloison à démolir : même budget, 4 m doublés côté Chambre, deux moitiés à démolir.
+- `toiture.mjs` : chaque état (mousse, à refaire, à traiter) → 0 €, aucune tâche, action « rien » ; à
+  décider avec le conseil ; contrat sans action ; vue Travaux : « Retenir » et « Je n'y touche pas », rien
+  de présélectionné ; retenu → compté ; « Rien » → décidé ; migration d'un plan d'avant.
+- `contrat.mjs` : Ctrl+D / Ctrl+V en Travaux → « À poser », ids tous différents au contrat, +2 radiateurs
+  au budget ; en Avant travaux, copie sans décision ; « Reprendre les murs porteurs » : même budget, rien
+  de partagé, aucun `pid` en double, retirer un doublage à l'étage ne touche pas le RDC.
+- `scene-reference.mjs` : toitures marquées choisies (`manuel`), salle d'eau des variantes carrelée sur
+  l'ancien carrelage ; `couverture.mts` à 0 % sur les deux scènes (45 014 € et 30 470 €).
+- Vitest (164) : un revêtement posé sur l'ancien sol ne produit aucune dépose et le dit. Fixture du contrat
+  régénérée (1.16.0 : `surExistant`, `manuel`).
+
+**Pas fait, et pourquoi.**
+- **Déposer l'ancienne faïence** (proposé par cj-pro05, poste `dem-enlever-un-revetement-mural` au
+  catalogue) : ce serait une nouvelle ligne de coût, avec un champ de contrat et une traduction à ajouter ;
+  hors de ce chantier, à arbitrer.
+- **Plans enregistrés entre D37 et D47** : un « Parquet neuf » choisi dans cet intervalle est migré une
+  dernière fois en ponçage à la première ouverture (indiscernable d'un plan de D8). Après, il tient.
+- **« Traiter la charpente » coché seul** ne vaut pas choix de l'action : si l'état conseille aussi de
+  refaire la couverture, la toiture reste à décider jusqu'à « Retenir » ou « Je n'y touche pas ».
+- La pastille d'écart ne nomme la seconde tâche que s'il n'y en a qu'une ; au-delà, « et N autres tâches ».
+- Les autres glyphes utilisés comme icônes (↔ ↕ du faîtage, ↺, ↗) ne sont pas dans les écrans de ce
+  chantier : laissés au chantier du langage visuel.

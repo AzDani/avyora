@@ -6,6 +6,8 @@
  * bouger d'un centimètre (sinon c'est une régression de prix silencieuse) ; sur tout le reste,
  * ils doivent enfin coller au plan.
  *
+ * D47 : l'état décrit de la toiture est un constat — il conseille, il ne commande aucun travaux.
+ *
  *   node maquettes/tools/toiture.mjs "$(pwd)/maquettes"
  */
 import puppeteer from "puppeteer-core";
@@ -203,6 +205,37 @@ const res = await p.evaluate(() => {
     pose("anneau (étage au milieu)", [[0, 0], [12, 0], [12, 9], [0, 9]], [[2, 2], [10, 2], [10, 7], [2, 7]]);
     pose("rez en L", [[0, 0], [12, 0], [12, 4], [6, 4], [6, 7.5], [0, 7.5]], [[0, 0], [6, 0], [6, 7.5], [0, 7.5]]);
     pose("niveau unique", [[0, 0], [6, 0], [6, 4], [0, 4]], null);
+  }
+
+  /* ── D47 (cj-pro04, cj-qa07) : l'état décrit ne commande aucun travaux ───────────────────
+     Un constat (« couverture à refaire ») devenait une réfection chiffrée, jusqu'à 37 000 €, sans
+     décision. Il reste un conseil : à décider, adoptable d'un clic en vue Travaux. */
+  {
+    state = blankState(); L().height = 2.5; chantier().bien = "maison";
+    [[0, 0, 8, 0], [8, 0, 8, 6], [8, 6, 0, 6], [0, 6, 0, 0]].forEach(([a, b2, c, d]) => L().walls.push({ id: uid(), a: v(a, b2), b: v(c, d), type: "mur" }));
+    afterChange(); setTool("select"); setToiture("init", "");
+    const toit = () => chantierTasks().filter((x) => x.id.startsWith("toit:")).map((x) => x.id);
+    const adec = () => elementsATrancher().filter((a) => a.kind === "toit");
+    let ok = true;
+    for (const [k, val] of [["etatCouv", "mousse"], ["etatCouv", "refaire"], ["etatCharp", "traiter"], ["etatCharp", "refaire"]]) {
+      setToiture(k, val); ok = ok && chantierPrix().total === 0 && !toit().length && state.toiture.projet.action === "rien" && !state.toiture.projet.traiterCharpente;
+    }
+    t["état décrit (mousse, à refaire, à traiter) : 0 €, aucune tâche, action « rien »"] = ok;
+    t["… la toiture est « à décider », avec le conseil"] = adec().length === 1 && /toiture complète/i.test(adec()[0].aide);
+    t["… le contrat n'émet aucune action"] = contratPlan().toiture.projet.action === "rien";
+    setMode("projet"); closeModal(); sel = null; state.cur = 0; renderPanel();
+    const btns = [...document.querySelectorAll("#pbody button")].map((x) => x.textContent);
+    t["vue Travaux : le conseil se retient d'un bouton, ou se refuse"] = btns.some((x) => /Retenir : toiture complète/.test(x)) && btns.some((x) => /Je n'y touche pas/.test(x)) && !document.querySelector("#pbody .seg button.on[onclick*=\"p.action\"]");
+    setToiture("p.action", "complete");
+    t["retenu : la toiture complète est comptée, plus rien à décider"] = toit().includes("toit:complete") && !adec().length && state.toiture.projet.manuel === true;
+    setToiture("p.action", "rien"); setToiture("etatCharp", "bon"); setToiture("etatCouv", "mousse");
+    t["« Rien » choisi : décidé, même si l'état change ensuite"] = !toit().length && !adec().length;
+    /* un plan d'avant D47 dont l'action venait de l'état (manuel faux) repart sur « Rien » */
+    const leg = { levels: [], toiture: { etatCouv: "refaire", etatCharp: "traiter", projet: { action: "refection", traiterCharpente: true, manuel: false } } };
+    migrerEtat(leg);
+    const choisi = { levels: [], toiture: { etatCouv: "refaire", etatCharp: "bon", projet: { action: "refection", manuel: true } } };
+    migrerEtat(choisi);
+    t["plan d'avant : l'action déduite de l'état repart sur « Rien », un choix fait reste"] = leg.toiture.projet.action === "rien" && !leg.toiture.projet.traiterCharpente && choisi.toiture.projet.action === "refection";
   }
   return t;
 });

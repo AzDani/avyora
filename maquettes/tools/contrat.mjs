@@ -58,6 +58,31 @@ const res = await p.evaluate(() => {
     setOpeningProp("type", "porte_fenetre"); renderPanel();
     t["allège · pas de champ sur une porte-fenêtre"] = !champ() && allegeOf(o) === 0;
     lv.openings.splice(lv.openings.indexOf(o), 1); afterChange(); }
+
+  /* D47 (cj-qa02) : dupliquer ou coller un équipement en vue Travaux crée un objet À POSER, avec son
+     propre identifiant — la copie naissait existante, gratuite, avec l'id de l'original */
+  { loadSample(); setMode("projet"); closeModal();
+    const rad = L().items.find((i) => i.type === "radiateur"); const t0 = chantierPrix().total;
+    sel = { kind: "item", id: rad.id }; multi = []; duplicateItem(); const d1 = L().items.find((i) => i.id === sel.id);
+    copyItems(); pasteItems(v(5, 5)); const d2 = L().items.find((i) => i.id === sel.id);
+    garantirPids(); const q2 = contratPlan();
+    const eq = (q2.detailNiveaux || []).flatMap((n) => (n.equipements || []).map((e) => e.id));
+    t["Ctrl+D / Ctrl+V en vue Travaux : les copies sont « À poser »"] = d1.st === "creer" && d2.st === "creer" && d1 !== rad && d2 !== rad;
+    t["… chacune avec son identifiant : aucun id en double au contrat"] = new Set(eq).size === eq.length && d1.pid !== rad.pid && d2.pid !== rad.pid && d1.pid !== d2.pid;
+    t["… et elles se chiffrent (deux radiateurs à poser)"] = chantierPrix().total - t0 === 2 * (EQUIP_PRIX.radiateur || 0);
+    setMode("existant"); closeModal(); sel = { kind: "item", id: rad.id }; rad.st = "demolir"; duplicateItem(); const d3 = L().items.find((i) => i.id === sel.id);
+    t["en vue Avant travaux, la copie est un autre objet relevé, sans la décision de l'original"] = !d3.st && d3.pid !== rad.pid; }
+
+  /* D47 (cj-qa03, qa14) : « Reprendre les murs porteurs du dessous » ne partage rien et ne recopie
+     aucun travaux — le doublage à créer du RDC se chiffrait une seconde fois à l'étage */
+  { loadSample(); setMode("projet"); closeModal(); const t0 = chantierPrix().total, bas = L();
+    addLevel("empty"); copyBearingBelow(); const haut = L(); garantirPids();
+    const pb = new Set(bas.walls.map((w) => w.pid));
+    t["murs porteurs repris : même budget (aucun travaux recopié)"] = chantierPrix().total === t0 && haut.walls.length > 0 && haut.walls.every((w) => !w.st && isoLayers(w).every((io) => io.st !== "creer"));
+    t["… aucun tableau partagé entre les niveaux, aucun id public en double"] = haut.walls.every((w) => bas.walls.every((d) => (d.isos === undefined || d.isos !== w.isos) && (d.facade === undefined || d.facade !== w.facade))) && haut.walls.every((w) => !pb.has(w.pid));
+    const w = haut.walls.find((x) => isoLayers(x).length) || haut.walls[0]; const avant = JSON.stringify(bas.walls.map((x) => x.isos || null));
+    w.isos = []; afterChange();
+    t["… retirer un doublage à l'étage ne touche pas le RDC"] = JSON.stringify(bas.walls.map((x) => x.isos || null)) === avant; }
   return t;
 });
 await b.close();

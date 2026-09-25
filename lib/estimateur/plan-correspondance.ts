@@ -54,7 +54,10 @@ export interface PlanPourCorrespondance {
     depose?: boolean; dalle?: boolean; betonFini?: boolean; isolant?: unknown; chape?: string | null; ragreage?: boolean;
     /** Contrat 1.14 : le parquet actuel est poncé (vrai) ou remplacé par un neuf (faux). Absent
      *  dans un contrat antérieur : on retombe alors sur la déduction D8. */
-    poncage?: boolean }>;
+    poncage?: boolean;
+    /** Contrat 1.16 (D47) : le revêtement neuf est posé SUR l'ancien sol — `depose` est alors faux.
+     *  Il ne change aucun poste ; il est dit dans la raison de la ligne du revêtement. */
+    surExistant?: boolean }>;
   /* Le détail objet par objet, que le contrat émettait déjà sans que personne lise autre chose
      que `murs`. Deux choses en dépendent : la TRAÇABILITÉ exigée par D1 — une ligne injectée doit
      se rattacher à un objet du plan — et l'ÉTAT, sans lequel un doublage déjà en place se
@@ -496,6 +499,7 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
     const src = sol.id ? [sol.id] : [];
     const m2 = +(sol.surface ?? 0);
     const ou = sol.piece ? ` · ${sol.piece}` : "";
+    const surAncien = sol.surExistant ? " posé sur l'ancien sol" : "";
     if (sol.depose) add("dem-enlever-un-revetement-de-sol", m2, src, `Ancien sol déposé${ou}`);
     if (sol.dalle) add("mac-couler-une-dalle-beton", m2, src, `Dalle à couler${ou}`);
     if (sol.isolant) add("iso-isolation-du-sol-plancher-bas", m2, src, `Isolation sous chape${ou}`);
@@ -517,7 +521,7 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
       const dit = typeof sol.poncage === "boolean";
       const poncage = dit ? sol.poncage === true : ancien.includes("parquet");
       add(poncage ? "rev-poncage-vitrification-parquet" : "rev-parquet-bois", m2, src,
-        poncage ? `Parquet existant poncé et vitrifié${ou}` : `Parquet neuf${ou}`, undefined,
+        poncage ? `Parquet existant poncé et vitrifié${ou}` : `Parquet neuf${surAncien}${ou}`, undefined,
         dit ? undefined
         : poncage
           ? `Déduit du sol existant (${sol.existant}) : on le ponce plutôt que de le remplacer. Si tu veux un parquet neuf, change cette ligne.`
@@ -525,7 +529,7 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
       continue;
     }
     const poste = SOL[nouveau];
-    if (poste) add(poste, m2, src, `Sol : ${nouveau.toLowerCase()}${ou}`);
+    if (poste) add(poste, m2, src, `Sol : ${nouveau.toLowerCase()}${surAncien}${ou}`);
     else ignores.push({ quoi: nouveau, pourquoi: "aucun poste de sol au catalogue pour ce revêtement", sources: src });
   }
 
