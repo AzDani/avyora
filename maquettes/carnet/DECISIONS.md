@@ -2202,3 +2202,114 @@ concernés : l'estimateur détaillé seul ne passe pas par cette table.
 
 **Contrôle.** `tests/estimateur-plan-correspondance.test.ts` : la salle de bain de la fixture, rendue
 sans hauteur, ne produit plus aucune des deux lignes (159 tests). Couverture et cohérence inchangées.
+
+## D46 · Géométrie et quantités : les cotes disent la surface, les quantités celles d'un pro (25/09/2026)
+
+**Constats (contre-jury : cj-novice00, cj-design00, cj-qa00, novice19, cj-pro00, cj-pro01, cj-pro02,
+pro16, cj-integration00, integ-15).**
+- **Les cotes contredisaient la surface** (régression de D39). Le premier contour pose ses murs d'un
+  côté du trait (`side −1` : le trait est la face intérieure, le mur pousse dehors), mais les cotes
+  retiraient toujours une DEMI-épaisseur de chaque côté, comme pour un mur centré. 4 × 3,5 m cliqués :
+  « 14,0 m² » et 3,80 × 3,30 dedans, 4,20 × 3,70 dehors ; en murs de 60 cm (5 × 4) : 4,40 × 3,40 et
+  5,60 × 4,60 — à l'écran ET dans le dossier pour les artisans. La cote du mur sélectionné
+  s'imprimait sur la cote extérieure ; le badge « 90° » cachait l'origine des cotes intérieures.
+  Et, à la souris, revenir au premier coin avec un mur épais (ou zoomé) accrochait la face du
+  premier mur, 30 cm plus loin : la pièce ne se fermait pas.
+- **Plinthes, peinture, faïence à l'axe des murs** : la salle de bain de l'exemple, 2,06 × 2,87 m
+  dedans, se comptait sur 10,40 m de périmètre (9,86 au pied des murs) ; +16 % sur une chambre en
+  murs de pierre.
+- **Doublage fenêtres comprises** : 6,25 m² comptés pour 4,75 m² d'isolant (+32 %).
+- **Hydrofuge sur les cloisons existantes** : l'exemple facturait 13 m² de cloisons neuves (715 €)
+  pour 4,9 m² de faïence ; « Zone douche » sans douche : hydrofuge seul. Et une cloison NEUVE de
+  salle de bain se payait deux fois : « Monter une cloison » (50 €/m²) PLUS « Cloison pièce humide
+  (hydrofuge) » (55 €/m²) — au catalogue, c'est le même ouvrage en deux variantes.
+- **Rampants isolés débord compris** (+12 à +16 %) : l'avancée de toit est dehors.
+- **Façade démolie d'une pièce seule** : plus aucune pièce fermée après travaux ; la carte tombait à
+  « 0 € · dès ta première pièce fermée », « Estimer » se bloquait, la liste d'étapes redemandait de
+  dessiner une pièce — pendant que le Suivi comptait 3 920 €.
+- **Mur maçonné non porteur démoli** : le compteur le rangeait en cloison (15 €/m²), la traduction en
+  « Abattre un mur non porteur » (35 €/m²) : 150 € au Suivi, 350 € au devis. Même écart à la
+  création : un mur de 20 cm déclaré non porteur se montait « en cloison » au Suivi, en parpaings au
+  devis.
+
+**Décisions.**
+1. **Cotes intérieures** = la boîte du polygone intérieur de la pièce (celui qui donne la surface,
+   doublage compris). Là où un doublage s'arrête au milieu d'un mur, `polyInt` reliait les deux
+   retraits en biais ; `polyIntExact` garde le retrait de chaque arête, avec la marche : la cote
+   reste droite, et une pièce en marche se cote face par face. **Cotes extérieures** : jusqu'à la face
+   extérieure réelle de chaque mur (`faceVers`, qui lit `w.side`), la ligne de cote à 55 cm de cette
+   face. Même fonction à l'écran et dans le dossier (`renderLevelImage`). Résultat : 4,00 × 3,50
+   dedans, 4,40 × 3,90 dehors ; 5,00 × 4,00 et 6,20 × 5,20 en murs de 60 cm.
+2. La cote du mur sélectionné **glisse le long du mur** jusqu'à une place libre (cotes extérieures et
+   intérieures) ; le badge d'angle s'écarte de 16 px du coin. **Un coin visé l'emporte** sur la face
+   du mur qui y arrive (`snapPoint`) : le contour se ferme au clic sur le premier coin, quelle que
+   soit l'épaisseur.
+3. **Périmètre au pied des murs** (`f.perimInt`) : sur les faces intérieures, doublage déduit, arêtes
+   de vrais murs seulement. Plinthes, murs à peindre, faïence (mi-hauteur et pleine), la ligne
+   « Périmètre » de la fiche et le contrat (`perimeter`, `wallArea`, `plinthes`) le lisent : une seule
+   formule. La marche d'un doublage partiel (quelques centimètres) n'est pas comptée.
+4. **Doublage, ouvertures déduites** — règle retenue : **toutes** les ouvertures qui restent après
+   travaux, pour la part de leur largeur qui tombe dans le tronçon doublé, sur toute leur hauteur
+   (bornée à celle du niveau). Pourquoi pas de seuil : l'estimateur n'en pose aucun (sa quantité par
+   défaut est une enveloppe, 4 √emprise × hauteur × niveaux × 1,25) et le plan déduit déjà toutes les
+   ouvertures de la peinture et de la façade. Même formule au Suivi, au compteur et au contrat
+   (`isoSurface`) ; ITE comprise. Le retour d'isolant en tableau reste une tâche à part. La fiche du
+   doublage dit « Surface comptée : X m², ouvertures déduites ».
+5. **Hydrofuge : seulement les cloisons À CRÉER** qui bordent une pièce humide dont la faïence est
+   comptée (> 0 m²). Elles se montent « en plaques hydrofuges » : la tâche du mur prend le prix de
+   « Cloison pièce humide (hydrofuge) » **à la place** de « Monter une cloison », jamais les deux. Une
+   cloison existante reste — plus de tâche « Passer les cloisons en plaques hydrofuges ». « Zone
+   douche » est grisé tant qu'aucune douche ni baignoire n'est dessinée (« dessine d'abord la
+   douche »). L'exemple passe de 6 511 à 5 796 € (−715 € d'hydrofuge sur des cloisons gardées).
+   L'étanchéité sous carrelage (SPEC) sur les cloisons existantes n'est **pas** ajoutée : ce serait une
+   ligne de coût nouvelle, à arbitrer par Dani.
+6. **Rampants sans débord** : `toitureGeo().surfaceRampants` = Σ emprise de chaque partie (jusqu'à la
+   face extérieure des murs) / cos(pente). La couverture, le démoussage et la charpente gardent la
+   surface débord compris.
+7. **Budget sans pièce fermée** : l'attente « première pièce » ne vaut que pour un plan sans pièce
+   (ni avant ni après travaux) ET sans tâche (`budgetEnAttente`) — carte, bouton du haut, Estimer, tiroir
+   du téléphone. L'étape « Dessiner tes pièces » se lit sur les deux états. La vue d'ensemble dit
+   « Plus aucune pièce fermée après ces travaux » au lieu de « Trace les murs extérieurs ».
+8. **Murs démolis et créés : le poste de la traduction.** Démolir : porteur → « Abattre un mur
+   porteur », cloison → « Abattre une cloison », sinon « Abattre un mur non porteur » (`PRIX.demolMur`,
+   libellé « Démolir le mur », détail « mur non porteur »). Créer : selon le TYPE — cloison
+   (ou cloison hydrofuge), mur en parpaings, mur en pierre —, comme `plan-correspondance.ts`.
+9. **Contrat 1.15.0** (ajout pur) : `provenance.murs[].hydrofuge`, `toiture.surfaceRampants` ;
+   `perimeter`, `wallArea`, `plinthes`, les m² de doublage changent de mesure (face intérieure,
+   ouvertures déduites). **Traduction** (`lib/estimateur/plan-correspondance.ts`) : une cloison à créer
+   `hydrofuge` → « Cloison pièce humide (hydrofuge) » au lieu de « Monter une cloison » ; plus
+   d'hydrofuge par pièce sur un contrat 1.15 ; un contrat antérieur garde l'ancienne lecture, signalée
+   comme déduction ; faïence à 0 m² → ni faïence ni hydrofuge ; rampants sur `surfaceRampants`
+   (repli : `surface`).
+
+**Contrôles.**
+- `visuel.mjs` §9 : contour cliqué à la souris 4 × 3,5 (murs de 20 cm) et 5 × 4 (60 cm) → la pièce se
+  ferme, 14,0 / 20,0 m², cotes 4,00 × 3,50 / 5,00 × 4,00 dedans et 4,40 × 3,90 / 6,20 × 5,20 dehors, à
+  l'écran et dans le dossier, et rien d'autre ; la cote du mur sélectionné n'écrase aucune cote
+  extérieure ; sur l'exemple, chaque pièce rectangulaire cotée à ses faces intérieures.
+- `metier.mjs` §10 : périmètre 17,20 m au pied des murs (18 à l'axe), 15,60 en murs de 60 cm, doublage
+  déduit ; plinthes 16,37 ml et murs à peindre = compteur = contrat ; doublage 11,0 m² (fenêtre
+  déduite) et 5,5 m² (tronçon partiel) au Suivi et au contrat ; faïence refaite sur cloison existante :
+  aucune tâche hydrofuge ; cloison à créer : « en plaques hydrofuges » au prix de ce poste, une seule
+  fois, `hydrofuge` au contrat ; sans faïence : cloison ordinaire ; « Zone douche » grisé ; mur non
+  porteur démoli au prix « Abattre un mur non porteur » ; rampants = emprise / cos(pente), compteur =
+  contrat.
+- `valeur.mjs` §3 : façade démolie → montant du Suivi sur la carte, Estimer actif et ouvert, étape
+  « pièces » faite, vue d'ensemble juste.
+- `coherence.mjs` §1quater : les sept branches murs (démolir ×3, créer ×4) nomment les mêmes postes
+  des deux côtés (le compteur utilise le prix du poste que la traduction vise).
+- `scene-reference.mjs` (scène variantes) : un mur non porteur démoli, une salle d'eau créée (cloisons
+  hydrofuges), un doublage sur le mur des deux fenêtres, des rampants — `couverture.mts` reste à 0 %
+  sur les deux scènes (45 014 € et 30 305 €).
+- Vitest (163) : faïence et plinthes remesurées (15,09 m ; 18,26 ml), hydrofuge d'une cloison existante
+  = 0, cloison à créer hydrofuge au lieu de « Monter une cloison », contrat antérieur signalé, « zone
+  de douche » sans douche, rampants sans débord (et repli). Fixture du contrat régénérée (1.15.0).
+
+**Pas fait, et pourquoi.**
+- **SPEC sur les cloisons existantes** (proposé par cj-pro02) : ajouterait un coût que l'arbitrage ne
+  demande pas ; à trancher.
+- **Pièce créée en Travaux dans une pièce existante** : avec une douche dedans, la pièce d'avant
+  travaux prend son nom (`ficheDeFusion` ne sait pas dans quelle vue il apparie) — vu sur la scène
+  variantes (« Démolir le mur · Salle d'eau » pour un mur de la chambre). Hors géométrie ; signalé.
+- La cote extérieure s'arrête à la face du mur, pas à celle d'une ITE ; elle suit toujours les lignes
+  extrêmes du plan (un plan en L n'a qu'une chaîne par côté), comme avant.

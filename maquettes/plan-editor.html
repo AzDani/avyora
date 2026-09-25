@@ -1629,10 +1629,14 @@ function setToitPartie(li,k,val){history.push(snapshot());const lv=state.levels[
   lv.toit=lv.toit||{};
   if(k==='forme')lv.toit.forme=val; else lv.toit.pente=Math.max(0,Math.min(60,parseFloat(val)||0));
   afterChange();}
-function toitureGeo(){const G=toitureGeom();if(!G)return {emprise:0,perim:0,surface:0,pente:30,niveau:'',egouts:0,raccords:0,faitage:0,aretiers:0,hPignon:0,compose:false,parties:[]};
+function toitureGeo(){const G=toitureGeom();if(!G)return {emprise:0,perim:0,surface:0,surfaceRampants:0,pente:30,niveau:'',egouts:0,raccords:0,faitage:0,aretiers:0,hPignon:0,compose:false,parties:[]};
   const parts=partiesToiture();
   const som=(k)=>+parts.reduce((s,x)=>s+(x[k]||0),0).toFixed(1);
-  return {emprise:som('base'),perim:+G.R.perim.toFixed(1),surface:som('surface'),pente:G.pente,niveau:G.R.lv.name,
+  /* D46 (pro16) : l'avancée de toit est dehors, on ne l'isole pas. Les rampants se comptent sur
+     l'emprise de chaque partie (jusqu'à la face extérieure des murs) sous sa pente, SANS le débord ;
+     la couverture, le démoussage et la charpente gardent la surface débord compris. */
+  const surfaceRampants=+parts.reduce((s,x)=>s+(x.base||0)/Math.cos((x.pente||0)*Math.PI/180),0).toFixed(1);
+  return {emprise:som('base'),perim:+G.R.perim.toFixed(1),surface:som('surface'),surfaceRampants,pente:G.pente,niveau:G.R.lv.name,
     egouts:som('egouts'),faitage:G.faitage,aretiers:G.aretiers,raccords:G.raccords,hPignon:G.hPignon,dir:G.dir,compose:G.compose,
     /* la principale d'abord, puis les parties plus basses, de haut en bas */
     parties:parts.map(x=>({niveau:x.nom,principale:x.principale,forme:x.forme,pente:x.pente,emprise:x.base,surface:x.surface,egouts:x.egouts}))};}
@@ -1752,7 +1756,7 @@ function toitureTasks(T){const t=toiture();if(!t||!t.projet||estAppart())return;
       const C2={tuile:['Poser la couverture en tuiles et la sous-toiture',PRIX_TOIT.couvTuile+PRIX_TOIT.sousToiture],ardoise:['Poser la couverture en ardoise et la sous-toiture',PRIX_TOIT.couvArdoise+PRIX_TOIT.sousToiture],zinc:['Poser la couverture en zinc ou bac acier et la sous-toiture',PRIX_TOIT.couvZinc+PRIX_TOIT.sousToiture],plat:['Faire l\'étanchéité du toit plat',PRIX_TOIT.plat]}[couv];T.push({id:'toit:couv',lot,label:C2[0],detail:sfx,prix:S*C2[1]});}}
   if(p.action!=='complete'&&p.traiterCharpente)T.push({id:'toit:traiter',lot,label:'Traiter la charpente (préventif)',detail:sfx,prix:S*PRIX_TOIT.traiter});
   if(p.isoCombles==='perdus')T.push({id:'toit:iso',lot:'Isolation',label:'Isoler les combles perdus (soufflage)',detail:fmtM2(g.emprise),prix:g.emprise*PRIX_TOIT.isoPerdus});
-  if(p.isoCombles==='rampants')T.push({id:'toit:iso',lot:'Isolation',label:'Isoler les rampants des combles aménagés',detail:sfx,prix:S*PRIX_TOIT.isoRampants});
+  if(p.isoCombles==='rampants'){const SR=g.surfaceRampants||0;T.push({id:'toit:iso',lot:'Isolation',label:'Isoler les rampants des combles aménagés',detail:fmtM2(SR)+' · sous la pente, sans l\'avancée de toit',prix:SR*PRIX_TOIT.isoRampants});}
   /* Une seule source (D36, même règle que l'estimation) : les fenêtres de toit DESSINÉES font foi ;
      le nombre du panneau Toiture ne compte que si aucune n'est posée sur le plan. */
   if(p.velux>0&&!veluxDessines())T.push({id:'toit:velux',lot,label:p.velux>1?'Poser '+p.velux+' fenêtres de toit':'Poser une fenêtre de toit',detail:'fourni-posé',prix:p.velux*PRIX_TOIT.velux});
@@ -1828,8 +1832,8 @@ function faienceDe(lv,f){const r=f.room;if(!r||RT[r.type].ext||!r.faience)return
   const eaux=lv.items.filter(i=>(i.type==='douche'||i.type==='baignoire')&&ist(i)!=='demolir'&&pointIn(v(i.x,i.y),f.poly));
   if(!(r.type==='sdb'||r.type==='sde'||eaux.length))return null;
   /* D10 : un receveur est adossé à deux murs, c'est ce linéaire-là qui monte à 2 m. */
-  const pEau=Math.min(eaux.reduce((t,i)=>t+i.w+i.h,0),f.perimReal),haut=r.faience;
-  const m2=haut==='pleine'?wallPaintArea(lv,f,'projet'):haut==='douche'?pEau*2:Math.max(0,f.perimReal-pEau)*1.2+pEau*2;
+  const pEau=Math.min(eaux.reduce((t,i)=>t+i.w+i.h,0),f.perimInt),haut=r.faience;
+  const m2=haut==='pleine'?wallPaintArea(lv,f,'projet'):haut==='douche'?pEau*2:Math.max(0,f.perimInt-pEau)*1.2+pEau*2;
   return {haut,pEau,m2};}
 /* D37 · Peinture : seulement si elle est choisie dans la fiche de la pièce (murs, plafond ou les
    deux) — jamais par défaut. Murs = murs de la pièce hors ouvertures, moins la faïence décidée ;
@@ -1846,11 +1850,27 @@ function plinthesDe(lv,f){const r=f.room;if(!r||RT[r.type].ext)return 0;const nw
   const fa=faienceDe(lv,f);if(fa)pl=fa.haut==='douche'?pl-fa.pEau:0;
   return Math.max(0,pl);}
 /* Cloisons hydrofuges : les CLOISONS d'une pièce humide dont la faïence est décidée — un mur
-   extérieur de pièce humide est doublé, pas hydrofugé. */
-function cloisonsHumidesDe(lv,f){if(!faienceDe(lv,f))return 0;return mursParTypeDeFace(lv,f,roomHeight(lv,f.room)).cloison||0;}
+   extérieur de pièce humide est doublé, pas hydrofugé.
+   D46 (cj-pro02) : et seulement les cloisons À CRÉER. Refaire la faïence d'une salle de bain, ce
+   n'est pas remplacer ses cloisons : l'exemple facturait 13 m² de cloisons neuves (715 €) pour
+   4,9 m² de faïence. Une cloison neuve qui borde la pièce humide se monte directement en plaques
+   hydrofuges : c'est le poste « Cloison pièce humide (hydrofuge) » À LA PLACE de « Monter une
+   cloison » (même ouvrage, 55 au lieu de 50 €/m²), jamais les deux. Sans faïence comptée, rien. */
+function cloisonHydrofuge(lv,w,facesP){if(isVirtual(w)||w.type!=='cloison'||wst(w)!=='creer'||isPorteur(w))return false;facesP=facesP||facesFor(lv,'projet');
+  return facesP.some(f=>{if(!f.room||!f.edges.some(e=>e&&e.wall===w.id))return false;const fa=faienceDe(lv,f);return !!fa&&fa.m2>0;});}
+/* m² de cloisons neuves hydrofuges qui bordent cette pièce (pour sa fiche) */
+function cloisonsHumidesDe(lv,f){const fa=faienceDe(lv,f);if(!fa||!(fa.m2>0))return 0;const N=f.poly.length,h=roomHeight(lv,f.room);let s=0;
+  (f.edges||[]).forEach((e,i)=>{if(!e)return;const w=lv.walls.find(x=>x.id===e.wall);if(!w||!cloisonHydrofuge(lv,w))return;s+=dist(f.poly[(i-1+N)%N],f.poly[i])*h;});return +s.toFixed(2);}
 /* Une couche de doublage se compte sur la longueur TRACÉE (t0..t1), jamais sur tout le mur. */
 const isoLongueur=(w,io)=>wallLen(w)*(isoT1(io)-isoT0(io));
-const isoSurface=(w,io,lv)=>isoLongueur(w,io)*lv.height;
+/* D46 (cj-pro01) : on ne pose pas d'isolant sur une fenêtre. Une couche se compte ouvertures
+   déduites — TOUTES les ouvertures du mur qui restent après travaux, pour la part de leur largeur
+   qui tombe dans le tronçon doublé : c'est la règle que le plan applique déjà à la peinture et à la
+   façade, et l'estimateur ne pose aucun seuil (sa quantité par défaut est une enveloppe). Même
+   formule au Suivi, au compteur et au contrat. Le retour d'isolant en tableau reste une tâche à part. */
+function isoOuvertures(w,io,lv){const L0=wallLen(w);if(!L0)return 0;const t0=isoT0(io)*L0,t1=isoT1(io)*L0;
+  return lv.openings.filter(o=>o.wallId===w.id&&opActive(o,'projet')&&OPENINGS[o.type]).reduce((s,o)=>{const c=o.t*L0,a=Math.max(t0,c-o.w/2),b=Math.min(t1,c+o.w/2);return s+(b>a?(b-a)*Math.min(lv.height,o.h||OPENINGS[o.type].h):0);},0);}
+const isoSurface=(w,io,lv)=>Math.max(0,isoLongueur(w,io)*lv.height-isoOuvertures(w,io,lv));
 /* Identifiant d'une couche dans le Suivi : unique par couche, stable si une autre est retirée. */
 const isoTacheId=(w,io,li)=>'iso:'+w.id+':'+(io.id||li);
 /* Les pièces que longe une couche, de son début à sa fin : ce sont elles qui nomment la tâche
@@ -1872,10 +1892,17 @@ function chantierTasks(){const T=[];const ml=state.levels.length>1;
   state.levels.forEach(lv=>{const lvn=ml?' · '+lv.name:'';const facesP=facesFor(lv,'projet');let fE=null;const facesE=()=>fE||(fE=facesFor(lv,'existant'));
     lv.walls.forEach(w=>{if(isVirtual(w))return;const len=wallLen(w),surf=len*lv.height,thick=isPorteur(w);
       if(wst(w)==='demolir'){
-        T.push({id:'w:'+w.id+':demolir',lot:'Démolition',label:'Démolir '+(thick?'le mur porteur':'la cloison')+ouPieces(piecesAutour(facesE(),w))+' · '+fmt(len)+' m'+lvn,detail:fmtM2(surf)+(thick?' · dépose, étaiement et évacuation':'')+(thick&&(w.porteurDoute||w.porteur==null)?' · compté porteur par prudence, à faire vérifier par un pro':''),prix:surf*(thick?PRIX.demolPorteur:PRIX.demolCloison)});
+        /* D46 (integ-15) : le même poste que la traduction vers l'estimateur — porteur, cloison, ou
+           mur maçonné non porteur (« Abattre un mur non porteur », 35 €/m²). Un mur de 20 cm déclaré
+           non porteur se comptait comme une cloison (15 €/m²) : 150 € ici, 350 € au devis. */
+        const cl=w.type==='cloison';
+        T.push({id:'w:'+w.id+':demolir',lot:'Démolition',label:'Démolir '+(thick?'le mur porteur':cl?'la cloison':'le mur')+ouPieces(piecesAutour(facesE(),w))+' · '+fmt(len)+' m'+lvn,detail:fmtM2(surf)+(thick?' · dépose, étaiement et évacuation':cl?'':' · mur non porteur')+(thick&&(w.porteurDoute||w.porteur==null)?' · compté porteur par prudence, à faire vérifier par un pro':''),prix:surf*(thick?PRIX.demolPorteur:cl?PRIX.demolCloison:PRIX.demolMur)});
         if(thick&&!poutreSurMur(lv,w))T.push({id:'w:'+w.id+':poutre',lot:'Maçonnerie',label:'Poser la poutre de reprise de charge'+ouPieces(piecesAutour(facesE(),w))+' · '+fmt(len)+' m'+lvn,detail:fmt(len)+' ml · le mur portait la charge, la poutre la reprend',prix:len*PRIX.poutreReprise});
       }
-      if(wst(w)==='creer')T.push({id:'w:'+w.id+':creer',lot:thick?'Maçonnerie':'Plâtrerie et cloisons',label:'Monter '+(thick?'le mur':'la cloison')+ouPieces(piecesAutour(facesP,w))+' · '+fmt(len)+' m'+lvn,detail:fmtM2(surf)+' · '+Math.round(wallT(w)*100)+' cm',prix:surf*(w.type==='porteur'?PRIX.murPierre:thick?PRIX.murNeuf:PRIX.cloisonNeuve)});
+      /* D46 : le poste suit le TYPE du mur, comme la traduction (cloison, mur en parpaings, mur en
+         pierre) ; une cloison neuve qui borde une pièce humide faïencée se monte en plaques hydrofuges. */
+      if(wst(w)==='creer'){const cl=w.type==='cloison',hyd=cloisonHydrofuge(lv,w,facesP);
+        T.push({id:'w:'+w.id+':creer',lot:cl?'Plâtrerie et cloisons':'Maçonnerie',label:'Monter '+(cl?'la cloison':'le mur')+(hyd?' en plaques hydrofuges':'')+ouPieces(piecesAutour(facesP,w))+' · '+fmt(len)+' m'+lvn,detail:fmtM2(surf)+' · '+Math.round(wallT(w)*100)+' cm'+(hyd?' · pièce humide':''),prix:surf*(w.type==='porteur'?PRIX.murPierre:cl?(hyd?PRIX.cloisonHumide:PRIX.cloisonNeuve):PRIX.murNeuf)});}
       if(w.facade&&w.facade.st==='creer')facadeFinsEffectives(w).forEach(k=>{const F=FACADES[k];if(F)T.push({id:'fac:'+w.id+':'+k,lot:'Façade',label:(FAC_ACTION[k]||F.label)+ouPieces(piecesAutour(facesP,w))+' · '+fmt(len)+' m'+lvn,detail:fmtM2(facadeArea(w,lv))+' hors ouvertures',prix:facadeArea(w,lv)*(FACADE_PRIX[k]||30)});});
       /* D36 : chaque couche compte SA longueur tracée, comme au contrat, et porte son propre id —
          trois tronçons sur une face partageaient 'iso2:<mur>', et cocher l'un cochait les autres. */
@@ -1884,7 +1911,7 @@ function chantierTasks(){const T=[];const ml=state.levels.length>1;
         const pcs=ite?[]:piecesDuCote(facesP,w,io),cote=pcs.length===1?' · côté '+roomName(pcs[0]):pcs.length===2?' · côtés '+roomName(pcs[0])+' et '+roomName(pcs[1]):'';
         T.push({id:isoTacheId(w,io,li),lot:'Isolation',m2:+s2.toFixed(2),
           label:(ite?'Isoler par l\'extérieur '+quoi+(io.sys==='bardage'?' · sous bardage':''):'Doubler '+quoi+cote)+lvn,
-          detail:fmtM2(s2)+' · '+Math.round(io.e*100)+' cm '+(ISO_MAT[io.mat]?.label||''),
+          detail:fmtM2(s2)+(isoOuvertures(w,io,lv)>0?' hors ouvertures':'')+' · '+Math.round(io.e*100)+' cm '+(ISO_MAT[io.mat]?.label||''),
           prix:s2*(ite?(io.sys==='bardage'?PRIX.isoITEBardage:PRIX.isoITE):PRIX.isoITI)});});});
     lv.openings.forEach(o=>{const d=OPENINGS[o.type];const w=lv.walls.find(x=>x.id===o.wallId);if(!w||!d)return;const dim=fmt(o.w)+' × '+fmt(o.h||d.h)+' m',ou=ouPieces(piecesAutour(facesP,w,o.t)),mex=isExtType(o.type)?'Menuiseries extérieures':'Menuiseries intérieures';
       /* D36 : une ouverture part avec le mur qu'on démolit. Rien à reboucher dans un mur qui
@@ -1954,8 +1981,8 @@ function chantierTasks(){const T=[];const ml=state.levels.length>1;
       const fa=faienceDe(lv,f);
       if(fa&&fa.m2>0)T.push({id:'faience:'+r.id,lot:'Faïence',label:'Poser la faïence · '+rn+lvn,
         detail:fmtM2(fa.m2)+' · '+(fa.haut==='pleine'?'pleine hauteur':fa.haut==='douche'?'zone de douche':'mi-hauteur, 2 m dans la douche'),prix:fa.m2*PRIX.faience});
-      const clo=cloisonsHumidesDe(lv,f);
-      if(clo>0)T.push({id:'clohum:'+r.id,lot:'Plâtrerie et cloisons',label:'Passer les cloisons en plaques hydrofuges · '+rn+lvn,detail:fmtM2(clo)+' · pièce humide',prix:clo*PRIX.cloisonHumide});
+      /* D46 : plus de tâche « Passer les cloisons en plaques hydrofuges » : une cloison neuve de la
+         pièce humide est montée en plaques hydrofuges (tâche du mur), une cloison existante reste. */
       {const pe=peintureDe(lv,f);if(pe){
         if(pe.murs>0)T.push({id:'peint-murs:'+r.id,lot:'Peinture',label:'Peindre les murs · '+rn+lvn,detail:fmtM2(pe.murs)+' · hors ouvertures'+(pe.faience?' et faïence':''),prix:pe.murs*PRIX.peintureMurs});
         if(pe.plafond>0)T.push({id:'peint-plafond:'+r.id,lot:'Peinture',label:'Peindre le plafond · '+rn+lvn,detail:fmtM2(pe.plafond),prix:pe.plafond*PRIX.peinturePlafond});}}});
@@ -2587,7 +2614,22 @@ function detectFaces(level,m=mode()){
       const corner=(ins)=>{const ln=[];for(let i=0;i<N;i++){const p0=P[(i-1+N)%N],p1=P[i];const u=norm(sub(p1,p0));let nn=perp(u);if(((f.label.x-p0.x)*nn.x+(f.label.y-p0.y)*nn.y)<0)nn=mul(nn,-1);ln.push({p:add(p0,mul(nn,ins[i]||0)),u});}
         return P.map((p1,i)=>{const L1=ln[i],L2=ln[(i+1)%N];const den=L1.u.x*L2.u.y-L1.u.y*L2.u.x;if(Math.abs(den)<1e-6){const q=ln[(i+1)%N];const nn=perp(q.u);const d=ins[(i+1)%N]||ins[i]||0;const sgn=((f.label.x-p1.x)*nn.x+(f.label.y-p1.y)*nn.y)<0?-1:1;return add(p1,mul(nn,d*sgn));}const dx=L2.p.x-L1.p.x,dy=L2.p.y-L1.p.y;const t=(dx*L2.u.y-dy*L2.u.x)/den;return add(L1.p,mul(L1.u,t));});};
       f.polyFace=corner(insetsFace); // faces des murs (mitre aux coins) — bord extérieur du doublage intérieur
-      f.polyInt=P.map((p1,i)=>{const L1=lines[i],L2=lines[(i+1)%N];const den=L1.u.x*L2.u.y-L1.u.y*L2.u.x;if(Math.abs(den)<1e-6){const q=lines[(i+1)%N];const nn=perp(q.u);const d=insets[(i+1)%N]||insets[i]||0;const sgn=((f.label.x-p1.x)*nn.x+(f.label.y-p1.y)*nn.y)<0?-1:1;return add(p1,mul(nn,d*sgn));}const dx=L2.p.x-L1.p.x,dy=L2.p.y-L1.p.y;const t=(dx*L2.u.y-dy*L2.u.x)/den;return add(L1.p,mul(L1.u,t));});}
+      f.polyInt=P.map((p1,i)=>{const L1=lines[i],L2=lines[(i+1)%N];const den=L1.u.x*L2.u.y-L1.u.y*L2.u.x;if(Math.abs(den)<1e-6){const q=lines[(i+1)%N];const nn=perp(q.u);const d=insets[(i+1)%N]||insets[i]||0;const sgn=((f.label.x-p1.x)*nn.x+(f.label.y-p1.y)*nn.y)<0?-1:1;return add(p1,mul(nn,d*sgn));}const dx=L2.p.x-L1.p.x,dy=L2.p.y-L1.p.y;const t=(dx*L2.u.y-dy*L2.u.x)/den;return add(L1.p,mul(L1.u,t));});
+      /* D46 (cj-pro00) : le périmètre À LA FACE INTÉRIEURE — là où l'on pose une plinthe, où l'on
+         peint, où l'on carrelle —, doublage déduit, sur les seules arêtes de vrais murs. Le périmètre
+         à l'axe (perimReal) comptait la demi-épaisseur de chaque mur en plus : +16 % sur une chambre
+         en murs de pierre de 60 cm. L'arête i de la face va du coin i−1 au coin i.
+         Là où deux arêtes alignées n'ont pas le même retrait (un doublage qui s'arrête au milieu
+         d'un mur), polyInt relie les deux retraits EN BIAIS : chaque arête garde ici le sien, avec
+         la marche entre les deux (polyIntExact) — c'est ce que cotes et périmètre mesurent. */
+      {const aligne=k=>{const L1=lines[k],L2=lines[(k+1)%N];return Math.abs(L1.u.x*L2.u.y-L1.u.y*L2.u.x)<1e-6;};
+       const pts=[];let pi=0;
+       for(let i=0;i<N;i++){const p0=P[(i-1+N)%N],p1=P[i];let nn=perp(norm(sub(p1,p0)));if(((f.label.x-p0.x)*nn.x+(f.label.y-p0.y)*nn.y)<0)nn=mul(nn,-1);
+         const A=aligne((i-1+N)%N)?add(p0,mul(nn,insets[i]||0)):f.polyInt[(i-1+N)%N],B=aligne(i)?add(p1,mul(nn,insets[i]||0)):f.polyInt[i];
+         const e=f.edges[i];if(e&&e.t>0)pi+=dist(A,B);
+         [A,B].forEach(q=>{const d=pts[pts.length-1];if(!d||dist(d,q)>1e-6)pts.push(q);});}
+       if(pts.length>1&&dist(pts[0],pts[pts.length-1])<1e-6)pts.pop();
+       f.polyIntExact=pts.length>=3?pts:f.polyInt;f.perimInt=isFinite(pi)?pi:perReal;}}
   });
   inner.forEach(f=>{inner.forEach(g=>{if(g===f)return;if(g.poly.every(p=>pointIn(p,f.poly)||f.poly.some(q=>same(p,q)))&&g.poly.some(p=>pointIn(p,f.poly))){f.areaInt-=g.gross;f.hasHole=true;}});});
   /* La face NON BORNÉE — la plus grande en valeur absolue — était jetée : son polygone est
@@ -2722,7 +2764,7 @@ const POSTES=[['sol','Sol'],['murs','Peinture / murs'],['faience','Faïence'],['
 const POSTE_LABEL=Object.fromEntries(POSTES);
 /* Le linéaire où une plinthe peut aller : périmètre réel moins les portes. Une seule formule, que
    lisent le produit repéré et `plinthesDe` (qui n'en compte que ce qui est décidé). */
-function perimHorsPortes(lv,f){return Math.max(0,f.perimReal-openingsOfFace(lv,f,'projet').filter(o=>OPENINGS[o.type].cat==='porte').reduce((s,o)=>s+o.w,0));}
+function perimHorsPortes(lv,f){return Math.max(0,f.perimInt-openingsOfFace(lv,f,'projet').filter(o=>OPENINGS[o.type].cat==='porte').reduce((s,o)=>s+o.w,0));}
 function productQty(lv,f,p){
   if(p.qtyManual!=null)return p.qtyManual;
   /* D42 (pro14) : la faïence repérée suit la faïence DÉCIDÉE de la pièce (même formule que sa tâche,
@@ -2738,7 +2780,7 @@ const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"
 // surface habitable d'une pièce = surface au sol − trémie, moins la part sous 1,80 m (combles)
 function areaNet(lv,f){const r=f.room||{};return Math.max(0,(f.areaInt-tremieArea(lv,f))*(1-(r.lowPct||0)/100));}
 // m² de murs à peindre d'une pièce : périmètre des vrais murs × hauteur − ouvertures
-function wallPaintArea(lv,f,m=mode()){const ops=openingsOfFace(lv,f,m);return Math.max(0,f.perimReal*roomHeight(lv,f.room)-ops.reduce((s,o)=>s+o.w*(o.h||OPENINGS[o.type].h),0));}
+function wallPaintArea(lv,f,m=mode()){const ops=openingsOfFace(lv,f,m);return Math.max(0,f.perimInt*roomHeight(lv,f.room)-ops.reduce((s,o)=>s+o.w*(o.h||OPENINGS[o.type].h),0));}
 // extrémités de murs qui ne touchent rien (ni nœud commun, ni milieu d'un autre mur) — parmi les murs actifs dans la vue
 // Contrôle du plan : les vérifications qu'un archi ferait d'un coup d'œil (accès, lumière, décence, sanitaire).
 // Chaque point est cliquable → sélectionne l'élément concerné. err = bloque la détection/le chiffrage, warn = à corriger, info = bon à savoir.
@@ -3206,6 +3248,10 @@ function snapPoint(raw,ref,exclude){
     const st=keys.shift?Math.PI/2:Math.PI/4; const sa=Math.round(ang/st)*st; let diff=Math.abs(ang-sa); diff=Math.min(diff,2*Math.PI-diff);
     if(keys.shift||(settings.magnet&&diff<7*Math.PI/180)){
       const ll=settings.magnet?Math.round(l/0.05)*0.05:l; p=add(ref,v(Math.cos(sa)*ll,Math.sin(sa)*ll)); kind='angle';
+      /* D46 : un coin visé l'emporte sur la face du mur qui y arrive. Revenir au premier coin avec
+         un mur épais (ou zoomé) accrochait la FACE du premier mur, 30 cm plus loin : le contour ne
+         se fermait pas et la pièce n'existait pas. */
+      for(const q of nodes) if(dist(q,p)<R||dist(q,raw)<R){guides=[];return {p:{...q},kind:'node'};}
       // prolonger jusqu'à un mur proche (jonction en T propre)
       const nw=nearestWall(p,R,L(),false,true); if(nw&&!(exclude&&(same(nw.wall.a,exclude)||same(nw.wall.b,exclude)))){
         /* on vise la FACE du mur (doublage compris), pas son trait : le tracé s'arrête où la
@@ -4235,12 +4281,12 @@ function dessinerEtiquette(E){const b=E.box,cx=b.x+b.w/2;
   ctx.fillStyle=couleurLisible(RT[E.r.type].color);ctx.font=`600 ${E.fsArea}px "Geist Mono", monospace`;ctx.fillText(E.area,cx,b.y+6+E.lines.length*E.lh+E.fsArea/2+1);
   E.marks.forEach((c,i)=>{const mx=b.x+b.w-2-i*10,my=b.y+2;ctx.beginPath();ctx.arc(mx,my,4.2,0,7);ctx.fillStyle=c;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.6;ctx.stroke();});}
 /* Toutes les étiquettes d'un niveau, puis les cotes (qui les évitent), puis les étiquettes par-dessus. */
-let etiquettesVues=[],cotesVues=[]; /* dernier rendu à l'écran : lu par les contrôles (tools/visuel.mjs) */
+let etiquettesVues=[],cotesVues=[],boitesChaines=[]; /* dernier rendu à l'écran : lu par les contrôles (tools/visuel.mjs) ; boitesChaines : textes des cotes extérieures (D46) */
 function drawRoomLabelsEtCotes(lv,faces,fsName,fsArea,hotOf){
   const obst=obstaclesEtiquettes(lv);
   const E=faces.filter(f=>f.room).map(f=>{const hot=!!(hotOf&&hotOf(f));const e=mesureEtiquette(f,f.room,hot?fsName+1:fsName,hot?fsArea+1:fsArea,hot);e.box=placerEtiquette(e,obst);return e;});
   const evite=E.map(e=>({x:e.box.x-4,y:e.box.y-4,w:e.box.w+8,h:e.box.h+8}));
-  if(!exporting)cotesVues=[];drawExteriorChains(lv);drawRoomDims(lv,evite);
+  if(!exporting){cotesVues=[];boitesChaines=[];}drawExteriorChains(lv);drawRoomDims(lv,evite);
   E.forEach(dessinerEtiquette);if(!exporting)etiquettesVues=E.map(e=>({id:e.r.id,nom:roomName(e.r),lignes:e.lines.slice(),box:{...e.box}}));return E;}
 function drawRoomLabel(f,r,fsName,fsArea,hot){const e=mesureEtiquette(f,r,fsName,fsArea,hot);e.box=placerEtiquette(e,[]);dessinerEtiquette(e);}
 // raccords aux nœuds : enveloppe convexe des coins des murs + intersections de leurs faces (onglet propre quelle que soit l'épaisseur)
@@ -4495,10 +4541,15 @@ function drawDoublageITE(lv){
 let uiScale=1; // >1 pendant l'export haute résolution
 function drawWallCote(w,clickable){
   const z=view.zoom,k=uiScale,t=wallT(w),u=norm(sub(w.b,w.a)),n=perp(u);const L0=wallLen(w);if(L0*z<28*k)return;
-  const m=add(add(mul(add(w.a,w.b),.5),wallOff(w)),mul(n,-(t/2+0.18*k)));const s=S(m);let ang=Math.atan2(u.y,u.x);if(ang>Math.PI/2||ang<-Math.PI/2)ang+=Math.PI;
+  const m0=add(add(mul(add(w.a,w.b),.5),wallOff(w)),mul(n,-(t/2+0.18*k)));let ang=Math.atan2(u.y,u.x);if(ang>Math.PI/2||ang<-Math.PI/2)ang+=Math.PI;
   const isSel=sel?.kind==='wall'&&sel.id===w.id;
-  ctx.save();ctx.translate(s.x,s.y);ctx.rotate(ang);ctx.font=`${isSel?700:600} ${11*k}px "Geist Mono", monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
-  const txt=fmt(L0)+' m';const tw=ctx.measureText(txt).width;ctx.fillStyle=isSel?'#eef0fd':'rgba(247,247,252,.85)';ctx.beginPath();ctx.roundRect(-tw/2-4*k,-7*k,tw+8*k,14*k,3);ctx.fill();if(isSel){ctx.strokeStyle='#c4b5fd';ctx.lineWidth=1;ctx.stroke();}ctx.fillStyle=isSel?'#4f46e5':'#6c6b86';ctx.fillText(txt,0,0);ctx.restore();
+  ctx.font=`${isSel?700:600} ${11*k}px "Geist Mono", monospace`;const txt=fmt(L0)+' m';const tw=ctx.measureText(txt).width;
+  /* D46 (cj-design00) : la cote du mur s'imprimait sur la cote extérieure. Elle glisse le long du
+     mur jusqu'à une place libre (cotes extérieures et intérieures) ; sans place, elle reste au milieu. */
+  let s=S(m0);{const c=Math.abs(Math.cos(ang)),sn=Math.abs(Math.sin(ang)),bw=(tw+8*k)*c+14*k*sn,bh=(tw+8*k)*sn+14*k*c,occ=boitesChaines.concat(cotesVues);
+    const libre=q=>!occ.some(o=>q.x-bw/2<o.x+o.w&&q.x+bw/2>o.x&&q.y-bh/2<o.y+o.h&&q.y+bh/2>o.y);
+    if(!libre(s))for(const f of [-.3,.3,-.6,.6,-.8,.8]){const q=S(add(m0,mul(u,f*L0/2)));if(libre(q)){s=q;break;}}}
+  ctx.save();ctx.translate(s.x,s.y);ctx.rotate(ang);ctx.font=`${isSel?700:600} ${11*k}px "Geist Mono", monospace`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=isSel?'#eef0fd':'rgba(247,247,252,.85)';ctx.beginPath();ctx.roundRect(-tw/2-4*k,-7*k,tw+8*k,14*k,3);ctx.fill();if(isSel){ctx.strokeStyle='#c4b5fd';ctx.lineWidth=1;ctx.stroke();}ctx.fillStyle=isSel?'#4f46e5':'#6c6b86';ctx.fillText(txt,0,0);ctx.restore();
   if(clickable)coteLabels.push({wallId:w.id,cx:s.x,cy:s.y,ang,w:tw+8,h:14});
 }
 // arc + libellé de l'angle formé au sommet `vtx` entre les directions vers pA et pB
@@ -4509,7 +4560,7 @@ function drawAngle(vtx,pA,pB){
   const right=Math.abs(deg-90)<0.5,col=right?'#16a34a':'#7c3aed';const s=S(vtx),r=Math.min(26,Math.min(dist(pA,vtx),dist(pB,vtx))*view.zoom*0.45);
   if(right){const m=a1+d/2;const q=r*0.7;const p1=v(s.x+Math.cos(a1)*q,s.y+Math.sin(a1)*q),p2=v(s.x+Math.cos(a2)*q,s.y+Math.sin(a2)*q),pc=v(p1.x+p2.x-s.x,p1.y+p2.y-s.y);ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(pc.x,pc.y);ctx.lineTo(p2.x,p2.y);ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.stroke();}
   else{ctx.beginPath();ctx.arc(s.x,s.y,r,a1,a2,d<0);ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.stroke();}
-  const mid=a1+d/2,tx=s.x+Math.cos(mid)*(r+15),ty=s.y+Math.sin(mid)*(r+15);
+  const mid=a1+d/2,tx=s.x+Math.cos(mid)*(r+31),ty=s.y+Math.sin(mid)*(r+31); /* D46 : 16 px plus loin du coin, l'origine des cotes intérieures reste visible */
   const txt=Math.round(deg)+'°';ctx.font='700 11px "Geist Mono", monospace';const tw=ctx.measureText(txt).width;ctx.fillStyle='#fff';ctx.beginPath();ctx.roundRect(tx-tw/2-4,ty-8,tw+8,16,5);ctx.fill();ctx.strokeStyle=col;ctx.lineWidth=1;ctx.stroke();ctx.fillStyle=col;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,tx,ty);
 }
 // cotes de jambage : distance de l'ouverture aux extrémités de son mur
@@ -4534,6 +4585,8 @@ function drawDim(a,b,col,withText,evite){
   [A,B].forEach(p=>{ctx.beginPath();ctx.moveTo(p.x+n.x*6*k,p.y+n.y*6*k);ctx.lineTo(p.x-n.x*6*k,p.y-n.y*6*k);ctx.stroke();});
   if(!withText)return;let ang=Math.atan2(u.y,u.x);if(ang>Math.PI/2||ang<-Math.PI/2)ang+=Math.PI;
   ctx.save();ctx.translate(pos.x,pos.y);ctx.rotate(ang);ctx.font=`700 ${11*k}px "Geist Mono", monospace`;ctx.textAlign='center';ctx.textBaseline='middle';const txt=fmt(dist(a,b))+' m';const tw=ctx.measureText(txt).width;ctx.fillStyle='#fff';ctx.fillRect(-tw/2-4*k,-8*k,tw+8*k,16*k);ctx.fillStyle=col;ctx.fillText(txt,0,0);ctx.restore();
+  /* D46 : la boîte du texte, pour que la cote d'un mur sélectionné ne s'imprime pas dessus */
+  {const c=Math.abs(Math.cos(ang)),sn=Math.abs(Math.sin(ang)),bw=(tw+8*k)*c+16*k*sn,bh=(tw+8*k)*sn+16*k*c;return {x:pos.x-bw/2,y:pos.y-bh/2,w:bw,h:bh,txt};}
 }
 function drawOpening(o,isSel){
   const w=L().walls.find(w=>w.id===o.wallId);if(!w)return;const def=OPENINGS[o.type];const z=view.zoom,t=wallT(w);
@@ -4778,7 +4831,7 @@ function setLevelProp(k,val){history.push(snapshot());const lv=L();
 function pruneEmptyTexts(){const lv=L();if(!lv.texts||!lv.texts.length)return;lv.texts=lv.texts.filter(t=>(t.text&&t.text.trim())||(sel?.kind==='text'&&sel.id===t.id));}
 const isMobile=()=>window.innerWidth<=600; // téléphone = mode chantier (lecture + suivi) ; tablette = éditeur complet
 /* D40 · le tiroir fermé du téléphone montre le budget à côté de la surface (en Pro, dès qu'une tâche existe) */
-function resumeTiroir(){const q=quantities();if(!q.rooms)return 'Détails du plan';const a=fmtM2(habView(q).area),px=chantierPrix();
+function resumeTiroir(){const q=quantities();if(budgetEnAttente(q))return 'Détails du plan';const a=fmtM2(habView(q).area),px=chantierPrix();
   return isPro()&&px.nb?a+' · '+eur(px.total)+' HT · détails':a+' habitables · détails';}
 function toggleSheet(force){const pn=document.getElementById('panel');pn.classList.toggle('open',force===undefined?!pn.classList.contains('open'):!!force);document.body.classList.toggle('sheetOpen',pn.classList.contains('open'));{const sh=document.getElementById('sheetHandle');if(sh)sh.setAttribute('aria-expanded',String(pn.classList.contains('open')));} /* D43 : le lecteur d'écran sait si le tiroir est ouvert */ /* D40 : la barre de zoom ne couvre plus le budget du tiroir */}
 let panelTab='details'; // volet du panneau de droite : 'details' | 'suivi'
@@ -5100,9 +5153,12 @@ function renderSelection(lv){
          L'ancien défaut « mi-hauteur » facturait une salle de bain que personne n'avait décidé de refaire. */
       const H={'':['Aucune','je garde l\'existant'],douche:['Zone douche','les murs de la douche'],mi:['Mi-hauteur','1,20 m · 2,00 m douche'],pleine:['Pleine hauteur','du sol au plafond']};
       const cur=r.faience||'';
+      /* D46 : « Zone douche » sans douche ni baignoire dessinée ne carrelle rien : on le dit au lieu de le laisser choisir */
+      const eau=lv.items.some(i=>['douche','baignoire'].includes(i.type)&&ist(i)!=='demolir'&&pointIn(v(i.x,i.y),f.poly));
+      const clo=cloisonsHumidesDe(lv,f),fa=faienceDe(lv,f);
       return `<div class="ph mt">Faïence neuve${gl('faience')}</div>
-      <div class="seg wrap">${Object.entries(H).map(([k,l])=>`<button class="${cur===k?'on':''}" onclick="setRoomProp('faience','${k}')">${l[0]}<small>${l[1]}</small></button>`).join('')}</div>
-      <div class="tip" style="margin-top:6px">${!cur?'Rien de compté : ni faïence, ni cloisons hydrofuges. Choisis une hauteur si tu refais les murs de cette pièce.':'C\'est ce qui décide la surface carrelée : '+(cur==='pleine'?'toute la surface des murs':cur==='douche'?'seulement les murs de la douche':'une bande de 1,20 m, portée à 2,00 m dans la douche')+'. Le reste des murs se repeint si tu choisis « Peinture » plus bas. Les cloisons de la pièce passent en plaques hydrofuges.'}</div>`;})()}
+      <div class="seg wrap">${Object.entries(H).map(([k,l])=>{const off=k==='douche'&&!eau&&cur!=='douche';return `<button class="${cur===k?'on':''}"${off?' disabled':''} onclick="setRoomProp('faience','${k}')">${l[0]}<small>${off?'dessine d\'abord la douche':l[1]}</small></button>`;}).join('')}</div>
+      <div class="tip" style="margin-top:6px">${!cur?'Rien de compté : ni faïence, ni cloisons hydrofuges. Choisis une hauteur si tu refais les murs de cette pièce.':cur==='douche'&&!eau?'Aucune douche ni baignoire dessinée dans cette pièce : rien à carreler. Pose-la avec l\'outil Équipements, ou choisis une autre hauteur.':'C\'est ce qui décide la surface carrelée'+(fa&&fa.m2>0?' ('+fmtM2(fa.m2)+')':'')+' : '+(cur==='pleine'?'toute la surface des murs':cur==='douche'?'seulement les murs de la douche':'une bande de 1,20 m, portée à 2,00 m dans la douche')+'. Le reste des murs se repeint si tu choisis « Peinture » plus bas.'+(clo>0?' Les cloisons que tu crées autour de cette pièce ('+fmtM2(clo)+') se montent en plaques hydrofuges.':' Les cloisons existantes restent en place ; une cloison à créer autour de cette pièce se monterait en plaques hydrofuges.')}</div>`;})()}
     ${mode()==='existant'?`<div class="ph mt">Sol actuel</div><select class="fin" aria-label="Sol actuel" onchange="setRoomProp('floor',this.value)">${FLOORS_EX.map(fl=>`<option value="${esc(fl)}" ${fl===r.floor?'selected':''}>${fl===SANS_PLANCHER?'Pas de plancher — volume ouvert (étage à créer)':fl}</option>`).concat(r.floor&&!FLOORS_EX.includes(r.floor)?[`<option selected>${esc(r.floor)}</option>`]:[]).join('')}</select>
     <div class="tip" style="margin-top:8px">Précise bien l'état : <b>terre / sol brut</b> → il faudra couler une <b>dalle</b> ; <b>dalle brute</b> → il faudra une <b>chape</b> ; <b>chape</b> → prêt pour un revêtement. Le projet s'en déduit.</div>`
     :(()=>{const so=r.sol||{};const A=areaNet(lv,f);const sp=solPlan(r);const nw=r.floorNew||'';const c=solCouches(r);
@@ -5153,7 +5209,7 @@ function renderSelection(lv){
     ${(tremieArea(lv,f)>0||r.lowPct)?`<div class="row"><label>Surface au sol</label><span class="val">${fmtM2(f.areaInt)}${tremieArea(lv,f)>0?' − trémie '+fmtM2(tremieArea(lv,f)):''}</span></div>`:''}
     ${mode()!=='existant'?`<label class="chk"><input type="checkbox" ${r.fauxPlafond?'checked':''} onchange="setRoomProp('fauxPlafond',this.checked)"><span>Faux plafond${gl('fauxplafond')}<small>pour cacher des gaines, poser des spots ou rattraper une hauteur</small></span></label>`:''}
     <div class="row"><label>Part sous 1,80 m (combles)</label><span><input class="fin n" type="number" step="5" min="0" max="90" value="${r.lowPct||0}" onchange="setRoomProp('lowPct',Math.max(0,Math.min(90,parseFloat(this.value)||0)))"> %</span></div>
-    <div class="row"><label>Périmètre</label><span class="val">${fmt(f.perimReal)} m</span></div>
+    <div class="row"><label>Périmètre<small style="display:block;color:var(--muted);font-weight:400">au pied des murs, doublage déduit</small></label><span class="val">${fmt(f.perimInt)} m</span></div>
     <div class="row"><label>Hauteur sous plafond${r.hAvant?' <span class="chip">après travaux</span>':''}</label><span><input class="fin n" type="number" step="0.05" min="1.8" max="5" value="${(r.height||lv.height).toFixed(2)}" placeholder="${lv.height.toFixed(2)}" onchange="setRoomHeight(this.value)"> m</span></div>
     <div class="row"><label>Hauteur avant travaux<small style="display:block;color:var(--muted);font-weight:400">vide si elle ne change pas</small></label><span><input class="fin n" type="number" step="0.05" min="1.8" max="12" value="${r.hAvant?r.hAvant.toFixed(2):''}" placeholder="—" onchange="setRoomHAvant(this.value)"> m</span></div>
     ${!RT[r.type].ext&&!RT[r.type].nh?`<label class="chk"><input type="checkbox" ${r.nhAvant?'checked':''} onchange="setRoomProp('nhAvant',this.checked)"><span>Non habitable avant travaux<small>grange, dépendance, combles bruts — la pièce le devient grâce au chantier</small></span></label>
@@ -5253,12 +5309,14 @@ function travauxEnMots(tq){const n=(k,s,p)=>'<b>'+k+'</b> '+(k>1?p:s);
   return [tq.demolM2>0?'<b>'+fmtM2(tq.demolM2)+'</b> de murs à démolir':'',tq.creerM2>0?'<b>'+fmtM2(tq.creerM2)+'</b> de murs à créer':'',tq.boucher?n(tq.boucher,'ouverture à boucher','ouvertures à boucher'):'',tq.percements?n(tq.percements,'percement','percements'):'',tq.remplacer?n(tq.remplacer,'menuiserie à remplacer','menuiseries à remplacer'):'',tq.poser.length?n(tq.poser.length,'équipement à poser','équipements à poser'):'',tq.deposer.length?n(tq.deposer.length,'équipement à déposer','équipements à déposer'):''].filter(Boolean).join(', ');}
 function renderOverview(lv){
   const faces=(facesCache[lv.id]||[]);
+  /* D46 (cj-integration00) : une pièce ouverte par une démolition n'est pas une pièce jamais dessinée */
+  const ouvertParTravaux=!faces.length&&mode()!=='existant'&&facesFor(lv,'existant').some(f=>f.room);
   const tq=quantities().travaux;
-  let h=`${isMobile()?`<div class="mplan"><span><small>Plan ouvert</small><b>${esc(state.name||'Mon plan')}</b></span><button type="button" class="ib" onclick="openPlansModal()">${ico('mesPlans')}Mes plans</button></div>`:'' /* D43 (qa16) : au téléphone, la barre n'a ni nom ni menu Fichier */}<div class="ptitle">${lv.name} <span class="chip vue-${mode()}">Vue ${nomVue(mode()).toLowerCase()}</span></div><div class="psub">${faces.length?faces.length+' pièce(s) détectée(s) sur ce niveau.':'Aucune pièce fermée pour l\'instant. Trace les murs extérieurs avec l\'outil <b>Murs</b>.'}</div>
+  let h=`${isMobile()?`<div class="mplan"><span><small>Plan ouvert</small><b>${esc(state.name||'Mon plan')}</b></span><button type="button" class="ib" onclick="openPlansModal()">${ico('mesPlans')}Mes plans</button></div>`:'' /* D43 (qa16) : au téléphone, la barre n'a ni nom ni menu Fichier */}<div class="ptitle">${lv.name} <span class="chip vue-${mode()}">Vue ${nomVue(mode()).toLowerCase()}</span></div><div class="psub">${faces.length?faces.length+' pièce(s) détectée(s) sur ce niveau.':ouvertParTravaux?'Plus aucune pièce fermée après ces travaux : un mur démoli ouvre la pièce. Elle reste en vue <b>'+nomVue('existant')+'</b>.':'Aucune pièce fermée pour l\'instant. Trace les murs extérieurs avec l\'outil <b>Murs</b>.'}</div>
   ${projetHTML() /* D42 : « Ton projet à X % » et la prochaine étape, en tête de la vue d'ensemble */}
   ${mode()==='projet'?`<div class="tip q">${tq.actif?`Travaux marqués : ${travauxEnMots(tq)}. Passe en vue <b>${nomVue('final')}</b> pour voir le résultat.`:`Aucun travail marqué pour l'instant. Clique un mur → <b>${LEX.etat.demolir}</b>, ou trace un nouveau mur : il sera <b>${LEX.etat.creer.toLowerCase()}</b>. Même logique pour les équipements : ajouté ici = <b>${LEX.etat.poser.toLowerCase()}</b>, existant cliqué → <b>${LEX.etat.deposer.toLowerCase()}</b>.`}</div>`:mode()==='final'?`<div class="tip ok">Le logement <b>après travaux</b>, tel qu'il sera : murs démolis retirés, nouveaux murs et ouvertures intégrés, sans marquage. C'est le plan à montrer aux artisans. Pour changer les travaux, repasse en vue <b>${nomVue('projet')}</b>.</div>`:(lv.walls.length?`<div class="tip">Ton logement tel qu'il est. Quand il est complet, passe en vue <b>${nomVue('projet')}</b> (boutons en haut du plan) pour dessiner ce que tu démolis et ce que tu crées.</div>`:'')}
   <div class="ph mt">Pièces</div><div class="roomlist">`;
-  if(!faces.length)h+=`<div class="empty">Dès qu'un contour de murs se ferme, la pièce apparaît ici avec sa surface.</div>`;
+  if(!faces.length)h+=`<div class="empty">${ouvertParTravaux?'Aucune pièce fermée après travaux.':'Dès qu\'un contour de murs se ferme, la pièce apparaît ici avec sa surface.'}</div>`;
   faces.forEach(f=>{const r=f.room;h+=`<button type="button" class="rl" onclick="sel={kind:'room',id:'${r.id}'};render()"><span class="dot" style="background:${RT[r.type].color}"></span><span class="nm">${roomName(r)}<small>${RT[r.type].label}${(mode()!=='existant'&&r.floorNew)?' · '+r.floorNew.replace(/ \(.*\)/,''):(mode()!=='existant'&&solGarde(r))?' · sol conservé':(r.floor!==FLOORS[0]?' · '+r.floor:'')}${tremieArea(lv,f)>0?' · trémie':''}${r.lowPct?' · '+r.lowPct+'% sous pente':''}</small></span><span class="m2">${fmtM2(areaNet(lv,f))}</span></button>`;});
   h+=`</div>
   ${state.levels.indexOf(lv)>0?`<label class="chk"><input type="checkbox" ${lv.neuf?'checked':''} onchange="setLevelProp('neuf',this.checked)"><span>Étage créé par le projet<small>son plancher est à construire et sera chiffré</small></span></label>
@@ -5294,6 +5352,8 @@ function renderOverview(lv){
    ouvre « Estimer ce plan »). La surface tient sur une ligne discrète en dessous. Sans pièce, la
    carte attend et le dit ; le bouton du haut aussi, avec la même phrase (ATTENTE_PIECE). */
 const ATTENTE_PIECE='Ton budget apparaîtra dès ta première pièce fermée.';
+/* D46 : « vide » se lit sur les pièces des DEUX états et sur les tâches, jamais sur la seule vue d'après travaux */
+const budgetEnAttente=(q,px)=>!q.rooms&&!q.roomsBefore&&!(px||chantierPrix()).nb;
 const calme=()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches;}catch{return false;}};
 /* Un compteur qui « monte » de l'ancienne valeur à la nouvelle ; direct quand le système demande
    moins d'animation. Le texte final est déjà dans la page : le compteur ne fait que le rejoindre. */
@@ -5305,7 +5365,10 @@ function renderFoot(){
   const q=quantities(); const F=document.getElementById('pfoot'); const px=chantierPrix();renderProChip();
   const sb=document.getElementById('surfBadge');const hv=habView(q);
   if(sb){if(hv.area>0){sb.hidden=false;sb.innerHTML=`<span class="s">${ico('surface')}<b>${fmtM2(hv.area)}</b> habitables</span><span class="sub">${hv.rooms} pièce${hv.rooms>1?'s':''}${state.levels.length>1?' · '+state.levels.length+' niveaux':''}${mode()==='existant'?' · '+nomVue('existant').toLowerCase():''}</span>`;}else sb.hidden=true;}
-  const pro=isPro(),vide=!q.rooms,rien=px.nb===0,avant=mode()==='existant';
+  /* D46 (cj-integration00) : l'attente « première pièce » ne vaut que pour un plan sans pièce (ni avant
+     ni après travaux) ET sans tâche. Démolir la façade d'une pièce seule ouvre toutes les pièces : la
+     carte tombait à 0 € et « Estimer » se bloquait pendant que le Suivi comptait 3 920 €. */
+  const pro=isPro(),vide=budgetEnAttente(q,px),rien=px.nb===0,avant=mode()==='existant';
   /* D36 : le montant dit ce qu'il est — HT, prix catalogue, moyenne nationale — et, tant que rien
      n'est décidé, il le dit aussi au lieu de disparaître ou de compter des travaux imaginaires. */
   const carte=vide?`<div class="budget bcard attente"><span class="bk">Budget travaux HT</span><span class="bv" id="budgetVal">0 €</span><span class="bs"><small>${ATTENTE_PIECE}</small></span></div>`
@@ -5313,7 +5376,7 @@ function renderFoot(){
     :pro?`<button type="button" class="budget bcard budgetbtn" onclick="showEstimate()" aria-label="Budget travaux HT : ${eur(px.total)}, ${pluriel(px.nb,'tâche')}. Voir le détail"><span class="bk">Budget travaux HT<span class="bn">${pluriel(px.nb,'tâche')}</span></span><span class="bv" id="budgetVal">${eur(px.total)}</span><span class="bs"><small>indicatif · prix catalogue, moyenne nationale</small><b>Voir le détail →</b></span></button>`
     :`<button type="button" class="budget bcard budgetbtn" onclick="showEstimate()"><span class="bk">Budget travaux HT · Pro<span class="bn">${pluriel(px.nb,'tâche')}</span></span><span class="bv flou" aria-hidden="true">•••• €</span><span class="bs"><small>${avecPro('budget')}</small><b>Aperçu →</b></span></button>`;
   const resume=vide?'':`<div class="presume"><b>${fmtM2(hv.area)}</b> habitables ${avant?'avant':'après'} travaux · <b>${hv.rooms}</b> pièce${hv.rooms>1?'s':''}${state.levels.length>1?' · <b>'+state.levels.length+'</b> niveaux':''}</div>`;
-  F.innerHTML=carte+resume+(isDev()?`<button class="ib devonly" style="width:100%;justify-content:center;margin-top:8px" onclick="ouvrirEnvoi()" ${q.rooms?'':'disabled'}>Envoyer vers mon estimation AVYORA (dev)</button>`:'');
+  F.innerHTML=carte+resume+(isDev()?`<button class="ib devonly" style="width:100%;justify-content:center;margin-top:8px" onclick="ouvrirEnvoi()" ${vide?'disabled':''}>Envoyer vers mon estimation AVYORA (dev)</button>`:'');
   /* le bouton du haut : grisé sans pièce, et il dit pourquoi (survol, lecteur d'écran, clic) */
   {const eb=document.getElementById('estBtnTop');if(eb){eb.classList.toggle('attente',vide);if(vide)eb.setAttribute('aria-disabled','true');else eb.removeAttribute('aria-disabled');
     eb.title=vide?ATTENTE_PIECE:pro?'Ton budget travaux, par corps d\'état et tâche par tâche':avecPro('budget');}}
@@ -5431,7 +5494,7 @@ function isoSideHtml(w,side){const io=isoOnSide(w,side);const room=roomOnSide(w,
          seule ligne dit où on en est, et le geste se fait sur le plan. */
       return `<div class="tip" style="margin-top:8px">${isoEntier(io)
         ?`Doublage sur <b>tout le mur</b> — ${fmt(Lw,2)} m. Tire les deux <b style="color:#b45309">poignées ●</b> sur le plan pour l'arrêter avant une cloison, un conduit, un décroché.`
-        :`Doublage sur <b>${fmt(lg,2)} m</b> des ${fmt(Lw,2)} m du mur — le reste reste brut. Tire les <b style="color:#b45309">poignées ●</b> pour l'ajuster. <button class="ib" style="padding:3px 8px;margin-left:6px" onclick="setWallIsoSide(${side},'tout',1)">Tout le mur</button>`}</div>`;})()}
+        :`Doublage sur <b>${fmt(lg,2)} m</b> des ${fmt(Lw,2)} m du mur — le reste reste brut. Tire les <b style="color:#b45309">poignées ●</b> pour l'ajuster. <button class="ib" style="padding:3px 8px;margin-left:6px" onclick="setWallIsoSide(${side},'tout',1)">Tout le mur</button>`}${isoOuvertures(w,io,L())>0?` Surface comptée : <b>${fmtM2(isoSurface(w,io,L()))}</b>, ouvertures déduites.`:''}</div>`;})()}
     ${mode()==='projet'?`<div class="row"><label>Dans le projet</label><span class="seg" style="display:inline-flex"><button class="${io.st!=='creer'?'on':''}" onclick="setWallIsoSide(${side},'st','existant')">Déjà isolé</button><button class="st-creer ${io.st==='creer'?'on':''}" onclick="setWallIsoSide(${side},'st','creer')">À isoler</button></span></div>`:''}
     <div class="blond ${!isExteriorWall(w)||R>=R_MIN_MUR?'ok':'ko'}"><b>${ite?'Épaisseur ajoutée dehors':'Épaisseur perdue côté '+label} : <span>${fmt(dt*100,1)} cm</span></b><small>${Math.round(io.e*100)} cm isolant + finition (${ite?(io.sys==='bardage'?'lame d\'air + bardage':'enduit'):'lame d\'air + plaque de plâtre'}). R = ${fmt(R,1)} m²·K/W.</small>${isExteriorWall(w)?`<small>${R>=R_MIN_MUR?ico('check','lead ok')+'R ≥ 3,7 : atteint le seuil MaPrimeRénov\' / CEE pour un mur extérieur.':ico('alerte','lead')+'R < 3,7 : sous le seuil MaPrimeRénov\' / CEE pour un mur extérieur.'}</small>`:''}</div>`:''}
   </div></div>`;}
@@ -5575,7 +5638,7 @@ function quantities(){
          si elle en a une, sinon celle du niveau) — plus deux hauteurs contradictoires. */
       lr.push({id:pidOf('p',rr),name:roomName(rr),type:rr.type,exterieur:isExt,horsHabitable:isExt||nh,floor:rr.floor,area:+an.toFixed(2),
         surfaceAuSolPiece:+f.areaInt.toFixed(2),tremie:+tremieArea(lv,f).toFixed(2),tremiePerim:+tremiePerim(lv,f).toFixed(2),tremiePerimNeuf:+tremiePerimNeuf(lv,f).toFixed(2),
-        sousPentePct:rr.lowPct||0,perimeter:+f.perimReal.toFixed(2),hauteur:roomHeight(lv,rr,'projet'),hauteurAvant:rr.hAvant||null,
+        sousPentePct:rr.lowPct||0,perimeter:+f.perimInt.toFixed(2),hauteur:roomHeight(lv,rr,'projet'),hauteurAvant:rr.hAvant||null,
           /* 1.8 : ce que le chantier change du statut de la pièce — un volume sans plancher et
              une grange à convertir ne sont pas habitables AUJOURD'HUI, ils le deviennent. */
           plancherACreer:rr.floor===SANS_PLANCHER?(rr.plancherNeuf||null):null,
@@ -5594,7 +5657,9 @@ function quantities(){
       if(st!=='demolir')lin[w.type]=(lin[w.type]||0)+l;
       if(st==='demolir'){travaux.demolLin[w.type]=(travaux.demolLin[w.type]||0)+l;travaux.demolM2+=m2;tn.demolLin[w.type]=(tn.demolLin[w.type]||0)+l;tn.demolM2=+(tn.demolM2+m2).toFixed(2);if(isPorteur(w))travaux.demolPorteur+=l;}
       if(st==='creer'){travaux.creerLin[w.type]=(travaux.creerLin[w.type]||0)+l;travaux.creerM2+=m2;tn.creerLin[w.type]=(tn.creerLin[w.type]||0)+l;tn.creerM2=+(tn.creerM2+m2).toFixed(2);}
-      provenance.murs.push({id:pidOf('m',w),niveau:nvId,type:w.type,porteur:isPorteur(w),porteurAVerifier:isPorteur(w)&&(!!w.porteurDoute||w.porteur==null),etat:st,ml:+l.toFixed(2),m2:+m2.toFixed(2)});});
+      provenance.murs.push({id:pidOf('m',w),niveau:nvId,type:w.type,porteur:isPorteur(w),porteurAVerifier:isPorteur(w)&&(!!w.porteurDoute||w.porteur==null),etat:st,ml:+l.toFixed(2),m2:+m2.toFixed(2),
+        /* 1.15 (D46) : une cloison À CRÉER qui borde une pièce humide faïencée se monte en plaques hydrofuges */
+        hydrofuge:cloisonHydrofuge(lv,w,faces)});});
     lv.openings.forEach(o=>{const d=OPENINGS[o.type],st=ost(o),h=o.h||d.h,wo=lv.walls.find(x=>x.id===o.wallId);let perc=null;
       if(wo&&wst(wo)==='demolir')return; /* D36 : elle part avec son mur */
       if(st!=='boucher'){if(d.cat==='porte')doors++;else{windows++;glass+=o.w*h;}}
@@ -5717,7 +5782,7 @@ function quantities(){
    que le consommateur doit vérifier. Toute clé renommée ou retirée fait changer ce numéro.
    Avant, le seul « export » était un <details> de debug — qui n'émettait ni la toiture, ni les
    sols, ni la plomberie, ni les études, ni les velux. */
-const CONTRAT_PLAN='1.14.0'; /* 1.1 : attributs de choix (douche, point lumineux, escalier), hauteur de faïence par pièce, état « conservé ». 1.2 : chaque équipement dit sa pièce, et chaque pièce ses murs par type. 1.3 : les choix non tranchés (type de douche, point lumineux, matériau d'escalier, hauteur de faïence) sortent à null au lieu de leur défaut — c'est au consommateur d'appliquer le défaut ET de le signaler. 1.4 : faux plafond par pièce, et un niveau dit s'il est créé par le projet et en quoi est son plancher. 1.5 : poteaux et poutres dessinables — chaque équipement d'ossature porte son rôle, sa portée et le fait qu'il reprend ou non un mur porteur démoli ; agrégat `ossature` au niveau du plan. Ajout pur : rien n'est renommé ni retiré. 1.6 : `hauteurAvant` par pièce — la hauteur du volume AVANT travaux, quand le projet y crée un plancher ; `hauteur` reste celle d'après travaux, comme avant. Ajout pur. 1.7 : `emprise` par niveau, en m² — sans elle le plancher d'un étage créé n'était pas chiffrable. Ajout pur. 1.8 : par pièce, `plancherACreer` (bois / béton / null) — le plancher se chiffre pièce par pièce, une mezzanine ne couvre pas tout un volume — et `nonHabitableAvant`, vrai pour une grange, une dépendance ou un volume ouvert que le chantier rend habitable. Ajout pur. 1.9 : `toiture.parties` — une toiture n'est plus une seule surface. Chaque niveau qu'un étage ne recouvre pas entièrement donne une partie plus basse, avec sa forme, sa pente, son emprise et ses égouts ; `surface`, `emprise` et `egouts` sont désormais les TOTAUX. Sur un plan à un seul niveau, tout est identique. 1.10 : `tremiePerimNeuf` par pièce — le pourtour de la trémie dont l'escalier est À CRÉER, qui porte le garde-corps. `tremiePerim` reste le pourtour de TOUTES les trémies, comme avant : une trémie déjà là a déjà son garde-corps, la facturer violerait D1. Ajout pur. 1.11 : `provenance.ouvertures[].percement` — le percement que chaque ouverture provoque (porteurPetit / porteurGrand / leger / null). `travaux.percementsDetail` reste le total ; sans identifiant, le devis portait jusqu'à 19 000 € de percements rattachés à aucune ouverture. Ajout pur. 1.12 : provenance.doublages[].sys — la finition du doublage (ossature / enduit / bardage). Une ITE sous bardage est un AUTRE poste qu'une ITE sous enduit, 185 contre 140 EUR/m2 ; sans cette clef le devis ne pouvait pas choisir. Ajout pur. 1.13 (D36, aucun euro sans geste) : `plinthes` — par pièce et au total — ne compte plus que les plinthes NEUVES : une pièce sans revêtement neuf, ou faïencée jusqu'au sol, en porte 0. `sols` n'émet que les pièces dont le sol est décidé (revêtement ou couche choisie). Les ouvertures d'un mur démoli ne sortent plus, ni en menuiseries ni en provenance : elles partent avec le mur. Aucune clé renommée ni retirée. 1.14 (D37, justesse métier) : `sols[].poncage` — le parquet actuel est poncé, pas remplacé (`depose` faux, `revetement` reste « Parquet ») ; « Parquet » sur un parquet veut désormais dire parquet NEUF. `rooms[].peinture` ({murs, plafond} en m², ou null) — la peinture choisie pièce par pièce. `provenance.murs[].porteurAVerifier` — compté porteur sans que l'utilisateur l'ait dit (« je ne sais pas » ou pas de réponse). `etudes.ossatureCreee` — une poutre ou un poteau créé déclenche aussi l'étude. `toiture` est null pour un appartement ; `sols` n'émet pas une pièce dont on garde le sol ; les finitions de façade qui s'excluent ne sortent plus. Ajout pur : rien n'est renommé ni retiré. */
+const CONTRAT_PLAN='1.15.0'; /* 1.1 : attributs de choix (douche, point lumineux, escalier), hauteur de faïence par pièce, état « conservé ». 1.2 : chaque équipement dit sa pièce, et chaque pièce ses murs par type. 1.3 : les choix non tranchés (type de douche, point lumineux, matériau d'escalier, hauteur de faïence) sortent à null au lieu de leur défaut — c'est au consommateur d'appliquer le défaut ET de le signaler. 1.4 : faux plafond par pièce, et un niveau dit s'il est créé par le projet et en quoi est son plancher. 1.5 : poteaux et poutres dessinables — chaque équipement d'ossature porte son rôle, sa portée et le fait qu'il reprend ou non un mur porteur démoli ; agrégat `ossature` au niveau du plan. Ajout pur : rien n'est renommé ni retiré. 1.6 : `hauteurAvant` par pièce — la hauteur du volume AVANT travaux, quand le projet y crée un plancher ; `hauteur` reste celle d'après travaux, comme avant. Ajout pur. 1.7 : `emprise` par niveau, en m² — sans elle le plancher d'un étage créé n'était pas chiffrable. Ajout pur. 1.8 : par pièce, `plancherACreer` (bois / béton / null) — le plancher se chiffre pièce par pièce, une mezzanine ne couvre pas tout un volume — et `nonHabitableAvant`, vrai pour une grange, une dépendance ou un volume ouvert que le chantier rend habitable. Ajout pur. 1.9 : `toiture.parties` — une toiture n'est plus une seule surface. Chaque niveau qu'un étage ne recouvre pas entièrement donne une partie plus basse, avec sa forme, sa pente, son emprise et ses égouts ; `surface`, `emprise` et `egouts` sont désormais les TOTAUX. Sur un plan à un seul niveau, tout est identique. 1.10 : `tremiePerimNeuf` par pièce — le pourtour de la trémie dont l'escalier est À CRÉER, qui porte le garde-corps. `tremiePerim` reste le pourtour de TOUTES les trémies, comme avant : une trémie déjà là a déjà son garde-corps, la facturer violerait D1. Ajout pur. 1.11 : `provenance.ouvertures[].percement` — le percement que chaque ouverture provoque (porteurPetit / porteurGrand / leger / null). `travaux.percementsDetail` reste le total ; sans identifiant, le devis portait jusqu'à 19 000 € de percements rattachés à aucune ouverture. Ajout pur. 1.12 : provenance.doublages[].sys — la finition du doublage (ossature / enduit / bardage). Une ITE sous bardage est un AUTRE poste qu'une ITE sous enduit, 185 contre 140 EUR/m2 ; sans cette clef le devis ne pouvait pas choisir. Ajout pur. 1.13 (D36, aucun euro sans geste) : `plinthes` — par pièce et au total — ne compte plus que les plinthes NEUVES : une pièce sans revêtement neuf, ou faïencée jusqu'au sol, en porte 0. `sols` n'émet que les pièces dont le sol est décidé (revêtement ou couche choisie). Les ouvertures d'un mur démoli ne sortent plus, ni en menuiseries ni en provenance : elles partent avec le mur. Aucune clé renommée ni retirée. 1.14 (D37, justesse métier) : `sols[].poncage` — le parquet actuel est poncé, pas remplacé (`depose` faux, `revetement` reste « Parquet ») ; « Parquet » sur un parquet veut désormais dire parquet NEUF. `rooms[].peinture` ({murs, plafond} en m², ou null) — la peinture choisie pièce par pièce. `provenance.murs[].porteurAVerifier` — compté porteur sans que l'utilisateur l'ait dit (« je ne sais pas » ou pas de réponse). `etudes.ossatureCreee` — une poutre ou un poteau créé déclenche aussi l'étude. `toiture` est null pour un appartement ; `sols` n'émet pas une pièce dont on garde le sol ; les finitions de façade qui s'excluent ne sortent plus. Ajout pur : rien n'est renommé ni retiré. 1.15 (D46, géométrie et quantités) : `rooms[].perimeter`, `wallArea` et `plinthes` se mesurent à la FACE intérieure des murs (doublage déduit), plus à l'axe ; `provenance.doublages[].m2` et `doublage.iti/ite` déduisent les ouvertures du tronçon doublé ; `provenance.murs[].hydrofuge` — une cloison À CRÉER qui borde une pièce humide faïencée se monte en plaques hydrofuges (le devis prend alors ce poste à la place de « Monter une cloison », et ne facture plus d'hydrofuge sur les cloisons existantes) ; `toiture.surfaceRampants` — la surface sous la pente SANS le débord, pour l'isolation des rampants. Ajout pur : rien n'est renommé ni retiré. */
 function contratPlan(){
   garantirPids();
   const q=quantities(),bas=empriseNiveau(0),ch=chantier();
@@ -5788,7 +5853,7 @@ function telechargerEnvoi(){
   }catch{toast('Téléchargement bloqué ici : utilise « Copier »');}
 }
 function showEstimate(){
-  const q=quantities(); if(!q.rooms){toast(ATTENTE_PIECE+(isMobile()?'':' Trace ses murs avec l\'outil Murs (M).'));return;}
+  const q=quantities(); if(budgetEnAttente(q)){toast(ATTENTE_PIECE+(isMobile()?'':' Trace ses murs avec l\'outil Murs (M).'));return;}
   document.getElementById('estBody').innerHTML=isPro()?estimateHTML(q):estimatePaywallHTML(q); openModal('estimate');
   /* D42 : « Ouvrir ton estimation » est une étape du projet (« Ton projet à X % ») */
   if(!(state.vu&&state.vu.estimer)){state.vu={...(state.vu||{}),estimer:Date.now()};save();}
@@ -5982,41 +6047,61 @@ function exportPlan(){
   document.getElementById('exportGallery').innerHTML=h;openModal('export');draw();
 }
 // cotes extérieures cumulées le long des quatre façades (nœuds de murs alignés sur le bord du plan)
-// demi-épaisseur du mur porteur/extérieur situé sur un bord donné (pour coter à la face, pas à l'axe)
-function edgeHalf(lv,orient,coord,within){let h=0;lv.walls.forEach(w=>{if(isVirtual(w)||!wallActive(w))return;const hor=Math.abs(w.a.y-w.b.y)<1e-3,ver=Math.abs(w.a.x-w.b.x)<1e-3;
-  if(orient==='h'&&hor&&Math.abs(w.a.y-coord)<0.09){const lo=Math.min(w.a.x,w.b.x),hi=Math.max(w.a.x,w.b.x);if(within>lo-0.3&&within<hi+0.3)h=Math.max(h,wallT(w)/2);}
-  if(orient==='v'&&ver&&Math.abs(w.a.x-coord)<0.09){const lo=Math.min(w.a.y,w.b.y),hi=Math.max(w.a.y,w.b.y);if(within>lo-0.3&&within<hi+0.3)h=Math.max(h,wallT(w)/2);}});return h;}
-// rectangle intérieur œuvre d'une pièce (bbox de la face rétrécie des demi-épaisseurs des murs de chaque côté)
+/* D46 · Les cotes contredisaient la surface (cj-novice00, cj-design00, cj-qa00). Depuis D39, le
+   premier contour pose ses murs d'un côté du trait (side −1 : le trait est la face intérieure, le
+   mur pousse dehors). Mais les cotes retiraient toujours une DEMI-épaisseur de chaque côté, comme
+   si le mur était centré : une chambre de 4 × 3,5 m cliquée annonçait 14,0 m² et s'écrivait
+   3,80 × 3,30 dedans, 4,20 × 3,70 dehors — jusque dans le dossier pour les artisans.
+   Maintenant : la cote intérieure est la boîte du polygone intérieur (celui qui donne la surface,
+   doublage compris) ; la cote extérieure va jusqu'à la face EXTÉRIEURE réelle de chaque mur,
+   quel que soit son côté. Même fonction à l'écran et dans le dossier exporté. */
+/* distance, depuis la coordonnée `coord`, jusqu'à la face la plus lointaine dans la direction `dir`
+   (±1 le long de x pour un mur vertical 'v', de y pour un mur horizontal 'h') des murs posés sur
+   cette ligne ; `within` : seulement ceux qui passent à hauteur de ce point (null : tous). */
+function faceVers(lv,orient,coord,within,dir){let h=null;lv.walls.forEach(w=>{if(isVirtual(w)||!wallActive(w))return;const hor=Math.abs(w.a.y-w.b.y)<1e-3,ver=Math.abs(w.a.x-w.b.x)<1e-3;
+  const trait=orient==='h'?w.a.y:w.a.x;if(!(orient==='h'?hor:ver)||Math.abs(trait-coord)>=0.09)return;
+  const lo=orient==='h'?Math.min(w.a.x,w.b.x):Math.min(w.a.y,w.b.y),hi=orient==='h'?Math.max(w.a.x,w.b.x):Math.max(w.a.y,w.b.y);
+  if(within!=null&&!(within>lo-0.3&&within<hi+0.3))return;
+  const n=perp(norm(sub(w.b,w.a))),s=Math.sign((orient==='h'?n.y:n.x)*dir)||1;
+  const d=(trait-coord)*dir+faceDist(w,s);h=h==null?d:Math.max(h,d);});return h||0;}
+/* un polygone sans ses sommets alignés (un mur coupé par un doublage partiel, une jonction en T) */
+function sansAlignes(P){if(!P||P.length<4)return P;const out=P.filter((q,i)=>{const a=P[(i-1+P.length)%P.length],b=P[(i+1)%P.length];return distSeg(q,a,b)>0.005;});return out.length>=3?out:P;}
+const rectDroit=P=>!!P&&P.length===4&&P.every((q,i)=>{const r=P[(i+1)%4];return Math.abs(q.x-r.x)<1e-3||Math.abs(q.y-r.y)<1e-3;});
+// rectangle intérieur d'une pièce : la boîte de son polygone intérieur (faces des murs, doublage compris)
 function roomInteriorBox(lv,f){
+  const P=(f.polyIntExact||f.polyInt||[]).length>=3?(f.polyIntExact||f.polyInt):null;
+  if(P){const xs=P.map(p=>p.x),ys=P.map(p=>p.y);return {x0:Math.min(...xs),x1:Math.max(...xs),y0:Math.min(...ys),y1:Math.max(...ys)};}
   const xs=f.poly.map(p=>p.x),ys=f.poly.map(p=>p.y);const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
   const cx=(x0+x1)/2,cy=(y0+y1)/2;
-  return {x0:x0+edgeHalf(lv,'v',x0,cy),x1:x1-edgeHalf(lv,'v',x1,cy),y0:y0+edgeHalf(lv,'h',y0,cx),y1:y1-edgeHalf(lv,'h',y1,cx)};
+  return {x0:x0+faceVers(lv,'v',x0,cy,1),x1:x1-faceVers(lv,'v',x1,cy,-1),y0:y0+faceVers(lv,'h',y0,cx,1),y1:y1-faceVers(lv,'h',y1,cx,-1)};
 }
 function exteriorChains(lv){
   const ws=lv.walls.filter(w=>!isVirtual(w)&&wallActive(w));if(ws.length<3)return [];
-  const nodes=[];ws.forEach(w=>nodes.push(w.a,w.b));const tmax=Math.max(...ws.map(wallT));
+  const nodes=[];ws.forEach(w=>nodes.push(w.a,w.b));
   const xs=nodes.map(p=>p.x),ys=nodes.map(p=>p.y);const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
   const cx=(x0+x1)/2,cy=(y0+y1)/2;const tol=0.05,out=[];
-  // pousse les extrémités sur la FACE extérieure → segments d'about et hors-tout justes
-  const build=(pts,axis,pos,dir,lo,hi)=>{let vals=[...new Set(pts.map(p=>Math.round(p[axis]*100)/100))].sort((a,b)=>a-b);if(vals.length<2)return;vals[0]-=lo;vals[vals.length-1]+=hi;out.push({axis,pos,dir,vals,off:tmax/2+0.55});};
-  build(nodes.filter(p=>Math.abs(p.y-y0)<tol),'x',y0,-1,edgeHalf(lv,'v',x0,cy),edgeHalf(lv,'v',x1,cy));
-  build(nodes.filter(p=>Math.abs(p.y-y1)<tol),'x',y1,1,edgeHalf(lv,'v',x0,cy),edgeHalf(lv,'v',x1,cy));
-  build(nodes.filter(p=>Math.abs(p.x-x0)<tol),'y',x0,-1,edgeHalf(lv,'h',y0,cx),edgeHalf(lv,'h',y1,cx));
-  build(nodes.filter(p=>Math.abs(p.x-x1)<tol),'y',x1,1,edgeHalf(lv,'h',y0,cx),edgeHalf(lv,'h',y1,cx));
+  // pousse les extrémités sur la FACE extérieure réelle → segments d'about et hors-tout justes ; la ligne de cote se pose à 55 cm de la face
+  const build=(pts,axis,pos,dir,lo,hi,face)=>{let vals=[...new Set(pts.map(p=>Math.round(p[axis]*100)/100))].sort((a,b)=>a-b);if(vals.length<2)return;vals[0]-=lo;vals[vals.length-1]+=hi;out.push({axis,pos,dir,vals,off:face+0.55});};
+  const gx=faceVers(lv,'v',x0,cy,-1),dx=faceVers(lv,'v',x1,cy,1),hy=faceVers(lv,'h',y0,cx,-1),by=faceVers(lv,'h',y1,cx,1);
+  build(nodes.filter(p=>Math.abs(p.y-y0)<tol),'x',y0,-1,gx,dx,faceVers(lv,'h',y0,null,-1));
+  build(nodes.filter(p=>Math.abs(p.y-y1)<tol),'x',y1,1,gx,dx,faceVers(lv,'h',y1,null,1));
+  build(nodes.filter(p=>Math.abs(p.x-x0)<tol),'y',x0,-1,hy,by,faceVers(lv,'v',x0,null,-1));
+  build(nodes.filter(p=>Math.abs(p.x-x1)<tol),'y',x1,1,hy,by,faceVers(lv,'v',x1,null,1));
   return out;
 }
 function drawExteriorChains(lv){
   if(!settings.cotes)return;
   exteriorChains(lv).forEach(ch=>{const P=(val,off)=>ch.axis==='x'?v(val,ch.pos+ch.dir*off):v(ch.pos+ch.dir*off,val);
-    if(ch.vals.length>2)for(let i=0;i<ch.vals.length-1;i++)drawDim(P(ch.vals[i],ch.off),P(ch.vals[i+1],ch.off),'#6c6b86',true);
-    drawDim(P(ch.vals[0],ch.off+(ch.vals.length>2?0.42*uiScale:0)),P(ch.vals[ch.vals.length-1],ch.off+(ch.vals.length>2?0.42*uiScale:0)),'#1e1b3a',true);});
+    const garde=r=>{if(r&&!exporting)boitesChaines.push(r);};
+    if(ch.vals.length>2)for(let i=0;i<ch.vals.length-1;i++)garde(drawDim(P(ch.vals[i],ch.off),P(ch.vals[i+1],ch.off),'#6c6b86',true));
+    garde(drawDim(P(ch.vals[0],ch.off+(ch.vals.length>2?0.42*uiScale:0)),P(ch.vals[ch.vals.length-1],ch.off+(ch.vals.length>2?0.42*uiScale:0)),'#1e1b3a',true));});
 }
 // cotes intérieures œuvre (largeur × longueur de chaque pièce, tracées à l'intérieur) — style plan d'exécution
 function drawRoomDims(lv,evite){
   if(!settings.cotes)return;const faces=facesCache[lv.id]||[];
   faces.forEach(f=>{const r=f.room;if(!r||RT[r.type].ext||f.areaInt<2.5)return;
     // pièce en L / pans coupés : la bbox ment → une cote par face intérieure (≥ 1 m), décalée vers l'intérieur
-    const P=f.polyInt;if(P&&P.length!==4){const N=P.length;for(let i=0;i<N;i++){const a=P[i],b=P[(i+1)%N];const l=dist(a,b);if(l<1||l*view.zoom<62)continue;const u=norm(sub(b,a));let nn=perp(u);if(((f.label.x-a.x)*nn.x+(f.label.y-a.y)*nn.y)<0)nn=mul(nn,-1);const o=mul(nn,0.26);drawDim(add(a,o),add(b,o),'#6d4fc2',true,evite);}return;}
+    const P=sansAlignes(f.polyIntExact||f.polyInt);if(P&&!rectDroit(P)){const N=P.length;for(let i=0;i<N;i++){const a=P[i],b=P[(i+1)%N];const l=dist(a,b);if(l<1||l*view.zoom<62)continue;const u=norm(sub(b,a));let nn=perp(u);if(((f.label.x-a.x)*nn.x+(f.label.y-a.y)*nn.y)<0)nn=mul(nn,-1);const o=mul(nn,0.26);drawDim(add(a,o),add(b,o),'#6d4fc2',true,evite);}return;}
     const ib=roomInteriorBox(lv,f);const w=ib.x1-ib.x0,h=ib.y1-ib.y0;
     if(w<=0.1||h<=0.1)return;
     if(w*view.zoom>78)drawDim(v(ib.x0,ib.y0+0.26),v(ib.x1,ib.y0+0.26),'#6d4fc2',true,evite);   /* largeur intérieure (en haut, dedans) */
@@ -6239,7 +6324,7 @@ function etapesProjet(){
   state.levels.forEach((lv,li)=>{
     if(!solInconnu)facesFor(lv,'existant').some(f=>{const r=f.room;if(r&&!RT[r.type].ext&&(!r.floor||r.floor==='À définir')){solInconnu={li,id:r.id,nom:roomName(r)};return true;}return false;});
     if(!solAChoisir)facesFor(lv,'projet').some(f=>{const r=f.room;if(r&&!RT[r.type].ext&&!solDecide(r)&&!solGarde(r)){solAChoisir={li,id:r.id,nom:roomName(r)};return true;}return false;});});
-  const n=q.rooms>0;
+  const n=q.rooms>0||q.roomsBefore>0; /* D46 : des pièces dessinées, avant OU après travaux */
   return [
     {k:'pieces',label:'Dessiner tes pièces',suite:'Dessine ta première pièce',fait:n,dessin:true},
     {k:'ouvertures',label:'Placer les portes et fenêtres',suite:'Place les portes et fenêtres',fait:q.doors+q.windows>0,dessin:true},

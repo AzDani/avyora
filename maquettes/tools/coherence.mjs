@@ -245,6 +245,40 @@ for (const [chemin, quoi] of ABANDONNES) {
 }
 console.log(`  ${zeros}/${ABANDONNES.length} à 0 — ${ABANDONNES.map(a => a[0].split(".").pop()).join(", ")}`);
 
+/* ── 1quater. D46 (integ-15) : un mur démoli ou créé prend au compteur le poste que la traduction
+   lui donne. La traduction (plan-correspondance.ts) décide par le drapeau porteur puis par le TYPE :
+   porteur → « Abattre un mur porteur », cloison → « Abattre une cloison », sinon « Abattre un mur non
+   porteur ». Le compteur, lui, rangeait tout mur non porteur en cloison (15 €/m² au lieu de 35) : un
+   mur de 20 cm déclaré non porteur, 150 € au Suivi, 350 € au devis. Même règle à la création
+   (cloison / cloison hydrofuge / parpaings / pierre). On vérifie que les deux côtés nomment les
+   mêmes branches — les prix eux-mêmes sont tenus par §1. ── */
+console.log("\n1quater. Murs démolis et créés : le compteur prend le poste de la traduction");
+{
+  const PC = fs.readFileSync("lib/estimateur/plan-correspondance.ts", "utf8");
+  const bloc = PC.slice(PC.indexOf("// ── Murs : démolir, créer"), PC.indexOf("// ── Percements induits"));
+  const demol = MAQ.slice(MAQ.indexOf("T.push({id:'w:'+w.id+':demolir'"), MAQ.indexOf("\n", MAQ.indexOf("T.push({id:'w:'+w.id+':demolir'")));
+  const creer = MAQ.slice(MAQ.indexOf("T.push({id:'w:'+w.id+':creer'"), MAQ.indexOf("\n", MAQ.indexOf("T.push({id:'w:'+w.id+':creer'")));
+  const paires = [
+    ["démolir · porteur", "dem-abattre-un-mur-porteur", demol, "PRIX.demolPorteur"],
+    ["démolir · cloison", "dem-abattre-une-cloison", demol, "PRIX.demolCloison"],
+    ["démolir · mur non porteur", "dem-abattre-un-mur-non-porteur", demol, "PRIX.demolMur"],
+    ["créer · cloison", "clo-monter-une-cloison", creer, "PRIX.cloisonNeuve"],
+    ["créer · cloison de pièce humide", "clo-cloison-piece-humide-hydrofuge", creer, "PRIX.cloisonHumide"],
+    ["créer · mur en parpaings", "mac-monter-un-mur-en-parpaings", creer, "PRIX.murNeuf"],
+    ["créer · mur en pierre", "mac-monter-un-mur-en-pierre", creer, "PRIX.murPierre"],
+  ];
+  let ok = 0;
+  if (!demol || !creer) KO("tâches de mur introuvables dans chantierTasks", "identifiant de tâche renommé ?");
+  for (const [quoi, poste, ligne, prix] of paires) {
+    if (!bloc.includes(`"${poste}"`)) KO(`${quoi} : la traduction ne vise plus « ${poste} »`, "branche retirée de plan-correspondance.ts ?");
+    else if (!ligne.includes(prix)) KO(`${quoi} : le compteur n'utilise pas ${prix}`, `la traduction facture « ${poste} » ; le Suivi doit porter le même prix`);
+    else ok++;
+  }
+  if (!/const cl=w\.type==='cloison'/.test(demol + MAQ.slice(MAQ.indexOf("T.push({id:'w:'+w.id+':demolir'") - 400, MAQ.indexOf("T.push({id:'w:'+w.id+':demolir'"))))
+    KO("démolir : le compteur ne distingue plus la cloison du mur par son TYPE", "c'est le critère de la traduction (w.type === \"cloison\")");
+  console.log(`  ${ok}/${paires.length} branches alignées`);
+}
+
 /* ── 2. libellés déclarés « exacts » : FACADES[].poste doit exister au catalogue ── */
 console.log("\n1ter. Coefficients recopiés du moteur (matériau, vitrage)");
 let cok = 0;

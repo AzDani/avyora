@@ -21,7 +21,10 @@
  *     famille ; fiches longues : la décision visible sans défiler, la technique repliée ;
  *   - vue d'ensemble : les pièces avant « Le chantier », qui dit ce qu'il reste à répondre, sans
  *     encart d'erreur ; légende de la vue Travaux dans le DOM ;
- *   - messages : en bas, le temps de les lire ; bulle d'astuce contextuelle, repliée après 7 s.
+ *   - messages : en bas, le temps de les lire ; bulle d'astuce contextuelle, repliée après 7 s ;
+ *   - cotes (D46) : un contour cliqué 4 × 3,5 (murs de 20 cm) ou 5 × 4 (60 cm) se cote 4,00 × 3,50
+ *     ou 5,00 × 4,00 dedans, 4,40 × 3,90 ou 6,20 × 5,20 dehors, à l'écran et dans le dossier ; la
+ *     cote du mur sélectionné n'écrase pas une cote extérieure.
  *
  *   node maquettes/tools/visuel.mjs "$(pwd)/maquettes"
  *
@@ -279,6 +282,50 @@ for (const [L, H] of [[1440, 900], [1280, 800], [1024, 768]]) for (const vue of 
     r["téléphone · « Estimer ce plan » entier et cliquable"] = q.left >= 0 && q.right <= innerWidth && (au === e || e.contains(au));
     r["téléphone · pas de menu Fichier (mode chantier), pas de défilement horizontal"] = !document.getElementById("menuFichier").getClientRects().length && document.documentElement.scrollWidth <= innerWidth;
     return r;
+  }));
+  await p.close();
+}
+
+/* ═════════ 9. D46 · Les cotes disent la surface (cj-novice00, cj-design00, cj-qa00) ═════════
+   Un premier contour tracé à la souris pose ses murs vers l'extérieur (le trait = la face
+   intérieure). 4 × 3,5 cliqués : 14,0 m², et les cotes doivent dire 4,00 × 3,50 dedans, 4,40 × 3,90
+   dehors — à l'écran ET dans le dossier exporté. Même chose en murs épais de 60 cm. */
+for (const [nom, type, pts, dedans, dehors, aire] of [
+  ["murs de 20 cm, 4 × 3,5", "mur", [[0, 0], [4, 0], [4, 3.5], [0, 3.5], [0, 0]], ["4,00", "3,50"], ["4,40", "3,90"], 14],
+  ["murs épais de 60 cm, 5 × 4", "porteur", [[0, 0], [5, 0], [5, 4], [0, 4], [0, 0]], ["5,00", "4,00"], ["6,20", "5,20"], 20]]) {
+  const p = await onglet({ larg: 1440, haut: 900 });
+  await p.evaluate((type) => { newPlan(() => setTool("mur")); wallType = type; view.zoom = 80; view.x = 320; view.y = 220; renderPanel(); draw(); }, type);
+  await wait(150);
+  for (const [x, y] of pts) {
+    const q = await p.evaluate(([x, y]) => { const s = S(v(x, y)); const rc = cv.getBoundingClientRect(); return { x: rc.left + s.x, y: rc.top + s.y }; }, [x, y]);
+    await p.mouse.move(q.x, q.y); await wait(40); await p.mouse.click(q.x, q.y); await wait(100);
+  }
+  await wait(200);
+  Object.assign(t, await p.evaluate((nom, dedans, dehors, aire) => {
+    const r = {}, lv = L(), f = (facesCache[lv.id] || []).find((x) => x.room);
+    const lire = (fn) => { const vus = []; const orig = window.drawDim; window.drawDim = function (a, b2, col) { vus.push({ t: fmt(dist(a, b2)), int: col === "#6d4fc2" }); return orig.apply(this, arguments); }; try { fn(); } finally { window.drawDim = orig; } return vus; };
+    setTool("select"); sel = null;
+    const ecran = lire(() => draw()), dossier = lire(() => renderLevelImage(0, "existant"));
+    const dit = (vus, int, v2) => vus.some((x) => x.int === int && x.t === v2), seul = (vus, int, attendus) => vus.filter((x) => x.int === int).every((x) => attendus.includes(x.t));
+    r[`cotes · ${nom} : la pièce se ferme à la souris, ${fmtM2(aire)}`] = !!f && Math.abs(f.areaInt - aire) < 0.05;
+    r[`cotes · ${nom} : dedans ${dedans.join(" × ")} à l'écran`] = dedans.every((x) => dit(ecran, true, x)) && seul(ecran, true, dedans);
+    r[`cotes · ${nom} : dehors ${dehors.join(" × ")} à l'écran`] = dehors.every((x) => dit(ecran, false, x)) && seul(ecran, false, dehors);
+    r[`cotes · ${nom} : les mêmes dans le dossier exporté`] = [...dedans].every((x) => dit(dossier, true, x)) && dehors.every((x) => dit(dossier, false, x)) && seul(dossier, true, dedans) && seul(dossier, false, dehors);
+    /* la cote du mur sélectionné ne s'imprime pas sur une cote de chaîne */
+    const ch = (a, b2) => a.x < b2.x + b2.w && a.x + a.w > b2.x && a.y < b2.y + b2.h && a.y + a.h > b2.y;
+    r[`cotes · ${nom} : la cote du mur sélectionné évite les cotes extérieures`] = lv.walls.every((w) => { sel = { kind: "wall", id: w.id }; draw(); const c = coteLabels.find((x) => x.wallId === w.id); if (!c) return true; const bw = Math.abs(Math.cos(c.ang)) * c.w + Math.abs(Math.sin(c.ang)) * c.h, bh = Math.abs(Math.sin(c.ang)) * c.w + Math.abs(Math.cos(c.ang)) * c.h; return !boitesChaines.some((o) => ch({ x: c.cx - bw / 2, y: c.cy - bh / 2, w: bw, h: bh }, o)); });
+    sel = null; draw();
+    return r;
+  }, nom, dedans, dehors, aire));
+  await p.close();
+}
+/* murs centrés (l'exemple) : la cote intérieure d'une pièce rectangulaire = la boîte de son polygone intérieur */
+{
+  const p = await onglet({ larg: 1440, haut: 900 });
+  Object.assign(t, await p.evaluate(() => {
+    setMode("existant"); closeModal(); sel = null; render();
+    const lv = L(), faces = (facesCache[lv.id] || []).filter((f) => f.room && f.polyInt && rectDroit(sansAlignes(f.polyInt)));
+    return { "cotes · exemple : chaque pièce rectangulaire cotée à ses faces intérieures": faces.length > 0 && faces.every((f) => { const b2 = roomInteriorBox(lv, f), xs = f.polyInt.map((q) => q.x), ys = f.polyInt.map((q) => q.y); return Math.abs(b2.x1 - b2.x0 - (Math.max(...xs) - Math.min(...xs))) < 1e-6 && Math.abs((b2.x1 - b2.x0) * (b2.y1 - b2.y0) - f.areaInt) < 0.05 + 0.02 * f.areaInt; }) };
   }));
   await p.close();
 }

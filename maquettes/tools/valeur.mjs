@@ -6,6 +6,7 @@
  * « Mes plans » et le tiroir du téléphone. Le contrôle vérifie aussi :
  *   - le pied : une seule carte, qui est son seul appel, compacte (≤ 170 px), le montant bien plus
  *     gros que la surface ; plan vide : Estimer grisé en haut ET en bas, avec la même explication ;
+ *     mais des tâches sans pièce fermée après travaux (façade démolie) : le montant, et Estimer (D46) ;
  *   - « Estimer ce plan » : le montant d'abord, compteur animé (direct si le système demande moins
  *     d'animation), corps d'état avec barres, chaque tâche avec son prix, « non chiffré » au lieu de
  *     « 0 € », « Encore à décider » où CHAQUE ligne sélectionne son objet et ferme la fenêtre, les
@@ -183,6 +184,19 @@ Object.assign(t, await p.evaluate(() => {
   const lv = L(); [[0, 0, 4, 0], [4, 0, 4, 3], [4, 3, 0, 3], [0, 3, 0, 0]].forEach((z) => lv.walls.push({ id: uid(), a: v(z[0], z[1]), b: v(z[2], z[3]), type: "mur" })); afterChange();
   r["vide · dès la 1re pièce, « Estimer » redevient actif en haut et en bas"] = !eb.hasAttribute("aria-disabled") && !!F.querySelector(".budgetbtn");
   r["rien de décidé · le pied reste compact (≤ 170 px)"] = F.getBoundingClientRect().height <= 170 && /Rien de décidé/.test(F.innerText);
+  /* D46 (cj-integration00) : démolir la façade d'une pièce seule ouvre toutes les pièces en vue
+     Travaux. La carte tombait à « 0 € · … dès ta première pièce fermée » et « Estimer » se bloquait
+     pendant que le Suivi comptait les tâches : l'attente se lit sur les pièces des DEUX états et sur
+     les tâches. */
+  setMode("projet"); closeModal(); const haut = lv.walls[0]; sel = { kind: "wall", id: haut.id }; render(); setWallProp("porteur", "non"); setWallProp("st", "demolir"); sel = null; render();
+  const px = chantierPrix(), q = quantities();
+  r["façade démolie · plus aucune pièce fermée après travaux, mais des tâches"] = q.rooms === 0 && q.roomsBefore === 1 && px.nb > 0 && px.total > 0;
+  r["façade démolie · la carte montre le montant du Suivi, pas l'attente"] = document.getElementById("budgetVal").textContent === eur(px.total) && !F.innerText.includes(ATTENTE_PIECE) && !!F.querySelector(".budgetbtn");
+  r["façade démolie · « Estimer » reste actif et s'ouvre"] = !eb.hasAttribute("aria-disabled") && (showEstimate(), modaleOuverte()?.id === "m-estimate") && document.getElementById("estTotal")?.textContent === eur(px.total);
+  closeModal();
+  r["façade démolie · l'étape « Dessiner tes pièces » reste faite"] = etapesProjet().find((e) => e.k === "pieces").fait;
+  setTool("select"); sel = null; render();
+  r["façade démolie · la vue d'ensemble ne redemande pas de tracer les murs"] = !/Trace les murs extérieurs/.test(document.getElementById("pbody").innerText) && /Plus aucune pièce fermée après ces travaux/.test(document.getElementById("pbody").innerText);
   return r;
 }));
 await p.close();

@@ -41,6 +41,9 @@ export interface PlanPourCorrespondance {
   toiture?: {
     surface?: number; emprise?: number; egouts?: number; raccords?: number;
     couverture?: string; combles?: string; forme?: string;
+    /** Contrat 1.15 : la surface sous la pente SANS le débord de toit — l'isolation des rampants
+     *  s'arrête au mur, l'avancée de toit est dehors. `surface` reste débord compris (couverture). */
+    surfaceRampants?: number;
     /** Contrat 1.9 : le détail par partie. `surface`, `emprise` et `egouts` ci-dessus sont les
      *  TOTAUX — un étage qui ne couvre pas toute l'emprise laisse une toiture plus basse, et
      *  elle compte. Les postes se chiffrent sur le total ; les parties servent à l'expliquer. */
@@ -58,7 +61,9 @@ export interface PlanPourCorrespondance {
      facturait comme neuf. */
   provenance?: {
     /** Contrat 1.14 : `porteurAVerifier` — compté porteur sans que l'utilisateur l'ait dit. */
-    murs?: Array<{ id: string; type: string; porteur: boolean; porteurAVerifier?: boolean; etat: string; ml: number; m2: number }>;
+    murs?: Array<{ id: string; type: string; porteur: boolean; porteurAVerifier?: boolean; etat: string; ml: number; m2: number;
+      /** Contrat 1.15 : cloison À CRÉER qui borde une pièce humide faïencée — montée en plaques hydrofuges. */
+      hydrofuge?: boolean }>;
     /** Contrat 1.11 : le percement que chaque ouverture provoque, pour rattacher ces lignes. */
     ouvertures?: Array<{ id?: string; percement?: string | null }>;
     doublages?: Array<{ mur?: string; mode?: string; sys?: string | null; mat?: string; etat?: string | null; m2?: number }>;
@@ -375,7 +380,10 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
       else add("dem-abattre-un-mur-non-porteur", +w.m2.toFixed(2), src, "Mur non porteur à démolir");
     }
     if (w.etat === "creer") {
-      if (w.type === "cloison") add("clo-monter-une-cloison", +w.m2.toFixed(2), src, "Cloison à créer");
+      /* Contrat 1.15 (D46) : une cloison neuve qui borde une pièce humide faïencée se monte
+         directement en plaques hydrofuges — ce poste À LA PLACE de « Monter une cloison », pas en plus. */
+      if (w.type === "cloison" && w.hydrofuge) add("clo-cloison-piece-humide-hydrofuge", +w.m2.toFixed(2), src, "Cloison à créer dans une pièce humide, en plaques hydrofuges");
+      else if (w.type === "cloison") add("clo-monter-une-cloison", +w.m2.toFixed(2), src, "Cloison à créer");
       else if (w.type === "porteur") add("mac-monter-un-mur-en-pierre", +w.m2.toFixed(2), src, "Mur en pierre à créer");
       else add("mac-monter-un-mur-en-parpaings", +w.m2.toFixed(2), src, "Mur en parpaings à créer");
     }
@@ -522,6 +530,10 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
   }
 
   // ── Surfaces mesurées pièce par pièce : faïence, cloison humide, plinthes ─
+  /* Contrat 1.15 (D46) : la cloison hydrofuge se lit MUR PAR MUR (`provenance.murs[].hydrofuge`),
+     seulement sur les cloisons à créer. Un contrat antérieur ne le dit pas : on garde l'ancienne
+     lecture pièce par pièce (toutes ses cloisons), signalée comme une déduction. */
+  const hydrofugeParMur = (plan.provenance?.murs ?? []).some((m) => m.hydrofuge !== undefined);
   {
     const humides = new Set<string>();
     const perimEau = new Map<string, number>();
@@ -558,12 +570,15 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
       const m2 = hauteur === "pleine" ? (r.wallArea ?? 0)
         : hauteur === "douche" ? pEau * 2
         : Math.max(0, (r.perimeter ?? 0) - pEau) * 1.2 + pEau * 2;
+      /* D46 : « zone de douche » sans douche dessinée = 0 m² : ni faïence, ni cloison hydrofuge. */
+      if (m2 <= 0) continue;
       add("rev-faience-carrelage-mural", +m2.toFixed(2), src,
         hauteur === "pleine" ? "Faïence pleine hauteur" : hauteur === "douche" ? "Faïence sur la zone de douche" : "Faïence à mi-hauteur, 2 m dans la douche");
       // La cloison hydrofuge ne concerne que les CLOISONS de la pièce humide : un mur extérieur
-      // est doublé, pas hydrofugé.
-      const cloisons = r.mursParType?.cloison ?? 0;
-      if (cloisons > 0) add("clo-cloison-piece-humide-hydrofuge", +cloisons.toFixed(2), src, "Cloisons de la pièce humide");
+      // est doublé, pas hydrofugé. Depuis 1.15, elle se lit sur les murs (voir plus haut).
+      const cloisons = hydrofugeParMur ? 0 : (r.mursParType?.cloison ?? 0);
+      if (cloisons > 0) add("clo-cloison-piece-humide-hydrofuge", +cloisons.toFixed(2), src, "Cloisons de la pièce humide", undefined,
+        "Contrat antérieur à 1.15 : toutes les cloisons de la pièce sont comptées en hydrofuge, neuves ou non. Le plan à jour ne compte que les cloisons à créer.");
     }
   }
 
@@ -623,7 +638,8 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
       }
       if (pr.action !== "complete" && pr.traiterCharpente) add("toi-traiter-la-charpente", S, src, "Charpente à traiter (préventif)");
       if (pr.isoCombles === "perdus") add("iso-isolation-des-combles-perdus-soufflage", +(t.emprise ?? 0), src, "Isolation des combles perdus, à l'emprise du niveau");
-      if (pr.isoCombles === "rampants") add("iso-isolation-des-combles-amenages-rampants", S, src, "Isolation des rampants");
+      /* Contrat 1.15 (D46) : sans le débord de toit ; un contrat antérieur n'a que la surface débord compris. */
+      if (pr.isoCombles === "rampants") add("iso-isolation-des-combles-amenages-rampants", +(t.surfaceRampants ?? S), src, "Isolation des rampants, sous la pente, sans l'avancée de toit");
       if (pr.gouttieres && t.egouts) add("toi-gouttieres-descentes", +t.egouts, src, "Gouttières, au linéaire d'égout mesuré");
       if (pr.raccords && t.raccords) add("toi-raccords-faitage-noues-solins", +t.raccords, src, "Raccords : faîtage, arêtiers, solins");
       // Double source (D15) : les fenêtres de toit POSÉES sur le plan font foi ; le compteur du

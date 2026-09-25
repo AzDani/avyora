@@ -238,12 +238,49 @@ describe("table de correspondance · les sols, pièce par pièce (D8)", () => {
 
 describe("table de correspondance · les surfaces mesurées (D10)", () => {
   it("la faïence à mi-hauteur : 1,20 m partout, 2,00 m contre la douche et la baignoire", () => {
-    // périmètre 16 m ; receveur 1,2×0,8 et baignoire 1,7×0,75 adossés → 4,45 m à 2 m
-    const attendu = (16 - 4.45) * 1.2 + 4.45 * 2;
+    /* D46 : le périmètre se mesure au pied des murs (face intérieure, doublage déduit), plus à
+       l'axe : 2,865 × 4,68 m → 15,09 m (16 m à l'axe). Receveur 1,2×0,8 et baignoire 1,7×0,75
+       adossés → 4,45 m à 2 m. */
+    const sdb = (plan.detailNiveaux ?? []).flatMap((n) => n.rooms ?? []).find((r) => r.type === "sdb")!;
+    expect(sdb.perimeter).toBeCloseTo(15.09, 2);
+    const attendu = (15.09 - 4.45) * 1.2 + 4.45 * 2;
     expect(q("rev-faience-carrelage-mural")).toBeCloseTo(attendu, 1);
   });
-  it("seules les CLOISONS de la pièce humide sont hydrofugées, pas ses murs extérieurs", () => {
-    expect(q("clo-cloison-piece-humide-hydrofuge")).toBeCloseTo(12.5, 1);
+  /* D46 (contrat 1.15) : refaire la faïence d'une salle de bain n'est pas remplacer ses cloisons.
+     Seule une cloison À CRÉER qui borde la pièce humide se monte en plaques hydrofuges — et ce poste
+     remplace « Monter une cloison », il ne s'y ajoute pas. Le refend de la scène existe : rien. */
+  it("une cloison existante de la pièce humide n'est pas facturée en hydrofuge", () => {
+    expect(q("clo-cloison-piece-humide-hydrofuge")).toBe(0);
+  });
+  it("une cloison à créer qui borde la pièce humide : le poste hydrofuge À LA PLACE de « Monter une cloison »", () => {
+    const p = JSON.parse(JSON.stringify(plan)) as PlanPourCorrespondance;
+    const refend = p.provenance!.murs!.find((m) => m.type === "cloison" && m.etat === "existant")!;
+    refend.etat = "creer"; refend.hydrofuge = true;
+    const c = contributionsDuPlan(p).contributions;
+    const h = c.find((x) => x.poste === "clo-cloison-piece-humide-hydrofuge")!;
+    expect(h.quantite).toBeCloseTo(refend.m2, 2);
+    expect(h.sources).toEqual([refend.id]);
+    expect(c.find((x) => x.poste === "clo-monter-une-cloison")).toBeUndefined();
+    refend.hydrofuge = false;
+    const c2 = contributionsDuPlan(p).contributions;
+    expect(c2.find((x) => x.poste === "clo-monter-une-cloison")?.quantite).toBeCloseTo(refend.m2, 2);
+    expect(c2.find((x) => x.poste === "clo-cloison-piece-humide-hydrofuge")).toBeUndefined();
+  });
+  it("un contrat antérieur à 1.15 (sans `hydrofuge`) garde la lecture par pièce, et la signale", () => {
+    const p = JSON.parse(JSON.stringify(plan)) as PlanPourCorrespondance;
+    for (const m of p.provenance!.murs!) delete m.hydrofuge;
+    const l = contributionsDuPlan(p).contributions.find((x) => x.poste === "clo-cloison-piece-humide-hydrofuge")!;
+    expect(l.quantite).toBeCloseTo(12.5, 1);
+    expect(l.deduction).toMatch(/antérieur à 1\.15/);
+  });
+  it("« zone de douche » sans douche ni baignoire : 0 m², donc ni faïence ni hydrofuge", () => {
+    const p = JSON.parse(JSON.stringify(plan)) as PlanPourCorrespondance;
+    for (const m of p.provenance!.murs!) delete m.hydrofuge;
+    const sdb = (p.detailNiveaux ?? []).flatMap((n) => n.rooms ?? []).find((r) => r.type === "sdb")!;
+    sdb.faience = "douche";
+    for (const n of p.detailNiveaux ?? []) n.equipements = (n.equipements ?? []).filter((e) => e.piece !== sdb.id);
+    const c = contributionsDuPlan(p).contributions;
+    expect(c.filter((x) => x.sources.includes(sdb.id) && /faience|hydrofuge/.test(x.poste))).toEqual([]);
   });
   it("D45 · une salle de bain sans hauteur de faïence choisie : ni faïence ni cloison hydrofuge", () => {
     const sans = JSON.parse(JSON.stringify(plan)) as PlanPourCorrespondance;
@@ -261,9 +298,10 @@ describe("table de correspondance · les surfaces mesurées (D10)", () => {
   });
   it("les plinthes viennent du périmètre réel, pas d'une racine carrée", () => {
     /* D36 : seulement là où un sol neuf est posé, et pas sous une faïence qui descend au sol.
-       La chambre (parquet neuf) : 19,17 ml. La salle de bain est faïencée à mi-hauteur, et la
-       pièce de l'étage n'a aucun sol décidé : ni l'une ni l'autre n'a de plinthes neuves. */
-    expect(q("rev-plinthes")).toBeCloseTo(19.17, 1);
+       D46 : au pied des murs, plus à l'axe. La chambre (parquet neuf) : 4,865 × 4,68 m, soit
+       19,09 m moins la porte de 0,83 m → 18,26 ml (19,17 à l'axe). La salle de bain est faïencée à
+       mi-hauteur, et la pièce de l'étage n'a aucun sol décidé : pas de plinthes neuves. */
+    expect(q("rev-plinthes")).toBeCloseTo(18.26, 1);
   });
 });
 
@@ -288,6 +326,18 @@ describe("table de correspondance · la toiture", () => {
   });
   it("les fenêtres de toit du panneau comptent quand aucune n'est dessinée (D15)", () => {
     expect(q("toi-fenetre-de-toit-velux")).toBe(2);
+  });
+  /* D46 (contrat 1.15) : l'avancée de toit est dehors, on ne l'isole pas. Les rampants se comptent
+     sous la pente, SANS le débord (49,2 m² ici) ; la couverture garde la surface débord compris. */
+  it("l'isolation des rampants se compte sans le débord de toit", () => {
+    const p = JSON.parse(JSON.stringify(plan)) as PlanPourCorrespondance;
+    expect(p.toiture!.surfaceRampants).toBeCloseTo(49.2, 1);
+    expect(p.toiture!.surfaceRampants!).toBeLessThan(p.toiture!.surface!);
+    p.toiture!.projet!.isoCombles = "rampants";
+    const l = contributionsDuPlan(p).contributions.find((x) => x.poste === "iso-isolation-des-combles-amenages-rampants")!;
+    expect(l.quantite).toBeCloseTo(49.2, 1);
+    delete p.toiture!.surfaceRampants;   /* contrat antérieur : il n'a que la surface débord compris */
+    expect(contributionsDuPlan(p).contributions.find((x) => x.poste === "iso-isolation-des-combles-amenages-rampants")!.quantite).toBeCloseTo(58.9, 1);
   });
 });
 

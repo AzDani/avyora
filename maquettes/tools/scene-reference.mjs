@@ -100,5 +100,22 @@ export function sceneVariantes() {
   afterChange();
   /* l'étage reprend l'emprise : la trémie de l'escalier s'y ouvre, donc un garde-corps */
   addLevel('copy'); const et=L(); et.name='Étage'; et.height=2.5;
-  state.cur=0; afterChange(); garantirPids();
+  state.cur=0; afterChange();
+  /* D46 — les chemins de la géométrie et des quantités, posés après la copie de l'étage pour ne
+     toucher qu'au rez-de-chaussée : un mur maçonné NON porteur démoli (« Abattre un mur non
+     porteur », pas une cloison), une salle d'eau créée dans la chambre (ses cloisons neuves se
+     montent en plaques hydrofuges, à la place d'une cloison ordinaire), un doublage sur le mur des
+     deux fenêtres (ouvertures déduites), des combles aménagés isolés sous les rampants (sans le
+     débord de toit). */
+  const lv0=L(), W0=(a,c,t,x={})=>{const w={id:uid(),a:v(...a),b:v(...c),type:t,...x};lv0.walls.push(w);return w;};
+  W0([6,4.2],[6,5.2],'mur',{porteur:false,st:'demolir'});
+  W0([6.5,0],[6.5,2],'cloison',{st:'creer'}); W0([6.5,2],[8,2],'cloison',{st:'creer'});
+  nord.iso={e:0.12,mat:'gv',mode:'iti',sys:'ossature',side:1,st:'creer'};
+  state.toiture={forme:'deuxpans',pente:35,couverture:'tuile',etatCouv:'bon',etatCharp:'bon',combles:'amenages',debord:0.4,
+    projet:{action:'demousser',isoCombles:'rampants',velux:0,gouttieres:false,raccords:false,traiterCharpente:false}};
+  afterChange();
+  const sde=facesFor(lv0,'projet').find(f=>f.room&&pointIn(v(7.2,1),f.poly));
+  sde.room.type='sde'; sde.room.name="Salle d'eau"; sde.room.typeAuto=false; sde.room.faience='mi';
+  lv0.items.push({id:uid(),type:'douche',x:7.5,y:0.6,w:0.9,h:0.9,rot:0,st:'creer',douche:'bac'});
+  afterChange(); garantirPids();
 }

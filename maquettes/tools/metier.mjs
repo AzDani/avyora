@@ -6,6 +6,9 @@
  * posé dehors, un appartement à qui l'on réclamait sa toiture, un WC fondu dans un cellier, six
  * finitions de façade empilées, une cloison tracée en parpaing « porteur », une fenêtre posée sur
  * une cloison qui éclairait la pièce, une peinture introuvable.
+ * D46 : plinthes, peinture et faïence au pied des murs (plus à l'axe), doublage hors ouvertures,
+ * hydrofuge des seules cloisons à créer, mur non porteur démoli au poste de la traduction,
+ * rampants sans le débord de toit.
  *
  *   node maquettes/tools/metier.mjs "$(pwd)/maquettes"
  *
@@ -263,6 +266,85 @@ Object.assign(t, await p.evaluate(() => {
   r["faïence décidée : déduite des murs à peindre"] = Math.abs(m0 - m1 - faienceDe(L(), fs).m2) < 0.01;
   setRoomProp("faience", "pleine");
   r["faïence pleine hauteur : plus de murs à peindre"] = !chantierTasks().some((x) => x.id === "peint-murs:" + fs.room.id);
+  return r;
+}));
+
+/* ── 10. D46 : les quantités d'un pro — au pied des murs, hors ouvertures, sur ce qui est neuf ── */
+Object.assign(t, await p.evaluate(() => {
+  const r = {};
+  closeWelcome("blank"); closeModal(); setTool("select");
+  const boite = (type) => { state = blankState(); const lv = L(); lv.height = 2.5;
+    const ws = [[0, 0, 5, 0], [5, 0, 5, 4], [5, 4, 0, 4], [0, 4, 0, 0]].map(([a, b2, c, d]) => { const w = { id: uid(), a: v(a, b2), b: v(c, d), type }; lv.walls.push(w); return w; });
+    afterChange(); setMode("projet"); closeModal(); afterChange();
+    const f = () => facesFor(lv, "projet").find((g) => g.room && pointIn(v(4.5, 3.5), g.poly));
+    f().room.type = "chambre"; sel = { kind: "room", id: f().room.id }; return { lv, ws, f }; };
+  const tache = (re) => chantierTasks().find((x) => re.test(x.id));
+  const piece = (id) => contratPlan().detailNiveaux[0].rooms.find((x) => !id || x.id === id);
+  const proche = (a, b2, e = 0.01) => Math.abs(a - b2) < e;
+
+  /* cj-pro00 : plinthes, peinture, faïence au pied des murs, plus à l'axe */
+  let B = boite("mur");   /* 5 × 4 à l'axe, murs de 20 cm centrés : 4,80 × 3,80 dedans */
+  B.lv.openings.push({ id: uid(), wallId: B.ws[2].id, t: 0.5, type: "porte", w: 0.83, h: 2.04, hinge: 1, side: 1 }); afterChange();
+  let f = B.f(); renderPanel();
+  r["périmètre au pied des murs : 2 × (4,80 + 3,80) = 17,20 m (18 m à l'axe)"] = proche(f.perimInt, 17.2) && proche(f.perimReal, 18);
+  r["la fiche de la pièce dit ce périmètre-là"] = /Périmètre[\s\S]{0,80}17,20 m/.test(document.getElementById("pbody").innerText);
+  f.room.floor = "Parquet ancien"; setRoomRevetement("Parquet");
+  r["plinthes = 2(a + b) − porte = 16,37 ml, au compteur et au contrat"] = /16,37 ml/.test(tache(/^plinthes:/)?.detail || "") && proche(piece().plinthes, 16.37) && proche(piece().perimeter, 17.2);
+  setRoomProp("peinture", "murs"); f = B.f();
+  const murs = 17.2 * 2.5 - 0.83 * 2.04;
+  r["murs à peindre = périmètre intérieur × hauteur − ouvertures, compteur = contrat"] = proche(peintureDe(B.lv, f).murs, murs) && proche(piece().peinture.murs, murs) && proche(tache(/^peint-murs:/).prix, murs * PRIX.peintureMurs);
+  B = boite("porteur");  /* murs de pierre de 60 cm : 4,40 × 3,40 dedans */
+  r["murs de 60 cm : périmètre 15,60 m au pied des murs (18 m à l'axe)"] = proche(B.f().perimInt, 15.6);
+  B.ws[0].iso = { e: 0.12, mat: "gv", mode: "iti", sys: "ossature", side: 1, st: "creer" }; afterChange();
+  r["doublé : le périmètre se prend sur le doublage"] = proche(B.f().perimInt, 15.6 - 2 * doublageOf(B.ws[0].iso), 0.02);
+
+  /* cj-pro01 : on ne pose pas d'isolant sur une fenêtre */
+  B = boite("mur");
+  B.lv.openings.push({ id: uid(), wallId: B.ws[0].id, t: 0.5, type: "fenetre", w: 1.2, h: 1.25, hinge: 1, side: 1 });
+  B.ws[0].iso = { e: 0.12, mat: "gv", mode: "iti", sys: "ossature", side: 1, st: "creer" }; afterChange();
+  const iso = () => chantierTasks().find((x) => x.id.startsWith("iso:")), dbl = () => contratPlan().provenance.doublages[0];
+  r["doublage du mur à la fenêtre : 5 × 2,5 − 1,20 × 1,25 = 11,0 m², au Suivi et au contrat"] = /11,0 m² hors ouvertures/.test(iso().detail) && proche(iso().prix, 11 * PRIX.isoITI) && proche(dbl().m2, 11) && proche(quantities().doublage.iti, 11, 0.06);
+  B.ws[0].iso.t0 = 0; B.ws[0].iso.t1 = 0.5; afterChange();
+  r["doublage partiel : seule la part de la fenêtre dans le tronçon est déduite (2,5 × 2,5 − 0,60 × 1,25)"] = proche(dbl().m2, 5.5) && proche(iso().prix, 5.5 * PRIX.isoITI);
+  sel = { kind: "wall", id: B.ws[0].id }; renderPanel();
+
+  /* cj-pro02 : hydrofuge seulement pour les cloisons À CRÉER de la pièce humide */
+  B = boite("mur");
+  const clo = { id: uid(), a: v(2, 0), b: v(2, 4), type: "cloison" }; B.lv.walls.push(clo); afterChange();
+  const sdb = () => facesFor(B.lv, "projet").find((g) => g.room && pointIn(v(1, 2), g.poly));
+  sdb().room.type = "sdb"; sel = { kind: "room", id: sdb().room.id };
+  B.lv.items.push({ id: uid(), type: "douche", x: 0.6, y: 0.6, w: 0.9, h: 0.9, rot: 0, st: "creer", douche: "bac" }); afterChange();
+  setRoomProp("faience", "mi");
+  const hyd = () => chantierTasks().filter((x) => /hydrofuge/.test(x.label));
+  r["faïence refaite, cloison existante : aucune tâche hydrofuge, rien au contrat"] = !!tache(/^faience:/) && !hyd().length && contratPlan().provenance.murs.every((m) => m.hydrofuge === false);
+  r["… et la fiche ne promet plus de passer les cloisons en hydrofuge"] = !/passent en plaques hydrofuges/.test(document.getElementById("pbody").innerText);
+  clo.st = "creer"; afterChange();
+  const tc = () => chantierTasks().find((x) => x.id === "w:" + clo.id + ":creer"), m2c = wallLen(clo) * 2.5;
+  r["cloison À CRÉER qui borde la salle de bain : montée en plaques hydrofuges, au prix de ce poste, une seule fois"] = /plaques hydrofuges/.test(tc().label) && proche(tc().prix, m2c * PRIX.cloisonHumide) && hyd().length === 1;
+  r["… le contrat le dit sur le mur (hydrofuge)"] = contratPlan().provenance.murs.find((m) => m.id === clo.pid).hydrofuge === true;
+  setRoomProp("faience", "");
+  r["sans faïence : une cloison ordinaire"] = !/hydrofuge/.test(tc().label) && proche(tc().prix, m2c * PRIX.cloisonNeuve) && contratPlan().provenance.murs.every((m) => m.hydrofuge === false);
+  B.lv.items = []; afterChange(); sel = { kind: "room", id: sdb().room.id }; renderPanel();
+  const zd = [...document.querySelectorAll("#pbody .seg button")].find((x) => /Zone douche/.test(x.textContent));
+  r["« Zone douche » grisé tant qu'aucune douche n'est dessinée"] = !!zd && zd.disabled;
+  setRoomProp("faience", "douche");
+  r["« zone de douche » sans douche : ni faïence ni hydrofuge"] = !tache(/^faience:/) && !hyd().length;
+
+  /* integ-15 : un mur maçonné non porteur démoli = « Abattre un mur non porteur » (le poste de la traduction) */
+  B = boite("mur");
+  const stub = { id: uid(), a: v(3, 1), b: v(3, 3), type: "mur", porteur: false, st: "demolir" }; B.lv.walls.push(stub); afterChange();
+  const td = chantierTasks().find((x) => x.id === "w:" + stub.id + ":demolir"), cm = contratPlan().provenance.murs.find((m) => m.id === stub.pid);
+  r["mur de 20 cm non porteur démoli : « Démolir le mur », au prix « Abattre un mur non porteur »"] = /^Démolir le mur /.test(td.label) && !/porteur ·|cloison/.test(td.label) && proche(td.prix, 2 * 2.5 * PRIX.demolMur);
+  r["… et le contrat l'envoie en mur non porteur (type mur, porteur faux)"] = cm.type === "mur" && cm.porteur === false && cm.etat === "demolir";
+  stub.type = "cloison"; afterChange();
+  r["une cloison démolie reste « Démolir la cloison », au prix de la cloison"] = proche(chantierTasks().find((x) => x.id === "w:" + stub.id + ":demolir").prix, 2 * 2.5 * PRIX.demolCloison);
+
+  /* pro16 : les rampants sans l'avancée de toit */
+  B = boite("mur");
+  state.toiture = { forme: "deuxpans", pente: 30, couverture: "tuile", combles: "amenages", debord: 0.3, projet: { action: "rien", isoCombles: "rampants" } }; afterChange();
+  const g = toitureGeo(), ti = chantierTasks().find((x) => x.id === "toit:iso"), ct = contratPlan().toiture;
+  r["rampants : l'emprise sous la pente, sans le débord (5,20 × 4,20 / cos 30°)"] = proche(g.surfaceRampants, 5.2 * 4.2 / Math.cos(Math.PI / 6), 0.06) && g.surfaceRampants < g.surface;
+  r["… au compteur et au contrat"] = proche(ti.prix, g.surfaceRampants * PRIX_TOIT.isoRampants) && proche(ct.surfaceRampants, g.surfaceRampants) && proche(ct.surface, g.surface);
   return r;
 }));
 
