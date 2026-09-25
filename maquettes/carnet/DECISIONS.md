@@ -3008,3 +3008,103 @@ souris ; chaque vue, chaque fiche, chaque outil, Suivi, Estimer, dossier, fenêt
   cadrage automatique, « faîtage » sous une cote au téléphone.
 - Le bouton « Continuer sur ordinateur » ouvre le partage du téléphone (`navigator.share`) : non vérifiable en
   automatique.
+
+## D53 · Finition F1 : le tronçon de la pièce visée, l'exemple qui ne prend pas la place, un résumé qui compte tout (25/09/2026)
+
+**D'où l'on part.** Jury final : 7 à 7,5/10. Trois bloquants (pro : « À démolir » abat toute la longueur d'un mur ;
+retention : en gratuit, l'exemple prend la seule place de « Mes plans » ; retention : « Aucun travail marqué » à côté
+d'un budget de 3 319 €) et une contradiction relevée par deux jurés (« Mes plans » dit « Aucun plan enregistré » quand
+le plan ouvert est enregistré). Batterie, couverture et vitest verts avant toute retouche.
+
+**Arbitrage (Dani) · un élément déjà là n'est jamais « à créer ».** En vue Travaux, un mur, une ouverture ou un
+équipement déjà là ne propose plus « À créer » ni « À poser » : mur « À décider / Je garde / À démolir », menuiserie
+« À décider / Je garde / À remplacer / À boucher », passage « À décider / Je garde / À boucher », équipement « À décider /
+Je garde / À déposer ». « À créer » / « À poser » restent à ce qui a été tracé en Travaux (son état est déjà `creer`) et
+aux murs d'un étage créé par les travaux (`lv.neuf`, surélévation, D37). `choixEtat(kind, vue, sous, creerOk)` ; un plan
+enregistré dont un élément existant porte `creer` le garde (rien n'est migré, `SCHEMA` inchangé) et le choix reste
+coché. Le constat du pro (fenêtre existante « À créer » : 3 320 € au lieu de 610 €, sans alerte) tombe avec.
+
+**1. « À démolir » ne vise que le tronçon de la pièce (bloquant pro).** Sur la Maison, un clic sur la cloison
+Chambre 2 / Cuisine (7 ; 2,2) puis « À démolir » abattait les 8 m du mur, ses 3 portes, fondait cinq pièces en une et
+laissait trois extrémités en l'air. Un mur se lit désormais en **tronçons**, d'une jonction à l'autre
+(`jonctionsInterieures` : les bouts des autres murs posés sur lui, séparations exclues). Le tronçon visé est
+(`tronconVise`) l'endroit cliqué (`_visee`, noté au clic), sinon la pièce choisie juste avant (au clavier, Alt + flèches),
+sinon le choix de la fiche : une liste « « À démolir » vise » (tronçons nommés « Entre Chambre 2 et Cuisine · 4,00 m »,
+et « Tout le mur · 8,00 m », qui est le choix par défaut sans clic — dit, pas deviné), avec la pastille ⓘ « Tronçon ».
+`demolirTroncon` coupe le mur aux deux jonctions (`couperMurA`, la coupe de « Couper en 2 » généralisée : état, porteur,
+doublages répartis, cases cochées, groupe, ouvertures rangées selon leur milieu), ne marque que ce morceau, en un seul
+pas d'historique. Message : « 4,00 m démolis entre Chambre 2 et Cuisine : une seule pièce, « Cuisine ». » avec
+**« Tout le mur (8,00 m) »** et « Annuler » (un message porte désormais une 2e action, `opt.plus`). Même règle pour
+**Suppr** et pour la **sélection de zone** (vue Travaux : un mur intérieur qui dépasse du cadre y laisse ses tronçons,
+`{kind:'troncon'}` ; pas un mur de façade — un cadre autour d'une pièce n'abat pas sa façade). En vue Travaux, seul le
+tronçon visé se dessine sélectionné (halo indigo). « Couper en 2 » devient **« Couper aux jonctions »** quand le mur en a.
+- La séparation Cuisine / Séjour (sans mur) s'appuie à 3,50 m sur cette cloison de 4 m : démolie, son bout restait en
+  l'air et le Séjour disparaissait dans la pièce ouverte. La part du tronçon qui ne fait pas face à la pièce visée
+  devient, **après travaux seulement**, le prolongement de la séparation (`garderSeparations`, séparation `creer` liée au
+  mur par `surMur`, jamais chiffrée, retirée si le mur repasse « Je garde »). Résultat sur la Maison : 4,00 m, 10,0 m²,
+  150 € ; Chambre 2 + Cuisine réunies (22,3 m²) ; Séjour, Salle de bain, Buanderie, WC intacts ; 5 portes gardées sur 6 ;
+  0 extrémité en l'air, 0 alerte.
+- L'exemple reste l'exemple après une coupe : son empreinte de murs recolle les morceaux alignés (`murSansCoupes`,
+  `sigMurs`) ; l'ancienne empreinte reste reconnue (`sigMursBrut`).
+- Dessin : l'étiquette de la pièce réunie s'écarte d'un mur à démolir et de sa cote (`obstaclesDemolis`, obstacle
+  souple de poids 0,2 : jamais préféré à un équipement) ; un mur à démolir sélectionné ne montre plus ses badges d'angle (« 90° » sur l'étiquette,
+  design 2).
+
+**2. En gratuit, l'exemple ne prend jamais la place de « Mes plans » (bloquant retention, option (b)).** Une coche
+(« Explorer le Suivi ») ou une démolition d'essai (« essaie une décision ») suffisait à le ranger : le premier plan de
+l'utilisateur naissait « Pas dans Mes plans · il sera perdu », et la fenêtre de paiement s'ouvrait pendant la découverte.
+En gratuit, l'exemple n'est jamais rangé (`exempleNonGarde`, `avantDeRemplacer` → `'exemple'`, `sortDuPlanOuvert` →
+`'exemple'`) : le plan type, « Nouveau plan », « Ouvrir » ou « Revoir l'exemple » passent sans fenêtre, avec le message
+« L'exemple n'est pas gardé : il se rouvre depuis Aide › Revoir l'exemple. » et « Annuler » (qui le rend, coches
+comprises) ; « Enregistrer dans Mes plans » sur l'exemple le dit au lieu d'ouvrir la limite ; l'indicateur dit
+« Enregistré » ; Fichier › Nouveau plan le dit d'avance. Nouvelle entrée **Aide › Revoir l'exemple** (après les
+raccourcis). En Pro, rien ne change (D48 : l'exemple retouché se range, la place ne manque pas).
+
+**3. Le résumé des travaux compte toutes les tâches (bloquant retention, novice).** « Aucun travail marqué pour
+l'instant » lisait `quantities().travaux.actif` (murs, ouvertures, équipements) et s'affichait à côté d'un budget fait de
+sols et de peinture. `resumeTravauxHTML` lit `chantierPrix()` — la même source que le compteur, le Suivi, Estimer et le
+contrat : « Travaux décidés : 4 tâches dans 2 corps d'état (Sols, Peinture) · 3 086 € HT », suivi de `travauxEnMots`
+(« dont 10,0 m² de murs à démolir… ») quand il y a des murs ou des équipements ; « Aucun travail marqué » seulement à 0
+tâche (bureau, tablette, téléphone). Dans Estimer, « Ce que ton plan ne dit pas encore » ne réclame plus « Travaux :
+aucune démolition ni création » quand des tâches existent.
+
+**4. « Mes plans » montre le plan ouvert (novice, retention).** Le plan ouvert n'est rangé qu'avant d'en ouvrir un
+autre : la liste était vide, et disait « Aucun plan enregistré ». Il s'affiche toujours en **première carte** — « Ouvert ·
+enregistré automatiquement » (ou, pour l'exemple en gratuit, le message ci-dessus ; en gratuit plein, « enregistré sur
+cet appareil, pas dans Mes plans »), vignette, surface, montant, avancement, projet à X %. Le message vide est réservé au
+cas où il n'y a vraiment rien. Une fois rangé, une seule carte.
+
+**En passant.** Une liste de choix mise en colonne APRÈS sa mesure (`segLisibles`) faisait sauter le défilement du
+panneau de 56 px (ancrage du navigateur) : visible dès que la décision d'un mur passe à trois choix. Le défilement est
+remis.
+
+**Contrôles.**
+- `metier.mjs` §14 (Maison, à la souris) : clic en (7 ; 2,2) → tronçon visé, la fiche le dit, « Couper aux jonctions » ;
+  « À démolir » → 4,00 m, 10,0 m², 150 € ; Salle de bain, Buanderie, WC, Séjour intacts ; une seule porte part ; 0
+  extrémité en l'air, 0 alerte ; message et « Tout le mur (8,00 m) » → 8,00 m ; séparation prolongée (0,50 m, après
+  travaux, sans prix) puis retirée par « Je garde » ; Suppr en (7 ; 5,6) → 2,20 m ; zone au glisser + Suppr → 4,00 m ;
+  au clavier, « Tout le mur » par défaut, tronçon choisi dans la fiche → 1,80 m ; « Couper aux jonctions » → 1,80 · 2,20 ·
+  4,00 m, même budget.
+- `decision.mjs` : déjà là → jamais « À créer » / « À poser » (mur, menuiserie, équipement) ; tracé en Travaux → « À
+  créer » / « À poser » cochés ; plan d'avant non migré ; étage créé par les travaux.
+- `onboarding.mjs` (gratuit) : coche puis plan type, démolition d'essai puis « Nouveau plan » → aucune fenêtre, « Mes
+  plans » vide, message + « Annuler » qui rend l'exemple ; premier plan à soi « Enregistré », rangé par Aide › Revoir
+  l'exemple sans fenêtre ; « Enregistrer dans Mes plans » refusé et dit ; Fichier le dit d'avance.
+- `langage.mjs` : états « déjà là » dans les deux vues (mis à jour selon l'arbitrage, même intention : mêmes mots) ;
+  résumé au bureau et au téléphone ; « Aucun travail » jamais lu à côté d'une tâche, sur les 415 états lus.
+- `valeur.mjs` : « Mes plans » vide seulement s'il n'y a rien ; plan ouvert non rangé en première carte, « Ouvert ·
+  enregistré automatiquement », surface, montant, avancement ; rangé → une seule carte.
+- Chaque nouveau contrôle échoue sur le fichier d'avant (ou y lève une erreur : fonctions absentes). Batterie complète,
+  couverture (45 014 € et 30 470 € à 0 %), vitest (164) verts ; fixture du contrat : seuls des `id` changent — rendue telle quelle,
+  contrat 1.16.0 inchangé. Rien dans `lib/`.
+
+**Reste imparfait (vu, pas corrigé).**
+- Pas encore d'« À remplacer » pour un WC, une chaudière ou un radiateur (pro, depuis le premier jury) : il faut une
+  paire de tâches (dépose + pose) et sa traduction au contrat.
+- Les équipements posés contre un tronçon démoli (interrupteur, prise) restent en place après travaux ; la porte d'un
+  tronçon démoli reste dessinée en noir (design 2).
+- « Tout le mur » est un choix explicite : les cloisons qui s'y arrêtaient restent en l'air, et le contrôle le signale.
+- Sans clic (clavier, « Voir sur le plan »), « À démolir » vise tout le mur tant que la fiche n'a pas choisi un tronçon
+  — c'est écrit dans la fiche, pas deviné.
+- Un exemple enregistré AVANT cette version, puis coupé à une jonction, n'est plus reconnu comme l'exemple (son
+  empreinte d'origine est l'ancienne).

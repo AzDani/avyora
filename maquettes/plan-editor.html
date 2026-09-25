@@ -300,6 +300,7 @@ div.tot .v.big{font-size:24px}
 .grp .gdot{width:10px;height:10px;border-radius:3px;flex:0 0 auto}
 .grp .glink{border:0;background:transparent;font:inherit;font-weight:600;color:var(--ink);cursor:pointer;flex:1;text-align:left}
 .grp .gn{font-size:11px;color:var(--muted);font-family:"Geist Mono",monospace}
+.grp .gouvert{font-size:12px;font-weight:500;color:var(--muted)} /* D53 : l'état du plan ouvert, en mots (la Mono reste aux nombres) */
 /* D40 · carte de « Mes plans » : vignette, surface · budget · avancement, date */
 .grp.plancard{padding:8px 10px;gap:10px;border-radius:12px}
 .plancard .pmini{flex:0 0 52px;height:44px;border-radius:8px;background:var(--canvas);display:flex;align-items:center;justify-content:center;padding:4px}
@@ -902,6 +903,7 @@ button.chk{width:100%;font:inherit;text-align:left}
       <button type="button" role="menuitem" tabindex="-1" id="visiteBtn" onclick="menuAction(lancerVisiteOuGuide)"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m10 8.5 5.5 3.5-5.5 3.5z"/></svg><span id="visiteLbl">Visite guidée</span></button>
       <button type="button" role="menuitem" tabindex="-1" id="glossBtn" onclick="menuAction(()=>ouvrirAide('gloss'))"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19.5A2 2 0 0 0 6 21h13"/></svg><span>Glossaire<small>Les mots du bâtiment, en une phrase</small></span></button>
       <button type="button" role="menuitem" tabindex="-1" id="keysBtn" onclick="menuAction(()=>ouvrirAide('keys'))"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M10 13h.01M14 13h.01M18 13h.01M8 16.5h8"/></svg><span>Raccourcis clavier</span></button>
+      <button type="button" role="menuitem" tabindex="-1" id="exempleBtn" onclick="menuAction(revoirExemple)"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/></svg><span>Revoir l'exemple<small>Un T2 déjà décidé, avec son budget</small></span></button>
     </div>
   </div>
   <a class="ib propill" id="proTop" href="https://getavyora.fr/tarifs?source=editeur-plan" target="_blank" rel="noopener" onclick="suivre('clic_passer_pro',{origine:'barre'})" hidden><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5 14.6 9H21l-5.2 4 2 6.5L12 15.6 6.2 19.5l2-6.5L3 9h6.4z"/></svg><span class="lbl">Passer Pro</span></a>
@@ -1093,15 +1095,21 @@ const LEX={
 function accord(n,m,mp){if(!(Math.abs(n)>=2))return m;if(mp)return mp;return /\s/.test(m)||/[sxz]$/i.test(m)?m:m+'s';}
 function pluriel(n,m,mp){return n+' '+accord(n,m,mp);}
 /* Les états proposés pour un élément. En vue Avant travaux : ce qui a un sens sur ce qui existe
-   (décider, garder, enlever ou remplacer) ; en vue Travaux : la liste complète. Mêmes mots, même
-   ordre, mêmes couleurs dans les deux vues. */
-function choixEtat(kind,vue,sous){const E=LEX.etat,Sb={...LEX.sous,...(sous||{})},L=[['existant',E.aDecider,Sb.aDecider],['garder',E.garder,Sb.garder]];
-  if(kind==='wall'){if(vue==='projet')L.push(['creer',E.creer,Sb.creer,'st-creer']);L.push(['demolir',E.demolir,Sb.demolir,'st-demolir']);}
-  else if(kind==='opening'||kind==='passage'){if(kind==='opening')L.push(['remplacer',E.remplacer,Sb.remplacer,'st-creer']);if(vue==='projet'){ /* D47 : « passage » = ouverture sans menuiserie */L.push(['creer',E.creer,Sb.creer,'st-creer']);L.push(['boucher',E.boucher,Sb.boucher,'st-demolir']);}}
-  else{if(vue==='projet')L.push(['creer',E.poser,Sb.poser,'st-creer']);L.push(['demolir',E.deposer,Sb.deposer,'st-demolir']);}
+   (décider, garder, enlever ou remplacer) ; en vue Travaux : en plus, boucher une ouverture. Mêmes
+   mots, même ordre, mêmes couleurs dans les deux vues.
+   D53 (arbitrage) : un élément DÉJÀ LÀ n'est jamais « à créer » (ni « à poser ») — « créer » un mur
+   qui existe n'a pas de sens, et une fenêtre existante passée « À créer » chiffrait un percement de
+   plus de 2 700 € sans alerte. « À créer » / « À poser » ne se proposent qu'à ce qui a été tracé en
+   vue Travaux (son état est déjà « creer ») ou sur un étage créé par les travaux (`creerOk`). Un plan
+   enregistré qui porte cet état sur un élément existant le garde : rien n'est migré. */
+function choixEtat(kind,vue,sous,creerOk){const E=LEX.etat,Sb={...LEX.sous,...(sous||{})},L=[['existant',E.aDecider,Sb.aDecider],['garder',E.garder,Sb.garder]];
+  const creer=vue==='projet'&&!!creerOk;
+  if(kind==='wall'){if(creer)L.push(['creer',E.creer,Sb.creer,'st-creer']);L.push(['demolir',E.demolir,Sb.demolir,'st-demolir']);}
+  else if(kind==='opening'||kind==='passage'){if(kind==='opening')L.push(['remplacer',E.remplacer,Sb.remplacer,'st-creer']);if(vue==='projet'){ /* D47 : « passage » = ouverture sans menuiserie */if(creer)L.push(['creer',E.creer,Sb.creer,'st-creer']);L.push(['boucher',E.boucher,Sb.boucher,'st-demolir']);}}
+  else{if(creer)L.push(['creer',E.poser,Sb.poser,'st-creer']);L.push(['demolir',E.deposer,Sb.deposer,'st-demolir']);}
   return L;}
 function segEtat(kind,cur,onclick,sous,marque){const vue=mode()==='projet'?'projet':'existant';
-  const C=choixEtat(kind,vue,sous);return `<div class="seg segetat n${C.length}">${C.map(([k,l,s,cls])=>`<button class="${cls||''} ${marque!==false&&cur===k?'on':''}" onclick="${onclick(k)}">${l}${s?`<small>${s}</small>`:''}</button>`).join('')}</div>`;}
+  const C=choixEtat(kind,vue,sous,(marque!==false&&cur==='creer')||!!(L()&&L().neuf));return `<div class="seg segetat n${C.length}">${C.map(([k,l,s,cls])=>`<button class="${cls||''} ${marque!==false&&cur===k?'on':''}" onclick="${onclick(k)}">${l}${s?`<small>${s}</small>`:''}</button>`).join('')}</div>`;}
 
 /* ---------- Glossaire : une phrase simple par mot du bâtiment ----------
    Affiché par la pastille ⓘ, là où le mot apparaît — une fois par panneau et par mot. */
@@ -1110,6 +1118,7 @@ const GLOSSAIRE={
   iti:['Isolation par l\'intérieur (ITI)','On isole le mur côté pièce : la pièce perd quelques centimètres.'],
   ite:['Isolation par l\'extérieur (ITE)','On isole le mur côté dehors, sous un enduit ou un bardage : la pièce ne perd rien.'],
   porteur:['Mur porteur','Un mur qui soutient un plancher ou le toit : on ne l\'ouvre pas sans une poutre calculée par un bureau d\'études.'],
+  troncon:['Tronçon','La partie d\'un mur comprise entre deux murs qui le touchent. On peut en démolir un sans toucher au reste du mur ni à ses autres ouvertures.'],
   cloison:['Cloison','Un mur fin qui sépare deux pièces et ne porte rien.'],
   refend:['Mur de refend','Un mur intérieur épais, souvent porteur, qui partage le bâtiment.'],
   allege:['Allège','La hauteur de mur entre le sol et le bas de la fenêtre.'],
@@ -2876,9 +2885,12 @@ function reglerFusion(lv,f,pieces){const r=f&&f.room;const autres=(pieces||[]).f
   return quoi;}
 function retirerFusion(r,k){if(!r||!r.fusion)return;r.fusion.quoi=(r.fusion.quoi||[]).filter(x=>x!==k);if(!r.fusion.quoi.length)delete r.fusion;}
 const phraseFusion=quoi=>quoi.map(k=>MOT_FUSION[k]).join(', ').replace(/, ([^,]*)$/,' ni $1');
-function annonceFusion(w,avant){if(!avant)return;const m=add(mul(add(w.a,w.b),.5),wallOff(w));const f=facesFor(L(),'projet').find(g=>g.room&&pointIn(m,g.poly));if(!f)return;
+function annonceFusion(w,avant){const t=texteFusion(w,avant);if(t)toast(t,true);}
+/* D53 : la phrase de la fusion, seule — le message d'un tronçon démoli la reprend à sa suite */
+function texteFusion(w,avant,court){if(!avant)return '';const m=add(mul(add(w.a,w.b),.5),wallOff(w));const f=facesFor(L(),'projet').find(g=>g.room&&pointIn(m,g.poly));if(!f)return '';
   const quoi=reglerFusion(L(),f,avant);if(quoi.length)afterChange();
-  toast(`${roomName(avant[0])} et ${roomName(avant[1])} ne font plus qu'une pièce : « ${roomName(f.room)} ».`+(quoi.length?` Elles n'avaient pas ${phraseFusion(quoi)} : à choisir pour la pièce réunie (Encore à décider).`:' Change son type dans sa fiche si besoin.'),true);}
+  if(court)return `une seule pièce, « ${roomName(f.room)} »`+(quoi.length?`. Pas ${phraseFusion(quoi)} des deux côtés : à choisir (Encore à décider)`:'');
+  return `${roomName(avant[0])} et ${roomName(avant[1])} ne font plus qu'une pièce : « ${roomName(f.room)} ».`+(quoi.length?` Elles n'avaient pas ${phraseFusion(quoi)} : à choisir pour la pièce réunie (Encore à décider).`:' Change son type dans sa fiche si besoin.');}
 function pairRoomFaces(level,faces,creer){
   const used=new Set(),typesGeo=[];
   // 1) les petites pièces d'abord : une pièce imbriquée récupère bien sa propre fiche (ancrage dedans)
@@ -3227,7 +3239,7 @@ function danglingNodes(level){const out=[];level.walls.filter(w=>wallActive(w)).
 function snapshot(){return JSON.stringify(state);}
 function commit(){history.push(snapshot());if(history.length>80)history.shift();future=[];afterChange();}
 /* le message d'un geste précédent perd son « Annuler » dès qu'un autre geste entre dans l'historique */
-function retirerAnnulerPerime(){const t=document.getElementById('toast');if(!t||!t._geste)return;const g=t._geste;if(history.length===g.h&&history[g.h-1]===g.snap)return;t._geste=null;const b=t.querySelector('.tact');if(b)b.remove();t.classList.remove('act');}
+function retirerAnnulerPerime(){const t=document.getElementById('toast');if(!t||!t._geste)return;const g=t._geste;if(history.length===g.h&&history[g.h-1]===g.snap)return;t._geste=null;t.querySelectorAll('.tact').forEach(b=>b.remove());t.classList.remove('act');}
 function afterChange(){state.levels.forEach(syncRooms);_numPieces=null;retirerAnnulerPerime();save();render();}
 /* D38 : annuler ou rétablir laissait le tracé en cours à l'écran (chain) : le mur annulé restait
    dessiné et le clic suivant repartait de son bout, en laissant un mur orphelin. Les gestes en
@@ -3267,7 +3279,14 @@ let conflitOnglet=null;
 const ICO_ENREG={ok:'<path d="M20 6 9 17l-5-5"/>',saving:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',err:'<path d="M12 3 2 21h20L12 3z"/><path d="M12 10v5M12 18h.01"/>',perdu:'<path d="M12 3 2 21h20L12 3z"/><path d="M12 10v5M12 18h.01"/>',conflit:'<rect x="3" y="5" width="13" height="11" rx="1.5"/><path d="M8 19h11a2 2 0 0 0 2-2V9"/>'};
 /* Ce qu'il adviendra du plan ouvert si l'on en ouvre un autre : 'rien' (vide ou jamais touché),
    'range' (déjà dans « Mes plans »), 'rangera' (il y sera rangé), 'perdu' (gratuit, place prise). */
-function sortDuPlanOuvert(){if(planVide()||planIntact())return 'rien';const lib=loadPlans();if(state.id&&lib[state.id])return 'range';if(isPro()||Object.keys(lib).length<PLAN_LIMIT_FREE)return 'rangera';return 'perdu';}
+/* D53 (jury final, retention) · En gratuit, l'EXEMPLE n'est jamais rangé dans « Mes plans » : il y
+   prenait la seule place dès une coche ou une démolition d'essai (ce que la visite invite à faire),
+   le premier vrai plan de l'utilisateur naissait « perdable » et la fenêtre de paiement s'ouvrait
+   pendant la découverte. Il n'est pas gardé — il se rouvre, intact, depuis Aide › Revoir
+   l'exemple — et le message qui le dit porte « Annuler ». 'exemple' : ce qu'il advient de lui. */
+const MSG_EXEMPLE='L\'exemple n\'est pas gardé : il se rouvre depuis Aide › Revoir l\'exemple.';
+const exempleNonGarde=()=>!isPro()&&estExemple();
+function sortDuPlanOuvert(){if(planVide()||planIntact())return 'rien';const lib=loadPlans();if(state.id&&lib[state.id])return 'range';if(exempleNonGarde())return 'exemple';if(isPro()||Object.keys(lib).length<PLAN_LIMIT_FREE)return 'rangera';return 'perdu';}
 /* D48 (cj-retention07, cj-integration11, retention05) : « Enregistré » ne se dit plus d'un plan que
    la version gratuite perdra à l'ouverture d'un autre (« Pas dans Mes plans », en orange foncé,
    cliquable), ni d'un plan qu'un autre onglet est en train d'écrire. */
@@ -3281,7 +3300,7 @@ function afficherEnreg(dansLib){const el=document.getElementById('saveState');if
   const t=et==='err'?'Pas enregistré : l\'espace de ce navigateur est plein. Supprime un plan dans « Mes plans » ou exporte celui-ci.':et==='saving'?'Enregistrement en cours…'
     :et==='perdu'?'Version gratuite : '+DROITS.plans.gratuit+'. Ce plan est sur cet appareil, mais « Mes plans » n\'a plus de place : il sera perdu si tu en ouvres un autre. Clique pour voir tes options.'
     :et==='conflit'?'Ce plan est aussi ouvert dans un autre onglet : cet onglet n\'enregistre plus rien tant que tu n\'as pas choisi. Clique pour choisir.'
-    :'Enregistré sur cet appareil'+(hh?' à '+hh:'')+(dansLib?', et à jour dans « Mes plans »':sort==='rangera'?'. Il sera rangé dans « Mes plans » avant que tu en ouvres un autre.':'');
+    :'Enregistré sur cet appareil'+(hh?' à '+hh:'')+(dansLib?', et à jour dans « Mes plans »':sort==='rangera'?'. Il sera rangé dans « Mes plans » avant que tu en ouvres un autre.':sort==='exemple'?'. '+MSG_EXEMPLE:'');
   el.title=t;el.setAttribute('aria-label',t);
   const actif=et==='perdu'||et==='conflit';
   if(actif){el.setAttribute('role','button');el.tabIndex=0;el.onclick=clicEnreg;el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();clicEnreg();}};}
@@ -3335,8 +3354,16 @@ function marquerOrigine(k){state.origine={k,sig:empreinte(state)};if(k==='exempl
    gratuit : c'est la vitrine. Il reste « l'exemple » tant que ses murs existants sont ceux de
    l'exemple (décider, démolir, créer ne change rien ; déplacer ou redessiner ses murs en fait un
    autre logement, donc le plan de l'utilisateur). */
-function sigMurs(st){const j=(st.levels||[]).map(l=>(l.walls||[]).filter(w=>w.st!=='creer').map(w=>[w.a.x,w.a.y,w.b.x,w.b.y].map(n=>Math.round(n*100)).join(',')).sort().join(';')).join('|');let h=2166136261;for(let i=0;i<j.length;i++){h^=j.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(36)+'.'+j.length;}
-function estExemple(){const o=state.origine;if(!o||o.k!=='exemple')return false;return o.murs!=null?o.murs===sigMurs(state):planIntact();}
+function sigMursBrut(st){const j=(st.levels||[]).map(l=>(l.walls||[]).filter(w=>w.st!=='creer').map(w=>[w.a.x,w.a.y,w.b.x,w.b.y].map(n=>Math.round(n*100)).join(',')).sort().join(';')).join('|');let h=2166136261;for(let i=0;i<j.length;i++){h^=j.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(36)+'.'+j.length;}
+/* D53 : un mur coupé (tronçon démoli, « Couper aux jonctions », « Couper en 2 ») reste le même logement —
+   les morceaux alignés bout à bout se recollent avant l'empreinte. */
+function murSansCoupes(ws){const S=ws.map(w=>({a:w.a,b:w.b,type:w.type}));let k=true;const d=(p,q)=>Math.hypot(p.x-q.x,p.y-q.y);
+  while(k){k=false;for(let i=0;i<S.length&&!k;i++)for(let j=i+1;j<S.length&&!k;j++){const p=S[i],q=S[j];if((p.type==='virtuel')!==(q.type==='virtuel'))continue;
+    const c=[[p.a,p.b,q.a,q.b],[p.a,p.b,q.b,q.a],[p.b,p.a,q.a,q.b],[p.b,p.a,q.b,q.a]].find(([,y,z])=>d(y,z)<1e-6);if(!c)continue;const [x,y,,u]=c;
+    const cr=(y.x-x.x)*(u.y-x.y)-(y.y-x.y)*(u.x-x.x),dot=(y.x-x.x)*(u.x-y.x)+(y.y-x.y)*(u.y-y.y);if(Math.abs(cr)>1e-6*Math.max(1,d(x,u))||dot<=0)continue;
+    S[i]={a:x,b:u,type:p.type};S.splice(j,1);k=true;}}return S;}
+function sigMurs(st){const j=(st.levels||[]).map(l=>murSansCoupes((l.walls||[]).filter(w=>w.st!=='creer')).map(w=>{const A=[w.a.x,w.a.y].map(n=>Math.round(n*100)),B=[w.b.x,w.b.y].map(n=>Math.round(n*100));return (A[0]<B[0]||(A[0]===B[0]&&A[1]<=B[1])?[...A,...B]:[...B,...A]).join(',');}).sort().join(';')).join('|');let h=2166136261;for(let i=0;i<j.length;i++){h^=j.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(36)+'.'+j.length;}
+function estExemple(){const o=state.origine;if(!o||o.k!=='exemple')return false;return o.murs!=null?(o.murs===sigMurs(state)||o.murs===sigMursBrut(state)):planIntact();}
 const voitTout=()=>isPro()||estExemple();
 const planVide=()=>!state.levels.some(l=>l.walls.length||l.items.length||(l.texts||[]).length||(l.dims||[]).length||l.bg);
 const planIntact=()=>!!state.origine&&state.origine.sig===empreinte(state);
@@ -3350,6 +3377,7 @@ function avantDeRemplacer(suite){enregistrerMaintenant();
   if(planVide()||planIntact()){suite(null);return;}
   const lib=loadPlans(),nom=state.name||'Plan sans nom';
   if(state.id&&lib[state.id]){suite(nom);return;}
+  if(exempleNonGarde()){suite(null,'exemple');return;} /* D53 : en gratuit, l'exemple ne prend pas la place de « Mes plans » */
   /* D48 : déjà rangé à l'identique (par un autre onglet, par exemple) : on ne le range pas deux fois */
   {const e=empreinteTravail(state),deja=Object.values(lib).find(x=>x.state&&empreinteTravail(x.state)===e);if(deja){suite(deja.name||nom);return;}}
   if(isPro()||Object.keys(lib).length<PLAN_LIMIT_FREE){if(rangerDansMesPlans()){suite(state.name||nom);return;}
@@ -3423,12 +3451,13 @@ function renderProChip(){const p=isPro(),t=document.getElementById('proTop');if(
   const c=document.getElementById('proChip');if(!c)return;c.innerHTML=p?ico('etoile')+' Pro':ico('cadenas')+' Gratuit';c.classList.toggle('pro',p);}
 function planPaywall(){renderPlans();openModal('plans');toast('Version gratuite : '+DROITS.plans.gratuit+'. '+avecPro('plans'),false);}
 function savePlanToLibrary(){const lib=loadPlans();const exists=state.id&&lib[state.id];
+  if(!exists&&exempleNonGarde()){toast(MSG_EXEMPLE+' Pour garder un plan, dessine le tien : Fichier › Nouveau plan.',true);return false;} /* D53 */
   if(!isPro()&&!exists&&Object.keys(lib).length>=PLAN_LIMIT_FREE){planPaywall();return false;}
   if(!state.id)state.id=uid();state.name=nomUnique(state.name||'Plan sans nom',state.id);lib[state.id]={id:state.id,name:state.name||'Plan sans nom',savedAt:Date.now(),state:JSON.parse(JSON.stringify(state)),view:{...view},resume:resumePlan()};if(writePlans(lib)){save();render();toast('Plan « '+(state.name||'sans nom')+' » enregistré',true);}else toast('Enregistrement impossible (espace navigateur plein)');if(document.getElementById('m-plans').classList.contains('show'))renderPlans();return true;}
 function openSavedPlan(id){const lib0=loadPlans();if(!lib0[id])return;
   if(id===state.id){closeModal();toast('« '+(lib0[id].name||'Ce plan')+' » est déjà ouvert, à jour',true);return;} /* D38 : « Ouvrir » le plan ouvert rechargeait sa version rangée et perdait les dernières modifications */
-  avantDeRemplacer(garde=>ouvrirPlanRange(id,garde));}
-function ouvrirPlanRange(id,garde){const lib=loadPlans();const e=lib[id];if(!e)return;history.push(snapshot());state=JSON.parse(JSON.stringify(e.state));state.id=id;state.done=state.done||{};migrerDone(state);migrerEtat(state);state.groups=state.groups||[];state.chantier={...CHANTIER_DEF,...(state.chantier||{})};state.cur=Math.min(state.cur||0,state.levels.length-1);if(e.view)view={...e.view};sel=null;resetGestes();panelTab='details';_tachesOuverture=null;chargerCalques();afterChange();fitView();baseDecisions();closeModal();toast('Plan « '+(e.name||'')+' » ouvert'+(garde&&garde!==e.name?' · « '+garde+' » est rangé dans « Mes plans »':''),true);suivre('plan_ouvert',{source:'mes-plans'});}
+  avantDeRemplacer((garde,pq)=>ouvrirPlanRange(id,garde,pq));}
+function ouvrirPlanRange(id,garde,pq){const lib=loadPlans();const e=lib[id];if(!e)return;history.push(snapshot());state=JSON.parse(JSON.stringify(e.state));state.id=id;state.done=state.done||{};migrerDone(state);migrerEtat(state);state.groups=state.groups||[];state.chantier={...CHANTIER_DEF,...(state.chantier||{})};state.cur=Math.min(state.cur||0,state.levels.length-1);if(e.view)view={...e.view};sel=null;resetGestes();panelTab='details';_tachesOuverture=null;chargerCalques();afterChange();fitView();baseDecisions();closeModal();toast('Plan « '+(e.name||'')+' » ouvert'+(garde&&garde!==e.name?' · « '+garde+' » est rangé dans « Mes plans »':pq==='exemple'?' · '+MSG_EXEMPLE:''),true,pq==='exemple'?annulerCe():undefined);suivre('plan_ouvert',{source:'mes-plans'});}
 /* D38 : la petite croix effaçait définitivement, sans confirmation ni retour. Le plan supprimé reste
    récupérable 8 s (« Annuler » dans le message). */
 function deleteSavedPlan(id){const lib=loadPlans();const e=lib[id];if(!e)return;delete lib[id];writePlans(lib);const ouvert=state.id===id;if(ouvert)delete state.id;renderPlans();save();
@@ -3452,11 +3481,18 @@ function renderPlans(){const lib=loadPlans();const list=Object.values(lib).sort(
   const fmtDate=t=>{const d=new Date(t);return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});};
   const pro=isPro();const atLimit=!pro&&list.length>=PLAN_LIMIT_FREE;
   const banner=pro?'':`<div class="budget" style="margin-bottom:12px;cursor:default"><div class="bl"><span>Version gratuite : ${DROITS.plans.gratuit}</span><small>${maj(DROITS.dessin.gratuit)} reste gratuit. ${avecPro('plans')}</small></div>${lienPro('Passer Pro','ib propill')}</div>`;
-  if(!list.length){el.innerHTML=banner+(isMobile()?'<div class="empty">Aucun plan sur ce téléphone. Pour l\'instant, un plan reste enregistré sur l\'appareil où il a été dessiné : ouvre-le sur cet ordinateur ou cette tablette.</div>':'<div class="empty">Aucun plan enregistré pour l\'instant. Dessine ton plan puis clique <b>Enregistrer le plan actuel</b>.</div>');return;}
-  el.innerHTML=banner+'<div class="grouplist">'+list.map(e=>{const cur=e.id===state.id;const nb=(e.state?.levels||[]).reduce((s,l)=>s+(l.walls?.length||0),0);
+  const resumeTxt=(R,nb)=>R?[R.pieces?fmtM2(R.m2):'aucune pièce',R.taches?eur(R.budget)+' HT':'rien de décidé',R.taches?'chantier '+R.faites+'/'+R.taches:'',R.projet!=null?'projet à '+R.projet+'\u00a0%':'',R.prochain?'prochaine étape : '+R.prochain:''].filter(Boolean).join(' · '):pluriel(nb,'mur');
+  /* D53 (jury final : novice, retention) · « Aucun plan enregistré pour l'instant » se lisait avec un plan
+     ouvert à 3 065 € et « Enregistré » dans la barre : le plan ouvert n'est rangé ici qu'avant d'en
+     ouvrir un autre. Il s'affiche désormais toujours en première carte (surface, montant, avancement) ;
+     le message vide est réservé au cas où il n'y a vraiment rien. */
+  const ouvertHors=!planVide()&&!(state.id&&lib[state.id]),so=ouvertHors?sortDuPlanOuvert():'';
+  const carteOuverte=ouvertHors?`<div class="grp plancard" id="planOuvertCarte" style="border-color:var(--acc3);background:var(--brand-l)"><span class="pmini" aria-hidden="true">${miniPlanSVG(state)}</span><div class="glink" style="cursor:default"><span class="gname"><b>${esc(state.name||'Mon plan')}</b> <span class="gouvert">· ${so==='exemple'?'Ouvert · '+MSG_EXEMPLE.replace(/\.$/,''):so==='perdu'?'Ouvert · enregistré sur cet appareil, pas dans Mes plans':'Ouvert · enregistré automatiquement'}</span></span><span class="gres">${resumeTxt(resumePlan(),0)}</span></div></div>`:'';
+  if(!list.length&&!ouvertHors){el.innerHTML=banner+(isMobile()?'<div class="empty">Aucun plan sur ce téléphone. Pour l\'instant, un plan reste enregistré sur l\'appareil où il a été dessiné : ouvre-le sur cet ordinateur ou cette tablette.</div>':'<div class="empty">Aucun plan enregistré pour l\'instant. Dessine ton plan puis clique <b>Enregistrer le plan actuel</b>.</div>');return;}
+  el.innerHTML=banner+'<div class="grouplist">'+carteOuverte+list.map(e=>{const cur=e.id===state.id;const nb=(e.state?.levels||[]).reduce((s,l)=>s+(l.walls?.length||0),0);
     /* D40 : la carte rappelle ce que le plan vaut — surface, budget (Pro), avancement du chantier. Le plan ouvert se lit en direct. */
     const R=cur?resumePlan():e.resume;
-    const res=R?[R.pieces?fmtM2(R.m2):'aucune pièce',R.taches?eur(R.budget)+' HT':'rien de décidé',R.taches?'chantier '+R.faites+'/'+R.taches:'',R.projet!=null?'projet à '+R.projet+'\u00a0%':'',R.prochain?'prochaine étape : '+R.prochain:''].filter(Boolean).join(' · '):pluriel(nb,'mur');
+    const res=resumeTxt(R,nb);
     return `<div class="grp plancard" style="${cur?'border-color:var(--acc3);background:var(--brand-l)':''}">
     <span class="pmini" aria-hidden="true">${miniPlanSVG(e.state)}</span>
     <button class="glink" onclick="openSavedPlan('${e.id}')"><span class="gname"><b>${(e.name||'Plan').replace(/</g,'&lt;')}</b>${cur?' <span class="gn">· ouvert</span>':''}</span><span class="gres">${res}</span><span class="gn">${fmtDate(e.savedAt)}</span></button>
@@ -3800,6 +3836,8 @@ cv.addEventListener('pointerdown',e=>{
       if(e.shiftKey&&(!h||h.kind==='room')){drag={kind:'band',start:raw,cur:raw};return;}
     }
     if(!(h?.kind==='item'&&multi.includes(h.id)))multi=[];
+    /* D53 : l'endroit cliqué d'un mur (son tronçon), ou la pièce cliquée (le tronçon qui la borde, si l'on choisit ensuite un de ses murs au clavier) */
+    _visee=h?.kind==='wall'?(()=>{const w=findWall(h.id);return w?{id:h.id,t:projT(raw,w.a,w.b)}:null;})():h?.kind==='room'?{piece:h.id}:null;
     sel=h; if(h)panelTab='details'; /* D48 (cj-integration03) : cliquer un objet montre sa fiche, même depuis l'onglet Suivi */ renderPanel(); if(isMobile()){draw();return;}
     if(lecture){drag={kind:'pan',sx,sy,ox:view.ox,oy:view.oy,soft:true};draw();return;} /* vue finale : glisser déplace la vue */
     if(h?.kind==='wall'){const w=findWall(h.id);const u=norm(sub(w.b,w.a)),n=perp(u);
@@ -3958,11 +3996,15 @@ cv.addEventListener('pointerup',e=>{
     const lv=L(),inR=p=>p.x>=x0&&p.x<=x1&&p.y>=y0&&p.y<=y1,sel2=[];
     lv.items.forEach(it=>{if(itemDrawn(it)&&!itemHidden(it)&&inR(it))sel2.push({kind:'item',id:it.id});});
     lv.walls.forEach(w=>{if(!isVirtual(w)&&wallDrawn(w)&&inR(w.a)&&inR(w.b))sel2.push({kind:'wall',id:w.id});});
+    /* D53 : en vue Travaux, un mur intérieur à jonctions qui dépasse du cadre y laisse ses tronçons (d'une jonction à l'autre) : ce sont eux qui sont pris.
+       Pas un mur de façade : un cadre autour d'une pièce n'abat pas sa façade (elle se démolit au clic, tronçon par tronçon). */
+    if(mode()==='projet')lv.walls.forEach(w=>{if(isVirtual(w)||!wallDrawn(w)||wst(w)==='creer'||wst(w)==='demolir'||(inR(w.a)&&inR(w.b))||isExteriorWall(w,lv))return;
+      const P=[{t:0,p:w.a},...jonctionsInterieures(lv,w),{t:1,p:w.b}].filter(x=>inR(x.p));if(P.length>=2)sel2.push({kind:'troncon',id:w.id,t0:P[0].t,t1:P[P.length-1].t});});
     lv.openings.forEach(o=>{if(!opDrawn(o))return;const w=lv.walls.find(x=>x.id===o.wallId);if(w&&inR(add(w.a,mul(sub(w.b,w.a),o.t))))sel2.push({kind:'opening',id:o.id});});
     TX(lv).forEach(t=>{if(inR(v(t.x,t.y)))sel2.push({kind:'text',id:t.id});});
     lv.dims.forEach(dm=>{if(inR(dm.a)&&inR(dm.b))sel2.push({kind:'dim',id:dm.id});});
     const items=sel2.filter(x=>x.kind==='item').map(x=>x.id);
-    if(sel2.length<=1){multi=[];msel=[];sel=sel2[0]||null;renderPanel();draw();return;}
+    if(sel2.length<=1){multi=[];msel=[];const s0=sel2[0];if(s0&&s0.kind==='troncon'){_visee={id:s0.id,t:(s0.t0+s0.t1)/2};sel={kind:'wall',id:s0.id};}else sel=s0||null;renderPanel();draw();return;}
     // si tout est équipement : sélection groupe classique (déplaçable) ; sinon marquee mixte (supprimable)
     if(items.length===sel2.length){multi=items;msel=[];sel={kind:'item',id:items[0]};}
     else{msel=sel2;multi=[];sel={kind:'marquee'};}
@@ -4243,7 +4285,8 @@ function marquerAuLieuDEffacer(){const lv=L(),annuler=annulerCe;
   const existe=w=>w&&!isVirtual(w)&&wst(w)!=='creer';
   if(sel.kind==='wall'){const w=findWall(sel.id);if(!existe(w))return false;
     if(wst(w)==='demolir'){toast(`Ce mur est déjà « ${LEX.etat.demolir} ». Pour le garder, choisis « ${LEX.etat.garder} » dans le panneau.`);return true;}
-    setWallProp('st','demolir');toast(`Mur marqué « ${LEX.etat.demolir} » : il reste sur le plan, en ${LEX.couleur.demolir}.`,true,annuler());return true;}
+    if(setWallProp('st','demolir')==='troncon')return true; /* D53 : son message dit déjà quel tronçon part */
+    toast(`Mur marqué « ${LEX.etat.demolir} » : il reste sur le plan, en ${LEX.couleur.demolir}.`,true,annuler());return true;}
   if(sel.kind==='opening'){const o=lv.openings.find(x=>x.id===sel.id);if(!o||ost(o)==='creer')return false;
     const w=findWall(o.wallId);if(w&&wst(w)==='demolir'){toast('Son mur est à démolir : cette ouverture part avec lui.');return true;}
     if(ost(o)==='boucher'){toast('Cette ouverture est déjà « À boucher ».');return true;}
@@ -4256,9 +4299,13 @@ function marquerAuLieuDEffacer(){const lv=L(),annuler=annulerCe;
     toast((aMarquer.length>1?aMarquer.length+' équipements marqués':ITEMS[aMarquer[0].type].label+' marqué')+' « À déposer »'+(aEffacer.length?' · '+aEffacer.length+' posé'+(aEffacer.length>1?'s':'')+' en Travaux, effacé'+(aEffacer.length>1?'s':''):'')+'.',true,annuler());return true;}
   if(sel.kind==='marquee'){const by=k=>msel.filter(m=>m.kind===k).map(m=>m.id);
     const ws=by('wall').map(id=>lv.walls.find(w=>w.id===id)).filter(Boolean),os=by('opening').map(id=>lv.openings.find(o=>o.id===id)).filter(Boolean),is=by('item').map(id=>lv.items.find(i=>i.id===id)).filter(Boolean);
-    if(!(ws.some(existe)||os.some(o=>ost(o)!=='creer')||is.some(i=>ist(i)!=='creer')))return false;
+    /* D53 : les tronçons pris dans le cadre — coupés à leurs jonctions, seuls démolis */
+    const tr=msel.filter(m=>m.kind==='troncon').map(m=>({m,w:lv.walls.find(w=>w.id===m.id)})).filter(x=>x.w&&existe(x.w)&&wst(x.w)!=='demolir');
+    if(!(tr.length||ws.some(existe)||os.some(o=>ost(o)!=='creer')||is.some(i=>ist(i)!=='creer')))return false;
+    if(tr.length){history.push(snapshot());tr.forEach(x=>{const {m,w}=x,J=jonctionsInterieures(lv,w),pt=t=>{const j=J.find(y=>Math.abs(y.t-t)<1e-9);return j&&j.p;};x.nom=nomTroncon(w,m.t0,m.t1);
+      if(m.t1<1-1e-9)couperMurA(w,m.t1,pt(m.t1));const c=m.t0>1e-9?couperMurA(w,m.t0/m.t1,pt(m.t0)):w;garderSeparations(c,-1,null);x.len=wallLen(c);ws.push(c);});}
     const fusM=ws.filter(w=>existe(w)&&wst(w)!=='demolir').map(w=>[w,piecesDeChaqueCote(w)]).filter(x=>x[1]); /* D47 : les pièces que ces démolitions réunissent */
-    history.push(snapshot());let nm=0;
+    if(!tr.length)history.push(snapshot());let nm=0;
     const effW=new Set(ws.filter(w=>!existe(w)).map(w=>w.id)),effO=new Set(os.filter(o=>ost(o)==='creer').map(o=>o.id)),effI=new Set(is.filter(i=>ist(i)==='creer').map(i=>i.id)),effT=new Set(by('text')),effD=new Set(by('dim'));
     ws.filter(existe).forEach(w=>{if(wst(w)!=='demolir'){w.st='demolir';nm++;}});
     os.forEach(o=>{if(effO.has(o.id))return;const w=findWall(o.wallId);if(w&&(wst(w)==='demolir'||effW.has(w.id)))return;if(ost(o)!=='boucher'){o.st='boucher';nm++;}});
@@ -4267,7 +4314,7 @@ function marquerAuLieuDEffacer(){const lv=L(),annuler=annulerCe;
     const ne=effW.size+effO.size+effI.size+effT.size+effD.size;sel=null;msel=[];purgerGroupes();afterChange();
     let nf=0;{const parFace=new Map();fusM.forEach(([w,pc])=>{const m=add(mul(add(w.a,w.b),.5),wallOff(w)),f=facesFor(lv,'projet').find(g=>g.room&&pointIn(m,g.poly));if(!f)return;const e=parFace.get(f)||[];pc.forEach(x=>{if(!e.includes(x))e.push(x);});parFace.set(f,e);});
       parFace.forEach((pc,f)=>{if(reglerFusion(lv,f,pc).length)nf++;});if(nf)afterChange();}
-    toast(`${nm} élément${nm>1?'s':''} marqué${nm>1?'s':''} à démolir, à boucher ou à déposer`+(ne?` · ${ne} effacé${ne>1?'s':''} (créé${ne>1?'s':''} en Travaux ou annotation${ne>1?'s':''})`:'')+'.'+(nf?' Des pièces réunies n\'avaient pas les mêmes décisions : à choisir (Encore à décider).':''),true,annuler());return true;}
+    toast(`${nm} élément${nm>1?'s':''} marqué${nm>1?'s':''} à démolir, à boucher ou à déposer`+(tr.length?` (dont ${tr.map(x=>fmt(x.len)+' m de mur'+(x.nom?' '+x.nom:'')).join(', ')} : le reste du mur est gardé)`:'')+(ne?` · ${ne} effacé${ne>1?'s':''} (créé${ne>1?'s':''} en Travaux ou annotation${ne>1?'s':''})`:'')+'.'+(nf?' Des pièces réunies n\'avaient pas les mêmes décisions : à choisir (Encore à décider).':''),true,annuler());return true;}
   return false;}
 function rotateItem(){if(enLectureSeule())return;const its=selectedItems();if(!its.length)return;history.push(snapshot());its.forEach(it=>{it.rot=(it.rot+Math.PI/2)%(2*Math.PI);pushOutOfWalls(it);});afterChange();}
 function setItemRot(deg){const it=L().items.find(i=>i.id===sel?.id);if(!it)return;history.push(snapshot());it.rot=((parseFloat(deg)||0)%360)*Math.PI/180;afterChange();}
@@ -4322,10 +4369,12 @@ function ouvrirMenu(m,focusDernier){fermerMenus();const [b,p]=MENUS[m].map(i=>do
 function fermerMenus(rendreFocus){if(!menuOuvert)return;const [b,p]=MENUS[menuOuvert].map(i=>document.getElementById(i));p.hidden=true;b.setAttribute('aria-expanded','false');menuOuvert=null;if(rendreFocus)try{b.focus();}catch{}}
 function basculerMenu(m){if(menuOuvert===m)fermerMenus(true);else{if(m==='fichier')majMenuFichier();ouvrirMenu(m);}}
 /* D48 (cj-qa05) : ce que « Nouveau plan » fera du plan ouvert, dit tel quel — y compris en gratuit. */
-function phraseSortie(){const o=sortDuPlanOuvert();return o==='rien'?'Rien à ranger : le plan ouvert est vide ou jamais modifié':o==='range'?'Le plan ouvert est déjà dans Mes plans, à jour':o==='rangera'?'Le plan ouvert est d\'abord rangé dans Mes plans':'Version gratuite : Mes plans est plein, on te demandera avant';}
+function phraseSortie(){const o=sortDuPlanOuvert();return o==='rien'?'Rien à ranger : le plan ouvert est vide ou jamais modifié':o==='range'?'Le plan ouvert est déjà dans Mes plans, à jour':o==='rangera'?'Le plan ouvert est d\'abord rangé dans Mes plans':o==='exemple'?MSG_EXEMPLE.replace(/\.$/,''):'Version gratuite : Mes plans est plein, on te demandera avant';}
 function majMenuFichier(){const s=document.querySelector('#newBtn small');if(s)s.textContent=phraseSortie();}
 function menuAction(fn){fermerMenus(true);fn();}
 /* « Visite guidée » : la visite de 5 bulles si elle existe (chantier onboarding), sinon le guide en 3 étapes. */
+/* D53 : l'exemple se rouvre toujours d'ici, intact — c'est pourquoi, en gratuit, il n'a pas à être gardé */
+function revoirExemple(){closeWelcome('sample');}
 function lancerVisiteOuGuide(){if(typeof lancerVisite==='function')lancerVisite();else openModal('welcome');}
 window.addEventListener('keydown',e=>{
   const bouton=e.target&&e.target.closest&&e.target.closest('.mbtn');
@@ -4450,8 +4499,12 @@ function draw(){
      const ecrire=(txt,y,pas)=>{const Ls=[];let cur='';txt.split(' ').forEach(m=>{const e=cur?cur+' '+m:m;if(cur&&ctx.measureText(e).width>W-40){Ls.push(cur);cur=m;}else cur=e;});Ls.push(cur);Ls.forEach((l,i)=>ctx.fillText(l,W/2,y+i*pas));return Ls.length;};
      const y0=ghost?40:H/2-14,n1=ecrire(tx[0],y0,23);ctx.font='500 13.5px Geist, sans-serif';ecrire(tx[1],y0+(n1-1)*23+26,18);}}
   // murs (le mur survolé est teinté) + raccords en onglet aux nœuds ; en vue Projet les murs à démolir sont dessinés en dernier (jaune pointillé)
-  lv.walls.forEach(w=>{if(wallDrawn(w)&&!(mode()==='projet'&&wst(w)==='demolir'))drawWall(w,(sel?.kind==='wall'&&sel.id===w.id)||inMsel('wall',w.id),isHover('wall',w.id));});
+  /* D53 : en vue Travaux, un mur à jonctions dont un tronçon est visé : seul ce tronçon se dessine sélectionné
+     (en Avant travaux, le mur se déplace d'un bloc : il reste sélectionné en entier, la fiche dit le tronçon visé) */
+  const tvS=sel?.kind==='wall'&&mode()==='projet'?tronconVise(findWall(sel.id)):null;
+  lv.walls.forEach(w=>{if(wallDrawn(w)&&!(mode()==='projet'&&wst(w)==='demolir'))drawWall(w,(sel?.kind==='wall'&&sel.id===w.id&&!tvS)||inMsel('wall',w.id),isHover('wall',w.id));});
   drawJoins();
+  if(tvS)drawTroncon(tvS.w,tvS.t0,tvS.t1);if(sel?.kind==='marquee')msel.forEach(m=>{if(m.kind!=='troncon')return;const w=findWall(m.id);if(w)drawTroncon(w,m.t0,m.t1);});
   if(layOn('iso')){drawDoublageITE(lv);drawDoublageITI(lv);}if(layOn('toiture'))drawToiture(lv);
   if(mode()==='projet')lv.walls.forEach(w=>{if(wst(w)==='demolir')drawWall(w,(sel?.kind==='wall'&&sel.id===w.id)||inMsel('wall',w.id),isHover('wall',w.id));});
   // trait de référence d'un mur sélectionné non centré
@@ -4532,7 +4585,7 @@ function draw(){
   if(tool==='select'){
     const showAt=p=>{const ws=nodeWalls(p);if(ws.length<2||ws.length>4)return;const dirs=ws.map(({w,end})=>w[end==='a'?'b':'a']).sort((p1,p2)=>Math.atan2(p1.y-p.y,p1.x-p.x)-Math.atan2(p2.y-p.y,p2.x-p.x));for(let i=0;i<dirs.length;i++){if(dirs.length===2&&i===1)break;drawAngle(p,dirs[i],dirs[(i+1)%dirs.length]);}};
     if(drag?.kind==='node'||drag?.kind==='corner'){showAt(drag.wall[drag.end]);}
-    else{if(sel?.kind==='wall'){const w=findWall(sel.id);if(w){showAt(w.a);showAt(w.b);}}
+    else{if(sel?.kind==='wall'){const w=findWall(sel.id);if(w&&!(mode()==='projet'&&wst(w)==='demolir')){showAt(w.a);showAt(w.b);}} /* D53 : un mur qui part n'a plus d'angle à montrer (le badge « 90° » tombait sur l'étiquette de la pièce réunie) */
       if(hover&&!drag){const q=nodeAt(lastMouse.x,lastMouse.y);if(q&&!(sel?.kind==='wall'&&(same(findWall(sel.id)?.a,q)||same(findWall(sel.id)?.b,q))))showAt(q);}}
   }
   // poignée centrale du mur sélectionné (glisser = agrandir/réduire la pièce)
@@ -4697,11 +4750,15 @@ function boiteNote(t){const g=noteGeom(t,sel?.kind==='text'&&sel.id===t.id);retu
 function obstaclesEtiquettes(lv,sansNotes){const o=[];
   lv.items.forEach(it=>{if(!itemDrawn(it)||itemHidden(it))return;const P=itemCorners(it).map(S),xs=P.map(p=>p.x),ys=P.map(p=>p.y);o.push({x:Math.min(...xs),y:Math.min(...ys),w:Math.max(...xs)-Math.min(...xs),h:Math.max(...ys)-Math.min(...ys)});});
   if(layOn('notes')&&!sansNotes)TX(lv).forEach(t=>o.push(boiteNote(t)));return o;}
+/* D53 : en vue Travaux, un mur à démolir (et sa cote) traverse souvent la pièce qu'il réunit — l'étiquette s'en écarte,
+   sans le préférer à un équipement (obstacle souple, poids 0,2) */
+function obstaclesDemolis(lv){const o=[];if(mode()!=='projet')return o;
+  lv.walls.forEach(w=>{if(isVirtual(w)||wst(w)!=='demolir')return;const a=S(w.a),b=S(w.b),m=Math.max(12,wallT(w)*view.zoom/2+10);o.push({x:Math.min(a.x,b.x)-m,y:Math.min(a.y,b.y)-m,w:Math.abs(a.x-b.x)+2*m,h:Math.abs(a.y-b.y)+2*m,k:0.2});});return o;}
 const chevauche=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
 function placerEtiquette(E,obst,durs){durs=durs||[];const f=E.f,P=f.polyInt||f.poly,s=S(f.label);
   const dedans=(x,y)=>pointIn(W2(v(x,y)),P);
   const inside=b=>dedans(b.x+2,b.y+2)&&dedans(b.x+b.w-2,b.y+2)&&dedans(b.x+2,b.y+b.h-2)&&dedans(b.x+b.w-2,b.y+b.h-2);
-  const aire=(b,L)=>L.reduce((t,o)=>{const dx=Math.min(b.x+b.w,o.x+o.w)-Math.max(b.x,o.x),dy=Math.min(b.y+b.h,o.y+o.h)-Math.max(b.y,o.y);return t+(dx>0&&dy>0?dx*dy:0);},0);
+  const aire=(b,L)=>L.reduce((t,o)=>{const dx=Math.min(b.x+b.w,o.x+o.w)-Math.max(b.x,o.x),dy=Math.min(b.y+b.h,o.y+o.h)-Math.max(b.y,o.y);return t+(dx>0&&dy>0?dx*dy*(o.k||1):0);},0); /* o.k : poids d'un obstacle (D53 : un mur à démolir pèse moins qu'un équipement) */
   /* D50 : une autre étiquette est un obstacle DUR (jamais deux cartouches l'un sur l'autre), un équipement un obstacle souple */
   const couvre=b=>aire(b,obst)+1e7*aire(b,durs);
   const dx=E.bw*0.62,dy=E.bh*0.8;let best=null,bs=Infinity;
@@ -4726,7 +4783,7 @@ function dessinerEtiquette(E){const b=E.box,cx=b.x+b.w/2;
 /* Toutes les étiquettes d'un niveau, puis les cotes (qui les évitent), puis les étiquettes par-dessus. */
 let etiquettesVues=[],cotesVues=[],boitesChaines=[],cotesOuverture=[]; /* dernier rendu à l'écran : lu par les contrôles (tools/visuel.mjs) ; boitesChaines : textes des cotes extérieures (D46) */
 function drawRoomLabelsEtCotes(lv,faces,fsName,fsArea,hotOf){
-  const obst=obstaclesEtiquettes(lv);
+  const obst=obstaclesEtiquettes(lv).concat(obstaclesDemolis(lv));
   /* D50 (cj-integration05, cj-access03, novice24) · au téléphone et à la tablette, les étiquettes se
      recouvraient (« ntrée · 2 m² » sous « WC »). La taille suit le zoom (jusqu'à 85 %), puis les
      étiquettes s'évitent entre elles : celle de la plus petite pièce cède — elle se déplace, se réduit,
@@ -4837,6 +4894,11 @@ function retraitContreDoublage(w,p,autre){
   }
   return r;
 }
+/* D53 : le tronçon visé d'un mur, dans la couleur de la sélection */
+function drawTroncon(w,t0,t1){const z=view.zoom,t=wallT(w),u=norm(sub(w.b,w.a)),n=perp(u),off=wallOff(w),d=sub(w.b,w.a);
+  const a=S(add(add(w.a,mul(d,t0)),off)),b=S(add(add(w.a,mul(d,t1)),off)),hx=n.x*t/2*z,hy=n.y*t/2*z;
+  ctx.beginPath();ctx.moveTo(a.x+hx,a.y+hy);ctx.lineTo(b.x+hx,b.y+hy);ctx.lineTo(b.x-hx,b.y-hy);ctx.lineTo(a.x-hx,a.y-hy);ctx.closePath();ctx.fillStyle='#4f46e5';ctx.fill();
+  ctx.lineWidth=5;ctx.strokeStyle='rgba(79,70,229,.3)';ctx.lineJoin='round';ctx.stroke();ctx.lineJoin='miter';}
 function drawWall(w,isSel,isHov){
   const z=view.zoom,t=wallT(w),u=norm(sub(w.b,w.a)),n=perp(u);const off=wallOff(w);
   const ra=retraitContreDoublage(w,w.a,w.b),rb=retraitContreDoublage(w,w.b,w.a);
@@ -5351,8 +5413,10 @@ function avecFocus(root,fn){const ae=document.activeElement,cle=ae&&root&&root.c
    reste levée à part (console, page) pour que les contrôles la voient. */
 /* D41 · segmentés lisibles : au-delà de 3 choix, ou si un choix tient sur plus de 2 lignes, liste radio
    verticale (sous-titre à droite) ; chaque bouton dit s'il est choisi (aria-pressed). */
-function segLisibles(root){if(!root)return;root.querySelectorAll('div.seg').forEach(s=>{const b=[...s.children].filter(x=>x.tagName==='BUTTON');b.forEach(x=>x.setAttribute('aria-pressed',String(x.classList.contains('on'))));
-  if(b.length>3){s.classList.add('stack');return;}if(b.some(x=>x.getClientRects().length&&x.offsetHeight>46))s.classList.add('stack');});}
+function segLisibles(root){if(!root)return;const sc=root.scrollTop;root.querySelectorAll('div.seg').forEach(s=>{const b=[...s.children].filter(x=>x.tagName==='BUTTON');b.forEach(x=>x.setAttribute('aria-pressed',String(x.classList.contains('on'))));
+  if(b.length>3){s.classList.add('stack');return;}if(b.some(x=>x.getClientRects().length&&x.offsetHeight>46))s.classList.add('stack');});
+  /* D53 : passer une liste en colonne APRÈS l'avoir mesurée faisait sauter le défilement du panneau (ancrage du navigateur) — on le remet */
+  if(root.scrollHeight&&root.scrollTop!==sc)root.scrollTop=sc;}
 /* D41 · repliables des fiches : ouverts ou fermés, ils le restent d'un rendu à l'autre (le panneau se redessine à chaque clic) */
 const plisOuverts={};
 function plie(k,titre,resume,contenu,ouvert){if(!String(contenu||'').trim())return '';const o=k in plisOuverts?plisOuverts[k]:!!ouvert;return `<details class="plie" data-k="${k}"${o?' open':''} ontoggle="plisOuverts[this.dataset.k]=this.open"><summary><span class="st">${titre}${resume?`<small>${resume}</small>`:''}</span>${ico('chevronBas')}</summary><div class="pli">${contenu}</div></details>`;}
@@ -5512,7 +5576,7 @@ function libSuppr(){if(!sel||mode()!=='projet')return sel&&sel.kind==='marquee'?
   if(sel.kind==='wall'){const w=findWall(sel.id);return w&&!isVirtual(w)&&wst(w)!=='creer'?'À démolir':'Supprimer';}
   if(sel.kind==='opening'){const o=lv.openings.find(x=>x.id===sel.id);return o&&ost(o)!=='creer'?'À boucher':'Supprimer';}
   if(sel.kind==='item')return selectedItems().some(i=>ist(i)!=='creer')?'À déposer':'Supprimer';
-  if(sel.kind==='marquee')return msel.some(m=>{if(m.kind==='wall'){const w=findWall(m.id);return w&&!isVirtual(w)&&wst(w)!=='creer';}if(m.kind==='opening'){const o=lv.openings.find(x=>x.id===m.id);return o&&ost(o)!=='creer';}if(m.kind==='item'){const i=lv.items.find(x=>x.id===m.id);return i&&ist(i)!=='creer';}return false;})?'Démolir, boucher, déposer':'Tout supprimer';
+  if(sel.kind==='marquee')return msel.some(m=>{if(m.kind==='troncon')return true;if(m.kind==='wall'){const w=findWall(m.id);return w&&!isVirtual(w)&&wst(w)!=='creer';}if(m.kind==='opening'){const o=lv.openings.find(x=>x.id===m.id);return o&&ost(o)!=='creer';}if(m.kind==='item'){const i=lv.items.find(x=>x.id===m.id);return i&&ist(i)!=='creer';}return false;})?'Démolir, boucher, déposer':'Tout supprimer';
   return 'Supprimer';}
 function renderSelection(lv){
   const backLabel=sel.kind==='room'?'Toutes les pièces':'Retour';
@@ -5520,9 +5584,9 @@ function renderSelection(lv){
   if(sel.kind==='wall'){const w=findWall(sel.id);if(!w){sel=null;return renderOverview(lv);}const nOp=lv.openings.filter(o=>o.wallId===w.id).length;
     h+=`<div class="ptitle">${isVirtual(w)?'Séparation (sans mur)':'Mur'}</div><div class="psub">${isVirtual(w)?'Découpe une pièce ouverte en zones. Non comptée dans les travaux.':[nOp?pluriel(nOp,'ouverture')+' sur ce mur':'',isMobile()?'':'glisse ses extrémités · <kbd>Maj</kbd>+clic pour sélectionner plusieurs murs'].filter(Boolean).join(' · ')}</div>
     ${(()=>{const g=groupOf(w.id);return g?`<div class="grouptag"><span class="gdot" style="background:${GROUP_COLORS[(state.groups||[]).indexOf(g)%GROUP_COLORS.length]}"></span> Groupe « ${esc(g.name)} » <button class="gx" style="margin-left:auto" onclick="removeFromGroup('${w.id}')" title="Retirer ce mur du groupe">Dissocier ${ico('x')}</button></div>`:'';})()}
-    ${!isVirtual(w)?blocDecisionExistant('wall',k=>`setWallProp('st','${k}')`,wst(w),`Ce que tu décides de ce mur.`):''}
+    ${!isVirtual(w)?blocDecisionExistant('wall',k=>`setWallProp('st','${k}')`,wst(w),`Ce que tu décides de ce mur.`)+(mode()==='existant'?tronconsHTML(w):''):''}
     ${mode()==='existant'?questionPorteurHTML(w):''}
-    ${!isVirtual(w)&&mode()==='projet'?`<div class="ph">Décision</div>${segEtat('wall',wst(w),k=>`setWallProp('st','${k}')`,wst(w)==='demolir'?{demolir:fmt(wallLen(w)*L().height,1)+' m²'}:null)}${questionPorteurHTML(w)?questionPorteurHTML(w):wst(w)==='demolir'&&isPorteur(w)?`<div class="tip warn" style="margin-top:8px"><b>Mur porteur à démolir.</b>${w.porteurDoute?' Tu ne sais pas s\'il porte : il est compté porteur, par prudence — <b>à faire vérifier par un pro</b>.':''} Enlever un mur qui porte ne s'arrête pas à le casser : ce qu'il tenait doit être repris. Trois lignes s'ajoutent au chiffrage.<br>• <b>La démolition</b> — ${fmt(wallLen(w)*L().height,1)} m², dépose, étaiement et évacuation.<br>• <b>Une poutre de reprise de charge</b> sur toute sa longueur (${fmt(wallLen(w))} m). C'est elle qui porte désormais ce que le mur portait, et c'est le vrai coût.<br>• <b>L'étude d'un bureau d'études</b>, qui dimensionne cette poutre. Obligatoire, et c'est elle qui engage la responsabilité en cas de problème. Comptée une seule fois pour tout le chantier.<br>Si ce mur ne porte rien — refend léger, doublage — mets « Porteur ? » sur <b>Non</b> juste en dessous : les trois lignes disparaissent.</div>`:''}<div class="ph mt"></div>`:''}
+    ${!isVirtual(w)&&mode()==='projet'?`<div class="ph">Décision</div>${segEtat('wall',wst(w),k=>`setWallProp('st','${k}')`,wst(w)==='demolir'?{demolir:fmt(wallLen(w)*L().height,1)+' m²'}:null)}${tronconsHTML(w)}${questionPorteurHTML(w)?questionPorteurHTML(w):wst(w)==='demolir'&&isPorteur(w)?`<div class="tip warn" style="margin-top:8px"><b>Mur porteur à démolir.</b>${w.porteurDoute?' Tu ne sais pas s\'il porte : il est compté porteur, par prudence — <b>à faire vérifier par un pro</b>.':''} Enlever un mur qui porte ne s'arrête pas à le casser : ce qu'il tenait doit être repris. Trois lignes s'ajoutent au chiffrage.<br>• <b>La démolition</b> — ${fmt(wallLen(w)*L().height,1)} m², dépose, étaiement et évacuation.<br>• <b>Une poutre de reprise de charge</b> sur toute sa longueur (${fmt(wallLen(w))} m). C'est elle qui porte désormais ce que le mur portait, et c'est le vrai coût.<br>• <b>L'étude d'un bureau d'études</b>, qui dimensionne cette poutre. Obligatoire, et c'est elle qui engage la responsabilité en cas de problème. Comptée une seule fois pour tout le chantier.<br>Si ce mur ne porte rien — refend léger, doublage — mets « Porteur ? » sur <b>Non</b> juste en dessous : les trois lignes disparaissent.</div>`:''}<div class="ph mt"></div>`:''}
     <div class="ph">Type${gl('cloison')}</div><div class="seg">${WALL_TYPES.map(t=>`<button class="${w.type===t[0]?'on':''}" onclick="setWallProp('type','${t[0]}')">${t[1]}<small>${wallTypeSub(t)}</small></button>`).join('')}</div>
     ${isVirtual(w)||questionPorteurHTML(w)?'':`<div class="ph mt">Porteur ?${gl('porteur')} <span style="text-transform:none;letter-spacing:0;font-weight:500">porte-t-il un plancher ou le toit</span></div><div class="seg"><button class="${w.porteur===true&&!w.porteurDoute?'on':''}" onclick="setWallProp('porteur','oui')">Oui</button><button class="${w.porteur===false?'on':''}" onclick="setWallProp('porteur','non')">Non</button><button class="${w.porteurDoute?'on':''}" onclick="setWallProp('porteur','nsp')">Je ne sais pas</button></div>${w.porteur==null?`<div class="tip" style="margin-top:6px">Pas encore dit : compté ${isPorteur(w)?'porteur':'non porteur'} d'après son épaisseur (${Math.round(wallT(w)*100)} cm).</div>`:w.porteurDoute?`<div class="tip" style="margin-top:6px">Compté porteur, par prudence. <b>À faire vérifier par un pro</b> avant d'y toucher.</div>`:''}${isPorteur(w)?`<div class="tip" style="margin-top:6px">Mur porteur : une ouverture = <b>étude de structure + linteau${gl('linteau')}</b> (chiffrés) ; sa démolition est signalée. Un mur épais mais <b>non porteur</b> (refend léger, doublage) → mets « Non ».</div>`:''}`}
     <div class="row" style="margin-top:14px"><label>Longueur</label><span><input class="fin n" type="number" step="0.01" min="0.1" value="${wallLen(w).toFixed(2)}" onchange="setWallLen(+this.value)"> m</span></div>
@@ -5535,7 +5599,7 @@ function renderSelection(lv){
     ${wst(w)==='demolir'?`<div class="tip" style="margin-top:10px">Ce mur part : <b>rien à décrire de son isolation ni de sa finition</b>. Ce qui compte est plus haut — son épaisseur et s'il est porteur, qui décident du prix de la démolition et de la reprise de charge.</div>`:''}
     ${replierAvant(w,lv,(wst(w)==='demolir'||isVirtual(w)?'':renderWallIsoFaces(w,lv))+(!isVirtual(w)&&wst(w)!=='demolir'&&isExteriorWall(w)?(()=>{const fins=facadeFins(w),creer=w.facade?.st==='creer';return `<div class="ph mt">Finition extérieure${gl('ravalement')}</div><div class="chips">${Object.entries(FACADES).filter(([k])=>fins.includes(k)||facadeProposee(w,k)).map(([k,f])=>{const inclus=fins.includes('ravalement')&&(k==='nettoyage'||k==='joints');return `<button class="chip2 ${fins.includes(k)?'on':''}" ${inclus?'disabled title="Compris dans le ravalement pierre"':''} onclick="setWallFacade('fin','${k}')">${f.label}${inclus?' · compris':''}</button>`;}).join('')}</div>
       ${fins.length?`<div class="row" style="margin-top:10px"><label>Superposées</label><span class="val" style="font-weight:600">${fins.map(k=>FACADES[k].label).join(' + ')}</span></div>${mode()==='projet'?`<div class="row"><label>Décision</label><span class="seg" style="display:inline-flex"><button class="${!creer?'on':''}" onclick="setWallFacade('st','existant')">${LEX.etat.garder}</button><button class="st-creer ${creer?'on':''}" onclick="setWallFacade('st','creer')">À refaire</button></span></div>`:creer?`<div class="tip" style="margin-top:6px">Finition <b>à refaire</b> (travaux).</div>`:''}${creer?(()=>{const eff=facadeFinsEffectives(w),hors=fins.filter(k=>!eff.includes(k));return `<div class="tip" style="margin-top:6px">Compté dans le budget (façade) : ${eff.map(k=>FACADES[k].label.toLowerCase()).join(' + ')||'rien'} · ${fmtM2(facadeArea(w,lv))} par couche (hors ouvertures).${hors.length?' Pas comptée'+(hors.length>1?'s':'')+' : '+hors.map(k=>FACADES[k].label.toLowerCase()).join(', ')+' — '+facadeRaison(w,hors[0])+'.':''}</div>`;})():''}`:`<div class="tip" style="margin-top:8px">Ce mur donne sur l'extérieur. Choisis sa <b>finition</b> : un seul parement (enduit, enduit à la chaux, bardage ou ravalement pierre), puis ce qui s'y ajoute (peinture, hydrofuge). En vue <b>${nomVue('projet')}</b>, une finition choisie devient un <b>ravalement à faire</b>, ajouté au budget (façade).</div>`}`;})():''))}
-    <div class="btnrow" style="margin-top:14px"><button class="ib" onclick="splitWall()">${ico('ciseaux')}Couper en 2</button></div>${lienSuppr()}
+    <div class="btnrow" style="margin-top:14px">${!isVirtual(w)&&jonctionsInterieures(lv,w).length?`<button class="ib" onclick="couperAuxJonctions()">${ico('ciseaux')}Couper aux jonctions</button>`:`<button class="ib" onclick="splitWall()">${ico('ciseaux')}Couper en 2</button>`}</div>${lienSuppr()}
     ${plie('mur-gestes','Déplacer, étirer, coter','',`<div class="tip gestes" style="margin-top:10px"><p><b>Glisse le mur</b> pour agrandir ou réduire la pièce : il reste parallèle, les voisins s'étirent, les cloisons en T et les meubles adossés suivent.</p><p><b>Tire un coin</b> (poignée ronde) : les deux murs restent droits, les angles ne changent pas. <kbd>Alt</kbd> = déplacement libre.</p><p><b>Clique sur sa cote</b> (« ${fmt(wallLen(w))} m ») pour taper une longueur exacte.</p></div>`)}`;
   }
   if(sel.kind==='opening'){const o=lv.openings.find(o=>o.id===sel.id);if(!o){sel=null;return renderOverview(lv);}const def=OPENINGS[o.type];const isDoor=['door','door2','slide','gap'].includes(def.kind);
@@ -5587,8 +5651,8 @@ function renderSelection(lv){
     ${(()=>{const x=tipChiffrageOuverture(o,lv);return x?`<div class="tip">${x}</div>`:'';})()}
     ${ost(o)==='boucher'?'':elemProductSection(o,def.label,isDoor?'porte alvéolaire chêne 83':'fenêtre PVC double vitrage 120×125')}`;
   }
-  if(sel.kind==='marquee'){const by={};msel.forEach(m=>by[m.kind]=(by[m.kind]||0)+1);const LBL={wall:'mur',opening:'ouverture',item:'équipement',text:'note',dim:'cote'};const gw=msel.filter(m=>m.kind==='wall').map(m=>m.id);
-    h+=`<div class="ptitle">${msel.length} éléments</div><div class="psub">${Object.entries(by).map(([k,c])=>c+' '+LBL[k]+(c>1?'s':'')).join(' · ')}</div>`;
+  if(sel.kind==='marquee'){const by={};msel.forEach(m=>by[m.kind]=(by[m.kind]||0)+1);const LBL={wall:'mur',troncon:'tronçon de mur',opening:'ouverture',item:'équipement',text:'note',dim:'cote'};const gw=msel.filter(m=>m.kind==='wall').map(m=>m.id);
+    h+=`<div class="ptitle">${msel.length} éléments</div><div class="psub">${Object.entries(by).map(([k,c])=>c+' '+(k==='troncon'?accord(c,LBL[k],'tronçons de mur'):LBL[k]+(c>1?'s':''))).join(' · ')}</div>`;
     if(gw.length>1){const ids=gw.join(',');const grp=sel.group?groupById(sel.group):null;
       const wallsG=gw.map(id=>findWallAny(id)?.w).filter(Boolean);
       const common=(f)=>{const vs=wallsG.map(f);return vs.every(x=>x===vs[0])?vs[0]:null;};
@@ -5824,6 +5888,15 @@ function recapExistant(){let area=0,ext=0;const levels=state.levels.map(lv=>({ro
 /* D39 : les travaux en mots, avec les vrais accords, sans les zéros. */
 function travauxEnMots(tq){const n=(k,s,p)=>'<b>'+k+'</b> '+(k>1?p:s);
   return [tq.demolM2>0?'<b>'+fmtM2(tq.demolM2)+'</b> de murs à démolir':'',tq.creerM2>0?'<b>'+fmtM2(tq.creerM2)+'</b> de murs à créer':'',tq.boucher?n(tq.boucher,'ouverture à boucher','ouvertures à boucher'):'',tq.percements?n(tq.percements,'percement','percements'):'',tq.remplacer?n(tq.remplacer,'menuiserie à remplacer','menuiseries à remplacer'):'',tq.poser.length?n(tq.poser.length,'équipement à poser','équipements à poser'):'',tq.deposer.length?n(tq.deposer.length,'équipement à déposer','équipements à déposer'):''].filter(Boolean).join(', ');}
+/* D53 (jury final : retention, novice) · Le résumé des travaux lisait les seuls murs, ouvertures et
+   équipements (quantities().travaux) : « Aucun travail marqué pour l'instant » s'affichait à côté
+   d'un budget de 3 319 € fait de sols et de peinture — le cas le plus courant chez un particulier.
+   Il compte désormais les tâches du compteur (chantierPrix : le même chiffre que le Suivi, Estimer
+   et le contrat) ; « Aucun travail marqué » n'est dit que s'il n'y a aucune tâche. */
+function resumeTravauxHTML(tq){const px=chantierPrix();
+  if(!px.nb)return `Aucun travail marqué pour l'instant. Clique une pièce pour choisir son sol, sa peinture ou sa faïence ; clique un mur → <b>${LEX.etat.demolir}</b>, ou trace un nouveau mur : il sera <b>${LEX.etat.creer.toLowerCase()}</b>. Même logique pour les équipements : ajouté ici = <b>${LEX.etat.poser.toLowerCase()}</b>, existant cliqué → <b>${LEX.etat.deposer.toLowerCase()}</b>.`;
+  const lots=px.lots.map(g=>g.lot),mots=tq&&tq.actif?travauxEnMots(tq):'';
+  return `Travaux décidés : <b>${pluriel(px.nb,'tâche')}</b> dans ${pluriel(lots.length,'corps d\'état','corps d\'état')} (${lots.join(', ')}) · <b>${eur(px.total)} HT</b>${mots?`, dont ${mots}`:''}. Passe en vue <b>${nomVue('final')}</b> pour voir le résultat.`;}
 function renderOverview(lv){
   const faces=(facesCache[lv.id]||[]);
   /* D46 (cj-integration00) : une pièce ouverte par une démolition n'est pas une pièce jamais dessinée */
@@ -5831,7 +5904,7 @@ function renderOverview(lv){
   const tq=quantities().travaux;
   let h=`${isMobile()?`<div class="mplan"><span><small>Plan ouvert</small><b>${esc(state.name||'Mon plan')}</b></span><button type="button" class="ib" onclick="openPlansModal()">${ico('mesPlans')}Mes plans</button></div>`:'' /* D43 (qa16) : au téléphone, la barre n'a ni nom ni menu Fichier */}<div class="ptitle">${lv.name} <span class="chip vue-${mode()}">Vue ${nomVue(mode()).toLowerCase()}</span></div><div class="psub">${faces.length?pluriel(faces.length,'pièce détectée','pièces détectées')+' sur ce niveau.':ouvertParTravaux?'Plus aucune pièce fermée après ces travaux : un mur démoli ouvre la pièce. Elle reste en vue <b>'+nomVue('existant')+'</b>.':'Aucune pièce fermée pour l\'instant. Trace les murs extérieurs avec l\'outil <b>Murs</b>.'}</div>
   ${projetHTML() /* D42 : « Ton projet à X % » et la prochaine étape, en tête de la vue d'ensemble */}
-  ${mode()==='projet'?`<div class="tip q">${tq.actif?`Travaux marqués : ${travauxEnMots(tq)}. Passe en vue <b>${nomVue('final')}</b> pour voir le résultat.`:`Aucun travail marqué pour l'instant. Clique un mur → <b>${LEX.etat.demolir}</b>, ou trace un nouveau mur : il sera <b>${LEX.etat.creer.toLowerCase()}</b>. Même logique pour les équipements : ajouté ici = <b>${LEX.etat.poser.toLowerCase()}</b>, existant cliqué → <b>${LEX.etat.deposer.toLowerCase()}</b>.`}</div>`:mode()==='final'?`<div class="tip ok">Le logement <b>après travaux</b>, tel qu'il sera : murs démolis retirés, nouveaux murs et ouvertures intégrés, sans marquage. C'est le plan à montrer aux artisans. Pour changer les travaux, repasse en vue <b>${nomVue('projet')}</b>.</div>`:(lv.walls.length?`<div class="tip">Ton logement tel qu'il est. Quand il est complet, passe en vue <b>${nomVue('projet')}</b> (boutons en haut du plan) pour dessiner ce que tu démolis et ce que tu crées.</div>`:'')}
+  ${mode()==='projet'?`<div class="tip q" id="resumeTravaux">${resumeTravauxHTML(tq)}</div>`:mode()==='final'?`<div class="tip ok">Le logement <b>après travaux</b>, tel qu'il sera : murs démolis retirés, nouveaux murs et ouvertures intégrés, sans marquage. C'est le plan à montrer aux artisans. Pour changer les travaux, repasse en vue <b>${nomVue('projet')}</b>.</div>`:(lv.walls.length?`<div class="tip">Ton logement tel qu'il est. Quand il est complet, passe en vue <b>${nomVue('projet')}</b> (boutons en haut du plan) pour dessiner ce que tu démolis et ce que tu crées.</div>`:'')}
   <div class="ph mt">Pièces</div><div class="roomlist">`;
   if(!faces.length)h+=`<div class="empty">${ouvertParTravaux?'Aucune pièce fermée après travaux.':'Dès qu\'un contour de murs se ferme, la pièce apparaît ici avec sa surface.'}</div>`;
   faces.forEach(f=>{const r=f.room;h+=`<button type="button" class="rl" onclick="sel={kind:'room',id:'${r.id}'};render()"><span class="dot" style="background:${RT[r.type].color}"></span><span class="nm">${roomName(r)}<small>${RT[r.type].label}${(mode()!=='existant'&&r.floorNew)?' · '+r.floorNew.replace(/ \(.*\)/,''):(mode()!=='existant'&&solGarde(r))?' · sol gardé':(r.floor!==FLOORS[0]?' · '+r.floor:'')}${tremieArea(lv,f)>0?' · trémie':''}${r.lowPct?' · '+r.lowPct+'% sous pente':''}</small></span><span class="m2">${fmtM2(areaNet(lv,f))}</span></button>`;});
@@ -5942,7 +6015,14 @@ function cacherEcart(net){const el=document.getElementById('budgetDelta');clearT
   if(net)el.innerHTML='';else _ecartT2=setTimeout(()=>{if(!el.classList.contains('show'))el.innerHTML='';},400);}
 const eur=n=>milliers(n.toLocaleString('fr-FR'))+' €';
 const pastille=c=>`<i class="pastille" style="background:${c}"></i>`;
-function setWallProp(k,val){const w=findWall(sel.id);const fus=k==='st'&&val==='demolir'&&wst(w)!=='demolir'&&!isVirtual(w)?piecesDeChaqueCote(w):null,defus=k==='st'&&val!=='demolir'&&wst(w)==='demolir';history.push(snapshot());if(k==='porteur'){delete w.porteurDoute;if(val==='auto')delete w.porteur;else if(val==='nsp'){w.porteur=true;w.porteurDoute=true;}else w.porteur=(val==='oui');}else if(k==='type'){w.type=val;delete w.t;}else if(k==='t'){if(val>=0.03&&val<=0.8)w.t=val;}else if(k==='st'){if(val==='existant')delete w.st;else w.st=val;/* D36 : ses ouvertures partent avec lui — les marquer « à boucher » créait une tâche de rebouchage dans un mur qui n'existe plus */}else w[k]=val;afterChange();annonceFusion(w,fus);
+function setWallProp(k,val){const w=findWall(sel.id);
+  /* D53 : « À démolir » sur un mur à jonctions ne vise que son tronçon (clic, pièce, choix de la fiche) */
+  const demol=k==='st'&&val==='demolir'&&w&&!isVirtual(w)&&wst(w)!=='demolir';
+  if(demol){const tv=tronconVise(w);if(tv){demolirTroncon(tv);return 'troncon';}}
+  const fus=k==='st'&&val==='demolir'&&wst(w)!=='demolir'&&!isVirtual(w)?piecesDeChaqueCote(w):null,defus=k==='st'&&val!=='demolir'&&wst(w)==='demolir';history.push(snapshot());
+  if(demol&&!(_visee&&_visee.id===w.id&&_visee.tout))garderSeparations(w,_visee&&_visee.id===w.id&&_visee.t>=0?_visee.t:-1,_visee&&_visee.piece); /* D53 : une séparation posée sur ce mur ne reste pas en l'air */
+  if(k==='porteur'){delete w.porteurDoute;if(val==='auto')delete w.porteur;else if(val==='nsp'){w.porteur=true;w.porteurDoute=true;}else w.porteur=(val==='oui');}else if(k==='type'){w.type=val;delete w.t;}else if(k==='t'){if(val>=0.03&&val<=0.8)w.t=val;}else if(k==='st'){if(val==='existant')delete w.st;else w.st=val;/* D36 : ses ouvertures partent avec lui — les marquer « à boucher » créait une tâche de rebouchage dans un mur qui n'existe plus */}else w[k]=val;afterChange();annonceFusion(w,fus);
+  if(defus&&L().walls.some(x=>x.surMur===w.id)){L().walls=L().walls.filter(x=>x.surMur!==w.id);afterChange();} /* D53 : le mur reste debout, la séparation posée sur lui n'a plus lieu d'être */
   if(defus){const pc=piecesDeChaqueCote(w);if(pc&&pc.some(r=>r.fusion)){pc.forEach(r=>delete r.fusion);afterChange();}}}
 function setCustomT(cm){const t=parseFloat(cm)/100;customT=(t>=0.03&&t<=0.8)?t:null;renderPanel();draw();}
 function setWallLen(l){const w=findWall(sel.id);if(!(l>0.1))return;history.push(snapshot());setWallLength(w,l);afterChange();}
@@ -6046,18 +6126,89 @@ function renderWallIsoInterior(w,lv){return `<div class="ph mt">Isolation (doubl
    au mauvais endroit. Elle est maintenant une copie PROFONDE du mur (nouvel id, sans identifiant
    public), chaque couche de doublage est répartie de part et d'autre de la coupe, la seconde moitié
    rejoint le groupe du mur, et les cases déjà cochées du Suivi valent pour les deux moitiés. */
-function splitWall(){const w=findWall(sel.id);if(!w)return;history.push(snapshot());const m=mul(add(w.a,w.b),.5);
+function splitWall(){const w=findWall(sel.id);if(!w||enLectureSeule())return;history.push(snapshot());couperMurA(w,.5);afterChange();}
+/* D53 · La coupe elle-même, à une fraction t quelconque (0 < t < 1) : w garde [0 ; t], la copie w2
+   prend [t ; 1] — mêmes règles que « Couper en 2 » ci-dessus (état, porteur, doublages répartis,
+   cases cochées valables pour les deux morceaux, groupe, ouvertures rangées selon leur milieu).
+   `pt` : le point exact de la coupe (la jonction), sinon le point à t sur l'axe. Ni historique ni
+   rendu : l'appelant les fait. Rend w2. */
+function couperMurA(w,t,pt){const m=pt?{...pt}:add(w.a,mul(sub(w.b,w.a),t));
   const w2=JSON.parse(JSON.stringify(w));w2.id=uid();delete w2.pid;w2.a={...m};w.b={...m};
   const d=state.done=state.done||{},couches=isoLayers(w).map(io=>({...io}));
-  const part=(io,dec)=>{const t0=Math.max(0,Math.min(1,2*isoT0(io)-dec)),t1=Math.max(0,Math.min(1,2*isoT1(io)-dec));if(t1-t0<1e-3)return null;
+  const part=(io,lo,hi)=>{const k=hi-lo,t0=Math.max(0,Math.min(1,(isoT0(io)-lo)/k)),t1=Math.max(0,Math.min(1,(isoT1(io)-lo)/k));if(t1-t0<1e-3)return null;
     const c={...io};delete c.t0;delete c.t1;if(t0>1e-6)c.t0=t0;if(t1<1-1e-6)c.t1=t1;return c;};
   const n1=[],n2=[];couches.forEach((io,li)=>{const k0=isoTacheId(w,io,li),fait=d[k0];
-    const c1=part(io,0),c2=part(io,1);if(c1){if(!c1.id)c1.id=uid();n1.push(c1);}if(c2){c2.id=uid();n2.push(c2);}
+    const c1=part(io,0,t),c2=part(io,t,1);if(c1){if(!c1.id)c1.id=uid();n1.push(c1);}if(c2){c2.id=uid();n2.push(c2);}
     if(fait){delete d[k0];if(c1)d['iso:'+w.id+':'+c1.id]=fait;if(c2)d['iso:'+w2.id+':'+c2.id]=fait;}});
   w.isos=n1;w2.isos=n2;delete w.iso;delete w.iso2;delete w2.iso;delete w2.iso2;
   Object.keys(d).forEach(k=>{if(k.startsWith('w:'+w.id+':')||k.startsWith('fac:'+w.id+':'))d[k.replace(':'+w.id+':',':'+w2.id+':')]=d[k];});
   (state.groups||[]).forEach(g=>{if(g.wallIds.includes(w.id)&&!g.wallIds.includes(w2.id))g.wallIds.push(w2.id);});
-  L().openings.forEach(o=>{if(o.wallId===w.id){if(o.t>0.5){o.wallId=w2.id;o.t=(o.t-0.5)*2;}else o.t*=2;}});L().walls.push(w2);afterChange();}
+  L().openings.forEach(o=>{if(o.wallId===w.id){if(o.t>t){o.wallId=w2.id;o.t=(o.t-t)/(1-t);}else o.t=o.t/t;}});L().walls.push(w2);return w2;}
+/* D53 (jury final, pro) · « À démolir » sur un mur que d'autres murs touchent entre ses bouts
+   abattait TOUTE sa longueur : sur la Maison, la cloison Chambre 2 / Cuisine (4 m) emportait aussi
+   celles de la Salle de bain et de la Buanderie (8 m, 3 portes), cinq pièces fondues en une, trois
+   extrémités de mur en l'air. Un mur se lit désormais en TRONÇONS, d'une jonction à l'autre, et le
+   geste ne vise que le tronçon de la pièce visée : l'endroit cliqué, sinon la pièce choisie juste
+   avant, sinon le choix de la fiche (« À démolir vise »). Le mur est coupé aux deux jonctions qui
+   encadrent ce tronçon ; les ouvertures des autres tronçons restent ; le message propose
+   « Tout le mur ». Les jonctions : les bouts des autres murs (pas les séparations) posés sur celui-ci. */
+function jonctionsInterieures(lv,w){const out=[];if(!w||isVirtual(w))return out;
+  lv.walls.forEach(o=>{if(o===w||isVirtual(o))return;[o.a,o.b].forEach(q=>{if(distSeg(q,w.a,w.b)>Math.max(wallT(o),wallT(w))/2+2e-2)return;
+    const t=projT(q,w.a,w.b);if(t>1e-3&&t<1-1e-3&&!out.some(x=>Math.abs(x.t-t)<1e-4))out.push({t,p:distSeg(q,w.a,w.b)<1e-6?{...q}:add(w.a,mul(sub(w.b,w.a),t))});});});
+  return out.sort((x,y)=>x.t-y.t);}
+/* l'endroit visé d'un mur : {id, t} (clic), {id, tout:true} (fiche : « Tout le mur »), {piece} (pièce choisie juste avant) */
+let _visee=null;
+function piecesDuTroncon(w,t0,t1){const pf=facesFor(L(),mode()==='existant'?'existant':'projet'),u=norm(sub(w.b,w.a)),nn=perp(u),m=add(add(w.a,mul(sub(w.b,w.a),(t0+t1)/2)),wallOff(w));
+  const cote=s=>{const p=add(m,mul(nn,s*(wallT(w)/2+0.12)));const g=pf.find(g=>g.room&&!RT[g.room.type].ext&&pointIn(p,g.poly));return g?g.room:null;};
+  const a=cote(1),b=cote(-1);return [a,b].filter((r,i,T)=>r&&T.indexOf(r)===i);}
+function nomTroncon(w,t0,t1){const p=piecesDuTroncon(w,t0,t1);return p.length===2?'entre '+roomName(p[0])+' et '+roomName(p[1]):p.length?'le long de '+roomName(p[0]):'';}
+/* Le tronçon visé d'un mur, ou null (mur sans jonction intérieure, mur tracé en Travaux, déjà à démolir, ou « Tout le mur »). */
+function tronconVise(w){if(!w||isVirtual(w)||mode()==='final'||wst(w)==='creer'||wst(w)==='demolir'||!_visee)return null;
+  const J=jonctionsInterieures(L(),w);if(!J.length)return null;const ts=[0,...J.map(j=>j.t),1];let i=-1;
+  if(_visee.id===w.id){if(_visee.tout||!(_visee.t>=0))return null;i=ts.findIndex((t0,k)=>k<ts.length-1&&_visee.t>=t0-1e-9&&_visee.t<=ts[k+1]+1e-9);}
+  else if(_visee.piece&&!_visee.id){for(let k=0;k<ts.length-1;k++)if(piecesDuTroncon(w,ts[k],ts[k+1]).some(r=>r.id===_visee.piece)){i=k;break;}}
+  if(i<0||i>=ts.length-1)return null;return {w,i,t0:ts[i],t1:ts[i+1],J,ts};}
+function viserTroncon(v){if(!sel||sel.kind!=='wall')return;const w=findWall(sel.id);if(!w)return;
+  if(v==='tout')_visee={id:w.id,tout:true};else{const ts=[0,...jonctionsInterieures(L(),w).map(j=>j.t),1],i=+v;if(i>=0&&i<ts.length-1)_visee={id:w.id,t:(ts[i]+ts[i+1])/2};}draw();}
+/* La fiche dit ce que « À démolir » abattra, et laisse le choisir (au clavier aussi) : un tronçon ou tout le mur. */
+function tronconsHTML(w){if(isMobile()||mode()==='final'||!w||isVirtual(w)||wst(w)==='creer'||wst(w)==='demolir')return '';const J=jonctionsInterieures(L(),w);if(!J.length)return '';
+  const ts=[0,...J.map(j=>j.t),1],Lw=wallLen(w),tv=tronconVise(w);
+  const opts=ts.slice(0,-1).map((t0,i)=>{const t1=ts[i+1],nm=nomTroncon(w,t0,t1);return `<option value="${i}"${tv&&tv.i===i?' selected':''}>${esc(nm?maj(nm):'Tronçon '+(i+1))} · ${fmt((t1-t0)*Lw)} m</option>`;}).join('');
+  return `<div class="troncons" style="margin-top:10px"><div style="display:flex;align-items:center;gap:2px;margin-bottom:5px"><label for="tronconSel" style="font-size:12.5px;font-weight:600;color:var(--muted)">« ${LEX.etat.demolir} » vise</label>${gl('troncon')}</div><select id="tronconSel" class="fin" style="width:100%;max-width:100%" onchange="viserTroncon(this.value)">${opts}<option value="tout"${tv?'':' selected'}>Tout le mur · ${fmt(Lw)} m</option></select></div>`;}
+/* Une séparation (ligne de zone, sans mur) qui s'appuyait au milieu du tronçon démoli garde ses zones : la
+   part du tronçon qui ne fait pas face à la pièce visée devient, après travaux seulement, le prolongement
+   de cette séparation (sur la Maison, Cuisine / Séjour s'arrête à 3,50 m sur la cloison de 4 m de la
+   Chambre 2). Sans elle, son bout restait en l'air et le Séjour disparaissait dans la pièce ouverte.
+   Une séparation ne se chiffre pas. `tc` : l'endroit visé sur c (0 à 1), sinon `piece`, sinon la plus
+   longue part. Rend la part ouverte {t0, t1} de c. */
+function garderSeparations(c,tc,piece){const lv=L(),P=[];
+  lv.walls.forEach(o=>{if(!isVirtual(o)||o===c)return;[o.a,o.b].forEach(q=>{if(distSeg(q,c.a,c.b)>2e-3)return;const t=projT(q,c.a,c.b);if(t>1e-3&&t<1-1e-3&&!P.some(x=>Math.abs(x.t-t)<1e-4))P.push({t,p:{...q}});});});
+  if(!P.length)return {t0:0,t1:1};P.sort((x,y)=>x.t-y.t);const B=[{t:0,p:{...c.a}},...P,{t:1,p:{...c.b}}];let k=-1;
+  if(tc>=0&&tc<=1)k=B.findIndex((x,i)=>i<B.length-1&&tc>=x.t-1e-9&&tc<=B[i+1].t+1e-9);
+  if(k<0&&piece)k=B.findIndex((x,i)=>i<B.length-1&&piecesDuTroncon(c,x.t,B[i+1].t).some(r=>r.id===piece));
+  if(k<0){let best=-1;B.slice(0,-1).forEach((x,i)=>{if(B[i+1].t-x.t>best){best=B[i+1].t-x.t;k=i;}});}
+  B.slice(0,-1).forEach((x,i)=>{if(i!==k)lv.walls.push({id:uid(),a:{...x.p},b:{...B[i+1].p},type:'virtuel',st:'creer',surMur:c.id});}); /* surMur : retirée si le mur n'est plus démoli */
+  return {t0:B[k].t,t1:B[k+1].t};}
+/* Couper le mur visé à ses deux jonctions et ne démolir que le tronçon. Un seul pas d'historique. */
+function demolirTroncon(tv){const w=tv.w,Lw=wallLen(w),id0=w.id,pt=t=>{const j=tv.J.find(x=>Math.abs(x.t-t)<1e-9);return j&&j.p;};
+  const tc=_visee&&_visee.id===id0&&_visee.t>=0?(_visee.t-tv.t0)/(tv.t1-tv.t0):-1,piece=_visee&&_visee.piece;
+  history.push(snapshot());if(history.length>80)history.shift();future=[];
+  if(tv.t1<1-1e-9)couperMurA(w,tv.t1,pt(tv.t1));
+  const cible=tv.t0>1e-9?couperMurA(w,tv.t0/tv.t1,pt(tv.t0)):w;
+  const ou=garderSeparations(cible,tc,piece),nom=nomTroncon(cible,ou.t0,ou.t1);
+  const fus=piecesDeChaqueCote(cible);cible.st='demolir';sel={kind:'wall',id:cible.id};_visee=null;afterChange();
+  const ft=texteFusion(cible,fus,true),h=history.length,snap=history[h-1];
+  toast(`${fmt(wallLen(cible))} m démolis${nom?' '+nom:''}`+(ft?' : '+ft+'.':'. Le reste du mur est gardé.'),true,{action:`Tout le mur (${fmt(Lw)} m)`,geste:{h,snap},fn:()=>{
+    if(history.length!==h||history[h-1]!==snap){toast('Tu as fait d\'autres gestes depuis : utilise Annuler en haut (Ctrl+Z) pour revenir pas à pas.');return;}
+    undo();const w0=findWall(id0);if(!w0)return;sel={kind:'wall',id:id0};_visee={id:id0,tout:true};const f2=piecesDeChaqueCote(w0);
+    history.push(snapshot());future=[];w0.st='demolir';afterChange();const t2=texteFusion(w0,f2);
+    toast(`Tout le mur démoli : ${fmt(Lw)} m.`+(t2?' '+t2:''),true,annulerCe());},
+    plus:[annulerCe()]});}
+/* « Couper aux jonctions » : un morceau par tronçon, pour décider de chacun à part. */
+function couperAuxJonctions(){const w=findWall(sel&&sel.id);if(!w||enLectureSeule())return;const J=jonctionsInterieures(L(),w);if(!J.length){splitWall();return;}
+  history.push(snapshot());if(history.length>80)history.shift();future=[];let cur=w,t0=0;const P=[w];
+  J.forEach(j=>{const w2=couperMurA(cur,(j.t-t0)/(1-t0),j.p);P.push(w2);cur=w2;t0=j.t;});_visee=null;afterChange();
+  toast(`Mur coupé en ${P.length} tronçons (${P.map(p=>fmt(wallLen(p))).join(' · ')} m) : clique celui à changer.`,true,annulerCe());}
 function toggleOpeningOpt(k){const o=L().openings.find(o=>o.id===sel.id);if(!o)return;history.push(snapshot());o.opts=o.opts||[];const i=o.opts.indexOf(k);if(i>=0)o.opts.splice(i,1);else o.opts.push(k);afterChange();}
 function setTableaux(on){const o=L().openings.find(x=>x.id===sel.id);const w=o&&L().walls.find(x=>x.id===o.wallId);if(w)poserTableaux(o,w,!!on);}
 function setOpeningProp(k,val){const o=L().openings.find(o=>o.id===sel.id);if(k==='volet'&&val==='battant'&&o.type==='baie')val='roulant';if(k==='ouvrant'&&val==='galandage')o.pose='applique';if(k==='pose'&&val!=='applique'&&ouvrantOf(o)==='galandage')o.ouvrant='coulissant';if(k==='st'&&(val==='creer'||val==='remplacer')&&o.vitrage==='simple')o.vitrage='double';history.push(snapshot());if(k==='type'){const d=OPENINGS[val];o.type=val;o.w=d.w;o.h=d.h;if(d.kind==='gap'&&o.st==='remplacer')delete o.st;if(val==='baie')o.mat='alu';else if(!matsFor(o).includes(o.mat))delete o.mat;}else if(k==='st'){if(val==='existant')delete o.st;else o.st=val;
@@ -6442,7 +6593,7 @@ function couvertureManquante(q){
   if(!q.plomberie.pointsEau)a.push(['Plomberie','aucun appareil sanitaire posé','outil Équipements → Salle de bain / Cuisine']);
   if(!q.chauffage.radiateurs&&!q.chauffage.clim&&!q.chauffage.poele&&!q.chauffage.chaudiere)a.push(['Chauffage','aucun émetteur posé','outil Équipements → Chauffage']);
   if(!q.chauffage.vmc)a.push(['Ventilation','aucune VMC posée','outil Équipements → Technique']);
-  if(quelquun(l=>l.rooms.length)&&!q.travaux.actif)a.push(['Travaux','aucune démolition ni création marquée','passe en vue '+nomVue('projet')]);
+  if(quelquun(l=>l.rooms.length)&&!q.travaux.actif&&!chantierPrix().nb)a.push(['Travaux','aucun travail décidé','passe en vue '+nomVue('projet')]); /* D53 : sols et peinture décidés sont des travaux */
   if(!q.contexte.codePostal)a.push(['Code postal','pas encore dit : l\'estimation détaillée du site en a besoin pour la main-d\'œuvre de ta région','bloc Le chantier']);
   /* Ce que le plan ne peut pas deviner : garder ou remplacer. Tant que ce n'est pas tranché, le
      chiffrage ne les compte pas — ce qui est juste, mais il ne peut pas le présenter comme un choix. */
@@ -6758,7 +6909,7 @@ function closeWelcome(choix,avecVisite){try{localStorage.setItem('avyora-plan-we
   /* « Découvrir avec l'exemple » : ne faisait rien si un plan existait déjà. Le plan ouvert est d'abord rangé. */
   if(state.origine&&state.origine.k==='exemple'&&planIntact()){suite();return;}
   avantDeRemplacer((garde,pq)=>{const vide=!garde&&!pq;loadSample();if(vide)history=[];render();
-    if(garde)toast(`Exemple ouvert · « ${garde} » est rangé dans « Mes plans »`,true);else if(pq)toast('Exemple ouvert · l\'ancien plan n\'est pas gardé',false,annulerCe());suivre('plan_ouvert',{source:'exemple'});suite();});}
+    if(garde)toast(`Exemple ouvert · « ${garde} » est rangé dans « Mes plans »`,true);else if(pq==='exemple')toast('Exemple rouvert, tel qu\'au départ : tes essais dessus ne sont pas gardés.',true,annulerCe());else if(pq)toast('Exemple ouvert · l\'ancien plan n\'est pas gardé',false,annulerCe());suivre('plan_ouvert',{source:'exemple'});suite();});}
 function closeModal(){const ouverte=modaleOuverte(),wasCalib=document.getElementById('m-calib').classList.contains('show'),wasWelcome=document.getElementById('m-welcome').classList.contains('show');document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('show'));
   if(wasWelcome){try{localStorage.setItem('avyora-plan-welcome','1');}catch{}}
   if(wasCalib)cancelCalib();
@@ -6779,7 +6930,8 @@ document.querySelectorAll('.overlay .modal').forEach(m=>{if(m.querySelector('.mx
 /* D38 : un toast peut porter une action (« Annuler » une suppression, « Passer en … »). Il reste
    alors 8 s, et il passe au-dessus d'une fenêtre ouverte au lieu de s'afficher derrière le voile. */
 let toastT;function toast(msg,ok,opt){const t=document.getElementById('toast');t.textContent=msg;const act=!!(opt&&opt.action);t._geste=act&&opt.geste||null;
-  if(act){const b=document.createElement('button');b.type='button';b.className='tact';b.textContent=opt.action;b.onclick=ev=>{ev.stopPropagation();clearTimeout(toastT);t.classList.remove('show','act');if(opt.fn)opt.fn();};t.appendChild(b);}
+  /* D53 : un message peut porter une 2e action (`plus`, ex. « Tout le mur » puis « Annuler ») */
+  if(act)[opt,...(opt.plus||[])].filter(x=>x&&x.action).forEach(o=>{const b=document.createElement('button');b.type='button';b.className='tact';b.textContent=o.action;b.onclick=ev=>{ev.stopPropagation();clearTimeout(toastT);t.classList.remove('show','act');if(o.fn)o.fn();};t.appendChild(b);});
   t.classList.toggle('ok',!!ok);t.classList.toggle('act',act);t.classList.toggle('over',!!modaleOuverte());t.classList.add('show');clearTimeout(toastT);
   /* D41 : le message se pose juste au-dessus de la bulle d'astuce, sans la recouvrir */
   /* R6 : au téléphone le message est posé en haut (top) ; lui donner aussi un « bottom » l'étirait en une colonne blanche sur tout le plan */
@@ -6806,6 +6958,7 @@ function newPlan(apres){if(isMobile()){toast('Le dessin se fait sur ordinateur o
   baseDecisions();if(apres)apres();else tracerLesMurs();
   const suite=' Clique pour poser le 1er coin de ton logement.';
   if(garde)toast(`Nouveau plan · « ${garde} » est rangé dans « Mes plans ».`+suite,true);
+  else if(pq==='exemple')toast('Nouveau plan · '+MSG_EXEMPLE,true,annulerCe());
   else if(pq)toast('Nouveau plan · l\'ancien n\'est pas gardé.',false,annulerCe());
   else toast('Nouveau plan : clique pour poser le 1er coin de ton logement.',true);
   suivre('plan_ouvert',{source:'nouveau'});}));}
@@ -6875,7 +7028,7 @@ const TEMPLATES=[
 function loadTemplate(id){
   const T=TEMPLATES.find(t=>t.id===id);if(!T)return;closeModal();
   avantDeRemplacer((garde,pq)=>annoncerLimite(pq,()=>chargerModele(T,garde,pq)));}
-function chargerModele(T,garde,pq){const apres=()=>{if(garde)toast(T.name+' chargé · « '+garde+' » est rangé dans « Mes plans »',true);else if(pq)toast(T.name+' chargé · l\'ancien plan n\'est pas gardé',false,annulerCe());suivre('plan_ouvert',{source:'plan-type',modele:T.id});};
+function chargerModele(T,garde,pq){const apres=()=>{if(garde)toast(T.name+' chargé · « '+garde+' » est rangé dans « Mes plans »',true);else if(pq==='exemple')toast(T.name+' chargé · '+MSG_EXEMPLE,true,annulerCe());else if(pq)toast(T.name+' chargé · l\'ancien plan n\'est pas gardé',false,annulerCe());suivre('plan_ouvert',{source:'plan-type',modele:T.id});};
   /* D50 : le T2 a sa propre construction (la géométrie de l'exemple, sans travaux) — plus de chemin qui charge l'exemple */
   if(!garde&&!pq)history=[];else history.push(snapshot());future=[];resetGestes();_tachesOuverture=null;
   const lv=newLevel('RDC');lv.height=2.5;
@@ -7216,7 +7369,7 @@ function decrireObjet(c){const lv=L(),F=facesCache[lv.id]||[];
     return [(ITEMS[it.type]||{}).label||'Équipement',f?'dans '+roomName(f.room):'',etatEnMots('item',ist(it))].filter(Boolean).join(' · ');}
   return '';}
 function annoncerPlan(txt){const a=document.getElementById('cvAnnonce');if(!a)return;a.textContent='';setTimeout(()=>{a.textContent=txt;},30);}
-function choisirAuClavier(c,j,n){sel={kind:c.kind,id:c.id};multi=c.kind==='item'?[c.id]:[];msel=[];render();recentrerSur(c);
+function choisirAuClavier(c,j,n){if(c.kind==='room')_visee={piece:c.id};else if(!(c.kind==='wall'&&_visee&&_visee.piece))_visee=null; /* D53 : pièce puis un de ses murs = le tronçon de cette pièce */sel={kind:c.kind,id:c.id};multi=c.kind==='item'?[c.id]:[];msel=[];render();recentrerSur(c);
   annoncerPlan(`${decrireObjet(c)} · ${j+1} sur ${n}. Entrée : ouvrir sa fiche.`);}
 function ouvrirFiche(){if(!sel)return;panelTab='details';deplierPanneau();if(isMobile())toggleSheet(true);renderPanel();
   const t=document.querySelector('#pbody .ptitle');if(t){t.tabIndex=-1;try{t.focus();}catch{}}}

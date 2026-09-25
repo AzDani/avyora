@@ -41,8 +41,23 @@ const res = await p.evaluate(() => {
     t["mur · la décision est proposée en Existant"] = /Décision/.test(html({ kind: "wall", id: haut.id }));
     t["équipement · la décision est proposée en Existant"] = /Décision/.test(html({ kind: "item", id: it.id }));
     setMode("projet"); closeModal();
-    /* D39 : même titre « Décision » et mêmes mots dans les deux vues ; en Travaux, la liste est complète (créer, boucher) */
-    t["en Projet, c'est la liste complète qui parle"] = /setOpeningProp\('st','boucher'\)/.test(html({ kind: "opening", id: o.id })) && /setOpeningProp\('st','creer'\)/.test(html({ kind: "opening", id: o.id })) && !/État dans le projet/.test(html({ kind: "opening", id: o.id })); }
+    /* D39 : même titre « Décision » et mêmes mots dans les deux vues ; en Travaux, « À boucher » s'ajoute.
+       D53 (arbitrage) : un élément DÉJÀ LÀ n'est jamais « à créer » ni « à poser », même en Travaux */
+    const seg = (s) => { sel = s; renderPanel(); return [...document.querySelectorAll("#pbody .segetat button")].map((x) => x.textContent); };
+    t["en Projet, une menuiserie déjà là : À décider, Je garde, À remplacer, À boucher"] = /setOpeningProp\('st','boucher'\)/.test(html({ kind: "opening", id: o.id })) && !/État dans le projet/.test(html({ kind: "opening", id: o.id })) && JSON.stringify(seg({ kind: "opening", id: o.id }).map((x) => x.match(/^À décider|^Je garde|^À remplacer|^À boucher|^À créer/)?.[0])) === JSON.stringify(["À décider", "Je garde", "À remplacer", "À boucher"]);
+    t["en Projet, un mur déjà là : pas de « À créer »"] = !/setWallProp\('st','creer'\)/.test(html({ kind: "wall", id: haut.id })) && seg({ kind: "wall", id: haut.id }).some((x) => /^À démolir/.test(x));
+    t["en Projet, un équipement déjà là : pas de « À poser »"] = !seg({ kind: "item", id: it.id }).some((x) => /^À poser/.test(x)) && seg({ kind: "item", id: it.id }).some((x) => /^À déposer/.test(x));
+    /* ce qui est tracé en Travaux garde « À créer » / « À poser » */
+    const w2 = { id: uid(), a: v(3, 0), b: v(3, 4), type: "cloison", st: "creer" }; L().walls.push(w2);
+    const i2 = { id: uid(), type: "lavabo", x: 4, y: 2, w: 0.6, h: 0.45, rot: 0, st: "creer" }; L().items.push(i2);
+    const o2 = { id: uid(), wallId: haut.id, type: "fenetre", t: 0.2, w: 0.8, h: 1.1, side: 1, st: "creer" }; L().openings.push(o2); afterChange();
+    t["tracé en Travaux : « À créer » (mur, fenêtre) et « À poser » (équipement), cochés"] = /setWallProp\('st','creer'\)/.test(html({ kind: "wall", id: w2.id })) && seg({ kind: "opening", id: o2.id }).some((x) => /^À créer/.test(x)) && seg({ kind: "item", id: i2.id }).some((x) => /^À poser/.test(x)) && document.querySelector("#pbody .segetat .st-creer.on");
+    /* un plan enregistré où un élément existant porte « creer » le garde : rien n'est migré */
+    o.st = "creer"; const cp = JSON.parse(JSON.stringify(state)); migrerEtat(cp);
+    t["plan d'avant : une fenêtre existante « À créer » le reste (pas de migration), et le choix est coché"] = cp.levels[0].openings.find((x) => x.id === o.id).st === "creer" && seg({ kind: "opening", id: o.id }).some((x) => /^À créer/.test(x)) && !!document.querySelector("#pbody .segetat .st-creer.on");
+    delete o.st; afterChange();
+    /* un étage créé par les travaux : ses murs peuvent être « À créer » (surélévation, D37) */
+    L().neuf = true; t["étage créé par les travaux : « À créer » reste proposé"] = /setWallProp\('st','creer'\)/.test(html({ kind: "wall", id: haut.id })); delete L().neuf; }
 
   /* ── les états sans objet sur de l'existant restent hors du bloc ─────────── */
   { const { o } = scene(); setMode("existant"); sel = { kind: "opening", id: o.id }; renderPanel();

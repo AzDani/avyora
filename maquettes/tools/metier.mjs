@@ -11,6 +11,8 @@
  * rampants sans le débord de toit.
  * D47 : les décisions tiennent au rechargement, poser sur l'ancien sol, la faïence d'une pièce d'eau
  * refaite à décider, une fusion qui n'étend aucune décision, un passage sans menuiserie, « Couper en 2 ».
+ * D53 : « À démolir » sur un mur que d'autres murs touchent ne démolit que le tronçon visé (clic, Suppr,
+ * zone, choix de la fiche), « Tout le mur » en un geste, « Couper aux jonctions ».
  * D48 : le type de mur se lit au tracé (cloison dans une pièce, mur de façade aligné dehors), à la
  * souris, pièce par pièce le long de la façade, et après un rechargement ; une cloison de 7 cm en
  * façade est signalée ; deux pièces du même nom sont numérotées dans le Suivi, Estimer et le dossier.
@@ -540,6 +542,77 @@ Object.assign(t, await p.evaluate(() => {
     loadSample(); r["pièces · un nom unique n'a pas de numéro (l'exemple : « Chambre »)"] = (facesCache[L().id] || []).some((f) => f.room && roomName(f.room) === "Chambre");
     return r; }));
   await p3.close();
+}
+
+/* ── 14. D53 (jury final, pro) · « À démolir » sur un mur que d'autres touchent : le tronçon de la pièce visée ── */
+{
+  const p4 = await b.newPage(); p4.on("pageerror", (e) => errs.push(e.message));
+  await p4.setViewport({ width: 1440, height: 900 });
+  await p4.evaluateOnNewDocument(() => { try { if (!sessionStorage.getItem("m53")) { localStorage.clear(); localStorage.setItem("avyora-plan-welcome", "1"); localStorage.setItem("avyora-plan-tuto", "fait"); sessionStorage.setItem("m53", "1"); } } catch {} });
+  await p4.goto("file://" + SP + "/plan-editor.html", { waitUntil: "networkidle0" }); await wait(400);
+  const MAISON = () => p4.evaluate(() => { closeModal(); loadTemplate("maison"); closeModal(); setMode("projet"); closeModal(); setTool("select"); sel = null; _visee = null; render(); });
+  const Q = (x, y) => p4.evaluate(([x, y]) => { const s = S(v(x, y)); const rc = cv.getBoundingClientRect(); return { x: rc.left + s.x, y: rc.top + s.y }; }, [x, y]);
+  const clic = async (x, y) => { const q = await Q(x, y); await p4.mouse.move(q.x, q.y); await wait(40); await p4.mouse.click(q.x, q.y); await wait(160); };
+  /* ce qui doit rester : pièces (hors celles réunies), portes des autres tronçons, aucune extrémité en l'air */
+  const bilan = () => p4.evaluate(() => { const lv = L(), q = quantities().travaux;
+    const pieces = Object.fromEntries(facesFor(lv, "projet").filter((f) => f.room).map((f) => [roomName(f.room), Math.round(areaNet(lv, f) * 10) / 10]));
+    const dem = chantierTasks().filter((x) => /^w:/.test(x.id) && /Démolir/.test(x.label));
+    const portes = lv.openings.filter((o) => o.type === "porte" && wst(findWall(o.wallId)) !== "demolir").length;
+    return { pieces, dem: dem.map((x) => x.label), prix: dem.reduce((s2, x) => s2 + (x.prix || 0), 0), m2: Math.round(q.demolM2 * 10) / 10, portes, enLair: danglingNodes(lv).length,
+      alerte: planChecks(lv).some((c) => /extrémité/.test(c.msg)), toast: document.getElementById("toast").innerText }; });
+  await MAISON();
+  const avant = await bilan();
+  await clic(7, 2.2);
+  Object.assign(t, await p4.evaluate(() => { const r = {}, w = findWall(sel && sel.id);
+    r["tronçon · clic en (7 ; 2,2) : la cloison de 8 m est sélectionnée, son tronçon Chambre 2 / Cuisine est visé"] = !!w && Math.abs(wallLen(w) - 8) < 1e-6 && !!tronconVise(w) && Math.abs((tronconVise(w).t1 - tronconVise(w).t0) * 8 - 4) < 1e-6;
+    r["tronçon · la fiche dit ce que « À démolir » abattra (Chambre 2 et Cuisine · 4,00 m, ou tout le mur)"] = /Entre Chambre 2 et Cuisine · 4,00 m/.test(document.getElementById("tronconSel")?.selectedOptions[0]?.textContent || "") && [...document.querySelectorAll("#tronconSel option")].some((o) => /Tout le mur · 8,00 m/.test(o.textContent));
+    r["tronçon · « Couper aux jonctions » remplace « Couper en 2 »"] = /Couper aux jonctions/.test(document.getElementById("pbody").innerText) && !/Couper en 2/.test(document.getElementById("pbody").innerText);
+    [...document.querySelectorAll("#pbody .segetat button")].find((x) => /démolir/i.test(x.textContent)).click();
+    return r; }));
+  await wait(200);
+  let B = await bilan();
+  t["tronçon · « À démolir » : 4,00 m et 10,0 m² (150 €), pas 8,00 m"] = B.dem.length === 1 && /4,00 m/.test(B.dem[0]) && B.m2 === 10 && B.prix === 150;
+  t["tronçon · Salle de bain, Buanderie, WC et Séjour intacts ; Chambre 2 et Cuisine réunies"] = ["Salle de bain", "Buanderie", "WC", "Séjour"].every((k) => B.pieces[k] === avant.pieces[k]) && !("Chambre 2" in B.pieces);
+  t["tronçon · les portes des autres tronçons sont gardées (seule celle du tronçon part)"] = B.portes === avant.portes - 1;
+  t["tronçon · aucune extrémité de mur en l'air, aucune alerte"] = B.enLair === 0 && !B.alerte;
+  t["tronçon · le message dit « 4,00 m démolis entre Chambre 2 et Cuisine » et propose « Tout le mur (8,00 m) »"] = /4,00 m démolis entre Chambre 2 et Cuisine/.test(B.toast) && /Tout le mur \(8,00 m\)/.test(B.toast);
+  await p4.evaluate(() => { [...document.querySelectorAll("#toast .tact")].find((x) => /Tout le mur/.test(x.textContent)).click(); }); await wait(150);
+  B = await bilan();
+  t["tronçon · « Tout le mur » : les 8,00 m, en un geste"] = B.dem.length === 1 && /8,00 m/.test(B.dem[0]) && B.m2 === 20;
+  /* la séparation Cuisine / Séjour s'appuyait au milieu du tronçon : prolongée après travaux, retirée si le tronçon reste */
+  await MAISON(); await clic(7, 2.2);
+  Object.assign(t, await p4.evaluate(() => { const r = {}, sep = () => L().walls.filter((x) => isVirtual(x) && x.st === "creer");
+    setWallProp("st", "demolir");
+    r["tronçon · la séparation Cuisine / Séjour est prolongée après travaux seulement (0,50 m), sans prix"] = sep().length === 1 && Math.abs(wallLen(sep()[0]) - 0.5) < 1e-6 && !wallActive(sep()[0], "existant") && chantierPrix().total === 150;
+    setWallProp("st", "garder");
+    const noms = facesFor(L(), "projet").filter((f) => f.room).map((f) => roomName(f.room));
+    r["tronçon · « Je garde » ensuite : la séparation ajoutée disparaît, Chambre 2 et Cuisine reviennent"] = sep().length === 0 && ["Chambre 2", "Cuisine", "Séjour"].every((k) => noms.includes(k)) && danglingNodes(L()).length === 0 && chantierPrix().total === 0;
+    return r; }));
+  /* Suppr, au clic : le tronçon Salle de bain / Séjour seul */
+  await MAISON(); await clic(7, 5.6); await p4.keyboard.press("Delete"); await wait(200);
+  B = await bilan();
+  t["tronçon · Suppr en (7 ; 5,6) : 2,20 m entre Salle de bain et Séjour, le reste gardé"] = B.dem.length === 1 && /2,20 m/.test(B.dem[0]) && /entre Salle de bain et Séjour/.test(B.toast) && B.enLair === 0 && B.portes === avant.portes - 1 && B.pieces["Buanderie"] === avant.pieces["Buanderie"];
+  /* sélection de zone autour du tronçon, puis Suppr */
+  await MAISON(); await p4.evaluate(() => setTool("zone"));
+  { const a = await Q(6.6, -0.3), c = await Q(7.4, 4.3); await p4.mouse.move(a.x, a.y); await p4.mouse.down(); await p4.mouse.move((a.x + c.x) / 2, (a.y + c.y) / 2, { steps: 4 }); await p4.mouse.move(c.x, c.y, { steps: 4 }); await p4.mouse.up(); await wait(200); }
+  t["tronçon · zone : le tronçon dans le cadre est pris, pas la cloison entière"] = await p4.evaluate(() => sel?.kind === "marquee" && msel.some((m) => m.kind === "troncon" && Math.abs(m.t1 - m.t0 - 0.5) < 1e-6) && !msel.some((m) => m.kind === "wall" && Math.abs(wallLen(findWall(m.id)) - 8) < 1e-6));
+  await p4.keyboard.press("Delete"); await wait(200);
+  B = await bilan();
+  t["tronçon · zone + Suppr : 4,00 m démolis, aucune extrémité en l'air"] = B.dem.length === 1 && /4,00 m/.test(B.dem[0]) && B.enLair === 0 && B.pieces["Salle de bain"] === avant.pieces["Salle de bain"];
+  /* au clavier : la fiche choisit le tronçon */
+  await MAISON();
+  Object.assign(t, await p4.evaluate(() => { const r = {}, w = L().walls.find((x) => Math.abs(x.a.x - 7) < 1e-6 && Math.abs(x.b.x - 7) < 1e-6);
+    sel = { kind: "wall", id: w.id }; _visee = null; render();
+    r["tronçon · sans clic, la fiche vise tout le mur (dit)"] = document.getElementById("tronconSel")?.value === "tout";
+    viserTroncon("2"); setWallProp("st", "demolir");
+    r["tronçon · choisi dans la fiche (Buanderie / Séjour) : 1,80 m démolis"] = chantierTasks().filter((x) => /^w:/.test(x.id) && /Démolir/.test(x.label)).map((x) => x.label).join() .match(/1,80 m/) !== null && danglingNodes(L()).length === 0;
+    /* « Couper aux jonctions » : trois tronçons, rien ne change au budget */
+    closeModal(); loadTemplate("maison"); closeModal(); setMode("projet"); closeModal();
+    const w2 = L().walls.find((x) => Math.abs(x.a.x - 7) < 1e-6 && Math.abs(x.b.x - 7) < 1e-6), t0 = chantierPrix().total, n0 = L().openings.length; sel = { kind: "wall", id: w2.id }; couperAuxJonctions();
+    const P = L().walls.filter((x) => Math.abs(x.a.x - 7) < 1e-6 && Math.abs(x.b.x - 7) < 1e-6 && !isVirtual(x)).map((x) => Math.round(wallLen(x) * 100) / 100).sort();
+    r["tronçon · « Couper aux jonctions » : 1,80 · 2,20 · 4,00 m, même budget, mêmes ouvertures"] = JSON.stringify(P) === JSON.stringify([1.8, 2.2, 4]) && chantierPrix().total === t0 && L().openings.length === n0 && danglingNodes(L()).length === 0;
+    return r; }));
+  await p4.close();
 }
 
 await b.close();

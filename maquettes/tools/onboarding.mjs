@@ -25,6 +25,8 @@
  *     montre une carte « À toi » au lieu de la checklist d'un T2 fictif ; le Suivi se date (en retard,
  *     cette semaine, tri) ; la page appelle window.AVYORA_TRACK aux moments clés, sans donnée
  *     personnelle ni appel réseau ;
+ *   - D53 : en gratuit, l'exemple n'est jamais rangé dans « Mes plans » (une coche, une démolition d'essai, puis un plan
+ *     type ou « Nouveau » : aucune fenêtre, un message avec « Annuler ») ; il se rouvre depuis Aide › Revoir l'exemple ;
  *   - D50 : l'accueil fermé par la croix ouvre l'exemple en Travaux et propose la visite ; chaque plan type
  *     s'ouvre sans point au contrôle, à 0 €, avec son type de bien, et le T2 n'est plus l'exemple.
  *
@@ -529,6 +531,37 @@ Object.assign(t, await p.evaluate(() => { const r = {}, ev = window.__ev, noms =
   r["mesure · sans AVYORA_TRACK injecté : rien, sans erreur"] = ok;
   return r; }));
 t["mesure · aucun appel réseau (hors police de la page)"] = reseau.length === 0; if (reseau.length) console.log("réseau :", reseau.slice(0, 5));
+await p.close();
+
+/* ── D53 (jury final, retention) · En gratuit, l'exemple ne prend jamais la place de « Mes plans » ── */
+p = await onglet({ welcomeVu: true });
+Object.assign(t, await p.evaluate(() => { const r = {}; localStorage.setItem("avyora-plan-pro", "0"); localStorage.setItem("avyora-plan-tuto", "fait");
+  const fenetre = () => modaleOuverte()?.id || null, msg = () => document.getElementById("toast").innerText, enreg = () => { enregistrerMaintenant(); afficherEnreg(); return document.getElementById("saveState").innerText; };
+  const EX = "L'exemple n'est pas gardé : il se rouvre depuis Aide › Revoir l'exemple";
+  closeWelcome("sample"); closeModal(); setMode("projet"); closeModal();
+  r["gratuit · Aide › « Revoir l'exemple » existe"] = /Revoir l'exemple/.test(document.getElementById("aideMenu").textContent);
+  /* une coche au Suivi, comme « Explorer le Suivi » y invite */
+  toggleDone(chantierTasks()[0].id);
+  r["gratuit · exemple coché : toujours l'exemple, « Enregistré » (pas « Pas dans Mes plans »)"] = estExemple() && enreg() === "Enregistré" && !isPro();
+  loadTemplate("t2");
+  r["gratuit · exemple coché puis plan type : aucune fenêtre, « Mes plans » vide"] = fenetre() === null && Object.keys(loadPlans()).length === 0 && /^T2/.test(state.name);
+  r["… le message dit que l'exemple n'est pas gardé et où le rouvrir, avec « Annuler »"] = msg().includes(EX) && [...document.querySelectorAll("#toast .tact")].some((x) => x.textContent === "Annuler");
+  [...document.querySelectorAll("#toast .tact")].find((x) => x.textContent === "Annuler").click();
+  r["… « Annuler » : l'exemple revient, avec sa coche"] = estExemple() && Object.keys(state.done || {}).length === 1;
+  /* une démolition d'essai (« essaie une décision »), puis Fichier › Nouveau plan */
+  const cl = L().walls.find((w) => w.type === "cloison" && wst(w) !== "demolir"); sel = { kind: "wall", id: cl.id }; _visee = null; setWallProp("st", "demolir");
+  newPlan();
+  r["gratuit · démolition d'essai puis « Nouveau plan » : aucune fenêtre, « Mes plans » vide"] = fenetre() === null && Object.keys(loadPlans()).length === 0 && L().walls.length === 0 && msg().includes(EX);
+  /* le premier plan à soi : « Enregistré », rangé dès qu'on en ouvre un autre — sans fenêtre de paiement */
+  [[0, 0, 4, 0], [4, 0, 4, 3], [4, 3, 0, 3], [0, 3, 0, 0]].forEach(([a, b2, c, d]) => L().walls.push({ id: uid(), a: v(a, b2), b: v(c, d), type: "mur" })); afterChange();
+  r["gratuit · le premier plan à soi : « Enregistré », il sera rangé (pas « perdu »)"] = enreg() === "Enregistré" && sortDuPlanOuvert() === "rangera";
+  document.getElementById("exempleBtn").click();
+  r["gratuit · Aide › Revoir l'exemple : le plan à soi est rangé, l'exemple rouvert, aucune fenêtre"] = fenetre() === null && Object.values(loadPlans()).length === 1 && !Object.values(loadPlans()).some((e) => /Exemple/.test(e.name)) && estExemple() && planIntact();
+  /* l'exemple ne se range pas non plus par « Enregistrer dans Mes plans » */
+  toggleDone(chantierTasks()[0].id); const n0 = Object.keys(loadPlans()).length; savePlanToLibrary();
+  r["gratuit · « Enregistrer dans Mes plans » sur l'exemple : refusé, dit pourquoi, aucune fenêtre"] = Object.keys(loadPlans()).length === n0 && fenetre() === null && msg().includes(EX);
+  r["gratuit · Fichier › Nouveau plan le dit d'avance"] = phraseSortie().includes("L'exemple n'est pas gardé");
+  return r; }));
 await p.close();
 
 await b.close();

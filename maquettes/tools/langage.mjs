@@ -24,6 +24,8 @@
  *     chaque vue, « Encore à décider » sans homonymes, « Ton projet à 100 % » impossible tant qu'il reste à
  *     décider, aucune promesse régionale du compteur, les mots du bâtiment expliqués dans Estimer, le Suivi
  *     et le dossier, des icônes SVG au lieu des flèches ↔ ↕ ↗, un exemple nommé d'après sa surface.
+ *   - D53 (jury final) : le résumé des travaux compte toutes les tâches du compteur ; « Aucun travail marqué » ne se
+ *     lit jamais à côté d'une tâche (bureau, téléphone, et chaque état lu).
  *
  *   node maquettes/tools/langage.mjs "$(pwd)/maquettes"
  *
@@ -97,8 +99,8 @@ const INTERDITS = [
 ];
 const AVEC_PRO = /Avec Pro\b|avec Pro\b|Passer Pro|· Pro\b|Budget travaux HT · Pro/;
 
-const lus = []; /* [état, texte] */
-const noter = async (p, etat) => lus.push([etat, await p.evaluate(LIRE)]);
+const lus = []; /* [état, texte, nombre de tâches du compteur] */
+const noter = async (p, etat) => lus.push([etat, await p.evaluate(LIRE), await p.evaluate(() => { try { return chantierPrix().nb; } catch { return 0; } })]);
 
 /* Une tâche de Suivi commence par un verbe, comme sur la feuille d'un conducteur de travaux. */
 const VERBE_SRC = "^(Faire|Démolir|Poser|Déposer|Monter|Reboucher|Ouvrir|Percer|Doubler|Isoler|Couler|Créer|Lisser|Passer|Peindre|Poncer|Ajouter|Remplacer|Débrancher|Habiller|Appliquer|Nettoyer|Refaire|Traiter|Ravaler)\\b";
@@ -158,9 +160,13 @@ Object.assign(t, await p.evaluate(() => {
   const ex = { w: boutons({ kind: "wall", id: w.id }), o: boutons({ kind: "opening", id: o.id }), i: boutons({ kind: "item", id: it.id }) };
   setMode("projet"); closeModal();
   const pj = { w: boutons({ kind: "wall", id: w.id }), o: boutons({ kind: "opening", id: o.id }), i: boutons({ kind: "item", id: it.id }) };
-  r["états · mur : Avant travaux ⊂ Travaux, mêmes mots"] = JSON.stringify(ex.w) === JSON.stringify([E.aDecider, E.garder, E.demolir]) && JSON.stringify(pj.w) === JSON.stringify([E.aDecider, E.garder, E.creer, E.demolir]);
-  r["états · ouverture : mêmes mots dans les deux vues"] = JSON.stringify(ex.o) === JSON.stringify([E.aDecider, E.garder, E.remplacer]) && JSON.stringify(pj.o) === JSON.stringify([E.aDecider, E.garder, E.remplacer, E.creer, E.boucher]);
-  r["états · équipement : « À poser » / « À déposer »"] = JSON.stringify(ex.i) === JSON.stringify([E.aDecider, E.garder, E.deposer]) && JSON.stringify(pj.i) === JSON.stringify([E.aDecider, E.garder, E.poser, E.deposer]);
+  /* D53 (arbitrage) : ce qui est déjà là n'est jamais « à créer » ni « à poser », dans aucune vue */
+  r["états · mur déjà là : les mêmes mots dans les deux vues, jamais « À créer »"] = JSON.stringify(ex.w) === JSON.stringify([E.aDecider, E.garder, E.demolir]) && JSON.stringify(pj.w) === JSON.stringify([E.aDecider, E.garder, E.demolir]);
+  r["états · ouverture déjà là : mêmes mots, « À boucher » en Travaux, jamais « À créer »"] = JSON.stringify(ex.o) === JSON.stringify([E.aDecider, E.garder, E.remplacer]) && JSON.stringify(pj.o) === JSON.stringify([E.aDecider, E.garder, E.remplacer, E.boucher]);
+  r["états · équipement déjà là : « À déposer », jamais « À poser »"] = JSON.stringify(ex.i) === JSON.stringify([E.aDecider, E.garder, E.deposer]) && JSON.stringify(pj.i) === JSON.stringify([E.aDecider, E.garder, E.deposer]);
+  const it2 = { id: uid(), type: it.type, x: it.x + 0.5, y: it.y, w: it.w, h: it.h, rot: 0, st: "creer" }; lv.items.push(it2); afterChange();
+  r["états · équipement posé en Travaux : « À poser »"] = JSON.stringify(boutons({ kind: "item", id: it2.id })) === JSON.stringify([E.aDecider, E.garder, E.poser, E.deposer]);
+  lv.items = lv.items.filter((x) => x.id !== it2.id); afterChange();
   setMode("existant"); closeModal(); sel = { kind: "wall", id: w.id }; renderPanel();
   r["mur en vue Avant travaux : plus de consigne « se règle en vue Projet »"] = !/se règle en vue/.test(document.getElementById("pbody").innerText) && !/Passer en/.test(document.getElementById("pbody").innerText);
   return r;
@@ -512,6 +518,26 @@ await p.evaluate(() => { closeWelcome("fermer"); loadTemplate("maison"); closeMo
 t["R6 · toiture à décrire : « ce que tu décris ne coûte rien », plus « le projet en déduit les travaux »"] = await p.evaluate(() => { const inv = document.getElementById("pbody").innerText; return /Décrire la toiture/.test(inv) && /ne coûte rien/.test(inv) && !/en déduit les travaux/.test(inv); });
 await noter(p, "R6 · maison, toiture à décrire");
 await p.close();
+
+/* D53 (jury final : retention, novice) · le résumé des travaux compte TOUTES les tâches : sols et peinture seuls,
+   c'est « Travaux décidés : … », jamais « Aucun travail marqué » à côté d'un budget ; au bureau et au téléphone */
+for (const [larg, haut] of [[1440, 900], [390, 844]]) {
+  p = await onglet("", larg, haut);
+  if (larg < 600) await p.setViewport({ width: larg, height: haut, isMobile: true, hasTouch: true });
+  Object.assign(t, await p.evaluate((tel) => { const r = {}, k = tel ? "téléphone" : "bureau";
+    closeWelcome("fermer"); closeModal(); state = blankState(); const lv = L(); lv.height = 2.5;
+    [[0, 0, 5, 0], [5, 0, 5, 4], [5, 4, 0, 4], [0, 4, 0, 0]].forEach(([a, b2, c, d]) => lv.walls.push({ id: uid(), a: v(a, b2), b: v(c, d), type: "mur" })); afterChange();
+    const f = facesCache[lv.id][0]; f.room.type = "sejour"; setMode("projet"); closeModal(); setTool("select"); sel = null; render();
+    const lire = () => (document.getElementById("resumeTravaux") || {}).innerText || "";
+    r["résumé (" + k + ") · rien de décidé : « Aucun travail marqué »"] = chantierPrix().nb === 0 && /Aucun travail marqué/.test(lire());
+    f.room.floorNew = "Carrelage"; f.room.peinture = "tout"; afterChange(); sel = null; render();
+    const px = chantierPrix(), txt = lire();
+    r["résumé (" + k + ") · sols et peinture seuls : « Travaux décidés », le nombre de tâches, les corps d'état et le montant"] = px.nb > 0 && !/Aucun travail/.test(txt) && txt.includes(pluriel(px.nb, "tâche")) && px.lots.every((g) => txt.includes(g.lot)) && txt.includes(eur(px.total));
+    return r; }, larg < 600));
+  await noter(p, "D53 · résumé des travaux (" + larg + ")");
+  await p.close();
+}
+t["résumé · « Aucun travail » n'est jamais lu quand le compteur a des tâches (" + lus.length + " états)"] = lus.every(([, txt, nb]) => !(nb > 0 && /Aucun travail/.test(txt)));
 
 /* ═════════ 6. Ce qui s'affiche : aucune tournure interdite ═════════ */
 const fautes = [];

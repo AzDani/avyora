@@ -142,6 +142,21 @@ Object.assign(t, await p.evaluate(() => {
   r["Mes plans · un plan fermé montre le budget enregistré"] = !!ex && !!e && ex.querySelector(".gres").textContent.includes(eur(e.resume.budget) + " HT");
   closeModal(); return r;
 }));
+/* D53 (jury final : novice, retention) · « Aucun plan enregistré » ne se lit plus à côté d'un plan ouvert (« Enregistré » dans la barre) */
+Object.assign(t, await p.evaluate(() => {
+  const r = {}, liste = () => document.getElementById("plansList"); writePlans({}); delete state.id; state = blankState(); afterChange();
+  openPlansModal(); r["Mes plans · vraiment rien (aucun plan rangé, plan ouvert vide) : « Aucun plan enregistré »"] = /Aucun plan enregistré/.test(liste().innerText) && !document.getElementById("planOuvertCarte"); closeModal();
+  const lv = L(); lv.height = 2.5; [[0, 0, 5, 0], [5, 0, 5, 4], [5, 4, 0, 4], [0, 4, 0, 0]].forEach(([a, b2, c, d]) => lv.walls.push({ id: uid(), a: v(a, b2), b: v(c, d), type: "mur" })); afterChange();
+  const f = facesCache[lv.id][0]; f.room.type = "sejour"; setMode("projet"); closeModal(); f.room.floorNew = "Carrelage"; afterChange(); enregistrerMaintenant();
+  const px = chantierPrix(), q = quantities();
+  openPlansModal(); const c = document.getElementById("planOuvertCarte"), g = c ? c.querySelector(".gres").textContent : "";
+  r["Mes plans · un plan ouvert non rangé : jamais « Aucun plan enregistré »"] = !/Aucun plan/.test(liste().innerText) && Object.keys(loadPlans()).length === 0;
+  r["Mes plans · … il est la première carte, « Ouvert · enregistré automatiquement »"] = !!c && c === liste().querySelector(".plancard") && /Ouvert · enregistré automatiquement/.test(c.innerText);
+  r["Mes plans · … avec sa surface, son montant et son avancement"] = g.includes(fmtM2(q.area)) && g.includes(eur(px.total) + " HT") && g.includes("chantier 0/" + px.nb) && /projet à/.test(g);
+  closeModal(); savePlanToLibrary(); closeModal(); openPlansModal();
+  r["Mes plans · une fois rangé : une seule carte, pas de doublon"] = !document.getElementById("planOuvertCarte") && liste().querySelectorAll(".plancard").length === 1;
+  closeModal(); return r;
+}));
 await p.close();
 
 /* ═════════ 2. La pastille d'écart ═════════ */
