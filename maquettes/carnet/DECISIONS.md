@@ -2833,3 +2833,94 @@ cj-pro07, cj-qa09, cj-integration04, cj-coherence06, cj-pro08, cj-access04, cj-d
   contrôle « chaque chambre accessible depuis une circulation ».
 - **La porte-fenêtre du studio** s'ouvre vers l'extérieur : non signalée, et la tourner vers l'intérieur
   demande de redessiner le coin séjour (canapé) ; laissée.
+
+## D51 · Accessibilité : le focus ne se perd ni ne se cache, les raccourcis se coupent, tout se fait sans glisser (25/09/2026)
+
+**Constats (contre-jury : cj-access00, cj-access01, cj-access02, cj-access05, cj-access06, cj-access07,
+cj-access08, cj-access09, cj-access10, cj-access11, cj-access12).**
+- **« Ton budget travaux » au clavier** : le focus passait entièrement sous le pied collant « Exporter le dossier /
+  Enregistrer » (6 arrêts de Tab à 1 440 × 900, 7 à 390 × 844 : « La porte d'entrée », « Sols 924 € »…). WCAG 2.4.11.
+- **Focus perdu** : cocher une tâche du Suivi à l'Espace, ou valider un champ par Entrée, renvoyait le focus sur la
+  page ; le Tab suivant repartait de l'onglet « Détails ». `avecFocus` ne rendait le focus qu'aux boutons.
+- **Raccourcis d'une lettre** actifs depuis n'importe quel bouton (focus clavier sur « Détails », « m » → outil
+  Murs) et impossibles à couper. WCAG 2.1.4 (niveau A).
+- **Bulles d'aide et définitions du glossaire** fermées dès que la souris (ou la loupe) passait dessus. WCAG 1.4.13.
+- **Menus ouverts à la souris** : Espace n'activait pas l'entrée choisie aux flèches (il partait en « Espace +
+  glisser ») ; « Estimer ce plan » cliqué, Échap, Espace : rien.
+- **Le plan au clavier** : 59 arrêts de Tab sur l'exemple avant d'atteindre le panneau.
+- **Anneau de la carte budget** lavande sur le pied blanc : 1,85:1 (tous les autres : 6,29:1).
+- **Plan vierge** : impossible à commencer sans souris (le premier coin se posait d'un clic). WCAG 2.1.1.
+- **Déplacer un équipement ou une ouverture** exigeait un glisser (ou les flèches). WCAG 2.5.7.
+- **Outil « Image »** nommé « Fond de plan » pour le lecteur d'écran et la commande vocale. WCAG 2.5.3.
+- **À 320 px** (petit téléphone, zoom 400 %), « Estimer ce plan » sortait de l'écran ; la page défilait de 9 px.
+
+**Décisions.**
+1. **Focus jamais masqué** (`degagerFocus`) : toute fenêtre qui a un pied collant (`.colle`) réserve sa hauteur
+   réelle (`scroll-padding-bottom`, 124 px par défaut sur Estimer) et, si l'élément focalisé y est encore, défile
+   juste ce qu'il faut. 70 arrêts de Tab à 1 440 et à 390 : aucun caché.
+2. **Focus rendu aux champs et aux cases** : `avecFocus` reconnaît aussi `INPUT`, `SELECT`, `TEXTAREA` par une clé
+   stable (leur action `onchange` / `oninput` et le nom écrit dans le gabarit ; à égalité, leur rang) et remet le
+   curseur d'un champ texte où il était. Tab après une saisie ne change pas : le navigateur poursuit sa navigation.
+3. **Raccourcis d'une lettre** (`lettreAutorisee`) : ils n'agissent que sur le plan, la colonne d'outils, les
+   niveaux, les vues, quand rien n'a le focus, ou sur un bouton simplement **cliqué à la souris** (un utilisateur
+   souris qui vient de choisir « Je garde » puis tape M garde son raccourci) ; jamais dans un champ. **Aide >
+   Raccourcis** porte la case « Raccourcis d'une touche » (cochée par défaut, mémorisée : `avyora-plan-raccourcis`) ;
+   décochée, les touches disparaissent des outils (ni `<kbd>`, ni bulle, ni `aria-keyshortcuts`). Ctrl/Cmd +
+   touche, Échap, Suppr et les flèches restent actifs ; les chiffres tapés pendant le tracé d'un mur sont une
+   longueur, pas un raccourci. Le focus ne reste plus sur un bouton d'une fenêtre fermée (`closeModal` le libère).
+4. **Bulles survolables** : `#bulle` et `#glossPop` acceptent le pointeur ; un pont invisible (`::before`, 9 px)
+   couvre l'écart avec leur bouton ; elles se ferment quand la souris quitte les deux (ou Échap, ou un clic ailleurs).
+5. **Menus et Espace** : Espace active l'entrée de menu choisie, même menu ouvert à la souris. Un focus déplacé par
+   une touche (flèches d'un menu, Échap qui rend le focus au bouton) compte comme clavier, sauf si la souris a
+   agi entre-temps ou si c'est un focus rendu après un redessin : « Espace + glisser » reste à la souris.
+6. **Le plan est UN arrêt de Tab** (composant composite) : Tab et Maj+Tab y entrent et en sortent, toujours ;
+   **Alt + flèches** (Option sur Mac) passent d'un élément à l'autre, en boucle, avec l'annonce existante
+   (« … · 7 sur 59 ») ; les flèches seules déplacent l'élément choisi ; Entrée ouvre sa fiche. Consigne du lecteur
+   d'écran, message du premier focus et table de l'Aide mis à jour. Alt+← ne renvoie jamais à la page précédente
+   depuis le plan.
+7. **Anneau indigo** (`--brand`, 6,29:1) sur la carte budget et sur la pastille budget du panneau replié.
+8. **Plan vierge au clavier** : « Poser une pièce de 4 × 3 m » et « Poser cette pièce » activés par Entrée / Espace
+   (clic de confiance, `detail` 0) posent la pièce **au centre de la vue** ; elle est choisie, sa fiche s'ouvre
+   avec le focus sur son titre ; un message dit comment régler un mur (Alt + flèches, puis sa longueur). Une pièce
+   en attente se pose aussi par Entrée dans le plan. À la souris, rien ne change : on clique où poser le coin.
+9. **Déplacer sans glisser** (`deplacerSel`, partagé par les flèches et les boutons) : fiche d'un équipement (un ou
+   plusieurs) : « Décaler de 10 cm » ← → ↑ ↓, quatre boutons nommés « Décaler de 10 cm vers la gauche »… ; fiche
+   d'une ouverture : section repliée **« Position sur le mur »** (« à 1,15 m du bout gauche »), champ « Depuis le
+   bout gauche » (la cote violette du plan, au cm) et deux boutons ; aux flèches, une ouverture coulisse le long de
+   son mur (la part perpendiculaire est ignorée), jamais sur une autre ouverture ni hors du mur. Téléphone et vue
+   Après travaux : grisés, comme le reste de la fiche.
+10. **Noms = libellés visibles** : l'outil « Image » s'annonce « Image (fond de plan) » ; le « + » des niveaux
+    devient une icône (le glyphe n'était pas dans son nom « Ajouter un niveau »).
+11. **320 px** : sous 360 px, l'icône d'« Estimer ce plan » s'efface (le libellé reste) : bouton entier, aucun
+    défilement horizontal.
+
+**Contrôles.**
+- `accessibilite.mjs` §3 réécrit en gardant son intention (le plan se parcourt au clavier, sans piège) : Alt + ↓
+  parcourt les 59 éléments (pièces, murs, ouvertures, équipements), boucle, Alt + ↑ revient, Alt + flèches ne
+  déplacent rien et → seul déplace, Entrée ouvre la fiche, Tab et Maj+Tab quittent le plan avec un élément choisi
+  (la sélection reste), consignes (message et lecteur d'écran) à jour. Nouveau §9 : Estimer à 1 440 et 390 (70 Tab,
+  aucun caché sous le pied) ; Suivi coché et décoché à l'Espace (focus sur la même case, le Tab suivant reste dans
+  la liste) ; champ validé par Entrée ; « m » sur un onglet atteint au clavier / dans un champ → rien, sur le plan
+  et la colonne d'outils → Murs ; réglage dans l'Aide, coupé → « m » sans effet, touches retirées des outils, Suppr
+  et Ctrl+Z actifs, mémorisé dans une nouvelle page, recoché → « m » refonctionne ; bulle d'outil et définition
+  survolées puis quittées ; menu ouvert à la souris + ↓ ↓ + Espace ; Estimer cliqué + Échap + Espace ; Espace +
+  glisser intact ; anneau de la carte budget ≥ 3:1 ; boutons « Décaler » nommés et exacts (équipement, ouverture,
+  champ de distance = cote du plan, flèches sur une ouverture) ; le nom de chaque outil et de chaque bouton de la
+  barre, des niveaux, des vues, du panneau et du pied contient son libellé visible ; plan vierge : Entrée sur les
+  deux boutons et dans le plan pose la pièce au centre, choisie, fiche focalisée — et à la souris, le bouton attend
+  toujours le clic.
+- `responsive.mjs` : 320 × 640 ajouté à toutes les passes (barre, Estimer, flottants, fiche, mode chantier, Suivi,
+  consultation). Le seuil de la liste du Suivi devient 40 % de la hauteur sous 800 px (380 px au-dessus, inchangé).
+- Mis à jour en gardant leur intention : `visuel.mjs` (fenêtre gardée ≤ 960 px au lieu de 900 : + la ligne repliée
+  « Position sur le mur », dont on vérifie qu'elle est repliée) ; `langage.mjs` (l'outil « Image (fond de plan) » ;
+  l'Aide = le réglage des raccourcis puis la table unique).
+- Fixture du contrat régénérée : seuls des `id` changent — rendue telle quelle ; contrat 1.16.0 inchangé, vitest
+  vert. Rien dans `lib/`.
+
+**Pas fait, et pourquoi.**
+- **Tracer un contour libre au clavier** (poser chaque coin) : le chemin clavier est la pièce rectangulaire au centre,
+  puis la longueur de chaque mur dans sa fiche. Un tracé point par point au clavier (curseur déplacé aux flèches)
+  est un chantier à part.
+- **Déplacer un mur sans glisser** par des boutons : non demandé ; un mur se règle par sa longueur (fiche) et aux
+  flèches.
+- **« Voir le détail → »** et autres flèches typographiques dans les liens : hors de ce chantier (langage).

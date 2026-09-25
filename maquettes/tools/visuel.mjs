@@ -263,7 +263,8 @@ for (const [L, H] of [[1440, 900], [768, 1024], [390, 844]]) {
     /* fenêtre gardée : courte, la technique repliée ; remplacée : la technique ouverte */
     setMode("existant"); closeModal(); delete plisOuverts["op-tech"];
     const o = lv.openings.find((x) => OPENINGS[x.type].cat === "fenetre" && !x.st); sel = { kind: "opening", id: o.id }; renderPanel();
-    r["fenêtre gardée · fiche courte (≤ 900 px), détails repliés"] = P.scrollHeight <= 900 && !!P.querySelector('details.plie[data-k="op-tech"]:not([open])');
+    /* D51 (cj-access10) : + une ligne repliée « Position sur le mur » (placer sans glisser, WCAG 2.5.7) : 900 → 960 px */
+    r["fenêtre gardée · fiche courte (≤ 960 px), détails et position repliés"] = P.scrollHeight <= 960 && !!P.querySelector('details.plie[data-k="op-tech"]:not([open])') && !!P.querySelector('details.plie[data-k="op-position"]:not([open])');
     r["fenêtre · la décision se voit sans défiler"] = (() => { const d = P.querySelector(".segetat"); return d && d.getBoundingClientRect().bottom <= P.getBoundingClientRect().bottom; })();
     delete plisOuverts["op-tech"]; setOpeningProp("st", "remplacer"); renderPanel();
     r["fenêtre à remplacer · détails de la menuiserie ouverts"] = !!P.querySelector('details.plie[data-k="op-tech"][open]') && /Vitrage/.test(P.innerHTML);

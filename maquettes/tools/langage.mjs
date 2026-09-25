@@ -99,7 +99,7 @@ await noter(p, "accueil");
 /* D42 : l'accueil, raccourci, ne liste plus les touches — elles vivent dans l'Aide seulement (une seule table, keysHTML) */
 t["accueil · les raccourcis ne vivent qu'à un endroit : l'Aide (une seule table)"] = await p.evaluate(() => {
   /* D43 : la page ajoute aux titres un rôle de titre (lecteur d'écran) — on compare le contenu, pas les attributs */
-  const a = document.getElementById("welcomeKeys"), b2 = document.getElementById("aideKeys"), ref = document.createElement("div"); ref.innerHTML = keysHTML();
+  const a = document.getElementById("welcomeKeys"), b2 = document.getElementById("aideKeys"), ref = document.createElement("div"); ref.innerHTML = reglageRaccourcisHTML() + keysHTML(); /* D51 : le réglage « Raccourcis d'une touche » précède la table */
   return !a && !document.querySelector("#m-welcome kbd") && b2.innerHTML.length > 200 && b2.textContent === ref.textContent && b2.querySelectorAll("kbd").length === ref.querySelectorAll("kbd").length;
 });
 t["raccourcis · chaque touche d'outil y figure (V, B, M, P, D, E, T, C, L) et R dit 90°"] = await p.evaluate(() => {
@@ -115,7 +115,7 @@ t["vues · les trois boutons portent les mots de LEX, sans emoji"] = await p.eva
 });
 t["outils · aucun libellé en double (« Sélection » ×2), « Zone », « Note », fond de plan"] = await p.evaluate(() => {
   const l = [...document.querySelectorAll("#tools .tb span")].map((x) => x.textContent.trim());
-  return new Set(l).size === l.length && l.includes("Zone") && l.includes("Note") && !l.includes("Calque") && !!document.querySelector('#tools .tb[aria-label="Fond de plan"]');
+  return new Set(l).size === l.length && l.includes("Zone") && l.includes("Note") && !l.includes("Calque") && !!document.querySelector('#tools .tb[aria-label="Image (fond de plan)"]'); /* D51 (cj-access11) : le nom contient le libellé visible « Image » */
 });
 t["outils · le Doublage a sa bulle d'explication"] = await p.evaluate(() => /Isoler un mur/.test(document.querySelector("#tools .tb[aria-label=\"Doublage\"]").dataset.tip));
 t["affichage · le bouton des couches s'appelle « Affichage »"] = await p.evaluate(() => document.getElementById("layersBtn").getAttribute("aria-label") === "Affichage");

@@ -1,7 +1,7 @@
 /**
  * Le plan à toutes les tailles d'écran (D43).
  *
- * Une passe automatique à 390 × 844 (téléphone), 768 × 1024 (tablette en portrait), 1024 × 768,
+ * Une passe automatique à 390 × 844 (téléphone), 320 × 640 (petit téléphone, zoom 400 % : D51), 768 × 1024 (tablette en portrait), 1024 × 768,
  * 1280 × 800, 1440 × 900, 720 × 450 et 640 × 360 (portable zoomé à 200 et 300 %), qui vérifie :
  *   - la barre du haut : aucun de ses éléments ne déborde (ni à droite, ni sous la barre) ;
  *   - « Estimer ce plan » visible et cliquable (le point touché est bien le bouton, et le clic ouvre
@@ -66,7 +66,8 @@ const MESURES = () => {
   return { topH: Math.round(top.height), hors, estOk, chev, scroll: document.documentElement.scrollWidth - innerWidth, scrollB: document.body.scrollWidth - innerWidth };
 };
 
-for (const [L, H, mob] of [[390, 844, true], [768, 1024, false], [1024, 768, false], [1280, 800, false], [1440, 900, false], [720, 450, false], [640, 360, false]]) {
+/* D51 (cj-access12) : 320 × 640 — le petit téléphone, et la largeur de référence du critère 1.4.10 (1 280 px zoomé à 400 %) */
+for (const [L, H, mob] of [[390, 844, true], [320, 640, true], [768, 1024, false], [1024, 768, false], [1280, 800, false], [1440, 900, false], [720, 450, false], [640, 360, false]]) {
   const tag = `${L} × ${H}`;
   const p = await onglet(L, H, mob);
   /* 1. vue d'ensemble */
@@ -118,7 +119,7 @@ for (const [L, H, mob] of [[390, 844, true], [768, 1024, false], [1024, 768, fal
     t[`${tag} · tiroir fermé : zoom en boutons de 40 px (${z.n}), au-dessus de la poignée`] = z.n > 0 && !z.petits && !z.surPoignee;
     await p.evaluate(() => { panelTab = "suivi"; toggleSheet(true); render(); }); await wait(250);
     const S = await p.evaluate(() => { const cases = [...document.querySelectorAll("#pbody .task input[type=checkbox]")].filter((e) => e.getClientRects().length); const pb = document.getElementById("pbody").getBoundingClientRect(); return { cases: cases.length, petites: cases.filter((c) => c.getBoundingClientRect().width < 23.5 || c.getBoundingClientRect().height < 23.5).length, lignes: cases.filter((c) => c.closest(".task").getBoundingClientRect().height < 43.5).length, haut: Math.round(pb.height) }; });
-    t[`${tag} · Suivi : cases de 24 px, lignes de 44 px (${S.cases} tâches), liste de ${S.haut} px`] = S.cases > 0 && !S.petites && !S.lignes && S.haut >= 380;
+    t[`${tag} · Suivi : cases de 24 px, lignes de 44 px (${S.cases} tâches), liste de ${S.haut} px`] = S.cases > 0 && !S.petites && !S.lignes && S.haut >= (H >= 800 ? 380 : Math.round(H * 0.4)); /* D51 : sur 640 px de haut, 40 % de l'écran (4 tâches) */
     m = await p.evaluate(MESURES);
     t[`${tag} · Suivi ouvert : « Estimer ce plan » visible et cliquable`] = m.estOk;
     await p.evaluate(() => { panelTab = "details"; sel = null; render(); }); await wait(200);
