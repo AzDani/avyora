@@ -1,5 +1,7 @@
+<!doctype html>
+<html lang="fr">
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>AVYORA · Éditeur de plan</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><!-- D43 : le zoom de la page reste libre (WCAG 1.4.4) ; le plan garde son propre pincement (touch-action:none sur le canvas) --><title>AVYORA · Éditeur de plan</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@500;600;700&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
@@ -127,18 +129,11 @@ button,input,select{font:inherit}
 .measbox .m{font-family:"Geist Mono",monospace;font-weight:600}
 /* infobulles maison : apparaissent tout de suite au survol, avec un mini-explicatif */
 [data-tip]{position:relative}
-[data-tip]:hover::after{content:attr(data-tip);position:absolute;z-index:30;bottom:calc(100% + 9px);left:50%;transform:translateX(-50%);background:var(--nuit);color:#fff;font-size:11.5px;font-weight:500;line-height:1.35;padding:7px 10px;border-radius:8px;width:max-content;max-width:190px;text-align:center;box-shadow:0 8px 22px rgba(30,27,75,.34);pointer-events:none}
-[data-tip]:hover::before{content:"";position:absolute;z-index:30;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--nuit);pointer-events:none}
-/* D41 · dans la barre du haut, la bulle s'ouvre VERS LE BAS (au-dessus, elle sortait de l'écran) */
-.top [data-tip]:hover::after{bottom:auto;top:calc(100% + 9px)}
-.top [data-tip]:hover::before{bottom:auto;top:calc(100% - 1px);border-top-color:transparent;border-bottom-color:var(--nuit)}
-/* barre d'outils : bulle à droite du bouton */
-.tb[data-tip]:hover::after,.tb[data-tip]:hover::before{display:none} /* la bulle des outils est un élément flottant (#tipbox) : le volet la découpait */
+/* D43 · les bulles ne sont plus dessinées en CSS (::after au survol) : elles sortaient de l'écran en haut,
+   restaient collées au doigt et n'apparaissaient jamais au clavier. Une seule bulle, #bulle, les remplace (voir « D43 »).
+   #tipbox reste la bulle des étiquettes de pièces sur le plan. */
 #tipbox{position:fixed;z-index:60;background:var(--nuit);color:#fff;font-size:11.5px;font-weight:500;line-height:1.35;padding:7px 10px;border-radius:8px;max-width:230px;pointer-events:none;display:none;box-shadow:0 6px 18px rgba(20,17,51,.25)}
 #tipbox::before{content:"";position:absolute;right:100%;top:50%;transform:translateY(-50%);border:5px solid transparent;border-right-color:var(--nuit)}
-/* barre de zoom (près du bord droit) : bulle calée à droite pour ne pas déborder */
-.zoomctl [data-tip]:hover::after{left:auto;right:0;transform:none;text-align:right}
-.zoomctl [data-tip]:hover::before{left:auto;right:11px;transform:none}
 .zoomctl{position:absolute;right:14px;bottom:14px;display:flex;gap:4px;background:var(--white);border:1px solid var(--line);padding:4px;border-radius:12px;z-index:2;box-shadow:var(--sh-2)}
 .zoomctl button{border:0;background:transparent;width:32px;height:30px;border-radius:8px;cursor:pointer;color:var(--ink);font-weight:700;display:flex;align-items:center;justify-content:center;font-size:13px}
 .zoomctl button:hover{background:var(--canvas)}
@@ -718,10 +713,101 @@ html:not(.dev) .devonly{display:none!important}
   #m-export .modal{max-width:none;width:auto;max-height:none;overflow:visible;box-shadow:none;padding:0;border-radius:0}
   .xp img{border:0}
   .xp:first-child{page-break-before:auto}
+  .tscroll{overflow:visible!important}
+}
+/* =====================================================================
+   D43 · ACCESSIBILITÉ ET RESPONSIVE
+   Le clavier, le lecteur d'écran, le téléphone de chantier, la tablette en portrait et le portable
+   zoomé à 200 % voient le même produit : tout se nomme, tout se voit au focus, rien ne se recouvre.
+   ===================================================================== */
+:root{--field-b:#8A88A6} /* contour d'un champ : 3,4:1 sur blanc, 3,2:1 sur --canvas (WCAG 1.4.11) */
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;clip-path:inset(50%)!important;white-space:nowrap!important;border:0!important}
+/* le focus au clavier : un anneau indigo net, partout (6,3:1) — jamais à la souris */
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+h3[tabindex="-1"]:focus,.ptitle[tabindex="-1"]:focus,.modal[tabindex="-1"]:focus{outline:0}
+#cv:focus-visible{outline:3px solid var(--brand);outline-offset:-3px}
+.fin,.unit,.row>span:has(>.fin.n:not(.cpvide)){border-color:var(--field-b)}
+.unit:focus-within,.row>span:has(>.fin.n:not(.cpvide)):focus-within{border-color:var(--brand);box-shadow:0 0 0 3px rgba(79,70,229,.22)}
+.fin:focus,.fin:focus-visible,.pname:focus,.pname:focus-visible{outline:0;border-color:var(--brand);box-shadow:0 0 0 3px rgba(79,70,229,.22)}
+.unit .fin:is(:focus,:focus-visible),.row>span:has(>.fin.n:not(.cpvide))>.fin.n:is(:focus,:focus-visible){box-shadow:none} /* l'enveloppe porte déjà l'anneau */
+/* la liste des pièces et les points du contrôle sont des boutons (Tab, Entrée) */
+button.rl{width:100%;font:inherit;color:inherit;text-align:left;background:transparent}
+button.rl:focus-visible{outline-offset:0}
+button.chk{width:100%;font:inherit;text-align:left}
+/* une seule bulle d'aide (#bulle) pour tout [data-tip] : au survol de la souris ET au focus clavier,
+   jamais au toucher, toujours dans l'écran (les bulles en CSS sortaient de l'écran et collaient au doigt) */
+#bulle{position:fixed;left:0;top:0;z-index:61;background:var(--nuit);color:#fff;font-size:11.5px;font-weight:500;line-height:1.35;padding:7px 10px;border-radius:8px;width:max-content;max-width:min(240px,calc(100vw - 16px));pointer-events:none;box-shadow:0 8px 22px rgba(30,27,75,.34);text-align:left}
+#bulle::after{content:"";position:absolute;border:5px solid transparent}
+#bulle.c-haut::after{top:100%;left:var(--fx,50%);transform:translateX(-50%);border-top-color:var(--nuit)}
+#bulle.c-bas::after{bottom:100%;left:var(--fx,50%);transform:translateX(-50%);border-bottom-color:var(--nuit)}
+#bulle.c-droite::after{right:100%;top:var(--fy,50%);transform:translateY(-50%);border-right-color:var(--nuit)}
+#bulle.c-gauche::after{left:100%;top:var(--fy,50%);transform:translateY(-50%);border-left-color:var(--nuit)}
+/* moins d'animation quand le système le demande : tiroir, messages, progression, halo…
+   « transition:none » et non une durée de 0,01 ms : la propriété par défaut étant « all », une durée
+   non nulle ferait « transitionner » TOUT élément (le canvas lisait encore son ancienne largeur au
+   redimensionnement). Aucun code n'attend transitionend / animationend. */
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+/* un double-tap sur un bouton ne zoome pas la page (le pincement de la page reste libre) */
+.top,.panel,.levels,.zoomctl,.phoneBanner,.overlay{touch-action:manipulation}
+/* petites croix et liens : une vraie cible, même à la souris */
+.grp .gx,.prow .del,.prow a{min-width:28px;min-height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:7px}
+.grp .gx:hover,.prow .del:hover{background:var(--canvas)}
+.prochip{white-space:nowrap}
+/* les tableaux défilent dans leur cadre, jamais la fenêtre */
+.tscroll{overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
+.tscroll>.mtable{min-width:100%}
+/* repli du panneau (tablette, petit écran) : un bouton sur la poignée, qui dit ce qu'il fait */
+.pfold{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:22px;height:44px;border:1px solid var(--line);border-radius:999px;background:var(--white);color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--sh-1);padding:0;z-index:1}
+.pfold:hover{color:var(--brand);border-color:var(--acc3)}
+.pfold .ico{width:14px;height:14px}
+.body.panelPlie #resizer .pfold .ico{transform:rotate(180deg)}
+@media (min-width:601px){.body.panelPlie .panel{display:none}.body.panelPlie #resizer{cursor:default}.body.panelPlie #resizer .pfold{left:auto;right:5px;transform:translateY(-50%)}}
+/* carte budget resserrée (téléphone, écran très bas) : libellé à gauche, montant à droite, la mention dessous — le pied tient en ~105 px */
+@media (max-width:600px),(min-width:601px) and (max-height:640px){
+  .pfoot{padding:8px 12px 10px}
+  .budget.bcard{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:10px;padding:9px 14px;margin-bottom:6px}
+  .bcard .bk{flex-direction:column;align-items:flex-start;gap:0;grid-column:1;grid-row:1}
+  .budget.bcard .bv{font-size:22px;grid-column:2;grid-row:1}
+  .bcard .bs{grid-column:1/-1;grid-row:2;margin-top:2px}
+  .bcard .bs>b{display:none} /* toute la carte est le bouton ; la mention « indicatif… » reste */
+}
+/* écran bas (fenêtre réduite, portable zoomé) : la même carte, resserrée */
+@media (min-width:601px) and (max-height:720px) and (min-height:641px){
+  .pfoot{padding:10px 14px 12px}
+  .budget.bcard{padding:9px 14px;margin-bottom:6px}
+  .budget.bcard .bv{font-size:24px}
+}
+/* tablette en portrait : un panneau plus étroit, le plan d'abord */
+@media (min-width:601px) and (max-width:900px){.panel{flex-basis:280px}.pbody{padding-left:14px;padding-right:14px}}
+/* téléphone : le nom du plan et « Mes plans », en tête de la vue d'ensemble du tiroir (la barre du haut n'a pas la place) */
+.mplan{display:none;align-items:center;gap:10px;margin:0 0 12px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:var(--canvas)}
+.mplan span{flex:1;min-width:0;display:flex;flex-direction:column}
+.mplan small{font-size:11px;color:var(--muted)}
+.mplan b{font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mplan .ib{flex:0 0 auto;min-height:40px}
+/* téléphone = mode chantier : cibles de 40 px et plus, un tiroir plus haut, la barre de zoom sous le tiroir */
+@media (max-width:600px){
+  .top{height:54px}
+  .top .ib{height:40px}.top .ib.ic,.top .mbtn{width:40px;min-width:40px}.top .ib.primary{height:40px}
+  .levels{padding:3px}.levels button{min-height:40px;padding:8px 12px}.levels button.add{min-width:40px}
+  .levels.modes{top:62px}.levels.modes button{min-height:40px;padding:8px 10px}
+  body:has(.vlegend) .phoneBanner{top:146px}.phoneBanner{top:118px}
+  .phoneBanner button{min-height:40px;min-width:44px;padding:8px 14px}
+  .toast{top:200px}
+  .zoomctl{z-index:6}.zoomctl button{width:40px;height:40px}
+  .panel{height:66vh;max-height:66vh}
+  .sheetHandle{min-height:48px}
+  .ptabs button{min-height:40px}
+  button.rl{min-height:44px}
+  .task{padding:9px 0;align-items:center;min-height:44px}.task input[type=checkbox]{width:24px;height:24px;margin:0;flex:0 0 24px}
+  .grp .gx,.prow .del,.prow a,.plancard .ib{min-width:40px;min-height:40px}
+  .mtable{font-size:12px}.mtable th,.mtable td{padding:6px 5px}
+  .mplan{display:flex}
+  #proChip{display:none} /* ?dev : la règle générale, plus bas dans la feuille, l'affichait quand même */
 }
 </style>
 
-<div class="top">
+<div class="top" role="banner">
   <div class="brand"><span class="lg"><svg viewBox="0 0 64 64" width="22" height="22"><path d="M15 47 L32 13 L49 47" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="40" r="4.8" fill="#C4B5FD"/></svg></span><b>AVY<i>ORA</i></b></div>
   <div class="vsep"></div>
   <input class="pname" id="pname" value="Mon plan" spellcheck="false" aria-label="Nom du plan" oninput="state.name=this.value;save()">
@@ -757,11 +843,13 @@ html:not(.dev) .devonly{display:none!important}
 </div>
 
 <div class="body">
-  <div class="tools" id="tools"></div>
+  <div class="tools" id="tools" role="region" aria-label="Outils de dessin"></div>
   <div class="resizer resizerL" id="resizerL" title="Tire pour élargir · double-clic pour réduire"></div>
 
-  <div class="stage" id="stage">
-    <canvas id="cv"></canvas>
+  <div class="stage" id="stage" role="main" aria-label="Plan">
+    <canvas id="cv" tabindex="0" role="application" aria-label="Plan du logement" aria-describedby="cvAide"></canvas>
+    <p id="cvAide" class="sr-only">Au clavier : Tab et Maj+Tab passent d'une pièce, d'un mur, d'une ouverture ou d'un équipement à l'autre ; Entrée ouvre sa fiche ; Échap désélectionne, puis Tab quitte le plan.</p>
+    <div id="cvAnnonce" class="sr-only" aria-live="polite" aria-atomic="true"></div>
     <div class="surfbadge" id="surfBadge" hidden></div>
     <div class="levels" id="levels"></div>
     <div class="levels modes" id="modes"></div>
@@ -782,9 +870,9 @@ html:not(.dev) .devonly{display:none!important}
     <div class="layerpop" id="layerPop" hidden></div>
   </div>
 
-  <div class="resizer" id="resizer" title="Tire pour élargir · double-clic pour réduire/agrandir"></div>
-  <div class="panel" id="panel">
-    <button class="sheetHandle" id="sheetHandle" onclick="toggleSheet()"><span class="bar"></span><span id="sheetLabel">Détails du plan</span><span class="chev"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg></span></button>
+  <div class="resizer" id="resizer" title="Tire pour élargir · double-clic pour réduire/agrandir"><button type="button" class="pfold" id="pfold" title="" aria-expanded="true" aria-controls="panel" aria-label="Replier le panneau" data-tip="Replier le panneau : plus de place pour le plan" onclick="plierPanneau()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button></div>
+  <div class="panel" id="panel" role="complementary" aria-label="Détails et budget">
+    <button class="sheetHandle" id="sheetHandle" type="button" aria-expanded="false" aria-controls="pbody" onclick="toggleSheet()"><span class="bar"></span><span id="sheetLabel">Détails du plan</span><span class="chev"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg></span></button>
     <div class="pbody" id="pbody"></div>
     <div class="bdelta" id="budgetDelta" role="status" aria-live="polite" aria-atomic="true"></div>
     <div class="pfoot" id="pfoot"></div>
@@ -794,6 +882,7 @@ html:not(.dev) .devonly{display:none!important}
 <!-- Modales -->
 <div class="overlay" id="m-estimate"><div class="modal wide"><h3 tabindex="-1" data-autofocus>Ton budget travaux</h3><div class="sub">Tout ce que ton plan permet de chiffrer, à partir de ce que tu as décidé.</div><div id="estBody"></div><button class="mclose sec" onclick="closeModal()">Fermer</button></div></div>
 <div id="tipbox"></div>
+<div id="bulle" role="tooltip" hidden></div>
 <div id="glossPop" role="tooltip" hidden></div>
 <div class="overlay" id="m-plans"><div class="modal"><h3>Mes plans</h3><div class="sub">Tes plans, sur cet appareil. Le plan ouvert s'enregistre tout seul ; il est rangé ici avant que tu en ouvres ou en commences un autre.</div><div class="btnrow" style="margin:0 0 14px"><button class="ib primary" style="flex:1" onclick="savePlanToLibrary()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>Enregistrer le plan actuel</button><button class="ib" style="flex:1" onclick="newSavedPlan()"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Nouveau plan vierge</button></div><div id="plansList"></div><div class="note">Tes plans sont enregistrés dans ce navigateur, sur cet appareil.</div><button class="mclose" onclick="closeModal()">Fermer</button></div></div>
 <div class="overlay" id="m-templates"><div class="modal wide"><h3>Partir d'un plan type</h3><div class="sub">Choisis le logement qui ressemble au tien : tu ajustes ensuite les cotes en glissant les murs, tu déplaces les portes, tu renommes les pièces. Bien plus rapide que de partir de zéro.</div><div class="tpls" id="tplGrid"></div><div class="note">Ton plan en cours est d'abord rangé dans « Mes plans ».</div><button class="mclose" onclick="closeModal()">Fermer</button></div></div>
@@ -898,6 +987,8 @@ const ICONS={
   visite:'<circle cx="12" cy="12" r="9"/><path d="m10 8.5 5.5 3.5-5.5 3.5z"/>',
   livre:'<path d="M4 19.5V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19.5A2 2 0 0 0 6 21h13"/>',
   annuler:'<path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/>',
+  copie:'<rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>',
+  chevronDroite:'<path d="m9 6 6 6-6 6"/>',
   retablir:'<path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h3"/>',
   estimer:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8"/><path d="M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01M8.5 15h.01M12 15h.01M15.5 15h.01M8.5 18h.01M12 18h3.5"/>',
   pro:'<path d="M12 2.5 14.6 9H21l-5.2 4 2 6.5L12 15.6 6.2 19.5l2-6.5L3 9h6.4z"/>',
@@ -1937,14 +2028,18 @@ function montrerSurLePlan(c,vue='projet'){if(!c)return false; /* D42 : la vue pe
   closeModal();if(tool==='mur'&&chain.length)endChain(false);
   state.cur=li;if(mode()!==vue){state.mode=vue;toitOpen=false;}
   chain=[];rectMode=null;if(tool!=='select'){tool='select';renderTools();updateCursor();}
-  panelTab='details';sel={kind:c.kind,id:c.id};multi=[];msel=[];afterChange();
-  const lv=L();let p=null;
-  if(c.kind==='wall'){const w=lv.walls.find(x=>x.id===c.id);if(w)p=add(mul(add(w.a,w.b),.5),wallOff(w));}
-  else if(c.kind==='opening'){const o=lv.openings.find(x=>x.id===c.id),w=o&&lv.walls.find(x=>x.id===o.wallId);if(w)p=add(w.a,mul(sub(w.b,w.a),o.t));}
-  else if(c.kind==='item'){const it=lv.items.find(x=>x.id===c.id);if(it)p=v(it.x,it.y);}
-  else{const f=roomFace(lv,c.id);if(f)p=f.label;}
-  if(p){const q=S(p),r=cv.getBoundingClientRect();if(q.x<40||q.y<40||q.x>r.width-40||q.y>r.height-40){view.ox+=r.width/2-q.x;view.oy+=r.height/2-q.y;draw();}}
+  panelTab='details';sel={kind:c.kind,id:c.id};multi=[];msel=[];deplierPanneau();afterChange();
+  recentrerSur(c);
   return true;}
+/* Le point d'un objet sur le plan (milieu d'un mur, d'une ouverture, étiquette d'une pièce) ; la vue se
+   recentre dessus s'il est hors champ. Sert à « voir sur le plan » et au parcours du plan au clavier (D43). */
+function pointDeLObjet(c){const lv=L();
+  if(c.kind==='wall'){const w=lv.walls.find(x=>x.id===c.id);return w?add(mul(add(w.a,w.b),.5),wallOff(w)):null;}
+  if(c.kind==='opening'){const o=lv.openings.find(x=>x.id===c.id),w=o&&lv.walls.find(x=>x.id===o.wallId);return w?add(w.a,mul(sub(w.b,w.a),o.t)):null;}
+  if(c.kind==='item'){const it=lv.items.find(x=>x.id===c.id);return it?v(it.x,it.y):null;}
+  const f=roomFace(lv,c.id);return f?f.label:null;}
+function recentrerSur(c){const p=pointDeLObjet(c);
+  if(p){const q=S(p),r=cv.getBoundingClientRect();if(q.x<40||q.y<40||q.x>r.width-40||q.y>r.height-40){view.ox+=r.width/2-q.x;view.oy+=r.height/2-q.y;draw();}}}
 // badge ✓ vert sur les éléments dont la tâche est cochée (vue Projet)
 // badge d'avancement sur le plan (vue Projet) : GÉNÉRIQUE — toute tâche du suivi est rattachée à son élément (mur / ouverture / équipement / pièce) par son id.
 // ✓ vert = toutes les tâches de l'élément sont faites ; orange = une partie seulement (ex. percement fait, fenêtre pas encore posée).
@@ -2990,8 +3085,8 @@ function renderPlans(){const lib=loadPlans();const list=Object.values(lib).sort(
     <span class="pmini" aria-hidden="true">${miniPlanSVG(e.state)}</span>
     <button class="glink" onclick="openSavedPlan('${e.id}')"><span class="gname"><b>${(e.name||'Plan').replace(/</g,'&lt;')}</b>${cur?' <span class="gn">· ouvert</span>':''}</span><span class="gres">${res}</span><span class="gn">${fmtDate(e.savedAt)}</span></button>
     <button class="ib" style="padding:5px 8px" onclick="openSavedPlan('${e.id}')">Ouvrir</button>
-    <button class="ib" style="padding:5px 8px" onclick="duplicateSavedPlan('${e.id}')" data-tip="Dupliquer">⧉</button>
-    <button class="gx" onclick="deleteSavedPlan('${e.id}')" data-tip="Supprimer" aria-label="Supprimer ce plan">${ico('x')}</button>
+    <button class="ib" style="padding:5px 8px" onclick="duplicateSavedPlan('${e.id}')" data-tip="Dupliquer" aria-label="Dupliquer le plan « ${esc(e.name||'Plan')} »">${ico('copie')}</button>
+    <button class="gx" onclick="deleteSavedPlan('${e.id}')" data-tip="Supprimer (annulable quelques secondes)" aria-label="Supprimer le plan « ${esc(e.name||'Plan')} »">${ico('x')}</button>
   </div>`;}).join('')+'</div>';}
 
 // ---------- Vue ----------
@@ -3009,8 +3104,8 @@ function dragResizer(id,apply,widthFromX,dbl){
   const rz=document.getElementById(id);let dragging=false;
   const move=e=>{if(dragging)apply(widthFromX(e.clientX));};
   const up=()=>{if(dragging){dragging=false;rz.classList.remove('drag');document.body.style.userSelect='';window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',up);}};
-  rz.addEventListener('pointerdown',e=>{if(e.button!==0)return;dragging=true;rz.classList.add('drag');document.body.style.userSelect='none';window.addEventListener('pointermove',move);window.addEventListener('pointerup',up);});
-  rz.addEventListener('dblclick',dbl);
+  rz.addEventListener('pointerdown',e=>{if(e.button!==0||e.target.closest('.pfold')||(id==='resizer'&&document.querySelector('.body.panelPlie')))return;dragging=true;rz.classList.add('drag');document.body.style.userSelect='none';window.addEventListener('pointermove',move);window.addEventListener('pointerup',up);});
+  rz.addEventListener('dblclick',e=>{if(e.target.closest('.pfold')||(id==='resizer'&&document.querySelector('.body.panelPlie')))return;dbl(e);});
 }
 function initResizer(){
   try{const s=+localStorage.getItem('avyora-plan-panel');if(s>=PANEL_MIN&&s<=PANEL_MAX)document.getElementById('panel').style.flexBasis=s+'px';}catch{}
@@ -3622,6 +3717,7 @@ window.addEventListener('keydown',e=>{
   const ov=modaleOuverte();if(ov){gardeModale(e,ov);return;}
   if(visite){gardeVisite(e);return;} /* D42 : pendant la visite guidée, rien n'atteint le plan */
   if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT'||e.target.tagName==='TEXTAREA'||e.target.isContentEditable)return;
+  if(e.target===cv&&planClavier(e))return; /* D43 : le plan au clavier (Tab / Maj+Tab, Entrée) */
   /* Espace ou Entrée sur un bouton atteint au clavier : c'est le bouton qu'on active. Un bouton
      simplement cliqué à la souris garde le focus sans qu'on le voie : là, Espace reste « Espace +
      glisser » et Entrée ferme la pièce, comme avant. */
@@ -3780,16 +3876,15 @@ window.addEventListener('keydown',e=>{
 window.addEventListener('pointerdown',e=>{if(menuOuvert&&!e.target.closest('.menu'))fermerMenus(false);},true);
 
 // bulle flottante des outils (positionnée à droite du bouton, par-dessus le plan)
-function initToolTips(){const box=document.getElementById('tipbox'),tools=document.getElementById('tools');
-  tools.addEventListener('mouseover',e=>{const b=e.target.closest('.tb[data-tip]');if(!b)return;const r=b.getBoundingClientRect();box.textContent=b.dataset.tip;box.style.display='block';box.style.left=(r.right+10)+'px';box.style.top=(r.top+r.height/2)+'px';box.style.transform='translateY(-50%)';});
-  tools.addEventListener('mouseout',e=>{if(e.target.closest('.tb[data-tip]'))box.style.display='none';});
-  tools.addEventListener('click',()=>{box.style.display='none';});}
+/* D43 : les bulles des outils passent par la bulle unique (#bulle) — à droite du bouton, au survol
+   comme au clavier (elles ne s'affichaient qu'à la souris). */
+function initToolTips(){}
 function renderTools(){avecFocus(document.getElementById('tools'),renderToolsBrut);}
 function renderToolsBrut(){
   const D=Object.fromEntries(TOOLS.map(t=>[t[0],t]));
   document.getElementById('tools').innerHTML=TOOL_GROUPS.map(g=>
     (g.cat?`<div class="cat">${g.cat}</div>`:'')+
-    g.ids.map(id=>{const t=D[id],ro=mode()==='final'&&!OUTILS_LECTURE.includes(id);return `<button class="tb ${tool===id?'on':''}${ro?' ro':''}" onclick="setTool('${id}')" data-tip="${ro?'Lecture seule en vue '+nomVue('final')+' · passe en vue '+nomVue('projet')+' pour modifier':(TOOL_TIP[id]||t[1])+(t[2]?' · '+t[2]:'')}" aria-label="${t[1]}"${ro?' aria-disabled="true"':''}>${t[3]}<span>${t[4]||t[1]}</span>${t[2]?`<kbd>${t[2]}</kbd>`:''}</button>`;}).join('')
+    g.ids.map(id=>{const t=D[id],ro=mode()==='final'&&!OUTILS_LECTURE.includes(id);return `<button class="tb ${tool===id?'on':''}${ro?' ro':''}" aria-pressed="${tool===id}" onclick="setTool('${id}')" data-tip="${ro?'Lecture seule en vue '+nomVue('final')+' · passe en vue '+nomVue('projet')+' pour modifier':(TOOL_TIP[id]||t[1])+(t[2]?' · '+t[2]:'')}" aria-label="${t[1]}"${ro?' aria-disabled="true"':''}>${t[3]}<span>${t[4]||t[1]}</span>${t[2]?`<kbd>${t[2]}</kbd>`:''}</button>`;}).join('')
   ).join('');
 }
 let calibMode=false;
@@ -3882,7 +3977,9 @@ function draw(){
        :mode()==='final'?['Ce plan est vide','Dessine ton logement en vue '+nomVue('existant')+'.']
        :rectMode?['Clique pour poser le coin haut-gauche de la pièce',fmt(rectMode.L)+' × '+fmt(rectMode.l)+' m · Échap pour annuler']
        :['Clique pour poser le premier coin','Clique chaque coin, puis reviens au premier point pour fermer la pièce'];
-     ctx.fillText(tx[0],W/2,ghost?40:H/2-14);ctx.font='500 13.5px Geist, sans-serif';ctx.fillText(tx[1],W/2,ghost?64:H/2+12);}}
+     /* D43 : la consigne passe à la ligne quand le plan est étroit (tablette en portrait, téléphone) — elle était coupée des deux côtés */
+     const ecrire=(txt,y,pas)=>{const Ls=[];let cur='';txt.split(' ').forEach(m=>{const e=cur?cur+' '+m:m;if(cur&&ctx.measureText(e).width>W-40){Ls.push(cur);cur=m;}else cur=e;});Ls.push(cur);Ls.forEach((l,i)=>ctx.fillText(l,W/2,y+i*pas));return Ls.length;};
+     const y0=ghost?40:H/2-14,n1=ecrire(tx[0],y0,23);ctx.font='500 13.5px Geist, sans-serif';ecrire(tx[1],y0+(n1-1)*23+26,18);}}
   // murs (le mur survolé est teinté) + raccords en onglet aux nœuds ; en vue Projet les murs à démolir sont dessinés en dernier (jaune pointillé)
   lv.walls.forEach(w=>{if(wallDrawn(w)&&!(mode()==='projet'&&wst(w)==='demolir'))drawWall(w,(sel?.kind==='wall'&&sel.id===w.id)||inMsel('wall',w.id),isHover('wall',w.id));});
   drawJoins();
@@ -4600,7 +4697,7 @@ function drawItem(it,isSel){
 let lastHint=null;
 function render(){renderTools();renderLevels();renderPanel();lastHint=null;draw();document.getElementById('undoBtn').disabled=!history.length;document.getElementById('redoBtn').disabled=!future.length;document.getElementById('pname').value=state.name;}
 function renderLevels(){avecFocus(document.getElementById('stage'),renderLevelsBrut);}
-function renderLevelsBrut(){document.getElementById('levels').innerHTML=state.levels.map((l,i)=>`<button class="${i===state.cur?'on':''}" onclick="setLevel(${i})" title="${l.name}">${l.name}</button>`).join('')+`<button class="add" onclick="openModal('level')" title="Ajouter un niveau">+</button>`;
+function renderLevelsBrut(){majLibellePlan();document.getElementById('levels').innerHTML=state.levels.map((l,i)=>`<button class="${i===state.cur?'on':''}" aria-pressed="${i===state.cur}" onclick="setLevel(${i})" title="${l.name}">${l.name}</button>`).join('')+`<button class="add" onclick="openModal('level')" title="Ajouter un niveau" aria-label="Ajouter un niveau">+</button>`;
   /* D39 : les trois vues, nommées par LEX, sans emoji */
   document.getElementById('modes').innerHTML=['existant','projet','final'].map(m=>`<button class="${mode()===m?(m==='existant'?'on':'on '+m):''}" onclick="setMode('${m}')" title="${LEX.vueBulle[m]}" aria-pressed="${mode()===m}">${LEX.vue[m]}</button>`).join('')
     /* D41 · la légende de la vue Travaux vit sous le sélecteur de vue (DOM, lisible, accessible) ; elle était dessinée dans le plan */
@@ -4683,7 +4780,7 @@ const isMobile=()=>window.innerWidth<=600; // téléphone = mode chantier (lectu
 /* D40 · le tiroir fermé du téléphone montre le budget à côté de la surface (en Pro, dès qu'une tâche existe) */
 function resumeTiroir(){const q=quantities();if(!q.rooms)return 'Détails du plan';const a=fmtM2(habView(q).area),px=chantierPrix();
   return isPro()&&px.nb?a+' · '+eur(px.total)+' HT · détails':a+' habitables · détails';}
-function toggleSheet(force){const pn=document.getElementById('panel');pn.classList.toggle('open',force===undefined?!pn.classList.contains('open'):!!force);document.body.classList.toggle('sheetOpen',pn.classList.contains('open')); /* D40 : la barre de zoom ne couvre plus le budget du tiroir */}
+function toggleSheet(force){const pn=document.getElementById('panel');pn.classList.toggle('open',force===undefined?!pn.classList.contains('open'):!!force);document.body.classList.toggle('sheetOpen',pn.classList.contains('open'));{const sh=document.getElementById('sheetHandle');if(sh)sh.setAttribute('aria-expanded',String(pn.classList.contains('open')));} /* D43 : le lecteur d'écran sait si le tiroir est ouvert */ /* D40 : la barre de zoom ne couvre plus le budget du tiroir */}
 let panelTab='details'; // volet du panneau de droite : 'details' | 'suivi'
 function setPanelTab(t){panelTab=t;renderPanel();}
 function suiviPanelHTML(T){
@@ -4700,8 +4797,9 @@ function suiviPanelHTML(T){
 /* D38 : le panneau, les outils et les boutons de vue se redessinent à chaque clic — le bouton qui
    avait le focus disparaissait, et quelqu'un au clavier repartait du haut de la page. Le focus est
    rendu au bouton équivalent (même action) après le redessin. */
+let refocus=false; /* D43 : focus rendu après un redessin — ce n'est pas un geste, la bulle d'aide ne se rouvre pas */
 function avecFocus(root,fn){const ae=document.activeElement,sig=ae&&ae.tagName==='BUTTON'&&root&&root.contains(ae)?(ae.getAttribute('onclick')||'')+'|'+(ae.getAttribute('aria-label')||''):null;fn();
-  if(sig&&!root.contains(document.activeElement)&&!modaleOuverte()){const c=[...root.querySelectorAll('button')].find(x=>(x.getAttribute('onclick')||'')+'|'+(x.getAttribute('aria-label')||'')===sig);if(c)try{c.focus({preventScroll:true});}catch{}}}
+  if(sig&&!root.contains(document.activeElement)&&!modaleOuverte()){const c=[...root.querySelectorAll('button')].find(x=>(x.getAttribute('onclick')||'')+'|'+(x.getAttribute('aria-label')||'')===sig);if(c){refocus=true;try{c.focus({preventScroll:true});}catch{}refocus=false;}}}
 /* D38 : une erreur dans le panneau (ex. la sélection de plusieurs équipements, hors Travaux) arrêtait
    tout ce qui suivait — render() s'interrompait avant draw(), le plan ne se redessinait plus et les
    gestes suivants agissaient à l'aveugle. Le panneau affiche un message, le reste continue ; l'erreur
@@ -4717,7 +4815,7 @@ function renderPanel(){try{avecFocus(document.getElementById('pbody'),renderPane
 function renderPanelBrut(){pruneEmptyTexts();if(isMobile()){if(sel)toggleSheet(true);const lb=document.getElementById('sheetLabel');if(lb){try{lb.textContent=sel?'Élément sélectionné · détails':(tool!=='select'?TOOLS.find(t=>t[0]===tool)?.[1]+' · options':resumeTiroir());}catch{}}}
   const lv=L(); const P=document.getElementById('pbody'); let h='';
   const _T=chantierTasks();const _done=_T.filter(t=>isDone(t.id)).length;
-  const tabBar=`<div class="ptabs"><button class="${panelTab!=='suivi'?'on':''}" onclick="setPanelTab('details')">Détails</button><button class="${panelTab==='suivi'?'on':''}" onclick="setPanelTab('suivi')"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 12.5l2 2 4-4"/></svg>Suivi${_T.length?` <span class="tabn">${_done}/${_T.length}</span>`:''}</button></div>`;
+  const tabBar=`<div class="ptabs" role="tablist" aria-label="Panneau"><button type="button" role="tab" aria-selected="${panelTab!=='suivi'}" class="${panelTab!=='suivi'?'on':''}" onclick="setPanelTab('details')">Détails</button><button type="button" role="tab" aria-selected="${panelTab==='suivi'}" class="${panelTab==='suivi'?'on':''}" onclick="setPanelTab('suivi')"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 12.5l2 2 4-4"/></svg>Suivi${_T.length?` <span class="tabn">${_done}/${_T.length}</span>`:''}</button></div>`;
   if(panelTab==='suivi'){P.innerHTML=tabBar+suiviPanelHTML(_T);panneauEnHaut(P);renderFoot();return;}
   h+=tabBar;
   if(tool==='mur'){
@@ -5100,7 +5198,7 @@ function elemProductSection(el,label,defaultNote){
     <label class="pfl">Produit choisi<input class="fin" placeholder="ex. ${esc(defaultNote)}" value="${esc(p.nom||'')}" onchange="setElemProduct('nom',this.value)"></label>
     <div class="pf3" style="margin-top:8px"><label class="pfl" style="margin-top:0">Lien (facultatif)<input class="fin" placeholder="https://…" value="${esc(p.url||'')}" onchange="setElemProduct('url',this.value)"></label><label class="pfl" style="margin-top:0">Prix HT<span class="unit"><input class="fin n" type="number" step="1" min="0" value="${p.prix||''}" onchange="setElemProduct('prix',this.value)">€ HT</span></label></div>
     ${p.url?`<div style="margin-top:6px;font-size:12.5px"><a href="${esc(p.url)}" target="_blank" rel="noopener">Ouvrir le lien ↗</a></div>`:''}
-    <textarea class="fin" rows="2" style="margin-top:8px" placeholder="Note (ex. à remplacer, garder, dimensions à vérifier…)" oninput="setElemNote(this.value)" onchange="save()">${esc(el.note||'')}</textarea>`;
+    <textarea class="fin" rows="2" style="margin-top:8px" aria-label="Note" placeholder="Note (ex. à remplacer, garder, dimensions à vérifier…)" oninput="setElemNote(this.value)" onchange="save()">${esc(el.note||'')}</textarea>`;
 }
 function currentElem(){const lv=L();if(sel?.kind==='opening')return lv.openings.find(o=>o.id===sel.id);if(sel?.kind==='item')return lv.items.find(i=>i.id===sel.id);return null;}
 function setElemProduct(k,val){const el=currentElem();if(!el)return;history.push(snapshot());el.product=el.product||{};if(k==='url')el.product.url=cleanUrl(val);else if(k==='prix'){const p=parseFloat(val);el.product.prix=p>0?p:null;}else el.product[k]=String(val).trim();if(!el.product.nom&&!el.product.url&&!el.product.prix)delete el.product;afterChange();}
@@ -5156,12 +5254,12 @@ function travauxEnMots(tq){const n=(k,s,p)=>'<b>'+k+'</b> '+(k>1?p:s);
 function renderOverview(lv){
   const faces=(facesCache[lv.id]||[]);
   const tq=quantities().travaux;
-  let h=`<div class="ptitle">${lv.name} <span class="chip vue-${mode()}">Vue ${nomVue(mode()).toLowerCase()}</span></div><div class="psub">${faces.length?faces.length+' pièce(s) détectée(s) sur ce niveau.':'Aucune pièce fermée pour l\'instant. Trace les murs extérieurs avec l\'outil <b>Murs</b>.'}</div>
+  let h=`${isMobile()?`<div class="mplan"><span><small>Plan ouvert</small><b>${esc(state.name||'Mon plan')}</b></span><button type="button" class="ib" onclick="openPlansModal()">${ico('mesPlans')}Mes plans</button></div>`:'' /* D43 (qa16) : au téléphone, la barre n'a ni nom ni menu Fichier */}<div class="ptitle">${lv.name} <span class="chip vue-${mode()}">Vue ${nomVue(mode()).toLowerCase()}</span></div><div class="psub">${faces.length?faces.length+' pièce(s) détectée(s) sur ce niveau.':'Aucune pièce fermée pour l\'instant. Trace les murs extérieurs avec l\'outil <b>Murs</b>.'}</div>
   ${projetHTML() /* D42 : « Ton projet à X % » et la prochaine étape, en tête de la vue d'ensemble */}
   ${mode()==='projet'?`<div class="tip q">${tq.actif?`Travaux marqués : ${travauxEnMots(tq)}. Passe en vue <b>${nomVue('final')}</b> pour voir le résultat.`:`Aucun travail marqué pour l'instant. Clique un mur → <b>${LEX.etat.demolir}</b>, ou trace un nouveau mur : il sera <b>${LEX.etat.creer.toLowerCase()}</b>. Même logique pour les équipements : ajouté ici = <b>${LEX.etat.poser.toLowerCase()}</b>, existant cliqué → <b>${LEX.etat.deposer.toLowerCase()}</b>.`}</div>`:mode()==='final'?`<div class="tip ok">Le logement <b>après travaux</b>, tel qu'il sera : murs démolis retirés, nouveaux murs et ouvertures intégrés, sans marquage. C'est le plan à montrer aux artisans. Pour changer les travaux, repasse en vue <b>${nomVue('projet')}</b>.</div>`:(lv.walls.length?`<div class="tip">Ton logement tel qu'il est. Quand il est complet, passe en vue <b>${nomVue('projet')}</b> (boutons en haut du plan) pour dessiner ce que tu démolis et ce que tu crées.</div>`:'')}
   <div class="ph mt">Pièces</div><div class="roomlist">`;
   if(!faces.length)h+=`<div class="empty">Dès qu'un contour de murs se ferme, la pièce apparaît ici avec sa surface.</div>`;
-  faces.forEach(f=>{const r=f.room;h+=`<div class="rl" onclick="sel={kind:'room',id:'${r.id}'};render()"><span class="dot" style="background:${RT[r.type].color}"></span><span class="nm">${roomName(r)}<small>${RT[r.type].label}${(mode()!=='existant'&&r.floorNew)?' · '+r.floorNew.replace(/ \(.*\)/,''):(mode()!=='existant'&&solGarde(r))?' · sol conservé':(r.floor!==FLOORS[0]?' · '+r.floor:'')}${tremieArea(lv,f)>0?' · trémie':''}${r.lowPct?' · '+r.lowPct+'% sous pente':''}</small></span><span class="m2">${fmtM2(areaNet(lv,f))}</span></div>`;});
+  faces.forEach(f=>{const r=f.room;h+=`<button type="button" class="rl" onclick="sel={kind:'room',id:'${r.id}'};render()"><span class="dot" style="background:${RT[r.type].color}"></span><span class="nm">${roomName(r)}<small>${RT[r.type].label}${(mode()!=='existant'&&r.floorNew)?' · '+r.floorNew.replace(/ \(.*\)/,''):(mode()!=='existant'&&solGarde(r))?' · sol conservé':(r.floor!==FLOORS[0]?' · '+r.floor:'')}${tremieArea(lv,f)>0?' · trémie':''}${r.lowPct?' · '+r.lowPct+'% sous pente':''}</small></span><span class="m2">${fmtM2(areaNet(lv,f))}</span></button>`;});
   h+=`</div>
   ${state.levels.indexOf(lv)>0?`<label class="chk"><input type="checkbox" ${lv.neuf?'checked':''} onchange="setLevelProp('neuf',this.checked)"><span>Étage créé par le projet<small>son plancher est à construire et sera chiffré</small></span></label>
   ${lv.neuf?`<div class="tip warn" style="margin-top:8px">${ico('niveaux','lead')}<b>Le plancher de cet étage est compté comme travaux.</b> Les murs, eux, gardent leur propre état : si tu poses un plancher dans un volume de grande hauteur, ils sont <b>déjà debout</b> — laisse-les « existant » et indique la hauteur d'origine de la pièce du dessous, dans sa fiche, au champ <b>« hauteur avant travaux »</b>. Si tu surélèves, passe-les <b>« à créer »</b>.</div>`:''}
@@ -5179,7 +5277,7 @@ function renderOverview(lv){
   // (le suivi de chantier vit entièrement dans son onglet dédié — rien ici)
   if(lv.walls.length){const chk=planChecks(lv);const ne=chk.filter(c=>c.lvl==='err').length,nw=chk.filter(c=>c.lvl==='warn').length;
     h+=`<div class="ph mt">${ico('controle')} Contrôle du plan ${chk.length?`<span class="chip ${ne?'err':nw?'warn':''}">${chk.length} point${chk.length>1?'s':''}</span>`:'<span class="chip ok">rien à signaler</span>'}</div>`;
-    if(chk.length)h+=`<div class="chks">${chk.map(c=>`<div class="chk ${c.lvl}" ${c.sel?`onclick="sel=${JSON.stringify(c.sel).replace(/"/g,'&quot;')};render()"`:''}><span class="ci">${ico(c.lvl==='err'?'erreur':c.lvl==='warn'?'alerte':'idee')}</span><span>${c.msg}</span></div>`).join('')}</div>`;
+    if(chk.length)h+=`<div class="chks">${chk.map(c=>{const tg=c.sel?'button':'div';return `<${tg} ${c.sel?'type="button" ':''}class="chk ${c.lvl}" ${c.sel?`onclick="sel=${JSON.stringify(c.sel).replace(/"/g,'&quot;')};render()"`:''}><span class="ci" aria-hidden="true">${ico(c.lvl==='err'?'erreur':c.lvl==='warn'?'alerte':'idee')}</span><span>${c.lvl==='err'?'<span class="sr-only">Erreur : </span>':c.lvl==='warn'?'<span class="sr-only">À vérifier : </span>':''}${c.msg}</span></${tg}>`;}).join('')}</div>`; /* D43 : un point qui mène à un élément est un bouton (Tab, Entrée) */
     else h+=`<div class="tip ok">Rien à signaler sur les points vérifiés : accès des pièces, lumière naturelle, hauteurs, WC. Le contrôle se met à jour à chaque modification.</div>`;}
   const prods=allProducts();const ptot=prods.reduce((s,p)=>s+(p.total||0),0);
   h+=`<div class="ph mt">${ico('panier')} Personnalisation du projet</div>
@@ -5211,7 +5309,7 @@ function renderFoot(){
   /* D36 : le montant dit ce qu'il est — HT, prix catalogue, moyenne nationale — et, tant que rien
      n'est décidé, il le dit aussi au lieu de disparaître ou de compter des travaux imaginaires. */
   const carte=vide?`<div class="budget bcard attente"><span class="bk">Budget travaux HT</span><span class="bv" id="budgetVal">0 €</span><span class="bs"><small>${ATTENTE_PIECE}</small></span></div>`
-    :rien?`<button type="button" class="budget bcard budgetbtn" onclick="showEstimate()"><span class="bk">Budget travaux HT</span><span class="bv" id="budgetVal">0 €</span><span class="bs"><small>${avant?'Rien de décidé pour l\'instant. Passe en vue <b>'+nomVue('projet')+'</b> pour marquer ce que tu changes.':'Rien de décidé pour l\'instant. Clique un mur, une ouverture ou une pièce et choisis ce que tu en fais.'}</small></span></button>`
+    :rien?`<button type="button" class="budget bcard budgetbtn rien" onclick="showEstimate()"><span class="bk">Budget travaux HT</span><span class="bv" id="budgetVal">0 €</span><span class="bs"><small>${avant?'Rien de décidé pour l\'instant. Passe en vue <b>'+nomVue('projet')+'</b> pour marquer ce que tu changes.':'Rien de décidé pour l\'instant. Clique un mur, une ouverture ou une pièce et choisis ce que tu en fais.'}</small></span></button>`
     :pro?`<button type="button" class="budget bcard budgetbtn" onclick="showEstimate()" aria-label="Budget travaux HT : ${eur(px.total)}, ${pluriel(px.nb,'tâche')}. Voir le détail"><span class="bk">Budget travaux HT<span class="bn">${pluriel(px.nb,'tâche')}</span></span><span class="bv" id="budgetVal">${eur(px.total)}</span><span class="bs"><small>indicatif · prix catalogue, moyenne nationale</small><b>Voir le détail →</b></span></button>`
     :`<button type="button" class="budget bcard budgetbtn" onclick="showEstimate()"><span class="bk">Budget travaux HT · Pro<span class="bn">${pluriel(px.nb,'tâche')}</span></span><span class="bv flou" aria-hidden="true">•••• €</span><span class="bs"><small>${avecPro('budget')}</small><b>Aperçu →</b></span></button>`;
   const resume=vide?'':`<div class="presume"><b>${fmtM2(hv.area)}</b> habitables ${avant?'avant':'après'} travaux · <b>${hv.rooms}</b> pièce${hv.rooms>1?'s':''}${state.levels.length>1?' · <b>'+state.levels.length+'</b> niveaux':''}</div>`;
@@ -5246,9 +5344,10 @@ function ecartBudget(px){
   /* la tâche de l'objet sélectionné d'abord : c'est lui qu'on vient de décider */
   const vise=sel&&ch.find(c=>{const k=tacheCible(c.t.id);return k&&k.kind===sel.kind&&k.id===sel.id;});
   const p=vise||ch[0],n=ch.length-1;
-  montrerEcart(d,(p.parti?'retiré : ':'')+p.t.label+(n?' · et '+n+' autre'+(n>1?'s':'')+' tâche'+(n>1?'s':''):''));}
-function montrerEcart(d,lib){const el=document.getElementById('budgetDelta'),F=document.getElementById('pfoot');if(!el)return;
-  el.innerHTML=`<b class="${d>0?'plus':'moins'}">${d>0?'+':'−'}${eur(Math.abs(Math.round(d)))}</b><span>${esc(lib)}</span>`;
+  montrerEcart(d,(p.parti?'retiré : ':'')+p.t.label+(n?' · et '+n+' autre'+(n>1?'s':'')+' tâche'+(n>1?'s':''):''),px.total);}
+function montrerEcart(d,lib,total){const el=document.getElementById('budgetDelta'),F=document.getElementById('pfoot');if(!el)return;
+  /* D43 : la pastille est lue par le lecteur d'écran (role=status) ; elle dit aussi le nouveau total */
+  el.innerHTML=`<b class="${d>0?'plus':'moins'}">${d>0?'+':'−'}${eur(Math.abs(Math.round(d)))}</b><span>${esc(lib)}</span>${total!=null?`<i class="sr-only">. Budget travaux : ${eur(Math.round(total))} HT.</i>`:''}`;
   el.style.bottom=F&&!isMobile()?(F.offsetHeight+8)+'px':'';
   el.classList.add('show');clearTimeout(_ecartT);clearTimeout(_ecartT2);_ecartT=setTimeout(()=>cacherEcart(),3200);}
 function cacherEcart(net){const el=document.getElementById('budgetDelta');clearTimeout(_ecartT);clearTimeout(_ecartT2);_ecartBase=null;if(!el)return;el.classList.remove('show');
@@ -5976,7 +6075,13 @@ let toastT;function toast(msg,ok,opt){const t=document.getElementById('toast');t
   /* D41 : le message se pose juste au-dessus de la bulle d'astuce, sans la recouvrir */
   {const h=document.getElementById('hint'),st=document.getElementById('stage');if(!t.classList.contains('over')&&h&&!h.hidden&&h.getClientRects().length&&st){const hr=h.getBoundingClientRect(),sr=st.getBoundingClientRect();t.style.bottom=Math.max(76,Math.round(sr.bottom-hr.top+10))+'px';}else t.style.bottom='';}
   /* D41 : le temps de lire — 45 ms par caractère, entre 2,6 et 7 s (8 s avec une action) */
-  toastT=setTimeout(()=>t.classList.remove('show','act'),(opt&&opt.ms)||(act?8000:Math.min(7000,Math.max(2600,String(msg).length*45))));}
+  const duree=(opt&&opt.ms)||(act?8000:Math.min(7000,Math.max(2600,String(msg).length*45)));t._reste=duree;t._fin=Date.now()+duree;
+  toastT=setTimeout(()=>t.classList.remove('show','act'),duree);}
+/* D43 : le message attend qu'on ait fini de le lire — il se fige tant que la souris ou le focus est dessus */
+(function(){const t=document.getElementById('toast');if(!t)return;
+  const fige=()=>{if(!t.classList.contains('show'))return;clearTimeout(toastT);t._reste=Math.max(1500,(t._fin||0)-Date.now());};
+  const repart=()=>{if(!t.classList.contains('show')||t.matches(':hover')||t.contains(document.activeElement))return;clearTimeout(toastT);t._fin=Date.now()+(t._reste||2000);toastT=setTimeout(()=>t.classList.remove('show','act'),t._reste||2000);};
+  t.addEventListener('mouseenter',fige);t.addEventListener('focusin',fige);t.addEventListener('mouseleave',repart);t.addEventListener('focusout',()=>setTimeout(repart,0));})();
 /* D38 : « Nouveau » effaçait le plan ouvert, sans rien demander ; seul un Ctrl+Z en mémoire le
    retenait, et au rechargement l'exemple revenait à sa place. Il est d'abord rangé dans « Mes plans ».
    Un plan vide, l'exemple ou un plan type jamais touchés partent sans regret — sans historique non
@@ -6192,7 +6297,7 @@ function etapesVisite(){
       avant:()=>{const f=rooms.find(g=>g.room.type==='chambre')||rooms[0];if(!f)return;if(tool!=='select')setTool('select');sel={kind:'room',id:f.room.id};multi=[];msel=[];panelTab='details';render();if(visite)visite.aSel=true;}},
     {cible:'#pfoot',place:['gauche','haut'],titre:'Le budget suit tes décisions',texte:`Chaque décision s'ajoute ici, au prix ${gl('ht','HT')} indicatif. Rien n'est compté tant que tu n'as rien décidé. Clique la carte pour ${isPro()?'voir d\'où vient chaque euro':'un aperçu du détail'}.`},
     {cible:'#estBtnTop',place:['bas','gauche'],titre:'Estime, puis suis ton chantier',texte:`<b>Estimer ce plan</b> : le montant, le détail par ${gl('corps','corps d\'état')} et ce qu'il te reste à décider. Ensuite, l'onglet <b>Suivi</b> range chaque travail dans l'ordre du chantier : tu coches au fur et à mesure.`}];}
-function lancerVisite(depuisAccueil){if(visite)return;if(modaleOuverte())closeModal();try{fermerMenus(false);}catch{}
+function lancerVisite(depuisAccueil){if(visite)return;if(modaleOuverte())closeModal();try{fermerMenus(false);}catch{}deplierPanneau(); /* D43 : la visite montre le panneau */
   if(tool==='mur'&&chain.length)endChain(false);
   visite={i:0,E:etapesVisite(),mob:isMobile(),retour:document.activeElement,mode0:mode(),accueil:!!depuisAccueil,aSel:false};
   let el=document.getElementById('visite');
@@ -6260,6 +6365,115 @@ function partagerLien(){const url=String(location.href).split('#')[0];closeWelco
 function tracerLesMurs(){if(planVide()){wallType='mur';customT=null;}setTool('mur');}
 function poserPieceRapide(){if(isMobile()){toast('Le dessin se fait sur ordinateur ou tablette.');return;}tracerLesMurs();rectMode={L:4,l:3};chain=[];chainWallIds=[];renderPanel();draw();toast('Clique dans le plan pour poser le coin haut-gauche de la pièce (4 × 3 m).',true);}
 
+/* =====================================================================
+   D43 · ACCESSIBILITÉ ET RESPONSIVE
+   ===================================================================== */
+/* 1. Tout ce qui se dessine se nomme tout seul. Un champ reçoit le libellé de sa ligne (ou le titre
+   qui le précède) ; un titre de section devient un titre pour le lecteur d'écran ; des onglets disent
+   lequel est ouvert ; une bulle d'aide devient la description de son bouton ; un tableau défile dans
+   son cadre. Un seul passage après chaque rendu (MutationObserver) : les gabarits n'ont pas à y penser. */
+let champN=0;
+function texteLibelle(el){if(!el)return '';const c=el.cloneNode(true);c.querySelectorAll('.gl,.chip,svg,.sr-only,input,select,textarea,button').forEach(x=>x.remove());return c.textContent.replace(/\s+/g,' ').trim();}
+function aUnNom(x){return !!(x.getAttribute('aria-label')||x.getAttribute('aria-labelledby')||x.title||(x.labels&&[...x.labels].some(l=>l.textContent.trim())));}
+function accessibiliser(root){if(!root||!root.querySelectorAll)return;
+  root.querySelectorAll('input:not([type=hidden]),select,textarea').forEach(x=>{if(aUnNom(x))return;
+    const row=x.closest('.row'),lab=row&&[...row.children].find(c=>c.tagName==='LABEL'&&!c.control&&!c.querySelector('input,select,textarea'));
+    if(lab&&texteLibelle(lab)&&row.querySelectorAll('input:not([type=hidden]),select,textarea').length===1){if(!x.id)x.id='ch'+(++champN);lab.htmlFor=x.id;return;}
+    /* sinon : le libellé de la ligne, ou le titre juste au-dessus (« Nom », « Note », « Sol actuel »…) */
+    let t=lab?texteLibelle(lab):'';
+    if(!t){let n=x;for(let k=0;k<3&&n&&!t;k++){let p=n.previousElementSibling;while(p&&(p.matches('.gl,svg,br')||!texteLibelle(p)))p=p.previousElementSibling;if(p&&p.matches('.ph,label,b,.lbl,.solk,.k'))t=texteLibelle(p);n=n.parentElement;if(n&&n.matches('.pbody,.modal,.panel,body'))break;}}
+    if(!t&&x.placeholder)t=x.placeholder;
+    if(t)x.setAttribute('aria-label',t);});
+  root.querySelectorAll('.ptitle:not([role])').forEach(x=>{x.setAttribute('role','heading');x.setAttribute('aria-level','2');});
+  root.querySelectorAll('.ph:not([role])').forEach(x=>{x.setAttribute('role','heading');x.setAttribute('aria-level','3');});
+  root.querySelectorAll('.ptabs:not([role])').forEach(t=>{t.setAttribute('role','tablist');t.querySelectorAll(':scope>button').forEach(b=>{b.setAttribute('role','tab');b.setAttribute('aria-selected',String(b.classList.contains('on')));});});
+  root.querySelectorAll('[data-tip]').forEach(x=>{const t=x.dataset.tip;if(t&&t!==x.getAttribute('aria-label')&&x.getAttribute('aria-description')!==t)x.setAttribute('aria-description',t);});
+  root.querySelectorAll('table.mtable').forEach(t=>{const pa=t.parentElement;if(pa&&!pa.classList.contains('tscroll')){const w=document.createElement('div');w.className='tscroll';pa.insertBefore(w,t);w.appendChild(t);}});}
+const obsA11y=new MutationObserver(ms=>{const C=new Set();for(const m of ms)if(m.addedNodes.length&&m.target.nodeType===1&&!m.target.closest('#bulle,#cvAnnonce,#toast,#budgetDelta,#tipbox,#glossPop'))C.add(m.target);
+  C.forEach(t=>{if(![...C].some(o=>o!==t&&o.contains(t)))accessibiliser(t);});
+  if(bulleAncre&&!bulleAncre.isConnected)cacherBulle();});
+obsA11y.observe(document.body,{childList:true,subtree:true});
+/* Onglets au clavier : ← → Début Fin passent d'un onglet à l'autre (et l'ouvrent). */
+window.addEventListener('keydown',e=>{const t=e.target;if(!t||!t.getAttribute||t.getAttribute('role')!=='tab'||e.ctrlKey||e.metaKey||e.altKey)return;if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;
+  const tl=t.closest('[role=tablist]');if(!tl)return;const T=[...tl.querySelectorAll('[role=tab]')].filter(x=>x.getClientRects().length),i=T.indexOf(t);if(i<0)return;
+  const j=e.key==='Home'?0:e.key==='End'?T.length-1:(i+(e.key==='ArrowRight'?1:-1)+T.length)%T.length;
+  e.preventDefault();e.stopImmediatePropagation();try{T[j].focus();}catch{}T[j].click();},true);
+
+/* 2. Une seule bulle d'aide pour tout [data-tip] : au survol de la souris et au focus clavier, jamais au
+   toucher (elle restait collée au doigt), toujours dans l'écran (côté préféré : à droite des outils,
+   sous la barre du haut, au-dessus ailleurs ; sinon le côté qui tient). Échap, un clic ou un défilement
+   la ferment. */
+let bulleAncre=null;
+function coteBulle(el){return el.closest('.tb,.resizer')?(el.closest('.resizer')?'gauche':'droite'):el.closest('.top,.levels')?'bas':'haut';}
+function montrerBulle(el){const b=document.getElementById('bulle'),t=el&&el.dataset.tip;if(!b||!t||!el.getClientRects().length)return;bulleAncre=el;b.textContent=t;b.className='';b.hidden=false;
+  const r=el.getBoundingClientRect(),bw=b.offsetWidth,bh=b.offsetHeight,M=8,G=9,W=innerWidth,H=innerHeight;
+  const pos={haut:[r.left+r.width/2-bw/2,r.top-G-bh],bas:[r.left+r.width/2-bw/2,r.bottom+G],droite:[r.right+G,r.top+r.height/2-bh/2],gauche:[r.left-G-bw,r.top+r.height/2-bh/2]};
+  const tient=c=>{const [x,y]=pos[c];return c==='haut'?y>=M:c==='bas'?y+bh<=H-M:c==='droite'?x+bw<=W-M:x>=M;};
+  let c=coteBulle(el);if(!tient(c)){const alt={haut:['bas','gauche','droite'],bas:['haut','gauche','droite'],droite:['gauche','haut','bas'],gauche:['droite','haut','bas']}[c].find(tient);if(alt)c=alt;}
+  let [x,y]=pos[c];x=Math.max(M,Math.min(W-M-bw,x));y=Math.max(M,Math.min(H-M-bh,y));
+  b.style.left=Math.round(x)+'px';b.style.top=Math.round(y)+'px';b.classList.add('c-'+c);
+  b.style.setProperty('--fx',Math.round(Math.max(10,Math.min(bw-10,r.left+r.width/2-x)))+'px');b.style.setProperty('--fy',Math.round(Math.max(10,Math.min(bh-10,r.top+r.height/2-y)))+'px');}
+function cacherBulle(el){if(el&&el!==bulleAncre)return;const b=document.getElementById('bulle');if(b)b.hidden=true;bulleAncre=null;}
+document.addEventListener('pointerover',e=>{if(e.pointerType&&e.pointerType!=='mouse')return;const el=e.target.closest&&e.target.closest('[data-tip]');if(el&&el!==bulleAncre)montrerBulle(el);});
+document.addEventListener('pointerout',e=>{const el=e.target.closest&&e.target.closest('[data-tip]');if(!el||el!==bulleAncre||(e.relatedTarget&&el.contains(e.relatedTarget)))return;let kb=false;try{kb=el.matches(':focus-visible');}catch{}if(!kb)cacherBulle(el);});
+document.addEventListener('focusin',e=>{const el=e.target;if(refocus||!el||!el.dataset||!el.dataset.tip)return;let kb=true;try{kb=el.matches(':focus-visible');}catch{}if(kb)montrerBulle(el);});
+document.addEventListener('focusout',e=>{if(e.target===bulleAncre){let h=false;try{h=e.target.matches(':hover');}catch{}if(!h)cacherBulle();}});
+window.addEventListener('pointerdown',()=>cacherBulle(),true);
+window.addEventListener('keydown',e=>{if(e.key==='Escape'&&bulleAncre)cacherBulle();},true); /* WCAG 1.4.13 : on peut la faire disparaître sans bouger */
+window.addEventListener('scroll',()=>cacherBulle(),true);
+
+/* 3. Le plan au clavier. Le canvas prend le focus (Tab) ; alors Tab / Maj+Tab passent d'un élément à
+   l'autre — pièces, puis murs, ouvertures, équipements, dans l'ordre de lecture — et le lecteur d'écran
+   dit lequel (« Cloison de 1,30 m, entre Cellier / rangement et WC · À démolir · 14 sur 59 ») ; Entrée ouvre sa fiche ;
+   Échap désélectionne, puis Tab sort du plan (au bout de la liste aussi : jamais de piège). */
+let cvParcours=true,cvAideVue=false;
+function majLibellePlan(){try{cv.setAttribute('aria-label',`Plan du logement · ${L().name} · vue ${nomVue(mode())}`);}catch{}}
+function elementsDuPlan(){const lv=L(),m=mode();
+  const lecture=(a,b)=>Math.abs(a.p.y-b.p.y)>0.4?a.p.y-b.p.y:a.p.x-b.p.x;
+  const R=(facesCache[lv.id]||[]).filter(f=>f.room).map(f=>({kind:'room',id:f.room.id,p:f.label}));
+  const W=lv.walls.filter(w=>!isVirtual(w)&&wallDrawn(w,m)).map(w=>({kind:'wall',id:w.id,p:mul(add(w.a,w.b),.5)}));
+  const O=lv.openings.filter(o=>opDrawn(o,m)).map(o=>{const w=lv.walls.find(x=>x.id===o.wallId);return w?{kind:'opening',id:o.id,p:add(w.a,mul(sub(w.b,w.a),o.t))}:null;}).filter(Boolean);
+  const I=lv.items.filter(i=>itemDrawn(i,m)).map(i=>({kind:'item',id:i.id,p:v(i.x,i.y)}));
+  return [R,W,O,I].flatMap(g=>g.sort(lecture));}
+function etatEnMots(kind,st){const E=LEX.etat;if(st==='existant')return mode()==='existant'?'':E.aDecider;
+  if(kind==='item')return st==='creer'?E.poser:st==='demolir'?E.deposer:(E[st]||'');if(kind==='opening'&&st==='demolir')return E.boucher;return E[st]||'';}
+function decrireObjet(c){const lv=L(),F=facesCache[lv.id]||[];
+  if(c.kind==='room'){const f=F.find(x=>x.room&&x.room.id===c.id);return f?`Pièce : ${roomName(f.room)}, ${fmtM2(areaNet(lv,f))}`:'Pièce';}
+  if(c.kind==='wall'){const w=findWall(c.id);if(!w)return 'Mur';const ty=(WALL_TYPES.find(t=>t[0]===w.type)||[0,'Mur'])[1];
+    const cotes=[sideLabel(w,1),sideLabel(w,-1)].map(x=>x.replace(/^côté /,'')).filter(x=>!/^[AB]$/.test(x)).map(x=>x==='extérieur'?'l\'extérieur':x);
+    return [`${ty} de ${fmt(wallLen(w))} m`+(cotes.length===2&&cotes[0]!==cotes[1]?`, entre ${cotes[0]} et ${cotes[1]}`:''),w.type!=='cloison'&&isPorteur(w)?'porteur':'',etatEnMots('wall',wst(w))].filter(Boolean).join(' · ');}
+  if(c.kind==='opening'){const o=lv.openings.find(x=>x.id===c.id);return o?[`${(OPENINGS[o.type]||{}).label||'Ouverture'} de ${Math.round(o.w*100)} cm`,etatEnMots('opening',ost(o))].filter(Boolean).join(' · '):'Ouverture';}
+  if(c.kind==='item'){const it=lv.items.find(x=>x.id===c.id);if(!it)return 'Équipement';const f=F.find(x=>x.room&&pointIn(v(it.x,it.y),x.poly));
+    return [(ITEMS[it.type]||{}).label||'Équipement',f?'dans '+roomName(f.room):'',etatEnMots('item',ist(it))].filter(Boolean).join(' · ');}
+  return '';}
+function annoncerPlan(txt){const a=document.getElementById('cvAnnonce');if(!a)return;a.textContent='';setTimeout(()=>{a.textContent=txt;},30);}
+function choisirAuClavier(c,j,n){sel={kind:c.kind,id:c.id};multi=c.kind==='item'?[c.id]:[];msel=[];render();recentrerSur(c);
+  annoncerPlan(`${decrireObjet(c)} · ${j+1} sur ${n}. Entrée : ouvrir sa fiche.`);}
+function ouvrirFiche(){if(!sel)return;panelTab='details';deplierPanneau();if(isMobile())toggleSheet(true);renderPanel();
+  const t=document.querySelector('#pbody .ptitle');if(t){t.tabIndex=-1;try{t.focus();}catch{}}}
+function planClavier(e){if(e.ctrlKey||e.metaKey||e.altKey)return false;
+  if(e.key==='Escape'){cvParcours=false;return false;} /* la suite (désélection) reste celle d'avant */
+  if(e.key==='Tab'){if(tool!=='select'||!cvParcours)return false;const E=elementsDuPlan();if(!E.length)return false;
+    const i=sel?E.findIndex(x=>x.kind===sel.kind&&x.id===sel.id):-1,j=i<0?(e.shiftKey?E.length-1:0):i+(e.shiftKey?-1:1);
+    if(j<0||j>=E.length){cvParcours=false;return false;} /* au bout de la liste, Tab quitte le plan */
+    e.preventDefault();choisirAuClavier(E[j],j,E.length);return true;}
+  if(e.key==='Enter'&&sel&&tool==='select'&&sel.kind!=='marquee'){e.preventDefault();ouvrirFiche();return true;}
+  return false;}
+/* Arrivé au clavier (Tab), le plan se parcourt ; cliqué à la souris, Tab garde son sens habituel (on
+   passe au panneau) — quelqu'un qui clique une pièce puis Tab pour aller à son nom ne doit pas voir
+   la sélection sauter d'un élément à l'autre. */
+cv.addEventListener('focus',()=>{majLibellePlan();let kb=false;try{kb=cv.matches(':focus-visible');}catch{}cvParcours=kb;
+  if(kb&&!cvAideVue&&tool==='select'){cvAideVue=true;toast('Plan au clavier : Tab passe d\'un élément à l\'autre, Entrée ouvre sa fiche, Échap puis Tab sort du plan.',true);}});
+cv.addEventListener('pointerdown',()=>{cvParcours=false;});
+
+/* 4. Replier le panneau (tablette en portrait, petit écran) : le plan prend toute la largeur ; la poignée
+   porte un vrai bouton, qui dit ce qu'il fait (il fallait deviner un double-clic sur une poignée de 7 px). */
+function plierPanneau(force){const B=document.querySelector('.body');if(!B)return;const plie=force===undefined?!B.classList.contains('panelPlie'):!!force;B.classList.toggle('panelPlie',plie);
+  const b=document.getElementById('pfold');if(b){b.setAttribute('aria-expanded',String(!plie));b.setAttribute('aria-label',plie?'Afficher le panneau':'Replier le panneau');b.dataset.tip=plie?'Afficher le panneau : détails, suivi et budget':'Replier le panneau : plus de place pour le plan';b.setAttribute('aria-description',b.dataset.tip);}
+  try{if(plie)localStorage.setItem('avyora-plan-plie','1');else localStorage.removeItem('avyora-plan-plie');}catch{}
+  cacherBulle();resize();}
+function deplierPanneau(){if(document.querySelector('.body.panelPlie'))plierPanneau(false);}
+
 // ---------- Démarrage ----------
 window.addEventListener('resize',resize);
 /* D38 : glisser la fenêtre d'un écran Retina vers un écran standard change devicePixelRatio sans
@@ -6273,7 +6487,7 @@ state.levels.forEach(syncRooms);
 /* D39 : les textes fixes lisent LEX (data-lex), et les deux listes de raccourcis sortent de la même table. */
 document.querySelectorAll('[data-lex]').forEach(el=>{const v=el.dataset.lex.split('.').reduce((o,k)=>o&&o[k],LEX);if(typeof v==='string')el.textContent=v;});
 {const wk=document.getElementById('welcomeKeys'),ak=document.getElementById('aideKeys'),ag=document.getElementById('aideGloss');if(wk)wk.innerHTML=keysHTML();if(ak)ak.innerHTML=keysHTML();if(ag)ag.innerHTML=glossaireHTML();}
-renderTools();initResizer();initToolTips();resize();updZoom();
+renderTools();initResizer();initToolTips();try{if(localStorage.getItem('avyora-plan-plie')&&!isMobile())plierPanneau(true);}catch{}resize();updZoom();accessibiliser(document.body);
 ['grid','magnet','cotes'].forEach(k=>{const b=document.getElementById(k+'Btn');if(b)b.classList.toggle('on',settings[k]);});updLayersBtn();
 // clic hors du menu Calques → fermeture
 document.addEventListener('pointerdown',e=>{const el=document.getElementById('layerPop');if(el&&!el.hidden&&!el.contains(e.target)&&e.target.closest('#layersBtn')==null){el.hidden=true;document.getElementById('layersBtn').classList.remove('on');}});
@@ -6289,3 +6503,4 @@ etatEnreg='ok';enregAt=0;afficherEnreg(!!(state.id&&loadPlans()[state.id]));
 try{if(localStorage.getItem('avyora-plan-phonebanner'))document.getElementById('phoneBanner').hidden=true;}catch{}
 if(firstVisit)openModal('welcome');
 </script>
+</html>

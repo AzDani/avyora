@@ -2063,3 +2063,127 @@ existe, le nombre de tâches pouvant baisser quand une porte rebouchée part ave
 `langage.mjs` (les raccourcis ne vivent plus qu'à un endroit, l'Aide), `metier.mjs` (l'exemple est un
 appartement : on efface la réponse pour tester « bien non dit » ; la faïence de l'exemple est remise
 à « aucune » avant de mesurer ce qu'elle retire à la peinture).
+
+## D43 · Accessibilité et responsive : le même produit au clavier, au lecteur d'écran, au téléphone et sur un écran zoomé (25/09/2026)
+
+**Constat (jury : accessibilité & mobile, chasseur de bugs, rétention).**
+Le plan se dessinait bien à la souris, sur un grand écran. Hors de ce cas, il se dérobait.
+- **La page** : ni `<!doctype html>` (Chrome en mode quirks) ni `lang` — un lecteur d'écran lisait le
+  français avec une voix anglaise. Le zoom de la page était bloqué (`maximum-scale=1,
+  user-scalable=no`), alors que le tiroir du téléphone affiche des textes de 11 à 12 px.
+- **Au clavier, le cœur du produit était inatteignable** : le plan (canvas) ne prenait pas le focus,
+  la liste des pièces et les points du contrôle étaient des `div` cliquables.
+- **Noms et états** : des champs lus « zone d'édition, 2,50 » ; outils, niveaux et onglets sans état ;
+  aucun titre, aucun repère ; la croix de « Mes plans » lue « multiplication », ⧉ nommé par sa bulle.
+- **Bulles d'aide** dessinées en CSS : jamais au clavier, collées au doigt au toucher (« Ajuster »
+  restait sur le tiroir), sans garde contre les bords de l'écran hors de la barre du haut.
+- **Focus** : anneau lavande à 1,85:1 sur les champs ; contour des champs à 1,25:1.
+- **Mouvement** : `prefers-reduced-motion` ignoré (tiroir, messages).
+- **Téléphone** : cibles de 25 à 32 px (vues, niveaux, zoom, Annuler / Rétablir, « OK » du bandeau),
+  cases du Suivi natives (13 px) ; un pied de tiroir de 139 px qui laissait ~70 px à la liste du
+  Suivi ; plus d'accès à « Mes plans » une fois l'accueil fermé ; le tableau « Pièces après travaux »
+  d'Estimer débordait (colonne « Murs » coupée).
+- **Portable zoomé** : à 720 × 450, 238 px pour la fiche contre 156 px de pied ; à 640 × 360, presque rien.
+- **Tablette en portrait** : 378 px de plan sur 768 ; la consigne du plan vide (outil Murs) coupée des
+  deux côtés ; le panneau ne se repliait qu'au double-clic d'une poignée de 7 px.
+- `#proChip` réaffiché au téléphone en mode développeur (une règle plus bas l'écrasait).
+
+**Déjà réglé avant ce chantier (vérifié, non refait).** Barre de zoom masquée quand le tiroir est
+ouvert (D40, `body.sheetOpen`) ; messages `role=status`, en bas, 45 ms par caractère (D38, D41) ;
+accueil du téléphone sans promesse de dessin et carte du plan vide (D42) ; carte budget du pied en
+bouton (D40) ; badge de surface masqué sous 900 px (D41 — access20) ; suppression d'un plan
+annulable (D38) ; « Passer Pro » absent du téléphone et `#pname` nommé (D41).
+
+**Décisions.**
+1. **La page** : `<!doctype html>` et `<html lang="fr">` (mode standard ; captures avant / après
+   identiques au pixel au bureau, 3 px dans le tiroir du téléphone). Viewport sans blocage
+   (`viewport-fit=cover`) ; le canvas garde `touch-action:none`, donc son pincement ;
+   `touch-action:manipulation` sur la barre, le panneau, les vues, le zoom et les fenêtres (pas de zoom
+   au double-tap d'un bouton). Repères : bannière, région « Outils de dessin », plan (`main`), panneau
+   (`complementary`).
+2. **Un seul passage d'accessibilité** (`accessibiliser`, sur un `MutationObserver`) après chaque
+   rendu, pour que les gabarits n'aient pas à y penser : un champ est relié au libellé de sa ligne
+   (`for`), sinon au titre qui le précède (`aria-label`) — 1 046 champs dans 189 fiches, tous nommés,
+   jamais par leur exemple ; `.ptitle` / `.ph` deviennent des titres (niveaux 2 / 3) ; des onglets
+   disent lequel est ouvert ; une bulle devient la description de son bouton (`aria-description`) ;
+   un tableau `.mtable` est enveloppé dans `.tscroll` et défile dans son cadre. Il ne pose jamais
+   d'`aria-label` sur un bouton (le focus rendu après un redessin, D38, se repère par lui).
+   Dans les gabarits : `aria-pressed` sur les outils et les niveaux (vues et segmentés l'avaient),
+   `role=tablist` / `tab` / `aria-selected` sur les onglets du panneau (← → Début Fin), `aria-expanded`
+   sur la poignée du tiroir, « Dupliquer / Supprimer le plan « X » » (⧉ devient une icône), liste des
+   pièces et points du contrôle en `<button>` (« Erreur : » / « À vérifier : » dits au lecteur d'écran).
+3. **Le plan au clavier** : le canvas prend le focus (`tabindex=0`, `role=application`, nommé
+   « Plan du logement · RDC · vue Travaux », consigne en `aria-describedby`). **Arrivé au clavier**,
+   Tab / Maj+Tab parcourent pièces → murs → ouvertures → équipements (ce qui est dessiné dans la vue,
+   dans l'ordre de lecture), sélectionnent, recentrent la vue si besoin (`recentrerSur`, extrait de
+   `montrerSurLePlan`) et l'annoncent (sur l'exemple : « Cloison de 1,30 m, entre Cellier / rangement et WC ·
+   À démolir · 14 sur 59 ») ; **Entrée** ouvre la fiche (focus sur son titre ; tiroir ouvert au téléphone ; panneau
+   déplié) ; **Échap** désélectionne, puis Tab sort ; Tab après le dernier élément sort aussi — jamais
+   de piège ; avec un outil de tracé, Tab sort. **Cliqué à la souris**, Tab garde son sens habituel :
+   on passe au panneau, la sélection ne saute pas. Anneau indigo de 3 px dans le plan, et une consigne
+   au premier focus clavier.
+4. **Le focus se voit** : `:focus-visible` global (anneau indigo 2 px, 6,3:1) ; champ focalisé à
+   bordure indigo et halo ; contour des champs `--field-b` #8A88A6 (3,4:1 sur blanc, 3,2:1 sur le fond),
+   enveloppes des champs à unité comprises (un seul anneau, sur l'enveloppe).
+5. **Une seule bulle d'aide** (`#bulle`) pour tout `[data-tip]` : au survol de la souris et au focus
+   clavier, **jamais au toucher** ; placée dans l'écran (à droite des outils, sous la barre du haut, à
+   gauche de la poignée du panneau, au-dessus ailleurs ; sinon le côté qui tient, puis bornée aux bords) ;
+   Échap, un clic ou un défilement la ferment ; elle ne se rouvre pas quand un redessin rend le focus
+   (`refocus`). Les bulles `::after` en CSS sont retirées ; celles des outils passent par elle (elles ne
+   venaient qu'à la souris). `#tipbox` reste la bulle des étiquettes de pièces du plan (D42).
+6. **Messages et budget** : un message à action (« Annuler ») se fige sous la souris ou le focus, puis
+   repart ; la pastille d'écart (déjà `role=status`) dit aussi « Budget travaux : X € HT ».
+7. **Mouvement réduit** : `transition:none; animation:none` partout. **Piège évité** : la recette
+   courante (`transition-duration:.01ms` sur `*`) fait transitionner *toutes* les propriétés (la
+   propriété par défaut est `all`) — le canvas relisait sa largeur d'avant au redimensionnement et le
+   plan se dessinait décalé (vu en testant le repli du panneau). Le compteur du budget et les
+   défilements suivaient déjà `calme()`.
+8. **Téléphone = mode chantier** (arbitrage H) : commandes de 40 px au moins (Annuler, Rétablir, Aide,
+   Estimer, niveaux, vues, zoom, onglets, « OK » du bandeau), poignée de 48 px, lignes de pièces de
+   44 px, cases du Suivi de 24 px sur des lignes de 44 px, croix et liens des produits à 40 px ; barre
+   de 54 px ; tiroir à 66 vh ; **carte budget resserrée** (libellé et tâches à gauche, montant à droite,
+   « indicatif · prix catalogue, moyenne nationale » dessous) : pied de 109 px au lieu de 139 — fiche
+   d'une pièce 399 px utiles au lieu de 313, liste du Suivi 399 px ; la barre de zoom passe sous le
+   tiroir (z-index) en plus d'être masquée ; en tête de la vue d'ensemble du tiroir, **le nom du plan et
+   « Mes plans »** (qa16) ; tableaux d'Estimer resserrés, défilant dans leur cadre.
+9. **Écrans bas** (portable zoomé, fenêtre réduite) : sous 640 px de haut, la même carte resserrée
+   (720 × 450 : 285 px de fiche au lieu de 238) ; de 641 à 720 px, une carte un peu plus compacte.
+   Au-dessus, rien ne change : la mention « indicatif » reste entière (D36, D40).
+10. **Tablette en portrait** (601 à 900 px) : panneau à 280 px (410 px de plan au lieu de 378) ; un
+    **bouton « Replier le panneau »** sur la poignée (`aria-expanded`, bulle) donne 690 px au plan ;
+    « voir sur le plan » (Estimer, Suivi, checklist), Entrée sur le plan et la visite guidée le
+    rouvrent ; l'état est retenu sur cet appareil (`avyora-plan-plie`, confort seulement). La consigne
+    du plan vide passe à la ligne quand elle ne tient pas.
+11. `#proChip` masqué au téléphone même en `?dev`, jamais sur deux lignes.
+
+**Ce qui n'est pas fait, et pourquoi.**
+- **Liste « Murs et ouvertures du niveau »** sous les pièces (access09) : le parcours du plan au clavier
+  couvre le besoin sans rallonger la vue d'ensemble, que D41 a raccourcie.
+- **Tabindex itinérant sur les onglets** : tous restent atteignables par Tab ; ← → marchent en plus.
+- **La bulle des étiquettes de pièces** (pastille orange, `#tipbox`) reste à la souris : au clavier, le
+  même message est en tête de la fiche de la pièce (D42).
+- **640 × 360** (zoom 300 %) : le sélecteur de vue passe sur deux lignes ; tout reste atteignable et
+  le panneau se replie.
+- `.fin.devine` (valeur devinée, pointillé violet) et `.fin.cpvide` (code postal à remplir) gardent leur
+  contour : c'est un sens, pas une limite de champ.
+
+**Contrôles.** Deux nouveaux outils, **à ajouter à la batterie** :
+- `tools/responsive.mjs` — à 390 × 844, 768 × 1024, 1024 × 768, 1280 × 800, 1440 × 900, 720 × 450 et
+  640 × 360 : rien ne déborde de la barre du haut ; « Estimer ce plan » visible, touché en trois points
+  et ouvert d'un vrai clic, tiroir fermé, fiche ouverte et Suivi ouvert ; aucun flottant du plan ne
+  chevauche un autre ; pas de défilement horizontal ; Estimer sans débordement, tableaux dans leur
+  cadre ; hauteur utile de la fiche (≥ 60 %) et pied borné ; carte budget touchable sur toute sa
+  largeur ; au téléphone, zoom jamais sur le tiroir, commandes ≥ 40 px, cases du Suivi 24 px / lignes
+  44 px, « Mes plans » dans le tiroir ; tablette : plan ≥ 400 px, repli / dépli (canvas qui suit,
+  noms, retour par « voir sur le plan »), consigne du plan vide dans le plan.
+- `tools/accessibilite.mjs` — doctype, langue, zoom libre, repères ; tous les champs de toutes les
+  fiches (trois vues) nommés ; `aria-pressed`, onglets (← →), titres, boutons de « Mes plans », poignée
+  du tiroir ; liste des pièces et points du contrôle au clavier ; le plan au clavier (Tab, Maj+Tab,
+  annonces, Entrée → fiche, Échap puis Tab, bout de liste, outil de tracé, clic souris puis Tab) ;
+  anneaux de focus, contour des champs ≥ 3:1 ; bulles (survol de 17 boutons dans l'écran, clavier à
+  droite des outils, Échap, jamais au toucher) ; messages figés au survol ; total annoncé ; mouvement
+  réduit (tiroir, messages, aucune transition ajoutée, canvas qui suit le repli tout de suite).
+Mis à jour en gardant son intention : `langage.mjs` (« une seule table de raccourcis » compare le
+contenu de l'Aide à `keysHTML()`, plus son HTML : la page y ajoute des rôles de titre). Les autres
+contrôles passent sans modification ; la fixture du contrat ne change que par ses identifiants (non
+gardée).

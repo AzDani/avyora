@@ -80,8 +80,9 @@ let p = await onglet();
 await noter(p, "accueil");
 /* D42 : l'accueil, raccourci, ne liste plus les touches — elles vivent dans l'Aide seulement (une seule table, keysHTML) */
 t["accueil · les raccourcis ne vivent qu'à un endroit : l'Aide (une seule table)"] = await p.evaluate(() => {
-  const a = document.getElementById("welcomeKeys"), b2 = document.getElementById("aideKeys").innerHTML;
-  return !a && !document.querySelector("#m-welcome kbd") && b2.length > 200 && b2 === keysHTML();
+  /* D43 : la page ajoute aux titres un rôle de titre (lecteur d'écran) — on compare le contenu, pas les attributs */
+  const a = document.getElementById("welcomeKeys"), b2 = document.getElementById("aideKeys"), ref = document.createElement("div"); ref.innerHTML = keysHTML();
+  return !a && !document.querySelector("#m-welcome kbd") && b2.innerHTML.length > 200 && b2.textContent === ref.textContent && b2.querySelectorAll("kbd").length === ref.querySelectorAll("kbd").length;
 });
 t["raccourcis · chaque touche d'outil y figure (V, B, M, P, D, E, T, C, L) et R dit 90°"] = await p.evaluate(() => {
   const h = document.getElementById("aideKeys").textContent, kbd = [...document.querySelectorAll("#aideKeys kbd")].map((x) => x.textContent.trim());
