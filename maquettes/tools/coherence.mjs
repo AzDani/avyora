@@ -356,5 +356,18 @@ NB(`${typesMaq.length} types dans la maquette, ${typesMaq.length - sansEquivalen
   `sans compteur direct : ${sansEquivalent.join(", ")}`);
 
 console.log(`\n${"─".repeat(60)}`);
+/* ── 7. Le prix de Pro affiché dans l'éditeur = celui de la page Tarifs (décision de Dani, 26/09/2026) ── */
+console.log("\n7. Prix de Pro : l'éditeur dit celui de la page Tarifs");
+{
+  const DICO = fs.readFileSync("lib/i18n/dictionaries.ts", "utf8");
+  const mensuel = (DICO.match(/mensuel:\s*\{[^}]*prix:\s*"([^"]+)"/) || [])[1];
+  const ligne = MAQ.slice(MAQ.indexOf("const PRIX_PRO="), MAQ.indexOf("\n", MAQ.indexOf("const PRIX_PRO=")));
+  const editeur = (ligne.match(/\|\|'([^']+)';\s*$/) || [])[1];
+  const chiffre = s => (s || "").match(/\d+(?:,\d+)?/)?.[0];
+  if (!mensuel || !editeur) KO("prix de Pro introuvable", `Tarifs : ${mensuel ?? "?"} · éditeur : ${editeur ?? "?"}`);
+  else if (chiffre(mensuel) !== chiffre(editeur)) KO(`l'éditeur dit « ${editeur} », la page Tarifs « ${mensuel} »`, "PRIX_PRO dans plan-editor.html");
+  else console.log(`  ✓ ${editeur} (page Tarifs : ${mensuel} / mois)`);
+}
+
 console.log(dur ? `✗ ${dur} divergence(s) à corriger · ${mou} point(s) à savoir` : `✓ aucune divergence · ${mou} point(s) à savoir`);
 process.exit(dur ? 1 : 0);

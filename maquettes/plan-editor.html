@@ -892,6 +892,8 @@ button.chk{width:100%;font:inherit;text-align:left}
   .mplan{display:flex}
   #proChip{display:none} /* ?dev : la règle générale, plus bas dans la feuille, l'affichait quand même */
 }
+.prixpro{display:block;margin-top:4px;font-size:12px;font-weight:600;color:var(--brand)}
+.xfree .prixpro{display:inline;margin:0}
 </style>
 
 <div class="top" role="banner">
@@ -1256,6 +1258,11 @@ const DROITS={
   plans:{gratuit:'1 plan enregistré',pro:'des plans enregistrés sans limite'},
 };
 const maj=s=>s?s.charAt(0).toUpperCase()+s.slice(1):'';
+/* Décision de Dani (QCM du 26/09/2026) : le prix de Pro se lit à côté de « Passer Pro ». Le même que la page
+   Tarifs du site (lib/i18n/dictionaries.ts, plan mensuel) — coherence.mjs l'exige ; le site peut injecter le
+   sien (window.AVYORA_PRIX_PRO). Aucun prix barré, aucune promotion : seulement le prix pratiqué. */
+const PRIX_PRO=(typeof window!=='undefined'&&typeof window.AVYORA_PRIX_PRO==='string'&&window.AVYORA_PRIX_PRO)||'dès 18,85 € par mois, sans engagement';
+const prixPro=()=>`<span class="prixpro">Pro ${esc(PRIX_PRO)}</span>`;
 /* Les lignes que Pro ajoute ou change, dans l'ordre de la table ; et ce qui reste gratuit. */
 const droitsPro=()=>Object.values(DROITS).filter(d=>d.pro!==d.gratuit).map(d=>d.pro);
 const droitsGratuit=()=>Object.values(DROITS).filter(d=>d.gratuit).map(d=>d.gratuit);
@@ -3508,7 +3515,7 @@ const PLAN_LIMIT_FREE=1;
 function isPro(){if(typeof window.AVYORA_PRO==='boolean')return window.AVYORA_PRO; /* D39 : valeur injectée par le site quand l'éditeur y sera monté */
   try{return localStorage.getItem('avyora-plan-pro')!=='0';}catch{return true;}}
 function togglePro(){try{localStorage.setItem('avyora-plan-pro',isPro()?'0':'1');}catch{}toast(isPro()?'Maquette en mode Pro : détail du chiffrage, multi-plans et export sans filigrane':'Maquette en mode Gratuit : montant total et corps d\'état, 1 plan, export filigrané',true);render();}
-function renderProChip(){const p=isPro(),t=document.getElementById('proTop');if(t){t.hidden=p;t.href=TARIFS_URL;} /* D41 : « Passer Pro » dans la barre, en gratuit seulement */
+function renderProChip(){const p=isPro(),t=document.getElementById('proTop');if(t){t.hidden=p;t.href=TARIFS_URL;t.title='AVYORA Pro, '+PRIX_PRO;} /* D41 : « Passer Pro » dans la barre, en gratuit seulement */
   const c=document.getElementById('proChip');if(!c)return;c.innerHTML=p?ico('etoile')+' Pro':ico('cadenas')+' Gratuit';c.classList.toggle('pro',p);}
 function planPaywall(){renderPlans();openModal('plans');toast('Version gratuite : '+DROITS.plans.gratuit+'. '+avecPro('plans'),false);}
 function savePlanToLibrary(){const lib=loadPlans();const exists=state.id&&lib[state.id];
@@ -3541,7 +3548,7 @@ function miniPlanSVG(st){const L0=(st&&st.levels)||[],lv=L0[Math.min(st&&st.cur|
 function renderPlans(){const lib=loadPlans();const list=Object.values(lib).sort((a,b)=>b.savedAt-a.savedAt);const el=document.getElementById('plansList');
   const fmtDate=t=>{const d=new Date(t);return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});};
   const pro=isPro();const atLimit=!pro&&list.length>=PLAN_LIMIT_FREE;
-  const banner=pro?'':`<div class="budget" style="margin-bottom:12px;cursor:default"><div class="bl"><span>Version gratuite : ${DROITS.plans.gratuit}</span><small>${maj(DROITS.dessin.gratuit)} reste gratuit. ${avecPro('plans')}</small></div>${lienPro('Passer Pro','ib propill')}</div>`;
+  const banner=pro?'':`<div class="budget" style="margin-bottom:12px;cursor:default"><div class="bl"><span>Version gratuite : ${DROITS.plans.gratuit}</span><small>${maj(DROITS.dessin.gratuit)} reste gratuit. ${avecPro('plans')}</small>${prixPro()}</div>${lienPro('Passer Pro','ib propill')}</div>`;
   const resumeTxt=(R,nb)=>R?[R.pieces?fmtM2(R.m2):'aucune pièce',R.taches?eur(R.budget)+' HT':'rien de décidé',R.taches?'chantier '+R.faites+'/'+R.taches:'',R.projet!=null?'projet à '+R.projet+'\u00a0%':'',R.prochain?'prochaine étape : '+R.prochain:''].filter(Boolean).join(' · '):pluriel(nb,'mur');
   /* D53 (jury final : novice, retention) · « Aucun plan enregistré pour l'instant » se lisait avec un plan
      ouvert à 3 065 € et « Enregistré » dans la barre : le plan ouvert n'est rangé ici qu'avant d'en
@@ -6827,7 +6834,7 @@ function estimatePaywallHTML(q){
   let h=`<div class="esthero"><div class="eh1"><span class="k">Budget travaux ${gl('ht','HT')}</span><b class="v" id="estTotal">${eur(tot)}</b><small>${T.length?'Indicatif : finition '+nomFinition()+', moyenne nationale. Ta région et la TVA s\'appliquent dans l\'estimation détaillée.':'Rien de décidé pour l\'instant : passe en vue <b>'+nomVue('projet')+'</b> et choisis ce que tu changes.'}</small></div>
     <div class="eh2"><span><b>${T.length}</b><i>tâche${T.length>1?'s':''}</i></span><span><b>${lots.length}</b><i>${gl('corps','corps d\'état')}</i></span>${A.length?`<button type="button" class="eh2b" onclick="allerAuxDecisions()"><b>${A.length}</b><i>à décider</i></button>`:`<span><b>0</b><i>à décider</i></span>`}</div></div>`;
   if(lots.length)h+=`<div class="ph">Par corps d'état</div><div class="estlots">${lots.map(g=>`<div class="estlot ferme barre"><span class="ln">${esc(g.lot)}<small>${g.taches.length} tâche${g.taches.length>1?'s':''}${tot>0&&g.total>0?' · '+Math.max(1,Math.round(g.total/tot*100))+' %':''}</small></span><span class="lb"><i style="width:${Math.round(g.total/max*100)}%"></i></span><span class="lv${g.total?'':' nul'}">${g.total?eur(Math.round(g.total)):'non chiffré'}</span></div>`).join('')}${motsHTML(motsDe(lots.map(g=>g.lot),vus))}</div>
-  <div class="estpro"><span class="epi" aria-hidden="true">${ico('cadenas')}</span><span class="ept"><b>${maj(DROITS.detail.pro)}</b><small>Les ${pluriel(T.length,'tâche')} de ton plan, dans l'ordre du chantier : c'est Pro.</small></span>${lienPro('Voir le détail · Passer Pro','ib primary','estimer-detail')}</div>`;
+  <div class="estpro"><span class="epi" aria-hidden="true">${ico('cadenas')}</span><span class="ept"><b>${maj(DROITS.detail.pro)}</b><small>Les ${pluriel(T.length,'tâche')} de ton plan, dans l'ordre du chantier : c'est Pro.</small>${prixPro()}</span>${lienPro('Voir le détail · Passer Pro','ib primary','estimer-detail')}</div>`;
   h+=`<div class="ph">Ce que Pro ajoute</div><ul class="droits">${droitsPro().map(d=>`<li>${maj(d)}</li>`).join('')}</ul>
   <div class="tip" style="margin:0 0 18px">Gratuit : ${droitsGratuit().join(', ')}.</div>`;
   h+=aDecHTML(A)+couvertureHTML(q,vus);
@@ -6926,7 +6933,7 @@ function exportPlan(){
   {const px=chantierPrix();if(px.total>0){const ks=['ht','corps',...(tout?['habitable']:[]),...motsDe(tout?px.taches.map(t=>t.lot+' '+t.label+' '+(detailTache(t)||'')):px.lots.map(g=>g.lot),new Set(['ht','corps','habitable']))];
     pages.push({title:'Les mots de ce budget',sub:'Les mots du bâtiment de ce dossier, en une phrase',body:`<div class="xrecap xmots"><div class="glist">${ks.map(k=>`<div><b>${esc(GLOSSAIRE[k][0])}</b><span>${esc(GLOSSAIRE[k][1])}</span></div>`).join('')}</div></div>`,foot:'Les mots de ce budget'});}}
   const N=pages.length;
-  let h=pro?'':`<div class="xfree noprint"><span><b>Version gratuite</b> : ${DROITS.export.gratuit}. ${avecPro('export')}</span>${lienPro('Passer Pro','ib propill')}</div>`;
+  let h=pro?'':`<div class="xfree noprint"><span><b>Version gratuite</b> : ${DROITS.export.gratuit}. ${avecPro('export')} ${prixPro()}</span>${lienPro('Passer Pro','ib propill')}</div>`;
   pages.forEach((pg,i)=>{h+=`<div class="xpage${pro?' pro':''}">${pro?'':'<div class="wm">'+WM+'</div>'}<div class="xhead"><span class="xbrand"><svg viewBox="0 0 64 64" width="18" height="18" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><rect width="64" height="64" rx="16" fill="#4F46E5"/><path d="M15 47 L32 13 L49 47" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="40" r="4.8" fill="#C4B5FD"/></svg>AVY<i>ORA</i></span><span class="xpn">${pro?'Dossier Pro':'Dossier de plan'} · ${esc(state.name||'Mon plan')}</span></div><h4>${pg.title}</h4>${pg.sub?`<div class="xsub">${pg.sub}</div>`:''}${pg.body}<div class="xfoot"><span>Page ${i+1}/${N} · ${pg.foot}</span><span>${pro?'Dossier <b>AVYORA Pro</b> · getavyora.fr':'Généré gratuitement avec <b>AVYORA</b> · getavyora.fr'}</span></div></div>`;});
   document.getElementById('exportGallery').innerHTML=h;openModal('export');draw();
 }

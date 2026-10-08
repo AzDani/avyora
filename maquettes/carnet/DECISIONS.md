@@ -3266,3 +3266,17 @@ TVA restent à l'estimation détaillée, et c'est dit (pied, Estimer, dossier, �
 `lineHT` en Standard : 43 113 € plan / 43 116 € devis, 0 % (avant : 45 014 € au prix Premium) ; `budget.mjs`
 (Éco < Standard < Premium, pied qui dit la finition) ; les contrôles de prix catalogue (structure, existant)
 se font en Premium.
+
+## D58 · Le prix de Pro se lit à côté de « Passer Pro » (QCM de Dani, 26/09/2026)
+
+**Décision de Dani.** Afficher le prix Pro dans l'éditeur. Le prix est celui de la page Tarifs du site
+(`lib/i18n/dictionaries.ts`, plan mensuel) : « dès 18,85 € par mois, sans engagement » — aucun prix barré,
+aucune promotion. Affiché dans l'écran budget en gratuit (sous « le détail tâche par tâche »), la bannière
+de « Mes plans », le bandeau du dossier gratuit et l'infobulle de « Passer Pro ». Le site peut injecter le
+sien (`window.AVYORA_PRIX_PRO`).
+
+**Reporté, volontairement.** Ajouter l'éditeur de plan aux avantages de la page Tarifs : il n'est pas encore
+accessible sur le site ; l'annoncer aux abonnés vendrait une fonction qui n'existe pas. Il entrera sur la
+page Tarifs le jour du branchement.
+
+**Contrôle.** `coherence.mjs` §7 : le prix de l'éditeur doit égaler celui de la page Tarifs.
