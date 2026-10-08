@@ -105,6 +105,17 @@ button,input,select{font:inherit}
 .tools{background:linear-gradient(var(--white) 30%,rgba(255,255,255,0)) center top/100% 28px no-repeat local,linear-gradient(rgba(255,255,255,0),var(--white) 70%) center bottom/100% 28px no-repeat local,radial-gradient(farthest-side at 50% 0,rgba(30,27,75,.16),transparent) center top/100% 10px no-repeat scroll,radial-gradient(farthest-side at 50% 100%,rgba(30,27,75,.16),transparent) center bottom/100% 10px no-repeat scroll;background-color:var(--white)}
 @media (max-height:780px){.tools{padding:6px 0;gap:2px}.tb{padding:6px 0 5px;gap:3px}.tools .cat{margin:4px 6px 0;padding-top:5px}}
 .tb:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+/* D63 · la hauteur manque (fenêtre basse, portable zoomé) : la colonne d'outils passe en icônes seules — le nom, la
+   touche et la phrase restent dans la bulle, au survol et au focus —, puis sur deux colonnes si même les icônes ne
+   tiennent pas. Jamais de défilement : les 10 outils restent à l'écran (majOutilsCompacts mesure, rien n'est deviné). */
+.tools.icones{flex-basis:52px!important;padding:5px 0;gap:1px}
+.tools.icones .tb span,.tools.icones .tb kbd{display:none}
+.tools.icones .tb{flex:0 0 auto;width:40px;height:32px;padding:0;justify-content:center}
+.tools.icones .cat{align-self:stretch;font-size:0;line-height:0;padding:0;margin:3px 12px;border-top:1px solid var(--line)}
+.tools.icones .cat:first-child{display:none}
+.tools.icones.deux{flex-basis:84px!important;display:grid;grid-template-columns:repeat(2,36px);justify-content:center;align-content:start;gap:2px}
+.tools.icones.deux .tb{width:36px;height:30px}
+.tools.icones.deux .cat{grid-column:1/-1;margin:2px 8px}
 
 /* scène */
 .stage{flex:1;position:relative;overflow:hidden;background:var(--stage)}
@@ -650,7 +661,7 @@ html:not(.dev) .devonly{display:none!important}
   .levels{left:8px;top:8px;padding:3px}.levels button{padding:5px 9px;font-size:12px}
   .levels.modes{right:8px;top:50px;left:auto}.levels.modes button{padding:5px 8px;font-size:12px}
   .toast{top:168px;bottom:auto;max-width:calc(100% - 24px);font-size:12px}
-  .zoomctl{bottom:66px;right:8px;z-index:8}.zoomctl .z,#gridBtn{display:none}
+  .zoomctl{bottom:66px;right:8px;z-index:8}.zoomctl .z,#gridBtn,#magnetBtn{display:none} /* D63 : l'aimantation est un réglage de dessin ; au téléphone on consulte (la grille l'était déjà) */
   .measbox{bottom:66px}
   .modal{padding:18px;border-radius:var(--r-l)}.tpls{grid-template-columns:1fr 1fr}
 }
@@ -885,7 +896,7 @@ button.chk{width:100%;font:inherit;text-align:left}
 .pfold{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:22px;height:44px;border:1px solid var(--line);border-radius:999px;background:var(--white);color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:var(--sh-1);padding:0;z-index:1}
 .pfold:hover{color:var(--brand);border-color:var(--acc3)}
 .body.panelPlie #resizer .pfold .ico{transform:rotate(180deg)}
-@media (min-width:601px){.body.panelPlie .panel{display:none}.body.panelPlie #resizer{cursor:default}.body.panelPlie #resizer .pfold{left:auto;right:5px;transform:translateY(-50%)}}
+@media (min-width:601px){.body.panelPlie .panel{display:none}.body.panelPlie #resizer{cursor:default;margin-right:0} /* D63 : sa marge négative débordait de 3 px (la page défilait) */.body.panelPlie #resizer .pfold{left:auto;right:5px;transform:translateY(-50%)}}
 /* carte budget resserrée (téléphone, écran très bas) : libellé à gauche, montant à droite, la mention dessous — le pied tient en ~105 px */
 @media (max-width:600px),(min-width:601px) and (max-height:640px){
   .pfoot{padding:8px 12px 10px}
@@ -950,13 +961,18 @@ button.chk{width:100%;font:inherit;text-align:left}
   .pbande .levels button.add{width:var(--h-s);padding:0}
   .pbande .vlegend{order:-1;grid-column:auto;border-top:0;margin:0 var(--sp-2) 0 0;padding:0 var(--sp-3) 0 0;border-right:1px solid var(--line);gap:var(--sp-3)}
   /* la barre d'options : une ligne, qui défile à l'horizontale (molette comprise) si le plan est étroit */
-  .optbar{display:flex;align-items:center;gap:var(--sp-3);height:var(--opt-h);padding:0 var(--sp-2);overflow-x:auto;overflow-y:hidden;scrollbar-width:none;overscroll-behavior-x:contain}
+  .optbar{display:flex;align-items:center;gap:var(--sp-3);height:var(--opt-h);padding:0 var(--sp-2);overflow-x:auto;overflow-y:hidden;scrollbar-width:none;overscroll-behavior-x:contain;scroll-padding-inline:40px} /* D63 : une option atteinte au Tab s'arrête hors du chevron */
   .optbar::-webkit-scrollbar{display:none}
   .optbar:empty{display:none}
   .optbar.vers-d{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent)}
   .optbar.vers-g{-webkit-mask-image:linear-gradient(90deg,transparent,#000 28px);mask-image:linear-gradient(90deg,transparent,#000 28px)}
   .optbar.vers-g.vers-d{-webkit-mask-image:linear-gradient(90deg,transparent,#000 28px,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(90deg,transparent,#000 28px,#000 calc(100% - 28px),transparent)}
   .optbar>*{flex:0 0 auto}
+  /* D63 · les chevrons de défilement : posés sur le bord estompé, seulement du côté où il reste des options */
+  .obdef{display:none;position:absolute;bottom:8px;width:28px;height:28px;padding:0;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:var(--r-s);background:var(--white);color:var(--ink2);box-shadow:var(--sh-1);cursor:pointer;z-index:1}
+  .obdef:hover{background:var(--hover);color:var(--ink)}.obdef:active{background:var(--press)}
+  .obdef.g{left:4px}.obdef.d{right:4px}
+  .optbar.vers-g~.obdef.g,.optbar.vers-d~.obdef.d{display:flex}
   .optbar .obg{display:flex;align-items:center;gap:var(--sp-1)}
   .optbar .obl{font-size:var(--fs-xs);font-weight:600;color:var(--muted);margin-right:var(--sp-1);white-space:nowrap}
   .optbar .obs{width:1px;height:24px;background:var(--line)}
@@ -1035,13 +1051,22 @@ button.chk{width:100%;font:inherit;text-align:left}
   @container etat (max-width:680px){.zoomctl .z{display:none}}
   @container etat (max-width:560px){.mlive .acc{display:none}}
   @container etat (max-width:440px){.surfbadge{display:none!important}}
+  /* D63 · la barre d'état se resserre par ordre de priorité : le zoom, la grille, l'aimantation et l'affichage restent
+     entiers ; pendant un geste, la mesure en direct passe avant la surface ; puis le budget (pastille) n'en garde que le
+     montant et la surface que son nombre (le reste est dans la bulle et le nom accessible) ; la consigne se coupe en dernier */
+  .etat .zoomctl{flex-shrink:0}
+  .etat .hint{flex-shrink:1000}.etat .mlive{flex:0 1 auto;min-width:0;overflow:hidden} /* la consigne cède la place d'abord ; la mesure en direct se coupe ensuite, jamais le zoom */
+  @container etat (max-width:760px){.etat:has(#mesureLive:not([hidden])) .hint{display:none}} /* barre étroite, pendant un geste : la mesure tient lieu de consigne (plus de « Co… ») */
+  @container etat (max-width:1000px){#mesureLive:not([hidden])~.surfbadge{display:none!important}.body.panelPlie .etat .bplie span,.body.panelPlie .etat .bplie small{display:none}}
+  @container etat (max-width:640px){.surfbadge .hab{display:none}#mesureLive:not([hidden])~.bplie{display:none!important}.etat .mlive{gap:6px}}
+  @container etat (max-width:480px){.etat .hint{display:none}.etat .mlive{flex:1 1 auto;min-width:0;overflow:hidden}}
   @container tete (max-width:1300px){.optbar .fams button:not(.on) span{display:none}.optbar .fams button:not(.on){padding:0 8px}}
   @container tete (max-width:1000px){.optbar .recherche input{width:0;padding:0}.optbar .recherche:focus-within input{width:120px}.optbar .recherche{padding:0 7px;cursor:text}}
   @container tete (max-width:600px){.pbande .levels.modes{display:grid;grid-template-columns:repeat(3,auto);justify-content:end}.pbande .vlegend{order:0;grid-column:1/-1;justify-content:flex-end;border-right:0;margin:0;padding:0 2px 2px}}
   @container tete (max-width:760px){.optbar .lib2.barre .it small{display:none}.optbar .fams button span{display:none}}
   @container tete (max-width:520px){.pbande .levels.modes button{padding:0 7px;font-size:var(--fs-s)}.pbande .vlegend{gap:var(--sp-2)}}
 }
-@media (max-width:600px){.tetePlan,.pbande,.etat{display:contents}.optbar,.mlive,.echelle,#etat .measbox{display:none!important}}
+@media (max-width:600px){.tetePlan,.pbande,.etat{display:contents}.optbar,.obdef,.mlive,.echelle,#etat .measbox{display:none!important}}
 /* D61 · le mode d'emploi court d'un outil (trois gestes numérotés) et la fiche du modèle choisi */
 .memploi{list-style:none;counter-reset:me;display:flex;flex-direction:column;gap:6px;margin:2px 0 16px;padding:0}
 .memploi li{counter-increment:me;position:relative;padding-left:26px;font-size:var(--fs-m);line-height:1.45;color:var(--ink2)}
@@ -1113,6 +1138,10 @@ button.chk{width:100%;font:inherit;text-align:left}
     <div class="tetePlan" id="tetePlan">
       <div class="pbande" id="pbande"><div class="levels" id="levels"></div><div class="levels modes" id="modes"></div></div>
       <div class="optbar" id="optbar" role="region" aria-label="Options de l'outil"></div>
+      <!-- D63 · quand la barre déborde, un chevron à chaque bord où il reste des options : un clic la fait défiler d'une
+           page (souris ; au clavier, Tab y mène et la fait défiler tout seul) -->
+      <button type="button" class="obdef g" id="obGauche" tabindex="-1" aria-hidden="true" onclick="defilerOptbar(-1)" data-tip="Options précédentes"><svg class="ico" data-ico="chevronGauche"></svg></button>
+      <button type="button" class="obdef d" id="obDroite" tabindex="-1" aria-hidden="true" onclick="defilerOptbar(1)" data-tip="Plus d'options : fais défiler"><svg class="ico" data-ico="chevronDroite"></svg></button>
     </div>
     <div class="emptyStage" id="emptyStage" hidden><div class="emptyCard" role="region" aria-label="Plan vide"><span class="ei"><svg class="ico i24" data-ico="outilMur"></svg></span><h4>Dessine ton logement</h4><p class="edesk">Trace tes pièces telles qu'elles sont aujourd'hui : chaque pièce fermée affiche sa surface, et ton budget suivra tes décisions.</p><p class="ephone">Ce plan est vide. Pour dessiner ton logement, ouvre AVYORA sur ordinateur ou tablette.</p><div class="eact edesk"><button type="button" class="ib primary" onclick="tracerLesMurs()">Tracer les murs<kbd>M</kbd></button><button type="button" class="ib" onclick="poserPieceRapide(event)">Poser une pièce de 4 × 3 m</button></div><div class="eact ephone"><button type="button" class="ib primary" onclick="closeWelcome('sample')">Voir l'exemple</button><button type="button" class="ib" onclick="openPlansModal()">Mes plans</button></div><button type="button" class="elink edesk" onclick="openTemplates()">ou pars d'un plan type</button></div></div>
     <div class="phoneBanner" id="phoneBanner" role="note"><span><svg class="ico" data-ico="telephone"></svg> <b>Mode chantier</b> : consulte le plan, tape un élément pour ses détails, coche l'avancement dans le tiroir en bas. Pour <b>dessiner</b>, passe sur ordinateur ou tablette.</span><button type="button" onclick="fermerBandeau()">OK</button></div>
@@ -3889,12 +3918,17 @@ function renderPlans(){const lib=loadPlans();const list=Object.values(lib).sort(
 const cv=document.getElementById('cv'); let ctx=cv.getContext('2d');
 const S=p=>v(view.ox+p.x*view.zoom, view.oy+p.y*view.zoom);
 const W2=p=>v((p.x-view.ox)/view.zoom,(p.y-view.oy)/view.zoom);
-function resize(){const r=cv.parentElement.getBoundingClientRect();cv.width=r.width*devicePixelRatio;cv.height=r.height*devicePixelRatio;cv.style.width=r.width+'px';cv.style.height=r.height+'px';if(typeof majZonePlan==='function')majZonePlan();draw();}
+function resize(){if(typeof majOutilsCompacts==='function')majOutilsCompacts();const r=cv.parentElement.getBoundingClientRect();cv.width=r.width*devicePixelRatio;cv.height=r.height*devicePixelRatio;cv.style.width=r.width+'px';cv.style.height=r.height+'px';if(typeof majZonePlan==='function')majZonePlan();draw();}
 // ---- panneau de droite redimensionnable ----
 const PANEL_MIN=280,PANEL_MAX=680,PANEL_DEF=312;
 const TOOLS_MIN=46,TOOLS_MAX=118,TOOLS_DEF=76;
 function setPanelWidth(w){w=Math.max(PANEL_MIN,Math.min(PANEL_MAX,Math.round(w)));document.getElementById('panel').style.flexBasis=w+'px';try{localStorage.setItem('avyora-plan-panel',w);}catch{}resize();}
 function setToolsWidth(w){w=Math.max(TOOLS_MIN,Math.min(TOOLS_MAX,Math.round(w)));const t=document.getElementById('tools');t.style.flexBasis=w+'px';t.classList.toggle('compact',w<64);try{localStorage.setItem('avyora-plan-tools',w);}catch{}resize();}
+/* D63 · la colonne d'outils tient toujours sans défiler : avec ses libellés si la hauteur le permet, sinon en icônes
+   seules (le nom dans la bulle, au survol et au focus), puis sur deux colonnes. Mesuré depuis l'état complet à chaque
+   redimensionnement : rien n'oscille (la décision ne dépend que de la hauteur). */
+function majOutilsCompacts(){const T=document.getElementById('tools');if(!T)return;T.classList.remove('icones','deux');if(typeof isMobile==='function'&&isMobile())return;
+  const deborde=()=>T.scrollHeight>T.clientHeight+1;if(deborde()){T.classList.add('icones');if(deborde())T.classList.add('deux');}}
 // poignée générique : glisser pour redimensionner, double-clic pour basculer
 function dragResizer(id,apply,widthFromX,dbl){
   const rz=document.getElementById(id);let dragging=false;
@@ -4268,7 +4302,7 @@ function clickAction(raw){
   }
   if(tool==='ouverture'){const nw=nearestWall(raw,0.6,L(),true);if(!nw){toast('Approche-toi d\'un mur pour poser l\'ouverture');return;}const def=OPENINGS[openingType];const w=nw.wall,Lw=wallLen(w);if(def.w>Lw-0.1){toast('Ce mur est trop court pour cette ouverture');return;}const t=Math.max(def.w/2/Lw,Math.min(1-def.w/2/Lw,nw.t));const dup=ouverturesChevauchees(L(),w.id,t,def.w,null);if(dup.length){sel={kind:'opening',id:dup[0].id};render();toast('Il y a déjà une ouverture ici : je te la sélectionne. Glisse-la pour la déplacer.',true);return;}const side=sideOf(raw,w);history.push(snapshot());const op={id:uid(),wallId:w.id,t,type:openingType,w:def.w,h:def.h,hinge:1,side};const _def=OPENINGS[openingType];if(_def&&(openingType==='porte_entree'||openingType==='garage'||_def.cat==='fenetre')){op.dormant=dormantConseille(op);}if(mode()!=='existant')op.st='creer';L().openings.push(op);sel={kind:'opening',id:op.id};afterChange();if(_def&&_def.cat==='fenetre'&&!isExteriorWall(w))toast('Fenêtre posée sur un mur intérieur : c\'était une porte ? Change son type dans le volet.');return;}
   if(tool==='equipement'){const def=ITEMS[itemType];if(!def){toast('Choisis d\'abord un modèle dans la barre au-dessus du plan : rien n\'est posé tant que tu n\'as pas choisi.');return;} /* D61 : plus de « Lit double » posé en douce */const {p}=snapPoint(raw,null);history.push(snapshot());const it={id:uid(),type:itemType,x:p.x,y:p.y,w:def.w,h:def.h,rot:0};if(mode()!=='existant')it.st='creer';if(itemType==='escalier'){it.stair={type:'droit'};fitStair(it,L());}const sn=snapItemToWall(it,raw);if(sn)Object.assign(it,sn);pushOutOfWalls(it);L().items.push(it);sel={kind:'item',id:it.id};afterChange();if(mode()!=='existant')toast(LEX.etat.poser+' (travaux) : '+def.label+'. Pour un équipement déjà en place, dessine-le en vue '+nomVue('existant')+'.',true); /* D54 : « Douche ajouté » ne s'accordait pas ; le libellé d'abord, pour tous les équipements */return;}
-  if(tool==='texte'){history.push(snapshot());const t={id:uid(),x:raw.x,y:raw.y,text:'',color:lastNoteColor};TX(L()).push(t);sel={kind:'text',id:t.id};tool='select';afterChange();updateCursor();setTimeout(()=>document.getElementById('txtEdit')?.focus(),30);return;}
+  if(tool==='texte'){history.push(snapshot());const t={id:uid(),x:raw.x,y:raw.y,text:'',color:lastNoteColor};TX(L()).push(t);sel={kind:'text',id:t.id};tool='select';deplierPanneau(); /* D63 : la note s'écrit dans le panneau ; replié (tablette), il s'ouvre */afterChange();updateCursor();setTimeout(()=>document.getElementById('txtEdit')?.focus(),30);return;}
   if(tool==='cote'){
     if(dimPending){history.push(snapshot());L().dims.push({id:uid(),a:dimPending.a,b:dimPending.b,off:dimOffAt(dimPending,raw)});dimPending=null;afterChange();toast('Cote posée — glisse-la pour la faire coulisser, Alt pour la déplacer',true);return;}
     const {p}=snapPoint(raw,dimStart);if(!dimStart){dimStart=p;draw();return;}
@@ -4361,9 +4395,10 @@ function cotesTemporairesEquip(it){if(it.type==='escalier')return;const c=Math.c
 /* g = fiche | etat | geste | suppr ; menuSeul = au menu seulement ; la touche est celle que le clavier connaît */
 function actionsSel(){if(!sel||sel.kind==='room')return [];const lv=L(),m=mode(),A=[];
   const geste=(id,lib,ic,fn,touche,menuSeul)=>A.push({id,lib,ic,fn,touche,g:'geste',menuSeul:!!menuSeul});
+  const ficheMenu=!panneauPlie(); /* D63 : panneau replié (tablette), la fiche se demande aussi depuis la barre d'actions */
   if(m==='final'){if(sel.kind!=='marquee')A.push({id:'fiche',lib:'Voir sa fiche',ic:'info',fn:ouvrirFiche,touche:'Entrée',g:'fiche',menuSeul:true});
     A.push({id:'travaux',lib:'Modifier en vue '+nomVue('projet'),ic:'crayon',fn:modifierEnTravaux,g:'fiche',menuSeul:true});return A;}
-  if(sel.kind!=='marquee')A.push({id:'fiche',lib:sel.kind==='text'?'Modifier la note':'Voir sa fiche',ic:sel.kind==='text'?'crayon':'info',fn:ouvrirFiche,touche:'Entrée',g:'fiche',menuSeul:true});
+  if(sel.kind!=='marquee')A.push({id:'fiche',lib:sel.kind==='text'?'Modifier la note':'Voir sa fiche',ic:sel.kind==='text'?'crayon':'info',fn:ouvrirFiche,touche:'Entrée',g:'fiche',menuSeul:ficheMenu});
   const etats=(kind,cur,fnEtat,creerOk)=>{if(m!=='projet')return;choixEtat(kind,'projet',null,creerOk).forEach(([e,l])=>{if(e==='existant')return;A.push({id:'etat-'+e,lib:l,etat:e,on:cur===e,fn:()=>fnEtat(e),g:'etat'});});};
   const k=sel.kind;
   if(k==='item'){const its=selectedItems();if(!its.length)return [];const e0=ist(its[0]),tous=its.every(x=>ist(x)===e0);
@@ -4388,7 +4423,7 @@ function faireActionSel(id){const a=actionsSel().find(x=>x.id===id);if(a)a.fn();
 function toucheDite(a){return a.touche&&(raccourcisOn||!/^[A-Z]$/.test(a.touche))?a.touche:'';}
 /* ---- la barre d'actions ---- */
 function barreSelHTML(A){const B=A.filter(a=>!a.menuSeul);if(!B.length)return '';
-  return ['etat','geste','suppr'].map(g=>B.filter(a=>a.g===g).map(a=>{const t=toucheDite(a),tip=a.lib+(t?' ('+t+')':'');
+  return ['fiche','etat','geste','suppr'].map(g=>B.filter(a=>a.g===g).map(a=>{const t=toucheDite(a),tip=a.lib+(t?' ('+t+')':'');
     if(a.g==='etat')return `<button type="button" class="sbe${a.on?' on':''}" aria-pressed="${!!a.on}" onclick="faireActionSel('${a.id}')"${t?` data-tip="${esc(tip)}"`:''}><i class="ech e-${a.etat}" aria-hidden="true"></i>${a.lib}</button>`;
     if(a.texte||!a.ic)return `<button type="button" class="sbt" onclick="faireActionSel('${a.id}')" data-tip="${esc(tip)}">${a.ic?ico(a.ic):''}${a.lib}</button>`;
     return `<button type="button" class="ic" onclick="faireActionSel('${a.id}')" aria-label="${esc(a.lib)}" data-tip="${esc(tip)}">${ico(a.ic)}</button>`;}).join('')).filter(Boolean).join('<span class="sbsep" aria-hidden="true"></span>');}
@@ -4411,7 +4446,7 @@ function boiteSel(){if(!sel)return null;const lv=L(),P=[],pt=q=>P.push(S(q));
 /* près de l'élément — au-dessus, au-dessous ou à côté, centrée ou alignée sur un bord : la place où elle couvre le moins
    de textes du plan (cotes, chaînes, étiquettes, notes, cote cliquable), jamais l'élément ni ses poignées ; à égalité,
    au-dessus et centrée (un léger coût pour l'éloignement) */
-function placerBarreSel(b){const r=boiteSel(),Z=zoneUtile(),M=8;if(!r||r.x1<Z.x0||r.x0>Z.x1||r.y1<Z.y0||r.y0>Z.y1){b.hidden=true;return;}
+function placerBarreSel(b){const r=boiteSel(),Z=zoneUtile(),M=8;if(panneauPlie())Z.x1-=26; /* D63 : panneau replié, son bouton (au bord droit du plan) reste dégagé */if(!r||r.x1<Z.x0||r.x0>Z.x1||r.y1<Z.y0||r.y0>Z.y1){b.hidden=true;return;}
   const bw=b.offsetWidth,bh=b.offsetHeight,G=12,cx=(r.x0+r.x1)/2,cy=(r.y0+r.y1)/2;
   const O=[...cotesVues,...boitesChaines,...cotesOuverture,...etiquettesVues.map(e=>e.box),...Object.values(textBoxes),...coteLabels.filter(l=>sel.kind==='wall'&&l.wallId===sel.id).map(l=>({x:l.cx-l.w/2-2,y:l.cy-l.h/2-2,w:l.w+4,h:l.h+4}))].filter(Boolean); /* la cote du mur survolé n'y entre pas : la barre ne saute pas au survol */
   const inter=(R,o)=>Math.max(0,Math.min(R.x+R.w,o.x+o.w)-Math.max(R.x,o.x))*Math.max(0,Math.min(R.y+R.h,o.y+o.h)-Math.max(R.y,o.y));
@@ -4664,7 +4699,7 @@ function annoncerPiece(lv,fs,premier,facade){const f=fs[0],r=f&&f.room;if(!r)ret
   /* D54 (design 3) : deux lignes au plus — la surface et le nom deviné. La règle cloison / mur de façade est dans le
      panneau (« Automatique ») : le message de 4 lignes la répétait, et restait plus de 10 s sur le plan. */
   const txt=fs.length>1?`${fs.length} pièces fermées.`:`Pièce fermée : ${fmtM2(areaNet(lv,f))}${premier?' à l\'intérieur':''} · « ${roomName(r)} »`;
-  toast(txt,true,{action:'Choisir son type',fn:()=>{if(!L().rooms.includes(r))return;sel={kind:'room',id:r.id};multi=[];msel=[];if(tool!=='select'){if(tool==='mur'&&chain.length)endChain(false);tool='select';renderTools();updateCursor();}panelTab='details';render();}});}
+  toast(txt,true,{action:'Choisir son type',fn:()=>{if(!L().rooms.includes(r))return;sel={kind:'room',id:r.id};multi=[];msel=[];if(tool!=='select'){if(tool==='mur'&&chain.length)endChain(false);tool='select';renderTools();updateCursor();}panelTab='details';deplierPanneau();render();}});} /* D63 : le type se choisit dans la fiche ; replié (tablette), le panneau s'ouvre */
 function addWall(a,b){
   history.push(snapshot());if(history.length>80)history.shift();future=[];
   const lv=L();const before=new Set(lv.rooms.map(r=>r.id));
@@ -5102,8 +5137,10 @@ function optbarHTML(){
 function renderOptions(){const el=document.getElementById('optbar');if(!el)return;const h=optbarHTML();if(h===el._h){majZonePlan();return;}
   const meme=el._outil===tool,sx=el.scrollLeft;
   avecFocus(el,()=>{el.innerHTML=h;});el._h=h;el._outil=tool;{const t=TOOLS.find(x=>x[0]===tool);el.setAttribute('aria-label','Options de l\'outil '+(t?(t[4]||t[1]):''));}
-  if(meme)el.scrollLeft=sx;else{el.scrollLeft=0;const on=el.querySelector('.lib2 .it.on');if(on){const q=on.getBoundingClientRect(),r=el.getBoundingClientRect();if(q.right>r.right)el.scrollLeft+=q.right-r.right+24;}}
+  if(meme)el.scrollLeft=sx;else{el.scrollLeft=0;const on=el.querySelector('.lib2 .it.on');if(on){const q=on.getBoundingClientRect(),r=el.getBoundingClientRect();if(q.right>r.right-40)el.scrollLeft+=q.right-r.right+40;}} /* D63 : le modèle choisi s'arrête avant le chevron et le bord estompé */
   majZonePlan();bordsOptbar();}
+/* D63 : un clic sur un chevron fait défiler la barre d'environ une page (sans glisser si le mouvement est réduit) */
+function defilerOptbar(d){const ob=document.getElementById('optbar');if(!ob)return;let doux=true;try{doux=!matchMedia('(prefers-reduced-motion: reduce)').matches;}catch{}ob.scrollBy({left:d*Math.max(120,ob.clientWidth*0.7),behavior:doux?'smooth':'auto'});}
 /* quand la barre déborde, ses bords s'estompent du côté où il reste des options à faire défiler */
 function bordsOptbar(){const ob=document.getElementById('optbar');if(!ob)return;const d=ob.scrollWidth-ob.clientWidth;ob.classList.toggle('vers-d',d>1&&ob.scrollLeft<d-1);ob.classList.toggle('vers-g',d>1&&ob.scrollLeft>1);}
 function setWallType(k){wallType=k;customT=null;renderOptions();renderPanel();draw();}
@@ -5305,7 +5342,7 @@ function draw(){
   /* D62 : le survol parle la langue de la sélection — le même contour indigo, léger, sans halo (plus de cercle ni de tirets lilas) */
   if(hoverHit&&isHover(hoverHit.kind,hoverHit.id))survolObjet(lv,hoverHit);
   // cotes de jambage de l'ouverture sélectionnée (distance aux angles)
-  cotesOuverture=[];if(sel?.kind==='opening'){const o=lv.openings.find(x=>x.id===sel.id);if(o)drawOpeningDims(o);}
+  cotesOuverture=[];const ouvSel=sel?.kind==='opening'?lv.openings.find(x=>x.id===sel.id):null;if(ouvSel)prepOpeningDims(ouvSel,lv); /* D63 : la place est réservée ici, les cotes se dessinent après la chaîne extérieure */
   // pièces en défaut (contrôle du plan) → badge ⚠ sur l'étiquette
   {const ck=planChecks(lv,{espace:false}).filter(c=>c.sel?.kind==='room'&&c.lvl!=='info');checkRooms=new Set(ck.map(c=>c.sel.id));
    /* D42 (novice11) : le message de la pastille orange, pour l'expliquer au survol de l'étiquette */
@@ -5316,6 +5353,7 @@ function draw(){
      étiquettes, par-dessus (D41). La cote d'axe d'un mur n'apparaît que sur le mur survolé ou
      sélectionné (pour l'éditer sans surcharger). */
   drawRoomLabelsEtCotes(lv,faces,13,12,f=>movingIds.length>0&&f.edges.some(e=>e&&movingIds.includes(e.wall)));
+  if(ouvSel)drawOpeningDims(ouvSel);
   if(settings.cotes){const selW=sel?.kind==='wall'?sel.id:null,hovW=hoverHit?.kind==='wall'?hoverHit.id:null;
     lv.walls.forEach(w=>{if(isVirtual(w)||!wallDrawn(w))return;if(w.id===selW||w.id===hovW)drawWallCote(w,tool==='select');});}
   /* D41 : la légende de la vue Travaux est dans le DOM, sous le sélecteur de vue (renderLevelsBrut) */
@@ -5855,12 +5893,26 @@ function drawAngle(vtx,pA,pB){
   const txt=Math.round(deg)+'°';ctx.font='600 11px "Geist Mono", monospace';const tw=ctx.measureText(txt).width;ctx.fillStyle='#fff';ctx.beginPath();ctx.roundRect(tx-tw/2-4,ty-8,tw+8,16,4);ctx.fill();ctx.strokeStyle='#C9CCDD';ctx.lineWidth=1;ctx.stroke();ctx.fillStyle=ENCRE;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,tx,ty);
 }
 // cotes de jambage : distance de l'ouverture aux extrémités de son mur
-function drawOpeningDims(o){
-  const w=findWall(o.wallId);if(!w)return;const u=norm(sub(w.b,w.a)),n=perp(u),t=wallT(w);
-  const wo=wallOff(w);const c=add(w.a,mul(sub(w.b,w.a),o.t)),s0=add(c,mul(u,-o.w/2)),s1=add(c,mul(u,o.w/2));const off=add(wo,mul(n,-(o.side||1)*(t/2+0.28)));
+/* D63 · en deux temps. Avant les étiquettes et les cotes intérieures (qui les évitent, D50), on choisit le côté et on réserve
+   la place (cotesOuverture) ; après la chaîne de cotes extérieure, on les dessine — par-dessus : l'ouverture choisie se lit
+   toujours. Le côté : à l'opposé du débattement, sauf si un de leurs textes tombe sur la chaîne extérieure (« 4,45 m » caché
+   sous « 4,40 m », « 5,20 m » sur « 4,10 m ») et que l'autre côté est libre. La chaîne est calculée à blanc pour ce rendu
+   (alpha nul, rien ne s'affiche) : après un recadrage, celle du rendu d'avant serait ailleurs. */
+let jambage=null;
+function prepOpeningDims(o,lv){jambage=null;const w=findWall(o.wallId);if(!w)return;const u=norm(sub(w.b,w.a)),n=perp(u),t=wallT(w);
+  const wo=wallOff(w);const c=add(w.a,mul(sub(w.b,w.a),o.t)),s0=add(c,mul(u,-o.w/2)),s1=add(c,mul(u,o.w/2));const decal=sg=>add(wo,mul(n,sg*(t/2+0.28)));
+  let K=[];if(!exporting){const b0=boitesChaines;ctx.save();ctx.globalAlpha=0;try{boitesChaines=[];drawExteriorChains(lv||L());K=boitesChaines;}finally{ctx.restore();boitesChaines=b0;}}
+  const segs=[[w.a,s0],[s1,w.b]].filter(([p,q])=>dist(p,q)>0.03),ev=K.map(b=>({x:b.x-3,y:b.y-3,w:b.w+6,h:b.h+6}));
+  const boites=sg=>segs.map(([p,q])=>{ctx.save();try{const e=drawDim(add(p,decal(sg)),add(q,decal(sg)),'#7c3aed',true,[],null,true);return e&&e.r;}finally{ctx.restore();}}); /* un essai : rien n'est dessiné, l'état du contexte est rendu */
+  const libre=sg=>boites(sg).every(r=>r&&!ev.some(b=>chevauche(r,b)));
+  let cote=-(o.side||1);if(ev.length&&!libre(cote)&&libre(-cote))cote=-cote;
+  jambage={id:o.id,segs,off:decal(cote)};
   /* D50 : les cotes intérieures des pièces évitent celles de l'ouverture sélectionnée */
-  [[w.a,s0],[s1,w.b]].forEach(([p,q])=>{if(dist(p,q)>0.03){const r=drawDim(add(p,off),add(q,off),'#7c3aed',true);if(r&&!exporting)cotesOuverture.push({x:r.x-3,y:r.y-3,w:r.w+6,h:r.h+6});}});
-}
+  /* court : une cote plus courte que son texte (le texte déborde de ses attaches) — si elle touche la chaîne des deux côtés, elle
+     passe par-dessus (dessinée après), lisible */
+  if(!exporting)boites(cote).forEach((r,i)=>{if(r){const [p,q]=segs[i];cotesOuverture.push({x:r.x-3,y:r.y-3,w:r.w+6,h:r.h+6,court:dist(p,q)*view.zoom<Math.max(r.w,r.h)});}});}
+function drawOpeningDims(o){if(!jambage||jambage.id!==o.id)prepOpeningDims(o);if(!jambage)return;const {segs,off}=jambage;jambage=null;
+  segs.forEach(([p,q])=>drawDim(add(p,off),add(q,off),'#7c3aed',true));}
 // cote manuelle : ligne décalée de d.off perpendiculairement aux points mesurés, avec lignes d'attache
 function dimLine(d){const u=norm(sub(d.b,d.a)),nn=perp(u),o=mul(nn,d.off||0);return {a:add(d.a,o),b:add(d.b,o),n:nn};}
 function drawManualDim(d,col){const L2=dimLine(d);if(d.off){ctx.save();ctx.strokeStyle=col;ctx.lineWidth=1;ctx.globalAlpha=.55;[[d.a,L2.a],[d.b,L2.b]].forEach(([p,q])=>{const P=S(p),Q=S(q);const ext=mul(L2.n,Math.sign(d.off)*0.12);const E=S(add(q,ext));ctx.beginPath();ctx.moveTo(P.x,P.y);ctx.lineTo(E.x,E.y);ctx.stroke();});ctx.restore();}drawDim(L2.a,L2.b,col,true);}
@@ -6763,7 +6815,7 @@ function baseDecisions(){try{_tachesOuverture=new Set(chantierTasks().map(t=>t.i
 function renderFoot(){
   const q=quantities(); const F=document.getElementById('pfoot'); const px=chantierPrix();renderProChip();
   const sb=document.getElementById('surfBadge');const hv=habView(q);
-  if(sb){if(hv.area>0){sb.hidden=false;sb.innerHTML=`<span class="s">${ico('surface')}<b>${fmtM2(hv.area)}</b> habitables</span><span class="sub">${hv.rooms} pièce${hv.rooms>1?'s':''}${state.levels.length>1?' · '+state.levels.length+' niveaux':''}${mode()==='existant'?' · '+nomVue('existant').toLowerCase():''}</span>`;}else sb.hidden=true;}
+  if(sb){if(hv.area>0){sb.hidden=false;sb.innerHTML=`<span class="s">${ico('surface')}<b>${fmtM2(hv.area)}</b><span class="hab"> habitables</span></span><span class="sub">${hv.rooms} pièce${hv.rooms>1?'s':''}${state.levels.length>1?' · '+state.levels.length+' niveaux':''}${mode()==='existant'?' · '+nomVue('existant').toLowerCase():''}</span>`;}else sb.hidden=true;}
   /* D46 (cj-integration00) : l'attente « première pièce » ne vaut que pour un plan sans pièce (ni avant
      ni après travaux) ET sans tâche. Démolir la façade d'une pièce seule ouvre toutes les pièces : la
      carte tombait à 0 € et « Estimer » se bloquait pendant que le Suivi comptait 3 920 €. */
@@ -6775,7 +6827,7 @@ function renderFoot(){
     /* D48 (arbitrage tour 2) : le montant se voit aussi en gratuit ; le détail tâche par tâche est Pro */
     :`<button type="button" class="budget bcard budgetbtn" onclick="showEstimate()" aria-label="Budget travaux HT : ${eur(px.total)}, ${pluriel(px.nb,'tâche')}. ${tout?'Voir le détail':'Voir la répartition par corps d\'état'}"><span class="bk">Budget travaux HT<span class="bn"><b>${px.nb}</b> ${accord(px.nb,'tâche')}</span></span><span class="bv" id="budgetVal">${eur(px.total)}</span><span class="bs"><small>indicatif · finition ${nomFinition()}</small><b>${tout?'Voir le détail':'Par corps d\'état'}${ico('fleche','inl')}</b></span></button>`; /* R6 : la flèche est une icône SVG, pas le glyphe → */
   const resume=vide?'':`<div class="presume"><b>${fmtM2(hv.area)}</b> habitables ${avant?'avant':'après'} travaux · <b>${hv.rooms}</b> pièce${hv.rooms>1?'s':''}${state.levels.length>1?' · <b>'+state.levels.length+'</b> niveaux':''}</div>`;
-  {const bp=document.getElementById('budgetPlie');if(bp){bp.hidden=!!vide;if(!vide){bp.innerHTML=`<span>Budget HT</span><b>${eur(px.total)}</b><small>${tout?'Voir le détail':'Répartition'}</small>`;bp.setAttribute('aria-label',`Budget travaux HT : ${eur(px.total)}. ${tout?'Voir le détail':'Voir la répartition par corps d\'état'}`);}}}
+  {const bp=document.getElementById('budgetPlie');if(bp){bp.hidden=!!vide;if(!vide){bp.innerHTML=`<span>Budget HT</span><b>${eur(px.total)}</b><small>${tout?'Voir le détail':'Répartition'}</small>`;bp.setAttribute('aria-label',`Budget travaux HT : ${eur(px.total)}. ${tout?'Voir le détail':'Voir la répartition par corps d\'état'}`);bp.dataset.tip=`Budget travaux HT · ${tout?'voir le détail':'voir la répartition par corps d\'état'}`;}}}
   F.innerHTML=carte+resume+(isDev()?`<button class="ib devonly" style="width:100%;justify-content:center;margin-top:8px" onclick="ouvrirEnvoi()" ${vide?'disabled':''}>Envoyer vers mon estimation AVYORA (dev)</button>`:'');
   /* le bouton du haut : grisé sans pièce, et il dit pourquoi (survol, lecteur d'écran, clic) */
   {const eb=document.getElementById('estBtnTop');if(eb){eb.classList.toggle('attente',vide);if(vide)eb.setAttribute('aria-disabled','true');else eb.removeAttribute('aria-disabled');
@@ -8039,9 +8091,9 @@ function etapesVisite(){
       avant:()=>{const f=rooms.find(g=>g.room.type==='chambre')||rooms[0];if(!f)return;if(tool!=='select')setTool('select');sel={kind:'room',id:f.room.id};multi=[];msel=[];panelTab='details';render();if(visite)visite.aSel=true;}},
     {cible:'#pfoot',place:['gauche','haut'],titre:'Le budget suit tes décisions',texte:`Chaque décision s'ajoute ici, au prix ${gl('ht','HT')} indicatif. Rien n'est compté tant que tu n'as rien décidé. Clique la carte pour ${voitTout()?'voir d\'où vient chaque euro':'voir sa répartition par corps d\'état'}.`},
     {cible:'#estBtnTop',aussi:'#panel .ptabs[aria-label="Panneau"] button:last-child',place:['gauche','bas'],titre:'Estime, puis suis ton chantier',texte:`<b>Estimer ce plan</b> : le montant, le détail par ${gl('corps','corps d\'état')} et ce qu'il te reste à décider. Ensuite, l'onglet <b>Suivi</b> range chaque travail dans l'ordre du chantier : tu coches au fur et à mesure.`}];}
-function lancerVisite(depuisAccueil){if(visite)return;if(modaleOuverte())closeModal();try{fermerMenus(false);}catch{}deplierPanneau(); /* D43 : la visite montre le panneau */
+function lancerVisite(depuisAccueil){if(visite)return;if(modaleOuverte())closeModal();try{fermerMenus(false);}catch{}const plie0=panneauPlie();deplierPanneau(); /* D43 : la visite montre le panneau (D63 : replié avant, il le redevient à la fin) */
   if(tool==='mur'&&chain.length)endChain(false);
-  visite={i:0,E:etapesVisite(),mob:isMobile(),retour:document.activeElement,mode0:mode(),accueil:!!depuisAccueil,aSel:false};
+  visite={i:0,E:etapesVisite(),mob:isMobile(),retour:document.activeElement,mode0:mode(),accueil:!!depuisAccueil,aSel:false,plie0};
   let el=document.getElementById('visite');
   if(!el){el=document.createElement('div');el.id='visite';el.className='noprint';
     el.innerHTML='<div class="vblock"></div><div class="vhalo" aria-hidden="true"></div><div class="vbulle" role="dialog" aria-modal="true" aria-labelledby="vTitre" aria-describedby="vTexte" tabindex="-1"></div>';
@@ -8092,6 +8144,7 @@ function fermerVisite(etat,suite){if(!visite)return;const v=visite;visite=null;t
   /* relancée depuis Aide sur son propre plan : on rend la vue d'avant ; ce que la visite a sélectionné est relâché */
   if(!v.accueil&&mode()!==v.mode0)setMode(v.mode0,true);
   if(v.aSel){sel=null;multi=[];msel=[];render();}
+  if(v.plie0&&!isMobile())plierPanneau(true);
   const r=v.retour;if(r&&r!==document.body&&document.contains(r)&&r.getClientRects().length){try{r.focus({preventScroll:true});}catch{}}
   if(etat==='fait'&&v.accueil&&suite!=='mon-plan'&&suite!=='ordinateur')toast(v.mob?'L\'exemple reste ouvert : touche un élément pour voir sa fiche, et ouvre le tiroir pour le Suivi.':'L\'exemple reste ouvert : essaie une décision, le budget bouge. Ton plan à toi, quand tu veux.',true,v.mob?null:{action:'Commencer mon plan',fn:()=>newPlan()});}
 /* Clavier pendant la visite : Échap ferme, ← → naviguent, Tab reste dans la bulle ; rien n'atteint le plan. */
@@ -8173,15 +8226,19 @@ function montrerBulle(el){const b=document.getElementById('bulle'),t=el&&el.data
   b.style.left=Math.round(x)+'px';b.style.top=Math.round(y)+'px';b.classList.add('c-'+c);
   b.style.setProperty('--fx',Math.round(Math.max(10,Math.min(bw-10,r.left+r.width/2-x)))+'px');b.style.setProperty('--fy',Math.round(Math.max(10,Math.min(bh-10,r.top+r.height/2-y)))+'px');}
 function cacherBulle(el){if(el&&el!==bulleAncre)return;const b=document.getElementById('bulle');if(b)b.hidden=true;bulleAncre=null;}
-document.addEventListener('pointerover',e=>{if(e.pointerType&&e.pointerType!=='mouse')return;const el=e.target.closest&&e.target.closest('[data-tip]');if(el&&el!==bulleAncre)montrerBulle(el);});
+/* D63 : après un clic sur un bouton à bulle (un outil), sa bulle se tait jusqu'à ce que la souris le quitte : redessiné, le
+   bouton la rouvrait, elle se posait entre l'outil et le plan, restait au survol (1.4.13) et prenait le 1er clic du tracé */
+let bulleMuette=null;const cleBulle=el=>el&&(el.id||el.getAttribute('aria-label')||el.dataset.tip);
+document.addEventListener('pointerover',e=>{if(e.pointerType&&e.pointerType!=='mouse')return;const el=e.target.closest&&e.target.closest('[data-tip]');if(el&&el!==bulleAncre&&!(bulleMuette&&cleBulle(el)===bulleMuette))montrerBulle(el);});
 /* D51 (cj-access05) · WCAG 1.4.13 : la bulle se survole — passer du bouton à la bulle ne la ferme pas ; quitter les deux, oui */
 const dansEl=(x,el)=>!!(x&&el&&(el===x||el.contains(x)));
 document.addEventListener('pointerout',e=>{const bu=document.getElementById('bulle');
+  if(bulleMuette){const m=e.target.closest&&e.target.closest('[data-tip]');if(m&&cleBulle(m)===bulleMuette&&!dansEl(e.relatedTarget,m))bulleMuette=null;}
   if(bu&&dansEl(e.target,bu)){if(!bulleAncre||dansEl(e.relatedTarget,bu)||dansEl(e.relatedTarget,bulleAncre))return;let kb=false;try{kb=bulleAncre.matches(':focus-visible');}catch{}if(!kb)cacherBulle();return;}
   const el=e.target.closest&&e.target.closest('[data-tip]');if(!el||el!==bulleAncre||dansEl(e.relatedTarget,el)||dansEl(e.relatedTarget,bu))return;let kb=false;try{kb=el.matches(':focus-visible');}catch{}if(!kb)cacherBulle(el);});
 document.addEventListener('focusin',e=>{const el=e.target;if(refocus||!el||!el.dataset||!el.dataset.tip)return;let kb=true;try{kb=el.matches(':focus-visible');}catch{}if(kb)montrerBulle(el);});
 document.addEventListener('focusout',e=>{if(e.target===bulleAncre){let h=false;try{h=e.target.matches(':hover');}catch{}if(!h)cacherBulle();}});
-window.addEventListener('pointerdown',()=>cacherBulle(),true);
+window.addEventListener('pointerdown',e=>{cacherBulle();const el=e.target&&e.target.closest&&e.target.closest('[data-tip]');bulleMuette=el?cleBulle(el):null;},true);
 window.addEventListener('keydown',e=>{if(e.key==='Escape'&&bulleAncre)cacherBulle();},true); /* WCAG 1.4.13 : on peut la faire disparaître sans bouger */
 window.addEventListener('scroll',()=>cacherBulle(),true);
 
@@ -8239,12 +8296,23 @@ document.addEventListener('keydown',e=>{if(e.key==='Tab'&&document.activeElement
 function planEntierVisible(){const b=bbox(L());if(!b||!cv.clientWidth)return false;const a=S(v(b.x0,b.y0)),c=S(v(b.x1,b.y1)),Z=zoneUtile();return a.x>=Z.x0-2&&a.y>=Z.y0-2&&c.x<=Z.x1+2&&c.y<=Z.y1+2;}
 function plierPanneau(force){const B=document.querySelector('.body');if(!B)return;const plie=force===undefined?!B.classList.contains('panelPlie'):!!force;const recadrer=plie!==B.classList.contains('panelPlie')&&planEntierVisible();B.classList.toggle('panelPlie',plie);
   const b=document.getElementById('pfold');if(b){b.setAttribute('aria-expanded',String(!plie));b.setAttribute('aria-label',plie?'Afficher le panneau':'Replier le panneau');b.dataset.tip=plie?'Afficher le panneau : détails, suivi et budget':'Replier le panneau : plus de place pour le plan';b.setAttribute('aria-description',b.dataset.tip);}
-  try{if(plie)localStorage.setItem('avyora-plan-plie','1');else localStorage.removeItem('avyora-plan-plie');}catch{}
+  /* D63 : seule la bascule au bouton (sans argument) est une préférence, gardée ('1' replié, '0' déplié) ; « Voir sa fiche »,
+     la visite ou « voir sur le plan » ouvrent le panneau sans la changer */
+  if(force===undefined){pliAuto=false;try{localStorage.setItem('avyora-plan-plie',plie?'1':'0');}catch{}}
   cacherBulle();resize();if(recadrer)fitView();}
 function deplierPanneau(){if(document.querySelector('.body.panelPlie'))plierPanneau(false);}
+/* D63 · écran étroit (tablette en portrait, fenêtre réduite, portable zoomé) : le panneau s'ouvre replié, le plan
+   d'abord ; la fiche reste à un geste (« Voir sa fiche » dans la barre d'actions, Entrée, le clic droit, le bouton du
+   panneau). La préférence dite au bouton prime. On ne bascule qu'en franchissant le seuil (tourner la tablette), jamais
+   à chaque redimensionnement (le clavier virtuel en déclenche). */
+let pliAuto=false,pliEtroit=null;
+function pliAutoVoulu(){return !isMobile()&&innerWidth<=900;}
+function majPliAuto(){const e=pliAutoVoulu();if(e===pliEtroit)return;pliEtroit=e;let p=null;try{p=localStorage.getItem('avyora-plan-plie');}catch{}if(p==='1'||p==='0'||isMobile())return;
+  const plie=!!document.querySelector('.body.panelPlie');if(e&&!plie){plierPanneau(true);pliAuto=true;}else if(!e&&plie&&pliAuto){plierPanneau(false);pliAuto=false;}}
+function panneauPlie(){return !isMobile()&&!!document.querySelector('.body.panelPlie');}
 
 // ---------- Démarrage ----------
-window.addEventListener('resize',resize);
+window.addEventListener('resize',resize);window.addEventListener('resize',()=>majPliAuto());
 /* D38 : glisser la fenêtre d'un écran Retina vers un écran standard change devicePixelRatio sans
    événement 'resize' : le canvas gardait sa taille interne et le plan s'affichait en double. On suit
    la densité, et la taille réelle de la zone de dessin (poignées du panneau comprises). */
@@ -8256,7 +8324,7 @@ state.levels.forEach(syncRooms);
 /* D39 : les textes fixes lisent LEX (data-lex), et les deux listes de raccourcis sortent de la même table. */
 document.querySelectorAll('[data-lex]').forEach(el=>{const v=el.dataset.lex.split('.').reduce((o,k)=>o&&o[k],LEX);if(typeof v==='string')el.textContent=v;});
 {const wk=document.getElementById('welcomeKeys'),ak=document.getElementById('aideKeys'),ag=document.getElementById('aideGloss');if(wk)wk.innerHTML=keysHTML();if(ak)ak.innerHTML=reglageRaccourcisHTML()+keysHTML();if(ag)ag.innerHTML=glossaireHTML();}
-renderTools();initResizer();try{if(localStorage.getItem('avyora-plan-plie')&&!isMobile())plierPanneau(true);}catch{}resize();updZoom();accessibiliser(document.body);
+renderTools();initResizer();try{if(localStorage.getItem('avyora-plan-plie')==='1'&&!isMobile())plierPanneau(true);}catch{}majPliAuto();resize();updZoom();accessibiliser(document.body);
 ['grid','magnet','cotes'].forEach(k=>{const b=document.getElementById(k+'Btn');if(b)b.classList.toggle('on',settings[k]);});updLayersBtn();
 // clic hors du menu Calques → fermeture
 document.addEventListener('pointerdown',e=>{const el=document.getElementById('layerPop');if(el&&!el.hidden&&!el.contains(e.target)&&e.target.closest('#layersBtn')==null){el.hidden=true;document.getElementById('layersBtn').classList.remove('on');}});
