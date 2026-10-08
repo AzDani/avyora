@@ -3564,3 +3564,136 @@ chaque modèle une fois, recherche, rien posé sans modèle, fiche de l'objet po
 outil, mode d'emploi pour chaque outil ; mesure en direct et accrochage « coin » ; échelle graphique juste et qui suit
 le zoom ; consigne de chaque outil entière à 1 280 et 1 440. `ux.mjs` passe de 85 à 165 contrôles ; sur le fichier
 d'avant, les sections 1, 4 et 6 échouent. Batterie complète (21 + ux), finition, couverture et vitest verts.
+
+## D62 · Refonte U4 : les interactions — un seul langage de sélection, la barre d'actions, le clic droit, Échap (08/10/2026)
+
+**D'où l'on part.** Quatrième des cinq chantiers de la refonte (après U1, D59 ; U2, D60 ; U3, D61). Point 7 de
+l'architecture décidée : survol et sélection, poignées, barre d'actions près de la sélection, menu contextuel, aperçu de
+pose et cotes temporaires, accrochage nommé, Échap, table unique des raccourcis, bulles. Batterie (21 + ux), finition,
+couverture et vitest verts avant toute retouche. Captures avant / après : scratchpad `refonte/u4/` (`avant-*`,
+`apres-*` : mur à démolir choisi, mur de façade, fenêtre choisie et porte survolée, équipement choisi et survolé, pose
+d'une fenêtre et d'un WC, clic droit, porte en vue Travaux, WC de près, zone, menu au clavier, barre au clavier, menu au
+bord de l'écran — à 1 440, 1 280 et 1 024).
+
+**Constat.**
+- Trois langages de sélection : un mur choisi devenait indigo plein (sa couleur métier disparaissait), une ouverture et
+  un équipement prenaient un cadre en tirets de 1 px et viraient à l'indigo, le survol était un cercle ou des tirets
+  lilas. Un mur **à démolir** choisi ne se voyait pas : son jaune passait de 24 à 50 % d'opacité, rien d'autre
+  (capture `avant-*-a-sel-demolir-zoom`).
+- Rien n'agissait au contact de l'objet : pivoter, dupliquer, retourner une porte, décider de son sort se faisaient
+  dans la fiche, à 900 px du plan, souvent sous le pli. Le clic droit ne faisait que « terminer et revenir à la
+  Sélection » (`contextmenu` bloqué).
+- L'aperçu de pose prenait le style de la sélection, sans cote : on ne savait ni à quelle distance du coin on posait,
+  ni qu'une ouverture était déjà là (l'aperçu se posait dessus sans un signal).
+- Échap ne quittait jamais l'outil : après deux Échap, l'outil Ouvertures posait encore au clic suivant.
+- Les raccourcis étaient écrits deux fois : TOOLS (Aide, bulles, `aria-keyshortcuts`) et des lettres en dur dans le
+  gestionnaire du clavier — changer une lettre dans TOOLS ne changeait que l'affichage.
+- La poignée d'une cote choisie était un rond blanc, seule hors de la famille de poignées de D60.
+
+**Décision.**
+1. *Un seul langage.* Choisi, un élément GARDE sa couleur métier (encre, cloison, rouge « à créer », jaune « à démolir »,
+   rouge d'un point électrique à poser) et prend un contour indigo plein posé par-dessus — juste à l'extérieur du
+   poché d'un mur (`contourMur`, halo 7 px à 28 % et trait de 2 px), autour d'une ouverture ou d'un équipement
+   (`cadreSel` : halo et trait plein, plus de tirets), à l'intérieur d'une pièce (`dessinerSelection`, plus le tireté à
+   la couleur du type de pièce). Le tronçon visé d'un mur (D53) se dit pareil (`drawTroncon` → `contourMur`). Le survol
+   est le même contour, léger (trait de 1,25 px à 50 %, sans halo) — mur, ouverture (`cadresOuv`, le cadre que
+   `drawOpening` vient de calculer), équipement (électricité comprise, `kElec`). Un mur à démolir choisi se voit enfin.
+2. *Les poignées.* La famille de D60 est complète : la poignée d'une cote choisie devient le losange du milieu d'un mur
+   (même geste : glisser de côté ; `poigneeLosange`, partagé).
+3. *La barre d'actions* (`#selbar`, `role="toolbar"`, après le canvas dans le DOM) : près de l'élément choisi avec
+   l'outil Sélection — au-dessus, au-dessous ou à côté, centrée ou alignée sur un bord : la place où elle couvre le moins
+   de textes du plan (cotes, chaînes, étiquettes, notes, cote cliquable du mur choisi ; à égalité, au-dessus et centrée)
+   —, jamais sur l'élément ni ses poignées (rotation, doublage), jamais sur une bande, cachée si l'élément sort de la
+   zone visible ; elle ne saute pas quand la souris survole un autre mur. Trois groupes : la décision en vue Travaux (Je garde, À démolir /
+   À remplacer / À boucher / À déposer, À créer, avec l'échantillon de la légende ; « À décider » reste dans la fiche),
+   les gestes en icônes (Pivoter de 90°, Dupliquer ; Ouvre de l'autre côté, Charnière ; Couper aux jonctions ou
+   Couper en 2), Supprimer. En vue Travaux, sur ce qui existe, Suppr MARQUE (D38) : c'est alors le choix d'état qui
+   porte la touche, pas un bouton de plus. Rien pour une pièce, pendant la pose, en vue Après travaux ni au téléphone.
+   Au clavier : Tab depuis le plan y entre (un seul arrêt), ← → Début Fin, Échap rend le plan (la sélection reste) ;
+   R y pivote comme dans le plan (`lettreAutorisee`). Elle se cache pendant un glissé et ne se reconstruit que si ses
+   actions changent (le focus est rendu au même bouton après l'action).
+4. *Le menu du clic droit* (`#ctxMenu`, `role="menu"`, le composant des menus Fichier et Aide) : avec l'outil Sélection,
+   un clic droit SUR un élément le choisit (s'il ne l'était pas) et ouvre ses actions — Voir sa fiche (Entrée), la
+   décision (`menuitemradio`, cochée), les gestes avec leur touche (R, Ctrl D, Ctrl C, Coller ici), Supprimer (Suppr) ;
+   en vue Après travaux, « Voir sa fiche » et « Modifier en vue Travaux » seulement. Hors d'un élément, pendant un
+   tracé ou avec un autre outil, le clic droit garde son rôle (terminer, revenir à la Sélection, désélectionner). Au
+   clavier : Maj + F10 ou la touche Menu, ↑ ↓ Début Fin, Entrée / Espace, Échap et Tab ferment et rendent le focus ;
+   aucune touche n'atteint le plan derrière. Il ne sort jamais de l'écran (il se replie vers l'intérieur au bord).
+5. *UNE liste d'actions* (`actionsSel`) lue par la barre et par le menu ; chaque action appelle la fonction du raccourci
+   ou de la fiche (`rotateItem`, `duplicateItem`, `copyItems`, `pasteItems`, `deleteSel`, `setWallProp`,
+   `setOpeningProp`, `setItemProp`, `setItemsEtat`, `couperAuxJonctions`, `splitWall`, `ouvrirFiche`,
+   `modifierEnTravaux`) — aucune logique en double. Raccourcis d'une touche coupés : ni la barre ni le menu ne
+   promettent « R ».
+6. *L'aperçu de pose* (`apercuOuverture`, `apercuEquipement`) a son style : le symbole tel qu'il sera posé (rouge en vue
+   Travaux pour une ouverture), translucide, dans un cadre en TIRETS — le provisoire, distinct du survol et de la
+   sélection —, rouge danger s'il ne tient pas (une ouverture déjà là, un mur trop court ; la barre d'état le dit :
+   « une ouverture est déjà là : le clic la choisit »). Les cotes temporaires, en indigo : pour une ouverture, de chaque
+   jambage au jambage voisin ou au bout du mur (la même mesure que la fiche, à l'axe) ; pour un équipement, sur chacun
+   de ses axes, la distance à la face de mur la plus proche, sauf du côté où il est collé (`rayonMur`).
+7. *Échap, en cascade* : le geste en cours (glissé, tracé, pièce, cote, mesure, calage), puis l'OUTIL (retour à la
+   Sélection ; l'objet qu'on vient de poser reste choisi, sa fiche ouverte), puis la sélection. Le mode d'emploi de
+   chaque outil le dit en une ligne (`.msortie`), l'Aide aussi (KEYS_GESTES : Échap, Clic droit, Maj + F10), et la
+   consigne du lecteur d'écran du plan.
+8. *UNE table de raccourcis* : le gestionnaire du clavier lit la touche d'un outil dans TOOLS (`outilDeTouche`) — une
+   lettre changée là change l'Aide, les bulles, `aria-keyshortcuts` ET le clavier.
+9. *Les bulles* : la barre d'actions dit le nom et la touche (« Pivoter de 90° (R) », « Supprimer (Suppr) ») ; Annuler
+   et Rétablir quittent le `title` natif pour la bulle commune (« Annuler (Ctrl Z) · défait le dernier geste ») — elle
+   s'affiche aussi sur un bouton désactivé (vérifié).
+10. *L'accrochage nommé* dans la barre d'état, au-delà des murs : Cote (coin, face du mur, prolongement, alignement,
+   grille…), Mesurer (angle intérieur, face du mur), Ouvertures (sur le mur / déjà là / mur trop court), Équipements
+   (contre le mur).
+
+**Ce qui ne bouge pas.** Aucune globale renommée (ajouts : `outilDeTouche`, `cadreSel`, `cadreApercu`, `contourMur`,
+`poigneeLosange`, `kElec`, `dessinerSelection`, `survolObjet`, `rayonMur`, `apercuOuverture`,
+`cotesTemporairesOuverture`, `apercuEquipement`, `cotesTemporairesEquip`, `actionsSel`, `faireActionSel`,
+`toucheDite`, `barreSelHTML`, `boiteSel`, `placerBarreSel`, `majBarreSel`, `menuCtxHTML`, `itemsCtx`, `ouvrirMenuCtx`,
+`fermerMenuCtx`, `faireActionCtx`, `clicDroitObjet` ; `let cadresOuv, apercuInfo, barreSig, menuCtx, ctxPoint`).
+`drawOpening(o, isSel, apercu)` et `drawItem(it, isSel, apercu)` gardent leurs deux premiers paramètres (le 3e est
+facultatif) ; `drawTroncon`, `rightClickFinish`, `setTool` gardent leur nom et leur rôle. Ids nouveaux : `#selbar`,
+`#ctxMenu` ; ordre `.top → #tools → canvas` (les deux sont après le canvas), ids, `onclick` d'ancrage, clés
+`localStorage`, tables lues comme du texte, chiffrage, géométrie (hit-test, aimantation, `snapPoint`), couleurs des
+états, rendu du doublage, cotes intérieures #6d4fc2, signatures de `drawDim` / `hachurer`, vignettes (rendues sans
+sélection : identiques).
+
+**Laissé, volontairement.**
+- Les accroches « milieu » et « axe » : `snapPoint` ne s'y accroche pas ; les ajouter change le tracé (jonctions) — à
+  décider (déjà noté en D61).
+- Les poignées de largeur aux jambages d'une ouverture et les flèches de retournement dessinées sur le plan : un nouveau
+  geste à glisser et de nouvelles zones de clic ; le retournement est dans la barre d'actions et le menu.
+- Un clic sur une cote temporaire pour la taper : la fiche (« Position sur le mur ») le fait déjà.
+- La barre d'actions couvre forcément un peu du plan au-dessus ou au-dessous de l'élément : elle choisit le côté le
+  moins chargé, elle ne disparaît pas.
+- Notes : leur cadre de sélection reste celui de D49 (contour indigo épaissi), déjà dans le langage.
+- Le chantier U5 (finitions) : passer en revue la barre d'actions au téléphone en mode consultation (aujourd'hui :
+  aucune), et la densité de la barre en vue Travaux sur une ouverture (5 à 6 boutons).
+
+**Contrôles.** Mis à jour en gardant leur intention, parce que Échap quitte désormais l'outil :
+- `metier` (tracés à la souris) : Échap n'est plus tapé QUE s'il reste un tracé en cours — la pièce 2 et la cloison
+  s'arrêtent seules contre un mur, et un Échap de plus rendait la Sélection (le clic suivant sélectionnait au lieu de
+  tracer). L'intention « finir la pièce, puis tracer la suite » est intacte ; nouveau : « pièce 2 fermée contre le mur :
+  l'outil Murs reste actif pour la suite ».
+- `responsive` : `#selbar` rejoint la liste des flottants contrôlés au chevauchement ; nouveau : un mur, une ouverture,
+  un équipement choisis à chaque taille — la barre ne touche aucune bande ni aucun flottant.
+Nouveaux :
+- `ux` §7 (U4, à 1 440, 1 280 et 1 024) : le clavier lit TOOLS (toutes les touches tapées pour de vrai ; une touche
+  changée dans TOOLS change le raccourci) ; Échap en cascade (outil de pose → Sélection ; tracé terminé puis Sélection ;
+  après une pose, l'ouverture reste choisie avec sa fiche ; puis désélection) ; au pixel : un mur choisi garde son encre
+  et prend un contour indigo, un mur à démolir choisi a son contour indigo autour du jaune ; une ouverture et un
+  équipement choisis : symbole à l'encre, cadre indigo PLEIN ; survol sans lilas, contour léger ; barre d'actions
+  (toolbar, décision enfoncée, noms, bulles avec la touche, registre d'icônes, dans la zone du plan pour CHAQUE mur,
+  ouverture et équipement de l'exemple ; décision, Pivoter, Dupliquer, Supprimer, Ouvre de l'autre côté agissent ;
+  rien pour une pièce, la pose, la lecture seule ; au clavier Tab, →, Échap) ; menu du clic droit (role menu, mêmes
+  actions et touches, focus dedans, dans l'écran même au coin bas-droit, ↓ Fin, une lettre sans effet, Échap rend le
+  focus, Dupliquer agit, hors d'un élément le clic droit désélectionne et termine un tracé, Maj + F10) ; aperçu de pose
+  (porte : deux cotes temporaires justes à 2 cm ; sur une ouverture déjà là : rouge, sans cote, dit dans la barre d'état ;
+  WC : collé au mur, une cote au mur voisin, « contre le mur ») ; accrochage nommé de Cote (« coin ») et de Mesurer
+  (« angle intérieur ») ; raccourcis coupés : plus de « R » promis. Trois contrôles du source (plus de lettres d'outil en
+  dur, plus de cadre en tirets ni de survol lilas, Annuler et Rétablir dans la bulle commune).
+- `accessibilite` (D62) : barre d'actions `toolbar` nommée, horizontale, un seul arrêt de Tab, décision en
+  `aria-pressed`, noms des boutons-icônes, anneau de focus plein ; menu `menu` nommé, `menuitem` / `menuitemradio`
+  coché, séparateurs, focus sur la 1re action au clavier avec son anneau, Échap rend le focus au plan, Fin.
+- `robustesse` (D62) : en vue Après travaux, le clic droit ne propose que « Voir sa fiche » et « Modifier en vue
+  Travaux » (qui garde l'élément choisi), aucune barre, rien ne bouge ; menu ouvert, Suppr et une lettre n'agissent pas
+  derrière ; Échap pendant le cadre de Zone l'annule.
+`ux.mjs` passe de 165 à 279 contrôles ; sur le fichier d'avant, 24 échecs (source, clavier, Échap, puis `contourMur`
+absent). Batterie complète (21 + ux), finition, couverture et vitest (167) verts.
