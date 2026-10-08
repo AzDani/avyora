@@ -3697,3 +3697,123 @@ Nouveaux :
   derrière ; Échap pendant le cadre de Zone l'annule.
 `ux.mjs` passe de 165 à 279 contrôles ; sur le fichier d'avant, 24 échecs (source, clavier, Échap, puis `contourMur`
 absent). Batterie complète (21 + ux), finition, couverture et vitest (167) verts.
+
+## D63 · Refonte U5 : toutes les tailles d'écran, l'accessibilité, et la recette au clic (09/10/2026)
+
+**D'où l'on part.** Dernier des cinq chantiers de la refonte (après U1, D59 ; U2, D60 ; U3, D61 ; U4, D62). Vérifier et
+corriger à 1 920 × 1 080, 1 440 × 900, 1 280 × 800, 1 024 × 768, 768 × 1 024, 720 × 450, 640 × 360 et 390 × 844, puis
+recette complète au clic. Batterie (21 + ux), finition, couverture et vitest verts avant toute retouche. Captures :
+scratchpad `refonte/u5/` — `avant-*` et `apres-*` aux 8 tailles (vue d'ensemble, Murs, Ouvertures, Équipements, Doublage,
+Image, mur choisi, ouverture en vue Travaux, clic droit, tracé en cours ; téléphone : fiche, Suivi, Travaux), `p1-*` à
+`p4-*` (étapes), `recette-*` (le parcours au clic à 1 440, 1 280 et 1 024, puis 768), `det-*` (bulle d'un outil en icônes
+seules, chevrons, tablette repliée), `dims-*` (les 11 ouvertures de l'exemple choisies, avant / après).
+
+**Constat.** De 1 024 px et plus, rien ne se chevauchait ni ne débordait dans l'interface (mesuré à chaque état). En dessous :
+- *Tablette en portrait (768 × 1 024)* : le panneau ouvert laissait 410 px au plan ; la bande de contexte passait sur
+  deux lignes ; la consigne se coupait à 206 px.
+- *Portable zoomé (720 × 450, 640 × 360)* : la colonne d'outils défilait (625 px de contenu pour 394 et 304) — Cote,
+  Mesurer, Note et Image sous le pli ; le plan tenait dans 362 × 264 puis 282 × 144 px (tête de 128 px sur 304) ; la
+  chaîne de cotes du haut passait sous la barre d'options.
+- *Barre d'état pendant un geste* : la mesure en direct écrasait la consigne à 23 px (« Co… », 1 024) puis à 0 ; à 720 et
+  640, le zoom, la grille, l'aimantation et l'affichage sortaient de la barre (coupés à droite) ; pendant une pose refusée
+  (« une ouverture est déjà là : le clic la choisit »), l'Affichage sortait même à 1 024.
+- *Panneau replié* : la poignée gardait sa marge négative au bord droit — la page défilait de 3 px à l'horizontale.
+- *Barre d'options trop longue* (Murs dès 1 440, Ouvertures même à 1 920) : seul un bord estompé disait qu'il restait
+  des options ; rien à cliquer pour les atteindre sans molette horizontale ; le modèle choisi revenait collé au bord.
+- *Téléphone* : l'aimantation (un réglage de dessin) restait dans la barre de zoom, alors qu'on n'y dessine pas.
+La recette au clic a trouvé, en plus :
+- *La bulle d'un outil prenait le 1er clic du tracé* : après un clic sur « Murs », le bouton redessiné rouvrait sa bulle ;
+  elle se posait sur le haut gauche du plan, restait au survol (1.4.13) et avalait le clic du premier coin (1 024 : la
+  pièce ne se fermait jamais, 3 murs sur 4 ; 1 440 : le clic du Doublage).
+- *Les cotes de jambage d'une ouverture choisie tombaient sur la chaîne extérieure* : « 4,45 m » caché sous « 4,40 m »
+  (porte d'entrée), « 5,20 m » sur « 4,10 m » (petite fenêtre), « 6,65 m » collé à « 5,60 m » (fenêtre de la cuisine),
+  la baie de la recette sous « 3,20 m ». Elles étaient dessinées avant la chaîne, donc dessous.
+- *Tablette repliée* : une note posée s'écrit dans le panneau — replié, le texte tapé partait dans le vide (note vide) ;
+  « Choisir son type » (message d'une pièce fermée) ouvrait une fiche invisible.
+
+**Décision.**
+1. *La colonne d'outils ne défile plus jamais* (`majOutilsCompacts`, appelée en tête de `resize`) : elle mesure son
+   contenu complet ; s'il ne tient pas, elle passe en **icônes seules** (52 px, boutons de 40 × 32, les intitulés de
+   section deviennent des filets) ; si même les icônes ne tiennent pas, en **deux colonnes** (84 px). Le nom, la touche
+   et la phrase restent dans la bulle (survol et focus, à droite) et dans `aria-label` ; mêmes boutons, même ordre,
+   même tabulation. 720 × 450 : une colonne d'icônes ; 640 × 360 : deux colonnes.
+2. *Le panneau s'ouvre replié sur un écran étroit* (900 px et moins, hors téléphone : tablette en portrait, fenêtre
+   réduite, portable zoomé) — `pliAutoVoulu`, `majPliAuto` : le plan d'abord (768 : 687 px au lieu de 410), le budget
+   dans la barre d'état. La fiche est à un geste : « Voir sa fiche » entre dans la barre d'actions quand le panneau est
+   replié (`panneauPlie`), comme Entrée et le clic droit ; une note posée et « Choisir son type » ouvrent le panneau (on y
+   écrit) ; la visite l'ouvre et le replie en partant s'il l'était. La préférence dite au bouton du panneau prime et se
+   garde (`avyora-plan-plie` : '1' replié, '0' déplié) ; ouvrir une fiche ne la change pas. On ne bascule qu'en
+   franchissant le seuil (tourner la tablette), jamais à chaque redimensionnement (le clavier virtuel en déclenche).
+   Replié, plus de défilement de 3 px ; la barre d'actions laisse libre le bouton du panneau au bord droit du plan.
+3. *La barre d'état se resserre par priorité* (requêtes de conteneur) : zoom −, +, Ajuster, Grille, Aimantation,
+   Affichage restent entiers ; la consigne cède la place la première ; pendant un geste, la mesure en direct passe
+   avant la surface (sous 1 000 px de barre) et, sous 760 px, tient lieu de consigne (plus de « Co… ») ; elle se coupe
+   ensuite, jamais le zoom ; la pastille budget ne garde que le montant (sous 1 000 px, le reste dans sa bulle et son
+   nom accessible), la surface que son nombre (sous 640).
+4. *La barre d'options défile proprement* : un chevron (`#obGauche`, `#obDroite`, icônes du registre) au bord où il reste
+   des options ; un clic défile d'une page (sans glisser si le mouvement est réduit) ; au clavier, Tab parcourt les
+   options et `scroll-padding` les arrête hors du chevron (les chevrons sont `tabindex=-1`, `aria-hidden`) ; le modèle
+   choisi revient en vue hors du bord estompé.
+5. *La bulle d'un bouton cliqué se tait* jusqu'à ce que la souris le quitte (`bulleMuette`) : elle reste lisible au survol
+   et au focus clavier, elle se survole toujours (1.4.13), elle ne prend plus le clic destiné au plan.
+6. *Les cotes de jambage d'une ouverture choisie* : en deux temps (`prepOpeningDims`, puis `drawOpeningDims`). Avant les
+   étiquettes et les cotes intérieures (qui les évitent, D50), le côté se choisit et la place se réserve ; elles se
+   dessinent APRÈS la chaîne extérieure, par-dessus. Le côté reste l'opposé du débattement, sauf si un de leurs textes
+   tombe sur la chaîne (calculée à blanc pour ce rendu, alpha nul) et que l'autre côté est libre : elles passent alors
+   côté pièce. Une cote plus courte que son texte qui touche la chaîne des deux côtés reste par-dessus, lisible.
+7. *Téléphone* : toujours le mode chantier en consultation (aucun outil, aucune barre d'options ni d'actions) ; la barre
+   de zoom perd l'aimantation, comme elle avait perdu la grille.
+
+**Recette au clic** (souris et clavier réels, plan vierge, à 1 440, 1 280, 1 024, puis 768 replié) : tracer une pièce
+de 6 × 4 et la fermer ; une cloison choisie dans la barre d'options (deux pièces) ; une porte, une fenêtre et une baie
+(le panneau montre l'objet posé ; Échap rend la Sélection) ; un doublage ; un équipement de chaque famille (WC, Évier,
+Radiateur, Prise, Lit double) et l'escalier ; une cote ; une note tapée ; choisir un équipement (barre d'actions),
+Pivoter, clic droit → Dupliquer, Annuler (bouton) puis Ctrl Z ; vues Travaux (la barre propose l'état, « À démolir »
+marque la cloison), Après travaux (lecture seule), Avant travaux ; Estimer. Tout passe, 0 erreur et 0 avertissement en
+console. Les montants lus en cours d'animation (147 / 149 / 150 €) sont le compteur animé, pas un écart.
+
+**Ce qui ne bouge pas.** Aucune globale renommée (ajouts : `majOutilsCompacts`, `pliAuto`, `pliEtroit`, `pliAutoVoulu`,
+`majPliAuto`, `panneauPlie`, `defilerOptbar`, `bulleMuette`, `cleBulle`, `jambage`, `prepOpeningDims`) ;
+`plierPanneau(force)` et `drawOpeningDims(o)` gardent leur signature (seule la bascule sans argument écrit la
+préférence) ; `drawDim` et `hachurer` intacts (le choix du côté utilise le mode `essai` existant de `drawDim`). Ids
+nouveaux : `#obGauche`, `#obDroite` (dans `#tetePlan`, après le canvas). Ordre `.top → #tools → canvas`, ids, `onclick`
+d'ancrage, clés `localStorage`, tables lues comme du texte, chiffrage, dessin du plan hors sélection, 10 boutons `.tb`
+(libellé dans le 1er `<span>`, toujours là, seulement masqué en icônes seules).
+
+**Laissé, volontairement.**
+- *Le téléphone en paysage* (844 × 390…) a la largeur d'une tablette : il ouvre l'éditeur complet (panneau replié,
+  outils en icônes), pas le mode chantier. `isMobile()` ne regarde que la largeur (D48) ; détecter un téléphone couché
+  (pointeur grossier et faible hauteur) toucherait toutes les règles du téléphone — à décider.
+- *Les étiquettes de pièces au très petit zoom* (720 × 450 et 640 × 360, plan entier à ~27 px/m) : « Salle de bain »
+  peut sortir de sa pièce sur la chaîne de cotes ; le placement (D46–D50) n'est vérifié qu'à partir de 768. On zoome.
+- *640 × 360* : la bande de contexte passe sur deux lignes (légende sous les vues) et la barre d'options garde 44 px ; le
+  plan garde ~170 px de haut. Réduire encore la tête toucherait les gabarits vérifiés (44 px, vignettes 54 × 30).
+- La consigne de la barre d'état se coupe (lisible au survol) sous ~1 000 px de plan ; elle n'est vérifiée entière qu'à
+  1 280 et 1 440 hors geste (D61).
+- Tablette repliée : après une pose, la fiche de l'objet posé est prête mais le panneau reste replié (le plan d'abord) ;
+  Entrée ou « Voir sa fiche » l'ouvrent.
+- Côté pièce, une cote de jambage longue peut traverser un meuble (trait sur trait) : préféré à un texte posé sur un autre.
+- Au téléphone, pas de barre d'actions (U4 laissait la question) : le tiroir montre la fiche en lecture, et toutes les
+  actions de la barre modifient le plan — ce que le mode chantier refuse.
+- La barre d'actions en vue Travaux sur une ouverture : 5 boutons (6 avec « Voir sa fiche » replié) — elle tient entière
+  dans la zone du plan jusqu'à 640 px (vérifié).
+
+**Contrôles.** Mis à jour en gardant leur intention, parce que la tablette s'ouvre désormais repliée :
+- `responsive` : 1 920 × 1 080 rejoint les tailles parcourues ; « fiche d'une pièce : hauteur utile » ouvre la fiche
+  comme on la demande quand le panneau est replié (`ouvrirFiche`) ; « replié : le plan se recadre » part du panneau
+  déplié. Nouveaux : 900 px et moins s'ouvrent repliés (plan ≥ largeur − 140 px, budget dans la barre d'état, pas de
+  défilement), « Voir sa fiche » de la barre d'actions ouvre le panneau sur la fiche sans changer la préférence, une note
+  posée panneau replié ouvre le panneau avec le curseur dans son texte ; 1 024 et plus s'ouvrent dépliés.
+Nouveau : `ux` §8 (U5, à 1 920, 1 440, 1 280, 1 024, 768, 720 × 450, 640 × 360 et au téléphone) — les 10 outils dans la
+colonne sans défiler, libellés si la hauteur suffit, sinon icônes seules avec le nom dans `aria-label` et la bulle (survol
+réel et focus clavier), boutons ≥ 30 px ; panneau replié / déplié selon la largeur, sans défilement horizontal ; barre
+d'état de 32 px où rien ne déborde et où les 6 commandes de vue restent entières et cliquables — en vue d'ensemble,
+pendant un tracé (mesure en direct entière) et pendant une pose refusée (« déjà là » dit) ; bande de contexte sans
+chevauchement ; barre d'options de 44 px pour chaque outil ; chevrons (à droite, un clic défile, à gauche ensuite, plus à
+droite au bout) ; modèle choisi en vue hors des chevrons ; barre d'actions dans la zone du plan et entière (mur,
+ouverture, équipement, vue Travaux), menu du clic droit dans l'écran ; « Voir sa fiche » dans la barre seulement panneau
+replié ; à 1 440 et 1 024, la bulle d'un outil cliqué ne prend pas le 1er clic du tracé, et les cotes de jambage des 11
+ouvertures de l'exemple ne tombent sur aucune cote de la chaîne extérieure (un seul rendu après un changement de zoom) ;
+téléphone : ni outils, ni barre d'options, ni chevrons, ni grille, ni aimantation, un outil de dessin refusé, pas de
+barre d'actions. `ux.mjs` passe de 279 à 396 contrôles ; sur le fichier d'avant, 37 échecs (et 15 pour `responsive`).
+Batterie complète (21 + ux), finition, couverture et vitest (167) verts.
