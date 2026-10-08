@@ -68,6 +68,21 @@
  *   - l'aperçu de pose : cotes temporaires du jambage au voisin, refus visible ; accrochage nommé (Cote, Mesurer) ;
  *     raccourcis d'une touche coupés : ni la barre ni le menu ne promettent « R ».
  *
+ * U5 · toutes les tailles d'écran (D63) — 1 920, 1 440, 1 280, 1 024, 768 (portrait), 720 × 450 et 640 × 360 (portable
+ *   zoomé), 390 (téléphone) :
+ *   - la colonne d'outils ne défile jamais : libellés si la hauteur suffit, sinon icônes seules (puis deux colonnes), le nom
+ *     dans aria-label et dans la bulle (survol réel et focus clavier) ; boutons de 30 px au moins ;
+ *   - le panneau s'ouvre replié à 900 px et moins (le plan d'abord), déplié au-delà ; replié, « Voir sa fiche » est dans la
+ *     barre d'actions ; jamais de défilement horizontal ;
+ *   - la barre d'état (32 px) se resserre sans rien laisser déborder : les 6 commandes de vue toujours entières et
+ *     cliquables, en vue d'ensemble, pendant un tracé (la mesure en direct se lit entière) et pendant une pose refusée ;
+ *   - la bande de contexte (niveaux, vues) sans chevauchement ; la barre d'options d'une ligne de 44 px pour chaque outil,
+ *     qui défile proprement : chevron du côté où il reste des options, un clic défile d'une page, le modèle choisi en vue ;
+ *   - la barre d'actions dans la zone du plan et entière, le menu du clic droit dans l'écran ;
+ *   - recette au clic : la bulle d'un outil choisi ne prend pas le 1er clic du tracé ; les cotes de jambage d'une ouverture
+ *     choisie ne tombent jamais sur la chaîne de cotes extérieure (1 440 et 1 024) ;
+ *   - le téléphone reste le mode chantier : ni outils, ni barre d'options, ni grille, ni aimantation, ni barre d'actions.
+ *
  *   node maquettes/tools/ux.mjs "$(pwd)/maquettes"
  *
  * Sort en code 1 si un contrôle échoue ou si la page lève une erreur.
@@ -590,9 +605,130 @@ for (const [L0, H0] of [[1440, 900], [1280, 800], [1024, 768]]) {
   await p.close();
 }
 
+/* ═════════ 8. U5 · à toutes les tailles d'écran (D63) ═════════ */
+t["source · la colonne d'outils se compacte d'après sa hauteur mesurée (majOutilsCompacts, appelée par resize)"] = /function majOutilsCompacts\(\)/.test(SRC) && /function resize\(\)\{if\(typeof majOutilsCompacts==='function'\)majOutilsCompacts\(\);/.test(SRC);
+for (const [L0, H0] of [[1920, 1080], [1440, 900], [1280, 800], [1024, 768], [768, 1024], [720, 450], [640, 360]]) {
+  const p = await onglet({ larg: L0, haut: H0 });
+  const tag = `${L0} × ${H0}`;
+  try {
+  Object.assign(t, await p.evaluate(async (tag, larg, haut) => { const r = {};
+    const vis = (e) => !!e && e.getClientRects().length > 0 && getComputedStyle(e).display !== "none" && getComputedStyle(e).visibility !== "hidden";
+    const rect = (e) => e.getBoundingClientRect(), dans = (a, b, m = 0.5) => a.left >= b.left - m && a.right <= b.right + m && a.top >= b.top - m && a.bottom <= b.bottom + m;
+    const coupe = (a, b) => a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1;
+    const touche = (e) => { const q = rect(e), el = document.elementFromPoint(q.left + q.width / 2, q.top + q.height / 2); return !!el && (el === e || e.contains(el)); };
+    const attendre = (ms) => new Promise((ok) => setTimeout(ok, ms));
+    const T = document.getElementById("tools"), tb = [...T.querySelectorAll(".tb")], TR = rect(T);
+    /* a. la colonne d'outils : jamais de défilement, les 10 outils à l'écran ; libellés si la hauteur le permet, sinon icônes */
+    r[`${tag} · outils : les 10 tiennent dans la colonne, sans défiler${T.classList.contains("deux") ? " (deux colonnes d'icônes)" : T.classList.contains("icones") ? " (icônes seules)" : ""}`] = tb.length === 10 && T.scrollHeight <= T.clientHeight + 1 && tb.every((b) => dans(rect(b), TR) && rect(b).bottom <= innerHeight && touche(b));
+    const libs = tb.filter((b) => vis(b.querySelector("span"))).length;
+    if (haut >= 768) r[`${tag} · outils : libellés visibles (la hauteur suffit)`] = libs === 10 && !T.classList.contains("icones");
+    else r[`${tag} · outils : la hauteur manque — icônes seules, le nom dans aria-label et dans la bulle`] = T.classList.contains("icones") && libs === 0 && tb.every((b) => { const n = b.querySelector("span").textContent; return (b.getAttribute("aria-label") || "").includes(n) && b.dataset.tip.startsWith(n); });
+    r[`${tag} · outils : chaque bouton fait au moins 30 × 30 px`] = tb.every((b) => rect(b).width >= 29.5 && rect(b).height >= 29.5);
+    /* b. le panneau : replié sur un écran étroit (900 px et moins), déplié au-delà ; replié, aucun défilement horizontal */
+    const plie = !!document.querySelector(".body.panelPlie"), ST = rect(document.getElementById("stage"));
+    r[`${tag} · panneau ${larg <= 900 ? "replié (écran étroit, le plan d'abord)" : "déplié"} — plan de ${Math.round(ST.width)} px`] = (larg <= 900) === plie && (!plie || ST.width >= larg - 140) && document.documentElement.scrollWidth <= innerWidth;
+    /* c. la barre d'état : une ligne de 32 px ; zoom, ajuster, grille, aimantation, affichage entiers et cliquables, dans tous les états */
+    const ET = document.getElementById("etat");
+    const etatOk = (ctx) => { const er = rect(ET), hors = [...ET.querySelectorAll(":scope > *, .zoomctl > *")].filter(vis).filter((e) => !dans(rect(e), er, 1)).map((e) => e.id || e.className);
+      const btn = [...ET.querySelectorAll(".zoomctl button")]; const ko = btn.filter((b) => !vis(b) || !touche(b)).map((b) => b.getAttribute("aria-label"));
+      const h = document.getElementById("hint");
+      r[`${tag} · barre d'état (${ctx}) : 32 px, rien ne déborde, les 6 commandes de vue (−, +, ajuster, grille, aimantation, affichage) entières et cliquables${hors.length ? " — déborde : " + hors.join(", ") : ""}${ko.length ? " — cachées : " + ko.join(", ") : ""}`] = Math.round(er.height) === 32 && !hors.length && btn.length === 6 && !ko.length && (!vis(h) || rect(h).width >= 40 || h.textContent === ""); };
+    etatOk("vue d'ensemble");
+    setTool("mur"); const b0 = bbox(L()); hover = v(b0.x1 + 2, b0.y0); clickAction(hover); hover = v(b0.x1 + 2, b0.y0 + 3); draw();
+    const ml = document.getElementById("mesureLive");
+    r[`${tag} · barre d'état pendant un tracé : la mesure en direct se lit entière (« ${ml.textContent} »)`] = vis(ml) && /Longueur 3,00 m/.test(ml.textContent) && ml.scrollWidth <= ml.clientWidth + 1 && dans(rect(ml), rect(ET), 1);
+    etatOk("tracé en cours");
+    keys.shift = false; endChain(false); hover = null; setTool("select"); draw();
+    /* la pose d'une ouverture sur une ouverture déjà là : le message le plus long de la barre d'état ne pousse jamais le zoom dehors */
+    setTool("ouverture"); { const o0 = L().openings[0], w0 = findWall(o0.wallId); hover = add(add(w0.a, mul(sub(w0.b, w0.a), o0.t)), wallOff(w0)); draw(); }
+    r[`${tag} · barre d'état pendant une pose refusée : « déjà là » est dit (${ml.textContent.slice(0, 40)}…)`] = vis(ml) && /déjà là/.test(ml.textContent);
+    etatOk("pose refusée");
+    hover = null; setTool("select"); draw();
+    /* d. la tête du plan : la bande de contexte sans chevauchement, la barre d'options d'une ligne de 44 px pour chaque outil */
+    const lv = rect(document.getElementById("levels")), mo = rect(document.getElementById("modes")), TP = rect(document.getElementById("tetePlan"));
+    r[`${tag} · bande de contexte : niveaux et vues côte à côte ou sur deux lignes, jamais l'un sur l'autre, dans la tête du plan`] = !coupe(lv, mo) && dans(lv, TP) && dans(mo, TP) && [...document.querySelectorAll("#modes button")].every((b) => dans(rect(b), ST) && touche(b));
+    const OB = document.getElementById("optbar"), hauts = [];
+    for (const o of ["select", "mur", "ouverture", "doublage", "equipement", "cote", "texte", "calque"]) { setTool(o); hauts.push(Math.round(rect(OB).height)); }
+    r[`${tag} · barre d'options : une ligne de 44 px pour chaque outil, jamais de défilement de la page`] = hauts.every((h) => h === 44) && document.documentElement.scrollWidth <= innerWidth;
+    /* e. la barre d'options défile proprement : chevron du côté où il reste des options, un clic la fait défiler, le modèle choisi est en vue */
+    setTool("ouverture"); OB.scrollLeft = 0; bordsOptbar();
+    const deb = OB.scrollWidth > OB.clientWidth + 1, gD = document.getElementById("obDroite"), gG = document.getElementById("obGauche");
+    if (deb && !(gD && gG)) r[`${tag} · barre d'options trop longue : un chevron à droite, un clic défile d'une page, le chevron de gauche paraît ; au bout, plus de chevron à droite`] = false;
+    else if (deb) {
+      const d0 = vis(gD) && !vis(gG) && OB.classList.contains("vers-d") && dans(rect(gD), rect(OB)) && touche(gD);
+      gD.click(); await attendre(700); bordsOptbar();
+      const d1 = OB.scrollLeft > 60 && vis(gG) && touche(gG);
+      OB.scrollLeft = OB.scrollWidth; bordsOptbar(); await attendre(60);
+      const d2 = !vis(gD) && vis(gG);
+      gG.click(); await attendre(700);
+      r[`${tag} · barre d'options trop longue : un chevron à droite, un clic défile d'une page, le chevron de gauche paraît ; au bout, plus de chevron à droite`] = d0 && d1 && d2 && OB.scrollLeft < OB.scrollWidth - OB.clientWidth - 60;
+    } else r[`${tag} · barre d'options : tout tient, aucun chevron`] = !vis(gD) && !vis(gG);
+    const cle = ORDRE_OUV_BARRE[ORDRE_OUV_BARRE.length - 1]; /* le dernier modèle de la barre (Passage) */
+    setOpeningType(cle); setTool("select"); setTool("ouverture");
+    const on = OB.querySelector(".lib2 .it.on"), obr = rect(OB);
+    r[`${tag} · barre d'options : le modèle choisi (${OPENINGS[cle].label}) est en vue au retour sur l'outil, hors des chevrons`] = !!on && rect(on).left >= obr.left - 0.5 && rect(on).right <= obr.right - 30;
+    setOpeningType("porte"); setTool("select");
+    /* f. la barre d'actions et le menu du clic droit restent dans la zone du plan / l'écran */
+    const Z = zoneUtile(), cvr = rect(cv), zone = { left: cvr.left + Z.x0, right: cvr.left + Z.x1, top: cvr.top + Z.y0, bottom: cvr.top + Z.y1 };
+    const sb = document.getElementById("selbar"), dehors = [];
+    for (const k of ["wall", "opening", "item"]) { const lvv = L(), x = k === "wall" ? lvv.walls.find((w) => !isVirtual(w)) : k === "opening" ? lvv.openings[0] : lvv.items.find((i) => !ITEMS[i.type].elec);
+      sel = { kind: k, id: x.id }; multi = []; render(); if (!sb.hidden && (!dans(rect(sb), zone, 1) || sb.scrollWidth > sb.clientWidth + 1)) dehors.push(k); }
+    setMode("projet"); closeModal(); sel = { kind: "opening", id: L().openings[0].id }; render(); if (!sb.hidden && (!dans(rect(sb), zone, 1) || sb.scrollWidth > sb.clientWidth + 1)) dehors.push("ouverture en vue Travaux");
+    ouvrirMenuCtx(null); const cm = document.getElementById("ctxMenu"), cq = rect(cm); const menuOk = !cm.hidden && cq.left >= 0 && cq.top >= 0 && cq.right <= innerWidth && cq.bottom <= innerHeight; fermerMenuCtx(false);
+    setMode("existant"); closeModal(); sel = null; render();
+    r[`${tag} · barre d'actions dans la zone du plan, entière (mur, ouverture, équipement, vue Travaux)${dehors.length ? " — " + dehors.join(", ") : ""} ; menu du clic droit dans l'écran`] = !dehors.length && menuOk;
+    /* g. replié : « Voir sa fiche » est dans la barre d'actions ; déplié : au menu seulement (la fiche est déjà là) */
+    const w0 = L().walls.find((w) => !isVirtual(w)); sel = { kind: "wall", id: w0.id }; multi = []; render();
+    const fiche = [...sb.querySelectorAll("button")].some((b) => b.getAttribute("aria-label") === "Voir sa fiche");
+    r[`${tag} · barre d'actions : « Voir sa fiche » ${plie ? "présent (panneau replié)" : "absent (la fiche est dans le panneau)"}`] = fiche === plie;
+    sel = null; render();
+    return r; }, tag, L0, H0));
+  /* h. icônes seules : la bulle dit le nom de l'outil, au survol (souris réelle) et au focus clavier, à droite de la colonne */
+  if (H0 < 768) {
+    const q = await p.evaluate(() => { const b = document.querySelector('#tools .tb[aria-label="Murs"]'), r = b.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
+    await p.mouse.move(q.x, q.y); await wait(120);
+    const s1 = await p.evaluate(() => { const bu = document.getElementById("bulle"), b = document.querySelector('#tools .tb[aria-label="Murs"]'); return !bu.hidden && bu.textContent.startsWith("Murs") && bu.getBoundingClientRect().left >= b.getBoundingClientRect().right; });
+    await p.mouse.move(600, 5); await wait(80);
+    await p.evaluate(() => { document.querySelector('#tools .tb[aria-label="Zone"]').focus(); }); await p.keyboard.press("Tab"); await wait(120);
+    const s2 = await p.evaluate(() => { const bu = document.getElementById("bulle"); return document.activeElement.getAttribute("aria-label") === "Murs" && !bu.hidden && bu.textContent.startsWith("Murs"); });
+    t[`${tag} · icônes seules : la bulle dit « Murs (M) · … » au survol et au focus clavier, à droite de la colonne`] = s1 && s2;
+  }
+  } catch (e) { t[`U5 · ${tag} — ${e.message.split("\n")[0]}`] = false; }
+  /* j. la recette au clic l'a montré : après un clic sur un outil, sa bulle (rouverte par le bouton redessiné) restait sur le plan
+     et prenait le 1er clic du tracé — elle se tait désormais jusqu'à ce que la souris quitte l'outil */
+  if (L0 === 1440 || L0 === 1024) {
+    await p.evaluate(() => { closeModal(); setMode("existant"); closeModal(); setTool("select"); sel = null; render(); });
+    await p.click('#tools .tb[aria-label="Murs"]'); await wait(80);
+    const cible = await p.evaluate(() => { const q = document.querySelector('#tools .tb[aria-label="Murs"]').getBoundingClientRect(); return { x: q.right + 70, y: q.top + q.height / 2 }; });
+    await p.mouse.move(cible.x, cible.y); await wait(60); await p.mouse.click(cible.x, cible.y); await wait(80);
+    const tr = await p.evaluate(() => ({ tool, chain: chain.length, bulle: !document.getElementById("bulle").hidden }));
+    t[`${tag} · un outil choisi au clic : sa bulle ne prend pas le 1er clic sur le plan (le tracé commence)`] = tr.tool === "mur" && tr.chain === 1 && !tr.bulle;
+    await p.keyboard.press("Escape"); await p.keyboard.press("Escape"); await wait(40);
+    /* k. les cotes de jambage d'une ouverture choisie ne tombent jamais sur la chaîne de cotes extérieure */
+    const heurts = await p.evaluate(() => { setTool("select"); fitView(); const out = []; const x = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+      /* un seul rendu après un changement de zoom : la chaîne lue est celle de ce rendu, pas du précédent */
+      for (const [i, o] of L().openings.entries()) { fitView(); view.zoom *= i % 2 ? 1.12 : 0.9; sel = { kind: "opening", id: o.id }; render(); if (cotesOuverture.some((c) => !c.court && boitesChaines.some((k) => x(c, k)))) out.push(OPENINGS[o.type].label); }
+      fitView();
+      sel = null; render(); return out; });
+    t[`${tag} · ouverture choisie : ses cotes de jambage ne tombent sur aucune cote de la chaîne extérieure (hors cote plus courte que son texte, dessinée par-dessus)${heurts.length ? " — " + heurts.join(", ") : ""}`] = !heurts.length;
+  }
+  await p.close();
+}
+/* i. le téléphone reste le mode chantier, en consultation : ni outils, ni barre d'options, ni barre d'état, ni aimantation */
+{ const p = await onglet({ larg: 390, haut: 844, mobile: true });
+  Object.assign(t, await p.evaluate(() => { const r = {}, vis = (e) => !!e && e.getClientRects().length > 0 && getComputedStyle(e).display !== "none";
+    r["390 × 844 · téléphone : ni colonne d'outils, ni barre d'options, ni chevrons, ni mesure en direct, ni échelle"] = !vis(document.getElementById("tools")) && !vis(document.getElementById("optbar")) && !vis(document.getElementById("obDroite")) && !vis(document.getElementById("mesureLive")) && !vis(document.getElementById("echelle"));
+    r["390 × 844 · téléphone : le zoom reste (−, +, ajuster, affichage), sans la grille ni l'aimantation (réglages de dessin)"] = !vis(document.getElementById("gridBtn")) && !vis(document.getElementById("magnetBtn")) && [...document.querySelectorAll(".zoomctl button")].filter(vis).length === 4;
+    setTool("mur"); r["390 × 844 · téléphone : un outil de dessin est refusé (on consulte)"] = tool === "select";
+    const w = L().walls.find((x) => !isVirtual(x)); sel = { kind: "wall", id: w.id }; render();
+    r["390 × 844 · téléphone : un élément choisi n'a pas de barre d'actions (sa fiche est dans le tiroir)"] = document.getElementById("selbar").hidden;
+    r["390 × 844 · téléphone : pas de défilement horizontal"] = document.documentElement.scrollWidth <= innerWidth;
+    return r; }));
+  await p.close(); }
+
 await b.close().catch(() => {});
 const echecs = Object.entries(t).filter(([, ok]) => !ok);
 for (const [nom, ok] of Object.entries(t)) console.log(`  ${ok ? "✓" : "✗"} ${nom}`);
 if (errs.length) console.log("\n  erreurs de page :", errs.join(" · "));
-console.log(echecs.length || errs.length ? `\n✗ ${echecs.length} contrôle(s) en échec` : `\n✓ refonte : ${Object.keys(t).length} contrôles (registre d'icônes, design system, bibliothèques, symboles du plan et vignettes, disposition, interactions)`);
+console.log(echecs.length || errs.length ? `\n✗ ${echecs.length} contrôle(s) en échec` : `\n✓ refonte : ${Object.keys(t).length} contrôles (registre d'icônes, design system, bibliothèques, symboles du plan et vignettes, disposition, interactions, toutes les tailles d’écran)`);
 process.exit(echecs.length || errs.length ? 1 : 0);
