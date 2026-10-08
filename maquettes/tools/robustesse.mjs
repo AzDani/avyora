@@ -446,6 +446,31 @@ await p.setViewport({ width: 1400, height: 900, deviceScaleFactor: 1 }); await w
 t["densité de pixels ×1 : le canvas se recale"] = await p.evaluate(() => { const r = cv.parentElement.getBoundingClientRect(); return devicePixelRatio === 1 && Math.abs(cv.width - r.width) <= 2; });
 await p.close();
 
+/* ── D62 · le clic droit et Échap : ce qui agit, ce qui n'agit pas ──────────────────────── */
+p = await onglet();
+await p.evaluate(() => { closeWelcome("sample"); closeModal(); setMode("final"); closeModal(); setTool("select"); sel = null; render(); });
+{ const it = await p.evaluate(() => { const it = L().items.find((x) => !ITEMS[x.type].elec && x.type !== "escalier" && hitTest(v(x.x, x.y))?.id === x.id); return { id: it.id, x: it.x, y: it.y, rot: it.rot, n: L().items.length }; });
+  const q = await ecran(p, it.x, it.y); await p.mouse.move(q.x, q.y); await p.mouse.click(q.x, q.y, { button: "right" }); await wait(120);
+  const m = await p.evaluate(() => [...document.querySelectorAll("#ctxMenu [role^=menuitem]")].map((x) => x.textContent.trim()));
+  t[`vue ${"Après travaux"} (lecture seule) · clic droit : le menu ne propose que « Voir sa fiche » et « Modifier en vue Travaux » (${m.join(" | ")})`] = m.length === 2 && /^Voir sa fiche/.test(m[0]) && /^Modifier en vue/.test(m[1]);
+  t["vue Après travaux · aucune barre d'actions (lecture seule)"] = await p.evaluate(() => document.getElementById("selbar").hidden);
+  await p.evaluate(() => { [...document.querySelectorAll("#ctxMenu [role=menuitem]")].find((x) => /Modifier en vue/.test(x.textContent)).click(); }); await wait(120);
+  t["vue Après travaux · « Modifier en vue Travaux » du menu : la vue Travaux, l'élément reste choisi"] = await p.evaluate((it) => mode() === "projet" && sel && sel.id === it.id && document.getElementById("ctxMenu").hidden, it);
+  await p.evaluate(() => closeModal());
+  t["vue Après travaux · rien n'a bougé (ni pivoté, ni dupliqué)"] = await p.evaluate((it) => L().items.length === it.n && L().items.find((x) => x.id === it.id).rot === it.rot, it); }
+/* le menu ouvert, une lettre ou Suppr n'atteignent pas le plan derrière */
+await p.evaluate(() => { setMode("existant"); closeModal(); setTool("select"); const it = L().items[0]; sel = { kind: "item", id: it.id }; multi = []; render(); ouvrirMenuCtx(null); });
+await wait(40);
+{ const n0 = await p.evaluate(() => L().items.length);
+  await p.keyboard.press("Delete"); await p.keyboard.press("m"); await wait(40);
+  t["menu du clic droit ouvert : Suppr et une lettre n'agissent pas derrière (rien d'effacé, l'outil ne change pas)"] = await p.evaluate((n0) => L().items.length === n0 && tool === "select" && !document.getElementById("ctxMenu").hidden, n0);
+  await p.keyboard.press("Escape"); await wait(40); }
+/* Échap pendant un glissé de Zone : le cadre s'annule, rien n'est choisi */
+await p.evaluate(() => { setTool("zone"); sel = null; render(); });
+{ const a = await ecran(p, 0.5, 0.5), c = await ecran(p, 3, 3); await p.mouse.move(a.x, a.y); await p.mouse.down(); await p.mouse.move(c.x, c.y, { steps: 4 }); await p.keyboard.press("Escape"); await p.mouse.up(); await wait(60);
+  t["Échap pendant le cadre de Zone : le cadre s'annule, rien n'est sélectionné"] = await p.evaluate(() => !sel && !drag); }
+await p.close();
+
 await b.close();
 const echecs = Object.entries(t).filter(([, ok]) => !ok);
 Object.entries(t).forEach(([k, ok]) => console.log((ok ? "  ✓ " : "  ✗ ") + k));
