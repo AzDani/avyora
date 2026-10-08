@@ -493,7 +493,10 @@ Object.assign(t, await p.evaluate(() => {
   await wait(150);
   t["souris · pièce 1 (4 × 3,5) : murs de 20 cm, l'outil passe en « Automatique »"] = await p3.evaluate(() => L().walls.length === 4 && L().walls.every((w) => w.type === "mur") && wallType === "auto");
   for (const [x, y] of [[4, 0], [7, 0], [7, 3.5], [4, 3.5]]) await clic3(x, y);
-  await p3.keyboard.press("Escape"); await wait(250);
+  /* D62 : Échap termine un tracé EN COURS ; sans tracé (la pièce 2 s'est fermée seule contre le mur), il rend la Sélection.
+     On ne le tape donc que s'il reste un tracé — l'intention (« finir la pièce, puis tracer la cloison ») ne change pas. */
+  if (await p3.evaluate(() => chain.length > 0)) await p3.keyboard.press("Escape"); await wait(250);
+  t["souris · pièce 2 fermée contre le mur : l'outil Murs reste actif pour la suite"] = await p3.evaluate(() => tool === "mur" && !chain.length);
   Object.assign(t, await p3.evaluate(() => { const r = {}, n = L().walls.slice(4);
     r["souris · pièce 2 accolée : ses 3 murs de façade sont des murs de 20 cm (pas des cloisons)"] = n.length === 3 && n.every((w) => w.type === "mur" && Math.abs(wallT(w) - 0.2) < 1e-9);
     const hauts = L().walls.filter((w) => Math.abs(w.a.y) < 1e-6 && Math.abs(w.b.y) < 1e-6).map((w) => wallOff(w).y);
@@ -510,10 +513,10 @@ Object.assign(t, await p.evaluate(() => {
   await p3.evaluate(() => { view.zoom = 60; view.ox = 200; view.oy = 200; draw(); setTool("mur"); });
   t["rechargement : l'outil Murs reste en « Automatique » (plus de retour au mur 20 cm)"] = await p3.evaluate(() => wallType === "auto");
   for (const [x, y] of [[0, 1.5], [4, 1.5]]) await clic3(x, y);
-  await p3.keyboard.press("Escape"); await wait(150);
+  if (await p3.evaluate(() => chain.length > 0)) await p3.keyboard.press("Escape"); await wait(150); /* D62 : Échap seulement si le tracé ne s'est pas arrêté seul (il bute ici contre le mur) */
   t["rechargement : un mur dans une pièce reste une cloison"] = await p3.evaluate(() => L().walls[L().walls.length - 1].type === "cloison");
   for (const [x, y] of [[0, 3.5], [0, 6], [4, 6], [4, 3.5]]) await clic3(x, y);
-  await p3.keyboard.press("Escape"); await wait(150);
+  if (await p3.evaluate(() => chain.length > 0)) await p3.keyboard.press("Escape"); await wait(150); /* D62 */
   t["rechargement : une extension dehors reste en murs de 20 cm"] = await p3.evaluate(() => L().walls.slice(-3).every((w) => w.type === "mur"));
   t["contrôle : une cloison de 7 cm en façade est signalée"] = await p3.evaluate(() => { const w = L().walls.slice(-3)[1]; w.type = "cloison"; afterChange(); return planChecks(L()).some((c) => /cloison de 7 cm en façade/i.test(c.msg)); });
   /* le vitrine reste sans alerte */
