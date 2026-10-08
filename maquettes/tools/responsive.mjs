@@ -2,7 +2,7 @@
  * Le plan à toutes les tailles d'écran (D43).
  *
  * Une passe automatique à 390 × 844 (téléphone), 320 × 640 (petit téléphone, zoom 400 % : D51), 768 × 1024 (tablette en portrait), 1024 × 768,
- * 1280 × 800, 1440 × 900, 720 × 450 et 640 × 360 (portable zoomé à 200 et 300 %), qui vérifie :
+ * 1280 × 800, 1440 × 900, 1920 × 1080 (D63), 720 × 450 et 640 × 360 (portable zoomé à 200 et 300 %), qui vérifie :
  *   - la barre du haut : aucun de ses éléments ne déborde (ni à droite, ni sous la barre) ;
  *   - « Estimer ce plan » visible et cliquable (le point touché est bien le bouton, et le clic ouvre
  *     l'estimation) — tiroir fermé ET ouvert au téléphone ;
@@ -12,6 +12,9 @@
  *   - pas de défilement horizontal de la page ; les tableaux de l'estimation défilent dans leur cadre ;
  *   - au téléphone (mode chantier), les commandes du chantier font au moins 40 px, les cases du Suivi 24 px ;
  *   - la tablette en portrait : le plan a plus de place, et le panneau se replie d'un bouton (et revient) ;
+ *   - D63 : un écran étroit (900 px et moins : tablette en portrait, portable zoomé) s'ouvre panneau replié, le plan
+ *     d'abord ; la fiche se demande d'un geste (« Voir sa fiche » dans la barre d'actions, Entrée) ; 1 024 px et plus
+ *     s'ouvrent déplié ; replié, la page ne défile pas à l'horizontale ;
  *   - D48 : le téléphone est le mode chantier en CONSULTATION — fiches et réglages en lecture (le
  *     glossaire reste actif), rien ne se tire au doigt, Suppr ne marque rien, pas de nouveau plan ;
  *     le Suivi se coche ; et l'on dit honnêtement qu'un plan reste sur l'appareil où il a été dessiné.
@@ -71,7 +74,7 @@ const MESURES = () => {
 };
 
 /* D51 (cj-access12) : 320 × 640 — le petit téléphone, et la largeur de référence du critère 1.4.10 (1 280 px zoomé à 400 %) */
-for (const [L, H, mob] of [[390, 844, true], [320, 640, true], [768, 1024, false], [1024, 768, false], [1280, 800, false], [1440, 900, false], [720, 450, false], [640, 360, false]]) {
+for (const [L, H, mob] of [[390, 844, true], [320, 640, true], [768, 1024, false], [1024, 768, false], [1280, 800, false], [1440, 900, false], [1920, 1080, false], [720, 450, false], [640, 360, false]]) {
   const tag = `${L} × ${H}`;
   const p = await onglet(L, H, mob);
   /* 1. vue d'ensemble */
@@ -89,8 +92,24 @@ for (const [L, H, mob] of [[390, 844, true], [320, 640, true], [768, 1024, false
     t[`${tag} · estimation : rien ne déborde de la fenêtre (${est.deb} px), les tableaux défilent dans leur cadre`] = est.deb <= 1 && est.cadres && !est.dehors;
     await p.evaluate(() => closeModal()); await wait(100);
   }
-  /* 2. la fiche d'une pièce : hauteur utile du panneau */
-  await p.evaluate(() => { const r = L().rooms.find((x) => x.type === "sejour") || L().rooms[0]; sel = { kind: "room", id: r.id }; render(); });
+  /* D63 : 900 px et moins (hors téléphone), le panneau s'ouvre replié — le plan d'abord ; 1 024 px et plus, déplié */
+  if (!mob) { const R = await p.evaluate(() => ({ plie: !!document.querySelector(".body.panelPlie"), st: Math.round(document.getElementById("stage").getBoundingClientRect().width), sc: document.documentElement.scrollWidth - innerWidth, bp: !!document.getElementById("budgetPlie").getClientRects().length }));
+    if (L <= 900) {
+      t[`${tag} · écran étroit : le panneau s'ouvre replié, le plan prend ${R.st} px (budget dans la barre d'état), sans défilement`] = R.plie && R.st >= L - 140 && R.bp && R.sc <= 0;
+      /* replié, un élément choisi propose « Voir sa fiche » dans sa barre d'actions : le panneau s'ouvre sur sa fiche */
+      const F = await p.evaluate(async () => { const w = L().walls.find((x) => !isVirtual(x)); sel = { kind: "wall", id: w.id }; multi = []; render(); await new Promise((r) => setTimeout(r, 60));
+        const b = [...document.querySelectorAll("#selbar button")].find((x) => x.getAttribute("aria-label") === "Voir sa fiche"); const vu = !!b && !document.getElementById("selbar").hidden; if (b) b.click(); await new Promise((r) => setTimeout(r, 150));
+        const out = { vu, ouvert: !document.querySelector(".body.panelPlie") && /Mur|Cloison/.test(document.querySelector("#pbody .ptitle")?.textContent || ""), garde: (() => { try { return localStorage.getItem("avyora-plan-plie"); } catch { return null; } })() };
+        plierPanneau(true); sel = null; render(); return out; });
+      t[`${tag} · replié : « Voir sa fiche » dans la barre d'actions ouvre le panneau sur la fiche (sans changer la préférence)`] = F.vu && F.ouvert && F.garde === null;
+      /* une note s'écrit dans le panneau : posée panneau replié, il s'ouvre et le curseur est dans son texte (la recette au clic l'a vu) */
+      const N = await p.evaluate(async () => { plierPanneau(true); setTool("texte"); const b0 = bbox(L()); clickAction(v((b0.x0 + b0.x1) / 2, (b0.y0 + b0.y1) / 2)); await new Promise((r) => setTimeout(r, 150));
+        const out = { ouvert: !document.querySelector(".body.panelPlie"), focus: document.activeElement && document.activeElement.id === "txtEdit" }; undo(); plierPanneau(true); sel = null; setTool("select"); render(); return out; });
+      t[`${tag} · replié : une note posée ouvre le panneau, le curseur dans son texte`] = N.ouvert && N.focus;
+    } else t[`${tag} · écran large : le panneau s'ouvre déplié`] = !R.plie;
+  }
+  /* 2. la fiche d'une pièce : hauteur utile du panneau (D63 : replié, la fiche s'ouvre comme on la demande — Entrée, « Voir sa fiche ») */
+  await p.evaluate(() => { const r = L().rooms.find((x) => x.type === "sejour") || L().rooms[0]; sel = { kind: "room", id: r.id }; if (typeof panneauPlie === "function" && panneauPlie()) ouvrirFiche(); render(); });
   await wait(300);
   const P = await p.evaluate(() => {
     const pn = document.getElementById("panel").getBoundingClientRect(), pb = document.getElementById("pbody").getBoundingClientRect(), pf = document.getElementById("pfoot").getBoundingClientRect();
@@ -164,7 +183,7 @@ for (const [L, H, mob] of [[390, 844, true], [320, 640, true], [768, 1024, false
     t[`${tag} · le plan fait ${P.stage} px de large (378 avant D43)`] = P.stage >= 400;
     await p.evaluate(() => { sel = null; render(); });
     /* D50 (cj-access04) : replié, le plan vu en entier se recadre (zoom plus grand) et le budget reste à l'écran, sans toucher la bulle d'astuce */
-    { const z = await p.evaluate(async () => { fitView(); const z0 = view.zoom; plierPanneau(true); await new Promise((r) => setTimeout(r, 150));
+    { const z = await p.evaluate(async () => { plierPanneau(false); await new Promise((r) => setTimeout(r, 100)); fitView(); const z0 = view.zoom; plierPanneau(true); /* D63 : la tablette s'ouvre repliée ; on part du panneau déplié */ await new Promise((r) => setTimeout(r, 150));
         const bp = document.getElementById("budgetPlie"), q = bp.getBoundingClientRect(), h = document.getElementById("hint"), hr = h.getBoundingClientRect(), st = document.getElementById("stage").getBoundingClientRect();
         const out = { z0, z1: view.zoom, pill: bp.getClientRects().length > 0 && /Budget HT/.test(bp.textContent) && /€/.test(bp.textContent) && q.right <= st.right && q.bottom <= st.bottom,
           horsBulle: h.hidden || !h.getClientRects().length || !(q.left < hr.right && q.right > hr.left && q.top < hr.bottom && q.bottom > hr.top) };
