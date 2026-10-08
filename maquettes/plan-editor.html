@@ -817,6 +817,44 @@ h3[tabindex="-1"]:focus,.ptitle[tabindex="-1"]:focus,.modal[tabindex="-1"]:focus
 button.rl{width:100%;font:inherit;color:inherit;text-align:left;background:transparent}
 button.rl:focus-visible{outline-offset:0}
 button.chk{width:100%;font:inherit;text-align:left}
+/* =====================================================================
+   D62 · LES INTERACTIONS (chantier U4). Près de l'élément choisi, la barre de ses actions (une rangée de boutons
+   de 28 px : décision, gestes, supprimer) ; au clic droit, le menu des mêmes actions avec leurs touches (le
+   composant des menus Fichier et Aide). Rien d'autre ne flotte sur le plan ; la barre se pose au-dessus de
+   l'élément, dans la zone visible, jamais sous une bande.
+   ===================================================================== */
+.selbar{position:absolute;left:0;top:0;z-index:3;display:flex;align-items:center;gap:2px;padding:3px;background:var(--white);border:1px solid var(--line);border-radius:var(--r-m);box-shadow:var(--sh-pop);white-space:nowrap;max-width:calc(100% - 16px)}
+.selbar button{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:var(--h-s);min-width:var(--h-s);padding:0 9px;border:0;border-radius:var(--r-s);background:transparent;color:var(--ink2);font:inherit;font-size:var(--fs-s);font-weight:600;line-height:1;cursor:pointer}
+.selbar button.ic{width:var(--h-s);padding:0}
+.selbar button:hover{background:var(--hover);color:var(--ink)}
+.selbar button:active{background:var(--press)}
+.selbar button.on{background:var(--brand-l);color:var(--brand)}
+.selbar button:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
+.selbar .sbsep{flex:0 0 auto;width:1px;height:18px;background:var(--line);margin:0 3px}
+/* l'échantillon de la légende du plan, devant chaque décision (le même que dans la fiche) */
+.ech{display:inline-block;flex:0 0 auto;width:12px;height:9px;border-radius:2px;box-sizing:border-box}
+.ech.e-garder{background:var(--lg-exist)}
+.ech.e-creer,.ech.e-remplacer{background:var(--creer)}
+.ech.e-demolir{background:var(--demolir-l);border:1.5px dashed var(--demolir)}
+.ech.e-boucher{background:repeating-linear-gradient(45deg,var(--creer) 0 1.5px,#fff 1.5px 4px);border:1px solid var(--creer)}
+.mpop.ctxmenu{position:fixed;left:0;top:0;right:auto;z-index:45;min-width:232px}
+.ctxmenu:focus{outline:0}
+.ctxmenu [role^=menuitem]{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;font:inherit;font-size:13px;font-weight:600;color:var(--ink);padding:7px 10px;border-radius:var(--r-s);cursor:pointer;text-align:left;line-height:1.3}
+.ctxmenu [role^=menuitem]>span:not(.icv){flex:1;min-width:0}
+.ctxmenu [role^=menuitem] .ico{margin-top:0;color:var(--muted)}
+.ctxmenu [role^=menuitem]:hover,.ctxmenu [role^=menuitem]:focus{background:var(--hover);color:var(--ink);outline:0}
+.ctxmenu [role^=menuitem]:hover .ico,.ctxmenu [role^=menuitem]:focus .ico{color:var(--ink)}
+.ctxmenu [role^=menuitem]:focus-visible{box-shadow:inset 0 0 0 2px var(--brand)}
+.ctxmenu [role^=menuitem]>span.icv{flex:0 0 16px;width:16px}
+.ctxmenu [role=menuitemradio] .ech{margin:0 2px}
+.ctxmenu [aria-checked=true],.ctxmenu [aria-checked=true]:hover,.ctxmenu [aria-checked=true]:focus{color:var(--brand)}
+.ctxmenu [aria-checked=true] .ico,.ctxmenu [aria-checked=true]:hover .ico{color:var(--brand)}
+/* la barre d'état dit aussi ce qui ne tient pas (aperçu de pose) */
+.etat .mlive .ko{color:var(--danger);font-weight:600}
+.etat .mlive .ko::before{content:"";display:inline-block;width:6px;height:6px;border-radius:1px;background:var(--danger);margin-right:5px;vertical-align:1px;transform:rotate(45deg)}
+/* le mode d'emploi d'un outil dit comment en sortir */
+.msortie{margin:-8px 0 16px;font-size:var(--fs-s);line-height:1.45;color:var(--muted)}
+.msortie kbd{background:var(--canvas);border:1px solid var(--line);padding:0 4px;border-radius:4px;font-family:var(--mono);font-size:11px;color:var(--ink2)}
 /* une seule bulle d'aide (#bulle) pour tout [data-tip] : au survol de la souris ET au focus clavier,
    jamais au toucher, toujours dans l'écran (les bulles en CSS sortaient de l'écran et collaient au doigt) */
 /* D59 · l'info-bulle : encre, 12 px, rayon 6, ombre de menu */
@@ -1031,8 +1069,8 @@ button.chk{width:100%;font:inherit;text-align:left}
   <span class="chip devonly">Maquette · mode développeur</span>
   <button class="chip prochip devonly" id="proChip" onclick="togglePro()" data-tip="Développement : bascule Pro / Gratuit pour tester les deux parcours">Pro</button>
   <div class="vsep vsep2"></div>
-  <button class="ib ic" onclick="undo()" id="undoBtn" title="Annuler (Ctrl+Z)" aria-label="Annuler"><svg class="ico" data-ico="annuler"></svg></button>
-  <button class="ib ic" onclick="redo()" id="redoBtn" title="Rétablir (Ctrl+Y)" aria-label="Rétablir"><svg class="ico" data-ico="retablir"></svg></button>
+  <button class="ib ic" onclick="undo()" id="undoBtn" data-tip="Annuler (Ctrl Z) · défait le dernier geste" aria-label="Annuler"><svg class="ico" data-ico="annuler"></svg></button>
+  <button class="ib ic" onclick="redo()" id="redoBtn" data-tip="Rétablir (Ctrl Y) · refait ce qui vient d'être annulé" aria-label="Rétablir"><svg class="ico" data-ico="retablir"></svg></button>
   <div class="spacer"></div>
   <!-- D41 · menus Fichier et Aide : listes déroulantes accessibles (clavier : flèches, Échap, Tab) -->
   <div class="menu" id="menuFichier">
@@ -1065,8 +1103,11 @@ button.chk{width:100%;font:inherit;text-align:left}
 
   <div class="stage" id="stage" role="main" aria-label="Plan">
     <canvas id="cv" tabindex="0" role="application" aria-label="Plan du logement" aria-describedby="cvAide"></canvas>
-    <p id="cvAide" class="sr-only">Au clavier : Alt + flèches (Option + flèches sur Mac) passent d'une pièce, d'un mur, d'une ouverture ou d'un équipement à l'autre ; Entrée ouvre sa fiche ; les flèches déplacent l'élément choisi ; Échap désélectionne ; Tab quitte le plan.</p>
+    <p id="cvAide" class="sr-only">Au clavier : Alt + flèches (Option + flèches sur Mac) passent d'une pièce, d'un mur, d'une ouverture ou d'un équipement à l'autre ; Entrée ouvre sa fiche ; Maj + F10 ouvre le menu de ses actions ; les flèches déplacent l'élément choisi ; Échap annule le geste en cours, revient à la Sélection, puis désélectionne ; Tab quitte le plan.</p>
     <div id="cvAnnonce" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+    <!-- D62 · la barre d'actions de l'élément choisi (près de lui) et le menu du clic droit : après le canvas dans le DOM -->
+    <div class="selbar" id="selbar" role="toolbar" aria-label="Actions sur l'élément choisi" aria-orientation="horizontal" hidden></div>
+    <div class="mpop ctxmenu" id="ctxMenu" role="menu" aria-label="Actions" tabindex="-1" hidden></div>
     <!-- D61 · la tête du plan (après le canvas dans le DOM : l'outil actif reste à moins de 15 Tab du plan) : la bande
          de contexte (niveaux à gauche, vues et légende à droite), puis la barre d'options de l'outil actif -->
     <div class="tetePlan" id="tetePlan">
@@ -1696,7 +1737,7 @@ function itemThumb(type){const r=vignette('equipement',type,84,44);return r?r.ur
    plus de « pâtés » au petit zoom. Prise : demi-cercle fermé et sa tige ; prise double : deux sur une même barre ;
    interrupteur : rond, oblique à 45° et son crochet (simple allumage) ; applique : point lumineux relié au mur. */
 function drawElec(it,isSel){
-  const T=it.type,w=it.w,h=it.h,st=mode()==='projet'?it.st:null;ctx.strokeStyle=isSel?'#4f46e5':st==='creer'?CREER:st==='demolir'?DEMOLIR:ENCRE;ctx.fillStyle='#fff';ctx.lineCap='round';ctx.lineJoin='round'; /* D60 : un point à poser se dessine en rouge, à déposer en jaune, comme tout le plan */
+  const T=it.type,w=it.w,h=it.h,st=mode()==='projet'?it.st:null;ctx.strokeStyle=st==='creer'?CREER:st==='demolir'?DEMOLIR:ENCRE; /* D62 : choisi, il garde sa couleur */ctx.fillStyle='#fff';ctx.lineCap='round';ctx.lineJoin='round'; /* D60 : un point à poser se dessine en rouge, à déposer en jaune, comme tout le plan */
   const trait=(x0,y0,x1,y1)=>{ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();};
   if(T==='lumiere'){const r=w*0.4,q=r*0.7;ctx.beginPath();ctx.arc(0,0,r,0,7);ctx.fill();ctx.stroke();trait(-q,-q,q,q);trait(q,-q,-q,q);return;}
   if(T==='applique'){const r=w*0.28,cy=h*0.35,q=r*0.7;trait(0,-h/2,0,cy-r);ctx.beginPath();ctx.arc(0,cy,r,0,7);ctx.fill();ctx.stroke();trait(-q,cy-q,q,cy+q);trait(q,cy-q,-q,cy+q);return;}
@@ -1767,6 +1808,7 @@ function garantirPids(){state.levels.forEach(lv=>{pidOf('n',lv);lv.walls.forEach
 function newLevel(name){ return {id:uid(), name, height:2.5, walls:[], openings:[], rooms:[], items:[], dims:[], texts:[], bg:null}; }
 const TX=lv=>lv.texts||(lv.texts=[]);
 let textBoxes={}, checkRooms=new Set(), checkMsgs={};
+let cadresOuv={},apercuInfo=null,barreSig='',menuCtx=null,ctxPoint=null; /* D62 : cadre de chaque ouverture (survol), l'aperçu de pose, la barre d'actions, le menu du clic droit */
 // couleurs de note : [fond, bord, texte] — un code couleur libre pour l'utilisateur (ex. bleu = question pour l'artisan, vert = validé…)
 /* D49 (cj-coherence09) : une note est BLEUE par défaut — une note jaune sur la vue Travaux se lisait « à démolir ». */
 const NOTE_DEFAUT='bleu';
@@ -4126,7 +4168,7 @@ cv.addEventListener('pointerdown',e=>{
   if(pointers.size>2)return;
   if(e.button===1||keys.space){drag={kind:'pan',sx,sy,ox:view.ox,oy:view.oy};return;}
   // clic droit : termine la tâche en cours (pose, tracé, mesure) et revient à l'outil Sélection
-  if(e.button===2){ rightClickFinish(); return; }
+  if(e.button===2){ if(clicDroitObjet(raw,e))return; rightClickFinish(); return; } /* D62 : sur un élément, avec la Sélection, le menu de ses actions ; ailleurs, le clic droit termine et revient à la Sélection */
   if(tool==='zone'){drag={kind:'band',start:raw,cur:raw};return;}
   if(tool==='doublage'){
     const tb=tableauSousCurseur(raw);
@@ -4251,6 +4293,184 @@ function rightClickFinish(){
   else if(tool==='select'){clearSel();}               // déjà en sélection : on désélectionne
   if(tool!=='select'){setTool('select');} else {render();}
 }
+/* =====================================================================
+   D62 · LES INTERACTIONS (chantier U4). Un seul langage pour le survol et la sélection : un contour indigo posé
+   PAR-DESSUS la couleur métier (le rouge « à créer », le jaune « à démolir » restent lisibles dessous) — avec un
+   halo quand l'élément est choisi, léger et sans halo au survol. Près de l'élément choisi, la barre de ses actions ;
+   au clic droit (outil Sélection), le menu des mêmes actions avec leurs touches ; pendant la pose, l'aperçu en
+   tirets et ses cotes temporaires. Tout appelle les fonctions des raccourcis et des fiches (rotateItem,
+   duplicateItem, deleteSel, setWallProp, setOpeningProp, setItemProp…) : aucune logique en double.
+   ===================================================================== */
+/* le cadre de sélection (repère local d'un objet, px = épaisseur d'écran) : fort = choisi (halo + trait), sinon survol */
+function cadreSel(R,pad,px,fort){ctx.save();ctx.setLineDash([]);ctx.lineJoin='round';
+  if(fort){ctx.strokeStyle='rgba(79,70,229,.28)';ctx.lineWidth=px(6);strokeRects(R,pad);}
+  ctx.strokeStyle=SEL_C;if(!fort)ctx.globalAlpha*=.5;ctx.lineWidth=px(fort?1.75:1.25);strokeRects(R,pad);ctx.restore();}
+/* l'aperçu de pose : en tirets (provisoire), rouge danger s'il ne tient pas */
+function cadreApercu(R,pad,px,ko){ctx.save();ctx.setLineDash([px(4),px(3)]);ctx.lineWidth=px(1.25);ctx.strokeStyle=ko?DANGER_C:SEL_C;strokeRects(R,pad);ctx.restore();}
+/* le contour d'un mur (ou d'un tronçon t0 → t1) : juste à l'extérieur de son poché, qui garde sa couleur */
+function contourMur(w,t0,t1,fort){const z=view.zoom,d=sub(w.b,w.a);if(len(d)<1e-6)return;const u=norm(d),n=perp(u),o=wallOff(w),h=Math.max(wallT(w)*z/2,2),e=2;
+  const A=S(add(add(w.a,mul(d,t0)),o)),B=S(add(add(w.a,mul(d,t1)),o));
+  const Q=[[-1,1],[1,1],[1,-1],[-1,-1]].map(([i,j])=>{const P=i<0?A:B;return v(P.x+u.x*i*e+n.x*j*(h+e),P.y+u.y*i*e+n.y*j*(h+e));});
+  const trace=()=>{ctx.beginPath();Q.forEach((p,k)=>k?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.closePath();};
+  ctx.save();ctx.setLineDash([]);ctx.lineJoin='miter';
+  if(fort){trace();ctx.strokeStyle='rgba(79,70,229,.28)';ctx.lineWidth=7;ctx.stroke();}
+  trace();ctx.strokeStyle=SEL_C;ctx.globalAlpha*=fort?1:.5;ctx.lineWidth=fort?2:1.25;ctx.stroke();ctx.restore();}
+/* la poignée « glisser de côté » (milieu d'un mur, ligne d'une cote) : un losange plein indigo, un trait blanc dit le sens */
+function poigneeLosange(x,y,r,n){ctx.save();ctx.setLineDash([]);ctx.beginPath();ctx.moveTo(x,y-r);ctx.lineTo(x+r,y);ctx.lineTo(x,y+r);ctx.lineTo(x-r,y);ctx.closePath();ctx.fillStyle=SEL_C;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();
+  if(n){ctx.beginPath();ctx.moveTo(x-n.x*r*0.45,y-n.y*r*0.45);ctx.lineTo(x+n.x*r*0.45,y+n.y*r*0.45);ctx.stroke();}ctx.restore();}
+/* un point électrique est dessiné à une taille d'écran bornée (D60) : son facteur, pour son cadre */
+function kElec(it){const z=view.zoom,kU=uiScale||1,reel=Math.max(it.w,it.h)*z,cible=it.type==='tableau'?Math.max(12*kU,reel):Math.min(20*kU,Math.max(12*kU,reel));return cible/reel;}
+/* les murs et la pièce choisis : leur contour, par-dessus (les ouvertures et les équipements dessinent le leur) */
+function dessinerSelection(lv){if(exporting||!sel)return;
+  if(sel.kind==='wall'){const w=findWall(sel.id);if(w&&wallDrawn(w)&&!(mode()==='projet'&&tronconVise(w)))contourMur(w,0,1,true);}
+  if(sel.kind==='marquee')msel.forEach(m=>{if(m.kind!=='wall')return;const w=findWall(m.id);if(w&&wallDrawn(w))contourMur(w,0,1,true);});
+  if(sel.kind==='room'){const f=(facesCache[lv.id]||[]).find(x=>x.room&&x.room.id===sel.id),P=f&&(f.polyInt&&f.polyInt.length>2?f.polyInt:f.poly);
+    if(P){const tr=()=>{ctx.beginPath();P.forEach((p,i)=>{const s=S(p);i?ctx.lineTo(s.x,s.y):ctx.moveTo(s.x,s.y);});ctx.closePath();};ctx.save();ctx.setLineDash([]);ctx.lineJoin='round';
+      tr();ctx.strokeStyle='rgba(79,70,229,.28)';ctx.lineWidth=7;ctx.stroke();tr();ctx.strokeStyle=SEL_C;ctx.lineWidth=2;ctx.stroke();ctx.restore();}}}
+/* le survol : le même contour, léger */
+function survolObjet(lv,h){if(exporting)return;const z=view.zoom,kU=uiScale||1;
+  if(h.kind==='wall'){const w=findWall(h.id);if(w&&!inMsel('wall',w.id))contourMur(w,0,1,false);return;}
+  if(h.kind==='opening'){const o=lv.openings.find(x=>x.id===h.id),w=o&&findWall(o.wallId),R0=o&&cadresOuv[o.id];if(!w||!R0)return;const u=norm(sub(w.b,w.a)),cs=S(add(add(w.a,mul(sub(w.b,w.a),o.t)),wallOff(w))),px=q=>q*kU/z;
+    ctx.save();ctx.translate(cs.x,cs.y);ctx.rotate(Math.atan2(u.y,u.x));ctx.scale(z,z);cadreSel(R0,px(5),px,false);ctx.restore();return;}
+  if(h.kind==='item'){const it=lv.items.find(x=>x.id===h.id);if(!it)return;const el=!!ITEMS[it.type]?.elec,k=el?kElec(it):1,s=S(it),px=q=>q*kU/(z*k);
+    ctx.save();ctx.translate(s.x,s.y);ctx.rotate(it.rot);ctx.scale(z*k,z*k);cadreSel(el?[{x:-it.w/2,y:-it.h/2,w:it.w,h:it.h}]:itemRects(it,lv),px(5),px,false);ctx.restore();}}
+/* ---- l'aperçu de pose ---- */
+/* d'un point, dans une direction : la distance jusqu'à la face de mur la plus proche (null au-delà de max) */
+function rayonMur(p,d,max){let best=max;L().walls.forEach(w=>{if(isVirtual(w)||!wallDrawn(w))return;const o=wallOff(w),n=perp(norm(sub(w.b,w.a))),h=wallT(w)/2;
+  [1,-1].forEach(j=>{const A=add(add(w.a,o),mul(n,j*h)),B=add(add(w.b,o),mul(n,j*h)),e=sub(B,A),den=d.x*e.y-d.y*e.x;if(Math.abs(den)<1e-9)return;
+    const ap=sub(A,p),s=(ap.x*e.y-ap.y*e.x)/den,r=(ap.x*d.y-ap.y*d.x)/den;if(s>-1e-6&&r>=-1e-6&&r<=1+1e-6&&s<best)best=s;});});
+  return best<max?Math.max(0,best):null;}
+function apercuOuverture(){const nw=nearestWall(hover,0.6),def=OPENINGS[openingType];if(!nw||!def)return;const w=nw.wall,Lw=wallLen(w),court=def.w>Lw-0.1;
+  const t=court?0.5:Math.max(def.w/2/Lw,Math.min(1-def.w/2/Lw,nw.t)),deja=!court&&ouverturesChevauchees(L(),w.id,t,def.w,null).length>0,side=sideOf(hover,w);
+  const o={wallId:w.id,t,type:openingType,w:def.w,h:def.h,hinge:1,side};if(mode()!=='existant')o.st='creer'; /* ce qui sera posé : en vue Travaux, rouge */
+  apercuInfo={court,deja};ctx.save();ctx.globalAlpha=.6;drawOpening(o,false,court||deja?'ko':'apercu');ctx.restore();
+  if(!court&&!deja)cotesTemporairesOuverture(w,t,def.w,side);}
+/* les cotes temporaires d'une ouverture : de chaque jambage au jambage voisin, ou au bout du mur (comme sa fiche) */
+function cotesTemporairesOuverture(w,t,larg,side){const Lw=wallLen(w),c=t*Lw,g=c-larg/2,dr=c+larg/2;let a=0,b=Lw;
+  L().openings.forEach(o=>{if(o.wallId!==w.id||!opDrawn(o)||ost(o)==='boucher')return;const oc=o.t*Lw;if(oc+o.w/2<=g+1e-6)a=Math.max(a,oc+o.w/2);else if(oc-o.w/2>=dr-1e-6)b=Math.min(b,oc-o.w/2);});
+  const u=norm(sub(w.b,w.a)),n=perp(u),off=add(wallOff(w),mul(n,-(side||1)*(wallT(w)/2+0.28))),P=x=>add(add(w.a,mul(u,x)),off);
+  [[a,g],[dr,b]].forEach(([x0,x1])=>{if(x1-x0>0.03)drawDim(P(x0),P(x1),SEL_C,true);});}
+function apercuEquipement(){const def=ITEMS[itemType];if(!def)return;const {p}=snapPoint(hover,null);const it={type:itemType,x:p.x,y:p.y,w:def.w,h:def.h,rot:0};
+  if(itemType==='escalier'){it.stair={type:'droit'};fitStair(it,L());}const sn=snapItemToWall(it,hover);if(sn)Object.assign(it,sn);pushOutOfWalls(it);
+  apercuInfo={contre:!!sn};ctx.save();ctx.globalAlpha=.6;drawItem(it,false,'apercu');ctx.restore();cotesTemporairesEquip(it);}
+/* les cotes temporaires d'un équipement : sur chacun de ses axes, la distance au mur le plus proche (sauf s'il y est collé) */
+function cotesTemporairesEquip(it){if(it.type==='escalier')return;const c=Math.cos(it.rot),s=Math.sin(it.rot),ax=[v(c,s),v(-s,c)],dm=[it.w/2,it.h/2];
+  ax.forEach((d,i)=>{let best=null;[1,-1].forEach(sg=>{const dir=mul(d,sg),p0=add(v(it.x,it.y),mul(dir,dm[i])),r=rayonMur(p0,dir,6);if(r!=null&&(!best||r<best.r))best={r,p0,dir};});
+    if(best&&best.r>0.02)drawDim(best.p0,add(best.p0,mul(best.dir,best.r)),SEL_C,true);});}
+/* ---- les actions de l'élément choisi : UNE liste, lue par la barre d'actions et par le menu du clic droit ---- */
+/* g = fiche | etat | geste | suppr ; menuSeul = au menu seulement ; la touche est celle que le clavier connaît */
+function actionsSel(){if(!sel||sel.kind==='room')return [];const lv=L(),m=mode(),A=[];
+  const geste=(id,lib,ic,fn,touche,menuSeul)=>A.push({id,lib,ic,fn,touche,g:'geste',menuSeul:!!menuSeul});
+  if(m==='final'){if(sel.kind!=='marquee')A.push({id:'fiche',lib:'Voir sa fiche',ic:'info',fn:ouvrirFiche,touche:'Entrée',g:'fiche',menuSeul:true});
+    A.push({id:'travaux',lib:'Modifier en vue '+nomVue('projet'),ic:'crayon',fn:modifierEnTravaux,g:'fiche',menuSeul:true});return A;}
+  if(sel.kind!=='marquee')A.push({id:'fiche',lib:sel.kind==='text'?'Modifier la note':'Voir sa fiche',ic:sel.kind==='text'?'crayon':'info',fn:ouvrirFiche,touche:'Entrée',g:'fiche',menuSeul:true});
+  const etats=(kind,cur,fnEtat,creerOk)=>{if(m!=='projet')return;choixEtat(kind,'projet',null,creerOk).forEach(([e,l])=>{if(e==='existant')return;A.push({id:'etat-'+e,lib:l,etat:e,on:cur===e,fn:()=>fnEtat(e),g:'etat'});});};
+  const k=sel.kind;
+  if(k==='item'){const its=selectedItems();if(!its.length)return [];const e0=ist(its[0]),tous=its.every(x=>ist(x)===e0);
+    etats('item',tous?e0:null,e=>its.length>1?setItemsEtat(e):setItemProp('st',e),(tous&&e0==='creer')||!!lv.neuf);
+    geste('pivoter','Pivoter de 90°','pivoter',rotateItem,'R');geste('dupliquer','Dupliquer','copie',duplicateItem,'Ctrl D');geste('copier','Copier',null,copyItems,'Ctrl C',true); /* pas l'icône de Dupliquer : deux actions, deux dessins (ou aucun) */
+    if(clipboard&&clipboard.length)geste('coller','Coller ici',null,()=>{const c0=clipboard[0];pasteItems(ctxPoint||v(c0.x+0.3,c0.y+0.3));},'Ctrl V',true);}
+  else if(k==='opening'){const o=lv.openings.find(x=>x.id===sel.id);if(!o)return [];const def=OPENINGS[o.type]||{},w=findWall(o.wallId);
+    if(w&&wst(w)!=='demolir')etats(def.kind==='gap'?'passage':'opening',ost(o),e=>setOpeningProp('st',e),ost(o)==='creer'||!!lv.neuf);
+    if(['door','door2','doorwin','slide'].includes(def.kind))geste('sens','Ouvre de l\'autre côté','flechesV',()=>setOpeningProp('side',-(o.side||1)));
+    if(def.kind==='door'||def.kind==='doorwin')geste('charniere','Charnière','flechesH',()=>setOpeningProp('hinge',-(o.hinge||1)));}
+  else if(k==='wall'){const w=findWall(sel.id);if(!w)return [];
+    if(!isVirtual(w))etats('wall',wst(w),e=>setWallProp('st',e),wst(w)==='creer'||!!lv.neuf);
+    const J=!isVirtual(w)&&jonctionsInterieures(lv,w).length>0;geste('couper',J?'Couper aux jonctions':'Couper en 2','ciseaux',J?couperAuxJonctions:splitWall);}
+  /* Suppr : en vue Travaux, sur ce qui existe, il MARQUE (D38) — c'est alors le choix d'état qui porte la touche */
+  const ls=libSuppr(),efface=/^(Tout )?supprimer$/i.test(ls);
+  if(k==='marquee')A.push({id:'suppr',lib:ls,ic:efface?'corbeille':null,fn:deleteSel,touche:'Suppr',g:'suppr',texte:true});
+  else if(efface||m!=='projet')A.push({id:'suppr',lib:'Supprimer',ic:'corbeille',fn:deleteSel,touche:'Suppr',g:'suppr'});
+  else{const c=A.find(a=>a.g==='etat'&&a.lib===ls);if(c)c.touche='Suppr';}
+  return A;}
+function faireActionSel(id){const a=actionsSel().find(x=>x.id===id);if(a)a.fn();}
+/* la touche, telle qu'on la tape (une lettre seule n'est pas dite si les raccourcis d'une touche sont coupés) */
+function toucheDite(a){return a.touche&&(raccourcisOn||!/^[A-Z]$/.test(a.touche))?a.touche:'';}
+/* ---- la barre d'actions ---- */
+function barreSelHTML(A){const B=A.filter(a=>!a.menuSeul);if(!B.length)return '';
+  return ['etat','geste','suppr'].map(g=>B.filter(a=>a.g===g).map(a=>{const t=toucheDite(a),tip=a.lib+(t?' ('+t+')':'');
+    if(a.g==='etat')return `<button type="button" class="sbe${a.on?' on':''}" aria-pressed="${!!a.on}" onclick="faireActionSel('${a.id}')"${t?` data-tip="${esc(tip)}"`:''}><i class="ech e-${a.etat}" aria-hidden="true"></i>${a.lib}</button>`;
+    if(a.texte||!a.ic)return `<button type="button" class="sbt" onclick="faireActionSel('${a.id}')" data-tip="${esc(tip)}">${a.ic?ico(a.ic):''}${a.lib}</button>`;
+    return `<button type="button" class="ic" onclick="faireActionSel('${a.id}')" aria-label="${esc(a.lib)}" data-tip="${esc(tip)}">${ico(a.ic)}</button>`;}).join('')).filter(Boolean).join('<span class="sbsep" aria-hidden="true"></span>');}
+/* la boîte de l'élément choisi, à l'écran (repère du canvas) */
+function boiteSel(){if(!sel)return null;const lv=L(),P=[],pt=q=>P.push(S(q));
+  const de=(k,id,m)=>{
+    if(k==='wall'||k==='troncon'){const w=findWall(id);if(!w)return;const t0=m&&m.t0!=null?m.t0:0,t1=m&&m.t1!=null?m.t1:1,d=sub(w.b,w.a),n=perp(norm(d)),o=wallOff(w),h=wallT(w)/2;[t0,t1].forEach(t=>{const q=add(add(w.a,mul(d,t)),o);pt(add(q,mul(n,h)));pt(sub(q,mul(n,h)));});}
+    else if(k==='opening'){const o=lv.openings.find(x=>x.id===id),w=o&&findWall(o.wallId);if(!w)return;const u=norm(sub(w.b,w.a)),n=perp(u),c=add(add(w.a,mul(sub(w.b,w.a),o.t)),wallOff(w)),r=Math.max(wallT(w)/2,o.w*0.6);[-1,1].forEach(i=>[-1,1].forEach(j=>pt(add(add(c,mul(u,i*o.w/2)),mul(n,j*r)))));}
+    else if(k==='item'){const it=lv.items.find(x=>x.id===id);if(it)itemCorners(it).forEach(pt);}
+    else if(k==='text'){const b=textBoxes[id];if(b)P.push(v(b.x,b.y),v(b.x+b.w,b.y+b.h));}
+    else if(k==='dim'){const d=lv.dims.find(x=>x.id===id);if(d){const L2=dimLine(d);pt(L2.a);pt(L2.b);}}};
+  if(sel.kind==='marquee')msel.forEach(m=>de(m.kind,m.id,m));
+  else if(sel.kind==='item'&&multi.length>1)multi.forEach(id=>de('item',id));
+  else if(sel.kind==='wall'&&mode()==='projet'){const w=findWall(sel.id),tv=w&&tronconVise(w);de(tv?'troncon':'wall',sel.id,tv);}
+  else de(sel.kind,sel.id);
+  if(sel.kind==='item'&&multi.length<=1){const it=lv.items.find(x=>x.id===sel.id);if(it)P.push(rotHandle(it));}
+  if(sel.kind==='wall'){const w=findWall(sel.id);if(w)poigneesDoublage(w).forEach(g=>P.push(g.s));} /* ses poignées comptent : la barre ne les couvre jamais */
+  if(!P.length)return null;const X=P.map(q=>q.x),Y=P.map(q=>q.y);return {x0:Math.min(...X),y0:Math.min(...Y),x1:Math.max(...X),y1:Math.max(...Y)};}
+/* au-dessus de l'élément (en dessous s'il n'y a pas la place), dans la zone visible du plan, jamais sous une bande */
+/* près de l'élément — au-dessus, au-dessous ou à côté, centrée ou alignée sur un bord : la place où elle couvre le moins
+   de textes du plan (cotes, chaînes, étiquettes, notes, cote cliquable), jamais l'élément ni ses poignées ; à égalité,
+   au-dessus et centrée (un léger coût pour l'éloignement) */
+function placerBarreSel(b){const r=boiteSel(),Z=zoneUtile(),M=8;if(!r||r.x1<Z.x0||r.x0>Z.x1||r.y1<Z.y0||r.y0>Z.y1){b.hidden=true;return;}
+  const bw=b.offsetWidth,bh=b.offsetHeight,G=12,cx=(r.x0+r.x1)/2,cy=(r.y0+r.y1)/2;
+  const O=[...cotesVues,...boitesChaines,...cotesOuverture,...etiquettesVues.map(e=>e.box),...Object.values(textBoxes),...coteLabels.filter(l=>sel.kind==='wall'&&l.wallId===sel.id).map(l=>({x:l.cx-l.w/2-2,y:l.cy-l.h/2-2,w:l.w+4,h:l.h+4}))].filter(Boolean); /* la cote du mur survolé n'y entre pas : la barre ne saute pas au survol */
+  const inter=(R,o)=>Math.max(0,Math.min(R.x+R.w,o.x+o.w)-Math.max(R.x,o.x))*Math.max(0,Math.min(R.y+R.h,o.y+o.h)-Math.max(R.y,o.y));
+  const borne=(x,y)=>[Math.max(Z.x0+M,Math.min(Z.x1-M-bw,x)),Math.max(Z.y0+M,Math.min(Z.y1-M-bh,y))];
+  const haut=r.y0-G-bh,bas=r.y1+G,C=[[cx-bw/2,haut],[cx-bw/2,bas],[r.x0,haut],[r.x1-bw,haut],[r.x0,bas],[r.x1-bw,bas],[r.x1+G,cy-bh/2],[r.x0-G-bw,cy-bh/2]].map(([x,y])=>borne(x,y));
+  const cout=([x,y])=>{const R={x,y,w:bw,h:bh};return O.reduce((c,o)=>c+inter(R,o),0)+4*inter(R,{x:r.x0,y:r.y0,w:r.x1-r.x0,h:r.y1-r.y0})+2*Math.hypot(x+bw/2-cx,y+bh/2-cy);};
+  let best=C[0],bc=cout(C[0]);C.slice(1).forEach(c=>{const k=cout(c);if(k<bc-1){bc=k;best=c;}});const [x,y]=best;
+  const L0=Math.round(cv.offsetLeft+x)+'px',T0=Math.round(cv.offsetTop+y)+'px';if(b.style.left!==L0)b.style.left=L0;if(b.style.top!==T0)b.style.top=T0;}
+function majBarreSel(){const b=document.getElementById('selbar');if(!b)return;let vis=false;try{vis=!!visite;}catch{}
+  const voir=!!sel&&sel.kind!=='room'&&tool==='select'&&!drag&&!exporting&&!vis&&!isMobile()&&mode()!=='final'&&!chain.length&&!menuCtx;
+  if(!voir){if(!b.hidden){const f=b.contains(document.activeElement);b.hidden=true;barreSig='';if(f)try{cv.focus({preventScroll:true});}catch{}}return;}
+  const A=actionsSel(),sig=JSON.stringify(A.filter(a=>!a.menuSeul).map(a=>[a.id,a.lib,!!a.on,toucheDite(a)]));
+  if(sig!==barreSig){const h=barreSelHTML(A);if(!h){b.hidden=true;barreSig='';return;}barreSig=sig;
+    avecFocus(b,()=>{const ae=document.activeElement,i=b.contains(ae)?[...b.querySelectorAll('button')].indexOf(ae):-1;b.innerHTML=h;const B=[...b.querySelectorAll('button')];B.forEach((x,k)=>x.tabIndex=k===Math.max(0,Math.min(B.length-1,i))?0:-1);});}
+  b.hidden=false;placerBarreSel(b);}
+/* au clavier : une barre d'outils (← → Début Fin passent d'une action à l'autre, Échap rend le plan, Tab en sort) */
+{const b=document.getElementById('selbar');if(b){
+  b.addEventListener('keydown',e=>{const B=[...b.querySelectorAll('button')],i=B.indexOf(document.activeElement);
+    if(e.key==='Escape'){e.preventDefault();e.stopPropagation();try{cv.focus();}catch{}return;}
+    if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(e.key)&&!e.altKey&&!e.ctrlKey&&!e.metaKey){e.preventDefault();e.stopPropagation();if(i<0||!B.length)return;
+      const n=B.length,j=e.key==='Home'?0:e.key==='End'?n-1:(e.key==='ArrowLeft'||e.key==='ArrowUp')?(i-1+n)%n:(i+1)%n;B.forEach((x,k)=>x.tabIndex=k===j?0:-1);B[j].focus();}});
+  b.addEventListener('contextmenu',e=>e.preventDefault());}}
+/* ---- le menu du clic droit ---- */
+function menuCtxHTML(A){return ['fiche','etat','geste','suppr'].map(g=>A.filter(a=>a.g===g).map(a=>{const t=toucheDite(a),kb=t?`<kbd>${t}</kbd>`:'';
+    if(a.g==='etat')return `<button type="button" role="menuitemradio" aria-checked="${!!a.on}" tabindex="-1" onclick="faireActionCtx('${a.id}')"><i class="ech e-${a.etat}" aria-hidden="true"></i><span>${a.lib}</span>${a.on?ico('check'):''}${kb}</button>`;
+    return `<button type="button" role="menuitem" tabindex="-1" onclick="faireActionCtx('${a.id}')">${a.ic?ico(a.ic):'<span class="icv" aria-hidden="true"></span>'}<span>${a.lib}</span>${kb}</button>`;}).join('')).filter(Boolean).join('<div class="msep" role="separator"></div>');}
+function itemsCtx(){const m=document.getElementById('ctxMenu');return m&&!m.hidden?[...m.querySelectorAll('[role^=menuitem]')]:[];}
+/* pos = {x, y} (clic droit, coordonnées de la fenêtre) ou null (clavier : sous l'élément choisi, focus sur la 1re action) */
+function ouvrirMenuCtx(pos){const m=document.getElementById('ctxMenu');if(!m||!sel)return false;const A=actionsSel();if(!A.length)return false;
+  fermerMenus(false);cacherBulle();const r=cv.getBoundingClientRect(),ae=document.activeElement;
+  menuCtx={retour:ae&&ae!==document.body&&ae!==m&&!m.contains(ae)?ae:cv,at:pos?W2(v(pos.x-r.left,pos.y-r.top)):null,clavier:!pos};
+  m.innerHTML=menuCtxHTML(A);m.hidden=false;majBarreSel();
+  const mw=m.offsetWidth,mh=m.offsetHeight,M=8;let x,y;
+  if(pos){x=pos.x+2;y=pos.y+2;if(x+mw>innerWidth-M)x=pos.x-2-mw;if(y+mh>innerHeight-M)y=pos.y-2-mh;}
+  else{const b=boiteSel();x=r.left+(b?(b.x0+b.x1)/2:r.width/2)-mw/2;y=r.top+(b?b.y1+10:r.height/2);if(y+mh>innerHeight-M&&b)y=r.top+b.y0-10-mh;}
+  x=Math.max(M,Math.min(innerWidth-M-mw,x));y=Math.max(M,Math.min(innerHeight-M-mh,y));m.style.left=Math.round(x)+'px';m.style.top=Math.round(y)+'px';
+  /* après le geste de la souris : sinon le canvas reprend le focus derrière le menu */
+  setTimeout(()=>{if(!menuCtx)return;const it=itemsCtx();try{(menuCtx.clavier&&it[0]?it[0]:m).focus({preventScroll:true});}catch{}},0);
+  return true;}
+function fermerMenuCtx(rendre){const m=document.getElementById('ctxMenu');if(!menuCtx||!m)return;const r=menuCtx.retour;menuCtx=null;m.hidden=true;
+  if(rendre&&r&&r.isConnected)try{r.focus({preventScroll:true});}catch{}try{majBarreSel();}catch{}}
+function faireActionCtx(id){ctxPoint=menuCtx&&menuCtx.at;fermerMenuCtx(true);try{faireActionSel(id);}finally{ctxPoint=null;}}
+/* le clic droit sur un élément, avec la Sélection : il est choisi (s'il ne l'était pas déjà), puis son menu s'ouvre */
+function clicDroitObjet(raw,e){if(tool!=='select'||isMobile()||chain.length)return false;const h=hitTest(raw);if(!h||h.kind==='room')return false;
+  const dedans=(sel&&sel.kind===h.kind&&sel.id===h.id)||(h.kind==='item'&&multi.length>1&&multi.includes(h.id))||inMsel(h.kind,h.id);
+  if(!dedans){closeCoteEdit();multi=[];msel=[];_visee=h.kind==='wall'?(()=>{const w=findWall(h.id);return w?{id:h.id,t:projT(raw,w.a,w.b)}:null;})():null;sel=h;panelTab='details';renderPanel();draw();}
+  return ouvrirMenuCtx({x:e.clientX,y:e.clientY});}
+/* au clavier (modèle ARIA des menus) : ↑ ↓ Début Fin, Entrée / Espace, Échap et Tab ferment et rendent le focus ;
+   aucune autre touche n'atteint le plan derrière (une lettre ne change pas d'outil) */
+window.addEventListener('keydown',e=>{if(!menuCtx)return;toucheAt=performance.now();if(e.key==='Tab')tabAt=toucheAt;const it=itemsCtx(),i=it.indexOf(document.activeElement),n=it.length;
+  if(e.key==='Escape'||e.key==='Tab'){e.preventDefault();e.stopImmediatePropagation();fermerMenuCtx(true);return;}
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();e.stopImmediatePropagation();if(n)it[i<0?(e.key==='ArrowDown'?0:n-1):(i+(e.key==='ArrowDown'?1:-1)+n)%n].focus();return;}
+  if(e.key==='Home'||e.key==='End'){e.preventDefault();e.stopImmediatePropagation();if(n)it[e.key==='Home'?0:n-1].focus();return;}
+  if((e.key==='Enter'||e.code==='Space')&&i>=0){e.preventDefault();e.stopImmediatePropagation();it[i].click();return;}
+  if(!e.ctrlKey&&!e.metaKey)e.stopImmediatePropagation();},true);
+window.addEventListener('pointerdown',e=>{if(menuCtx&&!(e.target.closest&&e.target.closest('#ctxMenu')))fermerMenuCtx(false);},true);
+window.addEventListener('wheel',e=>{if(menuCtx&&!(e.target.closest&&e.target.closest('#ctxMenu')))fermerMenuCtx(false);},{capture:true,passive:true});
+window.addEventListener('resize',()=>fermerMenuCtx(false));window.addEventListener('blur',()=>fermerMenuCtx(false));
+{const m=document.getElementById('ctxMenu');if(m)m.addEventListener('contextmenu',e=>e.preventDefault());}
 /* D42 (novice11) : la pastille orange d'une étiquette de pièce s'explique au survol (infobulle), et
    dans la fiche de la pièce (en tête). */
 let tipPieceOn=false;
@@ -4552,7 +4772,7 @@ let raccourcisOn=true;try{raccourcisOn=localStorage.getItem('avyora-plan-raccour
 document.documentElement.classList.toggle('sansRaccourcis',!raccourcisOn);
 function lettreAutorisee(e){if(!raccourcisOn)return false;const t=e.target;if(!t||t===cv||t===document.body||t===document.documentElement)return true;
   if(!t.getClientRects||!t.getClientRects().length||(t.closest&&t.closest('.overlay:not(.show)')))return true; /* un bouton d'une fenêtre qui vient de se fermer : plus rien n'a le focus */
-  if(t.closest&&t.closest('#tools,#levels,#modes,#optbar,#etat'))return true;return pointeurAt>tabAt;}
+  if(t.closest&&t.closest('#tools,#levels,#modes,#optbar,#etat,#selbar'))return true;return pointeurAt>tabAt;} /* D62 : la barre d'actions agit sur le plan : R y pivote, comme dans le plan */
 function setRaccourcis(on){raccourcisOn=!!on;try{if(raccourcisOn)localStorage.removeItem('avyora-plan-raccourcis');else localStorage.setItem('avyora-plan-raccourcis','0');}catch{}
   document.documentElement.classList.toggle('sansRaccourcis',!raccourcisOn);const c=document.getElementById('raccOn');if(c)c.checked=raccourcisOn;renderTools();
   toast(raccourcisOn?'Raccourcis d\'une touche activés.':'Raccourcis d\'une touche coupés : les outils se choisissent dans la colonne de gauche.',true);}
@@ -4588,7 +4808,12 @@ window.addEventListener('keydown',e=>{
     if(e.key==='Backspace'&&lenBuf){lenBuf=lenBuf.slice(0,-1);draw();e.preventDefault();return;}
     if(e.key==='Enter'){lenBuf?commitTypedLength():closeOrEnd();return;}
   }
-  if(e.key==='Escape'){if(rectMode){rectMode=null;}else if(chain.length){endChain(false);}else if(dimStart||dimPending){dimStart=null;dimPending=null;}else if(measure.length){measure=[];measureDone=false;}else if(calibMode){calibMode=false;calib=[];}else{clearSel();}render();return;}
+  /* D62 : le menu des actions de l'élément choisi, au clavier (Maj + F10, ou la touche Menu) */
+  if((e.key==='ContextMenu'||(e.shiftKey&&e.key==='F10'))&&tool==='select'&&sel&&sel.kind!=='room'){e.preventDefault();ouvrirMenuCtx(null);return;}
+  /* D62 · Échap, en cascade : le geste en cours (glissé, tracé, pièce, cote, mesure, calage), puis l'OUTIL (retour à
+     la Sélection — l'objet qu'on vient de poser reste choisi, sa fiche ouverte), puis la sélection. Avant, Échap ne
+     quittait jamais l'outil : le clic suivant posait encore. */
+  if(e.key==='Escape'){if(drag){drag=null;render();return;}if(rectMode){rectMode=null;}else if(chain.length){endChain(false);}else if(dimStart||dimPending){dimStart=null;dimPending=null;}else if(measure.length){measure=[];measureDone=false;}else if(calibMode){calibMode=false;calib=[];}else if(tool!=='select'){setTool('select');return;}else{clearSel();}render();return;}
   if(e.key==='Enter'&&tool==='mur'){endChain();return;}
   if(e.key==='Delete'||e.key==='Backspace'){deleteSel();return;}
   // flèches : déplacement fin de l'élément sélectionné (5 cm, 50 cm avec Maj)
@@ -4596,7 +4821,7 @@ window.addEventListener('keydown',e=>{
     e.preventDefault();const st=e.shiftKey?0.5:0.05;deplacerSel(v(e.key==='ArrowLeft'?-st:e.key==='ArrowRight'?st:0,e.key==='ArrowUp'?-st:e.key==='ArrowDown'?st:0));return;
   }
   if(k.length===1&&!lettreAutorisee(e))return; /* D51 (cj-access02) */
-  if(k==='v')setTool('select');if(k==='m')setTool('mur');if(k==='p')setTool('ouverture');if(k==='e')setTool('equipement');if(k==='c')setTool('cote');if(k==='l')setTool('mesure');if(k==='t')setTool('texte');if(k==='b')setTool('zone');if(k==='d')setTool('doublage');
+  {const T=outilDeTouche(k);if(T)setTool(T);} /* D62 : UNE table de raccourcis — le clavier lit la touche dans TOOLS, comme l'Aide, les bulles et aria-keyshortcuts */
   if(k==='r'&&sel?.kind==='item'){rotateItem();}
   if(e.key==='Shift')draw();
 });
@@ -4720,13 +4945,15 @@ const TOOL_GROUPS=[
 ];
 /* la phrase de la bulle d'un outil (la bulle dit : le nom, la touche, cette phrase) */
 const TOOL_TIP={select:'Sélectionner un élément pour voir sa fiche, le déplacer ou décider de son sort',zone:'Encadrer une zone pour tout sélectionner d\'un coup (puis Suppr)',doublage:'Isoler un mur (doublage) : clique la face à isoler',mur:'Tracer les murs, cloisons et séparations : le type se choisit au-dessus du plan',ouverture:'Portes, fenêtres, baies, passages : le modèle se choisit au-dessus du plan, puis un clic sur un mur',equipement:'Salle de bain, cuisine, chauffage, électricité, mobilier, escalier : le modèle se choisit au-dessus du plan',cote:'Ajouter une cote fixe entre deux points',mesure:'Mesurer une longueur ou une surface, sans rien ajouter au plan',calque:'Importer une image de ton plan, pour dessiner par-dessus',texte:'Poser une note sur le plan (remarque, question pour l\'artisan)'};
+/* D62 · UNE table de raccourcis : le gestionnaire du clavier lit ici la touche d'un outil (3e colonne de TOOLS) */
+function outilDeTouche(k){k=String(k||'').toLowerCase();if(!k)return null;const T=TOOLS.find(t=>t[2]&&t[2].toLowerCase()===k);return T?T[0]:null;}
 function bulleOutil(t){const nom=t[4]||t[1];return nom+(t[2]&&raccourcisOn?' ('+t[2]+')':'')+' · '+(TOOL_TIP[t[0]]||t[1]);}
 /* D39 · UNE liste de raccourcis, rendue dans l'accueil et dans l'Aide. Les outils viennent de
    TOOLS (touche, nom) et de TOOL_TIP (ce qu'ils font) : une touche ajoutée à un outil apparaît
    partout d'elle-même. Les gestes sont écrits une seule fois, ici. */
 const KEYS_GESTES=[
-  ['Pendant le tracé',[['Maj','Force les angles droits'],['3,5 puis Entrée','Pose un mur de la longueur tapée'],['Entrée','Ferme la pièce'],['Échap','Termine sans fermer, désélectionne ou ferme une fenêtre'],['Clic droit','Termine et revient à la sélection']]],
-  ['Modifier',[['Suppr','Supprime · en vue '+nomVue('projet')+', marque à démolir, à boucher ou à déposer (ce que tu y as créé s\'efface)'],['R','Pivote l\'équipement de 90° · poignée ronde : rotation libre, par pas de 15°'],['Flèches','Déplace l\'élément choisi de 5 cm (Maj : 50 cm) · une ouverture coulisse le long de son mur'],['Alt + flèches','Dans le plan : passe d\'un élément à l\'autre (Option + flèches sur Mac) · Entrée ouvre sa fiche · Tab sort du plan'],['Maj + clic','Ajoute à la sélection · Maj + glisser dans le vide : rectangle'],['Ctrl A','Sélectionne tous les équipements'],['Ctrl C / V / D','Copie, colle, duplique des équipements'],['Ctrl Z / Y','Annule, rétablit'],['Ctrl S','Enregistre dans « Mes plans »']]],
+  ['Pendant le tracé',[['Maj','Force les angles droits'],['3,5 puis Entrée','Pose un mur de la longueur tapée'],['Entrée','Ferme la pièce'],['Échap','Annule le geste en cours (le tracé se termine sans fermer), puis revient à la Sélection, puis désélectionne · ferme une fenêtre'],['Clic droit','Termine et revient à la Sélection · sur un élément, avec la Sélection : le menu de ses actions']]],
+  ['Modifier',[['Suppr','Supprime · en vue '+nomVue('projet')+', marque à démolir, à boucher ou à déposer (ce que tu y as créé s\'efface)'],['R','Pivote l\'équipement de 90° · poignée ronde : rotation libre, par pas de 15°'],['Flèches','Déplace l\'élément choisi de 5 cm (Maj : 50 cm) · une ouverture coulisse le long de son mur'],['Alt + flèches','Dans le plan : passe d\'un élément à l\'autre (Option + flèches sur Mac) · Entrée ouvre sa fiche · Tab sort du plan'],['Maj + clic','Ajoute à la sélection · Maj + glisser dans le vide : rectangle'],['Maj + F10','Le menu des actions de l\'élément choisi (aussi la touche Menu du clavier)'],['Ctrl A','Sélectionne tous les équipements'],['Ctrl C / V / D','Copie, colle, duplique des équipements'],['Ctrl Z / Y','Annule, rétablit'],['Ctrl S','Enregistre dans « Mes plans »']]],
   ['Se déplacer',[['Molette','Zoom (pincer sur tablette)'],['Glisser dans le vide','Déplace la vue (aussi : Espace + glisser, ou clic milieu)']]],
 ];
 function keysHTML(){const grp=(t,l)=>`<div class="kgrp"><div class="ph">${t}</div><div class="keys">${l.map(([k,d])=>`<kbd>${k}</kbd><span>${d}</span>`).join('')}</div></div>`;
@@ -4826,7 +5053,7 @@ const tipEquip=k=>ITEMS[k].label+' · '+dimsModele('equipement',k)+(isFurniture(
 /* la fiche du modèle choisi, dans le panneau (grande vignette, nom, dimensions) */
 function propModele(genre,k,extra){const o=genre==='ouverture'?OPENINGS[k]:ITEMS[k];if(!o)return '';
   return `<div class="mprop"><span class="th">${vignetteImg(genre,k,84,44)}</span><span class="mpt"><b>${o.label}</b><small class="${genre!=='ouverture'&&o.elec?'':'mono'}">${dimsModele(genre,k)}</small>${extra?`<small>${extra}</small>`:''}</span></div>`;}
-function modeEmploi(l){return `<ol class="memploi">${l.map(x=>`<li>${x}</li>`).join('')}</ol>`;}
+function modeEmploi(l){return `<ol class="memploi">${l.map(x=>`<li>${x}</li>`).join('')}</ol><p class="msortie"><kbd>Échap</kbd> annule le geste en cours, puis revient à la Sélection.</p>`;} /* D62 */
 function optbarHTML(){
   if(isMobile())return '';
   const T=tool;
@@ -4905,9 +5132,11 @@ function majEtatLive(){let h='';
     else if(tool==='mur'&&liveMur){const {ref,end,sp}=liveMur,acc=nomAccroche(sp);
       let a=null;if(ref){const d=sub(end,ref);a=(Math.round(-Math.atan2(d.y,d.x)*180/Math.PI)+360)%360;h=`<span>Longueur <b>${fmt(len(d))} m</b></span><span>Angle <b>${a}°</b></span>`;}
       const nom=acc==='angle'?(a!=null&&a%90===0?'angle droit':'à 45°'):acc;if(nom)h+=`<span class="acc">${nom}</span>`;}
-    else if(tool==='cote'&&hover&&(dimStart||dimPending))h=`<span>Cote <b>${fmt(dimPending?dist(dimPending.a,dimPending.b):dist(dimStart,hover))} m</b></span>`;
-    else if(tool==='ouverture'&&hover&&OPENINGS[openingType]){const nw=nearestWall(hover,0.6),o=OPENINGS[openingType];h=nw?`<span>${o.label} <b>${fmt(o.w)} m</b></span><span>Mur de <b>${fmt(wallLen(nw.wall))} m</b></span><span class="acc">sur le mur</span>`:`<span>${o.label} : approche un mur</span>`;}
-    else if(tool==='equipement'&&hover&&ITEMS[itemType]){const d=ITEMS[itemType];h=`<span>${d.label} <b>${dimsModele('equipement',itemType)}</b></span>`;}
+    else if(tool==='cote'&&hover&&dimPending)h=`<span>Cote <b>${fmt(dist(dimPending.a,dimPending.b))} m</b></span>`;
+    else if(tool==='cote'&&hover){const sp=snapPoint(hover,dimStart),acc=nomAccroche(sp);h=(dimStart?`<span>Cote <b>${fmt(dist(dimStart,sp.p))} m</b></span>`:'')+(acc?`<span class="acc">${acc}</span>`:''); /* D62 : l'accrochage nommé, comme pour les murs */}
+    else if(tool==='mesure'&&hover&&!measureDone){const sp=snapMeasure(hover,measure.length?measure[measure.length-1]:null),acc=sp.kind==='corner'?'angle intérieur':sp.kind==='face'?'face du mur':nomAccroche(sp);if(acc)h=`<span class="acc">${acc}</span>`;}
+    else if(tool==='ouverture'&&hover&&OPENINGS[openingType]){const nw=nearestWall(hover,0.6),o=OPENINGS[openingType],A=apercuInfo||{};h=nw?`<span>${o.label} <b>${fmt(o.w)} m</b></span><span>Mur de <b>${fmt(wallLen(nw.wall))} m</b></span>`+(A.court?`<span class="ko">mur trop court</span>`:A.deja?`<span class="ko">une ouverture est déjà là : le clic la choisit</span>`:`<span class="acc">sur le mur</span>`):`<span>${o.label} : approche un mur</span>`;}
+    else if(tool==='equipement'&&hover&&ITEMS[itemType]){const d=ITEMS[itemType];h=`<span>${d.label} <b>${dimsModele('equipement',itemType)}</b></span>`+(apercuInfo&&apercuInfo.contre?`<span class="acc">contre le mur</span>`:'');}
   }
   if(h!==etatLive){etatLive=h;const el=document.getElementById('mesureLive');if(el){el.innerHTML=h;el.hidden=!h;}}
   if(view.zoom!==echelleZ)majEchelle();}
@@ -4958,7 +5187,7 @@ function draw(){
   if(!draw.recale&&cv.width!==Math.floor(cv.parentElement.getBoundingClientRect().width*devicePixelRatio)){draw.recale=1;try{resize();}finally{draw.recale=0;}return;}
   const W=cv.clientWidth,H=cv.clientHeight,z=view.zoom; ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
   ctx.fillStyle='#F7F8FC';ctx.fillRect(0,0,W,H);
-  const lv=L(); coteLabels=[];liveMur=null;
+  const lv=L(); coteLabels=[];liveMur=null;apercuInfo=null;
   const hoverHit=(tool==='select'&&hover&&!drag)?hitTest(hover):null;
   const isHover=(kind,id)=>hoverHit&&hoverHit.kind===kind&&hoverHit.id===id&&!(sel&&sel.kind===kind&&sel.id===id);
   // calque
@@ -4995,7 +5224,6 @@ function draw(){
     const r=f.room; if(!r)return; const col=RT[r.type].color; const isSel=sel?.kind==='room'&&sel.id===r.id;
     ctx.beginPath();f.poly.forEach((p,i)=>{const s=S(p);i?ctx.lineTo(s.x,s.y):ctx.moveTo(s.x,s.y);});ctx.closePath();
     ctx.fillStyle=hexA(col,isSel?.26:isHover('room',r.id)?.2:.13);ctx.fill();
-    if(isSel){ctx.beginPath();f.poly.forEach((p,i)=>{const s=S(p);i?ctx.lineTo(s.x,s.y):ctx.moveTo(s.x,s.y);});ctx.closePath();ctx.setLineDash([6,4]);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.stroke();ctx.setLineDash([]);}
   });
   /* D42 : plan vide → une carte avec des actions (DOM : Tracer les murs, Poser une pièce, plan type ;
      au téléphone : l'exemple et Mes plans). Le texte dans le plan ne sert plus que pendant le tracé,
@@ -5029,6 +5257,7 @@ function draw(){
   tremies(lv).forEach(it=>{const s=S(it);const below=state.levels[state.cur-1];const G=stairGeom(it,below);ctx.save();ctx.translate(s.x,s.y);ctx.rotate(it.rot);ctx.scale(z,z);ctx.lineWidth=1.6/z;ctx.strokeStyle='#6c6b86';ctx.fillStyle='rgba(108,107,134,.12)';G.rects.forEach(r=>{if(r.circle){ctx.setLineDash([0.12,0.08]);ctx.beginPath();ctx.arc(0,0,r.w/2,0,7);ctx.stroke();ctx.setLineDash([]);ctx.fill();return;}ctx.setLineDash([0.12,0.08]);ctx.strokeRect(r.x,r.y,r.w,r.h);ctx.setLineDash([]);ctx.fillRect(r.x,r.y,r.w,r.h);ctx.beginPath();ctx.moveTo(r.x,r.y);ctx.lineTo(r.x+r.w,r.y+r.h);ctx.moveTo(r.x+r.w,r.y);ctx.lineTo(r.x,r.y+r.h);ctx.stroke();});ctx.restore();ctx.fillStyle='#6c6b86';ctx.font='700 11px Geist, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';const r0=G.rects[0];const lc=S(v(it.x+Math.cos(it.rot)*(r0.x+r0.w/2)-Math.sin(it.rot)*(r0.y+r0.h/2),it.y+Math.sin(it.rot)*(r0.x+r0.w/2)+Math.cos(it.rot)*(r0.y+r0.h/2)));ctx.fillText('Trémie',lc.x,lc.y);});
   // équipements (sélection multiple surlignée)
   lv.items.forEach(it=>{if(itemDrawn(it)&&!itemHidden(it))drawItem(it,(sel?.kind==='item'&&sel.id===it.id)||multi.includes(it.id)||inMsel('item',it.id));});
+  dessinerSelection(lv); /* D62 : le contour indigo des murs et de la pièce choisis, par-dessus leur couleur métier */
   // poignée de rotation d'un équipement seul
   if(sel?.kind==='wall'){const w=lv.walls.find(x=>x.id===sel.id);
     if(w)poigneesDoublage(w).forEach(g=>{const tire=drag&&drag.kind==='isoEnd'&&drag.io===g.io&&drag.bout===g.k;
@@ -5073,8 +5302,8 @@ function draw(){
       ctx.textAlign='center';ctx.fillText(fmt(ml,2)+' m',m.x,m.y);}
   }
   if(drag?.kind==='band'){const a=S(drag.start),b=S(drag.cur);ctx.fillStyle='rgba(79,70,229,.08)';ctx.fillRect(a.x,a.y,b.x-a.x,b.y-a.y);ctx.setLineDash([5,4]);ctx.strokeStyle='#4f46e5';ctx.lineWidth=1.5;ctx.strokeRect(a.x,a.y,b.x-a.x,b.y-a.y);ctx.setLineDash([]);}
-  if(hoverHit?.kind==='item'&&isHover('item',hoverHit.id)){const it=lv.items.find(i=>i.id===hoverHit.id);if(it){const s=S(it);ctx.save();ctx.translate(s.x,s.y);ctx.rotate(it.rot);ctx.scale(z,z);ctx.setLineDash([5/z,4/z]);ctx.strokeStyle='#a78bfa';ctx.lineWidth=1.5/z;strokeRects(itemRects(it,lv),4/z);ctx.restore();}}
-  if(hoverHit?.kind==='opening'&&isHover('opening',hoverHit.id)){const o=lv.openings.find(x=>x.id===hoverHit.id);const w=o&&findWall(o.wallId);if(w){const c=S(add(w.a,mul(sub(w.b,w.a),o.t)));ctx.beginPath();ctx.arc(c.x,c.y,Math.max(14,o.w/2*z+6),0,7);ctx.strokeStyle='#a78bfa';ctx.lineWidth=1.5;ctx.setLineDash([5,4]);ctx.stroke();ctx.setLineDash([]);}}
+  /* D62 : le survol parle la langue de la sélection — le même contour indigo, léger, sans halo (plus de cercle ni de tirets lilas) */
+  if(hoverHit&&isHover(hoverHit.kind,hoverHit.id))survolObjet(lv,hoverHit);
   // cotes de jambage de l'ouverture sélectionnée (distance aux angles)
   cotesOuverture=[];if(sel?.kind==='opening'){const o=lv.openings.find(x=>x.id===sel.id);if(o)drawOpeningDims(o);}
   // pièces en défaut (contrôle du plan) → badge ⚠ sur l'étiquette
@@ -5100,13 +5329,13 @@ function draw(){
       if(hover&&!drag){const q=nodeAt(lastMouse.x,lastMouse.y);if(q&&!(sel?.kind==='wall'&&(same(findWall(sel.id)?.a,q)||same(findWall(sel.id)?.b,q))))showAt(q);}}
   }
   // poignée centrale du mur sélectionné (glisser = agrandir/réduire la pièce)
-  if(sel?.kind==='wall'&&!drag){const w=findWall(sel.id);if(w&&!isVirtual(w)&&!(mode()==='projet'&&wst(w)==='demolir')){const m=S(mul(add(w.a,w.b),.5)); /* D54 (design 2) : un mur qui part n'a ni poignée ronde ni poignées d'extrémité (elles coupaient l'étiquette de la pièce réunie) */const n=perp(norm(sub(w.b,w.a))),r=7*Math.max(1,hitScale*0.7); /* D60 : un losange plein indigo, un trait blanc dit le sens du glissé */ctx.beginPath();ctx.moveTo(m.x,m.y-r);ctx.lineTo(m.x+r,m.y);ctx.lineTo(m.x,m.y+r);ctx.lineTo(m.x-r,m.y);ctx.closePath();ctx.fillStyle=SEL_C;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();ctx.beginPath();ctx.moveTo(m.x-n.x*r*0.45,m.y-n.y*r*0.45);ctx.lineTo(m.x+n.x*r*0.45,m.y+n.y*r*0.45);ctx.stroke();}}
+  if(sel?.kind==='wall'&&!drag){const w=findWall(sel.id);if(w&&!isVirtual(w)&&!(mode()==='projet'&&wst(w)==='demolir')){const m=S(mul(add(w.a,w.b),.5)); /* D54 (design 2) : un mur qui part n'a ni poignée ronde ni poignées d'extrémité (elles coupaient l'étiquette de la pièce réunie) */const n=perp(norm(sub(w.b,w.a))),r=7*Math.max(1,hitScale*0.7); /* D60 : un losange plein indigo, un trait blanc dit le sens du glissé */poigneeLosange(m.x,m.y,r,n);}}
   // extrémités non raccordées (hors tracé en cours)
   if(!chain.length&&tool!=='export'){danglingNodes(lv).forEach(p=>{const s=S(p);losangeAlerte(s.x,s.y,8);});}
   // cotes manuelles
   lv.dims.forEach(d=>drawManualDim(d,sel?.kind==='dim'&&sel.id===d.id?'#4f46e5':'#7c3aed'));
   // poignée ⇕ sur la cote sélectionnée : glisser = coulisser la ligne de cote
-  if(sel?.kind==='dim'&&!drag){const d=lv.dims.find(x=>x.id===sel.id);if(d){const L2=dimLine(d);const m=S(mul(add(L2.a,L2.b),.5));const nn=L2.n;ctx.beginPath();ctx.arc(m.x,m.y,8,0,7);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#4f46e5';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.moveTo(m.x-nn.x*4.5,m.y-nn.y*4.5);ctx.lineTo(m.x+nn.x*4.5,m.y+nn.y*4.5);ctx.stroke();}}
+  if(sel?.kind==='dim'&&!drag){const d=lv.dims.find(x=>x.id===sel.id);if(d){const L2=dimLine(d);const m=S(mul(add(L2.a,L2.b),.5));poigneeLosange(m.x,m.y,7,L2.n);}} /* D62 : le losange du milieu d'un mur (même geste : glisser de côté) */
   if(layOn('notes'))drawTexts(lv,sel?.kind==='text'?sel.id:null,hoverHit?.kind==='text'?hoverHit.id:null);drawDoneBadges(lv);
   if(tool==='texte'&&hover){const s=S(hover);ctx.save();ctx.globalAlpha=.6;ctx.fillStyle='#fff7d6';ctx.strokeStyle='#f59e0b';ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(s.x,s.y-12,90,24,6);ctx.fill();ctx.stroke();ctx.fillStyle='#92400e';ctx.font='600 11.5px Geist, sans-serif';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText('Ta note ici…',s.x+8,s.y);ctx.restore();}
   // aperçus
@@ -5131,8 +5360,8 @@ function draw(){
   /* D41 : l'astuce parle de ce qui est sélectionné (mur, ouverture, équipement, pièce), et se replie en « ? » après quelques secondes */
   const selK=tool==='select'&&sel&&['wall','opening','item','room'].includes(sel.kind)&&mode()!=='final'?'sel_'+sel.kind+(mode()==='projet'?'_projet':''):null;
   const hintKey=tool==='mur'&&chain.length?'murChain':(tool==='cote'&&dimPending)?'cotePlace':selK&&HINTS[selK]?selK:tool==='select'&&planVide()&&!isMobile()?'vide':tool==='select'&&mode()!=='existant'?'select_'+mode():tool==='equipement'&&!ITEMS[itemType]?'equipement_choix':tool;if(hintKey!==lastHint){lastHint=hintKey;montrerAstuce(HINTS[hintKey]||'',hintKey==='murChain'||hintKey==='cotePlace');}
-  if(tool==='ouverture'&&hover){const nw=nearestWall(hover,0.6);if(nw){const def=OPENINGS[openingType];const Lw=wallLen(nw.wall);const t=Math.max(def.w/2/Lw,Math.min(1-def.w/2/Lw,nw.t));ctx.globalAlpha=.55;drawOpening({wallId:nw.wall.id,t,type:openingType,w:def.w,hinge:1,side:sideOf(hover,nw.wall)},true);ctx.globalAlpha=1;}}
-  if(tool==='equipement'&&hover&&ITEMS[itemType]){const def=ITEMS[itemType];const {p}=snapPoint(hover,null);const it={type:itemType,x:p.x,y:p.y,w:def.w,h:def.h,rot:0};if(itemType==='escalier'){it.stair={type:'droit'};fitStair(it,L());}const sn=snapItemToWall(it,hover);if(sn)Object.assign(it,sn);pushOutOfWalls(it);ctx.globalAlpha=.5;drawItem(it,true);ctx.globalAlpha=1;}
+  if(tool==='ouverture'&&hover&&!drag)apercuOuverture(); /* D62 : l'aperçu de pose a son style (tirets), ses cotes temporaires et dit s'il ne tient pas */
+  if(tool==='equipement'&&hover&&!drag&&ITEMS[itemType])apercuEquipement();
   if(tool==='cote'&&hover){
     if(dimPending){const d={...dimPending,off:dimOffAt(dimPending,hover)};ctx.save();ctx.globalAlpha=.85;drawManualDim(d,'#7c3aed');ctx.restore();[dimPending.a,dimPending.b].forEach(q=>{const s=S(q);ctx.beginPath();ctx.arc(s.x,s.y,3.5,0,7);ctx.fillStyle='#7c3aed';ctx.fill();});}
     else{const sp=snapPoint(hover,dimStart);if(dimStart)drawDim(dimStart,sp.p,'#7c3aed',true);const s=S(sp.p);ctx.beginPath();ctx.arc(s.x,s.y,4.5,0,7);ctx.fillStyle='#7c3aed';ctx.fill();}}
@@ -5141,6 +5370,7 @@ function draw(){
   // poignées du mur sélectionné
   if(sel?.kind==='wall'){const w=findWall(sel.id);if(w&&!(mode()==='projet'&&wst(w)==='demolir'))[w.a,w.b].forEach(p=>{const s=S(p);poigneeCarree(s.x,s.y,4.5*Math.max(1,hitScale*0.7));});} /* D60 : carrés pleins indigo */
   updateMeasBox();majEtatLive();
+  try{majBarreSel();}catch(err){console.error(err);} /* D62 : la barre d'actions suit la sélection (jamais au prix du dessin) */
 }
 function hexA(hex,a){const n=parseInt(hex.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;}
 // Outil Mesurer : polyligne + point courant, longueur cumulée, surface si ≥ 3 points. Rien n'est enregistré.
@@ -5347,7 +5577,7 @@ function drawJoins(){
     const hull=convexHull(pts);if(hull.length<3)return;
     ctx.beginPath();const P=hull.map(S);P.forEach((s,i)=>i?ctx.lineTo(s.x,s.y):ctx.moveTo(s.x,s.y));ctx.closePath();
     const toutesCl=ends.every(e=>e.w.type==='cloison'); /* D60 : un raccord entre cloisons garde leur teinte */
-    ctx.fillStyle=allSel?(allNew?'#ef4444':'#4f46e5'):(allNew?CREER:toutesCl?ENCRE_CLOISON:ENCRE);ctx.fill();
+    ctx.fillStyle=allNew?CREER:toutesCl?ENCRE_CLOISON:ENCRE;ctx.fill(); /* D62 : le raccord garde sa teinte, même entre murs choisis (allSel n'est plus lu) */
     /* le raccord porte le motif de ce qu'il raccorde : sans lui, un angle entre deux cloisons à
        créer laissait un carré plein au milieu des hachures — l'angle sautait aux yeux */
     const hach=ends.filter(e=>(mode()==='projet'&&wst(e.w)==='creer')||wallT(e.w)>=0.4);
@@ -5411,10 +5641,8 @@ function retraitContreDoublage(w,p,autre){
   return r;
 }
 /* D53 : le tronçon visé d'un mur, dans la couleur de la sélection */
-function drawTroncon(w,t0,t1){const z=view.zoom,t=wallT(w),u=norm(sub(w.b,w.a)),n=perp(u),off=wallOff(w),d=sub(w.b,w.a);
-  const a=S(add(add(w.a,mul(d,t0)),off)),b=S(add(add(w.a,mul(d,t1)),off)),hx=n.x*t/2*z,hy=n.y*t/2*z;
-  ctx.beginPath();ctx.moveTo(a.x+hx,a.y+hy);ctx.lineTo(b.x+hx,b.y+hy);ctx.lineTo(b.x-hx,b.y-hy);ctx.lineTo(a.x-hx,a.y-hy);ctx.closePath();ctx.fillStyle='#4f46e5';ctx.fill();
-  ctx.lineWidth=5;ctx.strokeStyle='rgba(79,70,229,.3)';ctx.lineJoin='round';ctx.stroke();ctx.lineJoin='miter';}
+/* D62 : le tronçon visé d'un mur se dit comme toute sélection — le contour indigo, la couleur du mur dessous */
+function drawTroncon(w,t0,t1){contourMur(w,t0,t1,true);}
 /* D60 · une cloison existante qui bute au MILIEU d'un mur (jonction en T) s'arrête à la face de ce mur, du côté de la
    cloison. Plus claire que le mur (ENCRE_CLOISON), elle laissait sinon une encoche claire dans son poché, jusqu'à
    l'axe. Ni une autre cloison (même encre), ni un mur qui part (on le voit à travers). */
@@ -5434,7 +5662,7 @@ function drawWall(w,isSel,isHov){
   const ra=Math.max(retraitContreDoublage(w,w.a,w.b),cl?retraitEnT(w,w.a,w.b):0),rb=Math.max(retraitContreDoublage(w,w.b,w.a),cl?retraitEnT(w,w.b,w.a):0);
   const a=S(add(add(w.a,off),mul(u,ra))),b=S(add(add(w.b,off),mul(u,-rb)));const hx=n.x*t/2*z,hy=n.y*t/2*z;
   /* D60 : la séparation, en tirets d'encre à 50 % — le lilas était la couleur de la sélection */
-  if(isVirtual(w)){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=isSel?'#4f46e5':isHov?'rgba(79,70,229,.7)':ENCRE_SEP;ctx.lineWidth=isSel||isHov?2.5:1.25;ctx.setLineDash([6,4]);ctx.lineCap='butt';ctx.stroke();ctx.setLineDash([]);return;}
+  if(isVirtual(w)){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=ENCRE_SEP;ctx.lineWidth=1.25; /* D62 : choisie ou survolée, elle garde son trait ; le contour indigo (contourMur) le dit */ctx.setLineDash([6,4]);ctx.lineCap='butt';ctx.stroke();ctx.setLineDash([]);return;}
   /* Le quadrilatère du mur, REFAIT à la demande : les hachures appellent beginPath(), donc tout
      tracé posé avant elles est perdu. Le liseré de cloison, juste après, repassait ainsi sur la
      dernière ligne de hachure — un éclat oblique en travers du plan à chaque jonction. */
@@ -5444,13 +5672,13 @@ function drawWall(w,isSel,isHov){
     ctx.fillStyle=isSel?'rgba(245,158,11,.5)':isHov?'rgba(245,158,11,.38)':'rgba(245,158,11,.24)';ctx.fill();ctx.setLineDash([6,4]);ctx.strokeStyle=DEMOLIR;ctx.lineWidth=isSel?2.5:1.5;ctx.stroke();ctx.setLineDash([]);return;}
   /* D60 (annexe C7) : mur en poché plein d'encre, cloison à 65 %, mur épais (pierre, ≥ 40 cm) hachuré blanc à 35 %
      au pas de 6 px — la hachure à 14 % ne se voyait pas : seule l'épaisseur distinguait une cloison d'un mur. */
-  ctx.fillStyle=isNew?(isSel?'#ef4444':isHov?'#dc2626':CREER):(isSel?'#4f46e5':isHov?'#5b52c9':w.type==='cloison'?ENCRE_CLOISON:ENCRE);ctx.fill();
+  ctx.fillStyle=isNew?CREER:w.type==='cloison'?ENCRE_CLOISON:ENCRE;ctx.fill(); /* D62 : la couleur métier ne change plus à la sélection ni au survol (le contour indigo se pose par-dessus) */
   if(isNew||t>=0.4){ctx.save();ctx.clip();hatch(a,b,u,n,t,z,isNew?.45:.35,isNew?7:6);ctx.restore();}
   if(w.type==='cloison'&&isNew){
     /* Le liseré (cloison à créer) suit les deux LONGS côtés, et ne referme une extrémité que si elle est libre.
        Refermé contre un autre mur, il barrait la jonction d'un trait : la cloison semblait
        s'arrêter là au lieu de s'y raccorder. D60 : une cloison existante n'a plus de liseré, sa teinte suffit. */
-    ctx.strokeStyle=isSel?'#4f46e5':ENCRE;ctx.lineWidth=1;
+    ctx.strokeStyle=ENCRE;ctx.lineWidth=1;
     ctx.beginPath();
     ctx.moveTo(a.x+hx,a.y+hy);ctx.lineTo(b.x+hx,b.y+hy);
     ctx.moveTo(a.x-hx,a.y-hy);ctx.lineTo(b.x-hx,b.y-hy);
@@ -5662,11 +5890,11 @@ function drawDim(a,b,col,withText,evite,cout,essai){ /* D50 : cout(boîte) → l
    seuil et sa marque d'entrée, porte âme pleine au vantail plein, coulissante en applique sur son rail (ou dans sa
    poche, à galandage), porte de garage = tablier et rails. Les états (à créer, à remplacer en rouge, à boucher hachuré)
    ne changent pas. La vignette de la bibliothèque EST ce dessin (vignette()). */
-function drawOpening(o,isSel){
+function drawOpening(o,isSel,apercu){ /* D62 : apercu = 'apercu' | 'ko' (l'aperçu de pose) */
   const w=L().walls.find(w=>w.id===o.wallId);if(!w)return;const def=OPENINGS[o.type];const z=view.zoom,t=wallT(w);
   const u=norm(sub(w.b,w.a)),n=perp(u);const c=add(add(w.a,mul(sub(w.b,w.a),o.t)),wallOff(w));const half=o.w/2;
   const projet=mode()==='projet',os=ost(o);
-  const col=isSel?'#4f46e5':(projet&&(os==='creer'||os==='remplacer'))?CREER:ENCRE;
+  const col=(projet&&(os==='creer'||os==='remplacer'))?CREER:ENCRE; /* D62 : choisie, elle garde sa couleur ; le cadre indigo le dit */
   const kU=uiScale||1,px=q=>q*kU/z; /* une épaisseur d'écran (px) dans le repère du mur (m) */
   ctx.save();const cs=S(c);ctx.translate(cs.x,cs.y);ctx.rotate(Math.atan2(u.y,u.x));ctx.scale(z,z);ctx.lineWidth=px(1.5);ctx.strokeStyle=col;ctx.lineCap='butt';ctx.lineJoin='miter';
   /* l'emprise réellement dessinée (repère du mur : x le long, y à travers), pour le cadre de sélection */
@@ -5762,7 +5990,8 @@ function drawOpening(o,isSel){
       }
     }
   }
-  if(isSel){ctx.save();ctx.setLineDash([px(4),px(3)]);ctx.strokeStyle='#4f46e5';ctx.lineWidth=px(1.25);ctx.strokeRect(X0-0.05,Y0-0.05,X1-X0+0.1,Y1-Y0+0.1);ctx.restore();}
+  {const R0=[{x:X0,y:Y0,w:X1-X0,h:Y1-Y0}];if(o.id&&!apercu)cadresOuv[o.id]=R0; /* D62 : le cadre plein de la sélection (le survol le reprend), l'aperçu en tirets */
+   if(isSel)cadreSel(R0,px(5),px,true);if(apercu)cadreApercu(R0,px(5),px,apercu==='ko');}
   ctx.restore();
   // retour d'isolant en tableau — dessiné en coordonnées MONDE avec fillIso() : EXACTEMENT la même représentation (remplissage + hachures + trait de placo) que le doublage des murs.
   // va jusqu'au bord extérieur du doublage (t/2+dt) → à fleur des bandes latérales, coin rempli ; 2 faces mêmes ép. = une seule gaine continue.
@@ -5792,10 +6021,10 @@ function drawOpening(o,isSel){
    un plan français (FR, LV, LL, CE, CH, VMC), écrit droit et seulement s'il se lit. Plus d'orange ni de violet hors des
    états. « À poser » n'est plus écrit au-dessus de l'appareil : une puce rouge au coin de son cadre (la légende dit déjà
    « à créer »). La vignette de la bibliothèque EST ce dessin (vignette()). */
-function drawItem(it,isSel){
+function drawItem(it,isSel,apercu){ /* D62 : apercu = 'apercu' (l'aperçu de pose) */
   const z=view.zoom,s=S(it);ctx.save();ctx.translate(s.x,s.y);ctx.rotate(it.rot);ctx.scale(z,z);
   const kU=uiScale||1,px=q=>q*kU/z,w=it.w,h=it.h,T=it.type;
-  const C=isSel?'#4f46e5':ENCRE,CF=isSel?'rgba(79,70,229,.75)':'rgba(30,27,75,.75)';
+  const C=ENCRE,CF='rgba(30,27,75,.75)'; /* D62 : choisi, il garde son encre ; le cadre indigo le dit */
   const mob=['lit','lit1','armoire','canape','table','bureau'].includes(T);
   const moy=()=>{ctx.lineWidth=px(1.5);ctx.strokeStyle=C;},fin=()=>{ctx.lineWidth=px(1);ctx.strokeStyle=CF;};
   if(mob)fin();else moy();ctx.fillStyle='rgba(255,255,255,.85)';ctx.lineJoin='round';ctx.lineCap='butt';
@@ -5806,15 +6035,15 @@ function drawItem(it,isSel){
   const code=(txt,x=0,y=0,fs=Math.min(w,h)*0.3)=>{if(fs*z<6*kU)return;ctx.save();ctx.translate(x,y);ctx.rotate(-it.rot);ctx.fillStyle=CF;ctx.font=`600 ${fs}px Geist, sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,0,fs*0.06);ctx.restore();};
   /* points électriques : le symbole seul, à une taille d'écran BORNÉE — 12 à 20 px (le tableau : au moins 12 px) — et
      un trait constant de 1,25 px. Agrandi sans borne, il devenait un pâté noir au téléphone, et minuscule de près. */
-  if(ITEMS[T]?.elec){const reel=Math.max(w,h)*z,cible=T==='tableau'?Math.max(12*kU,reel):Math.min(20*kU,Math.max(12*kU,reel)),k=cible/reel;
+  if(ITEMS[T]?.elec){const k=kElec(it);
     ctx.scale(k,k);ctx.lineWidth=1.25*kU/(z*k);drawElec(it,isSel);
-    if(isSel){const m=4*kU/(z*k);ctx.setLineDash([m,m*0.75]);ctx.strokeStyle='#4f46e5';ctx.lineWidth=kU/(z*k);ctx.strokeRect(-w/2-m,-h/2-m,w+2*m,h+2*m);ctx.setLineDash([]);}
+    {const pk=q=>q*kU/(z*k),R0=[{x:-w/2,y:-h/2,w,h}];if(isSel)cadreSel(R0,pk(5),pk,true);if(apercu)cadreApercu(R0,pk(5),pk,false);} /* D62 */
     ctx.restore();return;}
   if(!['escalier','poutre','poteau','velux','cumulus','wc'].includes(T)){rr(-w/2,-h/2,w,h,0.03);ctx.fill();ctx.stroke();}
   if(T==='poutre'){ /* en hauteur : deux rives en tirets, l'axe en trait mixte (plus d'orange, celui des démolitions) */
     ctx.save();ctx.setLineDash([px(4),px(3)]);ctx.lineWidth=px(1.25);ctx.strokeStyle=C;ctx.strokeRect(-w/2,-h/2,w,h);
-    ctx.setLineDash([px(10),px(3),px(2),px(3)]);ctx.lineWidth=px(1);ctx.strokeStyle=isSel?C:'rgba(30,27,75,.5)';trait(-w/2-0.08,0,w/2+0.08,0);ctx.restore();}
-  if(T==='poteau'){ctx.fillStyle=isSel?'#4f46e5':(mode()==='projet'&&it.st==='creer')?CREER:ENCRE;ctx.fillRect(-w/2,-h/2,w,h);}
+    ctx.setLineDash([px(10),px(3),px(2),px(3)]);ctx.lineWidth=px(1);ctx.strokeStyle='rgba(30,27,75,.5)';trait(-w/2-0.08,0,w/2+0.08,0);ctx.restore();}
+  if(T==='poteau'){ctx.fillStyle=(mode()==='projet'&&it.st==='creer')?CREER:ENCRE;ctx.fillRect(-w/2,-h/2,w,h);}
   if(T==='velux'){ctx.save();ctx.setLineDash([px(4),px(3)]);ctx.lineWidth=px(1.25);ctx.strokeStyle=C;ctx.strokeRect(-w/2,-h/2,w,h);ctx.lineWidth=px(1);ctx.strokeStyle=CF;trait(-w/2,h/2,w/2,-h/2);ctx.restore();}
   if(T==='baignoire'){fin();rr(-w/2+0.07,-h/2+0.07,w-0.14,h-0.14,0.16);ctx.stroke();rond(w/2-0.22,0,0.025);ctx.stroke();ctx.fillStyle=C;[-0.06,0.06].forEach(dy=>{rond(w/2-0.035,dy,0.013);ctx.fill();});}
   if(T==='douche'){fin();trait(-w/2,-h/2,w/2,h/2);trait(w/2,-h/2,-w/2,h/2);moy();ctx.fillStyle='#fff';rond(0,0,0.03);ctx.fill();ctx.stroke();ctx.lineWidth=px(2.5);trait(-w/2,h/2,w*0.12,h/2);}
@@ -5861,7 +6090,7 @@ function drawItem(it,isSel){
   if(mode()==='projet'&&it.st&&it.st!=='existant'){const col=it.st==='creer'?CREER:DEMOLIR;ctx.save();ctx.globalAlpha*=.8;ctx.setLineDash([px(5),px(4)]);ctx.strokeStyle=col;ctx.lineWidth=px(1.5);strokeRects(RR,0.05);ctx.setLineDash([]);
     if(it.st==='demolir'){ctx.globalAlpha*=.7;ctx.lineWidth=px(1.2);RR.forEach(r=>{ctx.beginPath();ctx.moveTo(r.x,r.y);ctx.lineTo(r.x+r.w,r.y+r.h);ctx.moveTo(r.x+r.w,r.y);ctx.lineTo(r.x,r.y+r.h);ctx.stroke();});}
     else{const r0=RR[0];ctx.globalAlpha/=.8;ctx.fillStyle=col;ctx.strokeStyle='#fff';ctx.lineWidth=px(1.5);ctx.beginPath();ctx.arc(r0.x+r0.w+0.05,r0.y-0.05,px(4),0,7);ctx.fill();ctx.stroke();}ctx.restore();}
-  if(isSel){ctx.setLineDash([px(4),px(3)]);ctx.lineWidth=px(1.25);ctx.strokeStyle='#4f46e5';strokeRects(RR,0.06);ctx.setLineDash([]);}
+  if(isSel)cadreSel(RR,px(5),px,true);if(apercu)cadreApercu(RR,px(5),px,false); /* D62 : le cadre plein de la sélection, l'aperçu en tirets */
   ctx.restore();
 }
 
