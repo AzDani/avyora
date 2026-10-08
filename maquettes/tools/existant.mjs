@@ -90,7 +90,7 @@ const res = await p.evaluate(() => {
   const ligne = (re) => chantierTasks().find((x) => re.test(x.id));
   const pieces = (lv) => facesFor(lv, "projet").map((f) => f.room).filter(Boolean);
 
-  { rdc(); addLevel("plancher"); const haut = L();
+  { rdc(); addLevel("plancher"); chantier().finition = "premium"; const haut = L(); /* prix catalogue = Premium : depuis le 26/09/2026 le compteur applique la finition */
     t["plancher dans un volume · l'étage est marqué créé"] = haut.neuf === true;
     t["plancher dans un volume · les murs restent EXISTANTS"] = haut.walls.every((w) => !w.st);
     t["plancher dans un volume · les pièces naissent SANS plancher"] = pieces(haut).every((r) => r.floor === SANS_PLANCHER && r.plancherNeuf === "bois");
@@ -100,7 +100,7 @@ const res = await p.evaluate(() => {
   { rdc(); addLevel("surelevation"); const haut = L();
     t["surélévation · les murs sont À CRÉER"] = haut.walls.every((w) => w.st === "creer");
     t["surélévation · les murs sont chiffrés en plus du plancher"] = !!ligne(/sol-plancher/) && chantierTasks().some((x) => /^w:.*:creer$/.test(x.id) && (x.lot === "Maçonnerie" || x.lot === "Plâtrerie et cloisons")); } /* D39 : un mur épais créé va en Maçonnerie */
-  { rdc(); addLevel("plancher"); const haut = L(); const r = pieces(haut)[0];
+  { rdc(); addLevel("plancher"); chantier().finition = "premium"; const haut = L(); /* prix catalogue = Premium : depuis le 26/09/2026 le compteur applique la finition */ const r = pieces(haut)[0];
     r.plancherNeuf = "beton"; afterChange();
     const l = ligne(/sol-plancher/);
     t["plancher béton chiffré à 120 €/m², au lot Maçonnerie"] = !!l && Math.abs(l.prix / 120 - areaNet(haut, facesFor(haut, "projet")[0])) < 0.1 && l.lot === "Maçonnerie"; }

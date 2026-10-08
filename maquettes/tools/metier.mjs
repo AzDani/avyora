@@ -326,11 +326,18 @@ Object.assign(t, await p.evaluate(() => {
   const hyd = () => chantierTasks().filter((x) => /hydrofuge/.test(x.label));
   r["faïence refaite, cloison existante : aucune tâche hydrofuge, rien au contrat"] = !!tache(/^faience:/) && !hyd().length && contratPlan().provenance.murs.every((m) => m.hydrofuge === false);
   r["… et la fiche ne promet plus de passer les cloisons en hydrofuge"] = !/passent en plaques hydrofuges/.test(document.getElementById("pbody").innerText);
+  /* Décision de Dani (26/09/2026) : faïence refaite + douche = étanchéité SPEC d'office (receveur 0,90 × 0,90 :
+     0,81 + (0,90 + 1,80) × 2 = 6,21 m²), au prix du catalogue ; et la même surface part au contrat (dimensions de la douche). */
+  const sp = () => chantierTasks().find((x) => x.id.startsWith("spec:"));
+  const eq = contratPlan().detailNiveaux.flatMap((n) => n.equipements).find((e) => e.type === "douche");
+  r["SPEC · faïence refaite dans une salle de bain avec douche : étanchéité comptée d'office, 6,21 m² × 40 €"] = !!sp() && proche(sp().prix, 6.21 * PRIX.spec) && PRIX_CATALOGUE["PRIX.spec"] === 40 && proche(PRIX.spec, 40 - 15 + 15 * FINITION_PRIX["PRIX.spec"][2]);
+  r["SPEC · le contrat porte les dimensions de la douche dont la traduction tire la même surface"] = !!eq && Math.max(eq.l, eq.p) * Math.min(eq.l, eq.p) + (Math.max(eq.l, eq.p) + 2 * Math.min(eq.l, eq.p)) * 2 === 6.21 + 0 || Math.abs(Math.max(eq.l, eq.p) * Math.min(eq.l, eq.p) + (Math.max(eq.l, eq.p) + 2 * Math.min(eq.l, eq.p)) * 2 - 6.21) < 0.01;
   clo.st = "creer"; afterChange();
   const tc = () => chantierTasks().find((x) => x.id === "w:" + clo.id + ":creer"), m2c = wallLen(clo) * 2.5;
   r["cloison À CRÉER qui borde la salle de bain : montée en plaques hydrofuges, au prix de ce poste, une seule fois"] = /plaques hydrofuges/.test(tc().label) && proche(tc().prix, m2c * PRIX.cloisonHumide) && hyd().length === 1;
   r["… le contrat le dit sur le mur (hydrofuge)"] = contratPlan().provenance.murs.find((m) => m.id === clo.pid).hydrofuge === true;
   setRoomProp("faience", "");
+  r["SPEC · sans faïence décidée : pas d'étanchéité"] = !chantierTasks().some((x) => x.id.startsWith("spec:"));
   r["sans faïence : une cloison ordinaire"] = !/hydrofuge/.test(tc().label) && proche(tc().prix, m2c * PRIX.cloisonNeuve) && contratPlan().provenance.murs.every((m) => m.hydrofuge === false);
   B.lv.items = []; afterChange(); sel = { kind: "room", id: sdb().room.id }; renderPanel();
   const zd = [...document.querySelectorAll("#pbody .seg button")].find((x) => /Zone douche/.test(x.textContent));

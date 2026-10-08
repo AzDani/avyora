@@ -213,9 +213,11 @@ Object.assign(t, await p.evaluate(() => {
   loadSample(); setMode("projet"); closeModal(); setTool("select"); sel = null; render();
   const pied = document.getElementById("pfoot").textContent, pan = document.getElementById("panel").innerHTML;
   r["pied · le budget est dit HT"] = /Budget travaux HT/.test(pied);
-  r["Le chantier · dit que le compteur ne les applique pas"] = /compteur du plan/.test(pan) && /prix catalogue/.test(pan) && !/commande le prix/.test(pan);
-  setChantier("finition", "eco"); const eco = chantierPrix().total; setChantier("finition", "standard"); const std = chantierPrix().total;
-  r["compteur : la finition Éco ne le change pas — et l'interface le dit"] = eco === std;
+  /* Décision de Dani (26/09/2026) : le compteur applique la finition, comme l'estimateur ; la région et la TVA restent à l'estimation détaillée. */
+  r["Le chantier · dit que le compteur applique la finition, pas la région ni la TVA"] = /compteur du plan/.test(pan) && /applique déjà ta finition/.test(pan) && !/commande le prix/.test(pan);
+  setChantier("finition", "eco"); const eco = chantierPrix().total; setChantier("finition", "premium"); const pre = chantierPrix().total; setChantier("finition", "standard"); const std = chantierPrix().total;
+  r["compteur : Éco < Standard < Premium, comme l'estimateur"] = eco < std && std < pre;
+  r["pied : la finition appliquée est dite"] = /finition Standard/.test(document.getElementById("pfoot").textContent);
   r["Le chantier · plus de chiffre non sourcé sur les régions"] = !/milliers d'euros/.test(document.getElementById("panel").innerHTML);
   /* épaisseur de doublage : 120 mm par défaut, R ≥ 3,7, une seule liste */
   r["doublage · 120 mm par défaut, et R ≥ 3,7"] = DBL_CFG.e === 0.12 && DBL_CFG.e / ISO_MAT[DBL_CFG.mat].lambda >= R_MIN_MUR;

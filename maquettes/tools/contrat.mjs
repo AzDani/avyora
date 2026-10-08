@@ -69,7 +69,7 @@ const res = await p.evaluate(() => {
     const eq = (q2.detailNiveaux || []).flatMap((n) => (n.equipements || []).map((e) => e.id));
     t["Ctrl+D / Ctrl+V en vue Travaux : les copies sont « À poser »"] = d1.st === "creer" && d2.st === "creer" && d1 !== rad && d2 !== rad;
     t["… chacune avec son identifiant : aucun id en double au contrat"] = new Set(eq).size === eq.length && d1.pid !== rad.pid && d2.pid !== rad.pid && d1.pid !== d2.pid;
-    t["… et elles se chiffrent (deux radiateurs à poser)"] = chantierPrix().total - t0 === 2 * (EQUIP_PRIX.radiateur || 0);
+    t["… et elles se chiffrent (deux radiateurs à poser)"] = Math.abs(chantierPrix().total - t0 - 2 * (EQUIP_PRIX.radiateur || 0)) < 1; /* total arrondi à l'euro ; le prix suit la finition */
     setMode("existant"); closeModal(); sel = { kind: "item", id: rad.id }; rad.st = "demolir"; duplicateItem(); const d3 = L().items.find((i) => i.id === sel.id);
     t["en vue Avant travaux, la copie est un autre objet relevé, sans la décision de l'original"] = !d3.st && d3.pid !== rad.pid; }
 

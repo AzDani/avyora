@@ -299,6 +299,19 @@ describe("table de correspondance · les surfaces mesurées (D10)", () => {
     const c = contributionsDuPlan(p).contributions;
     expect(c.filter((x) => x.sources.includes(sdb.id) && /faience|hydrofuge/.test(x.poste))).toEqual([]);
   });
+  it("Dani 26/09 · la faïence refaite d'une douche emporte son étanchéité SPEC (sol du receveur + 3 parois à 2 m)", () => {
+    // receveur 1,20 × 0,80 : 0,96 + (1,20 + 2 × 0,80) × 2 = 6,56 m²
+    expect(q("rev-etancheite-sous-carrelage-spec-douche")).toBeCloseTo(6.56, 2);
+    const c = contributions.find((x) => x.poste === "rev-etancheite-sous-carrelage-spec-douche")!;
+    const sdb = (plan.detailNiveaux ?? []).flatMap((n) => n.rooms ?? []).find((r) => r.type === "sdb")!;
+    expect(c.sources).toEqual([sdb.id]);
+  });
+  it("Dani 26/09 · sans faïence décidée, pas d'étanchéité SPEC", () => {
+    const sans = JSON.parse(JSON.stringify(plan)) as PlanPourCorrespondance;
+    const sdb = (sans.detailNiveaux ?? []).flatMap((n) => n.rooms ?? []).find((r) => r.type === "sdb")!;
+    sdb.faience = null;
+    expect(contributionsDuPlan(sans).contributions.some((x) => x.poste === "rev-etancheite-sous-carrelage-spec-douche")).toBe(false);
+  });
   it("D45 · une salle de bain sans hauteur de faïence choisie : ni faïence ni cloison hydrofuge", () => {
     const sans = JSON.parse(JSON.stringify(plan)) as PlanPourCorrespondance;
     const sdb = (sans.detailNiveaux ?? []).flatMap((n) => n.rooms ?? []).find((r) => r.type === "sdb")!;

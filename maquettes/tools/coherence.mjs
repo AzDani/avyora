@@ -180,6 +180,7 @@ const PRIX_MAP = [
   ["PRIX", "plinthes", "Plinthes"],
   ["PRIX", "fauxPlafond", "Faux plafond"],
   ["PRIX", "faience", "Faïence / carrelage mural"],
+  ["PRIX", "spec", "Étanchéité sous carrelage (SPEC douche)"],
   ["PRIX", "cloisonHumide", "Cloison pièce humide (hydrofuge)"],
   ["PRIX", "poncageParquet", "Ponçage + vitrification parquet"],
   ["PRIX", "gardeCorps", "Garde-corps"],

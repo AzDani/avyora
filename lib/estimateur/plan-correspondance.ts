@@ -544,11 +544,18 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
   {
     const humides = new Set<string>();
     const perimEau = new Map<string, number>();
+    const specParPiece = new Map<string, number>();
     for (const n of plan.detailNiveaux ?? []) for (const e of n.equipements ?? []) {
       if (!APPAREILS_HUMIDES.has(e.type) || !e.piece) continue;
       humides.add(e.piece);
       // Un receveur est adossé à deux murs : c'est ce linéaire-là qui monte à 2 m de faïence.
       perimEau.set(e.piece, (perimEau.get(e.piece) ?? 0) + (e.l ?? 0) + (e.p ?? 0));
+      /* Décision de Dani (26/09/2026) : l'étanchéité sous carrelage suit la faïence de la douche.
+         Même surface que core.ts (specArea) : sol du receveur + 3 parois jusqu'à 2 m. */
+      if (e.type === "douche") {
+        const w = Math.max(e.l ?? 0, e.p ?? 0), d = Math.min(e.l ?? 0, e.p ?? 0);
+        specParPiece.set(e.piece, (specParPiece.get(e.piece) ?? 0) + w * d + (w + 2 * d) * 2);
+      }
     }
     for (const n of plan.detailNiveaux ?? []) for (const r of n.rooms ?? []) {
       if (r.exterieur) continue;
@@ -585,6 +592,8 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
       if (m2 <= 0) continue;
       add("rev-faience-carrelage-mural", +m2.toFixed(2), src,
         hauteur === "pleine" ? "Faïence pleine hauteur" : hauteur === "douche" ? "Faïence sur la zone de douche" : "Faïence à mi-hauteur, 2 m dans la douche");
+      const spec = specParPiece.get(r.id) ?? 0;
+      if (spec > 0) add("rev-etancheite-sous-carrelage-spec-douche", +spec.toFixed(2), src, "Étanchéité sous la faïence de la douche, comptée avec elle");
       // La cloison hydrofuge ne concerne que les CLOISONS de la pièce humide : un mur extérieur
       // est doublé, pas hydrofugé. Depuis 1.15, elle se lit sur les murs (voir plus haut).
       const cloisons = hydrofugeParMur ? 0 : (r.mursParType?.cloison ?? 0);
@@ -698,7 +707,7 @@ export function postesCouverts(): string[] {
     ...Object.values(SOL), "rev-poncage-vitrification-parquet", "rev-parquet-bois",
     "dem-enlever-un-revetement-de-sol", "mac-couler-une-dalle-beton", "iso-isolation-du-sol-plancher-bas",
     "mac-chape-traditionnelle", "mac-chape-liquide", "rev-preparation-du-sol-ragreage",
-    "rev-plinthes", "rev-faience-carrelage-mural", "clo-cloison-piece-humide-hydrofuge",
+    "rev-plinthes", "rev-faience-carrelage-mural", "rev-etancheite-sous-carrelage-spec-douche", "clo-cloison-piece-humide-hydrofuge",
     ...Object.values(COUVERTURE_REFECTION), ...Object.values(COUVERTURE_NEUVE),
     "toi-nettoyer-demousser-la-toiture", "toi-depose-complete-de-toiture-couverture-charpent",
     "toi-toiture-complete-tuile-charpente-couverture", "toi-toiture-complete-ardoise-charpente-couverture",

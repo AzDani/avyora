@@ -358,6 +358,38 @@ for (const [nom, type, pts, dedans, dehors, aire] of [
   }, nom, dedans, dehors, aire));
   await p.close();
 }
+/* Décision de Dani (26/09/2026) · tracé pièce par pièce : chaque pièce garde les cotes cliquées. La 2e
+   pièce, tracée contre la 1re, se recule de l'épaisseur du mur commun au lieu de la perdre (3,50 m cliqués
+   donnaient 3,30 m dedans). Un placard tracé DANS une pièce, lui, ne bouge pas : rien n'y avance. */
+{
+  const p = await onglet({ larg: 1440, haut: 900 });
+  await p.evaluate(() => { newPlan(() => setTool("mur")); wallType = "mur"; view.zoom = 60; view.x = 300; view.y = 200; renderPanel(); draw(); });
+  await wait(150);
+  const clics = async (pts) => { for (const [x, y] of pts) {
+    const q = await p.evaluate(([x, y]) => { const s = S(v(x, y)); const rc = cv.getBoundingClientRect(); return { x: rc.left + s.x, y: rc.top + s.y }; }, [x, y]);
+    await p.mouse.move(q.x, q.y); await wait(40); await p.mouse.click(q.x, q.y); await wait(100); } await wait(200); };
+  await clics([[0, 0], [4, 0], [4, 3.5], [0, 3.5], [0, 0]]);
+  await clics([[4, 0], [7.5, 0], [7.5, 3.5], [4, 3.5], [4, 0]]);
+  await p.keyboard.press("Escape"); await wait(150);
+  Object.assign(t, await p.evaluate(() => {
+    const lv = L(), fs = (facesCache[lv.id] || []).filter((f) => f.room), lg = (f) => { const xs = f.polyInt.map((q) => q.x), ys = f.polyInt.map((q) => q.y); return [+(Math.max(...xs) - Math.min(...xs)).toFixed(3), +(Math.max(...ys) - Math.min(...ys)).toFixed(3)]; };
+    const d = fs.map(lg).sort((a, b) => a[0] - b[0]);
+    return {
+      "pièce par pièce · la 2e pièce garde ses 3,50 m cliqués dedans": fs.length === 2 && d[0][0] === 3.5 && d[0][1] === 3.5,
+      "pièce par pièce · la 1re garde ses 4,00 × 3,50": fs.length === 2 && d[1][0] === 4 && d[1][1] === 3.5,
+    };
+  }));
+  /* placard tracé à l'intérieur de la 1re pièce : aucun recul */
+  const avant = await p.evaluate(() => L().walls.map((w) => [w.a.x, w.a.y, w.b.x, w.b.y].join()).join("|"));
+  await p.evaluate(() => setTool("mur")); await wait(60);
+  await clics([[0, 2.5], [1, 2.5], [1, 3.5]]);
+  await p.keyboard.press("Escape"); await wait(150);
+  Object.assign(t, await p.evaluate((avant) => {
+    const lv = L(), neufs = lv.walls.filter((w) => !avant.includes([w.a.x, w.a.y, w.b.x, w.b.y].join()));
+    return { "pièce par pièce · un placard tracé dans une pièce ne se décale pas": neufs.length === 2 && neufs.every((w) => [w.a, w.b].every((q) => [0, 1].includes(+q.x.toFixed(3)) && [2.5, 3.5].includes(+q.y.toFixed(3)))) };
+  }, avant));
+  await p.close();
+}
 /* murs centrés (l'exemple) : la cote intérieure d'une pièce rectangulaire = la boîte de son polygone intérieur */
 {
   const p = await onglet({ larg: 1440, haut: 900 });

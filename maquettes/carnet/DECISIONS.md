@@ -3221,3 +3221,48 @@ au téléphone (tiroir).
   mesure paywall_vu / dossier_exporte, système de boutons (« C'est parti » en encre, hauteurs 33 / 42 px), ⌘ sur Mac.
 - La porte d'un tronçon démoli reste dessinée en noir « déjà là » (design 2) ; le trait « à démolir » reste #D97706.
 - Le rappel du Suivi s'affiche tant que la date est passée et la tâche non cochée : il ne se ferme pas pour la session.
+
+## D55 · Tracer pièce par pièce : chaque pièce garde les cotes cliquées (QCM de Dani, 26/09/2026)
+
+**Constat.** Une 2e pièce tracée contre la 1re perdait l'épaisseur du mur commun : 3,50 m cliqués donnaient
+3,30 m à l'intérieur (le mur, tracé avec la 1re pièce, avançait chez la nouvelle).
+
+**Décision de Dani.** « Le mur commun est pris sur la pièce déjà tracée, la nouvelle garde ses cotes ».
+Mise en œuvre : à la fin d'un tracé (`decalerContreMitoyens`), chaque mur neuf qui ne s'appuie pas sur un
+mur existant recule de l'épaisseur que ce mur avance chez la nouvelle pièce. La 1re pièce garde 4,00 m, la
+2e ses 3,50 m, et le mur commun est ENTRE les deux, comme au chantier où chacune se mesure de l'intérieur.
+Un placard tracé dans une pièce ne bouge pas (rien n'y avance). Sans effet si l'on a choisi soi-même ce que
+représente le trait.
+
+**Contrôle.** `visuel.mjs` : deux pièces tracées à la souris (4 × 3,5 puis 3,5 × 3,5) et un placard.
+
+## D56 · L'étanchéité sous carrelage suit la faïence de la douche (QCM de Dani, 26/09/2026)
+
+**Décision de Dani.** « Une salle de bain où on refait le carrelage, tu comptes du SPEC : c'est logique de le
+faire avec, mais la personne qui dessine n'y pensera pas. » Le poste existe au catalogue (« Étanchéité sous
+carrelage (SPEC douche) », 40 €/m²) : aucun prix inventé. Comptée d'office dès que la faïence de la pièce est
+décidée, sur la zone de douche, avec la surface de l'estimateur (`core.ts`, specArea) : sol du receveur +
+3 parois jusqu'à 2 m, depuis les dimensions de chaque douche dessinée. Rien sans faïence, rien sans douche.
+Compteur (`specDe`, tâche `spec:<pièce>` au lot Faïence) et traduction (`plan-correspondance.ts`, depuis les
+dimensions des douches du contrat — forme du contrat inchangée, 1.17.0).
+
+**Contrôles.** `metier.mjs` (6,21 m² pour un receveur 0,90 × 0,90 ; rien sans faïence) ; vitest (6,56 m² sur
+la fixture, rien sans faïence) ; `coherence.mjs` (PRIX.spec = poste du catalogue).
+
+## D57 · Le compteur applique la finition, comme l'estimateur (QCM de Dani, 26/09/2026)
+
+**Constat.** Le compteur restait au prix catalogue, qui est le prix Premium ; l'estimateur, en Standard par
+défaut, sortait 12 à 22 % moins cher sur la part matériaux. C'était dit à l'écran, mais les deux chiffres
+différaient.
+
+**Décision de Dani.** Le compteur applique la finition choisie dans « Le chantier ». Comme `lineHT` : seule la
+part matériaux bouge, prix = catalogue − part matériaux + part matériaux × coefficient (`finCoefTask` : lot,
+exceptions par tâche, 1 pour un prix fixe ou piloté par variante — les fenêtres ne bougent pas, les portes
+intérieures si). Premium = prix catalogue. La table `FINITION_PRIX` (87 prix) est GÉNÉRÉE depuis le moteur par
+`tools/finition.mts --ecrire` et contrôlée par le même outil : aucun barème recopié à la main. La région et la
+TVA restent à l'estimation détaillée, et c'est dit (pied, Estimer, dossier, « Le chantier »).
+
+**Contrôles.** `finition.mts` (nouveau, à la batterie) ; `couverture.mts` valorise désormais le devis comme
+`lineHT` en Standard : 43 113 € plan / 43 116 € devis, 0 % (avant : 45 014 € au prix Premium) ; `budget.mjs`
+(Éco < Standard < Premium, pied qui dit la finition) ; les contrôles de prix catalogue (structure, existant)
+se font en Premium.

@@ -22,7 +22,9 @@ await new Promise((r) => setTimeout(r, 400));
 const res = await p.evaluate(() => {
   closeWelcome("blank");
   const t = {};
-  const boite = () => { state = blankState(); setMode("projet"); const lv = L(); lv.height = 2.5;
+  /* Ces contrôles vérifient les prix du CATALOGUE : en Premium, la finition laisse le prix catalogue
+     (décision de Dani du 26/09/2026 : le compteur applique la finition ; Standard est plus bas, voir budget.mjs). */
+  const boite = () => { state = blankState(); state.chantier.finition = "premium"; setMode("projet"); const lv = L(); lv.height = 2.5;
     const P = [[0,0],[6,0],[6,4],[0,4]];
     for (let i = 0; i < P.length; i++) lv.walls.push({ id: uid(), a: v(...P[i]), b: v(...P[(i+1)%P.length]), type: "mur" });
     return lv; };

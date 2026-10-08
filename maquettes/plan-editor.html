@@ -1524,7 +1524,8 @@ const NOTE_COLORS={bleu:['#dbeafe','#3b82f6','#1e3a8a'],jaune:['#fff7d6','#f59e0
 function noteColors(t){const c=t.color||NOTE_DEFAUT;if(NOTE_COLORS[c])return NOTE_COLORS[c];if(/^#[0-9a-f]{6}$/i.test(c))return [hexA(c,.22),c,'#1e1b3a'];return NOTE_COLORS[NOTE_DEFAUT];}
 /* ---------- Le chantier : les trois entrées SANS lesquelles aucun prix n'est calculable ----------
    Le plan décrit le bâtiment ; ces trois-là décrivent le CONTEXTE, et le moteur en a besoin :
-     · finition  → coefficient appliqué à CHAQUE lot (le levier le plus lourd du chiffrage)
+     · finition  → coefficient appliqué à CHAQUE lot (le levier le plus lourd du chiffrage) — le compteur
+                   l'applique aussi depuis le 26/09/2026, avec la table générée FINITION_PRIX
      · codePostal → coefficient régional de main-d'œuvre
      · plus2ans  → éligibilité au taux de TVA réduit (le taux exact est porté par chaque lot)
    Aucun barème n'est recopié ici : les coefficients vivent dans le moteur (lib/estimateur).
@@ -2037,6 +2038,12 @@ function faienceDe(lv,f){const r=f.room;if(!r||RT[r.type].ext||!r.faience)return
      déjà les ouvertures. Même formule au contrat (`perimetreHorsPortes`, 1.17) et dans la traduction. */
   const m2=haut==='pleine'?wallPaintArea(lv,f,'projet'):haut==='douche'?pEau*2:Math.max(0,perimHorsPortes(lv,f)-pEau)*1.2+pEau*2;
   return {haut,pEau,m2};}
+/* Décision de Dani (QCM du 26/09/2026) : une salle de bain dont on refait la faïence a son étanchéité
+   sous carrelage (SPEC) — « c'est logique de le faire avec, mais la personne qui dessine n'y pensera pas ».
+   Même surface que l'estimateur (core.ts, specArea) : pour chaque douche de la pièce, le sol du receveur
+   et ses trois parois jusqu'à 2 m. Comptée d'office dès que la faïence est décidée ; rien sans faïence. */
+function specDe(lv,f){if(!faienceDe(lv,f))return 0;
+  return lv.items.filter(i=>i.type==='douche'&&ist(i)!=='demolir'&&pointIn(v(i.x,i.y),f.poly)).reduce((t,i)=>{const w=Math.max(i.w||0,i.h||0),d=Math.min(i.w||0,i.h||0);return t+w*d+(w+2*d)*2;},0);}
 /* D37 · Peinture : seulement si elle est choisie dans la fiche de la pièce (murs, plafond ou les
    deux) — jamais par défaut. Murs = murs de la pièce hors ouvertures, moins la faïence décidée ;
    plafond = surface au sol hors trémie. Même formule pour le Suivi, le compteur et le contrat. */
@@ -2082,7 +2089,7 @@ function piecesDuCote(faces,w,io){const u=norm(sub(w.b,w.a)),nn=perp(u),s=io.sid
     const p=add(add(add(w.a,mul(sub(w.b,w.a),t)),wallOff(w)),mul(nn,s*(wallT(w)/2+0.12)));
     const f=faces.find(f=>f.room&&!RT[f.room.type].ext&&pointIn(p,f.poly));if(f&&!out.includes(f.room))out.push(f.room);}
   return out;}
-function chantierTasks(){const T=[];const ml=state.levels.length>1;
+function chantierTasks(){appliquerFinition();const T=[];const ml=state.levels.length>1;
   /* Démolir un mur qui porte, ce n'est pas seulement le casser : la charge qu'il tenait doit
      être reprise par une poutre, et c'est un bureau d'études qui la dimensionne. L'étude est
      un forfait, elle ne se compte qu'une fois pour tout le chantier. */
@@ -2183,6 +2190,9 @@ function chantierTasks(){const T=[];const ml=state.levels.length>1;
       const fa=faienceDe(lv,f);
       if(fa&&fa.m2>0)T.push({id:'faience:'+r.id,lot:'Faïence',label:'Poser la faïence · '+rn+lvn,
         detail:fmtM2(fa.m2)+' · '+(fa.haut==='pleine'?'pleine hauteur':fa.haut==='douche'?'zone de douche':'mi-hauteur hors portes, 2 m dans la douche'),prix:fa.m2*PRIX.faience});
+      const spM2=specDe(lv,f);
+      if(spM2>0)T.push({id:'spec:'+r.id,lot:'Faïence',label:'Étanchéité sous carrelage de la douche · '+rn+lvn,
+        detail:fmtM2(spM2)+' · sous la faïence de la douche, comptée avec elle',prix:spM2*PRIX.spec});
       /* D46 : plus de tâche « Passer les cloisons en plaques hydrofuges » : une cloison neuve de la
          pièce humide est montée en plaques hydrofuges (tâche du mur), une cloison existante reste. */
       {const pe=peintureDe(lv,f);if(pe){
@@ -2281,7 +2291,7 @@ function chantierListHTML(T,editable,opt){const pro=!!(opt&&opt.prix);let lot=''
 function tacheCible(id){let m;
   if((m=id.match(/^([wio]):([^:]+):/)))return {kind:{w:'wall',i:'item',o:'opening'}[m[1]],id:m[2]};
   if((m=id.match(/^(?:iso2?|fac):([^:]+)/)))return {kind:'wall',id:m[1]};
-  if((m=id.match(/^(?:sol-[a-z]+|plinthes|fauxplaf|gardecorps|faience|clohum|peint-murs|peint-plafond):(.+)$/)))return {kind:'room',id:m[1]};
+  if((m=id.match(/^(?:sol-[a-z]+|plinthes|fauxplaf|gardecorps|faience|spec|clohum|peint-murs|peint-plafond):(.+)$/)))return {kind:'room',id:m[1]};
   if(/^toit:/.test(id))return {kind:'toit'};
   return null;}
 function montrerTache(id){return montrerSurLePlan(tacheCible(id));}
@@ -2695,7 +2705,7 @@ const PRIX={
   /* D22 — ouvrages que le plan MESURAIT déjà sans jamais les compter. Le compteur annonçait
      3 845 € de moins que le devis sur la scène de référence, uniquement là-dessus. */
   poncageParquet:40,                                        // €/m² · D8 : parquet sur parquet, on ponce au lieu de remplacer
-  faience:70, cloisonHumide:55, fauxPlafond:47, plinthes:13, // €/m², sauf plinthes en €/ml
+  faience:70, spec:40, cloisonHumide:55, fauxPlafond:47, plinthes:13, // €/m², sauf plinthes en €/ml
   peintureMurs:25, peinturePlafond:28,                      // €/m² · D37 : « Peinture des murs » / « Peinture des plafonds » du catalogue
   gardeCorps:180,                                           // €/ml · pourtour d'une trémie d'escalier créée
 };
@@ -2725,6 +2735,22 @@ const SOL_MAT={pu:{label:'Mousse polyuréthane (TMS)'},pse:{label:'PSE (polystyr
 const SOL_MAT_CHOIX=['pu'];
 const solMatLabel=k=>SOL_MAT[k]?.label||ISO_MAT[k]?.label||k;
 const FACADE_PRIX={nettoyage:15,enduit:28,enduit_chaux:70,peinture:30,joints:50,ravalement:130,bardage:90,hydrofuge:20}; // €/m²
+/* Décision de Dani (QCM du 26/09/2026) : le compteur applique la FINITION choisie dans « Le chantier »,
+   avec les mêmes coefficients que l'estimateur. Comme lui (core.ts, lineHT), elle ne touche que la part
+   matériaux d'un ouvrage : prix = prix catalogue − part matériaux + part matériaux × coefficient du lot.
+   Premium = le prix catalogue. Un prix fixe, piloté par une variante (menuiseries : matériau, vitrage)
+   ou une prestation sans matériaux ne bouge pas. La table est GÉNÉRÉE depuis le moteur par
+   tools/finition.mts --ecrire, et ce même outil exige qu'elle lui reste identique : aucun barème n'est
+   recopié à la main. Valeur : [part matériaux €, coefficient Éco, coefficient Standard]. */
+const FINITION_PRIX={"PRIX.poutreReprise":[180,0.83,0.88],"PRIX_POUTRE.acier":[180,0.83,0.88],"PRIX_POUTRE.bois":[90,0.83,0.88],"PRIX_POUTRE.beton":[70,0.83,0.88],"PRIX_POTEAU.acier":[190,0.83,0.88],"PRIX_POTEAU.bois":[120,0.83,0.88],"PRIX_POTEAU.beton":[110,0.83,0.88],"PRIX_PLANCHER.bois":[45,0.83,0.88],"PRIX_PLANCHER.beton":[50,0.83,0.88],"PRIX.murPierre":[100,0.83,0.88],"PRIX.cloisonNeuve":[20,0.75,0.83],"PRIX.chapeTradi":[10,0.83,0.88],"PRIX.chapeLiquide":[20,0.83,0.88],"PRIX.ragreage":[8,0.67,0.78],"PRIX.dalle":[30,0.83,0.88],"PRIX.isoITI":[15,0.83,0.88],"PRIX.isoITE":[60,0.75,0.83],"PRIX.isoITEBardage":[80,0.75,0.83],"PRIX_TOIT.demousser":[3,0.75,0.83],"PRIX_TOIT.refectionTuile":[45,0.75,0.83],"PRIX_TOIT.refectionArdoise":[65,0.75,0.83],"PRIX_TOIT.couvTuile":[30,0.75,0.83],"PRIX_TOIT.couvArdoise":[50,0.75,0.83],"PRIX_TOIT.couvZinc":[40,0.75,0.83],"PRIX_TOIT.sousToiture":[5,0.75,0.83],"PRIX_TOIT.completeTuile":[90,0.75,0.83],"PRIX_TOIT.completeArdoise":[110,0.75,0.83],"PRIX_TOIT.charpTrad":[45,0.83,0.88],"PRIX_TOIT.charpFermettes":[40,0.83,0.88],"PRIX_TOIT.traiter":[2,0.83,0.88],"PRIX_TOIT.gouttieres":[20,0.75,0.83],"PRIX_TOIT.raccords":[15,0.75,0.83],"PRIX_TOIT.velux":[500,0.75,0.83],"PRIX_TOIT.plat":[30,0.75,0.83],"PRIX_TOIT.isoPerdus":[10,0.83,0.88],"PRIX_TOIT.isoRampants":[25,0.83,0.88],"FACADE_PRIX.nettoyage":[2,0.75,0.83],"FACADE_PRIX.enduit":[10,0.75,0.83],"FACADE_PRIX.enduit_chaux":[15,0.75,0.83],"FACADE_PRIX.peinture":[8,0.75,0.83],"FACADE_PRIX.joints":[10,0.75,0.83],"FACADE_PRIX.ravalement":[40,0.75,0.83],"FACADE_PRIX.bardage":[40,0.75,0.83],"FACADE_PRIX.hydrofuge":[6,0.75,0.83],"EQUIP_PRIX.baignoire":[650,0.75,0.83],"EQUIP_PRIX.chaudiere":[2800,0.83,0.88],"EQUIP_PRIX.poele":[2500,0.83,0.88],"EQUIP_PRIX.clim":[1500,0.83,0.88],"EQUIP_PRIX.radiateur":[320,0.83,0.88],"EQUIP_PRIX.tableau":[600,0.83,0.88],"EQUIP_PRIX.escalier":[1200,0.83,0.88],"EQUIP_PRIX.ilot":[1800,0.67,0.78],"PRIX.revetement.Carrelage":[30,0.67,0.78],"PRIX.revetement.Stratifié":[22,0.67,0.78],"PRIX.revetement.Vinyle / PVC":[20,0.67,0.78],"PRIX.revetement.Moquette":[15,0.67,0.78],"PRIX.revetement.Béton ciré":[30,0.67,0.78],"PRIX.menuiserie.porte":[180,0.75,0.83],"PRIX.menuiserie.porte_pleine":[255,0.75,0.83],"PRIX.menuiserie.coulissante":[395,0.75,0.83],"PRIX.menuiserie.garage":[800,0.75,0.83],"PRIX.percPorteurPetit":[800,0.83,0.88],"PRIX.percPorteurGrand":[1400,0.83,0.88],"PRIX.appuiFenetre":[60,0.83,0.88],"PRIX.seuil":[60,0.83,0.88],"PRIX.murNeuf":[25,0.83,0.88],"PRIX.galandage":[300,0.75,0.83],"PRIX.optStore":[700,0.75,0.83],"PRIX.optGrille":[200,0.75,0.83],"PRIX.solIso":[20,0.83,0.88],"EQUIP_PRIX.prise":[25,0.83,0.88],"EQUIP_PRIX.interrupteur":[25,0.83,0.88],"EQUIP_PRIX.lumiere":[30,0.83,0.88],"PRIX.fauxPlafond":[20,0.75,0.83],"PRIX.faience":[30,0.67,0.78],"PRIX.spec":[15,0.67,0.78],"PRIX.cloisonHumide":[25,0.75,0.83],"PRIX.poncageParquet":[8,0.67,0.78],"PRIX.gardeCorps":[90,0.83,0.88],"PRIX_ACC.spot":[15,0.83,0.88],"EQUIP_PRIX.prise2":[50,0.83,0.88],"EQUIP_PRIX.lave_linge":[55,0.75,0.83],"EQUIP_PRIX.lave_vaisselle":[55,0.75,0.83],"EQUIP_PRIX.evier":[310,0.67,0.78],"EQUIP_PRIX.velux":[500,0.75,0.83],"PRIX.peintureMurs":[5,0.67,0.78],"PRIX.peinturePlafond":[5,0.67,0.78]};
+const TABLES_PRIX={PRIX,EQUIP_PRIX,PRIX_TOIT,PRIX_PLANCHER,PRIX_POUTRE,PRIX_POTEAU,PRIX_DOUCHE,PRIX_ACC,FACADE_PRIX};
+const PRIX_CATALOGUE={};
+let finitionAppliquee=null;
+const nomFinition=()=>FINITIONS[(typeof state!=='undefined'&&state&&state.chantier&&state.chantier.finition)||'standard'].label;
+function appliquerFinition(){const f=(typeof state!=='undefined'&&state&&state.chantier&&state.chantier.finition)||'standard';if(f===finitionAppliquee)return;
+  Object.entries(FINITION_PRIX).forEach(([k,[sm,eco,std]])=>{const [t,...r]=k.split('.'),cle=r.pop();let o=TABLES_PRIX[t];r.forEach(x=>{o=o&&o[x];});if(!o||typeof o[cle]!=='number')return;
+    if(!(k in PRIX_CATALOGUE))PRIX_CATALOGUE[k]=o[cle];o[cle]=PRIX_CATALOGUE[k]-sm+sm*(f==='eco'?eco:f==='standard'?std:1);});
+  finitionAppliquee=f;}
 // ouvrages induits d'une ouverture percée (linteau/tableaux + appui ou seuil) — utilisé par le suivi ET le compteur
 function openingInduits(o,w,lv){const d=OPENINGS[o.type];if(!d)return [];const porteur=isPorteur(w),baie=d.kind==='bay'||d.kind==='doorwin'||d.w>=1.8;const out=[];
   const percPU=porteur?(baie?PRIX.percPorteurGrand:PRIX.percPorteurPetit):PRIX.percLeger;
@@ -3275,7 +3301,7 @@ function snapshot(){return JSON.stringify(state);}
 function commit(){history.push(snapshot());if(history.length>80)history.shift();future=[];afterChange();}
 /* le message d'un geste précédent perd son « Annuler » dès qu'un autre geste entre dans l'historique */
 function retirerAnnulerPerime(){const t=document.getElementById('toast');if(!t||!t._geste)return;const g=t._geste;if(history.length===g.h&&history[g.h-1]===g.snap)return;t._geste=null;t.querySelectorAll('.tact').forEach(b=>b.remove());t.classList.remove('act');}
-function afterChange(){state.levels.forEach(syncRooms);_numPieces=null;retirerAnnulerPerime();save();render();}
+function afterChange(){appliquerFinition();state.levels.forEach(syncRooms);_numPieces=null;retirerAnnulerPerime();save();render();}
 /* D38 : annuler ou rétablir laissait le tracé en cours à l'écran (chain) : le mur annulé restait
    dessiné et le clic suivant repartait de son bout, en laissant un mur orphelin. Les gestes en
    cours (tracé, rectangle, cote, sélection multiple, glissement) sont remis à zéro ; pendant un
@@ -4178,10 +4204,37 @@ function endChain(closed){
   /* D48 : les murs de façade tracés « en automatique » s'alignent comme le premier contour */
   const facade=!premier&&al==='axe'&&!wallAlignChoisi?ids.filter(id=>murFacade.has(id)&&findWall(id)):[];
   if(facade.length){applyAlign(facade,closed?chain.slice():null,'int');if(!_pieceAnnoncee)toast(facade.length>1?'Murs de façade : 20 cm, alignés sur les autres murs extérieurs. Change le type dans le volet si besoin.':'Mur de façade : 20 cm, aligné sur les autres murs extérieurs. Change le type dans le volet si besoin.',true);}
+  if(!premier&&!wallAlignChoisi&&ids.length)decalerContreMitoyens(ids,chain.slice());
   if(premier){const fs=(facesCache[lv.id]||[]).filter(f=>f.room);if(fs.length)annoncerPiece(lv,fs,true);}
   if(_piecesAAnnoncer){const fs=(facesCache[lv.id]||[]).filter(f=>f.room&&_piecesAAnnoncer.includes(f.room));_pieceAnnoncee=false;if(fs.length)annoncerPiece(lv,fs,false,true);_piecesAAnnoncer=null;}
   murFacade.clear();_pieceAnnoncee=false;_numPieces=null;
   chain=[];chainWallIds=[];lenBuf='';draw();renderPanel();
+}
+/* Décision de Dani (QCM du 26/09/2026) : tracée pièce par pièce, une pièce garde les cotes qu'on a
+   cliquées, et la pièce d'à côté garde les siennes. Le mur commun existe déjà : il appartient à la pièce
+   tracée avant et avance chez la nouvelle de son épaisseur (3,50 m cliqués donnaient 3,30 m dedans).
+   On recule donc d'autant les murs neufs qui ne s'appuient pas sur lui : le mur commun se retrouve
+   ENTRE les deux pièces, comme sur le chantier, où chacune se mesure au mètre ruban de l'intérieur. */
+function decalerContreMitoyens(ids,poly){
+  const lv=L(),pts=[],dot=(p,q)=>p.x*q.x+p.y*q.y,cr=(p,q)=>p.x*q.y-p.y*q.x;(poly||[]).forEach(q=>{if(!pts.length||dist(pts[pts.length-1],q)>1e-3)pts.push(q);});
+  if(pts.length>2&&dist(pts[0],pts[pts.length-1])<1e-3)pts.pop();
+  if(pts.length<3)return false;
+  const surLigne=(q,a,u)=>Math.abs((q.x-a.x)*u.y-(q.y-a.y)*u.x)<1e-3;
+  const appuis=[];
+  for(let i=0;i<pts.length;i++){const a=pts[i],b=pts[(i+1)%pts.length];if(dist(a,b)<0.05)continue;
+    const u=norm(sub(b,a));let n=perp(u);const mid=mul(add(a,b),0.5);
+    if(!pointIn(add(mid,mul(n,0.02)),pts))n=mul(n,-1);
+    const w=lv.walls.find(w=>!ids.includes(w.id)&&!isVirtual(w)&&wst(w)!=='demolir'&&Math.abs(cr(norm(sub(w.b,w.a)),u))<1e-3&&surLigne(w.a,a,u)&&surLigne(w.b,a,u)&&
+      Math.min(Math.max(dot(sub(w.a,a),u),dot(sub(w.b,a),u)),dist(a,b))-Math.max(Math.min(dot(sub(w.a,a),u),dot(sub(w.b,a),u)),0)>0.05);
+    if(!w)continue;
+    const s=Math.sign(dot(n,perp(norm(sub(w.b,w.a)))))||1,d=faceDist(w,s);
+    if(d>1e-4&&!appuis.some(x=>surLigne(a,x.a,x.u)))appuis.push({a,u,n,d});}
+  if(!appuis.length)return false;
+  const ws=ids.map(id=>findWall(id)).filter(w=>w&&!isVirtual(w));
+  const avant=new Map();ws.forEach(w=>avant.set(w,{a:{...w.a},b:{...w.b}}));
+  ws.forEach(w=>['a','b'].forEach(k=>{const q=avant.get(w)[k];let o=v(0,0);
+    appuis.forEach(x=>{if(!surLigne(q,x.a,x.u))o=add(o,mul(x.n,x.d));});w[k]=add(q,o);}));
+  syncRooms(lv);return true;
 }
 function applyAlign(ids,poly,al){al=al||wallAlign;
   const lv=L();const ws=ids.map(id=>findWall(id)).filter(Boolean);if(!ws.length)return;
@@ -5932,7 +5985,7 @@ function renderChantier(){
   <div class="ph mt" style="margin-bottom:6px">Âge du logement</div>
   <div class="seg"><button class="${c.plus2ans?'on':''}" onclick="setChantier('plus2ans','1')">Plus de 2 ans<small>TVA réduite</small></button><button class="${!c.plus2ans?'on':''}" onclick="setChantier('plus2ans','0')">Neuf ou &lt; 2 ans<small>TVA 20 %</small></button></div>
   <div class="tip">C'est l'âge du logement qui ouvre droit à une ${gl('tva','TVA à taux réduit')} sur des travaux de rénovation ; les travaux d'amélioration énergétique relèvent d'un taux encore plus bas.</div>
-  <div class="tip q">Ces réponses servent à l'estimation AVYORA : elle applique ta finition, ta région et la TVA. Le <b>compteur du plan</b>, lui, reste au prix catalogue <b>HT</b>${gl('ht')}, moyenne nationale — la finition n'y change que le matériau des fenêtres par défaut (PVC, alu en Premium). En Standard ou Éco, l'estimation sera un peu plus basse ; dans une région chère, un peu plus haute.</div>`,manque.length>0);
+  <div class="tip q">Ces réponses servent à l'estimation AVYORA : elle applique ta finition, ta région et la TVA. Le <b>compteur du plan</b> applique déjà ta finition ; il reste en <b>HT</b>${gl('ht')}, moyenne nationale : dans une région chère, l'estimation sera un peu plus haute. En Premium, les fenêtres passent en alu par défaut.</div>`,manque.length>0);
 }
 /* Les pièces AVANT travaux, dans la forme que lit surfaceTable. Même règle que `areaBefore` :
    un volume sans plancher ou déclaré non habitable avant ne compte pas dans l'habitable. */
@@ -6021,7 +6074,7 @@ function renderFoot(){
   const carte=vide?`<div class="budget bcard attente"><span class="bk">Budget travaux HT</span><span class="bv" id="budgetVal">0 €</span><span class="bs"><small>${ATTENTE_PIECE}</small></span></div>`
     :rien?`<button type="button" class="budget bcard budgetbtn rien" onclick="showEstimate()"><span class="bk">Budget travaux HT</span><span class="bv" id="budgetVal">0 €</span><span class="bs"><small>${avant?'Rien de décidé pour l\'instant. Passe en vue <b>'+nomVue('projet')+'</b> pour marquer ce que tu changes.':'Rien de décidé pour l\'instant. Clique un mur, une ouverture ou une pièce et choisis ce que tu en fais.'}</small></span></button>`
     /* D48 (arbitrage tour 2) : le montant se voit aussi en gratuit ; le détail tâche par tâche est Pro */
-    :`<button type="button" class="budget bcard budgetbtn" onclick="showEstimate()" aria-label="Budget travaux HT : ${eur(px.total)}, ${pluriel(px.nb,'tâche')}. ${tout?'Voir le détail':'Voir la répartition par corps d\'état'}"><span class="bk">Budget travaux HT<span class="bn"><b>${px.nb}</b> ${accord(px.nb,'tâche')}</span></span><span class="bv" id="budgetVal">${eur(px.total)}</span><span class="bs"><small>indicatif · prix catalogue, moyenne nationale</small><b>${tout?'Voir le détail':'Par corps d\'état'}${ico('fleche','inl')}</b></span></button>`; /* R6 : la flèche est une icône SVG, pas le glyphe → */
+    :`<button type="button" class="budget bcard budgetbtn" onclick="showEstimate()" aria-label="Budget travaux HT : ${eur(px.total)}, ${pluriel(px.nb,'tâche')}. ${tout?'Voir le détail':'Voir la répartition par corps d\'état'}"><span class="bk">Budget travaux HT<span class="bn"><b>${px.nb}</b> ${accord(px.nb,'tâche')}</span></span><span class="bv" id="budgetVal">${eur(px.total)}</span><span class="bs"><small>indicatif · finition ${nomFinition()}</small><b>${tout?'Voir le détail':'Par corps d\'état'}${ico('fleche','inl')}</b></span></button>`; /* R6 : la flèche est une icône SVG, pas le glyphe → */
   const resume=vide?'':`<div class="presume"><b>${fmtM2(hv.area)}</b> habitables ${avant?'avant':'après'} travaux · <b>${hv.rooms}</b> pièce${hv.rooms>1?'s':''}${state.levels.length>1?' · <b>'+state.levels.length+'</b> niveaux':''}</div>`;
   {const bp=document.getElementById('budgetPlie');if(bp){bp.hidden=!!vide;if(!vide){bp.innerHTML=`<span>Budget HT</span><b>${eur(px.total)}</b><small>${tout?'Voir le détail':'Répartition'}</small>`;bp.setAttribute('aria-label',`Budget travaux HT : ${eur(px.total)}. ${tout?'Voir le détail':'Voir la répartition par corps d\'état'}`);}}}
   F.innerHTML=carte+resume+(isDev()?`<button class="ib devonly" style="width:100%;justify-content:center;margin-top:8px" onclick="ouvrirEnvoi()" ${vide?'disabled':''}>Envoyer vers mon estimation AVYORA (dev)</button>`:'');
@@ -6750,7 +6803,7 @@ const ICO_RANGER='<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path 
 function estimateHTML(q){
   const px=chantierPrix(),T=px.taches,tot=px.total,lots=px.lots,A=elementsATrancher(),Z=px.nonChiffrees;
   const max=Math.max(1,...lots.map(g=>g.total)),vus=new Set(['ht','corps']),motsLot=g=>motsHTML(motsDe([g.lot,...g.taches.map(t=>t.label+' '+(detailTache(t)||''))],vus));
-  let h=`<div class="esthero"><div class="eh1"><span class="k">Budget travaux ${gl('ht','HT')}</span><b class="v" id="estTotal">${eur(tot)}</b><small>${T.length?'Indicatif : prix catalogue, moyenne nationale. Ta finition, ta région et la TVA n\'y sont pas encore appliquées.':'Rien de décidé pour l\'instant : passe en vue <b>'+nomVue('projet')+'</b> et choisis ce que tu changes.'}</small></div>
+  let h=`<div class="esthero"><div class="eh1"><span class="k">Budget travaux ${gl('ht','HT')}</span><b class="v" id="estTotal">${eur(tot)}</b><small>${T.length?'Indicatif : finition '+nomFinition()+', moyenne nationale. Ta région et la TVA s\'appliquent dans l\'estimation détaillée.':'Rien de décidé pour l\'instant : passe en vue <b>'+nomVue('projet')+'</b> et choisis ce que tu changes.'}</small></div>
     <div class="eh2"><span><b>${T.length}</b><i>tâche${T.length>1?'s':''}</i></span><span><b>${lots.length}</b><i>${gl('corps','corps d\'état')}</i></span>${A.length?`<button type="button" class="eh2b" onclick="allerAuxDecisions()"><b>${A.length}</b><i>à décider${ico('flecheBas','inl')}</i></button>`:`<span><b>0</b><i>à décider</i></span>`}${px.fait?`<span><b>${eur(px.fait)}</b><i>déjà réalisés</i></span>`:''}</div></div>`;
   if(lots.length)h+=`<div class="ph">Par corps d'état</div><p class="estnote">Ouvre un corps d'état pour voir ses tâches ; clique une tâche pour la voir sur le plan.</p><div class="estlots">${lots.map(g=>`<details class="estlot"><summary><span class="ln">${esc(g.lot)}<small>${g.taches.length} tâche${g.taches.length>1?'s':''}${tot>0&&g.total>0?' · '+Math.max(1,Math.round(g.total/tot*100))+' %':''}</small></span><span class="lb"><i style="width:${Math.round(g.total/max*100)}%"></i></span><span class="lv${g.total?'':' nul'}">${g.total?eur(Math.round(g.total)):'non chiffré'}</span></summary><div class="estt">${g.taches.map(t=>ligneTache(t)).join('')}</div>${motsLot(g)}</details>`).join('')}</div>`;
   h+=aDecHTML(A);
@@ -6771,7 +6824,7 @@ function exempleGratuitHTML(){return `<div class="tip exgratuit" style="margin:0
 function estimatePaywallHTML(q){
   const px=chantierPrix(),T=px.taches,tot=px.total,lots=px.lots,A=elementsATrancher(),vus=new Set(['ht','corps']);
   const max=Math.max(1,...lots.map(g=>g.total));
-  let h=`<div class="esthero"><div class="eh1"><span class="k">Budget travaux ${gl('ht','HT')}</span><b class="v" id="estTotal">${eur(tot)}</b><small>${T.length?'Indicatif : prix catalogue, moyenne nationale. Ta finition, ta région et la TVA n\'y sont pas encore appliquées.':'Rien de décidé pour l\'instant : passe en vue <b>'+nomVue('projet')+'</b> et choisis ce que tu changes.'}</small></div>
+  let h=`<div class="esthero"><div class="eh1"><span class="k">Budget travaux ${gl('ht','HT')}</span><b class="v" id="estTotal">${eur(tot)}</b><small>${T.length?'Indicatif : finition '+nomFinition()+', moyenne nationale. Ta région et la TVA s\'appliquent dans l\'estimation détaillée.':'Rien de décidé pour l\'instant : passe en vue <b>'+nomVue('projet')+'</b> et choisis ce que tu changes.'}</small></div>
     <div class="eh2"><span><b>${T.length}</b><i>tâche${T.length>1?'s':''}</i></span><span><b>${lots.length}</b><i>${gl('corps','corps d\'état')}</i></span>${A.length?`<button type="button" class="eh2b" onclick="allerAuxDecisions()"><b>${A.length}</b><i>à décider</i></button>`:`<span><b>0</b><i>à décider</i></span>`}</div></div>`;
   if(lots.length)h+=`<div class="ph">Par corps d'état</div><div class="estlots">${lots.map(g=>`<div class="estlot ferme barre"><span class="ln">${esc(g.lot)}<small>${g.taches.length} tâche${g.taches.length>1?'s':''}${tot>0&&g.total>0?' · '+Math.max(1,Math.round(g.total/tot*100))+' %':''}</small></span><span class="lb"><i style="width:${Math.round(g.total/max*100)}%"></i></span><span class="lv${g.total?'':' nul'}">${g.total?eur(Math.round(g.total)):'non chiffré'}</span></div>`).join('')}${motsHTML(motsDe(lots.map(g=>g.lot),vus))}</div>
   <div class="estpro"><span class="epi" aria-hidden="true">${ico('cadenas')}</span><span class="ept"><b>${maj(DROITS.detail.pro)}</b><small>Les ${pluriel(T.length,'tâche')} de ton plan, dans l'ordre du chantier : c'est Pro.</small></span>${lienPro('Voir le détail · Passer Pro','ib primary','estimer-detail')}</div>`;
@@ -6790,9 +6843,9 @@ function quantitesHTML(q){
    <tr><td>Niveau de finition</td><td class="n mot">${f}</td></tr>
    <tr><td>Code postal</td><td class="n${c.codePostal?'':' mot'}">${c.codePostal?c.codePostal+' <small style="color:var(--muted)">· pour l\'estimation détaillée</small>':'<span style="color:#b45309">non renseigné</span>'}</td></tr>
    <tr><td>Logement de plus de 2 ans</td><td class="n mot">${c.logementPlus2Ans?'oui':'non'}</td></tr></table>`;
-   /* D49 (cj-coherence03) : le montant du plan reste au prix catalogue, moyenne nationale — code postal ou non. Seule
-      l'estimation détaillée du site applique la finition, la région et la TVA : on le dit, on ne le promet pas ici. */
-   h+=`<div class="note" style="margin:0 0 18px">Le montant de ce plan reste au <b>prix catalogue, moyenne nationale, hors taxes</b>. Ta finition, ${c.codePostal?'ton code postal':'ton code postal (s\'il est renseigné)'} et la TVA sont appliqués par l'estimation détaillée du site, pas ici.</div>`;}
+   /* D49 (cj-coherence03) puis décision de Dani (26/09/2026) : le montant du plan applique la finition, en moyenne
+      nationale — code postal ou non. Seule l'estimation détaillée du site applique la région et la TVA : on le dit. */
+   h+=`<div class="note" style="margin:0 0 18px">Le montant de ce plan applique ta finition (<b>${nomFinition()}</b>), en <b>moyenne nationale, hors taxes</b>. ${c.codePostal?'Ton code postal':'Ton code postal (s\'il est renseigné)'} et la TVA sont appliqués par l'estimation détaillée du site, pas ici.</div>`;}
   h+=`<div class="ph">Tableau des surfaces${gl('habitable')}</div>${surfaceTable(q)}<div class="note" style="margin:8px 0 18px;font-size:12px">Surface habitable au sens du plan : surfaces intérieures des pièces, trémies et parties sous 1,80 m déduites, balcons/terrasses à part. (Pour une vente, le mesurage « loi Carrez » se fait à part, souvent par un diagnostiqueur.)</div>`;
   if(T.actif){const lin=o=>Object.entries(o).filter(([k,v])=>v>0.01).map(([k,v])=>fmt(v,1)+' ml '+(k==='cloison'?'cloison':k==='mur'?'mur 20 cm':'mur épais')).join(' · ')||'—';
     h+=`<div class="ph">Travaux décidés</div><table class="mtable" style="margin-bottom:18px">
@@ -6860,12 +6913,12 @@ function exportPlan(){
   const pages=[];const q=quantities();
   state.levels.forEach((lv,i)=>modes.forEach(m=>{const src=renderLevelImage(i,m);if(!src)return;pages.push({title:lv.name+' · '+nomVue(m),sub:SUBS[m],body:`<img src="${src}" alt="${esc(lv.name)} ${m}">`,foot:'Plan · '+esc(lv.name)});}));
   /* D48 : en gratuit, le dossier garde le budget par corps d'état (vu à l'écran) ; le reste est Pro, ou l'exemple */
-  if(!tout){const px=chantierPrix();if(px.total>0)pages.push({title:'Budget travaux HT',sub:'Indicatif, hors taxes · prix catalogue, moyenne nationale · travaux décidés sur le plan',body:`<div class="xrecap"><div class="xbig"><span>Budget travaux HT</span><b>${eur(px.total)}</b><small>${pluriel(px.nb,'tâche')} · ${px.lots.length} corps d'état</small></div><table class="mtable"><tr><th>Corps d'état</th><th style="text-align:right">Tâches</th><th style="text-align:right">Part</th><th style="text-align:right">Montant</th></tr>${px.lots.map(g=>`<tr><td>${esc(g.lot)}</td><td class="n">${g.taches.length}</td><td class="n">${g.total>0?Math.max(1,Math.round(g.total/px.total*100))+' %':'—'}</td><td class="n">${g.total>0?eur(Math.round(g.total)):'non chiffré'}</td></tr>`).join('')}<tr class="tot"><td>Total HT</td><td class="n">${px.nb}</td><td></td><td class="n">${eur(px.total)}</td></tr></table><div class="tip" style="margin-top:10px">Ta finition, ta région et la TVA n'y sont pas encore appliquées.</div></div>`,foot:'Budget · '+eur(px.total)});}
+  if(!tout){const px=chantierPrix();if(px.total>0)pages.push({title:'Budget travaux HT',sub:'Indicatif, hors taxes · finition '+nomFinition()+', moyenne nationale · travaux décidés sur le plan',body:`<div class="xrecap"><div class="xbig"><span>Budget travaux HT</span><b>${eur(px.total)}</b><small>${pluriel(px.nb,'tâche')} · ${px.lots.length} corps d'état</small></div><table class="mtable"><tr><th>Corps d'état</th><th style="text-align:right">Tâches</th><th style="text-align:right">Part</th><th style="text-align:right">Montant</th></tr>${px.lots.map(g=>`<tr><td>${esc(g.lot)}</td><td class="n">${g.taches.length}</td><td class="n">${g.total>0?Math.max(1,Math.round(g.total/px.total*100))+' %':'—'}</td><td class="n">${g.total>0?eur(Math.round(g.total)):'non chiffré'}</td></tr>`).join('')}<tr class="tot"><td>Total HT</td><td class="n">${px.nb}</td><td></td><td class="n">${eur(px.total)}</td></tr></table><div class="tip" style="margin-top:10px">Ta finition, ta région et la TVA n'y sont pas encore appliquées.</div></div>`,foot:'Budget · '+eur(px.total)});}
   if(tout){
     pages.push({title:'Contrôle du plan',sub:'Accessibilité, éclairage, hauteurs, surfaces — vérifiés automatiquement',body:`<div class="xrecap">${q.controles.length?q.controles.map(c=>`<div class="ph">${esc(c.niveau)}</div><div class="chks">${c.points.map(pt=>`<div class="chk ${pt.niveau}"><span class="ci">${ico(pt.niveau==='err'?'erreur':pt.niveau==='warn'?'alerte':'idee')}</span><span>${esc(pt.texte)}</span></div>`).join('')}</div>`).join(''):'<div class="tip ok">Rien à signaler sur les points vérifiés : accès des pièces, lumière naturelle, hauteurs, WC.</div>'}</div>`,foot:'Contrôle du plan'});
     /* D40 : Suivi et Budget du dossier lisent la même source que l'écran (chantierPrix). */
     const px=chantierPrix(),T=px.taches;if(T.length){const pc=Math.round(px.faites/T.length*100);pages.push({title:'Suivi du chantier',sub:`${px.faites}/${T.length} tâches faites · ${pc} % · ${eur(px.fait)} réalisés sur ${eur(px.total)} HT`,body:`<div class="xrecap"><div class="prog" style="margin-bottom:12px"><i style="width:${pc}%"></i></div><div class="tasks">${chantierListHTML(T,false,{prix:true})}</div></div>`,foot:'Suivi de chantier'});}
-    if(px.total>0){const A=elementsATrancher(),Z=px.nonChiffrees;pages.push({title:'Budget travaux HT',sub:'Indicatif, hors taxes · prix catalogue, moyenne nationale · travaux décidés sur le plan',body:`<div class="xrecap"><div class="xbig"><span>Budget travaux HT</span><b>${eur(px.total)}</b><small>${pluriel(px.nb,'tâche')} · ${px.lots.length} corps d'état</small></div><table class="mtable"><tr><th>Corps d'état</th><th style="text-align:right">Tâches</th><th style="text-align:right">Part</th><th style="text-align:right">Montant</th></tr>${px.lots.map(g=>`<tr><td>${esc(g.lot)}</td><td class="n">${g.taches.length}</td><td class="n">${g.total>0?Math.max(1,Math.round(g.total/px.total*100))+' %':'—'}</td><td class="n">${g.total>0?eur(Math.round(g.total)):'non chiffré'}</td></tr>`).join('')}<tr class="tot"><td>Total HT</td><td class="n">${px.nb}</td><td></td><td class="n">${eur(px.total)}</td></tr></table>${Z.length?`<div class="tip" style="margin-top:10px">Pas encore chiffré : ${pluriel(Z.length,'tâche')} du suivi, sans prix pour l'instant (${esc(Z.slice(0,3).map(t=>t.label).join(' ; '))}${Z.length>3?'…':''}). Elles ne sont pas dans le total.</div>`:''}${A.length?`<div class="tip" style="margin-top:10px">Encore à décider : ${pluriel(A.length,'élément')} déjà en place sur lesquels rien n'est décidé. Ils ne sont pas dans le total.</div>`:''}<div class="tip" style="margin-top:10px">Ta finition, ta région et la TVA n'y sont pas encore appliquées.</div></div>`,foot:'Budget · '+eur(px.total)});}
+    if(px.total>0){const A=elementsATrancher(),Z=px.nonChiffrees;pages.push({title:'Budget travaux HT',sub:'Indicatif, hors taxes · finition '+nomFinition()+', moyenne nationale · travaux décidés sur le plan',body:`<div class="xrecap"><div class="xbig"><span>Budget travaux HT</span><b>${eur(px.total)}</b><small>${pluriel(px.nb,'tâche')} · ${px.lots.length} corps d'état</small></div><table class="mtable"><tr><th>Corps d'état</th><th style="text-align:right">Tâches</th><th style="text-align:right">Part</th><th style="text-align:right">Montant</th></tr>${px.lots.map(g=>`<tr><td>${esc(g.lot)}</td><td class="n">${g.taches.length}</td><td class="n">${g.total>0?Math.max(1,Math.round(g.total/px.total*100))+' %':'—'}</td><td class="n">${g.total>0?eur(Math.round(g.total)):'non chiffré'}</td></tr>`).join('')}<tr class="tot"><td>Total HT</td><td class="n">${px.nb}</td><td></td><td class="n">${eur(px.total)}</td></tr></table>${Z.length?`<div class="tip" style="margin-top:10px">Pas encore chiffré : ${pluriel(Z.length,'tâche')} du suivi, sans prix pour l'instant (${esc(Z.slice(0,3).map(t=>t.label).join(' ; '))}${Z.length>3?'…':''}). Elles ne sont pas dans le total.</div>`:''}${A.length?`<div class="tip" style="margin-top:10px">Encore à décider : ${pluriel(A.length,'élément')} déjà en place sur lesquels rien n'est décidé. Ils ne sont pas dans le total.</div>`:''}<div class="tip" style="margin-top:10px">Ta finition, ta région et la TVA n'y sont pas encore appliquées.</div></div>`,foot:'Budget · '+eur(px.total)});}
     pages.push({title:'Quantités',sub:'Mesurées automatiquement sur le plan',body:`<div class="xrecap">${quantitesHTML(q)}</div>`,foot:'Quantités'});
   }
   /* D49 (cj-coherence05) · Le dossier se lit sans nous : une dernière page explique les mots du bâtiment qu'il

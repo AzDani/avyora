@@ -19,7 +19,7 @@
 import { readFileSync } from "node:fs";
 import { ouvrirMaquette, scene, sceneVariantes } from "./scene-reference.mjs";
 import { contributionsDuPlan, type PlanPourCorrespondance } from "../../lib/estimateur/plan-correspondance";
-import { effPrices, defaultCtx } from "../../lib/estimateur/core";
+import { effPrices, defaultCtx, finCoefTask } from "../../lib/estimateur/core";
 
 type Tache = { label: string; lot: string; prix: number; inclus: boolean; pid: string };
 type Poste = { n: string; u: string; fp: number; vars?: Array<{ k: string; opts: Array<{ k: string; coef: number }> }> };
@@ -37,7 +37,8 @@ const SEUIL_ECART_PC = 1;
 const CAT = JSON.parse(readFileSync("lib/estimateur/catalog.json", "utf8"));
 const lots = Array.isArray(CAT) ? CAT : (CAT.lots ?? Object.values(CAT)[0]);
 const postes: Record<string, Poste> = {};
-for (const l of lots as Array<{ t: Array<Poste & { id: string }> }>) for (const t of l.t) postes[t.id] = t;
+const lotDe: Record<string, unknown> = {};
+for (const l of lots as Array<{ t: Array<Poste & { id: string }> }>) for (const t of l.t) { postes[t.id] = t; lotDe[t.id] = l; }
 
 /* Prix d'une ligne tel que le DEVIS le facturera. On appelle `effPrices`, le calcul du moteur
    lui-même, au lieu de refaire les coefficients à la main : la première version multipliait les
@@ -48,8 +49,12 @@ const CTX = defaultCtx();
 const valoriser = (c: { poste: string; quantite: number; variante?: Record<string, string>; mat?: string; vit?: string }) => {
   const t = postes[c.poste];
   if (!t) return null;
-  const { fp } = effPrices(t as never, { on: true, vsel: c.variante, mat: c.mat, vit: c.vit } as never, CTX);
-  return (fp ?? 0) * c.quantite;
+  const { fp, sm } = effPrices(t as never, { on: true, vsel: c.variante, mat: c.mat, vit: c.vit } as never, CTX);
+  /* Décision de Dani (26/09/2026) : le compteur applique la finition. Le devis aussi — comme lineHT, en
+     moyenne nationale : part matériaux × coefficient de finition + main-d'œuvre. La scène est en
+     Standard, la finition par défaut d'un projet ; comparer au prix brut validerait un compteur faux. */
+  const fc = finCoefTask(CTX, lotDe[c.poste] as never, t as never);
+  return (fp == null ? 0 : sm != null ? sm * fc + (fp - sm) : fp) * c.quantite;
 };
 
 const LECTURE = `(() => {
@@ -120,7 +125,7 @@ const ecartPc = Math.round((totalDevis / totalPlan - 1) * 1000) / 10;
 
 console.log(`\n━━ ${nom}\n\n1. Le compteur du plan et le devis`);
 console.log(`  compteur maquette  ${Math.round(totalPlan).toLocaleString("fr-FR")} €`);
-console.log(`  devis estimateur   ${Math.round(totalDevis).toLocaleString("fr-FR")} €   (fourni-posé, hors finition / région / TVA)`);
+console.log(`  devis estimateur   ${Math.round(totalDevis).toLocaleString("fr-FR")} €   (fourni-posé, finition Standard, hors région / TVA)`);
 console.log(`  écart              ${ecartPc > 0 ? "+" : ""}${ecartPc} %`);
 if (Math.abs(ecartPc) > SEUIL_ECART_PC) KO(`écart de ${ecartPc} % · toléré : ${SEUIL_ECART_PC} %`, "le compteur du plan ne dit plus ce que le devis facturera");
 
