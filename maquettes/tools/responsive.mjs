@@ -59,7 +59,8 @@ const MESURES = () => {
   const estOk = vis(eb) && q.right <= innerWidth + 0.5 && [0.15, 0.5, 0.85].every((f) => { const el = document.elementFromPoint(q.left + q.width * f, q.top + q.height / 2); return el && el.closest("#estBtnTop"); });
   /* D61 : la tête du plan (bande de contexte + barre d'options) et la barre d'état s'ajoutent à la liste, avec ce qu'elles
      portent ; deux éléments emboîtés (la barre et son zoom) ne comptent pas comme un chevauchement */
-  const flottants = ["#levels", "#modes", "#optbar", "#tetePlan", "#etat", "#surfBadge", "#hint", "#mesureLive", "#echelle", "#budgetPlie", ".zoomctl", "#phoneBanner", "#emptyStage .emptyCard", "#measBox"].map((s) => document.querySelector(s)).filter(vis);
+  /* D62 : la barre d'actions de l'élément choisi s'y ajoute (posée sur le plan, jamais sur une bande) */
+  const flottants = ["#levels", "#modes", "#optbar", "#tetePlan", "#etat", "#surfBadge", "#hint", "#mesureLive", "#echelle", "#budgetPlie", ".zoomctl", "#phoneBanner", "#emptyStage .emptyCard", "#measBox", "#selbar"].map((s) => document.querySelector(s)).filter(vis);
   const chev = [];
   for (let i = 0; i < flottants.length; i++) for (let j = i + 1; j < flottants.length; j++) {
     if (flottants[i].contains(flottants[j]) || flottants[j].contains(flottants[i])) continue;
@@ -107,6 +108,12 @@ for (const [L, H, mob] of [[390, 844, true], [320, 640, true], [768, 1024, false
   m = await p.evaluate(MESURES);
   t[`${tag} · fiche ouverte : « Estimer ce plan » reste visible et cliquable`] = m.estOk;
   t[`${tag} · fiche ouverte : aucun flottant ne se chevauche${m.chev.length ? " (" + m.chev.join(" ; ") + ")" : ""}`] = !m.chev.length;
+  /* D62 : un mur, une ouverture, un équipement choisis — la barre d'actions apparaît (sauf au téléphone) et ne touche aucune bande */
+  if (!mob) { const chevs = [], vues = [];
+    for (const k of ["wall", "opening", "item"]) { await p.evaluate((k) => { const lv = L(), x = k === "wall" ? lv.walls.find((w) => !isVirtual(w)) : k === "opening" ? lv.openings[0] : lv.items.find((i) => !ITEMS[i.type].elec); sel = { kind: k, id: x.id }; multi = []; render(); }, k); await wait(60);
+      const mk = await p.evaluate(MESURES); chevs.push(...mk.chev); vues.push(await p.evaluate(() => !document.getElementById("selbar").hidden)); }
+    await p.evaluate(() => { sel = null; render(); });
+    t[`${tag} · élément choisi : la barre d'actions ne chevauche aucune bande ni aucun flottant${chevs.length ? " (" + chevs.join(" ; ") + ")" : ""}`] = !chevs.length && (vues.some(Boolean) || H < 700); } /* sur un écran bas, l'élément peut être hors de la zone visible : la barre se cache alors */
   if (mob) {
     /* 3. mode chantier : cibles du chantier */
     const petits = await p.evaluate(() => {
