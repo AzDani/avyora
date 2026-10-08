@@ -186,3 +186,20 @@ node maquettes/tools/review.mjs "$(pwd)/maquettes"   # captures dans maquettes/r
 
 Il attend `puppeteer-core` (présent dans les dépendances de l'app) et Chrome à l'emplacement macOS
 standard. Les captures ne sont **pas** versionnées : elles se régénèrent en une commande.
+
+Depuis D59, la revue **sort en 1** si la page lève une erreur ou si un geste de base ne fait plus ce
+qu'il faisait (18 contrôles : tracé, longueur tapée, pose, cote, note, mesure, clic droit, Ctrl+Z,
+mur choisi en vue Travaux, export, niveaux, téléphone, raccourcis). Avant, son « ok » voulait seulement
+dire « le script n'a pas planté ».
+
+## `tools/ux.mjs` — la refonte de l'interface (D59 et suivants)
+
+```bash
+node maquettes/tools/ux.mjs "$(pwd)/maquettes"
+```
+
+Ce qui fait « logiciel de plans » et doit le rester : un seul registre d'icônes (`ICONS` / `ico()`,
+chaque SVG de l'interface en est un tracé), trois tailles d'icône au même poids, les jetons du design
+system (rayons, hauteurs, tailles de texte sans demi-pixel), familles de bibliothèque sans couleur,
+mini-coupes et échantillons de légende, une seule carte « choisir un modèle », et la bibliothèque lisible
+sans défiler jusqu'à 1 024 × 768. À lancer avec la batterie, après `responsive`.

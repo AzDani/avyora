@@ -3280,3 +3280,93 @@ accessible sur le site ; l'annoncer aux abonnés vendrait une fonction qui n'exi
 page Tarifs le jour du branchement.
 
 **Contrôle.** `coherence.mjs` §7 : le prix de l'éditeur doit égaler celui de la page Tarifs.
+
+## D59 · Refonte U1 : un design system et une seule famille d'icônes, dessinée en plan (08/10/2026)
+
+**D'où l'on part.** Dani : « l'impression d'un vrai logiciel professionnel de conception de plans, pas d'une interface
+web avec plein de petits boutons ». Audit à 5 experts (cartographe, débutant, iconographe, conventions des logiciels
+pros, gardien de non-régression) ; la refonte est découpée en 5 chantiers qui s'enchaînent. U1 pose le socle : design
+system et icônes. Batterie (21), finition, couverture et vitest verts avant toute retouche.
+
+**Constat.**
+- Cinq systèmes d'icônes côte à côte : `ICONS`/`ico()` (trait 1,75 à 16 px = 1,17 px réel), les SVG écrits dans `TOOLS`
+  (22 px, 1,7), ceux de `FAM` et des catégories d'ouvertures (17 px, 1,9, **colorés** à la couleur de famille), des
+  copies à la main dans le HTML (barre, menus, zoom) qui avaient divergé, et « − » « + » en texte dans le zoom.
+  Huit tailles, des traits de 1,02 à 2 px. Les icônes d'outils dessinaient en élévation (briques, porte de face,
+  canapé de face, « T » de texte) ; Doublage et Ouvertures ne se reconnaissaient pas.
+- Pas de composant de base : 17 rayons différents, ~15 tailles de texte dont 11,5 / 12,5 / 13,5 / 14,5 px, des ombres
+  écrites une à une, un focus lavande à certains endroits, indigo ailleurs.
+- Familles des bibliothèques colorées (Intérieur et Chauffage orange comme la démolition, Électricité jaune, Séjour
+  indigo comme la sélection) : la couleur, qui veut dire quelque chose sur le plan, devenait décorative.
+- Bug : `openingIcon(o.kind)` — Porte d'entrée, Porte de garage et Petite fenêtre n'avaient jamais leur vignette.
+- Intitulés de la colonne d'outils barrés par leurs propres filets (« AJOUTER », « MESURES »).
+- CSS et code morts : `.lib`, `.tools .sep`, `#cotesBtn`, `initToolTips`, et `.levels .add{display:none}` qui perdait
+  contre `.levels button.add` — au téléphone, le « + » de niveau restait (D48 le retirait).
+- La batterie avait trois angles morts : `review.mjs` sortait toujours en 0 (son étape « vue Travaux » cliquait sur la
+  fenêtre explicative sans le voir) ; rien ne vérifiait qu'un outil a son icône ; la bibliothèque n'était contrôlée
+  qu'à 1 280 et 1 440 px — à 1 024 × 768, « Porte simple » passait 5 px sous le pied.
+
+**Décision.**
+1. *La batterie d'abord.* `review.mjs` sort en 1 sur une erreur de page ou un geste de base cassé (18 contrôles ;
+   l'étape « vue Travaux » ferme la fenêtre explicative et vérifie que le mur est choisi). Nouveau `tools/ux.mjs`,
+   **à ajouter à la batterie** (après `responsive`) : il porte les contrôles de la refonte, dont « chaque `.tb` a un
+   `svg.ico[aria-hidden]` de 20 px puis son libellé dans le 1er `<span>` » et la bibliothèque à 1 024 × 768.
+2. *Un registre, une fonction.* Tout passe par `ICONS` + `ico(nom, taille)` : `TOOLS[i][3]` et `FAM[c].ic` sont des
+   NOMS d'icônes, les catégories d'ouvertures aussi ; le HTML statique porte `<svg class="ico" data-ico="nom">`, rempli
+   au chargement (`icoRemplir`) ; état d'enregistrement, pastille ⓘ du glossaire, onglet Suivi, « Retour », croix des
+   fenêtres, boutons d'Estimer : du registre. Plus aucun glyphe comme icône (zoom, « + » de la couleur libre, « + / − »
+   de « Voir les N autres »). Restent hors registre, volontairement : le logo, les illustrations de l'accueil, les
+   vignettes de plans (Mes plans, plans types) et les vignettes d'objets (`openingIcon`, `itemThumb` : chantier U2).
+3. *La famille « AVYORA Plan ».* Grille 24, zone utile 20, `currentColor`, jamais de couleur dans le tracé. Trois
+   tailles au même poids optique (~1,4 px) : `.ico` 16 px trait 2, `.ico.i20` 20 px trait 1,75, `.ico.i24` 24 px trait
+   1,5 (`ico(n,20)`). Bouts ronds pour l'interface, angles vifs (`ICO_A`) pour l'architecture ; une seule masse pleine,
+   le mur coupé (`ICO_P`). Outils dessinés EN PLAN (annexe C1) : flèche, cadre en tirets, angle de mur poché, porte
+   (poché + vantail + arc), doublage (poché + isolant en zigzag + parement), lavabo vu de dessus, bulle de note, ligne
+   de cote à obliques, mètre ruban, feuille de calque. Barre et calques (C2) : moins / plus / ajuster / grille / aimant,
+   Affichage = œil sur deux couches, Niveaux = profil d'escalier, cote / note / canapé / isolant redessinés et un seul
+   dessin par concept (`ICONS.cote = outilCote`, `note = outilNote`, `regle = outilMesure`, `canape = famSejour`).
+   Familles (C3) : fenêtre en plan, porte en plan, WC, plaque 4 feux, chauffe-eau « CE » (lettres en tracé, pas en
+   `<text>`), lit, canapé, poteau sur poutre, radiateur, prise NF. Deux icônes mortes retirées (`epingle`, `coin`).
+4. *Mini-coupes (C4).* `ico('mcMur')`… 40 × 24 (`ICO_VB`) : Automatique, Cloison, Mur, Mur épais (hachuré),
+   Séparation ; le trait (axe, face ext., face int.) ; ITI / ITE ; Poser / Retirer. Elles s'affichent dans les listes
+   de choix (`.seg.stack`), entre la pastille et le libellé, et restent repliées dans un segmenté en ligne (sinon un
+   bouton dépasserait 46 px). Poser / Retirer et ITI / ITE passent en liste pour les montrer. Une décision (`segEtat`,
+   classes `e-<état>`) porte en `::after` l'échantillon de la légende du plan — encre (Je garde), rouge (À créer,
+   À remplacer), jaune à tirets (À démolir, À déposer), hachure rouge (À boucher), tirets gris (À décider) — le libellé
+   reste le 1er texte du bouton.
+5. *Design system.* Jetons sur `:root` : espacements 4/8/12/16/24 (`--sp-*`), rayons 6/8/12 (`--r-s/m/l`, les anciens
+   noms en alias), hauteurs 28/32/36 (`--h-*`), texte 11/12/13/14/16/20 (`--fs-*`), ombres `--sh-1`, `--sh-2`,
+   `--sh-pop`, `--sh-modal`, états `--hover`, `--press`, `--off`, `--focus` (anneau indigo partout, plus de lavande).
+   Rayons et tailles de texte ramenés mécaniquement sur l'échelle (½ px arrondis : 11,5 et 12,5 → 12, 13,5 → 13,
+   14,5 → 14 ; la légende des vues reste à 11). Composants : bouton (32 px, `.ib.s` 28 px au lieu des marges écrites à
+   la main), bouton-icône (barre 32, zoom et niveaux 28), segmenté (rayon 8, choix 6), champ (rayon 8, focus indigo),
+   onglet (intitulé souligné d'indigo — le segmenté reste aux choix), info-bulle (encre, 12 px, rayon 6), menus
+   (rayon 8, survol neutre). Direction « plan d'architecte calme » : plus de dégradé (`--nuit-g` = aplat), plus de flou
+   derrière les fenêtres ni l'astuce, plus de carte qui se soulève au survol, encarts neutres (gris froid au lieu de
+   lavande), niveau et vue choisis en indigo clair comme l'outil actif.
+6. *Une seule présentation « choisir un modèle ».* `carteModele` / `bibOuvertures` : vignette, nom, dimensions en Mono,
+   rangées par famille sous un intitulé en encre (plus de liseré ni de teinte de famille ; la carte choisie est indigo
+   comme toute sélection). La même dans l'outil Ouvertures et dans la fiche d'une ouverture, où elle remplace la liste
+   déroulante « Modèle » (repliée `details.plie[data-k=op-modele]`, le modèle et ses dimensions dans le résumé). Cartes
+   plus denses : la bibliothèque des ouvertures se lit sans défiler jusqu'à 1 024 × 768 (Porte simple à 60 px au-dessus
+   du pied, WC à 32 px).
+7. *Bug et code mort.* `openingIcon(k)` reçoit la clé du modèle (repli sur le genre) : Porte d'entrée (seuil), Porte
+   de garage (sections) et Petite fenêtre ont leur vignette. Intitulés d'outils sous un filet pleine largeur, en
+   casse normale. `.lib`, `.tools .sep`, `#cotesBtn`, `initToolTips` retirés ; au téléphone, `.levels button.add` masqué
+   (l'intention de D48). `tool='export'` n'est PAS du code mort : `rendu-murs.mjs` s'en sert pour masquer les pastilles.
+
+**Ce qui ne bouge pas.** Aucune globale renommée (les noms ajoutés : `ICO_A`, `ICO_Z`, `ICO_P`, `ICO_VB`, `icoRemplir`,
+`MC_MUR`, `carteModele`, `bibOuvertures`) ; ids, classes à sens, `onclick` d'ancrage, ordre DOM, clés `localStorage`,
+couleurs et signatures du plan (canvas intouché), tables lues comme du texte. 10 outils, mêmes ids et libellés.
+
+**Laissé aux chantiers suivants.** Les vignettes d'objets rendues par le code du plan (`openingIcon` / `itemThumb`,
+U2 — Porte simple et Porte âme pleine partagent encore leur vignette) ; la colonne d'outils regroupée en sections
+(U-outils) ; la barre d'options et la barre d'état (le « ? » de l'astuce repliée est encore un glyphe en `::before`) ;
+les symboles du plan et les glyphes du canvas (poignées, badges) ; les cases à cocher et le champ date natifs.
+
+**Contrôles.** `review.mjs` (18 contrôles, sort en 1) ; `ux.mjs` (nouveau, 64 contrôles à 1 440, 1 280, 1 024 et au
+téléphone : registre unique — chaque SVG de l'interface est un tracé de `ICONS` —, trois tailles et poids optique,
+outils, zoom sans glyphe, jetons, rayons, aucune taille à ½ px, hauteurs, familles neutres, carte choisie indigo,
+vignettes du bug, bibliothèques sans défiler à 1 024 × 768, mini-coupes, échantillons de décision, modèle par cartes
+dans la fiche, plus d'icône morte ni de code mort, pas de « + » de niveau au téléphone). Sur le fichier d'avant :
+55 échecs sur 64. Batterie complète (21 + ux), finition, couverture et vitest (167) verts.

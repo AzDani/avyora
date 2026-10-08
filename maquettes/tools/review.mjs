@@ -46,7 +46,8 @@ await p.mouse.click(qt.x,qt.y,{button:'right'});await wait(80);R.rightClick=awai
 await p.keyboard.down('Control');await p.keyboard.press('z');await p.keyboard.up('Control');await wait(80);
 R.undo=await p.evaluate(()=>({texts:L().texts.length,hist:history.length,redo:(typeof future!=='undefined'?future.length:(typeof redo!=='undefined'?redo.length:null))}));
 // 10. projet : mur à démolir (clic sur mur gauche), puis final
-await p.evaluate(()=>{setMode('projet');setTool('select');});await wait(80);const qw=await P(0,2);await p.mouse.move(qw.x,qw.y);await p.mouse.click(qw.x,qw.y);await wait(120);
+/* D59 : la fenêtre explicative de la vue Travaux s'ouvre au 1er passage ; on la ferme, sinon le clic sur le mur tombe dessus et l'étape ne vérifie rien */
+await p.evaluate(()=>{setMode('projet');closeModal();setTool('select');});await wait(80);const qw=await P(0,2);await p.mouse.move(qw.x,qw.y);await p.mouse.click(qw.x,qw.y);await wait(120);
 R.projetSel=await p.evaluate(()=>({sel:sel?.kind,hasStBtn:!!document.querySelector('button.st-demolir')}));
 await p.evaluate(()=>{if(!sel){const w=L().walls.find(w=>Math.abs(w.a.x)<.01&&Math.abs(w.b.x)<.01);if(w)sel={kind:'wall',id:w.id};}if(sel)setWallProp('st','demolir');});await wait(100);await shot('07-projet');
 await p.evaluate(()=>setMode('final'));await wait(100);await shot('08-final');
@@ -72,3 +73,28 @@ await p.evaluate(()=>{closeModal();setTool('select');});await p.keyboard.press('
 // 15. hint bar text lengths (troncature)
 R.hints=await p.evaluate(()=>{const el=document.getElementById('hint');return {w:Math.round(el.getBoundingClientRect().width),overflow:el.scrollWidth>el.clientWidth};});
 console.log(JSON.stringify(R,null,1));console.log("ERRORS",errs.length?errs.join(" | "):"none");console.log("WARNS",warns.slice(0,5).join(" | ")||"none");await b.close();
+/* D59 (gardien) : la revue sort en erreur si la page lève une erreur ou si un geste de base ne fait plus ce qu'il faisait.
+   Avant, elle sortait toujours en 0 : son « ok » voulait seulement dire « le script n'a pas planté ». */
+const C={
+  "accueil ouvert au 1er lancement":R.welcome===true,
+  "feuille blanche → outil Murs":R.toolAfterBlank==="mur",
+  "pièce tracée à la souris (4 murs, 1 pièce de 20 m²)":R.afterDraw.walls===4&&R.afterDraw.rooms===1&&Math.abs(R.afterDraw.area-20)<0.01,
+  "longueur tapée (3 m)":R.typedLen.len===3,
+  "ouverture posée et sélectionnée":R.opening.n===1&&R.opening.sel==="opening",
+  "équipement posé":R.item.n===1,
+  "cote posée":R.cote.n===1,
+  "note posée et focalisée":R.text.n===1&&R.text.focused==="txtEdit",
+  "mesure fermée (20 m²)":R.measure.done===true&&R.measure.area===20,
+  "clic droit → Sélection":R.rightClick==="select",
+  "Ctrl+Z retire la note":R.undo.texts===0&&R.undo.redo>=1,
+  "vue Travaux : le mur cliqué est sélectionné, avec « À démolir »":R.projetSel.sel==="wall"&&R.projetSel.hasStBtn===true,
+  "export : 3 images":R.export.imgs===3&&R.export.open===true,
+  "niveau ajouté, reprise des porteurs proposée":R.level.n===2&&R.level.btnCopy===true,
+  "téléphone : pas de défilement horizontal, outils masqués":R.mobile.bodyScrollX===false&&R.mobile.toolsW===0,
+  "raccourcis M et L":R.keyM==="mur"&&R.keyL==="mesure",
+  "astuce sans débordement":R.hints.overflow===false,
+  "aucune erreur de page":errs.length===0,
+};
+let ko=0;for(const [k,v] of Object.entries(C)){console.log((v?"✓ ":"✗ ")+k);if(!v)ko++;}
+console.log(ko?`\n✗ ${ko} contrôle(s) de la revue en échec`:"\n✓ revue : "+Object.keys(C).length+" contrôles");
+process.exit(ko?1:0);
