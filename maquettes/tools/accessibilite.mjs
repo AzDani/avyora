@@ -20,7 +20,10 @@
  *   - les messages : role=status, durée selon la longueur, figés au survol ; la pastille d'écart du
  *     budget annonce le nouveau total ;
  *   - moins d'animation quand le système le demande (tiroir, messages, compteur) ;
- *   - un tableau défile dans son cadre.
+ *   - un tableau défile dans son cadre ;
+ *   - D62 : la barre d'actions de l'élément choisi est une barre d'outils (role toolbar, un arrêt de Tab, ← → Début Fin,
+ *     décision en aria-pressed) et le menu du clic droit un menu (role menu, menuitem / menuitemradio, focus sur la
+ *     1re action au clavier, Échap rend le focus au plan) ; anneaux de focus visibles.
  *
  *   node maquettes/tools/accessibilite.mjs "$(pwd)/maquettes"
  *
@@ -436,6 +439,30 @@ await charger(p); await wait(250); await p.evaluate(() => { closeWelcome("blank"
 { const q = await p.evaluate(() => { const bt = [...document.querySelectorAll("#emptyStage button")].find((x) => /Poser une pièce/.test(x.textContent)); const r = bt.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
   await p.mouse.click(q.x, q.y); await wait(150);
   t["plan vierge · à la souris, « Poser une pièce » attend le clic dans le plan (rien n'est posé)"] = await p.evaluate(() => !!rectMode && L().walls.length === 0); }
+await p.close();
+
+/* ═════════ D62 · la barre d'actions et le menu du clic droit, au clavier et pour un lecteur d'écran ═════════ */
+p = await onglet();
+Object.assign(t, await p.evaluate(() => { const r = {};
+  setMode("projet"); closeModal(); setTool("select");
+  const w = L().walls.find((x) => x.st === "demolir"); sel = { kind: "wall", id: w.id }; render();
+  const b = document.getElementById("selbar"), B = [...b.querySelectorAll("button")];
+  r["D62 · barre d'actions : role toolbar nommé et horizontal, UN arrêt de Tab (tabindex 0 sur une action, -1 sur les autres)"] = b.getAttribute("role") === "toolbar" && /\S/.test(b.getAttribute("aria-label") || "") && b.getAttribute("aria-orientation") === "horizontal" && B.length > 1 && B.filter((x) => x.tabIndex === 0).length === 1;
+  r["D62 · barre d'actions : la décision en boutons à bascule (aria-pressed), une seule enfoncée"] = B.filter((x) => x.hasAttribute("aria-pressed")).length >= 2 && B.filter((x) => x.getAttribute("aria-pressed") === "true").length === 1;
+  r["D62 · barre d'actions : un bouton-icône a un nom accessible (aria-label), ses icônes sont aria-hidden"] = B.filter((x) => !x.textContent.trim()).every((x) => (x.getAttribute("aria-label") || "").length > 2) && [...b.querySelectorAll("svg")].every((s) => s.getAttribute("aria-hidden") === "true");
+  ouvrirMenuCtx(null);
+  const m = document.getElementById("ctxMenu"), I = [...m.querySelectorAll("[role^=menuitem]")];
+  r["D62 · menu : role menu nommé ; menuitem, et menuitemradio coché (aria-checked) pour la décision en cours"] = m.getAttribute("role") === "menu" && !!m.getAttribute("aria-label") && I.length >= 3 && I.some((x) => x.getAttribute("role") === "menuitemradio" && x.getAttribute("aria-checked") === "true") && I.every((x) => x.tagName === "BUTTON" && x.getAttribute("type") === "button" && x.getAttribute("tabindex") === "-1");
+  r["D62 · menu : séparateurs role=separator, icônes aria-hidden"] = [...m.querySelectorAll(".msep")].every((x) => x.getAttribute("role") === "separator") && [...m.querySelectorAll("svg")].every((s) => s.getAttribute("aria-hidden") === "true");
+  return r; }));
+await wait(60);
+t["D62 · menu ouvert au clavier : le focus est sur sa 1re action, l'anneau se voit"] = await p.evaluate(() => { const a = document.activeElement; return a === document.querySelector("#ctxMenu [role^=menuitem]") && /79, 70, 229/.test(getComputedStyle(a).boxShadow); });
+await p.keyboard.press("Escape"); await wait(40);
+t["D62 · menu : Échap le ferme et rend le focus au plan"] = await p.evaluate(() => document.getElementById("ctxMenu").hidden && document.activeElement === cv);
+await p.keyboard.press("Tab"); await wait(60);
+t["D62 · barre d'actions : atteinte par Tab depuis le plan, son anneau de focus est plein (≥ 2 px)"] = await p.evaluate(() => { const a = document.activeElement, cs = getComputedStyle(a); return !!a.closest("#selbar") && a.matches(":focus-visible") && cs.outlineStyle === "solid" && parseFloat(cs.outlineWidth) >= 2; });
+await p.keyboard.press("End"); await wait(30);
+t["D62 · barre d'actions : Fin va à la dernière action, et c'est elle qui garde l'arrêt de Tab"] = await p.evaluate(() => { const B = [...document.querySelectorAll("#selbar button")]; return document.activeElement === B[B.length - 1] && B[B.length - 1].tabIndex === 0 && B.filter((x) => x.tabIndex === 0).length === 1; });
 await p.close();
 
 await b.close();
