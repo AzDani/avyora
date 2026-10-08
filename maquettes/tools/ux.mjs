@@ -54,6 +54,20 @@
  *     douce ; après une pose, le panneau montre l'objet posé ; choisir un outil rebascule sur Détails ; chaque outil a
  *     son mode d'emploi ; mesure en direct et accrochage nommé (coin…) ; l'échelle graphique mesure ce qu'elle dit.
  *
+ * U4 · interactions et retours (D62) — à 1 440, 1 280 et 1 024 :
+ *   - UNE table de raccourcis : le clavier lit la touche dans TOOLS (une touche changée là change le raccourci) ;
+ *   - Échap en cascade : le geste en cours, puis l'outil (retour à la Sélection, l'objet posé reste choisi), puis la
+ *     sélection ;
+ *   - un seul langage : choisi, un mur (à démolir compris), une ouverture, un équipement gardent leur couleur métier et
+ *     prennent un contour indigo plein ; le survol, le même contour, léger (plus de lilas ni de tirets) ;
+ *   - la barre d'actions près de l'élément choisi (role toolbar) : dans la zone du plan pour chaque élément de
+ *     l'exemple, ses boutons appellent les fonctions des fiches (décision, pivoter, dupliquer, supprimer, sens), au
+ *     clavier (Tab, ← →, Échap) ; rien pour une pièce, pendant la pose ni en lecture seule ;
+ *   - le menu du clic droit (outil Sélection, role menu) : les mêmes actions avec leurs touches, au clavier (↓, Fin,
+ *     Échap qui rend le focus, Maj + F10), toujours dans l'écran ; hors d'un élément, le clic droit garde son rôle ;
+ *   - l'aperçu de pose : cotes temporaires du jambage au voisin, refus visible ; accrochage nommé (Cote, Mesurer) ;
+ *     raccourcis d'une touche coupés : ni la barre ni le menu ne promettent « R ».
+ *
  *   node maquettes/tools/ux.mjs "$(pwd)/maquettes"
  *
  * Sort en code 1 si un contrôle échoue ou si la page lève une erreur.
@@ -392,9 +406,193 @@ for (const [L0, H0] of [[1440, 900], [1280, 800], [1024, 768]]) {
   await p.close();
 }
 
+/* ═════════ 7. U4 · interactions et retours (D62) ═════════ */
+t["source · le clavier lit la table TOOLS (plus de lettres d'outil écrites en dur dans le gestionnaire)"] = !/if\(k==='[a-z]'\)setTool\(/.test(SRC) && /outilDeTouche\(k\)/.test(SRC);
+t["source · Annuler et Rétablir ont la bulle commune (nom, raccourci, une phrase), plus de title natif"] = /id="undoBtn" data-tip="Annuler \(Ctrl Z\) · [^"]+"/.test(SRC) && /id="redoBtn" data-tip="Rétablir \(Ctrl Y\) · [^"]+"/.test(SRC) && !/id="(undo|redo)Btn" title=/.test(SRC);
+t["source · plus de cadre de sélection en tirets ni de survol lilas (ouvertures, équipements, électricité)"] = !/setLineDash\(\[px\(4\),px\(3\)\]\);ctx\.(?:strokeStyle='#4f46e5'|lineWidth=px\(1\.25\);ctx\.strokeStyle='#4f46e5')/.test(SRC) && !/strokeStyle='#a78bfa';ctx\.lineWidth=1\.5[^;]*;strokeRects/.test(SRC) && !/ctx\.arc\(c\.x,c\.y,Math\.max\(14,o\.w\/2\*z\+6\)/.test(SRC);
+for (const [L0, H0] of [[1440, 900], [1280, 800], [1024, 768]]) {
+  const p = await onglet({ larg: L0, haut: H0 });
+  const plan = async (x, y) => p.evaluate((x, y) => { const q = S(v(x, y)), r = cv.getBoundingClientRect(); return { x: r.left + q.x, y: r.top + q.y }; }, x, y);
+  try { /* une fonction absente (fichier d'avant D62) : un échec dit, pas un plantage */
+  /* a. une seule table de raccourcis : la touche lue dans TOOLS, même changée */
+  Object.assign(t, await p.evaluate((larg) => { const r = {};
+    const od = typeof outilDeTouche === "function" ? outilDeTouche : () => undefined;
+    const ok = TOOLS.filter((x) => x[2]).every((x) => od(x[2]) === x[0] && od(x[2].toLowerCase()) === x[0]);
+    r[`${larg} · clavier : chaque touche de TOOLS rend son outil (outilDeTouche)`] = ok && od("z") === null;
+    return r; }, L0));
+  await p.evaluate(() => { setMode("existant"); closeModal(); document.activeElement && document.activeElement.blur && document.activeElement.blur(); setTool("select"); });
+  const essais = await p.evaluate(() => TOOLS.filter((x) => x[2]).map((x) => [x[2].toLowerCase(), x[0]]));
+  const rates = [];
+  for (const [k, id] of essais) { await p.keyboard.press(k); await wait(20); const o = await p.evaluate(() => tool); if (o !== id) rates.push(k + "→" + o); await p.keyboard.press("Escape"); await p.keyboard.press("Escape"); }
+  t[`${L0} · clavier : les ${essais.length} touches d'outil, tapées pour de vrai${rates.length ? " — " + rates.join(", ") : ""}`] = !rates.length;
+  await p.evaluate(() => { setTool("select"); const m = TOOLS.find((x) => x[0] === "mur"); m.__k = m[2]; m[2] = "Q"; });
+  await p.keyboard.press("q"); await wait(20); const viaQ = await p.evaluate(() => tool); await p.keyboard.press("Escape"); await p.keyboard.press("m"); await wait(20); const viaM = await p.evaluate(() => tool);
+  await p.evaluate(() => { const m = TOOLS.find((x) => x[0] === "mur"); m[2] = m.__k; delete m.__k; setTool("select"); render(); });
+  t[`${L0} · clavier : la touche changée dans TOOLS change le raccourci (Q → Murs, M ne fait plus rien) — vu ${viaQ} / ${viaM}`] = viaQ === "mur" && viaM === "select";
+  /* b. Échap : le geste, puis l'outil, puis la sélection */
+  await p.evaluate(() => { setTool("ouverture"); });
+  await p.keyboard.press("Escape"); await wait(30);
+  t[`${L0} · Échap : sans geste en cours, l'outil Ouvertures revient à la Sélection`] = await p.evaluate(() => tool === "select");
+  await p.evaluate(() => { setTool("mur"); const b0 = bbox(L()); clickAction(v(b0.x1 + 1, b0.y0)); });
+  await p.keyboard.press("Escape"); await wait(30);
+  const e1 = await p.evaluate(() => ({ tool, chain: chain.length }));
+  await p.keyboard.press("Escape"); await wait(30);
+  const e2 = await p.evaluate(() => tool);
+  t[`${L0} · Échap : un tracé en cours se termine (l'outil reste Murs), le 2e Échap rend la Sélection`] = e1.tool === "mur" && e1.chain === 0 && e2 === "select";
+  { const w = await p.evaluate(() => { const w = L().walls.filter((x) => x.type === "mur").sort((a, c) => wallLen(c) - wallLen(a))[0]; const L2 = wallLen(w); let best = null; for (let k = 1; k < 20; k++) { const t2 = k / 20; if (!ouverturesChevauchees(L(), w.id, t2, 1.2, null).length && t2 * L2 > 0.8 && (1 - t2) * L2 > 0.8) { best = t2; break; } } setTool("ouverture"); setOpeningType("fenetre"); return { a: w.a, b: w.b, t: best }; });
+    const q = await plan(w.a.x + (w.b.x - w.a.x) * w.t, w.a.y + (w.b.y - w.a.y) * w.t); await p.mouse.move(q.x, q.y); await wait(30); await p.mouse.click(q.x, q.y); await wait(80);
+    await p.keyboard.press("Escape"); await wait(60);
+    t[`${L0} · Échap après une pose : la Sélection, l'ouverture posée reste choisie et sa fiche ouverte`] = await p.evaluate(() => tool === "select" && sel && sel.kind === "opening" && /Fenêtre/.test(document.querySelector("#pbody .ptitle")?.textContent || ""));
+    await p.keyboard.press("Escape"); await wait(30);
+    t[`${L0} · Échap avec la Sélection : désélectionne`] = await p.evaluate(() => tool === "select" && !sel);
+    await p.evaluate(() => undo()); }
+  /* c. un seul langage : la couleur métier reste, le contour indigo se pose par-dessus */
+  Object.assign(t, await p.evaluate((larg) => { const r = {};
+    state = blankState(); const lv = L(); lv.walls.push({ id: "m1", a: v(0, 0), b: v(6, 0), type: "mur" }, { id: "m2", a: v(0, 0), b: v(0, 4), type: "mur" }, { id: "c1", a: v(3, 0), b: v(3, 4), type: "cloison", st: "demolir" });
+    lv.openings.push({ id: "o1", wallId: "m1", t: 0.25, type: "porte", w: 0.83, h: 2.04, hinge: 1, side: 1 }); lv.items.push({ id: "e1", type: "lavabo", x: 5, y: 1.5, w: 0.6, h: 0.45, rot: 0 });
+    afterChange(); setMode("existant"); closeModal(); tool = "select"; settings.grid = false; settings.cotes = false; view.zoom = 100; view.ox = 60; view.oy = 300; hover = null;
+    const k = devicePixelRatio, lire = (x, y, dy = 0, dx = 0) => { const s = S(v(x, y)), d = ctx.getImageData(Math.round((s.x + dx) * k), Math.round((s.y + dy) * k), 1, 1).data; return [d[0], d[1], d[2]]; };
+    const balaye = (x, y, sx, sy, d0, d1) => { for (let d = d0; d <= d1; d += 0.5) { const c = lire(x, y, sy * d, sx * d); if (c[2] > c[0] + 70 && c[2] > 150 && c[0] < 170) return c; } return null; };
+    const indigo = (c) => c[2] > c[0] + 70 && c[2] > 150 && c[0] < 170, encre = (c) => Math.abs(c[0] - 30) < 8 && Math.abs(c[1] - 27) < 8 && Math.abs(c[2] - 75) < 8;
+    /* le mur m1 : 20 cm = 20 px ; sa face haute à y = -10 px ; 4 px au-dessus = le contour */
+    /* le mur m1 (20 cm = 20 px, axe à y = 300 px) : le contour est juste au-dessus de sa face (10 px) */
+    sel = null; draw(); const libre = balaye(2.4, 0, 0, -1, 10.5, 16), coeurLibre = lire(2.4, 0);
+    sel = { kind: "wall", id: "m1" }; draw(); const choisi = balaye(2.4, 0, 0, -1, 10.5, 16), coeurChoisi = lire(2.4, 0);
+    r[`${larg} · un mur choisi garde son encre et prend un contour indigo (cœur ${coeurChoisi}, bord ${choisi} ; libre ${libre})`] = encre(coeurLibre) && encre(coeurChoisi) && !!choisi && !libre;
+    setMode("projet"); closeModal(); tool = "select"; view.zoom = 100; view.ox = 60; view.oy = 300; sel = null; draw();
+    const avantD = balaye(3, 2, -1, 0, 4, 10); sel = { kind: "wall", id: "c1" }; draw(); const apresD = balaye(3, 2, -1, 0, 4, 10), coeurD = lire(3, 2);
+    r[`${larg} · un mur à démolir choisi se voit : contour indigo autour du jaune (bord ${apresD}, libre ${avantD}, cœur ${coeurD})`] = !!apresD && !avantD && coeurD[0] > 200 && coeurD[1] > 150 && coeurD[2] < 200;
+    /* ouverture et équipement : le dessin reste à l'encre, un cadre plein indigo (jamais en tirets) */
+    setMode("existant"); closeModal(); tool = "select"; view.zoom = 100; view.ox = 60; view.oy = 300;
+    const traits = []; const S0 = ctx.stroke, SR = ctx.strokeRect;
+    ctx.stroke = function () { traits.push([String(this.strokeStyle).toLowerCase(), this.getLineDash().length]); return S0.apply(this, arguments); };
+    ctx.strokeRect = function () { traits.push([String(this.strokeStyle).toLowerCase(), this.getLineDash().length]); return SR.apply(this, arguments); };
+    let o1, e1;
+    try { traits.length = 0; drawOpening(L().openings[0], true); o1 = traits.slice(); traits.length = 0; drawItem(L().items[0], true); e1 = traits.slice(); }
+    finally { ctx.stroke = S0; ctx.strokeRect = SR; }
+    const cadre = (T) => T.some(([c, d]) => c === "#4f46e5" && d === 0) && !T.some(([c, d]) => c === "#4f46e5" && d > 0);
+    const encreSeule = (T) => T.filter(([c]) => c !== "#4f46e5" && !/^rgba\(79, ?70, ?229/.test(c)).length >= 2;
+    r[`${larg} · une ouverture choisie : son symbole à l'encre, un cadre plein indigo`] = cadre(o1) && encreSeule(o1);
+    r[`${larg} · un équipement choisi : son symbole à l'encre, un cadre plein indigo`] = cadre(e1) && encreSeule(e1);
+    /* survol : le même langage, léger (plus de cercle ni de tirets lilas) */
+    const vu = new Set(), dS = Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype, "strokeStyle");
+    Object.defineProperty(ctx, "strokeStyle", { configurable: true, get() { return dS.get.call(this); }, set(x) { vu.add(String(x).toLowerCase()); dS.set.call(this, x); } });
+    const appels = []; const CM = contourMur; contourMur = function (w, a, b2, fort) { appels.push([w.id, fort]); return CM.apply(this, arguments); };
+    try { sel = null; for (const h of [v(5, 1.5), L().walls.find((x) => x.id === "m2") && v(0, 2), (() => { const w = findWall("m1"); return add(w.a, mul(sub(w.b, w.a), 0.25)); })()]) { hover = h; draw(); } }
+    finally { delete ctx.strokeStyle; contourMur = CM; hover = null; }
+    r[`${larg} · survol : un liseré indigo léger (équipement, mur, ouverture), plus de lilas`] = vu.has("#4f46e5") && !vu.has("#a78bfa") && appels.some(([id, f]) => id === "m2" && f === false);
+    return r; }, L0));
+  /* d. la barre d'actions, près de l'élément choisi */
+  await p.evaluate(() => { closeWelcome("sample"); closeModal(); setMode("projet"); closeModal(); setTool("select"); sel = null; fitView(); render(); });
+  { const w = await p.evaluate(() => { const w = L().walls.find((x) => x.st === "demolir"); for (let k = 1; k < 20; k++) { const q = add(add(w.a, mul(sub(w.b, w.a), k / 20)), wallOff(w)), h = hitTest(q); if (h && h.kind === "wall" && h.id === w.id) return q; } return mul(add(w.a, w.b), 0.5); }); const q = await plan(w.x, w.y); await p.mouse.move(q.x, q.y); await p.mouse.click(q.x, q.y); await wait(120); }
+  Object.assign(t, await p.evaluate((larg) => { const r = {}, b = document.getElementById("selbar"), q = b.getBoundingClientRect(), st = document.getElementById("stage").getBoundingClientRect(), tp = document.getElementById("tetePlan").getBoundingClientRect(), et = document.getElementById("etat").getBoundingClientRect();
+    const B = [...b.querySelectorAll("button")];
+    r[`${larg} · barre d'actions : un clic sur un mur à démolir la montre (role toolbar), « ${LEX.etat.demolir} » enfoncé`] = !b.hidden && b.getAttribute("role") === "toolbar" && !!b.getAttribute("aria-label") && B.some((x) => x.textContent.trim() === LEX.etat.demolir && x.getAttribute("aria-pressed") === "true");
+    r[`${larg} · barre d'actions : dans la zone du plan, jamais sous la bande du haut ni sous la barre d'état`] = q.left >= st.left && q.right <= st.right && q.top >= tp.bottom && q.bottom <= et.top;
+    r[`${larg} · barre d'actions : chaque bouton a un nom (texte ou aria-label), les icônes leur bulle avec la touche`] = B.every((x) => (x.textContent.trim() || x.getAttribute("aria-label"))) && B.filter((x) => x.classList.contains("ic")).every((x) => /\(.+\)$/.test(x.dataset.tip || "") || x.getAttribute("aria-label") === x.dataset.tip);
+    r[`${larg} · barre d'actions : ses icônes viennent du registre (svg.ico aria-hidden)`] = [...b.querySelectorAll("svg")].every((s) => s.classList.contains("ico") && s.getAttribute("aria-hidden") === "true");
+    return r; }, L0));
+  /* chaque élément du plan, choisi : la barre ne sort jamais de la zone du plan */
+  t[`${L0} · barre d'actions : pour chaque mur, ouverture et équipement de l'exemple, elle reste dans la zone du plan`] = await p.evaluate(() => { const st = document.getElementById("stage").getBoundingClientRect(), tp = document.getElementById("tetePlan").getBoundingClientRect(), et = document.getElementById("etat").getBoundingClientRect(), b = document.getElementById("selbar"); const hors = [];
+    for (const c of elementsDuPlan()) { if (c.kind === "room") continue; sel = { kind: c.kind, id: c.id }; multi = []; msel = []; render(); if (b.hidden) continue; const q = b.getBoundingClientRect(); if (!(q.left >= st.left - 0.5 && q.right <= st.right + 0.5 && q.top >= tp.bottom - 0.5 && q.bottom <= et.top + 0.5)) hors.push(c.kind); }
+    sel = null; render(); return !hors.length; });
+  /* les boutons appellent les fonctions des fiches */
+  Object.assign(t, await p.evaluate((larg) => { const r = {}, b = document.getElementById("selbar"), btn = (f) => [...b.querySelectorAll("button")].find(f);
+    const w = L().walls.find((x) => x.st === "demolir"); sel = { kind: "wall", id: w.id }; render(); btn((x) => x.textContent.trim() === LEX.etat.garder).click();
+    const garde = wst(findWall(w.id)) === "garder"; btn((x) => x.textContent.trim() === LEX.etat.demolir).click(); const remis = wst(findWall(w.id)) === "demolir";
+    r[`${larg} · barre d'actions : « ${LEX.etat.garder} » puis « ${LEX.etat.demolir} » changent la décision du mur (setWallProp)`] = garde && remis;
+    setMode("existant"); closeModal(); setTool("select");
+    const it = L().items.find((x) => !ITEMS[x.type].elec && x.type !== "escalier"); sel = { kind: "item", id: it.id }; multi = []; render(); const rot0 = it.rot, n0 = L().items.length;
+    btn((x) => x.getAttribute("aria-label") === "Pivoter de 90°").click(); const pivote = Math.abs(((L().items.find((x) => x.id === it.id).rot - rot0 + 2 * Math.PI) % (2 * Math.PI)) - Math.PI / 2) < 1e-6;
+    btn((x) => x.getAttribute("aria-label") === "Dupliquer").click(); const duplique = L().items.length === n0 + 1;
+    btn((x) => x.getAttribute("aria-label") === "Supprimer").click(); const supprime = L().items.length === n0;
+    r[`${larg} · barre d'actions : Pivoter (R), Dupliquer (Ctrl D), Supprimer (Suppr) agissent sur l'équipement`] = pivote && duplique && supprime && /\(R\)$/.test(btn((x) => x.getAttribute("aria-label") === "Pivoter de 90°")?.dataset.tip || "(R)");
+    const d = L().openings.find((x) => OPENINGS[x.type].kind === "door"); sel = { kind: "opening", id: d.id }; render(); const s0 = d.side || 1;
+    btn((x) => x.getAttribute("aria-label") === "Ouvre de l'autre côté").click();
+    r[`${larg} · barre d'actions : « Ouvre de l'autre côté » retourne la porte (setOpeningProp)`] = (L().openings.find((x) => x.id === d.id).side || 1) === -s0;
+    undo();
+    /* elle ne s'affiche pas : une pièce, un outil de pose, la vue Après travaux */
+    const room = L().rooms[0]; sel = { kind: "room", id: room.id }; render(); const piece = b.hidden;
+    sel = { kind: "item", id: it.id }; setTool("ouverture"); const outil = b.hidden; setTool("select"); sel = { kind: "item", id: L().items[0].id }; render();
+    setMode("final"); closeModal(); const fin = b.hidden; setMode("existant"); closeModal(); sel = null; render();
+    r[`${larg} · barre d'actions : rien pour une pièce, pendant la pose, ni en vue ${nomVue("final")} (lecture seule)`] = piece && outil && fin;
+    return r; }, L0));
+  /* au clavier : Tab depuis le plan y entre, ← → la parcourent, Échap rend le plan (la sélection reste) */
+  await p.evaluate(() => { cv.focus(); const E = elementsDuPlan(), i = E.findIndex((x) => x.kind === "item"); choisirAuClavier(E[i], i, E.length); cv.focus(); });
+  await p.keyboard.press("Tab"); await wait(60);
+  const k1 = await p.evaluate(() => ({ dans: !!document.activeElement.closest("#selbar"), i: [...document.querySelectorAll("#selbar button")].indexOf(document.activeElement), n: document.querySelectorAll("#selbar button").length }));
+  await p.keyboard.press("ArrowRight"); await wait(40);
+  const k2 = await p.evaluate(() => [...document.querySelectorAll("#selbar button")].indexOf(document.activeElement));
+  const sel0 = await p.evaluate(() => sel && sel.id); await p.keyboard.press("Escape"); await wait(40);
+  const k3 = await p.evaluate((s0) => document.activeElement === cv && sel && sel.id === s0, sel0);
+  t[`${L0} · barre d'actions au clavier : Tab depuis le plan y entre, → passe à l'action suivante, Échap rend le plan (sélection gardée)`] = k1.dans && k1.i === 0 && k1.n > 1 && k2 === 1 && k3;
+  /* e. le menu du clic droit (outil Sélection) */
+  const ci = await p.evaluate(() => { setTool("select"); sel = null; render(); const it = L().items.find((x) => !ITEMS[x.type].elec && x.type !== "escalier" && hitTest(v(x.x, x.y))?.id === x.id); return { id: it.id, x: it.x, y: it.y, n: L().items.length, larg: innerWidth }; });
+  { const q = await plan(ci.x, ci.y); await p.mouse.move(q.x, q.y); await p.mouse.click(q.x, q.y, { button: "right" }); await wait(120); }
+  Object.assign(t, await p.evaluate((ci) => { const r = {}, m = document.getElementById("ctxMenu"), it = [...m.querySelectorAll("[role^=menuitem]")], q = m.getBoundingClientRect();
+    r[ci.larg + " · menu du clic droit : sur un équipement, il le choisit et ouvre le menu de ses actions (role menu, menuitem)"] = !m.hidden && m.getAttribute("role") === "menu" && sel && sel.id === ci.id && it.length >= 4 && it.every((x) => x.getAttribute("tabindex") === "-1");
+    r[ci.larg + " · menu du clic droit : les mêmes actions que les raccourcis, avec leur touche (Entrée, R, Ctrl D, Suppr)"] = ["Entrée", "R", "Ctrl D", "Suppr"].every((k) => it.some((x) => x.querySelector("kbd")?.textContent === k));
+    r[ci.larg + " · menu du clic droit : le focus est dans le menu, qui tient dans l'écran"] = m.contains(document.activeElement) && q.left >= 0 && q.top >= 0 && q.right <= innerWidth && q.bottom <= innerHeight;
+    r[ci.larg + " · menu du clic droit : ses icônes viennent du registre (svg.ico aria-hidden)"] = [...m.querySelectorAll("svg")].every((s) => s.classList.contains("ico") && s.getAttribute("aria-hidden") === "true");
+    return r; }, ci));
+  await p.keyboard.press("ArrowDown"); await wait(30); const f1 = await p.evaluate(() => document.activeElement.getAttribute("role"));
+  await p.keyboard.press("End"); await wait(30); const f2 = await p.evaluate(() => /Supprimer/.test(document.activeElement.textContent));
+  await p.keyboard.press("m"); await wait(30); const f3 = await p.evaluate(() => tool === "select" && !document.getElementById("ctxMenu").hidden);
+  await p.keyboard.press("Escape"); await wait(40); const f4 = await p.evaluate(() => document.getElementById("ctxMenu").hidden && document.activeElement === cv && sel && sel.kind === "item");
+  t[`${L0} · menu du clic droit au clavier : ↓ et Fin parcourent les actions, une lettre ne change pas d'outil, Échap ferme et rend le focus au plan`] = f1 === "menuitem" && f2 && f3 && f4;
+  { const q = await plan(ci.x, ci.y); await p.mouse.click(q.x, q.y, { button: "right" }); await wait(100);
+    await p.evaluate(() => { [...document.querySelectorAll("#ctxMenu [role=menuitem]")].find((x) => /Dupliquer/.test(x.textContent)).click(); }); await wait(60); }
+  t[`${L0} · menu du clic droit : « Dupliquer » duplique l'équipement, le menu se ferme`] = await p.evaluate((ci) => L().items.length === ci.n + 1 && document.getElementById("ctxMenu").hidden, ci);
+  await p.evaluate(() => undo());
+  /* hors d'un élément : le clic droit garde son rôle (désélectionner, terminer un tracé et revenir à la Sélection) */
+  { const r0 = await p.evaluate(() => { const z = zoneUtile(); for (let i = 0; i < 40; i++) { const q = W2(v(z.x0 + 24 + i * 7, z.y1 - 24)); if (!hitTest(q)) return q; } return W2(v(z.x0 + 24, z.y1 - 24)); }); const q = await plan(r0.x, r0.y);
+    await p.mouse.click(q.x, q.y, { button: "right" }); await wait(80);
+    const vide = await p.evaluate(() => document.getElementById("ctxMenu").hidden && !sel);
+    await p.evaluate(() => { setTool("mur"); const b0 = bbox(L()); clickAction(v(b0.x1 + 1, b0.y0)); }); await p.mouse.click(q.x, q.y, { button: "right" }); await wait(80);
+    const trace = await p.evaluate(() => document.getElementById("ctxMenu").hidden && tool === "select" && !chain.length);
+    t[`${L0} · clic droit hors d'un élément : pas de menu, il désélectionne ; pendant un tracé, il termine et rend la Sélection`] = vide && trace; }
+  /* au bord de l'écran : le menu se replie vers l'intérieur */
+  { const r0 = await p.evaluate(() => { const st = document.getElementById("stage").getBoundingClientRect(), z = zoneUtile(); return { x: st.left + st.width - 6, y: st.top + z.y1 - 6 }; });
+    await p.evaluate(() => { const it = L().items[0]; sel = { kind: "item", id: it.id }; render(); });
+    await p.evaluate((r0) => { ouvrirMenuCtx({ x: r0.x, y: r0.y }); }, r0); await wait(40);
+    t[`${L0} · menu du clic droit : ouvert au coin bas-droit du plan, il reste entier dans l'écran`] = await p.evaluate(() => { const q = document.getElementById("ctxMenu").getBoundingClientRect(); return q.width > 100 && q.left >= 0 && q.top >= 0 && q.right <= innerWidth && q.bottom <= innerHeight; });
+    await p.keyboard.press("Escape"); }
+  /* Maj + F10 : le menu au clavier, focus sur la 1re action */
+  await p.evaluate(() => { cv.focus(); const E = elementsDuPlan(), i = E.findIndex((x) => x.kind === "wall"); choisirAuClavier(E[i], i, E.length); cv.focus(); });
+  await p.keyboard.down("Shift"); await p.keyboard.press("F10"); await p.keyboard.up("Shift"); await wait(60);
+  t[`${L0} · Maj + F10 : le menu des actions de l'élément choisi s'ouvre, focus sur sa 1re action`] = await p.evaluate(() => !document.getElementById("ctxMenu").hidden && document.activeElement.getAttribute("role") === "menuitem" && document.activeElement === document.querySelector("#ctxMenu [role^=menuitem]"));
+  await p.keyboard.press("Escape"); await wait(30);
+  /* f. l'aperçu de pose : ses cotes temporaires, et ce qui ne tient pas */
+  Object.assign(t, await p.evaluate((larg) => { const r = {};
+    state = blankState(); const lv = L(); lv.walls.push({ id: "m1", a: v(0, 0), b: v(6, 0), type: "mur" }, { id: "m2", a: v(0, 0), b: v(0, 4), type: "mur" }); lv.openings.push({ id: "o1", wallId: "m1", t: 0.75, type: "fenetre", w: 1.2, h: 1.25, hinge: 1, side: 1 });
+    afterChange(); setMode("existant"); closeModal(); view.zoom = 80; view.ox = 200; view.oy = 300; setTool("ouverture"); setOpeningType("porte");
+    const cotes = []; const D0 = window.drawDim; window.drawDim = function (a, b2, col) { if (col === SEL_C) cotes.push(dist(a, b2)); return D0.apply(this, arguments); };
+    let deja, ml;
+    try { hover = v(2, 0.05); draw(); const c1 = cotes.slice(); cotes.length = 0; hover = v(4.5, 0.05); draw(); deja = apercuInfo && apercuInfo.deja; ml = document.getElementById("mesureLive").textContent; const c2 = cotes.slice(); cotes.length = 0;
+      /* porte de 0,83 centrée à 2 m : 1,585 m jusqu'au bout du mur, 1,485 m jusqu'au jambage de la fenêtre (1,20 centrée à 4,5 m) */
+      r[`${larg} · aperçu d'une porte : deux cotes temporaires, du jambage au bout du mur et au jambage voisin (${c1.map((x) => x.toFixed(2)).join(" / ")})`] = c1.length === 2 && c1.some((x) => Math.abs(x - 1.585) < 0.02) && c1.some((x) => Math.abs(x - 1.485) < 0.02);
+      r[`${larg} · aperçu sur une ouverture déjà là : rouge, sans cotes, et la barre d'état le dit (« ${ml} »)`] = !!deja && !c2.length && /déjà là/.test(ml);
+      setTool("equipement"); setItemType("wc"); hover = v(1.2, 0.5); draw(); const c3 = cotes.slice(); cotes.length = 0; const ml3 = document.getElementById("mesureLive").textContent;
+      r[`${larg} · aperçu d'un équipement : collé au mur, une cote temporaire jusqu'au mur voisin (${c3.map((x) => x.toFixed(2)).join(" / ")}) et « contre le mur »`] = c3.length >= 1 && c3.every((x) => x > 0.02) && /contre le mur/.test(ml3);
+    } finally { window.drawDim = D0; hover = null; }
+    /* l'accrochage nommé : Cote sur un coin, Mesurer dans un angle de pièce */
+    setTool("cote"); hover = v(0, 0); draw(); const a1 = document.querySelector("#mesureLive .acc")?.textContent;
+    r[`${larg} · barre d'état : l'outil Cote nomme l'accrochage (« ${a1} »)`] = a1 === "coin";
+    closeWelcome("sample"); closeModal(); setMode("existant"); closeModal(); setTool("mesure"); const f = (facesCache[L().id] || []).find((x) => x.room && x.polyInt); hover = { ...f.polyInt[0] }; draw(); const a2 = document.querySelector("#mesureLive .acc")?.textContent;
+    r[`${larg} · barre d'état : l'outil Mesurer nomme l'accrochage (« ${a2} »)`] = a2 === "angle intérieur";
+    hover = null; setTool("select");
+    /* les raccourcis d'une touche coupés : la barre et le menu ne disent plus « R » */
+    setRaccourcis(false); const it = L().items.find((x) => !ITEMS[x.type].elec && x.type !== "escalier"); sel = { kind: "item", id: it.id }; multi = []; render();
+    const tipR = [...document.querySelectorAll("#selbar button")].find((x) => x.getAttribute("aria-label") === "Pivoter de 90°")?.dataset.tip; ouvrirMenuCtx(null); const kR = [...document.querySelectorAll("#ctxMenu kbd")].some((x) => x.textContent === "R"); fermerMenuCtx(false); setRaccourcis(true); sel = null; render();
+    r[`${larg} · raccourcis d'une touche coupés : ni la barre ni le menu ne promettent « R » (bulle « ${tipR} »)`] = tipR === "Pivoter de 90°" && !kR;
+    return r; }, L0));
+  } catch (e) { t[`U4 · ${L0} — ${e.message.split("\n")[0]}`] = false; }
+  await p.close();
+}
+
 await b.close().catch(() => {});
 const echecs = Object.entries(t).filter(([, ok]) => !ok);
 for (const [nom, ok] of Object.entries(t)) console.log(`  ${ok ? "✓" : "✗"} ${nom}`);
 if (errs.length) console.log("\n  erreurs de page :", errs.join(" · "));
-console.log(echecs.length || errs.length ? `\n✗ ${echecs.length} contrôle(s) en échec` : `\n✓ refonte : ${Object.keys(t).length} contrôles (registre d'icônes, design system, bibliothèques, symboles du plan et vignettes)`);
+console.log(echecs.length || errs.length ? `\n✗ ${echecs.length} contrôle(s) en échec` : `\n✓ refonte : ${Object.keys(t).length} contrôles (registre d'icônes, design system, bibliothèques, symboles du plan et vignettes, disposition, interactions)`);
 process.exit(echecs.length || errs.length ? 1 : 0);
