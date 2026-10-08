@@ -43,6 +43,17 @@
  *   - glyphes du canvas : poignées carrées indigo, losange au milieu d'un mur, rotation = rond indigo et flèche du
  *     registre, défauts en losange --danger, plus de texte « à poser » au-dessus d'un appareil.
  *
+ * U3 · organisation et disposition (D61) — à 1 440, 1 280 et 1 024 :
+ *   - colonne d'outils en sections (Édition, Structure, Menuiseries, Équipements, Annoter, Fond), 10 outils dans cet ordre,
+ *     bulle riche (nom, touche, une phrase) ;
+ *   - bande de contexte en haut (niveaux à gauche, vues et légende à droite), barre d'options dessous (une ligne de 44 px
+ *     pour chaque outil), barre d'état en bas (consigne, mesure en direct, surface, échelle, zoom, grille, aimant,
+ *     affichage) ; plus aucune carte posée sur la zone utile du plan ; le cadrage commence sous la tête du plan ;
+ *   - Murs (type, trait, pièce, poteau et poutre vers Équipements), Ouvertures (11 modèles + fenêtre de toit), Équipements
+ *     (6 familles en onglets, chaque modèle une fois, recherche par mots de tous les jours) ; plus de modèle posé en
+ *     douce ; après une pose, le panneau montre l'objet posé ; choisir un outil rebascule sur Détails ; chaque outil a
+ *     son mode d'emploi ; mesure en direct et accrochage nommé (coin…) ; l'échelle graphique mesure ce qu'elle dit.
+ *
  *   node maquettes/tools/ux.mjs "$(pwd)/maquettes"
  *
  * Sort en code 1 si un contrôle échoue ou si la page lève une erreur.
@@ -79,11 +90,11 @@ t["source · plus de SVG d'outil ou de famille écrit à la main (TOOLS, FAM, ca
 /* ═════════ 1. Registre, tailles, outils, jetons — à trois largeurs ═════════ */
 for (const [L, H] of [[1440, 900], [1280, 800], [1024, 768]]) {
   const p = await onglet({ larg: L, haut: H });
-  Object.assign(t, await p.evaluate((larg) => {
+  Object.assign(t, await p.evaluate((larg) => { try {
     const r = {}, vis = (e) => e.getClientRects().length && getComputedStyle(e).visibility !== "hidden" && getComputedStyle(e).display !== "none";
     const norm = (h) => { const g = document.createElementNS("http://www.w3.org/2000/svg", "svg"); g.innerHTML = h; return g.innerHTML; }; const TRACES = new Set(Object.values(ICONS).map(norm));
     const ILLU = ".brand .lg svg, .wv svg, .pmini svg, .tpl .tv svg, .th.op svg, .xbrand svg";
-    const ZONES = ".top, #tools, #pbody, #pfoot, .zoomctl, #levels, #modes, #layerPop, .mpop, .overlay, #emptyStage";
+    const ZONES = ".top, #tools, #pbody, #pfoot, .zoomctl, #levels, #modes, #optbar, #etat, #layerPop, .mpop, .overlay, #emptyStage"; /* D61 : la barre d'options et la barre d'état aussi */
     const mauvais = new Set(), tailles = new Set(), poids = [];
     const releve = (ctx) => { for (const s of document.querySelectorAll(ZONES.split(",").map((z) => z + " svg").join(","))) {
       if (s.closest(ILLU.replace(/ svg/g, ""))) continue;
@@ -117,35 +128,39 @@ for (const [L, H] of [[1440, 900], [1280, 800], [1024, 768]]) {
     const rs = getComputedStyle(document.documentElement);
     r[`${larg} · jetons du design system (espacements, rayons, hauteurs, textes, ombres, états)`] = ["--sp-1", "--sp-2", "--sp-3", "--sp-4", "--sp-6", "--r-s", "--r-m", "--r-l", "--h-s", "--h-m", "--h-l", "--fs-xs", "--fs-s", "--fs-m", "--fs-b", "--fs-l", "--fs-xl", "--sh-1", "--sh-2", "--sh-pop", "--hover", "--press", "--focus"].every((k) => rs.getPropertyValue(k).trim());
     const RAY = new Set(["0px", "2px", "3px", "4px", "6px", "8px", "12px"]);
-    const ctrl = [...document.querySelectorAll(".top .ib, #tools .tb, .zoomctl, .zoomctl button, #levels, #levels button, #modes button, #pbody .ib, #pbody .seg, #pbody .seg button, #pbody .fin, #pbody .lib2 .it, #pbody .ptabs button, #pfoot .bcard, .mpop")].filter(vis);
+    setTool("ouverture"); /* D61 : les contrôles de la barre d'options comptent aussi (cartes, segmentés, onglets de famille) */
+    const ctrl = [...document.querySelectorAll(".top .ib, #tools .tb, .zoomctl button, #levels, #levels button, #modes button, #pbody .ib, #pbody .seg, #pbody .seg button, #pbody .fin, #pbody .lib2 .it, #pbody .ptabs button, #pfoot .bcard, .mpop, #optbar .lib2 .it")].filter(vis);
+    setTool("mur"); ctrl.push(...[...document.querySelectorAll("#optbar .seg.barre, #optbar .seg.barre button, #optbar .fin, #optbar .ib")].filter(vis));
+    setTool("equipement"); ctrl.push(...[...document.querySelectorAll("#optbar .fams button, #optbar .recherche")].filter(vis)); setTool("select");
     const rayHors = ctrl.map((x) => getComputedStyle(x).borderTopLeftRadius).filter((v) => !RAY.has(v) && !/^(50%|9\d\dpx|99px)$/.test(v) && parseFloat(v) < 50);
     r[`${larg} · rayons des contrôles sur l'échelle (6 / 8 / 12)${rayHors.length ? " — " + [...new Set(rayHors)].join(", ") : ""}`] = !rayHors.length;
     const demi = [...document.querySelectorAll(".top *, #tools *, #pbody *, #pfoot *, .zoomctl *, #levels *, #modes *")].filter((x) => x.childNodes.length && [...x.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()) && vis(x)).map((x) => getComputedStyle(x).fontSize).filter((v) => !Number.isInteger(parseFloat(v)));
     r[`${larg} · aucune taille de texte à demi-pixel (échelle 11 / 12 / 13 / 14 / 16 / 20)${demi.length ? " — " + [...new Set(demi)].join(", ") : ""}`] = !demi.length;
     const h = (sel) => [...document.querySelectorAll(sel)].filter(vis).map((x) => Math.round(x.getBoundingClientRect().height));
     r[`${larg} · hauteurs : boutons de la barre 32, primaire 36, zoom et niveaux 28`] = h(".top .ib:not(.primary)").every((v) => v === 32) && h(".top .ib.primary").every((v) => v === 36) && h(".zoomctl button").every((v) => v === 28) && h("#levels button").every((v) => v === 28);
-    /* bibliothèques */
+    /* bibliothèques — D61 : dans la barre d'options, au-dessus du plan */
     setTool("equipement");
-    r[`${larg} · familles neutres : icône en encre, ni liseré ni teinte de famille`] = [...document.querySelectorAll("#pbody .famh")].every((f) => !f.closest(".fam").getAttribute("style") && parseFloat(getComputedStyle(f).borderLeftWidth) === 0 && getComputedStyle(f.querySelector(".fic")).color === getComputedStyle(document.querySelector("#pbody .famh .fic")).color);
+    const fics = [...document.querySelectorAll("#optbar .fams button:not(.on) .ico")].map((x) => getComputedStyle(x).color);
+    r[`${larg} · familles neutres : onglets à l'icône en encre, sans teinte de famille`] = fics.length === 5 && new Set(fics).size === 1 && !document.querySelector("#optbar .fams [style]");
     setTool("ouverture");
-    const on = document.querySelector("#pbody .lib2 .it.on");
+    const on = document.querySelector("#optbar .lib2 .it.on");
     r[`${larg} · la carte choisie est indigo, comme toute sélection`] = !!on && getComputedStyle(on).borderTopColor === "rgb(79, 70, 229)";
-    const vig = (n) => { const it = [...document.querySelectorAll("#pbody .lib2 .it")].find((x) => x.querySelector("b").textContent === n); return it ? it.querySelector(".th").innerHTML : "?"; };
+    const vig = (n) => { const it = [...document.querySelectorAll("#optbar .lib2 .it")].find((x) => x.querySelector("b").textContent === n); return it ? it.querySelector(".th").innerHTML : "?"; };
     r[`${larg} · vignettes : Porte d'entrée, Porte de garage et Petite fenêtre ont leur propre dessin`] = vig("Porte d'entrée") !== vig("Porte simple") && vig("Porte de garage") !== vig("Porte coulissante (intérieure)") && vig("Petite fenêtre") !== vig("Fenêtre");
-    /* bibliothèque à toutes les largeurs (D54 l'exigeait à 1 280 et 1 440 ; D59 ajoute 1 024 × 768) */
-    const P = document.getElementById("pbody").getBoundingClientRect(), pied = document.getElementById("pfoot").getBoundingClientRect().top;
-    const vu = (n) => { const it = [...document.querySelectorAll("#pbody .lib2 .it")].find((x) => x.querySelector("b").textContent === n); if (!it) return false; const q = it.getBoundingClientRect(); return q.top >= P.top && q.bottom <= pied; };
+    /* bibliothèque à toutes les largeurs (D54 l'exigeait à 1 280 et 1 440 ; D59 ajoute 1 024 × 768) — D61 : dans la partie visible de la barre */
+    const vu = (n) => { const O = document.getElementById("optbar").getBoundingClientRect(), it = [...document.querySelectorAll("#optbar .lib2 .it")].find((x) => x.querySelector("b").textContent === n); if (!it) return false; const q = it.getBoundingClientRect(); return q.left >= O.left - 0.5 && q.right <= O.right + 0.5 && q.top >= O.top - 0.5 && q.bottom <= O.bottom + 0.5; };
     r[`${larg} · Ouvertures : Fenêtre, Porte d'entrée, Porte simple, Porte-fenêtre sans défiler`] = ["Fenêtre", "Porte d'entrée", "Porte simple", "Porte-fenêtre"].every(vu);
-    setTool("equipement");
+    setTool("equipement"); setFamEquip("bain");
     r[`${larg} · Équipements : Douche, Lavabo, WC sans défiler`] = ["Douche", "Lavabo", "WC"].every(vu);
-    /* mini-coupes */
+    /* mini-coupes — D61 : dans la barre d'options de l'outil Murs */
     setTool("mur");
-    const segs = [...document.querySelectorAll("#pbody .seg.stack")];
+    const segs = [...document.querySelectorAll("#optbar .seg.barre")];
     const coupes = (s) => [...s.querySelectorAll(":scope>button>svg.ico.mc")].filter(vis).map((x) => x.innerHTML);
     r[`${larg} · outil Murs : chaque type de mur a sa mini-coupe, toutes différentes`] = segs.length >= 2 && coupes(segs[0]).length === 5 && new Set(coupes(segs[0])).size === 5;
+    /* ce qui déborde à droite de la barre se fait défiler : les coupes non visibles comptent quand même (getClientRects) */
     r[`${larg} · outil Murs : le trait (axe, face ext., face int.) a sa mini-coupe`] = coupes(segs[1]).length === 3 && new Set(coupes(segs[1])).size === 3;
     setTool("select"); return r;
-  }, L));
+  } catch (e) { return { [`U1 · ${larg} — ${e.message}`]: false }; } }, L));
   await p.close();
 }
 
@@ -236,11 +251,15 @@ for (const dsf of [1, 2]) {
   }, dsf));
   if (dsf === 1) Object.assign(t, await p.evaluate(() => { try {
     const r = {}; closeWelcome("sample"); closeModal(); setMode("existant"); closeModal(); setTool("select"); sel = null; render();
-    /* 5. les bibliothèques montrent ces vignettes, à leur taille, sans réduction */
-    setTool("ouverture"); const io = [...document.querySelectorAll("#pbody .lib2 .it .th")];
-    r["bibliothèque des ouvertures · chaque carte montre la vignette du plan (img.vig 54 × 30, non réduite)"] = io.length === Object.keys(OPENINGS).length && io.every((th) => { const im = th.querySelector("img.vig"); if (!im) return false; const q = im.getBoundingClientRect(); return Math.round(q.width) === 54 && Math.round(q.height) === 30 && getComputedStyle(im).transform === "none"; });
-    setTool("equipement"); const ie = [...document.querySelectorAll("#pbody .lib2 .it .th")];
-    r["bibliothèque des équipements · chaque carte montre la vignette du plan (img.vig 84 × 44, non réduite)"] = ie.length === Object.keys(ITEMS).length && ie.every((th) => { const im = th.querySelector("img.vig"); if (!im) return false; const q = im.getBoundingClientRect(); return Math.round(q.width) === 84 && Math.round(q.height) === 44 && getComputedStyle(im).transform === "none"; });
+    /* 5. les bibliothèques montrent ces vignettes, à leur taille, sans réduction — D61 : dans la barre d'options (54 × 30),
+       et le modèle choisi en grand dans le panneau (84 × 44) */
+    const net = (im, w, h) => { if (!im) return false; const q = im.getBoundingClientRect(); return Math.round(q.width) === w && Math.round(q.height) === h && getComputedStyle(im).transform === "none"; };
+    setTool("ouverture"); const io = [...document.querySelectorAll("#optbar .lib2 .it .th")];
+    r["bibliothèque des ouvertures · chaque carte montre la vignette du plan (img.vig 54 × 30, non réduite), plus la fenêtre de toit"] = io.length === Object.keys(OPENINGS).length + 1 && io.every((th) => net(th.querySelector("img.vig"), 54, 30)) && net(document.querySelector("#pbody .mprop img.vig"), 84, 44);
+    setTool("equipement"); const ie = []; for (const f of FAM_EQUIP) { setFamEquip(f[0]); ie.push(...[...document.querySelectorAll("#optbar .lib2 .it .th")].map((th) => net(th.querySelector("img.vig"), 54, 30))); }
+    setItemType("wc");
+    r["bibliothèque des équipements · chaque carte montre la vignette du plan (img.vig 54 × 30, non réduite), famille par famille"] = ie.length === Object.keys(ITEMS).length && ie.every(Boolean) && net(document.querySelector("#pbody .mprop img.vig"), 84, 44);
+    itemType = null; setFamEquip("bain");
     setTool("select");
     /* 6. conventions d'architecte : arcs par vantail, plus de chevron, seuil, âme pleine, rails */
     const releve = (k) => { state = blankState(); const lv = L(), d = OPENINGS[k], w = { id: uid(), a: v(30, 0), b: v(-30, 0), type: isExtType(k) ? "mur" : "cloison" }; lv.walls.push(w); const o = { id: uid(), wallId: w.id, t: 0.5, type: k, w: d.w, h: d.h, side: 1, hinge: 1 }; lv.openings.push(o); afterChange(); view.zoom = 120; view.ox = 500; view.oy = 300;
@@ -290,6 +309,86 @@ for (const dsf of [1, 2]) {
     } finally { poigneeCarree = G.poigneeCarree; losangeAlerte = G.losangeAlerte; icoCanvas = G.icoCanvas; ctx.fillText = FT; sel = null; }
     return r;
   } catch (e) { return { ["U2 · symboles et glyphes du plan — " + e.message]: false }; } }));
+  await p.close();
+}
+
+/* ═════════ 6. U3 · organisation et disposition (D61) ═════════ */
+for (const [L0, H0] of [[1440, 900], [1280, 800], [1024, 768]]) {
+  const p = await onglet({ larg: L0, haut: H0 });
+  Object.assign(t, await p.evaluate(async (larg) => { try {
+    const r = {}, vis = (e) => !!e && e.getClientRects().length > 0 && getComputedStyle(e).display !== "none" && getComputedStyle(e).visibility !== "hidden";
+    const rect = (e) => e.getBoundingClientRect(), dans = (a, b, m = 0.5) => a.left >= b.left - m && a.right <= b.right + m && a.top >= b.top - m && a.bottom <= b.bottom + m;
+    const coupe = (a, b) => a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1;
+    const ST = rect(document.getElementById("stage")), TP = document.getElementById("tetePlan"), OB = document.getElementById("optbar"), ET = document.getElementById("etat");
+    /* a. la colonne d'outils en sections, par intention */
+    const cats = [...document.querySelectorAll("#tools .cat")].map((c) => c.textContent.trim());
+    r[`${larg} · outils : sections Édition, Structure, Menuiseries, (filet), Annoter, Fond — vu : ${cats.join(" | ")}`] = cats.join("|") === "Édition|Structure|Menuiseries||Annoter|Fond";
+    const ordre = [...document.querySelectorAll("#tools .tb")].map((b) => b.getAttribute("onclick").match(/'(\w+)'/)[1]);
+    r[`${larg} · outils : 10 boutons, dans l'ordre des sections`] = ordre.join() === "select,zone,mur,doublage,ouverture,equipement,cote,mesure,texte,calque";
+    const tips = [...document.querySelectorAll("#tools .tb")].map((b) => b.dataset.tip);
+    r[`${larg} · outils : bulle riche (nom, touche, une phrase) ; Ouvertures « Portes, fenêtres, baies, passages »`] = tips.every((x, i) => { const sp = document.querySelectorAll("#tools .tb span")[i].textContent; return x.startsWith(sp) && x.split(" · ").length >= 2 && x.length > sp.length + 15; }) && /\(P\) · Portes, fenêtres, baies, passages/.test(document.querySelector('#tools .tb[aria-label="Ouvertures"]').dataset.tip) && /\(M\)/.test(document.querySelector('#tools .tb[aria-label="Murs"]').dataset.tip);
+    r[`${larg} · outils : aucun titre de section coupé ni plus large que la colonne`] = [...document.querySelectorAll("#tools .cat")].every((c) => c.scrollWidth <= c.clientWidth + 1);
+    /* b. les bandes : la tête (niveaux à gauche, vues à droite, barre d'options) en haut, la barre d'état en bas, rien sur le plan */
+    const lvR = rect(document.getElementById("levels")), moR = rect(document.getElementById("modes")), tpR = rect(TP), etR = rect(ET);
+    r[`${larg} · bande de contexte : niveaux à gauche, vues à droite, en haut de la zone du plan`] = document.getElementById("pbande").contains(document.getElementById("levels")) && document.getElementById("pbande").contains(document.getElementById("modes")) && Math.abs(tpR.top - ST.top) < 1 && lvR.left < moR.left && moR.right <= ST.right + 0.5 && lvR.left - ST.left < 20;
+    r[`${larg} · barre d'état : consigne, mesure en direct, surface, échelle, zoom, grille, aimantation, affichage — en bas, sur toute la largeur`] = ["hint", "mesureLive", "measBox", "surfBadge", "echelle", "zlabel", "gridBtn", "magnetBtn", "layersBtn"].every((id) => ET.contains(document.getElementById(id))) && Math.abs(etR.bottom - ST.bottom) < 1 && Math.abs(etR.width - ST.width) < 1 && etR.height <= 33;
+    const Z = zoneUtile(), cvr = rect(cv), zone = { left: cvr.left + Z.x0, right: cvr.left + Z.x1, top: cvr.top + Z.y0, bottom: cvr.top + Z.y1 };
+    const surLePlan = [...document.querySelectorAll("#stage > *")].filter((e) => e !== cv && vis(e) && !e.matches("#toast, #emptyStage, #layerPop, .cotePop, #cvAide, #cvAnnonce, #bgFile") && coupe(rect(e), zone)).map((e) => e.id || e.className);
+    r[`${larg} · plus aucune carte posée sur le plan (zone utile dégagée)${surLePlan.length ? " — " + surLePlan.join(", ") : ""}`] = !surLePlan.length && Math.abs(Z.y0 - tpR.height) < 1 && Math.abs(cvr.height - Z.y1 - etR.height) < 1;
+    fitView(); { const b0 = bbox(L()), a = S(v(b0.x0, b0.y0)); r[`${larg} · cadrage : le plan commence sous la tête du plan (aucune cote sous le sélecteur de vue)`] = a.y - 40 >= Z.y0 - 1; }
+    /* c. la barre d'options : une ligne, pour chaque outil, qui défile à l'horizontale sans faire défiler la page */
+    const hauteurs = {}, vides = [];
+    for (const o of ["select", "zone", "mur", "ouverture", "doublage", "equipement", "cote", "mesure", "texte", "calque"]) { setTool(o); hauteurs[o] = Math.round(rect(OB).height); if (!OB.children.length) vides.push(o); }
+    r[`${larg} · barre d'options : une ligne de 44 px pour chacun des 10 outils${vides.length ? " — vide : " + vides.join(", ") : ""}`] = !vides.length && Object.values(hauteurs).every((h) => h === 44) && document.documentElement.scrollWidth <= innerWidth;
+    setTool("mur");
+    r[`${larg} · Murs : type (5), le trait (3), pièce rectangulaire, poteau et poutre`] = OB.querySelectorAll(".seg.barre")[0]?.children.length === 5 && OB.querySelectorAll(".seg.barre")[1]?.children.length === 3 && !!OB.querySelector("#rectL") && !!OB.querySelector("#rectl") && [...OB.querySelectorAll(".lib2 .it b")].map((x) => x.textContent).join() === "Poteau,Poutre";
+    OB.querySelectorAll(".seg.barre")[0].children[2].click();
+    r[`${larg} · Murs : un clic choisit « Cloison » (wallType), le panneau dit « Prochains murs : Cloison »`] = wallType === "cloison" && /Cloison/.test(document.querySelector("#pbody .mprop b").textContent);
+    wallType = "auto"; [...OB.querySelectorAll(".lib2 .it")].find((x) => /Poteau/.test(x.textContent)).click();
+    r[`${larg} · Murs › Poteau : passe à l'outil Équipements avec le poteau choisi`] = tool === "equipement" && itemType === "poteau" && famEquip === "structure";
+    setTool("ouverture"); const cOuv = [...OB.querySelectorAll(".lib2 .it b")].map((x) => x.textContent);
+    r[`${larg} · Ouvertures : les 11 modèles puis la fenêtre de toit, en cartes`] = cOuv.length === 12 && Object.values(OPENINGS).every((o) => cOuv.includes(o.label)) && cOuv[11] === ITEMS.velux.label;
+    [...OB.querySelectorAll(".lib2 .it")].find((x) => /Porte-fenêtre/.test(x.textContent)).click();
+    r[`${larg} · Ouvertures : un clic choisit le modèle (carte indigo), le panneau montre sa fiche (vignette, dimensions)`] = openingType === "porte_fenetre" && /Porte-fenêtre/.test(OB.querySelector(".lib2 .it.on b").textContent) && /Porte-fenêtre/.test(document.querySelector("#pbody .mprop").textContent) && /1,40 × 2,15 m/.test(document.querySelector("#pbody .mprop").textContent);
+    [...OB.querySelectorAll(".lib2 .it")].find((x) => /Fenêtre de toit/.test(x.textContent)).click();
+    r[`${larg} · Ouvertures › Fenêtre de toit : l'outil Équipements, famille Escalier et structure`] = tool === "equipement" && itemType === "velux" && OB.querySelector(".fams button.on").getAttribute("aria-label") === "Escalier et structure";
+    /* d. Équipements : familles en onglets, recherche, plus de modèle posé en douce */
+    itemType = null; setTool("equipement"); setFamEquip("bain");
+    const fams = [...OB.querySelectorAll(".fams button")].map((x) => x.getAttribute("aria-label"));
+    r[`${larg} · Équipements : 6 familles en onglets (Salle de bain, Cuisine, Chauffage, Électricité, Mobilier, Escalier et structure)`] = fams.join("|") === "Salle de bain|Cuisine|Chauffage|Électricité|Mobilier|Escalier et structure";
+    const tous = FAM_EQUIP.flatMap((f) => f[3]);
+    r[`${larg} · Équipements : chaque modèle dans une famille, une seule fois (${tous.length} pour ${Object.keys(ITEMS).length})`] = tous.length === Object.keys(ITEMS).length && new Set(tous).size === tous.length && Object.keys(ITEMS).every((k) => tous.includes(k));
+    chercherEquip("toilettes"); const tr = [...OB.querySelectorAll(".lib2 .it b")].map((x) => x.textContent);
+    chercherEquip("zzzz"); const rien = /Aucun équipement/.test(OB.textContent); chercherEquip("chauffe eau"); const ce = [...OB.querySelectorAll(".lib2 .it b")].map((x) => x.textContent); chercherEquip("");
+    r[`${larg} · Équipements : la recherche trouve « toilettes » → WC, « chauffe eau » → Chauffe-eau, et dit quand rien ne répond`] = tr.join() === "WC" && rien && ce.includes("Chauffe-eau");
+    const n0 = L().items.length, c = S(v(...(() => { const b0 = bbox(L()); return [(b0.x0 + b0.x1) / 2, (b0.y0 + b0.y1) / 2]; })())); clickAction(W2(c));
+    r[`${larg} · Équipements : sans modèle choisi, un clic ne pose rien (fin du « Lit double » en douce) et le dit`] = itemType === null && L().items.length === n0 && /Choisis d'abord un modèle/.test(document.getElementById("toast").textContent) && /Choisis d'abord un modèle/.test(document.getElementById("hint").textContent);
+    [...OB.querySelectorAll(".lib2 .it")].find((x) => x.querySelector("b").textContent === "WC").click(); clickAction(W2(c));
+    r[`${larg} · Équipements : après la pose, le panneau montre l'objet posé (sa fiche)`] = L().items.length === n0 + 1 && sel?.kind === "item" && document.querySelector("#pbody .ptitle")?.textContent.includes("WC");
+    undo(); sel = null;
+    /* e. le panneau de propriétés : choisir un outil bascule sur Détails, chaque outil a son mode d'emploi */
+    setTool("select"); setPanelTab("suivi"); setTool("ouverture");
+    r[`${larg} · panneau : choisir un outil rebascule de Suivi sur Détails`] = panelTab === "details" && !!document.querySelector("#pbody .memploi");
+    const sansMode = ["mur", "ouverture", "doublage", "equipement", "cote", "mesure", "texte", "zone", "calque"].filter((o) => { setTool(o); return !(document.querySelectorAll("#pbody .memploi li").length >= 2); });
+    r[`${larg} · panneau : chaque outil a son mode d'emploi court (2 à 3 gestes numérotés)${sansMode.length ? " — sans : " + sansMode.join(", ") : ""}`] = !sansMode.length;
+    setTool("select");
+    /* f. la barre d'état : mesure en direct et accrochage nommé pendant un tracé, échelle graphique juste */
+    setTool("mur"); const b0 = bbox(L()); hover = v(b0.x1 + 2, b0.y0); clickAction(hover); hover = v(b0.x1 + 2, b0.y0 + 3); draw();
+    const ml = document.getElementById("mesureLive");
+    r[`${larg} · barre d'état : pendant un tracé, la longueur, l'angle et l'accrochage nommé (« ${ml.textContent} »)`] = vis(ml) && /Longueur 3,00 m/.test(ml.textContent) && /Angle 270°/.test(ml.textContent) && /angle droit|grille|alignement|coin|face du mur|prolongement/.test(ml.textContent);
+    hover = { ...L().walls[0].a }; draw(); const acc = ml.querySelector(".acc")?.textContent || "";
+    r[`${larg} · barre d'état : au-dessus d'un coin, l'accrochage dit « coin »`] = acc === "coin";
+    keys.shift = false; endChain(false); setTool("select"); hover = null; draw();
+    const ech = document.getElementById("echelle"), eb = ech.querySelector("i"), lab = ech.querySelector("span").textContent, m = parseFloat(lab.replace(",", ".")) / (/cm/.test(lab) ? 100 : 1);
+    r[`${larg} · échelle graphique : la barre « ${lab} » mesure ${lab} au zoom du plan`] = !vis(ech) || Math.abs(rect(eb).width - m * view.zoom) <= 2;
+    zoomBy(1.25); const lab2 = ech.querySelector("span").textContent, m2 = parseFloat(lab2.replace(",", ".")) / (/cm/.test(lab2) ? 100 : 1);
+    r[`${larg} · échelle graphique : suit le zoom`] = !vis(ech) || Math.abs(rect(eb).width - m2 * view.zoom) <= 2;
+    fitView();
+    /* g. la consigne tient sur une ligne, sans être coupée, pour l'outil et la sélection courants (1 440 et 1 280) */
+    if (larg >= 1280) { const coupees = []; for (const o of ["select", "zone", "mur", "ouverture", "doublage", "cote", "mesure", "texte", "calque"]) { setTool(o); draw(); const h = document.getElementById("hint"); if (h.scrollWidth > h.clientWidth + 1) coupees.push(o); } setTool("select");
+      r[`${larg} · barre d'état : la consigne de chaque outil se lit en entier${coupees.length ? " — coupée : " + coupees.join(", ") : ""}`] = !coupees.length; }
+    return r;
+  } catch (e) { return { [`U3 · ${larg} — ${e.message}`]: false }; } }, L0));
   await p.close();
 }
 

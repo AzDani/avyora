@@ -3457,3 +3457,110 @@ l'échantillon « Je garde » attendu en rgb(30, 27, 75) (l'encre du plan) au li
 la section 4 échoue (pas de `vignette()`, pas d'`ENCRE`). Batterie complète (21 + ux), finition, couverture et vitest (167)
 verts. Captures avant / après : scratchpad `refonte/u2/` (planches P-ouvertures, P-equip, variantes, exemple ×2, export,
 téléphone 390).
+
+## D61 · Refonte U3 : la disposition d'un logiciel de plans — outils en sections, barre d'options, barre d'état (08/10/2026)
+
+**D'où l'on part.** Troisième des cinq chantiers de la refonte (après U1, D59, et U2, D60). Points 4, 5 et 6 de
+l'architecture décidée : colonne d'outils, barre d'options d'outil et panneau de propriétés, barre d'état et bande de
+contexte. Batterie (21 + ux), finition, couverture et vitest verts avant toute retouche. Captures avant / après :
+scratchpad `refonte/u3/` (`avant-*`, `apres3-*`, `apres4-*`, `det1-*`, planches des barres).
+
+**Constat.**
+- Sept cartes posées sur le plan (niveaux, vues et légende, badge de surface, astuce encre, zoom, mesure, pastille
+  budget) : la cote « 9,20 m » passait sous le badge et le sélecteur de vue ; l'astuce, le message et le zoom
+  s'empilaient en bas.
+- Les variantes d'un outil ne se choisissaient que dans le panneau, sous le pli : la bibliothèque des équipements
+  faisait 3 069 px de haut, remontait en haut après chaque pose ; l'onglet Suivi cachait le panneau de l'outil ; après
+  une pose, le panneau restait sur la bibliothèque ; « Lit double » était présélectionné, caché trois écrans plus bas,
+  et se posait par-dessus le WC qu'on cliquait.
+- La colonne d'outils rangeait Ouvertures, Doublage, Équipements et Note sous « Ajouter ».
+- Ni barre d'état, ni accrochage nommé, ni échelle : le zoom se lisait en « 119 % ». L'astuce se repliait en « ? »
+  au bout de 7 s (elle couvrait les cotes).
+
+**Décision.**
+1. *La colonne d'outils en sections, par intention.* Édition (Sélection V, Zone B) · Structure (Murs M, Doublage D) ·
+   Menuiseries (Ouvertures P) · Équipements (E ; un filet, le titre répéterait le nom de l'outil) · Annoter (Cote C,
+   Mesurer L, Note T) · Fond (Image). Toujours 10 `.tb`, mêmes ids, libellé dans le 1er `<span>`, `aria-pressed` ;
+   l'ordre DOM suit les sections (Doublage passe avant Ouvertures, Note après Mesurer ; Zone → Murs reste au Tab).
+   La bulle dit le nom, la touche et une phrase (`bulleOutil` : « Ouvertures (P) · Portes, fenêtres, baies,
+   passages : … ») ; touches coupées, plus de « (P) ».
+2. *La disposition.* Le canvas garde toute la scène (sa taille ne change jamais : ni les contrôles au pixel, ni les
+   coordonnées ne bougent) ; autour, des bandes opaques, après le canvas dans le DOM (≤ 15 Tab de l'outil au plan) :
+   en haut `#tetePlan` = la bande de contexte `#pbande` (`#levels` à gauche, `#modes` et sa légende à droite) et la
+   barre d'options `#optbar` (44 px) ; en bas la barre d'état `#etat` (32 px). `zoneUtile()` donne la partie que les
+   bandes ne couvrent pas : `fitView` cadre dessous (le plan commence sous le sélecteur de vue, la bande basse de D54
+   est gardée), le zoom aux boutons tourne autour de son centre, la pièce posée au clavier y tombe, `planEntierVisible`
+   la vérifie, la carte du plan vide s'y centre. Les bandes se resserrent par requêtes de conteneur (légende sous les
+   vues, onglets en icônes, recherche en loupe, dimensions des cartes, échelle, pourcentage). Au téléphone (mode
+   chantier), elles s'effacent (`display:contents`) : niveaux, vues et zoom gardent leur place de D48.
+3. *La barre d'options* (`optbarHTML`, `renderOptions` dans `render()`, rien ne bouge si le contenu est le même ;
+   molette = défilement horizontal, bords estompés du côté où il reste des options). Sélection / Zone : le mode et
+   les raccourcis de sélection. Murs : type (Automatique, Mur, Cloison, Mur épais, Séparation, à la mini-coupe), pièce
+   rectangulaire (`#rectL` × `#rectl` · « Poser la pièce »), le trait (axe, face int., face ext.), poteau et poutre
+   (raccourcis vers Équipements). Ouvertures : les 11 modèles dans l'ordre de ce qu'on pose le plus (Fenêtre, Porte
+   simple, Porte-fenêtre, Porte d'entrée…), puis la fenêtre de toit. Doublage : poser / retirer, par l'intérieur /
+   l'extérieur, épaisseur. Équipements : la recherche (mots de tous les jours : « toilettes », « chauffe eau »…), six
+   familles en onglets (Salle de bain, Cuisine, Chauffage, Électricité, Mobilier, Escalier et structure — un
+   regroupement d'affichage `FAM_EQUIP`, `ITEMS[k].cat` ne change pas), les modèles de la famille. Cote, Mesurer,
+   Note (couleur de la prochaine note), Image (importer, opacité, verrou, caler l'échelle). Chaque choix passe par une
+   fonction (`setWallType`, `setWallAlign`, `setOpeningType`, `setItemType`, `setFamEquip`, `chercherEquip`,
+   `outilModele`, `setDblCfg`) qui garde les globales des contrôles. Une carte = LA carte « choisir un modèle »
+   (`carteBarre` : vignette du plan 54 × 30, nom, dimensions en Mono ; les mots en police de texte).
+4. *Plus de modèle posé en douce.* `itemType` vaut `null` au départ : sans modèle choisi, pas d'aperçu, un clic ne pose
+   rien et le dit (message, consigne, panneau).
+5. *Le panneau de propriétés.* L'élément sélectionné — y compris l'ouverture ou l'équipement qu'on vient de poser —,
+   sinon le mode d'emploi court de l'outil (`modeEmploi` : trois gestes numérotés, pour chaque outil, Zone et Note
+   comprises) et les propriétés de la variante choisie (`propModele` : vignette 84 × 44, nom, dimensions ; « Prochains
+   murs » ; « Par où » du doublage avec ses pastilles ITI / ITE, l'épaisseur et R gardés près de leur résultat). Choisir
+   un outil rebascule de Suivi sur Détails. Le Suivi et le budget restent.
+6. *La barre d'état.* La consigne (`HINTS` réécrits en une ligne courte ; elle ne se replie plus, elle se lit en entier
+   au survol si la largeur la coupe — le « ? » en `::before` est retiré) · la mesure en direct (`#mesureLive` :
+   longueur, angle et accrochage nommé pendant un tracé — coin, face du mur, prolongement jusqu'au mur, alignement,
+   angle droit / à 45°, grille, niveau du dessous (`snapPoint` rend `prol`, rien d'autre ne change) ; modèle, largeur
+   et mur pendant la pose d'une ouverture ; modèle et dimensions d'un équipement ; longueur d'une cote) · le résultat de
+   Mesurer (`#measBox`) · la surface habitable (`#surfBadge`) · le budget quand le panneau est replié (`#budgetPlie`) ·
+   l'échelle graphique (`#echelle` : 10 cm à 50 m, la plus longue sous 64 px, suit le zoom) · zoom, %, ajuster, grille,
+   aimantation, affichage (`.zoomctl`, mêmes ids). Le message passager se pose juste au-dessus.
+7. *La visite guidée.* Mêmes cinq cibles (`#tools`, `#modes`, `#panel`, `#pfoot`, `#estBtnTop`) ; la 1re bulle dit
+   que les variantes et les modèles sont dans la barre au-dessus du plan et la consigne dans celle du dessous, la 3e
+   que le panneau montre la fiche (les propriétés).
+
+**Ce qui ne bouge pas.** Aucune globale renommée (ajouts : `bulleOutil`, `famEquip`, `rechEquip`, `rectDims`,
+`FAM_EQUIP`, `famDeModele`, `ORDRE_OUV_BARRE`, `MOTS_EQUIP`, `sansAccent`, `obGrp`, `OBS`, `obSeg`, `dimsModele`,
+`carteBarre`, `tipOuv`, `tipEquip`, `propModele`, `modeEmploi`, `optbarHTML`, `renderOptions`, `bordsOptbar`,
+`setWallType`, `setWallAlign`, `setOpeningType`, `setItemType`, `outilModele`, `setFamEquip`, `chercherEquip`,
+`setRectDim`, `zoneUtile`, `majZonePlan`, `liveMur`, `etatLive`, `echelleZ`, `nomAccroche`, `majEtatLive`,
+`majEchelle` ; icône `chercher`). Ids gardés, déplacés seulement (`#levels`, `#modes`, `#hint`, `#surfBadge`,
+`#measBox`, `#budgetPlie`, `.zoomctl` et ses boutons, `#rectL`, `#rectl`, `#bgFile` devenu statique) ; ids
+nouveaux `#tetePlan`, `#pbande`, `#optbar`, `#etat`, `#mesureLive`, `#echelle`, `#rechEquip`. Ordre `.top → #tools →
+canvas`, `onclick` d'ancrage, clés `localStorage`, dessin du plan, tables lues comme du texte, chiffrage.
+
+**Laissé, volontairement.** Au chantier interactions : barre d'actions près de la sélection, menu contextuel, Échap
+qui rend la Sélection, table unique des raccourcis (le clavier lit encore ses lettres en dur), aperçu de pose avec
+cotes temporaires. Les accroches « milieu » et « axe » : `snapPoint` ne s'accroche ni au milieu ni à l'axe d'un mur ;
+les ajouter changerait le tracé (jonctions) — à décider. Au-dessous de 1 000 px de plan, les onglets de famille sont
+des icônes (nom en bulle) et la consigne peut être coupée (lisible au survol). Le message passager reste au-dessus
+de la barre d'état (il porte des actions, « Annuler »…). La barre d'options se parcourt au Tab, pas aux flèches.
+
+**Contrôles.** Mis à jour en gardant leur intention, parce que la refonte déplace volontairement l'interface :
+- `visuel` §7 : l'astuce « repliée en « ? » après 7 s » devient « toujours lisible après 7 s, sur une ligne, dans la
+  barre d'état sous le plan » ; §12 : « un message replie l'astuce » devient « le message se pose au-dessus de la barre
+  d'état » ; D54 « Fenêtre, Porte d'entrée, Porte simple, Porte-fenêtre / Douche, Lavabo, WC visibles sans défiler »
+  se vérifie dans la partie visible de la barre d'options ; §6 « aucun nom coupé, aucune carte ne déborde » porte sur
+  la barre (toutes les familles parcourues).
+- `ux` §1 : familles neutres, carte choisie indigo, vignettes, bibliothèques sans défiler (1 024 à 1 440) et
+  mini-coupes lus dans la barre ; le registre d'icônes et les rayons couvrent `#optbar` et `#etat`. §5 : chaque carte
+  de la barre montre sa vignette 54 × 30 non réduite (11 ouvertures + fenêtre de toit, 35 équipements famille par
+  famille), le modèle choisi la sienne en 84 × 44 dans le panneau.
+- `responsive` : la liste des éléments contrôlés au chevauchement s'étend à `#tetePlan`, `#optbar`, `#etat`,
+  `#mesureLive`, `#echelle`, `#budgetPlie` (deux éléments emboîtés ne comptent pas).
+- `accessibilite` : « Poser cette pièce » au clavier se cherche dans `#optbar` (« Poser la pièce ») ; le clic souris
+  sur le plan vise sa zone visible (le bas du canvas est sous la barre d'état).
+Nouveau : `ux` §6 (U3, à 1 440, 1 280 et 1 024) — sections et ordre des outils, bulles riches, titres jamais coupés ;
+bande de contexte en haut et barre d'état en bas, sur toute la largeur, plus aucune carte sur la zone utile, cadrage
+sous la tête du plan ; barre d'options d'une ligne de 44 px pour les 10 outils ; Murs (5 types, 3 traits, pièce,
+poteau → Équipements), Ouvertures (11 + fenêtre de toit, clic → modèle et fiche du panneau), Équipements (6 onglets,
+chaque modèle une fois, recherche, rien posé sans modèle, fiche de l'objet posé) ; Suivi → Détails au choix d'un
+outil, mode d'emploi pour chaque outil ; mesure en direct et accrochage « coin » ; échelle graphique juste et qui suit
+le zoom ; consigne de chaque outil entière à 1 280 et 1 440. `ux.mjs` passe de 85 à 165 contrôles ; sur le fichier
+d'avant, les sections 1, 4 et 6 échouent. Batterie complète (21 + ux), finition, couverture et vitest verts.

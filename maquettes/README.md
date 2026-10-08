@@ -210,3 +210,10 @@ ce qu'il dessine) et doit égaler, après un flou 3 × 3, le rendu du plan au m�
 modèles, à ×1 et ×2 ; deux modèles n'ont jamais la même vignette ; aucune n'est coupée. Il vérifie aussi
 les conventions d'architecte (un arc par vantail, plus de chevron, seuil, âme pleine, rails du garage),
 l'encre unique du plan, la cloison à 65 %, l'électricité à taille d'écran bornée et les glyphes indigo.
+
+Depuis D61 (chantier U3), il garde aussi **la disposition** : colonne d'outils en sections (Édition, Structure,
+Menuiseries, Équipements, Annoter, Fond) et bulles riches ; la tête du plan (bande de contexte : niveaux, vues et
+légende ; barre d'options d'une ligne, avec les variantes et les modèles de l'outil actif) et la barre d'état
+(consigne, mesure en direct et accrochage nommé, surface, échelle graphique, zoom, grille, aimantation, affichage) —
+plus aucune carte sur la zone utile du plan ; Équipements sans modèle posé en douce ; le panneau qui montre l'objet
+posé et le mode d'emploi de chaque outil. La liste des éléments contrôlés au chevauchement (`responsive`) suit.

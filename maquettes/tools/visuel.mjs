@@ -270,8 +270,17 @@ for (const [L, H] of [[1440, 900], [768, 1024], [390, 844]]) {
     r["fenêtre à remplacer · détails de la menuiserie ouverts"] = !!P.querySelector('details.plie[data-k="op-tech"][open]') && /Vitrage/.test(P.innerHTML);
     undo();
     /* bibliothèques : aucune carte ne déborde */
-    for (const o2 of ["ouverture", "equipement"]) { sel = null; setTool(o2); r[`bibliothèque ${o2} · aucun nom coupé (deux lignes au plus, sans points de suspension)`] = [...P.querySelectorAll(".lib2 .it b")].every((x) => x.scrollHeight <= x.clientHeight + 1 && getComputedStyle(x).textOverflow !== "ellipsis"); }
-    for (const o2 of ["ouverture", "equipement"]) { sel = null; setTool(o2); const pr = P.getBoundingClientRect(); r[`bibliothèque ${o2} · aucune carte ne déborde`] = [...P.querySelectorAll(".lib2 .it")].every((c) => { const q = c.getBoundingClientRect(); return q.right <= pr.right + 0.5 && c.scrollWidth <= c.clientWidth + 1; }); }
+    /* D61 : les bibliothèques sont dans la barre d'options (toutes les familles d'équipements parcourues) */
+    { const lots = { ouverture: { n: 0, coupe: [], deborde: [] }, equipement: { n: 0, coupe: [], deborde: [] } };
+      const relire = (o2) => { const ob = document.getElementById("optbar").getBoundingClientRect(), L2 = lots[o2];
+        for (const c of document.querySelectorAll("#optbar .lib2 .it")) { L2.n++; const x = c.querySelector("b"), q = c.getBoundingClientRect();
+          if (x.scrollWidth > x.clientWidth + 1 || getComputedStyle(x).textOverflow === "ellipsis") L2.coupe.push(x.textContent);
+          if (q.top < ob.top - 0.5 || q.bottom > ob.bottom + 0.5 || c.scrollWidth > c.clientWidth + 1) L2.deborde.push(x.textContent); } };
+      sel = null; setTool("ouverture"); relire("ouverture"); setTool("equipement"); for (const f of FAM_EQUIP) { setFamEquip(f[0]); relire("equipement"); } setFamEquip("bain");
+      for (const o2 of ["ouverture", "equipement"]) {
+        r[`bibliothèque ${o2} · aucun nom coupé (une ligne, sans points de suspension)${lots[o2].coupe.length ? " — " + lots[o2].coupe.join(", ") : ""}`] = lots[o2].n > 0 && !lots[o2].coupe.length;
+        r[`bibliothèque ${o2} · aucune carte ne déborde (dans la hauteur de la barre)${lots[o2].deborde.length ? " — " + lots[o2].deborde.join(", ") : ""}`] = lots[o2].n > 0 && !lots[o2].deborde.length;
+      } }
     setTool("select");
     /* vue d'ensemble : les pièces d'abord, puis « Le chantier » qui dit ce qu'il manque */
     sel = null; setMode("existant"); closeModal(); render();
@@ -306,9 +315,9 @@ for (const [L, H] of [[1440, 900], [768, 1024], [390, 844]]) {
     return r;
   }));
   await wait(7400);
-  t["astuce · repliée en « ? » après 7 s, texte gardé"] = await p.evaluate(() => { const h = document.getElementById("hint"); return h.classList.contains("replie") && h.getBoundingClientRect().width <= 32 && /Suppr/.test(h.textContent); });
-  await p.evaluate(() => document.getElementById("hint").click()); await wait(60);
-  t["astuce · un clic sur le « ? » la rouvre"] = await p.evaluate(() => !document.getElementById("hint").classList.contains("replie"));
+  /* D61 : la consigne vit dans la barre d'état, SOUS le plan — elle ne couvre plus les cotes, donc elle ne se replie plus
+     en « ? » au bout de 7 s (D41, D54). L'intention reste : jamais sur le dessin, toujours lisible. */
+  t["astuce · après 7 s, toujours lisible, sur une ligne, dans la barre d'état sous le plan (aucune cote dessous)"] = await p.evaluate(() => { const h = document.getElementById("hint"), e = document.getElementById("etat"), q = h.getBoundingClientRect(), z = zoneUtile(), c = cv.getBoundingClientRect(); return !h.classList.contains("replie") && e.contains(h) && /Suppr/.test(h.textContent) && q.width > 120 && q.height <= 20 && q.top >= c.top + z.y1 - 0.5; });
   await p.close();
 }
 
@@ -489,13 +498,13 @@ for (const [L, H] of [[1440, 900], [1280, 800], [1024, 768]]) {
 for (const [L0, H0] of [[1280, 800], [1440, 900]]) {
   const p = await onglet({ larg: L0, haut: H0 });
   Object.assign(t, await p.evaluate((tag) => {
+    /* D61 : les bibliothèques sont dans la barre d'options, au-dessus du plan (une ligne qui défile à l'horizontale) :
+       l'intention de D54 reste — ce qu'on pose le plus se voit sans défiler, dans la partie visible de la barre */
     const r = {}; setTool("ouverture");
-    const F = document.getElementById("pfoot").getBoundingClientRect(), P = document.getElementById("pbody").getBoundingClientRect();
-    const vu = (nom) => { const it = [...document.querySelectorAll("#pbody .lib2 .it")].find((x) => x.querySelector("b").textContent === nom); if (!it) return false; const q = it.getBoundingClientRect(); return q.top >= P.top - 0.5 && q.bottom <= F.top + 0.5; };
-    r[`${tag} · Ouvertures : Fenêtre, Porte d'entrée, Porte simple, Porte-fenêtre visibles sans défiler`] = ["Fenêtre", "Porte d'entrée", "Porte simple", "Porte-fenêtre"].every(vu);
+    const vu = (nom) => { const O = document.getElementById("optbar").getBoundingClientRect(), it = [...document.querySelectorAll("#optbar .lib2 .it")].find((x) => x.querySelector("b").textContent === nom); if (!it) return false; const q = it.getBoundingClientRect(); return q.left >= O.left - 0.5 && q.right <= O.right + 0.5 && q.top >= O.top - 0.5 && q.bottom <= O.bottom + 0.5; };
+    r[`${tag} · Ouvertures : Fenêtre, Porte d'entrée, Porte simple, Porte-fenêtre visibles sans défiler (barre d'options)`] = ["Fenêtre", "Porte d'entrée", "Porte simple", "Porte-fenêtre"].every(vu);
     setTool("equipement");
-    const vuE = (nom) => { const it = [...document.querySelectorAll("#pbody .lib2 .it")].find((x) => x.querySelector("b").textContent === nom); if (!it) return false; const q = it.getBoundingClientRect(); return q.bottom <= document.getElementById("pfoot").getBoundingClientRect().top + 0.5; };
-    r[`${tag} · Équipements : Douche, Lavabo, WC visibles sans défiler`] = ["Douche", "Lavabo", "WC"].every(vuE);
+    r[`${tag} · Équipements (Salle de bain) : Douche, Lavabo, WC visibles sans défiler (barre d'options)`] = ["Douche", "Lavabo", "WC"].every(vu);
     setTool("select"); return r;
   }, `${L0} × ${H0}`));
   await p.close();
@@ -512,10 +521,11 @@ for (const [L0, H0] of [[1280, 800], [1440, 900]]) {
     r["lecture seule · « Produit repéré & note » vide : replié (absent)"] = !/Produit repéré/.test(P.innerText);
     setMode("projet"); closeModal(); sel = { kind: "item", id: it.id }; render();
     r["vue Travaux · la même fiche garde ses réglages et son aide"] = /Glisse pour déplacer/.test(P.innerText) && /Pivoter/.test(P.innerText);
-    /* un message replie l'astuce ; le plan se cadre au-dessus de la bande du bas */
+    /* D61 : un message se pose AU-DESSUS de la barre d'état (consigne, zoom) — plus d'empilement, plus rien à replier ;
+       le plan se cadre au-dessus de la bande du bas */
     sel = null; render(); const h = document.getElementById("hint"); document.getElementById("toast").classList.remove("show"); montrerAstuce("Une astuce de test");
-    const avant = !h.classList.contains("replie"); toast("Un message de test", true);
-    r["message · il replie la bulle d'astuce en « ? » (plus d'empilement sur le plan)"] = avant && h.classList.contains("replie");
+    toast("Un message de test", true); { const q = document.getElementById("toast").getBoundingClientRect(), e = document.getElementById("etat").getBoundingClientRect();
+    r["message · posé au-dessus de la barre d'état : il ne couvre ni la consigne ni le zoom"] = !h.classList.contains("replie") && q.bottom <= e.top - 4 && q.bottom >= e.top - 24; }
     fitView(); const b0 = bbox(L()), bas = S(v(0, b0.y1 + 1)).y, H = cv.clientHeight;
     r["cadrage · le plan s'arrête au-dessus de la bande du bas (zoom, astuce, message)"] = bas <= H - Math.min(120, Math.round(H * 0.16)) + 1;
     /* les gros montants : pas de Mono (son espace insécable a la largeur d'un chiffre) ; « tâches » dans la police du texte */

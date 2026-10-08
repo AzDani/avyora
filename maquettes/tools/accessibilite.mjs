@@ -196,7 +196,8 @@ t["plan · avec l'outil Murs, Tab sort du plan"] = await p.evaluate(() => docume
 await p.evaluate(() => setTool("select"));
 /* focus à la souris : pas d'anneau */
 await p.evaluate(() => document.activeElement.blur());
-{ const r = await p.evaluate(() => { const q = cv.getBoundingClientRect(); return { x: q.left + 30, y: q.top + q.height - 30 }; }); await p.mouse.click(r.x, r.y); await wait(60); }
+/* D61 : le bas du canvas est sous la barre d'état ; on clique dans la zone visible du plan (zoneUtile) */
+{ const r = await p.evaluate(() => { const q = cv.getBoundingClientRect(), z = zoneUtile(); return { x: q.left + 30, y: q.top + z.y1 - 30 }; }); await p.mouse.click(r.x, r.y); await wait(60); }
 t["plan · cliqué à la souris : pas d'anneau de focus"] = await p.evaluate(() => !cv.matches(":focus-visible"));
 /* D50 (cj-design02) : cliqué à la souris, puis une touche (Échap, une lettre d'outil) : toujours pas de cadre indigo sur tout le plan */
 await p.keyboard.press("Escape"); await wait(40); await p.keyboard.press("v"); await wait(60);
@@ -420,9 +421,10 @@ await p.keyboard.press("Enter"); await wait(250);
 t["plan vierge · Entrée sur « Poser une pièce de 4 × 3 m » : la pièce est posée, choisie, sa fiche a le focus"] = await p.evaluate(() => L().walls.length === 4 && (facesCache[L().id] || []).filter((f) => f.room).length === 1 && sel && sel.kind === "room" && tool === "select" && document.activeElement.classList.contains("ptitle"));
 t["plan vierge · la pièce est au centre de la vue (entière à l'écran)"] = await p.evaluate(() => planEntierVisible());
 await p.evaluate(() => { tracerLesMurs(); document.getElementById("rectL").value = "3.00"; document.getElementById("rectl").value = "2.50"; render(); });
-await p.evaluate(() => { const bt = [...document.querySelectorAll("#pbody button")].find((x) => /Poser cette pièce/.test(x.textContent)); bt.focus(); });
+/* D61 : la pièce rectangulaire est une option de l'outil Murs, dans la barre au-dessus du plan (« Poser la pièce ») */
+await p.evaluate(() => { const bt = [...document.querySelectorAll("#optbar button")].find((x) => /Poser la pièce/.test(x.textContent)); bt.focus(); });
 await p.keyboard.press("Enter"); await wait(250);
-t["plan vierge · « Poser cette pièce » (3 × 2,5 m) au clavier : posée tout de suite"] = await p.evaluate(() => L().walls.length >= 7 && sel && sel.kind === "room");
+t["plan vierge · « Poser la pièce » (3 × 2,5 m, barre d'options) au clavier : posée tout de suite"] = await p.evaluate(() => L().walls.length >= 7 && sel && sel.kind === "room");
 await p.evaluate(() => { tracerLesMurs(); rectMode = { L: 2, l: 2 }; cv.focus(); });
 { const n0 = await p.evaluate(() => L().walls.length); await p.keyboard.press("Enter"); await wait(250);
   t["plan vierge · une pièce en attente, Entrée dans le plan la pose au centre"] = await p.evaluate((n0) => L().walls.length > n0 && !rectMode, n0); }

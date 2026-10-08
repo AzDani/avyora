@@ -57,9 +57,12 @@ const MESURES = () => {
   const hors = [...document.querySelectorAll(".top > *")].filter(vis).filter((e) => { const q = e.getBoundingClientRect(); return q.width && (q.right > innerWidth + 0.5 || q.left < -0.5 || q.bottom > top.bottom + 0.5 || q.top < top.top - 0.5); }).map((e) => e.id || e.className);
   const eb = document.getElementById("estBtnTop"), q = eb.getBoundingClientRect();
   const estOk = vis(eb) && q.right <= innerWidth + 0.5 && [0.15, 0.5, 0.85].every((f) => { const el = document.elementFromPoint(q.left + q.width * f, q.top + q.height / 2); return el && el.closest("#estBtnTop"); });
-  const flottants = ["#levels", "#modes", "#surfBadge", "#hint", ".zoomctl", "#phoneBanner", "#emptyStage .emptyCard", "#measBox"].map((s) => document.querySelector(s)).filter(vis);
+  /* D61 : la tête du plan (bande de contexte + barre d'options) et la barre d'état s'ajoutent à la liste, avec ce qu'elles
+     portent ; deux éléments emboîtés (la barre et son zoom) ne comptent pas comme un chevauchement */
+  const flottants = ["#levels", "#modes", "#optbar", "#tetePlan", "#etat", "#surfBadge", "#hint", "#mesureLive", "#echelle", "#budgetPlie", ".zoomctl", "#phoneBanner", "#emptyStage .emptyCard", "#measBox"].map((s) => document.querySelector(s)).filter(vis);
   const chev = [];
   for (let i = 0; i < flottants.length; i++) for (let j = i + 1; j < flottants.length; j++) {
+    if (flottants[i].contains(flottants[j]) || flottants[j].contains(flottants[i])) continue;
     const a = flottants[i].getBoundingClientRect(), c = flottants[j].getBoundingClientRect();
     if (a.left < c.right - 1 && c.left < a.right - 1 && a.top < c.bottom - 1 && c.top < a.bottom - 1) chev.push((flottants[i].id || flottants[i].className) + " / " + (flottants[j].id || flottants[j].className));
   }

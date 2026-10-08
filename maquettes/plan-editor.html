@@ -98,11 +98,12 @@ button,input,select{font:inherit}
 .tb.on{background:var(--brand-l);color:var(--brand);box-shadow:inset 0 0 0 1px var(--brand-b)}
 .tb kbd{display:none} /* D41 : la touche reste dans la bulle de l'outil et dans l'Aide ; 9 px pâles n'apprenaient rien */
 /* D59 : l'intitulé d'un groupe d'outils sous un filet pleine largeur — les filets latéraux de 8 px barraient « AJOUTER » et « MESURES » */
-.tools .cat{align-self:stretch;margin:6px 10px 0;padding-top:7px;border-top:1px solid var(--line);text-align:center;font-size:11px;font-weight:600;color:var(--muted);line-height:1.2}
-.tools .cat:first-child{display:none}
+.tools .cat{align-self:stretch;margin:6px 6px 0;padding-top:7px;border-top:1px solid var(--line);text-align:center;font-size:11px;font-weight:600;color:var(--muted);line-height:1.2;white-space:nowrap;letter-spacing:-.01em}
+.tools .cat:first-child{margin-top:0;border-top:0;padding-top:2px}
+.tools .cat.filet{padding-top:0;margin-top:6px;margin-bottom:2px} /* D61 : une section d'un seul outil qui porterait son nom : un filet */
 /* D41 · la colonne d'outils tient à 1 280 × 800 et 1 024 × 768 ; si elle doit défiler (fenêtre basse), une ombre le dit */
 .tools{background:linear-gradient(var(--white) 30%,rgba(255,255,255,0)) center top/100% 28px no-repeat local,linear-gradient(rgba(255,255,255,0),var(--white) 70%) center bottom/100% 28px no-repeat local,radial-gradient(farthest-side at 50% 0,rgba(30,27,75,.16),transparent) center top/100% 10px no-repeat scroll,radial-gradient(farthest-side at 50% 100%,rgba(30,27,75,.16),transparent) center bottom/100% 10px no-repeat scroll;background-color:var(--white)}
-@media (max-height:780px){.tools{padding:6px 0;gap:2px}.tb{padding:6px 0 5px;gap:3px}.tools .cat{margin:4px 10px 0;padding-top:5px}}
+@media (max-height:780px){.tools{padding:6px 0;gap:2px}.tb{padding:6px 0 5px;gap:3px}.tools .cat{margin:4px 6px 0;padding-top:5px}}
 .tb:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
 
 /* scène */
@@ -122,10 +123,6 @@ button,input,select{font:inherit}
 .surfbadge .sub{color:var(--muted);font-size:12px;font-weight:600;border-left:1px solid var(--line);padding-left:10px}
 .seg button.st-creer.on{color:var(--creer)}.seg button.st-demolir.on{color:var(--warn)}
 .hint{position:absolute;left:14px;bottom:14px;background:var(--nuit);color:#fff;font-size:12px;font-weight:500;padding:8px 14px;pointer-events:none;white-space:normal;line-height:1.35;border-radius:var(--r-m);max-width:calc(100% - 340px);overflow:hidden;text-overflow:ellipsis;z-index:2}
-.hint.replie{width:30px;height:30px;max-width:30px;padding:0;border-radius:50%;font-size:0;pointer-events:auto;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:.85}
-.hint.replie:hover{opacity:1}
-.hint.replie>*{display:none}
-.hint.replie::before{content:"?";font-size:14px;font-weight:700;color:#fff}
 .hint kbd{background:rgba(255,255,255,.18);padding:1px 6px;border-radius:var(--r-s);font-family:"Geist Mono",monospace;font-size:11px;margin:0 2px}
 .cotePop{position:absolute;transform:translate(-50%,-50%);z-index:5;background:#fff;border:1px solid var(--line);border-radius:var(--r-m);box-shadow:var(--sh-pop);padding:9px 11px;min-width:130px}
 .cotePop label{display:block;font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
@@ -896,6 +893,130 @@ button.chk{width:100%;font:inherit;text-align:left}
 }
 .prixpro{display:block;margin-top:4px;font-size:12px;font-weight:600;color:var(--brand)}
 .xfree .prixpro{display:inline;margin:0}
+/* =====================================================================
+   D61 · LA DISPOSITION D'UN LOGICIEL DE PLANS (chantier U3). Autour du plan, des bandes fixes et rien
+   par-dessus : en haut la bande de contexte (niveaux à gauche, vues et légende à droite) et la barre
+   d'options de l'outil actif (ses variantes et ses modèles, en un clic, avec leur dessin) ; en bas la
+   barre d'état (consigne, mesure en direct et accrochage nommé, surface, échelle graphique, zoom,
+   grille, aimantation, affichage). Le canvas garde toute la scène (sa taille ne bouge jamais) ; les
+   bandes sont opaques et le cadrage (fitView) réserve leur hauteur réelle (zoneUtile). Au téléphone
+   (mode chantier), les bandes s'effacent (display:contents) : niveaux, vues et zoom gardent leur place.
+   ===================================================================== */
+:root{--bande-h:36px;--opt-h:44px;--etat-h:32px}
+.optbar,.mlive,.echelle{display:none}
+@media (min-width:601px){
+  .tetePlan{position:absolute;left:0;right:0;top:0;z-index:4;background:var(--white);border-bottom:1px solid var(--line);display:flex;flex-direction:column}
+  .pbande{display:flex;align-items:center;flex-wrap:wrap;column-gap:var(--sp-3);row-gap:2px;min-height:var(--bande-h);padding:3px var(--sp-2);border-bottom:1px solid var(--line2)}
+  .pbande .levels{position:static;left:auto;right:auto;top:auto;display:flex;align-items:center;flex-wrap:wrap;gap:2px;background:transparent;border:0;box-shadow:none;padding:0;border-radius:0}
+  .pbande .levels.modes{margin-left:auto;justify-content:flex-end;row-gap:2px}
+  .pbande .levels button.add{width:var(--h-s);padding:0}
+  .pbande .vlegend{order:-1;grid-column:auto;border-top:0;margin:0 var(--sp-2) 0 0;padding:0 var(--sp-3) 0 0;border-right:1px solid var(--line);gap:var(--sp-3)}
+  /* la barre d'options : une ligne, qui défile à l'horizontale (molette comprise) si le plan est étroit */
+  .optbar{display:flex;align-items:center;gap:var(--sp-3);height:var(--opt-h);padding:0 var(--sp-2);overflow-x:auto;overflow-y:hidden;scrollbar-width:none;overscroll-behavior-x:contain}
+  .optbar::-webkit-scrollbar{display:none}
+  .optbar:empty{display:none}
+  .optbar.vers-d{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent)}
+  .optbar.vers-g{-webkit-mask-image:linear-gradient(90deg,transparent,#000 28px);mask-image:linear-gradient(90deg,transparent,#000 28px)}
+  .optbar.vers-g.vers-d{-webkit-mask-image:linear-gradient(90deg,transparent,#000 28px,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(90deg,transparent,#000 28px,#000 calc(100% - 28px),transparent)}
+  .optbar>*{flex:0 0 auto}
+  .optbar .obg{display:flex;align-items:center;gap:var(--sp-1)}
+  .optbar .obl{font-size:var(--fs-xs);font-weight:600;color:var(--muted);margin-right:var(--sp-1);white-space:nowrap}
+  .optbar .obs{width:1px;height:24px;background:var(--line)}
+  .optbar .obt{font-size:var(--fs-s);color:var(--muted);white-space:nowrap}
+  .optbar .obt kbd{font-family:var(--mono);font-size:11px;color:var(--ink2);background:var(--canvas);border:1px solid var(--line);border-radius:4px;padding:0 4px}
+  .optbar .seg.barre{display:flex;padding:2px;gap:2px}
+  .optbar .seg.barre button{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;height:var(--h-s);padding:0 10px;font-size:var(--fs-s);white-space:nowrap}
+  .optbar .seg.barre button>.ico.mc{display:block;margin:0 -2px 0 -4px;color:var(--ink2)}
+  .optbar .seg.barre button.on>.ico.mc{color:var(--brand)}
+  .optbar .seg.barre.ico-seul button{padding:0 4px}
+  .optbar .ib.s{height:var(--h-s);min-height:0;white-space:nowrap}
+  .optbar .miniep{height:var(--h-s);min-width:32px;padding:0 6px}
+  .optbar .fin.n{width:58px;height:var(--h-s);padding:0 6px;font-size:var(--fs-s)}
+  .optbar .obx{font-size:var(--fs-s);color:var(--muted);font-family:var(--mono)}
+  .optbar input[type=range]{width:110px;accent-color:var(--brand)}
+  .optbar .obchk{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-s);font-weight:600;color:var(--ink2);cursor:pointer;white-space:nowrap}
+  .optbar .obchk input{width:16px;height:16px;accent-color:var(--brand)}
+  .optbar .recherche{display:flex;align-items:center;gap:6px;height:var(--h-s);border:1px solid var(--field-b);border-radius:var(--r-m);padding:0 8px;background:var(--white);color:var(--muted)}
+  .optbar .recherche:focus-within{border-color:var(--brand);box-shadow:var(--focus)}
+  .optbar .recherche input{border:0;outline:0;background:transparent;font-size:var(--fs-s);font-weight:500;color:var(--ink);width:112px}
+  .optbar .recherche input::placeholder{color:var(--muted)}
+  .optbar .swatches .sw{width:22px;height:22px}
+  /* les familles d'équipements : des onglets (icône + nom), l'onglet choisi en indigo */
+  .optbar .fams{display:flex;gap:2px}
+  .optbar .fams button{display:inline-flex;align-items:center;gap:6px;height:var(--h-m);padding:0 10px;border:0;border-radius:var(--r-s);background:transparent;font-size:var(--fs-s);font-weight:600;color:var(--ink2);cursor:pointer;white-space:nowrap;box-shadow:inset 0 -2px 0 transparent}
+  .optbar .fams button:hover{background:var(--hover);color:var(--ink)}
+  .optbar .fams button.on{color:var(--ink);box-shadow:inset 0 -2px 0 var(--brand);border-radius:var(--r-s) var(--r-s) 0 0}
+  .optbar .fams button .ico{color:var(--muted)}.optbar .fams button.on .ico{color:var(--brand)}
+  /* « choisir un modèle » : LA carte de bibliothèque (vignette du plan, nom, dimensions en Mono), en rangée */
+  .optbar .lib2.barre{display:flex;gap:4px}
+  .optbar .lib2.barre .it{flex-direction:row;align-items:center;gap:8px;height:38px;padding:3px 10px 3px 3px;min-width:0}
+  .optbar .lib2.barre .it .th{flex:0 0 54px;width:54px;height:30px;border-radius:var(--r-s)}
+  .optbar .lib2.barre .it .itx{display:flex;flex-direction:column;gap:0;min-width:0}
+  .optbar .lib2.barre .it b{min-height:0;-webkit-line-clamp:1;white-space:nowrap;display:block;line-height:1.25}
+  .optbar .lib2.barre .it small{line-height:1.2}
+  .optbar .vide{font-size:var(--fs-s);color:var(--muted);white-space:nowrap}
+  /* la barre d'état */
+  .etat{position:absolute;left:0;right:0;bottom:0;z-index:4;height:var(--etat-h);display:flex;align-items:center;gap:var(--sp-3);padding:0 2px 0 var(--sp-3);background:var(--white);border-top:1px solid var(--line);font-size:var(--fs-s);color:var(--ink2);white-space:nowrap}
+  .etat>*{flex:0 0 auto}
+  .etat .hint{position:static;left:auto;bottom:auto;flex:1 1 auto;min-width:0;width:auto;height:auto;max-width:none;background:transparent;color:var(--ink2);padding:0;border-radius:0;font-size:var(--fs-s);font-weight:500;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:auto;cursor:default;display:block;opacity:1}
+  .etat .hint kbd{background:var(--canvas);border:1px solid var(--line);color:var(--ink2);padding:0 4px;border-radius:4px;font-size:11px;margin:0 1px}
+  .etat .mlive{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-s);color:var(--ink)}
+  .etat .mlive[hidden]{display:none}
+  .etat .mlive b{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums}
+  .etat .mlive .acc{color:var(--brand);font-weight:600}
+  .etat .mlive .acc::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--brand);margin-right:5px;vertical-align:1px}
+  .etat .measbox{position:static;left:auto;top:auto;transform:none;box-shadow:none;background:transparent;color:var(--ink);padding:0;border-radius:0;font-size:var(--fs-s);gap:var(--sp-2)}
+  .etat .measbox i{color:var(--muted);font-size:11px;letter-spacing:0;text-transform:none;font-weight:600}
+  .etat .measbox b{font-size:var(--fs-s);color:#0e7490}
+  .etat .measbox .sep{color:var(--line)}
+  .etat .surfbadge{position:static;left:auto;top:auto;transform:none;box-shadow:none;border:0;border-left:1px solid var(--line);background:transparent;padding:0 0 0 var(--sp-3);border-radius:0;font-size:var(--fs-s);gap:var(--sp-2);pointer-events:auto}
+  .etat .surfbadge .s{color:var(--ink2)}.etat .surfbadge .s b{font-size:var(--fs-s);color:var(--brand)}
+  .etat .surfbadge .sub{font-size:var(--fs-s);padding-left:var(--sp-2)}
+  .etat .echelle{display:flex;align-items:center;gap:6px;padding:0 var(--sp-2) 0 var(--sp-3);border-left:1px solid var(--line);height:20px}
+  .etat .echelle i{display:block;height:6px;border:1.5px solid var(--ink2);border-top:0;margin-top:2px}
+  .etat .echelle span{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--ink2);line-height:1}
+  .etat .zoomctl{position:static;right:auto;bottom:auto;box-shadow:none;border:0;border-left:1px solid var(--line);border-radius:0;background:transparent;padding:0 0 0 4px;gap:1px}
+  .etat .zoomctl .z{min-width:46px}
+  .etat .bplie{display:none}
+  .body.panelPlie .etat .bplie:not([hidden]){display:inline-flex;align-items:center;gap:6px;position:static;right:auto;bottom:auto;height:24px;padding:0 10px;border-radius:var(--r-s);box-shadow:none;font-size:var(--fs-s)}
+  .body.panelPlie .etat .bplie b{font-size:var(--fs-s)}
+  .body.panelPlie .etat .bplie small{font-size:11px}
+  /* le message passager se pose juste au-dessus de la barre d'état ; les fenêtres d'appoint aussi */
+  .toast{bottom:calc(var(--etat-h) + 12px)}
+  .layerpop{bottom:calc(var(--etat-h) + 8px);right:6px}
+  .emptyStage{top:var(--haut-plan,80px);bottom:var(--etat-h)}
+  .body.panelPlie .hint{max-width:none}
+}
+/* les bandes se resserrent avec la place laissée au plan (panneau large, tablette, fenêtre étroite) : requêtes de conteneur */
+@media (min-width:601px){
+  .etat{container:etat/inline-size}
+  .tetePlan{container:tete/inline-size}
+  .etat .surfbadge:not([hidden]){display:flex}
+  @container etat (max-width:1100px){.surfbadge .sub{display:none}}
+  @container etat (max-width:760px){.echelle{display:none!important}}
+  @container etat (max-width:680px){.zoomctl .z{display:none}}
+  @container etat (max-width:560px){.mlive .acc{display:none}}
+  @container etat (max-width:440px){.surfbadge{display:none!important}}
+  @container tete (max-width:1300px){.optbar .fams button:not(.on) span{display:none}.optbar .fams button:not(.on){padding:0 8px}}
+  @container tete (max-width:1000px){.optbar .recherche input{width:0;padding:0}.optbar .recherche:focus-within input{width:120px}.optbar .recherche{padding:0 7px;cursor:text}}
+  @container tete (max-width:600px){.pbande .levels.modes{display:grid;grid-template-columns:repeat(3,auto);justify-content:end}.pbande .vlegend{order:0;grid-column:1/-1;justify-content:flex-end;border-right:0;margin:0;padding:0 2px 2px}}
+  @container tete (max-width:760px){.optbar .lib2.barre .it small{display:none}.optbar .fams button span{display:none}}
+  @container tete (max-width:520px){.pbande .levels.modes button{padding:0 7px;font-size:var(--fs-s)}.pbande .vlegend{gap:var(--sp-2)}}
+}
+@media (max-width:600px){.tetePlan,.pbande,.etat{display:contents}.optbar,.mlive,.echelle,#etat .measbox{display:none!important}}
+/* D61 · le mode d'emploi court d'un outil (trois gestes numérotés) et la fiche du modèle choisi */
+.memploi{list-style:none;counter-reset:me;display:flex;flex-direction:column;gap:6px;margin:2px 0 16px;padding:0}
+.memploi li{counter-increment:me;position:relative;padding-left:26px;font-size:var(--fs-m);line-height:1.45;color:var(--ink2)}
+.memploi li::before{content:counter(me);position:absolute;left:0;top:1px;width:18px;height:18px;border-radius:50%;background:var(--brand-l);color:var(--brand);font:600 11px/18px var(--mono);text-align:center}
+.memploi kbd,.mprop kbd{background:var(--canvas);border:1px solid var(--line);padding:0 4px;border-radius:4px;font-family:var(--mono);font-size:11px}
+.mprop{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:var(--r-m);padding:8px 10px 8px 8px;background:var(--white)}
+.mprop .th{flex:0 0 84px;height:44px;border-radius:var(--r-s);background:var(--canvas);display:flex;align-items:center;justify-content:center;color:var(--ink2)}
+.mprop .th img{display:block}
+.mprop .mpt{min-width:0;display:flex;flex-direction:column;gap:2px}
+.mprop b{font-size:var(--fs-b);font-weight:700;color:var(--ink)}
+.mprop small{font-size:var(--fs-s);color:var(--muted);line-height:1.35}
+.mprop small.mono{font-family:var(--mono);font-size:11px}
+.lib2 .it small.mot{font-family:inherit}
 /* D59 · les trois tailles d'icône, au même poids optique (~1,4 px) — en dernier, elles priment */
 .ico.i20{width:20px;height:20px;flex:0 0 20px;stroke-width:1.75}
 .ico.i24{width:24px;height:24px;flex:0 0 24px;stroke-width:1.5}
@@ -946,16 +1067,26 @@ button.chk{width:100%;font:inherit;text-align:left}
     <canvas id="cv" tabindex="0" role="application" aria-label="Plan du logement" aria-describedby="cvAide"></canvas>
     <p id="cvAide" class="sr-only">Au clavier : Alt + flèches (Option + flèches sur Mac) passent d'une pièce, d'un mur, d'une ouverture ou d'un équipement à l'autre ; Entrée ouvre sa fiche ; les flèches déplacent l'élément choisi ; Échap désélectionne ; Tab quitte le plan.</p>
     <div id="cvAnnonce" class="sr-only" aria-live="polite" aria-atomic="true"></div>
-    <div class="surfbadge" id="surfBadge" hidden></div>
-    <div class="levels" id="levels"></div>
-    <div class="levels modes" id="modes"></div>
-    <div class="hint" id="hint" onclick="montrerAstuce()"></div>
+    <!-- D61 · la tête du plan (après le canvas dans le DOM : l'outil actif reste à moins de 15 Tab du plan) : la bande
+         de contexte (niveaux à gauche, vues et légende à droite), puis la barre d'options de l'outil actif -->
+    <div class="tetePlan" id="tetePlan">
+      <div class="pbande" id="pbande"><div class="levels" id="levels"></div><div class="levels modes" id="modes"></div></div>
+      <div class="optbar" id="optbar" role="region" aria-label="Options de l'outil"></div>
+    </div>
     <div class="emptyStage" id="emptyStage" hidden><div class="emptyCard" role="region" aria-label="Plan vide"><span class="ei"><svg class="ico i24" data-ico="outilMur"></svg></span><h4>Dessine ton logement</h4><p class="edesk">Trace tes pièces telles qu'elles sont aujourd'hui : chaque pièce fermée affiche sa surface, et ton budget suivra tes décisions.</p><p class="ephone">Ce plan est vide. Pour dessiner ton logement, ouvre AVYORA sur ordinateur ou tablette.</p><div class="eact edesk"><button type="button" class="ib primary" onclick="tracerLesMurs()">Tracer les murs<kbd>M</kbd></button><button type="button" class="ib" onclick="poserPieceRapide(event)">Poser une pièce de 4 × 3 m</button></div><div class="eact ephone"><button type="button" class="ib primary" onclick="closeWelcome('sample')">Voir l'exemple</button><button type="button" class="ib" onclick="openPlansModal()">Mes plans</button></div><button type="button" class="elink edesk" onclick="openTemplates()">ou pars d'un plan type</button></div></div>
     <div class="phoneBanner" id="phoneBanner" role="note"><span><svg class="ico" data-ico="telephone"></svg> <b>Mode chantier</b> : consulte le plan, tape un élément pour ses détails, coche l'avancement dans le tiroir en bas. Pour <b>dessiner</b>, passe sur ordinateur ou tablette.</span><button type="button" onclick="fermerBandeau()">OK</button></div>
-    <div class="measbox" id="measBox" hidden></div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <button type="button" class="bplie" id="budgetPlie" onclick="showEstimate()" hidden></button>
-    <div class="zoomctl">
+    <input type="file" id="bgFile" accept="image/*" hidden onchange="importBg(this.files[0]);this.value=''">
+    <!-- D61 · la barre d'état : la consigne à gauche, la mesure en direct et la surface au milieu, l'échelle, le zoom
+         et l'affichage à droite (elle remplace l'astuce flottante, la carte de zoom et le badge de surface) -->
+    <div class="etat" id="etat">
+      <div class="hint" id="hint" onclick="montrerAstuce()"></div>
+      <div class="mlive" id="mesureLive" hidden></div>
+      <div class="measbox" id="measBox" hidden></div>
+      <div class="surfbadge" id="surfBadge" hidden></div>
+      <button type="button" class="bplie" id="budgetPlie" onclick="showEstimate()" hidden></button>
+      <div class="echelle" id="echelle" title="Échelle du plan"><i></i><span>1 m</span></div>
+      <div class="zoomctl">
       <button onclick="zoomBy(1/1.25)" data-tip="Dézoomer" aria-label="Dézoomer"><svg class="ico i20" data-ico="moins"></svg></button>
       <span class="z" id="zlabel">100 %</span>
       <button onclick="zoomBy(1.25)" data-tip="Zoomer" aria-label="Zoomer"><svg class="ico i20" data-ico="plus"></svg></button>
@@ -963,6 +1094,7 @@ button.chk{width:100%;font:inherit;text-align:left}
       <button id="gridBtn" class="on" onclick="toggle('grid')" data-tip="Grille de fond (afficher / masquer)" aria-label="Grille"><svg class="ico i20" data-ico="grille"></svg></button>
       <button id="magnetBtn" class="on" onclick="toggle('magnet')" data-tip="Aimantation : le curseur s'accroche aux murs, aux coins et à la grille pour tracer droit" aria-label="Aimantation"><svg class="ico i20" data-ico="aimant"></svg></button>
       <button id="layersBtn" onclick="toggleLayersPop()" data-tip="Affichage : masquer ou afficher la toiture, les cotes, l'électricité, le mobilier…" aria-label="Affichage"><svg class="ico i20" data-ico="affichage"></svg></button>
+      </div>
     </div>
     <div class="layerpop" id="layerPop" hidden></div>
   </div>
@@ -1109,6 +1241,7 @@ const ICONS={
   outilCote:ICO_A+'<path d="M4 12h16M4 8v8M20 8v8M2.6 13.4l2.8-2.8M18.6 13.4l2.8-2.8"/>'+ICO_Z,
   outilNote:'<path d="M5 4h14a2 2 0 0 1 2 2v9.5a2 2 0 0 1-2 2h-8.5L6 21v-3.5H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="M7.5 9h9M7.5 12.5h6"/>',
   outilMesure:'<rect x="2.5" y="5.5" width="12.5" height="12.5" rx="3.5"/><circle cx="8.75" cy="11.75" r="2.5"/><path d="M15 16.5h6.5v-3M17.5 16.5v-1.6M19.5 16.5v-1.6"/>',
+  chercher:'<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/>', /* D61 : la recherche des équipements */
   outilImage:'<path d="M5 3h9.5L19 7.5V21H5z"/><path d="M14.5 3v4.5H19"/><path d="M8.5 10.5V17.5H15.5M12 10.5v3.5" opacity=".6"/>',
   /* C2 — barre, zoom, affichage, niveaux, fiches */
   moins:'<path d="M5 12h14"/>',
@@ -1592,7 +1725,7 @@ function renderLayers(){const el=document.getElementById('layerPop');if(!el)retu
 function showAllLayers(){Object.keys(settings.lay).forEach(k=>settings.lay[k]=true);if(!settings.cotes)toggle('cotes');saveView();draw();renderLayers();updLayersBtn();}
 function toggleLayersPop(){const el=document.getElementById('layerPop');el.hidden=!el.hidden;if(!el.hidden)renderLayers();document.getElementById('layersBtn').classList.toggle('on',!el.hidden);}
 function updLayersBtn(){const b=document.getElementById('layersBtn');if(b)b.classList.toggle('has-hidden',LAYERS.some(([k])=>!layVisible(k)));}
-let tool = 'select', wallType = 'auto', openingType = 'porte', itemType = 'lit';
+let tool = 'select', wallType = 'auto', openingType = 'porte', itemType = null; /* D61 : aucun équipement choisi d'office */
 let sel = null;             // {kind:'wall'|'opening'|'item'|'room'|'dim', id}
 let chain = [];             // tracé de murs en cours
 let lenBuf = '';            // longueur tapée au clavier pendant le tracé
@@ -2621,7 +2754,7 @@ function setDblCfg(k,val){
   else if(k==='mode'&&(val==='iti'||val==='ite'))DBL_CFG.mode=val;
   else if(k==='mat'&&ISO_MAT[val])DBL_CFG.mat=val;
   else if(k==='e')DBL_CFG.e=Math.max(0.02,Math.min(0.30,(parseFloat(val)||100)/1000));
-  renderPanel();draw();
+  renderOptions();renderPanel();draw();
 }
 /* La face de mur sous le point : le mur le plus proche, et de quel côté on est. On vise la FACE,
    pas l'axe — c'est le geste naturel, on longe le parement qu'on va doubler. */
@@ -3714,7 +3847,7 @@ function renderPlans(){const lib=loadPlans();const list=Object.values(lib).sort(
 const cv=document.getElementById('cv'); let ctx=cv.getContext('2d');
 const S=p=>v(view.ox+p.x*view.zoom, view.oy+p.y*view.zoom);
 const W2=p=>v((p.x-view.ox)/view.zoom,(p.y-view.oy)/view.zoom);
-function resize(){const r=cv.parentElement.getBoundingClientRect();cv.width=r.width*devicePixelRatio;cv.height=r.height*devicePixelRatio;cv.style.width=r.width+'px';cv.style.height=r.height+'px';draw();}
+function resize(){const r=cv.parentElement.getBoundingClientRect();cv.width=r.width*devicePixelRatio;cv.height=r.height*devicePixelRatio;cv.style.width=r.width+'px';cv.style.height=r.height+'px';if(typeof majZonePlan==='function')majZonePlan();draw();}
 // ---- panneau de droite redimensionnable ----
 const PANEL_MIN=280,PANEL_MAX=680,PANEL_DEF=312;
 const TOOLS_MIN=46,TOOLS_MAX=118,TOOLS_DEF=76;
@@ -3735,12 +3868,13 @@ function initResizer(){
   dragResizer('resizerL',setToolsWidth,x=>x,()=>{const cur=document.getElementById('tools').getBoundingClientRect().width;setToolsWidth(cur>60?TOOLS_MIN:TOOLS_DEF);});
 }
 function zoomAt(k,sx,sy){const z=Math.max(12,Math.min(400,view.zoom*k));const kk=z/view.zoom;view.ox=sx-(sx-view.ox)*kk;view.oy=sy-(sy-view.oy)*kk;view.zoom=z;draw();updZoom();save();}
-function zoomBy(k){zoomAt(k,cv.clientWidth/2,cv.clientHeight/2);}
+function zoomBy(k){const Z=zoneUtile();zoomAt(k,(Z.x0+Z.x1)/2,(Z.y0+Z.y1)/2);} /* D61 : autour du centre de la zone visible */
 function updZoom(){document.getElementById('zlabel').textContent=Math.round(view.zoom/60*100)+' %';}
 function bbox(level){const ps=[];level.walls.forEach(w=>ps.push(w.a,w.b));level.items.forEach(i=>ps.push(v(i.x-i.w,i.y-i.h),v(i.x+i.w,i.y+i.h)));if(!ps.length&&level.bg&&images[level.bg.img]){const im=images[level.bg.img];ps.push(v(level.bg.x,level.bg.y),v(level.bg.x+im.width*level.bg.mpp,level.bg.y+im.height*level.bg.mpp));}if(!ps.length)return null;return {x0:Math.min(...ps.map(p=>p.x)),y0:Math.min(...ps.map(p=>p.y)),x1:Math.max(...ps.map(p=>p.x)),y1:Math.max(...ps.map(p=>p.y))};}
 function fitView(){let b=bbox(L());if(!b&&state.cur>0&&settings.ghost)b=bbox(state.levels[state.cur-1]);/* étage vide : on cadre sur le fantôme du niveau du dessous */const W=cv.clientWidth,H=cv.clientHeight;
   /* D54 (design 3) : au bureau, le plan se cadre au-dessus de la bande du bas (barre de zoom, bulle d'astuce, message) */
-  const bas=isMobile()?0:Math.min(120,Math.round(H*0.16)),Hu=H-bas;if(!b){view.zoom=60;view.ox=W/2;view.oy=Hu/2;}else{const bw=b.x1-b.x0+2,bh=b.y1-b.y0+2;view.zoom=Math.max(12,Math.min(400,Math.min(W/bw,Hu/bh)));view.ox=W/2-(b.x0+b.x1)/2*view.zoom;view.oy=Hu/2-(b.y0+b.y1)/2*view.zoom;}draw();updZoom();save();}
+  /* D61 : et sous la tête du plan (bande de contexte + barre d'options), plus aucune cote sous le sélecteur de vue */
+  const haut=isMobile()?0:zoneUtile().y0,bas=isMobile()?0:Math.min(120,Math.round(H*0.16)),Hu=Math.max(40,H-bas-haut);if(!b){view.zoom=60;view.ox=W/2;view.oy=haut+Hu/2;}else{const bw=b.x1-b.x0+2,bh=b.y1-b.y0+2;view.zoom=Math.max(12,Math.min(400,Math.min(W/bw,Hu/bh)));view.ox=W/2-(b.x0+b.x1)/2*view.zoom;view.oy=haut+Hu/2-(b.y0+b.y1)/2*view.zoom;}draw();updZoom();save();}
 function toggle(k){settings[k]=!settings[k];const b=document.getElementById(k+'Btn');if(b)b.classList.toggle('on',settings[k]);saveView();if(k==='cotes')updLayersBtn();draw();}
 
 // ---------- Accroche ----------
@@ -3818,7 +3952,7 @@ function snapItemToWall(it,p){
 // Accroche d'un point : nœuds, murs, angles, grille + guides d'alignement avec les coins existants.
 // `exclude` = point à ignorer (le nœud qu'on est en train de déplacer).
 function snapPoint(raw,ref,exclude){
-  const R=10/view.zoom; let p=raw, kind='free'; guides=[];
+  const R=10/view.zoom; let p=raw, kind='free', prol=false; guides=[];
   const nodes=[];L().walls.forEach(w=>{if(!wallDrawn(w))return;[w.a,w.b].forEach(q=>{if(!(exclude&&same(q,exclude)))nodes.push(q);});});
   // étage : les coins et murs du niveau du dessous (fantôme) servent aussi d'accroche → porteurs superposés
   const ghostWalls=(state.cur>0&&settings.ghost)?state.levels[state.cur-1].walls.filter(w=>wallActive(w)&&!isVirtual(w)):[];const gnodes=[];ghostWalls.forEach(w=>gnodes.push(w.a,w.b));
@@ -3842,12 +3976,12 @@ function snapPoint(raw,ref,exclude){
         const cote=((ref.x-nw.wall.a.x)*nn.x+(ref.y-nw.wall.a.y)*nn.y)>=0?1:-1;
         const dec=mul(nn,cote*marge);
         const it=segInter(ref,far,add(nw.wall.a,dec),add(nw.wall.b,dec))||segInter(ref,far,nw.wall.a,nw.wall.b);
-        if(it)p=it.p;}
+        if(it){p=it.p;prol=true;}}
       // alignement avec un coin existant, le long de la direction
       if(Math.abs(Math.cos(sa))>0.99)alignX(p,p); else if(Math.abs(Math.sin(sa))>0.99)alignY(p,p);
       // nœud proche sur cette direction
       for(const q of nodes) if(dist(q,p)<R){p={...q};kind='node';guides=[];}
-      return {p,kind};
+      return {p,kind,prol:kind!=='node'&&prol}; /* D61 : prol nomme l'accroche dans la barre d'état */
     }
   }
   if(settings.magnet){
@@ -4091,7 +4225,7 @@ function clickAction(raw){
     if(ref){const n=addWall(ref,p);chain.push(p);lenBuf='';if(n){endChain(false);return;}} else chain.push(p); lenBuf=''; draw(); return;
   }
   if(tool==='ouverture'){const nw=nearestWall(raw,0.6,L(),true);if(!nw){toast('Approche-toi d\'un mur pour poser l\'ouverture');return;}const def=OPENINGS[openingType];const w=nw.wall,Lw=wallLen(w);if(def.w>Lw-0.1){toast('Ce mur est trop court pour cette ouverture');return;}const t=Math.max(def.w/2/Lw,Math.min(1-def.w/2/Lw,nw.t));const dup=ouverturesChevauchees(L(),w.id,t,def.w,null);if(dup.length){sel={kind:'opening',id:dup[0].id};render();toast('Il y a déjà une ouverture ici : je te la sélectionne. Glisse-la pour la déplacer.',true);return;}const side=sideOf(raw,w);history.push(snapshot());const op={id:uid(),wallId:w.id,t,type:openingType,w:def.w,h:def.h,hinge:1,side};const _def=OPENINGS[openingType];if(_def&&(openingType==='porte_entree'||openingType==='garage'||_def.cat==='fenetre')){op.dormant=dormantConseille(op);}if(mode()!=='existant')op.st='creer';L().openings.push(op);sel={kind:'opening',id:op.id};afterChange();if(_def&&_def.cat==='fenetre'&&!isExteriorWall(w))toast('Fenêtre posée sur un mur intérieur : c\'était une porte ? Change son type dans le volet.');return;}
-  if(tool==='equipement'){const def=ITEMS[itemType];const {p}=snapPoint(raw,null);history.push(snapshot());const it={id:uid(),type:itemType,x:p.x,y:p.y,w:def.w,h:def.h,rot:0};if(mode()!=='existant')it.st='creer';if(itemType==='escalier'){it.stair={type:'droit'};fitStair(it,L());}const sn=snapItemToWall(it,raw);if(sn)Object.assign(it,sn);pushOutOfWalls(it);L().items.push(it);sel={kind:'item',id:it.id};afterChange();if(mode()!=='existant')toast(LEX.etat.poser+' (travaux) : '+def.label+'. Pour un équipement déjà en place, dessine-le en vue '+nomVue('existant')+'.',true); /* D54 : « Douche ajouté » ne s'accordait pas ; le libellé d'abord, pour tous les équipements */return;}
+  if(tool==='equipement'){const def=ITEMS[itemType];if(!def){toast('Choisis d\'abord un modèle dans la barre au-dessus du plan : rien n\'est posé tant que tu n\'as pas choisi.');return;} /* D61 : plus de « Lit double » posé en douce */const {p}=snapPoint(raw,null);history.push(snapshot());const it={id:uid(),type:itemType,x:p.x,y:p.y,w:def.w,h:def.h,rot:0};if(mode()!=='existant')it.st='creer';if(itemType==='escalier'){it.stair={type:'droit'};fitStair(it,L());}const sn=snapItemToWall(it,raw);if(sn)Object.assign(it,sn);pushOutOfWalls(it);L().items.push(it);sel={kind:'item',id:it.id};afterChange();if(mode()!=='existant')toast(LEX.etat.poser+' (travaux) : '+def.label+'. Pour un équipement déjà en place, dessine-le en vue '+nomVue('existant')+'.',true); /* D54 : « Douche ajouté » ne s'accordait pas ; le libellé d'abord, pour tous les équipements */return;}
   if(tool==='texte'){history.push(snapshot());const t={id:uid(),x:raw.x,y:raw.y,text:'',color:lastNoteColor};TX(L()).push(t);sel={kind:'text',id:t.id};tool='select';afterChange();updateCursor();setTimeout(()=>document.getElementById('txtEdit')?.focus(),30);return;}
   if(tool==='cote'){
     if(dimPending){history.push(snapshot());L().dims.push({id:uid(),a:dimPending.a,b:dimPending.b,off:dimOffAt(dimPending,raw)});dimPending=null;afterChange();toast('Cote posée — glisse-la pour la faire coulisser, Alt pour la déplacer',true);return;}
@@ -4418,7 +4552,7 @@ let raccourcisOn=true;try{raccourcisOn=localStorage.getItem('avyora-plan-raccour
 document.documentElement.classList.toggle('sansRaccourcis',!raccourcisOn);
 function lettreAutorisee(e){if(!raccourcisOn)return false;const t=e.target;if(!t||t===cv||t===document.body||t===document.documentElement)return true;
   if(!t.getClientRects||!t.getClientRects().length||(t.closest&&t.closest('.overlay:not(.show)')))return true; /* un bouton d'une fenêtre qui vient de se fermer : plus rien n'a le focus */
-  if(t.closest&&t.closest('#tools,#levels,#modes'))return true;return pointeurAt>tabAt;}
+  if(t.closest&&t.closest('#tools,#levels,#modes,#optbar,#etat'))return true;return pointeurAt>tabAt;}
 function setRaccourcis(on){raccourcisOn=!!on;try{if(raccourcisOn)localStorage.removeItem('avyora-plan-raccourcis');else localStorage.setItem('avyora-plan-raccourcis','0');}catch{}
   document.documentElement.classList.toggle('sansRaccourcis',!raccourcisOn);const c=document.getElementById('raccOn');if(c)c.checked=raccourcisOn;renderTools();
   toast(raccourcisOn?'Raccourcis d\'une touche activés.':'Raccourcis d\'une touche coupés : les outils se choisissent dans la colonne de gauche.',true);}
@@ -4573,14 +4707,20 @@ const TOOLS=[
   ['mesure','Mesurer','L','outilMesure'],
   ['calque','Fond de plan','','outilImage','Image'],
 ];
+/* D61 · la colonne d'outils en sections, par intention : Édition, Structure (murs et doublage), Menuiseries,
+   Équipements, Annoter, Fond. Les ids ne changent pas ; une section d'un seul outil qui porterait son nom
+   (Équipements) n'a qu'un filet. */
 const TOOL_GROUPS=[
-  {cat:'',ids:['select','zone']},
-  {cat:'Tracer',ids:['mur']},
-  {cat:'Ajouter',ids:['ouverture','doublage','equipement','texte']},
-  {cat:'Mesures',ids:['cote','mesure']},
+  {cat:'Édition',ids:['select','zone']},
+  {cat:'Structure',ids:['mur','doublage']},
+  {cat:'Menuiseries',ids:['ouverture']},
+  {cat:'Équipements',ids:['equipement']},
+  {cat:'Annoter',ids:['cote','mesure','texte']},
   {cat:'Fond',ids:['calque']},
 ];
-const TOOL_TIP={select:'Sélectionner et déplacer les éléments',zone:'Encadrer une zone pour tout sélectionner (puis Suppr)',doublage:'Isoler un mur (doublage) : clique la face à isoler',mur:'Tracer des murs et cloisons',ouverture:'Ouvertures : portes, fenêtres, baies, porte de garage',equipement:'Ajouter meubles et équipements',cote:'Ajouter une cote fixe au plan',mesure:'Mesurer une longueur ou une surface',calque:'Importer une image de ton plan, pour dessiner par-dessus',texte:'Poser une note sur le plan (remarque, question pour l\'artisan)'};
+/* la phrase de la bulle d'un outil (la bulle dit : le nom, la touche, cette phrase) */
+const TOOL_TIP={select:'Sélectionner un élément pour voir sa fiche, le déplacer ou décider de son sort',zone:'Encadrer une zone pour tout sélectionner d\'un coup (puis Suppr)',doublage:'Isoler un mur (doublage) : clique la face à isoler',mur:'Tracer les murs, cloisons et séparations : le type se choisit au-dessus du plan',ouverture:'Portes, fenêtres, baies, passages : le modèle se choisit au-dessus du plan, puis un clic sur un mur',equipement:'Salle de bain, cuisine, chauffage, électricité, mobilier, escalier : le modèle se choisit au-dessus du plan',cote:'Ajouter une cote fixe entre deux points',mesure:'Mesurer une longueur ou une surface, sans rien ajouter au plan',calque:'Importer une image de ton plan, pour dessiner par-dessus',texte:'Poser une note sur le plan (remarque, question pour l\'artisan)'};
+function bulleOutil(t){const nom=t[4]||t[1];return nom+(t[2]&&raccourcisOn?' ('+t[2]+')':'')+' · '+(TOOL_TIP[t[0]]||t[1]);}
 /* D39 · UNE liste de raccourcis, rendue dans l'accueil et dans l'Aide. Les outils viennent de
    TOOLS (touche, nom) et de TOOL_TIP (ce qu'ils font) : une touche ajoutée à un outil apparaît
    partout d'elle-même. Les gestes sont écrits une seule fois, ici. */
@@ -4639,57 +4779,186 @@ window.addEventListener('pointerdown',e=>{if(menuOuvert&&!e.target.closest('.men
 function renderTools(){avecFocus(document.getElementById('tools'),renderToolsBrut);}
 function renderToolsBrut(){
   const D=Object.fromEntries(TOOLS.map(t=>[t[0],t]));
-  document.getElementById('tools').innerHTML=TOOL_GROUPS.map(g=>
-    (g.cat?`<div class="cat">${g.cat}</div>`:'')+
-    g.ids.map(id=>{const t=D[id],ro=mode()==='final'&&!OUTILS_LECTURE.includes(id);return `<button class="tb ${tool===id?'on':''}${ro?' ro':''}" aria-pressed="${tool===id}" onclick="setTool('${id}')" data-tip="${ro?'Lecture seule en vue '+nomVue('final')+' · passe en vue '+nomVue('projet')+' pour modifier':(TOOL_TIP[id]||t[1])+(t[2]&&raccourcisOn?' · '+t[2]:'')}" aria-label="${t[4]?t[4]+' ('+t[1].toLowerCase()+')':t[1]}"${t[2]&&raccourcisOn?` aria-keyshortcuts="${t[2]}"`:''}${ro?' aria-disabled="true"':''}>${ico(t[3],20)}<span>${t[4]||t[1]}</span>${t[2]&&raccourcisOn?`<kbd>${t[2]}</kbd>`:''}</button>`;}).join('')
+  document.getElementById('tools').innerHTML=TOOL_GROUPS.map(g=>{
+    const seul=g.ids.length===1&&(D[g.ids[0]][4]||D[g.ids[0]][1])===g.cat; /* D61 : pas de titre qui répète le nom de son seul outil */
+    return `<div class="cat${seul?' filet':''}">${seul?'':g.cat}</div>`+
+    g.ids.map(id=>{const t=D[id],ro=mode()==='final'&&!OUTILS_LECTURE.includes(id);return `<button class="tb ${tool===id?'on':''}${ro?' ro':''}" aria-pressed="${tool===id}" onclick="setTool('${id}')" data-tip="${ro?'Lecture seule en vue '+nomVue('final')+' · passe en vue '+nomVue('projet')+' pour modifier':bulleOutil(t)}" aria-label="${t[4]?t[4]+' ('+t[1].toLowerCase()+')':t[1]}"${t[2]&&raccourcisOn?` aria-keyshortcuts="${t[2]}"`:''}${ro?' aria-disabled="true"':''}>${ico(t[3],20)}<span>${t[4]||t[1]}</span>${t[2]&&raccourcisOn?`<kbd>${t[2]}</kbd>`:''}</button>`;}).join('');}
   ).join('');
 }
 let calibMode=false;
-function setTool(t){if(typeof isMobile==='function'&&isMobile()&&t!=='select'){toast('Le dessin se fait sur ordinateur ou tablette — ici tu consultes le plan et tu coches l\'avancement');t='select';}if(mode()==='final'&&!OUTILS_LECTURE.includes(t)){enLectureSeule();if(OUTILS_LECTURE.includes(tool))return;t='select';}if(tool==='mur'&&chain.length)endChain(false);tool=t;chain=[];chainWallIds=[];rectMode=null;lenBuf='';guides=[];dimStart=null;dimPending=null;measure=[];measureDone=false;calibMode=false;calib=[];closeCoteEdit();if(t!=='select')clearSel();render();updateCursor();}
-function startRect(ev){const Lr=parseFloat(document.getElementById('rectL').value),l=parseFloat(document.getElementById('rectl').value);if(!(Lr>0.5&&l>0.5)){toast('Indique une longueur et une largeur (en m)');return;}rectMode={L:Lr,l};chain=[];chainWallIds=[];if(auClavier(ev)){poserPieceAuCentre();return;}renderPanel();draw();toast('Clique dans le plan pour poser le coin haut-gauche de la pièce',true);}
+function setTool(t){if(typeof isMobile==='function'&&isMobile()&&t!=='select'){toast('Le dessin se fait sur ordinateur ou tablette — ici tu consultes le plan et tu coches l\'avancement');t='select';}if(mode()==='final'&&!OUTILS_LECTURE.includes(t)){enLectureSeule();if(OUTILS_LECTURE.includes(tool))return;t='select';}if(tool==='mur'&&chain.length)endChain(false);tool=t;chain=[];chainWallIds=[];rectMode=null;lenBuf='';guides=[];dimStart=null;dimPending=null;measure=[];measureDone=false;calibMode=false;calib=[];closeCoteEdit();if(t!=='select')clearSel();panelTab='details'; /* D61 : choisir un outil montre son mode d'emploi, jamais le Suivi */render();updateCursor();}
+function startRect(ev){const Lr=parseFloat(document.getElementById('rectL').value),l=parseFloat(document.getElementById('rectl').value);if(!(Lr>0.5&&l>0.5)){toast('Indique une longueur et une largeur (en m)');return;}rectDims.L=Lr;rectDims.l=l;rectMode={L:Lr,l};chain=[];chainWallIds=[];if(auClavier(ev)){poserPieceAuCentre();return;}renderPanel();draw();toast('Clique dans le plan pour poser le coin haut-gauche de la pièce',true);}
+/* =====================================================================
+   D61 · LA BARRE D'OPTIONS DE L'OUTIL (au-dessus du plan, une ligne qui défile à l'horizontale si le plan est
+   étroit). Les variantes de l'outil actif s'y choisissent en un clic, avec leur dessin : Murs (type à la mini-coupe,
+   le trait, la pièce rectangulaire, poteau et poutre), Ouvertures (les 11 modèles et la fenêtre de toit, vignettes du
+   plan), Doublage (poser / retirer, par où, épaisseur), Équipements (familles en onglets, recherche, modèles),
+   Sélection / Zone, Cote, Mesurer, Note, Image. Chaque choix passe par une fonction (setWallType, setOpeningType,
+   setItemType…) qui garde les globales lues par les contrôles (wallType, openingType, itemType, DBL_CFG).
+   Aucun modèle d'équipement n'est posé « en douce » : sans modèle choisi, l'outil le demande (itemType = null).
+   ===================================================================== */
+let famEquip='bain',rechEquip='';
+const rectDims={L:4,l:3};
+/* les familles de la barre (regroupement d'affichage : ITEMS[k].cat ne change pas), dans l'ordre de ce qu'on pose le plus */
+const FAM_EQUIP=[
+  ['bain','Salle de bain','famBain',['wc','douche','lavabo','baignoire','vasque2']],
+  ['cuisine','Cuisine','famCuisine',['evier','plan','frigo','lave_vaisselle','lave_linge','ilot']],
+  ['chauffage','Chauffage','famChauffage',['radiateur','seche_serviette','chaudiere','cumulus','poele','clim','pac_ext','vmc']],
+  ['elec','Électricité','famElec',['prise','prise2','interrupteur','lumiere','applique','tableau']],
+  ['mobilier','Mobilier','famSejour',['lit','lit1','armoire','canape','table','bureau']],
+  ['structure','Escalier et structure','famStructure',['escalier','poteau','poutre','velux']],
+];
+const famDeModele=k=>(FAM_EQUIP.find(f=>f[3].includes(k))||FAM_EQUIP[0])[0];
+/* les ouvertures, dans l'ordre de ce qu'on pose le plus (les quatre premières se voient sans défiler à 1 024 px) */
+const ORDRE_OUV_BARRE=['fenetre','porte','porte_fenetre','porte_entree','baie','fenetre_p','porte_double','coulissante','garage','porte_pleine','passage'];
+/* la recherche trouve aussi les mots de tous les jours (jamais affichés) */
+const MOTS_EQUIP={wc:'toilettes cuvette',douche:'receveur italienne',lavabo:'vasque',vasque2:'meuble lavabo vasque',baignoire:'bain',evier:'cuisine bac',plan:'cuisine meuble cuisson plaque',frigo:'frigo',ilot:'cuisine',lave_linge:'machine a laver',lave_vaisselle:'machine',cumulus:'ballon eau chaude cumulus',chaudiere:'gaz fioul',poele:'cheminee bois granules',clim:'climatisation',pac_ext:'pompe a chaleur climatisation',vmc:'ventilation aeration',radiateur:'chauffage',seche_serviette:'radiateur salle de bain',lumiere:'lampe plafonnier eclairage',applique:'lampe eclairage',prise:'courant',prise2:'courant',tableau:'disjoncteur compteur',lit:'chambre',lit1:'chambre',armoire:'rangement penderie',canape:'salon',table:'salle a manger',escalier:'marches etage',poteau:'pilier',poutre:'linteau',velux:'lucarne toit'};
+const sansAccent=x=>String(x).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[-'\u2019]/g,' ').replace(/\s+/g,' ');
+function obGrp(lbl,inner,aria){return `<div class="obg" role="group" aria-label="${aria||lbl}">${lbl?`<span class="obl" aria-hidden="true">${lbl}</span>`:''}${inner}</div>`;}
+const OBS='<span class="obs" aria-hidden="true"></span>';
+function obSeg(items,cls){return `<div class="seg barre${cls?' '+cls:''}">${items.map(x=>`<button type="button" class="${x.on?'on':''}" aria-pressed="${!!x.on}" onclick="${x.act}"${x.tip?` data-tip="${x.tip}"`:''}${x.aria?` aria-label="${x.aria}"`:''}>${x.html}</button>`).join('')}</div>`;}
+/* LA carte « choisir un modèle » (D59) : vignette du plan (D60), nom, dimensions en Mono — ici en rangée */
+function dimsModele(genre,k){const o=genre==='ouverture'?OPENINGS[k]:ITEMS[k];if(!o)return '';return genre!=='ouverture'&&o.elec?(o.free?'au plafond':'sur un mur'):fmt(o.w)+' × '+fmt(o.h)+' m';}
+function carteBarre(genre,k,on,act,tip){const o=genre==='ouverture'?OPENINGS[k]:ITEMS[k];if(!o)return '';const dm=dimsModele(genre,k),mot=genre!=='ouverture'&&o.elec;
+  return `<button type="button" class="it ${on?'on':''}" onclick="${act}" aria-pressed="${on}" data-tip="${tip||o.label+' · '+dm}"><span class="th op">${vignetteImg(genre,k,54,30)}</span><span class="itx"><b>${o.label}</b><small${mot?' class="mot"':''}>${dm}</small></span></button>`;}
+const tipOuv=k=>OPENINGS[k].label+' · '+dimsModele('ouverture',k)+' · '+(isExtType(k)?'sur un mur de façade':'entre deux pièces');
+const tipEquip=k=>ITEMS[k].label+' · '+dimsModele('equipement',k)+(isFurniture(k)?' · mobilier, pour te repérer':'');
+/* la fiche du modèle choisi, dans le panneau (grande vignette, nom, dimensions) */
+function propModele(genre,k,extra){const o=genre==='ouverture'?OPENINGS[k]:ITEMS[k];if(!o)return '';
+  return `<div class="mprop"><span class="th">${vignetteImg(genre,k,84,44)}</span><span class="mpt"><b>${o.label}</b><small class="${genre!=='ouverture'&&o.elec?'':'mono'}">${dimsModele(genre,k)}</small>${extra?`<small>${extra}</small>`:''}</span></div>`;}
+function modeEmploi(l){return `<ol class="memploi">${l.map(x=>`<li>${x}</li>`).join('')}</ol>`;}
+function optbarHTML(){
+  if(isMobile())return '';
+  const T=tool;
+  if(T==='select'||T==='zone')return obGrp('',obSeg([
+      {on:T==='select',act:"setTool('select')",html:ico('outilSelection')+'Sélection',tip:'Un clic choisit un élément · Maj + clic en ajoute'},
+      {on:T==='zone',act:"setTool('zone')",html:ico('outilZone')+'Zone',tip:'Un rectangle sélectionne tout ce qu\'il touche'}]),'Mode de sélection')
+    +OBS+`<span class="obt">${T==='zone'?'Trace un rectangle sur le plan, puis <kbd>Suppr</kbd> pour tout effacer':'<kbd>Maj</kbd> + clic : ajouter à la sélection · <kbd>Ctrl A</kbd> : tous les équipements'}</span>`;
+  if(T==='mur'){
+    const pieces=(facesCache[L().id]||[]).some(f=>f.room);
+    const tipType=k=>{if(k==='auto')return 'Automatique : '+(pieces?'cloison de 7 cm dans une pièce, mur de 20 cm en façade':'mur de 20 cm pour le contour');const t=WALL_TYPES.find(x=>x[0]===k);return t[1]+' · '+wallTypeSub(t);};
+    let h=obGrp('Type',obSeg([['auto','Automatique'],['mur','Mur'],['cloison','Cloison'],['porteur','Mur épais'],['virtuel','Séparation']].map(([k,l])=>({on:wallType===k,act:`setWallType('${k}')`,html:ico(MC_MUR[k])+l,tip:tipType(k)}))),'Type de mur');
+    h+=OBS+obGrp('Pièce',`<input class="fin n" id="rectL" type="number" step="0.01" min="0.5" value="${rectDims.L.toFixed(2)}" aria-label="Longueur de la pièce, en m" onchange="setRectDim('L',this.value)"><span class="obx">×</span><input class="fin n" id="rectl" type="number" step="0.01" min="0.5" value="${rectDims.l.toFixed(2)}" aria-label="Largeur de la pièce, en m" onchange="setRectDim('l',this.value)"><span class="obx">m</span><button type="button" class="ib s" onclick="startRect(event)" data-tip="Pose une pièce rectangulaire de ces dimensions : un clic dans le plan pour son coin haut-gauche">${ico('rect')}Poser la pièce</button>`,'Pièce rectangulaire');
+    if(wallType!=='virtuel'){const alAuto=(wallType==='mur'||wallType==='porteur'||wallType==='auto')&&contourIntAuto();
+      h+=OBS+obGrp('Le trait est',obSeg([['axe','mcAxe','l\'axe','le mur est centré sur le trait'],['int','mcFaceInt','la face intérieure','le mur pousse vers l\'extérieur'],['ext','mcFaceExt','la face extérieure','le mur pousse vers l\'intérieur']].map(([k,ic,l,s2])=>({on:k==='int'?(wallAlign==='int'||alAuto):k==='axe'?(wallAlign==='axe'&&!alAuto):wallAlign===k,act:`setWallAlign('${k}')`,html:ico(ic),tip:'Le trait est '+l+' : '+s2,aria:'Le trait est '+l})),'ico-seul'),'Le trait dessiné');}
+    h+=OBS+obGrp('Structure',`<div class="lib2 barre">${['poteau','poutre'].map(k=>carteBarre('equipement',k,false,`outilModele('${k}')`,ITEMS[k].label+' · se pose avec l\'outil Équipements')).join('')}</div>`,'Poteau et poutre');
+    return h;}
+  if(T==='ouverture'){
+    const ks=ORDRE_OUV_BARRE.filter(k=>OPENINGS[k]).concat(Object.keys(OPENINGS).filter(k=>!ORDRE_OUV_BARRE.includes(k)));
+    return `<div class="lib2 barre" role="group" aria-label="Modèles d'ouverture">${ks.map(k=>carteBarre('ouverture',k,openingType===k,`setOpeningType('${k}')`,tipOuv(k))).join('')}</div>`
+      +OBS+obGrp('Toit',`<div class="lib2 barre">${carteBarre('equipement','velux',false,"outilModele('velux')",'Fenêtre de toit · se pose avec l\'outil Équipements')}</div>`,'Fenêtre de toit');}
+  if(T==='doublage'){const retire=DBL_CFG.action==='retirer',ite=DBL_CFG.mode==='ite',e=Math.round(DBL_CFG.e*1000);
+    let h=obGrp('',obSeg([{on:!retire,act:"setDblCfg('action','poser')",html:ico('mcPoser')+'Poser',tip:'Poser un doublage : clique ou glisse le long d\'une face'},{on:retire,act:"setDblCfg('action','retirer')",html:ico('mcRetirer')+'Retirer',tip:'Retirer un doublage : clique-le (raccourci : Alt + clic)'}]),'Poser ou retirer');
+    if(!retire){
+      h+=OBS+obGrp('Par',obSeg([{on:!ite,act:"setDblCfg('mode','iti')",html:ico('mcIti')+'l\'intérieur',tip:'Isolation par l\'intérieur (ITI) : clique la face côté pièce'},{on:ite,act:"setDblCfg('mode','ite')",html:ico('mcIte')+'l\'extérieur',tip:'Isolation par l\'extérieur (ITE) : clique la face côté dehors'}]),'Isoler par');
+      h+=OBS+obGrp('Isolant',EP_DOUBLAGE.map(mm=>`<button type="button" class="miniep ${e===mm?'on':''}" aria-pressed="${e===mm}" onclick="setDblCfg('e',${mm})"${mm===120?' data-tip="Conseillé : R ≥ 3,7"':''}>${mm/10}</button>`).join('')+'<span class="obx">cm</span>','Épaisseur d\'isolant');
+      if(ISO_MAT_CHOIX.length>1)h+=OBS+obGrp('',obSeg(Object.entries(ISO_MAT).filter(([k])=>ISO_MAT_CHOIX.includes(k)).map(([k,m])=>({on:DBL_CFG.mat===k,act:`setDblCfg('mat','${k}')`,html:m.label}))),'Isolant');}
+    return h;}
+  if(T==='equipement'){
+    const q=sansAccent(rechEquip.trim()),F=FAM_EQUIP.find(f=>f[0]===famEquip)||FAM_EQUIP[0];
+    const rech=`<label class="recherche">${ico('chercher')}<input type="search" id="rechEquip" value="${esc(rechEquip)}" placeholder="Rechercher" aria-label="Rechercher un équipement" oninput="chercherEquip(this.value)"></label>`;
+    const tabs=`<div class="fams" role="group" aria-label="Familles d'équipements">${FAM_EQUIP.map(([id,l,ic])=>{const on=!q&&F[0]===id;return `<button type="button" class="${on?'on':''}" aria-pressed="${on}" aria-label="${l}" data-tip="${l}" onclick="setFamEquip('${id}')">${ico(ic)}<span>${l}</span></button>`;}).join('')}</div>`;
+    const liste=q?FAM_EQUIP.flatMap(f=>f[3]).filter(k=>ITEMS[k]&&sansAccent(ITEMS[k].label+' '+(MOTS_EQUIP[k]||'')).includes(q)):F[3].filter(k=>ITEMS[k]);
+    const cartes=liste.length?`<div class="lib2 barre" role="group" aria-label="Modèles d'équipement">${liste.map(k=>carteBarre('equipement',k,itemType===k,`setItemType('${k}')`,tipEquip(k))).join('')}</div>`:`<span class="vide">Aucun équipement ne répond à « ${esc(rechEquip.trim())} »</span>`;
+    return rech+tabs+OBS+cartes;}
+  if(T==='cote')return `<span class="obt">Clique deux points, écarte la ligne de cote, puis clique pour la fixer</span>`+OBS+`<label class="obchk"><input type="checkbox" ${settings.cotes?'checked':''} onchange="toggle('cotes');renderOptions()">Cotes du plan affichées</label>`;
+  if(T==='mesure')return `<button type="button" class="ib s" onclick="measure=[];measureDone=false;renderPanel();draw()">${ico('regle')}Nouvelle mesure</button>`+OBS+`<span class="obt">Les points s'accrochent aux angles intérieurs : surface réelle · reviens au 1er point pour fermer</span>`;
+  if(T==='texte')return obGrp('Couleur',`<div class="swatches">${Object.entries(NOTE_COLORS).map(([k,c])=>`<button type="button" class="sw ${lastNoteColor===k?'on':''}" style="background:${c[0]};border-color:${c[1]}" aria-pressed="${lastNoteColor===k}" aria-label="Note ${k}" data-tip="Note ${k}" onclick="lastNoteColor='${k}';renderOptions()"></button>`).join('')}</div>`,'Couleur de la note')+OBS+`<span class="obt">Clique dans le plan pour poser la note, puis écris-la</span>`;
+  if(T==='calque'){const bg=L().bg;let h=`<button type="button" class="ib s" onclick="document.getElementById('bgFile').click()">${ico('importer')}${bg?'Changer l\'image':'Importer une image'}</button>`;
+    if(bg)h+=OBS+obGrp('Opacité',`<input type="range" min="0.1" max="1" step="0.05" value="${bg.opacity}" aria-label="Opacité du fond de plan" oninput="L().bg.opacity=+this.value;draw()" onchange="save();renderPanel()">`,'Opacité')
+      +OBS+`<label class="obchk"><input type="checkbox" ${bg.locked?'checked':''} onchange="L().bg.locked=this.checked;save();renderPanel()">Position verrouillée</label>`
+      +OBS+`<button type="button" class="ib s" onclick="startCalib()">${ico('regle')}Caler l'échelle</button>`;
+    else h+=OBS+`<span class="obt">Une photo, un scan ou une capture de ton plan, pour tracer par-dessus</span>`;
+    return h;}
+  return '';}
+/* la barre se redessine avec render() ; rien ne bouge si son contenu est le même (défilement et focus gardés) */
+function renderOptions(){const el=document.getElementById('optbar');if(!el)return;const h=optbarHTML();if(h===el._h){majZonePlan();return;}
+  const meme=el._outil===tool,sx=el.scrollLeft;
+  avecFocus(el,()=>{el.innerHTML=h;});el._h=h;el._outil=tool;{const t=TOOLS.find(x=>x[0]===tool);el.setAttribute('aria-label','Options de l\'outil '+(t?(t[4]||t[1]):''));}
+  if(meme)el.scrollLeft=sx;else{el.scrollLeft=0;const on=el.querySelector('.lib2 .it.on');if(on){const q=on.getBoundingClientRect(),r=el.getBoundingClientRect();if(q.right>r.right)el.scrollLeft+=q.right-r.right+24;}}
+  majZonePlan();bordsOptbar();}
+/* quand la barre déborde, ses bords s'estompent du côté où il reste des options à faire défiler */
+function bordsOptbar(){const ob=document.getElementById('optbar');if(!ob)return;const d=ob.scrollWidth-ob.clientWidth;ob.classList.toggle('vers-d',d>1&&ob.scrollLeft<d-1);ob.classList.toggle('vers-g',d>1&&ob.scrollLeft>1);}
+function setWallType(k){wallType=k;customT=null;renderOptions();renderPanel();draw();}
+function setWallAlign(k){wallAlign=k;wallAlignChoisi=true;renderOptions();renderPanel();draw();}
+function setOpeningType(k){if(!OPENINGS[k])return;openingType=k;if(sel&&tool==='ouverture')clearSel();renderOptions();renderPanel();draw();}
+function setItemType(k){if(!ITEMS[k])return;itemType=k;famEquip=famDeModele(k);if(tool!=='equipement'){setTool('equipement');return;}if(sel)clearSel();renderOptions();renderPanel();draw();}
+function outilModele(k){rechEquip='';setItemType(k);}
+function setFamEquip(f){famEquip=f;rechEquip='';renderOptions();}
+function chercherEquip(q){rechEquip=q;renderOptions();}
+function setRectDim(k,val){const x=parseFloat(String(val).replace(',','.'));if(x>0.5)rectDims[k]=x;}
+/* la molette fait défiler la barre à l'horizontale quand elle déborde (jamais de zoom du plan par-dessous) */
+{const ob=document.getElementById('optbar');if(ob)ob.addEventListener('scroll',bordsOptbar,{passive:true});if(ob)ob.addEventListener('wheel',e=>{if(ob.scrollWidth<=ob.clientWidth+1||Math.abs(e.deltaX)>Math.abs(e.deltaY))return;ob.scrollLeft+=e.deltaY;e.preventDefault();},{passive:false});}
+/* la zone du plan que les bandes ne couvrent pas (repère du canvas) : le cadrage, le zoom et la pose au centre s'y tiennent */
+function zoneUtile(){const W=cv.clientWidth,H=cv.clientHeight;if(isMobile())return {x0:0,y0:0,x1:W,y1:H};
+  const tp=document.getElementById('tetePlan'),et=document.getElementById('etat');
+  const h0=tp&&tp.getClientRects().length?tp.offsetHeight:0,h1=et&&et.getClientRects().length?et.offsetHeight:0;
+  return {x0:0,y0:h0,x1:W,y1:Math.max(h0+40,H-h1)};}
+function majZonePlan(){const st=document.getElementById('stage'),tp=document.getElementById('tetePlan');if(st&&tp)st.style.setProperty('--haut-plan',(isMobile()||!tp.getClientRects().length?0:tp.offsetHeight)+'px');if(typeof bordsOptbar==='function')bordsOptbar();}
+/* ---- la barre d'état : mesure en direct, accrochage nommé, échelle graphique ---- */
+let liveMur=null,etatLive='',echelleZ=0;
+/* le nom de ce sur quoi le curseur s'accroche (snapPoint) : coin, face du mur, prolongement, alignement, angle, grille */
+function nomAccroche(sp){if(!sp)return '';const k=sp.kind;if(k==='node')return 'coin';if(k==='wall')return 'face du mur';if(k==='ghost')return 'niveau du dessous';if(sp.prol)return 'prolongement jusqu\'au mur';if(guides.length)return 'alignement';if(k==='angle')return 'angle';if(k==='grid')return 'grille';return '';}
+function majEtatLive(){let h='';
+  if(!isMobile()){
+    if(tool==='mur'&&rectMode)h=`<span>Pièce <b>${fmt(rectMode.L)} × ${fmt(rectMode.l)} m</b></span>`;
+    else if(tool==='mur'&&liveMur){const {ref,end,sp}=liveMur,acc=nomAccroche(sp);
+      let a=null;if(ref){const d=sub(end,ref);a=(Math.round(-Math.atan2(d.y,d.x)*180/Math.PI)+360)%360;h=`<span>Longueur <b>${fmt(len(d))} m</b></span><span>Angle <b>${a}°</b></span>`;}
+      const nom=acc==='angle'?(a!=null&&a%90===0?'angle droit':'à 45°'):acc;if(nom)h+=`<span class="acc">${nom}</span>`;}
+    else if(tool==='cote'&&hover&&(dimStart||dimPending))h=`<span>Cote <b>${fmt(dimPending?dist(dimPending.a,dimPending.b):dist(dimStart,hover))} m</b></span>`;
+    else if(tool==='ouverture'&&hover&&OPENINGS[openingType]){const nw=nearestWall(hover,0.6),o=OPENINGS[openingType];h=nw?`<span>${o.label} <b>${fmt(o.w)} m</b></span><span>Mur de <b>${fmt(wallLen(nw.wall))} m</b></span><span class="acc">sur le mur</span>`:`<span>${o.label} : approche un mur</span>`;}
+    else if(tool==='equipement'&&hover&&ITEMS[itemType]){const d=ITEMS[itemType];h=`<span>${d.label} <b>${dimsModele('equipement',itemType)}</b></span>`;}
+  }
+  if(h!==etatLive){etatLive=h;const el=document.getElementById('mesureLive');if(el){el.innerHTML=h;el.hidden=!h;}}
+  if(view.zoom!==echelleZ)majEchelle();}
+/* l'échelle graphique : une barre de 0,5 / 1 / 2 / 5 / 10 m, la plus longue sous 64 px */
+function majEchelle(){echelleZ=view.zoom;const el=document.getElementById('echelle');if(!el)return;const z=view.zoom;
+  const m=[0.1,0.2,0.5,1,2,5,10,20,50].filter(x=>x*z<=64).pop()||0.1;
+  const i=el.querySelector('i'),s=el.querySelector('span');if(i)i.style.width=Math.round(m*z)+'px';if(s)s.textContent=(m<1?fmt(m*100,0)+' cm':fmt(m,0)+' m');
+  el.title='Échelle du plan : la barre fait '+s.textContent;
+  const zl=document.getElementById('zlabel');if(zl)zl.textContent=Math.round(z/60*100)+' %';}
+/* D61 · LA CONSIGNE de la barre d'état : une ligne, ce qu'on fait maintenant (le reste est dans le mode d'emploi du panneau) */
 const HINTS={
-  vide:'Commence par <b>Tracer les murs</b> ou <b>Poser une pièce de 4 × 3 m</b> : la carte au milieu du plan · ou pars d\'un plan type (menu Fichier)',
-  select:'Glisse un mur pour agrandir la pièce · glisse dans le vide pour déplacer la vue · clique une cote pour taper la longueur · <kbd>Suppr</kbd> supprime',
-  select_projet:'Clique un élément pour décider de son sort · <kbd>Suppr</kbd> = à démolir, à boucher ou à déposer (ce que tu as créé ici s\'efface) · glisse dans le vide pour déplacer la vue',
-  select_final:`Lecture seule : ton logement après travaux · clique un élément pour voir sa fiche · pour modifier, passe en vue ${nomVue('projet')}`,
-  sel_wall:'Glisse le mur pour agrandir la pièce · tire une extrémité (poignée ronde) · clique sa cote pour taper la longueur · <kbd>Suppr</kbd> supprime',
-  sel_wall_projet:'Choisis la décision de ce mur dans le panneau de droite · <kbd>Suppr</kbd> = à démolir (un mur créé ici s\'efface)',
-  sel_opening:'Glisse l\'ouverture le long du mur · sa largeur, son sens et sa décision se règlent dans le panneau · <kbd>Suppr</kbd> supprime',
-  sel_opening_projet:'Choisis la décision de cette ouverture dans le panneau · <kbd>Suppr</kbd> = à boucher (une ouverture créée ici s\'efface)',
-  sel_item:'Glisse pour déplacer · <kbd>R</kbd> pivote de 90° · <kbd>Ctrl D</kbd> duplique · <kbd>Suppr</kbd> supprime',
-  sel_item_projet:'Choisis la décision de cet équipement dans le panneau · <kbd>Suppr</kbd> = à déposer (un équipement posé ici s\'efface)',
-  sel_room:'Nomme la pièce et choisis son type dans le panneau · glisse un de ses murs pour changer sa taille',
-  sel_room_projet:'Décide du sol, de la faïence et de la peinture de cette pièce dans le panneau de droite',
-  zone:'Trace un rectangle pour <b>tout sélectionner</b> à l\'intérieur (murs, ouvertures, meubles, notes…) puis <kbd>Suppr</kbd> pour effacer d\'un coup',
-  mur:'Clique pour poser le 1er coin · <kbd>Maj</kbd> = angles droits · astuce : tape une longueur (ex. <kbd>3,5</kbd>) puis <kbd>Entrée</kbd>',
-  murChain:'Clique le coin suivant, ou tape une longueur (ex. <kbd>3,5</kbd>) + <kbd>Entrée</kbd> · <kbd>Entrée</kbd> seule ferme la pièce · <kbd>Échap</kbd> / double-clic termine sans fermer',
-  ouverture:'Survole un mur et clique pour poser l\'ouverture · elle s\'aimante au mur · ensuite : glisse-la ou change son sens dans le panneau',
-  equipement:'Clique près d\'un mur : l\'équipement se colle au mur tout seul · <kbd>R</kbd> pour pivoter · glisse pour déplacer',
-  doublage:'<b>Clique</b> la face d\'un mur : isolé d\'un angle à l\'autre · <b>glisse</b> le long de la face pour n\'en isoler qu\'une partie · bascule <b>Poser / Retirer</b> dans le volet (ou <kbd>Alt</kbd>+clic)',
-  cote:'Clique les 2 points à coter · la cote <b>flotte</b> avec la souris : écarte-la du mur et <b>clique pour la fixer</b> · <kbd>Échap</kbd> annule',
-  cotePlace:'Écarte la ligne de cote à la distance voulue (elle suit la souris) puis <b>clique pour la fixer</b> · <kbd>Échap</kbd> annule',
-  mesure:'Les points s\'accrochent aux <b>angles intérieurs</b> des pièces (carré vert) → surface réelle, pas à l\'axe des murs · zoome pour viser · reviens au 1er point pour <b>fermer</b> : périmètre + surface · <kbd>clic droit</kbd>/<kbd>Échap</kbd> efface',
-  texte:'Clique dans le plan pour poser une note (ex. « mur porteur ? », « garder le carrelage ») · elle reste attachée au plan et part dans le dossier',
-  calque:'Importe une photo ou une capture de ton plan existant, cale son échelle, puis dessine par-dessus · glisse l\'image pour la positionner',
+  vide:'Commence par <b>Tracer les murs</b> ou <b>Poser une pièce</b>',
+  select:'Clique un élément pour voir sa fiche et le modifier',
+  select_projet:'Clique un élément pour décider de son sort',
+  select_final:`Lecture seule · pour modifier, passe en vue ${nomVue('projet')}`,
+  sel_wall:'Glisse le mur ou une extrémité · clique sa cote pour la taper',
+  sel_wall_projet:'Choisis la décision de ce mur · <kbd>Suppr</kbd> = à démolir',
+  sel_opening:'Glisse l\'ouverture le long du mur · réglages dans le panneau',
+  sel_opening_projet:'Choisis la décision de cette ouverture · <kbd>Suppr</kbd> = à boucher',
+  sel_item:'Glisse pour déplacer · <kbd>R</kbd> pivote · <kbd>Suppr</kbd> supprime',
+  sel_item_projet:'Choisis la décision de cet équipement · <kbd>Suppr</kbd> = à déposer',
+  sel_room:'Nomme la pièce et choisis son type dans le panneau',
+  sel_room_projet:'Décide du sol, de la faïence et de la peinture',
+  zone:'Trace un rectangle autour de ce que tu veux sélectionner',
+  mur:'Clique le 1er coin · <kbd>Maj</kbd> = angles droits',
+  murChain:'Coin suivant, ou tape une longueur · <kbd>Entrée</kbd> ferme',
+  ouverture:'Clique sur un mur pour poser l\'ouverture choisie',
+  equipement:'Clique près d\'un mur : l\'équipement s\'y colle',
+  equipement_choix:'Choisis d\'abord un modèle au-dessus du plan',
+  doublage:'<b>Clique</b> la face d\'un mur à isoler, ou <b>glisse</b> le long',
+  cote:'Clique les 2 points à coter',
+  cotePlace:'Écarte la ligne de cote, puis <b>clique pour la fixer</b>',
+  mesure:'Clique des points · reviens au 1er pour fermer',
+  texte:'Clique dans le plan pour poser la note',
+  calque:'Importe une image de ton plan, puis cale son échelle',
 };
 
 // ---------- Rendu ----------
-/* D41 · la bulle d'astuce : affichée à chaque changement d'outil ou de sélection, repliée en « ? » après 7 s
-   (elle recouvrait les cotes du bas en permanence). Un clic sur le « ? » la rouvre. Pendant un tracé, elle reste. */
+/* D41 · la consigne : affichée à chaque changement d'outil ou de sélection. D61 : dans la barre d'état. */
 let astuceT;
-function montrerAstuce(html,garder){const h=document.getElementById('hint');if(!h)return;if(typeof html==='string')h.innerHTML=html;h.hidden=!h.innerHTML.trim();h.classList.remove('replie');h.removeAttribute('title');clearTimeout(astuceT);
-  /* D54 (design 3) : une astuce qui arrive avec un message du même geste (« Pièce fermée… », « Nouveau plan… ») arrive
-     repliée en « ? » (un clic la rouvre) : le même geste n'est pas annoncé deux fois. Un message de vue, ou plus ancien,
-     ne la replie pas — une nouvelle sélection a droit à son astuce. */
-  {const t=document.getElementById('toast');if(!garder&&!isMobile()&&t&&t.classList.contains('show')&&!t.classList.contains('over')&&!t._vue&&Date.now()-(t._debut||0)<600){h.classList.add('replie');h.title='Afficher l\'astuce';return;}}
-  if(!garder)astuceT=setTimeout(()=>{h.classList.add('replie');h.title='Afficher l\'astuce';},7000);}
+function montrerAstuce(html,garder){const h=document.getElementById('hint');if(!h)return;if(typeof html==='string')h.innerHTML=html;h.hidden=!h.innerHTML.trim();h.classList.remove('replie');clearTimeout(astuceT);
+  /* D61 : la consigne vit dans la barre d'état, sous le plan — elle ne couvre plus les cotes, elle ne se replie plus en
+     « ? » (D41, D54). Coupée par la largeur, elle se lit en entier au survol. */
+  h.removeAttribute('title');if(!h.hidden&&h.scrollWidth>h.clientWidth+1)h.title=h.textContent;}
 function draw(){
   /* D38 : la densité de pixels a changé sans 'resize' (fenêtre glissée d'un écran Retina vers un
      écran standard) : la taille interne du canvas ne correspond plus, on la recale avant de dessiner. */
   if(!draw.recale&&cv.width!==Math.floor(cv.parentElement.getBoundingClientRect().width*devicePixelRatio)){draw.recale=1;try{resize();}finally{draw.recale=0;}return;}
   const W=cv.clientWidth,H=cv.clientHeight,z=view.zoom; ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
   ctx.fillStyle='#F7F8FC';ctx.fillRect(0,0,W,H);
-  const lv=L(); coteLabels=[];
+  const lv=L(); coteLabels=[];liveMur=null;
   const hoverHit=(tool==='select'&&hover&&!drag)?hitTest(hover):null;
   const isHover=(kind,id)=>hoverHit&&hoverHit.kind===kind&&hoverHit.id===id&&!(sel&&sel.kind===kind&&sel.id===id);
   // calque
@@ -4846,6 +5115,7 @@ function draw(){
     const ref=chain.length?chain[chain.length-1]:null;const sp=snapPoint(hover||ref||v(0,0),ref);
     let end=sp.p;const typed=parseFloat(lenBuf.replace(',','.'));
     if(ref&&typed>0){let dir=sub(sp.p,ref);if(len(dir)<1e-6)dir=chain.length>=2?sub(ref,chain[chain.length-2]):v(1,0);end=clampContreMur(add(ref,mul(norm(dir),typed)),ref,null);}
+    liveMur={ref,end,sp}; /* D61 : longueur, angle et accrochage, dans la barre d'état */
     if(chain.length){ctx.beginPath();chain.forEach((p,i)=>{const s=S(p);i?ctx.lineTo(s.x,s.y):ctx.moveTo(s.x,s.y);});const e=S(end);ctx.lineTo(e.x,e.y);ctx.strokeStyle=wallType==='virtuel'?'rgba(124,58,237,.8)':'rgba(79,70,229,.9)';ctx.lineWidth=Math.max(2,(WALL_TYPES.find(t=>t[0]===(wallType==='auto'?typeAuTrace(L(),ref,end).type:wallType))||WALL_TYPES[1])[2]*z);ctx.lineCap='round';if(wallType==='virtuel')ctx.setLineDash([6,5]);ctx.stroke();ctx.setLineDash([]);ctx.lineCap='butt';drawDim(ref,end,'#4f46e5',false);const s0=S(chain[0]);if(chain.length>=3&&dist(end,chain[0])<0.02){ctx.beginPath();ctx.arc(s0.x,s0.y,11,0,7);ctx.strokeStyle=SEL_C;ctx.lineWidth=2.5;ctx.stroke();}
       // angle avec le mur précédent (et angle de fermeture)
       if(chain.length>=2)drawAngle(ref,chain[chain.length-2],end);
@@ -4860,9 +5130,9 @@ function draw(){
   // aide contextuelle pendant le tracé
   /* D41 : l'astuce parle de ce qui est sélectionné (mur, ouverture, équipement, pièce), et se replie en « ? » après quelques secondes */
   const selK=tool==='select'&&sel&&['wall','opening','item','room'].includes(sel.kind)&&mode()!=='final'?'sel_'+sel.kind+(mode()==='projet'?'_projet':''):null;
-  const hintKey=tool==='mur'&&chain.length?'murChain':(tool==='cote'&&dimPending)?'cotePlace':selK&&HINTS[selK]?selK:tool==='select'&&planVide()&&!isMobile()?'vide':tool==='select'&&mode()!=='existant'?'select_'+mode():tool;if(hintKey!==lastHint){lastHint=hintKey;montrerAstuce(HINTS[hintKey]||'',hintKey==='murChain'||hintKey==='cotePlace');}
+  const hintKey=tool==='mur'&&chain.length?'murChain':(tool==='cote'&&dimPending)?'cotePlace':selK&&HINTS[selK]?selK:tool==='select'&&planVide()&&!isMobile()?'vide':tool==='select'&&mode()!=='existant'?'select_'+mode():tool==='equipement'&&!ITEMS[itemType]?'equipement_choix':tool;if(hintKey!==lastHint){lastHint=hintKey;montrerAstuce(HINTS[hintKey]||'',hintKey==='murChain'||hintKey==='cotePlace');}
   if(tool==='ouverture'&&hover){const nw=nearestWall(hover,0.6);if(nw){const def=OPENINGS[openingType];const Lw=wallLen(nw.wall);const t=Math.max(def.w/2/Lw,Math.min(1-def.w/2/Lw,nw.t));ctx.globalAlpha=.55;drawOpening({wallId:nw.wall.id,t,type:openingType,w:def.w,hinge:1,side:sideOf(hover,nw.wall)},true);ctx.globalAlpha=1;}}
-  if(tool==='equipement'&&hover){const def=ITEMS[itemType];const {p}=snapPoint(hover,null);const it={type:itemType,x:p.x,y:p.y,w:def.w,h:def.h,rot:0};if(itemType==='escalier'){it.stair={type:'droit'};fitStair(it,L());}const sn=snapItemToWall(it,hover);if(sn)Object.assign(it,sn);pushOutOfWalls(it);ctx.globalAlpha=.5;drawItem(it,true);ctx.globalAlpha=1;}
+  if(tool==='equipement'&&hover&&ITEMS[itemType]){const def=ITEMS[itemType];const {p}=snapPoint(hover,null);const it={type:itemType,x:p.x,y:p.y,w:def.w,h:def.h,rot:0};if(itemType==='escalier'){it.stair={type:'droit'};fitStair(it,L());}const sn=snapItemToWall(it,hover);if(sn)Object.assign(it,sn);pushOutOfWalls(it);ctx.globalAlpha=.5;drawItem(it,true);ctx.globalAlpha=1;}
   if(tool==='cote'&&hover){
     if(dimPending){const d={...dimPending,off:dimOffAt(dimPending,hover)};ctx.save();ctx.globalAlpha=.85;drawManualDim(d,'#7c3aed');ctx.restore();[dimPending.a,dimPending.b].forEach(q=>{const s=S(q);ctx.beginPath();ctx.arc(s.x,s.y,3.5,0,7);ctx.fillStyle='#7c3aed';ctx.fill();});}
     else{const sp=snapPoint(hover,dimStart);if(dimStart)drawDim(dimStart,sp.p,'#7c3aed',true);const s=S(sp.p);ctx.beginPath();ctx.arc(s.x,s.y,4.5,0,7);ctx.fillStyle='#7c3aed';ctx.fill();}}
@@ -4870,7 +5140,7 @@ function draw(){
   if(tool==='calque'&&calib.length){calib.forEach(p=>{const s=S(p);ctx.beginPath();ctx.arc(s.x,s.y,6,0,7);ctx.fillStyle='#c2410c';ctx.fill();});if(calib.length===1&&hover)drawDim(calib[0],hover,'#c2410c',true);}
   // poignées du mur sélectionné
   if(sel?.kind==='wall'){const w=findWall(sel.id);if(w&&!(mode()==='projet'&&wst(w)==='demolir'))[w.a,w.b].forEach(p=>{const s=S(p);poigneeCarree(s.x,s.y,4.5*Math.max(1,hitScale*0.7));});} /* D60 : carrés pleins indigo */
-  updateMeasBox();
+  updateMeasBox();majEtatLive();
 }
 function hexA(hex,a){const n=parseInt(hex.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;}
 // Outil Mesurer : polyligne + point courant, longueur cumulée, surface si ≥ 3 points. Rien n'est enregistré.
@@ -5597,7 +5867,7 @@ function drawItem(it,isSel){
 
 // ---------- Panneau droit ----------
 let lastHint=null;
-function render(){renderTools();renderLevels();renderPanel();lastHint=null;draw();document.getElementById('undoBtn').disabled=!history.length;document.getElementById('redoBtn').disabled=!future.length;document.getElementById('pname').value=state.name;}
+function render(){renderTools();renderLevels();renderOptions();renderPanel();lastHint=null;draw();document.getElementById('undoBtn').disabled=!history.length;document.getElementById('redoBtn').disabled=!future.length;document.getElementById('pname').value=state.name;}
 function renderLevels(){avecFocus(document.getElementById('stage'),renderLevelsBrut);}
 function renderLevelsBrut(){majLibellePlan();document.getElementById('levels').innerHTML=state.levels.map((l,i)=>`<button class="${i===state.cur?'on':''}" aria-pressed="${i===state.cur}" onclick="setLevel(${i})" title="${l.name}">${l.name}</button>`).join('')+`<button class="add" onclick="openModal('level')" title="Ajouter un niveau" aria-label="Ajouter un niveau">${ico('plus')}</button>`; /* D51 : une icône, plus le glyphe « + » (lu « plus » par le lecteur d'écran, hors du nom) */
   /* D39 : les trois vues, nommées par LEX, sans emoji */
@@ -5748,90 +6018,83 @@ function renderPanelBrut(){pruneEmptyTexts();{const k=sel?sel.kind+':'+(sel.id||
   const tabBar=`<div class="ptabs" role="tablist" aria-label="Panneau"><button type="button" role="tab" aria-selected="${panelTab!=='suivi'}" class="${panelTab!=='suivi'?'on':''}" onclick="setPanelTab('details')">Détails</button><button type="button" role="tab" aria-selected="${panelTab==='suivi'}" class="${panelTab==='suivi'?'on':''}" onclick="setPanelTab('suivi')">${ico('suivi')}Suivi${_T.length?` <span class="tabn${_retard?' retard':''}">${_done}/${_T.length}</span>${_retard?'<span class="sr-only">, tâches en retard</span>':''}`:''}</button></div>`;
   if(panelTab==='suivi'){P.innerHTML=tabBar+suiviPanelHTML(_T);panneauEnHaut(P);renderFoot();return;}
   h+=tabBar;
-  if(tool==='mur'){
-    const alAuto=(wallType==='mur'||wallType==='porteur'||wallType==='auto')&&contourIntAuto();
-    h+=`<div class="ptitle">Tracer des murs</div><div class="psub">Choisis l'épaisseur, puis clique dans le plan pour poser chaque angle.</div>
-    <div class="ph">Type de mur</div><div class="seg"><button class="${wallType==='auto'?'on':''}" onclick="wallType='auto';customT=null;renderPanel();draw()">${ico('mcAuto')}Automatique<small>${(facesCache[lv.id]||[]).some(f=>f.room)?'cloison 7 cm dans une pièce · mur 20 cm en façade':'mur 20 cm pour le contour'}</small></button>${WALL_TYPES.map(t=>`<button class="${wallType===t[0]?'on':''}" onclick="wallType='${t[0]}';customT=null;renderPanel();draw()">${ico(MC_MUR[t[0]])}${t[1]}<small>${wallTypeSub(t)}</small></button>`).join('')}</div>
-    ${wallType!=='virtuel'?`${wallType==='auto'?`<div class="tip" style="margin-top:12px">${ico('idee','lead')}<b>Automatique</b> : ton premier contour est en murs de 20 cm. Ensuite, un mur tracé <b>dans une pièce</b> devient une cloison de 7 cm ; un mur qui <b>agrandit le logement</b> reste un mur de façade, aligné sur les autres. Choisis un type ci-dessus pour le forcer.</div>`:`<div class="row" style="margin-top:12px"><label>Épaisseur des prochains murs</label><span><input class="fin n" type="number" step="1" min="3" max="80" value="${Math.round((customT??WALL_TYPES.find(t=>t[0]===wallType)[2])*100)}" onchange="setCustomT(this.value)"> cm</span></div>`}
-    <div class="tip" style="margin-top:8px">Épaisseurs courantes : cloison en plaques de plâtre <b>7 cm</b> · mur en parpaing ou en béton <b>20 cm</b> · mur ancien en pierre <b>50 à 60 cm</b>. Autres : cloison de 10, brique 15, parpaing + isolation 30 à 35.</div>
-    <div class="ph mt">Le trait que je dessine est…</div><div class="seg stack">
-      <button class="${wallAlign==='axe'&&!alAuto?'on':''}" onclick="wallAlign='axe';wallAlignChoisi=true;renderPanel()">${ico('mcAxe')}L'axe<small>mur centré</small></button>
-      <button class="${wallAlign==='ext'?'on':''}" onclick="wallAlign='ext';wallAlignChoisi=true;renderPanel()">${ico('mcFaceExt')}La face ext.<small>mur vers l'intérieur</small></button>
-      <button class="${wallAlign==='int'||alAuto?'on':''}" onclick="wallAlign='int';wallAlignChoisi=true;renderPanel()">${ico('mcFaceInt')}La face int.<small>mur vers l'extérieur</small></button></div>
-    ${alAuto?`<div class="tip" style="margin-top:8px">Ton premier contour suit <b>l'intérieur des pièces</b> : clique les coins comme tu les mesures au mètre ruban, dans la pièce. Les murs épais poussent vers l'extérieur.</div>`:''}${wallAlign!=='axe'?`<div class="tip" style="margin-top:8px">Les murs poussent d'un seul côté du trait : des murs d'épaisseurs différentes (pierre 60 + parpaing 20) restent <b>alignés sur la même face</b>. Le côté est choisi automatiquement à la fermeture de la pièce ; tu peux l'inverser mur par mur.</div>`:''}
-    <div class="ph mt">Pièce rectangulaire rapide</div>
-    <div class="row"><label>Longueur × largeur</label><span style="display:flex;gap:6px;align-items:center"><input class="fin n" id="rectL" type="number" step="0.01" min="0.5" value="4.00" style="width:76px"> × <input class="fin n" id="rectl" type="number" step="0.01" min="0.5" value="3.00" style="width:76px"> m</span></div>
-    <button class="ib" style="width:100%;justify-content:center;margin-top:6px" onclick="startRect(event)">${ico('rect')}Poser cette pièce</button>
-    ${rectMode?`<div class="tip act">Clique dans le plan : le coin haut-gauche se pose là. Au clavier : <kbd>Entrée</kbd> dans le plan la pose au centre. <kbd>Échap</kbd> annule.</div>`:''}`:''}
-    ${wallType==='virtuel'?`<div class="tip">${ico('info','lead')}Une <b>séparation</b> découpe une pièce ouverte (ex. séjour / cuisine) <b>sans construire de mur</b> : chaque zone a sa surface et son type. Elle n'est pas comptée dans les cloisons ni dans les murs à peindre.</div>`:
-    `<div class="tip">${ico('idee','lead')}Commence par les <b>murs extérieurs</b>, puis les <b>cloisons</b>. Dès qu'un contour se ferme, la pièce apparaît avec sa surface.<br><br>${ico('clavier','lead')}<b>Précis au cm</b> : après le 1er clic, tape la longueur (ex. <kbd>3,5</kbd>) puis <kbd>Entrée</kbd> — le mur part dans la direction de ta souris. <kbd>Maj</kbd> force les angles droits, <kbd>Entrée</kbd> seule ferme la pièce.</div>`}
+  /* D61 · le panneau de droite est le panneau de PROPRIÉTÉS : l'élément sélectionné — y compris l'objet qu'un outil
+     vient de poser (il était caché sous la bibliothèque) —, sinon le mode d'emploi court de l'outil actif et les
+     propriétés de la variante ou du modèle choisi dans la barre d'options. Les bibliothèques sont au-dessus du plan. */
+  if(sel&&(tool==='ouverture'||tool==='equipement')){
+    h+=renderSelection(lv);
+  } else if(tool==='mur'){
+    const alAuto=(wallType==='mur'||wallType==='porteur'||wallType==='auto')&&contourIntAuto(),ty=WALL_TYPES.find(t=>t[0]===wallType),pieces=(facesCache[lv.id]||[]).some(f=>f.room);
+    h+=`<div class="ptitle">Murs</div><div class="psub">Le type de mur et le trait se choisissent dans la barre au-dessus du plan.</div>`
+    +modeEmploi(['Clique pour poser le premier coin.','Clique chaque coin suivant, ou tape une longueur (<kbd>3,5</kbd>) puis <kbd>Entrée</kbd>.','Reviens au premier coin, ou <kbd>Entrée</kbd>, pour fermer la pièce : sa surface s\'affiche.'])
+    +`<div class="ph">Prochains murs</div><div class="mprop"><span class="th">${ico(MC_MUR[wallType]||'mcAuto')}</span><span class="mpt"><b>${ty?ty[1]:'Automatique'}</b><small>${ty?wallTypeSub(ty):pieces?'cloison 7 cm dans une pièce · mur 20 cm en façade':'mur 20 cm pour le contour'}</small></span></div>
+    ${wallType!=='virtuel'&&wallType!=='auto'?`<div class="row" style="margin-top:12px"><label>Épaisseur des prochains murs</label><span><input class="fin n" type="number" step="1" min="3" max="80" value="${Math.round((customT??ty[2])*100)}" onchange="setCustomT(this.value)"> cm</span></div>`:''}
+    ${wallType==='auto'?`<div class="tip" style="margin-top:12px">${ico('idee','lead')}<b>Automatique</b> : ton premier contour est en murs de 20 cm. Ensuite, un mur tracé <b>dans une pièce</b> devient une cloison de 7 cm ; un mur qui <b>agrandit le logement</b> reste un mur de façade, aligné sur les autres. Choisis un type au-dessus du plan pour le forcer.</div>`:''}
+    ${wallType==='virtuel'?`<div class="tip">${ico('info','lead')}Une <b>séparation</b> découpe une pièce ouverte (ex. séjour / cuisine) <b>sans construire de mur</b> : chaque zone a sa surface et son type. Elle n'est pas comptée dans les cloisons ni dans les murs à peindre.</div>`
+    :`${alAuto?`<div class="tip" style="margin-top:8px">Ton premier contour suit <b>l'intérieur des pièces</b> : clique les coins comme tu les mesures au mètre ruban, dans la pièce. Les murs épais poussent vers l'extérieur.</div>`:''}${wallAlign!=='axe'?`<div class="tip" style="margin-top:8px">Les murs poussent d'un seul côté du trait : des murs d'épaisseurs différentes (pierre 60 + parpaing 20) restent <b>alignés sur la même face</b>. Le côté est choisi automatiquement à la fermeture de la pièce ; tu peux l'inverser mur par mur.</div>`:''}
+    <div class="tip">${ico('idee','lead')}Commence par les <b>murs extérieurs</b>, puis les <b>cloisons</b>. Épaisseurs courantes : cloison en plaques de plâtre <b>7 cm</b> · parpaing ou béton <b>20 cm</b> · pierre <b>50 à 60 cm</b>.</div>`}
+    ${rectMode?`<div class="tip act">Clique dans le plan : le coin haut-gauche de la pièce se pose là. Au clavier : <kbd>Entrée</kbd> dans le plan la pose au centre. <kbd>Échap</kbd> annule.</div>`:''}
     ${chain.length?`<div class="tip act">${ico('crayon','lead')}Tracé en cours : ${pluriel(chain.length,'point')}. <b>Entrée</b> ferme la pièce, <b>Échap</b> termine sans fermer.</div>`:''}`;
   } else if(tool==='ouverture'){
-    h+=`<div class="ptitle">Ouvertures</div><div class="psub">Choisis un modèle puis clique sur un mur : l'ouverture s'y aimante. Largeur, sens et hauteur se règlent ensuite.</div>`;
-    /* D54 (jury final, novice) : la Fenêtre, le modèle le plus posé, tombait sous le pied du budget (à 1 280 × 800,
-       toute la section Extérieur était cachée) et le premier clic « sur la Fenêtre » ouvrait le budget. L'extérieur
-       passe d'abord, dans l'ordre de ce qu'on pose le plus (Fenêtre, Porte d'entrée, Porte-fenêtre), puis l'intérieur
-       (Porte simple en tête) ; chaque modèle tient sur une ligne : les quatre plus courants se voient sans défiler. */
-    h+=bibOuvertures(openingType,k=>`openingType='${k}';renderPanel();draw()`);
-    h+=`<div class="tip"><b>Intérieur</b> : portes entre pièces (comptées en menuiserie intérieure). <b>Extérieur</b> : donne sur dehors → pose, tapée et isolation gérées. En vue <b>${nomVue('projet')}</b>, une ouverture ajoutée est un <b>percement</b> ; une existante peut être marquée <b>à boucher</b>.</div>`;
+    const ext=isExtType(openingType);
+    h+=`<div class="ptitle">Ouvertures</div><div class="psub">Portes, fenêtres, baies et passages : le modèle se choisit dans la barre au-dessus du plan.</div>`
+    +modeEmploi(['Choisis un modèle au-dessus du plan.','Survole un mur : l\'ouverture s\'y aimante.','Clique pour la poser : sa fiche s\'ouvre ici (largeur, sens, décision).'])
+    +`<div class="ph">Modèle choisi</div>`+propModele('ouverture',openingType,ext?'Sur un mur de façade : pose, tapée et isolation gérées':'Entre deux pièces : menuiserie intérieure')
+    +`<div class="tip">En vue <b>${nomVue('projet')}</b>, une ouverture ajoutée est un <b>percement</b> ; une existante peut être marquée <b>à boucher</b>.</div>`;
   } else if(tool==='doublage'){
     const ite=DBL_CFG.mode==='ite',ep=DBL_CFG.e+(ite?0.010:0.020),R=+(DBL_CFG.e/(ISO_MAT[DBL_CFG.mat].lambda)).toFixed(2);
-    /* Poser / Retirer est un BOUTON, pas seulement un Alt. Le retrait n'existait que par le
-       raccourci : Dani l'a cherché dans l'outil et ne l'a pas trouvé. Une fonction qu'on ne voit
-       pas est une fonction qui n'existe pas. En mode Retirer, les réglages du prochain doublage
-       disparaissent — ils ne veulent rien dire quand on enlève. */
+    /* Poser / Retirer est un BOUTON (dans la barre d'options), pas seulement un Alt. En mode Retirer, les réglages du
+       prochain doublage disparaissent — ils ne veulent rien dire quand on enlève. */
     const retire=DBL_CFG.action==='retirer';
     h+=`<div class="ptitle">Doublage${gl('doublage')}</div>
-      <div class="psub">${retire
-        ?`Clique un doublage sur le plan pour l'enlever — <b>ce tronçon-là seulement</b>. Un clic dans une ouverture retire l'isolant de ses tableaux.`
-        :`<b>Clique</b> la face du mur à isoler : il est doublé d'un angle à l'autre de la pièce. Pour n'en isoler qu'une partie, <b>glisse</b> le long de la face. Un clic <b>dans une ouverture</b> isole ses tableaux.`}</div>
-      <div class="seg stack">
-        <button class="${!retire?'on':''}" onclick="setDblCfg('action','poser')">${ico('mcPoser')}Poser<small>tracer</small></button>
-        <button class="${retire?'on':''}" onclick="setDblCfg('action','retirer')">${ico('mcRetirer')}Retirer<small>enlever</small></button>
-      </div>`;
-    if(retire){
-      h+=`<div class="tip" style="margin-top:12px">Raccourci : <kbd>Alt</kbd> + clic retire sans changer de mode.</div>
-      <div class="tip">Pour vider <b>toute une face</b> d'un coup, sélectionne le mur et clique <b>Retirer</b> dans sa fiche. Pour plusieurs murs, sélectionne-les et utilise le bloc du groupe.</div>`;
-    } else {
-      h+=`<div class="ph mt">Par où · ITI${gl('iti')} ou ITE${gl('ite')}</div>
-      <div class="seg stack">
-        <button class="${!ite?'on':''}" onclick="setDblCfg('mode','iti')">${ico('mcIti')}Par l'intérieur<small>ITI</small></button>
-        <button class="${ite?'on':''}" onclick="setDblCfg('mode','ite')">${ico('mcIte')}Par l'extérieur<small>ITE</small></button>
-      </div>
-      <div class="tip" style="margin-top:8px">${ite?'Clique (ou glisse le long de) la face <b>côté dehors</b> d\'un mur de façade.':'Clique (ou glisse le long de) la face <b>côté pièce</b> du mur à doubler.'}</div>
+      <div class="psub">${retire?'Mode <b>Retirer</b> : clique un doublage sur le plan pour l\'enlever, <b>ce tronçon-là seulement</b>.':'Poser ou retirer, par l\'intérieur ou par l\'extérieur, et l\'épaisseur : dans la barre au-dessus du plan.'}</div>`
+    +(retire?modeEmploi(['Clique un doublage sur le plan : ce tronçon est retiré.','Un clic dans une ouverture retire l\'isolant de ses tableaux.','Raccourci : <kbd>Alt</kbd> + clic retire sans changer de mode.'])
+      +`<div class="tip">Pour vider <b>toute une face</b> d'un coup, sélectionne le mur et clique <b>Retirer</b> dans sa fiche. Pour plusieurs murs, sélectionne-les et utilise le bloc du groupe.</div>`
+    :modeEmploi(['<b>Clique</b> la face du mur à isoler : il est doublé d\'un angle à l\'autre de la pièce.','Pour n\'en isoler qu\'une partie, <b>glisse</b> le long de la face.','Un clic <b>dans une ouverture</b> isole ses tableaux.'])
+      +`<div class="ph">Par où · ITI${gl('iti')} ou ITE${gl('ite')}</div><div class="mprop"><span class="th">${ico(ite?'mcIte':'mcIti')}</span><span class="mpt"><b>${ite?'Par l\'extérieur':'Par l\'intérieur'}</b><small>${ite?'clique (ou glisse le long de) la face côté dehors d\'un mur de façade':'clique (ou glisse le long de) la face côté pièce du mur à doubler'}</small></span></div>
       ${ISO_MAT_CHOIX.length>1?`<div class="ph mt">Isolant</div>
       <div class="seg wrap">${Object.entries(ISO_MAT).filter(([k])=>ISO_MAT_CHOIX.includes(k)).map(([k,m])=>`<button class="${DBL_CFG.mat===k?'on':''}" onclick="setDblCfg('mat','${k}')">${m.label}<small>λ <span class="mono">${fmt(m.lambda,3)}</span></small></button>`).join('')}</div>`
         :`<div class="row" style="margin-top:12px"><label>Isolant</label><span class="val" style="font-family:inherit">${ISO_MAT[DBL_CFG.mat].label} · λ${gl('lambda')} <span class="mono">${fmt(ISO_MAT[DBL_CFG.mat].lambda,3)}</span></span></div>`}
       <div class="row" style="margin-top:10px"><label>Épaisseur d'isolant</label><span>${EP_DOUBLAGE.map(mm=>`<button class="miniep ${Math.round(DBL_CFG.e*1000)===mm?'on':''}" onclick="setDblCfg('e',${mm})" ${mm===120?'title="Conseillé : R ≥ 3,7"':''}>${mm/10}</button>`).join('')} cm</span></div>
       <div class="blond ${R>=R_MIN_MUR?'ok':'ko'}"><b>${ite?'Épaisseur ajoutée dehors':'Épaisseur perdue dans la pièce'} : <span>${fmt(ep*100,1)} cm</span> · R${gl('r')} = <span>${fmt(R,1)}</span> m²·K/W</b><small>${Math.round(DBL_CFG.e*100)} cm d'isolant + ${ite?'enduit':'lame d\'air + plaque de plâtre'}.${Math.round(DBL_CFG.e*1000)===120?' Épaisseur conseillée.':''}</small><small>${R>=R_MIN_MUR?ico('check','lead ok')+'R ≥ 3,7 : atteint le seuil MaPrimeRénov\' / CEE pour un mur extérieur.'+gl('aides'):ico('alerte','lead')+'R < 3,7 : sous le seuil MaPrimeRénov\' / CEE pour un mur extérieur (sans effet sur une cloison).'+gl('aides')}</small></div>
       <div class="tip">Le doublage reste <b>accroché à sa face de mur</b> : les fenêtres et les cloisons qui le touchent s'y ajustent d'elles-mêmes. Il s'arrête contre une cloison, jamais au milieu de nulle part.</div>
-      ${mode()==='existant'?`<div class="tip warn">Tu es en vue <b>${nomVue('existant')}</b> : ce doublage sera compté comme <b>déjà en place</b>, donc jamais facturé. Passe en vue <b>${nomVue('projet')}</b> pour le chiffrer.</div>`:''}`;
-    }
+      ${mode()==='existant'?`<div class="tip warn">Tu es en vue <b>${nomVue('existant')}</b> : ce doublage sera compté comme <b>déjà en place</b>, donc jamais facturé. Passe en vue <b>${nomVue('projet')}</b> pour le chiffrer.</div>`:''}`);
   } else if(tool==='equipement'){
-    h+=`<div class="ptitle">Équipements</div><div class="psub">Choisis un élément puis clique dans le plan : il se colle au mur tout seul. En vue Travaux, chaque équipement ajouté est chiffré ; le mobilier sert seulement à te repérer.</div>`;
-    const cats=[...new Set(Object.values(ITEMS).map(i=>i.cat))];
-    cats.forEach((c,i)=>{const F=FAM[c]||FAM.Autre;const list=Object.entries(ITEMS).filter(([k,o])=>o.cat===c);
-      h+=`<div class="fam"><div class="famh"><span class="fic">${F.ic?ico(F.ic,20):''}</span><b>${c}</b><small>${list.length}</small></div><div class="lib2">`+
-        list.map(([k,o])=>`<button class="it ${itemType===k?'on':''}" onclick="itemType='${k}';renderPanel();draw()" title="${o.label}"><span class="th">${vignetteImg('equipement',k,84,44)}</span><b>${o.label}</b><small>${o.elec?(o.free?'plafond':'sur un mur'):fmt(o.w)+' × '+fmt(o.h)+' m'}</small></button>`).join('')+`</div></div>`;});
-    h+=`<div class="tip">${ico('eclair','lead')}En vue <b>${nomVue('projet')}</b>, les points électriques et le chauffage que tu ajoutes sont <b>comptés dans le budget</b> (prises, interrupteurs, lumières, radiateurs). Minimum de la norme électrique NF C 15-100 : 3 prises par chambre, 6 en cuisine, 1 point lumineux par pièce. <kbd>R</kbd> pivote, glisser déplace.</div>`;
+    const d=ITEMS[itemType];
+    h+=`<div class="ptitle">Équipements</div><div class="psub">Salle de bain, cuisine, chauffage, électricité, mobilier, escalier : le modèle se choisit dans la barre au-dessus du plan.</div>`
+    +modeEmploi(['Choisis une famille, puis un modèle, au-dessus du plan.','Clique près d\'un mur : l\'équipement s\'y colle tout seul.','<kbd>R</kbd> le pivote, glisser le déplace ; sa fiche s\'ouvre ici.'])
+    +`<div class="ph">Modèle choisi</div>`+(d?propModele('equipement',itemType,isFurniture(itemType)?'Mobilier : pour te repérer, non chiffré':d.elec?'Point électrique : chiffré en vue '+nomVue('projet'):'Chiffré quand il est ajouté en vue '+nomVue('projet'))
+      :`<div class="tip q">${ico('info','lead')}Aucun modèle choisi : choisis-en un dans la barre au-dessus du plan. Rien n'est posé tant que tu n'as pas choisi.</div>`)
+    +`<div class="tip">${ico('eclair','lead')}En vue <b>${nomVue('projet')}</b>, les points électriques et le chauffage que tu ajoutes sont <b>comptés dans le budget</b> (prises, interrupteurs, lumières, radiateurs). Minimum de la norme électrique NF C 15-100 : 3 prises par chambre, 6 en cuisine, 1 point lumineux par pièce.</div>`;
   } else if(tool==='cote'){
-    h+=`<div class="ptitle">Cotes</div><div class="psub">Clique les deux points à coter, la cote <b>flotte</b> avec la souris : écarte-la du mur, puis clique pour la <b>fixer</b>. Tu pourras la faire coulisser après coup.</div><div class="tip">Les cotes manuelles servent à noter une distance utile (largeur d'un passage, recul, hauteur sous plafond dans une remarque…).</div>`;
+    h+=`<div class="ptitle">Cotes</div><div class="psub">Une cote fixe note une distance utile : largeur d'un passage, recul, alignement.</div>`
+    +modeEmploi(['Clique les deux points à coter.','La cote <b>flotte</b> avec la souris : écarte-la du mur.','Clique pour la <b>fixer</b> ; tu pourras la faire coulisser après coup.'])
+    +`<div class="tip">Les cotes des pièces et du logement s'affichent toutes seules ; pour les masquer : <b>Affichage</b>, en bas à droite du plan.</div>`;
   } else if(tool==='mesure'){
     const path=measureLen(measure),A=measureArea(measure);const per=measure.length>=3?path+dist(measure[measure.length-1],measure[0]):path;
-    h+=`<div class="ptitle">Mesurer${measureDone?' <span class="chip mes">fermé</span>':''}</div><div class="psub">Un mètre-ruban : mesure une longueur ou une surface sans rien ajouter au plan.</div>
-    <div class="row"><label>${measureDone?'Périmètre':'Longueur'}</label><span class="val b">${measure.length>=2?fmt(measureDone?per:path)+' m':'—'}</span></div>
+    h+=`<div class="ptitle">Mesurer${measureDone?' <span class="chip mes">fermé</span>':''}</div><div class="psub">Un mètre-ruban : mesure une longueur ou une surface sans rien ajouter au plan.</div>`
+    +modeEmploi(['Clique des points le long de ce que tu mesures : ils s\'accrochent aux <b>angles intérieurs</b> des pièces.','Reviens au premier point pour <b>fermer</b> : périmètre et surface réelle.','<kbd>Échap</kbd> ou clic droit efface la mesure.'])
+    +`<div class="row"><label>${measureDone?'Périmètre':'Longueur'}</label><span class="val b">${measure.length>=2?fmt(measureDone?per:path)+' m':'—'}</span></div>
     <div class="row"><label>Surface</label><span class="val b">${measure.length>=3?fmtM2(A):'—'}</span></div>
     <div class="row"><label>Points posés</label><span class="val">${measure.length}</span></div>
-    <button class="ib" style="width:100%;justify-content:center;margin-top:8px" onclick="measure=[];measureDone=false;renderPanel();draw()">Nouvelle mesure</button>
-    <div class="tip">Clique des points le long de ce que tu veux mesurer. Le curseur s'accroche aux <b>angles intérieurs</b> des pièces (carré vert « angle intérieur ») et aux faces des murs — donc tu mesures la <b>surface réelle</b>, pas celle à l'axe. Zoome (molette) pour viser précisément. <b>Reviens au 1er point</b> pour <b>fermer</b> la forme → périmètre + surface figés. <kbd>Clic droit</kbd> ou <kbd>Échap</kbd> efface.</div>`;
+    <button class="ib" style="width:100%;justify-content:center;margin-top:8px" onclick="measure=[];measureDone=false;renderPanel();draw()">Nouvelle mesure</button>`;
   } else if(tool==='calque'){
     const bg=lv.bg;
-    h+=`<div class="ptitle">Fond de plan</div><div class="psub">Importe une image de ton plan (photo, scan, capture d'écran) pour dessiner par-dessus.</div>
-    <input type="file" id="bgFile" accept="image/*" style="display:none" onchange="importBg(this.files[0])"><button class="ib" style="width:100%;justify-content:center" onclick="document.getElementById('bgFile').click()">${ico('importer')}Importer une image</button>`;
-    if(bg){h+=`<div class="ph mt">Réglages</div><div class="row"><label>Opacité</label><span class="val">${Math.round(bg.opacity*100)} %</span></div><input class="range" type="range" min="0.1" max="1" step="0.05" value="${bg.opacity}" oninput="L().bg.opacity=+this.value;draw()" onchange="save();renderPanel()">
-      <div class="row"><label>Verrouiller la position</label><input type="checkbox" ${bg.locked?'checked':''} onchange="L().bg.locked=this.checked;save()"></div>
+    h+=`<div class="ptitle">Fond de plan</div><div class="psub">Une image de ton plan (photo, scan, capture d'écran) sous le dessin, pour tracer par-dessus.</div>`
+    +modeEmploi(['<b>Importe une image</b> (barre au-dessus du plan).','<b>Cale l\'échelle</b> : clique 2 points d\'une longueur connue, entre la distance réelle.','Trace tes murs par-dessus ; glisse l\'image pour la placer.'])
+    +`<button class="ib" style="width:100%;justify-content:center" onclick="document.getElementById('bgFile').click()">${ico('importer')}${bg?'Changer l\'image':'Importer une image'}</button>`;
+    if(bg){h+=`<div class="ph mt">Réglages</div><div class="row"><label>Opacité</label><span class="val">${Math.round(bg.opacity*100)} %</span></div><input class="range" type="range" min="0.1" max="1" step="0.05" value="${bg.opacity}" aria-label="Opacité du fond de plan" oninput="L().bg.opacity=+this.value;draw()" onchange="save();renderPanel();renderOptions()">
+      <div class="row"><label>Verrouiller la position</label><input type="checkbox" ${bg.locked?'checked':''} onchange="L().bg.locked=this.checked;save();renderOptions()"></div>
       <div class="btnrow"><button class="ib" onclick="startCalib()">${ico('regle')}Caler l'échelle</button><button class="ib danger" onclick="L().bg=null;save();render()">Retirer</button></div>
       <div class="tip">${calibMode?'<b>Clique 2 points</b> sur le calque dont tu connais la distance réelle (ex. un mur de 3 m).':'Pour que les surfaces soient justes : <b>Caler l\'échelle</b>, clique 2 points sur une longueur connue, entre la distance réelle. Glisse l\'image pour la positionner.'}</div>`;}
+  } else if(tool==='texte'&&!sel){
+    h+=`<div class="ptitle">Note</div><div class="psub">Une remarque sur le plan : question pour l'artisan, point à vérifier, choix à retenir. Elle part dans le dossier.</div>`
+    +modeEmploi(['Choisis sa couleur au-dessus du plan (facultatif).','Clique dans le plan, là où la note doit aller.','Écris-la dans sa fiche ; glisse-la pour la déplacer.'])
+    +`<div class="tip">Crée ton code couleur : par ex. bleu = question pour l'artisan, vert = validé, rose = à vérifier.</div>`;
+  } else if(tool==='zone'&&!sel){
+    h+=`<div class="ptitle">Zone</div><div class="psub">Pour agir sur plusieurs éléments d'un coup.</div>`
+    +modeEmploi(['Trace un rectangle sur le plan.','Tout ce qu\'il touche est sélectionné : murs, tronçons, ouvertures, équipements, notes.','<kbd>Suppr</kbd> les efface (en vue '+nomVue('projet')+' : les marque à démolir, à boucher ou à déposer).'])
+    +`<div class="tip">Avec l'outil Sélection, <kbd>Maj</kbd> + glisser dans le vide fait la même chose.</div>`;
   } else if(sel){
     h+=mode()==='final'||isMobile()?ficheEnLecture(renderSelection(lv)):renderSelection(lv); /* D48 (cj-integration09) : au téléphone, les fiches se lisent */
   } else {
@@ -7282,11 +7545,9 @@ let toastT;function toast(msg,ok,opt){const t=document.getElementById('toast');t
   /* D53 : un message peut porter une 2e action (`plus`, ex. « Tout le mur » puis « Annuler ») */
   if(act)[opt,...(opt.plus||[])].filter(x=>x&&x.action).forEach(o=>{const b=document.createElement('button');b.type='button';b.className='tact';b.textContent=o.action;b.onclick=ev=>{ev.stopPropagation();clearTimeout(toastT);t.classList.remove('show','act');if(o.fn)o.fn();};t.appendChild(b);});
   t.classList.toggle('ok',!!ok);t.classList.toggle('act',act);t.classList.toggle('over',!!modaleOuverte());t.classList.add('show');clearTimeout(toastT);
-  /* D41 : le message se pose juste au-dessus de la bulle d'astuce, sans la recouvrir */
-  /* R6 : au téléphone le message est posé en haut (top) ; lui donner aussi un « bottom » l'étirait en une colonne blanche sur tout le plan */
-  /* D54 (design 3) : un message replie la bulle d'astuce en « ? » — les deux, plus la barre de zoom, couvraient le bas du plan */
-  {const h=document.getElementById('hint');if(h&&!h.hidden&&!h.classList.contains('replie')&&!isMobile()&&!['murChain','cotePlace'].includes(lastHint)){clearTimeout(astuceT);h.classList.add('replie');h.title='Afficher l\'astuce';}}
-  t.style.bottom='';{const h=document.getElementById('hint'),st=document.getElementById('stage');if(!t.classList.contains('over')&&!isMobile()&&h&&!h.hidden&&h.getClientRects().length&&st){const hr=h.getBoundingClientRect(),sr=st.getBoundingClientRect();t.style.bottom=Math.max(76,Math.round(sr.bottom-hr.top+10))+'px';}else t.style.bottom='';}
+  /* D61 : le message passager se pose juste au-dessus de la barre d'état (CSS) ; la consigne, dans la barre, ne se
+     replie plus (R6 : au téléphone le message est posé en haut, sans « bottom »). */
+  t.style.bottom='';
   /* D41 : le temps de lire — 45 ms par caractère, entre 2,6 et 7 s (8 s avec une action) */
   const duree=(opt&&opt.ms)||(act?8000:Math.min(7000,Math.max(2600,String(msg).length*45)));t._reste=duree;t._fin=Date.now()+duree;
   toastT=setTimeout(()=>t.classList.remove('show','act'),duree);}
@@ -7541,11 +7802,11 @@ function etapesVisite(){
     {cible:'#sheetHandle',place:['haut','bas'],titre:'Le tiroir',texte:'Touche-le pour l\'ouvrir : la fiche de ce que tu as touché, et l\'onglet <b>Suivi</b> pour cocher l\'avancement de ton chantier.'},
     {cible:'#estBtnTop',place:['bas','haut'],titre:'Ton budget',texte:`<b>Estimer ce plan</b> : le montant ${gl('ht','HT')}, le détail par ${gl('corps','corps d\'état')} et ce qu'il te reste à décider.`}];
   return [
-    {cible:'#tools',place:['droite','bas'],titre:'Ton plan',texte:vide?'Commence par l\'outil <b>Murs</b> : clique chaque coin de ton logement, la pièce apparaît avec sa surface. Les autres outils ajoutent les portes, les fenêtres et les équipements.'
-      :(ex?'Voici un T2 de 58 m², déjà dessiné : chaque pièce affiche sa surface, calculée toute seule. ':'')+'Pour dessiner, choisis un outil dans cette colonne (Murs, Ouvertures, Équipements…). Pour modifier, clique un élément du plan.'},
+    {cible:'#tools',place:['droite','bas'],titre:'Ton plan',texte:vide?'Commence par l\'outil <b>Murs</b> : clique chaque coin de ton logement, la pièce apparaît avec sa surface. Les autres outils ajoutent les portes, les fenêtres et les équipements ; leurs modèles se choisissent dans la barre <b>au-dessus du plan</b>.'
+      :(ex?'Voici un T2 de 58 m², déjà dessiné : chaque pièce affiche sa surface, calculée toute seule. ':'')+'Pour dessiner, choisis un outil dans cette colonne (Murs, Ouvertures, Équipements…) : ses variantes et ses modèles s\'affichent dans la barre <b>au-dessus du plan</b>, la consigne dans la barre <b>en dessous</b>. Pour modifier, clique un élément du plan.'},
     vues,
     {cible:'#panel',place:['gauche','bas','haut'],titre:'C\'est ici que tu décides',
-      texte:'Clique une pièce, un mur ou une fenêtre : sa fiche s\'ouvre ici. Tu y dis ce que tu en fais : '+[LEX.etat.garder,LEX.etat.demolir,LEX.etat.remplacer].map(x=>'<b>'+x+'</b>').join(', ')+', un nouveau sol…'+(ex&&!vide?' Ici, la Chambre : on garde son parquet, on remplace sa fenêtre et on isole un de ses murs.':''),
+      texte:'Clique une pièce, un mur ou une fenêtre : sa fiche (ses propriétés) s\'ouvre ici. Tu y dis ce que tu en fais : '+[LEX.etat.garder,LEX.etat.demolir,LEX.etat.remplacer].map(x=>'<b>'+x+'</b>').join(', ')+', un nouveau sol…'+(ex&&!vide?' Ici, la Chambre : on garde son parquet, on remplace sa fenêtre et on isole un de ses murs.':''),
       avant:()=>{const f=rooms.find(g=>g.room.type==='chambre')||rooms[0];if(!f)return;if(tool!=='select')setTool('select');sel={kind:'room',id:f.room.id};multi=[];msel=[];panelTab='details';render();if(visite)visite.aSel=true;}},
     {cible:'#pfoot',place:['gauche','haut'],titre:'Le budget suit tes décisions',texte:`Chaque décision s'ajoute ici, au prix ${gl('ht','HT')} indicatif. Rien n'est compté tant que tu n'as rien décidé. Clique la carte pour ${voitTout()?'voir d\'où vient chaque euro':'voir sa répartition par corps d\'état'}.`},
     {cible:'#estBtnTop',aussi:'#panel .ptabs[aria-label="Panneau"] button:last-child',place:['gauche','bas'],titre:'Estime, puis suis ton chantier',texte:`<b>Estimer ce plan</b> : le montant, le détail par ${gl('corps','corps d\'état')} et ce qu'il te reste à décider. Ensuite, l'onglet <b>Suivi</b> range chaque travail dans l'ordre du chantier : tu coches au fur et à mesure.`}];}
@@ -7629,7 +7890,7 @@ function poserPieceRapide(ev){if(isMobile()){toast('Le dessin se fait sur ordina
    centre de la vue. Elle est choisie et sa fiche s'ouvre ; ses murs se règlent ensuite un par un, par leur
    longueur. Un clic de souris garde son sens : il pose le coin là où on clique. */
 function auClavier(ev){return !!(ev&&ev.isTrusted&&ev.detail===0);}
-function poserPieceAuCentre(){if(!rectMode)return;const {L:Lr,l}=rectMode,c=W2(v(cv.clientWidth/2,cv.clientHeight/2));clickAction(v(c.x-Lr/2,c.y-l/2));
+function poserPieceAuCentre(){if(!rectMode)return;const {L:Lr,l}=rectMode,Z=zoneUtile(),c=W2(v((Z.x0+Z.x1)/2,(Z.y0+Z.y1)/2));clickAction(v(c.x-Lr/2,c.y-l/2));
   syncRooms(L());const f=(facesCache[L().id]||[]).filter(x=>x.room).find(x=>pointIn(c,x.poly));setTool('select');
   if(f){sel={kind:'room',id:f.room.id};render();ouvrirFiche();}
   toast(`Pièce de ${fmt(Lr)} × ${fmt(l)} m posée au centre du plan. Pour régler un mur : dans le plan, Alt + flèches jusqu'à lui, puis sa longueur dans sa fiche.`,true);}
@@ -7673,7 +7934,7 @@ window.addEventListener('keydown',e=>{const t=e.target;if(!t||!t.getAttribute||t
    sous la barre du haut, au-dessus ailleurs ; sinon le côté qui tient). Échap, un clic ou un défilement
    la ferment. */
 let bulleAncre=null;
-function coteBulle(el){return el.closest('.tb,.resizer')?(el.closest('.resizer')?'gauche':'droite'):el.closest('.top,.levels')?'bas':'haut';}
+function coteBulle(el){return el.closest('.tb,.resizer')?(el.closest('.resizer')?'gauche':'droite'):el.closest('.top,.levels,.optbar')?'bas':'haut';}
 function montrerBulle(el){const b=document.getElementById('bulle'),t=el&&el.dataset.tip;if(!b||!t||!el.getClientRects().length)return;bulleAncre=el;b.textContent=t;b.className='';b.hidden=false;
   const r=el.getBoundingClientRect(),bw=b.offsetWidth,bh=b.offsetHeight,M=8,G=9,W=innerWidth,H=innerHeight;
   const pos={haut:[r.left+r.width/2-bw/2,r.top-G-bh],bas:[r.left+r.width/2-bw/2,r.bottom+G],droite:[r.right+G,r.top+r.height/2-bh/2],gauche:[r.left-G-bw,r.top+r.height/2-bh/2]};
@@ -7746,7 +8007,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Tab'&&document.activeElement
    porte un vrai bouton, qui dit ce qu'il fait (il fallait deviner un double-clic sur une poignée de 7 px). */
 /* D50 (cj-access04) : replier ou déplier le panneau recadre le plan s'il était vu en entier (sinon on
    garde le zoom choisi à la main) ; replié, le budget reste visible (pastille « Budget HT »). */
-function planEntierVisible(){const b=bbox(L());if(!b||!cv.clientWidth)return false;const a=S(v(b.x0,b.y0)),c=S(v(b.x1,b.y1));return a.x>=-2&&a.y>=-2&&c.x<=cv.clientWidth+2&&c.y<=cv.clientHeight+2;}
+function planEntierVisible(){const b=bbox(L());if(!b||!cv.clientWidth)return false;const a=S(v(b.x0,b.y0)),c=S(v(b.x1,b.y1)),Z=zoneUtile();return a.x>=Z.x0-2&&a.y>=Z.y0-2&&c.x<=Z.x1+2&&c.y<=Z.y1+2;}
 function plierPanneau(force){const B=document.querySelector('.body');if(!B)return;const plie=force===undefined?!B.classList.contains('panelPlie'):!!force;const recadrer=plie!==B.classList.contains('panelPlie')&&planEntierVisible();B.classList.toggle('panelPlie',plie);
   const b=document.getElementById('pfold');if(b){b.setAttribute('aria-expanded',String(!plie));b.setAttribute('aria-label',plie?'Afficher le panneau':'Replier le panneau');b.dataset.tip=plie?'Afficher le panneau : détails, suivi et budget':'Replier le panneau : plus de place pour le plan';b.setAttribute('aria-description',b.dataset.tip);}
   try{if(plie)localStorage.setItem('avyora-plan-plie','1');else localStorage.removeItem('avyora-plan-plie');}catch{}
