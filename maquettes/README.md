@@ -203,3 +203,10 @@ chaque SVG de l'interface en est un tracé), trois tailles d'icône au même poi
 system (rayons, hauteurs, tailles de texte sans demi-pixel), familles de bibliothèque sans couleur,
 mini-coupes et échantillons de légende, une seule carte « choisir un modèle », et la bibliothèque lisible
 sans défiler jusqu'à 1 024 × 768. À lancer avec la batterie, après `responsive`.
+
+Depuis D60 (chantier U2), il garde aussi les **symboles du plan et leurs vignettes** : la vignette d'un
+modèle est rendue par le code du plan (`vignette()` : `drawOpening` sur un mur témoin, `drawItem` cadré sur
+ce qu'il dessine) et doit égaler, après un flou 3 × 3, le rendu du plan au même cadrage — pour les 46
+modèles, à ×1 et ×2 ; deux modèles n'ont jamais la même vignette ; aucune n'est coupée. Il vérifie aussi
+les conventions d'architecte (un arc par vantail, plus de chevron, seuil, âme pleine, rails du garage),
+l'encre unique du plan, la cloison à 65 %, l'électricité à taille d'écran bornée et les glyphes indigo.

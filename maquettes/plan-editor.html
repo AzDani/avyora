@@ -31,7 +31,7 @@
   --sh-1:0 1px 2px rgba(30,27,75,.10);--sh-2:0 1px 3px rgba(30,27,75,.08),0 4px 12px -6px rgba(30,27,75,.12);--sh-pop:0 10px 28px -10px rgba(30,27,75,.28),0 2px 6px rgba(30,27,75,.06);--sh-modal:0 24px 64px -16px rgba(20,17,51,.45);
   --fs-xs:11px;--fs-s:12px;--fs-m:13px;--fs-b:14px;--fs-l:16px;--fs-xl:20px;
   --hover:#F0F1F7;--press:#E6E8F2;--hover-b:#C9CCDD;--off:.4;--focus:0 0 0 3px rgba(79,70,229,.22);
-  --lg-exist:#2b2857; /* l'encre des murs « déjà là », dans les légendes et les décisions */
+  --lg-exist:#1E1B4B; /* l'encre des murs « déjà là », dans les légendes et les décisions (D60 : l'encre du plan) */
   --mono:"Geist Mono",ui-monospace,monospace;
 }
 html,body{height:100%;font-family:"Geist",system-ui,sans-serif;color:var(--ink);background:var(--canvas)}
@@ -279,16 +279,13 @@ div.seg.stack{display:flex;flex-direction:column;gap:2px}
 .lib2 .it:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
 .lib2 .it .th{display:block;height:44px;border-radius:var(--r-s);background:var(--canvas);display:flex;align-items:center;justify-content:center;overflow:hidden}
 .lib2 .it.on .th{background:#fff}
-.lib2 .it .th img{width:84px;max-width:100%;height:54px;object-fit:contain;transform:scale(.85)}
-.lib2 .it .th.op svg{width:72px;max-width:100%;height:44px;stroke:var(--nuit);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.lib2 .it .th.op svg .wl{stroke:#9a99b5;stroke-width:2.4}
+.lib2 .it .th img{display:block;max-width:100%;height:auto;object-fit:contain} /* D60 : la vignette est rendue à sa taille et à la densité de l'écran, jamais réduite */
 .lib2 .it b{font-size:12px;font-weight:600;color:var(--ink);line-height:1.2;white-space:normal;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;min-height:2.4em;overflow-wrap:anywhere} /* D50 (cj-integration12) : le nom sur deux lignes, jamais « Porte coulissant… » */
 .lib2 .it small{font-family:"Geist Mono",monospace;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* D54 : la liste compacte des ouvertures — un modèle par ligne, vignette à gauche */
 .lib2.liste{grid-template-columns:minmax(0,1fr);gap:4px}
 .lib2.liste .it{flex-direction:row;align-items:center;gap:10px;padding:3px 8px 3px 3px}
 .lib2.liste .it .th{flex:0 0 54px;width:54px;height:30px;border-radius:var(--r-s)}
-.lib2.liste .it .th.op svg{width:52px;height:30px}
 .lib2.liste .it .itx{min-width:0;flex:1;display:flex;flex-direction:column;gap:1px}
 .lib2.liste .it b{min-height:0}
 .btnrow{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap}
@@ -1513,20 +1510,69 @@ const FAM={
   'Structure':{c:'#1e1b4b',ic:'famStructure'},
   'Autre':{c:'#6c6b86',ic:''}
 };
-const itemThumbs={};
-// vignette 2D d'un équipement : le vrai picto du plan, rendu hors écran (cache par type)
-function itemThumb(type){if(itemThumbs[type])return itemThumbs[type];const d=ITEMS[type];const off=document.createElement('canvas');const CW=84,CH=54;off.width=CW*2;off.height=CH*2;const c=off.getContext('2d');c.scale(2,2);
-  const sv={...view},real=ctx;const z=Math.min(66/d.w,40/d.h,320);view.zoom=z;view.ox=CW/2;view.oy=CH/2;ctx=c;
-  try{drawItem({type,x:0,y:0,w:d.w,h:d.h,rot:0},false);}finally{ctx=real;Object.assign(view,sv);}
-  return itemThumbs[type]=off.toDataURL();}
-// pictos d'un point électrique (échelle : 1 unité = 1 m, déjà dans le repère de l'équipement)
+/* D60 · LA vignette d'un modèle (annexe C9 de l'iconographe) : le symbole du plan, rendu par LE MÊME CODE que le plan —
+   drawOpening sur un tronçon de mur témoin (20 cm pour une ouverture extérieure, cloison pour une intérieure ; la pièce
+   au-dessus), drawItem cadré sur ce qu'il dessine vraiment (chaises, débords, flèches : rien n'est coupé). Rendue à la
+   densité de l'écran (nette à ×1, ×2, ×3) et transparente : une carte choisie ne change que son fond, le dessin reste à
+   l'encre. Deux modèles n'ont donc jamais la même vignette, et ce qu'on choisit est ce qu'on verra posé. Une passe d'essai
+   mesure l'emprise dessinée, la seconde cadre : échelle commune plafonnée (32 px/m pour les ouvertures, 60 px/m pour les
+   équipements ; un point électrique à sa taille d'écran maximale), et un équipement en hauteur se couche s'il y gagne.
+   genre : 'ouverture' | 'equipement' ; lw × lh : la taille affichée (px CSS). Le résultat est gardé en cache par modèle,
+   taille et densité, avec son cadrage (z, ox, oy, rot) pour les contrôles. Prête pour toute bibliothèque (vignetteImg). */
+const vignettes={};
+const itemThumbs=vignettes; /* l'ancien cache des vignettes d'équipement */
+function vignette(genre,k,lw,lh){
+  const dpr=Math.max(1,window.devicePixelRatio||1),cle=genre+'|'+k+'|'+lw+'x'+lh+'|'+dpr;
+  if(vignettes[cle])return vignettes[cle];
+  const ouv=genre==='ouverture',d=ouv?OPENINGS[k]:ITEMS[k];if(!d)return null;
+  const lv={id:'__vignette',name:'',height:2.5,walls:[],openings:[],rooms:[],items:[],dims:[],texts:[],bg:null};
+  let obj,mur=null;
+  if(ouv){mur={id:'__vmur',a:v(30,0),b:v(-30,0),type:isExtType(k)?'mur':'cloison'};lv.walls.push(mur); /* tracé vers −x : le côté intérieur (+n) est en haut */
+    obj={id:'__vouv',wallId:mur.id,t:0.5,type:k,w:d.w,h:d.h,side:1,hinge:-1};lv.openings.push(obj);} /* charnière à gauche, comme on lit une porte */
+  else{obj={id:'__veq',type:k,x:0,y:0,w:d.w,h:d.h,rot:0};if(k==='escalier')obj.stair={type:'droit'};lv.items.push(obj);}
+  const sv={state,view:{...view},ctx,ui:uiScale,ex:exporting},PAD=2,CAP=ouv?32:(d.elec?24/Math.max(d.w,d.h):60);
+  const peindre=(c2,W,H,ech,z,ox,oy,rot,avecMur)=>{ctx=c2;c2.setTransform(ech,0,0,ech,0,0);c2.clearRect(0,0,W,H);view.zoom=z;view.ox=ox;view.oy=oy;
+    if(ouv){if(avecMur)drawWall(mur,false,false);drawOpening(obj,false);}else{obj.rot=rot;drawItem(obj,false);}};
+  /* l'emprise réellement dessinée à l'échelle z (m, repère du plan ; le mur témoin compte en hauteur, pas en largeur) */
+  const TW=480,essai=document.createElement('canvas');essai.width=TW;essai.height=TW;const ce=essai.getContext('2d',{willReadFrequently:true});
+  const emprise=(z,rot)=>{peindre(ce,TW,TW,1,z,TW/2,TW/2,rot,false);const px=new Uint32Array(ce.getImageData(0,0,TW,TW).data.buffer);let x0=TW,y0=TW,x1=-1,y1=-1;
+    for(let y=0;y<TW;y++){const L0=y*TW;for(let x=0;x<TW;x++)if((px[L0+x]>>>24)>10){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;y1=y;}}
+    const e=x1<0?{x0:-0.1,x1:0.1,y0:-0.1,y1:0.1}:{x0:(x0-TW/2)/z,x1:(x1+1-TW/2)/z,y0:(y0-TW/2)/z,y1:(y1+1-TW/2)/z};
+    if(ouv){const t=wallT(mur);e.y0=Math.min(e.y0,-t/2);e.y1=Math.max(e.y1,t/2);}
+    return e;};
+  const cadrage=rot=>{let z=Math.min(CAP,40),e=emprise(z,rot);
+    for(let i=0;i<3;i++){const z2=Math.min(CAP,(lw-2*PAD)/(e.x1-e.x0),(lh-2*PAD)/(e.y1-e.y0));if(Math.abs(z2-z)<0.01*z)break;z=z2;e=emprise(z,rot);}
+    return {z:Math.min(z,(lw-2*PAD)/(e.x1-e.x0),(lh-2*PAD)/(e.y1-e.y0)),e,rot};};
+  try{
+    state={...state,levels:[lv],cur:0,mode:'existant'};uiScale=1;exporting=false;vigRendu=true;
+    if(!ouv&&k==='escalier')fitStair(obj,lv);
+    let r=cadrage(0);
+    if(!ouv&&lw>lh&&(r.e.y1-r.e.y0)>(r.e.x1-r.e.x0)*1.15){const r2=cadrage(-Math.PI/2);if(r2.z>r.z*1.05)r=r2;}
+    const cx=(r.e.x0+r.e.x1)/2,cy=(r.e.y0+r.e.y1)/2,ox=Math.round(lw/2-cx*r.z),oy=Math.round(lh/2-cy*r.z);
+    const toile=document.createElement('canvas');toile.width=Math.round(lw*dpr);toile.height=Math.round(lh*dpr);
+    peindre(toile.getContext('2d'),lw,lh,dpr,r.z,ox,oy,r.rot,true);
+    return vignettes[cle]={url:toile.toDataURL('image/png'),z:r.z,ox,oy,rot:r.rot,lw,lh,dpr,genre,k,temoin:ouv?{mur:mur.type,side:obj.side,hinge:obj.hinge}:null};
+  }finally{state=sv.state;Object.assign(view,sv.view);ctx=sv.ctx;uiScale=sv.ui;exporting=sv.ex;vigRendu=false;}
+}
+/* la vignette en image, à sa taille d'affichage — pour toute liste où un modèle se choisit */
+function vignetteImg(genre,k,lw,lh){const r=vignette(genre,k,lw,lh);return r?`<img class="vig" src="${r.url}" width="${lw}" height="${lh}" alt="">`:'';}
+/* l'équipement, dans la bibliothèque en grille (84 × 44) */
+function itemThumb(type){const r=vignette('equipement',type,84,44);return r?r.url:'';}
+/* pictos d'un point électrique, NF C 15-100 (repère de l'équipement : 1 unité = 1 m ; −y = le mur). D60 : le trait est
+   réglé par drawItem (1,25 px constant), le symbole n'est jamais rempli d'encre (sauf la moitié du tableau, sa convention) :
+   plus de « pâtés » au petit zoom. Prise : demi-cercle fermé et sa tige ; prise double : deux sur une même barre ;
+   interrupteur : rond, oblique à 45° et son crochet (simple allumage) ; applique : point lumineux relié au mur. */
 function drawElec(it,isSel){
-  const T=it.type,w=it.w,h=it.h;ctx.strokeStyle=isSel?'#4f46e5':'#1e1b3a';ctx.fillStyle='#fff';
-  if(T==='lumiere'){ctx.beginPath();ctx.arc(0,0,w*0.42,0,7);ctx.fill();ctx.stroke();ctx.beginPath();ctx.moveTo(-w*0.3,-w*0.3);ctx.lineTo(w*0.3,w*0.3);ctx.moveTo(w*0.3,-w*0.3);ctx.lineTo(-w*0.3,w*0.3);ctx.stroke();return;}
-  if(T==='prise'||T==='prise2'){const n=T==='prise2'?2:1;for(let i=0;i<n;i++){const x=n===2?(i?w*0.25:-w*0.25):0;ctx.beginPath();ctx.arc(x,h*0.3,w/(n*2)*0.7,Math.PI,0);ctx.stroke();ctx.beginPath();ctx.moveTo(x,h*0.3);ctx.lineTo(x,-h*0.5);ctx.stroke();}return;}
-  if(T==='interrupteur'){ctx.beginPath();ctx.arc(0,h*0.35,w*0.25,0,7);ctx.fill();ctx.stroke();ctx.beginPath();ctx.moveTo(0,h*0.35);ctx.lineTo(w*0.35,-h*0.5);ctx.lineTo(w*0.5,-h*0.3);ctx.stroke();return;}
-  if(T==='applique'){ctx.beginPath();ctx.arc(0,h*0.2,w*0.3,Math.PI,0);ctx.fill();ctx.stroke();ctx.beginPath();ctx.moveTo(-w*0.3,h*0.2);ctx.lineTo(w*0.3,h*0.2);ctx.stroke();return;}
-  if(T==='tableau'){ctx.beginPath();ctx.rect(-w/2,-h/2,w,h);ctx.fill();ctx.stroke();for(let x=-w/2+0.06;x<w/2-0.03;x+=0.06){ctx.beginPath();ctx.moveTo(x,-h/2+0.02);ctx.lineTo(x,h/2-0.02);ctx.stroke();}return;}
+  const T=it.type,w=it.w,h=it.h,st=mode()==='projet'?it.st:null;ctx.strokeStyle=isSel?'#4f46e5':st==='creer'?CREER:st==='demolir'?DEMOLIR:ENCRE;ctx.fillStyle='#fff';ctx.lineCap='round';ctx.lineJoin='round'; /* D60 : un point à poser se dessine en rouge, à déposer en jaune, comme tout le plan */
+  const trait=(x0,y0,x1,y1)=>{ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();};
+  if(T==='lumiere'){const r=w*0.4,q=r*0.7;ctx.beginPath();ctx.arc(0,0,r,0,7);ctx.fill();ctx.stroke();trait(-q,-q,q,q);trait(q,-q,-q,q);return;}
+  if(T==='applique'){const r=w*0.28,cy=h*0.35,q=r*0.7;trait(0,-h/2,0,cy-r);ctx.beginPath();ctx.arc(0,cy,r,0,7);ctx.fill();ctx.stroke();trait(-q,cy-q,q,cy+q);trait(q,cy-q,-q,cy+q);return;}
+  if(T==='prise'||T==='prise2'){const n2=T==='prise2'?2:1,r=w/(n2*2)*(n2===2?0.8:0.9),yb=h*0.3;
+    if(n2===2)trait(-w*0.25-r,yb,w*0.25+r,yb);
+    for(let i=0;i<n2;i++){const x=n2===2?(i?w*0.25:-w*0.25):0;ctx.beginPath();ctx.arc(x,yb,r,Math.PI,0);if(n2===1)ctx.closePath();ctx.stroke();trait(x,yb-r,x,-h/2);}
+    return;}
+  if(T==='interrupteur'){const r=w*0.2,cx=-w*0.12,cy=h*0.25,dx=Math.SQRT1_2,L2=w*0.5,ex=cx+(r+L2)*dx,ey=cy-(r+L2)*dx;ctx.beginPath();ctx.arc(cx,cy,r,0,7);ctx.fill();ctx.stroke();trait(cx+r*dx,cy-r*dx,ex,ey);trait(ex,ey,ex+w*0.16*dx,ey+w*0.16*dx);return;}
+  if(T==='tableau'){ctx.beginPath();ctx.rect(-w/2,-h/2,w,h);ctx.fill();ctx.stroke();ctx.beginPath();ctx.moveTo(-w/2,-h/2);ctx.lineTo(w/2,-h/2);ctx.lineTo(-w/2,h/2);ctx.closePath();ctx.fillStyle=ctx.strokeStyle;ctx.fill();trait(-w/2,h/2,w/2,-h/2);return;}
 }
 
 // ---------- État ----------
@@ -2393,9 +2439,10 @@ function recentrerSur(c){const p=pointDeLObjet(c);
 function taskElem(id){let m;if((m=id.match(/^(w|i|o):([^:]+):/)))return m[1]+':'+m[2];if((m=id.match(/^iso2?:([^:]+)/)))return 'w:'+m[1];if((m=id.match(/^fac:([^:]+):/)))return 'w:'+m[1];if((m=id.match(/^sol-[a-z]+:(.+)$/)))return 'r:'+m[1];return null;}
 function doneByElem(){const G={};chantierTasks().forEach(t=>{const e=taskElem(t.id);if(!e)return;const g=G[e]=G[e]||{n:0,d:0};g.n++;if(isDone(t.id))g.d++;});return G;}
 function drawDoneBadges(lv){if(mode()!=='projet'||!state.done)return;const G=doneByElem();window.__badges=[];
-  const badge=(s,full,e)=>{window.__badges.push({e,full});ctx.beginPath();ctx.arc(s.x,s.y,8,0,7);ctx.fillStyle=full?'#16a34a':'#d97706';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();
+  /* D60 : fait = vert et coche ; en partie = anneau indigo à moitié plein (l'orange était celui des démolitions) */
+  const badge=(s,full,e)=>{window.__badges.push({e,full});ctx.beginPath();ctx.arc(s.x,s.y,8,0,7);ctx.fillStyle=full?'#15803d':'#fff';ctx.fill();ctx.strokeStyle=full?'#fff':SEL_C;ctx.lineWidth=full?1.5:2;ctx.stroke();
     if(full){ctx.beginPath();ctx.moveTo(s.x-3.5,s.y);ctx.lineTo(s.x-1,s.y+2.8);ctx.lineTo(s.x+3.8,s.y-2.8);ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();}
-    else{ctx.beginPath();ctx.arc(s.x,s.y,2.2,0,7);ctx.fillStyle='#fff';ctx.fill();}};
+    else{ctx.beginPath();ctx.moveTo(s.x,s.y-5);ctx.arc(s.x,s.y,5,-Math.PI/2,Math.PI/2);ctx.closePath();ctx.fillStyle=SEL_C;ctx.fill();}};
   const st=e=>{const g=G[e];return (!g||!g.d)?0:(g.d===g.n?2:1);};
   lv.walls.forEach(w=>{const k='w:'+w.id,s=st(k);if(s)badge(S(add(mul(add(w.a,w.b),.5),wallOff(w))),s===2,k);});
   lv.items.forEach(it=>{const k='i:'+it.id,s=st(k);if(s)badge(S(v(it.x,it.y)),s===2,k);});
@@ -2427,6 +2474,36 @@ const OUTILS_LECTURE = ['select','zone','mesure'];
 function enLectureSeule(){if(isMobile()){toast('Au téléphone, tu consultes ton plan et tu coches l\'avancement. Pour le modifier, ouvre-le sur l\'ordinateur ou la tablette où tu l\'as dessiné.');return true;}if(mode()!=='final')return false;toast(`Vue ${nomVue('final')} : lecture seule. Pour modifier, passe en vue ${nomVue('projet')}.`,false,{action:'Aller en '+nomVue('projet'),fn:modifierEnTravaux});return true;}
 function modifierEnTravaux(){const s0=sel,m0=multi.slice();setMode('projet');if(s0){sel=s0;multi=m0;render();}}
 const CREER='#b91c1c', DEMOLIR='#d97706';
+/* D60 · l'encre du plan (annexe C7 de l'iconographe) : UNE encre pour tout ce qui est dessiné — murs, menuiseries,
+   équipements, électricité —, et sa version à 65 % pour une cloison : la maçonnerie se lit pleine, la cloison plus
+   claire, d'un coup d'œil, comme sur un plan d'architecte. La séparation (sans mur) en tirets d'encre à 50 %. Rouge et
+   jaune restent aux seuls états (à créer, à démolir) ; l'indigo, à la sélection. */
+const ENCRE='#1e1b4b', ENCRE_CLOISON='#5e5a86', ENCRE_SEP='rgba(30,27,75,.5)';
+let vigRendu=false; /* vrai pendant le rendu d'une vignette (vignette()) : le trou d'une ouverture s'efface au lieu de se peindre */
+/* le tableau d'une ouverture : le poché du mur s'interrompt, au fond du plan (blanc à l'export, transparent en vignette) */
+/* D60 · les glyphes du canvas (annexe C8) : UN langage de manipulation en indigo — poignée = carré plein (bout de mur,
+   bout de doublage), losange au milieu d'un mur, rond plein avec la flèche « pivoter » du registre pour la rotation,
+   équerre pour un angle droit. Un défaut du plan = un losange --danger avec un « ! » DESSINÉ (pas un glyphe) : le rouge
+   des cercles se confondait avec « à créer ». */
+const SEL_C='#4f46e5',DANGER_C='#BE123C';
+/* une icône du registre (ICONS) tracée dans le canvas, centrée en (cx,cy), à `taille` px, trait réel ≈ 1,4 px */
+function icoCanvas(nom,cx,cy,taille,couleur){const src=ICONS[nom];if(!src)return;ctx.save();ctx.translate(cx-taille/2,cy-taille/2);ctx.scale(taille/24,taille/24);
+  ctx.strokeStyle=couleur;ctx.fillStyle='none';ctx.lineWidth=1.4*24/taille;ctx.lineCap='round';ctx.lineJoin='round';ctx.setLineDash([]);
+  const at=(t2,k)=>{const m=t2.match(new RegExp('\\b'+k+'="([^"]*)"'));return m?m[1]:null;};
+  (src.match(/<(path|circle|line|rect|polyline|polygon)\b[^>]*>/g)||[]).forEach(t2=>{const tag=t2.slice(1).split(/[\s/>]/)[0];let p=null;
+    if(tag==='path')p=new Path2D(at(t2,'d'));
+    else if(tag==='circle'){p=new Path2D();p.arc(+at(t2,'cx'),+at(t2,'cy'),+at(t2,'r'),0,7);}
+    else if(tag==='line'){p=new Path2D();p.moveTo(+at(t2,'x1'),+at(t2,'y1'));p.lineTo(+at(t2,'x2'),+at(t2,'y2'));}
+    else if(tag==='rect'){p=new Path2D();p.roundRect(+at(t2,'x'),+at(t2,'y'),+at(t2,'width'),+at(t2,'height'),+(at(t2,'rx')||0));}
+    else{const n2=(at(t2,'points')||'').trim().split(/[\s,]+/).map(Number);p=new Path2D();for(let i=0;i+1<n2.length;i+=2)i?p.lineTo(n2[i],n2[i+1]):p.moveTo(n2[i],n2[i+1]);if(tag==='polygon')p.closePath();}
+    ctx.stroke(p);});
+  ctx.restore();}
+/* poignée : carré plein indigo, bord blanc (r = demi-côté, px) */
+function poigneeCarree(x,y,r,couleur){ctx.save();ctx.beginPath();ctx.rect(x-r,y-r,2*r,2*r);ctx.fillStyle=couleur||SEL_C;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();ctx.restore();}
+/* défaut du plan : losange --danger, « ! » dessiné en blanc */
+function losangeAlerte(x,y,r,k=1){ctx.save();ctx.beginPath();ctx.moveTo(x,y-r);ctx.lineTo(x+r,y);ctx.lineTo(x,y+r);ctx.lineTo(x-r,y);ctx.closePath();ctx.fillStyle=DANGER_C;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5*k;ctx.stroke();
+  ctx.fillStyle='#fff';const b=Math.max(1.6,r*0.17);ctx.beginPath();ctx.roundRect(x-b/2,y-r*0.52,b,r*0.6,b/2);ctx.fill();ctx.beginPath();ctx.arc(x,y+r*0.34,b*0.62,0,7);ctx.fill();ctx.restore();}
+function trouOuverture(x,y,w,h){ctx.save();if(vigRendu){ctx.globalCompositeOperation='destination-out';ctx.fillStyle='#000';}else ctx.fillStyle=exporting?'#fff':'#F7F8FC';ctx.fillRect(x,y,w,h);ctx.restore();}
 // allège (hauteur sous la fenêtre) par défaut selon le modèle ; null = sans objet (portes, fenêtre de toit)
 const ALLEGE={fenetre:0.9,fenetre_p:1.2,porte_fenetre:0,baie:0};
 /* Baie vitrée et porte-fenêtre descendent au sol : allège 0, fixe. Le champ n'existe que pour les
@@ -4686,16 +4763,14 @@ function draw(){
   // poignée de rotation d'un équipement seul
   if(sel?.kind==='wall'){const w=lv.walls.find(x=>x.id===sel.id);
     if(w)poigneesDoublage(w).forEach(g=>{const tire=drag&&drag.kind==='isoEnd'&&drag.io===g.io&&drag.bout===g.k;
-      ctx.beginPath();ctx.arc(g.s.x,g.s.y,tire?7.5:6,0,7);ctx.fillStyle=tire?'#b45309':'#fff';ctx.fill();
-      ctx.strokeStyle='#b45309';ctx.lineWidth=2.2;ctx.stroke();
-      ctx.beginPath();ctx.arc(g.s.x,g.s.y,2.2,0,7);ctx.fillStyle=tire?'#fff':'#b45309';ctx.fill();
+      poigneeCarree(g.s.x,g.s.y,tire?6:4.5); /* D60 : la poignée d'un bout de doublage, comme celle d'un bout de mur */
       if(tire){const lg=(isoT1(g.io)-isoT0(g.io))*wallLen(g.w);
         const txt=fmt(lg,2)+' m doublés';ctx.font='700 12px Geist, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
         const bw=ctx.measureText(txt).width+16;
-        ctx.fillStyle='rgba(255,255,255,.94)';ctx.strokeStyle='#b45309';ctx.lineWidth=1;
+        ctx.fillStyle='rgba(255,255,255,.94)';ctx.strokeStyle=SEL_C;ctx.lineWidth=1;
         ctx.beginPath();ctx.roundRect(g.s.x-bw/2,g.s.y-34,bw,22,6);ctx.fill();ctx.stroke();
-        ctx.fillStyle='#b45309';ctx.fillText(txt,g.s.x,g.s.y-23);}});}
-  if(sel?.kind==='item'&&multi.length<=1&&!drag){const it=lv.items.find(i=>i.id===sel.id);if(it){const rh=rotHandle(it),c=S(it);ctx.setLineDash([3,3]);ctx.strokeStyle='#4f46e5';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(c.x+Math.sin(it.rot)*it.h/2*z,c.y-Math.cos(it.rot)*it.h/2*z);ctx.lineTo(rh.x,rh.y);ctx.stroke();ctx.setLineDash([]);ctx.beginPath();ctx.arc(rh.x,rh.y,7,0,7);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#4f46e5';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.arc(rh.x,rh.y,3.2,0.3,5.6);ctx.lineWidth=1.5;ctx.stroke();}}
+        ctx.fillStyle=SEL_C;ctx.fillText(txt,g.s.x,g.s.y-23);}});}
+  if(sel?.kind==='item'&&multi.length<=1&&!drag){const it=lv.items.find(i=>i.id===sel.id);if(it){const rh=rotHandle(it),c=S(it);ctx.setLineDash([3,3]);ctx.strokeStyle='#4f46e5';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(c.x+Math.sin(it.rot)*it.h/2*z,c.y-Math.cos(it.rot)*it.h/2*z);ctx.lineTo(rh.x,rh.y);ctx.stroke();ctx.setLineDash([]);ctx.beginPath();ctx.arc(rh.x,rh.y,8,0,7);ctx.fillStyle=SEL_C;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();icoCanvas('pivoter',rh.x,rh.y,11,'#fff');}} /* D60 : un rond plein indigo et la flèche « pivoter » du registre (l'ancien se lisait « © ») */
   // rectangle de sélection
   if(sel?.kind==='marquee'){msel.forEach(m=>{if(m.kind==='wall'||m.kind==='opening'||m.kind==='item')return;let pt=null;if(m.kind==='text'){const t=TX(lv).find(x=>x.id===m.id);if(t)pt=v(t.x,t.y);}else if(m.kind==='dim'){const d=lv.dims.find(x=>x.id===m.id);if(d){const L2=dimLine(d);pt=mul(add(L2.a,L2.b),.5);}}if(pt){const s=S(pt);ctx.beginPath();ctx.arc(s.x,s.y,9,0,7);ctx.fillStyle='rgba(79,70,229,.18)';ctx.fill();ctx.strokeStyle='#4f46e5';ctx.lineWidth=2;ctx.stroke();}});}
   /* Survol d'une ouverture avec l'outil Doublage : on montre l'isolant de tableau AVANT le clic —
@@ -4756,9 +4831,9 @@ function draw(){
       if(hover&&!drag){const q=nodeAt(lastMouse.x,lastMouse.y);if(q&&!(sel?.kind==='wall'&&(same(findWall(sel.id)?.a,q)||same(findWall(sel.id)?.b,q))))showAt(q);}}
   }
   // poignée centrale du mur sélectionné (glisser = agrandir/réduire la pièce)
-  if(sel?.kind==='wall'&&!drag){const w=findWall(sel.id);if(w&&!isVirtual(w)&&!(mode()==='projet'&&wst(w)==='demolir')){const m=S(mul(add(w.a,w.b),.5)); /* D54 (design 2) : un mur qui part n'a ni poignée ronde ni poignées d'extrémité (elles coupaient l'étiquette de la pièce réunie) */const n=perp(norm(sub(w.b,w.a)));ctx.beginPath();ctx.arc(m.x,m.y,9,0,7);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#4f46e5';ctx.lineWidth=2;ctx.stroke();ctx.beginPath();ctx.moveTo(m.x-n.x*5,m.y-n.y*5);ctx.lineTo(m.x+n.x*5,m.y+n.y*5);ctx.stroke();[1,-1].forEach(s=>{const tip=v(m.x+n.x*5*s,m.y+n.y*5*s);const u=norm(sub(w.b,w.a));ctx.beginPath();ctx.moveTo(tip.x-n.x*2.5*s+u.x*2.5,tip.y-n.y*2.5*s+u.y*2.5);ctx.lineTo(tip.x,tip.y);ctx.lineTo(tip.x-n.x*2.5*s-u.x*2.5,tip.y-n.y*2.5*s-u.y*2.5);ctx.stroke();});}}
+  if(sel?.kind==='wall'&&!drag){const w=findWall(sel.id);if(w&&!isVirtual(w)&&!(mode()==='projet'&&wst(w)==='demolir')){const m=S(mul(add(w.a,w.b),.5)); /* D54 (design 2) : un mur qui part n'a ni poignée ronde ni poignées d'extrémité (elles coupaient l'étiquette de la pièce réunie) */const n=perp(norm(sub(w.b,w.a))),r=7*Math.max(1,hitScale*0.7); /* D60 : un losange plein indigo, un trait blanc dit le sens du glissé */ctx.beginPath();ctx.moveTo(m.x,m.y-r);ctx.lineTo(m.x+r,m.y);ctx.lineTo(m.x,m.y+r);ctx.lineTo(m.x-r,m.y);ctx.closePath();ctx.fillStyle=SEL_C;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();ctx.beginPath();ctx.moveTo(m.x-n.x*r*0.45,m.y-n.y*r*0.45);ctx.lineTo(m.x+n.x*r*0.45,m.y+n.y*r*0.45);ctx.stroke();}}
   // extrémités non raccordées (hors tracé en cours)
-  if(!chain.length&&tool!=='export'){danglingNodes(lv).forEach(p=>{const s=S(p);ctx.beginPath();ctx.arc(s.x,s.y,8,0,7);ctx.strokeStyle='#dc2626';ctx.lineWidth=2.5;ctx.stroke();ctx.fillStyle='rgba(220,38,38,.12)';ctx.fill();});}
+  if(!chain.length&&tool!=='export'){danglingNodes(lv).forEach(p=>{const s=S(p);losangeAlerte(s.x,s.y,8);});}
   // cotes manuelles
   lv.dims.forEach(d=>drawManualDim(d,sel?.kind==='dim'&&sel.id===d.id?'#4f46e5':'#7c3aed'));
   // poignée ⇕ sur la cote sélectionnée : glisser = coulisser la ligne de cote
@@ -4771,13 +4846,16 @@ function draw(){
     const ref=chain.length?chain[chain.length-1]:null;const sp=snapPoint(hover||ref||v(0,0),ref);
     let end=sp.p;const typed=parseFloat(lenBuf.replace(',','.'));
     if(ref&&typed>0){let dir=sub(sp.p,ref);if(len(dir)<1e-6)dir=chain.length>=2?sub(ref,chain[chain.length-2]):v(1,0);end=clampContreMur(add(ref,mul(norm(dir),typed)),ref,null);}
-    if(chain.length){ctx.beginPath();chain.forEach((p,i)=>{const s=S(p);i?ctx.lineTo(s.x,s.y):ctx.moveTo(s.x,s.y);});const e=S(end);ctx.lineTo(e.x,e.y);ctx.strokeStyle=wallType==='virtuel'?'rgba(124,58,237,.8)':'rgba(79,70,229,.9)';ctx.lineWidth=Math.max(2,(WALL_TYPES.find(t=>t[0]===(wallType==='auto'?typeAuTrace(L(),ref,end).type:wallType))||WALL_TYPES[1])[2]*z);ctx.lineCap='round';if(wallType==='virtuel')ctx.setLineDash([6,5]);ctx.stroke();ctx.setLineDash([]);ctx.lineCap='butt';drawDim(ref,end,'#4f46e5',false);const s0=S(chain[0]);if(chain.length>=3&&dist(end,chain[0])<0.02){ctx.beginPath();ctx.arc(s0.x,s0.y,11,0,7);ctx.strokeStyle='#16a34a';ctx.lineWidth=3;ctx.stroke();}
+    if(chain.length){ctx.beginPath();chain.forEach((p,i)=>{const s=S(p);i?ctx.lineTo(s.x,s.y):ctx.moveTo(s.x,s.y);});const e=S(end);ctx.lineTo(e.x,e.y);ctx.strokeStyle=wallType==='virtuel'?'rgba(124,58,237,.8)':'rgba(79,70,229,.9)';ctx.lineWidth=Math.max(2,(WALL_TYPES.find(t=>t[0]===(wallType==='auto'?typeAuTrace(L(),ref,end).type:wallType))||WALL_TYPES[1])[2]*z);ctx.lineCap='round';if(wallType==='virtuel')ctx.setLineDash([6,5]);ctx.stroke();ctx.setLineDash([]);ctx.lineCap='butt';drawDim(ref,end,'#4f46e5',false);const s0=S(chain[0]);if(chain.length>=3&&dist(end,chain[0])<0.02){ctx.beginPath();ctx.arc(s0.x,s0.y,11,0,7);ctx.strokeStyle=SEL_C;ctx.lineWidth=2.5;ctx.stroke();}
       // angle avec le mur précédent (et angle de fermeture)
       if(chain.length>=2)drawAngle(ref,chain[chain.length-2],end);
       if(chain.length>=3&&dist(end,chain[0])<0.02)drawAngle(chain[0],chain[1],ref);
       // bulle de longueur (tapée ou mesurée)
       const m=S(mul(add(ref,end),.5));const txt=lenBuf?lenBuf.replace('.',',')+' m · Entrée':fmt(dist(ref,end))+' m';ctx.font=`700 12px "Geist Mono", monospace`;const tw=ctx.measureText(txt).width;ctx.fillStyle=lenBuf?'#4f46e5':'#fff';ctx.beginPath();ctx.roundRect(m.x-tw/2-8,m.y-26,tw+16,22,7);ctx.fill();if(!lenBuf){ctx.strokeStyle='#c4b5fd';ctx.lineWidth=1;ctx.stroke();}ctx.fillStyle=lenBuf?'#fff':'#4f46e5';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,m.x,m.y-15);}
-    if(hover){const s=S(sp.p);ctx.beginPath();ctx.arc(s.x,s.y,sp.kind==='node'?6:4.5,0,7);ctx.fillStyle=sp.kind==='node'?'#16a34a':sp.kind==='wall'?'#7c3aed':sp.kind==='ghost'?'#475569':'#a78bfa';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();}
+    if(hover){const s=S(sp.p);ctx.save(); /* D60 : l'accroche en indigo — croix sur un coin, rond sur un mur, point ailleurs */
+      if(sp.kind==='node'){ctx.lineCap='round';[[4,'#fff'],[1.75,SEL_C]].forEach(([lw,cc])=>{ctx.lineWidth=lw;ctx.strokeStyle=cc;ctx.beginPath();ctx.moveTo(s.x-6,s.y);ctx.lineTo(s.x+6,s.y);ctx.moveTo(s.x,s.y-6);ctx.lineTo(s.x,s.y+6);ctx.stroke();});}
+      else{ctx.beginPath();ctx.arc(s.x,s.y,sp.kind==='wall'||sp.kind==='ghost'?4.5:3,0,7);ctx.fillStyle=sp.kind==='wall'||sp.kind==='ghost'?'#fff':SEL_C;ctx.fill();ctx.strokeStyle=sp.kind==='ghost'?'#64627F':sp.kind==='wall'?SEL_C:'#fff';ctx.lineWidth=sp.kind==='wall'||sp.kind==='ghost'?2:1.5;ctx.stroke();}
+      ctx.restore();}
   }
   // aide contextuelle pendant le tracé
   /* D41 : l'astuce parle de ce qui est sélectionné (mur, ouverture, équipement, pièce), et se replie en « ? » après quelques secondes */
@@ -4791,7 +4869,7 @@ function draw(){
   if(tool==='mesure')drawMeasure();
   if(tool==='calque'&&calib.length){calib.forEach(p=>{const s=S(p);ctx.beginPath();ctx.arc(s.x,s.y,6,0,7);ctx.fillStyle='#c2410c';ctx.fill();});if(calib.length===1&&hover)drawDim(calib[0],hover,'#c2410c',true);}
   // poignées du mur sélectionné
-  if(sel?.kind==='wall'){const w=findWall(sel.id);if(w&&!(mode()==='projet'&&wst(w)==='demolir'))[w.a,w.b].forEach(p=>{const s=S(p);ctx.beginPath();ctx.arc(s.x,s.y,6.5*Math.max(1,hitScale*0.7),0,7);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#4f46e5';ctx.lineWidth=2.5;ctx.stroke();});}
+  if(sel?.kind==='wall'){const w=findWall(sel.id);if(w&&!(mode()==='projet'&&wst(w)==='demolir'))[w.a,w.b].forEach(p=>{const s=S(p);poigneeCarree(s.x,s.y,4.5*Math.max(1,hitScale*0.7));});} /* D60 : carrés pleins indigo */
   updateMeasBox();
 }
 function hexA(hex,a){const n=parseInt(hex.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;}
@@ -4831,7 +4909,7 @@ function drawMeasure(){
   ctx.strokeStyle=MCOL;ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();pts.forEach((p,i)=>{const s=S(p);i?ctx.lineTo(s.x,s.y):ctx.moveTo(s.x,s.y);});ctx.stroke();ctx.setLineDash([]);
   for(let i=0;i<pts.length-1;i++)measSeg(pts[i],pts[i+1]);
   pts.forEach((p,i)=>measPt(p,i<measure.length));
-  if(closing){const s0=S(measure[0]);ctx.beginPath();ctx.arc(s0.x,s0.y,11,0,7);ctx.strokeStyle='#16a34a';ctx.lineWidth=3;ctx.stroke();}
+  if(closing){const s0=S(measure[0]);ctx.beginPath();ctx.arc(s0.x,s0.y,11,0,7);ctx.strokeStyle=MCOL;ctx.lineWidth=2.5;ctx.stroke();} /* D60 : la couleur de l'outil Mesurer, plus le vert */
 }
 // Case flottante « résultat » de la mesure (périmètre + surface) : apparaît en mesure, disparaît sinon.
 function updateMeasBox(){
@@ -4998,13 +5076,14 @@ function drawJoins(){
     for(let i=0;i<faces.length;i++)for(let j=i+1;j<faces.length;j++){if((i>>1)===(j>>1))continue;const A=faces[i],B=faces[j];const den=A.u.x*B.u.y-A.u.y*B.u.x;if(Math.abs(den)<1e-9)continue;const d=sub(B.p,A.p);const s=(d.x*B.u.y-d.y*B.u.x)/den;const X=add(A.p,mul(A.u,s));if(dist(X,p)<=reach)pts.push(X);}
     const hull=convexHull(pts);if(hull.length<3)return;
     ctx.beginPath();const P=hull.map(S);P.forEach((s,i)=>i?ctx.lineTo(s.x,s.y):ctx.moveTo(s.x,s.y));ctx.closePath();
-    ctx.fillStyle=allSel?(allNew?'#ef4444':'#4f46e5'):(allNew?CREER:'#2b2857');ctx.fill();
+    const toutesCl=ends.every(e=>e.w.type==='cloison'); /* D60 : un raccord entre cloisons garde leur teinte */
+    ctx.fillStyle=allSel?(allNew?'#ef4444':'#4f46e5'):(allNew?CREER:toutesCl?ENCRE_CLOISON:ENCRE);ctx.fill();
     /* le raccord porte le motif de ce qu'il raccorde : sans lui, un angle entre deux cloisons à
        créer laissait un carré plein au milieu des hachures — l'angle sautait aux yeux */
     const hach=ends.filter(e=>(mode()==='projet'&&wst(e.w)==='creer')||wallT(e.w)>=0.4);
     if(hach.length===ends.length){const neuf=allNew;
       ctx.save();ctx.clip();
-      hachurer(Math.min(...P.map(s=>s.x)),Math.min(...P.map(s=>s.y)),Math.max(...P.map(s=>s.x)),Math.max(...P.map(s=>s.y)),neuf?.45:.14,neuf?7:10);
+      hachurer(Math.min(...P.map(s=>s.x)),Math.min(...P.map(s=>s.y)),Math.max(...P.map(s=>s.x)),Math.max(...P.map(s=>s.y)),neuf?.45:.35,neuf?7:6);
       ctx.restore();}
   });
 }
@@ -5066,27 +5145,42 @@ function drawTroncon(w,t0,t1){const z=view.zoom,t=wallT(w),u=norm(sub(w.b,w.a)),
   const a=S(add(add(w.a,mul(d,t0)),off)),b=S(add(add(w.a,mul(d,t1)),off)),hx=n.x*t/2*z,hy=n.y*t/2*z;
   ctx.beginPath();ctx.moveTo(a.x+hx,a.y+hy);ctx.lineTo(b.x+hx,b.y+hy);ctx.lineTo(b.x-hx,b.y-hy);ctx.lineTo(a.x-hx,a.y-hy);ctx.closePath();ctx.fillStyle='#4f46e5';ctx.fill();
   ctx.lineWidth=5;ctx.strokeStyle='rgba(79,70,229,.3)';ctx.lineJoin='round';ctx.stroke();ctx.lineJoin='miter';}
+/* D60 · une cloison existante qui bute au MILIEU d'un mur (jonction en T) s'arrête à la face de ce mur, du côté de la
+   cloison. Plus claire que le mur (ENCRE_CLOISON), elle laissait sinon une encoche claire dans son poché, jusqu'à
+   l'axe. Ni une autre cloison (même encre), ni un mur qui part (on le voit à travers). */
+function retraitEnT(w,p,autre){let r=0;const ud=norm(sub(autre,p)),projet=mode()==='projet';
+  for(const o of L().walls){
+    if(o===w||isVirtual(o)||!wallDrawn(o)||o.type==='cloison'||(projet&&wst(o)==='demolir'))continue;
+    if(same(p,o.a)||same(p,o.b))continue;
+    const uo=norm(sub(o.b,o.a)),no=perp(uo),q=add(o.a,wallOff(o)),lo=wallLen(o),pl=(p.x-q.x)*uo.x+(p.y-q.y)*uo.y;
+    if(pl<-1e-3||pl>lo+1e-3)continue;
+    const d=(p.x-q.x)*no.x+(p.y-q.y)*no.y,to=wallT(o);if(Math.abs(d)>to/2+1e-3)continue;
+    const c=ud.x*no.x+ud.y*no.y;if(Math.abs(c)<0.2)continue; /* presque parallèles : ce n'est pas un T */
+    r=Math.max(r,((c>0?1:-1)*to/2-d)/c);}
+  return Math.max(0,r);}
 function drawWall(w,isSel,isHov){
   const z=view.zoom,t=wallT(w),u=norm(sub(w.b,w.a)),n=perp(u);const off=wallOff(w);
-  const ra=retraitContreDoublage(w,w.a,w.b),rb=retraitContreDoublage(w,w.b,w.a);
+  const st=wst(w),projet=mode()==='projet',isNew=projet&&st==='creer',cl=w.type==='cloison'&&!isNew&&!(projet&&st==='demolir');
+  const ra=Math.max(retraitContreDoublage(w,w.a,w.b),cl?retraitEnT(w,w.a,w.b):0),rb=Math.max(retraitContreDoublage(w,w.b,w.a),cl?retraitEnT(w,w.b,w.a):0);
   const a=S(add(add(w.a,off),mul(u,ra))),b=S(add(add(w.b,off),mul(u,-rb)));const hx=n.x*t/2*z,hy=n.y*t/2*z;
-  if(isVirtual(w)){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=isSel?'#4f46e5':isHov?'#7c3aed':'#9d8df0';ctx.lineWidth=isSel||isHov?3:2;ctx.setLineDash([7,6]);ctx.lineCap='round';ctx.stroke();ctx.setLineDash([]);ctx.lineCap='butt';return;}
+  /* D60 : la séparation, en tirets d'encre à 50 % — le lilas était la couleur de la sélection */
+  if(isVirtual(w)){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=isSel?'#4f46e5':isHov?'rgba(79,70,229,.7)':ENCRE_SEP;ctx.lineWidth=isSel||isHov?2.5:1.25;ctx.setLineDash([6,4]);ctx.lineCap='butt';ctx.stroke();ctx.setLineDash([]);return;}
   /* Le quadrilatère du mur, REFAIT à la demande : les hachures appellent beginPath(), donc tout
      tracé posé avant elles est perdu. Le liseré de cloison, juste après, repassait ainsi sur la
      dernière ligne de hachure — un éclat oblique en travers du plan à chaque jonction. */
   const quad=()=>{ctx.beginPath();ctx.moveTo(a.x+hx,a.y+hy);ctx.lineTo(b.x+hx,b.y+hy);ctx.lineTo(b.x-hx,b.y-hy);ctx.lineTo(a.x-hx,a.y-hy);ctx.closePath();};
   quad();
-  const st=wst(w),projet=mode()==='projet';
   if(projet&&st==='demolir'){ // à démolir : jaune, pointillé, transparent
     ctx.fillStyle=isSel?'rgba(245,158,11,.5)':isHov?'rgba(245,158,11,.38)':'rgba(245,158,11,.24)';ctx.fill();ctx.setLineDash([6,4]);ctx.strokeStyle=DEMOLIR;ctx.lineWidth=isSel?2.5:1.5;ctx.stroke();ctx.setLineDash([]);return;}
-  const isNew=projet&&st==='creer';
-  ctx.fillStyle=isNew?(isSel?'#ef4444':isHov?'#dc2626':CREER):(isSel?'#4f46e5':isHov?'#5b52c9':'#2b2857');ctx.fill();
-  if(isNew||t>=0.4){ctx.save();ctx.clip();hatch(a,b,u,n,t,z,isNew?.45:.14,isNew?7:10);ctx.restore();}
-  if(w.type==='cloison'){
-    /* Le liseré suit les deux LONGS côtés, et ne referme une extrémité que si elle est libre.
+  /* D60 (annexe C7) : mur en poché plein d'encre, cloison à 65 %, mur épais (pierre, ≥ 40 cm) hachuré blanc à 35 %
+     au pas de 6 px — la hachure à 14 % ne se voyait pas : seule l'épaisseur distinguait une cloison d'un mur. */
+  ctx.fillStyle=isNew?(isSel?'#ef4444':isHov?'#dc2626':CREER):(isSel?'#4f46e5':isHov?'#5b52c9':w.type==='cloison'?ENCRE_CLOISON:ENCRE);ctx.fill();
+  if(isNew||t>=0.4){ctx.save();ctx.clip();hatch(a,b,u,n,t,z,isNew?.45:.35,isNew?7:6);ctx.restore();}
+  if(w.type==='cloison'&&isNew){
+    /* Le liseré (cloison à créer) suit les deux LONGS côtés, et ne referme une extrémité que si elle est libre.
        Refermé contre un autre mur, il barrait la jonction d'un trait : la cloison semblait
-       s'arrêter là au lieu de s'y raccorder. */
-    ctx.strokeStyle=isSel?'#4f46e5':'#2b2857';ctx.lineWidth=1;
+       s'arrêter là au lieu de s'y raccorder. D60 : une cloison existante n'a plus de liseré, sa teinte suffit. */
+    ctx.strokeStyle=isSel?'#4f46e5':ENCRE;ctx.lineWidth=1;
     ctx.beginPath();
     ctx.moveTo(a.x+hx,a.y+hy);ctx.lineTo(b.x+hx,b.y+hy);
     ctx.moveTo(a.x-hx,a.y-hy);ctx.lineTo(b.x-hx,b.y-hy);
@@ -5218,8 +5312,7 @@ function drawDoublageITI(lv){const faces=facesCache[lv.id]||[];faces.forEach(f=>
 // ITE : enveloppe extérieure continue. Coins mitrés = intersection des bandes des murs voisins (aucun recouvrement, aucun trou dans l'angle).
 // repère rouge sur les menuiseries dont la tapée est plus fine que le doublage du mur (dormant à agrandir)
 function drawMenuisWarnings(lv){menuisSousDimensionnees(lv).forEach(({o})=>{const w=lv.walls.find(x=>x.id===o.wallId);if(!w)return;const c=add(add(w.a,mul(sub(w.b,w.a),o.t)),wallOff(w));const s=S(c);const r=Math.max(9,11*uiScale);
-  ctx.save();ctx.beginPath();ctx.arc(s.x,s.y,r,0,7);ctx.fillStyle='#dc2626';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2*uiScale;ctx.stroke();
-  ctx.fillStyle='#fff';ctx.font=`700 ${Math.round(r*1.15)}px Geist, sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('!',s.x,s.y+0.5);ctx.restore();});}
+  losangeAlerte(s.x,s.y,r*1.2,uiScale);});} /* D60 : le losange --danger des défauts du plan */
 /* ITE : enveloppe extérieure continue, dessinée couche par couche (`isoLayers`). Elle lisait
    `w.iso` : une ITE posée à l'outil était chiffrée mais jamais dessinée. Coins mitrés quand deux
    ITE se rejoignent au bout de leurs murs ; une ITE partielle s'arrête d'équerre. */
@@ -5256,11 +5349,12 @@ function drawAngle(vtx,pA,pB){
   const a1=Math.atan2(pA.y-vtx.y,pA.x-vtx.x),a2=Math.atan2(pB.y-vtx.y,pB.x-vtx.x);
   let d=a2-a1;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;
   const deg=Math.abs(d)*180/Math.PI;if(deg<1||deg>179.5)return;
-  const right=Math.abs(deg-90)<0.5,col=right?'#16a34a':'#7c3aed';const s=S(vtx),r=Math.min(26,Math.min(dist(pA,vtx),dist(pB,vtx))*view.zoom*0.45);
-  if(right){const m=a1+d/2;const q=r*0.7;const p1=v(s.x+Math.cos(a1)*q,s.y+Math.sin(a1)*q),p2=v(s.x+Math.cos(a2)*q,s.y+Math.sin(a2)*q),pc=v(p1.x+p2.x-s.x,p1.y+p2.y-s.y);ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(pc.x,pc.y);ctx.lineTo(p2.x,p2.y);ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.stroke();}
-  else{ctx.beginPath();ctx.arc(s.x,s.y,r,a1,a2,d<0);ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.stroke();}
+  const right=Math.abs(deg-90)<0.5,col=right?SEL_C:ENCRE;const s=S(vtx),r=Math.min(26,Math.min(dist(pA,vtx),dist(pB,vtx))*view.zoom*0.45);
+  /* D60 (annexe C8) : un angle droit = une équerre indigo, sans badge ; les autres angles, un arc fin et leur valeur en encre sur blanc */
+  if(right){const q=Math.min(9,r*0.7);const p1=v(s.x+Math.cos(a1)*q,s.y+Math.sin(a1)*q),p2=v(s.x+Math.cos(a2)*q,s.y+Math.sin(a2)*q),pc=v(p1.x+p2.x-s.x,p1.y+p2.y-s.y);ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(pc.x,pc.y);ctx.lineTo(p2.x,p2.y);ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.stroke();return;}
+  ctx.beginPath();ctx.arc(s.x,s.y,r,a1,a2,d<0);ctx.strokeStyle=col;ctx.lineWidth=1;ctx.stroke();
   const mid=a1+d/2,tx=s.x+Math.cos(mid)*(r+31),ty=s.y+Math.sin(mid)*(r+31); /* D46 : 16 px plus loin du coin, l'origine des cotes intérieures reste visible */
-  const txt=Math.round(deg)+'°';ctx.font='700 11px "Geist Mono", monospace';const tw=ctx.measureText(txt).width;ctx.fillStyle='#fff';ctx.beginPath();ctx.roundRect(tx-tw/2-4,ty-8,tw+8,16,5);ctx.fill();ctx.strokeStyle=col;ctx.lineWidth=1;ctx.stroke();ctx.fillStyle=col;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,tx,ty);
+  const txt=Math.round(deg)+'°';ctx.font='600 11px "Geist Mono", monospace';const tw=ctx.measureText(txt).width;ctx.fillStyle='#fff';ctx.beginPath();ctx.roundRect(tx-tw/2-4,ty-8,tw+8,16,4);ctx.fill();ctx.strokeStyle='#C9CCDD';ctx.lineWidth=1;ctx.stroke();ctx.fillStyle=ENCRE;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,tx,ty);
 }
 // cotes de jambage : distance de l'ouverture aux extrémités de son mur
 function drawOpeningDims(o){
@@ -5290,18 +5384,36 @@ function drawDim(a,b,col,withText,evite,cout,essai){ /* D50 : cout(boîte) → l
   /* D46 : la boîte du texte, pour que la cote d'un mur sélectionné ne s'imprime pas dessus */
   {const c=Math.abs(Math.cos(ang)),sn=Math.abs(Math.sin(ang)),bw=(tw+8*k)*c+16*k*sn,bh=(tw+8*k)*sn+16*k*c;return {x:pos.x-bw/2,y:pos.y-bh/2,w:bw,h:bh,txt};}
 }
+/* D60 · le symbole d'une ouverture, à la convention d'architecte (annexe C5 de l'iconographe). Trois traits sur une seule
+   encre : MOYEN 1,5 px (dormant, vantail, seuil, tablier), FIN 1 px à 75 % (arcs de débattement, vitrage d'une fenêtre,
+   jambages, rails, flèches), TIRETS 4/3 pour ce qui est en hauteur (linteau d'un passage, rails d'une porte de garage).
+   Plus de chevron devant les fenêtres (c'est une convention d'élévation) : un arc par vantail, un seul vantail sous
+   0,90 m. Porte-fenêtre à deux vantaux dressés, baie à deux vantaux décalés qui se recouvrent, porte d'entrée avec son
+   seuil et sa marque d'entrée, porte âme pleine au vantail plein, coulissante en applique sur son rail (ou dans sa
+   poche, à galandage), porte de garage = tablier et rails. Les états (à créer, à remplacer en rouge, à boucher hachuré)
+   ne changent pas. La vignette de la bibliothèque EST ce dessin (vignette()). */
 function drawOpening(o,isSel){
   const w=L().walls.find(w=>w.id===o.wallId);if(!w)return;const def=OPENINGS[o.type];const z=view.zoom,t=wallT(w);
   const u=norm(sub(w.b,w.a)),n=perp(u);const c=add(add(w.a,mul(sub(w.b,w.a),o.t)),wallOff(w));const half=o.w/2;
   const projet=mode()==='projet',os=ost(o);
-  const col=isSel?'#4f46e5':(projet&&(os==='creer'||os==='remplacer'))?CREER:'#1e1b3a';
-  ctx.save();const cs=S(c);ctx.translate(cs.x,cs.y);ctx.rotate(Math.atan2(u.y,u.x));ctx.scale(z,z);ctx.lineWidth=1.6/z;ctx.strokeStyle=col;ctx.lineCap='round';
-  // trou dans le mur
-  ctx.fillStyle='#f7f7fc';ctx.fillRect(-half,-t/2-0.004,o.w,t+0.008);
+  const col=isSel?'#4f46e5':(projet&&(os==='creer'||os==='remplacer'))?CREER:ENCRE;
+  const kU=uiScale||1,px=q=>q*kU/z; /* une épaisseur d'écran (px) dans le repère du mur (m) */
+  ctx.save();const cs=S(c);ctx.translate(cs.x,cs.y);ctx.rotate(Math.atan2(u.y,u.x));ctx.scale(z,z);ctx.lineWidth=px(1.5);ctx.strokeStyle=col;ctx.lineCap='butt';ctx.lineJoin='miter';
+  /* l'emprise réellement dessinée (repère du mur : x le long, y à travers), pour le cadre de sélection */
+  let X0=-half,X1=half,Y0=-t/2,Y1=t/2;const E=(x,y)=>{X0=Math.min(X0,x);X1=Math.max(X1,x);Y0=Math.min(Y0,y);Y1=Math.max(Y1,y);};
+  const ligne=(x0,y0,x1,y1)=>{ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();E(x0,y0);E(x1,y1);};
+  const fin=fn=>{ctx.save();ctx.globalAlpha*=.75;ctx.lineWidth=px(1);fn();ctx.restore();};
+  const tirets=fn=>{ctx.save();ctx.setLineDash([px(4),px(3)]);fn();ctx.restore();};
+  const cadre=(x0,y0,x1,y1,plein)=>{ctx.beginPath();ctx.rect(Math.min(x0,x1),Math.min(y0,y1),Math.abs(x1-x0),Math.abs(y1-y0));ctx.fillStyle=plein?col:'#fff';ctx.fill();ctx.stroke();E(x0,y0);E(x1,y1);};
+  /* arc de débattement : de la position fermée (angle a0) à la position ouverte (a1), autour de la charnière */
+  const arc=(cx,cy,r,a0,a1)=>{let d=a1-a0;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;ctx.beginPath();ctx.arc(cx,cy,r,a0,a1,d<0);ctx.stroke();E(cx,cy);E(cx+r*Math.cos(a0),cy+r*Math.sin(a0));E(cx+r*Math.cos(a1),cy+r*Math.sin(a1));};
+  const fleche=(x0,y,x1)=>{const sg=Math.sign(x1-x0)||1,p=Math.min(0.05,Math.abs(x1-x0)*0.4);ligne(x0,y,x1,y);ctx.beginPath();ctx.moveTo(x1-sg*p,y-p*0.6);ctx.lineTo(x1,y);ctx.lineTo(x1-sg*p,y+p*0.6);ctx.stroke();};
+  // tableau : le poché du mur s'interrompt
+  trouOuverture(-half,-t/2-0.004,o.w,t+0.008);
   if(projet&&os==='boucher'){ // à boucher : le trou est rebouché (hachures rouges), on garde le symbole en fantôme
     ctx.fillStyle='rgba(185,28,28,.55)';ctx.fillRect(-half,-t/2,o.w,t);ctx.save();ctx.beginPath();ctx.rect(-half,-t/2,o.w,t);ctx.clip();ctx.strokeStyle='rgba(255,255,255,.6)';ctx.lineWidth=1.2/z;for(let x=-half-t;x<half+t;x+=0.12){ctx.beginPath();ctx.moveTo(x,-t/2);ctx.lineTo(x+t,t/2);ctx.stroke();}ctx.restore();ctx.globalAlpha=.35;}
   const k=def.kind, side=o.side||1, hinge=o.hinge||1;
-  const jamb=x=>{ctx.beginPath();ctx.moveTo(x,-t/2);ctx.lineTo(x,t/2);ctx.stroke();};
+  const jamb=x=>fin(()=>ligne(x,-t/2,x,t/2));
   // pose : place la menuiserie dans l'épaisseur (applique = intérieur, tunnel = centre, feuillure = extérieur)
   const isExtM=isExtType(o.type);
   const siN=isExtM?interiorSideN(w):0;const pose=poseOf(o);
@@ -5309,54 +5421,78 @@ function drawOpening(o,isSel){
   // position du vitrage dans l'épaisseur selon la pose (local +y = intérieur = siN)
   let py=0;
   if(isExtM){ if(pose==='feuillure') py=-siN*(t/2-gg-0.006); else if(pose!=='applique') py=0; else py=siN*(t/2+gg-0.010); }
+  const nv=o.w<0.9?1:2; /* vantaux : un seul sous 0,90 m */
   if(k==='win'||k==='bay'||k==='doorwin'){
-    // centre du vitrage selon la pose (applique = plaqué face intérieure, déborde côté pièce)
-    const cy=(isExtM&&pose==='applique')?siN*(t/2+fd/2):py;
-    if(isExtM&&pose==='applique'){const lap=Math.min(0.05,o.w*0.10);ctx.fillStyle='#fff';
-      ctx.beginPath();ctx.rect(-half-lap,siN*(t/2),o.w+2*lap,siN*fd);ctx.fill();ctx.stroke();}  // dormant plaqué + débord sur le mur
-    if(k==='bay'){ // baie : deux vantaux qui se recouvrent au centre
-      const ov=Math.max(0.06,o.w*0.06);
-      ctx.beginPath();ctx.moveTo(-half,cy-gg);ctx.lineTo(ov,cy-gg);ctx.moveTo(-ov,cy+gg);ctx.lineTo(half,cy+gg);ctx.stroke();
-    } else {
-      ctx.beginPath();ctx.moveTo(-half,cy-gg);ctx.lineTo(half,cy-gg);ctx.moveTo(-half,cy+gg);ctx.lineTo(half,cy+gg);ctx.stroke();
+    const app=isExtM&&pose==='applique';
+    const cy=app?siN*(t/2+fd/2):py;               // plan du vitrage
+    const yI=app?siN*(t/2+fd):py+siN*gg;          // face du dormant côté pièce : d'où partent les vantaux
+    const ov=ouvrantOf(o);
+    // le dormant : plaqué contre la face intérieure (applique, il déborde sur le mur), sinon deux traits dans l'épaisseur
+    if(app){const lap=Math.min(0.05,o.w*0.10);cadre(-half-lap,siN*(t/2),half+lap,siN*(t/2+fd));}
+    else{ligne(-half,cy-gg,half,cy-gg);ligne(-half,cy+gg,half,cy+gg);}
+    jamb(-half);jamb(half);
+    if(ov==='coulissant'||ov==='galandage'){
+      /* deux vantaux dans le dormant, décalés dans l'épaisseur ; coulissant, ils se recouvrent au milieu ;
+         une flèche fine côté pièce dit le sens du glissement */
+      const dz=Math.min(gg*0.5,0.012),rec=ov==='galandage'?0:Math.max(0.03,o.w*0.025),yf=yI+siN*0.09;
+      ligne(-half,cy-siN*dz,rec,cy-siN*dz);ligne(-rec,cy+siN*dz,half,cy+siN*dz);
+      fin(()=>{if(ov==='galandage'){fleche(-half*0.2,yf,-half*0.75);fleche(half*0.2,yf,half*0.75);}else fleche(half*0.65,yf,half*0.1);});
+    } else if(k!=='doorwin'||ov==='fixe'){
+      fin(()=>ligne(-half,cy,half,cy)); // le vitrage
+      if(ov!=='fixe'){const lw=o.w/nv; // fenêtre : chaque vantail ouvert à 90° et son arc, en trait fin, côté pièce
+        for(let i=0;i<nv;i++){const xh=nv===1?-half*hinge:(i?half:-half),dir=xh<0?1:-1;fin(()=>{ligne(xh,yI,xh,yI+siN*lw);arc(xh,yI,lw,dir>0?0:Math.PI,siN>0?Math.PI/2:-Math.PI/2);});}}
+    } else { // porte-fenêtre : vantaux dressés à 90° (4 cm, vitrage au milieu), arcs fins
+      const lw=o.w/nv,e=Math.max(0.04,px(3.5));
+      for(let i=0;i<nv;i++){const xh=nv===1?-half*hinge:(i?half:-half),dir=xh<0?1:-1;
+        cadre(xh,yI,xh+dir*e,yI+siN*lw);fin(()=>ligne(xh+dir*e/2,yI+siN*0.03,xh+dir*e/2,yI+siN*(lw-0.03)));
+        fin(()=>arc(xh,yI,lw,dir>0?0:Math.PI,siN>0?Math.PI/2:-Math.PI/2));}
     }
-    jamb(-half);jamb(half);
-    // emprise du galandage : 2 vantaux qui coulissent dans le DOUBLAGE (côté intérieur), une poche de chaque côté (largeur o.w/2)
-    if(ouvrantOf(o)==='galandage'){const sN=interiorSideN(w)||1;const ig=doublageIntAu(o),pd=ig?doublageOf(ig):0.10;const y0=sN*(t/2),y1=sN*(t/2+pd),lw=o.w/2;
-      ctx.save();ctx.setLineDash([0.07,0.05]);ctx.strokeStyle='#7c3aed';ctx.lineWidth=1.1/view.zoom*(uiScale||1);ctx.fillStyle='rgba(124,58,237,.10)';
-      [[-half-lw,-half],[half,half+lw]].forEach(([xa,xb])=>{ctx.beginPath();ctx.moveTo(xa,y0);ctx.lineTo(xb,y0);ctx.lineTo(xb,y1);ctx.lineTo(xa,y1);ctx.closePath();ctx.fill();ctx.stroke();});
-      ctx.setLineDash([]);if(o.w*view.zoom>90){ctx.fillStyle='#7c3aed';ctx.font=`${Math.max(0.08,9/view.zoom)}px Geist, sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';const ga=Math.atan2(u.y,u.x);const ym=(y0+y1)/2;[[-half-lw/2],[half+lw/2]].forEach(([xm])=>{ctx.save();ctx.translate(xm,ym);ctx.rotate(-ga);ctx.fillText('galandage',0,0);ctx.restore();});}ctx.restore();}
-    // sens d'ouverture (léger) : coulissant = flèche ↔ ; battant/oscillo = pointe vers l'intérieur ; fixe = rien
-    if(isExtM){const ov=ouvrantOf(o);ctx.save();ctx.strokeStyle='rgba(90,88,117,.6)';ctx.lineWidth=1/view.zoom*(uiScale||1);
-      if(ov==='coulissant'||ov==='galandage'){const ay=cy;ctx.beginPath();ctx.moveTo(-half*0.5,ay);ctx.lineTo(half*0.5,ay);ctx.moveTo(half*0.5-0.08,ay-0.05);ctx.lineTo(half*0.5,ay);ctx.lineTo(half*0.5-0.08,ay+0.05);ctx.moveTo(-half*0.5+0.08,ay-0.05);ctx.lineTo(-half*0.5,ay);ctx.lineTo(-half*0.5+0.08,ay+0.05);ctx.stroke();}
-      else if(ov==='battant'||ov==='oscillo'){const iy=siN*(t/2);ctx.beginPath();ctx.moveTo(-half,cy);ctx.lineTo(0,iy+siN*Math.min(0.25,o.w*0.2));ctx.lineTo(half,cy);ctx.stroke();}
-      ctx.restore();}
-    // volets : logés dans l'ÉPAISSEUR du mur, côté extérieur (comme une pose tunnel), s=vers l'extérieur
-    if(o.volet&&isExtM){const s=-siN,yf=s*(t/2),db=Math.min(0.06,t*0.35);ctx.save();ctx.strokeStyle='#5a5875';ctx.lineWidth=1.2/view.zoom*(uiScale||1);
-      if(o.volet==='roulant'){ // coffre/lames dans le tableau, plaqué côté extérieur, sur toute la largeur
-        ctx.fillStyle='rgba(90,88,117,.20)';ctx.beginPath();ctx.rect(-half,yf,o.w,-s*db);ctx.fill();ctx.stroke();
-        ctx.beginPath();ctx.moveTo(-half,yf-s*db*0.5);ctx.lineTo(half,yf-s*db*0.5);ctx.stroke();
-      } else { // 2 battants dans le tableau, côté extérieur, de part et d'autre
-        const pw=o.w*0.5*0.95;ctx.fillStyle='rgba(90,88,117,.14)';
-        [[-half,1],[half,-1]].forEach(([x0,d])=>{ctx.beginPath();ctx.rect(x0,yf,d*pw,-s*db);ctx.fill();ctx.stroke();});
-      }
-      ctx.restore();}
+    if(k==='doorwin'&&siN)fin(()=>ligne(-half-0.03,-siN*(t/2+0.012),half+0.03,-siN*(t/2+0.012))); // seuil, côté dehors
+    /* galandage : les deux vantaux s'effacent dans des poches du DOUBLAGE (côté intérieur), une de chaque côté
+       (largeur o.w/2) — en tirets d'encre, le mot en gris (le violet est la couleur de la sélection) */
+    if(ov==='galandage'){const sN=interiorSideN(w)||1;const ig=doublageIntAu(o),pd=ig?doublageOf(ig):0.10;const y0=sN*(t/2),y1=sN*(t/2+pd),lw=o.w/2;
+      fin(()=>tirets(()=>[[-half-lw,-half],[half,half+lw]].forEach(([xa,xb])=>{ctx.beginPath();ctx.rect(xa,Math.min(y0,y1),xb-xa,Math.abs(y1-y0));ctx.stroke();E(xa,y0);E(xb,y1);})));
+      if(o.w*view.zoom>90){ctx.save();ctx.fillStyle='#64627F';ctx.font=`${Math.max(0.08,9/view.zoom)}px Geist, sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';const ga=Math.atan2(u.y,u.x);const ym=(y0+y1)/2;[-half-lw/2,half+lw/2].forEach(xm=>{ctx.save();ctx.translate(xm,ym);ctx.rotate(-ga);ctx.fillText('galandage',0,0);ctx.restore();});ctx.restore();}}
+    /* volets, côté dehors, en trait fin : roulant = son coffre dans le tableau ; battants = deux panneaux rabattus contre la façade */
+    if(o.volet&&isExtM){const s2=-siN,yf=s2*(t/2),db=Math.min(0.06,t*0.35);
+      fin(()=>{if(o.volet==='roulant'){ctx.beginPath();ctx.rect(-half,Math.min(yf,yf-s2*db),o.w,db);ctx.stroke();E(-half,yf);E(half,yf-s2*db);ligne(-half,yf-s2*db*0.5,half,yf-s2*db*0.5);}
+        else{const pw=o.w/2,ep=0.03;[[-half,-1],[half,1]].forEach(([x0,d])=>{ctx.beginPath();ctx.rect(Math.min(x0,x0+d*pw),Math.min(yf,yf+s2*ep),pw,ep);ctx.stroke();E(x0,yf);E(x0+d*pw,yf+s2*ep);});}});}
   }
-  if(k==='gap'){ctx.setLineDash([0.06,0.05]);ctx.beginPath();ctx.moveTo(-half,0);ctx.lineTo(half,0);ctx.stroke();ctx.setLineDash([]);jamb(-half);jamb(half);}
-  if(k==='door'||k==='doorwin'){
-    const hx=-half*hinge,dy=isExtM?py:0; // charnière · plan du dormant selon la pose (applique/tunnel/feuillure)
-    ctx.beginPath();ctx.moveTo(hx,dy);ctx.lineTo(hx,dy+side*o.w);ctx.stroke(); // vantail
-    ctx.beginPath();const a0=Math.atan2(side,0),a1=hinge>0?0:Math.PI;
-    let d=a1-a0; while(d>Math.PI)d-=2*Math.PI; while(d<-Math.PI)d+=2*Math.PI;
-    ctx.arc(hx,dy,o.w,a0,a1,d<0);ctx.stroke();
+  // passage sans porte : le linteau, au-dessus, en tirets
+  if(k==='gap'){fin(()=>tirets(()=>ligne(-half,0,half,0)));jamb(-half);jamb(half);}
+  if(k==='door'){
+    /* vantail = rectangle de 4 cm (6 cm pour l'entrée) dressé à la charnière, plein pour l'âme pleine ; arc fin */
+    const ent=o.type==='porte_entree',e=Math.max(ent?0.06:0.04,px(3.5)),hx=-half*hinge,dy=isExtM?py:0; // charnière · plan du dormant selon la pose ; un vantail garde 3,5 px à l'écran (plein ou évidé se lit)
+    cadre(hx,dy,hx+hinge*e,dy+side*o.w,o.type==='porte_pleine');
+    fin(()=>arc(hx,dy,o.w,hinge>0?0:Math.PI,side>0?Math.PI/2:-Math.PI/2));
     jamb(-half);jamb(half);
+    if(ent&&siN){const ye=-siN*(t/2+0.012);ligne(-half-0.05,ye,half+0.05,ye); // seuil, côté dehors, qui déborde du tableau
+      const yt=ye-siN*Math.max(0.04,px(2)),hb=Math.max(0.09,px(6)),lb=Math.max(0.055,px(3.5));ctx.beginPath();ctx.moveTo(0,yt);ctx.lineTo(-lb,yt-siN*hb);ctx.lineTo(lb,yt-siN*hb);ctx.closePath();ctx.fillStyle=col;ctx.fill();E(-lb,yt-siN*hb);E(lb,yt);} // marque d'entrée, lisible à toute échelle
   }
   if(k==='door2'){
-    for(const hg of [1,-1]){const hx=-half*hg;ctx.beginPath();ctx.moveTo(hx,0);ctx.lineTo(hx,side*half);ctx.stroke();const a0=Math.atan2(side,0),a1=hg>0?0:Math.PI;let d=a1-a0;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;ctx.beginPath();ctx.arc(hx,0,half,a0,a1,d<0);ctx.stroke();}
+    for(const hg of [1,-1]){const hx=-half*hg;cadre(hx,0,hx+hg*Math.max(0.04,px(3.5)),side*half);fin(()=>arc(hx,0,half,hg>0?0:Math.PI,side>0?Math.PI/2:-Math.PI/2));}
     jamb(-half);jamb(half);
   }
-  if(k==='slide'){const dy=isExtM?py:0;ctx.beginPath();ctx.moveTo(-half,dy+t*0.2*side);ctx.lineTo(0,dy+t*0.2*side);ctx.moveTo(0,dy-t*0.2*side);ctx.lineTo(half,dy-t*0.2*side);ctx.stroke();ctx.beginPath();ctx.moveTo(half*0.2,dy-t*0.2*side);ctx.lineTo(half*0.6,dy-t*0.2*side);ctx.stroke();jamb(-half);jamb(half);}
-  if(isSel){const swing=(k==='door'||k==='doorwin')?o.w:(k==='door2'?half:0);const y0=Math.min(-t/2,side>0?0:-swing),y1=Math.max(t/2,side>0?swing:0);ctx.setLineDash([0.05,0.04]);ctx.strokeStyle='#4f46e5';ctx.strokeRect(-half-0.05,y0-0.05,o.w+0.1,y1-y0+0.1);ctx.setLineDash([]);}
+  if(k==='slide'){
+    if(o.type==='garage'){ /* tablier dans le tableau, côté dehors ; il se range au plafond : rails en tirets côté garage */
+      const si=siN||1,yt=-si*(t/2-Math.min(0.05,t*0.3));ctx.save();ctx.lineWidth=px(2.25);ligne(-half,yt,half,yt);ctx.restore();
+      jamb(-half);jamb(half);
+      fin(()=>tirets(()=>[-1,1].forEach(j=>ligne(j*(half-0.04),si*(t/2),j*(half-0.04),si*(t/2+0.6)))));
+    } else {
+      const sto=hinge>0?1:-1,fs=side,ov=ouvrantOf(o),xc=sto*o.w/2; // sto : côté où elle se range
+      jamb(-half);jamb(half);
+      if(ov==='galandage'){ /* elle s'efface dans une poche de la cloison */
+        const ep=Math.min(0.025,t*0.35),xa=Math.min(sto*half,sto*(half+o.w));trouOuverture(xa,-ep,o.w,2*ep);
+        fin(()=>tirets(()=>{ctx.beginPath();ctx.rect(xa,-ep,o.w,2*ep);ctx.stroke();E(xa,-ep);E(xa+o.w,ep);}));
+        cadre(xc-half,-ep*0.5,xc+half,ep*0.5);fin(()=>fleche(xc-sto*0.12,fs*(t/2+0.07),xc+sto*0.12));
+      } else { /* en applique : le vantail glisse devant le mur, sur un rail apparent */
+        const e=0.035,y0=fs*(t/2+0.008),y1=fs*(t/2+0.008+e),yr=fs*(t/2+0.008+e+0.015);
+        cadre(xc-half-0.03,y0,xc+half+0.03,y1);
+        fin(()=>{ligne(Math.min(-sto*(half+0.03),sto*(half+0.03+o.w)),yr,Math.max(-sto*(half+0.03),sto*(half+0.03+o.w)),yr);fleche(xc-sto*0.12,yr+fs*0.07,xc+sto*0.12);});
+      }
+    }
+  }
+  if(isSel){ctx.save();ctx.setLineDash([px(4),px(3)]);ctx.strokeStyle='#4f46e5';ctx.lineWidth=px(1.25);ctx.strokeRect(X0-0.05,Y0-0.05,X1-X0+0.1,Y1-Y0+0.1);ctx.restore();}
   ctx.restore();
   // retour d'isolant en tableau — dessiné en coordonnées MONDE avec fillIso() : EXACTEMENT la même représentation (remplissage + hachures + trait de placo) que le doublage des murs.
   // va jusqu'au bord extérieur du doublage (t/2+dt) → à fleur des bandes latérales, coin rempli ; 2 faces mêmes ép. = une seule gaine continue.
@@ -5380,54 +5516,68 @@ function drawOpening(o,isSel){
     else layers.forEach(la=>[1,-1].forEach(j=>rev(j,la.L,la.yEnd,la.yOuter,la.creer)));
   }
 }
+/* D60 · le symbole d'un équipement (annexe C6 de l'iconographe) : appareils et sanitaires en trait MOYEN (1,5 px)
+   d'encre, mobilier en trait FIN (1 px à 75 %), ce qui est en hauteur en tirets (poutre, fenêtre de toit), la matière
+   coupée en poché (poteau ; la croix voulait dire « vide »). Les appareils carrés se distinguent par leur code, comme sur
+   un plan français (FR, LV, LL, CE, CH, VMC), écrit droit et seulement s'il se lit. Plus d'orange ni de violet hors des
+   états. « À poser » n'est plus écrit au-dessus de l'appareil : une puce rouge au coin de son cadre (la légende dit déjà
+   « à créer »). La vignette de la bibliothèque EST ce dessin (vignette()). */
 function drawItem(it,isSel){
   const z=view.zoom,s=S(it);ctx.save();ctx.translate(s.x,s.y);ctx.rotate(it.rot);ctx.scale(z,z);
-  const w=it.w,h=it.h,lw=1.4/z;ctx.lineWidth=lw;ctx.strokeStyle=isSel?'#4f46e5':'#3f3d63';ctx.fillStyle='rgba(255,255,255,.85)';ctx.lineJoin='round';
+  const kU=uiScale||1,px=q=>q*kU/z,w=it.w,h=it.h,T=it.type;
+  const C=isSel?'#4f46e5':ENCRE,CF=isSel?'rgba(79,70,229,.75)':'rgba(30,27,75,.75)';
+  const mob=['lit','lit1','armoire','canape','table','bureau'].includes(T);
+  const moy=()=>{ctx.lineWidth=px(1.5);ctx.strokeStyle=C;},fin=()=>{ctx.lineWidth=px(1);ctx.strokeStyle=CF;};
+  if(mob)fin();else moy();ctx.fillStyle='rgba(255,255,255,.85)';ctx.lineJoin='round';ctx.lineCap='butt';
   const rr=(x,y,ww,hh,r)=>{ctx.beginPath();ctx.roundRect(x,y,ww,hh,r);};
-  const T=it.type;
-  // points électriques : picto seul (pas de boîte), lisible même à petit zoom
-  if(ITEMS[T]?.elec){ctx.lineWidth=2/z;const k=Math.max(1,18/(w*z));ctx.scale(k,k);drawElec(it,isSel);if(isSel){ctx.setLineDash([0.04,0.03]);ctx.strokeStyle='#4f46e5';ctx.strokeRect(-w/2-0.05,-h/2-0.05,w+0.1,h+0.1);ctx.setLineDash([]);}ctx.restore();return;}
-  if(T!=='escalier'&&T!=='poutre'){rr(-w/2,-h/2,w,h,0.03);ctx.fill();ctx.stroke();}
-  if(T==='poutre'){
-    /* Convention du dessin d'architecte : un ouvrage situé EN HAUTEUR se trace en trait
-       interrompu — on ne le coupe pas, on le voit au-dessus de soi. */
-    ctx.setLineDash([0.16,0.1]);ctx.strokeStyle=isSel?'#4f46e5':'#b45309';ctx.lineWidth=2.2/z;
-    ctx.strokeRect(-w/2,-h/2,w,h);
-    ctx.setLineDash([]);ctx.lineWidth=1/z;ctx.strokeStyle=isSel?'#4f46e5':'rgba(180,83,9,.55)';
-    ctx.beginPath();ctx.moveTo(-w/2,0);ctx.lineTo(w/2,0);ctx.stroke();
-  }
-  if(T==='poteau'){
-    ctx.strokeStyle=isSel?'#4f46e5':'#b45309';ctx.fillStyle='rgba(180,83,9,.16)';
-    ctx.fillRect(-w/2,-h/2,w,h);ctx.lineWidth=1.8/z;
-    ctx.beginPath();ctx.moveTo(-w/2,-h/2);ctx.lineTo(w/2,h/2);ctx.moveTo(w/2,-h/2);ctx.lineTo(-w/2,h/2);ctx.stroke();
-    ctx.strokeRect(-w/2,-h/2,w,h);
-  }
-  if(T==='baignoire'){rr(-w/2+0.08,-h/2+0.08,w-0.16,h-0.16,0.18);ctx.stroke();ctx.beginPath();ctx.arc(w/2-0.25,0,0.04,0,7);ctx.stroke();}
-  if(T==='douche'){ctx.beginPath();ctx.moveTo(-w/2,-h/2);ctx.lineTo(w/2,h/2);ctx.stroke();ctx.beginPath();ctx.arc(0,0,0.05,0,7);ctx.stroke();}
-  if(T==='lavabo'){ctx.beginPath();ctx.ellipse(0,0.02,w*0.36,h*0.3,0,0,7);ctx.stroke();ctx.beginPath();ctx.arc(0,-h/2+0.08,0.02,0,7);ctx.stroke();}
-  if(T==='wc'){ctx.beginPath();ctx.ellipse(0,h*0.12,w*0.42,h*0.33,0,0,7);ctx.stroke();rr(-w/2+0.03,-h/2+0.03,w-0.06,0.17,0.02);ctx.stroke();}
-  if(T==='evier'){ctx.beginPath();ctx.ellipse(-w*0.17,0.02,w*0.2,h*0.26,0,0,7);ctx.stroke();ctx.beginPath();ctx.ellipse(w*0.21,0.02,w*0.14,h*0.2,0,0,7);ctx.stroke();ctx.beginPath();ctx.moveTo(-w*0.17,-h/2+0.05);ctx.lineTo(-w*0.17,-h/2+0.15);ctx.stroke();}
-  if(T==='vmc'){const r=Math.min(w,h)*0.32;ctx.beginPath();ctx.arc(0,0,r,0,7);ctx.stroke();for(let a=0;a<3;a++){const t=a*2.094;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(t)*r,Math.sin(t)*r);ctx.stroke();}}
-  if(T==='velux'){ctx.setLineDash([0.07,0.05]);ctx.strokeStyle=isSel?'#4f46e5':'#7c3aed';ctx.beginPath();ctx.moveTo(-w/2,-h/2);ctx.lineTo(w/2,h/2);ctx.moveTo(w/2,-h/2);ctx.lineTo(-w/2,h/2);ctx.stroke();ctx.setLineDash([]);}
-  if(T==='plan'){ctx.beginPath();ctx.arc(-w*0.25,0,0.18,0,7);ctx.stroke();ctx.beginPath();ctx.moveTo(-w*0.25,-0.05);ctx.lineTo(-w*0.25,0.05);ctx.stroke();for(const dx of [0.15,0.3])for(const dy of[-0.12,0.12]){ctx.beginPath();ctx.arc(w*dx,dy,0.06,0,7);ctx.stroke();}}
-  if(T==='frigo'){ctx.beginPath();ctx.moveTo(-w/2,h*0.2);ctx.lineTo(w/2,h*0.2);ctx.stroke();}
-  if(T==='vasque2'){[-w*0.25,w*0.25].forEach(x=>{ctx.beginPath();ctx.ellipse(x,0.02,w*0.17,h*0.3,0,0,7);ctx.stroke();});}
-  if(T==='ilot'){ctx.beginPath();ctx.moveTo(-w/2,-h/2+0.35);ctx.lineTo(w/2,-h/2+0.35);ctx.stroke();ctx.beginPath();ctx.arc(-w*0.2,-h/2+0.17,0.11,0,7);ctx.stroke();}
-  if(T==='lave_vaisselle'){ctx.beginPath();ctx.moveTo(-w/2,-h/2+0.1);ctx.lineTo(w/2,-h/2+0.1);ctx.stroke();ctx.beginPath();ctx.arc(0,0.06,w*0.22,0,7);ctx.stroke();}
-  if(T==='cumulus'){ctx.beginPath();ctx.arc(0,0,w*0.46,0,7);ctx.stroke();ctx.beginPath();ctx.arc(0,0,w*0.1,0,7);ctx.stroke();}
-  if(T==='chaudiere'){ctx.beginPath();ctx.moveTo(-w*0.12,h*0.15);ctx.quadraticCurveTo(0,-h*0.3,w*0.12,h*0.15);ctx.stroke();}
-  if(T==='poele'){ctx.beginPath();ctx.arc(0,0,w*0.3,0,7);ctx.stroke();ctx.beginPath();ctx.moveTo(-w*0.08,w*0.1);ctx.quadraticCurveTo(0,-w*0.2,w*0.08,w*0.1);ctx.stroke();}
-  if(T==='lave_linge'){ctx.beginPath();ctx.arc(0,0.02,w*0.3,0,7);ctx.stroke();ctx.beginPath();ctx.arc(0,0.02,w*0.18,0,7);ctx.stroke();}
-  if(T==='lit'||T==='lit1'){const pw=T==='lit'?w*0.42:w*0.8;const xs=T==='lit'?[-w*0.24,w*0.24]:[0];xs.forEach(x=>{rr(x-pw/2,-h/2+0.08,pw,0.32,0.05);ctx.stroke();});ctx.beginPath();ctx.moveTo(-w/2,-h/2+0.55);ctx.lineTo(w/2,-h/2+0.55);ctx.stroke();}
-  if(T==='armoire'){ctx.beginPath();ctx.moveTo(0,-h/2);ctx.lineTo(0,h/2);ctx.moveTo(-w/2,h/2);ctx.lineTo(w/2,-h/2);ctx.moveTo(w/2,h/2);ctx.lineTo(-w/2,-h/2);ctx.stroke();}
-  if(T==='canape'){rr(-w/2+0.04,-h/2+0.04,w-0.08,0.22,0.04);ctx.stroke();ctx.beginPath();ctx.moveTo(-w/2+0.2,-h/2+0.26);ctx.lineTo(-w/2+0.2,h/2);ctx.moveTo(w/2-0.2,-h/2+0.26);ctx.lineTo(w/2-0.2,h/2);ctx.stroke();}
+  const rond=(x,y,r)=>{ctx.beginPath();ctx.arc(x,y,r,0,7);};
+  const trait=(x0,y0,x1,y1)=>{ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();};
+  /* le code d'un appareil, droit quel que soit le sens de pose, et seulement s'il se lit (≥ 6 px) */
+  const code=(txt,x=0,y=0,fs=Math.min(w,h)*0.3)=>{if(fs*z<6*kU)return;ctx.save();ctx.translate(x,y);ctx.rotate(-it.rot);ctx.fillStyle=CF;ctx.font=`600 ${fs}px Geist, sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,0,fs*0.06);ctx.restore();};
+  /* points électriques : le symbole seul, à une taille d'écran BORNÉE — 12 à 20 px (le tableau : au moins 12 px) — et
+     un trait constant de 1,25 px. Agrandi sans borne, il devenait un pâté noir au téléphone, et minuscule de près. */
+  if(ITEMS[T]?.elec){const reel=Math.max(w,h)*z,cible=T==='tableau'?Math.max(12*kU,reel):Math.min(20*kU,Math.max(12*kU,reel)),k=cible/reel;
+    ctx.scale(k,k);ctx.lineWidth=1.25*kU/(z*k);drawElec(it,isSel);
+    if(isSel){const m=4*kU/(z*k);ctx.setLineDash([m,m*0.75]);ctx.strokeStyle='#4f46e5';ctx.lineWidth=kU/(z*k);ctx.strokeRect(-w/2-m,-h/2-m,w+2*m,h+2*m);ctx.setLineDash([]);}
+    ctx.restore();return;}
+  if(!['escalier','poutre','poteau','velux','cumulus','wc'].includes(T)){rr(-w/2,-h/2,w,h,0.03);ctx.fill();ctx.stroke();}
+  if(T==='poutre'){ /* en hauteur : deux rives en tirets, l'axe en trait mixte (plus d'orange, celui des démolitions) */
+    ctx.save();ctx.setLineDash([px(4),px(3)]);ctx.lineWidth=px(1.25);ctx.strokeStyle=C;ctx.strokeRect(-w/2,-h/2,w,h);
+    ctx.setLineDash([px(10),px(3),px(2),px(3)]);ctx.lineWidth=px(1);ctx.strokeStyle=isSel?C:'rgba(30,27,75,.5)';trait(-w/2-0.08,0,w/2+0.08,0);ctx.restore();}
+  if(T==='poteau'){ctx.fillStyle=isSel?'#4f46e5':(mode()==='projet'&&it.st==='creer')?CREER:ENCRE;ctx.fillRect(-w/2,-h/2,w,h);}
+  if(T==='velux'){ctx.save();ctx.setLineDash([px(4),px(3)]);ctx.lineWidth=px(1.25);ctx.strokeStyle=C;ctx.strokeRect(-w/2,-h/2,w,h);ctx.lineWidth=px(1);ctx.strokeStyle=CF;trait(-w/2,h/2,w/2,-h/2);ctx.restore();}
+  if(T==='baignoire'){fin();rr(-w/2+0.07,-h/2+0.07,w-0.14,h-0.14,0.16);ctx.stroke();rond(w/2-0.22,0,0.025);ctx.stroke();ctx.fillStyle=C;[-0.06,0.06].forEach(dy=>{rond(w/2-0.035,dy,0.013);ctx.fill();});}
+  if(T==='douche'){fin();trait(-w/2,-h/2,w/2,h/2);trait(w/2,-h/2,-w/2,h/2);moy();ctx.fillStyle='#fff';rond(0,0,0.03);ctx.fill();ctx.stroke();ctx.lineWidth=px(2.5);trait(-w/2,h/2,w*0.12,h/2);}
+  if(T==='lavabo'){fin();ctx.beginPath();ctx.ellipse(0,0.03,w*0.36,h*0.3,0,0,7);ctx.stroke();moy();trait(0,-h/2+0.03,0,-h/2+0.1);}
+  if(T==='vasque2'){fin();[-w*0.25,w*0.25].forEach(x=>{ctx.beginPath();ctx.ellipse(x,0.03,w*0.17,h*0.3,0,0,7);ctx.stroke();});moy();[-w*0.25,w*0.25].forEach(x=>trait(x,-h/2+0.03,x,-h/2+0.09));}
+  if(T==='wc'){ /* réservoir contre le mur, cuvette en « D », plus étroite devant */
+    rr(-w/2+0.02,-h/2,w-0.04,0.17,0.02);ctx.fill();ctx.stroke();
+    const a=w*0.42,y0=-h/2+0.19,y2=h/2,y1=y0+(y2-y0)*0.55;ctx.beginPath();ctx.moveTo(-a,y0);ctx.bezierCurveTo(-a,y1,-a*0.6,y2,0,y2);ctx.bezierCurveTo(a*0.6,y2,a,y1,a,y0);ctx.closePath();ctx.fill();ctx.stroke();
+    fin();ctx.beginPath();ctx.ellipse(0,(y0+y2)/2+0.02,a*0.62,(y2-y0)*0.3,0,0,7);ctx.stroke();}
+  if(T==='plan'){fin();trait(-w/2+0.02,h/2-0.03,w/2-0.02,h/2-0.03);const hx=-w/4,c2=Math.min(0.56,h*0.8);rr(hx-c2/2,-c2/2,c2,c2,0.02);ctx.stroke();[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([i,j])=>{rond(hx+i*c2*0.24,j*c2*0.24,c2*0.15);ctx.stroke();});}
+  if(T==='ilot'){fin();ctx.save();ctx.setLineDash([px(4),px(3)]);trait(-w/2,h/2-0.25,w/2,h/2-0.25);ctx.restore();const c2=0.5,cy=-0.1;rr(-c2/2,cy-c2/2,c2,c2,0.02);ctx.stroke();[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([i,j])=>{rond(i*c2*0.24,cy+j*c2*0.24,c2*0.15);ctx.stroke();});}
+  if(T==='evier'){fin();rr(-w/2+0.05,-h/2+0.1,0.32,h-0.18,0.04);ctx.stroke();rr(-w/2+0.41,-h/2+0.1,0.16,h-0.18,0.04);ctx.stroke();for(let i=0;i<5;i++){const x=-w/2+0.62+i*0.033;trait(x,-h/2+0.12,x,h/2-0.1);}moy();ctx.beginPath();ctx.arc(-w/2+0.21,-h/2+0.1,0.035,Math.PI,0);ctx.stroke();}
+  if(T==='frigo'){fin();trait(-w/2+0.03,h/2-0.06,w/2-0.03,h/2-0.06);code('FR');}
+  if(T==='lave_vaisselle'){fin();trait(-w/2+0.03,h/2-0.06,w/2-0.03,h/2-0.06);code('LV');}
+  if(T==='lave_linge'){fin();rond(0,0.01,w*0.32);ctx.stroke();code('LL',0,0.01,w*0.2);}
+  if(T==='cumulus'){rond(0,0,Math.min(w,h)/2-0.005);ctx.fill();ctx.stroke();code('CE');}
+  if(T==='chaudiere'){code('CH');moy();ctx.fillStyle='#fff';rond(w*0.3,-h/2+0.06,0.04);ctx.fill();ctx.stroke();}
+  if(T==='poele'){ctx.fillStyle=C;rond(0,-h/2+0.13,0.075);ctx.fill();fin();ctx.beginPath();ctx.arc(0,h/2-0.04,Math.min(0.2,w*0.34),Math.PI,0);ctx.stroke();}
+  if(T==='vmc'){fin();const r=Math.min(w,h)*0.28,cy=-h*0.1;rond(0,cy,r);ctx.stroke();for(let a=0;a<3;a++){const t2=a*2.094;trait(0,cy,Math.cos(t2)*r,cy+Math.sin(t2)*r);}code('VMC',0,h/2-0.06,Math.min(0.07,h*0.2));}
+  if(T==='radiateur'){fin();for(let x=-w/2+0.1;x<w/2-0.11;x+=0.1)trait(x,-h/2,x,h/2);moy();ctx.fillStyle='#fff';rond(w/2-0.05,0,Math.min(0.03,h*0.32));ctx.fill();ctx.stroke();}
+  if(T==='seche_serviette'){fin();[-h*0.2,h*0.2].forEach(y=>trait(-w/2+0.04,y,w/2-0.04,y));ctx.fillStyle=C;[-1,1].forEach(j=>ctx.fillRect(j>0?w/2-0.04:-w/2+0.01,-h/2+0.012,0.03,h-0.024));}
+  if(T==='clim'){fin();trait(-w/2+0.05,h/2-h*0.3,w/2-0.05,h/2-h*0.3);[-w*0.25,0,w*0.25].forEach(x=>{trait(x,h/2+0.04,x,h/2+0.15);ctx.beginPath();ctx.moveTo(x-0.03,h/2+0.11);ctx.lineTo(x,h/2+0.15);ctx.lineTo(x+0.03,h/2+0.11);ctx.stroke();});}
+  if(T==='pac_ext'){rond(-w*0.18,0,h*0.36);ctx.stroke();fin();for(let k2=0;k2<3;k2++){const a=k2*Math.PI*2/3;trait(-w*0.18,0,-w*0.18+Math.cos(a)*h*0.3,Math.sin(a)*h*0.3);}moy();ctx.beginPath();ctx.rect(w*0.18,-h*0.3,w*0.24,h*0.6);ctx.stroke();}
+  if(T==='lit'||T==='lit1'){const pw=T==='lit'?w*0.42:w*0.8;const xs=T==='lit'?[-w*0.24,w*0.24]:[0];xs.forEach(x=>{rr(x-pw/2,-h/2+0.08,pw,0.32,0.05);ctx.stroke();});trait(-w/2,-h/2+0.55,w/2,-h/2+0.55);}
+  if(T==='armoire'){trait(-w/2+0.06,0,w/2-0.06,0);for(let i=0;i<5;i++){const x=-w*0.32+i*w*0.16;trait(x-0.035,-0.12,x+0.035,0.12);}}
+  if(T==='canape'){rr(-w/2+0.04,-h/2+0.04,w-0.08,0.22,0.04);ctx.stroke();trait(-w/2+0.2,-h/2+0.26,-w/2+0.2,h/2);trait(w/2-0.2,-h/2+0.26,w/2-0.2,h/2);}
   if(T==='table'){for(const x of [-w*0.28,0,w*0.28])for(const y of [-h/2-0.28,h/2+0.05]){rr(x-0.2,y,0.4,0.23,0.05);ctx.stroke();}}
   if(T==='bureau'){rr(-0.25,h/2+0.06,0.5,0.45,0.1);ctx.stroke();}
-  if(T==='escalier'){const G=stairGeom(it,L());ctx.fillStyle='rgba(255,255,255,.85)';
+  if(T==='escalier'){ctx.lineWidth=px(1.25);ctx.strokeStyle=C;const G=stairGeom(it,L());ctx.fillStyle='rgba(255,255,255,.85)';
     const HC=G.rects.find(r=>r.circle);if(HC){const R=HC.w/2;ctx.beginPath();ctx.arc(0,0,R,0,7);ctx.fill();ctx.stroke();ctx.beginPath();ctx.arc(0,0,0.08,0,7);ctx.stroke();const a0=Math.PI/2,st=HC.tour/HC.n;for(let i=0;i<=HC.n;i++){const a=a0+st*i;ctx.beginPath();ctx.moveTo(Math.cos(a)*0.08,Math.sin(a)*0.08);ctx.lineTo(Math.cos(a)*R,Math.sin(a)*R);ctx.stroke();}
-      const rf=R*0.67;ctx.beginPath();ctx.arc(0,0,rf,a0,a0+HC.tour*0.97);ctx.stroke();const ae=a0+HC.tour*0.97,e={x:Math.cos(ae)*rf,y:Math.sin(ae)*rf},tg=ae+Math.PI/2;ctx.beginPath();ctx.moveTo(e.x-Math.cos(tg-0.5)*0.16,e.y-Math.sin(tg-0.5)*0.16);ctx.lineTo(e.x,e.y);ctx.lineTo(e.x-Math.cos(tg+0.5)*0.16,e.y-Math.sin(tg+0.5)*0.16);ctx.stroke();ctx.beginPath();ctx.arc(Math.cos(a0)*rf,Math.sin(a0)*rf,0.05,0,7);ctx.fillStyle=isSel?'#4f46e5':'#3f3d63';ctx.fill();ctx.restore();return;}
+      const rf=R*0.67;ctx.beginPath();ctx.arc(0,0,rf,a0,a0+HC.tour*0.97);ctx.stroke();const ae=a0+HC.tour*0.97,e={x:Math.cos(ae)*rf,y:Math.sin(ae)*rf},tg=ae+Math.PI/2;ctx.beginPath();ctx.moveTo(e.x-Math.cos(tg-0.5)*0.16,e.y-Math.sin(tg-0.5)*0.16);ctx.lineTo(e.x,e.y);ctx.lineTo(e.x-Math.cos(tg+0.5)*0.16,e.y-Math.sin(tg+0.5)*0.16);ctx.stroke();ctx.beginPath();ctx.arc(Math.cos(a0)*rf,Math.sin(a0)*rf,0.05,0,7);ctx.fillStyle=C;ctx.fill();ctx.restore();return;}
     G.rects.forEach(r=>{ctx.beginPath();ctx.rect(r.x,r.y,r.w,r.h);ctx.fill();ctx.stroke();
-      if(r.land){ctx.save();ctx.font='700 0.13px Geist, sans-serif';ctx.fillStyle='#6c6b86';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('palier',r.x+r.w/2,r.y+r.h/2);ctx.restore();return;}
+      if(r.land){ctx.save();ctx.font='700 0.13px Geist, sans-serif';ctx.fillStyle='#64627F';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('palier',r.x+r.w/2,r.y+r.h/2);ctx.restore();return;}
       const vert=r.dir==='up'||r.dir==='down';const step=(vert?r.h:r.w)/r.n;
       for(let i=1;i<r.n;i++){ctx.beginPath();if(vert){const y=r.y+step*i;ctx.moveTo(r.x,y);ctx.lineTo(r.x+r.w,y);}else{const x=r.x+step*i;ctx.moveTo(x,r.y);ctx.lineTo(x,r.y+r.h);}ctx.stroke();}});
     // ligne de foulée + flèche de montée (départ → arrivée)
@@ -5436,15 +5586,12 @@ function drawItem(it,isSel){
     path.push(startOf(first));if(land){path.push(mid(land));}if(last!==first)path.push(endOf(last));else path.push(endOf(first));
     ctx.beginPath();path.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y));ctx.stroke();
     const e=path[path.length-1],pv=path[path.length-2];const ang=Math.atan2(e.y-pv.y,e.x-pv.x);ctx.beginPath();ctx.moveTo(e.x-Math.cos(ang-0.5)*0.16,e.y-Math.sin(ang-0.5)*0.16);ctx.lineTo(e.x,e.y);ctx.lineTo(e.x-Math.cos(ang+0.5)*0.16,e.y-Math.sin(ang+0.5)*0.16);ctx.stroke();
-    ctx.beginPath();ctx.arc(path[0].x,path[0].y,0.05,0,7);ctx.fillStyle=isSel?'#4f46e5':'#3f3d63';ctx.fill();}
-  if(T==='radiateur'||T==='seche_serviette'){for(let x=-w/2+0.1;x<w/2;x+=0.1){ctx.beginPath();ctx.moveTo(x,-h/2);ctx.lineTo(x,h/2);ctx.stroke();}}
-  if(T==='clim'){ctx.beginPath();ctx.moveTo(-w/2+0.06,h*0.15);ctx.lineTo(w/2-0.06,h*0.15);ctx.stroke();ctx.beginPath();ctx.arc(w*0.32,-h*0.15,0.05,0,7);ctx.stroke();}
-  if(T==='pac_ext'){ctx.beginPath();ctx.arc(-w*0.18,0,h*0.36,0,7);ctx.stroke();for(let k=0;k<3;k++){const a=k*Math.PI*2/3;ctx.beginPath();ctx.moveTo(-w*0.18,0);ctx.lineTo(-w*0.18+Math.cos(a)*h*0.3,Math.sin(a)*h*0.3);ctx.stroke();}ctx.beginPath();ctx.rect(w*0.18,-h*0.3,w*0.24,h*0.6);ctx.stroke();}
+    ctx.beginPath();ctx.arc(path[0].x,path[0].y,0.05,0,7);ctx.fillStyle=C;ctx.fill();}
   const RR=itemRects(it,L());
-  if(mode()==='projet'&&it.st&&it.st!=='existant'){const col=it.st==='creer'?CREER:DEMOLIR;ctx.save();ctx.globalAlpha=.8;ctx.setLineDash([0.07,0.05]);ctx.strokeStyle=col;ctx.lineWidth=1.5/z;strokeRects(RR,0.05);ctx.setLineDash([]);
-    if(it.st==='demolir'){ctx.globalAlpha=.55;ctx.lineWidth=1.2/z;RR.forEach(r=>{ctx.beginPath();ctx.moveTo(r.x,r.y);ctx.lineTo(r.x+r.w,r.y+r.h);ctx.moveTo(r.x+r.w,r.y);ctx.lineTo(r.x,r.y+r.h);ctx.stroke();});}
-    else{const r0=RR[0];ctx.fillStyle=col;ctx.font=`700 ${Math.max(0.08,10/z)}px Geist, sans-serif`;ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText('à poser',r0.x+r0.w/2,-h/2-0.08);}ctx.restore();}
-  if(isSel){ctx.setLineDash([0.06,0.05]);ctx.strokeStyle='#4f46e5';strokeRects(RR,0.06);ctx.setLineDash([]);}
+  if(mode()==='projet'&&it.st&&it.st!=='existant'){const col=it.st==='creer'?CREER:DEMOLIR;ctx.save();ctx.globalAlpha*=.8;ctx.setLineDash([px(5),px(4)]);ctx.strokeStyle=col;ctx.lineWidth=px(1.5);strokeRects(RR,0.05);ctx.setLineDash([]);
+    if(it.st==='demolir'){ctx.globalAlpha*=.7;ctx.lineWidth=px(1.2);RR.forEach(r=>{ctx.beginPath();ctx.moveTo(r.x,r.y);ctx.lineTo(r.x+r.w,r.y+r.h);ctx.moveTo(r.x+r.w,r.y);ctx.lineTo(r.x,r.y+r.h);ctx.stroke();});}
+    else{const r0=RR[0];ctx.globalAlpha/=.8;ctx.fillStyle=col;ctx.strokeStyle='#fff';ctx.lineWidth=px(1.5);ctx.beginPath();ctx.arc(r0.x+r0.w+0.05,r0.y-0.05,px(4),0,7);ctx.fill();ctx.stroke();}ctx.restore();}
+  if(isSel){ctx.setLineDash([px(4),px(3)]);ctx.lineWidth=px(1.25);ctx.strokeStyle='#4f46e5';strokeRects(RR,0.06);ctx.setLineDash([]);}
   ctx.restore();
 }
 
@@ -5665,7 +5812,7 @@ function renderPanelBrut(){pruneEmptyTexts();{const k=sel?sel.kind+':'+(sel.id||
     const cats=[...new Set(Object.values(ITEMS).map(i=>i.cat))];
     cats.forEach((c,i)=>{const F=FAM[c]||FAM.Autre;const list=Object.entries(ITEMS).filter(([k,o])=>o.cat===c);
       h+=`<div class="fam"><div class="famh"><span class="fic">${F.ic?ico(F.ic,20):''}</span><b>${c}</b><small>${list.length}</small></div><div class="lib2">`+
-        list.map(([k,o])=>`<button class="it ${itemType===k?'on':''}" onclick="itemType='${k}';renderPanel();draw()" title="${o.label}"><span class="th"><img src="${itemThumb(k)}" alt=""></span><b>${o.label}</b><small>${o.elec?(o.free?'plafond':'sur un mur'):fmt(o.w)+' × '+fmt(o.h)+' m'}</small></button>`).join('')+`</div></div>`;});
+        list.map(([k,o])=>`<button class="it ${itemType===k?'on':''}" onclick="itemType='${k}';renderPanel();draw()" title="${o.label}"><span class="th">${vignetteImg('equipement',k,84,44)}</span><b>${o.label}</b><small>${o.elec?(o.free?'plafond':'sur un mur'):fmt(o.w)+' × '+fmt(o.h)+' m'}</small></button>`).join('')+`</div></div>`;});
     h+=`<div class="tip">${ico('eclair','lead')}En vue <b>${nomVue('projet')}</b>, les points électriques et le chauffage que tu ajoutes sont <b>comptés dans le budget</b> (prises, interrupteurs, lumières, radiateurs). Minimum de la norme électrique NF C 15-100 : 3 prises par chambre, 6 en cuisine, 1 point lumineux par pièce. <kbd>R</kbd> pivote, glisser déplace.</div>`;
   } else if(tool==='cote'){
     h+=`<div class="ptitle">Cotes</div><div class="psub">Clique les deux points à coter, la cote <b>flotte</b> avec la souris : écarte-la du mur, puis clique pour la <b>fixer</b>. Tu pourras la faire coulisser après coup.</div><div class="tip">Les cotes manuelles servent à noter une distance utile (largeur d'un passage, recul, hauteur sous plafond dans une remarque…).</div>`;
@@ -5707,27 +5854,9 @@ function bibOuvertures(cur,act){const ORDRE=['fenetre','porte_entree','porte_fen
   const rang=k=>{const i=ORDRE.indexOf(k);return i<0?99:i;};
   return [['Extérieur','famExt',k=>isExtType(k)],['Intérieur','famInt',k=>!isExtType(k)]].map(([label,ic,test])=>{const list=Object.entries(OPENINGS).filter(([k])=>test(k)).sort((a,b)=>rang(a[0])-rang(b[0]));
     return `<div class="fam"><div class="famh"><span class="fic">${ico(ic,20)}</span><b>${label}</b><small>${list.length}</small></div><div class="lib2 liste">${list.map(([k,o])=>carteModele(k,o,cur===k,act,openingIcon(k))).join('')}</div></div>`;}).join('');}
-// Symboles de plan (convention architecte) : le mur (deux traits + jambages) est coupé,
-// et l'ouverture est représentée par son mécanisme réel (débattement de porte, vitrage, rail coulissant…).
-function openingIcon(k){
-  /* D59 : appelée avec la clé du modèle ; les modèles sans dessin propre prennent celui de leur genre (door, win…) */
-  if(OPENINGS[k]&&!['porte_entree','garage','fenetre_p'].includes(k))k=OPENINGS[k].kind;
-  const b='<svg viewBox="0 0 64 44">';
-  // mur coupé : 2 filets + jambages de part et d'autre de l'ouverture (x 20→44)
-  const W='<path class="wl" d="M0 26H20M44 26H64M0 34H20M44 34H64M20 26V34M44 26V34"/>';
-  const e='</svg>';
-  if(k==='door')       return b+W+'<path d="M20 30V7"/><path d="M20 7A23 23 0 0 1 43 30"/>'+e;                                   // 1 vantail + débattement
-  if(k==='door2')      return b+W+'<path d="M20 30V18"/><path d="M20 18A12 12 0 0 1 32 30"/><path d="M44 30V18"/><path d="M44 18A12 12 0 0 0 32 30"/>'+e; // 2 vantaux
-  if(k==='slide')      return b+W+'<path d="M20 28H33"/><path d="M31 32H44"/><path d="M25 21H39"/><path d="M25 21l3-2M25 21l3 2M39 21l-3-2M39 21l-3 2"/>'+e; // 2 panneaux qui glissent
-  if(k==='gap')        return b+W+'<path stroke-dasharray="3 3" d="M20 30H44"/>'+e;                                             // simple passage
-  if(k==='porte_entree')return b+W+'<path d="M20 30V9"/><path d="M20 9A21 21 0 0 1 41 30"/><path class="wl" d="M13 38H51M13 41H51"/>'+e; // porte + seuil extérieur
-  if(k==='garage')     return b+W+'<path d="M22 27V33M27 27V33M32 27V33M37 27V33M42 27V33"/>'+e;                                // sections basculantes
-  if(k==='win')        return b+'<path class="wl" d="M0 26H64M0 34H64"/><path d="M20 26V34M44 26V34"/><path d="M20 29H44M20 31H44"/>'+e; // vitrage (double filet)
-  if(k==='fenetre_p')  return b+'<path class="wl" d="M0 26H64M0 34H64"/><path d="M25 26V34M39 26V34"/><path d="M25 29H39M25 31H39"/>'+e; // petite fenêtre
-  if(k==='doorwin')    return b+W+'<path d="M20 29H44M20 31H44"/><path stroke-dasharray="2.5 2.5" d="M20 30V11"/><path stroke-dasharray="2.5 2.5" d="M20 11A19 19 0 0 1 39 30"/>'+e; // porte-fenêtre : vitrage + battant
-  if(k==='bay')        return b+'<path class="wl" d="M0 26H64M0 34H64"/><path d="M20 26V34M44 26V34"/><path d="M20 28H33M20 30H33"/><path d="M31 31H44M31 33H44"/>'+e; // baie coulissante vitrée
-  return b+e;
-}
+/* D60 : la vignette d'une ouverture n'est plus un dessin à part (mur creux en deux filets, porte-fenêtre en tirets, garage
+   pris pour une coulissante) : c'est le symbole du plan, rendu par drawOpening sur un mur témoin (vignette()). */
+function openingIcon(k){return vignetteImg('ouverture',k,54,30);}
 /* D36 : ce que devient cette ouverture dans le budget — calculé sur son état, pas une phrase fixe
    qui promettait « comptée en menuiserie » à une porte gardée, bouchée ou sans menuiserie. */
 function tipChiffrageOuverture(o,lv){const d=OPENINGS[o.type],w=lv.walls.find(x=>x.id===o.wallId),st=ost(o);
@@ -6969,7 +7098,7 @@ function renderLevelImage(li,m){
     tremies(lv).forEach(it=>{const s=S(it);const G=stairGeom(it,state.levels[li-1]);c.save();c.translate(s.x,s.y);c.rotate(it.rot);c.scale(z,z);c.lineWidth=2/z;c.strokeStyle='#6c6b86';G.rects.forEach(r=>{if(r.circle){c.setLineDash([0.12,0.08]);c.beginPath();c.arc(0,0,r.w/2,0,7);c.stroke();c.setLineDash([]);return;}c.setLineDash([0.12,0.08]);c.strokeRect(r.x,r.y,r.w,r.h);c.setLineDash([]);c.beginPath();c.moveTo(r.x,r.y);c.lineTo(r.x+r.w,r.y+r.h);c.moveTo(r.x+r.w,r.y);c.lineTo(r.x,r.y+r.h);c.stroke();});c.restore();});
     lv.items.forEach(it=>{if(itemDrawn(it))drawItem(it,false);});
     drawRoomLabelsEtCotes(lv,faces,22,18,null);lv.dims.forEach(d=>drawManualDim(d,'#7c3aed'));drawTexts(lv,null,null);
-    if(m==='projet'){const items=[['#2b2857','déjà là','fill'],[CREER,LEX.etat.creer.toLowerCase(),'fill'],[DEMOLIR,LEX.etat.demolir.toLowerCase(),'dash']];let cx=PW-28;c.font='600 20px Geist, sans-serif';c.textBaseline='middle';const ws=items.map(i=>c.measureText(i[1]).width+52);cx-=ws.reduce((a,b)=>a+b,0);items.forEach((it,i)=>{c.beginPath();c.roundRect(cx,28,28,20,4);if(it[2]==='dash'){c.fillStyle='rgba(245,158,11,.25)';c.fill();c.setLineDash([5,3]);c.strokeStyle=it[0];c.lineWidth=2;c.stroke();c.setLineDash([]);}else{c.fillStyle=it[0];c.fill();}c.fillStyle='#1e1b3a';c.textAlign='left';c.fillText(it[1],cx+36,38);cx+=ws[i];});}
+    if(m==='projet'){const items=[[ENCRE,'déjà là','fill'],[CREER,LEX.etat.creer.toLowerCase(),'fill'],[DEMOLIR,LEX.etat.demolir.toLowerCase(),'dash']];let cx=PW-28;c.font='600 20px Geist, sans-serif';c.textBaseline='middle';const ws=items.map(i=>c.measureText(i[1]).width+52);cx-=ws.reduce((a,b)=>a+b,0);items.forEach((it,i)=>{c.beginPath();c.roundRect(cx,28,28,20,4);if(it[2]==='dash'){c.fillStyle='rgba(245,158,11,.25)';c.fill();c.setLineDash([5,3]);c.strokeStyle=it[0];c.lineWidth=2;c.stroke();c.setLineDash([]);}else{c.fillStyle=it[0];c.fill();}c.fillStyle='#1e1b3a';c.textAlign='left';c.fillText(it[1],cx+36,38);cx+=ws[i];});}
     c.fillStyle='#1e1b3a';c.font='700 28px Geist, sans-serif';c.textAlign='left';c.textBaseline='top';c.fillText(state.name+' — '+lv.name+' — '+nomVue(m).toUpperCase(),28,22);
     const hab=faces.filter(f=>f.room&&!RT[f.room.type].ext&&!RT[f.room.type].nh).reduce((s,f)=>s+areaNet(lv,f),0);
     c.font='600 15px "Geist Mono", monospace';c.fillStyle='#6c6b86';c.fillText(fmtM2(hab)+' habitables · '+faces.length+' pièces · h. '+fmt(lv.height)+' m · réalisé avec AVYORA · getavyora.fr',28,58);

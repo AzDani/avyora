@@ -3370,3 +3370,90 @@ outils, zoom sans glyphe, jetons, rayons, aucune taille à ½ px, hauteurs, fami
 vignettes du bug, bibliothèques sans défiler à 1 024 × 768, mini-coupes, échantillons de décision, modèle par cartes
 dans la fiche, plus d'icône morte ni de code mort, pas de « + » de niveau au téléphone). Sur le fichier d'avant :
 55 échecs sur 64. Batterie complète (21 + ux), finition, couverture et vitest (167) verts.
+
+## D60 · Refonte U2 : les symboles du plan à la convention d'architecte, et la vignette EST le symbole (08/10/2026)
+
+**D'où l'on part.** Deuxième des cinq chantiers de la refonte (après U1, D59). Annexe de l'iconographe, tableaux C5
+(ouvertures), C6 (équipements), C7 (murs, sauf doublage et états) et C8 (glyphes du canvas). Batterie (21 + ux), finition,
+couverture et vitest verts avant toute retouche.
+
+**Constat.**
+- Les vignettes des bibliothèques étaient des dessins à part : `openingIcon` montrait un mur creux en deux filets et une
+  porte-fenêtre en tirets là où le plan dessine un mur poché et un vantail plein ; Porte simple et Porte âme pleine avaient
+  la même vignette ; `itemThumb` rasterisait à ×2 puis réduisait à 0,85 (flou), cadrait sur w × h (chaises de la table et du
+  bureau coupées, escalier tronqué).
+- Sur le plan, des conventions d'élévation ou fausses : chevron en V devant chaque fenêtre, porte-fenêtre à UN vantail de
+  1,40 m, porte de garage en deux bouts de trait (la même que la coulissante), porte d'entrée sans seuil, vantail aussi fin
+  que son arc, poteau en carré orange barré d'une croix (la croix veut dire « vide »), poutre orange en tirets (lue « mur à
+  démolir »), fenêtre de toit et galandage en violet (la couleur de la sélection).
+- Quatre encres (#2b2857, #1e1b3a, #3f3d63, #5a5875) et aucune hiérarchie de traits : cloison, mur et mur épais au même
+  poché, hachure du mur épais à 14 % (invisible), séparation en lilas.
+- Électricité agrandie sans borne au petit zoom, trait compris : au téléphone, des disques noirs plus gros que les portes.
+- Glyphes disparates : rotation lue « © », badges « 90° » verts, accroches vertes ou violettes, bouts libres en cercles
+  rouges (le rouge d'« à créer »), pastilles d'avancement orange, « à poser » écrit en rouge au-dessus des appareils.
+
+**Décision.**
+1. *Une encre.* `ENCRE` #1E1B4B pour tout ce qui est dessiné ; cloison à 65 % (`ENCRE_CLOISON` #5E5A86, plus de liseré —
+   il reste sur une cloison à créer, que `rendu-murs` mesure) ; mur épais hachuré blanc à 35 % au pas de 6 ; séparation en
+   tirets 6/4 d'encre à 50 %. Les raccords prennent la teinte de ce qu'ils raccordent. Une cloison existante qui bute au
+   milieu d'un mur s'arrête à sa face (`retraitEnT`) : plus claire que lui, elle y laissait une encoche jusqu'à l'axe. Le
+   jeton `--lg-exist` (légende « déjà là », échantillon « Je garde ») suit : #1E1B4B. Rouge, jaune et hachure rouge des états,
+   doublage (fillIso, retours, onglets 45°), cotes intérieures #6d4fc2 et signatures de drawDim / hachurer : inchangés.
+2. *Trois traits* (`drawOpening`, `drawItem`) : moyen 1,5 px (dormant, vantail, seuil, appareils, sanitaires), fin 1 px à
+   75 % (arcs, vitrage, jambages, mobilier, rails), tirets 4/3 pour ce qui est en hauteur. Épaisseurs en px d'écran (× uiScale
+   à l'export).
+3. *Ouvertures (C5).* Fenêtre : dormant + vitrage, chaque vantail ouvert à 90° et son arc côté pièce, un seul vantail sous
+   0,90 m (Petite fenêtre) ; fixe = vitrage seul ; coulissant et baie = deux vantaux décalés qui se recouvrent et une flèche ;
+   plus de chevron. Porte-fenêtre : deux vantaux dressés (vitrage au milieu) et un seuil côté dehors. Porte : vantail en
+   rectangle (3,5 px au moins à l'écran) et arc fin ; âme pleine = vantail plein ; porte d'entrée = vantail de 6 cm, seuil
+   débordant et marque d'entrée. Coulissante intérieure en applique sur son rail (ou dans sa poche, à galandage). Porte de
+   garage = tablier côté dehors et rails en tirets au plafond. Passage = linteau en tirets. Galandage d'une baie et volets en
+   trait fin d'encre (battants rabattus contre la façade). Le cadre de sélection suit l'emprise réellement dessinée.
+4. *Équipements (C6).* Codes des plans français, droits et seulement lisibles (≥ 6 px) : FR, LV, LL (hublot), CE (le cumulus
+   devient un cercle), CH (et sa ventouse), VMC. WC en « D », douche à deux diagonales, bonde et paroi, baignoire avec bonde
+   et robinetterie, lavabo et vasques avec robinet, plan de travail = nez + plaque (plus d'évier dedans), îlot avec débord
+   en tirets, évier à deux bacs et égouttoir, poêle = conduit plein + foyer, radiateur avec sa tête thermostatique,
+   sèche-serviettes en échelle, split avec soufflage, armoire = tringle et cintres. Poteau poché plein, poutre en tirets
+   avec axe mixte, fenêtre de toit en tirets et une diagonale. Électricité NF à taille d'écran BORNÉE (12 à 20 px, trait
+   constant 1,25 px, jamais rempli), prise fermée, prise double sur une barre, interrupteur à crochet, applique reliée au
+   mur, tableau à moitié plein ; un point à poser se dessine en rouge. « À poser » n'est plus écrit : une puce rouge au coin
+   du cadre en tirets.
+5. *Glyphes (C8).* Une famille en indigo (`SEL_C`) : bouts de mur et de doublage = carrés pleins (`poigneeCarree`), milieu
+   d'un mur = losange, rotation = rond plein et la flèche `pivoter` du registre tracée dans le canvas (`icoCanvas`), angle
+   droit = équerre sans badge, autres angles en encre sur blanc ; accroche = croix sur un coin, rond sur un mur. Défauts du
+   plan (bout libre, menuiserie trop petite) = losange --danger avec « ! » DESSINÉ (`losangeAlerte`). Avancement : fait =
+   vert et coche, en partie = anneau indigo à moitié plein. Le cercle de fermeture de Mesurer prend la couleur de l'outil.
+6. *La vignette EST le symbole (C9).* `vignette(genre, k, lw, lh)` rend le modèle par le code du plan, dans une scène témoin
+   (un niveau à part, vue Avant travaux) : `drawOpening` sur un tronçon de mur (20 cm pour une ouverture extérieure, cloison
+   pour une intérieure, la pièce en haut, charnière à gauche), `drawItem` cadré sur ce qu'il dessine vraiment — une passe
+   d'essai mesure l'emprise (chaises, débords, flèches), la seconde cadre ; échelle commune plafonnée (32 px/m ouvertures,
+   60 px/m équipements) ; un équipement en hauteur se couche s'il y gagne. Rendue à la densité de l'écran, transparente (le
+   tableau s'efface : `trouOuverture` + `vigRendu`), gardée en cache avec son cadrage. `vignetteImg()` la sert à toute liste ;
+   `openingIcon(k)` et `itemThumb(type)` (anciens noms gardés) l'utilisent ; `itemThumbs` reste en alias du cache. Les deux
+   bibliothèques et la fiche d'une ouverture la montrent à sa taille (54 × 30 en liste, 84 × 44 en grille), plus de
+   réduction CSS. Prête pour la barre d'options de U3. Coût : la première ouverture des Équipements passe de 46 à 136 ms
+   (46 modèles rendus une fois), puis 7 ms.
+
+**Ce qui ne bouge pas.** Aucune globale renommée (ajouts : `ENCRE`, `ENCRE_CLOISON`, `ENCRE_SEP`, `vigRendu`,
+`trouOuverture`, `retraitEnT`, `SEL_C`, `DANGER_C`, `icoCanvas`, `poigneeCarree`, `losangeAlerte`, `vignettes`, `vignette`,
+`vignetteImg`), ids, classes, `onclick`, ordre DOM, clés `localStorage`, tables lues comme du texte, géométrie et chiffrage
+(hit-test, aimantation, quantités : rien ne bouge, seul le dessin change).
+
+**Laissé, volontairement.** Le trait de coupe de l'escalier à 1 m (variantes droit / L / U / hélicoïdal : risque sur
+`stairGeom` sans gain de chiffrage) ; les notes jaune et rose (`NOTE_COLORS`, données de l'utilisateur, lues par
+`langage.mjs`) ; le regroupement des points électriques sous 40 px/m ; le survol en lilas des équipements et ouvertures
+(langage survol / sélection : chantier interactions) ; la poignée ⇕ d'une cote manuelle.
+
+**Contrôles.** `ux.mjs` passe de 64 à 85 contrôles (section 4, à ×1 et ×2) : vignette rendue à la densité de l'écran ;
+46 empreintes pour 46 modèles ; aucune vignette coupée ni vide (bord vide sauf le mur témoin, mur percé, ≥ 50 px² d'encre) ;
+chaque vignette égale le rendu du plan au même cadrage (après un flou 3 × 3 qui absorbe l'anticrénelage différent de la toile
+accélérée : écart moyen < 3 / 255 et aucun pixel à plus de 40 — un autre modèle s'en écarte nettement, âme pleine contre
+porte simple 6 % de pixels, prise contre prise double 2 %) ; les bibliothèques montrent `img.vig` non réduite ; un arc par
+vantail (2 / 1 / 2 / 0), plus de chevron ; marque d'entrée, âme pleine pleine, porte simple évidée ; rails du garage en
+tirets ; une seule encre sur le plan de l'exemple (ni violet, orange, vert, lilas, ni les quatre encres d'avant) ; mur
+#1E1B4B, cloison #5E5A86, cloison arrêtée à la face en T, mur épais hachuré ; électricité de 9 à 24 px du téléphone au gros
+plan, jamais un pâté ; poignées carrées, flèche du registre, losanges, plus de « à poser » écrit. Mis à jour délibérément :
+l'échantillon « Je garde » attendu en rgb(30, 27, 75) (l'encre du plan) au lieu de rgb(43, 40, 87). Sur le fichier d'avant,
+la section 4 échoue (pas de `vignette()`, pas d'`ENCRE`). Batterie complète (21 + ux), finition, couverture et vitest (167)
+verts. Captures avant / après : scratchpad `refonte/u2/` (planches P-ouvertures, P-equip, variantes, exemple ×2, export,
+téléphone 390).
