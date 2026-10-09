@@ -644,7 +644,7 @@ Object.assign(t, await p.evaluate(() => {
     const tf = chantierTasks().find((x) => x.id === "faience:" + sdb.id);
     r["faïence mi-hauteur · la tâche le dit et se chiffre sur cette surface"] = !!tf && /hors portes/.test(tf.detail) && Math.abs(tf.prix - fa.m2 * PRIX.faience) < 0.01;
     const cr = contratPlan().detailNiveaux.flatMap((n) => n.rooms || []).find((x) => x.type === "sdb" && Math.abs(x.perimeter - +f2.perimInt.toFixed(2)) < 0.01);
-    r["faïence mi-hauteur · le contrat porte le même périmètre hors portes (1.17)"] = CONTRAT_PLAN === "1.17.0" && !!cr && cr.perimetreHorsPortes === +hp.toFixed(2);
+    r["faïence mi-hauteur · le contrat porte le même périmètre hors portes (1.17)"] = /* D67 : le minimum sous lequel le périmètre hors portes ne part pas (1.17), pas le numéro du jour */ (([maj, min]) => maj === 1 && min >= 17)(CONTRAT_PLAN.split(".").map(Number)) && !!cr && cr.perimetreHorsPortes === +hp.toFixed(2);
     /* l'eau des appareils neufs */
     const manque = () => couvertureManquante(quantities()).find((a) => /^Arrivées et évacuations d'eau/.test(a[0]));
     const sansEau = !manque();
