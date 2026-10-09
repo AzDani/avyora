@@ -50,7 +50,8 @@ let p = await onglet();
 Object.assign(t, await p.evaluate(() => {
   const r = {}, m = document.querySelector("#m-welcome .modal"), ae = document.activeElement;
   r["accueil · rôle de dialogue, aria-modal, titre relié"] = m.getAttribute("role") === "dialog" && m.getAttribute("aria-modal") === "true" && (document.getElementById(m.getAttribute("aria-labelledby"))?.textContent || "").length > 5;
-  r["accueil · le focus est dans la fenêtre, sur le choix recommandé"] = m.contains(ae) && /exemple/i.test(ae.textContent);
+  /* D68 : l'accueil demande d'abord le type de plan ; le focus est sur le premier choix, « Plan final » */
+  r["accueil · le focus est dans la fenêtre, sur le premier choix (le type : Plan final)"] = m.contains(ae) && /^Plan final/.test(ae.innerText);
   r["accueil · une croix de fermeture visible"] = !!m.querySelector(".mx") && m.querySelector(".mx").getClientRects().length > 0;
   r["toutes les fenêtres ont leur croix"] = [...document.querySelectorAll(".overlay .modal")].every((x) => x.querySelector(".mx"));
   return r;
@@ -88,6 +89,9 @@ await p.keyboard.press("Escape"); await wait(60);
 t["Échap ferme « Estimer »"] = await p.evaluate(() => !modaleOuverte());
 /* Espace active un bouton ; sur le plan, il reste « Espace + glisser » */
 await p.evaluate(() => { localStorage.removeItem("avyora-plan-welcome"); openModal("welcome"); });
+/* D68 : l'accueil rouvert repart du type ; Tab puis Espace choisissent « Projet rénovation », dont l'exemple est le choix focalisé */
+await p.keyboard.press("Tab"); await p.keyboard.press("Space"); await wait(80);
+t["Espace sur « Projet rénovation » : l'étape suivante, le focus sur « Découvrir avec l'exemple »"] = await p.evaluate(() => modaleOuverte()?.id === "m-welcome" && /exemple/i.test(document.activeElement?.textContent || ""));
 await p.keyboard.press("Space"); await wait(80);
 t["Espace sur « Découvrir avec l'exemple » l'active"] = await p.evaluate(() => !modaleOuverte());
 /* D42 : à la première visite, la visite guidée démarre ; elle garde le clavier, Échap la ferme */
