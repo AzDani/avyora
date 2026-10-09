@@ -67,7 +67,8 @@ const INTERDITS = [
   [/base de prix|poste au catalogue|au catalogue|du catalogue|le catalogue/i, "mot interne : catalogue / base de prix"],
   [/\bBET\b/, "sigle non expliqué : BET"],
   [/\bJSON\b|Contrat \d|Envoyer vers mon estimation|plan complet|pour le support/i, "développement visible sans ?dev"],
-  [/vue\s+(Projet|Existant|Final)\b|\ben (Projet|Existant)\b|Passer en Projet|\bProjet\b|\bFinal\b|🛠|✅/, "ancien nom de vue"],
+  /* D68 : « Projet rénovation » est le nom d'un TYPE de plan (pastille, choix à la création), pas l'ancienne vue « Projet » */
+  [/vue\s+(Projet|Existant|Final)\b|\ben (Projet|Existant)\b|Passer en Projet|\bProjet\b(?! rénovation)|\bFinal\b|🛠|✅/, "ancien nom de vue"],
   [/Conservée?\b|Rien de prévu|Je l[ae] garde|Je la remplace|\bExistante\b|État dans le projet/, "ancien libellé d'état"],
   [/arrive avec Pro|Débloque/i, "promesse Pro mal placée"],
   [/décret|réglementaires?\b/i, "référence juridique non vérifiée"],
@@ -278,8 +279,10 @@ await p.close();
 
 /* ═════════ 2. En gratuit ═════════ */
 p = await onglet("", 1400, 900, false);
-/* D48 : un plan de l'utilisateur (la maison type, fenêtres à remplacer) — l'exemple, lui, montre tout */
-await p.evaluate(() => { closeWelcome("fermer"); loadTemplate("maison"); closeModal(); }); await wait(150);
+/* D48 : un plan de l'utilisateur (la maison type, fenêtres à remplacer) — l'exemple, lui, montre tout.
+   D68 : en gratuit, un plan neuf est un Plan final ; ce contrôle lit une RÉNOVATION d'un utilisateur gratuit (un plan
+   d'avant, ou d'un abonnement terminé) : il la demande explicitement. */
+await p.evaluate(() => { closeWelcome("fermer"); loadTemplate("maison", WORKFLOW_RENO); closeModal(); }); await wait(150);
 Object.assign(t, await p.evaluate(() => {
   const r = {}; setMode("projet"); closeModal(); L().openings.filter((o) => OPENINGS[o.type].cat === "fenetre").forEach((o) => { o.st = "remplacer"; }); afterChange(); sel = null; render();
   r["gratuit · le haut du panneau : le plan de l'utilisateur n'est pas l'exemple"] = !estExemple();
@@ -300,7 +303,7 @@ Object.assign(t, await p.evaluate(() => {
 }));
 await p.evaluate(() => { setMode("projet"); closeModal(); showEstimate(); }); await noter(p, "gratuit · estimer");
 await p.evaluate(() => { closeModal(); loadSample(); setMode("projet"); closeModal(); showEstimate(); }); await noter(p, "gratuit · estimer l'exemple");
-await p.evaluate(() => { closeModal(); loadTemplate("maison"); closeModal(); setMode("projet"); closeModal(); L().openings.filter((o) => OPENINGS[o.type].cat === "fenetre").forEach((o) => { o.st = "remplacer"; }); afterChange(); });
+await p.evaluate(() => { closeModal(); loadTemplate("maison", WORKFLOW_RENO); closeModal(); setMode("projet"); closeModal(); L().openings.filter((o) => OPENINGS[o.type].cat === "fenetre").forEach((o) => { o.st = "remplacer"; }); afterChange(); });
 await p.evaluate(() => { closeModal(); exportPlan(); }); await noter(p, "gratuit · export");
 await p.evaluate(() => { closeModal(); openPlansModal(); }); await noter(p, "gratuit · mes plans");
 await p.evaluate(() => { closeModal(); setPanelTab("suivi"); }); await noter(p, "gratuit · suivi");
@@ -505,7 +508,7 @@ await p.evaluate(() => { setPanelTab("details"); closeModal(); openModal("level"
 await p.close();
 /* en gratuit : les mots des corps d'état, sous la répartition */
 p = await onglet("", 1400, 900, false);
-await p.evaluate(() => { closeWelcome("fermer"); loadTemplate("maison"); closeModal(); }); await wait(150);
+await p.evaluate(() => { closeWelcome("fermer"); loadTemplate("maison", WORKFLOW_RENO); closeModal(); }); await wait(150); /* D68 : une rénovation, demandée (en gratuit, un plan neuf est un Plan final) */
 Object.assign(t, await p.evaluate(() => {
   const r = {}; setMode("projet"); closeModal(); L().openings.forEach((o) => { o.st = "remplacer"; }); L().walls.filter((w) => w.type === "cloison").slice(0, 1).forEach((w) => { w.st = "demolir"; }); afterChange();
   showEstimate(); const B = document.getElementById("estBody"), att = motsDe(chantierPrix().lots.map((g) => g.lot), new Set(["ht", "corps"]));
