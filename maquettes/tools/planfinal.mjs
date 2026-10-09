@@ -27,6 +27,16 @@
  *     DROITS (« Projet rénovation » : Pro). Le choix du type décrit la rénovation avec ses mots (« Pars de l'existant
  *     et décide tes travaux ») : ses deux premières cartes ne sont pas lues comme un écran de Plan final ; ses étapes
  *     « Plan final » le sont.
+ *   - D69 (interface épurée) : comparé au même plan en rénovation, moins de commandes dans la barre du haut (ni
+ *     vues), une colonne d'outils plus courte (ni Zone ni raccourci B ; Structure, Menuiseries, Équipements, Mesures,
+ *     Fond), pas de barre d'options sans option (la Sélection) — la tête du plan disparaît, le plan gagne sa hauteur —,
+ *     une barre d'état sans budget ni légende ; à la tablette, les niveaux montent dans la barre du haut s'ils y
+ *     tiennent ; le panneau garde les propriétés et, à la place du budget, un récapitulatif (surface habitable, pièces
+ *     et surfaces par type, ouvertures par modèle), mêmes nombres que le plan ; « Exporter le plan » (clic) ouvre le
+ *     dossier des plans, sans budget ni suivi ; l'aide de la première fois (la petite carte « Dessine ton plan final »
+ *     et trois gestes) : où et quand elle se montre, fermée à la souris, mémorisée au rechargement, rouverte par
+ *     Aide › Premiers pas, jamais dans une rénovation, ni par-dessus la carte du plan vide, ni au téléphone ; aux
+ *     largeurs 1 440, 1 280, 1 024 (Pro et gratuit), 768 et 640 rien ne déborde ; au téléphone, la consultation.
  *
  *   node maquettes/tools/planfinal.mjs "$(pwd)/maquettes"            (ajouter --lister pour voir chaque mot trouvé)
  *
@@ -514,6 +524,164 @@ for (const [L0, H0] of [[1280, 800], [1024, 768], [768, 1024]]) {
     return r; }, `${L0}×${H0}`));
   });
 }
+
+/* ═════════ 14. D69 · L'interface épurée : le même plan, en Plan final puis en rénovation ═════════ */
+/* ce qui se voit dans chaque bande autour du plan (comptes de commandes, outils, sections, tête du plan, zone utile) */
+const MESURE = () => {
+  const vis = (el) => !!el && el.getClientRects().length > 0 && getComputedStyle(el).visibility !== "hidden";
+  const n = (sel) => [...document.querySelectorAll(sel)].filter(vis).length, z = zoneUtile(), tp = document.getElementById("tetePlan");
+  return {
+    top: n(".top button, .top input, .top a"),
+    outils: [...document.querySelectorAll("#tools .tb")].filter(vis).map((x) => (x.getAttribute("onclick").match(/setTool\('(\w+)'\)/) || [])[1]),
+    sections: [...document.querySelectorAll("#tools .cat")].filter(vis).map((c) => c.textContent.trim()).filter(Boolean),
+    tete: vis(tp) ? tp.offsetHeight : 0, optbar: vis(document.getElementById("optbar")),
+    etat: n("#etat > *") + n("#etat .zoomctl > *"), plan: Math.round(z.y1 - z.y0), y0: z.y0,
+    budget: vis(document.querySelector("#pfoot .budget")) || vis(document.getElementById("budgetPlie")), legende: vis(document.querySelector("#etat .vlegend")) || vis(document.querySelector(".vlegend")),
+    recap: vis(document.querySelector("#pfoot .recappf")), onglets: n(".ptabs [role=tab]"),
+  };
+};
+await parcours("D69, l'interface épurée", async () => {
+p = await onglet({ graine: { "avyora-plan-welcome": "1", "avyora-plan-tuto": "fait", "avyora-plan-aide-pf": "1" } });
+await p.evaluate(scenePF);
+const pf = await p.evaluate(MESURE);
+const reno = await p.evaluate((M) => { state.workflow = WORKFLOW_RENO; sel = null; render(); const r = (0, eval)("(" + M + ")")(); setMode("projet"); closeModal(); const rp = (0, eval)("(" + M + ")")(); state.workflow = WORKFLOW_FINAL; state.mode = "existant"; render(); return { ...r, etatProjet: rp.etat, legendeProjet: rp.legende }; }, MESURE.toString());
+if (LISTER) console.log("   Plan final", JSON.stringify(pf), "\n   rénovation", JSON.stringify(reno));
+t["épuré · barre du haut : moins de commandes que la rénovation du même plan (ni vues)"] = pf.top < reno.top && pf.top <= reno.top - 3;
+t["épuré · colonne : 9 outils — Sélection, Murs, Doublage, Ouvertures, Équipements, Cote, Mesurer, Note, Image (ni Zone)"] = JSON.stringify(pf.outils) === JSON.stringify(["select", "mur", "doublage", "ouverture", "equipement", "cote", "mesure", "texte", "calque"]);
+t["épuré · colonne : les sections Structure, Menuiseries, (Équipements), Mesures, Fond ; la Sélection en tête, sans titre"] = JSON.stringify(pf.sections) === JSON.stringify(["Structure", "Menuiseries", "Mesures", "Fond"]);
+t["rénovation · sa colonne ne bouge pas (10 outils, Zone comprise ; Édition, Annoter)"] = reno.outils.length === 10 && reno.outils.includes("zone") && JSON.stringify(reno.sections) === JSON.stringify(["Édition", "Structure", "Menuiseries", "Annoter", "Fond"]);
+t["épuré · Sélection : pas de barre d'options, la tête du plan disparaît (le plan commence sous la barre du haut)"] = !pf.optbar && pf.tete === 0 && pf.y0 === 0;
+t["épuré · le plan gagne la hauteur de la barre d'options (rénovation : barre de la Sélection, même plan)"] = reno.optbar && reno.tete > 0 && pf.plan >= reno.plan + reno.tete;
+t["épuré · barre d'état : ni budget ni légende, moins d'éléments que la rénovation en vue Travaux"] = !pf.budget && !pf.legende && pf.etat < reno.etatProjet && reno.legendeProjet;
+t["épuré · panneau : ni onglets ni budget ; le récapitulatif au pied (rénovation : onglets et budget)"] = pf.onglets === 0 && !pf.budget && pf.recap && reno.onglets === 2 && reno.budget && !reno.recap;
+Object.assign(t, await p.evaluate(() => {
+  const r = {}, vis = (el) => !!el && el.getClientRects().length > 0;
+  setTool("mur"); const ob = document.getElementById("optbar");
+  r["barre d'options : elle s'ouvre pour un outil qui a des options (Murs : Type, Trait, Pièce)"] = vis(ob) && /Type/.test(ob.innerText) && /Pièce/.test(ob.innerText) && vis(document.getElementById("tetePlan")) && zoneUtile().y0 > 0;
+  setTool("select"); render();
+  r["barre d'options : elle se referme à la Sélection"] = !vis(document.getElementById("tetePlan")) && zoneUtile().y0 === 0;
+  setTool("zone"); r["Zone : hors de la colonne, l'outil revient à la Sélection"] = tool === "select";
+  const tb = [...document.querySelectorAll("#tools .tb")].find((x) => /setTool\('select'\)/.test(x.getAttribute("onclick")));
+  r["Sélection : sa bulle dit le cadre (Maj + glisser), qui remplace la Zone"] = /Maj \+ glisser dans le vide/.test(tb.dataset.tip);
+  r["contexte : la barre du haut dit « Niveaux » (pas de vue à choisir)"] = document.getElementById("ctxTop").getAttribute("aria-label") === "Niveaux";
+  ouvrirAide("keys"); const k = document.getElementById("aideKeys").innerText; closeModal();
+  r["Aide · raccourcis : les outils de la colonne, sans la Zone ni sa touche"] = !/\bZone\b/.test(k) && /Murs/.test(k) && /Ouvertures/.test(k);
+  return r;
+}));
+await p.evaluate(() => { sel = null; render(); cv.focus(); }); await p.keyboard.press("b"); await wait(80);
+t["clavier · B ne choisit rien dans un Plan final (la Zone n'y est pas)"] = await p.evaluate(() => tool === "select");
+await p.keyboard.press("m"); await wait(60);
+t["clavier · M choisit toujours les Murs"] = await p.evaluate(() => tool === "mur");
+await p.keyboard.press("Escape"); await p.evaluate(() => { setTool("select"); sel = null; render(); });
+/* le panneau : propriétés + récapitulatif */
+await regarder(p, "Pro · vue d'ensemble, le récapitulatif");
+Object.assign(t, await p.evaluate(() => {
+  const r = {}, vis = (el) => !!el && el.getClientRects().length > 0, P = document.getElementById("pbody");
+  const ph = [...P.querySelectorAll(".ph")].find((x) => /^Récapitulatif/.test(x.textContent.trim()));
+  const q = recapExistant(), hv = habView(quantities()), N = state.levels.reduce((s, l) => s + l.openings.length, 0);
+  const tabs = ph ? [ph.nextElementSibling, ph.nextElementSibling && ph.nextElementSibling.nextElementSibling] : [];
+  r["récapitulatif · « Récapitulatif » (tous niveaux), plus de « Récap des surfaces »"] = !!ph && /tous niveaux/.test(ph.textContent) && !/Récap des surfaces/.test(P.innerText);
+  r["récapitulatif · les surfaces par type de pièce, et la surface habitable du plan"] = !!tabs[0] && tabs[0].classList.contains("stab") && /Chambres\s*× 3/.test(tabs[0].innerText) && tabs[0].querySelector(".sr.tot b").textContent === fmtM2(q.area);
+  const o = tabs[1], rows = o ? [...o.querySelectorAll(".sr:not(.tot)")] : [];
+  r["récapitulatif · les ouvertures par modèle, leur total = toutes les ouvertures du plan"] = !!o && o.classList.contains("ouv") && rows.length >= 5 && rows.reduce((s, x) => s + +x.querySelector("b").textContent, 0) === N && +o.querySelector(".sr.tot b").textContent === N && /Baie vitrée/.test(o.innerText) && /Porte d'entrée/.test(o.innerText);
+  const c = document.querySelector("#pfoot .recappf");
+  r["pied · à la place du budget : « Surface habitable », la surface en grand (celle du plan)"] = vis(c) && /^Surface habitable/.test(c.querySelector(".rk").textContent) && c.querySelector(".rv").textContent === fmtM2(hv.area) && !document.querySelector("#pfoot .budget");
+  r["pied · les pièces et les ouvertures (mêmes nombres), et les 2 niveaux"] = c.querySelector(".rs").textContent.replace(/\s+/g, " ").trim() === `${hv.rooms} pièces · ${N} ouvertures` && /2 niveaux/.test(c.querySelector(".rk").textContent) && c.getAttribute("aria-label") === "Récapitulatif du plan";
+  const w = L().walls[0]; sel = { kind: "wall", id: w.id }; render();
+  r["pied · il reste quand un élément est choisi (les propriétés au-dessus)"] = vis(document.querySelector("#pfoot .recappf")) && /Mur/.test(P.querySelector(".ptitle").textContent);
+  sel = null; render();
+  return r;
+}));
+/* « Exporter le plan », le bouton du haut, à la souris : le dossier des plans */
+await cliquer(p, "#estBtnTop");
+t["Exporter le plan (clic) : le dossier des plans — un par niveau, le contrôle, les quantités — ni budget ni suivi"] = await p.evaluate(() => { const H = [...document.querySelectorAll("#exportGallery .xpage h4")].map((x) => x.textContent); return modaleOuverte()?.id === "m-export" && JSON.stringify(H) === JSON.stringify([...state.levels.map((l) => l.name), "Contrôle du plan", "Quantités"]) && !H.some((h) => /Budget|Suivi|mots de ce budget/.test(h)); });
+await regarder(p, "Pro · dossier exporté depuis le bouton du haut"); await p.evaluate(() => closeModal());
+/* sans pièce : ni carte de récapitulatif, ni liste vide */
+Object.assign(t, await p.evaluate(() => { const vis = (el) => !!el && el.getClientRects().length > 0; state = blankState(); state.workflow = WORKFLOW_FINAL; afterChange(); fitView(); setTool("select"); render();
+  return { "sans pièce : pas de récapitulatif au pied, et le panneau ne dit qu'une fois comment fermer une pièce": !vis(document.getElementById("pfoot")) && !document.querySelector("#pfoot .recappf") && ![...document.querySelectorAll("#pbody .ph")].some((x) => vis(x) && /Pièces/.test(x.textContent)) && /Aucune pièce fermée/.test(document.getElementById("pbody").innerText) }; }));
+await regarder(p, "Pro · plan vide, le panneau");
+});
+
+/* ═════════ 15. D69 · L'aide de la première fois ═════════ */
+const AIDE = () => { const a = document.getElementById("aidePF"); if (!a || !a.getClientRects().length) return null; const q = a.getBoundingClientRect(), st = document.getElementById("stage").getBoundingClientRect(), tp = document.getElementById("tetePlan"), et = document.getElementById("etat").getBoundingClientRect(), to = document.getElementById("tools").getBoundingClientRect();
+  return { h4: a.querySelector("h4")?.textContent, p: a.querySelector("p")?.textContent, li: [...a.querySelectorAll("li")].map((x) => x.textContent.replace(/\s+/g, " ").trim()), ico: a.querySelectorAll("li svg.ico").length, x: a.querySelector(".aidex")?.getAttribute("aria-label"),
+    dedans: q.left >= st.left && q.right <= st.right && q.top >= st.top && q.bottom <= et.top && q.left >= to.right && (!tp.getClientRects().length || q.top >= tp.getBoundingClientRect().bottom), l: Math.round(q.width), focus: a.contains(document.activeElement), carteVide: !document.getElementById("emptyStage").hidden }; };
+await parcours("D69, l'aide de la première fois (Pro, à la souris)", async () => {
+p = await onglet({ graine: { "avyora-plan-tuto": "fait" } });
+await cliquer(p, "#m-welcome .wcard", "Plan final"); await cliquer(p, "#m-welcome .wcard", "Feuille blanche");
+const a = await p.evaluate(AIDE);
+t["aide · après « Plan final › Feuille blanche » (outil Murs), la petite carte est là"] = !!a;
+t["aide · « Dessine ton plan final — Commence par tes murs, puis ajoute tes portes, fenêtres et aménagements. »"] = !!a && a.h4 === "Dessine ton plan final" && a.p === "Commence par tes murs, puis ajoute tes portes, fenêtres et aménagements.";
+t["aide · trois gestes très courts (12 mots au plus : Murs, Ouvertures, Équipements), chacun avec l'icône de son outil"] = !!a && a.li.length === 3 && /^Murs :/.test(a.li[0]) && /^Ouvertures :/.test(a.li[1]) && /^Équipements :/.test(a.li[2]) && a.li.every((x) => (x.match(/\p{L}+/gu) || []).length <= 12) && a.ico === 3;
+t["aide · en haut à gauche du plan : sous la barre d'options, à droite des outils, au-dessus de la barre d'état ; 320 px au plus"] = !!a && a.dedans && a.l <= 320;
+t["aide · elle ne prend pas le focus ; sa croix est nommée « Fermer l'aide »"] = !!a && !a.focus && a.x === "Fermer l'aide";
+await regarder(p, "Pro · l'aide de la première fois");
+await piece(p, 0, 0, 6, 4);
+t["aide · elle ne gêne pas le dessin : une pièce de 6 × 4 m tracée à la souris, carte ouverte"] = await p.evaluate(() => (facesCache[L().id] || []).filter((f) => f.room).length === 1);
+await p.evaluate(() => { setTool("select"); fitView(); render(); });
+await regarder(p, "Pro · une pièce, l'aide ouverte");
+await cliquer(p, "#aidePF .aidex");
+t["aide · la croix (clic) la ferme, et c'est mémorisé"] = await p.evaluate(() => document.getElementById("aidePF").hidden && localStorage.getItem("avyora-plan-aide-pf") === "1");
+await p.evaluate(() => { save(); enregistrerMaintenant(); }); await p.reload({ waitUntil: "networkidle0" }); await wait(300);
+t["aide · au rechargement, elle ne revient pas (le Plan final, si)"] = await p.evaluate(() => estPlanFinal() && document.getElementById("aidePF").hidden);
+await cliquer(p, "#aideBtn");
+t["aide · le menu Aide propose « Premiers pas » (Plan final)"] = await p.evaluate(() => !!document.getElementById("aidePfBtn").getClientRects().length && /Premiers pas/.test(document.getElementById("aidePfBtn").textContent));
+await regarder(p, "Pro · menu Aide d'un Plan final");
+await cliquer(p, "#aidePfBtn");
+t["aide · Aide › Premiers pas (clic) la rouvre"] = !!(await p.evaluate(AIDE));
+await cliquer(p, "#aidePF .aidex");
+t["aide · … et la croix la referme"] = await p.evaluate(() => document.getElementById("aidePF").hidden);
+});
+await parcours("D69, l'aide : jamais dans une rénovation", async () => {
+p = await onglet({ graine: { "avyora-plan-welcome": "1", "avyora-plan-tuto": "fait" } });
+Object.assign(t, await p.evaluate((A) => { const aide = (0, eval)("(" + A + ")"); closeModal(); const r = {};
+  loadTemplate("maison", WORKFLOW_RENO); closeModal(); render();
+  r["aide · une rénovation : pas d'aide, pas de « Premiers pas » au menu Aide"] = !aide() && (ouvrirMenu("aide"), !document.getElementById("aidePfBtn").getClientRects().length); fermerMenus(false);
+  loadTemplate("maison", WORKFLOW_FINAL); closeModal(); render();
+  r["aide · le même plan type en Plan final : l'aide est là (première fois)"] = !!aide();
+  return r; }, AIDE.toString()));
+await regarder(p, "Pro · plan type en Plan final, l'aide");
+});
+await parcours("D69, l'aide : gratuit, après la carte du plan vide", async () => {
+p = await onglet({ pro: false });
+t["aide · gratuit, arrivée : la carte du plan vide seule (même titre : jamais les deux)"] = await p.evaluate(() => !document.getElementById("emptyStage").hidden && document.getElementById("aidePF").hidden);
+await cliquer(p, "#emptyStage button", "Tracer les murs");
+t["aide · gratuit, « Tracer les murs » (clic) : la carte du plan vide part, l'aide arrive"] = await p.evaluate((A) => { const a = (0, eval)("(" + A + ")")(); return !!a && !a.carteVide && a.dedans; }, AIDE.toString());
+await regarder(p, "gratuit · l'aide après Tracer les murs");
+});
+
+/* ═════════ 16. D69 · Aux largeurs : rien ne déborde, l'aide et le récapitulatif tiennent ═════════ */
+for (const [L0, H0, pro] of [[1440, 900, true], [1440, 900, false], [1280, 800, true], [1280, 800, false], [1024, 768, true], [1024, 768, false], [768, 1024, true], [768, 1024, false], [640, 900, false]]) {
+  const tag = `${L0}×${H0} ${pro ? "Pro" : "gratuit"}`;
+  await parcours(tag, async () => {
+  p = await onglet({ largeur: L0, hauteur: H0, pro, graine: { "avyora-plan-welcome": "1", "avyora-plan-tuto": "fait" } });
+  await p.evaluate(scenePF); await p.evaluate(() => { closeModal(); sel = null; render(); });
+  const r = await p.evaluate((A, tag, L0, pro) => { const aide = (0, eval)("(" + A + ")")(), o = {}, T = document.querySelector(".top"), Tl = document.getElementById("tools"), c = document.querySelector("#pfoot .recappf"), vis = (el) => !!el && el.getClientRects().length > 0;
+    o[`${tag} · la barre du haut ne déborde pas`] = T.scrollWidth <= T.clientWidth + 1;
+    o[`${tag} · la colonne d'outils tient sans défiler`] = Tl.scrollHeight <= Tl.clientHeight + 1;
+    o[`${tag} · l'aide est dans le plan, sous la tête, à droite des outils, au-dessus de la barre d'état`] = !!aide && aide.dedans;
+    if (L0 > 900 || vis(document.getElementById("panel"))) { const q = c && c.getBoundingClientRect(); o[`${tag} · le récapitulatif du pied se voit en entier`] = vis(c) && q.bottom <= innerHeight + 0.5 && q.right <= innerWidth + 0.5; }
+    else if (L0 >= 768) o[`${tag} · panneau replié : la surface habitable dans la barre d'état`] = vis(document.getElementById("surfBadge")) && /habitables/.test(document.getElementById("surfBadge").textContent);
+    /* à la tablette, les niveaux montent dans la barre du haut s'ils y tiennent, sinon la bande reste (mesuré) */
+    if (L0 <= 900) { const haut = document.getElementById("ctxTop").contains(document.getElementById("levels")), bande = vis(document.getElementById("pbande"));
+      o[`${tag} · les niveaux : dans la barre du haut (sans bande), ou dans la bande — jamais les deux, jamais de débordement`] = haut !== bande && T.scrollWidth <= T.clientWidth + 1;
+      if (pro && L0 === 768) o[`${tag} · les niveaux tiennent dans la barre du haut : la bande disparaît (36 px de plan)`] = haut && !bande;
+      if (L0 === 640) o[`${tag} · la barre est pleine : les niveaux restent dans la bande`] = bande && !haut; }
+    return o; }, AIDE.toString(), tag, L0, pro);
+  Object.assign(t, r);
+  await regarder(p, tag + " · plan");
+  });
+}
+await parcours("390×844 gratuit, la consultation", async () => {
+p = await onglet({ largeur: 390, hauteur: 844, pro: false });
+await p.evaluate(scenePF); await p.evaluate(() => { closeModal(); sel = null; render(); });
+Object.assign(t, await p.evaluate(() => { const vis = (el) => !!el && el.getClientRects().length > 0;
+  const r = { "téléphone · ni aide, ni barre d'options, ni annuler / rétablir (on consulte)": !vis(document.getElementById("aidePF")) && !vis(document.getElementById("optbar")) && !vis(document.getElementById("undoBtn")) && !vis(document.getElementById("redoBtn")) && /Consultation/.test(document.getElementById("phoneBanner").innerText) };
+  toggleSheet(true); renderPanel(); return r; }));
+await wait(500);
+t["téléphone · le tiroir ouvert : le récapitulatif (surface habitable) en entier"] = await p.evaluate(() => { const c = document.querySelector("#pfoot .recappf"), q = c && c.getBoundingClientRect(); return !!c && c.getClientRects().length > 0 && q.bottom <= innerHeight + 0.5 && q.left >= 0 && q.right <= innerWidth + 0.5 && /Surface habitable/.test(c.innerText); });
+await regarder(p, "téléphone · tiroir, le récapitulatif");
+});
 
 /* ═════════ Verdicts ═════════ */
 for (const [etat, txt] of lus) {
