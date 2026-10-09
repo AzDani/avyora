@@ -4089,3 +4089,96 @@ en tunnel (choisie) reste dans l'épaisseur. Seul le dessin change : ni chiffrag
 
 **Contrôle.** `metier.mjs` : mur de 60 cm doublé — la porte simple part de la face doublée, la porte d'entrée
 de la face de son dormant, et retournée la porte se pose sur l'autre face. Les trois échouent sur l'ancien fichier.
+
+## D67 · Plan final, chantier P1 : la donnée et la couche de logique (09/10/2026)
+
+**Demande de Dani.** Un deuxième type de plan, le **Plan final** : on dessine directement le logement que l'on veut
+obtenir — ni existant, ni démolition, ni conservé / nouveau, ni chantier, ni avancement, ni avant / après. Ouvrir,
+dessiner, aménager, enregistrer. Le mode actuel (Avant travaux → Travaux → Après travaux) devient le **Projet
+rénovation** et ne bouge pas, anciens plans compris. Même moteur de dessin, couche de logique différente. Ce chantier
+(P1) pose la donnée et la couche de logique ; la création (choix des deux cartes, gratuit en Plan final direct), le
+repère de type près du nom, l'onboarding et « Démarrer un projet rénovation à partir de ce plan » viennent ensuite.
+
+**Constat** (mesuré avant). Rien ne distinguait deux types de plan : un plan dessiné en vue Avant travaux restait un
+plan de rénovation, avec ses mots et ses chiffres. Le contrôle `planfinal.mjs`, lancé sur le fichier qui ne portait
+encore que la donnée (`state.workflow`, `setMode` verrouillé, aucune tâche), échouait sur **220 contrôles sur 279** :
+dans les fiches de chaque type d'élément, « Décision · À décider / Je garde / À démolir / À déposer / À remplacer » et
+« Tu retrouves cette décision en vue Travaux » (51 fiches), « Menuiserie actuelle », « État : Bon / Moyen / Vétuste »,
+« Sol actuel » (avec « Pas de plancher — étage à créer »), « Hauteur avant travaux », « Non habitable avant travaux…
+grâce au chantier », « ajouté au budget (façade) », « comptés dans le budget » ; le libellé du plan « vue Avant
+travaux » (lecteur d'écran) ; la toiture du contrôle du plan ; « menuiseries actuelles » sur un mur doublé ; le
+dossier « Avant travaux, Travaux, Après travaux… budget… suivi du chantier » et, DANS l'image exportée, « RDC — AVANT
+TRAVAUX » ; « Suppr … marque à démolir » dans l'Aide ; « Corps d'état : un métier du chantier » au glossaire ; « tu
+coches l'avancement » au téléphone ; et partout le sélecteur des trois vues, l'onglet Suivi, la carte du budget.
+
+**Décision.**
+1. *La donnée.* `state.workflow` ∈ { `'final_plan'`, `'renovation'` } — pas `state.mode`, qui reste la vue.
+   `WORKFLOW_FINAL`, `WORKFLOW_RENO`, `workflowDe(st)` et **une seule fonction, `estPlanFinal()`**, qui pilote toute la
+   couche d'interface. `blankState()` naît `'renovation'`. Absent = rénovation : `migrerWorkflow` (dans `migrerEtat`)
+   écrit `'renovation'` sur un plan d'avant D67, ou sur un type inconnu, sans rien toucher d'autre ; un Plan final relu
+   revient toujours sur sa couche (`mode='existant'`). **Pas de numéro de schéma** : la migration est idempotente, et
+   monter `SCHEMA` aurait changé l'empreinte de chaque plan enregistré (un plan type jamais touché se serait dit
+   modifié, et « Nouveau » l'aurait rangé). Pour la même raison, `empreinte()` ignore `workflow:'renovation'`
+   (= absent) : l'empreinte d'un ancien plan est identique avant et après migration (contrôlé).
+2. *Une seule couche.* Le Plan final dessine dans la couche « existant », objets sans état : mêmes outils, même
+   moteur, mêmes plans types. `setMode` refuse toute autre vue et y revient (la fenêtre « Vue Travaux » ne s'ouvre
+   pas).
+3. *Rien à chiffrer.* `chantierTasks()` rend `[]` en Plan final — garde explicite, même si un état traînait sur un
+   objet. Contrat **1.18.0** : `workflow` (ajout pur ; absent d'un contrat plus ancien = rénovation).
+   `lib/estimateur/plan-correspondance.ts` : un contrat `final_plan` ne produit **aucune contribution** (garde en tête
+   de `contributionsDuPlan`, pour qu'aucune règle ajoutée plus tard — un forfait, une déduction — n'y fabrique une
+   ligne). La scène de référence porte `workflow:'renovation'` (fixture mise à jour à la main : seules ces deux
+   lignes changent, la régénération ne fait que tirer de nouveaux identifiants internes).
+4. *L'interface, en Plan final.* Ni sélecteur de vues ni légende (`#modes` vide et caché) ; ni onglet Suivi (le
+   panneau n'a plus d'onglets) ; ni « Ton projet à X % » (`projetHTML`) ; ni carte du budget, ni pastille d'écart, ni
+   budget replié : le pied garde la surface (« 218,3 m² habitables · 8 pièces · 2 niveaux ») ; ni « Le chantier », ni
+   « Étage créé par les travaux », ni toiture (panneau, contrôle, calque d'Affichage) ; ni « Personnalisation du
+   projet » (produits chiffrés) : « Notes du plan ». Fiches : aucune décision (`blocDecisionExistant` rend vide),
+   ni tronçons à démolir, ni « Porteur ? », ni finition de façade ; ouverture sans « État » (bon / vétuste) ni « Pas de
+   travaux prévus » ni chiffrage ; pièce sans hauteur ni habitabilité « avant travaux » ; équipement sans phrase de
+   prix. Barre d'actions et clic droit : déjà sans décision dans la couche dessinée (contrôlé). La colonne d'outils
+   garde tous ses outils — tous dessinent le plan voulu (Doublage compris) ; seule la bulle de la Sélection ne
+   « décide » plus. Aide : visite guidée et « Revoir l'exemple » (la rénovation) masqués (`.renoSeul`), Suppr
+   « supprime l'élément choisi », glossaire sans dépose, corps d'état, TVA, HT, aides, poutre de reprise
+   (`GL_RENO`). Le bouton du panneau replié dit « les détails du plan ». Téléphone : consultation du plan (bandeau
+   « Consultation », messages sans « avancement », pas d'onglet Suivi dans le tiroir).
+5. *Le vocabulaire.* « Sol » (parmi les revêtements, `FLOORS`) au lieu de « Sol actuel », « Menuiserie », « Options »,
+   « Volets », « Surface des murs », « Récap des surfaces », « Pièces » (dossier). Les textes fixes de la page passent
+   par une table, `TEXTES_PF` (`majTypePlan`, appelée par `render`) : le bouton principal devient **« Exporter le
+   plan »** (même id, même `onclick` : `showEstimate()` exporte en Plan final), « Exporter le plan · Le dossier PDF de
+   tes plans » au menu Fichier, la carte du plan vide « Dessine ton plan final — Commence par tes murs, puis ajoute
+   tes portes, fenêtres et aménagements. », la fenêtre « Ajouter un niveau » sans « les travaux le créent ». Le texte
+   d'origine est gardé et revient tel quel : le DOM d'une rénovation ne change pas (contrôlé après un Plan final
+   ouvert dans la même page).
+6. *Le dossier.* Les plans, une page par niveau (« RDC · Plan final · le logement voulu »), l'image titrée « PLAN
+   FINAL » ; en Pro, le contrôle du plan et les quantités (sans « Le chantier », sans « Travaux décidés ») ; ni budget
+   ni suivi. En gratuit, le filigrane reste, et le bandeau lit `DROITS.export.planFinal` (une clé de la même table,
+   hors des listes : les droits ne changent pas).
+7. *Les menuiseries d'un Plan final sont celles que l'on veut* : leur tapée suit le doublage, comme une neuve
+   (`dormantOf`). Sans cela, chaque fenêtre d'un mur doublé déclenchait « menuiserie actuelle plus fine que le
+   doublage : choisis À remplacer ». Seul le dessin d'un Plan final change ; la rénovation, non.
+8. *En attendant le choix à la création* : « Nouveau » et un plan type gardent le type du plan ouvert ; l'exemple
+   reste une rénovation.
+
+**Ce qui ne bouge pas.** Aucune globale renommée (ajouts : `WORKFLOW_FINAL`, `WORKFLOW_RENO`, `workflowDe`,
+`estPlanFinal`, `migrerWorkflow`, `TEXTES_PF`, `majTypePlan`, `tipPfold`, `TOOL_TIP_PF`, `tipOutil`, `GL_RENO`,
+`solPlanFinalHTML`) ; ids, ordre `.top → #tools → canvas`, `onclick` d'ancrage, clés `localStorage`, `SCHEMA` (47),
+la rénovation entière. Classe ajoutée : `.renoSeul` (sous `body.planFinal`). `DROITS` garde ses lignes : « Projet
+rénovation : Pro » viendra avec le chantier qui réserve la rénovation au Pro — l'écrire avant serait promettre ce qui
+n'existe pas encore.
+
+**Contrôles.** Nouveau : `planfinal.mjs` — la donnée (plan neuf, ancien plan, type inconnu, empreinte), la vue
+verrouillée, aucune tâche ni prix (même un état égaré sur un mur), le contrat (type, aucun travail, chaque objet
+« existant ») ; une maison de 120 m² dessinée en Plan final et lue état par état (vue d'ensemble, chaque outil, la
+fiche, la barre d'actions et le clic droit de chaque élément, une zone, plusieurs équipements, l'étage, les menus,
+l'Aide, Mes plans, un niveau, les plans types, l'Affichage, le dossier, le panneau replié, les messages, un tracé, le
+clavier ; en Pro, en gratuit, à la tablette et au téléphone) : aucun mot du chantier ni « actuel », ni vue, ni
+décision, ni Suivi, ni budget ; une pièce, une fenêtre, un WC et une cote posés à la souris ; enregistrer, recharger,
+ranger et rouvrir garde le type ; « Nouveau » et un plan type le gardent ; une rénovation rouverte retrouve ses textes ;
+un plan d'avant D67 (l'exemple sans type) reste une rénovation entière ; le dossier (Pro : plans, contrôle, quantités ;
+gratuit : plans et filigrane), l'Aide et la feuille blanche disent ce qu'ils doivent dire. **314 contrôles** ; sur le
+fichier qui ne portait que la donnée, 220 échecs sur 279. Vitest : 3 tests (la scène se dit rénovation ; un Plan final
+ne produit rien ; un contrat sans type se lit à l'identique), 170 au total. Mis à jour en gardant son intention :
+`metier.mjs` vérifiait `CONTRAT_PLAN === "1.17.0"` pour le périmètre hors portes — il vérifie le minimum (≥ 1.17),
+comme le font déjà `existant` et `structure`. Batterie complète (22 + planfinal), finition, couverture, vitest et
+build verts.
