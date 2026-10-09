@@ -1180,12 +1180,34 @@ select.fin{-webkit-appearance:none;appearance:none;padding-right:32px;text-overf
 /* D67 · Plan final : ce qui ne vaut que pour un projet de rénovation (niveau créé par les travaux, visite de la rénovation)
    ne s'affiche pas — le DOM d'une rénovation ne change pas */
 body.planFinal .renoSeul{display:none!important}
+/* D68 · le type du plan : une pastille discrète près du nom, sur les cartes de Mes plans et dans la fenêtre des plans types ;
+   à la création, le même choix à deux cartes (accueil, Fichier › Nouveau plan, Mes plans › Nouveau plan) */
+.typeplan{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:99px;border:1px solid var(--line);background:var(--canvas);color:var(--ink2);font-size:11px;font-weight:600;line-height:1;white-space:nowrap;vertical-align:middle;flex:0 0 auto}
+.typeplan.pf{background:var(--brand-l);border-color:var(--brand-b);color:var(--brand)}
+/* près du nom, SOUS lui : la pastille ne prend aucune largeur à la barre du haut (à 1 024 px en gratuit, elle est pleine) */
+.top .pnom{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;flex:0 1 220px;min-width:96px}
+.top .pnom .pname{flex:none;width:100%;min-width:0;padding-top:2px;padding-bottom:2px}
+.top .pnom .typeplan{height:16px;padding:0 6px;margin-left:10px}
+@media (max-width:900px){.top .pnom{flex:0 0 auto;max-width:none}}
+.gname .typeplan{margin-left:6px;height:20px;padding:0 7px}
+body:not(.planFinal) .pfSeul,body.gratuit .proSeul{display:none!important}
+@media (min-width:761px){.wcards.n2{grid-template-columns:repeat(2,minmax(0,1fr))}}
+#m-welcome .wel:not([data-etape=reno]) .wreno,#m-welcome .wel[data-etape=reno] .wetape{display:none}
+.wel .wretour{display:none;position:absolute;top:22px;left:18px;width:34px;height:34px;align-items:center;justify-content:center;border:0;background:transparent;color:var(--muted);border-radius:var(--r-m);cursor:pointer}
+.wel.aretour .wretour{display:flex}.wel.aretour h3{padding-left:38px}
+.wel .wretour:hover{background:var(--canvas);color:var(--ink)}
+.wel .wretour:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+#m-nouveau .note{margin-top:16px}
+.tpltype{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-size:13px;font-weight:600;color:var(--ink2)}
+.tpltype:empty{display:none}
+.tpltype .seg{display:inline-flex;min-width:300px}
+@media (max-width:600px){.top .pnom{display:none}} /* au téléphone (consultation), le nom n'est pas dans la barre : sa pastille non plus */
 </style>
 
 <div class="top" role="banner">
   <div class="brand"><span class="lg"><svg viewBox="0 0 64 64" width="22" height="22"><path d="M15 47 L32 13 L49 47" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="40" r="4.8" fill="#C4B5FD"/></svg></span><b>AVY<i>ORA</i></b></div>
   <div class="vsep"></div>
-  <input class="pname" id="pname" value="Mon plan" spellcheck="false" aria-label="Nom du plan" oninput="state.name=this.value;save()" onchange="nommerPlan(this.value)">
+  <div class="pnom"><input class="pname" id="pname" value="Mon plan" spellcheck="false" aria-label="Nom du plan" aria-describedby="typePlan" oninput="state.name=this.value;save()" onchange="nommerPlan(this.value)"><span class="typeplan" id="typePlan"></span></div>
   <span class="savest ok" id="saveState"></span>
   <span class="chip devonly">Maquette · mode développeur</span>
   <button class="chip prochip devonly" id="proChip" onclick="togglePro()" data-tip="Développement : bascule Pro / Gratuit pour tester les deux parcours">Pro</button>
@@ -1201,12 +1223,14 @@ body.planFinal .renoSeul{display:none!important}
   <div class="menu" id="menuFichier">
     <button class="ib mbtn" id="fichierBtn" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="fichierMenu" aria-label="Fichier" onclick="basculerMenu('fichier')"><svg class="ico" data-ico="fichier"></svg><span class="lbl">Fichier</span><svg class="ico chev" data-ico="chevronBas"></svg></button>
     <div class="mpop" id="fichierMenu" role="menu" aria-labelledby="fichierBtn" hidden>
-      <button type="button" role="menuitem" tabindex="-1" id="newBtn" onclick="menuAction(()=>newPlan())"><svg class="ico" data-ico="plus"></svg><span>Nouveau plan<small>Le plan ouvert est d'abord rangé dans Mes plans</small></span></button>
+      <button type="button" role="menuitem" tabindex="-1" id="newBtn" onclick="menuAction(nouveauPlan)"><svg class="ico" data-ico="plus"></svg><span>Nouveau plan<small>Le plan ouvert est d'abord rangé dans Mes plans</small></span></button>
       <button type="button" role="menuitem" tabindex="-1" id="tplBtn" onclick="menuAction(openTemplates)"><svg class="ico" data-ico="plansTypes"></svg><span>Plans types<small>Studio, T2, T3, maison : un plan à adapter</small></span></button>
       <button type="button" role="menuitem" tabindex="-1" id="plansBtn" onclick="menuAction(openPlansModal)"><svg class="ico" data-ico="mesPlans"></svg><span>Mes plans<small>Ouvrir, dupliquer ou supprimer</small></span></button>
       <div class="msep" role="separator"></div>
       <button type="button" role="menuitem" tabindex="-1" id="savePlanBtn" onclick="menuAction(savePlanToLibrary)"><svg class="ico" data-ico="enregistrer"></svg><span>Enregistrer dans Mes plans</span><kbd>Ctrl S</kbd></button>
       <button type="button" role="menuitem" tabindex="-1" id="exportBtn" onclick="menuAction(exportPlan)"><svg class="ico" data-ico="exporter"></svg><span>Exporter le dossier<small>Plans avant / après, budget, quantités (PDF)</small></span></button>
+      <div class="msep pfSeul proSeul" role="separator"></div>
+      <button type="button" role="menuitem" tabindex="-1" id="renoDepuisBtn" class="pfSeul proSeul" onclick="menuAction(renoDepuisPlanFinal)"><svg class="ico" data-ico="copie"></svg><span>Démarrer un projet rénovation à partir de ce plan<small>Une copie : ce plan devient ton logement de départ</small></span></button>
     </div>
   </div>
   <div class="menu" id="menuAide">
@@ -1243,7 +1267,7 @@ body.planFinal .renoSeul{display:none!important}
       <button type="button" class="obdef g" id="obGauche" tabindex="-1" aria-hidden="true" onclick="defilerOptbar(-1)" data-tip="Options précédentes"><svg class="ico" data-ico="chevronGauche"></svg></button>
       <button type="button" class="obdef d" id="obDroite" tabindex="-1" aria-hidden="true" onclick="defilerOptbar(1)" data-tip="Plus d'options : fais défiler"><svg class="ico" data-ico="chevronDroite"></svg></button>
     </div>
-    <div class="emptyStage" id="emptyStage" hidden><div class="emptyCard" role="region" aria-label="Plan vide"><span class="ei"><svg class="ico i24" data-ico="outilMur"></svg></span><h4>Dessine ton logement</h4><p class="edesk">Trace tes pièces telles qu'elles sont aujourd'hui : chaque pièce fermée affiche sa surface, et ton budget suivra tes décisions.</p><p class="ephone">Ce plan est vide. Pour dessiner ton logement, ouvre AVYORA sur ordinateur ou tablette.</p><div class="eact edesk"><button type="button" class="ib primary" onclick="tracerLesMurs()">Tracer les murs<kbd>M</kbd></button><button type="button" class="ib" onclick="poserPieceRapide(event)">Poser une pièce de 4 × 3 m</button></div><div class="eact ephone"><button type="button" class="ib primary" onclick="closeWelcome('sample')">Voir l'exemple</button><button type="button" class="ib" onclick="openPlansModal()">Mes plans</button></div><button type="button" class="elink edesk" onclick="openTemplates()">ou pars d'un plan type</button></div></div>
+    <div class="emptyStage" id="emptyStage" hidden><div class="emptyCard" role="region" aria-label="Plan vide"><span class="ei"><svg class="ico i24" data-ico="outilMur"></svg></span><h4>Dessine ton logement</h4><p class="edesk">Trace tes pièces telles qu'elles sont aujourd'hui : chaque pièce fermée affiche sa surface, et ton budget suivra tes décisions.</p><p class="ephone">Ce plan est vide. Pour dessiner ton logement, ouvre AVYORA sur ordinateur ou tablette.</p><div class="eact edesk"><button type="button" class="ib primary" onclick="tracerLesMurs()">Tracer les murs<kbd>M</kbd></button><button type="button" class="ib" onclick="poserPieceRapide(event)">Poser une pièce de 4 × 3 m</button></div><div class="eact ephone"><button type="button" class="ib primary proSeul" onclick="closeWelcome('sample')">Voir l'exemple</button><button type="button" class="ib" onclick="openPlansModal()">Mes plans</button></div><button type="button" class="elink edesk" onclick="openTemplates()">ou pars d'un plan type</button></div></div>
     <div class="phoneBanner" id="phoneBanner" role="note"><span><svg class="ico" data-ico="telephone"></svg> <b>Mode chantier</b> : consulte le plan, tape un élément pour ses détails, coche l'avancement dans le tiroir en bas. Pour <b>dessiner</b>, passe sur ordinateur ou tablette.</span><button type="button" onclick="fermerBandeau()">OK</button></div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <input type="file" id="bgFile" accept="image/*" hidden onchange="importBg(this.files[0]);this.value=''">
@@ -1284,13 +1308,16 @@ body.planFinal .renoSeul{display:none!important}
 <div id="tipbox"></div>
 <div id="bulle" role="tooltip" hidden></div>
 <div id="glossPop" role="tooltip" hidden></div>
-<div class="overlay" id="m-plans"><div class="modal"><h3>Mes plans</h3><div class="sub">Tes plans, sur cet appareil. Le plan ouvert s'enregistre tout seul ; il est rangé ici avant que tu en ouvres ou en commences un autre.</div><div class="btnrow" style="margin:0 0 14px"><button class="ib primary" style="flex:1" onclick="savePlanToLibrary()"><svg class="ico" data-ico="enregistrer"></svg>Enregistrer le plan actuel</button><button class="ib" style="flex:1" onclick="newSavedPlan()"><svg class="ico" data-ico="plus"></svg>Nouveau plan vierge</button></div><div id="plansList"></div><div class="note">Tes plans sont enregistrés dans ce navigateur, sur cet appareil.</div><button class="mclose" onclick="closeModal()">Fermer</button></div></div>
-<div class="overlay" id="m-templates"><div class="modal wide"><h3>Partir d'un plan type</h3><div class="sub">Choisis le logement qui ressemble au tien : tu ajustes ensuite les cotes en glissant les murs, tu déplaces les portes, tu renommes les pièces. Bien plus rapide que de partir de zéro.</div><div class="tpls" id="tplGrid"></div><div class="note">Ton plan en cours est d'abord rangé dans « Mes plans ».</div><button class="mclose" onclick="closeModal()">Fermer</button></div></div>
-<div class="overlay" id="m-welcome"><div class="modal wel">
+<div class="overlay" id="m-plans"><div class="modal"><h3>Mes plans</h3><div class="sub">Tes plans, sur cet appareil. Le plan ouvert s'enregistre tout seul ; il est rangé ici avant que tu en ouvres ou en commences un autre.</div><div class="btnrow" style="margin:0 0 14px"><button class="ib primary" style="flex:1" onclick="savePlanToLibrary()"><svg class="ico" data-ico="enregistrer"></svg>Enregistrer le plan actuel</button><button class="ib" style="flex:1" onclick="newSavedPlan()"><svg class="ico" data-ico="plus"></svg>Nouveau plan</button></div><div id="plansList"></div><div class="note">Tes plans sont enregistrés dans ce navigateur, sur cet appareil.</div><button class="mclose" onclick="closeModal()">Fermer</button></div></div>
+<div class="overlay" id="m-templates"><div class="modal wide"><h3>Partir d'un plan type</h3><div class="sub">Choisis le logement qui ressemble au tien : tu ajustes ensuite les cotes en glissant les murs, tu déplaces les portes, tu renommes les pièces. Bien plus rapide que de partir de zéro.</div><div class="tpltype" id="tplType"></div><div class="tpls" id="tplGrid"></div><div class="note">Ton plan en cours est d'abord rangé dans « Mes plans ».</div><button class="mclose" onclick="closeModal()">Fermer</button></div></div>
+<div class="overlay" id="m-welcome"><div class="modal wel" data-etape="reno">
+<button type="button" class="wretour" onclick="retourDepart('accueil')" aria-label="Retour au choix du type de plan" data-tip="Retour : Plan final ou Projet rénovation"><svg class="ico" data-ico="flecheGauche"></svg></button>
 <h3>Dessine ton logement, on chiffre tes travaux</h3>
-<div class="sub wdesk">Trace tes pièces, dis ce que tu changes : ton budget se calcule à chaque décision.</div>
+<div class="sub wdesk wetape wsub" id="welSub"></div>
+<div class="sub wdesk wreno">Trace tes pièces, dis ce que tu changes : ton budget se calcule à chaque décision.</div>
 <div class="sub wphone">Sur téléphone, tu consultes ton plan, ton budget, et tu coches l'avancement du chantier. Pour dessiner ton logement, ouvre AVYORA sur ordinateur ou tablette. Pour l'instant, un plan reste enregistré sur l'appareil où il a été dessiné.</div>
-<div class="wcards wdesk">
+<div class="wcards wdesk wetape n2" id="welCartes"></div>
+<div class="wcards wdesk wreno">
 <button type="button" class="wcard rec" data-autofocus onclick="closeWelcome('sample',true)"><span class="wv"><svg viewBox="0 0 160 100" aria-hidden="true"><rect x="10" y="9" width="140" height="82" rx="2" fill="#fff"/><rect x="12" y="11" width="50" height="46" fill="#DDF3F0"/><rect x="62" y="11" width="86" height="78" fill="#ECEBFD"/><rect x="12" y="57" width="28" height="32" fill="#DCEEFB"/><rect x="40" y="57" width="22" height="32" fill="#EEF0F7"/><path d="M62 11v46M12 57h50M40 57v32M62 57v32" stroke="#1E1B4B" stroke-width="2" fill="none"/><path d="M40 73h22" stroke="#D97706" stroke-width="2.4" stroke-dasharray="3.5 2.5"/><rect x="10" y="9" width="140" height="82" rx="2" fill="none" stroke="#1E1B4B" stroke-width="4"/><rect x="146.5" y="22" width="5" height="18" rx="1" fill="#B91C1C"/><rect x="26" y="7" width="18" height="4" fill="#B91C1C"/><rect x="92" y="60" width="48" height="22" rx="5" fill="#4F46E5"/><path d="M99 67h18M99 74h30" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg></span><span class="wbadge">Recommandé</span><span class="wt"><b>Découvrir avec l'exemple</b><small>Un T2 de 58 m² déjà dessiné et chiffré, avec une visite guidée d'une minute.</small></span></button>
 <button type="button" class="wcard" onclick="closeWelcome('templates')"><span class="wv"><svg viewBox="0 0 160 100" aria-hidden="true"><g transform="rotate(-6 50 60)"><rect x="18" y="26" width="64" height="52" rx="3" fill="#fff" stroke="#DCD9FB" stroke-width="1.5"/><path d="M26 34h48v36H26z" fill="none" stroke="#A78BFA" stroke-width="2"/><path d="M48 34v36M26 52h22" stroke="#A78BFA" stroke-width="1.4" fill="none"/></g><g transform="rotate(5 112 56)"><rect x="80" y="20" width="64" height="52" rx="3" fill="#fff" stroke="#DCD9FB" stroke-width="1.5"/><path d="M88 28h48v36H88z" fill="none" stroke="#A78BFA" stroke-width="2"/><path d="M110 28v36M110 46h26" stroke="#A78BFA" stroke-width="1.4" fill="none"/></g><rect x="46" y="30" width="70" height="58" rx="3" fill="#fff" stroke="#DCD9FB" stroke-width="1.5"/><path d="M54 38h54v42H54z" fill="#EEF0FD" stroke="#1E1B4B" stroke-width="2.6"/><path d="M78 38v42M54 60h24M92 60v20M78 60h14" stroke="#1E1B4B" stroke-width="1.6" fill="none"/></svg></span><span class="wt"><b>Partir d'un plan type</b><small>Studio, T2, T3 ou maison : tu ajustes les cotes.</small></span></button>
 <button type="button" class="wcard" onclick="closeWelcome('blank')"><span class="wv"><svg viewBox="0 0 160 100" aria-hidden="true"><defs><pattern id="wgrid" width="10" height="10" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#C9CBE0"/></pattern></defs><rect width="160" height="100" fill="url(#wgrid)"/><path d="M34 76V24h70v34" fill="none" stroke="#1E1B4B" stroke-width="3.2" stroke-linejoin="round"/><path d="M104 58 60 76H34" fill="none" stroke="#4F46E5" stroke-width="1.8" stroke-dasharray="4 3"/><circle cx="34" cy="76" r="3.6" fill="#fff" stroke="#4F46E5" stroke-width="2"/><circle cx="34" cy="24" r="3" fill="#4F46E5"/><circle cx="104" cy="24" r="3" fill="#4F46E5"/><circle cx="104" cy="58" r="3" fill="#4F46E5"/><path d="m112 60 12 26 4-10 10-4z" fill="#1E1B4B" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg></span><span class="wt"><b>Feuille blanche</b><small>Tu traces tes murs toi-même : le contour de ton logement, puis les cloisons.</small></span></button>
@@ -1301,6 +1328,13 @@ body.planFinal .renoSeul{display:none!important}
 <button type="button" class="wcard" onclick="partagerLien()"><span class="wi"><svg class="ico i20" data-ico="partager"></svg></span><span class="wt"><b>Continuer sur ordinateur</b><small>Envoie-toi le lien de cette page pour dessiner.</small></span></button>
 </div>
 <p class="wnote"><svg class="ico" data-ico="check"></svg>Ton plan s'enregistre tout seul, sur cet appareil.</p>
+</div></div>
+<div class="overlay" id="m-nouveau"><div class="modal wel" data-etape="type">
+<button type="button" class="wretour" onclick="retourDepart('nouveau')" aria-label="Retour au choix du type de plan" data-tip="Retour : Plan final ou Projet rénovation"><svg class="ico" data-ico="flecheGauche"></svg></button>
+<h3>Nouveau plan</h3>
+<div class="sub wsub">Que veux-tu dessiner ?</div>
+<div class="wcards wdesk wetape n2"></div>
+<p class="note" id="nouvNote"></p>
 </div></div>
 <div class="overlay" id="m-projet"><div class="modal"><h3>Vue <span data-lex="vue.projet">Travaux</span> : dessine ta rénovation</h3><div class="sub">Comme sur un plan d'architecte : <span data-lex="couleur.demolir">jaune</span> = on démolit, <span data-lex="couleur.creer">rouge</span> = on construit.</div>
 <div class="steps">
@@ -1479,6 +1513,9 @@ const LEX={
   couleur:{demolir:'jaune',creer:'rouge'},
   etat:{aDecider:'À décider',garder:'Je garde',demolir:'À démolir',deposer:'À déposer',remplacer:'À remplacer',boucher:'À boucher',creer:'À créer',poser:'À poser'},
   sous:{aDecider:'pas encore tranché',garder:'il reste tel quel',demolir:'on l\'enlève',deposer:'on l\'enlève',remplacer:'menuiserie neuve',boucher:'on la referme',creer:'nouveau',poser:'nouveau'},
+  /* D68 : les deux types de plan, et ce que chacun fait, en une phrase (le choix à la création, la pastille près du nom) */
+  type:{final_plan:'Plan final',renovation:'Projet rénovation'},
+  typeBulle:{final_plan:'Dessine directement le plan que tu veux obtenir.',renovation:'Pars de l\'existant et décide tes travaux.'},
 };
 /* D49 (cj-design08, coherence16) · UN SEUL ACCORD, jamais « pièce(s) détectée(s) ». pluriel(6,'pièce détectée',
    'pièces détectées') → « 6 pièces détectées » ; un mot seul prend son s tout seul (pluriel(2,'tâche')). À partir de 2,
@@ -1620,7 +1657,10 @@ const TARIFS_URL='https://getavyora.fr/tarifs?source=editeur-plan';
    par corps d'état — le moment où l'on comprend ce que vaut son plan. Pro débloque le détail tâche
    par tâche avec son prix, les prix du Suivi, le dossier sans filigrane et plusieurs plans. */
 const DROITS={
-  dessin:{planFinal:'dessiner ton plan final',gratuit:'dessiner ton logement et tes travaux',pro:'dessiner ton logement et tes travaux'},
+  /* D68 : en gratuit, on dessine son plan final ; le Projet rénovation (Avant travaux, Travaux, Après travaux, chiffré) est
+     Pro. Un plan de rénovation déjà là (d'avant D68, ou d'un abonnement terminé) reste entier en gratuit : rien n'est retiré. */
+  dessin:{planFinal:'dessiner ton plan final',gratuit:'dessiner ton plan final',pro:'dessiner ton plan final'},
+  renovation:{gratuit:null,pro:'le projet rénovation, pour partir de ton logement tel qu\'il est et chiffrer ce qui change'},
   controle:{gratuit:'les surfaces et le contrôle du plan',pro:'les surfaces et le contrôle du plan'},
   total:{gratuit:'le montant total du budget travaux HT et sa répartition par corps d\'état',pro:'le montant total du budget travaux HT et sa répartition par corps d\'état'}, /* R6 : sans deux-points, la phrase se lit dans une liste (« Gratuit : …, le montant total…, le suivi… ») */
   detail:{gratuit:null,pro:'le détail tâche par tâche, avec le prix de chaque tâche'},
@@ -3994,7 +4034,7 @@ const PLAN_LIMIT_FREE=1;
 function isPro(){if(typeof window.AVYORA_PRO==='boolean')return window.AVYORA_PRO; /* D39 : valeur injectée par le site quand l'éditeur y sera monté */
   try{return localStorage.getItem('avyora-plan-pro')!=='0';}catch{return true;}}
 function togglePro(){try{localStorage.setItem('avyora-plan-pro',isPro()?'0':'1');}catch{}toast(isPro()?'Maquette en mode Pro : détail du chiffrage, multi-plans et export sans filigrane':'Maquette en mode Gratuit : montant total et corps d\'état, 1 plan, export filigrané',true);render();}
-function renderProChip(){const p=isPro(),t=document.getElementById('proTop');if(t){t.hidden=p;t.href=TARIFS_URL;t.title='AVYORA Pro, '+PRIX_PRO;} /* D41 : « Passer Pro » dans la barre, en gratuit seulement */
+function renderProChip(){const p=isPro(),t=document.getElementById('proTop');document.body.classList.toggle('gratuit',!p);if(t){t.hidden=p;t.href=TARIFS_URL;t.title='AVYORA Pro, '+PRIX_PRO;} /* D41 : « Passer Pro » dans la barre, en gratuit seulement */
   const c=document.getElementById('proChip');if(!c)return;c.innerHTML=p?ico('etoile')+' Pro':ico('cadenas')+' Gratuit';c.classList.toggle('pro',p);}
 function planPaywall(){renderPlans();openModal('plans');toast('Version gratuite : '+DROITS.plans.gratuit+'. '+avecPro('plans'),false);}
 function savePlanToLibrary(){const lib=loadPlans();const exists=state.id&&lib[state.id];
@@ -4011,7 +4051,7 @@ function deleteSavedPlan(id){const lib=loadPlans();const e=lib[id];if(!e)return;
   toast(`« ${e.name||'Plan sans nom'} » supprimé de « Mes plans »`,false,{action:'Annuler',fn:()=>{const l2=loadPlans();l2[id]=e;writePlans(l2);if(ouvert&&!state.id)state.id=id;if(document.getElementById('m-plans').classList.contains('show'))renderPlans();save();toast(`« ${e.name||'Plan sans nom'} » est de retour dans « Mes plans »`,true);}});}
 function duplicateSavedPlan(id){const lib=loadPlans();const e=lib[id];if(!e)return;if(!isPro()&&Object.keys(lib).length>=PLAN_LIMIT_FREE){planPaywall();return;}const nid=uid();const copy=JSON.parse(JSON.stringify(e));copy.id=nid;copy.name=nomUnique((e.name||'Plan')+' (copie)');copy.savedAt=Date.now();copy.state.name=copy.name;copy.state.id=nid;lib[nid]=copy;writePlans(lib);renderPlans();toast('Copie créée',true);}
 /* D38 : un seul « Nouveau », qu'on clique en haut ou dans « Mes plans ». */
-function newSavedPlan(){closeModal();newPlan();}
+function newSavedPlan(){closeModal();nouveauPlan();} /* D68 : le même choix que Fichier › Nouveau plan */
 function openPlansModal(){renderPlans();openModal('plans');}
 /* D40 · ce qu'une carte de « Mes plans » rappelle : surface, budget, avancement — calculé quand le
    plan est rangé ou tenu à jour (un plan rangé n'est pas rechargé pour s'afficher). */
@@ -4027,7 +4067,7 @@ function miniPlanSVG(st){const L0=(st&&st.levels)||[],lv=L0[Math.min(st&&st.cur|
 function renderPlans(){const lib=loadPlans();const list=Object.values(lib).sort((a,b)=>b.savedAt-a.savedAt);const el=document.getElementById('plansList');
   const fmtDate=t=>{const d=new Date(t);return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});};
   const pro=isPro();const atLimit=!pro&&list.length>=PLAN_LIMIT_FREE;
-  const banner=pro?'':`<div class="budget" style="margin-bottom:12px;cursor:default"><div class="bl"><span>Version gratuite : ${DROITS.plans.gratuit}</span><small>${maj(estPlanFinal()?DROITS.dessin.planFinal:DROITS.dessin.gratuit)} reste gratuit. ${avecPro('plans')}</small>${prixPro()}</div>${lienPro('Passer Pro','ib propill')}</div>`;
+  const banner=pro?'':`<div class="budget" style="margin-bottom:12px;cursor:default"><div class="bl"><span>Version gratuite : ${DROITS.plans.gratuit}</span><small>${maj(estPlanFinal()?DROITS.dessin.planFinal:DROITS.dessin.gratuit)} reste gratuit. ${estPlanFinal()?'Avec Pro : '+DROITS.plans.pro+', et '+DROITS.renovation.pro+'.':avecPro('plans')}</small>${prixPro()}</div>${lienPro('Passer Pro','ib propill')}</div>`;
   /* D67 : la carte d'un Plan final dit sa surface et ses pièces — ni montant, ni chantier, ni étapes */
   const resumeTxt=(R,nb)=>R&&R.pf?[R.pieces?fmtM2(R.m2):'aucune pièce',R.pieces?pluriel(R.pieces,'pièce'):''].filter(Boolean).join(' · '):R?[R.pieces?fmtM2(R.m2):'aucune pièce',R.taches?eur(R.budget)+' HT':'rien de décidé',R.taches?'chantier '+R.faites+'/'+R.taches:'',R.projet!=null?'projet à '+R.projet+'\u00a0%':'',R.prochain?'prochaine étape : '+R.prochain:''].filter(Boolean).join(' · '):pluriel(nb,'mur');
   /* D53 (jury final : novice, retention) · « Aucun plan enregistré pour l'instant » se lisait avec un plan
@@ -4035,7 +4075,7 @@ function renderPlans(){const lib=loadPlans();const list=Object.values(lib).sort(
      ouvrir un autre. Il s'affiche désormais toujours en première carte (surface, montant, avancement) ;
      le message vide est réservé au cas où il n'y a vraiment rien. */
   const ouvertHors=!planVide()&&!(state.id&&lib[state.id]),so=ouvertHors?sortDuPlanOuvert():'';
-  const carteOuverte=ouvertHors?`<div class="grp plancard" id="planOuvertCarte" style="border-color:var(--acc3);background:var(--brand-l)"><span class="pmini" aria-hidden="true">${miniPlanSVG(state)}</span><div class="glink" style="cursor:default"><span class="gname"><b>${esc(state.name||'Mon plan')}</b> <span class="gouvert">· ${so==='exemple'?'Ouvert · '+MSG_EXEMPLE.replace(/\.$/,''):so==='perdu'?'Ouvert · enregistré sur cet appareil, pas dans Mes plans':'Ouvert · enregistré automatiquement'}</span></span><span class="gres">${resumeTxt(resumePlan(),0)}</span></div></div>`:'';
+  const carteOuverte=ouvertHors?`<div class="grp plancard" id="planOuvertCarte" style="border-color:var(--acc3);background:var(--brand-l)"><span class="pmini" aria-hidden="true">${miniPlanSVG(state)}</span><div class="glink" style="cursor:default"><span class="gname"><b>${esc(state.name||'Mon plan')}</b>${pastilleType(workflowDe(state))} <span class="gouvert">· ${so==='exemple'?'Ouvert · '+MSG_EXEMPLE.replace(/\.$/,''):so==='perdu'?'Ouvert · enregistré sur cet appareil, pas dans Mes plans':'Ouvert · enregistré automatiquement'}</span></span><span class="gres">${resumeTxt(resumePlan(),0)}</span></div></div>`:'';
   if(!list.length&&!ouvertHors){el.innerHTML=banner+(isMobile()?'<div class="empty">Aucun plan sur ce téléphone. Pour l\'instant, un plan reste enregistré sur l\'appareil où il a été dessiné : ouvre-le sur cet ordinateur ou cette tablette.</div>':'<div class="empty">Aucun plan enregistré pour l\'instant. Dessine ton plan puis clique <b>Enregistrer le plan actuel</b>.</div>');return;}
   el.innerHTML=banner+'<div class="grouplist">'+carteOuverte+list.map(e=>{const cur=e.id===state.id;const nb=(e.state?.levels||[]).reduce((s,l)=>s+(l.walls?.length||0),0);
     /* D40 : la carte rappelle ce que le plan vaut — surface, budget (Pro), avancement du chantier. Le plan ouvert se lit en direct. */
@@ -4043,7 +4083,7 @@ function renderPlans(){const lib=loadPlans();const list=Object.values(lib).sort(
     const res=resumeTxt(R,nb);
     return `<div class="grp plancard" style="${cur?'border-color:var(--acc3);background:var(--brand-l)':''}">
     <span class="pmini" aria-hidden="true">${miniPlanSVG(e.state)}</span>
-    <button class="glink" onclick="openSavedPlan('${e.id}')"><span class="gname"><b>${(e.name||'Plan').replace(/</g,'&lt;')}</b>${cur?' <span class="gn">· ouvert</span>':''}</span><span class="gres">${res}</span><span class="gn">${fmtDate(e.savedAt)}</span></button>
+    <button class="glink" onclick="openSavedPlan('${e.id}')"><span class="gname"><b>${(e.name||'Plan').replace(/</g,'&lt;')}</b>${pastilleType(workflowDe(cur?state:e.state))}${cur?' <span class="gn">· ouvert</span>':''}</span><span class="gres">${res}</span><span class="gn">${fmtDate(e.savedAt)}</span></button>
     <button class="ib s" onclick="openSavedPlan('${e.id}')">Ouvrir</button>
     <button class="ib s" onclick="duplicateSavedPlan('${e.id}')" data-tip="Dupliquer" aria-label="Dupliquer le plan « ${esc(e.name||'Plan')} »">${ico('copie')}</button>
     <button class="gx" onclick="deleteSavedPlan('${e.id}')" data-tip="Supprimer (annulable quelques secondes)" aria-label="Supprimer le plan « ${esc(e.name||'Plan')} »">${ico('x')}</button>
@@ -6420,7 +6460,7 @@ function majTypePlan(){const pf=estPlanFinal();if(pf===_typeApplique)return;cons
   {const b=document.getElementById('pfold');if(b&&b.getAttribute('aria-expanded')==='false'){b.dataset.tip=tipPfold(true);b.setAttribute('aria-description',b.dataset.tip);}}
   TEXTES_PF.forEach(([s,attr,vpf])=>{const el=document.querySelector(s);if(!el)return;const k=s+'|'+(attr||'');if(!_textesReno.has(k))_textesReno.set(k,attr?el.getAttribute(attr):el.innerHTML);
     const val=pf?vpf:_textesReno.get(k);if(attr){if(val==null)el.removeAttribute(attr);else el.setAttribute(attr,val);}else{el.innerHTML=val;icoRemplir(el);}});}
-function render(){majTypePlan();renderTools();renderLevels();renderOptions();renderPanel();lastHint=null;draw();document.getElementById('undoBtn').disabled=!history.length;document.getElementById('redoBtn').disabled=!future.length;document.getElementById('pname').value=state.name;}
+function render(){majTypePlan();majTypeTop();renderTools();renderLevels();renderOptions();renderPanel();lastHint=null;draw();document.getElementById('undoBtn').disabled=!history.length;document.getElementById('redoBtn').disabled=!future.length;document.getElementById('pname').value=state.name;}
 function renderLevels(){placerContexte();avecFocus(document.getElementById('levels').closest('.top')||document.getElementById('stage'),renderLevelsBrut);majBarreHaut();}
 /* D64 · le niveau et la vue au centre de la barre du haut : la bande de contexte au-dessus du plan prenait 36 px, à moitié
    vide (444 px à 1 440). Au téléphone (mode chantier), ils reprennent leur place sur le plan (D48). Seul l'endroit change :
@@ -6432,7 +6472,7 @@ function placerContexte(){const lv=document.getElementById('levels'),mo=document
    « Avant · Travaux · Après », puis l'état d'enregistrement en icône et sans filets, puis le logo sans son nom */
 let sigBarreHaut='';
 function majBarreHaut(force){const T=document.querySelector('.top'),n=document.getElementById('pname');if(!T||!n)return;
-  const sig=[innerWidth,state.levels.length,state.cur,mode(),isPro(),n.value,etatEnreg,document.body.classList.contains('ctxHaut')].join('|');if(!force&&sig===sigBarreHaut)return;sigBarreHaut=sig;
+  const sig=[innerWidth,state.levels.length,state.cur,mode(),isPro(),n.value,etatEnreg,document.body.classList.contains('ctxHaut'),estPlanFinal()].join('|');if(!force&&sig===sigBarreHaut)return;sigBarreHaut=sig;
   T.classList.remove('c1','c2','c3');if(isMobile()||!document.body.classList.contains('ctxHaut'))return;
   const trop=()=>T.scrollWidth>T.clientWidth+1||n.scrollWidth>n.clientWidth+1;for(const c of ['c1','c2','c3'])if(trop())T.classList.add(c);}
 function renderLevelsBrut(){majLibellePlan();document.getElementById('levels').innerHTML=state.levels.map((l,i)=>`<button class="${i===state.cur?'on':''}" aria-pressed="${i===state.cur}" onclick="setLevel(${i})" title="${l.name}">${l.name}</button>`).join('')+`<button class="add" onclick="openModal('level')" title="Ajouter un niveau" aria-label="Ajouter un niveau">${ico('plus')}</button>`; /* D51 : une icône, plus le glyphe « + » (lu « plus » par le lecteur d'écran, hors du nom) */
@@ -8115,7 +8155,7 @@ function drawRoomDims(lv,evite){
 let modalRetour=null;
 const modaleOuverte=()=>[...document.querySelectorAll('.overlay.show')].pop()||null;
 function focusables(el){return [...el.querySelectorAll('button,[href],input,select,textarea,summary,[tabindex]:not([tabindex="-1"])')].filter(x=>!x.disabled&&x.getClientRects().length>0);}
-function openModal(id){const o=document.getElementById('m-'+id);if(!o)return;
+function openModal(id){const o=document.getElementById('m-'+id);if(!o)return;if(id==='welcome')accueilEtape(null); /* D68 : le type d'abord (Pro) */
   const a=document.activeElement;if(!modaleOuverte()&&a&&a!==document.body&&!a.closest('.overlay'))modalRetour=a;
   const m=o.querySelector('.modal');m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.tabIndex=-1;
   const h=m.querySelector('h3');if(h){if(!h.id)h.id='mt-'+id;m.setAttribute('aria-labelledby',h.id);}
@@ -8134,10 +8174,10 @@ function gardeModale(e,ov){
     return;}
   if(e.key==='Enter'&&e.target&&e.target.id==='calibVal'){e.preventDefault();applyCalib();}
 }
-function closeWelcome(choix,avecVisite){try{localStorage.setItem('avyora-plan-welcome','1');}catch{}closeModal();
+function closeWelcome(choix,avecVisite,wf){try{localStorage.setItem('avyora-plan-welcome','1');}catch{}closeModal();
   /* D50 (cj-design11, cj-qa10) : fermer l'accueil par la croix ou Échap sur l'exemple l'ouvre, comme la carte, en vue
      Travaux (ses couleurs expliquent son montant), et propose la visite guidée en une ligne */
-  if(choix==='fermer'){if(estExemple()){if(mode()!=='projet')setMode('projet',true);if(!visiteFaite())toast('Tu regardes l\'exemple, en vue Travaux.',true,{action:'Visite guidée',fn:()=>lancerVisite(true)});}return;}if(choix==='templates'){openTemplates();return;}if(choix==='plans'){openPlansModal();return;}if(choix==='blank'){newPlan();return;}
+  if(choix==='fermer'){if(estExemple()){if(mode()!=='projet')setMode('projet',true);if(!visiteFaite())toast('Tu regardes l\'exemple, en vue Travaux.',true,{action:'Visite guidée',fn:()=>lancerVisite(true)});}return;}if(choix==='templates'){openTemplates(wf||typeAccueil());return;}if(choix==='plans'){openPlansModal();return;}if(choix==='blank'){newPlan(undefined,wf||typeAccueil());return;} /* D68 : les cartes de l'étape « rénovation » font une rénovation (en gratuit, un Plan final) */
   /* D42 : l'exemple s'ouvre en vue Travaux — ses couleurs expliquent son budget — et, choisi depuis
      l'accueil à la première visite, la visite guidée démarre. */
   const suite=()=>{if(mode()!=='projet')setMode('projet',true);if(avecVisite&&!visiteFaite())lancerVisite(true);};
@@ -8186,10 +8226,10 @@ let toastT;function toast(msg,ok,opt){const t=document.getElementById('toast');t
 /* D48 (cj-design05, cj-integration06) : le message disait « clique pour poser le 1er coin » mais
    l'outil restait sur Sélection — le clic ne faisait rien. Sur ordinateur, un nouveau plan ouvre
    réellement l'outil Murs (même parcours que « Feuille blanche ») ; au téléphone, pas de dessin. */
-function newPlan(apres){if(isMobile()){toast(estPlanFinal()?'Le dessin se fait sur ordinateur ou tablette : ici, tu consultes tes plans.':'Le dessin se fait sur ordinateur ou tablette : ici, tu consultes tes plans et tu coches l\'avancement.');return;}
+function newPlan(apres,wf0){if(isMobile()){toast(estPlanFinal()?'Le dessin se fait sur ordinateur ou tablette : ici, tu consultes tes plans.':'Le dessin se fait sur ordinateur ou tablette : ici, tu consultes tes plans et tu coches l\'avancement.');return;}
   avantDeRemplacer((garde,pq)=>annoncerLimite(pq,()=>{
   if(!garde&&!pq)history=[];else history.push(snapshot());future=[];
-  const wf=workflowDe(state); /* D67 : « Nouveau » garde le type du plan ouvert, tant que la création ne le demande pas */
+  const wf=wf0||typeNouveau(); /* D68 : le type choisi à la création ; sans choix, en gratuit un Plan final, en Pro le type du plan ouvert (D67) */
   _tachesOuverture=null;state=blankState();state.workflow=wf;state.name=nomUnique(state.name);sel=null;resetGestes();panelTab='details';wallType='auto';customT=null; /* D42 : le premier contour d'un nouveau plan est en murs (arbitrage I) ; D48 : ensuite, le type se lit au tracé */afterChange();fitView();
   baseDecisions();if(apres)apres();else tracerLesMurs();
   /* D64 : la consigne (« clique pour poser le 1er coin ») est déjà dite au centre du plan et dans la barre d'état ; le
@@ -8198,6 +8238,68 @@ function newPlan(apres){if(isMobile()){toast(estPlanFinal()?'Le dessin se fait s
   else if(pq==='exemple')toast('Nouveau plan · '+MSG_EXEMPLE,true,annulerCe());
   else if(pq)toast('Nouveau plan · l\'ancien n\'est pas gardé.',false,annulerCe());
   suivre('plan_ouvert',{source:'nouveau'});}));}
+
+/* =====================================================================
+   D68 · CRÉER UN PLAN : le type d'abord, puis le point de départ.
+   En Pro, l'accueil, Fichier › Nouveau plan et Mes plans › Nouveau plan ouvrent le même choix à deux cartes (Plan final,
+   Projet rénovation) ; puis, pour le Plan final, feuille blanche ou plan type ; pour la rénovation, les choix d'avant
+   (feuille blanche, plan type, exemple). En gratuit, aucune question : un Plan final, tout de suite (les plans types
+   restent un point de départ, l'exemple de rénovation n'est plus proposé). Pas de bascule de type en place : on crée un
+   autre plan — ou, en Pro, on démarre une rénovation à partir d'un Plan final (une copie). Tout passe par
+   avantDeRemplacer : le plan ouvert est rangé avant.
+   ===================================================================== */
+function nomType(wf){return LEX.type[wf===WORKFLOW_FINAL?WORKFLOW_FINAL:WORKFLOW_RENO];}
+function pastilleType(wf){return `<span class="typeplan${wf===WORKFLOW_FINAL?' pf':''}">${nomType(wf)}</span>`;}
+/* le type d'un plan créé sans qu'on l'ait demandé : en gratuit, toujours un Plan final ; en Pro, celui du plan ouvert (D67) */
+function typeNouveau(){return isPro()?workflowDe(state):WORKFLOW_FINAL;}
+/* les cartes de l'étape « rénovation » de l'accueil : une rénovation en Pro (en gratuit, elle n'existe pas) */
+function typeAccueil(){return isPro()?WORKFLOW_RENO:WORKFLOW_FINAL;}
+function majTypeTop(){const el=document.getElementById('typePlan');if(!el)return;const wf=workflowDe(state),t=nomType(wf);if(el.textContent!==t)el.textContent=t;el.classList.toggle('pf',wf===WORKFLOW_FINAL);}
+/* deux petits dessins : le logement voulu, aménagé ; le logement d'aujourd'hui et ses travaux (jaune = on démolit, rouge = on crée) */
+const SVG_TYPE={
+  final_plan:'<svg viewBox="0 0 160 100" aria-hidden="true"><rect x="14" y="10" width="132" height="80" rx="2" fill="#fff"/><rect x="16" y="12" width="54" height="44" fill="#DDF3F0"/><rect x="70" y="12" width="74" height="76" fill="#ECEBFD"/><rect x="16" y="56" width="30" height="32" fill="#DCEEFB"/><rect x="46" y="56" width="24" height="32" fill="#EEF0F7"/><path d="M70 12v20M70 44v44M16 56h10M38 56h32M46 56v32" stroke="#1E1B4B" stroke-width="2" fill="none"/><path d="M70 32a12 12 0 0 1 12 12M26 56a12 12 0 0 1 12-12" stroke="#1E1B4B" stroke-width="1.1" fill="none"/><rect x="22" y="17" width="22" height="30" rx="2" fill="#fff" stroke="#A78BFA" stroke-width="1.5"/><path d="M22 24h22" stroke="#A78BFA" stroke-width="1.2"/><rect x="80" y="16" width="36" height="8" rx="1.5" fill="#fff" stroke="#A78BFA" stroke-width="1.5"/><rect x="108" y="58" width="30" height="22" rx="4" fill="#fff" stroke="#A78BFA" stroke-width="1.5"/><rect x="20" y="64" width="12" height="20" rx="4" fill="#fff" stroke="#A78BFA" stroke-width="1.3"/><rect x="14" y="10" width="132" height="80" rx="2" fill="none" stroke="#1E1B4B" stroke-width="4"/><path d="M92 10h26M146 28v20" stroke="#fff" stroke-width="5"/><path d="M92 8.6h26M92 11.4h26M144.6 28v20M147.4 28v20" stroke="#1E1B4B" stroke-width="1"/></svg>',
+  renovation:'<svg viewBox="0 0 160 100" aria-hidden="true"><rect x="14" y="10" width="132" height="80" rx="2" fill="#fff"/><rect x="16" y="56" width="54" height="32" fill="#FEF3C7" opacity=".55"/><path d="M70 12v20M70 44v44M16 56h54" stroke="#1E1B4B" stroke-width="2" fill="none"/><path d="M46 56v32" stroke="#D97706" stroke-width="2.6" stroke-dasharray="3.5 2.5" fill="none"/><path d="M70 70h40" stroke="#B91C1C" stroke-width="2.6" fill="none"/><path d="M70 32a12 12 0 0 1 12 12" stroke="#1E1B4B" stroke-width="1.1" fill="none"/><rect x="14" y="10" width="132" height="80" rx="2" fill="none" stroke="#1E1B4B" stroke-width="4"/><rect x="143.5" y="24" width="5" height="18" rx="1" fill="#B91C1C"/><path d="M92 10h26" stroke="#fff" stroke-width="5"/><path d="M92 8.6h26M92 11.4h26" stroke="#1E1B4B" stroke-width="1"/></svg>'};
+/* les dessins du point de départ : ceux de l'accueil (une seule source) ; l'identifiant du motif rendu unique */
+let _svgDepartN=0;
+function svgDepart(k){const c=document.querySelectorAll('#m-welcome .wcards.wreno .wcard .wv')[{exemple:0,modele:1,blanc:2}[k]];if(!c)return '';const n=++_svgDepartN;return c.innerHTML.replace(/wgrid/g,'wgrid'+n);}
+function carteDepartHTML(c,i){return `<button type="button" class="wcard"${i?'':' data-autofocus'} onclick="${c.act}"><span class="wv">${c.svg}</span><span class="wt"><b>${c.titre}</b><small>${c.txt}</small></span></button>`;}
+/* ctx : 'accueil' (première visite) | 'nouveau' (Fichier › Nouveau plan, Mes plans › Nouveau plan) */
+function cartesDepart(etape,ctx){const F=WORKFLOW_FINAL,R=WORKFLOW_RENO,acc=ctx==='accueil';
+  if(etape==='type')return [F,R].map(w=>({titre:nomType(w),txt:LEX.typeBulle[w],svg:SVG_TYPE[w],act:`etapeDepart('${ctx}','${w===F?'pf':'reno'}',true)`}));
+  const fin=(k,w)=>acc?`closeWelcome('${k}',false,'${w}')`:`nouveauChoix('${k}','${w}')`;
+  const blanc={titre:'Feuille blanche',txt:'Tu traces tes murs toi-même : le contour, puis les cloisons.',svg:svgDepart('blanc')},modele={titre:'Partir d\'un plan type',txt:'Studio, T2, T3 ou maison : tu ajustes les cotes.',svg:svgDepart('modele')};
+  if(etape==='pf')return [{...blanc,act:fin('blank',F)},{...modele,act:fin('templates',F)}];
+  return [{...blanc,act:fin('blank',R)},{...modele,act:fin('templates',R)},{titre:'Voir l\'exemple',txt:'Un T2 de 58 m² déjà dessiné et chiffré.',svg:svgDepart('exemple'),act:'nouveauChoix(\'sample\')'}];}
+/* le titre et la phrase de chaque étape (l'étape « rénovation » de l'accueil garde ses textes d'origine, dans le HTML) */
+const ETAPES_DEPART={
+  accueil:{type:['Que veux-tu dessiner ?','Deux façons de commencer. L\'autre reste à portée de main : Fichier › Nouveau plan.'],pf:['Dessine ton plan final','Commence par tes murs, puis ajoute tes portes, fenêtres et aménagements.']},
+  nouveau:{type:['Nouveau plan','Que veux-tu dessiner ?'],pf:['Dessine ton plan final','Commence par tes murs, puis ajoute tes portes, fenêtres et aménagements.'],reno:[LEX.type.renovation,LEX.typeBulle.renovation]}};
+let _h3Accueil=null;
+/* Une étape du choix. Le focus va à la première carte (ou, au retour, à la carte d'où l'on vient). */
+function etapeDepart(ctx,e,focus,de){const acc=ctx==='accueil',m=document.querySelector(acc?'#m-welcome .modal':'#m-nouveau .modal');if(!m)return;
+  const h=m.querySelector('h3');if(acc&&_h3Accueil===null)_h3Accueil=h.textContent;
+  m.dataset.etape=e;m.classList.toggle('aretour',e!=='type'&&isPro()&&!isMobile());
+  const T=ETAPES_DEPART[ctx][e];h.textContent=T?T[0]:_h3Accueil;
+  if(T){const sb=m.querySelector('.wsub'),cs=m.querySelector('.wcards.wetape'),C=cartesDepart(e,ctx);if(sb)sb.textContent=T[1];if(cs){cs.innerHTML=C.map(carteDepartHTML).join('');cs.classList.toggle('n2',C.length===2);}}
+  if(!acc){const n=document.getElementById('nouvNote');if(n)n.textContent=phraseSortie()+'.';}
+  if(focus){const L0=[...m.querySelectorAll('.wcard')].filter(x=>x.getClientRects().length),f=de?L0[de==='reno'?1:0]:(L0.find(x=>x.hasAttribute('data-autofocus'))||L0[0]);if(f)try{f.focus();}catch{}}}
+/* l'accueil : au téléphone, sa version « consultation » (on n'y dessine pas) ; en gratuit, directement le Plan final */
+function accueilEtape(e,focus){etapeDepart('accueil',e||(isMobile()?'reno':isPro()?'type':'pf'),focus);}
+function retourDepart(ctx){const m=document.querySelector(ctx==='accueil'?'#m-welcome .modal':'#m-nouveau .modal');etapeDepart(ctx,'type',true,m&&m.dataset.etape);}
+/* Fichier › Nouveau plan, Mes plans › Nouveau plan : en Pro, le choix ; en gratuit, un Plan final tout de suite */
+function nouveauPlan(){if(isMobile()||!isPro()){newPlan(undefined,isPro()?undefined:WORKFLOW_FINAL);return;}etapeDepart('nouveau','type');openModal('nouveau');}
+function nouveauChoix(k,wf){closeModal();if(k==='blank')newPlan(undefined,wf);else if(k==='templates')openTemplates(wf);else if(k==='sample')revoirExemple();}
+/* Pro · « Démarrer un projet rénovation à partir de ce plan » : une COPIE du Plan final devient le logement de départ
+   (vue Avant travaux) d'un nouveau projet rénovation ; le Plan final est d'abord rangé dans Mes plans, intact. Ses objets
+   n'ont aucun état : en rénovation, ils sont « déjà là » — c'est exactement ce que l'on dessine en vue Avant travaux. */
+function renoDepuisPlanFinal(){if(!isPro()||!estPlanFinal())return;if(isMobile()){toast('Le dessin se fait sur ordinateur ou tablette : ici, tu consultes tes plans.');return;}
+  if(planVide()){toast('Dessine d\'abord ton plan : il deviendra le logement de départ du projet rénovation.');return;}
+  const nomPF=state.name||'Mon plan';
+  avantDeRemplacer(garde=>{const c=JSON.parse(JSON.stringify(state));history.push(snapshot());future=[];
+    delete c.id;delete c.origine;delete c.vu;c.workflow=WORKFLOW_RENO;c.mode='existant';c.done={};
+    _tachesOuverture=null;state=c;state.name=nomUnique(nomPF+' · rénovation');sel=null;resetGestes();panelTab='details';afterChange();fitView();baseDecisions();
+    toast(`Projet rénovation démarré : « ${nomPF} »${garde?' est rangé dans « Mes plans », et':''} sert de logement de départ (vue ${nomVue('existant')}). Passe en vue ${nomVue('projet')} pour décider ce qui change.`,true);
+    suivre('plan_ouvert',{source:'plan-final'});});}
 
 // ---------- Exemple ----------
 
@@ -8261,17 +8363,17 @@ const TEMPLATES=[
      [[2,2.4],[2,6.4],[5.5,2.4],[5.5,5.1],[4.65,7.1],[6.15,7.1],[9.7,2.1],[9.8,5.7]].forEach(([x,y])=>I('lumiere',x,y,0));
      return [[0,0,4,4,'chambre','Parquet'],[0,4,4,8,'chambre','Parquet'],[4,0,7,4,'chambre','Parquet'],[4,4,7,6.2,'sdb','Carrelage'],[4,6.2,5.3,8,'wc','Carrelage'],[5.3,6.2,7,8,'buanderie','Carrelage'],[7,0,10.2,3.5,'cuisine','Carrelage'],[7,3.5,12.5,8,'sejour','Parquet']];}},
 ];
-function loadTemplate(id){
+function loadTemplate(id,wf){
   const T=TEMPLATES.find(t=>t.id===id);if(!T)return;closeModal();
-  avantDeRemplacer((garde,pq)=>annoncerLimite(pq,()=>chargerModele(T,garde,pq)));}
-function chargerModele(T,garde,pq){const apres=()=>{if(garde)toast(T.name+' chargé · « '+garde+' » est rangé dans « Mes plans »',true);else if(pq==='exemple')toast(T.name+' chargé · '+MSG_EXEMPLE,true,annulerCe());else if(pq)toast(T.name+' chargé · l\'ancien plan n\'est pas gardé',false,annulerCe());suivre('plan_ouvert',{source:'plan-type',modele:T.id});};
+  avantDeRemplacer((garde,pq)=>annoncerLimite(pq,()=>chargerModele(T,garde,pq,wf)));}
+function chargerModele(T,garde,pq,wf0){const apres=()=>{if(garde)toast(T.name+' chargé · « '+garde+' » est rangé dans « Mes plans »',true);else if(pq==='exemple')toast(T.name+' chargé · '+MSG_EXEMPLE,true,annulerCe());else if(pq)toast(T.name+' chargé · l\'ancien plan n\'est pas gardé',false,annulerCe());suivre('plan_ouvert',{source:'plan-type',modele:T.id});};
   /* D50 : le T2 a sa propre construction (la géométrie de l'exemple, sans travaux) — plus de chemin qui charge l'exemple */
   if(!garde&&!pq)history=[];else history.push(snapshot());future=[];resetGestes();_tachesOuverture=null;
   const lv=newLevel('RDC');lv.height=2.5;
   const W=(a,b,type)=>{const w={id:uid(),a:v(...a),b:v(...b),type};lv.walls.push(w);return w;};
   const O=(w,t,type,side,hinge=1)=>{const d=OPENINGS[type];lv.openings.push({id:uid(),wallId:w.id,t,type,w:d.w,h:d.h,side,hinge});};
   const I=(type,x,y,rot=0)=>{const d=ITEMS[type];lv.items.push({id:uid(),type,x,y,w:d.w,h:d.h,rot});};
-  const spec=T.build(lv,W,O,I),wf=workflowDe(state); /* D67 : un plan type se charge dans le type du plan ouvert (le choix du type à la création viendra) */
+  const spec=T.build(lv,W,O,I),wf=wf0===WORKFLOW_FINAL||wf0===WORKFLOW_RENO?wf0:typeNouveau(); /* D68 : le type choisi (accueil, Nouveau, la fenêtre des plans types) ; sinon typeNouveau() */
   state=blankState();state.workflow=wf;state.name=nomUnique(T.name.replace(' · ',' de '));state.levels=[lv];state.cur=0;panelTab='details';
   /* D42 (novice15) : « Maison » est une maison, un studio un appartement — on ne redemande pas ce que le modèle dit déjà */
   if(T.bien)chantier().bien=T.bien;
@@ -8287,7 +8389,14 @@ function templateSVG(T){
   const xs=lv.walls.flatMap(w=>[w.a.x,w.b.x]),ys=lv.walls.flatMap(w=>[w.a.y,w.b.y]);const x0=Math.min(...xs)-0.4,y0=Math.min(...ys)-0.4,bw=Math.max(...xs)-x0+0.4,bh=Math.max(...ys)-y0+0.4;
   return `<svg viewBox="${x0} ${y0} ${bw} ${bh}" preserveAspectRatio="xMidYMid meet">${lv.walls.map(w=>`<line x1="${w.a.x}" y1="${w.a.y}" x2="${w.b.x}" y2="${w.b.y}" stroke="${w.type==='virtuel'?'#a78bfa':'#1e1b4b'}" stroke-width="${w.type==='virtuel'?0.06:w.type==='cloison'?0.12:0.24}" ${w.type==='virtuel'?'stroke-dasharray="0.25 0.15"':''} stroke-linecap="square"/>`).join('')}</svg>`;
 }
-function openTemplates(){{const n=document.querySelector('#m-templates .note');if(n)n.textContent=phraseSortie()+'.';}document.getElementById('tplGrid').innerHTML=TEMPLATES.map(T=>`<button class="tpl" onclick="loadTemplate('${T.id}')"><div class="tv">${templateSVG(T)}</div><b>${T.name}</b><small>${T.desc}</small></button>`).join('');openModal('templates');}
+/* D68 · le type du plan qui naîtra du plan type : fixé quand on vient du choix (accueil, Nouveau plan) ; sinon, en Pro, deux
+   boutons (le type du plan ouvert d'abord) ; en gratuit, rien à choisir : un Plan final. */
+let _typeModele=WORKFLOW_RENO,_typeModeleFixe=false;
+function majTypeModele(){const el=document.getElementById('tplType');if(!el)return;
+  el.innerHTML=!isPro()?'':_typeModeleFixe?`<span>Type du plan</span>${pastilleType(_typeModele)}`:`<span id="tplTypeLbl">Type du plan</span><div class="seg" role="group" aria-labelledby="tplTypeLbl">${[WORKFLOW_FINAL,WORKFLOW_RENO].map(w=>`<button type="button" class="${_typeModele===w?'on':''}" aria-pressed="${_typeModele===w}" onclick="choisirTypeModele('${w}')">${nomType(w)}</button>`).join('')}</div>`;}
+function choisirTypeModele(wf){_typeModele=wf===WORKFLOW_FINAL?WORKFLOW_FINAL:WORKFLOW_RENO;majTypeModele();const b=document.querySelector('#tplType .seg button[aria-pressed="true"]');if(b)try{b.focus();}catch{}}
+function openTemplates(wf){wf=wf===WORKFLOW_FINAL||wf===WORKFLOW_RENO?wf:null;_typeModeleFixe=!!wf;_typeModele=wf||typeNouveau();majTypeModele();
+  {const n=document.querySelector('#m-templates .note');if(n)n.textContent=phraseSortie()+'.';}document.getElementById('tplGrid').innerHTML=TEMPLATES.map((T,i)=>`<button class="tpl"${i?'':' data-autofocus'} onclick="loadTemplate('${T.id}',_typeModele)"><div class="tv">${templateSVG(T)}</div><b>${T.name}</b><small>${T.desc}</small></button>`).join('');openModal('templates');}
 
 function loadSample(){
   history.push(snapshot());chain=[];lenBuf='';_tachesOuverture=null;
@@ -8687,7 +8796,7 @@ window.addEventListener('resize',resize);window.addEventListener('resize',()=>ma
    la densité, et la taille réelle de la zone de dessin (poignées du panneau comprises). */
 (function suivreDensite(){try{const m=matchMedia(`(resolution: ${devicePixelRatio}dppx)`);m.addEventListener('change',()=>{resize();suivreDensite();},{once:true});}catch{}})();
 if(window.ResizeObserver){let roT=0;new ResizeObserver(()=>{cancelAnimationFrame(roT);roT=requestAnimationFrame(()=>{const r=cv.parentElement.getBoundingClientRect();if(Math.abs(r.width*devicePixelRatio-cv.width)>1||Math.abs(r.height*devicePixelRatio-cv.height)>1)resize();});}).observe(document.getElementById('stage'));}
-const planCharge=load();if(!planCharge){state=blankState();}
+const planCharge=load();if(!planCharge){state=blankState();if(!isPro())state.workflow=WORKFLOW_FINAL; /* D68 : en gratuit, un plan neuf est un Plan final */}
 loadView();
 state.levels.forEach(syncRooms);
 /* D39 : les textes fixes lisent LEX (data-lex), et les deux listes de raccourcis sortent de la même table. */
@@ -8702,12 +8811,12 @@ render();
    c'est lui qu'on retrouvait à la place de sa feuille blanche. Il n'est chargé qu'à la toute
    première visite (ou si ce navigateur ne garde rien). */
 let firstVisit=false;try{firstVisit=!localStorage.getItem('avyora-plan-welcome');}catch{firstVisit=true;}
-if(!planCharge&&firstVisit){loadSample();history=[];render();}
+if(!planCharge&&firstVisit&&isPro()){loadSample();history=[];render();} /* D68 : l'exemple (une rénovation) n'est plus proposé au gratuit */
 else fitView();
 etatEnreg='ok';enregAt=0;afficherEnreg(!!(state.id&&loadPlans()[state.id]));
 /* D42 (access23) : le bandeau « mode chantier » fermé une fois ne revient plus */
 try{if(localStorage.getItem('avyora-plan-phonebanner'))document.getElementById('phoneBanner').hidden=true;}catch{}
-if(firstVisit)openModal('welcome');
+if(firstVisit){if(isPro())openModal('welcome');else try{localStorage.setItem('avyora-plan-welcome','1');}catch{}} /* D68 : en gratuit, aucune question — le Plan final s'ouvre, sa carte « Dessine ton plan final » dit par où commencer */
 /* D48 (cj-retention05) : la page s'ouvre sur un plan */
 baseDecisions();suivre('plan_ouvert',{source:'page',premiereVisite:firstVisit,exemple:estExemple(),vide:planVide()});
 </script>
