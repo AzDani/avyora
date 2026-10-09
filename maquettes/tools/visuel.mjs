@@ -239,7 +239,7 @@ for (const [L, H] of [[1440, 900], [768, 1024], [390, 844]]) {
     const relever = () => { P.querySelectorAll("div.seg").forEach((s) => segs.push(s)); P.querySelectorAll(".row").forEach((x) => rows.push(x)); };
     for (const vue of ["existant", "projet"]) {
       setMode(vue); closeModal(); sel = null; render(); relever();
-      legende[vue] = document.querySelectorAll("#modes .vlegend span").length;
+      legende[vue] = document.querySelectorAll(".vlegend > span").length; /* D64 : la légende est dans la barre d'état (au-dessus de 900 px), à côté des vues sinon */
       [...lv.walls.map((w) => ["wall", w.id]), ...lv.openings.map((o) => ["opening", o.id]), ...lv.items.map((i) => ["item", i.id]), ...lv.rooms.map((x) => ["room", x.id])].forEach(([kind, id]) => { sel = { kind, id }; renderPanel(); relever(); });
       for (const o of ["mur", "doublage", "ouverture", "equipement"]) { sel = null; setTool(o); relever(); } setTool("select");
       const on = document.querySelector("#modes button.on");
@@ -419,7 +419,11 @@ for (const [L, H] of [[1440, 900], [1024, 768], [390, 844]]) {
     const pastilles = (tag) => { const pr = P.getBoundingClientRect(), rows = [...P.querySelectorAll(".row")].filter((x) => x.querySelector(".miniep"));
       r[`${larg} · ${tag} : rangée d'épaisseurs lisible (libellé ≥ 40 px, au-dessus des pastilles)`] = rows.length > 0 && rows.every((x) => { const l = x.querySelector("label").getBoundingClientRect(), b0 = x.querySelector(".miniep").getBoundingClientRect(); return l.width >= 40 && l.bottom <= b0.top + 1; });
       r[`${larg} · ${tag} : aucune pastille ni champ hors du panneau`] = rows.every((x) => [...x.querySelectorAll("button,input")].every((b2) => b2.getBoundingClientRect().right <= pr.right + 0.5) && x.scrollWidth <= x.clientWidth + 1); };
-    if (larg >= 1000) { setMode("projet", true); closeModal(); setTool("doublage"); pastilles("outil Doublage"); setTool("select"); }
+    /* D64 : l'outil Doublage choisit son épaisseur dans la barre d'options (un segmenté, comme poser / retirer et par où) ;
+       le panneau ne la répète plus — la rangée lisible se contrôle dans la fiche d'un mur doublé, ci-dessous */
+    if (larg >= 1000) { setMode("projet", true); closeModal(); setTool("doublage"); const ep = document.querySelector("#optbar .seg.barre.ep"), O = document.getElementById("optbar").getBoundingClientRect();
+      r[`${larg} · outil Doublage : les épaisseurs dans la barre d'options, en un segmenté sur une ligne, sans doublon dans le panneau`] = !!ep && ep.querySelectorAll(".miniep").length === EP_DOUBLAGE.length && [...ep.querySelectorAll(".miniep")].every((b2) => { const q = b2.getBoundingClientRect(); return q.height <= 32 && q.top >= O.top && q.bottom <= O.bottom; }) && !P.querySelector(".miniep");
+      setTool("select"); }
     setMode("projet", true); closeModal(); const wd = lv.walls.find((w) => isoList(w).length); sel = { kind: "wall", id: wd.id }; render(); pastilles("fiche d'un mur doublé");
     /* cj-design04 : boutons sur une ligne, pas de rouge pour un état métier, « Supprimer du plan » en lien */
     const btns = () => [...P.querySelectorAll(".btnrow .ib")].filter((x) => x.getClientRects().length);
