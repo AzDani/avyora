@@ -661,6 +661,32 @@ Object.assign(t, await p.evaluate(() => {
   await p5.close();
 }
 
+
+/* Dani (09/10/2026) : une porte ajoutée dans un mur de 60 cm démarrait à l'AXE du mur. Une porte se pose sur la
+   face du côté où elle s'ouvre, alignée sur le doublage (tapée) ; une porte d'entrée en applique a son dormant
+   contre la face intérieure, comme les fenêtres. On lit l'emprise dessinée (cadresOuv, repère du mur). */
+{ const p6 = await b.newPage(); p6.on("pageerror", (e) => errs.push(e.message)); await p6.setViewport({ width: 1440, height: 900 });
+  await p6.evaluateOnNewDocument(() => { try { localStorage.clear(); localStorage.setItem("avyora-plan-tuto", "passe"); } catch {} });
+  await p6.goto("file://" + SP + "/plan-editor.html", { waitUntil: "networkidle0" }); await wait(300);
+  Object.assign(t, await p6.evaluate(() => { const r = {};
+    closeWelcome("blank"); state = blankState(); setMode("projet"); closeModal(); const lv = L(); lv.height = 2.5;
+    const P = [[0, 0], [6, 0], [6, 4], [0, 4]];
+    for (let i = 0; i < 4; i++) lv.walls.push({ id: uid(), a: v(...P[i]), b: v(...P[(i + 1) % 4]), type: "porteur", t: 0.6 });
+    afterChange(); const w = lv.walls[0], si = interiorSideN(w);
+    poserDoublage(w, si, 0, 1); afterChange();
+    const io = isoLayers(w)[0], dbl = doublageOf(io);
+    const ps = { id: uid(), wallId: w.id, t: 0.3, type: "porte", w: 0.83, h: 2.04, hinge: 1, side: si, st: "creer" };
+    const pe = { id: uid(), wallId: w.id, t: 0.7, type: "porte_entree", w: 0.9, h: 2.15, hinge: 1, side: si, st: "creer", pose: "applique" };
+    lv.openings.push(ps, pe); afterChange(); setTool("select"); sel = null; draw();
+    const bout = (o) => { const R = cadresOuv[o.id][0]; return si > 0 ? R.y + R.h : -R.y; };
+    r["porte dans un mur de 60 cm : elle part de la face intérieure doublée, pas de l'axe"] = Math.abs(bout(ps) - (0.3 + dbl + ps.w)) < 0.01;
+    r["porte d'entrée en applique : dormant contre la face intérieure, vantail depuis sa face"] = Math.abs(bout(pe) - (0.3 + dormantOf(pe) / 1000 + pe.w)) < 0.01;
+    ps.side = -si; afterChange(); draw(); const R2 = cadresOuv[ps.id][0];
+    r["… et retournée, elle se pose sur l'autre face (sans doublage de ce côté)"] = Math.abs((si > 0 ? -R2.y : R2.y + R2.h) - (0.3 + ps.w)) < 0.01;
+    return r; }));
+  await p6.close();
+}
+
 await b.close();
 const echecs = Object.entries(t).filter(([, ok]) => !ok);
 Object.entries(t).forEach(([k, ok]) => console.log((ok ? "  ✓ " : "  ✗ ") + k));

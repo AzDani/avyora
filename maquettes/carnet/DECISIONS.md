@@ -4073,3 +4073,19 @@ vue ; un clic au milieu de Largeur puis 140 ; la séparation en cours de tracé 
 pièce de 5 × 4 m meublée sur ses deux longs murs, dont la cote de largeur prend une ligne libre ; à 768 panneau ouvert, la
 consigne coupée en « … » et entière dans la bulle (souris réelle). `ux.mjs` passe de 500 à 540 contrôles (40 nouveaux) ;
 sur le fichier d'avant, 38 échecs. Batterie complète (21 + ux), finition, couverture et vitest (167) verts.
+
+## D66 · Une porte se pose sur la face où elle s'ouvre, tapée sur le complexe d'isolation (09/10/2026)
+
+**Constat de Dani.** Une porte ajoutée dans un mur de 60 cm démarrait à l'AXE du mur, au milieu de
+l'épaisseur. « La menuiserie est posée depuis l'intérieur, elle s'ouvre vers l'intérieur, elle vient se poser
+en tapée sur le mur intérieur, alignée au complexe d'isolation. » Cause : une porte de type intérieur
+(porte simple, âme pleine, double, coulissante) avait sa charnière à l'axe, pensée pour une cloison de 7 cm ; et
+la porte d'entrée en applique avait sa charnière au milieu du dormant, sans dormant dessiné.
+
+**Décision.** Une porte se dessine sur la face FINIE du côté où elle s'ouvre (mur + doublage par l'intérieur de
+ce côté) : la porte simple, la porte double et la coulissante en applique. Une porte d'entrée en applique a son
+dormant plaqué contre la face intérieure, comme les fenêtres, et son vantail part de la face de ce dormant. La pose
+en tunnel (choisie) reste dans l'épaisseur. Seul le dessin change : ni chiffrage, ni contrat, ni accroche.
+
+**Contrôle.** `metier.mjs` : mur de 60 cm doublé — la porte simple part de la face doublée, la porte d'entrée
+de la face de son dormant, et retournée la porte se pose sur l'autre face. Les trois échouent sur l'ancien fichier.

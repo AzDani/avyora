@@ -6181,6 +6181,12 @@ function drawOpening(o,isSel,apercu){ /* D62 : apercu = 'apercu' | 'ko' (l'aper�
   let py=0;
   if(isExtM){ if(pose==='feuillure') py=-siN*(t/2-gg-0.006); else if(pose!=='applique') py=0; else py=siN*(t/2+gg-0.010); }
   const nv=o.w<0.9?1:2; /* vantaux : un seul sous 0,90 m */
+  /* Dani (09/10/2026) : une porte est posée sur la FACE du côté où elle s'ouvre, alignée sur le complexe
+     d'isolation s'il y en a un (tapée), jamais à l'axe d'un mur épais — une porte simple ajoutée dans un
+     mur de 60 cm démarrait au milieu de l'épaisseur. faceOuv(s) = le plan fini de la face s (mur + doublage
+     par l'intérieur de ce côté) ; une ouverture extérieure en applique s'aligne sur la face du dormant. */
+  const P0=add(w.a,mul(sub(w.b,w.a),o.t)),dblCote=s=>{const io=isoOnSideAt(w,s,P0);return io&&io.mode!=='ite'?doublageOf(io):0;};
+  const faceOuv=s=>s*(t/2+dblCote(s));
   if(k==='win'||k==='bay'||k==='doorwin'){
     const app=isExtM&&pose==='applique';
     const cy=app?siN*(t/2+fd/2):py;               // plan du vitrage
@@ -6221,7 +6227,12 @@ function drawOpening(o,isSel,apercu){ /* D62 : apercu = 'apercu' | 'ko' (l'aper�
   if(k==='gap'){fin(()=>tirets(()=>ligne(-half,0,half,0)));jamb(-half);jamb(half);}
   if(k==='door'){
     /* vantail = rectangle de 4 cm (6 cm pour l'entrée) dressé à la charnière, plein pour l'âme pleine ; arc fin */
-    const ent=o.type==='porte_entree',e=Math.max(ent?0.06:0.04,px(3.5)),hx=-half*hinge,dy=isExtM?py:0; // charnière · plan du dormant selon la pose ; un vantail garde 3,5 px à l'écran (plein ou évidé se lit)
+    const ent=o.type==='porte_entree',e=Math.max(ent?0.06:0.04,px(3.5)),hx=-half*hinge;
+    /* charnière : extérieure en applique = face du dormant posé contre la face intérieure (comme les fenêtres),
+       en tunnel ou en feuillure = le plan du dormant dans l'épaisseur ; intérieure = face du côté où elle s'ouvre */
+    const app=isExtM&&pose==='applique';
+    if(app){const lap=Math.min(0.05,o.w*0.10);cadre(-half-lap,siN*(t/2),half+lap,siN*(t/2+fd));}
+    const dy=app?siN*(t/2+fd):isExtM?py:faceOuv(side);
     cadre(hx,dy,hx+hinge*e,dy+side*o.w,o.type==='porte_pleine');
     fin(()=>arc(hx,dy,o.w,hinge>0?0:Math.PI,side>0?Math.PI/2:-Math.PI/2));
     jamb(-half);jamb(half);
@@ -6229,7 +6240,8 @@ function drawOpening(o,isSel,apercu){ /* D62 : apercu = 'apercu' | 'ko' (l'aper�
       const yt=ye-siN*Math.max(0.04,px(2)),hb=Math.max(0.09,px(6)),lb=Math.max(0.055,px(3.5));ctx.beginPath();ctx.moveTo(0,yt);ctx.lineTo(-lb,yt-siN*hb);ctx.lineTo(lb,yt-siN*hb);ctx.closePath();ctx.fillStyle=col;ctx.fill();E(-lb,yt-siN*hb);E(lb,yt);} // marque d'entrée, lisible à toute échelle
   }
   if(k==='door2'){
-    for(const hg of [1,-1]){const hx=-half*hg;cadre(hx,0,hx+hg*Math.max(0.04,px(3.5)),side*half);fin(()=>arc(hx,0,half,hg>0?0:Math.PI,side>0?Math.PI/2:-Math.PI/2));}
+    const dy2=faceOuv(side); /* comme la porte simple : sur la face du côté où elle s'ouvre */
+    for(const hg of [1,-1]){const hx=-half*hg;cadre(hx,dy2,hx+hg*Math.max(0.04,px(3.5)),dy2+side*half);fin(()=>arc(hx,dy2,half,hg>0?0:Math.PI,side>0?Math.PI/2:-Math.PI/2));}
     jamb(-half);jamb(half);
   }
   if(k==='slide'){
@@ -6245,7 +6257,7 @@ function drawOpening(o,isSel,apercu){ /* D62 : apercu = 'apercu' | 'ko' (l'aper�
         fin(()=>tirets(()=>{ctx.beginPath();ctx.rect(xa,-ep,o.w,2*ep);ctx.stroke();E(xa,-ep);E(xa+o.w,ep);}));
         cadre(xc-half,-ep*0.5,xc+half,ep*0.5);fin(()=>fleche(xc-sto*0.12,fs*(t/2+0.07),xc+sto*0.12));
       } else { /* en applique : le vantail glisse devant le mur, sur un rail apparent */
-        const e=0.035,y0=fs*(t/2+0.008),y1=fs*(t/2+0.008+e),yr=fs*(t/2+0.008+e+0.015);
+        const e=0.035,yF=Math.abs(faceOuv(fs)),y0=fs*(yF+0.008),y1=fs*(yF+0.008+e),yr=fs*(yF+0.008+e+0.015); /* devant la face finie (doublage compris) */
         cadre(xc-half-0.03,y0,xc+half+0.03,y1);
         fin(()=>{ligne(Math.min(-sto*(half+0.03),sto*(half+0.03+o.w)),yr,Math.max(-sto*(half+0.03),sto*(half+0.03+o.w)),yr);fleche(xc-sto*0.12,yr+fs*0.07,xc+sto*0.12);});
       }
