@@ -208,7 +208,8 @@ for (const [L, H, mob] of [[390, 844, true], [320, 640, true], [768, 1024, false
     const g = await p.evaluate(() => { plierPanneau(true); const w = L().walls.find((x) => x.st === "demolir"); montrerSurLePlan({ kind: "wall", id: w.id }); return !document.querySelector(".body.panelPlie") && sel && sel.id === w.id; });
     t[`${tag} · replié : « voir sur le plan » rouvre le panneau sur la fiche`] = g;
     /* la consigne du plan vide (outil Murs) passe à la ligne : elle était coupée des deux côtés */
-    await p.evaluate(() => closeWelcome("blank")); await wait(250);
+    /* D64 : le panneau ouvert pour une fiche se replie quand la sélection se vide (le nouveau plan) — on le rouvre : c'est le plan ÉTROIT qui est contrôlé */
+    await p.evaluate(() => { closeWelcome("blank"); plierPanneau(false); }); await wait(250);
     const txt = await p.evaluate(() => { const o = ctx.fillText, out = []; ctx.fillText = function (s, x) { const w = this.measureText(s).width, al = this.textAlign; out.push({ s, l: al === "center" ? x - w / 2 : x, r: al === "center" ? x + w / 2 : x + w }); return o.apply(this, arguments); }; draw(); ctx.fillText = o; return { W: cv.clientWidth, L: out.filter((q) => /coin|pièce/.test(q.s)) }; });
     t[`${tag} · plan vide, outil Murs : la consigne tient dans le plan (${txt.L.length} lignes)`] = txt.L.length >= 3 && txt.L.every((q) => q.l >= 0 && q.r <= txt.W);
   }
