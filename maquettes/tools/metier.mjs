@@ -634,7 +634,7 @@ Object.assign(t, await p.evaluate(() => {
   await p5.evaluateOnNewDocument(() => { try { localStorage.clear(); } catch {} });
   await p5.goto("file://" + SP + "/plan-editor.html", { waitUntil: "networkidle0" }); await wait(300);
   Object.assign(t, await p5.evaluate(() => { const r = {};
-    closeWelcome("fermer"); loadTemplate("maison"); closeModal(); setMode("projet"); closeModal(); setTool("select");
+    closeWelcome("fermer"); loadTemplate("maison", WORKFLOW_RENO); /* D70 : l'accueil fermé laisse un Plan final vide ; une rénovation, demandée */ closeModal(); setMode("projet"); closeModal(); setTool("select");
     const lv = L(), f = facesCache[lv.id].find((x) => x.room && x.room.type === "sdb"), sdb = f.room;
     const portes = openingsOfFace(lv, f, "projet").filter((o) => OPENINGS[o.type].cat === "porte");
     sdb.faience = "mi"; afterChange();
