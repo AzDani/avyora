@@ -275,6 +275,10 @@ Object.assign(t, await p.evaluate(() => {
   const bar = B.querySelector(".estactions.colle a.estimate"), rc = bar && bar.getBoundingClientRect();
   r["gratuit · Estimer (1280 × 800) : « Passer Pro » visible dès l'ouverture (barre collante)"] = !!rc && rc.bottom <= innerHeight && rc.top >= 0 && /Passer Pro/.test(bar.textContent);
   r["gratuit · Estimer : le lien Pro dit d'où vient le visiteur (?source=editeur-plan)"] = /source=editeur-plan/.test(TARIFS_URL) && [...B.querySelectorAll("a[href]")].every((a) => a.getAttribute("href") === TARIFS_URL);
+  /* D70 (jury, gardien) : Estimer ne s'ouvre que dans une rénovation — on ne vend pas « le projet rénovation » à qui le chiffre, et
+     le gratuit y dessine son logement et ses travaux (la phrase d'avant D68) */
+  { const ul = B.querySelector(".droits"), tip = [...B.querySelectorAll(".tip")].find((x) => /^Gratuit :/.test(x.textContent.trim()));
+    r["gratuit · Estimer d'une rénovation : « Ce que Pro ajoute » ne lui vend ni « le projet rénovation » ni le plan final ; « Gratuit » dit « dessiner ton logement et tes travaux »"] = !!ul && !/projet rénovation|plan final/i.test(ul.innerText) && !!tip && /dessiner ton logement et tes travaux/.test(tip.textContent) && !/plan final/.test(tip.textContent); }
   closeModal(); setPanelTab("suivi"); const S2 = document.getElementById("pbody");
   r["gratuit · Suivi : à cocher, sans prix"] = !S2.querySelector(".tpx") && !!S2.querySelector('.task input[type=checkbox]');
   setPanelTab("details"); return r;
