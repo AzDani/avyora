@@ -31,6 +31,10 @@ import { posteParId, posteParNom } from "./identite";
 /** Ce que la table lit du contrat du plan. Structurel : le contrat en émet bien davantage. */
 export interface PlanPourCorrespondance {
   contrat?: string;
+  /** Contrat 1.18 (D67) : le type de plan. `final_plan` décrit le logement VOULU, dessiné directement, sans aucun
+   *  état (ni existant, ni à créer, ni à démolir) : il ne produit aucune contribution. Absent (contrat antérieur)
+   *  ou `renovation` : la lecture habituelle, par le delta (D1). */
+  workflow?: string;
   travaux?: {
     percementsDetail?: { porteurPetit?: number; porteurGrand?: number; leger?: number };
   };
@@ -211,6 +215,10 @@ const POSTE_OSSATURE: Record<string, Record<string, string>> = {
 const MAT_OSSATURE: Record<string, string> = { acier: "acier", bois: "bois lamellé-collé", beton: "béton armé" };
 
 export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributions: Contribution[]; ignores: Ignore[] } {
+  /* D67 · Un Plan final n'a pas de delta : c'est le logement que l'on veut, pas les travaux pour y arriver. Le lire
+     comme une rénovation ne produirait rien par hasard (tout y est « existant ») ; la garde le dit, explicitement,
+     pour qu'aucune règle ajoutée plus bas — un forfait, une déduction — n'y fabrique un jour une ligne de devis. */
+  if (plan.workflow === "final_plan") return { contributions: [], ignores: [] };
   const brut: Contribution[] = [];
   const ignores: Ignore[] = [];
   /* Murs porteurs dont la poutre de reprise est DESSINÉE : leur ligne induite ne doit pas
