@@ -87,6 +87,17 @@ Object.assign(t, await p.evaluate((EMO) => {
   const cartes = [...m.querySelectorAll(".wcard")].filter(vis);
   r["accueil · ouvert à la première visite"] = o.classList.contains("show");
   r["accueil · une croix visible"] = vis(m.querySelector(".mx"));
+  /* D68 : en Pro, l'accueil demande d'abord le type de plan ; les trois cartes d'avant sont l'étape « Projet rénovation »,
+     où l'on va au clavier (Tab, Entrée), comme un utilisateur — les contrôles qui suivent la lisent telle qu'avant */
+  r["accueil · d'abord le type : deux cartes illustrées, « Plan final » focalisé, puis « Projet rénovation »"] = cartes.length === 2 && cartes.every((c) => c.querySelector(".wv svg")) && /^Plan final/.test(cartes[0].innerText) && /^Projet rénovation/.test(cartes[1].innerText) && cartes[0].contains(ae);
+  return r;
+}, EMOJI.source));
+await p.keyboard.press("Tab"); await p.keyboard.press("Enter"); await wait(200);
+Object.assign(t, await p.evaluate((EMO) => {
+  const r = {}, o = document.getElementById("m-welcome"), m = o.querySelector(".modal"), ae = document.activeElement;
+  const vis = (el) => !!el && el.getClientRects().length > 0;
+  const cartes = [...m.querySelectorAll(".wcard")].filter(vis);
+  r["accueil · Projet rénovation : l'étape d'avant, une flèche pour revenir au type"] = o.classList.contains("show") && m.dataset.etape === "reno" && vis(m.querySelector(".wretour"));
   r["accueil · trois cartes illustrées"] = cartes.length === 3 && cartes.every((c) => c.querySelector(".wv svg"));
   r["accueil · « Découvrir avec l'exemple » recommandé (badge) et focalisé"] = cartes[0].classList.contains("rec") && /Recommandé/.test(cartes[0].textContent) && cartes[0].contains(ae) && /exemple/i.test(ae.textContent);
   r["accueil · les autres cartes : plan type, feuille blanche"] = /plan type/i.test(cartes[1].textContent) && /Feuille blanche/.test(cartes[2].textContent);
