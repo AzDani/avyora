@@ -115,11 +115,13 @@ t["accueil · les raccourcis ne vivent qu'à un endroit : l'Aide (une seule tabl
   const a = document.getElementById("welcomeKeys"), b2 = document.getElementById("aideKeys"), ref = document.createElement("div"); ref.innerHTML = reglageRaccourcisHTML() + keysHTML(); /* D51 : le réglage « Raccourcis d'une touche » précède la table */
   return !a && !document.querySelector("#m-welcome kbd") && b2.innerHTML.length > 200 && b2.textContent === ref.textContent && b2.querySelectorAll("kbd").length === ref.querySelectorAll("kbd").length;
 });
+/* D70 : au bureau, l'accueil Pro s'ouvre sur un Plan final vide (sans Zone, D69) ; la table complète est celle d'une rénovation,
+   lue dans l'Aide de l'exemple (comme avant D70, quand l'exemple était derrière l'accueil) */
+await p.evaluate(() => closeWelcome("sample")); await wait(200);
 t["raccourcis · chaque touche d'outil y figure (V, B, M, P, D, E, T, C, L) et R dit 90°"] = await p.evaluate(() => {
-  const h = document.getElementById("aideKeys").textContent, kbd = [...document.querySelectorAll("#aideKeys kbd")].map((x) => x.textContent.trim());
+  ouvrirAide("keys"); const h = document.getElementById("aideKeys").textContent, kbd = [...document.querySelectorAll("#aideKeys kbd")].map((x) => x.textContent.trim()); closeModal();
   return ["V", "B", "M", "P", "D", "E", "T", "C", "L"].every((k) => kbd.includes(k) && TOOLS.some((x) => x[2] === k)) && TOOLS.filter((x) => x[2]).every((x) => kbd.includes(x[2])) && /90°/.test(h) && /15°/.test(h);
 });
-await p.evaluate(() => closeWelcome("sample")); await wait(200);
 
 /* les boutons de vue et les outils */
 t["vues · les trois boutons portent les mots de LEX, sans emoji"] = await p.evaluate(() => {
@@ -289,7 +291,8 @@ Object.assign(t, await p.evaluate(() => {
   const pied = document.getElementById("pfoot").innerText;
   r["gratuit · le pied montre le montant total (DROITS : " + DROITS.total.gratuit + ")"] = pied.includes(eur(chantierPrix().total)) && /Par corps d'état/.test(pied);
   showEstimate(); const B = document.getElementById("estBody");
-  r["gratuit · Estimer : ce que Pro ajoute = la table DROITS, mot pour mot"] = JSON.stringify([...B.querySelectorAll("ul.droits li")].map((x) => x.textContent)) === JSON.stringify(droitsPro().map(maj));
+  /* D70 : Estimer ne s'ouvre que dans une rénovation : la ligne « le projet rénovation » n'y est pas vendue à qui le chiffre */
+  r["gratuit · Estimer : ce que Pro ajoute = la table DROITS, mot pour mot"] = JSON.stringify([...B.querySelectorAll("ul.droits li")].map((x) => x.textContent)) === JSON.stringify(droitsPro().filter((d) => d !== DROITS.renovation.pro).map(maj));
   r["gratuit · Estimer : le montant et les corps d'état, pas le prix d'une tâche ni du « si tu les remplaçais »"] = B.innerText.includes(eur(chantierPrix().total)) && !B.querySelector(".tline") && !/€ si tu les/.test(B.innerText);
   r["gratuit · « Passer Pro » mène à la page Tarifs"] = B.querySelector("a.estimate")?.getAttribute("href") === TARIFS_URL && B.querySelector("a.estimate").target === "_blank";
   r["gratuit · un aperçu honnête : tâches et corps d'état réels"] = new RegExp(chantierTasks().length + " tâche").test(B.innerText);
@@ -519,7 +522,7 @@ await p.close();
 
 /* R6 · toiture d'une maison, en vue Avant travaux : décrire n'ajoute aucun travaux (arbitrage tour 2) */
 p = await onglet();
-await p.evaluate(() => { closeWelcome("fermer"); loadTemplate("maison"); closeModal(); setMode("existant", true); closeModal(); sel = null; renderPanel(); }); await wait(150);
+await p.evaluate(() => { closeWelcome("fermer"); loadTemplate("maison", WORKFLOW_RENO); /* D70 : l'accueil fermé laisse un Plan final vide ; une rénovation, demandée */ closeModal(); setMode("existant", true); closeModal(); sel = null; renderPanel(); }); await wait(150);
 t["R6 · toiture à décrire : « ce que tu décris ne coûte rien », plus « le projet en déduit les travaux »"] = await p.evaluate(() => { const inv = document.getElementById("pbody").innerText; return /Décrire la toiture/.test(inv) && /ne coûte rien/.test(inv) && !/en déduit les travaux/.test(inv); });
 await noter(p, "R6 · maison, toiture à décrire");
 await p.close();
@@ -550,7 +553,7 @@ t["résumé · « Aucun travail » n'est jamais lu quand le compteur a des tâch
    de vue ne reste pas affiché dans une autre vue. */
 p = await onglet();
 Object.assign(t, await p.evaluate(() => { const r = {};
-  closeWelcome("fermer"); loadTemplate("t3"); closeModal(); setMode("projet"); closeModal();
+  closeWelcome("fermer"); loadTemplate("t3", WORKFLOW_RENO); /* D70 : une rénovation, demandée */ closeModal(); setMode("projet"); closeModal();
   const lv = L(), f = facesCache[lv.id].find((x) => x.room && x.room.type === "sdb"), c = f.poly.reduce((s, q) => ({ x: s.x + q.x / f.poly.length, y: s.y + q.y / f.poly.length }), { x: 0, y: 0 });
   setTool("equipement"); const msgs = [];
   for (const ty of ["douche", "baignoire", "chaudiere", "applique", "prise", "wc"]) { itemType = ty; clickAction(v(c.x, c.y)); msgs.push([ty, document.getElementById("toast").textContent]); undo(); }
