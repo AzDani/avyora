@@ -3817,3 +3817,169 @@ ouvertures de l'exemple ne tombent sur aucune cote de la chaîne extérieure (un
 téléphone : ni outils, ni barre d'options, ni chevrons, ni grille, ni aimantation, un outil de dessin refusé, pas de
 barre d'actions. `ux.mjs` passe de 279 à 396 contrôles ; sur le fichier d'avant, 37 échecs (et 15 pour `responsive`).
 Batterie complète (21 + ux), finition, couverture et vitest (167) verts.
+
+## D64 · Corrections du jury de la refonte : une place par rôle, des commandes qui ne bougent pas, un plan d'architecte (09/10/2026)
+
+**D'où l'on part.** Jury de quatre experts sur la refonte U1 à U5 (D59 à D63) : designer produit (7/10), architecte
+projeteur (7/10), débutante (6,5/10), QA (7/10). Tous lisent déjà « un logiciel de plans » ; ce qu'ils relèvent tient
+aux finitions de comportement, de CSS, de libellés et d'icônes. Hors sujet (décisions de Dani) : couleurs des états,
+rendu du doublage, chiffrage, téléphone en consultation. Écartés volontairement : les accroches « milieu » et « axe »
+(elles changent le tracé et les jonctions — « à décider » depuis D61), le téléphone en paysage, les notes jaune et rose.
+Batterie (21 + ux), finition, couverture et vitest verts avant toute retouche. Captures : scratchpad `jury-ux/corr-*`
+(1 920, 1 440, 1 280, 1 024, 768, 720 × 450, 640 × 360 : vue d'ensemble, menu des familles, bulle, tracé, doublage, porte
+choisie, séjour choisi, pose d'une porte d'entrée sur une façade, vue Après).
+
+**Constat** (le détail, captures comprises, est dans les avis du jury).
+- *Forts.* Onglets de familles d'équipements en icônes seules dès 1 440, qui glissaient de 84 px sous le curseur au clic ;
+  barre d'options en cartes encadrées (2 à 3 modèles visibles) ; changer de famille gardait le modèle d'une autre famille,
+  posé en douce au clic suivant (le « Lit double » de D61, revenu par une autre porte) ; une porte posée en survolant une
+  façade s'ouvrait dehors (le côté se calculait sur le trait stocké, qui est une face quand le contour est tracé par
+  l'intérieur) ; Échap ne sortait pas d'une note et la lettre d'outil suivante s'y écrivait (« Vérifier porteurl ») ; sous
+  760 px de barre d'état, la consigne disparaissait et le zoom sautait vers la gauche à chaque changement d'accrochage.
+- *Moyens.* Consignes dites trois fois (barre d'options, barre d'état, panneau) et commandes en double ; deux bandes du
+  haut à moitié vides (le plan à 59 % de l'écran) ; carte budget sombre, l'élément le plus lourd de l'écran ; Surface et
+  Ajuster au même dessin, Murs lu « L », Image lue « document », Mesurer lu « appareil photo » ; épaisseurs du doublage en
+  7 pastilles encadrées ; tracé de mur en trait indigo à bouts ronds (violet pour une séparation) ; Séjour dans l'indigo de
+  la sélection, Entrée dans l'ambre de --warn ; « Ctrl » affiché sur Mac ; aucune baie dans la chaîne de cotes extérieure ;
+  familles qui sortaient de l'écran en choisissant un modèle en bout de liste ; cotes intérieures sur les vantaux, la
+  coulissante et le mobilier ; aperçu fantôme quand la souris quitte le plan ; rouge « déjà là » juste après une pose
+  réussie ; un clic sur une fenêtre prenait la pièce ou le radiateur dessous ; « 140 » donnait un radiateur de 140 m ;
+  supprimer ne disait rien ; tablette : la fiche ouverte restait ouverte après Échap (plan à 410 px).
+- *Faibles retenus.* Trois styles d'intitulés ; une ligne de bulle qui commence par « : » ; bulles plates ; Charnière et
+  Ouvre de l'autre côté en flèches d'étirement ; listes déroulantes natives ; zoom et échelle masqués à 1 024 alors qu'il
+  restait de la place ; Annuler qui change de vue sans le dire et perd la sélection ; « Choisis d'abord un modèle » qui
+  restait ; consigne au singulier en sélection multiple ; barre d'actions cachée après un glissé de la vue ; Échap sur une
+  bulle qui agissait aussi sur le plan ; Entrée sans effet dans « Pièce » ; extrémités de cote perpendiculaires (l'icône
+  Cote montre des obliques) ; un chevron pour 3 px de dépassement ; trois mentions de la consigne au premier écran.
+
+**Décision.**
+1. *Une place par rôle.* La barre d'options ne porte que des OPTIONS : plus de segmenté Sélection / Zone (il est dans la
+   colonne), plus de consigne en texte pour Zone, Cote, Mesurer, Note, Image (elle est dans la barre d'état). Sélection
+   garde ses modificateurs (Maj + clic, ⌘A, Maj + glisser), que la consigne ne dit pas. Le panneau garde les propriétés et
+   le résultat : plus de « Nouvelle mesure », d'« Importer une image », d'opacité ni de verrou en double, plus de pastilles
+   d'épaisseur du doublage (l'épaisseur s'y lit en valeur, avec l'épaisseur perdue et R) ; plus de sous-titre « … se
+   choisit dans la barre au-dessus du plan ». Le mode d'emploi devient un pli (`modeEmploi`, `details.mepli`), ouvert par
+   défaut ; replié une fois, il le reste d'un outil à l'autre et d'une visite à l'autre (`avyora-plan-memploi`). Les trois
+   encarts des Murs passent sous « En savoir plus » (replié). « Nouveau plan » ne répète plus « clique pour poser le 1er
+   coin » (la carte du plan et la barre d'état le disent).
+2. *La barre d'options en tuiles.* Plus de cadre par carte : une tuile (vignette du plan + nom), survol neutre, le modèle
+   choisi en indigo ; les dimensions passent dans la bulle et dans « Modèle choisi ». Les 5 modèles de la salle de bain se
+   voient sans défiler à 1 440 et 1 280. Les épaisseurs du doublage rejoignent le segmenté (comme Poser / Retirer et Par
+   où), « cm » après le groupe. Murs : le type, PUIS le trait (il se choisit avant de tracer, il n'est plus jamais sous le
+   chevron), puis la pièce rectangulaire (Entrée dans ses champs la pose) ; poteau et poutre ne sont plus en double (ils
+   sont dans Équipements › Structure) ; sous 860 px de tête, les types en mini-coupe seule (nom en bulle et aria-label).
+   Un chevron n'apparaît que pour plus de 8 px de dépassement.
+3. *Les familles d'équipements : un menu au nom visible.* **Contradiction du jury** : le designer et la débutante veulent
+   des noms toujours lisibles, la QA des onglets de largeur stable (elle proposait des icônes seules), l'architecte des
+   familles qui ne sortent pas de l'écran. Retenu, le plus simple et le plus « logiciel pro » : UN bouton de famille de
+   largeur fixe (152 px) qui dit toujours son nom (« Salle de bain ▾ »), et le menu des six familles (icône + nom long,
+   `menuitemradio` coché) — le composant des menus Fichier et Aide (`MENUS.famille`, flèches, Entrée, Échap). Rien ne
+   bouge sous le curseur, aucun nom n'est caché, et il reste la place des tuiles. La recherche et la famille sont dans un
+   groupe fixe (`.obfixe`) : seules les cartes défilent (`.obdefile`, `defileOptbar`) ; les chevrons et les bords estompés
+   suivent la partie qui défile. Changer de famille, ou chercher, retire un modèle qu'on ne voit plus (`itemType = null` :
+   le clic suivant ne pose rien et le dit) ; choisir un modèle retire « Choisis d'abord un modèle ».
+4. *Le niveau et la vue dans la barre du haut.* `#levels` et `#modes` passent au centre de la barre du haut, entre Rétablir
+   et Fichier (`placerContexte` les déplace : mêmes ids, mêmes boutons) ; la bande de contexte disparaît, le plan gagne
+   36 px. Les vues forment un segmenté (le choisi en blanc surélevé). La barre se resserre par étapes MESURÉES
+   (`majBarreHaut`, rien ne déborde et le nom du plan n'est pas coupé, en Pro comme en gratuit) : « Avant · Travaux ·
+   Après » (le mot « travaux » reste dans le DOM et le nom accessible), puis l'état d'enregistrement en icône et sans
+   filets, puis le logo sans son nom. À 900 px et moins (tablette en portrait, portable zoomé) la barre du haut est pleine :
+   la bande de contexte de D63 reste, avec la légende. Au téléphone, rien ne change (D48). La légende de la vue Travaux
+   passe dans la barre d'état, juste avant l'échelle ; sous 960 px de barre, elle garde ses échantillons (le mot reste lu
+   et dans la bulle) ; pendant un geste, sous 1 000 px, elle cède à la mesure en direct.
+5. *La barre d'état.* Zoom, grille, aimantation et affichage collés au bord droit (`margin-left:auto`) : ils ne sautent
+   plus. La consigne cède sa place quand ELLE n'en a plus (`majPlaceConsigne` : moins de 120 px pendant un geste, 48 px
+   sinon) et revient dès que 140 px se libèrent — plus de seuil fixe. Le pourcentage de zoom tient jusqu'à 560 px de
+   barre, l'échelle jusqu'à 600 (pendant un geste, sous 760, l'échelle cède à la mesure). La surface perd son icône (celle
+   d'Ajuster) ; consignes raccourcies (tracé, Zone, Ouvertures, Image) ; consignes propres à la sélection multiple
+   (« ces N équipements »), à la zone, à une cote, à une note (« Échap rend le plan »).
+6. *Le pied du panneau, calme.* La carte budget passe en blanc bordé, montant en encre ; « Voir le détail » en lien
+   indigo ; le seul appel fort reste « Estimer ce plan ». **Contradiction** : le designer proposait un montant de 20 px,
+   D40 (« le budget, héros du produit », décision de Dani, contrôlée par `valeur`) le veut bien plus gros que la surface :
+   24 px, en encre sur blanc (il était à 28 px, blanc sur encre).
+7. *Icônes et symboles.* Murs : l'angle en contour et poché léger (plus de masse pleine lue « L ») ; Image : l'image
+   universelle ; Mesurer : le ruban déroulé et gradué ; Cote et Ouvertures recalées à la hauteur des autres ; Surface :
+   une pièce hachurée ; « Ouvre de l'autre côté » et « Charnière » : des symétries (`retournerV`, `retournerH`) — les
+   flèches restent au faîtage. Extrémités de cote en obliques à 45° partout (convention française, comme l'icône).
+   Le mur en cours de tracé se prévisualise comme le mur posé : encre translucide, angles vifs ; une séparation en tirets
+   d'encre. Palette des pièces loin des couleurs de sens (Séjour, Cuisine, Entrée, Buanderie, Bureau) ; la surface d'une
+   étiquette s'écrit en encre (la teinte du sol distingue les pièces).
+8. *Le plan d'architecte.* Une porte qu'on pose prend le côté du curseur par rapport à l'AXE dessiné du mur ; sur une
+   façade, elle s'ouvre vers le logement (comme sa vignette et les fenêtres) sauf si le curseur est au-delà du nu
+   extérieur (`sideOuverture`) ; glissée le long du même mur, elle ne se retourne que si le curseur passe franchement de
+   l'autre côté. La chaîne des BAIES au 1er rang de chaque façade percée (nu extérieur, jambages, nu extérieur ; les deux
+   chaînes d'avant aux 2e et 3e rangs ; masquable : Affichage › Cotes des baies ; le cadrage garde sa place ; pas au
+   téléphone). Les cotes intérieures prennent d'abord une ligne qui ne traverse ni ouverture ni meuble, puis une qui ne
+   traverse aucune ouverture (quitte à entrer à 95 cm dans la pièce), et leur texte ne se pose jamais sur l'emprise
+   dessinée d'une ouverture (`boitesOuvertures`) ; les textes de la chaîne extérieure évitent les notes ; les cotes
+   temporaires d'une pose passent de l'autre côté du mur si elles traversent une note.
+9. *Les interactions.* Échap dans un champ du panneau ou de la barre d'options (la note, une largeur, « Pièce », la
+   recherche vide) rend le plan ; la cascade de D62 reprend à l'Échap suivant. Échap sur une bulle de SURVOL ne fait que la
+   fermer (WCAG 1.4.13) ; celle d'un bouton atteint au clavier se ferme et Échap fait aussi son travail. La souris quitte le
+   plan : plus d'aperçu, de contour de survol ni de mesure en direct. L'ouverture qu'on vient de poser n'est pas « déjà
+   là » tant que la souris ne l'a pas quittée (« Porte d'entrée posée · approche un autre mur… »). Une ouverture se choisit
+   dans l'épaisseur de son mur avant l'équipement posé contre elle, et sur ce qu'elle dessine (vantaux, débattement) avant
+   la pièce ; contre le mur, hors de son épaisseur, l'équipement reste prioritaire. Une dimension au-delà de la borne du
+   modèle (3 fois le modèle, 15 m pour une poutre, 6 × 3,5 m pour une ouverture) n'est pas appliquée : le message propose
+   les centimètres (« Mettre 1,40 m »). Supprimer le dit, avec « Annuler » (un mur dit les ouvertures qu'il emporte).
+   Annuler et Rétablir gardent l'élément choisi s'il existe encore et disent « retour en vue Travaux » quand la vue change.
+   La barre d'actions revient à la fin d'un glissé de la vue. Tablette : le panneau ouvert POUR une fiche se replie quand
+   la sélection se vide (le bouton du panneau reste une préférence et annule ce repli).
+10. *Les mots et les touches.* Sur Mac, ⌘ partout où un raccourci s'écrit (menu du clic droit, bulles, Aide, Fichier,
+   barre d'options, messages : `toucheMac`) ; les touches des menus sans cadre. La bulle en deux niveaux : le nom en gras
+   et sa touche, puis la phrase — son texte reste exactement celui de `data-tip` (séparateurs masqués), et aucune de ses
+   lignes ne commence par « : ». Un seul style d'intitulé, en casse normale (sections du panneau, calques, étiquettes
+   « déjà là », « à poncer », « le plus rapide »). Listes déroulantes au chevron du registre, coupées en « … ».
+
+**Pourquoi pas tout ce que le jury proposait.**
+- *Typographie insécable dans tout le panneau* : les espaces insécables (ou des `<span>` autour de chaque « mot : »)
+  changent le texte que lisent une vingtaine de contrôles ; la bulle la reçoit (nœuds `nw`, texte identique), le panneau
+  la reçoit là où le jury l'a vue (« 7 cm ; », « · mur 20 cm »).
+- *Colonne d'outils en filets seuls* (designer) : la colonne en sections nommées est l'organisation validée (D61) ; on garde.
+- *Renommer Zone en « Cadre »* (architecte) : le doublon est retiré (un seul accès, la colonne) ; le nom reste celui du
+  lexique.
+- *Second clic qui passe à l'élément du dessous* (débutante) : il entrerait en conflit avec le glissé d'un élément déjà
+  choisi (un second clic sur une porte la ferait passer au mur) ; la priorité de clic suffit au cas relevé.
+- *« Lecture seule » dite trois fois en vue Après* : le message de vue est exigé par D54 (il se retire au changement de vue),
+  le bandeau des fiches porte l'action « Modifier en vue Travaux » ; on garde.
+- *Coupe de l'escalier* : laissée (D60), comme le regroupement des points électriques.
+
+**Ce qui ne bouge pas.** Aucune globale renommée (ajouts : `MAC`, `toucheMac`, `listeEquip`, `defileOptbar`,
+`retirerMsgSansModele`, `borneDim`, `dimHorsBorne`, `garderSel`, `vueRestauree`, `sideOuverture`, `ouvertureSous`,
+`apresPose`, `boitesOuvertures`, `segCoupeBoite`, `memploiOuvert`, `memploiGarder`, `majPlaceConsigne`, `placerContexte`,
+`contexteEnHaut`, `majBarreHaut`, `legendeHTML`, `ficheTemp`, `replierApresFiche`, `TOUCHE_BULLE`, `bulleHTML` ; icônes
+`retournerH`, `retournerV` ; `FAM_EQUIP[i][4]` = nom court ; retiré : `couleurLisible`, devenu sans usage). Ids gardés
+(`#levels`, `#modes`, `#pbande` déplacés ou masqués seulement) ; nouveaux : `#ctxTop`, `#legendeVue`, `#famBtn`,
+`#famMenu`. Ordre `.top → #tools → canvas`, `onclick` d'ancrage, clés `localStorage` (une ajoutée :
+`avyora-plan-memploi`), signatures de `drawDim` / `hachurer` / `drawOpening` / `drawItem`, vignettes, chiffrage,
+`snapPoint` et jonctions, couleurs des états, rendu du doublage, téléphone.
+
+**Contrôles.** Mis à jour en gardant leur intention, parce que la refonte déplace volontairement ce qu'ils visaient :
+- `ux` §1 : les familles neutres se lisent dans le menu (icônes de la même encre) ; les rayons comptent le bouton de famille.
+  §6 : « niveau et vue au centre de la barre du haut, plus de bande au-dessus du plan » ; Murs = type, trait, pièce (plus
+  de poteau ni de poutre en double ; le poteau se choisit dans Équipements › Structure) ; les 6 familles dans un menu au
+  nom visible ; la fenêtre de toit ouvre la famille Structure. §7 : la touche de Dupliquer est « ⌘D » sur Mac. §8 : le
+  niveau et la vue dans la barre du haut au-dessus de 900 px, dans la tête du plan en dessous.
+- `visuel` : la légende Travaux se compte où elle est (`.vlegend > span`) ; « outil Doublage : rangée d'épaisseurs
+  lisible » devient « les épaisseurs dans la barre d'options, un segmenté sur une ligne, sans doublon dans le panneau » (la
+  rangée lisible reste contrôlée dans la fiche d'un mur doublé).
+- `responsive` : « plan vide, outil Murs : la consigne tient » rouvre le panneau avant de mesurer (le panneau ouvert pour
+  une fiche se replie désormais au nouveau plan) — c'est le plan étroit qui est contrôlé.
+- `robustesse` : le message d'un « Annuler » périmé renvoie à « Ctrl+Z », ou « ⌘Z » sur Mac.
+- `rendu-murs` : ses sondes sont au pixel près ; elles suivaient le cadrage de `fitView`, qui dépend de la hauteur des
+  bandes autour du plan (D64 l'a changée : le bord de la face du mur tombait à mi-pixel, lu comme un trait au T). Le
+  cadrage du contrôle est fixé (1 m = 100 px, origine entière) ; ses seuils ne bougent pas, et il passe sur le fichier
+  d'avant comme sur celui-ci.
+Nouveau : `ux` §9 (D64, à 1 440, 1 280 et 1 024, et la tablette à 768) — 104 contrôles : barre d'options sans doublon ;
+bouton de famille immobile d'une famille à l'autre ; recherche et famille en place avec le dernier modèle choisi ; tuiles ;
+5 modèles de salle de bain sans défiler à 1 440 et 1 280 ; changer de famille ou chercher ne pose rien en douce et le dit ; le
+message retiré au choix d'un modèle ; épaisseurs en segmenté ; panneau sans doublon, mode d'emploi en pli qui se souvient,
+« En savoir plus », carte budget calme (24 px, fond blanc), intitulés en casse normale ; légende dans la barre d'état ; zoom collé au bord droit
+(vue d'ensemble, survol, tracé) ; Échap dans une note puis M (au clavier réel) ; Échap sur une bulle de survol pendant un
+tracé ; « Retiré du plan » et son « Annuler » ; Annuler garde la sélection et dit la vue ; 140 refusé, « Mettre 1,40 m » ;
+consignes multiple et note ; la souris quitte le plan ; une porte d'entrée posée sur une façade (souris réelle) s'ouvre
+vers le logement, sans rouge après la pose ; priorité de clic de la fenêtre et du radiateur ; barre d'actions après un
+glissé au bouton du milieu ; chaîne des baies ; aucune cote intérieure sur une ouverture ; palette des pièces ; icônes ;
+⌘ sur Mac ; bulle en deux niveaux ; tablette : la fiche se replie. Deux contrôles du source (extrémités obliques, tracé à
+l'encre). `ux.mjs` passe de 396 à 500 contrôles ; sur le fichier d'avant, 22 échecs (les sections U1, U3, U4, U5 et D64
+s'arrêtent sur ce qui n'existe pas encore). Batterie complète (21 + ux), finition, couverture et vitest (167) verts.
