@@ -4276,3 +4276,95 @@ Mis à jour en gardant leur intention, à cause du changement voulu :
   et `valeur.mjs` §4 demandent explicitement la rénovation (`loadTemplate("maison", WORKFLOW_RENO)`) : en gratuit, un
   plan neuf est désormais un Plan final, et ces contrôles portent sur la rénovation qu'un gratuit a déjà.
 Batterie complète (22 + planfinal), finition, couverture et vitest verts ; `lib/` non touché (pas de build à refaire).
+
+## D69 · Plan final, chantier P3 : l'interface épurée et l'accueil minimal (09/10/2026)
+
+**Demande de Dani** (suite de D67, D68). En Plan final, la barre du haut, la bande de contexte, la colonne d'outils, la
+barre d'options et la barre d'état sont plus épurées que dans la rénovation : rien d'inutile, le plan prend le maximum
+d'écran. Le panneau de droite : les propriétés, et un récapitulatif simple (surface habitable, pièces et surfaces, nombre
+d'ouvertures) à la place du budget. « Exporter le plan », un dossier sans budget ni suivi. Une aide minimale à la première
+utilisation : une petite carte qu'on ferme (« Dessine ton plan final — Commence par tes murs, puis ajoute tes portes,
+fenêtres et aménagements » et trois indications très courtes), mémorisée. Au téléphone, la consultation.
+
+**Constat** (mesuré avant, sur le fichier de D68, le même plan lu en Plan final puis en rénovation). D67 avait retiré
+tout ce qui parle du chantier, mais la disposition restait celle de la rénovation. La colonne gardait ses 10 outils, dont
+la Zone — sa propre fiche disait « Avec l'outil Sélection, Maj + glisser dans le vide fait la même chose » —, et ses
+sections « Édition » et « Annoter » ; la barre d'options de la Sélection, l'outil de tous les instants, ne portait que
+trois raccourcis de modificateurs, et gardait la tête du plan ouverte (44 px de plan en moins à 1 440) ; à la tablette, la
+bande de contexte (36 px) ne portait que « RDC + », la barre du haut ayant de la place ; le panneau listait les pièces deux
+fois (la liste, puis « Récap des surfaces » par type), et son pied n'avait qu'une ligne grise (« 94,1 m² habitables ·
+8 pièces ») là où la rénovation a sa carte ; le nombre d'ouvertures n'était dit nulle part ; un plan vide disait deux fois,
+dans le panneau, qu'il faut fermer une pièce. À la première utilisation, rien que la carte du plan vide : plus rien dès
+l'outil Murs pris, rien du tout pour un Pro parti d'un plan type. Au téléphone, Annuler et Rétablir restaient dans la barre
+d'un plan qu'on ne peut que consulter. `planfinal.mjs` enrichi, lancé sur ce fichier : **38 échecs sur 512** (4 parcours
+interrompus net : pas d'aide à fermer).
+
+**Décision.**
+1. *La colonne d'outils* (`TOOL_GROUPS_PF`, lue par `groupesOutils()`) : la Sélection en tête, sans titre ; Structure
+   (Murs — le type de mur fait la cloison —, Doublage) ; Menuiseries (Ouvertures : porte, porte-fenêtre, fenêtre, baie
+   vitrée…) ; Équipements ; **Mesures** (Cote, Mesurer — longueur et surface —, Note) ; Fond (Image). 9 outils au lieu de
+   10 : pas de Zone, la Sélection fait le cadre (Maj + glisser), et sa bulle le dit désormais (`TOOL_TIP_PF`). La touche B
+   n'y choisit rien (`outilDeTouche` ne propose que les outils de la colonne, `outilsVisibles()`), l'Aide ne la liste pas,
+   `setTool('zone')` revient à la Sélection, comme un plan rouvert en Plan final avec la Zone active (`majTypePlan`). Le
+   fond de plan reste : retracer une image (un plan de constructeur, une photo du plan d'aujourd'hui) pour dessiner le
+   logement voulu est un usage du Plan final — y compris en gratuit, qui n'a pas la rénovation.
+2. *La barre d'options* ne s'ouvre que pour un outil qui a des options : en Plan final, rien pour la Sélection. La tête
+   du plan, vide, disparaît (`:has(>.optbar:empty)`, sous `body.planFinal.ctxHaut`) et le cadrage (`zoneUtile`) rend sa
+   hauteur au plan. Avec Murs, Ouvertures, etc., la barre revient par-dessus le haut du plan, sans le déplacer (le canvas
+   garde toute la scène, D61).
+3. *La bande de contexte* : un Plan final n'y a que ses niveaux. À la tablette, ils montent dans la barre du haut
+   (`contexteEnHaut`) tant qu'elle ne déborde pas, même resserrée (c1 à c3) ; sinon ils redescendent dans la bande, comme
+   avant (`_ctxPF`, mesuré dans `majBarreHaut`, réessayé quand la largeur, le compte Pro ou les niveaux changent). Mesuré :
+   à 768 px en Pro, la bande disparaît (36 px de plan) ; à 768 px en gratuit avec deux niveaux (« Passer Pro » en plus) et
+   à 640 px, la barre est pleine : la bande reste. Le groupe s'appelle « Niveaux » (il n'y a pas de vue à choisir).
+4. *La barre du haut* garde ce qui sert à ce type de plan — nom et pastille, enregistrement, Annuler / Rétablir, niveaux,
+   Fichier, Aide, Passer Pro, « Exporter le plan » — : trois commandes de moins que la rénovation (les vues). *La barre
+   d'état* : consigne, surface, échelle, zoom, grille, aimantation, affichage ; ni budget replié, ni légende.
+5. *Le panneau* : les propriétés de l'élément choisi (D67) ; dans la vue d'ensemble, à la place de « Récap des surfaces »,
+   un **Récapitulatif** (tous niveaux) : les surfaces par type de pièce et la surface habitable, puis les ouvertures par
+   modèle, dans l'ordre de la barre d'options, et leur total (`ouverturesPlan()`). Au pied, à la place du budget, une carte
+   calme (`recapPiedHTML`, `.recappf`, même place et même poids que la carte du budget en rénovation) : « Surface
+   habitable », la surface en grand, puis « 8 pièces · 15 ouvertures » (et « 2 niveaux ») ; elle reste quand un élément
+   est choisi. Sans pièce, ni carte ni liste vide : le panneau le dit une seule fois, sous son titre.
+6. *« Exporter le plan »* (le bouton du haut) ouvre le dossier de D67 : un plan par niveau, et en Pro le contrôle du plan
+   et les quantités ; ni budget, ni suivi, ni « Les mots de ce budget » ; en gratuit, le filigrane de DROITS reste.
+7. *L'aide de la première fois* (`#aidePF`, `majAidePF`) : une petite carte en haut à gauche du plan, près des outils
+   qu'elle nomme. « Dessine ton plan final », « Commence par tes murs, puis ajoute tes portes, fenêtres et
+   aménagements. » (une seule source : `TEXTES_PF`, la carte du plan vide), puis trois gestes, chacun avec l'icône de son
+   outil (`GESTES_AIDE_PF`, noms tirés de `TOOLS`) : « Murs : clique chaque coin, puis le premier pour fermer la pièce. »,
+   « Ouvertures : choisis un modèle, puis clique sur un mur. », « Équipements : choisis un modèle, puis clique où il va. »
+   Elle attend que la carte du plan vide soit partie — même titre, jamais les deux à la fois : en gratuit, elle arrive avec
+   « Tracer les murs » ; en Pro, avec « Plan final › Feuille blanche » ou un plan type. Elle ne prend pas le focus et ne
+   gêne pas le tracé. Sa croix, « Fermer l'aide », la ferme, et c'est mémorisé (`avyora-plan-aide-pf`) ; Aide ›
+   **Premiers pas** (Plan final seulement, `.pfSeul`, en dernière entrée : les entrées d'une rénovation gardent leur
+   ordre, que `visuel.mjs` lit dans le DOM) la rouvre. Jamais dans une rénovation (elle a sa visite), jamais au
+   téléphone.
+8. *Le téléphone* : la consultation de D67 ; en plus, ni Annuler ni Rétablir dans la barre (rien à annuler) ; le tiroir
+   montre le récapitulatif.
+
+**Ce qui ne bouge pas.** Le Projet rénovation : sa colonne (10 outils ; Édition, Annoter), la barre d'options de sa
+Sélection, sa bande de contexte à la tablette, son panneau (onglets, budget) — vérifiés dans le même parcours, sur le même
+plan. Aucune globale renommée ; ajouts : `TOOL_GROUPS_PF`, `groupesOutils`, `outilsVisibles`, `_ctxPF`, `aidePF`,
+`nomOutil`, `GESTES_AIDE_PF`, `aidePFHTML`, `majAidePF`, `fermerAidePF`, `ouvrirAidePF`, `ouverturesPlan`,
+`recapPiedHTML`. Ids conservés (ajouts : `aidePF`, `aidePfBtn`, `recapSurf`) ; ordre `.top → #tools → canvas` (la carte
+d'aide vient après le canvas) ; `onclick` d'ancrage inchangés. Clé `localStorage` ajoutée : `avyora-plan-aide-pf`.
+`SCHEMA`, contrat (1.18), `lib/` : inchangés.
+
+**Contrôles.** `planfinal.mjs` enrichi : **539 contrôles** (408 avant). Le même plan lu en Plan final puis en rénovation :
+moins de commandes dans la barre du haut, la colonne exacte (outils et sections) et celle de la rénovation inchangée, pas de
+tête du plan à la Sélection et un plan plus haut d'autant, une barre d'état sans budget ni légende et plus courte que la
+rénovation en vue Travaux, un panneau sans onglets ni budget. La barre d'options s'ouvre (Murs) et se referme (Sélection) ;
+la Zone revient à la Sélection, la touche B ne fait rien, M choisit les Murs ; l'Aide ne liste pas la Zone ; « Niveaux ».
+Le récapitulatif : les surfaces par type et la surface habitable du plan, les ouvertures dont le total est celui du plan ;
+la carte du pied (surface, pièces, ouvertures, niveaux), qui reste à la sélection ; rien sans pièce. « Exporter le plan »
+au clic. L'aide, à la souris : après Plan final › Feuille blanche, ses textes exacts, trois gestes de 12 mots au plus avec
+leur icône, sa place (sous la tête, à droite des outils, au-dessus de la barre d'état, 320 px au plus), pas de focus, une
+pièce tracée carte ouverte, la croix, le rechargement, Aide › Premiers pas, la croix encore ; ni dans une rénovation (ni
+au menu Aide), mais sur le même plan type en Plan final ; en gratuit, pas par-dessus la carte du plan vide, puis là après
+« Tracer les murs ». Aux largeurs 1 440 × 900, 1 280 × 800, 1 024 × 768 (Pro et gratuit), 768 × 1 024 (Pro et gratuit) et
+640 × 900 : la barre du haut ne déborde pas, la colonne tient sans défiler, l'aide est dans le plan, le récapitulatif se
+voit en entier (ou, panneau replié, la surface dans la barre d'état) ; les niveaux dans la barre ou dans la bande, jamais
+les deux. Au téléphone : ni aide, ni barre d'options, ni Annuler / Rétablir, le récapitulatif en entier dans le tiroir.
+Chaque nouvel état est lu mot à mot : aucun mot du chantier. Vu à l'écran aux quatre largeurs (1 440, 1 280, 1 024, 390),
+en Pro et en gratuit, et à 768. Aucun contrôle existant n'a été modifié. Batterie complète (22 + planfinal), finition,
+couverture et vitest verts ; `lib/` non touché (pas de build à refaire).
