@@ -209,9 +209,12 @@ for (const [L, H, mob] of [[390, 844, true], [320, 640, true], [768, 1024, false
     t[`${tag} · replié : « voir sur le plan » rouvre le panneau sur la fiche`] = g;
     /* la consigne du plan vide (outil Murs) passe à la ligne : elle était coupée des deux côtés */
     /* D64 : le panneau ouvert pour une fiche se replie quand la sélection se vide (le nouveau plan) — on le rouvre : c'est le plan ÉTROIT qui est contrôlé */
+    /* D65 : la consigne n'est plus écrite au centre du plan (la barre d'état la dit, une seule fois) : un pictogramme, qui
+       tient dans le plan étroit ; la consigne de la barre d'état reste là, entière ou coupée en « … » avec sa bulle */
     await p.evaluate(() => { closeWelcome("blank"); plierPanneau(false); }); await wait(250);
-    const txt = await p.evaluate(() => { const o = ctx.fillText, out = []; ctx.fillText = function (s, x) { const w = this.measureText(s).width, al = this.textAlign; out.push({ s, l: al === "center" ? x - w / 2 : x, r: al === "center" ? x + w / 2 : x + w }); return o.apply(this, arguments); }; draw(); ctx.fillText = o; return { W: cv.clientWidth, L: out.filter((q) => /coin|pièce/.test(q.s)) }; });
-    t[`${tag} · plan vide, outil Murs : la consigne tient dans le plan (${txt.L.length} lignes)`] = txt.L.length >= 3 && txt.L.every((q) => q.l >= 0 && q.r <= txt.W);
+    const txt = await p.evaluate(() => { const o = ctx.fillText, oa = ctx.arc, out = [], pts = []; ctx.fillText = function (s) { out.push(s); return o.apply(this, arguments); }; ctx.arc = function (x, y, r) { pts.push({ x, y, r }); return oa.apply(this, arguments); }; draw(); ctx.fillText = o; ctx.arc = oa; const h = document.getElementById("hint"), q = h.getBoundingClientRect(), Z = zoneUtile();
+      return { W: cv.clientWidth, ecrits: out.filter((s) => /coin|pièce/.test(s)).length, pts: pts.length, dans: pts.every((p) => p.x - p.r >= 0 && p.x + p.r <= cv.clientWidth && p.y - p.r >= Z.y0 && p.y + p.r <= Z.y1), hint: /1er coin/.test(h.textContent) && q.width >= 40 && (h.scrollWidth <= h.clientWidth + 1 || h.dataset.tip === h.textContent.trim()) }; });
+    t[`${tag} · plan vide, outil Murs : la consigne tient — dans la barre d'état (pas redite au centre du plan), le pictogramme dans le plan`] = txt.ecrits === 0 && txt.pts >= 4 && txt.dans && txt.hint;
   }
   await p.close();
 }
