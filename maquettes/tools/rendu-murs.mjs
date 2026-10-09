@@ -37,7 +37,9 @@ const res = await p.evaluate(() => {
   settings.grid = false; settings.cotes = false;
   tool = "export";                     /* masque les pastilles de bout libre, qui couvriraient
                                           justement les traits d'extrémité qu'on veut mesurer */
-  fitView(); draw();
+  /* D64 : un cadrage FIXE, à l'origine entière (1 m = 100 px) — les sondes sont au pixel près et ne doivent pas dépendre de
+     la hauteur des bandes autour du plan (D64 l'a changée : avec fitView, le bord de la face du mur tombait à mi-pixel) */
+  fitView(); view.zoom = 100; view.ox = 200; view.oy = 200; draw();
 
   const lire = (x, y) => { const s = S(v(x, y)); const d = ctx.getImageData(Math.round(s.x * (cv.width / cv.clientWidth)), Math.round(s.y * (cv.height / cv.clientHeight)), 1, 1).data; return [d[0], d[1], d[2]]; };
   /* Un trait, c'est nettement plus sombre que ce qu'il traverse : le liseré bleu nuit donne
