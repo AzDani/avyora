@@ -349,7 +349,7 @@ await p.evaluate(() => { closeModal(); setMode("projet"); closeModal(); sel = nu
   t["Annuler · un autre geste : le bouton disparaît du message"] = await p.evaluate(() => !document.querySelector("#toast .tact"));
   Object.assign(t, await p.evaluate(([id, tid, x0]) => { const r = {};
     const a = annulerCe(); const w = L().walls.find((w) => w.type === "cloison" && !w.st); sel = { kind: "wall", id: w.id }; setWallProp("st", "demolir"); a.fn();
-    r["Annuler · un « Annuler » périmé ne défait pas le geste suivant, il renvoie à Ctrl+Z"] = findWall(w.id).st === "demolir" && findWall(id).st === "demolir" && Math.abs(L().items.find((i) => i.id === tid).x - (x0 - 0.05)) < 1e-6 && /Ctrl\+Z/.test(document.getElementById("toast").textContent);
+    r["Annuler · un « Annuler » périmé ne défait pas le geste suivant, il renvoie à Ctrl+Z"] = findWall(w.id).st === "demolir" && findWall(id).st === "demolir" && Math.abs(L().items.find((i) => i.id === tid).x - (x0 - 0.05)) < 1e-6 && /Ctrl\+Z|⌘Z/.test(document.getElementById("toast").textContent); /* D64 : sur Mac, le message dit ⌘Z */
     const w2 = L().walls.find((w) => w.type === "cloison" && !w.st); sel = { kind: "wall", id: w2.id }; deleteSel(); document.querySelector("#toast .tact").click();
     r["Annuler · immédiat : il défait exactement le marquage annoncé"] = !findWall(w2.id).st && findWall(w.id).st === "demolir";
     addLevel("empty"); const n = state.levels.length; deleteLevel();
