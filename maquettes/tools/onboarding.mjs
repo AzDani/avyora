@@ -272,6 +272,10 @@ await p.close();
 /* D50 (cj-design11, cj-qa10) : fermer l'accueil par la croix ouvre l'exemple en vue Travaux et propose la visite en une ligne */
 {
   const q = await onglet();
+  /* D70 : au bureau, l'exemple n'est plus derrière l'accueil ; c'est l'étape « Projet rénovation » (où l'exemple est le choix
+     recommandé et focalisé) qui, fermée par la croix, l'ouvre comme sa carte. Le premier pas fermé garde un Plan final vide
+     (contrôlé par planfinal.mjs). On y va au clavier, comme un utilisateur (Tab, Entrée). */
+  await q.keyboard.press("Tab"); await q.keyboard.press("Enter"); await wait(150);
   await q.evaluate(() => document.querySelector("#m-welcome .mx").click()); await wait(250);
   Object.assign(t, await q.evaluate(() => { const to = document.getElementById("toast"), a = to.querySelector(".tact");
     return { "accueil fermé par la croix · l'exemple en vue Travaux (comme la carte)": estExemple() && mode() === "projet" && !modaleOuverte(),
