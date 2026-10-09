@@ -708,6 +708,12 @@ html:not(.dev) .devonly{display:none!important}
 .wcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .wcard{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;border:1px solid var(--line);background:var(--white);border-radius:var(--r-l);padding:12px 12px 14px;cursor:pointer;font:inherit;color:var(--ink);transition:border-color .15s}
 .wcard:hover{border-color:var(--hover-b);background:#FBFBFE}
+/* D70 · les deux cartes du type de plan (la décision clé du parcours) : un survol qui se voit, des titres de 16 px, et au focus un
+   seul cadre de 2 px (celui de .rec) au lieu du contour décalé posé sur la bordure */
+.wcard.wtype:hover{border-color:var(--brand-b);background:var(--brand-l)}
+.wcard.wtype b{font-size:16px}
+.wcard.wtype:focus-visible{outline:2px solid var(--brand);outline-offset:-1px;background:var(--brand-l)}
+.wcard.wtype:hover .wv,.wcard.wtype:focus-visible .wv{background:var(--white)}
 .wcard:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
 .wcard.rec{border:2px solid var(--brand);background:var(--brand-l);padding:11px 11px 13px}
 .wcard .wv{display:block;width:100%;height:112px;border-radius:var(--r-m);background:var(--canvas);margin-bottom:8px;overflow:hidden}
@@ -1190,7 +1196,8 @@ body.planFinal .renoSeul{display:none!important}
 .top .pnom .typeplan{height:16px;padding:0 6px;margin-left:10px}
 @media (max-width:900px){.top .pnom{flex:0 0 auto;max-width:none}}
 .gname .typeplan{margin-left:6px;height:20px;padding:0 7px}
-body:not(.planFinal) .pfSeul,body.gratuit .proSeul{display:none!important}
+.mplan .typeplan{flex:0 0 auto;display:inline-flex;flex-direction:row;align-self:flex-start;min-width:0;height:18px;padding:0 7px;margin-top:4px} /* D70 : au téléphone, la pastille du type sous le nom (la règle .mplan span l'étirait) */
+body:not(.planFinal) .pfSeul,body.gratuit.planFinal .proSeul{display:none!important} /* D70 : la rénovation d'un gratuit garde ses boutons d'avant */
 @media (min-width:761px){.wcards.n2{grid-template-columns:repeat(2,minmax(0,1fr))}}
 #m-welcome .wel:not([data-etape=reno]) .wreno,#m-welcome .wel[data-etape=reno] .wetape{display:none}
 .wel .wretour{display:none;position:absolute;top:22px;left:18px;width:34px;height:34px;align-items:center;justify-content:center;border:0;background:transparent;color:var(--muted);border-radius:var(--r-m);cursor:pointer}
@@ -1215,9 +1222,19 @@ body:not(.planFinal) .pfSeul,body.gratuit .proSeul{display:none!important}
 body.planFinal .pfoot:empty{display:none} /* sans pièce, pas de récapitulatif : le panneau dit déjà comment en fermer une */
 @media (max-width:600px){body.planFinal #undoBtn,body.planFinal #redoBtn{display:none}} /* au téléphone, on consulte : rien à annuler */
 .stab.ouv{margin-top:var(--sp-2)}
+.stab.ouv .sr b{color:var(--ink)} /* D70 : un nombre qu'on lit (l'indigo dit ce qui se clique), comme la carte du pied */
 /* l'aide de la première fois d'un Plan final : une petite carte en haut à gauche du plan (près des outils qu'elle nomme),
    qu'on ferme ; elle ne revient pas (le menu Aide la rouvre). Jamais au téléphone : on y consulte. */
-.aidePF{position:absolute;left:var(--sp-3);top:calc(var(--haut-plan,0px) + var(--sp-3));z-index:2;width:300px;max-width:calc(100% - 24px);padding:14px 16px 14px;background:var(--white);border:1px solid var(--line);border-radius:var(--r-l);box-shadow:var(--sh-pop)}
+.aidePF{position:absolute;left:var(--sp-3);top:calc(var(--haut-plan,0px) + var(--sp-3));z-index:2;width:300px;max-width:calc(100% - 24px);padding:14px 16px 14px;background:var(--white);border:1px solid var(--line);border-radius:var(--r-l);box-shadow:var(--sh-pop);pointer-events:none}
+/* D70 : la carte ne prend aucun clic (le premier coin d'une maison tombait dessous et le tracé le perdait) ; seuls ses boutons */
+.aidePF button{pointer-events:auto}
+/* D70 : repliée (dès qu'on dessine), une pastille « Premiers pas » en bas à gauche du plan, dans la bande que le cadrage laisse libre */
+.aidePF.pli{top:auto;bottom:calc(var(--etat-h) + var(--sp-3));width:auto;display:flex;align-items:center;gap:0;padding:3px;border-radius:999px;box-shadow:var(--sh-2)}
+.aidePF .aidepill{display:flex;align-items:center;gap:6px;height:28px;padding:0 10px 0 8px;border:0;border-radius:999px;background:transparent;font:inherit;font-size:var(--fs-s);font-weight:600;color:var(--ink2);cursor:pointer}
+.aidePF .aidepill .ico{color:var(--brand)}
+.aidePF .aidepill:hover{background:var(--hover);color:var(--ink)}
+.aidePF .aidepill:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
+.aidePF.pli .aidex{position:static;width:28px;height:28px;border-radius:999px}
 .aidePF[hidden]{display:none}
 .aidePF h4{margin:0 30px 4px 0;font-size:var(--fs-b);font-weight:700;color:var(--ink);line-height:1.3}
 .aidePF p{margin:0 0 12px;font-size:var(--fs-s);color:var(--muted);line-height:1.45}
@@ -1650,7 +1667,7 @@ function motsHTML(keys){return keys.length?`<div class="glmots"><span>Les mots :
 function gl(k,txt){const g=GLOSSAIRE[k],t=txt||'';if(!g)return t;return t+`<button type="button" class="gl" data-gl="${k}" aria-label="C'est quoi, ${String(g[0]).replace(/"/g,'&quot;')} ?" aria-expanded="false">${ico('info')}</button>`;}
 let glAncre=null,glEpingle=false,glRAF=0;
 function glPop(){return document.getElementById('glossPop');}
-function glOuvrir(b,epingle){const g=GLOSSAIRE[b.dataset.gl],p=glPop();if(!g||!p)return;
+function glOuvrir(b,epingle){const g=(typeof defGl==='function'?defGl:k=>GLOSSAIRE[k])(b.dataset.gl),p=glPop();if(!g||!p)return;
   if(glAncre&&glAncre!==b){glAncre.setAttribute('aria-expanded','false');glAncre.removeAttribute('aria-describedby');}
   p.innerHTML=`<b>${g[0]}</b>${g[1]}`;p.hidden=false;glAncre=b;glEpingle=!!epingle;
   b.setAttribute('aria-expanded','true');b.setAttribute('aria-describedby','glossPop');glPlacer();
@@ -1690,7 +1707,7 @@ const TARIFS_URL='https://getavyora.fr/tarifs?source=editeur-plan';
 const DROITS={
   /* D68 : en gratuit, on dessine son plan final ; le Projet rénovation (Avant travaux, Travaux, Après travaux, chiffré) est
      Pro. Un plan de rénovation déjà là (d'avant D68, ou d'un abonnement terminé) reste entier en gratuit : rien n'est retiré. */
-  dessin:{planFinal:'dessiner ton plan final',gratuit:'dessiner ton plan final',pro:'dessiner ton plan final'},
+  dessin:{planFinal:'dessiner ton plan final',gratuit:'dessiner ton plan final',pro:'dessiner ton plan final',renovation:'dessiner ton logement et tes travaux'}, /* D70 : `renovation` — ce que dit une rénovation qu'un gratuit a déjà (hors des listes : mêmes droits) */
   renovation:{gratuit:null,pro:'le projet rénovation, pour partir de ton logement tel qu\'il est et chiffrer ce qui change'},
   controle:{gratuit:'les surfaces et le contrôle du plan',pro:'les surfaces et le contrôle du plan'},
   total:{gratuit:'le montant total du budget travaux HT et sa répartition par corps d\'état',pro:'le montant total du budget travaux HT et sa répartition par corps d\'état'}, /* R6 : sans deux-points, la phrase se lit dans une liste (« Gratuit : …, le montant total…, le suivi… ») */
@@ -3326,7 +3343,7 @@ const fmtM2 = a => fmt(a,1)+' m²';
    croisent pour refermer un contour, on la prolonge jusqu'à ce trait — le temps du calcul.
    La géométrie enregistrée, elle, reste celle du chantier : la cloison s'arrête sur la plaque. */
 function segEffectif(level,w,m){
-  if(isVirtual(w))return w;
+  if(isVirtual(w))return sepEffective(level,w,m);
   let a=w.a,b=w.b,change=false;
   for(const bout of ['a','b']){
     const pt=w[bout];
@@ -3335,6 +3352,21 @@ function segEffectif(level,w,m){
     const c=closestOnSeg(pt,o.a,o.b);
     if(dist(pt,c.p)<2e-3)continue;                    /* déjà sur le trait : rien à prolonger */
     if(bout==='a')a=c.p;else b=c.p;change=true;
+  }
+  return change?{...w,a,b}:w;
+}
+/* D70 · une Séparation (cuisine ouverte) posée sur le BOUT d'une cloison qui bute contre un refend : la cloison est
+   prolongée jusqu'au trait du refend (ci-dessus), la Séparation restait 3,5 cm avant — la pièce ne se coupait pas. Son bout
+   suit le même déplacement que le mur qui part de ce point ; sinon, s'il tombe dans l'épaisseur d'un mur, il va jusqu'à son
+   trait, comme une cloison. La géométrie enregistrée ne change pas. */
+function sepEffective(level,w,m){
+  let a=w.a,b=w.b,change=false;
+  for(const bout of ['a','b']){
+    const pt=w[bout];let np=null;
+    for(const o of level.walls){if(o===w||isVirtual(o)||!wallActive(o,m))continue;const k=same(o.a,pt)?'a':same(o.b,pt)?'b':null;if(!k)continue;
+      const e=segEffectif(level,o,m);if(dist(e[k],pt)>=2e-3){np=e[k];break;}}
+    if(!np){const o=murTouche(level,w,pt,m);if(o&&!same(o.a,pt)&&!same(o.b,pt)){const c=closestOnSeg(pt,o.a,o.b);if(dist(pt,c.p)>=2e-3)np=c.p;}}
+    if(np){if(bout==='a')a=np;else b=np;change=true;}
   }
   return change?{...w,a,b}:w;
 }
@@ -3923,7 +3955,7 @@ function clicEnreg(){if(conflitOnglet){alerterOnglet();return;}
   const autre=Object.values(loadPlans())[0],nom=state.name||'Plan sans nom';
   demander({titre:`« ${esc(nom)} » n'est pas dans « Mes plans »`,texte:`Version gratuite : ${DROITS.plans.gratuit}, et <b>« ${esc(autre?.name||'un autre plan')} »</b> y est déjà. Ce plan-ci reste sur cet appareil tant que tu n'en ouvres pas un autre ; si tu en ouvres un autre, il sera perdu. ${avecPro('plans')}`,
     choix:[{t:'Passer Pro',fn:()=>passerPro('enregistrement')},{t:'Voir Mes plans',fn:openPlansModal},{t:'Compris',primaire:true}]});}
-function save(){let ok=true;if(!conflitOnglet){try{localStorage.setItem('avyora-plan-v2',JSON.stringify({state,view,onglet:ONGLET}));}catch{ok=false;}}
+function save(){majAnnuler();let ok=true;if(!conflitOnglet){try{localStorage.setItem('avyora-plan-v2',JSON.stringify({state,view,onglet:ONGLET}));}catch{ok=false;}}
   enregOk=ok;etatEnreg='saving';afficherEnreg();clearTimeout(enregT);enregT=setTimeout(synchroMesPlans,450);}
 function synchroMesPlans(){enregT=0;let ok=enregOk;const lib=loadPlans();
   if(!conflitOnglet&&state.id&&lib[state.id]){lib[state.id]={...lib[state.id],name:state.name||'Plan sans nom',savedAt:Date.now(),state:JSON.parse(JSON.stringify(state)),view:{...view},resume:resumePlan()};if(!writePlans(lib))ok=false;}
@@ -4098,7 +4130,7 @@ function miniPlanSVG(st){const L0=(st&&st.levels)||[],lv=L0[Math.min(st&&st.cur|
 function renderPlans(){const lib=loadPlans();const list=Object.values(lib).sort((a,b)=>b.savedAt-a.savedAt);const el=document.getElementById('plansList');
   const fmtDate=t=>{const d=new Date(t);return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});};
   const pro=isPro();const atLimit=!pro&&list.length>=PLAN_LIMIT_FREE;
-  const banner=pro?'':`<div class="budget" style="margin-bottom:12px;cursor:default"><div class="bl"><span>Version gratuite : ${DROITS.plans.gratuit}</span><small>${maj(estPlanFinal()?DROITS.dessin.planFinal:DROITS.dessin.gratuit)} reste gratuit. ${estPlanFinal()?'Avec Pro : '+DROITS.plans.pro+', et '+DROITS.renovation.pro+'.':avecPro('plans')}</small>${prixPro()}</div>${lienPro('Passer Pro','ib propill')}</div>`;
+  const banner=pro?'':`<div class="budget" style="margin-bottom:12px;cursor:default"><div class="bl"><span>Version gratuite : ${DROITS.plans.gratuit}</span><small>${maj(estPlanFinal()?DROITS.dessin.planFinal:DROITS.dessin.renovation)} reste gratuit. ${estPlanFinal()?'Avec Pro : '+DROITS.plans.pro+', et '+DROITS.renovation.pro+'.':avecPro('plans')}</small>${prixPro()}</div>${lienPro('Passer Pro','ib propill')}</div>`;
   /* D67 : la carte d'un Plan final dit sa surface et ses pièces — ni montant, ni chantier, ni étapes */
   const resumeTxt=(R,nb)=>R&&R.pf?[R.pieces?fmtM2(R.m2):'aucune pièce',R.pieces?pluriel(R.pieces,'pièce'):''].filter(Boolean).join(' · '):R?[R.pieces?fmtM2(R.m2):'aucune pièce',R.taches?eur(R.budget)+' HT':'rien de décidé',R.taches?'chantier '+R.faites+'/'+R.taches:'',R.projet!=null?'projet à '+R.projet+'\u00a0%':'',R.prochain?'prochaine étape : '+R.prochain:''].filter(Boolean).join(' · '):pluriel(nb,'mur');
   /* D53 (jury final : novice, retention) · « Aucun plan enregistré pour l'instant » se lisait avec un plan
@@ -5230,7 +5262,7 @@ const TOOL_GROUPS_PF=[
   {cat:'Sélection',ids:['select']},
   {cat:'Structure',ids:['mur','doublage']},
   {cat:'Menuiseries',ids:['ouverture']},
-  {cat:'Équipements',ids:['equipement']},
+  {cat:'Intérieur',ids:['equipement']}, /* D70 : un titre, comme les autres familles (« Équipements » répétait le nom de l'outil : un simple filet ; « Aménagement » dépasse la colonne) */
   {cat:'Mesures',ids:['cote','mesure','texte']},
   {cat:'Fond',ids:['calque']},
 ];
@@ -5242,7 +5274,10 @@ const TOOL_TIP={select:'Sélectionner un élément pour voir sa fiche, le dépla
 /* D62 · UNE table de raccourcis : le gestionnaire du clavier lit ici la touche d'un outil (3e colonne de TOOLS) */
 function outilDeTouche(k){k=String(k||'').toLowerCase();if(!k)return null;const T=TOOLS.find(t=>t[2]&&t[2].toLowerCase()===k&&outilsVisibles().includes(t[0]));return T?T[0]:null;} /* D69 : seulement un outil de la colonne */
 /* D67 : en Plan final, la Sélection ne « décide » de rien */
-const TOOL_TIP_PF={select:'Sélectionner un élément pour voir sa fiche ou le déplacer · Maj + glisser dans le vide : plusieurs d\'un coup'}; /* D69 : le cadre de la Zone, sans outil de plus */
+/* D70 · les phrases de la Note : dans un Plan final, une idée sur le logement voulu, pas une question pour l'artisan (celles d'une rénovation, mot pour mot) */
+const NOTE_TXT=()=>estPlanFinal()?{sub:'Une remarque sur le plan : une idée, un point à vérifier, un choix à retenir. Elle part dans le dossier.',code:'Crée ton code couleur : par ex. bleu = idée, vert = validé, rose = à vérifier.',ex:'Ex. îlot central · parquet clair · une prise près du lit',usage:'Les notes gardent tes idées : envies, choix, points d\'attention.'}
+  :{sub:'Une remarque sur le plan : question pour l\'artisan, point à vérifier, choix à retenir. Elle part dans le dossier.',code:'Crée ton code couleur : par ex. bleu = question pour l\'artisan, vert = validé, rose = à vérifier.',ex:'Ex. mur porteur ? à vérifier · garder le carrelage · prise à déplacer ici',usage:'Les notes servent à toi et aux artisans : questions, choix, points d\'attention.'};
+const TOOL_TIP_PF={select:'Sélectionner un élément pour voir sa fiche ou le déplacer · Maj + glisser dans le vide : plusieurs d\'un coup',texte:'Poser une note sur le plan (remarque, idée)'}; /* D70 : la note d'un Plan final n'est pas une question pour l'artisan */ /* D69 : le cadre de la Zone, sans outil de plus */
 const tipOutil=k=>(estPlanFinal()&&TOOL_TIP_PF[k])||TOOL_TIP[k];
 function bulleOutil(t){const nom=t[4]||t[1];return nom+(t[2]&&raccourcisOn?' ('+t[2]+')':'')+' · '+(tipOutil(t[0])||t[1]);}
 /* D39 · UNE liste de raccourcis, rendue dans l'accueil et dans l'Aide. Les outils viennent de
@@ -5259,8 +5294,11 @@ function keysHTML(){const grp=(t,l)=>`<div class="kgrp"><div class="ph">${t}</di
   const G=estPlanFinal()?KEYS_GESTES.map(([t,l])=>[t,l.map(([k,d])=>k==='Suppr'?[k,'Supprime l\'élément choisi']:[k,d])]):KEYS_GESTES;
   return toucheMac(`<div class="keysgrid">${grp('Outils',outils)}${G.map(([t,l])=>grp(t,l)).join('')}</div>`);}
 /* D67 : les mots qui ne parlent que du chantier (dépose, corps d'état, TVA, HT, aides, reprise) ne sont pas ceux d'un Plan final */
-const GL_RENO=['depose','corps','tva','ht','aides','poutre'];
-function glossaireHTML(){return `<div class="glist">${Object.entries(GLOSSAIRE).filter(([k])=>!(estPlanFinal()&&GL_RENO.includes(k))).map(([,g])=>g).sort((a,b)=>a[0].localeCompare(b[0],'fr')).map(([t,d])=>`<div><b>${t}</b><span>${d}</span></div>`).join('')}</div>`;}
+const GL_RENO=['depose','corps','tva','ht','aides','poutre','troncon']; /* D70 : le tronçon ne sert qu'à démolir une partie de mur */
+/* D70 · les définitions dites autrement dans un Plan final (le logement voulu n'a pas d'« ancien ») */
+const GL_PF={fauxplafond:['Faux plafond','Un plafond suspendu sous la dalle ou le plancher, pour cacher des gaines, poser des spots ou baisser la hauteur.']};
+const defGl=k=>(estPlanFinal()&&GL_PF[k])||GLOSSAIRE[k];
+function glossaireHTML(){return `<div class="glist">${Object.entries(GLOSSAIRE).filter(([k])=>!(estPlanFinal()&&GL_RENO.includes(k))).map(([k])=>defGl(k)).sort((a,b)=>a[0].localeCompare(b[0],'fr')).map(([t,d])=>`<div><b>${t}</b><span>${d}</span></div>`).join('')}</div>`;}
 function aideOnglet(t){const k=t!=='gloss';const a=document.getElementById('aideTabKeys'),b=document.getElementById('aideTabGloss');
   a.classList.toggle('on',k);b.classList.toggle('on',!k);a.setAttribute('aria-selected',String(k));b.setAttribute('aria-selected',String(!k));
   document.getElementById('aideKeys').hidden=!k;document.getElementById('aideGloss').hidden=k;}
@@ -5361,7 +5399,7 @@ function propModele(genre,k,extra){const o=genre==='ouverture'?OPENINGS[k]:ITEMS
    visite à l'autre) — la consigne du moment est dans la barre d'état, le panneau garde les propriétés */
 function memploiOuvert(){try{return localStorage.getItem('avyora-plan-memploi')!=='0';}catch{return true;}}
 function memploiGarder(o){try{if(o)localStorage.removeItem('avyora-plan-memploi');else localStorage.setItem('avyora-plan-memploi','0');}catch{}}
-function modeEmploi(l){return `<details class="plie mepli" data-k="memploi"${memploiOuvert()?' open':''} ontoggle="memploiGarder(this.open)"><summary><span class="st">Mode d'emploi</span>${ico('chevronBas')}</summary><div class="pli"><ol class="memploi">${l.map(x=>`<li>${x}</li>`).join('')}</ol><p class="msortie"><kbd>Échap</kbd> annule le geste en cours, puis revient à la Sélection.</p></div></details>`;}
+function modeEmploi(l){return `<details class="plie mepli" data-k="memploi"${memploiOuvert()&&!aidePFDepliee()?' open':''} ontoggle="memploiGarder(this.open)"><summary><span class="st">Mode d'emploi</span>${ico('chevronBas')}</summary><div class="pli"><ol class="memploi">${l.map(x=>`<li>${x}</li>`).join('')}</ol><p class="msortie"><kbd>Échap</kbd> annule le geste en cours, puis revient à la Sélection.</p></div></details>`;}
 function optbarHTML(){
   if(isMobile())return '';
   const T=tool;
@@ -6493,6 +6531,8 @@ const TEXTES_PF=[
   ['#exportBtn span',null,'Exporter le plan<small>Le dossier PDF de tes plans</small>'],
   ['#panel','aria-label','Détails du plan'],
   ['#ctxTop','aria-label','Niveaux'], /* D69 : pas de vue à choisir dans un Plan final */
+  ['#layersBtn','data-tip','Affichage : masquer ou afficher les cotes, l\'électricité, le mobilier…'], /* D70 : un Plan final n'a pas de toiture à afficher */
+  ['#layersBtn','aria-description','Affichage : masquer ou afficher les cotes, l\'électricité, le mobilier…'],
   ['#emptyStage h4',null,'Dessine ton plan final'],
   ['#emptyStage p.edesk',null,'Commence par tes murs, puis ajoute tes portes, fenêtres et aménagements.'],
   ['#emptyStage p.ephone',null,'Ce plan est vide. Pour le dessiner, ouvre AVYORA sur ordinateur ou tablette.'],
@@ -6513,17 +6553,39 @@ function majTypePlan(){const pf=estPlanFinal();if(pf===_typeApplique)return;cons
    seule source, TEXTES_PF), puis trois gestes —, en haut à gauche du plan, près des outils qu'elle nomme. Elle attend que la
    carte du plan vide soit partie (même titre : jamais les deux à la fois) ; ni au téléphone (on y consulte), ni dans une
    rénovation. Fermée, elle ne revient pas (avyora-plan-aide-pf) ; le menu Aide la rouvre (Premiers pas). */
+/* D70 · la carte se déplie sur une feuille blanche (ou rouverte) et se replie en pastille « Premiers pas » dès qu'on dessine :
+   un clic dans le plan, un mur, un plan type. Elle ne prend aucun clic du plan (pointer-events) ; pendant un tracé, même la
+   pastille s'efface. Repliée, elle reste à un clic ; sa croix la ferme pour de bon.
+   aidePF : 'auto' (la première fois) · 'ouverte' (rouverte) · 'pliee' (en pastille, le temps de la page) · 'fermee' (mémorisé) */
 let aidePF=(()=>{try{return localStorage.getItem('avyora-plan-aide-pf')==='1'?'fermee':'auto';}catch{return 'auto';}})();
 const nomOutil=k=>{const t=TOOLS.find(x=>x[0]===k);return t?(t[4]||t[1]):k;};
 const GESTES_AIDE_PF=[['mur','outilMur','clique chaque coin, puis le premier pour fermer la pièce.'],['ouverture','outilOuverture','choisis un modèle, puis clique sur un mur.'],['equipement','outilEquipement','choisis un modèle, puis clique où il va.']];
 function aidePFHTML(){const tx=k=>(TEXTES_PF.find(x=>x[0]===k)||[])[2]||'';
   return `<button type="button" class="aidex" onclick="fermerAidePF()" aria-label="Fermer l'aide" data-tip="Fermer · le menu Aide la rouvre (Premiers pas)">${ico('x')}</button><h4 id="aidePFt">${tx('#emptyStage h4')}</h4><p>${tx('#emptyStage p.edesk')}</p><ol>${GESTES_AIDE_PF.map(([k,ic,g])=>`<li>${ico(ic,20)}<span><b>${nomOutil(k)}</b> : ${g}</span></li>`).join('')}</ol>`;}
-function majAidePF(carte){const a=document.getElementById('aidePF');if(!a)return;
-  const voir=estPlanFinal()&&!isMobile()&&(aidePF==='ouverte'||(aidePF==='auto'&&!carte));
-  if(a.hidden!==voir)return;if(voir&&!a.innerHTML){a.innerHTML=aidePFHTML();a.setAttribute('aria-labelledby','aidePFt');}a.hidden=!voir;}
+function aidePFPliHTML(){return `<button type="button" class="aidepill" onclick="ouvrirAidePF()" aria-expanded="false" data-tip="Rouvrir l'aide : murs, ouvertures, équipements">${ico('idee')}<span>Premiers pas</span></button><button type="button" class="aidex" onclick="fermerAidePF()" aria-label="Fermer l'aide" data-tip="Fermer · le menu Aide la rouvre (Premiers pas)">${ico('x')}</button>`;}
+/* ce que l'aide montre : 'carte', 'pli' (la pastille) ou '' ; `carte` = la carte du plan vide est là (jamais les deux) */
+function etatAidePF(carte){if(!estPlanFinal()||isMobile()||aidePF==='fermee')return '';
+  if(aidePF==='auto'&&(!planVide()||chain.length||rectMode))aidePF='pliee';
+  if(aidePF==='ouverte')return 'carte';
+  if(carte)return '';
+  if(aidePF==='auto')return 'carte';
+  return chain.length||rectMode||dimStart?'':'pli';}
+/* la carte dépliée (le panneau garde alors son « Mode d'emploi » replié : une seule voix à la fois) */
+const aidePFDepliee=()=>estPlanFinal()&&!isMobile()&&(aidePF==='ouverte'||(aidePF==='auto'&&planVide()&&!chain.length&&!rectMode));
+function majAidePF(carte){const a=document.getElementById('aidePF');if(!a)return;const e=etatAidePF(carte);
+  if((a.dataset.etat||'')===e&&a.hidden===!e)return;
+  const f=a.contains(document.activeElement);a.dataset.etat=e;a.hidden=!e;a.classList.toggle('pli',e==='pli');
+  if(e){a.innerHTML=e==='carte'?aidePFHTML():aidePFPliHTML();if(e==='carte')a.setAttribute('aria-labelledby','aidePFt');else a.removeAttribute('aria-labelledby');
+    if(f){const x=a.querySelector(e==='carte'?'.aidex':'.aidepill');if(x)try{x.focus({preventScroll:true});}catch{}}}
+  else if(f)try{cv.focus({preventScroll:true});}catch{}}
 function fermerAidePF(){aidePF='fermee';try{localStorage.setItem('avyora-plan-aide-pf','1');}catch{}const a=document.getElementById('aidePF');if(!a)return;const f=a.contains(document.activeElement);a.hidden=true;cacherBulle();if(f)try{cv.focus({preventScroll:true});}catch{}}
-function ouvrirAidePF(){aidePF='ouverte';draw();}
-function render(){majTypePlan();majTypeTop();renderTools();renderLevels();renderOptions();renderPanel();lastHint=null;draw();document.getElementById('undoBtn').disabled=!history.length;document.getElementById('redoBtn').disabled=!future.length;document.getElementById('pname').value=state.name;}
+function ouvrirAidePF(){aidePF='ouverte';draw();renderPanel();}
+/* D70 : un clic dans le plan replie la carte dépliée en pastille (elle laisse passer ce clic : il dessine) */
+cv.addEventListener('pointerdown',()=>{if(estPlanFinal()&&(aidePF==='auto'||aidePF==='ouverte')){const a=document.getElementById('aidePF');if(a&&!a.hidden&&a.dataset.etat==='carte')aidePF='pliee';}},true);
+function render(){majTypePlan();majTypeTop();renderTools();renderLevels();renderOptions();renderPanel();lastHint=null;draw();majAnnuler();document.getElementById('pname').value=state.name;}
+/* D70 · Annuler et Rétablir disent l'historique à chaque écriture du plan (save) : un mur tracé (addWall) n'appelle pas render,
+   et le bouton Annuler restait grisé après la première pièce fermée — Rétablir allumé à vide après un nouveau tracé */
+function majAnnuler(){const u=document.getElementById('undoBtn'),r=document.getElementById('redoBtn');if(u)u.disabled=!history.length;if(r)r.disabled=!future.length;}
 function renderLevels(){placerContexte();avecFocus(document.getElementById('levels').closest('.top')||document.getElementById('stage'),renderLevelsBrut);majBarreHaut();}
 /* D64 · le niveau et la vue au centre de la barre du haut : la bande de contexte au-dessus du plan prenait 36 px, à moitié
    vide (444 px à 1 440). Au téléphone (mode chantier), ils reprennent leur place sur le plan (D48). Seul l'endroit change :
@@ -6738,7 +6800,7 @@ function renderPanelBrut(){pruneEmptyTexts();if(ficheTemp&&!sel)replierApresFich
       <div class="seg wrap">${Object.entries(ISO_MAT).filter(([k])=>ISO_MAT_CHOIX.includes(k)).map(([k,m])=>`<button class="${DBL_CFG.mat===k?'on':''}" onclick="setDblCfg('mat','${k}')">${m.label}<small>λ <span class="mono">${fmt(m.lambda,3)}</span></small></button>`).join('')}</div>`
         :`<div class="row" style="margin-top:12px"><label>Isolant</label><span class="val" style="font-family:inherit">${ISO_MAT[DBL_CFG.mat].label} · λ${gl('lambda')} <span class="mono">${fmt(ISO_MAT[DBL_CFG.mat].lambda,3)}</span></span></div>`}
       <div class="row" style="margin-top:10px"><label>Épaisseur d'isolant</label><span class="val">${fmt(DBL_CFG.e*100,0)} cm</span></div>
-      <div class="blond ${R>=R_MIN_MUR?'ok':'ko'}"><b>${ite?'Épaisseur ajoutée dehors':'Épaisseur perdue dans la pièce'} : <span>${fmt(ep*100,1)} cm</span> · R${gl('r')} = <span>${fmt(R,1)}</span> m²·K/W</b><small>${Math.round(DBL_CFG.e*100)} cm d'isolant + ${ite?'enduit':'lame d\'air + plaque de plâtre'}.${Math.round(DBL_CFG.e*1000)===120?' Épaisseur conseillée.':''}</small><small>${R>=R_MIN_MUR?ico('check','lead ok')+'R ≥ 3,7 : atteint le seuil MaPrimeRénov\' / CEE pour un mur extérieur.'+gl('aides'):ico('alerte','lead')+'R < 3,7 : sous le seuil MaPrimeRénov\' / CEE pour un mur extérieur (sans effet sur une cloison).'+gl('aides')}</small></div>
+      <div class="blond ${R>=R_MIN_MUR?'ok':'ko'}"><b>${ite?'Épaisseur ajoutée dehors':'Épaisseur perdue dans la pièce'} : <span>${fmt(ep*100,1)} cm</span> · R${gl('r')} = <span>${fmt(R,1)}</span> m²·K/W</b><small>${Math.round(DBL_CFG.e*100)} cm d'isolant + ${ite?'enduit':'lame d\'air + plaque de plâtre'}.${Math.round(DBL_CFG.e*1000)===120?' Épaisseur conseillée.':''}</small>${estPlanFinal()?'' /* D70 : une aide à la rénovation, sans objet pour un Plan final */:'<small>'+(R>=R_MIN_MUR?ico('check','lead ok')+'R ≥ 3,7 : atteint le seuil MaPrimeRénov\' / CEE pour un mur extérieur.'+gl('aides'):ico('alerte','lead')+'R < 3,7 : sous le seuil MaPrimeRénov\' / CEE pour un mur extérieur (sans effet sur une cloison).'+gl('aides'))+'</small>'}</div>
       <div class="tip">Le doublage reste <b>accroché à sa face de mur</b> : les fenêtres et les cloisons qui le touchent s'y ajustent d'elles-mêmes. Il s'arrête contre une cloison, jamais au milieu de nulle part.</div>
       ${mode()==='existant'&&!estPlanFinal()?`<div class="tip warn">Tu es en vue <b>${nomVue('existant')}</b> : ce doublage sera compté comme <b>déjà en place</b>, donc jamais facturé. Passe en vue <b>${nomVue('projet')}</b> pour le chiffrer.</div>`:''}`);
   } else if(tool==='equipement'){
@@ -6768,9 +6830,9 @@ function renderPanelBrut(){pruneEmptyTexts();if(ficheTemp&&!sel)replierApresFich
       <div class="btnrow"><button class="ib danger" onclick="L().bg=null;save();render()">Retirer l'image</button></div>
       <div class="tip">${calibMode?'<b>Clique 2 points</b> sur le calque dont tu connais la distance réelle (ex. un mur de 3 m).':'Pour que les surfaces soient justes : <b>Caler l\'échelle</b>, clique 2 points sur une longueur connue, entre la distance réelle. Glisse l\'image pour la positionner.'}</div>`;}
   } else if(tool==='texte'&&!sel){
-    h+=`<div class="ptitle">Note</div><div class="psub">Une remarque sur le plan : question pour l'artisan, point à vérifier, choix à retenir. Elle part dans le dossier.</div>`
+    h+=`<div class="ptitle">Note</div><div class="psub">${NOTE_TXT().sub}</div>`
     +modeEmploi(['Choisis sa couleur au-dessus du plan (facultatif).','Clique dans le plan, là où la note doit aller.','Écris-la dans sa fiche ; glisse-la pour la déplacer.'])
-    +`<div class="tip">Crée ton code couleur : par ex. bleu = question pour l'artisan, vert = validé, rose = à vérifier.</div>`;
+    +`<div class="tip">${NOTE_TXT().code}</div>`;
   } else if(tool==='zone'&&!sel){
     h+=`<div class="ptitle">Zone</div><div class="psub">Pour agir sur plusieurs éléments d'un coup.</div>`
     +modeEmploi(['Trace un rectangle sur le plan.','Tout ce qu\'il touche est sélectionné : murs, tronçons, ouvertures, équipements, notes.',(estPlanFinal()?'<kbd>Suppr</kbd> les efface.':'<kbd>Suppr</kbd> les efface (en vue '+nomVue('projet')+' : les marque à démolir, à boucher ou à déposer).')])
@@ -6969,7 +7031,7 @@ function renderSelection(lv){
     <div class="tip aidegeste"><kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>V</kbd> copie et colle sous la souris · <kbd>Ctrl</kbd>+<kbd>D</kbd> duplique · <kbd>Maj</kbd>+clic ou <kbd>Maj</kbd>+glisser dans le vide pour en sélectionner plusieurs · un meuble adossé à un mur suit le mur.</div>`;
   }
   if(sel.kind==='text'){const t=TX(lv).find(x=>x.id===sel.id);if(!t){sel=null;return renderOverview(lv);}
-    h+=`<div class="ptitle">Note sur le plan</div><div class="psub">Glisse-la pour la déplacer · elle part dans le dossier d'export.</div><textarea class="fin" id="txtEdit" rows="4" placeholder="Ex. mur porteur ? à vérifier · garder le carrelage · prise à déplacer ici" oninput="setTextProp(this.value)" onchange="save()">${esc(t.text||'')}</textarea><div class="ph mt">Couleur</div><div class="swatches">${Object.entries(NOTE_COLORS).map(([k,c])=>`<button class="sw ${(t.color||NOTE_DEFAUT)===k?'on':''}" style="background:${c[0]};border-color:${c[1]}" title="${k}" onclick="setTextColor('${k}')"></button>`).join('')}<label class="sw custom ${t.color&&!NOTE_COLORS[t.color]?'on':''}" title="Couleur libre" style="${t.color&&!NOTE_COLORS[t.color]?'background:'+hexA(t.color,.3)+';border-color:'+t.color:''}"><input type="color" value="${t.color&&!NOTE_COLORS[t.color]?t.color:'#f59e0b'}" oninput="setTextColor(this.value)">${ico('plus')}</label></div><div class="tip" style="margin-top:8px">Crée ton code couleur : par ex. bleu = question pour l'artisan, vert = validé, rose = à vérifier.</div><div class="btnrow"><button class="ib danger" style="flex:1" onclick="deleteSel()">Supprimer la note</button></div><div class="tip">Raccourci <kbd>T</kbd> puis clic dans le plan pour en poser une autre. Les notes servent à toi et aux artisans : questions, choix, points d'attention.</div>`;}
+    h+=`<div class="ptitle">Note sur le plan</div><div class="psub">Glisse-la pour la déplacer · elle part dans le dossier d'export.</div><textarea class="fin" id="txtEdit" rows="4" placeholder="${NOTE_TXT().ex}" oninput="setTextProp(this.value)" onchange="save()">${esc(t.text||'')}</textarea><div class="ph mt">Couleur</div><div class="swatches">${Object.entries(NOTE_COLORS).map(([k,c])=>`<button class="sw ${(t.color||NOTE_DEFAUT)===k?'on':''}" style="background:${c[0]};border-color:${c[1]}" title="${k}" onclick="setTextColor('${k}')"></button>`).join('')}<label class="sw custom ${t.color&&!NOTE_COLORS[t.color]?'on':''}" title="Couleur libre" style="${t.color&&!NOTE_COLORS[t.color]?'background:'+hexA(t.color,.3)+';border-color:'+t.color:''}"><input type="color" value="${t.color&&!NOTE_COLORS[t.color]?t.color:'#f59e0b'}" oninput="setTextColor(this.value)">${ico('plus')}</label></div><div class="tip" style="margin-top:8px">${NOTE_TXT().code}</div><div class="btnrow"><button class="ib danger" style="flex:1" onclick="deleteSel()">Supprimer la note</button></div><div class="tip">Raccourci <kbd>T</kbd> puis clic dans le plan pour en poser une autre. ${NOTE_TXT().usage}</div>`;}
   if(sel.kind==='dim'){const d=lv.dims.find(x=>x.id===sel.id);h+=`<div class="ptitle">Cote</div><div class="psub">Glisse-la : elle <b>coulisse</b> perpendiculairement, les points mesurés ne bougent pas (lignes d'attache). <kbd>Alt</kbd> + glisser la déplace librement.</div><div class="row"><label>Longueur mesurée</label><span class="val b">${fmt(dist(d.a,d.b))} m</span></div><div class="row"><label>Décalage de la ligne</label><span><input class="fin n" type="number" step="0.05" value="${(d.off||0).toFixed(2)}" onchange="history.push(snapshot());sel&&(lv.dims.find(x=>x.id===sel.id).off=+this.value||0);afterChange()"> m</span></div><div class="btnrow"><button class="ib" style="flex:1" onclick="history.push(snapshot());L().dims.find(x=>x.id===sel.id).off=0;afterChange()">Remettre sur les points</button><button class="ib danger" style="flex:1" onclick="deleteSel()">${libSuppr()}</button></div>`;}
   if(sel.kind==='room'){const r=lv.rooms.find(r=>r.id===sel.id);const f=roomFace(lv,sel.id);if(!r||!f){sel=null;return renderOverview(lv);}
     const ops=openingsOfFace(lv,f);const wallArea=wallPaintArea(lv,f);
@@ -7161,6 +7223,9 @@ function resumeTravauxHTML(tq){const px=chantierPrix();
 /* D69 · les ouvertures du plan, tous niveaux, par modèle, dans l'ordre de la barre d'options */
 function ouverturesPlan(){const n={};state.levels.forEach(l=>(l.openings||[]).forEach(o=>{if(OPENINGS[o.type])n[o.type]=(n[o.type]||0)+1;}));
   const ks=ORDRE_OUV_BARRE.filter(k=>n[k]).concat(Object.keys(n).filter(k=>!ORDRE_OUV_BARRE.includes(k)));return {par:ks.map(k=>[k,n[k]]),tot:ks.reduce((s2,k)=>s2+n[k],0)};}
+/* D70 · les ouvertures d'un Plan final, par modèle, tous niveaux (le total est au pied) */
+function recapOuverturesHTML(){const o=ouverturesPlan();if(!o.tot)return '';
+  return `<div class="ph mt">Ouvertures${state.levels.length>1?' <span class="chip">tous niveaux</span>':''}</div><div class="stab ouv" role="list" aria-label="Ouvertures par modèle">${o.par.map(([k,n])=>`<div class="sr" role="listitem"><span>${OPENINGS[k].label}</span><b>${n}</b></div>`).join('')}</div>`;}
 /* D69 · le pied d'un Plan final, à la place du budget : la surface habitable en grand, puis les pièces et les ouvertures */
 function recapPiedHTML(hv){if(!(hv.area>0))return ''; /* sans pièce, rien à récapituler : le panneau dit déjà comment en fermer une */const o=ouverturesPlan().tot,n=state.levels.length;
   return `<div class="recappf" role="group" aria-label="Récapitulatif du plan"><span class="rk">Surface habitable${n>1?`<span class="rn"><b>${n}</b> niveaux</span>`:''}</span><span class="rv" id="recapSurf">${fmtM2(hv.area)}</span><span class="rs"><b>${hv.rooms}</b> ${accord(hv.rooms,'pièce')} · <b>${o}</b> ${accord(o,'ouverture')}</span></div>`;}
@@ -7169,13 +7234,13 @@ function renderOverview(lv){
   /* D46 (cj-integration00) : une pièce ouverte par une démolition n'est pas une pièce jamais dessinée */
   const ouvertParTravaux=!faces.length&&mode()!=='existant'&&facesFor(lv,'existant').some(f=>f.room);
   const tq=quantities().travaux;
-  let h=`${isMobile()?`<div class="mplan"><span><small>Plan ouvert</small><b>${esc(state.name||'Mon plan')}</b></span><button type="button" class="ib" onclick="openPlansModal()">${ico('mesPlans')}Mes plans</button></div>`:'' /* D43 (qa16) : au téléphone, la barre n'a ni nom ni menu Fichier */}${rappelSuiviHTML()}<div class="ptitle">${lv.name}${pf?'':` <span class="chip vue-${mode()}">Vue ${nomVue(mode()).toLowerCase()}</span>`}</div><div class="psub">${faces.length?pluriel(faces.length,'pièce détectée','pièces détectées')+' sur ce niveau.':ouvertParTravaux?'Plus aucune pièce fermée après ces travaux : un mur démoli ouvre la pièce. Elle reste en vue <b>'+nomVue('existant')+'</b>.':'Aucune pièce fermée pour l\'instant. Trace les murs extérieurs avec l\'outil <b>Murs</b>.'}</div>
+  let h=`${isMobile()?`<div class="mplan"><span><small>Plan ouvert</small><b>${esc(state.name||'Mon plan')}</b>${pastilleType(workflowDe(state)) /* D70 : au téléphone, le type du plan se lit ici */}</span><button type="button" class="ib" onclick="openPlansModal()">${ico('mesPlans')}Mes plans</button></div>`:'' /* D43 (qa16) : au téléphone, la barre n'a ni nom ni menu Fichier */}${rappelSuiviHTML()}<div class="ptitle">${lv.name}${pf?'':` <span class="chip vue-${mode()}">Vue ${nomVue(mode()).toLowerCase()}</span>`}</div><div class="psub">${faces.length?pluriel(faces.length,'pièce détectée','pièces détectées')+' sur ce niveau.':ouvertParTravaux?'Plus aucune pièce fermée après ces travaux : un mur démoli ouvre la pièce. Elle reste en vue <b>'+nomVue('existant')+'</b>.':pf?'Aucune pièce fermée pour l\'instant.' /* D70 : la carte du plan vide et la barre d'état disent déjà par où commencer */:'Aucune pièce fermée pour l\'instant. Trace les murs extérieurs avec l\'outil <b>Murs</b>.'}</div>
   ${projetHTML() /* D42 : « Ton projet à X % » et la prochaine étape, en tête de la vue d'ensemble */}
   ${pf?'':mode()==='projet'?`<div class="tip q" id="resumeTravaux">${resumeTravauxHTML(tq)}</div>`:mode()==='final'?`<div class="tip ok">Le logement <b>après travaux</b>, tel qu'il sera : murs démolis retirés, nouveaux murs et ouvertures intégrés, sans marquage. C'est le plan à montrer aux artisans. Pour changer les travaux, repasse en vue <b>${nomVue('projet')}</b>.</div>`:(lv.walls.length?`<div class="tip">Ton logement tel qu'il est. Quand il est complet, passe en vue <b>${nomVue('projet')}</b> (boutons en haut du plan) pour dessiner ce que tu démolis et ce que tu crées.</div>`:'')}
   ${pf&&!faces.length?'':'<div class="ph mt">Pièces</div>' /* D69 : un Plan final sans pièce ne le dit qu'une fois (sous le titre) */}<div class="roomlist"${pf&&!faces.length?' hidden':''}>`;
   if(!faces.length)h+=`<div class="empty">${ouvertParTravaux?'Aucune pièce fermée après travaux.':'Dès qu\'un contour de murs se ferme, la pièce apparaît ici avec sa surface.'}</div>`;
   faces.forEach(f=>{const r=f.room;h+=`<button type="button" class="rl" onclick="sel={kind:'room',id:'${r.id}'};render()"><span class="dot" style="background:${RT[r.type].color}"></span><span class="nm">${roomName(r)}<small>${RT[r.type].label}${(mode()!=='existant'&&r.floorNew)?' · '+r.floorNew.replace(/ \(.*\)/,''):(mode()!=='existant'&&solGarde(r))?' · sol gardé':(r.floor!==FLOORS[0]?' · '+r.floor:'')}${tremieArea(lv,f)>0?' · trémie':''}${r.lowPct?' · '+r.lowPct+'% sous pente':''}</small></span><span class="m2">${fmtM2(areaNet(lv,f))}</span></button>`;});
-  h+=`</div>${isMobile()?'<fieldset class="ro">':'' /* D48 : au téléphone, les réglages se lisent */}
+  h+=`</div>${pf?recapOuverturesHTML():'' /* D70 : un Plan final, juste sous ses pièces */}${isMobile()?'<fieldset class="ro">':'' /* D48 : au téléphone, les réglages se lisent */}
   ${state.levels.indexOf(lv)>0&&!pf?`<label class="chk"><input type="checkbox" ${lv.neuf?'checked':''} onchange="setLevelProp('neuf',this.checked)"><span>Étage créé par les travaux<small>son plancher est à construire et sera chiffré</small></span></label>
   ${lv.neuf?`<div class="tip warn" style="margin-top:8px">${ico('niveaux','lead')}<b>Le plancher de cet étage est compté comme travaux.</b> Les murs, eux, gardent leur propre état : si tu poses un plancher dans un volume de grande hauteur, ils sont <b>déjà debout</b> — ne les passe pas « ${LEX.etat.creer} » et indique la hauteur d'origine de la pièce du dessous, dans sa fiche, au champ <b>« hauteur avant travaux »</b>. Si tu surélèves, passe-les <b>« ${LEX.etat.creer} »</b>.</div>`:''}
   ${lv.neuf?`<div class="ph" style="margin-bottom:6px">Plancher de cet étage</div>
@@ -7187,9 +7252,9 @@ function renderOverview(lv){
   ${lv.walls.length&&!estAppart()&&!pf?renderToiture(lv):''}${isMobile()?'</fieldset>':''}`;
   /* D36 : en vue Existant, le récap décrit l'existant — il montrait les surfaces APRÈS travaux,
      juste sous une liste de pièces et au-dessus d'un total qui décrivaient l'avant. */
-  /* D69 : le récapitulatif d'un Plan final — les surfaces par type de pièce, puis les ouvertures par modèle, tous niveaux */
-  if(pf){const qs=recapExistant(),o=ouverturesPlan(),pc=qs.levels.some(l=>l.rooms.length);if(pc||o.tot)h+=`<div class="ph mt">Récapitulatif${state.levels.length>1?' <span class="chip">tous niveaux</span>':''}</div>${pc?surfaceTable(qs,true):''}${o.tot?`<div class="stab ouv" role="list" aria-label="Ouvertures">${o.par.map(([k,n])=>`<div class="sr" role="listitem"><span>${OPENINGS[k].label}</span><b>${n}</b></div>`).join('')}<div class="sr tot" role="listitem"><span>Ouvertures</span><b>${o.tot}</b></div></div>`:''}`;}
-  else if(faces.length){const av=mode()==='existant',qs=av?recapExistant():quantities();h+=`<div class="ph mt">Récap des surfaces${pf?'':' · '+(av?'avant':'après')+' travaux'}${state.levels.length>1?' <span class="chip">tous niveaux</span>':''}</div>${surfaceTable(qs,true)}`;}
+  /* D70 · un Plan final dit chaque nombre une fois : ses pièces (la liste, cliquable), ses ouvertures par modèle (recapOuverturesHTML,
+     sous la liste) ; la surface habitable et les totaux sont au pied (recapPiedHTML). Le tableau des surfaces par type répétait la liste. */
+  if(!pf&&faces.length){const av=mode()==='existant',qs=av?recapExistant():quantities();h+=`<div class="ph mt">Récap des surfaces${pf?'':' · '+(av?'avant':'après')+' travaux'}${state.levels.length>1?' <span class="chip">tous niveaux</span>':''}</div>${surfaceTable(qs,true)}`;}
   if((state.groups||[]).length){h+=`<div class="ph mt">Groupes de murs</div><div class="grouplist">${state.groups.map((g,i)=>`<div class="grp"><span class="gdot" style="background:${GROUP_COLORS[i%GROUP_COLORS.length]}"></span><button class="glink" onclick="selectGroup('${g.id}')">${esc(g.name)}</button><span class="gn">${g.wallIds.length} murs</span><button class="gx" onclick="deleteGroup('${g.id}')" title="Supprimer le groupe" aria-label="Supprimer le groupe">${ico('x')}</button></div>`).join('')}</div><div class="tip" style="margin-top:6px">Clique un groupe pour re-sélectionner ses murs et leur ré-appliquer une isolation ou un revêtement.</div>`;}
   // (le suivi de chantier vit entièrement dans son onglet dédié — rien ici)
   if(lv.walls.length){const chk=planChecks(lv);const ne=chk.filter(c=>c.lvl==='err').length,nw=chk.filter(c=>c.lvl==='warn').length;
@@ -7381,7 +7446,7 @@ function isoSideHtml(w,side){const io=isoOnSide(w,side);const room=roomOnSide(w,
         ?`Doublage sur <b>tout le mur</b> — ${fmt(Lw,2)} m. Tire les deux <b style="color:#b45309">poignées ${ico('point','inl')}</b> sur le plan pour l'arrêter avant une cloison, un conduit, un décroché.`
         :`Doublage sur <b>${fmt(lg,2)} m</b> des ${fmt(Lw,2)} m du mur — le reste reste brut. Tire les <b style="color:#b45309">poignées ${ico('point','inl')}</b> pour l'ajuster. <button class="ib s" style="margin-left:6px" onclick="setWallIsoSide(${side},'tout',1)">Tout le mur</button>`}${isoOuvertures(w,io,L())>0?` Surface comptée : <b>${fmtM2(isoSurface(w,io,L()))}</b>, ouvertures déduites.`:''}</div>`;})()}
     ${mode()==='projet'?`<div class="row"><label>Décision</label><span class="seg" style="display:inline-flex"><button class="${io.st!=='creer'?'on':''}" onclick="setWallIsoSide(${side},'st','existant')">${LEX.etat.garder}<small>déjà isolé</small></button><button class="st-creer ${io.st==='creer'?'on':''}" onclick="setWallIsoSide(${side},'st','creer')">${LEX.etat.creer}<small>isolant à poser</small></button></span></div>`:''}
-    <div class="blond ${!isExteriorWall(w)||R>=R_MIN_MUR?'ok':'ko'}"><b>${ite?'Épaisseur ajoutée dehors':'Épaisseur perdue côté '+label} : <span>${fmt(dt*100,1)} cm</span></b><small>${Math.round(io.e*100)} cm isolant + finition (${ite?(io.sys==='bardage'?'lame d\'air + bardage':'enduit'):'lame d\'air + plaque de plâtre'}). R = ${fmt(R,1)} m²·K/W.</small>${isExteriorWall(w)?`<small>${R>=R_MIN_MUR?ico('check','lead ok')+'R ≥ 3,7 : atteint le seuil MaPrimeRénov\' / CEE pour un mur extérieur.':ico('alerte','lead')+'R < 3,7 : sous le seuil MaPrimeRénov\' / CEE pour un mur extérieur.'}</small>`:''}</div>`:''}
+    <div class="blond ${!isExteriorWall(w)||R>=R_MIN_MUR?'ok':'ko'}"><b>${ite?'Épaisseur ajoutée dehors':'Épaisseur perdue côté '+label} : <span>${fmt(dt*100,1)} cm</span></b><small>${Math.round(io.e*100)} cm isolant + finition (${ite?(io.sys==='bardage'?'lame d\'air + bardage':'enduit'):'lame d\'air + plaque de plâtre'}). R = ${fmt(R,1)} m²·K/W.</small>${isExteriorWall(w)&&!estPlanFinal()?`<small>${R>=R_MIN_MUR?ico('check','lead ok')+'R ≥ 3,7 : atteint le seuil MaPrimeRénov\' / CEE pour un mur extérieur.':ico('alerte','lead')+'R < 3,7 : sous le seuil MaPrimeRénov\' / CEE pour un mur extérieur.'}</small>`:''}</div>`:''}
   </div></div>`;}
 /* Mur de FAÇADE : même lecture face par face qu'un mur intérieur. Le panneau lisait `w.iso`,
    l'ancien doublage unique, et annonçait « ce mur n'est pas doublé » sur un mur doublé à l'outil. */
@@ -8006,8 +8071,10 @@ function estimatePaywallHTML(q){
     <div class="eh2"><span><b>${T.length}</b><i>tâche${T.length>1?'s':''}</i></span><span><b>${lots.length}</b><i>${gl('corps','corps d\'état')}</i></span>${A.length?`<button type="button" class="eh2b" onclick="allerAuxDecisions()"><b>${A.length}</b><i>à décider</i></button>`:`<span><b>0</b><i>à décider</i></span>`}</div></div>`;
   if(lots.length)h+=`<div class="ph">Par corps d'état</div><div class="estlots">${lots.map(g=>`<div class="estlot ferme barre"><span class="ln">${esc(g.lot)}<small>${g.taches.length} tâche${g.taches.length>1?'s':''}${tot>0&&g.total>0?' · '+Math.max(1,Math.round(g.total/tot*100))+' %':''}</small></span><span class="lb"><i style="width:${Math.round(g.total/max*100)}%"></i></span><span class="lv${g.total?'':' nul'}">${g.total?eur(Math.round(g.total)):'non chiffré'}</span></div>`).join('')}${motsHTML(motsDe(lots.map(g=>g.lot),vus))}</div>
   <div class="estpro"><span class="epi" aria-hidden="true">${ico('cadenas')}</span><span class="ept"><b>${maj(DROITS.detail.pro)}</b><small>Les ${pluriel(T.length,'tâche')} de ton plan, dans l'ordre du chantier : c'est Pro.</small>${prixPro()}</span>${lienPro('Voir le détail · Passer Pro','ib primary','estimer-detail')}</div>`;
-  h+=`<div class="ph">Ce que Pro ajoute</div><ul class="droits">${droitsPro().map(d=>`<li>${maj(d)}</li>`).join('')}</ul>
-  <div class="tip" style="margin:0 0 18px">Gratuit : ${droitsGratuit().join(', ')}.</div>`;
+  /* D70 : cette fenêtre ne s'ouvre que dans une rénovation — on ne vend pas « le projet rénovation » à qui le chiffre déjà, et le gratuit
+     y dessine son logement et ses travaux (DROITS.dessin.renovation) */
+  h+=`<div class="ph">Ce que Pro ajoute</div><ul class="droits">${droitsPro().filter(d=>d!==DROITS.renovation.pro).map(d=>`<li>${maj(d)}</li>`).join('')}</ul>
+  <div class="tip" style="margin:0 0 18px">Gratuit : ${droitsGratuit().map(d=>d===DROITS.dessin.gratuit?DROITS.dessin.renovation:d).join(', ')}.</div>`;
   h+=aDecHTML(A)+couvertureHTML(q,vus);
   h+=`<div class="estactions colle">${lienPro('Passer Pro','estimate','estimer-barre')}<button class="ib" onclick="closeModal();exportPlan()">${ICO_EXPORTER}Exporter le dossier (avec filigrane)</button></div>`;
   h+=`<details class="qdet"><summary>Surfaces mesurées sur le plan</summary>${kpisHTML(q)}<div class="ph">Tableau des surfaces${gl('habitable')}</div>${surfaceTable(q)}</details>`;
@@ -8046,7 +8113,7 @@ function quantitesHTML(q){
   q.levels.forEach(lv=>{if(!lv.rooms.length)return;h+=`<tr class="lvl"><td colspan="5">${lv.name} · h. ${fmt(lv.hauteur)} m</td></tr>`;lv.rooms.forEach(r=>{h+=`<tr${r.exterieur?' style="color:var(--muted)"':''}><td>${r.name}</td><td>${RT[r.type].label}${r.exterieur?' <small>(hors habitable)</small>':''}</td><td>${r.exterieur?'—':solApres(q,r)}</td><td class="n">${fmtM2(r.area)}</td><td class="n">${r.exterieur?'—':fmtM2(r.wallArea)}</td></tr>`;});});
   h+=`<tr class="tot"><td>Total habitable</td><td></td><td></td><td class="n">${fmtM2(q.area)}</td><td class="n">${fmtM2(q.wallPaint)}</td></tr></table>
   <div class="ph mt">Autres quantités mesurées</div>
-  <table class="mtable"><tr><td>Plinthes neuves (pièces au sol refait, hors portes)</td><td class="n">${fmt(q.plinthes,1)} ml</td></tr><tr><td>Plafonds</td><td class="n">${fmtM2(q.area)}</td></tr><tr><td>Cloisons</td><td class="n">${fmt(q.lin.cloison||0,1)} ml</td></tr><tr><td>Murs maçonnés (20 cm)</td><td class="n">${fmt(q.lin.mur||0,1)} ml</td></tr><tr><td>Murs anciens épais (pierre, moellon)</td><td class="n">${fmt(q.lin.porteur||0,1)} ml</td></tr><tr><td>Vitrage (fenêtres + baies)</td><td class="n">${fmtM2(q.glass)}</td></tr>${q.ext?`<tr><td>Surfaces extérieures (balcon, terrasse)</td><td class="n">${fmtM2(q.ext)}</td></tr>`:''}<tr><td>Équipements dessinés (mobilier compris)</td><td class="n">${q.levels.reduce((s,l)=>s+l.items.length,0)}</td></tr>
+  <table class="mtable">${pf?'' /* D70 : un Plan final ne refait aucun sol */:`<tr><td>Plinthes neuves (pièces au sol refait, hors portes)</td><td class="n">${fmt(q.plinthes,1)} ml</td></tr>`}<tr><td>Plafonds</td><td class="n">${fmtM2(q.area)}</td></tr><tr><td>Cloisons</td><td class="n">${fmt(q.lin.cloison||0,1)} ml</td></tr><tr><td>Murs maçonnés (20 cm)</td><td class="n">${fmt(q.lin.mur||0,1)} ml</td></tr><tr><td>${pf?'Murs épais (pierre, moellon)':'Murs anciens épais (pierre, moellon)'}</td><td class="n">${fmt(q.lin.porteur||0,1)} ml</td></tr><tr><td>Vitrage (fenêtres + baies)</td><td class="n">${fmtM2(q.glass)}</td></tr>${q.ext?`<tr><td>Surfaces extérieures (balcon, terrasse)</td><td class="n">${fmtM2(q.ext)}</td></tr>`:''}<tr><td>Équipements dessinés (mobilier compris)</td><td class="n">${q.levels.reduce((s,l)=>s+l.items.length,0)}</td></tr>
   <tr><td>Points électriques (prises · interrupteurs · lumières)</td><td class="n">${q.electricite.points?`${q.electricite.points} <small style="color:var(--muted)">(${q.electricite.prises} · ${q.electricite.interrupteurs} · ${q.electricite.pointsLumineux})</small>`:'—'}</td></tr>
   ${q.plomberie.pointsEau?`<tr><td>Points d'eau (WC · vasques · douches · baignoires · éviers)</td><td class="n">${q.plomberie.pointsEau} <small style="color:var(--muted)">(${q.plomberie.wc} · ${q.plomberie.vasques} · ${q.plomberie.douches} · ${q.plomberie.baignoires} · ${q.plomberie.eviers})</small></td></tr>`:''}${q.chauffage.vmc?`<tr><td>VMC</td><td class="n">${q.chauffage.vmc}</td></tr>`:''}${q.velux?`<tr><td>Fenêtres de toit</td><td class="n">${q.velux}</td></tr>`:''}${q.etudes.structure?`<tr><td>Étude de structure <small style="color:#b45309">obligatoire</small></td><td class="n">${fmt(q.etudes.mlPorteurDemoli,1)} ml <small style="color:var(--muted)">de porteur démoli</small></td></tr>`:''}
   ${q.toiture&&q.toiture.surface?`<tr><td>Toiture ${TOIT_FORME[q.toiture.forme]?.label||''} · ${TOIT_COUV[q.toiture.couverture]||''}${q.toiture.projet&&q.toiture.projet.action!=='rien'?' → <b>'+TOIT_ACTION[q.toiture.projet.action].toLowerCase()+'</b>':''}</td><td class="n">${fmtM2(q.toiture.surface)} <small style="color:var(--muted)">emprise ${fmtM2(q.toiture.emprise)}${q.toiture.pente?' · pente '+q.toiture.pente+'°':''}</small></td></tr>`:''}
@@ -8074,7 +8141,7 @@ function renderLevelImage(li,m){
     if(m==='projet'){const items=[[ENCRE,'déjà là','fill'],[CREER,LEX.etat.creer.toLowerCase(),'fill'],[DEMOLIR,LEX.etat.demolir.toLowerCase(),'dash']];let cx=PW-28;c.font='600 20px Geist, sans-serif';c.textBaseline='middle';const ws=items.map(i=>c.measureText(i[1]).width+52);cx-=ws.reduce((a,b)=>a+b,0);items.forEach((it,i)=>{c.beginPath();c.roundRect(cx,28,28,20,4);if(it[2]==='dash'){c.fillStyle='rgba(245,158,11,.25)';c.fill();c.setLineDash([5,3]);c.strokeStyle=it[0];c.lineWidth=2;c.stroke();c.setLineDash([]);}else{c.fillStyle=it[0];c.fill();}c.fillStyle='#1e1b3a';c.textAlign='left';c.fillText(it[1],cx+36,38);cx+=ws[i];});}
     c.fillStyle='#1e1b3a';c.font='700 28px Geist, sans-serif';c.textAlign='left';c.textBaseline='top';c.fillText(state.name+' — '+lv.name+' — '+(estPlanFinal()?'PLAN FINAL':nomVue(m).toUpperCase()),28,22); /* D67 : l'image d'un Plan final ne dit pas « avant travaux » */
     const hab=faces.filter(f=>f.room&&!RT[f.room.type].ext&&!RT[f.room.type].nh).reduce((s,f)=>s+areaNet(lv,f),0);
-    c.font='600 15px "Geist Mono", monospace';c.fillStyle='#6c6b86';c.fillText(fmtM2(hab)+' habitables · '+faces.length+' pièces · h. '+fmt(lv.height)+' m · réalisé avec AVYORA · getavyora.fr',28,58);
+    c.font='600 15px "Geist Mono", monospace';c.fillStyle='#6c6b86';c.fillText(fmtM2(hab)+' habitables · '+faces.length+' '+accord(faces.length,'pièce')+' · h. '+fmt(lv.height)+' m · réalisé avec AVYORA · getavyora.fr',28,58);
   } finally { exporting=false; ctx=real; uiScale=1; checkRooms=svChk; Object.assign(view,sv); state.mode=svMode;state.cur=svCur;syncRooms(L()); }
   return off.toDataURL('image/png');
 }
@@ -8253,7 +8320,15 @@ function gardeModale(e,ov){
 function closeWelcome(choix,avecVisite,wf){try{localStorage.setItem('avyora-plan-welcome','1');}catch{}closeModal();
   /* D50 (cj-design11, cj-qa10) : fermer l'accueil par la croix ou Échap sur l'exemple l'ouvre, comme la carte, en vue
      Travaux (ses couleurs expliquent son montant), et propose la visite guidée en une ligne */
-  if(choix==='fermer'){if(estExemple()){if(mode()!=='projet')setMode('projet',true);if(!visiteFaite())toast('Tu regardes l\'exemple, en vue Travaux.',true,{action:'Visite guidée',fn:()=>lancerVisite(true)});}return;}if(choix==='templates'){openTemplates(wf||typeAccueil());return;}if(choix==='plans'){openPlansModal();return;}if(choix==='blank'){newPlan(undefined,wf||typeAccueil());return;} /* D68 : les cartes de l'étape « rénovation » font une rénovation (en gratuit, un Plan final) */
+  if(choix==='fermer'){const voirEx=()=>{if(mode()!=='projet')setMode('projet',true);if(!visiteFaite())toast('Tu regardes l\'exemple, en vue Travaux.',true,{action:'Visite guidée',fn:()=>lancerVisite(true)});};
+    if(estExemple()){voirEx();return;}
+    /* D70 : au bureau, l'exemple n'est plus derrière l'accueil. Fermée sur l'étape « Projet rénovation », la fenêtre ouvre son choix
+       recommandé (l'exemple, en vue Travaux, comme D50) ; sur le premier pas ou l'étape « Plan final », la feuille blanche reste :
+       un Plan final vide, avec sa carte « Dessine ton plan final » */
+    const et=(document.querySelector('#m-welcome .modal')||{dataset:{}}).dataset.etape;
+    if(et==='reno'&&isPro()&&planVide())avantDeRemplacer(()=>{loadSample();history=[];render();suivre('plan_ouvert',{source:'exemple'});voirEx();});
+    else save(); /* la feuille blanche est gardée : un rechargement la rouvre telle quelle */
+    return;}if(choix==='templates'){openTemplates(wf||typeAccueil());return;}if(choix==='plans'){openPlansModal();return;}if(choix==='blank'){newPlan(undefined,wf||typeAccueil());return;} /* D68 : les cartes de l'étape « rénovation » font une rénovation (en gratuit, un Plan final) */
   /* D42 : l'exemple s'ouvre en vue Travaux — ses couleurs expliquent son budget — et, choisi depuis
      l'accueil à la première visite, la visite guidée démarre. */
   const suite=()=>{if(mode()!=='projet')setMode('projet',true);if(avecVisite&&!visiteFaite())lancerVisite(true);};
@@ -8338,18 +8413,18 @@ const SVG_TYPE={
 /* les dessins du point de départ : ceux de l'accueil (une seule source) ; l'identifiant du motif rendu unique */
 let _svgDepartN=0;
 function svgDepart(k){const c=document.querySelectorAll('#m-welcome .wcards.wreno .wcard .wv')[{exemple:0,modele:1,blanc:2}[k]];if(!c)return '';const n=++_svgDepartN;return c.innerHTML.replace(/wgrid/g,'wgrid'+n);}
-function carteDepartHTML(c,i){return `<button type="button" class="wcard"${i?'':' data-autofocus'} onclick="${c.act}"><span class="wv">${c.svg}</span><span class="wt"><b>${c.titre}</b><small>${c.txt}</small></span></button>`;}
+function carteDepartHTML(c,i){return `<button type="button" class="wcard${c.cls?' '+c.cls:''}"${i?'':' data-autofocus'} onclick="${c.act}"><span class="wv">${c.svg}</span><span class="wt"><b>${c.titre}</b><small>${c.txt}</small></span></button>`;}
 /* ctx : 'accueil' (première visite) | 'nouveau' (Fichier › Nouveau plan, Mes plans › Nouveau plan) */
 function cartesDepart(etape,ctx){const F=WORKFLOW_FINAL,R=WORKFLOW_RENO,acc=ctx==='accueil';
-  if(etape==='type')return [F,R].map(w=>({titre:nomType(w),txt:LEX.typeBulle[w],svg:SVG_TYPE[w],act:`etapeDepart('${ctx}','${w===F?'pf':'reno'}',true)`}));
+  if(etape==='type')return [F,R].map(w=>({titre:nomType(w),txt:LEX.typeBulle[w],svg:SVG_TYPE[w],cls:'wtype',act:`etapeDepart('${ctx}','${w===F?'pf':'reno'}',true)`}));
   const fin=(k,w)=>acc?`closeWelcome('${k}',false,'${w}')`:`nouveauChoix('${k}','${w}')`;
   const blanc={titre:'Feuille blanche',txt:'Tu traces tes murs toi-même : le contour, puis les cloisons.',svg:svgDepart('blanc')},modele={titre:'Partir d\'un plan type',txt:'Studio, T2, T3 ou maison : tu ajustes les cotes.',svg:svgDepart('modele')};
   if(etape==='pf')return [{...blanc,act:fin('blank',F)},{...modele,act:fin('templates',F)}];
   return [{...blanc,act:fin('blank',R)},{...modele,act:fin('templates',R)},{titre:'Voir l\'exemple',txt:'Un T2 de 58 m² déjà dessiné et chiffré.',svg:svgDepart('exemple'),act:'nouveauChoix(\'sample\')'}];}
 /* le titre et la phrase de chaque étape (l'étape « rénovation » de l'accueil garde ses textes d'origine, dans le HTML) */
 const ETAPES_DEPART={
-  accueil:{type:['Que veux-tu dessiner ?','Deux façons de commencer. L\'autre reste à portée de main : Fichier › Nouveau plan.'],pf:['Dessine ton plan final','Commence par tes murs, puis ajoute tes portes, fenêtres et aménagements.']},
-  nouveau:{type:['Nouveau plan','Que veux-tu dessiner ?'],pf:['Dessine ton plan final','Commence par tes murs, puis ajoute tes portes, fenêtres et aménagements.'],reno:[LEX.type.renovation,LEX.typeBulle.renovation]}};
+  accueil:{type:['Que veux-tu dessiner ?','Deux façons de commencer. L\'autre reste à portée de main : Fichier › Nouveau plan.'],pf:['Dessine ton plan final','Comment veux-tu commencer ?']}, /* D70 : une question ; la consigne est dite une fois, dans l'aide de la première fois */
+  nouveau:{type:['Nouveau plan','Que veux-tu dessiner ?'],pf:['Dessine ton plan final','Comment veux-tu commencer ?'],reno:[LEX.type.renovation,LEX.typeBulle.renovation]}};
 let _h3Accueil=null;
 /* Une étape du choix. Le focus va à la première carte (ou, au retour, à la carte d'où l'on vient). */
 function etapeDepart(ctx,e,focus,de){const acc=ctx==='accueil',m=document.querySelector(acc?'#m-welcome .modal':'#m-nouveau .modal');if(!m)return;
@@ -8468,7 +8543,11 @@ function templateSVG(T){
 /* D68 · le type du plan qui naîtra du plan type : fixé quand on vient du choix (accueil, Nouveau plan) ; sinon, en Pro, deux
    boutons (le type du plan ouvert d'abord) ; en gratuit, rien à choisir : un Plan final. */
 let _typeModele=WORKFLOW_RENO,_typeModeleFixe=false;
-function majTypeModele(){const el=document.getElementById('tplType');if(!el)return;
+/* D70 · la phrase de la fenêtre des plans types suit le type du plan créé : un Plan final décrit le logement voulu (celle d'une rénovation reste mot pour mot) */
+const SUB_TPL_PF='Choisis la base la plus proche du logement que tu veux : tu ajustes ensuite les cotes en glissant les murs, tu déplaces les portes, tu renommes les pièces. Bien plus rapide que de partir de zéro.';
+let _subTplReno=null;
+function majTypeModele(){{const sb=document.querySelector('#m-templates .sub');if(sb){if(_subTplReno===null)_subTplReno=sb.textContent;const t=_typeModele===WORKFLOW_FINAL?SUB_TPL_PF:_subTplReno;if(sb.textContent!==t)sb.textContent=t;}}
+  const el=document.getElementById('tplType');if(!el)return;
   el.innerHTML=!isPro()?'':_typeModeleFixe?`<span>Type du plan</span>${pastilleType(_typeModele)}`:`<span id="tplTypeLbl">Type du plan</span><div class="seg" role="group" aria-labelledby="tplTypeLbl">${[WORKFLOW_FINAL,WORKFLOW_RENO].map(w=>`<button type="button" class="${_typeModele===w?'on':''}" aria-pressed="${_typeModele===w}" onclick="choisirTypeModele('${w}')">${nomType(w)}</button>`).join('')}</div>`;}
 function choisirTypeModele(wf){_typeModele=wf===WORKFLOW_FINAL?WORKFLOW_FINAL:WORKFLOW_RENO;majTypeModele();const b=document.querySelector('#tplType .seg button[aria-pressed="true"]');if(b)try{b.focus();}catch{}}
 function openTemplates(wf){wf=wf===WORKFLOW_FINAL||wf===WORKFLOW_RENO?wf:null;_typeModeleFixe=!!wf;_typeModele=wf||typeNouveau();majTypeModele();
@@ -8634,7 +8713,7 @@ function etapeVisite(i){if(!visite)return;const E=visite.E;i=Math.max(0,Math.min
   if(e.avant){try{e.avant();}catch(err){setTimeout(()=>{throw err;});}}
   const b=document.querySelector('#visite .vbulle');if(!b)return;
   b.innerHTML=`<div class="vk">Étape ${i+1} sur ${E.length}</div><h4 id="vTitre">${e.titre}</h4><p id="vTexte">${e.texte}</p>
-    ${der?`<div class="vfin"><button type="button" class="vsuiv" onclick="finirVisite('${visite.mob?'ordinateur':'mon-plan'}')">${visite.mob?'Continuer sur ordinateur':'Commencer mon plan'}${ico('fleche')}</button><button type="button" class="vlien vpasser" onclick="finirVisite('exemple')">Continuer l'exemple</button></div>`:''}
+    ${der?`<div class="vfin"><button type="button" class="vsuiv" onclick="finirVisite('${visite.mob?'ordinateur':'mon-plan'}')">${visite.mob?'Continuer sur ordinateur':libCommencer()}${ico('fleche')}</button><button type="button" class="vlien vpasser" onclick="finirVisite('exemple')">Continuer l'exemple</button></div>`:''}
     <div class="vpied"><div class="vpts" aria-hidden="true">${E.map((x,j)=>`<i class="${j===i?'on':j<i?'fait':''}"></i>`).join('')}</div>${i>0?`<button type="button" class="vlien" onclick="etapeVisite(${i-1})">Retour</button>`:''}${der?'':`<button type="button" class="vlien vpasser" onclick="fermerVisite('passe')">Passer</button><button type="button" class="vsuiv" onclick="etapeVisite(${i+1})">Suivant${ico('fleche')}</button>`}</div>`;
   placerVisite();requestAnimationFrame(()=>{placerVisite();const s=b.querySelector('.vsuiv');if(s)try{s.focus({preventScroll:true});}catch{}});
   setTimeout(placerVisite,320);}
@@ -8663,6 +8742,8 @@ function placerVisite(){if(!visite)return;const root=document.getElementById('vi
 /* D48 (cj-retention02) : la visite se termine sur le plan de l'utilisateur, pas sur le T2 fictif —
    « Commencer mon plan » (nouveau plan, rangement d'abord : avantDeRemplacer) ou « Continuer
    l'exemple » ; au téléphone, « Continuer sur ordinateur ». */
+/* D70 : en gratuit, un plan neuf est un Plan final (D68) : la visite d'une rénovation le dit avant le clic */
+const libCommencer=()=>isPro()?'Commencer mon plan':'Commencer mon plan final';
 function finirVisite(suite){fermerVisite('fait',suite);if(suite==='mon-plan')newPlan();else if(suite==='ordinateur')partagerLien();}
 function fermerVisite(etat,suite){if(!visite)return;const v=visite;visite=null;try{localStorage.setItem(VISITE_CLE,etat==='fait'?'fait':'passe');}catch{}
   suivre(etat==='fait'?'visite_terminee':'visite_passee',{etape:v.i+1,etapes:v.E.length,suite:suite||null,accueil:v.accueil});
@@ -8674,7 +8755,7 @@ function fermerVisite(etat,suite){if(!visite)return;const v=visite;visite=null;t
   if(v.aSel){sel=null;multi=[];msel=[];render();}
   if(v.plie0&&!isMobile())plierPanneau(true);
   const r=v.retour;if(r&&r!==document.body&&document.contains(r)&&r.getClientRects().length){try{r.focus({preventScroll:true});}catch{}}
-  if(etat==='fait'&&v.accueil&&suite!=='mon-plan'&&suite!=='ordinateur')toast(v.mob?'L\'exemple reste ouvert : touche un élément pour voir sa fiche, et ouvre le tiroir pour le Suivi.':'L\'exemple reste ouvert : essaie une décision, le budget bouge. Ton plan à toi, quand tu veux.',true,v.mob?null:{action:'Commencer mon plan',fn:()=>newPlan()});}
+  if(etat==='fait'&&v.accueil&&suite!=='mon-plan'&&suite!=='ordinateur')toast(v.mob?'L\'exemple reste ouvert : touche un élément pour voir sa fiche, et ouvre le tiroir pour le Suivi.':'L\'exemple reste ouvert : essaie une décision, le budget bouge. Ton plan à toi, quand tu veux.',true,v.mob?null:{action:libCommencer(),fn:()=>newPlan()});}
 /* Clavier pendant la visite : Échap ferme, ← → naviguent, Tab reste dans la bulle ; rien n'atteint le plan. */
 function gardeVisite(e){
   if(e.key==='Escape'){e.preventDefault();fermerVisite('passe');return;}
@@ -8872,12 +8953,12 @@ window.addEventListener('resize',resize);window.addEventListener('resize',()=>ma
    la densité, et la taille réelle de la zone de dessin (poignées du panneau comprises). */
 (function suivreDensite(){try{const m=matchMedia(`(resolution: ${devicePixelRatio}dppx)`);m.addEventListener('change',()=>{resize();suivreDensite();},{once:true});}catch{}})();
 if(window.ResizeObserver){let roT=0;new ResizeObserver(()=>{cancelAnimationFrame(roT);roT=requestAnimationFrame(()=>{const r=cv.parentElement.getBoundingClientRect();if(Math.abs(r.width*devicePixelRatio-cv.width)>1||Math.abs(r.height*devicePixelRatio-cv.height)>1)resize();});}).observe(document.getElementById('stage'));}
-const planCharge=load();if(!planCharge){state=blankState();if(!isPro())state.workflow=WORKFLOW_FINAL; /* D68 : en gratuit, un plan neuf est un Plan final */}
+const planCharge=load();if(!planCharge){state=blankState();if(!isPro()||(!isMobile()&&(()=>{try{return !localStorage.getItem('avyora-plan-welcome');}catch{return true;}})()))state.workflow=WORKFLOW_FINAL; /* D68 : en gratuit, un plan neuf est un Plan final ; D70 : en Pro, sous le choix de la première visite, une feuille blanche calme (un Plan final vide), pas une rénovation chiffrée */}
 loadView();
 state.levels.forEach(syncRooms);
 /* D39 : les textes fixes lisent LEX (data-lex), et les deux listes de raccourcis sortent de la même table. */
 document.querySelectorAll('[data-lex]').forEach(el=>{const v=el.dataset.lex.split('.').reduce((o,k)=>o&&o[k],LEX);if(typeof v==='string')el.textContent=v;});
-{const wk=document.getElementById('welcomeKeys'),ak=document.getElementById('aideKeys'),ag=document.getElementById('aideGloss');if(wk)wk.innerHTML=keysHTML();if(ak)ak.innerHTML=reglageRaccourcisHTML()+keysHTML();if(ag)ag.innerHTML=glossaireHTML();}
+{const wk=document.getElementById('welcomeKeys'),ak=document.getElementById('aideKeys'),ag=document.getElementById('aideGloss');if(wk)wk.innerHTML=keysHTML();_aideType=estPlanFinal(); /* D70 : l'Aide est écrite pour le type du plan ouvert au démarrage (un Plan final, en gratuit ou sous l'accueil Pro) : une rénovation ouverte ensuite la réécrit */if(ak)ak.innerHTML=reglageRaccourcisHTML()+keysHTML();if(ag)ag.innerHTML=glossaireHTML();}
 renderTools();initResizer();try{if(localStorage.getItem('avyora-plan-plie')==='1'&&!isMobile())plierPanneau(true);}catch{}majPliAuto();resize();updZoom();accessibiliser(document.body);
 ['grid','magnet','cotes'].forEach(k=>{const b=document.getElementById(k+'Btn');if(b)b.classList.toggle('on',settings[k]);});updLayersBtn();
 // clic hors du menu Calques → fermeture
@@ -8887,7 +8968,7 @@ render();
    c'est lui qu'on retrouvait à la place de sa feuille blanche. Il n'est chargé qu'à la toute
    première visite (ou si ce navigateur ne garde rien). */
 let firstVisit=false;try{firstVisit=!localStorage.getItem('avyora-plan-welcome');}catch{firstVisit=true;}
-if(!planCharge&&firstVisit&&isPro()){loadSample();history=[];render();} /* D68 : l'exemple (une rénovation) n'est plus proposé au gratuit */
+if(!planCharge&&firstVisit&&isPro()&&isMobile()){loadSample();history=[];render();} /* D68 : l'exemple (une rénovation) n'est plus proposé au gratuit ; D70 : au bureau, il n'est chargé que si on le choisit (Projet rénovation › l'exemple) ; au téléphone, l'accueil de la consultation le recommande, il reste derrière */
 else fitView();
 etatEnreg='ok';enregAt=0;afficherEnreg(!!(state.id&&loadPlans()[state.id]));
 /* D42 (access23) : le bandeau « mode chantier » fermé une fois ne revient plus */
