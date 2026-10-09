@@ -245,8 +245,10 @@ Object.assign(t, await p.evaluate(() => {
 await p.close();
 
 /* ═════════ 4. Gratuit (D48) : le montant et les corps d'état se voient ; le détail est Pro ═════════ */
-/* un plan de l'utilisateur : la maison type, ses fenêtres à remplacer */
-const MAISON = () => { closeWelcome("fermer"); loadTemplate("maison"); closeModal(); setMode("projet"); closeModal(); setTool("select"); sel = null;
+/* un plan de l'utilisateur : la maison type, ses fenêtres à remplacer.
+   D68 : en gratuit, un plan neuf est un Plan final ; ce contrôle lit une RÉNOVATION d'un utilisateur gratuit (un plan
+   d'avant, ou d'un abonnement terminé) : il la demande explicitement. */
+const MAISON = () => { closeWelcome("fermer"); loadTemplate("maison", WORKFLOW_RENO); closeModal(); setMode("projet"); closeModal(); setTool("select"); sel = null;
   L().openings.filter((o) => OPENINGS[o.type].cat === "fenetre").forEach((o) => { o.st = "remplacer"; }); afterChange(); sel = null; render(); };
 p = await onglet({ larg: 1280, haut: 800, pro: false });
 await p.evaluate(MAISON); await wait(300);
