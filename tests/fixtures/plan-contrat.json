@@ -1,5 +1,6 @@
 {
- "contrat": "1.17.0",
+ "contrat": "1.18.0",
+ "workflow": "renovation",
  "plan": {
   "id": null,
   "nom": "Scène de référence"
