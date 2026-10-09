@@ -38,6 +38,10 @@ async function onglet(largeur = 1400, hauteur = 900) {
   await p.evaluateOnNewDocument(() => { try { if (!sessionStorage.getItem("rob")) { localStorage.clear(); sessionStorage.setItem("rob", "1"); } } catch {} });
   await p.goto("file://" + SP + "/plan-editor.html", { waitUntil: "networkidle0" });
   await wait(300);
+  /* D70 : au bureau, l'accueil Pro de la première visite s'ouvre sur une feuille blanche (l'exemple n'est chargé que choisi).
+     Ces contrôles éprouvent un plan DESSINÉ — l'exemple — sous l'accueil, puis après lui : on l'y charge, comme avant D70
+     (fermé sans choisir sur l'exemple, l'accueil le garde : D50). */
+  await p.evaluate(() => { if (modaleOuverte()?.id === "m-welcome" && planVide()) { loadSample(); history = []; render(); } });
   return p;
 }
 const ecran = (p, x, y) => p.evaluate(([x, y]) => { const s = S(v(x, y)); const rc = cv.getBoundingClientRect(); return { x: rc.left + s.x, y: rc.top + s.y }; }, [x, y]);
