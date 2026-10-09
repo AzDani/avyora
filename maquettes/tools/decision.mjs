@@ -155,7 +155,7 @@ const res = await p.evaluate(() => {
   await p2.evaluateOnNewDocument(() => { try { localStorage.clear(); } catch {} });
   await p2.goto("file://" + SP + "/plan-editor.html", { waitUntil: "networkidle0" }); await new Promise((r) => setTimeout(r, 300));
   Object.assign(res, await p2.evaluate(() => { const t = {};
-    closeWelcome("fermer"); loadTemplate("t3"); closeModal(); setMode("projet"); closeModal(); setTool("select"); sel = null; render();
+    closeWelcome("fermer"); loadTemplate("t3", WORKFLOW_RENO); /* D70 : l'accueil fermé laisse un Plan final vide (plus l'exemple) ; ce contrôle porte sur une rénovation : il la demande */ closeModal(); setMode("projet"); closeModal(); setTool("select"); sel = null; render();
     /* la salle de bain refaite (sol neuf + douche à poser) : sa faïence est un choix qui a un prix */
     const lv = L(), sdb = lv.rooms.find((r) => r.type === "sdb"), f = facesCache[lv.id].find((x) => x.room === sdb);
     sdb.floorNew = "Carrelage"; lv.items.push({ id: uid(), type: "douche", x: f.poly.reduce((s, q) => s + q.x, 0) / f.poly.length, y: f.poly.reduce((s, q) => s + q.y, 0) / f.poly.length, w: 0.9, h: 0.9, rot: 0, st: "creer" }); afterChange();
