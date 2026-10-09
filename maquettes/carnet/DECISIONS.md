@@ -4368,3 +4368,132 @@ les deux. Au téléphone : ni aide, ni barre d'options, ni Annuler / Rétablir, 
 Chaque nouvel état est lu mot à mot : aucun mot du chantier. Vu à l'écran aux quatre largeurs (1 440, 1 280, 1 024, 390),
 en Pro et en gratuit, et à 768. Aucun contrôle existant n'a été modifié. Batterie complète (22 + planfinal), finition,
 couverture et vitest verts ; `lib/` non touché (pas de build à refaire).
+
+## D70 · Plan final, corrections du jury : l'aide qui laisse dessiner, un accueil calme, chaque nombre une fois (09/10/2026)
+
+**Demande** (jury du Plan final, après D69 : un découvreur 7/10, un designer produit 7,5/10, le gardien de la rénovation
+9/10). Corriger les constats forts et moyens, et les faibles rapides, sans sortir de l'architecture décidée (D67) ; la
+rénovation ne bouge pas.
+
+**Constat** (mesuré avant, sur le fichier de D69 ; `planfinal.mjs` enrichi, lancé dessus : **195 échecs sur 568**, deux
+parcours interrompus net).
+- *Fort — l'aide de la première fois avalait les premiers clics.* La carte (300 × 216 px, en haut à gauche du plan) prenait
+  les clics ; au zoom de départ, le premier coin d'une maison de 12 × 10 m tombe dessous : départ et fermeture perdus, deux
+  murs au lieu de quatre, sans message (reproduit à la souris : 2 murs sur 4).
+- *Moyen — la cuisine ouverte ne se séparait pas.* Une Séparation posée sur le bout d'une cloison qui bute contre un
+  refend : la cloison est prolongée jusqu'au trait du refend pour la détection des pièces (`segEffectif`), la Séparation
+  restait 3,5 cm avant, la pièce ne se coupait pas (reproduit dans les deux types : 4 pièces avant, 4 après). Moteur commun.
+- *Moyen — Annuler grisé après la première pièce fermée*, Rétablir allumé à vide après un nouveau tracé : `addWall` écrit
+  l'historique mais seul `render()` mettait les deux boutons à jour. Moteur commun.
+- *Moyen — en Pro, l'accueil s'ouvrait sur l'exemple chiffré* (vues, budget 5 602 €) ; le fermer sans choisir menait à une
+  rénovation en vue Travaux, et c'est elle qui revenait au rechargement.
+- *Moyen — le panneau répétait ses nombres* : la liste des pièces, puis « Récapitulatif » (surfaces par type, total), puis la
+  carte du pied (20,0 m² quatre fois pour une pièce) ; à 1 280 et 1 024, seul le titre « Récapitulatif » se voyait.
+- *Moyen — la carte d'aide cachait un plan type* (8 à 11 % de l'emprise des murs, étiquettes et cotes du haut), et au premier
+  tracé trois aides disaient la même chose (l'étape Plan final de l'accueil, la carte, le « Mode d'emploi » déplié).
+- *Moyen — la rénovation d'un gratuit* : Estimer lui vendait « le projet rénovation » qu'il chiffrait, et « Gratuit :
+  dessiner ton plan final » ; Mes plans disait « Dessiner ton plan final reste gratuit ».
+- *Faibles* : « Tronçon … démolir » et « sous l'ancien » au glossaire d'un Plan final ; MaPrimeRénov' / CEE au Doublage ;
+  « Plinthes neuves », « Murs anciens » au dossier ; la Note « question pour l'artisan », l'Affichage « toiture » ; « 1 pièces »
+  dans l'image exportée ; la phrase des plans types (« qui ressemble au tien ») ; « Équipements » sans titre de section ; au
+  téléphone, le type du plan nulle part ; la visite d'une rénovation, en gratuit, débouchait sur un Plan final sans le dire ;
+  la carte d'une rénovation vide, au téléphone en gratuit, avait perdu « Voir l'exemple » (`.proSeul`) ; le panneau d'un
+  plan vide redisait « Trace les murs extérieurs » ; les cartes du type : survol presque invisible, titres de 14 px, double
+  cadre au focus.
+
+**Décision.**
+1. *L'aide laisse dessiner* (`etatAidePF`, `majAidePF`, `aidePFDepliee`, `aidePFPliHTML`). La carte ne prend aucun clic du
+   plan (`pointer-events:none`, ses boutons seuls) ; elle ne se déplie que sur une feuille blanche (ou rouverte par Aide ›
+   Premiers pas) et se replie dès qu'on dessine — le premier clic dans le plan, un mur, un plan type — en une pastille
+   « Premiers pas » (et sa croix), en bas à gauche du plan, dans la bande que le cadrage laisse libre (D54). Pendant un tracé,
+   même la pastille s'efface : le clic qui ferme la pièce ne la touche jamais. Repliée, c'est le temps de la page ; la croix
+   ferme pour de bon (mémorisé, comme D69). Tant que la carte est dépliée, le « Mode d'emploi » du panneau reste replié (une
+   seule voix ; la préférence de l'utilisateur n'est pas touchée), et l'étape Plan final de l'accueil et de « Nouveau plan »
+   pose une question, « Comment veux-tu commencer ? » : « Commence par tes murs… » n'est dit qu'une fois, dans la carte. La
+   réserve de largeur dans `zoneUtile` n'a pas été faite : la carte n'est dépliée que sur une feuille blanche (rien à cadrer)
+   ou à la demande, et se replie au premier clic.
+2. *La Séparation suit le mur qui part du même point* (`sepEffective`, appelée par `segEffectif` pour un mur virtuel) : son
+   bout prend le même prolongement que la cloison qui y part ; sinon, s'il tombe dans l'épaisseur d'un mur, il va jusqu'à son
+   trait. Seule la détection des pièces change ; la géométrie enregistrée, non. Vérifié : l'exemple, les quatre plans types
+   (dans les deux types) et le plan réel `plan-refend-pierre.json` gardent exactement leurs pièces, leurs surfaces et leur
+   budget (10 clés comparées à D69, 0 écart).
+3. *Annuler et Rétablir suivent l'historique à chaque écriture* (`majAnnuler`, appelée par `save()` et `render()`).
+4. *En Pro, la première visite au bureau s'ouvre sur une feuille blanche calme* : un Plan final vide sous le choix (ni vues ni
+   budget derrière). L'exemple n'est chargé que choisi (Projet rénovation › l'exemple). Fermer l'accueil sans choisir (croix,
+   Échap, clic à côté) au premier pas ou à l'étape Plan final garde ce Plan final vide, avec sa carte « Dessine ton plan
+   final », et l'enregistre (un rechargement le rouvre) ; fermé à l'étape Projet rénovation, il ouvre son choix recommandé,
+   l'exemple en vue Travaux (D50 inchangé). Au téléphone, l'accueil de la consultation garde l'exemple derrière.
+5. *Chaque nombre une fois* (`recapOuverturesHTML`) : dans la vue d'ensemble d'un Plan final, la liste des pièces
+   (cliquable), puis les ouvertures par modèle (tous niveaux, sans ligne de total), avant « Réglages du niveau » ; la surface
+   habitable et les totaux au pied seulement (`recapPiedHTML`, D69). Le tableau des surfaces par type, qui répétait la liste,
+   est retiré ; les nombres des ouvertures sont en encre (l'indigo dit ce qui se clique). Sans pièce : « Aucune pièce fermée
+   pour l'instant. », sans redire la consigne.
+6. *La rénovation d'un gratuit garde ses phrases d'avant* : `DROITS.dessin.renovation` (« dessiner ton logement et tes
+   travaux », hors des listes : les droits ne changent pas) dans Mes plans et dans « Gratuit : » d'Estimer ; « Ce que Pro
+   ajoute » n'y vend plus « le projet rénovation » (cette fenêtre ne s'ouvre que dans une rénovation). `.proSeul` ne cache
+   plus rien dans une rénovation (`body.gratuit.planFinal .proSeul`) : la carte d'une rénovation vide retrouve « Voir
+   l'exemple » au téléphone. En gratuit, la dernière bulle de la visite dit « Commencer mon plan final » (D68 : un plan neuf de
+   gratuit est un Plan final).
+7. *Les mots du logement voulu* : glossaire sans tronçon (`GL_RENO`), faux plafond dit autrement (`GL_PF`, `defGl`, aussi dans
+   la bulle ⓘ) ; ni MaPrimeRénov' ni CEE au Doublage (outil et fiche) ; au dossier, ni « Plinthes neuves » ni « Murs
+   anciens » (« Murs épais ») ; la Note (`NOTE_TXT` : bulle, fiche, exemple, code couleur) parle d'idées, plus d'artisan ;
+   l'Affichage sans toiture (`TEXTES_PF`) ; la phrase des plans types suit le type du plan créé (`SUB_TPL_PF`, celle d'une
+   rénovation reste mot pour mot). Les phrases d'une rénovation sont gardées telles quelles.
+8. *L'Aide suit le type du plan ouvert dès le démarrage* (trouvé en route) : écrite au démarrage pour un Plan final (le gratuit
+   depuis D68, l'accueil Pro désormais) sans que `_aideType` le sache, elle restait celle d'un Plan final dans la rénovation
+   ouverte ensuite (ni Zone, glossaire réduit). `_aideType` est posé au démarrage.
+9. *Finitions* : « 1 pièce » au singulier dans l'en-tête de l'image exportée (`accord`, les deux types) ; la famille des
+   équipements a son titre, **« Intérieur »** (« Aménagement », proposé, dépasse la colonne de 76 px : 75 px de texte) ; au
+   téléphone, la carte « Plan ouvert » du tiroir porte la pastille du type (à sa largeur : `.mplan .typeplan`) ; les deux cartes du type : survol en
+   `--brand-b` / `--brand-l`, titres de 16 px, au focus un seul cadre de 2 px (contour posé sur la bordure).
+
+**Pas fait, et pourquoi.**
+- *Les libellés « Mur » et « Cloison » de la barre d'options à 1 024 px* : à cette largeur, les écrire pousse « Trait » sous
+  le chevron, ce que D64 interdit (le trait se choisit avant de tracer, jamais caché). La cloison reste à un clic (icône
+  nommée, bulle) et « Automatique » la trace d'office dans une pièce.
+- *Le panneau replié d'office sur un Plan final vide* : la préférence du panneau (D63) et son repli à la tablette sont
+  partagés avec la rénovation ; seule la phrase redite est retirée.
+- *Réserver la largeur de la carte dans le cadrage* : sans objet (voir 1).
+- *Vu en route, hors constats* : en mode développeur (`?dev`, ses deux pastilles « Maquette » et « Gratuit »), à 1 280 px la
+  barre du haut déborde de 98 px (« Exporter le plan » coupé) — identique sur le fichier de D69 ; la barre ne se resserre
+  que quand les niveaux y sont montés (`ctxHaut`). Sans `?dev`, rien ne déborde (mesuré par `planfinal.mjs`).
+
+**Ce qui ne bouge pas.** Aucune globale renommée ; ajouts : `majAnnuler`, `sepEffective`, `etatAidePF`, `aidePFDepliee`,
+`aidePFPliHTML`, `recapOuverturesHTML`, `GL_PF`, `defGl`, `NOTE_TXT`, `SUB_TPL_PF`, `_subTplReno`, `libCommencer` ; classes
+`.wtype`, `.aidepill`, `.aidePF.pli`. Ids,
+ordre `.top → #tools → canvas`, `onclick` d'ancrage, clés `localStorage`, `SCHEMA`, contrat (1.18), `lib/` : inchangés. La
+rénovation : ses écrans, ses textes, son étape de l'accueil, ses budgets ; seules les corrections du moteur commun la
+touchent (Séparation, Annuler, « 1 pièce »), sans changer aucune pièce ni aucun montant des plans de référence.
+
+**Contrôles.** `planfinal.mjs` enrichi : **579 contrôles** (539 avant ; 195 échecs sur le fichier de D69). À la souris : un
+tracé dont le premier coin tombe SOUS la carte se ferme (4 murs), la carte se replie au premier clic, rien pendant le tracé,
+puis la pastille en bas à gauche, sans focus, qui rouvre la carte et que le clic suivant dans le plan replie ; Annuler
+allumé et Rétablir éteint juste après la première pièce ; le « Mode d'emploi » replié carte ouverte ; sur un plan type, la
+pastille ne couvre aucun mur ; une Séparation posée sur le bout d'une cloison accrochée à la face d'un refend fait une pièce
+de plus, en Plan final ET en rénovation ; l'accueil Pro sur une feuille blanche (ni vues ni budget), fermé par la croix
+(Plan final vide, sa carte, rien de rangé, gardé au rechargement), par Échap à l'étape Plan final, et à l'étape rénovation
+(l'exemple en vue Travaux) ; les cartes du type (16 px, survol, un seul cadre au focus clavier) ; la vue d'ensemble (pièces,
+ouvertures par modèle avant les réglages, sans total, encre ; la surface habitable au pied seulement ; plan vide sans
+consigne redite) ; glossaire, Doublage, bulles de la Note et de l'Affichage, phrase des plans types (et celle d'une
+rénovation, mot pour mot), « 1 pièce » dans l'image exportée ; la rénovation d'un gratuit (Mes plans, visite, téléphone).
+La liste des mots interdits gagne **démolir, MaPrimeRénov', neuf / neuves, ancien, toiture, artisan**, lus dans chaque état.
+`valeur.mjs` §4 : sur la rénovation d'un gratuit, « Ce que Pro ajoute » ne vend ni le projet rénovation ni le plan final, et
+« Gratuit » dit « dessiner ton logement et tes travaux ».
+Mis à jour en gardant leur intention (changements voulus) :
+- `planfinal.mjs` (D68, D69) : l'étape Plan final dit « Comment veux-tu commencer ? » ; la colonne a une section de plus
+  (« Intérieur ») ; le récapitulatif est relu dans sa nouvelle forme ; l'aide qui « ne gêne pas le dessin » est éprouvée par
+  un premier coin posé dessous, et sur un plan type elle est repliée ; la pastille du type sous le nom dit le type du plan
+  ouvert (après l'accueil fermé, un Plan final, plus l'exemple).
+- `onboarding.mjs` (D50, la croix de l'accueil) : il passe d'abord à l'étape « Projet rénovation » au clavier (Tab, Entrée) ;
+  c'est elle, dont l'exemple est le choix recommandé, qui fermée ouvre l'exemple en vue Travaux et propose la visite. Le
+  premier pas fermé garde un Plan final vide (contrôlé par `planfinal.mjs`).
+- `robustesse.mjs` : son `onglet()` charge l'exemple sous l'accueil Pro de la première visite, comme avant D70 — ses
+  contrôles éprouvent un plan dessiné sous la fenêtre (touches, Suppr, Échap qui le garde), puis l'exemple après elle.
+- `decision.mjs` (D54), `metier.mjs` (D54, faïence), `langage.mjs` (R6, D54) : après l'accueil fermé, c'est un Plan final qui
+  est ouvert, et un plan type garde le type du plan ouvert (D67) : ils demandent la rénovation sur laquelle ils portent
+  (`loadTemplate(…, WORKFLOW_RENO)`), comme `valeur.mjs` et `langage.mjs` le font déjà depuis D68.
+- `langage.mjs` : la table complète des raccourcis (V, B, M…) est lue dans l'Aide de l'exemple, une rénovation (sous
+  l'accueil, un Plan final n'a pas de Zone, D69) ; « Ce que Pro ajoute » d'Estimer = la table DROITS sans la ligne du projet
+  rénovation (décision 6).
+Batterie complète (22 + planfinal), finition, couverture et vitest (170 tests) verts, lancés seuls ; `lib/` non touché (pas
+de build à refaire). Vu à l'écran à 1 440, 1 280, 1 024 et 390 (Pro, gratuit et `?dev`).
