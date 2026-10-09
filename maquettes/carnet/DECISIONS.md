@@ -4182,3 +4182,97 @@ ne produit rien ; un contrat sans type se lit à l'identique), 170 au total. Mis
 `metier.mjs` vérifiait `CONTRAT_PLAN === "1.17.0"` pour le périmètre hors portes — il vérifie le minimum (≥ 1.17),
 comme le font déjà `existant` et `structure`. Batterie complète (22 + planfinal), finition, couverture, vitest et
 build verts.
+
+## D68 · Plan final, chantier P2 : la création et la navigation (09/10/2026)
+
+**Demande de Dani** (suite de D67). À la création, un Pro choisit entre deux cartes claires, « Plan final — Dessine
+directement le plan que tu veux obtenir » et « Projet rénovation — Pars de l'existant et décide tes travaux » ; un
+utilisateur gratuit arrive directement en Plan final, sans choix ni exemple de rénovation, et peut vraiment dessiner et
+enregistrer. Le type du plan se lit près de son nom et sur les cartes de « Mes plans » ; pas de bascule en place ; le
+Pro peut démarrer une rénovation à partir d'un Plan final si c'est simple et sûr. DROITS dit « Projet rénovation : Pro ».
+
+**Constat** (mesuré avant, sur le fichier de D67). Aucun endroit ne demandait le type : un Plan final ne naissait que
+par script. En gratuit, l'arrivée ouvrait l'exemple T2 (une rénovation chiffrée) sous l'accueil « Dessine ton logement,
+on chiffre tes travaux » ; « Nouveau » et un plan type gardaient le type du plan ouvert — donc, depuis l'exemple, le
+gratuit créait des rénovations. Rien ne disait le type du plan ouvert, ni sur les cartes de Mes plans. DROITS promettait
+au gratuit « dessiner ton logement et tes travaux ». Le contrôle `planfinal.mjs` enrichi, lancé sur ce fichier : **20
+échecs sur 337**, dont 7 parcours interrompus net (à l'arrivée gratuite, pas de bouton « Tracer les murs » : l'accueil
+et l'exemple étaient là ; pas de carte « Projet rénovation » dans l'accueil ; `nouveauPlan`, `DROITS.renovation`
+inexistants).
+
+**Décision.**
+1. *Le type à la création, une seule mécanique* (`etapeDepart(ctx, étape)`), sur le socle des fenêtres (`openModal`,
+   rôle de dialogue, focus, Tab qui reste, Échap qui ferme et rend le focus) et les cartes de l'accueil (`.wcard`, un
+   dessin chacune) : l'accueil de la première visite (`#m-welcome`) et une fenêtre « Nouveau plan » (`#m-nouveau`,
+   Fichier › Nouveau plan et Mes plans › Nouveau plan). Premier pas : les deux cartes (LEX.type, LEX.typeBulle), le
+   focus sur « Plan final ». Plan final : « Dessine ton plan final — Commence par tes murs, puis ajoute tes portes,
+   fenêtres et aménagements. », Feuille blanche ou Partir d'un plan type. Projet rénovation : dans l'accueil, l'étape
+   d'avant à l'identique (titre, phrase, l'exemple recommandé et focalisé, plan type, feuille blanche) ; dans « Nouveau
+   plan », Feuille blanche, Partir d'un plan type, Voir l'exemple. Une flèche (icône nommée « Retour au choix du type de
+   plan ») ramène au premier pas, le focus sur la carte d'où l'on vient. Tout passe par `avantDeRemplacer` (et
+   `annoncerLimite` en gratuit) : le plan ouvert est rangé avant, la limite gratuite est dite avant.
+2. *Gratuit : aucune question.* L'arrivée est un Plan final vide, sans accueil (le drapeau est posé) : la carte du plan
+   vide dit « Dessine ton plan final » et propose Tracer les murs, Poser une pièce, ou un plan type. Nouveau plan (menu,
+   Mes plans) : un Plan final tout de suite ; un plan type : un Plan final. L'exemple n'est proposé nulle part (ni
+   accueil, ni carte du plan vide au téléphone — classe `.proSeul` —, ni Aide en Plan final). Un plan de rénovation qu'un
+   gratuit a déjà (d'avant D68, ou d'un abonnement Pro terminé) reste entier : il s'ouvre, se modifie, se chiffre comme
+   avant, et l'Aide y garde la visite et « Revoir l'exemple » (D53 : c'est de là que l'exemple se rouvre). Rien n'est
+   retiré à personne.
+3. *Le type d'un plan créé sans choix* : `typeNouveau()` — en gratuit toujours Plan final, en Pro celui du plan ouvert
+   (D67). `newPlan(apres, wf)`, `loadTemplate(id, wf)`, `chargerModele(T, garde, pq, wf)`, `closeWelcome(choix,
+   avecVisite, wf)` prennent le type demandé ; sans lui, `typeNouveau()` : la visite (« Commencer mon plan ») et la carte
+   « À toi » de l'exemple (une rénovation) continuent une rénovation. Les cartes de l'étape rénovation de l'accueil font
+   une rénovation (`typeAccueil()`).
+4. *La fenêtre des plans types* dit « Type du plan » : une pastille quand on vient du choix (rien à refaire) ; en Pro,
+   depuis Fichier › Plans types ou la carte du plan vide, deux boutons (`.seg`, aria-pressed), le type du plan ouvert
+   choisi d'abord ; en gratuit, rien (il n'y a qu'un type).
+5. *La pastille* (`#typePlan`, lue avec le nom : aria-describedby) : « Plan final » (indigo pâle) ou « Projet
+   rénovation » (neutre), SOUS le nom du plan (bloc `.pnom`). À côté, elle coûtait 112 px : à 1 024 px en gratuit la barre
+   est déjà resserrée au maximum (c1 c2 c3) et le nom se coupait de 53 à 83 px ; à 1 440 px en gratuit « Enregistré »
+   passait en icône (c2) — c'est ce qu'a vu `onboarding.mjs`. Sous le nom, chaque largeur garde exactement les paliers
+   d'avant (mesuré à 1 440, 1 280 et 1 024, Pro et gratuit). Au téléphone, le nom n'est pas dans la barre : la pastille
+   non plus. Elle est aussi sur chaque carte de Mes plans, et sur celle du plan ouvert.
+6. *« Démarrer un projet rénovation à partir de ce plan »* (menu Fichier, Pro, Plan final seulement) : simple et sûr,
+   donc fait. Le Plan final est d'abord rangé dans Mes plans, intact ; une copie devient un nouveau plan « … ·
+   rénovation », en vue Avant travaux. Ses objets n'ont aucun état, c'est-à-dire « déjà là » : c'est exactement un plan
+   dessiné en vue Avant travaux (aucun niveau « créé par les travaux » : un Plan final n'en a pas). Aucune tâche tant
+   que rien n'est décidé ; Ctrl+Z ramène le Plan final. Un mur doublé portant des fenêtres y pose la question de la
+   rénovation (« menuiseries actuelles… choisis À remplacer »), comme pour tout plan dessiné en Avant travaux : c'est la
+   rénovation qui commence, pas une erreur.
+7. *DROITS* : `dessin` = « dessiner ton plan final » (gratuit et Pro) ; une ligne `renovation`, Pro seulement : « le
+   projet rénovation, pour partir de ton logement tel qu'il est et chiffrer ce qui change » — sans un mot du chantier,
+   elle se lit dans Mes plans d'un Plan final gratuit ; elle entre dans « Ce que Pro ajoute ». Rien de neuf n'est promis.
+
+**Ce qui ne bouge pas.** Le Projet rénovation : ses vues, ses textes, son étape de l'accueil (≤ 80 mots, recommandé,
+focus). Aucune globale renommée ; ajouts : `nomType`, `pastilleType`, `typeNouveau`, `typeAccueil`, `majTypeTop`,
+`SVG_TYPE`, `svgDepart` (les dessins de l'accueil, une seule source), `carteDepartHTML`, `cartesDepart`,
+`ETAPES_DEPART`, `etapeDepart`, `accueilEtape`, `retourDepart`, `nouveauPlan`, `nouveauChoix`, `renoDepuisPlanFinal`,
+`majTypeModele`, `choisirTypeModele`, `_typeModele` ; signatures prolongées par la fin seulement. Ids conservés (ajouts :
+`m-nouveau`, `typePlan`, `welSub`, `welCartes`, `nouvNote`, `renoDepuisBtn`, `tplType`) ; ordre `.top → #tools →
+canvas` ; `#pname` dans un bloc `.pnom`. Un `onclick` change : `#newBtn` appelle `nouveauPlan` (aucun contrôle ne
+l'ancrait ; `newPlan()` garde son sens pour tous ceux qui l'appellent). Mes plans dit « Nouveau plan » (plus
+« vierge » : il ouvre le choix). Clés `localStorage`, `SCHEMA`, contrat (1.18) : inchangés ; `lib/` non touché.
+
+**Contrôles.** `planfinal.mjs` enrichi : **408 contrôles** (314 avant). Gratuit, à la souris : l'arrivée (ni fenêtre,
+ni question, ni exemple ; la carte du plan vide ; la pastille), une pièce tracée, Fichier › Nouveau plan (pas de choix,
+le plan dessiné rangé, la limite dite avant), les plans types sans choix (un Plan final sans état), Mes plans (pastilles,
+DROITS) ; au téléphone, ni accueil ni exemple. Pro, à la souris : l'accueil en deux pas (textes exacts, dessins, focus,
+flèche), Feuille blanche en Plan final, Fichier › Nouveau plan puis rénovation (le Plan final rangé, intact), les
+pastilles de Mes plans, Mes plans › Nouveau plan, un plan type en Plan final, Fichier › Plans types et ses deux boutons,
+« Voir l'exemple » ; au clavier (Entrée, Tab, Maj+Tab sur la flèche, Échap qui rend le focus à Fichier) ; « Démarrer un
+projet rénovation » (copie fidèle, aucun état, aucune tâche, le Plan final intact, Ctrl+Z) et son absence en rénovation
+et en gratuit ; DROITS ; à 1 280, 1 024 et 768 px l'accueil et Nouveau plan tiennent sans défiler, la pastille est
+sous le nom. Les étapes « Plan final » des deux fenêtres, la fenêtre des plans types et chaque écran d'un Plan final
+sont lus mot à mot : aucun mot du chantier. Le premier pas du choix, lui, décrit la rénovation avec ses mots (« Pars de
+l'existant et décide tes travaux », demandé tel quel) : il n'est pas un écran de Plan final. Un parcours interrompu
+compte comme un échec et la suite continue (`parcours`).
+Mis à jour en gardant leur intention, à cause du changement voulu :
+- `onboarding.mjs` §1 et `robustesse.mjs` §1 : l'accueil Pro demande d'abord le type ; ils y vont au clavier (Tab puis
+  Entrée, ou Tab puis Espace) avant de lire l'étape « Projet rénovation » telle qu'avant (trois cartes, l'exemple
+  recommandé et focalisé, ≤ 80 mots, sans défiler ; Espace active l'exemple, la visite démarre). Le focus de départ
+  est sur le premier choix, « Plan final » (il était sur l'exemple, premier choix d'alors).
+- `langage.mjs` : l'ancien nom de vue « Projet » reste interdit, sauf dans « Projet rénovation », le nom d'un TYPE de
+  plan (`\bProjet\b(?! rénovation)`) ; ses trois lectures d'une rénovation en gratuit (« un plan de l'utilisateur »)
+  et `valeur.mjs` §4 demandent explicitement la rénovation (`loadTemplate("maison", WORKFLOW_RENO)`) : en gratuit, un
+  plan neuf est désormais un Plan final, et ces contrôles portent sur la rénovation qu'un gratuit a déjà.
+Batterie complète (22 + planfinal), finition, couverture et vitest verts ; `lib/` non touché (pas de build à refaire).
