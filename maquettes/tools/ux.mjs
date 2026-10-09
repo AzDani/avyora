@@ -102,6 +102,18 @@
  *   - le plan : la chaîne des baies au 1er rang, aucune cote intérieure écrite sur une ouverture, une palette de pièces loin
  *     des couleurs de sens, des icônes sans ambiguïté, ⌘ sur Mac, la bulle en deux niveaux.
  *
+ * D65 · la dernière passe (à 1 440, 1 280 et 1 024, et la tablette à 768) :
+ *   - la consigne de la barre d'état ne disparaît jamais : entière au repos pour chaque outil et chaque sélection, en Avant
+ *     travaux et en Travaux, et pendant un tracé réel en vue Travaux (la légende et l'échelle laissent la place) ; ce qui cède
+ *     le fait dans l'ordre (échelle et zoom avant la légende) ; une pose refusée garde la consigne ; sous 1 024, coupée en
+ *     « … » et entière dans la bulle ;
+ *   - une place par rôle : la surface une seule fois (pied du panneau, ou barre d'état panneau replié) ; sans modèle, la
+ *     consigne dite une fois (la barre d'état s'allume, plus de message ni de carte qui la répète) et le rappel s'éteint ;
+ *     la feuille blanche : un pictogramme au centre du plan, un mode d'emploi qui commence ailleurs ;
+ *   - les finitions : l'icône Murs (angle poché et amorce de cloison) ; l'épaisseur choisie du doublage en vue ; un clic dans
+ *     Largeur prend toute la valeur ; la séparation en cours de tracé en tirets d'encre (la ligne guide à côté) ; la cote de
+ *     largeur d'une pièce meublée prend une ligne libre plus loin dans la pièce plutôt que traverser un meuble.
+ *
  *   node maquettes/tools/ux.mjs "$(pwd)/maquettes"
  *
  * Sort en code 1 si un contrôle échoue ou si la page lève une erreur.
@@ -416,7 +428,8 @@ for (const [L0, H0] of [[1440, 900], [1280, 800], [1024, 768]]) {
     chercherEquip("zzzz"); const rien = /Aucun équipement/.test(OB.textContent); chercherEquip("chauffe eau"); const ce = [...OB.querySelectorAll(".lib2 .it b")].map((x) => x.textContent); chercherEquip("");
     r[`${larg} · Équipements : la recherche trouve « toilettes » → WC, « chauffe eau » → Chauffe-eau, et dit quand rien ne répond`] = tr.join() === "WC" && rien && ce.includes("Chauffe-eau");
     const n0 = L().items.length, c = S(v(...(() => { const b0 = bbox(L()); return [(b0.x0 + b0.x1) / 2, (b0.y0 + b0.y1) / 2]; })())); clickAction(W2(c));
-    r[`${larg} · Équipements : sans modèle choisi, un clic ne pose rien (fin du « Lit double » en douce) et le dit`] = itemType === null && L().items.length === n0 && /Choisis d'abord un modèle/.test(document.getElementById("toast").textContent) && /Choisis d'abord un modèle/.test(document.getElementById("hint").textContent);
+    /* D65 : « le dit » = la consigne de la barre d'état s'allume (le message du bas la répétait mot pour mot) */
+    r[`${larg} · Équipements : sans modèle choisi, un clic ne pose rien (fin du « Lit double » en douce) et le dit (la consigne s'allume)`] = itemType === null && L().items.length === n0 && !/Choisis d'abord un modèle/.test(document.getElementById("toast").textContent) && /Choisis d'abord un modèle/.test(document.getElementById("hint").textContent) && document.getElementById("hint").classList.contains("allume");
     [...OB.querySelectorAll(".lib2 .it")].find((x) => x.querySelector("b").textContent === "WC").click(); clickAction(W2(c));
     r[`${larg} · Équipements : après la pose, le panneau montre l'objet posé (sa fiche)`] = L().items.length === n0 + 1 && sel?.kind === "item" && document.querySelector("#pbody .ptitle")?.textContent.includes("WC");
     undo(); sel = null;
@@ -778,7 +791,7 @@ for (const [L0, H0] of [[1440, 900], [1280, 800], [1024, 768]]) {
     /* le modèle d'une autre famille ne reste pas choisi en douce */
     setFamEquip("chauffage"); setItemType("radiateur"); setFamEquip("elec"); const n0 = L().items.length; const b0 = bbox(L()); clickAction(v((b0.x0 + b0.x1) / 2, (b0.y0 + b0.y1) / 2));
     r[`${larg} · Équipements : changer de famille retire le modèle d'une autre famille — le clic suivant ne pose rien et le dit`] = itemType === null && L().items.length === n0 && /Choisis d'abord un modèle/.test(document.getElementById("hint").textContent);
-    setItemType("prise"); r[`${larg} · Équipements : choisir un modèle retire le message « Choisis d'abord un modèle »`] = !document.getElementById("toast").classList.contains("show");
+    setItemType("prise"); r[`${larg} · Équipements : choisir un modèle retire le message « Choisis d'abord un modèle »`] = !document.getElementById("toast").classList.contains("show") && !document.getElementById("hint").classList.contains("allume") && !/Choisis d'abord/.test(document.getElementById("hint").textContent);
     chercherEquip("radiateur"); r[`${larg} · Équipements : une recherche qui ne montre plus le modèle choisi le retire aussi`] = itemType === null; chercherEquip("");
     /* les épaisseurs du doublage : le même segmenté ; le panneau ne les répète pas */
     setTool("doublage"); const ep = OB.querySelector(".seg.barre.ep");
@@ -891,6 +904,92 @@ for (const [L0, H0] of [[1440, 900], [1280, 800], [1024, 768]]) {
     sel = null; render(); let pref = null; try { pref = localStorage.getItem("avyora-plan-plie"); } catch {}
     r["768 × 1024 · « Voir sa fiche » ouvre le panneau ; la sélection vidée, il se replie, la préférence ne change pas"] = a && b && plie() && pref === pref0;
     return r; }));
+  await p.close(); }
+
+/* ═════════ 10. D65 · la dernière passe : la consigne toujours là, une place par rôle, les finitions ═════════ */
+/* les aides de la page (noms à part : la page a ses propres globales) */
+const AIDES = () => { window.__vis = (e) => !!e && e.getClientRects().length > 0 && getComputedStyle(e).display !== "none" && getComputedStyle(e).visibility !== "hidden";
+  window.__H = document.getElementById("hint"); window.__entiere = () => __vis(__H) && !__H.classList.contains("cede") && __H.getBoundingClientRect().width >= 40 && __H.scrollWidth <= __H.clientWidth + 1; };
+for (const [L0, H0] of [[1440, 900], [1280, 800], [1024, 768]]) {
+  const p = await onglet({ larg: L0, haut: H0 });
+  await p.evaluate(AIDES);
+  try {
+  /* a. au repos : la consigne de chaque outil et de chaque sélection se lit entière, en Avant travaux comme en Travaux (la
+     légende déplacée dans la barre d'état lui prenait sa place) ; ce qui cède le fait dans l'ordre (échelle, zoom, légende) */
+  Object.assign(t, await p.evaluate((larg) => { const r = {}, ko = [];
+    for (const vue of ["existant", "projet"]) { setMode(vue, true); closeModal();
+      for (const o of ["select", "zone", "mur", "ouverture", "doublage", "equipement", "cote", "mesure", "texte", "calque"]) { setTool(o); sel = null; render(); if (!__entiere()) ko.push(vue + "/" + o); }
+      setTool("select"); const lv = L();
+      for (const [kind, x] of [["wall", lv.walls.find((w) => !isVirtual(w))], ["opening", lv.openings[0]], ["item", lv.items.find((i) => !ITEMS[i.type].elec)], ["room", lv.rooms[0]]]) { sel = { kind, id: x.id }; render(); if (!__entiere()) ko.push(vue + "/" + kind); }
+      sel = null; render(); }
+    r[`${larg} · barre d'état au repos : la consigne se lit entière pour chaque outil et chaque sélection, en Avant travaux et en Travaux${ko.length ? " — coupée : " + ko.join(", ") : ""}`] = !ko.length;
+    setMode("projet", true); closeModal(); sel = { kind: "opening", id: L().openings[0].id }; render();
+    const c = (id) => document.getElementById(id).classList, lg = c("legendeVue"), legendeCede = lg.contains("cede") || lg.contains("court");
+    r[`${larg} · barre d'état : l'échelle et le pourcentage de zoom cèdent avant la légende, la légende avant la consigne (consigne entière)`] = __entiere() && (!legendeCede || (c("echelle").contains("cede") && c("zlabel").contains("cede"))) && !__H.dataset.tip;
+    sel = null; render(); return r; }, L0));
+  /* b. pendant un tracé réel en vue Travaux : consigne entière, mesure en direct ; la légende et l'échelle laissent la place */
+  { await p.evaluate(() => { setMode("projet", true); closeModal(); setTool("select"); sel = null; render(); });
+    await p.keyboard.press("m"); await wait(60);
+    const c = await p.evaluate(() => { const Z = zoneUtile(), r = cv.getBoundingClientRect(); return { x: r.left + Z.x0 + 30, y: r.top + Z.y0 + 40, z: view.zoom }; });
+    await p.mouse.move(c.x, c.y); await p.mouse.click(c.x, c.y); await wait(60); await p.mouse.move(c.x, c.y + 3 * c.z, { steps: 5 }); await wait(100);
+    t[`${L0} · tracé réel en vue Travaux : la consigne se lit entière à côté de la mesure en direct ; la légende et l'échelle laissent la place ; le zoom reste au bord droit`] = await p.evaluate(() => { const ml = document.getElementById("mesureLive"), ET = document.getElementById("etat"), Z = document.querySelector(".etat .zoomctl"); return chain.length === 1 && __entiere() && /Coin suivant/.test(__H.textContent) && __vis(ml) && /Longueur/.test(ml.textContent) && !__vis(document.getElementById("legendeVue")) && !__vis(document.getElementById("echelle")) && Math.abs(ET.getBoundingClientRect().right - Z.getBoundingClientRect().right) <= 4; });
+    await p.keyboard.press("Escape"); await p.keyboard.press("Escape"); await p.mouse.move(5, 5);
+    /* la pose refusée (« déjà là ») : le message le plus long ; la consigne reste là, la fin du refus cède d'abord */
+    t[`${L0} · pose refusée (« déjà là ») : la consigne reste visible${L0 >= 1024 ? "" : ", coupée avec sa bulle"}, le refus est dit`] = await p.evaluate(() => { setTool("ouverture"); const o0 = L().openings[0], w0 = findWall(o0.wallId); hover = add(add(w0.a, mul(sub(w0.b, w0.a), o0.t)), wallOff(w0)); draw(); const ml = document.getElementById("mesureLive"), ok = __vis(__H) && __H.getBoundingClientRect().width >= 40 && (__entiere() || __H.dataset.tip === __H.textContent.trim()) && __vis(ml) && /déjà là/.test(ml.textContent) && __vis(ml.querySelector(".ko")); hover = null; setTool("select"); draw(); return ok; }); }
+  /* c. la surface une seule fois sur la ligne : dans le pied du panneau (à côté du budget) ; panneau replié, dans la barre d'état */
+  Object.assign(t, await p.evaluate((larg) => { const r = {}; setMode("projet", true); closeModal(); setTool("select"); sel = null; render();
+    const sb = document.getElementById("surfBadge"), pr = () => document.querySelector("#pfoot .presume"), a = !__vis(sb) && __vis(pr()) && /habitables/.test(pr().textContent);
+    plierPanneau(true); render(); const b2 = __vis(sb) && /habitables/.test(sb.textContent) && !__vis(pr()) && __entiere(); plierPanneau(false); render();
+    r[`${larg} · surface : une seule fois — pied du panneau quand il est ouvert, barre d'état quand il est replié (avec la consigne entière)`] = a && b2;
+    return r; }, L0));
+  /* d. une seule place par rôle : sans modèle (clic réel), la consigne n'est dite qu'une fois — dans la barre d'état, qui s'allume */
+  { await p.evaluate(() => { setMode("existant", true); closeModal(); setTool("equipement"); setFamEquip("chauffage"); document.getElementById("toast").classList.remove("show"); });
+    const m = await p.evaluate(() => { const b0 = bbox(L()), q = S(v((b0.x0 + b0.x1) / 2, (b0.y0 + b0.y1) / 2)), r = cv.getBoundingClientRect(); return { x: r.left + q.x, y: r.top + q.y }; });
+    const n0 = await p.evaluate(() => L().items.length); await p.mouse.click(m.x, m.y); await wait(120);
+    t[`${L0} · Équipements sans modèle (clic réel) : rien n'est posé ; la consigne est dite une fois (barre d'état, qui s'allume) ; pas de message ni de carte qui la répète`] = await p.evaluate((n0) => { const T = document.getElementById("toast"), P = document.getElementById("pbody"), re = /choisis[- ](d'abord )?(une famille, puis )?un modèle|choisis-en un/i;
+      const textes = [__H.textContent, __vis(T) && T.classList.contains("show") ? T.textContent : "", P.innerText, document.getElementById("optbar").innerText];
+      return L().items.length === n0 && itemType === null && textes.filter((x) => re.test(x)).length === 1 && re.test(__H.textContent) && __H.classList.contains("allume") && !!P.querySelector(".mprop.vide") && !/Aucun modèle choisi/.test(P.innerText); }, n0);
+    t[`${L0} · Équipements : la consigne allumée s'éteint dès qu'une autre la remplace (autre outil)`] = await p.evaluate(() => { setTool("select"); draw(); return !__H.classList.contains("allume") && !document.getElementById("optbar").classList.contains("allume"); });
+    await p.evaluate(() => { setItemType("radiateur"); setTool("select"); }); }
+  /* e. la feuille blanche : la consigne dans la barre d'état seulement — un pictogramme au centre du plan, un mode d'emploi qui dit autre chose */
+  t[`${L0} · feuille blanche : « clique le 1er coin » une seule fois (barre d'état) ; un pictogramme au centre du plan, le mode d'emploi commence ailleurs`] = await p.evaluate(() => { newPlan(); const o = ctx.fillText, oa = ctx.arc, ecrits = []; let pts = 0; ctx.fillText = function (s) { ecrits.push(s); return o.apply(this, arguments); }; ctx.arc = function () { pts++; return oa.apply(this, arguments); }; draw(); ctx.fillText = o; ctx.arc = oa;
+    const P = document.getElementById("pbody").innerText, T = document.getElementById("toast"), ok = tool === "mur" && !ecrits.some((x) => /coin/i.test(x)) && pts >= 4 && /1er coin/.test(__H.textContent) && __entiere() && !/poser le premier coin|1er coin/.test(P) && !(T.classList.contains("show") && /coin/.test(T.textContent));
+    closeWelcome("sample"); closeModal(); setTool("select"); return ok; });
+  /* f. les finitions */
+  Object.assign(t, await p.evaluate((larg) => { const r = {};
+    r[`${larg} · icône Murs : un angle de mur poché avec l'amorce d'une cloison (plus la lettre « L »)`] = (ICONS.outilMur.match(/<path/g) || []).length >= 2 && !/fill="currentColor" stroke="none"/.test(ICONS.outilMur);
+    const e0 = DBL_CFG.e; DBL_CFG.e = EP_DOUBLAGE[EP_DOUBLAGE.length - 1] / 1000; setTool("select"); setTool("doublage"); const on = document.querySelector("#optbar .seg.barre.ep .miniep.on"), sc = defileOptbar(document.getElementById("optbar")), q = on && on.getBoundingClientRect(), z = sc.getBoundingClientRect();
+    r[`${larg} · Doublage : l'épaisseur choisie (${on ? on.textContent : "?"}) est en vue dans la barre d'options, comme le modèle choisi`] = !!on && q.left >= z.left - 0.5 && q.right <= z.right + 0.5;
+    DBL_CFG.e = e0; setTool("select"); return r; }, L0));
+  /* le champ Largeur : un clic au milieu prend toute la valeur — taper 140 la remplace (et propose 1,40 m) */
+  { const f = await p.evaluate(() => { setMode("existant", true); closeModal(); setTool("select"); const rad = L().items.find((x) => x.type === "radiateur"); sel = { kind: "item", id: rad.id }; render(); const i = document.querySelector("#pbody input[type=number]"); i.scrollIntoView({ block: "center" }); const q = i.getBoundingClientRect(); return { x: q.left + q.width / 2, y: q.top + q.height / 2, w: rad.w }; });
+    await p.mouse.click(f.x, f.y); await wait(50); await p.keyboard.type("140"); await p.keyboard.press("Enter"); await wait(120);
+    t[`${L0} · champ numérique : un clic au milieu de Largeur prend toute la valeur — 140 la remplace, refusé avec « Mettre 1,40 m »`] = await p.evaluate((w) => { const T = document.getElementById("toast"), rad = L().items.find((x) => x.type === "radiateur"); const ok = rad.w === w && /140,00 m/.test(T.textContent) && /1,40 m/.test(T.textContent) && !!T.querySelector(".tact"); sel = null; render(); return ok; }, f.w); }
+  /* la séparation en cours de tracé : des tirets d'encre sur le trait, la ligne guide 10 px à côté */
+  { await p.evaluate(() => { newPlan(); wallType = "virtuel"; renderOptions(); });
+    const c = await p.evaluate(() => { const Z = zoneUtile(), r = cv.getBoundingClientRect(); return { x: r.left + (Z.x0 + Z.x1) / 2 - 150, y: r.top + Z.y0 + 60, z: view.zoom }; });
+    await p.mouse.move(c.x, c.y); await p.mouse.click(c.x, c.y); await wait(60); await p.mouse.move(c.x, c.y + 3.2 * c.z, { steps: 5 }); await wait(100);
+    t[`${L0} · séparation en cours de tracé : des tirets d'encre sur le trait, la ligne guide de la cote à côté (plus dessus)`] = await p.evaluate(() => { if (chain.length !== 1 || !liveMur) return false; const a = S(chain[0]), b = S(liveMur.end), k = devicePixelRatio;
+      const lire = (dx) => { let ind = 0, enc = 0; for (let y = Math.min(a.y, b.y) + 24; y < Math.max(a.y, b.y) - 24; y += 1) { const d = ctx.getImageData(Math.round((a.x + dx) * k), Math.round(y * k), 1, 1).data; if (d[2] > 180 && d[0] < 140 && d[2] - d[0] > 80) ind++; else if (d[0] < 200 && d[2] < 210 && d[2] - d[0] < 70 && d[0] + d[1] + d[2] < 560) enc++; } return { ind, enc }; };
+      const trait = lire(0), cote = [lire(-10), lire(10)].sort((x, y) => y.ind - x.ind)[0]; return Math.abs(a.x - b.x) < 1 && trait.enc > 10 && trait.ind <= 2 && cote.ind > 10; });
+    await p.keyboard.press("Escape"); await p.keyboard.press("Escape"); await p.evaluate(() => { wallType = "auto"; closeWelcome("sample"); closeModal(); setTool("select"); }); }
+  /* les cotes intérieures : une ligne libre plus loin dans la pièce avant de traverser un meuble (pièce de 5 × 4 m, un
+     canapé contre chaque long mur : à 26 et 95 cm des deux murs, la cote de largeur traversait un meuble) */
+  t[`${L0} · cotes intérieures : la cote de largeur prend une ligne libre plus loin dans la pièce plutôt que traverser un meuble`] = await p.evaluate(() => { newPlan(); rectMode = { L: 5, l: 4 }; clickAction(v(0, 0)); rectMode = null; setTool("select"); const lv = L(); render();
+    const f = (facesCache[lv.id] || []).find((x) => x.room); if (!f) return false; const ib = roomInteriorBox(lv, f), w = ib.x1 - ib.x0;
+    lv.items.push({ id: uid(), type: "canape", x: (ib.x0 + ib.x1) / 2, y: ib.y0 + 0.55, w: w - 0.2, h: 1.0, rot: 0 }, { id: uid(), type: "canape", x: (ib.x0 + ib.x1) / 2, y: ib.y1 - 0.55, w: w - 0.2, h: 1.0, rot: 0 }); fitView(); render();
+    const o = drawDim, vus = []; drawDim = function (a, b, col, withText, evite, cout, essai) { const r2 = o.apply(this, arguments); if (col === "#6d4fc2" && withText && !essai && r2) vus.push({ A: S(a), B: S(b), hz: Math.abs(a.y - b.y) < 1e-6 }); return r2; }; draw(); drawDim = o;
+    const eq = obstaclesEtiquettes(lv, true), larg = vus.find((x) => x.hz); const ok = !!larg && !eq.some((q) => segCoupeBoite(larg.A, larg.B, q)); closeWelcome("sample"); closeModal(); return ok; });
+  } catch (e) { t[`D65 · ${L0} — ${e.message.split("\n")[0]}`] = false; }
+  await p.close();
+}
+/* g. sous 1 024 px (tablette, panneau ouvert) : la consigne peut se couper — en « … », jamais retirée, entière dans la bulle */
+{ const p = await onglet({ larg: 768, haut: 1024 });
+  await p.evaluate(AIDES);
+  await p.evaluate(() => { plierPanneau(false); setTool("mur"); const Z = zoneUtile(); hover = W2(v(Z.x0 + 30, Z.y0 + 40)); clickAction(hover); hover = W2(v(Z.x0 + 30, Z.y0 + 40 + 3 * view.zoom)); draw(); });
+  const q = await p.evaluate(() => { const h = document.getElementById("hint"), r = __H.getBoundingClientRect(); return { x: r.left + Math.min(20, r.width / 2), y: r.top + r.height / 2, w: r.width, coupe: __H.scrollWidth > __H.clientWidth + 1, tip: __H.dataset.tip || "", txt: __H.textContent.trim(), ell: getComputedStyle(h).textOverflow }; });
+  await p.mouse.move(q.x, q.y); await wait(120);
+  t[`768 × 1024 · panneau ouvert, pendant un tracé : la consigne reste (${Math.round(q.w)} px)${q.coupe ? ", coupée en « … », entière dans la bulle" : ", entière"}`] = q.w >= 40 && /Coin suivant/.test(q.txt) && (!q.coupe || (q.ell === "ellipsis" && q.tip === q.txt && await p.evaluate((txt) => { const b = document.getElementById("bulle"); return !b.hidden && b.textContent.replace(/\s+/g, " ").includes(txt.replace(/\s+/g, " ")); }, q.txt)));
   await p.close(); }
 
 await b.close().catch(() => {});
