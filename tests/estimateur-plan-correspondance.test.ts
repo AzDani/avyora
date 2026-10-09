@@ -616,3 +616,21 @@ describe("table de correspondance · l'étude de structure (contrat 1.14)", () =
     expect(c.raison).toMatch(/poutre ou un poteau/);
   });
 });
+
+/* D67 (contrat 1.18) : deux types de plan. Un Plan final décrit le logement VOULU, sans état : rien à facturer. */
+describe("table de correspondance · le type de plan (contrat 1.18)", () => {
+  it("la scène de référence dit qu'elle est une rénovation", () => {
+    expect(plan.workflow).toBe("renovation");
+  });
+  it("un Plan final ne produit AUCUNE contribution, même porteur des mêmes objets qu'une rénovation", () => {
+    const r = contributionsDuPlan({ ...plan, workflow: "final_plan" });
+    expect(contributions.length).toBeGreaterThan(10);
+    expect(r.contributions).toEqual([]);
+    expect(r.ignores).toEqual([]);
+  });
+  it("un contrat sans type (antérieur à 1.18) se lit comme une rénovation, à l'identique", () => {
+    const { workflow: _w, ...ancien } = plan;
+    expect(contributionsDuPlan(ancien as PlanPourCorrespondance).contributions).toEqual(contributions);
+    expect(contributionsDuPlan({ ...plan, workflow: "renovation" }).contributions).toEqual(contributions);
+  });
+});
