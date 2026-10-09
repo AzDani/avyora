@@ -3983,3 +3983,93 @@ glissé au bouton du milieu ; chaîne des baies ; aucune cote intérieure sur un
 ⌘ sur Mac ; bulle en deux niveaux ; tablette : la fiche se replie. Deux contrôles du source (extrémités obliques, tracé à
 l'encre). `ux.mjs` passe de 396 à 500 contrôles ; sur le fichier d'avant, 22 échecs (les sections U1, U3, U4, U5 et D64
 s'arrêtent sur ce qui n'existe pas encore). Batterie complète (21 + ux), finition, couverture et vitest (167) verts.
+
+## D65 · Dernière passe de la refonte : la consigne toujours là, une place par rôle, les finitions (09/10/2026)
+
+**D'où l'on part.** Contre-vérification du jury (designer senior et architecte, 8/10) : D64 tient, l'éditeur se lit comme
+un vrai logiciel de plans. Restent une régression (la consigne qui disparaît pendant un tracé à 1 440 en vue Travaux), deux
+« une place par rôle » inachevés (consignes répétées, surface en double) et des finitions. Hors passe (décisions de Dani) :
+l'accrochage au milieu et à l'axe, le téléphone en paysage, les couleurs d'états, le doublage, le chiffrage. Tout est vu à
+l'écran, avant et après, à 1 440 × 900, 1 280 × 800 et 1 024 × 768 (plus 768 × 1024). Captures : scratchpad
+`finition-ux/` (`avant-*`, `apres-*`, `barres-avant-apres`, `l23b-*`, `fin-*`, `cotes-*`).
+
+**Constat** (mesuré avant).
+- *La consigne.* Murs, 1er coin cliqué, souris 3,20 m plus bas, vue Travaux, 1 440 : `#hint` en `display:none` — la barre
+  (1 050 px) porte la mesure (251), la surface (127), la légende (226), l'échelle (108) et le zoom (225). À 1 280 elle
+  tient, coupée ; à 1 024, même au repos, « Clique un éléme… » (101 px).
+- *La surface* : « 58,1 m² habitables » dans la barre d'état et « 58,1 m² habitables après travaux · 6 pièces » dans le
+  pied du panneau, côte à côte sur la même ligne.
+- *Équipements sans modèle* : la consigne quatre fois — barre d'état, mode d'emploi (« Choisis une famille, puis un
+  modèle, au-dessus du plan »), carte « Aucun modèle choisi : choisis-en un… », message du bas au clic. *Feuille blanche* :
+  trois fois — centre du plan (« Clique pour poser le premier coin »), barre d'état, étape 1 du mode d'emploi.
+- *Finitions* : l'icône Murs se lit « L » (la touche de Mesurer) ; un clic au milieu de Largeur met le curseur devant
+  la valeur (140 donnait « 1401,00 m », refusé sans proposition) ; à 1 024 la barre du Doublage s'arrête à « Isolant 6 »,
+  l'épaisseur choisie sous le chevron ; une séparation en cours de tracé se lit indigo (la ligne guide de la cote, pleine,
+  recouvre ses tirets d'encre).
+- *Cotes intérieures* : 4 sur 12 traversent un meuble à 1 440 (Chambre 3,22 m, Salle de bain 2,06 m, Séjour 3,90 m et
+  4,17 m), 4 sur 11 à 1 280.
+
+**Décision.**
+1. *La consigne ne cède plus jamais.* `majPlaceConsigne` applique un ordre de priorité MESURÉ : consigne > mesure en
+   direct > surface > légende (`CEDE_ETAT`). Au repos cèdent, tant que la consigne est coupée : l'échelle, le pourcentage
+   de zoom, les mots de la légende (les échantillons restent ; le mot est lu par le lecteur d'écran et dans la bulle), la
+   légende, puis la surface (ses pièces, « habitables », elle). Ce qui a cédé avant le dernier revient s'il tient encore,
+   du plus utile au moins utile (jamais un moins utile sans un plus utile). Pendant un geste (la mesure en direct est
+   là), la légende et l'échelle sont retirées à toute largeur — elles ne servent pas au tracé — puis cèdent le
+   pourcentage de zoom, la surface, la pastille du budget, l'accrochage nommé, la 2e mesure (l'angle, le mur visé ;
+   jamais un refus), la fin d'un refus (« : le clic la choisit ») et, devant un refus, le modèle. Sous 1 024, si elle ne
+   tient toujours pas, la consigne se coupe en « … » (48 px au moins) et se lit entière dans la bulle (`data-tip`) ; même
+   une barre de moins de 480 px la garde. On remesure quand les polices arrivent. Résultat : entière à 1 440, 1 280 et
+   1 024, au repos et pendant un tracé, en Avant travaux comme en Travaux ; coupée avec sa bulle à 768 panneau ouvert.
+2. *La surface, une fois.* Panneau ouvert, elle est dans le pied du panneau, à côté du budget (le résultat, D64) ; la
+   barre d'état ne la porte que panneau replié, avec la pastille du budget. C'est la place que lisent les contrôles
+   `valeur` (le montant plus gros que la surface).
+3. *Une place par rôle.* Équipements sans modèle : la barre d'état seule dit la consigne ; un clic refusé l'allume (fond
+   indigo pâle, tuiles cerclées, 1,8 s : `rappelConsigne`, classe `.allume` — `.rappel` est celle du Suivi) et le lecteur
+   d'écran l'entend ; plus de message en bas. Le panneau dit autre chose : le mode d'emploi commence par « Une tuile par
+   modèle : change de famille, ou cherche par nom (« toilettes ») », et « Modèle choisi » montre un état vide neutre
+   (« Aucun · ses dimensions et son chiffrage s'afficheront ici »). Une autre consigne éteint le rappel. Feuille blanche :
+   plus de consigne écrite au centre du plan mais un pictogramme calme (`pictoPremierCoin` : une pièce en tirets, le 1er
+   coin plein en indigo, le dernier côté qui y revient en flèche) ; le mode d'emploi des Murs commence par « Choisis le
+   type de mur au-dessus du plan, ou laisse Automatique ».
+4. *Les finitions.* Icône Murs : l'angle poché, plus épais, avec l'amorce d'une cloison — un fragment de plan, plus une
+   lettre. Un champ numérique prend toute sa valeur au focus, au clic comme au clavier (un 2e clic place le curseur) :
+   140 remplace « 1,00 » et le message propose « Mettre 1,40 m ». La barre du Doublage amène l'épaisseur choisie en vue à
+   l'ouverture de l'outil, comme le modèle choisi. Une séparation en cours de tracé : sa ligne guide de cote passe 10 px à
+   côté, ses tirets d'encre se lisent.
+5. *Cotes intérieures et mobilier : la solution simple et sûre, seulement.* Avant de traverser un meuble, une cote
+   intérieure essaie une ligne libre plus loin dans la pièce (tous les 10 cm, des deux côtés, jusqu'au milieu), qui ne
+   passe ni sur une ouverture, ni sur un meuble, ni sous une étiquette, une note ou un autre texte ; rien ne change quand
+   une ligne libre existait déjà. Sur l'exemple, elle ne règle qu'une cote (Chambre 3,86 m à 1 280 et 1 024, posée entre
+   le lit et l'armoire) : la baignoire barre toute la largeur de la salle de bain, le canapé et la table tout le séjour, le
+   lit et le débattement de la porte la chambre à 1 440. **Ces 3 cotes traversent encore un meuble** : il n'existe pas de
+   ligne libre à décaler. Couper la ligne de cote sur l'emprise du meuble (l'autre proposition du jury) change le rendu de
+   toutes les cotes (`drawDim`) : laissé, à décider.
+
+**Pourquoi pas tout ce que le jury proposait.**
+- *Garder le message du bas pour « le refus »* : la consigne allumée le dit à la même place, et le lecteur d'écran
+  l'entend ; un message de plus redisait la même phrase.
+- *Réduire « Par l'intérieur / l'extérieur » à la mini-coupe sous 700 px* : amener l'épaisseur choisie en vue suffit ; la
+  barre garde ses mots.
+- *Retirer la légende pendant un geste seulement sous 1 000 px* (D64) : à toute largeur — à 1 440 c'est elle qui prenait
+  la place.
+
+**Ce qui ne bouge pas.** Aucune globale renommée (ajouts : `CEDE_ETAT`, `sigPlace`, `rappelConsigne`,
+`pictoPremierCoin` ; `retirerMsgSansModele` éteint aussi le rappel ; `majPlaceConsigne` change d'algorithme, pas de nom).
+Ids, ordre `.top → #tools → canvas`, `onclick` d'ancrage, clés `localStorage`, signatures de `drawDim` / `hachurer` /
+`drawOpening` / `drawItem`, `snapPoint` et jonctions, couleurs des états, rendu du doublage, chiffrage, téléphone. Classes
+ajoutées : `.allume`, `.cede` (générique), `.court` (la légende), `.mprop.vide`, `.kl` (la fin d'un refus).
+
+**Contrôles.** Mis à jour en gardant leur intention, parce que la passe déplace volontairement ce qu'ils visaient :
+- `ux` §6 : « sans modèle, un clic ne pose rien et le dit » — le dire, c'est la consigne qui s'allume (plus le message du
+  bas, qui la répétait) ; « choisir un modèle retire le message » — et le rappel.
+- `responsive` : « plan vide, outil Murs : la consigne tient » — elle n'est plus écrite au centre du plan ; le pictogramme
+  tient dans le plan étroit et la consigne de la barre d'état reste, entière ou coupée avec sa bulle.
+Nouveau : `ux` §10 (D65, à 1 440, 1 280 et 1 024, et 768) — la consigne entière au repos pour chaque outil et chaque
+sélection en Avant travaux et en Travaux ; l'ordre de ce qui cède ; un tracé réel en vue Travaux (consigne entière, légende
+et échelle retirées, zoom au bord) ; une pose refusée ; la surface une fois (panneau ouvert ou replié) ; sans modèle au clic
+réel, la consigne dite une fois et allumée, puis éteinte ; la feuille blanche ; l'icône Murs ; l'épaisseur du doublage en
+vue ; un clic au milieu de Largeur puis 140 ; la séparation en cours de tracé (pixels du trait et de la ligne guide) ; une
+pièce de 5 × 4 m meublée sur ses deux longs murs, dont la cote de largeur prend une ligne libre ; à 768 panneau ouvert, la
+consigne coupée en « … » et entière dans la bulle (souris réelle). `ux.mjs` passe de 500 à 540 contrôles (40 nouveaux) ;
+sur le fichier d'avant, 38 échecs. Batterie complète (21 + ux), finition, couverture et vitest (167) verts.
