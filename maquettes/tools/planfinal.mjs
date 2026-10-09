@@ -37,6 +37,15 @@
  *     et trois gestes) : où et quand elle se montre, fermée à la souris, mémorisée au rechargement, rouverte par
  *     Aide › Premiers pas, jamais dans une rénovation, ni par-dessus la carte du plan vide, ni au téléphone ; aux
  *     largeurs 1 440, 1 280, 1 024 (Pro et gratuit), 768 et 640 rien ne déborde ; au téléphone, la consultation.
+ *   - D70 (corrections du jury) : l'aide ne prend aucun clic — un tracé à la souris dont le premier coin tombe SOUS la
+ *     carte se ferme, la carte se replie en pastille « Premiers pas » (bas à gauche) dès qu'on dessine, d'office sur un
+ *     plan type, et le « Mode d'emploi » du panneau reste replié tant qu'elle est dépliée ; Annuler s'allume dès la
+ *     première pièce fermée ; une Séparation posée sur le bout d'une cloison coupe la pièce (Plan final et rénovation) ;
+ *     en Pro, l'accueil s'ouvre sur une feuille blanche calme et le fermer sans choisir garde un Plan final vide
+ *     (l'étape rénovation fermée ouvre l'exemple, D50) ; la vue d'ensemble dit chaque nombre une fois (pièces, puis
+ *     ouvertures par modèle ; les totaux au pied) ; les mots démolir, MaPrimeRénov', neuf, ancien, toiture, artisan
+ *     rejoignent la liste ; les plans types, le dossier, le glossaire, la Note et l'Affichage parlent du logement voulu ;
+ *     au téléphone, le tiroir dit le type ; la rénovation d'un gratuit garde ses phrases et son exemple (D66).
  *
  *   node maquettes/tools/planfinal.mjs "$(pwd)/maquettes"            (ajouter --lister pour voir chaque mot trouvé)
  *
@@ -73,7 +82,7 @@ async function onglet({ largeur = 1440, hauteur = 900, pro = true, graine = null
 const MOTS = [
   [/(?<!\p{L})existant(?:e|s|es)?(?!\p{L})/iu, "existant"],
   [/(?<!\p{L})travaux(?!\p{L})/iu, "travaux (avant, après travaux)"],
-  [/à démolir|(?<!\p{L})démoli(?:e|s|es)?(?!\p{L})/iu, "démolir / démoli"],
+  [/à démolir|(?<!\p{L})démoli(?:e|s|es|r)?(?!\p{L})/iu, "démolir / démoli"], /* D70 : « démolir » aussi (le glossaire « Tronçon ») */
   [/(?<!\p{L})conserv(?:é|ée|és|ées)(?!\p{L})/iu, "conservé"],
   [/je garde/iu, "je garde"],
   [/à créer/iu, "à créer"],
@@ -87,6 +96,12 @@ const MOTS = [
   [/avancement/iu, "avancement"],
   [/(?<!\p{L})budgets?(?!\p{L})/iu, "budget"],
   [/(?<!\p{L})estimer(?!\p{L})/iu, "estimer"],
+  /* D70 (jury) : les aides à la rénovation, le neuf et l'ancien, la toiture (un Plan final n'en a pas), l'artisan (le chantier) */
+  [/MaPrimeR[ée]nov/iu, "MaPrimeRénov'"],
+  [/(?<!\p{L})neu(?:f|fs|ve|ves)(?!\p{L})/iu, "neuf / neuves"],
+  [/(?<!\p{L})ancien(?:ne|s|nes)?(?!\p{L})/iu, "ancien"],
+  [/(?<!\p{L})toitures?(?!\p{L})/iu, "toiture"],
+  [/(?<!\p{L})artisans?(?!\p{L})/iu, "artisan"],
   /* vocabulaire (D67) : un Plan final décrit ce que l'on veut, pas ce qui est là */
   [/(?<!\p{L})(?<!plan |niveau )actuel(?:le|s|les)?(?!\p{L})/iu, "actuel (vocabulaire du Plan final : « Sol », pas « Sol actuel » ; « le plan actuel » reste)"],
 ];
@@ -424,7 +439,7 @@ await cliquer(p, "#m-welcome .wretour");
 t["Pro · accueil : la flèche (clic) revient au type, le focus sur la carte d'où l'on vient"] = await p.evaluate(() => document.querySelector("#m-welcome .modal").dataset.etape === "type" && /^Projet rénovation/.test(document.activeElement.innerText));
 await cliquer(p, "#m-welcome .wcard", "Plan final");
 Object.assign(t, await p.evaluate(() => { const m = document.querySelector("#m-welcome .modal"), vis = (el) => !!el && el.getClientRects().length > 0, C = [...m.querySelectorAll(".wcard")].filter(vis);
-  return { "Pro · accueil › Plan final (clic) : « Dessine ton plan final », feuille blanche ou plan type": m.dataset.etape === "pf" && /Dessine ton plan final/.test(m.querySelector("h3").textContent) && /Commence par tes murs/.test(m.innerText) && C.length === 2 && /Feuille blanche/.test(C[0].innerText) && /plan type/.test(C[1].innerText) }; }));
+  return { "Pro · accueil › Plan final (clic) : « Dessine ton plan final — Comment veux-tu commencer ? », feuille blanche ou plan type (D70 : la consigne n'est dite qu'une fois, dans l'aide)": m.dataset.etape === "pf" && /Dessine ton plan final/.test(m.querySelector("h3").textContent) && m.querySelector(".wsub").textContent === "Comment veux-tu commencer ?" && !/Commence par tes murs/.test(m.innerText) && C.length === 2 && /Feuille blanche/.test(C[0].innerText) && /plan type/.test(C[1].innerText) }; }));
 await lireDans(p, "#m-welcome .modal", "Pro · accueil, étape Plan final");
 await cliquer(p, "#m-welcome .wcard", "Feuille blanche");
 t["Pro · accueil › Plan final › Feuille blanche (clic) : un Plan final vide, l'outil Murs, l'exemple pas rangé"] = await p.evaluate(() => !modaleOuverte() && estPlanFinal() && planVide() && tool === "mur" && Object.keys(loadPlans()).length === 0 && localStorage.getItem("avyora-plan-welcome") === "1" && document.getElementById("typePlan").textContent === "Plan final");
@@ -520,7 +535,7 @@ for (const [L0, H0] of [[1280, 800], [1024, 768], [768, 1024]]) {
     r[`${tag} · Nouveau plan : dans l'écran, sans défiler`] = nr.top >= 0 && nr.bottom <= innerHeight && n.scrollHeight <= n.clientHeight + 1;
     etapeDepart("nouveau", "reno"); r[`${tag} · Nouveau plan › Projet rénovation : trois cartes, sans défiler`] = [...n.querySelectorAll(".wcard")].filter(vis).length === 3 && n.scrollHeight <= n.clientHeight + 1;
     closeModal(); const tp = document.getElementById("typePlan"), nm = document.getElementById("pname"), a = tp.getBoundingClientRect(), b2 = nm.getBoundingClientRect(), top = document.querySelector(".top").getBoundingClientRect();
-    r[`${tag} · la pastille du type, sous le nom, dans la barre`] = vis(tp) && a.top >= b2.bottom - 1 && a.left >= b2.left && a.bottom <= top.bottom && tp.textContent === "Projet rénovation";
+    r[`${tag} · la pastille du type, sous le nom, dans la barre`] = vis(tp) && a.top >= b2.bottom - 1 && a.left >= b2.left && a.bottom <= top.bottom && tp.textContent === nomType(workflowDe(state)); /* D70 : l'accueil fermé laisse un Plan final vide (plus l'exemple) : la pastille dit le type du plan ouvert */
     return r; }, `${L0}×${H0}`));
   });
 }
@@ -548,7 +563,7 @@ const reno = await p.evaluate((M) => { state.workflow = WORKFLOW_RENO; sel = nul
 if (LISTER) console.log("   Plan final", JSON.stringify(pf), "\n   rénovation", JSON.stringify(reno));
 t["épuré · barre du haut : moins de commandes que la rénovation du même plan (ni vues)"] = pf.top < reno.top && pf.top <= reno.top - 3;
 t["épuré · colonne : 9 outils — Sélection, Murs, Doublage, Ouvertures, Équipements, Cote, Mesurer, Note, Image (ni Zone)"] = JSON.stringify(pf.outils) === JSON.stringify(["select", "mur", "doublage", "ouverture", "equipement", "cote", "mesure", "texte", "calque"]);
-t["épuré · colonne : les sections Structure, Menuiseries, (Équipements), Mesures, Fond ; la Sélection en tête, sans titre"] = JSON.stringify(pf.sections) === JSON.stringify(["Structure", "Menuiseries", "Mesures", "Fond"]);
+t["épuré · colonne : les sections Structure, Menuiseries, Intérieur (D70 : un titre à chaque famille), Mesures, Fond ; la Sélection en tête, sans titre"] = JSON.stringify(pf.sections) === JSON.stringify(["Structure", "Menuiseries", "Intérieur", "Mesures", "Fond"]);
 t["rénovation · sa colonne ne bouge pas (10 outils, Zone comprise ; Édition, Annoter)"] = reno.outils.length === 10 && reno.outils.includes("zone") && JSON.stringify(reno.sections) === JSON.stringify(["Édition", "Structure", "Menuiseries", "Annoter", "Fond"]);
 t["épuré · Sélection : pas de barre d'options, la tête du plan disparaît (le plan commence sous la barre du haut)"] = !pf.optbar && pf.tete === 0 && pf.y0 === 0;
 t["épuré · le plan gagne la hauteur de la barre d'options (rénovation : barre de la Sélection, même plan)"] = reno.optbar && reno.tete > 0 && pf.plan >= reno.plan + reno.tete;
@@ -577,13 +592,16 @@ await p.keyboard.press("Escape"); await p.evaluate(() => { setTool("select"); se
 await regarder(p, "Pro · vue d'ensemble, le récapitulatif");
 Object.assign(t, await p.evaluate(() => {
   const r = {}, vis = (el) => !!el && el.getClientRects().length > 0, P = document.getElementById("pbody");
-  const ph = [...P.querySelectorAll(".ph")].find((x) => /^Récapitulatif/.test(x.textContent.trim()));
-  const q = recapExistant(), hv = habView(quantities()), N = state.levels.reduce((s, l) => s + l.openings.length, 0);
-  const tabs = ph ? [ph.nextElementSibling, ph.nextElementSibling && ph.nextElementSibling.nextElementSibling] : [];
-  r["récapitulatif · « Récapitulatif » (tous niveaux), plus de « Récap des surfaces »"] = !!ph && /tous niveaux/.test(ph.textContent) && !/Récap des surfaces/.test(P.innerText);
-  r["récapitulatif · les surfaces par type de pièce, et la surface habitable du plan"] = !!tabs[0] && tabs[0].classList.contains("stab") && /Chambres\s*× 3/.test(tabs[0].innerText) && tabs[0].querySelector(".sr.tot b").textContent === fmtM2(q.area);
-  const o = tabs[1], rows = o ? [...o.querySelectorAll(".sr:not(.tot)")] : [];
-  r["récapitulatif · les ouvertures par modèle, leur total = toutes les ouvertures du plan"] = !!o && o.classList.contains("ouv") && rows.length >= 5 && rows.reduce((s, x) => s + +x.querySelector("b").textContent, 0) === N && +o.querySelector(".sr.tot b").textContent === N && /Baie vitrée/.test(o.innerText) && /Porte d'entrée/.test(o.innerText);
+  /* D70 (jury) : chaque nombre une fois — la liste des pièces (cliquable), puis les ouvertures par modèle, avant les réglages ;
+     les totaux (surface habitable, pièces, ouvertures) au pied seulement ; les nombres qu'on lit en encre, pas en indigo */
+  const hv = habView(quantities()), N = state.levels.reduce((s, l) => s + l.openings.length, 0);
+  const ph = [...P.querySelectorAll(".ph")].find((x) => /^Ouvertures/.test(x.textContent.trim())), o = ph && ph.nextElementSibling, rows = o ? [...o.querySelectorAll(".sr")] : [];
+  r["vue d'ensemble · la liste des pièces (cliquable), sans tableau des surfaces par type ni « Récapitulatif » qui la répète"] = P.querySelectorAll(".roomlist button.rl").length === (facesCache[L().id] || []).filter((f) => f.room).length && !P.querySelector(".stab:not(.ouv)") && ![...P.querySelectorAll(".ph")].some((x) => /^Récap/.test(x.textContent.trim()));
+  r["vue d'ensemble · les ouvertures par modèle (tous niveaux), sans ligne de total : leur somme = toutes les ouvertures du plan"] = !!o && o.classList.contains("ouv") && /tous niveaux/.test(ph.textContent) && rows.length >= 5 && !o.querySelector(".tot") && rows.reduce((s, x) => s + +x.querySelector("b").textContent, 0) === N && /Baie vitrée/.test(o.innerText) && /Porte d'entrée/.test(o.innerText);
+  r["vue d'ensemble · les ouvertures juste sous les pièces, avant « Réglages du niveau »"] = !!ph && ph.previousElementSibling?.classList.contains("roomlist") && !!(ph.compareDocumentPosition(P.querySelector('details[data-k="niveau"]') || P.lastElementChild) & Node.DOCUMENT_POSITION_FOLLOWING);
+  r["vue d'ensemble · la surface habitable et les totaux ne se lisent qu'au pied"] = !/Surface habitable/.test(P.innerText) && !P.innerText.includes(fmtM2(hv.area));
+  { const enc = document.createElement("i"); enc.style.color = "var(--ink)"; document.body.appendChild(enc); const ink = getComputedStyle(enc).color; enc.remove();
+    r["vue d'ensemble · les nombres des ouvertures en encre (l'indigo dit ce qui se clique)"] = rows.length > 0 && rows.every((x) => getComputedStyle(x.querySelector("b")).color === ink); }
   const c = document.querySelector("#pfoot .recappf");
   r["pied · à la place du budget : « Surface habitable », la surface en grand (celle du plan)"] = vis(c) && /^Surface habitable/.test(c.querySelector(".rk").textContent) && c.querySelector(".rv").textContent === fmtM2(hv.area) && !document.querySelector("#pfoot .budget");
   r["pied · les pièces et les ouvertures (mêmes nombres), et les 2 niveaux"] = c.querySelector(".rs").textContent.replace(/\s+/g, " ").trim() === `${hv.rooms} pièces · ${N} ouvertures` && /2 niveaux/.test(c.querySelector(".rk").textContent) && c.getAttribute("aria-label") === "Récapitulatif du plan";
@@ -598,13 +616,14 @@ t["Exporter le plan (clic) : le dossier des plans — un par niveau, le contrôl
 await regarder(p, "Pro · dossier exporté depuis le bouton du haut"); await p.evaluate(() => closeModal());
 /* sans pièce : ni carte de récapitulatif, ni liste vide */
 Object.assign(t, await p.evaluate(() => { const vis = (el) => !!el && el.getClientRects().length > 0; state = blankState(); state.workflow = WORKFLOW_FINAL; afterChange(); fitView(); setTool("select"); render();
-  return { "sans pièce : pas de récapitulatif au pied, et le panneau ne dit qu'une fois comment fermer une pièce": !vis(document.getElementById("pfoot")) && !document.querySelector("#pfoot .recappf") && ![...document.querySelectorAll("#pbody .ph")].some((x) => vis(x) && /Pièces/.test(x.textContent)) && /Aucune pièce fermée/.test(document.getElementById("pbody").innerText) }; }));
+  return { "sans pièce : pas de récapitulatif au pied, et le panneau ne dit qu'une fois comment fermer une pièce": !vis(document.getElementById("pfoot")) && !document.querySelector("#pfoot .recappf") && ![...document.querySelectorAll("#pbody .ph")].some((x) => vis(x) && /Pièces/.test(x.textContent)) && /Aucune pièce fermée/.test(document.getElementById("pbody").innerText),
+    "sans pièce (D70) : le panneau ne redit pas « Trace les murs extérieurs » (la carte du plan vide et la barre d'état le disent)": !/Trace les murs/.test(document.getElementById("pbody").innerText) }; }));
 await regarder(p, "Pro · plan vide, le panneau");
 });
 
 /* ═════════ 15. D69 · L'aide de la première fois ═════════ */
 const AIDE = () => { const a = document.getElementById("aidePF"); if (!a || !a.getClientRects().length) return null; const q = a.getBoundingClientRect(), st = document.getElementById("stage").getBoundingClientRect(), tp = document.getElementById("tetePlan"), et = document.getElementById("etat").getBoundingClientRect(), to = document.getElementById("tools").getBoundingClientRect();
-  return { h4: a.querySelector("h4")?.textContent, p: a.querySelector("p")?.textContent, li: [...a.querySelectorAll("li")].map((x) => x.textContent.replace(/\s+/g, " ").trim()), ico: a.querySelectorAll("li svg.ico").length, x: a.querySelector(".aidex")?.getAttribute("aria-label"),
+  return { etat: a.dataset.etat, pill: a.querySelector(".aidepill")?.textContent, h4: a.querySelector("h4")?.textContent, p: a.querySelector("p")?.textContent, li: [...a.querySelectorAll("li")].map((x) => x.textContent.replace(/\s+/g, " ").trim()), ico: a.querySelectorAll("li svg.ico").length, x: a.querySelector(".aidex")?.getAttribute("aria-label"),
     dedans: q.left >= st.left && q.right <= st.right && q.top >= st.top && q.bottom <= et.top && q.left >= to.right && (!tp.getClientRects().length || q.top >= tp.getBoundingClientRect().bottom), l: Math.round(q.width), focus: a.contains(document.activeElement), carteVide: !document.getElementById("emptyStage").hidden }; };
 await parcours("D69, l'aide de la première fois (Pro, à la souris)", async () => {
 p = await onglet({ graine: { "avyora-plan-tuto": "fait" } });
@@ -614,12 +633,28 @@ t["aide · après « Plan final › Feuille blanche » (outil Murs), la petite c
 t["aide · « Dessine ton plan final — Commence par tes murs, puis ajoute tes portes, fenêtres et aménagements. »"] = !!a && a.h4 === "Dessine ton plan final" && a.p === "Commence par tes murs, puis ajoute tes portes, fenêtres et aménagements.";
 t["aide · trois gestes très courts (12 mots au plus : Murs, Ouvertures, Équipements), chacun avec l'icône de son outil"] = !!a && a.li.length === 3 && /^Murs :/.test(a.li[0]) && /^Ouvertures :/.test(a.li[1]) && /^Équipements :/.test(a.li[2]) && a.li.every((x) => (x.match(/\p{L}+/gu) || []).length <= 12) && a.ico === 3;
 t["aide · en haut à gauche du plan : sous la barre d'options, à droite des outils, au-dessus de la barre d'état ; 320 px au plus"] = !!a && a.dedans && a.l <= 320;
+t["aide (D70) · une seule voix : tant qu'elle est dépliée, le « Mode d'emploi » des Murs reste replié dans le panneau"] = await p.evaluate(() => !!document.querySelector("#pbody details.mepli") && !document.querySelector("#pbody details.mepli").open);
+t["aide (D70) · elle ne prend aucun clic du plan (seuls ses boutons)"] = await p.evaluate(() => { const a = document.getElementById("aidePF"); return getComputedStyle(a).pointerEvents === "none" && [...a.querySelectorAll("button")].every((x) => getComputedStyle(x).pointerEvents === "auto"); });
 t["aide · elle ne prend pas le focus ; sa croix est nommée « Fermer l'aide »"] = !!a && !a.focus && a.x === "Fermer l'aide";
 await regarder(p, "Pro · l'aide de la première fois");
-await piece(p, 0, 0, 6, 4);
-t["aide · elle ne gêne pas le dessin : une pièce de 6 × 4 m tracée à la souris, carte ouverte"] = await p.evaluate(() => (facesCache[L().id] || []).filter((f) => f.room).length === 1);
+/* D70 (jury) : le premier coin tombe SOUS la carte — là où l'on commence sa maison. Le clic passe, la carte se replie. */
+const coin = await p.evaluate(() => { const a = document.getElementById("aidePF").getBoundingClientRect(), rc = cv.getBoundingClientRect(); const x = (a.left + 110 - rc.left - view.ox) / view.zoom, y = (a.top + 120 - rc.top - view.oy) / view.zoom; return { x: Math.round(x), y: Math.round(y) }; });
+t["aide (D70) · le premier coin choisi est bien sous la carte"] = await p.evaluate((c) => { const a = document.getElementById("aidePF").getBoundingClientRect(), rc = cv.getBoundingClientRect(), q = S(v(c.x, c.y)); const X = rc.left + q.x, Y = rc.top + q.y; return X > a.left && X < a.right && Y > a.top && Y < a.bottom; }, coin);
+await clicPlan(p, coin.x, coin.y);
+t["aide (D70) · le premier clic, sous la carte, commence le tracé ; la carte se replie, et pendant le tracé même la pastille s'efface"] = await p.evaluate(() => tool === "mur" && chain.length === 1 && document.getElementById("aidePF").hidden);
+for (const [x, y] of [[coin.x + 5, coin.y], [coin.x + 5, coin.y + 4], [coin.x, coin.y + 4], [coin.x, coin.y]]) await clicPlan(p, x, y);
+Object.assign(t, await p.evaluate(() => { const a = document.getElementById("aidePF"), q = a.getBoundingClientRect(), et = document.getElementById("etat").getBoundingClientRect(), to = document.getElementById("tools").getBoundingClientRect();
+  return { "aide (D70) · la pièce de 5 × 4 m dont le premier coin était sous la carte se ferme (4 murs)": (facesCache[L().id] || []).filter((f) => f.room).length === 1 && L().walls.length === 4,
+    "Annuler (D70) · allumé dès la première pièce fermée à la souris, et Rétablir éteint (rien à rétablir)": !document.getElementById("undoBtn").disabled && document.getElementById("redoBtn").disabled && history.length > 0 && !future.length,
+    "aide (D70) · repliée : une pastille « Premiers pas », en bas à gauche du plan (au-dessus de la barre d'état, à droite des outils)": !a.hidden && a.dataset.etat === "pli" && /Premiers pas/.test(a.innerText) && q.bottom <= et.top && et.top - q.bottom <= 24 && q.left >= to.right && q.left - to.right <= 24 && q.height <= 44,
+    "aide (D70) · la pastille ne prend pas le focus ; elle se rouvre (bouton) et se ferme (croix « Fermer l'aide »)": !a.contains(document.activeElement) && a.querySelector(".aidepill")?.getAttribute("aria-expanded") === "false" && a.querySelector(".aidex")?.getAttribute("aria-label") === "Fermer l'aide" }; }));
 await p.evaluate(() => { setTool("select"); fitView(); render(); });
-await regarder(p, "Pro · une pièce, l'aide ouverte");
+await regarder(p, "Pro · une pièce, l'aide repliée");
+await cliquer(p, "#aidePF .aidepill");
+t["aide (D70) · la pastille (clic) rouvre la carte"] = await p.evaluate(() => document.getElementById("aidePF").dataset.etat === "carte" && /Dessine ton plan final/.test(document.getElementById("aidePF").innerText));
+await clicPlan(p, coin.x + 2.5, coin.y + 2);
+t["aide (D70) · un clic dans le plan la replie de nouveau (le clic choisit ce qu'il touche)"] = await p.evaluate(() => document.getElementById("aidePF").dataset.etat === "pli" && !!sel);
+await p.evaluate(() => { sel = null; render(); });
 await cliquer(p, "#aidePF .aidex");
 t["aide · la croix (clic) la ferme, et c'est mémorisé"] = await p.evaluate(() => document.getElementById("aidePF").hidden && localStorage.getItem("avyora-plan-aide-pf") === "1");
 await p.evaluate(() => { save(); enregistrerMaintenant(); }); await p.reload({ waitUntil: "networkidle0" }); await wait(300);
@@ -638,9 +673,11 @@ Object.assign(t, await p.evaluate((A) => { const aide = (0, eval)("(" + A + ")")
   loadTemplate("maison", WORKFLOW_RENO); closeModal(); render();
   r["aide · une rénovation : pas d'aide, pas de « Premiers pas » au menu Aide"] = !aide() && (ouvrirMenu("aide"), !document.getElementById("aidePfBtn").getClientRects().length); fermerMenus(false);
   loadTemplate("maison", WORKFLOW_FINAL); closeModal(); render();
-  r["aide · le même plan type en Plan final : l'aide est là (première fois)"] = !!aide();
+  const a = aide(), q = document.getElementById("aidePF").getBoundingClientRect(), b = bbox(L()), A0 = S(v(b.x0, b.y0)), A1 = S(v(b.x1, b.y1)), rc = cv.getBoundingClientRect();
+  r["aide · le même plan type en Plan final : l'aide est là (première fois) — D70 : repliée en pastille, le plan a déjà ses murs"] = !!a && a.etat === "pli" && /Premiers pas/.test(a.pill || "");
+  r["aide (D70) · sur un plan type cadré, la pastille ne couvre aucun mur"] = q.top >= rc.top + A1.y || q.right <= rc.left + A0.x || q.left >= rc.left + A1.x || q.bottom <= rc.top + A0.y;
   return r; }, AIDE.toString()));
-await regarder(p, "Pro · plan type en Plan final, l'aide");
+await regarder(p, "Pro · plan type en Plan final, l'aide repliée");
 });
 await parcours("D69, l'aide : gratuit, après la carte du plan vide", async () => {
 p = await onglet({ pro: false });
@@ -680,7 +717,92 @@ Object.assign(t, await p.evaluate(() => { const vis = (el) => !!el && el.getClie
   toggleSheet(true); renderPanel(); return r; }));
 await wait(500);
 t["téléphone · le tiroir ouvert : le récapitulatif (surface habitable) en entier"] = await p.evaluate(() => { const c = document.querySelector("#pfoot .recappf"), q = c && c.getBoundingClientRect(); return !!c && c.getClientRects().length > 0 && q.bottom <= innerHeight + 0.5 && q.left >= 0 && q.right <= innerWidth + 0.5 && /Surface habitable/.test(c.innerText); });
+t["téléphone · le tiroir (D70) : la carte « Plan ouvert » dit le type du plan"] = await p.evaluate(() => document.querySelector("#pbody .mplan .typeplan.pf")?.textContent === "Plan final");
 await regarder(p, "téléphone · tiroir, le récapitulatif");
+});
+
+/* ═════════ 17. D70 · Les corrections du jury ═════════ */
+/* Pro, première visite : le choix s'ouvre sur une feuille blanche calme ; le fermer sans choisir garde un Plan final vide */
+await parcours("D70, Pro : l'accueil sur une feuille blanche, fermé sans choisir", async () => {
+p = await onglet({ graine: { "avyora-plan-tuto": "fait" } });
+Object.assign(t, await p.evaluate(() => { const vis = (s) => [...document.querySelectorAll(s)].some((el) => el.getClientRects().length > 0);
+  return { "Pro · accueil (D70) : derrière le choix, une feuille blanche calme — un Plan final vide, ni exemple, ni vues, ni budget": modaleOuverte()?.id === "m-welcome" && estPlanFinal() && planVide() && !estExemple() && !vis("#modes button") && !vis("#pfoot .budget") && !vis("#budgetPlie") && /Exporter le plan/.test(document.getElementById("estBtnTop").textContent) }; }));
+await cliquer(p, "#m-welcome .mx");
+Object.assign(t, await p.evaluate(() => { const e = document.getElementById("emptyStage");
+  return { "Pro · accueil fermé par la croix au premier pas (D70) : un Plan final vide, sa carte « Dessine ton plan final », rien de rangé": !modaleOuverte() && estPlanFinal() && planVide() && !e.hidden && /Dessine ton plan final/.test(e.innerText) && Object.keys(loadPlans()).length === 0 && localStorage.getItem("avyora-plan-welcome") === "1" }; }));
+await regarder(p, "Pro · accueil fermé sans choisir");
+await p.reload({ waitUntil: "networkidle0" }); await wait(300);
+t["Pro · … au rechargement (D70) : ni accueil, toujours le Plan final vide"] = await p.evaluate(() => !modaleOuverte() && estPlanFinal() && planVide());
+});
+await parcours("D70, Pro : l'accueil fermé sur une étape", async () => {
+p = await onglet({ graine: { "avyora-plan-tuto": "fait" } });
+await cliquer(p, "#m-welcome .wcard", "Plan final"); await p.keyboard.press("Escape"); await wait(200);
+t["Pro · accueil › Plan final, Échap (D70) : un Plan final vide"] = await p.evaluate(() => !modaleOuverte() && estPlanFinal() && planVide());
+await p.evaluate(() => { localStorage.removeItem("avyora-plan-welcome"); openModal("welcome"); });
+await cliquer(p, "#m-welcome .wcard", "Projet rénovation"); await cliquer(p, "#m-welcome .mx"); await wait(150);
+t["Pro · accueil › Projet rénovation, la croix (D50, D70) : son choix recommandé, l'exemple, en vue Travaux"] = await p.evaluate(() => !modaleOuverte() && estExemple() && !estPlanFinal() && mode() === "projet");
+});
+/* les deux cartes du type : titres de 16 px, un survol qui se voit, un seul cadre au focus */
+await parcours("D70, les deux cartes du type", async () => {
+p = await onglet({ graine: { "avyora-plan-tuto": "fait" } });
+await p.keyboard.press("Tab"); await p.keyboard.down("Shift"); await p.keyboard.press("Tab"); await p.keyboard.up("Shift"); await wait(100);
+const st = await p.evaluate(() => { const C = [...document.querySelectorAll("#m-welcome .wcard.wtype")], cs = getComputedStyle(C[0]); return { n: C.length, focus: C[0].matches(":focus-visible"), titre: getComputedStyle(C[0].querySelector("b")).fontSize, off: cs.outlineOffset, ow: cs.outlineWidth }; });
+const c = await centre(p, "#m-welcome .wcard", "Projet rénovation"); await p.mouse.move(c.x, c.y); await wait(300);
+const survol = await p.evaluate(() => { const C = [...document.querySelectorAll("#m-welcome .wcard.wtype")][1], i = document.createElement("i"); document.body.appendChild(i); i.style.color = "var(--brand-b)"; const bb = getComputedStyle(i).color; i.style.color = "var(--brand-l)"; const bl = getComputedStyle(i).color; i.remove(); const cs = getComputedStyle(C); return cs.borderTopColor === bb && cs.backgroundColor === bl; });
+t["choix du type (D70) : deux cartes aux titres de 16 px ; au focus clavier, un seul cadre de 2 px (posé sur la bordure)"] = st.n === 2 && st.titre === "16px" && st.focus && st.off === "-1px" && st.ow === "2px";
+t["choix du type (D70) : le survol se voit (bordure et fond de la marque)"] = survol;
+});
+/* une Séparation posée à la souris sur le bout d'une cloison qui bute contre un refend (le moteur commun) */
+await parcours("D70, la cuisine ouverte contre le bout d'une cloison", async () => {
+p = await onglet({ graine: { "avyora-plan-welcome": "1", "avyora-plan-tuto": "fait", "avyora-plan-aide-pf": "1" } });
+for (const wf of ["final_plan", "renovation"]) {
+  await p.evaluate((wf) => { closeModal(); state = blankState(); state.workflow = wf; afterChange(); view.zoom = 45; view.ox = cv.clientWidth / 2; view.oy = cv.clientHeight / 2 + 20; draw(); setTool("mur"); setWallType("auto"); }, wf);
+  await piece(p, -6, -5, 6, 5); await p.keyboard.press("Escape"); await wait(60);
+  const trait = async (a, c, type) => { await p.evaluate((ty) => { setTool("mur"); setWallType(ty); }, type); await clicPlan(p, ...a); await clicPlan(p, ...c); await p.keyboard.press("Escape"); await wait(60); };
+  await trait([1, -5], [1, 5], "cloison"); await trait([1, -1.5], [6, -1.5], "cloison"); await trait([1, 2], [6, 2], "cloison");
+  const avant = await p.evaluate(() => ({ n: (facesCache[L().id] || []).filter((f) => f.room).length, bout: L().walls.some((w) => w.type === "cloison" && Math.abs(w.a.y + 1.5) < 1e-6 && Math.abs(w.a.x - 1) > 0.01 && Math.abs(w.a.x - 1) < 0.1) }));
+  await trait([-6, -1.5], [1, -1.5], "virtuel");
+  const apres = await p.evaluate(() => ({ n: (facesCache[L().id] || []).filter((f) => f.room).length, sep: L().walls.filter((w) => w.type === "virtuel").length }));
+  if (LISTER) console.log("   séparation", wf, JSON.stringify(avant), JSON.stringify(apres));
+  t[`Séparation (D70, ${wf === "final_plan" ? "Plan final" : "rénovation"}) · posée à la souris sur le bout d'une cloison (accrochée à la face du refend) : une pièce de plus`] = avant.bout && apres.sep === 1 && apres.n === avant.n + 1;
+}
+});
+/* les mots du logement voulu, et l'image exportée */
+await parcours("D70, les mots du logement voulu", async () => {
+p = await onglet({ graine: { "avyora-plan-welcome": "1", "avyora-plan-tuto": "fait" } });
+await p.evaluate(scenePF);
+Object.assign(t, await p.evaluate(() => { const r = {}; ouvrirAide("gloss"); aideOnglet("gloss"); const g = document.getElementById("aideGloss").innerText; closeModal();
+  r["glossaire d'un Plan final (D70) : ni « Tronçon » (démolir), un faux plafond sans « l'ancien »"] = !/Tronçon/.test(g) && /Faux plafond/.test(g) && !/ancien/i.test(g);
+  setTool("doublage"); const d = document.getElementById("pbody").innerText; setTool("select");
+  r["Doublage d'un Plan final (D70) : ni MaPrimeRénov' ni CEE (une aide à la rénovation), l'isolation reste dite (R)"] = !/MaPrimeRénov|CEE/.test(d) && /m²·K\/W/.test(d);
+  const tb = [...document.querySelectorAll("#tools .tb")].find((x) => /setTool\('texte'\)/.test(x.getAttribute("onclick")));
+  r["bulles d'un Plan final (D70) : la Note sans « artisan », l'Affichage sans « toiture »"] = !/artisan/.test(tb.dataset.tip) && /remarque, idée/.test(tb.dataset.tip) && !/toiture/.test(document.getElementById("layersBtn").dataset.tip) && !/toiture/.test(document.getElementById("layersBtn").getAttribute("aria-description") || "");
+  openTemplates(WORKFLOW_FINAL); const s1 = document.querySelector("#m-templates .sub").textContent; closeModal(); openTemplates(WORKFLOW_RENO); const s2 = document.querySelector("#m-templates .sub").textContent; closeModal();
+  r["plans types (D70) : en Plan final « la base la plus proche du logement que tu veux » ; pour une rénovation, la phrase d'avant, mot pour mot"] = /logement que tu veux/.test(s1) && s2 === "Choisis le logement qui ressemble au tien : tu ajustes ensuite les cotes en glissant les murs, tu déplaces les portes, tu renommes les pièces. Bien plus rapide que de partir de zéro.";
+  return r; }));
+await p.evaluate(() => { window.__ent = []; const f0 = CanvasRenderingContext2D.prototype.fillText; window.__f0 = f0; CanvasRenderingContext2D.prototype.fillText = function (tx, ...a) { window.__ent.push(String(tx)); return f0.call(this, tx, ...a); };
+  state = blankState(); state.workflow = WORKFLOW_FINAL; const lv = L(); [[0, 0, 5, 0], [5, 0, 5, 4], [5, 4, 0, 4], [0, 4, 0, 0]].forEach(([a, b2, c, d]) => lv.walls.push({ id: uid(), a: v(a, b2), b: v(c, d), type: "mur" })); afterChange();
+  try { exportPlan(); } catch (e) {} });
+await wait(700);
+const ent = await p.evaluate(() => { CanvasRenderingContext2D.prototype.fillText = window.__f0; closeModal(); return window.__ent.filter((x) => /habitables/.test(x)); });
+t["image exportée (D70) : « 1 pièce » au singulier dans son en-tête"] = ent.length > 0 && ent.every((x) => /· 1 pièce ·/.test(x) && !/1 pièces/.test(x));
+});
+/* la rénovation qu'un gratuit a déjà : ses phrases d'avant (D66), la visite qui dit le type du plan qui suit */
+await parcours("D70, la rénovation d'un gratuit", async () => {
+p = await onglet({ pro: false });
+Object.assign(t, await p.evaluate(() => { const r = {}; closeModal(); loadTemplate("maison", WORKFLOW_RENO); closeModal(); setMode("projet"); closeModal();
+  openPlansModal(); const m = document.getElementById("plansList").innerText; closeModal();
+  r["gratuit, sa rénovation · Mes plans : « Dessiner ton logement et tes travaux reste gratuit » (la phrase d'avant)"] = /Dessiner ton logement et tes travaux reste gratuit/.test(m) && !/plan final/i.test(m);
+  return r; }));
+await p.evaluate(() => { lancerVisite(); }); await wait(300); await p.evaluate(() => etapeVisite(visite.E.length - 1)); await wait(300);
+t["gratuit, la visite d'une rénovation (D70) : sa dernière bulle dit « Commencer mon plan final » (un plan neuf de gratuit, D68)"] = await p.evaluate(() => /Commencer mon plan final/.test(document.querySelector("#visite .vsuiv")?.textContent || ""));
+await p.evaluate(() => fermerVisite("passe"));
+});
+await parcours("D70, téléphone, gratuit : une rénovation vide", async () => {
+p = await onglet({ largeur: 390, hauteur: 844, pro: false });
+Object.assign(t, await p.evaluate(() => { closeModal(); const vis = (el) => !!el && el.getClientRects().length > 0, e = document.getElementById("emptyStage"), bt = () => [...e.querySelectorAll("button")].filter(vis).map((x) => x.textContent).join("|");
+  const pf = bt(); state = blankState(); state.workflow = WORKFLOW_RENO; sel = null; afterChange(); fitView(); render(); const reno = bt();
+  return { "téléphone, gratuit (D70) : la carte d'un Plan final vide n'offre pas l'exemple ; celle d'une rénovation vide le garde (D66)": pf === "Mes plans" && reno === "Voir l'exemple|Mes plans" }; }));
 });
 
 /* ═════════ Verdicts ═════════ */
