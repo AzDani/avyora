@@ -83,6 +83,25 @@
  *     choisie ne tombent jamais sur la chaîne de cotes extérieure (1 440 et 1 024) ;
  *   - le téléphone reste le mode chantier : ni outils, ni barre d'options, ni grille, ni aimantation, ni barre d'actions.
  *
+ * D64 · les corrections du jury (à 1 440, 1 280 et 1 024, et la tablette à 768) :
+ *   - la barre d'options ne porte que des options (plus de segmenté Sélection / Zone, plus de consigne répétée) ; Équipements :
+ *     la famille est un menu au nom visible qui ne bouge pas d'un pixel, la recherche et la famille restent en place quand le
+ *     dernier modèle est choisi, des tuiles sans cadre (le choisi en indigo), les 5 modèles de la salle de bain sans défiler de
+ *     1 280 à 1 440 ; changer de famille ou chercher retire un modèle qu'on ne voit plus (le clic suivant ne pose rien et le dit) ;
+ *     choisir un modèle retire « Choisis d'abord un modèle » ; les épaisseurs du doublage dans un segmenté ;
+ *   - le panneau : plus de sous-titre « au-dessus du plan » ni de commande en double ; le mode d'emploi est un pli qui se
+ *     souvient ; les encarts des Murs sous « En savoir plus » ; une carte budget calme ; un seul style d'intitulé ;
+ *   - le niveau et la vue au centre de la barre du haut (plus de bande au-dessus du plan) ; la légende Travaux dans la barre
+ *     d'état ; zoom, grille, aimantation et affichage collés au bord droit, en vue d'ensemble, au survol et pendant un tracé ;
+ *   - Échap rend le plan depuis une note (la lettre suivante choisit l'outil) ; Échap sur une bulle de survol ne fait que la
+ *     fermer ; supprimer le dit avec « Annuler » ; Annuler garde la sélection et dit la vue ; une dimension aberrante est
+ *     refusée avec la proposition en centimètres ; consignes de la sélection multiple et d'une note ; plus d'aperçu fantôme
+ *     quand la souris quitte le plan ; une porte posée sur une façade s'ouvre vers le logement ; juste après une pose, pas
+ *     de rouge ; une fenêtre se choisit dans l'épaisseur du mur et sur ses vantaux ; la barre d'actions revient après un
+ *     glissé de la vue ; la tablette replie la fiche quand la sélection se vide ;
+ *   - le plan : la chaîne des baies au 1er rang, aucune cote intérieure écrite sur une ouverture, une palette de pièces loin
+ *     des couleurs de sens, des icônes sans ambiguïté, ⌘ sur Mac, la bulle en deux niveaux.
+ *
  *   node maquettes/tools/ux.mjs "$(pwd)/maquettes"
  *
  * Sort en code 1 si un contrôle échoue ou si la page lève une erreur.
@@ -160,7 +179,7 @@ for (const [L, H] of [[1440, 900], [1280, 800], [1024, 768]]) {
     setTool("ouverture"); /* D61 : les contrôles de la barre d'options comptent aussi (cartes, segmentés, onglets de famille) */
     const ctrl = [...document.querySelectorAll(".top .ib, #tools .tb, .zoomctl button, #levels, #levels button, #modes button, #pbody .ib, #pbody .seg, #pbody .seg button, #pbody .fin, #pbody .lib2 .it, #pbody .ptabs button, #pfoot .bcard, .mpop, #optbar .lib2 .it")].filter(vis);
     setTool("mur"); ctrl.push(...[...document.querySelectorAll("#optbar .seg.barre, #optbar .seg.barre button, #optbar .fin, #optbar .ib")].filter(vis));
-    setTool("equipement"); ctrl.push(...[...document.querySelectorAll("#optbar .fams button, #optbar .recherche")].filter(vis)); setTool("select");
+    setTool("equipement"); ctrl.push(...[...document.querySelectorAll("#optbar .famsel, #optbar .recherche")].filter(vis)); setTool("select"); /* D64 : la famille est un menu */
     const rayHors = ctrl.map((x) => getComputedStyle(x).borderTopLeftRadius).filter((v) => !RAY.has(v) && !/^(50%|9\d\dpx|99px)$/.test(v) && parseFloat(v) < 50);
     r[`${larg} · rayons des contrôles sur l'échelle (6 / 8 / 12)${rayHors.length ? " — " + [...new Set(rayHors)].join(", ") : ""}`] = !rayHors.length;
     const demi = [...document.querySelectorAll(".top *, #tools *, #pbody *, #pfoot *, .zoomctl *, #levels *, #modes *")].filter((x) => x.childNodes.length && [...x.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim()) && vis(x)).map((x) => getComputedStyle(x).fontSize).filter((v) => !Number.isInteger(parseFloat(v)));
@@ -169,8 +188,9 @@ for (const [L, H] of [[1440, 900], [1280, 800], [1024, 768]]) {
     r[`${larg} · hauteurs : boutons de la barre 32, primaire 36, zoom et niveaux 28`] = h(".top .ib:not(.primary)").every((v) => v === 32) && h(".top .ib.primary").every((v) => v === 36) && h(".zoomctl button").every((v) => v === 28) && h("#levels button").every((v) => v === 28);
     /* bibliothèques — D61 : dans la barre d'options, au-dessus du plan */
     setTool("equipement");
-    const fics = [...document.querySelectorAll("#optbar .fams button:not(.on) .ico")].map((x) => getComputedStyle(x).color);
-    r[`${larg} · familles neutres : onglets à l'icône en encre, sans teinte de famille`] = fics.length === 5 && new Set(fics).size === 1 && !document.querySelector("#optbar .fams [style]");
+    /* D64 : les familles sont les entrées d'un menu (le bouton dit toujours la famille ouverte) — mêmes icônes, toutes de la même encre */
+    basculerMenu("famille"); const fics = [...document.querySelectorAll("#famMenu [role=menuitemradio]:not([aria-checked=true]) .ico")].map((x) => getComputedStyle(x).color); fermerMenus();
+    r[`${larg} · familles neutres : entrées du menu à l'icône en encre, sans teinte de famille`] = fics.length === 5 && new Set(fics).size === 1 && !document.querySelector("#famMenu [style]");
     setTool("ouverture");
     const on = document.querySelector("#optbar .lib2 .it.on");
     r[`${larg} · la carte choisie est indigo, comme toute sélection`] = !!on && getComputedStyle(on).borderTopColor === "rgb(79, 70, 229)";
@@ -359,7 +379,9 @@ for (const [L0, H0] of [[1440, 900], [1280, 800], [1024, 768]]) {
     r[`${larg} · outils : aucun titre de section coupé ni plus large que la colonne`] = [...document.querySelectorAll("#tools .cat")].every((c) => c.scrollWidth <= c.clientWidth + 1);
     /* b. les bandes : la tête (niveaux à gauche, vues à droite, barre d'options) en haut, la barre d'état en bas, rien sur le plan */
     const lvR = rect(document.getElementById("levels")), moR = rect(document.getElementById("modes")), tpR = rect(TP), etR = rect(ET);
-    r[`${larg} · bande de contexte : niveaux à gauche, vues à droite, en haut de la zone du plan`] = document.getElementById("pbande").contains(document.getElementById("levels")) && document.getElementById("pbande").contains(document.getElementById("modes")) && Math.abs(tpR.top - ST.top) < 1 && lvR.left < moR.left && moR.right <= ST.right + 0.5 && lvR.left - ST.left < 20;
+    /* D64 : le niveau et la vue au centre de la barre du haut (la bande de contexte, à moitié vide, coûtait 36 px de plan) */
+    const TOPR = rect(document.querySelector(".top")), RED = rect(document.getElementById("redoBtn")), FIC = rect(document.getElementById("menuFichier"));
+    r[`${larg} · niveau et vue au centre de la barre du haut (entre Rétablir et Fichier), plus de bande au-dessus du plan`] = document.getElementById("ctxTop").contains(document.getElementById("levels")) && document.getElementById("ctxTop").contains(document.getElementById("modes")) && dans(lvR, TOPR) && dans(moR, TOPR) && lvR.left < moR.left && lvR.left >= RED.right && moR.right <= FIC.left && !vis(document.getElementById("pbande")) && Math.abs(tpR.top - ST.top) < 1 && tpR.height <= 46;
     r[`${larg} · barre d'état : consigne, mesure en direct, surface, échelle, zoom, grille, aimantation, affichage — en bas, sur toute la largeur`] = ["hint", "mesureLive", "measBox", "surfBadge", "echelle", "zlabel", "gridBtn", "magnetBtn", "layersBtn"].every((id) => ET.contains(document.getElementById(id))) && Math.abs(etR.bottom - ST.bottom) < 1 && Math.abs(etR.width - ST.width) < 1 && etR.height <= 33;
     const Z = zoneUtile(), cvr = rect(cv), zone = { left: cvr.left + Z.x0, right: cvr.left + Z.x1, top: cvr.top + Z.y0, bottom: cvr.top + Z.y1 };
     const surLePlan = [...document.querySelectorAll("#stage > *")].filter((e) => e !== cv && vis(e) && !e.matches("#toast, #emptyStage, #layerPop, .cotePop, #cvAide, #cvAnnonce, #bgFile") && coupe(rect(e), zone)).map((e) => e.id || e.className);
@@ -370,21 +392,24 @@ for (const [L0, H0] of [[1440, 900], [1280, 800], [1024, 768]]) {
     for (const o of ["select", "zone", "mur", "ouverture", "doublage", "equipement", "cote", "mesure", "texte", "calque"]) { setTool(o); hauteurs[o] = Math.round(rect(OB).height); if (!OB.children.length) vides.push(o); }
     r[`${larg} · barre d'options : une ligne de 44 px pour chacun des 10 outils${vides.length ? " — vide : " + vides.join(", ") : ""}`] = !vides.length && Object.values(hauteurs).every((h) => h === 44) && document.documentElement.scrollWidth <= innerWidth;
     setTool("mur");
-    r[`${larg} · Murs : type (5), le trait (3), pièce rectangulaire, poteau et poutre`] = OB.querySelectorAll(".seg.barre")[0]?.children.length === 5 && OB.querySelectorAll(".seg.barre")[1]?.children.length === 3 && !!OB.querySelector("#rectL") && !!OB.querySelector("#rectl") && [...OB.querySelectorAll(".lib2 .it b")].map((x) => x.textContent).join() === "Poteau,Poutre";
+    /* D64 : dans cet ordre — le trait se choisit avant de tracer ; poteau et poutre n'y sont plus en double (Équipements › Structure) */
+    { const g = [...OB.querySelectorAll(".obg")].map((x) => x.getAttribute("aria-label"));
+      r[`${larg} · Murs : type (5), puis le trait (3), puis la pièce rectangulaire ; plus de poteau ni de poutre en double`] = OB.querySelectorAll(".seg.barre")[0]?.children.length === 5 && OB.querySelectorAll(".seg.barre")[1]?.children.length === 3 && !!OB.querySelector("#rectL") && !!OB.querySelector("#rectl") && g.join("|") === "Type de mur|Le trait dessiné|Pièce rectangulaire" && !OB.querySelector(".lib2"); }
     OB.querySelectorAll(".seg.barre")[0].children[2].click();
     r[`${larg} · Murs : un clic choisit « Cloison » (wallType), le panneau dit « Prochains murs : Cloison »`] = wallType === "cloison" && /Cloison/.test(document.querySelector("#pbody .mprop b").textContent);
-    wallType = "auto"; [...OB.querySelectorAll(".lib2 .it")].find((x) => /Poteau/.test(x.textContent)).click();
-    r[`${larg} · Murs › Poteau : passe à l'outil Équipements avec le poteau choisi`] = tool === "equipement" && itemType === "poteau" && famEquip === "structure";
+    wallType = "auto"; setTool("equipement"); setFamEquip("structure"); [...OB.querySelectorAll(".lib2 .it")].find((x) => /Poteau/.test(x.textContent)).click();
+    r[`${larg} · Équipements › Structure › Poteau : le poteau choisi`] = tool === "equipement" && itemType === "poteau" && famEquip === "structure";
     setTool("ouverture"); const cOuv = [...OB.querySelectorAll(".lib2 .it b")].map((x) => x.textContent);
     r[`${larg} · Ouvertures : les 11 modèles puis la fenêtre de toit, en cartes`] = cOuv.length === 12 && Object.values(OPENINGS).every((o) => cOuv.includes(o.label)) && cOuv[11] === ITEMS.velux.label;
     [...OB.querySelectorAll(".lib2 .it")].find((x) => /Porte-fenêtre/.test(x.textContent)).click();
     r[`${larg} · Ouvertures : un clic choisit le modèle (carte indigo), le panneau montre sa fiche (vignette, dimensions)`] = openingType === "porte_fenetre" && /Porte-fenêtre/.test(OB.querySelector(".lib2 .it.on b").textContent) && /Porte-fenêtre/.test(document.querySelector("#pbody .mprop").textContent) && /1,40 × 2,15 m/.test(document.querySelector("#pbody .mprop").textContent);
     [...OB.querySelectorAll(".lib2 .it")].find((x) => /Fenêtre de toit/.test(x.textContent)).click();
-    r[`${larg} · Ouvertures › Fenêtre de toit : l'outil Équipements, famille Escalier et structure`] = tool === "equipement" && itemType === "velux" && OB.querySelector(".fams button.on").getAttribute("aria-label") === "Escalier et structure";
+    r[`${larg} · Ouvertures › Fenêtre de toit : l'outil Équipements, famille Escalier et structure`] = tool === "equipement" && itemType === "velux" && famEquip === "structure" && /Structure/.test(document.getElementById("famBtn").textContent);
     /* d. Équipements : familles en onglets, recherche, plus de modèle posé en douce */
     itemType = null; setTool("equipement"); setFamEquip("bain");
-    const fams = [...OB.querySelectorAll(".fams button")].map((x) => x.getAttribute("aria-label"));
-    r[`${larg} · Équipements : 6 familles en onglets (Salle de bain, Cuisine, Chauffage, Électricité, Mobilier, Escalier et structure)`] = fams.join("|") === "Salle de bain|Cuisine|Chauffage|Électricité|Mobilier|Escalier et structure";
+    /* D64 : les 6 familles dans un menu dont le bouton dit toujours la famille ouverte, de largeur fixe */
+    const fb = document.getElementById("famBtn"), fbw = rect(fb).width; basculerMenu("famille"); const fams = [...document.querySelectorAll("#famMenu [role=menuitemradio]")].map((x) => x.textContent.trim()); fermerMenus();
+    r[`${larg} · Équipements : 6 familles (Salle de bain, Cuisine, Chauffage, Électricité, Mobilier, Escalier et structure), dans un menu au nom visible`] = fams.join("|") === "Salle de bain|Cuisine|Chauffage|Électricité|Mobilier|Escalier et structure" && fb.getAttribute("aria-haspopup") === "menu" && /Salle de bain/.test(fb.textContent) && fbw >= 120;
     const tous = FAM_EQUIP.flatMap((f) => f[3]);
     r[`${larg} · Équipements : chaque modèle dans une famille, une seule fois (${tous.length} pour ${Object.keys(ITEMS).length})`] = tous.length === Object.keys(ITEMS).length && new Set(tous).size === tous.length && Object.keys(ITEMS).every((k) => tous.includes(k));
     chercherEquip("toilettes"); const tr = [...OB.querySelectorAll(".lib2 .it b")].map((x) => x.textContent);
@@ -546,7 +571,7 @@ for (const [L0, H0] of [[1440, 900], [1280, 800], [1024, 768]]) {
   { const q = await plan(ci.x, ci.y); await p.mouse.move(q.x, q.y); await p.mouse.click(q.x, q.y, { button: "right" }); await wait(120); }
   Object.assign(t, await p.evaluate((ci) => { const r = {}, m = document.getElementById("ctxMenu"), it = [...m.querySelectorAll("[role^=menuitem]")], q = m.getBoundingClientRect();
     r[ci.larg + " · menu du clic droit : sur un équipement, il le choisit et ouvre le menu de ses actions (role menu, menuitem)"] = !m.hidden && m.getAttribute("role") === "menu" && sel && sel.id === ci.id && it.length >= 4 && it.every((x) => x.getAttribute("tabindex") === "-1");
-    r[ci.larg + " · menu du clic droit : les mêmes actions que les raccourcis, avec leur touche (Entrée, R, Ctrl D, Suppr)"] = ["Entrée", "R", "Ctrl D", "Suppr"].every((k) => it.some((x) => x.querySelector("kbd")?.textContent === k));
+    r[ci.larg + " · menu du clic droit : les mêmes actions que les raccourcis, avec leur touche (Entrée, R, Ctrl D — ⌘D sur Mac —, Suppr)"] = ["Entrée", "R", MAC ? "⌘D" : "Ctrl D", "Suppr"].every((k) => it.some((x) => x.querySelector("kbd")?.textContent === k));
     r[ci.larg + " · menu du clic droit : le focus est dans le menu, qui tient dans l'écran"] = m.contains(document.activeElement) && q.left >= 0 && q.top >= 0 && q.right <= innerWidth && q.bottom <= innerHeight;
     r[ci.larg + " · menu du clic droit : ses icônes viennent du registre (svg.ico aria-hidden)"] = [...m.querySelectorAll("svg")].every((s) => s.classList.contains("ico") && s.getAttribute("aria-hidden") === "true");
     return r; }, ci));
@@ -646,7 +671,8 @@ for (const [L0, H0] of [[1920, 1080], [1440, 900], [1280, 800], [1024, 768], [76
     hover = null; setTool("select"); draw();
     /* d. la tête du plan : la bande de contexte sans chevauchement, la barre d'options d'une ligne de 44 px pour chaque outil */
     const lv = rect(document.getElementById("levels")), mo = rect(document.getElementById("modes")), TP = rect(document.getElementById("tetePlan"));
-    r[`${tag} · bande de contexte : niveaux et vues côte à côte ou sur deux lignes, jamais l'un sur l'autre, dans la tête du plan`] = !coupe(lv, mo) && dans(lv, TP) && dans(mo, TP) && [...document.querySelectorAll("#modes button")].every((b) => dans(rect(b), ST) && touche(b));
+    const CTX = contexteEnHaut() ? rect(document.querySelector(".top")) : TP; /* D64 : au-dessus de 900 px, dans la barre du haut */
+    r[`${tag} · niveau et vue : côte à côte ou sur deux lignes, jamais l'un sur l'autre, dans la barre du haut (900 px et moins : la tête du plan)`] = !coupe(lv, mo) && dans(lv, CTX) && dans(mo, CTX) && [...document.querySelectorAll("#modes button")].every((b) => dans(rect(b), contexteEnHaut() ? CTX : ST) && touche(b));
     const OB = document.getElementById("optbar"), hauts = [];
     for (const o of ["select", "mur", "ouverture", "doublage", "equipement", "cote", "texte", "calque"]) { setTool(o); hauts.push(Math.round(rect(OB).height)); }
     r[`${tag} · barre d'options : une ligne de 44 px pour chaque outil, jamais de défilement de la page`] = hauts.every((h) => h === 44) && document.documentElement.scrollWidth <= innerWidth;
@@ -723,6 +749,147 @@ for (const [L0, H0] of [[1920, 1080], [1440, 900], [1280, 800], [1024, 768], [76
     const w = L().walls.find((x) => !isVirtual(x)); sel = { kind: "wall", id: w.id }; render();
     r["390 × 844 · téléphone : un élément choisi n'a pas de barre d'actions (sa fiche est dans le tiroir)"] = document.getElementById("selbar").hidden;
     r["390 × 844 · téléphone : pas de défilement horizontal"] = document.documentElement.scrollWidth <= innerWidth;
+    return r; }));
+  await p.close(); }
+
+/* ═════════ 9. D64 · les corrections du jury (après U1 à U5) ═════════ */
+t["source · D64 : les extrémités de cote en obliques à 45° (convention française), comme l'icône Cote"] = /const ob=v\(\(n\.x\+u\.x\)\*4\.5\*k,\(n\.y\+u\.y\)\*4\.5\*k\)/.test(SRC) && !/ctx\.moveTo\(p\.x\+n\.x\*6\*k,p\.y\+n\.y\*6\*k\)/.test(SRC);
+t["source · D64 : le mur en cours se prévisualise à l'encre (plus d'indigo de surligneur ni de violet pour une séparation)"] = !/rgba\(124,58,237,\.8\)':'rgba\(79,70,229,\.9\)'/.test(SRC) && /wallType==='virtuel'\?ENCRE_SEP:'rgba\(30,27,75,\.55\)'/.test(SRC);
+for (const [L0, H0] of [[1440, 900], [1280, 800], [1024, 768]]) {
+  const p = await onglet({ larg: L0, haut: H0 });
+  const plan = async (x, y) => p.evaluate((x, y) => { const q = S(v(x, y)), r = cv.getBoundingClientRect(); return { x: r.left + q.x, y: r.top + q.y }; }, x, y);
+  try {
+  /* a. la barre d'options : des options seulement, des tuiles, une famille qui ne bouge pas */
+  Object.assign(t, await p.evaluate((larg) => { const r = {}, rect = (e) => e.getBoundingClientRect(), vis = (e) => !!e && e.getClientRects().length > 0 && getComputedStyle(e).display !== "none";
+    const OB = document.getElementById("optbar");
+    const obt = {}; for (const o of ["select", "zone", "cote", "mesure", "texte", "calque"]) { setTool(o); obt[o] = !!OB.querySelector(".seg") || (o !== "select" && o !== "zone" && !!OB.querySelector(".obt")); }
+    r[`${larg} · barre d'options : plus de segmenté Sélection / Zone (il est dans la colonne), plus de consigne répétée (Cote, Mesurer, Note, Image)`] = !Object.values(obt).some(Boolean);
+    setTool("equipement"); itemType = null; setFamEquip("bain");
+    const fb = () => rect(document.getElementById("famBtn")), f0 = fb(), pos = [];
+    for (const f of FAM_EQUIP) { setFamEquip(f[0]); const q = fb(); pos.push(Math.abs(q.left - f0.left) < 0.5 && Math.abs(q.width - f0.width) < 0.5 && document.getElementById("famBtn").textContent.includes(f[4])); }
+    r[`${larg} · Équipements : le bouton de la famille dit son nom et ne bouge pas d'un pixel d'une famille à l'autre`] = pos.every(Boolean);
+    setFamEquip("cuisine"); const its = [...OB.querySelectorAll(".lib2 .it")]; its[its.length - 1].click();
+    const sc = OB.querySelector(".obdefile"), O = rect(OB), F = fb(), R = rect(OB.querySelector(".recherche"));
+    r[`${larg} · Équipements : le dernier modèle choisi, la recherche et la famille restent en place (seules les cartes défilent)`] = !!sc && F.left >= O.left - 0.5 && R.left >= O.left - 0.5 && vis(document.getElementById("famBtn")) && itemType === FAM_EQUIP[1][3][FAM_EQUIP[1][3].length - 1];
+    const its2 = [...OB.querySelectorAll(".lib2 .it")], it0 = its2[0]; /* la barre s'est redessinée au clic : on relit ses cartes */
+    r[`${larg} · Équipements : des tuiles sans cadre (le modèle choisi en indigo), les dimensions dans la bulle`] = getComputedStyle(it0).borderTopColor === "rgba(0, 0, 0, 0)" && getComputedStyle(its2[its2.length - 1]).borderTopColor === "rgb(79, 70, 229)" && !vis(it0.querySelector("small")) && /m/.test(it0.dataset.tip);
+    if (larg >= 1280) { setFamEquip("bain"); const vu = [...OB.querySelectorAll(".lib2 .it")].filter((x) => { const q = rect(x), s2 = rect(OB.querySelector(".obdefile")); return q.left >= s2.left - 0.5 && q.right <= s2.right + 0.5; }).length;
+      r[`${larg} · Équipements : les 5 modèles de la salle de bain se voient sans défiler (${vu})`] = vu === 5; }
+    /* le modèle d'une autre famille ne reste pas choisi en douce */
+    setFamEquip("chauffage"); setItemType("radiateur"); setFamEquip("elec"); const n0 = L().items.length; const b0 = bbox(L()); clickAction(v((b0.x0 + b0.x1) / 2, (b0.y0 + b0.y1) / 2));
+    r[`${larg} · Équipements : changer de famille retire le modèle d'une autre famille — le clic suivant ne pose rien et le dit`] = itemType === null && L().items.length === n0 && /Choisis d'abord un modèle/.test(document.getElementById("hint").textContent);
+    setItemType("prise"); r[`${larg} · Équipements : choisir un modèle retire le message « Choisis d'abord un modèle »`] = !document.getElementById("toast").classList.contains("show");
+    chercherEquip("radiateur"); r[`${larg} · Équipements : une recherche qui ne montre plus le modèle choisi le retire aussi`] = itemType === null; chercherEquip("");
+    /* les épaisseurs du doublage : le même segmenté ; le panneau ne les répète pas */
+    setTool("doublage"); const ep = OB.querySelector(".seg.barre.ep");
+    r[`${larg} · Doublage : les 7 épaisseurs dans un segmenté (comme poser / retirer et par où), le panneau ne les répète pas`] = !!ep && ep.querySelectorAll("button.miniep").length === EP_DOUBLAGE.length && !document.querySelector("#pbody .miniep") && /Épaisseur perdue|Épaisseur ajoutée/.test(document.getElementById("pbody").textContent);
+    setTool("select"); return r; }, L0));
+  /* b. le panneau : les propriétés et le résultat ; le mode d'emploi se replie et s'en souvient */
+  Object.assign(t, await p.evaluate((larg) => { const r = {}, P = document.getElementById("pbody");
+    const sansBarre = ["mur", "ouverture", "doublage", "equipement"].every((o) => { setTool(o); return ![...P.querySelectorAll(".psub")].some((x) => /au-dessus du plan/.test(x.textContent)); });
+    setTool("mesure"); const mes = ![...P.querySelectorAll("button")].some((x) => /Nouvelle mesure/.test(x.textContent));
+    setTool("calque"); const img = ![...P.querySelectorAll("button")].some((x) => /Importer une image/.test(x.textContent));
+    r[`${larg} · panneau : plus de sous-titre « … au-dessus du plan », ni « Nouvelle mesure », ni « Importer une image » en double`] = sansBarre && mes && img;
+    setTool("mur"); const d = P.querySelector("details.mepli"); const ouvert = !!d && d.open && d.querySelectorAll(".memploi li").length === 3;
+    d.open = false; d.dispatchEvent(new Event("toggle")); setTool("ouverture"); const garde = !P.querySelector("details.mepli").open; P.querySelector("details.mepli").open = true; P.querySelector("details.mepli").dispatchEvent(new Event("toggle"));
+    r[`${larg} · panneau : le mode d'emploi est un pli, ouvert d'abord ; replié, il le reste d'un outil à l'autre`] = ouvert && garde;
+    setTool("mur"); r[`${larg} · panneau Murs : les encarts sont sous « En savoir plus », replié`] = [...P.querySelectorAll("details.plie")].some((x) => /En savoir plus/.test(x.querySelector("summary").textContent) && !x.open && x.querySelector(".tip"));
+    setTool("select"); sel = null; render(); const bc = document.querySelector("#pfoot .bcard:not(.attente)");
+    r[`${larg} · pied du panneau : la carte budget est calme (fond blanc, montant en 24 px au lieu de 28 en blanc sur encre) — un seul appel fort, « Estimer ce plan »`] = !!bc && getComputedStyle(bc).backgroundColor === "rgb(255, 255, 255)" && parseFloat(getComputedStyle(document.getElementById("budgetVal")).fontSize) <= 24;
+    r[`${larg} · un seul style d'intitulé de section, en casse normale`] = [...document.querySelectorAll("#pbody .ph")].every((x) => getComputedStyle(x).textTransform === "none");
+    return r; }, L0));
+  /* c. la barre d'état : la légende y est en vue Travaux, le zoom collé au bord droit */
+  Object.assign(t, await p.evaluate((larg) => { const r = {}, ET = document.getElementById("etat"), Z = document.querySelector(".etat .zoomctl"), droit = () => Math.abs(ET.getBoundingClientRect().right - Z.getBoundingClientRect().right) <= 4;
+    setMode("projet", true); closeModal(); sel = null; render();
+    r[`${larg} · barre d'état : la légende de la vue Travaux (3 échantillons) juste avant l'échelle ; aucune en Avant travaux`] = document.querySelectorAll("#etat .vlegend > span").length === 3 && document.getElementById("legendeVue").nextElementSibling.id === "echelle" && (setMode("existant", true), closeModal(), render(), !document.querySelector("#etat .vlegend"));
+    const ok = []; ok.push(droit()); setTool("mur"); hover = v(0, 0); draw(); ok.push(droit()); const b0 = bbox(L()); hover = v(b0.x1 + 2, b0.y0); clickAction(hover); hover = v(b0.x1 + 2, b0.y0 + 3); draw(); ok.push(droit()); endChain(false); hover = null; setTool("select"); draw();
+    r[`${larg} · barre d'état : zoom, grille, aimantation et affichage collés au bord droit (vue d'ensemble, survol, tracé)`] = ok.every(Boolean);
+    return r; }, L0));
+  /* d. Échap rend le plan depuis une note ; la lettre suivante choisit l'outil, elle ne s'écrit pas dans la note */
+  { const c = await p.evaluate(() => { setMode("existant", true); closeModal(); setTool("texte"); const b0 = bbox(L()); return { x: (b0.x0 + b0.x1) / 2, y: (b0.y0 + b0.y1) / 2 }; });
+    const q = await plan(c.x, c.y); await p.mouse.click(q.x, q.y); await wait(120); await p.keyboard.type("Abc"); await p.keyboard.press("Escape"); await wait(40); await p.keyboard.press("m"); await wait(60);
+    t[`${L0} · note : Échap rend le plan, la touche M choisit les Murs, la note reste « Abc »`] = await p.evaluate(() => tool === "mur" && TX(L()).some((x) => x.text === "Abc") && !TX(L()).some((x) => /Abcm/.test(x.text)));
+    await p.keyboard.press("Escape"); await p.keyboard.press("Escape"); }
+  /* e. Échap sur une bulle de survol la ferme, et rien d'autre */
+  { await p.evaluate(() => { setTool("mur"); const b0 = bbox(L()); hover = v(b0.x1 + 2, b0.y0); clickAction(hover); });
+    const bt = await p.evaluate(() => { const q = document.querySelector('#tools .tb[aria-label="Cote"]').getBoundingClientRect(); return { x: q.left + q.width / 2, y: q.top + q.height / 2 }; });
+    await p.mouse.move(bt.x, bt.y); await wait(80); await p.keyboard.press("Escape"); await wait(40);
+    t[`${L0} · bulle de survol : Échap la ferme sans toucher au tracé en cours`] = await p.evaluate(() => document.getElementById("bulle").hidden && chain.length === 1 && tool === "mur");
+    await p.mouse.move(5, 5); await p.evaluate(() => { endChain(false); setTool("select"); }); }
+  /* f. retours : supprimer le dit et propose « Annuler » ; Annuler garde la sélection et dit la vue ; une dimension aberrante est refusée */
+  Object.assign(t, await p.evaluate((larg) => { const r = {}; setMode("existant", true); closeModal();
+    const wc = L().items.find((x) => x.type === "wc"), n0 = L().items.length; sel = { kind: "item", id: wc.id }; render(); deleteSel(); const T = document.getElementById("toast"), b = T.querySelector(".tact");
+    r[`${larg} · supprimer : « Retiré du plan : … » avec « Annuler », qui le rend`] = /Retiré du plan/.test(T.textContent) && !!b && /Annuler/.test(b.textContent) && (b.click(), L().items.length === n0);
+    setMode("projet", true); closeModal(); const w = L().walls.find((x) => !isVirtual(x) && !isExteriorWall(x) && wst(x) !== "demolir"); sel = { kind: "wall", id: w.id }; render(); setWallProp("st", "demolir"); undo();
+    r[`${larg} · Annuler garde l'élément choisi s'il existe encore`] = sel && sel.kind === "wall" && sel.id === w.id && wst(findWall(w.id)) !== "demolir";
+    setWallProp("st", "demolir"); setMode("existant", true); closeModal(); undo();
+    r[`${larg} · Annuler qui change de vue le dit (« retour en vue Travaux »)`] = mode() === "projet" && /retour en vue/.test(document.getElementById("toast").textContent);
+    const rad = L().items.find((x) => x.type === "radiateur"); sel = { kind: "item", id: rad.id }; render(); const w0 = rad.w; setItemProp("w", 140); const T2 = document.getElementById("toast"), act = T2.querySelector(".tact");
+    r[`${larg} · une largeur aberrante (140) n'est pas appliquée : le message propose 1,40 m, et le bouton la met`] = L().items.find((x) => x.id === rad.id).w === w0 && /1,40 m/.test(T2.textContent) && !!act && (act.click(), Math.abs(L().items.find((x) => x.id === rad.id).w - 1.4) < 1e-9);
+    undo(); sel = null; render(); return r; }, L0));
+  /* g. la consigne d'une sélection multiple, d'une cote, d'une note */
+  Object.assign(t, await p.evaluate((larg) => { const r = {}; setMode("projet", true); closeModal(); setTool("select");
+    const ids = L().items.slice(0, 3).map((x) => x.id); multi = ids; sel = { kind: "item", id: ids[0] }; render(); const h1 = document.getElementById("hint").textContent;
+    const nt = TX(L())[0]; sel = { kind: "text", id: nt.id }; multi = []; render(); const h2 = document.getElementById("hint").textContent;
+    r[`${larg} · consigne : « ces 3 équipements » en sélection multiple, « Échap rend le plan » pour une note (« ${h1} » · « ${h2} »)`] = /ces 3 équipements/.test(h1) && /Échap/.test(h2);
+    sel = null; render(); return r; }, L0));
+  /* h. la souris quitte le plan : plus d'aperçu fantôme ni de mesure en direct */
+  { await p.evaluate(() => { setMode("existant", true); closeModal(); setTool("ouverture"); setOpeningType("porte"); });
+    const w = await p.evaluate(() => { const x = L().walls.find((y) => !isVirtual(y) && wallLen(y) > 2.5); const c = add(add(x.a, mul(sub(x.b, x.a), 0.5)), wallOff(x)); return { x: c.x, y: c.y }; });
+    const q = await plan(w.x, w.y); await p.mouse.move(q.x, q.y); await wait(60); const avant = await p.evaluate(() => !!hover && !document.getElementById("mesureLive").hidden);
+    const ob = await p.evaluate(() => { const r = document.getElementById("optbar").getBoundingClientRect(); return { x: r.left + 20, y: r.top + 22 }; }); await p.mouse.move(ob.x, ob.y, { steps: 4 }); await wait(60);
+    t[`${L0} · la souris quitte le plan : plus d'aperçu fantôme ni de mesure en direct`] = avant && await p.evaluate(() => hover === null && document.getElementById("mesureLive").hidden); }
+  /* i. pose d'une porte : sur un mur de façade, le curseur dans l'épaisseur ouvre vers le logement ; juste après, pas de rouge */
+  { const w = await p.evaluate(() => { setMode("existant", true); closeModal(); setTool("ouverture"); setOpeningType("porte_entree"); const lv = L();
+      const x = lv.walls.filter((y) => !isVirtual(y) && isExteriorWall(y) && wallLen(y) > 2).find((y) => { const L0 = wallLen(y); return !lv.openings.some((o) => o.wallId === y.id && Math.abs(o.t - 0.5) * L0 < 0.9); });
+      if (!x) return null; const u = norm(sub(x.b, x.a)), n = perp(u), si = interiorSideN(x), c = add(add(add(x.a, mul(sub(x.b, x.a), 0.5)), wallOff(x)), mul(n, -si * wallT(x) * 0.3)); return { id: x.id, x: c.x, y: c.y, si }; });
+    if (!w) t[`${L0} · porte posée sur une façade : un mur libre pour l'essai`] = false; else {
+      const q = await plan(w.x, w.y); await p.mouse.move(q.x, q.y); await wait(50); await p.mouse.click(q.x, q.y); await wait(80);
+      const r = await p.evaluate((w) => { const o = L().openings[L().openings.length - 1]; return { side: o.side, mur: o.wallId === w.id, live: document.getElementById("mesureLive").textContent, ko: !!apercuInfo?.deja }; }, w);
+      t[`${L0} · porte d'entrée posée sur une façade, le curseur dans l'épaisseur : elle s'ouvre vers le logement`] = r.mur && r.side === w.si;
+      t[`${L0} · juste après la pose : un retour neutre (« ${r.live.slice(0, 40)} »), pas « déjà là » ni de cadre rouge`] = /posée/.test(r.live) && !/déjà là/.test(r.live) && !r.ko;
+      await p.evaluate(() => { undo(); setTool("select"); sel = null; render(); }); } }
+  /* j. une fenêtre se choisit dans l'épaisseur de son mur, même avec un radiateur contre elle */
+  Object.assign(t, await p.evaluate((larg) => { const r = {}; setMode("existant", true); closeModal(); setTool("select"); render();
+    const lv = L(), o = lv.openings.find((x) => OPENINGS[x.type].kind === "win" && x.w >= 1), w = findWall(o.wallId), u = norm(sub(w.b, w.a)), n = perp(u), si = interiorSideN(w), c = add(add(w.a, mul(sub(w.b, w.a), o.t)), wallOff(w));
+    /* seuls la fenêtre et un radiateur contre elle (les autres équipements, mis de côté, ne gênent pas l'essai) */
+    const rad = { id: uid(), type: "radiateur", x: 0, y: 0, w: 0.8, h: 0.1, rot: Math.atan2(u.y, u.x) }; const pc = add(c, mul(n, si * (wallT(w) / 2 + 0.05))); rad.x = pc.x; rad.y = pc.y; const garde = lv.items; lv.items = [rad]; draw();
+    const h1 = hitTest(add(c, mul(n, si * wallT(w) * 0.4))), h2 = hitTest(add(add(c, mul(u, -o.w / 4)), mul(n, si * (wallT(w) / 2 + 0.3)))), h3 = hitTest(pc);
+    r[`${larg} · une fenêtre se choisit dans l'épaisseur du mur et sur ses vantaux ; le radiateur contre elle reste choisissable`] = h1?.kind === "opening" && h1.id === o.id && h2?.kind === "opening" && h2.id === o.id && h3?.kind === "item" && h3.id === rad.id;
+    lv.items = garde; draw(); return r; }, L0));
+  /* k. la barre d'actions revient à la fin d'un glissé de la vue, sans attendre la souris */
+  { const c = await p.evaluate(() => { setMode("existant", true); closeModal(); setTool("select"); const it = L().items.find((x) => !ITEMS[x.type].elec && x.type !== "escalier"); sel = { kind: "item", id: it.id }; multi = []; render(); const r = cv.getBoundingClientRect(), Z = zoneUtile(); return { x: r.left + Z.x0 + 30, y: r.top + Z.y0 + 30 }; });
+    await p.mouse.move(c.x, c.y); await p.mouse.down({ button: "middle" }); await p.mouse.move(c.x + 20, c.y + 12, { steps: 3 }); await p.mouse.up({ button: "middle" }); await wait(500);
+    t[`${L0} · barre d'actions : visible à la fin d'un glissé de la vue (bouton du milieu), sans mouvement de souris`] = await p.evaluate(() => !document.getElementById("selbar").hidden); }
+  /* l. le plan : la chaîne des baies, les cotes intérieures hors des ouvertures, une palette de pièces loin des couleurs de sens */
+  Object.assign(t, await p.evaluate((larg) => { const r = {}; setMode("existant", true); closeModal(); sel = null; settings.cotes = true; fitView(); render();
+    const ch = exteriorChains(L()), lv = L(), avec = ch.filter((c) => c.baies);
+    const jambes = avec.every((c) => lv.openings.filter((o) => { const w = findWall(o.wallId); if (!w || !opDrawn(o)) return false; const k = c.axis === "x" ? "y" : "x"; return Math.abs(w.a[k] - c.pos) < 0.05 && Math.abs(w.b[k] - c.pos) < 0.05; }).every((o) => { const w = findWall(o.wallId), cc = w.a[c.axis] + (w.b[c.axis] - w.a[c.axis]) * o.t; return c.baies.some((x) => Math.abs(x - (cc - o.w / 2)) < 0.011) && c.baies.some((x) => Math.abs(x - (cc + o.w / 2)) < 0.011); }));
+    r[`${larg} · chaîne des baies : au 1er rang de chaque façade percée, nu extérieur et jambages de chaque ouverture (${avec.length} façades)`] = avec.length >= 2 && jambes;
+    const ouv = boitesOuvertures(lv).map((b) => ({ x: b.x + 1, y: b.y + 1, w: b.w - 2, h: b.h - 2 })), x = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+    r[`${larg} · aucune cote intérieure n'écrit son texte sur une ouverture (dormant, vantaux, débattement)`] = !cotesVues.some((c) => ouv.some((o) => x(c, o)));
+    const sens = ["#4f46e5", "#7c3aed", "#b45309", "#b91c1c", "#d97706"]; r[`${larg} · pièces : aucune teinte de type de pièce n'est une couleur de sens (sélection, à créer, à démolir)`] = ROOM_TYPES.every((x) => !sens.includes(String(x[2]).toLowerCase()));
+    r[`${larg} · icônes : la surface n'a plus le dessin d'« Ajuster » ; Murs n'est plus une masse pleine`] = ICONS.surface !== ICONS.ajuster && !/fill="currentColor" stroke="none"/.test(ICONS.outilMur);
+    return r; }, L0));
+  /* m. Mac : les raccourcis se disent ⌘ (le clavier accepte ⌘ et Ctrl) */
+  Object.assign(t, await p.evaluate((larg) => { const r = {}; if (!MAC) { r[`${larg} · raccourcis : sur cette machine, « Ctrl » (pas un Mac)`] = !/⌘/.test(document.getElementById("undoBtn").dataset.tip); return r; }
+    setMode("existant", true); closeModal(); const it = L().items.find((x) => !ITEMS[x.type].elec && x.type !== "escalier"); sel = { kind: "item", id: it.id }; multi = []; render(); ouvrirMenuCtx(null); const k = [...document.querySelectorAll("#ctxMenu kbd")].map((x) => x.textContent).join(" "); fermerMenuCtx(false); sel = null; render();
+    r[`${larg} · raccourcis sur Mac : ⌘ dans le menu (« ${k} »), la bulle d'Annuler et le menu Fichier ; plus de « Ctrl »`] = /⌘D/.test(k) && !/Ctrl/.test(k) && /⌘Z/.test(document.getElementById("undoBtn").dataset.tip) && document.querySelector("#savePlanBtn kbd").textContent === "⌘S";
+    return r; }, L0));
+  /* n. la bulle en deux niveaux (nom et touche, puis la phrase), même texte que data-tip */
+  { const bt = await p.evaluate(() => { setTool("select"); const q = document.querySelector('#tools .tb[aria-label="Murs"]').getBoundingClientRect(); return { x: q.left + q.width / 2, y: q.top + q.height / 2 }; });
+    await p.mouse.move(bt.x, bt.y); await wait(80);
+    t[`${L0} · bulle d'un outil : le nom en gras et sa touche, puis la phrase — le texte reste celui de data-tip`] = await p.evaluate(() => { const b = document.getElementById("bulle"), el = document.querySelector('#tools .tb[aria-label="Murs"]'); return !b.hidden && b.querySelector("b")?.textContent === "Murs" && b.querySelector("kbd")?.textContent === "M" && !!b.querySelector(".ph") && b.textContent === el.dataset.tip; });
+    await p.mouse.move(5, 5); }
+  } catch (e) { t[`D64 · ${L0} — ${e.message.split("\n")[0]}`] = false; }
+  await p.close();
+}
+/* o. tablette (≤ 900 px, panneau replié) : la fiche ouverte par « Voir sa fiche » se replie quand la sélection se vide */
+{ const p = await onglet({ larg: 768, haut: 1024 });
+  Object.assign(t, await p.evaluate(() => { const r = {}, plie = () => document.querySelector(".body").classList.contains("panelPlie"); let pref0 = null; try { pref0 = localStorage.getItem("avyora-plan-plie"); } catch {}
+    setTool("select"); const it = L().items.find((x) => !ITEMS[x.type].elec && x.type !== "escalier"); sel = { kind: "item", id: it.id }; render(); const a = plie(); ouvrirFiche(); const b = !plie();
+    sel = null; render(); let pref = null; try { pref = localStorage.getItem("avyora-plan-plie"); } catch {}
+    r["768 × 1024 · « Voir sa fiche » ouvre le panneau ; la sélection vidée, il se replie, la préférence ne change pas"] = a && b && plie() && pref === pref0;
     return r; }));
   await p.close(); }
 
