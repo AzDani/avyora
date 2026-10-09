@@ -18,6 +18,15 @@
  *     sélecteur de vues, légende, onglet Suivi, « Ton projet à X % », budget, « Le chantier », toiture ;
  *   - le dessin : un Plan final se dessine à la souris (murs, ouvertures, équipements, cote) ;
  *   - la barre du haut : « Exporter le plan » à la place d'« Estimer ce plan ».
+ *   - D68 (création) : en gratuit, aucune question — un Plan final vide, sa carte « Dessine ton plan final », ni
+ *     exemple ni choix de type (Nouveau, plans types : Plan final) ; en Pro, l'accueil, Fichier › Nouveau plan et
+ *     Mes plans › Nouveau plan ouvrent le même choix à deux cartes (Plan final, Projet rénovation), puis le point de
+ *     départ ; tout à la souris, puis au clavier (Tab, Entrée, la flèche de retour, Échap qui rend le focus) ; la
+ *     pastille du type sous le nom et sur les cartes de Mes plans ; les plans types dans le type choisi ;
+ *     « Démarrer un projet rénovation à partir de ce plan » (Pro) : une copie, le Plan final rangé et intact ;
+ *     DROITS (« Projet rénovation » : Pro). Le choix du type décrit la rénovation avec ses mots (« Pars de l'existant
+ *     et décide tes travaux ») : ses deux premières cartes ne sont pas lues comme un écran de Plan final ; ses étapes
+ *     « Plan final » le sont.
  *
  *   node maquettes/tools/planfinal.mjs "$(pwd)/maquettes"            (ajouter --lister pour voir chaque mot trouvé)
  *
@@ -322,6 +331,189 @@ Object.assign(t, await p.evaluate(() => {
   return r;
 }));
 await p.close();
+
+/* ═════════ 10. D68 · Création, gratuit : aucune question, un Plan final (à la souris) ═════════ */
+/* ce qu'on lit dans une fenêtre seulement (l'écran derrière peut être l'exemple, une rénovation) */
+const lireDans = (p, sel, etat) => p.evaluate((sel) => { const el = document.querySelector(sel); return el ? el.innerText : ""; }, sel).then((txt) => { lus.push([etat, txt]); return txt; });
+/* le centre d'un élément (sélecteur, ou texte d'un bouton visible) pour un vrai clic de souris */
+const centre = (p, sel, texte) => p.evaluate((sel, texte) => {
+  const el = [...document.querySelectorAll(sel)].find((x) => x.getClientRects().length && (!texte || x.innerText.replace(/\s+/g, " ").includes(texte)));
+  if (!el) return null; el.scrollIntoView({ block: "nearest" }); const q = el.getBoundingClientRect(); return { x: q.left + q.width / 2, y: q.top + q.height / 2 }; }, sel, texte || "");
+const cliquer = async (p, sel, texte) => { const c = await centre(p, sel, texte); if (!c) throw new Error("introuvable : " + sel + " " + (texte || "")); await p.mouse.move(c.x, c.y); await wait(30); await p.mouse.click(c.x, c.y); await wait(180); };
+const surPlan = (p, x, y) => p.evaluate(([x, y]) => { const s = S(v(x, y)); const rc = cv.getBoundingClientRect(); return { x: rc.left + s.x, y: rc.top + s.y }; }, [x, y]);
+const clicPlan = async (p, x, y) => { const q = await surPlan(p, x, y); await p.mouse.move(q.x, q.y); await wait(40); await p.mouse.click(q.x, q.y); await wait(120); };
+const piece = async (p, x0, y0, x1, y1) => { for (const [x, y] of [[x0, y0], [x1, y0], [x1, y1], [x0, y1], [x0, y0]]) await clicPlan(p, x, y); };
+const EXEMPLE_PROPOSE = /Découvrir avec l'exemple|Voir l'exemple|Revoir l'exemple/;
+
+/* un parcours qui s'interrompt (un bouton absent, une fonction qui n'existe pas) compte comme un échec, et la suite continue */
+const parcours = async (nom, fn) => { const k = `parcours · ${nom} : jusqu'au bout`; try { await fn(); t[k] = true; } catch (e) { t[k] = false; console.log("   " + nom + " interrompu : " + String((e && e.message) || e).split("\n")[0].slice(0, 160)); } finally { try { await p.close(); } catch {} } };
+await parcours("gratuit, à l'ordinateur", async () => {
+p = await onglet({ pro: false });
+Object.assign(t, await p.evaluate((EX) => {
+  const r = {}, vis = (el) => !!el && el.getClientRects().length > 0, e = document.getElementById("emptyStage");
+  r["gratuit · arrivée : aucune fenêtre, aucune question — un Plan final vide"] = !modaleOuverte() && estPlanFinal() && planVide() && state.workflow === "final_plan";
+  r["gratuit · arrivée : la carte « Dessine ton plan final — Commence par tes murs… »"] = vis(e) && /Dessine ton plan final/.test(e.innerText) && /Commence par tes murs, puis ajoute tes portes, fenêtres et aménagements/.test(e.innerText);
+  r["gratuit · arrivée : l'accueil ne reviendra pas (drapeau posé)"] = localStorage.getItem("avyora-plan-welcome") === "1";
+  r["gratuit · arrivée : la pastille « Plan final » sous le nom du plan"] = vis(document.getElementById("typePlan")) && document.getElementById("typePlan").textContent === "Plan final" && document.getElementById("pname").getAttribute("aria-describedby") === "typePlan";
+  r["gratuit · l'exemple de rénovation n'est proposé nulle part (écran, menu Aide)"] = (() => { ouvrirMenu("aide"); const a = document.getElementById("aideMenu").innerText; fermerMenus(false); return !new RegExp(EX).test(document.body.innerText) && !new RegExp(EX).test(a); })();
+  return r;
+}, EXEMPLE_PROPOSE.source));
+await regarder(p, "gratuit · arrivée");
+await cliquer(p, "#emptyStage button", "Tracer les murs");
+t["gratuit · « Tracer les murs » (clic) : l'outil Murs"] = await p.evaluate(() => tool === "mur");
+await piece(p, 0, 0, 5, 4); await p.evaluate(() => { fitView(); render(); });
+t["gratuit · une pièce de 5 × 4 m tracée à la souris, sans état"] = await p.evaluate(() => (facesCache[L().id] || []).filter((f) => f.room).length === 1 && L().walls.every((w) => !w.st) && estPlanFinal());
+await p.evaluate(() => { setTool("select"); state.name = "Ma maison"; render(); });
+await cliquer(p, "#fichierBtn"); await regarder(p, "gratuit · menu Fichier, un plan dessiné");
+t["gratuit · Fichier : ni « Démarrer un projet rénovation », ni choix de type"] = await p.evaluate(() => !document.getElementById("renoDepuisBtn").getClientRects().length);
+await cliquer(p, "#newBtn");
+/* la place de « Mes plans » est prise par le plan dessiné (rangé d'abord) : la limite gratuite est dite avant (D48) */
+t["gratuit · Fichier › Nouveau plan : pas de choix du type ; le plan dessiné est rangé, la limite gratuite dite avant"] = await p.evaluate(() => !document.getElementById("m-nouveau").classList.contains("show") && modaleOuverte()?.id === "m-confirm" && Object.values(loadPlans()).some((e) => e.name === "Ma maison" && e.state.workflow === "final_plan"));
+await cliquer(p, "#confirmChoix button", "quand même");
+t["gratuit · … un Plan final vide, l'outil Murs prêt"] = await p.evaluate(() => estPlanFinal() && planVide() && tool === "mur" && !modaleOuverte());
+await p.evaluate(() => setTool("select"));
+await cliquer(p, "#fichierBtn"); await cliquer(p, "#tplBtn");
+t["gratuit · Plans types : rien à choisir (le type est toujours Plan final)"] = await p.evaluate(() => modaleOuverte()?.id === "m-templates" && !document.getElementById("tplType").innerHTML && !document.querySelector("#m-templates .seg"));
+await regarder(p, "gratuit · plans types");
+await cliquer(p, "#tplGrid .tpl", "T3");
+if (await p.evaluate(() => modaleOuverte()?.id === "m-confirm")) await cliquer(p, "#confirmChoix button", "quand même");
+t["gratuit · un plan type (clic) : un Plan final, sans aucun état, ni tâche"] = await p.evaluate(() => estPlanFinal() && /^T3/.test(state.name) && L().walls.length > 4 && L().walls.every((w) => !w.st) && L().openings.every((o) => !o.st) && chantierTasks().length === 0 && document.getElementById("typePlan").textContent === "Plan final");
+await regarder(p, "gratuit · plan type T3");
+await cliquer(p, "#fichierBtn"); await cliquer(p, "#plansBtn");
+Object.assign(t, await p.evaluate(() => { const r = {}, L2 = document.getElementById("plansList");
+  r["gratuit · Mes plans : chaque carte porte sa pastille « Plan final »"] = [...L2.querySelectorAll(".plancard")].length >= 1 && [...L2.querySelectorAll(".plancard")].every((c) => c.querySelector(".typeplan.pf")?.textContent === "Plan final");
+  r["gratuit · Mes plans dit ce que Pro ajoute : le projet rénovation (DROITS)"] = L2.innerText.includes(DROITS.renovation.pro) && L2.innerText.includes(DROITS.plans.pro);
+  r["gratuit · Mes plans : « Nouveau plan » (plus « vierge »)"] = /^\s*Nouveau plan\s*$/.test(document.querySelector('#m-plans button[onclick="newSavedPlan()"]').innerText);
+  return r; }));
+await regarder(p, "gratuit · Mes plans");
+await p.evaluate(() => closeModal());
+});
+/* au téléphone, en gratuit : ni accueil, ni exemple */
+await parcours("gratuit, au téléphone", async () => {
+p = await onglet({ largeur: 390, hauteur: 844, pro: false });
+Object.assign(t, await p.evaluate((EX) => { const vis = (el) => !!el && el.getClientRects().length > 0, e = document.getElementById("emptyStage");
+  return { "téléphone gratuit · arrivée : aucune fenêtre, un Plan final, « Mes plans » seul sur la carte (pas d'exemple)": !modaleOuverte() && estPlanFinal() && vis(e) && [...e.querySelectorAll("button")].filter(vis).map((x) => x.textContent).join("|") === "Mes plans" && !new RegExp(EX).test(document.body.innerText) }; }, EXEMPLE_PROPOSE.source));
+await regarder(p, "téléphone gratuit · arrivée");
+});
+
+/* ═════════ 11. D68 · Création, Pro : le type d'abord, deux cartes (à la souris, puis au clavier) ═════════ */
+await parcours("Pro, création et navigation", async () => {
+p = await onglet({ graine: { "avyora-plan-tuto": "fait" } });
+Object.assign(t, await p.evaluate(() => {
+  const r = {}, m = document.querySelector("#m-welcome .modal"), vis = (el) => !!el && el.getClientRects().length > 0, C = [...m.querySelectorAll(".wcard")].filter(vis);
+  r["Pro · accueil : d'abord le type, deux cartes illustrées"] = modaleOuverte()?.id === "m-welcome" && m.dataset.etape === "type" && C.length === 2 && C.every((c) => c.querySelector(".wv svg"));
+  r["Pro · accueil : « Plan final — Dessine directement le plan que tu veux obtenir. »"] = C[0].innerText.replace(/\s+/g, " ").trim() === "Plan final Dessine directement le plan que tu veux obtenir.";
+  r["Pro · accueil : « Projet rénovation — Pars de l'existant et décide tes travaux. »"] = C[1].innerText.replace(/\s+/g, " ").trim() === "Projet rénovation Pars de l'existant et décide tes travaux.";
+  r["Pro · accueil : le focus sur « Plan final », pas de flèche de retour au premier pas"] = C[0].contains(document.activeElement) && !vis(m.querySelector(".wretour"));
+  r["Pro · accueil : il tient sans défiler"] = m.scrollHeight <= m.clientHeight + 1;
+  return r; }));
+await cliquer(p, "#m-welcome .wcard", "Projet rénovation");
+Object.assign(t, await p.evaluate(() => { const m = document.querySelector("#m-welcome .modal"), vis = (el) => !!el && el.getClientRects().length > 0, C = [...m.querySelectorAll(".wcard")].filter(vis);
+  return { "Pro · accueil › Projet rénovation (clic) : les choix d'avant (exemple recommandé, plan type, feuille blanche), une flèche de retour": m.dataset.etape === "reno" && C.length === 3 && /exemple/.test(C[0].innerText) && C[0].classList.contains("rec") && /plan type/.test(C[1].innerText) && /Feuille blanche/.test(C[2].innerText) && vis(m.querySelector(".wretour")) && /Dessine ton logement, on chiffre tes travaux/.test(m.querySelector("h3").textContent) }; }));
+await cliquer(p, "#m-welcome .wretour");
+t["Pro · accueil : la flèche (clic) revient au type, le focus sur la carte d'où l'on vient"] = await p.evaluate(() => document.querySelector("#m-welcome .modal").dataset.etape === "type" && /^Projet rénovation/.test(document.activeElement.innerText));
+await cliquer(p, "#m-welcome .wcard", "Plan final");
+Object.assign(t, await p.evaluate(() => { const m = document.querySelector("#m-welcome .modal"), vis = (el) => !!el && el.getClientRects().length > 0, C = [...m.querySelectorAll(".wcard")].filter(vis);
+  return { "Pro · accueil › Plan final (clic) : « Dessine ton plan final », feuille blanche ou plan type": m.dataset.etape === "pf" && /Dessine ton plan final/.test(m.querySelector("h3").textContent) && /Commence par tes murs/.test(m.innerText) && C.length === 2 && /Feuille blanche/.test(C[0].innerText) && /plan type/.test(C[1].innerText) }; }));
+await lireDans(p, "#m-welcome .modal", "Pro · accueil, étape Plan final");
+await cliquer(p, "#m-welcome .wcard", "Feuille blanche");
+t["Pro · accueil › Plan final › Feuille blanche (clic) : un Plan final vide, l'outil Murs, l'exemple pas rangé"] = await p.evaluate(() => !modaleOuverte() && estPlanFinal() && planVide() && tool === "mur" && Object.keys(loadPlans()).length === 0 && localStorage.getItem("avyora-plan-welcome") === "1" && document.getElementById("typePlan").textContent === "Plan final");
+await piece(p, 0, 0, 6, 4); await p.evaluate(() => { fitView(); setTool("select"); state.name = "Maison voulue"; render(); });
+await regarder(p, "Pro · Plan final dessiné depuis l'accueil");
+/* Fichier › Nouveau plan : le même choix ; puis Projet rénovation › Feuille blanche */
+await cliquer(p, "#fichierBtn"); await cliquer(p, "#newBtn");
+Object.assign(t, await p.evaluate(() => { const m = document.querySelector("#m-nouveau .modal"), vis = (el) => !!el && el.getClientRects().length > 0, C = [...m.querySelectorAll(".wcard")].filter(vis);
+  return { "Pro · Fichier › Nouveau plan (clic) : la fenêtre « Nouveau plan », les deux mêmes cartes, le focus sur la première": modaleOuverte()?.id === "m-nouveau" && m.getAttribute("role") === "dialog" && /Nouveau plan/.test(document.getElementById(m.getAttribute("aria-labelledby")).textContent) && C.length === 2 && /^Plan final/.test(C[0].innerText) && /^Projet rénovation/.test(C[1].innerText) && C[0].contains(document.activeElement),
+    "Pro · Nouveau plan : il dit ce qui arrive au plan ouvert (rangé d'abord)": /d'abord rangé dans Mes plans/.test(document.getElementById("nouvNote").textContent) }; }));
+await cliquer(p, "#m-nouveau .wcard", "Plan final");
+await lireDans(p, "#m-nouveau .modal", "Pro · Nouveau plan, étape Plan final");
+await cliquer(p, "#m-nouveau .wretour"); await cliquer(p, "#m-nouveau .wcard", "Projet rénovation");
+t["Pro · Nouveau plan › Projet rénovation (clic) : feuille blanche, plan type, exemple"] = await p.evaluate(() => { const C = [...document.querySelectorAll("#m-nouveau .wcard")].filter((x) => x.getClientRects().length); return document.querySelector("#m-nouveau .modal").dataset.etape === "reno" && C.length === 3 && /Feuille blanche/.test(C[0].innerText) && /plan type/.test(C[1].innerText) && /exemple/.test(C[2].innerText); });
+await cliquer(p, "#m-nouveau .wcard", "Feuille blanche");
+Object.assign(t, await p.evaluate(() => { const r = {}, lib = Object.values(loadPlans());
+  r["Pro · … Feuille blanche (clic) : une rénovation vide (vues, « Estimer ce plan »), la pastille « Projet rénovation »"] = !modaleOuverte() && !estPlanFinal() && planVide() && document.querySelectorAll("#modes button").length === 3 && /Estimer ce plan/.test(document.getElementById("estBtnTop").textContent) && document.getElementById("typePlan").textContent === "Projet rénovation" && !document.getElementById("typePlan").classList.contains("pf");
+  r["Pro · … le Plan final d'avant est rangé dans Mes plans, et le reste"] = lib.some((e) => e.name === "Maison voulue" && e.state.workflow === "final_plan" && e.state.levels[0].walls.length === 4);
+  return r; }));
+/* Mes plans : les deux types, et « Nouveau plan » ouvre le même choix (un mur dans la rénovation : elle a sa carte) */
+await p.evaluate(() => { L().walls.push({ id: uid(), a: v(0, 0), b: v(4, 0), type: "mur" }); afterChange(); });
+await cliquer(p, "#fichierBtn"); await cliquer(p, "#plansBtn");
+t["Pro · Mes plans : chaque carte porte la pastille de son type"] = await p.evaluate(() => { const C = [...document.querySelectorAll("#plansList .plancard")]; const de = (n) => C.find((c) => c.querySelector(".gname b")?.textContent === n)?.querySelector(".typeplan")?.textContent; return de("Maison voulue") === "Plan final" && de(state.name) === "Projet rénovation"; });
+await cliquer(p, "#m-plans button", "Nouveau plan");
+t["Pro · Mes plans › Nouveau plan (clic) : le même choix à deux cartes"] = await p.evaluate(() => modaleOuverte()?.id === "m-nouveau" && document.querySelector("#m-nouveau .modal").dataset.etape === "type");
+await cliquer(p, "#m-nouveau .wcard", "Plan final"); await cliquer(p, "#m-nouveau .wcard", "plan type");
+t["Pro · Plan final › Partir d'un plan type (clic) : la fenêtre des plans types dit « Plan final », sans choix à refaire"] = await p.evaluate(() => modaleOuverte()?.id === "m-templates" && document.querySelector("#tplType .typeplan.pf")?.textContent === "Plan final" && !document.querySelector("#tplType .seg"));
+await lireDans(p, "#m-templates .modal", "Pro · plans types (Plan final fixé), la fenêtre");
+await cliquer(p, "#tplGrid .tpl", "Maison");
+Object.assign(t, await p.evaluate(() => ({ "Pro · … Maison (clic) : un Plan final redessiné, sans état ni tâche": !modaleOuverte() && estPlanFinal() && /^Maison/.test(state.name) && L().walls.every((w) => !w.st) && L().openings.every((o) => !o.st) && L().items.every((i) => !i.st) && chantierTasks().length === 0 && document.getElementById("typePlan").textContent === "Plan final" })));
+await regarder(p, "Pro · plan type Maison en Plan final");
+/* Fichier › Plans types, depuis un Plan final : deux boutons, le type du plan ouvert d'abord */
+await cliquer(p, "#fichierBtn"); await cliquer(p, "#tplBtn");
+t["Pro · Fichier › Plans types : « Type du plan » en deux boutons, « Plan final » choisi (le plan ouvert)"] = await p.evaluate(() => { const B = [...document.querySelectorAll("#tplType .seg button")]; return B.length === 2 && B[0].textContent === "Plan final" && B[0].getAttribute("aria-pressed") === "true" && B[1].textContent === "Projet rénovation" && B[1].getAttribute("aria-pressed") === "false" && document.querySelector("#tplType .seg").getAttribute("role") === "group"; });
+await regarder(p, "Pro · plans types, depuis un Plan final");
+await cliquer(p, "#tplType .seg button", "Projet rénovation");
+t["Pro · … « Projet rénovation » (clic) : choisi"] = await p.evaluate(() => document.querySelector("#tplType .seg button[aria-pressed=true]")?.textContent === "Projet rénovation");
+await cliquer(p, "#tplGrid .tpl", "Studio");
+t["Pro · … Studio (clic) : une rénovation (ses vues), le Plan final Maison rangé"] = await p.evaluate(() => !estPlanFinal() && /^Studio/.test(state.name) && document.querySelectorAll("#modes button").length === 3 && Object.values(loadPlans()).some((e) => /^Maison/.test(e.name) && e.state.workflow === "final_plan"));
+/* au clavier : Fichier, Entrée, Entrée ; Tab, Entrée ; Maj+Tab sur la flèche, Entrée ; Échap */
+await p.evaluate(() => { closeModal(); document.activeElement?.blur?.(); });
+await p.focus("#fichierBtn"); await p.keyboard.press("Enter"); await wait(80); await p.keyboard.press("Enter"); await wait(150);
+t["clavier · Fichier, Entrée, Entrée : « Nouveau plan », le focus sur « Plan final »"] = await p.evaluate(() => modaleOuverte()?.id === "m-nouveau" && /^Plan final/.test(document.activeElement.innerText));
+await p.keyboard.press("Tab"); await p.keyboard.press("Enter"); await wait(150);
+t["clavier · Tab, Entrée : l'étape Projet rénovation, le focus sur sa première carte"] = await p.evaluate(() => document.querySelector("#m-nouveau .modal").dataset.etape === "reno" && /^Feuille blanche/.test(document.activeElement.innerText));
+await p.keyboard.down("Shift"); await p.keyboard.press("Tab"); await p.keyboard.up("Shift"); await wait(40);
+t["clavier · Maj+Tab : la flèche de retour, nommée"] = await p.evaluate(() => document.activeElement.classList.contains("wretour") && /Retour au choix du type de plan/.test(document.activeElement.getAttribute("aria-label")));
+await p.keyboard.press("Enter"); await wait(150);
+t["clavier · Entrée sur la flèche : le type, le focus sur « Projet rénovation »"] = await p.evaluate(() => document.querySelector("#m-nouveau .modal").dataset.etape === "type" && /^Projet rénovation/.test(document.activeElement.innerText));
+for (let i = 0; i < 8; i++) await p.keyboard.press("Tab");
+t["clavier · Tab ×8 : le focus reste dans la fenêtre"] = await p.evaluate(() => document.querySelector("#m-nouveau .modal").contains(document.activeElement));
+await p.keyboard.press("Escape"); await wait(120);
+t["clavier · Échap ferme, rien n'a changé, le focus revient à « Fichier »"] = await p.evaluate(() => !modaleOuverte() && /^Studio/.test(state.name) && document.activeElement.id === "fichierBtn");
+/* « Démarrer un projet rénovation à partir de ce plan » (Pro, depuis un Plan final) */
+t["Fichier, dans une rénovation : pas de « Démarrer un projet rénovation »"] = await p.evaluate(() => { majMenuFichier(); ouvrirMenu("fichier"); const v = !!document.getElementById("renoDepuisBtn").getClientRects().length; fermerMenus(false); return !v; });
+await p.evaluate(() => { const e = Object.values(loadPlans()).find((x) => /^Maison/.test(x.name)); ouvrirPlanRange(e.id); closeModal(); const lv = L(); lv.walls.find((w) => w.type === "mur").iso = { e: 0.12, mat: "gv", mode: "iti", sys: "ossature", side: 1 }; addLevel("copy"); setLevel(0); afterChange(); render(); });
+const avantCopie = await p.evaluate(() => ({ id: state.id, nom: state.name, n: state.levels.map((l) => [l.walls.length, l.openings.length, l.items.length].join(",")).join("|") }));
+await cliquer(p, "#fichierBtn"); await regarder(p, "Pro · menu Fichier d'un Plan final");
+await cliquer(p, "#renoDepuisBtn");
+Object.assign(t, await p.evaluate((a) => { const r = {}, lib = loadPlans(), pf = lib[a.id];
+  r["Démarrer une rénovation (clic) : un AUTRE plan, en rénovation, vue Avant travaux"] = !estPlanFinal() && state.workflow === "renovation" && mode() === "existant" && state.id !== a.id && state.name === a.nom + " · rénovation" && document.querySelectorAll("#modes button").length === 3 && document.getElementById("typePlan").textContent === "Projet rénovation";
+  r["… le plan est copié tel quel (niveaux, murs, ouvertures, équipements), chaque objet « déjà là » (aucun état), aucune tâche"] = state.levels.map((l) => [l.walls.length, l.openings.length, l.items.length].join(",")).join("|") === a.n && state.levels.every((l) => [...l.walls, ...l.openings, ...l.items].every((o) => !o.st) && !l.neuf) && chantierTasks().length === 0;
+  r["… le Plan final reste dans Mes plans, intact et Plan final"] = !!pf && pf.state.workflow === "final_plan" && pf.state.levels.map((l) => [l.walls.length, l.openings.length, l.items.length].join(",")).join("|") === a.n;
+  r["… le message dit où est le Plan final et la vue suivante"] = /rangé dans « Mes plans »/.test(document.getElementById("toast").textContent) && /vue Travaux/.test(document.getElementById("toast").textContent);
+  undo(); r["… Ctrl+Z ramène le Plan final"] = estPlanFinal() && state.name === a.nom; redo(); render();
+  return r; }, avantCopie));
+});
+/* la carte « Voir l'exemple » de l'étape rénovation ouvre l'exemple (une rénovation) */
+await parcours("Pro, l'exemple depuis Nouveau plan", async () => {
+p = await onglet({ graine: { "avyora-plan-welcome": "1", "avyora-plan-tuto": "fait" } });
+await p.evaluate(() => { closeModal(); nouveauPlan(); etapeDepart("nouveau", "reno"); });
+await cliquer(p, "#m-nouveau .wcard", "exemple");
+t["Pro · Nouveau plan › Projet rénovation › Voir l'exemple (clic) : l'exemple, une rénovation"] = await p.evaluate(() => !modaleOuverte() && estExemple() && !estPlanFinal());
+});
+
+/* ═════════ 12. D68 · DROITS : « Projet rénovation : Pro », rien de promis qui n'existe pas ═════════ */
+await parcours("DROITS", async () => {
+p = await onglet({ graine: { "avyora-plan-welcome": "1" } });
+Object.assign(t, await p.evaluate(() => ({
+  "DROITS · une ligne « Projet rénovation » : Pro seulement": DROITS.renovation && DROITS.renovation.gratuit === null && /^le projet rénovation/.test(DROITS.renovation.pro) && droitsPro().includes(DROITS.renovation.pro) && !droitsGratuit().includes(DROITS.renovation.pro),
+  "DROITS · le gratuit dessine son plan final (plus « et tes travaux »)": DROITS.dessin.gratuit === "dessiner ton plan final" && !droitsGratuit().some((d) => /tes travaux/.test(d)),
+  "DROITS · une phrase de liste, sans deux-points": !/:/.test(DROITS.renovation.pro),
+})));
+});
+
+/* ═════════ 13. D68 · Aux autres tailles : l'accueil et « Nouveau plan » tiennent, la pastille est sous le nom ═════════ */
+for (const [L0, H0] of [[1280, 800], [1024, 768], [768, 1024]]) {
+  await parcours(`${L0}×${H0}`, async () => {
+  p = await onglet({ largeur: L0, hauteur: H0 });
+  Object.assign(t, await p.evaluate((tag) => { const r = {}, m = document.querySelector("#m-welcome .modal"), vis = (el) => !!el && el.getClientRects().length > 0, C = [...m.querySelectorAll(".wcard")].filter(vis), mr = m.getBoundingClientRect();
+    r[`${tag} · accueil : les deux cartes côte à côte, dans l'écran, sans défiler`] = C.length === 2 && Math.abs(C[0].getBoundingClientRect().top - C[1].getBoundingClientRect().top) < 1 && mr.top >= 0 && mr.bottom <= innerHeight && m.scrollHeight <= m.clientHeight + 1;
+    closeWelcome("fermer"); closeModal(); nouveauPlan(); const n = document.querySelector("#m-nouveau .modal"), nr = n.getBoundingClientRect();
+    r[`${tag} · Nouveau plan : dans l'écran, sans défiler`] = nr.top >= 0 && nr.bottom <= innerHeight && n.scrollHeight <= n.clientHeight + 1;
+    etapeDepart("nouveau", "reno"); r[`${tag} · Nouveau plan › Projet rénovation : trois cartes, sans défiler`] = [...n.querySelectorAll(".wcard")].filter(vis).length === 3 && n.scrollHeight <= n.clientHeight + 1;
+    closeModal(); const tp = document.getElementById("typePlan"), nm = document.getElementById("pname"), a = tp.getBoundingClientRect(), b2 = nm.getBoundingClientRect(), top = document.querySelector(".top").getBoundingClientRect();
+    r[`${tag} · la pastille du type, sous le nom, dans la barre`] = vis(tp) && a.top >= b2.bottom - 1 && a.left >= b2.left && a.bottom <= top.bottom && tp.textContent === "Projet rénovation";
+    return r; }, `${L0}×${H0}`));
+  });
+}
 
 /* ═════════ Verdicts ═════════ */
 for (const [etat, txt] of lus) {
