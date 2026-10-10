@@ -4841,3 +4841,200 @@ vitest (170 tests) verts ; `langage` a d'abord refusé « maquette » dans l'Aid
 dans le contrôle. Vu à l'écran à 1 440 × 900 et
 1 024 × 768 (et 768, 390) : l'exemple avant et après, en vue aérienne et en visite ; la maison de 94 m² en Plan
 final (vue aérienne, pièce à choisir, visite de la chambre) ; le plan réel (vue aérienne, visite, toiture) ; le plein écran.
+
+## D74 · La vue 3D, corrections du jury : la caméra qui tient, la lumière qui dessine, la visite bien placée, la géométrie de l'architecte (10/10/2026)
+
+**Demande.** Le jury de D73 (découvreur 7/10, designer produit 6,5/10, architecte 7,5/10) : corriger tous les constats
+« fort » et « moyen », et les « faible » rapides, sans sortir de l'architecture décidée (une seule source, rien d'écrit
+dans `state`, Three.js chargé à la demande, 60 i/s) ; sinon dire pourquoi.
+
+**Constat** (avant, mesuré par le jury et revu ici).
+- *Caméra* : `maxPolarAngle` à 87,3° — un geste ordinaire (150 px vers le haut, ou un glisser en diagonale) couchait l'œil
+  au ras du sol, face à un pan de façade gris ; la seule sortie était une icône sans texte. Le cadrage visait une sphère
+  (× 0,98) : la maison coupée au bord à 1 024 px et au téléphone, le toit sous la barre ; allumer la toiture ne recadrait pas.
+- *Lumière* : aucun rendu filmique — en visite, blancs brûlés (255), murs gris souris (203) tous de la même valeur (l'angle de
+  deux murs se réduisait à un trait), plafond égal au mur ; le soleil (direction fixe) traversait les plafonds et, de l'autre
+  côté de la maison, toutes les façades prenaient la même teinte ; les métaux (m 0,45 à 0,85, sans environnement) sortaient
+  noirs ; le survol indigo à 22 % donnait du vieux rose sur le parquet ; meubles en bois sur parquet en bois ; la tuile se
+  répétait tous les 1,6 m en vagues ; les points lumineux du plafond flottaient à 2,50 m en vue aérienne.
+- *Joints* : chaque mur était une suite de prismes juxtaposés — jonctions en T aux tranches, faces d'about entre deux tranches
+  pleines : un trait clair sous les fenêtres (« des fissures »), des façades zébrées.
+- *Visite* : entrer par la chambre de l'exemple posait le visiteur DANS le lit (son repère est dans l'emprise du lit) ; entrer
+  par le nom regardait souvent une porte ; on traversait les meubles ; un clic à travers une chaise envoyait le nez à 30 cm
+  d'un mur ; contre un mur, l'écran devenait un aplat gris (arrêt à 25 cm) ; au RDC, la trémie s'ouvrait sur le vide et la
+  dernière marche était tranchée à 2,50 m. Trouvé en chemin : une trémie À CHEVAL sur deux pièces (la cuisine ouverte et le
+  séjour de la maison de 120 m²) n'était percée dans aucun plafond — la volée montait dans un plafond plein.
+- *Transitions* : aucune — 2D ↔ 3D, entrée en visite, niveau, avant / après : des coupes sèches. Avant / après ne changeait
+  que 0,98 % de l'image, sans rien montrer.
+- *Barre* : « murs entiers » élargissait la coupe et le bouton Toiture sautait de 30 à 42 px sous le curseur ; « Retour au plan »
+  perdait son mot en premier ; Recentrer (les quatre coins) collé au Plein écran ; le moment montré n'avait pas la facture du
+  sélecteur de la 2D ; la barre restait active sans scène (chargement, hors ligne, plan vide) ; le plan vide n'offrait rien.
+- *Le reste de l'écran* : le panneau de droite décrivait le niveau de la 2D et prenait 30 % de la largeur ; le bouton « 3D » se
+  lisait comme un nom de niveau, et rien n'annonçait la 3D ; rendu par Échap, le plan affichait « Plan au clavier : … ».
+- *Architecte* : un escalier quart tournant ou demi-tour montait 17 marches de 16,05 cm quand sa fiche en annonçait 16 de
+  17,0 cm (c'est la 2D qui se trompait : le palier EST une marche) ; l'épaisseur de plancher de la fiche (0,30 m) était
+  ignorée ; plancher d'étage sans épaisseur, trémie sans garde-corps ; une partie basse de toiture posait un bandeau de tuiles
+  de 30 cm au pied d'une façade d'étage alignée sur le RDC, et un toit plat en tuiles ; l'ITE s'arrêtait à 2,50 m sur les
+  pignons et entrait de 4 à 7,5 cm dans le dessous du toit à l'égout ; la hauteur sous plafond d'une pièce (`r.height`,
+  `hAvant`) était ignorée ; le retour d'isolant choisi dans un tableau n'existait pas en 3D ; en applique avec doublage, le
+  dormant perdait le recouvrement que la 2D dessine.
+
+**Décision.**
+1. *La caméra aérienne* : 72° au plus (`V3_POLAIRE`, 0,40π), rotation verticale à 0,7 ; un double-clic dans le vide recentre
+   (sur un sol, il entre en visite) ; « Recentrer » en toutes lettres dès 1 100 px de 3D. Le cadrage vise les 8 coins de la
+   boîte du niveau projetés dans la zone utile — la scène moins la barre d'outils (+ 12 px), 6 % de marge — en quelques passes
+   (distance, puis recentrage dans le plan de l'écran) ; il recadre quand la toiture s'allume et que la maison grandit, et
+   après un plein écran (vue aérienne).
+2. *La lumière* : rendu filmique ACES (exposition 1) ; ciel à sol chaud et clair (`0xD8D4CC`) ; le soleil suit la caméra en
+   vue aérienne (30° à gauche de l'œil, 50° de haut) — la façade vue de face reste claire de tous les côtés, les ombres partent
+   derrière ; deux lumières d'appoint sans ombre, fixes, de part et d'autre de l'axe nord-sud du plan : deux murs
+   perpendiculaires n'ont plus la même valeur. Réglages (`V3_LUM`) : vue aérienne ciel 0,65, soleil 1,3, appoint 0,12 ; visite
+   ciel 1,38, soleil 0,6, appoint 0,55. En visite, les plafonds portent ombre (le soleil n'entre plus que par les baies), un ton
+   sous les murs (`#EFEFEC`, sans émission). La coupe à l'encre, le cloisonnement et le survol ne passent pas par le rendu
+   filmique (`toneMapped:false`) : `#1E1B4B` reste `#1E1B4B`. Mesuré : encre (30,27,75) ; façade vue de face 229–231 aux quatre
+   azimuts ; en visite (séjour), murs 226 et 235 (9 niveaux d'écart entre murs perpendiculaires), plafond 218, aucun pixel
+   au-delà de 247.
+3. *Les matières* : métaux mats (métallicité ≤ 0,1 : chrome `#D9DDE3`, inox `#C3C8CF`, acier peint `#6B7080`, alu
+   `#4A4F5B`) — pas de carte d'environnement, aucun fichier de plus ; meubles en noyer (`#86654A`) sur parquet moins orangé
+   (`#BC9A78`, lames ± 14) ; sol « À définir » `#D9DADF` ; tuile et ardoise dessinées en 512 px pour 3,2 et 2,4 m, chaque rang
+   décalé au hasard (plus de vagues) ; les points lumineux du plafond seulement en visite. Le survol : un voile blanc de 18 %
+   et un liseré indigo `#4F46E5` de 4 cm sur le bord du sol.
+4. *Des murs étanches* (`v3Extruder`) : le polygone monté de bas en haut moins ses trous, chaque face découpée sur UNE grille
+   commune (abscisses des bords de trous, hauteurs des allèges et linteaux), les points d'arête calculés toujours dans le même
+   sens : deux faces voisines partagent exactement leurs sommets — plus de jonction en T. Les tableaux, l'appui et la sous-face
+   du linteau sont fermés ; plus rien entre deux tranches pleines ; un mur entre d'1 mm dans son raccord. Les tranches pleines
+   restent notées pour les collisions (D73), à l'identique.
+5. *La visite* :
+   - *Y entrer* : d'un clic, au point libre le plus proche (à 50 cm des murs, 30 cm des meubles, dans la pièce) ; on y garde le
+     regard de la vue aérienne seulement loin des murs et des meubles, sinon le côté le plus profond. Par la pièce (son nom, le
+     clavier, un changement de niveau sans sol dessous) : à 60 cm devant sa porte principale (la plus large de ses portes, à
+     défaut un passage, une porte-fenêtre), le regard vers le centre de ses équipements, à 35° au plus de l'axe de la porte —
+     le cadrage d'une photo d'agence.
+   - *Les transitions* : la caméra glisse de la vue aérienne aux yeux en 500 ms (position, orientation, objectif 32 → 68°) et
+     en revient de même ; l'ouverture part de la vue de dessus, orientée comme le plan, et bascule en trois-quarts (450 ms),
+     le canevas apparaît en 180 ms ; un changement de niveau ou de moment se fond (250 ms, une image posée sur la scène — pas un
+     second canevas). Le plan et le visiteur sont à leur place dès le premier instant : la transition ne fait que montrer.
+     La main reprend la caméra à tout moment. Rien de tout cela sous « moins de mouvement ».
+   - *Bouger* : en avançant, une sonde arrête à 45 cm d'un mur ou d'un meuble haut (`V3_FACE`), le reste du pas glisse le
+     long ; le cercle de 25 cm reste (les portes se passent). Les meubles hauts (lit, armoire, frigo, plan, îlot, évier,
+     appareils, baignoire, canapé, table, bureau, vasque, poêle, cumulus, chaudière) et l'escalier (ses volées) arrêtent.
+     Un clic au sol vise toujours à travers les meubles, mais s'arrête à 60 cm du mur au-delà ; arrivé face à un mur à moins
+     d'un mètre, on se tourne vers le côté le plus profond (un geste reprend la main).
+   - *Au-dessus* : le niveau du dessus est posé, coupé à 1 m (son plancher, sa trémie et son garde-corps, le bas de ses
+     murs) : par la trémie, on voit l'étage ; la volée monte entière jusqu'à son plancher. Ce qu'on ne peut atteindre ne
+     coûte rien aux collisions.
+   - *Une trémie à cheval sur deux pièces* se retire de chacune, par morceaux (la pièce hors de chaque arête de la trémie) :
+     plafonds, sols et planchers sont percés, sans trou à trianguler.
+6. *Avant / après* : la bascule se fond, et ce qui change s'éclaire aux couleurs de la vue Travaux de la 2D — avant, ce qui
+   sera démoli, déposé, remplacé ou rebouché en ambre (`DEMOLIR`) ; après, ce qui est créé ou remplacé en rouge (`CREER`) —
+   1,2 s, puis s'efface en 0,6 s. Ces objets vont dans des matières à part (« clé~creer », « clé~demolir ») ; la coupe reste
+   à l'encre.
+7. *La barre* : la valeur de la coupe a une largeur fixe (86 px) — rien ne bouge sous le curseur ; « murs entiers » en police
+   de texte, « 1,20 m » en Geist Mono ; « Moment montré » en piste grise et pastille blanche, comme la 2D ; l'anneau de focus
+   arrondi sur le curseur ; « Recentrer » à part, le plein écran seul à l'extrême droite ; le resserrement dans l'ordre du jury
+   (Recentrer en icône, la coupe sans son mot, les vues en un mot, la toiture en icône, Vue aérienne / Visite en icônes,
+   « Retour au plan » en dernier). Sans scène (chargement, hors ligne, plan vide, erreur : `data-etat` sur `.v3`), les
+   commandes restent à leur place, grisées et hors du clavier, sauf « Retour au plan », et la barre d'état se tait ; le
+   chargement dit « Chargement de la 3D (une seule fois)… » avec une barre indéterminée indigo (CSS seul). Le plan vide
+   propose « Tracer les murs » et « Partir d'un plan type », sans Visite ni coupe.
+8. *Autour* : le bouton « 3D » en pastille, avec le cube de « Vue aérienne » ; une seule fois par navigateur, au chargement
+   d'un plan type, le message propose « Voir en 3D » (`avyora-plan-3d-propose`). La 3D replie le panneau de droite (il
+   décrivait un autre niveau) sans toucher la préférence gardée, et le rouvre au retour ; rendu par Échap, le plan ne se croit
+   pas atteint au clavier (pas de « Plan au clavier »).
+9. *L'architecte* :
+   - *Escalier* (dans la 2D, `stairCalc`) : un quart tournant ou un demi-tour de n hauteurs a n − 2 girons plus le palier —
+     l'emprise raccourcit d'un giron ; la fiche, Blondel, le chiffrage et la 3D disent la même marche (n de rise / n).
+   - *Planchers* : l'épaisseur de la fiche de l'escalier (`stair.plancher`) pose l'étage (`v3EpPlancher`) ; le plancher de
+     l'étage est une dalle de cette épaisseur sous chaque pièce (3 mm au-dessus des plafonds du dessous), percée de la
+     trémie — un chant au bord de la trémie, une sous-face sous un porte-à-faux ; la trémie a un garde-corps de 1,00 m
+     (montants, main courante, lisse basse) sur ses bords libres, ni à l'arrivée de la volée (lue dans `stairGeom`) ni contre
+     un mur ; pas pour un hélicoïdal (trémie ronde).
+   - *Toiture* : la forme est connue avant les murs (`v3ToitForme`) ; l'ITE du dernier niveau s'arrête au plus bas du dessous
+     du toit et la toiture la remonte jusque sous les pans (pignons compris). Une partie basse : son contour au débord MOINS
+     l'étage — décalé du débord sur ses façades alignées sur le dessous, à son nu ailleurs ; plate, elle est en étanchéité
+     (`toit:plat`) ; sinon un appentis adossé à l'étage, dans la couverture du toit, à la pente de la partie : un pan par
+     façade de l'étage qui la borde, le plus bas des pans (un arêtier dans l'angle), les murs du dessous montent dessous. Si
+     l'appentis, trop profond, passait au-dessus de l'égout de l'étage, il s'y arrête 25 cm dessous (pente réduite, dite au
+     registre : `pente3d`). Un étage en L ou en porte-à-faux : rien n'est dessiné (comme avant).
+   - *Hauteurs* : la hauteur sous plafond de chaque pièce (`roomHeight`, et `hAvant` avant travaux) : un mur monte à la plus
+     haute des pièces qu'il borde, jamais sous la hauteur du niveau ; le plafond de visite de chaque pièce à la sienne ; la
+     coupe va jusqu'à la plus haute du niveau, et « murs entiers » aussi.
+   - *Le retour d'isolant* : `retourOK`, `retourPossible`, `revealOnSide` prennent la vue et le niveau en paramètres
+     facultatifs (la 2D garde les siens) ; la 3D monte, sur chaque face choisie et permise, une bande de doublage dans chaque
+     jambage — du doublage (ou du nu) jusqu'au plan de la menuiserie, jusqu'à l'axe si l'autre face a aussi le sien, sinon
+     jusqu'à l'autre parement — et la sous-face du linteau, de la largeur de la 2D.
+   - *En applique*, le dormant garde son recouvrement (5 cm au plus, 10 % de la largeur), doublage ou non ; le trou du
+     doublage s'élargit d'autant : il s'arrête contre la tapée.
+
+**Pas fait, et pourquoi.**
+- *Un panneau 3D* (la liste des pièces du niveau montré) : le repli du panneau suffit et n'écrit rien ; la visite par la
+  pièce existe (le clavier, le nom).
+- *Un sélecteur « Plan | 3D »* à deux segments : non — un second bouton dans la barre du haut aurait déplacé ses étapes de
+  resserrement (`responsive`, `ux`) ; la pastille avec le cube nomme le mode et ne se lit plus comme un niveau.
+- *Une 4e ligne à « Premiers pas »* : non — `planfinal.mjs` exige trois gestes (on n'assouplit pas un contrôle) ; et sur une
+  feuille blanche la 3D n'a rien à montrer : l'annonce va au chargement d'un plan type. Le message « Pièce fermée » ne la
+  propose pas non plus (deux boutons dans un message de deux lignes, que `langage.mjs` mesure).
+- *La porte d'entrée qui s'ouvre vers le dehors* traverse toujours la maçonnerie : la règle est celle de la 2D (« les mêmes
+  fonctions »), elle se corrige d'abord dans la 2D.
+- *Une carte d'environnement* (PMREM) : les métaux mats suffisent, sans rien charger de plus.
+- *Une plinthe générique* : non, les appoints suffisent à lire les angles.
+- *Monter l'escalier* en visite : toujours non (on change de niveau dans la barre).
+- *L'appentis trop profond* est dessiné moins pentu que la partie ne le dit (au registre) : un toit qui traverse celui du
+  dessus ne se construit pas.
+
+**Ce qui ne bouge pas.** Aucune globale renommée. Dans la 2D : `stairCalc` (le palier, voir 9) et trois paramètres
+facultatifs à `retourOK`, `retourPossible`, `revealOnSide` ; le message du plan type (une action, une fois). Ajouts :
+`V3_POLAIRE`, `V3_FACE`, `V3_ARRIVEE`, `V3_LIBRE`, `V3_MEUBLES`, `V3_LUM` et des fonctions `v3…` (Calme, Proposer,
+PlierPanneau, HSP, HSPde, HMax, AnimImage, Animer, FinAnim, Pose, PoseAerienne, PoseYeux, Envol, Fondu, TagTravaux, Travaux,
+TravauxImage, MatsTravaux, EpPlancher, Retour, DalleSous, GardeCorps, TremiesDe, Retirer, PlancherGeo, ToitForme, Decoupe,
+CorpsExt, PartieBasse, Soleil, CadragePose, PlusProfond, DistObst, PointLibre, PoseDePiece, Sonde, Arrivee). Les ids et
+l'ordre `.top → #tools → canvas` inchangés ; une clé `localStorage` (`avyora-plan-3d-propose`) ; `state`, le contrat,
+`lib/` : inchangés. Rien n'est écrit dans `state` par la 3D (contrôlé dans le source et par l'empreinte).
+
+**Contrôles.** `vue3d.mjs`, enrichi (**138 → 182 contrôles**). Six contrôles de D73 changent parce que la décision a changé,
+pas leur exigence : le panneau de droite se replie (il restait) ; le clic dans le repère de la chambre (dans le lit) entre au
+point libre le plus proche ; face à un mur ou une allège, l'arrêt est à 45 cm (la sonde) au lieu de 25 ; « Z avance » et « une
+allège arrête » choisissent un chemin sans meuble (les meubles arrêtent désormais) ; les mesures de caméra attendent la fin des
+transitions. Nouveaux, mesurés par des rayons, des pixels ou dans la page :
+- *la caméra* : après un glisser de 150 px vers le haut, l'œil à 72,0° (87° avant), des sols encore visibles ; un double-clic
+  dans le vide recentre en glissant (à 2 mm du cadrage) ; à 1 024 px, la maison de 120 m² entière sous la barre ; le plan réel,
+  toiture allumée, à 1 440 et 1 024 px : le bouton Toiture ne bouge pas sous le curseur, la vue se recadre, le toit entier
+  sous la barre ;
+- *la lumière*, par des pixels : l'encre de la coupe à (30,27,75) sous le rendu filmique ; le soleil à 30° de la caméra et la
+  façade vue de face à 229–231 aux quatre azimuts ; en visite, murs à 226 et 235 (225 au moins, 9 niveaux entre deux murs
+  perpendiculaires), plafond à 218, aucun pixel au-delà de 247 ; les métaux mats, le noyer, le parquet, le sol « À définir »,
+  la tuile ; les sept points lumineux de l'exemple absents en vue aérienne, présents en visite ;
+- *les joints* : un mur de l'exemple percé d'une fenêtre, coupé à 1,60 m : 58 triangles, aucune jonction en T ;
+- *la visite* : le clic dans le lit entre à 43 cm de là, hors du lit, à plus de 50 cm des murs ; par la pièce (« Séjour ») à
+  63 cm de sa porte, le regard à 35° de son axe ; la sonde arrête à 0,45 m d'un mur, d'une allège et du lit ; un clic à 20 cm
+  d'un mur s'arrête à 0,60 m et se tourne vers la pièce ; l'escalier arrête ; au RDC de la maison de 120 m², l'étage vu par la
+  trémie (un rayon touche un mur de l'étage), la dernière marche à 2,558 m, les obstacles restent ceux du RDC ;
+- *les transitions* : l'entrée et la sortie de visite glissent ; sous « moins de mouvement », ni glissement ni fondu ;
+- *avant / après* : le fondu (une image, un seul canevas WebGL), 8 matières éclairées en ambre avant, 3 en rouge après,
+  revenues à leur couleur en 2 s ;
+- *la barre* : la coupe à 86 px fixes, « murs entiers » en police de texte ; le moment en piste grise et pastille blanche ;
+  Recentrer en toutes lettres à 1 440 px, à part du plein écran ; l'anneau de focus du curseur ; hors ligne, la barre éteinte
+  sauf « Retour au plan » et la barre d'état muette ; le plan vide (« Tracer les murs » prend l'outil, « Partir d'un plan
+  type ») ; le bouton en pastille avec le cube ; « Voir en 3D » proposé une fois ; le panneau replié puis rouvert, la
+  préférence intacte, pas de « Plan au clavier » au retour ;
+- *l'architecte* : droit, quart tournant, demi-tour, hélicoïdal — 16 hauteurs annoncées, 16 montées, 0,6 mm d'écart ;
+  plancher de 0,30 m sur la fiche : l'étage à 2,80 m, la marche de 17,56 cm des deux côtés ; la dalle et son chant (à 0,449 m
+  du centre de la trémie) ; le garde-corps (7 côtés), ouvert à l'arrivée ; la partie basse sans bandeau de tuiles au pied de la
+  façade alignée, l'appentis en tuiles (24,4°, réduit de 30° : il passait au-dessus de l'égout), plate en `toit:plat` ;
+  l'ITE du pignon à 2,860 m (à sa face), sous le dessous du toit à l'égout ; une pièce à 3,20 m (ses six murs à 3,20, les
+  autres à 2,50, son plafond, la coupe jusqu'à 3,2) ; le retour d'isolant (13 cm, le doublage dans le jambage, le milieu
+  ouvert) ; le recouvrement en applique (la menuiserie à 14 cm de l'axe, sur le nu du mur doublé).
+Pièges trouvés en chemin : le bouton 3D de la barre du haut — le cube l'élargissait de 21 px et faisait passer la
+barre gratuite à 1 440 px une étape plus loin (`onboarding` ne lisait plus « Enregistré », caché à cette étape ; `visuel`
+voyait le nom coupé à 1 024 px ; `ux` refusait une icône de 15 px) : le cube s'efface dès la première étape de resserrement
+(la barre retrouve exactement ses largeurs d'avant), il est en 16 px, le bouton un peu plus serré — corrigé dans la page,
+pas dans les contrôles ; et la trémie à cheval sur deux pièces (voir Constat).
+Performances (inchangées malgré deux lumières et le rendu filmique) : construction 4,1 ms (94 m², 32 maillages), 4,0 ms
+(120 m², 39), 1,9 ms (plan réel, 14) ; sur la carte graphique (Apple M1, ANGLE Metal, 2 718 × 1 624 px — la 3D a pris la
+place du panneau), une image en 3,5 à 3,9 ms, la boucle à 61 i/s pour les trois plans.
+Batterie complète lancée seule : les 22 contrôles, `planfinal` (579/579) et `vue3d` (182/182), finition, couverture et
+vitest (170 tests) verts — `metier`, `structure` et `planfinal` passent avec le nouveau palier de `stairCalc` (aucun de leurs
+plans n'a d'escalier tournant). Vu à l'écran à 1 440 × 900 et 1 024 × 768 : l'exemple (rénovation) avant et après
+— vue aérienne, l'éclairage des travaux, la visite de ses six pièces ; la maison de 94 m² en Plan final (vue aérienne, murs
+entiers, visite de six pièces) ; le plan réel (vue aérienne, toiture, visite) ; plus la maison de 120 m² (l'étage, le
+garde-corps, la trémie vue du RDC, l'escalier), la partie basse et l'ITE sous les pans, le chargement, le plan vide et le survol.
