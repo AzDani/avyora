@@ -231,3 +231,10 @@ largeur et hauteur de chaque trou, allège, linteau, doublage percé, un sol par
 trémie), compare l'état du plan avant / après (JSON complet et empreinte), vérifie que la page 2D ne demande rien au
 CDN et le message hors ligne (CDN bloqué). Il lance Chrome avec WebGL logiciel (SwiftShader). Sans réseau, il le dit
 et sort en 0 avec un avertissement : la géométrie n'a alors pas été contrôlée.
+
+Depuis D72 (les détails), il mesure aussi, toujours par des rayons — les murs et les sols parmi les seuls murs,
+doublages et sols (`v3Viser(o, d, genres)`) : chaque fenêtre ferme son jour jusqu'aux bords et à sa pose, chaque porte
+a son vantail ouvert du bon côté et à sa hauteur, la porte de garage fermée, la matière avant / après ; chaque
+équipement à sa largeur, à sa place et à sa hauteur courante, tranché par la coupe, les points électriques en petits
+repères ; l'escalier marche par marche (vu aussi de l'étage, par la trémie), le poteau, la poutre ; la toiture
+(interrupteur, un pan, deux pans avec débord, plate, pignons) et l'état intact.
