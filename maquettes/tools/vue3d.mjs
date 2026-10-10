@@ -47,6 +47,22 @@
  *     sans carte graphique, rien n'est mesuré, et c'est dit ;
  *   - le réseau : la 3D ne demande que ses deux fichiers épinglés.
  *
+ *   D74 (les corrections du jury) :
+ *   - la caméra : 72° au plus après un glisser de 150 px vers le haut (des sols encore visibles), le double-clic dans le vide
+ *     qui recentre, le cadrage sous la barre (1 024 px, toiture allumée) ;
+ *   - la lumière, par des pixels : l'encre exacte sous le rendu filmique, le soleil à 30° de la caméra et la façade vue de face
+ *     claire aux quatre azimuts, en visite des murs blancs dont deux perpendiculaires diffèrent, un plafond d'un autre ton,
+ *     rien qui brûle ; les matières (métaux mats, noyer, parquet, tuile) ; les points lumineux en visite seulement ;
+ *   - les joints : un mur percé d'une fenêtre est étanche (aucune jonction en T) ;
+ *   - la visite : le point libre le plus proche d'un clic (le lit), l'entrée par la pièce devant sa porte, la sonde à 45 cm,
+ *     les meubles et l'escalier qui arrêtent, l'arrêt à 60 cm d'un mur au clic puis le demi-tour vers la pièce, l'étage vu par
+ *     la trémie, la volée entière ; les transitions, et leur absence sous « moins de mouvement » ;
+ *   - avant / après : le fondu, ce qui change éclairé puis effacé ; la barre : largeur fixe de la coupe, facture du moment,
+ *     Recentrer à part, barre éteinte sans scène, plan vide ; le panneau replié pendant la 3D ; la 3D proposée une fois ;
+ *   - l'architecte : les quatre types d'escalier montent la marche de leur fiche, l'épaisseur de plancher de la fiche, la dalle
+ *     et son chant, le garde-corps ouvert à l'arrivée, la partie basse de toiture (ni bandeau, ni tuiles à plat ; l'appentis),
+ *     l'ITE sous les pans, la hauteur sous plafond d'une pièce, le retour d'isolant, le recouvrement en applique.
+ *
  *   node maquettes/tools/vue3d.mjs "$(pwd)/maquettes"
  *
  * Three.js vient du CDN : sans réseau, le contrôle le DIT, joue ce qui ne demande pas le réseau, et sort en 0 avec un
@@ -64,6 +80,7 @@ const SRC = fs.readFileSync(SP + "/plan-editor.html", "utf8");
 const pf = fs.readFileSync(SP + "/tools/planfinal.mjs", "utf8"); const a0 = pf.indexOf("function scenePF() {"), SCENE_PF = pf.slice(a0, pf.indexOf("\n}\n", a0) + 3);
 const FIX = JSON.parse(fs.readFileSync(SP + "/tools/fixtures/plan-refend-pierre.json", "utf8")).state;
 const CDN = /cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com|unpkg\.com|three/i;
+const V3_FACE = +(SRC.match(/V3_FACE=([\d.]+)/) || [0, 0.45])[1]; /* D74 : la sonde devant le visiteur */
 
 async function onglet({ largeur = 1440, hauteur = 900, pro = true, bloquerCDN = false, requetes = null, tactile = false, dsf = 1, navigateur = b } = {}) {
   const p = await navigateur.newPage();
@@ -78,7 +95,9 @@ async function onglet({ largeur = 1440, hauteur = 900, pro = true, bloquerCDN = 
   return p;
 }
 /* attend la 3D prête ; renvoie 'pret', 'reseau' ou 'webgl' */
-const attendre3D = (p) => p.waitForFunction(() => (v3Etat().pret && v3.etat !== "charge") || v3.etat === "reseau" || v3.etat === "webgl", { timeout: 60000 }).then(() => p.evaluate(() => (v3.etat === "reseau" || v3.etat === "webgl" ? v3.etat : "pret")));
+const attendre3D = (p) => p.waitForFunction(() => (v3Etat().pret && v3.etat !== "charge" && !v3.anim) || v3.etat === "reseau" || v3.etat === "webgl", { timeout: 60000 }).then(() => p.evaluate(() => (v3.etat === "reseau" || v3.etat === "webgl" ? v3.etat : "pret")));
+/* D74 : les transitions de caméra (ouverture, entrée et sortie de visite, recadrage) durent 400 à 500 ms : on attend leur fin */
+const finAnim = (p) => p.waitForFunction(() => !v3.anim, { timeout: 10000 }).then(() => wait(30));
 
 /* ── les mesures, jouées DANS la page (THREE chargé) : rayons sur les murs, les ouvertures, les sols ── */
 function MESURES() {
@@ -218,6 +237,9 @@ function MESURES() {
   t["hors ligne · un message clair (« la 3D n'a pas pu se charger… connexion internet… ton plan n'a pas bougé »), en alerte"] = etat === "reseau" && r.vis && r.alerte && /n'a pas pu se charger/.test(r.txt) && /internet/.test(r.txt) && /plan n'a pas bougé/.test(r.txt);
   t["hors ligne · « Réessayer » et « Retour au plan »"] = JSON.stringify(r.B) === JSON.stringify(["Réessayer", "Retour au plan"]);
   t["hors ligne · le CDN a bien été demandé à l'ouverture (et seulement alors)"] = req.some((u) => /cdn\.jsdelivr\.net\/npm\/three@/.test(u));
+  /* D74 : sans scène, la barre reste en place mais éteinte (grisée, hors du clavier), sauf « Retour au plan » ; la barre d'état se tait */
+  { const b2 = await p.evaluate(() => { const B = [...document.querySelectorAll("#v3Barre button")], R = document.getElementById("v3Retour"); return { data: document.getElementById("v3").dataset.etat, eteints: B.filter((x) => x !== R).every((x) => x.getAttribute("aria-disabled") === "true" && x.tabIndex === -1), retour: !R.hasAttribute("aria-disabled") && getComputedStyle(R).pointerEvents !== "none", gris: [...document.querySelectorAll("#v3Barre .v3grp")].every((g) => +getComputedStyle(g).opacity < 0.5 && getComputedStyle(g).pointerEvents === "none"), aide: document.getElementById("v3Aide").innerText.trim() }; });
+    t[`hors ligne (D74) · la barre de la 3D est éteinte (data-etat=${b2.data}) sauf « Retour au plan » ; la barre d'état ne dit pas de geste`] = b2.data === "reseau" && b2.eteints && b2.retour && b2.gris && b2.aide === ""; }
   await p.click("#v3Msg button.primary"); await wait(400);
   t["hors ligne · « Réessayer » redemande, et redit le message"] = await p.evaluate(() => v3.etat === "reseau" && !document.getElementById("v3Msg").hidden);
   await p.keyboard.press("Escape"); await wait(150);
@@ -240,7 +262,7 @@ let reseau = true;
   if (etat !== "pret") { reseau = false; console.log(`  AVERTISSEMENT · la 3D n'a pas pu charger Three.js (${etat}) : pas de réseau ? les contrôles de géométrie ne sont pas joués.`); }
   if (reseau) {
     Object.assign(t, await p.evaluate(() => { const r = {}, E = v3Etat(), lv = L();
-      r["ouverture · la 3D couvre la zone du plan ; colonne d'outils, barre du haut et panneau restent"] = !document.getElementById("v3").hidden && document.getElementById("stage").contains(document.getElementById("v3")) && getComputedStyle(document.getElementById("v3")).position === "absolute" && document.getElementById("tools").getClientRects().length > 0 && document.getElementById("panel").getClientRects().length > 0;
+      r["ouverture · la 3D couvre la zone du plan ; colonne d'outils et barre du haut restent ; D74 : le panneau de droite (qui décrivait le niveau de la 2D) se replie, sans toucher la préférence gardée"] = !document.getElementById("v3").hidden && document.getElementById("stage").contains(document.getElementById("v3")) && getComputedStyle(document.getElementById("v3")).position === "absolute" && document.getElementById("tools").getClientRects().length > 0 && !document.getElementById("panel").getClientRects().length && document.querySelector(".body").classList.contains("panelPlie") && localStorage.getItem("avyora-plan-plie") === null;
       r["ouverture · le bouton dit « Retour au plan », enfoncé ; niveaux et vues de la 2D masqués pendant la 3D"] = document.getElementById("v3Btn").getAttribute("aria-pressed") === "true" && /Retour au plan/.test(document.getElementById("v3Btn").dataset.tip) && !document.querySelector("#modes button")?.getClientRects().length;
       r["rénovation · « Après travaux » par défaut, même quand la 2D est en vue Travaux"] = E.vue === "final" && mode() === "projet";
       const B = [...document.querySelectorAll("#v3Barre button")].map((x) => x.getAttribute("aria-label") || x.textContent.trim());
@@ -308,8 +330,8 @@ let reseau = true;
     await p.keyboard.press("Delete"); await wait(100);
     t["clavier · en 3D, Suppr ne supprime pas l'élément choisi du plan caché"] = await p.evaluate((id) => L().walls.some((w) => w.id === id) && v3.ouvert, avant.selId);
     await p.keyboard.press("Escape"); await wait(150);
-    const ap = await p.evaluate(() => ({ on: document.body.classList.contains("v3on"), v3: document.getElementById("v3").hidden, json: JSON.stringify(state), emp: empreinte(state), pressed: document.getElementById("v3Btn").getAttribute("aria-pressed"), modes: !!document.querySelector("#modes button")?.getClientRects().length }));
-    t["fermeture · Échap rend le plan : bouton relâché, vues de la 2D revenues"] = !ap.on && ap.v3 && ap.pressed === "false" && ap.modes;
+    const ap = await p.evaluate(() => ({ on: document.body.classList.contains("v3on"), v3: document.getElementById("v3").hidden, json: JSON.stringify(state), emp: empreinte(state), pressed: document.getElementById("v3Btn").getAttribute("aria-pressed"), modes: !!document.querySelector("#modes button")?.getClientRects().length, panneau: document.getElementById("panel").getClientRects().length > 0 && !document.querySelector(".body").classList.contains("panelPlie"), pref: localStorage.getItem("avyora-plan-plie"), toast: document.getElementById("toast").classList.contains("show") && /Plan au clavier/.test(document.getElementById("toast").textContent) }));
+    t["fermeture · Échap rend le plan : bouton relâché, vues de la 2D revenues ; D74 : le panneau rouvert, la préférence intacte, et pas de message « Plan au clavier »"] = !ap.on && ap.v3 && ap.pressed === "false" && ap.modes && ap.panneau && ap.pref === null && !ap.toast;
     t["état · le plan est identique avant et après la 3D (JSON complet et empreinte), après niveau, vues, coupe et caméra"] = ap.json === avant.json && ap.emp === avant.emp;
     t["DOM · l'ordre .top → #tools → canvas tient ; la 3D vient après le canvas"] = avant.ordre && await p.evaluate(() => !!(cv.compareDocumentPosition(document.getElementById("v3")) & Node.DOCUMENT_POSITION_FOLLOWING));
     /* la touche 3, « Retour au plan », un outil choisi */
@@ -521,10 +543,16 @@ if (reseau) {
   await p.mouse.move(P.x, P.y); await wait(250);
   const sv = await p.evaluate(() => ({ de: v3.surligne ? v3.surligne.userData.de.userData.roomId : null, info: document.getElementById("v3Info").innerText, curseur: v3.renderer.domElement.classList.contains("surPiece"), maill: v3Etat().maillages }));
   t[`visite · la pièce survolée s'éclaire, son nom dans la barre d'état (${sv.info})`] = sv.de === ch.s.roomId && sv.info === ch.s.nom && sv.curseur;
-  await p.mouse.click(P.x, P.y); await wait(300);
+  await p.mouse.click(P.x, P.y); await wait(60);
+  const enAnim = await p.evaluate(() => ({ anim: !!v3.anim, fov: v3.cam.fov }));
+  await finAnim(p);
   Object.assign(t, await p.evaluate((s) => { const r = {}, E = v3Etat(), V = E.visiteur, lv = L(), H = lv.height;
-    r[`visite · un clic dans la pièce y entre, à l'endroit cliqué (${V && V.piece})`] = E.mode === "visite" && !E.choix && !!V && V.piece === s.nom && Math.hypot(V.x - s.x, V.z - s.y) < 0.1;
-    r["visite · à hauteur d'yeux : 1,60 m au-dessus du sol du niveau, un objectif plus large (68°)"] = Math.abs(V.yeux - 1.6) < 1e-9 && Math.abs(v3.cam.position.y - v3.altitudes[0] - 1.6) < 1e-9 && V.fov === 68;
+    /* D74 (architecte) : le repère de la chambre tombe DANS le lit — on entre au point libre le plus proche : hors du lit (et
+       30 cm autour), à 50 cm des murs, dans la chambre */
+    const lit = lv.items.find((x) => x.type === "lit"), c = Math.cos(-(lit.rot || 0)), sn = Math.sin(-(lit.rot || 0)), dx = V.x - lit.x, dy = V.z - lit.y, lx = c * dx - sn * dy, ly = sn * dx + c * dy;
+    const horsLit = Math.abs(lx) > lit.w / 2 + 0.29 || Math.abs(ly) > lit.h / 2 + 0.29, dMur = v3DistObst(V.x, V.z, v3.obst), clicDansLit = Math.abs((c * (s.x - lit.x) - sn * (s.y - lit.y))) < lit.w / 2 && Math.abs(sn * (s.x - lit.x) + c * (s.y - lit.y)) < lit.h / 2;
+    r[`visite · un clic dans la pièce y entre ; D74 : le clic tombait dans le lit — on entre au point libre le plus proche (${V && V.piece}, à ${Math.hypot(V.x - s.x, V.z - s.y).toFixed(2)} m du clic, ${dMur.toFixed(2)} m du mur le plus proche, hors du lit)`] = E.mode === "visite" && !E.choix && !!V && V.piece === s.nom && clicDansLit && horsLit && dMur >= V3_LIBRE - 1e-3 && Math.hypot(V.x - s.x, V.z - s.y) < 2;
+    r["visite · à hauteur d'yeux : 1,60 m au-dessus du sol du niveau, un objectif plus large (68°) — D74 : à la fin de la transition"] = Math.abs(V.yeux - 1.6) < 1e-9 && Math.abs(v3.cam.position.y - v3.altitudes[0] - 1.6) < 1e-9 && V.fov === 68 && !E.anim;
     const M = lv.walls.filter((w) => !isVirtual(w) && wallDrawn(w, "final")).map((w) => ({ w, h: __hautMur(lv, 0, w, "final") })).filter((x) => x.h), fm = M.filter((x) => x.h.y == null || Math.abs(x.h.y - H) > 0.002);
     r[`visite · murs entiers (${M.length} murs à ${fmt(H, 2)} m, rayon), sans coupe ni toiture dans la barre`] = M.length >= 8 && !fm.length && !document.getElementById("v3Coupe") && !document.getElementById("v3Toit");
     const couv = facesFor(lv, "final").filter((f) => f.room && RT[f.room.type] && !RT[f.room.type].ext).length, up = v3Viser([V.x, 1.6, V.z], [0, 1, 0]);
@@ -535,7 +563,8 @@ if (reseau) {
   { const tout = motsLus.join("\n"), ko = [/maquette/i, /\bmoteur\b/i, /\bProjet\b(?! rénovation)|\bFinal\b/, /\bJSON\b/].filter((re) => re.test(tout));
     t[`langage · la 3D (vue aérienne, pièce à choisir, visite) ne dit aucun mot retiré par D39 — ni « maquette », ni « moteur »${ko.length ? " — " + ko.join(" ") : ""}`] = !ko.length && /Vue aérienne/.test(tout); }
   /* marcher : au clavier, dans une direction dégagée (le séjour) */
-  const dep = await p.evaluate(() => { const g = v3PlusGrande(0); let best = 0, bd = 0; for (let k = 0; k < 36; k++) { const a = k * Math.PI / 18, d = v3Degage(g.x, g.y, a); if (d > bd) { bd = d; best = a; } } __poser(g.x, g.y, best); return { x: v3.vis.x, z: v3.vis.z, yaw: v3.vis.yaw, libre: bd }; });
+  /* D74 : les meubles hauts arrêtent aussi (la sonde) — on choisit la direction la plus libre, meubles compris */
+  const dep = await p.evaluate(() => { const g = v3PlusGrande(0); __poser(g.x, g.y, 0); const x = v3.vis.x, z = v3.vis.z; let best = 0, bd = 0; for (let k = 0; k < 36; k++) { const a = k * Math.PI / 18, d = v3Degage(x, z, a, false, true); if (d > bd) { bd = d; best = a; } } __poser(x, z, best); return { x: v3.vis.x, z: v3.vis.z, yaw: v3.vis.yaw, libre: bd }; });
   await p.focus("canvas.v3cv"); await p.keyboard.down("KeyW"); await wait(700); await p.keyboard.up("KeyW"); await wait(80);
   const m1 = await p.evaluate(() => ({ x: v3.vis.x, z: v3.vis.z, yaw: v3.vis.yaw }));
   const d1 = Math.hypot(m1.x - dep.x, m1.z - dep.z), av = ((m1.x - dep.x) * -Math.sin(dep.yaw) + (m1.z - dep.z) * -Math.cos(dep.yaw));
@@ -552,20 +581,22 @@ if (reseau) {
   const m4 = await p.evaluate(() => ({ yaw: v3.vis.yaw, x: v3.vis.x, z: v3.vis.z }));
   t[`visite · Q (A) fait un pas de côté à gauche (${gauche.toFixed(2)} m), la flèche gauche tourne sur place (${((m4.yaw - m3.yaw) * 180 / Math.PI).toFixed(0)}°)`] = gauche > 0.2 && Math.abs(m3.yaw - dep.yaw) < 1e-9 && m4.yaw - m3.yaw > 0.3 && Math.hypot(m4.x - m3.x, m4.z - m3.z) < 1e-9;
   /* les murs arrêtent : face au mur le plus proche, on s'arrête à 25 cm ; on glisse le long du mur */
-  const mur = await p.evaluate(() => { const g = v3PlusGrande(0); let best = 0, bd = 99; for (let k = 0; k < 72; k++) { const a = k * Math.PI / 36, d = v3Degage(g.x, g.y, a); if (d < bd) { bd = d; best = a; } } __poser(g.x, g.y, best); return { yaw: best, d0: bd }; });
+  const mur = await p.evaluate(() => { const g = v3PlusGrande(0); __poser(g.x, g.y, 0); const x = v3.vis.x, z = v3.vis.z; let best = 0, bd = 99; for (let k = 0; k < 72; k++) { const a = k * Math.PI / 36, d = v3Degage(x, z, a); if (d < bd && Math.abs(d - v3Degage(x, z, a, false, true)) < 1e-6) { bd = d; best = a; } } __poser(x, z, best); return { yaw: best, d0: bd }; });
   await p.keyboard.down("KeyW"); await wait(Math.min(3000, 700 + mur.d0 * 900)); await p.keyboard.up("KeyW"); await wait(80);
   const mr = await p.evaluate(() => ({ d: __devant(0.35), d2: __devant(1.0), pen: __penetre(), x: v3.vis.x, z: v3.vis.z }));
-  t[`collisions · face à un mur, on s'arrête à 25 cm de sa face (rayon à 35 cm : ${mr.d.toFixed(3)} m ; à 1 m : ${mr.d2.toFixed(3)} m)`] = Math.abs(mr.d - 0.25) < 0.015 && Math.abs(mr.d2 - 0.25) < 0.015 && !mr.pen.dedans && mr.pen.m > 0.245;
+  t[`collisions · face à un mur, D74 : la sonde arrête à 45 cm de sa face (rayon à 35 cm : ${mr.d.toFixed(3)} m ; à 1 m : ${mr.d2.toFixed(3)} m) — le cercle de 25 cm reste pour les portes`] = Math.abs(mr.d - V3_FACE) < 0.015 && Math.abs(mr.d2 - V3_FACE) < 0.015 && !mr.pen.dedans && mr.pen.m > 0.245;
   await p.keyboard.down("KeyD"); await wait(500); await p.keyboard.up("KeyD"); await wait(80);
   const gl = await p.evaluate(() => ({ x: v3.vis.x, z: v3.vis.z, pen: __penetre() }));
   t[`collisions · contre le mur, un pas de côté glisse le long (${Math.hypot(gl.x - mr.x, gl.z - mr.z).toFixed(2)} m), sans y entrer`] = Math.hypot(gl.x - mr.x, gl.z - mr.z) > 0.3 && !gl.pen.dedans && gl.pen.m > 0.245;
   /* une fenêtre (allège) arrête ; une porte se passe */
-  const fz = await p.evaluate(() => { const lv = L(), o = lv.openings.find((x) => x.type === "fenetre" && opDrawn(x, "final") && (allegeOf(x) || 0) > 0.5), w = lv.walls.find((x) => x.id === o.wallId), t = wallT(w), u = norm(sub(w.b, w.a)), n = perp(u), A = add(w.a, wallOff(w)), sc = o.t * wallLen(w);
-    const si = (() => { const a = wallSideInside(w, 1, lv), c = wallSideInside(w, -1, lv); return a && !c ? 1 : c && !a ? -1 : 1; })(), Q = add(add(A, mul(u, sc)), mul(n, si * (t / 2 + 1.2)));
-    __poser(Q.x, Q.y, Math.atan2(si * n.x, si * n.y)); return { id: o.id, si, nx: n.x, ny: n.y, ax: A.x + u.x * sc, ay: A.y + u.y * sc, piece: v3.vis.piece }; });
+  /* une fenêtre devant laquelle aucun meuble haut ne se tient (D74 : un lit sous l'appui arrêterait avant) */
+  const fz = await p.evaluate(() => { const lv = L(); for (const o of lv.openings.filter((x) => x.type === "fenetre" && opDrawn(x, "final") && (allegeOf(x) || 0) > 0.5)) { const w = lv.walls.find((x) => x.id === o.wallId), t = wallT(w), u = norm(sub(w.b, w.a)), n = perp(u), A = add(w.a, wallOff(w)), sc = o.t * wallLen(w);
+    const si = (() => { const a = wallSideInside(w, 1, lv), c = wallSideInside(w, -1, lv); return a && !c ? 1 : c && !a ? -1 : 1; })(), Q = add(add(A, mul(u, sc)), mul(n, si * (t / 2 + 1.2))), yaw = Math.atan2(si * n.x, si * n.y);
+    __poser(Q.x, Q.y, yaw); if (Math.hypot(v3.vis.x - Q.x, v3.vis.z - Q.y) > 1e-6 || Math.abs(v3Degage(Q.x, Q.y, yaw) - v3Degage(Q.x, Q.y, yaw, false, true)) > 1e-6) continue;
+    return { id: o.id, si, nx: n.x, ny: n.y, ax: A.x + u.x * sc, ay: A.y + u.y * sc, piece: v3.vis.piece }; } return null; });
   await p.keyboard.down("KeyW"); await wait(1800); await p.keyboard.up("KeyW"); await wait(80);
   const fr = await p.evaluate((f) => ({ d: __devant(0.35), cote: ((v3.vis.x - f.ax) * f.nx + (v3.vis.z - f.ay) * f.ny) * f.si, piece: v3.vis.piece, pen: __penetre() }), fz);
-  t[`collisions · une fenêtre arrête : on s'arrête à 25 cm de son allège, côté pièce (${fr.d.toFixed(3)} m, ${fz.piece})`] = Math.abs(fr.d - 0.25) < 0.015 && fr.cote > 0 && fr.piece === fz.piece && !fr.pen.dedans;
+  t[`collisions · une fenêtre arrête : D74 : la sonde arrête à 45 cm de son allège, côté pièce (${fr.d.toFixed(3)} m, ${fz.piece})`] = Math.abs(fr.d - V3_FACE) < 0.015 && fr.cote > 0 && fr.piece === fz.piece && !fr.pen.dedans;
   const pz = await p.evaluate(() => { const lv = L(), fc = facesFor(lv, "final").filter((f) => f.room);
     for (const o of lv.openings.filter((x) => x.type === "porte" && opDrawn(x, "final"))) { const w = lv.walls.find((x) => x.id === o.wallId), t = wallT(w), u = norm(sub(w.b, w.a)), n = perp(u), A = add(w.a, wallOff(w)), sc = o.t * wallLen(w), C = add(A, mul(u, sc));
       const a = add(C, mul(n, t / 2 + 0.9)), c = sub(C, mul(n, t / 2 + 0.9)), ra = v3SolSous(a.x, a.y, 0), rc = v3SolSous(c.x, c.y, 0);
@@ -610,10 +641,12 @@ if (reseau) {
   t[`plein écran · la 3D couvre toute la fenêtre (${pl.q[2]} × ${pl.q[3]} depuis le coin), barre du haut et panneau dessous ; le bouton enfoncé garde le focus`] = pl.on && pl.etat && pl.q.join() === "0,0,1440,900" && pl.pressed === "true" && pl.dessus && pl.focus === "v3Plein";
   await p.keyboard.press("Escape"); await wait(200);
   const e1 = await p.evaluate(() => ({ plein: v3.plein, cls: document.body.classList.contains("v3plein"), mode: v3.mode, ouvert: v3.ouvert }));
-  await p.keyboard.press("Escape"); await wait(200);
+  await p.keyboard.press("Escape"); await wait(60);
+  const e2a = await p.evaluate(() => !!v3.anim); await finAnim(p);
   const e2 = await p.evaluate((c0) => ({ mode: v3.mode, ouvert: v3.ouvert, fov: v3.cam.fov, cam: v3.cam.position.toArray().every((x, i) => Math.abs(x - c0[i]) < 1e-6), coupe: !!document.getElementById("v3Coupe"), ctl: v3.ctl.enabled, aide: document.getElementById("v3Aide").innerText }), cam0);
   await p.keyboard.press("Escape"); await wait(200);
   const e3 = await p.evaluate(() => ({ ouvert: v3.ouvert, json: JSON.stringify(state), emp: empreinte(state) }));
+  t["transitions (D74) · la sortie de visite remonte des yeux à la vue aérienne (une transition, puis la pose laissée)"] = e2a;
   t["Échap · un cran à la fois : le plein écran, puis la visite (la maquette revient telle qu'on l'avait laissée), puis le plan"] = !e1.plein && !e1.cls && e1.mode === "visite" && e1.ouvert && e2.mode === "maquette" && e2.ouvert && e2.fov === 32 && e2.cam && e2.coupe && e2.ctl && /double-clic/.test(e2.aide) && !e3.ouvert;
   t["visite · le plan est identique après la visite (état complet et empreinte)"] = e3.json === avant.json && e3.emp === avant.emp;
   /* un double-clic dans la maquette entre en visite */
@@ -633,10 +666,10 @@ if (reseau) {
   await p.evaluate(MESURES);
   await p.evaluate((S) => { (0, eval)("(" + S + ")")(); closeModal(); sel = null; render(); }, SCENE_PF);
   await p.evaluate(() => cv.focus()); await p.keyboard.press("3"); await attendre3D(p);
-  await p.focus("#v3Visite"); await p.keyboard.press("Enter"); await wait(300);
+  await p.focus("#v3Visite"); await p.keyboard.press("Enter"); await wait(100); await finAnim(p);
   const k1 = await p.evaluate(() => { const E = v3Etat(); return { mode: E.mode, choix: E.choix, piece: E.visiteur && E.visiteur.piece, focus: document.activeElement === v3.renderer.domElement, niv: E.niveau }; });
   t[`clavier · « Visite » au clavier (Entrée) entre directement dans la pièce du centre de la vue (${k1.piece}), le clavier passe à la scène`] = k1.mode === "visite" && !k1.choix && !!k1.piece && k1.focus && k1.niv === 0;
-  await p.click('#v3Barre [aria-label="Niveau montré"] button:nth-child(2)'); await wait(300);
+  await p.click('#v3Barre [aria-label="Niveau montré"] button:nth-child(2)'); await wait(300); await finAnim(p);
   Object.assign(t, await p.evaluate(() => { const r = {}, E = v3Etat(), y1 = v3.altitudes[1];
     r[`niveaux · en visite, « Étage » : on y est, les yeux à 1,60 m de son sol, dans une de ses pièces (${E.visiteur.piece})`] = E.mode === "visite" && E.niveau === 1 && Math.abs(v3.cam.position.y - y1 - 1.6) < 1e-9 && !!E.visiteur.piece && !!v3SolSous(E.visiteur.x, E.visiteur.z, 1);
     const trem = v3Tremies(state.levels[1], 1, v3.vue);
@@ -736,6 +769,265 @@ if (reseau) {
     }
   }
   if (g) g.close().catch(() => {});
+}
+
+/* ═════════ 11. D74 · Les corrections du jury ═════════ */
+/* le pixel d'un point du monde (s'il est bien le premier touché), sa luminance ; la part du sol dans l'image */
+function PIX() {
+  window.__pix = (P, genres) => { const T = THREE, gl = v3.renderer.getContext(), px = new Uint8Array(4); v3.cam.updateMatrixWorld(); const q = new T.Vector3(...P).project(v3.cam); if (Math.abs(q.x) > 0.98 || Math.abs(q.y) > 0.98 || q.z > 1) return null;
+    const rc = new T.Raycaster(); rc.setFromCamera(new T.Vector2(q.x, q.y), v3.cam); const h = rc.intersectObject(v3.groupe, true)[0]; if (!h || h.point.distanceTo(new T.Vector3(...P)) > 0.08) return null; if (genres && !genres.includes(h.object.userData.kind)) return null;
+    v3Rendre(); const W = gl.drawingBufferWidth, H = gl.drawingBufferHeight; gl.readPixels(Math.round((q.x + 1) / 2 * W), Math.round((q.y + 1) / 2 * H), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); return [px[0], px[1], px[2]]; };
+  window.__lum = (c) => c ? 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2] : null;
+  window.__poser = (x, z, yaw) => { Object.assign(v3.vis, { x, z, yaw, pitch: 0, tourne: null }); v3.glisse = null; v3Repousser(); v3Regard(); v3PieceIci(true); };
+  window.__ecran = (x, y, niv, h) => { const T = THREE, q = new T.Vector3(x, v3.altitudes[niv] + (h || 0.01), y).project(v3.cam), r = v3.renderer.domElement.getBoundingClientRect(); return { x: r.left + (q.x + 1) / 2 * r.width, y: r.top + (1 - q.y) / 2 * r.height }; };
+  window.__partSol = () => { const T = THREE, rc = new T.Raycaster(); let n = 0, s = 0; for (let i = 0; i < 24; i++) for (let j = 0; j < 16; j++) { rc.setFromCamera(new T.Vector2(-0.95 + 1.9 * i / 23, -0.95 + 1.9 * j / 15), v3.cam); const h = rc.intersectObject(v3.groupe, true).find((x) => x.object.userData.kind !== "survol"); n++; if (h && h.object.userData.kind === "sol") s++; } return s / n; };
+  window.__polaire = () => { const o = v3.cam.position.clone().sub(v3.ctl.target); return Math.acos(Math.max(-1, Math.min(1, o.y / o.length()))) * 180 / Math.PI; };
+  window.__az = (o) => Math.atan2(o.x, o.z) * 180 / Math.PI;
+  window.__boiteDansZone = () => { const T = THREE, b = v3Boite(), cvr = v3.renderer.domElement.getBoundingClientRect(), br = document.getElementById("v3Barre").getBoundingClientRect(); let ok = true, pire = 0;
+    for (let k = 0; k < 8; k++) { const q = new T.Vector3(k & 1 ? b.max.x : b.min.x, k & 2 ? b.max.y : b.min.y, k & 4 ? b.max.z : b.min.z).project(v3.cam), x = cvr.left + (q.x + 1) / 2 * cvr.width, y = cvr.top + (1 - q.y) / 2 * cvr.height;
+      if (x < cvr.left + 2 || x > cvr.right - 2 || y > cvr.bottom - 2 || y < br.bottom + 2) { ok = false; pire = Math.max(pire, cvr.left - x, x - cvr.right, br.bottom - y, y - cvr.bottom); } } return { ok, pire: Math.round(pire) }; };
+}
+if (reseau) {
+  /* 11a · l'exemple (rénovation), à 1 440 px : la caméra, la lumière, la barre, le bouton, la visite */
+  const p = await onglet();
+  await p.evaluate(MESURES); await p.evaluate(PIX);
+  await p.evaluate(() => { closeModal(); loadSample(); closeModal(); render(); });
+  const bt = await p.evaluate(() => { const b = document.getElementById("v3Btn"); return { ico: !!b.querySelector("svg.ico"), txt: b.textContent.trim(), cadre: getComputedStyle(b).boxShadow !== "none" }; });
+  t["bouton (D74) · « 3D » en pastille, avec le cube de « Vue aérienne » (il ne se lit plus comme un niveau)"] = bt.ico && bt.txt === "3D" && bt.cadre;
+  await p.click("#v3Btn"); await attendre3D(p);
+  /* la caméra : un glisser de 150 px vers le haut ne couche jamais l'œil au ras du sol */
+  const c0 = await p.evaluate(() => { const r = v3.renderer.domElement.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height * 0.55, pol: __polaire() }; });
+  await p.mouse.move(c0.x, c0.y); await p.mouse.down(); for (let k = 1; k <= 15; k++) { await p.mouse.move(c0.x, c0.y - k * 10); await wait(16); } await p.mouse.up(); await wait(700);
+  const cam1 = await p.evaluate(() => ({ pol: __polaire(), sol: __partSol(), max: v3.ctl.maxPolarAngle * 180 / Math.PI }));
+  t[`caméra (D74) · un glisser de 150 px vers le haut : l'œil s'arrête à ${cam1.pol.toFixed(1)}° (72° au plus ; ${c0.pol.toFixed(0)}° au départ ; avant D74, 87°, au ras du sol), et l'on voit encore des sols (${(cam1.sol * 100).toFixed(1)} % de l'image)`] = cam1.max <= 72.01 && cam1.pol <= 72.5 && cam1.sol >= 0.01;
+  /* un double-clic dans le vide recentre (en glissant) */
+  const P0 = await p.evaluate(() => { const P = v3CadragePose(); return { p: P.p.toArray(), t: P.t.toArray() }; });
+  await p.evaluate(() => { const T = THREE, off = v3.cam.position.clone().sub(v3.ctl.target), s = new T.Spherical().setFromVector3(off); s.theta += 1.3; s.radius *= 0.6; v3.cam.position.copy(v3.ctl.target).add(off.setFromSpherical(s)); v3.ctl.update(); });
+  const vide = await p.evaluate(() => { const r = v3.renderer.domElement.getBoundingClientRect(); for (let y = r.top + 70; y < r.top + 200; y += 10) for (let x = r.left + 10; x < r.right - 10; x += 40) { if (!v3Sol({ clientX: x, clientY: y })) { const T = THREE, rc = new T.Raycaster(); rc.setFromCamera(new T.Vector2((x - r.left) / r.width * 2 - 1, -((y - r.top) / r.height) * 2 + 1), v3.cam); if (!rc.intersectObject(v3.groupe, true).length) return { x, y }; } } return null; });
+  if (vide) { await p.mouse.click(vide.x, vide.y, { count: 2 }); await wait(80); }
+  const dc = vide && await p.evaluate(() => ({ anim: !!v3.anim, mode: v3.mode }));
+  await finAnim(p);
+  const dc2 = await p.evaluate((P0) => ({ d: v3.cam.position.distanceTo(new THREE.Vector3(...P0.p)), dt: v3.ctl.target.distanceTo(new THREE.Vector3(...P0.t)), mode: v3.mode }), P0);
+  t[`caméra (D74) · un double-clic dans le vide recentre la vue, en glissant (à ${dc2.d.toFixed(3)} m du cadrage)`] = !!vide && dc.anim && dc.mode === "maquette" && dc2.d < 0.02 && dc2.dt < 0.02 && dc2.mode === "maquette";
+  /* le soleil suit la caméra ; la façade vue de face reste claire de tous les côtés ; l'encre reste l'encre */
+  Object.assign(t, await p.evaluate(() => { const r = {}, T = THREE, lv = L(); v3ChoisirCoupe(1.2); v3Rafraichir();
+    const w0 = lv.walls.find((w) => !isVirtual(w) && w.type !== "cloison" && wallDrawn(w, v3.vue)), M = add(mul(add(w0.a, w0.b), 0.5), wallOff(w0)), enc = __pix([M.x, 1.2, M.y]);
+    r[`lumière (D74) · la coupe reste à l'encre exacte #1E1B4B sous le rendu filmique (${enc && enc.join(",")})`] = !!enc && Math.abs(enc[0] - 0x1E) <= 2 && Math.abs(enc[1] - 0x1B) <= 2 && Math.abs(enc[2] - 0x4B) <= 2 && v3.renderer.toneMapping === T.ACESFilmicToneMapping;
+    v3ChoisirCoupe(9); v3Rafraichir();
+    const fac = lv.walls.filter((w) => !isVirtual(w) && isExteriorWall(w, lv)).map((w) => { const u = norm(sub(w.b, w.a)), n = perp(u), t = wallT(w), si = v3CoteInt(w, lv), Ps = [];
+      for (const k of [0.15, 0.3, 0.45, 0.6, 0.75, 0.9]) for (const zz of [0.45, 1.6]) { const M2 = add(add(add(w.a, mul(sub(w.b, w.a), k)), wallOff(w)), mul(n, -si * (t / 2 + 0.002))); Ps.push([M2.x, zz, M2.y]); }
+      const M3 = add(add(mul(add(w.a, w.b), 0.5), wallOff(w)), mul(n, -si * (t / 2 + 0.002))); return { P: [M3.x, 0.9, M3.y], Ps, nrm: [-si * n.x, -si * n.y] }; });
+    const az = [], ko = [];
+    for (let k = 0; k < 4; k++) { const off = v3.cam.position.clone().sub(v3.ctl.target), s = new T.Spherical().setFromVector3(off); s.theta += Math.PI / 2; v3.cam.position.copy(v3.ctl.target).add(off.setFromSpherical(s)); v3.ctl.update();
+      const o = v3.cam.position.clone().sub(v3.ctl.target), so = v3.soleil.position.clone().sub(v3.soleil.target.position); let d = __az(so) - (__az(o) - 30); while (d > 180) d -= 360; while (d < -180) d += 360;
+      const cam = v3.cam.position, F = fac.map((f) => { const dx = cam.x - f.P[0], dz = cam.z - f.P[2], l = Math.hypot(dx, dz); return { ...f, face: (f.nrm[0] * dx + f.nrm[1] * dz) / l }; }).filter((f) => f.face > 0.6).map((f) => { const L2 = f.Ps.map((q) => __lum(__pix(q, ["mur", "doublage"]))).filter((x) => x != null).sort((a, b) => a - b); return L2.length ? L2[Math.floor(L2.length / 2)] : null; }).filter((x) => x != null);
+      az.push(Math.round(Math.min(...F))); if (Math.abs(d) > 1 || !F.length || Math.min(...F) < 200) ko.push(k); }
+    r[`lumière (D74) · le soleil suit la caméra (30° à sa gauche) : la façade vue de face reste claire de tous les côtés (${az.join(" / ")}, 200 au moins)`] = !ko.length;
+    return r; }));
+  /* la visite : des murs blancs, deux murs perpendiculaires de valeurs différentes, un plafond d'un autre ton ; rien ne brûle */
+  Object.assign(t, await p.evaluate(() => { const r = {}, lv = L(), sj = v3Etat().sols.find((s) => s.type === "sejour"); v3EntrerVisite(sj.roomId); v3FinAnim(); const V = v3.vis, x = V.x, z = V.z, L_ = [];
+    for (let k = 0; k < 8; k++) { V.yaw = k * Math.PI / 4; V.pitch = 0; v3Regard(); const h = v3Viser([x, v3.altitudes[0] + 1.4, z], [-Math.sin(V.yaw), 0, -Math.cos(V.yaw)], ["mur", "doublage"]); if (!h) { L_.push(null); continue; } L_.push(__lum(__pix(h.p, ["mur", "doublage"]))); }
+    const dirs = [0, 2, 4, 6].map((k) => L_[k]).filter((l) => l != null), paires = [[0, 2], [2, 4], [4, 6], [6, 0]].map(([a, b]) => L_[a] != null && L_[b] != null ? Math.abs(L_[a] - L_[b]) : null).filter((d) => d != null);
+    V.yaw = 0; V.pitch = 1.1; v3Regard(); const up = v3Viser([x, v3.altitudes[0] + 1.6, z], [-Math.sin(0) * 0.4, 1, -Math.cos(0) * 0.4], ["plafond"]), lp = up && __lum(__pix(up.p, ["plafond"]));
+    V.pitch = 0; v3Regard(); const px = v3Pixels(), gl = v3.renderer.getContext(), W = gl.drawingBufferWidth, H = gl.drawingBufferHeight, buf = new Uint8Array(W * H * 4); v3Rendre(); gl.readPixels(0, 0, W, H, gl.RGBA, gl.UNSIGNED_BYTE, buf);
+    let brule = 0; for (let i = 0; i < buf.length; i += 4) { const l = 0.2126 * buf[i] + 0.7152 * buf[i + 1] + 0.0722 * buf[i + 2]; if (l > 247.5) brule++; }
+    r[`lumière (D74) · en visite (séjour), les murs restent blancs (${dirs.map(Math.round).join(" / ")} : 225 au moins) et deux murs perpendiculaires diffèrent (${paires.map(Math.round).join(" / ")} : 8 au moins)`] = dirs.length >= 3 && dirs.every((l) => l >= 225) && paires.length >= 2 && paires.every((d) => d >= 8);
+    r[`lumière (D74) · le plafond a son ton, distinct des murs (${lp && Math.round(lp)} contre ${Math.round(Math.min(...dirs))}–${Math.round(Math.max(...dirs))}) ; aucune surface ne brûle (${(brule / (W * H) * 100).toFixed(2)} % au-delà de 247)`] = lp != null && dirs.every((l) => Math.abs(l - lp) >= 6) && brule / (W * H) < 0.005 && px.noirs < 0.01;
+    v3QuitterVisite(); v3FinAnim(); return r; }));
+  /* matières et repères */
+  Object.assign(t, await p.evaluate(() => { const r = {};
+    r["matières (D74) · aucun métal très métallique (sortait noir sans environnement) : chrome, poignées, inox, alu, acier ≤ 0,1"] = ["eq:chrome", "men:poignee", "eq:inox", "men:alu", "str:acier", "esc:metal", "eq:bac"].every((k) => (V3_MATS[k].m || 0) <= 0.1);
+    r["matières (D74) · le bois des meubles se détache du parquet ; le parquet est moins orangé ; le sol « À définir » n'est plus blanc ; la tuile tient 3,2 m (512 px)"] = V3_MATS["eq:bois"].c !== V3_SOLS.bois.c && parseInt(V3_SOLS.bois.c.slice(1, 3), 16) - parseInt(V3_SOLS.bois.c.slice(5, 7), 16) < 70 && V3_SOLS.defaut.c === "#D9DADF" && V3_MATS["toit:tuile"].motif === 3.2;
+    const lum = L().items.filter((x) => x.type === "lumiere"), E = v3Etat(), sansBoite = lum.every((it) => !E.equipements.find((q) => q.id === it.id).boite);
+    v3EntrerVisite(v3PlusGrande(0).roomId); v3FinAnim(); const E2 = v3Etat(), avecBoite = lum.every((it) => !!E2.equipements.find((q) => q.id === it.id).boite); v3QuitterVisite(); v3FinAnim();
+    r[`repères (D74) · les points lumineux du plafond (${lum.length}) ne flottent plus en vue aérienne ; la visite les montre`] = lum.length >= 1 && sansBoite && avecBoite;
+    return r; }));
+  /* avant / après : un fondu, et ce qui change s'éclaire puis s'efface */
+  const tr = await p.evaluate(() => { v3ChoisirVue("existant"); const im = document.querySelector("#v3 img.v3fondu"), M = v3.mats["cloison~demolir"]; return { fondu: !!im && im.classList.contains("va"), trav: !!v3.trav, teinte: !!M && !M.color.equals(M.userData.base), maill: (() => { let n = 0; v3.groupe.traverse((x) => { if (x.isMesh && /~demolir$/.test(x.userData.cle || "")) n++; }); return n; })() }; });
+  await wait(2200);
+  const tr2 = await p.evaluate(() => { const M = v3.mats["cloison~demolir"]; return { trav: !!v3.trav, base: !!M && M.color.equals(M.userData.base), canvas: document.querySelectorAll("#v3 canvas").length }; });
+  const tr3 = await p.evaluate(() => { v3ChoisirVue("final"); let n = 0; v3.groupe.traverse((x) => { if (x.isMesh && /~creer$/.test(x.userData.cle || "")) n++; }); const M = v3.mats["doublage~creer"]; return { n, teinte: !!M && !M.color.equals(M.userData.base) }; });
+  t[`avant / après (D74) · la bascule se fond (un instantané), ce qui sera démoli ou remplacé s'éclaire en ambre (${tr.maill} matières), ce qui est créé en rouge (${tr3.n}) — puis s'efface en 2 s ; un seul canevas`] = tr.fondu && tr.trav && tr.teinte && tr.maill >= 2 && !tr2.trav && tr2.base && tr2.canvas === 1 && tr3.n >= 2 && tr3.teinte;
+  await wait(2200);
+  /* la barre : la coupe a une largeur fixe ; « murs entiers » est un mot ; le moment a la facture de la 2D ; Recentrer et Plein écran */
+  Object.assign(t, await p.evaluate(() => { const r = {}, o = document.getElementById("v3CoupeV"), g = document.querySelector("#v3Barre .v3coupe"); v3ChoisirCoupe(1.2); const w1 = o.getBoundingClientRect().width, d1 = g.getBoundingClientRect().right, f1 = getComputedStyle(o).fontFamily;
+    v3ChoisirCoupe(9); const w2 = o.getBoundingClientRect().width, d2 = g.getBoundingClientRect().right, f2 = getComputedStyle(o).fontFamily;
+    r[`barre (D74) · la valeur de la coupe a une largeur fixe (${w1.toFixed(0)} = ${w2.toFixed(0)} px) : rien ne bouge sous le curseur ; « murs entiers » en police de texte, « 1,20 m » en Geist Mono`] = Math.abs(w1 - w2) < 0.5 && Math.abs(d1 - d2) < 0.5 && /Geist Mono/.test(f1) && !/Geist Mono/.test(f2) && o.textContent === "murs entiers";
+    const m = document.querySelector('#v3Barre [aria-label="Moment montré"]');
+    r["barre (D74) · « Moment montré » a la facture du sélecteur de vue de la 2D (piste grise, pastille blanche)"] = !!m && m.classList.contains("v3moment") && getComputedStyle(m).backgroundColor !== getComputedStyle(document.querySelector("#v3Barre .v3mode")).backgroundColor && getComputedStyle(m.querySelector("button.on")).backgroundColor === "rgb(255, 255, 255)";
+    const rc = document.getElementById("v3Recentrer"), pl = document.getElementById("v3Plein");
+    r["barre (D74) · « Recentrer » en toutes lettres à 1 440 px, à part du plein écran (seul à l'extrême droite)"] = rc.querySelector(".v3t").getClientRects().length > 0 && rc.parentElement !== pl.parentElement && pl.getBoundingClientRect().right > rc.getBoundingClientRect().right;
+    r["barre (D74) · le curseur de coupe a l'anneau de focus arrondi de la marque"] = [...document.styleSheets].some((ss) => { try { return [...ss.cssRules].some((x) => /\.v3coupe input\[type="?range"?\]:focus-visible/.test(x.selectorText || "") && /border-radius/.test(x.cssText)); } catch { return false; } });
+    v3ChoisirCoupe(1.2); return r; }));
+  /* l'entrée par la pièce : devant sa porte, le regard vers la pièce */
+  Object.assign(t, await p.evaluate(() => { const r = {}, lv = L(), sj = v3Etat().sols.find((s) => s.type === "sejour"), P = v3PoseDePiece(sj.roomId, 0); v3EntrerVisite(sj.roomId); v3FinAnim();
+    const V = v3.vis, o = lv.openings.find((x) => x.id === P.porte), w = lv.walls.find((x) => x.id === o.wallId), C = add(add(w.a, mul(sub(w.b, w.a), o.t)), wallOff(w)), n = perp(norm(sub(w.b, w.a))), dPorte = Math.hypot(V.x - C.x, V.z - C.y);
+    const axe = Math.atan2(-(V.x - C.x), -(V.z - C.y)), ecart = Math.abs(Math.atan2(Math.sin(V.yaw - axe), Math.cos(V.yaw - axe))) * 180 / Math.PI; /* l'axe : de la porte vers la pièce */
+    r[`visite (D74) · par la pièce (« ${sj.nom} ») : devant sa porte (${dPorte.toFixed(2)} m), le regard vers la pièce (${ecart.toFixed(0)}° de l'axe de la porte, 35 au plus), hors des meubles, loin des murs`] = !!P && dPorte < 1.2 && ecart <= 36 && v3DistObst(V.x, V.z, v3.meubles) >= 0.29 && v3DistObst(V.x, V.z, v3.obst) >= V3_LIBRE - 0.26;
+    return r; }));
+  /* la sonde : marcher vers le lit s'arrête à 45 cm (les meubles hauts arrêtent) */
+  const lit = await p.evaluate(() => { const lv = L(), it = lv.items.find((x) => x.type === "lit"), ch = v3Etat().sols.find((s) => s.type === "chambre"); if (v3.mode !== "visite") { v3EntrerVisite(ch.roomId); v3FinAnim(); }
+    const c = Math.cos(it.rot || 0), s = Math.sin(it.rot || 0); for (const [lx, ly] of [[0, it.h / 2 + 1.4], [it.w / 2 + 1.2, 0], [-it.w / 2 - 1.2, 0]]) { const x = it.x + c * lx - s * ly, z = it.y + s * lx + c * ly, yaw = Math.atan2(-(it.x - x), -(it.y - z));
+      __poser(x, z, yaw); if (Math.hypot(v3.vis.x - x, v3.vis.z - z) > 1e-6 || !v3SolSous(x, z, 0)) continue; if (v3Degage(x, z, yaw) < v3Degage(x, z, yaw, false, true) + 0.3) continue; return { ok: true }; } return null; });
+  if (lit) { await p.focus("canvas.v3cv"); await p.keyboard.down("KeyW"); await wait(1600); await p.keyboard.up("KeyW"); await wait(80); }
+  const lr = lit && await p.evaluate(() => ({ d: v3Degage(v3.vis.x, v3.vis.z, v3.vis.yaw, false, true), dans: v3.meubles.some((o) => pointIn({ x: v3.vis.x, y: v3.vis.z }, o.poly)) }));
+  t[`collisions (D74) · on ne traverse plus les meubles : en marchant vers le lit, la sonde arrête à ${lr ? lr.d.toFixed(2) : "?"} m de lui (0,45)`] = !!lr && Math.abs(lr.d - V3_FACE) < 0.03 && !lr.dans;
+  /* un clic au sol près d'un mur : on s'arrête à 60 cm, puis on se tourne vers le côté le plus profond */
+  const cl = await p.evaluate(() => { const sj = v3Etat().sols.find((s) => s.type === "sejour"); if (v3.mode === "visite") v3QuitterVisite(); v3FinAnim(); v3EntrerVisite(sj.roomId); v3FinAnim(); const x = v3.vis.x, z = v3.vis.z;
+    /* une direction vers un mur, sans meuble sur le passage (le cercle du visiteur compris) */
+    const libre = (a, d) => { for (let s = 0.1; s < d; s += 0.1) if (v3DistObst(x - Math.sin(a) * s, z - Math.cos(a) * s, v3.meubles) < 0.35) return false; return true; };
+    const C = []; for (let k = 0; k < 72; k++) { const a = k * Math.PI / 36, d = v3Degage(x, z, a, false, true), dw = v3Degage(x, z, a); if (d > 1.6 && d < 4.5 && Math.abs(d - dw) < 1e-6 && libre(a, d)) C.push({ a, d }); }
+    C.sort((p1, p2) => p1.d - p2.d);
+    /* le point visé doit être un sol que le clic atteint (rien devant lui) */
+    for (const best of C) { __poser(x, z, best.a); v3.vis.pitch = -0.5; v3Regard(); v3Rendre(); const l = best.d - 0.2, X = x - Math.sin(best.a) * l, Z = z - Math.cos(best.a) * l, e = __ecran(X, Z, 0, 0.003), h = v3Sol({ clientX: e.x, clientY: e.y });
+      if (h && Math.hypot(h.x - X, h.y - Z) < 0.05) return { e, yaw: best.a, l }; }
+    return null; });
+  if (cl) { await p.mouse.click(cl.e.x, cl.e.y); await wait(Math.max(1500, cl.l / 2.4 * 1000 + 1500)); }
+  const ca = cl && await p.evaluate((y0) => { const V = v3.vis; return { mur: v3Degage(V.x, V.z, y0, false, true), devant: v3Degage(V.x, V.z, V.yaw, true, true), tourne: Math.abs(Math.atan2(Math.sin(V.yaw - y0), Math.cos(V.yaw - y0))) > 0.2 }; }, cl.yaw);
+  t[`visite (D74) · un clic au sol à 20 cm d'un mur : on s'arrête à ${ca ? ca.mur.toFixed(2) : "?"} m de lui (60 cm), puis on se tourne vers le côté le plus profond (${ca ? ca.devant.toFixed(1) : "?"} m devant)`] = !!ca && ca.mur >= V3_FACE + 0.1 && ca.mur < 0.75 && ca.tourne && ca.devant >= 1;
+  /* les joints : le corps d'un mur percé d'une fenêtre est ÉTANCHE — aucun sommet au milieu d'une arête d'un autre triangle (une
+     jonction en T laisse passer un trait clair : celui que le jury voyait sous les fenêtres, et en zébrures sur les façades) */
+  Object.assign(t, await p.evaluate(() => { const r = {}, lv = L(), m = "final";
+    const o = lv.openings.find((x) => x.type === "fenetre" && opDrawn(x, m) && (allegeOf(x) || 0) > 0.5), w = lv.walls.find((x) => x.id === o.wallId), t_ = wallT(w), Lw = wallLen(w), u = norm(sub(w.b, w.a)), n = perp(u), off = wallOff(w), h = mul(n, t_ / 2), P = (s) => add(add(w.a, off), mul(u, s));
+    const sv = v3.registre; v3.registre = null; const S = {}, B = (k) => S[k] || (S[k] = { pos: [], nor: [] });
+    try { v3Extruder(B, [add(P(0), h), add(P(Lw), h), sub(P(Lw), h), sub(P(0), h)], u, v3Trous(lv, m, w, u, lv.height), 0, lv.height, 1.6, "mur", 0); } finally { v3.registre = sv; }
+    const pos = [].concat(...Object.values(S).map((x) => x.pos)), tris = []; for (let i = 0; i < pos.length; i += 9) tris.push([0, 1, 2].map((k) => [pos[i + 3 * k], pos[i + 3 * k + 1], pos[i + 3 * k + 2]]));
+    const V = []; tris.forEach((T) => T.forEach((q) => V.push(q))); let tj = 0;
+    tris.forEach((T) => { for (let k = 0; k < 3; k++) { const a = T[k], b = T[(k + 1) % 3], ab = [b[0] - a[0], b[1] - a[1], b[2] - a[2]], L2 = ab[0] ** 2 + ab[1] ** 2 + ab[2] ** 2; if (L2 < 1e-10) continue;
+      for (const q of V) { const aq = [q[0] - a[0], q[1] - a[1], q[2] - a[2]], tt = (aq[0] * ab[0] + aq[1] * ab[1] + aq[2] * ab[2]) / L2; if (tt <= 1e-4 || tt >= 1 - 1e-4) continue; const d2 = (aq[0] - tt * ab[0]) ** 2 + (aq[1] - tt * ab[1]) ** 2 + (aq[2] - tt * ab[2]) ** 2; if (d2 < 1e-10) { tj++; break; } } } });
+    r[`joints (D74) · un mur percé d'une fenêtre (coupé à 1,60 m) est étanche : ${tris.length} triangles, ${tj} jonction(s) en T — plus de trait clair sous l'appui ni de façade zébrée`] = tris.length >= 20 && tj === 0 && !!S.murCoupe;
+    return r; }));
+  /* moins de mouvement (réglage du système) : ni transition, ni fondu */
+  await p.emulateMediaFeatures([{ name: "prefers-reduced-motion", value: "reduce" }]);
+  const rm = await p.evaluate(() => { if (v3.mode === "visite") { v3QuitterVisite(); } v3FinAnim(); v3EntrerVisite(v3PlusGrande(0).roomId); const a = !!v3.anim; v3QuitterVisite(); const b = !!v3.anim; v3ChoisirVue("existant"); const im = document.querySelector("#v3 img.v3fondu"), f = !!im && im.classList.contains("va") && getComputedStyle(im).animationName !== "none"; v3ChoisirVue("final"); return { a, b, f }; });
+  t["transitions (D74) · « moins de mouvement » : ni glissement de caméra ni fondu"] = !rm.a && !rm.b && !rm.f;
+  await p.emulateMediaFeatures([{ name: "prefers-reduced-motion", value: "no-preference" }]);
+  await p.close();
+}
+if (reseau) {
+  /* 11b · la maison de 120 m² (Plan final) : l'étage vu de la visite du RDC, la trémie, son garde-corps, le plancher ; à 1 024 px */
+  const p = await onglet({ largeur: 1024, hauteur: 768 });
+  await p.evaluate(MESURES); await p.evaluate(PIX);
+  await p.evaluate((S) => { (0, eval)("(" + S + ")")(); closeModal(); sel = null; render(); }, SCENE_PF);
+  await p.click("#v3Btn"); await attendre3D(p);
+  const z0 = await p.evaluate(() => __boiteDansZone());
+  t[`cadrage (D74) · à 1 024 px, la maison entière tient dans la scène, sous la barre (dépassement ${z0.pire} px)`] = z0.ok;
+  Object.assign(t, await p.evaluate(() => { const r = {}, lv0 = state.levels[0], esc = lv0.items.find((i) => i.type === "escalier"), G = stairGeom(esc, lv0), ra = G.rects[0], c = Math.cos(esc.rot || 0), s = Math.sin(esc.rot || 0), W = (x, y) => [esc.x + c * x - s * y, esc.y + s * x + c * y];
+    v3ChoisirNiveau(1); v3Rafraichir(); const y1 = v3.altitudes[1], E = v3Etat();
+    const ch = v3Viser([esc.x, y1 - 0.1, esc.y], [1, 0, 0], ["plancher", "mur", "sol"]);
+    r[`plancher (D74) · l'étage a son plancher (${(y1 - v3.altitudes[0] - lv0.height).toFixed(2)} m), son chant au bord de la trémie (rayon : ${ch && ch.kind} à ${ch && ch.d.toFixed(3)} m)`] = E.dalles.length >= 1 && !!ch && ch.kind === "plancher" && Math.abs(ch.d - ra.w / 2) < 0.01;
+    const arr = W(0, ra.y + 0.01), dep = W(0, ra.y + ra.h - 0.01), ha = v3Viser([arr[0], y1 + 1.15, arr[1]], [0, -1, 0], ["gardecorps", "escalier", "sol"]), hd = v3Viser([dep[0], y1 + 1.15, dep[1]], [0, -1, 0], ["gardecorps", "escalier", "sol"]);
+    r[`garde-corps (D74) · la trémie a son garde-corps de 1,00 m (${E.gardecorps.length && E.gardecorps[0].cotes} côtés), ouvert à l'arrivée de la volée`] = E.gardecorps.length === 1 && !!hd && hd.kind === "gardecorps" && Math.abs(hd.p[1] - (y1 + 0.012 + 1.0)) < 0.005 && (!ha || ha.kind !== "gardecorps");
+    v3ChoisirNiveau(0); return r; }));
+  /* la visite du RDC : l'étage par la trémie, la volée entière */
+  Object.assign(t, await p.evaluate(() => { const r = {}, lv0 = state.levels[0], esc = lv0.items.find((i) => i.type === "escalier"); v3EntrerVisite(v3PlusGrande(0).roomId); v3FinAnim();
+    const E = v3Etat(), haut = v3.groupe.children.find((g) => g.userData.niveau === 1), y1 = v3.altitudes[1];
+    /* un regard qui monte le long de la trémie, depuis son départ, vers le mur nord de l'étage */
+    const G = stairGeom(esc, lv0), ra = G.rects[0], c = Math.cos(esc.rot || 0), s = Math.sin(esc.rot || 0), O = [esc.x + (-s) * (ra.y + ra.h + 0.35), 1.6, esc.y + c * (ra.y + ra.h + 0.35)], Cb = [esc.x + (-s) * (ra.y - 2.5), y1 + 0.8, esc.y + c * (ra.y - 2.5)];
+    const hc = v3Viser([esc.x, y1 - 0.1, esc.y], [1, 0, 0], ["plancher"]), hm = v3Viser(O, [Cb[0] - O[0], Cb[1] - O[1], Cb[2] - O[2]]);
+    const cs = v3.coupe; v3.coupe = 99; const S = __escalier(lv0, 0, esc); v3.coupe = cs; const der = S.n * S.hm, st = ra.h / ra.n, L1 = [esc.x + (-s) * (ra.y + st / 2), esc.y + c * (ra.y + st / 2)], hd = v3Viser([L1[0], 10, L1[1]], [0, -1, 0], ["escalier", "sol"]);
+    r[`visite (D74) · au RDC, l'étage est posé au-dessus (plancher, chant de la trémie, bas de ses murs) : par la trémie on voit l'étage (${hm && hm.kind} niveau ${hm && hm.niveau})`] = !!haut && !!hc && !!hm && hm.niveau === 1;
+    r[`visite (D74) · la volée monte entière jusqu'au plancher de l'étage : sa dernière marche à ${hd ? (hd.p[1] - 0.003).toFixed(3) : "?"} m (plus haut que le plafond, ${lv0.height} m)`] = der > lv0.height && !!hd && hd.kind === "escalier" && Math.abs(hd.p[1] - 0.003 - der) < 0.004 && S.vues >= S.n - 1;
+    r["visite (D74) · ce qu'on ne peut atteindre ne coûte rien : les obstacles restent ceux du RDC"] = v3.obst.every((o) => !v3.registre.obstacles.some((q) => q.poly === o.poly && Math.abs(q.y0 - y1) < 1e-6));
+    r["visite (D74) · l'escalier arrête le visiteur (ses volées comptent parmi les obstacles)"] = v3.meubles.some((o) => pointIn({ x: esc.x, y: esc.y }, o.poly));
+    v3QuitterVisite(); v3FinAnim(); return r; }));
+  /* les escaliers : la 2D et la 3D disent la même marche, quel que soit le type ; l'épaisseur de plancher de la fiche */
+  Object.assign(t, await p.evaluate(() => { const r = {}, lv = state.levels[0], it = lv.items.find((x) => x.type === "escalier"), sv = JSON.stringify(it), out = [];
+    for (const ty of ["droit", "quart", "demi", "helico"]) { it.stair = { ...(it.stair || {}), type: ty }; fitStair(it, lv); v3.sig = ""; v3Rafraichir(); const e = v3Etat().escaliers.find((x) => x.id === it.id), c = stairCalc(it, lv); out.push({ ty, d: Math.abs(e.hm - c.hM), n: c.n, m: e.marches + (e.palier ? 1 : 0) + 1 }); }
+    r[`escalier (D74) · droit, quart tournant, demi-tour, hélicoïdal : la 3D monte les marches que la fiche annonce (${out.map((x) => x.ty + " " + x.n + "/" + x.m + " " + (x.d * 1000).toFixed(1) + " mm").join(", ")})`] = out.every((x) => x.d <= 0.002 && x.m === x.n);
+    it.stair = { type: "droit", plancher: 0.3 }; fitStair(it, lv); v3.sig = ""; v3Rafraichir(); const a1 = v3.altitudes[1], e1 = v3Etat().escaliers.find((x) => x.id === it.id), c1 = stairCalc(it, lv);
+    r[`plancher (D74) · l'épaisseur de plancher de la fiche de l'escalier (0,30 m) pose l'étage à ${a1.toFixed(2)} m ; la marche de la 3D est celle de la fiche (${(e1.hm * 100).toFixed(2)} cm)`] = Math.abs(a1 - (lv.height + 0.3)) < 1e-9 && Math.abs(e1.hm - c1.hM) <= 0.002;
+    Object.assign(it, JSON.parse(sv)); if (!JSON.parse(sv).stair) delete it.stair; return r; }));
+  await p.close();
+}
+if (reseau) {
+  /* 11c · le plan réel : la toiture allumée ne fait pas sauter la barre ; elle recadre ; à 1 024 px */
+  for (const [L_, H_] of [[1440, 900], [1024, 768]]) {
+    const p = await onglet({ largeur: L_, hauteur: H_ });
+    await p.evaluate(PIX);
+    await p.evaluate((fix) => { closeModal(); state = fix; migrerEtat(state); state.levels.forEach(syncRooms); sel = null; render(); v3Ouvrir(); }, FIX);
+    await attendre3D(p);
+    const x0 = await p.evaluate(() => document.getElementById("v3Toit").getBoundingClientRect().left);
+    await p.click("#v3Toit"); await wait(60); const an = await p.evaluate(() => !!v3.anim); await finAnim(p);
+    const r2 = await p.evaluate(() => ({ x: document.getElementById("v3Toit").getBoundingClientRect().left, toit: !!v3Etat().toit, z: __boiteDansZone() }));
+    t[`${L_} px · la toiture allumée : le bouton ne bouge pas sous le curseur (${Math.round(x0)} → ${Math.round(r2.x)} px), la vue se recadre en glissant, le toit entier sous la barre (dépassement ${r2.z.pire} px)`] = Math.abs(r2.x - x0) < 0.5 && r2.toit && an && r2.z.ok;
+    await p.close();
+  }
+}
+if (reseau) {
+  /* 11d · la toiture d'une rénovation sur deux niveaux, l'étage plus petit : la partie basse ; puis l'ITE sous les pans (maison de 94 m²) */
+  const p = await onglet();
+  await p.evaluate(MESURES);
+  await p.evaluate((S) => { (0, eval)("(" + S + ")")(); closeModal(); state.workflow = WORKFLOW_RENO; state.toiture = toitureDefaults(); const et = state.levels[1]; et.walls = [[0, 0, 7, 0], [7, 0, 7, 10], [7, 10, 0, 10], [0, 10, 0, 0]].map(([a, b2, c, d]) => ({ id: uid(), a: v(a, b2), b: v(c, d), type: "mur" })); state.cur = 0; afterChange(); render(); v3Ouvrir(); }, SCENE_PF);
+  await attendre3D(p);
+  Object.assign(t, await p.evaluate(() => { const r = {}; v3ChoisirNiveau(1); v3ChoisirToit(); v3FinAnim(); const E = v3Etat(), base = v3.altitudes[1] - V3_JOINT;
+    /* 15 cm devant la façade ouest de l'étage, alignée sur celle du RDC : aucun toit à 2,70 m (le débord du toit, plus haut, si) */
+    const f = v3Viser([-0.25, 9, 5], [0, -1, 0], ["toit"]), g = v3Viser([-0.25, base + 0.5, 5], [0, -1, 0], ["toit"]), a = v3Viser([9.5, 9, 5], [0, -1, 0], ["toit"]);
+    r[`toiture (D74) · une partie basse : plus de bandeau de tuiles au pied d'une façade d'étage alignée sur le RDC (sous le débord du toit : ${g ? g.cle + " à " + g.p[1].toFixed(2) : "rien"})`] = !!E.toit && E.toit.parties === 1 && !g && !!f && f.p[1] > base + 1;
+    r[`toiture (D74) · la partie basse en appentis, adossé à l'étage, dans la couverture du toit (${a && a.cle}, pente ${E.toit.pente3d}°)`] = !!a && a.cle === "toit:tuile" && a.p[1] > base + 0.2 && E.toit.appentis >= 1;
+    state.levels[0].toit = { forme: "plat" }; v3.sig = ""; v3Rafraichir(); const pl = v3Viser([9.5, 9, 5], [0, -1, 0], ["toit"]);
+    r[`toiture (D74) · une partie basse plate est en étanchéité, jamais en tuiles posées à plat (${pl && pl.cle})`] = !!pl && pl.cle === "toit:plat";
+    return r; }));
+  await p.close();
+  const q = await onglet();
+  await q.evaluate(() => { closeModal(); loadTemplate("maison", WORKFLOW_RENO); closeModal(); state.toiture = toitureDefaults(); const lv = L();
+    lv.walls.forEach((w) => { if (isVirtual(w) || !isExteriorWall(w, lv)) return; w.isos = [{ id: uid(), e: 0.13, mat: DBL_CFG.mat, mode: "ite", sys: "enduit", side: -interiorSideN(w), t0: 0, t1: 1, st: "creer" }]; });
+    afterChange(); render(); v3Ouvrir(); });
+  await attendre3D(q);
+  Object.assign(t, await q.evaluate(() => { const r = {}; v3ChoisirToit(); v3FinAnim(); const F = v3.toitF, G = F.G, R = G.R, X = G.dir === "x", dt = 0.14;
+    const O = X ? [R.x0 - 3, F.base + 0.4, (R.y0 + R.y1) / 2] : [(R.x0 + R.x1) / 2, F.base + 0.4, R.y0 - 3], h = v3Viser(O, X ? [1, 0, 0] : [0, 0, 1]);
+    r[`toiture (D74) · l'ITE monte avec le pignon jusque sous les pans (rayon à 40 cm au-dessus des murs : ${h && h.kind} à ${h && h.d.toFixed(3)} m)`] = !!h && h.kind === "doublage" && Math.abs(h.d - (3 - dt)) < 0.01 && v3Etat().toit.ite >= 2;
+    const eg = X ? { x: (R.x0 + R.x1) / 2, y: R.y0 - dt / 2 } : { x: R.x0 - dt / 2, y: (R.y0 + R.y1) / 2 }, hi = v3Viser([eg.x, F.base + 3, eg.y], [0, -1, 0], ["doublage"]);
+    r[`toiture (D74) · à l'égout, l'ITE s'arrête sous le dessous du toit (${hi && hi.p[1].toFixed(3)} m pour ${F.zb([eg.x, eg.y]).toFixed(3)})`] = !!hi && hi.p[1] <= F.zb([eg.x, eg.y]) + 1e-3;
+    return r; }));
+  await q.close();
+}
+if (reseau) {
+  /* 11e · le retour d'isolant, le recouvrement en applique ; la hauteur sous plafond d'une pièce */
+  const p = await onglet();
+  await p.evaluate(() => { closeModal(); state = blankState(); state.workflow = WORKFLOW_RENO; const lv = L(); lv.height = 2.5;
+    const W = (a, c) => { const x = { id: uid(), a: v(...a), b: v(...c), type: "mur", t: 0.2 }; lv.walls.push(x); return x; };
+    const s = W([0, 0], [8, 0]), e = W([8, 0], [8, 5]), n = W([8, 5], [0, 5]), o = W([0, 5], [0, 0]); afterChange();
+    [s, e, n, o].forEach((w) => { w.isos = [{ id: uid(), e: 0.11, mat: DBL_CFG.mat, mode: "iti", sys: "ossature", side: interiorSideN(w), t0: 0, t1: 1 }]; });
+    const O = (w, t, type, ex) => { const d = OPENINGS[type]; lv.openings.push({ id: uid(), wallId: w.id, t, type, w: d.w, h: d.h, side: 1, hinge: 1, ...ex }); };
+    O(s, 0.2, "fenetre", { pose: "applique" }); O(s, 0.7, "fenetre", { pose: "tunnel", retour: [interiorSideN(s)] }); afterChange(); render(); v3Ouvrir(); });
+  await attendre3D(p);
+  Object.assign(t, await p.evaluate(() => { const r = {}; v3ChoisirCoupe(9); v3Rafraichir(); const E = v3Etat(), lv = L(), s = lv.walls[0], u = norm(sub(s.b, s.a)), n = perp(u), si = interiorSideN(s);
+    const o = lv.openings[1], sc = o.t * wallLen(s), hw = o.w / 2, R0 = E.retours[0], L_ = R0 && R0.L[0], dt = doublageOf(s.isos[0]);
+    const P = add(add(s.a, mul(u, sc + hw - L_ / 2)), mul(n, si * 0.5)), h = v3Viser([P.x, 1.4, P.y], [-si * n.x, 0, -si * n.y], ["mur", "doublage", "menuiserie"]);
+    const Pm = add(add(s.a, mul(u, sc)), mul(n, si * 0.5)), hm = v3Viser([Pm.x, 1.4, Pm.y], [-si * n.x, 0, -si * n.y], ["mur", "doublage"]);
+    r[`retour d'isolant (D74) · choisi dans le tableau, il y est : un rayon dans le jambage, à ${(hw - L_ / 2).toFixed(2)} m de l'axe, bute sur le doublage (${h && h.kind}, ${L_} m de large) ; le milieu reste ouvert`] = !!R0 && R0.cotes.length === 1 && Math.abs(L_ - Math.min(dt, hw - 0.02)) < 1e-3 && !!h && h.kind === "doublage" && Math.abs(h.d - (0.5 - 0.1 - dt)) < 0.01 && (!hm || hm.d > 0.5 + 0.1);
+    const o0 = lv.openings[0], sc0 = o0.t * wallLen(s), P0 = add(add(s.a, mul(u, sc0 + o0.w / 2 + 0.025)), mul(n, si * 0.5)), h0 = v3Viser([P0.x, 1.4, P0.y], [-si * n.x, 0, -si * n.y], ["mur", "doublage", "menuiserie"]);
+    r[`menuiserie (D74) · en applique, le dormant garde son recouvrement de la 2D, doublage ou non : à 2,5 cm du tableau, il est là (${h0 && h0.kind} à ${h0 && (0.5 - h0.d).toFixed(3)} m de l'axe)`] = !!h0 && h0.kind === "menuiserie" && 0.5 - h0.d >= 0.1 - 1e-3 && 0.5 - h0.d <= 0.1 + dt + 0.01;
+    return r; }));
+  await p.close();
+  const q = await onglet();
+  await q.evaluate(() => { closeModal(); loadSample(); closeModal(); render(); const lv = L(), f = facesFor(lv, "final").find((x) => x.room && x.room.type === "sejour"); f.room.height = 3.2; afterChange(); render(); v3Ouvrir(); });
+  await attendre3D(q);
+  Object.assign(t, await q.evaluate(() => { const r = {}, lv = L(), f = facesFor(lv, "final").find((x) => x.room && x.room.type === "sejour"), max = +document.getElementById("v3Coupe").max;
+    v3ChoisirCoupe(9); v3Rafraichir(); const ws = new Set((f.edges || []).map((e) => e.wall)), murs = v3Etat().murs.filter((m) => ws.has(m.id)), autres = v3Etat().murs.filter((m) => !ws.has(m.id) && !lv.walls.find((w) => w.id === m.id && facesFor(lv, "final").some((g) => g.room && g.room.height > 2.6 && (g.edges || []).some((e) => e.wall === w.id))));
+    v3EntrerVisite(f.room.id); v3FinAnim(); const V = v3.vis, up = v3Viser([V.x, 1.6, V.z], [0, 1, 0], ["plafond"]); v3QuitterVisite(); v3FinAnim();
+    r[`hauteur (D74) · une pièce à 3,20 m dans un niveau à 2,50 m : ses murs montent à 3,20 m (${murs.length}), les autres restent à 2,50 m ; son plafond de visite à ${up && up.p[1].toFixed(2)} m ; la coupe va jusqu'à ${max} m`] = max === 3.2 && murs.length >= 3 && murs.every((m) => Math.abs(m.haut - 3.2) < 1e-9) && autres.length >= 1 && autres.every((m) => Math.abs(m.haut - 2.5) < 1e-9) && !!up && Math.abs(up.p[1] - 3.2) < 1e-3;
+    return r; }));
+  await q.close();
+}
+{
+  /* 11f · le plan vide : que faire ; et la 3D proposée une fois au chargement d'un plan type */
+  const p = await onglet();
+  await p.evaluate(() => { closeModal(); render(); }); await p.click("#v3Btn");
+  if (reseau) {
+    await p.waitForFunction(() => v3.etat === "vide", { timeout: 60000 });
+    const r = await p.evaluate(() => ({ B: [...document.querySelectorAll("#v3Msg button")].map((x) => x.textContent.trim()), visite: !!document.getElementById("v3Visite"), coupe: !!document.getElementById("v3Coupe"), data: document.getElementById("v3").dataset.etat }));
+    t[`plan vide (D74) · « Rien à montrer en 3D » propose « Tracer les murs » et « Partir d'un plan type » ; ni Visite ni coupe (${r.B.join(", ")})`] = JSON.stringify(r.B) === JSON.stringify(["Tracer les murs", "Partir d'un plan type"]) && !r.visite && !r.coupe && r.data === "vide";
+    await p.evaluate(() => [...document.querySelectorAll("#v3Msg button")][0].click()); await wait(150);
+    t["plan vide (D74) · « Tracer les murs » rend le plan, l'outil Murs pris"] = await p.evaluate(() => !v3.ouvert && tool === "mur");
+  }
+  await p.evaluate(() => { setTool("select"); loadTemplate("t2", WORKFLOW_FINAL); }); await wait(150);
+  const a1 = await p.evaluate(() => { const b = [...document.querySelectorAll("#toast .tact")].find((x) => /Voir en 3D/.test(x.textContent)); return { b: !!b }; });
+  await p.evaluate(() => { closeModal(); state = blankState(); render(); loadTemplate("maison", WORKFLOW_FINAL); }); await wait(150);
+  const a2 = await p.evaluate(() => ({ b: [...document.querySelectorAll("#toast .tact")].some((x) => /Voir en 3D/.test(x.textContent)) }));
+  t["annonce (D74) · une fois, au chargement d'un plan type, le message propose « Voir en 3D » — pas la fois suivante"] = a1.b && !a2.b;
+  await p.close();
 }
 
 let ko = 0;
