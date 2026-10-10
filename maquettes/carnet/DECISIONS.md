@@ -4703,3 +4703,141 @@ garage fermée ; la matière avant / après ; un volume par équipement, à sa l
 l'équipement déposé absent après ; l'escalier marche par marche (15 marches de 17,1 cm), sous la coupe seulement, entier
 vu de l'étage ; poteau et poutre ; la toiture : l'interrupteur, un pan (plan réel, 49 rayons), deux pans avec débord
 (64 rayons, pignons, avancée sous le haut des murs), plate, Ctrl Z, éteinte par la coupe ; l'état intact partout.
+
+## D73 · La vue 3D, chantier T3 : l'ergonomie et la recette — la visite, la barre, le téléphone, la mémoire, les performances (10/10/2026)
+
+**Demande** (suite de D71, D72). Une vue Visite à hauteur d'yeux (ZQSD / WASD, flèches, souris, entrée par un clic dans une
+pièce, collisions simples) ; une barre d'outils 3D sobre (Maquette / Visite, niveau, coupe, Avant / Après, toiture,
+recentrer, plein écran) ; l'aide dans la barre d'état ; les commandes au clavier ; 1 440, 1 280, 1 024, 768 px et le
+téléphone (maquette seulement, au doigt) ; les i/s et le temps de construction mesurés ; pas de fuite à l'ouverture et à la
+fermeture répétées. Recette complète.
+
+**Constat** (avant).
+- La 3D n'avait qu'une maquette en orbite : rien pour être DANS le logement.
+- La barre : Retour au plan, vues, coupe, toiture ; « Recadrer » dans un coin, l'aide en pastille flottante sur la scène ;
+  étroite (la 3D fait ~630 px de large à 1 024), la barre passait à la ligne au hasard des largeurs.
+- Au téléphone, pas de 3D du tout (bouton masqué, ouverture refusée).
+- Fermée, la 3D gardait toute sa scène (géométries) en mémoire vidéo jusqu'à l'ouverture suivante.
+- Les i/s n'avaient jamais été mesurées (les contrôles tournent en WebGL logiciel). Trouvé : Chrome sans écran sait
+  tourner sur la carte graphique du Mac (ANGLE Metal, Apple M1) — les i/s se mesurent pour de vrai.
+- Pièges trouvés en chemin :
+  - À l'étage de la maison de 120 m², le repère de la seule pièce tombe DANS la trémie de l'escalier : y entrer, c'était
+    flotter au-dessus du vide (pas de sol sous les pieds, pas de nom de pièce).
+  - Le plafond, vu d'en dessous, ne reçoit que la lumière « du sol » de l'hémisphère (bleutée) : il sortait gris-bleu, la
+    couleur du fond, et se lisait comme un ciel.
+  - Entrer « dans la direction de la maquette » mettait parfois le nez dans un mur ; « vers le plus dégagé » regardait
+    dehors par la baie (un trou de baie est vide aux genoux).
+  - En WebGL logiciel, une image prend 30 à 100 ms : un pas par image plafonné à 50 ms faisait marcher à mi-vitesse.
+  - Une barre refaite (un niveau, une vue, le plein écran) perdait le focus du bouton qu'on venait d'activer au clavier.
+  - « Maquette », le nom demandé pour la vue en orbite, est un mot que D39 a retiré de l'écran (« mot de développeur » :
+    la page est elle-même une maquette) ; `langage.mjs` l'a trouvé dans l'Aide dès le premier passage de la batterie.
+  - Le cadrage de la maquette rognait le plan sur un écran en hauteur (c'est la largeur qui limite).
+
+**Décision.**
+1. *Deux façons de voir* : la **vue aérienne** (la maquette de D71 : orbite, coupe, toiture — « maquette » reste son nom
+   dans le code, pas à l'écran, D39) et la **visite**. La visite (`v3.mode`), comme le reste de la 3D, n'écrit rien dans
+   `state`.
+   - *Y entrer.* « Visite » à la souris : on choisit sa pièce — curseur en croix, la pièce survolée teintée d'indigo et
+     nommée dans la barre d'état, la maquette et sa coupe restent ; un clic au sol y entre, à l'endroit cliqué. Un
+     double-clic dans la vue aérienne y entre directement. Au clavier (Entrée ou Espace sur « Visite ») : directement dans la
+     pièce au centre de la vue, à défaut la plus grande pièce habitable. On vise à travers les meubles (un lit ne cache pas
+     la chambre), jamais à travers un mur, une vitre ou un plafond.
+   - *Y être.* Les yeux à 1,60 m du sol du niveau, un objectif de 68° (32° en maquette) ; le niveau en murs entiers, sous
+     un plafond par pièce couverte (`polyInt`, percé de la trémie qui monte), qui ne porte ni ne reçoit d'ombre et garde
+     un blanc neutre ; ni coupe ni toiture ; une lumière un peu plus claire (ciel 0,95, soleil 0,5). Entré d'un clic, on
+     regarde où regardait la maquette ; sinon, ou face à un mur à moins de 2 m, vers le côté le plus profond de la pièce
+     (jusqu'aux murs, portes et baies comprises : on regarde la pièce, pas le dehors).
+   - *Bouger.* ZQSD / WASD (lus par leur place, `e.code` : les mêmes touches sur tout clavier ; l'aide écrit les lettres du
+     clavier branché quand le navigateur les donne), ↑ ↓ avancer et reculer, ← → tourner sur place (100°/s), Maj pour aller
+     plus vite (1,5 → 3,2 m/s) ; glisser regarde (on attrape la vue, comme une photo qu'on fait défiler ; la tête de −75° à
+     +75°) ; un clic au sol y mène ; la molette avance ou recule de 50 cm. Recentrer ramène à l'entrée. Changer de niveau :
+     même place s'il y a un sol dessous, sinon la plus grande pièce. Avant / Après se change en visite.
+   - *Les murs arrêtent.* Le visiteur est un cercle de 25 cm de rayon. Les obstacles sont les tranches pleines des murs,
+     raccords et doublages TELLES QUE LA 3D LES MONTE (`v3Extruder` les note en passant), vues de dessus, si elles sont
+     pleines aux genoux (35 cm) ou à la taille (1,10 m) : une allège arrête, un trou de porte ou de baie se passe ; plus la
+     trémie de l'escalier qui monte du dessous (son garde-corps, que le plan ne dessine pas). Le pas est découpé en tranches
+     de 8 cm (une cloison de 7 cm ne se traverse pas d'un coup), le cercle est repoussé hors des tranches : on glisse le long
+     d'un mur au lieu de s'y coller. Un pas tient compte du temps réel de l'image (jusqu'à 0,1 s).
+   - *Échap remonte d'un cran* : le plein écran, puis la visite (la vue aérienne revient telle qu'on l'avait laissée :
+     caméra, objectif, coupe), puis le plan.
+2. *La barre* : Retour au plan · Vue aérienne | Visite · les niveaux · Avant | Après · Coupe · Toiture … et, à droite,
+   Recentrer · Plein écran. Chaque groupe a son rôle et son nom, chaque bouton un nom entier ; refaite, elle rend le focus
+   au même bouton (des ids). Elle tient sur une ligne en se resserrant par étapes mesurées sur la largeur de la 3D (comme
+   la barre du haut, D64) : « Retour au plan » en icône, les vues en un mot, la coupe sans son mot, la toiture en icône,
+   Vue aérienne / Visite en icônes ; au téléphone, sur deux lignes. Quatre dessins dans le registre (`maquette`, `marcher`,
+   `pleinEcran`, `quitterPleinEcran`) ; Recentrer garde « ajuster » (un concept, un dessin : l'Ajuster de la 2D).
+3. *La barre d'état de la 3D*, au même endroit et de la même facture que celle de la 2D : à gauche l'aide du moment en une
+   ligne (vue aérienne, pièce à choisir, visite, tactile ; écourtée sous 780 px de large), annoncée aux lecteurs d'écran ; à
+   droite la pièce survolée ou celle où l'on est. La scène s'arrête au-dessus d'elle. La pastille d'aide et le coin
+   « Recadrer » de T1 disparaissent.
+4. *Plein écran* : la 3D couvre toute la fenêtre (barre du haut, outils et panneau dessous ; fenêtres et bulles au-dessus),
+   et l'écran entier quand le navigateur le permet — une page intégrée peut le refuser : la fenêtre suffit alors.
+5. *Le téléphone* : le bouton 3D revient, à côté des niveaux (44 × 40 px) ; la 3D s'y ouvre en vue aérienne seulement —
+   rien à choisir (la visite demande un clavier ou une souris ; une fenêtre qui devient étroite en visite revient à la vue
+   aérienne) ; un doigt tourne, deux doigts zooment et déplacent ; des cibles de 40 px. Le cadrage prend
+   l'angle le plus étroit de l'objectif (la largeur, sur un écran en hauteur).
+6. *La mémoire* : fermer vide la scène (géométries libérées : il ne reste en mémoire vidéo que le sol des ombres) ; restent
+   le moteur (un seul contexte WebGL pour la page : en recréer un à chaque ouverture finit par épuiser le navigateur), les
+   matières et leurs textures dessinées (un jeu fini, repris à l'ouverture suivante). Les écouteurs (touche relâchée,
+   fenêtre quittée, plein écran quitté) sont posés une fois.
+7. *Le rendu* reste à la demande : en vue aérienne, une image quand la caméra ou le plan bougent ; en visite, quand on marche,
+   tourne ou regarde.
+8. *Le raccourci* reste la touche 3 (D71) ; l'Aide (« Se déplacer ») dit aussi la visite.
+
+**Pas fait, et pourquoi.**
+- *La visite au téléphone* : non, volontairement (pas de clavier ; deux pouces à l'écran seraient un autre chantier).
+- *Monter l'escalier* en visite : non, on change de niveau dans la barre.
+- *Les meubles* n'arrêtent pas le visiteur, et l'on passe une porte-fenêtre ou une baie (sa menuiserie est montrée fermée,
+  son trou est ouvert) : « collisions simples avec les murs ».
+- *Regarder sans cliquer* (verrouillage du pointeur) : non — l'iframe d'un artefact peut le refuser ; glisser suffit.
+- *Les fines lignes claires* à la jonction de deux prismes de mur (D71) se voient de près, surtout en WebGL logiciel ; sur
+  la carte graphique (2×, antialiasé), presque plus.
+- *Le cadrage* ne tient pas compte de la barre d'outils : au premier cadrage, le haut d'une toiture peut passer dessous.
+- *Le panneau de droite* reste celui de la 2D (D71).
+- *60 i/s* : mesurées sur un portable Apple M1 ; une machine sans carte graphique joignable n'est pas mesurée (le contrôle
+  le dit).
+
+**Ce qui ne bouge pas.** Aucune globale renommée ; ajouts : `V3_YEUX`, `V3_RAYON`, `V3_PAS`, `V3_COURSE`, `V3_TOURNE`,
+`V3_GENOU`, `V3_FOV`, `V3_TOUCHES`, `V3_VISE` et les fonctions `v3…` (Vider, Echap, Resserrer, ChoisirMode,
+QuitterVisite, EntrerVisite, Degage, Lumiere, Regard, Marcher, Pas, Repousser, Obstacles, SolSous, PieceIci, PlusGrande,
+PieceCentre, SolNdc, Sol, Surligner, Pointeurs, Clic, BasculerPlein, AideTexte, MajAide, Info, Plafonds, MesurerRendu,
+MesurerIps) ; des champs dans `v3`. Ids nouveaux, tous dans la 3D : `v3Retour`, `v3Maquette`, `v3Visite`, `v3Niv0…`,
+`v3VueAvant`, `v3VueApres`, `v3Recentrer`, `v3Plein`, `v3Bas`, `v3Info` (`v3Aide` passe dans la barre d'état) ; classe
+`body.v3plein`. Retirés : `.v3coins` et la pastille d'aide. La 2D, `state`, le contrat, `lib/`, les clés `localStorage`
+(aucune nouvelle), l'ordre `.top → #tools → canvas` : inchangés. Dans le code commun, une ligne de `KEYS_GESTES` (la
+touche 3 dit la vue aérienne et la visite) ; la règle CSS qui masquait le bouton 3D au téléphone devient sa taille de cible.
+
+**Contrôles.** `vue3d.mjs`, enrichi (**84 → 138 contrôles**, dont 3 qui demandent une carte graphique). Trois contrôles
+de T1 changent de forme, pas d'exigence : la barre (rénovation, Plan final) se compare toujours à la liste EXACTE de ses
+commandes, dans l'ordre — Vue aérienne / Visite, Recentrer et Plein écran s'y ajoutent ; « Avant travaux enfoncé » se lit
+dans le groupe des vues (Vue aérienne y est aussi enfoncé) ; au téléphone, « ni bouton 3D » devient « le bouton, la vue
+aérienne seule, l'orbite au doigt » (la décision a changé). Nouveaux, mesurés par des rayons ou dans la page :
+- *la visite* : le choix de la pièce (bouton enfoncé, consigne, survol éclairé et nommé), l'entrée au point cliqué, les yeux
+  à 1,60 m, l'objectif, les murs entiers (10 murs), un plafond par pièce couverte (6/6) au-dessus de la tête ; Z avance
+  droit devant à la marche (1,08 m en 0,7 s), Maj plus vite (2,19 m), Q un pas de côté, ← tourne sur place ; un clic au sol
+  y mène (à 0 cm), la molette avance de 0,50 m, glisser tourne la vue de 52° pour 200 px sans déplacer ; Recentrer ; Avant
+  travaux en visite (le mur démoli debout, le visiteur remis hors du mur) ; le double-clic ; les mots de la 3D (vue
+  aérienne, pièce à choisir, visite) : aucun de ceux que D39 a retirés (« maquette », « moteur »…) ; au clavier, l'entrée directe ;
+  sur deux niveaux, l'étage (yeux, pièce, ses murs et sa trémie, ses plafonds) ;
+- *les collisions* : face au mur le plus proche, arrêt à 0,250 m de sa face (rayons à 35 cm et à 1 m) puis glissement de
+  0,75 m le long ; arrêt à 0,250 m d'une allège, côté pièce ; une porte de 0,83 m se passe (de la chambre au séjour) sans
+  toucher les tableaux ; huit courses droit devant depuis le séjour, jamais à moins de 25 cm d'un mur ; la trémie arrête ;
+- *la barre et le clavier* : l'ordre de Tab (Retour au plan › Vue aérienne › Visite › RDC › Étage › Hauteur de coupe ›
+  Recentrer la vue › Plein écran), Espace sur un niveau (le focus reste), les flèches sur la coupe ; un nom pour chaque
+  commande et chaque groupe ; à 1 440, 1 280, 1 024 et 768 px, en vue aérienne et en visite : une ligne, sans chevauchement,
+  dans la 3D, la barre d'état en bas, l'aide entière ; le plein écran (1 440 × 900, le bouton garde le focus) ; Échap un
+  cran à la fois, la vue aérienne retrouvée, le plan intact ; au téléphone : le bouton, la vue aérienne seule, deux lignes au plus,
+  des cibles de 40 px, l'aide tactile, la visite refusée, l'orbite au doigt, Retour au plan ;
+- *la mémoire* : vingt ouvertures et fermetures (en vue aérienne, en visite, avant et après) — fermée, une seule géométrie (le
+  sol des ombres) ; un seul moteur, un seul canvas ; textures 3 → 3, programmes 7 → 7 ; tas JavaScript 6,2 → 6,6 Mo de la
+  3e à la 20e ; écouteurs 43 → 43 ;
+- *les performances* : construction (WebGL logiciel, médiane de 6) — maison de 94 m² 4,3 ms (32 maillages, 5 377
+  triangles à la coupe, 6 337 murs entiers), maison de 120 m² 4,8 ms (39 ; 4 407 ; 5 227), plan réel 1,5 ms (14 ; 628 ;
+  1 048) ; sur la carte graphique (Apple M1, ANGLE Metal, 2 100 × 1 624 px, soit 2×) une image en ~3 ms (coupe, murs entiers
+  ou visite, ~300 i/s possibles) et la boucle à 60 i/s, pour les trois plans ;
+- *le réseau* : la 3D ne demande que ses deux fichiers épinglés, la visite rien de plus.
+Batterie complète lancée seule : les 22 contrôles, `planfinal` (579/579) et `vue3d` (138/138), finition, couverture et
+vitest (170 tests) verts ; `langage` a d'abord refusé « maquette » dans l'Aide (voir Constat) — corrigé dans la page, pas
+dans le contrôle. Vu à l'écran à 1 440 × 900 et
+1 024 × 768 (et 768, 390) : l'exemple avant et après, en vue aérienne et en visite ; la maison de 94 m² en Plan
+final (vue aérienne, pièce à choisir, visite de la chambre) ; le plan réel (vue aérienne, visite, toiture) ; le plein écran.
