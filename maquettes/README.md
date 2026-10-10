@@ -238,3 +238,13 @@ a son vantail ouvert du bon côté et à sa hauteur, la porte de garage fermée,
 équipement à sa largeur, à sa place et à sa hauteur courante, tranché par la coupe, les points électriques en petits
 repères ; l'escalier marche par marche (vu aussi de l'étage, par la trémie), le poteau, la poutre ; la toiture
 (interrupteur, un pan, deux pans avec débord, plate, pignons) et l'état intact.
+
+Depuis D73 (l'ergonomie, la recette), il joue aussi la **visite** à la souris et au clavier (choisir sa pièce, y entrer à
+1,60 m sous ses plafonds, marcher, courir, pas de côté, aller où l'on clique, la molette, regarder en glissant, Recentrer,
+Avant / Après, changer de niveau) et ses **collisions** mesurées par des rayons (arrêt à 25 cm d'un mur ou d'une allège,
+glisser le long, passer une porte, la trémie de l'étage, huit courses droit devant) ; la **barre** (la liste exacte de
+ses commandes, l'ordre de Tab, Espace, Entrée, flèches ; une ligne sans chevauchement à 1 440, 1 280, 1 024 et 768 px ;
+le plein écran ; Échap un cran à la fois ; au téléphone, la maquette seule et l'orbite au doigt) ; la **mémoire** (vingt
+ouvertures : géométries, textures, programmes, tas JavaScript, écouteurs) ; les **performances** : le temps de
+construction, et — si la machine a une carte graphique, Chrome sans écran sur Metal — le temps d'une image à 2× et la
+cadence de la boucle (≥ 60 i/s) ; sans carte graphique, il le dit et ne mesure pas les i/s.
