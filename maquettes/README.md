@@ -8,7 +8,8 @@ on l'ouvre dans un navigateur, on le publie en artefact, on le branche plus tard
 ## `plan-editor.html` — Éditeur de plan 2D
 
 L'éditeur de plan d'AVYORA : on dessine son logement, le plan produit les **quantités** que le
-moteur d'estimation chiffre. ~3 100 lignes, un seul `<script>`, aucune dépendance externe.
+moteur d'estimation chiffre. ~3 100 lignes, un seul `<script>`, aucune dépendance externe au chargement :
+seule la vue 3D (D71) va chercher Three.js (jsDelivr, version épinglée) à sa première ouverture.
 
 Publié ici : <https://claude.ai/artifact/Y1F75L5bdcuQt91KKrxWNr>
 Ce fichier est la **source de vérité** ; l'artefact est la copie publiée. Republier le même
@@ -217,3 +218,16 @@ légende ; barre d'options d'une ligne, avec les variantes et les modèles de l'
 (consigne, mesure en direct et accrochage nommé, surface, échelle graphique, zoom, grille, aimantation, affichage) —
 plus aucune carte sur la zone utile du plan ; Équipements sans modèle posé en douce ; le panneau qui montre l'objet
 posé et le mode d'emploi de chaque outil. La liste des éléments contrôlés au chevauchement (`responsive`) suit.
+
+## `tools/vue3d.mjs` — la vue 3D du plan (D71)
+
+```bash
+node maquettes/tools/vue3d.mjs "$(pwd)/maquettes"
+```
+
+La 3D est **générée** depuis le plan (module `v3…` du même fichier, qui n'écrit jamais dans `state`) ; Three.js
+n'est demandé au CDN qu'à la première ouverture. Le contrôle mesure la scène par des **rayons** (hauteur des murs,
+largeur et hauteur de chaque trou, allège, linteau, doublage percé, un sol par pièce, l'étage posé sur le RDC, la
+trémie), compare l'état du plan avant / après (JSON complet et empreinte), vérifie que la page 2D ne demande rien au
+CDN et le message hors ligne (CDN bloqué). Il lance Chrome avec WebGL logiciel (SwiftShader). Sans réseau, il le dit
+et sort en 0 avec un avertissement : la géométrie n'a alors pas été contrôlée.
