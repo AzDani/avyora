@@ -4497,3 +4497,99 @@ Mis à jour en gardant leur intention (changements voulus) :
   rénovation (décision 6).
 Batterie complète (22 + planfinal), finition, couverture et vitest (170 tests) verts, lancés seuls ; `lib/` non touché (pas
 de build à refaire). Vu à l'écran à 1 440, 1 280, 1 024 et 390 (Pro, gratuit et `?dev`).
+
+## D71 · La vue 3D, chantier T1 : le socle — générée depuis le plan, chargée à la demande (10/10/2026)
+
+**Demande** (Dani : « tu saurais me faire la version 3D maintenant ? »). Une vue 3D du plan dessiné, sans second modèle :
+générée depuis l'état du plan, Three.js chargé seulement à la première ouverture, une maquette en orbite avec coupe, Avant /
+Après pour une rénovation, le plan tel quel pour un Plan final. T1 = le socle : chargement, bascule 2D / 3D, construction
+JUSTE des murs, ouvertures, cloisons, doublages, sols et niveaux, coupe, lumière, reconstruction, contrôle.
+
+**Constat** (avant).
+- Le plan sait déjà tout ce qu'il faut, mais une partie n'était lisible que par le dessin : le raccord des nœuds de murs
+  était calculé DANS `drawJoins`, la bande d'ITE dans `drawDoublageITE`, et les raccourcis d'une cloison (contre un doublage,
+  en T) lisaient `L()` et `mode()` — le niveau et la vue de la 2D, pas ceux qu'on demande.
+- La page ne charge aucun script externe ; ses seules requêtes sont les polices (Google Fonts, D41).
+- La barre du haut est pleine à 1 024 px (D64). Un bouton de plus coupait le nom du plan (1 024 gratuit, rénovation : 28 px
+  manquants, `visuel.mjs` en échec) et faisait perdre au logo son nom dès 1 100 – 1 280 px.
+- Vu en capture pendant le chantier : le dessus des murs du RDC, 12 mm sous le sol de l'étage, transparaissait en lignes
+  pointillées (précision de profondeur).
+
+**Décision.**
+1. *Une seule source.* Un module `v3…` dans le même fichier, qui n'écrit JAMAIS dans `state` : le niveau, la vue, la coupe et
+   la caméra de la 3D vivent dans `v3`. Ce qui existe dans une vue vient des fonctions de la 2D (`wallDrawn`, `opDrawn`,
+   `isoShownIso`, `allegeOf`) ; les pièces de `facesFor` / `detectFaces` + `pairRoomFaces(…, false)`, jamais `syncRooms`.
+2. *La géométrie de la 2D, pas une autre.* Extraites sans changer un pixel : `noeudsJonction(lv,m)` (drawJoins en dessine le
+   résultat) et `bandesITE(lv,m)` (drawDoublageITE) ; `retraitContreDoublage` et `retraitEnT` prennent le niveau et la vue en
+   paramètres facultatifs (par défaut, ceux de la 2D).
+3. *Un mur = le quadrilatère que la 2D dessine*, découpé le long du mur aux bords de ses ouvertures (`clipHalf`, l'abscisse de
+   `cutAtOpenings`, sur le mur ENREGISTRÉ : le piège `o.t`), chaque tranche montée sur ses hauteurs pleines — sous l'allège,
+   au-dessus du linteau. Jambages, appuis et linteaux tombent juste d'eux-mêmes. Raccords : l'enveloppe de `noeudsJonction`
+   extrudée. Doublages : `bandeDoublage` de chaque arête de pièce et `bandesITE`, percés comme leur mur. Sols : un par pièce
+   (`polyInt`), les pièces imbriquées et la trémie de l'escalier du dessous en trous. Un maillage par matière et par niveau.
+4. *Niveaux.* Altitude = somme des (hauteur + 0,22 m), le plancher que l'escalier prend par défaut (`stairCalc`). Les niveaux
+   du dessous sont entiers ; leurs murs montent jusqu'au plancher du dessus moins un joint de 2 cm, que les murs du dessus
+   redescendent : façade continue, plus de lignes à travers le sol de l'étage (qui passe 12 mm au-dessus). Le niveau montré
+   est coupé ; ceux du dessus, cachés ; aucun plafond. Les plans proche et lointain de la caméra suivent sa distance.
+5. *Coupe.* Rien au-dessus ; le dessus tranché à l'encre (#1E1B4B ; cloison à 65 %, comme la 2D ; doublage en jaune pâle) ; un
+   dessus non tranché (appui de fenêtre, murs entiers) blanc cassé. Curseur de 0,30 m aux murs entiers, 1,20 m par défaut.
+6. *Phases.* Rénovation : « Après travaux » par défaut, même si la 2D est en vue Travaux, et le choix Avant / Après (LEX).
+   Plan final : le plan tel quel. Le sol porte le revêtement de la vue (`floor`, `floorNew`, poncé = parquet, « Pas de
+   plancher » = vide), en texture dessinée (lames, dalles, béton…) : rien à télécharger.
+7. *Chargement.* Three.js r147 depuis jsDelivr, version épinglée, à la première ouverture : la dernière version qui a encore
+   le build classique et `examples/js` (OrbitControls) — la CSP de l'artefact n'autorise des scripts que de cdnjs et de
+   jsDelivr, et un module ES demanderait une importmap. CDN injoignable : « La 3D n'a pas pu se charger… », Réessayer, Retour
+   au plan ; WebGL absent : un message ; une erreur de construction : un message, et `render()` (qui fait suivre la 3D) ne
+   casse jamais la 2D.
+8. *L'entrée.* Le bouton « 3D » est dans le groupe des niveaux (il les suit, barre du haut ou bande du plan) ; la touche 3
+   (raccourcis d'une touche ; la table de l'Aide, « Se déplacer ») ; Échap, 3, « Retour au plan » ou un outil choisi rendent le
+   plan. Pendant la 3D, les niveaux et les vues de la 2D sont masqués (le bouton 3D reste, enfoncé), la 3D garde le clavier
+   (Suppr n'atteint pas le plan caché ; Ctrl Z / Y passent, la 3D suit ; flèches : tourner, + et − : rapprocher). Au
+   téléphone, pas de 3D. DROITS : « la vue 3D de ton plan », la même en gratuit et en Pro.
+9. *La barre du haut a une étape de plus*, `c4`, placée AVANT `c3` (le logo sans son nom) : les boutons des niveaux et des vues
+   se resserrent à 7 px. Mesuré : 1 024 gratuit rénovation, le nom entier ; 1 280 gratuit, le logo garde son nom ; 1 024 et
+   1 280 Pro, l'état d'enregistrement passe en icône.
+10. *Le rendu.* Fond neutre, ciel et soleil doux (ombres douces, soleil haut du côté de la caméra : les faces vues sont
+    éclairées, les ombres partent derrière), sortie sRGB (les couleurs écrites sont celles qu'on voit) ; rendu à la demande :
+    rien ne se calcule tant que la caméra et le plan ne bougent pas ; reconstruction seulement quand le plan ou un réglage
+    change (signature).
+
+**Pas fait, et pourquoi** (chantiers suivants).
+- *Menuiseries* (dormant, vitrage, vantaux, baie coulissante, porte de garage) : T1 montre des trous justes, sans menuiserie.
+- *Équipements, escalier en marches* (la trémie est ouverte, l'escalier pas encore construit), *toiture*.
+- *Vue Visite* (hauteur d'yeux, ZQSD / flèches, collisions) : non commencée ; PointerLockControls n'est pas chargé. À vérifier
+  avant de le choisir : l'iframe d'un artefact peut refuser le verrouillage du pointeur — un « glisser pour regarder » est
+  plus sûr.
+- *Le téléphone* : pas de 3D pour l'instant — ni conçue ni contrôlée à cette taille, le bouton y est masqué.
+- *Le panneau de droite* reste celui de la 2D : il dit la vue de la 2D (« Vue avant travaux ») pendant que la 3D montre l'après.
+- *60 i/s* : non mesurable ici (WebGL logiciel, sans carte graphique) ; mesuré : une construction de la maison de 120 m² en
+  ~1 ms, 14 maillages, ~410 triangles, rendu seulement au mouvement.
+- *La vue Travaux* (jaune / rouge) n'a pas d'équivalent 3D.
+- `v3Construire` n'est pas une fonction pure `(state, vue)` : elle passe par les fonctions de la 2D, qui lisent l'état global.
+- Une coupure fine reste visible par endroits sur une façade, là où le prisme d'un mur et celui de son raccord se touchent
+  (deux faces de même couleur, côte à côte) : à peine perceptible ; les arêtes dessinées la rendaient criante, elles ont été
+  retirées.
+
+**Ce qui ne bouge pas.** Aucune globale renommée ; ajouts : `noeudsJonction`, `bandesITE`, `V3_THREE`, `V3_FICHIERS`,
+`V3_PLANCHER`, `V3_JOINT`, `V3_COUPE`, `V3_COUL`, `V3_SOLS`, `v3` et les fonctions `v3…` (Charger, BoutonHTML, MajBouton,
+Basculer, Actif, Ouvrir, Fermer, Reessayer, Demarrer, Dom, Message, TexteCoupe, Barre, ChoisirNiveau, ChoisirVue,
+ChoisirCoupe, Init, Taille, Profondeur, Boucle, Rendre, Signature, Rafraichir, Altitudes, Liberer, Construire, Faces, Trous,
+ConstruireNiveau, Extruder, Moins, Tri, Prisme, Mat, SolDe, GenreSol, Hasard, Texture, MatSol, Tremies, Sols, Plancher, Boite,
+Ombres, Cadrer, Clavier, Etat, Viser, Pixels) ; classe `.top.c4`. Ids, ordre `.top → #tools → canvas` (la 3D est dans
+`#stage`, après le canvas), `onclick` d'ancrage, clés `localStorage` (aucune nouvelle), `SCHEMA`, contrat, `lib/` : inchangés.
+Le dessin 2D : identique (`rendu-murs`, `jonctions`, `doublage`, `ux` verts). Les points d'accroche dans le code commun, tous
+d'une ligne : `render` (la 3D suit le plan), `renderLevelsBrut` (le bouton), le clavier (`v3Clavier`), `setRaccourcis` (la
+touche annoncée du bouton), `majBarreHaut` (l'étape `c4`), `setTool` et `lancerVisite` (ils ferment la 3D d'abord),
+`KEYS_GESTES` et `DROITS` (une ligne chacun).
+
+**Contrôles.** `vue3d.mjs`, nouveau (**59 contrôles**), lancé avec WebGL logiciel : le source (Three.js épinglé, aucune
+écriture de l'état dans le module) ; la page 2D ne demande rien au CDN, CDN bloqué = message, Réessayer, Échap, plan intact ;
+le bouton, la touche 3, Échap, Retour au plan, un outil, raccourcis coupés, Suppr ; et la géométrie mesurée par des RAYONS
+lancés dans la scène — hauteur de chaque mur (murs entiers et coupe), chaque ouverture un trou de sa largeur et de sa hauteur
+avec allège et linteau pleins, doublage percé, un sol par pièce à sa place et de l'aire de la pièce, l'étage à 2,72 m, la
+trémie ouverte — sur l'exemple, la maison de 120 m² sur deux niveaux (Plan final) et le plan réel en pierre ; les phases (mur
+démoli, fenêtre créée) ; l'état complet et l'empreinte identiques avant / après ; la reconstruction (aucune sans changement,
+une au changement, Ctrl Z) ; une erreur de construction qui ne casse pas la 2D ; la capture WebGL ni noire ni vide. Sans
+réseau, il le dit et sort en 0 avec un avertissement. Batterie complète (22 + `planfinal` 579/579 + `vue3d`), finition,
+couverture et vitest (170 tests) verts, lancés seuls ; `lib/` non touché. Vu à l'écran à 1 440 × 900 et 1 024 × 768 :
+l'exemple avant et après, la maison de 94 m² (plan type, Plan final), la maison de 120 m² sur deux niveaux, le plan réel.
