@@ -248,3 +248,16 @@ le plein écran ; Échap un cran à la fois ; au téléphone, la maquette seule 
 ouvertures : géométries, textures, programmes, tas JavaScript, écouteurs) ; les **performances** : le temps de
 construction, et — si la machine a une carte graphique, Chrome sans écran sur Metal — le temps d'une image à 2× et la
 cadence de la boucle (≥ 60 i/s) ; sans carte graphique, il le dit et ne mesure pas les i/s.
+
+Depuis D74 (les corrections du jury), il mesure aussi la **caméra** (un glisser de 150 px vers le haut s'arrête à 72°,
+un double-clic dans le vide recentre, le cadrage tient la maison entière sous la barre à 1 024 px et toiture allumée), la
+**lumière** par des pixels (l'encre de la coupe exacte sous le rendu filmique, le soleil qui suit la caméra et la façade vue
+de face claire aux quatre azimuts, en visite des murs à 225 et plus dont deux perpendiculaires diffèrent de 8, un plafond
+d'un autre ton, rien qui brûle), les **joints** (un mur percé d'une fenêtre sans aucune jonction en T), la **visite** mieux
+placée (au point libre le plus proche du clic, devant la porte par la pièce, la sonde à 45 cm, les meubles et l'escalier qui
+arrêtent, l'arrêt à 60 cm d'un mur au clic, l'étage vu par la trémie, la volée entière), les **transitions** (et leur
+absence sous « moins de mouvement »), **avant / après** (le fondu, ce qui change éclairé puis effacé), la **barre** (largeur
+fixe de la coupe, facture du moment, Recentrer à part, barre éteinte sans scène, plan vide), le panneau replié pendant la 3D,
+et la **géométrie de l'architecte** : les quatre types d'escalier (la marche de la fiche), l'épaisseur de plancher, la dalle
+et son chant, le garde-corps ouvert à l'arrivée, la partie basse de toiture (ni bandeau ni tuiles à plat, l'appentis), l'ITE
+sous les pans, la hauteur sous plafond d'une pièce, le retour d'isolant et le recouvrement en applique.
