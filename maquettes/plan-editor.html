@@ -1251,6 +1251,14 @@ body.planFinal .pfoot:empty{display:none} /* sans pièce, pas de récapitulatif 
    haut ou bande du plan). D73 : au téléphone aussi, en maquette seulement (on tourne au doigt). */
 .levels #v3Btn{position:relative;margin-left:4px;padding:0 8px;color:var(--ink2)}
 .levels #v3Btn::before{content:"";position:absolute;left:-3px;top:6px;bottom:6px;width:1px;background:var(--line)}
+/* D74 · le bouton 3D en pastille, avec le cube de « Vue aérienne » : il ne se lit plus comme un niveau de plus */
+.levels #v3Btn{display:inline-flex;align-items:center;gap:4px;margin-left:8px;padding:0 7px;box-shadow:inset 0 0 0 1px var(--line);background:var(--white)}
+.levels #v3Btn:hover:not(.on){box-shadow:inset 0 0 0 1px var(--hover-b,var(--line));background:var(--hover)}
+.levels #v3Btn.on{box-shadow:inset 0 0 0 1px rgba(79,70,229,.35)}
+.levels #v3Btn::before{left:-6px}
+/* … et dès que la barre du haut se resserre (première étape, c1), sans le cube : la barre retrouve exactement sa largeur
+   d'avant D74 — le nom du plan et l'état d'enregistrement passent d'abord */
+@media (min-width:601px){.top.c1 .levels #v3Btn{margin-left:4px;gap:0}.top.c1 .levels #v3Btn .ico{display:none}.top.c1 .levels #v3Btn::before{left:-3px}}
 /* D71 · la barre du haut a une étape de plus (c4, avant le logo sans son nom) : les boutons des niveaux et des vues se
    resserrent — le bouton 3D y a pris sa place sans couper le nom du plan à 1 024 px */
 @media (min-width:601px){.top.c4 .ctx{gap:4px}.top.c4 .ctx .levels button,.top.c4 .ctx .levels.modes button,.top.c4 .levels #v3Btn{padding:0 7px}}
@@ -1280,13 +1288,38 @@ body.v3on .levels #v3Btn::before{display:none}
 .v3barre .v3droite{margin-left:auto}
 .v3coupe input[type=range]{width:128px;margin:0 6px;accent-color:var(--brand);cursor:pointer}
 .v3coupe output{min-width:64px;padding-right:8px;font-family:"Geist Mono",monospace;font-size:var(--fs-s);font-weight:600;color:var(--ink2);white-space:nowrap}
+/* D74 · la valeur de la coupe a une largeur fixe (« murs entiers » réservé dès le départ) : rien ne bouge sous le curseur ;
+   « murs entiers » est un mot, en police de texte ; le curseur a l'anneau de focus arrondi de la marque */
+.v3coupe output{display:inline-block;width:86px;min-width:0;text-align:left}
+.v3coupe output.mot{font-family:inherit}
+.v3coupe input[type=range]:focus-visible{outline:2px solid var(--brand);outline-offset:3px;border-radius:var(--r-s)}
+/* D74 · le moment montré a la facture du sélecteur de vue de la 2D : une piste grise, la vue choisie en pastille blanche */
+.v3grp.v3moment{background:var(--canvas)}
+.v3grp.v3moment button{color:var(--ink2)}
+.v3grp.v3moment button:hover:not(.on){background:rgba(255,255,255,.6);color:var(--ink)}
+.v3grp.v3moment button.on{background:var(--white);color:var(--ink);box-shadow:var(--sh-1)}
+/* D74 · « Recentrer » en toutes lettres quand la 3D est large ; le plein écran à part, à l'extrême droite */
+.v3grp button.v3lab{padding:0 10px 0 8px}
+.v3barre.r0 #v3Recentrer .v3t{display:none}.v3barre.r0 #v3Recentrer{width:var(--h-s);padding:0}
+/* D74 · sans scène (chargement, hors ligne, plan vide, erreur) : les commandes restent à leur place, éteintes */
+.v3[data-etat] .v3barre .v3grp{opacity:.45;pointer-events:none}
+/* D74 · l'apparition de la 3D (180 ms) et le fondu d'un instantané (250 ms) quand le niveau ou le moment change */
+@keyframes v3apparait{from{opacity:0}to{opacity:1}}
+@keyframes v3fondu{from{opacity:1}to{opacity:0}}
+.v3:not([hidden]) canvas.v3cv{animation:v3apparait .18s ease-out}
+.v3 img.v3fondu{position:absolute;left:0;top:0;width:100%;height:calc(100% - var(--etat-h));object-fit:fill;pointer-events:none;opacity:0;z-index:1}
+.v3 img.v3fondu.va{animation:v3fondu .25s ease-out}
+/* D74 · le chargement : une barre indéterminée indigo, en CSS seul */
+.v3attente{position:relative;height:3px;margin-top:14px;border-radius:2px;background:var(--brand-l);overflow:hidden}
+.v3attente i{position:absolute;top:0;bottom:0;width:38%;border-radius:2px;background:var(--brand);animation:v3attente 1.1s ease-in-out infinite}
+@keyframes v3attente{from{left:-38%}to{left:100%}}
 /* D73 · la barre se resserre par étapes, mesurées sur la largeur de la 3D (v3Resserrer) : « Retour au plan » en icône, les
    vues en un mot, Vue aérienne / Visite en icônes, la coupe sans son mot et plus courte, la toiture en icône ; si elle ne tient
    toujours pas (téléphone), elle passe sur deux lignes. Le nom accessible de chaque bouton reste entier. */
 .v3barre.r1 .v3retour .v3t{display:none}.v3barre.r1 .v3retour{width:var(--h-l);padding:0;justify-content:center}
 .v3barre.r2 .vx{display:none}
 .v3barre.r3 .v3mode .v3t{display:none}.v3barre.r3 .v3mode button{width:var(--h-s);padding:0}
-.v3barre.r4 .v3coupe .v3lbl{display:none}.v3barre.r4 .v3coupe input[type=range]{width:84px}.v3barre.r4 .v3coupe output{min-width:52px}
+.v3barre.r4 .v3coupe .v3lbl{display:none}.v3barre.r4 .v3coupe input[type=range]{width:84px}
 .v3barre.r5 .v3toit .v3t{display:none}.v3barre.r5 .v3toit button{width:var(--h-s);padding:0}
 .v3barre.r6{flex-wrap:wrap;overflow:visible}
 /* D73 · la barre d'état de la 3D : l'aide du moment à gauche, la pièce à droite — celle de la 2D, au même endroit */
@@ -3680,7 +3713,9 @@ function stairCalc(it,lv){
   const type=st.type||'droit',w=st.largeur||0.9;let n1=0,n2=0,W,H,L=(n-1)*g;
   if(type==='helico'){const D=st.diametre||2.0,tour=(st.tour||360)*Math.PI/180,rf=D/2*0.67;g=tour*rf/(n-1);const bl=2*hM+g;warn.length=0;if(hM>0.18)warn.push('marche trop haute ('+Math.round(hM*100)+' cm > 18)');if(g<0.24)warn.push('giron sur la ligne de foulée trop court ('+Math.round(g*100)+' cm < 24) → augmente le diamètre ou le nombre de tours');if(bl<0.60||bl>0.64)warn.push('Blondel hors 60–64 cm ('+Math.round(bl*100)+' cm)');
     return {rise,n,hM,g,blondel:bl,warn,ok:!warn.length,type,w:D,n1:0,n2:0,W:D,H:D,L:D,D,tour};}
-  if(type==='droit'){W=w;H=L;}else{n1=Math.floor((n-1)/2);n2=n-1-n1;if(type==='quart'){W=w+n2*g;H=n1*g+w;}else{W=2*w;H=Math.max(n1,n2)*g+w;}}
+  /* D74 (architecte) : le palier d'un quart tournant ou d'un demi-tour EST une marche — n hauteurs, c'est n − 2 girons plus le
+     palier (on en dessinait n − 1 : n + 1 hauteurs montées, quand la fiche en annonçait n) */
+  if(type==='droit'){W=w;H=L;}else{n1=Math.floor((n-2)/2);n2=n-2-n1;if(type==='quart'){W=w+n2*g;H=n1*g+w;}else{W=2*w;H=Math.max(n1,n2)*g+w;}}
   return {rise,n,hM,g,blondel,warn,ok:!warn.length,type,w,n1,n2,W,H,L:type==='droit'?L:n1*g+w+n2*g};
 }
 // emprise en coordonnées locales (centre de l'objet) : liste de volées/paliers
@@ -6196,8 +6231,9 @@ function fillIso(poly,finish,mark,innerRef,u,skipEdge){
    l'épaisseur du mur » dans un grand passage). Sans doublage, l'isolant habille le tableau à fleur
    des parements ; avec, il rejoint la bande. Jamais côté façade d'un mur extérieur (c'est
    l'enduit), jamais contre une ITE, jamais derrière une menuiserie posée en applique. */
-function retourOK(o,w,s){if(ost(o)==='boucher'||!OPENINGS[o.type])return false;const io=isoOnSideAt(w,s,add(w.a,mul(sub(w.b,w.a),o.t)));if(io&&io.mode==='ite')return false;const si=interiorSideN(w);if(isExteriorWall(w)&&s!==si)return false;if(isExtType(o.type)&&s===si&&poseOf(o)==='applique')return false;return true;}
-function retourPossible(o,w,s){if(!retourOK(o,w,s))return false;const io=isoOnSideAt(w,s,add(w.a,mul(sub(w.b,w.a),o.t)));return io?isoShownIso(io,mode()):mode()!=='existant';}
+/* D74 : le niveau (lv) et la vue (m) en paramètres facultatifs — la 3D les donne (son niveau, avant / après), la 2D garde les siens */
+function retourOK(o,w,s,lv){if(ost(o)==='boucher'||!OPENINGS[o.type])return false;const io=isoOnSideAt(w,s,add(w.a,mul(sub(w.b,w.a),o.t)));if(io&&io.mode==='ite')return false;const si=lv?((a,b)=>a&&!b?1:b&&!a?-1:1)(wallSideInside(w,1,lv),wallSideInside(w,-1,lv)):interiorSideN(w);if(isExteriorWall(w,lv)&&s!==si)return false;if(isExtType(o.type)&&s===si&&poseOf(o)==='applique')return false;return true;}
+function retourPossible(o,w,s,m,lv){if(!retourOK(o,w,s,lv))return false;const io=isoOnSideAt(w,s,add(w.a,mul(sub(w.b,w.a),o.t)));m=m||mode();return io?isoShownIso(io,m):m!=='existant';}
 /* Épaisseur de l'isolant de tableau : celle du doublage de la face s'il y en a un (règle V92,
    même épaisseur), sinon celle du doublage de l'autre face, sinon celle réglée dans l'outil. */
 function epTableau(o,w,s){const P=add(w.a,mul(sub(w.b,w.a),o.t));const io=isoOnSideAt(w,s,P)||isoOnSideAt(w,-s,P);return io&&io.mode!=='ite'?doublageOf(io):doublageOf({e:DBL_CFG.e,mat:DBL_CFG.mat,mode:'iti',sys:'ossature'});}
@@ -6215,7 +6251,7 @@ function tableauSousCurseur(p){const lv=L(),z=view.zoom||60,tol=10*(hitScale||1)
     if(le<o.w/2&&tr<t/2+4/z)return {o,w};
     if(le<o.w/2+tol&&tr<t/2-lisiere)return {o,w};}
   return null;}
-function revealOnSide(o,w,s){return retourPossible(o,w,s)&&(o.retour||[]).includes(s);}
+function revealOnSide(o,w,s,m,lv){return retourPossible(o,w,s,m,lv)&&(o.retour||[]).includes(s);}
 // découpe d'une bande d'isolant au droit des ouvertures du mur : l'isolant s'arrête contre la menuiserie
 function clipHalf(poly,u,sCut,keepLess){const out=[];const N=poly.length;for(let i=0;i<N;i++){const A=poly[i],B=poly[(i+1)%N];const sa=A.x*u.x+A.y*u.y,sb=B.x*u.x+B.y*u.y;const inA=keepLess?sa<=sCut:sa>=sCut,inB=keepLess?sb<=sCut:sb>=sCut;if(inA)out.push(A);if(inA!==inB&&Math.abs(sb-sa)>1e-9){const t=(sCut-sa)/(sb-sa);out.push(add(A,mul(sub(B,A),t)));}}return out;}
 /* Le mur ENREGISTRÉ derrière une arête de pièce. detectFaces travaille sur une copie ramenée à
@@ -8614,7 +8650,7 @@ function chargerModele(T,garde,pq,wf0){const apres=()=>{if(garde)toast(T.name+' 
   afterChange();
   (facesCache[lv.id]||[]).forEach(f=>{const c=f.label;const r=f.room;const m=spec.find(z=>c.x>=z[0]&&c.x<=z[2]&&c.y>=z[1]&&c.y<=z[3]);if(m&&r){r.type=m[4];if(m[5])r.floor=m[5];}});
   sel=null;afterChange();fitView();marquerOrigine('modele');baseDecisions();
-  toast(T.name+' chargé — adapte les cotes en glissant les murs'+(estPlanFinal()?'':', puis passe en vue '+nomVue('projet')),true);apres();
+  toast(T.name+' chargé — adapte les cotes en glissant les murs'+(estPlanFinal()?'':', puis passe en vue '+nomVue('projet')),true,v3Proposer());apres();
 }
 // aperçu SVG d'un modèle (murs seuls), pour la galerie
 function templateSVG(T){
@@ -9058,12 +9094,23 @@ const V3_COUL={fond:0xEDEFF5,mur:0xEDEBE6,doublage:0xF1EFE9,coupe:0x1E1B4B,coupe
    (les genoux : une allège de fenêtre) ou à 1,10 m (un trou de porte est vide aux deux). */
 const V3_YEUX=1.6,V3_RAYON=0.25,V3_PAS=1.5,V3_COURSE=3.2,V3_TOURNE=1.75,V3_GENOU=[0.35,1.1];
 const V3_FOV={maquette:32,visite:68};
+/* D74 · la caméra aérienne ne descend jamais sous 72° (au-delà, un geste ordinaire posait l'œil au ras du sol, face à un pan de
+   façade) ; en marchant droit devant, la sonde arrête à 45 cm d'un mur ; un clic au sol s'arrête à 60 cm du mur au-delà ;
+   une entrée en visite se fait à 50 cm des murs au moins, hors des meubles. Les meubles hauts arrêtent aux genoux. */
+const V3_POLAIRE=Math.PI*0.40,V3_FACE=0.45,V3_ARRIVEE=0.6,V3_LIBRE=0.5;
+const V3_MEUBLES=['lit','lit1','armoire','frigo','ilot','plan','evier','lave_vaisselle','lave_linge','baignoire','canape','table','bureau','vasque2','poele','cumulus','chaudiere'];
+/* D74 · la lumière (rendu filmique ACES) : un ciel, un soleil qui suit la caméra en vue aérienne, et deux lumières d'appoint
+   sans ombre, d'azimuts différents, pour que deux murs d'orientations différentes n'aient jamais la même valeur */
+const V3_LUM={maquette:{ciel:0.65,soleil:1.3,appoint:[0.12,0.12]},visite:{ciel:1.38,soleil:0.6,appoint:[0.55,0.55]},expo:1.0,appointDir:[[0,20],[180,20]],soleilEl:50};
 const V3_TOUCHES=['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','ShiftLeft','ShiftRight']; /* e.code : la place de la touche — ZQSD sur un clavier français, WASD ailleurs */
 const V3_VISE=['sol','mur','doublage','menuiserie','toit','plafond']; /* un clic vise le sol à travers les meubles, jamais à travers un mur ou une vitre */
 const v3={ouvert:false,charge:null,el:null,renderer:null,scene:null,cam:null,ctl:null,groupe:null,niveau:0,vue:'final',coupe:V3_COUPE,
   sig:'',aRendre:false,raf:0,mats:{},registre:null,altitudes:[],etat:'',attente:0,toit:false,
   mode:'maquette',choix:false,vis:null,touches:new Set(),glisse:null,plein:false,pleinNatif:false,camMaquette:null,survol:null,surligne:null,
-  tPrec:0,images:0,zqsd:'ZQSD',obst:[],obstTout:[],pieceT:0,sigBarre:'',sigTaille:''};
+  tPrec:0,images:0,zqsd:'ZQSD',obst:[],obstTout:[],pieceT:0,sigBarre:'',sigTaille:'',
+  anim:null,trav:null,meubles:[],pliePar3D:false,prefPli:null,hsp:null};
+/* D74 · moins de mouvement demandé (réglage du système) : aucune transition, aucun fondu */
+function v3Calme(){try{return matchMedia('(prefers-reduced-motion: reduce)').matches;}catch{return false;}}
 /* ── chargement paresseux ── */
 function v3Charger(){
   if(V3_FICHIERS.every(f=>f[1]()))return Promise.resolve();
@@ -9077,10 +9124,14 @@ function v3Charger(){
   return v3.charge;}
 /* ── le bouton (dans le groupe des niveaux : il les suit, barre du haut ou bande du plan) ── */
 function v3BoutonHTML(){const tip=v3.ouvert?'Retour au plan (Échap)':'Vue 3D : tourner autour du plan, couper les murs à la hauteur voulue';
-  return `<button type="button" id="v3Btn" class="${v3.ouvert?'on':''}" aria-pressed="${v3.ouvert}" aria-label="Vue 3D"${raccourcisOn?' aria-keyshortcuts="3"':''} data-tip="${tip}${raccourcisOn?' · touche 3':''}" onclick="v3Basculer()">3D</button>`;}
+  return `<button type="button" id="v3Btn" class="${v3.ouvert?'on':''}" aria-pressed="${v3.ouvert}" aria-label="Vue 3D"${raccourcisOn?' aria-keyshortcuts="3"':''} data-tip="${tip}${raccourcisOn?' · touche 3':''}" onclick="v3Basculer()">${ico('maquette')}<span>3D</span></button>`;} /* D74 : en pastille, avec le cube de « Vue aérienne » — il ne se lit plus comme un niveau */
 function v3MajBouton(){const b=document.getElementById('v3Btn');if(!b)return;const n=document.createElement('div');n.innerHTML=v3BoutonHTML();const x=n.firstChild;
   b.className=x.className;['aria-pressed','data-tip','aria-keyshortcuts'].forEach(a=>x.hasAttribute(a)?b.setAttribute(a,x.getAttribute(a)):b.removeAttribute(a));} /* sur place : le focus reste au bouton */
 function v3Basculer(){if(v3.ouvert)v3Fermer();else v3Ouvrir();}
+/* D74 · la 3D n'était annoncée nulle part : une seule fois (par navigateur), au chargement d'un plan type, le message propose
+   « Voir en 3D » ; ensuite plus rien (le bouton est là, sa bulle le dit) */
+function v3Proposer(){try{if(localStorage.getItem('avyora-plan-3d-propose'))return undefined;localStorage.setItem('avyora-plan-3d-propose','1');}catch{return undefined;}
+  return {action:'Voir en 3D',fn:()=>{try{v3Ouvrir();}catch{}}};}
 /* la 3D est-elle ouverte ? (lisible de partout, même avant la déclaration de `v3`, plus bas dans le script) */
 function v3Actif(){try{return !!v3.ouvert;}catch{return false;}}
 /* ── ouvrir, fermer ── */
@@ -9090,16 +9141,23 @@ function v3Ouvrir(){
   drag=null;rectMode=null;try{fermerMenus();fermerMenuCtx(false);}catch{}
   v3.ouvert=true;v3.niveau=Math.max(0,Math.min(state.levels.length-1,state.cur));v3.vue=estPlanFinal()?'existant':'final';v3.toit=false;
   v3.mode='maquette';v3.choix=false;v3.vis=null;v3.glisse=null;v3.touches.clear();
-  v3Dom();v3.el.hidden=false;v3.el.classList.remove('visite','choix');document.body.classList.add('v3on');v3MajBouton();v3Barre();v3MajAide();v3Message('charge');
+  v3.anim=null;v3.trav=null;
+  v3Dom();v3.el.hidden=false;v3.el.classList.remove('visite','choix');document.body.classList.add('v3on');v3PlierPanneau(true);v3MajBouton();v3Message('charge');v3Barre();v3MajAide();
   v3Charger().then(v3Demarrer,()=>{if(v3.ouvert)v3Message('reseau');});
   suivre('vue_3d',{type:estPlanFinal()?'plan_final':'renovation'});}
 function v3Fermer(){
   if(!v3.ouvert)return;
   if(v3.plein)v3BasculerPlein(false);
-  v3.ouvert=false;cancelAnimationFrame(v3.raf);v3.raf=0;
-  v3QuitterVisite(true);v3Vider();
-  if(v3.el)v3.el.hidden=true;document.body.classList.remove('v3on');v3MajBouton();
-  try{cv.focus({preventScroll:true});}catch{}draw();}
+  v3.ouvert=false;cancelAnimationFrame(v3.raf);v3.raf=0;v3.anim=null;v3.trav=null;
+  v3QuitterVisite(true);v3Vider();v3MatsTravaux(0);
+  if(v3.el)v3.el.hidden=true;document.body.classList.remove('v3on');v3MajBouton();v3PlierPanneau(false);
+  /* D74 : rendu au plan par Échap, le plan ne se croit pas atteint au clavier (pas de message « Plan au clavier ») */
+  try{cv.classList.add('souris');cv.focus({preventScroll:true});}catch{}draw();}
+/* D74 · la 3D prend la place du panneau de droite (il décrivait le niveau de la 2D, pas celui de la 3D) : replié à l'ouverture,
+   rouvert au retour — sans toucher la préférence gardée (avyora-plan-plie) ; un panneau déjà replié le reste. Pas au téléphone. */
+function v3PlierPanneau(on){if(isMobile())return;const pref=()=>{try{return localStorage.getItem('avyora-plan-plie');}catch{return null;}};
+  try{if(on){v3.pliePar3D=false;if(!panneauPlie()){v3.prefPli=pref();plierPanneau(true);v3.pliePar3D=true;}}
+    else if(v3.pliePar3D){v3.pliePar3D=false;if(panneauPlie()&&pref()===v3.prefPli)plierPanneau(false);}}catch{}}
 /* D73 · fermée, la 3D ne garde rien en mémoire vidéo : la scène est vidée (géométries libérées) ; restent le moteur (un seul
    contexte WebGL pour la page : en recréer un à chaque ouverture finit par en épuiser le navigateur), les matières et leurs
    textures dessinées (un jeu fini, réutilisé à l'ouverture suivante) */
@@ -9111,7 +9169,7 @@ function v3Reessayer(){v3Message('charge');v3Charger().then(v3Demarrer,()=>{if(v
 /* Three.js est là : la scène, la construction, le cadrage. Une erreur ici n'est PAS une erreur de réseau, et ne sort jamais
    de la 3D : la 2D reste utilisable (render() appelle la 3D). */
 function v3Demarrer(){if(!v3.ouvert)return;
-  try{if(!v3Init())return;v3Message(null);v3.sig='';v3Rafraichir();if(v3.etat==='erreur')return;v3Cadrer();v3Boucle();}catch(e){v3.erreur=e;v3Message('erreur');return;}
+  try{if(!v3Init())return;v3Message(null);v3.sig='';v3Rafraichir();if(v3.etat==='erreur')return;v3Taille();v3Cadrer();v3Envol();v3Boucle();}catch(e){v3.erreur=e;v3Message('erreur');return;}
   try{v3.renderer.domElement.focus({preventScroll:true});}catch{}}
 /* ── le DOM de la vue (créé à la première ouverture) ── */
 function v3Dom(){
@@ -9129,58 +9187,79 @@ function v3Dom(){
   window.addEventListener('keyup',e=>{if(v3.touches.size)v3.touches.delete(e.code);});
   window.addEventListener('blur',()=>{v3.touches.clear();});
   document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&v3.plein&&v3.pleinNatif){v3.pleinNatif=false;v3BasculerPlein(false);}});}
-function v3Message(k){const el=document.getElementById('v3Msg');if(!el)return;v3.etat=k||'';
+function v3Message(k){const el=document.getElementById('v3Msg');if(!el)return;const avant=v3.etat;v3.etat=k||'';
+  /* D74 : sans scène (chargement, hors ligne, plan vide, erreur), la barre est grisée sauf « Retour au plan » (data-etat) */
+  if(v3.el){if(k)v3.el.dataset.etat=k;else delete v3.el.dataset.etat;}
   const retour=`<button type="button" class="ib" onclick="v3Fermer()">Retour au plan</button>`;
   const M={
-    charge:`<div role="status"><h4>Vue 3D</h4><p>Construction de la 3D à partir de ton plan…</p></div>`,
+    charge:`<div role="status"><h4>Vue 3D</h4><p>${window.THREE?'Construction de la 3D à partir de ton plan…':'Chargement de la 3D (une seule fois)…'}</p><div class="v3attente" aria-hidden="true"><i></i></div></div>`,
     reseau:`<div role="alert"><h4>La 3D n'a pas pu se charger</h4><p>La première ouverture de la vue 3D a besoin d'une connexion internet. Ton plan n'a pas bougé.</p><div class="btnrow"><button type="button" class="ib primary" onclick="v3Reessayer()">Réessayer</button>${retour}</div></div>`,
     webgl:`<div role="alert"><h4>Pas de 3D sur ce navigateur</h4><p>Ce navigateur n'affiche pas la 3D (WebGL est désactivé ou indisponible). Ton plan n'a pas bougé.</p><div class="btnrow">${retour}</div></div>`,
-    vide:`<div role="status"><h4>Rien à montrer en 3D</h4><p>Dessine d'abord tes murs : la 3D se construit à partir du plan.</p></div>`,
+    /* D74 : le plan vide propose ce qu'on peut y faire — tracer ses murs, ou partir d'un plan type */
+    vide:`<div role="status"><h4>Rien à montrer en 3D</h4><p>Dessine d'abord tes murs : la 3D se construit à partir du plan.</p><div class="btnrow"><button type="button" class="ib primary" onclick="v3Fermer();tracerLesMurs()">Tracer les murs</button><button type="button" class="ib" onclick="v3Fermer();openTemplates(estPlanFinal()?WORKFLOW_FINAL:WORKFLOW_RENO)">Partir d'un plan type</button></div></div>`,
     erreur:`<div role="alert"><h4>La 3D n'a pas pu se construire</h4><p>Un élément du plan n'a pas pu être mis en volume. Ton plan n'a pas bougé : tu peux continuer à le dessiner.</p><div class="btnrow">${retour}</div></div>`};
-  el.innerHTML=k?M[k]:'';el.hidden=!k;}
+  el.innerHTML=k?M[k]:'';el.hidden=!k;
+  if((avant||'')!==(k||'')){v3Barre();v3MajAide();}}
 function v3TexteCoupe(c,H){return c>=H-1e-3?'murs entiers':fmt(c,2)+' m';}
+/* D74 · la hauteur sous plafond de chaque pièce (roomHeight : r.height, et hAvant avant travaux) — un mur monte à la plus haute
+   des pièces qu'il borde (jamais sous la hauteur du niveau), le plafond de visite de chaque pièce est à la sienne, et la coupe
+   va jusqu'à la plus haute du niveau. Calculée à chaque construction (v3.hspN), relue par la barre et la coupe. */
+function v3HSP(lv,m){const H=lv.height||2.5,mur={},piece={};let max=H;
+  try{v3Faces(lv,m).forEach(f=>{const r=f.room;if(!r||!RT[r.type]||RT[r.type].ext)return;const h=roomHeight(lv,r,m);if(!(h>0))return;max=Math.max(max,h);piece[r.id]=h;
+    (f.edges||[]).forEach(e=>{if(e&&e.wall)mur[e.wall]=Math.max(mur[e.wall]||0,h);});});}catch(e){}
+  return {max,mur,piece};}
+function v3HSPde(i){const lv=state.levels[i];if(!lv)return {max:2.5,mur:{},piece:{}};return (v3.hspN&&v3.hspN[i])||v3HSP(lv,v3.vue);}
+function v3HMax(i){return v3HSPde(i!=null?i:Math.min(v3.niveau,state.levels.length-1)).max;}
 function v3Barre(){
   const b=document.getElementById('v3Barre');if(!b)return;
-  const nv=state.levels,pf=estPlanFinal(),H=(nv[v3.niveau]||nv[0]).height||2.5,c=Math.min(v3.coupe,H),tel=isMobile(),vis=v3.mode==='visite'||v3.choix,dedans=v3.mode==='visite';
+  const nv=state.levels,pf=estPlanFinal(),H=v3HMax(),c=Math.min(v3.coupe,H),tel=isMobile(),vis=v3.mode==='visite'||v3.choix,dedans=v3.mode==='visite',etat=v3.etat||'',vide=etat==='vide',sans=!!etat;
   /* refaite seulement si ce qu'elle montre change : la refaire pendant qu'on tire le curseur de coupe le lâcherait */
-  const sg=[nv.map(l=>l.name).join('/'),v3.niveau,v3.vue,pf,H,v3ToitPossible(),v3.mode,v3.choix,v3.plein,tel].join('|');if(sg===v3.sigBarre&&b.firstChild){v3Resserrer();return;}v3.sigBarre=sg;
+  const sg=[nv.map(l=>l.name).join('/'),v3.niveau,v3.vue,pf,H,v3ToitPossible(),v3.mode,v3.choix,v3.plein,tel,etat].join('|');if(sg===v3.sigBarre&&b.firstChild){v3Resserrer();return;}v3.sigBarre=sg;
   const foc=document.activeElement&&b.contains(document.activeElement)?document.activeElement.id:''; /* D73 : refaite, elle rend le focus au même bouton */
+  /* D74 : sans scène (chargement, hors ligne, plan vide, erreur), les commandes restent à leur place mais éteintes — grisées,
+     hors du clavier — sauf « Retour au plan » ; un plan vide n'a ni Visite ni coupe */
+  const off=sans?' aria-disabled="true" tabindex="-1"':'';
   /* les vues en deux mots, le second masqué quand la barre se resserre (le nom accessible reste entier) */
   const court=m=>{const l=nomVue(m),i=l.indexOf(' ');return i<0?esc(l):`<span><span class="vl">${esc(l.slice(0,i))}</span><span class="vx">${esc(l.slice(i))}</span></span>`;};
   const retour=`<button type="button" class="ib v3retour" id="v3Retour" onclick="v3Fermer()" aria-label="Retour au plan" data-tip="Retour au plan (Échap)">${ico('flecheGauche')}<span class="v3t">Retour au plan</span></button>`;
   /* D73 · Vue aérienne / Visite (la visite demande un clavier ou une souris : pas au téléphone). À l'écran, la maquette
      s'appelle « Vue aérienne » : « maquette » est un mot de développeur (D39, langage.mjs) */
-  const mode=tel?'':`<div class="v3grp v3mode" role="group" aria-label="Façon de voir">${[['maquette','Maquette','Vue aérienne','maquette','Vue aérienne : tourner autour du niveau, les murs coupés à la hauteur voulue'],['visite','Visite','Visite','marcher','Visite : marcher dans les pièces, à hauteur d\'yeux (1,60 m)']]
-    .map(([k,id,t,ic,tip])=>{const on=k==='visite'?vis:!vis;return `<button type="button" id="v3${id}" class="${on?'on':''}" aria-pressed="${on}" aria-label="${t}" data-tip="${tip}" onclick="v3ChoisirMode('${k}',event)">${ico(ic)}<span class="v3t">${t}</span></button>`;}).join('')}</div>`;
-  const niv=nv.length>1?`<div class="v3grp" role="group" aria-label="Niveau montré">${nv.map((l,i)=>`<button type="button" id="v3Niv${i}" class="${i===v3.niveau?'on':''}" aria-pressed="${i===v3.niveau}" onclick="v3ChoisirNiveau(${i})">${esc(l.name)}</button>`).join('')}</div>`:'';
-  const vues=pf?'':`<div class="v3grp" role="group" aria-label="Moment montré">${['existant','final'].map(m=>`<button type="button" id="v3Vue${m==='final'?'Apres':'Avant'}" class="${v3.vue===m?'on':''}" aria-pressed="${v3.vue===m}" aria-label="${esc(nomVue(m))}" onclick="v3ChoisirVue('${m}')">${court(m)}</button>`).join('')}</div>`;
-  /* la coupe et la toiture sont celles de la maquette : la visite a ses murs entiers et ses plafonds */
-  const coupe=dedans?'':`<div class="v3grp v3coupe"><label class="v3lbl" for="v3Coupe">Coupe</label><input type="range" id="v3Coupe" min="0.3" max="${H}" step="0.05" value="${c}" aria-label="Hauteur de coupe" aria-valuetext="${v3TexteCoupe(c,H)}" oninput="v3ChoisirCoupe(this.value)"><output id="v3CoupeV" for="v3Coupe">${v3TexteCoupe(c,H)}</output></div>`;
+  const mode=tel||vide?'':`<div class="v3grp v3mode" role="group" aria-label="Façon de voir">${[['maquette','Maquette','Vue aérienne','maquette','Vue aérienne : tourner autour du niveau, les murs coupés à la hauteur voulue'],['visite','Visite','Visite','marcher','Visite : marcher dans les pièces, à hauteur d\'yeux (1,60 m)']]
+    .map(([k,id,t,ic,tip])=>{const on=k==='visite'?vis:!vis;return `<button type="button" id="v3${id}" class="${on?'on':''}" aria-pressed="${on}" aria-label="${t}" data-tip="${tip}" onclick="v3ChoisirMode('${k}',event)"${off}>${ico(ic)}<span class="v3t">${t}</span></button>`;}).join('')}</div>`;
+  const niv=nv.length>1?`<div class="v3grp" role="group" aria-label="Niveau montré">${nv.map((l,i)=>`<button type="button" id="v3Niv${i}" class="${i===v3.niveau?'on':''}" aria-pressed="${i===v3.niveau}" onclick="v3ChoisirNiveau(${i})"${off}>${esc(l.name)}</button>`).join('')}</div>`:'';
+  /* D74 : le moment montré a la facture du sélecteur de vue de la 2D (piste grise, pastille blanche) */
+  const vues=pf?'':`<div class="v3grp v3moment" role="group" aria-label="Moment montré">${['existant','final'].map(m=>`<button type="button" id="v3Vue${m==='final'?'Apres':'Avant'}" class="${v3.vue===m?'on':''}" aria-pressed="${v3.vue===m}" aria-label="${esc(nomVue(m))}" onclick="v3ChoisirVue('${m}')"${off}>${court(m)}</button>`).join('')}</div>`;
+  /* la coupe et la toiture sont celles de la maquette : la visite a ses murs entiers et ses plafonds. D74 : la valeur a une
+     largeur fixe (la barre ne bouge plus sous le curseur) ; « murs entiers » est un mot, en police de texte */
+  const coupe=dedans||vide?'':`<div class="v3grp v3coupe"><label class="v3lbl" for="v3Coupe">Coupe</label><input type="range" id="v3Coupe" min="0.3" max="${H}" step="0.05" value="${c}" aria-label="Hauteur de coupe" aria-valuetext="${v3TexteCoupe(c,H)}" oninput="v3ChoisirCoupe(this.value)"${sans?' disabled':''}><output id="v3CoupeV" for="v3Coupe" class="${c>=H-1e-3?'mot':''}">${v3TexteCoupe(c,H)}</output></div>`;
   /* D72 : la toiture d'une rénovation qui la décrit (un Plan final n'en a pas) — un interrupteur, éteint par défaut */
-  const toit=!dedans&&v3ToitPossible()?`<div class="v3grp v3toit"><button type="button" id="v3Toit" class="${v3.toit?'on':''}" aria-pressed="${v3.toit}" aria-label="Toiture" onclick="v3ChoisirToit()" data-tip="Toiture : la maison fermée, vue du dehors (dernier niveau, murs entiers)">${ico('toit')}<span class="v3t">Toiture</span></button></div>`:'';
-  const recentrer=v3.mode==='visite'?'Recentrer : revenir à l\'entrée de la visite':'Recentrer : tout le niveau d\'un coup';
-  const droite=`<div class="v3grp v3droite" role="group" aria-label="Cadrage"><button type="button" class="v3ic" id="v3Recentrer" onclick="v3Cadrer(true)" aria-label="Recentrer la vue" data-tip="${recentrer}">${ico('ajuster')}</button>`
-    +`<button type="button" class="v3ic${v3.plein?' on':''}" id="v3Plein" aria-pressed="${v3.plein}" aria-label="Plein écran" onclick="v3BasculerPlein()" data-tip="${v3.plein?'Quitter le plein écran (Échap)':'Plein écran : la 3D sur toute la fenêtre'}">${ico(v3.plein?'quitterPleinEcran':'pleinEcran')}</button></div>`;
+  const toit=!dedans&&!vide&&v3ToitPossible()?`<div class="v3grp v3toit"><button type="button" id="v3Toit" class="${v3.toit?'on':''}" aria-pressed="${v3.toit}" aria-label="Toiture" onclick="v3ChoisirToit()" data-tip="Toiture : la maison fermée, vue du dehors (dernier niveau, murs entiers)"${off}>${ico('toit')}<span class="v3t">Toiture</span></button></div>`:'';
+  const recentrer=v3.mode==='visite'?'Recentrer : revenir à l\'entrée de la visite':'Recentrer : tout le niveau d\'un coup (double-clic dans le vide)';
+  /* D74 : « Recentrer » en toutes lettres quand la 3D est large ; le plein écran à part, seul à l'extrême droite */
+  const droite=`<div class="v3grp v3droite"><button type="button" class="v3lab" id="v3Recentrer" onclick="v3Cadrer(true)" aria-label="Recentrer la vue" data-tip="${recentrer}"${off}>${ico('ajuster')}<span class="v3t">Recentrer</span></button></div>`
+    +`<div class="v3grp v3pe"><button type="button" class="v3ic${v3.plein?' on':''}" id="v3Plein" aria-pressed="${v3.plein}" aria-label="Plein écran" onclick="v3BasculerPlein()" data-tip="${v3.plein?'Quitter le plein écran (Échap)':'Plein écran : la 3D sur toute la fenêtre'}"${off}>${ico(v3.plein?'quitterPleinEcran':'pleinEcran')}</button></div>`;
   b.innerHTML=retour+mode+niv+vues+coupe+toit+droite;
   if(foc){const x=document.getElementById(foc);if(x)try{x.focus({preventScroll:true});}catch{}}
   v3Resserrer();}
-/* D73 · la barre se resserre par étapes tant qu'elle déborde de la largeur de la 3D (comme la barre du haut, majBarreHaut) :
-   « Retour au plan » en icône, les vues en un mot, la coupe sans son mot, la toiture en icône, Vue aérienne / Visite en icônes ;
-   puis, au téléphone, sur deux lignes */
+/* D73 · la barre se resserre par étapes tant qu'elle déborde de la largeur de la 3D (comme la barre du haut, majBarreHaut).
+   D74 : dans l'ordre du jury — « Recentrer » en icône (toujours sous 1 100 px de 3D), la coupe sans son mot, les vues en un
+   mot, la toiture en icône, Vue aérienne / Visite en icônes, et « Retour au plan » en dernier ; puis, au téléphone, deux lignes */
 function v3Resserrer(){const b=document.getElementById('v3Barre');if(!b||!v3.el||v3.el.hidden)return;
-  b.classList.remove('r1','r2','r3','r4','r5','r6');const trop=()=>b.scrollWidth>b.clientWidth+1;
-  for(const c of ['r1','r2','r4','r5','r3','r6'])if(trop())b.classList.add(c);}
-function v3ChoisirNiveau(i){if(i===v3.niveau||!state.levels[i])return;const y0=v3.altitudes[v3.niveau]||0;v3.niveau=i;if(i!==state.levels.length-1)v3.toit=false;v3Barre();v3Rafraichir();
+  b.classList.remove('r0','r1','r2','r3','r4','r5','r6');const trop=()=>b.scrollWidth>b.clientWidth+1;
+  if(v3.el.clientWidth<1100)b.classList.add('r0');
+  for(const c of ['r0','r4','r2','r5','r3','r1','r6'])if(trop())b.classList.add(c);}
+function v3ChoisirNiveau(i){if(i===v3.niveau||!state.levels[i])return;v3Fondu();const y0=v3.altitudes[v3.niveau]||0;v3.niveau=i;if(i!==state.levels.length-1)v3.toit=false;v3Barre();v3Rafraichir();
   const dy=(v3.altitudes[i]||0)-y0;
   if(v3.mode==='visite'&&v3.vis){if(v3.camMaquette&&dy){v3.camMaquette.p.y+=dy;v3.camMaquette.t.y+=dy;}
-    /* D73 · en visite : à la même place s'il y a une pièce dessous, sinon dans la plus grande pièce du niveau */
-    if(!v3SolSous(v3.vis.x,v3.vis.z,i)){const g=v3PlusGrande(i);if(g){v3.vis.x=g.x;v3.vis.z=g.y;}}
+    /* D73 · en visite : à la même place s'il y a une pièce dessous ; D74 : sinon devant la porte de la plus grande pièce du niveau */
+    if(!v3SolSous(v3.vis.x,v3.vis.z,i)){const g=v3PlusGrande(i),P=g&&v3PoseDePiece(g.roomId,i);if(P){Object.assign(v3.vis,{x:P.x,z:P.z,yaw:P.yaw});}else if(g){v3.vis.x=g.x;v3.vis.z=g.y;}}
     v3.glisse=null;v3Repousser();v3.vis.entree={x:v3.vis.x,z:v3.vis.z,yaw:v3.vis.yaw};v3Regard();v3PieceIci(true);return;}
   if(v3.ctl&&dy){v3.ctl.target.y+=dy;v3.cam.position.y+=dy;v3.ctl.update();v3.aRendre=true;}}
-function v3ChoisirVue(m){if(m===v3.vue)return;v3.vue=m;v3Barre();v3Rafraichir();}
-function v3ChoisirCoupe(val){const H=(state.levels[v3.niveau]||{}).height||2.5;v3.coupe=Math.max(0.3,Math.min(H,+val||V3_COUPE));
+/* D74 : passer d'avant à après travaux se fond (250 ms), et ce qui change s'éclaire un instant aux couleurs de la vue Travaux */
+function v3ChoisirVue(m){if(m===v3.vue)return;v3Fondu();v3.vue=m;v3Barre();v3Rafraichir();v3Travaux();}
+function v3ChoisirCoupe(val){const H=v3HMax();v3.coupe=Math.max(0.3,Math.min(H,+val||V3_COUPE));
   if(v3.toit&&v3.coupe<H-1e-3){v3.toit=false;v3MajToit();} /* D72 : couper les murs, c'est ouvrir la maison : la toiture s'efface */
-  const o=document.getElementById('v3CoupeV'),r=document.getElementById('v3Coupe');const t=v3TexteCoupe(v3.coupe,H);if(o)o.textContent=t;if(r){r.setAttribute('aria-valuetext',t);if(Math.abs(+r.value-Math.min(v3.coupe,H))>1e-6)r.value=Math.min(v3.coupe,H);}
+  const o=document.getElementById('v3CoupeV'),r=document.getElementById('v3Coupe');const t=v3TexteCoupe(v3.coupe,H);if(o){o.textContent=t;o.classList.toggle('mot',v3.coupe>=H-1e-3);}if(r){r.setAttribute('aria-valuetext',t);if(Math.abs(+r.value-Math.min(v3.coupe,H))>1e-6)r.value=Math.min(v3.coupe,H);}
   if(!v3.attente)v3.attente=requestAnimationFrame(()=>{v3.attente=0;v3Rafraichir();});}
 /* ── le moteur : scène, caméra, lumière ── */
 function v3Init(){
@@ -9189,18 +9268,28 @@ function v3Init(){
   try{r=new T.WebGLRenderer({antialias:true,powerPreference:'high-performance'});}catch(e){v3Message('webgl');return false;}
   r.setPixelRatio(Math.min(2,window.devicePixelRatio||1));r.shadowMap.enabled=true;r.shadowMap.type=T.PCFSoftShadowMap;
   if(T.ColorManagement)T.ColorManagement.legacyMode=false;r.outputEncoding=T.sRGBEncoding; /* les couleurs écrites (#1E1B4B…) sont celles qu'on voit */
+  /* D74 : un rendu filmique (ACES) — les blancs ne brûlent plus, les murs à l'ombre gardent leur blanc cassé ; l'encre des coupes
+     et le survol n'y passent pas (toneMapped:false) : #1E1B4B reste #1E1B4B */
+  r.toneMapping=T.ACESFilmicToneMapping;r.toneMappingExposure=V3_LUM.expo;
   const c=r.domElement;c.className='v3cv';c.tabIndex=0;c.setAttribute('role','img');c.setAttribute('aria-label','Vue 3D du plan');
   v3.el.insertBefore(c,v3.el.firstChild);
   c.addEventListener('webglcontextlost',e=>{e.preventDefault();v3Message('webgl');});
   const sc=new T.Scene();sc.background=new T.Color(V3_COUL.fond);
   const cam=new T.PerspectiveCamera(32,1,0.05,800);
-  const ciel=new T.HemisphereLight(0xffffff,0xb9bccb,0.7);sc.add(ciel);
-  const soleil=new T.DirectionalLight(0xfff3e4,0.6);soleil.castShadow=true;soleil.shadow.mapSize.set(2048,2048);soleil.shadow.bias=-0.0005;soleil.shadow.normalBias=0.02;
+  /* D74 : le ciel renvoie un sol chaud et clair (les murs et le plafond vus d'en dessous restent blancs) ; deux lumières d'appoint
+     sans ombre, d'azimuts fixes (le long de l'axe nord-sud du plan, de part et d'autre), donnent aux murs perpendiculaires des
+     valeurs différentes, même à l'ombre du soleil */
+  const ciel=new T.HemisphereLight(0xffffff,0xd8d4cc,V3_LUM.maquette.ciel);sc.add(ciel);
+  const soleil=new T.DirectionalLight(0xfff3e4,V3_LUM.maquette.soleil);soleil.castShadow=true;soleil.shadow.mapSize.set(2048,2048);soleil.shadow.bias=-0.0005;soleil.shadow.normalBias=0.02;
   sc.add(soleil);sc.add(soleil.target);
+  const appoint=V3_LUM.appointDir.map(([az,el])=>{const L=new T.DirectionalLight(0xf4f6ff,0);const a=az*Math.PI/180,e=el*Math.PI/180;L.position.set(Math.sin(a)*Math.cos(e),Math.sin(e),Math.cos(a)*Math.cos(e));sc.add(L);return L;});
   const sol0=new T.Mesh(new T.PlaneGeometry(1,1),new T.ShadowMaterial({opacity:0.13}));sol0.rotation.x=-Math.PI/2;sol0.position.y=-0.002;sol0.receiveShadow=true;sol0.userData={kind:'terrain'};sc.add(sol0);
-  const ctl=new T.OrbitControls(cam,c);ctl.enableDamping=true;ctl.dampingFactor=0.12;ctl.screenSpacePanning=true;ctl.maxPolarAngle=Math.PI*0.485;ctl.minDistance=0.8;ctl.maxDistance=220;
-  ctl.addEventListener('change',()=>{v3.aRendre=true;v3Profondeur();});
-  Object.assign(v3,{renderer:r,scene:sc,cam,ctl,soleil,ciel,sol0});
+  /* D74 : 72° au plus (V3_POLAIRE) — les façades restent lisibles en murs entiers, l'œil ne tombe jamais au ras du sol ; une
+     rotation verticale plus douce (0,7) */
+  const ctl=new T.OrbitControls(cam,c);ctl.enableDamping=true;ctl.dampingFactor=0.12;ctl.screenSpacePanning=true;ctl.maxPolarAngle=V3_POLAIRE;ctl.rotateSpeed=0.7;ctl.minDistance=0.8;ctl.maxDistance=220;
+  ctl.addEventListener('change',()=>{v3.aRendre=true;v3Profondeur();if(v3.mode==='maquette')v3Soleil();}); /* D74 : le soleil suit la caméra */
+  ctl.addEventListener('start',()=>{if(v3.anim&&v3.mode==='maquette')v3FinAnim();}); /* la main reprend la caméra : la transition s'achève */
+  Object.assign(v3,{renderer:r,scene:sc,cam,ctl,soleil,ciel,sol0,appoint});v3Lumiere();
   v3Pointeurs(c); /* D73 : choisir une pièce, regarder et aller en visite */
   try{if(navigator.keyboard&&navigator.keyboard.getLayoutMap)navigator.keyboard.getLayoutMap().then(m=>{const l=['KeyW','KeyA','KeyS','KeyD'].map(k=>String(m.get(k)||'').toUpperCase()).join('');if(/^[A-Z]{4}$/.test(l)){v3.zqsd=l;v3MajAide();}}).catch(()=>{});}catch{} /* l'aide dit les lettres du clavier branché (ZQSD, WASD…) */
   if(window.ResizeObserver)new ResizeObserver(()=>v3Taille()).observe(v3.el);else window.addEventListener('resize',v3Taille);
@@ -9216,8 +9305,44 @@ function v3Profondeur(){if(v3.mode==='visite')return; /* D73 : en visite, la pro
   if(Math.abs(n-v3.cam.near)>1e-4||Math.abs(f-v3.cam.far)>1e-3){v3.cam.near=n;v3.cam.far=f;v3.cam.updateProjectionMatrix();}}
 function v3Boucle(){cancelAnimationFrame(v3.raf);v3.tPrec=performance.now();
   const f=t=>{if(!v3.ouvert)return;v3.raf=requestAnimationFrame(f);const dt=Math.min(0.1,Math.max(0,(t-v3.tPrec)/1000));v3.tPrec=t; /* une image lente (10 i/s) avance encore à la bonne vitesse ; v3Pas découpe le pas */
-    const bouge=v3.mode==='visite'?v3Marcher(dt):v3.ctl.update();if(bouge||v3.aRendre){v3.aRendre=false;v3.renderer.render(v3.scene,v3.cam);v3.images++;}};
+    if(v3.trav)v3TravauxImage(); /* D74 : l'éclairage de ce qui change, puis son fondu */
+    let bouge;if(v3.anim)bouge=v3AnimImage(); /* D74 : une transition de caméra en cours ; le clavier attend la fin */
+    else bouge=v3.mode==='visite'?v3Marcher(dt):v3.ctl.update();
+    if(bouge||v3.aRendre){v3.aRendre=false;v3.renderer.render(v3.scene,v3.cam);v3.images++;}};
   v3.raf=requestAnimationFrame(f);}
+/* ═══ D74 · LES TRANSITIONS ═══
+   L'ouverture part de la vue de dessus, cadrée comme le plan, et bascule en trois-quarts (450 ms) ; l'entrée en visite et sa
+   sortie glissent de la vue aérienne aux yeux (500 ms, position, orientation et objectif) ; un changement de niveau ou de
+   moment se fond (250 ms). Rien de tout cela sous « moins de mouvement » (réglage du système). La caméra seule bouge : le
+   plan, la construction, le visiteur (v3.vis) sont à leur place dès le premier instant — la transition ne fait que montrer. */
+const v3Doux=x=>x<0.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2; /* easeInOutCubic */
+function v3Pose(){return {p:v3.cam.position.clone(),q:v3.cam.quaternion.clone(),fov:v3.cam.fov};}
+/* anime la caméra de sa pose actuelle vers `vers()` (une pose, relue à chaque image : le visiteur peut bouger), puis `fin` */
+function v3Animer(vers,duree,fin){if(!v3.cam)return;if(v3Calme()||!duree){v3.anim=null;if(fin)fin();v3.aRendre=true;return;}
+  v3.anim={t0:performance.now(),d:duree,de:v3Pose(),vers,fin};v3.cam.near=0.05;v3.cam.far=Math.max(150,v3.cam.far);v3.cam.updateProjectionMatrix();v3.aRendre=true;}
+function v3AnimImage(){const A=v3.anim;if(!A)return false;const k=Math.min(1,(performance.now()-A.t0)/A.d),e=v3Doux(k),B=A.vers();
+  v3.cam.position.lerpVectors(A.de.p,B.p,e);v3.cam.quaternion.copy(A.de.q).slerp(B.q,e);const fv=A.de.fov+(B.fov-A.de.fov)*e;if(Math.abs(fv-v3.cam.fov)>1e-6){v3.cam.fov=fv;v3.cam.updateProjectionMatrix();}
+  v3.cam.updateMatrixWorld();if(k>=1)v3FinAnim();return true;}
+function v3FinAnim(){const A=v3.anim;if(!A)return;v3.anim=null;const B=A.vers();v3.cam.position.copy(B.p);v3.cam.quaternion.copy(B.q);if(v3.cam.fov!==B.fov){v3.cam.fov=B.fov;v3.cam.updateProjectionMatrix();}v3.cam.updateMatrixWorld();if(A.fin)A.fin();v3.aRendre=true;}
+/* la pose de la vue aérienne autour de la cible t (la caméra en p) */
+function v3PoseAerienne(p,t){const T=window.THREE,o=new T.Object3D();o.position.copy(p);o.up.set(0,1,0);o.lookAt(t);return {p:p.clone(),q:o.quaternion.clone(),fov:V3_FOV.maquette};}
+/* l'ouverture : de la vue de dessus (le plan, tel que la 2D le montre : x à droite, y vers le bas) au trois-quarts du cadrage */
+function v3Envol(){if(!v3.ctl||v3Calme())return;const T=window.THREE,t=v3.ctl.target.clone(),fin=v3PoseAerienne(v3.cam.position,t),d=v3.cam.position.distanceTo(t);
+  const haut=t.clone().add(new T.Vector3().setFromSpherical(new T.Spherical(d*0.92,0.001,0)));v3.cam.position.copy(haut);v3.cam.lookAt(t);v3.cam.updateMatrixWorld();
+  v3Animer(()=>fin,450,()=>{v3.ctl.update();v3Profondeur();});}
+/* le fondu : l'image d'avant, posée sur la scène et effacée en 250 ms (une image, pas un second canevas WebGL) */
+function v3Fondu(){if(v3Calme()||!v3.renderer||!v3.el||!v3.groupe||v3.el.hidden)return;try{
+  const src=v3.renderer.domElement;v3Rendre();const w=Math.min(src.width,1280),h=Math.round(src.height*w/src.width);if(!w||!h)return;
+  const c=v3.fonduCv||(v3.fonduCv=document.createElement('canvas'));c.width=w;c.height=h;c.getContext('2d').drawImage(src,0,0,w,h);
+  let im=v3.fondu;if(!im){im=document.createElement('img');im.className='v3fondu';im.alt='';im.setAttribute('aria-hidden','true');v3.el.insertBefore(im,src.nextSibling);v3.fondu=im;im.addEventListener('animationend',()=>{im.classList.remove('va');});}
+  im.src=c.toDataURL('image/jpeg',0.82);im.classList.remove('va');void im.offsetWidth;im.classList.add('va');}catch(e){}}
+/* ═══ D74 · CE QUI CHANGE ═══ — à chaque passage d'avant à après travaux (et retour), ce qui sera démoli, déposé ou remplacé
+   (avant) ou ce qui est créé (après) s'éclaire aux couleurs de la vue Travaux de la 2D (DEMOLIR, CREER), 1,2 s, puis s'efface en
+   0,6 s : la 3D redevient la vue du moment. Ces objets sont versés dans des matières à part (clé « matière~créer »). */
+function v3TagTravaux(st,m){if(estPlanFinal())return '';if(m==='final')return st==='creer'?'creer':'';return st==='demolir'||st==='remplacer'||st==='boucher'?'demolir':'';}
+function v3Travaux(){if(estPlanFinal())return;v3.trav={t0:performance.now()};v3TravauxImage();}
+function v3TravauxImage(){const T=v3.trav;if(!T)return;const t=(performance.now()-T.t0)/1000,k=v3Calme()?(t<1.5?1:0):(t<1.2?1:Math.max(0,1-(t-1.2)/0.6));v3MatsTravaux(k);v3.aRendre=true;if(k<=0)v3.trav=null;}
+function v3MatsTravaux(k){Object.keys(v3.mats).forEach(n=>{const M=v3.mats[n],u=M&&M.userData;if(!u||!u.teinte)return;M.color.copy(u.base).lerp(u.teinte,0.78*k);if(M.emissive)M.emissive.copy(u.teinte).multiplyScalar(0.18*k);});}
 function v3Rendre(){if(v3.renderer)v3.renderer.render(v3.scene,v3.cam);}
 /* ── reconstruire, seulement quand le plan (ou un réglage de la 3D) change ── */
 function v3Signature(){return [JSON.stringify(state.levels),workflowDe(state),v3.niveau,v3.vue,v3.coupe,v3.toit,JSON.stringify(state.toiture||null),(state.chantier||CHANTIER_DEF).finition,v3.mode==='visite'].join('|');} /* D72 : la toiture et la finition (la matière des menuiseries) aussi */
@@ -9229,79 +9354,173 @@ function v3Rafraichir(){
   const s=v3Signature();if(s===v3.sig)return;v3.sig=s;
   try{v3Construire();}catch(e){v3.erreur=e;v3Message('erreur');return;}
   v3Barre();
-  {const nv=state.levels[v3.niveau];v3.renderer.domElement.setAttribute('aria-label','Vue 3D du plan · '+(nv?nv.name:'')+(estPlanFinal()?'':' · '+nomVue(v3.vue))+' · coupe '+v3TexteCoupe(Math.min(v3.coupe,(nv&&nv.height)||2.5),(nv&&nv.height)||2.5)+(v3.registre.toit?' · toiture':''));}
+  {const nv=state.levels[v3.niveau],Hm=v3HMax();v3.renderer.domElement.setAttribute('aria-label','Vue 3D du plan · '+(nv?nv.name:'')+(estPlanFinal()?'':' · '+nomVue(v3.vue))+' · coupe '+v3TexteCoupe(Math.min(v3.coupe,Hm),Hm)+(v3.registre.toit?' · toiture':''));}
   if(v3.etat==='vide'||v3.etat===''||v3.etat==='erreur')v3Message(v3.registre.murs.length?null:'vide');
   if(v3.mode==='visite'&&v3.vis){v3Repousser();v3Regard();v3PieceIci(true);} /* D73 : le plan a changé sous le visiteur (un mur posé là, Ctrl Z) : il reste hors des murs */
   v3.aRendre=true;}
-function v3Altitudes(){const Y=[];let y=0;state.levels.forEach((lv,i)=>{Y[i]=y;y+=(lv.height||2.5)+V3_PLANCHER;});return Y;}
+/* D74 · l'épaisseur du plancher au-dessus du niveau i : celle que la fiche de son escalier dit (stair.plancher, le calcul de
+   stairCalc), sinon 0,22 m ; l'étage est posé à la hauteur du niveau plus ce plancher */
+function v3EpPlancher(i){const lv=state.levels[i];if(!lv)return V3_PLANCHER;const it=lv.items.find(x=>x.type==='escalier'&&x.link!==false&&itemActive(x,v3.vue)&&x.stair&&x.stair.plancher!=null);
+  const p=it?+it.stair.plancher:NaN;return p>=0&&p<1.5?p:V3_PLANCHER;}
+function v3Altitudes(){const Y=[];let y=0;state.levels.forEach((lv,i)=>{Y[i]=y;y+=(lv.height||2.5)+v3EpPlancher(i);});return Y;}
 function v3Liberer(o){o.traverse(x=>{if(x.geometry)x.geometry.dispose();});}
 function v3Construire(){
   const T=window.THREE;
   v3Surligner(null); /* la pièce survolée partage la géométrie de son sol, libérée plus bas */
   if(v3.groupe){v3.scene.remove(v3.groupe);v3Liberer(v3.groupe);}
   const g=new T.Group();g.name='plan';
-  v3.altitudes=v3Altitudes();v3.registre={murs:[],trous:[],sols:[],raccords:0,doublages:0,menuiseries:[],equipements:[],escaliers:[],toit:null,obstacles:[],plafonds:[]};
+  v3.altitudes=v3Altitudes();v3.registre={murs:[],trous:[],sols:[],raccords:0,doublages:0,menuiseries:[],equipements:[],escaliers:[],toit:null,obstacles:[],plafonds:[],retours:[],dalles:[],gardecorps:[],iteToit:[]};
   const vis=v3.mode==='visite';
-  for(let i=0;i<=v3.niveau;i++){const lv=state.levels[i],H=lv.height||2.5,cour=i===v3.niveau;
+  v3.hspN=state.levels.map((lv,i)=>i<=v3.niveau+1?v3HSP(lv,v3.vue):null); /* D74 : les hauteurs sous plafond des pièces */
+  v3.toitF=v3ToitVisible()?v3ToitForme():null; /* D74 : la toiture est connue avant les murs (l'ITE du dernier niveau monte sous ses pans) */
+  for(let i=0;i<=v3.niveau;i++){const lv=state.levels[i],H=lv.height||2.5,cour=i===v3.niveau,ep=v3.altitudes[i+1]!=null?v3.altitudes[i+1]-v3.altitudes[i]-H:V3_PLANCHER;
     /* le niveau montré est coupé (D73 : en visite, murs entiers et plafonds) ; ceux du dessous sont entiers, et leurs murs
        montent jusqu'au plancher du dessus */
-    g.add(v3ConstruireNiveau(lv,i,v3.altitudes[i],H,cour?H:H+V3_PLANCHER-V3_JOINT,cour?(vis?H:Math.min(v3.coupe,H)):null,i?-V3_JOINT:0));}
-  if(v3ToitVisible()){const tg=v3Toiture();if(tg)g.add(tg);} /* D72 : la toiture, sur la maison fermée */
+    g.add(v3ConstruireNiveau(lv,i,v3.altitudes[i],H,cour?H:H+ep-V3_JOINT,cour?(vis?null:Math.min(v3.coupe,v3.hspN[i].max)):null,i?-V3_JOINT:0));}
+  /* D74 · en visite, le niveau du dessus est posé, coupé à 1 m (son plancher, sa trémie, le bas de ses murs) : par la trémie, on
+     voit l'étage — pas le vide, ni le fond */
+  if(vis&&state.levels[v3.niveau+1]){const j=v3.niveau+1,lj=state.levels[j],Hj=lj.height||2.5;g.add(v3ConstruireNiveau(lj,j,v3.altitudes[j],Hj,Hj,1.0,-V3_JOINT));}
+  if(v3.toitF){const tg=v3Toiture();if(tg)g.add(tg);} /* D72 : la toiture, sur la maison fermée */
   v3.scene.add(g);v3.groupe=g;v3Obstacles();v3Ombres();}
 function v3Faces(lv,m){if(m===mode()&&facesCache[lv.id])return facesCache[lv.id];const f=detectFaces(lv,m);pairRoomFaces(lv,f,false);return f;}
-/* les trous d'un mur dans une vue : abscisse le long de u (comme cutAtOpenings), hauteurs de l'allège au linteau */
-function v3Trous(lv,m,w,u,H){const out=[];
+/* les trous d'un mur dans une vue : abscisse le long de u (comme cutAtOpenings), hauteurs de l'allège au linteau. D74 : `dbl`
+   (le doublage) — une menuiserie extérieure posée en applique porte sur le nu du mur par son recouvrement (lap, comme drawOpening) :
+   le doublage s'arrête contre sa tapée, le trou du doublage est plus large d'autant */
+function v3Trous(lv,m,w,u,H,dbl){const out=[];
   lv.openings.forEach(o=>{if(o.wallId!==w.id||!opDrawn(o,m))return;const d=OPENINGS[o.type];if(!d)return;
-    const c=add(w.a,mul(sub(w.b,w.a),o.t)),sc=c.x*u.x+c.y*u.y,hw=(o.w||d.w)/2,z0=Math.max(0,allegeOf(o)||0),z1=Math.min(H,z0+(o.h||d.h));
-    if(z1>z0+1e-3&&hw>1e-3)out.push({s0:sc-hw,s1:sc+hw,z0,z1,o});});
+    const c=add(w.a,mul(sub(w.b,w.a),o.t)),sc=c.x*u.x+c.y*u.y,hw=(o.w||d.w)/2;let z0=Math.max(0,allegeOf(o)||0),z1=Math.min(H,z0+(o.h||d.h)),s0=sc-hw,s1=sc+hw;
+    if(z1>z0+1e-3&&hw>1e-3){if(dbl&&d.kind!=='gap'&&isExtType(o.type)&&poseOf(o)==='applique'){const lap=Math.min(0.05,(o.w||d.w)*0.1);s0-=lap;s1+=lap;if(z0>0.01)z0=Math.max(0,z0-lap);z1=Math.min(H,z1+lap);}
+      out.push({s0,s1,z0,z1,o});}});
   return out;}
 function v3ConstruireNiveau(lv,i,y0,H,haut,coupe,bas){
   const T=window.THREE,m=v3.vue,grp=new T.Group();grp.userData={kind:'niveau',niveau:i};
   const seaux={},B=k=>seaux[k]||(seaux[k]={pos:[],nor:[]});
-  const faces=v3Faces(lv,m);
-  /* les murs : le corps que la 2D dessine (épaisseur, côté, raccourcis contre un doublage ou en T), percé à chaque ouverture */
+  const faces=v3Faces(lv,m),cour=i===v3.niveau,hsp=(v3.hspN&&v3.hspN[i])||v3HSP(lv,m),tf=cour&&i===state.levels.length-1?v3.toitF:null;
+  /* D74 : la hauteur d'un mur du niveau montré — la plus haute des pièces qu'il borde, jamais sous celle du niveau */
+  const hMur=w=>cour?Math.max(haut,hsp.mur[w.id]||0):haut,tg=st=>{const x=v3TagTravaux(st,m);return x?'~'+x:'';};
+  /* les murs : le corps que la 2D dessine (épaisseur, côté, raccourcis contre un doublage ou en T), percé à chaque ouverture ;
+     D74 : prolongé d'1 mm dans son raccord (aucune fente à la jonction) */
   lv.walls.forEach(w=>{
     if(isVirtual(w)||!wallDrawn(w,m))return;const t=wallT(w),Lw=wallLen(w);if(t<=0||Lw<1e-4)return;
-    const u=norm(sub(w.b,w.a)),n=perp(u),off=wallOff(w),cl=w.type==='cloison';
+    const u=norm(sub(w.b,w.a)),n=perp(u),off=wallOff(w),cl=w.type==='cloison',hw=hMur(w);
     const ra=Math.max(retraitContreDoublage(w,w.a,w.b,lv,m),cl?retraitEnT(w,w.a,w.b,lv,m):0),rb=Math.max(retraitContreDoublage(w,w.b,w.a,lv,m),cl?retraitEnT(w,w.b,w.a,lv,m):0);
     if(ra+rb>=Lw-1e-4)return;
-    const P=s=>add(add(w.a,off),mul(u,s)),h=mul(n,t/2);
-    const trous=v3Trous(lv,m,w,u,H);
-    v3Extruder(B,[add(P(ra),h),add(P(Lw-rb),h),sub(P(Lw-rb),h),sub(P(ra),h)],u,trous,bas,haut,coupe,cl?'cloison':'mur',y0);
-    v3.registre.murs.push({id:w.id,niveau:i,type:w.type,t,ra,rb,bas,haut,coupe});
+    const P=s=>add(add(w.a,off),mul(u,s)),h=mul(n,t/2),e0=ra-0.001,e1=Lw-rb+0.001;
+    const trous=v3Trous(lv,m,w,u,Math.max(H,hw));
+    v3Extruder(B,[add(P(e0),h),add(P(e1),h),sub(P(e1),h),sub(P(e0),h)],u,trous,bas,hw,coupe,(cl?'cloison':'mur')+tg(wst(w)),y0);
+    v3.registre.murs.push({id:w.id,niveau:i,type:w.type,t,ra,rb,bas,haut:hw,coupe,st:wst(w)});
     trous.forEach(x=>v3.registre.trous.push({id:x.o.id,wallId:w.id,niveau:i,type:x.o.type,s0:x.s0,s1:x.s1,z0:x.z0,z1:x.z1}));});
-  /* les raccords des nœuds : exactement ceux de la 2D */
-  noeudsJonction(lv,m).forEach(({ends,hull})=>{v3Extruder(B,hull,null,[],bas,haut,coupe,ends.every(e=>e.w.type==='cloison')?'cloison':'mur',y0);v3.registre.raccords++;});
+  /* les raccords des nœuds : exactement ceux de la 2D (à la hauteur du plus haut des murs qui s'y rejoignent) */
+  noeudsJonction(lv,m).forEach(({ends,hull})=>{const tgs=[...new Set(ends.map(e=>tg(wst(e.w))))],hh=Math.max(...ends.map(e=>hMur(e.w)),haut);
+    v3Extruder(B,hull,null,[],bas,hh,coupe,(ends.every(e=>e.w.type==='cloison')?'cloison':'mur')+(tgs.length===1?tgs[0]:''),y0);v3.registre.raccords++;});
   /* les doublages intérieurs : la bande de chaque arête de pièce (bandeDoublage), percée comme son mur — le mur ENREGISTRÉ
-     (une face porte une copie ramenée à l'axe : `o.t` ne s'y applique pas) */
-  faces.forEach(f=>{if(!f.dbl||!f.polyFace||!f.polyInt)return;for(let k=0;k<f.poly.length;k++){if(!f.dbl[k])continue;const bd=bandeDoublage(f,k);if(!bd)continue;
-    const W=lv.walls.find(x=>x.id===bd.w.id)||murReel(bd.w),u=norm(sub(W.b,W.a));v3Extruder(B,bd.quad,u,v3Trous(lv,m,W,u,H),0,H,coupe,'doublage',y0);v3.registre.doublages++;}});
-  /* l'isolation par l'extérieur : les bandes que la 2D dessine, sur toute la hauteur de la façade */
-  bandesITE(lv,m).forEach(e=>{if(!e.quad)return;v3Extruder(B,e.quad,e.u,v3Trous(lv,m,e.w,e.u,H),bas,haut,coupe,'doublage',y0);v3.registre.doublages++;});
-  /* D72 : la menuiserie de chaque ouverture percée (le mur ENREGISTRÉ, comme les trous) */
+     (une face porte une copie ramenée à l'axe : `o.t` ne s'y applique pas) ; D74 : jusqu'au plafond de la pièce */
+  faces.forEach(f=>{if(!f.dbl||!f.polyFace||!f.polyInt)return;const hp=cour&&f.room?(hsp.piece[f.room.id]||H):H;for(let k=0;k<f.poly.length;k++){if(!f.dbl[k])continue;const bd=bandeDoublage(f,k);if(!bd)continue;
+    const io=(f.dblIso&&f.dblIso[k])||f.dbl[k].iso,W=lv.walls.find(x=>x.id===bd.w.id)||murReel(bd.w),u=norm(sub(W.b,W.a));v3Extruder(B,bd.quad,u,v3Trous(lv,m,W,u,hp,true),0,hp,coupe,'doublage'+tg(io&&io.st),y0);v3.registre.doublages++;}});
+  /* l'isolation par l'extérieur : les bandes que la 2D dessine, sur toute la hauteur de la façade ; D74 : sous une toiture
+     montrée, elles s'arrêtent sous le dessous du toit (la toiture les remonte jusque sous ses pans, v3Toiture) */
+  bandesITE(lv,m).forEach(e=>{if(!e.quad)return;let zh=hMur(e.w);
+    if(tf){const zq=Math.min(...e.quad.map(p=>tf.zb([p.x,p.y])))-y0;zh=Math.max(0.05,Math.min(zh,zq));v3.registre.iteToit.push({quad:e.quad,y:y0+zh,cle:'doublage'+tg(e.io.st)});}
+    v3Extruder(B,e.quad,e.u,v3Trous(lv,m,e.w,e.u,Math.max(H,zh)),bas,zh,coupe,'doublage'+tg(e.io.st),y0);v3.registre.doublages++;});
+  /* D72 : la menuiserie de chaque ouverture percée (le mur ENREGISTRÉ, comme les trous) ; D74 : et le retour d'isolant choisi
+     dans ses tableaux (revealOnSide, dans la vue et sur le niveau de la 3D) */
   lv.openings.forEach(o=>{if(!opDrawn(o,m))return;const W=lv.walls.find(x=>x.id===o.wallId);if(!W||isVirtual(W)||!wallDrawn(W,m))return;
-    const r=v3Menuiserie(B,lv,W,o,m,y0,H,coupe,i);if(r)v3.registre.menuiseries.push(r);});
+    const ta=tg(ost(o)),Bt=ta?(k=>B(v3EstVerre(k)?k:k+ta)):B,Hw=Math.max(H,hMur(W));
+    const r=v3Menuiserie(Bt,lv,W,o,m,y0,Hw,coupe,i);if(r)v3.registre.menuiseries.push(r);
+    const rt=v3Retour(B,lv,W,o,m,y0,Hw,coupe,i,r?r.yc:0);if(rt)v3.registre.retours.push(rt);});
   /* D72 : les équipements, l'escalier, la structure (une fenêtre de toit va dans la toiture quand elle est montrée) */
-  const toitIci=i===state.levels.length-1&&v3ToitVisible();
-  lv.items.forEach(it=>{if(!itemDrawn(it,m)||(toitIci&&it.type==='velux'))return;const mk=v3Marque(seaux);v3Equipement(B,it,lv,i,y0,H,haut,coupe);
+  const toitIci=i===state.levels.length-1&&!!v3.toitF;
+  lv.items.forEach(it=>{if(!itemDrawn(it,m)||(toitIci&&it.type==='velux'))return;const mk=v3Marque(seaux),ta=tg(ist(it)),Bt=ta?(k=>B(v3EstVerre(k)?k:k+ta)):B;v3Equipement(Bt,it,lv,i,y0,H,haut,coupe);
     v3.registre.equipements.push({id:it.id,type:it.type,niveau:i,boite:v3Emprise(seaux,mk)});});
+  /* D74 : le plancher (son épaisseur, sa trémie) et le garde-corps de la trémie, à l'étage */
+  if(i>0){v3DalleSous(B,lv,i,m,faces);v3GardeCorps(B,lv,i,m,y0,coupe);}
   v3Maillages(seaux,grp,i);
   v3Sols(lv,i,m,faces,y0,grp);
   if(v3.mode==='visite'&&i===v3.niveau)v3Plafonds(lv,i,m,faces,y0,H,grp); /* D73 */
   return grp;}
-/* un prisme percé : le polygone (plan) découpé le long de u aux bords des trous, chaque tranche montée sur ses hauteurs
-   pleines ; au niveau coupé, rien au-dessus de la coupe, et le dessus tranché prend la couleur de la coupe */
+/* D74 · le retour d'isolant d'un tableau (la règle V92 de la 2D, drawOpening) : sur chaque face où il est choisi et permis, une
+   bande de doublage de largeur L dans chaque jambage, du doublage (ou du nu) jusqu'au plan de la menuiserie — ou jusqu'à l'axe
+   si l'autre face a aussi le sien, sinon jusqu'à l'autre parement — et la sous-face du linteau */
+function v3Retour(B,lv,w,o,m,y0,H,coupe,i,yc){
+  const d=OPENINGS[o.type];if(!d||!(o.retour||[]).length)return null;const t=wallT(w),Lw=wallLen(w);if(t<=0||Lw<1e-4)return null;
+  const u=norm(sub(w.b,w.a)),off=wallOff(w),hw=(o.w||d.w)/2,z0=Math.max(0,allegeOf(o)||0),z1=Math.min(H,z0+(o.h||d.h));if(z1<z0+0.05||hw<0.05)return null;
+  const P0=add(w.a,mul(u,o.t*Lw)),Q=add(P0,off),R=v3Repere(Q.x,Q.y,Math.atan2(u.y,u.x),y0,coupe),ext=isExtType(o.type),siN=ext?v3CoteInt(w,lv):0,out={id:o.id,cotes:[],L:[]};
+  [1,-1].forEach(s=>{if(!revealOnSide(o,w,s,m,lv))return;const io=isoOnSideAt(w,s,P0),dt=io&&io.mode!=='ite'?doublageOf(io):0;
+    const yEnd=ext&&s===siN?yc:revealOnSide(o,w,-s,m,lv)?0:-s*t/2,yOut=s*(t/2+dt),L=Math.min(io&&io.mode!=='ite'?dt:epTableau(o,w,s),hw-0.02);if(L<0.01||Math.abs(yOut-yEnd)<0.02)return;
+    const k='doublage'+(v3TagTravaux(!io||io.st==='creer'?'creer':'',m)?'~creer':''),ya=Math.min(yEnd,yOut),yb=Math.max(yEnd,yOut),lin=z1<H-1e-3;
+    [-1,1].forEach(j=>v3Pave(B,k,R,Math.min(j*hw,j*(hw-L)),Math.max(j*hw,j*(hw-L)),ya,yb,z0,lin?z1-L:z1));
+    if(lin)v3Pave(B,k,R,-hw,hw,ya,yb,z1-L,z1);
+    out.cotes.push(s);out.L.push(+L.toFixed(4));});
+  return out.cotes.length?out:null;}
+/* D74 · le plancher sous les pièces de l'étage : son épaisseur (v3EpPlancher), percée de la trémie de l'escalier qui y monte — un
+   chant au bord de la trémie, une sous-face sous un porte-à-faux ; 3 mm au-dessus des plafonds du dessous, 1 mm sous ses sols */
+function v3DalleSous(B,lv,i,m,faces){const ep=v3.altitudes[i]-v3.altitudes[i-1]-(state.levels[i-1].height||2.5);if(ep<0.03)return;
+  const ya=v3.altitudes[i]-ep+0.003,yb=v3.altitudes[i]-0.001,tremies=v3Tremies(lv,i,m);
+  faces.forEach(f=>{const r=f.room;if(!r||!RT[r.type]||RT[r.type].ext)return;const P=f.poly&&f.poly.length>2?f.poly:f.polyInt;if(!P||P.length<3)return;
+    const trT=v3TremiesDe(tremies,P);(trT.length?v3Retirer(P,trT):[P]).forEach(Q=>v3Dalle(B,'plancher','plancher',Q.map(p=>[p.x,p.y]),[],ya,yb));v3.registre.dalles.push({roomId:r.id,niveau:i,ya,yb,trous:trT.length});});}
+/* D74 · le garde-corps de la trémie (1,00 m : montants, main courante, lisse basse), sur ses bords libres : ni à l'arrivée de la
+   volée (lue dans stairGeom), ni contre un mur ; pas d'escalier hélicoïdal (sa trémie est ronde) */
+function v3GardeCorps(B,lv,i,m,y0,coupe){const below=state.levels[i-1];if(!below)return;const sol=0.012,Rc=coupe==null?null:coupe-sol;
+  below.items.forEach(it=>{if(it.type!=='escalier'||it.link===false||!itemActive(it,m))return;const G=stairGeom(it,below);if(G.rects.some(r=>r.circle))return;
+    const c=Math.cos(it.rot||0),s=Math.sin(it.rot||0),W=(x,y)=>v(it.x+c*x-s*y,it.y+s*x+c*y),der=G.rects.filter(r=>!r.land).pop();if(!der)return;
+    const arr=der.dir==='up'?{h:1,v:der.y}:der.dir==='down'?{h:1,v:der.y+der.h}:der.dir==='right'?{h:0,v:der.x+der.w}:{h:0,v:der.x};
+    const contreMur=(a,b)=>{const mid=mul(add(a,b),0.5);return lv.walls.some(w=>!isVirtual(w)&&wallDrawn(w,m)&&distSeg(mid,add(w.a,wallOff(w)),add(w.b,wallOff(w)))<wallT(w)/2+0.15);};
+    let n=0;unionEdges(G.rects).forEach(([x0,y0e,x1,y1e])=>{const hor=Math.abs(y0e-y1e)<1e-9;if(hor===!!arr.h&&Math.abs((hor?y0e:x0)-arr.v)<1e-6)return;
+      const A=W(x0,y0e),Bp=W(x1,y1e),L=dist(A,Bp);if(L<0.05||contreMur(A,Bp))return;const u=norm(sub(Bp,A)),R=v3Repere(A.x,A.y,Math.atan2(u.y,u.x),y0+sol,Rc);
+      const P=(x0p,x1p,z0,z1)=>v3Pave(B,'gc:acier',R,x0p,x1p,-0.02,0.02,z0,z1),np=Math.max(1,Math.ceil(L/1.1));
+      for(let k=0;k<=np;k++){const x=Math.min(L-0.02,Math.max(0.02,k*L/np));P(x-0.02,x+0.02,0,0.96);}
+      P(0,L,0.96,1.0);P(0,L,0.1,0.13);n++;});
+    if(n)v3.registre.gardecorps.push({id:it.id,niveau:i,cotes:n});});}
+/* un prisme percé — D74 : ÉTANCHE. Le polygone (plan) est monté de zb à zh moins ses trous ; chaque face est découpée sur UNE
+   grille commune (les abscisses des bords de trous le long de u, les hauteurs de leurs allèges et linteaux) : deux faces voisines
+   partagent exactement leurs sommets — plus de jonction en T, plus de trait clair aux tranches (le joint vertical sous une
+   fenêtre). Les tableaux, l'appui et la sous-face du linteau sont fermés ; rien n'est émis entre deux tranches pleines. Au niveau
+   coupé, rien au-dessus de la coupe, et le dessus tranché prend la couleur de la coupe. Ce qui arrête le visiteur (D73) reste
+   enregistré par tranches pleines. */
 function v3Extruder(B,poly,u,trous,zb,zh,coupe,cle,y0){
-  const pose=(pc,z0,z1)=>{let top=z1,tranche=false;if(coupe!=null){if(z0>=coupe-1e-4)return;if(z1>coupe+1e-4){top=coupe;tranche=true;}}
-    if(top-z0<1e-4)return;v3Prisme(B,pc,y0+z0,y0+top,cle,tranche,z0>1e-4);if(v3.registre&&v3.registre.obstacles)v3.registre.obstacles.push({poly:pc,z0,z1:top,y0});}; /* D73 : ce qui arrête le visiteur */
-  if(!u||!trous.length){pose(poly,zb,zh);return;}
+  const top=coupe!=null?Math.min(zh,coupe):zh,tranche=coupe!=null&&zh>coupe+1e-4;if(top-zb<1e-4)return;
+  const ob=(pc,z0,z1)=>{if(v3.registre&&v3.registre.obstacles)v3.registre.obstacles.push({poly:pc,z0,z1,y0});}; /* D73 : ce qui arrête le visiteur */
+  if(!u||!trous.length){v3Prisme(B,poly,y0+zb,y0+top,cle,tranche,zb>1e-4);ob(poly,zb,top);return;}
   const sv=poly.map(p=>p.x*u.x+p.y*u.y),sMin=Math.min(...sv),sMax=Math.max(...sv),cuts=[sMin,sMax];
-  trous.forEach(h=>{if(h.s1>sMin+1e-4&&h.s0<sMax-1e-4)cuts.push(Math.max(sMin,h.s0),Math.min(sMax,h.s1));});
-  const S=[...new Set(cuts.map(x=>Math.round(x*1e5)/1e5))].sort((a,b)=>a-b);
-  for(let k=0;k<S.length-1;k++){const a=S[k],b=S[k+1];if(b-a<1e-4)continue;const mid=(a+b)/2;
-    const pc=clipHalf(clipHalf(poly,u,a,false),u,b,true);if(pc.length<3)continue;
-    let R=[[zb,zh]];trous.forEach(h=>{if(h.s0<mid&&h.s1>mid)R=v3Moins(R,h.z0,h.z1);});
-    R.forEach(([z0,z1])=>pose(pc,z0,z1));}}
+  const T_=trous.filter(h=>h.s1>sMin+1e-4&&h.s0<sMax-1e-4&&h.z1>zb+1e-4&&h.z0<top-1e-4);
+  if(!T_.length){v3Prisme(B,poly,y0+zb,y0+top,cle,tranche,zb>1e-4);ob(poly,zb,top);return;}
+  T_.forEach(h=>cuts.push(Math.max(sMin,h.s0),Math.min(sMax,h.s1)));
+  const uniq=A=>{const O=[];A.sort((a,b)=>a-b).forEach(x=>{if(!O.length||x-O[O.length-1]>1e-6)O.push(x);});return O;};
+  const S=uniq(cuts),Z=uniq([zb,top,...T_.flatMap(h=>[h.z0,h.z1]).filter(z=>z>zb+1e-4&&z<top-1e-4)]);
+  const plein=(s,z)=>s>sMin-1e-7&&s<sMax+1e-7&&z>zb-1e-7&&z<top+1e-7&&!T_.some(h=>h.s0<s&&h.s1>s&&h.z0<z&&h.z1>z);
+  /* les tranches pleines, pour les collisions (comme avant D74) */
+  for(let k=0;k<S.length-1;k++){const a=S[k],b=S[k+1];if(b-a<1e-4)continue;const mid=(a+b)/2,pc=clipHalf(clipHalf(poly,u,a,false),u,b,true);if(pc.length<3)continue;
+    let R=[[zb,top]];T_.forEach(h=>{if(h.s0<mid&&h.s1>mid)R=v3Moins(R,h.z0,h.z1);});R.forEach(([z0,z1])=>{if(z1-z0>1e-4)ob(pc,z0,z1);});}
+  /* le polygone, direct (comme v3Prisme), et le point d'une arête à l'abscisse s — calculé toujours dans le même sens, pour que
+     deux faces qui partagent un sommet le trouvent identique au bit près */
+  let P=[];poly.forEach(p=>{const d=P[P.length-1];if(!d||Math.hypot(d.x-p.x,d.y-p.y)>1e-6)P.push(p);});
+  if(P.length>2&&Math.hypot(P[0].x-P[P.length-1].x,P[0].y-P[P.length-1].y)<1e-6)P.pop();if(P.length<3)return;
+  let Ar=0;for(let q=0;q<P.length;q++){const a=P[q],b=P[(q+1)%P.length];Ar+=a.x*b.y-b.x*a.y;}if(Math.abs(Ar)<1e-9)return;if(Ar<0)P=P.slice().reverse();
+  const sP=p=>p.x*u.x+p.y*u.y,ptS=(a,b,s)=>{if(a.x>b.x||(a.x===b.x&&a.y>b.y)){const t0=a;a=b;b=t0;}const sa=sP(a),sb=sP(b),t=Math.abs(sb-sa)<1e-12?0:(s-sa)/(sb-sa);return {x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t};};
+  const Bc=B(cle),Y=z=>y0+z,quad=(s,A,Bq,za,zbq,n)=>{v3Tri(s,[A.x,Y(za),A.y],[Bq.x,Y(za),Bq.y],[Bq.x,Y(zbq),Bq.y],n);v3Tri(s,[A.x,Y(za),A.y],[Bq.x,Y(zbq),Bq.y],[A.x,Y(zbq),A.y],n);};
+  /* 1. les faces verticales du contour : chaque arête découpée aux abscisses S qu'elle traverse et aux hauteurs Z */
+  for(let q=0;q<P.length;q++){const a=P[q],b=P[(q+1)%P.length],dx=b.x-a.x,dy=b.y-a.y,l=Math.hypot(dx,dy);if(l<1e-6)continue;const n=[dy/l,0,-dx/l];
+    const sa=sP(a),sb=sP(b),lo=Math.min(sa,sb),hi=Math.max(sa,sb),inS=S.filter(x=>x>lo+1e-6&&x<hi-1e-6),pts=[a,...(sa<sb?inS:inS.slice().reverse()).map(x=>ptS(a,b,x)),b];
+    /* un point de bord est le même d'une face à l'autre : à l'abscisse d'une coupe, il vient de ptS */
+    for(let k=0;k<pts.length-1;k++){const A=pts[k],Bq=pts[k+1],sm=sP({x:(A.x+Bq.x)/2-n[0]*1e-4,y:(A.y+Bq.y)/2-n[2]*1e-4}); /* juste dedans : un bout de mur dans une porte n'est pas plein */
+      for(let j=0;j<Z.length-1;j++){const zm=(Z[j]+Z[j+1])/2;if(plein(sm,zm))quad(Bc,A,Bq,Z[j],Z[j+1],n);}}}
+  /* la coupe du polygone par la droite s (deux points, pris sur les arêtes par ptS) */
+  const travers=s=>{const X=[];for(let q=0;q<P.length;q++){const a=P[q],b=P[(q+1)%P.length],sa=sP(a),sb=sP(b);if((sa-s)*(sb-s)<0||Math.abs(sa-s)<1e-9&&Math.abs(sb-s)>1e-9)X.push(Math.abs(sa-s)<1e-9?a:ptS(a,b,s));}return X.length>=2?[X[0],X[X.length-1]]:null;};
+  /* 2. les tableaux : à chaque coupe intérieure, là où le plein s'arrête d'un côté seulement (normale vers le vide) */
+  for(let k=1;k<S.length-1;k++){const s=S[k],X=travers(s);if(!X)continue;
+    for(let j=0;j<Z.length-1;j++){const zm=(Z[j]+Z[j+1])/2,g=plein(s-1e-5,zm),d=plein(s+1e-5,zm);if(g===d)continue;
+      const nu=g?[u.x,0,u.y]:[-u.x,0,-u.y];quad(Bc,X[0],X[1],Z[j],Z[j+1],nu);}}
+  /* 3. les faces horizontales : pour chaque tranche [S_k, S_k+1] (prise sur les arêtes d'origine, par ptS), à chaque hauteur où
+     le plein commence (dessous, hors du sol) ou finit (dessus : la coupe à l'encre, ou le haut du mur, l'appui) */
+  const bande=(a,b)=>{const out=[];for(let q=0;q<P.length;q++){const p=P[q],r=P[(q+1)%P.length],sp=sP(p),sr=sP(r);if(sp>=a-1e-9&&sp<=b+1e-9)out.push(p);
+    [a,b].filter(x=>(sp-x)*(sr-x)<-1e-18).sort((x,y)=>sp<sr?x-y:y-x).forEach(x=>out.push(ptS(p,r,x)));}
+    const D=[];out.forEach(p=>{const d=D[D.length-1];if(!d||Math.hypot(d.x-p.x,d.y-p.y)>1e-9)D.push(p);});if(D.length>2&&Math.hypot(D[0].x-D[D.length-1].x,D[0].y-D[D.length-1].y)<1e-9)D.pop();return D;};
+  const T3=window.THREE,kCoupe=cle.replace(/~\w+$/,'')+'Coupe';
+  for(let k=0;k<S.length-1;k++){const a=S[k],b=S[k+1];if(b-a<1e-5)continue;const sm=(a+b)/2,pc=bande(a,b);if(pc.length<3)continue;
+    const tris=T3.ShapeUtils.triangulateShape(pc.map(p=>new T3.Vector2(p.x,p.y)),[]);
+    Z.forEach(z=>{const dessous=plein(sm,z-1e-5),dessus=plein(sm,z+1e-5);if(dessous===dessus)return;
+      if(dessous){const s3=B(z>=top-1e-6&&tranche?kCoupe:cle);tris.forEach(([i0,i1,i2])=>v3Tri(s3,[pc[i0].x,Y(z),pc[i0].y],[pc[i1].x,Y(z),pc[i1].y],[pc[i2].x,Y(z),pc[i2].y],[0,1,0]));}
+      else if(z>1e-4)tris.forEach(([i0,i1,i2])=>v3Tri(Bc,[pc[i0].x,Y(z),pc[i0].y],[pc[i1].x,Y(z),pc[i1].y],[pc[i2].x,Y(z),pc[i2].y],[0,-1,0]));});}}
 function v3Moins(R,a,b){const out=[];R.forEach(([z0,z1])=>{if(b<=z0+1e-6||a>=z1-1e-6){out.push([z0,z1]);return;}if(a>z0+1e-4)out.push([z0,a]);if(b<z1-1e-4)out.push([b,z1]);});return out;}
 /* un triangle, tourné pour que sa face avant regarde du côté de la normale voulue */
 function v3Tri(s,a,b,c,n){const ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2],vx=c[0]-a[0],vy=c[1]-a[1],vz=c[2]-a[2];
@@ -9315,13 +9534,17 @@ function v3Prisme(B,poly,yb,yh,cle,tranche,dessous){
   for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length],dx=b.x-a.x,dy=b.y-a.y,l=Math.hypot(dx,dy);if(l<1e-6)continue;const n=[dy/l,0,-dx/l];
     v3Tri(cot,[a.x,yb,a.y],[b.x,yb,b.y],[b.x,yh,b.y],n);v3Tri(cot,[a.x,yb,a.y],[b.x,yh,b.y],[a.x,yh,a.y],n);}
   const tris=window.THREE.ShapeUtils.triangulateShape(P.map(p=>new window.THREE.Vector2(p.x,p.y)),[]);
-  const des=B(tranche?cle+'Coupe':cle);tris.forEach(([i,j,k])=>v3Tri(des,[P[i].x,yh,P[i].y],[P[j].x,yh,P[j].y],[P[k].x,yh,P[k].y],[0,1,0]));
+  const des=B(tranche?cle.replace(/~\w+$/,'')+'Coupe':cle); /* D74 : la coupe reste à l'encre, travaux ou non */tris.forEach(([i,j,k])=>v3Tri(des,[P[i].x,yh,P[i].y],[P[j].x,yh,P[j].y],[P[k].x,yh,P[k].y],[0,1,0]));
   if(dessous)tris.forEach(([i,j,k])=>v3Tri(cot,[P[i].x,yb,P[i].y],[P[j].x,yb,P[j].y],[P[k].x,yb,P[k].y],[0,-1,0]));}
 /* ── matières : murs blanc cassé, coupe à l'encre (la cloison à 65 %, comme en 2D), doublage en jaune pâle ── */
 function v3Mat(k){if(v3.mats[k])return v3.mats[k];const T=window.THREE;let M;
-  if(k==='murCoupe')M=new T.MeshBasicMaterial({color:V3_COUL.coupe});
-  else if(k==='cloisonCoupe')M=new T.MeshBasicMaterial({color:V3_COUL.coupeCloison,polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:2});
-  else if(k==='doublageCoupe')M=new T.MeshBasicMaterial({color:V3_COUL.coupeDoublage});
+  /* D74 : une matière « de travaux » (clé~creer, clé~demolir) est sa matière de base, à part — v3MatsTravaux l'éclaire un instant */
+  const tr=/^(.*)~(creer|demolir)$/.exec(k);
+  if(tr){const b=v3Mat(tr[1]);M=b.clone();M.userData={base:b.color.clone(),teinte:new T.Color(tr[2]==='creer'?CREER:DEMOLIR)};return v3.mats[k]=M;}
+  /* D74 : la coupe ne passe pas par le rendu filmique (toneMapped:false) — l'encre reste exactement #1E1B4B */
+  if(k==='murCoupe')M=new T.MeshBasicMaterial({color:V3_COUL.coupe,toneMapped:false});
+  else if(k==='cloisonCoupe')M=new T.MeshBasicMaterial({color:V3_COUL.coupeCloison,toneMapped:false,polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:2});
+  else if(k==='doublageCoupe')M=new T.MeshBasicMaterial({color:V3_COUL.coupeDoublage,toneMapped:false});
   else if(k==='doublage')M=new T.MeshStandardMaterial({color:V3_COUL.doublage,roughness:0.95,metalness:0});
   else if(V3_MATS[k]&&V3_MATS[k].motif)M=new T.MeshStandardMaterial({map:v3TextureToit(k.slice(5)),roughness:V3_MATS[k].r,metalness:V3_MATS[k].m||0}); /* D72 : la couverture, en texture dessinée */
   else if(V3_MATS[k]){const d=V3_MATS[k];M=new T.MeshStandardMaterial({color:d.c,roughness:d.r,metalness:d.m||0});if(d.verre){M.transparent=true;M.opacity=d.verre;M.depthWrite=false;}} /* D72 : menuiseries, équipements, toiture */
@@ -9337,17 +9560,17 @@ function v3GenreSol(f,ext){f=String(f||'').toLowerCase();
   if(/parquet/.test(f))return 'bois';if(/stratifi/.test(f))return 'stratifie';if(/tomette/.test(f))return 'tomettes';if(/carrelage/.test(f))return 'carrelage';
   if(/béton|beton|dalle|chape/.test(f))return 'beton';if(/vinyle|pvc/.test(f))return 'vinyle';if(/moquette/.test(f))return 'moquette';if(/lino/.test(f))return 'lino';if(/terre|brut/.test(f))return 'terre';
   return ext?'terrasse':'defaut';}
-const V3_SOLS={bois:{c:'#B98F64',taille:1.2,lames:8,r:0.72},stratifie:{c:'#CDB08A',taille:1.2,lames:6,r:0.6},terrasse:{c:'#A79A86',taille:1.2,lames:8,r:0.9},
+const V3_SOLS={bois:{c:'#BC9A78',taille:1.2,lames:8,r:0.72,contraste:14},stratifie:{c:'#CDB08A',taille:1.2,lames:6,r:0.6},terrasse:{c:'#A79A86',taille:1.2,lames:8,r:0.9},
   carrelage:{c:'#D3CFC7',taille:1.2,dalles:2,joint:'#ADA79C',r:0.45},tomettes:{c:'#B9673F',taille:1,dalles:5,joint:'#E3D5C3',r:0.8},
   beton:{c:'#C9C8C3',taille:2,r:0.82},vinyle:{c:'#DCD5C9',taille:1.2,lames:6,r:0.55,doux:1},moquette:{c:'#B6B9C6',taille:1,r:1},lino:{c:'#D8D0C1',taille:1,r:0.6},
-  terre:{c:'#A08C70',taille:2,r:1},defaut:{c:'#E2E3E8',taille:1,r:0.9}};
+  terre:{c:'#A08C70',taille:2,r:1},defaut:{c:'#D9DADF',taille:1,r:0.9}}; /* D74 : « À définir » n'est plus un blanc qui brûle */
 function v3Hasard(n){let x=n*9301+49297;return ()=>{x=(x*9301+49297)%233280;return x/233280;};}
 function v3Texture(genre){
   const d=V3_SOLS[genre]||V3_SOLS.defaut,N=256,c=document.createElement('canvas');c.width=c.height=N;const g=c.getContext('2d'),h=v3Hasard(genre.length*7+3);
   const teinte=(hex,k)=>{const v=parseInt(hex.slice(1),16);const f=x=>Math.max(0,Math.min(255,Math.round(x+k)));return `rgb(${f(v>>16)},${f((v>>8)&255)},${f(v&255)})`;};
   g.fillStyle=d.c;g.fillRect(0,0,N,N);
   if(d.lames){const L=N/d.lames;for(let i=0;i<d.lames;i++){let x0=-h()*N;const l=N*(0.55+h()*0.5);
-      for(let x=x0;x<N;x+=l){g.fillStyle=teinte(d.c,(h()-0.5)*(d.doux?8:22));g.fillRect(x,i*L,l,L);g.fillStyle=teinte(d.c,-38);g.fillRect(x,i*L,1,L);}
+      for(let x=x0;x<N;x+=l){g.fillStyle=teinte(d.c,(h()-0.5)*(d.doux?8:d.contraste||22));g.fillRect(x,i*L,l,L);g.fillStyle=teinte(d.c,-38);g.fillRect(x,i*L,1,L);}
       g.fillStyle=teinte(d.c,-30);g.fillRect(0,i*L,N,1);}}
   else if(d.dalles){const L=N/d.dalles;for(let i=0;i<d.dalles;i++)for(let j=0;j<d.dalles;j++){g.fillStyle=teinte(d.c,(h()-0.5)*(genre==='tomettes'?26:6));g.fillRect(i*L,j*L,L,L);}
     g.fillStyle=d.joint;for(let i=0;i<d.dalles;i++){g.fillRect(i*L,0,2,N);g.fillRect(0,i*L,N,2);}}
@@ -9365,24 +9588,37 @@ function v3Sols(lv,i,m,faces,y0,grp){
   const T=window.THREE,tremies=v3Tremies(lv,i,m);
   faces.forEach(f=>{const r=f.room;if(!r||!RT[r.type])return;const typ=v3SolDe(r,m);if(!typ)return;
     const P=(f.polyInt&&f.polyInt.length>2?f.polyInt:f.poly);
-    const trous=faces.filter(g=>g!==f&&g.poly.every(p=>pointIn(p,f.poly)||f.poly.some(q=>same(p,q)))&&g.poly.some(p=>pointIn(p,f.poly))).map(g=>g.poly)
-      .concat(tremies.filter(t=>t.every(p=>pointIn(p,P))));
-    const genre=v3GenreSol(typ,RT[r.type].ext),M=v3MatSol(genre),geo=v3Plancher(P,trous,y0+(i?0.012:0.003),M.userData.taille);if(!geo)return; /* à l'étage, le sol passe 12 mm au-dessus du haut des murs du dessous (pas de scintillement) */
+    const cours=faces.filter(g=>g!==f&&g.poly.every(p=>pointIn(p,f.poly)||f.poly.some(q=>same(p,q)))&&g.poly.some(p=>pointIn(p,f.poly))).map(g=>g.poly),trT=v3TremiesDe(tremies,P);
+    const parts=trT.length?v3Retirer(P,trT).map(Q=>[Q,cours.filter(h=>h.every(p=>pointIn(p,Q)))]):[[P,cours]],trous=cours.concat(trT);
+    const genre=v3GenreSol(typ,RT[r.type].ext),M=v3MatSol(genre),geo=v3PlancherGeo(parts,y0+(i?0.012:0.003),M.userData.taille);if(!geo)return; /* à l'étage, le sol passe 12 mm au-dessus du haut des murs du dessous (pas de scintillement) */
     const nom=roomName(r),me=new T.Mesh(geo,M);me.receiveShadow=true;me.userData={kind:'sol',roomId:r.id,niveau:i,sol:typ,genre,nom};grp.add(me);
-    v3.registre.sols.push({roomId:r.id,niveau:i,sol:typ,genre,aire:Math.abs(polyArea(P))-trous.reduce((s,t)=>s+Math.abs(polyArea(t)),0),trous:trous.length,
-      nom,type:r.type,x:f.label.x,y:f.label.y});});} /* D73 : le nom et le repère de la pièce (la visite y entre) */
-/* D73 · les plafonds de la visite : un par pièce couverte (polyInt), à la hauteur du niveau, percé de la trémie de l'escalier
-   qui monte ; vus d'en dessous (la face arrière d'un plancher), ils ne portent ni ne reçoivent d'ombre : le soleil entre
-   comme par un ciel ouvert, la pièce reste claire */
-function v3Plafonds(lv,i,m,faces,y0,H,grp){const T=window.THREE,up=state.levels[i+1],tremies=up?v3Tremies(up,i+1,m):[];
-  if(!v3.mats.plafond)v3.mats.plafond=new T.MeshStandardMaterial({color:0xF6F6F3,roughness:0.95,metalness:0,side:T.BackSide,emissive:0xA6A392}); /* éclairé d'en dessous (le ciel bleuté), il resterait gris-bleu : un peu de clarté chaude le garde blanc neutre */
-  faces.forEach(f=>{const r=f.room;if(!r||!RT[r.type]||RT[r.type].ext)return;const P=(f.polyInt&&f.polyInt.length>2?f.polyInt:f.poly);
-    const geo=v3Plancher(P,tremies.filter(t=>t.every(p=>pointIn(p,P))),y0+H,1);if(!geo)return;
-    const me=new T.Mesh(geo,v3.mats.plafond);me.userData={kind:'plafond',roomId:r.id,niveau:i};grp.add(me);v3.registre.plafonds.push({roomId:r.id,niveau:i,y:y0+H});});}
-function v3Plancher(P,trous,y,taille){const T=window.THREE,V=p=>new T.Vector2(p.x,p.y),C=P.map(V),Hs=trous.map(t=>t.map(V));if(C.length<3)return null;
-  const tris=T.ShapeUtils.triangulateShape(C,Hs),pts=C.concat(...Hs);if(!tris.length)return null; /* les indices lisent le contour puis les trous, tels que triangulateShape les a gardés */
-  const s={pos:[],nor:[]},uv=[];tris.forEach(([a,b,c])=>{const n0=s.pos.length;v3Tri(s,[pts[a].x,y,pts[a].y],[pts[b].x,y,pts[b].y],[pts[c].x,y,pts[c].y],[0,1,0]);
-    for(let k=n0;k<s.pos.length;k+=3)uv.push(s.pos[k]/taille,s.pos[k+2]/taille);});
+    v3.registre.sols.push({roomId:r.id,niveau:i,sol:typ,genre,aire:parts.reduce((s,[Q,H])=>s+Math.abs(polyArea(Q))-H.reduce((s2,t)=>s2+Math.abs(polyArea(t)),0),0),trous:trous.length,
+      nom,type:r.type,x:f.label.x,y:f.label.y,poly:P,trousP:trous});me.userData.poly=P;});} /* D73 : le nom et le repère de la pièce (la visite y entre) ; D74 : son contour (le point libre, le survol) */
+/* D74 · les trémies qui touchent une pièce — une trémie peut chevaucher deux pièces (la cuisine ouverte et le séjour) : elle n'était
+   alors percée dans aucune (plafonds, planchers), et l'escalier montait dans un plafond plein */
+function v3TremiesDe(tremies,P){return tremies.filter(t=>t.some(p=>pointIn(p,P))||P.some(p=>pointIn(p,t)));}
+/* une pièce moins des trémies (convexes) : par morceaux — la pièce hors de chaque arête de la trémie, dedans des précédentes ; les
+   morceaux couvrent la pièce moins la trémie, sans trou à trianguler (une trémie à cheval sur le bord n'en est pas un) */
+function v3Retirer(P,trous){let M=[v3Direct(P.map(p=>[p.x,p.y]))];
+  trous.forEach(t=>{const C=v3Direct(t.map(p=>[p.x,p.y])),N=C.length;if(N<3)return;const L=C.map((a,k)=>{const b=C[(k+1)%N],dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1,n=[dy/l,-dx/l];return {n,c:n[0]*a[0]+n[1]*a[1]};});
+    const out=[];M.forEach(Q=>L.forEach((Lk,k)=>{let R=v3Couper(Q,-Lk.n[0],-Lk.n[1],-Lk.c);for(let j=0;j<k&&R.length>2;j++)R=v3Couper(R,L[j].n[0],L[j].n[1],L[j].c);R=v3Direct(R);if(R.length>2)out.push(R);}));M=out;});
+  return M.filter(C=>C.length>2&&Math.abs(polyArea(C.map(p=>v(p[0],p[1]))))>1e-6).map(C=>C.map(p=>v(p[0],p[1])));}
+/* D73 · les plafonds de la visite : un par pièce couverte (polyInt), percé de la trémie de l'escalier qui monte. D74 : à la
+   hauteur sous plafond de la pièce (roomHeight) ; ils portent ombre — le soleil n'entre plus que par les baies (il traversait les
+   plafonds et dessinait des ombres en biais dans des pièces fermées) — et ne la reçoivent pas (vus d'en dessous, ils restent clairs) */
+function v3Plafonds(lv,i,m,faces,y0,H,grp){const T=window.THREE,up=state.levels[i+1],tremies=up?v3Tremies(up,i+1,m):[],hsp=(v3.hspN&&v3.hspN[i])||v3HSP(lv,m);
+  if(!v3.mats.plafond)v3.mats.plafond=new T.MeshStandardMaterial({color:0xEFEFEC,roughness:0.95,metalness:0,side:T.BackSide}); /* D74 : éclairé d'en dessous par le sol chaud du ciel, un ton sous les murs — l'arête mur / plafond se lit */
+  faces.forEach(f=>{const r=f.room;if(!r||!RT[r.type]||RT[r.type].ext)return;const P=(f.polyInt&&f.polyInt.length>2?f.polyInt:f.poly),hp=hsp.piece[r.id]||H;
+    const trT=v3TremiesDe(tremies,P),geo=v3PlancherGeo(trT.length?v3Retirer(P,trT).map(Q=>[Q,[]]):[[P,[]]],y0+hp,1);if(!geo)return;
+    const me=new T.Mesh(geo,v3.mats.plafond);me.castShadow=true;me.userData={kind:'plafond',roomId:r.id,niveau:i};grp.add(me);v3.registre.plafonds.push({roomId:r.id,niveau:i,y:y0+hp});});}
+function v3Plancher(P,trous,y,taille){return v3PlancherGeo([[P,trous]],y,taille);}
+/* D74 : plusieurs morceaux (une pièce moins sa trémie) dans une seule géométrie */
+function v3PlancherGeo(parts,y,taille){const T=window.THREE,V=p=>new T.Vector2(p.x,p.y),s={pos:[],nor:[]},uv=[];
+  parts.forEach(([P,trous])=>{const C=P.map(V),Hs=(trous||[]).map(t=>t.map(V));if(C.length<3)return;
+    const tris=T.ShapeUtils.triangulateShape(C,Hs),pts=C.concat(...Hs); /* les indices lisent le contour puis les trous, tels que triangulateShape les a gardés */
+    tris.forEach(([a,b,c])=>{const n0=s.pos.length;v3Tri(s,[pts[a].x,y,pts[a].y],[pts[b].x,y,pts[b].y],[pts[c].x,y,pts[c].y],[0,1,0]);
+      for(let k=n0;k<s.pos.length;k+=3)uv.push(s.pos[k]/taille,s.pos[k+2]/taille);});});
+  if(!s.pos.length)return null;
   const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(s.pos,3));geo.setAttribute('normal',new T.Float32BufferAttribute(s.nor,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uv,2));geo.computeBoundingSphere();return geo;}
 /* ═══ D72 · les détails : menuiseries, équipements, escalier, structure, toiture ═══
    Même règle que le socle : tout vient du plan, rien n'est enregistré. Chaque objet est fait de volumes simples (pavés,
@@ -9392,20 +9628,23 @@ function v3Plancher(P,trous,y,taille){const T=window.THREE,V=p=>new T.Vector2(p.
    comme drawItem ; d'une ouverture : son centre sur l'axe du corps du mur, x le long du mur, y vers +n, comme drawOpening.
    Les hauteurs sont les cotes courantes (plan de travail 0,90 m, lavabo 0,86, assise 0,45, table 0,75…). */
 const V3_MATS={
-  'men:pvc':{c:'#F3F3EF',r:0.5},'men:blanc':{c:'#F3F3EF',r:0.5},'men:alu':{c:'#3D414C',r:0.42,m:0.35},'men:bois':{c:'#A47652',r:0.7},
+  /* D74 : sans carte d'environnement, un métal très métallique sort noir — les métaux sont mats (≤ 0,1), d'une teinte claire ;
+     le bois des meubles est un noyer qui se détache du parquet */
+  'men:pvc':{c:'#F3F3EF',r:0.5},'men:blanc':{c:'#F3F3EF',r:0.5},'men:alu':{c:'#4A4F5B',r:0.45,m:0.1},'men:bois':{c:'#A47652',r:0.7},
   'men:verre':{c:'#C4DCE4',r:0.05,m:0.1,verre:0.3},'men:porte':{c:'#D9C4A6',r:0.65},'men:volet':{c:'#8E9BB0',r:0.7},
-  'men:garage':{c:'#D6D9DF',r:0.5,m:0.15},'men:joint':{c:'#A6ABB6',r:0.6},'men:pierre':{c:'#CFCBC2',r:0.85},'men:poignee':{c:'#C9CDD3',r:0.25,m:0.8},
-  'eq:ceramique':{c:'#FAFAF8',r:0.22},'eq:creux':{c:'#D5D9E1',r:0.3},'eq:inox':{c:'#B7BCC4',r:0.32,m:0.65},'eq:bac':{c:'#7F858F',r:0.35,m:0.55},'eq:chrome':{c:'#D5D9DF',r:0.2,m:0.85},
+  'men:garage':{c:'#D6D9DF',r:0.5,m:0.05},'men:joint':{c:'#A6ABB6',r:0.6},'men:pierre':{c:'#CFCBC2',r:0.85},'men:poignee':{c:'#C9CDD3',r:0.35,m:0.1},
+  'eq:ceramique':{c:'#F7F7F5',r:0.22},'eq:creux':{c:'#D5D9E1',r:0.3},'eq:inox':{c:'#C3C8CF',r:0.35,m:0.1},'eq:bac':{c:'#9AA0AA',r:0.35,m:0.1},'eq:chrome':{c:'#D9DDE3',r:0.3,m:0.1},
   'eq:meuble':{c:'#DADCE5',r:0.55},'eq:plan':{c:'#5A5652',r:0.45},'eq:noir':{c:'#25242C',r:0.3},'eq:electro':{c:'#F2F3F5',r:0.35},
-  'eq:bois':{c:'#B48A60',r:0.68},'eq:armoire':{c:'#DCD2C2',r:0.6},'eq:tissu':{c:'#8F94AB',r:0.95},'eq:linge':{c:'#F4F3F0',r:0.95},
-  'eq:couette':{c:'#AEB3D0',r:0.95},'eq:anthracite':{c:'#34363F',r:0.5,m:0.2},'rep:blanc':{c:'#F2F3F5',r:0.35},'rep:noir':{c:'#34363F',r:0.5,m:0.2},'eq:gris':{c:'#C8CBD2',r:0.55},'eq:verre':{c:'#C4DCE4',r:0.05,m:0.1,verre:0.3},
-  'esc:bois':{c:'#B48E66',r:0.65},'esc:beton':{c:'#C6C4BE',r:0.85},'esc:metal':{c:'#4B4F5A',r:0.45,m:0.45},
-  'str:acier':{c:'#4B4F5A',r:0.45,m:0.45},'str:bois':{c:'#A47A53',r:0.7},'str:beton':{c:'#C0BEB8',r:0.85},
-  'toit:tuile':{c:'#B3664B',r:0.85,motif:1.6},'toit:ardoise':{c:'#4C515D',r:0.7,motif:1.2},'toit:zinc':{c:'#8B919A',r:0.45,m:0.4,motif:2},'toit:plat':{c:'#8F8D89',r:0.9,motif:2},
+  'eq:bois':{c:'#86654A',r:0.62},'eq:armoire':{c:'#DCD2C2',r:0.6},'eq:tissu':{c:'#8F94AB',r:0.95},'eq:linge':{c:'#F1F0EC',r:0.95},
+  'eq:couette':{c:'#AEB3D0',r:0.95},'eq:anthracite':{c:'#34363F',r:0.5,m:0.05},'rep:blanc':{c:'#F2F3F5',r:0.35},'rep:noir':{c:'#34363F',r:0.5,m:0.05},'eq:gris':{c:'#C8CBD2',r:0.55},'eq:verre':{c:'#C4DCE4',r:0.05,m:0.1,verre:0.3},
+  'esc:bois':{c:'#B48E66',r:0.65},'esc:beton':{c:'#C6C4BE',r:0.85},'esc:metal':{c:'#6B7080',r:0.5,m:0.1},
+  'str:acier':{c:'#6B7080',r:0.5,m:0.1},'str:bois':{c:'#A47A53',r:0.7},'str:beton':{c:'#C0BEB8',r:0.85},
+  'plancher':{c:'#D6D2CA',r:0.9},'gc:acier':{c:'#5B6070',r:0.5,m:0.1},
+  'toit:tuile':{c:'#B3664B',r:0.85,motif:3.2},'toit:ardoise':{c:'#4C515D',r:0.7,motif:2.4},'toit:zinc':{c:'#8B919A',r:0.5,m:0.1,motif:2},'toit:plat':{c:'#8F8D89',r:0.9,motif:2},
   'toit:rive':{c:'#E2DFD8',r:0.9},'toit:pignon':{c:V3_COUL.mur,r:0.92},'toit:velux':{c:'#3D414C',r:0.42,m:0.35},'toit:verre':{c:'#C4DCE4',r:0.05,m:0.1,verre:0.3}};
 const v3EstVerre=k=>!!(V3_MATS[k]&&V3_MATS[k].verre);
 /* le genre d'un maillage, d'après sa matière : ce que les rayons des contrôles reconnaissent */
-function v3Genre(k){return /^men:/.test(k)?'menuiserie':/^eq:/.test(k)?'equipement':/^rep:/.test(k)?'repere':/^esc:/.test(k)?'escalier':/^str:/.test(k)?'structure':/^toit:/.test(k)?'toit':/^doublage/.test(k)?'doublage':'mur';}
+function v3Genre(k){return /^men:/.test(k)?'menuiserie':/^eq:/.test(k)?'equipement':/^rep:/.test(k)?'repere':/^esc:/.test(k)?'escalier':/^str:/.test(k)?'structure':/^toit:/.test(k)?'toit':/^doublage/.test(k)?'doublage':/^plancher/.test(k)?'plancher':/^gc:/.test(k)?'gardecorps':'mur';} /* D74 : le plancher de l'étage, le garde-corps */
 /* les maillages d'un groupe de seaux : un par matière ; le verre ne porte ni ne reçoit d'ombre */
 function v3Maillages(seaux,grp,i,genre){const T=window.THREE;
   Object.keys(seaux).forEach(k=>{const s=seaux[k];if(!s.pos.length)return;const geo=new T.BufferGeometry();
@@ -9482,11 +9721,11 @@ function v3Menuiserie(B,lv,w,o,m,y0,H,coupe,i){
   const P=(k,x0,x1,b0,b1,za,zb)=>v3Pave(B,k,R,x0,x1,Math.min(b0,b1),Math.max(b0,b1),za,zb);
   const k=d.kind,ext=isExtType(o.type),siN=ext?v3CoteInt(w,lv):0,pose=poseOf(o),cadre=v3MatMenuis(o,m),alu=cadre==='men:alu';
   /* la tapée (dormantOf, sur le niveau de l'ouverture) et le plan du vitrage dans l'épaisseur (y = +n) : applique côté pièce,
-     tunnel au milieu, feuillure côté dehors ; en applique sans doublage, le dormant déborde de lap sur la face */
+     tunnel au milieu, feuillure côté dehors ; en applique, le dormant déborde de lap sur le nu du mur */
   const dblI=ext?v3DblCote(w,siN,P0,m):0,neuf=estPlanFinal()||ost(o)==='creer'||ost(o)==='remplacer';
   const fd=ext&&pose==='applique'?Math.max(0.03,Math.min(0.18,neuf?(dblI||0.04):(o.dormant||40)/1000)):Math.min(t*0.55,0.055);
   const yc=!ext?0:pose==='applique'?siN*(t/2+fd/2):pose==='feuillure'?-siN*(t/2-fd/2-0.006):0;
-  const lap=ext&&pose==='applique'&&!dblI?Math.min(0.05,ow*0.1):0,yExt=siN?-siN*(t/2+v3IteCote(w,-siN,P0,m)):0;
+  const lap=ext&&pose==='applique'?Math.min(0.05,ow*0.1):0,yExt=siN?-siN*(t/2+v3IteCote(w,-siN,P0,m)):0; /* D74 : le recouvrement de la 2D, doublage ou non (le doublage s'arrête contre la tapée : v3Trous) */
   const reg={id:o.id,type:o.type,wallId:w.id,niveau:i,kind:k,ext,siN,pose:ext?pose:null,yc,fd,z0,z1,w:ow,mat:cadre.slice(4)};
   const dormant=(pf,bas)=>{const ya=yc-fd/2,yb=yc+fd/2,za=z0>0.01?z0-lap:z0,zt=Math.min(H,z1+lap);
     P(cadre,-hw-lap,-hw+pf,ya,yb,za,zt);P(cadre,hw-pf,hw+lap,ya,yb,za,zt);P(cadre,-hw+pf,hw-pf,ya,yb,z1-pf,zt);if(bas)P(cadre,-hw+pf,hw-pf,ya,yb,za,z0+bas);};
@@ -9554,7 +9793,8 @@ function v3Equipement(B,it,lv,i,y0,H,haut,coupe){
   const w=it.w||d.w,h=it.h||d.h,W=w/2,D=h/2,sol=i?0.012:0.003,Hc=H-sol,R=v3Repere(it.x,it.y,it.rot,y0+sol,coupe==null?null:coupe-sol);
   const P=(k,x0,x1,b0,b1,z0,z1)=>v3Pave(B,k,R,x0,x1,b0,b1,z0,z1),C=(k,poly,z0,z1,lisse)=>v3Colonne(B,k,R,poly,z0,z1,lisse);
   if(d.elec){ /* les points électriques : de petits repères discrets (leur genre à part, « repere »), à leur hauteur */
-    if(T==='lumiere'){const l=it.lum||'spot';if(l==='suspension'){P('rep:noir',-0.004,0.004,-0.004,0.004,Hc-0.62,Hc);C('rep:blanc',v3Rond(0,0,0.17,16),Hc-0.8,Hc-0.62,1);}
+    if(T==='lumiere'){if(v3.mode!=='visite')return; /* D74 : vus d'en haut, les points lumineux du plafond flottaient à 2,50 m (des points blancs sur le sol) : la visite seule les montre */
+      const l=it.lum||'spot';if(l==='suspension'){P('rep:noir',-0.004,0.004,-0.004,0.004,Hc-0.62,Hc);C('rep:blanc',v3Rond(0,0,0.17,16),Hc-0.8,Hc-0.62,1);}
       else if(l==='plafonnier')C('rep:blanc',v3Rond(0,0,0.16,16),Hc-0.07,Hc,1);else C('rep:blanc',v3Rond(0,0,0.045,10),Hc-0.012,Hc,1);return;}
     if(T==='tableau'){P('rep:blanc',-W,W,-D,D,1.2,1.85);return;}
     if(T==='applique'){P('rep:blanc',-0.08,0.08,-0.04,0.04,1.8,1.95);return;}
@@ -9610,7 +9850,9 @@ function v3Equipement(B,it,lv,i,y0,H,haut,coupe){
     [-w*0.28,0,w*0.28].forEach(x=>{v3Chaise(P,x,-D-0.28,1);v3Chaise(P,x,D+0.28,-1);});break;} /* les chaises de la 2D, trois de chaque côté */
   case 'bureau':{P('eq:bois',-W,W,-D,D,0.72,0.75);P('eq:bois',-W,-W+0.03,-D,D,0,0.72);P('eq:bois',W-0.03,W,-D,D,0,0.72);P('eq:bois',-W+0.03,W-0.03,-D,-D+0.02,0.35,0.72);
     const yc=D+0.285;C('eq:anthracite',v3Rond(0,yc,0.24,12),0.03,0.05,1);C('eq:anthracite',v3Rond(0,yc,0.025,8),0.05,0.42,1);C('eq:tissu',v3Rond(0,yc,0.23,14),0.42,0.49,1);P('eq:tissu',-0.2,0.2,D+0.47,D+0.52,0.52,0.98);break;}
-  case 'escalier':{const up=state.levels[i+1],mt=up?(v3.altitudes[i+1]+0.012)-(y0+sol):stairCalc(it,lv).rise;const r=v3Escalier(B,it,lv,i,R,mt);if(r)v3.registre.escaliers.push(r);break;}
+  case 'escalier':{const up=state.levels[i+1],mt=up?(v3.altitudes[i+1]+0.012)-(y0+sol):stairCalc(it,lv).rise;
+    /* D74 : en visite, la volée monte entière jusqu'au plancher du dessus (elle n'est plus tranchée au plafond) */
+    const Re=v3.mode==='visite'&&i===v3.niveau?v3Repere(it.x,it.y,it.rot,y0+sol,null):R,r=v3Escalier(B,it,lv,i,Re,mt);if(r)v3.registre.escaliers.push(r);break;}
   case 'poteau':{P(v3MatStruct(it),-W,W,-D,D,0,haut-sol);break;}
   case 'poutre':{const e=Math.max(0.2,Math.min(0.4,h*1.25));P(v3MatStruct(it),-W,W,-D,D,Hc-e,Hc);break;} /* sous le plafond, sa retombée */
   case 'velux':{const f=0.06;P('eq:anthracite',-W,W,-D,-D+f,Hc-0.06,Hc);P('eq:anthracite',-W,W,D-f,D,Hc-0.06,Hc);P('eq:anthracite',-W,-W+f,-D+f,D-f,Hc-0.06,Hc);P('eq:anthracite',W-f,W,-D+f,D-f,Hc-0.06,Hc);
@@ -9655,22 +9897,25 @@ function v3TriUV(s,a,b,c,n,ua,ub,uc){const ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2
   const cx=uy*vz-uz*vy,cy=uz*vx-ux*vz,cz=ux*vy-uy*vx;if(cx*cx+cy*cy+cz*cz<1e-16)return;
   if(cx*n[0]+cy*n[1]+cz*n[2]<0){let t=b;b=c;c=t;t=ub;ub=uc;uc=t;}s.pos.push(...a,...b,...c);s.nor.push(...n,...n,...n);(s.uv||(s.uv=[])).push(...ua,...ub,...uc);}
 /* la couverture dessinée (rien à télécharger) : rangs de tuiles décalés, ardoises, joints debout du zinc, gravillons d'un toit plat */
-function v3TextureToit(genre){const N=256,c=document.createElement('canvas');c.width=c.height=N;const g=c.getContext('2d'),h=v3Hasard(genre.length*13+5),d=V3_MATS['toit:'+genre]||V3_MATS['toit:tuile'];
+/* D74 : 512 px pour 3,2 m (la tuile garde sa taille) et un décalage tiré à chaque rang — plus de vagues diagonales à 1,6 m */
+function v3TextureToit(genre){const tuile=genre==='tuile'||genre==='ardoise',N=tuile?512:256,c=document.createElement('canvas');c.width=c.height=N;const g=c.getContext('2d'),h=v3Hasard(genre.length*13+5),d=V3_MATS['toit:'+genre]||V3_MATS['toit:tuile'];
   const teinte=(hex,k)=>{const x=parseInt(hex.slice(1),16),f=y=>Math.max(0,Math.min(255,Math.round(y+k)));return `rgb(${f(x>>16)},${f((x>>8)&255)},${f(x&255)})`;};
   g.fillStyle=d.c;g.fillRect(0,0,N,N);
-  if(genre==='tuile'||genre==='ardoise'){const rang=genre==='tuile'?32:16,larg=genre==='tuile'?32:24,var_=genre==='tuile'?18:10;
-    for(let y=0,r=0;y<N;y+=rang,r++){const dec=r%2?larg/2:0;for(let x=-dec;x<N;x+=larg){g.fillStyle=teinte(d.c,(h()-0.5)*var_);g.fillRect(x,y,larg,rang);g.fillStyle=teinte(d.c,-34);g.fillRect(x,y,1,rang);}
+  if(tuile){const rang=genre==='tuile'?32:16,larg=32,var_=genre==='tuile'?18:10; /* 512 / 32 : le motif se raccorde sans couture */
+    for(let y=0,r=0;y<N;y+=rang,r++){const dec=Math.floor(h()*larg);for(let x=-dec;x<N;x+=larg){g.fillStyle=teinte(d.c,(h()-0.5)*var_);g.fillRect(x,y,larg,rang);g.fillStyle=teinte(d.c,-34);g.fillRect(x,y,1,rang);}
       g.fillStyle=teinte(d.c,-46);g.fillRect(0,y+rang-3,N,3);g.fillStyle=teinte(d.c,16);g.fillRect(0,y,N,1);}}
   else if(genre==='zinc'){for(let x=0;x<N;x+=64){g.fillStyle=teinte(d.c,26);g.fillRect(x,0,3,N);g.fillStyle=teinte(d.c,-30);g.fillRect(x+3,0,2,N);}}
   else{const im=g.getImageData(0,0,N,N),p=im.data;for(let k=0;k<p.length;k+=4){const e=(h()-0.5)*26;p[k]+=e;p[k+1]+=e;p[k+2]+=e;}g.putImageData(im,0,0);}
   const T=window.THREE,tx=new T.CanvasTexture(c);tx.wrapS=tx.wrapT=T.RepeatWrapping;tx.encoding=T.sRGBEncoding;tx.anisotropy=Math.min(8,v3.renderer.capabilities.getMaxAnisotropy());return tx;}
 function v3ToitPossible(){try{return !estPlanFinal()&&(state.chantier||CHANTIER_DEF).bien!=='appartement'&&!!toiture()&&!!toitureGeom();}catch(e){return false;}} /* un appartement n'a pas de toiture (estAppart, sans chantier()) */
-function v3ToitVisible(){const top=state.levels.length-1,lv=state.levels[top];return !!v3.toit&&v3.mode!=='visite'&&v3.niveau===top&&!!lv&&v3.coupe>=(lv.height||2.5)-1e-3&&v3ToitPossible();}
+function v3ToitVisible(){const top=state.levels.length-1,lv=state.levels[top];return !!v3.toit&&v3.mode!=='visite'&&v3.niveau===top&&!!lv&&v3.coupe>=v3HMax(top)-1e-3&&v3ToitPossible();}
 function v3MajToit(){const b=document.getElementById('v3Toit');if(b){b.classList.toggle('on',!!v3.toit);b.setAttribute('aria-pressed',String(!!v3.toit));}}
 /* l'interrupteur : allumé, la 3D montre le dernier niveau, murs entiers, et la toiture dessus ; couper les murs l'éteint */
 function v3ChoisirToit(){v3.toit=!v3.toit;
-  if(v3.toit){const top=state.levels.length-1;if(v3.niveau!==top)v3ChoisirNiveau(top);v3ChoisirCoupe(state.levels[top].height||2.5);v3.toit=true;}
-  v3MajToit();v3Rafraichir();}
+  if(v3.toit){const top=state.levels.length-1;if(v3.niveau!==top)v3ChoisirNiveau(top);v3ChoisirCoupe(v3HMax(top));v3.toit=true;}
+  const b0=v3.groupe?v3Boite().getSize(new window.THREE.Vector3()):null;v3MajToit();v3Rafraichir();
+  /* D74 : la toiture allumée agrandit la maison (le faîtage, le débord) : on recadre, la maison reste entière sous la barre */
+  if(v3.toit&&b0){const b1=v3Boite().getSize(new window.THREE.Vector3());if(b1.y>b0.y+0.05||b1.x>b0.x+0.05||b1.z>b0.z+0.05)v3Cadrer(true);}}
 function v3Pans(G){const R=G.R,X=G.dir==='x',out=[],pan=(gx,gy,s)=>out.push({g:[gx,gy],s});
   const travers=()=>{if(X){pan(0,1,R.y0);pan(0,-1,-R.y1);}else{pan(1,0,R.x0);pan(-1,0,-R.x1);}},
     long=()=>{if(X){pan(1,0,R.x0);pan(-1,0,-R.x1);}else{pan(0,1,R.y0);pan(0,-1,-R.y1);}};
@@ -9698,52 +9943,121 @@ function v3Dalle(B,k,kCote,P,trous,ya,yb){const T=window.THREE;P=v3Direct(P);if(
     const tm=(V3_MATS[k]&&V3_MATS[k].motif)||1;v3TriUV(B(k),[A[0],yb,A[1]],[Bq[0],yb,Bq[1]],[Cq[0],yb,Cq[1]],[0,1,0],[A[0]/tm,A[1]/tm],[Bq[0]/tm,Bq[1]/tm],[Cq[0]/tm,Cq[1]/tm]);v3Tri(B(kCote),[A[0],ya,A[1]],[Bq[0],ya,Bq[1]],[Cq[0],ya,Cq[1]],[0,-1,0]);});
   tout.forEach(C=>{for(let q=0;q<C.length;q++){const a=C[q],b=C[(q+1)%C.length],dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy);if(l<1e-6)continue;const n=[dy/l,0,-dx/l];
     v3Tri(B(kCote),[a[0],ya,a[1]],[b[0],ya,b[1]],[b[0],yb,b[1]],n);v3Tri(B(kCote),[a[0],ya,a[1]],[b[0],yb,b[1]],[a[0],yb,a[1]],n);}});}
-function v3Toiture(){
-  const t=toiture(),G=toitureGeom();if(!t||!G)return null;
-  const T=window.THREE,m=v3.vue,top=state.levels.length-1,lvT=state.levels[top],base=v3.altitudes[top]+(lvT.height||2.5),tan=Math.tan((G.pente||0)*Math.PI/180),EP=V3_TOIT_EP;
-  const seaux={},B=k=>seaux[k]||(seaux[k]={pos:[],nor:[]}),couv='toit:'+(V3_MATS['toit:'+t.couverture]?t.couverture:'tuile');
+/* D74 · la forme de la toiture (connue avant les murs : l'ITE du dernier niveau s'arrête sous le dessous du toit) — chaque pan est
+   un plan z = base + tan·(g·p − s) ; la toiture est le plus bas des pans ; `decoupe` partage un contour en ses régions par pan */
+function v3ToitForme(){const t=toiture(),G=toitureGeom();if(!t||!G)return null;
+  const top=state.levels.length-1,lvT=state.levels[top],base=v3.altitudes[top]+(lvT.height||2.5),tan=Math.tan((G.pente||0)*Math.PI/180);
   const pans=tan>1e-6?v3Pans(G):[],val=(q,p)=>q.g[0]*p[0]+q.g[1]*p[1]-q.s,zb=p=>base+(pans.length?tan*Math.min(...pans.map(q=>val(q,p))):0);
+  return {t,G,top,lvT,base,tan,pans,val,zb,decoupe:C=>v3Decoupe(C,pans)};}
+/* un contour découpé en ses pans : la région où chaque pan est le plus bas */
+function v3Decoupe(C,pans){return pans.length?pans.map((q,k)=>{let E=C;pans.forEach((r,j)=>{if(j!==k&&E.length>2)E=v3Couper(E,q.g[0]-r.g[0],q.g[1]-r.g[1],q.s-r.s);});return {C:E,q,k};}).filter(x=>x.C.length>2):[{C,q:null,k:-1}];}
+function v3Toiture(){
+  const F=v3.toitF||v3ToitForme();if(!F)return null;const {t,G,top,lvT,base,tan,pans,val,zb,decoupe}=F;
+  const T=window.THREE,m=v3.vue,EP=V3_TOIT_EP;
+  const seaux={},B=k=>seaux[k]||(seaux[k]={pos:[],nor:[]}),couv='toit:'+(V3_MATS['toit:'+t.couverture]?t.couverture:'tuile');
   const normale=q=>{if(!q)return [0,1,0];const x=[-tan*q.g[0],1,-tan*q.g[1]],l=Math.hypot(x[0],x[1],x[2]);return x.map(c=>c/l);};
-  /* un contour découpé en ses pans : la région où chaque pan est le plus bas */
-  const decoupe=C=>pans.length?pans.map((q,k)=>{let E=C;pans.forEach((r,j)=>{if(j!==k&&E.length>2)E=v3Couper(E,q.g[0]-r.g[0],q.g[1]-r.g[1],q.s-r.s);});return {C:E,q,k};}).filter(x=>x.C.length>2):[{C,q:null,k:-1}];
   const contour=(G.toitPoly&&G.toitPoly.length>2?G.toitPoly:[v(G.ox0,G.oy0),v(G.ox1,G.oy0),v(G.ox1,G.oy1),v(G.ox0,G.oy1)]).map(p=>[p.x,p.y]);
-  const reg={forme:G.forme,pente:G.pente,dir:G.dir,base,ep:EP,pans:0,pignons:0,parties:0,velux:0,couverture:couv.slice(5)};
+  const reg={forme:G.forme,pente:G.pente,dir:G.dir,base,ep:EP,pans:0,pignons:0,parties:0,velux:0,couverture:couv.slice(5),ite:0,appentis:0};
   /* la texture de la couverture : u le long de l'égout, v en remontant le rampant (les rangs de tuiles sont parallèles à l'égout) */
   const tm=V3_MATS[couv].motif||1,cs=Math.cos((G.pente||0)*Math.PI/180)||1,uv=q=>q?(p=>[(-q.g[1]*p[0]+q.g[0]*p[1])/tm,val(q,p)/cs/tm]):(p=>[p[0]/tm,p[1]/tm]);
   decoupe(contour).forEach(({C,q,k})=>{v3Nappe(B,couv,'toit:rive',C,zb,EP,normale(q),(a,b)=>{if(!q)return false;const mid=[(a[0]+b[0])/2,(a[1]+b[1])/2];return pans.some((r,j)=>j!==k&&Math.abs(val(r,mid)-val(q,mid))<1e-6);},uv(q));reg.pans++;});
   /* les pignons : chaque mur extérieur du dernier niveau (son corps et ses raccords) monte jusque sous les pans */
-  if(pans.length){const corps=[];
-    lvT.walls.forEach(w=>{if(isVirtual(w)||!wallDrawn(w,m)||!isExteriorWall(w,lvT))return;const tw=wallT(w),Lw=wallLen(w);if(tw<=0||Lw<1e-4)return;
-      const u=norm(sub(w.b,w.a)),hh=mul(perp(u),tw/2),off=wallOff(w),Pa=add(w.a,off),Pb=add(w.b,off);corps.push([add(Pa,hh),add(Pb,hh),sub(Pb,hh),sub(Pa,hh)].map(p=>[p.x,p.y]));});
-    noeudsJonction(lvT,m).forEach(({ends,hull})=>{if(ends.some(e=>isExteriorWall(e.w,lvT)))corps.push(hull.map(p=>[p.x,p.y]));});
-    corps.forEach(C=>decoupe(C).forEach(x=>{reg.pignons+=v3Remplir(B,'toit:pignon',x.C,base,zb);}));}
+  if(pans.length){
+    v3CorpsExt(lvT,m).forEach(C=>decoupe(C).forEach(x=>{reg.pignons+=v3Remplir(B,'toit:pignon',x.C,base,zb);}));
+    /* D74 : l'isolation par l'extérieur monte avec eux, jusque sous les pans — et s'arrête sous le dessous du toit à l'égout
+       (v3ConstruireNiveau l'a arrêtée au plus bas de son dessous : on la complète de là) */
+    (v3.registre.iteToit||[]).forEach(e=>decoupe(e.quad.map(p=>[p.x,p.y])).forEach(x=>{reg.ite+=v3Remplir(B,e.cle,x.C,e.y,zb);}));}
   /* les fenêtres de toit du dernier niveau, posées dans le pan */
   lvT.items.forEach(it=>{if(it.type!=='velux'||!itemDrawn(it,m))return;const c=Math.cos(it.rot||0),s=Math.sin(it.rot||0),Wv=(it.w||ITEMS.velux.w)/2,Dv=(it.h||ITEMS.velux.h)/2,pt=(x,y)=>[it.x+c*x-s*y,it.y+s*x+c*y];
     const q=pans.length?pans.reduce((a,r)=>val(r,[it.x,it.y])<val(a,[it.x,it.y])?r:a):null,n=normale(q);
     v3Nappe(B,'toit:velux','toit:velux',[pt(-Wv,-Dv),pt(Wv,-Dv),pt(Wv,Dv),pt(-Wv,Dv)],p=>zb(p)+EP-0.01,0.06,n,null);
     v3Nappe(B,'toit:verre','toit:velux',[pt(-Wv+0.06,-Dv+0.06),pt(Wv-0.06,-Dv+0.06),pt(Wv-0.06,Dv-0.06),pt(-Wv+0.06,Dv-0.06)],p=>zb(p)+EP+0.05,0.006,n,null);reg.velux++;});
-  /* les parties basses : une dalle au haut des murs du niveau, percée de l'emprise de ce qui le couvre */
-  partiesToiture().forEach(pa=>{if(pa.principale||pa.li>=top||!pa.poly||pa.poly.length<3)return;const lvi=state.levels[pa.li];if(!lvi)return;
-    const y=v3.altitudes[pa.li]+(lvi.height||2.5)+V3_PLANCHER-V3_JOINT;let trou=null;
-    for(let j=pa.li+1;j<=top;j++){const r=toitureRect(j);if(r&&r.poly&&r.poly.length>2&&(!trou||Math.abs(polyArea(r.poly))>Math.abs(polyArea(trou))))trou=r.poly;}
-    if(trou&&!trou.every(q=>pointIn(q,pa.poly)))return; /* un étage en porte-à-faux : on ne dessine pas ce qu'on ne sait pas */
-    v3Dalle(B,couv,'toit:rive',pa.poly.map(p=>[p.x,p.y]),trou?[trou.map(p=>[p.x,p.y])]:[],y,y+0.18);reg.parties++;});
-  const g=new T.Group();g.userData={kind:'toit',niveau:top};v3Maillages(seaux,g,top,'toit');
+  /* les parties basses (D74 : v3PartieBasse) */
+  partiesToiture().forEach(pa=>{if(pa.principale||pa.li>=top||!pa.poly||pa.poly.length<3||!state.levels[pa.li])return;if(v3PartieBasse(B,pa,couv,m,top,reg))reg.parties++;});
+  const g=new T.Group();g.userData={kind:'toit',niveau:top};v3Maillages(seaux,g,top); /* D74 : chaque maillage garde son genre (l'ITE remontée est un doublage) */
   v3.registre.toit=reg;return g;}
+/* les corps des murs extérieurs d'un niveau et leurs raccords, en contours ([[x,y],…]) */
+function v3CorpsExt(lv,m){const corps=[];
+  lv.walls.forEach(w=>{if(isVirtual(w)||!wallDrawn(w,m)||!isExteriorWall(w,lv))return;const tw=wallT(w),Lw=wallLen(w);if(tw<=0||Lw<1e-4)return;
+    const u=norm(sub(w.b,w.a)),hh=mul(perp(u),tw/2),off=wallOff(w),Pa=add(w.a,off),Pb=add(w.b,off);corps.push([add(Pa,hh),add(Pb,hh),sub(Pb,hh),sub(Pa,hh)].map(p=>[p.x,p.y]));});
+  noeudsJonction(lv,m).forEach(({ends,hull})=>{if(ends.some(e=>isExteriorWall(e.w,lv)))corps.push(hull.map(p=>[p.x,p.y]));});
+  return corps;}
+/* D74 · une partie basse de toiture (un niveau que l'étage ne couvre pas, partiesToiture) : son contour au débord MOINS l'étage qui
+   la couvre — décalé du débord sur les façades alignées sur celles du dessous (plus de bandeau de tuiles de 30 cm au pied de
+   l'étage), à son nu ailleurs (le toit bas vient contre la façade). Plate : en étanchéité (toit:plat), jamais en tuiles à plat.
+   Sinon un appentis adossé à l'étage, à la pente de la partie, dans la couverture du toit : chaque façade de l'étage qui la
+   borde donne un pan descendant vers le dehors, qui passe par l'arête extérieure du haut des murs du dessous ; la couverture est
+   le plus bas des pans (un arêtier dans l'angle) ; les murs extérieurs du dessous montent jusque dessous. L'étage doit être
+   convexe et posé dans l'emprise : sinon (porte-à-faux, étage en L), on ne dessine pas ce qu'on ne sait pas. */
+function v3PartieBasse(B,pa,couv,m,top,reg){
+  const li=pa.li,deb=(toiture()||{}).debord??0.3;let jc=-1,aj=0;
+  for(let j=li+1;j<=top;j++){const r=toitureRect(j);const a=r&&r.poly?Math.abs(polyArea(r.poly)):0;if(a>aj){aj=a;jc=j;}}
+  const A=v3Direct(pa.poly.map(p=>[p.x,p.y]));if(A.length<3)return false;
+  const Rj=jc>=0?toitureRect(jc):null,Ri=toitureRect(li),Pj=Rj&&Rj.C?contourDecale(Rj.C,0):null,Pi=Ri&&Ri.C?contourDecale(Ri.C,0):null;
+  const base=v3.altitudes[li+1]-V3_JOINT,forme=pa.forme||'mono',plat=forme==='plat'||!(pa.pente>0.5);let tan=Math.tan((pa.pente||0)*Math.PI/180);
+  const kTop=plat?'toit:plat':couv;
+  if(!Pj){v3Dalle(B,kTop,'toit:rive',A,[],base,base+0.18);return true;}
+  /* l'étage, direct ; chaque arête décalée du débord si elle prolonge une façade du dessous */
+  let E=v3Direct(Pj.map(p=>[p.x,p.y]));const N=E.length;if(N<3)return false;
+  const conv=E.every((p,k)=>{const a=E[(k+N-1)%N],b=E[(k+1)%N];return (p[0]-a[0])*(b[1]-p[1])-(p[1]-a[1])*(b[0]-p[0])>=-1e-9;});
+  if(!conv||!E.every(p=>pointIn(v(p[0],p[1]),pa.poly)||Pi&&Pi.some(q=>Math.hypot(q.x-p[0],q.y-p[1])<0.05)))return false;
+  const Iq=Pi?v3Direct(Pi.map(p=>[p.x,p.y])):[],aligne=(a,b)=>Iq.some((c,k)=>{const d=Iq[(k+1)%Iq.length],ux=d[0]-c[0],uy=d[1]-c[1],l=Math.hypot(ux,uy);if(l<1e-6)return false;
+    const dist_=p=>Math.abs((p[0]-c[0])*uy-(p[1]-c[1])*ux)/l;return dist_(a)<0.02&&dist_(b)<0.02;});
+  const lignes=E.map((a,k)=>{const b=E[(k+1)%N],dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy),n=[dy/l,-dx/l],o=aligne(a,b)?deb:0;return {n,c:n[0]*a[0]+n[1]*a[1]+o,o};});
+  /* le contour B (lignes décalées, coins aux intersections) puis les morceaux de A hors de B : hors de l'arête k, dedans des précédentes */
+  const morceaux=[];lignes.forEach((L,k)=>{let C=v3Couper(A,-L.n[0],-L.n[1],-L.c);for(let j=0;j<k&&C.length>2;j++)C=v3Couper(C,lignes[j].n[0],lignes[j].n[1],lignes[j].c);if(C.length>2&&Math.abs(polyArea(C.map(p=>v(p[0],p[1]))))>0.05)morceaux.push({C,k});});
+  if(!morceaux.length)return false;
+  if(plat){morceaux.forEach(x=>v3Dalle(B,kTop,'toit:rive',x.C,[],base,base+0.18));return true;}
+  /* l'appentis : un pan par arête qui a un morceau dehors ; il passe par la face extérieure des murs du dessous (Dmax − débord).
+     Sa pente est celle de la partie — sauf si, si profond, il passerait au-dessus de l'égout de l'étage : il s'y arrête 25 cm
+     dessous (une pente plus faible, dite au registre : pente3d) — on ne dessine pas un toit qui traverse celui du dessus */
+  const ks=[...new Set(morceaux.map(x=>x.k))],pans=ks.map(k=>{const L=lignes[k],Dm=Math.max(...A.map(p=>L.n[0]*p[0]+L.n[1]*p[1]-L.c));return {g:[-L.n[0],-L.n[1]],s:-L.c-(Dm-deb),D:Dm-deb};});
+  const plafondEtage=v3.altitudes[jc]+(state.levels[jc].height||2.5)-0.25,Dmax=Math.max(...pans.map(q=>q.D));if(Dmax>0.1&&base+tan*Dmax>plafondEtage)tan=Math.max(0,(plafondEtage-base)/Dmax);
+  reg.pente3d=+(Math.atan(tan)*180/Math.PI).toFixed(1);
+  const val=(q,p)=>q.g[0]*p[0]+q.g[1]*p[1]-q.s,zb=p=>base+tan*Math.min(...pans.map(q=>val(q,p))),nrm=q=>{const x=[-tan*q.g[0],1,-tan*q.g[1]],l=Math.hypot(x[0],x[1],x[2]);return x.map(c=>c/l);};
+  const tm=V3_MATS[couv].motif||1,cs=Math.cos((pa.pente||0)*Math.PI/180)||1;
+  morceaux.forEach(x=>v3Decoupe(x.C,pans).forEach(({C,q,k})=>{v3Nappe(B,couv,'toit:rive',C,zb,V3_TOIT_EP,nrm(q),(a,b)=>{const mid=[(a[0]+b[0])/2,(a[1]+b[1])/2];return pans.some((r,j)=>j!==k&&Math.abs(val(r,mid)-val(q,mid))<1e-6);},p=>[(-q.g[1]*p[0]+q.g[0]*p[1])/tm,val(q,p)/cs/tm]);}));
+  /* les murs extérieurs du dessous montent jusque sous l'appentis (hors de l'emprise de l'étage) */
+  v3CorpsExt(state.levels[li],m).forEach(C=>lignes.forEach((L,k)=>{let D=v3Couper(C,-L.n[0],-L.n[1],-L.c);for(let j=0;j<k&&D.length>2;j++)D=v3Couper(D,lignes[j].n[0],lignes[j].n[1],lignes[j].c);
+    if(D.length>2)v3Decoupe(D,pans).forEach(y=>{v3Remplir(B,'toit:pignon',y.C,base,zb);});}));
+  reg.appentis+=pans.length;return true;}
 /* ── lumière, ombres, cadrage ── */
 function v3Boite(){const T=window.THREE,b=new T.Box3();if(v3.groupe)v3.groupe.children.forEach(x=>b.expandByObject(x));if(b.isEmpty())b.set(new T.Vector3(-4,0,-4),new T.Vector3(4,2.5,4));return b;}
 function v3Ombres(){const T=window.THREE,b=v3Boite(),c=b.getCenter(new T.Vector3()),R=Math.max(4,b.getSize(new T.Vector3()).length()/2);
-  v3.sol0.position.set(c.x,-0.002,c.z);v3.sol0.scale.set(R*12,R*12,1);
-  const dir=new T.Vector3(-0.35,1.45,0.95).normalize(); /* haut, du côté de la caméra et un peu à sa gauche : les faces vues sont éclairées, les ombres partent derrière */v3.soleil.position.copy(c).addScaledVector(dir,R*3);v3.soleil.target.position.copy(c);
-  const o=v3.soleil.shadow.camera;o.left=-R*1.15;o.right=R*1.15;o.top=R*1.15;o.bottom=-R*1.15;o.near=0.5;o.far=R*7;o.updateProjectionMatrix();v3.aRendre=true;}
+  v3.sol0.position.set(c.x,-0.002,c.z);v3.sol0.scale.set(R*12,R*12,1);v3.ombre={c,R};
+  const o=v3.soleil.shadow.camera;o.left=-R*1.15;o.right=R*1.15;o.top=R*1.15;o.bottom=-R*1.15;o.near=0.5;o.far=R*7;o.updateProjectionMatrix();v3Soleil();v3.aRendre=true;}
+/* D74 · le soleil suit la caméra (vue aérienne) : haut (50°), 30° à gauche de l'œil — les faces vues sont toujours éclairées, les
+   ombres partent derrière, de quelque côté qu'on tourne. En visite, il reste où la vue aérienne l'a laissé (il n'entre que par
+   les baies). La carte d'ombre suit (le cadre d'ombre est une boîte de rayon R autour du centre) */
+function v3Soleil(){if(!v3.soleil||!v3.ombre||!v3.cam)return;const T=window.THREE,{c,R}=v3.ombre;
+  if(v3.mode==='maquette'&&!v3.anim||!v3.soleilAz){const t=v3.ctl?v3.ctl.target:c,o=v3.cam.position.clone().sub(t);v3.soleilAz=Math.atan2(o.x,o.z)-30*Math.PI/180;}
+  const az=v3.soleilAz,el=V3_LUM.soleilEl*Math.PI/180,dir=new T.Vector3(Math.sin(az)*Math.cos(el),Math.sin(el),Math.cos(az)*Math.cos(el));
+  v3.soleil.position.copy(c).addScaledVector(dir,R*3);v3.soleil.target.position.copy(c);v3.soleil.target.updateMatrixWorld();v3.aRendre=true;}
+/* D74 · le cadrage : la boîte du niveau (ses 8 coins projetés) tient dans la zone utile — la scène moins la barre d'outils (et 12 px),
+   6 % de marge de chaque côté ; trois-quarts, l'orientation du plan. On ajuste la distance et on recentre en quelques passes. */
+function v3CadragePose(){const T=window.THREE,b=v3Boite(),c=b.getCenter(new T.Vector3()),cv3=v3.renderer.domElement,W=cv3.clientWidth||1,H=cv3.clientHeight||1;
+  const br=document.getElementById('v3Barre'),hb=br&&br.getClientRects().length?Math.max(0,Math.min(H*0.35,br.getBoundingClientRect().bottom-cv3.getBoundingClientRect().top+12)):56;
+  const zx0=-1+0.12,zx1=1-0.12,zy1=1-2*(hb/H)-0.08,zy0=-1+0.12,cx=(zx0+zx1)/2,cy=(zy0+zy1)/2,lx=zx1-zx0,ly=Math.max(0.3,zy1-zy0);
+  const coins=[];for(let k=0;k<8;k++)coins.push(new T.Vector3(k&1?b.max.x:b.min.x,k&2?b.max.y:b.min.y,k&4?b.max.z:b.min.z));
+  const y=v3.altitudes[v3.niveau]||0,dir=new T.Vector3().setFromSpherical(new T.Spherical(1,0.88,0.42)),cam=v3.cam.clone();cam.fov=V3_FOV.maquette;cam.aspect=W/H;cam.near=0.05;cam.far=2000;cam.updateProjectionMatrix();
+  const R=Math.max(3,Math.hypot(b.max.x-b.min.x,b.max.z-b.min.z)/2),t=new T.Vector3(c.x,y+0.4,c.z);let d=R/Math.sin(cam.fov*Math.PI/360)*0.9;
+  const q=new T.Vector3();
+  for(let it=0;it<8;it++){cam.position.copy(t).addScaledVector(dir,d);cam.lookAt(t);cam.updateMatrixWorld();
+    let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;coins.forEach(p=>{q.copy(p).project(cam);x0=Math.min(x0,q.x);x1=Math.max(x1,q.x);y0=Math.min(y0,q.y);y1=Math.max(y1,q.y);});
+    const k=Math.max((x1-x0)/lx,(y1-y0)/ly);
+    /* recentrer : la cible glisse dans le plan de l'écran (à sa distance, une unité d'écran vaut tan(fov/2)·d) */
+    const hy=Math.tan(cam.fov*Math.PI/360)*d,hx=hy*cam.aspect,ex=((x0+x1)/2-cx)*hx,ey=((y0+y1)/2-cy)*hy;
+    const right=new T.Vector3().setFromMatrixColumn(cam.matrixWorld,0),up=new T.Vector3().setFromMatrixColumn(cam.matrixWorld,1);
+    t.addScaledVector(right,ex).addScaledVector(up,ey);d*=Math.max(0.5,Math.min(2,k));if(Math.abs(k-1)<0.01&&Math.abs(ex)+Math.abs(ey)<0.01)break;}
+  cam.position.copy(t).addScaledVector(dir,d);return {p:cam.position.clone(),t};}
 function v3Cadrer(doux){if(!v3.ctl)return;
   if(v3.mode==='visite'&&v3.vis&&v3.vis.entree){const E=v3.vis.entree;Object.assign(v3.vis,{x:E.x,z:E.z,yaw:E.yaw,pitch:-0.06});v3.glisse=null;v3Regard();v3PieceIci(true); /* D73 : en visite, retour à l'entrée */
     if(doux)try{v3.renderer.domElement.focus({preventScroll:true});}catch{}return;}
-  const T=window.THREE,b=v3Boite(),c=b.getCenter(new T.Vector3()),sz=b.getSize(new T.Vector3());
-  const y=v3.altitudes[v3.niveau]||0,R=Math.max(3,Math.hypot(sz.x,sz.z)/2),fv=v3.cam.fov*Math.PI/180,f=Math.min(fv,2*Math.atan(Math.tan(fv/2)*(v3.cam.aspect||1))); /* D73 : l'angle le plus étroit (la largeur, sur un écran en hauteur) */
-  const d=R/Math.sin(f/2)*0.98,s=new T.Spherical(d,0.88,0.42);
-  v3.ctl.target.set(c.x,y+0.4,c.z);v3.cam.position.copy(v3.ctl.target).add(new T.Vector3().setFromSpherical(s));v3Profondeur();
-  v3.cam.lookAt(v3.ctl.target);v3.ctl.update();v3.aRendre=true;if(doux)try{v3.renderer.domElement.focus({preventScroll:true});}catch{}}
+  const P=v3CadragePose();
+  const poser=()=>{v3.ctl.target.copy(P.t);v3.cam.position.copy(P.p);v3Profondeur();v3.cam.lookAt(v3.ctl.target);v3.ctl.update();v3Soleil();v3.aRendre=true;};
+  /* D74 : demandé à la main (Recentrer, double-clic dans le vide), on y glisse en 400 ms */
+  if(doux&&v3.mode==='maquette'&&!v3Calme()){const fin=v3PoseAerienne(P.p,P.t);v3Animer(()=>fin,400,poser);}else poser();
+  if(doux)try{v3.renderer.domElement.focus({preventScroll:true});}catch{}}
 /* ── clavier : Échap ou 3 rendent le plan ; les flèches tournent, + et − rapprochent ; Ctrl Z / Y passent (le plan change, la
    3D suit) ; rien d'autre n'atteint le plan caché derrière ── */
 function v3Clavier(e){
@@ -9755,7 +10069,8 @@ function v3Clavier(e){
   /* D73 · la visite : ZQSD (WASD) et les flèches tant qu'elles sont enfoncées, Maj pour aller plus vite */
   if(v3.mode==='visite'&&seul&&V3_TOUCHES.includes(e.code)){e.preventDefault();v3.touches.add(e.code);if(!/^Shift/.test(e.code))v3.glisse=null;return true;}
   /* une pièce à choisir : Entrée prend celle du centre de la vue (ou la plus grande) */
-  if(v3.choix&&seul&&e.key==='Enter'&&!(e.target.closest&&e.target.closest('button,input,select,a[href]'))){e.preventDefault();v3EntrerVisite(v3PieceCentre());return true;}
+  if(v3.choix&&seul&&e.key==='Enter'&&!(e.target.closest&&e.target.closest('button,input,select,a[href]'))){e.preventDefault();const h=v3PieceCentre();v3EntrerVisite(h?h.roomId:null);return true;} /* D74 : par la pièce — devant sa porte */
+  if(v3.anim&&v3.mode==='maquette'&&seul&&(e.key.startsWith('Arrow')||/^[+=\-]$/.test(e.key)))v3FinAnim(); /* la main reprend la caméra */
   if(v3.mode==='maquette'&&v3.ctl&&seul&&e.key.startsWith('Arrow')){e.preventDefault();const T=window.THREE,off=v3.cam.position.clone().sub(v3.ctl.target),s=new T.Spherical().setFromVector3(off),pas=e.shiftKey?0.3:0.1;
     if(e.key==='ArrowLeft')s.theta-=pas;if(e.key==='ArrowRight')s.theta+=pas;if(e.key==='ArrowUp')s.phi=Math.max(0.05,s.phi-pas);if(e.key==='ArrowDown')s.phi=Math.min(v3.ctl.maxPolarAngle,s.phi+pas);
     v3.cam.position.copy(v3.ctl.target).add(off.setFromSpherical(s));v3.ctl.update();v3.aRendre=true;return true;}
@@ -9771,64 +10086,112 @@ function v3Clavier(e){
    monte : on change de niveau dans la barre. Rien de tout cela n'écrit dans le plan. */
 function v3ChoisirMode(m,ev){
   if(m!=='visite'){v3QuitterVisite();return;}
-  if(isMobile()||!v3.renderer||v3.mode==='visite')return;
-  if(ev&&ev.detail===0){if(!v3EntrerVisite(v3PieceCentre())){const el=document.getElementById('v3Info');if(el)el.innerHTML='Aucune pièce fermée à visiter';}return;} /* au clavier (Entrée ou Espace sur le bouton) : directement dans la pièce du centre */
+  if(isMobile()||!v3.renderer||v3.mode==='visite'||v3.etat)return;
+  if(ev&&ev.detail===0){const h=v3PieceCentre();if(!v3EntrerVisite(h?h.roomId:null)){const el=document.getElementById('v3Info');if(el)el.innerHTML='Aucune pièce fermée à visiter';}return;} /* au clavier (Entrée ou Espace sur le bouton) : directement dans la pièce du centre — D74 : devant sa porte */
   if(v3.choix)return;
   v3.choix=true;v3.el.classList.add('choix');v3Barre();v3MajAide();}
-function v3QuitterVisite(fermeture){if(v3.mode!=='visite'&&!v3.choix)return;const etait=v3.mode==='visite';
-  v3.mode='maquette';v3.choix=false;v3.vis=null;v3.glisse=null;v3.survol=null;v3.touches.clear();v3Surligner(null);
+function v3QuitterVisite(fermeture){if(v3.mode!=='visite'&&!v3.choix)return;const etait=v3.mode==='visite',de=etait&&v3.cam?v3Pose():null;
+  v3.mode='maquette';v3.choix=false;v3.vis=null;v3.glisse=null;v3.survol=null;v3.touches.clear();v3Surligner(null);v3.anim=null;
   if(v3.el){v3.el.classList.remove('visite','choix');if(v3.renderer)v3.renderer.domElement.classList.remove('surPiece');}
   if(v3.cam&&etait){v3.cam.fov=V3_FOV.maquette;v3.cam.rotation.order='XYZ';if(v3.camMaquette){v3.cam.position.copy(v3.camMaquette.p);v3.ctl.target.copy(v3.camMaquette.t);}v3.cam.updateProjectionMatrix();}
   if(v3.ctl){v3.ctl.enabled=true;if(etait){v3.cam.lookAt(v3.ctl.target);v3.ctl.update();v3Profondeur();}}
   v3Lumiere();
   if(fermeture)return;
-  v3Barre();v3MajAide();v3Rafraichir();v3.aRendre=true;}
-/* entrer : `c` est un point au sol ({x, y, niveau}) ou l'identifiant d'une pièce construite */
+  v3Barre();v3MajAide();v3Rafraichir();v3.aRendre=true;
+  /* D74 : on remonte des yeux à la vue aérienne laissée (500 ms) */
+  if(etait&&de&&!v3Calme()){const fin=v3Pose();v3.cam.position.copy(de.p);v3.cam.quaternion.copy(de.q);v3.cam.fov=de.fov;v3.cam.updateProjectionMatrix();v3Animer(()=>fin,500,()=>{v3.ctl.update();v3Profondeur();v3Soleil();});}}
+/* la pose des yeux du visiteur (sans toucher la caméra) */
+function v3PoseYeux(){const T=window.THREE,V=v3.vis;return {p:new T.Vector3(V.x,(v3.altitudes[v3.niveau]||0)+V3_YEUX,V.z),q:new T.Quaternion().setFromEuler(new T.Euler(V.pitch,V.yaw,0,'YXZ')),fov:V3_FOV.visite};}
+/* entrer : `c` est un point au sol ({x, y, niveau}, un clic) ou l'identifiant d'une pièce construite (son nom, le clavier).
+   D74 : un clic dans un meuble ou contre un mur entre au point libre le plus proche (50 cm des murs, hors des meubles) ; par la
+   pièce, on entre devant sa porte, le regard vers ce qui la meuble ; on glisse de la vue aérienne aux yeux en 500 ms */
 function v3EntrerVisite(c){
   if(!v3.ouvert||!v3.renderer||!v3.groupe||isMobile())return false;
-  if(c!=null&&typeof c!=='object'){const q=(v3.registre.sols||[]).find(x=>x.roomId===c);c=q?{x:q.x,y:q.y,niveau:q.niveau}:null;}
+  let parPiece=false;
+  if(c!=null&&typeof c!=='object'){const q=(v3.registre.sols||[]).find(x=>x.roomId===c);c=q?{x:q.x,y:q.y,niveau:q.niveau,roomId:q.roomId}:null;parPiece=true;}
   if(!c||!state.levels[c.niveau!=null?c.niveau:v3.niveau])return false;
+  const de=v3.mode!=='visite'?v3Pose():null;
   if(v3.mode!=='visite')v3.camMaquette={p:v3.cam.position.clone(),t:v3.ctl.target.clone()};
   /* on regarde où regardait la maquette, à l'horizontale */
   const d=v3.ctl.target.clone().sub(v3.cam.position),yaw=v3.mode==='visite'&&v3.vis?v3.vis.yaw:Math.atan2(-d.x,-d.z);
   const dy=(v3.altitudes[c.niveau]||0)-(v3.altitudes[v3.niveau]||0);if(c.niveau!=null&&c.niveau!==v3.niveau&&v3.camMaquette&&dy){v3.camMaquette.p.y+=dy;v3.camMaquette.t.y+=dy;}
-  v3.mode='visite';v3.choix=false;if(c.niveau!=null)v3.niveau=c.niveau;v3.toit=false;v3.survol=null;v3.glisse=null;
+  v3.mode='visite';v3.choix=false;if(c.niveau!=null)v3.niveau=c.niveau;v3.toit=false;v3.survol=null;v3.glisse=null;v3.anim=null;
   v3.vis={x:c.x,z:c.y,yaw,pitch:-0.06,entree:null,piece:null};
   v3.ctl.enabled=false;v3.cam.fov=V3_FOV.visite;v3.cam.near=0.05;v3.cam.far=150;v3.cam.updateProjectionMatrix();
   v3Surligner(null);v3.el.classList.remove('choix');v3.el.classList.add('visite');
-  v3Lumiere();v3Barre();v3Rafraichir();v3Repousser();
-  /* entré d'un clic, on regarde où regardait la maquette ; sinon (clavier, niveau, plus grande pièce), ou face à un mur à
-     moins de 2 m : vers le côté le plus profond de la pièce */
-  if(!c.mesh||v3Degage(v3.vis.x,v3.vis.z,v3.vis.yaw,true)<2){let best=v3.vis.yaw,bd=-1;for(let k=0;k<36;k++){const a=yaw+k*Math.PI/18,dd=v3Degage(v3.vis.x,v3.vis.z,a,true);if(dd>bd+0.05){bd=dd;best=a;}}v3.vis.yaw=best;} /* la profondeur jusqu'aux murs, portes et baies comprises : on regarde la pièce, pas le dehors */
+  v3Lumiere();v3Barre();v3Rafraichir();
+  const niv=v3.niveau,pose=parPiece&&c.roomId?v3PoseDePiece(c.roomId,niv):null;
+  if(pose){Object.assign(v3.vis,{x:pose.x,z:pose.z,yaw:pose.yaw});v3Repousser();}
+  else{const L=v3PointLibre(v3.vis.x,v3.vis.z,c.roomId,niv),bouge=!!L&&Math.hypot(L.x-v3.vis.x,L.z-v3.vis.z)>0.02;if(L){v3.vis.x=L.x;v3.vis.z=L.z;}v3Repousser();
+    /* entré d'un clic loin des murs et des meubles, on regarde où regardait la vue aérienne ; sinon (clavier, plus grande pièce,
+       point déplacé), ou face à un mur à moins de 2 m : vers le côté le plus profond de la pièce (portes et baies comprises) */
+    if(!c.mesh||bouge||v3Degage(v3.vis.x,v3.vis.z,v3.vis.yaw,true)<2)v3.vis.yaw=v3PlusProfond(v3.vis.x,v3.vis.z,yaw);}
   v3.vis.entree={x:v3.vis.x,z:v3.vis.z,yaw:v3.vis.yaw};v3Regard();v3PieceIci(true);v3MajAide();
+  if(de&&!v3Calme()){v3.cam.position.copy(de.p);v3.cam.quaternion.copy(de.q);v3.cam.fov=de.fov;v3.cam.updateProjectionMatrix();v3Animer(v3PoseYeux,500,()=>v3Regard());}
   try{v3.renderer.domElement.focus({preventScroll:true});}catch{}
   return true;}
+/* la direction la plus profonde vue d'un point (jusqu'au premier mur, même au-dessus d'une porte) */
+function v3PlusProfond(x,z,yaw0){let best=yaw0,bd=-1;for(let k=0;k<36;k++){const a=yaw0+k*Math.PI/18,dd=v3Degage(x,z,a,true);if(dd>bd+0.05){bd=dd;best=a;}}return best;}
+/* la distance d'un point aux obstacles d'une liste (0 dedans) */
+function v3DistObst(x,z,Lst){let m=Infinity;const p={x,y:z};for(const o of Lst){if(x<o.x0-m||x>o.x1+m||z<o.y0-m||z>o.y1+m)continue;if(pointIn(p,o.poly))return 0;const P=o.poly;for(let k=0;k<P.length;k++)m=Math.min(m,distSeg(p,P[k],P[(k+1)%P.length]));}return m;}
+/* D74 · un point libre : à 50 cm au moins des murs, à 30 cm des meubles, sur le sol de la pièce ; le plus proche du point voulu */
+function v3PointLibre(x,z,roomId,i){const S=(v3.registre.sols||[]).filter(q=>q.niveau===i&&(!roomId||q.roomId===roomId)&&q.poly);
+  const dans=(px,pz)=>!S.length||S.some(q=>pointIn({x:px,y:pz},q.poly)&&!(q.trousP||[]).some(t=>pointIn({x:px,y:pz},t)));
+  const libre=(px,pz)=>v3DistObst(px,pz,v3.obst)>=V3_LIBRE&&v3DistObst(px,pz,v3.meubles)>=0.3&&dans(px,pz);
+  if(libre(x,z))return {x,z};
+  for(let r=0.1;r<=4.001;r+=0.1){const n=Math.max(8,Math.round(2*Math.PI*r/0.1));for(let k=0;k<n;k++){const a=k/n*Math.PI*2,px=x+Math.cos(a)*r,pz=z+Math.sin(a)*r;if(libre(px,pz))return {x:px,z:pz};}}
+  return null;}
+/* D74 · l'entrée par la pièce : à 60 cm dans la pièce, devant sa porte principale (la plus large de ses portes, à défaut un passage,
+   une porte-fenêtre), le regard vers le centre de ses équipements — à défaut de son sol : le cadrage d'une photo d'agence */
+function v3PoseDePiece(roomId,i){
+  const lv=state.levels[i],S=(v3.registre.sols||[]).find(q=>q.roomId===roomId&&q.niveau===i);if(!lv||!S||!S.poly)return null;
+  const P=S.poly,m=v3.vue,f=v3Faces(lv,m).find(x=>x.room&&x.room.id===roomId),murs=new Set(f?(f.edges||[]).map(e=>e&&e.wall).filter(Boolean):[]);
+  const prio=o=>{const k=(OPENINGS[o.type]||{}).kind;return k==='door'||k==='door2'||k==='slide'?(isExtType(o.type)?2:3):k==='gap'?2.5:k==='doorwin'||k==='bay'?1:-1;};
+  const cand=lv.openings.filter(o=>murs.has(o.wallId)&&opDrawn(o,m)&&prio(o)>=0).sort((a,b)=>prio(b)-prio(a)||(b.w||0)-(a.w||0));
+  const its=lv.items.filter(it=>itemDrawn(it,m)&&ITEMS[it.type]&&!ITEMS[it.type].elec&&it.type!=='escalier'&&pointIn(v(it.x,it.y),P));
+  let cx=0,cy=0,A=0;for(let k=0;k<P.length;k++){const a=P[k],b=P[(k+1)%P.length],cr=a.x*b.y-b.x*a.y;A+=cr;cx+=(a.x+b.x)*cr;cy+=(a.y+b.y)*cr;}
+  const cible=its.length?{x:its.reduce((s,it)=>s+it.x,0)/its.length,y:its.reduce((s,it)=>s+it.y,0)/its.length}:Math.abs(A)>1e-9?{x:cx/(3*A),y:cy/(3*A)}:{x:S.x,y:S.y};
+  for(const o of cand){const w=lv.walls.find(x=>x.id===o.wallId);if(!w)continue;const u=norm(sub(w.b,w.a)),n=perp(u),P0=add(w.a,mul(sub(w.b,w.a),o.t)),C=add(P0,wallOff(w)),t=wallT(w);
+    for(const sg of [1,-1]){const Q=add(C,mul(n,sg*(t/2+v3DblCote(w,sg,P0,m)+0.6)));if(!pointIn(Q,P))continue;
+      const L=v3PointLibre(Q.x,Q.y,roomId,i)||{x:Q.x,z:Q.y},dx=cible.x-L.x,dz=cible.y-L.z,y0=Math.atan2(-n.x*sg,-n.y*sg);
+      /* vers la cible, à 35° au plus de l'axe de la porte : le mur de la porte n'entre pas dans l'image */
+      let dyw=Math.hypot(dx,dz)>0.5?Math.atan2(-dx,-dz)-y0:0;while(dyw>Math.PI)dyw-=2*Math.PI;while(dyw<-Math.PI)dyw+=2*Math.PI;const yaw=y0+Math.max(-0.61,Math.min(0.61,dyw));
+      return {x:L.x,z:L.z,yaw,porte:o.id};}}
+  return null;}
 /* la distance libre devant soi (vue de dessus, jusqu'à la première tranche pleine ; 30 m au plus) ; `tout` : jusqu'au premier
-   mur, même au-dessus d'une porte ou sous une baie (la profondeur de la pièce) */
-function v3Degage(x,z,yaw,tout){const dx=-Math.sin(yaw),dz=-Math.cos(yaw);let best=30;
-  for(const o of (tout?v3.obstTout:v3.obst)){const P=o.poly;for(let k=0;k<P.length;k++){const a=P[k],b=P[(k+1)%P.length],ex=b.x-a.x,ey=b.y-a.y,den=dx*ey-dz*ex;if(Math.abs(den)<1e-9)continue;
-    const t=((a.x-x)*ey-(a.y-z)*ex)/den,u=((a.x-x)*dz-(a.y-z)*dx)/den;if(t>0&&u>=0&&u<=1&&t<best)best=t;}}
-  return best;}
-/* la lumière : la visite est plus claire que la maquette (on y est à l'ombre des murs) */
-function v3Lumiere(){if(!v3.ciel)return;const vis=v3.mode==='visite';v3.ciel.intensity=vis?0.95:0.7;v3.soleil.intensity=vis?0.5:0.6;v3.aRendre=true;}
+   mur, même au-dessus d'une porte ou sous une baie (la profondeur de la pièce) ; D74 `meubles` : les meubles hauts comptent */
+function v3Degage(x,z,yaw,tout,meubles){return v3Sonde(x,z,yaw,tout,meubles).d;}
+function v3Sonde(x,z,yaw,tout,meubles){const dx=-Math.sin(yaw),dz=-Math.cos(yaw);let best=30,tx=0,tz=0;
+  for(const Lst of meubles?[tout?v3.obstTout:v3.obst,v3.meubles]:[tout?v3.obstTout:v3.obst])for(const o of Lst){const P=o.poly;for(let k=0;k<P.length;k++){const a=P[k],b=P[(k+1)%P.length],ex=b.x-a.x,ey=b.y-a.y,den=dx*ey-dz*ex;if(Math.abs(den)<1e-9)continue;
+    const t=((a.x-x)*ey-(a.y-z)*ex)/den,u=((a.x-x)*dz-(a.y-z)*dx)/den;if(t>0&&u>=0&&u<=1&&t<best){best=t;const l=Math.hypot(ex,ey)||1;tx=ex/l;tz=ey/l;}}}
+  return {d:best,tx,tz};}
+/* la lumière : la visite est plus claire que la vue aérienne (on y est à l'ombre des murs) ; D74 : l'appoint y est plus fort, le
+   soleil n'entre plus que par les baies (les plafonds portent ombre) */
+function v3Lumiere(){if(!v3.ciel)return;const L=v3.mode==='visite'?V3_LUM.visite:V3_LUM.maquette;v3.ciel.intensity=L.ciel;v3.soleil.intensity=L.soleil;(v3.appoint||[]).forEach((x,k)=>{x.intensity=L.appoint[k]||0;});v3.aRendre=true;}
 /* la caméra suit le visiteur : ses yeux à 1,60 m du sol du niveau */
 function v3Regard(){const V=v3.vis;if(!V||!v3.cam)return;v3.cam.position.set(V.x,(v3.altitudes[v3.niveau]||0)+V3_YEUX,V.z);v3.cam.rotation.set(V.pitch,V.yaw,0,'YXZ');v3.cam.updateMatrixWorld();v3.aRendre=true;}
 /* une image de la visite : les touches enfoncées, ou le chemin vers le point cliqué */
 function v3Marcher(dt){const V=v3.vis;if(!V)return false;const K=v3.touches,k=c=>K.has(c);let bouge=false;
   const av=(k('KeyW')||k('ArrowUp')?1:0)-(k('KeyS')||k('ArrowDown')?1:0),lat=(k('KeyD')?1:0)-(k('KeyA')?1:0),rot=(k('ArrowLeft')?1:0)-(k('ArrowRight')?1:0);
-  if(rot){V.yaw+=rot*V3_TOURNE*dt;bouge=true;}
-  if(av||lat){const l=(k('ShiftLeft')||k('ShiftRight')?V3_COURSE:V3_PAS)*dt/(av&&lat?Math.SQRT2:1),s=Math.sin(V.yaw),c=Math.cos(V.yaw);
-    v3Pas((-s*av+c*lat)*l,(-c*av-s*lat)*l);bouge=true;}
+  if(rot){V.yaw+=rot*V3_TOURNE*dt;V.tourne=null;bouge=true;}
+  if(av||lat){const l=(k('ShiftLeft')||k('ShiftRight')?V3_COURSE:V3_PAS)*dt/(av&&lat?Math.SQRT2:1),s=Math.sin(V.yaw),c=Math.cos(V.yaw);let fw=av*l,mx=0,mz=0;V.tourne=null;
+    /* D74 · la sonde devant : en avançant, on s'arrête à 45 cm d'un mur ou d'un meuble haut — le reste du pas glisse le long */
+    if(fw>0){const h=v3Sonde(V.x,V.z,V.yaw,false,true);if(h.d-V3_FACE<fw){const ok=Math.max(0,h.d-V3_FACE),reste=fw-ok,pr=-s*h.tx-c*h.tz;fw=ok;mx=h.tx*pr*reste;mz=h.tz*pr*reste;}}
+    v3Pas(-s*fw+c*lat*l+mx,-c*fw-s*lat*l+mz);bouge=true;}
   else if(v3.glisse){const g=v3.glisse,dx=g.x-V.x,dz=g.z-V.z,l=Math.hypot(dx,dz);
-    if(l<0.02)v3.glisse=null;else{const a=Math.min(l,(g.v||2.4)*dt),x0=V.x,z0=V.z;v3Pas(dx/l*a,dz/l*a);if(Math.hypot(V.x-x0,V.z-z0)<a*0.25)v3.glisse=null; /* arrêté par un mur */bouge=true;}}
+    if(l<0.02){v3.glisse=null;v3Arrivee();}else{const a=Math.min(l,(g.v||2.4)*dt),x0=V.x,z0=V.z;v3Pas(dx/l*a,dz/l*a);if(Math.hypot(V.x-x0,V.z-z0)<a*0.25){v3.glisse=null;v3Arrivee();} /* arrêté par un mur */bouge=true;}}
+  else if(V.tourne!=null){let d=V.tourne-V.yaw;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;const pas=3*dt;if(Math.abs(d)<=pas){V.yaw=V.tourne;V.tourne=null;}else V.yaw+=Math.sign(d)*pas;bouge=true;}
   if(bouge){v3Regard();v3PieceIci();}
   return bouge;}
+/* D74 : arrivé d'un clic au sol, face à un mur à moins d'un mètre : on se tourne vers le côté le plus profond */
+function v3Arrivee(){const V=v3.vis;if(!V||v3.glisseMolette)return;if(v3Degage(V.x,V.z,V.yaw,true,true)<1){const y=v3PlusProfond(V.x,V.z,V.yaw);if(Math.abs(y-V.yaw)>1e-3)V.tourne=y;}}
 /* un pas, par tranches de 8 cm (un mur de 7 cm ne se traverse pas d'un coup), puis hors des murs */
 function v3Pas(dx,dz){const V=v3.vis;if(!V)return;const l=Math.hypot(dx,dz),n=Math.max(1,Math.ceil(l/0.08));for(let k=0;k<n;k++){V.x+=dx/n;V.z+=dz/n;v3Repousser();}}
-/* hors des murs : le cercle du visiteur ne recouvre aucune tranche pleine ; il glisse le long d'un mur au lieu de s'y coller */
+/* hors des murs : le cercle du visiteur ne recouvre aucune tranche pleine — D74 : ni aucun meuble haut ; il glisse le long d'un
+   mur au lieu de s'y coller */
 function v3Repousser(){const V=v3.vis;if(!V)return;const R=V3_RAYON;
   for(let it=0;it<4;it++){let pousse=false;
-    for(const o of v3.obst){if(V.x<o.x0-R||V.x>o.x1+R||V.z<o.y0-R||V.z>o.y1+R)continue;
+    for(const Lst of [v3.obst,v3.meubles])for(const o of Lst){if(V.x<o.x0-R||V.x>o.x1+R||V.z<o.y0-R||V.z>o.y1+R)continue;
       const P=o.poly,p={x:V.x,y:V.z};let best=null;
       for(let k=0;k<P.length;k++){const a=P[k],b=P[(k+1)%P.length],ex=b.x-a.x,ey=b.y-a.y,L2=ex*ex+ey*ey,t=L2>1e-12?Math.max(0,Math.min(1,((p.x-a.x)*ex+(p.y-a.y)*ey)/L2)):0,cx=a.x+ex*t,cy=a.y+ey*t,dd=Math.hypot(p.x-cx,p.y-cy);
         if(!best||dd<best.d)best={d:dd,x:cx,y:cy,nx:ey,ny:-ex};}
@@ -9837,10 +10200,14 @@ function v3Repousser(){const V=v3.vis;if(!V)return;const R=V3_RAYON;
       V.x=best.x+ux*(R+1e-4);V.z=best.y+uy*(R+1e-4);pousse=true;}
     if(!pousse)break;}}
 /* les obstacles du niveau montré : les tranches pleines aux genoux ou à la taille ; en visite, la trémie de l'escalier qui
-   monte du dessous aussi (on ne marche pas dans le vide : elle a son garde-corps, même si le plan ne le dessine pas) */
+   monte du dessous aussi (on ne marche pas dans le vide : elle a son garde-corps). D74 : les meubles hauts, à part (v3.meubles) */
 function v3Obstacles(){const y=v3.altitudes[v3.niveau]||0,lv=state.levels[v3.niveau],bb=P=>{const xs=P.map(p=>p.x),ys=P.map(p=>p.y);return {poly:P,x0:Math.min(...xs),x1:Math.max(...xs),y0:Math.min(...ys),y1:Math.max(...ys)};};
   const ici=((v3.registre&&v3.registre.obstacles)||[]).filter(o=>Math.abs(o.y0-y)<1e-6);v3.obst=ici.filter(o=>V3_GENOU.some(h=>o.z0<h&&o.z1>h)).map(o=>bb(o.poly));v3.obstTout=ici.map(o=>bb(o.poly));
-  if(v3.mode==='visite'&&lv)v3Tremies(lv,v3.niveau,v3.vue).forEach(P=>{if(P.length>2)v3.obst.push(bb(P));});}
+  if(v3.mode==='visite'&&lv)v3Tremies(lv,v3.niveau,v3.vue).forEach(P=>{if(P.length>2)v3.obst.push(bb(P));});
+  v3.meubles=[];if(lv)lv.items.forEach(it=>{const d=ITEMS[it.type];if(!d||!itemDrawn(it,v3.vue))return;const c=Math.cos(it.rot||0),s=Math.sin(it.rot||0),W_=(x,y)=>v(it.x+c*x-s*y,it.y+s*x+c*y);
+    /* l'escalier qui monte d'ici : ses volées et son palier (on ne marche pas dans ses marches ; on change de niveau dans la barre) */
+    if(it.type==='escalier'){if(v3.mode==='visite')stairGeom(it,lv).rects.forEach(r=>{if(r.circle){const P=[];for(let k=0;k<16;k++){const a=k/16*Math.PI*2;P.push(W_(r.x+r.w/2+Math.cos(a)*r.w/2,r.y+r.h/2+Math.sin(a)*r.h/2));}v3.meubles.push(bb(P));}else v3.meubles.push(bb([W_(r.x,r.y),W_(r.x+r.w,r.y),W_(r.x+r.w,r.y+r.h),W_(r.x,r.y+r.h)]));});return;}
+    if(!V3_MEUBLES.includes(it.type))return;const W=(it.w||d.w)/2,D=(it.h||d.h)/2;v3.meubles.push(bb([[-W,-D],[W,-D],[W,D],[-W,D]].map(([a,b])=>W_(a,b))));});}
 /* le sol sous un point d'un niveau (la pièce où l'on est) */
 function v3SolSous(x,z,i){if(!v3.groupe)return null;const T=window.THREE,rc=v3.rcBas||(v3.rcBas=new T.Raycaster()),y=v3.altitudes[i]||0;
   rc.set(new T.Vector3(x,y+1.2,z),new T.Vector3(0,-1,0));rc.near=0;rc.far=1.5;const sols=[];
@@ -9859,16 +10226,25 @@ function v3SolNdc(nx,ny){if(!v3.groupe||!v3.cam)return null;const T=window.THREE
   const u=h.object.userData;if(v3.mode==='visite'&&u.niveau!==v3.niveau)return null;return {x:h.point.x,y:h.point.z,niveau:u.niveau,roomId:u.roomId,nom:u.nom,mesh:h.object};}
 function v3Sol(e){const r=v3.renderer.domElement.getBoundingClientRect();if(!r.width||!r.height)return null;return v3SolNdc((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height)*2+1);}
 /* la pièce survolée, en indigo léger (une copie de son sol, posée dessus) */
-function v3Surligner(me){if(v3.surligne){if(me&&v3.surligne.userData.de===me)return;if(v3.scene)v3.scene.remove(v3.surligne);v3.surligne=null;v3.aRendre=true;}
+/* D74 : l'indigo multiplié sur le parquet donnait du vieux rose — la pièce s'éclaire d'un voile blanc (18 %) et se borde d'un
+   liseré indigo #4F46E5 de 4 cm, posé à 5 mm sur le bord de son sol ; ni l'un ni l'autre ne passe par le rendu filmique */
+function v3Surligner(me){if(v3.surligne){if(me&&v3.surligne.userData.de===me)return;if(v3.scene)v3.scene.remove(v3.surligne);v3.surligne.traverse(x=>{if(x.userData.propre&&x.geometry)x.geometry.dispose();});v3.surligne=null;v3.aRendre=true;}
   if(!me||!window.THREE)return;const T=window.THREE;
-  if(!v3.mats.__survol)v3.mats.__survol=new T.MeshBasicMaterial({color:0x4F46E5,transparent:true,opacity:0.22,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
-  const o=new T.Mesh(me.geometry,v3.mats.__survol);o.userData={kind:'survol',de:me};o.renderOrder=3;v3.scene.add(o);v3.surligne=o;v3.aRendre=true;}
+  if(!v3.mats.__survol)v3.mats.__survol=new T.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.18,depthWrite:false,toneMapped:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+  if(!v3.mats.__lisere)v3.mats.__lisere=new T.MeshBasicMaterial({color:0x4F46E5,toneMapped:false,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3});
+  const g=new T.Group();g.userData={kind:'survol',de:me};const voile=new T.Mesh(me.geometry,v3.mats.__survol);voile.renderOrder=3;voile.userData={kind:'survol'};g.add(voile);
+  const P=me.userData.poly;if(P&&P.length>2){const y=(me.geometry.attributes.position.array[1]||0)+0.005,s3={pos:[],nor:[]};let A=0;for(let k=0;k<P.length;k++){const a=P[k],b=P[(k+1)%P.length];A+=a.x*b.y-b.x*a.y;}const sg=A>0?1:-1;
+    for(let k=0;k<P.length;k++){const a=P[k],b=P[(k+1)%P.length],dx=b.x-a.x,dy=b.y-a.y,l=Math.hypot(dx,dy);if(l<1e-6)continue;const ix=-dy/l*sg*0.04,iy=dx/l*sg*0.04; /* vers l'intérieur */
+      v3Tri(s3,[a.x,y,a.y],[b.x,y,b.y],[b.x+ix,y,b.y+iy],[0,1,0]);v3Tri(s3,[a.x,y,a.y],[b.x+ix,y,b.y+iy],[a.x+ix,y,a.y+iy],[0,1,0]);}
+    const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(s3.pos,3));geo.setAttribute('normal',new T.Float32BufferAttribute(s3.nor,3));
+    const li=new T.Mesh(geo,v3.mats.__lisere);li.renderOrder=4;li.userData={kind:'survol',propre:true};g.add(li);}
+  v3.scene.add(g);v3.surligne=g;v3.aRendre=true;}
 /* le pointeur sur la scène : un clic choisit la pièce (ou, en visite, le point où aller) ; glisser regarde ; la molette avance */
 function v3Pointeurs(c){let bas=null,survolT=0,dernier=null;
   const survoler=()=>{survolT=0;if(!dernier||!v3.ouvert)return;const h=(v3.choix||v3.mode==='visite')?v3Sol(dernier):null;c.classList.toggle('surPiece',!!h);
     if(v3.choix){v3Surligner(h?h.mesh:null);const nom=h?h.nom||'':null;if(nom!==v3.survol){v3.survol=nom;v3Info();}}};
   c.addEventListener('pointerdown',e=>{bas={x:e.clientX,y:e.clientY,t:performance.now(),b:e.button,id:e.pointerId,yaw:v3.vis?v3.vis.yaw:0,pitch:v3.vis?v3.vis.pitch:0,glisse:false};
-    if(v3.mode==='visite'&&e.button===0){try{c.setPointerCapture(e.pointerId);}catch{}v3.glisse=null;}});
+    if(v3.mode==='visite'&&e.button===0){try{c.setPointerCapture(e.pointerId);}catch{}v3.glisse=null;if(v3.vis)v3.vis.tourne=null;}});
   c.addEventListener('pointermove',e=>{
     if(bas&&v3.mode==='visite'&&v3.vis&&e.pointerId===bas.id&&(e.buttons&1)){const dx=e.clientX-bas.x,dy=e.clientY-bas.y;if(!bas.glisse&&Math.hypot(dx,dy)>4)bas.glisse=true;
       if(bas.glisse){const k=0.0045;v3.vis.yaw=bas.yaw+dx*k;v3.vis.pitch=Math.max(-1.3,Math.min(1.3,bas.pitch+dy*k));v3Regard();} /* on attrape la vue : glisser à droite la tourne vers la gauche, comme une photo qu'on fait défiler */
@@ -9878,22 +10254,28 @@ function v3Pointeurs(c){let bas=null,survolT=0,dernier=null;
     if(Math.hypot(e.clientX-b.x,e.clientY-b.y)>5||performance.now()-b.t>700)return;v3Clic(e);});
   c.addEventListener('pointercancel',()=>{bas=null;});
   c.addEventListener('pointerleave',()=>{dernier=null;c.classList.remove('surPiece');if(v3.choix){v3Surligner(null);if(v3.survol!=null){v3.survol=null;v3Info();}}});
-  c.addEventListener('dblclick',e=>{if(v3.mode==='maquette'&&!v3.choix&&!isMobile()){const h=v3Sol(e);if(h){e.preventDefault();v3EntrerVisite(h);}}});
+  /* D74 : un double-clic dans le vide recentre la vue ; sur un sol, il y entre en visite */
+  c.addEventListener('dblclick',e=>{if(v3.mode==='maquette'&&!v3.choix&&!isMobile()&&!v3.etat){const h=v3Sol(e);e.preventDefault();if(h)v3EntrerVisite(h);else v3Cadrer(true);}});
   c.addEventListener('wheel',e=>{if(v3.mode!=='visite'||!v3.vis)return;e.preventDefault();const V=v3.vis,s=-Math.sign(e.deltaY)*0.5;if(!s)return;
-    v3.glisse={x:V.x-Math.sin(V.yaw)*s,z:V.z-Math.cos(V.yaw)*s,v:3};},{passive:false});}
+    v3.glisseMolette=true;V.tourne=null;v3.glisse={x:V.x-Math.sin(V.yaw)*s,z:V.z-Math.cos(V.yaw)*s,v:3};},{passive:false});}
 function v3Clic(e){const h=v3Sol(e);
   if(v3.choix){if(h)v3EntrerVisite(h);else{const el=document.getElementById('v3Info');if(el)el.innerHTML='Clique sur le sol d\'une pièce';}return;}
-  if(v3.mode==='visite'&&h)v3.glisse={x:h.x,z:h.y,v:2.4};}
+  if(v3.mode==='visite'&&h&&v3.vis){v3.glisseMolette=false;v3.vis.tourne=null;
+    /* D74 : on vise à travers les meubles — on s'arrête à 60 cm du mur (ou du meuble) au-delà du point visé, jamais le nez contre */
+    const V=v3.vis,dx=h.x-V.x,dz=h.y-V.z,l=Math.hypot(dx,dz);let x=h.x,z=h.y;
+    if(l>0.05){const yaw=Math.atan2(-dx,-dz),au=v3Degage(h.x,h.y,yaw,false,true);if(au<V3_ARRIVEE){const r=Math.min(l,V3_ARRIVEE-au);x-=dx/l*r;z-=dz/l*r;}}
+    v3.glisse={x,z,v:2.4};}}
 /* ── D73 · plein écran : la 3D sur toute la fenêtre ; l'écran entier aussi quand le navigateur le permet (une page intégrée
    peut le refuser : la fenêtre suffit alors) ── */
 function v3BasculerPlein(on){if(on==null)on=!v3.plein;on=!!on;if(on===v3.plein)return;v3.plein=on;document.body.classList.toggle('v3plein',on);
   if(on){v3.pleinNatif=false;try{if(document.fullscreenEnabled&&!document.fullscreenElement&&document.documentElement.requestFullscreen){v3.pleinNatif=true;const pr=document.documentElement.requestFullscreen();if(pr&&pr.catch)pr.catch(()=>{v3.pleinNatif=false;});}}catch{v3.pleinNatif=false;}}
   else{const nat=v3.pleinNatif;v3.pleinNatif=false;try{if(nat&&document.fullscreenElement&&document.exitFullscreen){const pr=document.exitFullscreen();if(pr&&pr.catch)pr.catch(()=>{});}}catch{}}
-  v3Barre();v3Taille();}
+  v3Barre();v3Taille();if(v3.mode==='maquette'&&!v3.choix&&v3.groupe)v3Cadrer();} /* D74 : la scène change de forme, la maison reste entière */
 /* ── D73 · la barre d'état : l'aide du moment (une ligne), et la pièce où l'on est ── */
 function v3AideTexte(){const tactile=(()=>{try{return matchMedia('(pointer:coarse)').matches;}catch{return false;}})(),court=!!v3.el&&v3.el.clientWidth>0&&v3.el.clientWidth<780; /* étroite, l'aide garde l'essentiel */
   if(v3.mode==='visite')return tactile?'<b>Glisser</b> : regarder · <b>toucher le sol</b> : y aller · <b>Vue aérienne</b> : en sortir':`<kbd>${esc(v3.zqsd)}</kbd> ou <b>flèches</b> : marcher · <b>glisser</b> : regarder · <b>clic au sol</b> : y aller`+(court?'':' · <kbd>Maj</kbd> : plus vite · <kbd>Échap</kbd> : vue aérienne');
   if(v3.choix)return court?'<b>Clique dans une pièce</b> pour y entrer · <kbd>Entrée</kbd> : celle du centre':'<b>Clique dans une pièce</b> pour la visiter à hauteur d\'yeux · <kbd>Entrée</kbd> : la pièce au centre · <kbd>Échap</kbd> : annuler';
+  if(v3.etat)return ''; /* D74 : sans scène, pas de geste à dire (le message du milieu dit quoi faire) */
   if(isMobile()||tactile)return '<b>Un doigt</b> : tourner · <b>deux doigts</b> : zoomer et déplacer';
   return '<b>Glisser</b> : tourner · <b>clic droit</b> : déplacer · <b>molette</b> : zoomer · <b>double-clic</b>'+(court?' : visiter':' dans une pièce : la visiter · <kbd>Échap</kbd> : retour au plan');}
 function v3MajAide(){const a=document.getElementById('v3Aide');if(!a)return;const h=toucheMac(v3AideTexte());if(a.innerHTML!==h){a.innerHTML=h;a.title=a.textContent;}v3Info();}
@@ -9907,6 +10289,7 @@ function v3Etat(){const R=v3.registre||{murs:[],trous:[],sols:[]};let maillages=
     menuiseries:(R.menuiseries||[]).slice(),equipements:(R.equipements||[]).slice(),escaliers:(R.escaliers||[]).slice(),toit:R.toit||null, /* D72 */
     mode:v3.mode,choix:v3.choix,plein:v3.plein,plafonds:(R.plafonds||[]).slice(),obstacles:v3.obst.length,images:v3.images, /* D73 */
     visiteur:v3.vis?{x:v3.vis.x,z:v3.vis.z,yaw:v3.vis.yaw,pitch:v3.vis.pitch,piece:v3.vis.piece,yeux:v3.cam.position.y-(v3.altitudes[v3.niveau]||0),fov:v3.cam.fov}:null,
+    anim:!!v3.anim,travaux:!!v3.trav,meubles:v3.meubles.length,retours:(R.retours||[]).slice(),dalles:(R.dalles||[]).slice(),gardecorps:(R.gardecorps||[]).slice(),hsp:(v3.hspN||[]).map(h=>h&&h.max), /* D74 */
     memoire:v3.renderer?{geometries:v3.renderer.info.memory.geometries,textures:v3.renderer.info.memory.textures,programmes:(v3.renderer.info.programs||[]).length}:null};}
 /* D73 · la mesure du rendu : n images de suite, la caméra faisant le tour du niveau (en visite, le visiteur tourne sur
    lui-même) ; on attend la carte graphique à la fin (lecture d'un pixel) : le temps d'une image, ce qu'elle tient par seconde */
