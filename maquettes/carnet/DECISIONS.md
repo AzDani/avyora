@@ -4593,3 +4593,113 @@ une au changement, Ctrl Z) ; une erreur de construction qui ne casse pas la 2D ;
 réseau, il le dit et sort en 0 avec un avertissement. Batterie complète (22 + `planfinal` 579/579 + `vue3d`), finition,
 couverture et vitest (170 tests) verts, lancés seuls ; `lib/` non touché. Vu à l'écran à 1 440 × 900 et 1 024 × 768 :
 l'exemple avant et après, la maison de 94 m² (plan type, Plan final), la maison de 120 m² sur deux niveaux, le plan réel.
+
+## D72 · La vue 3D, chantier T2 : les détails — menuiseries, équipements, escalier, toiture (10/10/2026)
+
+**Demande** (suite de D71). Après le socle, les détails : menuiseries (dormant, vitrage, vantaux, porte d'entrée,
+porte-fenêtre, baie coulissante, porte de garage, fenêtre de toit), équipements et mobilier en volumes simples
+reconnaissables à leurs dimensions, escalier en vraies marches avec sa trémie, poteau et poutre, sols selon le revêtement,
+toiture si elle est décrite (masquable), lumière et ombres douces, l'identité AVYORA. Toujours une seule source : le plan.
+
+**Constat** (avant).
+- T1 montrait des trous justes sans menuiserie, une trémie ouverte sans escalier, aucun équipement, aucune toiture.
+- Tout ce qu'il faut est déjà dans la 2D, il suffit de le LIRE : la pose (`poseOf`), la tapée (`dormantOf`), l'ouvrant
+  (`ouvrantOf`), le sens (`side`, `hinge`), les volets, la matière (`matDeOuverture`), l'escalier (`stairGeom` : volées,
+  palier, hélicoïdal ; `stairCalc` : la hauteur à monter), la toiture (`toitureGeom` : forme, pente, débord, sens du
+  faîtage, contour au débord ; `partiesToiture`), le matériau d'un poteau ou d'une poutre (`structMat`).
+- Pièges trouvés en chemin :
+  - `interiorSideN` et `dormantOf` lisent le niveau de la 2D (`L()`), pas celui de l'ouverture ; `matDeOuverture` et
+    `estAppart` passent par `chantier()`, qui CRÉE `state.chantier` s'il manque : la 3D aurait écrit l'état.
+  - Une fois les fenêtres posées dans leurs trous et les meubles dans les pièces, les rayons de T1 (le trou vide, le sol
+    sous le repère d'une pièce, la trémie) touchaient d'abord une vitre, une table, une marche.
+  - Dans l'exemple, le lit est contre le mur de la fenêtre : sa tête de lit (0,95 m) passe devant l'appui (0,90 m) et
+    recouvre un radiateur. C'est le plan ; la 3D le montre tel quel.
+  - Murs entiers, le niveau montré s'arrête à son plafond (2,50 m) : les deux dernières marches, dans l'épaisseur du
+    plancher, n'y sont pas ; vues de l'étage, si.
+  - L'exemple est un appartement : pas de toiture, même si on lui en décrit une (`estAppart`).
+
+**Décision.**
+1. *Mêmes règles que T1.* Rien n'est écrit : plus aucun `chantier()` dans le module (la finition et le bien se lisent
+   `(state.chantier||CHANTIER_DEF)`) ; le côté pièce se calcule sur le niveau de l'ouverture (`v3CoteInt`), la tapée
+   aussi (`v3DblCote` : le doublage intérieur du côté pièce, au droit de l'ouverture, dans la vue montrée).
+2. *Des briques simples.* Un solide générique (un contour poussé le long d'un axe), et ses cas : pavé, prisme vertical
+   (les ronds lissés), profil dressé — tous tranchés à la coupe —, versés dans les seaux de matière du niveau : un
+   maillage par matière et par niveau, comme les murs. Le genre d'un maillage vient de sa matière : `menuiserie`,
+   `equipement`, `repere`, `escalier`, `structure`, `toit` (en plus de `mur`, `doublage`, `sol`).
+3. *Menuiseries* (la lecture de `drawOpening`).
+   - Fenêtre, porte-fenêtre, baie : un dormant (profil de 6,5 cm, 5 en alu) sur la profondeur de la tapée, à sa pose —
+     applique : contre la face côté pièce (sans doublage, il déborde de 5 cm sur la face ; avec, il est dans le doublage),
+     tunnel : au milieu, feuillure : côté dehors ; un vantail sous 0,90 m, deux au-delà ; coulissant ou galandage : deux
+     vantaux décalés dans l'épaisseur, qui se recouvrent ; fixe : le vitrage seul. Vitrage translucide, sans ombre. Côté
+     dehors, l'appui (le seuil d'une porte-fenêtre ou d'une baie). Volets : roulant = son coffre sous le linteau et ses
+     coulisses ; battants = deux panneaux ouverts contre la façade (devant l'ITE).
+   - Portes : l'huisserie habille le tableau (doublages compris) ; le vantail est OUVERT à 90°, du côté où la porte
+     s'ouvre — ce que la 2D dessine : en coupe, on lit le sens de chaque porte et les passages restent ouverts ;
+     poignée au bout libre ; porte double : deux vantaux ; coulissante : le vantail devant le mur, sous son rail (à
+     galandage, rangé dans la cloison : rien à voir) ; porte d'entrée : son dormant à sa pose, son seuil, son vantail à
+     sa matière ; porte de garage : le tablier FERMÉ dans le tableau, côté dehors, et les joints de ses panneaux.
+   - La matière : celle que retient le chiffrage (PVC blanc, alu anthracite, bois) ; avant travaux, une menuiserie à
+     remplacer n'a pas de matière connue : blanche.
+4. *Équipements.* Chaque modèle d'`ITEMS` a son volume, à ses dimensions (w × h du plan), à ses hauteurs courantes,
+   orienté comme son symbole (le dos en −y) : baignoire (bord de 7 cm, fond, robinetterie côté vidange), douche (receveur,
+   au sol à l'italienne, cabine fermée ; colonne ; la paroi = le trait épais de la 2D), lavabo sur colonne, double vasque
+   sur meuble, WC (cuvette en « D », réservoir), bas de cuisine (socle en retrait, caissons, joints et poignées, plan de
+   travail à 0,90 m), plaque, évier inox et col de cygne, îlot et son débord, réfrigérateur de 1,80 m, lave-vaisselle,
+   lave-linge (hublot), chauffe-eau, chaudière murale, poêle et son conduit jusqu'au plafond, VMC, radiateur à ailettes,
+   sèche-serviettes, split, unité extérieure, lits (cadre, tête de lit, matelas, oreillers, couette), armoire (portes,
+   poignées), canapé (assise, dossier, accoudoirs, coussins), table et ses six chaises (celles de la 2D), bureau et son
+   siège. Les points électriques sont de petits repères (genre à part) : prise à 25 cm, interrupteur à 1,06 m, applique,
+   tableau, spot, plafonnier ou suspension au plafond. Rien au-dessus de la coupe : à 1,20 m, l'armoire et le
+   réfrigérateur sont tranchés comme les murs ; poutre, VMC, split et lumières disparaissent ; murs entiers, tout est là.
+5. *Escalier.* Les marches de `stairGeom` (droit, quart tournant, demi-tour et son palier, hélicoïdal en quartiers autour
+   d'un fût), dans l'ordre de la montée, chacune d'un cran (la hauteur à monter divisée par le nombre de marches + 1),
+   de son sol au sol du niveau du dessus : la dernière un cran dessous. Bois (défaut) : marches de 4,5 cm et limons ;
+   métal : marches bois sur limons acier ; béton : plein. Par la trémie de l'étage, on le voit monter.
+6. *Structure.* Le poteau du sol au plafond (jusqu'au plancher du dessus pour un niveau du dessous) ; la poutre sous le
+   plafond, sa retombée à 1,25 × sa largeur, bornée entre 20 et 40 cm ; la matière de la 2D (acier, bois, béton). La
+   fenêtre de toit : dans son pan quand la toiture est montrée, sinon à sa place sous le plafond.
+7. *Toiture* (une rénovation qui la décrit, hors appartement ; un Plan final n'en a pas). Un interrupteur « Toiture »
+   dans la barre de la 3D, éteint par défaut ; allumé, la maison fermée : dernier niveau, murs entiers ; couper les murs,
+   descendre d'un niveau ou ne plus décrire la toiture l'éteint. La forme vient de `toitureGeom` : chaque pan est un plan
+   qui passe par l'arête extérieure du haut des murs (l'avancée descend sous elle), la toiture est le plus bas des pans,
+   coupée au contour au débord — deux pans, quatre pans (croupes), un pan, plat ; la couverture 25 cm au-dessus, en
+   texture dessinée (rangs de tuiles parallèles à l'égout, ardoises, joints debout du zinc, gravillons d'un toit plat) ;
+   dessous et rives clairs ; les murs extérieurs montent jusque sous les pans (pignons, côté haut d'un pan unique). Une
+   partie basse (un niveau que l'étage ne couvre pas) est posée en plat, percée de l'emprise de ce qui la couvre : la 2D
+   ne lui donne pas de sens de pente ; un étage en porte-à-faux : rien, plutôt qu'un dessin faux.
+8. *Rendu.* La lumière de T1 ; la palette reste sobre (encre, neutres froids, céramique blanche, bois, tissu gris-bleu,
+   couette indigo pâle). La signature de reconstruction compte aussi la toiture et la finition (la matière par défaut
+   des menuiseries en dépend). Mesuré sur la maison de 120 m² : une construction en ~4 ms, 39 maillages, ~4 400 triangles
+   (coupe à 1,20 m), ~5 200 murs entiers.
+
+**Pas fait, et pourquoi.**
+- *La vue Visite* (hauteur d'yeux, ZQSD / flèches, collisions) : chantier suivant.
+- *Garde-corps* de l'escalier et de la trémie, *plinthes, faïence, peinture, plafonds* : le plan ne les décrit pas en
+  volume.
+- *Les parties basses de toiture en pente* : la 2D ne dit pas vers où elles penchent (elles sont posées en plat).
+  *Gouttières, souches de cheminée, isolation des combles* : non.
+- *Portes et volets* sont montrés ouverts (comme la 2D les dessine) ; pas de réglage « fermé ».
+- *La fenêtre de toit sans toiture* reste sous le plafond (murs entiers), comme un spot ou une poutre : lisible, pas
+  réaliste. *Un meuble posé sur un autre* dans le plan (la tête de lit devant l'appui, le radiateur sous le lit de
+  l'exemple) se chevauche aussi en 3D.
+- *Le panneau de droite* reste celui de la 2D ; *le téléphone* sans 3D ; *60 i/s* non mesurables ici (WebGL logiciel,
+  sans carte graphique) : rendu à la demande, ~5 000 triangles, 39 maillages.
+
+**Ce qui ne bouge pas.** Aucune globale renommée ; ajouts : `V3_MATS`, `V3_HAUT`, `V3_TOIT_EP`, `v3EstVerre`,
+`v3MatStruct` et les fonctions `v3…` (Genre, Maillages, Direct, Couper, Solide, TriN, TriUV, Repere, Pt, Pave, Colonne,
+Profil, ProfilY, Rond, Ellipse, RectArr, Marque, Emprise, CoteInt, DblCote, IteCote, MatMenuis, Menuiserie, Robinet,
+Cuisine, Chaise, FormeWC, Echelle, Equipement, Escalier, TextureToit, ToitPossible, ToitVisible, MajToit, ChoisirToit,
+Pans, Nappe, Remplir, Dalle, Toiture) ; `v3Viser` prend en option les genres à viser ; `v3Etat` rend aussi menuiseries,
+équipements, escaliers et toiture. Un id de plus, `v3Toit` (le bouton, dans la barre de la 3D). La 2D, `state`, le
+contrat, `lib/`, les clés `localStorage`, l'ordre `.top → #tools → canvas` : inchangés.
+
+**Contrôles.** `vue3d.mjs`, enrichi (**59 → 84 contrôles**). Les mesures de T1 visent désormais les seuls murs,
+doublages et sols (une vitre dans son trou ne doit pas fausser la mesure du trou, ni une table celle du sol) — rien n'est
+assoupli : ce sont les mêmes mesures, sur le même bâti. Nouveaux, toujours par des rayons : une menuiserie par ouverture ;
+chaque fenêtre ferme son jour jusqu'aux bords, côté pièce en applique, dans l'épaisseur en tunnel, sans cadre plus large
+que le trou côté rue ; chaque porte intérieure a son vantail ouvert du côté où elle s'ouvre, à sa hauteur ; la porte de
+garage fermée ; la matière avant / après ; un volume par équipement, à sa largeur, à sa place, à sa hauteur courante
+(table 0,75, plan 0,90, lit, canapé, baignoire, WC…), tranché par la coupe ; prises et interrupteurs à leur hauteur ;
+l'équipement déposé absent après ; l'escalier marche par marche (15 marches de 17,1 cm), sous la coupe seulement, entier
+vu de l'étage ; poteau et poutre ; la toiture : l'interrupteur, un pan (plan réel, 49 rayons), deux pans avec débord
+(64 rayons, pignons, avancée sous le haut des murs), plate, Ctrl Z, éteinte par la coupe ; l'état intact partout.
