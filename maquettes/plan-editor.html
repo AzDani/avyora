@@ -9023,7 +9023,7 @@ const V3_JOINT=0.02;      /* entre deux niveaux, les murs du dessous s'arrêtent
 const V3_COUPE=1.2;       /* hauteur de coupe par défaut, celle d'un plan d'architecte (réglable de 0,30 m aux murs entiers) */
 const V3_COUL={fond:0xEDEFF5,mur:0xEDEBE6,doublage:0xF1EFE9,coupe:0x1E1B4B,coupeCloison:0x5E5A86,coupeDoublage:0xE9D59A};
 const v3={ouvert:false,charge:null,el:null,renderer:null,scene:null,cam:null,ctl:null,groupe:null,niveau:0,vue:'final',coupe:V3_COUPE,
-  sig:'',aRendre:false,raf:0,mats:{},registre:null,altitudes:[],etat:'',attente:0};
+  sig:'',aRendre:false,raf:0,mats:{},registre:null,altitudes:[],etat:'',attente:0,toit:false};
 /* ── chargement paresseux ── */
 function v3Charger(){
   if(V3_FICHIERS.every(f=>f[1]()))return Promise.resolve();
@@ -9048,7 +9048,7 @@ function v3Ouvrir(){
   if(v3.ouvert||isMobile()||modaleOuverte()||visite)return;
   if(tool==='mur'&&chain.length)endChain(false);
   drag=null;rectMode=null;try{fermerMenus();fermerMenuCtx(false);}catch{}
-  v3.ouvert=true;v3.niveau=Math.max(0,Math.min(state.levels.length-1,state.cur));v3.vue=estPlanFinal()?'existant':'final';
+  v3.ouvert=true;v3.niveau=Math.max(0,Math.min(state.levels.length-1,state.cur));v3.vue=estPlanFinal()?'existant':'final';v3.toit=false;
   v3Dom();v3.el.hidden=false;document.body.classList.add('v3on');v3MajBouton();v3Barre();v3Message('charge');
   v3Charger().then(v3Demarrer,()=>{if(v3.ouvert)v3Message('reseau');});
   suivre('vue_3d',{type:estPlanFinal()?'plan_final':'renovation'});}
@@ -9087,15 +9087,18 @@ function v3Barre(){
   const b=document.getElementById('v3Barre');if(!b)return;
   const nv=state.levels,pf=estPlanFinal(),H=(nv[v3.niveau]||nv[0]).height||2.5,c=Math.min(v3.coupe,H);
   /* refaite seulement si ce qu'elle montre change : la refaire pendant qu'on tire le curseur de coupe le lâcherait */
-  const sg=[nv.map(l=>l.name).join('/'),v3.niveau,v3.vue,pf,H].join('|');if(sg===v3.sigBarre&&b.firstChild)return;v3.sigBarre=sg;
+  const sg=[nv.map(l=>l.name).join('/'),v3.niveau,v3.vue,pf,H,v3ToitPossible()].join('|');if(sg===v3.sigBarre&&b.firstChild)return;v3.sigBarre=sg;
   const niv=nv.length>1?`<div class="v3grp" role="group" aria-label="Niveau montré">${nv.map((l,i)=>`<button type="button" class="${i===v3.niveau?'on':''}" aria-pressed="${i===v3.niveau}" onclick="v3ChoisirNiveau(${i})">${esc(l.name)}</button>`).join('')}</div>`:'';
   const vues=pf?'':`<div class="v3grp" role="group" aria-label="Moment montré">${['existant','final'].map(m=>`<button type="button" class="${v3.vue===m?'on':''}" aria-pressed="${v3.vue===m}" onclick="v3ChoisirVue('${m}')">${esc(nomVue(m))}</button>`).join('')}</div>`;
   const coupe=`<div class="v3grp v3coupe"><label class="v3lbl" for="v3Coupe">Coupe</label><input type="range" id="v3Coupe" min="0.3" max="${H}" step="0.05" value="${c}" aria-valuetext="${v3TexteCoupe(c,H)}" oninput="v3ChoisirCoupe(this.value)"><output id="v3CoupeV" for="v3Coupe">${v3TexteCoupe(c,H)}</output></div>`;
-  b.innerHTML=`<button type="button" class="ib" onclick="v3Fermer()" data-tip="Retour au plan (Échap)">${ico('flecheGauche')}Retour au plan</button>${niv}${vues}${coupe}`;}
-function v3ChoisirNiveau(i){if(i===v3.niveau||!state.levels[i])return;const y0=v3.altitudes[v3.niveau]||0;v3.niveau=i;v3Barre();v3Rafraichir();
+  /* D72 : la toiture d'une rénovation qui la décrit (un Plan final n'en a pas) — un interrupteur, éteint par défaut */
+  const toit=v3ToitPossible()?`<div class="v3grp"><button type="button" id="v3Toit" class="${v3.toit?'on':''}" aria-pressed="${v3.toit}" onclick="v3ChoisirToit()" data-tip="Toiture : la maison fermée, vue du dehors (dernier niveau, murs entiers)">${ico('toit')}Toiture</button></div>`:'';
+  b.innerHTML=`<button type="button" class="ib" onclick="v3Fermer()" data-tip="Retour au plan (Échap)">${ico('flecheGauche')}Retour au plan</button>${niv}${vues}${coupe}${toit}`;}
+function v3ChoisirNiveau(i){if(i===v3.niveau||!state.levels[i])return;const y0=v3.altitudes[v3.niveau]||0;v3.niveau=i;if(i!==state.levels.length-1)v3.toit=false;v3Barre();v3Rafraichir();
   const dy=(v3.altitudes[i]||0)-y0;if(v3.ctl&&dy){v3.ctl.target.y+=dy;v3.cam.position.y+=dy;v3.ctl.update();v3.aRendre=true;}}
 function v3ChoisirVue(m){if(m===v3.vue)return;v3.vue=m;v3Barre();v3Rafraichir();}
 function v3ChoisirCoupe(val){const H=(state.levels[v3.niveau]||{}).height||2.5;v3.coupe=Math.max(0.3,Math.min(H,+val||V3_COUPE));
+  if(v3.toit&&v3.coupe<H-1e-3){v3.toit=false;v3MajToit();} /* D72 : couper les murs, c'est ouvrir la maison : la toiture s'efface */
   const o=document.getElementById('v3CoupeV'),r=document.getElementById('v3Coupe');const t=v3TexteCoupe(v3.coupe,H);if(o)o.textContent=t;if(r){r.setAttribute('aria-valuetext',t);if(Math.abs(+r.value-Math.min(v3.coupe,H))>1e-6)r.value=Math.min(v3.coupe,H);}
   if(!v3.attente)v3.attente=requestAnimationFrame(()=>{v3.attente=0;v3Rafraichir();});}
 /* ── le moteur : scène, caméra, lumière ── */
@@ -9129,15 +9132,16 @@ function v3Boucle(){cancelAnimationFrame(v3.raf);
   v3.raf=requestAnimationFrame(f);}
 function v3Rendre(){if(v3.renderer)v3.renderer.render(v3.scene,v3.cam);}
 /* ── reconstruire, seulement quand le plan (ou un réglage de la 3D) change ── */
-function v3Signature(){return [JSON.stringify(state.levels),workflowDe(state),v3.niveau,v3.vue,v3.coupe].join('|');}
+function v3Signature(){return [JSON.stringify(state.levels),workflowDe(state),v3.niveau,v3.vue,v3.coupe,v3.toit,JSON.stringify(state.toiture||null),(state.chantier||CHANTIER_DEF).finition].join('|');} /* D72 : la toiture et la finition (la matière des menuiseries) aussi */
 function v3Rafraichir(){
   if(!v3.ouvert||!v3.renderer)return;
   if(estPlanFinal()&&v3.vue!=='existant')v3.vue='existant';
   if(!state.levels[v3.niveau])v3.niveau=Math.max(0,state.levels.length-1);
+  if(v3.toit&&!v3ToitPossible()){v3.toit=false;v3MajToit();} /* D72 : la toiture n'est plus décrite (ou le plan est devenu un Plan final) : l'interrupteur s'éteint */
   const s=v3Signature();if(s===v3.sig)return;v3.sig=s;
   try{v3Construire();}catch(e){v3.erreur=e;v3Message('erreur');return;}
   v3Barre();
-  {const nv=state.levels[v3.niveau];v3.renderer.domElement.setAttribute('aria-label','Vue 3D du plan · '+(nv?nv.name:'')+(estPlanFinal()?'':' · '+nomVue(v3.vue))+' · coupe '+v3TexteCoupe(Math.min(v3.coupe,(nv&&nv.height)||2.5),(nv&&nv.height)||2.5));}
+  {const nv=state.levels[v3.niveau];v3.renderer.domElement.setAttribute('aria-label','Vue 3D du plan · '+(nv?nv.name:'')+(estPlanFinal()?'':' · '+nomVue(v3.vue))+' · coupe '+v3TexteCoupe(Math.min(v3.coupe,(nv&&nv.height)||2.5),(nv&&nv.height)||2.5)+(v3.registre.toit?' · toiture':''));}
   if(v3.etat==='vide'||v3.etat===''||v3.etat==='erreur')v3Message(v3.registre.murs.length?null:'vide');
   v3.aRendre=true;}
 function v3Altitudes(){const Y=[];let y=0;state.levels.forEach((lv,i)=>{Y[i]=y;y+=(lv.height||2.5)+V3_PLANCHER;});return Y;}
@@ -9146,10 +9150,11 @@ function v3Construire(){
   const T=window.THREE;
   if(v3.groupe){v3.scene.remove(v3.groupe);v3Liberer(v3.groupe);}
   const g=new T.Group();g.name='plan';
-  v3.altitudes=v3Altitudes();v3.registre={murs:[],trous:[],sols:[],raccords:0,doublages:0};
+  v3.altitudes=v3Altitudes();v3.registre={murs:[],trous:[],sols:[],raccords:0,doublages:0,menuiseries:[],equipements:[],escaliers:[],toit:null};
   for(let i=0;i<=v3.niveau;i++){const lv=state.levels[i],H=lv.height||2.5,cour=i===v3.niveau;
     /* le niveau montré est coupé ; ceux du dessous sont entiers, et leurs murs montent jusqu'au plancher du dessus */
     g.add(v3ConstruireNiveau(lv,i,v3.altitudes[i],H,cour?H:H+V3_PLANCHER-V3_JOINT,cour?Math.min(v3.coupe,H):null,i?-V3_JOINT:0));}
+  if(v3ToitVisible()){const tg=v3Toiture();if(tg)g.add(tg);} /* D72 : la toiture, sur la maison fermée */
   v3.scene.add(g);v3.groupe=g;v3Ombres();}
 function v3Faces(lv,m){if(m===mode()&&facesCache[lv.id])return facesCache[lv.id];const f=detectFaces(lv,m);pairRoomFaces(lv,f,false);return f;}
 /* les trous d'un mur dans une vue : abscisse le long de u (comme cutAtOpenings), hauteurs de l'allège au linteau */
@@ -9181,9 +9186,14 @@ function v3ConstruireNiveau(lv,i,y0,H,haut,coupe,bas){
     const W=lv.walls.find(x=>x.id===bd.w.id)||murReel(bd.w),u=norm(sub(W.b,W.a));v3Extruder(B,bd.quad,u,v3Trous(lv,m,W,u,H),0,H,coupe,'doublage',y0);v3.registre.doublages++;}});
   /* l'isolation par l'extérieur : les bandes que la 2D dessine, sur toute la hauteur de la façade */
   bandesITE(lv,m).forEach(e=>{if(!e.quad)return;v3Extruder(B,e.quad,e.u,v3Trous(lv,m,e.w,e.u,H),bas,haut,coupe,'doublage',y0);v3.registre.doublages++;});
-  Object.keys(seaux).forEach(k=>{const s=seaux[k];if(!s.pos.length)return;const geo=new T.BufferGeometry();
-    geo.setAttribute('position',new T.Float32BufferAttribute(s.pos,3));geo.setAttribute('normal',new T.Float32BufferAttribute(s.nor,3));geo.computeBoundingSphere();
-    const me=new T.Mesh(geo,v3Mat(k));me.castShadow=!/Coupe$/.test(k);me.receiveShadow=true;me.userData={kind:/^doublage/.test(k)?'doublage':'mur',cle:k,niveau:i};grp.add(me);});
+  /* D72 : la menuiserie de chaque ouverture percée (le mur ENREGISTRÉ, comme les trous) */
+  lv.openings.forEach(o=>{if(!opDrawn(o,m))return;const W=lv.walls.find(x=>x.id===o.wallId);if(!W||isVirtual(W)||!wallDrawn(W,m))return;
+    const r=v3Menuiserie(B,lv,W,o,m,y0,H,coupe,i);if(r)v3.registre.menuiseries.push(r);});
+  /* D72 : les équipements, l'escalier, la structure (une fenêtre de toit va dans la toiture quand elle est montrée) */
+  const toitIci=i===state.levels.length-1&&v3ToitVisible();
+  lv.items.forEach(it=>{if(!itemDrawn(it,m)||(toitIci&&it.type==='velux'))return;const mk=v3Marque(seaux);v3Equipement(B,it,lv,i,y0,H,haut,coupe);
+    v3.registre.equipements.push({id:it.id,type:it.type,niveau:i,boite:v3Emprise(seaux,mk)});});
+  v3Maillages(seaux,grp,i);
   v3Sols(lv,i,m,faces,y0,grp);
   return grp;}
 /* un prisme percé : le polygone (plan) découpé le long de u aux bords des trous, chaque tranche montée sur ses hauteurs
@@ -9220,6 +9230,8 @@ function v3Mat(k){if(v3.mats[k])return v3.mats[k];const T=window.THREE;let M;
   else if(k==='cloisonCoupe')M=new T.MeshBasicMaterial({color:V3_COUL.coupeCloison,polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:2});
   else if(k==='doublageCoupe')M=new T.MeshBasicMaterial({color:V3_COUL.coupeDoublage});
   else if(k==='doublage')M=new T.MeshStandardMaterial({color:V3_COUL.doublage,roughness:0.95,metalness:0});
+  else if(V3_MATS[k]&&V3_MATS[k].motif)M=new T.MeshStandardMaterial({map:v3TextureToit(k.slice(5)),roughness:V3_MATS[k].r,metalness:V3_MATS[k].m||0}); /* D72 : la couverture, en texture dessinée */
+  else if(V3_MATS[k]){const d=V3_MATS[k];M=new T.MeshStandardMaterial({color:d.c,roughness:d.r,metalness:d.m||0});if(d.verre){M.transparent=true;M.opacity=d.verre;M.depthWrite=false;}} /* D72 : menuiseries, équipements, toiture */
   else M=new T.MeshStandardMaterial({color:V3_COUL.mur,roughness:0.92,metalness:0});
   return v3.mats[k]=M;}
 /* ── les sols : un par pièce (polyInt), teinte et motif selon le revêtement de la vue ── */
@@ -9270,6 +9282,352 @@ function v3Plancher(P,trous,y,taille){const T=window.THREE,V=p=>new T.Vector2(p.
   const s={pos:[],nor:[]},uv=[];tris.forEach(([a,b,c])=>{const n0=s.pos.length;v3Tri(s,[pts[a].x,y,pts[a].y],[pts[b].x,y,pts[b].y],[pts[c].x,y,pts[c].y],[0,1,0]);
     for(let k=n0;k<s.pos.length;k+=3)uv.push(s.pos[k]/taille,s.pos[k+2]/taille);});
   const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(s.pos,3));geo.setAttribute('normal',new T.Float32BufferAttribute(s.nor,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uv,2));geo.computeBoundingSphere();return geo;}
+/* ═══ D72 · les détails : menuiseries, équipements, escalier, structure, toiture ═══
+   Même règle que le socle : tout vient du plan, rien n'est enregistré. Chaque objet est fait de volumes simples (pavés,
+   prismes, profils), versés dans les seaux de matière de son niveau (un maillage par matière et par niveau). Au niveau
+   coupé, rien au-dessus de la coupe : un meuble haut, un escalier, un dormant sont tranchés comme les murs.
+   Repère d'un équipement : son centre au sol, x le long de sa largeur (w), y le long de sa profondeur (h), le dos en −y,
+   comme drawItem ; d'une ouverture : son centre sur l'axe du corps du mur, x le long du mur, y vers +n, comme drawOpening.
+   Les hauteurs sont les cotes courantes (plan de travail 0,90 m, lavabo 0,86, assise 0,45, table 0,75…). */
+const V3_MATS={
+  'men:pvc':{c:'#F3F3EF',r:0.5},'men:blanc':{c:'#F3F3EF',r:0.5},'men:alu':{c:'#3D414C',r:0.42,m:0.35},'men:bois':{c:'#A47652',r:0.7},
+  'men:verre':{c:'#C4DCE4',r:0.05,m:0.1,verre:0.3},'men:porte':{c:'#D9C4A6',r:0.65},'men:volet':{c:'#8E9BB0',r:0.7},
+  'men:garage':{c:'#D6D9DF',r:0.5,m:0.15},'men:joint':{c:'#A6ABB6',r:0.6},'men:pierre':{c:'#CFCBC2',r:0.85},'men:poignee':{c:'#C9CDD3',r:0.25,m:0.8},
+  'eq:ceramique':{c:'#FAFAF8',r:0.22},'eq:creux':{c:'#D5D9E1',r:0.3},'eq:inox':{c:'#B7BCC4',r:0.32,m:0.65},'eq:bac':{c:'#7F858F',r:0.35,m:0.55},'eq:chrome':{c:'#D5D9DF',r:0.2,m:0.85},
+  'eq:meuble':{c:'#DADCE5',r:0.55},'eq:plan':{c:'#5A5652',r:0.45},'eq:noir':{c:'#25242C',r:0.3},'eq:electro':{c:'#F2F3F5',r:0.35},
+  'eq:bois':{c:'#B48A60',r:0.68},'eq:armoire':{c:'#DCD2C2',r:0.6},'eq:tissu':{c:'#8F94AB',r:0.95},'eq:linge':{c:'#F4F3F0',r:0.95},
+  'eq:couette':{c:'#AEB3D0',r:0.95},'eq:anthracite':{c:'#34363F',r:0.5,m:0.2},'rep:blanc':{c:'#F2F3F5',r:0.35},'rep:noir':{c:'#34363F',r:0.5,m:0.2},'eq:gris':{c:'#C8CBD2',r:0.55},'eq:verre':{c:'#C4DCE4',r:0.05,m:0.1,verre:0.3},
+  'esc:bois':{c:'#B48E66',r:0.65},'esc:beton':{c:'#C6C4BE',r:0.85},'esc:metal':{c:'#4B4F5A',r:0.45,m:0.45},
+  'str:acier':{c:'#4B4F5A',r:0.45,m:0.45},'str:bois':{c:'#A47A53',r:0.7},'str:beton':{c:'#C0BEB8',r:0.85},
+  'toit:tuile':{c:'#B3664B',r:0.85,motif:1.6},'toit:ardoise':{c:'#4C515D',r:0.7,motif:1.2},'toit:zinc':{c:'#8B919A',r:0.45,m:0.4,motif:2},'toit:plat':{c:'#8F8D89',r:0.9,motif:2},
+  'toit:rive':{c:'#E2DFD8',r:0.9},'toit:pignon':{c:V3_COUL.mur,r:0.92},'toit:velux':{c:'#3D414C',r:0.42,m:0.35},'toit:verre':{c:'#C4DCE4',r:0.05,m:0.1,verre:0.3}};
+const v3EstVerre=k=>!!(V3_MATS[k]&&V3_MATS[k].verre);
+/* le genre d'un maillage, d'après sa matière : ce que les rayons des contrôles reconnaissent */
+function v3Genre(k){return /^men:/.test(k)?'menuiserie':/^eq:/.test(k)?'equipement':/^rep:/.test(k)?'repere':/^esc:/.test(k)?'escalier':/^str:/.test(k)?'structure':/^toit:/.test(k)?'toit':/^doublage/.test(k)?'doublage':'mur';}
+/* les maillages d'un groupe de seaux : un par matière ; le verre ne porte ni ne reçoit d'ombre */
+function v3Maillages(seaux,grp,i,genre){const T=window.THREE;
+  Object.keys(seaux).forEach(k=>{const s=seaux[k];if(!s.pos.length)return;const geo=new T.BufferGeometry();
+    geo.setAttribute('position',new T.Float32BufferAttribute(s.pos,3));geo.setAttribute('normal',new T.Float32BufferAttribute(s.nor,3));
+    if(s.uv&&s.uv.length*3===s.pos.length*2)geo.setAttribute('uv',new T.Float32BufferAttribute(s.uv,2));geo.computeBoundingSphere();
+    const verre=v3EstVerre(k),me=new T.Mesh(geo,v3Mat(k));me.castShadow=!/Coupe$/.test(k)&&!verre;me.receiveShadow=!verre;if(verre)me.renderOrder=2;
+    me.userData={kind:genre||v3Genre(k),cle:k,niveau:i};grp.add(me);});}
+/* ── les briques : un contour orienté, un solide, un pavé, un prisme, un profil ── */
+function v3Direct(C){let P=[];C.forEach(p=>{const d=P[P.length-1];if(!d||Math.hypot(d[0]-p[0],d[1]-p[1])>1e-6)P.push(p);});
+  if(P.length>2&&Math.hypot(P[0][0]-P[P.length-1][0],P[0][1]-P[P.length-1][1])<1e-6)P.pop();if(P.length<3)return [];
+  let A=0;for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length];A+=a[0]*b[1]-b[0]*a[1];}if(Math.abs(A)<1e-9)return [];return A<0?P.reverse():P;}
+/* le contour C ([[a,b],…]) gardé du côté a·na + b·nb ≤ c (Sutherland–Hodgman) */
+function v3Couper(C,na,nb,c){const out=[],f=p=>p[0]*na+p[1]*nb-c;
+  for(let i=0;i<C.length;i++){const a=C[i],b=C[(i+1)%C.length],fa=f(a),fb=f(b),ia=fa<=1e-9,ib=fb<=1e-9;if(ia)out.push(a);
+    if(ia!==ib){const t=fa/(fa-fb);out.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t]);}}
+  return out;}
+/* un solide : le contour C (dans le plan (U, V), en m) poussé de W ; O = son origine. U, V unitaires et orthogonaux. */
+function v3Solide(s,C,O,U,V,W,lisse){const P=v3Direct(C);if(P.length<3)return;const lw=Math.hypot(W[0],W[1],W[2]);if(lw<1e-6)return;
+  const X=(p,k)=>[O[0]+U[0]*p[0]+V[0]*p[1]+W[0]*k,O[1]+U[1]*p[0]+V[1]*p[1]+W[1]*k,O[2]+U[2]*p[0]+V[2]*p[1]+W[2]*k],w=[W[0]/lw,W[1]/lw,W[2]/lw];
+  /* les côtés : un contour direct a sa normale sortante en (dy, −dx) dans (U, V) ; lisse (un rond), la normale de chaque sommet
+     est la moyenne de ses deux arêtes */
+  const N=P.map((a,i)=>{const b=P[(i+1)%P.length],dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy)||1;return [(U[0]*dy-V[0]*dx)/l,(U[1]*dy-V[1]*dx)/l,(U[2]*dy-V[2]*dx)/l];});
+  const S=i=>{const a=N[(i-1+P.length)%P.length],b=N[i],m=[a[0]+b[0],a[1]+b[1],a[2]+b[2]],l=Math.hypot(m[0],m[1],m[2])||1;return [m[0]/l,m[1]/l,m[2]/l];};
+  for(let i=0;i<P.length;i++){const j=(i+1)%P.length,a=P[i],b=P[j];if(Math.hypot(b[0]-a[0],b[1]-a[1])<1e-6)continue;const n=N[i];
+    if(lisse){const na=S(i),nb=S(j);v3TriN(s,X(a,0),X(b,0),X(b,1),na,nb,nb,n);v3TriN(s,X(a,0),X(b,1),X(a,1),na,nb,na,n);}
+    else{v3Tri(s,X(a,0),X(b,0),X(b,1),n);v3Tri(s,X(a,0),X(b,1),X(a,1),n);}}
+  const T=window.THREE,m=[-w[0],-w[1],-w[2]];
+  T.ShapeUtils.triangulateShape(P.map(p=>new T.Vector2(p[0],p[1])),[]).forEach(([i,j,k])=>{v3Tri(s,X(P[i],1),X(P[j],1),X(P[k],1),w);v3Tri(s,X(P[i],0),X(P[j],0),X(P[k],0),m);});}
+const V3_HAUT=[0,1,0];
+/* le repère d'un objet : (x, y) du plan, sa rotation, le sol (y0), la coupe au-dessus de ce sol (null : entier) */
+function v3Repere(x,y,rot,y0,coupe){const c=Math.cos(rot||0),s=Math.sin(rot||0);return {o:[x,y0,y],ex:[c,0,s],ey:[-s,0,c],coupe};}
+function v3Pt(R,a,b,z){return [R.o[0]+R.ex[0]*a+R.ey[0]*b,R.o[1]+z,R.o[2]+R.ex[2]*a+R.ey[2]*b];}
+/* un pavé [x0,x1] × [y0,y1] × [z0,z1] du repère, tranché à la coupe */
+function v3Pave(B,k,R,x0,x1,y0,y1,z0,z1){if(R.coupe!=null){if(z0>=R.coupe-1e-4)return;z1=Math.min(z1,R.coupe);}if(z1-z0<1e-4||x1-x0<1e-4||y1-y0<1e-4)return;
+  v3Solide(B(k),[[x0,y0],[x1,y0],[x1,y1],[x0,y1]],v3Pt(R,0,0,z0),R.ex,R.ey,[0,z1-z0,0]);}
+/* un prisme vertical : le contour C ([[x,y],…] du repère) de z0 à z1 */
+function v3Colonne(B,k,R,C,z0,z1,lisse){if(R.coupe!=null){if(z0>=R.coupe-1e-4)return;z1=Math.min(z1,R.coupe);}if(z1-z0<1e-4)return;v3Solide(B(k),C,v3Pt(R,0,0,z0),R.ex,R.ey,[0,z1-z0,0],lisse);}
+/* un triangle aux normales de sommet (na, nb, nc), tourné pour regarder du côté de n */
+function v3TriN(s,a,b,c,na,nb,nc,n){const ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2],vx=c[0]-a[0],vy=c[1]-a[1],vz=c[2]-a[2];
+  const cx=uy*vz-uz*vy,cy=uz*vx-ux*vz,cz=ux*vy-uy*vx;if(cx*cx+cy*cy+cz*cz<1e-16)return;
+  if(cx*n[0]+cy*n[1]+cz*n[2]<0){let t=b;b=c;c=t;t=nb;nb=nc;nc=t;}s.pos.push(...a,...b,...c);s.nor.push(...na,...nb,...nc);}
+/* un profil dressé : le contour C ([[x,z],…]) dans le plan (x, haut), poussé le long de y de y0 à y1 */
+function v3Profil(B,k,R,C,y0,y1){if(R.coupe!=null)C=v3Couper(C,0,1,R.coupe);if(C.length<3||y1-y0<1e-4)return;
+  v3Solide(B(k),C,v3Pt(R,0,y0,0),R.ex,V3_HAUT,[R.ey[0]*(y1-y0),0,R.ey[2]*(y1-y0)]);}
+/* le même dans le plan (y, haut), poussé le long de x de x0 à x1 */
+function v3ProfilY(B,k,R,C,x0,x1){if(R.coupe!=null)C=v3Couper(C,0,1,R.coupe);if(C.length<3||x1-x0<1e-4)return;
+  v3Solide(B(k),C,v3Pt(R,x0,0,0),R.ey,V3_HAUT,[R.ex[0]*(x1-x0),0,R.ex[2]*(x1-x0)]);}
+function v3Rond(cx,cy,r,n){const P=[];for(let k=0;k<n;k++){const a=k/n*Math.PI*2;P.push([cx+Math.cos(a)*r,cy+Math.sin(a)*r]);}return P;}
+function v3Ellipse(cx,cy,rx,ry,n){const P=[];for(let k=0;k<n;k++){const a=k/n*Math.PI*2;P.push([cx+Math.cos(a)*rx,cy+Math.sin(a)*ry]);}return P;}
+function v3RectArr(x0,y0,x1,y1,r,n){r=Math.max(0,Math.min(r,(x1-x0)/2-1e-4,(y1-y0)/2-1e-4));if(r<1e-3)return [[x0,y0],[x1,y0],[x1,y1],[x0,y1]];n=n||3;const P=[];
+  [[x1-r,y0+r,-Math.PI/2],[x1-r,y1-r,0],[x0+r,y1-r,Math.PI/2],[x0+r,y0+r,Math.PI]].forEach(([cx,cy,a0])=>{for(let k=0;k<=n;k++){const a=a0+k/n*Math.PI/2;P.push([cx+Math.cos(a)*r,cy+Math.sin(a)*r]);}});return P;}
+/* ce qu'un objet a versé dans les seaux : sa boîte (monde), pour le registre des contrôles */
+function v3Marque(seaux){const m={};Object.keys(seaux).forEach(k=>{m[k]=seaux[k].pos.length;});return m;}
+function v3Emprise(seaux,mk){let b=null;Object.keys(seaux).forEach(k=>{const p=seaux[k].pos;for(let q=mk[k]||0;q<p.length;q+=3){
+    if(!b)b=[p[q],p[q+1],p[q+2],p[q],p[q+1],p[q+2]];else{b[0]=Math.min(b[0],p[q]);b[1]=Math.min(b[1],p[q+1]);b[2]=Math.min(b[2],p[q+2]);b[3]=Math.max(b[3],p[q]);b[4]=Math.max(b[4],p[q+1]);b[5]=Math.max(b[5],p[q+2]);}}});
+  return b&&b.map(x=>+x.toFixed(4));}
+/* ── les menuiseries : la lecture de drawOpening (pose, tapée, ouvrant, sens, volets), dans le trou du mur ── */
+/* le côté pièce d'un mur, sur SON niveau (interiorSideN lit le niveau de la 2D) */
+function v3CoteInt(w,lv){const a=wallSideInside(w,1,lv),b=wallSideInside(w,-1,lv);return a&&!b?1:b&&!a?-1:1;}
+/* l'épaisseur du doublage intérieur (ITI) ou extérieur (ITE) d'une face s du mur, au droit de P, dans la vue */
+function v3DblCote(w,s,P,m){const io=isoOnSideAt(w,s,P);return io&&io.mode!=='ite'&&isoShownIso(io,m)?doublageOf(io):0;}
+function v3IteCote(w,s,P,m){const io=isoOnSideAt(w,s,P);return io&&io.mode==='ite'&&isoShownIso(io,m)?doublageOf(io):0;}
+/* la matière du cadre : celle que le chiffrage retient (matDeOuverture) ; avant travaux, une menuiserie à remplacer n'a pas
+   de matière connue — blanche */
+function v3MatMenuis(o,m){if(!estPlanFinal()&&m==='existant'&&ost(o)==='remplacer')return 'men:blanc';
+  /* la lecture de matDeOuverture, sans chantier() (qui crée state.chantier s'il manque) : la 3D n'écrit rien */
+  const mats=matsFor(o);if(!mats.length)return 'men:blanc';const def=(state.chantier||CHANTIER_DEF).finition==='premium'?'alu':'pvc',k=mats.includes(o.mat)?o.mat:mats.includes(def)?def:mats[0];
+  return V3_MATS['men:'+k]?'men:'+k:'men:blanc';}
+function v3Menuiserie(B,lv,w,o,m,y0,H,coupe,i){
+  const d=OPENINGS[o.type];if(!d||d.kind==='gap')return null;
+  const t=wallT(w),Lw=wallLen(w);if(t<=0||Lw<1e-4)return null;
+  const u=norm(sub(w.b,w.a)),off=wallOff(w),ow=o.w||d.w,hw=ow/2,z0=Math.max(0,allegeOf(o)||0),z1=Math.min(H,z0+(o.h||d.h));if(z1<z0+0.05||hw<0.05)return null;
+  const P0=add(w.a,mul(u,o.t*Lw)),Q=add(P0,off),R=v3Repere(Q.x,Q.y,Math.atan2(u.y,u.x),y0,coupe);
+  const P=(k,x0,x1,b0,b1,za,zb)=>v3Pave(B,k,R,x0,x1,Math.min(b0,b1),Math.max(b0,b1),za,zb);
+  const k=d.kind,ext=isExtType(o.type),siN=ext?v3CoteInt(w,lv):0,pose=poseOf(o),cadre=v3MatMenuis(o,m),alu=cadre==='men:alu';
+  /* la tapée (dormantOf, sur le niveau de l'ouverture) et le plan du vitrage dans l'épaisseur (y = +n) : applique côté pièce,
+     tunnel au milieu, feuillure côté dehors ; en applique sans doublage, le dormant déborde de lap sur la face */
+  const dblI=ext?v3DblCote(w,siN,P0,m):0,neuf=estPlanFinal()||ost(o)==='creer'||ost(o)==='remplacer';
+  const fd=ext&&pose==='applique'?Math.max(0.03,Math.min(0.18,neuf?(dblI||0.04):(o.dormant||40)/1000)):Math.min(t*0.55,0.055);
+  const yc=!ext?0:pose==='applique'?siN*(t/2+fd/2):pose==='feuillure'?-siN*(t/2-fd/2-0.006):0;
+  const lap=ext&&pose==='applique'&&!dblI?Math.min(0.05,ow*0.1):0,yExt=siN?-siN*(t/2+v3IteCote(w,-siN,P0,m)):0;
+  const reg={id:o.id,type:o.type,wallId:w.id,niveau:i,kind:k,ext,siN,pose:ext?pose:null,yc,fd,z0,z1,w:ow,mat:cadre.slice(4)};
+  const dormant=(pf,bas)=>{const ya=yc-fd/2,yb=yc+fd/2,za=z0>0.01?z0-lap:z0,zt=Math.min(H,z1+lap);
+    P(cadre,-hw-lap,-hw+pf,ya,yb,za,zt);P(cadre,hw-pf,hw+lap,ya,yb,za,zt);P(cadre,-hw+pf,hw-pf,ya,yb,z1-pf,zt);if(bas)P(cadre,-hw+pf,hw-pf,ya,yb,za,z0+bas);};
+  if(k==='win'||k==='bay'||k==='doorwin'){
+    const pf=alu?0.05:0.065,porte=z0<0.01,bas=porte?0.02:pf;dormant(pf,bas);
+    const ov=ouvrantOf(o),jx0=-hw+pf,jx1=hw-pf,jz0=z0+bas,jz1=z1-pf,ps=alu?0.045:0.055,sb=porte?ps*1.8:ps;
+    /* un ouvrant : son cadre et son vitrage (une porte-fenêtre a une traverse basse plus haute) */
+    const vantail=(x0,x1,b,ep)=>{P(cadre,x0,x0+ps,b-ep/2,b+ep/2,jz0,jz1);P(cadre,x1-ps,x1,b-ep/2,b+ep/2,jz0,jz1);P(cadre,x0+ps,x1-ps,b-ep/2,b+ep/2,jz0,jz0+sb);
+      P(cadre,x0+ps,x1-ps,b-ep/2,b+ep/2,jz1-ps,jz1);P('men:verre',x0+ps,x1-ps,b-0.006,b+0.006,jz0+sb,jz1-ps);};
+    if(ov==='fixe')P('men:verre',jx0,jx1,yc-0.006,yc+0.006,jz0,jz1);
+    else if(ov==='coulissant'||ov==='galandage'){const dz=Math.min(fd/4,0.016),rec=ov==='galandage'?0:Math.max(0.03,ow*0.025),s=siN||1; /* deux vantaux décalés dans l'épaisseur, qui se recouvrent au milieu */
+      vantail(jx0,rec,yc-s*dz,2*dz-0.002);vantail(-rec,jx1,yc+s*dz,2*dz-0.002);}
+    else{const nv=ow<0.9?1:2,l=(jx1-jx0)/nv,ep=Math.min(0.06,fd*0.9);for(let q=0;q<nv;q++)vantail(jx0+q*l,jx0+(q+1)*l,yc,ep);}
+    /* l'appui (fenêtre) ou le seuil (porte-fenêtre, baie), côté dehors, jusqu'au dormant */
+    if(siN){const fe=yc-siN*fd/2;if(porte)P('men:pierre',-hw-0.04,hw+0.04,yExt-siN*0.03,fe,0,0.02);else P('men:pierre',-hw-0.04,hw+0.04,yExt-siN*0.045,fe,z0-0.03,z0+0.015);}
+    /* les volets, côté dehors : roulant = son coffre sous le linteau et ses coulisses ; battants = deux panneaux ouverts contre la façade */
+    if(o.volet&&ext){const s2=-siN,tf=t/2+v3IteCote(w,s2,P0,m);
+      if(o.volet==='roulant'){const db=Math.min(0.06,t*0.35);P('men:volet',-hw,hw,s2*t/2,s2*(t/2-db),z1-0.18,z1);P('men:volet',-hw,-hw+0.025,s2*t/2,s2*(t/2-0.03),z0,z1-0.18);P('men:volet',hw-0.025,hw,s2*t/2,s2*(t/2-0.03),z0,z1-0.18);}
+      else{P('men:volet',-ow,-hw-0.005,s2*tf,s2*(tf+0.03),z0,z1);P('men:volet',hw+0.005,ow,s2*tf,s2*(tf+0.03),z0,z1);}
+      reg.volet=o.volet;}
+  }
+  if(k==='door'||k==='door2'||k==='slide'){
+    const side=o.side||1,hinge=o.hinge||1,ent=o.type==='porte_entree',face=s=>s*(t/2+v3DblCote(w,s,P0,m));
+    if(o.type==='garage'){ /* le tablier fermé dans le tableau, côté dehors, et les joints de ses panneaux */
+      const si=siN||1,yt=-si*(t/2-Math.min(0.05,t*0.3));P('men:garage',-hw,hw,yt-0.02,yt+0.02,0,z1);
+      for(let z=0.5;z<z1-0.15;z+=0.5)P('men:joint',-hw+0.02,hw-0.02,yt-si*0.02,yt-si*0.027,z-0.008,z+0.008);reg.tablier=yt;}
+    else{
+      if(ext)dormant(alu?0.05:0.065,0);
+      else{const pf=0.045,ya=face(-1),yb=face(1); /* l'huisserie habille le tableau, doublages compris */
+        P('men:porte',-hw,-hw+pf,ya,yb,0,z1);P('men:porte',hw-pf,hw,ya,yb,0,z1);P('men:porte',-hw+pf,hw-pf,ya,yb,z1-pf,z1);}
+      if(ent&&siN)P('men:pierre',-hw-0.05,hw+0.05,yExt-siN*0.03,yc-siN*fd/2,0,0.02);
+      /* le vantail ouvert à 90°, dressé à la charnière, du côté où la porte s'ouvre — le dessin de la 2D ; sa poignée au bout libre */
+      const kv=ent?cadre:'men:porte',e=ent?0.06:0.04;
+      const feuille=(hx,hg,lw,dy)=>{const xa=Math.min(hx,hx+hg*e),xb=Math.max(hx,hx+hg*e),yp=dy+side*(lw-0.06);P(kv,xa,xb,dy,dy+side*lw,0.01,z1-0.005);
+        P('men:poignee',xa-0.055,xb+0.055,yp,yp-side*0.13,1.0,1.022);};
+      const dy=ext&&pose==='applique'?siN*(t/2+fd):ext?yc:face(side);
+      if(k==='door'){feuille(-hw*hinge,hinge,ow,dy);reg.feuille={dy,side,hinge,e,lw:ow};}
+      else if(k==='door2'){feuille(-hw,1,hw,dy);feuille(hw,-1,hw,dy);reg.feuille={dy,side,e,lw:hw,double:true};}
+      else{const ov=ouvrantOf(o),sto=hinge>0?1:-1,xc=sto*hw;
+        if(ov!=='galandage'){ /* en applique : le vantail glisse devant le mur (à moitié ouvert, comme la 2D), sous son rail */
+          const yF=t/2+v3DblCote(w,side,P0,m),za=Math.min(H,z1+0.03),r0=-sto*(hw+0.03),r1=sto*(hw+0.03+ow);
+          P('men:porte',xc-hw-0.03,xc+hw+0.03,side*(yF+0.008),side*(yF+0.043),0.01,za);P('men:poignee',Math.min(r0,r1),Math.max(r0,r1),side*yF,side*(yF+0.05),za,Math.min(H,za+0.04));}
+        reg.coulisse=ov;}
+    }
+  }
+  return reg;}
+/* ── les équipements : des volumes simples, à leurs dimensions et à leurs hauteurs courantes ── */
+function v3Robinet(P,x,y,z){P('eq:chrome',x-0.015,x+0.015,y,y+0.03,z,z+0.13);P('eq:chrome',x-0.015,x+0.015,y,y+0.12,z+0.1,z+0.13);}
+/* un bas de cuisine : socle en retrait, caissons, plan de travail (jusqu'à yp), joints et poignées des façades (avant en +y) */
+function v3Cuisine(P,x0,x1,yb,yf,zt,yp){yp=yp==null?yf:yp;
+  P('eq:anthracite',x0+0.01,x1-0.01,yb,yf-0.07,0,0.1);P('eq:meuble',x0,x1,yb,yf-0.02,0.1,zt-0.03);P('eq:plan',x0,x1,yb,yp,zt-0.03,zt);
+  const n=Math.max(1,Math.round((x1-x0)/0.6)),l=(x1-x0)/n;
+  for(let q=0;q<n;q++){if(q)P('eq:creux',x0+q*l-0.003,x0+q*l+0.003,yf-0.02,yf-0.017,0.12,zt-0.05);const xm=x0+(q+0.5)*l;P('eq:chrome',xm-0.07,xm+0.07,yf-0.02,yf-0.008,zt-0.13,zt-0.115);}}
+/* une chaise : le dossier en yd, l'assise vers s (+1 : vers +y) */
+function v3Chaise(P,x,yd,s){const y1=yd+s*0.42;
+  [[x-0.18,yd+s*0.03],[x+0.18,yd+s*0.03],[x-0.18,y1-s*0.03],[x+0.18,y1-s*0.03]].forEach(([a,b])=>P('eq:bois',a-0.015,a+0.015,b-0.015,b+0.015,0,0.43));
+  P('eq:bois',x-0.2,x+0.2,Math.min(yd,y1),Math.max(yd,y1),0.43,0.47);P('eq:bois',x-0.2,x+0.2,Math.min(yd,yd+s*0.03),Math.max(yd,yd+s*0.03),0.47,0.88);}
+/* la cuvette d'un WC : le « D » de la 2D (réservoir contre le mur, plus étroite devant) */
+function v3FormeWC(a,y0,y1,y2){const P=[[-a,y0]],bz=(p0,p1,p2,p3,t)=>{const m=1-t;return m*m*m*p0+3*m*m*t*p1+3*m*t*t*p2+t*t*t*p3;};
+  for(let k=1;k<=6;k++){const t=k/6;P.push([bz(-a,-a,-a*0.6,0,t),bz(y0,y1,y2,y2,t)]);}for(let k=1;k<=6;k++){const t=k/6;P.push([bz(0,a*0.6,a,a,t),bz(y2,y2,y1,y0,t)]);}return P;}
+function v3Echelle(C,k,cx,cy){return C.map(([x,y])=>[cx+(x-cx)*k,cy+(y-cy)*k]);}
+const v3MatStruct=it=>'str:'+structMat(it);
+function v3Equipement(B,it,lv,i,y0,H,haut,coupe){
+  const T=it.type,d=ITEMS[T];if(!d)return;
+  const w=it.w||d.w,h=it.h||d.h,W=w/2,D=h/2,sol=i?0.012:0.003,Hc=H-sol,R=v3Repere(it.x,it.y,it.rot,y0+sol,coupe==null?null:coupe-sol);
+  const P=(k,x0,x1,b0,b1,z0,z1)=>v3Pave(B,k,R,x0,x1,b0,b1,z0,z1),C=(k,poly,z0,z1,lisse)=>v3Colonne(B,k,R,poly,z0,z1,lisse);
+  if(d.elec){ /* les points électriques : de petits repères discrets (leur genre à part, « repere »), à leur hauteur */
+    if(T==='lumiere'){const l=it.lum||'spot';if(l==='suspension'){P('rep:noir',-0.004,0.004,-0.004,0.004,Hc-0.62,Hc);C('rep:blanc',v3Rond(0,0,0.17,16),Hc-0.8,Hc-0.62,1);}
+      else if(l==='plafonnier')C('rep:blanc',v3Rond(0,0,0.16,16),Hc-0.07,Hc,1);else C('rep:blanc',v3Rond(0,0,0.045,10),Hc-0.012,Hc,1);return;}
+    if(T==='tableau'){P('rep:blanc',-W,W,-D,D,1.2,1.85);return;}
+    if(T==='applique'){P('rep:blanc',-0.08,0.08,-0.04,0.04,1.8,1.95);return;}
+    const z=T==='interrupteur'?1.06:0.25,lx=T==='prise2'?0.075:0.042;P('rep:blanc',-lx,lx,-0.012,0.012,z,z+0.084);return;}
+  switch(T){
+  case 'baignoire':{const e=0.07;C('eq:ceramique',v3RectArr(-W,-D,W,D,0.06),0,0.15);
+    P('eq:ceramique',-W,W,-D,-D+e,0.15,0.55);P('eq:ceramique',-W,W,D-e,D,0.15,0.55);P('eq:ceramique',-W,-W+e,-D+e,D-e,0.15,0.55);P('eq:ceramique',W-e,W,-D+e,D-e,0.15,0.55);
+    C('eq:creux',v3RectArr(-W+e,-D+e,W-e,D-e,0.14),0.15,0.156);P('eq:chrome',W-0.05,W-0.02,-0.06,0.06,0.55,0.6);P('eq:chrome',W-0.14,W-0.02,-0.015,0.015,0.57,0.6);break;}
+  case 'douche':{const ty=it.douche||'bac',zr=ty==='italienne'?0.008:0.06;
+    if(ty==='italienne')C('eq:creux',[[-W,-D],[W,-D],[W,D],[-W,D]],0,zr);else C('eq:ceramique',v3RectArr(-W,-D,W,D,0.03),0,zr);
+    C('eq:creux',v3Rond(0,0,0.04,10),zr,zr+0.003,1);
+    P('eq:chrome',-0.012,0.012,-D+0.02,-D+0.045,zr,2.02);P('eq:chrome',-0.012,0.012,-D+0.02,-D+0.24,2.0,2.02);C('eq:chrome',v3Rond(0,-D+0.24,0.1,12),1.985,2.0,1);
+    if(ty==='cabine'){P('eq:verre',-W,W,D-0.008,D,zr,2.05);P('eq:verre',W-0.008,W,-D+0.02,D-0.008,zr,2.05);P('eq:verre',-W,-W+0.008,-D+0.02,D-0.008,zr,2.05);
+      P('eq:ceramique',-W,W,-D,-D+0.02,zr,2.05);P('eq:ceramique',-W,W,-D,D,2.05,2.08);}
+    else P('eq:verre',-W,w*0.12,D-0.008,D,zr,2.0); /* la paroi : le trait épais de la 2D */
+    break;}
+  case 'lavabo':{C('eq:ceramique',v3RectArr(-W,-D,W,D,0.06),0.78,0.86);C('eq:creux',v3Ellipse(0,0.03,w*0.36,h*0.3,18),0.86,0.864,1);C('eq:ceramique',v3Rond(0,-D+0.13,0.08,12),0,0.78,1);v3Robinet(P,0,-D+0.03,0.86);break;}
+  case 'vasque2':{P('eq:bois',-W,W,-D,D-0.01,0.18,0.8);C('eq:ceramique',v3RectArr(-W,-D,W,D,0.02),0.8,0.86);
+    [-w*0.25,w*0.25].forEach(x=>{C('eq:creux',v3Ellipse(x,0.03,w*0.17,h*0.3,16),0.86,0.864,1);v3Robinet(P,x,-D+0.03,0.86);});break;}
+  case 'wc':{const a=w*0.42,ya=-D+0.1,yc=(ya+D)/2,F=v3FormeWC(a,ya,ya+(D-ya)*0.55,D);
+    C('eq:ceramique',v3Echelle(F,0.62,0,yc),0,0.22);C('eq:ceramique',F,0.22,0.39);C('eq:creux',v3Echelle(F,0.97,0,yc),0.39,0.41);
+    P('eq:ceramique',-W+0.02,W-0.02,-D,-D+0.17,0.39,0.8);P('eq:chrome',-0.03,0.03,-D+0.06,-D+0.11,0.8,0.806);break;}
+  case 'plan':{v3Cuisine(P,-W,W,-D,D,0.9);const hx=-w/4,c2=Math.min(0.56,h*0.8);P('eq:noir',hx-c2/2,hx+c2/2,-c2/2,c2/2,0.9,0.904);break;}
+  case 'ilot':{v3Cuisine(P,-W,W,-D,D-0.25,0.9,D);P('eq:noir',-0.25,0.25,-0.35,0.15,0.9,0.904);break;}
+  case 'evier':{v3Cuisine(P,-W,W,-D,D,0.9);P('eq:inox',-W+0.03,W-0.02,-D+0.06,D-0.06,0.9,0.902);
+    P('eq:bac',-W+0.05,Math.min(W-0.05,-W+0.37),-D+0.1,D-0.08,0.902,0.904);if(w>=0.7)P('eq:bac',-W+0.41,Math.min(W-0.05,-W+0.57),-D+0.1,D-0.08,0.902,0.904);
+    const x=-W+0.21;P('eq:chrome',x-0.015,x+0.015,-D+0.06,-D+0.09,0.9,1.2);P('eq:chrome',x-0.015,x+0.015,-D+0.06,-D+0.28,1.17,1.2);break;}
+  case 'frigo':{P('eq:electro',-W,W,-D,D,0,1.8);P('eq:creux',-W+0.005,W-0.005,D,D+0.003,1.13,1.14);P('eq:chrome',W-0.07,W-0.05,D,D+0.035,0.9,1.08);P('eq:chrome',W-0.07,W-0.05,D,D+0.035,1.2,1.4);break;}
+  case 'lave_vaisselle':{P('eq:electro',-W,W,-D,D,0,0.85);P('eq:anthracite',-W+0.01,W-0.01,D,D+0.004,0.75,0.82);break;}
+  case 'lave_linge':{P('eq:electro',-W,W,-D,D,0,0.85);v3Profil(B,'eq:anthracite',R,v3Rond(0,0.45,0.17,18),D,D+0.012);v3Profil(B,'eq:creux',R,v3Rond(0,0.45,0.12,16),D+0.012,D+0.016);
+    P('eq:anthracite',-W+0.01,W-0.01,D,D+0.004,0.76,0.82);break;}
+  case 'cumulus':{const r=Math.min(w,h)/2-0.005;C('eq:electro',v3Rond(0,0,r,18),0.05,1.55,1);C('eq:anthracite',v3Rond(0,0,r*0.6,12),0,0.05,1);break;}
+  case 'chaudiere':{P('eq:electro',-W,W,-D,D,0.9,1.65);P('eq:noir',-0.08,0.08,D,D+0.003,1.25,1.31);[-0.12,-0.04,0.04,0.12].forEach(x=>C('eq:chrome',v3Rond(x,-D+0.08,0.011,8),0.7,0.9,1));break;}
+  case 'poele':{C('eq:anthracite',v3RectArr(-W+0.05,-D+0.05,W-0.05,D-0.05,0.03),0,0.06);C('eq:anthracite',v3RectArr(-W,-D,W,D,0.08),0.06,0.95);P('eq:noir',-W*0.6,W*0.6,D,D+0.004,0.3,0.78);
+    C('eq:anthracite',v3Rond(0,-D+0.13,0.075,14),0.95,Hc,1);break;}
+  case 'vmc':{P('eq:electro',-W,W,-D,D,Hc-0.3,Hc-0.02);break;}
+  case 'radiateur':{const e=Math.min(D,0.035);P('eq:electro',-W,W,-e,e,0.15,0.75);for(let x=-W+0.05;x<W-0.04;x+=0.1)P('eq:electro',x-0.012,x+0.012,-e-0.006,e+0.006,0.16,0.74);C('eq:chrome',v3Rond(W-0.04,0,0.015,8),0.75,0.82,1);break;}
+  case 'seche_serviette':{P('eq:electro',-W,-W+0.03,-0.015,0.015,0.15,1.45);P('eq:electro',W-0.03,W,-0.015,0.015,0.15,1.45);for(let z=0.25;z<1.42;z+=0.1)P('eq:electro',-W+0.03,W-0.03,-0.01,0.01,z,z+0.02);break;}
+  case 'clim':{const z0=Math.min(2.0,Hc-0.32);P('eq:electro',-W,W,-D,D,z0,z0+0.28);P('eq:creux',-W+0.05,W-0.05,D,D+0.003,z0+0.03,z0+0.07);break;}
+  case 'pac_ext':{P('eq:gris',-W,W,-D,D,0.06,0.72);[-1,1].forEach(j=>P('eq:anthracite',j*W*0.8-0.03,j*W*0.8+0.03,-D,D,0,0.06));v3Profil(B,'eq:anthracite',R,v3Rond(-w*0.18,0.4,Math.min(0.26,h*0.75),20),D,D+0.012);break;}
+  case 'lit':case 'lit1':{const deux=T==='lit';
+    [[-W+0.05,D-0.05],[W-0.05,D-0.05]].forEach(([x,y])=>P('eq:bois',x-0.03,x+0.03,y-0.03,y+0.03,0,0.08));
+    P('eq:bois',-W,W,-D+0.06,D,0.08,0.3);P('eq:bois',-W,W,-D,-D+0.06,0,0.95);P('eq:linge',-W+0.02,W-0.02,-D+0.07,D-0.02,0.3,0.52);
+    (deux?[-w*0.24,w*0.24]:[0]).forEach(x=>{const pw=deux?w*0.42:w*0.8;C('eq:linge',v3RectArr(x-pw/2,-D+0.09,x+pw/2,-D+0.4,0.06),0.52,0.63);});
+    P('eq:couette',-W-0.012,W+0.012,-D+0.55,D+0.012,0.36,0.57);break;}
+  case 'armoire':{P('eq:armoire',-W,W,-D,D,0,2.0);const n=Math.max(2,Math.round(w/0.5));
+    for(let q=1;q<n;q++){const x=-W+w*q/n;P('eq:creux',x-0.003,x+0.003,D,D+0.003,0.04,1.96);}
+    for(let q=0;q<n;q++){const x=-W+w*(q+0.5)/n+(q%2?-1:1)*(w/n/2-0.06);P('eq:chrome',x-0.008,x+0.008,D,D+0.03,0.95,1.2);}break;}
+  case 'canape':{[[-W+0.06,-D+0.06],[W-0.06,-D+0.06],[-W+0.06,D-0.06],[W-0.06,D-0.06]].forEach(([x,y])=>P('eq:bois',x-0.025,x+0.025,y-0.025,y+0.025,0,0.06));
+    P('eq:tissu',-W+0.2,W-0.2,-D+0.2,D-0.02,0.06,0.4);P('eq:tissu',-W,W,-D,-D+0.22,0.06,0.82);P('eq:tissu',-W,-W+0.2,-D,D,0.06,0.62);P('eq:tissu',W-0.2,W,-D,D,0.06,0.62);
+    const n=w>1.7?3:2,lc=(w-0.4)/n;for(let q=0;q<n;q++)P('eq:tissu',-W+0.2+q*lc+0.006,-W+0.2+(q+1)*lc-0.006,-D+0.22,D-0.02,0.4,0.46);break;}
+  case 'table':{P('eq:bois',-W,W,-D,D,0.72,0.75);[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>P('eq:bois',a*(W-0.08)-0.03,a*(W-0.08)+0.03,b*(D-0.08)-0.03,b*(D-0.08)+0.03,0,0.72));
+    [-w*0.28,0,w*0.28].forEach(x=>{v3Chaise(P,x,-D-0.28,1);v3Chaise(P,x,D+0.28,-1);});break;} /* les chaises de la 2D, trois de chaque côté */
+  case 'bureau':{P('eq:bois',-W,W,-D,D,0.72,0.75);P('eq:bois',-W,-W+0.03,-D,D,0,0.72);P('eq:bois',W-0.03,W,-D,D,0,0.72);P('eq:bois',-W+0.03,W-0.03,-D,-D+0.02,0.35,0.72);
+    const yc=D+0.285;C('eq:anthracite',v3Rond(0,yc,0.24,12),0.03,0.05,1);C('eq:anthracite',v3Rond(0,yc,0.025,8),0.05,0.42,1);C('eq:tissu',v3Rond(0,yc,0.23,14),0.42,0.49,1);P('eq:tissu',-0.2,0.2,D+0.47,D+0.52,0.52,0.98);break;}
+  case 'escalier':{const up=state.levels[i+1],mt=up?(v3.altitudes[i+1]+0.012)-(y0+sol):stairCalc(it,lv).rise;const r=v3Escalier(B,it,lv,i,R,mt);if(r)v3.registre.escaliers.push(r);break;}
+  case 'poteau':{P(v3MatStruct(it),-W,W,-D,D,0,haut-sol);break;}
+  case 'poutre':{const e=Math.max(0.2,Math.min(0.4,h*1.25));P(v3MatStruct(it),-W,W,-D,D,Hc-e,Hc);break;} /* sous le plafond, sa retombée */
+  case 'velux':{const f=0.06;P('eq:anthracite',-W,W,-D,-D+f,Hc-0.06,Hc);P('eq:anthracite',-W,W,D-f,D,Hc-0.06,Hc);P('eq:anthracite',-W,-W+f,-D+f,D-f,Hc-0.06,Hc);P('eq:anthracite',W-f,W,-D+f,D-f,Hc-0.06,Hc);
+    P('eq:verre',-W+f,W-f,-D+f,D-f,Hc-0.035,Hc-0.025);break;} /* sans la toiture : à sa place, au plafond */
+  default:P('eq:gris',-W,W,-D,D,0,0.8);
+  }}
+/* ── l'escalier : ses vraies marches (stairGeom, le calcul de la 2D), de son sol au sol du niveau du dessus ── */
+function v3Escalier(B,it,lv,i,R,montee){
+  const G=stairGeom(it,lv),mat=it.materiau==='beton'?'beton':it.materiau==='metal'?'metal':'bois',km='esc:'+mat,kt=mat==='metal'?'esc:bois':km,beton=mat==='beton';
+  const out={id:it.id,niveau:i,type:G.calc.type,mat,montee,marches:0,palier:false,hm:0};
+  const HC=G.rects.find(r=>r.circle);
+  if(HC){ /* hélicoïdal : un fût, et des marches en quartier de la ligne de la 2D (départ à π/2, dans le sens de la flèche) */
+    const n=HC.n,hm=montee/(n+1),r0=0.06,rx=HC.w/2,st=HC.tour/n;v3Colonne(B,beton?km:'esc:metal',R,v3Rond(0,0,r0,12),0,montee,1);
+    for(let k=0;k<n;k++){const z=(k+1)*hm,a=Math.PI/2+st*k,b=a+st,poly=[];for(let q=0;q<=4;q++){const tt=a+(b-a)*q/4;poly.push([Math.cos(tt)*rx,Math.sin(tt)*rx]);}
+      poly.push([Math.cos(b)*r0*0.5,Math.sin(b)*r0*0.5],[Math.cos(a)*r0*0.5,Math.sin(a)*r0*0.5]);v3Colonne(B,kt,R,poly,beton?z-0.15:z-0.045,z);}
+    out.marches=n;out.hm=hm;return out;}
+  /* droit, quart tournant, demi-tour : les volées et le palier dans l'ordre de la montée ; chaque marche monte d'un cran */
+  const seq=[];G.rects.forEach(r=>{if(r.land){seq.push({land:r});return;}const vert=r.dir==='up'||r.dir==='down',st=(vert?r.h:r.w)/r.n;
+    for(let k=0;k<r.n;k++){let x0=r.x,x1=r.x+r.w,y0=r.y,y1=r.y+r.h;
+      if(r.dir==='up'){y1=r.y+r.h-k*st;y0=y1-st;}else if(r.dir==='down'){y0=r.y+k*st;y1=y0+st;}else if(r.dir==='right'){x0=r.x+k*st;x1=x0+st;}else{x1=r.x+r.w-k*st;x0=x1-st;}
+      seq.push({x0,x1,y0,y1});}});
+  const S=seq.length,hm=montee/(S+1);
+  seq.forEach((s,j)=>{const z=(j+1)*hm;if(s.land){const L=s.land;v3Pave(B,beton?km:kt,R,L.x,L.x+L.w,L.y,L.y+L.h,beton?0:z-0.2,z);out.palier=true;return;}
+    v3Pave(B,beton?km:kt,R,s.x0,s.x1,s.y0,s.y1,beton?0:z-0.045,z);});
+  /* les limons (bois, métal) : de chaque côté de chaque volée, de la marche d'avant à la dernière */
+  if(!beton){let j=0;G.rects.forEach(r=>{if(r.land){j++;return;}const zA=(j+1)*hm,zB=(j+r.n)*hm,e=0.04;j+=r.n;
+    const a0=r.dir==='up'?r.y+r.h:r.dir==='down'?r.y:r.dir==='right'?r.x:r.x+r.w,a1=r.dir==='up'?r.y:r.dir==='down'?r.y+r.h:r.dir==='right'?r.x+r.w:r.x;
+    const prof=[[a0,Math.max(0,zA-0.3)],[a0,zA+0.03],[a1,zB+0.03],[a1,zB-0.3]];
+    if(r.dir==='up'||r.dir==='down'){v3ProfilY(B,km,R,prof,r.x,r.x+e);v3ProfilY(B,km,R,prof,r.x+r.w-e,r.x+r.w);}
+    else{v3Profil(B,km,R,prof,r.y,r.y+e);v3Profil(B,km,R,prof,r.y+r.h-e,r.y+r.h);}});}
+  out.marches=S-(out.palier?1:0);out.hm=hm;return out;}
+/* ── la toiture : une rénovation qui la décrit, sur la maison fermée (dernier niveau, murs entiers) ──
+   toitureGeom (la 2D) donne la forme, la pente, le débord, le sens du faîtage et le contour au débord. Chaque pan est un plan
+   z = base + tan·(g·p − s) (g : de l'égout vers le faîtage ; s : la face extérieure du mur) ; la toiture est le plus bas des
+   pans, coupée au contour : deux pans, quatre pans (croupes), un pan, ou plat. Le pan passe par l'arête extérieure du haut des
+   murs (l'avancée descend sous elle) ; la couverture est V3_TOIT_EP au-dessus. Les murs extérieurs montent sous les pans
+   (pignons, côté haut d'un pan unique). Une partie basse (un niveau que l'étage ne couvre pas) : en plat — la 2D ne lui
+   donne pas de sens de pente. */
+const V3_TOIT_EP=0.25;
+/* un triangle et ses coordonnées de texture, tourné comme v3Tri */
+function v3TriUV(s,a,b,c,n,ua,ub,uc){const ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2],vx=c[0]-a[0],vy=c[1]-a[1],vz=c[2]-a[2];
+  const cx=uy*vz-uz*vy,cy=uz*vx-ux*vz,cz=ux*vy-uy*vx;if(cx*cx+cy*cy+cz*cz<1e-16)return;
+  if(cx*n[0]+cy*n[1]+cz*n[2]<0){let t=b;b=c;c=t;t=ub;ub=uc;uc=t;}s.pos.push(...a,...b,...c);s.nor.push(...n,...n,...n);(s.uv||(s.uv=[])).push(...ua,...ub,...uc);}
+/* la couverture dessinée (rien à télécharger) : rangs de tuiles décalés, ardoises, joints debout du zinc, gravillons d'un toit plat */
+function v3TextureToit(genre){const N=256,c=document.createElement('canvas');c.width=c.height=N;const g=c.getContext('2d'),h=v3Hasard(genre.length*13+5),d=V3_MATS['toit:'+genre]||V3_MATS['toit:tuile'];
+  const teinte=(hex,k)=>{const x=parseInt(hex.slice(1),16),f=y=>Math.max(0,Math.min(255,Math.round(y+k)));return `rgb(${f(x>>16)},${f((x>>8)&255)},${f(x&255)})`;};
+  g.fillStyle=d.c;g.fillRect(0,0,N,N);
+  if(genre==='tuile'||genre==='ardoise'){const rang=genre==='tuile'?32:16,larg=genre==='tuile'?32:24,var_=genre==='tuile'?18:10;
+    for(let y=0,r=0;y<N;y+=rang,r++){const dec=r%2?larg/2:0;for(let x=-dec;x<N;x+=larg){g.fillStyle=teinte(d.c,(h()-0.5)*var_);g.fillRect(x,y,larg,rang);g.fillStyle=teinte(d.c,-34);g.fillRect(x,y,1,rang);}
+      g.fillStyle=teinte(d.c,-46);g.fillRect(0,y+rang-3,N,3);g.fillStyle=teinte(d.c,16);g.fillRect(0,y,N,1);}}
+  else if(genre==='zinc'){for(let x=0;x<N;x+=64){g.fillStyle=teinte(d.c,26);g.fillRect(x,0,3,N);g.fillStyle=teinte(d.c,-30);g.fillRect(x+3,0,2,N);}}
+  else{const im=g.getImageData(0,0,N,N),p=im.data;for(let k=0;k<p.length;k+=4){const e=(h()-0.5)*26;p[k]+=e;p[k+1]+=e;p[k+2]+=e;}g.putImageData(im,0,0);}
+  const T=window.THREE,tx=new T.CanvasTexture(c);tx.wrapS=tx.wrapT=T.RepeatWrapping;tx.encoding=T.sRGBEncoding;tx.anisotropy=Math.min(8,v3.renderer.capabilities.getMaxAnisotropy());return tx;}
+function v3ToitPossible(){try{return !estPlanFinal()&&(state.chantier||CHANTIER_DEF).bien!=='appartement'&&!!toiture()&&!!toitureGeom();}catch(e){return false;}} /* un appartement n'a pas de toiture (estAppart, sans chantier()) */
+function v3ToitVisible(){const top=state.levels.length-1,lv=state.levels[top];return !!v3.toit&&v3.niveau===top&&!!lv&&v3.coupe>=(lv.height||2.5)-1e-3&&v3ToitPossible();}
+function v3MajToit(){const b=document.getElementById('v3Toit');if(b){b.classList.toggle('on',!!v3.toit);b.setAttribute('aria-pressed',String(!!v3.toit));}}
+/* l'interrupteur : allumé, la 3D montre le dernier niveau, murs entiers, et la toiture dessus ; couper les murs l'éteint */
+function v3ChoisirToit(){v3.toit=!v3.toit;
+  if(v3.toit){const top=state.levels.length-1;if(v3.niveau!==top)v3ChoisirNiveau(top);v3ChoisirCoupe(state.levels[top].height||2.5);v3.toit=true;}
+  v3MajToit();v3Rafraichir();}
+function v3Pans(G){const R=G.R,X=G.dir==='x',out=[],pan=(gx,gy,s)=>out.push({g:[gx,gy],s});
+  const travers=()=>{if(X){pan(0,1,R.y0);pan(0,-1,-R.y1);}else{pan(1,0,R.x0);pan(-1,0,-R.x1);}},
+    long=()=>{if(X){pan(1,0,R.x0);pan(-1,0,-R.x1);}else{pan(0,1,R.y0);pan(0,-1,-R.y1);}};
+  if(G.forme==='deuxpans')travers();else if(G.forme==='quatrepans'){travers();long();}
+  else if(G.forme==='mono'){if(X)pan(0,-1,-R.y1);else pan(-1,0,-R.x1);} /* le faîtage en c0 (toitureGeom), l'égout en c1 */
+  return out;}
+/* une nappe : le contour C, de zb(p) à zb(p) + ep — dessus en kHaut, dessous et rives en kCote ; `interne` saute les arêtes
+   partagées entre deux pans (faîtage, arêtiers) */
+function v3Nappe(B,kHaut,kCote,C,zb,ep,n,interne,uvf){C=v3Direct(C);if(C.length<3)return;const T=window.THREE,Q=(p,dz)=>[p[0],zb(p)+dz,p[1]],nb=[-n[0],-n[1],-n[2]];
+  T.ShapeUtils.triangulateShape(C.map(p=>new T.Vector2(p[0],p[1])),[]).forEach(([a,b,c])=>{if(uvf)v3TriUV(B(kHaut),Q(C[a],ep),Q(C[b],ep),Q(C[c],ep),n,uvf(C[a]),uvf(C[b]),uvf(C[c]));else v3Tri(B(kHaut),Q(C[a],ep),Q(C[b],ep),Q(C[c],ep),n);
+    v3Tri(B(kCote),Q(C[a],0),Q(C[b],0),Q(C[c],0),nb);});
+  for(let k=0;k<C.length;k++){const a=C[k],b=C[(k+1)%C.length];if(interne&&interne(a,b))continue;const dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy);if(l<1e-6)continue;
+    const m=[dy/l,0,-dx/l];v3Tri(B(kCote),Q(a,0),Q(b,0),Q(b,ep),m);v3Tri(B(kCote),Q(a,0),Q(b,ep),Q(a,ep),m);}}
+/* un remplissage : le contour C, de y0 jusque sous la toiture (zt), en mur — un pignon */
+function v3Remplir(B,k,C,y0,zt){C=v3Direct(C);if(C.length<3)return 0;const top=p=>Math.max(y0,zt(p));if(Math.max(...C.map(p=>top(p)-y0))<0.01)return 0;
+  const T=window.THREE;T.ShapeUtils.triangulateShape(C.map(p=>new T.Vector2(p[0],p[1])),[]).forEach(([a,b,c])=>{const A=[C[a][0],top(C[a]),C[a][1]],Bq=[C[b][0],top(C[b]),C[b][1]],Cq=[C[c][0],top(C[c]),C[c][1]];
+    const ux=Bq[0]-A[0],uy=Bq[1]-A[1],uz=Bq[2]-A[2],vx=Cq[0]-A[0],vy=Cq[1]-A[1],vz=Cq[2]-A[2];let n=[uy*vz-uz*vy,uz*vx-ux*vz,ux*vy-uy*vx];if(n[1]<0)n=n.map(x=>-x);const l=Math.hypot(n[0],n[1],n[2])||1;
+    v3Tri(B(k),A,Bq,Cq,n.map(x=>x/l));});
+  for(let q=0;q<C.length;q++){const a=C[q],b=C[(q+1)%C.length],dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy);if(l<1e-6)continue;const n=[dy/l,0,-dx/l],ta=top(a),tb=top(b);
+    if(ta-y0<1e-4&&tb-y0<1e-4)continue;v3Tri(B(k),[a[0],y0,a[1]],[b[0],y0,b[1]],[b[0],tb,b[1]],n);v3Tri(B(k),[a[0],y0,a[1]],[b[0],tb,b[1]],[a[0],ta,a[1]],n);}
+  return 1;}
+/* une dalle percée : le contour P moins les trous, de ya à yb */
+function v3Dalle(B,k,kCote,P,trous,ya,yb){const T=window.THREE;P=v3Direct(P);if(P.length<3)return;const Hs=trous.map(t=>v3Direct(t).reverse()).filter(t=>t.length>2),tout=[P,...Hs],plat=[].concat(...tout);
+  T.ShapeUtils.triangulateShape(P.map(p=>new T.Vector2(p[0],p[1])),Hs.map(h=>h.map(p=>new T.Vector2(p[0],p[1])))).forEach(([a,b,c])=>{const A=plat[a],Bq=plat[b],Cq=plat[c];
+    const tm=(V3_MATS[k]&&V3_MATS[k].motif)||1;v3TriUV(B(k),[A[0],yb,A[1]],[Bq[0],yb,Bq[1]],[Cq[0],yb,Cq[1]],[0,1,0],[A[0]/tm,A[1]/tm],[Bq[0]/tm,Bq[1]/tm],[Cq[0]/tm,Cq[1]/tm]);v3Tri(B(kCote),[A[0],ya,A[1]],[Bq[0],ya,Bq[1]],[Cq[0],ya,Cq[1]],[0,-1,0]);});
+  tout.forEach(C=>{for(let q=0;q<C.length;q++){const a=C[q],b=C[(q+1)%C.length],dx=b[0]-a[0],dy=b[1]-a[1],l=Math.hypot(dx,dy);if(l<1e-6)continue;const n=[dy/l,0,-dx/l];
+    v3Tri(B(kCote),[a[0],ya,a[1]],[b[0],ya,b[1]],[b[0],yb,b[1]],n);v3Tri(B(kCote),[a[0],ya,a[1]],[b[0],yb,b[1]],[a[0],yb,a[1]],n);}});}
+function v3Toiture(){
+  const t=toiture(),G=toitureGeom();if(!t||!G)return null;
+  const T=window.THREE,m=v3.vue,top=state.levels.length-1,lvT=state.levels[top],base=v3.altitudes[top]+(lvT.height||2.5),tan=Math.tan((G.pente||0)*Math.PI/180),EP=V3_TOIT_EP;
+  const seaux={},B=k=>seaux[k]||(seaux[k]={pos:[],nor:[]}),couv='toit:'+(V3_MATS['toit:'+t.couverture]?t.couverture:'tuile');
+  const pans=tan>1e-6?v3Pans(G):[],val=(q,p)=>q.g[0]*p[0]+q.g[1]*p[1]-q.s,zb=p=>base+(pans.length?tan*Math.min(...pans.map(q=>val(q,p))):0);
+  const normale=q=>{if(!q)return [0,1,0];const x=[-tan*q.g[0],1,-tan*q.g[1]],l=Math.hypot(x[0],x[1],x[2]);return x.map(c=>c/l);};
+  /* un contour découpé en ses pans : la région où chaque pan est le plus bas */
+  const decoupe=C=>pans.length?pans.map((q,k)=>{let E=C;pans.forEach((r,j)=>{if(j!==k&&E.length>2)E=v3Couper(E,q.g[0]-r.g[0],q.g[1]-r.g[1],q.s-r.s);});return {C:E,q,k};}).filter(x=>x.C.length>2):[{C,q:null,k:-1}];
+  const contour=(G.toitPoly&&G.toitPoly.length>2?G.toitPoly:[v(G.ox0,G.oy0),v(G.ox1,G.oy0),v(G.ox1,G.oy1),v(G.ox0,G.oy1)]).map(p=>[p.x,p.y]);
+  const reg={forme:G.forme,pente:G.pente,dir:G.dir,base,ep:EP,pans:0,pignons:0,parties:0,velux:0,couverture:couv.slice(5)};
+  /* la texture de la couverture : u le long de l'égout, v en remontant le rampant (les rangs de tuiles sont parallèles à l'égout) */
+  const tm=V3_MATS[couv].motif||1,cs=Math.cos((G.pente||0)*Math.PI/180)||1,uv=q=>q?(p=>[(-q.g[1]*p[0]+q.g[0]*p[1])/tm,val(q,p)/cs/tm]):(p=>[p[0]/tm,p[1]/tm]);
+  decoupe(contour).forEach(({C,q,k})=>{v3Nappe(B,couv,'toit:rive',C,zb,EP,normale(q),(a,b)=>{if(!q)return false;const mid=[(a[0]+b[0])/2,(a[1]+b[1])/2];return pans.some((r,j)=>j!==k&&Math.abs(val(r,mid)-val(q,mid))<1e-6);},uv(q));reg.pans++;});
+  /* les pignons : chaque mur extérieur du dernier niveau (son corps et ses raccords) monte jusque sous les pans */
+  if(pans.length){const corps=[];
+    lvT.walls.forEach(w=>{if(isVirtual(w)||!wallDrawn(w,m)||!isExteriorWall(w,lvT))return;const tw=wallT(w),Lw=wallLen(w);if(tw<=0||Lw<1e-4)return;
+      const u=norm(sub(w.b,w.a)),hh=mul(perp(u),tw/2),off=wallOff(w),Pa=add(w.a,off),Pb=add(w.b,off);corps.push([add(Pa,hh),add(Pb,hh),sub(Pb,hh),sub(Pa,hh)].map(p=>[p.x,p.y]));});
+    noeudsJonction(lvT,m).forEach(({ends,hull})=>{if(ends.some(e=>isExteriorWall(e.w,lvT)))corps.push(hull.map(p=>[p.x,p.y]));});
+    corps.forEach(C=>decoupe(C).forEach(x=>{reg.pignons+=v3Remplir(B,'toit:pignon',x.C,base,zb);}));}
+  /* les fenêtres de toit du dernier niveau, posées dans le pan */
+  lvT.items.forEach(it=>{if(it.type!=='velux'||!itemDrawn(it,m))return;const c=Math.cos(it.rot||0),s=Math.sin(it.rot||0),Wv=(it.w||ITEMS.velux.w)/2,Dv=(it.h||ITEMS.velux.h)/2,pt=(x,y)=>[it.x+c*x-s*y,it.y+s*x+c*y];
+    const q=pans.length?pans.reduce((a,r)=>val(r,[it.x,it.y])<val(a,[it.x,it.y])?r:a):null,n=normale(q);
+    v3Nappe(B,'toit:velux','toit:velux',[pt(-Wv,-Dv),pt(Wv,-Dv),pt(Wv,Dv),pt(-Wv,Dv)],p=>zb(p)+EP-0.01,0.06,n,null);
+    v3Nappe(B,'toit:verre','toit:velux',[pt(-Wv+0.06,-Dv+0.06),pt(Wv-0.06,-Dv+0.06),pt(Wv-0.06,Dv-0.06),pt(-Wv+0.06,Dv-0.06)],p=>zb(p)+EP+0.05,0.006,n,null);reg.velux++;});
+  /* les parties basses : une dalle au haut des murs du niveau, percée de l'emprise de ce qui le couvre */
+  partiesToiture().forEach(pa=>{if(pa.principale||pa.li>=top||!pa.poly||pa.poly.length<3)return;const lvi=state.levels[pa.li];if(!lvi)return;
+    const y=v3.altitudes[pa.li]+(lvi.height||2.5)+V3_PLANCHER-V3_JOINT;let trou=null;
+    for(let j=pa.li+1;j<=top;j++){const r=toitureRect(j);if(r&&r.poly&&r.poly.length>2&&(!trou||Math.abs(polyArea(r.poly))>Math.abs(polyArea(trou))))trou=r.poly;}
+    if(trou&&!trou.every(q=>pointIn(q,pa.poly)))return; /* un étage en porte-à-faux : on ne dessine pas ce qu'on ne sait pas */
+    v3Dalle(B,couv,'toit:rive',pa.poly.map(p=>[p.x,p.y]),trou?[trou.map(p=>[p.x,p.y])]:[],y,y+0.18);reg.parties++;});
+  const g=new T.Group();g.userData={kind:'toit',niveau:top};v3Maillages(seaux,g,top,'toit');
+  v3.registre.toit=reg;return g;}
 /* ── lumière, ombres, cadrage ── */
 function v3Boite(){const T=window.THREE,b=new T.Box3();if(v3.groupe)v3.groupe.children.forEach(x=>b.expandByObject(x));if(b.isEmpty())b.set(new T.Vector3(-4,0,-4),new T.Vector3(4,2.5,4));return b;}
 function v3Ombres(){const T=window.THREE,b=v3Boite(),c=b.getCenter(new T.Vector3()),R=Math.max(4,b.getSize(new T.Vector3()).length()/2);
@@ -9296,9 +9654,12 @@ function v3Clavier(e){
   return true;}
 /* ── pour les contrôles (vue3d.mjs) : ce qui est construit, un rayon, la capture ── */
 function v3Etat(){const R=v3.registre||{murs:[],trous:[],sols:[]};let maillages=0,triangles=0;if(v3.groupe)v3.groupe.traverse(x=>{if(x.isMesh){maillages++;triangles+=x.geometry.attributes.position.count/3;}});
-  return {ouvert:v3.ouvert,pret:!!v3.renderer&&!!v3.groupe,etat:v3.etat,niveau:v3.niveau,vue:v3.vue,coupe:v3.coupe,altitudes:v3.altitudes.slice(),murs:R.murs.slice(),trous:R.trous.slice(),sols:R.sols.slice(),raccords:R.raccords,doublages:R.doublages,maillages,triangles};}
-function v3Viser(o,d){if(!v3.groupe)return null;const T=window.THREE,rc=new T.Raycaster(new T.Vector3(o[0],o[1],o[2]),new T.Vector3(d[0],d[1],d[2]).normalize());
-  const h=rc.intersectObject(v3.groupe,true)[0];return h?{d:h.distance,p:[h.point.x,h.point.y,h.point.z],kind:h.object.userData.kind,cle:h.object.userData.cle,niveau:h.object.userData.niveau,roomId:h.object.userData.roomId}:null;}
+  return {ouvert:v3.ouvert,pret:!!v3.renderer&&!!v3.groupe,etat:v3.etat,niveau:v3.niveau,vue:v3.vue,coupe:v3.coupe,altitudes:v3.altitudes.slice(),murs:R.murs.slice(),trous:R.trous.slice(),sols:R.sols.slice(),raccords:R.raccords,doublages:R.doublages,maillages,triangles,
+    menuiseries:(R.menuiseries||[]).slice(),equipements:(R.equipements||[]).slice(),escaliers:(R.escaliers||[]).slice(),toit:R.toit||null};} /* D72 */
+/* un rayon dans la scène : le premier objet touché — ou, avec `genres`, le premier de ces genres (mur, doublage, sol, menuiserie,
+   equipement, repere, escalier, structure, toit) : on mesure un mur derrière une fenêtre, un sol sous une table */
+function v3Viser(o,d,genres){if(!v3.groupe)return null;const T=window.THREE,rc=new T.Raycaster(new T.Vector3(o[0],o[1],o[2]),new T.Vector3(d[0],d[1],d[2]).normalize());
+  const h=rc.intersectObject(v3.groupe,true).find(x=>!genres||genres.includes(x.object.userData.kind));return h?{d:h.distance,p:[h.point.x,h.point.y,h.point.z],kind:h.object.userData.kind,cle:h.object.userData.cle,niveau:h.object.userData.niveau,roomId:h.object.userData.roomId}:null;}
 function v3Pixels(){if(!v3.renderer)return null;v3Rendre();const gl=v3.renderer.getContext(),W=gl.drawingBufferWidth,H=gl.drawingBufferHeight,px=new Uint8Array(W*H*4);gl.readPixels(0,0,W,H,gl.RGBA,gl.UNSIGNED_BYTE,px);
   let som=0,noirs=0,fond=0,encre=0;const f=[(V3_COUL.fond>>16)&255,(V3_COUL.fond>>8)&255,V3_COUL.fond&255];
   for(let i=0;i<px.length;i+=4){const l=(px[i]+px[i+1]+px[i+2])/3;som+=l;if(l<8)noirs++;if(Math.abs(px[i]-f[0])<4&&Math.abs(px[i+1]-f[1])<4&&Math.abs(px[i+2]-f[2])<4)fond++;if(Math.abs(px[i]-0x1E)<10&&Math.abs(px[i+1]-0x1B)<10&&Math.abs(px[i+2]-0x4B)<12)encre++;}
