@@ -1248,37 +1248,63 @@ body.planFinal .pfoot:empty{display:none} /* sans pièce, pas de récapitulatif 
 @media (max-width:600px){.aidePF{display:none!important}}
 /* D71 · LA VUE 3D : une couche posée sur la zone du plan (#stage), générée depuis le plan — la colonne d'outils, la barre
    du haut et le panneau restent ; « Retour au plan » ou Échap rend la 2D, intacte. Le bouton « 3D » suit les niveaux (barre du
-   haut ou bande du plan) ; au téléphone, pas de 3D pour l'instant. */
+   haut ou bande du plan). D73 : au téléphone aussi, en maquette seulement (on tourne au doigt). */
 .levels #v3Btn{position:relative;margin-left:4px;padding:0 8px;color:var(--ink2)}
 .levels #v3Btn::before{content:"";position:absolute;left:-3px;top:6px;bottom:6px;width:1px;background:var(--line)}
 /* D71 · la barre du haut a une étape de plus (c4, avant le logo sans son nom) : les boutons des niveaux et des vues se
    resserrent — le bouton 3D y a pris sa place sans couper le nom du plan à 1 024 px */
 @media (min-width:601px){.top.c4 .ctx{gap:4px}.top.c4 .ctx .levels button,.top.c4 .ctx .levels.modes button,.top.c4 .levels #v3Btn{padding:0 7px}}
 .levels #v3Btn.on{background:var(--brand-l);color:var(--brand)}
-@media (max-width:600px){.levels #v3Btn{display:none}}
+@media (max-width:600px){.levels #v3Btn{min-width:44px;padding:0 12px}} /* D73 : au téléphone, une cible de 40 px et plus, comme les niveaux */
 body.v3on #levels button:not(#v3Btn),body.v3on #modes,body.v3on #legendeVue{display:none!important}
 body.v3on .levels #v3Btn{margin-left:0}
 body.v3on .levels #v3Btn::before{display:none}
 .v3{position:absolute;inset:0;z-index:8;background:var(--v3-fond,#EDEFF5);overflow:hidden}
 .v3[hidden]{display:none}
-.v3 canvas.v3cv{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;outline:0;cursor:grab}
+/* D73 : la scène s'arrête au-dessus de la barre d'état de la 3D */
+.v3 canvas.v3cv{position:absolute;left:0;top:0;width:100%;height:calc(100% - var(--etat-h));display:block;touch-action:none;outline:0;cursor:grab}
 .v3 canvas.v3cv:active{cursor:grabbing}
+.v3.choix canvas.v3cv{cursor:crosshair}
+.v3.choix canvas.v3cv.surPiece,.v3.visite canvas.v3cv.surPiece{cursor:pointer}
 .v3 canvas.v3cv:focus-visible{box-shadow:inset 0 0 0 2px var(--brand)}
-.v3barre{position:absolute;left:var(--sp-3);right:var(--sp-3);top:var(--sp-3);display:flex;flex-wrap:wrap;align-items:center;gap:var(--sp-2);z-index:2;pointer-events:none}
-.v3barre>*{pointer-events:auto}
+.v3barre{position:absolute;left:var(--sp-3);right:var(--sp-3);top:var(--sp-3);display:flex;flex-wrap:nowrap;align-items:center;gap:var(--sp-2);z-index:2;pointer-events:none;overflow:hidden;padding:2px 2px 8px;margin:-2px -2px 0}
+.v3barre>*{pointer-events:auto;flex:0 0 auto}
 .v3barre .ib{height:var(--h-l);box-shadow:var(--sh-2)}
 .v3grp{display:flex;align-items:center;gap:2px;min-height:var(--h-l);background:var(--white);border:1px solid var(--line);border-radius:var(--r-m);padding:3px;box-shadow:var(--sh-2)}
-.v3grp button{display:inline-flex;align-items:center;gap:6px;height:var(--h-s);padding:0 10px;border:0;border-radius:var(--r-s);background:transparent;font:inherit;font-size:var(--fs-m);font-weight:600;color:var(--ink2);cursor:pointer;white-space:nowrap}
+.v3grp button{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:var(--h-s);min-width:var(--h-s);padding:0 10px;border:0;border-radius:var(--r-s);background:transparent;font:inherit;font-size:var(--fs-m);font-weight:600;color:var(--ink2);cursor:pointer;white-space:nowrap}
 .v3grp button:hover:not(.on){background:var(--hover);color:var(--ink)}
 .v3grp button.on{background:var(--brand-l);color:var(--brand)}
 .v3grp button:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.v3grp button.v3ic{width:var(--h-s);padding:0}
 .v3grp .v3lbl{padding:0 6px 0 8px;font-size:var(--fs-s);font-weight:600;color:var(--muted);white-space:nowrap}
+.v3barre .v3droite{margin-left:auto}
 .v3coupe input[type=range]{width:128px;margin:0 6px;accent-color:var(--brand);cursor:pointer}
 .v3coupe output{min-width:64px;padding-right:8px;font-family:"Geist Mono",monospace;font-size:var(--fs-s);font-weight:600;color:var(--ink2);white-space:nowrap}
-.v3coins{position:absolute;right:var(--sp-3);bottom:var(--sp-3);z-index:2}
-.v3coins button{width:var(--h-s);padding:0;justify-content:center}
-.v3aide{position:absolute;left:var(--sp-3);bottom:var(--sp-3);z-index:2;max-width:calc(100% - 120px);padding:6px 10px;border-radius:var(--r-m);background:rgba(255,255,255,.86);border:1px solid var(--line);font-size:var(--fs-s);color:var(--muted);line-height:1.4}
-.v3aide b{color:var(--ink2);font-weight:600}
+/* D73 · la barre se resserre par étapes, mesurées sur la largeur de la 3D (v3Resserrer) : « Retour au plan » en icône, les
+   vues en un mot, Vue aérienne / Visite en icônes, la coupe sans son mot et plus courte, la toiture en icône ; si elle ne tient
+   toujours pas (téléphone), elle passe sur deux lignes. Le nom accessible de chaque bouton reste entier. */
+.v3barre.r1 .v3retour .v3t{display:none}.v3barre.r1 .v3retour{width:var(--h-l);padding:0;justify-content:center}
+.v3barre.r2 .vx{display:none}
+.v3barre.r3 .v3mode .v3t{display:none}.v3barre.r3 .v3mode button{width:var(--h-s);padding:0}
+.v3barre.r4 .v3coupe .v3lbl{display:none}.v3barre.r4 .v3coupe input[type=range]{width:84px}.v3barre.r4 .v3coupe output{min-width:52px}
+.v3barre.r5 .v3toit .v3t{display:none}.v3barre.r5 .v3toit button{width:var(--h-s);padding:0}
+.v3barre.r6{flex-wrap:wrap;overflow:visible}
+/* D73 · la barre d'état de la 3D : l'aide du moment à gauche, la pièce à droite — celle de la 2D, au même endroit */
+.v3bas{position:absolute;left:0;right:0;bottom:0;z-index:2;height:var(--etat-h);display:flex;align-items:center;gap:var(--sp-3);padding:0 var(--sp-3);background:var(--white);border-top:1px solid var(--line);font-size:var(--fs-s);color:var(--ink2);white-space:nowrap}
+.v3bas .v3aide{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+.v3bas .v3aide b{color:var(--ink);font-weight:600}
+.v3bas kbd{background:var(--canvas);border:1px solid var(--line);color:var(--ink2);padding:0 4px;border-radius:4px;font-size:11px;margin:0 1px;font-family:inherit}
+.v3bas .v3info{flex:0 0 auto;color:var(--muted);font-weight:600}
+.v3bas .v3info:empty{display:none}
+.v3bas .v3info b{color:var(--ink)}
+/* D73 · plein écran : la 3D couvre toute la fenêtre (barre du haut, outils et panneau dessous), sous les fenêtres et les bulles */
+body.v3plein .v3{position:fixed;inset:0;z-index:19}
+@media (max-width:600px){
+  .v3barre{left:8px;right:8px;top:8px;gap:6px}
+  .v3barre .ib{height:42px;min-width:42px}.v3barre.r1 .v3retour{width:42px}
+  .v3grp{min-height:42px;padding:2px}.v3grp button,.v3grp button.v3ic,.v3barre.r3 .v3mode button,.v3barre.r5 .v3toit button{height:38px;min-width:40px}
+  .v3bas{padding:0 10px}
+}
 .v3msg{position:absolute;inset:0;z-index:3;display:grid;place-items:center;padding:var(--sp-6);pointer-events:none}
 .v3msg[hidden]{display:none}
 .v3msg>div{max-width:420px;padding:20px 22px;border-radius:var(--r-l);background:var(--white);border:1px solid var(--line);box-shadow:var(--sh-pop);pointer-events:auto}
@@ -1515,6 +1541,11 @@ const ICONS={
   mesPlans:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
   exporter:'<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M12 12v6M9 15l3 3 3-3"/>',
   visite:'<circle cx="12" cy="12" r="9"/><path d="m10 8.5 5.5 3.5-5.5 3.5z"/>',
+  /* D73 · la vue 3D : la maquette (un volume vu de biais), la visite (quelqu'un qui marche), le plein écran (ouvrir, refermer) */
+  maquette:'<path d="M12 2.8 3.5 7.4v9.2l8.5 4.6 8.5-4.6V7.4z"/><path d="m3.5 7.4 8.5 4.6 8.5-4.6M12 12v9.2"/>',
+  marcher:'<circle cx="13.5" cy="4.2" r="1.9"/><path d="m12.6 8.6-1.6 6.6 2.9 2.6.6 3.7M11 15.2 8.6 21"/><path d="M8 12.6 10 9.4l3.6-.8 2 3.1 2.6 1.1"/>',
+  pleinEcran:'<path d="M14 4h6v6M20 4l-6.5 6.5M10 20H4v-6M4 20l6.5-6.5"/>',
+  quitterPleinEcran:'<path d="M19.5 10.5h-6v-6M13.5 10.5 20 4M4.5 13.5h6v6M10.5 13.5 4 20"/>',
   livre:'<path d="M4 19.5V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19.5A2 2 0 0 0 6 21h13"/>',
   annuler:'<path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/>',
   copie:'<rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>',
@@ -5327,7 +5358,7 @@ function bulleOutil(t){const nom=t[4]||t[1];return nom+(t[2]&&raccourcisOn?' ('+
 const KEYS_GESTES=[
   ['Pendant le tracé',[['Maj','Force les angles droits'],['3,5 puis Entrée','Pose un mur de la longueur tapée'],['Entrée','Ferme la pièce'],['Échap','Annule le geste en cours (le tracé se termine sans fermer), puis revient à la Sélection, puis désélectionne · ferme une fenêtre'],['Clic droit','Termine et revient à la Sélection · sur un élément, avec la Sélection : le menu de ses actions']]],
   ['Modifier',[['Suppr','Supprime · en vue '+nomVue('projet')+', marque à démolir, à boucher ou à déposer (ce que tu y as créé s\'efface)'],['R','Pivote l\'équipement de 90° · poignée ronde : rotation libre, par pas de 15°'],['Flèches','Déplace l\'élément choisi de 5 cm (Maj : 50 cm) · une ouverture coulisse le long de son mur'],['Alt + flèches','Dans le plan : passe d\'un élément à l\'autre (Option + flèches sur Mac) · Entrée ouvre sa fiche · Tab sort du plan'],['Maj + clic','Ajoute à la sélection · Maj + glisser dans le vide : rectangle'],['Maj + F10','Le menu des actions de l\'élément choisi (aussi la touche Menu du clavier)'],['Ctrl A','Sélectionne tous les équipements'],['Ctrl C / V / D','Copie, colle, duplique des équipements'],['Ctrl Z / Y','Annule, rétablit'],['Ctrl S','Enregistre dans « Mes plans »']]],
-  ['Se déplacer',[['Molette','Zoom (pincer sur tablette)'],['Glisser dans le vide','Déplace la vue (aussi : Espace + glisser, ou clic milieu)'],['3','Vue 3D du plan · Échap ou 3 : retour au plan']]], /* D71 */
+  ['Se déplacer',[['Molette','Zoom (pincer sur tablette)'],['Glisser dans le vide','Déplace la vue (aussi : Espace + glisser, ou clic milieu)'],['3','Vue 3D du plan : vue aérienne, ou visite à hauteur d\'yeux (ZQSD ou flèches) · Échap ou 3 : retour au plan']]], /* D71 ; D73 : la visite */
 ];
 function keysHTML(){const grp=(t,l)=>`<div class="kgrp"><div class="ph">${t}</div><div class="keys">${l.map(([k,d])=>`<kbd>${k}</kbd><span>${d}</span>`).join('')}</div></div>`;
   const outils=TOOLS.filter(t=>t[2]&&outilsVisibles().includes(t[0])).map(t=>{ /* D69 : les outils de la colonne du plan ouvert */const nom=t[4]||t[1],tip=tipOutil(t[0])||'';return [t[2],tip.toLowerCase().startsWith(nom.toLowerCase())?'<b>'+tip+'</b>':'<b>'+nom+'</b> · '+tip];});
@@ -9022,8 +9053,17 @@ const V3_JOINT=0.02;      /* entre deux niveaux, les murs du dessous s'arrêtent
                              descendent d'autant : la façade reste continue, et rien ne scintille sous le sol de l'étage */
 const V3_COUPE=1.2;       /* hauteur de coupe par défaut, celle d'un plan d'architecte (réglable de 0,30 m aux murs entiers) */
 const V3_COUL={fond:0xEDEFF5,mur:0xEDEBE6,doublage:0xF1EFE9,coupe:0x1E1B4B,coupeCloison:0x5E5A86,coupeDoublage:0xE9D59A};
+/* D73 · la visite : les yeux à 1,60 m ; le visiteur est un cercle de 25 cm de rayon (il passe une porte, pas un mur, pas une
+   allège) ; il marche à 1,5 m/s (3,2 avec Maj) et tourne à 100°/s aux flèches. Un mur l'arrête s'il est plein à 35 cm
+   (les genoux : une allège de fenêtre) ou à 1,10 m (un trou de porte est vide aux deux). */
+const V3_YEUX=1.6,V3_RAYON=0.25,V3_PAS=1.5,V3_COURSE=3.2,V3_TOURNE=1.75,V3_GENOU=[0.35,1.1];
+const V3_FOV={maquette:32,visite:68};
+const V3_TOUCHES=['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','ShiftLeft','ShiftRight']; /* e.code : la place de la touche — ZQSD sur un clavier français, WASD ailleurs */
+const V3_VISE=['sol','mur','doublage','menuiserie','toit','plafond']; /* un clic vise le sol à travers les meubles, jamais à travers un mur ou une vitre */
 const v3={ouvert:false,charge:null,el:null,renderer:null,scene:null,cam:null,ctl:null,groupe:null,niveau:0,vue:'final',coupe:V3_COUPE,
-  sig:'',aRendre:false,raf:0,mats:{},registre:null,altitudes:[],etat:'',attente:0,toit:false};
+  sig:'',aRendre:false,raf:0,mats:{},registre:null,altitudes:[],etat:'',attente:0,toit:false,
+  mode:'maquette',choix:false,vis:null,touches:new Set(),glisse:null,plein:false,pleinNatif:false,camMaquette:null,survol:null,surligne:null,
+  tPrec:0,images:0,zqsd:'ZQSD',obst:[],obstTout:[],pieceT:0,sigBarre:'',sigTaille:''};
 /* ── chargement paresseux ── */
 function v3Charger(){
   if(V3_FICHIERS.every(f=>f[1]()))return Promise.resolve();
@@ -9045,17 +9085,28 @@ function v3Basculer(){if(v3.ouvert)v3Fermer();else v3Ouvrir();}
 function v3Actif(){try{return !!v3.ouvert;}catch{return false;}}
 /* ── ouvrir, fermer ── */
 function v3Ouvrir(){
-  if(v3.ouvert||isMobile()||modaleOuverte()||visite)return;
+  if(v3.ouvert||modaleOuverte()||visite)return; /* D73 : au téléphone aussi (la maquette seulement) */
   if(tool==='mur'&&chain.length)endChain(false);
   drag=null;rectMode=null;try{fermerMenus();fermerMenuCtx(false);}catch{}
   v3.ouvert=true;v3.niveau=Math.max(0,Math.min(state.levels.length-1,state.cur));v3.vue=estPlanFinal()?'existant':'final';v3.toit=false;
-  v3Dom();v3.el.hidden=false;document.body.classList.add('v3on');v3MajBouton();v3Barre();v3Message('charge');
+  v3.mode='maquette';v3.choix=false;v3.vis=null;v3.glisse=null;v3.touches.clear();
+  v3Dom();v3.el.hidden=false;v3.el.classList.remove('visite','choix');document.body.classList.add('v3on');v3MajBouton();v3Barre();v3MajAide();v3Message('charge');
   v3Charger().then(v3Demarrer,()=>{if(v3.ouvert)v3Message('reseau');});
   suivre('vue_3d',{type:estPlanFinal()?'plan_final':'renovation'});}
 function v3Fermer(){
-  if(!v3.ouvert)return;v3.ouvert=false;cancelAnimationFrame(v3.raf);v3.raf=0;
+  if(!v3.ouvert)return;
+  if(v3.plein)v3BasculerPlein(false);
+  v3.ouvert=false;cancelAnimationFrame(v3.raf);v3.raf=0;
+  v3QuitterVisite(true);v3Vider();
   if(v3.el)v3.el.hidden=true;document.body.classList.remove('v3on');v3MajBouton();
   try{cv.focus({preventScroll:true});}catch{}draw();}
+/* D73 · fermée, la 3D ne garde rien en mémoire vidéo : la scène est vidée (géométries libérées) ; restent le moteur (un seul
+   contexte WebGL pour la page : en recréer un à chaque ouverture finit par en épuiser le navigateur), les matières et leurs
+   textures dessinées (un jeu fini, réutilisé à l'ouverture suivante) */
+function v3Vider(){v3Surligner(null);if(v3.groupe&&v3.scene){v3.scene.remove(v3.groupe);v3Liberer(v3.groupe);}v3.groupe=null;v3.sig='';v3.obst=[];v3.obstTout=[];v3.registre=null;
+  if(v3.renderer)v3.renderer.renderLists.dispose();}
+/* D73 · Échap remonte d'un cran : le plein écran, puis la visite (ou la pièce à choisir), puis le plan */
+function v3Echap(){if(v3.plein)v3BasculerPlein(false);else if(v3.mode==='visite'||v3.choix)v3QuitterVisite();else v3Fermer();}
 function v3Reessayer(){v3Message('charge');v3Charger().then(v3Demarrer,()=>{if(v3.ouvert)v3Message('reseau');});}
 /* Three.js est là : la scène, la construction, le cadrage. Une erreur ici n'est PAS une erreur de réseau, et ne sort jamais
    de la 3D : la 2D reste utilisable (render() appelle la 3D). */
@@ -9066,13 +9117,18 @@ function v3Demarrer(){if(!v3.ouvert)return;
 function v3Dom(){
   if(v3.el)return;
   const d=document.createElement('div');d.className='v3';d.id='v3';d.hidden=true;d.setAttribute('role','region');d.setAttribute('aria-label','Vue 3D');
-  d.innerHTML=`<div class="v3barre" id="v3Barre"></div><div class="v3coins"><button type="button" class="ib" onclick="v3Cadrer(true)" aria-label="Recadrer la vue" data-tip="Recadrer : tout le niveau d'un coup">${ico('ajuster')}</button></div>`
-    +`<p class="v3aide" id="v3Aide"><b>Glisser</b> : tourner · <b>clic droit</b> : déplacer · <b>molette</b> : zoomer · <b>Échap</b> : retour au plan</p><div class="v3msg" id="v3Msg" hidden></div>`;
+  /* D73 : la barre d'outils en haut ; en bas, la barre d'état de la 3D (l'aide du moment, la pièce où l'on est) */
+  d.innerHTML=`<div class="v3barre" id="v3Barre"></div><div class="v3bas" id="v3Bas"><span class="v3aide" id="v3Aide" role="status" aria-live="polite"></span><span class="v3info" id="v3Info"></span></div><div class="v3msg" id="v3Msg" hidden></div>`;
   document.getElementById('stage').appendChild(d);v3.el=d;
-  /* Échap dans le curseur de coupe : la 3D se ferme aussi (le clavier du plan ne lit pas les champs) */
-  d.addEventListener('keydown',e=>{if(e.key==='Escape'&&/^(INPUT|SELECT)$/.test(e.target.tagName)){e.preventDefault();v3Fermer();}});
+  /* Échap dans le curseur de coupe : comme ailleurs dans la 3D (le clavier du plan ne lit pas les champs) */
+  d.addEventListener('keydown',e=>{if(e.key==='Escape'&&/^(INPUT|SELECT)$/.test(e.target.tagName)){e.preventDefault();v3Echap();}});
   /* un outil choisi dans la colonne : on revient au plan, l'outil est pris */
-  const T=document.getElementById('tools');if(T)T.addEventListener('click',()=>{if(v3.ouvert)v3Fermer();},true);}
+  const T=document.getElementById('tools');if(T)T.addEventListener('click',()=>{if(v3.ouvert)v3Fermer();},true);
+  /* D73 · la visite : une touche relâchée s'arrête ; la fenêtre quittée, plus rien n'avance ; le plein écran quitté par le
+     navigateur (Échap) revient à la 3D dans sa zone */
+  window.addEventListener('keyup',e=>{if(v3.touches.size)v3.touches.delete(e.code);});
+  window.addEventListener('blur',()=>{v3.touches.clear();});
+  document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&v3.plein&&v3.pleinNatif){v3.pleinNatif=false;v3BasculerPlein(false);}});}
 function v3Message(k){const el=document.getElementById('v3Msg');if(!el)return;v3.etat=k||'';
   const retour=`<button type="button" class="ib" onclick="v3Fermer()">Retour au plan</button>`;
   const M={
@@ -9085,17 +9141,42 @@ function v3Message(k){const el=document.getElementById('v3Msg');if(!el)return;v3
 function v3TexteCoupe(c,H){return c>=H-1e-3?'murs entiers':fmt(c,2)+' m';}
 function v3Barre(){
   const b=document.getElementById('v3Barre');if(!b)return;
-  const nv=state.levels,pf=estPlanFinal(),H=(nv[v3.niveau]||nv[0]).height||2.5,c=Math.min(v3.coupe,H);
+  const nv=state.levels,pf=estPlanFinal(),H=(nv[v3.niveau]||nv[0]).height||2.5,c=Math.min(v3.coupe,H),tel=isMobile(),vis=v3.mode==='visite'||v3.choix,dedans=v3.mode==='visite';
   /* refaite seulement si ce qu'elle montre change : la refaire pendant qu'on tire le curseur de coupe le lâcherait */
-  const sg=[nv.map(l=>l.name).join('/'),v3.niveau,v3.vue,pf,H,v3ToitPossible()].join('|');if(sg===v3.sigBarre&&b.firstChild)return;v3.sigBarre=sg;
-  const niv=nv.length>1?`<div class="v3grp" role="group" aria-label="Niveau montré">${nv.map((l,i)=>`<button type="button" class="${i===v3.niveau?'on':''}" aria-pressed="${i===v3.niveau}" onclick="v3ChoisirNiveau(${i})">${esc(l.name)}</button>`).join('')}</div>`:'';
-  const vues=pf?'':`<div class="v3grp" role="group" aria-label="Moment montré">${['existant','final'].map(m=>`<button type="button" class="${v3.vue===m?'on':''}" aria-pressed="${v3.vue===m}" onclick="v3ChoisirVue('${m}')">${esc(nomVue(m))}</button>`).join('')}</div>`;
-  const coupe=`<div class="v3grp v3coupe"><label class="v3lbl" for="v3Coupe">Coupe</label><input type="range" id="v3Coupe" min="0.3" max="${H}" step="0.05" value="${c}" aria-valuetext="${v3TexteCoupe(c,H)}" oninput="v3ChoisirCoupe(this.value)"><output id="v3CoupeV" for="v3Coupe">${v3TexteCoupe(c,H)}</output></div>`;
+  const sg=[nv.map(l=>l.name).join('/'),v3.niveau,v3.vue,pf,H,v3ToitPossible(),v3.mode,v3.choix,v3.plein,tel].join('|');if(sg===v3.sigBarre&&b.firstChild){v3Resserrer();return;}v3.sigBarre=sg;
+  const foc=document.activeElement&&b.contains(document.activeElement)?document.activeElement.id:''; /* D73 : refaite, elle rend le focus au même bouton */
+  /* les vues en deux mots, le second masqué quand la barre se resserre (le nom accessible reste entier) */
+  const court=m=>{const l=nomVue(m),i=l.indexOf(' ');return i<0?esc(l):`<span><span class="vl">${esc(l.slice(0,i))}</span><span class="vx">${esc(l.slice(i))}</span></span>`;};
+  const retour=`<button type="button" class="ib v3retour" id="v3Retour" onclick="v3Fermer()" aria-label="Retour au plan" data-tip="Retour au plan (Échap)">${ico('flecheGauche')}<span class="v3t">Retour au plan</span></button>`;
+  /* D73 · Vue aérienne / Visite (la visite demande un clavier ou une souris : pas au téléphone). À l'écran, la maquette
+     s'appelle « Vue aérienne » : « maquette » est un mot de développeur (D39, langage.mjs) */
+  const mode=tel?'':`<div class="v3grp v3mode" role="group" aria-label="Façon de voir">${[['maquette','Maquette','Vue aérienne','maquette','Vue aérienne : tourner autour du niveau, les murs coupés à la hauteur voulue'],['visite','Visite','Visite','marcher','Visite : marcher dans les pièces, à hauteur d\'yeux (1,60 m)']]
+    .map(([k,id,t,ic,tip])=>{const on=k==='visite'?vis:!vis;return `<button type="button" id="v3${id}" class="${on?'on':''}" aria-pressed="${on}" aria-label="${t}" data-tip="${tip}" onclick="v3ChoisirMode('${k}',event)">${ico(ic)}<span class="v3t">${t}</span></button>`;}).join('')}</div>`;
+  const niv=nv.length>1?`<div class="v3grp" role="group" aria-label="Niveau montré">${nv.map((l,i)=>`<button type="button" id="v3Niv${i}" class="${i===v3.niveau?'on':''}" aria-pressed="${i===v3.niveau}" onclick="v3ChoisirNiveau(${i})">${esc(l.name)}</button>`).join('')}</div>`:'';
+  const vues=pf?'':`<div class="v3grp" role="group" aria-label="Moment montré">${['existant','final'].map(m=>`<button type="button" id="v3Vue${m==='final'?'Apres':'Avant'}" class="${v3.vue===m?'on':''}" aria-pressed="${v3.vue===m}" aria-label="${esc(nomVue(m))}" onclick="v3ChoisirVue('${m}')">${court(m)}</button>`).join('')}</div>`;
+  /* la coupe et la toiture sont celles de la maquette : la visite a ses murs entiers et ses plafonds */
+  const coupe=dedans?'':`<div class="v3grp v3coupe"><label class="v3lbl" for="v3Coupe">Coupe</label><input type="range" id="v3Coupe" min="0.3" max="${H}" step="0.05" value="${c}" aria-label="Hauteur de coupe" aria-valuetext="${v3TexteCoupe(c,H)}" oninput="v3ChoisirCoupe(this.value)"><output id="v3CoupeV" for="v3Coupe">${v3TexteCoupe(c,H)}</output></div>`;
   /* D72 : la toiture d'une rénovation qui la décrit (un Plan final n'en a pas) — un interrupteur, éteint par défaut */
-  const toit=v3ToitPossible()?`<div class="v3grp"><button type="button" id="v3Toit" class="${v3.toit?'on':''}" aria-pressed="${v3.toit}" onclick="v3ChoisirToit()" data-tip="Toiture : la maison fermée, vue du dehors (dernier niveau, murs entiers)">${ico('toit')}Toiture</button></div>`:'';
-  b.innerHTML=`<button type="button" class="ib" onclick="v3Fermer()" data-tip="Retour au plan (Échap)">${ico('flecheGauche')}Retour au plan</button>${niv}${vues}${coupe}${toit}`;}
+  const toit=!dedans&&v3ToitPossible()?`<div class="v3grp v3toit"><button type="button" id="v3Toit" class="${v3.toit?'on':''}" aria-pressed="${v3.toit}" aria-label="Toiture" onclick="v3ChoisirToit()" data-tip="Toiture : la maison fermée, vue du dehors (dernier niveau, murs entiers)">${ico('toit')}<span class="v3t">Toiture</span></button></div>`:'';
+  const recentrer=v3.mode==='visite'?'Recentrer : revenir à l\'entrée de la visite':'Recentrer : tout le niveau d\'un coup';
+  const droite=`<div class="v3grp v3droite" role="group" aria-label="Cadrage"><button type="button" class="v3ic" id="v3Recentrer" onclick="v3Cadrer(true)" aria-label="Recentrer la vue" data-tip="${recentrer}">${ico('ajuster')}</button>`
+    +`<button type="button" class="v3ic${v3.plein?' on':''}" id="v3Plein" aria-pressed="${v3.plein}" aria-label="Plein écran" onclick="v3BasculerPlein()" data-tip="${v3.plein?'Quitter le plein écran (Échap)':'Plein écran : la 3D sur toute la fenêtre'}">${ico(v3.plein?'quitterPleinEcran':'pleinEcran')}</button></div>`;
+  b.innerHTML=retour+mode+niv+vues+coupe+toit+droite;
+  if(foc){const x=document.getElementById(foc);if(x)try{x.focus({preventScroll:true});}catch{}}
+  v3Resserrer();}
+/* D73 · la barre se resserre par étapes tant qu'elle déborde de la largeur de la 3D (comme la barre du haut, majBarreHaut) :
+   « Retour au plan » en icône, les vues en un mot, la coupe sans son mot, la toiture en icône, Vue aérienne / Visite en icônes ;
+   puis, au téléphone, sur deux lignes */
+function v3Resserrer(){const b=document.getElementById('v3Barre');if(!b||!v3.el||v3.el.hidden)return;
+  b.classList.remove('r1','r2','r3','r4','r5','r6');const trop=()=>b.scrollWidth>b.clientWidth+1;
+  for(const c of ['r1','r2','r4','r5','r3','r6'])if(trop())b.classList.add(c);}
 function v3ChoisirNiveau(i){if(i===v3.niveau||!state.levels[i])return;const y0=v3.altitudes[v3.niveau]||0;v3.niveau=i;if(i!==state.levels.length-1)v3.toit=false;v3Barre();v3Rafraichir();
-  const dy=(v3.altitudes[i]||0)-y0;if(v3.ctl&&dy){v3.ctl.target.y+=dy;v3.cam.position.y+=dy;v3.ctl.update();v3.aRendre=true;}}
+  const dy=(v3.altitudes[i]||0)-y0;
+  if(v3.mode==='visite'&&v3.vis){if(v3.camMaquette&&dy){v3.camMaquette.p.y+=dy;v3.camMaquette.t.y+=dy;}
+    /* D73 · en visite : à la même place s'il y a une pièce dessous, sinon dans la plus grande pièce du niveau */
+    if(!v3SolSous(v3.vis.x,v3.vis.z,i)){const g=v3PlusGrande(i);if(g){v3.vis.x=g.x;v3.vis.z=g.y;}}
+    v3.glisse=null;v3Repousser();v3.vis.entree={x:v3.vis.x,z:v3.vis.z,yaw:v3.vis.yaw};v3Regard();v3PieceIci(true);return;}
+  if(v3.ctl&&dy){v3.ctl.target.y+=dy;v3.cam.position.y+=dy;v3.ctl.update();v3.aRendre=true;}}
 function v3ChoisirVue(m){if(m===v3.vue)return;v3.vue=m;v3Barre();v3Rafraichir();}
 function v3ChoisirCoupe(val){const H=(state.levels[v3.niveau]||{}).height||2.5;v3.coupe=Math.max(0.3,Math.min(H,+val||V3_COUPE));
   if(v3.toit&&v3.coupe<H-1e-3){v3.toit=false;v3MajToit();} /* D72 : couper les murs, c'est ouvrir la maison : la toiture s'efface */
@@ -9120,19 +9201,26 @@ function v3Init(){
   const ctl=new T.OrbitControls(cam,c);ctl.enableDamping=true;ctl.dampingFactor=0.12;ctl.screenSpacePanning=true;ctl.maxPolarAngle=Math.PI*0.485;ctl.minDistance=0.8;ctl.maxDistance=220;
   ctl.addEventListener('change',()=>{v3.aRendre=true;v3Profondeur();});
   Object.assign(v3,{renderer:r,scene:sc,cam,ctl,soleil,ciel,sol0});
+  v3Pointeurs(c); /* D73 : choisir une pièce, regarder et aller en visite */
+  try{if(navigator.keyboard&&navigator.keyboard.getLayoutMap)navigator.keyboard.getLayoutMap().then(m=>{const l=['KeyW','KeyA','KeyS','KeyD'].map(k=>String(m.get(k)||'').toUpperCase()).join('');if(/^[A-Z]{4}$/.test(l)){v3.zqsd=l;v3MajAide();}}).catch(()=>{});}catch{} /* l'aide dit les lettres du clavier branché (ZQSD, WASD…) */
   if(window.ResizeObserver)new ResizeObserver(()=>v3Taille()).observe(v3.el);else window.addEventListener('resize',v3Taille);
   v3Taille();return true;}
-function v3Taille(){if(!v3.renderer||!v3.el)return;if(v3.ouvert&&isMobile()){v3Fermer();return;}const w=v3.el.clientWidth,h=v3.el.clientHeight;if(!w||!h)return;
-  v3.renderer.setSize(w,h,false);v3.cam.aspect=w/h;v3.cam.updateProjectionMatrix();v3.aRendre=true;}
+function v3Taille(){if(!v3.renderer||!v3.el)return;
+  if(v3.ouvert&&isMobile()&&(v3.mode==='visite'||v3.choix))v3QuitterVisite(); /* D73 : au téléphone, la maquette seulement */
+  const c=v3.renderer.domElement,w=c.clientWidth,h=c.clientHeight;if(!w||!h)return; /* la zone de la scène, au-dessus de la barre d'état */
+  v3.renderer.setSize(w,h,false);v3.cam.aspect=w/h;v3.cam.updateProjectionMatrix();v3.aRendre=true;
+  if(v3.ouvert){v3Barre();v3MajAide();}}
 /* le plan proche suit la distance de la caméra (1/60) : la précision de profondeur reste fine, de près comme de loin */
-function v3Profondeur(){const d=v3.cam.position.distanceTo(v3.ctl.target),n=Math.min(1,Math.max(0.03,d/60)),f=Math.max(80,d*15);
+function v3Profondeur(){if(v3.mode==='visite')return; /* D73 : en visite, la profondeur est fixe (de 5 cm à 150 m) */
+  const d=v3.cam.position.distanceTo(v3.ctl.target),n=Math.min(1,Math.max(0.03,d/60)),f=Math.max(80,d*15);
   if(Math.abs(n-v3.cam.near)>1e-4||Math.abs(f-v3.cam.far)>1e-3){v3.cam.near=n;v3.cam.far=f;v3.cam.updateProjectionMatrix();}}
-function v3Boucle(){cancelAnimationFrame(v3.raf);
-  const f=()=>{if(!v3.ouvert)return;v3.raf=requestAnimationFrame(f);const bouge=v3.ctl.update();if(bouge||v3.aRendre){v3.aRendre=false;v3.renderer.render(v3.scene,v3.cam);}};
+function v3Boucle(){cancelAnimationFrame(v3.raf);v3.tPrec=performance.now();
+  const f=t=>{if(!v3.ouvert)return;v3.raf=requestAnimationFrame(f);const dt=Math.min(0.1,Math.max(0,(t-v3.tPrec)/1000));v3.tPrec=t; /* une image lente (10 i/s) avance encore à la bonne vitesse ; v3Pas découpe le pas */
+    const bouge=v3.mode==='visite'?v3Marcher(dt):v3.ctl.update();if(bouge||v3.aRendre){v3.aRendre=false;v3.renderer.render(v3.scene,v3.cam);v3.images++;}};
   v3.raf=requestAnimationFrame(f);}
 function v3Rendre(){if(v3.renderer)v3.renderer.render(v3.scene,v3.cam);}
 /* ── reconstruire, seulement quand le plan (ou un réglage de la 3D) change ── */
-function v3Signature(){return [JSON.stringify(state.levels),workflowDe(state),v3.niveau,v3.vue,v3.coupe,v3.toit,JSON.stringify(state.toiture||null),(state.chantier||CHANTIER_DEF).finition].join('|');} /* D72 : la toiture et la finition (la matière des menuiseries) aussi */
+function v3Signature(){return [JSON.stringify(state.levels),workflowDe(state),v3.niveau,v3.vue,v3.coupe,v3.toit,JSON.stringify(state.toiture||null),(state.chantier||CHANTIER_DEF).finition,v3.mode==='visite'].join('|');} /* D72 : la toiture et la finition (la matière des menuiseries) aussi */
 function v3Rafraichir(){
   if(!v3.ouvert||!v3.renderer)return;
   if(estPlanFinal()&&v3.vue!=='existant')v3.vue='existant';
@@ -9143,19 +9231,23 @@ function v3Rafraichir(){
   v3Barre();
   {const nv=state.levels[v3.niveau];v3.renderer.domElement.setAttribute('aria-label','Vue 3D du plan · '+(nv?nv.name:'')+(estPlanFinal()?'':' · '+nomVue(v3.vue))+' · coupe '+v3TexteCoupe(Math.min(v3.coupe,(nv&&nv.height)||2.5),(nv&&nv.height)||2.5)+(v3.registre.toit?' · toiture':''));}
   if(v3.etat==='vide'||v3.etat===''||v3.etat==='erreur')v3Message(v3.registre.murs.length?null:'vide');
+  if(v3.mode==='visite'&&v3.vis){v3Repousser();v3Regard();v3PieceIci(true);} /* D73 : le plan a changé sous le visiteur (un mur posé là, Ctrl Z) : il reste hors des murs */
   v3.aRendre=true;}
 function v3Altitudes(){const Y=[];let y=0;state.levels.forEach((lv,i)=>{Y[i]=y;y+=(lv.height||2.5)+V3_PLANCHER;});return Y;}
 function v3Liberer(o){o.traverse(x=>{if(x.geometry)x.geometry.dispose();});}
 function v3Construire(){
   const T=window.THREE;
+  v3Surligner(null); /* la pièce survolée partage la géométrie de son sol, libérée plus bas */
   if(v3.groupe){v3.scene.remove(v3.groupe);v3Liberer(v3.groupe);}
   const g=new T.Group();g.name='plan';
-  v3.altitudes=v3Altitudes();v3.registre={murs:[],trous:[],sols:[],raccords:0,doublages:0,menuiseries:[],equipements:[],escaliers:[],toit:null};
+  v3.altitudes=v3Altitudes();v3.registre={murs:[],trous:[],sols:[],raccords:0,doublages:0,menuiseries:[],equipements:[],escaliers:[],toit:null,obstacles:[],plafonds:[]};
+  const vis=v3.mode==='visite';
   for(let i=0;i<=v3.niveau;i++){const lv=state.levels[i],H=lv.height||2.5,cour=i===v3.niveau;
-    /* le niveau montré est coupé ; ceux du dessous sont entiers, et leurs murs montent jusqu'au plancher du dessus */
-    g.add(v3ConstruireNiveau(lv,i,v3.altitudes[i],H,cour?H:H+V3_PLANCHER-V3_JOINT,cour?Math.min(v3.coupe,H):null,i?-V3_JOINT:0));}
+    /* le niveau montré est coupé (D73 : en visite, murs entiers et plafonds) ; ceux du dessous sont entiers, et leurs murs
+       montent jusqu'au plancher du dessus */
+    g.add(v3ConstruireNiveau(lv,i,v3.altitudes[i],H,cour?H:H+V3_PLANCHER-V3_JOINT,cour?(vis?H:Math.min(v3.coupe,H)):null,i?-V3_JOINT:0));}
   if(v3ToitVisible()){const tg=v3Toiture();if(tg)g.add(tg);} /* D72 : la toiture, sur la maison fermée */
-  v3.scene.add(g);v3.groupe=g;v3Ombres();}
+  v3.scene.add(g);v3.groupe=g;v3Obstacles();v3Ombres();}
 function v3Faces(lv,m){if(m===mode()&&facesCache[lv.id])return facesCache[lv.id];const f=detectFaces(lv,m);pairRoomFaces(lv,f,false);return f;}
 /* les trous d'un mur dans une vue : abscisse le long de u (comme cutAtOpenings), hauteurs de l'allège au linteau */
 function v3Trous(lv,m,w,u,H){const out=[];
@@ -9195,12 +9287,13 @@ function v3ConstruireNiveau(lv,i,y0,H,haut,coupe,bas){
     v3.registre.equipements.push({id:it.id,type:it.type,niveau:i,boite:v3Emprise(seaux,mk)});});
   v3Maillages(seaux,grp,i);
   v3Sols(lv,i,m,faces,y0,grp);
+  if(v3.mode==='visite'&&i===v3.niveau)v3Plafonds(lv,i,m,faces,y0,H,grp); /* D73 */
   return grp;}
 /* un prisme percé : le polygone (plan) découpé le long de u aux bords des trous, chaque tranche montée sur ses hauteurs
    pleines ; au niveau coupé, rien au-dessus de la coupe, et le dessus tranché prend la couleur de la coupe */
 function v3Extruder(B,poly,u,trous,zb,zh,coupe,cle,y0){
   const pose=(pc,z0,z1)=>{let top=z1,tranche=false;if(coupe!=null){if(z0>=coupe-1e-4)return;if(z1>coupe+1e-4){top=coupe;tranche=true;}}
-    if(top-z0<1e-4)return;v3Prisme(B,pc,y0+z0,y0+top,cle,tranche,z0>1e-4);};
+    if(top-z0<1e-4)return;v3Prisme(B,pc,y0+z0,y0+top,cle,tranche,z0>1e-4);if(v3.registre&&v3.registre.obstacles)v3.registre.obstacles.push({poly:pc,z0,z1:top,y0});}; /* D73 : ce qui arrête le visiteur */
   if(!u||!trous.length){pose(poly,zb,zh);return;}
   const sv=poly.map(p=>p.x*u.x+p.y*u.y),sMin=Math.min(...sv),sMax=Math.max(...sv),cuts=[sMin,sMax];
   trous.forEach(h=>{if(h.s1>sMin+1e-4&&h.s0<sMax-1e-4)cuts.push(Math.max(sMin,h.s0),Math.min(sMax,h.s1));});
@@ -9275,8 +9368,17 @@ function v3Sols(lv,i,m,faces,y0,grp){
     const trous=faces.filter(g=>g!==f&&g.poly.every(p=>pointIn(p,f.poly)||f.poly.some(q=>same(p,q)))&&g.poly.some(p=>pointIn(p,f.poly))).map(g=>g.poly)
       .concat(tremies.filter(t=>t.every(p=>pointIn(p,P))));
     const genre=v3GenreSol(typ,RT[r.type].ext),M=v3MatSol(genre),geo=v3Plancher(P,trous,y0+(i?0.012:0.003),M.userData.taille);if(!geo)return; /* à l'étage, le sol passe 12 mm au-dessus du haut des murs du dessous (pas de scintillement) */
-    const me=new T.Mesh(geo,M);me.receiveShadow=true;me.userData={kind:'sol',roomId:r.id,niveau:i,sol:typ,genre};grp.add(me);
-    v3.registre.sols.push({roomId:r.id,niveau:i,sol:typ,genre,aire:Math.abs(polyArea(P))-trous.reduce((s,t)=>s+Math.abs(polyArea(t)),0),trous:trous.length});});}
+    const nom=roomName(r),me=new T.Mesh(geo,M);me.receiveShadow=true;me.userData={kind:'sol',roomId:r.id,niveau:i,sol:typ,genre,nom};grp.add(me);
+    v3.registre.sols.push({roomId:r.id,niveau:i,sol:typ,genre,aire:Math.abs(polyArea(P))-trous.reduce((s,t)=>s+Math.abs(polyArea(t)),0),trous:trous.length,
+      nom,type:r.type,x:f.label.x,y:f.label.y});});} /* D73 : le nom et le repère de la pièce (la visite y entre) */
+/* D73 · les plafonds de la visite : un par pièce couverte (polyInt), à la hauteur du niveau, percé de la trémie de l'escalier
+   qui monte ; vus d'en dessous (la face arrière d'un plancher), ils ne portent ni ne reçoivent d'ombre : le soleil entre
+   comme par un ciel ouvert, la pièce reste claire */
+function v3Plafonds(lv,i,m,faces,y0,H,grp){const T=window.THREE,up=state.levels[i+1],tremies=up?v3Tremies(up,i+1,m):[];
+  if(!v3.mats.plafond)v3.mats.plafond=new T.MeshStandardMaterial({color:0xF6F6F3,roughness:0.95,metalness:0,side:T.BackSide,emissive:0xA6A392}); /* éclairé d'en dessous (le ciel bleuté), il resterait gris-bleu : un peu de clarté chaude le garde blanc neutre */
+  faces.forEach(f=>{const r=f.room;if(!r||!RT[r.type]||RT[r.type].ext)return;const P=(f.polyInt&&f.polyInt.length>2?f.polyInt:f.poly);
+    const geo=v3Plancher(P,tremies.filter(t=>t.every(p=>pointIn(p,P))),y0+H,1);if(!geo)return;
+    const me=new T.Mesh(geo,v3.mats.plafond);me.userData={kind:'plafond',roomId:r.id,niveau:i};grp.add(me);v3.registre.plafonds.push({roomId:r.id,niveau:i,y:y0+H});});}
 function v3Plancher(P,trous,y,taille){const T=window.THREE,V=p=>new T.Vector2(p.x,p.y),C=P.map(V),Hs=trous.map(t=>t.map(V));if(C.length<3)return null;
   const tris=T.ShapeUtils.triangulateShape(C,Hs),pts=C.concat(...Hs);if(!tris.length)return null; /* les indices lisent le contour puis les trous, tels que triangulateShape les a gardés */
   const s={pos:[],nor:[]},uv=[];tris.forEach(([a,b,c])=>{const n0=s.pos.length;v3Tri(s,[pts[a].x,y,pts[a].y],[pts[b].x,y,pts[b].y],[pts[c].x,y,pts[c].y],[0,1,0]);
@@ -9563,7 +9665,7 @@ function v3TextureToit(genre){const N=256,c=document.createElement('canvas');c.w
   else{const im=g.getImageData(0,0,N,N),p=im.data;for(let k=0;k<p.length;k+=4){const e=(h()-0.5)*26;p[k]+=e;p[k+1]+=e;p[k+2]+=e;}g.putImageData(im,0,0);}
   const T=window.THREE,tx=new T.CanvasTexture(c);tx.wrapS=tx.wrapT=T.RepeatWrapping;tx.encoding=T.sRGBEncoding;tx.anisotropy=Math.min(8,v3.renderer.capabilities.getMaxAnisotropy());return tx;}
 function v3ToitPossible(){try{return !estPlanFinal()&&(state.chantier||CHANTIER_DEF).bien!=='appartement'&&!!toiture()&&!!toitureGeom();}catch(e){return false;}} /* un appartement n'a pas de toiture (estAppart, sans chantier()) */
-function v3ToitVisible(){const top=state.levels.length-1,lv=state.levels[top];return !!v3.toit&&v3.niveau===top&&!!lv&&v3.coupe>=(lv.height||2.5)-1e-3&&v3ToitPossible();}
+function v3ToitVisible(){const top=state.levels.length-1,lv=state.levels[top];return !!v3.toit&&v3.mode!=='visite'&&v3.niveau===top&&!!lv&&v3.coupe>=(lv.height||2.5)-1e-3&&v3ToitPossible();}
 function v3MajToit(){const b=document.getElementById('v3Toit');if(b){b.classList.toggle('on',!!v3.toit);b.setAttribute('aria-pressed',String(!!v3.toit));}}
 /* l'interrupteur : allumé, la 3D montre le dernier niveau, murs entiers, et la toiture dessus ; couper les murs l'éteint */
 function v3ChoisirToit(){v3.toit=!v3.toit;
@@ -9634,28 +9736,189 @@ function v3Ombres(){const T=window.THREE,b=v3Boite(),c=b.getCenter(new T.Vector3
   v3.sol0.position.set(c.x,-0.002,c.z);v3.sol0.scale.set(R*12,R*12,1);
   const dir=new T.Vector3(-0.35,1.45,0.95).normalize(); /* haut, du côté de la caméra et un peu à sa gauche : les faces vues sont éclairées, les ombres partent derrière */v3.soleil.position.copy(c).addScaledVector(dir,R*3);v3.soleil.target.position.copy(c);
   const o=v3.soleil.shadow.camera;o.left=-R*1.15;o.right=R*1.15;o.top=R*1.15;o.bottom=-R*1.15;o.near=0.5;o.far=R*7;o.updateProjectionMatrix();v3.aRendre=true;}
-function v3Cadrer(doux){if(!v3.ctl)return;const T=window.THREE,b=v3Boite(),c=b.getCenter(new T.Vector3()),sz=b.getSize(new T.Vector3());
-  const y=v3.altitudes[v3.niveau]||0,R=Math.max(3,Math.hypot(sz.x,sz.z)/2),k=Math.max(1,1/Math.max(0.6,v3.cam.aspect||1));
-  const d=R/Math.sin((v3.cam.fov/2)*Math.PI/180)*0.98*k,s=new T.Spherical(d,0.88,0.42);
+function v3Cadrer(doux){if(!v3.ctl)return;
+  if(v3.mode==='visite'&&v3.vis&&v3.vis.entree){const E=v3.vis.entree;Object.assign(v3.vis,{x:E.x,z:E.z,yaw:E.yaw,pitch:-0.06});v3.glisse=null;v3Regard();v3PieceIci(true); /* D73 : en visite, retour à l'entrée */
+    if(doux)try{v3.renderer.domElement.focus({preventScroll:true});}catch{}return;}
+  const T=window.THREE,b=v3Boite(),c=b.getCenter(new T.Vector3()),sz=b.getSize(new T.Vector3());
+  const y=v3.altitudes[v3.niveau]||0,R=Math.max(3,Math.hypot(sz.x,sz.z)/2),fv=v3.cam.fov*Math.PI/180,f=Math.min(fv,2*Math.atan(Math.tan(fv/2)*(v3.cam.aspect||1))); /* D73 : l'angle le plus étroit (la largeur, sur un écran en hauteur) */
+  const d=R/Math.sin(f/2)*0.98,s=new T.Spherical(d,0.88,0.42);
   v3.ctl.target.set(c.x,y+0.4,c.z);v3.cam.position.copy(v3.ctl.target).add(new T.Vector3().setFromSpherical(s));v3Profondeur();
   v3.cam.lookAt(v3.ctl.target);v3.ctl.update();v3.aRendre=true;if(doux)try{v3.renderer.domElement.focus({preventScroll:true});}catch{}}
 /* ── clavier : Échap ou 3 rendent le plan ; les flèches tournent, + et − rapprochent ; Ctrl Z / Y passent (le plan change, la
    3D suit) ; rien d'autre n'atteint le plan caché derrière ── */
 function v3Clavier(e){
   const seul=!e.ctrlKey&&!e.metaKey&&!e.altKey;
-  if(!v3.ouvert){if(e.key==='3'&&seul&&!(tool==='mur'&&chain.length)&&!rectMode&&!isMobile()&&lettreAutorisee(e)){e.preventDefault();v3Ouvrir();return true;}return false;}
-  if(e.key==='Escape'||(e.key==='3'&&seul&&raccourcisOn&&((e.target.closest&&e.target.closest('#v3'))||lettreAutorisee(e)))){e.preventDefault();v3Fermer();return true;} /* la 3D est le plan, le temps qu'elle est ouverte : sa touche y vaut comme dans le canvas */
+  if(!v3.ouvert){if(e.key==='3'&&seul&&!(tool==='mur'&&chain.length)&&!rectMode&&lettreAutorisee(e)){e.preventDefault();v3Ouvrir();return true;}return false;}
+  if(e.key==='Escape'){e.preventDefault();v3Echap();return true;} /* D73 : un cran à la fois (plein écran, visite, plan) */
+  if(e.key==='3'&&seul&&raccourcisOn&&((e.target.closest&&e.target.closest('#v3'))||lettreAutorisee(e))){e.preventDefault();v3Fermer();return true;} /* la 3D est le plan, le temps qu'elle est ouverte : sa touche y vaut comme dans le canvas */
   if((e.ctrlKey||e.metaKey)&&/^[zys]$/i.test(e.key))return false;
-  if(v3.ctl&&seul&&e.key.startsWith('Arrow')){e.preventDefault();const T=window.THREE,off=v3.cam.position.clone().sub(v3.ctl.target),s=new T.Spherical().setFromVector3(off),pas=e.shiftKey?0.3:0.1;
+  /* D73 · la visite : ZQSD (WASD) et les flèches tant qu'elles sont enfoncées, Maj pour aller plus vite */
+  if(v3.mode==='visite'&&seul&&V3_TOUCHES.includes(e.code)){e.preventDefault();v3.touches.add(e.code);if(!/^Shift/.test(e.code))v3.glisse=null;return true;}
+  /* une pièce à choisir : Entrée prend celle du centre de la vue (ou la plus grande) */
+  if(v3.choix&&seul&&e.key==='Enter'&&!(e.target.closest&&e.target.closest('button,input,select,a[href]'))){e.preventDefault();v3EntrerVisite(v3PieceCentre());return true;}
+  if(v3.mode==='maquette'&&v3.ctl&&seul&&e.key.startsWith('Arrow')){e.preventDefault();const T=window.THREE,off=v3.cam.position.clone().sub(v3.ctl.target),s=new T.Spherical().setFromVector3(off),pas=e.shiftKey?0.3:0.1;
     if(e.key==='ArrowLeft')s.theta-=pas;if(e.key==='ArrowRight')s.theta+=pas;if(e.key==='ArrowUp')s.phi=Math.max(0.05,s.phi-pas);if(e.key==='ArrowDown')s.phi=Math.min(v3.ctl.maxPolarAngle,s.phi+pas);
     v3.cam.position.copy(v3.ctl.target).add(off.setFromSpherical(s));v3.ctl.update();v3.aRendre=true;return true;}
-  if(v3.ctl&&seul&&/^[+=\-]$/.test(e.key)){e.preventDefault();const off=v3.cam.position.clone().sub(v3.ctl.target).multiplyScalar(e.key==='-'?1.15:1/1.15);
+  if(v3.mode==='maquette'&&v3.ctl&&seul&&/^[+=\-]$/.test(e.key)){e.preventDefault();const off=v3.cam.position.clone().sub(v3.ctl.target).multiplyScalar(e.key==='-'?1.15:1/1.15);
     if(off.length()>v3.ctl.minDistance&&off.length()<v3.ctl.maxDistance)v3.cam.position.copy(v3.ctl.target).add(off);v3.ctl.update();v3.aRendre=true;return true;}
   return true;}
+/* ═══ D73 · LA VISITE ═══
+   À hauteur d'yeux (1,60 m) dans le niveau montré, murs entiers, sous ses plafonds. On y entre par un clic dans une pièce
+   (après « Visite », ou d'un double-clic dans la maquette), au clavier par la pièce du centre de la vue. On marche au clavier
+   (ZQSD / WASD, flèches), on regarde en glissant, on va où l'on clique au sol ; la molette avance et recule. Les murs
+   arrêtent : le visiteur est un cercle, les obstacles sont les tranches pleines des murs, raccords et doublages telles que
+   la 3D les monte (v3Extruder), vues de dessus — un trou de porte est vide, une allège est pleine. Aucun escalier ne se
+   monte : on change de niveau dans la barre. Rien de tout cela n'écrit dans le plan. */
+function v3ChoisirMode(m,ev){
+  if(m!=='visite'){v3QuitterVisite();return;}
+  if(isMobile()||!v3.renderer||v3.mode==='visite')return;
+  if(ev&&ev.detail===0){if(!v3EntrerVisite(v3PieceCentre())){const el=document.getElementById('v3Info');if(el)el.innerHTML='Aucune pièce fermée à visiter';}return;} /* au clavier (Entrée ou Espace sur le bouton) : directement dans la pièce du centre */
+  if(v3.choix)return;
+  v3.choix=true;v3.el.classList.add('choix');v3Barre();v3MajAide();}
+function v3QuitterVisite(fermeture){if(v3.mode!=='visite'&&!v3.choix)return;const etait=v3.mode==='visite';
+  v3.mode='maquette';v3.choix=false;v3.vis=null;v3.glisse=null;v3.survol=null;v3.touches.clear();v3Surligner(null);
+  if(v3.el){v3.el.classList.remove('visite','choix');if(v3.renderer)v3.renderer.domElement.classList.remove('surPiece');}
+  if(v3.cam&&etait){v3.cam.fov=V3_FOV.maquette;v3.cam.rotation.order='XYZ';if(v3.camMaquette){v3.cam.position.copy(v3.camMaquette.p);v3.ctl.target.copy(v3.camMaquette.t);}v3.cam.updateProjectionMatrix();}
+  if(v3.ctl){v3.ctl.enabled=true;if(etait){v3.cam.lookAt(v3.ctl.target);v3.ctl.update();v3Profondeur();}}
+  v3Lumiere();
+  if(fermeture)return;
+  v3Barre();v3MajAide();v3Rafraichir();v3.aRendre=true;}
+/* entrer : `c` est un point au sol ({x, y, niveau}) ou l'identifiant d'une pièce construite */
+function v3EntrerVisite(c){
+  if(!v3.ouvert||!v3.renderer||!v3.groupe||isMobile())return false;
+  if(c!=null&&typeof c!=='object'){const q=(v3.registre.sols||[]).find(x=>x.roomId===c);c=q?{x:q.x,y:q.y,niveau:q.niveau}:null;}
+  if(!c||!state.levels[c.niveau!=null?c.niveau:v3.niveau])return false;
+  if(v3.mode!=='visite')v3.camMaquette={p:v3.cam.position.clone(),t:v3.ctl.target.clone()};
+  /* on regarde où regardait la maquette, à l'horizontale */
+  const d=v3.ctl.target.clone().sub(v3.cam.position),yaw=v3.mode==='visite'&&v3.vis?v3.vis.yaw:Math.atan2(-d.x,-d.z);
+  const dy=(v3.altitudes[c.niveau]||0)-(v3.altitudes[v3.niveau]||0);if(c.niveau!=null&&c.niveau!==v3.niveau&&v3.camMaquette&&dy){v3.camMaquette.p.y+=dy;v3.camMaquette.t.y+=dy;}
+  v3.mode='visite';v3.choix=false;if(c.niveau!=null)v3.niveau=c.niveau;v3.toit=false;v3.survol=null;v3.glisse=null;
+  v3.vis={x:c.x,z:c.y,yaw,pitch:-0.06,entree:null,piece:null};
+  v3.ctl.enabled=false;v3.cam.fov=V3_FOV.visite;v3.cam.near=0.05;v3.cam.far=150;v3.cam.updateProjectionMatrix();
+  v3Surligner(null);v3.el.classList.remove('choix');v3.el.classList.add('visite');
+  v3Lumiere();v3Barre();v3Rafraichir();v3Repousser();
+  /* entré d'un clic, on regarde où regardait la maquette ; sinon (clavier, niveau, plus grande pièce), ou face à un mur à
+     moins de 2 m : vers le côté le plus profond de la pièce */
+  if(!c.mesh||v3Degage(v3.vis.x,v3.vis.z,v3.vis.yaw,true)<2){let best=v3.vis.yaw,bd=-1;for(let k=0;k<36;k++){const a=yaw+k*Math.PI/18,dd=v3Degage(v3.vis.x,v3.vis.z,a,true);if(dd>bd+0.05){bd=dd;best=a;}}v3.vis.yaw=best;} /* la profondeur jusqu'aux murs, portes et baies comprises : on regarde la pièce, pas le dehors */
+  v3.vis.entree={x:v3.vis.x,z:v3.vis.z,yaw:v3.vis.yaw};v3Regard();v3PieceIci(true);v3MajAide();
+  try{v3.renderer.domElement.focus({preventScroll:true});}catch{}
+  return true;}
+/* la distance libre devant soi (vue de dessus, jusqu'à la première tranche pleine ; 30 m au plus) ; `tout` : jusqu'au premier
+   mur, même au-dessus d'une porte ou sous une baie (la profondeur de la pièce) */
+function v3Degage(x,z,yaw,tout){const dx=-Math.sin(yaw),dz=-Math.cos(yaw);let best=30;
+  for(const o of (tout?v3.obstTout:v3.obst)){const P=o.poly;for(let k=0;k<P.length;k++){const a=P[k],b=P[(k+1)%P.length],ex=b.x-a.x,ey=b.y-a.y,den=dx*ey-dz*ex;if(Math.abs(den)<1e-9)continue;
+    const t=((a.x-x)*ey-(a.y-z)*ex)/den,u=((a.x-x)*dz-(a.y-z)*dx)/den;if(t>0&&u>=0&&u<=1&&t<best)best=t;}}
+  return best;}
+/* la lumière : la visite est plus claire que la maquette (on y est à l'ombre des murs) */
+function v3Lumiere(){if(!v3.ciel)return;const vis=v3.mode==='visite';v3.ciel.intensity=vis?0.95:0.7;v3.soleil.intensity=vis?0.5:0.6;v3.aRendre=true;}
+/* la caméra suit le visiteur : ses yeux à 1,60 m du sol du niveau */
+function v3Regard(){const V=v3.vis;if(!V||!v3.cam)return;v3.cam.position.set(V.x,(v3.altitudes[v3.niveau]||0)+V3_YEUX,V.z);v3.cam.rotation.set(V.pitch,V.yaw,0,'YXZ');v3.cam.updateMatrixWorld();v3.aRendre=true;}
+/* une image de la visite : les touches enfoncées, ou le chemin vers le point cliqué */
+function v3Marcher(dt){const V=v3.vis;if(!V)return false;const K=v3.touches,k=c=>K.has(c);let bouge=false;
+  const av=(k('KeyW')||k('ArrowUp')?1:0)-(k('KeyS')||k('ArrowDown')?1:0),lat=(k('KeyD')?1:0)-(k('KeyA')?1:0),rot=(k('ArrowLeft')?1:0)-(k('ArrowRight')?1:0);
+  if(rot){V.yaw+=rot*V3_TOURNE*dt;bouge=true;}
+  if(av||lat){const l=(k('ShiftLeft')||k('ShiftRight')?V3_COURSE:V3_PAS)*dt/(av&&lat?Math.SQRT2:1),s=Math.sin(V.yaw),c=Math.cos(V.yaw);
+    v3Pas((-s*av+c*lat)*l,(-c*av-s*lat)*l);bouge=true;}
+  else if(v3.glisse){const g=v3.glisse,dx=g.x-V.x,dz=g.z-V.z,l=Math.hypot(dx,dz);
+    if(l<0.02)v3.glisse=null;else{const a=Math.min(l,(g.v||2.4)*dt),x0=V.x,z0=V.z;v3Pas(dx/l*a,dz/l*a);if(Math.hypot(V.x-x0,V.z-z0)<a*0.25)v3.glisse=null; /* arrêté par un mur */bouge=true;}}
+  if(bouge){v3Regard();v3PieceIci();}
+  return bouge;}
+/* un pas, par tranches de 8 cm (un mur de 7 cm ne se traverse pas d'un coup), puis hors des murs */
+function v3Pas(dx,dz){const V=v3.vis;if(!V)return;const l=Math.hypot(dx,dz),n=Math.max(1,Math.ceil(l/0.08));for(let k=0;k<n;k++){V.x+=dx/n;V.z+=dz/n;v3Repousser();}}
+/* hors des murs : le cercle du visiteur ne recouvre aucune tranche pleine ; il glisse le long d'un mur au lieu de s'y coller */
+function v3Repousser(){const V=v3.vis;if(!V)return;const R=V3_RAYON;
+  for(let it=0;it<4;it++){let pousse=false;
+    for(const o of v3.obst){if(V.x<o.x0-R||V.x>o.x1+R||V.z<o.y0-R||V.z>o.y1+R)continue;
+      const P=o.poly,p={x:V.x,y:V.z};let best=null;
+      for(let k=0;k<P.length;k++){const a=P[k],b=P[(k+1)%P.length],ex=b.x-a.x,ey=b.y-a.y,L2=ex*ex+ey*ey,t=L2>1e-12?Math.max(0,Math.min(1,((p.x-a.x)*ex+(p.y-a.y)*ey)/L2)):0,cx=a.x+ex*t,cy=a.y+ey*t,dd=Math.hypot(p.x-cx,p.y-cy);
+        if(!best||dd<best.d)best={d:dd,x:cx,y:cy,nx:ey,ny:-ex};}
+      if(!best)continue;const dedans=pointIn(p,P);if(!dedans&&best.d>=R-1e-6)continue;
+      let ux,uy;if(best.d>1e-6){ux=(p.x-best.x)/best.d;uy=(p.y-best.y)/best.d;if(dedans){ux=-ux;uy=-uy;}}else{const ln=Math.hypot(best.nx,best.ny)||1;ux=best.nx/ln;uy=best.ny/ln;if(pointIn({x:best.x+ux*1e-3,y:best.y+uy*1e-3},P)){ux=-ux;uy=-uy;}}
+      V.x=best.x+ux*(R+1e-4);V.z=best.y+uy*(R+1e-4);pousse=true;}
+    if(!pousse)break;}}
+/* les obstacles du niveau montré : les tranches pleines aux genoux ou à la taille ; en visite, la trémie de l'escalier qui
+   monte du dessous aussi (on ne marche pas dans le vide : elle a son garde-corps, même si le plan ne le dessine pas) */
+function v3Obstacles(){const y=v3.altitudes[v3.niveau]||0,lv=state.levels[v3.niveau],bb=P=>{const xs=P.map(p=>p.x),ys=P.map(p=>p.y);return {poly:P,x0:Math.min(...xs),x1:Math.max(...xs),y0:Math.min(...ys),y1:Math.max(...ys)};};
+  const ici=((v3.registre&&v3.registre.obstacles)||[]).filter(o=>Math.abs(o.y0-y)<1e-6);v3.obst=ici.filter(o=>V3_GENOU.some(h=>o.z0<h&&o.z1>h)).map(o=>bb(o.poly));v3.obstTout=ici.map(o=>bb(o.poly));
+  if(v3.mode==='visite'&&lv)v3Tremies(lv,v3.niveau,v3.vue).forEach(P=>{if(P.length>2)v3.obst.push(bb(P));});}
+/* le sol sous un point d'un niveau (la pièce où l'on est) */
+function v3SolSous(x,z,i){if(!v3.groupe)return null;const T=window.THREE,rc=v3.rcBas||(v3.rcBas=new T.Raycaster()),y=v3.altitudes[i]||0;
+  rc.set(new T.Vector3(x,y+1.2,z),new T.Vector3(0,-1,0));rc.near=0;rc.far=1.5;const sols=[];
+  v3.groupe.children.forEach(g=>{if(g.userData.niveau===i)g.children.forEach(me=>{if(me.userData.kind==='sol')sols.push(me);});});
+  const h=rc.intersectObjects(sols,false)[0];return h?h.object.userData:null;}
+function v3PieceIci(force){const V=v3.vis;if(!V)return;const t=performance.now();if(!force&&t-v3.pieceT<150)return;v3.pieceT=t;
+  const u=v3SolSous(V.x,V.z,v3.niveau),nom=u?u.nom||'':'';if(nom===V.piece&&!force)return;V.piece=nom;v3Info();
+  const lv=state.levels[v3.niveau];v3.renderer.domElement.setAttribute('aria-label','Visite 3D du plan · '+(nom||'hors des pièces')+(lv?' · '+lv.name:''));}
+/* la plus grande pièce habitable d'un niveau (à défaut, la plus grande) : là où l'on entre sans viser */
+function v3PlusGrande(i){const S=((v3.registre&&v3.registre.sols)||[]).filter(q=>q.niveau===i).sort((a,b)=>b.aire-a.aire),h=S.find(q=>RT[q.type]&&!RT[q.type].ext&&!RT[q.type].nh)||S[0];
+  return h?{x:h.x,y:h.y,niveau:i,roomId:h.roomId,nom:h.nom}:null;}
+function v3PieceCentre(){return v3SolNdc(0,0)||v3PlusGrande(v3.niveau);}
+/* ce que vise le pointeur : un sol (à travers les meubles), jamais à travers un mur, une vitre ou un plafond */
+function v3SolNdc(nx,ny){if(!v3.groupe||!v3.cam)return null;const T=window.THREE,rc=v3.rc||(v3.rc=new T.Raycaster());rc.setFromCamera(new T.Vector2(nx,ny),v3.cam);rc.near=0;rc.far=Infinity;
+  const h=rc.intersectObject(v3.groupe,true).find(x=>V3_VISE.includes(x.object.userData.kind));if(!h||h.object.userData.kind!=='sol')return null;
+  const u=h.object.userData;if(v3.mode==='visite'&&u.niveau!==v3.niveau)return null;return {x:h.point.x,y:h.point.z,niveau:u.niveau,roomId:u.roomId,nom:u.nom,mesh:h.object};}
+function v3Sol(e){const r=v3.renderer.domElement.getBoundingClientRect();if(!r.width||!r.height)return null;return v3SolNdc((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height)*2+1);}
+/* la pièce survolée, en indigo léger (une copie de son sol, posée dessus) */
+function v3Surligner(me){if(v3.surligne){if(me&&v3.surligne.userData.de===me)return;if(v3.scene)v3.scene.remove(v3.surligne);v3.surligne=null;v3.aRendre=true;}
+  if(!me||!window.THREE)return;const T=window.THREE;
+  if(!v3.mats.__survol)v3.mats.__survol=new T.MeshBasicMaterial({color:0x4F46E5,transparent:true,opacity:0.22,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+  const o=new T.Mesh(me.geometry,v3.mats.__survol);o.userData={kind:'survol',de:me};o.renderOrder=3;v3.scene.add(o);v3.surligne=o;v3.aRendre=true;}
+/* le pointeur sur la scène : un clic choisit la pièce (ou, en visite, le point où aller) ; glisser regarde ; la molette avance */
+function v3Pointeurs(c){let bas=null,survolT=0,dernier=null;
+  const survoler=()=>{survolT=0;if(!dernier||!v3.ouvert)return;const h=(v3.choix||v3.mode==='visite')?v3Sol(dernier):null;c.classList.toggle('surPiece',!!h);
+    if(v3.choix){v3Surligner(h?h.mesh:null);const nom=h?h.nom||'':null;if(nom!==v3.survol){v3.survol=nom;v3Info();}}};
+  c.addEventListener('pointerdown',e=>{bas={x:e.clientX,y:e.clientY,t:performance.now(),b:e.button,id:e.pointerId,yaw:v3.vis?v3.vis.yaw:0,pitch:v3.vis?v3.vis.pitch:0,glisse:false};
+    if(v3.mode==='visite'&&e.button===0){try{c.setPointerCapture(e.pointerId);}catch{}v3.glisse=null;}});
+  c.addEventListener('pointermove',e=>{
+    if(bas&&v3.mode==='visite'&&v3.vis&&e.pointerId===bas.id&&(e.buttons&1)){const dx=e.clientX-bas.x,dy=e.clientY-bas.y;if(!bas.glisse&&Math.hypot(dx,dy)>4)bas.glisse=true;
+      if(bas.glisse){const k=0.0045;v3.vis.yaw=bas.yaw+dx*k;v3.vis.pitch=Math.max(-1.3,Math.min(1.3,bas.pitch+dy*k));v3Regard();} /* on attrape la vue : glisser à droite la tourne vers la gauche, comme une photo qu'on fait défiler */
+      return;}
+    if(v3.choix||v3.mode==='visite'){dernier={clientX:e.clientX,clientY:e.clientY};if(!survolT)survolT=requestAnimationFrame(survoler);}});
+  c.addEventListener('pointerup',e=>{const b=bas;bas=null;if(!b||e.pointerId!==b.id||b.b!==0||e.button!==0||b.glisse)return;
+    if(Math.hypot(e.clientX-b.x,e.clientY-b.y)>5||performance.now()-b.t>700)return;v3Clic(e);});
+  c.addEventListener('pointercancel',()=>{bas=null;});
+  c.addEventListener('pointerleave',()=>{dernier=null;c.classList.remove('surPiece');if(v3.choix){v3Surligner(null);if(v3.survol!=null){v3.survol=null;v3Info();}}});
+  c.addEventListener('dblclick',e=>{if(v3.mode==='maquette'&&!v3.choix&&!isMobile()){const h=v3Sol(e);if(h){e.preventDefault();v3EntrerVisite(h);}}});
+  c.addEventListener('wheel',e=>{if(v3.mode!=='visite'||!v3.vis)return;e.preventDefault();const V=v3.vis,s=-Math.sign(e.deltaY)*0.5;if(!s)return;
+    v3.glisse={x:V.x-Math.sin(V.yaw)*s,z:V.z-Math.cos(V.yaw)*s,v:3};},{passive:false});}
+function v3Clic(e){const h=v3Sol(e);
+  if(v3.choix){if(h)v3EntrerVisite(h);else{const el=document.getElementById('v3Info');if(el)el.innerHTML='Clique sur le sol d\'une pièce';}return;}
+  if(v3.mode==='visite'&&h)v3.glisse={x:h.x,z:h.y,v:2.4};}
+/* ── D73 · plein écran : la 3D sur toute la fenêtre ; l'écran entier aussi quand le navigateur le permet (une page intégrée
+   peut le refuser : la fenêtre suffit alors) ── */
+function v3BasculerPlein(on){if(on==null)on=!v3.plein;on=!!on;if(on===v3.plein)return;v3.plein=on;document.body.classList.toggle('v3plein',on);
+  if(on){v3.pleinNatif=false;try{if(document.fullscreenEnabled&&!document.fullscreenElement&&document.documentElement.requestFullscreen){v3.pleinNatif=true;const pr=document.documentElement.requestFullscreen();if(pr&&pr.catch)pr.catch(()=>{v3.pleinNatif=false;});}}catch{v3.pleinNatif=false;}}
+  else{const nat=v3.pleinNatif;v3.pleinNatif=false;try{if(nat&&document.fullscreenElement&&document.exitFullscreen){const pr=document.exitFullscreen();if(pr&&pr.catch)pr.catch(()=>{});}}catch{}}
+  v3Barre();v3Taille();}
+/* ── D73 · la barre d'état : l'aide du moment (une ligne), et la pièce où l'on est ── */
+function v3AideTexte(){const tactile=(()=>{try{return matchMedia('(pointer:coarse)').matches;}catch{return false;}})(),court=!!v3.el&&v3.el.clientWidth>0&&v3.el.clientWidth<780; /* étroite, l'aide garde l'essentiel */
+  if(v3.mode==='visite')return tactile?'<b>Glisser</b> : regarder · <b>toucher le sol</b> : y aller · <b>Vue aérienne</b> : en sortir':`<kbd>${esc(v3.zqsd)}</kbd> ou <b>flèches</b> : marcher · <b>glisser</b> : regarder · <b>clic au sol</b> : y aller`+(court?'':' · <kbd>Maj</kbd> : plus vite · <kbd>Échap</kbd> : vue aérienne');
+  if(v3.choix)return court?'<b>Clique dans une pièce</b> pour y entrer · <kbd>Entrée</kbd> : celle du centre':'<b>Clique dans une pièce</b> pour la visiter à hauteur d\'yeux · <kbd>Entrée</kbd> : la pièce au centre · <kbd>Échap</kbd> : annuler';
+  if(isMobile()||tactile)return '<b>Un doigt</b> : tourner · <b>deux doigts</b> : zoomer et déplacer';
+  return '<b>Glisser</b> : tourner · <b>clic droit</b> : déplacer · <b>molette</b> : zoomer · <b>double-clic</b>'+(court?' : visiter':' dans une pièce : la visiter · <kbd>Échap</kbd> : retour au plan');}
+function v3MajAide(){const a=document.getElementById('v3Aide');if(!a)return;const h=toucheMac(v3AideTexte());if(a.innerHTML!==h){a.innerHTML=h;a.title=a.textContent;}v3Info();}
+function v3Info(){const el=document.getElementById('v3Info');if(!el)return;let h='';
+  if(v3.mode==='visite'&&v3.vis){const lv=state.levels[v3.niveau];h=(v3.vis.piece?'<b>'+esc(v3.vis.piece)+'</b>':'Hors des pièces')+(state.levels.length>1&&lv?' · '+esc(lv.name):'');}
+  else if(v3.choix&&v3.survol)h='<b>'+esc(v3.survol)+'</b>';
+  if(el.innerHTML!==h)el.innerHTML=h;}
 /* ── pour les contrôles (vue3d.mjs) : ce qui est construit, un rayon, la capture ── */
 function v3Etat(){const R=v3.registre||{murs:[],trous:[],sols:[]};let maillages=0,triangles=0;if(v3.groupe)v3.groupe.traverse(x=>{if(x.isMesh){maillages++;triangles+=x.geometry.attributes.position.count/3;}});
   return {ouvert:v3.ouvert,pret:!!v3.renderer&&!!v3.groupe,etat:v3.etat,niveau:v3.niveau,vue:v3.vue,coupe:v3.coupe,altitudes:v3.altitudes.slice(),murs:R.murs.slice(),trous:R.trous.slice(),sols:R.sols.slice(),raccords:R.raccords,doublages:R.doublages,maillages,triangles,
-    menuiseries:(R.menuiseries||[]).slice(),equipements:(R.equipements||[]).slice(),escaliers:(R.escaliers||[]).slice(),toit:R.toit||null};} /* D72 */
+    menuiseries:(R.menuiseries||[]).slice(),equipements:(R.equipements||[]).slice(),escaliers:(R.escaliers||[]).slice(),toit:R.toit||null, /* D72 */
+    mode:v3.mode,choix:v3.choix,plein:v3.plein,plafonds:(R.plafonds||[]).slice(),obstacles:v3.obst.length,images:v3.images, /* D73 */
+    visiteur:v3.vis?{x:v3.vis.x,z:v3.vis.z,yaw:v3.vis.yaw,pitch:v3.vis.pitch,piece:v3.vis.piece,yeux:v3.cam.position.y-(v3.altitudes[v3.niveau]||0),fov:v3.cam.fov}:null,
+    memoire:v3.renderer?{geometries:v3.renderer.info.memory.geometries,textures:v3.renderer.info.memory.textures,programmes:(v3.renderer.info.programs||[]).length}:null};}
+/* D73 · la mesure du rendu : n images de suite, la caméra faisant le tour du niveau (en visite, le visiteur tourne sur
+   lui-même) ; on attend la carte graphique à la fin (lecture d'un pixel) : le temps d'une image, ce qu'elle tient par seconde */
+function v3MesurerRendu(n){if(!v3.renderer||!v3.groupe)return null;n=n||60;const T=window.THREE,gl=v3.renderer.getContext(),px=new Uint8Array(4),vis=v3.mode==='visite'&&v3.vis;
+  const p0=v3.cam.position.clone(),q0=v3.cam.quaternion.clone(),c=v3.ctl.target.clone(),off=p0.clone().sub(c),s=new T.Spherical().setFromVector3(off),yaw0=vis?v3.vis.yaw:0;
+  v3Rendre();gl.readPixels(0,0,1,1,gl.RGBA,gl.UNSIGNED_BYTE,px);const t0=performance.now();
+  for(let k=1;k<=n;k++){if(vis){v3.vis.yaw=yaw0+k*Math.PI*2/n;v3Regard();}else{s.theta+=Math.PI*2/n;v3.cam.position.copy(c).add(off.clone().setFromSpherical(s));v3.cam.lookAt(c);}v3.renderer.render(v3.scene,v3.cam);}
+  gl.readPixels(0,0,1,1,gl.RGBA,gl.UNSIGNED_BYTE,px);const ms=(performance.now()-t0)/n;
+  if(vis){v3.vis.yaw=yaw0;v3Regard();}else{v3.cam.position.copy(p0);v3.cam.quaternion.copy(q0);v3.ctl.update();}v3.aRendre=true;return ms;}
+/* les images par seconde de la boucle, la maquette tournant toute seule (comme sous la main), pendant `duree` ms */
+function v3MesurerIps(duree){return new Promise(res=>{if(!v3.ctl||v3.mode!=='maquette'||!v3.ouvert){res(null);return;}const a=v3.ctl.autoRotate,sp=v3.ctl.autoRotateSpeed,n0=v3.images,t0=performance.now();
+  v3.ctl.autoRotate=true;v3.ctl.autoRotateSpeed=20;setTimeout(()=>{const n=v3.images-n0,t=performance.now()-t0;v3.ctl.autoRotate=a;v3.ctl.autoRotateSpeed=sp;res(n*1000/t);},duree||2000);});}
 /* un rayon dans la scène : le premier objet touché — ou, avec `genres`, le premier de ces genres (mur, doublage, sol, menuiserie,
    equipement, repere, escalier, structure, toit) : on mesure un mur derrière une fenêtre, un sol sous une table */
 function v3Viser(o,d,genres){if(!v3.groupe)return null;const T=window.THREE,rc=new T.Raycaster(new T.Vector3(o[0],o[1],o[2]),new T.Vector3(d[0],d[1],d[2]).normalize());
