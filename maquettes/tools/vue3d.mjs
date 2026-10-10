@@ -9,7 +9,7 @@
  *     seules les polices, déjà là avant D71 ; hors ligne (CDN bloqué), un message clair, « Réessayer » et « Retour au plan »,
  *     la 2D intacte ;
  *   - l'ouverture et la fermeture : le bouton « 3D » (à côté des niveaux), la touche 3, Échap, « Retour au plan », un outil
- *     choisi dans la colonne ; au téléphone, pas de 3D ; Suppr en 3D ne touche pas le plan caché ;
+ *     choisi dans la colonne ; Suppr en 3D ne touche pas le plan caché ; (D73 : au téléphone, la maquette seule) ;
  *   - la géométrie, mesurée par des RAYONS lancés dans la scène (pas en relisant ce que le module dit avoir fait) : la
  *     hauteur de chaque mur = la hauteur du niveau (murs entiers), ou la coupe ; chaque ouverture = un trou de sa largeur
  *     et de sa hauteur, allège et linteau pleins, doublages percés avec le mur ; un sol par pièce, à sa place, de l'aire de
@@ -32,6 +32,21 @@
  *   - toiture : seulement pour une rénovation qui la décrit, éteinte par défaut ; allumée, la maison fermée (dernier niveau,
  *     murs entiers) ; la hauteur du pan (un pan, deux pans, plat) et les pignons mesurés ; couper les murs l'éteint.
  *
+ *   D73 (l'ergonomie, la recette) :
+ *   - la visite : « Visite » à la souris, une pièce à choisir (survol éclairé, son nom) ; un clic y entre, à 1,60 m du sol, murs
+ *     entiers sous un plafond par pièce ; ZQSD / WASD et flèches (pas de côté, rotation sur place, Maj plus vite), un clic au
+ *     sol y mène, la molette avance, glisser regarde ; les murs arrêtent à 25 cm (rayons), on glisse le long, une allège
+ *     arrête, une porte se passe, la trémie de l'étage arrête, jamais dans un mur en courant droit devant ; Recentrer, Avant /
+ *     Après en visite, un double-clic dans la maquette ; au clavier, « Visite » entre directement ; changer de niveau ;
+ *   - la barre : la liste exacte de ses commandes, l'ordre de Tab, Espace / Entrée / flèches, un nom pour chacune ; à 1 440,
+ *     1 280, 1 024 et 768 px : une ligne, sans chevauchement, la barre d'état en bas et son aide entière ; le plein écran ;
+ *     Échap un cran à la fois ; au téléphone : le bouton, la maquette seule, l'orbite au doigt ;
+ *   - la mémoire : vingt ouvertures et fermetures, rien ne s'accumule (géométries, textures, programmes, tas, écouteurs) ;
+ *   - les performances : le temps de construction (maison de 94 m², de 120 m², plan réel) ; et, si la machine a une carte
+ *     graphique (Chrome sans écran sur Metal), le temps d'une image à 2× (≤ 16,7 ms : 60 i/s) et la cadence de la boucle —
+ *     sans carte graphique, rien n'est mesuré, et c'est dit ;
+ *   - le réseau : la 3D ne demande que ses deux fichiers épinglés.
+ *
  *   node maquettes/tools/vue3d.mjs "$(pwd)/maquettes"
  *
  * Three.js vient du CDN : sans réseau, le contrôle le DIT, joue ce qui ne demande pas le réseau, et sort en 0 avec un
@@ -50,12 +65,12 @@ const pf = fs.readFileSync(SP + "/tools/planfinal.mjs", "utf8"); const a0 = pf.i
 const FIX = JSON.parse(fs.readFileSync(SP + "/tools/fixtures/plan-refend-pierre.json", "utf8")).state;
 const CDN = /cdn\.jsdelivr\.net|cdnjs\.cloudflare\.com|unpkg\.com|three/i;
 
-async function onglet({ largeur = 1440, hauteur = 900, pro = true, bloquerCDN = false, requetes = null } = {}) {
-  const p = await b.newPage();
+async function onglet({ largeur = 1440, hauteur = 900, pro = true, bloquerCDN = false, requetes = null, tactile = false, dsf = 1, navigateur = b } = {}) {
+  const p = await navigateur.newPage();
   p.on("pageerror", (e) => errs.push(e.message));
   if (requetes) p.on("request", (r) => requetes.push(r.url()));
   if (bloquerCDN) { await p.setRequestInterception(true); p.on("request", (r) => (CDN.test(r.url()) ? r.abort("internetdisconnected") : r.continue())); }
-  await p.setViewport({ width: largeur, height: hauteur });
+  await p.setViewport({ width: largeur, height: hauteur, deviceScaleFactor: dsf, isMobile: tactile, hasTouch: tactile });
   await p.evaluateOnNewDocument((pro) => { try { if (sessionStorage.getItem("v3-semee")) return; sessionStorage.setItem("v3-semee", "1"); localStorage.clear(); if (!pro) localStorage.setItem("avyora-plan-pro", "0");
     localStorage.setItem("avyora-plan-welcome", "1"); localStorage.setItem("avyora-plan-tuto", "fait"); localStorage.setItem("avyora-plan-projet-tip", "1"); } catch {} }, pro);
   await p.goto("file://" + SP + "/plan-editor.html", { waitUntil: "networkidle0" });
@@ -228,8 +243,9 @@ let reseau = true;
       r["ouverture · la 3D couvre la zone du plan ; colonne d'outils, barre du haut et panneau restent"] = !document.getElementById("v3").hidden && document.getElementById("stage").contains(document.getElementById("v3")) && getComputedStyle(document.getElementById("v3")).position === "absolute" && document.getElementById("tools").getClientRects().length > 0 && document.getElementById("panel").getClientRects().length > 0;
       r["ouverture · le bouton dit « Retour au plan », enfoncé ; niveaux et vues de la 2D masqués pendant la 3D"] = document.getElementById("v3Btn").getAttribute("aria-pressed") === "true" && /Retour au plan/.test(document.getElementById("v3Btn").dataset.tip) && !document.querySelector("#modes button")?.getClientRects().length;
       r["rénovation · « Après travaux » par défaut, même quand la 2D est en vue Travaux"] = E.vue === "final" && mode() === "projet";
-      const B = [...document.querySelectorAll("#v3Barre button")].map((x) => x.textContent.trim());
-      r[`rénovation · la barre : Retour au plan, Avant travaux / Après travaux (LEX), la coupe — pas de niveaux pour un plan d'un niveau (${B.join(" · ")})`] = B[0] === "Retour au plan" && B.includes(LEX.vue.existant) && B.includes(LEX.vue.final) && !!document.getElementById("v3Coupe") && B.length === 3;
+      const B = [...document.querySelectorAll("#v3Barre button")].map((x) => x.getAttribute("aria-label") || x.textContent.trim());
+      /* D73 : la barre de T3 — Maquette / Visite, Recentrer et Plein écran s'y ajoutent ; la liste reste exacte, dans l'ordre */
+      r[`rénovation · la barre : Retour au plan, Vue aérienne / Visite, Avant travaux / Après travaux (LEX), la coupe, Recentrer, Plein écran — pas de niveaux pour un plan d'un niveau (${B.join(" · ")})`] = JSON.stringify(B) === JSON.stringify(["Retour au plan", "Vue aérienne", "Visite", LEX.vue.existant, LEX.vue.final, "Recentrer la vue", "Plein écran"]) && !!document.getElementById("v3Coupe");
       const murs = lv.walls.filter((w) => !isVirtual(w) && wallDrawn(w, "final")), trous = lv.openings.filter((o) => opDrawn(o, "final") && murs.some((w) => w.id === o.wallId)), faces = facesFor(lv, "final").filter((f) => f.room);
       r[`construction · un corps par mur (${E.murs.length}/${murs.length}), un trou par ouverture (${E.trous.length}/${trous.length}), un sol par pièce (${E.sols.length}/${faces.length})`] = E.murs.length === murs.length && E.trous.length === trous.length && E.sols.length === faces.length;
       r["construction · les sols portent le revêtement de la vue (parquet en bois, carrelage en dalles)"] = E.sols.some((s) => s.genre === "bois") && E.sols.some((s) => s.genre === "carrelage");
@@ -261,7 +277,7 @@ let reseau = true;
       v3ChoisirVue("existant"); v3Rafraichir();
       const w = lv.walls.find((x) => x.id === cre.wallId), u = norm(sub(w.b, w.a)), n = perp(u), c = add(add(w.a, mul(sub(w.b, w.a), cre.t)), wallOff(w)), O = add(c, mul(n, wallT(w) / 2 + 0.35)), z = (allegeOf(cre) || 0) + 0.3;
       const h = v3Viser([O.x, z, O.y], [-n.x, 0, -n.y], ["mur", "doublage"]);
-      const avant = { mur: v3Etat().murs.some((m) => m.id === dem.id), trou: v3Etat().trous.some((x) => x.id === cre.id), plein: !!h && h.d <= 0.351, vue: v3.vue, btn: document.querySelector("#v3Barre .v3grp button[aria-pressed=true]")?.textContent };
+      const avant = { mur: v3Etat().murs.some((m) => m.id === dem.id), trou: v3Etat().trous.some((x) => x.id === cre.id), plein: !!h && h.d <= 0.351, vue: v3.vue, btn: document.querySelector('#v3Barre [aria-label="Moment montré"] button[aria-pressed=true]')?.textContent }; /* D73 : le groupe des vues (Maquette / Visite a aussi son bouton enfoncé) */
       r["phases · Après travaux : le mur démoli n'est plus là, la fenêtre créée est percée (rayon)"] = !!dem && !!cre && !apres.mur && apres.trou && apres.mesure.vu && !apres.mesure.ko.length;
       r["phases · Avant travaux : le mur démoli est debout, le mur de la fenêtre à créer est plein (rayon)"] = avant.mur && !avant.trou && avant.plein && avant.vue === "existant" && avant.btn === LEX.vue.existant;
       v3ChoisirVue("final"); v3Rafraichir(); return r; }));
@@ -337,8 +353,8 @@ if (reseau) {
   const avant = await p.evaluate((S) => { (0, eval)("(" + S + ")")(); closeModal(); sel = null; render(); return { json: JSON.stringify(state), emp: empreinte(state), cur: state.cur }; }, SCENE_PF);
   await p.evaluate(() => cv.focus()); await p.keyboard.press("3"); await attendre3D(p);
   Object.assign(t, await p.evaluate(() => { const r = {}, E = v3Etat();
-    const B = [...document.querySelectorAll("#v3Barre button")].map((x) => x.textContent.trim());
-    r[`Plan final · la vue est le plan tel quel ; la barre : Retour au plan, les niveaux, la coupe — ni avant ni après (${B.join(" · ")})`] = E.vue === "existant" && JSON.stringify(B) === JSON.stringify(["Retour au plan", "RDC", "Étage"]) && !!document.getElementById("v3Coupe");
+    const B = [...document.querySelectorAll("#v3Barre button")].map((x) => x.getAttribute("aria-label") || x.textContent.trim());
+    r[`Plan final · la vue est le plan tel quel ; la barre : Retour au plan, Vue aérienne / Visite, les niveaux, la coupe, Recentrer, Plein écran — ni avant ni après (${B.join(" · ")})`] = E.vue === "existant" && JSON.stringify(B) === JSON.stringify(["Retour au plan", "Vue aérienne", "Visite", "RDC", "Étage", "Recentrer la vue", "Plein écran"]) && !!document.getElementById("v3Coupe");
     const lire = () => { const el = document.getElementById("v3"); return [el.innerText, ...[...el.querySelectorAll("[data-tip],[title],[aria-label]")].flatMap((x) => ["data-tip", "title", "aria-label"].map((a) => x.getAttribute(a)).filter(Boolean)), document.getElementById("v3Btn").dataset.tip, document.getElementById("v3Btn").getAttribute("aria-label")].join("\n"); };
     const txt = lire(), mots = [/travaux/i, /(?<!\p{L})existant/iu, /toiture/i, /chantier/i, /budget/i, /démoli/i, /à créer/i, /avant/i, /après/i].filter((re) => re.test(txt));
     r[`Plan final · aucun mot du chantier dans la 3D${mots.length ? " — " + mots.join(" ") : ""}`] = !mots.length;
@@ -451,12 +467,275 @@ if (reseau) {
   await p.close();
 }
 
-/* ═════════ 5. Le téléphone : pas de 3D (consultation) ═════════ */
-{ const p = await onglet({ largeur: 390, hauteur: 844, pro: true });
-  const r = await p.evaluate(() => { closeModal(); loadSample(); closeModal(); render(); const b = document.getElementById("v3Btn"); return { vis: !!b && b.getClientRects().length > 0 }; });
-  await p.evaluate(() => cv.focus()); await p.keyboard.press("3"); await wait(200);
-  t["téléphone · ni bouton 3D, ni touche 3 (la 3D reste sur ordinateur et tablette)"] = !r.vis && await p.evaluate(() => !v3.ouvert);
+/* ═════════ 5. D73 · Le téléphone : la maquette seulement, au doigt ═════════ */
+{ const p = await onglet({ largeur: 390, hauteur: 844, pro: true, tactile: true });
+  const r = await p.evaluate(() => { closeModal(); loadSample(); closeModal(); render(); const b = document.getElementById("v3Btn"), q = b && b.getBoundingClientRect(); return { vis: !!b && b.getClientRects().length > 0, w: q && q.width, h: q && q.height, niv: !!b && !!b.closest("#levels") }; });
+  t[`téléphone · le bouton 3D est là, à côté des niveaux, une cible de 40 px et plus (${r.w && Math.round(r.w)} × ${r.h && Math.round(r.h)})`] = r.vis && r.niv && r.w >= 40 && r.h >= 40;
+  if (reseau) {
+    await p.tap("#v3Btn"); await attendre3D(p);
+    Object.assign(t, await p.evaluate(() => { const r = {}, v = document.getElementById("v3"), R = v.getBoundingClientRect(), B = [...document.querySelectorAll("#v3Barre button,#v3Barre input")].filter((x) => x.getClientRects().length);
+      const petits = B.filter((x) => x.tagName === "BUTTON" && (x.getBoundingClientRect().width < 39.5 || x.getBoundingClientRect().height < 37.5)).map((x) => x.getAttribute("aria-label") || x.textContent.trim());
+      const hors = B.filter((x) => { const q = x.getBoundingClientRect(); return q.left < R.left - 0.5 || q.right > R.right + 0.5 || q.top < R.top - 0.5; }).map((x) => x.id || x.textContent.trim());
+      r["téléphone · la 3D s'ouvre en vue aérienne ; ni Vue aérienne ni Visite à choisir (la visite demande un clavier ou une souris)"] = v3.ouvert && v3Etat().pret && v3.mode === "maquette" && !document.getElementById("v3Visite") && !document.querySelector("#v3Barre .v3mode");
+      r[`téléphone · la barre tient dans la 3D, sur deux lignes au plus, des cibles de 40 px${petits.length ? " — petits : " + petits.join(", ") : ""}${hors.length ? " — dehors : " + hors.join(", ") : ""}`] = !petits.length && !hors.length && document.getElementById("v3Barre").getBoundingClientRect().height < 110;
+      r["téléphone · la barre d'état dit le geste : un doigt tourne, deux doigts zooment et déplacent"] = /Un doigt/.test(document.getElementById("v3Aide").innerText) && /deux doigts/.test(document.getElementById("v3Aide").innerText);
+      v3ChoisirMode("visite"); const g = v3PlusGrande(0); const entre = v3EntrerVisite(g);
+      r["téléphone · la visite est refusée (bouton absent, appel sans effet)"] = !entre && v3.mode === "maquette" && !v3.choix;
+      return r; }));
+    /* orbiter au doigt : un glisser tactile fait tourner la caméra autour du niveau */
+    const az = () => p.evaluate(() => { const o = v3.cam.position.clone().sub(v3.ctl.target); return Math.atan2(o.x, o.z); });
+    const a0 = await az(), c = await p.evaluate(() => { const r = v3.renderer.domElement.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height * 0.6 }; });
+    const tch = await p.touchscreen.touchStart(c.x - 60, c.y); for (let k = 1; k <= 8; k++) { await tch.move(c.x - 60 + k * 15, c.y); await wait(16); } await tch.end(); await wait(500);
+    const a1 = await az();
+    t[`téléphone · un doigt qui glisse fait tourner la maquette (azimut ${(a0 * 180 / Math.PI).toFixed(0)}° → ${(a1 * 180 / Math.PI).toFixed(0)}°)`] = Math.abs(a1 - a0) > 0.2;
+    const ap = await p.evaluate(() => { document.getElementById("v3Retour").click(); return !v3.ouvert; });
+    t["téléphone · « Retour au plan » rend le plan"] = ap;
+  }
   await p.close();
+}
+
+/* ═════════ 6. D73 · La visite (l'exemple, une rénovation) ═════════ */
+if (reseau) {
+  const req = [];
+  const p = await onglet({ requetes: req });
+  await p.evaluate(MESURES);
+  await p.evaluate(() => {
+    /* les obstacles (tranches pleines vues de dessus) : le visiteur n'en recouvre aucun ; la distance de son centre au plus proche */
+    window.__penetre = () => { const V = v3.vis; let m = Infinity, dedans = false; for (const o of v3.obst) { if (pointIn({ x: V.x, y: V.z }, o.poly)) dedans = true; for (let k = 0; k < o.poly.length; k++) { const a = o.poly[k], c = o.poly[(k + 1) % o.poly.length]; m = Math.min(m, distSeg({ x: V.x, y: V.z }, a, c)); } } return { dedans, m }; };
+    /* un rayon à 35 cm du sol (les genoux), devant soi, parmi les murs et doublages */
+    window.__devant = (h) => { const V = v3.vis, y = v3.altitudes[v3.niveau] + (h || 0.35), r = v3Viser([V.x, y, V.z], [-Math.sin(V.yaw), 0, -Math.cos(V.yaw)], ["mur", "doublage"]); return r ? r.d : Infinity; };
+    window.__poser = (x, z, yaw) => { Object.assign(v3.vis, { x, z, yaw, pitch: 0 }); v3.glisse = null; v3Repousser(); v3Regard(); v3PieceIci(true); };
+    window.__ecran = (x, y, niv, h) => { const T = window.THREE, q = new T.Vector3(x, v3.altitudes[niv] + (h || 0.01), y).project(v3.cam), r = v3.renderer.domElement.getBoundingClientRect(); return { x: r.left + (q.x + 1) / 2 * r.width, y: r.top + (1 - q.y) / 2 * r.height }; };
+  });
+  const avant = await p.evaluate(() => { closeModal(); loadSample(); closeModal(); render(); return { json: JSON.stringify(state), emp: empreinte(state) }; });
+  await p.click("#v3Btn"); await attendre3D(p);
+  const cam0 = await p.evaluate(() => v3.cam.position.toArray());
+  /* les mots de la 3D, à chaque moment : aucun de ceux que D39 a retirés de l'écran (langage.mjs) */
+  const MOTS = () => { const el = document.getElementById("v3"), vis = (x) => x.getClientRects().length > 0; return [el.innerText, ...[...el.querySelectorAll("[data-tip],[title],[aria-label]")].filter(vis).flatMap((x) => ["data-tip", "title", "aria-label"].map((k) => x.getAttribute(k)).filter(Boolean)), document.getElementById("v3Btn").dataset.tip, v3.renderer && v3.renderer.domElement.getAttribute("aria-label")].join("\n"); };
+  const motsLus = [await p.evaluate(MOTS)];
+  /* « Visite » à la souris : une pièce à choisir, la maquette reste */
+  await p.click("#v3Visite"); await wait(150); motsLus.push(await p.evaluate(MOTS));
+  const ch = await p.evaluate(() => ({ choix: v3.choix, mode: v3.mode, pressed: document.getElementById("v3Visite").getAttribute("aria-pressed"), aide: document.getElementById("v3Aide").innerText, coupe: !!document.getElementById("v3Coupe"), classe: document.getElementById("v3").classList.contains("choix"), s: v3Etat().sols.find((q) => q.type === "chambre") }));
+  t["visite · « Visite » à la souris : on choisit sa pièce (bouton enfoncé, consigne dans la barre d'état), la maquette et sa coupe restent"] = ch.choix && ch.mode === "maquette" && ch.pressed === "true" && /Clique dans une pièce/.test(ch.aide) && ch.coupe && ch.classe;
+  const P = await p.evaluate((s) => __ecran(s.x, s.y, 0), ch.s);
+  await p.mouse.move(P.x, P.y); await wait(250);
+  const sv = await p.evaluate(() => ({ de: v3.surligne ? v3.surligne.userData.de.userData.roomId : null, info: document.getElementById("v3Info").innerText, curseur: v3.renderer.domElement.classList.contains("surPiece"), maill: v3Etat().maillages }));
+  t[`visite · la pièce survolée s'éclaire, son nom dans la barre d'état (${sv.info})`] = sv.de === ch.s.roomId && sv.info === ch.s.nom && sv.curseur;
+  await p.mouse.click(P.x, P.y); await wait(300);
+  Object.assign(t, await p.evaluate((s) => { const r = {}, E = v3Etat(), V = E.visiteur, lv = L(), H = lv.height;
+    r[`visite · un clic dans la pièce y entre, à l'endroit cliqué (${V && V.piece})`] = E.mode === "visite" && !E.choix && !!V && V.piece === s.nom && Math.hypot(V.x - s.x, V.z - s.y) < 0.1;
+    r["visite · à hauteur d'yeux : 1,60 m au-dessus du sol du niveau, un objectif plus large (68°)"] = Math.abs(V.yeux - 1.6) < 1e-9 && Math.abs(v3.cam.position.y - v3.altitudes[0] - 1.6) < 1e-9 && V.fov === 68;
+    const M = lv.walls.filter((w) => !isVirtual(w) && wallDrawn(w, "final")).map((w) => ({ w, h: __hautMur(lv, 0, w, "final") })).filter((x) => x.h), fm = M.filter((x) => x.h.y == null || Math.abs(x.h.y - H) > 0.002);
+    r[`visite · murs entiers (${M.length} murs à ${fmt(H, 2)} m, rayon), sans coupe ni toiture dans la barre`] = M.length >= 8 && !fm.length && !document.getElementById("v3Coupe") && !document.getElementById("v3Toit");
+    const couv = facesFor(lv, "final").filter((f) => f.room && RT[f.room.type] && !RT[f.room.type].ext).length, up = v3Viser([V.x, 1.6, V.z], [0, 1, 0]);
+    r[`visite · un plafond par pièce couverte (${E.plafonds.length}/${couv}), à la hauteur du niveau au-dessus de la tête (rayon)`] = E.plafonds.length === couv && !!up && up.kind === "plafond" && Math.abs(up.p[1] - H) < 1e-6;
+    r["visite · la barre d'état : ZQSD ou flèches, glisser, clic au sol ; la pièce où l'on est ; le clavier va à la scène"] = /ZQSD|WASD/.test(document.getElementById("v3Aide").innerText) && /flèches/.test(document.getElementById("v3Aide").innerText) && /clic au sol/.test(document.getElementById("v3Aide").innerText) && document.getElementById("v3Info").innerText === s.nom && document.activeElement === v3.renderer.domElement;
+    return r; }, ch.s));
+  motsLus.push(await p.evaluate(MOTS));
+  { const tout = motsLus.join("\n"), ko = [/maquette/i, /\bmoteur\b/i, /\bProjet\b(?! rénovation)|\bFinal\b/, /\bJSON\b/].filter((re) => re.test(tout));
+    t[`langage · la 3D (vue aérienne, pièce à choisir, visite) ne dit aucun mot retiré par D39 — ni « maquette », ni « moteur »${ko.length ? " — " + ko.join(" ") : ""}`] = !ko.length && /Vue aérienne/.test(tout); }
+  /* marcher : au clavier, dans une direction dégagée (le séjour) */
+  const dep = await p.evaluate(() => { const g = v3PlusGrande(0); let best = 0, bd = 0; for (let k = 0; k < 36; k++) { const a = k * Math.PI / 18, d = v3Degage(g.x, g.y, a); if (d > bd) { bd = d; best = a; } } __poser(g.x, g.y, best); return { x: v3.vis.x, z: v3.vis.z, yaw: v3.vis.yaw, libre: bd }; });
+  await p.focus("canvas.v3cv"); await p.keyboard.down("KeyW"); await wait(700); await p.keyboard.up("KeyW"); await wait(80);
+  const m1 = await p.evaluate(() => ({ x: v3.vis.x, z: v3.vis.z, yaw: v3.vis.yaw }));
+  const d1 = Math.hypot(m1.x - dep.x, m1.z - dep.z), av = ((m1.x - dep.x) * -Math.sin(dep.yaw) + (m1.z - dep.z) * -Math.cos(dep.yaw));
+  t[`visite · Z (W) fait avancer droit devant, à la marche (${d1.toFixed(2)} m en 0,7 s ; ${dep.libre.toFixed(1)} m libres)`] = d1 > 0.6 && d1 < 1.4 && av > 0.98 * d1;
+  await p.evaluate((d) => __poser(d.x, d.z, d.yaw), dep);
+  await p.keyboard.down("Shift"); await p.keyboard.down("KeyW"); await wait(700); await p.keyboard.up("KeyW"); await p.keyboard.up("Shift"); await wait(80);
+  const m2 = await p.evaluate(() => ({ x: v3.vis.x, z: v3.vis.z }));
+  const d2 = Math.hypot(m2.x - dep.x, m2.z - dep.z);
+  t[`visite · avec Maj, plus vite (${d2.toFixed(2)} m contre ${d1.toFixed(2)})`] = d2 > 1.4 * d1 || (d2 > d1 && d2 > dep.libre - 0.6);
+  await p.evaluate((d) => __poser(d.x, d.z, d.yaw), dep);
+  await p.keyboard.down("KeyA"); await wait(400); await p.keyboard.up("KeyA"); await wait(80);
+  const m3 = await p.evaluate(() => ({ x: v3.vis.x, z: v3.vis.z, yaw: v3.vis.yaw })), gauche = (m3.x - dep.x) * -Math.cos(dep.yaw) + (m3.z - dep.z) * Math.sin(dep.yaw);
+  await p.keyboard.down("ArrowLeft"); await wait(400); await p.keyboard.up("ArrowLeft"); await wait(80);
+  const m4 = await p.evaluate(() => ({ yaw: v3.vis.yaw, x: v3.vis.x, z: v3.vis.z }));
+  t[`visite · Q (A) fait un pas de côté à gauche (${gauche.toFixed(2)} m), la flèche gauche tourne sur place (${((m4.yaw - m3.yaw) * 180 / Math.PI).toFixed(0)}°)`] = gauche > 0.2 && Math.abs(m3.yaw - dep.yaw) < 1e-9 && m4.yaw - m3.yaw > 0.3 && Math.hypot(m4.x - m3.x, m4.z - m3.z) < 1e-9;
+  /* les murs arrêtent : face au mur le plus proche, on s'arrête à 25 cm ; on glisse le long du mur */
+  const mur = await p.evaluate(() => { const g = v3PlusGrande(0); let best = 0, bd = 99; for (let k = 0; k < 72; k++) { const a = k * Math.PI / 36, d = v3Degage(g.x, g.y, a); if (d < bd) { bd = d; best = a; } } __poser(g.x, g.y, best); return { yaw: best, d0: bd }; });
+  await p.keyboard.down("KeyW"); await wait(Math.min(3000, 700 + mur.d0 * 900)); await p.keyboard.up("KeyW"); await wait(80);
+  const mr = await p.evaluate(() => ({ d: __devant(0.35), d2: __devant(1.0), pen: __penetre(), x: v3.vis.x, z: v3.vis.z }));
+  t[`collisions · face à un mur, on s'arrête à 25 cm de sa face (rayon à 35 cm : ${mr.d.toFixed(3)} m ; à 1 m : ${mr.d2.toFixed(3)} m)`] = Math.abs(mr.d - 0.25) < 0.015 && Math.abs(mr.d2 - 0.25) < 0.015 && !mr.pen.dedans && mr.pen.m > 0.245;
+  await p.keyboard.down("KeyD"); await wait(500); await p.keyboard.up("KeyD"); await wait(80);
+  const gl = await p.evaluate(() => ({ x: v3.vis.x, z: v3.vis.z, pen: __penetre() }));
+  t[`collisions · contre le mur, un pas de côté glisse le long (${Math.hypot(gl.x - mr.x, gl.z - mr.z).toFixed(2)} m), sans y entrer`] = Math.hypot(gl.x - mr.x, gl.z - mr.z) > 0.3 && !gl.pen.dedans && gl.pen.m > 0.245;
+  /* une fenêtre (allège) arrête ; une porte se passe */
+  const fz = await p.evaluate(() => { const lv = L(), o = lv.openings.find((x) => x.type === "fenetre" && opDrawn(x, "final") && (allegeOf(x) || 0) > 0.5), w = lv.walls.find((x) => x.id === o.wallId), t = wallT(w), u = norm(sub(w.b, w.a)), n = perp(u), A = add(w.a, wallOff(w)), sc = o.t * wallLen(w);
+    const si = (() => { const a = wallSideInside(w, 1, lv), c = wallSideInside(w, -1, lv); return a && !c ? 1 : c && !a ? -1 : 1; })(), Q = add(add(A, mul(u, sc)), mul(n, si * (t / 2 + 1.2)));
+    __poser(Q.x, Q.y, Math.atan2(si * n.x, si * n.y)); return { id: o.id, si, nx: n.x, ny: n.y, ax: A.x + u.x * sc, ay: A.y + u.y * sc, piece: v3.vis.piece }; });
+  await p.keyboard.down("KeyW"); await wait(1800); await p.keyboard.up("KeyW"); await wait(80);
+  const fr = await p.evaluate((f) => ({ d: __devant(0.35), cote: ((v3.vis.x - f.ax) * f.nx + (v3.vis.z - f.ay) * f.ny) * f.si, piece: v3.vis.piece, pen: __penetre() }), fz);
+  t[`collisions · une fenêtre arrête : on s'arrête à 25 cm de son allège, côté pièce (${fr.d.toFixed(3)} m, ${fz.piece})`] = Math.abs(fr.d - 0.25) < 0.015 && fr.cote > 0 && fr.piece === fz.piece && !fr.pen.dedans;
+  const pz = await p.evaluate(() => { const lv = L(), fc = facesFor(lv, "final").filter((f) => f.room);
+    for (const o of lv.openings.filter((x) => x.type === "porte" && opDrawn(x, "final"))) { const w = lv.walls.find((x) => x.id === o.wallId), t = wallT(w), u = norm(sub(w.b, w.a)), n = perp(u), A = add(w.a, wallOff(w)), sc = o.t * wallLen(w), C = add(A, mul(u, sc));
+      const a = add(C, mul(n, t / 2 + 0.9)), c = sub(C, mul(n, t / 2 + 0.9)), ra = v3SolSous(a.x, a.y, 0), rc = v3SolSous(c.x, c.y, 0);
+      if (ra && rc && ra.roomId !== rc.roomId) { __poser(a.x, a.y, Math.atan2(n.x, n.y)); return { de: ra.nom, vers: rc.nom, w: o.w || OPENINGS[o.type].w }; } }
+    return null; });
+  if (pz) { await p.keyboard.down("KeyW"); await wait(1400); await p.keyboard.up("KeyW"); await wait(80); }
+  const pr = pz && await p.evaluate(() => ({ piece: v3.vis.piece, pen: __penetre() }));
+  t[`collisions · une porte se passe : de « ${pz && pz.de} » à « ${pz && pz.vers} » par une porte de ${pz && pz.w} m, sans toucher les tableaux`] = !!pz && pr.piece === pz.vers && !pr.pen.dedans && pr.pen.m > 0.245;
+  /* tout droit dans 8 directions depuis le séjour, au pas de course : jamais dans un mur */
+  const ko8 = [];
+  for (let k = 0; k < 8; k++) {
+    await p.evaluate((k) => { const g = v3PlusGrande(0); __poser(g.x, g.y, k * Math.PI / 4); }, k);
+    await p.keyboard.down("Shift"); await p.keyboard.down("KeyW"); await wait(1100); await p.keyboard.up("KeyW"); await p.keyboard.up("Shift"); await wait(60);
+    const q = await p.evaluate(() => __penetre()); if (q.dedans || q.m < 0.245) ko8.push(k * 45 + "° : " + q.m.toFixed(3));
+  }
+  t[`collisions · 8 courses droit devant depuis le séjour : jamais dans un mur, jamais à moins de 25 cm${ko8.length ? " — " + ko8.join(", ") : ""}`] = !ko8.length;
+  /* aller où l'on clique ; la molette avance ; glisser regarde */
+  const cible = await p.evaluate(() => { const g = v3PlusGrande(0); let best = 0, bd = 0; for (let k = 0; k < 36; k++) { const a = k * Math.PI / 18, d = v3Degage(g.x, g.y, a); if (d > bd) { bd = d; best = a; } } __poser(g.x, g.y, best); v3.vis.pitch = -0.35; v3Regard(); v3Rendre();
+    const l = Math.min(2, bd - 0.6), x = g.x - Math.sin(best) * l, z = g.y - Math.cos(best) * l; return { x, z, e: __ecran(x, z, 0, 0.003), l }; });
+  await p.mouse.click(cible.e.x, cible.e.y); await wait(Math.max(1200, cible.l / 2.4 * 1000 + 600));
+  const va = await p.evaluate(() => ({ x: v3.vis.x, z: v3.vis.z, mode: v3.mode }));
+  t[`visite · un clic au sol y mène (${cible.l.toFixed(1)} m, arrivé à ${(Math.hypot(va.x - cible.x, va.z - cible.z) * 100).toFixed(0)} cm)`] = va.mode === "visite" && Math.hypot(va.x - cible.x, va.z - cible.z) < 0.08;
+  const mo = await p.evaluate(() => { const g = v3PlusGrande(0); let best = 0, bd = 0; for (let k = 0; k < 36; k++) { const a = k * Math.PI / 18, d = v3Degage(g.x, g.y, a); if (d > bd) { bd = d; best = a; } } __poser(g.x, g.y, best); v3.vis.pitch = 0; v3Regard(); return { x: v3.vis.x, z: v3.vis.z }; });
+  const cc = await p.evaluate(() => { const r = v3.renderer.domElement.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
+  await p.mouse.move(cc.x, cc.y); await p.mouse.wheel({ deltaY: -100 }); await wait(700);
+  const mw = await p.evaluate(() => ({ x: v3.vis.x, z: v3.vis.z }));
+  t[`visite · la molette avance d'un pas (${Math.hypot(mw.x - mo.x, mw.z - mo.z).toFixed(2)} m)`] = Math.abs(Math.hypot(mw.x - mo.x, mw.z - mo.z) - 0.5) < 0.03;
+  const y0 = await p.evaluate(() => v3.vis.yaw);
+  await p.mouse.move(cc.x, cc.y); await p.mouse.down(); for (let k = 1; k <= 10; k++) await p.mouse.move(cc.x + k * 20, cc.y + k * 4); await p.mouse.up(); await wait(200);
+  const gr = await p.evaluate(() => ({ yaw: v3.vis.yaw, pitch: v3.vis.pitch, x: v3.vis.x, z: v3.vis.z, gl: v3.glisse }));
+  t[`visite · glisser regarde autour (la vue suit la main : ${((gr.yaw - y0) * 180 / Math.PI).toFixed(0)}° à 200 px), sans déplacer`] = Math.abs(gr.yaw - y0 - 0.9) < 0.02 && gr.pitch > 0.1 && Math.hypot(gr.x - mw.x, gr.z - mw.z) < 1e-9 && !gr.gl;
+  await p.click("#v3Recentrer"); await wait(150);
+  t["visite · « Recentrer » ramène à l'entrée de la visite"] = await p.evaluate(() => { const V = v3.vis, E = V.entree; return Math.hypot(V.x - E.x, V.z - E.z) < 1e-9 && V.yaw === E.yaw; });
+  /* avant / après en visite : le mur démoli revient, le visiteur reste hors des murs */
+  Object.assign(t, await p.evaluate(() => { const r = {}, lv = L(), dem = lv.walls.find((w) => w.st === "demolir"), M = dem && add(add(dem.a, wallOff(dem)), mul(sub(dem.b, dem.a), 0.5));
+    __poser(M.x, M.y, 0); const ap = __penetre(); v3ChoisirVue("existant"); const av = __penetre(), E = v3Etat();
+    r["visite · Avant travaux en visite : le mur démoli est debout, et le visiteur qui s'y trouvait est remis hors du mur"] = E.mode === "visite" && E.murs.some((m) => m.id === dem.id) && !ap.dedans && !av.dedans && av.m > 0.245;
+    v3ChoisirVue("final"); return r; }));
+  /* plein écran, puis Échap un cran à la fois */
+  await p.click("#v3Plein"); await wait(250);
+  const pl = await p.evaluate(() => { const q = document.getElementById("v3").getBoundingClientRect(), e = document.elementFromPoint(20, 20); return { on: document.body.classList.contains("v3plein"), etat: v3.plein, q: [q.left, q.top, q.width, q.height].map(Math.round), pressed: document.getElementById("v3Plein").getAttribute("aria-pressed"), dessus: !!e && !!e.closest("#v3"), focus: document.activeElement && document.activeElement.id }; });
+  t[`plein écran · la 3D couvre toute la fenêtre (${pl.q[2]} × ${pl.q[3]} depuis le coin), barre du haut et panneau dessous ; le bouton enfoncé garde le focus`] = pl.on && pl.etat && pl.q.join() === "0,0,1440,900" && pl.pressed === "true" && pl.dessus && pl.focus === "v3Plein";
+  await p.keyboard.press("Escape"); await wait(200);
+  const e1 = await p.evaluate(() => ({ plein: v3.plein, cls: document.body.classList.contains("v3plein"), mode: v3.mode, ouvert: v3.ouvert }));
+  await p.keyboard.press("Escape"); await wait(200);
+  const e2 = await p.evaluate((c0) => ({ mode: v3.mode, ouvert: v3.ouvert, fov: v3.cam.fov, cam: v3.cam.position.toArray().every((x, i) => Math.abs(x - c0[i]) < 1e-6), coupe: !!document.getElementById("v3Coupe"), ctl: v3.ctl.enabled, aide: document.getElementById("v3Aide").innerText }), cam0);
+  await p.keyboard.press("Escape"); await wait(200);
+  const e3 = await p.evaluate(() => ({ ouvert: v3.ouvert, json: JSON.stringify(state), emp: empreinte(state) }));
+  t["Échap · un cran à la fois : le plein écran, puis la visite (la maquette revient telle qu'on l'avait laissée), puis le plan"] = !e1.plein && !e1.cls && e1.mode === "visite" && e1.ouvert && e2.mode === "maquette" && e2.ouvert && e2.fov === 32 && e2.cam && e2.coupe && e2.ctl && /double-clic/.test(e2.aide) && !e3.ouvert;
+  t["visite · le plan est identique après la visite (état complet et empreinte)"] = e3.json === avant.json && e3.emp === avant.emp;
+  /* un double-clic dans la maquette entre en visite */
+  await p.evaluate(() => v3Ouvrir()); await attendre3D(p);
+  const P2 = await p.evaluate(() => { const s = v3PlusGrande(0); return __ecran(s.x, s.y, 0); });
+  await p.mouse.click(P2.x, P2.y, { count: 2 }); await wait(300);
+  t["visite · un double-clic dans une pièce de la maquette y entre directement"] = await p.evaluate(() => v3.mode === "visite" && !!v3.vis && v3.vis.piece === v3PlusGrande(0).nom);
+  await p.evaluate(() => v3Fermer());
+  const cdn = req.filter((u) => CDN.test(u));
+  t[`réseau · la 3D ne demande que ses deux fichiers épinglés, la visite rien de plus (${cdn.length} requêtes)`] = cdn.length >= 2 && cdn.every((u) => /three@0\.147\.0\/(build\/three\.min\.js|examples\/js\/controls\/OrbitControls\.js)$/.test(u));
+  await p.close();
+}
+
+/* ═════════ 7. D73 · La visite au clavier, sur deux niveaux (Plan final, 120 m²) ═════════ */
+if (reseau) {
+  const p = await onglet();
+  await p.evaluate(MESURES);
+  await p.evaluate((S) => { (0, eval)("(" + S + ")")(); closeModal(); sel = null; render(); }, SCENE_PF);
+  await p.evaluate(() => cv.focus()); await p.keyboard.press("3"); await attendre3D(p);
+  await p.focus("#v3Visite"); await p.keyboard.press("Enter"); await wait(300);
+  const k1 = await p.evaluate(() => { const E = v3Etat(); return { mode: E.mode, choix: E.choix, piece: E.visiteur && E.visiteur.piece, focus: document.activeElement === v3.renderer.domElement, niv: E.niveau }; });
+  t[`clavier · « Visite » au clavier (Entrée) entre directement dans la pièce du centre de la vue (${k1.piece}), le clavier passe à la scène`] = k1.mode === "visite" && !k1.choix && !!k1.piece && k1.focus && k1.niv === 0;
+  await p.click('#v3Barre [aria-label="Niveau montré"] button:nth-child(2)'); await wait(300);
+  Object.assign(t, await p.evaluate(() => { const r = {}, E = v3Etat(), y1 = v3.altitudes[1];
+    r[`niveaux · en visite, « Étage » : on y est, les yeux à 1,60 m de son sol, dans une de ses pièces (${E.visiteur.piece})`] = E.mode === "visite" && E.niveau === 1 && Math.abs(v3.cam.position.y - y1 - 1.6) < 1e-9 && !!E.visiteur.piece && !!v3SolSous(E.visiteur.x, E.visiteur.z, 1);
+    const trem = v3Tremies(state.levels[1], 1, v3.vue);
+    r[`niveaux · ce qui arrête est de l'étage : ses murs (${v3.obst.length - trem.length} tranches) et la trémie de l'escalier qui y monte (${trem.length})`] = trem.length === 1 && v3.obst.length > trem.length && v3.obst.every((o) => v3.registre.obstacles.some((q) => q.poly === o.poly && Math.abs(q.y0 - y1) < 1e-9) || trem.some((P) => P.length === o.poly.length && P.every((q, k) => Math.abs(q.x - o.poly[k].x) < 1e-9 && Math.abs(q.y - o.poly[k].y) < 1e-9)));
+    r[`niveaux · les plafonds de l'étage (${E.plafonds.length}), aucun au RDC`] = E.plafonds.length > 0 && E.plafonds.every((q) => q.niveau === 1);
+    return r; }));
+  /* la trémie de l'escalier arrête : on ne marche pas dans le vide */
+  const tr = await p.evaluate(() => { const T = v3Tremies(state.levels[1], 1, v3.vue)[0], cx = T.reduce((s, q) => s + q.x, 0) / T.length, cy = T.reduce((s, q) => s + q.y, 0) / T.length;
+    let best = null; for (let k = 0; k < 16; k++) { const a = k * Math.PI / 8, x = cx + Math.sin(a) * 2.2, y = cy + Math.cos(a) * 2.2; if (v3SolSous(x, y, 1) && !v3.obst.some((o) => pointIn({ x, y }, o.poly))) { best = { x, y, yaw: a }; break; } }
+    if (!best) return null; Object.assign(v3.vis, { x: best.x, z: best.y, yaw: best.yaw, pitch: 0 }); v3Repousser(); v3Regard(); return { cx, cy }; });
+  if (tr) { await p.focus("canvas.v3cv"); await p.keyboard.down("KeyW"); await wait(2200); await p.keyboard.up("KeyW"); await wait(80); }
+  const tv = tr && await p.evaluate((c) => ({ sol: !!v3SolSous(v3.vis.x, v3.vis.z, 1), d: Math.hypot(v3.vis.x - c.cx, v3.vis.z - c.cy) }), tr);
+  t[`niveaux · la trémie de l'escalier arrête le visiteur de l'étage : il reste sur le plancher${tv ? " (à " + tv.d.toFixed(2) + " m de son centre)" : ""}`] = !!tv && tv.sol;
+  await p.keyboard.press("Escape"); await wait(150);
+  t["niveaux · Échap : la maquette, sur l'étage"] = await p.evaluate(() => v3.mode === "maquette" && v3.niveau === 1 && v3.ouvert);
+  /* l'ordre du clavier : la scène, puis la barre de gauche à droite ; Entrée et Espace y agissent */
+  await p.focus("canvas.v3cv"); const ordre = [];
+  for (let k = 0; k < 12; k++) { await p.keyboard.press("Tab"); const id = await p.evaluate(() => { const a = document.activeElement; return a && a.closest("#v3") ? (a.getAttribute("aria-label") || a.textContent.trim()) : null; }); if (!id) break; ordre.push(id); }
+  t[`clavier · Tab parcourt la barre dans l'ordre (${ordre.join(" › ")})`] = JSON.stringify(ordre) === JSON.stringify(["Retour au plan", "Vue aérienne", "Visite", "RDC", "Étage", "Hauteur de coupe", "Recentrer la vue", "Plein écran"]);
+  await p.focus('#v3Barre [aria-label="Niveau montré"] button:nth-child(1)'); await p.keyboard.press("Space"); await wait(150);
+  const sp = await p.evaluate(() => ({ niv: v3.niveau, focus: document.activeElement && document.activeElement.textContent.trim() }));
+  const c0 = await p.evaluate(() => v3.coupe);
+  await p.focus("#v3Coupe"); await p.keyboard.press("ArrowLeft"); await p.keyboard.press("ArrowLeft"); await wait(150);
+  const cp = await p.evaluate(() => ({ c: v3.coupe, v: document.getElementById("v3CoupeV").textContent }));
+  t[`clavier · Espace sur « RDC » change de niveau (le focus reste) ; les flèches règlent la coupe (${c0.toFixed(2)} m → ${cp.v})`] = sp.niv === 0 && sp.focus === "RDC" && Math.abs(cp.c - (c0 - 0.1)) < 1e-6;
+  /* ce que disent les commandes : un nom pour chacune, un groupe nommé */
+  t["accessibilité · chaque commande de la 3D a un nom ; chaque groupe aussi"] = await p.evaluate(() => [...document.querySelectorAll("#v3 button,#v3 input")].every((x) => (x.getAttribute("aria-label") || x.textContent.trim() || (x.labels && x.labels[0] && x.labels[0].textContent.trim()))) && [...document.querySelectorAll("#v3Barre .v3grp")].every((g) => !g.querySelectorAll("button").length || g.querySelectorAll("button").length === 1 || g.getAttribute("role") === "group" && g.getAttribute("aria-label")));
+  await p.keyboard.press("Escape"); await wait(100);
+  await p.close();
+}
+
+/* ═════════ 8. D73 · La barre à toutes les largeurs (le plan réel : toutes les commandes) ═════════ */
+if (reseau) {
+  const BARRE = () => { const v = document.getElementById("v3"), R = v.getBoundingClientRect(), b = document.getElementById("v3Barre"), bas = document.getElementById("v3Bas").getBoundingClientRect(), K = [...b.children].filter((x) => x.getClientRects().length).map((x) => x.getBoundingClientRect());
+    const hors = K.filter((q) => q.left < R.left - 0.5 || q.right > R.right + 0.5).length, lignes = new Set(K.map((q) => Math.round(q.top))).size;
+    let chev = 0; for (let i = 0; i < K.length; i++) for (let j = i + 1; j < K.length; j++) if (K[i].left < K[j].right - 1 && K[j].left < K[i].right - 1 && K[i].top < K[j].bottom - 1 && K[j].top < K[i].bottom - 1) chev++;
+    const a = document.getElementById("v3Aide");
+    return { hors, lignes, chev, etapes: [...b.classList].filter((c) => /^r\d$/.test(c)).join(" "), basVu: bas.height > 20 && Math.abs(bas.bottom - R.bottom) < 1, basSousBarre: bas.top > Math.max(...K.map((q) => q.bottom)), aide: a.innerText.length > 10 && a.scrollWidth <= a.clientWidth + 1 }; };
+  for (const [L, H] of [[1440, 900], [1280, 800], [1024, 768], [768, 1024]]) {
+    const p = await onglet({ largeur: L, hauteur: H });
+    await p.evaluate((fix) => { closeModal(); state = fix; migrerEtat(state); state.levels.forEach(syncRooms); sel = null; render(); v3Ouvrir(); }, FIX);
+    await attendre3D(p);
+    const m = await p.evaluate(BARRE);
+    await p.evaluate(() => v3ChoisirMode("visite")); await p.evaluate(() => v3EntrerVisite(v3PlusGrande(0))); await wait(150);
+    const v = await p.evaluate(BARRE);
+    t[`${L} × ${H} · la barre de la 3D tient sur une ligne, sans chevauchement, dans la 3D (maquette : ${m.etapes || "entière"} ; visite : ${v.etapes || "entière"}) ; la barre d'état en bas, l'aide entière`] = m.lignes === 1 && !m.hors && !m.chev && m.basVu && m.basSousBarre && m.aide && v.lignes === 1 && !v.hors && !v.chev && v.basVu && v.aide;
+    await p.close();
+  }
+}
+
+/* ═════════ 9. D73 · Ouvrir et fermer vingt fois : rien ne s'accumule ═════════ */
+if (reseau) {
+  const p = await onglet();
+  await p.evaluate(() => { closeModal(); loadSample(); closeModal(); render(); });
+  const cdp = await p.createCDPSession();
+  const ecouteurs = async () => { const { result } = await cdp.send("Runtime.evaluate", { expression: "window" }), { listeners } = await cdp.send("DOMDebugger.getEventListeners", { objectId: result.objectId }), d = await cdp.send("Runtime.evaluate", { expression: "document" }), L2 = await cdp.send("DOMDebugger.getEventListeners", { objectId: d.result.objectId }); return listeners.length + L2.listeners.length; };
+  const tas = async () => { await cdp.send("HeapProfiler.collectGarbage"); await cdp.send("HeapProfiler.collectGarbage"); return (await cdp.send("Runtime.getHeapUsage")).usedSize; };
+  const mesures = [];
+  for (let k = 0; k < 20; k++) {
+    await p.evaluate(() => v3Ouvrir()); await attendre3D(p);
+    const o = await p.evaluate((k) => { if (k % 2) v3EntrerVisite(v3PlusGrande(0)); if (k % 3 === 0) v3ChoisirVue("existant"); v3Rendre(); const m = v3Etat().memoire; if (!window.__r0) window.__r0 = v3.renderer; return { m, meme: window.__r0 === v3.renderer, cv: document.querySelectorAll("#v3 canvas").length }; }, k);
+    await p.evaluate(() => v3Fermer());
+    const f = await p.evaluate(() => ({ m: { geometries: v3.renderer.info.memory.geometries, textures: v3.renderer.info.memory.textures, programmes: v3.renderer.info.programs.length }, groupe: v3.groupe, scene: v3.scene.children.length }));
+    if (k === 2 || k === 19) mesures.push({ k, o, f, tas: await tas(), ec: await ecouteurs() });
+    else mesures.push({ k, o, f });
+  }
+  const a = mesures[2], z = mesures[19], ouv = mesures.map((x) => x.o.m.geometries), fer = mesures.map((x) => x.f.m.geometries);
+  t[`mémoire · fermée, la 3D ne garde aucune géométrie (${[...new Set(fer)].join("/")} : le sol des ombres), et la scène est vide`] = fer.every((g) => g <= 1) && mesures.every((x) => x.f.groupe === null);
+  t[`mémoire · vingt ouvertures : un seul moteur et un seul canvas ; textures et programmes n'augmentent plus (${a.f.m.textures} → ${z.f.m.textures} textures, ${a.f.m.programmes} → ${z.f.m.programmes} programmes)`] = mesures.every((x) => x.o.meme && x.o.cv === 1) && z.f.m.textures <= a.f.m.textures && z.f.m.programmes <= a.f.m.programmes + 1;
+  t[`mémoire · le tas JavaScript ne grossit pas d'une ouverture à l'autre (${(a.tas / 1e6).toFixed(1)} → ${(z.tas / 1e6).toFixed(1)} Mo de la 3e à la 20e) ; les écouteurs non plus (${a.ec} → ${z.ec})`] = z.tas - a.tas < 3e6 && z.ec === a.ec;
+  await p.close();
+}
+
+/* ═════════ 10. D73 · Le temps de construction (WebGL logiciel) et les images par seconde (carte graphique, si elle est là) ═════════ */
+if (reseau) {
+  const scenes = [["la maison de 94 m²", () => { closeModal(); loadTemplate("maison", WORKFLOW_FINAL); closeModal(); render(); }], ["la maison de 120 m² sur deux niveaux", SCENE_PF], ["le plan réel", "FIX"]];
+  const charger = (p, sc) => (sc[1] === "FIX" ? p.evaluate((fix) => { closeModal(); state = fix; migrerEtat(state); state.levels.forEach(syncRooms); sel = null; render(); }, FIX) : typeof sc[1] === "string" ? p.evaluate((S) => { (0, eval)("(" + S + ")")(); closeModal(); sel = null; render(); }, sc[1]) : p.evaluate(sc[1]));
+  for (const sc of scenes) {
+    const p = await onglet(); await charger(p, sc); await p.evaluate(() => v3Ouvrir()); await attendre3D(p);
+    const c = await p.evaluate(() => { const T = []; for (let k = 0; k < 6; k++) { v3.sig = ""; const t0 = performance.now(); v3Rafraichir(); T.push(performance.now() - t0); } T.sort((a, b) => a - b); const E = v3Etat(); v3ChoisirCoupe(state.levels[v3.niveau].height); v3Rafraichir(); const E2 = v3Etat(); return { ms: T[3], maill: E.maillages, tri: Math.round(E.triangles), tri2: Math.round(E2.triangles) }; });
+    t[`performances · ${sc[0]} : une construction en ${c.ms.toFixed(1)} ms (médiane), ${c.maill} maillages, ${c.tri} triangles à la coupe, ${c.tri2} murs entiers (≤ 120 ms, ≤ 60, ≤ 20 000)`] = c.ms <= 120 && c.maill <= 60 && c.tri2 <= 20000;
+    await p.close();
+  }
+  /* la carte graphique de la machine : Chrome sans écran, sur Metal (Mac) ; sans carte graphique, rien n'est mesuré, et c'est dit */
+  let g = null;
+  try { g = await puppeteer.launch({ executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", headless: true, protocolTimeout: 60000, args: ["--no-sandbox", "--use-angle=metal", "--enable-gpu", "--ignore-gpu-blocklist"] }); } catch { g = null; }
+  const carte = g && await (async () => { const p = await g.newPage(); await p.goto("about:blank"); const r = await p.evaluate(() => { const c = document.createElement("canvas"), x = c.getContext("webgl2") || c.getContext("webgl"); if (!x) return ""; const d = x.getExtension("WEBGL_debug_renderer_info"); return d ? x.getParameter(d.UNMASKED_RENDERER_WEBGL) : x.getParameter(x.RENDERER); }); await p.close(); return r; })().catch(() => "");
+  if (!carte || /swiftshader|llvmpipe|software/i.test(carte)) console.log(`  AVERTISSEMENT · pas de carte graphique joignable (${carte || "aucune"}) : les images par seconde ne sont pas mesurées.`);
+  else {
+    for (const sc of scenes) {
+      const p = await onglet({ navigateur: g, dsf: 2 }); await charger(p, sc); await p.evaluate(() => v3Ouvrir()); await attendre3D(p); await wait(300);
+      const r = await p.evaluate(async () => { const W = v3.renderer.domElement.width, H = v3.renderer.domElement.height; v3MesurerRendu(20); const coupe = v3MesurerRendu(120); v3ChoisirCoupe(state.levels[v3.niveau].height); v3Rafraichir(); const entiers = v3MesurerRendu(120); const ips = await v3MesurerIps(2000);
+        v3EntrerVisite(v3PlusGrande(v3.niveau)); v3MesurerRendu(20); const visite = v3MesurerRendu(120); return { W, H, coupe, entiers, visite, ips }; });
+      const pire = Math.max(r.coupe, r.entiers, r.visite);
+      t[`performances · ${sc[0]}, ${carte.replace(/^ANGLE \(|\)$/g, "").split(",").slice(0, 2).join(",")}, ${r.W} × ${r.H} px : une image en ${r.coupe.toFixed(2)} ms (coupe), ${r.entiers.toFixed(2)} (murs entiers), ${r.visite.toFixed(2)} (visite) — ${Math.round(1000 / pire)} i/s au pire ; la boucle tourne à ${r.ips.toFixed(0)} i/s`] = pire <= 1000 / 60 && r.ips >= 55;
+      await p.close();
+    }
+  }
+  if (g) g.close().catch(() => {});
 }
 
 let ko = 0;
