@@ -3,8 +3,8 @@
  * (liste, mon-espace, fiche). Tout part de `reponses = { v:"estimateur", ctx, sel }`.
  * Aucune dépendance à l'ancien moteur.
  */
-import { buildDevis, statutLigne, key, type Ctx, type Selection } from "./core";
-import { catalogueDe } from "./catalogue-neuf";
+import { buildDevis, statutLigne, key, PHASES, type Ctx, type Selection, type DevisLot, type Tache } from "./core";
+import { catalogueDe, PHASES_NEUF } from "./catalogue-neuf";
 import { normaliserCles } from "./identite";
 
 export type ProjetEstim = {
@@ -14,6 +14,9 @@ export type ProjetEstim = {
   aleas: number;
   surface: number;
   eurM2: number;
+  /** Frais hors TVA et hors aléas (taxes, assurance dommages-ouvrage) : `bilan.frais`, 0 en rénovation. */
+  frais: number;
+  nature: "reno" | "neuf";
 };
 
 type Rep = { v?: string; ctx?: Ctx; sel?: Selection; statuts?: Record<string, number> };
@@ -59,8 +62,57 @@ export function estimationProjet(reponses: unknown): ProjetEstim | null {
     aleas: dv.totaux.aleas,
     surface,
     eurM2: surface > 0 ? dv.totaux.ttc / surface : 0,
+    frais: dv.bilan.frais,
+    nature: estNeuf(ctx) ? "neuf" : "reno",
   };
 }
+
+// ── Construction neuve : ce que les pages lisent pour afficher un projet ──────────────────────
+/* Ces fonctions vivent ici et pas dans `catalogue-neuf.ts` : ce module-là n'importe de `core` que
+   des types, exprès. Y importer `PHASES` (une valeur) créerait un cycle à l'exécution
+   (core → catalogue-neuf → core). En rénovation, chacune rend exactement ce que les pages
+   utilisaient avant : même liste, même ordre (vérifié par `tests/estimateur-neuf-affichage.test.ts`). */
+
+/** true pour une construction neuve. Absent ou « reno » : rénovation (tous les anciens projets). */
+export const estNeuf = (ctx?: Pick<Ctx, "nature"> | null): boolean => ctx?.nature === "neuf";
+
+/** Nature d'un projet enregistré, depuis ses réponses (format inattendu : rénovation). */
+export function natureProjet(reponses: unknown): "reno" | "neuf" {
+  return estNeuf((reponses as Rep | null)?.ctx) ? "neuf" : "reno";
+}
+
+/** Phases d'affichage. Rénovation : exactement `PHASES` (même référence, même ordre). */
+export function phasesDe(ctx?: Pick<Ctx, "nature"> | null): readonly string[] {
+  return estNeuf(ctx) ? PHASES_NEUF : PHASES;
+}
+
+/**
+ * Un lot par corps d'état. En neuf, un même lot revient dans plusieurs phases (la maçonnerie
+ * coule les fondations, monte les murs puis tire les chapes), parfois deux fois dans la même
+ * phase : on additionne et on garde la liste de ses phases. Rénovation : un corps n'apparaît
+ * qu'une fois, la fonction rend donc la même liste, dans le même ordre, avec les mêmes montants.
+ */
+export function lotsParCorps(lots: DevisLot[]): (DevisLot & { phases: string[] })[] {
+  const m = new Map<string, DevisLot & { phases: string[] }>();
+  for (const l of lots) {
+    const e = m.get(l.corps);
+    if (e) { e.ttc += l.ttc; if (!e.phases.includes(l.phase)) e.phases.push(l.phase); }
+    else m.set(l.corps, { ...l, phases: [l.phase] });
+  }
+  return [...m.values()];
+}
+
+/** Clé d'une ligne (`key(lot, nom)`) → poste du catalogue du projet : pour reconnaître un jalon
+ *  ou un frais depuis une `DevisLigne`. */
+export function tachesParCle(ctx: Pick<Ctx, "nature"> | null | undefined): Map<string, Tache> {
+  const m = new Map<string, Tache>();
+  for (const l of catalogueDe(ctx)) for (const t of l.t) m.set(key(l.c, t.n), t);
+  return m;
+}
+
+/** Jalon = démarche à 0 € (permis, DOC, DT, PV de réception, DAACT…) : un frais sans prix ni
+ *  fourniture. La rénovation n'en a aucun (aucun frais au catalogue). */
+export const estJalon = (t?: Tache | null): boolean => !!t?.frais && (t.fp ?? 0) === 0 && !t.sm;
 
 // Label régional (informatif — les prix du catalogue sont nationaux, pas de coef régional).
 const IDF = ["75", "77", "78", "91", "92", "93", "94", "95"];

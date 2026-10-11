@@ -17,6 +17,13 @@ export const FEATURES = {
   rentabilite: false,
   documents: false,
   plateforme: false, // grille marketing des 10 modules sur l'accueil
+  /**
+   * Construction neuve (estimation d'une maison à construire). Allumée en développement local,
+   * éteinte dans un build de production tant que `NEXT_PUBLIC_FEATURE_NEUF` ne vaut pas « 1 ».
+   * Ne jamais l'allumer en production avant le lancement (chantier C8). À `false`, le site public
+   * est identique à aujourd'hui : les pages du neuf renvoient `notFound()`, aucun point d'entrée.
+   */
+  neuf: process.env.NODE_ENV !== "production" || process.env.NEXT_PUBLIC_FEATURE_NEUF === "1",
 } as const;
 
 /**

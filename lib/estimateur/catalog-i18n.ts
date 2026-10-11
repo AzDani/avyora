@@ -358,9 +358,13 @@ const EN: Record<CatKind, Record<string, string>> = {
   }
 };
 
+const UNITES_FR: Record<string, string> = { pct: "%", m3: "m³" };
+
 /** Traduit une chaîne du catalogue pour l'affichage. En FR (ou clé absente) → renvoie la valeur d'origine. */
 export function catT(locale: string, kind: CatKind, fr: string | undefined | null): string {
   if (!fr) return fr ?? "";
-  if (locale !== "en") return fr;
+  /* Unités propres à la construction neuve : « pct » (un pourcentage du projet) et « m3 ». Les
+     unités de la rénovation (dont « m2 ») restent affichées telles quelles, comme avant. */
+  if (locale !== "en") return kind === "unites" ? (UNITES_FR[fr] ?? fr) : fr;
   return EN[kind][fr] ?? fr;
 }

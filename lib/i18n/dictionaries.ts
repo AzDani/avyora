@@ -228,6 +228,16 @@ const fr = {
     inBasAvant: "Déjà un compte ? ",
     inBasLien: "Se connecter",
   },
+  /** Construction neuve : libellés communs (aucun prix ici, les montants viennent du moteur). */
+  neuf: {
+    badge: "Construction neuve",
+    projetNom: "Construction neuve",
+    demarche: "Démarche",
+    sansTva: "sans TVA",
+    pctTravaux: "% des travaux",
+    pctProjet: "% du projet",
+    maisonNiveaux: { pp: "Maison plain-pied", etage: "Maison à étage", combles: "Maison avec combles aménagés" } as Record<string, string>,
+  },
 };
 
 const en: Dict = {
@@ -451,6 +461,15 @@ const en: Dict = {
     inSous: "Save your estimates and track your projects over time.",
     inBasAvant: "Already have an account? ",
     inBasLien: "Sign in",
+  },
+  neuf: {
+    badge: "New build",
+    projetNom: "New build",
+    demarche: "Admin step",
+    sansTva: "no VAT",
+    pctTravaux: "% of the works",
+    pctProjet: "% of the project",
+    maisonNiveaux: { pp: "Single-storey house", etage: "Two-storey house", combles: "House with converted attic" } as Record<string, string>,
   },
 };
 

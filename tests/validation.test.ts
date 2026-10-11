@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { projetCreateSchema, pieceSchema, depenseSchema, artisanSchema, chantierStatutSchema } from "@/lib/validation";
+import { projetCreateSchema, projetPatchSchema, pieceSchema, depenseSchema, artisanSchema, chantierStatutSchema } from "@/lib/validation";
 
 describe("schémas de validation d'entrée (zod)", () => {
   it("projet : accepte une entrée valide", () => {
@@ -20,6 +20,23 @@ describe("schémas de validation d'entrée (zod)", () => {
   it("projet : refuse des réponses démesurées (anti-abus)", () => {
     const gros = { grosChamp: "x".repeat(50000) };
     expect(projetCreateSchema.safeParse({ nom: "x", surface: 90, codePostal: "33000", reponses: gros }).success).toBe(false);
+  });
+  it("projet : plafond des réponses à 40 000 caractères en rénovation, 80 000 en construction neuve", () => {
+    const rep = (nature: string | undefined, taille: number) => {
+      const r: Record<string, unknown> = { v: "estimateur", ctx: nature ? { nature } : {}, pad: "" };
+      r.pad = "x".repeat(taille - JSON.stringify(r).length);
+      expect(JSON.stringify(r).length).toBe(taille);
+      return { nom: "x", surface: 100, codePostal: "45000", reponses: r };
+    };
+    expect(projetCreateSchema.safeParse(rep(undefined, 40_000)).success).toBe(true);
+    expect(projetCreateSchema.safeParse(rep(undefined, 41_000)).success).toBe(false);
+    expect(projetCreateSchema.safeParse(rep("reno", 41_000)).success).toBe(false);
+    expect(projetCreateSchema.safeParse(rep("neuf", 41_000)).success).toBe(true);
+    expect(projetCreateSchema.safeParse(rep("neuf", 80_000)).success).toBe(true);
+    expect(projetCreateSchema.safeParse(rep("neuf", 81_000)).success).toBe(false);
+    // même règle sur la modification (PATCH de « Modifier »)
+    expect(projetPatchSchema.safeParse(rep("neuf", 41_000)).success).toBe(true);
+    expect(projetPatchSchema.safeParse(rep(undefined, 41_000)).success).toBe(false);
   });
   it("pièce : bornes dimensions", () => {
     expect(pieceSchema.safeParse({ nom: "Salon", longueur: 5, largeur: 4 }).success).toBe(true);

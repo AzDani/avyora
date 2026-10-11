@@ -7,7 +7,7 @@
  */
 import { key, type Ctx, type Selection, type Finition, type Tache } from "./core";
 import { POSTE_NEUF } from "./catalogue-neuf";
-import { maisonComplete, geometrieNeuf, decisionsNeuf, exclusifsDe, type MaisonNeuve, type DecisionNeuf } from "./neuf";
+import { maisonComplete, geometrieNeuf, decisionsNeuf, exclusifsDe, type MaisonNeuve, type DecisionNeuf, type Niveaux } from "./neuf";
 import type { QuiRealise } from "./presets";
 
 /** Lots qu'un particulier fait couramment lui-même sur une maison neuve (« une partie »). */
@@ -108,16 +108,25 @@ export function cocherPosteNeuf(sel: Selection, id: string, on: boolean, qui?: Q
 }
 
 export type RapideNeufInput = {
-  surface: number; niveaux: "pp" | "etage"; codePostal: string; finition: Finition; qui: QuiRealise;
+  surface: number; niveaux: Niveaux; codePostal: string; finition: Finition; qui: QuiRealise;
   garage?: boolean; assainissement?: "collectif" | "fosse";
 };
 
-/** Mode rapide du neuf : 5 questions (+ garage, assainissement), le reste par défaut. */
-export function presetNeuf(input: RapideNeufInput): { ctx: Ctx; sel: Selection } {
+/**
+ * Mode rapide du neuf : 5 questions (+ garage, assainissement), le reste par défaut.
+ *
+ * `base` (facultatif) : une maison déjà décrite (plan importé, projet détaillé qu'on rouvre en
+ * édition gratuite). Ses réponses servent de défauts ; les questions du rapide passent par-dessus.
+ * Un garage déjà décrit garde sa surface quand la réponse reste « avec garage », un assainissement
+ * déjà décrit (micro-station) reste tant que le rapide ne répond pas. Sans `base`, la sortie est
+ * exactement celle d'avant (vérifié par test).
+ */
+export function presetNeuf(input: RapideNeufInput, base?: Partial<MaisonNeuve>): { ctx: Ctx; sel: Selection } {
   const surface = Math.max(30, input.surface || 0);
   const maison = maisonComplete({
-    surface, niveaux: input.niveaux, garage: input.garage ? 20 : 0,
-    assainissement: input.assainissement ?? "collectif", codePostal: input.codePostal,
+    ...(base ?? {}),
+    surface, niveaux: input.niveaux, garage: input.garage ? (base?.garage || 20) : 0,
+    assainissement: input.assainissement ?? base?.assainissement ?? "collectif", codePostal: input.codePostal,
   });
   return presetMaison(maison, { finition: input.finition, qui: input.qui, codePostal: input.codePostal });
 }

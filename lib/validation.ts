@@ -8,7 +8,14 @@ import { NextResponse } from "next/server";
  */
 const reponses = z
   .record(z.string(), z.unknown())
-  .refine((r) => JSON.stringify(r).length <= 40_000, "réponses trop volumineuses");
+  // Une construction neuve porte la description complète de la maison et ~90 postes : jusqu'à
+  // 80 000 caractères. La rénovation garde sa borne de 40 000.
+  .refine((r) => JSON.stringify(r).length <= (reponsesNeuf(r) ? 80_000 : 40_000), "réponses trop volumineuses");
+
+function reponsesNeuf(r: unknown): boolean {
+  const ctx = (r as { ctx?: unknown } | null)?.ctx;
+  return !!ctx && typeof ctx === "object" && (ctx as { nature?: unknown }).nature === "neuf";
+}
 
 export const projetCreateSchema = z.object({
   nom: z.string().trim().min(1).max(120),
