@@ -1,0 +1,642 @@
+{
+ "_meta": {
+  "jury": "Conducteur de travaux / chef de chantier (maisons individuelles, lots séparés)",
+  "date": "2026-10-11",
+  "base": "conception.md, catalog-neuf.draft.json, prix-sources.json, recherche-*.json, sortie de node calibre.mjs (maisons A, B, C)",
+  "regle": "Aucun prix inventé. 'prix_source' = URL + chiffre relevé, ou 'incertain'. Les quantités marquées [métier] relèvent du raisonnement de chantier, sans source publiée."
+ },
+ "manquants": [
+  {
+   "quoi": "Protection anti-termites du sol (barrière physique ou physico-chimique sous dallage / vide sanitaire) dans les départements concernés par un arrêté préfectoral",
+   "phase": "Fondations & plancher bas",
+   "pourquoi": "Obligatoire en construction neuve dans les zones délimitées (CCH art. R131-1 à R131-4, cités par Ootravaux). Elle se pose avant le coulage : si on l'oublie, on ne peut plus la poser après. Quantité = surface de plancher bas (E − 0,2·P). Cochage = selon le département, donc une table département → obligation est à construire.",
+   "prix_source": "incertain : un seul prix trouvé, ancien (2010) — barrière Iso Filma, 'prix public indicatif HT : 5,5 à 6 €/m² fourni posé' (https://www.batiproduits.com/fiche/produits/barriere-physico-chimique-anti-termites-p69097583.html). Trop vieux pour le catalogue : à resourcer."
+  },
+  {
+   "quoi": "Liaison électrique privée coffret Enedis (en limite) → tableau : câble de liaison posé dans le fourreau",
+   "phase": "Réseaux & raccordements",
+   "pourquoi": "Le poste fourreaux dit 'câbles et tuyaux non compris'. L'installation électrique neuve ne cite pas ce câble, et Enedis ne le facture jamais. Choisir.com : 'les canalisations souterraines qui assurent la liaison entre le coffret CCPI et le disjoncteur de branchement sont à la charge de l'usager'. Quantité = D (ml).",
+   "prix_source": "incertain : aucun prix au mètre trouvé (https://www.choisir.com/energie/articles/104438/quel-est-le-prix-dun-compteur-electrique ; https://selectra.info/energie/actualites/marche/raccordement-maison-neuve-delais-devis)."
+  },
+  {
+   "quoi": "Conduite d'eau privée (PEHD) entre le regard compteur et la maison, avec sa traversée de dalle",
+   "phase": "Réseaux & raccordements",
+   "pourquoi": "Même trou que pour l'électricité : le raccordement eau (1 425-1 500 €) s'arrête au compteur, les fourreaux excluent les tuyaux, et la plomberie neuve part du collecteur. Quantité = D (ml).",
+   "prix_source": "incertain (non recherché)"
+  },
+  {
+   "quoi": "Niche ou borne maçonnée du coffret de branchement Enedis en limite de propriété",
+   "phase": "Réseaux & raccordements",
+   "pourquoi": "La conception (§ g) la cite, mais aucun poste n'existe. Selectra la range dans les 'travaux hors devis Enedis'. Non concerné si le lotisseur l'a déjà posée.",
+   "prix_source": "incertain"
+  },
+  {
+   "quoi": "Finition des refends maçonnés à l'intérieur (2 faces) : plaque collée ou enduit plâtre, puis peinture",
+   "phase": "Second œuvre",
+   "pourquoi": "Maison B : le refend porteur de 25,8 m² (2 faces = 51,6 m²) n'est compté ni en doublage, ni en cloisons, ni en peinture. Les règles ne couvrent que la face intérieure des murs extérieurs.",
+   "prix_source": "pour une plaque sur fourrures, reprise possible du poste rénovation clo-doubler-un-mur (40 €/m² base, catalog.json) + bandes + peinture neuve ; pour un enduit plâtre : incertain (voir arbitrage h-7)"
+  },
+  {
+   "quoi": "Monomur (et béton cellulaire 30) : finition intérieure des murs extérieurs ET leur peinture",
+   "phase": "Second œuvre / Finitions",
+   "pourquoi": "Dans calibre.mjs, la peinture des murs exclut `g.doublage` quand murs = monomur. Les faces intérieures des murs extérieurs ne sont donc ni enduites ni peintes (A en monomur : ≈ 87 m² oubliés deux fois). La sensibilité 'Monomur −1 %' est faussée vers le bas.",
+   "prix_source": "peinture : poste existant pei-peinture-murs-plaques-neuves (26,1 base) applicable sur enduit plâtre ; enduit : incertain (voir h-7)"
+  },
+  {
+   "quoi": "Ossature bois : frein-vapeur intérieur (couche d'étanchéité à l'air) et contre-cloison technique (vide technique pour les gaines)",
+   "phase": "Second œuvre",
+   "pourquoi": "La note de toi-mur-ossature-bois-isole cite 'montants 145, isolant, contreventement, pare-pluie' et exclut la plaque. Le frein-vapeur n'est donc nulle part, alors que sans lui le test RE2020 échoue. 'Doubler un mur' (rénovation) n'est qu'une plaque sur fourrures. Maison C : 84 m².",
+   "prix_source": "incertain pour les murs ; le poste repris iso-pose-d-un-pare-vapeur (8 €/m² base) existe, mais son prix porte sur un plafond : à vérifier avant de l'étendre aux murs"
+  },
+  {
+   "quoi": "Porte de communication garage → maison (isolante, pleine)",
+   "phase": "Finitions & équipements",
+   "pourquoi": "Le mur entre la maison et le garage fait partie de l'enveloppe chauffée : il faut une porte isolante, avec son linteau. Aucun poste quand garage = oui.",
+   "prix_source": "reprise possible de min-porte-interieure-ame-pleine (450 €, catalog.json) ; une vraie porte isolante est probablement plus chère : incertain"
+  },
+  {
+   "quoi": "Contrôle de bonne exécution du SPANC (avant remblaiement de la fosse ou de la micro-station) ; attestation de conformité du projet ANC à joindre au permis",
+   "phase": "Études & permis + Réseaux & raccordements",
+   "pourquoi": "L'étude de filière seule est chiffrée (600 €). Les contrôles du SPANC sont deux démarches à part, facturées par la collectivité.",
+   "prix_source": "SPANC (contrôle) « 200 € en moyenne » — https://www.lamaisonsaintgobain.fr/guides-travaux/plomberie-sanitaire/prix-assainissement-individuel-maison (déjà relevé dans prix-sources.json, HT/TTC non précisé)"
+  },
+  {
+   "quoi": "Attestations à joindre à la DAACT : retrait-gonflement des argiles (aléa moyen/fort) et parasismique (zones 3 à 5)",
+   "phase": "Réception & achèvement",
+   "pourquoi": "recherche-demarches.json : ces pièces sont exigées à la DAACT selon le terrain. Elles ont un coût (bureau d'études ou contrôleur technique) et n'ont aucun poste.",
+   "prix_source": "incertain (recherche-demarches.json, non_trouve : 'aucun tarif publié trouvé')"
+  },
+  {
+   "quoi": "Démarche gratuite : déclaration des éléments d'imposition sur impots.gouv (« Gérer mes biens immobiliers ») dans les 90 jours suivant l'achèvement",
+   "phase": "Réception & achèvement",
+   "pourquoi": "Elle déclenche la taxe d'aménagement (recherche-calibrage, étape 24 : 'déclaration taxe d'aménagement sur impots.gouv.fr sous 90 jours'). La conception la cite en phase 9, mais aucun jalon à 0 € n'existe, contrairement à la DOC et à la DAACT.",
+   "prix_source": "0 € (démarche) — jalon"
+  },
+  {
+   "quoi": "Démarche gratuite : demandes de raccordement Enedis / eau / égout déposées dès l'obtention du permis",
+   "phase": "Études & permis",
+   "pourquoi": "Enedis demande 2 à 6 mois : c'est le délai le plus long du projet après la purge du permis. La conception le cite en phase 1, mais sans jalon dans le catalogue.",
+   "prix_source": "0 € (démarche) — jalon"
+  },
+  {
+   "quoi": "Démarche : DT (déclaration de projet de travaux, à la charge du maître d'ouvrage) avant les tranchées et le terrassement",
+   "phase": "Terrain & terrassement",
+   "pourquoi": "recherche-terrain, étape 2 : 'déclarations DT/DICT par les entreprises'. En lots séparés, c'est le particulier qui fait la DT, sur le guichet unique.",
+   "prix_source": "0 € si faite soi-même (démarche) — jalon ; coût d'un prestataire non recherché"
+  },
+  {
+   "quoi": "Démarche : numéro de voirie / adresse du terrain (terrain en diffus)",
+   "phase": "Études & permis",
+   "pourquoi": "[métier] Sans adresse, les demandes Enedis, eau et fibre bloquent.",
+   "prix_source": "0 € (démarche) — jalon, option si diffus"
+  },
+  {
+   "quoi": "Point d'eau de chantier (raccordement eau anticipé ou compteur de chantier)",
+   "phase": "Terrain & terrassement",
+   "pourquoi": "recherche-calibrage, étape 4 : 'branchement provisoire électricité/eau de chantier'. Le maçon, le façadier et le plâtrier ont besoin d'eau. Le catalogue ne prévoit que l'électricité provisoire. Solution sans nouveau prix : avancer le raccordement eau définitif en phase 2.",
+   "prix_source": "pas de nouveau prix si l'on avance rac-raccordement-eau-potable (voir 'ordre')"
+  },
+  {
+   "quoi": "Rupteurs de ponts thermiques / planelles isolées en rive du plancher d'étage (maison maçonnée à étage, isolation intérieure)",
+   "phase": "Murs & planchers",
+   "pourquoi": "recherche-structure : le prix du plancher 'Non inclus : rupteurs'. La RT 2012 plafonnait le pont thermique de plancher intermédiaire à 0,6 W/(m.K). Quantité = P (ml), plus les refends traversants si un BET le demande.",
+   "prix_source": "incertain : seul prix trouvé, Ruptherm Alkern 'Prix public indicatif HT : 15 €/ml' daté 2012 (https://www.batiproduits.com/fiche/produits/rupteur-en-pierre-ponce-et-polyurethane-p69114618.html). Fourniture seule et périmé : inutilisable."
+  },
+  {
+   "quoi": "Planche de rive / bandeau d'égout (support des crochets de gouttière, habillage des abouts de fermettes)",
+   "phase": "Clos & couvert",
+   "pourquoi": "recherche-clos (non_trouve) : 'planche de rive / bandeau PVC au ml posé : aucun prix'. La sous-face est chiffrée, pas le bandeau. Quantité = égout (+ rampants de pignon si débord en pignon).",
+   "prix_source": "incertain : fourniture seule ≈ 5 à 17 €/ml calculée à partir d'annonces (non fiable), pose non trouvée"
+  },
+  {
+   "quoi": "Benne(s) supplémentaire(s) : un chantier neuf n'en remplit pas qu'une seule",
+   "phase": "Terrain & terrassement → Second œuvre",
+   "pourquoi": "La note du poste repris dit 'par benne', mais la règle compte 1 forfait. [métier] Il en faut au moins une au gros œuvre et une au plâtre / second œuvre.",
+   "prix_source": "prix existant 400 €/benne (catalog.json) ; quantité 2 [métier]"
+  },
+  {
+   "quoi": "Régalage de la terre végétale en fin de chantier, ou son évacuation sur petite parcelle",
+   "phase": "Réception & achèvement",
+   "pourquoi": "Le décapage met ≈ 55 m³ en tas (A : 219 m² × 0,25 m), puis rien n'est prévu. Évacuation possible avec le prix existant (22 €/m³ foisonné) : A ≈ 219 × 0,25 × 1,3 = 71 m³ ≈ 1 570 € HT.",
+   "prix_source": "évacuation : prix existant ter-evacuation-des-terres 22 €/m³ ; régalage : incertain (la conception le classe en aménagements extérieurs)"
+  },
+  {
+   "quoi": "Raccords de la toiture du garage contre le mur de la maison (solin d'appentis) et sa zinguerie",
+   "phase": "Clos & couvert",
+   "pourquoi": "Maison B : un garage en rez-de-chaussée contre une maison à étage a son propre toit plus bas, avec un solin le long de la façade (≈ 5 ml). La formule traite tout comme un seul toit.",
+   "prix_source": "prix existant toi-raccords-faitage-noues-solins (40 €/ml base, catalog.json) ; quantité = profondeur du garage [métier]"
+  },
+  {
+   "quoi": "Coffrage de la gaine technique (chute EU et gaine VMC qui traversent l'étage)",
+   "phase": "Second œuvre",
+   "pourquoi": "[métier] Toute maison à étage avec SDB à l'étage a une gaine en placo. Le poste rénovation 'Cacher tuyaux / gaines (coffrage)' a été exclu à tort pour le neuf à étage.",
+   "prix_source": "reprise possible de clo-cacher-tuyaux-gaines-coffrage (25 €/ml base, catalog.json) ; quantité ≈ 2 × hauteur d'étage [métier]"
+  },
+  {
+   "quoi": "Protection collective en rive de toit pendant la charpente et la couverture (échafaudage de pied ou garde-corps de chantier)",
+   "phase": "Clos & couvert",
+   "pourquoi": "recherche-clos : 'garde-corps de chantier parfois chiffrés à part par le couvreur'. L'échafaudage du catalogue ne vise que l'enduit.",
+   "prix_source": "incertain ; à couvrir par une note, sinon en option"
+  },
+  {
+   "quoi": "Garde-corps des fenêtres d'étage à allège basse",
+   "phase": "Clos & couvert",
+   "pourquoi": "Déjà relevé dans calibrage-brouillon (§ 4). Reprise possible du poste toi-garde-corps au ml.",
+   "prix_source": "toi-garde-corps 180 €/ml base (catalog.json, non revérifié)"
+  },
+  {
+   "quoi": "Marche ou perron devant la porte d'entrée et les portes-fenêtres",
+   "phase": "Murs & planchers (maçon)",
+   "pourquoi": "[métier] Avec 2-3 rangs de soubassement, le sol fini est 20-40 cm au-dessus du terrain naturel : il faut au moins une marche. Ce n'est pas un aménagement extérieur 'confort'.",
+   "prix_source": "incertain"
+  }
+ ],
+ "ordre": [
+  {
+   "quoi": "Évacuations sous dallage (plomberie) + fourreaux sous dalle (arrivée électrique, eau, liaisons PAC)",
+   "actuel": "Compris dans 'Plomberie d'une maison neuve' en phase Second œuvre",
+   "correct": "Phase 3, AVANT le coulage de la dalle (jalon 'réseaux sous dallage posés et testés')",
+   "raison": "La note de la dalle le dit ('réseaux posés avant coulage'), mais l'affichage par phase envoie le plombier après le hors d'air. Il faut scinder le poste plomberie en 1re passe sous dalle (phase 3) et reste du réseau (phase 7), ou ajouter un jalon en phase 3."
+  },
+  {
+   "quoi": "Consuel puis mise en service du compteur définitif",
+   "actuel": "Consuel en Second œuvre (lot Électricité)",
+   "correct": "Fin de la phase 8 / phase 9, après la 2e passe électrique (appareillage posé), puis mise en service Enedis",
+   "raison": "Le Consuel contrôle une installation terminée. Le raccordement Enedis définitif en phase 6 n'alimente rien avant l'attestation."
+  },
+  {
+   "quoi": "Raccordement eau potable",
+   "actuel": "Phase 6 (Réseaux & raccordements)",
+   "correct": "Phase 2 (installation de chantier), ou un point d'eau provisoire",
+   "raison": "Eau nécessaire pour le mortier, l'enduit, le plâtre et le nettoyage. En pratique on demande tôt le compteur en limite."
+  },
+  {
+   "quoi": "Test d'étanchéité à l'air intermédiaire",
+   "actuel": "Après le lot Chauffage/VMC, en fin de Second œuvre",
+   "correct": "Juste après les menuiseries, les doublages et le pare-vapeur, AVANT la pose des plaques de plafond, des cloisons et des bandes",
+   "raison": "Sa note dit 'avant la pose des plaques'. Placé après, il ne sert plus à rien : on ne voit plus les fuites."
+  },
+  {
+   "quoi": "Sol stratifié / parquet et plinthes",
+   "actuel": "Lot Carrelage/Revêtements, affiché AVANT la peinture",
+   "correct": "Carrelage → peinture → stratifié/parquet → plinthes → vantaux de portes → appareillage",
+   "raison": "On ne peint pas au-dessus d'un stratifié neuf. Le carrelage peut passer avant la peinture."
+  },
+  {
+   "quoi": "Garde-corps définitif de la trémie d'escalier",
+   "actuel": "Phase Murs & planchers",
+   "correct": "Phase Finitions, posé avec l'escalier ; protection provisoire de trémie pendant le gros œuvre",
+   "raison": "Un garde-corps fini posé en gros œuvre est abîmé ou gêne les livraisons de plaques."
+  },
+  {
+   "quoi": "Tranchées pluviales autour de la maison + remblai périphérique",
+   "actuel": "Phase 6, après le Clos & couvert (enduit compris)",
+   "correct": "Avant l'enduit de façade (au moins le remblai et le pluvial en pied de mur)",
+   "raison": "[métier] L'enduit s'arrête au niveau du terrain fini. Si l'on terrasse après l'enduit, le bas de façade est sali ou abîmé."
+  },
+  {
+   "quoi": "Demandes de raccordement (Enedis surtout)",
+   "actuel": "Implicites (texte phase 1), poste 'Raccordement' en phase 6",
+   "correct": "Jalon 0 € en phase 1, dès le permis obtenu",
+   "raison": "Délai Enedis de 2 à 6 mois : c'est le chemin critique avant la mise en service."
+  },
+  {
+   "quoi": "Benne de second œuvre",
+   "actuel": "Une seule benne, en phase 2",
+   "correct": "Une benne au gros œuvre et une en phase 7 (chutes de placo, emballages)",
+   "raison": "Voir 'manquants'."
+  }
+ ],
+ "doublons": [
+  {
+   "quoi": "Partie privée du raccordement à l'égout",
+   "postes": [
+    "rac-raccordement-au-tout-a-l-egout (2 500 €)",
+    "vrd-tranchee-reseaux (D eaux usées)",
+    "vrd-canalisation-pvc-enterree (D eaux usées)"
+   ],
+   "effet": "≈ 15 ml × (25 + 30) = 825 € HT (maisons A, B, C)",
+   "correction": "Le verdict de prix-sources explique 2 500 € par la partie publique (grilles 2 214-2 238 € HT) PLUS la partie privée. Soit on écrit dans la note que le poste ne couvre que la partie publique et le regard en limite (et on réduit son prix : correction du catalogue rénovation à soumettre à Dani), soit on ne compte plus D pour les eaux usées en VRD."
+  },
+  {
+   "quoi": "Chaînage du refend sous le plancher d'étage",
+   "postes": [
+    "mac-chainage-horizontal (+ Lref)",
+    "mac-plancher-beton-etage-cree"
+   ],
+   "effet": "B : 9,5 ml × 35,3 = 337 € HT",
+   "correction": "La conception dit que le plancher comprend le chaînage qu'il porte. Il faut donc retirer Lref de la quantité de chaînage quand le refend est sous un plancher béton."
+  },
+  {
+   "quoi": "Installation de chantier (forfait de 400 € au contenu non défini) et WC de chantier / clôture / benne",
+   "postes": [
+    "anx-installation-de-chantier",
+    "anx-wc-de-chantier",
+    "anx-cloture-de-chantier"
+   ],
+   "effet": "jusqu'à 400 € HT",
+   "correction": "Écrire dans la note ce que couvre l'installation (panneau, protections, cabane ?) et que WC, clôture et benne sont à part. Sinon, décocher l'installation quand le maçon l'inclut (prix-sources : 'souvent compris dans le lot du maçon')."
+  },
+  {
+   "quoi": "Hauteur des descentes du garage",
+   "postes": [
+    "cou-descente-eaux-pluviales"
+   ],
+   "effet": "B : ≈ 3 ml × 25 € = 80 € HT (faible)",
+   "correction": "Compter la descente du garage avec 2,6 m de haut et non 5,7 m."
+  },
+  {
+   "quoi": "Dalle isolée + plancher chauffant (point h-4)",
+   "postes": [
+    "fon-dalle-terre-plein-isolee",
+    "cha-plancher-chauffant-eau-hors-chape"
+   ],
+   "effet": "Aucun doublon réel (voir arbitrage h-4)",
+   "correction": "Garder les deux. Interdire en revanche l'ajout de iso-isolant-sous-chape, qui est déjà exclu."
+  }
+ ],
+ "defauts": [
+  {
+   "quoi": "Question 21 'Lotissement' sans effet",
+   "constat": "Dans calibre.mjs : `if (!h.lotissement) on(\"etu-plan-topographique\"); else on(\"etu-plan-topographique\")`. Le plan topo est coché dans les deux cas, et le bornage n'est jamais proposé.",
+   "correction": "Lotissement = oui : plan topo décoché (fourni par le lotisseur), bornage décoché. Diffus : plan topo coché, bornage proposé coché si le terrain n'est pas borné."
+  },
+  {
+   "quoi": "Raccordement Enedis à 2 000 € même en lotissement viabilisé",
+   "constat": "En lotissement, le coffret est en général déjà en limite. Selectra : 'coffret déjà posé en limite de terrain, 430 € TTC' ; 'réseau devant le terrain avec coffret à créer, 1 690 € TTC' (https://selectra.info/energie/actualites/marche/raccordement-maison-neuve-delais-devis). Ce sont des repères simplifiés, sans engagement.",
+   "correction": "Variante du poste selon la question lotissement / coffret existant. C'est une correction de prix du catalogue rénovation : à soumettre à Dani, avec le barème Enedis officiel comme source finale (prix-sources : 1 586 € HT pour le branchement simple)."
+  },
+  {
+   "quoi": "Pente de toit à 35° partout",
+   "constat": "A : 1,64 m² de toiture par m² habitable. Dans le Sud (tuile canal ou romane), les toits sont à 30-35 % (≈ 17°) : la surface tombe à 1/cos 17° = 1,046 contre 1,221, soit −14 % de rampants, et les pignons diminuent aussi. [métier]",
+   "correction": "Pente selon une zone climatique tirée du code postal : Sud ≈ 17°, ailleurs 35°. À défaut, 30° partout comme le propose déjà calibrage-brouillon."
+  },
+  {
+   "quoi": "Sol argileux 'je ne sais pas' → 'non'",
+   "constat": "Le surcoût fort (+11 %) disparaît sans bruit. L'avertissement seul ne suffit pas : c'est le premier poste qui dérape sur chantier.",
+   "correction": "Garder 'non' pour ne pas gonfler tous les devis, mais afficher une fourchette haute (+ fon-surcout-sol-argileux, variante moyenne) tant que la carte Géorisques n'est pas branchée sur le code postal."
+  },
+  {
+   "quoi": "Étude béton armé cochée d'office",
+   "constat": "La note dit qu'elle est souvent incluse chez le maçon ou le fournisseur du plancher. [métier] En plain-pied parpaing et fermettes, on la commande rarement à part.",
+   "correction": "Cochée seulement si étage, sous-sol, argile moyen/fort ou zone sismique ≥ 3 ; option sinon."
+  },
+  {
+   "quoi": "Benne : 1",
+   "constat": "Le prix est 'par benne'.",
+   "correction": "Quantité par défaut 2 [métier]."
+  },
+  {
+   "quoi": "Aléas 7 %",
+   "constat": "Neuf en lots séparés : coordination, sol, intempéries, reprises entre corps d'état. La recherche conseille 10-15 %.",
+   "correction": "10 % en neuf (avis du jury : on reste au bas de la fourchette sourcée)."
+  },
+  {
+   "quoi": "Nombre minimum de fenêtres",
+   "constat": "C (90 m², 3 ch.) : 3 fenêtres + 2 PF + 1 baie. Une fois les 2 PF données à 2 chambres, il reste chambre 3 + SDB + WC = 3 fenêtres, et la cuisine n'a plus de fenêtre.",
+   "correction": "nFen ≥ SDB + WC + 1 (cuisine) + max(0, chambres − nPF). C passe de 3 à 4. A (4) et B (9) restent inchangés."
+  },
+  {
+   "quoi": "Raidisseurs hors zone sismique seulement",
+   "constat": "recherche-structure : '+1 tous les ~5 m de façade en zone sismique', 'plus nombreux en zone sismique 2 à 4'.",
+   "correction": "Quand le code postal est en zone sismique ≥ 3 : + ⌈P/5⌉ raidisseurs par niveau, et l'étude béton armé est cochée (+15 à +20 % selon recherche-demarches)."
+  },
+  {
+   "quoi": "Anti-termites jamais coché",
+   "constat": "Obligatoire dans les départements sous arrêté préfectoral.",
+   "correction": "Cochage automatique selon le département (voir 'manquants')."
+  },
+  {
+   "quoi": "Gouttière zinc par défaut en finition standard",
+   "constat": "[métier, non sourcé] En neuf standard, on pose plus souvent du PVC ou de l'alu laqué. Le zinc est plutôt régional ou premium.",
+   "correction": "À trancher par Dani : PVC par défaut en éco/standard, zinc en premium. Verdict incertain, pas de source sur les parts de marché."
+  }
+ ],
+ "quantites": [
+  {
+   "grandeur": "Semelles (Lsem)",
+   "maison": "A",
+   "valeur_calculee": "43,5 ml",
+   "verdict": "réaliste",
+   "correction": "aucune",
+   "raison": "Plain-pied avec fermettes qui portent sur les murs extérieurs : pas de refend à fonder. Lsem = périmètre."
+  },
+  {
+   "grandeur": "Semelles (Lsem)",
+   "maison": "B",
+   "valeur_calculee": "57,6 ml (33,7 + refend 9,5 + garage 14,4)",
+   "verdict": "réaliste",
+   "correction": "aucune",
+   "raison": "Le refend sous le plancher d'étage et les 3 murs du garage sont bien comptés."
+  },
+  {
+   "grandeur": "Semelles (Lsem)",
+   "maison": "C",
+   "valeur_calculee": "41,3 ml",
+   "verdict": "réaliste",
+   "correction": "aucune",
+   "raison": "Idem A."
+  },
+  {
+   "grandeur": "Évacuation des terres",
+   "maison": "A / B / C",
+   "valeur_calculee": "11,3 / 15,0 / 10,7 m³ foisonnés",
+   "verdict": "réaliste seulement si toute la terre végétale reste sur la parcelle",
+   "correction": "Option 'petite parcelle / terre non réutilisable' : + décapage × 0,25 m × 1,3 (A : + 71 m³)",
+   "raison": "0,4 m³/ml de fouille (fouille 0,5-0,6 × 0,8 m), dont la moitié réutilisée en remblai : c'est cohérent. Le gros volume, c'est la terre végétale (≈ 55 m³ sur A), et elle n'apparaît nulle part."
+  },
+  {
+   "grandeur": "Décapage",
+   "maison": "A / B / C",
+   "valeur_calculee": "219 / 195 / 203 m²",
+   "verdict": "réaliste",
+   "correction": "aucune",
+   "raison": "Maison + 2 m autour : c'est la pratique (recherche-terrain)."
+  },
+  {
+   "grandeur": "Dalle (E − 0,2 P)",
+   "maison": "A",
+   "valeur_calculee": "107,6 m²",
+   "verdict": "réaliste",
+   "correction": "aucune",
+   "raison": "Emprise de 116 m² moins l'épaisseur des parpaings de 20 cm sur 43,5 ml."
+  },
+  {
+   "grandeur": "Murs extérieurs nets",
+   "maison": "A",
+   "valeur_calculee": "131 m² (43,5 × 2,70 + pignons 31,3 − 18 m² d'ouvertures)",
+   "verdict": "réaliste",
+   "correction": "aucune",
+   "raison": "2,70 m d'élévation sur l'arase du soubassement + 2 pignons de ≈ 15,6 m² (l = 9,45 m à 35°)."
+  },
+  {
+   "grandeur": "Murs maçonnés",
+   "maison": "B",
+   "valeur_calculee": "237,5 m² (179 ext. + refend 25,8 + garage 32,6)",
+   "verdict": "réaliste",
+   "correction": "aucune",
+   "raison": "5,40 m sur deux niveaux, avec le plancher et son chaînage dans le poste plancher."
+  },
+  {
+   "grandeur": "Murs ossature bois",
+   "maison": "C",
+   "valeur_calculee": "123 m²",
+   "verdict": "réaliste",
+   "correction": "aucune",
+   "raison": "Même géométrie que A, pignons en ossature."
+  },
+  {
+   "grandeur": "Plancher d'étage",
+   "maison": "B",
+   "valeur_calculee": "66,7 m²",
+   "verdict": "réaliste (convention de la recherche)",
+   "correction": "aucune",
+   "raison": "recherche-structure : 'SH étage ÷ 0,9 ; trémie d'escalier généralement non déduite'. C'est un peu plus que l'intérieur du rez-de-chaussée (63 m²), car les appuis sur les murs sont compris."
+  },
+  {
+   "grandeur": "Toiture (rampants)",
+   "maison": "A",
+   "valeur_calculee": "164 m² (1,64 m²/m² SH)",
+   "verdict": "juste avec 35°, trop fort dans le Sud",
+   "correction": "Pente selon la zone (Sud ≈ 17° → ≈ 140 m²)",
+   "raison": "Toit projeté = emprise + débord 0,40 m (134 m²) ÷ cos 35°. La géométrie est bonne, c'est l'hypothèse de pente qui pèse."
+  },
+  {
+   "grandeur": "Toiture (rampants)",
+   "maison": "B",
+   "valeur_calculee": "134 m² (maison + garage)",
+   "verdict": "acceptable",
+   "correction": "Garage traité comme un toit séparé (appentis) avec solin le long de la façade",
+   "raison": "Un garage d'un seul niveau contre une maison à étage n'est pas sous le même toit."
+  },
+  {
+   "grandeur": "Toiture (rampants)",
+   "maison": "C",
+   "valeur_calculee": "149 m²",
+   "verdict": "juste avec 35°",
+   "correction": "idem A",
+   "raison": "idem A"
+  },
+  {
+   "grandeur": "Ouvertures",
+   "maison": "A",
+   "valeur_calculee": "4 fenêtres + 2 PF + 1 baie + porte (18 m²)",
+   "verdict": "réaliste, au bas de la fourchette",
+   "correction": "aucune",
+   "raison": "3 chambres (2 PF + 1 fenêtre), cuisine, SDB, WC : chaque pièce a sa baie."
+  },
+  {
+   "grandeur": "Ouvertures",
+   "maison": "B",
+   "valeur_calculee": "9 fenêtres + 1 PF + 1 baie + porte",
+   "verdict": "réaliste",
+   "correction": "aucune",
+   "raison": "4 chambres à l'étage, cuisine, 2 SDB, 2 WC."
+  },
+  {
+   "grandeur": "Ouvertures",
+   "maison": "C",
+   "valeur_calculee": "3 fenêtres + 2 PF + 1 baie + porte",
+   "verdict": "trop peu (la cuisine n'a pas de fenêtre)",
+   "correction": "4 fenêtres (formule minimale corrigée, voir 'defauts')",
+   "raison": "16,2 m² d'ouvertures pour 90 m², avec la baie et les PF qui mangent le quota."
+  },
+  {
+   "grandeur": "Doublage",
+   "maison": "A",
+   "valeur_calculee": "87,5 m²",
+   "verdict": "réaliste (≈ +4 %)",
+   "correction": "Pint = P − 8 × 0,33 (≈ 0,94 P) au lieu de 0,97 P : 84 m²",
+   "raison": "Le périmètre intérieur d'un rectangle perd 8 épaisseurs de mur (≈ 2,6 ml). L'écart est négligeable."
+  },
+  {
+   "grandeur": "Doublage",
+   "maison": "B",
+   "valeur_calculee": "141,8 m²",
+   "verdict": "réaliste",
+   "correction": "+ refend 2 faces (51,6 m²) dans une ligne à part (plaque ou enduit, non isolant)",
+   "raison": "Le refend maçonné intérieur n'a aucune finition dans le modèle."
+  },
+  {
+   "grandeur": "Cloisons",
+   "maison": "A / B / C",
+   "valeur_calculee": "80 / 96 / 72 m² (dont hydro 12 / 24 / 12)",
+   "verdict": "réaliste (B au bas de la fourchette)",
+   "correction": "aucune ; B pourrait monter à 0,85 × SH avec 4 chambres + 2 SDB + 2 WC [métier]",
+   "raison": "A ≈ 32 ml de cloisons × 2,50 m pour 7 pièces, comme sur un plan type."
+  },
+  {
+   "grandeur": "Plafonds",
+   "maison": "A / B / C",
+   "valeur_calculee": "103 / 123,6 / 92,7 m²",
+   "verdict": "réaliste",
+   "correction": "aucune",
+   "raison": "1,03 × SH. En B, le plafond du rez-de-chaussée sous les hourdis est un vrai plafond placo sur fourrures, donc il est bien compté."
+  },
+  {
+   "grandeur": "Isolation des combles",
+   "maison": "B",
+   "valeur_calculee": "61,8 m²",
+   "verdict": "réaliste",
+   "correction": "aucune",
+   "raison": "Plafond du dernier niveau seulement ; les combles du garage ne sont pas isolés."
+  },
+  {
+   "grandeur": "Bandes à joints (faces de plaques)",
+   "maison": "A",
+   "valeur_calculee": "350 m²",
+   "verdict": "réaliste",
+   "correction": "aucune",
+   "raison": "doublage + 2 faces de cloisons + plafonds."
+  },
+  {
+   "grandeur": "Peinture des murs",
+   "maison": "A",
+   "valeur_calculee": "235,5 m²",
+   "verdict": "légèrement haut",
+   "correction": "Déduire les baies des portes intérieures (≈ 1,7 m² × 2 faces par porte : A ≈ −20 m²) [métier]",
+   "raison": "Négligeable sur le total. Le vrai problème est le monomur (0 m² sur les murs extérieurs, voir 'manquants')."
+  },
+  {
+   "grandeur": "Façade (échafaudage / enduit)",
+   "maison": "A / B",
+   "valeur_calculee": "162 / 149 m² ; 251 / 236 m²",
+   "verdict": "réaliste",
+   "correction": "aucune",
+   "raison": "Hauteur d'égout de 3,0 m (soubassement visible compris) + pignons ; usage des métreurs pour les petites ouvertures non déduites."
+  },
+  {
+   "grandeur": "Gouttière / descentes",
+   "maison": "A",
+   "valeur_calculee": "26,2 ml ; 3 descentes × 3,0 m = 9 ml",
+   "verdict": "réaliste",
+   "correction": "aucune",
+   "raison": "2 égouts de 12,3 m + débords."
+  },
+  {
+   "grandeur": "Gouttière / descentes",
+   "maison": "B",
+   "valeur_calculee": "26,3 ml ; 3 × 5,7 = 17,1 ml",
+   "verdict": "légèrement haut sur les descentes",
+   "correction": "Descente du garage à 2,6 m : ≈ 14 ml",
+   "raison": "Le garage n'a qu'un niveau."
+  },
+  {
+   "grandeur": "Sous-face",
+   "maison": "A",
+   "valeur_calculee": "11,8 m²",
+   "verdict": "réaliste (égouts seuls)",
+   "correction": "Ajouter rampants de pignon × débord si la rive déborde en pignon",
+   "raison": "Débord en pignon fréquent avec une tuile à rabat ou un chevron de rive."
+  },
+  {
+   "grandeur": "Chaînage horizontal",
+   "maison": "A / B",
+   "valeur_calculee": "66,6 / 75,5 ml",
+   "verdict": "A réaliste ; B compte le refend en double",
+   "correction": "B : 66 ml (retirer Lref)",
+   "raison": "Voir 'doublons'."
+  },
+  {
+   "grandeur": "Raidisseurs",
+   "maison": "A / B",
+   "valeur_calculee": "6 / 14",
+   "verdict": "réaliste hors zone sismique",
+   "correction": "+ ⌈P/5⌉ par niveau en zone sismique ≥ 3",
+   "raison": "recherche-structure."
+  },
+  {
+   "grandeur": "Tranchées",
+   "maison": "A / B / C",
+   "valeur_calculee": "61,8 / 61,9 / 60,6 ml",
+   "verdict": "réaliste avec D = 15 m",
+   "correction": "aucune (sauf le doublon de la partie privée de l'égout)",
+   "raison": "Une tranchée réseaux secs + eau (15), une eaux usées (15), le pluvial en pied de façade (½ périmètre) et 10 m vers le puits."
+  },
+  {
+   "grandeur": "Regards",
+   "maison": "A",
+   "valeur_calculee": "6",
+   "verdict": "réaliste",
+   "correction": "aucune",
+   "raison": "3 pieds de descente, sortie EU, changement de direction, limite."
+  },
+  {
+   "grandeur": "Plinthes",
+   "maison": "A",
+   "valeur_calculee": "98 ml",
+   "verdict": "réaliste",
+   "correction": "aucune (déduire SDB faïencée si l'on veut affiner)",
+   "raison": "6 pièces sèches + dégagement."
+  },
+  {
+   "grandeur": "Cuisine",
+   "maison": "A",
+   "valeur_calculee": "3,6 ml",
+   "verdict": "un peu court pour 100 m²",
+   "correction": "aucune sans source (même règle que presetRapide)",
+   "raison": "[métier] Une cuisine en L de maison neuve fait plutôt 4-5 ml, mais la règle est commune avec la rénovation."
+  },
+  {
+   "grandeur": "WC de chantier (durée)",
+   "maison": "A / B / C",
+   "valeur_calculee": "270 / 300 / 210 jours",
+   "verdict": "réaliste",
+   "correction": "aucune",
+   "raison": "Durées de la recherche calibrage."
+  }
+ ],
+ "arbitrages": [
+  {
+   "point": "h-3 — vide sanitaire contre dalle",
+   "avis": "Garder la dalle sur terre-plein par défaut (terrain plat et sain) et le vide sanitaire par défaut en terrain en pente, en sol argileux moyen/fort ou humide. Le prix actuel du vide sanitaire est classé 'incertain' : ne pas le baisser ni le monter sans source. En attendant, ne jamais présenter le vide sanitaire comme 'moins cher' dans l'interface.",
+   "raison": "Sur le chantier, un vide sanitaire, c'est plus de maçonnerie (≈ 80 cm de murs contre 2-3 rangs), un plancher poutrelles-entrevous, des ventilations et une trappe : il n'est pas moins cher que dalle + soubassement. Les sources se contredisent sur le périmètre. PTM, sur la même page, donne 'hérisson 110 €/m²' et 'vide sanitaire 140 € tout compris', soit un VS ≈ +27 % au m² ; CYPE (114,62 € HT déboursé, sans marge) inclut le mur de 80 cm. Il faut vérifier si les sources de la dalle isolée (SG 150-212 € HT) comprennent déjà le soubassement. Si oui, on compte 85 €/ml en double. Prix manquant : un prix sourcé des murs de VS au ml, pour le décomposer comme la dalle (plancher au m² + murs au ml)."
+  },
+  {
+   "point": "h-4 — dalle isolée + plancher chauffant",
+   "avis": "Garder le défaut actuel (dalle isolée + plancher chauffant sur panneau à plots). Ce n'est pas un doublon. Ne pas basculer sur 'dalle non isolée + isolant sous chape' : aux prix du catalogue, cette variante coûte plus cher.",
+   "raison": "L'isolant sous la dalle est celui de l'enveloppe (exigé par l'étude thermique). Le panneau à plots est le support isolant du système de plancher chauffant, qu'on pose de toute façon. Les deux coexistent sur les chantiers. Chiffres en standard : actuel 140 + 55 = 195 €/m² ; variante 112 + 32 (iso sous chape) + 55 = 199 €/m², donc aucune économie de ≈ 3 000 €. Une variante moins chère ('PC sur isolant plan, fixation tacker') n'a pas de prix sourcé : incertain. Seul garde-fou : interdire iso-isolant-sous-chape avec la dalle isolée (déjà prévu)."
+  },
+  {
+   "point": "h-7 — enduit intérieur sur monomur / béton cellulaire 30",
+   "avis": "Créer le poste 'Enduit plâtre intérieur sur maçonnerie (projeté, prêt à peindre)', quantité = celle du doublage, coché d'office avec monomur et béton cellulaire 30, et RÉTABLIR la peinture de ces murs (aujourd'hui à 0 dans calibre.mjs). Prix : incertain, à sourcer avant mise en ligne.",
+   "raison": "Sur monomur, l'enduit intérieur n'est pas qu'une finition : c'est lui qui rend le mur étanche à l'air (la brique à joints minces ne l'est pas seule). Sans lui, le test RE2020 échoue. Une plaque sur fourrures (clo-doubler-un-mur, 40 €/m²) est un plan B chiffrable tout de suite, mais elle n'assure pas l'étanchéité à l'air. Repères trouvés, trop faibles pour un prix : plâtrier '20 à 80 €/m²' (https://www.travaux.com/platre) ; témoignages de forum à 17-18 €/m² (https://forums.futura-sciences.com/habitat-bioclimatique-isolation-chauffage/563843-finition-murs-interieurs-maconnerie-ite-4.html) ; fourniture Knauf MP 75 ≈ 12,69 € le sac de 25 kg pour 3 m² (https://www.brico.be/…/enduit-a-projeter-knauf-mp-75-e…, prix belge). Tant que le prix manque, la variante monomur est sous-évaluée."
+  },
+  {
+   "point": "h-9 — rupteurs de ponts thermiques",
+   "avis": "Ajouter un poste 'Rupteurs / planelles isolées en rive de plancher d'étage', quantité = P, coché d'office pour une maison maçonnée à étage avec isolation intérieure, en plain-pied rien. Prix : incertain, pas de mise en ligne chiffrée sans source.",
+   "raison": "recherche-structure : non compris dans le plancher, 'souvent nécessaires en RE2020 avec isolation intérieure'. Le seul prix trouvé (Ruptherm 15 €/ml HT fourniture, 2012) est trop ancien. Les distributeurs (Chausson Isoplanel, Samse) présentent la planelle isolée R ≥ 0,5 comme une alternative au rupteur d'about de dalle : c'est la solution la plus courante en maison, à sourcer en priorité."
+  },
+  {
+   "point": "h-9 — sorties de toit (VMC, ventilation primaire, poêle)",
+   "avis": "Pas de poste séparé. On précise dans les notes que la ventilation primaire est dans la plomberie neuve (son 'inclus' cite 'chutes et ventilation primaire') et que le rejet en toiture fait partie de la VMC (850 € HT en neuf). Pour le poêle, la sortie est déjà dans le conduit de fumée. On ajoute une note de coordination couvreur ↔ plombier/VMC (tuiles à douille).",
+   "raison": "Ce sont des accessoires de quelques dizaines d'euros, posés par le couvreur mais fournis par les autres lots. Un poste à part créerait un risque de doublon sans prix sourcé (recherche-clos : 'non chiffrés ici')."
+  },
+  {
+   "point": "h-9 — rives",
+   "avis": "Les tuiles de rive sont déjà dans la couverture 'tout compris'. La planche de rive / bandeau d'égout manque : à créer (quantité = égout, + rampants de pignon si débord), prix incertain. À défaut, écrire dans la note de la sous-face qu'elle ne comprend pas le bandeau.",
+   "raison": "recherche-clos (non_trouve) : 'aucun prix posé trouvé'. Recherche complémentaire : seules des fournitures d'annonces (≈ 5-17 €/ml calculés), pas de pose : inexploitable."
+  }
+ ],
+ "sources_ajoutees_par_le_jury": [
+  "https://www.batiproduits.com/fiche/produits/barriere-physico-chimique-anti-termites-p69097583.html — barrière Iso Filma, 5,5-6 € HT/m² fourni posé (indicatif, 2010)",
+  "https://www.ootravaux.fr/traitement-nuisibles/desinsectisation/insectes-xylophages/protection-termites-maison-neuve.html — obligation (CCH R131-1 à R131-4), page en 403, lue seulement via l'extrait de recherche",
+  "https://selectra.info/energie/actualites/marche/raccordement-maison-neuve-delais-devis — coffret déjà en limite 430 € TTC ; coffret à créer 1 690 € TTC ; niche maçonnée hors devis Enedis",
+  "https://www.choisir.com/energie/articles/104438/quel-est-le-prix-dun-compteur-electrique — liaison coffret CCPI → disjoncteur à la charge de l'usager ; tranchée et fourreau non compris",
+  "https://www.batiproduits.com/fiche/produits/rupteur-en-pierre-ponce-et-polyurethane-p69114618.html — Ruptherm 15 €/ml HT (2012)",
+  "https://www.travaux.com/platre — plâtrier 20 à 80 €/m²",
+  "https://forums.futura-sciences.com/habitat-bioclimatique-isolation-chauffage/563843-finition-murs-interieurs-maconnerie-ite-4.html — enduit plâtre intérieur 17-18 €/m² (témoignages)"
+ ],
+ "corrections_catalogue_renovation_a_soumettre_a_Dani": [
+  {
+   "poste": "rac-raccordement-au-tout-a-l-egout (2 500 €)",
+   "proposition": "Soit la note précise 'partie publique + regard en limite' et le prix descend vers 2 214-2 238 € HT (grilles publiques déjà relevées dans prix-sources.json), soit on garde 2 500 € et on supprime la longueur D eaux usées en VRD",
+   "effet": "≈ −260 à −825 € HT par maison"
+  },
+  {
+   "poste": "rac-raccordement-electrique-enedis (2 000 €)",
+   "proposition": "Variante 'coffret déjà en limite (lotissement)' : Selectra 430 € TTC (≈ 358 € HT). À confirmer sur le barème Enedis officiel avant d'appliquer",
+   "effet": "≈ −1 640 € HT en lotissement"
+  }
+ ]
+}

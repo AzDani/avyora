@@ -1,0 +1,606 @@
+{
+ "groupe": "Études, assurance, taxes, contrôles, réception",
+ "verdicts": [
+  {
+   "id": "etu-plan-topographique",
+   "n": "Plan topographique du terrain",
+   "verdict": "confirme",
+   "fp_actuel": 800,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Des sources indépendantes donnent un relevé topo seul autour de 400-1 200 € pour une parcelle de maison. La tarification à l'hectare (≈ 2 000-2 800 €/ha) ne s'applique pas à 600-800 m², où joue un minimum de facturation. 800 € HT reste dans la fourchette. Confiance moyenne.",
+   "sources": [
+    {
+     "url": "https://planet-artisans.com/quel-est-le-prix-pour-faire-venir-un-geometre-analyse-des-couts-et-conseils-pratiques/",
+     "releve": "relevé topographique seul 400-900 € ; tableau 500-1 200 € (HT/TTC non précisé ; relevé via extrait de recherche)"
+    },
+    {
+     "url": "https://www.prodestravaux.com/devis-travaux/geometre",
+     "releve": "plan topographique 2 000-2 800 €/ha ; taux horaire géomètre 70-160 € TTC (relevé via extrait de recherche)"
+    }
+   ]
+  },
+  {
+   "id": "etu-bornage-du-terrain",
+   "n": "Bornage du terrain par un géomètre-expert",
+   "verdict": "confirme",
+   "fp_actuel": 920,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Le bornage amiable coûte 650-1 000 € HT selon prix-pose, 600-2 000 € selon le nombre de bornes. 920 € HT est cohérent pour un bornage de parcelle complet (4 bornes plutôt que 2). Rappel utile pour la note : en bornage amiable, les frais sont souvent partagés à 50/50 avec le voisin.",
+   "sources": [
+    {
+     "url": "https://www.prix-pose.com/bornage-terrain",
+     "releve": "bornage amiable 650-1 000 € HT (relevé via extrait de recherche)"
+    },
+    {
+     "url": "https://planet-artisans.com/quel-est-le-prix-pour-faire-venir-un-geometre-analyse-des-couts-et-conseils-pratiques/",
+     "releve": "2 bornes ≈ 600-900 € ; 4 bornes 1 200-2 000 € (relevé via extrait de recherche)"
+    }
+   ]
+  },
+  {
+   "id": "etu-etude-de-sol-g1",
+   "n": "Étude de sol préalable G1",
+   "verdict": "confirme",
+   "fp_actuel": 800,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Fourchettes indépendantes : à partir de 650 € TTC (Univers-Sol), 800-1 500 € (Expertgeotechnique), 700-1 500 € (Geo2mo). Ces chiffres sont souvent TTC ou non précisés ; le milieu bas ≈ 900-1 000 € TTC donne ≈ 800 € HT.",
+   "sources": [
+    {
+     "url": "https://www.univers-sol.com/tarifs/",
+     "releve": "G1 PGC « à partir de 650 € » TTC (TVA incluse), maison 100 m²"
+    },
+    {
+     "url": "https://www.expertgeotechnique.com/prix-etude-sol/prix-etude-sol-maison/",
+     "releve": "G1 (ES + PGC) 800 à 1 500 € (HT/TTC non précisé)"
+    },
+    {
+     "url": "https://geo2mo.com/combien-coute-une-etude-de-sol-guide-des-prix-g1-a-g5",
+     "releve": "G1 700 à 1 500 € (HT/TTC non précisé)"
+    }
+   ]
+  },
+  {
+   "id": "etu-etude-de-sol-g2-avp",
+   "n": "Étude de sol G2 AVP",
+   "verdict": "confirme",
+   "fp_actuel": 1600,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Sources indépendantes : 1 500-2 500 € (Expertgeotechnique, environ 1 500 € pour un plain-pied sur terrain plat), à partir de 1 290 € TTC pour 100 m² (Univers-Sol), 1 500-2 000 € HT (Novinntec, page G2). 1 600 € HT tient pour un terrain simple. Sondages et rapport sont inclus ; un terrain hétérogène ou une nappe font monter le prix à 2 500-3 500 €.",
+   "sources": [
+    {
+     "url": "https://www.expertgeotechnique.com/prix-etude-sol/prix-etude-sol-maison/",
+     "releve": "G2 AVP 1 500 à 2 500 € : sondages profonds, essais pressiométriques, pré-dimensionnement des fondations"
+    },
+    {
+     "url": "https://www.univers-sol.com/tarifs/",
+     "releve": "G2-AVP « à partir de 1 290 € » TTC, maison ≈ 100 m², sondages + labo + rapport inclus"
+    },
+    {
+     "url": "https://novinntec.fr/etude-de-sol-g2/",
+     "releve": "G2 AVP maison individuelle 1 500-2 000 € HT (relevé via extrait de recherche)"
+    }
+   ]
+  },
+  {
+   "id": "etu-etude-de-sol-g2-pro",
+   "n": "Étude de sol G2 PRO (complément)",
+   "verdict": "confirme",
+   "fp_actuel": 750,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Vérifié sur le couple AVP + PRO : 1 600 + 750 = 2 350 € HT. Sources indépendantes pour la G2 complète : 2 000-3 500 € (Geo2mo), 2 300-4 000 € (Expertgeotechnique), milieux 2 750-3 150 €, probablement TTC ≈ 2 300-2 600 € HT. Le total est cohérent ; le complément seul (≈ 750-1 000 € HT) reste en confiance basse. Ne pas utiliser le prix « PRO seule » (2 500-3 600 €), qui ne s'applique pas à un complément d'AVP.",
+   "sources": [
+    {
+     "url": "https://geo2mo.com/combien-coute-une-etude-de-sol-guide-des-prix-g1-a-g5",
+     "releve": "G2 complète AVP + PRO maison classique : 2 000 à 3 500 € (HT/TTC non précisé)"
+    },
+    {
+     "url": "https://www.expertgeotechnique.com/prix-etude-sol/prix-etude-sol-maison/",
+     "releve": "G2 complète (AVP + PRO groupées) 2 300 à 4 000 € ; G2 PRO seule 2 500-3 600 €"
+    }
+   ]
+  },
+  {
+   "id": "etu-dossier-permis-dessinateur",
+   "n": "Plans et dossier de permis (dessinateur / MOE, ≤ 150 m²)",
+   "verdict": "confirme",
+   "fp_actuel": 2500,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Sources indépendantes pour 100-150 m² : 2 000-3 500 € (dessinateur-freelance, 2026) et 2 000-3 500 € HT (demande-de-permis). Pour moins de 100 m² : 1 200-2 800 €. 2 500 € HT convient pour une maison de 100-120 m². Les offres en ligne à 400-1 000 € existent, sans suivi local.",
+   "sources": [
+    {
+     "url": "https://demande-de-permis.fr/blog/prix-permis-construire-sans-architecte",
+     "releve": "dessinateur : < 100 m² 1 200-2 500 € HT ; 100-150 m² 2 000-3 500 € HT ; BE/MOE dossier seul 1 500-3 500 € HT (relevé via extrait de recherche)"
+    },
+    {
+     "url": "https://dessinateur-freelance.com/prix-permis-de-construire/",
+     "releve": "< 100 m² ≈ 1 500-2 800 € ; 100-150 m² 2 000-3 500 € (relevé via extrait de recherche)"
+    }
+   ]
+  },
+  {
+   "id": "etu-architecte-mission-permis",
+   "n": "Architecte : dossier de permis (> 150 m² SP)",
+   "verdict": "confirme",
+   "fp_actuel": 30,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Une source indépendante donne 3 000-8 000 € pour le permis seul d'une maison individuelle par un architecte, soit 20-50 €/m² à 160 m². 30 €/m² tient. Remarque pour la conception : calibre.mjs déclenche ce poste sur SH > 150 et prend SH comme quantité, alors que le seuil légal et la quantité portent sur la SURFACE DE PLANCHER (SP > SH). Il faut utiliser SP, sinon une maison de 140 m² SH / 155 m² SP passe à tort sans architecte.",
+   "sources": [
+    {
+     "url": "https://demande-de-permis.fr/guides/prix-permis-de-construire",
+     "releve": "architecte obligatoire > 150 m² SP ; permis seul 3 000 à 8 000 € pour une maison individuelle (relevé via extrait de recherche)"
+    }
+   ]
+  },
+  {
+   "id": "etu-maitrise-d-oeuvre-complete",
+   "n": "Mission complète architecte / MOE",
+   "verdict": "confirme",
+   "fp_actuel": 10,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Sources indépendantes : mission complète en maison neuve à 8-15 % du HT des travaux, « souvent proche de 10-12 % ». Exemple : 10 % de 250 000 € = 25 000 €. Un maître d'œuvre non architecte se situe plus bas (5-10 % selon demande-de-permis). 10 % est un bon milieu. L'assiette doit être écrite dans la note (gros œuvre seul ou tout hors terrain) ; le moteur prend le HT des travaux, ce qui est l'usage.",
+   "sources": [
+    {
+     "url": "https://www.construires.fr/plans-architecte-permis-de-construire/",
+     "releve": "mission complète 8 à 15 % du HT travaux ; ex. 250 000 € → 20 000-37 500 € (relevé via extrait de recherche)"
+    },
+    {
+     "url": "https://demande-de-permis.fr/blog/prix-permis-construire-sans-architecte",
+     "releve": "BE ou MOE avec suivi de chantier : 5 à 10 % du montant des travaux HT (relevé via extrait de recherche)"
+    }
+   ]
+  },
+  {
+   "id": "etu-etude-thermique-re2020",
+   "n": "Étude thermique RE2020 + attestation PCMI14",
+   "verdict": "confirme",
+   "fp_actuel": 850,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Tarifs publiés par des bureaux d'études indépendants des sources citées : SIEB 500-1 200 € HT pour une maison neuve, Civigo 550 (permis) / 650 (RE2020 conforme) / 850 € (RE2020 + ACV), ThermiConseil 683 € HT (cahier des charges) à 1 215 € HT (offre complète). Il existe aussi des offres en ligne à 99-290 € HT. 850 € HT est un prix de bureau d'études local, ACV comprise (obligatoire en RE2020).",
+   "sources": [
+    {
+     "url": "https://sieb-ingenierie.fr/bureau-d-etude-thermique",
+     "releve": "maison individuelle neuve : 500 à 1 200 € HT (relevé via extrait de recherche)"
+    },
+    {
+     "url": "https://civigo.fr/expertises/bet-thermique/reglementation-environnementale-re2020/",
+     "releve": "permis 550 € ; RE2020 conforme 650 € ; pack RE2020 + ACV 850 € (relevé via extrait de recherche)"
+    },
+    {
+     "url": "https://www.bureau-etude-thermique-bet.fr/nos-tarifs/",
+     "releve": "RE2020 + Cep + ACV (attestation fin de travaux incluse) 290 € HT / 349 € TTC — offre en ligne low-cost"
+    }
+   ]
+  },
+  {
+   "id": "etu-etude-assainissement-individuel-spanc",
+   "n": "Étude assainissement individuel (SPANC) [repris]",
+   "verdict": "confirme",
+   "fp_actuel": 600,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Une source indépendante donne l'étude de filière à partir de 750 € TTC (= 625 € HT). Le prix repris de 600 € HT tient. Les redevances de contrôle du SPANC (conception + bonne exécution) ne sont pas dans ce poste : voir manquants.",
+   "sources": [
+    {
+     "url": "https://www.univers-sol.com/tarifs/",
+     "releve": "Étude de filière d'assainissement « à partir de 750 € » TTC"
+    }
+   ]
+  },
+  {
+   "id": "etu-depot-du-permis-de-construire",
+   "n": "Dépôt du permis (jalon 0 €)",
+   "verdict": "confirme",
+   "fp_actuel": 0,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Démarche gratuite, vérifié.",
+   "sources": []
+  },
+  {
+   "id": "etu-panneau-affichage-permis",
+   "n": "Panneau d'affichage du permis",
+   "verdict": "confirme",
+   "fp_actuel": 20,
+   "sm_actuel": 20,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Prix de fourniture négligeable et cohérent (panneau 80 × 120 cm à 11-35 €).",
+   "sources": []
+  },
+  {
+   "id": "etu-constat-affichage-commissaire",
+   "n": "Constat d'affichage par commissaire de justice (3 passages)",
+   "verdict": "ajuster",
+   "fp_actuel": 500,
+   "sm_actuel": null,
+   "fp_propose": 350,
+   "sm_propose": null,
+   "raison": "500 € HT est un tarif parisien, le haut de la fourchette. Les honoraires sont libres. Tarifs publiés hors Paris : 265 € TTC pour 1 constat regroupant 3 passages (Toulouse), 359 € TTC pour 3 constats séparés, 450 € TTC pour 3 passages (GMBG). Les guides 2025 donnent 250-500 € TTC. Médiane ≈ 400-450 € TTC → 350 € HT. La note peut garder « jusqu'à 600 € TTC à Paris ».",
+   "sources": [
+    {
+     "url": "https://www.commissaire-huissier-justice-toulouse-auxijuris.fr/constat/chantier-travaux-urbanisme/constat-affichage/",
+     "releve": "3 passages : 265,00 € TTC (1 constat regroupé) ou 359,38 € TTC (3 constats) ; 1 passage 184,09 € TTC"
+    },
+    {
+     "url": "https://www.huissiers-samain-ricard.fr/huissier-commissaire-justice-paris/tarifs-huissier.php",
+     "releve": "Paris : forfait 3 passages 500 € HT = 600 € TTC"
+    },
+    {
+     "url": "https://www.gmbg-huissiers.com/public/files/67729938b957a.pdf",
+     "releve": "450 € TTC pour 3 passages, 200 € TTC par passage (relevé via extrait de recherche)"
+    },
+    {
+     "url": "https://lecommissairedejustice.fr/blog/tarif-huissier-constat-2025",
+     "releve": "300 à 500 € TTC forfait 3 passages (relevé via extrait de recherche)"
+    }
+   ]
+  },
+  {
+   "id": "etu-etude-beton-arme",
+   "n": "Étude béton armé (structure + plans de ferraillage)",
+   "verdict": "ajuster",
+   "fp_actuel": 1800,
+   "sm_actuel": null,
+   "fp_propose": 2000,
+   "sm_propose": null,
+   "raison": "Prix en ligne indépendants : Structatis à partir de 2 499 € TTC (≈ 2 083 € HT) pour l'analyse structurale, le dimensionnement fondations/poutres/poteaux/planchers et les plans de coffrage et de ferraillage. Travaux.com : étude béton de maison à partir de 1 950 € HT. Comptoir du BTP : 1 500-3 000 € pour une maison simple. 1 800 € est sous les « à partir de » observés → 2 000 € HT. L'écart est faible (+200 €), confiance moyenne.",
+   "sources": [
+    {
+     "url": "https://structatis.com/tarifs",
+     "releve": "Étude Essentiel « à partir de » 2 499 € TTC : dimensionnement fondations, poutres, poteaux, planchers + plans d'exécution coffrage et ferraillage"
+    },
+    {
+     "url": "https://www.travaux.com/construction-renovation-maison/guide-des-prix/prix-dun-ingenieur",
+     "releve": "étude béton maison individuelle « à partir de 1 950 € HT » (relevé via extrait de recherche, page 403 au fetch)"
+    },
+    {
+     "url": "https://comptoir-du-btp.fr/ingenieur-beton/",
+     "releve": "maison individuelle simple 1 500 à 3 000 € ; complexe 3 000-5 000 € (relevé via extrait de recherche)"
+    }
+   ]
+  },
+  {
+   "id": "ass-assurance-dommages-ouvrage",
+   "n": "Assurance dommages-ouvrage",
+   "verdict": "confirme",
+   "fp_actuel": 3.5,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Les sources se contredisent fortement : 0,5-1 % HT (dommages-ouvrage-fr, peu crédible, incohérent en interne), 2-4 % (reassurez-moi, lecomparateur), 6-7 % pour un particulier (ladecennale.fr, courtier). Points chiffrés indépendants : autoconstruction 150 000 € → 4 480 € (3,0 %) ; grille particulier 120-220 k€ → 3 589 € TTC forfait puis 2,08 % TTC au-delà de 220 k€ ; devis 2020 en lots séparés 3 000-6 000 € pour moins de 200 k€. Les assureurs appliquent leur taux au coût total TTC, honoraires compris : 3,5 % du HT = 2,9 % du TTC, dans la bande 2-4,5 % des lots séparés. On garde 3,5 %, confiance BASSE. À ajouter dans la note : un minimum ≈ 3 000-3 600 €, et l'assureur peut exiger une G2 et une maîtrise d'œuvre.",
+   "sources": [
+    {
+     "url": "https://www.lecomparateurassurance.com/dommages-ouvrage/demarches/souscription/assurance-dommage-ouvrage-prix",
+     "releve": "maison individuelle 200 000 € → 3 921 € ; maison en autoconstruction 150 000 € → 4 480 € ; « 2 à 4 % du coût des travaux »"
+    },
+    {
+     "url": "https://reassurez-moi.fr/guide/assurance-dommages-ouvrage/prix",
+     "releve": "grille TTC : 80-120 k€ 3 127 € ; 120-220 k€ 3 589 € ; 220-500 k€ 2,08 % TTC ; « entre 2 et 4 % »"
+    },
+    {
+     "url": "https://www.ladecennale.fr/dossier-62-prix-assurance-dommages-ouvrage.html",
+     "releve": "particulier « généralement entre 6 et 7 % du coût de la construction » (honoraires techniques inclus)"
+    },
+    {
+     "url": "https://www.forumconstruire.com/construire/topic-400671-dommage-ouvrage.php",
+     "releve": "témoignages 06/2020 : 3 500 € ; 5 374 € (courtier, Lloyd's) ; barème Gestineo 3 000 € < 150 k€ / 4 000 € < 200 k€ ; ≈ 6 000 € en auto-construction partielle"
+    },
+    {
+     "url": "https://www.forumconstruire.com/construire/topic-20306.php",
+     "releve": "« C'est sur le TTC » : la prime DO se calcule sur le coût TTC (titre du fil : La D.O. est-elle calculée sur le prix HT ou TTC ?)"
+    }
+   ]
+  },
+  {
+   "id": "ass-declaration-ouverture-de-chantier",
+   "n": "Déclaration d'ouverture de chantier (jalon 0 €)",
+   "verdict": "confirme",
+   "fp_actuel": 0,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Démarche gratuite.",
+   "sources": []
+  },
+  {
+   "id": "rec-test-etancheite-intermediaire",
+   "n": "Test d'étanchéité à l'air intermédiaire",
+   "verdict": "confirme",
+   "fp_actuel": 270,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Contrôle par différence : pack intermédiaire + final à 600-1 000 € moins test final à 400-600 € donne ≈ 200-400 € pour l'intermédiaire. 270 € HT tient. Un tarif « intermédiaire seul ≈ 480 € HT » est aussi cité, mais il s'agit d'un passage isolé hors pack.",
+   "sources": [
+    {
+     "url": "https://www.prix-travaux-m2.com/prix-test-infiltrometrie.php",
+     "releve": "test final 400-600 € ; pack test intermédiaire + final 600-1 000 € (maison 100-150 m², HT/TTC non précisé)"
+    }
+   ]
+  },
+  {
+   "id": "rec-controles-re2020-fin-de-chantier",
+   "n": "Contrôles RE2020 fin de chantier (infiltrométrie + ventilation + attestation)",
+   "verdict": "confirme",
+   "fp_actuel": 650,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Source indépendante : un bureau d'études vend 750 € HT (899 € TTC) le pack étude RE2020 + Cep + ACV + test d'infiltrométrie, avec recherche de fuites, DPE et contrôle de pression aux bouches VMC. Son test d'infiltrométrie seul coûte 500 € HT. Les autres sources donnent un test final à 350-700 € TTC. 650 € HT pour test + ventilation + attestation tient. Risque de double compte : si le même bureau d'études fait l'étude thermique et le pack de fin, son forfait global (750-1 215 € HT) remplace 850 + 650 € → le dire dans la note.",
+   "sources": [
+    {
+     "url": "https://www.bureau-etude-thermique-bet.fr/nos-tarifs/",
+     "releve": "test infiltrométrie 500 € HT / 600 € TTC ; pack RE2020 + Cep + ACV + test (déplacement, recherche de fuites, DPE, contrôle pression bouches VMC) 750 € HT / 899 € TTC"
+    },
+    {
+     "url": "https://www.etude-bet.fr/news/2025/test-infiltrometrie-re2020.php",
+     "releve": "test d'étanchéité maison individuelle standard 350 à 700 € TTC"
+    }
+   ]
+  },
+  {
+   "id": "rec-proces-verbal-de-reception",
+   "n": "Réception des travaux (jalon 0 €)",
+   "verdict": "confirme",
+   "fp_actuel": 0,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Démarche gratuite.",
+   "sources": []
+  },
+  {
+   "id": "rec-declaration-achevement-daact",
+   "n": "DAACT (jalon 0 €)",
+   "verdict": "confirme",
+   "fp_actuel": 0,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Le dépôt est gratuit. En revanche, les attestations RGA (argile moyen/fort) et parasismique à joindre ont un coût en lots séparés : sans constructeur CCMI pour les signer, il faut un bureau d'études ou un contrôleur technique. Voir manquants.",
+   "sources": [
+    {
+     "url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F1997",
+     "releve": "DAACT : attestation RGA en exposition moyenne/forte et attestation parasismique en zone exposée, établies par un contrôleur technique, un bureau d'études ou le constructeur (maison individuelle)"
+    }
+   ]
+  },
+  {
+   "id": "tax-taxe-amenagement-100-premiers-m2",
+   "n": "TA + RAP — 100 premiers m²",
+   "verdict": "confirme",
+   "fp_actuel": 26.31,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Formule officielle vérifiée. Valeur 2026 : 892 €/m² hors IDF, 1 011 €/m² en IDF. Abattement de 50 % sur les 100 premiers m² de la résidence principale et de ses annexes. Taux : commune 1-5 % (jusqu'à 20 %), département ≤ 2,5 %, région IDF ≤ 1 %. RAP 0,40 % sur la même assiette. 446 × (3 % + 2,5 % + 0,4 %) = 26,31 €/m². Le taux communal de 3 % est l'hypothèse d'exemple de Service-Public : le taux réel varie de 1 à 5 %, donc ± 45 % sur la ligne. Il faudrait un champ « taux communal » (défaut 3 %). Coefficient IDF 1,326 vérifié.",
+   "sources": [
+    {
+     "url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F23263",
+     "releve": "2026 : 892 €/m² hors IDF, 1 011 €/m² IDF ; abattement 50 % sur 100 premiers m² RP ; exemple 50 m² × 892 × (3 % + 2,5 %) = 2 453 € ; IDF + région 1 %"
+    },
+    {
+     "url": "https://www.var.gouv.fr/contenu/telechargement/7587/82396/file/redevance_archeologie_preventive_var.pdf",
+     "releve": "RAP = même assiette que la TA, taux 0,40 % ; 100 premiers m² (garage inclus) à 50 %"
+    }
+   ]
+  },
+  {
+   "id": "tax-taxe-amenagement-au-dela-100-m2",
+   "n": "TA + RAP — au-delà de 100 m²",
+   "verdict": "confirme",
+   "fp_actuel": 52.63,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "892 × 5,9 % = 52,63 €/m², même vérification que ci-dessus.",
+   "sources": [
+    {
+     "url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F23263",
+     "releve": "valeur forfaitaire 2026 892 €/m² sans abattement au-delà de 100 m²"
+    }
+   ]
+  },
+  {
+   "id": "tax-taxe-amenagement-stationnement",
+   "n": "TA (+ RAP) — places de stationnement extérieures",
+   "verdict": "ajuster",
+   "fp_actuel": 161.04,
+   "sm_actuel": null,
+   "fp_propose": 172.75,
+   "sm_propose": null,
+   "raison": "La redevance d'archéologie préventive s'applique aussi aux places de stationnement : même assiette que la TA, « aménagements et installations » compris. Le poste n'applique que 5,5 %. Correction : 2 928 × (3 % + 2,5 % + 0,4 %) = 172,75 €/place, soit +11,71 €. 2 928 € est le plancher 2026 ; une commune peut voter jusqu'à 5 857 €. Libellé à corriger : « Taxe d'aménagement + redevance d'archéologie — places de stationnement extérieures ». En IDF, ajouter la part régionale 1 % → 201,98 €.",
+   "sources": [
+    {
+     "url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F23263",
+     "releve": "place de stationnement extérieure : de 2 928 € à 5 857 € par emplacement selon la délibération (2026)"
+    },
+    {
+     "url": "https://www.var.gouv.fr/contenu/telechargement/7587/82396/file/redevance_archeologie_preventive_var.pdf",
+     "releve": "RAP : « Stationnement hors construction : 2 x 2000 € x 0,4 % = 16 € » (exemple maison individuelle 2020)"
+    },
+    {
+     "url": "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000045914152/",
+     "releve": "CGI art. 235 ter ZG : assiette de la taxe d'archéologie préventive = valeur de l'ensemble immobilier servant d'assiette à la TA (art. 1635 quater H à K), taux 0,40 % (relevé via extrait de recherche)"
+    }
+   ]
+  },
+  {
+   "id": "tax-pfac-participation-tout-a-l-egout",
+   "n": "PFAC",
+   "verdict": "confirme",
+   "fp_actuel": 2000,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Nouvelles collectivités 2024-2026, pour une maison de 120 m² : Clermont Auvergne Métropole 1 500 € forfait, Saumur 9,93 €/m² × 120 = 1 192 €, GrandAngoulême 2 742 € (2025) puis 2 879 € (2026). Avec les 6 villes déjà citées, médiane ≈ 1 500 € et moyenne ≈ 2 070 €. 2 000 € est prudent. La PFAC n'est pas soumise à la TVA. Le montant local figure dans la délibération, avec un plafond légal de 80 % du coût d'un assainissement individuel.",
+   "sources": [
+    {
+     "url": "https://www.clermontmetropole.eu/preserver-recycler/cycle-de-leau/mes-demarches/je-demande-un-raccordement-aux-reseaux-publics-deau-potable-et-dassainissement/participation-pour-le-financement-a-lassainissement-collectif/",
+     "releve": "logement individuel neuf : forfait 1 500 € (délibération 16/02/2024)"
+    },
+    {
+     "url": "https://www.saumurvaldeloire.fr/infos-demarches/eau-et-assainissement/participation-au-financement-de-l-assainissement-collectif",
+     "releve": "2026 : 9,93 €/m² de surface de plancher créée"
+    },
+    {
+     "url": "https://www.grandangouleme.fr/wp-content/uploads/2026/01/Tarifs_PFAC2026.pdf",
+     "releve": "maison individuelle : 2 742,03 € (tarif en cours) ; 2 879,13 € (tarif 2026)"
+    }
+   ]
+  }
+ ],
+ "corrections_renovation": [],
+ "doublons": [
+  {
+   "postes": [
+    "etu-etude-thermique-re2020",
+    "rec-controles-re2020-fin-de-chantier"
+   ],
+   "risque": "Beaucoup de bureaux d'études vendent étude + attestation PCMI14 + test + attestation de fin en un seul pack (750-1 215 € HT au lieu de 850 + 650 €). Pas de double compte dans le catalogue, mais la note doit dire de décocher l'un si le pack global est pris.",
+   "sources": [
+    "https://www.bureau-etude-thermique-bet.fr/nos-tarifs/",
+    "https://thermiconseil.fr/actualites/prix-etude-thermique-re2020/"
+   ]
+  },
+  {
+   "postes": [
+    "etu-etude-de-sol-g2-pro",
+    "etu-etude-beton-arme"
+   ],
+   "risque": "La G2 PRO fixe les hypothèses géotechniques des fondations ; l'étude béton armé dimensionne et ferraille les fondations. Les deux sont complémentaires, pas en double. Mais quand le maçon ou le fournisseur de plancher fournit l'étude BA (déjà dit dans la note), il ne faut pas la compter."
+  },
+  {
+   "postes": [
+    "etu-maitrise-d-oeuvre-complete",
+    "etu-dossier-permis-dessinateur / etu-architecte-mission-permis"
+   ],
+   "risque": "Exclusion déjà prévue (la mission complète remplace le dossier). Vérifier que l'assiette de la mission complète exclut les études (géomètre, sol, thermique, BA), comme dans la conception."
+  },
+  {
+   "postes": [
+    "tax-taxe-amenagement-*",
+    "tax-taxe-amenagement-stationnement"
+   ],
+   "risque": "Pas de doublon : le garage clos est dans la surface taxable, les places extérieures sont à part. La règle « 2 places sans garage, 1 avec » est cohérente."
+  }
+ ],
+ "manquants": [
+  {
+   "id": "rec-attestation-rga-daact",
+   "lot": "Contrôles & réception",
+   "phase": "Réception & achèvement",
+   "n": "Attestation « argile » (retrait-gonflement) à joindre à la déclaration d'achèvement",
+   "u": "forfait",
+   "fp": 292,
+   "sm": null,
+   "frais": false,
+   "regle": "si argile = moyen ou fort (zone d'exposition RGA, Géorisques)",
+   "raison": "Obligatoire à la DAACT en exposition moyenne ou forte pour les permis déposés depuis 2024. En lots séparés, aucun constructeur CCMI ne peut la signer : il faut un contrôleur technique ou un bureau d'études. Deux tarifs publiés identiques de 350 € TTC → 292 € HT.",
+   "sources": [
+    {
+     "url": "https://www.expertisol.fr/attestations",
+     "releve": "Attestation RGA (DAACT) : tarif unique 350,00 € TTC, zone modérée à forte, contrôle de 17 points"
+    },
+    {
+     "url": "https://enrgetic.fr/risques-naturels-sismiques/attestation-rga-daact-guide-2026/",
+     "releve": "350 € TTC pour un dossier complet"
+    },
+    {
+     "url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F1997",
+     "releve": "Attestation RGA requise en exposition forte ou moyenne ; établie par contrôleur technique, bureau d'études ou constructeur (maison individuelle)"
+    }
+   ]
+  },
+  {
+   "id": "rec-attestations-parasismiques",
+   "lot": "Contrôles & réception",
+   "phase": "Réception & achèvement",
+   "n": "Attestations parasismiques (au dépôt du permis + à l'achèvement)",
+   "u": "forfait",
+   "fp": 433,
+   "sm": null,
+   "frais": false,
+   "regle": "si zone de sismicité ≥ 3 (Géorisques) ; zone 5 sur devis",
+   "raison": "Le parasismique est exigé à la DAACT en zone exposée. Service-Public ne fixe pas le seuil pour une maison ; la DDT du Doubs (source déjà citée) indique les zones 3 à 5. Tarifs publiés : PCMI13 (permis) 170 € TTC + attestation d'achèvement 350 € TTC = 520 € TTC → 433 € HT. Si le dossier de permis ne l'exige pas pour une maison individuelle (à faire vérifier par la DDT du lieu), ne garder que l'achèvement : 292 € HT. Confiance basse : un seul fournisseur.",
+   "sources": [
+    {
+     "url": "https://www.expertisol.fr/attestations",
+     "releve": "Attestation sismique PCMI13 (permis) 170,00 € TTC ; attestation sismique AFT (DAACT) 350,00 € TTC ; zones 3 et 4 (zone 5 sur devis)"
+    },
+    {
+     "url": "https://www.service-public.gouv.fr/particuliers/vosdroits/F1997",
+     "releve": "Attestation parasismique requise en zone exposée au risque sismique ; contrôleur technique, bureau d'études ou constructeur pour maison individuelle"
+    }
+   ]
+  },
+  {
+   "id": "tax-redevances-spanc-controles",
+   "lot": "Taxes & participations",
+   "phase": "Réception & achèvement",
+   "n": "Redevances du SPANC : contrôle de conception + contrôle de bonne exécution",
+   "u": "forfait",
+   "fp": 270,
+   "sm": null,
+   "frais": true,
+   "regle": "si assainissement ≠ tout-à-l'égout (pendant de la PFAC)",
+   "raison": "Ces redevances sont distinctes de l'étude de filière (600 € HT, bureau d'études). Elles sont votées localement, souvent hors TVA. Exemples 2025-2026 : Guingamp 136 + 140 = 276 € ; Pornic 125 + 153 = 278 € ; Haut-Béarn 150 + 100 = 250 € HT. Valeur retenue : 270 €.",
+   "sources": [
+    {
+     "url": "https://www.guingamp-paimpol-agglo.bzh/wp-content/uploads/2026/01/TARIFS_ASS_NON_COLL_2026.pdf",
+     "releve": "2026 (non assujetti TVA) : conception 136 € ; bonne exécution 140 € (relevé via extrait de recherche)"
+    },
+    {
+     "url": "https://www.pornicagglo.fr/wp-content/uploads/2026/03/2025-485_DC_Assainissement_non_collectif_Tarifs_2026_tpn.pdf",
+     "releve": "2026 : conception 125 € ; réalisation ≤ 20 EH 153 € (relevé via extrait de recherche)"
+    },
+    {
+     "url": "https://www.hautbearn.fr/fileadmin/documents/deliberations/2026/20260428/260428_31A_FIN_Note_de_pre__sentation_SPANC-1-tampon.pdf",
+     "releve": "conception 150 € HT ; contrôle travaux 100 € HT (délibération 20/12/2024) (relevé via extrait de recherche)"
+    }
+   ]
+  },
+  {
+   "id": "(incertain) ass-rc-maitre-ouvrage-trc",
+   "lot": "Assurance & ouverture du chantier",
+   "n": "Option : responsabilité civile maître d'ouvrage + tous risques chantier",
+   "u": "pct",
+   "fp": null,
+   "sm": null,
+   "frais": true,
+   "regle": "option, lots séparés",
+   "raison": "INCERTAIN, pas de prix proposé. Un comparateur indique +8 à 12 % sur la prime DO quand le particulier coordonne lui-même le chantier, sans détail. Il faudrait 2-3 devis de courtiers DO avant d'ajouter le poste.",
+   "sources": [
+    {
+     "url": "https://www.lecomparateurassurance.com/dommages-ouvrage/demarches/souscription/assurance-dommage-ouvrage-prix",
+     "releve": "TRC et RCMO cités comme garanties optionnelles, sans montant ni taux sur la page ; « +8 à 12 % sur la prime » vu seulement en extrait de recherche"
+    }
+   ]
+  }
+ ],
+ "remarques": [
+  "Seuil de l'architecte : calibre.mjs teste SH > 150 et prend SH comme quantité ; la loi vise la surface de plancher (SP > SH). Il faut tester SP > 150 et facturer SP.",
+  "Taxe d'aménagement : le taux communal (1-5 %) pèse ± 45 % sur la ligne ; prévoir une saisie « taux communal » (défaut 3 %), en plus de la variante IDF.",
+  "Dommages-ouvrage : les assureurs tarifent sur le coût TTC, honoraires compris. Le moteur prend 3,5 % du HT (≈ 2,9 % du TTC), ce qui reste cohérent ; ajouter dans la note un minimum de prime ≈ 3 000-3 600 €."
+ ]
+}

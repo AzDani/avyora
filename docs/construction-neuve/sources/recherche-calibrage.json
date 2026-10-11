@@ -1,0 +1,351 @@
+{
+  "domaine": "Construction neuve maison individuelle (France métropolitaine, 2025-2026) : repères de marché pour CALIBRER le chiffrage AVYORA (prix au m² par mode de réalisation, part du budget par grand lot, prix hors d'eau / hors d'air, frais oubliés, durées) + chronologie complète du chantier du permis à la DAACT. Pas de catalogue de postes (postes = []).",
+  "postes": [],
+  "reperes": {
+    "lecture_rapide": [
+      "RÉFÉRENCE OFFICIELLE (SDES, EPTB 2024, publiée le 27/11/2025) : 1 914 € TTC/m² de SURFACE DE PLANCHER hors terrain, maison moyenne 118 m², 225 500 € TTC. Soit ≈ 1 595 € HT/m² (÷1,2). C'est un coût PRÉVISIONNEL DÉCLARÉ par le ménage au moment du permis, tous degrés de finition mélangés (seules 43 % des maisons sont « totalement terminées »).",
+      "Maison TOTALEMENT TERMINÉE (EPTB 2024) : 2 006 € TTC/m² ≈ 1 672 € HT/m². C'est le meilleur point d'ancrage pour un chiffrage « clé en main » d'AVYORA (toutes formules confondues).",
+      "Particulier maître d'œuvre (lots séparés coordonnés par lui-même, y compris part d'auto-construction) : 1 656 € TTC/m² ≈ 1 380 € HT/m², soit −17 % vs constructeur CCMI (1 994 € TTC/m²) — alors que 65 % des maisons CCMI ont encore du second œuvre à faire par le ménage contre 47 % pour les autres maîtres d'œuvre (particulier, artisan, architecte confondus).",
+      "Hors d'eau / hors d'air (gros œuvre fermé, menuiseries extérieures posées) : ≈ 45 % à un peu plus de 50 % du budget total ; ordre de grandeur 650 à 1 450 € HT/m² (prix-travaux-m2, 2026), 900-1 400 €/m² hors IDF (construires.fr, 2026).",
+      "Ordre de contrôle pour AVYORA : une maison 100-120 m² standard, en lots séparés par artisans, finie (hors cuisine équipée haut de gamme, hors extérieurs, hors frais annexes), doit sortir autour de 1 500-1 800 € HT/m² de surface de plancher. En dessous de ~1 300 € HT/m² ou au-dessus de ~2 300 € HT/m² en standard, il y a probablement un oubli ou un doublon."
+    ],
+    "prix_m2": [
+      {
+        "libelle": "Moyenne nationale toutes formules (EPTB 2024, officiel)",
+        "bas": 1914, "haut": 1914,
+        "unite": "€/m² TTC de surface de plancher, hors terrain (≈ 1 595 € HT)",
+        "perimetre": "toutes formules confondues (54 % CCMI, 29 % particulier, 9 % artisan/entrepreneur, 5 % architecte, 3 % autre) ; tous degrés de finition mélangés ; coût prévisionnel déclaré",
+        "source": "https://www.statistiques.developpement-durable.gouv.fr/le-prix-des-terrains-et-du-bati-pour-les-maisons-individuelles-en-2024",
+        "releve": "Tableau 1 : « Coût moyen des maisons (en €) 225 500 » ; « Prix moyen (en €/m² de surface de plancher) 1 914 » ; « Surface de plancher moyenne (en m²) 118 ». Définitions : « les prix des terrains et des maisons sont toutes taxes comprises ».",
+        "date": "2025-11-27 (données permis 2024)"
+      },
+      {
+        "libelle": "Maison totalement terminée (EPTB 2024, officiel)",
+        "bas": 2006, "haut": 2006,
+        "unite": "€/m² TTC de surface de plancher, hors terrain (≈ 1 672 € HT)",
+        "perimetre": "clé en main (toutes formules), 43 % des maisons, surface moyenne 120 m², 241 200 € TTC",
+        "source": "https://www.statistiques.developpement-durable.gouv.fr/media/8888/download?inline",
+        "releve": "Tableau 4 « selon le degré de finition » : « Totalement terminé 43 % / 120 m² / 241 200 € / 2 006 €/m² ».",
+        "date": "2025-11"
+      },
+      {
+        "libelle": "Maison « prêt à décorer » (EPTB 2024, officiel)",
+        "bas": 1890, "haut": 1890,
+        "unite": "€/m² TTC de surface de plancher, hors terrain (≈ 1 575 € HT)",
+        "perimetre": "livrée sans peintures / revêtements décoratifs (48 % des maisons), 117 m², 220 400 € TTC",
+        "source": "https://www.statistiques.developpement-durable.gouv.fr/media/8888/download?inline",
+        "releve": "Tableau 4 : « Prêt à décorer 48 % / 117 m² / 220 400 € / 1 890 €/m² ».",
+        "date": "2025-11"
+      },
+      {
+        "libelle": "Maison « clos et couvert » (EPTB 2024, officiel)",
+        "bas": 1558, "haut": 1558,
+        "unite": "€/m² TTC de surface de plancher, hors terrain (≈ 1 298 € HT)",
+        "perimetre": "hors d'eau hors d'air déclarée (9 % des maisons), 112 m², 175 300 € TTC. ATTENTION : coût déclaré du projet — on ne sait pas si le ménage y a inclus ce qu'il prévoit de dépenser pour finir lui-même (voir non_trouve).",
+        "source": "https://www.statistiques.developpement-durable.gouv.fr/media/8888/download?inline",
+        "releve": "Tableau 4 : « Clos et couvert 9 % / 112 m² / 175 300 € / 1 558 €/m² ».",
+        "date": "2025-11"
+      },
+      {
+        "libelle": "Constructeur de maisons individuelles (CCMI) — EPTB 2024",
+        "bas": 1994, "haut": 1994,
+        "unite": "€/m² TTC de surface de plancher, hors terrain (≈ 1 662 € HT)",
+        "perimetre": "constructeur CCMI ; 112 m² moyen, 222 900 € TTC ; dans 65 % des cas il reste du second œuvre à réaliser par le ménage → prix NON clé en main dans la majorité des cas",
+        "source": "https://www.statistiques.developpement-durable.gouv.fr/media/8888/download?inline",
+        "releve": "Tableau 4 : « Constructeur de maisons individuelles 54 % / 112 m² / 222 900 € / 1 994 €/m² » ; texte : « il reste des travaux de second œuvre à réaliser par les ménages dans 65 % des maisons construites (contre 47 % dans les autres situations) ».",
+        "date": "2025-11"
+      },
+      {
+        "libelle": "Entrepreneur ou artisan (entreprise générale) — EPTB 2024",
+        "bas": 1981, "haut": 1981,
+        "unite": "€/m² TTC de surface de plancher, hors terrain (≈ 1 651 € HT)",
+        "perimetre": "entrepreneur/artisan maître d'œuvre ; 120 m², 238 600 € TTC",
+        "source": "https://www.statistiques.developpement-durable.gouv.fr/media/8888/download?inline",
+        "releve": "Tableau 4 : « Entrepreneur ou artisan 9 % / 120 m² / 238 600 € / 1 981 €/m² ».",
+        "date": "2025-11"
+      },
+      {
+        "libelle": "Architecte — EPTB 2024",
+        "bas": 2382, "haut": 2382,
+        "unite": "€/m² TTC de surface de plancher, hors terrain (≈ 1 985 € HT)",
+        "perimetre": "architecte (obligatoire au-delà de 150 m² de surface de plancher) ; 141 m², 336 300 € TTC ; honoraires a priori inclus dans le coût déclaré (non précisé)",
+        "source": "https://www.statistiques.developpement-durable.gouv.fr/media/8888/download?inline",
+        "releve": "Tableau 4 : « Architecte 5 % / 141 m² / 336 300 € / 2 382 €/m² ».",
+        "date": "2025-11"
+      },
+      {
+        "libelle": "Particulier maître d'œuvre (lots séparés coordonnés par le ménage, incluant l'auto-construction partielle) — EPTB 2024",
+        "bas": 1656, "haut": 1656,
+        "unite": "€/m² TTC de surface de plancher, hors terrain (≈ 1 380 € HT)",
+        "perimetre": "lots séparés / auto-construction ; 124 m², 205 500 € TTC ; plus forte dispersion des prix",
+        "source": "https://www.statistiques.developpement-durable.gouv.fr/media/8888/download?inline",
+        "releve": "Tableau 4 : « Particulier lui-même 29 % / 124 m² / 205 500 € / 1 656 €/m² » ; texte : « Le prix moyen est logiquement plus bas lorsque la construction est prise en charge par les particuliers : 1 700 euros/m², contre près de 2 400 euros/m² lorsque la construction est confiée à un architecte et près de 2 000 euros/m² lorsque le maître d'œuvre est un constructeur ».",
+        "date": "2025-11"
+      },
+      {
+        "libelle": "Particulier vs constructeur avec degré de finition — EPTB 2023 Normandie (DREAL)",
+        "bas": 1512, "haut": 1779,
+        "unite": "€/m² TTC de surface de plancher, hors terrain",
+        "perimetre": "1 512 = particulier coordonnant lui-même (50 % de maisons totalement terminées) ; 1 779 = constructeur (22 % totalement terminées) ; 1 940 = entrepreneur/artisan (30 %) ; 2 248 = architecte",
+        "source": "https://dreal.statistiques.developpement-durable.gouv.fr/eptb/2023/normandie/prix_terrain_bati_normandie_2023.pdf",
+        "releve": "« Recourir à un constructeur élève le coût (1 779 € le m²) […] pour une maison qui la plupart du temps (78 %) ne sera pas livrée totalement terminée […]. Quand le particulier coordonne lui-même les travaux, le coût prévisionnel est moins élevé (1 512 € le m²), avec un degré de finition plus important (50 %) » ; tableau : Entrepreneur ou artisan 125 m² / 1 940 €/m² / 30 % ; Architecte 150 m² / 2 248 €/m².",
+        "date": "2024-12 (données 2023)"
+      },
+      {
+        "libelle": "Écart régional (EPTB 2024, officiel) — prix moyen de la maison par région",
+        "bas": 1685, "haut": 2158,
+        "unite": "€/m² TTC de surface de plancher, hors terrain",
+        "perimetre": "toutes formules ; Centre-Val de Loire 1 685 ; Normandie 1 759 ; Hauts-de-France 1 795 ; Occitanie 1 796 ; Nouvelle-Aquitaine 1 863 ; Île-de-France 1 867 ; Bourgogne-Franche-Comté 1 922 ; Grand Est 1 973 ; Pays de la Loire 1 984 ; Bretagne 2 010 ; Auvergne-Rhône-Alpes 2 063 ; PACA 2 156 ; Corse 2 158 ; France métropolitaine 1 927 ; DROM 1 642",
+        "source": "https://www.statistiques.developpement-durable.gouv.fr/media/8888/download?inline",
+        "releve": "Tableau 3 « prix, surface et part de résidences principales en 2024 selon la région », colonne « Prix moyen de la maison (en €/m2 de surface plancher) ». Écart métropole min/max ≈ −13 % / +12 % autour de 1 927.",
+        "date": "2025-11"
+      },
+      {
+        "libelle": "Fourchettes par mode « actualisées 2026 » (presse immobilière, dérivées de l'EPTB)",
+        "bas": 1200, "haut": 2200,
+        "unite": "€/m² (HT/TTC non précisé), hors terrain et hors frais annexes",
+        "perimetre": "autoconstruction 1 200-1 600 ; CCMI 1 700-2 000 ; entrepreneur/artisan 1 700-1 900 ; architecte à partir de 2 200",
+        "source": "https://www.plan-immobilier.fr/actualites-immobilieres/construire-une-maison-combien-ca-coute",
+        "releve": "Tableau : « Autoconstruction ~129 m² 1 200 – 1 600 €/m² » ; « Constructeur CCMI ~116 m² 1 700 – 2 000 €/m² » ; « Entrepreneur ou artisan ~126 m² 1 700 – 1 900 €/m² » ; « Architecte ~147 m² À partir de 2 200 €/m² » ; frais annexes « de 10 à 15 % du coût total de construction ». Fourchettes non sourcées précisément par l'article.",
+        "date": "2026-05-07"
+      },
+      {
+        "libelle": "Prix moyen marché 2025 (presse immobilière)",
+        "bas": 1700, "haut": 1800,
+        "unite": "€/m² (HT/TTC non précisé), hors terrain",
+        "perimetre": "moyenne tous modes ; auto-construction « peut descendre à 1 300 €/m² » ; rural parfois < 1 500 ; haut de gamme sur mesure > 3 500",
+        "source": "https://edito.seloger.com/construction/maitriser-projet/prix-maisons-neuves-m2-france-2025-article-20573.html",
+        "releve": "« entre 1 700 € et 1 800 € » hors achat de terrain ; 100 m² : 170 000 à 180 000 € ; 150 m² : 255 000 à 270 000 € ; 200 m² : 340 000 à 360 000 €.",
+        "date": "2025-06-07"
+      },
+      {
+        "libelle": "Maison traditionnelle parpaing enduit — maître d'œuvre (HT)",
+        "bas": 1500, "haut": 3000,
+        "unite": "€/m² HT, hors foncier, VRD et taxes",
+        "perimetre": "lots séparés / maître d'œuvre (site d'un maître d'œuvre) : entrée de gamme 1 500-1 800, standard 1 800-2 300, haut de gamme 2 300-3 000 ; plain-pied standard 1 900-2 400 ; ossature bois RE2020 standard 2 200-2 800. Valeurs hautes vs EPTB : à prendre comme plafond commercial.",
+        "source": "https://progineer.fr/prestations/prix-construction-maison/",
+        "releve": "Tableau « Maison traditionnelle (parpaing, enduit) 1 500 - 1 800 / 1 800 - 2 300 / 2 300 - 3 000 €/m² » HT ; « Marge d'un constructeur CCMI : 15 à 25 % » ; « Économies estimées : 5 à 15% avec un maître d'œuvre par rapport à un constructeur clé en main ».",
+        "date": "2026 (sans date précise)"
+      },
+      {
+        "libelle": "Plain-pied clé en main (constructeurs CCMI)",
+        "bas": 1350, "haut": 2200,
+        "unite": "€/m² « tout compris » (HT/TTC non précisé), hors terrain",
+        "perimetre": "constructeur CCMI clé en main ; médiane CCMI ~1 600 €/m² ; plain-pied 8 à 15 % plus cher au m² qu'une maison à étage",
+        "source": "https://abctravaux.org/prix-maison-plain-pied-cle-en-main/",
+        "releve": "« une maison plain-pied clé en main se négocie entre 1 350 et 2 200 € du m² tout compris » ; « Le tarif médian constaté chez les constructeurs CCMI se situe autour de 1 600 €/m² » ; « il coûte 8 à 15 % plus cher au m² qu'une maison à étage ».",
+        "date": "2026-08-21"
+      },
+      {
+        "libelle": "Clé en main Île-de-France (constructeur)",
+        "bas": 2000, "haut": 3200,
+        "unite": "€/m² (HT/TTC non précisé), hors terrain",
+        "perimetre": "clé en main, Île-de-France ; surcoût IDF annoncé 20-25 % (non confirmé par l'EPTB : IDF 1 867 € TTC/m², sous la moyenne nationale, mais maisons plus grandes 143 m²)",
+        "source": "https://www.construires.fr/prix-gros-oeuvre/",
+        "releve": "Tableau niveaux de livraison : « Clé en main 2 000 – 3 200 €/m² 100 % ».",
+        "date": "2026"
+      },
+      {
+        "libelle": "Fourchette générale banque (budget construction)",
+        "bas": 1500, "haut": 2500,
+        "unite": "€/m², hors terrain (HT/TTC non précisé)",
+        "perimetre": "tous modes ; kit 800-1 200 ; entrée de gamme 1 200-1 500 ; traditionnelle 1 500-2 000 ; contemporaine 1 800-2 500",
+        "source": "https://e-immobilier.credit-agricole.fr/conseils/travaux/comment-bien-calculer-son-budget-construction",
+        "releve": "« entre 1 500 et 2 500 € par m² » ; « Traditionnelle : 1 500 à 2 000 €/m² » ; imprévus : « Il est conseillé de prévoir une marge de 10 % à 15 % ».",
+        "date": "2026-05-21"
+      }
+    ],
+    "repartition_budget": [
+      {
+        "poste": "Gros œuvre seul (terrassement, fondations, dalle, murs porteurs — sans toiture ni menuiseries)",
+        "pct_bas": 30, "pct_haut": 30,
+        "source": "https://www.construires.fr/prix-gros-oeuvre/",
+        "releve": "« Gros œuvre seul 650 – 950 €/m² ~30 % » (IDF 2026)"
+      },
+      {
+        "poste": "Gros œuvre fermé = hors d'eau / hors d'air (structure + toiture étanche + menuiseries extérieures posées), cumul",
+        "pct_bas": 45, "pct_haut": 55,
+        "source": "https://www.construires.fr/prix-gros-oeuvre/ ; https://www.prix-travaux-m2.com/prix-maison-hors-eau-hors-air.php",
+        "releve": "construires.fr : « Gros œuvre fermé (hors d'eau / hors d'air) 950 – 1 600 €/m² ~45 % » ; prix-travaux-m2 : « un peu plus de la moitié du coût global au m² de construction » ; forumconstruire (pros cités) : « le hors d'eau représente entre 40 et 45% du budget total »"
+      },
+      {
+        "poste": "Gros œuvre (terrassement, fondations, élévation, charpente, couverture)",
+        "pct_bas": 35, "pct_haut": 40,
+        "source": "https://progineer.fr/prestations/prix-construction-maison/",
+        "releve": "exemple 100 m² à 200 000 € HT : gros œuvre 35-40 % (700-900 €/m²) ; second œuvre (cloisons, plomberie, électricité, chauffage, isolation) 30-35 % ; finitions (revêtements, menuiseries intérieures, peinture) 15-20 % ; études et maîtrise d'œuvre 10-15 %"
+      },
+      {
+        "poste": "Second œuvre technique et enveloppe intérieure (cloisons, isolation, plomberie, électricité, chauffage)",
+        "pct_bas": 30, "pct_haut": 35,
+        "source": "https://progineer.fr/prestations/prix-construction-maison/"
+      },
+      {
+        "poste": "Finitions (revêtements, menuiseries intérieures, peinture)",
+        "pct_bas": 15, "pct_haut": 20,
+        "source": "https://progineer.fr/prestations/prix-construction-maison/ ; https://e-immobilier.credit-agricole.fr/conseils/travaux/comment-bien-calculer-son-budget-construction",
+        "releve": "Crédit Agricole : finitions « entre 10 % et 25 % du budget total de construction »"
+      },
+      {
+        "poste": "Études et maîtrise d'œuvre (conception, bureau d'études, assurances, suivi)",
+        "pct_bas": 10, "pct_haut": 15,
+        "source": "https://progineer.fr/prestations/prix-construction-maison/"
+      },
+      {
+        "poste": "Gros œuvre / lots techniques / second œuvre-finitions (répartition grossière)",
+        "pct_bas": 25, "pct_haut": 50,
+        "source": "https://www.maisons-ideales.com/actualites/quel-prix-maison/",
+        "releve": "gros œuvre « environ la moitié » ; lots techniques (plomberie, électricité, chauffage, ventilation, raccordements) « environ un quart » ; second œuvre et finitions « environ un quart »"
+      },
+      {"poste": "Études (sol, thermique, étanchéité, béton)", "pct_bas": 2, "pct_haut": 3, "source": "https://www.monprojetmaison.fr/dossier-projet/prix-de-construction-maison/", "releve": "constructeur (Loire-Atlantique), page non datée — répartition lot par lot la plus détaillée trouvée"},
+      {"poste": "Maçonnerie (maison simple ; inclut a priori fondations, dallage, élévation)", "pct_bas": 25, "pct_haut": 30, "source": "https://www.monprojetmaison.fr/dossier-projet/prix-de-construction-maison/"},
+      {"poste": "Charpente (fermettes industrielles)", "pct_bas": 5, "pct_haut": 5, "source": "https://www.monprojetmaison.fr/dossier-projet/prix-de-construction-maison/"},
+      {"poste": "Couverture (tuiles terre cuite / béton / ardoise fibro)", "pct_bas": 6, "pct_haut": 6, "source": "https://www.monprojetmaison.fr/dossier-projet/prix-de-construction-maison/"},
+      {"poste": "Menuiseries extérieures (PVC / alu classiques ; +30 à 40 % en alu bicolore)", "pct_bas": 10, "pct_haut": 10, "source": "https://www.monprojetmaison.fr/dossier-projet/prix-de-construction-maison/"},
+      {"poste": "Ravalement (enduit de façade)", "pct_bas": 5, "pct_haut": 5, "source": "https://www.monprojetmaison.fr/dossier-projet/prix-de-construction-maison/"},
+      {"poste": "Isolation", "pct_bas": 6, "pct_haut": 7, "source": "https://www.monprojetmaison.fr/dossier-projet/prix-de-construction-maison/"},
+      {"poste": "Plâtrerie (plafonds, doublages, cloisons)", "pct_bas": 8, "pct_haut": 8, "source": "https://www.monprojetmaison.fr/dossier-projet/prix-de-construction-maison/"},
+      {"poste": "Menuiseries intérieures (modèles basiques)", "pct_bas": 1, "pct_haut": 2, "source": "https://www.monprojetmaison.fr/dossier-projet/prix-de-construction-maison/"},
+      {"poste": "Plomberie (sanitaires)", "pct_bas": 5, "pct_haut": 5, "source": "https://www.monprojetmaison.fr/dossier-projet/prix-de-construction-maison/"},
+      {"poste": "Électricité", "pct_bas": 5, "pct_haut": 5, "source": "https://www.monprojetmaison.fr/dossier-projet/prix-de-construction-maison/"},
+      {"poste": "Chauffage / ventilation (de la PAC air-air ou ballon thermo + convecteurs jusqu'au plancher chauffant PAC air-eau)", "pct_bas": 7, "pct_haut": 20, "source": "https://www.monprojetmaison.fr/dossier-projet/prix-de-construction-maison/"},
+      {"poste": "Carrelage / faïence", "pct_bas": 5, "pct_haut": 5, "source": "https://www.monprojetmaison.fr/dossier-projet/prix-de-construction-maison/"},
+      {"poste": "Revêtements de sol (souples / parquet)", "pct_bas": 1, "pct_haut": 2, "source": "https://www.monprojetmaison.fr/dossier-projet/prix-de-construction-maison/"},
+      {"poste": "Peinture", "pct_bas": 5, "pct_haut": 5, "source": "https://www.monprojetmaison.fr/dossier-projet/prix-de-construction-maison/"},
+      {
+        "poste": "Repère juridique (PAS une répartition de coût) : plafonds cumulés des appels de fonds CCMI, art. R231-7 CCH — fondations 25 %, murs 40 %, hors d'eau 60 %, cloisons + hors d'air 75 %, équipements/plomberie/menuiserie/chauffage/revêtements extérieurs 95 %, solde 5 % à la réception ou à la levée des réserves",
+        "pct_bas": 15, "pct_haut": 95,
+        "source": "https://www.ffbatiment.fr/actualites-batiment/actualite-ba/la-grille-des-paiements-evolue",
+        "releve": "« 15 % à l'ouverture du chantier […] 25 % à l'achèvement des fondations ; 40 % à l'achèvement des murs ; 60 % à la mise hors d'eau ; 75 % à l'achèvement des cloisons et à la mise hors d'air ; 95 % à l'achèvement des travaux d'équipement, de plomberie, de menuiserie, de chauffage et de revêtements extérieurs » (décret 2019-305 : les enduits extérieurs peuvent être faits au plus tard au stade 95 %). Ces plafonds sont volontairement en avance sur le coût réel (protection du trésorerie constructeur) : ne pas les utiliser comme part de coût."
+      }
+    ],
+    "durees": [
+      {"etape": "Instruction du permis de construire (maison individuelle, dossier complet)", "duree": "2 mois ; 3 mois en secteur protégé (site patrimonial, abords de monument historique…) ; si dossier incomplet, la mairie a 1 mois pour réclamer les pièces et le délai repart du dossier complet ; silence = permis tacite", "source": "https://www.service-public.gouv.fr/particuliers/vosdroits/F1986"},
+      {"etape": "Recours des tiers après obtention", "duree": "2 mois à compter du 1er jour d'affichage continu du panneau sur le terrain (art. R600-2 C. urb.) ; le recours doit être notifié au bénéficiaire sous 15 jours francs", "source": "https://www.service-public.gouv.fr/particuliers/vosdroits/F1986"},
+      {"etape": "Retrait du permis par la mairie", "duree": "3 mois après la décision (si permis illégal) → permis réellement « purgé » ≈ 3 mois après délivrance si l'affichage est fait tout de suite", "source": "https://www.service-public.gouv.fr/particuliers/vosdroits/F1986"},
+      {"etape": "Validité du permis", "duree": "3 ans à compter de la notification, prorogeable 2 fois 1 an ; caduc si travaux non commencés en 3 ans ou interrompus plus d'1 an", "source": "https://www.service-public.gouv.fr/particuliers/vosdroits/F1986"},
+      {"etape": "Ensemble démarches avant chantier (permis + recours)", "duree": "permis « en moyenne 2 à 3 mois » + recours « environ 2 mois » ; + 2 à 4 mois si viabilisation du terrain à faire", "source": "https://edito.seloger.com/construction/techniques-de-construction/combien-de-temps-faut-prevoir-construction-d-une-maison"},
+      {"etape": "Raccordement électrique Enedis", "duree": "coffret déjà en limite : ≥ 2 mois ; réseau devant le terrain, coffret à créer : ≥ 3 mois ; extension de réseau : ≥ 6 mois (devis 2 à 6 semaines, travaux 4-6 semaines simple / 14-18 semaines avec extension) → à demander dès le permis obtenu", "source": "https://selectra.info/energie/actualites/marche/raccordement-maison-neuve-delais-devis"},
+      {"etape": "Terrassement et fondations", "duree": "environ 1 à 2 mois", "source": "https://edito.seloger.com/construction/techniques-de-construction/combien-de-temps-faut-prevoir-construction-d-une-maison"},
+      {"etape": "Élévation des murs (maçonnerie)", "duree": "1 à 3 mois selon la taille", "source": "https://edito.seloger.com/construction/techniques-de-construction/combien-de-temps-faut-prevoir-construction-d-une-maison"},
+      {"etape": "Gros œuvre complet jusqu'au hors d'eau hors d'air (fondations, maçonnerie, charpente, toiture, menuiseries)", "duree": "4 à 6 mois", "source": "https://www.empruntis.com/financement/guide-immobilier/construire-maison-soi-meme/demarches-administratives-construire-maison/combien-temps-pour-construire-maison/"},
+      {"etape": "Mise hors d'eau et hors d'air (charpente, couverture, menuiseries)", "duree": "2 à 3 mois", "source": "https://edito.seloger.com/construction/techniques-de-construction/combien-de-temps-faut-prevoir-construction-d-une-maison"},
+      {"etape": "Second œuvre (isolation, cloisons, plomberie, électricité, chauffage)", "duree": "3 à 4 mois minimum", "source": "https://www.lamaisonsaintgobain.fr/guides-travaux/renovation-maison/construction-maison-neuve-preparer-projet-suivre-chantier ; https://edito.seloger.com/construction/techniques-de-construction/combien-de-temps-faut-prevoir-construction-d-une-maison"},
+      {"etape": "Séchage des chapes avant pose de revêtement", "duree": "≈ 1 semaine par cm jusqu'à 4 cm, ≈ 2 semaines par cm au-delà ; plus long en hiver / anhydrite ; plancher chauffant 6 cm ≥ 7 semaines avec mise en chauffe — contrôle à la bombe à carbure (forums + blog, confiance basse)", "source": "https://www.mesdepanneurs.fr/blog/chape-anhydrite ; https://www.forumconstruire.com/construire/topic-269299-temps-de-sechage-d-une-chape.php"},
+      {"etape": "Finitions (peinture, sols, aménagements)", "duree": "1 à 2 mois", "source": "https://edito.seloger.com/construction/techniques-de-construction/combien-de-temps-faut-prevoir-construction-d-une-maison"},
+      {"etape": "Durée totale de chantier selon technique", "duree": "traditionnelle 10 à 12 mois ; ossature bois 6 à 8 mois ; modulaire 4 à 6 mois (Empruntis : 8 à 12 mois en moyenne ; bois 6-9 mois)", "source": "https://edito.seloger.com/construction/techniques-de-construction/combien-de-temps-faut-prevoir-construction-d-une-maison ; https://www.empruntis.com/financement/guide-immobilier/construire-maison-soi-meme/demarches-administratives-construire-maison/combien-temps-pour-construire-maison/"},
+      {"etape": "Projet complet (démarches + chantier)", "duree": "souvent 1 à 1,5 an, peut dépasser 18 mois", "source": "https://edito.seloger.com/construction/techniques-de-construction/combien-de-temps-faut-prevoir-construction-d-une-maison"},
+      {"etape": "Contestation de la conformité après dépôt de la DAACT", "duree": "3 mois (5 mois en secteur patrimonial / monument historique / zone PPR) ; sans réponse, travaux réputés conformes", "source": "https://www.service-public.gouv.fr/particuliers/vosdroits/F1997"},
+      {"etape": "Paiement taxe d'aménagement", "duree": "déclaration sur impots.gouv.fr dans les 90 jours suivant l'achèvement ; si > 1 500 € : 2 échéances (90 jours puis 9 mois après l'achèvement)", "source": "https://www.plan-immobilier.fr/actualites-immobilieres/taxe-d-amenagement-et-maison-neuve-quels-montants"},
+      {"etape": "Garanties après réception", "duree": "parfait achèvement 1 an (tous désordres signalés) ; biennale 2 ans (équipements dissociables) ; décennale 10 ans (solidité / impropriété à destination) ; retenue de garantie ≤ 5 % si prévue au contrat (loi 71-584)", "source": "https://sites.service-information-publique.fr/chateaugiron/guide-particuliers/F2958.html"}
+    ],
+    "maisons_type": [
+      {"description": "Maison moyenne France 2024, toutes formules (118 m² de surface de plancher)", "prix": "225 500 € TTC hors terrain (≈ 187 900 € HT) ; projet terrain + maison 313 700 € ; terrain 95 000 € (30 % du total)", "source": "https://www.statistiques.developpement-durable.gouv.fr/le-prix-des-terrains-et-du-bati-pour-les-maisons-individuelles-en-2024"},
+      {"description": "Maison totalement terminée, 120 m² (moyenne France 2024)", "prix": "241 200 € TTC hors terrain (≈ 201 000 € HT)", "source": "https://www.statistiques.developpement-durable.gouv.fr/media/8888/download?inline"},
+      {"description": "Maison en lots séparés coordonnés par le particulier, 124 m² (moyenne France 2024)", "prix": "205 500 € TTC hors terrain (≈ 171 250 € HT) ; part de maisons terminées non publiée pour cette seule catégorie (47 % des maisons hors CCMI ont encore du second œuvre à faire)", "source": "https://www.statistiques.developpement-durable.gouv.fr/media/8888/download?inline"},
+      {"description": "Plain-pied 100 m² 3 chambres, constructeur clé en main", "prix": "135 000 – 190 000 € (prix moyen 1 600 €/m²), HT/TTC non précisé, hors terrain", "source": "https://abctravaux.org/prix-maison-plain-pied-cle-en-main/"},
+      {"description": "Plain-pied 120 m² 3-4 chambres, constructeur clé en main", "prix": "160 000 – 225 000 € (1 550 €/m²)", "source": "https://abctravaux.org/prix-maison-plain-pied-cle-en-main/"},
+      {"description": "Maison 100 m² traditionnelle, standard, maître d'œuvre", "prix": "180 000 – 250 000 € HT (entrée de gamme 150 000 – 180 000 € HT)", "source": "https://progineer.fr/prestations/prix-construction-maison/"},
+      {"description": "Maison 150 m² standard, maître d'œuvre", "prix": "270 000 – 375 000 € HT", "source": "https://progineer.fr/prestations/prix-construction-maison/"},
+      {"description": "Maison 100 / 150 / 200 m², moyenne marché 2025", "prix": "170-180 k€ / 255-270 k€ / 340-360 k€ hors terrain", "source": "https://edito.seloger.com/construction/maitriser-projet/prix-maisons-neuves-m2-france-2025-article-20573.html"},
+      {"description": "Primo-accédant : traditionnelle 100 m² ; famille : contemporaine 140 m²", "prix": "150 000 – 180 000 € ; 250 000 – 300 000 €", "source": "https://e-immobilier.credit-agricole.fr/conseils/travaux/comment-bien-calculer-son-budget-construction"},
+      {"description": "Retour d'expérience particulier 2023, maison 97 m² région nantaise (confiance basse, forum)", "prix": "≈ 2 000 €/m² hors parquets, peintures et cuisine", "source": "https://www.forumconstruire.com/construire/topic-463558-budget-construction-2023.php"}
+    ],
+    "hors_eau_hors_air": [
+      {"libelle": "Maison hors d'eau hors d'air, selon le matériau des murs", "valeur": "parpaing 650 – 1 450 € HT/m² ; brique 750 – 1 200 € HT/m² ; bois 800 – 1 300 € HT/m² ; 100 m² : 75 000 – 140 000 € HT ; 120 m² : 85 000 – 165 000 € HT. Suppléments : étage ≈ 200 €/m² ; garage 5 000-15 000 € ; sol argileux moyen 10 000-15 000 €, fort 15 000-20 000 € ; plan en L/T/U 10 000-20 000 €", "source": "https://www.prix-travaux-m2.com/prix-maison-hors-eau-hors-air.php", "date": "2026-01-06"},
+      {"libelle": "Gros œuvre fermé (structure + toiture étanche + menuiseries extérieures posées)", "valeur": "IDF 950 – 1 600 €/m² ; ailleurs en France 900 – 1 400 €/m² ; ≈ 45 % du budget clé en main. Décomposition : terrassement 40-90 €/m³ (souvent 5 000-12 000 €) ; fondations standard 120-220 €/m² ; fondations spéciales 250-500 €/m² (surcoût 15 000-40 000 €) ; dalle 90-160 €/m² ; murs porteurs 110-220 €/m² de mur ; charpente 70-180 €/m² ; couverture 90-200 €/m²", "source": "https://www.construires.fr/prix-gros-oeuvre/", "date": "2026"},
+      {"libelle": "Maison livrée hors d'eau hors d'air (blog logiciel artisans)", "valeur": "800 – 2 000 €/m² (HT/TTC non précisé)", "source": "https://www.obat.fr/blog/maison-hors-d-eau-hors-d-air/", "date": "2024-07-23"},
+      {"libelle": "Maison « clos et couvert » déclarée à l'EPTB 2024 (officiel)", "valeur": "1 558 € TTC/m² (≈ 1 298 € HT), 112 m², 175 300 € TTC — périmètre déclaratif incertain", "source": "https://www.statistiques.developpement-durable.gouv.fr/media/8888/download?inline", "date": "2025-11"},
+      {"libelle": "Retours forum (anciens, ordre de grandeur)", "valeur": "offre constructeur 150 000 € pour 139 m² habitables HEHA (≈ 1 080 €/m²) ; « à peine 70 000 € » terrassement + VRD + maçonnerie + toiture pour un plain-pied, + 7 000 € de menuiseries", "source": "https://www.forumconstruire.com/construire/topic-418548-quel-prix-construction-hors-eau.php", "date": "non daté"}
+    ],
+    "auto_construction": [
+      {"libelle": "Écart officiel particulier maître d'œuvre vs constructeur CCMI (EPTB 2024)", "valeur": "1 656 vs 1 994 € TTC/m² → −17 %, alors que les maisons hors CCMI ont moins souvent du second œuvre restant à la charge du ménage (47 % contre 65 % en CCMI)", "source": "https://www.statistiques.developpement-durable.gouv.fr/media/8888/download?inline"},
+      {"libelle": "Écart Normandie 2023 (DREAL)", "valeur": "1 512 vs 1 779 € TTC/m² → −15 %, 50 % vs 22 % de maisons totalement terminées", "source": "https://dreal.statistiques.developpement-durable.gouv.fr/eptb/2023/normandie/prix_terrain_bati_normandie_2023.pdf"},
+      {"libelle": "Économie en faisant soi-même les finitions / l'agencement intérieur", "valeur": "agencement intérieur (cuisine, sdb, peintures, sols, placards) par des pros : 800 – 1 200 €/m² ; en autoconstruction : 400 – 700 €/m²", "source": "https://sic-habitat.com/prix-total-maison-neuve-cout-frais-annexes/"},
+      {"libelle": "Économie maître d'œuvre vs constructeur clé en main", "valeur": "5 à 15 % ; marge constructeur CCMI 15 à 25 % (source commerciale d'un maître d'œuvre)", "source": "https://progineer.fr/prestations/prix-construction-maison/"},
+      {"libelle": "Retours forum", "valeur": "faire tout le second œuvre ≈ −25 % du prix total ; finitions DIY > −50 % sur ce poste mais il ne pèse qu'≈ 25 % du budget (confiance basse)", "source": "https://www.forumconstruire.com/construire/topic-32664.php"}
+    ],
+    "frais_souvent_oublies": [
+      {"poste": "Taxe d'aménagement (part communale + départementale [+ régionale IDF])", "valeur": "valeur forfaitaire 2026 : 892 €/m² hors IDF, 1 011 €/m² IDF ; abattement 50 % sur les 100 premiers m² de résidence principale ; taux communal 1-5 % (jusqu'à 20 % en secteur), département ≤ 2,5 %, région IDF ≤ 1 %. Assiette = surface TAXABLE (inclut le garage clos et couvert, contrairement à la surface de plancher). Calcul AVYORA (pas une citation) : 120 m² RP, 3 % + 2,5 % → (100 × 446 + 20 × 892) × 5,5 % ≈ 3 434 €. NB : l'exemple de la source (4 906 € pour 100 m²) n'applique pas l'abattement.", "source": "https://www.plan-immobilier.fr/actualites-immobilieres/taxe-d-amenagement-et-maison-neuve-quels-montants", "date": "2026-05-13"},
+      {"poste": "Redevance d'archéologie préventive", "valeur": "0,40 % sur la même assiette que la taxe d'aménagement (calcul AVYORA pour 120 m² RP : 62 440 € × 0,40 % ≈ 250 €) ; due si les travaux affectent le sous-sol", "source": "https://www.assemblee-nationale.fr/dyn/17/amendements/1906A/AN/1765.pdf", "date": "PLF 2026"},
+      {"poste": "Raccordement électrique Enedis (≤ 36 kVA)", "valeur": "barème depuis 17/07/2025 : branchement complet 1 404 € HT (1 684,80 € TTC) après réfaction 40 % ; repères Enedis 430 € TTC (coffret déjà en limite) / 1 690 € TTC (coffret à créer) / 1 690 € TTC et plus (extension, part fixe + ≈ 76-99 € TTC/m) ; nouveau barème au 28/10/2026 : 2 644 € HT avant réfaction. NON inclus : tranchée en domaine privé, fourreau, niche/maçonnerie du coffret.", "source": "https://selectra.info/energie/actualites/marche/raccordement-maison-neuve-delais-devis", "date": "2026-08-25"},
+      {"poste": "Branchement électrique provisoire de chantier + mise en service", "valeur": "39,60 € TTC (≤ 28 jours) ; 372 € à 496,80 € TTC au-delà ; mise en service 29,10 € TTC", "source": "https://selectra.info/energie/actualites/marche/raccordement-maison-neuve-delais-devis", "date": "2026-08-25"},
+      {"poste": "Attestation Consuel (jaune, maison neuve)", "valeur": "144,67 € TTC électronique / 146,15 € TTC papier (tarif au 02/09/2025) ; contre-visite 232,13 €", "source": "https://izi-by-edf.fr/blog/consuel-demarche-prix", "date": "2025-2026"},
+      {"poste": "Branchement eau potable + assainissement collectif", "valeur": "estimation distributeur (Suez, citée sur forum) 2 600 – 7 950 € TTC, moyenne 4 600 € TTC ; prix fixés localement", "source": "https://www.forumconstruire.com/construire/topic-320465-cout-excessif-raccordement-eau.php", "date": "non daté"},
+      {"poste": "PFAC (participation au financement de l'assainissement collectif)", "valeur": "fixée localement : ex. Vertou (Nantes Métropole) 25,81 €/m² de surface de plancher (≈ 3 100 € pour 120 m², calcul AVYORA) ; Montpellier Métropole base 2 400 € HT indexée ; plafond légal 80 % du coût d'un assainissement individuel", "source": "https://vertou.fr/wp-content/uploads/2025/01/Note_info_PFAC_annexe-au-PC_2025.pdf", "date": "2025"},
+      {"poste": "Viabilisation globale (eau, électricité, assainissement) si terrain non viabilisé", "valeur": "6 000 – 15 000 €", "source": "https://sic-habitat.com/prix-total-maison-neuve-cout-frais-annexes/", "date": "non daté"},
+      {"poste": "Étude de sol G1 (vente) / G2 AVP (conception)", "valeur": "G2 AVP 1 500 – 2 500 € ; G2 PRO 2 500 – 3 600 € ; G1 600 – 2 000 € ; obligatoire en zone d'aléa retrait-gonflement des argiles moyen/fort (loi ELAN, depuis 01/01/2020)", "source": "https://www.habitatpresto.com/mag/construction/etude-g2-sol ; https://www.prix-pose.com/etude-sol", "date": "2025"},
+      {"poste": "Assurance dommages-ouvrage", "valeur": "2 à 4 % du coût des travaux ; 3 921 € pour 200 000 € de travaux par un constructeur (≈ 2 %) ; 4 480 € pour 150 000 € en autoconstruction (≈ 3 %) ; obligatoire avant ouverture du chantier", "source": "https://www.lecomparateurassurance.com/dommages-ouvrage/demarches/souscription/assurance-dommage-ouvrage-prix", "date": "2025-08-12"},
+      {"poste": "Étude thermique RE2020 (attestation n°1 au dépôt du permis, PCMI14)", "valeur": "600 – 1 200 € (ou 500 – 1 200 € selon une autre source)", "source": "https://sic-habitat.com/prix-total-maison-neuve-cout-frais-annexes/", "date": "non daté"},
+      {"poste": "Test d'étanchéité à l'air + attestation RE2020 n°2 (jointe à la DAACT)", "valeur": "400 – 700 € (sic-habitat) ; 350 – 500 € (Saint-Gobain) ; seuil maison 0,6 m³/(h.m²) ; opérateur Qualibat 8711 ; contrôle ventilation Qualibat 8721", "source": "https://sic-habitat.com/prix-total-maison-neuve-cout-frais-annexes/ ; https://www.ffbatiment.fr/techniques-batiment/reglementation-construction/reglementation-thermique-environnementale/dossier/quels-sont-les-attestations-et-controles-reglementaires-de-la-re2020", "date": "2025-2026"},
+      {"poste": "Bornage (géomètre-expert) si terrain en diffus", "valeur": "700 – 1 500 € TTC, > 2 000 € terrain complexe", "source": "https://sic-habitat.com/prix-total-maison-neuve-cout-frais-annexes/", "date": "non daté"},
+      {"poste": "Implantation de la maison par géomètre (piquetage, niveau de dalle)", "valeur": "300 – 500 € (forum) ; jusqu'à 2 000 € avec implantation des fondations ; plan topographique 500 – 1 000 € (confiance basse)", "source": "https://www.forumconstruire.com/construire/topic-418298-implantation-maison-geometre.php", "date": "non daté"},
+      {"poste": "Maîtrise d'œuvre (si lots séparés pilotés par un pro)", "valeur": "7 – 12 % du coût des travaux (mission complète) ; coordination/suivi seul 3 – 5 % ; architecte 8 – 15 % ; architecte obligatoire au-delà de 150 m² de surface de plancher", "source": "https://www.travaux.com/construction-renovation-maison/maitre-oeuvre-professionnels/saint-martin-d-heres ; https://progineer.fr/prestations/prix-construction-maison/", "date": "2025-2026"},
+      {"poste": "Aménagements extérieurs (accès, allée, terrasse, clôture, engazonnement, regards eaux pluviales)", "valeur": "base 8 000 – 20 000 € pour un terrain de 600-800 m² ; 30 000 – 50 000 € avec terrasse et clôtures complètes ; 50 – 200 €/m² aménagé", "source": "https://sic-habitat.com/prix-total-maison-neuve-cout-frais-annexes/ ; https://e-immobilier.credit-agricole.fr/conseils/travaux/comment-bien-calculer-son-budget-construction", "date": "2026"},
+      {"poste": "Frais annexes globaux (raccordements, étude de sol, taxe d'aménagement, DO, notaire terrain)", "valeur": "10 – 15 % du coût de construction", "source": "https://www.plan-immobilier.fr/actualites-immobilieres/construire-une-maison-combien-ca-coute", "date": "2026-05-07"},
+      {"poste": "Provision pour imprévus", "valeur": "10 – 15 % (au moins 10 %)", "source": "https://e-immobilier.credit-agricole.fr/conseils/travaux/comment-bien-calculer-son-budget-construction", "date": "2026-05-21"}
+    ]
+  },
+  "etapes": [
+    "0. AVANT LE PERMIS — vérifier le terrain : certificat d'urbanisme / règles du PLU, bornage (géomètre si terrain en diffus), étude G1 fournie par le vendeur en zone argile, viabilisation présente ou non (réseaux en limite ?). Jalon : terrain acquis, contraintes connues.",
+    "1. CONCEPTION — plans (architecte obligatoire si surface de plancher > 150 m²), étude de sol G2 AVP (obligatoire en zone argile moyenne/forte, recommandée partout), étude thermique RE2020 → attestation n°1 (PCMI14). Jalon : dossier de permis complet.",
+    "2. PERMIS DE CONSTRUIRE — dépôt en mairie, instruction 2 mois (3 en secteur protégé), le délai court du dossier complet. Jalon : arrêté de permis (ou permis tacite).",
+    "3. PURGE DU PERMIS — affichage du panneau sur le terrain dès l'obtention, recours des tiers 2 mois à compter du 1er jour d'affichage, retrait possible 3 mois. Jalon : permis purgé (≈ 3 mois après délivrance). En parallèle : devis artisans par lot, demandes de raccordement (Enedis ≥ 2-6 mois), assurance dommages-ouvrage, étude béton armé si nécessaire.",
+    "4. OUVERTURE DE CHANTIER — DOC (Cerfa 13407) déposée en mairie au démarrage, DO souscrite, branchement provisoire électricité/eau de chantier, accès chantier et installation. Jalon : DOC déposée.",
+    "5. IMPLANTATION — piquetage de la maison par géomètre (ou maçon), niveau de référence de la dalle. Jalon : implantation validée conforme au permis (distances aux limites).",
+    "6. TERRASSEMENT — décapage de la terre végétale, fouilles des fondations, plateforme ; évacuation ou régalage des terres. Jalon : fond de fouille réceptionné.",
+    "7. FONDATIONS — béton de propreté, semelles filantes ferraillées (ou fondations spéciales si la G2 l'impose), réseaux sous dalle en attente (évacuations EU/EV, fourreaux). Jalon : achèvement des fondations (25 % en CCMI).",
+    "8. SOUBASSEMENT & PLANCHER BAS — murs de soubassement / vide sanitaire ou hérisson + dalle sur terre-plein, arase étanche contre les remontées capillaires. Jalon : plancher bas coulé.",
+    "9. ÉLÉVATION DES MURS — maçonnerie (parpaing, brique, béton cellulaire) ou ossature bois, linteaux, chaînages, appuis. Jalon : achèvement des murs (40 % en CCMI).",
+    "10. PLANCHER HAUT (si étage ou combles aménagés) — poutrelles-hourdis + dalle de compression, escalier béton éventuel. Jalon : plancher haut coulé, arases et pignons montés.",
+    "11. CHARPENTE — fermettes industrielles ou charpente traditionnelle, contreventement. Jalon : charpente levée.",
+    "12. COUVERTURE & ZINGUERIE — écran sous-toiture, liteaux, tuiles/ardoises, faîtage, gouttières et descentes. Jalon : MISE HORS D'EAU (60 % en CCMI).",
+    "13. MENUISERIES EXTÉRIEURES — fenêtres, porte d'entrée, baies, porte de garage, volets. Jalon : MISE HORS D'AIR (maison fermée, gros œuvre fermé).",
+    "14. RÉSEAUX EXTÉRIEURS (VRD) — tranchées vers les réseaux publics, branchements eau / électricité / assainissement (ou ANC) / eaux pluviales / télécom, regards. Jalon : compteurs posés (le Consuel conditionne la mise en service définitive).",
+    "15. PREMIER PASSAGE DES LOTS TECHNIQUES — plomberie (alimentations, évacuations), électricité (gaines, boîtiers), ventilation (gaines VMC), chauffage (PAC, réseaux, plancher chauffant éventuel). Jalon : réseaux encastrés posés avant fermeture des parois.",
+    "16. ISOLATION & PLÂTRERIE — isolation des murs (doublages), isolation des combles/plafonds, cloisons, plafonds, membrane / traitement de l'étanchéité à l'air ; test d'étanchéité intermédiaire conseillé. Jalon : achèvement des cloisons + hors d'air (75 % en CCMI).",
+    "17. CHAPES — chape (ciment ou anhydrite) sur isolant / plancher chauffant, puis séchage (≈ 1 semaine/cm jusqu'à 4 cm, plus en hiver). Jalon : chape sèche (humidité mesurée) avant revêtements.",
+    "18. ENDUIT DE FAÇADE — enduit monocouche ou traditionnel, appuis, habillages (peut se faire en parallèle du second œuvre, au plus tard au stade 95 % en CCMI). Jalon : façade terminée.",
+    "19. SECOND PASSAGE & FINITIONS — appareillages électriques, tableau, sanitaires, chauffe-eau, menuiseries intérieures et escalier, carrelage/faïence, sols, peintures, cuisine. Jalon : achèvement des équipements (95 % en CCMI).",
+    "20. CONTRÔLES DE FIN DE CHANTIER — test d'étanchéité à l'air final (Qualibat 8711), contrôle de la ventilation (Qualibat 8721), attestation Consuel, attestation RE2020 n°2 établie par contrôleur technique, architecte, diagnostiqueur ou organisme certifié. Jalon : attestations en main.",
+    "21. RÉCEPTION DES TRAVAUX — visite contradictoire avec chaque entreprise (ou le maître d'œuvre), procès-verbal avec ou sans réserves, retenue de garantie ≤ 5 % si prévue au contrat. Jalon : PV de réception signé = départ des garanties (1 an parfait achèvement, 2 ans biennale, 10 ans décennale).",
+    "22. LEVÉE DES RÉSERVES — reprises par les entreprises. Jalon : réserves levées → solde payé.",
+    "23. DAACT — déclaration attestant l'achèvement et la conformité, avec attestation RE2020 (et selon le terrain : attestation retrait-gonflement des argiles, parasismique). La mairie a 3 mois (5 en secteur protégé) pour contester. Jalon : conformité acquise (tacite ou attestation de non-contestation).",
+    "24. APRÈS L'ACHÈVEMENT — déclaration taxe d'aménagement sur impots.gouv.fr sous 90 jours (paiement en 2 fois si > 1 500 €), déclaration foncière (H1) pour la taxe foncière, aménagements extérieurs (allée, clôture, terrasse, engazonnement) souvent faits après la remise des clés."
+  ],
+  "pieges": [
+    "SURFACE : l'EPTB raisonne en surface de PLANCHER (garages et combles non aménageables exclus) ; la taxe d'aménagement en surface TAXABLE (garage compris) ; beaucoup de sites en « surface habitable ». AVYORA doit calibrer sur une seule surface et convertir les autres.",
+    "TTC vs HT : l'EPTB (officiel) est en TTC ; la plupart des sites commerciaux ne le précisent pas. En neuf la TVA est 20 % partout : 1 914 € TTC = 1 595 € HT. Ne pas comparer un prix TTC de neuf à un prix HT du catalogue sans conversion.",
+    "PÉRIMÈTRE « CONSTRUCTEUR » : le prix CCMI au m² n'est PAS un prix clé en main dans la majorité des cas — 65 % des maisons CCMI ont encore du second œuvre à faire par le ménage (EPTB 2024), 78 % non livrées totalement terminées en Normandie 2023. Comparer à « Totalement terminé » (2 006 € TTC/m²) et non à la moyenne.",
+    "EPTB = coût PRÉVISIONNEL déclaré au moment du permis : il sous-estime probablement le coût final (avenants, imprévus, extérieurs). Prévoir 10-15 % d'imprévus.",
+    "Frais hors construction à ne JAMAIS mettre dans le €/m² de calibrage : terrain, notaire, agence, taxe d'aménagement, PFAC, raccordements concessionnaires, DO, études — mais à afficher dans le budget global (≈ 10-15 % du coût de construction).",
+    "Devis Enedis : ne comprend JAMAIS la tranchée en domaine privé, le fourreau ni la niche du coffret ; idem eau/assainissement → poste VRD privé à chiffrer à part (longueur maison ↔ limite de terrain).",
+    "Doublon fouilles / semelles : vérifier si le prix de la semelle inclut les fouilles en rigole et l'évacuation des terres ; sinon terrassement à part (m³). De même la plateforme et le décapage de terre végétale ne sont pas dans « fondations ».",
+    "Fondations : dépendent de l'étude G2 (argile → semelles plus profondes, longrines, vide sanitaire, micropieux) : surcoût 5 000 à 20 000 € selon l'aléa (prix-travaux-m2), 15 000 à 40 000 € pour des fondations spéciales (construires.fr). Le ferraillage est dimensionné par une étude béton armé si plancher haut / porte-à-faux.",
+    "Plain-pied vs étage : à surface égale, le plain-pied coûte 8 à 15 % de plus au m² (plus de fondations, de dalle et de toiture) ; un étage ajoute un plancher haut et un escalier mais réduit emprise et toiture. Les quantités doivent partir de l'EMPRISE AU SOL et du PÉRIMÈTRE, pas seulement de la surface habitable.",
+    "Forme du plan : un plan en L/T/U coûte 10 000 à 20 000 € de plus qu'un rectangle (prix-travaux-m2) → le périmètre extérieur doit être une donnée d'entrée.",
+    "Enduit de façade : souvent oublié dans les budgets « hors d'eau » ; depuis le décret 2019-305 il peut être fait au stade 95 % en CCMI — ne pas le considérer inclus dans le hors d'eau.",
+    "Garage : compte dans la surface taxable, pas dans la surface de plancher ; coûte 5 000-15 000 € en HEHA (prix-travaux-m2) ; à chiffrer comme un volume à part (dalle, murs, toiture, porte sectionnelle).",
+    "Chapes : le temps de séchage bloque carrelage/parquet (≈ 1 semaine/cm) → planning ; plancher chauffant = chape plus épaisse + protocole de mise en chauffe.",
+    "RE2020 : deux attestations (au permis + à l'achèvement), test d'étanchéité à l'air obligatoire (seuil 0,6 m³/h.m²) et contrôle VMC → un échec du test = reprises + nouveau test. Prévoir le traitement de l'étanchéité à l'air dans le lot plâtrerie/menuiseries.",
+    "Consuel indispensable avant la mise en service définitive du compteur ; l'électricien le facture souvent sur son devis → ne pas le compter deux fois.",
+    "Assurance DO : obligatoire et plus chère en autoconstruction (≈ 3 % contre ≈ 2 % avec constructeur) ; certains assureurs refusent l'autoconstruction, et sans DOC l'assurance peut refuser la couverture.",
+    "Architecte obligatoire au-delà de 150 m² de surface de plancher : honoraires 8-15 % à ajouter ; maître d'œuvre en lots séparés 7-12 %.",
+    "Dans le catalogue rénovation, les prix sont souvent issus de sites « rénovation » en TTC 10 % : les reconvertir en HT puis appliquer la TVA 20 % en neuf. En neuf, la productivité est meilleure (pas de dépose, pas d'existant) : certains prix rénovation fourni-posé peuvent être légèrement surévalués pour du neuf.",
+    "Assainissement non collectif (fosse/micro-station) si pas de tout-à-l'égout : poste lourd, à proposer seulement si le terrain n'est pas raccordable.",
+    "Extérieurs (allée, clôture, terrasse, portail, gazon, gestion des eaux pluviales / puisard) presque toujours hors contrat : 8 000 à 20 000 € de base, jusqu'à 30 000-50 000 € complets.",
+    "Calendrier de paiement CCMI (25/40/60/75/95 %) ≠ répartition des coûts : ne pas s'en servir comme clé de ventilation par lot."
+  ],
+  "non_trouve": [
+    "Aucune répartition du coût par lot issue d'une source neutre et récente (fédération, observatoire, économiste) : la seule grille lot par lot détaillée vient d'un constructeur (monprojetmaison.fr, non datée) ; les autres sont des grandes masses commerciales (progineer, maisons-ideales, construires.fr). Confiance moyenne à basse sur les pourcentages par lot.",
+    "Prix au m² EPTB par mode de réalisation ET degré de finition croisés (ex. « particulier, totalement terminé ») : non publié dans la synthèse nationale ; seulement séparément. Le tableur de données détaillé n'a pas été consulté.",
+    "Périmètre exact du « coût de la maison » déclaré à l'EPTB (inclut-il raccordements, VRD privés, honoraires, ce que le ménage finira lui-même pour les maisons « clos et couvert » ?) : la page méthodologie ne le précise pas ; questionnaire non consulté.",
+    "Prix 2025-2026 d'une maison hors d'eau hors d'air en lots séparés par une source neutre : seules des sources commerciales (prix-travaux-m2, construires.fr, obat) et des forums anciens ; fourchettes larges (650 à 2 000 €/m²).",
+    "Moyenne nationale de la PFAC et des branchements eau/assainissement : fixées localement par chaque collectivité/délégataire ; seuls des exemples locaux et une estimation de distributeur citée sur un forum.",
+    "Barème officiel 2026 de la redevance d'archéologie préventive : taux 0,40 % relevé dans un amendement PLF 2026 rejeté (qui confirme le taux en vigueur) ; montant non vérifié sur impots.gouv.fr. La page economie.gouv.fr sur la taxe d'aménagement a renvoyé une erreur 403 : valeur 892 €/m² confirmée par 2 sites secondaires seulement.",
+    "Tarif d'une implantation par géomètre en France : aucune grille officielle (l'Ordre des géomètres-experts ne publie pas de barème) ; seulement des témoignages de forum.",
+    "Durées officielles par phase de chantier : aucune source institutionnelle ; seulement des guides (SeLoger, Empruntis, Saint-Gobain) concordants. Séchage des chapes : forums/blogs uniquement (le DTU n'a pas été consulté).",
+    "Prix de l'attestation RE2020 n°2 seule (hors test d'infiltrométrie) : non trouvé séparément ; généralement incluse dans la prestation test + bureau d'études.",
+    "Coefficients régionaux de construction neuve autres que l'EPTB (indice BT01 régionalisé, ratios économistes) : non recherchés en détail ; l'EPTB donne un écart d'environ −13 % / +12 % autour de la moyenne métropolitaine, mais il mélange les formules et les finitions.",
+    "Exemples réels et récents (2024-2026) de budgets complets en lots séparés, poste par poste : non trouvés (forums anciens ou incomplets)."
+  ]
+}

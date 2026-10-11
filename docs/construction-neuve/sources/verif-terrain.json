@@ -1,0 +1,894 @@
+{
+  "groupe": "Terrain, fondations, réseaux, raccordements (Annexes de chantier ; Raccordements provisoires ; Terrassement ; Fondations & soubassement ; Réseaux enterrés (VRD) ; Raccordements aux réseaux)",
+  "date": "2026-10-11",
+  "synthese_points_arbitrage": {
+    "h3_vide_sanitaire_vs_dalle": "La dalle n'est PAS surévaluée : prix-travaux-m2 donne 110 € HT sans isolant ; avec l'isolant, ≈ 140 €. C'est le vide sanitaire qui l'est trop bas : ses sources chiffrent des entrevous béton non isolants. Proposition : vide sanitaire 150 → 180 € HT/m² (sm 75 → 95). Il redevient plus cher que dalle + soubassement (+0,6 k€ sur A ; l'usage dit +3 à 8 k€, donc 180 € est une hypothèse basse). Mieux encore : scinder en plancher hourdis isolant (m²) + soubassement de 4 rangs (ml).",
+    "h4_dalle_isolee_plancher_chauffant": "Double compte partiel. Le DTU 65.14 exige un isolant sous les tubes, mais un panneau polyuréthane R 3,70 (80 mm) sous le plancher chauffant peut porter toute l'isolation du plancher bas. Avec plancher chauffant : dalle non isolée (112 €) + plancher chauffant sur panneau épais. Gain brut ≈ 28 €/m² ; le gain net n'est pas sourcé."
+  },
+  "verdicts": [
+    {
+      "id": "anx-implantation-par-geometre",
+      "n": "Implantation de la maison par un géomètre",
+      "verdict": "confirme",
+      "fp_actuel": 550,
+      "sm_actuel": null,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Le seul repère indépendant trouvé (forum, implantation 300 à 500 €) est dans la fourchette basse des sources déjà citées (376 à 800 €). 550 € HT reste un milieu défendable. Pas de barème officiel français.",
+      "sources": [
+        {
+          "url": "https://www.forumconstruire.com/construire/topic-38859.php",
+          "releve": "« implantation de maison de 300 à 500 € » (témoignage, non daté, HT/TTC non précisé)"
+        }
+      ]
+    },
+    {
+      "id": "anx-cloture-de-chantier",
+      "n": "Clôture de chantier (panneaux sur plots, pose et dépose)",
+      "verdict": "incertain",
+      "fp_actuel": 30,
+      "sm_actuel": 24,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Prix bâti sur l'ACHAT neuf des panneaux (Loxam). Sur un chantier de 7 à 10 mois, on loue le plus souvent : aucun tarif de location mensuel publié n'a été trouvé chez les loueurs (Kiloutou, Loxam : sur devis). Il faudrait un devis de location (panneau + plot + collier, au mois, livraison et reprise). Poste optionnel, impact faible.",
+      "sources": [
+        {
+          "url": "https://www.hellopro.fr//documentation/pdf_prod/7/8/5/1587019_90817d7d83996e5f3a101bbfe4f8d9ba_9040587.pdf",
+          "releve": "Kit de location clôture 3,50 × 2 m + plot plastique + raccord : aucun prix publié"
+        }
+      ]
+    },
+    {
+      "id": "anx-wc-de-chantier",
+      "n": "WC de chantier (cabine louée)",
+      "verdict": "ajuster",
+      "fp_actuel": 5,
+      "sm_actuel": 5,
+      "fp_propose": 8,
+      "sm_propose": 8,
+      "raison": "5 € HT/jour est le prix PLANCHER (« à partir de ») d'Obat. Hellopro relève 155 à 447 € par mois pour une cabine, vidange, nettoyage et papier compris (octobre 2026, HT/TTC non précisé) : milieu 301 €/mois, soit 10 €/jour, ou 8,4 € HT si le chiffre est TTC. On retient 8 € HT/jour. Effet maison A (270 jours) : +810 € HT. À décocher si le maçon fournit la cabine.",
+      "sources": [
+        {
+          "url": "https://conseils.hellopro.fr/quel-est-le-prix-d-une-toilette-mobile-1436.html",
+          "releve": "« Location mensuelle : entre 155 et 447 euros » une cabine ; pompage, nettoyage et papier inclus ; chiffres constatés en octobre 2026, HT/TTC non précisé"
+        },
+        {
+          "url": "https://www.obat.fr/blog/toilette-chantier/",
+          "releve": "« à partir de 5 € HT par jour » : c'est un plancher, pas un prix moyen (source déjà citée)"
+        }
+      ]
+    },
+    {
+      "id": "anx-acces-de-chantier-empierre",
+      "n": "Accès de chantier empierré (géotextile + grave)",
+      "verdict": "confirme",
+      "fp_actuel": 20,
+      "sm_actuel": 8,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Un devis HT publié chiffre la couche de forme à 11 €/m², sans géotextile et sans décaissement. Obat donne un chemin d'accès tout compris (décapage, remblai, évacuation) à 60 €/m². 20 € HT avec géotextile et 30 cm de grave se situe entre les deux.",
+      "sources": [
+        {
+          "url": "https://www.prix-travaux-m2.com/exemple-devis-terrassement.php",
+          "releve": "Exemple de devis HT (page mise à jour le 29/03/2026) : « couche de forme » 40 m² à 11 € HT/m²"
+        }
+      ]
+    },
+    {
+      "id": "anx-installation-de-chantier",
+      "n": "Installation de chantier (repris)",
+      "verdict": "confirme",
+      "fp_actuel": 400,
+      "sm_actuel": null,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Prix rénovation non contredit. Le seul repère trouvé (amenée et repli d'engins sur un marché public, 178 € HT) concerne un branchement d'eau, pas une maison. À décocher si le devis du maçon comprend l'installation.",
+      "sources": []
+    },
+    {
+      "id": "anx-benne-evacuation-des-gravats",
+      "n": "Benne & évacuation des gravats (repris)",
+      "verdict": "confirme",
+      "fp_actuel": 400,
+      "sm_actuel": null,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Aucune source indépendante en neuf. Les artisans évacuent souvent leurs propres déchets : une benne à 400 € HT reste un ordre de grandeur plausible.",
+      "sources": []
+    },
+    {
+      "id": "anx-nettoyage-de-fin-de-chantier",
+      "n": "Nettoyage de fin de chantier (repris)",
+      "verdict": "incertain",
+      "fp_actuel": 10,
+      "sm_actuel": 1,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "La synthèse propose de baisser le prix de 10 à 7 € HT/m² (Companeo 3-8, Ynspir 6-12). Une source indépendante, Obat (juin 2026), annonce au contraire 20 à 35 €/m² pour un nettoyage de fin de chantier. Les sources se contredisent : NE PAS baisser ; 10 € reste au milieu des deux familles de sources.",
+      "sources": [
+        {
+          "url": "https://travaux.obat.fr/guides/tarif-nettoyage-m2/",
+          "releve": "« Le tarif de nettoyage varie entre 20 et 35 €/m2 selon l'ampleur du chantier » (publié le 04/06/2026, HT/TTC non précisé)"
+        }
+      ]
+    },
+    {
+      "id": "rac-coffret-tableau-de-chantier-provisoire",
+      "n": "Coffret / tableau de chantier provisoire (repris)",
+      "verdict": "confirme",
+      "fp_actuel": 300,
+      "sm_actuel": null,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Témoignages : 340 € pour toute la durée du chantier (15 mois) en location avec pose et démarches ; 450 € HT posé par un électricien. Habitatpresto : achat 200 à plus de 1 000 € HT, location 50 à 150 €/mois. 300 € est dans le bas de la fourchette, mais il est défendable.",
+      "sources": [
+        {
+          "url": "https://www.habitatpresto.com/pro/conseils/pratiques/coffret-chantier-electrique",
+          "releve": "Achat 200 € à plus de 1 000 € HT ; location 50 à 150 € par mois (relevé via extrait de recherche)"
+        },
+        {
+          "url": "https://www.forumconstruire.com/construire/topic-304988-coffret-de-chantier.php",
+          "releve": "340 € pour 15 mois de location, pose et démarches comprises ; coffret posé par un électricien 450 € HT (relevé via extrait de recherche)"
+        }
+      ]
+    },
+    {
+      "id": "rac-mise-en-service-provisoire-enedis",
+      "n": "Mise en service provisoire Enedis (repris)",
+      "verdict": "ajuster",
+      "fp_actuel": 250,
+      "sm_actuel": null,
+      "fp_propose": 447,
+      "sm_propose": null,
+      "raison": "Barème Enedis V8 (annexe à la délibération CRE 2026-160, entrée en vigueur annoncée le 28/10/2026) : branchement provisoire non fixe de plus de 28 jours en BT ≤ 36 kVA, 447,00 € HT, réfaction de 40 % déjà déduite. C'est plus que les 414 € (barème V7) proposés par la synthèse. La correction se fait au catalogue rénovation (voir corrections_renovation).",
+      "sources": [
+        {
+          "url": "https://www.cre.fr/fileadmin/Documents/Deliberations/2026/260728_2026-160_Bareme_de_raccordement_Enedis_Annexe.pdf",
+          "releve": "Tableau 13.1.1, « Branchements provisoires, durée > 28 jours » : BT ≤ 36 kVA, non fixe 447,00 € HT (536,40 € TTC) ; non fixe semi-équipé 334,00 € HT ; fixe 36,00 € HT ; « Les prix indiqués ci-dessus intègrent la réfaction tarifaire de 40% »"
+        },
+        {
+          "url": "https://www.totalenergies.fr/particuliers/parlons-energie/dossiers-energie/compteur-d-electricite-gaz/compteur-de-chantier-ou-provisoire-quelles-demarches",
+          "releve": "Plus de 28 jours : non fixe 496,80 € TTC, réfaction intégrée (barème V7, relevé via extrait de recherche)"
+        }
+      ]
+    },
+    {
+      "id": "ter-debroussaillage",
+      "n": "Débroussaillage avec évacuation",
+      "verdict": "confirme",
+      "fp_actuel": 1,
+      "sm_actuel": null,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Aucune source indépendante nouvelle. 1 € HT/m² est cohérent avec les deux sources citées (0,40 à 1,50 € avec évacuation). Poste optionnel, impact négligeable.",
+      "sources": []
+    },
+    {
+      "id": "ter-decapage-terre-vegetale",
+      "n": "Décapage de la terre végétale",
+      "verdict": "confirme",
+      "fp_actuel": 4,
+      "sm_actuel": null,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Un devis HT indépendant chiffre le décapage sur 30 cm à 6 €/m², pour une petite surface de 40 m². Un forum donne 3,40 €/m² sur 230 m². À 200 m² environ, 4 € HT tient.",
+      "sources": [
+        {
+          "url": "https://www.prix-travaux-m2.com/exemple-devis-terrassement.php",
+          "releve": "Devis HT : décapage de la terre végétale sur 30 cm, 40 m² à 6 €/m² (page du 29/03/2026)"
+        }
+      ]
+    },
+    {
+      "id": "ter-fouilles-en-rigole",
+      "n": "Fouilles en rigole (chiffrage détaillé)",
+      "verdict": "confirme",
+      "fp_actuel": 35,
+      "sm_actuel": null,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Pas de contre-source nouvelle. Le prix est cohérent avec la décomposition STP de la semelle complète (fouille 30-60 €/ml). Il n'est jamais coché par défaut.",
+      "sources": []
+    },
+    {
+      "id": "ter-fouilles-en-pleine-masse",
+      "n": "Fouilles en pleine masse",
+      "verdict": "incertain",
+      "fp_actuel": 12,
+      "sm_actuel": null,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Les sources citées vont de 4-8 €/m³ (déboursé Polyvert, gros volumes) à 40 €/m³ (Obat). Aucune source indépendante n'a permis de trancher. 12 € suppose un rendement sur 50 à 300 m³ qui n'est pas sourcé. Pour un sous-sol (≈ 400 m³), le poste est de toute façon DÉJÀ compris dans « Sous-sol enterré » (voir doublons). Il faudrait 2 ou 3 devis de terrassier au m³.",
+      "sources": []
+    },
+    {
+      "id": "ter-evacuation-des-terres",
+      "n": "Évacuation des terres en décharge",
+      "verdict": "confirme",
+      "fp_actuel": 22,
+      "sm_actuel": null,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Sources indépendantes : devis HT de 2026 à 15 €/m³ ; devis de forum de 9,80 à 23 €/m³ (TTC ou HT selon les cas). Pour les petits volumes d'une maison (10-15 m³), 22 € HT reste plausible.",
+      "sources": [
+        {
+          "url": "https://www.prix-travaux-m2.com/exemple-devis-terrassement.php",
+          "releve": "Devis HT : « Évacuation des déchets » 8 m³ à 15 € HT/m³"
+        },
+        {
+          "url": "https://www.forumconstruire.com/construire/topic-1462.php",
+          "releve": "Témoignages : 23 €/m³ TTC (77), 12,95 € HT/m³ (95), 9,80 €/m³ (54) (relevés via extrait de recherche, anciens)"
+        }
+      ]
+    },
+    {
+      "id": "ter-remblai-peripherique",
+      "n": "Remblai périphérique avec les terres du site",
+      "verdict": "confirme",
+      "fp_actuel": 22,
+      "sm_actuel": null,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Pas de contre-source nouvelle. Impact faible (≈ 240 € sur A).",
+      "sources": []
+    },
+    {
+      "id": "ter-apport-remblai-grave",
+      "n": "Apport de grave compactée",
+      "verdict": "confirme",
+      "fp_actuel": 38,
+      "sm_actuel": 20,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Pas de contre-source nouvelle. Les sources citées (Polyvert 28-30 ; Belley 26,75-40,63 €/m³ en 2021) encadrent le prix.",
+      "sources": []
+    },
+    {
+      "id": "ter-journee-terrassier-mini-pelle",
+      "n": "Journée de terrassier avec mini-pelle",
+      "verdict": "confirme",
+      "fp_actuel": 500,
+      "sm_actuel": null,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Pas de contre-source nouvelle. Obat 400-800 €/jour ; Polyvert 56 €/h.",
+      "sources": []
+    },
+    {
+      "id": "mac-semelle-de-fondation-50-25-30-cm",
+      "n": "Semelle de fondation complète (repris)",
+      "verdict": "confirme",
+      "fp_actuel": 140,
+      "sm_actuel": 65,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Contrôle par CYPE : semelle BA à 450,91 € HT/m³ × 0,15 m³/ml = 68 €/ml de déboursé, hors fouille, propreté, marge et frais généraux. Avec la fouille et le béton de propreté, on retrouve ≈ 120-140 € HT. Abctravaux (2026) donne 12 000 à 20 000 € pour les semelles filantes d'une maison de 100 m² sur bon sol, contre ≈ 5 750 € de semelles + 3 700 € de soubassement pour A : le catalogue n'est pas trop cher.",
+      "sources": [
+        {
+          "url": "https://abctravaux.org/prix-fondations-maison/",
+          "releve": "Semelle filante (bon sol) 100-180 €/m², 12 000-20 000 € pour une maison de 100 m², hors étude de sol et terrassement (relevé via extrait de recherche)"
+        }
+      ]
+    },
+    {
+      "id": "ele-mise-a-la-terre",
+      "n": "Mise à la terre (repris)",
+      "verdict": "confirme",
+      "fp_actuel": 500,
+      "sm_actuel": 150,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Ootravaux donne 300 à 1 000 € tout compris, prix-travaux-m2 500 à 1 000 € pour une maison. La matière d'une boucle de 45-60 m en cuivre nu de 25 mm² vaut à elle seule ≈ 200 € HT (tresse à 15,90 € TTC les 3 m) : le sm de 150 € est un peu bas, mais le fp tient.",
+      "sources": [
+        {
+          "url": "https://www.ootravaux.fr/installation-entretien/electricite/installation-electrique/prix-installation-prise-de-terre.html",
+          "releve": "Mise à la terre « entre 300 et 1 000 euros tout compris » (relevé via extrait de recherche)"
+        },
+        {
+          "url": "https://www.prix-travaux-m2.com/prix-installation-prise-de-terre.php",
+          "releve": "« entre 500€ et 1 000€ pour une maison selon la technique choisie » (relevé via extrait de recherche)"
+        }
+      ]
+    },
+    {
+      "id": "fon-beton-de-proprete",
+      "n": "Béton de propreté (chiffrage détaillé)",
+      "verdict": "confirme",
+      "fp_actuel": 12,
+      "sm_actuel": 4,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Pas de contre-source nouvelle ; jamais coché par défaut.",
+      "sources": []
+    },
+    {
+      "id": "fon-semelle-filante-beton-arme-seul",
+      "n": "Semelle filante béton armé seul",
+      "verdict": "confirme",
+      "fp_actuel": 85,
+      "sm_actuel": 63,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "CYPE : 450,91 € HT/m³ de déboursé × 0,15 m³/ml = 68 €/ml ; avec frais généraux et marge, on arrive à ≈ 85 €. Jamais coché par défaut.",
+      "sources": []
+    },
+    {
+      "id": "fon-semelle-isolee-sous-poteau",
+      "n": "Semelle isolée sous poteau (0,256 m³), fouille comprise",
+      "verdict": "incertain",
+      "fp_actuel": 240,
+      "sm_actuel": 110,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "CYPE chiffre une semelle isolée en béton armé à 314,76 € HT/m³ (50 kg d'acier/m³, hors coffrage et hors fouille), soit ≈ 81 € pour 0,256 m³. Il faudrait y ajouter la fouille d'environ 0,5 m³, la propreté, l'évacuation et la marge : on arrive plutôt à 130-170 € qu'à 240 €. Le sm de 110 € dépasse lui aussi le coût matière CYPE (≈ 0,256 × 300). Aucune source ne donne un prix posé au plot. Poste optionnel : à faire chiffrer.",
+      "sources": [
+        {
+          "url": "https://sika.prix-construction.info/construction_neuve/Structure_et_gros_oeuvre/Fondations/Semelles_isolees/Semelle_de_fondation_en_beton_arme.html",
+          "releve": "Semelle isolée BA C25/30, ≈ 50 kg/m³ : 314,76 € HT/m³ ; « ne comprend pas le coffrage » ; fouille non comprise"
+        }
+      ]
+    },
+    {
+      "id": "fon-longrine-beton-arme",
+      "n": "Longrine en béton armé",
+      "verdict": "confirme",
+      "fp_actuel": 70,
+      "sm_actuel": 30,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Pas de contre-source nouvelle. Le prix est cohérent avec CYPE (341 €/m³ hors coffrage), déjà cité. Option sur prescription.",
+      "sources": []
+    },
+    {
+      "id": "fon-radier-general",
+      "n": "Radier général",
+      "verdict": "confirme",
+      "fp_actuel": 160,
+      "sm_actuel": null,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "CYPE : radier BA à 395,60 € HT/m³, hors coffrage, avec ≈ 87 kg d'acier/m³. À 25 cm d'épaisseur, cela fait ≈ 99 €/m² ; avec les rives coffrées, la propreté ou le hérisson et la marge, 160 € tient. ATTENTION : le radier REMPLACE la dalle ISOLÉE, mais son prix ne comprend aucun isolant. Il faut cocher en plus « Isolant sous chape » (35 €/m²) ou un isolant sous radier (voir manquants).",
+      "sources": [
+        {
+          "url": "https://sika.prix-construction.info/construction_neuve/Structure_et_gros_oeuvre/Fondations/Radiers/Radier.html",
+          "releve": "Radier BA C20/25, acier 86,7 kg/m³ : 395,60 € HT/m³ ; « ne comprend pas le coffrage »"
+        }
+      ]
+    },
+    {
+      "id": "fon-surcout-sol-argileux",
+      "n": "Surcoût fondations sol argileux (forfait)",
+      "verdict": "incertain",
+      "fp_actuel": 12500,
+      "sm_actuel": null,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Aucune source indépendante chiffrée trouvée : les documents de l'État et des DDT décrivent les dispositions, sans en donner le coût. Le forfait repose sur une seule page grand public. Une piste plus robuste, non chiffrée ici : calculer le surcoût à partir du métré, à savoir l'approfondissement des semelles (ancrage minimal 0,80 m en aléa moyen et 1,20 m en aléa fort, arrêté du 22/07/2020) × Lsem, plus les chaînages. Par ailleurs, le libellé cite « vide sanitaire » : risque de double compte si l'utilisateur choisit aussi le vide sanitaire (voir doublons).",
+      "sources": [
+        {
+          "url": "https://www.ecologie.gouv.fr/sols-argileux-secheresse-et-construction",
+          "releve": "Dispositions constructives en zone argileuse, sans chiffrage"
+        }
+      ]
+    },
+    {
+      "id": "fon-mur-de-soubassement",
+      "n": "Mur de soubassement parpaings (2-3 rangs), arase comprise",
+      "verdict": "confirme",
+      "fp_actuel": 85,
+      "sm_actuel": 15,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Le prix tient, mais une source citée est mal lue : les « 50 à 100 €/ml » de prix-travaux-m2 portent sur un SOUBASSEMENT DE CLÔTURE (muret de moins de 50 cm, hors fondations), pas sur celui d'une maison. Repère indépendant : mur porteur ou de soubassement en parpaing plein à 100-150 €/m², fourni-posé, soit 60 à 90 €/ml pour 60 cm de hauteur. 85 € HT, arase comprise, reste dans la fourchette.",
+      "sources": [
+        {
+          "url": "https://www.prix-travaux-m2.com/prix-soubassement.php",
+          "releve": "« Soubassement de clôture (muret) » 50 à 100 €/ml, < 50 cm, « Ce tarif ne comprend pas le coût des fondations » (mise à jour 08/08/2026)"
+        },
+        {
+          "url": "https://www.habitatpresto.com/mag/maconnerie/prix-mur-parpaing",
+          "releve": "Mur porteur ou mur de soubassement en parpaing plein : 100 à 150 €/m², fourniture et pose (relevé via extrait de recherche)"
+        }
+      ]
+    },
+    {
+      "id": "fon-arase-etanche",
+      "n": "Arase étanche seule",
+      "verdict": "confirme",
+      "fp_actuel": 12,
+      "sm_actuel": 4,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Pas de contre-source nouvelle ; jamais coché par défaut.",
+      "sources": []
+    },
+    {
+      "id": "fon-drain-peripherique",
+      "n": "Drain périphérique en fouille ouverte",
+      "verdict": "confirme",
+      "fp_actuel": 60,
+      "sm_actuel": 25,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Source indépendante : en construction neuve, tranchée encore ouverte, un devis fait 1 509,12 € HTVA pour ≈ 27 m (drain, géotextile, raccordement), soit ≈ 56 €/ml. Un autre artisan cite ≈ 50 €/ml. Les 160-400 €/ml des guides sont bien des prix de rénovation (terrassement compris).",
+      "sources": [
+        {
+          "url": "https://www.bricozone.be/t/prix-pose-drain.105771/",
+          "releve": "Construction neuve, tranchée ouverte : devis 1 509,12 € HTVA, drain + géotextile + raccordement, périmètre ≈ 27 m (≈ 56 €/ml) ; autre estimation ≈ 1 800 € pour une maison de 10 × 7 m (relevé via extrait de recherche, forum belge, non daté)"
+        }
+      ]
+    },
+    {
+      "id": "fon-dalle-terre-plein-isolee",
+      "n": "Dalle sur terre-plein isolée",
+      "verdict": "confirme",
+      "fp_actuel": 140,
+      "sm_actuel": 50,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Contre-vérification de ce que couvrent les sources. Les 110 € HT/m² de prix-travaux-m2 couvrent décapage, gravier, film et dalle, SANS isolant et SANS murs. En ajoutant un isolant sous dalle de R ≈ 3 (fourniture 25-50 € TTC/m², soit 21-42 € HT, plus la pose), on arrive à ≈ 135-155 € HT. 140 € est donc juste, et la dalle garage à 112 € l'est aussi. Ce n'est donc PAS la dalle qui fausse la comparaison avec le vide sanitaire, c'est le vide sanitaire (voir ce poste).",
+      "sources": [
+        {
+          "url": "https://www.prix-travaux-m2.com/prix-soubassement.php",
+          "releve": "Soubassement en hérisson : 110 € HT/m², fourni-posé, comprend décapage, gravier, dalle béton et film polyane ; murs et isolant non mentionnés (mise à jour 08/08/2026)"
+        },
+        {
+          "url": "https://www.prix-pose.com/dalle-beton",
+          "releve": "Dalle sur terre-plein 55-95 €/m² avec pose, hors fouilles, hérisson et pompe ; « Isolation sous dalle : 25 à 50 €/m² » en fourniture ; prix publics TTC (mise à jour 05/05/2025)"
+        },
+        {
+          "url": "https://www.prix-travaux-m2.com/prix-dalle-de-beton.php",
+          "releve": "Dalle 12-15 cm pour garage ou maison : 52 à 84 €/m² ; préparation 5 à 10 €/m² ; treillis + 2 à 4 €/m² ; prix « hors terrassement, ferraillage et isolation »"
+        }
+      ]
+    },
+    {
+      "id": "fon-vide-sanitaire-complet",
+      "n": "Vide sanitaire complet (murs 80 cm, entrevous ISOLANTS, dalle de compression)",
+      "verdict": "ajuster",
+      "fp_actuel": 150,
+      "sm_actuel": 75,
+      "fp_propose": 180,
+      "sm_propose": 95,
+      "raison": "Ce poste est SOUS-ÉVALUÉ. Ses sources (prix-travaux-m2 140 € « tout compris », CYPE 114,62 € de déboursé) chiffrent un vide sanitaire à entrevous BÉTON, sans isolant : CYPE ne mentionne aucune isolation. Or le libellé promet des entrevous isolants. prix-travaux-m2 (01/2026) donne un plancher hourdis posé de 98 à 185 € en polystyrène contre 84 à 116 € en béton, soit +40 €/m² environ au milieu. 140 + 40 ≈ 180 € HT ; sm = matériaux CYPE (≈ 70 €) + surcoût des entrevous PSE (≈ 25 €) = 95 €. Résultat sur A : vide sanitaire 19 370 € contre dalle + soubassement 18 760 €, le vide sanitaire repasse au-dessus, comme l'usage le veut. L'écart (+0,6 k€) reste sous le surcoût de 3 000 à 8 000 € annoncé par L'artisan-conseil et un forum : à 180 €, c'est une hypothèse basse. Variante plus juste, au choix de Dani : chiffrer le vide sanitaire comme « plancher hourdis isolant + dalle de compression » (≈ 140 €/m²) PLUS le mur de soubassement en ml, avec 4 rangs au lieu de 2-3. Le prix suivrait alors le périmètre réel.",
+      "sources": [
+        {
+          "url": "https://www.prix-travaux-m2.com/prix-hourdis.php",
+          "releve": "Plancher hourdis fourni-posé : polystyrène 98 à 185 €/m² ; béton 84 à 116 €/m² ; fourchette globale 85-201 € HT/m² (mise à jour 28/01/2026)"
+        },
+        {
+          "url": "https://sika.prix-construction.info/construction_neuve/Structure_et_gros_oeuvre/Planchers_bas/Planchers_sur_vide_sanitaire/GBV010_Plancher_sur_vide_sanitaire_ventile.html",
+          "releve": "GBV010 (déjà cité, revu pour vérifier ce qu'il couvre) : entrevous BÉTON 60 × 20 × 25, murs de 80 cm, membrane bitumineuse ; « isolation : non mentionnée » ; 114,62 € HT/m², dont matériaux ≈ 69,81 € et main-d'œuvre ≈ 42,32 €"
+        },
+        {
+          "url": "https://lartisan-conseil.fr/cout-dun-vide-sanitaire/",
+          "releve": "Surcoût du vide sanitaire par rapport à une dalle sur terre-plein « souvent entre 3 000 et 8 000 euros » ; création complète 80-150 €/m² TTC (2026)"
+        },
+        {
+          "url": "https://www.forumconstruire.com/construire/topic-25758.php",
+          "releve": "Plain-pied de 100 m² en Savoie : vide sanitaire « 8000 euros de plus » que la dalle (témoignage, relevé via extrait de recherche)"
+        }
+      ]
+    },
+    {
+      "id": "fon-sous-sol-enterre",
+      "n": "Sous-sol enterré (ordre de grandeur)",
+      "verdict": "confirme",
+      "fp_actuel": 250,
+      "sm_actuel": null,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Le prix est cohérent avec les sources citées (180-270 €/m²). Mais prix-travaux-m2 y comprend l'excavation, l'étanchéité et les tranchées drainantes. Or le moteur ajoute en plus le drain périphérique et l'évacuation de ≈ 400 m³ ; la conception ajoute aussi les fouilles en pleine masse : DOUBLE COMPTE (voir doublons).",
+      "sources": [
+        {
+          "url": "https://www.prix-travaux-m2.com/prix-soubassement.php",
+          "releve": "Sous-sol 270 € HT/m² en moyenne, matériaux et installation compris ; excavation, murs enterrés et tranchées drainantes décrits"
+        }
+      ]
+    },
+    {
+      "id": "fon-dalle-garage-non-isolee",
+      "n": "Dalle de garage non isolée",
+      "verdict": "confirme",
+      "fp_actuel": 112,
+      "sm_actuel": 32,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Cohérent avec prix-travaux-m2 (110 € HT/m² : décapage, gravier, film, dalle, sans isolant).",
+      "sources": [
+        {
+          "url": "https://www.prix-travaux-m2.com/prix-soubassement.php",
+          "releve": "Soubassement en hérisson 110 € HT/m², sans isolant ni murs"
+        }
+      ]
+    },
+    {
+      "id": "vrd-tranchee-reseaux",
+      "n": "Tranchée réseaux (ouverture, sable, grillage, rebouchage)",
+      "verdict": "confirme",
+      "fp_actuel": 25,
+      "sm_actuel": null,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Sources indépendantes : un devis HT (2026) chiffre le creusement seul à 9 €/ml ; un devis de forum (≈ 46 €/ml HT) couvre tranchée + 2 fourreaux + tuyau d'assainissement sur 50 ml. Avec le sable, le grillage et le rebouchage, 25 € HT/ml tient. Le total des réseaux enterrés de A (≈ 5 600 €) est cohérent avec ces devis.",
+      "sources": [
+        {
+          "url": "https://www.prix-travaux-m2.com/exemple-devis-terrassement.php",
+          "releve": "« Creusement de deux tranchées » 13 ml à 9 € HT/ml (creusement seul)"
+        },
+        {
+          "url": "https://www.forumconstruire.com/construire/topic-14824.php",
+          "releve": "Devis : 50 ml de tranchée avec fourreau électrique, fourreau téléphone et tuyau d'assainissement, 2 300 € HT (≈ 46 €/ml) (relevé via extrait de recherche, non daté)"
+        }
+      ]
+    },
+    {
+      "id": "vrd-fourreaux-arrivees",
+      "n": "Fourreaux électricité, eau, fibre (3 gaines + grillages)",
+      "verdict": "confirme",
+      "fp_actuel": 15,
+      "sm_actuel": 7,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Grille 2025 du Pays de Fayence : canalisation PEHD 25 + gaine TPC 40 posée à 13 € HT/ml. Trois gaines vides dans une tranchée déjà ouverte à 15 € HT/ml, cela reste plausible.",
+      "sources": [
+        {
+          "url": "https://www.cc-paysdefayence.fr/wp-content/uploads/2018/09/Projet-Grille-tarifaire-travaux-et-prestations-eau-ass-2025.pdf",
+          "releve": "Pose canalisation PEHD 25 mm + gaine TPC 40 mm : 13,00 € HT/ml (projet de grille 2025, relevé via extrait de recherche)"
+        }
+      ]
+    },
+    {
+      "id": "vrd-canalisation-pvc-enterree",
+      "n": "Canalisation PVC enterrée",
+      "verdict": "confirme",
+      "fp_actuel": 30,
+      "sm_actuel": 8,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Pas de contre-source nouvelle. Le prix est cohérent avec le bordereau de Belley (21,59-27,93 € HT/ml en 2021) actualisé.",
+      "sources": []
+    },
+    {
+      "id": "vrd-regard-de-visite",
+      "n": "Regard de visite avec tampon",
+      "verdict": "confirme",
+      "fp_actuel": 150,
+      "sm_actuel": 40,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Un devis de forum chiffre un regard de visite sur réseau d'égout à 220 € HT ; les regards de pied de descente en PVC coûtent moins cher. 150 € HT en moyenne tient. ATTENTION à la quantité (voir doublons) : le regard de branchement en limite est déjà compris dans le forfait de branchement à l'égout des collectivités.",
+      "sources": [
+        {
+          "url": "https://www.forumconstruire.com/construire/topic-203057.php",
+          "releve": "Regard de visite sur réseau égout 220 € HT (relevé via extrait de recherche, non daté)"
+        }
+      ]
+    },
+    {
+      "id": "vrd-puits-infiltration",
+      "n": "Puits d'infiltration",
+      "verdict": "confirme",
+      "fp_actuel": 1500,
+      "sm_actuel": 750,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Sources indépendantes : un terrassier cite « de l'ordre de 1 500 € le puisard avec anneaux » ; Ootravaux donne 600 à 3 000 € matériel et pose compris.",
+      "sources": [
+        {
+          "url": "https://www.forumconstruire.com/construire/topic-262779-urgent-puits-perdus-conformes-.php",
+          "releve": "Terrassier : « de l'ordre de 1500€ le puisard avec anneaux » ; autre devis 1 200 € HT pour trois puisards (relevé via extrait de recherche)"
+        },
+        {
+          "url": "https://www.ootravaux.fr/installation-entretien/assainissement/prix-installation-puisard.html",
+          "releve": "Puisard « entre 600 et 3 000 euros » matériel et pose (relevé via extrait de recherche)"
+        }
+      ]
+    },
+    {
+      "id": "rac-raccordement-electrique-enedis",
+      "n": "Raccordement électrique Enedis (repris)",
+      "verdict": "ajuster",
+      "fp_actuel": 2000,
+      "sm_actuel": null,
+      "fp_propose": 1586,
+      "sm_propose": null,
+      "raison": "Barème officiel V8 (annexe CRE 2026-160) : branchement complet BT < 36 kVA à 2 644,00 € HT avant réfaction ; avec la réfaction de 40 % (« autres cas », § 3.4), cela fait 1 586,40 € HT. Ce prix ne comprend ni la tranchée, ni la fourniture et la pose du fourreau en domaine privé, ni la niche du coffret : ils restent à la charge du demandeur. Correction à faire au catalogue rénovation.",
+      "sources": [
+        {
+          "url": "https://www.cre.fr/fileadmin/Documents/Deliberations/2026/260728_2026-160_Bareme_de_raccordement_Enedis_Annexe.pdf",
+          "releve": "§ 5.5.1 « Branchement complet BT < 36 kVA » : 2 644,00 € HT (3 172,80 € TTC) ; § 3.4 : taux de réfaction 40 % (« Autres cas ») ; § 5.4 : niche, maçonnerie, tranchée et fourreau en domaine privé « à la charge du demandeur »"
+        }
+      ]
+    },
+    {
+      "id": "rac-extension-reseau-electrique-part-fixe",
+      "n": "Extension réseau Enedis, part fixe",
+      "verdict": "ajuster",
+      "fp_actuel": 1529,
+      "sm_actuel": 1529,
+      "fp_propose": 1658,
+      "sm_propose": 1658,
+      "raison": "Le prix actuel vient du barème V7 (2 549 € HT). Dans le barème V8, la part fixe CfE en zone ZFA est de 2 764,00 € HT ; après réfaction de 40 %, cela fait 1 658,40 € HT. En zone ZFB (grandes agglomérations), 3 574 € × 0,6 = 2 144,40 € HT.",
+      "sources": [
+        {
+          "url": "https://www.cre.fr/fileadmin/Documents/Deliberations/2026/260728_2026-160_Bareme_de_raccordement_Enedis_Annexe.pdf",
+          "releve": "§ 5.5.4 Extension BT < 36 kVA : ZFA Cfe 2 764,00 € HT, Cve 114,00 €/ml HT ; ZFB Cfe 3 574,00 € HT, Cve 150,00 €/ml HT (avant réfaction)"
+        }
+      ]
+    },
+    {
+      "id": "rac-extension-reseau-electrique-au-metre",
+      "n": "Extension réseau Enedis, au mètre",
+      "verdict": "ajuster",
+      "fp_actuel": 63,
+      "sm_actuel": 63,
+      "fp_propose": 68.4,
+      "sm_propose": 68.4,
+      "raison": "Barème V8 en zone ZFA : CvE 114,00 €/ml HT ; après réfaction de 40 %, 68,40 € HT/ml. En zone ZFB : 90,00 € HT/ml.",
+      "sources": [
+        {
+          "url": "https://www.cre.fr/fileadmin/Documents/Deliberations/2026/260728_2026-160_Bareme_de_raccordement_Enedis_Annexe.pdf",
+          "releve": "§ 5.5.4 : ZFA Cve 114,00 €/ml HT ; ZFB 150,00 €/ml HT (avant réfaction)"
+        }
+      ]
+    },
+    {
+      "id": "rac-raccordement-eau-potable",
+      "n": "Raccordement eau potable (repris)",
+      "verdict": "confirme",
+      "fp_actuel": 1500,
+      "sm_actuel": null,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Construires (mai 2026) donne 800 à 1 500 € en standard ; les grilles publiques déjà citées vont jusqu'à ≈ 1 800 € HT. 1 500 € tient.",
+      "sources": [
+        {
+          "url": "https://www.construires.fr/viabilisation-terrain-demarches/",
+          "releve": "Eau potable : 800-1 500 € en standard, + 40-80 €/ml si le réseau est éloigné (mise à jour 08/05/2026, HT/TTC non précisé)"
+        }
+      ]
+    },
+    {
+      "id": "rac-raccordement-au-tout-a-l-egout",
+      "n": "Raccordement au tout-à-l'égout (repris)",
+      "verdict": "confirme",
+      "fp_actuel": 2500,
+      "sm_actuel": 800,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Construires (2026) : assainissement collectif 2 000 à 5 000 €. Les grilles publiques 2025-2026 déjà citées donnent 2 214-2 238 € HT. 2 500 € tient.",
+      "sources": [
+        {
+          "url": "https://www.construires.fr/viabilisation-terrain-demarches/",
+          "releve": "Assainissement collectif 2 000-5 000 € selon distance, profondeur, regard et pente"
+        }
+      ]
+    },
+    {
+      "id": "rac-assainissement-fosse-toutes-eaux-5-eh",
+      "n": "Fosse toutes eaux + épandage (repris)",
+      "verdict": "incertain",
+      "fp_actuel": 8400,
+      "sm_actuel": 4200,
+      "fp_propose": null,
+      "sm_propose": null,
+      "raison": "Les sources se contredisent. Ootravaux : filière complète avec lit d'épandage 3 200 à 6 500 €, filtre à sable 4 200 à 7 800 € (le tableau dit « hors pose » pour la fosse alors que le texte dit pose comprise) ; forum : 7 000 € et 9 800 € en terrain argileux. Saint-Gobain : 7 000 à 10 000 €. Construires (ANC) : 5 000 à 12 000 €. 8 400 € est dans le haut des fourchettes. Il faudrait un devis réel ou une grille de SPANC. Pas de correction proposée faute de convergence.",
+      "sources": [
+        {
+          "url": "https://www.ootravaux.fr/installation-entretien/assainissement/prix-epandage-fosse-septique.html",
+          "releve": "Fosse toutes eaux + lit d'épandage 3 200-6 500 € ; filtre à sable vertical non drainé 4 200-7 600 € ; drainé 4 700-7 800 € (relevé via extrait de recherche, HT/TTC non précisé)"
+        },
+        {
+          "url": "https://www.forumconstruire.com/construire/topic-8831.php",
+          "releve": "Devis 7 000 € (épandage + fosse 3 000 L) ; 9 800 € en terrain argileux (relevé via extrait de recherche)"
+        }
+      ]
+    },
+    {
+      "id": "rac-assainissement-micro-station-5-eh",
+      "n": "Micro-station 5 EH (repris)",
+      "verdict": "ajuster",
+      "fp_actuel": 12000,
+      "sm_actuel": 6600,
+      "fp_propose": 9500,
+      "sm_propose": 5500,
+      "raison": "Une source indépendante confirme la baisse proposée par la synthèse. Ootravaux : micro-station à culture libre 4 500 à 9 500 € pose comprise, à culture fixée 5 500 à 10 500 €, SBR 6 000 à 12 000 €. Construires : installation d'un assainissement non collectif 5 000 à 12 000 €. 12 000 € correspond au haut de la technologie la plus chère. 9 500 / 5 500 est validé ; correction à faire au catalogue rénovation.",
+      "sources": [
+        {
+          "url": "https://www.ootravaux.fr/installation-entretien/assainissement/prix-micro-station-epuration.html",
+          "releve": "Bactéries libres 4 500-9 500 € ; culture fixée 5 500-10 500 € ; SBR 6 000-12 000 € pose comprise (relevé via extrait de recherche)"
+        },
+        {
+          "url": "https://www.construires.fr/viabilisation-terrain-demarches/",
+          "releve": "Assainissement non collectif : installation 5 000-12 000 € (2026)"
+        }
+      ]
+    }
+  ],
+  "corrections_renovation": [
+    {
+      "ref": "rac-mise-en-service-provisoire-enedis",
+      "prix_actuel": 250,
+      "propose": 447,
+      "raison": "Barème Enedis V8 (CRE 2026-160) : branchement provisoire non fixe de plus de 28 jours, 447 € HT, réfaction de 40 % déduite (la synthèse proposait 414 € sur le barème V7). Effet : +197 € HT par maison. Le provisoire de moins de 28 jours (291 € HT) ne s'applique pas à un chantier de maison.",
+      "sources": [
+        {
+          "url": "https://www.cre.fr/fileadmin/Documents/Deliberations/2026/260728_2026-160_Bareme_de_raccordement_Enedis_Annexe.pdf",
+          "releve": "Tableau 13.1.1 : BT ≤ 36 kVA, branchement provisoire non fixe, 447,00 € HT / 536,40 € TTC, réfaction intégrée"
+        }
+      ]
+    },
+    {
+      "ref": "rac-raccordement-electrique-enedis",
+      "prix_actuel": 2000,
+      "propose": 1586,
+      "raison": "Barème V8 : branchement complet 2 644 € HT × (1 − 40 %) = 1 586,40 € HT. Effet : −414 € HT par maison. Laisser dans la note que tranchée, fourreau et niche ne sont pas compris.",
+      "sources": [
+        {
+          "url": "https://www.cre.fr/fileadmin/Documents/Deliberations/2026/260728_2026-160_Bareme_de_raccordement_Enedis_Annexe.pdf",
+          "releve": "§ 5.5.1 Branchement complet BT < 36 kVA : 2 644,00 € HT ; § 3.4 réfaction 40 %"
+        }
+      ]
+    },
+    {
+      "ref": "rac-assainissement-micro-station-5-eh",
+      "prix_actuel": 12000,
+      "propose": 9500,
+      "raison": "Validation indépendante de la proposition de la synthèse (sm 6 600 → 5 500). Effet : −2 500 € HT quand la micro-station est choisie.",
+      "sources": [
+        {
+          "url": "https://www.ootravaux.fr/installation-entretien/assainissement/prix-micro-station-epuration.html",
+          "releve": "4 500-9 500 € (culture libre), 5 500-10 500 € (culture fixée), 6 000-12 000 € (SBR), pose comprise"
+        },
+        {
+          "url": "https://www.construires.fr/viabilisation-terrain-demarches/",
+          "releve": "ANC : installation 5 000-12 000 €"
+        }
+      ]
+    },
+    {
+      "ref": "anx-nettoyage-de-fin-de-chantier",
+      "prix_actuel": 10,
+      "propose": 10,
+      "raison": "CONTRE-PROPOSITION : NE PAS appliquer la baisse 10 → 7 de la synthèse. Obat (juin 2026) annonce 20 à 35 €/m² pour un nettoyage de fin de chantier, Companeo 3 à 8 € HT. Les sources se contredisent, et 10 € est entre les deux.",
+      "sources": [
+        {
+          "url": "https://travaux.obat.fr/guides/tarif-nettoyage-m2/",
+          "releve": "« Le tarif de nettoyage varie entre 20 et 35 €/m2 selon l'ampleur du chantier » (04/06/2026)"
+        }
+      ]
+    }
+  ],
+  "doublons": [
+    {
+      "postes": [
+        "fon-sous-sol-enterre",
+        "fon-drain-peripherique",
+        "ter-fouilles-en-pleine-masse",
+        "ter-evacuation-des-terres"
+      ],
+      "probleme": "Le sous-sol (250 €/m²) est sourcé sur prix-travaux-m2, qui y comprend excavation, étanchéité et tranchées drainantes. Pourtant, quand plancher bas = sous-sol, calibre.mjs coche AUSSI le drain périphérique (Ptot × 60 €), et la conception (§ d) coche les fouilles en pleine masse (« si sous-sol »). Pour A, cela fait ≈ 45 ml × 60 = 2 700 € de drain, plus ≈ 390 m³ × 12 = 4 700 € de fouilles si la règle de la conception est appliquée.",
+      "regle": "Avec sous-sol : ne PAS cocher le drain ni les fouilles en pleine masse. N'ajouter l'évacuation des terres (≈ 360 m³ × 22 ≈ 7 900 €) que si le sous-sol est requalifié « hors évacuation », ce qui est à préciser dans sa note."
+    },
+    {
+      "postes": [
+        "fon-surcout-sol-argileux",
+        "fon-vide-sanitaire-complet"
+      ],
+      "probleme": "Le libellé du surcoût argile cite « vide sanitaire ou micropieux » parmi les mesures couvertes. Si l'utilisateur coche aussi le vide sanitaire, une partie est payée deux fois.",
+      "regle": "Retirer « vide sanitaire » de la note du forfait argile : il couvre l'approfondissement des semelles, les longrines et les chaînages, et le choix du plancher bas reste un poste distinct."
+    },
+    {
+      "postes": [
+        "fon-dalle-terre-plein-isolee",
+        "cha-plancher-chauffant-eau-hors-chape"
+      ],
+      "probleme": "Double compte PARTIEL seulement. Le DTU 65.14 impose de toute façon un isolant sous les tubes du plancher chauffant : le panneau du plancher chauffant n'est donc pas un doublon. En revanche, un fabricant (CCTP Giacomini) pose son plancher chauffant sur un panneau polyuréthane de 80 mm, R = 3,70, qui suffit à lui seul pour l'isolation du plancher bas. L'isolant sous dalle (≈ 28 €/m²) devient alors superflu.",
+      "regle": "Si chauffage = plancher chauffant : dalle NON isolée (fon-dalle-garage-non-isolee, 112 €/m², à renommer en « dalle sur terre-plein non isolée ») + plancher chauffant sur panneau R ≥ 3,7. Gain brut ≈ 28 €/m² (≈ 3 000 € sur A), moins le surcoût d'un panneau épais par rapport au panneau à plots (non sourcé : gain net incertain, probablement 1 500 à 2 500 €). À valider par l'étude thermique (pont thermique de rive)."
+    },
+    {
+      "postes": [
+        "vrd-regard-de-visite",
+        "rac-raccordement-au-tout-a-l-egout"
+      ],
+      "probleme": "La règle « nb descentes + 3 » compte un regard en limite pour l'égout. Les forfaits de branchement des collectivités (Belley, Guingamp, Quimperlé) comprennent déjà le regard de branchement.",
+      "regle": "En tout-à-l'égout : nb descentes + 2 (≈ −150 € HT)."
+    },
+    {
+      "postes": [
+        "fon-radier-general",
+        "fon-dalle-terre-plein-isolee"
+      ],
+      "probleme": "Le radier remplace la dalle ISOLÉE, mais son prix (CYPE : béton armé seul) ne comprend aucun isolant. Ce n'est pas un doublon, c'est un TROU.",
+      "regle": "Avec radier : cocher en plus iso-isolant-sous-chape (35 €/m²), ou ajouter un isolant sous radier."
+    },
+    {
+      "postes": [
+        "anx-wc-de-chantier",
+        "anx-installation-de-chantier"
+      ],
+      "probleme": "Si le maçon facture une « installation de chantier » avec base vie, la cabine WC y est souvent comprise.",
+      "regle": "Message d'aide : décocher le WC de chantier si le devis du maçon comprend les sanitaires."
+    }
+  ],
+  "manquants": [
+    {
+      "id": "vrd-liaison-coffret-tableau",
+      "n": "Câble de liaison entre le disjoncteur de branchement (coffret en limite) et le tableau de la maison, tiré dans le fourreau",
+      "u": "ml",
+      "fp": null,
+      "sm": 8.2,
+      "raison": "Le guide Enedis le met à la charge du client quand le compteur est en limite de propriété. Il n'est compris ni dans le forfait Enedis, ni dans l'installation électrique neuve (qui exclut le « raccordement »), ni dans les fourreaux. Quantité = D. Seule la fourniture est sourcée (R2V 3G16 à 9,82 € TTC/m, soit 8,2 € HT). Le prix posé reste INCERTAIN : un seul témoignage donne plus de 1 000 € TTC pour ≈ 10 m avec platine et disjoncteur. À faire chiffrer par l'électricien, ou à inclure dans son forfait.",
+      "sources": [
+        {
+          "url": "https://www.enedis.fr/media/699/download",
+          "releve": "« prévoir la fourniture et la pose, dans un fourreau, des câbles … entre le disjoncteur de branchement et votre tableau électrique » (guide Enedis avril 2025, relevé via extrait de recherche)"
+        },
+        {
+          "url": "https://www.domomat.com/16802-cable-r2v-3g16-mm-au-metre-fils-et-cables-generiques-filr2v3g16tgl.html",
+          "releve": "R2V 3G16 au mètre : 9,82 € TTC"
+        }
+      ]
+    },
+    {
+      "id": "vrd-tube-pehd-eau",
+      "n": "Tube PEHD Ø 25 d'eau potable, du compteur à la maison (tiré dans le fourreau)",
+      "u": "ml",
+      "fp": 4.41,
+      "sm": 4.22,
+      "raison": "Le fourreau « eau » est compté et la plomberie part du collecteur intérieur, mais le tuyau entre les deux manque. Quantité = D. fp = tarif public de fourniture et pose (raccords non compris) ; sm = prix HT d'une couronne de 50 m.",
+      "sources": [
+        {
+          "url": "https://www.grandannecy.fr/fileadmin/mediatheque/fichiers/Mon_quotidien/Preserve_mon_environnement/Eau_potable/TARIFS_EAU_2025_PRESTATIONS.pdf",
+          "releve": "Fourniture et pose canalisation PEHD 25 pour branchements (raccords non compris) : 4,36-4,41 €/ml (2025, relevé via extrait de recherche)"
+        },
+        {
+          "url": "https://mecafluid.eu/en/catalog/tuyau-en-pe-hd-dn20-ø-19int-x-25ext-mm-l50-m-ps-16-bar-pour-eau-potable~3e31e045-67bc-4dce-acda-538073a66c23",
+          "releve": "PEHD 25 mm eau potable, couronne de 50 m : 211,24 € HT (≈ 4,22 €/m)"
+        }
+      ]
+    },
+    {
+      "id": "tax-redevances-spanc-conception-realisation",
+      "n": "Redevances SPANC : contrôle de conception + contrôle de bonne exécution (assainissement individuel)",
+      "u": "forfait",
+      "fp": 278,
+      "sm": null,
+      "frais": true,
+      "raison": "Ces redevances sont dues au service public, en plus de l'étude de sol à la parcelle (etu-etude-assainissement-individuel-spanc), quand l'assainissement n'est pas raccordé à l'égout. Montant voté localement. Médiane de 4 grilles : Pornic 125 + 153 = 278 ; Tulle 116 + 116 = 232 HT ; Guingamp 136 + 140 = 276 ; Grand Chambéry 117 + 362 = 479.",
+      "sources": [
+        {
+          "url": "https://www.pornicagglo.fr/wp-content/uploads/2026/03/2025-485_DC_Assainissement_non_collectif_Tarifs_2026_tpn.pdf",
+          "releve": "Conception 125 € ; réalisation 153 € (≤ 20 EH), tarifs 2026"
+        },
+        {
+          "url": "https://www.tulleagglo.fr/wp-content/uploads/2023/06/TARIF-PRESTATIONS-ASSAINISSEMENT-2026.pdf",
+          "releve": "Conception 116 € HT ; exécution 116 € HT (2026)"
+        },
+        {
+          "url": "https://www.guingamp-paimpol-agglo.bzh/wp-content/uploads/2026/01/TARIFS_ASS_NON_COLL_2026.pdf",
+          "releve": "Conception 136 € ; premier contrôle de réalisation 140 € (2026)"
+        }
+      ]
+    },
+    {
+      "id": "vrd-niche-muret-coffrets",
+      "n": "Niche ou muret technique pour les coffrets (électricité, eau, boîte aux lettres) en limite de propriété",
+      "u": "forfait",
+      "fp": null,
+      "sm": null,
+      "raison": "Le barème Enedis V8 met « la confection de niche et de maçonnerie » pour le coffret à la charge du demandeur. La conception dit qu'elle est « dans les VRD », mais AUCUN poste réseaux enterrés ne la chiffre. Aucun prix trouvé (murets préfabriqués sur devis) : poste à ajouter avec un prix INCERTAIN, à sourcer (devis de maçon ou tarif d'un muret préfabriqué).",
+      "sources": [
+        {
+          "url": "https://www.cre.fr/fileadmin/Documents/Deliberations/2026/260728_2026-160_Bareme_de_raccordement_Enedis_Annexe.pdf",
+          "releve": "§ 5.4 : « la confection de niche et de maçonnerie … pour l'encastrement du coffret » à la charge du demandeur"
+        },
+        {
+          "url": "https://www.batiproduits.com/amp/fiche/produits/muret-technique-pour-integration-coffrets-gaz-el-p490834227.html",
+          "releve": "Muret technique préfabriqué MTP 50 (130 × 48,5 × 35 cm, 40 kg) : prix non publié"
+        }
+      ]
+    }
+  ]
+}

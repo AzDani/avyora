@@ -1,0 +1,105 @@
+# Construction neuve : les décisions à prendre (v1)
+
+Tous les chiffres viennent de `calibre.mjs` (maison A = plain-pied 100 m², B = à étage 120 m² + garage, C = ossature bois 90 m², niveau standard). Les sources sont dans `journal-corrections.md` et les fichiers `verif-*.json`.
+
+**État :** le catalogue v1 et ses règles sont branchés dans le moteur (`lib/estimateur/catalog-neuf.json`, `neuf.ts`, `presets-neuf.ts`) ; aucun prix du catalogue rénovation n'a été modifié. Le point 4 (« le maximum soi-même ») est appliqué dans sa version proposée, réversible en une ligne (`PRO_TOUJOURS` dans `presets-neuf.ts`). Les aléas restent à 7 % tant que tu n'as pas tranché le point 3.
+
+---
+
+## 1. Corriger 14 prix du catalogue rénovation ?
+
+Ces postes sont partagés entre la rénovation et le neuf. On ne les a pas modifiés. Chaque ligne se décide à part.
+
+| # | Poste | Aujourd'hui → proposé (fourni-posé / fourniture, € HT) | Prix standard affiché | Effet en rénovation | Effet en neuf (€ HT) | Fiabilité |
+|---|---|---|---|---|---|---|
+| 1 | Enduit monocouche | 28 / 10 → **43 / 19** | 26 → 40 €/m² | +14 €/m² (ravalement de 120 m² : +1 640 €) ; utilisé par le mode rapide | A +2 080 · B +3 300 · C 0 | haute (coût CYPE 42 € sans marge) |
+| 2 | Carrelage au sol | 70 / 30 → **85 / 36** | 63 → 77 €/m² | +14 €/m² (30 m² : +410 €) ; mode rapide et pièces | A +850 · B +1 020 · C +770 | moyenne (devis Saint-Gobain 2026). La faïence (même prix) n'a pas été revue |
+| 3 | Porte d'entrée | 1 600 / 1 150 → **2 150 / 1 550** | PVC 960 → 1 290 ; alu 1 600 → 2 150 | +330 € par porte PVC | +340 par maison | moyenne (2 sites de prix 2026) |
+| 4 | Porte de garage | 1 200 / 800 → **1 966 / 1 566** | 1 064 → 1 700 | +636 € par porte | B +660 | moyenne (CYPE + 2 sites) |
+| 5 | Raccords faîtage / noues | 40 / 15 → **59 / 22** | 37 → 55 €/ml | +18 €/ml | B +80 (plus sur les toits 4 pans ou en L) | haute (CYPE) |
+| 6 | Chape liquide | 40 / 20 → **30 / —** | 37,6 → 30 €/m² | −7,6 €/m² | A −790 · B −940 · C −710 | moyenne (relevés de chapistes datés de 2015) |
+| 7 | Cloison | 50 / 20 → **45 / 20** | 46,6 → 41,6 €/m² | −5 €/m² ; mode rapide | A −350 · B −370 · C −310 | moyenne |
+| 8 | Consuel | 180 → **123** | | −57 € | −59 | haute (tarif Consuel 2026). Garder 180 si l'électricien facture le dossier |
+| 9 | Compteur de chantier Enedis | 250 → **447** | | +197 € | +204 | haute (barème Enedis V8, au 28/10/2026) |
+| 10 | Raccordement Enedis | 2 000 → **1 586** | | −414 € | −428 | haute (barème V8 ; tranchée et niche non comprises) |
+| 11 | Micro-station | 12 000 / 6 600 → **9 500 / 5 500** | | −2 500 € | −2 500 si choisie (−3 340 TTC tout compris) | moyenne |
+| 12 | Raccordement égout | 2 500 → **2 226** (partie publique seule) | | −274 € | −284 | moyenne (grilles publiques 2 214-2 238 €). Sinon garder 2 500 |
+| 13 | Escalier béton | 4 500 → **3 800** | | −700 € | −700 si choisi | non contre-vérifié (proposé par la synthèse) |
+| 14 | Plancher bois | 90 / 45 → **106 / 51** | 85 → 100 €/m² | +15 €/m² | ossature à étage seulement | non contre-vérifié (proposé par la synthèse) |
+
+**Si tout est validé :** A +2 020 € TTC tout compris (+1 %), B +4 530 € (+2 %), C −620 €.
+
+Abandonnées après vérification (pour info) : plancher béton 120 → 111 (le coût sans marge dépasse déjà 93 €), nettoyage 10 → 7 (sources contradictoires : 3-8 € contre 20-35 €), fermettes 80 → 91 (sources contradictoires, il faut un vrai devis).
+
+## 2. Raccordement Enedis en lotissement (coffret déjà posé)
+
+En lotissement, le coffret est souvent déjà en limite : Selectra l'annonce à 430 € TTC (≈ 358 € HT) au lieu de 2 000 €.
+- **Option A :** ajouter une variante « coffret déjà posé » (−1 640 € HT par maison en lotissement), après vérification dans le barème Enedis officiel.
+- **Option B :** garder un seul prix.
+
+## 3. Aléas : 7 % ou 10 % en neuf ?
+
+| | A | B | C |
+|---|---:|---:|---:|
+| Total tout compris, aléas 7 % | 246 760 € | 314 750 € | 245 320 € |
+| Total tout compris, aléas 10 % | 252 150 € | 321 600 € | 250 680 € |
+
+La recherche conseille 10 à 15 %, et les jurys conducteur et économiste recommandent 10 %. **Proposition : 10 %.**
+
+## 4. « Je fais le maximum moi-même » en neuf
+
+Aujourd'hui, le moteur compte au prix des seuls matériaux tout ce qui a une fourniture, y compris fondations, charpente, couverture et PAC. Résultat : 958 € TTC/m² sur A, sous le repère de l'auto-construction (1 200-1 600 €/m²).
+- **Option A (proposée) :** structure, clos-couvert, raccordements et PAC toujours faits par des pros. A passe à **1 555 €/m²** (−25 %).
+- **Option B :** garder le moteur tel quel.
+
+## 5. Aménagements extérieurs (allée, terrasse, clôture, portail)
+
+Ils coûtent 8 000 à 20 000 € (recherche « calibrage ») et ne sont pas chiffrés poste par poste.
+- **Option A :** les laisser hors périmètre, avec un message clair.
+- **Option B :** créer un lot optionnel « Extérieurs ». Il faudra alors sourcer les prix, sauf les portails qui existent déjà au catalogue.
+
+## 6. Réglages par défaut de la toiture
+
+| Choix | Effet sur A (total TTC) | Remarque |
+|---|---:|---|
+| Tuile **béton** au lieu de terre cuite | −5 540 € | prix de la tuile béton non revérifié |
+| Gouttière **PVC** au lieu de zinc | −980 € | le conducteur pense que le PVC est plus courant en standard, sans source |
+| Pente faible (17°) dans le Sud | −7 800 € | il faut fixer la liste des départements « tuile canal ». Aujourd'hui c'est une question, réponse « non » par défaut |
+
+## 7. Dalle isolée + plancher chauffant
+
+Les deux isolants sont comptés : celui de la dalle (≈ 28 €/m²) et le panneau du plancher chauffant.
+- **Option A (actuelle) :** garder les deux. Le panneau est obligatoire (DTU), et la seule variante qu'on peut chiffrer coûte plus cher (199 € au lieu de 195 €/m²).
+- **Option B :** demander 2 ou 3 devis pour une variante « dalle non isolée + plancher chauffant sur panneau épais ». Gain possible de 1 500 à 2 500 € sur A, non sourcé.
+
+## 8. Postes non chiffrés : les sourcer avant la mise en ligne, ou afficher « non compris » ?
+
+| Poste | Quand | Ce qu'on a trouvé | Ordre de grandeur sur A |
+|---|---|---|---|
+| Enduit plâtre intérieur sur monomur / béton cellulaire 30 | murs isolants | 18 à 60 €/m², fourchette peu fiable. Plan B immédiat : reprendre « Doubler un mur » (37 €/m² en standard), mais il ne garantit pas l'étanchéité à l'air | 1 500 à 5 000 € (plan B : 3 110 €). Sans lui, la variante monomur est sous-estimée |
+| Protection anti-termites | départements sous arrêté | 5,5 à 6 €/m², prix de 2010 | ≈ 600 € |
+| Câble du coffret Enedis au tableau | toujours | câble seul 8,2 €/m, pose inconnue | quelques centaines d'euros |
+| Niche ou muret des coffrets | hors lotissement | aucun prix | — |
+| Planche de rive (bandeau d'égout) | toit en pente | aucun prix posé | — |
+| Marche ou perron d'entrée | toujours (sol fini 20-40 cm au-dessus du terrain) | aucun prix | — |
+| Assurance RC maître d'ouvrage + tous risques chantier | option, lots séparés | +8 à 12 % de la prime DO (lu seulement en extrait) | ≈ 500-800 € |
+| Peinture des portes intérieures | si portes livrées brutes | 50 à 100 € par porte, HT ou TTC non précisé | 300 à 600 € |
+| Garde-corps des fenêtres d'étage à allège basse | selon les plans | poste existant à 180 €/ml, sans règle de quantité | — |
+| Porte isolante garage → maison | si garage | comptée au prix d'une porte « âme pleine » (450 €), c'est un plancher | + ? |
+
+## 9. Prix nouveaux restés incertains (inchangés faute de source)
+
+Rien n'a été inventé : ces prix restent tels quels. Il faut des devis pour les fiabiliser.
+- **Plancher chauffant** à 55 € HT/m² : bas des fourchettes, jusqu'à +2 800 € sur A.
+- **Surcoût sol argileux** 12 500 € : une seule source.
+- **Dommages-ouvrage** 3,5 % : les sources vont de 0,5 à 7 %.
+- **Fosse toutes eaux** 8 400 € (prix repris).
+- Tuile béton, ardoise fibres-ciment, gouttière alu continu, sous-face bois, semelle isolée, clôture de chantier, fouilles en pleine masse.
+
+## 10. Texte de précision à afficher
+
+Proposé par le jury économiste :
+
+> « Estimation à ± 10 % des coûts moyens constatés en France pour une maison simple (enquête officielle SDES 2024). Votre terrain, votre région et vos devis feront la différence. Hors terrain, notaire et aménagements extérieurs. »
+
+Le calage le permet : A est à +2 % et B sans garage à 0 % du repère EPTB. C (ossature bois) est à +13 % : ne pas afficher de précision pour l'ossature bois.

@@ -1,0 +1,964 @@
+{
+ "groupe": "Murs, planchers, charpente, couverture, façade, menuiseries",
+ "methode": "Sources indépendantes de prix-sources.json. Socle principal : la base CYPE « Générateur de prix France » (prix-construction.info), qui donne des DÉBOURSÉS décomposés en € HT (matériaux au prix public, main-d'œuvre 34 à 43 €/h, frais de chantier 2 % ; ni frais généraux ni bénéfice). Pour passer à un prix d'artisan, on applique le coefficient de vente : × 1,32 (cours BTS eduscol) à × 1,73 (exemple Obat). Ce coefficient est vérifié sur le parpaing : 38,73 € de déboursé CYPE contre 68 € sur le marché, soit × 1,76. CYPE sert donc de BORNE BASSE. Il complète les sites de prix 2026 non cités jusqu'ici (Maisonbionat, Couverture Angers, ktel, Cleanalta, estimation-travaux, dma-armatures, Rue du Chantier, tarif-menuisier, Menuiseries France, md-menuiserie, TarifArtisan…). Des pages n'ont pu être lues que par le moteur de recherche : leur relevé le précise.",
+ "verdicts": [
+  {
+   "id": "mac-mur-brique-monomur",
+   "n": "Murs extérieurs en brique monomur 30 à 37,5 cm",
+   "verdict": "ajuster",
+   "fp_actuel": 123,
+   "sm_actuel": 63,
+   "fp_propose": 125,
+   "sm_propose": 80,
+   "raison": "Le fourni-posé tient : la base CYPE donne 115,85 € HT/m² de déboursé pour un monomur R30 sans chaînages ni linteaux, et travaux.com donne 72 à 108 € posé. Le standard moteur reste à 115 €. En revanche, la fourniture seule est trop basse. Le sm standard de 55 € est sous la brique seule : 85 €/m² au prix catalogue Wienerberger dans CYPE (11,2 briques × 7,58 €), 50 à 80 € hors pose chez travaux.com. Nouveau sm standard ≈ 70 → sm_base = 70/0,88 = 80 ; fp_base = 115 + (80 − 70) = 125, le standard reste à 115. Attention : appliqué au déboursé CYPE, le coefficient de vente (× 1,32 à 1,76) donnerait 150 € et plus. Ce chiffre n'est pas retenu, car la brique y est au prix public sans remise.",
+   "sources": [
+    {
+     "url": "https://wienerberger.prix-construction.info/construction_neuve/Structure_et_gros_oeuvre/Murs/Briques_en_terre_cuite/GMT020_Mur_porteur_en_maconnerie_chainee__.html",
+     "releve": "Mur porteur Porotherm R30 monomur, joint mince, chaînages et linteaux NON compris : brique 11,235 u × 7,58 = 85,16 € ; MO 0,615 h + 0,308 h ; total 115,85 € HT/m² (déboursé, frais de chantier 2 %)"
+    },
+    {
+     "url": "https://wienerberger.prix-construction.info/construction_neuve/Structure_et_gros_oeuvre/Murs/Briques_en_terre_cuite/GMT150_Mur_de_facade_en_maconnerie_de_briq.html",
+     "releve": "Même mur R30 AVEC chaînages verticaux, linteaux en U et abouts de plancher : 136,32 € HT/m² (déboursé)"
+    },
+    {
+     "url": "https://www.travaux.com/construction-renovation-maison/guide-des-prix/prix-dun-mur-brique",
+     "releve": "Monomur classique : 50 à 80 €/m² hors pose, 72 à 108 €/m² posé (mise à jour août 2026, HT/TTC non précisé ; relevé via moteur de recherche, page bloquée en lecture directe)"
+    },
+    {
+     "url": "https://www.tarifartisan.fr/prix-du-mur-brique-monomur/",
+     "releve": "65 à 120 €/m² pose comprise (monomur standard) ; 100 à 185 €/m² (isolation intégrée) — relevé via moteur de recherche"
+    }
+   ]
+  },
+  {
+   "id": "mac-mur-beton-cellulaire-20-cm",
+   "n": "Murs extérieurs en béton cellulaire 20 cm",
+   "verdict": "confirme",
+   "fp_actuel": 114,
+   "sm_actuel": 34,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Le prix tient, mais les sources se contredisent. Plus bas : estimation-travaux donne 65 à 90 €/m² posé pour un mur porteur de 20 cm. Un devis dma-armatures (Nantes, mars 2026) donne 92,50 € TTC/m². Rue du Chantier donne 52,78 € HT. Plus haut : le déboursé CYPE d'un mur de 17,5 cm est de 81,62 € HT ; avec le coefficient de vente (× 1,32 à 1,76), cela fait 108 à 144 €. Les 110 € du standard sont au milieu. La fourniture (sm 30 en standard) tient : 33,24 € chez Rue du Chantier, 32 à 48 € chez estimation-travaux. À noter : 110 € contre 72 € pour le parpaing, l'écart (+38 €) est supérieur à la seule différence de prix des blocs (≈ +18 €). Si Dani obtient des devis réels, la valeur basse probable est ≈ 95 €.",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Structure_et_gros_oeuvre/Murs/Blocs_de_beton/GMB020_Mur_porteur_en_maconnerie_chainee__.html",
+     "releve": "Mur porteur béton cellulaire 17,5 cm, joint mince, chaînages et linteaux exclus : blocs 59,14 € + mortier 2,09 + MO 18,79 → 81,62 € HT/m² (déboursé)"
+    },
+    {
+     "url": "https://www.estimation-travaux.com/prix-du-beton-cellulaire/",
+     "releve": "Tableau 2026, pose à la colle comprise : mur porteur 20 cm 65 à 90 €/m² (bloc 32 à 48) ; 30 cm 85 à 120 (bloc 45 à 65) ; HT/TTC non précisé"
+    },
+    {
+     "url": "https://dma-armatures.fr/prix-beton-cellulaire/",
+     "releve": "Devis Nantes mars 2026 : 1 850 € TTC pour 20 m² de mur 20 cm = 92,50 € TTC/m² posé ; tableau 20 cm 85 à 165 €/m² posé"
+    },
+    {
+     "url": "https://www.rueduchantier.com/maconnerie-de-beton-cellulaire/",
+     "releve": "20×25×62,5 cm : 52,78 € HT/m² fourni-posé (fournitures 33,24 + MO 19,54), prix nets HT, non daté"
+    },
+    {
+     "url": "https://sti.eduscol.education.fr/sites/eduscol.education.fr.sti/files/ressources/pedagogiques/12096/12096-03dr-ds-et-pvht-prof.docx",
+     "releve": "Cours BTS (eduscol) : prix de vente HT = déboursé sec × 1,2 (frais généraux) × 1,1 (bénéfice) ≈ × 1,32 ; exemple Obat (obat.fr/blog/debourse-sec) : 530 € de déboursé → 916 € HT, soit × 1,73"
+    }
+   ]
+  },
+  {
+   "id": "mac-mur-beton-cellulaire-30-cm",
+   "n": "Murs extérieurs en béton cellulaire 30 à 36,5 cm",
+   "verdict": "confirme",
+   "fp_actuel": 130,
+   "sm_actuel": 80,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Les sources indépendantes tombent dans la fourchette, autour de 120 € HT en standard. Pose comprise : estimation-travaux 85 à 120 € (30 cm), travaux.com 120 à 150 € TTC (36,5 cm), Rue du Chantier 109,56 € HT pour un bloc R = 3,04. Fourniture : 70 € en standard, contre 50 € (30 cm) et 60 € (36,5 cm) chez Conseils Thermiques, 65 à 90 € chez travaux.com, 90 € chez Rue du Chantier.",
+   "sources": [
+    {
+     "url": "https://www.estimation-travaux.com/prix-du-beton-cellulaire/",
+     "releve": "Mur isolation renforcée 30 cm : bloc 45 à 65 €/m², posé 85 à 120 €/m² (2026)"
+    },
+    {
+     "url": "https://www.rueduchantier.com/maconnerie-de-beton-cellulaire/",
+     "releve": "Bloc 25×25×60 R = 3,04 : 109,56 € HT/m² fourni-posé, dont fournitures 90,02 €"
+    },
+    {
+     "url": "https://conseils-thermiques.org/contenu/beton-cellulaire.php",
+     "releve": "Fourniture ≈ 50 €/m² en 30 cm, 60 € en 36,5 cm, 70 € en 42 cm (relevé via moteur de recherche)"
+    },
+    {
+     "url": "https://www.travaux.com/construction-renovation-maison/guide-des-prix/fiche-materiau-le-beton-cellulaire",
+     "releve": "Mur porteur 36,5 cm posé 120 à 150 € TTC ; fourniture 65 à 90 € (≥ 36,5 cm) — relevé via moteur de recherche"
+    }
+   ]
+  },
+  {
+   "id": "mac-mur-beton-banche",
+   "n": "Murs en béton banché (voile coulé)",
+   "verdict": "confirme",
+   "fp_actuel": 140,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Le prix tient. Le déboursé CYPE d'un voile banché (2 faces coffrées, 50 kg/m³ d'acier) est de 465,46 € HT/m³, soit 140 €/m² en 30 cm d'épaisseur. Recalculé pour 20 cm (le coffrage ne dépend pas de l'épaisseur), il fait ≈ 107 €/m². Avec le coefficient de vente (× 1,32 à 1,76), cela donne 141 à 188 € : les 140 € sont le bas de cette fourchette.",
+   "sources": [
+    {
+     "url": "https://sika.prix-construction.info/construction_neuve/Structure_et_gros_oeuvre/Murs/Beton_banche/Mur_en_beton_banche.html",
+     "releve": "GMC010 voile BA 30 cm, coffrage métallique 2 faces, 51 kg/m³ d'acier, C25/30 : 465,46 € HT/m³ (déboursé, frais de chantier 2 %), dont MO de coffrage 107,25 €/m³"
+    },
+    {
+     "url": "https://sti.eduscol.education.fr/sites/eduscol.education.fr.sti/files/ressources/pedagogiques/12096/12096-03dr-ds-et-pvht-prof.docx",
+     "releve": "Cours BTS (eduscol) : prix de vente HT = déboursé sec × 1,2 (frais généraux) × 1,1 (bénéfice) ≈ × 1,32 ; exemple Obat (obat.fr/blog/debourse-sec) : 530 € de déboursé → 916 € HT, soit × 1,73"
+    }
+   ]
+  },
+  {
+   "id": "mac-chainage-horizontal",
+   "n": "Chaînage horizontal en béton armé",
+   "verdict": "confirme",
+   "fp_actuel": 37,
+   "sm_actuel": 14,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Les sources encadrent les 35 € du standard. Plus bas : vite-un-chantier donne 20 à 35 €/ml, et un devis de garage 25 €/ml. Plus haut : le déboursé CYPE d'un chaînage en blocs U est de 31,46 € HT/ml ; avec le coefficient de vente, cela fait 41 à 55 €. Contrôle global : sur la maison A, chaînages et raidisseurs coûtent 2 860 €, soit ≈ 30 % des murs. C'est au-dessus de la règle « +10 à 20 % » déjà citée : la quantité (pignons compris) compense un prix unitaire bas.",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Structure_et_gros_oeuvre/Chainages/Maconnerie_de_blocs_de_beton/GHB020_Chainage_horizontal_de_blocs__U__en.html",
+     "releve": "Chaînage horizontal blocs U béton 500×200×250, C16/20, 2,28 kg/m d'acier : 31,46 € HT/ml (déboursé)"
+    },
+    {
+     "url": "https://wienerberger.prix-construction.info/construction_neuve/Structure_et_gros_oeuvre/Chainages/GHT_Maconnerie_de_briques_en_terre/GHT040_Chainage_horizontal__de_briques_lin.html",
+     "releve": "Chaînage horizontal en briques U monomur R25 : 32,52 € HT/ml (déboursé)"
+    },
+    {
+     "url": "https://vite-un-chantier.fr/prix-ml-chainage/",
+     "releve": "Chaînage 20 à 35 €/ml HT ; devis réel garage 21 m² : chaînage 25 €/ml (relevé via moteur de recherche)"
+    },
+    {
+     "url": "https://sti.eduscol.education.fr/sites/eduscol.education.fr.sti/files/ressources/pedagogiques/12096/12096-03dr-ds-et-pvht-prof.docx",
+     "releve": "Cours BTS (eduscol) : prix de vente HT = déboursé sec × 1,2 (frais généraux) × 1,1 (bénéfice) ≈ × 1,32 ; exemple Obat (obat.fr/blog/debourse-sec) : 530 € de déboursé → 916 € HT, soit × 1,73"
+    }
+   ]
+  },
+  {
+   "id": "mac-raidisseur-chainage-vertical",
+   "n": "Raidisseur (poteau BA dans le mur)",
+   "verdict": "confirme",
+   "fp_actuel": 88,
+   "sm_actuel": 28,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Le prix tient, mais la fourchette est large. Plus bas : vite-un-chantier donne 20 à 35 €/ml, soit 54 à 95 € pour 2,70 m. Plus haut : le déboursé CYPE d'un chaînage vertical en blocs d'angle est de 40,39 €/ml, soit 109 € pour 2,70 m, avant marge. En monomur, le poteau R42 coûte 51,44 €/ml de déboursé, soit 139 € par raidisseur. Le prix unitaire est donc sous-estimé si les murs sont en monomur.",
+   "sources": [
+    {
+     "url": "https://www.prix-construction.info/renovation/Structure_et_gros_oeuvre/Chainages/Maconnerie_de_blocs_de_beton/Chainage_vertical__de_blocs_de_beton.html",
+     "releve": "Chaînage vertical en blocs d'angle 500×150×200, 1,34 kg/m d'acier : 40,39 € HT/ml (déboursé)"
+    },
+    {
+     "url": "https://wienerberger.prix-construction.info/construction_neuve/Structure_et_gros_oeuvre/Chainages/GHT_Maconnerie_de_briques_en_terre/GHT030_Chainage_vertical__de_briques_en_te.html",
+     "releve": "Chaînage vertical briques Poteau R42 (monomur) : 51,44 € HT/ml (brique 36,51 €/ml)"
+    },
+    {
+     "url": "https://vite-un-chantier.fr/prix-ml-chainage/",
+     "releve": "Chaînage vertical 20 à 35 €/ml HT (relevé via moteur de recherche)"
+    }
+   ]
+  },
+  {
+   "id": "mac-linteau-beton-arme",
+   "n": "Linteau au-dessus d'une ouverture (≤ 2,5 m)",
+   "verdict": "confirme",
+   "fp_actuel": 98,
+   "sm_actuel": 28,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Le prix tient. Le déboursé CYPE d'un linteau en blocs U béton, étaiement compris, est de 35,39 € HT/ml. Une ouverture moyenne demande ≈ 1,7 ml (1,2 m + 2 appuis de 0,25 m), soit 60 € de déboursé. Avec le coefficient de vente, cela donne 79 à 106 € : les 95 € du standard sont dedans. Pour une baie de 2,40 m (2,9 ml), le linteau coûte 103 € de déboursé, soit 136 à 181 € : le prix unitaire unique sous-estime donc les baies.",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Structure_et_gros_oeuvre/Linteaux/Maconnerie_de_blocs_de_beton/GLB010_Linteau_en_maconnerie_renforcee_de_.html",
+     "releve": "Linteau 20 cm en blocs U béton, C16/20, 2,28 kg/m d'acier, étaiement compris : 35,39 € HT/ml (déboursé)"
+    },
+    {
+     "url": "https://wienerberger.prix-construction.info/construction_neuve/Structure_et_gros_oeuvre/Linteaux/GLT_Maconnerie_de_briques_en_terre/GLT010_Linteau_en_maconnerie_renforcee_de_.html",
+     "releve": "Linteau-chaînage 30 cm en briques U R30, étaiement compris : 50,73 € HT/ml (déboursé)"
+    },
+    {
+     "url": "https://sti.eduscol.education.fr/sites/eduscol.education.fr.sti/files/ressources/pedagogiques/12096/12096-03dr-ds-et-pvht-prof.docx",
+     "releve": "Cours BTS (eduscol) : prix de vente HT = déboursé sec × 1,2 (frais généraux) × 1,1 (bénéfice) ≈ × 1,32 ; exemple Obat (obat.fr/blog/debourse-sec) : 530 € de déboursé → 916 € HT, soit × 1,73"
+    }
+   ]
+  },
+  {
+   "id": "mac-appui-fenetre-seuil-prefabrique",
+   "n": "Appui de fenêtre ou seuil préfabriqué",
+   "verdict": "confirme",
+   "fp_actuel": 81,
+   "sm_actuel": 51,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Le prix tient pour une fenêtre. Le déboursé CYPE d'un appui préfabriqué gris de 25 cm, posé et hydrofugé, est de 40,26 € HT/ml, soit ≈ 52 € pour 1,3 m avant marge. Point.P vend la pièce de 35 × 50 cm à 33,96 € TTC, et un appui à nez arrondi de 35 × 130 cm à 164,12 € TTC. Le sm de 45 € couvre un appui simple de 1,2 m. En revanche, le seuil d'une baie de 2,40 m coûte ≈ 2 fois plus.",
+   "sources": [
+    {
+     "url": "https://www.prix-construction.info/renovation/Enveloppe_et_finition_exterieure/Elements_complementaires_de_facade/Appuis_de_baies/Appui_de_fenetre_prefabrique_en_beton.html",
+     "releve": "Appui préfabriqué béton gris 500×250×50 avec larmier, posé au mortier hydrofuge : 40,26 € HT/ml (dont appui 13,23 €/ml)"
+    },
+    {
+     "url": "https://www.pointp.fr/c/appuis-de-fenetre--seuils--produits-beton-prefabrique/x3snv3_dig_2024375",
+     "releve": "Appui béton gris 35×50 cm : 33,96 € TTC ; appui nez arrondi 35×130 cm : 164,12 € TTC (fourniture, relevé via moteur de recherche, page bloquée en lecture)"
+    }
+   ]
+  },
+  {
+   "id": "toi-mur-ossature-bois-isole",
+   "n": "Murs extérieurs en ossature bois isolés",
+   "verdict": "confirme",
+   "fp_actuel": 148,
+   "sm_actuel": 63,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Le prix tient, plutôt en bas de fourchette. Le déboursé CYPE d'un mur étanche à ossature bois (45 × 120, laine de verre 120, OSB 10, pare-pluie, frein-vapeur) est de 170,87 € HT/m² avec un bardage sapin. Sans les lames (28,56 €), sans les lattes (1,50 €) et sans ≈ 0,5 h de pose du bardage, il reste ≈ 120 € de déboursé. Avec le coefficient de vente, cela fait 158 à 211 €. Les 140 € du standard restent dans les fourchettes des sites : 100 à 200 € (prodestravaux), exemple à 115 € avec isolant.",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Enveloppe_et_finition_exterieure/Murs_a_ossature_bois/Etanche/Mur_etanche_a_ossature_bois.html",
+     "releve": "EOE010 : montants 45×120 e = 40 cm, OSB3 10 mm, pare-pluie 500 µm, laine de verre 120 mm, frein-vapeur, bardage sapin sur lattes : 170,87 € HT/m² (MO 100,28 €), plaque intérieure non comprise"
+    },
+    {
+     "url": "https://www.prodestravaux.com/devis-travaux/maison-ossature-bois",
+     "releve": "Mur ossature bois 100 à 200 €/m² ; exemple 115 €/m² pour un mur ossature avec isolant (relevé via moteur de recherche)"
+    },
+    {
+     "url": "https://sti.eduscol.education.fr/sites/eduscol.education.fr.sti/files/ressources/pedagogiques/12096/12096-03dr-ds-et-pvht-prof.docx",
+     "releve": "Cours BTS (eduscol) : prix de vente HT = déboursé sec × 1,2 (frais généraux) × 1,1 (bénéfice) ≈ × 1,32 ; exemple Obat (obat.fr/blog/debourse-sec) : 530 € de déboursé → 916 € HT, soit × 1,73"
+    }
+   ]
+  },
+  {
+   "id": "cou-couverture-tuiles-terre-cuite",
+   "n": "Couverture tuiles terre cuite tout compris",
+   "verdict": "confirme",
+   "fp_actuel": 92,
+   "sm_actuel": 39,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Le prix tient, mais les 85 € du standard sont un PLANCHER. Le déboursé CYPE (tuile romane terre cuite, écran HPV, liteaux, chatières) est de 79,71 € HT/m², sans les rives ni le faîtage. La rive en terre cuite coûte 21,29 €/ml et le faîtage ≈ 58 €/ml (déboursé). Avec le coefficient de vente, cela fait 105 à 140 € par m². Pas de hausse proposée : la toiture pèse déjà 16 % du total sur la maison A (voir calibrage), et Trustup (Belgique) donne 45 à 75 € HTVA. Si Dani relève la pente par défaut à 30°, ce prix devient défendable.",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Enveloppe_et_finition_exterieure/Couvertures_de_toitures_inclinees/Tuiles_en_terre_cuite_et_en_beton/Couverture_de_tuiles_en_terre_cuite.html",
+     "releve": "EUT010 : écran HPV 6,02 + liteaux 1,92 + tuiles romanes 26,06 + chatières 4,58 + MO 39,57 → 79,71 € HT/m², rives et faîtage non compris"
+    },
+    {
+     "url": "https://prix-construction.info/construction_neuve/Enveloppe_et_finition_exterieure/Couvertures_de_toitures_inclinees/Rives/EUI010_Rive_d_une_toiture_avec_des_pieces_.html",
+     "releve": "Rive en tuiles terre cuite au mortier : 21,29 € HT/ml"
+    },
+    {
+     "url": "https://blog.trustup.be/fr/?p=19824",
+     "releve": "Belgique 2026 : couverture tuiles terre cuite seule 45 à 75 €/m² HTVA (hors charpente, isolation) — marché belge, repère bas"
+    },
+    {
+     "url": "https://sti.eduscol.education.fr/sites/eduscol.education.fr.sti/files/ressources/pedagogiques/12096/12096-03dr-ds-et-pvht-prof.docx",
+     "releve": "Cours BTS (eduscol) : prix de vente HT = déboursé sec × 1,2 (frais généraux) × 1,1 (bénéfice) ≈ × 1,32 ; exemple Obat (obat.fr/blog/debourse-sec) : 530 € de déboursé → 916 € HT, soit × 1,73"
+    }
+   ]
+  },
+  {
+   "id": "cou-couverture-tuiles-beton",
+   "n": "Couverture tuiles béton tout compris",
+   "verdict": "incertain",
+   "fp_actuel": 65,
+   "sm_actuel": 29,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Aucune source indépendante nouvelle sur la tuile béton seule. CYPE ne la chiffre pas à part. Par cohérence avec la terre cuite (déboursé CYPE de 80 € sans rives), le prix de 60 € en standard paraît bas, mais rien ne permet de le chiffrer. Il faudrait le devis d'un couvreur ou une page de prix négoce pour la tuile béton (Monier, Edilians) avec sa pose.",
+   "sources": []
+  },
+  {
+   "id": "cou-couverture-ardoise-naturelle",
+   "n": "Couverture ardoise naturelle tout compris",
+   "verdict": "confirme",
+   "fp_actuel": 146,
+   "sm_actuel": 66,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Le prix tient. Le déboursé CYPE (ardoise naturelle 40 × 22 au crochet inox, liteaux, écran HPV, ventilation) est de 93,29 € HT/m², avec une ardoise d'entrée de gamme à 0,46 € la pièce. Avec le coefficient de vente, cela fait 123 à 164 € : les 135 € du standard sont dedans.",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Enveloppe_et_finition_exterieure/Couvertures_de_toitures_inclinees/Ardoises/Couverture_en_ardoise.html",
+     "releve": "EUA010 : 32 ardoises × 0,46 € + liteaux + écran + crochets ; MO 1,64 h → 93,29 € HT/m² (déboursé)"
+    },
+    {
+     "url": "https://sti.eduscol.education.fr/sites/eduscol.education.fr.sti/files/ressources/pedagogiques/12096/12096-03dr-ds-et-pvht-prof.docx",
+     "releve": "Cours BTS (eduscol) : prix de vente HT = déboursé sec × 1,2 (frais généraux) × 1,1 (bénéfice) ≈ × 1,32 ; exemple Obat (obat.fr/blog/debourse-sec) : 530 € de déboursé → 916 € HT, soit × 1,73"
+    }
+   ]
+  },
+  {
+   "id": "cou-couverture-ardoise-fibres-ciment",
+   "n": "Couverture ardoises fibres-ciment tout compris",
+   "verdict": "incertain",
+   "fp_actuel": 107,
+   "sm_actuel": 42,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Aucune source indépendante trouvée. CYPE n'a pas d'unité pour l'ardoise en fibres-ciment. Le prix repose sur trois sources déjà citées (PTM, abctravaux, Habitatpresto). Il faudrait un prix fabricant (Eternit, Edilians) et un devis de couvreur.",
+   "sources": []
+  },
+  {
+   "id": "cou-couverture-bac-acier",
+   "n": "Couverture bac acier anti-condensation",
+   "verdict": "confirme",
+   "fp_actuel": 66,
+   "sm_actuel": 36,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Le prix tient. Le déboursé CYPE d'un bac trapézoïdal 0,6 mm, sans anti-condensation, sans faîtage ni rives, est de 28,56 € HT/m². Avec le coefficient de vente, cela fait 38 à 50 €. Il faut y ajouter le feutre anti-condensation, les closoirs, le faîtage et les rives : les 60 € du standard sont cohérents.",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Enveloppe_et_finition_exterieure/Couvertures_de_toitures_inclinees/Bacs_acier_et_panneaux_sandwich/Couverture_de_tole_profilee_en_acier.html",
+     "releve": "EUL010 : tôle prélaquée 0,6 mm 9,00 € + accessoires 3,88 + MO 15,12 → 28,56 € HT/m², points singuliers non compris"
+    },
+    {
+     "url": "https://sti.eduscol.education.fr/sites/eduscol.education.fr.sti/files/ressources/pedagogiques/12096/12096-03dr-ds-et-pvht-prof.docx",
+     "releve": "Cours BTS (eduscol) : prix de vente HT = déboursé sec × 1,2 (frais généraux) × 1,1 (bénéfice) ≈ × 1,32 ; exemple Obat (obat.fr/blog/debourse-sec) : 530 € de déboursé → 916 € HT, soit × 1,73"
+    }
+   ]
+  },
+  {
+   "id": "cou-couverture-zinc-joint-debout",
+   "n": "Couverture zinc joint debout sur voligeage",
+   "verdict": "confirme",
+   "fp_actuel": 170,
+   "sm_actuel": 60,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Le prix tient. Le déboursé CYPE (zinc 0,7 mm à joint debout, nappe drainante, fixations), SANS voliges ni écran, est de 93,09 € HT/m². Avec le coefficient de vente, cela fait 123 à 164 €, auquel s'ajoute le voligeage (25 à 45 €/m², déjà cité). Les 160 € du standard sont le bas de la fourchette.",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Enveloppe_et_finition_exterieure/Couvertures_de_toitures_inclinees/Bacs_en_zinc/Couverture_de_bacs_en_zinc.html",
+     "releve": "EUZ010 : zinc 0,7 mm 30,17 € + nappe 5,09 + accessoires 9,08 + MO 46,92 → 93,09 € HT/m², support non compris"
+    },
+    {
+     "url": "https://sti.eduscol.education.fr/sites/eduscol.education.fr.sti/files/ressources/pedagogiques/12096/12096-03dr-ds-et-pvht-prof.docx",
+     "releve": "Cours BTS (eduscol) : prix de vente HT = déboursé sec × 1,2 (frais généraux) × 1,1 (bénéfice) ≈ × 1,32 ; exemple Obat (obat.fr/blog/debourse-sec) : 530 € de déboursé → 916 € HT, soit × 1,73"
+    }
+   ]
+  },
+  {
+   "id": "cou-toiture-terrasse-isolee",
+   "n": "Toiture-terrasse isolée sur dalle béton",
+   "verdict": "confirme",
+   "fp_actuel": 140,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Le prix tient, plutôt en bas de fourchette. Le déboursé CYPE est de 84,11 € HT/m², mais il est minimal : membrane monocouche, laine minérale de 50 mm seulement, ni pare-vapeur ni relevés. Avec l'isolant d'épaisseur RE2020 et les relevés, on est au-dessus de 140 €. Les sites donnent une fourchette de 150 à 230 € HT/m² pour une toiture chaude, et l'exemple PIR 120 mm de ed-ouest revient à 85 à 185 €/m².",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Enveloppe_et_finition_exterieure/Couvertures_de_toitures_terrasses/Toitures_chaudes_non_accessibles/ETH020_Toiture_terrasse_chaude__inaccessib.html",
+     "releve": "ETH020 : forme de pente argile expansée + laine minérale 50 mm + SBS monocouche autoprotégée : 84,11 € HT/m², relevés exclus, pare-vapeur en option"
+    },
+    {
+     "url": "https://www.ed-ouest.fr/blog/etancheite-toit-terrasse-avec-isolation/",
+     "releve": "Isolation PIR 120 mm : 2 500 à 5 500 € pour 30 m² (≈ 85 à 185 €/m²), HT/TTC non précisé (relevé via moteur de recherche)"
+    }
+   ]
+  },
+  {
+   "id": "cou-couvertine-acrotere",
+   "n": "Couvertine d'acrotère aluminium",
+   "verdict": "confirme",
+   "fp_actuel": 45,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Le prix tient. Le déboursé CYPE d'un chaperon en aluminium anodisé de 300 mm de développé, sur support CTBX, est de 30,19 € HT/ml. Avec le coefficient de vente, cela fait 40 à 53 €.",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Enveloppe_et_finition_exterieure/Elements_complementaires_de_facade/Chaperons_et_couvre-poteaux/Chaperon_en_aluminium.html",
+     "releve": "ECC030 : chaperon alu 1,5 mm dév. 300 13,46 € + support bois + MO 8,38 → 30,19 € HT/ml"
+    },
+    {
+     "url": "https://sti.eduscol.education.fr/sites/eduscol.education.fr.sti/files/ressources/pedagogiques/12096/12096-03dr-ds-et-pvht-prof.docx",
+     "releve": "Cours BTS (eduscol) : prix de vente HT = déboursé sec × 1,2 (frais généraux) × 1,1 (bénéfice) ≈ × 1,32 ; exemple Obat (obat.fr/blog/debourse-sec) : 530 € de déboursé → 916 € HT, soit × 1,73"
+    }
+   ]
+  },
+  {
+   "id": "cou-gouttiere-zinc",
+   "n": "Gouttière zinc posée",
+   "verdict": "confirme",
+   "fp_actuel": 65,
+   "sm_actuel": 30,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Le prix tient : la gouttière zinc posée coûte 30 à 80 € TTC/ml chez Maisonbionat (≈ 27 à 73 € HT) et 40 à 100 €/ml en demi-ronde chez Couverture Angers. Les 60 € du standard sont au milieu.",
+   "sources": [
+    {
+     "url": "https://www.maisonbionat.fr/prix/zinguerie/",
+     "releve": "Gouttière posée, prix TTC (TVA 10 %), hors échafaudage, vérifiés le 07/08/2026 : PVC 15-40 €, zinc 30-80 €, alu laqué 35-85 €/ml ; descente 25-60 €/ml"
+    },
+    {
+     "url": "https://couverture-angers.fr/conseils/prix-gouttiere-zinc/",
+     "releve": "Demi-ronde zinc fournie-posée 40 à 100 €/ml ; fourniture seule 10 à 40 €/ml ; descente zinc posée 30 à 60 €/ml ; alu « proche du zinc, parfois supérieur » (07/09/2026, HT/TTC non précisé)"
+    }
+   ]
+  },
+  {
+   "id": "cou-gouttiere-pvc",
+   "n": "Gouttière PVC posée",
+   "verdict": "ajuster",
+   "fp_actuel": 42,
+   "sm_actuel": 12,
+   "fp_propose": 34,
+   "sm_propose": 12,
+   "raison": "Le prix est TROP HAUT. Maisonbionat donne 15 à 40 € TTC/ml posé, soit ≈ 14 à 36 € HT. Le déboursé CYPE d'une gouttière PVC de 25 cm, accessoires compris, est de 23,14 € HT/ml, soit 31 à 41 € avec le coefficient de vente. Les milieux indépendants sont 25 et 36 €, contre 53 et 40 € pour les sources déjà citées : on retient 32 € en standard. Calcul : sm standard 10 → sm_base 12 ; fp_base = 32 + 2 = 34.",
+   "sources": [
+    {
+     "url": "https://www.maisonbionat.fr/prix/zinguerie/",
+     "releve": "Gouttière PVC posée 15 à 40 € TTC/ml (TVA 10 %), 2026"
+    },
+    {
+     "url": "https://prix-construction.info/construction_neuve/Equipements_techniques/TQ_Installations_d_evacuation_des/Gouttieres/Gouttiere_visible_de_pieces_usinees.html",
+     "releve": "TQG010 gouttière PVC dév. 250 avec 30 % d'accessoires (crochets, angles, fonds, naissances) : 23,14 € HT/ml (déboursé)"
+    },
+    {
+     "url": "https://sti.eduscol.education.fr/sites/eduscol.education.fr.sti/files/ressources/pedagogiques/12096/12096-03dr-ds-et-pvht-prof.docx",
+     "releve": "Cours BTS (eduscol) : prix de vente HT = déboursé sec × 1,2 (frais généraux) × 1,1 (bénéfice) ≈ × 1,32 ; exemple Obat (obat.fr/blog/debourse-sec) : 530 € de déboursé → 916 € HT, soit × 1,73"
+    }
+   ]
+  },
+  {
+   "id": "cou-gouttiere-alu-continu",
+   "n": "Gouttière aluminium laqué en continu",
+   "verdict": "incertain",
+   "fp_actuel": 80,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Les sources tirent vers le bas. Maisonbionat donne l'aluminium laqué posé à 35 à 85 € TTC/ml (milieu ≈ 55 € HT), et Couverture Angers le dit « proche du zinc, parfois supérieur ». Avec le zinc à 60 €, les 80 € de l'alu continu font +33 %. Mais aucune source ne chiffre à part la gouttière continue profilée sur place. Une valeur de ≈ 70 € serait plus cohérente. Il faudrait le prix d'un poseur de gouttières continues.",
+   "sources": [
+    {
+     "url": "https://www.maisonbionat.fr/prix/zinguerie/",
+     "releve": "Aluminium laqué posé 35 à 85 € TTC/ml ; continu/sans raccord non chiffré"
+    },
+    {
+     "url": "https://couverture-angers.fr/conseils/prix-gouttiere-zinc/",
+     "releve": "Aluminium : prix posé proche de celui du zinc, parfois supérieur (zinc 40 à 100 €/ml)"
+    }
+   ]
+  },
+  {
+   "id": "cou-descente-eaux-pluviales",
+   "n": "Descente d'eaux pluviales",
+   "verdict": "ajuster",
+   "fp_actuel": 27,
+   "sm_actuel": 10,
+   "fp_propose": 37,
+   "sm_propose": 10,
+   "raison": "Le prix est TROP BAS pour une descente en zinc, assortie à la gouttière zinc par défaut. Couverture Angers donne 30 à 60 €/ml pour une descente zinc posée, Maisonbionat 25 à 60 € TTC/ml (≈ 23 à 55 € HT) tous matériaux. Seul le PVC est moins cher : 18,43 € HT/ml de déboursé chez CYPE. On retient 35 € en standard, entre le devis Habitatpresto déjà cité (22 € HT) et les milieux indépendants (≈ 40 à 45 €). Calcul : sm standard 8 → sm_base 10 ; fp_base = 35 + 2 = 37. Effet : +90 € HT sur la maison A (9 ml).",
+   "sources": [
+    {
+     "url": "https://couverture-angers.fr/conseils/prix-gouttiere-zinc/",
+     "releve": "Descente zinc posée 30 à 60 €/ml (2025-2026)"
+    },
+    {
+     "url": "https://www.maisonbionat.fr/prix/zinguerie/",
+     "releve": "Descente d'eau pluviale 25 à 60 € TTC/ml"
+    },
+    {
+     "url": "https://prix-construction.info/construction_neuve/Equipements_techniques/TQ_Installations_d_evacuation_des/Colonnes_et_descentes/TQN030_Descente_visible_a_l_exterieur_du_b.html",
+     "releve": "Descente PVC Ø80 avec colliers et coudes : 18,43 € HT/ml (déboursé)"
+    }
+   ]
+  },
+  {
+   "id": "cou-sous-face-pvc",
+   "n": "Sous-face des débords en PVC",
+   "verdict": "confirme",
+   "fp_actuel": 43,
+   "sm_actuel": 19,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Le prix tient : les guides 2026 donnent 25 à 45 €/m² posé (panneaux standard 25 à 35, qualité supérieure 35 à 45), certains 30 à 60. Les 40 € du standard sont dedans.",
+   "sources": [
+    {
+     "url": "https://champlain-couverture.com/renovation/prix-pose-lambris-pvc-sous-toiture-renovation/",
+     "releve": "Lambris PVC sous toiture 20 à 45 €/m² pose comprise ; fourniture 10 à 25, pose 20 à 35 (relevé via moteur de recherche, 2026)"
+    },
+    {
+     "url": "https://www.guide-toiture.com/travaux-annexes-toiture/dessous-de-toit/",
+     "releve": "Dessous de toit 20 à 100 €/m² pose et fournitures comprises (relevé via moteur de recherche)"
+    }
+   ]
+  },
+  {
+   "id": "cou-sous-face-bois",
+   "n": "Sous-face en lambris bois lasuré",
+   "verdict": "incertain",
+   "fp_actuel": 49,
+   "sm_actuel": 22,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Aucune source indépendante n'a été trouvée pour la sous-face en bois posée. Le prix (confiance basse) reste raisonné. Il faudrait un devis de charpentier ou une page de prix pour le lambris extérieur posé.",
+   "sources": []
+  },
+  {
+   "id": "fac-echafaudage-de-facade",
+   "n": "Échafaudage de façade",
+   "verdict": "confirme",
+   "fp_actuel": 12,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Le prix au m² tient. CYPE donne 7,70 €/m² de déboursé pour le montage et le démontage (250 m², 10 m de haut), plus ≈ 1,56 €/m² pour 15 jours de location, plus le transport. ktel donne 5 à 12 € HT/m² (2 à 4 semaines comprises), Cleanalta 15 à 25 € HT/m² tout compris. MAIS ktel chiffre une maison de plain-pied de moins de 3 m à l'égout à « 0 à 300 € » au total. Le moteur, lui, compte 1 942 € sur la maison A : voir doublons.",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Interventions_prealables/PH_Equipements_pour_travaux_en_ha/Echafaudages/PHE130_Montage_et_demontage_d_un_echafauda.html",
+     "releve": "Montage 4,45 + démontage 2,97 €/m² (+2 %) : 1 925,21 € HT pour 250 m² de façade ≈ 7,70 €/m²"
+    },
+    {
+     "url": "https://prix-construction.info/construction_neuve/Interventions_prealables/PH_Equipements_pour_travaux_en_ha/Echafaudages/PHE010_Location_d_un_echafaudage_tubulaire.html",
+     "releve": "Location 0,10 €/m²/jour : 389,19 € HT pour 250 m² × 15 jours"
+    },
+    {
+     "url": "https://www.ktel.org/prix-ravalement-facade-m2/",
+     "releve": "Échafaudage facturé en supplément : 5 à 12 € HT/m² (2 à 4 semaines de location comprises) ; maison de plain-pied < 3 m à l'égout : 0 à 300 € ; R+1 200 m² : 1 000 à 2 400 € HT (19/08/2026)"
+    },
+    {
+     "url": "https://www.cleanalta.com/cout-echafaudage-nettoyage-facade/",
+     "releve": "15 à 25 € HT/m² de façade couverte, montage, location et démontage compris (2026)"
+    }
+   ]
+  },
+  {
+   "id": "fac-bardage-composite",
+   "n": "Bardage composite sur ossature avec pare-pluie",
+   "verdict": "confirme",
+   "fp_actuel": 161,
+   "sm_actuel": 96,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Le prix tient. Le déboursé CYPE d'un bardage ventilé en lames composites (WPC), sur ossature ALUMINIUM sans pare-pluie, est de 188,50 € HT/m². Sur ossature bois, il serait plus bas : l'ossature aluminium y coûte 39,34 €. Maisons et Bois donne 75 à 195 €/m² posé (moyenne ≈ 110), La Belle Charue 110 à 200 € avec ossature et pare-pluie. Les 145 € du standard sont au milieu.",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Enveloppe_et_finition_exterieure/EB_Revetements_et_bardages_de_par/Bardages_ventiles_en_lames_en_WPC/Bardage_ventile__en_lames_de_WPC.html",
+     "releve": "EBW010 : lames WPC 75,69 + ossature alu 39,34 + MO 67,98 → 188,50 € HT/m² ; isolation et points singuliers non compris"
+    },
+    {
+     "url": "https://maisons-et-bois.com/bardage-composite-avantages-prix-pose/",
+     "releve": "Fourniture 40 à 150 €/m² ; pose 40 à 60 €/m² ; total 75 à 195 €/m², moyenne ≈ 110 € (relevé via moteur de recherche)"
+    },
+    {
+     "url": "https://www.lbcharue-scierie.fr/bardage-bois-composite-prix/",
+     "releve": "Composite 110 à 200 €/m² pose incluse, ossature, pare-pluie et main-d'œuvre compris (relevé via moteur de recherche)"
+    }
+   ]
+  },
+  {
+   "id": "fac-enduit-monocouche-machine",
+   "n": "Enduit monocouche (machine) — repris",
+   "verdict": "ajuster",
+   "fp_actuel": 28,
+   "sm_actuel": 10,
+   "fp_propose": 43,
+   "sm_propose": 19,
+   "raison": "La correction proposée par la synthèse (43/19, soit 40 € en standard) est CONFIRMÉE par une source indépendante. Le déboursé CYPE d'un monocouche de 15 mm, gravier projeté, avec trame aux jonctions et profilés PVC, est de 42,13 € HT/m², sans marge. Les 26 € du standard actuel sont sous le seul déboursé. Prix du catalogue rénovation : à soumettre à Dani.",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Enveloppe_et_finition_exterieure/Enduits_de_mortier_industriel/Enduits_monocouche/Mortier_d_enduit_monocouche.html",
+     "releve": "EDM010 : mortier 19,5 kg × 0,55 = 10,73 + granulat 5,55 + trame/profilés 1,21 + MO 0,59 h 23,02 + 4 % → 42,13 € HT/m²"
+    }
+   ]
+  },
+  {
+   "id": "mex-porte-d-entree",
+   "n": "Porte d'entrée — repris (base alu, PVC × 0,60)",
+   "verdict": "ajuster",
+   "fp_actuel": 1600,
+   "sm_actuel": 1150,
+   "fp_propose": 2150,
+   "sm_propose": 1550,
+   "raison": "En aluminium, le prix est TROP BAS (1 600 €), mais l'écart est moindre que les ≈ 2 800 € avancés par la synthèse. Deux sources indépendantes donnent l'alu posé à 1 300 à 3 200 € (milieu 2 250) et 1 200 à 3 500 € (milieu 2 350) ; le PVC posé à 800 à 1 800 € (milieu 1 300). Le rapport PVC/alu vaut donc 0,55 à 0,58 : le coefficient PVC de 0,60 TIENT, contrairement au « ≈ 0,40 » de la synthèse (tiré d'une seule source). On retient 2 150 € HT (milieux ramenés de TTC à HT), fourniture 1 550 € (milieux 1 700 et 1 650). Pose ≈ 600 €, cohérente avec 400 à 700 €. Le PVC passe à 1 290 / 930. Le déboursé CYPE (porte d'immeuble d'entrée de gamme : alu 501 €, PVC 896 €) n'est pas représentatif d'une porte de maison.",
+   "sources": [
+    {
+     "url": "https://tarif-menuisier.fr/guide/prix-porte-entree",
+     "releve": "2026 : PVC fourniture 500-1 200, posée 800-1 800 € ; aluminium 900-2 500 / 1 300-3 200 € ; acier 700-2 000 / 1 000-2 800 € ; HT/TTC non précisé"
+    },
+    {
+     "url": "https://www.menuiseries-france.com/prix-porte-entree",
+     "releve": "2026 : PVC 400-1 200 / 800-1 800 € ; aluminium 800-2 500 / 1 200-3 500 € ; pose standard 300-500 € ; HT/TTC non précisé"
+    },
+    {
+     "url": "https://prix-construction.info/construction_neuve/Enveloppe_et_finition_exterieure/Menuiseries_exterieures/Portes_d_entree/Porte_d_entree_au_logement__en_PVC.html",
+     "releve": "Porte PVC 90×210 pleine, précadre : 896,38 € HT posée (déboursé) ; alu entrée de gamme (EME040) 501,46 € HT"
+    }
+   ]
+  },
+  {
+   "id": "mex-porte-de-garage",
+   "n": "Porte de garage sectionnelle motorisée — repris",
+   "verdict": "ajuster",
+   "fp_actuel": 1200,
+   "sm_actuel": 800,
+   "fp_propose": 1966,
+   "sm_propose": 1566,
+   "raison": "Le prix est TROP BAS, et la proposition de la synthèse (1 655/1 205, soit 1 450 € en standard) l'est encore. Le déboursé CYPE d'une sectionnelle alu isolée de 300 × 250, posée mais SANS moteur, est déjà de 1 495 € HT. Prix posés motorisés : acier 1 350 à 3 000 € TTC (md-menuiserie et TarifArtisan), soit un milieu de 2 175 € TTC ≈ 1 810 € HT à 20 %. Le moteur à crémaillère coûte 450 à 1 150 €. On retient 1 700 € HT en standard (groupe G2, coef 0,83). Calcul : sm standard 1 300 → sm_base = 1 300 / 0,83 = 1 566 ; fp_base = 1 700 + 266 = 1 966. Pose ≈ 400 €, cohérente avec 350 à 600 € TTC pour une motorisée.",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Enveloppe_et_finition_exterieure/Menuiseries_exterieures/Portes_de_garages/EMG060_Porte_sectionnelle_pour_garage__de_.html",
+     "releve": "Sectionnelle panneau sandwich alu 300×250, manuelle : fourniture 1 280,08 + MO 185,76 → 1 495,16 € HT (déboursé), motorisation en option"
+    },
+    {
+     "url": "https://md-menuiserie.fr/2026/06/30/prix-porte-garage-sectionnelle-2026/",
+     "releve": "Standard 240×200 : 850 à 3 000 € TTC posée (≈ 1 500 en moyenne) ; motorisée tout compris 1 800 à 5 000 € ; acier 1 350-3 000 € ; pose motorisée 350-600 € ; moteur crémaillère 450-1 150 €"
+    },
+    {
+     "url": "https://www.tarifartisan.fr/prix-porte-de-garage-sectionnelle/",
+     "releve": "Acier pose comprise 1 350 à 3 000 € ; hors pose 1 000 à 2 400 € ; motorisée 1 400 à 4 000 €"
+    }
+   ]
+  },
+  {
+   "id": "toi-raccords-faitage-noues-solins",
+   "n": "Raccords (faîtage, noues, solins) — repris",
+   "verdict": "ajuster",
+   "fp_actuel": 40,
+   "sm_actuel": 15,
+   "fp_propose": 59,
+   "sm_propose": 22,
+   "raison": "La correction de la synthèse (59/22) est CONFIRMÉE, voire prudente. Déboursés CYPE : arêtier en tuiles faîtières terre cuite au mortier 57,80 € HT/ml, noue en zinc 87,47 € HT/ml (sur maçonnerie, un cas haut). Les 37 € du standard actuel sont sous le seul déboursé de l'arêtier. Prix du catalogue rénovation : à soumettre à Dani.",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Enveloppe_et_finition_exterieure/Couvertures_de_toitures_inclinees/Noues_et_aretiers/Arete_de_tuile_en_terre_cuite.html",
+     "releve": "Arêtier tuiles faîtières TC 2,9 u × 11,24 + mortier + MO 0,556 h → 57,80 € HT/ml"
+    },
+    {
+     "url": "https://prix-construction.info/construction_neuve/Enveloppe_et_finition_exterieure/Couvertures_de_toitures_inclinees/Noues_et_aretiers/Noue_metallique.html",
+     "releve": "Noue zinc 0,6 mm dév. 450 sur maçonnerie : 87,47 € HT/ml"
+    }
+   ]
+  },
+  {
+   "id": "toi-charpente-en-fermettes-hors-couverture",
+   "n": "Charpente en fermettes — repris",
+   "verdict": "incertain",
+   "fp_actuel": 80,
+   "sm_actuel": 40,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Les sources se contredisent sur la correction 80 → 91 proposée par la synthèse. Pour une hausse : Maisonbionat 70 à 125 €/m², LVDP 70 à 120 € en neuf (fourniture 40 à 70, pose 30 à 50). Contre : abctravaux 35 à 70 €/m², et 35 à 45 € seulement pour des combles perdus de portée inférieure à 8 m, ce qui est le cas des maisons A et C. Ne rien corriger sans un devis réel (100 m² en 2 pans, portée ≈ 10 m).",
+   "sources": [
+    {
+     "url": "https://lvdp.fr/charpente-fermette-prix-2026-couts-de-pose-et-conseils-pour-reussir-votre-projet",
+     "releve": "Neuf : 70 à 120 €/m² fourni-posé ; fourniture 40-70, pose 30-50 (relevé via moteur de recherche)"
+    },
+    {
+     "url": "https://www.maisonbionat.fr/prix/charpente/",
+     "releve": "Fermettes industrielles 70 à 125 €/m² (relevé via moteur de recherche)"
+    },
+    {
+     "url": "https://abctravaux.org/prix-charpente/fermettes/",
+     "releve": "35 à 70 €/m² posée 2026 ; combles perdus portée < 8 m 35-45 €/m², 8-12 m 45-60 €/m² (relevé via moteur de recherche)"
+    }
+   ]
+  },
+  {
+   "id": "mac-plancher-beton-etage-cree",
+   "n": "Plancher béton (étage) — repris",
+   "verdict": "confirme",
+   "fp_actuel": 120,
+   "sm_actuel": 50,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "La correction 120 → 111 proposée par la synthèse N'EST PAS confirmée. Le déboursé CYPE d'un plancher poutrelles-entrevous béton (25 + 5, treillis, étaiement) est déjà de 93,61 € HT/m², sans marge. Avec le coefficient de vente, cela fait 124 à 165 €. Les 114 € du standard actuel sont plausibles, l'écart de 9 % avec les 105 € du marché est du bruit. À garder tel quel.",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Structure_et_gros_oeuvre/Planchers/Poutrelles_et_entrevous/GPH010_Plancher_unidirectionnel_avec_poutr.html",
+     "releve": "Plancher poutrelles précontraintes + entrevous béton, dalle de compression 5 cm, treillis : 93,61 € HT/m² (déboursé, MO 52,6 €)"
+    },
+    {
+     "url": "https://sti.eduscol.education.fr/sites/eduscol.education.fr.sti/files/ressources/pedagogiques/12096/12096-03dr-ds-et-pvht-prof.docx",
+     "releve": "Cours BTS (eduscol) : prix de vente HT = déboursé sec × 1,2 (frais généraux) × 1,1 (bénéfice) ≈ × 1,32 ; exemple Obat (obat.fr/blog/debourse-sec) : 530 € de déboursé → 916 € HT, soit × 1,73"
+    }
+   ]
+  },
+  {
+   "id": "toi-fenetre-de-toit-velux",
+   "n": "Fenêtre de toit — repris",
+   "verdict": "incertain",
+   "fp_actuel": 1200,
+   "sm_actuel": 500,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Le déboursé CYPE du plus petit modèle (GGL CK01, 55 × 70) avec son raccord est de 511,57 € HT, soit 675 à 900 € avec le coefficient de vente. Le format courant (MK04, 78 × 98) est plus cher : 572 € TTC la fenêtre seule chez Samse, source déjà citée. Pas de source indépendante pour un MK04 posé : la sous-évaluation de 11 % notée par la synthèse n'est ni confirmée ni infirmée.",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Enveloppe_et_finition_exterieure/Menuiseries_exterieures/Fenetres_de_toit/Fenetre_de_toit__VELUX_.html",
+     "releve": "VELUX GGL CK01 55×70 324 € + raccord EDW 123 € + MO 1,36 h → 511,57 € HT (déboursé)"
+    }
+   ]
+  }
+ ],
+ "corrections_renovation": [
+  {
+   "ref": "fac-enduit-monocouche-machine",
+   "prix_actuel": {
+    "fp": 28,
+    "sm": 10,
+    "standard": 26.3
+   },
+   "propose": {
+    "fp": 43,
+    "sm": 19,
+    "standard": 40
+   },
+   "raison": "Confirme la proposition de la synthèse par une source indépendante : le seul déboursé CYPE vaut 42,13 € HT/m². Effet : +2 045 € HT sur la maison A (149 m² × 13,7 €).",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Enveloppe_et_finition_exterieure/Enduits_de_mortier_industriel/Enduits_monocouche/Mortier_d_enduit_monocouche.html",
+     "releve": "42,13 € HT/m² de déboursé (monocouche 15 mm, gravier projeté)"
+    }
+   ]
+  },
+  {
+   "ref": "mex-porte-de-garage",
+   "prix_actuel": {
+    "fp": 1200,
+    "sm": 800,
+    "standard": 1064
+   },
+   "propose": {
+    "fp": 1966,
+    "sm": 1566,
+    "standard": 1700
+   },
+   "raison": "La sectionnelle isolée motorisée coûte ≈ 1 700 à 1 800 € HT posée : la sectionnelle manuelle seule fait déjà 1 495 € HT de déboursé chez CYPE. La proposition de la synthèse (1 450 en standard) reste trop basse. Effet : +636 € HT par maison avec garage (maison B).",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Enveloppe_et_finition_exterieure/Menuiseries_exterieures/Portes_de_garages/EMG060_Porte_sectionnelle_pour_garage__de_.html",
+     "releve": "Sectionnelle 300×250 manuelle posée 1 495,16 € HT (déboursé)"
+    },
+    {
+     "url": "https://md-menuiserie.fr/2026/06/30/prix-porte-garage-sectionnelle-2026/",
+     "releve": "Acier motorisée posée 1 350 à 3 000 € TTC"
+    },
+    {
+     "url": "https://www.tarifartisan.fr/prix-porte-de-garage-sectionnelle/",
+     "releve": "Acier pose comprise 1 350 à 3 000 €"
+    }
+   ]
+  },
+  {
+   "ref": "mex-porte-d-entree",
+   "prix_actuel": {
+    "fp": 1600,
+    "sm": 1150,
+    "pvc_standard": 960
+   },
+   "propose": {
+    "fp": 2150,
+    "sm": 1550,
+    "pvc_standard": 1290
+   },
+   "raison": "Base alu à 2 150 € HT, et non 2 800. Le coefficient PVC de 0,60 est conservé : le rapport PVC/alu vaut 0,55 à 0,58 dans deux sources indépendantes. Effet : +330 € HT par maison (porte PVC par défaut), +550 € en alu.",
+   "sources": [
+    {
+     "url": "https://tarif-menuisier.fr/guide/prix-porte-entree",
+     "releve": "Alu posée 1 300-3 200 € ; PVC 800-1 800 €"
+    },
+    {
+     "url": "https://www.menuiseries-france.com/prix-porte-entree",
+     "releve": "Alu posée 1 200-3 500 € ; PVC 800-1 800 €"
+    }
+   ]
+  },
+  {
+   "ref": "toi-raccords-faitage-noues-solins",
+   "prix_actuel": {
+    "fp": 40,
+    "sm": 15,
+    "standard": 37
+   },
+   "propose": {
+    "fp": 59,
+    "sm": 22,
+    "standard": 55
+   },
+   "raison": "Confirme la proposition de la synthèse : l'arêtier en tuiles faîtières vaut déjà 57,80 €/ml de déboursé chez CYPE. Effet : seulement pour les toits à 4 pans, en L ou complexes.",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Enveloppe_et_finition_exterieure/Couvertures_de_toitures_inclinees/Noues_et_aretiers/Arete_de_tuile_en_terre_cuite.html",
+     "releve": "57,80 € HT/ml de déboursé"
+    }
+   ]
+  },
+  {
+   "ref": "mac-plancher-beton-etage-cree",
+   "prix_actuel": {
+    "fp": 120,
+    "sm": 50,
+    "standard": 114
+   },
+   "propose": {
+    "fp": 120,
+    "sm": 50,
+    "standard": 114
+   },
+   "raison": "Retirer cette correction de la liste des 14 : le déboursé CYPE (93,61 €) multiplié par le coefficient de vente dépasse 114 €. La baisse à 111 n'est pas justifiée.",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Structure_et_gros_oeuvre/Planchers/Poutrelles_et_entrevous/GPH010_Plancher_unidirectionnel_avec_poutr.html",
+     "releve": "93,61 € HT/m² de déboursé"
+    }
+   ]
+  },
+  {
+   "ref": "toi-charpente-en-fermettes-hors-couverture",
+   "prix_actuel": {
+    "fp": 80,
+    "sm": 40,
+    "standard": 75
+   },
+   "propose": null,
+   "raison": "La correction 80 → 91 de la synthèse n'est pas confirmée (sources contradictoires, 35-45 € pour des combles perdus de portée inférieure à 8 m chez abctravaux). À laisser en suspens jusqu'à un devis réel.",
+   "sources": [
+    {
+     "url": "https://abctravaux.org/prix-charpente/fermettes/",
+     "releve": "35 à 70 €/m² ; combles perdus < 8 m : 35-45 €/m²"
+    },
+    {
+     "url": "https://lvdp.fr/charpente-fermette-prix-2026-couts-de-pose-et-conseils-pour-reussir-votre-projet",
+     "releve": "Neuf 70 à 120 €/m²"
+    }
+   ]
+  }
+ ],
+ "doublons": [
+  {
+   "postes": [
+    "toi-mur-ossature-bois-isole",
+    "fac-bardage-composite",
+    "fac-bardage"
+   ],
+   "constat": "Le prix du mur à ossature bois isolé (140 € en standard) repose sur un devis qui comprend « pare-pluie et lattage ». Le bardage composite comprend lui aussi « ossature avec pare-pluie », et le bardage bois une « ossature ventilée ». En maison à ossature bois, le pare-pluie et les tasseaux sont donc payés deux fois.",
+   "effet": "Pare-pluie CYPE 5,09 €/m² (fourniture) + lattes 1,50 €/m² + pose ≈ 0,1 h : ≈ 7 à 12 € HT/m² de façade, soit ≈ 1 000 à 1 800 € sur la maison C.",
+   "piste": "En ossature bois, décrire le bardage comme posé sur les tasseaux du mur, sans pare-pluie ; ou retirer pare-pluie et lattage du mur.",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Enveloppe_et_finition_exterieure/Murs_a_ossature_bois/Etanche/Mur_etanche_a_ossature_bois.html",
+     "releve": "Pare-pluie 1,1 m² × 4,63 = 5,09 € ; lattes 20×20 2,2 m × 0,68 = 1,50 €"
+    }
+   ]
+  },
+  {
+   "postes": [
+    "fac-echafaudage-de-facade"
+   ],
+   "constat": "En plain-pied (3 m à l'égout), le moteur compte 12 €/m² sur toute la façade brute : 1 942 € HT sur la maison A. ktel chiffre une maison de plain-pied de moins de 3 m à l'égout à 0 à 300 € au total : l'enduiseur y travaille sur tréteaux ou plateformes, et seuls les pignons demandent un échafaudage. Ce n'est pas un doublon au sens strict, c'est une quantité surévaluée.",
+   "effet": "≈ −1 300 à −1 900 € HT sur la maison A si l'on ne compte que les pignons.",
+   "piste": "Plain-pied : quantité = pignons seuls (ou forfait) ; à étage : façade brute.",
+   "sources": [
+    {
+     "url": "https://www.ktel.org/prix-ravalement-facade-m2/",
+     "releve": "Maison de plain-pied < 3 m à l'égout : 0 à 300 € ; R+1 200 m² : 1 000 à 2 400 € HT"
+    }
+   ]
+  },
+  {
+   "postes": [
+    "mac-linteau-beton-arme",
+    "mac-appui-fenetre-seuil-prefabrique"
+   ],
+   "constat": "Ce n'est pas un doublon mais un biais : un seul prix unitaire sert pour une fenêtre de 1,20 m et pour une baie de 2,40 m. Le linteau et le seuil d'une baie font ≈ 1,7 à 2 fois la longueur.",
+   "effet": "≈ +100 à +150 € par baie (déboursé CYPE linteau 35,39 €/ml, appui 40,26 €/ml).",
+   "piste": "Compter 2 unités par baie vitrée pour le linteau et le seuil.",
+   "sources": []
+  }
+ ],
+ "manquants": [
+  {
+   "poste": "Dalle de toiture en béton pour la maison à toit plat (plancher haut sous la toiture-terrasse)",
+   "constat": "La toiture-terrasse isolée est posée « sur dalle béton », et sa note dit « dalle et acrotères au gros œuvre ». Mais calibre.mjs n'active le plancher béton que si la maison a un étage. Sur une maison de plain-pied à toit plat, AUCUNE dalle de toiture n'est comptée.",
+   "regle": "si toit = plat : mac-plancher-beton-etage-cree (ou un poste « dalle pleine ») += Etot",
+   "prix": {
+    "ref": "mac-plancher-beton-etage-cree",
+    "fp": 120,
+    "sm": 50
+   },
+   "effet": "Maison de plain-pied de 100 m² à toit plat : Etot 116 m² × 114 € ≈ +13 200 € HT (+15 800 € TTC), le plus gros écart du groupe.",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Structure_et_gros_oeuvre/Planchers/Poutrelles_et_entrevous/GPH010_Plancher_unidirectionnel_avec_poutr.html",
+     "releve": "Plancher poutrelles-entrevous 93,61 € HT/m² de déboursé"
+    }
+   ]
+  },
+  {
+   "poste": "Rupteurs de ponts thermiques en rive de plancher d'étage (maison à étage maçonnée, isolation par l'intérieur)",
+   "constat": "La synthèse signale ce poste comme non chiffré. CYPE en donne un prix sourcé.",
+   "regle": "option si étage et isolation intérieure ; quantité = P (ml)",
+   "prix": {
+    "fp": 14,
+    "sm": 8.3,
+    "note": "déboursé CYPE, borne basse (× 1,32 à 1,76 → 18 à 25 € HT/ml)"
+   },
+   "effet": "Maison B : P ≈ 34 ml → ≈ 480 à 850 € HT",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Structure_et_gros_oeuvre/Planchers/Poutrelles_et_entrevous/GPH070_Rupteurs_thermiques_pour_planchers_.html",
+     "releve": "Rupteurs PSE RTK2 (60 % transversaux, 40 % longitudinaux), ψ moyen 0,27 W/(m·K) : fournitures 8,32 + MO 5,40 → 13,99 € HT/ml"
+    }
+   ]
+  },
+  {
+   "poste": "Chaînage horizontal au niveau du plancher d'étage",
+   "constat": "La règle suppose que ce chaînage est « coulé avec la dalle, compris dans le plancher ». Or l'unité CYPE du plancher n'en contient pas, et le devis Batisigne déjà cité chiffre plancher et chaînage sur deux lignes distinctes. À vérifier sur un devis réel.",
+   "regle": "si étage maçonné : mac-chainage-horizontal += P",
+   "prix": {
+    "ref": "mac-chainage-horizontal",
+    "fp": 37,
+    "sm": 14
+   },
+   "effet": "Maison B : P ≈ 34 ml × 35 € ≈ +1 190 € HT",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Structure_et_gros_oeuvre/Planchers/Poutrelles_et_entrevous/GPH010_Plancher_unidirectionnel_avec_poutr.html",
+     "releve": "Description du plancher : aciers de chapeaux, connecteurs et attaches ; aucun chaînage périphérique"
+    }
+   ]
+  },
+  {
+   "poste": "Planches de rive / bandeau d'égout (toit en pente)",
+   "constat": "Poste absent du catalogue, et aucun prix posé trouvé : les fiches produits (Durasid, UltraVentil, notice Chausson : contre-bandeau bois ≥ 16 mm obligatoire) n'en publient pas.",
+   "regle": "longueur d'égout + rampants de pignons",
+   "prix": null,
+   "effet": "inconnu",
+   "besoin": "devis de charpentier ou de couvreur au ml, PVC et bois",
+   "sources": [
+    {
+     "url": "https://www.batiproduits.com/fiche/produits/planche-de-rive-en-pvc-pour-toitures-en-neuf-ou-r-p69061153.html",
+     "releve": "Planche de rive PVC pour le neuf, clouée sur contre-bandeau ; pas de prix"
+    }
+   ]
+  },
+  {
+   "poste": "Sortie de toit (ventilation primaire, rejet VMC) avec abergement sur la couverture",
+   "constat": "Non chiffré. CYPE ne donne que le chapeau PVC Ø110 sans abergement (39,25 € HT de déboursé), ce qui ne suffit pas pour un prix complet.",
+   "regle": "1 à 2 par maison si toit en pente",
+   "prix": null,
+   "effet": "faible (quelques centaines d'euros)",
+   "besoin": "prix d'une sortie de toit avec tuile à douille et abergement, posée par le couvreur",
+   "sources": [
+    {
+     "url": "https://prix-construction.info/construction_neuve/Equipements_techniques/TQ_Installations_d_evacuation_des/Colonnes_et_descentes/Terminal_d_aeration.html",
+     "releve": "Chapeau de ventilation PVC Ø110 : 39,25 € HT, sans abergement"
+    }
+   ]
+  },
+  {
+   "poste": "Finition intérieure des murs en monomur et en béton cellulaire 30 (enduit plâtre)",
+   "constat": "Rappel du point h-7 de la synthèse : ce poste relève du second œuvre et n'a pas été recherché ici. Il conditionne pourtant la comparaison monomur / parpaing + doublage (−1 % dans la sensibilité, une économie fictive tant qu'il manque).",
+   "regle": "murs ext. nets, si murs = monomur ou béton cellulaire 30",
+   "prix": null,
+   "effet": "à chiffrer",
+   "sources": []
+  }
+ ]
+}

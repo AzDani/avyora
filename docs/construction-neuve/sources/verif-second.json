@@ -1,0 +1,548 @@
+{
+ "groupe": "Second œuvre et finitions",
+ "verdicts": [
+  {
+   "id": "iso-doublage-isolant-colle",
+   "n": "Doublage isolant collé des murs extérieurs (plaque de plâtre + polyuréthane, R ≥ 3,7)",
+   "verdict": "confirme",
+   "fp_actuel": 52,
+   "sm_actuel": 30,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Standard moteur 48 € HT. Fourniture du complexe PU 10+80 R 3,75 à 33 € TTC/m² en négoce grand public (27,5 € HT), un peu au-dessus du sm standard 26 €, mais un pro achète moins cher que le détail. Les prix de pose sources indépendantes (placo isolant intégré 39-51 € TTC, soit 33-43 € HT) visent surtout des complexes PSE plus minces ; avec un complexe PU R 3,7 plus cher (+10 €/m² de fourniture), 48 € HT tient. Attention au doublon partiel avec les bandes à joints (voir doublons) : Prix-Pose inclut « rails, montants, fixations et bandes » dans ses prix de plaques.",
+   "sources": [
+    {
+     "url": "https://www.bricodepot.fr/p/3434550508667/doublage-plaque-de-platre-polyurethane-r-3-75-l-2-50-x-l-1-20-m-x-ep-10-80-mm-pu",
+     "releve": "Doublage PU 10+80 R 3,75 : 33,00 € TTC/m², fourniture seule ; fourniture conseillée pour 10 m² : 3,5 panneaux, 18 kg de mortier adhésif, 14 m de bande, 4,7 kg d'enduit"
+    },
+    {
+     "url": "https://www.prix-pose.com/placo",
+     "releve": "Isolant intégré (doublage) : pose 39 à 51 €/m², fournitures 14 à 36 €/m² — prix publics TTC ; les prix BA13 comprennent « rails, montants, fixations et bandes »"
+    }
+   ]
+  },
+  {
+   "id": "iso-isolant-sous-chape",
+   "n": "Isolant sous chape (panneaux polyuréthane posés sur la dalle, R ≥ 3)",
+   "verdict": "confirme",
+   "fp_actuel": 35,
+   "sm_actuel": 23,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Standard 32 € HT. Une mousse PU projetée de 10 cm sous chape de plancher chauffant en maison neuve revient à ≈ 20 €/m² (exemple 130 m² pour 2 600 €, HT/TTC non précisé) ; les panneaux coûtent plus cher, 32 € HT reste dans les fourchettes (Effy : isolation des sols 30-90 €/m² posé). Poste rarement coché (jamais par défaut) : enjeu faible. Variante moins chère à signaler : mousse PU projetée.",
+   "sources": [
+    {
+     "url": "https://www.habitatpresto.com/mag/isolation/isolation-mousse-polyurethane-projetee-prix",
+     "releve": "Mousse PU projetée, sols : 20 à 30 €/m² pose comprise ; exemple maison neuve, 10 cm sous chape et chauffage au sol : 130 m² pour 2 600 € (≈ 20 €/m², HT/TTC non précisé)"
+    },
+    {
+     "url": "https://www.effy.fr/travaux-energetique/isolation/isolation-sol/prix",
+     "releve": "Isolation des sols : 30 à 90 €/m² main-d'œuvre incluse (HT/TTC non précisé)"
+    }
+   ]
+  },
+  {
+   "id": "clo-bandes-a-joints-plaques-neuves",
+   "n": "Bandes à joints sur plaques neuves (prêtes à peindre, sans ratissage)",
+   "verdict": "confirme",
+   "fp_actuel": 6.2,
+   "sm_actuel": 1.2,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Le prix unitaire tient : Prix-Pose chiffre les bandes droites 4 à 10 € TTC/ml, soit ≈ 3-8 € HT/m² de plaque (≈ 1 ml de joint par m² de plaque de 1,20 m). MAIS doublon probable avec les prix des plaques : les références de marché qui ont servi à valider « Monter une cloison », « Faux plafond » et le doublage incluent les joints (Prix-Pose : BA13 « rails, montants, fixations et bandes » ; CCTP d'un lot plâtrerie neuf : cloison 72/48 avec « traitement des joints … par bande et enduit spécial » dans le même article ; travaux.com : cloison BA13 « fourniture + pose + joints »). Voir doublons : à arbitrer, ≈ 2 100 € HT sur la maison A.",
+   "sources": [
+    {
+     "url": "https://www.prix-pose.com/placo",
+     "releve": "Joints : 4 à 10 €/ml bandes droites, 5 à 14 €/ml angles ; prix BA13 34 à 60 €/m² incluant « rails, montants, fixations et bandes » — TTC"
+    },
+    {
+     "url": "https://www.untoitpourtous.org/wp-content/uploads/2018/12/Lot-n°10-Platrerie-3-Lavandières-CLAIX.pdf",
+     "releve": "DPGF lot 10 plâtrerie (logements neufs, 2017) : article « cloison 72 mm » au m² décrit avec « traitement des joints entre panneaux, angles, cueillies par bande et enduit spécial » ; aucune ligne de joints séparée (bordereau sans prix)"
+    }
+   ]
+  },
+  {
+   "id": "ele-installation-electrique-maison-neuve",
+   "n": "Installation électrique complète d'une maison neuve (norme NF C 15-100)",
+   "verdict": "confirme",
+   "fp_actuel": 100,
+   "sm_actuel": 40,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Standard 95 € HT/m². Sources indépendantes contradictoires mais qui encadrent ce prix : (1) un devis réel analysé pour une maison neuve de 105 m² à 8 449 € HT, soit 80 € HT/m², MAIS il comprend la VMC (781 €), 3 convecteurs (1 155 €), un sèche-serviette (418 €) et une antenne (374 €) : l'électricité seule ressort à ≈ 54 € HT/m² ; (2) 10 000 € pour un pavillon basique de 80 m² en 2024 (≈ 125 €/m², HT/TTC non précisé) ; (3) mesdepanneurs/travaux.com 100-150 €/m² sans chauffage électrique (≈ 83-125 € HT). 95 € HT est dans la fourchette, côté haut si l'on suit le seul devis HT détaillé. Pas de correction sans devis supplémentaires ; à surveiller.",
+   "sources": [
+    {
+     "url": "https://www.prix-travaux-m2.com/exemple-devis-installation-electrique.php",
+     "releve": "Devis maison neuve 105 m² : 8 449,10 € HT / 10 138,92 € TTC (96,56 €/m² TTC) ; inclut tableau 935 €, VMC 605 € + 5 entrées d'air 176 €, 3 convecteurs à 385 €, sèche-serviette 418 €, antenne 374 €, piquets de terre 66 €, 7 RJ45 à 44 € ; prises 33 € HT l'unité"
+    },
+    {
+     "url": "https://www.forumconstruire.com/construire/topic-479564-budget-electricite-nouvelle-construction.php",
+     "releve": "18/06/2024 : « base de 10K€ » pour un pavillon basique ≈ 80 m², matériel gamme chantier (HT/TTC non précisé)"
+    },
+    {
+     "url": "https://www.mesdepanneurs.fr/blog/tarifs-moyens-electricien",
+     "releve": "Installation neuve sans chauffage électrique : 100 à 150 €/m², avec chauffage électrique 130 à 180 €/m², matériel et main-d'œuvre inclus (via résumé de recherche)"
+    }
+   ]
+  },
+  {
+   "id": "plo-reseaux-plomberie-maison-neuve",
+   "n": "Plomberie d'une maison neuve : réseaux d'eau froide, eau chaude et évacuations (sans les appareils)",
+   "verdict": "confirme",
+   "fp_actuel": 54,
+   "sm_actuel": 22,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Standard 50 € HT/m² pour les seuls réseaux. Source indépendante : Prix-travaux-m2 donne 50-110 € HT/m² pour une installation COMPLÈTE (réseaux + chauffe-eau + sanitaires + circuit de chauffage) ; exemple maison neuve 320 m² à 18 200 € (≈ 57 €/m², chauffage gaz et sanitaires compris). Sur la maison A, AVYORA fait réseaux 5 026 + chauffe-eau 2 592 + sanitaires ≈ 2 083 = ≈ 9 700 € HT (97 €/m²), dans le haut de cette fourchette mais cohérent avec Habitatpresto (8 500-13 000 € HT pour 100 m²). Pas de preuve d'erreur ; légèrement haut possible sur les grandes surfaces (prix au m² dégressif).",
+   "sources": [
+    {
+     "url": "https://www.prix-travaux-m2.com/prix-plomberie-m2.php",
+     "releve": "Construction neuve / installation complète : 50 à 110 € HT/m² fournitures et main-d'œuvre, y compris chauffe-eau, sanitaires et circuit de chauffage ; exemple maison neuve 320 m², 13 pièces : 18 200 € (≈ 57 €/m²)"
+    },
+    {
+     "url": "https://www.mesdepanneurs.fr/blog/exemple-devis-plomberie",
+     "releve": "Installation complète de la plomberie dans une maison : 5 000 à 15 000 € (sans surface ni détail)"
+    }
+   ]
+  },
+  {
+   "id": "cha-plancher-chauffant-eau-hors-chape",
+   "n": "Plancher chauffant à eau (isolant à plots, tubes, collecteur) — hors chape",
+   "verdict": "incertain",
+   "fp_actuel": 58,
+   "sm_actuel": 28,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Standard 55 € HT/m². Les sources indépendantes situent le plancher hydraulique à 70-120 € TTC/m² (Saint-Gobain, moyenne 100 € TTC = 83 € HT ; Quelle Énergie 70-110 €), mais aucune ne dit clairement si la chape est incluse. La seule décomposition hors chape (devis-artisan.fr, TTC) donne isolant 10-30 + tubes/collecteur 25-60 + pose 25-50 = 60-140 € TTC (50-117 € HT), plus une régulation de 300 à 1 500 € au forfait. 55 € HT est au bas de cette décomposition. Contre-argument : l'ensemble PAC + plancher (hors chape) de la maison A fait 15 504 € HT ≈ 18 600 € TTC, dans la fourchette « PAC + plancher 17 000-25 000 € TTC » déjà citée ; le paquet tient même si le poste seul paraît bas. Il faudrait 2-3 devis de chauffagiste en neuf « hors chape » pour trancher (écart possible : jusqu'à +28 € HT/m², ≈ +2 800 € sur A).",
+   "sources": [
+    {
+     "url": "https://www.lamaisonsaintgobain.fr/guides-travaux/tout-savoir-sur-le-chauffage-et-la-ventilation/prix-plancher-chauffant-hydraulique-electrique",
+     "releve": "Plancher hydraulique : prix moyen 100 €/m², fourchette 70 à 120 €/m², « fourni/posé TTC (hors revêtement et système de chauffage) » ; chape, isolant et collecteur non précisés"
+    },
+    {
+     "url": "https://www.quelleenergie.fr/prix-travaux/equipements-annexes/plancher-chauffant",
+     "releve": "Plancher hydraulique : 70 à 110 €/m² installé ; HT/TTC et chape non précisés"
+    },
+    {
+     "url": "https://www.devis-artisan.fr/devis/plancher-chauffant-eau-chaude",
+     "releve": "Prix courants TTC : isolant 10-30 €/m², tubes/rails/collecteur 25-60 €/m², pose du réseau 25-50 €/m², chape 25-55 €/m², régulation 300-1 500 € ; réseau fourni-posé 70-150 €/m² hors générateur"
+    }
+   ]
+  },
+  {
+   "id": "cha-conduit-de-fumee-isole",
+   "n": "Conduit de fumée isolé double paroi pour poêle (traversées, sortie et étanchéité de toit)",
+   "verdict": "confirme",
+   "fp_actuel": 260,
+   "sm_actuel": null,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "6 ml × 260 = 1 560 € HT en plain-pied, 8,5 ml × 260 = 2 210 € HT à étage. Sources indépendantes : la création d'un conduit coûte 500 à 3 000 € en plus de la pose (Quelle Énergie) ; Selectra donne 3 000-5 000 € d'installation avec création de conduit contre 1 000-2 000 € sans, soit un écart de ≈ 2 000-3 000 € TTC. Le poste tombe dans ces écarts.",
+   "sources": [
+    {
+     "url": "https://www.quelleenergie.fr/economies-energie/poele-granules-bois/prix",
+     "releve": "Installation d'un conduit d'évacuation : coût moyen 500 à 3 000 € selon la configuration (via résumé de recherche)"
+    },
+    {
+     "url": "https://selectra.info/energie/renovation-energetique/poele/granules-installation",
+     "releve": "Installation 1 000 à 2 000 € sans création de conduit, 3 000 à 5 000 € avec création ou adaptation du conduit, TTC hors appareil (via résumé de recherche)"
+    }
+   ]
+  },
+  {
+   "id": "pei-peinture-murs-plaques-neuves",
+   "n": "Peinture des murs sur plaques neuves (impression + 2 couches)",
+   "verdict": "confirme",
+   "fp_actuel": 26.1,
+   "sm_actuel": 5.1,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Standard 25 € HT/m². Ootravaux : mur neuf 15-25 € HT/m² (on est au plafond de la fourchette) ; Futura (Lille 2026) : murs en bon état 25-35 €/m², sous-couche et 2 couches comprises. Un devis (2012, 91) de 9 000 € TTC pour 200 m² de murs + 100 m² de plafonds, enduit et ponçage compris, donne 25 € HT/m² en moyenne : ancien mais dans le même ordre. Tient, côté haut.",
+   "sources": [
+    {
+     "url": "https://www.futura-sciences.com/maison/questions-reponses/diy-prix-m2-peintre-lille-2026-25350/",
+     "releve": "Lille 2026 : murs en bon état 25 à 35 €/m² (moyenne 30), fournitures, main-d'œuvre, sous-couche et 2 couches comprises ; HT/TTC non précisé"
+    },
+    {
+     "url": "https://www.ootravaux.fr/construction-renovation/finitions/revetements-muraux-et-plafonds/peinture-enduit/peinture-prix-surface.html",
+     "releve": "Logement neuf : mur neuf 15 à 25 € HT/m², plafond neuf 20 à 50 € HT/m² (via résumé de recherche, page bloquée en lecture directe)"
+    },
+    {
+     "url": "https://www.forumconstruire.com/construire/topic-170988.php",
+     "releve": "08/02/2012, Bièvres (91) : 9 000 € TTC pour 100 m² de plafonds + 200 m² de murs, enduit + ponçage + impression + 2 couches, tout compris"
+    }
+   ]
+  },
+  {
+   "id": "pei-peinture-plafonds-plaques-neuves",
+   "n": "Peinture des plafonds sur plaques neuves (impression + 2 couches)",
+   "verdict": "confirme",
+   "fp_actuel": 30.1,
+   "sm_actuel": 5.1,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Standard 29 € HT/m². Ootravaux : plafond neuf 20-50 € HT/m² ; Futura (Lille 2026) : plafond blanc 35-50 € TTC/m² (29-42 € HT). 29 € HT est au bas de la fourchette indépendante, ce qui reste défendable sur de grandes surfaces neuves.",
+   "sources": [
+    {
+     "url": "https://www.futura-sciences.com/maison/questions-reponses/diy-prix-m2-peintre-lille-2026-25350/",
+     "releve": "Plafond blanc : 35 à 50 €/m² TTC (moyenne 42), fournitures et main-d'œuvre comprises"
+    },
+    {
+     "url": "https://www.ootravaux.fr/construction-renovation/finitions/revetements-muraux-et-plafonds/peinture-enduit/peinture-prix-surface.html",
+     "releve": "Plafond neuf 20 à 50 € HT/m² (via résumé de recherche)"
+    }
+   ]
+  },
+  {
+   "id": "min-escalier-bois-quart-tournant",
+   "n": "Escalier intérieur en bois quart tournant, sur mesure, posé avec sa rampe",
+   "verdict": "confirme",
+   "fp_actuel": 4338,
+   "sm_actuel": 1988,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Standard 4 000 € HT (4 800 € TTC) + garde-corps de trémie 3 ml × 180 = 540 €. Sources indépendantes : Habitatpresto (quart tournant bois) fabrication 2 500-4 500 + garde-corps 500-1 500 + pose 500-1 500 = 3 500-7 500 € ; devis réels de forum (2014) : escalier sur mesure hêtre 2 300 € HT, droit movengui posé avec rampes 3 300 € TTC, deux quarts tournants posés 4 800 €. Le prix tient (milieu bas des fourchettes actuelles).",
+   "sources": [
+    {
+     "url": "https://www.habitatpresto.com/devis-travaux/devis-escalier-quart-tournant",
+     "releve": "Quart tournant bois : 2 000 à 6 000 € ; exemple fabrication 2 500-4 500 €, garde-corps 500-1 500 €, pose 500-1 500 €, total 3 500-7 500 € (HT/TTC non précisé)"
+    },
+    {
+     "url": "https://www.forumconstruire.com/construire/topic-253272.php",
+     "releve": "2014 : sur mesure hêtre + tubes inox 2 300 € HT (FLIN) ; droit movengui posé avec rampes 3 295 € TTC ; deux quarts tournants posés 4 800 €"
+    }
+   ]
+  },
+  {
+   "id": "mac-chape-liquide",
+   "n": "Chape liquide (repris)",
+   "verdict": "ajuster",
+   "fp_actuel": 40,
+   "sm_actuel": 20,
+   "fp_propose": 30,
+   "sm_propose": null,
+   "raison": "Correction du catalogue rénovation à soumettre à Dani (confirme la proposition de la synthèse). Source indépendante : relevés de chapistes 14 à 32 € HT/m², moyenne 21 € HT (> 100 m²) et 29 € « relativement normal » (2015) ; même avec la hausse des coûts depuis, 30 € HT couvre le marché neuf, 37,6 € (standard actuel) est trop haut. Coulée à la pompe : sm sans objet. Effet maison A : −760 € HT.",
+   "sources": [
+    {
+     "url": "https://www.forumconstruire.com/construire/topic-270446-prix-chape-anhydrite.php",
+     "releve": "06/01/2015 : moyenne des chapistes 21 € HT/m² (> 100 m²), 29 € « relativement normal » ; 30 € HT ; 18 € HT payé pour 100 m² ; 14 € HT (Alsace) ; 18-25 € pour 6 cm"
+    }
+   ]
+  },
+  {
+   "id": "rev-carrelage-au-sol",
+   "n": "Carrelage au sol (repris)",
+   "verdict": "ajuster",
+   "fp_actuel": 70,
+   "sm_actuel": 30,
+   "fp_propose": 85,
+   "sm_propose": 36,
+   "raison": "Correction du catalogue rénovation à soumettre à Dani. Standard actuel 63 € HT. Devis exemple Saint-Gobain (mis à jour 11/05/2026) : pose seule 49 € HT/m², colle flex + joint 8,2 € HT/m² (329 € pour 40 m²), carreau 45 € HT/m² (imitation parquet). Avec un grès standard ≈ 20 € HT/m² (bas de la fourchette Habitatpresto 20-120 € de fourniture déjà citée), on obtient ≈ 77 € HT/m² en standard. Proposition : fp 85 / sm 36 (G3 0,78 : 85 − 36 + 36 × 0,78 = 77 € en standard). Effet maison A (60 m²) : ≈ +820 € HT. La faïence (même prix 70/30) mériterait la même revue (non contre-vérifiée).",
+   "sources": [
+    {
+     "url": "https://www.lamaisonsaintgobain.fr/guides-travaux/amenagement-interieur/exemple-de-devis-carrelage-imitation-parquet",
+     "releve": "Devis HT : pose carrelage au sol 40 m² × 49 € ; carrelage 15×90 40 m² × 45 € ; colle flex 293,76 € ; joint 35,09 € ; total 5 930,97 € HT (TVA 10 %) ; mis à jour 11/05/2026"
+    }
+   ]
+  },
+  {
+   "id": "ele-consuel-attestation-de-conformite",
+   "n": "Consuel (attestation de conformité) (repris)",
+   "verdict": "ajuster",
+   "fp_actuel": 180,
+   "sm_actuel": null,
+   "fp_propose": 123,
+   "sm_propose": null,
+   "raison": "Correction du catalogue rénovation à soumettre à Dani (confirme la synthèse). Source indépendante du PDF Consuel : Izi by EDF donne 144,67 € TTC pour un particulier en 2025 ; tarif 2026 officiel 147,66 € TTC = 123 € HT. Garder 180 € seulement si l'on veut couvrir des frais de dossier de l'électricien. Effet : −57 € HT par maison.",
+   "sources": [
+    {
+     "url": "https://izi-by-edf.fr/blog/renovation-electrique-quel-budget",
+     "releve": "Consuel : 144,67 € TTC pour un particulier en France métropolitaine (tarif 2025)"
+    },
+    {
+     "url": "https://www.consuel.com/wp-content/uploads/2026/08/SC127_26.pdf",
+     "releve": "Attestation jaune habitation : 147,66 € TTC électronique, dont TVA 24,61 €"
+    }
+   ]
+  },
+  {
+   "id": "clo-monter-une-cloison",
+   "n": "Monter une cloison (repris)",
+   "verdict": "ajuster",
+   "fp_actuel": 50,
+   "sm_actuel": 20,
+   "fp_propose": 45,
+   "sm_propose": 20,
+   "raison": "Correction du catalogue rénovation à soumettre à Dani (confirme la proposition 45/20 de la synthèse). Prix-Pose : BA13 cloison/doublage/plafond 34-60 € TTC/m² bandes comprises (28-50 € HT) ; travaux.com : cloison BA13 20-40 € TTC tout compris, joints compris ; cloison isolante 45-110 € TTC. Standard actuel 46,6 € + 2 faces de bandes à joints (12 €) = 58,6 € HT/m² de cloison, au-dessus du marché pour une cloison 72/48 avec laine. Avec 45/20 : 41,6 € en standard. Effet maison A (68 m²) : −340 € HT, sans compter le doublon des bandes.",
+   "sources": [
+    {
+     "url": "https://www.prix-pose.com/placo",
+     "releve": "BA13 (cloison, doublage, plafond) : pose 34 à 60 €/m² TTC, incluant « rails, montants, fixations et bandes »"
+    },
+    {
+     "url": "https://www.travaux.com/platre/guide-des-prix/prix-plaquiste",
+     "releve": "Cloison BA13 standard 20 à 40 €/m² tout compris (fourniture + pose + joints) ; cloison isolante 45 à 110 €/m² ; TTC 2026 (via résumé de recherche)"
+    }
+   ]
+  },
+  {
+   "id": "clo-faux-plafond",
+   "n": "Faux plafond (repris)",
+   "verdict": "incertain",
+   "fp_actuel": 47,
+   "sm_actuel": 20,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Standard 43,6 € HT. Seul, il tient (Prix-Pose BA13 plafond 34-60 € TTC, soit 28-50 € HT). Mais le marché inclut les bandes : faux plafond + bandes à joints = 49,6 € HT/m², dans le haut de la fourchette. Pas de correction proposée tant que le doublon des bandes n'est pas tranché.",
+   "sources": [
+    {
+     "url": "https://www.prix-pose.com/placo",
+     "releve": "BA13 cloison/doublage/plafond : 34 à 60 €/m² TTC, bandes comprises"
+    }
+   ]
+  },
+  {
+   "id": "ele-mise-a-la-terre",
+   "n": "Mise à la terre (repris)",
+   "verdict": "incertain",
+   "fp_actuel": 500,
+   "sm_actuel": 150,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "En neuf : boucle de cuivre nu en fond de fouille + piquet + barrette. Aucune source de prix posé trouvée. Indice : dans un devis électricien de maison neuve, les « piquets de terre » ne coûtent que 66 € HT et la liaison est dans l'installation. Risque de double paiement avec la « liaison à la terre » du poste installation électrique neuve. Il faudrait un devis de maçon (pose de la boucle) et d'électricien (raccordement).",
+   "sources": [
+    {
+     "url": "https://www.prix-travaux-m2.com/exemple-devis-installation-electrique.php",
+     "releve": "Devis maison neuve 105 m² : ligne « piquets de terre » 66 € HT dans le lot électricité"
+    }
+   ]
+  },
+  {
+   "id": "plo-chauffe-eau-thermodynamique",
+   "n": "Chauffe-eau thermodynamique (repris)",
+   "verdict": "confirme",
+   "fp_actuel": 3200,
+   "sm_actuel": 2200,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Version petit 200 L : 2 592 € HT (3 110 € TTC). Sources indépendantes : Izi by EDF 2 500-3 200 € pour un 200 L ; Hellowatt 2 500-3 500 € pour un monobloc ; Quelle Énergie 2 000-3 500 €. Le fp tient. Le sm 2 200 reste haut (signalé par la synthèse), sans nouvelle source de fourniture seule.",
+   "sources": [
+    {
+     "url": "https://www.izi-by-edf-renov.fr/chauffe-eau-200-litres",
+     "releve": "Chauffe-eau thermodynamique 200 L : 2 500 à 3 200 € posé (via résumé de recherche)"
+    },
+    {
+     "url": "https://www.hellowatt.fr/chauffe-eau/thermodynamique/200-litres",
+     "releve": "Monobloc 2 500-3 500 € ; sur ventilation ou split 3 000-4 000 € (via résumé de recherche)"
+    }
+   ]
+  },
+  {
+   "id": "cha-ventilation-vmc",
+   "n": "Ventilation (VMC) (repris)",
+   "verdict": "confirme",
+   "fp_actuel": 800,
+   "sm_actuel": 450,
+   "fp_propose": null,
+   "sm_propose": null,
+   "raison": "Simple flux 800 € HT confirmé par la synthèse. Double flux (× 5 = 4 000 € HT) : Hellowatt donne en moyenne 3 500 € HT dans le neuf, donc 4 000 € n'est pas « trop bas » comme le disait la synthèse ; il tient.",
+   "sources": [
+    {
+     "url": "https://www.hellowatt.fr/isolation/installation-ventilation-vmc/prix",
+     "releve": "VMC double flux : en moyenne 3 500 € HT dans le neuf ; fourchette 2 000 à 7 700 € pour 100-160 m² (via résumé de recherche)"
+    }
+   ]
+  }
+ ],
+ "corrections_renovation": [
+  {
+   "ref": "mac-chape-liquide",
+   "prix_actuel": {
+    "fp": 40,
+    "sm": 20
+   },
+   "propose": {
+    "fp": 30,
+    "sm": null
+   },
+   "raison": "Standard 37,6 € contre ≈ 30 € HT sur le marché (chapistes 14-32 € HT/m², moyenne 21 € en 2015 ; Habitatpresto 22-35, Futura 20-25 déjà cités). Coulée à la pompe : pas de fourniture seule. Effet A : −760 € HT.",
+   "sources": [
+    {
+     "url": "https://www.forumconstruire.com/construire/topic-270446-prix-chape-anhydrite.php",
+     "releve": "2015 : moyenne 21 € HT/m², 29 € « relativement normal », 30 € HT, 18 € HT pour 100 m²"
+    }
+   ]
+  },
+  {
+   "ref": "rev-carrelage-au-sol",
+   "prix_actuel": {
+    "fp": 70,
+    "sm": 30
+   },
+   "propose": {
+    "fp": 85,
+    "sm": 36
+   },
+   "raison": "Standard 63 € contre ≈ 77 € HT recalculé : pose 49 € HT + colle et joint 8,2 € HT + grès standard ≈ 20 € HT. Effet A (60 m²) : ≈ +820 € HT ; B : proportionnel au 0,6 × SH. La faïence est à revoir de la même façon.",
+   "sources": [
+    {
+     "url": "https://www.lamaisonsaintgobain.fr/guides-travaux/amenagement-interieur/exemple-de-devis-carrelage-imitation-parquet",
+     "releve": "Devis HT 2026 : pose 49 €/m², colle 293,76 € + joint 35,09 € pour 40 m², carreau 45 €/m²"
+    }
+   ]
+  },
+  {
+   "ref": "clo-monter-une-cloison",
+   "prix_actuel": {
+    "fp": 50,
+    "sm": 20
+   },
+   "propose": {
+    "fp": 45,
+    "sm": 20
+   },
+   "raison": "Les prix du marché comprennent les bandes ; 46,6 € + 12 € de bandes (2 faces) = 58,6 € HT contre 28-50 € HT bandes comprises. Effet A : −340 € HT (plus l'éventuel retrait des bandes).",
+   "sources": [
+    {
+     "url": "https://www.prix-pose.com/placo",
+     "releve": "BA13 34-60 € TTC/m², « rails, montants, fixations et bandes » compris"
+    },
+    {
+     "url": "https://www.travaux.com/platre/guide-des-prix/prix-plaquiste",
+     "releve": "cloison BA13 20-40 € TTC tout compris, joints compris ; isolante 45-110 €"
+    }
+   ]
+  },
+  {
+   "ref": "ele-consuel-attestation-de-conformite",
+   "prix_actuel": {
+    "fp": 180,
+    "sm": null
+   },
+   "propose": {
+    "fp": 123,
+    "sm": null
+   },
+   "raison": "Tarif officiel 147,66 € TTC = 123 € HT (2026) ; 144,67 € TTC en 2025 selon Izi by EDF. Effet : −57 € HT.",
+   "sources": [
+    {
+     "url": "https://izi-by-edf.fr/blog/renovation-electrique-quel-budget",
+     "releve": "144,67 € TTC particulier (2025)"
+    },
+    {
+     "url": "https://www.consuel.com/wp-content/uploads/2026/08/SC127_26.pdf",
+     "releve": "147,66 € TTC électronique, dont TVA 24,61 €"
+    }
+   ]
+  }
+ ],
+ "doublons": [
+  {
+   "postes": [
+    "clo-bandes-a-joints-plaques-neuves",
+    "clo-monter-une-cloison",
+    "clo-faux-plafond",
+    "iso-doublage-isolant-colle",
+    "clo-cloison-piece-humide-hydrofuge"
+   ],
+   "probleme": "Les prix de marché qui ont validé les plaques (cloisons, plafonds, doublages) incluent déjà les bandes et joints (Prix-Pose : « rails, montants, fixations et bandes » ; travaux.com : « fourniture + pose + joints » ; CCTP d'un lot plâtrerie neuf : joints décrits dans l'article cloison). Le neuf ajoute 6 €/m² × toutes les faces par-dessus.",
+   "effet": "Maison A : 350,5 m² × 6 € = 2 102 € HT (≈ 1 % de la construction).",
+   "arbitrage": "Soit retirer le poste bandes en neuf (les plaques reprises restent « joints compris »), soit le garder et baisser les plaques (cloison 45/20 au minimum). La convention du catalogue rénovation (« bandes et enduit comptés à part » sur l'ITI) plaide pour la 2e option, mais il faut alors ramener faux plafond et doublage au prix sans joints (−5 à −6 €/m²)."
+  },
+  {
+   "postes": [
+    "cha-plancher-chauffant-eau-hors-chape",
+    "Dalle sur terre-plein complète et isolée"
+   ],
+   "probleme": "L'isolant de la dalle et le panneau isolant à plots du plancher chauffant sont tous deux payés (déjà signalé, § h-4).",
+   "effet": "Isolant sous plancher : 10-30 € TTC/m² (devis-artisan.fr), plaques isolantes 6-20 €/m² (monequerre.fr) ; ≈ 1 000-2 500 € sur A selon la part retirée.",
+   "arbitrage": "Variante « panneau à plots sans isolant épais » quand la dalle est isolée, ou dalle non isolée + isolant sous chape."
+  },
+  {
+   "postes": [
+    "ele-mise-a-la-terre",
+    "ele-installation-electrique-maison-neuve"
+   ],
+   "probleme": "La note du poste installation inclut la « liaison à la terre » ; un devis réel d'électricien de maison neuve comprend les piquets de terre (66 € HT). Le forfait 500 € de la mise à la terre (repris) peut recompter une partie.",
+   "effet": "Jusqu'à ≈ 400 € HT.",
+   "arbitrage": "Préciser : mise à la terre = boucle en fond de fouille posée par le maçon, et rien d'autre ; prix à confirmer sur devis."
+  },
+  {
+   "postes": [
+    "ele-installation-electrique-maison-neuve",
+    "cha-ventilation-vmc",
+    "cha-seche-serviette",
+    "cha-radiateurs-electriques"
+   ],
+   "probleme": "Beaucoup de devis d'électricien de maison neuve intègrent la VMC, les convecteurs et le sèche-serviette (devis prix-travaux-m2 : 781 + 1 155 + 418 € HT).",
+   "effet": "Aucun dans le modèle si l'installation au m² est bien « hors VMC et appareils de chauffage » : à afficher dans la note du poste.",
+   "arbitrage": "Ajouter « hors VMC » à la note de ele-installation-electrique-maison-neuve."
+  }
+ ],
+ "manquants": [
+  {
+   "id_propose": "clo-enduit-platre-interieur-maconnerie",
+   "n": "Enduit plâtre projeté intérieur sur maçonnerie (monomur, béton cellulaire 30, sans doublage)",
+   "u": "m2",
+   "fp": null,
+   "sm": null,
+   "verdict": "manquant",
+   "raison": "Déjà repéré par la synthèse (§ h-7). Les sources ne permettent pas un prix ferme : témoignages de 17-18 €/m² (enduit projeté ou plâtre murs et plafonds) contre un devis à plus de 60 €/m² ; plâtrier 20-80 €/m² selon travaux.com ; fourniture ≈ 4 €/m² (Knauf MP 75, 25 kg pour ≈ 3 m², 12,69 € en Belgique). À chiffrer sur devis avant de fixer fp/sm : fourchette sourcée 18-60 €/m² (HT/TTC non précisé).",
+   "sources": [
+    {
+     "url": "https://forums.futura-sciences.com/habitat-bioclimatique-isolation-chauffage/563843-finition-murs-interieurs-maconnerie-ite-4.html",
+     "releve": "devis plâtre à plus de 60 €/m² ; enduit prêt à projeter ≈ 17 €/m² ; enduit plâtre intérieur murs et plafonds réalisé à 18 €/m² (via résumé de recherche)"
+    },
+    {
+     "url": "https://www.travaux.com/platre",
+     "releve": "plâtrier 20 à 80 €/m² selon la nature des travaux (via résumé de recherche)"
+    }
+   ]
+  },
+  {
+   "id_propose": "cha-regulation-plancher-chauffant",
+   "n": "Régulation du plancher chauffant (thermostats d'ambiance par zone)",
+   "u": "forfait",
+   "fp": null,
+   "sm": null,
+   "verdict": "manquant (à vérifier)",
+   "raison": "Ni le poste plancher chauffant (« isolant, tubes, collecteur ») ni la PAC ne citent la régulation par zone. devis-artisan.fr la chiffre à part, 300-1 500 € TTC. À ajouter, ou à écrire dans la note de la PAC si l'installateur la comprend.",
+   "sources": [
+    {
+     "url": "https://www.devis-artisan.fr/devis/plancher-chauffant-eau-chaude",
+     "releve": "Régulation et thermostat : 300 à 1 500 € (forfait, TTC) ; exemple 80 m² : raccordement régulation 1 200 € TTC"
+    }
+   ]
+  },
+  {
+   "id_propose": "pei-peinture-portes-interieures",
+   "n": "Peinture des portes intérieures (si portes livrées non finies)",
+   "u": "u",
+   "fp": null,
+   "sm": null,
+   "verdict": "manquant (option)",
+   "raison": "La porte battante reprise est « alvéolaire standard », souvent livrée prépeinte et à finir. Futura (2026) : boiseries et portes 50-100 € par élément (moyenne 75), HT/TTC non précisé. Option à proposer, pas par défaut.",
+   "sources": [
+    {
+     "url": "https://www.futura-sciences.com/maison/questions-reponses/diy-prix-m2-peintre-lille-2026-25350/",
+     "releve": "Boiseries et portes : 50 à 100 € par élément (moyenne 75 €)"
+    }
+   ]
+  },
+  {
+   "id_propose": "cha-sorties-de-toit-ventilation",
+   "n": "Sorties de toit VMC et ventilation primaire (chapeau + solin)",
+   "u": "u",
+   "fp": null,
+   "sm": null,
+   "verdict": "manquant (incertain)",
+   "raison": "Déjà repéré (§ h-9). Aucune source de prix posé trouvée : seulement des pages produits sans prix. Les guides VMC disent que le raccordement en toiture est rarement compris. Il faut un devis de couvreur.",
+   "sources": [
+    {
+     "url": "https://www.hellowatt.fr/isolation/installation-ventilation-vmc/prix",
+     "releve": "pose VMC hors matériel 350-600 € (autoréglable), 700-1 500 € (hygro) ; raccordement en toiture rarement inclus (via résumé de recherche)"
+    }
+   ]
+  }
+ ]
+}
