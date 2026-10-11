@@ -12,9 +12,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import NumStepper from "@/components/Stepper";
 import { EST_CSS } from "./estimateur-styles";
+import { CountUp } from "./estimateur/CountUp";
+import { Row } from "./estimateur/Row";
+import { fmt, Field, Stepper, CustomLines } from "./estimateur/partage";
 import {
   CATALOG, PHASES, finCoef, ICON, LOC, defaultCtx, key, isLoc, visible, visibleTask,
-  nbFen, nbPieces, deriveSol, autoQty, isAuto, qtyOf, effRate, lineHT, lotHT, effPrices,
+  nbFen, nbPieces, deriveSol, autoQty, isAuto, qtyOf, effRate, lotHT,
   totals, buildDevis, regionCoef, piecesEff, sdbEff, customLotHT, customTotals, ESPACES,
   espacesCompo, selectedEspaces,
   type Ctx, type Selection, type TypeBien, type Finition, type Lot, type Tache, type CustomLine,
@@ -31,38 +34,8 @@ const espaceNom = (locale: string, nom: string) => (locale === "en" ? ESPACE_EN[
 
 const DRAFT_KEY = "avyora-estim-v2";              // brouillon partagé (mode rapide) — sert de graine « infos du bien »
 const DRAFT_KEY_DETAIL = "avyora-estim-detail-v1"; // brouillon PROPRE au détaillé : ne récupère PAS les postes cochés du rapide
-const fmt = (n: number): string => Math.round(n).toLocaleString("fr-FR") + " €";
 
 type Persisted = { v?: string; ctx?: Partial<Ctx>; sel?: Selection; open?: Record<string, boolean>; codePostal?: string; statuts?: Record<string, number>; custom?: CustomLine[] };
-
-/** Compteur animé (count-up, easeOutCubic) — repart de 0 à chaque montage. */
-function CountUp({ value }: { value: number }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const prev = useRef(0);
-  const raf = useRef<number | null>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const target = Math.round(value || 0);
-    const start = prev.current;
-    const reduce = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    const hidden = typeof document !== "undefined" && document.hidden; // rAF gelé en arrière-plan → set direct
-    if (raf.current) cancelAnimationFrame(raf.current);
-    if (reduce || hidden || start === target) { el.textContent = target.toLocaleString("fr-FR"); prev.current = target; return; }
-    const dur = Math.min(900, 320 + Math.abs(target - start) / 180);
-    let t0: number | null = null;
-    const step = (ts: number) => {
-      if (t0 == null) t0 = ts;
-      const p = Math.min(1, (ts - t0) / dur), e = 1 - Math.pow(1 - p, 3);
-      el.textContent = Math.round(start + (target - start) * e).toLocaleString("fr-FR");
-      if (p < 1) raf.current = requestAnimationFrame(step);
-      else { el.textContent = target.toLocaleString("fr-FR"); prev.current = target; raf.current = null; }
-    };
-    raf.current = requestAnimationFrame(step);
-    return () => { if (raf.current) cancelAnimationFrame(raf.current); };
-  }, [value]);
-  return <span ref={ref}>0</span>;
-}
 
 export default function Estimateur({ initialState, projectId }: { initialState?: Record<string, unknown>; projectId?: string } = {}) {
   const router = useRouter();
@@ -556,279 +529,12 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
   );
 }
 
-// ── Sous-composants ───────────────────────────────────────────────────────────
-/** Prix « Fait faire » / « Je le fais » : clic = choisir le mode, double-clic sur le montant = éditer son prix, ↺ = reset. */
-function ChoicePrice({ label, active, activeCls, amount, edited, onSelect, onEdit, onReset }: {
-  label: string; active: boolean; activeCls: string; amount: number | null; edited: boolean;
-  onSelect: () => void; onEdit: (v: number) => void; onReset: () => void;
-}) {
-  const [ed, setEd] = useState(false);
-  return (
-    <span
-      className={"ch" + (active ? " " + activeCls : "") + (edited ? " edited" : "")}
-      role="button" tabIndex={0}
-      onClick={() => { if (!ed) onSelect(); }}
-      onKeyDown={(e) => { if ((e.key === "Enter" || e.key === " ") && !ed) { e.preventDefault(); onSelect(); } }}
-    >
-      {label}
-      {ed ? (
-        <input
-          className="chin" type="number" inputMode="decimal" autoFocus
-          defaultValue={amount != null ? Math.round(amount) : 0}
-          onFocus={(e) => e.currentTarget.select()}
-          onClick={(e) => e.stopPropagation()}
-          onBlur={(e) => { const v = parseFloat(e.currentTarget.value); setEd(false); if (!Number.isNaN(v) && v > 0 && v !== (amount != null ? Math.round(amount) : null)) onEdit(v); }}
-          onKeyDown={(e) => { e.stopPropagation(); if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") setEd(false); }}
-        />
-      ) : (
-        <b onDoubleClick={(e) => { e.stopPropagation(); setEd(true); }} title="Double-clique pour mettre ton prix">{amount != null ? fmt(amount) : "—"}</b>
-      )}
-      {edited && !ed && <span className="chreset" role="button" title="Prix AVYORA par défaut" onClick={(e) => { e.stopPropagation(); onReset(); }}>↺</span>}
-    </span>
-  );
-}
-
-export function Field({ label, hint, children }: { label: React.ReactNode; hint?: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <div className="fld">
-      <label>{label}</label>
-      {children}
-      {hint && <div style={{ fontSize: "11.5px", color: "var(--faint)", lineHeight: 1.45, marginTop: "6px" }}>{hint}</div>}
-    </div>
-  );
-}
-
 // Cartes de finition (mêmes que le mode rapide) : objectif + description.
 const FINIS: { v: Finition; lvl: number; eye: string; label: string; desc: string }[] = [
   { v: "eco", lvl: 1, eye: "Locatif · budget maîtrisé", label: "Éco", desc: "Entrée de gamme robuste : stratifié, carrelage standard, cuisine en kit." },
   { v: "standard", lvl: 2, eye: "Le plus courant", label: "Standard", desc: "Bon rapport qualité-prix, marques milieu de gamme, finitions soignées." },
   { v: "premium", lvl: 3, eye: "Haut de gamme", label: "Premium", desc: "Matériaux nobles : parquet, grand format, cuisine équipée haut de gamme." },
 ];
-
-export function Stepper({ label, hint, value, onStep }: { label: string; hint?: string; value: number; onStep: (d: number) => void }) {
-  return (
-    <div className="stp">
-      <span className="l">{label}{hint && <small>{hint}</small>}</span>
-      <span className="c">
-        <button type="button" aria-label="moins" onClick={() => onStep(-1)}>−</button>
-        <span className="v num">{value}</span>
-        <button type="button" aria-label="plus" onClick={() => onStep(1)}>+</button>
-      </span>
-    </div>
-  );
-}
-
-export function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar, onNote, onPu, onPm }: {
-  l: Lot; t: Tache; ctx: Ctx; sel: Selection; coef: number; loc: boolean;
-  onCheck: () => void; onChoice: (self: boolean) => void; onAuto: () => void; onQty: (v: number) => void;
-  onMat: (m: "pvc" | "alu" | "bois") => void; onVit: (v: "double" | "triple") => void; onMot: (m: "manuel" | "motorise") => void; onTai: (z: "petit" | "grand") => void; onVar: (g: string, o: string) => void; onNote: (v: string) => void; onPu: (v: number | null) => void; onPm: (v: number | null) => void;
-}) {
-  const locale = useLocale();
-  const s = sel[key(l.c, t.n)] || {};
-  const on = !!s.on, self = !!s.self;
-  const [noteOpen, setNoteOpen] = useState<boolean>(false);
-  const [puEdit, setPuEdit] = useState<boolean>(false);
-  const variant = !!(t.mat || t.vitrage || t.moto || t.taille || (t.vars && t.vars.length));
-  const fcoef = (t.fixe || variant) ? 1 : coef;
-  const ep = effPrices(t, s, ctx);
-  const matSel = s.mat || t.matDef || (ctx.finition === "premium" ? "alu" : "pvc");
-  const vitSel = s.vit || "double";
-  const motSel = s.mot || "motorise";
-  const taiSel = s.tai || "grand";
-  // Finition sur MATÉRIAUX uniquement ; MO fixe. Prix unitaires indicatifs (hors coef régional).
-  const puMatBase = ep.sm != null ? ep.sm * fcoef : null;                                 // matériaux × finition
-  const puvBase = ep.fp != null ? (ep.sm != null ? ep.sm * fcoef + (ep.fp - ep.sm) : ep.fp) : null; // fait-faire = matériaux + MO
-  const moUnit = ep.fp != null && ep.sm != null ? ep.fp - ep.sm : 0;                       // MO unitaire (pour l'affichage lié)
-  const pmEdited = s.pm != null;
-  const puMat = pmEdited ? s.pm! : puMatBase;                                              // « Je le fais » (matériaux)
-  const puEdited = s.pu != null;
-  const puv = puEdited ? s.pu!                                                             // total figé (devis)
-    : pmEdited && puMatBase != null ? s.pm! + moUnit                                       // matériaux perso + MO
-    : puvBase;                                                                             // calcul normal
-  const uSuffix = " HT" + (t.u !== "forfait" && t.u !== "u" ? "/" + t.u : "");
-  const au = isAuto(ctx, l.c, t.n);
-  const autoVal = au ? autoQty(ctx, l.c, t.n, sel) ?? 0 : 0;
-
-  return (
-    <div className="trow">
-      <button className={"cbx" + (on ? " on" : "")} onClick={onCheck} aria-label={on ? "Décocher" : "Cocher"} />
-      <span className="tn">{catT(locale, "postes", t.n)}
-        <span className={"pu" + (puEdited ? " edited" : "")}>
-          {puv == null ? (locale === "en" ? "price on quote" : "prix sur devis") : puEdit ? (
-            <input
-              className="puin" type="number" inputMode="decimal" autoFocus defaultValue={Math.round(puv)}
-              onFocus={(e) => e.currentTarget.select()}
-              onClick={(e) => e.stopPropagation()}
-              onBlur={(e) => { const v = parseFloat(e.currentTarget.value); setPuEdit(false); if (!Number.isNaN(v) && v > 0 && v !== (puv != null ? Math.round(puv) : null)) onPu(v); }}
-              onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") setPuEdit(false); }}
-            />
-          ) : (
-            <>
-              <span className="puval" title="Double-clique pour ajuster à ton prix" onDoubleClick={() => setPuEdit(true)}>{fmt(puv) + uSuffix}</span>
-              {puEdited && <span className="pubadge">perso</span>}
-              {puEdited && <button type="button" className="pureset" title="Rétablir le prix AVYORA par défaut" onClick={() => onPu(null)}>↺</button>}
-            </>
-          )}
-          {t.note && !puEdit && <span className="punote"> · {catT(locale, "notes", t.note)}</span>}
-        </span>
-      </span>
-      {on ? (
-        <span className="tctl">
-          {t.u !== "forfait" && (au ? (
-            <>
-              {s.manual
-                ? <NumStepper compact value={s.qty != null ? s.qty : autoVal} min={0} onChange={onQty} />
-                : <span className="qauto num" title="calculé automatiquement depuis vos infos de départ">{autoVal}</span>}
-              <span className="unit">{catT(locale, "unites", t.u)}</span>
-              <span className="swiwrap">
-                <button className={"swi" + (!s.manual ? " on" : "")} onClick={onAuto} title="Auto = quantité calculée. Désactivez pour saisir à la main."><span className="knob" /></button>
-                <span className={"swilbl" + (!s.manual ? " on" : "")}>{!s.manual ? "auto" : (locale === "en" ? "manual" : "manuel")}</span>
-              </span>
-            </>
-          ) : (
-            <>
-              <NumStepper compact value={s.qty != null ? s.qty : (loc ? 1 : 0)} min={0} onChange={onQty} />
-              <span className="unit">{loc ? (locale === "en" ? "day" : "j") : catT(locale, "unites", t.u)}</span>
-            </>
-          ))}
-          {!loc && (
-            <span className="choice">
-              <ChoicePrice label={locale === "en" ? "Hire out" : "Fait faire"} active={!self} activeCls="onA" amount={puv} edited={puEdited}
-                onSelect={() => onChoice(false)} onEdit={(v) => onPu(v)} onReset={() => onPu(null)} />
-              {puMatBase != null && (
-                <ChoicePrice label={locale === "en" ? "DIY" : "Je le fais"} active={self} activeCls="onS" amount={puMat} edited={pmEdited}
-                  onSelect={() => onChoice(true)} onEdit={(v) => onPm(v)} onReset={() => onPm(null)} />
-              )}
-            </span>
-          )}
-          {s.note && !noteOpen && isUrl(s.note) && <a className="notechip" href={s.note} target="_blank" rel="noopener noreferrer" title={s.note}>🔗</a>}
-          <button type="button" className={"notebtn" + (s.note ? " has" : "")} onClick={() => setNoteOpen((o) => !o)} title={s.note ? "Voir / modifier la note" : "Ajouter une note / un lien"}>📝</button>
-          <span className="lineamt num">{fmt(lineHT(ctx, sel, l, t))}</span>
-        </span>
-      ) : (
-        <span className="tctl"><span className="unit">{t.u === "forfait" ? catT(locale, "unites", "forfait") : loc ? (locale === "en" ? "/day" : "/jour") : catT(locale, "unites", t.u)}</span></span>
-      )}
-      {on && variant && (
-        <div className="tvariants">
-          {t.mat && (
-            <span className="vg"><span className="vlab">{locale === "en" ? "Material" : "Matériau"}</span>
-              <span className="vseg">
-                <button type="button" className={matSel === "pvc" ? "on" : ""} onClick={() => onMat("pvc")}>PVC</button>
-                <button type="button" className={matSel === "bois" ? "on" : ""} onClick={() => onMat("bois")}>Bois</button>
-                <button type="button" className={matSel === "alu" ? "on" : ""} onClick={() => onMat("alu")}>{locale === "en" ? "Aluminium" : "Alu"}</button>
-              </span>
-            </span>
-          )}
-          {t.vitrage && (
-            <span className="vg"><span className="vlab">{locale === "en" ? "Glazing" : "Vitrage"}</span>
-              <span className="vseg">
-                <button type="button" className={vitSel === "double" ? "on" : ""} onClick={() => onVit("double")}>{locale === "en" ? "Double" : "Double"}</button>
-                <button type="button" className={vitSel === "triple" ? "on" : ""} onClick={() => onVit("triple")}>{locale === "en" ? "Triple" : "Triple"}</button>
-              </span>
-            </span>
-          )}
-          {t.moto && (
-            <span className="vg"><span className="vlab">{locale === "en" ? "Motorization" : "Motorisation"}</span>
-              <span className="vseg">
-                <button type="button" className={motSel === "manuel" ? "on" : ""} onClick={() => onMot("manuel")}>{locale === "en" ? "Manual" : "Manuel"}</button>
-                <button type="button" className={motSel === "motorise" ? "on" : ""} onClick={() => onMot("motorise")}>{locale === "en" ? "Motorized" : "Motorisé"}</button>
-              </span>
-            </span>
-          )}
-          {t.taille && (
-            <span className="vg"><span className="vlab">{locale === "en" ? "Size" : "Taille"}</span>
-              <span className="vseg">
-                <button type="button" className={taiSel === "petit" ? "on" : ""} onClick={() => onTai("petit")}>{locale === "en" ? "Small" : "Petit"}</button>
-                <button type="button" className={taiSel === "grand" ? "on" : ""} onClick={() => onTai("grand")}>{locale === "en" ? "Large" : "Grand"}</button>
-              </span>
-            </span>
-          )}
-          {t.vars && t.vars.map((g) => {
-            const cur = (s.vsel && s.vsel[g.k]) || g.opts[0].k;
-            return (
-              <span className="vg" key={g.k}><span className="vlab">{catT(locale, "vgroups", g.label)}</span>
-                <span className="vseg">
-                  {/* Aucune option n'affiche son écart de prix — ni le matériau, ni le vitrage,
-                      ni la pose. Le montrer sur une seule laisserait croire que les autres sont
-                      gratuites. Le total, lui, bouge à chaque clic. */}
-                  {g.opts.map((o) => (
-                    <button type="button" key={o.k} className={cur === o.k ? "on" : ""} onClick={() => onVar(g.k, o.k)}>{catT(locale, "vopts", o.label)}</button>
-                  ))}
-                </span>
-              </span>
-            );
-          })}
-        </div>
-      )}
-      {on && noteOpen && (
-        <div className="tnote">
-          <span className="cl-lk">🔗</span>
-          <input className="cl-note" autoFocus placeholder="Note ou lien matériau (https://…)" value={s.note || ""} onChange={(e) => onNote(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") setNoteOpen(false); }} />
-          {isUrl(s.note) && <a className="cl-open" href={s.note} target="_blank" rel="noopener noreferrer">Ouvrir ↗</a>}
-          <button type="button" className="notedone" onClick={() => setNoteOpen(false)} title="OK">✓</button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-const isUrl = (s?: string) => /^https?:\/\//i.test((s || "").trim());
-const CL_UNITS = ["m²", "ml", "u", "forfait", "jour", "m³", "tonne"];
-export function CustomLines({ lines, onAdd, onUpd, onDel }: { lines: CustomLine[]; onAdd: () => void; onUpd: (id: string, patch: Partial<CustomLine>) => void; onDel: (id: string) => void }) {
-  const [guide, setGuide] = useState<string | null>(null);
-  const [confirmDel, setConfirmDel] = useState<string | null>(null);
-  const askDel = (id: string) => { setConfirmDel(id); setTimeout(() => setConfirmDel((c) => (c === id ? null : c)), 3000); };
-  return (
-    <div className="clwrap">
-      {lines.map((l) => {
-        const on = l.on !== false;
-        // ── Tâche validée : rendu identique aux postes standards ──
-        if (!l.draft) return (
-          <div className="trow" key={l.id}>
-            <button type="button" className={"cbx" + (on ? " on" : "")} onClick={() => onUpd(l.id, { on: !on })} aria-label={on ? "Décocher" : "Cocher"} />
-            <span className="tn">{l.nom || "Ligne personnalisée"}<span className="pu">{fmt(l.prix || 0)} HT/{l.unite}{isUrl(l.note) ? " · " : ""}{isUrl(l.note) && <a className="cl-open" href={l.note} target="_blank" rel="noopener noreferrer">lien ↗</a>}</span></span>
-            <span className="tctl">
-              <NumStepper compact value={l.qte} min={0} onChange={(v) => onUpd(l.id, { qte: v })} />
-              <span className="unit">{l.unite}</span>
-              <button type="button" className="cl-icon" onClick={() => onUpd(l.id, { draft: true })} title="Modifier">✎</button>
-              {confirmDel === l.id
-                ? <button type="button" className="cl-delconfirm" onClick={() => { onDel(l.id); setConfirmDel(null); }}>Supprimer ?</button>
-                : <button type="button" className="cl-icon" onClick={() => askDel(l.id)} title="Supprimer">🗑</button>}
-              <span className="lineamt num">{fmt((l.prix || 0) * (l.qte || 0))}</span>
-            </span>
-          </div>
-        );
-        // ── Édition (nouvelle ligne ou modification) ──
-        return (
-        <div className="cl" key={l.id}>
-          <div className="clr">
-            <span className="clbadge">Ligne perso</span>
-            <input className="cl-nom" placeholder="Nom de la tâche…" value={l.nom} onChange={(e) => onUpd(l.id, { nom: e.target.value })} />
-            <input className="cl-prix num" type="number" inputMode="decimal" value={l.prix || ""} placeholder="0" onChange={(e) => onUpd(l.id, { prix: parseFloat(e.target.value) || 0 })} title="prix HT" />
-            <span className="cl-sep">€ /</span>
-            <select className="cl-unite" value={l.unite} onChange={(e) => onUpd(l.id, { unite: e.target.value })}>{CL_UNITS.map((u) => <option key={u}>{u}</option>)}</select>
-            <span className="cl-sep">×</span>
-            <NumStepper compact value={l.qte} min={0} onChange={(v) => onUpd(l.id, { qte: v })} />
-            <span className="cl-total num">= {fmt((l.prix || 0) * (l.qte || 0))}</span>
-          </div>
-          <div className="clr">
-            <span className="cl-lk">🔗</span>
-            <input className="cl-note" placeholder="Note ou lien matériau (https://…)" value={l.note || ""} onChange={(e) => onUpd(l.id, { note: e.target.value })} />
-            <label className="cl-tvalab">TVA <select value={String(l.tva)} onChange={(e) => onUpd(l.id, { tva: parseFloat(e.target.value) })}><option value="5.5">5,5 %</option><option value="10">10 %</option><option value="20">20 %</option></select></label>
-            <button type="button" className="cl-info" onClick={() => setGuide(guide === l.id ? null : l.id)} title="Guide TVA">i</button>
-          </div>
-          {guide === l.id && <div className="cl-guide"><b>Quelle TVA ?</b> · <b>5,5 %</b> réno énergétique · <b>10 %</b> amélioration logement +2 ans (standard) · <b>20 %</b> neuf, −2 ans, local pro ou matériaux seuls.</div>}
-          <div className="clr cl-actions">
-            <button type="button" className="cl-valider" onClick={() => onUpd(l.id, { draft: false, on: true })} disabled={!l.nom.trim() || !(l.prix > 0)}>✓ Valider la tâche</button>
-            <button type="button" className="cl-cancel" onClick={() => onDel(l.id)}>Annuler</button>
-          </div>
-        </div>
-        );
-      })}
-      <button type="button" className="cl-add" onClick={onAdd}>＋ Ajouter une ligne personnalisée</button>
-    </div>
-  );
-}
 
 function DevisView({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Selection; custom?: CustomLine[] }) {
   const dv = useMemo(() => buildDevis(CATALOG, ctx, sel), [ctx, sel]);

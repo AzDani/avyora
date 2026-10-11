@@ -8,7 +8,8 @@ import { createElement, type ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { CATALOG, defaultCtx, finCoef, isLoc, key, type Ctx, type Selection, type CustomLine } from "@/lib/estimateur";
 import { LangProvider } from "@/components/i18n/LangProvider";
-import { Row, CustomLines, Field, Stepper } from "@/components/Estimateur";
+import { Row } from "@/components/estimateur/Row";
+import { CustomLines, Field, Stepper } from "@/components/estimateur/partage";
 
 const rien = () => {};
 const ctx: Ctx = { ...defaultCtx(), type: "Maison", surface: 100, surfaceSol: 100 };
