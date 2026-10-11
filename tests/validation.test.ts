@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { projetCreateSchema, projetPatchSchema, pieceSchema, depenseSchema, artisanSchema, chantierStatutSchema } from "@/lib/validation";
 
 describe("schémas de validation d'entrée (zod)", () => {
@@ -23,7 +23,7 @@ describe("schémas de validation d'entrée (zod)", () => {
   });
   it("projet : plafond des réponses à 40 000 caractères en rénovation, 80 000 en construction neuve", () => {
     const rep = (nature: string | undefined, taille: number) => {
-      const r: Record<string, unknown> = { v: "estimateur", ctx: nature ? { nature } : {}, pad: "" };
+      const r: Record<string, unknown> = { v: "estimateur", ctx: nature ? { nature, ...(nature === "neuf" ? { neuf: { surface: 100 } } : {}) } : {}, pad: "" };
       r.pad = "x".repeat(taille - JSON.stringify(r).length);
       expect(JSON.stringify(r).length).toBe(taille);
       return { nom: "x", surface: 100, codePostal: "45000", reponses: r };
@@ -37,6 +37,23 @@ describe("schémas de validation d'entrée (zod)", () => {
     // même règle sur la modification (PATCH de « Modifier »)
     expect(projetPatchSchema.safeParse(rep("neuf", 41_000)).success).toBe(true);
     expect(projetPatchSchema.safeParse(rep(undefined, 41_000)).success).toBe(false);
+  });
+  it("projet : le plafond du neuf suit le flag et exige la description de la maison", async () => {
+    const rep = (ctx: Record<string, unknown>, taille: number) => {
+      const r: Record<string, unknown> = { v: "estimateur", ctx, pad: "" };
+      r.pad = "x".repeat(taille - JSON.stringify(r).length);
+      return { nom: "x", surface: 100, codePostal: "45000", reponses: r };
+    };
+    // « nature: neuf » sans maison décrite : borne de la rénovation.
+    expect(projetCreateSchema.safeParse(rep({ nature: "neuf" }, 41_000)).success).toBe(false);
+    // Flag éteint (production avant le lancement) : un neuf de plus de 40 000 caractères est refusé.
+    vi.resetModules();
+    vi.doMock("@/lib/features", () => ({ FEATURES: { neuf: false } }));
+    const v = await import("@/lib/validation");
+    expect(v.projetCreateSchema.safeParse(rep({ nature: "neuf", neuf: { surface: 100 } }, 41_000)).success).toBe(false);
+    expect(v.projetCreateSchema.safeParse(rep({ nature: "neuf", neuf: { surface: 100 } }, 40_000)).success).toBe(true);
+    vi.doUnmock("@/lib/features");
+    vi.resetModules();
   });
   it("pièce : bornes dimensions", () => {
     expect(pieceSchema.safeParse({ nom: "Salon", longueur: 5, largeur: 4 }).success).toBe(true);

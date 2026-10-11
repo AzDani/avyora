@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { NextResponse } from "next/server";
+import { FEATURES } from "@/lib/features";
 
 /**
  * Schémas de validation des entrées API (défense contre injections/malformations/débordements).
@@ -9,12 +10,16 @@ import { NextResponse } from "next/server";
 const reponses = z
   .record(z.string(), z.unknown())
   // Une construction neuve porte la description complète de la maison et ~90 postes : jusqu'à
-  // 80 000 caractères. La rénovation garde sa borne de 40 000.
-  .refine((r) => JSON.stringify(r).length <= (reponsesNeuf(r) ? 80_000 : 40_000), "réponses trop volumineuses");
+  // 80 000 caractères, seulement quand le neuf est ouvert (FEATURES.neuf) : flag éteint, le serveur
+  // se comporte comme avant le neuf. La rénovation garde sa borne de 40 000.
+  .refine((r) => JSON.stringify(r).length <= (FEATURES.neuf && reponsesNeuf(r) ? 80_000 : 40_000), "réponses trop volumineuses");
 
+/** Un projet neuf : `ctx.nature === "neuf"` ET la description de la maison (`ctx.neuf`, un objet). */
 function reponsesNeuf(r: unknown): boolean {
   const ctx = (r as { ctx?: unknown } | null)?.ctx;
-  return !!ctx && typeof ctx === "object" && (ctx as { nature?: unknown }).nature === "neuf";
+  if (!ctx || typeof ctx !== "object") return false;
+  const c = ctx as { nature?: unknown; neuf?: unknown };
+  return c.nature === "neuf" && !!c.neuf && typeof c.neuf === "object" && !Array.isArray(c.neuf);
 }
 
 export const projetCreateSchema = z.object({
