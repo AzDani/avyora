@@ -4,7 +4,7 @@ import {
 } from "@/lib/estimateur";
 import { dict } from "@/lib/i18n/dictionaries";
 import { normaliserCles } from "@/lib/estimateur/identite";
-import { catT } from "@/lib/estimateur/catalog-i18n";
+import { catT, catLigne } from "@/lib/estimateur/catalog-i18n";
 import { getLocale } from "@/lib/i18n/server";
 
 const estUrl = (s: string) => /^https?:\/\//i.test(s.trim());
@@ -184,8 +184,8 @@ export async function RapportPDF({
   const maxV = lots.length ? lots[0].ttc : 1;
 
   // Notes & liens matériaux (postes par défaut + lignes perso).
-  const notes: { poste: string; note: string }[] = [];
-  for (const li of dv.lignes) { const n = sel[li.cle]?.note; if (n) notes.push({ poste: li.nom, note: n }); }
+  const notes: { poste: string; note: string; cle?: string }[] = [];
+  for (const li of dv.lignes) { const n = sel[li.cle]?.note; if (n) notes.push({ poste: li.nom, note: n, cle: li.cle }); }
   for (const x of customVal) if (x.note) notes.push({ poste: x.nom, note: x.note });
   let acc = 0;
   const slices = lots.map((l, i) => {
@@ -431,7 +431,7 @@ export async function RapportPDF({
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {notes.map((n, i) => (
               <div key={i} style={{ display: "flex", gap: 10, fontSize: 12, lineHeight: 1.4, borderBottom: "1px solid #e9eaf3", paddingBottom: 6 }}>
-                <span style={{ fontWeight: 600, minWidth: 150, color: "#15172b" }}>{catT(locale, "postes", n.poste)}</span>
+                <span style={{ fontWeight: 600, minWidth: 150, color: "#15172b" }}>{neuf ? catLigne(locale, n.poste, n.cle) : catT(locale, "postes", n.poste)}</span>
                 {estUrl(n.note)
                   ? <a href={n.note} style={{ color: "#4f46e5", wordBreak: "break-all" }}>{n.note}</a>
                   : <span style={{ color: "#565a75" }}>{catT(locale, "notes", n.note)}</span>}
