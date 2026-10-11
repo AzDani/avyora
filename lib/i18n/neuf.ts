@@ -71,7 +71,7 @@ const fr = {
     q2: "Niveau de finition",
     finitions: {
       eco: { eye: "Budget maîtrisé", label: "Éco", desc: "Entrée de gamme robuste : sol stratifié, carrelage standard, sanitaires et cuisine simples." },
-      standard: { eye: "Le plus courant", label: "Standard", desc: "Bon rapport qualité-prix, marques milieu de gamme. Le choix de la plupart des maisons neuves." },
+      standard: { eye: "Le plus courant", label: "Standard", desc: "Bon rapport qualité-prix, marques milieu de gamme. Le bon équilibre pour une résidence principale." },
       premium: { eye: "Haut de gamme", label: "Premium", desc: "Parquet, carrelage grand format, sanitaires et cuisine haut de gamme." },
     } as Record<string, { eye: string; label: string; desc: string }>,
     q3: "Qui réalise les travaux",
@@ -277,7 +277,7 @@ const en: typeof fr = {
     q2: "Finish level",
     finitions: {
       eco: { eye: "Controlled budget", label: "Basic", desc: "Sturdy entry level: laminate floors, standard tiles, simple bathroom fittings and kitchen." },
-      standard: { eye: "Most common", label: "Standard", desc: "Good value, mid-range brands. The choice for most new houses." },
+      standard: { eye: "Most common", label: "Standard", desc: "Good value, mid-range brands. The right balance for a main home." },
       premium: { eye: "High end", label: "Premium", desc: "Hardwood floors, large-format tiles, high-end bathroom fittings and kitchen." },
     } as Record<string, { eye: string; label: string; desc: string }>,
     q3: "Who does the work",
