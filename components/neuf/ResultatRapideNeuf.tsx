@@ -34,7 +34,8 @@ const CSS = `
 .av-rn .lrow{display:flex;align-items:center;gap:9px;font-size:13.5px;padding:5px 0;border-bottom:1px solid var(--line)}
 .av-rn .lrow:last-child{border-bottom:0}
 .av-rn .dot{width:10px;height:10px;border-radius:3px;flex:none}
-.av-rn .lrow .nm{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.av-rn .lrow .nm{min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.av-rn .lrow .fake{display:block;height:10px;border-radius:99px;background:var(--line-strong)}
 .av-rn .lrow .lv{margin-left:auto;font-family:var(--font-geist-mono),monospace;font-weight:600;white-space:nowrap}
 .av-rn .lock{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:11px;padding:20px;background:rgba(248,249,253,.55)}
 .av-rn .lock .ico{width:46px;height:46px;border-radius:14px;background:#fff;border:1px solid var(--line-strong);display:flex;align-items:center;justify-content:center;color:var(--accent);box-shadow:0 10px 24px -12px rgba(30,27,75,.3)}
@@ -64,9 +65,12 @@ export default async function ResultatRapideNeuf({
   const finLabel = (ctx.finition && n.saisie.finitions[ctx.finition as Finition]?.label) || "—";
   const quiLabel = (reponses.qui && n.saisie.quis[reponses.qui]?.label) || "—";
 
-  // Teaser flouté : les vrais postes les plus lourds, masqués.
-  const dv = buildDevis(catalogueDe(ctx), ctx, sel);
-  const top = [...dv.lignes].filter((li) => li.ttc > 0).sort((a, b) => b.ttc - a.ttc).slice(0, 5);
+  // Teaser flouté. Un gratuit ne reçoit PAS le détail dans le HTML (le flou n'est que du CSS) :
+  // des lignes factices (barres grises, « ••• € »). Un Pro voit les vrais postes les plus lourds.
+  const dv = isPro ? buildDevis(catalogueDe(ctx), ctx, sel) : null;
+  const top = dv
+    ? [...dv.lignes].filter((li) => li.ttc > 0).sort((a, b) => b.ttc - a.ttc).slice(0, 5).map((li) => ({ k: li.cle, nom: catLigne(locale, li.nom, li.cle), v: eur(li.ttc) }))
+    : [62, 48, 55, 40, 50].map((w, i) => ({ k: "f" + i, nom: <span className="fake" style={{ width: w + "%" }} />, v: "••• €" }));
 
   const ctaHref = isPro ? `/projets/${projectId}/modifier` : "/tarifs";
   const ctaLabel = isPro ? t.affiner : t.passPro;
@@ -90,10 +94,10 @@ export default async function ResultatRapideNeuf({
       <div className="teaser">
         <div className="inside" aria-hidden="true">
           {top.map((li, i) => (
-            <div className="lrow" key={li.cle}>
+            <div className="lrow" key={li.k}>
               <span className="dot" style={{ background: SEG[i] ?? SEG[SEG.length - 1] }} />
-              <span className="nm">{catLigne(locale, li.nom, li.cle)}</span>
-              <span className="lv">{eur(li.ttc)}</span>
+              <span className="nm">{li.nom}</span>
+              <span className="lv">{li.v}</span>
             </div>
           ))}
           <div className="lrow"><span className="dot" style={{ background: SEG[SEG.length - 1] }} />{t.autres} <span className="lv">…</span></div>
