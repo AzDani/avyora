@@ -537,7 +537,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
       {/* Où part le budget — camembert par corps d'état */}
       <div className="card bud">
         <h2>{s.whereBudget}</h2>
-        <div className="sub">{s.whereBudgetSub1}{slices.length}{s.whereBudgetSub2}</div>
+        <div className="sub">{s.whereBudgetSub1}{neuf ? nbLots : slices.length}{s.whereBudgetSub2}</div>
         <div className="chart">
           <div className="donut">
             <svg viewBox="0 0 200 200" aria-hidden="true">
