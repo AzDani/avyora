@@ -100,7 +100,9 @@ export function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQt
               <span className="unit">{loc ? (locale === "en" ? "day" : "j") : catT(locale, "unites", t.u)}</span>
             </>
           ))}
-          {!loc && !jalon && (
+          {/* Une taxe ou une prime d'assurance (frais, % du projet : neuf seulement) ne se « fait » pas
+              faire : pas de puce de mode, son prix reste ajustable sur le libellé (double-clic). */}
+          {!loc && !jalon && !t.frais && badge !== "pct" && (
             <span className="choice">
               <ChoicePrice label={locale === "en" ? "Hire out" : "Fait faire"} active={!self} activeCls="onA" amount={puv} edited={puEdited}
                 onSelect={() => onChoice(false)} onEdit={(v) => onPu(v)} onReset={() => onPu(null)} />

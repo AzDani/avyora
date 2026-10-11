@@ -208,7 +208,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
     if (q.t === "cp") {
       return (
         <div className="rowflex">
-          <input className="cpin" inputMode="numeric" maxLength={5} autoComplete="postal-code" aria-label={lbl} placeholder="45000"
+          <input className="cpin" inputMode="numeric" maxLength={5} autoComplete="postal-code" aria-label={lbl} placeholder={n.saisie.cpPlaceholder}
             value={m.codePostal ?? ""} onChange={(e) => repondre("codePostal", e.target.value.replace(/\D/g, "").slice(0, 5))} />
           {(m.codePostal ?? "").length >= 2 && <span className="zone">{zoneLbl}{regDelta ? ` · ${regDelta > 0 ? "+" : ""}${regDelta} ${T.rapide.moSuffix}` : ""}</span>}
         </div>
