@@ -1,7 +1,7 @@
 import "server-only";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { estAdmin } from "@/lib/auth";
-import { estimationProjet, avancementProjet, type StatutChantier } from "@/lib/estimateur/projet";
+import { estimationProjet, avancementProjet, natureProjet, type StatutChantier } from "@/lib/estimateur/projet";
 
 /**
  * Couche de données ADMIN — lecture cross-tenant via le client service-role (bypass RLS).
@@ -29,6 +29,8 @@ export type AdminProjet = {
   ttc: number | null;
   statut: StatutChantier;
   pct: number;
+  /** Rénovation ou construction neuve. */
+  nature: "reno" | "neuf";
 };
 
 export type AdminInscrit = {
@@ -65,7 +67,7 @@ function mapProjet(r: Row): AdminProjet {
   return {
     id: r.id, ownerId: r.owner_id, nom: r.nom, typeBien: r.type_bien,
     surface: r.surface, codePostal: r.code_postal, createdAt: r.created_at,
-    ttc: estim ? estim.ttc : null, statut: av.statut, pct: av.pct,
+    ttc: estim ? estim.ttc : null, statut: av.statut, pct: av.pct, nature: natureProjet(r.reponses),
   };
 }
 
@@ -153,7 +155,10 @@ export type AdminStats = {
   parCanal: Repartition;
   parAge: Repartition;
   parRegion: Repartition;
+  /** Budget moyen des projets de RÉNOVATION (une maison neuve fausserait la moyenne). */
   budgetMoyen: number | null;
+  /** Budget moyen des constructions neuves, null s'il n'y en a aucune. */
+  budgetMoyenNeuf: number | null;
 };
 
 function compter(vals: string[], labelize: (v: string) => string = (v) => v): Repartition {
@@ -166,7 +171,10 @@ export function statsGlobales(inscrits: AdminInscrit[]): AdminStats {
   const now = Date.now();
   const j30 = now - 30 * 864e5;
   const projets = inscrits.flatMap((i) => i.projets);
-  const budgets = projets.map((p) => p.ttc).filter((n): n is number => n != null && n > 0);
+  const moyenne = (nature: "reno" | "neuf") => {
+    const v = projets.filter((p) => p.nature === nature).map((p) => p.ttc).filter((n): n is number => n != null && n > 0);
+    return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : null;
+  };
   return {
     totalInscrits: inscrits.length,
     nouveaux30j: inscrits.filter((i) => +new Date(i.createdAt) >= j30).length,
@@ -177,6 +185,7 @@ export function statsGlobales(inscrits: AdminInscrit[]): AdminStats {
     parCanal: compter(inscrits.map((i) => i.profil?.canal ?? "")),
     parAge: compter(inscrits.map((i) => i.profil?.age ?? "")),
     parRegion: compter(inscrits.map((i) => i.profil?.region ?? "")),
-    budgetMoyen: budgets.length ? Math.round(budgets.reduce((a, b) => a + b, 0) / budgets.length) : null,
+    budgetMoyen: moyenne("reno"),
+    budgetMoyenNeuf: moyenne("neuf"),
   };
 }

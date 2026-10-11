@@ -5,10 +5,12 @@ import { getUser, estPro } from "@/lib/auth";
 import ProjetActions from "@/components/ProjetActions";
 import EstimationResultat from "@/components/EstimationResultat";
 import ResultatRapide from "@/components/ResultatRapide";
-import { regionLabel, type Ctx, type Selection, type Ampleur, type QuiRealise } from "@/lib/estimateur";
+import ResultatRapideNeuf from "@/components/neuf/ResultatRapideNeuf";
+import { regionLabel, estNeuf, type Ctx, type Selection, type Ampleur, type QuiRealise } from "@/lib/estimateur";
 import RenameTitre from "@/components/RenameTitre";
 import TelechargerRapport from "@/components/TelechargerRapport";
 import { getLocale } from "@/lib/i18n/server";
+import { dict } from "@/lib/i18n/dictionaries";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +30,7 @@ export default async function ProjetPage({ params }: { params: Promise<{ id: str
   const s = TR[locale];
   const reponses = projet.reponses as { ctx?: Ctx; sel?: Selection; statuts?: Record<string, number>; codePostal?: string; mode?: string; ampleur?: Ampleur; qui?: QuiRealise };
   const isRapide = reponses.mode === "rapide";
+  const neuf = estNeuf(reponses.ctx);
   const refCode = "AVY-" + String(projet.id).replace(/-/g, "").slice(0, 8).toUpperCase();
 
   return (
@@ -49,6 +52,7 @@ export default async function ProjetPage({ params }: { params: Promise<{ id: str
             <span className="chip num">{projet.surface} m²</span>
             <span className="chip num">{projet.code_postal}</span>
             <span className="chip">{regionLabel(projet.code_postal)}</span>
+            {neuf && <span className="chip">{dict(locale).neuf.badge}</span>}
           </div>
         </div>
         <div className="flex flex-col items-end gap-2">
@@ -63,7 +67,9 @@ export default async function ProjetPage({ params }: { params: Promise<{ id: str
           et rétablir l'import de `@/components/ImporterPlan`. Le reste de la chaîne est prêt. */}
 
       {isRapide
-        ? <ResultatRapide reponses={reponses} projectId={projet.id} isPro={estPro(user)} />
+        ? (neuf
+          ? <ResultatRapideNeuf reponses={reponses} projectId={projet.id} isPro={estPro(user)} />
+          : <ResultatRapide reponses={reponses} projectId={projet.id} isPro={estPro(user)} />)
         : <EstimationResultat reponses={reponses} projectId={projet.id} />}
     </div>
   );

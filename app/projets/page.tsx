@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { listProjets, type Projet } from "@/lib/data/projects";
-import { estimationProjet, avancementProjet } from "@/lib/estimateur";
+import { estimationProjet, avancementProjet, natureProjet } from "@/lib/estimateur";
 import ListeProjets, { type ProjetCarte } from "@/components/ListeProjets";
 import ClaimDraft from "@/components/ClaimDraft";
 import ProUpsell from "@/components/ProUpsell";
 import { getUser, estPro } from "@/lib/auth";
 import { getLocale } from "@/lib/i18n/server";
+import { dict } from "@/lib/i18n/dictionaries";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +54,7 @@ function versCarte(p: Projet): ProjetCarte {
     statut: av.statut,
     donePct: av.pct,
     progPct: av.total > 0 ? Math.round((av.prog / av.total) * 100) : 0,
+    nature: natureProjet(p.reponses),
   };
 }
 
@@ -69,6 +71,8 @@ export default async function ProjetsPage() {
   const sumTravaux = projets.reduce((s, p) => s + p.ttc, 0);
   const sumSurface = projets.reduce((s, p) => s + p.surface, 0);
   const nbEnChantier = projets.filter((p) => p.statut === "en_cours").length;
+  // L'intro parle de rénovation : elle ne change que si l'utilisateur a au moins un projet neuf.
+  const aDuNeuf = [...projets, ...archives].some((p) => p.nature === "neuf");
 
   return (
     <div className="space-y-8">
@@ -100,7 +104,7 @@ export default async function ProjetsPage() {
           <p className="eyebrow">{s.portefeuille}</p>
           <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-ink">{s.projets}</h1>
           <p className="mt-1.5 text-[15px] text-muted">
-            {s.intro}
+            {aDuNeuf ? dict(locale).neuf.introListe : s.intro}
           </p>
         </header>
       )}

@@ -1,0 +1,91 @@
+/**
+ * Un projet NEUF enregistré s'affiche avec le même chiffre partout (liste, fiche, résultat rapide,
+ * admin) et son suivi peut aller jusqu'au bout (chantier C2 du branchement du neuf).
+ */
+import { describe, it, expect } from "vitest";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import {
+  presetNeuf, buildDevis, catalogueDe, estimationProjet, avancementProjet, natureProjet, phasesDe, lotsParCorps,
+  tachesParCle, estJalon, PHASES_NEUF, type Ctx, type Selection,
+} from "@/lib/estimateur";
+import { LangProvider } from "@/components/i18n/LangProvider";
+import EstimationResultat from "@/components/EstimationResultat";
+import BilanRapideNeuf from "@/components/neuf/BilanRapideNeuf";
+
+/** Cas de référence de la carte « affichage » : maison plain-pied de 100 m², Orléans, standard, tout par des pros. */
+const { ctx, sel } = presetNeuf({ surface: 100, niveaux: "pp", codePostal: "45000", finition: "standard", qui: "pros" });
+const reponses = (extra: Record<string, unknown> = {}) => ({ v: "estimateur", mode: "detaille", ctx, sel, codePostal: "45000", qui: "pros", ...extra });
+const dv = buildDevis(catalogueDe(ctx), ctx, sel);
+const eur = (n: number) => Math.round(n).toLocaleString("fr-FR").replace(/[\u00a0\u202f]/g, " ");
+const rendre = (el: ReturnType<typeof createElement>, locale: "fr" | "en" = "fr") =>
+  renderToStaticMarkup(createElement(LangProvider, { locale, children: el }));
+/** Le HTML rendu, en texte (sans balises ni styles) et avec des espaces normaux. */
+const texte = (html: string) => html.replace(/<style[\s\S]*?<\/style>/g, "").replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/&#x27;|&#39;/g, "'").replace(/[\s\u00a0\u202f]+/g, " ");
+
+describe("Neuf · un même projet, un même chiffre", () => {
+  it("le cas de référence vaut 246 762 € TTC, chiffré sur le catalogue neuf", () => {
+    expect(Math.round(dv.totaux.ttc)).toBe(246762);
+    expect(dv.lignes.length).toBe(92);
+  });
+
+  it("liste et admin (estimationProjet) = fiche (buildDevis sur catalogueDe)", () => {
+    const e = estimationProjet(reponses())!;
+    expect(e.ttc).toBe(dv.totaux.ttc);
+    expect(e.nature).toBe("neuf");
+    expect(e.frais).toBe(dv.bilan.frais);
+    expect(e.frais).toBeGreaterThan(0);
+    expect(natureProjet(reponses())).toBe("neuf");
+  });
+
+  it("la fiche affiche ce TTC, la maison, les frais hors TVA et aucune TVA à 0 %", () => {
+    const t = texte(rendre(createElement(EstimationResultat, { reponses: reponses() as never, projectId: "p1" })));
+    expect(t).toContain(`Le plus probable ${eur(dv.totaux.ttc)} €`);
+    expect(t).toContain("Estimation · construction neuve");
+    expect(t).toContain(`Travaux HT ${eur(dv.totaux.ht - dv.bilan.frais)} €`);
+    expect(t).toContain(`Frais hors TVA ${eur(dv.bilan.frais)} €`);
+    expect(t).toContain("TVA (20 %)");
+    expect(t).not.toMatch(/TVA \((?:0|[^)]*· 0) %/);
+    expect(t).toContain("3 chambres · plain-pied");
+    expect(t).toContain(`${lotsParCorps(dv.lots).length} corps · 92 postes`);
+    expect(t).not.toContain("Ampleur");
+    expect(t).toContain("3,5 % des travaux");
+  });
+
+  it("le suivi montre les 92 lignes dans les 9 phases, les 8 démarches en badge", () => {
+    const html = rendre(createElement(EstimationResultat, { reponses: reponses() as never, projectId: "p1" }));
+    const parPhase = phasesDe(ctx).reduce((s, ph) => s + dv.lignes.filter((li) => li.phase === ph).length, 0);
+    expect(parPhase).toBe(dv.lignes.length);
+    expect((html.match(/class="stbtn st\d"/g) ?? []).length).toBe(92);
+    expect((html.match(/class="phase-t/g) ?? []).length).toBe(PHASES_NEUF.length);
+    expect((html.match(/class="dem"/g) ?? []).length).toBe(8);
+    expect((html.match(/class="jal/g) ?? []).length).toBe(PHASES_NEUF.length);
+    const taches = tachesParCle(ctx);
+    expect(dv.lignes.filter((li) => estJalon(taches.get(li.cle))).length).toBe(8);
+  });
+
+  it("tout cocher : la liste passe à « Terminé », chaque jalon de phase est coché", () => {
+    const statuts: Record<string, number> = {};
+    for (const ph of phasesDe(ctx)) for (const li of dv.lignes) if (li.phase === ph) statuts[li.cle] = 2;
+    const av = avancementProjet(reponses({ statuts }));
+    expect(av).toMatchObject({ total: 92, done: 92, statut: "termine", pct: 100 });
+    const html = rendre(createElement(EstimationResultat, { reponses: reponses({ statuts }) as never, projectId: "p1" }));
+    expect((html.match(/class="jal ok"/g) ?? []).length).toBe(PHASES_NEUF.length);
+    // une seule démarche à faire : pas terminé
+    const un = { ...statuts };
+    delete un[dv.lignes[0].cle];
+    expect(avancementProjet(reponses({ statuts: un })).statut).toBe("en_cours");
+  });
+
+  it("le bilan rapide : même TTC, les 9 phases, les extérieurs formatés depuis lib/, FR et EN", () => {
+    const t = texte(renderToStaticMarkup(createElement(BilanRapideNeuf, { ctx: ctx as Ctx, sel: sel as Selection, qui: "pros", locale: "fr" })));
+    expect(t).toContain(`Total TTC tout compris ${eur(dv.totaux.ttc)} €`);
+    for (const ph of PHASES_NEUF) expect(t).toContain(ph);
+    expect(t).toContain("≈ 8 000 € à 20 000 € sur 600 à 800 m² de terrain");
+    expect(t).toMatch(/compte environ \+\d[\d ]* €/);
+    expect(t).not.toMatch(/NaN|undefined/);
+    const en = texte(renderToStaticMarkup(createElement(BilanRapideNeuf, { ctx: ctx as Ctx, sel: sel as Selection, qui: "pros", locale: "en" })));
+    expect(en).toContain("All-in total incl. tax");
+    expect(en).not.toMatch(/NaN|undefined/);
+  });
+});

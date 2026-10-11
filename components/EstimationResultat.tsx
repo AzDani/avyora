@@ -9,7 +9,11 @@ import { useMemo, useState, useCallback } from "react";
 import { EST_CSS } from "./estimateur-styles";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { catT } from "@/lib/estimateur/catalog-i18n";
-import { CATALOG, buildDevis, PHASES, ICON, visible, lineHT, effRate, statutLigne, cleLegacy, regionCoef, piecesEff, type Ctx, type Selection } from "@/lib/estimateur";
+import {
+  CATALOG, buildDevis, ICON, visible, lineHT, effRate, statutLigne, cleLegacy, regionCoef, piecesEff, type Ctx, type Selection,
+  catalogueDe, estNeuf, phasesDe, lotsParCorps, tachesParCle, estJalon, decoupe, geometrieNeuf, maisonComplete, INFO_PHASES,
+} from "@/lib/estimateur";
+import { dict } from "@/lib/i18n/dictionaries";
 import { normaliserCles } from "@/lib/estimateur/identite";
 
 // Traductions de l'interface (chrome/UI uniquement) — les données (corps d'état, postes) restent telles quelles.
@@ -280,16 +284,35 @@ const EXTRA_CSS = `
 .av-estim .hero .jfill.over{background:linear-gradient(90deg,#f59e0b,#e0434b)}
 `;
 
+// Construction neuve seulement : jalon en tête de phase, badge « Démarche ». Injecté uniquement
+// pour un projet neuf, la fiche rénovation garde exactement le même DOM.
+const NEUF_CSS = `
+.av-estim .jal{display:flex;align-items:flex-start;gap:8px;font-size:11.5px;color:var(--muted);margin:2px 0 6px;padding:6px 2px 6px 36px;line-height:1.4}
+.av-estim .jal .ck{flex:none;display:inline-grid;place-items:center;width:14px;height:14px;border-radius:50%;border:2px solid var(--line-strong);margin-top:1px;font-size:9px;font-weight:700;color:#fff}
+.av-estim .jal.ok{color:#0f9d6b}
+.av-estim .jal.ok .ck{background:#0f9d6b;border-color:#0f9d6b}
+.av-estim .jal b{font-weight:600;color:var(--ink)}
+.av-estim .jal.ok b{color:#0f9d6b}
+.av-estim .dtl .dem{font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:#fdf1e1;color:#b06d10;white-space:nowrap}
+.av-estim .dtl.chant .dem{min-width:74px;text-align:center;box-sizing:border-box}
+.av-estim .split-neuf{margin-top:8px;font-size:12px;color:var(--muted);line-height:1.45}
+.av-estim .split-neuf b{color:var(--ink);font-weight:600;font-family:var(--font-geist-mono),monospace;white-space:nowrap}
+`;
+
 export default function EstimationResultat({ reponses, projectId, readOnly }: { reponses: { ctx?: Ctx; sel?: Selection; statuts?: Record<string, number>; codePostal?: string }; projectId?: string; readOnly?: boolean }) {
   const locale = useLocale();
   const s = TR[locale];
   // Sécurité rétro-compat : le code postal (coef régional) était stocké hors ctx dans d'anciens projets.
-  const ctx = reponses?.ctx ? { ...reponses.ctx, codePostal: reponses.ctx.codePostal ?? reponses.codePostal } : undefined;
-  const sel = normaliserCles((reponses?.sel || {}) as Selection);
+  // `ctx` et `sel` ne changent qu'avec `reponses` : le devis n'est plus recalculé à chaque clic du suivi.
+  const ctx = useMemo(() => (reponses?.ctx ? { ...reponses.ctx, codePostal: reponses.ctx.codePostal ?? reponses.codePostal } : undefined), [reponses]);
+  const sel = useMemo(() => normaliserCles((reponses?.sel || {}) as Selection), [reponses]);
+  const neuf = estNeuf(ctx);
+  const n = dict(locale).neuf;
+  const taches = useMemo(() => (neuf ? tachesParCle(ctx) : null), [neuf, ctx]);
   const [statuts, setStatuts] = useState<Record<string, number>>(reponses?.statuts || {});
   const [closedPh, setClosedPh] = useState<Record<string, boolean>>({}); // phases repliées (Suivi / Détail)
   const togglePh = useCallback((ph: string) => setClosedPh((p) => ({ ...p, [ph]: !p[ph] })), []);
-  const dv = useMemo(() => (ctx ? buildDevis(CATALOG, ctx, sel) : null), [ctx, sel]);
+  const dv = useMemo(() => (ctx ? buildDevis(catalogueDe(ctx), ctx, sel) : null), [ctx, sel]);
 
   // Suivi de chantier : statut par tâche (0 à démarrer, 1 en cours, 2 terminé), sauvegardé côté serveur.
   const cycle = useCallback((k: string, legacy?: string | null) => {
@@ -351,7 +374,9 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
   const eurM2FF = ctx.surface > 0 ? ffTTC / ctx.surface : 0; // ampleur (tout fait faire)
   const rep = repereM2(eurM2FF); // le repère se base sur l'ampleur, pas sur ton coût
   const diyGap = eurM2FF - eurM2 > 30; // écart significatif → tu poses beaucoup toi-même
-  const lotsTri = [...lots].sort((a, x) => x.ttc - a.ttc);
+  // Un lot par corps d'état (en neuf, un corps revient dans plusieurs phases). Rénovation : identité.
+  const lotsCorps = lotsParCorps(lots);
+  const lotsTri = [...lotsCorps].sort((a, x) => x.ttc - a.ttc);
   const top = lotsTri[0];
   const topPct = top && t.ttc > 0 ? Math.round((top.ttc / t.ttc) * 100) : 0;
   // Tranches du camembert « Où part le budget » (corps d'état, ordonnés par taille).
@@ -366,29 +391,38 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
 
   // Ventilation TVA par taux (depuis les lignes)
   const tvaByRate: Record<number, number> = {};
-  lignes.forEach((li) => { if (li.ht > 0) { const r = Math.round((li.tva / li.ht) * 100); tvaByRate[r] = (tvaByRate[r] || 0) + li.tva; } });
+  lignes.forEach((li) => { if (li.ht > 0 && li.tva > 0) { const r = Math.round((li.tva / li.ht) * 100); tvaByRate[r] = (tvaByRate[r] || 0) + li.tva; } });
   const tauxPresents = Object.keys(tvaByRate).map(Number).sort((a, x) => x - a);
 
   const budget = ctx.budget || 0;
   const over = budget > 0 && t.ttc > budget;
-  const nbLots = lots.length;
+  const nbLots = lotsCorps.length;
+  // Construction neuve : la construction contre « études, taxes, assurance, branchements », la maison décrite.
+  const cut = neuf ? decoupe(dv) : null;
+  const maison = neuf ? maisonComplete(ctx.neuf) : null;
+  const moisChantier = maison ? geometrieNeuf(maison).moisChantier : 0;
+  const tache = (cle: string) => taches?.get(cle);
   const nbTaches = lignes.length;
 
   return (
     <div className="av-estim">
       <style dangerouslySetInnerHTML={{ __html: EST_CSS + EXTRA_CSS }} />
+      {neuf && <style dangerouslySetInnerHTML={{ __html: NEUF_CSS }} />}
 
       {/* Hero */}
       <div className="hero">
         <span className="glow g1" /><span className="glow g2" />
-        <div className="eb"><span className="dot" />{s.badge}</div>
+        <div className="eb"><span className="dot" />{neuf ? n.badgeEstim : s.badge}</div>
         <div className="four"><span className="num">{lo.toLocaleString("fr-FR")}</span><span className="s">–</span><span className="num">{hi.toLocaleString("fr-FR")}</span> €<small>{s.inclTax}</small></div>
         <div className="cap">{s.mostLikely} <b>{Math.round(t.ttc).toLocaleString("fr-FR")} €</b> · ≈ <b>{Math.round(eurM2).toLocaleString("fr-FR")} €/m²</b> · {s.margin}</div>
         {ctx.codePostal && (
           <div className="zone">📍 {reg.zone}{moPct ? ` · ${s.labor} ${moPct > 0 ? "+" : ""}${moPct} %` : ""}</div>
         )}
         <div className="brk">
-          <div className="pill"><span className="k">{s.workExclTax}</span><br /><span className="v num">{fmt(t.ht)}</span></div>
+          <div className="pill"><span className="k">{s.workExclTax}</span><br /><span className="v num">{fmt(neuf ? t.ht - b.frais : t.ht)}</span></div>
+          {neuf && b.frais > 0 && (
+            <div className="pill"><span className="k">{n.fraisHorsTva}</span><br /><span className="v num">{fmt(b.frais)}</span></div>
+          )}
           <div className="pill"><span className="k">{s.vat} {tauxPresents.length ? "(" + tauxPresents.map((r) => (r === 5.5 ? "5,5" : r) + " %").join(" · ") + ")" : ""}</span><br /><span className="v num">{fmt(t.tva)}</span></div>
           <div className="pill"><span className="k">{s.contingency} {ctx.aleas} %</span><br /><span className="v num">{fmt(t.aleas)}</span></div>
           <div className="pill"><span className="k">{s.finish}</span><br /><span className="v" style={{ textTransform: "capitalize" }}>{ctx.finition}</span></div>
@@ -404,7 +438,10 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
         <div className="stat">
           <div className="k">{s.pricePerM2}</div>
           <div className="v"><span className="num">{Math.round(eurM2).toLocaleString("fr-FR")}</span> €/m²</div>
-          <p className="sub">{s.realCost}{diyGap ? s.diyLot : ""}</p>
+          <p className="sub">{s.realCost}{!neuf && diyGap ? s.diyLot : ""}</p>
+          {cut ? (
+            <p className="split-neuf">{n.dontConstr} <b>{fmt(cut.constr)}</b> · {n.annexes} <b>{fmt(cut.annexes)}</b></p>
+          ) : (
           <div className="rep">
             <div style={{ fontSize: 11.5, fontWeight: 600, color: "var(--ink)", marginBottom: 4 }}>
               {s.scopeLabel}{s.ampleur[rep.key]}
@@ -413,6 +450,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
             <div className="bar"><span className="mark" style={{ left: rep.posPct + "%" }} /></div>
             <div className="scale"><span>{s.scaleRefresh}</span><span>{s.scalePartial}</span><span>{s.scaleComplete}</span><span>{s.scaleHeavy}</span></div>
           </div>
+          )}
         </div>
         <div className="stat">
           <div className="k">{s.biggestItem}</div>
@@ -422,7 +460,11 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
         <div className="stat">
           <div className="k">{s.theSite}</div>
           <div className="v"><span className="num">{nbLots}</span> {nbLots > 1 ? s.tradeWordP : s.tradeWord} · <span className="num">{nbTaches}</span> {nbTaches > 1 ? s.itemWordP : s.itemWord}</div>
-          <p className="sub">{ctx.surface} m² · {piecesEff(ctx) || ctx.pieces} {s.roomsWord} · {s.ceiling} {ctx.hauteur} m</p>
+          {maison ? (
+            <p className="sub">{maison.surface} m² · {maison.chambres} {maison.chambres > 1 ? n.chambres : n.chambre} · {n.niveauxCourt[maison.niveaux] ?? n.niveauxCourt.pp} · ≈ {moisChantier} {n.moisChantier}</p>
+          ) : (
+            <p className="sub">{ctx.surface} m² · {piecesEff(ctx) || ctx.pieces} {s.roomsWord} · {s.ceiling} {ctx.hauteur} m</p>
+          )}
         </div>
       </div>
 
@@ -434,11 +476,15 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
           <i style={{ width: `${t.ht > 0 ? (b.moA / t.ht) * 100 : 0}%`, background: "var(--brand)" }} />
           <i style={{ width: `${t.ht > 0 ? (b.matA / t.ht) * 100 : 0}%`, background: "var(--accent-300)" }} />
           <i style={{ width: `${t.ht > 0 ? (b.achat / t.ht) * 100 : 0}%`, background: "var(--accent-600)" }} />
+          {b.frais > 0 && <i style={{ width: `${t.ht > 0 ? (b.frais / t.ht) * 100 : 0}%`, background: "var(--line-strong)" }} />}
         </div>
         <div className="legend">
           <span><span className="dot" style={{ background: "var(--brand)" }} />{s.laborCap} <b>{fmt(b.moA)}</b> <span className="pct">{pc(b.moA)}&nbsp;%</span></span>
           <span><span className="dot" style={{ background: "var(--accent-300)" }} />{s.matPros} <b>{fmt(b.matA)}</b> <span className="pct">{pc(b.matA)}&nbsp;%</span></span>
           <span><span className="dot" style={{ background: "var(--accent-600)" }} />{s.matYou} <b>{fmt(b.achat)}</b> <span className="pct">{pc(b.achat)}&nbsp;%</span></span>
+          {b.frais > 0 && (
+            <span><span className="dot" style={{ background: "var(--line-strong)" }} />{n.fraisSeg} <b>{fmt(b.frais)}</b> <span className="pct">{pc(b.frais)}&nbsp;%</span></span>
+          )}
         </div>
         <div className="cards">
           <div className="qc"><div className="k">{s.hireOut} <span className="pct">{pc(b.paye)}&nbsp;%</span></div><div className="v">{fmt(b.paye)}</div><div className="d">{s.hireOutD1}<br />{s.moAbbr} {fmt(b.moA)} · {s.supplies} {fmt(b.matA)}</div></div>
@@ -506,11 +552,11 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
                 <span className="chip cur"><span className="cd" /><b>{prog}</b> {s.inProgress}</span>
                 <span className="chip wait"><span className="cd" /><b>{total - done - prog}</b> {s.toStart}</span>
               </div>
-              <p className="prognote">{s.progNoteA}<b>{s.progNoteBold}</b>{s.progNoteB}</p>
+              <p className="prognote">{s.progNoteA}<b>{neuf ? n.progNoteBold : s.progNoteBold}</b>{s.progNoteB}</p>
             </div>
           );
         })()}
-        {PHASES.map((ph) => {
+        {phasesDe(ctx).map((ph) => {
           const lignesPh = lignes.filter((li) => li.phase === ph);
           if (!lignesPh.length) return null;
           const open = !closedPh[ph];
@@ -524,8 +570,23 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
                 <span className="pt-lbl">{catT(locale, "phases", ph)}</span>
                 <span className="pt-meta">{projectId ? `${donePh}/${lignesPh.length}` : `${lignesPh.length} ${lignesPh.length > 1 ? s.itemWordP : s.itemWord}`}</span>
               </button>
+              {neuf && INFO_PHASES[ph] && (() => {
+                const ok = !!projectId && donePh === lignesPh.length;
+                return (
+                  <div className={"jal" + (ok ? " ok" : "")}>
+                    <span className="ck" aria-hidden="true">{ok ? "✓" : ""}</span>
+                    <span><b>{n.jalon}</b> · {INFO_PHASES[ph].jalon[locale]}</span>
+                  </div>
+                );
+              })()}
               {open && lignesPh.map((li, i) => {
                 const k = li.cle, kOld = cleLegacy(li);
+                const tk = neuf ? tache(li.cle) : undefined;
+                const jalon = estJalon(tk);
+                // Ligne au pourcentage (assurance dommages-ouvrage…) : pas de quantité, sa part des travaux.
+                const qtyTxt = li.unite === "pct" && tk?.fp != null
+                  ? `${tk.fp.toLocaleString("fr-FR")} ${n.pctTravaux}`
+                  : li.qty + " " + (li.mode === "location" ? s.dayAbbr : catT(locale, "unites", li.unite));
                 const st = statutLigne(statuts, li);
                 const stLabel = st === 2 ? s.stDone : st === 1 ? s.stInProgress : s.stToStart;
                 return (
@@ -533,7 +594,9 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
                     <span>
                       {catT(locale, "postes", li.nom)}
                       {projectId && li.unite !== "forfait" && (
-                        <span style={{ color: "var(--faint)", fontWeight: 400 }}> · {li.qty} {li.mode === "location" ? s.dayAbbr : catT(locale, "unites", li.unite)}</span>
+                        neuf
+                          ? <span style={{ color: "var(--faint)", fontWeight: 400 }}> · {qtyTxt}</span>
+                          : <span style={{ color: "var(--faint)", fontWeight: 400 }}> · {li.qty} {li.mode === "location" ? s.dayAbbr : catT(locale, "unites", li.unite)}</span>
                       )}
                     </span>
                     {projectId ? (
@@ -546,15 +609,20 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
                           {st === 2 ? <>✓ {s.stDone}</> : <><span className="ic" />{stLabel}</>}
                         </button>
                       )
+                    ) : jalon ? (
+                      <>
+                        <span className="q">—</span>
+                        <span className="dem">{n.demarche}</span>
+                      </>
                     ) : (
                       <>
-                        <span className="q">{li.unite === "forfait" ? "—" : li.qty + " " + (li.mode === "location" ? s.dayAbbr : catT(locale, "unites", li.unite))}</span>
+                        <span className="q">{li.unite === "forfait" ? "—" : neuf ? qtyTxt : li.qty + " " + (li.mode === "location" ? s.dayAbbr : catT(locale, "unites", li.unite))}</span>
                         <span className={"mode " + (li.mode === "location" ? "mL" : li.mode === "je-fais" ? "mS" : "mA")}>
                           {li.mode === "location" ? s.modeRental : li.mode === "je-fais" ? s.modeDIY : s.modeHireOut}
                         </span>
                       </>
                     )}
-                    <span className="m">{fmt(li.ttc)}</span>
+                    {jalon ? (projectId ? <span className="dem">{n.demarche}</span> : <span className="m" />) : <span className="m">{fmt(li.ttc)}</span>}
                   </div>
                 );
               })}

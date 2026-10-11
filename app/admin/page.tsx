@@ -1,8 +1,15 @@
 import { listInscrits, statsGlobales, type Repartition } from "@/lib/data/admin";
+import { dict } from "@/lib/i18n/dictionaries";
 
 export const dynamic = "force-dynamic";
 
 const euros = (n: number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
+
+/** « budget moyen X » (rénovation), suivi de « construction neuve Y » s'il y a des projets neufs. */
+function budgetsMoyens(reno: number | null, neuf: number | null): string | undefined {
+  const parts = [reno != null ? `budget moyen ${euros(reno)}` : "", neuf != null ? `${dict("fr").neuf.badge.toLowerCase()} ${euros(neuf)}` : ""].filter(Boolean);
+  return parts.length ? parts.join(" · ") : undefined;
+}
 
 function Kpi({ k, v, d, good }: { k: string; v: string; d?: string; good?: boolean }) {
   return (
@@ -47,7 +54,7 @@ export default async function AdminOverview() {
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
         <Kpi k="Inscrits" v={String(s.totalInscrits)} d={`+${s.nouveaux30j} sur 30 j`} good={s.nouveaux30j > 0} />
-        <Kpi k="Projets créés" v={String(s.totalProjets)} d={s.budgetMoyen != null ? `budget moyen ${euros(s.budgetMoyen)}` : undefined} />
+        <Kpi k="Projets créés" v={String(s.totalProjets)} d={budgetsMoyens(s.budgetMoyen, s.budgetMoyenNeuf)} />
         <Kpi k="Comptes Pro" v={String(s.totalPro)} d="mode test Stripe" />
         <Kpi k="Onboarding complété" v={`${s.onboardingPct} %`} d={`${inscrits.filter((i) => i.onboardingFait).length} / ${s.totalInscrits}`} />
       </div>

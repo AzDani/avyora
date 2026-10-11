@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/components/i18n/LangProvider";
+import { dict } from "@/lib/i18n/dictionaries";
 
 const TR = {
   fr: {
@@ -67,6 +68,8 @@ export type ProjetCarte = {
   statut: StatutChantier;
   donePct: number;
   progPct: number;
+  /** Rénovation ou construction neuve (`natureProjet`). Absent : rénovation. */
+  nature?: "reno" | "neuf";
 };
 
 function euros(n: number): string {
@@ -128,6 +131,7 @@ export default function ListeProjets({
   const router = useRouter();
   const locale = useLocale();
   const s = TR[locale];
+  const n = dict(locale).neuf;
   const [selection, setSelection] = useState<Set<number | string>>(new Set());
   const [modeSelection, setModeSelection] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -198,6 +202,7 @@ export default function ListeProjets({
               <span className="chip capitalize">{p.type_bien}</span>
               <span className="chip num">{p.surface} m²</span>
               <span className="chip num">{p.code_postal}</span>
+              {p.nature === "neuf" && <span className="chip">{n.badge}</span>}
             </div>
           </div>
           {!modeSelection && (
@@ -228,7 +233,7 @@ export default function ListeProjets({
 
         <div className="flex items-end justify-between gap-3">
           <div className="min-w-0">
-            <p className="eyebrow">{s.estimationTravaux}</p>
+            <p className="eyebrow">{p.nature === "neuf" ? n.eyebrowListe : s.estimationTravaux}</p>
             <p className="data mt-1 text-[17px] font-semibold text-ink">
               {euros(p.ttc)} <span className="text-faint text-sm font-normal">TTC</span>
             </p>

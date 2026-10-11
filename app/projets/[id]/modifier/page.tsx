@@ -5,7 +5,7 @@ import EstimateurRapide from "@/components/EstimateurRapide";
 import { getProjet } from "@/lib/data/projects";
 import { getUser, estPro } from "@/lib/auth";
 import { getLocale } from "@/lib/i18n/server";
-import type { Ctx, Ampleur, Finition, QuiRealise } from "@/lib/estimateur";
+import { estNeuf, type Ctx, type Ampleur, type Finition, type QuiRealise } from "@/lib/estimateur";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +23,10 @@ export default async function ModifierProjet({ params }: { params: Promise<{ id:
 
   const projet = await getProjet(id);
   if (!projet) notFound();
+  // Construction neuve : les deux éditeurs ci-dessous sont ceux de la RÉNOVATION. Ouverts sur un
+  // projet neuf, ils le réenregistreraient en rénovation (catalogue, ampleur). En attendant les
+  // éditeurs du neuf (chantiers C3 et C4), retour à la fiche, sans rien écrire.
+  if (estNeuf((projet.reponses as { ctx?: Ctx } | null)?.ctx)) redirect(`/projets/${id}`);
 
   const locale = await getLocale();
   const s = TR[locale];

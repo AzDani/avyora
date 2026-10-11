@@ -1,4 +1,8 @@
-import { CATALOG, buildDevis, regionCoef, ICON, customTotals, piecesEff, sdbEff, type Ctx, type Selection, type CustomLine } from "@/lib/estimateur";
+import {
+  buildDevis, regionCoef, ICON, customTotals, piecesEff, sdbEff, type Ctx, type Selection, type CustomLine,
+  catalogueDe, estNeuf, lotsParCorps, parPhase, maisonComplete, PHASES_NEUF, INFO_PHASES,
+} from "@/lib/estimateur";
+import { dict } from "@/lib/i18n/dictionaries";
 import { normaliserCles } from "@/lib/estimateur/identite";
 import { catT } from "@/lib/estimateur/catalog-i18n";
 import { getLocale } from "@/lib/i18n/server";
@@ -123,6 +127,15 @@ const RAPPORT_CSS = `
 }
 `;
 
+// Construction neuve seulement (injecté pour un projet neuf : le rapport rénovation garde le même DOM).
+const RAPPORT_NEUF_CSS = `
+.av-rapport .tot.t5{grid-template-columns:repeat(5,1fr)}
+.av-rapport .etapes td{vertical-align:top}
+.av-rapport .etapes .dem{margin:3px 0 0;padding:0;list-style:none;font-size:8.5px;color:var(--muted)}
+.av-rapport .etapes .dem b{color:var(--ink);font-weight:600}
+@media print{.av-rapport .sec.etapes{break-inside:auto}}
+`;
+
 export async function RapportPDF({
   reponses,
   nom,
@@ -141,7 +154,9 @@ export async function RapportPDF({
   const customVal = custom.filter((x) => x.on !== false && !x.draft); // lignes perso validées
   if (!ctx) return null;
 
-  const dv = buildDevis(CATALOG, ctx, sel);
+  const neuf = estNeuf(ctx);
+  const n = dict(locale).neuf;
+  const dv = buildDevis(catalogueDe(ctx), ctx, sel);
   const b = dv.bilan;
   // Totaux = postes par défaut + lignes personnalisées (les aléas s'appliquent aussi au HT perso).
   const cu = customTotals(custom);
@@ -158,7 +173,8 @@ export async function RapportPDF({
   // Camembert + tableau : corps d'état (défaut) + lignes perso repliées par lot (comme les postes par défaut).
   const customTtcByLot: Record<string, number> = {};
   for (const x of customVal) { const h = (x.prix || 0) * (x.qte || 0); customTtcByLot[x.lot] = (customTtcByLot[x.lot] || 0) + h + (h * (x.tva || 0)) / 100; }
-  const mergedLots = dv.lots.map((l) => ({ corps: l.corps, phase: l.phase, ttc: l.ttc }));
+  // Un lot par corps d'état (en neuf, un corps revient dans plusieurs phases). Rénovation : identité.
+  const mergedLots = lotsParCorps(dv.lots).map((l) => ({ corps: l.corps, phase: l.phase, ttc: l.ttc }));
   for (const [lot, ttc] of Object.entries(customTtcByLot)) {
     const ex = mergedLots.find((l) => l.corps === lot);
     if (ex) ex.ttc += ttc; else mergedLots.push({ corps: lot, phase: "Personnalisé", ttc });
@@ -183,11 +199,17 @@ export async function RapportPDF({
 
   // Qui fait quoi (répartition HT).
   const ht = t.ht || 1;
-  const pcHt = (n: number) => Math.round((n / ht) * 100);
+  const pcHt = (v: number) => Math.round((v / ht) * 100);
+  // Construction neuve : la maison décrite, le TTC par phase (+ lignes perso), les étapes.
+  const maison = neuf ? maisonComplete(ctx.neuf) : null;
+  const phNeuf = neuf ? parPhase(dv) : null;
+  const persoTtc = Object.values(customTtcByLot).reduce((a, v) => a + v, 0);
+  const maxPh = phNeuf ? Math.max(1, ...PHASES_NEUF.map((p) => phNeuf[p] ?? 0), persoTtc) : 1;
 
   return (
     <div className="av-rapport">
       <style dangerouslySetInnerHTML={{ __html: RAPPORT_CSS }} />
+      {neuf && <style dangerouslySetInnerHTML={{ __html: RAPPORT_NEUF_CSS }} />}
 
       {/* En-tête */}
       <div className="rhead">
@@ -209,6 +231,16 @@ export async function RapportPDF({
         <div>
           <div className="eyebrow">Le bien</div>
           <div className="ttl">{nom}</div>
+          {maison ? (
+          <div className="row">
+            <span><b>{n.maisonNeuve}</b></span><span>·</span>
+            <span><b className="num">{maison.surface}</b> {n.pdf.habitables}</span><span>·</span>
+            <span>{n.niveauxCourt[maison.niveaux] ?? n.niveauxCourt.pp}</span><span>·</span>
+            <span><b className="num">{maison.chambres}</b> {maison.chambres > 1 ? n.chambres : n.chambre}</span><span>·</span>
+            <span>{n.pdf.murs[maison.murs] ?? maison.murs}</span>
+            {ctx.codePostal ? <><span>·</span><span className="num">{ctx.codePostal}</span></> : null}
+          </div>
+          ) : (
           <div className="row">
             <span>{appart ? "🏢" : "🏠"} <b>{ctx.type}</b></span><span>·</span>
             <span><b className="num">{ctx.surface}</b> m² habitables</span><span>·</span>
@@ -218,6 +250,7 @@ export async function RapportPDF({
             <span><b className="num">{sdbEff(ctx)}</b> SDB</span>
             {ctx.codePostal ? <><span>·</span><span className="num">{ctx.codePostal}</span></> : null}
           </div>
+          )}
         </div>
         <div className="zone">📍 {reg.zone}{moPct ? ` · main-d’œuvre ${moPct > 0 ? "+" : ""}${moPct} %` : ""}</div>
       </div>
@@ -233,8 +266,9 @@ export async function RapportPDF({
       </div>
 
       {/* Totaux */}
-      <div className="tot">
-        <div className="c"><div className="k">Travaux HT</div><div className="v">{euro(t.ht)}</div></div>
+      <div className={neuf ? "tot t5" : "tot"}>
+        <div className="c"><div className="k">Travaux HT</div><div className="v">{euro(neuf ? t.ht - b.frais : t.ht)}</div></div>
+        {neuf && <div className="c"><div className="k">{n.pdf.fraisHorsTva}</div><div className="v">{euro(b.frais)}</div></div>}
         <div className="c"><div className="k">TVA</div><div className="v">{euro(t.tva)}</div></div>
         <div className="c"><div className="k">Provision aléas {ctx.aleas} %</div><div className="v">{euro(t.aleas)}</div></div>
         <div className="c big"><div className="k">Total TTC estimé</div><div className="v">{euro(t.ttc)}</div></div>
@@ -276,11 +310,13 @@ export async function RapportPDF({
           <span style={{ width: pcHt(b.moA) + "%", background: "var(--brand)" }} />
           <span style={{ width: pcHt(b.matA) + "%", background: "var(--accent-300)" }} />
           <span style={{ width: pcHt(b.achat) + "%", background: "var(--violet)" }} />
+          {b.frais > 0 && <span style={{ width: pcHt(b.frais) + "%", background: "var(--line-strong)" }} />}
         </div>
         <div className="qlg">
           <span className="i"><span className="d" style={{ background: "var(--brand)" }} />Main-d&apos;œuvre <b>{euro(b.moA)}</b> <span className="pct">{pcHt(b.moA)} %</span></span>
           <span className="i"><span className="d" style={{ background: "var(--accent-300)" }} />Matériaux (pros) <b>{euro(b.matA)}</b> <span className="pct">{pcHt(b.matA)} %</span></span>
           <span className="i"><span className="d" style={{ background: "var(--violet)" }} />Matériaux (vous) <b>{euro(b.achat)}</b> <span className="pct">{pcHt(b.achat)} %</span></span>
+          {b.frais > 0 && <span className="i"><span className="d" style={{ background: "var(--line-strong)" }} />{n.fraisSeg} <b>{euro(b.frais)}</b> <span className="pct">{pcHt(b.frais)} %</span></span>}
         </div>
         <div className="cards">
           <div className="qc"><div className="k">Fait faire (artisans) <span className="p">{pcHt(b.paye)} %</span></div><div className="v">{euro(b.paye)}</div><div className="d">MO {euro(b.moA)} · fournitures {euro(b.matA)}</div></div>
@@ -289,7 +325,33 @@ export async function RapportPDF({
         </div>
       </div>
 
-      {/* Détail par corps d'état */}
+      {/* Construction neuve : détail par phase du chantier (un corps d'état couvre plusieurs phases). */}
+      {phNeuf ? (
+      <div className="sec">
+        <div className="sec-t">{n.pdf.parPhaseT} <span className="hint">{n.pdf.parPhaseHint}</span></div>
+        <table>
+          <thead><tr><th>{n.pdf.phase}</th><th>{n.pdf.poids}</th><th className="amt">{n.pdf.montant}</th></tr></thead>
+          <tbody>
+            {PHASES_NEUF.map((p) => (
+              <tr key={p}>
+                <td>{catT(locale, "phases", p)}</td>
+                <td className="barcell"><div className="t"><div className="f" style={{ width: Math.max(6, ((phNeuf[p] ?? 0) / maxPh) * 100) + "%" }} /></div></td>
+                <td className="amt">{euro(phNeuf[p] ?? 0)}</td>
+              </tr>
+            ))}
+            {persoTtc > 0 && (
+              <tr>
+                <td>{n.pdf.perso}</td>
+                <td className="barcell"><div className="t"><div className="f" style={{ width: Math.max(6, (persoTtc / maxPh) * 100) + "%" }} /></div></td>
+                <td className="amt">{euro(persoTtc)}</td>
+              </tr>
+            )}
+            <tr className="tot-row"><td>{n.pdf.totalHorsAleas}</td><td /><td className="amt">{euro(budgetTotal)}</td></tr>
+          </tbody>
+        </table>
+      </div>
+      ) : (
+      /* Détail par corps d'état */
       <div className="sec">
         <div className="sec-t">Détail par corps d&apos;état</div>
         <table>
@@ -307,6 +369,37 @@ export async function RapportPDF({
           </tbody>
         </table>
       </div>
+      )}
+
+      {/* Construction neuve : étapes et démarches, du permis à la remise des clés. */}
+      {neuf && (
+        <div className="sec etapes">
+          <div className="sec-t">{n.pdf.etapesT} <span className="hint">{n.pdf.etapesHint}</span></div>
+          <table>
+            <thead><tr><th>{n.pdf.phase}</th><th>{n.pdf.jalon}</th><th>{n.pdf.duree}</th></tr></thead>
+            <tbody>
+              {PHASES_NEUF.map((p) => {
+                const info = INFO_PHASES[p];
+                if (!info) return null;
+                return (
+                  <tr key={p}>
+                    <td><b>{catT(locale, "phases", p)}</b></td>
+                    <td>
+                      {info.jalon[locale]}
+                      {info.dem.length > 0 && (
+                        <ul className="dem">
+                          {info.dem.map((d, i) => <li key={i}><b>{d.quand[locale]}</b> · {d.quoi[locale]}</li>)}
+                        </ul>
+                      )}
+                    </td>
+                    <td className="ph">{info.duree[locale]}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Lignes personnalisées */}
       {customVal.length > 0 && (
@@ -350,6 +443,7 @@ export async function RapportPDF({
 
       <div className="foot">
         <b>Estimation indicative</b> générée par AVYORA à partir des informations saisies — marge ±15 %. Elle ne constitue pas un devis et n&apos;engage aucun artisan. Les prix intègrent un coefficient régional appliqué à la main-d&apos;œuvre (zone : {reg.zone}) et le niveau de finition « {ctx.finition} ». Provision pour aléas de {ctx.aleas} % incluse.<br />
+        {neuf && <>{n.pdf.pied}<br /></>}
         <b>AVYORA</b> · estime tes travaux avant de signer · getavyora.fr
       </div>
     </div>
