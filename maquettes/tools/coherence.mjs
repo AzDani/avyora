@@ -369,9 +369,9 @@ console.log("\n7. Prix de Pro : l'éditeur dit celui de la page Tarifs");
   else console.log(`  ✓ ${editeur} (page Tarifs : ${mensuel} / mois)`);
 }
 
-/* ── 8. Le lien « Plan final → construction » (C7) : la route que l'éditeur ouvrira existe et lit
-   `?source=editeur-plan` et le fragment `#plan=`. Complété en C9 par la constante CONSTRUCTION_URL
-   de l'éditeur, qui devra pointer vers cette route. ── */
+/* ── 8. Le lien « Plan final → construction » (C7, C9 / D75) : la route que l'éditeur ouvre existe et lit
+   `?source=editeur-plan` et le fragment `#plan=` ; la constante CONSTRUCTION_URL de l'éditeur (seule adresse écrite)
+   vise cette route, sur getavyora.fr, avec `?source=editeur-plan`, et l'éditeur y met bien `#plan=`. ── */
 console.log("\n8. Lien du Plan final vers l'estimation de la construction");
 {
   const ROUTE = "app/estimation-construction-maison/page.tsx";
@@ -384,10 +384,23 @@ console.log("\n8. Lien du Plan final vers l'estimation de la construction");
     if (!ctxNeuf || !/lire\("source"\)\s*===\s*"editeur-plan"/.test(ctxNeuf)) manque.push("lib/neuf-contexte.ts ne lit pas ?source=editeur-plan");
     if (!comp || !comp.includes('"#plan="') || !/replaceState/.test(comp) || !/lirePlanNeuf/.test(comp)) manque.push("EstimateurRapideNeuf ne lit pas #plan= (ou ne nettoie pas l'URL)");
     if (!lib || !/planNeufSchema/.test(lib) || !/maisonDepuisPlan/.test(lib)) manque.push("lib/estimateur/plan-neuf.ts incomplet");
-    const MAQ_CONSTR = (MAQ.match(/CONSTRUCTION_URL\s*=\s*'([^']+)'/) || [])[1];
-    if (MAQ_CONSTR && !MAQ_CONSTR.includes("/estimation-construction-maison")) manque.push(`CONSTRUCTION_URL de l'éditeur (${MAQ_CONSTR}) ne vise pas la route`);
+    /* l'éditeur (D75) : la constante, la route qu'elle vise, et le fragment qu'il y ajoute */
+    const MAQ_CONSTR = (MAQ.match(/const CONSTRUCTION_URL\s*=\s*'([^']+)'/) || [])[1];
+    let u = null; try { u = MAQ_CONSTR ? new URL(MAQ_CONSTR) : null; } catch { u = null; }
+    const routeVisee = u ? "app" + u.pathname.replace(/\/$/, "") + "/page.tsx" : null;
+    if (!MAQ_CONSTR) manque.push("CONSTRUCTION_URL absente de l'éditeur");
+    else if (!u) manque.push(`CONSTRUCTION_URL illisible (${MAQ_CONSTR})`);
+    else {
+      if (u.protocol !== "https:" || u.hostname !== "getavyora.fr") manque.push(`CONSTRUCTION_URL ne vise pas https://getavyora.fr (${u.origin})`);
+      if (routeVisee !== ROUTE || !fs.existsSync(routeVisee)) manque.push(`CONSTRUCTION_URL vise ${u.pathname}, route ${routeVisee} ${fs.existsSync(routeVisee) ? "≠ " + ROUTE : "inexistante"}`);
+      if (u.searchParams.get("source") !== "editeur-plan") manque.push("CONSTRUCTION_URL sans ?source=editeur-plan");
+      if (u.hash) manque.push("CONSTRUCTION_URL porte déjà un fragment");
+    }
+    if (!/CONSTRUCTION_URL\+'#plan='\+/.test(MAQ)) manque.push("l'éditeur n'ajoute pas #plan= à CONSTRUCTION_URL (lienConstruction)");
+    const ecrites = [...new Set(MAQ.match(/https?:\/\/[^'"`\s)]*estimation-construction-maison[^'"`\s)]*/g) || [])];
+    if (ecrites.length !== 1) manque.push(`l'adresse est écrite ${ecrites.length} fois dans l'éditeur (une seule : CONSTRUCTION_URL) — ${ecrites.join(", ")}`);
     if (manque.length) KO("lien du Plan final cassé", manque.join(" · "));
-    else console.log(`  ✓ ${ROUTE} lit ?source=editeur-plan et #plan=${MAQ_CONSTR ? " · éditeur : " + MAQ_CONSTR : " · éditeur : lien à poser en C9"}`);
+    else console.log(`  ✓ ${ROUTE} lit ?source=editeur-plan et #plan= · éditeur : CONSTRUCTION_URL = ${MAQ_CONSTR} → ${routeVisee}`);
   }
 }
 
