@@ -582,10 +582,14 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
               {open && lignesPh.map((li, i) => {
                 const k = li.cle, kOld = cleLegacy(li);
                 const tk = neuf ? tache(li.cle) : undefined;
-                const jalon = estJalon(tk);
-                // Ligne au pourcentage (assurance dommages-ouvrage…) : pas de quantité, sa part des travaux.
-                const qtyTxt = li.unite === "pct" && tk?.fp != null
-                  ? `${tk.fp.toLocaleString("fr-FR")} ${n.pctTravaux}`
+                // Démarche : seulement tant que son montant est nul (un prix perso en fait une ligne chiffrée).
+                const jalon = estJalon(tk) && li.ttc === 0;
+                // Ligne au pourcentage (assurance dommages-ouvrage…) : pas de quantité, sa part des travaux,
+                // sauf si un prix perso l'a figée (le pourcentage n'est alors plus ce qui la chiffre).
+                const qtyTxt = li.unite === "pct"
+                  ? (tk?.fp != null && sel[li.cle]?.pu == null
+                    ? `${tk.fp.toLocaleString("fr-FR")} ${tk.assiette === "projet" || (tk.frais && tk.assiette !== "travaux") ? n.pctProjet : n.pctTravaux}`
+                    : "—")
                   : li.qty + " " + (li.mode === "location" ? s.dayAbbr : catT(locale, "unites", li.unite));
                 const st = statutLigne(statuts, li);
                 const stLabel = st === 2 ? s.stDone : st === 1 ? s.stInProgress : s.stToStart;

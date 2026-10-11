@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import Estimateur from "@/components/Estimateur";
 import EstimateurRapide from "@/components/EstimateurRapide";
 import EstimateurRapideNeuf from "@/components/neuf/EstimateurRapideNeuf";
+import EstimateurNeuf from "@/components/neuf/EstimateurNeuf";
 import { getProjet } from "@/lib/data/projects";
 import { getUser, estPro } from "@/lib/auth";
 import { getLocale } from "@/lib/i18n/server";
@@ -29,16 +30,14 @@ export default async function ModifierProjet({ params }: { params: Promise<{ id:
   const s = TR[locale];
   const pro = estPro(user);
   const rep = (projet.reponses ?? {}) as { ctx?: Ctx; codePostal?: string; ampleur?: Ampleur; qui?: QuiRealise; mode?: string; origine?: OrigineNeuf };
-  // Construction neuve : les éditeurs de la RÉNOVATION le réenregistreraient en rénovation
-  // (catalogue, ampleur). Gratuit → le rapide du neuf (ci-dessous). Pro → retour à la fiche, sans
-  // rien écrire, en attendant le détaillé du neuf (chantier C4).
+  // Construction neuve : jamais les éditeurs de la RÉNOVATION (ils le réenregistreraient en
+  // rénovation : catalogue, ampleur). Pro → le détaillé du neuf ; gratuit → le rapide du neuf.
   const neuf = estNeuf(rep.ctx);
-  if (neuf && pro) redirect(`/projets/${id}`);
   /* Le rapide neuf reprend la maison décrite (`base`) seulement quand elle est une vraie saisie :
      un projet DÉTAILLÉ rouvert en gratuit, ou une maison venue d'un plan. Un projet RAPIDE se
      redéduit de ses 5 réponses, sinon ses chambres et salles d'eau (déduites de l'ancienne
      surface) survivraient à un changement de surface. */
-  const maison = neuf ? maisonComplete(rep.ctx?.neuf) : null;
+  const maison = neuf && !pro ? maisonComplete(rep.ctx?.neuf) : null;
   const detaille = neuf && rep.mode !== "rapide";
   const baseNeuf = neuf && (detaille || rep.origine?.source === "plan") ? rep.ctx?.neuf : undefined;
 
@@ -58,7 +57,9 @@ export default async function ModifierProjet({ params }: { params: Promise<{ id:
         <p className="mt-1.5 text-[15px] text-muted">{projet.nom} — {s.sous}</p>
       </header>
 
-      {maison ? (
+      {neuf && pro ? (
+        <EstimateurNeuf initialState={(projet.reponses as Record<string, unknown>) ?? {}} projectId={projet.id} />
+      ) : maison ? (
         <EstimateurRapideNeuf
           edit={{ projectId: projet.id }}
           base={baseNeuf}

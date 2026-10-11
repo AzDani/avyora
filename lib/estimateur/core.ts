@@ -663,8 +663,10 @@ export function lotHT(ctx: Ctx, sel: Selection, l: Lot): number {
   return l.t.reduce((s, t) => s + lineHT(ctx, sel, l, t), 0);
 }
 
-/** Ligne personnalisée saisie par l'utilisateur (par lot). Prix HT, TVA propre. */
-export interface CustomLine { id: string; lot: string; nom: string; prix: number; unite: string; qte: number; note?: string; tva: number; on?: boolean; draft?: boolean; }
+/** Ligne personnalisée saisie par l'utilisateur (par lot). Prix HT, TVA propre.
+ *  `phase` : construction neuve seulement (un lot y revient dans plusieurs phases) — la phase où
+ *  la ligne s'affiche. La rénovation ne l'écrit ni ne la lit ; les totaux l'ignorent. */
+export interface CustomLine { id: string; lot: string; nom: string; prix: number; unite: string; qte: number; note?: string; tva: number; on?: boolean; draft?: boolean; phase?: string; }
 const clOn = (x: CustomLine): boolean => x.on !== false && !x.draft; // validée (cochée) et non en cours d'édition
 /** Total HT des lignes perso VALIDÉES d'un lot donné. */
 export function customLotHT(lines: CustomLine[], lot: string): number {

@@ -49,7 +49,8 @@ describe("Neuf · un même projet, un même chiffre", () => {
     expect(t).toContain("3 chambres · plain-pied");
     expect(t).toContain(`${lotsParCorps(dv.lots).length} corps · 92 postes`);
     expect(t).not.toContain("Ampleur");
-    expect(t).toContain("3,5 % des travaux");
+    // L'assurance dommages-ouvrage se calcule sur le projet (études comprises), pas sur les travaux.
+    expect(t).toContain("3,5 % du projet");
   });
 
   it("le suivi montre les 92 lignes dans les 9 phases, les 8 démarches en badge", () => {

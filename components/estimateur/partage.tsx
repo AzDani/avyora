@@ -68,7 +68,8 @@ export function Stepper({ label, hint, value, onStep }: { label: string; hint?: 
 
 export const isUrl = (s?: string) => /^https?:\/\//i.test((s || "").trim());
 export const CL_UNITS = ["m²", "ml", "u", "forfait", "jour", "m³", "tonne"];
-export function CustomLines({ lines, onAdd, onUpd, onDel }: { lines: CustomLine[]; onAdd: () => void; onUpd: (id: string, patch: Partial<CustomLine>) => void; onDel: (id: string) => void }) {
+/** `guideTva` (facultatif, construction neuve) remplace le texte du guide « Quelle TVA ? » de la rénovation. */
+export function CustomLines({ lines, onAdd, onUpd, onDel, guideTva }: { lines: CustomLine[]; onAdd: () => void; onUpd: (id: string, patch: Partial<CustomLine>) => void; onDel: (id: string) => void; guideTva?: React.ReactNode }) {
   const [guide, setGuide] = useState<string | null>(null);
   const [confirmDel, setConfirmDel] = useState<string | null>(null);
   const askDel = (id: string) => { setConfirmDel(id); setTimeout(() => setConfirmDel((c) => (c === id ? null : c)), 3000); };
@@ -111,7 +112,7 @@ export function CustomLines({ lines, onAdd, onUpd, onDel }: { lines: CustomLine[
             <label className="cl-tvalab">TVA <select value={String(l.tva)} onChange={(e) => onUpd(l.id, { tva: parseFloat(e.target.value) })}><option value="5.5">5,5 %</option><option value="10">10 %</option><option value="20">20 %</option></select></label>
             <button type="button" className="cl-info" onClick={() => setGuide(guide === l.id ? null : l.id)} title="Guide TVA">i</button>
           </div>
-          {guide === l.id && <div className="cl-guide"><b>Quelle TVA ?</b> · <b>5,5 %</b> réno énergétique · <b>10 %</b> amélioration logement +2 ans (standard) · <b>20 %</b> neuf, −2 ans, local pro ou matériaux seuls.</div>}
+          {guide === l.id && <div className="cl-guide">{guideTva ?? <><b>Quelle TVA ?</b> · <b>5,5 %</b> réno énergétique · <b>10 %</b> amélioration logement +2 ans (standard) · <b>20 %</b> neuf, −2 ans, local pro ou matériaux seuls.</>}</div>}
           <div className="clr cl-actions">
             <button type="button" className="cl-valider" onClick={() => onUpd(l.id, { draft: false, on: true })} disabled={!l.nom.trim() || !(l.prix > 0)}>✓ Valider la tâche</button>
             <button type="button" className="cl-cancel" onClick={() => onDel(l.id)}>Annuler</button>
