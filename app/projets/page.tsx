@@ -6,7 +6,7 @@ import ClaimDraft from "@/components/ClaimDraft";
 import ProUpsell from "@/components/ProUpsell";
 import { getUser, estPro } from "@/lib/auth";
 import { getLocale } from "@/lib/i18n/server";
-import { dict } from "@/lib/i18n/dictionaries";
+import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 
 export const dynamic = "force-dynamic";
 
@@ -104,7 +104,7 @@ export default async function ProjetsPage() {
           <p className="eyebrow">{s.portefeuille}</p>
           <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-ink">{s.projets}</h1>
           <p className="mt-1.5 text-[15px] text-muted">
-            {aDuNeuf ? dict(locale).neuf.introListe : s.intro}
+            {aDuNeuf ? dictNeufCommun(locale).introListe : s.intro}
           </p>
         </header>
       )}

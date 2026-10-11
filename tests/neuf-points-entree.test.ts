@@ -8,6 +8,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createElement, type ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { dict } from "@/lib/i18n/dictionaries";
+import { dictNeuf } from "@/lib/i18n/neuf";
 
 type Locale = "fr" | "en";
 
@@ -66,7 +67,7 @@ describe("Écran de choix · flag allumé", () => {
   it("une bascule à deux liens, l'actif marqué aria-current", async () => {
     const r = await charger(true, "fr");
     const reno = await r.choix(false), neuf = await r.choix(false, "neuf");
-    const t = dict("fr").neuf.choix;
+    const t = dictNeuf("fr").choix;
     expect(reno).toContain(`<nav class="nature" aria-label="${t.natureAria}">`);
     expect(reno).toContain(`<a aria-current="page" href="/projets/nouveau">${t.reno}</a>`);
     expect(reno).toContain(`<a href="/projets/nouveau?nature=neuf">${t.neuf}</a>`);
@@ -77,7 +78,7 @@ describe("Écran de choix · flag allumé", () => {
   it("en neuf : textes de la construction, rapide public et détaillé Pro du neuf", async () => {
     for (const locale of ["fr", "en"] as const) {
       const r = await charger(true, locale);
-      const t = dict(locale).neuf.choix;
+      const t = dictNeuf(locale).choix;
       const pro = await r.choix(true, "neuf"), gratuit = await r.choix(false, "neuf");
       for (const html of [pro, gratuit]) {
         expect(html).toContain('href="/estimation-construction-maison"');
@@ -121,7 +122,7 @@ describe("Textes ajoutés", () => {
   it("puce Pro, pied de page et bascule : FR et EN présents, sans emoji", () => {
     for (const locale of ["fr", "en"] as const) {
       const t = dict(locale);
-      const textes = [t.tarifs.featureNeuf, t.footer.construction, ...Object.values(t.neuf.choix)];
+      const textes = [t.tarifs.featureNeuf, t.footer.construction, ...Object.values(dictNeuf(locale).choix)];
       for (const s of textes) {
         expect(s.length).toBeGreaterThan(0);
         expect(s).not.toMatch(/\p{Extended_Pictographic}/u);

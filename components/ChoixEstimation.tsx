@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getT } from "@/lib/i18n/server";
+import { dictNeuf } from "@/lib/i18n/neuf";
 import { FEATURES } from "@/lib/features";
 
 /**
@@ -12,9 +13,9 @@ import { FEATURES } from "@/lib/features";
  * mènent au rapide et au détaillé du neuf. Flag éteint : aucune bascule, HTML d'origine.
  */
 export default async function ChoixEstimation({ isPro, nature = "reno" }: { isPro: boolean; nature?: "reno" | "neuf" }) {
-  const { t: tr } = await getT();
+  const { t: tr, locale } = await getT();
   const neuf = FEATURES.neuf && nature === "neuf";
-  const n = tr.neuf.choix;
+  const n = dictNeuf(locale).choix;
   // En neuf, seuls les textes propres à la construction changent ; le reste (tags, boutons, pieds) est commun.
   const t = neuf ? { ...tr.choix, ...n } : tr.choix;
   const lienRapide = neuf ? "/estimation-construction-maison" : "/estimation-travaux";

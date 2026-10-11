@@ -1,7 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import EstimateurNeuf from "@/components/neuf/EstimateurNeuf";
 import { getUser, estPro } from "@/lib/auth";
-import { getT } from "@/lib/i18n/server";
+import { getLocale } from "@/lib/i18n/server";
+import { dictNeuf } from "@/lib/i18n/neuf";
 import { FEATURES } from "@/lib/features";
 
 // noindex : page gatée, comme le détaillé de la rénovation (`/projets/nouveau/detaille`). La
@@ -21,8 +22,7 @@ export default async function NouveauProjetConstruction() {
   const user = await getUser();
   if (!user) redirect("/tarifs");
   if (!estPro(user)) redirect("/tarifs");
-  const { t } = await getT();
-  const d = t.neuf.detail;
+  const d = dictNeuf(await getLocale()).detail;
 
   return (
     <div className="space-y-6">

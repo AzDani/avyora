@@ -8,6 +8,7 @@ import { normaliserCles } from "@/lib/estimateur/identite";
 import { catLigne } from "@/lib/estimateur/catalog-i18n";
 import { getLocale } from "@/lib/i18n/server";
 import { dict } from "@/lib/i18n/dictionaries";
+import { dictNeuf } from "@/lib/i18n/neuf";
 import BilanRapideNeuf from "./BilanRapideNeuf";
 
 /**
@@ -48,7 +49,7 @@ export default async function ResultatRapideNeuf({
 }: { reponses: Reponses; projectId: string; isPro: boolean }) {
   const locale = await getLocale();
   const d = dict(locale);
-  const n = d.neuf;
+  const n = dictNeuf(locale);
   const t = n.rapide;
   const ctx = { ...(reponses.ctx ?? {}), codePostal: reponses.ctx?.codePostal ?? reponses.codePostal } as Ctx;
   const sel = normaliserCles((reponses.sel ?? {}) as Selection);

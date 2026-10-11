@@ -38,6 +38,7 @@ import type { MaisonDuPlan, RefusPlan } from "@/lib/estimateur/plan-neuf";
 import { suivre } from "@/lib/track";
 import { conversionEstimation } from "@/lib/gtag";
 import { useT, useLocale } from "@/components/i18n/LangProvider";
+import { dictNeuf } from "@/lib/i18n/neuf";
 import Stepper from "@/components/Stepper";
 import { CountUpNf as CountUp } from "@/components/estimateur/CountUp";
 import { RAPIDE_CSS } from "@/components/estimateur/rapide-styles";
@@ -82,8 +83,8 @@ export default function EstimateurRapideNeuf({
 }) {
   const router = useRouter();
   const T = useT();
-  const s = T.neuf.saisie;
   const locale = useLocale();
+  const s = dictNeuf(locale).saisie;
   const nf = locale === "en" ? "en-US" : "fr-FR";
 
   const [R, setR] = useState<ReponsesRapideNeuf>(() => ({

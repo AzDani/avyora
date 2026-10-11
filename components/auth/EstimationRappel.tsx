@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { CATALOG, buildDevis, catalogueDe, type Ctx, type Selection } from "@/lib/estimateur";
 import { CLE_BROUILLON_NEUF, CLE_RECLAMATION, RECLAMATION_NEUF, lireBrouillonNeuf } from "@/lib/estimateur/brouillon-neuf";
-import { useT } from "@/components/i18n/LangProvider";
+import { useLocale } from "@/components/i18n/LangProvider";
+import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 
 /**
  * Affiché sur /inscription quand l'utilisateur arrive depuis une estimation (brouillon présent) :
@@ -14,7 +15,7 @@ const fmt = (n: number) => n.toLocaleString("fr-FR");
 
 export function EstimationRappel() {
   const [info, setInfo] = useState<{ lo: number; hi: number; label: string } | null>(null);
-  const maisonNeuve = useT().neuf.maisonNeuve;
+  const maisonNeuve = dictNeufCommun(useLocale()).maisonNeuve;
 
   useEffect(() => {
     // Construction neuve (drapeau « neuf ») : son brouillon, chiffré sur le catalogue du neuf.

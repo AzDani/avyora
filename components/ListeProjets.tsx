@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/components/i18n/LangProvider";
-import { dict } from "@/lib/i18n/dictionaries";
+import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 
 const TR = {
   fr: {
@@ -131,7 +131,7 @@ export default function ListeProjets({
   const router = useRouter();
   const locale = useLocale();
   const s = TR[locale];
-  const n = dict(locale).neuf;
+  const n = dictNeufCommun(locale);
   const [selection, setSelection] = useState<Set<number | string>>(new Set());
   const [modeSelection, setModeSelection] = useState(false);
   const [busy, setBusy] = useState(false);

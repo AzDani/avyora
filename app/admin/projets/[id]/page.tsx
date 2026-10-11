@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getProjetAdmin, getInscrit } from "@/lib/data/admin";
 import EstimationResultat from "@/components/EstimationResultat";
 import { regionLabel, estNeuf, type Ctx, type Selection } from "@/lib/estimateur";
-import { dict } from "@/lib/i18n/dictionaries";
+import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +36,7 @@ export default async function AdminProjet({ params }: { params: Promise<{ id: st
             <span className="chip num">{projet.surface} m²</span>
             <span className="chip num">{projet.codePostal}</span>
             <span className="chip">{regionLabel(projet.codePostal)}</span>
-            {estNeuf(reponses.ctx) && <span className="chip">{dict("fr").neuf.badge}</span>}
+            {estNeuf(reponses.ctx) && <span className="chip">{dictNeufCommun("fr").badge}</span>}
           </div>
         </div>
         <span className="inline-flex items-center gap-2 rounded-full border border-[#f0c98a] bg-[#fdf1e1] px-3 py-1.5 text-[12px] font-semibold text-[#b06d10]">

@@ -10,7 +10,7 @@ import { regionLabel, estNeuf, type Ctx, type Selection, type Ampleur, type QuiR
 import RenameTitre from "@/components/RenameTitre";
 import TelechargerRapport from "@/components/TelechargerRapport";
 import { getLocale } from "@/lib/i18n/server";
-import { dict } from "@/lib/i18n/dictionaries";
+import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 
 export const dynamic = "force-dynamic";
 
@@ -52,7 +52,7 @@ export default async function ProjetPage({ params }: { params: Promise<{ id: str
             <span className="chip num">{projet.surface} m²</span>
             <span className="chip num">{projet.code_postal}</span>
             <span className="chip">{regionLabel(projet.code_postal)}</span>
-            {neuf && <span className="chip">{dict(locale).neuf.badge}</span>}
+            {neuf && <span className="chip">{dictNeufCommun(locale).badge}</span>}
           </div>
         </div>
         <div className="flex flex-col items-end gap-2">

@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 import {
-  buildDevis, catalogueDe, decoupe, parPhase, surcoutArgile, geometrieNeuf, maisonComplete, PHASES_NEUF, EXTERIEURS_HORS_PERIMETRE,
-  type Ctx, type Selection, type QuiRealise,
+  buildDevis, catalogueDe, geometrieNeuf, maisonComplete, PHASES_NEUF, type Ctx, type Selection, type QuiRealise,
 } from "@/lib/estimateur";
+import { decoupe, parPhase, surcoutArgile, EXTERIEURS_HORS_PERIMETRE } from "@/lib/estimateur/etapes-neuf";
 import { catT } from "@/lib/estimateur/catalog-i18n";
-import { dict } from "@/lib/i18n/dictionaries";
+import { dictNeuf } from "@/lib/i18n/neuf";
 import type { Locale } from "@/lib/i18n/config";
 
 /**
@@ -62,7 +62,7 @@ const IconeX = () => (
 export default function BilanRapideNeuf({
   ctx, sel, qui, locale, cta,
 }: { ctx: Ctx; sel: Selection; qui?: QuiRealise; locale: Locale; cta?: ReactNode }) {
-  const n = dict(locale).neuf;
+  const n = dictNeuf(locale);
   const t = n.rapide;
   const nf = locale === "en" ? "en-US" : "fr-FR";
   const eur = (v: number) => Math.round(v || 0).toLocaleString(nf) + " €";

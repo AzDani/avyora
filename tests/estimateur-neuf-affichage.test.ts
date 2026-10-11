@@ -1,11 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import {
-  PHASES, PHASES_NEUF, CATALOG, CATALOG_NEUF, buildDevis, catalogueDe, presetRapide, presetNeuf, presetMaison, maisonComplete, maisonParDefaut,
-  estNeuf, natureProjet, phasesDe, lotsParCorps, tachesParCle, estJalon, estimationProjet,
-  INFO_PHASES, LOTS_ANNEXES, decoupe, parPhase, surcoutArgile, EXTERIEURS_HORS_PERIMETRE, nomProjetNeuf, QUESTIONS_NEUF,
-  type Ampleur, type QuiRealise, type Finition, type TypeBien, type RapideNeufInput, type MaisonNeuve, type Ctx, type Selection,
+  PHASES, PHASES_NEUF, CATALOG, CATALOG_NEUF, buildDevis, catalogueDe, presetRapide, presetNeuf, presetMaison, maisonComplete,
+  maisonParDefaut, estNeuf, natureProjet, phasesDe, lotsParCorps, tachesParCle, estJalon, estimationProjet, type Ampleur,
+  type QuiRealise, type Finition, type TypeBien, type RapideNeufInput, type MaisonNeuve, type Ctx, type Selection,
 } from "@/lib/estimateur";
+import { INFO_PHASES, LOTS_ANNEXES, decoupe, parPhase, surcoutArgile, EXTERIEURS_HORS_PERIMETRE, nomProjetNeuf } from "@/lib/estimateur/etapes-neuf";
+import { QUESTIONS_NEUF } from "@/lib/estimateur/questions-neuf";
 import { catT } from "@/lib/estimateur/catalog-i18n";
 
 const lire = (f: string) => readFileSync(new URL(`../${f}`, import.meta.url), "utf8");

@@ -1,5 +1,5 @@
 import { listInscrits, statsGlobales, type Repartition } from "@/lib/data/admin";
-import { dict } from "@/lib/i18n/dictionaries";
+import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 
 export const dynamic = "force-dynamic";
 
@@ -7,7 +7,7 @@ const euros = (n: number) => new Intl.NumberFormat("fr-FR", { style: "currency",
 
 /** « budget moyen X » (rénovation), suivi de « construction neuve Y » s'il y a des projets neufs. */
 function budgetsMoyens(reno: number | null, neuf: number | null): string | undefined {
-  const parts = [reno != null ? `budget moyen ${euros(reno)}` : "", neuf != null ? `${dict("fr").neuf.badge.toLowerCase()} ${euros(neuf)}` : ""].filter(Boolean);
+  const parts = [reno != null ? `budget moyen ${euros(reno)}` : "", neuf != null ? `${dictNeufCommun("fr").badge.toLowerCase()} ${euros(neuf)}` : ""].filter(Boolean);
   return parts.length ? parts.join(" · ") : undefined;
 }
 

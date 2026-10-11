@@ -1,8 +1,9 @@
 import {
-  buildDevis, regionCoef, ICON, customTotals, piecesEff, sdbEff, type Ctx, type Selection, type CustomLine,
-  catalogueDe, estNeuf, lotsParCorps, parPhase, maisonComplete, PHASES_NEUF, INFO_PHASES,
+  buildDevis, regionCoef, ICON, customTotals, piecesEff, sdbEff, type Ctx, type Selection, type CustomLine, catalogueDe, estNeuf,
+  lotsParCorps, maisonComplete, PHASES_NEUF,
 } from "@/lib/estimateur";
-import { dict } from "@/lib/i18n/dictionaries";
+import { parPhase, INFO_PHASES } from "@/lib/estimateur/etapes-neuf";
+import { dictNeuf } from "@/lib/i18n/neuf";
 import { normaliserCles } from "@/lib/estimateur/identite";
 import { catT, catLigne } from "@/lib/estimateur/catalog-i18n";
 import { getLocale } from "@/lib/i18n/server";
@@ -155,7 +156,7 @@ export async function RapportPDF({
   if (!ctx) return null;
 
   const neuf = estNeuf(ctx);
-  const n = dict(locale).neuf;
+  const n = dictNeuf(locale);
   const dv = buildDevis(catalogueDe(ctx), ctx, sel);
   const b = dv.bilan;
   // Totaux = postes par défaut + lignes personnalisées (les aléas s'appliquent aussi au HT perso).

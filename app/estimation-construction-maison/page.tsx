@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import EstimateurRapideNeuf from "@/components/neuf/EstimateurRapideNeuf";
-import { getT } from "@/lib/i18n/server";
+import { getLocale } from "@/lib/i18n/server";
+import { dictNeuf } from "@/lib/i18n/neuf";
 import { getUser, estPro } from "@/lib/auth";
 import { FEATURES } from "@/lib/features";
 import { og } from "@/lib/seo-og";
@@ -39,8 +40,8 @@ export default async function EstimationConstructionMaison({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   if (!FEATURES.neuf) notFound();
-  const [{ t: tr }, user, sp] = await Promise.all([getT(), getUser(), searchParams]);
-  const t = tr.neuf.saisie;
+  const [locale, user, sp] = await Promise.all([getLocale(), getUser(), searchParams]);
+  const t = dictNeuf(locale).saisie;
   const isPro = !!user && estPro(user);
   const initial = contexteNeuf(sp);
 

@@ -8,18 +8,18 @@
  */
 import { useMemo } from "react";
 import {
-  buildDevis, customTotals, decoupe, tachesParCle, estJalon, CATALOG_NEUF, PHASES_NEUF,
-  type Ctx, type Selection, type CustomLine,
+  buildDevis, customTotals, tachesParCle, estJalon, CATALOG_NEUF, PHASES_NEUF, type Ctx, type Selection, type CustomLine,
 } from "@/lib/estimateur";
+import { decoupe } from "@/lib/estimateur/etapes-neuf";
 import { catT, catLigne } from "@/lib/estimateur/catalog-i18n";
-import { useLocale, useT } from "@/components/i18n/LangProvider";
+import { useLocale } from "@/components/i18n/LangProvider";
+import { dictNeuf } from "@/lib/i18n/neuf";
 import { CountUp } from "@/components/estimateur/CountUp";
 import { fmt } from "@/components/estimateur/partage";
 
 export default function DevisNeuf({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Selection; custom?: CustomLine[] }) {
   const locale = useLocale();
-  const T = useT();
-  const n = T.neuf;
+  const n = dictNeuf(locale);
   const d = n.detail;
   const dv = useMemo(() => buildDevis(CATALOG_NEUF, ctx, sel), [ctx, sel]);
   const taches = useMemo(() => tachesParCle(ctx), [ctx]);

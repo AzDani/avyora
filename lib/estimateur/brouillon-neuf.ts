@@ -13,7 +13,7 @@
 import type { Ctx, Selection, Finition, CustomLine } from "./core";
 import type { MaisonNeuve, Niveaux } from "./neuf";
 import type { QuiRealise } from "./presets";
-import { dict } from "../i18n/dictionaries";
+import { dictNeufCommun } from "../i18n/neuf-commun";
 import type { Locale } from "../i18n/config";
 
 /** Brouillon du rapide neuf (et graine de l'« Affiner » du neuf). */
@@ -52,7 +52,7 @@ export type BrouillonNeuf = {
 
 /** Nom par défaut d'un projet neuf : « Construction neuve — Maison plain-pied 100 m² ». */
 export function nomProjetNeuf(maison: Pick<MaisonNeuve, "niveaux" | "surface">, locale: Locale = "fr"): string {
-  const t = dict(locale).neuf;
+  const t = dictNeufCommun(locale);
   const maisonTxt = t.maisonNiveaux[maison.niveaux] ?? t.maisonNiveaux.pp;
   return `${t.projetNom} — ${maisonTxt} ${Math.round(maison.surface)} m²`;
 }

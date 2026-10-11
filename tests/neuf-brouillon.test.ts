@@ -10,7 +10,7 @@ import {
   brouillonRapideNeuf, lireBrouillonNeuf, corpsProjetNeuf, nomProjetNeuf,
   CLE_BROUILLON_NEUF, RECLAMATION_NEUF, TYPE_BIEN_NEUF,
 } from "@/lib/estimateur/brouillon-neuf";
-import { nomProjetNeuf as nomDepuisIndex } from "@/lib/estimateur";
+import { nomProjetNeuf as nomDepuisIndex } from "@/lib/estimateur/etapes-neuf";
 import { contexteNeuf } from "@/lib/neuf-contexte";
 import { projetCreateSchema, projetPatchSchema } from "@/lib/validation";
 import BilanRapideNeuf from "@/components/neuf/BilanRapideNeuf";

@@ -7,21 +7,12 @@
 import { useMemo, useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  PIECES,
-  CATALOG,
-  buildDevis,
-  presetRapide,
-  presetPieces,
-  AMPLEURS,
-  regionCoef,
-  type Ampleur,
-  type QuiRealise,
-  type TypeBien,
-  type Finition,
-  type PieceKey,
-  type PieceSel,
-} from "@/lib/estimateur";
+// Sous-modules ciblés plutôt que le baril `@/lib/estimateur` : le baril réexporte aussi le moteur
+// de la construction neuve, qui n'a rien à faire dans le bundle de cette page.
+import { buildDevis, regionCoef, type TypeBien, type Finition } from "@/lib/estimateur/core";
+import { CATALOG } from "@/lib/estimateur/catalog";
+import { presetRapide, AMPLEURS, type Ampleur, type QuiRealise } from "@/lib/estimateur/presets";
+import { PIECES, presetPieces, type PieceKey, type PieceSel } from "@/lib/estimateur/pieces";
 import { suivre } from "@/lib/track";
 import { conversionEstimation } from "@/lib/gtag";
 import { useT, useLocale } from "@/components/i18n/LangProvider";

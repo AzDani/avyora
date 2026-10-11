@@ -8,7 +8,7 @@ import NumStepper from "@/components/Stepper";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { catT } from "@/lib/estimateur/catalog-i18n";
 import { key, isAuto, autoQty, lineHT, effPrices, type Ctx, type Selection, type Lot, type Tache } from "@/lib/estimateur";
-import { dict } from "@/lib/i18n/dictionaries";
+import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 import { ChoicePrice, fmt, isUrl } from "./partage";
 
 export function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar, onNote, onPu, onPm, puReel, diy, badge }: {
@@ -46,7 +46,7 @@ export function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQt
     : puEdited ? s.pu!                                                                     // total figé (devis)
     : pmEdited && puMatBase != null ? s.pm! + moUnit                                       // matériaux perso + MO
     : puvBase;                                                                             // calcul normal
-  const nTxt = dict(locale).neuf;
+  const nTxt = dictNeufCommun(locale);
   const unitPart = badge !== "pct" && t.u !== "forfait" && t.u !== "u" ? "/" + t.u : "";
   // Un frais (taxe, assurance) ne porte pas de TVA : pas de « HT ». N'existe qu'en neuf.
   const uSuffix = t.frais ? unitPart + " · " + nTxt.sansTva : " HT" + unitPart;

@@ -11,9 +11,10 @@ import { useLocale } from "@/components/i18n/LangProvider";
 import { catT, catLigne } from "@/lib/estimateur/catalog-i18n";
 import {
   CATALOG, buildDevis, ICON, visible, lineHT, effRate, statutLigne, cleLegacy, regionCoef, piecesEff, type Ctx, type Selection,
-  catalogueDe, estNeuf, phasesDe, lotsParCorps, tachesParCle, estJalon, decoupe, geometrieNeuf, maisonComplete, INFO_PHASES,
+  catalogueDe, estNeuf, phasesDe, lotsParCorps, tachesParCle, estJalon, geometrieNeuf, maisonComplete,
 } from "@/lib/estimateur";
-import { dict } from "@/lib/i18n/dictionaries";
+import { decoupe, INFO_PHASES } from "@/lib/estimateur/etapes-neuf";
+import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 import { normaliserCles } from "@/lib/estimateur/identite";
 
 // Traductions de l'interface (chrome/UI uniquement) — les données (corps d'état, postes) restent telles quelles.
@@ -307,7 +308,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
   const ctx = useMemo(() => (reponses?.ctx ? { ...reponses.ctx, codePostal: reponses.ctx.codePostal ?? reponses.codePostal } : undefined), [reponses]);
   const sel = useMemo(() => normaliserCles((reponses?.sel || {}) as Selection), [reponses]);
   const neuf = estNeuf(ctx);
-  const n = dict(locale).neuf;
+  const n = dictNeufCommun(locale);
   const taches = useMemo(() => (neuf ? tachesParCle(ctx) : null), [neuf, ctx]);
   const [statuts, setStatuts] = useState<Record<string, number>>(reponses?.statuts || {});
   const [closedPh, setClosedPh] = useState<Record<string, boolean>>({}); // phases repliées (Suivi / Détail)
