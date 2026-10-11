@@ -106,10 +106,11 @@ describe("Accueil · bandeau construction neuve", () => {
     for (const locale of ["fr", "en"] as const) {
       const off = await (await charger(false, locale)).accueil();
       const on = await (await charger(true, locale)).accueil();
-      const liens = on.match(/<a href="\/estimation-construction-maison" class="strip"[^]*?<\/a>/g) ?? [];
+      // Le bandeau = son <style> (variante « lien » de .strip) + le lien lui-même.
+      const liens = on.match(/<style>\.av-home a\.strip-neuf[^]*?<\/style><a href="\/estimation-construction-maison" class="strip strip-neuf"[^]*?<\/a>/g) ?? [];
       expect(liens).toHaveLength(1);
       const bandeau = liens[0] ?? "";
-      const texte = bandeau.replace(/<[^>]*>/g, " ");
+      const texte = bandeau.replace(/<style>[^]*?<\/style>/, "").replace(/<[^>]*>/g, " ");
       expect(texte).not.toMatch(/€|\d{3}/);
       expect(texte).not.toMatch(/\p{Extended_Pictographic}/u);
       // Retirer le bandeau redonne l'accueil d'origine au caractère près.
