@@ -46,12 +46,26 @@
  *     ouvertures par modèle ; les totaux au pied) ; les mots démolir, MaPrimeRénov', neuf, ancien, toiture, artisan
  *     rejoignent la liste ; les plans types, le dossier, le glossaire, la Note et l'Affichage parlent du logement voulu ;
  *     au téléphone, le tiroir dit le type ; la rénovation d'un gratuit garde ses phrases et son exemple (D66).
+ *   - D75 (« Chiffrer cette maison ») : en Plan final, Pro et gratuit, trois vrais liens (nouvel onglet, noopener) vers
+ *     l'estimation de la construction du site — le pied du panneau, Fichier juste après « Exporter le plan », le dossier (à
+ *     côté d'Imprimer, hors des pages) ; absents en rénovation, pour un appartement, sur un plan vide et sous 30 m² ; au clic
+ *     (souris, clavier), le lien porte le plan (`?source=editeur-plan#plan=`) et le clic est mesuré ; décodé et relu par le
+ *     vrai code du site (`plan-neuf-lien.mts` → lib/estimateur/plan-neuf.ts), l'extrait passe planNeufSchema, égale
+ *     `extraitPlanNeuf(contratPlan())` et donne, pour le plan type Maison, la même maison que la fixture ; ni nom, ni note,
+ *     ni annotation ; au-delà de 20 000 caractères il s'allège, encore trop long il s'ouvre sans le plan et le dit ; les
+ *     pages du dossier ne changent pas ; à 375 px, le lien du tiroir se voit en entier et se clique.
  *
  *   node maquettes/tools/planfinal.mjs "$(pwd)/maquettes"            (ajouter --lister pour voir chaque mot trouvé)
  *
  * Sort en code 1 si un contrôle échoue ou si la page lève une erreur.
  */
 import puppeteer from "puppeteer-core";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+const OUTILS = path.dirname(fileURLToPath(import.meta.url)), RACINE = path.resolve(OUTILS, "../..");
 const SP = process.argv[2];
 if (!SP) { console.error("usage : node maquettes/tools/planfinal.mjs <dossier maquettes>"); process.exit(2); }
 const LISTER = process.argv.includes("--lister");
@@ -803,6 +817,129 @@ p = await onglet({ largeur: 390, hauteur: 844, pro: false });
 Object.assign(t, await p.evaluate(() => { closeModal(); const vis = (el) => !!el && el.getClientRects().length > 0, e = document.getElementById("emptyStage"), bt = () => [...e.querySelectorAll("button")].filter(vis).map((x) => x.textContent).join("|");
   const pf = bt(); state = blankState(); state.workflow = WORKFLOW_RENO; sel = null; afterChange(); fitView(); render(); const reno = bt();
   return { "téléphone, gratuit (D70) : la carte d'un Plan final vide n'offre pas l'exemple ; celle d'une rénovation vide le garde (D66)": pf === "Mes plans" && reno === "Voir l'exemple|Mes plans" }; }));
+});
+
+/* ═════════ 18. D75 · « Chiffrer cette maison » : le Plan final ouvre l'estimation de la construction du site ═════════ */
+/* le plan type Maison en Plan final, comme la fixture du site (scene-reference.mjs › scenePlanFinal) */
+const MAISON_PF = () => { closeWelcome("blank"); chargerModele(TEMPLATES.find((x) => x.id === "maison"), null, null, WORKFLOW_FINAL); state.cur = 0; afterChange(); garantirPids(); setTool("select"); sel = null; render(); };
+/* le clic part pour de vrai (souris, clavier) ; l'onglet du site, lui, ne s'ouvre pas : arrêté APRÈS les gestionnaires du lien,
+   qui ont déjà écrit l'adresse (relevée ici) ; la mesure est relevée par un AVYORA_TRACK de test */
+const SANS_NAVIGATION = () => { window.__mesures = []; window.__liens = []; window.AVYORA_TRACK = (n, d) => window.__mesures.push([n, d]);
+  if (!window.__sansNav) { window.__sansNav = true; window.addEventListener("click", (e) => { const a = e.target.closest && e.target.closest("a[target=_blank]"); if (a) { window.__liens.push(a.href); e.preventDefault(); } }); } };
+/* les trois entrées : visibles (le menu ouvert, le dossier ouvert) ? */
+const ENTREES = () => { const vis = (el) => !!el && el.getClientRects().length > 0, r = { peut: peutChiffrerConstruction(), pied: vis(document.getElementById("constructionPied")) };
+  majMenuFichier(); ouvrirMenu("fichier"); r.menu = vis(document.getElementById("constructionBtn")); fermerMenus(false);
+  try { exportPlan(); } catch {} const d = document.getElementById("constructionDossier"); r.dossier = modaleOuverte()?.id === "m-export" ? vis(d) : !d.hidden; closeModal(); toast("");
+  return r; };
+const PAGES_DOSSIER = () => JSON.stringify([...document.querySelectorAll("#exportGallery .xpage h4")].map((x) => x.textContent));
+const fragmentDe = (href) => (href || "").split("#plan=")[1] || "";
+const SECRETS = ["Villa Secrète Dupont", "Note privée du plan", "Annotation privée", "Note privée de pièce"];
+await parcours("D75, Chiffrer cette maison (Pro)", async () => {
+p = await onglet({ graine: { "avyora-plan-welcome": "1", "avyora-plan-tuto": "fait", "avyora-plan-aide-pf": "1" } });
+await p.evaluate(MAISON_PF); await p.evaluate(SANS_NAVIGATION);
+/* ce qui ne doit pas voyager : le nom du plan, ses notes, une annotation, la note d'une pièce */
+await p.evaluate((S) => { state.name = S[0]; state.notes = S[1]; const lv = L(); TX(lv).push({ id: uid(), x: 2, y: 2, text: S[2], color: "bleu" }); const f = (facesCache[lv.id] || []).find((x) => x.room); f.room.note = S[3]; afterChange(); render(); }, SECRETS);
+Object.assign(t, await p.evaluate(() => { const r = {}, vis = (el) => !!el && el.getClientRects().length > 0, a = document.getElementById("constructionPied");
+  r["D75 · Plan final : « Combien coûte cette maison à construire ? » sous le récapitulatif du pied"] = vis(a) && !!a.closest("#pfoot") && !!a.previousElementSibling?.classList.contains("recappf") && /^Combien coûte cette maison à construire \?$/.test(a.textContent.trim());
+  r["D75 · un vrai lien : nouvel onglet, rel=noopener, vers CONSTRUCTION_URL (?source=editeur-plan), pas window.open"] = a.tagName === "A" && a.target === "_blank" && a.rel === "noopener" && a.getAttribute("href").startsWith(CONSTRUCTION_URL) && /[?&]source=editeur-plan(&|$)/.test(CONSTRUCTION_URL) && !/window\.open/.test(chiffrerConstruction.toString() + majLienConstruction.toString());
+  r["D75 · le bouton du haut reste « Exporter le plan », TEXTES_PF ne parle pas de construction"] = /Exporter le plan/.test(document.getElementById("estBtnTop").textContent) && !/constr/i.test(JSON.stringify(TEXTES_PF));
+  return r; }));
+await regarder(p, "Pro · D75 le pied, « Combien coûte cette maison à construire ? »");
+await cliquer(p, "#constructionPied");
+const lien = await p.evaluate(() => ({ base: CONSTRUCTION_URL, href: window.__liens.at(-1) || "", mesures: window.__mesures, contrat: JSON.parse(JSON.stringify(contratPlan())) }));
+const frag = fragmentDe(lien.href);
+t["D75 · pied (clic) : l'adresse = CONSTRUCTION_URL + #plan=<base64url>, le fragment en quelques Ko (≤ 20 000)"] = lien.href.startsWith(lien.base + "#plan=") && /^[A-Za-z0-9_-]+$/.test(frag) && frag.length <= 20000;
+t["D75 · pied (clic) : mesuré (clic_chiffrer_construction, origine pied, plan repris), rien du plan dans la mesure"] = lien.mesures.some(([n, d]) => n === "clic_chiffrer_construction" && d.origine === "pied" && d.repris === true) && !SECRETS.some((x) => JSON.stringify(lien.mesures).includes(x));
+/* décodé et relu par le vrai code du site */
+let site = null;
+{ const dir = mkdtempSync(path.join(os.tmpdir(), "pf-d75-")), fic = path.join(dir, "lien.json");
+  try { writeFileSync(fic, JSON.stringify({ fragment: frag, contrat: lien.contrat, secrets: SECRETS }));
+    site = JSON.parse(execFileSync("npx", ["tsx", path.join(OUTILS, "plan-neuf-lien.mts"), fic], { cwd: RACINE, encoding: "utf8" }).trim().split("\n").pop()); }
+  catch (e) { console.log("   plan-neuf-lien.mts : " + String((e && e.message) || e).split("\n")[0]); }
+  finally { rmSync(dir, { recursive: true, force: true }); } }
+if (LISTER && site) console.log("   site", JSON.stringify(site));
+if (site && site.erreurs.length) console.log("   planNeufSchema : " + site.erreurs.join(" · "));
+t["D75 · décodé, l'extrait passe planNeufSchema (lib/estimateur/plan-neuf.ts, le code de la page)"] = !!site && site.decode && site.schema;
+t["D75 · l'extrait de l'éditeur = extraitPlanNeuf(contratPlan()) du site, clé pour clé"] = !!site && site.identiqueAuReferent;
+t["D75 · plan type Maison : lirePlanNeuf en tire la même maison que la fixture (tests/fixtures/plan-final-contrat.json)"] = !!site && site.memeMaisonQueLaFixture && site.maison.surface === 94 && site.maison.chambres === 3;
+t["D75 · ni nom du plan, ni note, ni annotation, ni produit dans le lien"] = !!site && !site.clesPrivees && !site.secrets.length && !SECRETS.some((x) => decodeURIComponent(lien.href).includes(x));
+/* Fichier : juste après « Exporter le plan », à la souris puis au clavier */
+await cliquer(p, "#fichierBtn");
+t["D75 · Fichier : « Chiffrer cette maison » juste après « Exporter le plan », un lien du menu (menuitem)"] = await p.evaluate(() => { const a = document.getElementById("constructionBtn"); return a.getClientRects().length > 0 && a.previousElementSibling?.id === "exportBtn" && a.tagName === "A" && a.getAttribute("role") === "menuitem" && a.target === "_blank" && a.rel === "noopener" && /^Chiffrer cette maison/.test(a.textContent.trim()) && itemsMenu("fichier").includes(a); });
+await regarder(p, "Pro · D75 menu Fichier, « Chiffrer cette maison »");
+await cliquer(p, "#constructionBtn");
+t["D75 · Fichier › Chiffrer cette maison (clic) : le lien porte le plan, le menu se ferme, mesuré (origine menu)"] = await p.evaluate(() => (window.__liens.at(-1) || "").startsWith(CONSTRUCTION_URL + "#plan=") && !menuOuvert && window.__mesures.some(([n, d]) => n === "clic_chiffrer_construction" && d.origine === "menu"));
+await p.evaluate(() => { window.__liens = []; document.activeElement?.blur?.(); }); await p.focus("#fichierBtn"); await p.keyboard.press("Enter"); await wait(80);
+for (let i = 0; i < 12 && !(await p.evaluate(() => document.activeElement?.id === "constructionBtn")); i++) { await p.keyboard.press("ArrowDown"); await wait(30); }
+await p.keyboard.press("Enter"); await wait(150);
+t["D75 · Fichier au clavier (flèches, Entrée) : le même lien, avec le plan"] = await p.evaluate(() => (window.__liens.at(-1) || "").startsWith(CONSTRUCTION_URL + "#plan=") && !menuOuvert);
+/* le dossier : à côté d'Imprimer, hors des pages ; les pages ne changent pas */
+await cliquer(p, "#estBtnTop");
+t["D75 · dossier : « Chiffrer cette maison » à côté d'« Imprimer / PDF » (noprint), hors des pages"] = await p.evaluate(() => { const a = document.getElementById("constructionDossier"); return modaleOuverte()?.id === "m-export" && a.getClientRects().length > 0 && !!a.closest(".btnrow.noprint") && a.classList.contains("noprint") && !a.closest("#exportGallery") && a.target === "_blank" && a.rel === "noopener" && /Chiffrer cette maison/.test(a.textContent); });
+t["D75 · dossier : les pages ne changent pas — un plan par niveau, le contrôle, les quantités"] = await p.evaluate((P) => (0, eval)("(" + P + ")")() === JSON.stringify([...state.levels.map((l) => l.name), "Contrôle du plan", "Quantités"]), PAGES_DOSSIER.toString());
+await regarder(p, "Pro · D75 le dossier, « Chiffrer cette maison »");
+await cliquer(p, "#constructionDossier");
+t["D75 · dossier › Chiffrer cette maison (clic) : le lien porte le plan, mesuré (origine dossier)"] = await p.evaluate(() => (window.__liens.at(-1) || "").startsWith(CONSTRUCTION_URL + "#plan=") && window.__mesures.some(([n, d]) => n === "clic_chiffrer_construction" && d.origine === "dossier"));
+await p.evaluate(() => closeModal());
+/* un plan qui ne tient pas dans un lien : allégé (cotes des menuiseries à 0), sinon ouvert sans lui, et dit */
+Object.assign(t, await p.evaluate(() => {
+  const r = {}, f0 = extraitConstruction, dec = (u) => { const f = (u || "").split("#plan=")[1] || ""; const b = atob(f.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - (f.length % 4)) % 4)); return { n: f.length, x: JSON.parse(new TextDecoder().decode(Uint8Array.from(b, (c) => c.charCodeAt(0)))) }; };
+  try {
+    extraitConstruction = () => { const x = f0(); x.detailNiveaux[0].menuiseries = Array.from({ length: 200 }, (_, i) => ({ type: "porte_fenetre", l: 1.2345678901234567 + i / 1e9, h: 2.1534567890123457 })); return x; };
+    const brut = base64url(JSON.stringify(extraitConstruction())).length, u = lienConstruction(), d = u && dec(u);
+    r["D75 · au-delà de 20 000 caractères, les cotes des menuiseries passent à 0 et le lien tient (le schéma les garde)"] = brut > 20000 && !!d && d.n <= 20000 && d.x.detailNiveaux[0].menuiseries.length === 200 && d.x.detailNiveaux[0].menuiseries.every((m) => m.l === 0 && m.h === 0);
+    extraitConstruction = () => { const x = f0(); x.detailNiveaux[0].rooms = Array.from({ length: 150 }, (_, i) => ({ id: "p" + i, type: "chambre", area: 12.345678901234567, horsHabitable: false, exterieur: false, sousPentePct: 0 })); return x; };
+    const a = document.getElementById("constructionPied"); window.__mesures = []; toast(""); const ok = chiffrerConstruction(a, "pied");
+    r["D75 · encore trop long : la page s'ouvre sans le plan, et un message le dit (mesuré, plan non repris)"] = lienConstruction() === null && ok === true && a.getAttribute("href") === CONSTRUCTION_URL && /trop grand pour passer dans un lien/.test(document.getElementById("toast").textContent) && window.__mesures.some(([n, d]) => n === "clic_chiffrer_construction" && d.repris === false);
+  } finally { extraitConstruction = f0; toast(""); }
+  r["D75 · un accent dans le plan voyage en UTF-8 (base64url, octet par octet)"] = (() => { const t0 = "Séjour · 94 m² « à l'étage »", f = base64url(t0), b = atob(f.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - (f.length % 4)) % 4)); return /^[A-Za-z0-9_-]+$/.test(f) && new TextDecoder().decode(Uint8Array.from(b, (c) => c.charCodeAt(0))) === t0; })();
+  return r; }));
+});
+/* absent : rénovation (avant et après un Plan final), appartement, plan vide, moins de 30 m² */
+await parcours("D75, absent en rénovation, pour un appartement, sur un plan vide, sous 30 m²", async () => {
+p = await onglet({ graine: { "avyora-plan-welcome": "1", "avyora-plan-tuto": "fait", "avyora-plan-aide-pf": "1" } });
+const c = await p.evaluate((E) => { const entrees = (0, eval)("(" + E + ")"), r = {}, M = (id) => TEMPLATES.find((x) => x.id === id); closeModal(); closeWelcome("blank");
+  chargerModele(M("maison"), null, null, WORKFLOW_RENO); closeModal(); afterChange(); render(); r.reno = entrees();
+  chargerModele(M("maison"), null, null, WORKFLOW_FINAL); closeModal(); afterChange(); render(); r.pf = entrees();
+  chargerModele(M("maison"), null, null, WORKFLOW_RENO); closeModal(); afterChange(); render(); r.reno2 = entrees();
+  chargerModele(M("t3"), null, null, WORKFLOW_FINAL); closeModal(); afterChange(); render(); r.appart = { ...entrees(), bien: chantier().bien, area: quantities().area };
+  state = blankState(); state.workflow = WORKFLOW_FINAL; afterChange(); fitView(); render(); r.vide = entrees();
+  state = blankState(); state.workflow = WORKFLOW_FINAL; const lv = L(); [[0, 0, 5, 0], [5, 0, 5, 4], [5, 4, 0, 4], [0, 4, 0, 0]].forEach(([a, b2, c2, d]) => lv.walls.push({ id: uid(), a: v(a, b2), b: v(c2, d), type: "mur" })); afterChange(); render(); r.petit = { ...entrees(), area: quantities().area };
+  return r; }, ENTREES.toString());
+if (LISTER) console.log("   D75 entrées", JSON.stringify(c));
+const aucune = (e) => !!e && !e.peut && !e.pied && !e.menu && !e.dossier;
+t["D75 · la même maison en Plan final : les trois entrées (pied, Fichier, dossier)"] = !!c.pf && c.pf.peut && c.pf.pied && c.pf.menu && c.pf.dossier;
+t["D75 · la même maison en rénovation : aucune entrée (ni pied, ni Fichier, ni dossier)"] = aucune(c.reno);
+t["D75 · une rénovation rouverte après un Plan final : les entrées repartent"] = aucune(c.reno2);
+t["D75 · un appartement en Plan final (T3, 65 m²) : aucune entrée"] = aucune(c.appart) && c.appart.bien === "appartement" && c.appart.area >= 30;
+t["D75 · un Plan final vide : aucune entrée"] = aucune(c.vide);
+t["D75 · un Plan final de moins de 30 m² (une pièce de 5 × 4 m) : aucune entrée"] = aucune(c.petit) && c.petit.area > 0 && c.petit.area < 30;
+});
+/* gratuit : les trois entrées aussi (rien de Pro) ; le dossier garde ses pages */
+await parcours("D75, gratuit", async () => {
+p = await onglet({ pro: false });
+await p.evaluate(MAISON_PF);
+const e = await p.evaluate((E) => (0, eval)("(" + E + ")")(), ENTREES.toString());
+t["D75 · gratuit, Plan final : les trois entrées (pied, Fichier, dossier)"] = e.peut && e.pied && e.menu && e.dossier;
+await regarder(p, "gratuit · D75 le pied");
+await p.evaluate(() => { majMenuFichier(); ouvrirMenu("fichier"); }); await regarder(p, "gratuit · D75 menu Fichier"); await p.evaluate(() => fermerMenus(false));
+await p.evaluate(() => { exportPlan(); }); await wait(300); await regarder(p, "gratuit · D75 le dossier");
+t["D75 · gratuit : le dossier garde ses pages (les plans seuls), le lien est à côté d'Imprimer"] = await p.evaluate((P) => (0, eval)("(" + P + ")")() === JSON.stringify(state.levels.map((l) => l.name)) && document.getElementById("constructionDossier").getClientRects().length > 0, PAGES_DOSSIER.toString());
+await p.evaluate(() => closeModal());
+});
+/* 375 px : le tiroir ouvert, le lien du pied se voit en entier et se clique */
+await parcours("D75, 375 px", async () => {
+p = await onglet({ largeur: 375, hauteur: 812, pro: false });
+await p.evaluate(MAISON_PF); await p.evaluate(() => closeModal()); await p.evaluate(SANS_NAVIGATION);
+await p.evaluate(() => { toggleSheet(true); renderPanel(); }); await wait(500);
+await p.evaluate(() => document.getElementById("constructionPied")?.scrollIntoView({ block: "nearest" })); await wait(200);
+const m = await p.evaluate(() => { const a = document.getElementById("constructionPied"); if (!a || !a.getClientRects().length) return null; const q = a.getBoundingClientRect(), hit = document.elementFromPoint(q.left + q.width / 2, q.top + q.height / 2);
+  return { dedans: q.left >= 0 && q.right <= innerWidth + 0.5 && q.top >= 0 && q.bottom <= innerHeight + 0.5, touche: !!hit && a.contains(hit), h: Math.round(q.height), deborde: document.documentElement.scrollWidth > innerWidth + 1 || a.scrollWidth > a.clientWidth + 1 }; });
+if (LISTER) console.log("   D75 375 px", JSON.stringify(m));
+t["D75 · 375 px : dans le tiroir, le lien du pied se voit en entier, rien par-dessus, rien ne déborde, 32 px au moins"] = !!m && m.dedans && m.touche && !m.deborde && m.h >= 32;
+await regarder(p, "téléphone 375 · D75 le tiroir, le lien du pied");
+await cliquer(p, "#constructionPied");
+t["D75 · 375 px : le clic (doigt ou souris) ouvre le lien avec le plan, mesuré au téléphone"] = await p.evaluate(() => (window.__liens.at(-1) || "").startsWith(CONSTRUCTION_URL + "#plan=") && window.__mesures.some(([n, d]) => n === "clic_chiffrer_construction" && d.origine === "pied" && d.telephone === true));
 });
 
 /* ═════════ Verdicts ═════════ */
