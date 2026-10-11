@@ -14,9 +14,9 @@ const META_RENO: Metadata = {
 // Variante construction neuve (`?nature=neuf`, flag allumé seulement). Le canonical ne bouge pas :
 // la variante n'est pas une page à indexer à part.
 const META_NEUF: Metadata = {
-  title: "Estimer la construction de ta maison neuve — gratuit, sans inscription",
+  title: "Estimer la construction de ta maison neuve",
   description:
-    "Choisis ton mode d'estimation : rapide et gratuite en 5 questions, ou détaillée phase par phase, du permis à la remise des clés. Prix du marché français ajustés à ta région.",
+    "Choisis ton mode d'estimation : rapide et gratuite en 5 questions, ou détaillée phase par phase, du permis à la remise des clés. Prix ajustés à ta région.",
   alternates: { canonical: "/projets/nouveau" },
 };
 

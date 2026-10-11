@@ -12,16 +12,19 @@ const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
 
-const TITRE = "Estimation construction maison neuve — gratuit, en 5 questions";
+// Longueurs pour la page de résultats : titre ≤ 51 caractères (le gabarit ajoute « · AVYORA »,
+// 60 au total), description ≤ 155. Le titre ne répète pas « AVYORA ».
+const TITRE = "Estimation construction maison neuve gratuite";
 const DESCRIPTION =
-  "Estime gratuitement le prix de construction de ta maison neuve : 5 questions, un budget complet du permis à la remise des clés (études, taxes, construction, branchements), ajusté à ton code postal. Sans inscription.";
+  "Estime le prix de construction de ta maison neuve en 5 questions : un budget complet, du permis à la remise des clés, ajusté à ton code postal. Gratuit.";
 
-// Le titre ne répète pas « AVYORA » : le gabarit du layout l'ajoute.
 export const metadata = {
   title: TITRE,
   description: DESCRIPTION,
   alternates: { canonical: "/estimation-construction-maison" },
   openGraph: og({ title: TITRE, description: DESCRIPTION, path: "/estimation-construction-maison", type: "website" }),
+  // Sans lui, X reprendrait le titre et la description du layout, qui parlent de rénovation.
+  twitter: { card: "summary_large_image" as const, title: TITRE, description: DESCRIPTION },
 };
 export const dynamic = "force-dynamic";
 
