@@ -8,7 +8,12 @@ export type EvenementAvyora =
   | "clic_sabonner"
   | "clic_telecharger_rapport"
   /** Arrivée sur la page de tarifs — le mur payant. Sans elle, on ignore combien y parviennent. */
-  | "vue_tarifs";
+  | "vue_tarifs"
+  /**
+   * Arrivée par le lien d'un Plan final (construction neuve). Props : `ok`, `niveaux`,
+   * `tranche_surface` — jamais le contenu du plan, ni la surface exacte.
+   */
+  | "neuf_depuis_plan";
 
 type Props = Record<string, string | number | boolean | null>;
 

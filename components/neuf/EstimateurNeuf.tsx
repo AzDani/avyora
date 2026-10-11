@@ -99,7 +99,12 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
     if (isNew || affiner) {
       try { localStorage.removeItem(CLE_BROUILLON_DETAIL_NEUF); } catch { /* noop */ }
       const depuisRapide = repriseDepuisAffiner(affiner);
-      if (depuisRapide) { setEtat(depuisRapide); return; }
+      if (depuisRapide) {
+        setEtat(depuisRapide);
+        // « Affiner » range la graine juste avant : une maison venue d'un plan garde son origine.
+        try { origineRef.current = repriseDepuisGraine(localStorage.getItem(CLE_BROUILLON_NEUF))?.origine; } catch { /* noop */ }
+        return;
+      }
       let graine = null;
       try { graine = repriseDepuisGraine(localStorage.getItem(CLE_BROUILLON_NEUF)); } catch { /* noop */ }
       if (graine) { setEtat(graine.etat); setCustom(graine.custom); origineRef.current = graine.origine; }

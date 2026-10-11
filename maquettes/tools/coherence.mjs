@@ -369,5 +369,27 @@ console.log("\n7. Prix de Pro : l'éditeur dit celui de la page Tarifs");
   else console.log(`  ✓ ${editeur} (page Tarifs : ${mensuel} / mois)`);
 }
 
+/* ── 8. Le lien « Plan final → construction » (C7) : la route que l'éditeur ouvrira existe et lit
+   `?source=editeur-plan` et le fragment `#plan=`. Complété en C9 par la constante CONSTRUCTION_URL
+   de l'éditeur, qui devra pointer vers cette route. ── */
+console.log("\n8. Lien du Plan final vers l'estimation de la construction");
+{
+  const ROUTE = "app/estimation-construction-maison/page.tsx";
+  const lit = (f) => (fs.existsSync(f) ? fs.readFileSync(f, "utf8") : null);
+  const page = lit(ROUTE), ctxNeuf = lit("lib/neuf-contexte.ts"), comp = lit("components/neuf/EstimateurRapideNeuf.tsx"), lib = lit("lib/estimateur/plan-neuf.ts");
+  if (!page) KO("route du neuf introuvable", ROUTE);
+  else {
+    const manque = [];
+    if (!/contexteNeuf\(/.test(page) || !/EstimateurRapideNeuf/.test(page)) manque.push("la page ne passe pas par contexteNeuf + EstimateurRapideNeuf");
+    if (!ctxNeuf || !/lire\("source"\)\s*===\s*"editeur-plan"/.test(ctxNeuf)) manque.push("lib/neuf-contexte.ts ne lit pas ?source=editeur-plan");
+    if (!comp || !comp.includes('"#plan="') || !/replaceState/.test(comp) || !/lirePlanNeuf/.test(comp)) manque.push("EstimateurRapideNeuf ne lit pas #plan= (ou ne nettoie pas l'URL)");
+    if (!lib || !/planNeufSchema/.test(lib) || !/maisonDepuisPlan/.test(lib)) manque.push("lib/estimateur/plan-neuf.ts incomplet");
+    const MAQ_CONSTR = (MAQ.match(/CONSTRUCTION_URL\s*=\s*'([^']+)'/) || [])[1];
+    if (MAQ_CONSTR && !MAQ_CONSTR.includes("/estimation-construction-maison")) manque.push(`CONSTRUCTION_URL de l'éditeur (${MAQ_CONSTR}) ne vise pas la route`);
+    if (manque.length) KO("lien du Plan final cassé", manque.join(" · "));
+    else console.log(`  ✓ ${ROUTE} lit ?source=editeur-plan et #plan=${MAQ_CONSTR ? " · éditeur : " + MAQ_CONSTR : " · éditeur : lien à poser en C9"}`);
+  }
+}
+
 console.log(dur ? `✗ ${dur} divergence(s) à corriger · ${mou} point(s) à savoir` : `✓ aucune divergence · ${mou} point(s) à savoir`);
 process.exit(dur ? 1 : 0);

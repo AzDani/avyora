@@ -345,6 +345,24 @@ const fr = {
       errSurface: "Renseigne la surface habitable.",
       errSave: "Enregistrement impossible.",
       errReseau: "Réseau indisponible. Réessaie.",
+      /* Lien d'un Plan final (éditeur de plan → ?source=editeur-plan#plan=…), chantier C7. */
+      reprisPlan: "repris de ton plan",
+      defautsPlan: "Le reste reprend ton plan (forme, chambres, salles de bain, WC). Murs, toit et chauffage prennent les réglages les plus courants : à vérifier en affinant ta maison.",
+      planOkTitre: "Ta maison est reprise de ton plan.",
+      planResume: (p: { surface: string; niveaux: string; chambres: number; sdb: number; wc: number; garage: string | null }) =>
+        `${p.surface} m², ${p.niveaux.toLowerCase()}, ${p.chambres} chambre${p.chambres > 1 ? "s" : ""}, ${p.sdb} salle${p.sdb > 1 ? "s" : ""} de bain, ${p.wc} WC${p.garage ? `, garage ${p.garage} m²` : ""}. Tout reste modifiable.`,
+      planRefus: {
+        illisible: "Ce lien de plan ne peut pas être lu : décris ta maison ici.",
+        version: "Ce lien vient d'une version de l'éditeur de plan que ce site ne lit pas : décris ta maison ici, ou relance le chiffrage depuis ton plan.",
+        renovation: "Ce plan est un plan de rénovation : une construction se chiffre depuis un Plan final. Décris ta maison ici.",
+        appartement: "Ton plan décrit un appartement : cette estimation chiffre la construction d'une maison individuelle. Décris ta maison ici.",
+      } as Record<string, string>,
+      planAvert: {
+        petiteSurface: "Ton plan fait moins de 30 m² : l'estimation part de 30 m².",
+        cave: "Ton plan a une cave : un sous-sol se chiffre dans l'estimation détaillée (plancher bas).",
+        nonChiffre: "Terrasse, atelier ou grange : ces surfaces de ton plan ne sont pas chiffrées.",
+        troisNiveaux: "Ta maison a plus de deux niveaux : elle est chiffrée comme une maison à étage.",
+      } as Record<string, string>,
     },
     pdf: {
       habitables: "m² habitables",
@@ -772,6 +790,23 @@ const en: Dict = {
       errSurface: "Enter the living area.",
       errSave: "Could not save.",
       errReseau: "Network unavailable. Try again.",
+      reprisPlan: "from your plan",
+      defautsPlan: "Everything else comes from your plan (shape, bedrooms, bathrooms, toilets). Walls, roof and heating take the most common settings: check them when you refine your house.",
+      planOkTitre: "Your house comes from your plan.",
+      planResume: (p: { surface: string; niveaux: string; chambres: number; sdb: number; wc: number; garage: string | null }) =>
+        `${p.surface} m², ${p.niveaux.toLowerCase()}, ${p.chambres} bedroom${p.chambres === 1 ? "" : "s"}, ${p.sdb} bathroom${p.sdb === 1 ? "" : "s"}, ${p.wc} toilet${p.wc === 1 ? "" : "s"}${p.garage ? `, ${p.garage} m² garage` : ""}. You can change anything.`,
+      planRefus: {
+        illisible: "This plan link can't be read: describe your house here.",
+        version: "This link comes from a version of the plan editor this site can't read: describe your house here, or start the costing again from your plan.",
+        renovation: "This is a renovation plan: a new build is costed from a Final plan. Describe your house here.",
+        appartement: "Your plan describes an apartment: this estimate costs the construction of a detached house. Describe your house here.",
+      } as Record<string, string>,
+      planAvert: {
+        petiteSurface: "Your plan is under 30 m²: the estimate starts at 30 m².",
+        cave: "Your plan has a cellar: a basement is costed in the detailed estimate (ground floor).",
+        nonChiffre: "Terrace, workshop or barn: these areas of your plan are not costed.",
+        troisNiveaux: "Your house has more than two levels: it is costed as a two-storey house.",
+      } as Record<string, string>,
     },
     pdf: {
       habitables: "m² of living area",

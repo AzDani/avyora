@@ -15,6 +15,7 @@ export const SOURCES_SEO = [
   "guide",    // /guides/[slug]
   "poste",    // /prix-poste/[slug]
   "hub",      // les pages d'index de ces familles
+  "plan",     // l'éditeur de plan (Plan final → /estimation-construction-maison?source=editeur-plan)
 ] as const;
 
 export type SourceSeo = (typeof SOURCES_SEO)[number];

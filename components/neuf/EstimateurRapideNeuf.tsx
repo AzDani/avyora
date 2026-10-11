@@ -15,6 +15,13 @@
  * DÉTAILLÉ rouvert en gratuit (sa description est une vraie saisie) ou une maison venue d'un plan.
  * Un projet RAPIDE rouvert n'a PAS de base : sa maison se déduit de ses 5 réponses, sinon les
  * chambres et salles d'eau déduites de l'ancienne surface survivraient à un changement de surface.
+ *
+ * Lien d'un Plan final (C7) : sur la page publique, un fragment `#plan=<base64url>` est lu au
+ * montage. L'URL est nettoyée D'ABORD (`history.replaceState`), puis le fragment est décodé, validé
+ * et traduit dans `lib/estimateur/plan-neuf.ts` (chargé à la demande : zod n'entre dans le bundle
+ * que si un plan arrive). Le fragment ne part jamais au serveur ni dans un événement : la mesure
+ * `neuf_depuis_plan` ne porte que `ok`, `niveaux` et une tranche de surface. La maison du plan
+ * devient la `base` ; chaque valeur reprise porte un badge tant qu'elle n'est pas changée.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -27,6 +34,7 @@ import {
   type ReponsesRapideNeuf, type OrigineNeuf,
 } from "@/lib/estimateur/brouillon-neuf";
 import type { InitialNeuf } from "@/lib/neuf-contexte";
+import type { MaisonDuPlan, RefusPlan } from "@/lib/estimateur/plan-neuf";
 import { suivre } from "@/lib/track";
 import { conversionEstimation } from "@/lib/gtag";
 import { useT, useLocale } from "@/components/i18n/LangProvider";
@@ -99,16 +107,62 @@ export default function EstimateurRapideNeuf({
   const [saving, setSaving] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
 
+  /* ── Lien d'un Plan final ── */
+  const [plan, setPlan] = useState<MaisonDuPlan | null>(null);
+  const [refusPlan, setRefusPlan] = useState<RefusPlan | null>(null);
+  const planLu = useRef(false);
+  const planRange = useRef(false);
+  useEffect(() => {
+    if (edit) return;
+    function lireFragment() {
+      let h = "";
+      try { h = window.location.hash; } catch { /* noop */ }
+      if (!h.startsWith("#plan=")) return;
+      // L'URL est nettoyée AVANT toute lecture : ni l'historique, ni un partage, ni une mesure ne la voient.
+      try { window.history.replaceState(null, "", window.location.pathname + window.location.search); } catch { /* noop */ }
+      const fragment = h.slice(6);
+      import("@/lib/estimateur/plan-neuf").then(({ lirePlanNeuf, trancheSurface }) => {
+        const r = lirePlanNeuf(fragment);
+        if (r.refus) {
+          setPlan(null);
+          setRefusPlan(r.refus);
+          suivre("neuf_depuis_plan", { ok: false, niveaux: null, tranche_surface: null });
+          return;
+        }
+        const m = r.maison;
+        planRange.current = false;   // nouvelle maison : rangée au prochain rendu
+        setRefusPlan(null);
+        setPlan(r);
+        setAgi(true);
+        setR((p) => ({
+          ...p,
+          surface: m.surface ?? p.surface,
+          niveaux: m.niveaux ?? p.niveaux,
+          garage: (m.garage ?? 0) > 0,
+          codePostal: m.codePostal ?? p.codePostal,
+        }));
+        suivre("neuf_depuis_plan", { ok: true, niveaux: m.niveaux ?? null, tranche_surface: trancheSurface(m.surface ?? 0) });
+      }).catch(() => setRefusPlan("illisible"));
+    }
+    // Une seule lecture au montage (le double montage du mode strict ne relit rien), puis à chaque
+    // nouveau lien collé dans le même onglet (seul le fragment change : pas de rechargement).
+    if (!planLu.current) { planLu.current = true; lireFragment(); }
+    window.addEventListener("hashchange", lireFragment);
+    return () => window.removeEventListener("hashchange", lireFragment);
+  }, [edit]);
+  const baseEff = base ?? plan?.maison;
+  const origineEff: OrigineNeuf | undefined = origine ?? (plan ? { source: "plan", contrat: plan.contrat } : undefined);
+
   const maj = (patch: Partial<ReponsesRapideNeuf>) => { setAgi(true); setR((r) => ({ ...r, ...patch })); };
 
-  const preset = useMemo(() => presetNeuf(R, base), [R, base]);
+  const preset = useMemo(() => presetNeuf(R, baseEff), [R, baseEff]);
   const tot = useMemo(() => buildDevis(catalogueDe(preset.ctx), preset.ctx, preset.sel).totaux, [preset]);
   const surface = preset.ctx.surface || 0;
   const valid = affiche && R.surface >= 30;
   const lo = Math.round((tot.ttc * 0.85) / 100) * 100;
   const hi = Math.round((tot.ttc * 1.15) / 100) * 100;
   const m2 = valid && surface > 0 ? Math.round(tot.ttc / surface) : 0;
-  const src = initial?.src ?? "direct";
+  const src = initial?.src ?? (plan ? "plan" : "direct");
 
   /** Estimation RÉELLE : une action, une saisie valide, un total non nul et un code postal. */
   const estimationReelle = agi && valid && tot.ttc > 0 && CP.test(R.codePostal);
@@ -125,15 +179,15 @@ export default function EstimateurRapideNeuf({
 
   // Aperçus €/m² des cartes : la même maison, une seule réponse changée, chiffrée par le moteur.
   const m2De = (o: Partial<ReponsesRapideNeuf>) => {
-    const p = presetNeuf({ ...R, ...o }, base);
+    const p = presetNeuf({ ...R, ...o }, baseEff);
     return p.ctx.surface > 0 ? Math.round(buildDevis(catalogueDe(p.ctx), p.ctx, p.sel).totaux.ttc / p.ctx.surface) : 0;
   };
   const m2ByFin = useMemo(() => Object.fromEntries(FINITIONS.map((f) => [f.v, m2De({ finition: f.v })])) as Record<Finition, number>,
-    [R.surface, R.niveaux, R.codePostal, R.qui, R.garage, R.assainissement, base]);
+    [R.surface, R.niveaux, R.codePostal, R.qui, R.garage, R.assainissement, baseEff]);
   const m2ByQui = useMemo(() => Object.fromEntries(QUIS.map((q) => [q.v, m2De({ qui: q.v })])) as Record<QuiRealise, number>,
-    [R.surface, R.niveaux, R.codePostal, R.finition, R.garage, R.assainissement, base]);
+    [R.surface, R.niveaux, R.codePostal, R.finition, R.garage, R.assainissement, baseEff]);
   // Surface du garage « oui » : celle de la maison décrite, sinon celle que le moteur met par défaut.
-  const garageM2 = useMemo(() => presetNeuf({ ...R, garage: true }, base).ctx.neuf?.garage ?? 0, [R, base]);
+  const garageM2 = useMemo(() => presetNeuf({ ...R, garage: true }, baseEff).ctx.neuf?.garage ?? 0, [R, baseEff]);
 
   const reg = regionCoef(R.codePostal);
   const regDelta = Math.round((reg.mo - 1) * 100);
@@ -145,11 +199,11 @@ export default function EstimateurRapideNeuf({
     [valid, preset, R.qui, locale],
   );
 
-  const niveauxOpts: Niveaux[] = ["pp", "etage", ...(base?.niveaux === "combles" ? (["combles"] as Niveaux[]) : [])];
-  const eauxOpts: ("collectif" | "fosse" | "micro")[] = ["collectif", "fosse", ...(base?.assainissement === "micro" ? (["micro"] as const) : [])];
-  const eauxActif = R.assainissement ?? (base?.assainissement === "micro" ? "micro" : "collectif");
+  const niveauxOpts: Niveaux[] = ["pp", "etage", ...(baseEff?.niveaux === "combles" ? (["combles"] as Niveaux[]) : [])];
+  const eauxOpts: ("collectif" | "fosse" | "micro")[] = ["collectif", "fosse", ...(baseEff?.assainissement === "micro" ? (["micro"] as const) : [])];
+  const eauxActif = R.assainissement ?? (baseEff?.assainissement === "micro" ? "micro" : "collectif");
 
-  const brouillon = () => brouillonRapideNeuf({ R, ctx: preset.ctx, sel: preset.sel, base, origine });
+  const brouillon = () => brouillonRapideNeuf({ R, ctx: preset.ctx, sel: preset.sel, base: baseEff, origine: origineEff });
   function saveDraft() {
     try { localStorage.setItem(CLE_BROUILLON_NEUF, JSON.stringify(brouillon())); } catch { /* noop */ }
   }
@@ -159,11 +213,28 @@ export default function EstimateurRapideNeuf({
       conversionEstimation();
     }
     saveDraft();
-    try { sessionStorage.setItem(CLE_AFFINER_NEUF, JSON.stringify({ R, base })); } catch { /* noop */ }
+    try { sessionStorage.setItem(CLE_AFFINER_NEUF, JSON.stringify({ R, base: baseEff })); } catch { /* noop */ }
     // Le détaillé du neuf est réservé au Pro : un gratuit va directement aux tarifs (la page du
     // détaillé l'y renverrait de toute façon). Le brouillon reste prêt pour après l'abonnement.
     router.push(isPro ? "/projets/nouveau/construction?new=1" : "/tarifs");
   }
+
+  // Une maison venue d'un plan est rangée tout de suite (`avyora-neuf-v1`, avec son origine) : elle
+  // survit à la connexion et sert de graine au détaillé, sans que l'URL la porte encore.
+  useEffect(() => {
+    if (!plan || planRange.current) return;
+    planRange.current = true;
+    saveDraft();
+  });
+
+  /** Badge « repris de ton plan » : la valeur vient du plan et n'a pas été changée. */
+  const repris = (k: "surface" | "niveaux" | "garage" | "codePostal") => {
+    if (!plan || !plan.repris.includes(k)) return false;
+    const m = plan.maison;
+    if (k === "garage") return R.garage === (m.garage ?? 0) > 0;
+    return R[k] === m[k];
+  };
+  const badge = (k: Parameters<typeof repris>[0]) => (repris(k) ? <span className="repris">{s.reprisPlan}</span> : null);
 
   async function enregistrer() {
     setErreur(null);
@@ -204,21 +275,45 @@ export default function EstimateurRapideNeuf({
           </div>
         )}
 
+        {refusPlan && (
+          <div className="avert" role="alert">
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8 15 14H1L8 1.8Z" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /><path d="M8 6.2v3.6M8 11.6v.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+            <span>{s.planRefus[refusPlan] ?? s.planRefus.illisible}</span>
+          </div>
+        )}
+        {plan && (
+          <div className="plan-ok" role="status">
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 2.5h12v11H2z M2 7h6v6.5 M8 2.5V5 M11 7h3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /></svg>
+            <div>
+              <b>{s.planOkTitre}</b>{" "}
+              {s.planResume({
+                surface: Math.round(plan.maison.surface ?? 0).toLocaleString(nf),
+                niveaux: s.niveaux[plan.maison.niveaux ?? "pp"],
+                chambres: plan.maison.chambres ?? 0, sdb: plan.maison.sdb ?? 0, wc: plan.maison.wc ?? 0,
+                garage: (plan.maison.garage ?? 0) > 0 ? Math.round(plan.maison.garage ?? 0).toLocaleString(nf) : null,
+              })}
+              {plan.avertissements.length > 0 && (
+                <ul>{plan.avertissements.map((a) => <li key={a}>{s.planAvert[a]}</li>)}</ul>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="q">
           <div className="qlbl"><span className="n">1</span>{s.q1}</div>
-          <p className="sub-q">{base ? s.defautsBase : s.defauts}</p>
+          <p className="sub-q">{plan && !base ? s.defautsPlan : baseEff ? s.defautsBase : s.defauts}</p>
           <div className="fields">
             <div className="fld">
-              <label>{s.surfaceLabel}</label>
+              <label>{s.surfaceLabel}{badge("surface")}</label>
               <Stepper block value={R.surface} min={30} max={400} step={5} unit="m²" onChange={(n) => maj({ surface: n })} />
             </div>
             <div className="fld">
-              <label htmlFor="neuf-cp">{s.cpLabel}</label>
+              <label htmlFor="neuf-cp">{s.cpLabel}{badge("codePostal")}</label>
               <input id="neuf-cp" inputMode="numeric" maxLength={5} autoComplete="postal-code" placeholder={s.cpPlaceholder} value={R.codePostal}
                 onChange={(e) => maj({ codePostal: e.target.value.replace(/\D/g, "").slice(0, 5) })} />
             </div>
           </div>
-          <div className="glbl">{s.niveauxLabel}</div>
+          <div className="glbl">{s.niveauxLabel}{badge("niveaux")}</div>
           <div className="seg" role="group" aria-label={s.niveauxLabel}>
             {niveauxOpts.map((v) => {
               const on = affiche && R.niveaux === v;
@@ -278,7 +373,7 @@ export default function EstimateurRapideNeuf({
         <div className="q">
           <div className="qlbl"><span className="n">4</span>{s.q4}</div>
           <div className="grp">
-            <div className="glbl">{s.garageLabel}<span className="opt">{s.facultatif}</span></div>
+            <div className="glbl">{s.garageLabel}<span className="opt">{s.facultatif}</span>{badge("garage")}</div>
             <div className="seg" role="group" aria-label={s.garageLabel}>
               {[false, true].map((v) => {
                 const on = !!R.garage === v;

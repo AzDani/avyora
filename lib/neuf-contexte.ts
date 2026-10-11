@@ -9,7 +9,9 @@ export type InitialNeuf = { cp?: string; surface?: number; niveaux?: "pp" | "eta
  * Même règle que `contexte()` de `/estimation-travaux` : tout ce qui n'est pas explicitement
  * reconnu est IGNORÉ, jamais « corrigé ». Code postal dans la plage réelle française
  * (01000-98999), surface dans les bornes du formulaire (30-400 m²), niveaux en liste fermée,
- * source en liste fermée (`SOURCES_SEO`).
+ * source en liste fermée (`SOURCES_SEO`). Le lien de l'éditeur de plan porte
+ * `?source=editeur-plan` (convention D48 de l'éditeur, comme son lien vers les tarifs) : il devient
+ * la source « plan ». Un `src` reconnu passe avant.
  */
 export function contexteNeuf(sp: Record<string, string | string[] | undefined>): InitialNeuf {
   const lire = (k: string) => (Array.isArray(sp[k]) ? sp[k][0] : sp[k]);
@@ -20,6 +22,6 @@ export function contexteNeuf(sp: Record<string, string | string[] | undefined>):
     cp: typeof cp === "string" && /^(0[1-9]|[1-8]\d|9[0-8])\d{3}$/.test(cp) ? cp : undefined,
     surface: Number.isFinite(surface) && surface >= 30 && surface <= 400 ? Math.round(surface) : undefined,
     niveaux: niveaux === "pp" || niveaux === "etage" ? niveaux : undefined,
-    src: sourceSeoValide(lire("src")),
+    src: sourceSeoValide(lire("src")) ?? (lire("source") === "editeur-plan" ? "plan" : undefined),
   };
 }

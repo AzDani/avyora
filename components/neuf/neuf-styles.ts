@@ -14,6 +14,10 @@ export const NEUF_CSS = `
 .av-neuf .av-step.block{height:46px}
 .av-neuf .avert{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.5;color:#7a4b00;background:#fff7e6;border:1px solid #f6d999;border-radius:var(--radius-card);padding:11px 14px;margin-bottom:18px}
 .av-neuf .avert svg{flex:0 0 16px;margin-top:2px}
+.av-neuf .plan-ok{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.5;color:var(--ink);background:var(--brand-50);border:1px solid var(--brand-200);border-radius:var(--radius-card);padding:11px 14px;margin-bottom:18px}
+.av-neuf .plan-ok svg{flex:0 0 16px;margin-top:2px;color:var(--brand)}
+.av-neuf .plan-ok ul{margin:6px 0 0;padding-left:16px;color:var(--muted)}
+.av-neuf .repris{display:inline-block;margin-left:8px;padding:1px 7px;border-radius:999px;background:var(--brand-50);color:var(--brand);font-size:10.5px;font-weight:600;letter-spacing:0;text-transform:none;vertical-align:1px}
 .av-neuf .bilan{margin:6px 0 4px}
 .av-neuf .attente{border:1px dashed var(--line-strong);border-radius:var(--radius-panel);padding:22px;text-align:center;font-size:13.5px;color:var(--faint);background:var(--surface)}
 @media(max-width:560px){.av-neuf .fields{grid-template-columns:1fr}}

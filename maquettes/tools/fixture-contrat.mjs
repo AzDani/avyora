@@ -1,15 +1,25 @@
 /**
- * Génère la scène de référence utilisée par les tests de la table de correspondance.
- * La scène elle-même vit dans scene-reference.mjs — partagée avec couverture.ts.
+ * Génère les contrats de référence utilisés par les tests.
+ * Les scènes elles-mêmes vivent dans scene-reference.mjs — partagées avec couverture.ts.
  *
  *   node maquettes/tools/fixture-contrat.mjs "$(pwd)/maquettes" tests/fixtures/plan-contrat.json
+ *
+ * Plan final (C7, lien « Plan final → construction » du site) : la maison 94 m² de plain-pied,
+ * puis la variante sur deux niveaux avec garage et suite.
+ *
+ *   node maquettes/tools/fixture-contrat.mjs "$(pwd)/maquettes" --final tests/fixtures/plan-final-contrat.json tests/fixtures/plan-final-etage-contrat.json
  */
 import { writeFileSync } from "node:fs";
-import { ouvrirMaquette, scene } from "./scene-reference.mjs";
-const SP=process.argv[2],OUT=process.argv[3];
-const {b,p,errs}=await ouvrirMaquette(SP);
-await p.evaluate(scene);
-const q=await p.evaluate(()=>JSON.parse(JSON.stringify(contratPlan())));
-writeFileSync(OUT,JSON.stringify(q,null,1));
-console.log("contrat",q.contrat,"· niveaux",q.detailNiveaux.length,"· pageerrors:",errs.length?errs:"aucune");
-await b.close();
+import { ouvrirMaquette, scene, scenePlanFinal, scenePlanFinalEtage } from "./scene-reference.mjs";
+const SP=process.argv[2];
+const final=process.argv[3]==="--final";
+const sorties=final?[[scenePlanFinal,process.argv[4]],[scenePlanFinalEtage,process.argv[5]]]:[[scene,process.argv[3]]];
+for(const [sc,OUT] of sorties){
+  if(!OUT)continue;
+  const {b,p,errs}=await ouvrirMaquette(SP);
+  await p.evaluate(sc);
+  const q=await p.evaluate(()=>JSON.parse(JSON.stringify(contratPlan())));
+  writeFileSync(OUT,JSON.stringify(q,null,1));
+  console.log(OUT,"· contrat",q.contrat,"·",q.workflow,"· niveaux",q.detailNiveaux.length,"· aire",q.area,"· pageerrors:",errs.length?errs:"aucune");
+  await b.close();
+}

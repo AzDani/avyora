@@ -122,3 +122,44 @@ export function sceneVariantes() {
   lv0.items.push({id:uid(),type:'douche',x:7.5,y:0.6,w:0.9,h:0.9,rot:0,st:'creer',douche:'bac'});
   afterChange(); garantirPids();
 }
+
+/**
+ * Plan final (D67) : le plan type « Maison · 94 m² », tel qu'un particulier l'ouvre. C'est le
+ * premier contrat de Plan final réel ; il nourrit les tests du lien « Plan final → construction »
+ * du site (C7, `tests/fixtures/plan-final-contrat.json`).
+ */
+export function scenePlanFinal() {
+  closeWelcome('blank');
+  chargerModele(TEMPLATES.find(t=>t.id==='maison'),null,null,WORKFLOW_FINAL);
+  state.cur=0; afterChange(); garantirPids();
+}
+
+/**
+ * Plan final sur deux niveaux : la maison 94 m² + un garage accolé 6 × 6 (emprise en L), un
+ * escalier béton, et un étage avec une suite parentale (douche, vasque et WC DANS la pièce), un
+ * palier et une chambre. Exerce ce que la maison de plain-pied ignore : étage, garage, suite,
+ * WC dans une pièce d'eau, forme, escalier choisi (`tests/fixtures/plan-final-etage-contrat.json`).
+ */
+export function scenePlanFinalEtage() {
+  closeWelcome('blank');
+  chargerModele(TEMPLATES.find(t=>t.id==='maison'),null,null,WORKFLOW_FINAL);
+  const lv=L(); state.name='Maison à étage';
+  const W=(n,a,c,t)=>{const x={id:uid(),a:v(...a),b:v(...c),type:t};n.walls.push(x);return x;};
+  W(lv,[12.5,0],[18.5,0],'mur'); const ge=W(lv,[18.5,0],[18.5,6],'mur'); W(lv,[18.5,6],[12.5,6],'mur');
+  lv.openings.push({id:uid(),wallId:ge.id,t:0.5,type:'garage',w:OPENINGS.garage.w,h:OPENINGS.garage.h,side:1,hinge:1});
+  afterChange();
+  const g=(facesCache[lv.id]||[]).find(f=>f.room&&pointIn(v(15.5,3),f.poly));
+  g.room.type='garage'; g.room.name='Garage'; g.room.typeAuto=false;
+  lv.items.push({id:uid(),type:'escalier',x:11.4,y:6.6,w:1,h:2.5,rot:0,materiau:'beton',stair:{type:'droit'}});
+  afterChange();
+  addLevel('empty'); const et=L(); et.name='Étage'; et.height=2.5;
+  W(et,[0,0],[12.5,0],'mur'); W(et,[12.5,0],[12.5,8],'mur'); W(et,[12.5,8],[0,8],'mur'); W(et,[0,8],[0,0],'mur');
+  W(et,[5,0],[5,8],'cloison'); W(et,[9,0],[9,8],'cloison');
+  afterChange();
+  const faces=facesCache[et.id]||[];
+  const piece=(x,y,type,nom)=>{const f=faces.find(f=>f.room&&pointIn(v(x,y),f.poly));f.room.type=type;f.room.name=nom;f.room.typeAuto=false;};
+  piece(2.5,4,'suite','Suite parentale'); piece(7,4,'palier','Palier'); piece(10.7,4,'chambre','Chambre 4');
+  const I=(type,x,y,o={})=>{const d=ITEMS[type];et.items.push({id:uid(),type,x,y,w:d.w,h:d.h,rot:0,...o});};
+  I('douche',0.6,7.4,{douche:'bac'}); I('vasque2',2.2,7.6); I('wc',4.4,7.6); I('lit',2.5,2);
+  state.cur=0; afterChange(); garantirPids();
+}
