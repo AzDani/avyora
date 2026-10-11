@@ -5038,3 +5038,89 @@ plans n'a d'escalier tournant). Vu à l'écran à 1 440 × 900 et 1 024 × 768 :
 — vue aérienne, l'éclairage des travaux, la visite de ses six pièces ; la maison de 94 m² en Plan final (vue aérienne, murs
 entiers, visite de six pièces) ; le plan réel (vue aérienne, toiture, visite) ; plus la maison de 120 m² (l'étage, le
 garde-corps, la trémie vue du RDC, l'escalier), la partie basse et l'ITE sous les pans, le chargement, le plan vide et le survol.
+
+## D75 · Le Plan final se chiffre : « Chiffrer cette maison » ouvre l'estimation de la construction du site (12/10/2026)
+
+**Demande** (chantier C9 du branchement de la construction neuve, après C8 : la page `/estimation-construction-maison` est
+en production). En Plan final, un lien « Chiffrer cette maison » qui ouvre l'estimation de la construction du site,
+pré-remplie par le plan, sans base de données. Le site ne bouge pas.
+
+**Constat.**
+- *Aucun chemin d'un Plan final vers le site.* Le bouton du haut y est « Exporter le plan » (D67), `showEstimate()` n'y
+  fait qu'exporter ; le seul lien sortant de l'éditeur est la page Tarifs (`TARIFS_URL`, D48).
+- *Le site sait déjà lire un plan* (C7, `lib/estimateur/plan-neuf.ts`) : `?source=editeur-plan#plan=<base64url>`, un
+  EXTRAIT de `contratPlan()` décodé dans le navigateur, borné (24 000 caractères), validé (`planNeufSchema`, clés en trop
+  retirées) puis traduit en maison (`maisonDepuisPlan`). L'import par la base (`ImporterPlan`, table `project_plans`) n'est
+  pas en production et ne lit qu'une rénovation : seule l'adresse peut transporter le plan.
+- *Un piège à ne pas recopier* : `passerPro` ouvre Tarifs par `window.open(…, 'noopener')`, qui renvoie toujours `null` —
+  le site s'ouvre ET la page essaie d'y aller.
+- *Les mots* : un Plan final ne dit ni « estimer », ni « budget », ni « neuf / neuve », ni « travaux » (`MOTS` de
+  `planfinal.mjs`). « Construction neuve » est exclu ; « chiffrer », « coût », « construire » passent.
+
+**Décision.**
+1. *L'adresse* : `CONSTRUCTION_URL` = `https://getavyora.fr/estimation-construction-maison?source=editeur-plan`, à côté de
+   `TARIFS_URL`. C'est la seule adresse écrite : les trois liens la reçoivent du script. `?source=` dit d'où vient le
+   visiteur (D48).
+2. *Ce qui voyage* (`extraitConstruction`) : l'extrait de `contratPlan()` que lit le site, clé pour clé celui
+   d'`extraitPlanNeuf` — `contrat`, `workflow`, `bien` (niveaux, emprise, rectangle), `area`, `contexte` (code postal, type
+   de bien) et, par niveau, ses pièces (type, aire, hors habitable, extérieur, sous pente), les équipements que lit le
+   chiffrage (WC, douche, baignoire, lavabo, double vasque, escalier : leur pièce et leur matériau) et ses menuiseries (type,
+   cotes ; pas une ouverture rebouchée). **Ni nom du plan, ni note, ni annotation, ni produit.** Le plan sort toujours par
+   `contratPlan()` (règle 6) ; le contrat ne change pas (1.18).
+3. *Comment* (`lienConstruction`, `base64url`) : `CONSTRUCTION_URL + '#plan=' +` le base64url des octets UTF-8 du JSON,
+   encodés octet par octet (btoa ne reçoit jamais un accent tel quel), sans `=`. Le fragment ne quitte pas le navigateur :
+   ni serveur, ni Referer, ni journaux. 2 354 caractères pour la maison de 94 m², 3 296 pour la maison à étage des fixtures.
+   Au-delà de 20 000, les cotes des menuiseries passent à 0 : le schéma du site les exige, le chiffrage ne les lit pas — les
+   retirer ferait refuser le plan. Encore trop long, la page s'ouvre sans le plan et un message le dit (« Ce plan est trop
+   grand pour passer dans un lien : la page s'ouvre sans lui, décris-y ta maison en quelques réponses. »).
+4. *Pour qui* (`peutChiffrerConstruction`) : un Plan final, gratuit compris, qui n'est pas un appartement (le site chiffre
+   une maison et refuse un appartement), d'au moins 30 m² habitables (la plus petite surface du rapide). En rénovation, pour
+   un appartement, sur un plan vide ou sous 30 m², les trois entrées n'existent pas.
+5. *Trois entrées, trois vrais liens* `<a target="_blank" rel="noopener">`, dont l'adresse s'écrit au moment du geste
+   (`majLienConstruction` à l'appui, `chiffrerConstruction` au clic et au clavier) — jamais `window.open` :
+   - *le pied du panneau* (`recapPiedHTML`), sous le récapitulatif : « Combien coûte cette maison à construire ? », un lien
+     sobre bordé d'indigo (icône de la calculatrice, icône du lien externe), seul appel du pied ; au téléphone, dans le
+     tiroir ;
+   - *Fichier*, juste après « Exporter le plan » : « Chiffrer cette maison — Le coût de sa construction, sur AVYORA »
+     (`#constructionBtn`, `pfSeul`, sans `proSeul`), un `menuitem` comme les autres (flèches, Entrée, Espace) ;
+   - *le dossier* (`#m-export`), à côté d'« Imprimer / enregistrer en PDF » : « Chiffrer cette maison »
+     (`#constructionDossier`, `noprint`). Aucune page de plus dans le dossier.
+   `majEntreesConstruction`, appelée par `renderFoot` et `exportPlan`, les montre ou les cache. `#estBtnTop` et
+   `TEXTES_PF` ne bougent pas.
+6. *La mesure* : `suivre('clic_chiffrer_construction', {origine, repris})` — origine `pied`, `menu` ou `dossier` ;
+   `repris` dit si le plan est parti dans le lien. Rien du plan (D48).
+
+**Pas fait, et pourquoi.**
+- *`passerPro`* garde son `window.open(…, 'noopener')` : le corriger touche la fenêtre gratuite et ses contrôles, un autre
+  sujet. Signalé.
+- *Grisé avec sa raison plutôt que caché* (proposé par la carte du plan) : sur un plan vide ou trop petit il n'y a rien à
+  chiffrer, et un appartement serait refusé par le site ; un bouton grisé y aurait parlé de construction pour rien.
+- *Le contrat 1.19* (longueur, largeur, périmètre) et les surcharges de `geometrieNeuf` : chantier C10, facultatif ; la v1
+  n'en a pas besoin.
+- *Le texte de `#m-envoi`* (« Mon projet → Importer un plan », `?dev` seulement) promet un import qui n'existe pas en
+  production : inchangé, sans urgence.
+
+**Ce qui ne bouge pas.** Ajouts : `CONSTRUCTION_URL`, `EQUIP_CONSTRUCTION`, `LIEN_CONSTRUCTION_MAX`,
+`extraitConstruction`, `base64url`, `lienConstruction`, `peutChiffrerConstruction`, `majLienConstruction`,
+`chiffrerConstruction`, `ATTRS_CONSTRUCTION`, `majEntreesConstruction` ; ids `#constructionPied`, `#constructionBtn`,
+`#constructionDossier` ; classe `.constr`. `recapPiedHTML` prend un second paramètre. Contrat (1.18), `SCHEMA`, clés
+`localStorage`, `TEXTES_PF`, `#estBtnTop`, pages du dossier, la rénovation (ni entrée ni texte) : inchangés. `lib/` et le
+site : non touchés.
+
+**Contrôles.** `planfinal.mjs` : **579 → 625 contrôles**. En Plan final (Pro et gratuit), les trois entrées ; aucune pour
+la même maison en rénovation, pour une rénovation rouverte après un Plan final, un T3 en Plan final (65 m²), un Plan final
+vide, une pièce de 20 m². Au clic (souris : pied, Fichier, dossier ; clavier : Fichier, flèches, Entrée), l'adresse
+`CONSTRUCTION_URL#plan=…` et la mesure (origine, plan repris). L'adresse décodée est relue par le **vrai code du site** :
+`plan-neuf-lien.mts`, lancé par `npx tsx`, importe `lib/estimateur/plan-neuf.ts` — l'extrait passe `planNeufSchema`, égale
+`extraitPlanNeuf(contratPlan())` clé pour clé et donne, pour le plan type Maison, la même maison que la fixture
+`plan-final-contrat.json` (94 m², plain-pied, rectangle, 3 chambres, 1 SDB, 1 WC). Le nom du plan, ses notes, une
+annotation et la note d'une pièce, posés exprès, n'y sont pas. Au-delà de 20 000 caractères (200 menuiseries), le lien
+tient avec des cotes à 0 ; encore trop long (150 pièces), la page s'ouvre sans le plan et le message le dit ; un accent fait
+l'aller-retour. Les pages du dossier ne changent pas (Pro et gratuit). À 375 px, dans le tiroir, le lien se voit en entier
+(32 px), rien par-dessus, et le clic part, mesuré au téléphone. Les sept nouveaux états sont relus par `MOTS` et
+`RIEN_DU_CHANTIER`. `coherence.mjs` § 8 : `CONSTRUCTION_URL` existe, vise `https://getavyora.fr`, une route qui existe
+(`app/estimation-construction-maison/page.tsx`), avec `?source=editeur-plan` et sans fragment ; l'éditeur y ajoute
+`#plan=` ; l'adresse n'est écrite qu'une fois dans l'éditeur.
+Batterie complète lancée seule, une par une : les 22 contrôles, `planfinal` (625/625) et `vue3d` (182/182), finition,
+couverture et vitest (391 tests) verts, `tsc` sans erreur ; la même batterie, sur le fichier d'avant D75, était déjà verte
+(`planfinal` 579/579). Vu à l'écran à 1 440 (gratuit : le pied, Fichier, le dossier), 1 024 (Pro) et 375 px (le tiroir).
