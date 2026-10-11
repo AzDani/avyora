@@ -39,7 +39,7 @@ import {
   diyNeuf, lignesPersoDuBloc, lignePersoNeuf, repriseDepuisReponses, repriseDepuisAffiner, repriseDepuisGraine,
   lireBrouillonDetailNeuf, enregistrementDetailNeuf, demarchesPhase, type EtatNeuf, type BlocNeuf,
 } from "@/lib/estimateur/detaille-neuf";
-import { CLE_BROUILLON_NEUF, CLE_AFFINER_NEUF, CLE_RECLAMATION, RECLAMATION_NEUF, type OrigineNeuf } from "@/lib/estimateur/brouillon-neuf";
+import { CLE_BROUILLON_NEUF, CLE_AFFINER_NEUF, CLE_RECLAMATION_NEUF, type OrigineNeuf } from "@/lib/estimateur/brouillon-neuf";
 import { NEUF_DETAIL_CSS } from "./detail-styles";
 import DevisNeuf from "./DevisNeuf";
 
@@ -183,7 +183,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
       });
       if (res.status === 401) {
         // Le brouillon D'ABORD, le drapeau ensuite : un drapeau sans brouillon ne réclame rien.
-        try { localStorage.setItem(CLE_BROUILLON_NEUF, JSON.stringify(brouillon)); localStorage.setItem(CLE_RECLAMATION, RECLAMATION_NEUF); } catch { /* noop */ }
+        try { localStorage.setItem(CLE_BROUILLON_NEUF, JSON.stringify(brouillon)); localStorage.setItem(CLE_RECLAMATION_NEUF, "1"); } catch { /* noop */ }
         router.push("/inscription");
         return;
       }

@@ -8,7 +8,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { buildDevis, catalogueDe, presetNeuf, maisonComplete, type RapideNeufInput, type Ctx, type Selection } from "@/lib/estimateur";
 import {
   brouillonRapideNeuf, lireBrouillonNeuf, lireReponsesRapideNeuf, corpsProjetNeuf, nomProjetNeuf,
-  CLE_BROUILLON_NEUF, RECLAMATION_NEUF, TYPE_BIEN_NEUF,
+  CLE_BROUILLON_NEUF, RECLAMATION_NEUF, TYPE_BIEN_NEUF, CLE_RECLAMATION, CLE_RECLAMATION_NEUF, reclamationNeufPosee,
 } from "@/lib/estimateur/brouillon-neuf";
 import { nomProjetNeuf as nomDepuisIndex } from "@/lib/estimateur/etapes-neuf";
 import { contexteNeuf } from "@/lib/neuf-contexte";
@@ -68,8 +68,13 @@ describe("Neuf · brouillon du rapide", () => {
   it("clés séparées de la rénovation", () => {
     expect(CLE_BROUILLON_NEUF).toBe("avyora-neuf-v1");
     expect(CLE_BROUILLON_NEUF).not.toBe("avyora-estim-v2");
-    expect(RECLAMATION_NEUF).toBe("neuf");
-    expect(RECLAMATION_NEUF).not.toBe("1");
+    // Le drapeau du neuf a sa propre clé : réno puis neuf (ou l'inverse) réclame les deux.
+    expect(CLE_RECLAMATION_NEUF).toBe("avyora-neuf-claim");
+    expect(CLE_RECLAMATION_NEUF).not.toBe(CLE_RECLAMATION);
+    const st = (o: Record<string, string>) => (k: string) => o[k] ?? null;
+    expect(reclamationNeufPosee(st({ [CLE_RECLAMATION_NEUF]: "1" }))).toBe(true);
+    expect(reclamationNeufPosee(st({ [CLE_RECLAMATION]: RECLAMATION_NEUF }))).toBe(true);   // ancienne valeur
+    expect(reclamationNeufPosee(st({ [CLE_RECLAMATION]: "1" }))).toBe(false);               // la rénovation
   });
 });
 

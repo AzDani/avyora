@@ -31,7 +31,7 @@ import {
 } from "@/lib/estimateur";
 import {
   brouillonRapideNeuf, corpsProjetNeuf, lireReponsesRapideNeuf, CLE_BROUILLON_NEUF, CLE_AFFINER_NEUF, CLE_RETOUR_NEUF,
-  CLE_RECLAMATION, RECLAMATION_NEUF, type ReponsesRapideNeuf, type OrigineNeuf,
+  CLE_RECLAMATION_NEUF, type ReponsesRapideNeuf, type OrigineNeuf,
 } from "@/lib/estimateur/brouillon-neuf";
 import type { InitialNeuf } from "@/lib/neuf-contexte";
 import type { MaisonDuPlan, RefusPlan } from "@/lib/estimateur/plan-neuf";
@@ -307,7 +307,7 @@ export default function EstimateurRapideNeuf({
       });
       if (res.status === 401) {
         // Le brouillon D'ABORD, le drapeau ensuite : un drapeau sans brouillon ne réclame rien.
-        try { localStorage.setItem(CLE_BROUILLON_NEUF, JSON.stringify(d)); localStorage.setItem(CLE_RECLAMATION, RECLAMATION_NEUF); } catch { /* noop */ }
+        try { localStorage.setItem(CLE_BROUILLON_NEUF, JSON.stringify(d)); localStorage.setItem(CLE_RECLAMATION_NEUF, "1"); } catch { /* noop */ }
         router.push("/inscription");
         return;
       }

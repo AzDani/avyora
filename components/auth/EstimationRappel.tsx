@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CATALOG, buildDevis, catalogueDe, type Ctx, type Selection } from "@/lib/estimateur";
-import { CLE_BROUILLON_NEUF, CLE_RECLAMATION, RECLAMATION_NEUF, lireBrouillonNeuf } from "@/lib/estimateur/brouillon-neuf";
+import { CLE_BROUILLON_NEUF, lireBrouillonNeuf, reclamationNeufPosee } from "@/lib/estimateur/brouillon-neuf";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 
@@ -18,17 +18,18 @@ export function EstimationRappel() {
   const maisonNeuve = dictNeufCommun(useLocale()).maisonNeuve;
 
   useEffect(() => {
-    // Construction neuve (drapeau « neuf ») : son brouillon, chiffré sur le catalogue du neuf.
+    // Construction neuve (son drapeau posé) : son brouillon, chiffré sur le catalogue du neuf.
+    // Brouillon absent ou illisible : on retombe sur le rappel de la rénovation, comme avant.
     try {
-      if (localStorage.getItem(CLE_RECLAMATION) === RECLAMATION_NEUF) {
+      if (reclamationNeufPosee((k) => localStorage.getItem(k))) {
         const d = lireBrouillonNeuf(localStorage.getItem(CLE_BROUILLON_NEUF));
-        if (!d) return;
-        const ttc = buildDevis(catalogueDe(d.ctx), d.ctx, d.sel).totaux.ttc;
-        if (!(ttc > 0)) return;
-        const lo = Math.round((ttc * 0.85) / 100) * 100;
-        const hi = Math.round((ttc * 1.15) / 100) * 100;
-        setInfo({ lo, hi, label: `${maisonNeuve} ${d.ctx.surface} m²` });
-        return;
+        const ttc = d ? buildDevis(catalogueDe(d.ctx), d.ctx, d.sel).totaux.ttc : 0;
+        if (d && ttc > 0) {
+          const lo = Math.round((ttc * 0.85) / 100) * 100;
+          const hi = Math.round((ttc * 1.15) / 100) * 100;
+          setInfo({ lo, hi, label: `${maisonNeuve} ${d.ctx.surface} m²` });
+          return;
+        }
       }
     } catch {
       /* stockage illisible : on retombe sur le chemin de la rénovation */

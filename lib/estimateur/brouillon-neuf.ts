@@ -7,8 +7,10 @@
  *
  * Clés SÉPARÉES de la rénovation (`avyora-estim-v2`, drapeau `"1"`) : un ctx neuf rangé sous la
  * clé réno serait relu par « Affiner » réno, `ClaimDraft` et `EstimationRappel`, puis chiffré sur
- * le catalogue de la rénovation, sans erreur visible. Le drapeau de réclamation est typé :
- * `avyora-estim-claim = "neuf"` ; la valeur `"1"` reste celle de la rénovation.
+ * le catalogue de la rénovation, sans erreur visible. Le drapeau de réclamation du neuf a aussi
+ * sa propre clé (`avyora-neuf-claim`) : un anonyme qui enregistre une rénovation PUIS une maison
+ * (ou l'inverse) retrouve les deux projets après l'inscription. `avyora-estim-claim = "1"` reste
+ * celui de la rénovation, inchangé.
  */
 import type { Ctx, Selection, Finition, CustomLine } from "./core";
 import type { MaisonNeuve, Niveaux } from "./neuf";
@@ -23,9 +25,16 @@ export const CLE_AFFINER_NEUF = "avyora-affiner-neuf";
 /** `sessionStorage` : un gratuit a cliqué « Détail phase par phase — Pro » et part vers /tarifs.
  *  Au retour (bouton Précédent), le rapide reprend ses réponses au lieu d'un formulaire vide. */
 export const CLE_RETOUR_NEUF = "avyora-neuf-retour";
-/** Drapeau de réclamation, partagé avec la rénovation ; sa VALEUR dit de quel brouillon il s'agit. */
+/** Drapeau de réclamation du neuf (valeur « 1 »), distinct de celui de la rénovation. */
+export const CLE_RECLAMATION_NEUF = "avyora-neuf-claim";
+/** Drapeau de la rénovation. Une première version du neuf y écrivait « neuf » : relu, jamais réécrit. */
 export const CLE_RECLAMATION = "avyora-estim-claim";
 export const RECLAMATION_NEUF = "neuf";
+
+/** Un enregistrement neuf anonyme attend-il d'être réclamé ? (lecteur du `localStorage` en paramètre) */
+export function reclamationNeufPosee(lire: (cle: string) => string | null): boolean {
+  return lire(CLE_RECLAMATION_NEUF) === "1" || lire(CLE_RECLAMATION) === RECLAMATION_NEUF;
+}
 /** `typeBien` d'un projet neuf (sans lui, le serveur met « appartement » par défaut). */
 export const TYPE_BIEN_NEUF = "Maison neuve";
 

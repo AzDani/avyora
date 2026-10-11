@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/components/i18n/LangProvider";
-import { CLE_BROUILLON_NEUF, RECLAMATION_NEUF, lireBrouillonNeuf, corpsProjetNeuf } from "@/lib/estimateur/brouillon-neuf";
+import { CLE_BROUILLON_NEUF, CLE_RECLAMATION_NEUF, RECLAMATION_NEUF, lireBrouillonNeuf, corpsProjetNeuf, reclamationNeufPosee } from "@/lib/estimateur/brouillon-neuf";
 
 const TR = {
   fr: { enregistrement: "Enregistrement de ton estimation…" },
@@ -33,53 +33,59 @@ export default function ClaimDraft() {
     if (done.current) return;
     done.current = true;
 
-    let flag: string | null = null;
-    try { flag = localStorage.getItem(CLAIM_KEY); } catch { /* noop */ }
-    if (!flag) return; // pas de tentative d'enregistrement anonyme → on ne réclame rien
+    // Deux drapeaux indépendants : la construction neuve (`avyora-neuf-claim`) et la rénovation
+    // (`avyora-estim-claim = "1"`). Un anonyme qui a enregistré les deux retrouve les deux projets.
+    let neuf = false, flag: string | null = null;
+    try {
+      neuf = reclamationNeufPosee((k) => localStorage.getItem(k));
+      flag = localStorage.getItem(CLAIM_KEY);
+    } catch { /* noop */ }
+    const reno = !!flag && flag !== RECLAMATION_NEUF; // « neuf » : ancienne valeur du drapeau du neuf
+    if (!neuf && !reno) return; // pas de tentative d'enregistrement anonyme → on ne réclame rien
 
-    // Construction neuve : son propre brouillon (`avyora-neuf-v1`), son propre nom et `typeBien`.
-    // Le brouillon de rénovation, s'il existe, n'est pas touché (réclamable plus tard).
-    if (flag === RECLAMATION_NEUF) {
-      const clear = () => { try { localStorage.removeItem(CLAIM_KEY); } catch { /* noop */ } };
+    /** Construction neuve : son propre brouillon (`avyora-neuf-v1`), son propre nom et `typeBien`. */
+    async function reclamerNeuf(): Promise<string | null> {
+      const clear = () => {
+        try {
+          localStorage.removeItem(CLE_RECLAMATION_NEUF);
+          if (localStorage.getItem(CLAIM_KEY) === RECLAMATION_NEUF) localStorage.removeItem(CLAIM_KEY);
+        } catch { /* noop */ }
+      };
       let rawNeuf: string | null = null;
       try { rawNeuf = localStorage.getItem(CLE_BROUILLON_NEUF); } catch { /* noop */ }
       const dn = lireBrouillonNeuf(rawNeuf);
-      if (!dn) { clear(); return; }
-      (async () => {
-        setEtat("claiming");
-        try {
-          const res = await fetch("/api/projects", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(corpsProjetNeuf(dn, locale)),
-          });
-          if (res.ok) {
-            const { id } = await res.json();
-            try { localStorage.removeItem(CLE_BROUILLON_NEUF); } catch { /* noop */ }
-            clear();
-            router.replace(`/projets/${id}`);
-            router.refresh();
-            return;
-          }
-        } catch { /* réseau : on garde le brouillon pour réessayer */ }
-        clear();
-        setEtat("idle");
-      })();
-      return;
+      if (!dn) { clear(); return null; }
+      setEtat("claiming");
+      try {
+        const res = await fetch("/api/projects", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(corpsProjetNeuf(dn, locale)),
+        });
+        if (res.ok) {
+          const { id } = await res.json();
+          try { localStorage.removeItem(CLE_BROUILLON_NEUF); } catch { /* noop */ }
+          clear();
+          return id as string;
+        }
+      } catch { /* réseau : on garde le brouillon pour réessayer */ }
+      clear();
+      return null;
     }
 
-    let raw: string | null = null;
-    try { raw = localStorage.getItem(DRAFT_KEY); } catch { /* noop */ }
-    const clearFlag = () => { try { localStorage.removeItem(CLAIM_KEY); } catch { /* noop */ } };
-    if (!raw) { clearFlag(); return; }
+    /** Rénovation : le chemin d'avant le neuf, inchangé. */
+    async function reclamerReno(): Promise<string | null> {
+      let raw: string | null = null;
+      try { raw = localStorage.getItem(DRAFT_KEY); } catch { /* noop */ }
+      const clearFlag = () => { try { localStorage.removeItem(CLAIM_KEY); } catch { /* noop */ } };
+      if (!raw) { clearFlag(); return null; }
 
-    let d: Draft | null = null;
-    try { d = JSON.parse(raw); } catch { clearFlag(); return; }
-    const surface = Number(d?.ctx?.surface) || 0;
-    const codePostal = String(d?.codePostal || "");
-    if (!d || d.v !== "estimateur" || !d.ctx || surface <= 0 || !/^\d{5}$/.test(codePostal)) { clearFlag(); return; }
+      let d: Draft | null = null;
+      try { d = JSON.parse(raw); } catch { clearFlag(); return null; }
+      const surface = Number(d?.ctx?.surface) || 0;
+      const codePostal = String(d?.codePostal || "");
+      if (!d || d.v !== "estimateur" || !d.ctx || surface <= 0 || !/^\d{5}$/.test(codePostal)) { clearFlag(); return null; }
 
-    (async () => {
       setEtat("claiming");
       try {
         const nom = `Rénovation — ${d!.ctx!.type ?? "bien"} ${surface} m²`.slice(0, 110);
@@ -95,12 +101,28 @@ export default function ClaimDraft() {
           const { id } = await res.json();
           try { localStorage.removeItem(DRAFT_KEY); } catch { /* noop */ }
           clearFlag();
-          router.replace(`/projets/${id}`);
-          router.refresh();
-          return;
+          return id as string;
         }
       } catch { /* réseau : on garde le brouillon pour réessayer */ }
       clearFlag();
+      return null;
+    }
+
+    (async () => {
+      const idNeuf = neuf ? await reclamerNeuf() : null;
+      const idReno = reno ? await reclamerReno() : null;
+      if (idNeuf && idReno) {
+        // Deux projets créés : la liste les montre tous les deux.
+        router.replace("/projets");
+        router.refresh();
+        return;
+      }
+      const id = idNeuf ?? idReno;
+      if (id) {
+        router.replace(`/projets/${id}`);
+        router.refresh();
+        return;
+      }
       setEtat("idle");
     })();
   }, [router]);
