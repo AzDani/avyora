@@ -48,7 +48,8 @@ export default async function ProjetPage({ params }: { params: Promise<{ id: str
           </Link>
           <RenameTitre id={projet.id} nom={projet.nom} />
           <div className="mt-2.5 flex flex-wrap gap-1.5">
-            <span className="chip capitalize">{projet.type_bien}</span>
+            {/* Neuf : la puce « Construction neuve » dit déjà le type (« Maison Neuve » en doublon). */}
+            {!neuf && <span className="chip capitalize">{projet.type_bien}</span>}
             <span className="chip num">{projet.surface} m²</span>
             <span className="chip num">{projet.code_postal}</span>
             <span className="chip">{regionLabel(projet.code_postal)}</span>

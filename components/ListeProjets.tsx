@@ -199,7 +199,7 @@ export default function ListeProjets({
           <div className="min-w-0 flex-1">
             <h3 className="truncate font-semibold text-ink">{p.nom}</h3>
             <div className="mt-2 flex flex-wrap gap-1.5">
-              <span className="chip capitalize">{p.type_bien}</span>
+              {p.nature !== "neuf" && <span className="chip capitalize">{p.type_bien}</span>}
               <span className="chip num">{p.surface} m²</span>
               <span className="chip num">{p.code_postal}</span>
               {p.nature === "neuf" && <span className="chip">{n.badge}</span>}

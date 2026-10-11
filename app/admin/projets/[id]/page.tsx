@@ -32,7 +32,7 @@ export default async function AdminProjet({ params }: { params: Promise<{ id: st
           </Link>
           <h1 className="mt-1 text-[26px] font-semibold tracking-tight text-ink">{projet.nom}</h1>
           <div className="mt-2.5 flex flex-wrap gap-1.5">
-            <span className="chip capitalize">{projet.typeBien}</span>
+            {!estNeuf(reponses.ctx) && <span className="chip capitalize">{projet.typeBien}</span>}
             <span className="chip num">{projet.surface} m²</span>
             <span className="chip num">{projet.codePostal}</span>
             <span className="chip">{regionLabel(projet.codePostal)}</span>
