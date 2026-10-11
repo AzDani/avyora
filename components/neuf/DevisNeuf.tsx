@@ -11,7 +11,7 @@ import {
   buildDevis, customTotals, decoupe, tachesParCle, estJalon, CATALOG_NEUF, PHASES_NEUF,
   type Ctx, type Selection, type CustomLine,
 } from "@/lib/estimateur";
-import { catT } from "@/lib/estimateur/catalog-i18n";
+import { catT, catLigne } from "@/lib/estimateur/catalog-i18n";
 import { useLocale, useT } from "@/components/i18n/LangProvider";
 import { CountUp } from "@/components/estimateur/CountUp";
 import { fmt } from "@/components/estimateur/partage";
@@ -107,7 +107,7 @@ export default function DevisNeuf({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Se
               : (Math.round(li.qty * 100) / 100).toLocaleString(nf) + " " + (li.mode === "location" ? (locale === "en" ? "d" : "j") : catT(locale, "unites", li.unite));
             return (
               <div key={li.cle} className="dtl">
-                <span>{catT(locale, "postes", li.nom)}</span>
+                <span>{catLigne(locale, li.nom, li.cle)}</span>
                 <span className="q">{jalon ? "—" : q}</span>
                 {jalon ? <span className="dem">{n.demarche}</span> : (
                   <span className={"mode " + (li.mode === "location" ? "mL" : li.mode === "je-fais" ? "mS" : "mA")}>

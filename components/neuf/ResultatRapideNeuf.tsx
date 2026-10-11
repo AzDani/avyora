@@ -5,7 +5,7 @@ import {
   type Ctx, type Selection, type Finition, type QuiRealise,
 } from "@/lib/estimateur";
 import { normaliserCles } from "@/lib/estimateur/identite";
-import { catT } from "@/lib/estimateur/catalog-i18n";
+import { catLigne } from "@/lib/estimateur/catalog-i18n";
 import { getLocale } from "@/lib/i18n/server";
 import { dict } from "@/lib/i18n/dictionaries";
 import BilanRapideNeuf from "./BilanRapideNeuf";
@@ -90,7 +90,7 @@ export default async function ResultatRapideNeuf({
           {top.map((li, i) => (
             <div className="lrow" key={li.cle}>
               <span className="dot" style={{ background: SEG[i] ?? SEG[SEG.length - 1] }} />
-              <span className="nm">{catT(locale, "postes", li.nom)}</span>
+              <span className="nm">{catLigne(locale, li.nom, li.cle)}</span>
               <span className="lv">{eur(li.ttc)}</span>
             </div>
           ))}

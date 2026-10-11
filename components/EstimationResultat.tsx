@@ -8,7 +8,7 @@
 import { useMemo, useState, useCallback } from "react";
 import { EST_CSS } from "./estimateur-styles";
 import { useLocale } from "@/components/i18n/LangProvider";
-import { catT } from "@/lib/estimateur/catalog-i18n";
+import { catT, catLigne } from "@/lib/estimateur/catalog-i18n";
 import {
   CATALOG, buildDevis, ICON, visible, lineHT, effRate, statutLigne, cleLegacy, regionCoef, piecesEff, type Ctx, type Selection,
   catalogueDe, estNeuf, phasesDe, lotsParCorps, tachesParCle, estJalon, decoupe, geometrieNeuf, maisonComplete, INFO_PHASES,
@@ -596,7 +596,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
                 return (
                   <div key={i} className={"dtl" + (projectId ? " chant" : "")}>
                     <span>
-                      {catT(locale, "postes", li.nom)}
+                      {neuf ? catLigne(locale, li.nom, li.cle) : catT(locale, "postes", li.nom)}
                       {projectId && li.unite !== "forfait" && (
                         neuf
                           ? <span style={{ color: "var(--faint)", fontWeight: 400 }}> · {qtyTxt}</span>
