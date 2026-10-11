@@ -13,7 +13,7 @@ import {
   CATALOG, buildDevis, ICON, visible, lineHT, effRate, statutLigne, cleLegacy, regionCoef, piecesEff, type Ctx, type Selection,
   catalogueDe, estNeuf, phasesDe, lotsParCorps, tachesParCle, estJalon, geometrieNeuf, maisonComplete,
 } from "@/lib/estimateur";
-import { decoupe, INFO_PHASES } from "@/lib/estimateur/etapes-neuf";
+import { decoupe, INFO_PHASES, qteNeuf } from "@/lib/estimateur/etapes-neuf";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 import { normaliserCles } from "@/lib/estimateur/identite";
 
@@ -298,6 +298,12 @@ const NEUF_CSS = `
 .av-estim .dtl.chant .dem{min-width:74px;text-align:center;box-sizing:border-box}
 .av-estim .split-neuf{margin-top:8px;font-size:12px;color:var(--muted);line-height:1.45}
 .av-estim .split-neuf b{color:var(--ink);font-weight:600;font-family:var(--font-geist-mono),monospace;white-space:nowrap}
+@media(max-width:560px){
+  .av-estim .dtl.chant{grid-template-columns:minmax(0,1fr) auto;row-gap:6px;padding:9px 0}
+  .av-estim .dtl.chant>span:first-child{grid-column:1/-1}
+  .av-estim .dtl.chant .stbtn,.av-estim .dtl.chant .dem{justify-self:start}
+  .av-estim .dtl.chant .stbtn{min-height:44px;padding:0 16px;font-size:12px}
+}
 `;
 
 export default function EstimationResultat({ reponses, projectId, readOnly }: { reponses: { ctx?: Ctx; sel?: Selection; statuts?: Record<string, number>; codePostal?: string }; projectId?: string; readOnly?: boolean }) {
@@ -314,6 +320,18 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
   const [closedPh, setClosedPh] = useState<Record<string, boolean>>({}); // phases repliées (Suivi / Détail)
   const togglePh = useCallback((ph: string) => setClosedPh((p) => ({ ...p, [ph]: !p[ph] })), []);
   const dv = useMemo(() => (ctx ? buildDevis(catalogueDe(ctx), ctx, sel) : null), [ctx, sel]);
+  // Construction neuve : 9 phases et une centaine de postes. Seule la phase en cours à l'ouverture
+  // (la première qui n'est pas terminée) est dépliée ; les autres s'ouvrent au clic. Calculée une
+  // fois : cocher le dernier poste d'une phase ne la replie pas sous le doigt. Rénovation : null.
+  const phaseCourante = useMemo(() => {
+    if (!neuf || !dv) return null;
+    const st0 = reponses?.statuts || {};
+    for (const ph of phasesDe(ctx)) {
+      const l = dv.lignes.filter((li) => li.phase === ph);
+      if (l.some((li) => statutLigne(st0, li) !== 2)) return ph;
+    }
+    return null;
+  }, [neuf, dv, ctx, reponses]);
 
   // Suivi de chantier : statut par tâche (0 à démarrer, 1 en cours, 2 terminé), sauvegardé côté serveur.
   const cycle = useCallback((k: string, legacy?: string | null) => {
@@ -560,11 +578,11 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
         {phasesDe(ctx).map((ph) => {
           const lignesPh = lignes.filter((li) => li.phase === ph);
           if (!lignesPh.length) return null;
-          const open = !closedPh[ph];
+          const open = neuf ? !(closedPh[ph] ?? ph !== phaseCourante) : !closedPh[ph];
           const donePh = projectId ? lignesPh.filter((li) => statutLigne(statuts, li) === 2).length : 0;
           return (
             <div key={ph}>
-              <button type="button" className={"phase-t" + (open ? " open" : "")} onClick={() => togglePh(ph)} aria-expanded={open}>
+              <button type="button" className={"phase-t" + (open ? " open" : "")} onClick={() => (neuf ? setClosedPh((p) => ({ ...p, [ph]: open })) : togglePh(ph))} aria-expanded={open}>
                 <span className="chev" aria-hidden="true">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </span>
@@ -589,9 +607,9 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
                 // sauf si un prix perso l'a figée (le pourcentage n'est alors plus ce qui la chiffre).
                 const qtyTxt = li.unite === "pct"
                   ? (tk?.fp != null && sel[li.cle]?.pu == null
-                    ? `${tk.fp.toLocaleString("fr-FR")} ${tk.assiette === "projet" || (tk.frais && tk.assiette !== "travaux") ? n.pctProjet : n.pctTravaux}`
+                    ? `${tk.fp.toLocaleString(locale === "en" ? "en-US" : "fr-FR")}\u00a0${tk.assiette === "projet" || (tk.frais && tk.assiette !== "travaux") ? n.pctProjet : n.pctTravaux}`
                     : "—")
-                  : li.qty + " " + (li.mode === "location" ? s.dayAbbr : catT(locale, "unites", li.unite));
+                  : qteNeuf(locale, li.qty, li.unite, li.mode === "location");
                 const st = statutLigne(statuts, li);
                 const stLabel = st === 2 ? s.stDone : st === 1 ? s.stInProgress : s.stToStart;
                 return (

@@ -239,3 +239,17 @@ describe("catT · unités", () => {
     expect(catT("en", "unites", "m2")).toBe("m²");
   });
 });
+
+describe("Neuf · quantités lisibles (qteNeuf)", () => {
+  it("décimales, unités écrites et accordées, espace insécable", async () => {
+    const { qteNeuf } = await import("@/lib/estimateur/etapes-neuf");
+    expect(qteNeuf("fr", 219.29, "m2")).toBe("219 m²");
+    expect(qteNeuf("fr", 1.5, "jour")).toBe("1,5 jour");
+    expect(qteNeuf("fr", 270, "jour")).toBe("270 jours");
+    expect(qteNeuf("fr", 4.25, "m3")).toBe("4,3 m³");
+    expect(qteNeuf("fr", 43.5, "ml")).toBe("44 ml");
+    expect(qteNeuf("en", 2, "x", true)).toBe("2 days");
+    expect(qteNeuf("en", 1, "u")).toBe("1 unit");
+    expect(qteNeuf("en", 1234.4, "m2")).toBe("1,234 m²");
+  });
+});

@@ -10,7 +10,7 @@ import { useMemo } from "react";
 import {
   buildDevis, customTotals, tachesParCle, estJalon, CATALOG_NEUF, PHASES_NEUF, type Ctx, type Selection, type CustomLine,
 } from "@/lib/estimateur";
-import { decoupe } from "@/lib/estimateur/etapes-neuf";
+import { decoupe, qteNeuf } from "@/lib/estimateur/etapes-neuf";
 import { catT, catLigne } from "@/lib/estimateur/catalog-i18n";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { dictNeuf } from "@/lib/i18n/neuf";
@@ -104,7 +104,7 @@ export default function DevisNeuf({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Se
             const pctPerso = sel[li.cle]?.pu != null;
             const q = li.unite === "forfait" ? "—"
               : li.unite === "pct" ? (tk?.fp != null && !pctPerso ? `${tk.fp.toLocaleString(nf)} ${tk.assiette === "projet" || (tk.frais && tk.assiette !== "travaux") ? n.pctProjet : n.pctTravaux}` : "—")
-              : (Math.round(li.qty * 100) / 100).toLocaleString(nf) + " " + (li.mode === "location" ? (locale === "en" ? "d" : "j") : catT(locale, "unites", li.unite));
+              : qteNeuf(locale, li.qty, li.unite, li.mode === "location");
             return (
               <div key={li.cle} className="dtl">
                 <span>{catLigne(locale, li.nom, li.cle)}</span>

@@ -53,13 +53,17 @@ describe("Neuf · un même projet, un même chiffre", () => {
     expect(t).toContain("3,5 % du projet");
   });
 
-  it("le suivi montre les 92 lignes dans les 9 phases, les 8 démarches en badge", () => {
+  it("le suivi range les 92 lignes dans les 9 phases, seule la phase en cours dépliée", () => {
     const html = rendre(createElement(EstimationResultat, { reponses: reponses() as never, projectId: "p1" }));
     const parPhase = phasesDe(ctx).reduce((s, ph) => s + dv.lignes.filter((li) => li.phase === ph).length, 0);
     expect(parPhase).toBe(dv.lignes.length);
-    expect((html.match(/class="stbtn st\d"/g) ?? []).length).toBe(92);
+    // Seule la phase en cours (ici la première, rien n'est commencé) est dépliée à l'ouverture.
+    const taches0 = tachesParCle(ctx);
+    const premiere = dv.lignes.filter((li) => li.phase === PHASES_NEUF[0]);
+    expect((html.match(/class="stbtn st\d"/g) ?? []).length).toBe(premiere.length);
     expect((html.match(/class="phase-t/g) ?? []).length).toBe(PHASES_NEUF.length);
-    expect((html.match(/class="dem"/g) ?? []).length).toBe(8);
+    expect((html.match(/aria-expanded="true"/g) ?? []).length).toBe(1);
+    expect((html.match(/class="dem"/g) ?? []).length).toBe(premiere.filter((li) => estJalon(taches0.get(li.cle))).length);
     expect((html.match(/class="jal/g) ?? []).length).toBe(PHASES_NEUF.length);
     const taches = tachesParCle(ctx);
     expect(dv.lignes.filter((li) => estJalon(taches.get(li.cle))).length).toBe(8);

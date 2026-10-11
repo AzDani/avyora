@@ -177,3 +177,29 @@ export const EXTERIEURS_HORS_PERIMETRE = {
 /** Nom par défaut d'un projet neuf : défini dans `brouillon-neuf.ts` (module sans moteur, lu par
  *  `ClaimDraft`), réexporté ici pour la fiche, le PDF et les tests. */
 export { nomProjetNeuf } from "./brouillon-neuf";
+
+/** Espace insécable : le nombre et son unité ne se séparent jamais à la ligne. */
+const NBSP = " ";
+const UNITE_NEUF: Record<"fr" | "en", Record<string, [string, string]>> = {
+  // [singulier, pluriel]
+  fr: { m2: ["m²", "m²"], m3: ["m³", "m³"], ml: ["ml", "ml"], jour: ["jour", "jours"], u: ["u", "u"] },
+  en: { m2: ["m²", "m²"], m3: ["m³", "m³"], ml: ["lin. m", "lin. m"], jour: ["day", "days"], u: ["unit", "units"] },
+};
+
+/**
+ * Quantité d'une ligne du neuf, lisible : séparateur décimal de la langue, pas de décimale au-delà
+ * de 10 (une seule en dessous), unité écrite (« m² », pas « m2 ») et accordée (« 270 jours »),
+ * espace insécable. Les quantités du neuf sortent de la géométrie (219,29 m²) : la rénovation,
+ * aux quantités saisies, garde son affichage. `location` : la ligne se compte en jours.
+ */
+export function qteNeuf(locale: string, qty: number, unite: string, location = false): string {
+  const l = locale === "en" ? "en" : "fr";
+  const q = Number(qty) || 0;
+  const txt = q.toLocaleString(l === "en" ? "en-US" : "fr-FR", { maximumFractionDigits: Math.abs(q) >= 10 ? 0 : 1 });
+  const u = location ? "jour" : unite;
+  const formes = UNITE_NEUF[l][u];
+  if (!formes) return txt + NBSP + u;
+  // Français : pluriel à partir de 2 (« 1,5 jour ») ; anglais : dès que ce n'est pas 1.
+  const pluriel = l === "fr" ? Math.abs(q) >= 2 : Math.round(Math.abs(q) * 10) !== 10;
+  return txt + NBSP + formes[pluriel ? 1 : 0];
+}
