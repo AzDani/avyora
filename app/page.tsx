@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getT } from "@/lib/i18n/server";
+import { FEATURES } from "@/lib/features";
 
 // Le canonical de l'accueil vit ici (retiré du layout racine où il contaminait toutes les pages).
 export const metadata: Metadata = { alternates: { canonical: "/" } };
@@ -143,6 +144,14 @@ const HOME_CSS = `
 @media(max-width:440px){.av-home .steps4,.av-home .pains,.av-home .cred{grid-template-columns:1fr}}
 `;
 
+/* Construction neuve : bandeau vers l'estimation publique, inséré seulement quand FEATURES.neuf est
+   allumé (éteint : HTML d'origine au caractère près). Classe .strip existante, styles en ligne pour
+   le lien (HOME_CSS ne bouge pas). Ni prix ni emoji. */
+const NEUF_BAND = `
+  <a href="/estimation-construction-maison" class="strip" style="display:block;text-decoration:none;color:inherit"><div class="t">Tu fais construire ?</div><div class="d">Estime ta maison neuve, du permis à la remise des clés : études, taxes, construction et branchements. Gratuit, en 5 questions.</div><div class="d" style="color:var(--brand);font-weight:600">Estimer ma construction →</div></a>`;
+const NEUF_BAND_EN = `
+  <a href="/estimation-construction-maison" class="strip" style="display:block;text-decoration:none;color:inherit"><div class="t">Building a new home?</div><div class="d">Estimate your new house, from building permit to handover: studies, taxes, construction and utility hookups. Free, in 5 questions.</div><div class="d" style="color:var(--brand);font-weight:600">Estimate my build →</div></a>`;
+
 const HOME_HTML = `
 <a href="/tarifs" class="promo"><span class="dot"></span>Estimer est <b>gratuit</b> — AVYORA Pro dès 18,85 €/mois <span class="arr">· sans engagement →</span></a>
 <div class="wrap"><header class="hero"><div class="in">
@@ -170,7 +179,7 @@ const HOME_HTML = `
     <div class="stepc"><div class="n">3</div><span class="ico">✅</span><h3>Suivre</h3><p>Coche l'avancement des travaux, garde ton carnet de chantier toujours à jour.</p></div>
     <div class="stepc"><div class="n">4</div><span class="ico">📊</span><h3>Piloter</h3><p>Garde le cap sur le budget et retrouve tous tes chantiers au même endroit.</p></div>
   </div>
-  <div class="strip"><div class="t">🏠 Pensé pour ceux qui gèrent vraiment un chantier</div><div class="d">Investisseurs locatifs, auto-rénovateurs, particuliers : garde le contrôle du budget et de tes choix, de A à Z.</div></div>
+  <div class="strip"><div class="t">🏠 Pensé pour ceux qui gèrent vraiment un chantier</div><div class="d">Investisseurs locatifs, auto-rénovateurs, particuliers : garde le contrôle du budget et de tes choix, de A à Z.</div></div>${FEATURES.neuf ? NEUF_BAND : ""}
 </div></section>
 
 <section class="blk" style="padding-top:0"><div class="wrap">
@@ -308,7 +317,7 @@ const HOME_HTML_EN = `
     <div class="stepc"><div class="n">1</div><h3>Describe your property</h3><p>4 questions, under 3 minutes. Type, area, scope, finish.</p></div>
     <div class="stepc"><div class="n">2</div><h3>Get your range</h3><p>An instant budget, ±15 %, adjusted to your region's market price.</p></div>
     <div class="stepc"><div class="n">3</div><h3>Refine line by line</h3><p>All 200 items, DIY vs. hire-out, and the PDF report — with AVYORA&nbsp;Pro.</p></div>
-  </div>
+  </div>${FEATURES.neuf ? NEUF_BAND_EN : ""}
 </div></section>
 
 <section class="blk" style="padding-top:0"><div class="wrap">

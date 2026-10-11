@@ -4,6 +4,7 @@ import BoutonCheckout from "@/components/BoutonCheckout";
 import { getUser, estPro } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
 import { SuiviVue } from "@/components/SuiviVue";
+import { FEATURES } from "@/lib/features";
 
 export const metadata = {
   title: "Passer Pro — estimation détaillée poste par poste",
@@ -135,7 +136,8 @@ export default async function TarifsPage({
         <div>
           <div className="eyebrow mb-3">{t.inclus}</div>
           <ul className="space-y-2.5">
-            {t.features.map((f) => (
+            {/* Construction neuve : 6ᵉ puce, seulement flag allumé (prix et offres inchangés). */}
+            {[...t.features, ...(FEATURES.neuf ? [t.featureNeuf] : [])].map((f) => (
               <li key={f} className="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink">
                 <Check />
                 {f}

@@ -28,6 +28,7 @@ const fr = {
     confidentialite: "Confidentialité",
     cookies: "Cookies",
     tarifs: "Tarifs",
+    construction: "Construction neuve",
     tagline:
       "Estimations indicatives basées sur le référentiel de prix AVYORA (France 2026). À confirmer par des devis d'artisans.",
   },
@@ -100,6 +101,7 @@ const fr = {
       "Sauvegarde de tous tes projets",
       "Suivi de chantier, poste par poste",
     ],
+    featureNeuf: "Construction neuve : ta maison détaillée phase par phase, du permis à l'achèvement",
     plans: {
       mensuel: { nom: "Mensuel", prix: "18,85 €", unite: "/ mois", note: "Sans engagement", tag: "" },
       "annuel-mois": { nom: "Annuel, payé au mois", prix: "16,15 €", unite: "/ mois", note: "Engagement 12 mois", tag: "" },
@@ -232,6 +234,22 @@ const fr = {
   neuf: {
     badge: "Construction neuve",
     projetNom: "Construction neuve",
+    /* Écran de choix (/projets/nouveau) : bascule de nature et cartes du neuf. */
+    choix: {
+      natureAria: "Type de projet",
+      reno: "Rénovation",
+      neuf: "Construction neuve",
+      titre: "Comment veux-tu estimer ta maison ?",
+      sousTitre: "Ta maison, du permis de construire à la remise des clés. Commence rapide, affine quand tu veux — sans rien ressaisir.",
+      rapideLead: "5 questions, un budget tout compris immédiat. Idéal pour un premier ordre de grandeur.",
+      rapideF1: "Surface, plain-pied ou étage, code postal du terrain",
+      rapideF2: "Études, taxes, construction et branchements compris",
+      rapideF3: "Sans inscription, résultat instantané",
+      detailLead: "Décris ta maison (structure, toit, chauffage, terrain) et ajuste chaque poste, phase par phase.",
+      detailF1: "Phase par phase, du permis à la remise des clés",
+      detailF2: "Postes et quantités ajustables, démarches et jalons",
+      detailF3: "Rapport PDF et suivi de chantier",
+    },
     demarche: "Démarche",
     sansTva: "sans TVA",
     pctTravaux: "% des travaux",
@@ -441,6 +459,7 @@ const en: Dict = {
     confidentialite: "Privacy",
     cookies: "Cookies",
     tarifs: "Pricing",
+    construction: "New build",
     tagline:
       "Indicative estimates based on the AVYORA price reference (France 2026). Confirm with contractor quotes.",
   },
@@ -513,6 +532,7 @@ const en: Dict = {
       "Save all your projects",
       "Project tracking, line by line",
     ],
+    featureNeuf: "New build: your house detailed phase by phase, from permit to completion",
     plans: {
       mensuel: { nom: "Monthly", prix: "€18.85", unite: "/ month", note: "No commitment", tag: "" },
       "annuel-mois": { nom: "Annual, billed monthly", prix: "€16.15", unite: "/ month", note: "12-month commitment", tag: "" },
@@ -644,6 +664,21 @@ const en: Dict = {
   neuf: {
     badge: "New build",
     projetNom: "New build",
+    choix: {
+      natureAria: "Project type",
+      reno: "Renovation",
+      neuf: "New build",
+      titre: "How do you want to estimate your house?",
+      sousTitre: "Your house, from building permit to handover. Start quick, refine whenever you like — without re-entering anything.",
+      rapideLead: "5 questions, an instant all-in budget. Ideal for a first ballpark figure.",
+      rapideF1: "Floor area, single-storey or two-storey, plot postcode",
+      rapideF2: "Studies, taxes, construction and utility hookups included",
+      rapideF3: "No sign-up, instant result",
+      detailLead: "Describe your house (structure, roof, heating, plot) and adjust every item, phase by phase.",
+      detailF1: "Phase by phase, from permit to handover",
+      detailF2: "Adjustable items and quantities, admin steps and milestones",
+      detailF3: "PDF report and build tracking",
+    },
     demarche: "Admin step",
     sansTva: "no VAT",
     pctTravaux: "% of the works",

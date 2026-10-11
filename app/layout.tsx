@@ -134,6 +134,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const { locale, t } = await getT();
+  const lienPrixVille = <Link href="/prix-renovation" className="transition-colors hover:text-brand-700">{t.footer.prixVille}</Link>;
   return (
     <html
       lang={locale}
@@ -206,7 +207,14 @@ export default async function RootLayout({
                 {/* Seul hub éditorial qui manquait au pied de page : il n'avait que 5 liens entrants
                     contre ~500 pour les trois autres. Une ligne, et le cluster corps d'état existe. */}
                 <Link href="/prix-poste" className="transition-colors hover:text-brand-700">Prix par corps d&apos;état</Link>
-                <Link href="/prix-renovation" className="transition-colors hover:text-brand-700">{t.footer.prixVille}</Link>
+                {/* Construction neuve : lien de maillage vers la page publique, seulement flag allumé
+                    (éteint : le lien « Prix par ville » seul, arbre rendu d'origine). */}
+                {FEATURES.neuf ? (
+                  <>
+                    {lienPrixVille}
+                    <Link href="/estimation-construction-maison" className="transition-colors hover:text-brand-700">{t.footer.construction}</Link>
+                  </>
+                ) : lienPrixVille}
                 <Link href="/mentions-legales" className="transition-colors hover:text-brand-700">{t.footer.mentions}</Link>
                 <Link href="/cgu" className="transition-colors hover:text-brand-700">{t.footer.cgu}</Link>
                 <Link href="/cgv" className="transition-colors hover:text-brand-700">{t.footer.cgv}</Link>

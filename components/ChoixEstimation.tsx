@@ -1,24 +1,47 @@
 import Link from "next/link";
 import { getT } from "@/lib/i18n/server";
+import { FEATURES } from "@/lib/features";
 
 /**
  * Écran de choix au lancement d'une estimation : Rapide (gratuit) vs Détaillée (Pro).
  * `isPro` adapte la carte détaillée : accès direct pour les abonnés, upsell vers /tarifs sinon.
  * Point d'entrée du tunnel de vente : la carte Pro est visible par tous.
+ *
+ * Construction neuve (derrière `FEATURES.neuf`) : une bascule « Rénovation | Construction neuve »
+ * (deux liens, `?nature=neuf`) ; en neuf, les mêmes cartes prennent les textes `neuf.choix` et
+ * mènent au rapide et au détaillé du neuf. Flag éteint : aucune bascule, HTML d'origine.
  */
-export default async function ChoixEstimation({ isPro }: { isPro: boolean }) {
+export default async function ChoixEstimation({ isPro, nature = "reno" }: { isPro: boolean; nature?: "reno" | "neuf" }) {
   const { t: tr } = await getT();
-  const t = tr.choix;
+  const neuf = FEATURES.neuf && nature === "neuf";
+  const n = tr.neuf.choix;
+  // En neuf, seuls les textes propres à la construction changent ; le reste (tags, boutons, pieds) est commun.
+  const t = neuf ? { ...tr.choix, ...n } : tr.choix;
+  const lienRapide = neuf ? "/estimation-construction-maison" : "/estimation-travaux";
+  const lienPro = neuf ? "/projets/nouveau/construction?new=1" : "/projets/nouveau/detaille?new=1";
+
+  const entete = (
+    <header className="animate-rise">
+      <p className="eyebrow">{t.eyebrow}</p>
+      <h1 className="ttl">{t.titre}</h1>
+      <p className="sub">{t.sousTitre}</p>
+    </header>
+  );
 
   return (
     <div className="av-choix">
-      <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      <style dangerouslySetInnerHTML={{ __html: FEATURES.neuf ? CSS + CSS_NATURE : CSS }} />
 
-      <header className="animate-rise">
-        <p className="eyebrow">{t.eyebrow}</p>
-        <h1 className="ttl">{t.titre}</h1>
-        <p className="sub">{t.sousTitre}</p>
-      </header>
+      {/* Flag éteint : l'en-tête seul, à sa place d'origine (ni bascule ni trou dans l'arbre rendu). */}
+      {FEATURES.neuf ? (
+        <>
+          {entete}
+          <nav className="nature" aria-label={n.natureAria}>
+            <Link href="/projets/nouveau" aria-current={neuf ? undefined : "page"}>{n.reno}</Link>
+            <Link href="/projets/nouveau?nature=neuf" aria-current={neuf ? "page" : undefined}>{n.neuf}</Link>
+          </nav>
+        </>
+      ) : entete}
 
       <div className="grid">
         {/* RAPIDE — gratuit */}
@@ -37,7 +60,7 @@ export default async function ChoixEstimation({ isPro }: { isPro: boolean }) {
             <Li tone="free">{t.rapideF3}</Li>
           </ul>
           <div className="spacer" />
-          <Link href="/estimation-travaux" className="btn btn-outline">{t.rapideCta}</Link>
+          <Link href={lienRapide} className="btn btn-outline">{t.rapideCta}</Link>
           <p className="foot">{t.rapideFoot}</p>
         </section>
 
@@ -66,7 +89,7 @@ export default async function ChoixEstimation({ isPro }: { isPro: boolean }) {
 
           {isPro ? (
             <>
-              <Link href="/projets/nouveau/detaille?new=1" className="btn btn-pro">{t.detailCtaPro}</Link>
+              <Link href={lienPro} className="btn btn-pro">{t.detailCtaPro}</Link>
               <p className="foot">
                 <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 1l2 4 4 .5-3 3 .8 4.3L8 11l-3.8 1.8L5 8.5 2 5.5 6 5l2-4Z" fill="var(--color-accent-500)" /></svg>
                 {t.detailFootPro}
@@ -140,4 +163,15 @@ const CSS = `
 .av-choix .hint{margin-top:22px;background:var(--color-surface-2);border:1px solid var(--color-line);border-radius:14px;padding:13px 16px;font-size:13px;color:var(--color-muted);display:flex;gap:10px;align-items:center;line-height:1.5}
 .av-choix .hint svg{flex:none;color:var(--color-brand-500)}
 .av-choix .hint b{color:var(--color-ink);font-weight:600}
+`;
+
+/* Bascule de nature (construction neuve) : ajoutée seulement quand le flag est allumé. */
+const CSS_NATURE = `
+.av-choix .nature{display:inline-flex;gap:4px;margin-top:20px;padding:4px;background:var(--color-surface-2);border:1px solid var(--color-line);border-radius:999px;max-width:100%}
+.av-choix .nature a{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 18px;border-radius:999px;font-size:14px;font-weight:500;color:var(--color-muted);text-decoration:none;white-space:nowrap;transition:background .15s,color .15s}
+.av-choix .nature a:hover{color:var(--color-ink)}
+.av-choix .nature a[aria-current="page"]{background:var(--color-surface);color:var(--color-brand-700);font-weight:600;box-shadow:0 1px 2px rgba(21,23,43,.08),0 2px 8px -4px rgba(21,23,43,.18)}
+.av-choix .nature a:focus-visible{outline:2px solid var(--color-brand-500);outline-offset:2px}
+@media (max-width:420px){.av-choix .nature{display:flex}.av-choix .nature a{flex:1;padding:0 10px;font-size:13.5px}}
+@media (pointer:coarse){.av-choix .nature a{min-height:44px}}
 `;
