@@ -20,6 +20,9 @@ import type { Locale } from "../i18n/config";
 export const CLE_BROUILLON_NEUF = "avyora-neuf-v1";
 /** `sessionStorage` : « Affiner » vient d'être cliqué dans le rapide neuf. */
 export const CLE_AFFINER_NEUF = "avyora-affiner-neuf";
+/** `sessionStorage` : un gratuit a cliqué « Détail phase par phase — Pro » et part vers /tarifs.
+ *  Au retour (bouton Précédent), le rapide reprend ses réponses au lieu d'un formulaire vide. */
+export const CLE_RETOUR_NEUF = "avyora-neuf-retour";
 /** Drapeau de réclamation, partagé avec la rénovation ; sa VALEUR dit de quel brouillon il s'agit. */
 export const CLE_RECLAMATION = "avyora-estim-claim";
 export const RECLAMATION_NEUF = "neuf";
@@ -69,6 +72,26 @@ export function brouillonRapideNeuf(p: {
 }
 
 const CP = /^\d{5}$/;
+const NIVEAUX: readonly string[] = ["pp", "etage", "combles"];
+const FINITIONS: readonly string[] = ["eco", "standard", "premium"];
+const QUIS: readonly string[] = ["pros", "partie", "max"];
+
+/** Relit les 5 réponses du rapide (stockage du navigateur) : `null` si une seule est hors des choix du formulaire. */
+export function lireReponsesRapideNeuf(x: unknown): ReponsesRapideNeuf | null {
+  if (!x || typeof x !== "object") return null;
+  const r = x as Record<string, unknown>;
+  const surface = Number(r.surface);
+  if (!Number.isFinite(surface) || surface < 30 || surface > 400) return null;
+  if (typeof r.niveaux !== "string" || !NIVEAUX.includes(r.niveaux)) return null;
+  if (typeof r.finition !== "string" || !FINITIONS.includes(r.finition)) return null;
+  if (typeof r.qui !== "string" || !QUIS.includes(r.qui)) return null;
+  const codePostal = typeof r.codePostal === "string" ? r.codePostal.replace(/\D/g, "").slice(0, 5) : "";
+  const assainissement = r.assainissement === "collectif" || r.assainissement === "fosse" ? r.assainissement : undefined;
+  return {
+    surface, niveaux: r.niveaux as Niveaux, codePostal, finition: r.finition as Finition, qui: r.qui as QuiRealise,
+    garage: r.garage === true, assainissement,
+  };
+}
 
 /**
  * Relit un brouillon neuf (texte du `localStorage`). `null` si ce n'est pas un brouillon neuf

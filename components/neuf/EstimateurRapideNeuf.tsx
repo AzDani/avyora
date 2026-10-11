@@ -30,8 +30,8 @@ import {
   type Finition, type QuiRealise, type MaisonNeuve, type Niveaux,
 } from "@/lib/estimateur";
 import {
-  brouillonRapideNeuf, corpsProjetNeuf, CLE_BROUILLON_NEUF, CLE_AFFINER_NEUF, CLE_RECLAMATION, RECLAMATION_NEUF,
-  type ReponsesRapideNeuf, type OrigineNeuf,
+  brouillonRapideNeuf, corpsProjetNeuf, lireReponsesRapideNeuf, CLE_BROUILLON_NEUF, CLE_AFFINER_NEUF, CLE_RETOUR_NEUF,
+  CLE_RECLAMATION, RECLAMATION_NEUF, type ReponsesRapideNeuf, type OrigineNeuf,
 } from "@/lib/estimateur/brouillon-neuf";
 import type { InitialNeuf } from "@/lib/neuf-contexte";
 import type { MaisonDuPlan, RefusPlan } from "@/lib/estimateur/plan-neuf";
@@ -104,7 +104,10 @@ export default function EstimateurRapideNeuf({
    * on l'affiche d'emblée, mais la conversion attend une vraie action.
    */
   const [agi, setAgi] = useState(false);
-  const affiche = agi || !!edit;
+  /** Retour de /tarifs (gratuit qui a cliqué le détail Pro) : ses réponses reviennent, et le chiffre
+   *  s'affiche, mais ce n'est pas une nouvelle action (aucune mesure, aucune conversion). */
+  const [retour, setRetour] = useState<{ base?: Partial<MaisonNeuve> } | null>(null);
+  const affiche = agi || !!edit || !!retour;
   const [saving, setSaving] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
 
@@ -166,12 +169,28 @@ export default function EstimateurRapideNeuf({
     }
     // Une seule lecture au montage (le double montage du mode strict ne relit rien), puis à chaque
     // nouveau lien collé dans le même onglet (seul le fragment change : pas de rechargement).
-    if (!planLu.current) { planLu.current = true; lireFragment(); }
+    if (!planLu.current) {
+      planLu.current = true;
+      // Retour de /tarifs dans le même onglet : les réponses d'avant le clic, sauf si un nouveau plan arrive.
+      try {
+        const raw = sessionStorage.getItem(CLE_RETOUR_NEUF);
+        if (raw) {
+          sessionStorage.removeItem(CLE_RETOUR_NEUF);
+          const d = JSON.parse(raw) as { R?: unknown; base?: Partial<MaisonNeuve> };
+          const rr = lireReponsesRapideNeuf(d?.R);
+          if (rr && !window.location.hash.startsWith("#plan=")) {
+            setR(rr);
+            setRetour({ base: d.base && typeof d.base === "object" ? d.base : undefined });
+          }
+        }
+      } catch { /* stockage illisible : formulaire vierge */ }
+      lireFragment();
+    }
     window.addEventListener("hashchange", lireFragment);
     return () => window.removeEventListener("hashchange", lireFragment);
     // `initial` vient du serveur et ne change pas pendant la vie de la page.
   }, [edit]);
-  const baseEff = base ?? plan?.maison;
+  const baseEff = base ?? plan?.maison ?? retour?.base;
   /** La maison du plan telle qu'elle est CHIFFRÉE (au moins une salle de bain et un WC) : le résumé dit vrai. */
   const planChiffre = useMemo(() => (plan ? maisonComplete(plan.maison) : null), [plan]);
   const origineEff: OrigineNeuf | undefined = origine ?? (plan ? { source: "plan", contrat: plan.contrat } : undefined);
@@ -238,7 +257,9 @@ export default function EstimateurRapideNeuf({
     saveDraft();
     try { sessionStorage.setItem(CLE_AFFINER_NEUF, JSON.stringify({ R, base: baseEff })); } catch { /* noop */ }
     // Le détaillé du neuf est réservé au Pro : un gratuit va directement aux tarifs (la page du
-    // détaillé l'y renverrait de toute façon). Le brouillon reste prêt pour après l'abonnement.
+    // détaillé l'y renverrait de toute façon). Le brouillon reste prêt pour après l'abonnement, et
+    // ses réponses reviennent s'il revient en arrière.
+    if (!isPro) { try { sessionStorage.setItem(CLE_RETOUR_NEUF, JSON.stringify({ R, base: baseEff })); } catch { /* noop */ } }
     router.push(isPro ? "/projets/nouveau/construction?new=1" : "/tarifs");
   }
 
@@ -426,7 +447,7 @@ export default function EstimateurRapideNeuf({
           {bilan ?? <div className="attente">{s.attente}</div>}
         </div>
 
-        <p className="intro">{s.intro}</p>
+        <p className="intro">{isPro ? s.intro : s.introGratuit}</p>
       </div>
 
       <div className="av-rapide-live av-neuf-live">
@@ -437,8 +458,8 @@ export default function EstimateurRapideNeuf({
             <div className="sub">{valid ? <>≈ <CountUp value={m2} nf={nf} /> {s.parM2} · ±15 %{regLabel ? <> · {regLabel}</> : ""}</> : !affiche ? s.attente : s.errSurface}</div>
           </div>
           <div className="btns">
-            <button type="button" className="ghost" onClick={affiner}>{s.affiner}</button>
-            <button type="button" className="cta" onClick={enregistrer} disabled={saving}>{saving ? s.enregistrement : s.enregistrer}</button>
+            <button type="button" className="ghost" onClick={affiner}>{isPro ? s.affiner : s.affinerPro}</button>
+            <button type="button" className="cta" onClick={enregistrer} disabled={saving}>{saving ? s.enregistrement : isPro || edit ? s.enregistrer : s.enregistrerGratuit}</button>
           </div>
           {erreur && <div className="err" role="alert">{erreur}</div>}
         </div>

@@ -7,7 +7,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { buildDevis, catalogueDe, presetNeuf, maisonComplete, type RapideNeufInput, type Ctx, type Selection } from "@/lib/estimateur";
 import {
-  brouillonRapideNeuf, lireBrouillonNeuf, corpsProjetNeuf, nomProjetNeuf,
+  brouillonRapideNeuf, lireBrouillonNeuf, lireReponsesRapideNeuf, corpsProjetNeuf, nomProjetNeuf,
   CLE_BROUILLON_NEUF, RECLAMATION_NEUF, TYPE_BIEN_NEUF,
 } from "@/lib/estimateur/brouillon-neuf";
 import { nomProjetNeuf as nomDepuisIndex } from "@/lib/estimateur/etapes-neuf";
@@ -133,5 +133,16 @@ describe("Neuf · alerte argile du bilan", () => {
   });
   it("masquée quand la maison est déjà sur sol argileux (surcoût déjà compté, 0)", () => {
     expect(rendre("moyen")).not.toContain('class="alert-n"');
+  });
+});
+
+describe("Neuf · retour de /tarifs", () => {
+  it("relit des réponses valides, refuse une réponse hors des choix du formulaire", () => {
+    expect(lireReponsesRapideNeuf(R)).toEqual({ ...R, garage: !!R.garage });
+    expect(lireReponsesRapideNeuf({ ...R, niveaux: "__proto__" })).toBeNull();
+    expect(lireReponsesRapideNeuf({ ...R, surface: "abc" })).toBeNull();
+    expect(lireReponsesRapideNeuf({ ...R, qui: "tous" })).toBeNull();
+    expect(lireReponsesRapideNeuf(null)).toBeNull();
+    expect(lireReponsesRapideNeuf({ ...R, assainissement: "micro" })?.assainissement).toBeUndefined();
   });
 });
