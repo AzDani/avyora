@@ -67,6 +67,7 @@ export default function EstimateurRapideNeuf({
   initialR,
   origine,
   avertDetaille = false,
+  statuts,
 }: {
   isPro?: boolean;
   /** Contexte venu de l'URL de la page publique (déjà validé côté serveur). */
@@ -80,6 +81,8 @@ export default function EstimateurRapideNeuf({
   origine?: OrigineNeuf;
   /** Projet détaillé rouvert en gratuit : on prévient que ses réglages poste par poste seront remplacés. */
   avertDetaille?: boolean;
+  /** Suivi de chantier du projet rouvert : gardé à l'enregistrement (le PATCH remplace toutes les réponses). */
+  statuts?: Record<string, number>;
 }) {
   const router = useRouter();
   const T = useT();
@@ -255,7 +258,7 @@ export default function EstimateurRapideNeuf({
   const eauxOpts: ("collectif" | "fosse" | "micro")[] = ["collectif", "fosse", ...(baseEff?.assainissement === "micro" ? (["micro"] as const) : [])];
   const eauxActif = R.assainissement ?? (baseEff?.assainissement === "micro" ? "micro" : "collectif");
 
-  const brouillon = () => brouillonRapideNeuf({ R, ctx: preset.ctx, sel: preset.sel, base: baseEff, origine: origineEff });
+  const brouillon = () => brouillonRapideNeuf({ R, ctx: preset.ctx, sel: preset.sel, base: baseEff, origine: origineEff, statuts: edit ? statuts : undefined });
   function saveDraft() {
     try { localStorage.setItem(CLE_BROUILLON_NEUF, JSON.stringify(brouillon())); } catch { /* noop */ }
   }

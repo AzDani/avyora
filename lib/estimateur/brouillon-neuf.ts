@@ -59,6 +59,8 @@ export type BrouillonNeuf = {
   /** Une maison déjà décrite (plan, détaillé rouvert) : défauts du rapide. */
   base?: Partial<MaisonNeuve>;
   custom?: CustomLine[];
+  /** Suivi de chantier d'un projet rouvert : recopié tel quel au PATCH (les clés disparues sont ignorées). */
+  statuts?: Record<string, number>;
   origine?: OrigineNeuf;
 };
 
@@ -71,12 +73,13 @@ export function nomProjetNeuf(maison: Pick<MaisonNeuve, "niveaux" | "surface">, 
 
 /** Le brouillon du rapide neuf, à partir du chiffrage courant (`presetNeuf(R, base)`). */
 export function brouillonRapideNeuf(p: {
-  R: ReponsesRapideNeuf; ctx: Ctx; sel: Selection; base?: Partial<MaisonNeuve>; origine?: OrigineNeuf;
+  R: ReponsesRapideNeuf; ctx: Ctx; sel: Selection; base?: Partial<MaisonNeuve>; origine?: OrigineNeuf; statuts?: Record<string, number>;
 }): BrouillonNeuf {
   return {
     v: "estimateur", mode: "rapide", qui: p.R.qui, ctx: p.ctx, sel: p.sel, codePostal: p.R.codePostal, R: p.R,
     ...(p.base ? { base: p.base } : {}),
     ...(p.origine ? { origine: p.origine } : {}),
+    ...(p.statuts && Object.keys(p.statuts).length ? { statuts: p.statuts } : {}),
   };
 }
 
@@ -128,6 +131,7 @@ export function corpsProjetNeuf(d: BrouillonNeuf, locale: Locale = "fr") {
     reponses: {
       v: "estimateur", mode: d.mode, qui: d.qui, ctx: d.ctx, sel: d.sel, codePostal: d.codePostal,
       ...(d.custom?.length ? { custom: d.custom } : {}),
+      ...(d.statuts && Object.keys(d.statuts).length ? { statuts: d.statuts } : {}),
       ...(d.origine ? { origine: d.origine } : {}),
     },
   };

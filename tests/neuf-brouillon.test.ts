@@ -151,3 +151,14 @@ describe("Neuf · retour de /tarifs", () => {
     expect(lireReponsesRapideNeuf({ ...R, assainissement: "micro" })?.assainissement).toBeUndefined();
   });
 });
+
+describe("Neuf · « Modifier » en gratuit garde le suivi", () => {
+  it("les statuts du projet rouvert repartent dans le PATCH ; sans statuts, rien n'est ajouté", () => {
+    const p = presetNeuf(R);
+    const statuts = { [Object.keys(p.sel)[0]]: 2 };
+    const avec = corpsProjetNeuf(brouillonRapideNeuf({ R, ctx: p.ctx, sel: p.sel, statuts }), "fr");
+    expect((avec.reponses as { statuts?: unknown }).statuts).toEqual(statuts);
+    const sans = corpsProjetNeuf(brouillonRapideNeuf({ R, ctx: p.ctx, sel: p.sel, statuts: {} }), "fr");
+    expect("statuts" in sans.reponses).toBe(false);
+  });
+});

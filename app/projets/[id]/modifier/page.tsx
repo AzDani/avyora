@@ -29,7 +29,7 @@ export default async function ModifierProjet({ params }: { params: Promise<{ id:
   const locale = await getLocale();
   const s = TR[locale];
   const pro = estPro(user);
-  const rep = (projet.reponses ?? {}) as { ctx?: Ctx; codePostal?: string; ampleur?: Ampleur; qui?: QuiRealise; mode?: string; origine?: OrigineNeuf };
+  const rep = (projet.reponses ?? {}) as { ctx?: Ctx; codePostal?: string; ampleur?: Ampleur; qui?: QuiRealise; mode?: string; origine?: OrigineNeuf; statuts?: Record<string, number> };
   // Construction neuve : jamais les éditeurs de la RÉNOVATION (ils le réenregistreraient en
   // rénovation : catalogue, ampleur). Pro → le détaillé du neuf ; gratuit → le rapide du neuf.
   const neuf = estNeuf(rep.ctx);
@@ -65,6 +65,7 @@ export default async function ModifierProjet({ params }: { params: Promise<{ id:
           base={baseNeuf}
           origine={rep.origine}
           avertDetaille={detaille}
+          statuts={rep.statuts}
           initialR={{
             surface: maison.surface,
             niveaux: maison.niveaux,
