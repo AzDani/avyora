@@ -7,7 +7,11 @@ export const NEUF_CSS = `
 .av-neuf .sub-q{font-size:12.5px;color:var(--muted);line-height:1.5;margin:-2px 0 12px}
 .av-neuf .grp{margin-top:14px}
 .av-neuf .grp:first-child{margin-top:0}
-.av-neuf .glbl .opt{font-weight:500;letter-spacing:.04em;text-transform:none;color:var(--faint);margin-left:6px}
+/* Intitulés de question et note : --muted (6,25:1) au lieu de --faint (2,99:1), sans toucher RAPIDE_CSS. */
+.av-neuf .glbl{color:var(--muted);font-size:11.5px}
+.av-neuf .glbl .opt{font-weight:500;letter-spacing:.04em;text-transform:none;color:var(--muted);margin-left:6px}
+.av-neuf .intro{color:var(--muted)}
+.av-neuf .fld input[aria-invalid="true"]{border-color:#e0434b;box-shadow:0 0 0 3px rgba(224,67,75,.15)}
 .av-neuf .seg button{min-height:44px}
 .av-neuf .fields{margin-bottom:14px}
 .av-neuf .fld input{min-height:44px}
@@ -19,7 +23,7 @@ export const NEUF_CSS = `
 .av-neuf .plan-ok ul{margin:6px 0 0;padding-left:16px;color:var(--muted)}
 .av-neuf .repris{display:inline-block;margin-left:8px;padding:1px 7px;border-radius:999px;background:var(--brand-50);color:var(--brand);font-size:10.5px;font-weight:600;letter-spacing:0;text-transform:none;vertical-align:1px}
 .av-neuf .bilan{margin:6px 0 4px}
-.av-neuf .attente{border:1px dashed var(--line-strong);border-radius:var(--radius-panel);padding:22px;text-align:center;font-size:13.5px;color:var(--faint);background:var(--surface)}
+.av-neuf .attente{border:1px dashed var(--line-strong);border-radius:var(--radius-panel);padding:22px;text-align:center;font-size:13.5px;color:var(--muted);background:var(--surface)}
 @media(max-width:560px){.av-neuf .fields{grid-template-columns:1fr}}
 .av-neuf-live .cta,.av-neuf-live .ghost{min-height:44px}
 `;

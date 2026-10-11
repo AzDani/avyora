@@ -131,6 +131,7 @@ const RAPPORT_CSS = `
 // Construction neuve seulement (injecté pour un projet neuf : le rapport rénovation garde le même DOM).
 const RAPPORT_NEUF_CSS = `
 .av-rapport .tot.t5{grid-template-columns:repeat(5,1fr)}
+@media screen and (max-width:560px){.av-rapport .tot.t5{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .av-rapport .etapes td{vertical-align:top}
 .av-rapport .etapes .dem{margin:3px 0 0;padding:0;list-style:none;font-size:8.5px;color:var(--muted)}
 .av-rapport .etapes .dem b{color:var(--ink);font-weight:600}

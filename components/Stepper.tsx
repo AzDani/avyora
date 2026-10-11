@@ -14,7 +14,7 @@ import { useEffect, useRef, useState } from "react";
  * la valeur n'est verrouillée (clamp min/max) qu'à la sortie du champ (blur).
  */
 export default function Stepper({
-  value, onChange, min, max, step = 1, unit, field, compact, block, className = "",
+  value, onChange, min, max, step = 1, unit, field, compact, block, className = "", id,
 }: {
   value: number;
   onChange: (n: number) => void;
@@ -26,6 +26,8 @@ export default function Stepper({
   compact?: boolean;
   block?: boolean;
   className?: string;
+  /** Pour relier un `<label htmlFor>` au champ (facultatif : absent, le rendu ne change pas). */
+  id?: string;
 }) {
   const dp = step < 1 ? 2 : 0;
   const clamp = (n: number) => {
@@ -55,7 +57,7 @@ export default function Stepper({
     onChange(n);
   };
   const input = (
-    <input type="number" inputMode="decimal" value={raw} min={min} max={max} step={step}
+    <input id={id} type="number" inputMode="decimal" value={raw} min={min} max={max} step={step}
       onFocus={() => { editing.current = true; }} onChange={onInput} onBlur={onBlur} />
   );
   const minus = <button type="button" onClick={() => bump(-step)} disabled={min != null && value <= min} aria-label="Diminuer">−</button>;

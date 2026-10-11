@@ -110,6 +110,13 @@ export default function EstimateurRapideNeuf({
   const affiche = agi || !!edit || !!retour;
   const [saving, setSaving] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
+  /** Le champ en faute (« Enregistrer » sans code postal ou surface) : marqué et focalisé. */
+  const [champErr, setChampErr] = useState<"cp" | "surface" | null>(null);
+  const signaler = (champ: "cp" | "surface", msg: string) => {
+    setErreur(msg); setChampErr(champ);
+    const el = document.getElementById(champ === "cp" ? "neuf-cp" : "neuf-surface");
+    if (el) { el.scrollIntoView({ block: "center", behavior: "smooth" }); el.focus({ preventScroll: true }); }
+  };
 
   /* ── Lien d'un Plan final ── */
   const [plan, setPlan] = useState<MaisonDuPlan | null>(null);
@@ -195,7 +202,10 @@ export default function EstimateurRapideNeuf({
   const planChiffre = useMemo(() => (plan ? maisonComplete(plan.maison) : null), [plan]);
   const origineEff: OrigineNeuf | undefined = origine ?? (plan ? { source: "plan", contrat: plan.contrat } : undefined);
 
-  const maj = (patch: Partial<ReponsesRapideNeuf>) => { setAgi(true); setR((r) => ({ ...r, ...patch })); };
+  const maj = (patch: Partial<ReponsesRapideNeuf>) => {
+    setAgi(true); setR((r) => ({ ...r, ...patch }));
+    if (champErr && ((champErr === "cp" && "codePostal" in patch) || (champErr === "surface" && "surface" in patch))) { setChampErr(null); setErreur(null); }
+  };
 
   const preset = useMemo(() => presetNeuf(R, baseEff), [R, baseEff]);
   const tot = useMemo(() => buildDevis(catalogueDe(preset.ctx), preset.ctx, preset.sel).totaux, [preset]);
@@ -281,9 +291,9 @@ export default function EstimateurRapideNeuf({
   const badge = (k: Parameters<typeof repris>[0]) => (repris(k) ? <span className="repris">{s.reprisPlan}</span> : null);
 
   async function enregistrer() {
-    setErreur(null);
-    if (!CP.test(R.codePostal)) { setErreur(s.errCp); return; }
-    if (!(R.surface >= 30)) { setErreur(s.errSurface); return; }
+    setErreur(null); setChampErr(null);
+    if (!CP.test(R.codePostal)) { signaler("cp", s.errCp); return; }
+    if (!(R.surface >= 30)) { signaler("surface", s.errSurface); return; }
     setAgi(true);
     suivre("estimation_terminee", { action: "enregistrer", type: "neuf", nature: "neuf", src });
     conversionEstimation();
@@ -348,12 +358,12 @@ export default function EstimateurRapideNeuf({
           <p className="sub-q">{plan && !base ? s.defautsPlan : baseEff ? s.defautsBase : s.defauts}</p>
           <div className="fields">
             <div className="fld">
-              <label>{s.surfaceLabel}{badge("surface")}</label>
-              <Stepper block value={R.surface} min={30} max={400} step={5} unit="m²" onChange={(n) => maj({ surface: n })} />
+              <label htmlFor="neuf-surface">{s.surfaceLabel}{badge("surface")}</label>
+              <Stepper block id="neuf-surface" value={R.surface} min={30} max={400} step={5} unit="m²" onChange={(n) => maj({ surface: n })} />
             </div>
             <div className="fld">
               <label htmlFor="neuf-cp">{s.cpLabel}{badge("codePostal")}</label>
-              <input id="neuf-cp" inputMode="numeric" maxLength={5} autoComplete="postal-code" placeholder={s.cpPlaceholder} value={R.codePostal}
+              <input id="neuf-cp" aria-invalid={champErr === "cp" || undefined} aria-describedby={champErr === "cp" ? "neuf-err" : undefined} inputMode="numeric" maxLength={5} autoComplete="postal-code" placeholder={s.cpPlaceholder} value={R.codePostal}
                 onChange={(e) => maj({ codePostal: e.target.value.replace(/\D/g, "").slice(0, 5) })} />
             </div>
           </div>
@@ -420,7 +430,8 @@ export default function EstimateurRapideNeuf({
             <div className="glbl">{s.garageLabel}<span className="opt">{s.facultatif}</span>{badge("garage")}</div>
             <div className="seg" role="group" aria-label={s.garageLabel}>
               {[false, true].map((v) => {
-                const on = !!R.garage === v;
+                // Pas de réponse « pleine » avant une première action : comme plain-pied / à étage.
+                const on = affiche && !!R.garage === v;
                 return (
                   <button type="button" key={String(v)} className={on ? "on" : ""} aria-pressed={on} onClick={() => maj({ garage: v })}>
                     {v ? s.garageOui(Math.round(garageM2).toLocaleString(nf)) : s.garageNon}
@@ -433,7 +444,7 @@ export default function EstimateurRapideNeuf({
             <div className="glbl">{s.eauxLabel}<span className="opt">{s.facultatif}</span></div>
             <div className="seg" role="group" aria-label={s.eauxLabel}>
               {eauxOpts.map((v) => {
-                const on = eauxActif === v;
+                const on = affiche && eauxActif === v;
                 return (
                   <button type="button" key={v} className={on ? "on" : ""} aria-pressed={on}
                     onClick={() => maj({ assainissement: v === "micro" ? undefined : v })}>{s.eaux[v]}</button>
@@ -461,7 +472,7 @@ export default function EstimateurRapideNeuf({
             <button type="button" className="ghost" onClick={affiner}>{isPro ? s.affiner : s.affinerPro}</button>
             <button type="button" className="cta" onClick={enregistrer} disabled={saving}>{saving ? s.enregistrement : isPro || edit ? s.enregistrer : s.enregistrerGratuit}</button>
           </div>
-          {erreur && <div className="err" role="alert">{erreur}</div>}
+          {erreur && <div className="err" id="neuf-err" role="alert">{erreur}</div>}
         </div>
       </div>
     </>

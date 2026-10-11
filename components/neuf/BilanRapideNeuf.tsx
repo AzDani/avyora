@@ -23,14 +23,15 @@ export const BILAN_NEUF_CSS = `
 .av-bn .k{font-size:12px;color:#c9c5f3;text-transform:uppercase;letter-spacing:.08em;font-weight:600}
 .av-bn .big{font-family:var(--font-geist-mono),ui-monospace,monospace;font-variant-numeric:tabular-nums;font-size:clamp(32px,6vw,46px);font-weight:600;letter-spacing:-.03em;line-height:1.05;margin:6px 0 4px}
 .av-bn .range{font-family:var(--font-geist-mono),ui-monospace,monospace;font-variant-numeric:tabular-nums;color:#e1defc;font-size:14px}
+.av-bn .range .data{white-space:nowrap}
 .av-bn .kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0}
 .av-bn .kpi{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:12px}
-.av-bn .kpi .v{font-family:var(--font-geist-mono),ui-monospace,monospace;font-variant-numeric:tabular-nums;font-size:17px;font-weight:600}
+.av-bn .kpi .v{font-family:var(--font-geist-mono),ui-monospace,monospace;font-variant-numeric:tabular-nums;font-size:17px;font-weight:600;white-space:nowrap}
 .av-bn .kpi .l{font-size:12px;color:#c9c5f3;margin-top:2px;line-height:1.3}
 .av-bn .small{font-size:12.5px;color:#c9c5f3;margin-top:-6px;line-height:1.5}
 .av-bn .hr{height:1px;background:rgba(255,255,255,.12);margin:18px 0}
 .av-bn .bars{display:grid;gap:7px;margin-top:8px}
-.av-bn .bar{display:grid;grid-template-columns:minmax(0,13em) minmax(0,1fr) 6.6em;align-items:center;gap:10px;font-size:13px}
+.av-bn .bar{display:grid;grid-template-columns:minmax(0,15em) minmax(0,1fr) 6.6em;align-items:center;gap:10px;font-size:13px}
 .av-bn .bar .t{color:#e7e5ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .av-bn .bar .track{display:block;height:9px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}
 .av-bn .bar .fill{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#a78bfa,#fff);min-width:3px}
@@ -46,7 +47,7 @@ export const BILAN_NEUF_CSS = `
   .av-bn{padding:20px 18px}
   .av-bn .kpis{grid-template-columns:minmax(0,1fr)}
   .av-bn .kpi{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
-  .av-bn .kpi .l{margin:0;order:-1}
+  .av-bn .kpi .l{margin:0;order:-1;min-width:0}
   .av-bn .bar{grid-template-columns:minmax(0,8.6em) minmax(0,1fr) 5.8em;gap:8px;font-size:12.5px}
   .av-bn .bar .t{white-space:normal;line-height:1.2}
 }
