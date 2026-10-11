@@ -37,6 +37,9 @@ const TYPES_OUVERTURE = [
 
 /** Longueur maximale du fragment (caractères base64url) : l'éditeur coupe à 20 000. */
 export const FRAGMENT_PLAN_MAX = 24_000;
+/** Bornes de la surface reprise : celles du rapide (Stepper 30-400, `contexteNeuf`). */
+export const SURFACE_PLAN_MIN = 30;
+export const SURFACE_PLAN_MAX = 400;
 /** Version minimale du contrat : `workflow` existe à partir de 1.18. */
 const VERSION_MIN = 18;
 
@@ -143,7 +146,7 @@ export function extraitPlanNeuf(c: Record<string, unknown>): Record<string, unkn
 /** Pourquoi un plan n'est pas chiffré (clé traduite à l'affichage, jamais un texte du plan). */
 export type RefusPlan = "illisible" | "renovation" | "version" | "appartement";
 /** Ce que le plan contient et que le chiffrage ne sait pas reprendre (clé traduite à l'affichage). */
-export type CleAvertissement = "petiteSurface" | "cave" | "nonChiffre" | "troisNiveaux";
+export type CleAvertissement = "petiteSurface" | "grandeSurface" | "sanitaires" | "cave" | "nonChiffre" | "troisNiveaux";
 
 export interface MaisonDuPlan {
   refus?: undefined;
@@ -162,7 +165,7 @@ const habitable = (r: PlanNeuf["detailNiveaux"][number]["rooms"][number]) => !r.
 
 /**
  * Traduit un Plan final validé en description de maison (règles de la carte du plan § 2) :
- * surface = aire habitable arrondie ; niveaux selon l'habitable au-dessus du rez-de-chaussée
+ * surface = aire habitable arrondie, ramenée entre 30 et 400 m² (bornes du rapide) ; niveaux selon l'habitable au-dessus du rez-de-chaussée
  * (moins de 5 m² → plain-pied, sous pente → combles, sinon étage) ; forme selon emprise /
  * rectangle ; chambres = chambres + suites ; salles de bain = sdb + suites (règle de l'appareil
  * de `compteursDepuisPlan`) ; WC ; garage = somme des aires `garage` ; escalier s'il est choisi ;
@@ -192,7 +195,7 @@ export function maisonDepuisPlan(c: PlanNeuf): MaisonDuPlan | { refus: RefusPlan
   const forme: MaisonNeuve["forme"] = ratio >= 0.95 ? "rect" : ratio >= 0.7 ? "L" : "complexe";
 
   const maison: Partial<MaisonNeuve> = {
-    surface: Math.max(30, Math.round(c.area)), niveaux, forme, garage: Math.round(garage),
+    surface: Math.min(SURFACE_PLAN_MAX, Math.max(SURFACE_PLAN_MIN, Math.round(c.area))), niveaux, forme, garage: Math.round(garage),
     chambres: k.chambres + k.suites, sdb: k.sdb + k.suites, wc: k.wc,
   };
   const repris: (keyof MaisonNeuve)[] = ["surface", "niveaux", "forme", "garage", "chambres", "sdb", "wc"];
@@ -207,7 +210,10 @@ export function maisonDepuisPlan(c: PlanNeuf): MaisonDuPlan | { refus: RefusPlan
 
   const avertissements: CleAvertissement[] = [];
   const toutes = N.flatMap((n) => n.rooms);
-  if (c.area < 30) avertissements.push("petiteSurface");
+  if (c.area < SURFACE_PLAN_MIN) avertissements.push("petiteSurface");
+  if (Math.round(c.area) > SURFACE_PLAN_MAX) avertissements.push("grandeSurface");
+  // Le moteur chiffre toujours au moins une salle de bain et un WC (`maisonComplete`).
+  if (maison.sdb === 0 || maison.wc === 0) avertissements.push("sanitaires");
   if (toutes.some((r) => r.type === "cave")) avertissements.push("cave");
   if (toutes.some((r) => NON_CHIFFRES.has(r.type) || r.exterieur)) avertissements.push("nonChiffre");
   if (N.filter((n) => habitableDe(n) >= 5).length >= 3) avertissements.push("troisNiveaux");

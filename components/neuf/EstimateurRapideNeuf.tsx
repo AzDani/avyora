@@ -26,7 +26,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  buildDevis, catalogueDe, presetNeuf, regionCoef,
+  buildDevis, catalogueDe, presetNeuf, regionCoef, maisonComplete,
   type Finition, type QuiRealise, type MaisonNeuve, type Niveaux,
 } from "@/lib/estimateur";
 import {
@@ -112,6 +112,8 @@ export default function EstimateurRapideNeuf({
   const [refusPlan, setRefusPlan] = useState<RefusPlan | null>(null);
   const planLu = useRef(false);
   const planRange = useRef(false);
+  /** Un plan a été appliqué au formulaire (et n'a pas été retiré depuis). */
+  const planApplique = useRef(false);
   useEffect(() => {
     if (edit) return;
     function lireFragment() {
@@ -124,6 +126,22 @@ export default function EstimateurRapideNeuf({
       import("@/lib/estimateur/plan-neuf").then(({ lirePlanNeuf, trancheSurface }) => {
         const r = lirePlanNeuf(fragment);
         if (r.refus) {
+          // Un lien refusé APRÈS un plan déjà appliqué (même onglet) : le message dit « décris ta
+          // maison ici », le formulaire doit donc redevenir vierge. On remet les valeurs du montage
+          // (surface, niveaux, garage, code postal), on retire la maison du plan (base) et son
+          // brouillon, et on attend une nouvelle action avant d'afficher un chiffre.
+          if (planApplique.current) {
+            planApplique.current = false;
+            setAgi(false);
+            setR((p) => ({
+              ...p,
+              surface: initial?.surface ?? 100,
+              niveaux: initial?.niveaux ?? "pp",
+              garage: false,
+              codePostal: initial?.cp ?? "",
+            }));
+            try { localStorage.removeItem(CLE_BROUILLON_NEUF); } catch { /* noop */ }
+          }
           setPlan(null);
           setRefusPlan(r.refus);
           suivre("neuf_depuis_plan", { ok: false, niveaux: null, tranche_surface: null });
@@ -131,6 +149,7 @@ export default function EstimateurRapideNeuf({
         }
         const m = r.maison;
         planRange.current = false;   // nouvelle maison : rangée au prochain rendu
+        planApplique.current = true;
         setRefusPlan(null);
         setPlan(r);
         setAgi(true);
@@ -149,8 +168,11 @@ export default function EstimateurRapideNeuf({
     if (!planLu.current) { planLu.current = true; lireFragment(); }
     window.addEventListener("hashchange", lireFragment);
     return () => window.removeEventListener("hashchange", lireFragment);
+    // `initial` vient du serveur et ne change pas pendant la vie de la page.
   }, [edit]);
   const baseEff = base ?? plan?.maison;
+  /** La maison du plan telle qu'elle est CHIFFRÉE (au moins une salle de bain et un WC) : le résumé dit vrai. */
+  const planChiffre = useMemo(() => (plan ? maisonComplete(plan.maison) : null), [plan]);
   const origineEff: OrigineNeuf | undefined = origine ?? (plan ? { source: "plan", contrat: plan.contrat } : undefined);
 
   const maj = (patch: Partial<ReponsesRapideNeuf>) => { setAgi(true); setR((r) => ({ ...r, ...patch })); };
@@ -281,16 +303,16 @@ export default function EstimateurRapideNeuf({
             <span>{s.planRefus[refusPlan] ?? s.planRefus.illisible}</span>
           </div>
         )}
-        {plan && (
+        {plan && planChiffre && (
           <div className="plan-ok" role="status">
             <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 2.5h12v11H2z M2 7h6v6.5 M8 2.5V5 M11 7h3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /></svg>
             <div>
               <b>{s.planOkTitre}</b>{" "}
               {s.planResume({
-                surface: Math.round(plan.maison.surface ?? 0).toLocaleString(nf),
-                niveaux: s.niveaux[plan.maison.niveaux ?? "pp"],
-                chambres: plan.maison.chambres ?? 0, sdb: plan.maison.sdb ?? 0, wc: plan.maison.wc ?? 0,
-                garage: (plan.maison.garage ?? 0) > 0 ? Math.round(plan.maison.garage ?? 0).toLocaleString(nf) : null,
+                surface: Math.round(planChiffre.surface).toLocaleString(nf),
+                niveaux: s.niveaux[planChiffre.niveaux],
+                chambres: planChiffre.chambres, sdb: planChiffre.sdb, wc: planChiffre.wc,
+                garage: planChiffre.garage > 0 ? Math.round(planChiffre.garage).toLocaleString(nf) : null,
               })}
               {plan.avertissements.length > 0 && (
                 <ul>{plan.avertissements.map((a) => <li key={a}>{s.planAvert[a]}</li>)}</ul>

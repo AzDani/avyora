@@ -359,6 +359,8 @@ const fr = {
       } as Record<string, string>,
       planAvert: {
         petiteSurface: "Ton plan fait moins de 30 m² : l'estimation part de 30 m².",
+        grandeSurface: "Ton plan fait plus de 400 m² : l'estimation rapide s'arrête à 400 m².",
+        sanitaires: "Ton plan n'a pas de salle de bain ou pas de WC : l'estimation en compte au moins un de chaque.",
         cave: "Ton plan a une cave : un sous-sol se chiffre dans l'estimation détaillée (plancher bas).",
         nonChiffre: "Terrasse, atelier ou grange : ces surfaces de ton plan ne sont pas chiffrées.",
         troisNiveaux: "Ta maison a plus de deux niveaux : elle est chiffrée comme une maison à étage.",
@@ -803,6 +805,8 @@ const en: Dict = {
       } as Record<string, string>,
       planAvert: {
         petiteSurface: "Your plan is under 30 m²: the estimate starts at 30 m².",
+        grandeSurface: "Your plan is over 400 m²: the quick estimate stops at 400 m².",
+        sanitaires: "Your plan has no bathroom or no toilet: the estimate counts at least one of each.",
         cave: "Your plan has a cellar: a basement is costed in the detailed estimate (ground floor).",
         nonChiffre: "Terrace, workshop or barn: these areas of your plan are not costed.",
         troisNiveaux: "Your house has more than two levels: it is costed as a two-storey house.",

@@ -147,6 +147,36 @@ describe("C7 · maisonDepuisPlan", () => {
     expect(m.maison.surface).toBe(30);
   });
 
+  it("au-delà de 400 m², la surface est ramenée à 400 (bornes du rapide), avec un avertissement", () => {
+    const c = copie(MAISON94);
+    c.area = 612.4;
+    const m = maison(c);
+    expect(m.maison.surface).toBe(400);
+    expect(m.avertissements).toEqual(["grandeSurface"]);
+    c.area = 400.4;
+    expect(maison(c).maison.surface).toBe(400);
+    expect(maison(c).avertissements).toEqual([]);
+    expect(contexteNeuf({ surface: "400" }).surface).toBe(400);
+    expect(contexteNeuf({ surface: "401" }).surface).toBeUndefined();
+  });
+
+  it("un plan sans salle de bain ni WC : avertissement, et la maison chiffrée en compte un de chaque", () => {
+    const c = copie(MAISON94);
+    for (const n of c.detailNiveaux) {
+      n.rooms = n.rooms.filter((r: { type: string }) => !["sdb", "sde", "wc", "suite"].includes(r.type));
+      n.equipements = [];
+    }
+    const m = maison(c);
+    expect(m.maison.sdb).toBe(0);
+    expect(m.maison.wc).toBe(0);
+    expect(m.avertissements).toContain("sanitaires");
+    const h = maisonComplete(m.maison);
+    expect(h.sdb).toBe(1);
+    expect(h.wc).toBe(1);
+    expect(maison(MAISON94).avertissements).not.toContain("sanitaires");
+    expect(maison(ETAGE).avertissements).not.toContain("sanitaires");
+  });
+
   it("les défauts non décrits par le plan (murs, toiture, chauffage) restent ceux du moteur", () => {
     const m = maison(MAISON94);
     const h = maisonComplete(m.maison);
