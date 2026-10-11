@@ -18,12 +18,12 @@ export const FEATURES = {
   documents: false,
   plateforme: false, // grille marketing des 10 modules sur l'accueil
   /**
-   * Construction neuve (estimation d'une maison à construire). Allumée en développement local,
-   * éteinte dans un build de production tant que `NEXT_PUBLIC_FEATURE_NEUF` ne vaut pas « 1 ».
-   * Ne jamais l'allumer en production avant le lancement (chantier C8). À `false`, le site public
-   * est identique à aujourd'hui : les pages du neuf renvoient `notFound()`, aucun point d'entrée.
+   * Construction neuve (estimation d'une maison à construire) — lancée le 11/10/2026.
+   * Allumée partout. Pour l'éteindre en urgence sans toucher au code : NEXT_PUBLIC_FEATURE_NEUF=0
+   * dans les variables de Vercel, puis redéployer. Éteinte, le site public redevient celui
+   * d'avant : les pages du neuf renvoient `notFound()`, aucun point d'entrée n'est affiché.
    */
-  neuf: process.env.NODE_ENV !== "production" || process.env.NEXT_PUBLIC_FEATURE_NEUF === "1",
+  neuf: process.env.NEXT_PUBLIC_FEATURE_NEUF !== "0",
 } as const;
 
 /**
