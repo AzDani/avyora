@@ -28,7 +28,7 @@ import { fmt, Field, CustomLines } from "@/components/estimateur/partage";
 import { useLocale, useT } from "@/components/i18n/LangProvider";
 import { catT } from "@/lib/estimateur/catalog-i18n";
 import {
-  buildDevis, customLotHT, finCoef, geometrieNeuf, isAuto, isLoc, key, regionCoef, autoQty, visibleTask, estJalon,
+  buildDevis, customLotHT, finCoef, geometrieNeuf, isAuto, isLoc, key, regionCoef, autoQty, visibleTask,
   CATALOG_NEUF, PHASES_NEUF, INFO_PHASES, QUESTIONS_NEUF,
   type CustomLine, type Selection, type LigneSel, type MaisonNeuve, type Lot, type Tache,
   type QuestionNeuf, type ValeurQuestionNeuf, type CleQuestionNeuf,
@@ -36,7 +36,7 @@ import {
 import {
   CLE_BROUILLON_DETAIL_NEUF, BLOCS_NEUF, ctxDetailNeuf, etatParDefaut, changerReponseNeuf, cocherNeuf, puReelNeuf, badgeNeuf,
   diyNeuf, lignesPersoDuBloc, lignePersoNeuf, repriseDepuisReponses, repriseDepuisAffiner, repriseDepuisGraine,
-  lireBrouillonDetailNeuf, enregistrementDetailNeuf, type EtatNeuf, type BlocNeuf,
+  lireBrouillonDetailNeuf, enregistrementDetailNeuf, demarchesPhase, type EtatNeuf, type BlocNeuf,
 } from "@/lib/estimateur/detaille-neuf";
 import { CLE_BROUILLON_NEUF, CLE_AFFINER_NEUF, CLE_RECLAMATION, RECLAMATION_NEUF, type OrigineNeuf } from "@/lib/estimateur/brouillon-neuf";
 import { NEUF_DETAIL_CSS } from "./detail-styles";
@@ -360,8 +360,9 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
 
             {PHASES_NEUF.map((ph, pi) => {
               const blocs = BLOCS_NEUF.filter((b) => b.l.p === ph);
-              let nOn = 0, nDem = 0;
-              for (const b of blocs) for (const t of b.l.t) if (sel[key(b.l.c, t.n)]?.on) { nOn++; if (estJalon(t)) nDem++; }
+              let nOn = 0;
+              for (const b of blocs) for (const t of b.l.t) if (sel[key(b.l.c, t.n)]?.on) nOn++;
+              const nDem = demarchesPhase(ctx, sel, ph);
               const ouverte = !ferme[ph];
               const info = INFO_PHASES[ph];
               const rendus = ouverte ? blocs.map(bloc).filter(Boolean) : [];

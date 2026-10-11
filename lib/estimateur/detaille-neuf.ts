@@ -114,6 +114,17 @@ export function badgeNeuf(ctx: Ctx, sel: Selection, l: Lot, t: Tache): "pct" | "
   return undefined;
 }
 
+/** Nombre de démarches d'une phase, affiché à côté de son jalon : les lignes cochées dont le badge
+ *  est « jalon » (montant nul). Une démarche à laquelle on a donné un prix n'en est plus une. */
+export function demarchesPhase(ctx: Ctx, sel: Selection, phase: string): number {
+  let n = 0;
+  for (const l of CATALOG_NEUF) {
+    if (l.p !== phase) continue;
+    for (const t of l.t) if (sel[key(l.c, t.n)]?.on && badgeNeuf(ctx, sel, l, t) === "jalon") n++;
+  }
+  return n;
+}
+
 /** « Je le fais » proposé sur ce poste ? (lots jamais faits soi-même, frais, pourcentages, PAC : non) */
 export const diyNeuf = (l: Lot, t: Tache): boolean => soiMemeNeuf(l.c, "max", t.id, t);
 

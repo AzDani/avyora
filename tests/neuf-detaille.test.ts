@@ -11,7 +11,7 @@ import {
 import {
   BLOCS_NEUF, ctxDetailNeuf, etatParDefaut, etatDepuisPreset, changerReponseNeuf, changerQuiNeuf, cocherNeuf, puReelNeuf,
   badgeNeuf, diyNeuf, lignesPersoDuBloc, lignePersoNeuf, repriseDepuisReponses, repriseDepuisAffiner, repriseDepuisGraine,
-  lireBrouillonDetailNeuf, enregistrementDetailNeuf, type EtatNeuf,
+  lireBrouillonDetailNeuf, enregistrementDetailNeuf, demarchesPhase, type EtatNeuf,
 } from "@/lib/estimateur/detaille-neuf";
 import { brouillonRapideNeuf, lireBrouillonNeuf, corpsProjetNeuf } from "@/lib/estimateur/brouillon-neuf";
 import { projetCreateSchema } from "@/lib/validation";
@@ -106,6 +106,22 @@ describe("Détaillé neuf · lignes et badges", () => {
     const l = CATALOG_NEUF.find((x) => x.t.includes(t))!;
     const avecPrix: Selection = { ...e.sel, [key(l.c, t.n)]: { on: true, pu: 150 } };
     expect(badgeNeuf(ctx, avecPrix, l, t)).toBeUndefined();
+  });
+
+  it("le compteur de démarches d'une phase ne compte que les lignes cochées au badge « jalon »", () => {
+    const total = () => [...new Set(CATALOG_NEUF.map((l) => l.p))].reduce((s, p) => s + demarchesPhase(ctx, e.sel, p), 0);
+    const attendu = CATALOG_NEUF.flatMap((l) => l.t.filter((t) => e.sel[key(l.c, t.n)]?.on && badgeNeuf(ctx, e.sel, l, t) === "jalon")).length;
+    expect(attendu).toBeGreaterThan(0);
+    expect(total()).toBe(attendu);
+    // Une démarche cochée à laquelle on donne un prix sort du compte de sa phase.
+    const l = CATALOG_NEUF.find((x) => x.t.some((t) => e.sel[key(x.c, t.n)]?.on && badgeNeuf(ctx, e.sel, x, t) === "jalon"))!;
+    const t = l.t.find((x) => e.sel[key(l.c, x.n)]?.on && badgeNeuf(ctx, e.sel, l, x) === "jalon")!;
+    const avant = demarchesPhase(ctx, e.sel, l.p);
+    const avecPrix: Selection = { ...e.sel, [key(l.c, t.n)]: { ...e.sel[key(l.c, t.n)], on: true, pu: 150 } };
+    expect(demarchesPhase(ctx, avecPrix, l.p)).toBe(avant - 1);
+    // Décochée : elle sort aussi du compte.
+    const off: Selection = { ...e.sel, [key(l.c, t.n)]: { ...e.sel[key(l.c, t.n)], on: false } };
+    expect(demarchesPhase(ctx, off, l.p)).toBe(avant - 1);
   });
 
   it("les postes en pourcentage ont le badge pct et un prix réel égal à leur montant", () => {
