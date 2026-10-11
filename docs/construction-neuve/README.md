@@ -3,7 +3,7 @@
 L'estimateur d'AVYORA chiffre désormais la construction d'une maison individuelle neuve, du permis de
 construire à la déclaration d'achèvement (enduits compris), avec le **même moteur** que la rénovation.
 
-## Ce qui est en place (moteur seulement — rien n'est encore branché dans les pages)
+## Le moteur
 
 | Fichier | Rôle |
 |---|---|
@@ -38,11 +38,19 @@ node maquettes/neuf/assembler.mjs <dossier>      # compile le moteur et produit 
 node maquettes/neuf/controle.cjs <dossier>       # 26 contrôles dans Chrome headless + captures
 ```
 
-## Reste à faire (branchement)
+## Dans le site (en ligne depuis le 12/10/2026)
 
-Pages du site (choix « Rénovation / Construction neuve », questionnaire, résultat), éditeur de plan
-(« Plan final » → chiffrage neuf), et tout ce qui affiche un projet en lisant `CATALOG` au lieu de
-`catalogueDe(ctx)`. La revue de code a listé ces endroits (fiche projet et `EstimationResultat`,
-`RapportPDF`, `ResultatRapide`, `EstimationRappel`, page « modifier », import de plan, traductions
-`catalog-i18n`) : chacun doit passer par `catalogueDe(ctx)` et `PHASES_NEUF`, et grouper les lots par
-phase, car un même lot revient dans plusieurs phases du neuf.
+| Où | Quoi |
+|---|---|
+| `/estimation-construction-maison` | Estimation rapide, publique et gratuite (5 questions), indexée. Lit aussi un plan venu de l'éditeur (`#plan=`, `lib/estimateur/plan-neuf.ts`). |
+| `/projets/nouveau/construction` | Estimation détaillée, Pro (phase par phase, poste par poste). |
+| `/projets/nouveau?nature=neuf` | Bascule « Rénovation / Construction neuve » de l'écran de choix. |
+| Fiche, suivi, PDF, liste, admin | Un projet neuf (`reponses.ctx.nature = "neuf"`) se chiffre et s'affiche avec le catalogue du neuf, par phase. |
+| Accueil, `/tarifs`, pied de page | Bandeau, puce Pro, lien. |
+| Éditeur de plan (D75) | En Plan final : « Chiffrer cette maison » ouvre la page publique pré-remplie. |
+
+Interrupteur : `FEATURES.neuf` (`lib/features.ts`). Extinction d'urgence sans toucher au code :
+`NEXT_PUBLIC_FEATURE_NEUF=0` dans les variables de Vercel, puis redéployer.
+
+Composants : `components/neuf/` ; briques partagées avec la rénovation : `components/estimateur/`.
+Tests : `tests/estimateur-neuf*.test.ts`, `tests/neuf-*.test.ts`, `tests/estimateur-plan-neuf.test.ts`.
