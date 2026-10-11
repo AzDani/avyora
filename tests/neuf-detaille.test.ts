@@ -9,7 +9,7 @@ import {
   CATALOG_NEUF, POSTE_NEUF, GROUPES_EXCLUSIFS_NEUF, type CustomLine, type Selection,
 } from "@/lib/estimateur";
 import {
-  BLOCS_NEUF, ctxDetailNeuf, etatParDefaut, etatDepuisPreset, changerReponseNeuf, changerQuiNeuf, cocherNeuf, puReelNeuf,
+  BLOCS_NEUF, ctxDetailNeuf, etatParDefaut, etatDepuisPreset, changerReponseNeuf, changerQuiNeuf, cocherNeuf, cocherNeufEtat, puReelNeuf,
   badgeNeuf, diyNeuf, lignesPersoDuBloc, lignePersoNeuf, repriseDepuisReponses, repriseDepuisAffiner, repriseDepuisGraine,
   lireBrouillonDetailNeuf, enregistrementDetailNeuf, demarchesPhase, type EtatNeuf,
 } from "@/lib/estimateur/detaille-neuf";
@@ -252,5 +252,36 @@ describe("Détaillé neuf · taille des réponses", () => {
     const taille = JSON.stringify(corps.reponses).length;
     expect(taille).toBeLessThan(80_000);
     expect(projetCreateSchema.safeParse(corps).success).toBe(true);
+  });
+});
+
+describe("Détaillé neuf · une coche manuelle met la réponse de la maison à jour", () => {
+  it("cocher l'ardoise : la question « Couverture » dit ardoise, et la réponse reste après un autre changement", () => {
+    let e = etatDepuisPreset(presetNeuf(R100), "pros");
+    expect(e.maison.couverture).toBe("terre-cuite");
+    const ardoise = poste("cou-couverture-ardoise-naturelle");
+    e = cocherNeufEtat(e, lotDe("cou-couverture-ardoise-naturelle"), ardoise.t);
+    expect(e.maison.couverture).toBe("ardoise");
+    expect(e.sel[cle("cou-couverture-ardoise-naturelle")]?.on).toBe(true);
+    expect(e.sel[cle("cou-couverture-tuiles-terre-cuite")]?.on).toBeFalsy();
+    const avant = ttcDe(e);
+    // Une maison relue depuis ses réponses chiffre la même couverture.
+    const relu = etatDepuisPreset(presetMaison(maisonComplete(e.maison), { codePostal: "45000" }), "pros");
+    expect(relu.sel[cle("cou-couverture-ardoise-naturelle")]?.on).toBe(true);
+    e = changerReponseNeuf(e, "chauffage", "pac-air");
+    expect(e.maison.couverture).toBe("ardoise");
+    expect(e.sel[cle("cou-couverture-ardoise-naturelle")]?.on).toBe(true);
+    expect(avant).toBeGreaterThan(0);
+  });
+  it("cocher un bardage : façade choisie, elle ne suit plus les murs", () => {
+    let e = etatDepuisPreset(presetNeuf(R100), "pros");
+    e = cocherNeufEtat(e, lotDe("fac-bardage"), poste("fac-bardage").t);
+    expect(e.maison.facade).toBe("bardage-bois");
+    expect(e.facadeAuto).toBe(false);
+  });
+  it("cocher un poste sans réponse associée ne touche pas la maison", () => {
+    const e = etatDepuisPreset(presetNeuf(R100), "pros");
+    const e2 = cocherNeufEtat(e, lotDe("rev-parquet-bois"), poste("rev-parquet-bois").t);
+    expect(e2.maison).toBe(e.maison);
   });
 });

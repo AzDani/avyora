@@ -219,6 +219,15 @@ const COUVERTURES = { "terre-cuite": "cou-couverture-tuiles-terre-cuite", beton:
   "ardoise-fibro": "cou-couverture-ardoise-fibres-ciment", "bac-acier": "cou-couverture-bac-acier", zinc: "cou-couverture-zinc-joint-debout" } as const;
 const GOUTTIERES = { zinc: "cou-gouttiere-zinc", pvc: "cou-gouttiere-pvc", alu: "cou-gouttiere-alu-continu" } as const;
 const FACADES = { enduit: "fac-enduit-monocouche-machine", "bardage-bois": "fac-bardage", "bardage-composite": "fac-bardage-composite" } as const;
+
+/** Poste du catalogue → la réponse de la maison qui le choisit (couverture, gouttière, façade).
+ *  Cocher ce poste à la main dans le détaillé met la réponse à jour : la description dit vrai. */
+export function reponseDuPoste(id: string): { k: "couverture" | "gouttiere" | "facade"; v: string } | null {
+  for (const [k, table] of [["couverture", COUVERTURES], ["gouttiere", GOUTTIERES], ["facade", FACADES]] as const) {
+    for (const [v, pid] of Object.entries(table)) if (pid === id) return { k, v };
+  }
+  return null;
+}
 const idfCp = (cp?: string) => /^(75|77|78|91|92|93|94|95)/.test((cp || "").replace(/\D/g, ""));
 
 /**

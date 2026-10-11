@@ -36,7 +36,7 @@ import { totauxAvecPerso } from "@/lib/estimateur/projet";
 import { INFO_PHASES } from "@/lib/estimateur/etapes-neuf";
 import { QUESTIONS_NEUF, type QuestionNeuf, type ValeurQuestionNeuf, type CleQuestionNeuf } from "@/lib/estimateur/questions-neuf";
 import {
-  CLE_BROUILLON_DETAIL_NEUF, BLOCS_NEUF, ctxDetailNeuf, etatParDefaut, changerReponseNeuf, cocherNeuf, puReelNeuf, badgeNeuf,
+  CLE_BROUILLON_DETAIL_NEUF, BLOCS_NEUF, ctxDetailNeuf, etatParDefaut, changerReponseNeuf, cocherNeufEtat, puReelNeuf, badgeNeuf,
   diyNeuf, lignesPersoDuBloc, lignePersoNeuf, repriseDepuisReponses, repriseDepuisAffiner, repriseDepuisGraine,
   lireBrouillonDetailNeuf, enregistrementDetailNeuf, demarchesPhase, type EtatNeuf, type BlocNeuf,
 } from "@/lib/estimateur/detaille-neuf";
@@ -151,7 +151,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
   function upd(c: string, nom: string, patch: (s: LigneSel) => LigneSel) {
     majSel((prev) => { const k = key(c, nom); return { ...prev, [k]: patch(prev[k] || {}) }; });
   }
-  const toggleCheck = (l: Lot, t: Tache) => setEtat((e) => ({ ...e, sel: cocherNeuf(ctxDetailNeuf(e), e.sel, l, t, e.qui) }));
+  const toggleCheck = (l: Lot, t: Tache) => setEtat((e) => cocherNeufEtat(e, l, t));
   function toggleAuto(l: Lot, t: Tache) {
     upd(l.c, t.n, (s) => {
       const manual = !s.manual;

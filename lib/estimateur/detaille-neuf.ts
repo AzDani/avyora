@@ -15,7 +15,7 @@
  */
 import { key, isAuto, isLoc, lineHT, type Ctx, type Selection, type Finition, type Lot, type Tache, type CustomLine } from "./core";
 import { CATALOG_NEUF } from "./catalogue-neuf";
-import { maisonComplete, maisonParDefaut, type MaisonNeuve } from "./neuf";
+import { maisonComplete, maisonParDefaut, reponseDuPoste, type MaisonNeuve } from "./neuf";
 import { ctxNeuf, appliquerMaison, cocherPosteNeuf, soiMemeNeuf, presetMaison, presetNeuf, type RapideNeufInput } from "./presets-neuf";
 import type { QuiRealise } from "./presets";
 import type { CleQuestionNeuf, ValeurQuestionNeuf } from "./questions-neuf";
@@ -87,6 +87,20 @@ export function changerReponseNeuf(e: EtatNeuf, k: CleQuestionNeuf, v: ValeurQue
   // La maison gardée est celle que le moteur chiffre (bornes, toit plat → pas de combles…).
   const maison = ctxDetailNeuf({ ...e, maison: brute }).neuf as MaisonNeuve;
   return { ...e, maison, facadeAuto, sel: appliquerMaison(maison, e.sel, e.qui, ancienne) };
+}
+
+/**
+ * Coche un poste à la main depuis l'état du détaillé. Si ce poste correspond à une réponse de la
+ * maison (couverture en ardoise, gouttière PVC, bardage…), la réponse suit : la question affiche
+ * le choix réel, et un « Modifier » qui repart de la maison chiffre la même chose. Décocher ne
+ * change pas la réponse (aucun autre choix n'est alors désigné).
+ */
+export function cocherNeufEtat(e: EtatNeuf, l: Lot, t: Tache): EtatNeuf {
+  const sel = cocherNeuf(ctxDetailNeuf(e), e.sel, l, t, e.qui);
+  const on = !!sel[key(l.c, t.n)]?.on;
+  const r = on && t.id ? reponseDuPoste(t.id) : null;
+  if (!r || (e.maison as unknown as Record<string, unknown>)[r.k] === r.v) return { ...e, sel };
+  return { ...e, sel, maison: { ...e.maison, [r.k]: r.v } as MaisonNeuve, facadeAuto: r.k === "facade" ? false : e.facadeAuto };
 }
 
 /** Coche ou décoche un poste à la main : décoche les postes exclusifs (deux couvertures ne
