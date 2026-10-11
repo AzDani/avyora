@@ -20,7 +20,7 @@ import { ctxNeuf, appliquerMaison, cocherPosteNeuf, soiMemeNeuf, presetMaison, p
 import type { QuiRealise } from "./presets";
 import type { CleQuestionNeuf, ValeurQuestionNeuf } from "./questions-neuf";
 import { estJalon } from "./projet";
-import { corpsProjetNeuf, type BrouillonNeuf, type OrigineNeuf } from "./brouillon-neuf";
+import { corpsProjetNeuf, lignesPersoValides, selValide, type BrouillonNeuf, type OrigineNeuf } from "./brouillon-neuf";
 import type { Locale } from "../i18n/config";
 
 /** Brouillon du détaillé neuf (travail en cours, rechargement de la page). Séparé de la rénovation. */
@@ -174,10 +174,10 @@ export function repriseDepuisReponses(reponses: unknown): RepriseNeuf | null {
     maison, finition: r.ctx.finition ?? "standard", qui: r.qui ?? "pros",
     aleas: typeof r.ctx.aleas === "number" ? r.ctx.aleas : ctxNeuf(maison).aleas,
     budget: typeof r.ctx.budget === "number" ? r.ctx.budget : 0,
-    sel: r.sel ?? {}, facadeAuto: facadeAutoDe(maison),
+    sel: selValide(r.sel), facadeAuto: facadeAutoDe(maison),
   };
   return {
-    etat, custom: Array.isArray(r.custom) ? r.custom : [],
+    etat, custom: lignesPersoValides(r.custom),
     ...(r.statuts ? { statuts: r.statuts } : {}),
     ...(r.origine ? { origine: r.origine } : {}),
   };
@@ -233,9 +233,9 @@ export function lireBrouillonDetailNeuf(raw: string | null | undefined): Brouill
       qui: QUIS.has(String(d.etat.qui)) ? d.etat.qui : "pros",
       aleas: typeof d.etat.aleas === "number" ? d.etat.aleas : ctxNeuf(maison).aleas,
       budget: typeof d.etat.budget === "number" ? d.etat.budget : 0,
-      sel: d.etat.sel ?? {}, facadeAuto: typeof d.etat.facadeAuto === "boolean" ? d.etat.facadeAuto : facadeAutoDe(maison),
+      sel: selValide(d.etat.sel), facadeAuto: typeof d.etat.facadeAuto === "boolean" ? d.etat.facadeAuto : facadeAutoDe(maison),
     },
-    custom: Array.isArray(d.custom) ? d.custom : [],
+    custom: lignesPersoValides(d.custom),
     open: d.open && typeof d.open === "object" ? d.open : {},
     ...(d.origine ? { origine: d.origine } : {}),
   };

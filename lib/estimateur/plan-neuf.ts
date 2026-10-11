@@ -21,7 +21,7 @@
  */
 import { z } from "zod";
 import { compteursDepuisPlan, type PiecePlan, type TypePiecePlan } from "./plan-mapping";
-import type { MaisonNeuve, Niveaux } from "./neuf";
+import { GARAGE_MAX, type MaisonNeuve, type Niveaux } from "./neuf";
 
 /** Les 22 types de pièces de l'éditeur (ROOM_TYPES), identiques à `TypePiecePlan`. */
 const TYPES_PIECE = [
@@ -48,7 +48,7 @@ const id = z.string().max(24);
 
 /** L'extrait de `contratPlan()` que le site sait lire. Les clés inconnues sont retirées (`strip`). */
 export const planNeufSchema = z.object({
-  contrat: z.string().regex(/^1\.(1[89]|[2-9]\d)\.\d+$/),
+  contrat: z.string().max(16).regex(/^1\.(1[89]|[2-9]\d)\.\d{1,4}$/),
   workflow: z.literal("final_plan"),
   bien: z.object({
     niveaux: z.number().int().min(1).max(6),
@@ -146,7 +146,7 @@ export function extraitPlanNeuf(c: Record<string, unknown>): Record<string, unkn
 /** Pourquoi un plan n'est pas chiffré (clé traduite à l'affichage, jamais un texte du plan). */
 export type RefusPlan = "illisible" | "renovation" | "version" | "appartement";
 /** Ce que le plan contient et que le chiffrage ne sait pas reprendre (clé traduite à l'affichage). */
-export type CleAvertissement = "petiteSurface" | "grandeSurface" | "sanitaires" | "cave" | "nonChiffre" | "troisNiveaux";
+export type CleAvertissement = "petiteSurface" | "grandeSurface" | "grandGarage" | "sanitaires" | "cave" | "nonChiffre" | "troisNiveaux";
 
 export interface MaisonDuPlan {
   refus?: undefined;
@@ -195,7 +195,7 @@ export function maisonDepuisPlan(c: PlanNeuf): MaisonDuPlan | { refus: RefusPlan
   const forme: MaisonNeuve["forme"] = ratio >= 0.95 ? "rect" : ratio >= 0.7 ? "L" : "complexe";
 
   const maison: Partial<MaisonNeuve> = {
-    surface: Math.min(SURFACE_PLAN_MAX, Math.max(SURFACE_PLAN_MIN, Math.round(c.area))), niveaux, forme, garage: Math.round(garage),
+    surface: Math.min(SURFACE_PLAN_MAX, Math.max(SURFACE_PLAN_MIN, Math.round(c.area))), niveaux, forme, garage: Math.min(GARAGE_MAX, Math.round(garage)),
     chambres: k.chambres + k.suites, sdb: k.sdb + k.suites, wc: k.wc,
   };
   const repris: (keyof MaisonNeuve)[] = ["surface", "niveaux", "forme", "garage", "chambres", "sdb", "wc"];
@@ -212,6 +212,7 @@ export function maisonDepuisPlan(c: PlanNeuf): MaisonDuPlan | { refus: RefusPlan
   const toutes = N.flatMap((n) => n.rooms);
   if (c.area < SURFACE_PLAN_MIN) avertissements.push("petiteSurface");
   if (Math.round(c.area) > SURFACE_PLAN_MAX) avertissements.push("grandeSurface");
+  if (Math.round(garage) > GARAGE_MAX) avertissements.push("grandGarage");
   // Le moteur chiffre toujours au moins une salle de bain et un WC (`maisonComplete`).
   if (maison.sdb === 0 || maison.wc === 0) avertissements.push("sanitaires");
   if (toutes.some((r) => r.type === "cave")) avertissements.push("cave");
@@ -230,7 +231,7 @@ export function lirePlanNeuf(fragment: string): MaisonDuPlan | { refus: RefusPla
   if (!brut || typeof brut !== "object" || Array.isArray(brut)) return { refus: "illisible" };
   const b = brut as { workflow?: unknown; contrat?: unknown };
   if (typeof b.workflow === "string" && b.workflow !== "final_plan") return { refus: "renovation" };
-  const v = typeof b.contrat === "string" ? /^(\d+)\.(\d+)\.\d+$/.exec(b.contrat) : null;
+  const v = typeof b.contrat === "string" && b.contrat.length <= 16 ? /^(\d{1,4})\.(\d{1,4})\.\d{1,4}$/.exec(b.contrat) : null;
   if (v && (Number(v[1]) < 1 || (Number(v[1]) === 1 && Number(v[2]) < VERSION_MIN) || b.workflow === undefined)) return { refus: "version" };
   const ok = planNeufSchema.safeParse(brut);
   if (!ok.success) return { refus: "illisible" };

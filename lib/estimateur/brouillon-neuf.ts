@@ -67,8 +67,11 @@ export type BrouillonNeuf = {
 /** Nom par défaut d'un projet neuf : « Construction neuve — Maison plain-pied 100 m² ». */
 export function nomProjetNeuf(maison: Pick<MaisonNeuve, "niveaux" | "surface">, locale: Locale = "fr"): string {
   const t = dictNeufCommun(locale);
-  const maisonTxt = t.maisonNiveaux[maison.niveaux] ?? t.maisonNiveaux.pp;
-  return `${t.projetNom} — ${maisonTxt} ${Math.round(maison.surface)} m²`;
+  // Valeurs relues d'un brouillon ou de l'API : une clé héritée (« __proto__ ») ou une surface en
+  // texte ne doivent pas produire « [object Object] NaN m² ».
+  const maisonTxt = Object.hasOwn(t.maisonNiveaux, String(maison.niveaux)) ? t.maisonNiveaux[maison.niveaux] : t.maisonNiveaux.pp;
+  const s = Math.round(Number(maison.surface));
+  return `${t.projetNom} — ${maisonTxt}${Number.isFinite(s) && s > 0 ? ` ${s} m²` : ""}`;
 }
 
 /** Le brouillon du rapide neuf, à partir du chiffrage courant (`presetNeuf(R, base)`). */
@@ -81,6 +84,17 @@ export function brouillonRapideNeuf(p: {
     ...(p.origine ? { origine: p.origine } : {}),
     ...(p.statuts && Object.keys(p.statuts).length ? { statuts: p.statuts } : {}),
   };
+}
+
+/** Lignes perso relues (brouillon, API) : seulement des objets avec un lot. Une entrée `null`
+ *  ferait planter le rendu du détaillé à chaque visite. */
+export function lignesPersoValides(x: unknown): CustomLine[] {
+  return Array.isArray(x) ? x.filter((c): c is CustomLine => !!c && typeof c === "object" && typeof (c as CustomLine).lot === "string") : [];
+}
+/** Sélection relue : seulement des postes décrits par un objet. */
+export function selValide(x: unknown): Selection {
+  if (!x || typeof x !== "object" || Array.isArray(x)) return {};
+  return Object.fromEntries(Object.entries(x as Record<string, unknown>).filter(([, v]) => !!v && typeof v === "object" && !Array.isArray(v))) as Selection;
 }
 
 const CP = /^\d{5}$/;
@@ -117,7 +131,12 @@ export function lireBrouillonNeuf(raw: string | null | undefined): BrouillonNeuf
   const codePostal = String(d.codePostal || d.ctx.codePostal || "");
   if (!CP.test(codePostal)) return null;
   if (!(Number(d.ctx.surface) > 0)) return null;
-  return { ...(d as BrouillonNeuf), codePostal, mode: d.mode === "detaille" ? "detaille" : "rapide", qui: d.qui ?? "pros", sel: d.sel ?? {} };
+  const custom = lignesPersoValides(d.custom);
+  return {
+    ...(d as BrouillonNeuf), codePostal, mode: d.mode === "detaille" ? "detaille" : "rapide",
+    qui: d.qui === "partie" || d.qui === "max" ? d.qui : "pros", sel: selValide(d.sel),
+    ...(custom.length ? { custom } : { custom: undefined }),
+  };
 }
 
 /** Corps du POST / PATCH `/api/projects` d'un projet neuf (création, réclamation, édition). */

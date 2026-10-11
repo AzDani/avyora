@@ -65,17 +65,40 @@ export function maisonParDefaut(surface = 100): MaisonNeuve {
   };
 }
 
+/** Bornes des réponses chiffrées, celles du détaillé (garage 10-80 m², distance 0-200 m). Une
+ *  valeur venue d'un plan, d'un brouillon ou de l'API ne les dépasse pas. */
+export const GARAGE_MAX = 80;
+export const DISTANCE_RESEAUX_MAX = 200;
+
+/** Réponses à choix : une valeur hors liste (brouillon trafiqué, ancienne version) garde le défaut. */
+const CHOIX: Partial<Record<keyof MaisonNeuve, readonly unknown[]>> = {
+  niveaux: ["pp", "etage", "combles"], forme: ["rect", "L", "complexe"],
+  plancherBas: ["terre-plein", "vide-sanitaire", "sous-sol"], murs: ["parpaing", "brique", "monomur", "cellulaire", "ossature"],
+  toiture: ["2pans", "4pans", "plat"], couverture: ["terre-cuite", "beton", "ardoise", "ardoise-fibro", "bac-acier", "zinc"],
+  gouttiere: ["zinc", "pvc", "alu"], facade: ["enduit", "bardage-bois", "bardage-composite"], chauffage: ["pac-eau", "pac-air", "poele"],
+  vmc: ["simple", "double"], escalier: ["bois", "beton"], assainissement: ["collectif", "fosse", "micro"],
+  eauxPluviales: ["infiltration", "reseau"], terrain: ["plat", "pente"], argile: ["non", "moyen", "fort"], pilotage: ["moi", "moe"],
+};
+
 /**
  * Complète une description partielle (anciens projets, saisie en cours) avec les valeurs par défaut.
  * Une réponse vide (undefined, NaN — un champ effacé) ne remplace jamais une valeur par défaut :
  * sinon les quantités qui en dépendent passeraient à NaN et sortiraient du total sans rien dire.
+ * Une réponse d'un autre type que le défaut (texte au lieu d'un nombre…), hors des choix possibles,
+ * ou une clé inconnue est ignorée ; les nombres sont ramenés dans les bornes du formulaire.
+ * Pour toute saisie faite par les formulaires, le résultat est le même qu'avant ces contrôles.
  */
 export function maisonComplete(h: Partial<MaisonNeuve> | undefined | null): MaisonNeuve {
   const surfaceSaisie = h?.surface != null && Number.isFinite(h.surface) ? h.surface : undefined;
   const d = maisonParDefaut(surfaceSaisie);
   const m = { ...d } as MaisonNeuve & Record<string, unknown>;
-  for (const [k, v] of Object.entries(h ?? {})) {
+  const src = h && typeof h === "object" ? h : {};
+  for (const [k, v] of Object.entries(src)) {
     if (v === undefined || v === null || (typeof v === "number" && !Number.isFinite(v))) continue;
+    if (k === "codePostal") { if (typeof v === "string") m.codePostal = v; continue; }
+    if (!Object.hasOwn(d, k) || typeof v !== typeof (d as unknown as Record<string, unknown>)[k]) continue;
+    const choix = CHOIX[k as keyof MaisonNeuve];
+    if (choix && !choix.includes(v)) continue;
     m[k] = v;
   }
   const entier = (v: number, min: number, max: number) => Math.min(max, Math.max(min, Math.round(v)));
@@ -83,10 +106,10 @@ export function maisonComplete(h: Partial<MaisonNeuve> | undefined | null): Mais
   m.chambres = entier(m.chambres, 0, 10);
   m.sdb = entier(m.sdb, 1, 6);
   m.wc = entier(m.wc, 1, 6);
-  m.garage = Math.max(0, m.garage);
-  m.distanceReseaux = Math.max(0, m.distanceReseaux);
+  m.garage = Math.min(GARAGE_MAX, Math.max(0, m.garage));
+  m.distanceReseaux = Math.min(DISTANCE_RESEAUX_MAX, Math.max(0, m.distanceReseaux));
   m.sismique = entier(m.sismique, 1, 5) as MaisonNeuve["sismique"];
-  if (m.murs === "ossature" && !h?.facade) m.facade = "bardage-bois";
+  if (m.murs === "ossature" && !(src as Partial<MaisonNeuve>).facade) m.facade = "bardage-bois";
   // Des combles aménagés supposent un toit en pente : sous un toit plat, l'étage est un vrai étage.
   if (m.toiture === "plat" && m.niveaux === "combles") m.niveaux = "etage";
   return m;

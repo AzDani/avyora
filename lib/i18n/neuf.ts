@@ -119,6 +119,7 @@ const fr = {
     planAvert: {
       petiteSurface: "Ton plan fait moins de 30 m² : l'estimation part de 30 m².",
       grandeSurface: "Ton plan fait plus de 400 m² : l'estimation rapide s'arrête à 400 m².",
+      grandGarage: "Le garage de ton plan fait plus de 80 m² : l'estimation compte un garage de 80 m².",
       sanitaires: "Ton plan n'a pas de salle de bain ou pas de WC : l'estimation en compte au moins un de chaque.",
       cave: "Ton plan a une cave : un sous-sol se chiffre dans l'estimation détaillée (plancher bas).",
       nonChiffre: "Terrasse, atelier ou grange : ces surfaces de ton plan ne sont pas chiffrées.",
@@ -323,6 +324,7 @@ const en: typeof fr = {
     planAvert: {
       petiteSurface: "Your plan is under 30 m²: the estimate starts at 30 m².",
       grandeSurface: "Your plan is over 400 m²: the quick estimate stops at 400 m².",
+      grandGarage: "The garage in your plan is over 80 m²: the estimate counts an 80 m² garage.",
       sanitaires: "Your plan has no bathroom or no toilet: the estimate counts at least one of each.",
       cave: "Your plan has a cellar: a basement is costed in the detailed estimate (ground floor).",
       nonChiffre: "Terrace, workshop or barn: these areas of your plan are not costed.",
