@@ -588,7 +588,7 @@ function ChoicePrice({ label, active, activeCls, amount, edited, onSelect, onEdi
   );
 }
 
-function Field({ label, hint, children }: { label: React.ReactNode; hint?: React.ReactNode; children: React.ReactNode }) {
+export function Field({ label, hint, children }: { label: React.ReactNode; hint?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="fld">
       <label>{label}</label>
@@ -605,7 +605,7 @@ const FINIS: { v: Finition; lvl: number; eye: string; label: string; desc: strin
   { v: "premium", lvl: 3, eye: "Haut de gamme", label: "Premium", desc: "Matériaux nobles : parquet, grand format, cuisine équipée haut de gamme." },
 ];
 
-function Stepper({ label, hint, value, onStep }: { label: string; hint?: string; value: number; onStep: (d: number) => void }) {
+export function Stepper({ label, hint, value, onStep }: { label: string; hint?: string; value: number; onStep: (d: number) => void }) {
   return (
     <div className="stp">
       <span className="l">{label}{hint && <small>{hint}</small>}</span>
@@ -618,7 +618,7 @@ function Stepper({ label, hint, value, onStep }: { label: string; hint?: string;
   );
 }
 
-function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar, onNote, onPu, onPm }: {
+export function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar, onNote, onPu, onPm }: {
   l: Lot; t: Tache; ctx: Ctx; sel: Selection; coef: number; loc: boolean;
   onCheck: () => void; onChoice: (self: boolean) => void; onAuto: () => void; onQty: (v: number) => void;
   onMat: (m: "pvc" | "alu" | "bois") => void; onVit: (v: "double" | "triple") => void; onMot: (m: "manuel" | "motorise") => void; onTai: (z: "petit" | "grand") => void; onVar: (g: string, o: string) => void; onNote: (v: string) => void; onPu: (v: number | null) => void; onPm: (v: number | null) => void;
@@ -774,7 +774,7 @@ function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMa
 
 const isUrl = (s?: string) => /^https?:\/\//i.test((s || "").trim());
 const CL_UNITS = ["m²", "ml", "u", "forfait", "jour", "m³", "tonne"];
-function CustomLines({ lines, onAdd, onUpd, onDel }: { lines: CustomLine[]; onAdd: () => void; onUpd: (id: string, patch: Partial<CustomLine>) => void; onDel: (id: string) => void }) {
+export function CustomLines({ lines, onAdd, onUpd, onDel }: { lines: CustomLine[]; onAdd: () => void; onUpd: (id: string, patch: Partial<CustomLine>) => void; onDel: (id: string) => void }) {
   const [guide, setGuide] = useState<string | null>(null);
   const [confirmDel, setConfirmDel] = useState<string | null>(null);
   const askDel = (id: string) => { setConfirmDel(id); setTimeout(() => setConfirmDel((c) => (c === id ? null : c)), 3000); };
