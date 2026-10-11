@@ -203,3 +203,14 @@ export function qteNeuf(locale: string, qty: number, unite: string, location = f
   const pluriel = l === "fr" ? Math.abs(q) >= 2 : Math.round(Math.abs(q) * 10) !== 10;
   return txt + NBSP + formes[pluriel ? 1 : 0];
 }
+
+/**
+ * Camembert d'un projet neuf : une vingtaine de corps d'état, dont les derniers ont des couleurs
+ * qu'on ne distingue plus. On garde les `max` plus gros (liste déjà triée, du plus gros au plus
+ * petit) et on regroupe le reste dans une part `libelle`. Rien n'est perdu : la somme ne change pas.
+ */
+export function premiersCorps<T extends { corps: string; ttc: number }>(tries: T[], libelle: string, max = 8): (T | { corps: string; ttc: number; autres: true })[] {
+  if (tries.length <= max + 1) return tries;
+  const reste = tries.slice(max).reduce((s, l) => s + l.ttc, 0);
+  return [...tries.slice(0, max), { corps: libelle, ttc: reste, autres: true as const }];
+}

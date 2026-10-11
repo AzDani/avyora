@@ -10,10 +10,11 @@ import { EST_CSS } from "./estimateur-styles";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { catT, catLigne } from "@/lib/estimateur/catalog-i18n";
 import {
-  CATALOG, buildDevis, ICON, visible, lineHT, effRate, statutLigne, cleLegacy, regionCoef, piecesEff, type Ctx, type Selection,
+  CATALOG, buildDevis, ICON, visible, lineHT, effRate, statutLigne, cleLegacy, regionCoef, piecesEff, type Ctx, type Selection, type CustomLine,
   catalogueDe, estNeuf, phasesDe, lotsParCorps, tachesParCle, estJalon, geometrieNeuf, maisonComplete,
 } from "@/lib/estimateur";
-import { decoupe, INFO_PHASES, qteNeuf } from "@/lib/estimateur/etapes-neuf";
+import { decoupe, INFO_PHASES, qteNeuf, premiersCorps } from "@/lib/estimateur/etapes-neuf";
+import { totauxAvecPerso } from "@/lib/estimateur/projet";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 import { normaliserCles } from "@/lib/estimateur/identite";
 
@@ -306,7 +307,7 @@ const NEUF_CSS = `
 }
 `;
 
-export default function EstimationResultat({ reponses, projectId, readOnly }: { reponses: { ctx?: Ctx; sel?: Selection; statuts?: Record<string, number>; codePostal?: string }; projectId?: string; readOnly?: boolean }) {
+export default function EstimationResultat({ reponses, projectId, readOnly }: { reponses: { ctx?: Ctx; sel?: Selection; statuts?: Record<string, number>; codePostal?: string; custom?: unknown }; projectId?: string; readOnly?: boolean }) {
   const locale = useLocale();
   const s = TR[locale];
   // Sécurité rétro-compat : le code postal (coef régional) était stocké hors ctx dans d'anciens projets.
@@ -357,7 +358,10 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
   if (!ctx || !dv) {
     return <div className="card p-5 text-sm text-muted">{s.unavailable}</div>;
   }
-  const { totaux: t, bilan: b, lots, lignes } = dv;
+  const { totaux: t0, bilan: b, lots, lignes } = dv;
+  // Construction neuve : les lignes perso comptent dans le total, comme dans le devis et le PDF.
+  // Rénovation : `dv.totaux` tel quel.
+  const t = neuf ? totauxAvecPerso(t0, reponses?.custom, ctx.aleas) : t0;
   const pc = (n: number) => (t.ht > 0 ? Math.round((n / t.ht) * 100) : 0); // part du coût HT
 
   // Stats
@@ -395,13 +399,25 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
   const diyGap = eurM2FF - eurM2 > 30; // écart significatif → tu poses beaucoup toi-même
   // Un lot par corps d'état (en neuf, un corps revient dans plusieurs phases). Rénovation : identité.
   const lotsCorps = lotsParCorps(lots);
+  // Neuf : les lignes perso s'ajoutent à leur corps d'état (TTC), comme dans le PDF.
+  if (neuf && Array.isArray(reponses?.custom)) {
+    for (const x of reponses.custom as CustomLine[]) {
+      if (!x || typeof x !== "object" || x.on === false || x.draft) continue;
+      const h = (x.prix || 0) * (x.qte || 0), ttc = h + (h * (x.tva || 0)) / 100;
+      const ex = lotsCorps.find((l) => l.corps === x.lot);
+      if (ex) ex.ttc += ttc;
+    }
+  }
   const lotsTri = [...lotsCorps].sort((a, x) => x.ttc - a.ttc);
   const top = lotsTri[0];
-  const topPct = top && t.ttc > 0 ? Math.round((top.ttc / t.ttc) * 100) : 0;
   // Tranches du camembert « Où part le budget » (corps d'état, ordonnés par taille).
   const budgetTotal = lotsTri.reduce((s, l) => s + l.ttc, 0);
+  // Neuf : la part du poste le plus lourd sur la même base que la légende du camembert.
+  const topPct = top && t.ttc > 0 ? Math.round((top.ttc / (neuf ? budgetTotal || 1 : t.ttc)) * 100) : 0;
   let _acc = 0;
-  const slices = lotsTri.map((l, i) => {
+  // Neuf : les 8 plus gros corps, le reste en une part « Autres corps d'état ». Rénovation : tous.
+  const lotsDonut = neuf ? premiersCorps(lotsTri, n.autresCorps) : lotsTri;
+  const slices = lotsDonut.map((l, i) => {
     const a0 = budgetTotal > 0 ? (_acc / budgetTotal) * 2 * Math.PI : 0;
     _acc += l.ttc;
     const a1 = budgetTotal > 0 ? (_acc / budgetTotal) * 2 * Math.PI : 0;
@@ -531,7 +547,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
                 </path>
               ))}
             </svg>
-            <div className="center"><div className="v">{fmt(budgetTotal)}</div><div className="kk">{s.totalInclTax}</div></div>
+            <div className="center"><div className="v">{fmt(budgetTotal)}</div><div className="kk">{neuf ? n.donutTotal : s.totalInclTax}</div></div>
           </div>
           <div className="legend">
             {slices.map((s) => (

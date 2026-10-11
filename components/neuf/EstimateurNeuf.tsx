@@ -32,6 +32,7 @@ import {
   buildDevis, customLotHT, finCoef, geometrieNeuf, isAuto, isLoc, key, regionCoef, autoQty, visibleTask, CATALOG_NEUF, PHASES_NEUF,
   type CustomLine, type Selection, type LigneSel, type MaisonNeuve, type Lot, type Tache,
 } from "@/lib/estimateur";
+import { totauxAvecPerso } from "@/lib/estimateur/projet";
 import { INFO_PHASES } from "@/lib/estimateur/etapes-neuf";
 import { QUESTIONS_NEUF, type QuestionNeuf, type ValeurQuestionNeuf, type CleQuestionNeuf } from "@/lib/estimateur/questions-neuf";
 import {
@@ -135,7 +136,8 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
   const m = ctx.neuf as MaisonNeuve;
   const dv = useMemo(() => buildDevis(CATALOG_NEUF, ctx, sel), [ctx, sel]);
   const htParCle = useMemo(() => new Map(dv.lignes.map((li) => [li.cle, li.ht])), [dv]);
-  const tot = dv.totaux;
+  // Lignes perso comprises : le même total que la vue devis, la fiche, la liste et le PDF.
+  const tot = useMemo(() => totauxAvecPerso(dv.totaux, custom, ctx.aleas), [dv, custom, ctx.aleas]);
   const frais = dv.bilan.frais;
   const m2 = ctx.surface > 0 ? tot.ttc / ctx.surface : 0;
   const geo = useMemo(() => geometrieNeuf(m), [m]);

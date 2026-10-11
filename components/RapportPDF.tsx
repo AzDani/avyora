@@ -2,7 +2,7 @@ import {
   buildDevis, regionCoef, ICON, customTotals, piecesEff, sdbEff, type Ctx, type Selection, type CustomLine, catalogueDe, estNeuf,
   lotsParCorps, maisonComplete, PHASES_NEUF,
 } from "@/lib/estimateur";
-import { parPhase, INFO_PHASES } from "@/lib/estimateur/etapes-neuf";
+import { parPhase, INFO_PHASES, premiersCorps } from "@/lib/estimateur/etapes-neuf";
 import { dictNeuf } from "@/lib/i18n/neuf";
 import { normaliserCles } from "@/lib/estimateur/identite";
 import { catT, catLigne } from "@/lib/estimateur/catalog-i18n";
@@ -190,11 +190,13 @@ export async function RapportPDF({
   for (const li of dv.lignes) { const n = sel[li.cle]?.note; if (n) notes.push({ poste: li.nom, note: n, cle: li.cle }); }
   for (const x of customVal) if (x.note) notes.push({ poste: x.nom, note: x.note });
   let acc = 0;
-  const slices = lots.map((l, i) => {
+  // Neuf : les 8 plus gros corps, le reste en une part « Autres corps d'état ». Rénovation : tous.
+  const lotsDonut = neuf ? premiersCorps(lots, n.autresCorps) : lots;
+  const slices = lotsDonut.map((l, i) => {
     const a0 = budgetTotal > 0 ? (acc / budgetTotal) * 2 * Math.PI : 0;
     acc += l.ttc;
     const a1 = budgetTotal > 0 ? (acc / budgetTotal) * 2 * Math.PI : 0;
-    return { corps: l.corps, phase: l.phase, ttc: l.ttc, color: RAMP[Math.min(i, RAMP.length - 1)], d: arcPath(100, 100, 92, 60, a0, a1), pct: budgetTotal > 0 ? (l.ttc / budgetTotal) * 100 : 0 };
+    return { corps: l.corps, phase: "phase" in l ? l.phase : "", ttc: l.ttc, color: RAMP[Math.min(i, RAMP.length - 1)], d: arcPath(100, 100, 92, 60, a0, a1), pct: budgetTotal > 0 ? (l.ttc / budgetTotal) * 100 : 0 };
   });
   const mid = Math.ceil(slices.length / 2);
   const legendCols = [slices.slice(0, mid), slices.slice(mid)];
@@ -286,7 +288,7 @@ export async function RapportPDF({
                 <path key={s.corps} d={s.d} fill={s.color} stroke="#fff" strokeWidth={2} />
               ))}
             </svg>
-            <div className="center"><div className="v num">{euro(budgetTotal)}</div><div className="k">Total TTC</div></div>
+            <div className="center"><div className="v num">{euro(budgetTotal)}</div><div className="k">{neuf ? n.donutTotal : "Total TTC"}</div></div>
           </div>
           <div className="legend">
             {legendCols.map((col, ci) => (

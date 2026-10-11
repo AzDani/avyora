@@ -3,7 +3,7 @@
  * (liste, mon-espace, fiche). Tout part de `reponses = { v:"estimateur", ctx, sel }`.
  * Aucune dépendance à l'ancien moteur.
  */
-import { buildDevis, statutLigne, key, PHASES, type Ctx, type Selection, type DevisLot, type Tache } from "./core";
+import { buildDevis, statutLigne, key, PHASES, customTotals, type Ctx, type Selection, type DevisLot, type Tache, type Totaux, type CustomLine } from "./core";
 import { catalogueDe, PHASES_NEUF } from "./catalogue-neuf";
 import { normaliserCles } from "./identite";
 
@@ -19,7 +19,21 @@ export type ProjetEstim = {
   nature: "reno" | "neuf";
 };
 
-type Rep = { v?: string; ctx?: Ctx; sel?: Selection; statuts?: Record<string, number> };
+type Rep = { v?: string; ctx?: Ctx; sel?: Selection; statuts?: Record<string, number>; custom?: unknown };
+
+/**
+ * Construction neuve : totaux du devis + lignes personnalisées validées (leur HT, leur TVA, et les
+ * aléas sur leur HT), le même calcul que la vue devis et le PDF. Un projet neuf a ainsi le même
+ * total partout (barre live, fiche, liste, devis, PDF). La rénovation ne l'appelle pas : sa fiche
+ * et sa liste gardent leur calcul (décision à prendre à part, elle changerait un écran réno).
+ */
+export function totauxAvecPerso(t: Totaux, custom: unknown, aleasPct: number | undefined): Totaux {
+  const lignes = Array.isArray(custom) ? (custom as CustomLine[]).filter((x) => !!x && typeof x === "object") : [];
+  const cu = customTotals(lignes);
+  if (!cu.ht && !cu.tva) return t;
+  const ht = t.ht + cu.ht, tva = t.tva + cu.tva, aleas = t.aleas + cu.ht * ((aleasPct || 0) / 100);
+  return { ht, tva, aleas, ttc: ht + tva + aleas };
+}
 
 export type StatutChantier = "estimation" | "en_cours" | "termine";
 export type Avancement = { total: number; done: number; prog: number; pct: number; statut: StatutChantier };
@@ -55,13 +69,15 @@ export function estimationProjet(reponses: unknown): ProjetEstim | null {
   const ctx = r.ctx as Ctx;
   const dv = buildDevis(catalogueDe(ctx), ctx, r.sel || {});
   const surface = ctx.surface || 0;
+  // Rénovation : `dv.totaux` tel quel (inchangé). Neuf : + lignes personnalisées.
+  const t = estNeuf(ctx) ? totauxAvecPerso(dv.totaux, r.custom, ctx.aleas) : dv.totaux;
   return {
-    ttc: dv.totaux.ttc,
-    ht: dv.totaux.ht,
-    tva: dv.totaux.tva,
-    aleas: dv.totaux.aleas,
+    ttc: t.ttc,
+    ht: t.ht,
+    tva: t.tva,
+    aleas: t.aleas,
     surface,
-    eurM2: surface > 0 ? dv.totaux.ttc / surface : 0,
+    eurM2: surface > 0 ? t.ttc / surface : 0,
     frais: dv.bilan.frais,
     nature: estNeuf(ctx) ? "neuf" : "reno",
   };

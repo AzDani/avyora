@@ -29,6 +29,9 @@ const fr = {
   progNoteBold: "nombre de postes et démarches",
   eyebrowListe: "Estimation construction",
   introListe: "Tes estimations de rénovation et de construction, retrouvées et modifiables à tout moment.",
+  /* Camembert « Où part le budget » d'un projet neuf : au-delà de 8 corps, une part « autres ». */
+  autresCorps: "Autres corps d'état",
+  donutTotal: "TTC hors aléas",
 };
 
 const en: typeof fr = {
@@ -53,6 +56,8 @@ const en: typeof fr = {
   progNoteBold: "number of items and admin steps",
   eyebrowListe: "Build estimate",
   introListe: "Your renovation and new-build estimates, saved and editable at any time.",
+  autresCorps: "Other trades",
+  donutTotal: "Incl. VAT, excl. contingency",
 };
 
 export type DictNeufCommun = typeof fr;

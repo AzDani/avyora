@@ -94,3 +94,26 @@ describe("Neuf · un même projet, un même chiffre", () => {
     expect(en).not.toMatch(/NaN|undefined/);
   });
 });
+
+describe("Neuf · une ligne perso compte partout dans le total", () => {
+  const custom = [{ id: "c1", lot: "Maçonnerie", nom: "Ligne perso", prix: 1000, unite: "forfait", qte: 1, tva: 20, on: true }];
+  const attendu = dv.totaux.ttc + 1000 + 200 + 1000 * ((ctx.aleas || 0) / 100);
+
+  it("liste et admin (estimationProjet) = fiche = devis/PDF", () => {
+    expect(estimationProjet(reponses({ custom }))!.ttc).toBeCloseTo(attendu, 6);
+    const html = texte(rendre(createElement(EstimationResultat, { reponses: reponses({ custom }) as never })));
+    expect(html).toContain(`${eur(attendu)} €`);
+  });
+
+  it("une ligne en brouillon, décochée ou illisible ne compte pas", () => {
+    const ignorees = [{ ...custom[0], draft: true }, { ...custom[0], on: false }, null, "x"];
+    expect(estimationProjet(reponses({ custom: ignorees }))!.ttc).toBe(dv.totaux.ttc);
+  });
+
+  it("rénovation : estimationProjet ignore toujours les lignes perso (inchangé)", async () => {
+    const { presetRapide } = await import("@/lib/estimateur");
+    const pr = presetRapide({ type: "Maison", surface: 100, codePostal: "45000", ampleur: "complete", finition: "standard", qui: "pros" } as never);
+    const r = { v: "estimateur", mode: "detaille", ctx: pr.ctx, sel: pr.sel, codePostal: "45000" };
+    expect(estimationProjet({ ...r, custom })!.ttc).toBe(estimationProjet(r)!.ttc);
+  });
+});
