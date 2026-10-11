@@ -9,7 +9,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { CATALOG, defaultCtx, finCoef, isLoc, key, type Ctx, type Selection, type CustomLine } from "@/lib/estimateur";
 import { LangProvider } from "@/components/i18n/LangProvider";
 import { Row } from "@/components/estimateur/Row";
-import { CustomLines, Field, Stepper } from "@/components/estimateur/partage";
+import { CustomLines, Field, Stepper, ChoicePrice } from "@/components/estimateur/partage";
+import { RAPIDE_CSS } from "@/components/estimateur/rapide-styles";
 
 const rien = () => {};
 const ctx: Ctx = { ...defaultCtx(), type: "Maison", surface: 100, surfaceSol: 100 };
@@ -79,6 +80,17 @@ describe("Briques de l'estimateur — rendu figé", () => {
       expect(rendre(createElement(CustomLines, { lines: [], onAdd: rien, onUpd: rien, onDel: rien }), locale)).toMatchSnapshot();
     });
   }
+  it("ChoicePrice", () => {
+    const base = { label: "Fait faire", activeCls: "on-pro", onSelect: rien, onEdit: rien, onReset: rien };
+    expect(renderToStaticMarkup(createElement(ChoicePrice, { ...base, active: true, amount: 1234.5, edited: false }))).toMatchSnapshot();
+    expect(renderToStaticMarkup(createElement(ChoicePrice, { ...base, active: false, amount: null, edited: false }))).toMatchSnapshot();
+    expect(renderToStaticMarkup(createElement(ChoicePrice, { ...base, active: true, amount: 61, edited: true }))).toMatchSnapshot();
+  });
+  it("RAPIDE_CSS (déplacé tel quel, partagé avec le rapide neuf)", () => {
+    expect(RAPIDE_CSS.length).toBeGreaterThan(1000);
+    for (const sel of [".av-rapide .fin", ".av-rapide .qcard", ".av-rapide .seg button", ".av-rapide-live .cta"]) expect(RAPIDE_CSS).toContain(sel);
+    expect(RAPIDE_CSS).toMatchSnapshot();
+  });
   it("Field et Stepper", () => {
     expect(renderToStaticMarkup(createElement(Field, { label: "Surface", hint: "Tous les niveaux", children: createElement("input") }))).toMatchSnapshot();
     expect(renderToStaticMarkup(createElement(Field, { label: "Code postal", children: createElement("input") }))).toMatchSnapshot();

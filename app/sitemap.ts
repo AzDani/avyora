@@ -4,6 +4,7 @@ import { PRIX_MAJ } from "@/lib/prix-maj";
 import { POSTES_PAGES } from "@/lib/seo-postes";
 import { GUIDES } from "@/lib/guides";
 import { PROJETS, projetsMatrix, MATRIX_VILLES, matriceIndexable } from "@/lib/seo-projets";
+import { FEATURES } from "@/lib/features";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
@@ -74,5 +75,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.3,
     })),
     { url: `${siteUrl}/estimation-travaux`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
+    // Construction neuve : seulement quand la fonction est allumée (sinon la page répond 404).
+    ...(FEATURES.neuf
+      ? [{ url: `${siteUrl}/estimation-construction-maison`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.9 }]
+      : []),
   ];
 }

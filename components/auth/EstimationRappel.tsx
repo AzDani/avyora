@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CATALOG, buildDevis, type Ctx, type Selection } from "@/lib/estimateur";
+import { CATALOG, buildDevis, catalogueDe, type Ctx, type Selection } from "@/lib/estimateur";
+import { CLE_BROUILLON_NEUF, CLE_RECLAMATION, RECLAMATION_NEUF, lireBrouillonNeuf } from "@/lib/estimateur/brouillon-neuf";
+import { useT } from "@/components/i18n/LangProvider";
 
 /**
  * Affiché sur /inscription quand l'utilisateur arrive depuis une estimation (brouillon présent) :
@@ -12,8 +14,24 @@ const fmt = (n: number) => n.toLocaleString("fr-FR");
 
 export function EstimationRappel() {
   const [info, setInfo] = useState<{ lo: number; hi: number; label: string } | null>(null);
+  const maisonNeuve = useT().neuf.maisonNeuve;
 
   useEffect(() => {
+    // Construction neuve (drapeau « neuf ») : son brouillon, chiffré sur le catalogue du neuf.
+    try {
+      if (localStorage.getItem(CLE_RECLAMATION) === RECLAMATION_NEUF) {
+        const d = lireBrouillonNeuf(localStorage.getItem(CLE_BROUILLON_NEUF));
+        if (!d) return;
+        const ttc = buildDevis(catalogueDe(d.ctx), d.ctx, d.sel).totaux.ttc;
+        if (!(ttc > 0)) return;
+        const lo = Math.round((ttc * 0.85) / 100) * 100;
+        const hi = Math.round((ttc * 1.15) / 100) * 100;
+        setInfo({ lo, hi, label: `${maisonNeuve} ${d.ctx.surface} m²` });
+        return;
+      }
+    } catch {
+      /* stockage illisible : on retombe sur le chemin de la rénovation */
+    }
     try {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (!raw) return;
@@ -28,7 +46,7 @@ export function EstimationRappel() {
     } catch {
       /* pas de brouillon lisible */
     }
-  }, []);
+  }, [maisonNeuve]);
 
   if (!info) return null;
   return (

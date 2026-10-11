@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/components/i18n/LangProvider";
+import { CLE_BROUILLON_NEUF, RECLAMATION_NEUF, lireBrouillonNeuf, corpsProjetNeuf } from "@/lib/estimateur/brouillon-neuf";
 
 const TR = {
   fr: { enregistrement: "Enregistrement de ton estimation…" },
@@ -35,6 +36,37 @@ export default function ClaimDraft() {
     let flag: string | null = null;
     try { flag = localStorage.getItem(CLAIM_KEY); } catch { /* noop */ }
     if (!flag) return; // pas de tentative d'enregistrement anonyme → on ne réclame rien
+
+    // Construction neuve : son propre brouillon (`avyora-neuf-v1`), son propre nom et `typeBien`.
+    // Le brouillon de rénovation, s'il existe, n'est pas touché (réclamable plus tard).
+    if (flag === RECLAMATION_NEUF) {
+      const clear = () => { try { localStorage.removeItem(CLAIM_KEY); } catch { /* noop */ } };
+      let rawNeuf: string | null = null;
+      try { rawNeuf = localStorage.getItem(CLE_BROUILLON_NEUF); } catch { /* noop */ }
+      const dn = lireBrouillonNeuf(rawNeuf);
+      if (!dn) { clear(); return; }
+      (async () => {
+        setEtat("claiming");
+        try {
+          const res = await fetch("/api/projects", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(corpsProjetNeuf(dn, locale)),
+          });
+          if (res.ok) {
+            const { id } = await res.json();
+            try { localStorage.removeItem(CLE_BROUILLON_NEUF); } catch { /* noop */ }
+            clear();
+            router.replace(`/projets/${id}`);
+            router.refresh();
+            return;
+          }
+        } catch { /* réseau : on garde le brouillon pour réessayer */ }
+        clear();
+        setEtat("idle");
+      })();
+      return;
+    }
 
     let raw: string | null = null;
     try { raw = localStorage.getItem(DRAFT_KEY); } catch { /* noop */ }

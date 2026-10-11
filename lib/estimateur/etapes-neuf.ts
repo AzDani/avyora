@@ -10,8 +10,6 @@ import { catalogueDe, PHASES_NEUF } from "./catalogue-neuf";
 import { presetMaison } from "./presets-neuf";
 import type { QuiRealise } from "./presets";
 import type { MaisonNeuve } from "./neuf";
-import { dict } from "../i18n/dictionaries";
-import type { Locale } from "../i18n/config";
 
 /** Un texte en français et en anglais. */
 export type TexteFrEn = { fr: string; en: string };
@@ -176,9 +174,6 @@ export const EXTERIEURS_HORS_PERIMETRE = {
   source: "docs/construction-neuve/decisions.md § 5 (recherche « calibrage », décision Dani)",
 } as const;
 
-/** Nom par défaut d'un projet neuf : « Construction neuve — Maison plain-pied 100 m² ». */
-export function nomProjetNeuf(maison: Pick<MaisonNeuve, "niveaux" | "surface">, locale: Locale = "fr"): string {
-  const t = dict(locale).neuf;
-  const maisonTxt = t.maisonNiveaux[maison.niveaux] ?? t.maisonNiveaux.pp;
-  return `${t.projetNom} — ${maisonTxt} ${Math.round(maison.surface)} m²`;
-}
+/** Nom par défaut d'un projet neuf : défini dans `brouillon-neuf.ts` (module sans moteur, lu par
+ *  `ClaimDraft`), réexporté ici pour la fiche, le PDF et les tests. */
+export { nomProjetNeuf } from "./brouillon-neuf";
