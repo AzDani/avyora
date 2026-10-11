@@ -114,10 +114,11 @@ export const QUESTIONS_NEUF: GroupeQuestionsNeuf[] = [
       ["moi", { fr: "Moi (lots séparés)", en: "Me (separate trades)" }], ["moe", { fr: "Un maître d'œuvre", en: "A project manager" }],
     ] },
     { k: "$qui", l: { fr: "Qui réalise", en: "Who builds" }, o: [
-      ["pros", { fr: "Tout fait faire", en: "All by pros" }], ["partie", { fr: "Une partie", en: "Some of it" }], ["max", { fr: "Le maximum", en: "As much as possible" }],
+      // Mêmes libellés que le rapide public (`neuf.saisie.quis`) : le particulier retrouve son choix.
+      ["pros", { fr: "Tout fait faire", en: "All done by pros" }], ["partie", { fr: "J'en fais une partie", en: "I do some of it" }], ["max", { fr: "Je fais le maximum", en: "I do as much as I can" }],
     ] },
     { k: "$finition", l: { fr: "Finition", en: "Finish" }, o: [
-      ["eco", { fr: "Éco", en: "Economy" }], ["standard", { fr: "Standard", en: "Standard" }], ["premium", { fr: "Premium", en: "Premium" }],
+      ["eco", { fr: "Éco", en: "Basic" }], ["standard", { fr: "Standard", en: "Standard" }], ["premium", { fr: "Premium", en: "Premium" }],
     ] },
   ] },
 ];

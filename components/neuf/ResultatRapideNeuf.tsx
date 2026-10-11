@@ -60,8 +60,9 @@ export default async function ResultatRapideNeuf({
   const cp = ctx.codePostal ?? "";
   const reg = regionCoef(cp);
   const zone = d.rapide.zones[reg.zone] ?? reg.zone;
-  const finLabel = ctx.finition ? d.rapide.finitions[ctx.finition as Finition]?.label : "—";
-  const quiLabel = reponses.qui ? d.rapide.quis[reponses.qui]?.label : "—";
+  // Les libellés du rapide du NEUF (ceux que le particulier a cliqués), pas ceux de la rénovation.
+  const finLabel = (ctx.finition && n.saisie.finitions[ctx.finition as Finition]?.label) || "—";
+  const quiLabel = (reponses.qui && n.saisie.quis[reponses.qui]?.label) || "—";
 
   // Teaser flouté : les vrais postes les plus lourds, masqués.
   const dv = buildDevis(catalogueDe(ctx), ctx, sel);
