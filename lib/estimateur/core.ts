@@ -20,6 +20,8 @@ export type TypeBien = "Studio" | "T2" | "T3" | "T4" | "Maison";
    induire. `catalog.ts` ne rapatrie de ce fichier qu'un type (`import type { Lot }`), effacé à la
    compilation — il n'y a donc pas de cycle à l'exécution. */
 import { CATALOG } from "./catalog";
+import { catalogueDe } from "./catalogue-neuf";
+import { autoQtyNeuf, type MaisonNeuve } from "./neuf";
 
 export interface VarOpt { k: string; label: string; coef: number; tva?: number;
   /** Poste que CETTE option déclenche ailleurs au catalogue, sans changer le prix de la ligne.
@@ -52,6 +54,15 @@ export interface Tache {
   taillePetit?: number; // coef Petit spécifique (défaut TAILLE_COEF.petit)
   vars?: VarGroup[];    // variantes génériques (chaque groupe = un sélecteur ; base fp = options par défaut)
   grid?: PrixGrille;    // prix EXACT par combinaison de 2 sélecteurs (quand les prix ne sont pas proportionnels)
+  /** Frais qui ne sont pas des travaux (taxe d'aménagement, assurance dommages-ouvrage…) : le
+   *  montant est payé tel quel — ni TVA, ni aléas, ni coefficient régional, ni finition, et
+   *  personne ne le « fait soi-même ». N'existe qu'en construction neuve. */
+  frais?: boolean;
+  /** Unité `pct` (un pourcentage, porté par `fp`) : sur quoi il se calcule. « travaux » = le HT de
+   *  tous les postes hors études et hors frais (mission de maîtrise d'œuvre) ; « projet » = le HT de
+   *  tout ce qui n'est pas un frais, études comprises (assurance dommages-ouvrage). Défaut : « projet »
+   *  pour un frais, « travaux » sinon. */
+  assiette?: "travaux" | "projet";
 }
 
 /** Grille de prix : dims = [clé groupe A, clé groupe B] ; prices["optA|optB"] = { fp, sm } HT. */
@@ -88,6 +99,11 @@ export interface Ctx {
   espaces?: Record<string, number[]>; // mode « pièces ciblées » : par pièce, une surface (m²) par exemplaire — ex. sdb:[6,4] = 2 SDB de 6 et 4 m²
   // Suite parentale : découpe de la surface par zone (surface totale = zChambre + zSdb + (dressing ? zDressing : 0)).
   zChambre?: number; zSdb?: number; zDressing?: number; avecDressing?: boolean;
+  /** Nature du projet. Absent = rénovation : tous les projets existants le restent, sans migration.
+   *  « neuf » = construction d'une maison neuve — autre catalogue (`catalogueDe`), TVA 20 % partout,
+   *  quantités tirées de la description de la maison à construire (`ctx.neuf`). */
+  nature?: "reno" | "neuf";
+  neuf?: MaisonNeuve;
 }
 
 export interface LigneSel {
@@ -160,7 +176,10 @@ export function effPrices(t: Tache, s?: LigneSel, ctx?: Ctx): { fp: number | nul
     const z = (s && s.tai) || DEFAULT_TAILLE;
     f *= z === "petit" ? (t.taillePetit ?? TAILLE_COEF.petit) : 1;
   }
-  return rendre(t.fp != null ? Math.round(t.fp * f) : null, t.sm != null ? Math.round(t.sm * f) : null);
+  /* Un prix de travaux s'arrondit à l'euro ; un frais (taxe au m²) se calcule au centime, comme
+     l'administration le fait — arrondir 26,31 €/m² à 26 € fausserait la taxe de 1 %. */
+  const arr = t.frais ? (v: number) => Math.round(v * 100) / 100 : Math.round;
+  return rendre(t.fp != null ? arr(t.fp * f) : null, t.sm != null ? arr(t.sm * f) : null);
 }
 /** Suffixe d'étiquette variante (matériau / vitrage) pour l'affichage. */
 export function variantLabel(t: Tache, s?: LigneSel, ctx?: Ctx): string {
@@ -177,7 +196,9 @@ export function variantLabel(t: Tache, s?: LigneSel, ctx?: Ctx): string {
 }
 
 export interface Totaux { ht: number; tva: number; aleas: number; ttc: number; }
-export interface Bilan { paye: number; matA: number; moA: number; achat: number; eco: number; }
+export interface Bilan { paye: number; matA: number; moA: number; achat: number; eco: number;
+  /** Frais hors travaux (taxes, assurance) — toujours 0 en rénovation. */
+  frais: number; }
 export type Mode = "fait-faire" | "je-fais" | "location";
 export interface DevisLigne {
   /** Identité STABLE de la ligne = key(corps, nom du catalogue) — sans le libellé de variante.
@@ -205,6 +226,10 @@ export const LOT_FIN: Record<string, Record<Finition, number>> = {
   "Maçonnerie": G1, "Charpente, couverture & structure bois": G1, "Isolation": G1, "Electricite": G1, "Chauffage / VMC": G1,
   "Façade": G2, "Cloisons / Platrerie": G2, "Plomberie": G2, "Menuiseries exterieures": G2, "Menuiseries interieures": G2,
   "Carrelage / Revetements": G3, "Peinture": G3, "Cuisine": G3,
+  // Construction neuve : le béton, la terre et les démarches ne changent pas avec le standing.
+  "Assurance & ouverture du chantier": G0, "Terrassement": G0, "Fondations & soubassement": G0,
+  "Réseaux enterrés (VRD)": G0, "Contrôles & réception": G0, "Taxes & participations": G0,
+  "Couverture & zinguerie": G2,
 };
 
 /** Tâches « couverture / toiture » (fusionnées dans le lot charpente) : barème finition G2 conservé + masquées en appartement. */
@@ -281,6 +306,8 @@ export const ICON: Record<string, string> = {
   "Menuiseries exterieures": "🪟", "Isolation": "🧊", "Cloisons / Platrerie": "🧱",
   "Electricite": "⚡", "Plomberie": "🚿", "Chauffage / VMC": "🔥",
   "Carrelage / Revetements": "🎨", "Peinture": "🖌️", "Menuiseries interieures": "🚪", "Cuisine": "🍳",
+  "Assurance & ouverture du chantier": "🛡️", "Terrassement": "🚜", "Fondations & soubassement": "🧱",
+  "Couverture & zinguerie": "🏠", "Réseaux enterrés (VRD)": "🔌", "Contrôles & réception": "✅", "Taxes & participations": "🧾",
 };
 
 export function defaultCtx(): Ctx {
@@ -464,6 +491,8 @@ export function posteParId(id: string): { lot: string; nom: string; t: Tache; l:
 }
 /** Renvoie la quantité auto d'une tâche, ou null si elle n'est pas calculable de façon fiable. */
 export function autoQty(ctx: Ctx, c: string, n: string, sel: Selection): number | null {
+  // Construction neuve : les quantités viennent de la description de la maison à construire.
+  if (ctx.nature === "neuf") return autoQtyNeuf(ctx, c, n, sel);
   const S = ctx.surface || 0;
   const SS = ctx.surfaceSol || S;
   const roof = SS * 1.4;
@@ -558,7 +587,7 @@ export function isAuto(ctx: Ctx, c: string, n: string): boolean {
 
 /** Quantité effective d'une tâche (auto non-modifiée, ou saisie). */
 export function qtyOf(ctx: Ctx, sel: Selection, c: string, t: Tache): number {
-  if (t.u === "forfait") return 1;
+  if (t.u === "forfait" || t.u === "pct") return 1;
   const s = sel[key(c, t.n)];
   if (isAuto(ctx, c, t.n) && !(s && s.manual)) return autoQty(ctx, c, t.n, sel) ?? 0;
   return s && s.qty != null ? s.qty : 0;
@@ -569,9 +598,11 @@ export const rate = (l: Lot, t: Tache): number => (t.tva != null ? t.tva : l.tva
 
 /** TVA effective : neuf/local pro = 20 %, « Je le fais » = 20 % (matériaux achetés par le particulier), sinon taux réduit du poste. */
 export function effRate(l: Lot, t: Tache, sel: Selection, ctx?: Ctx): number {
+  if (t.frais) return 0;                       // une taxe ou une prime d'assurance ne porte pas de TVA
   const s = sel[key(l.c, t.n)];
   if (s && s.self && !isLoc(l.c)) return 20;
   if (ctx && ctx.fiscal === "pro") return 20; // neuf / logement −2 ans / local professionnel
+  if (ctx && ctx.nature === "neuf") return 20; // construction neuve : aucun taux réduit
   if (t.vars) for (const g of t.vars) {          // TVA portée par une option de variante (ex. plancher élec 10 % / à eau 5,5 %)
     const opt = g.opts.find((o) => o.k === ((s && s.vsel && s.vsel[g.k]) || g.opts[0].k));
     if (opt && opt.tva != null) return opt.tva;
@@ -587,6 +618,11 @@ export function lineHT(ctx: Ctx, sel: Selection, l: Lot, t: Tache): number {
   const q = qtyOf(ctx, sel, l.c, t);
   const fc = finCoefTask(ctx, l, t); // finition = qualité des MATÉRIAUX uniquement (la MO ne varie pas)
   const { fp, sm } = effPrices(t, s, ctx);
+  // Pourcentage (maîtrise d'œuvre, dommages-ouvrage) : un taux appliqué au reste du projet, qui
+  // porte déjà la région et la finition — on ne les applique pas une seconde fois.
+  if (t.u === "pct") return s.pu != null ? s.pu : ((fp ?? 0) / 100) * assiettePct(ctx, sel, t);
+  // Frais (taxe, assurance) : le montant tel quel — ni région, ni finition, ni « je le fais ».
+  if (t.frais) return (s.pu != null ? s.pu : (fp ?? 0)) * q;
   // Location : équipement, pas de coef régional MO ni de finition.
   if (isLoc(l.c)) return (s.pu != null ? s.pu : (fp ?? 0)) * q;
   // « Je le fais » : matériaux — prix perso (s.pm) prioritaire, sinon fourniture × finition × mat.
@@ -602,6 +638,26 @@ export function lineHT(ctx: Ctx, sel: Selection, l: Lot, t: Tache): number {
   if (fp == null) return 0;
   if (sm != null) return (sm * fc * R.mat + (fp - sm) * R.mo) * q;
   return fp * R.mo * q;
+}
+/**
+ * Base d'un poste en pourcentage. « travaux » : tout le HT hors études et hors frais, sans les
+ * autres pourcentages. « projet » : tout ce qui n'est pas un frais, études et honoraires compris.
+ * Un pourcentage « projet » peut donc compter un pourcentage « travaux », jamais l'inverse : le
+ * calcul s'arrête toujours au premier niveau.
+ */
+function assiettePct(ctx: Ctx, sel: Selection, t: Tache): number {
+  const assiette = t.assiette ?? (t.frais ? "projet" : "travaux");
+  let base = 0;
+  for (const l of catalogueDe(ctx)) {
+    if (!visible(ctx, l)) continue;
+    if (assiette === "travaux" && l.c === "Etudes / Conception") continue;
+    for (const x of l.t) {
+      if (x === t || x.frais) continue;
+      if (x.u === "pct" && (assiette === "travaux" || (x.assiette ?? "travaux") !== "travaux")) continue;
+      base += lineHT(ctx, sel, l, x);
+    }
+  }
+  return base;
 }
 export function lotHT(ctx: Ctx, sel: Selection, l: Lot): number {
   return l.t.reduce((s, t) => s + lineHT(ctx, sel, l, t), 0);
@@ -632,7 +688,7 @@ export function totals(catalog: Lot[], ctx: Ctx, sel: Selection): Totaux {
       if (!h) return;
       ht += h;
       tva += (h * effRate(l, t, sel, ctx)) / 100;
-      if (l.c !== "Etudes / Conception") aleasBase += h;
+      if (l.c !== "Etudes / Conception" && !t.frais) aleasBase += h; // ni les études ni les frais ne dérapent sur le chantier
     });
   });
   const aleas = aleasBase * ((ctx.aleas || 0) / 100);
@@ -641,7 +697,7 @@ export function totals(catalog: Lot[], ctx: Ctx, sel: Selection): Totaux {
 
 /** Bilan HT : payé aux artisans (dont matériaux/pose), acheté/loué par vous, économie DIY. */
 export function bilan(catalog: Lot[], ctx: Ctx, sel: Selection): Bilan {
-  let paye = 0, matA = 0, moA = 0, achat = 0, eco = 0;
+  let paye = 0, matA = 0, moA = 0, achat = 0, eco = 0, frais = 0;
   const R = regCoef(ctx);
   catalog.filter((l) => visible(ctx, l)).forEach((l) => {
     l.t.forEach((t) => {
@@ -653,6 +709,8 @@ export function bilan(catalog: Lot[], ctx: Ctx, sel: Selection): Bilan {
       const q = qtyOf(ctx, sel, l.c, t);
       const fc = finCoefTask(ctx, l, t); // finition = matériaux uniquement (MO fixe)
       const moU = smU != null ? (fpU - smU) * R.mo : fpU * R.mo; // MO unitaire (régionale)
+      if (t.u === "pct") { const m = lineHT(ctx, sel, l, t); if (t.frais) frais += m; else { paye += m; moA += m; } return; }
+      if (t.frais) { frais += (s.pu != null ? s.pu : fpU) * q; return; }
       if (isLoc(l.c)) { achat += (s.pu != null ? s.pu : fpU) * q; return; }
       if (s.self) {                                    // « Je le fais » : matériaux achetés (prix perso s.pm prioritaire)
         achat += (s.pm != null ? s.pm : smU != null ? smU * fc * R.mat : fpU * R.mat) * q;
@@ -667,7 +725,7 @@ export function bilan(catalog: Lot[], ctx: Ctx, sel: Selection): Bilan {
       }
     });
   });
-  return { paye, matA, moA, achat, eco };
+  return { paye, matA, moA, achat, eco, frais };
 }
 
 /** Ancienne clé d'une ligne (nom + libellé de variante) si elle diffère de la clé stable.

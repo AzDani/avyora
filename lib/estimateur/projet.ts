@@ -4,7 +4,7 @@
  * Aucune dépendance à l'ancien moteur.
  */
 import { buildDevis, statutLigne, key, type Ctx, type Selection } from "./core";
-import { CATALOG } from "./catalog";
+import { catalogueDe } from "./catalogue-neuf";
 import { normaliserCles } from "./identite";
 
 export type ProjetEstim = {
@@ -26,7 +26,7 @@ export function avancementProjet(reponses: unknown): Avancement {
   const vide: Avancement = { total: 0, done: 0, prog: 0, pct: 0, statut: "estimation" };
   const r = reponses as Rep;
   if (!estFormatEstimateur(r)) return vide;
-  const dv = buildDevis(CATALOG, r.ctx as Ctx, normaliserCles(r.sel));
+  const dv = buildDevis(catalogueDe(r.ctx), r.ctx as Ctx, normaliserCles(r.sel));
   const statuts = normaliserCles(r.statuts);
   const total = dv.lignes.length;
   let done = 0, prog = 0;
@@ -50,7 +50,7 @@ export function estimationProjet(reponses: unknown): ProjetEstim | null {
   const r = reponses as Rep;
   if (!estFormatEstimateur(r)) return null;
   const ctx = r.ctx as Ctx;
-  const dv = buildDevis(CATALOG, ctx, r.sel || {});
+  const dv = buildDevis(catalogueDe(ctx), ctx, r.sel || {});
   const surface = ctx.surface || 0;
   return {
     ttc: dv.totaux.ttc,
@@ -78,7 +78,8 @@ export function conseilsProjet(reponses: unknown): string[] {
   if (!estFormatEstimateur(r)) return [];
   const sel = (r.sel || {}) as Selection;
   const conseils: string[] = [];
-  const has = (c: string, sub: string) => CATALOG.some((l) => l.c === c && l.t.some((t) => t.n.includes(sub) && sel[key(l.c, t.n)]?.on));
+  const cat = catalogueDe(r.ctx);
+  const has = (c: string, sub: string) => cat.some((l) => l.c === c && l.t.some((t) => t.n.includes(sub) && sel[key(l.c, t.n)]?.on));
   if (has("Maçonnerie", "mur porteur")) conseils.push("Ouverture de mur porteur : une étude de structure (bureau d'études) est obligatoire avant travaux.");
   if (has("Raccordements aux réseaux", "Assainissement")) conseils.push("Assainissement individuel : faites valider la filière (fosse / micro-station) par le SPANC selon le nombre d'occupants.");
   if (Object.values(sel).some((x) => x?.on && x?.self)) conseils.push("Vous réalisez certains postes vous-même : les matériaux achetés en magasin sont à 20 % de TVA (déjà pris en compte), le taux réduit ne s'applique qu'aux factures d'artisan.");

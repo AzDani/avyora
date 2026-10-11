@@ -1,0 +1,1485 @@
+[
+  {
+    "c": "Etudes / Conception",
+    "p": "Études & permis",
+    "tva": 20,
+    "note": "Tout ce qui se fait au bureau avant de creuser : relevés du terrain, études obligatoires, plans et dossier de permis.",
+    "t": [
+      {
+        "id": "etu-plan-topographique",
+        "n": "Plan topographique du terrain (géomètre : niveaux, limites, arbres, réseaux visibles)",
+        "u": "forfait",
+        "fp": 800,
+        "sm": null,
+        "note": "Indispensable pour dessiner le plan de masse et caler la hauteur de la maison. Souvent déjà fourni en lotissement."
+      },
+      {
+        "id": "etu-bornage-du-terrain",
+        "n": "Bornage du terrain par un géomètre-expert",
+        "u": "forfait",
+        "fp": 920,
+        "sm": null,
+        "note": "Seulement si les limites du terrain ne sont pas encore bornées, surtout pour un terrain « en diffus » (hors lotissement). En lotissement, c'est déjà fait, souvent payé par le vendeur."
+      },
+      {
+        "id": "etu-etude-de-sol-g1",
+        "n": "Étude de sol préalable G1 (si le vendeur ne l'a pas fournie)",
+        "u": "forfait",
+        "fp": 800,
+        "sm": null,
+        "note": "En zone d'argile moyenne ou forte, c'est au vendeur du terrain de la fournir (loi ELAN). Inutile si la G2 est commandée directement."
+      },
+      {
+        "id": "etu-etude-de-sol-g2-avp",
+        "n": "Étude de sol G2 avant-projet (dit comment fonder la maison)",
+        "u": "forfait",
+        "fp": 1600,
+        "sm": null,
+        "note": "Sondages et rapport qui fixent le type et la profondeur des fondations. Sans elle, le prix des fondations n'est qu'une hypothèse « sol courant ». L'assureur dommages-ouvrage la demande souvent."
+      },
+      {
+        "id": "etu-etude-de-sol-g2-pro",
+        "n": "Étude de sol G2 projet (complément : calcul détaillé des fondations)",
+        "u": "forfait",
+        "fp": 750,
+        "sm": null,
+        "note": "À commander avec la G2 avant-projet si celle-ci signale un sol difficile (argile forte, remblais, pente, fondations spéciales)."
+      },
+      {
+        "id": "etu-dossier-permis-dessinateur",
+        "n": "Plans et dossier de permis de construire par un dessinateur ou maître d'œuvre (jusqu'à 150 m²)",
+        "u": "forfait",
+        "fp": 2500,
+        "sm": null,
+        "note": "Plans de la maison + toutes les pièces du permis (plan de masse, coupe, façades, insertion, notice), dépôt en mairie. Hors étude thermique et hors suivi de chantier. Au-delà de 150 m² de surface de plancher, l'architecte est obligatoire (poste suivant)."
+      },
+      {
+        "id": "etu-architecte-mission-permis",
+        "n": "Architecte : plans et dossier de permis (obligatoire au-delà de 150 m² de surface de plancher)",
+        "u": "m2",
+        "fp": 30,
+        "sm": null,
+        "note": "Conception et dossier de permis signé par l'architecte, sans suivi de chantier. Quantité = surface de plancher (minimum facturé ≈ 1 500 € HT, soit 50 m²)."
+      },
+      {
+        "id": "etu-maitrise-d-oeuvre-complete",
+        "n": "Architecte ou maître d'œuvre : mission complète (plans, choix des artisans, suivi du chantier, réception)",
+        "u": "pct",
+        "fp": 10,
+        "sm": null,
+        "note": "En pourcentage du montant HT des travaux, dégressif : ≈ 13 à 15 % sous 100 000 € de travaux, 10 à 11 % de 150 000 à 250 000 €. Remplace les deux postes « dossier de permis ». Facilite l'obtention de la dommages-ouvrage."
+      },
+      {
+        "id": "etu-etude-thermique-re2020",
+        "n": "Étude thermique RE2020 + attestation à joindre au permis",
+        "u": "forfait",
+        "fp": 850,
+        "sm": null,
+        "note": "Obligatoire : sans l'attestation, le dossier de permis est incomplet. Fixe le niveau d'isolation et le chauffage. Si le même bureau d'études vend un pack « étude + tests + attestation de fin » (≈ 750-1 215 € HT), il remplace ce poste ET les contrôles de fin de chantier : n'en garder qu'un."
+      },
+      {
+        "ref": "etu-etude-assainissement-individuel-spanc"
+      },
+      {
+        "id": "etu-depot-du-permis-de-construire",
+        "n": "Dépôt du permis de construire en mairie (démarche gratuite, instruction ≈ 2 mois)",
+        "u": "forfait",
+        "fp": 0,
+        "sm": null,
+        "note": "Étape sans coût. Délai : 2 mois (3 en secteur protégé) à partir du dossier complet ; silence = permis tacite.",
+        "frais": true
+      },
+      {
+        "id": "etu-panneau-affichage-permis",
+        "n": "Panneau d'affichage du permis de construire (80 × 120 cm) et sa fixation",
+        "u": "u",
+        "fp": 20,
+        "sm": 20,
+        "note": "À poser dès l'obtention du permis, visible de la rue, pendant tout le chantier : il fait courir le délai de recours des voisins (2 mois)."
+      },
+      {
+        "id": "etu-constat-affichage-commissaire",
+        "n": "Constat d'affichage du permis par un commissaire de justice (3 passages)",
+        "u": "forfait",
+        "fp": 350,
+        "sm": null,
+        "note": "Option : prouve que le panneau est resté affiché 2 mois, ce qui protège contre un recours tardif d'un voisin. Honoraires libres : ≈ 265 à 450 € TTC en région, jusqu'à 600 € TTC à Paris."
+      },
+      {
+        "id": "etu-etude-beton-arme",
+        "n": "Étude béton armé : calcul de la structure et plans de ferraillage pour le maçon",
+        "u": "forfait",
+        "fp": 2000,
+        "sm": null,
+        "note": "Dimensionne fondations, planchers, poutres et chaînages à partir de l'étude de sol. Cochée d'office seulement avec un étage, un sous-sol, un toit plat, un sol argileux (moyen/fort) ou en zone sismique 3 à 5. Souvent incluse dans le devis du maçon ou du fournisseur de plancher : à vérifier pour ne pas la payer deux fois."
+      },
+      {
+        "id": "etu-demandes-de-raccordement",
+        "n": "Demandes de raccordement Enedis, eau et égout, dès le permis obtenu (démarche gratuite)",
+        "u": "forfait",
+        "fp": 0,
+        "sm": null,
+        "frais": true,
+        "note": "Le raccordement Enedis prend plusieurs mois : avec la purge du permis (délai après lequel plus aucun recours n'est possible), c'est souvent le délai le plus long du projet. Les devis des concessionnaires (Enedis, service des eaux, service assainissement) arrivent ensuite."
+      }
+    ]
+  },
+  {
+    "c": "Assurance & ouverture du chantier",
+    "p": "Études & permis",
+    "tva": 20,
+    "note": "Après le permis purgé (plus de recours possible) et avant le premier coup de pelle.",
+    "t": [
+      {
+        "id": "ass-assurance-dommages-ouvrage",
+        "n": "Assurance dommages-ouvrage (obligatoire, souscrite avant l'ouverture du chantier)",
+        "u": "pct",
+        "fp": 3.5,
+        "sm": null,
+        "note": "Prime unique en pourcentage du coût total de construction : 2,5 à 4,5 % en lots séparés (un artisan par métier), 1,2 à 2 % via un constructeur. Ce n'est pas un travail : ni TVA ni main-d'œuvre. Beaucoup d'assureurs appliquent un forfait minimal (≈ 3 100 à 3 600 € TTC jusqu'à 220 000 € de travaux). Ils peuvent exiger une étude de sol G2 et un maître d'œuvre (professionnel qui conçoit et suit le chantier). Plus chère en auto-construction.",
+        "frais": true
+      },
+      {
+        "id": "ass-declaration-ouverture-de-chantier",
+        "n": "Déclaration d'ouverture de chantier en mairie (démarche gratuite)",
+        "u": "forfait",
+        "fp": 0,
+        "sm": null,
+        "note": "Formulaire déposé en mairie le jour où les travaux commencent. Aucun coût.",
+        "frais": true
+      }
+    ]
+  },
+  {
+    "c": "Annexes de chantier",
+    "p": "Terrain & terrassement",
+    "tva": 20,
+    "note": "Installer le chantier : déclaration des réseaux, implantation, accès, clôture, sanitaires, bennes.",
+    "t": [
+      {
+        "id": "anx-declaration-dt-reseaux",
+        "n": "Déclaration de projet de travaux (DT) aux exploitants de réseaux enterrés, sur le guichet unique des réseaux, avant tout terrassement (démarche gratuite)",
+        "u": "forfait",
+        "fp": 0,
+        "sm": null,
+        "frais": true,
+        "note": "En lots séparés (un artisan par métier), c'est au maître d'ouvrage (la personne qui fait construire) de la faire. Chaque entreprise envoie ensuite sa DICT (sa propre déclaration aux exploitants de réseaux) avant de creuser."
+      },
+      {
+        "id": "anx-implantation-par-geometre",
+        "n": "Implantation de la maison sur le terrain par un géomètre (angles et niveau du plancher)",
+        "u": "forfait",
+        "fp": 550,
+        "sm": null,
+        "note": "Reporte sur le terrain les angles de la maison d'après le plan de masse du permis et le niveau 0. Protège contre une erreur de distance aux limites."
+      },
+      {
+        "ref": "anx-installation-de-chantier"
+      },
+      {
+        "id": "anx-cloture-de-chantier",
+        "n": "Clôture de chantier (panneaux grillagés sur plots, pose et dépose)",
+        "u": "ml",
+        "fp": 30,
+        "sm": 24,
+        "note": "Seulement si le terrain n'est pas clos (souvent imposé en lotissement ou en ville). Quantité = côtés ouverts du terrain."
+      },
+      {
+        "id": "anx-wc-de-chantier",
+        "n": "WC de chantier (cabine louée pour les ouvriers)",
+        "u": "jour",
+        "fp": 8,
+        "sm": 8,
+        "note": "Obligatoire pour les artisans s'ils n'ont pas accès à des sanitaires. Quantité = durée du chantier en jours (location ≈ 155-447 €/mois vidange comprise). À décocher si le maçon fournit les sanitaires dans son installation de chantier."
+      },
+      {
+        "id": "anx-acces-de-chantier-empierre",
+        "n": "Accès de chantier empierré pour les camions : géotextile (toile qui sépare la terre des cailloux) et grave compactée (cailloux et sable tassés)",
+        "u": "m2",
+        "fp": 20,
+        "sm": 8,
+        "note": "Si le terrain est en terre ou humide : évite que le camion toupie qui livre le béton s'embourbe. Sert ensuite de fond pour l'allée."
+      },
+      {
+        "ref": "anx-benne-evacuation-des-gravats"
+      }
+    ]
+  },
+  {
+    "c": "Raccordements aux réseaux",
+    "p": "Terrain & terrassement",
+    "tva": 20,
+    "note": "Électricité provisoire et eau du chantier : le compteur d'eau définitif est posé tôt, il sert au maçon, au façadier et au plâtrier.",
+    "t": [
+      {
+        "ref": "rac-coffret-tableau-de-chantier-provisoire"
+      },
+      {
+        "ref": "rac-mise-en-service-provisoire-enedis"
+      },
+      {
+        "ref": "rac-raccordement-eau-potable"
+      }
+    ]
+  },
+  {
+    "c": "Location de matériel",
+    "p": "Terrain & terrassement",
+    "tva": 20,
+    "note": "Uniquement pour les travaux faits soi-même. Prix indicatifs par jour.",
+    "t": [
+      {
+        "ref": "loc-mini-pelle-1-5-2-5-t"
+      },
+      {
+        "ref": "loc-livraison-mini-pelle-depose-reprise"
+      },
+      {
+        "ref": "loc-betonniere"
+      },
+      {
+        "ref": "loc-nacelle-plateforme-elevatrice"
+      }
+    ]
+  },
+  {
+    "c": "Terrassement",
+    "p": "Terrain & terrassement",
+    "tva": 20,
+    "note": "Préparer le terrain et creuser. Les fouilles des semelles sont DÉJÀ dans le prix de la semelle complète.",
+    "t": [
+      {
+        "id": "ter-debroussaillage",
+        "n": "Débroussaillage du terrain (avec évacuation des déchets verts)",
+        "u": "m2",
+        "fp": 1,
+        "sm": null,
+        "note": "Si le terrain est en friche. Abattage d'arbres et dessouchage en plus."
+      },
+      {
+        "id": "ter-decapage-terre-vegetale",
+        "n": "Décapage de la terre végétale (20 à 30 cm) mise en tas sur le terrain",
+        "u": "m2",
+        "fp": 4,
+        "sm": null,
+        "note": "Sous la maison et 2 m autour. La terre est gardée sur place pour le jardin (évacuation non comprise)."
+      },
+      {
+        "id": "ter-fouilles-en-rigole",
+        "n": "Fouilles en rigole pour les semelles (seulement en chiffrage détaillé des fondations)",
+        "u": "ml",
+        "fp": 35,
+        "sm": null,
+        "note": "À NE PAS cocher avec « Semelle de fondation » (qui les comprend). Sert uniquement avec « Béton de propreté » + « Semelle filante – béton armé seul »."
+      },
+      {
+        "id": "ter-fouilles-en-pleine-masse",
+        "n": "Fouilles en pleine masse (grand décaissement : sous-sol, terrain en pente)",
+        "u": "m3",
+        "fp": 12,
+        "sm": null,
+        "note": "Pour un sous-sol, un garage enterré ou mettre à niveau un terrain en pente. Mesuré en place ; évacuation à part."
+      },
+      {
+        "id": "ter-evacuation-des-terres",
+        "n": "Évacuation des terres en décharge (chargement, transport, redevance)",
+        "u": "m3",
+        "fp": 22,
+        "sm": null,
+        "note": "L'un des postes les plus oubliés : presque jamais compris dans le prix des fondations. Mesuré en m³ foisonnés (terre gonflée dans la benne = volume creusé × 1,3)."
+      },
+      {
+        "id": "ter-remblai-peripherique",
+        "n": "Remblai autour des fondations avec les terres du chantier, compacté",
+        "u": "m3",
+        "fp": 22,
+        "sm": null,
+        "note": "Reboucher le pourtour de la maison une fois le soubassement monté."
+      },
+      {
+        "id": "ter-apport-remblai-grave",
+        "n": "Apport de remblai en grave compactée (cailloux et sable tassés) : mise à niveau, plateforme, sous dallage",
+        "u": "m3",
+        "fp": 38,
+        "sm": 20,
+        "note": "Si le terrain est bas ou en pente, ou si la dalle est surélevée."
+      },
+      {
+        "id": "ter-journee-terrassier-mini-pelle",
+        "n": "Journée de terrassier avec mini-pelle et conducteur (travail en régie, payé à la journée)",
+        "u": "jour",
+        "fp": 500,
+        "sm": null,
+        "note": "Alternative au chiffrage au mètre pour les petits travaux et les reprises. Transport de la pelle et évacuation en plus."
+      }
+    ]
+  },
+  {
+    "c": "Maçonnerie",
+    "p": "Fondations & plancher bas",
+    "tva": 20,
+    "note": "Fondations (poste complet : fouille + béton de propreté + armatures + béton).",
+    "t": [
+      {
+        "ref": "mac-semelle-de-fondation-50-25-30-cm"
+      }
+    ]
+  },
+  {
+    "c": "Electricite",
+    "p": "Fondations & plancher bas",
+    "tva": 20,
+    "note": "La prise de terre se pose AVANT de couler les fondations.",
+    "t": [
+      {
+        "ref": "ele-mise-a-la-terre"
+      }
+    ]
+  },
+  {
+    "c": "Fondations & soubassement",
+    "p": "Fondations & plancher bas",
+    "tva": 20,
+    "note": "Soubassement et plancher bas : choisir UNE solution (dalle sur terre-plein, vide sanitaire, sous-sol ou radier). Les réseaux qui traversent la dalle sont posés avant le coulage.",
+    "t": [
+      {
+        "id": "fon-beton-de-proprete",
+        "n": "Béton de propreté au fond des fouilles (chiffrage détaillé seulement)",
+        "u": "ml",
+        "fp": 12,
+        "sm": 4,
+        "note": "Déjà compris dans « Semelle de fondation ». À utiliser seulement avec « Fouilles en rigole » + « Semelle filante – béton armé seul »."
+      },
+      {
+        "id": "fon-semelle-filante-beton-arme-seul",
+        "n": "Semelle filante – béton armé seul, dans une fouille déjà creusée (chiffrage détaillé)",
+        "u": "ml",
+        "fp": 85,
+        "sm": 63,
+        "note": "Armatures + béton coulé, sans fouille ni béton de propreté. Alternative au poste complet « Semelle de fondation », jamais en plus."
+      },
+      {
+        "id": "fon-semelle-isolee-sous-poteau",
+        "n": "Semelle isolée sous poteau (plot en béton armé ≈ 80 × 80 × 40 cm), fouille comprise",
+        "u": "u",
+        "fp": 240,
+        "sm": 110,
+        "note": "Une par poteau porteur (terrasse couverte, auvent, grande baie à poteau)."
+      },
+      {
+        "id": "fon-longrine-beton-arme",
+        "n": "Longrine en béton armé (poutre enterrée entre plots ou sous un mur)",
+        "u": "ml",
+        "fp": 70,
+        "sm": 30,
+        "note": "Seulement si l'étude de sol ou le bureau d'études la prescrit (fondations sur plots ou pieux, seuils de grandes baies)."
+      },
+      {
+        "id": "fon-radier-general",
+        "n": "Radier général (dalle de fondation épaisse sous toute la maison)",
+        "u": "m2",
+        "fp": 160,
+        "sm": null,
+        "note": "Uniquement si l'étude de sol G2 le prescrit. REMPLACE les semelles ET la dalle sur terre-plein. Le radier n'est pas isolé : ajouter « Isolant sous chape »."
+      },
+      {
+        "id": "fon-surcout-sol-argileux",
+        "n": "Surcoût des fondations en sol argileux (ordre de grandeur avant l'étude G2)",
+        "u": "forfait",
+        "fp": 12500,
+        "sm": null,
+        "note": "Semelles plus profondes (ancrage 0,80 m en aléa moyen, 1,20 m en aléa fort), longrines et chaînages renforcés selon l'étude de sol. Ne couvre PAS le choix du plancher bas (vide sanitaire = poste à part). Ordre de grandeur seulement (une seule source) : à remplacer par le chiffre du maçon une fois la G2 faite.",
+        "vars": [
+          {
+            "k": "alea",
+            "label": "Aléa argile (Géorisques)",
+            "opts": [
+              {
+                "k": "moyen",
+                "label": "Moyen",
+                "coef": 1
+              },
+              {
+                "k": "fort",
+                "label": "Fort",
+                "coef": 1.4
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "fon-mur-de-soubassement",
+        "n": "Mur de soubassement en parpaings sur les semelles (2-3 rangs), arase étanche comprise",
+        "u": "ml",
+        "fp": 85,
+        "sm": 15,
+        "note": "Pour une dalle sur terre-plein : monte les murs jusqu'au niveau du sol fini et coupe les remontées d'humidité. Déjà compris dans « Vide sanitaire complet »."
+      },
+      {
+        "id": "fon-arase-etanche",
+        "n": "Arase étanche seule (coupure contre les remontées d'humidité en pied de mur)",
+        "u": "ml",
+        "fp": 12,
+        "sm": 4,
+        "note": "Déjà comprise dans « Mur de soubassement » et « Vide sanitaire complet ». Seulement si le soubassement est chiffré autrement."
+      },
+      {
+        "id": "fon-drain-peripherique",
+        "n": "Drain autour de la maison, posé dans la fouille ouverte : gravier, géotextile (toile filtrante qui retient la terre), membrane, regards",
+        "u": "ml",
+        "fp": 60,
+        "sm": 25,
+        "note": "Utile avec un sous-sol, un terrain en pente ou argileux, ou si l'étude de sol le demande. Il lui faut un exutoire, c'est-à-dire un endroit où rejeter l'eau (puits ou réseau). Les prix publiés à 160-400 €/ml sont des prix de RÉNOVATION."
+      },
+      {
+        "id": "fon-reseaux-sous-dallage-poses",
+        "n": "Réseaux sous dallage posés et testés avant le coulage (évacuations, fourreaux) — compris dans la plomberie et l'électricité",
+        "u": "forfait",
+        "fp": 0,
+        "sm": null,
+        "frais": true,
+        "note": "Jalon : le plombier et l'électricien passent AVANT le maçon pour les réseaux qui traversent la dalle. Leur prix est dans les postes de plomberie et d'électricité de la maison."
+      },
+      {
+        "id": "fon-dalle-terre-plein-isolee",
+        "n": "Dalle sur terre-plein complète et isolée : hérisson (couche de cailloux sous la dalle), film, isolant RE2020, treillis, béton ≈ 12 cm",
+        "u": "m2",
+        "fp": 140,
+        "sm": 50,
+        "note": "Solution par défaut sur terrain plat et sain. Isolant sous dalle COMPRIS : ne pas ajouter d'isolant sous chape en plus. Les réseaux sous dallage doivent être posés avant le coulage."
+      },
+      {
+        "id": "fon-vide-sanitaire-complet",
+        "n": "Vide sanitaire complet (murs ≈ 80 cm et plancher béton isolé au-dessus du vide)",
+        "u": "m2",
+        "fp": 180,
+        "sm": 95,
+        "note": "Alternative à la dalle sur terre-plein : terrain en pente, sol humide ou argileux, réseaux restant accessibles. Comprend les murs de soubassement (≈ 80 cm), le plancher en poutrelles et entrevous isolants (petites poutres préfabriquées, avec des blocs isolants posés entre elles) et la dalle de compression (fine dalle de béton armé coulée dessus). Semelles en plus. Prix retenu en bas de fourchette : les devis constatés sont souvent plus élevés qu'une dalle sur terre-plein. À confirmer par devis."
+      },
+      {
+        "id": "fon-sous-sol-enterre",
+        "n": "Sous-sol enterré (gros œuvre brut, ordre de grandeur)",
+        "u": "m2",
+        "fp": 250,
+        "sm": null,
+        "note": "Option : remplace la dalle ou le vide sanitaire. Comprend l'excavation, les murs enterrés, l'étanchéité, le drainage et le dallage du sous-sol : NE PAS ajouter drain, fouilles en pleine masse ni évacuation des terres (à vérifier sur le devis : si le terrassier facture l'évacuation à part, l'ajouter). À faire chiffrer sur étude de sol."
+      },
+      {
+        "id": "fon-dalle-garage-non-isolee",
+        "n": "Dalle du garage sur terre-plein, non isolée : hérisson (couche de cailloux sous la dalle), film, treillis, béton",
+        "u": "m2",
+        "fp": 112,
+        "sm": 32,
+        "note": "Pour un garage accolé non chauffé. Même ouvrage que la dalle de la maison, sans l'isolant."
+      }
+    ]
+  },
+  {
+    "c": "Maçonnerie",
+    "p": "Murs & planchers",
+    "tva": 20,
+    "note": "Murs, chaînages, planchers d'étage (et dalle de toiture d'un toit plat), escalier béton. Le prix des murs EXCLUT chaînages, raidisseurs, linteaux et appuis (postes à part). Le prix du plancher EXCLUT la ceinture en béton armé à son niveau : elle est comptée dans le chaînage horizontal.",
+    "t": [
+      {
+        "ref": "mac-monter-un-mur-en-parpaings"
+      },
+      {
+        "ref": "mac-monter-un-mur-en-brique"
+      },
+      {
+        "id": "mac-mur-brique-monomur",
+        "n": "Murs extérieurs en brique monomur 30 à 37,5 cm (brique isolante, sans doublage obligatoire)",
+        "u": "m2",
+        "fp": 125,
+        "sm": 80,
+        "note": "Mur porteur et isolant à la fois : remplace le doublage isolant (selon l'étude thermique). Chaînages, linteaux, appuis et enduit extérieur à part. La face intérieure doit recevoir un enduit plâtre (étanchéité à l'air) : poste non chiffré aujourd'hui."
+      },
+      {
+        "id": "mac-mur-beton-cellulaire-20-cm",
+        "n": "Murs extérieurs en béton cellulaire 20 cm (à doubler d'un isolant intérieur)",
+        "u": "m2",
+        "fp": 114,
+        "sm": 34,
+        "note": "Blocs collés, plus légers et un peu isolants. Le doublage isolant reste nécessaire."
+      },
+      {
+        "id": "mac-mur-beton-cellulaire-30-cm",
+        "n": "Murs extérieurs en béton cellulaire 30 à 36,5 cm (mur isolant, sans doublage)",
+        "u": "m2",
+        "fp": 130,
+        "sm": 80,
+        "note": "Alternative « mur isolant » en béton cellulaire. Vérifier avec l'étude thermique."
+      },
+      {
+        "id": "mac-mur-beton-banche",
+        "n": "Murs en béton banché (voile coulé) : murs enterrés, sous-sol, garage enterré",
+        "u": "m2",
+        "fp": 140,
+        "sm": null,
+        "note": "Coffrage, armatures et béton coulé sur place : voile (mur coulé) d'environ 20 cm."
+      },
+      {
+        "id": "mac-chainage-horizontal",
+        "n": "Chaînage horizontal en béton armé (ceinture en haut des murs, au niveau du plancher d'étage et le long des pignons)",
+        "u": "ml",
+        "fp": 37,
+        "sm": 14,
+        "note": "Obligatoire en maçonnerie. Comprend aussi la ceinture au niveau du plancher d'étage, que le prix du plancher n'inclut pas."
+      },
+      {
+        "id": "mac-raidisseur-chainage-vertical",
+        "n": "Raidisseur (poteau en béton armé dans le mur : angles, côtés des grandes baies)",
+        "u": "u",
+        "fp": 88,
+        "sm": 28,
+        "note": "Un par angle et de part et d'autre des grandes ouvertures, sur la hauteur d'un niveau. Plus nombreux en zone sismique."
+      },
+      {
+        "id": "mac-linteau-beton-arme",
+        "n": "Linteau au-dessus d'une fenêtre ou d'une porte (béton armé ou prélinteau, jusqu'à ≈ 2,5 m)",
+        "u": "u",
+        "fp": 98,
+        "sm": 28,
+        "note": "Un par ouverture dans un mur maçonné. Au-delà de 2,5 m : poutre en béton armé."
+      },
+      {
+        "id": "mac-appui-fenetre-seuil-prefabrique",
+        "n": "Appui de fenêtre ou seuil de porte en béton préfabriqué (posé)",
+        "u": "u",
+        "fp": 81,
+        "sm": 51,
+        "note": "Un par fenêtre, porte-fenêtre, baie et porte d'entrée, posé avant les menuiseries et l'enduit. En ossature bois : bavettes en aluminium fournies avec les fenêtres."
+      },
+      {
+        "ref": "mac-poutre-de-reprise-de-charge-beton-arme"
+      },
+      {
+        "ref": "mac-poteau-de-reprise-beton-arme"
+      },
+      {
+        "ref": "mac-plancher-beton-etage-cree"
+      },
+      {
+        "id": "mac-rupteurs-thermiques-plancher",
+        "n": "Rupteurs de ponts thermiques ou planelles isolées en rive du plancher d'étage",
+        "u": "ml",
+        "fp": 19.6,
+        "sm": 9.45,
+        "note": "Limite la fuite de chaleur à la jonction plancher / mur extérieur quand on isole par l'intérieur. Quantité = périmètre. Prix bas de fourchette, à confirmer sur devis ou selon l'étude thermique."
+      },
+      {
+        "ref": "mac-escalier-en-beton"
+      }
+    ]
+  },
+  {
+    "c": "Charpente, couverture & structure bois",
+    "p": "Murs & planchers",
+    "tva": 20,
+    "note": "Maison à ossature bois : murs extérieurs, refends (murs porteurs intérieurs) et plancher d'étage en bois. Le poste « Mur en ossature bois » sert ici au refend : un mur porteur intérieur, non isolé. Sous un toit plat, « Créer un plancher bois » porte aussi la toiture-terrasse.",
+    "t": [
+      {
+        "id": "toi-mur-ossature-bois-isole",
+        "n": "Murs extérieurs en ossature bois isolés (montants 145 mm, isolant, frein-vapeur, panneau de contreventement, pare-pluie et tasseaux)",
+        "u": "m2",
+        "fp": 148,
+        "sm": 63,
+        "note": "Remplace murs maçonnés, chaînages, raidisseurs, linteaux et appuis. Le pare-pluie et les tasseaux de ventilation sont dans CE poste : le bardage se pose dessus (ne pas les recompter). NON compris : lames de bardage ou enduit extérieur, plaque de plâtre intérieure."
+      },
+      {
+        "ref": "toi-mur-en-ossature-bois"
+      },
+      {
+        "ref": "toi-creer-un-plancher-bois"
+      }
+    ]
+  },
+  {
+    "c": "Charpente, couverture & structure bois",
+    "p": "Clos & couvert",
+    "tva": 20,
+    "note": "Charpente (fermettes pour combles perdus, traditionnelle pour combles aménagés), fenêtres de toit, raccords des toits complexes. « Toit plat (étanchéité) » sert au toit d'un garage ou d'une annexe non chauffés. Le toit plat isolé de la maison est la « Toiture-terrasse isolée » de la couverture.",
+    "t": [
+      {
+        "ref": "toi-charpente-en-fermettes-hors-couverture"
+      },
+      {
+        "ref": "toi-charpente-traditionnelle-hors-couverture"
+      },
+      {
+        "ref": "toi-fenetre-de-toit-velux"
+      },
+      {
+        "ref": "toi-raccords-faitage-noues-solins"
+      },
+      {
+        "ref": "toi-toit-plat-etancheite"
+      }
+    ]
+  },
+  {
+    "c": "Couverture & zinguerie",
+    "p": "Clos & couvert",
+    "tva": 20,
+    "note": "Couverture neuve TOUT COMPRIS (écran, liteaux, rives et faîtage d'un toit 2 pans). Sa fin marque le HORS D'EAU (toit posé).",
+    "t": [
+      {
+        "id": "cou-couverture-tuiles-terre-cuite",
+        "n": "Couverture en tuiles terre cuite tout compris (écran sous-toiture, liteaux, tuiles, rives, faîtage ventilé)",
+        "u": "m2",
+        "fp": 92,
+        "sm": 39,
+        "note": "Le plus courant. Quantité = m² de toiture (rampants), débords compris. Hors charpente, gouttières et fenêtres de toit."
+      },
+      {
+        "id": "cou-couverture-tuiles-beton",
+        "n": "Couverture en tuiles béton tout compris (écran, liteaux, tuiles, rives, faîtage ventilé)",
+        "u": "m2",
+        "fp": 65,
+        "sm": 29,
+        "note": "La tuile la moins chère, fréquente en neuf si le PLU (règlement d'urbanisme de la commune) l'accepte."
+      },
+      {
+        "id": "cou-couverture-ardoise-naturelle",
+        "n": "Couverture en ardoise naturelle tout compris (écran, liteaux ou voliges, crochets, faîtage, rives)",
+        "u": "m2",
+        "fp": 146,
+        "sm": 66,
+        "note": "Régions ardoisières ou PLU (règlement d'urbanisme de la commune) qui l'impose."
+      },
+      {
+        "id": "cou-couverture-ardoise-fibres-ciment",
+        "n": "Couverture en ardoises fibres-ciment tout compris (écran, liteaux, crochets, accessoires)",
+        "u": "m2",
+        "fp": 107,
+        "sm": 42,
+        "note": "Alternative économique à l'ardoise naturelle si le PLU (règlement d'urbanisme de la commune) l'accepte."
+      },
+      {
+        "id": "cou-couverture-bac-acier",
+        "n": "Couverture en bac acier anti-condensation (plaques, faîtage, rives, closoirs)",
+        "u": "m2",
+        "fp": 66,
+        "sm": 36,
+        "note": "Toit contemporain à faible pente, garage, annexe. Parfois refusé par le PLU (règlement d'urbanisme de la commune) en lotissement."
+      },
+      {
+        "id": "cou-couverture-zinc-joint-debout",
+        "n": "Couverture zinc à joint debout sur voligeage (voliges, écran, zinc, faîtage, rives)",
+        "u": "m2",
+        "fp": 170,
+        "sm": 60,
+        "note": "Architecture contemporaine ou tradition régionale. Le zinc ne se pose pas sur liteaux : voligeage compris."
+      },
+      {
+        "id": "cou-toiture-terrasse-isolee",
+        "n": "Toiture-terrasse isolée (pare-vapeur, isolant, étanchéité, relevés) — support compté à part",
+        "u": "m2",
+        "fp": 140,
+        "sm": null,
+        "note": "Maison « cube » à toit plat. Le support est compté à part : dalle béton avec les planchers en maçonnerie, plancher bois en ossature bois. Les acrotères (murets autour du toit) sont comptés avec les murs, les couvertines à part. Sa fin marque le HORS D'EAU (toit posé)."
+      },
+      {
+        "id": "cou-couvertine-acrotere",
+        "n": "Couvertine d'acrotère en aluminium laqué (dessus des murets d'un toit plat)",
+        "u": "ml",
+        "fp": 45,
+        "sm": null,
+        "note": "Toit plat avec acrotères : souvent oubliée."
+      },
+      {
+        "id": "cou-gouttiere-zinc",
+        "n": "Gouttière zinc posée (crochets, naissances, angles)",
+        "u": "ml",
+        "fp": 65,
+        "sm": 30,
+        "note": "Quantité = longueur du bas des pentes du toit (l'égout). Descentes à part."
+      },
+      {
+        "id": "cou-gouttiere-pvc",
+        "n": "Gouttière PVC posée (crochets, naissances, angles)",
+        "u": "ml",
+        "fp": 34,
+        "sm": 12,
+        "note": "Solution économique, à la place de la gouttière zinc."
+      },
+      {
+        "id": "cou-gouttiere-alu-continu",
+        "n": "Gouttière aluminium laqué en continu (profilée sur place, sans raccord)",
+        "u": "ml",
+        "fp": 80,
+        "sm": null,
+        "note": "À la place de la gouttière zinc ou PVC. Nécessite la machine du poseur."
+      },
+      {
+        "id": "cou-descente-eaux-pluviales",
+        "n": "Descente d'eaux pluviales avec coudes et colliers",
+        "u": "ml",
+        "fp": 37,
+        "sm": 10,
+        "note": "Zinc assorti à la gouttière (PVC moins cher). Au moins une par pan, environ une tous les 10 à 12 m de gouttière. Quantité = nombre × hauteur du bas du toit (2,6 m pour un garage d'un niveau)."
+      },
+      {
+        "id": "cou-sous-face-pvc",
+        "n": "Sous-face des débords de toit en PVC (lambris + profilés + ventilation)",
+        "u": "m2",
+        "fp": 43,
+        "sm": 19,
+        "note": "Habille le dessous des débords de toit et ventile la toiture. Ne comprend pas la planche de rive (bandeau au bas du toit), non chiffrée."
+      },
+      {
+        "id": "cou-sous-face-bois",
+        "n": "Sous-face des débords de toit en lambris bois lasuré",
+        "u": "m2",
+        "fp": 49,
+        "sm": 22,
+        "note": "Alternative bois à la sous-face PVC."
+      }
+    ]
+  },
+  {
+    "c": "Menuiseries exterieures",
+    "p": "Clos & couvert",
+    "tva": 20,
+    "note": "Leur pose marque le HORS D'AIR (fenêtres et portes posées, maison fermée). Prix de base en aluminium : le PVC revient moins cher.",
+    "t": [
+      {
+        "ref": "mex-fenetres"
+      },
+      {
+        "ref": "mex-portes-fenetres"
+      },
+      {
+        "ref": "mex-baie-vitree"
+      },
+      {
+        "ref": "mex-porte-d-entree"
+      },
+      {
+        "ref": "mex-porte-de-garage"
+      },
+      {
+        "ref": "mex-volets-roulants"
+      },
+      {
+        "ref": "mex-volets-battants"
+      },
+      {
+        "ref": "mex-stores-exterieurs-brise-soleil"
+      },
+      {
+        "ref": "mex-moustiquaires"
+      }
+    ]
+  },
+  {
+    "c": "Réseaux enterrés (VRD)",
+    "p": "Réseaux & façade",
+    "tva": 20,
+    "note": "Partie privée, de la limite du terrain à la maison : à la charge de celui qui fait construire, jamais comprise dans les devis Enedis, eau ou égout. Le réseau d'eaux de pluie et le remblai en pied de mur se font AVANT l'enduit.",
+    "t": [
+      {
+        "id": "vrd-tranchee-reseaux",
+        "n": "Tranchée pour réseaux enterrés (ouverture, lit de sable, grillage avertisseur, rebouchage)",
+        "u": "ml",
+        "fp": 25,
+        "sm": null,
+        "note": "Une tranchée commune pour l'électricité, l'eau et la fibre. Une autre pour l'égout ou la fosse. Une troisième pour les eaux de pluie."
+      },
+      {
+        "id": "vrd-fourreaux-arrivees",
+        "n": "Fourreaux d'arrivée électricité, eau et fibre (3 gaines + grillages avertisseurs)",
+        "u": "ml",
+        "fp": 15,
+        "sm": 7,
+        "note": "Posés dans la tranchée ouverte. Le fourreau fibre jusqu'en limite est obligatoire en maison neuve. Câbles et tuyaux non compris."
+      },
+      {
+        "id": "vrd-tube-pehd-eau-potable",
+        "n": "Tube d'eau potable en PEHD (polyéthylène, tuyau noir souple) de 25 mm, du compteur à la maison, tiré dans le fourreau (raccords non compris)",
+        "u": "ml",
+        "fp": 4.41,
+        "sm": 4.22,
+        "note": "Le raccordement s'arrête au compteur en limite et la plomberie part du collecteur intérieur : ce tuyau fait le lien. Quantité = distance de la maison à la rue."
+      },
+      {
+        "id": "vrd-canalisation-pvc-enterree",
+        "n": "Canalisation PVC enterrée (eaux usées vers l'égout ou la fosse, eaux de pluie vers le puits)",
+        "u": "ml",
+        "fp": 30,
+        "sm": 8,
+        "note": "Partie extérieure seulement : les évacuations sous la dalle sont dans le poste plomberie."
+      },
+      {
+        "id": "vrd-regard-de-visite",
+        "n": "Regard de visite ou de branchement avec tampon",
+        "u": "u",
+        "fp": 150,
+        "sm": 40,
+        "note": "Un au pied de chaque descente d'eaux de pluie, à la sortie des eaux usées, aux changements de direction. Le regard de branchement en limite est compris dans le forfait de raccordement à l'égout."
+      },
+      {
+        "id": "vrd-puits-infiltration",
+        "n": "Puits d'infiltration des eaux de pluie : buses, gravier, géotextile (toile filtrante qui retient la terre), tampon",
+        "u": "u",
+        "fp": 1500,
+        "sm": 750,
+        "note": "Quand il n'y a pas de réseau d'eaux pluviales dans la rue, ou que le PLU (règlement d'urbanisme de la commune) impose l'infiltration sur la parcelle, ce qui est fréquent."
+      }
+    ]
+  },
+  {
+    "c": "Raccordements aux réseaux",
+    "p": "Réseaux & façade",
+    "tva": 20,
+    "note": "Branchements définitifs par les concessionnaires (Enedis, service des eaux, service assainissement), demandés dès le permis. Le compteur électrique n'est mis en service qu'après le Consuel.",
+    "t": [
+      {
+        "ref": "rac-raccordement-electrique-enedis"
+      },
+      {
+        "id": "rac-extension-reseau-electrique-part-fixe",
+        "n": "Extension du réseau électrique Enedis jusqu'au terrain — part fixe",
+        "u": "forfait",
+        "fp": 1658,
+        "sm": null,
+        "note": "Seulement si le réseau public n'arrive pas devant le terrain (terrain isolé). Barème Enedis après réfaction de 40 % (part du coût prise en charge par le tarif du réseau, que le client ne paie pas)."
+      },
+      {
+        "id": "rac-extension-reseau-electrique-au-metre",
+        "n": "Extension du réseau électrique Enedis — par mètre de réseau à créer",
+        "u": "ml",
+        "fp": 68.4,
+        "sm": null,
+        "note": "Longueur donnée par le devis Enedis."
+      },
+      {
+        "ref": "rac-raccordement-au-tout-a-l-egout"
+      },
+      {
+        "ref": "rac-assainissement-fosse-toutes-eaux-5-eh"
+      },
+      {
+        "ref": "rac-assainissement-micro-station-5-eh"
+      }
+    ]
+  },
+  {
+    "c": "Façade",
+    "p": "Réseaux & façade",
+    "tva": 20,
+    "note": "Enduit ou bardage, une fois les réseaux et le remblai faits au pied des murs : fin du clos et couvert. Peut avancer en parallèle du second œuvre.",
+    "t": [
+      {
+        "id": "fac-echafaudage-de-facade",
+        "n": "Échafaudage de façade (montage, location pendant l'enduit, démontage)",
+        "u": "m2",
+        "fp": 12,
+        "sm": null,
+        "note": "En plain-pied, seuls les pignons demandent un échafaudage (le reste se fait sur tréteaux) ; à étage, toute la façade. À retirer si le devis du façadier le comprend."
+      },
+      {
+        "ref": "fac-enduit-monocouche-machine"
+      },
+      {
+        "ref": "fac-bardage"
+      },
+      {
+        "id": "fac-bardage-composite",
+        "n": "Bardage composite sur ossature avec pare-pluie",
+        "u": "m2",
+        "fp": 161,
+        "sm": 96,
+        "note": "Aspect bois sans entretien. Hors isolation par l'extérieur et hors échafaudage. Sur un mur à ossature bois, le pare-pluie et les tasseaux sont déjà dans le mur : demander un prix « lames + fixations » (≈ 7 à 12 €/m² de moins)."
+      },
+      {
+        "ref": "fac-isolation-par-l-exterieur-ite"
+      }
+    ]
+  },
+  {
+    "c": "Electricite",
+    "p": "Second œuvre",
+    "tva": 20,
+    "note": "1re passe : gaines et boîtes posées avant les doublages et les plafonds. Installation complète au m² : tableau, prises, éclairages, réseau internet (RJ45) et fibre intérieure compris.",
+    "t": [
+      {
+        "id": "ele-installation-electrique-maison-neuve",
+        "n": "Installation électrique complète d'une maison neuve (norme NF C 15-100)",
+        "u": "m2",
+        "fp": 100,
+        "sm": 40,
+        "note": "Tableau, prises, interrupteurs et points lumineux aux minimums de la norme, circuits spécialisés, coffret de communication + RJ45, fibre intérieure, liaison des masses à la prise de terre. Hors VMC, luminaires, radiateurs, câble d'arrivée depuis le coffret en limite, Consuel et raccordement Enedis."
+      },
+      {
+        "ref": "ele-spots-encastres-led"
+      },
+      {
+        "ref": "ele-visiophone-interphone"
+      },
+      {
+        "ref": "ele-alarme-videosurveillance"
+      },
+      {
+        "ref": "ele-borne-de-recharge-voiture"
+      }
+    ]
+  },
+  {
+    "c": "Plomberie",
+    "p": "Second œuvre",
+    "tva": 20,
+    "note": "Réseaux d'eau et évacuations (y compris sous la dalle, posés avant le coulage) ; production d'eau chaude.",
+    "t": [
+      {
+        "id": "plo-reseaux-plomberie-maison-neuve",
+        "n": "Plomberie d'une maison neuve : réseaux d'eau froide, eau chaude et évacuations (sans les appareils)",
+        "u": "m2",
+        "fp": 54,
+        "sm": 22,
+        "note": "Collecteur, alimentations jusqu'à chaque point d'eau, évacuations jusqu'au regard au pied de la maison (y compris sous la dalle, posées AVANT le coulage), chutes et ventilation primaire avec sa sortie de toit (tuile à douille posée par le couvreur), attentes lave-linge et lave-vaisselle, robinet extérieur."
+      },
+      {
+        "ref": "plo-chauffe-eau-thermodynamique"
+      },
+      {
+        "ref": "plo-chauffe-eau-electrique-cumulus"
+      }
+    ]
+  },
+  {
+    "c": "Chauffage / VMC",
+    "p": "Second œuvre",
+    "tva": 20,
+    "note": "Le système est fixé par l'étude thermique RE2020. Le plus courant : pompe à chaleur air/eau + plancher chauffant + chauffe-eau thermodynamique. La pompe à chaleur air/eau est chiffrée pour le chauffage seul : l'eau chaude est produite par le chauffe-eau thermodynamique. Pas de chaudière gaz seule en neuf.",
+    "t": [
+      {
+        "ref": "cha-pompe-a-chaleur-air-eau"
+      },
+      {
+        "id": "cha-plancher-chauffant-eau-hors-chape",
+        "n": "Plancher chauffant à eau (isolant à plots, tubes, collecteur) — hors chape",
+        "u": "m2",
+        "fp": 58,
+        "sm": 28,
+        "note": "Avec une pompe à chaleur air/eau. La chape est un poste à part (« Chape liquide »). La régulation pièce par pièce n'est pas comprise (option « Thermostat / pilotage »). Prix au bas des fourchettes (50 à 117 € HT/m² hors chape) : à confirmer sur devis."
+      },
+      {
+        "ref": "cha-thermostat-pilotage"
+      },
+      {
+        "ref": "cha-climatisation-gainable-reversible"
+      },
+      {
+        "ref": "cha-climatisation-reversible-split"
+      },
+      {
+        "ref": "cha-poele-a-bois-granules"
+      },
+      {
+        "id": "cha-conduit-de-fumee-isole",
+        "n": "Conduit de fumée isolé double paroi pour poêle (traversées, sortie et étanchéité de toit)",
+        "u": "ml",
+        "fp": 260,
+        "sm": null,
+        "note": "Seulement avec un poêle. Réservations à prévoir dans le plancher et la charpente PENDANT le gros œuvre. Pose par un fumiste (artisan spécialiste des conduits de fumée), pour être couvert par l'assurance."
+      },
+      {
+        "ref": "cha-radiateurs-electriques"
+      },
+      {
+        "ref": "cha-seche-serviette"
+      },
+      {
+        "ref": "cha-ventilation-vmc"
+      }
+    ]
+  },
+  {
+    "c": "Isolation",
+    "p": "Second œuvre",
+    "tva": 20,
+    "note": "Doublages isolants et pare-vapeur (sauf murs isolants monomur / ossature bois). Les prix des doublages comprennent les bandes à joints, pas la peinture. Membrane d'étanchéité à l'air soignée : condition du test RE2020.",
+    "t": [
+      {
+        "id": "iso-doublage-isolant-colle",
+        "n": "Doublage isolant collé des murs extérieurs : plaque de plâtre + polyuréthane, R (pouvoir isolant) ≥ 3,7",
+        "u": "m2",
+        "fp": 52,
+        "sm": 30,
+        "note": "La solution courante sur parpaing ou brique. Bandes à joints comprises ; peinture à part. À la place du doublage sur ossature (« Isolation des murs par l'intérieur »), jamais en plus."
+      },
+      {
+        "ref": "iso-isolation-des-murs-par-l-interieur"
+      },
+      {
+        "ref": "iso-pose-d-un-pare-vapeur"
+      },
+      {
+        "ref": "iso-isolation-des-combles-amenages-rampants"
+      },
+      {
+        "id": "iso-isolant-sous-chape",
+        "n": "Isolant sous chape : panneaux polyuréthane posés sur la dalle, R (pouvoir isolant) ≥ 3",
+        "u": "m2",
+        "fp": 35,
+        "sm": 23,
+        "note": "SEULEMENT si l'isolant n'est pas déjà dans le plancher bas (la dalle isolée et le vide sanitaire de ce catalogue le comprennent)."
+      }
+    ]
+  },
+  {
+    "c": "Contrôles & réception",
+    "p": "Second œuvre",
+    "tva": 20,
+    "note": "Test intermédiaire : avant de fermer les plafonds et de monter les cloisons.",
+    "t": [
+      {
+        "id": "rec-test-etancheite-intermediaire",
+        "n": "Test d'étanchéité à l'air intermédiaire (après les doublages, avant les plafonds et les cloisons)",
+        "u": "forfait",
+        "fp": 270,
+        "sm": null,
+        "note": "Fortement conseillé : à faire juste après les menuiseries, les doublages et le pare-vapeur, AVANT les plaques de plafond et les cloisons, quand on peut encore réparer les fuites. Rater le test final coûte des reprises + un nouveau test."
+      }
+    ]
+  },
+  {
+    "c": "Cloisons / Platrerie",
+    "p": "Second œuvre",
+    "tva": 20,
+    "note": "Plafonds d'abord (continuité de la membrane), puis cloisons. Les prix des plaques comprennent les bandes à joints. « Doubler un mur » compte ici une plaque de plâtre sans isolant : habillage intérieur des murs à ossature bois et des deux faces des murs porteurs intérieurs.",
+    "t": [
+      {
+        "ref": "clo-faux-plafond"
+      },
+      {
+        "ref": "clo-monter-une-cloison"
+      },
+      {
+        "ref": "clo-cloison-piece-humide-hydrofuge"
+      },
+      {
+        "ref": "clo-doubler-un-mur"
+      },
+      {
+        "ref": "clo-cacher-tuyaux-gaines-coffrage"
+      },
+      {
+        "ref": "clo-trappe-de-visite"
+      }
+    ]
+  },
+  {
+    "c": "Annexes de chantier",
+    "p": "Second œuvre",
+    "tva": 20,
+    "note": "Évacuation des déchets du second œuvre.",
+    "t": [
+      {
+        "id": "anx-benne-second-oeuvre",
+        "n": "Deuxième benne pour le second œuvre (chutes de plaques, emballages, isolants)",
+        "u": "forfait",
+        "fp": 400,
+        "sm": null,
+        "note": "Même prix que la benne du gros œuvre. À décocher si chaque artisan évacue ses déchets."
+      }
+    ]
+  },
+  {
+    "c": "Isolation",
+    "p": "Second œuvre",
+    "tva": 20,
+    "note": "Isolant soufflé dans les combles perdus, une fois les plafonds posés.",
+    "t": [
+      {
+        "ref": "iso-isolation-des-combles-perdus-soufflage"
+      }
+    ]
+  },
+  {
+    "c": "Maçonnerie",
+    "p": "Second œuvre",
+    "tva": 20,
+    "note": "Chape sur le plancher chauffant (ou sur la dalle), puis temps de séchage avant les revêtements.",
+    "t": [
+      {
+        "ref": "mac-chape-liquide"
+      },
+      {
+        "ref": "mac-chape-traditionnelle"
+      }
+    ]
+  },
+  {
+    "c": "Carrelage / Revetements",
+    "p": "Finitions & équipements",
+    "tva": 20,
+    "note": "Carrelage et faïence avant la peinture. Sur chape neuve : pas de dépose ni de ragréage (enduit de lissage du sol).",
+    "t": [
+      {
+        "ref": "rev-carrelage-au-sol"
+      },
+      {
+        "ref": "rev-faience-carrelage-mural"
+      },
+      {
+        "ref": "rev-etancheite-sous-carrelage-spec-douche"
+      },
+      {
+        "ref": "rev-beton-cire-resine"
+      }
+    ]
+  },
+  {
+    "c": "Peinture",
+    "p": "Finitions & équipements",
+    "tva": 20,
+    "note": "Sur plaques neuves : impression (sous-couche) + 2 couches, sans préparation lourde.",
+    "t": [
+      {
+        "id": "pei-peinture-murs-plaques-neuves",
+        "n": "Peinture des murs sur plaques neuves : impression (sous-couche) + 2 couches",
+        "u": "m2",
+        "fp": 26.1,
+        "sm": 5.1,
+        "note": "Sous-couche et deux couches de finition comprises. Les bandes à joints sont déjà dans le prix des plaques."
+      },
+      {
+        "id": "pei-peinture-plafonds-plaques-neuves",
+        "n": "Peinture des plafonds sur plaques neuves : impression (sous-couche) + 2 couches",
+        "u": "m2",
+        "fp": 30.1,
+        "sm": 5.1,
+        "note": "Sous-couche et deux couches de finition comprises. Les bandes à joints sont déjà dans le prix des plaques."
+      }
+    ]
+  },
+  {
+    "c": "Carrelage / Revetements",
+    "p": "Finitions & équipements",
+    "tva": 20,
+    "note": "Sols des chambres et plinthes APRÈS la peinture.",
+    "t": [
+      {
+        "ref": "rev-sol-stratifie-imitation-bois"
+      },
+      {
+        "ref": "rev-parquet-bois"
+      },
+      {
+        "ref": "rev-sol-souple-pvc-lino"
+      },
+      {
+        "ref": "rev-moquette"
+      },
+      {
+        "ref": "rev-plinthes"
+      }
+    ]
+  },
+  {
+    "c": "Menuiseries interieures",
+    "p": "Finitions & équipements",
+    "tva": 20,
+    "note": "Portes (dont la porte pleine entre le garage et la maison), placards, escalier bois.",
+    "t": [
+      {
+        "ref": "min-porte-interieure-battante"
+      },
+      {
+        "ref": "min-porte-interieure-coulissante"
+      },
+      {
+        "ref": "min-porte-interieure-ame-pleine"
+      },
+      {
+        "ref": "min-placards-rangements"
+      },
+      {
+        "ref": "min-dressing-sur-mesure"
+      },
+      {
+        "ref": "min-verriere-interieure"
+      },
+      {
+        "id": "min-escalier-bois-quart-tournant",
+        "n": "Escalier intérieur en bois quart tournant, sur mesure, posé avec sa rampe",
+        "u": "u",
+        "fp": 4338,
+        "sm": 1988,
+        "note": "Maison à étage. Garde-corps de la trémie (ouverture dans le plancher pour l'escalier) à l'étage en plus. « Escalier en bois » (droit, en kit) est l'alternative moins chère : l'un ou l'autre, jamais les deux."
+      }
+    ]
+  },
+  {
+    "c": "Charpente, couverture & structure bois",
+    "p": "Finitions & équipements",
+    "tva": 20,
+    "note": "Garde-corps définitif de la trémie (ouverture dans le plancher pour l'escalier), posé avec l'escalier. Une protection provisoire la ferme pendant le gros œuvre. « Escalier en bois » : escalier droit en kit, à prendre à la place de l'escalier quart tournant, jamais en plus.",
+    "t": [
+      {
+        "ref": "toi-garde-corps"
+      },
+      {
+        "ref": "toi-escalier-en-bois"
+      }
+    ]
+  },
+  {
+    "c": "Plomberie",
+    "p": "Finitions & équipements",
+    "tva": 20,
+    "note": "Appareils sanitaires (les attentes sont dans le poste réseaux).",
+    "t": [
+      {
+        "ref": "plo-wc"
+      },
+      {
+        "ref": "plo-meuble-vasque"
+      },
+      {
+        "ref": "plo-robinetterie-lavabo"
+      },
+      {
+        "ref": "plo-bac-de-douche"
+      },
+      {
+        "ref": "plo-paroi-de-douche"
+      },
+      {
+        "ref": "plo-colonne-de-douche"
+      },
+      {
+        "ref": "plo-douche-a-l-italienne"
+      },
+      {
+        "ref": "plo-installer-une-baignoire"
+      },
+      {
+        "ref": "plo-robinetterie-baignoire"
+      },
+      {
+        "ref": "plo-miroir"
+      },
+      {
+        "ref": "plo-installer-un-adoucisseur-d-eau"
+      }
+    ]
+  },
+  {
+    "c": "Cuisine",
+    "p": "Finitions & équipements",
+    "tva": 20,
+    "note": "Prendre SOIT « cuisine tout compris », SOIT les lignes détaillées (jamais les deux). Les attentes eau/électricité sont déjà dans les réseaux.",
+    "t": [
+      {
+        "ref": "cui-cuisine-complete-neuve-tout-compris"
+      },
+      {
+        "ref": "cui-meubles-de-cuisine"
+      },
+      {
+        "ref": "cui-plan-de-travail-seul"
+      },
+      {
+        "ref": "cui-evier-robinetterie"
+      },
+      {
+        "ref": "cui-hotte"
+      },
+      {
+        "ref": "cui-ilot-central"
+      }
+    ]
+  },
+  {
+    "c": "Electricite",
+    "p": "Réception & achèvement",
+    "tva": 20,
+    "note": "Le Consuel (attestation de conformité de l'installation électrique) est obligatoire en maison neuve. Il passe une fois l'appareillage posé, puis Enedis met en service le compteur définitif.",
+    "t": [
+      {
+        "ref": "ele-consuel-attestation-de-conformite"
+      }
+    ]
+  },
+  {
+    "c": "Contrôles & réception",
+    "p": "Réception & achèvement",
+    "tva": 20,
+    "note": "Contrôles obligatoires RE2020, attestations à joindre à la déclaration d'achèvement selon le terrain, réception des travaux, déclaration d'achèvement.",
+    "t": [
+      {
+        "id": "rec-controles-re2020-fin-de-chantier",
+        "n": "Contrôles RE2020 de fin de chantier : test d'étanchéité à l'air + contrôle de la ventilation + attestation RE2020",
+        "u": "forfait",
+        "fp": 650,
+        "sm": null,
+        "note": "Obligatoires : sans l'attestation, la déclaration d'achèvement est incomplète. Vendus en pack, moins cher que séparément (voir aussi le pack global avec l'étude thermique). Un nouveau test est à payer en cas d'échec."
+      },
+      {
+        "id": "rec-attestation-argile-daact",
+        "n": "Attestation « argile » (retrait-gonflement) à joindre à la déclaration d'achèvement",
+        "u": "forfait",
+        "fp": 292,
+        "sm": null,
+        "note": "Obligatoire en zone d'argile moyenne ou forte (Géorisques). Sans constructeur pour la signer, il faut un contrôleur technique ou un bureau d'études."
+      },
+      {
+        "id": "rec-attestations-parasismiques",
+        "n": "Attestations parasismiques (au dépôt du permis + à l'achèvement)",
+        "u": "forfait",
+        "fp": 433,
+        "sm": null,
+        "note": "En zone sismique 3 et 4 (zone 5 sur devis). Vérifier auprès de la DDT (direction départementale des territoires, service de l'État) si l'attestation du permis est demandée pour une maison : sinon, ≈ 292 € HT pour l'achèvement seul. Une seule source de prix."
+      },
+      {
+        "id": "rec-proces-verbal-de-reception",
+        "n": "Réception des travaux avec chaque artisan (procès-verbal, réserves) — démarche gratuite",
+        "u": "forfait",
+        "fp": 0,
+        "sm": null,
+        "note": "Démarre les garanties (parfait achèvement 1 an, biennale 2 ans, décennale 10 ans) et la dommages-ouvrage. Une retenue de garantie (part du paiement gardée jusqu'à la levée des réserves) peut être prévue au contrat.",
+        "frais": true
+      },
+      {
+        "id": "rec-declaration-achevement-daact",
+        "n": "Déclaration d'achèvement et de conformité des travaux en mairie (DAACT) — démarche gratuite",
+        "u": "forfait",
+        "fp": 0,
+        "sm": null,
+        "note": "Avec l'attestation RE2020 (et, selon le terrain, les attestations argile et parasismique). La mairie a 3 mois pour contester.",
+        "frais": true
+      }
+    ]
+  },
+  {
+    "c": "Annexes de chantier",
+    "p": "Réception & achèvement",
+    "tva": 20,
+    "note": "Dernier poste avant la remise des clés.",
+    "t": [
+      {
+        "ref": "anx-nettoyage-de-fin-de-chantier"
+      }
+    ]
+  },
+  {
+    "c": "Taxes & participations",
+    "p": "Réception & achèvement",
+    "tva": 20,
+    "note": "Impôts et participations, sans TVA. Payés après l'achèvement : à prévoir dans la trésorerie.",
+    "t": [
+      {
+        "id": "tax-taxe-amenagement-100-premiers-m2",
+        "n": "Taxe d'aménagement + redevance d'archéologie — 100 premiers m² (résidence principale)",
+        "u": "m2",
+        "fp": 26.31,
+        "sm": null,
+        "note": "Impôt unique sur la surface taxable (surface de plancher + garage clos). Valeur 2026 : 892 €/m² (1 011 € en Île-de-France), divisée par 2 sur les 100 premiers m² d'une résidence principale. Taux par défaut : commune 3 % (1 à 5 % selon la commune) + département 2,5 % + archéologie 0,4 %. Montant exact sur l'avis des impôts.",
+        "frais": true,
+        "vars": [
+          {
+            "k": "zone",
+            "label": "Zone",
+            "opts": [
+              {
+                "k": "hors-idf",
+                "label": "Hors Île-de-France",
+                "coef": 1
+              },
+              {
+                "k": "idf",
+                "label": "Île-de-France",
+                "coef": 1.326
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "tax-taxe-amenagement-au-dela-100-m2",
+        "n": "Taxe d'aménagement + redevance d'archéologie — m² au-delà de 100",
+        "u": "m2",
+        "fp": 52.63,
+        "sm": null,
+        "note": "Même taxe, sans l'abattement de 50 %, sur la surface taxable au-delà de 100 m².",
+        "frais": true,
+        "vars": [
+          {
+            "k": "zone",
+            "label": "Zone",
+            "opts": [
+              {
+                "k": "hors-idf",
+                "label": "Hors Île-de-France",
+                "coef": 1
+              },
+              {
+                "k": "idf",
+                "label": "Île-de-France",
+                "coef": 1.326
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "tax-taxe-amenagement-stationnement",
+        "n": "Taxe d'aménagement + redevance d'archéologie — places de stationnement extérieures",
+        "u": "u",
+        "fp": 172.75,
+        "sm": null,
+        "note": "Places de parking non couvertes prévues au permis, souvent imposées par le PLU (règlement d'urbanisme de la commune). Quantité par défaut : 2 places sans garage, 1 avec. Valeur 2026 : 2 928 € par place (une commune peut voter jusqu'à 5 857 €), taxée aux mêmes taux que la surface de la maison.",
+        "frais": true,
+        "vars": [
+          {
+            "k": "zone",
+            "label": "Zone",
+            "opts": [
+              {
+                "k": "hors-idf",
+                "label": "Hors Île-de-France",
+                "coef": 1
+              },
+              {
+                "k": "idf",
+                "label": "Île-de-France",
+                "coef": 1.1695
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "tax-pfac-participation-tout-a-l-egout",
+        "n": "Participation pour le raccordement au tout-à-l'égout (PFAC)",
+        "u": "forfait",
+        "fp": 2000,
+        "sm": null,
+        "note": "Réclamée par la collectivité en plus du branchement. Montant fixé par délibération de la collectivité (à demander au service assainissement). Pas de TVA. Seulement avec le tout-à-l'égout.",
+        "frais": true
+      },
+      {
+        "id": "tax-redevances-spanc-controles",
+        "n": "Redevances du SPANC (service public d'assainissement non collectif) : contrôle de conception + contrôle de bonne exécution",
+        "u": "forfait",
+        "fp": 270,
+        "sm": null,
+        "frais": true,
+        "note": "Facturées par la collectivité, en plus de l'étude d'assainissement individuel. Montant voté localement (≈ 250 à 280 € dans les exemples relevés), souvent sans TVA. Pendant de la participation au tout-à-l'égout (PFAC) quand on n'est pas raccordé à l'égout."
+      },
+      {
+        "id": "tax-declaration-elements-imposition",
+        "n": "Déclaration des éléments d'imposition sur impots.gouv (« Gérer mes biens immobiliers ») dans les 90 jours après l'achèvement (démarche gratuite)",
+        "u": "forfait",
+        "fp": 0,
+        "sm": null,
+        "frais": true,
+        "note": "Elle déclenche le calcul de la taxe d'aménagement."
+      }
+    ]
+  }
+]
