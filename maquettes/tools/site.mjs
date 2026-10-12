@@ -668,6 +668,25 @@ const posts = (S) => S.log.filter((x) => x.m === "POST");
   await ctx.close();
 }
 
+/* B21 · un état piégé (noms de niveau et de pièce, sol, id, lien) : assaini au chargement, rien ne s'exécute */
+{
+  const P = `"'><img src=x onerror="window.__pwn=1">`;
+  const etat = FIX("maison");
+  etat.levels.forEach((l) => { l.name = P; (l.rooms || []).forEach((r) => { r.name = P; r.floor = P; r.note = P; r.products = [{ id: "x1", poste: "sol", nom: P, url: "javascript:window.__pwn=1" }]; }); });
+  etat.levels[0].rooms[0].id = "a');window.__pwn=1;('";
+  const S = serveur({ pro: true, plans: [{ id: UUID(16), nom: "Piégé", workflow: "renovation", etat, revision: 1 }] });
+  const { p, ctx } = await ongletSite(S, { site: siteDe(S, { planId: UUID(16) }), chemin: "/plan?id=" + UUID(16) });
+  const r = await p.evaluate(() => {
+    const lv = L(), ids = lv.rooms.map((x) => x.id);
+    for (const id of ids) { sel = { kind: "room", id }; render(); }
+    sel = null; panelTab = "details"; render(); renderLevels(); showEstimate(); closeModal();
+    return { pwn: window.__pwn, img: !!document.querySelector("#panel img[src='x'], #levels img"), nom: lv.name, id: lv.rooms[0].id, url: lv.rooms[0].products[0].url };
+  });
+  t["xss · état piégé : assaini au chargement (‹ › ”), id réduit, lien javascript: retiré, rien ne s'exécute"] = r.pwn === undefined && !r.img
+    && !/[<>"]/.test(r.nom) && /^[A-Za-z0-9_-]+$/.test(r.id) && r.url === "";
+  await ctx.close();
+}
+
 let ko = 0;
 for (const [k, ok] of Object.entries(t)) { if (!ok) ko++; console.log((ok ? "  ✓ " : "  ✗ ") + k); }
 console.log(`${Object.keys(t).length - ko}/${Object.keys(t).length} contrôles verts` + (errs.length ? ` · erreurs de page : ${[...new Set(errs)].join(" | ")}` : ""));

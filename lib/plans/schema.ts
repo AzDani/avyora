@@ -88,11 +88,22 @@ const mur = z
     st: z.string().regex(/^[a-z_]{0,20}$/).optional(),
   })
   .loose();
+/**
+ * Un texte que l'éditeur affiche dans sa page (nom d'un niveau ou d'une pièce, sol d'une pièce) : borné, sans
+ * chevron, guillemet droit ni accent grave. L'éditeur les remplace lui-même à l'entrée et au chargement (il traite
+ * l'état comme non fiable, la session pouvant l'écrire directement) : ce refus n'est qu'un renfort.
+ */
+const texteAffiche = z.string().max(200).regex(/^[^<>"`]*$/).nullable().optional();
+const piece = z
+  .object({ id: idEd.optional(), name: texteAffiche, floor: texteAffiche, floorNew: texteAffiche })
+  .loose();
 const niveau = z
   .object({
+    name: texteAffiche,
     walls: z.array(mur).max(2000),
     openings: z.array(z.object({ id: idEd }).loose()).max(2000),
     items: z.array(z.object({ id: idEd }).loose()).max(5000).optional(),
+    rooms: z.array(piece).max(2000).optional(),
   })
   .loose();
 

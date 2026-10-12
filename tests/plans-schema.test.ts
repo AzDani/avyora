@@ -71,6 +71,25 @@ describe("refus", () => {
     refuse(e3);
   });
 
+  it("un nom de niveau ou de pièce, un sol, qui porteraient une balise ou un guillemet droit (jury, XSS de l'éditeur)", () => {
+    const e = base();
+    niveaux(e)[0].name = "<img src=x onerror=alert(1)>";
+    refuse(e);
+    const e2 = base();
+    (niveaux(e2)[0].rooms as Record<string, unknown>[])[0].name = '" onmouseover="alert(1)';
+    refuse(e2);
+    const e3 = base();
+    (niveaux(e3)[0].rooms as Record<string, unknown>[])[0].floor = "Parquet<script>";
+    refuse(e3);
+    const e4 = base();
+    (niveaux(e4)[0].rooms as Record<string, unknown>[])[0].id = "a'b";
+    refuse(e4);
+    /* l'apostrophe reste permise dans un nom (« Chambre d'amis ») */
+    const ok = base();
+    (niveaux(ok)[0].rooms as Record<string, unknown>[])[0].name = "Chambre d'amis";
+    expect(etatPlanSchema.safeParse(ok).success).toBe(true);
+  });
+
   it("un type ou un statut de mur hors de la forme attendue", () => {
     const e = base();
     niveaux(e)[0].walls[0].type = 'mur" stroke="red';

@@ -4233,7 +4233,24 @@ function migrerToiture(st){const t=st&&st.toiture,p=t&&t.projet;if(!p||p.manuel)
    n'a jamais d'autre vue que la couche dessinée ('existant'). Idempotent, donc sans numéro de schéma : le monter aurait
    changé l'empreinte de chaque plan enregistré (un plan type jamais touché se serait dit « modifié »). */
 function migrerWorkflow(st){if(st.workflow!==WORKFLOW_FINAL)st.workflow=WORKFLOW_RENO;else st.mode='existant';}
-function migrerEtat(st){if(!st)return;const v=+st.schema||0;if(v<37)migrerSols(st);if(v<47)migrerToiture(st);migrerWorkflow(st);st.schema=SCHEMA;}
+/* Un état venu d'ailleurs (le compte, ce navigateur, un plan d'un autre onglet) est une donnée, pas du code : aucun
+   texte n'y garde de chevron, de guillemet droit ni d'accent grave (ils deviennent ‹ › ” '), un identifiant ne garde
+   que [A-Za-z0-9_-], un lien que http(s), et les clés __proto__, constructor et prototype sont retirées. Les noms,
+   notes et textes s'affichent ensuite tels quels sans jamais devenir du HTML. */
+const texteSur=s=>String(s).replace(/</g,'‹').replace(/>/g,'›').replace(/"/g,'”').replace(/`/g,'\'');
+function assainirEtat(o,k){
+  if(typeof o==='string'){
+    if(k==='id'||k==='pid'||/Id$/.test(k||''))return o.replace(/[^A-Za-z0-9_-]/g,'');
+    if(k==='url')return /^https?:\/\//i.test(o.trim())?texteSur(o):'';
+    return texteSur(o);}
+  if(Array.isArray(o)){for(let i=0;i<o.length;i++)o[i]=assainirEtat(o[i],k);return o;}
+  if(o&&typeof o==='object'){
+    for(const c of Object.keys(o)){
+      if(c==='__proto__'||c==='constructor'||c==='prototype'){delete o[c];continue;}
+      o[c]=assainirEtat(o[c],c);}
+    return o;}
+  return o;}
+function migrerEtat(st){if(!st)return;assainirEtat(st);const v=+st.schema||0;if(v<37)migrerSols(st);if(v<47)migrerToiture(st);migrerWorkflow(st);st.schema=SCHEMA;}
 function load(brut){try{const s=JSON.parse(brut??siteBrut()??localStorage.getItem('avyora-plan-v2'));if(s?.state?.levels){state=s.state;state.done=state.done||{};migrerDone(state);migrerEtat(state);state.groups=state.groups||[];state.chantier={...CHANTIER_DEF,...(state.chantier||{})};if(s.view)view=s.view;
   let imgs={};try{imgs=JSON.parse(localStorage.getItem('avyora-plan-images'))||{};}catch{}
   state.levels.forEach(l=>{if(l.bg&&imgs[l.bg.img]){const im=new Image();im.onload=()=>draw();im.src=imgs[l.bg.img];images[l.bg.img]=im;}else if(l.bg)l.bg=null;});
@@ -7341,7 +7358,7 @@ function majBarreHaut(force){const T=document.querySelector('.top'),n=document.g
   T.classList.remove('c1','c2','c3','c4');if(isMobile()||!document.body.classList.contains('ctxHaut'))return;
   const trop=()=>T.scrollWidth>T.clientWidth+1||n.scrollWidth>n.clientWidth+1;for(const c of ['c1','c2','c4','c3'])if(trop())T.classList.add(c);
   if(estPlanFinal()&&innerWidth<=900&&T.scrollWidth>T.clientWidth+1){_ctxPF.bande=true;placerContexte();T.classList.remove('c1','c2','c3','c4');sigBarreHaut='';if(typeof majZonePlan==='function')majZonePlan();}} /* D69 : même resserrée, la barre déborde — les niveaux redescendent dans la bande */
-function renderLevelsBrut(){majLibellePlan();document.getElementById('levels').innerHTML=state.levels.map((l,i)=>`<button class="${i===state.cur?'on':''}" aria-pressed="${i===state.cur}" onclick="setLevel(${i})" title="${l.name}">${l.name}</button>`).join('')+`<button class="add" onclick="openModal('level')" title="Ajouter un niveau" aria-label="Ajouter un niveau">${ico('plus')}</button>`+v3BoutonHTML(); /* D71 : la vue 3D, à côté des niveaux (elle les suit dans la barre du haut ou dans la bande) */ /* D51 : une icône, plus le glyphe « + » (lu « plus » par le lecteur d'écran, hors du nom) */
+function renderLevelsBrut(){majLibellePlan();document.getElementById('levels').innerHTML=state.levels.map((l,i)=>`<button class="${i===state.cur?'on':''}" aria-pressed="${i===state.cur}" onclick="setLevel(${i})" title="${esc(l.name)}">${esc(l.name)}</button>`).join('')+`<button class="add" onclick="openModal('level')" title="Ajouter un niveau" aria-label="Ajouter un niveau">${ico('plus')}</button>`+v3BoutonHTML(); /* D71 : la vue 3D, à côté des niveaux (elle les suit dans la barre du haut ou dans la bande) */ /* D51 : une icône, plus le glyphe « + » (lu « plus » par le lecteur d'écran, hors du nom) */
   /* D39 : les trois vues, nommées par LEX, sans emoji */
   /* D64 : sur une barre étroite, « Avant · Travaux · Après » — le mot « travaux » est dans le DOM (masqué), le nom accessible reste entier */
   const court=m=>{const l=LEX.vue[m],i=l.indexOf(' ');return i<0?l:`<span class="vl">${l.slice(0,i)}</span><span class="vx">${l.slice(i)}</span>`;};
@@ -7434,7 +7451,7 @@ function setLevelProp(k,val){history.push(snapshot());const lv=L();
        s'applique désormais à toutes ses pièces sans plancher ; une pièce peut ensuite différer. */
     let n=0;lv.rooms.forEach(r=>{if(r.floor===SANS_PLANCHER&&r.plancherNeuf!==val){r.plancherNeuf=val;if(r.sol&&val==='bois'){delete r.sol.chape;delete r.sol.iso;delete r.sol.chapeE;if(!r.sol.ragreage)delete r.sol;}n++;}});
     if(n)setTimeout(()=>toast(n+' pièce'+(n>1?'s':'')+' de cet étage en plancher '+(val==='beton'?'béton':'bois')+(val==='bois'?' : pas de chape ciment dessus':''),true),0);}
-  else lv.name=String(val).trim().slice(0,20)||lv.name;
+  else lv.name=texteSur(String(val).trim().slice(0,20))||lv.name;
   afterChange();}
 
 function pruneEmptyTexts(){const lv=L();if(!lv.texts||!lv.texts.length)return;lv.texts=lv.texts.filter(t=>(t.text&&t.text.trim())||(sel?.kind==='text'&&sel.id===t.id));}
@@ -7773,7 +7790,7 @@ function renderSelection(lv){
     const ops=openingsOfFace(lv,f);const wallArea=wallPaintArea(lv,f);
     /* D42 (novice11) : ce que le contrôle du plan dit de CETTE pièce, en tête de sa fiche */
     const ckP=planChecks(lv).filter(c=>c.sel&&c.sel.kind==='room'&&c.sel.id===r.id);
-    h+=`<div class="ptitle">${roomName(r)}</div><div class="psub">Détectée automatiquement à partir des murs.</div>${ckP.length?`<div class="chks" style="margin:0 0 12px">${ckP.map(c=>`<div class="chk ${c.lvl}"><span class="ci">${ico(c.lvl==='err'?'erreur':c.lvl==='warn'?'alerte':'idee')}</span><span>${c.msg}</span></div>`).join('')}</div>`:''}
+    h+=`<div class="ptitle">${esc(roomName(r))}</div><div class="psub">Détectée automatiquement à partir des murs.</div>${ckP.length?`<div class="chks" style="margin:0 0 12px">${ckP.map(c=>`<div class="chk ${c.lvl}"><span class="ci">${ico(c.lvl==='err'?'erreur':c.lvl==='warn'?'alerte':'idee')}</span><span>${c.msg}</span></div>`).join('')}</div>`:''}
     <div class="ph">Nom</div><input class="fin" value="${r.name.replace(/"/g,'&quot;')}" placeholder="${esc(roomName(r))}" oninput="setRoomProp('name',this.value,true)" onchange="save()">
     <div class="ph mt">Type de pièce</div>${r.typeAuto?`<div class="tip act" style="margin:0 0 8px">Type <b>deviné d'après la surface</b>. Choisis le bon : il décide de ce qu'on te propose (sol, faïence, équipements).</div>`:''}<select class="fin${r.typeAuto?' devine':''}" onchange="setRoomProp('type',this.value)" aria-label="Type de pièce">${ROOM_TYPES.map(t=>`<option value="${t[0]}" ${t[0]===r.type?'selected':''}>${t[1]}</option>`).join('')}</select>
     ${(()=>{const humide=pieceHumide(lv,f);
@@ -7816,7 +7833,7 @@ function renderSelection(lv){
       <div class="solstack">${sp.steps.map(s=>{const st=SOL_STATE[s.state],rev=s.k==='rev',dep=s.k==='depose'&&s.choix;
         /* D47 (cj-pro05) : la dépose est une couche DÉCIDÉE quand on peut poser sur l'ancien sol */
         const depSel=dep?`<select class="fin solsel" aria-label="Ancien sol" onchange="setRoomProp('surExistant',this.value==='1')"><option value="0"${sp.surExistant?'':' selected'}>Déposer l'ancien sol (${esc(actuel||solsTxt(null,r))})</option><option value="1"${sp.surExistant?' selected':''}>Poser sur l'ancien sol</option></select>`:'';
-        return `<div class="solstep s-${s.state}${rev?' s-rev':''}${(s.k==='support'&&supSel)||dep?' s-wrap':''}"><span class="si" style="color:${st[1]}">${ico(st[0])}</span><span class="sl"><b>${s.label}${GL_SOL[s.k]?gl(GL_SOL[s.k]):''}</b>${rev||(s.k==='support'&&supSel)||dep?'':`<small>${s.detail}</small>`}</span><span class="ss" style="color:${st[1]}">${s.etat||st[2]}</span>${rev?revSel:s.k==='support'&&supSel?supSel:depSel}</div>`;}).join('')}</div>
+        return `<div class="solstep s-${s.state}${rev?' s-rev':''}${(s.k==='support'&&supSel)||dep?' s-wrap':''}"><span class="si" style="color:${st[1]}">${ico(st[0])}</span><span class="sl"><b>${s.label}${GL_SOL[s.k]?gl(GL_SOL[s.k]):''}</b>${rev||(s.k==='support'&&supSel)||dep?'':`<small>${esc(s.detail)}</small>`}</span><span class="ss" style="color:${st[1]}">${s.etat||st[2]}</span>${rev?revSel:s.k==='support'&&supSel?supSel:depSel}</div>`;}).join('')}</div>
       ${sp.surExistant?`<div class="tip" style="margin-top:8px">Posé <b>sur l'ancien sol</b> : pas de dépose. Il faut un support sain, plan et bien adhérent — ton artisan le vérifie sur place ; coche le ragréage s'il n'est pas plan.${nw==='Parquet'?' Le parquet se pose alors en flottant.':''}${nw==='Carrelage'||nw==='Béton ciré'?' Le primaire d\'accrochage n\'a pas encore de prix : il n\'est pas compté.':''}</div>`:''}
       ${sp.garde?`<div class="tip" style="margin-top:8px">Tu gardes ce sol : <b>rien à faire, rien de compté</b>. La décision est prise.</div>`:''}
       ${sp.ponce?`<div class="tip" style="margin-top:8px">Le parquet actuel est <b>poncé puis vitrifié</b> : une seule couche, sans dépose ni chape, et il garde ses plinthes. Pour le remplacer, choisis « Parquet neuf ».</div>`:''}
@@ -7897,8 +7914,8 @@ function elemProductSection(el,label,defaultNote){
     <textarea class="fin" rows="2" style="margin-top:8px" aria-label="Note" placeholder="Note (ex. à remplacer, garder, dimensions à vérifier…)" oninput="setElemNote(this.value)" onchange="save()">${esc(el.note||'')}</textarea>`;
 }
 function currentElem(){const lv=L();if(sel?.kind==='opening')return lv.openings.find(o=>o.id===sel.id);if(sel?.kind==='item')return lv.items.find(i=>i.id===sel.id);return null;}
-function setElemProduct(k,val){const el=currentElem();if(!el)return;history.push(snapshot());el.product=el.product||{};if(k==='url')el.product.url=cleanUrl(val);else if(k==='prix'){const p=parseFloat(val);el.product.prix=p>0?p:null;}else el.product[k]=String(val).trim();if(!el.product.nom&&!el.product.url&&!el.product.prix)delete el.product;afterChange();}
-function setElemNote(val){const el=currentElem();if(!el)return;el.note=val;draw();}
+function setElemProduct(k,val){const el=currentElem();if(!el)return;history.push(snapshot());el.product=el.product||{};if(k==='url')el.product.url=cleanUrl(val);else if(k==='prix'){const p=parseFloat(val);el.product.prix=p>0?p:null;}else el.product[k]=texteSur(String(val).trim());if(!el.product.nom&&!el.product.url&&!el.product.prix)delete el.product;afterChange();}
+function setElemNote(val){const el=currentElem();if(!el)return;el.note=texteSur(val);draw();}
 // tous les produits du projet, avec quantité et total
 function allProducts(){
   const out=[];
@@ -7976,7 +7993,7 @@ function renderOverview(lv){
   ${pf?'':mode()==='projet'?`<div class="tip q" id="resumeTravaux">${resumeTravauxHTML(tq)}</div>`:mode()==='final'?`<div class="tip ok">Le logement <b>après travaux</b>, tel qu'il sera : murs démolis retirés, nouveaux murs et ouvertures intégrés, sans marquage. C'est le plan à montrer aux artisans. Pour changer les travaux, repasse en vue <b>${nomVue('projet')}</b>.</div>`:(lv.walls.length?`<div class="tip">Ton logement tel qu'il est. Quand il est complet, passe en vue <b>${nomVue('projet')}</b> (boutons en haut du plan) pour dessiner ce que tu démolis et ce que tu crées.</div>`:'')}
   ${pf&&!faces.length?'':'<div class="ph mt">Pièces</div>' /* D69 : un Plan final sans pièce ne le dit qu'une fois (sous le titre) */}<div class="roomlist"${pf&&!faces.length?' hidden':''}>`;
   if(!faces.length)h+=`<div class="empty">${ouvertParTravaux?'Aucune pièce fermée après travaux.':'Dès qu\'un contour de murs se ferme, la pièce apparaît ici avec sa surface.'}</div>`;
-  faces.forEach(f=>{const r=f.room;h+=`<button type="button" class="rl" onclick="sel={kind:'room',id:'${r.id}'};render()"><span class="dot" style="background:${RT[r.type].color}"></span><span class="nm">${roomName(r)}<small>${RT[r.type].label}${(mode()!=='existant'&&r.floorNew)?' · '+r.floorNew.replace(/ \(.*\)/,''):(mode()!=='existant'&&solGarde(r))?' · sol gardé':(r.floor!==FLOORS[0]?' · '+r.floor:'')}${tremieArea(lv,f)>0?' · trémie':''}${r.lowPct?' · '+r.lowPct+'% sous pente':''}</small></span><span class="m2">${fmtM2(areaNet(lv,f))}</span></button>`;});
+  faces.forEach(f=>{const r=f.room;h+=`<button type="button" class="rl" onclick="sel={kind:'room',id:'${r.id}'};render()"><span class="dot" style="background:${RT[r.type].color}"></span><span class="nm">${esc(roomName(r))}<small>${RT[r.type].label}${(mode()!=='existant'&&r.floorNew)?' · '+r.floorNew.replace(/ \(.*\)/,''):(mode()!=='existant'&&solGarde(r))?' · sol gardé':(r.floor!==FLOORS[0]?' · '+r.floor:'')}${tremieArea(lv,f)>0?' · trémie':''}${r.lowPct?' · '+r.lowPct+'% sous pente':''}</small></span><span class="m2">${fmtM2(areaNet(lv,f))}</span></button>`;});
   h+=`</div>${pf?recapOuverturesHTML():'' /* D70 : un Plan final, juste sous ses pièces */}${isMobile()?'<fieldset class="ro">':'' /* D48 : au téléphone, les réglages se lisent */}
   ${state.levels.indexOf(lv)>0&&!pf?`<label class="chk"><input type="checkbox" ${lv.neuf?'checked':''} onchange="setLevelProp('neuf',this.checked)"><span>Étage créé par les travaux<small>son plancher est à construire et sera chiffré</small></span></label>
   ${lv.neuf?`<div class="tip warn" style="margin-top:8px">${ico('niveaux','lead')}<b>Le plancher de cet étage est compté comme travaux.</b> Les murs, eux, gardent leur propre état : si tu poses un plancher dans un volume de grande hauteur, ils sont <b>déjà debout</b> — ne les passe pas « ${LEX.etat.creer} » et indique la hauteur d'origine de la pièce du dessous, dans sa fiche, au champ <b>« hauteur avant travaux »</b>. Si tu surélèves, passe-les <b>« ${LEX.etat.creer} »</b>.</div>`:''}
@@ -8332,11 +8349,11 @@ function setRoomRevetement(val){const r=L().rooms.find(r=>r.id===sel?.id);if(!r)
   else{delete r.solGarde;if(val)r.floorNew=val;else delete r.floorNew;if(val===PONCAGE||val===BETON_FINI)delete r.sol;}
   if(!poseSurExistantOK(r))delete r.surExistant; /* D47 : « poser sur l'ancien » ne survit pas à un revêtement qui ne le permet pas */
   retirerFusion(r,'sol');afterChange();}
-function setRoomProp(k,val,light){const r=L().rooms.find(r=>r.id===sel.id);if(!light)history.push(snapshot());if(k==='floor'&&r.floorNew===PONCAGE&&!/parquet/i.test(val||''))delete r.floorNew;r[k]=val;
+function setRoomProp(k,val,light){if(typeof val==='string'&&(k==='name'||k==='note'))val=texteSur(val);const r=L().rooms.find(r=>r.id===sel.id);if(!light)history.push(snapshot());if(k==='floor'&&r.floorNew===PONCAGE&&!/parquet/i.test(val||''))delete r.floorNew;r[k]=val;
   if(k==='surExistant'&&!val)delete r.surExistant;if(['peinture','faience','fauxPlafond','surExistant'].includes(k))retirerFusion(r,k==='surExistant'?'sol':k); /* D47 : décidé dans la pièce réunie */if(k==='type'||(k==='name'&&String(val).trim()))delete r.typeAuto;if(k==='type'||k==='name')_numPieces=null;if(light){draw();renderFoot();}else afterChange();}
 function setTextColor(c){const t=TX(L()).find(x=>x.id===sel?.id);if(!t)return;history.push(snapshot());t.color=c;lastNoteColor=c;afterChange();}
 let lastNoteColor=NOTE_DEFAUT;
-function setTextProp(val){const t=TX(L()).find(x=>x.id===sel?.id);if(!t)return;if(!t._h){history.push(snapshot());t._h=1;}t.text=String(val).slice(0,200);draw();}
+function setTextProp(val){const t=TX(L()).find(x=>x.id===sel?.id);if(!t)return;if(!t._h){history.push(snapshot());t._h=1;}t.text=texteSur(String(val).slice(0,200));draw();}
 function setRoomHeight(val){const r=L().rooms.find(r=>r.id===sel.id);const h=parseFloat(val);history.push(snapshot());r.height=(h>=1.8&&h<=5&&Math.abs(h-L().height)>0.001)?h:undefined;afterChange();}
 function setRoomHAvant(val){const r=L().rooms.find(r=>r.id===sel.id);const h=parseFloat(val);history.push(snapshot());r.hAvant=(h>=1.8&&h<=12)?h:undefined;afterChange();}
 
