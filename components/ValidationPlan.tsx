@@ -16,62 +16,83 @@
  */
 import { Fragment } from "react";
 import { EST_CSS } from "./estimateur-styles";
+import { useLocale } from "@/components/i18n/LangProvider";
+import { dictPlans, type DictPlans } from "@/lib/i18n/plans";
+import { catT } from "@/lib/estimateur/catalog-i18n";
 import { lignesAValider, type LigneInjectee, type RapportInjection } from "@/lib/estimateur/plan-injection";
 
+/* Couleurs : les jetons du thème (globals.css). Le texte d'alerte est assombri vers l'encre pour rester
+   lisible sur le fond pâle de la même teinte. */
 const CSS = `
 .av-estim .vp-chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
 .av-estim .vp-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:12px;font-weight:600;color:var(--muted);background:var(--surface-2)}
 .av-estim .vp-chip b{font-family:var(--font-geist-mono),monospace;color:var(--ink)}
-.av-estim .vp-chip.alerte{border-color:#f5c2c7;background:#fff5f5;color:#b91c1c}
-.av-estim .vp-chip.deduit{border-color:#fde68a;background:#fffbeb;color:#92400e}
+.av-estim .vp-chip.alerte{border-color:var(--color-danger);background:var(--color-danger-soft);color:color-mix(in srgb,var(--color-danger) 70%,var(--ink))}
+.av-estim .vp-chip.deduit{border-color:var(--color-warning);background:var(--color-warning-soft);color:color-mix(in srgb,var(--color-warning) 55%,var(--ink))}
 .av-estim .vp-bloc{border:1px solid var(--line);border-radius:var(--radius-card);padding:14px 16px;margin-bottom:12px;background:var(--surface)}
-.av-estim .vp-bloc.alerte{border-color:#f5c2c7;background:#fff8f8}
-.av-estim .vp-bloc.deduit{border-color:#fde68a;background:#fffdf5}
+.av-estim .vp-bloc.alerte{border-color:var(--color-danger);background:var(--color-danger-soft)}
+.av-estim .vp-bloc.deduit{border-color:var(--color-warning);background:var(--color-warning-soft)}
 .av-estim .vp-t{font-size:13.5px;font-weight:600;color:var(--ink);margin-bottom:2px}
-.av-estim .vp-t small{display:block;font-weight:500;font-size:11.5px;color:var(--faint);margin-top:1px}
-.av-estim .vp-q{display:flex;align-items:baseline;gap:10px;margin-top:8px;font-size:12.5px;color:var(--muted)}
+.av-estim .vp-t small{display:block;font-weight:500;font-size:11.5px;color:var(--muted);margin-top:1px}
+.av-estim .vp-q{display:flex;align-items:baseline;flex-wrap:wrap;gap:10px;margin-top:8px;font-size:12.5px;color:var(--muted)}
 .av-estim .vp-q .num{font-size:14px;font-weight:600;color:var(--ink)}
-.av-estim .vp-q .barre{text-decoration:line-through;color:var(--faint);font-weight:500}
-.av-estim .vp-why{font-size:12.5px;color:#92400e;margin-top:8px;line-height:1.45}
-.av-estim .vp-why.conflit{color:#b91c1c}
+.av-estim .vp-q .barre{text-decoration:line-through;color:var(--muted);font-weight:500}
+.av-estim .vp-why{font-size:12.5px;color:color-mix(in srgb,var(--color-warning) 55%,var(--ink));margin-top:8px;line-height:1.45}
+.av-estim .vp-why.conflit{color:color-mix(in srgb,var(--color-danger) 70%,var(--ink))}
 .av-estim .vp-tab{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
 .av-estim .vp-tab td{padding:6px 0;border-bottom:1px solid var(--line);vertical-align:baseline}
-.av-estim .vp-tab td:last-child{text-align:right;white-space:nowrap;font-family:var(--font-geist-mono),monospace;font-variant-numeric:tabular-nums}
-.av-estim .vp-lot{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--faint);padding-top:14px!important}
+.av-estim .vp-tab td:last-child{text-align:right;white-space:nowrap;padding-left:12px;font-family:var(--font-geist-mono),monospace;font-variant-numeric:tabular-nums}
+.av-estim .vp-lot{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);padding-top:14px!important}
 .av-estim .vp-neuf{color:var(--brand);font-weight:600}
-.av-estim .vp-cta{width:100%;font-family:var(--font-geist-sans);font-weight:600;font-size:14.5px;background:var(--brand);color:#fff;border:0;border-radius:var(--radius-field);padding:14px 18px;cursor:pointer;box-shadow:var(--shadow-lift);transition:transform .15s var(--ease)}
+.av-estim .vp-cta{width:100%;font-family:var(--font-geist-sans);font-weight:600;font-size:14.5px;background:var(--brand);color:var(--surface);border:0;border-radius:var(--radius-field);padding:14px 18px;cursor:pointer;box-shadow:var(--shadow-lift);transition:transform .15s var(--ease)}
 .av-estim .vp-cta:hover{transform:translateY(-1px)}
+.av-estim .vp-cta:disabled{opacity:.6;cursor:progress;transform:none}
 `;
 
-const fmt = (n: number, u: string) => (u === "forfait" ? "au forfait" : `${n.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} ${u === "m2" ? "m²" : u}`);
+type T = DictPlans["validation"];
 
-function Ligne({ l }: { l: LigneInjectee }) {
+/** Une quantité : nombre à la mode de la langue, unité du catalogue (traduite en anglais). */
+function formatQ(locale: string, t: T) {
+  const nombre = new Intl.NumberFormat(locale === "en" ? "en-US" : "fr-FR", { maximumFractionDigits: 2 });
+  return (n: number, u: string) => (u === "forfait" ? t.auForfait : `${nombre.format(n)} ${u === "m2" ? "m²" : catT(locale, "unites", u)}`);
+}
+
+function Ligne({ l, t, locale, fmt }: { l: LigneInjectee; t: T; locale: string; fmt: (n: number, u: string) => string }) {
   const conflit = l.etat === "epinglee";
   return (
     <div className={"vp-bloc" + (conflit ? " alerte" : l.deduction ? " deduit" : "")}>
-      <div className="vp-t">{l.nom}<small>{l.lot} · {l.raison}</small></div>
+      <div className="vp-t">{catT(locale, "postes", l.nom)}<small>{catT(locale, "corps", l.lot)} · {l.raison}</small></div>
       <div className="vp-q">
         {conflit ? (
           <>
-            <span>Tu as fixé <span className="num">{fmt(l.avant ?? 0, l.unite)}</span></span>
-            <span>·</span>
-            <span>le plan en mesure <span className="num">{fmt(l.quantite, l.unite)}</span></span>
+            <span>{t.tuAsFixe} <span className="num">{fmt(l.avant ?? 0, l.unite)}</span></span>
+            <span aria-hidden="true">·</span>
+            <span>{t.planMesure} <span className="num">{fmt(l.quantite, l.unite)}</span></span>
           </>
         ) : (
           <>
             {l.avant != null && l.etat === "mise-a-jour" && <span className="barre">{fmt(l.avant, l.unite)}</span>}
             <span className="num">{fmt(l.quantite, l.unite)}</span>
-            {l.etat === "ajoutee" && <span className="vp-neuf">nouveau</span>}
+            {l.etat === "ajoutee" && <span className="vp-neuf">{t.nouveau}</span>}
           </>
         )}
       </div>
-      {conflit && <p className="vp-why conflit">Ta saisie est conservée : le plan ne l&apos;écrase pas. Si c&apos;est sa mesure qui est juste, corrige la quantité dans le détail ci-dessous.</p>}
+      {conflit && <p className="vp-why conflit">{t.conflit}</p>}
       {!conflit && l.deduction && <p className="vp-why">{l.deduction}</p>}
     </div>
   );
 }
 
-export function ValidationPlan({ rapport, onValider }: { rapport: RapportInjection; onValider?: () => void }) {
+/**
+ * `occupe` (facultatif) : la validation est partie, le bouton attend. L'interface d'origine
+ * `{ rapport, onValider }` est inchangée. Les raisons et déductions viennent de la table de
+ * correspondance du plan (en français, comme l'intérieur de l'éditeur) ; les libellés du catalogue et
+ * tout le texte de l'écran suivent la langue.
+ */
+export function ValidationPlan({ rapport, onValider, occupe }: { rapport: RapportInjection; onValider?: () => void; occupe?: boolean }) {
+  const locale = useLocale();
+  const t = dictPlans(locale).validation;
+  const fmt = formatQ(locale, t);
   const lignes = lignesAValider(rapport);
   const aDecider = lignes.filter((l) => l.etat === "epinglee" || l.deduction);
   const reste = lignes.filter((l) => l.etat !== "epinglee" && !l.deduction && l.etat !== "inchangee");
@@ -83,44 +104,41 @@ export function ValidationPlan({ rapport, onValider }: { rapport: RapportInjecti
     <div className="av-estim">
       <style dangerouslySetInnerHTML={{ __html: EST_CSS + CSS }} />
       <div className="card">
-        <div className="eyebrow">Ton plan</div>
-        <h2>Vérifie ce que le plan a rempli</h2>
-        <div className="sub">
-          Les quantités viennent de ce que tu as dessiné. Rien n&apos;est définitif : tout reste
-          modifiable dans le détail, poste par poste.
-        </div>
+        <div className="eyebrow">{t.eyebrow}</div>
+        <h2>{t.titre}</h2>
+        <div className="sub">{lignes.length ? t.sous : t.vide}</div>
         <div className="vp-chips">
-          {bilan.ajoutees > 0 && <span className="vp-chip"><b>{bilan.ajoutees}</b> ajoutés</span>}
-          {bilan.misesAJour > 0 && <span className="vp-chip"><b>{bilan.misesAJour}</b> mis à jour</span>}
-          {bilan.inchangees > 0 && <span className="vp-chip"><b>{bilan.inchangees}</b> inchangés</span>}
-          {bilan.deductions > 0 && <span className="vp-chip deduit"><b>{bilan.deductions}</b> à confirmer</span>}
-          {bilan.epinglees > 0 && <span className="vp-chip alerte"><b>{bilan.epinglees}</b> en désaccord</span>}
+          {bilan.ajoutees > 0 && <span className="vp-chip"><b>{bilan.ajoutees}</b> {t.ajoutes}</span>}
+          {bilan.misesAJour > 0 && <span className="vp-chip"><b>{bilan.misesAJour}</b> {t.misAJour}</span>}
+          {bilan.inchangees > 0 && <span className="vp-chip"><b>{bilan.inchangees}</b> {t.inchanges}</span>}
+          {bilan.deductions > 0 && <span className="vp-chip deduit"><b>{bilan.deductions}</b> {t.aConfirmer}</span>}
+          {bilan.epinglees > 0 && <span className="vp-chip alerte"><b>{bilan.epinglees}</b> {t.desaccord}</span>}
         </div>
       </div>
 
       {aDecider.length > 0 && (
         <div className="card">
-          <h2>À regarder de près</h2>
+          <h2>{t.aRegarder}</h2>
           <div className="sub">
-            {bilan.epinglees > 0 && "Une quantité que tu avais corrigée ne correspond pas à ce que mesure le plan. "}
-            Sur ces lignes, le plan a choisi à ta place — vérifie que c&apos;est bien ce que tu veux.
+            {bilan.epinglees > 0 && t.aRegarderEpinglee + " "}
+            {t.aRegarderSous}
           </div>
-          {aDecider.map((l) => <Ligne key={l.cle} l={l} />)}
+          {aDecider.map((l) => <Ligne key={l.cle} l={l} t={t} locale={locale} fmt={fmt} />)}
         </div>
       )}
 
       {reste.length > 0 && (
         <div className="card">
-          <h2>Le reste, mesuré sur le plan</h2>
-          <div className="sub">Rien à décider ici : ce sont des quantités relevées sur ton dessin.</div>
+          <h2>{t.reste}</h2>
+          <div className="sub">{t.resteSous}</div>
           <table className="vp-tab">
             <tbody>
               {Object.entries(parLot).map(([lot, ls]) => (
                 <Fragment key={lot}>
-                  <tr><td className="vp-lot" colSpan={2}>{lot}</td></tr>
+                  <tr><td className="vp-lot" colSpan={2}>{catT(locale, "corps", lot)}</td></tr>
                   {ls.map((l) => (
                     <tr key={l.cle}>
-                      <td>{l.nom}{l.etat === "ajoutee" && <span className="vp-neuf"> · nouveau</span>}</td>
+                      <td>{catT(locale, "postes", l.nom)}{l.etat === "ajoutee" && <span className="vp-neuf"> · {t.nouveau}</span>}</td>
                       <td>{fmt(l.quantite, l.unite)}</td>
                     </tr>
                   ))}
@@ -131,8 +149,8 @@ export function ValidationPlan({ rapport, onValider }: { rapport: RapportInjecti
         </div>
       )}
 
-      <button type="button" className="vp-cta" onClick={() => onValider?.()}>
-        J&apos;ai vérifié, continuer vers le détail
+      <button type="button" className="vp-cta" onClick={() => onValider?.()} disabled={occupe} aria-busy={occupe || undefined}>
+        {t.continuer}
       </button>
     </div>
   );

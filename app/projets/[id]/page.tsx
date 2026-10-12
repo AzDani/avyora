@@ -62,11 +62,6 @@ export default async function ProjetPage({ params }: { params: Promise<{ id: str
         </div>
       </div>
 
-      {/* L'import de plan n'est PAS monté : tant que la migration 0003 n'est pas jouée, le bouton
-          échouerait à l'enregistrement. Pour l'activer, remettre ici :
-            {!isRapide && <div className="card p-4 mb-4"><ImporterPlan projetId={String(projet.id)} /></div>}
-          et rétablir l'import de `@/components/ImporterPlan`. Le reste de la chaîne est prêt. */}
-
       {isRapide
         ? (neuf
           ? <ResultatRapideNeuf reponses={reponses} projectId={projet.id} isPro={estPro(user)} />

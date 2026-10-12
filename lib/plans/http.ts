@@ -19,6 +19,9 @@ export const CODES_PLANS = [
   "limite_gratuite", // 402 : un gratuit a déjà son plan
   "plafond", // 409 : plafond anti-abus (200 plans), Pro compris
   "conflit", // 409 : révision périmée, avec `revision` (celle du serveur)
+  "pro_requis", // 403 : l'estimation détaillée d'un plan de rénovation est réservée au Pro (C7)
+  "contrat_absent", // 400 : le plan n'a pas encore de contrat de rénovation (l'éditeur ne l'a pas envoyé)
+  "code_postal", // 400 : code postal absent du contrat, et absent ou malformé dans la requête
   "erreur", // 500
 ] as const;
 export type CodePlans = (typeof CODES_PLANS)[number];
@@ -35,6 +38,9 @@ const STATUTS: Record<CodePlans, number> = {
   limite_gratuite: 402,
   plafond: 409,
   conflit: 409,
+  pro_requis: 403,
+  contrat_absent: 400,
+  code_postal: 400,
   erreur: 500,
 };
 

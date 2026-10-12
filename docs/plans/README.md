@@ -171,7 +171,7 @@ avant d'exécuter l'éditeur ; sans lui, rien ne change (carnet **D76**, `maquet
 | Connecté (`NUAGE`) | « Mes plans » = le compte. Un plan dessiné est rangé d'office (limite gratuite : 1). Sauvegarde `PATCH` regroupée à 2 s avec la révision ; 409 → fenêtre de conflit ; hors ligne → indicateur et nouvel essai ; 402 → fenêtre de la limite. |
 | Plans dessinés avant la connexion | Proposés, jamais repris seuls (« Sur cet appareil », « Ajouter à mon compte »), sauf drapeau `avyora-plan-claim`. Reconnus par leur id : ni Annuler ni Rétablir ne les rangent. Un plan ouvert supprimé du compte reste ouvert, proposé. |
 | Anonyme après une déconnexion | Un tampon `avyora-plan-v2` qui porte un plan du compte (id uuid) est ignoré par l'éditeur. La déconnexion (C4/C5) peut en plus effacer `avyora-plan-v2` et `avyora-plan-rev`. |
-| Liens | Construction : `&pid=<uuid>` ou `&pl=<id local>` devant `#plan=`. Rénovation (Pro) : `PATCH {revision, contrat}` puis `/projets/depuis-plan/<id>`. Logo → `/logiciel-plan-maison`. |
+| Liens | Construction : `&pid=<uuid>` ou `&pl=<id local>` devant `#plan=`. Rénovation (Pro) : `PATCH {revision, contrat}` puis `/projets/depuis-plan/<id>` (C7). Logo → `/logiciel-plan-maison`. |
 
 Ce que l'amorçage doit poser (contrat, détaillé dans D76) :
 
@@ -339,6 +339,47 @@ la reprise du plan local. Le rapide neuf reste gratuit, le détaillé neuf reste
   `planId` ni `planLocal` et l'URL garde `pid` comme avant ; allumé, `pid` arrive dans l'origine et quitte l'URL,
   l'anonyme (401) range un brouillon réclamable avec `planLocal`, un `pid` sans `#plan=` ou invalide ne relie rien.
   Le parcours réel (fiche « Vient de ton plan », C8) se fera en préversion après l'application de 0004.
+
+## Estimation reliée : plan de rénovation vers la rénovation, Pro (C7)
+
+L'éditeur (Pro, connecté) envoie son contrat (`PATCH /api/plans/[id] {revision, contrat}`, C3), puis ouvre
+`/projets/depuis-plan/<id>`. L'écran montre ce que le plan remplirait, demande le code postal s'il manque, et la
+validation part vers `POST /api/plans/<id>/estimation`, qui **recalcule tout depuis la base**. Le client continue
+vers `/projets/{projectId}/modifier` (D1 : dernière relecture dans le détaillé).
+
+| Fichier | Rôle |
+|---|---|
+| `lib/estimateur/plan-ctx.ts` | Pur. `ctxDepuisPlan(contrat)` part de `defaultCtx()` : périmètre logement entier (D3), surface = `area` arrondie, emprise du RDC saisie (`surfaceSolManual`), niveaux, hauteur, **les 8 compteurs toujours écrits** (`compteursDepuisPlan`, pièces construites comme `maisonDepuisPlan`, appareils à démolir exclus), fenêtres existantes après travaux, finition, code postal s'il est valide, `fiscal: "pro"` si le logement a moins de deux ans. Type : « Maison », ou pour un appartement Studio/T2/T3/T4 (chambres + 1, le moteur n'a pas de type « Appartement »). Chaque valeur du contrat est relue, typée et bornée. |
+| `lib/plans/estimation.ts` | Serveur, session seule (aucun service role). `preparer(sb, planId, projetRelie?)` : relit `floor_plans.contrat`, `planImportSchema`, refuse un Plan final, `contributionsDuPlan` → `injecterPlan(sel du projet relié ?? {})` ; **n'écrit rien**. `valider(sb, user, planId, {codePostal?, projetId?, nouvelle?, locale})` : estimation reliée (`projetId`, sinon la plus récente) → injection rejouée sur la sélection du moment (D12), seule `reponses.sel` change, puis cliché du lien remplacé ; sinon création (`reponses = {v:"estimateur", mode:"detaille", ctx, sel, codePostal}`, nom « Rénovation — « {plan} » · {surface} m² », clé EN) puis `upsert project_plans {project_id, plan_id, contrat, contributions, rapport, version, nom}`. Chaque écriture vérifie le nombre de lignes (0 → erreur). Lien en échec : le projet créé est **supprimé** ; une estimation mise à jour reprend sa sélection d'avant. `reponses` ≤ 40 000 caractères (l'estimateur doit pouvoir le réenregistrer), sinon `trop_volumineux`. |
+| `app/api/plans/[id]/estimation/route.ts` | `POST {codePostal?, projetId?, nouvelle?}` (schéma strict, corps ≤ 2 000 octets) → 201 `{projectId, cree:true}` ou 200 `{projectId, cree:false}`. Gardes : interrupteur (404 sans corps), session (401), `estPro` (403 `pro_requis`), débit `plan`, uuid, code postal à 5 chiffres obligatoire si le contrat n'en porte pas (400 `code_postal`). Codes : `introuvable`, `contrat_absent`, `contrat_invalide`, `contrat_version`, `contrat_workflow`, `trop_volumineux`, `erreur`. |
+| `app/projets/depuis-plan/[planId]/page.tsx` | Privée (`proxy.ts`). Interrupteur éteint → 404 ; gratuit → `/tarifs?source=editeur-plan`. `?projet=<id>` : l'estimation reliée à mettre à jour ; sinon la plus récente ; sinon création. `?nouvelle=1` force la création (lien secondaire « Créer plutôt une nouvelle estimation »). Plan sans contrat ou Plan final : un message et « Ouvrir le plan ». |
+| `components/plans/DepuisPlan.tsx` | Client : résumé du bien (création), code postal si besoin, `ValidationPlan`, envoi, erreurs par code (`lib/i18n/plans.ts`, `estimation.erreurs`). |
+| `components/ValidationPlan.tsx` | Textes en clés FR/EN (`validation`), nombres et unités selon la langue, libellés du catalogue traduits (`catT`), couleurs par jetons du thème. Interface `{rapport, onValider}` inchangée (un `occupe` facultatif en plus). Les raisons et déductions viennent de la table de correspondance : elles restent en français. |
+
+**Supprimés** : `app/api/projects/[id]/plan/route.ts`, `…/plan/appliquer/route.ts`, `components/ImporterPlan.tsx`, et le
+commentaire de la fiche projet qui les décrivait.
+
+**Ne change pas** : `plan-correspondance.ts`, `plan-injection.ts`, `plan-mapping.ts` ; l'estimateur détaillé ; les
+projets de rénovation sans plan ; aucune migration (0004 suffit : `project_plans` a déjà `plan_id`, `contrat`,
+`contributions`, `rapport`).
+
+### Contrôles
+
+- `tests/estimateur-plan-ctx.test.ts` (contrat `tests/fixtures/plan-contrat.json`) : 8 compteurs écrits, zéros
+  compris ; surface = `area` ; logement entier ; emprise du RDC ; fenêtres après travaux ; code postal absent →
+  aucun ; appartement → T2/T3/Studio ; valeurs hors bornes ramenées.
+- `tests/plans-estimation.test.ts` (Supabase simulé, aucun service role) : éteint → 404 ; 401 ; gratuit → 403 ;
+  429 ; plan d'un autre → 404 ; Plan final → 400 ; sans contrat → 400 ; code postal ; création (projet + lien
+  avec `plan_id`, cliché) ; nom EN borné ; lien en erreur ou refusé en silence → projet supprimé ; mise à jour :
+  une ligne épinglée (D12) n'est pas écrasée, `custom` et `statuts` gardés ; `update` à 0 ligne → erreur ; lien
+  en échec → sélection d'avant ; `preparer` n'écrit rien ; la page (404, connexion, Tarifs, FR/EN, mise à jour,
+  messages) ; anciennes routes absentes.
+- `estimateur-plan-correspondance`, `-injection`, `-mapping` : verts, sans modification.
+- Recette navigateur (`next start`, interrupteur allumé, page d'aperçu temporaire, `POST` intercepté, aucun
+  compte) : résumé et code postal, refus sans code postal, corps envoyé = code postal seul (création) ou
+  `projetId` seul (mise à jour), suite `/projets/{id}/modifier`, écran EN sans français hors raisons, 403 →
+  message, 375 px sans défilement, contraste AA des alertes. Le parcours réel (dessiner, valider, détaillé,
+  « Mettre à jour l'estimation ») se fera en préversion.
 
 ## Retouches des vérificateurs (lots 1 et 2)
 
