@@ -359,7 +359,7 @@ const posts = (S) => S.log.filter((x) => x.m === "POST");
   await p.evaluate(() => { addWall({ x: 0, y: 0 }, { x: 6, y: 0 }); addWall({ x: 6, y: 0 }, { x: 6, y: 5 }); addWall({ x: 6, y: 5 }, { x: 0, y: 5 }); addWall({ x: 0, y: 5 }, { x: 0, y: 0 }); afterChange(); });
   await wait(1500);
   t["site · 402 (le compte a déjà son plan) : la fenêtre de la limite gratuite, le plan reste sur l'appareil"] = posts(S).length === 1
-    && await p.evaluate(() => modaleOuverte()?.id === "m-plans" && /Version gratuite/.test(document.getElementById("toast").textContent) && Object.keys(siteLib).length === 0 && siteSansAuto === state);
+    && await p.evaluate(() => modaleOuverte()?.id === "m-plans" && /Version gratuite/.test(document.getElementById("toast").textContent) && Object.keys(siteLib).length === 0 && siteProp());
   await wait(1200);
   t["site · après un 402 : aucun nouvel essai à chaque modification"] = await p.evaluate(() => { state.name = "X"; afterChange(); return true; }) && (await wait(1200), posts(S).length === 1);
   await ctx.close();
@@ -469,7 +469,13 @@ const posts = (S) => S.log.filter((x) => x.m === "POST");
   await p2.evaluate(() => { state.name = "Studio retouché"; afterChange(); });
   await wait(2800);
   t["reprise · sans drapeau : le plan local est proposé (message), rien n'est envoyé, même après une retouche"] = posts(S2).length === 0
-    && await p2.evaluate(() => siteSansAuto === state && /Enregistré sur cet appareil/.test(document.getElementById("saveState").title));
+    && await p2.evaluate(() => siteProp() && /Enregistré sur cet appareil/.test(document.getElementById("saveState").title));
+  await p2.evaluate(() => { history.push(snapshot()); state.name = "Studio retouché 2"; afterChange(); });
+  await wait(600);
+  await p2.evaluate(() => undo());
+  await wait(2800);
+  t["reprise · plan local proposé, une modification puis Annuler : toujours proposé, aucun POST"] = posts(S2).length === 0
+    && await p2.evaluate(() => siteProp() && state.name === "Studio retouché" && Object.keys(siteLib).length === 0);
   await p2.evaluate(() => newPlan(undefined, WORKFLOW_FINAL));
   await wait(400);
   t["reprise · un nouveau plan : le plan local reste sur cet appareil (Sur cet appareil), pas dans le compte"] = posts(S2).length === 0
@@ -526,6 +532,61 @@ const posts = (S) => S.log.filter((x) => x.m === "POST");
   const b2 = await p2.evaluate(() => { showEstimate(); return { h: document.getElementById("estBody").innerHTML, est: voitTout() }; });
   t["rénovation · gratuit : jamais « Créer l'estimation détaillée » (avec Pro)"] = !/Créer l'estimation détaillée/.test(b2.h) && (!b2.est || /avec Pro/.test(b2.h));
   await c2.close();
+}
+
+/* B16 · supprimer le plan ouvert : il reste ouvert sur cet appareil ; ni une modification ni Annuler (Ctrl+Z) ne le
+   remettent dans le compte ; « Annuler » du message lui rend son id du compte */
+{
+  const S = serveur({ plans: [{ id: UUID(10), nom: "À supprimer", workflow: "final_plan", etat: FIX("plan-final-etage"), revision: 2 },
+    { id: UUID(12), nom: "Gardé", workflow: "final_plan", etat: FIX("plan-final-etage"), revision: 1 }] });
+  const { p, ctx } = await ongletSite(S, { site: siteDe(S, { planId: UUID(10) }), chemin: "/plan?id=" + UUID(10) });
+  await p.evaluate((id) => { openPlansModal(); deleteSavedPlan(id); closeModal(); }, UUID(10));
+  await wait(8600);
+  t["suppression · le plan ouvert supprimé : DELETE à 8 s, il reste ouvert sous un id local, proposé"] = S.log.filter((x) => x.m === "DELETE").length === 1 && !S.plans.has(UUID(10))
+    && await p.evaluate(() => /^[a-z0-9]{1,24}$/.test(state.id) && siteProp() && sortDuPlanOuvert() === "appareil");
+  await p.evaluate(() => { history.push(snapshot()); state.name = "Modifié après suppression"; afterChange(); });
+  await wait(2800);
+  t["suppression · une modification ensuite : aucun POST"] = posts(S).length === 0;
+  await p.evaluate(() => undo());
+  await wait(2800);
+  t["suppression · une modification puis Annuler (Ctrl+Z) : aucun POST, le plan n'est pas ressuscité"] = posts(S).length === 0 && !S.plans.has(UUID(10))
+    && await p.evaluate((id) => siteProp() && !siteLib[id] && Object.keys(siteLib).length === 1, UUID(10));
+  await ctx.close();
+  const { p: q, ctx: c2 } = await ongletSite(S, { site: siteDe(S, { planId: UUID(12) }), chemin: "/plan?id=" + UUID(12) });
+  await q.evaluate((id) => { openPlansModal(); deleteSavedPlan(id); closeModal(); }, UUID(12));
+  await wait(300);
+  await q.evaluate(() => document.querySelector("#toast .tact").click());
+  await q.evaluate(() => { state.name = "Gardé et retouché"; afterChange(); });
+  await wait(8800);
+  t["suppression · « Annuler » du message : le plan ouvert reprend son id du compte, le PATCH part, aucun DELETE ni POST"] = S.plans.has(UUID(12)) && S.plans.get(UUID(12)).nom === "Gardé et retouché"
+    && S.log.filter((x) => x.m === "DELETE").length === 1 && posts(S).length === 0 && await q.evaluate((id) => state.id === id && !!siteLib[id] && !siteProp(), UUID(12));
+  await c2.close();
+}
+
+/* B17 · « Chiffrer cette maison » pendant que le plan entre dans le compte : le lien attend l'uuid (&pid=) */
+{
+  const S = serveur({ pro: true });
+  const { p, ctx } = await ongletSite(S, { site: siteDe(S) });
+  const r = await p.evaluate(() => {
+    window.__w = {}; window.open = () => window.__w;
+    chargerModele(TEMPLATES.find((x) => x.id === "maison"), null, null, WORKFLOW_FINAL); state.name = "Maison pressée"; afterChange();
+    const suit = chiffrerConstruction(document.getElementById("constructionBtn"), "menu");
+    return { suit, enVol: Object.keys(siteCrea).length };
+  });
+  await wait(1200);
+  const w = await p.evaluate(() => ({ u: String(window.__w.location || ""), id: state.id }));
+  t["neuf · clic pendant le POST : l'onglet attend la création, le lien porte &pid=<uuid>, jamais l'id local"] = r.suit === false && r.enVol === 1 && posts(S).length === 1
+    && /^[0-9a-f-]{36}$/.test(w.id) && w.u.includes("&pid=" + w.id + "#plan=") && !/&pl=/.test(w.u);
+  await ctx.close();
+}
+
+/* B18 · anonyme sur un appareil partagé : un plan du compte resté dans le tampon ne s'affiche pas */
+{
+  const S = serveur({ pro: false });
+  const tampon = { state: { ...FIX("maison"), id: UUID(13), name: "Plan d'un compte" }, view: null };
+  const { p, ctx } = await ongletSite(S, { site: siteDe(S, { connecte: false }), pro: false, avant: { "avyora-plan-welcome": "1", "avyora-plan-v2": JSON.stringify(tampon) } });
+  t["anonyme · tampon portant un plan du compte (uuid) : ignoré, l'éditeur s'ouvre sur un plan vide"] = await p.evaluate((id) => state.id !== id && state.name !== "Plan d'un compte" && planVide(), UUID(13));
+  await ctx.close();
 }
 
 let ko = 0;

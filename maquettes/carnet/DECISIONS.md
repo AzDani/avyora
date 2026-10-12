@@ -5175,6 +5175,10 @@ batterie ne voient la moindre différence.
    démarrage est **proposé** (message « Ajouter à mon compte ») et n'est pas rangé d'office ; s'il est remplacé, il reste
    sur l'appareil. « Mes plans » gagne « Sur cet appareil (n) » avec « Ajouter à mon compte ». Le drapeau
    `avyora-plan-claim` (posé par l'invitation, lu aussi par le site en C5) fait partir l'ajout tout seul, une fois.
+   Un plan proposé, ou retiré du compte, se reconnaît par son **id** (`siteSansAuto`, un ensemble d'ids ; `siteProp()`),
+   jamais par l'objet `state` : Annuler et Rétablir le remplacent, et une comparaison d'objets laissait le plan repartir
+   au compte après un Ctrl+Z. Supprimer le plan ouvert le garde ouvert sous un id local proposé ; l'« Annuler » du message
+   lui rend son id du compte.
 8. *L'anonyme du site* : le mode local de l'artefact, et après la première pièce une carte, une fois par plan
    (`avyora-plan-invite`) : « Garde ce plan dans ton compte : tu le retrouves sur tous tes appareils. » · « Créer mon
    compte gratuit » · « Plus tard ».
@@ -5182,13 +5186,16 @@ batterie ne voient la moindre différence.
    `&pl=<id local>` sinon, toujours devant `#plan=`. Rénovation, Pro, connecté : « Créer l'estimation détaillée » (ou
    « Mettre à jour l'estimation ») dans le pied d'Estimer : la file vidée, `PATCH {revision, contrat}`, puis
    `/projets/depuis-plan/<id>` ; en gratuit, « Estimation détaillée · avec Pro ». Les estimations nées du plan se lisent
-   sous le pied du panneau (« Construction · 18 oct. »), dans un nouvel onglet. Le logo devient un lien vers
+   sous le pied du panneau (« Construction · 18 oct. »), dans un nouvel onglet. « Chiffrer cette maison » cliqué pendant
+   que le plan entre dans le compte ouvre l'onglet tout de suite et n'y charge le lien qu'une fois l'uuid reçu (`&pid=`). Le logo devient un lien vers
    `/logiciel-plan-maison`, après la file. Au retour de l'onglet, la session est relue : un passage à Pro s'applique
    sans recharger.
 10. *Les textes* : `TXT_LIEU` (appareil / compte) ; en artefact, les phrases d'avant au caractère près.
 11. *Sécurité, aussi en artefact* : `esc()` traite `'` et `>` ; `escJs()` (nouvelle) ne laisse passer que
     `[A-Za-z0-9_-]` dans les `onclick` de « Mes plans » ; `miniPlanSVG` écrit des nombres. Les résumés et aperçus venus du
-    serveur sont réduits à des nombres et à des codes fermés.
+    serveur sont réduits à des nombres et à des codes fermés ; la prochaine étape reste du texte brut et `resumeTxt`
+    l'échappe à l'affichage (un seul échappement, même après une duplication). Anonyme sur le site : un tampon qui porte
+    un plan du compte (id uuid, appareil partagé après une déconnexion) est ignoré, l'éditeur s'ouvre sur un plan vide.
 
 **Contrat de `window.AVYORA_SITE`** (posé par l'amorçage du site, C4) : `{v:1, connecte, limite, plans, plan, type, urls,
 lang, dev}` — `plans` = les cartes de `GET /api/plans`, `plan` = la réponse de `GET /api/plans/:id` telle quelle (`etat`,
@@ -5210,7 +5217,7 @@ editeur, api, inscription, tarifs}`. Aucune donnée personnelle.
 `contratPlan()`, `V3_THREE`, `PRIX_PRO`, `CONSTRUCTION_URL`, `TARIFS_URL`, l'`@import`, le tutoriel, l'accueil, D68. Clés
 du site seulement : `avyora-plan-rev`, `avyora-plan-invite`, `avyora-plan-claim`.
 
-**Contrôles.** `site.mjs` (nouveau, 80 contrôles) : le source, l'artefact (aucune requête, aucune clé nouvelle, phrases
+**Contrôles.** `site.mjs` (nouveau, 87 contrôles) : le source, l'artefact (aucune requête, aucune clé nouvelle, phrases
 d'avant, données hostiles), le site simulé (interception Puppeteer, API en mémoire, aucun compte). La batterie complète,
 outil par outil, donne la sortie de la ligne de base de C0 (mêmes ✓, aucun KO), sauf 4 contrôles de `vue3d` liés à la
 machine (sur batterie à 8 %, la boucle 3D plafonne à 31 i/s et le recentrage animé du double-clic s'arrête à 3,5 cm) : le

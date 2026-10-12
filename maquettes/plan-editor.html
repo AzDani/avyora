@@ -4076,7 +4076,7 @@ const ICO_ENREG={ok:'check',saving:'horloge',err:'alerte',perdu:'alerte',conflit
    l'exemple — et le message qui le dit porte « Annuler ». 'exemple' : ce qu'il advient de lui. */
 const MSG_EXEMPLE='L\'exemple n\'est pas gardé : il se rouvre depuis Aide › Revoir l\'exemple.';
 const exempleNonGarde=()=>!isPro()&&estExemple();
-function sortDuPlanOuvert(){if(planVide()||planIntact())return 'rien';const lib=loadPlans();if(state.id&&lib[state.id])return 'range';if(NUAGE&&siteSansAuto===state)return 'appareil';if(exempleNonGarde())return 'exemple';if(isPro()||Object.keys(lib).length<PLAN_LIMIT_FREE)return 'rangera';return 'perdu';}
+function sortDuPlanOuvert(){if(planVide()||planIntact())return 'rien';const lib=loadPlans();if(state.id&&lib[state.id])return 'range';if(NUAGE&&siteProp())return 'appareil';if(exempleNonGarde())return 'exemple';if(isPro()||Object.keys(lib).length<PLAN_LIMIT_FREE)return 'rangera';return 'perdu';}
 /* D48 (cj-retention07, cj-integration11, retention05) : « Enregistré » ne se dit plus d'un plan que
    la version gratuite perdra à l'ouverture d'un autre (« Pas dans Mes plans », en orange foncé,
    cliquable), ni d'un plan qu'un autre onglet est en train d'écrire. */
@@ -4260,7 +4260,10 @@ let siteLib={};
 let siteRev=0;
 let siteEstim=[];
 let siteEstimPour=null;
-let siteSansAuto=null;
+/* les plans à ne jamais ranger d'office (local proposé, retiré du compte), reconnus par leur id : Annuler et
+   Rétablir remplacent l'objet state, une comparaison d'objets ne tiendrait pas */
+const siteSansAuto=new Set();
+const siteRetraits={};
 let siteBrutPris=false;
 let siteRepris=false;
 let siteConflitDepart=null;
@@ -4274,11 +4277,18 @@ const siteSupp={};
 const siteEnvoye={};
 const siteCrea={};
 function siteNum(n){n=+n;return Number.isFinite(n)?n:0;}
+/* le plan ouvert est-il un plan proposé (pas dans le compte, jamais rangé d'office) ? */
+function siteProp(){return !!state.id&&siteSansAuto.has(state.id)&&!siteLib[state.id];}
+function siteProposer(){if(!state.id)state.id=uid();siteSansAuto.add(state.id);}
+/* « Annuler » une suppression : le plan ouvert, passé sur un id local, reprend son id du compte */
+function siteRendreId(id){
+  const l=siteRetraits[id];if(!l)return;delete siteRetraits[id];
+  if(state.id===l){siteSansAuto.delete(l);state.id=id;}}
 function siteNom(n){return String(n||'').trim().slice(0,120)||'Plan sans nom';}
 function siteUrl(id){
   const e=typeof SITE_URLS.editeur==='string'?SITE_URLS.editeur:'/plan';
   return e+'?id='+encodeURIComponent(id);}
-/* le résumé d'une carte : des nombres, et une étape sans balise (il finit dans le HTML de « Mes plans ») */
+/* le résumé d'une carte : des nombres, et une étape en texte brut (resumeTxt l'échappe à l'affichage) */
 function siteResume(r){
   if(!r||typeof r!=='object'||!Object.keys(r).length)return null;
   const o={};
@@ -4286,7 +4296,7 @@ function siteResume(r){
   if(r.projet!=null&&Number.isFinite(+r.projet))o.projet=+r.projet;
   ['pieces','taches','faites'].forEach(k=>{o[k]=Number.isFinite(+r[k])?Math.max(0,Math.round(+r[k])):0;});
   if(r.pf===true)o.pf=true;
-  o.prochain=typeof r.prochain==='string'&&r.prochain?esc(r.prochain):null;
+  o.prochain=typeof r.prochain==='string'&&r.prochain?r.prochain:null;
   return o;}
 /* ce que l'API accepte : ni clé nulle, ni nom trop long */
 function siteResumeEnvoi(r){
@@ -4335,9 +4345,10 @@ function siteTamponner(){
 function siteBrut(){
   if(!SITE||siteBrutPris)return undefined;
   siteBrutPris=true;
-  if(!NUAGE)return undefined;
   let tampon=null;try{tampon=JSON.parse(localStorage.getItem('avyora-plan-v2'));}catch{}
   const T=tampon&&tampon.state&&Array.isArray(tampon.state.levels)?tampon.state:null;
+  /* anonyme : un plan du compte resté dans le tampon (appareil partagé, déconnexion) ne s'affiche pas */
+  if(!NUAGE)return T&&SITE_UUID.test(String(T.id))?'null':undefined;
   const P=SITE.plan;
   if(siteRev){
     const m=siteMemo();
@@ -4358,9 +4369,9 @@ function siteEcrire(o){
   Object.keys(siteLib).forEach(id=>{if(!o[id])siteRetirer(id);});
   Object.keys(o).forEach(id=>{
     const e=o[id];if(!e||typeof e!=='object')return;
+    siteSansAuto.delete(id);siteRendreId(id);
     if(siteSupp[id]){
       clearTimeout(siteSupp[id].t);delete siteSupp[id];siteLib[id]=e;
-      if(siteSansAuto===state)siteSansAuto=null;
       return;}
     const a=siteLib[id];
     if(!a&&siteCrea[id]){siteCrea[id].retire=false;siteLib[id]=e;return;}
@@ -4372,9 +4383,9 @@ function siteEcrire(o){
   return true;}
 function siteRetirer(id){
   const e=siteLib[id];delete siteLib[id];siteFile.delete(id);
+  if(state.id===id)siteSansAuto.add(id);
   if(siteCrea[id]){siteCrea[id].retire=true;return;}
   if(!SITE_UUID.test(id))return;
-  if(state.id===id)siteSansAuto=state;
   siteSupp[id]={e,t:setTimeout(()=>siteSupprimer(id),8000)};}
 function siteSupprimer(id){
   const x=siteSupp[id];if(!x)return;delete siteSupp[id];
@@ -4424,7 +4435,7 @@ function siteReponse(id,r,emp){
     return false;}
   if(r.s===404){
     delete siteLib[id];delete siteEnvoye[id];
-    if(id===state.id){delete state.id;siteSansAuto=null;save();toast('Ce plan n\'était plus dans ton compte : il y est rangé de nouveau.',true);}
+    if(id===state.id){siteSansAuto.delete(id);delete state.id;save();toast('Ce plan n\'était plus dans ton compte : il y est rangé de nouveau.',true);}
     return true;}
   if(r.s===0||r.s===429||r.s>=500){siteFile.add(id);siteReessayer(r.s===0);return false;}
   etatEnreg='err';afficherEnreg();
@@ -4469,7 +4480,7 @@ function siteCree(id,c,r){
     siteRafraichirListe();return;}
   if(r.s===402||(r.s===409&&r.j&&r.j.code==='plafond')){
     delete siteLib[id];siteFile.delete(id);
-    if(state.id===id)siteSansAuto=state;
+    if(state.id===id)siteSansAuto.add(id);
     etatEnreg='ok';
     if(r.s===402)planPaywall();
     else toast('Ton compte a atteint le nombre maximal de plans : supprime un plan pour en ranger un autre.');
@@ -4483,7 +4494,7 @@ function siteSynchro(){
   if(conflitOnglet){afficherEnreg();return;}
   const dans=!!(state.id&&siteLib[state.id]);
   const place=isPro()||Object.keys(siteLib).length<PLAN_LIMIT_FREE;
-  if(!dans&&siteSansAuto!==state&&planPorteTravail(state)&&!exempleNonGarde()&&place){rangerDansMesPlans();return;}
+  if(!dans&&!siteProp()&&planPorteTravail(state)&&!exempleNonGarde()&&place){rangerDansMesPlans();return;}
   if(dans){
     const e=siteLib[state.id];
     siteLib[state.id]=Object.assign({},e,{name:state.name||'Plan sans nom',savedAt:Date.now(),
@@ -4562,7 +4573,7 @@ function siteRetirerLocal(id){
   delete L[id];try{localStorage.setItem(PLANS_KEY,JSON.stringify(L));}catch{}}
 function siteSectionLocale(el){
   const L=siteLocaux();
-  const ouvert=siteSansAuto===state&&!!state.id&&!siteLib[state.id]&&planPorteTravail(state);
+  const ouvert=siteProp()&&planPorteTravail(state);
   if(!L.length&&!ouvert)return;
   const carte=(id,nom,st,cour)=>`<div class="grp plancard"><span class="pmini" aria-hidden="true">${miniPlanSVG(st)}</span><div class="glink" style="cursor:default"><span class="gname"><b>${esc(nom||'Plan sans nom')}</b>${pastilleType(workflowDe(st))}${cour?' <span class="gn">· ouvert</span>':''}</span></div><button class="ib s" onclick="siteAjouterLocal('${escJs(id)}')" aria-label="Ajouter « ${esc(nom||'Plan sans nom')} » à mon compte">Ajouter à mon compte</button></div>`;
   const n=L.length+(ouvert?1:0);
@@ -4593,15 +4604,14 @@ function siteAjouterLocal(id){
       siteLib[nid]={id:nid,name:nom,savedAt:Date.now(),state:st,view:src.view||null,resume:siteResume(src.resume),revision:rev};
       siteEnvoye[nid]=empreinteTravail(st);
       siteRetirerLocal(id);
-      if(state.id===id){state.id=nid;state.name=nom;siteSansAuto=null;siteRev=rev;siteMemoriser(siteEnvoye[nid]);save();}
+      if(state.id===id){siteSansAuto.delete(id);state.id=nid;state.name=nom;siteRev=rev;siteMemoriser(siteEnvoye[nid]);save();}
       siteRafraichirListe();toast('« '+nom+' » est dans ton compte.',true);return true;}
     if(r.s===402){siteRefusLimite(nom);return false;}
     toast(r.s===0?'Pas de connexion : « '+nom+' » reste sur cet appareil.':'« '+nom+' » n\'a pas pu être ajouté à ton compte.');
     return false;});}
 /* avant de remplacer un plan local proposé : il reste sur cet appareil (Mes plans › Sur cet appareil) */
 function siteGarderSurAppareil(){
-  if(siteSansAuto!==state||(state.id&&siteLib[state.id]))return false;
-  if(!state.id)state.id=uid();
+  if(!siteProp())return false;
   const L=siteLocauxBruts(),nom=state.name||'Plan sans nom';
   L[state.id]={id:state.id,name:nom,savedAt:Date.now(),state:JSON.parse(JSON.stringify(state)),view:{...view},resume:resumePlan()};
   try{localStorage.setItem(PLANS_KEY,JSON.stringify(L));}catch{return false;}
@@ -4703,12 +4713,12 @@ function siteDemarrerCompte(){
     afficherEnreg(true);}
   else{
     if(q&&q.has('id'))toast('Ce plan n\'est pas dans ton compte.');
-    if(planPorteTravail(state)&&!(state.id&&siteLib[state.id])){if(!state.id)state.id=uid();siteSansAuto=state;}}
+    if(planPorteTravail(state)&&!(state.id&&siteLib[state.id]))siteProposer();}
   let f=null;try{f=localStorage.getItem('avyora-plan-claim');}catch{}
   if(f){
     try{localStorage.removeItem('avyora-plan-claim');}catch{}
-    if((siteSansAuto===state&&state.id===f)||siteLocaux().some(e=>e.id===f))siteAjouterLocal(f);}
-  else if(siteSansAuto===state)toast('« '+(state.name||'Ce plan')+' » est sur cet appareil, pas dans ton compte.',false,{action:'Ajouter à mon compte',fn:()=>siteAjouterLocal(state.id),ms:9000});}
+    if((siteProp()&&state.id===f)||siteLocaux().some(e=>e.id===f))siteAjouterLocal(f);}
+  else if(siteProp())toast('« '+(state.name||'Ce plan')+' » est sur cet appareil, pas dans ton compte.',false,{action:'Ajouter à mon compte',fn:()=>siteAjouterLocal(state.id),ms:9000});}
 function siteDemarrer(){
   siteLogo();
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')siteRelirePro();});
@@ -4727,8 +4737,24 @@ if(SITE){
   const _cc=chiffrerConstruction;
   chiffrerConstruction=function(el,o){
     if(!state.id&&peutChiffrerConstruction()){state.id=uid();save();}
-    if(NUAGE){enregistrerMaintenant();siteViderMaintenant();}
-    return _cc(el,o);};
+    if(!NUAGE)return _cc(el,o);
+    enregistrerMaintenant();
+    if(!siteCrea[state.id]){siteViderMaintenant();return _cc(el,o);}
+    /* le plan entre dans le compte (POST en route) : le lien attend son uuid, sinon il porterait l'id local */
+    if(!_cc(el,o))return false;
+    let w=null;try{w=window.open('','_blank');}catch{}
+    if(!w){siteViderMaintenant();return true;}
+    try{w.opener=null;}catch{}
+    siteAttendre().then(()=>{try{w.location=majLienConstruction(el)||CONSTRUCTION_URL;}catch{}});
+    return false;};
+}
+if(NUAGE){
+  /* supprimer le plan ouvert : il reste ouvert comme plan de cet appareil (id local, proposé, jamais rangé d'office) */
+  const _dsp=deleteSavedPlan;
+  deleteSavedPlan=function(id){
+    const ouvert=state.id===id&&!!siteLib[id];
+    _dsp(id);
+    if(ouvert&&!state.id){siteProposer();siteRetraits[id]=state.id;save();}};
 }
 if(SITE&&!NUAGE){
   const _sv=suivre;
@@ -4768,7 +4794,7 @@ function renderPlans(){const lib=loadPlans();const list=Object.values(lib).sort(
   const pro=isPro();const atLimit=!pro&&list.length>=PLAN_LIMIT_FREE;
   const banner=pro?'':`<div class="budget" style="margin-bottom:12px;cursor:default"><div class="bl"><span>Version gratuite : ${DROITS.plans.gratuit}</span><small>${maj(estPlanFinal()?DROITS.dessin.planFinal:DROITS.dessin.renovation)} reste gratuit. ${estPlanFinal()?'Avec Pro : '+DROITS.plans.pro+', et '+DROITS.renovation.pro+'.':avecPro('plans')}</small>${prixPro()}</div>${lienPro('Passer Pro','ib propill')}</div>`;
   /* D67 : la carte d'un Plan final dit sa surface et ses pièces — ni montant, ni chantier, ni étapes */
-  const resumeTxt=(R,nb)=>R&&R.pf?[R.pieces?fmtM2(R.m2):'aucune pièce',R.pieces?pluriel(R.pieces,'pièce'):''].filter(Boolean).join(' · '):R?[R.pieces?fmtM2(R.m2):'aucune pièce',R.taches?eur(R.budget)+' HT':'rien de décidé',R.taches?'chantier '+R.faites+'/'+R.taches:'',R.projet!=null?'projet à '+R.projet+'\u00a0%':'',R.prochain?'prochaine étape : '+R.prochain:''].filter(Boolean).join(' · '):pluriel(nb,'mur');
+  const resumeTxt=(R,nb)=>R&&R.pf?[R.pieces?fmtM2(R.m2):'aucune pièce',R.pieces?pluriel(R.pieces,'pièce'):''].filter(Boolean).join(' · '):R?[R.pieces?fmtM2(R.m2):'aucune pièce',R.taches?eur(R.budget)+' HT':'rien de décidé',R.taches?'chantier '+R.faites+'/'+R.taches:'',R.projet!=null?'projet à '+R.projet+'\u00a0%':'',R.prochain?'prochaine étape : '+esc(R.prochain):''].filter(Boolean).join(' · '):pluriel(nb,'mur');
   /* D53 (jury final : novice, retention) · « Aucun plan enregistré pour l'instant » se lisait avec un plan
      ouvert à 3 065 € et « Enregistré » dans la barre : le plan ouvert n'est rangé ici qu'avant d'en
      ouvrir un autre. Il s'affiche désormais toujours en première carte (surface, montant, avancement) ;

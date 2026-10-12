@@ -145,7 +145,8 @@ avant d'exécuter l'éditeur ; sans lui, rien ne change (carnet **D76**, `maquet
 | Artefact, outils de la batterie | `SITE === null` : le chemin d'avant, au caractère près (phrases, clés `localStorage`, aucune requête). |
 | Anonyme sur le site | Le mode local de l'artefact. Après la première pièce, une fois par plan : « Garde ce plan dans ton compte ». |
 | Connecté (`NUAGE`) | « Mes plans » = le compte. Un plan dessiné est rangé d'office (limite gratuite : 1). Sauvegarde `PATCH` regroupée à 2 s avec la révision ; 409 → fenêtre de conflit ; hors ligne → indicateur et nouvel essai ; 402 → fenêtre de la limite. |
-| Plans dessinés avant la connexion | Proposés, jamais repris seuls (« Sur cet appareil », « Ajouter à mon compte »), sauf drapeau `avyora-plan-claim`. |
+| Plans dessinés avant la connexion | Proposés, jamais repris seuls (« Sur cet appareil », « Ajouter à mon compte »), sauf drapeau `avyora-plan-claim`. Reconnus par leur id : ni Annuler ni Rétablir ne les rangent. Un plan ouvert supprimé du compte reste ouvert, proposé. |
+| Anonyme après une déconnexion | Un tampon `avyora-plan-v2` qui porte un plan du compte (id uuid) est ignoré par l'éditeur. La déconnexion (C4/C5) peut en plus effacer `avyora-plan-v2` et `avyora-plan-rev`. |
 | Liens | Construction : `&pid=<uuid>` ou `&pl=<id local>` devant `#plan=`. Rénovation (Pro) : `PATCH {revision, contrat}` puis `/projets/depuis-plan/<id>`. Logo → `/logiciel-plan-maison`. |
 
 Ce que l'amorçage doit poser (contrat, détaillé dans D76) :
