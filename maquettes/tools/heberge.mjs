@@ -15,7 +15,8 @@
  *     construction relatif ; les polices chargées depuis /fonts ; la 3D ouverte depuis /vendor (pixels ni noirs ni vides) ;
  *   - l'amorçage, l'API des plans simulée par interception (aucun compte, aucune requête ne part vers la vraie API) :
  *     connecté et Pro, le plan ?id= ouvert depuis le compte ; plan introuvable (404) ; session en panne (500) et délai
- *     dépassé : le mode local et un message ; anonyme avec ?id= : un message ; ?type=final ;
+ *     dépassé : le mode local et un message ; anonyme avec ?id= : un message ; ?type=final ; réseau bridé (1,6 Mb/s) :
+ *     l'éditeur ne démarre qu'une fois la page lue ;
  *   - ordinateur 1 440 px, tablette 768 px, téléphone 375 px : la page démarre sans erreur.
  *
  * Sort en code 1 si un contrôle échoue ou si la page lève une erreur.
@@ -29,7 +30,7 @@ if (!SP) { console.error("usage : node maquettes/tools/heberge.mjs <dossier maqu
 if (!/^https?:\/\//.test(BASE)) { console.log("heberge : sans adresse de serveur, rien à contrôler (voir l'en-tête du fichier)"); process.exit(0); }
 const iCap = process.argv.indexOf("--captures"), CAP = iCap > 0 ? process.argv[iCap + 1] : null;
 if (CAP) fs.mkdirSync(CAP, { recursive: true });
-setTimeout(() => { console.log("heberge : délai dépassé (240 s)"); process.exit(3); }, 240000);
+setTimeout(() => { console.log("heberge : délai dépassé (300 s)"); process.exit(3); }, 300000);
 const FIX = (n) => JSON.parse(fs.readFileSync(path.join(SP, "..", "tests", "fixtures", "plans-etats", n + ".json"), "utf8"));
 const t = {}, errs = [], wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const ORIGINE = new URL(BASE).origin;
@@ -230,6 +231,30 @@ function api({ session = { connecte: true, pro: true, limite: null, utilises: 1 
   const r = await o.p.evaluate(() => ({ type: SITE.type, pro: window.AVYORA_PRO }));
   t["amorçage · ?type et ?id hors liste : ignorés (type null, aucun plan demandé), gratuit"] = r.type === null && r.pro === false && !o.appels.some((x) => /\/api\/plans\/\.\.|x$/.test(x)) && o.appels.length === 2;
   await o.ctx.close();
+}
+
+/* 2c bis. réseau bridé (1,6 Mb/s) : la session répond bien avant la fin du HTML. L'éditeur ne doit démarrer qu'une fois
+   la page lue (sinon son script, copié tronqué, lève une SyntaxError et l'éditeur reste mort). */
+{
+  const ctx = await b.createBrowserContext();
+  const p = await ctx.newPage();
+  const err = [];
+  p.on("pageerror", (e) => { err.push(e.message); errs.push(`réseau bridé · ${e.message}`); });
+  await p.setViewport({ width: 1440, height: 900 });
+  await p.evaluateOnNewDocument(() => { try { localStorage.setItem("avyora-plan-welcome", "1"); } catch {} });
+  await p.setRequestInterception(true);
+  p.on("request", (r) => {
+    const u = new URL(r.url());
+    if (u.origin === ORIGINE && u.pathname.startsWith("/api/plans")) return r.respond(json(200, { connecte: false, pro: false, limite: 1, utilises: 0 }));
+    r.continue();
+  });
+  const cdp = await p.createCDPSession();
+  await cdp.send("Network.enable");
+  await cdp.send("Network.emulateNetworkConditions", { offline: false, latency: 150, downloadThroughput: 1.6e6 / 8, uploadThroughput: 750e3 / 8 });
+  await p.goto(BASE + "/plan", { waitUntil: "domcontentloaded", timeout: 60000 });
+  const pret = await p.waitForFunction(() => typeof render === "function" && typeof setMode === "function" && !document.getElementById("avyora-voile"), { timeout: 60000 }).then(() => true, () => false);
+  t["réseau bridé (1,6 Mb/s) · l'éditeur démarre entier une fois la page lue, sans erreur de page"] = pret && !err.length;
+  await ctx.close();
 }
 
 /* 2d. les largeurs (D48 : au téléphone, la consultation) */

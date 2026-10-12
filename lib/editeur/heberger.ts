@@ -111,10 +111,12 @@ const VOILE =
   `display:flex;align-items:center;justify-content:center;background:var(--canvas,#f6f7fb);color:var(--nuit,#1E1B4B);` +
   `font:500 15px Geist,system-ui,sans-serif">Ouverture de ton plan…</div>`;
 
-/** Les phrases de l'amorçage (l'intérieur de l'éditeur reste en français). */
+/**
+ * Les phrases de l'amorçage (l'intérieur de l'éditeur reste en français). « Connecte-toi pour ouvrir ce plan »
+ * est dit par l'éditeur lui-même (`compteAttendu`), avec son bouton « Me connecter ».
+ */
 const TXT_AMORCE = {
   panne: "La connexion à ton compte n'a pas abouti : ton plan reste sur cet appareil. Recharge la page pour réessayer.",
-  connexion: "Connecte-toi pour ouvrir ce plan : il est rangé dans ton compte.",
 };
 
 function configConstante(): string {
@@ -158,15 +160,19 @@ function lire(chemin){
     return r.text().then(function(t){var j=null;try{j=t?JSON.parse(t):null;}catch(e){}return {s:r.status,j:j};});
   });
 }
-function site(connecte,limite,plans,plan){
-  return {v:1,connecte:connecte,limite:limite,plans:plans,plan:plan,type:type,urls:U,lang:'fr',dev:false};
+function site(connecte,limite,plans,plan,quoi){
+  var s={v:1,connecte:connecte,limite:limite,plans:plans,plan:plan,type:type,urls:U,lang:'fr',dev:false};
+  /* panne : la session n'a pas répondu (le tampon de cet appareil s'ouvre tel quel) ;
+     compteAttendu : anonyme avec ?id= (un plan du compte resté ici est mis de côté, pas effacé) */
+  if(quoi==='panne')s.panne=true;
+  if(quoi==='compte'&&id)s.compteAttendu=id;
+  return s;
 }
-/* une seule fois : le premier qui arrive (réponses ou délai) démarre l'éditeur */
-function demarrer(s,pro,message){
-  if(fait)return;
-  fait=true;
-  clearTimeout(minuterie);
-  if(ctl){try{ctl.abort();}catch(e){}}
+/* le script de l'éditeur n'est copié qu'une fois la page entière lue : avant, son texte serait tronqué */
+var pret=document.readyState!=='loading';
+var attente=null;
+var minuterie=0;
+function lancer(s,pro,message){
   window.AVYORA_PRO=!!pro;
   window.AVYORA_SITE=s;
   var src=document.getElementById('avyora-editeur');
@@ -177,12 +183,28 @@ function demarrer(s,pro,message){
   if(v&&v.parentNode)v.parentNode.removeChild(v);
   if(message&&typeof window.toast==='function'){try{window.toast(message);}catch(e){}}
 }
-function local(message){demarrer(site(false,1,[],null),false,message);}
-var minuterie=setTimeout(function(){local(T.panne);},6000);
+/* une seule fois : le premier qui arrive (réponses ou délai) démarre l'éditeur */
+function demarrer(s,pro,message){
+  if(fait)return;
+  fait=true;
+  clearTimeout(minuterie);
+  if(ctl){try{ctl.abort();}catch(e){}}
+  if(pret)lancer(s,pro,message);
+  else attente=[s,pro,message];
+}
+function local(message,quoi){demarrer(site(false,1,[],null,quoi),false,message);}
+/* le délai de 6 s ne court qu'une fois la page lue : il borne les réponses, pas le téléchargement */
+function armer(){if(!fait)minuterie=setTimeout(function(){local(T.panne,'panne');},6000);}
+if(pret)armer();
+else document.addEventListener('DOMContentLoaded',function(){
+  pret=true;
+  if(attente){var a=attente;attente=null;lancer(a[0],a[1],a[2]);}
+  else armer();
+});
 lire(U.api+'/session').then(function(r){
   var S=r.j;
   if(r.s!==200||!S||typeof S!=='object')throw new Error('session');
-  if(S.connecte!==true){local(id?T.connexion:null);return;}
+  if(S.connecte!==true){local(null,'compte');return;}
   var P=id?lire(U.api+'/'+encodeURIComponent(id)):Promise.resolve(null);
   return Promise.all([lire(U.api),P]).then(function(x){
     var L=x[0],R=x[1],plan=null;
@@ -192,7 +214,7 @@ lire(U.api+'/session').then(function(r){
     var lim=L.j.limite===null?null:1;
     demarrer(site(true,lim,L.j.plans,plan),S.pro===true,null);
   });
-}).catch(function(){local(T.panne);});
+}).catch(function(){local(T.panne,'panne');});
 })();`;
 }
 

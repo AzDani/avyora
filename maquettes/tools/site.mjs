@@ -75,7 +75,7 @@ const ORIG = {
   accueil: "Ton plan s'enregistre tout seul, sur cet appareil.",
   calque: "Calque importé — cale son échelle pour des surfaces justes",
 };
-const CLES_SITE = ["avyora-plan-rev", "avyora-plan-invite", "avyora-plan-claim"];
+const CLES_SITE = ["avyora-plan-rev", "avyora-plan-invite", "avyora-plan-claim", "avyora-plan-cote"];
 const CLES_AVANT = new Set([...HORS.matchAll(/'(avyora-[a-z0-9-]+)'/g)].map((m) => m[1]));
 t["source · les clés du site n'existent que dans le bloc"] = CLES_SITE.every((k) => !CLES_AVANT.has(k) && BLOC.includes("'" + k + "'"));
 
@@ -175,6 +175,7 @@ function serveur({ pro = true, plans = [] } = {}) {
   S.carte = (x) => ({ id: x.id, nom: x.nom, workflow: x.workflow, resume: x.resume || {}, apercu: x.apercu || [], revision: x.revision, updated_at: x.updated_at, estimations: (x.estimations || []).length });
   S.rep = (st, j) => ({ status: st, contentType: "application/json", body: j === undefined ? "" : JSON.stringify(j) });
   S.api = (meth, chemin, corps) => {
+    if (S.statut && meth !== "GET") return S.rep(S.statut, { code: "refus" });
     const m = chemin.match(/^\/api\/plans(?:\/([^/?]+))?/), id = m && m[1];
     if (id === "session") return S.rep(200, { connecte: true, pro: S.pro, limite: S.pro ? null : 1, utilises: S.plans.size });
     if (!id && meth === "GET") return S.rep(200, { plans: [...S.plans.values()].map(S.carte), limite: S.pro ? null : 1, utilises: S.plans.size });
@@ -605,6 +606,65 @@ const posts = (S) => S.log.filter((x) => x.m === "POST");
   const tampon = { state: { ...FIX("maison"), id: UUID(13), name: "Plan d'un compte" }, view: null };
   const { p, ctx } = await ongletSite(S, { site: siteDe(S, { connecte: false }), pro: false, avant: { "avyora-plan-welcome": "1", "avyora-plan-v2": JSON.stringify(tampon) } });
   t["anonyme · tampon portant un plan du compte (uuid) : ignoré, l'éditeur s'ouvre sur un plan vide"] = await p.evaluate((id) => state.id !== id && state.name !== "Plan d'un compte" && planVide(), UUID(13));
+  t["anonyme · …mis de côté (avyora-plan-cote), pas effacé"] = await p.evaluate((id) => { try { const c = JSON.parse(localStorage.getItem("avyora-plan-cote")); return !!c && c[id] && c[id].state.name === "Plan d'un compte"; } catch { return false; } }, UUID(13));
+  await ctx.close();
+}
+
+/* B19 · session expirée puis reconnexion : le tampon mis de côté revient, ses modifications partent */
+{
+  const S = serveur({ pro: true, plans: [{ id: UUID(14), nom: "Maison", workflow: "final_plan", etat: FIX("plan-final-etage"), revision: 2 }] });
+  const { p, ctx } = await ongletSite(S, { site: siteDe(S, { planId: UUID(14) }), chemin: "/plan?id=" + UUID(14) });
+  /* la session expire : PATCH 401 */
+  S.statut = 401;
+  await p.evaluate(() => { state.name = "Retouchée hors session"; afterChange(); });
+  await wait(2900);
+  Object.assign(t, await p.evaluate(() => ({
+    "session · PATCH 401 : jamais « Enregistré », l'indicateur dit « Session expirée », la file garde le plan, la sortie est gardée":
+      /session/.test(document.getElementById("saveState").className) && !/Enregistré/.test(document.getElementById("saveState").textContent)
+      && siteEchec === true && siteFile.size === 1 && /session a expiré/.test(document.getElementById("toast").textContent),
+  })));
+  await p.close();
+  /* rechargement sans session : l'amorçage pose un site anonyme (compteAttendu) */
+  const anon = siteDe(S, { connecte: false }); anon.compteAttendu = UUID(14);
+  const { p: q } = await ongletSite(S, { site: anon, pro: false, chemin: "/plan?id=" + UUID(14), ctx });
+  t["session · rechargé sans session : plan vide, « Connecte-toi » avec « Me connecter », tampon mis de côté"] = await q.evaluate((id) => planVide() && state.id !== id
+    && /Connecte-toi pour ouvrir ce plan/.test(document.getElementById("toast").textContent) && /Me connecter/.test(document.getElementById("toast").textContent)
+    && JSON.parse(localStorage.getItem("avyora-plan-cote"))[id].state.name === "Retouchée hors session", UUID(14));
+  await q.close();
+  /* reconnecté : le plan du compte rouvert reprend le tampon mis de côté et l'envoie */
+  S.statut = 0;
+  const { p: r } = await ongletSite(S, { site: siteDe(S, { planId: UUID(14) }), chemin: "/plan?id=" + UUID(14), ctx });
+  await wait(2900);
+  t["session · reconnecté : la modification mise de côté revient et part au compte"] = S.plans.get(UUID(14)).nom === "Retouchée hors session"
+    && await r.evaluate(() => state.name === "Retouchée hors session" && localStorage.getItem("avyora-plan-cote") === null && /ok/.test(document.getElementById("saveState").className));
+  /* 400 et 413 : « Non enregistré », jamais « Enregistré » */
+  for (const st of [400, 413]) {
+    S.statut = st;
+    await r.evaluate((st) => { state.name = "Refus " + st; afterChange(); }, st);
+    await wait(2900);
+    t[`erreur · PATCH ${st} : l'indicateur reste « Non enregistré »`] = await r.evaluate(() => /\berr\b/.test(document.getElementById("saveState").className) && !/Enregistré dans ton compte/.test(document.getElementById("saveState").title));
+  }
+  S.statut = 0;
+  await ctx.close();
+}
+
+/* B20 · panne de la session : le plan du compte resté sur l'appareil s'ouvre tel quel, et repart ensuite */
+{
+  const S = serveur({ pro: true, plans: [{ id: UUID(15), nom: "Maison", workflow: "final_plan", etat: FIX("plan-final-etage"), revision: 3 }] });
+  const { p, ctx } = await ongletSite(S, { site: siteDe(S, { planId: UUID(15) }), chemin: "/plan?id=" + UUID(15) });
+  S.horsLigne = true;
+  await p.evaluate(() => { state.name = "Pas partie"; afterChange(); });
+  await wait(900); await p.close(); S.horsLigne = false;
+  const panne = siteDe(S, { connecte: false }); panne.panne = true;
+  const { p: q } = await ongletSite(S, { site: panne, pro: false, chemin: "/plan?id=" + UUID(15), ctx });
+  t["panne · le tampon (plan du compte, modifié) s'ouvre tel quel, sans invitation"] = await q.evaluate((id) => state.id === id && state.name === "Pas partie" && !NUAGE && !document.getElementById("siteInvite"), UUID(15));
+  await q.evaluate(() => { state.name = "Retouchée en panne"; afterChange(); });
+  await wait(900);
+  t["panne · une retouche reste dans le tampon, avec l'id du compte"] = await q.evaluate((id) => { const s = JSON.parse(localStorage.getItem("avyora-plan-v2")); return s.state.id === id && s.state.name === "Retouchée en panne"; }, UUID(15));
+  await q.close();
+  const { p: r } = await ongletSite(S, { site: siteDe(S, { planId: UUID(15) }), chemin: "/plan?id=" + UUID(15), ctx });
+  await wait(2900);
+  t["panne · au retour de la session, la retouche part au compte"] = S.plans.get(UUID(15)).nom === "Retouchée en panne" && await r.evaluate(() => state.name === "Retouchée en panne");
   await ctx.close();
 }
 
