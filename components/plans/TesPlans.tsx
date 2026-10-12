@@ -23,11 +23,14 @@ import { clicPlan, mesurerPlan, mesureVitrine } from "@/lib/plans/mesure";
  *
  * La page serveur ne lit pas la session : son HTML (celui que Google indexe) est celui d'un visiteur
  * sans compte, c'est-à-dire l'appel « Créer mon plan ». Une fois chargé, l'îlot devient :
+ *  - la session d'abord (`GET /api/plans/session`, 200 même sans compte) : un visiteur sans compte ne déclenche
+ *    aucune erreur 401 en console ;
  *  - connecté (`GET /api/plans` → 200) : les cartes du compte (vignette dessinée par React depuis
  *    l'aperçu du serveur, type, surface, date, « Ouvrir », estimations nées du plan), puis « Nouveau
  *    plan » ou, en gratuit à la limite, « Avec Pro : des plans enregistrés sans limite ». Un plan local
- *    en attente de reprise (drapeau) part d'abord (`ClaimPlan`) ;
- *  - sans compte (401) avec des plans dans ce navigateur : « Reprendre « {nom} » » et « Garde-le dans
+ *    en attente de reprise (drapeau) part d'abord (`ClaimPlan`). Les plans de CE navigateur restent
+ *    visibles (« Sur cet appareil », « Ajouter à mon compte ») : on ne cache jamais un plan local ;
+ *  - sans compte avec des plans dans ce navigateur : « Reprendre « {nom} » » et « Garde-le dans
  *    ton compte » (drapeau, puis inscription : la reprise se fait au retour) ;
  *  - au téléphone (on n'y dessine pas) : le bouton principal devient « M'envoyer le lien » (partage du
  *    système, à défaut copie), « Ouvrir » reste possible pour consulter.
@@ -48,7 +51,7 @@ type Vue =
   | { v: "chargement" }
   | { v: "invite" }
   | { v: "local"; plans: PlanLocal[] }
-  | { v: "compte"; liste: Liste }
+  | { v: "compte"; liste: Liste; locaux: PlanLocal[] }
   | { v: "erreur" };
 
 const VISIBLES = 3;
@@ -83,20 +86,35 @@ export default function TesPlans() {
   const t = dictPlans(locale);
   const [vue, setVue] = useState<Vue>({ v: "chargement" });
   const [telephone, setTelephone] = useState(false);
-  const [reprise, setReprise] = useState(false);
+  /* 0 : rien à reprendre ; n > 0 : une reprise demandée (drapeau), `ClaimPlan` remonté à chaque demande */
+  const [reprise, setReprise] = useState(0);
   const vu = useRef(false);
 
   const charger = useCallback(async (): Promise<void> => {
+    const json = { headers: { Accept: "application/json" }, cache: "no-store" as const };
+    let connecte = false;
+    try {
+      const s = await fetch("/api/plans/session", json);
+      if (!s.ok) throw new Error("session");
+      connecte = ((await s.json()) as { connecte?: unknown })?.connecte === true;
+    } catch {
+      setVue({ v: "erreur" });
+      return;
+    }
+    const s = stockageNavigateur();
+    const locaux = s ? lirePlansLocaux(s) : [];
+    if (!connecte) {
+      setVue(locaux.length ? { v: "local", plans: locaux } : { v: "invite" });
+      return;
+    }
     let r: Response;
     try {
-      r = await fetch("/api/plans", { headers: { Accept: "application/json" }, cache: "no-store" });
+      r = await fetch("/api/plans", json);
     } catch {
       setVue({ v: "erreur" });
       return;
     }
     if (r.status === 401) {
-      const s = stockageNavigateur();
-      const locaux = s ? lirePlansLocaux(s) : [];
       setVue(locaux.length ? { v: "local", plans: locaux } : { v: "invite" });
       return;
     }
@@ -114,15 +132,30 @@ export default function TesPlans() {
       setVue({ v: "erreur" });
       return;
     }
-    setVue({ v: "compte", liste });
-    const s = stockageNavigateur();
     let drapeau: string | null = null;
     try {
       drapeau = s ? s.getItem(CLE_RECLAMATION_PLAN) : null;
     } catch {
       drapeau = null;
     }
-    if (drapeau) setReprise(true);
+    /* le plan en cours de reprise (drapeau) n'est pas montré deux fois : ClaimPlan dit ce qu'il devient */
+    setVue({ v: "compte", liste, locaux: locaux.filter((p) => !drapeau || p.id !== drapeau) });
+    if (drapeau) setReprise((n) => n || 1);
+  }, []);
+
+  /* « Ajouter à mon compte » : le drapeau, puis la reprise (même chemin que l'inscription : ClaimPlan) */
+  const ajouter = useCallback((p: PlanLocal) => {
+    const s = stockageNavigateur();
+    if (!s) return;
+    const id = p.ouvert && !ID_PLAN_LOCAL.test(p.id) ? assurerIdTampon(s) ?? "" : p.id;
+    if (!ID_PLAN_LOCAL.test(id)) return;
+    try {
+      s.setItem(CLE_RECLAMATION_PLAN, id);
+    } catch {
+      return;
+    }
+    setVue((v) => (v.v === "compte" ? { ...v, locaux: v.locaux.filter((x) => x !== p) } : v));
+    setReprise((n) => n + 1);
   }, []);
 
   useEffect(() => {
@@ -153,8 +186,10 @@ export default function TesPlans() {
         <Compte
           t={t}
           liste={vue.liste}
+          locaux={vue.locaux}
           telephone={telephone}
-          reprise={reprise ? <ClaimPlan pro={vue.liste.limite === null} onFini={() => void charger()} /> : null}
+          onAjouter={ajouter}
+          reprise={reprise ? <ClaimPlan key={reprise} pro={vue.liste.limite === null} onFini={() => void charger()} /> : null}
         />
       ) : vue.v === "local" ? (
         <Locaux t={t} plans={vue.plans} telephone={telephone} />
@@ -167,33 +202,44 @@ export default function TesPlans() {
 
 /* ─── Sans plan : l'appel (c'est aussi le HTML serveur) ─────────────────────── */
 
-/** Un plan d'illustration pour l'appel (un rez-de-chaussée simple) : un dessin, pas une donnée. */
-const ILLUSTRATION: ApercuMur[] = [
-  [0, 0, 10, 0, "mur", ""], [10, 0, 10, 7, "mur", ""], [10, 7, 0, 7, "mur", ""], [0, 7, 0, 0, "mur", ""],
-  [4, 0, 4, 4.2, "cloison", ""], [0, 4.2, 6.5, 4.2, "cloison", ""], [6.5, 4.2, 6.5, 7, "cloison", ""],
-  [7, 0, 7, 2.6, "cloison", ""], [7, 2.6, 10, 2.6, "cloison", ""],
-];
-
+/**
+ * L'appel, au-dessus de la ligne de flottaison : le bouton, et la vraie capture 3D de l'éditeur (la Maison 94 m²),
+ * chargée tout de suite (élément LCP de la vitrine). Le sous-titre de la page n'est pas répété.
+ */
 function Appel({ t, telephone, erreur }: { t: DictPlans; telephone: boolean; erreur: boolean }) {
   return (
-    <div className="card grid min-h-[19rem] items-center gap-6 p-6 sm:grid-cols-[minmax(0,1fr)_minmax(0,16rem)] sm:p-8">
+    <div className="card grid items-center gap-6 overflow-hidden p-6 sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] sm:p-8">
       <div className="flex flex-col gap-4">
-        <p className="max-w-xl text-[15px] leading-relaxed text-muted">{t.hub.creerSous}</p>
         <div className="flex flex-wrap items-center gap-3">
           {telephone ? (
             <EnvoyerLien t={t} />
           ) : (
-            <Link href="/plan" className="btn btn-primary px-5 py-3 text-[15px]" {...clicPlan("vitrine_haut")}>
+            <a href="/plan" className="btn btn-primary px-5 py-3 text-[15px]" {...clicPlan("vitrine_haut")}>
               {t.hub.creer}
-            </Link>
+            </a>
           )}
         </div>
         <p className="text-[13px] text-faint">{t.hub.dessinNote}</p>
         {erreur && <p className="text-[13px] text-muted">{t.hub.erreurListe}</p>}
       </div>
-      <div className="hidden h-44 rounded-field border border-line bg-surface-2 p-5 sm:block">
-        <ApercuPlan murs={ILLUSTRATION} className="h-full w-full" />
-      </div>
+      <picture className="block min-w-0">
+        <source
+          type="image/webp"
+          srcSet="/plans/maison-3d-760.webp 760w, /plans/maison-3d-1040.webp 1040w"
+          sizes="(max-width: 640px) 88vw, 560px"
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/plans/maison-3d.png"
+          alt={t.vitrine.alt3d}
+          width={1040}
+          height={650}
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
+          className="w-full rounded-field border border-line bg-surface"
+        />
+      </picture>
     </div>
   );
 }
@@ -272,7 +318,17 @@ function CartePlan({
   return (
     <li className="card flex min-w-0 flex-col overflow-hidden">
       <div className="flex h-28 items-center justify-center border-b border-line bg-surface-2 p-3">
-        <ApercuPlan murs={murs} className="h-full w-full" />
+        {murs && murs.length ? (
+          <ApercuPlan murs={murs} className="h-full w-full" />
+        ) : (
+          <span className="flex flex-col items-center gap-1.5 text-faint">
+            <svg width="26" height="26" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M2.5 7.2 8 2.6l5.5 4.6V13a.8.8 0 0 1-.8.8H3.3a.8.8 0 0 1-.8-.8V7.2Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+              <path d="M6.3 13.8V9.6h3.4v4.2" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+            </svg>
+            <span className="text-[12px]">{t.commun.planVide}</span>
+          </span>
+        )}
       </div>
       <div className="flex flex-1 flex-col gap-1.5 p-4">
         <p className="flex min-w-0 flex-wrap items-center gap-2">
@@ -360,12 +416,16 @@ function Estimations({ t, planId, n }: { t: DictPlans; planId: string; n: number
 function Compte({
   t,
   liste,
+  locaux,
   telephone,
+  onAjouter,
   reprise,
 }: {
   t: DictPlans;
   liste: Liste;
+  locaux: PlanLocal[];
   telephone: boolean;
+  onAjouter: (p: PlanLocal) => void;
   reprise: React.ReactNode;
 }) {
   const [tous, setTous] = useState(false);
@@ -380,7 +440,7 @@ function Compte({
       </div>
       {reprise}
       {liste.plans.length === 0 ? (
-        <p className="card p-5 text-[14px] text-muted">{t.hub.aucunPlan}</p>
+        <p className="card p-5 text-[14px] text-muted">{locaux.length ? t.hub.aucunPlanCourt : t.hub.aucunPlan}</p>
       ) : (
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {visibles.map((p) => {
@@ -396,14 +456,14 @@ function Compte({
                 pieces={p.resume?.pieces ?? 0}
                 date={p.updated_at}
               >
-                <Link
+                <a
                   href={`/plan?id=${encodeURIComponent(p.id)}`}
                   className="btn btn-outline py-2"
                   aria-label={t.hub.ouvrirAria(nom)}
                   {...clicPlan("vitrine_haut")}
                 >
                   {t.hub.ouvrir}
-                </Link>
+                </a>
                 {p.estimations > 0 && <Estimations t={t} planId={p.id} n={p.estimations} />}
               </CartePlan>
             );
@@ -424,18 +484,44 @@ function Compte({
           </Link>
         ) : (
           <>
-            <Link href="/plan?type=final" className="btn btn-primary py-2.5" {...clicPlan("vitrine_haut")}>
+            <a href="/plan?type=final" className="btn btn-primary py-2.5" {...clicPlan("vitrine_haut")}>
               {t.hub.nouveauPlan}
-            </Link>
+            </a>
             {!gratuit && (
-              <Link href="/plan?type=renovation" className="btn btn-outline py-2.5" {...clicPlan("vitrine_haut")}>
+              <a href="/plan?type=renovation" className="btn btn-outline py-2.5" {...clicPlan("vitrine_haut")}>
                 {t.hub.nouveauReno}
-              </Link>
+              </a>
             )}
           </>
         )}
       </div>
       {telephone && <p className="text-[13px] text-faint">{t.hub.dessinNote}</p>}
+      {locaux.length > 0 && (
+        <div className="space-y-3 border-t border-line pt-4">
+          <div>
+            <h3 className="text-[15px] font-semibold text-ink">{t.hub.surAppareil}</h3>
+            <p className="mt-0.5 text-[13px] text-muted">{locaux.length > 1 ? t.hub.surAppareilNotePl : t.hub.surAppareilNote}</p>
+          </div>
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {locaux.map((p, i) => (
+              <CartePlan
+                key={p.id || `ouvert-${i}`}
+                t={t}
+                nom={p.nom}
+                workflow={p.workflow}
+                murs={apercuLocal(p)}
+                m2={Number(p.resume?.m2) || 0}
+                pieces={Number(p.resume?.pieces) || 0}
+                ouvert={p.ouvert}
+              >
+                <button type="button" className="btn btn-outline py-2" aria-label={t.hub.ajouterCompteAria(p.nom)} onClick={() => onAjouter(p)}>
+                  {t.hub.ajouterCompte}
+                </button>
+              </CartePlan>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
@@ -495,9 +581,9 @@ function Locaux({ t, plans, telephone }: { t: DictPlans; plans: PlanLocal[]; tel
       )}
       <div className="flex flex-wrap items-center gap-3">
         {telephone && <EnvoyerLien t={t} />}
-        <Link href="/plan" className={telephone ? "btn btn-outline py-2.5" : "btn btn-primary py-2.5"} {...clicPlan("vitrine_haut")}>
+        <a href="/plan" className={telephone ? "btn btn-outline py-2.5" : "btn btn-primary py-2.5"} {...clicPlan("vitrine_haut")}>
           {principal.ouvert ? t.hub.reprendre(principal.nom) : t.reprise.ouvrirEditeur}
-        </Link>
+        </a>
         <button type="button" className="btn btn-outline py-2.5" onClick={garder}>
           {t.hub.garder}
         </button>

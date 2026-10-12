@@ -48,6 +48,8 @@ describe("C5 · /logiciel-plan-maison", () => {
     expect(html).toContain("Créer mon plan, gratuit");
     expect(html).toContain("Le dessin se fait sur ordinateur ou tablette.");
     expect(html).toContain("min-h-[19rem]");
+    /* jury : au-dessus de la ligne de flottaison, la vraie capture 3D (chargée tout de suite), plus l'illustration */
+    expect(html).toMatch(/<img src="\/plans\/maison-3d\.png"[^>]*loading="eager"[^>]*fetchPriority="high"|<img src="\/plans\/maison-3d\.png"[^>]*loading="eager"[^>]*fetchpriority="high"/);
     expect(html).not.toContain("The editor is in French");
     expect(html).not.toMatch(/\d+[,.]\d{2}\s?€|€\s?\d/);
     expect(metadata.title.length).toBeLessThanOrEqual(51);

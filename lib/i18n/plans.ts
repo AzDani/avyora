@@ -25,6 +25,7 @@ const fr = {
     modifie: (d: string) => `Modifié le ${d}`,
     avecPro: "Avec Pro : des plans enregistrés sans limite.",
     gratuit: "Version gratuite : 1 plan enregistré.",
+    planVide: "Plan vide",
   },
   /* La vitrine (le haut de page ; le reste de son contenu arrive avec la mise en avant). */
   page: {
@@ -36,7 +37,6 @@ const fr = {
   /* L'îlot « Tes plans », en tête de la vitrine. */
   hub: {
     creer: "Créer mon plan, gratuit",
-    creerSous: "Murs, pièces et surfaces, portes et fenêtres, vue 3D : tout se passe dans ton navigateur.",
     dessinNote: "Le dessin se fait sur ordinateur ou tablette.",
     envoyerLien: "M'envoyer le lien",
     copierLien: "Copier le lien",
@@ -46,6 +46,9 @@ const fr = {
     chargement: "Chargement de tes plans…",
     tesPlans: "Tes plans",
     aucunPlan: "Aucun plan dans ton compte pour l'instant. Ton premier plan s'y range dès que tu dessines.",
+    aucunPlanCourt: "Aucun plan dans ton compte pour l'instant.",
+    ajouterCompte: "Ajouter à mon compte",
+    ajouterCompteAria: (nom: string) => `Ajouter « ${nom} » à mon compte`,
     erreurListe: "Tes plans n'ont pas pu être chargés. Recharge la page pour réessayer.",
     ouvrir: "Ouvrir",
     ouvrirAria: (nom: string) => `Ouvrir « ${nom} »`,
@@ -271,6 +274,7 @@ const en: DictPlans = {
     modifie: (d: string) => `Updated ${d}`,
     avecPro: "With Pro: unlimited saved plans.",
     gratuit: "Free version: 1 saved plan.",
+    planVide: "Empty plan",
   },
   page: {
     eyebrow: "Free 3D plan",
@@ -280,7 +284,6 @@ const en: DictPlans = {
   },
   hub: {
     creer: "Create my plan, free",
-    creerSous: "Walls, rooms and areas, doors and windows, 3D view: it all happens in your browser.",
     dessinNote: "Drawing works on a computer or a tablet.",
     envoyerLien: "Send me the link",
     copierLien: "Copy the link",
@@ -290,6 +293,9 @@ const en: DictPlans = {
     chargement: "Loading your plans…",
     tesPlans: "Your plans",
     aucunPlan: "No plans in your account yet. Your first plan is saved here as soon as you draw.",
+    aucunPlanCourt: "No plans in your account yet.",
+    ajouterCompte: "Add to my account",
+    ajouterCompteAria: (nom: string) => `Add “${nom}” to my account`,
     erreurListe: "Your plans could not be loaded. Reload the page to try again.",
     ouvrir: "Open",
     ouvrirAria: (nom: string) => `Open “${nom}”`,
