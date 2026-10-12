@@ -5,7 +5,8 @@
  * Même origine que l'éditeur hébergé sur `/plan` : on lit ses clés `localStorage` telles quelles.
  *  - `avyora-plans` : la bibliothèque locale (« Mes plans » d'un anonyme), `{ [id]: {id, name, savedAt,
  *    state, view, resume} }` ;
- *  - `avyora-plan-v2` : le tampon du plan ouvert, `{ state, view, onglet }` (pas de résumé) ;
+ *  - `avyora-plan-v2` : le tampon du plan ouvert, `{ state, view, onglet }`, plus `resume` quand l'éditeur part
+ *    vers l'inscription (`siteCreerCompte`) : le rappel de /inscription dit alors la surface et les pièces ;
  *  - `avyora-plan-claim` : le drapeau posé par l'invitation de l'éditeur (ou par « Garde-le dans ton
  *    compte » du hub) : l'id local du plan à reprendre après l'inscription.
  *
@@ -16,10 +17,11 @@
  * Aucune dépendance au DOM : le stockage et `fetch` sont passés en paramètres (testé sans navigateur).
  */
 import { apercuDepuisEtat, type ApercuMur } from "@/lib/plans/apercu";
+import { CLE_RECLAMATION_PLAN } from "@/lib/plans/origine";
 
 export const CLE_PLANS_LOCAUX = "avyora-plans";
 export const CLE_TAMPON_PLAN = "avyora-plan-v2";
-export const CLE_RECLAMATION_PLAN = "avyora-plan-claim";
+export { CLE_RECLAMATION_PLAN };
 
 /** Id local de l'éditeur (`uid()`, base 36) : la forme que l'API accepte en `editeurId`. */
 export const ID_PLAN_LOCAL = /^[a-z0-9]{1,24}$/;
@@ -58,9 +60,19 @@ function lire(s: Stockage, k: string): unknown {
   }
 }
 
-/** `siteNom` de l'éditeur : le nom tel qu'il part au compte (120 caractères au plus). */
+/**
+ * `siteNom` de l'éditeur, au caractère près : le nom tel qu'il part au compte. Coupé par point de code (jamais une
+ * moitié de paire UTF-16, que jsonb et l'API refusent), moitiés isolées et caractère nul retirés, 120 unités UTF-16
+ * au plus comme l'API.
+ */
 export function nomDuPlan(n: unknown): string {
-  return String(n ?? "").trim().slice(0, 120) || "Plan sans nom";
+  let s = "";
+  for (const c of Array.from(String(n ?? "").trim())) {
+    if (c.length === 1 && /[\uD800-\uDFFF\u0000]/.test(c)) continue;
+    if (s.length + c.length > 120) break;
+    s += c;
+  }
+  return s.trim() || "Plan sans nom";
 }
 
 /** `workflowDe` de l'éditeur : absent = rénovation (les plans d'avant D67). */
@@ -110,7 +122,7 @@ export function lirePlansLocaux(s: Stockage): PlanLocal[] {
       workflow: workflowDuPlan(T),
       etat: T,
       vue: estObj((tampon as Obj).view) ? ((tampon as Obj).view as Obj) : null,
-      resume: null,
+      resume: estObj((tampon as Obj).resume) ? ((tampon as Obj).resume as Obj) : null,
       savedAt: Number.POSITIVE_INFINITY,
       ouvert: true,
     });

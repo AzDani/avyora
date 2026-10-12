@@ -4754,6 +4754,8 @@ function siteCreerCompte(){
   if(!state.id)state.id=uid();
   try{localStorage.setItem('avyora-plan-claim',state.id);}catch{}
   save();enregistrerMaintenant();
+  /* le rappel de /inscription dit la surface et les pièces : le résumé part avec le tampon */
+  try{localStorage.setItem('avyora-plan-v2',JSON.stringify({state,view,onglet:ONGLET,resume:resumePlan()}));}catch{}
   location.assign(typeof SITE_URLS.inscription==='string'?SITE_URLS.inscription:'/inscription?next=%2Fplan');}
 /* le logo ramène au site (après avoir vidé la file) */
 function siteLogo(){

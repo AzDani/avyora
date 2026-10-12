@@ -41,6 +41,7 @@ import {
   lireBrouillonDetailNeuf, enregistrementDetailNeuf, demarchesPhase, type EtatNeuf, type BlocNeuf,
 } from "@/lib/estimateur/detaille-neuf";
 import { CLE_BROUILLON_NEUF, CLE_AFFINER_NEUF, CLE_RECLAMATION_NEUF, type OrigineNeuf } from "@/lib/estimateur/brouillon-neuf";
+import { marquerReprisePlan } from "@/lib/plans/origine";
 import { NEUF_DETAIL_CSS } from "./detail-styles";
 import DevisNeuf from "./DevisNeuf";
 import { mesurerPlan, mesureEstimationNeuf } from "@/lib/plans/mesure";
@@ -187,6 +188,8 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
       if (res.status === 401) {
         // Le brouillon D'ABORD, le drapeau ensuite : un drapeau sans brouillon ne réclame rien.
         try { localStorage.setItem(CLE_BROUILLON_NEUF, JSON.stringify(brouillon)); localStorage.setItem(CLE_RECLAMATION_NEUF, "1"); } catch { /* noop */ }
+        // Née d'un plan de cet appareil : le plan est repris d'abord (ClaimPlan), l'estimation s'y relie ensuite.
+        try { marquerReprisePlan(origineRef.current, localStorage); } catch { /* noop */ }
         router.push("/inscription");
         return;
       }

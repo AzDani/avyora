@@ -39,6 +39,7 @@ import {
   CLE_RECLAMATION_NEUF, type ReponsesRapideNeuf, type OrigineNeuf,
 } from "@/lib/estimateur/brouillon-neuf";
 import type { InitialNeuf } from "@/lib/neuf-contexte";
+import { marquerReprisePlan } from "@/lib/plans/origine";
 import type { MaisonDuPlan, RefusPlan } from "@/lib/estimateur/plan-neuf";
 import { FEATURES } from "@/lib/features";
 import { suivre } from "@/lib/track";
@@ -341,6 +342,8 @@ export default function EstimateurRapideNeuf({
       if (res.status === 401) {
         // Le brouillon D'ABORD, le drapeau ensuite : un drapeau sans brouillon ne réclame rien.
         try { localStorage.setItem(CLE_BROUILLON_NEUF, JSON.stringify(d)); localStorage.setItem(CLE_RECLAMATION_NEUF, "1"); } catch { /* noop */ }
+        // Née d'un plan de cet appareil : le plan est repris d'abord (ClaimPlan), l'estimation s'y relie ensuite.
+        try { marquerReprisePlan(d.origine, localStorage); } catch { /* noop */ }
         router.push("/inscription");
         return;
       }

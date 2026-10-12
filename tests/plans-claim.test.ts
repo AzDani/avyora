@@ -256,6 +256,19 @@ describe("C5 · reprise d'un plan local (ClaimPlan)", () => {
 const MOCKS = ["@/lib/features", "@/lib/i18n/server", "@/lib/auth", "@/lib/data/projects", "@/components/ClaimDraft",
   "@/components/plans/ClaimPlan", "@/components/ProUpsell", "@/components/ListeProjets", "server-only"];
 
+describe("nomDuPlan (jury) : comme siteNom de l'éditeur", () => {
+  it("un nom long dont la 120ᵉ unité tombe sur un emoji : jamais de moitié de paire, toujours accepté par l'API", async () => {
+    const { nomDuPlan } = await import("@/lib/plans/local");
+    const nom = nomDuPlan("a".repeat(119) + "\u{1F3E0}" + "fin");
+    expect(nom).toBe("a".repeat(119));
+    expect(/[\uD800-\uDFFF]/.test(nom)).toBe(false);
+    const etat = JSON.parse(readFileSync(path.join(__dirname, "fixtures", "plans-etats", "studio.json"), "utf8"));
+    expect(planCreerSchema.safeParse({ nom, etat: { ...etat, name: nom } }).success).toBe(true);
+    expect(nomDuPlan("x\uD800y\u0000z")).toBe("xyz");
+    expect(nomDuPlan("   ")).toBe("Plan sans nom");
+  });
+});
+
 describe("C5 · /projets monte ClaimPlan avant ClaimDraft", () => {
   afterEach(() => {
     for (const m of MOCKS) vi.doUnmock(m);

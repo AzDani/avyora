@@ -16,6 +16,23 @@ import type { OrigineNeuf } from "../estimateur/brouillon-neuf";
 export const RE_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 /** Id local de l'éditeur (`uid()`, base 36) : même forme que `editeurIdSchema` et la contrainte SQL. */
 export const RE_PLAN_LOCAL = /^[a-z0-9]{1,24}$/;
+/** Le drapeau de reprise d'un plan de l'appareil (`ClaimPlan` le lit sur /projets et sur la vitrine). */
+export const CLE_RECLAMATION_PLAN = "avyora-plan-claim";
+
+/**
+ * 401 à l'enregistrement d'une estimation née d'un plan de CET APPAREIL (`planLocal`) : le plan est marqué à
+ * reprendre. Sur /projets, `ClaimPlan` passe avant `ClaimDraft` : le plan entre dans le compte, puis l'estimation
+ * s'y relie par son `editeurId`. Sans `planLocal` (ou interrupteur éteint : l'origine n'en porte jamais), rien.
+ */
+export function marquerReprisePlan(o: OrigineNeuf | undefined, s: Pick<Storage, "setItem">): void {
+  if (!o?.planLocal || !RE_PLAN_LOCAL.test(o.planLocal)) return;
+  try {
+    s.setItem(CLE_RECLAMATION_PLAN, o.planLocal);
+  } catch {
+    /* stockage bloqué : la reprise se fera depuis l'éditeur (« Sur cet appareil ») */
+  }
+}
+
 /** Version du contrat de l'éditeur (`project_plans.version` : 16 caractères au plus). */
 export const RE_CONTRAT = /^\d{1,4}\.\d{1,4}\.\d{1,4}$/;
 
