@@ -11,8 +11,8 @@ const url = process.env.UPSTASH_REDIS_REST_URL;
 const token = process.env.UPSTASH_REDIS_REST_TOKEN;
 const redis = url && token ? new Redis({ url, token }) : null;
 
-function make(limiter: ReturnType<typeof Ratelimit.slidingWindow>): Ratelimit | null {
-  return redis ? new Ratelimit({ redis, limiter, prefix: "avyora", analytics: true }) : null;
+function make(limiter: ReturnType<typeof Ratelimit.slidingWindow>, prefix = "avyora"): Ratelimit | null {
+  return redis ? new Ratelimit({ redis, limiter, prefix, analytics: true }) : null;
 }
 
 // Fenêtres calibrées : auth serrée (anti-brute-force), IA très serrée (coût $), API modérée.
@@ -21,9 +21,13 @@ const LIMITERS: Record<LimitKind, Ratelimit | null> = {
   api: make(Ratelimit.slidingWindow(40, "60 s")), // 40 req / min
   ia: make(Ratelimit.slidingWindow(8, "60 s")), // 8 analyses IA / min
   pdf: make(Ratelimit.slidingWindow(5, "60 s")), // 5 PDF / min (génération Chrome headless = coûteux)
+  // « Mes plans », indexés sur user.id, chacun sous son propre préfixe (le compteur d'une catégorie
+  // ne mange pas celui de l'autre). La sauvegarde automatique de l'éditeur est groupée à ~2 s.
+  plan: make(Ratelimit.slidingWindow(90, "60 s"), "avyora:plan"), // 90 écritures / min
+  planCreation: make(Ratelimit.slidingWindow(20, "3600 s"), "avyora:plan-creation"), // 20 créations / h
 };
 
-export type LimitKind = "auth" | "api" | "ia" | "pdf";
+export type LimitKind = "auth" | "api" | "ia" | "pdf" | "plan" | "planCreation";
 
 /** IP client (best-effort) depuis les en-têtes de proxy. */
 export async function clientIp(): Promise<string> {

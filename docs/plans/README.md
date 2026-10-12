@@ -97,6 +97,44 @@ tous les plans enregistrés**. Il retire `floor_plans`, sa fonction de création
   il ne lit pas `.env.local` et ne tourne que si `RLS_TEST_SUPABASE_URL`, `RLS_TEST_SUPABASE_ANON_KEY` et
   `RLS_TEST_SUPABASE_SERVICE_ROLE_KEY` désignent un projet distinct de la production. Sinon il est ignoré.
 
+## API « Mes plans » (C2)
+
+Trois routes, toutes en `runtime = "nodejs"`, toutes à **404 sans corps** quand l'interrupteur est éteint.
+Les erreurs sont des **codes** (`{ code }`, liste dans `lib/plans/http.ts`), jamais un message de Postgres
+ou de zod : les textes vivent côté client, en français et en anglais. Aucune réponse n'est mise en cache
+(`Cache-Control: private, no-store`).
+
+| Route | Réponse | Règles |
+|---|---|---|
+| `GET /api/plans/session` | `{ connecte, pro, limite: 1\|null, utilises }` | Sans session : `{connecte:false, pro:false, limite:1, utilises:0}` en 200. Sert à l'affichage : chaque écriture refait le contrôle. |
+| `GET /api/plans` | `{ plans:[{id, nom, workflow, resume, apercu, revision, updated_at, estimations}], limite, utilises }` | 401 sans session. **Jamais l'état.** 100 cartes au plus, les plus récentes d'abord. |
+| `POST /api/plans` | 201 `{ id, revision, deja }` | `planCreerSchema`. Débit `planCreation` (20 / h / compte). Vignette calculée par le serveur. `floor_plans_creer` avec `limite = estPro ? null : 1`. `limite_gratuite` → 402, `plafond_plans` → 409 `plafond`. Même `editeurId` → le même plan, `deja: true`. |
+| `GET /api/plans/[id]` | `{ id, nom, workflow, etat, vue, resume, revision, updated_at, estimations:[{id, nom, nature, created_at}] }` | `id` hors uuid, absent ou d'un autre compte → 404 (on ne dit pas si le plan existe). |
+| `PATCH /api/plans/[id]` | `{ revision }` | `planMajSchema`. Débit `plan` (90 / min / compte). `where revision = attendue` ; 0 ligne → 404 si absent, sinon 409 `{code:"conflit", revision}`. `force: true` écrit sans condition. `contrat` : `planImportSchema` (codes `contrat_invalide`, `contrat_version`) et même type que le plan (`contrat_workflow`), puis `contrat_at`. |
+| `DELETE /api/plans/[id]` | 204 | Débit `plan`. RLS ; les liens `project_plans.plan_id` repassent à null. |
+
+- **Corps** : lu borné à 1,2 Mo (`content-length`, puis comptage du flux) avant `JSON.parse` ; au-delà, 413.
+- **Schémas** (`lib/plans/schema.ts`) : fermés sur ce qui finit en HTML ou en attribut (identifiants, coordonnées,
+  type et statut des murs, résumé), ouverts (`.loose()`) sur le reste. Une garde parcourt l'entrée **brute**
+  (zod retire `__proto__` en silence) : profondeur ≤ 12, chaîne ≤ 2 000, ni `__proto__` / `constructor` /
+  `prototype`, ni image `data:`. État ≤ 1 Mo, 6 niveaux.
+- **Vignette** (`lib/plans/apercu.ts`) : `[[ax, ay, bx, by, type, st], …]` du niveau affiché, nombres finis bornés
+  à ± 10 000 et arrondis au centimètre, `type` dans `cloison | mur | porteur`, `st` dans `'' | creer | demolir`,
+  2 000 murs au plus (moins de 128 Ko dans le pire cas).
+- **Données** (`lib/plans/data.ts`) : tout passe par la session (RLS), sauf la création (service role, RPC).
+
+### Tests
+
+- `tests/plans-schema.test.ts` : sept états réels de l'éditeur (`tests/fixtures/plans-etats/`, régénérés par
+  `node maquettes/tools/exporter-etats.mjs "$(pwd)/maquettes" tests/fixtures/plans-etats`) passent sans rien
+  perdre ; les injections (attribut, apostrophe, `__proto__`, `data:`, 7 niveaux, 3 000 caractères…) sont refusées.
+- `tests/plans-apercu.test.ts` : nombres et codes fermés, idempotent, sous 128 Ko.
+- `tests/plans-routes.test.ts` : les routes contre un Supabase simulé en mémoire (RLS, fonction de création
+  atomique, trigger de révision, cascade) : 404 interrupteur éteint, 401, 402, 409, 413, 429, aucune fuite
+  d'`error.message`, jamais d'`etat` dans la liste.
+- Pas d'intégration contre une vraie base : il faudrait des comptes, et la base de dev est la production.
+  `tests/rls.test.ts` couvre la fonction et la RLS dès qu'un projet Supabase de test existe.
+
 ## Contrôles de chaque chantier
 
 ```bash

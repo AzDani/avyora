@@ -1,0 +1,48 @@
+import { FEATURES } from "@/lib/features";
+import { getUser, estPro } from "@/lib/auth";
+import { verifierLimite } from "@/lib/ratelimit";
+import { creerPlan, listerPlans } from "@/lib/plans/data";
+import { PLAN_CORPS_MAX, planCreerSchema } from "@/lib/plans/schema";
+import { eteinte, erreur, lireCorpsBorne, repondre } from "@/lib/plans/http";
+
+export const runtime = "nodejs";
+
+/** Les cartes de « Mes plans », sans l'état. */
+export async function GET() {
+  if (!FEATURES.plans) return eteinte();
+  try {
+    const user = await getUser();
+    if (!user) return erreur("connexion_requise");
+    const { plans, utilises } = await listerPlans();
+    return repondre({ plans, limite: estPro(user) ? null : 1, utilises });
+  } catch {
+    return erreur("erreur");
+  }
+}
+
+/**
+ * Range un plan dans le compte. La limite gratuite est tenue par la fonction SQL (seule autorité,
+ * sous verrou) : la route lui passe 1 en gratuit, null en Pro.
+ */
+export async function POST(req: Request) {
+  if (!FEATURES.plans) return eteinte();
+  try {
+    const user = await getUser();
+    if (!user) return erreur("connexion_requise");
+    if (!(await verifierLimite("planCreation", user.id))) return erreur("trop_de_requetes");
+
+    const corps = await lireCorpsBorne(req, PLAN_CORPS_MAX);
+    if (!corps.ok) return corps.res;
+    const v = planCreerSchema.safeParse(corps.data);
+    if (!v.success) return erreur("invalide");
+    const { nom, etat, vue, resume, editeurId } = v.data;
+
+    const r = await creerPlan(user.id, estPro(user) ? null : 1, { nom, etat, vue, resume, editeurId });
+    if (!r.ok) return erreur(r.code);
+    /* C6 : si `editeurId` est fourni, les estimations déjà réclamées pour ce plan local seront
+       reliées ici (relierEstimationsOrphelines). */
+    return repondre({ id: r.id, revision: r.revision, deja: r.deja }, 201);
+  } catch {
+    return erreur("erreur");
+  }
+}
