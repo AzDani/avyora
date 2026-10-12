@@ -275,3 +275,40 @@ describe("Témoins · en-têtes du site et matcher du proxy", () => {
     }
   });
 });
+
+/* ─── C5 : « Mes plans » monté sur /projets et /inscription ────────────────────
+   Interrupteur ALLUMÉ, sans drapeau ni plan local : ClaimPlan et PlanRappel ne rendent rien côté serveur.
+   /projets et /inscription doivent donc rendre exactement le même HTML qu'interrupteur éteint. */
+describe("Témoins · C5, interrupteur allumé sans plan local", () => {
+  it("/projets : même HTML qu'interrupteur éteint (FR, EN ; gratuit, Pro ; vide, plein)", async () => {
+    const tous: CleProjet[] = ["renoRapide", "renoDetaille", "neufRapide", "neufDetaille", "archive"];
+    for (const locale of LOCALES) {
+      for (const user of ["gratuit", "pro"] as const) {
+        for (const projets of [[], tous]) {
+          const rendu: string[] = [];
+          for (const plans of [false, true]) {
+            const r = await charger({ plans, locale, user, projets: [...projets] });
+            const Projets = (await import("@/app/projets/page")).default;
+            rendu.push(await r.rendre(await Projets()));
+          }
+          expect(rendu[1]).toBe(rendu[0]);
+        }
+      }
+    }
+  });
+
+  it("/inscription : même HTML qu'interrupteur éteint, avec ou sans next=/plan (FR, EN)", async () => {
+    for (const locale of LOCALES) {
+      for (const next of [undefined, "/plan", "/tarifs"]) {
+        const rendu: string[] = [];
+        for (const plans of [false, true]) {
+          const r = await charger({ plans, locale });
+          const Inscription = (await import("@/app/inscription/page")).default;
+          rendu.push(await r.rendre(await Inscription({ searchParams: Promise.resolve(next ? { next } : {}) })));
+        }
+        expect(rendu[0]).toContain("<form");
+        expect(rendu[1]).toBe(rendu[0]);
+      }
+    }
+  });
+});

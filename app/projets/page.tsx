@@ -3,10 +3,12 @@ import { listProjets, type Projet } from "@/lib/data/projects";
 import { estimationProjet, avancementProjet, natureProjet } from "@/lib/estimateur";
 import ListeProjets, { type ProjetCarte } from "@/components/ListeProjets";
 import ClaimDraft from "@/components/ClaimDraft";
+import ClaimPlan from "@/components/plans/ClaimPlan";
 import ProUpsell from "@/components/ProUpsell";
 import { getUser, estPro } from "@/lib/auth";
 import { getLocale } from "@/lib/i18n/server";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
+import { FEATURES } from "@/lib/features";
 
 export const dynamic = "force-dynamic";
 
@@ -76,6 +78,8 @@ export default async function ProjetsPage() {
 
   return (
     <div className="space-y-8">
+      {/* Le plan dessiné sans compte part AVANT l'estimation : il obtient son id du compte d'abord. */}
+      {FEATURES.plans && <ClaimPlan pro={isPro} />}
       <ClaimDraft />
 
       {projets.length > 0 ? (

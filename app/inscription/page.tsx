@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { SignupForm } from "@/components/auth/forms";
 import { EstimationRappel } from "@/components/auth/EstimationRappel";
+import { PlanRappel } from "@/components/plans/PlanRappel";
+import { FEATURES } from "@/lib/features";
 import { getUser } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
 import { cheminInterne } from "@/lib/next-url";
@@ -36,6 +38,8 @@ export default async function InscriptionPage({
         </>
       }
     >
+      {/* Arrivée depuis l'éditeur (drapeau ou next=/plan) : le rappel du plan. Sinon il ne rend rien. */}
+      {FEATURES.plans && <PlanRappel next={next} />}
       <EstimationRappel />
       <SignupForm next={next} />
     </AuthShell>

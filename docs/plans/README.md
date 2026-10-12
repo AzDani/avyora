@@ -254,7 +254,51 @@ La source n'est pas modifiée (la batterie continue de tester le fichier tel que
 - Pas de recette avec un vrai compte : la base de dev est la production. Les parcours connectés passent par l'API
   simulée ; la recette réelle (dessiner, recharger, retrouver le plan) se fera après l'application de 0004, en
   préversion.
-- Le logo de l'éditeur mène à `/logiciel-plan-maison`, qui n'existe qu'à partir de C5.
+- Le logo de l'éditeur mène à `/logiciel-plan-maison` (C5).
+
+## « Mes plans » : la vitrine-hub, la reprise, la limite (C5)
+
+| Fichier | Rôle |
+|---|---|
+| `app/logiciel-plan-maison/page.tsx` | La vitrine (indexée, cible de l'onglet en C9). `notFound()` interrupteur éteint. Page serveur **sans lecture de session** : son HTML est celui d'un visiteur sans compte. Haut de page (titre, sous-titre ; en EN, « The editor is in French for now. »), puis l'îlot `TesPlans`. Le reste du contenu (étapes, Gratuit / Pro, FAQ, JSON-LD) arrive en C9. |
+| `components/plans/TesPlans.tsx` | L'îlot client, hauteur réservée (`min-h`, CLS mesuré à 0). Connecté (`GET /api/plans`) : cartes (vignette React depuis l'aperçu du serveur, « Plan final » / « Projet rénovation », surface et pièces, date, « Ouvrir » → `/plan?id=`, « n estimations » dépliables, chargées par `GET /api/plans/:id`), puis « Nouveau plan » (Pro : aussi « Nouveau projet rénovation »), ou à la limite gratuite « Avec Pro : des plans enregistrés sans limite » → `/tarifs?source=editeur-plan`. Sans compte, avec des plans dans ce navigateur : « Sur cet appareil », « Reprendre « {nom} » » → `/plan`, « Garde-le dans ton compte » (drapeau, puis `/inscription?next=%2Fplan`). Téléphone (`max-width: 600px`) : « M'envoyer le lien » (partage du système), à défaut « Copier le lien » ; « Ouvrir » reste possible. |
+| `components/plans/ClaimPlan.tsx` | Jumeau de `ClaimDraft`. Ne fait rien sans le drapeau `avyora-plan-claim`. Avec : un `POST /api/plans` avec `editeurId` (une seconde reprise rend le même plan, `deja`). Monté sur `/projets` **avant** `ClaimDraft` (interrupteur allumé seulement) et dans `TesPlans` pour un connecté. |
+| `components/plans/PlanRappel.tsx` | Sur `/inscription`, si `next=/plan` ou si le drapeau est posé : « Ton plan est prêt » · « « {nom} » · {surface} m² · {n} pièces » (surface et pièces quand le résumé est connu). |
+| `components/plans/ApercuPlan.tsx` | La vignette (`[[ax,ay,bx,by,type,st]]` → `<svg>` par React, donc échappée ; trait en pixels). |
+| `lib/plans/local.ts` | Les plans de ce navigateur (`avyora-plans`, tampon `avyora-plan-v2`), `planPorteTravail` et `empreinte` de l'éditeur au caractère près (un modèle intact n'est pas un plan), le choix du plan à reprendre, le corps de la reprise et le nettoyage (comme `siteAjouterLocal`). Sans DOM : stockage et `fetch` passés en paramètres. |
+| `lib/i18n/plans.ts` | Tous les textes FR et EN de C5 (`dictPlans`, `formatsPlans`, `messageReprise`). Hors du dictionnaire global. |
+
+**La reprise** (drapeau → compte) :
+- plan visé : celui du drapeau, sinon le plan ouvert (tampon), sinon le plus récent ; jamais un plan du compte resté
+  dans le tampon (id uuid), jamais un plan vide ou un modèle intact ;
+- 201 : « « {nom} » est dans ton compte. » (et « Les autres restent sur cet appareil. » s'il en reste, plus
+  « Avec Pro… » en gratuit) ; l'entrée locale est retirée et le tampon prend l'uuid (l'éditeur rouvre alors le plan
+  du compte par son adresse) ;
+- 402 : « Ton compte garde déjà « {autre} ». Ce plan reste sur cet appareil. Avec Pro : des plans enregistrés sans
+  limite. » (`{autre}` lu par `GET /api/plans`) ; 409 `plafond` ; panne : le plan reste sur l'appareil ;
+- le drapeau est retiré dans tous les cas, sauf 401 (pas encore connecté) ;
+- l'éditeur connecté traite aussi le drapeau à l'ouverture (C3) : celui qui passe le premier le retire.
+
+**Limite gratuite** : la fonction `floor_plans_creer` (C1) est la seule autorité ; l'éditeur l'affiche par
+`PLAN_LIMIT_FREE` / `planPaywall` ; le hub et la reprise traduisent le 402.
+
+**Ne change pas** : `ClaimDraft` (aucune ligne) ; `/projets` et `/inscription` gardent leur HTML serveur, interrupteur
+éteint **et** allumé sans drapeau (vérifié dans `tests/plans-temoins.test.ts`) ; `proxy.ts` (la vitrine et `/plan`
+restent publics).
+
+### Contrôles
+
+- `tests/plans-claim.test.ts` : drapeau absent → aucun appel ; drapeau → un `POST` avec `editeurId`, nettoyage ;
+  seconde reprise → `deja`, aucun doublon ; 402 → message FR et EN ; 401 → drapeau gardé ; panne, plafond, réponse
+  illisible ; choix du plan ; empreinte de l'éditeur sur quatre modèles réels ; `ClaimPlan` monté avant `ClaimDraft`
+  sur `/projets`, absent interrupteur éteint.
+- `tests/plans-traductions.test.ts` : même forme FR / EN (`plans.ts` et `dictionaries.ts`), aucun prix, aucun emoji,
+  tutoiement, droits repris de `DROITS`, mots interdits du Plan final absents.
+- `tests/plans-vitrine.test.ts` : 404 éteint ; allumé, HTML de l'anonyme sans lecture de session, FR et EN.
+- Recette navigateur sur `next start` interrupteur allumé, l'API simulée par interception dès qu'il faut une session
+  (aucun compte) : anonyme (CLS 0), plans locaux, « Garde-le » → inscription et rappel, reprise connectée, 402,
+  téléphone 375 px, anglais. Le parcours réel (s'inscrire, confirmer dans un autre navigateur, revenir) se fera en
+  préversion après l'application de 0004.
 
 ## Contrôles de chaque chantier
 
