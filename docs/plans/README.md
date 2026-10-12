@@ -135,6 +135,33 @@ ou de zod : les textes vivent côté client, en français et en anglais. Aucune 
 - Pas d'intégration contre une vraie base : il faudrait des comptes, et la base de dev est la production.
   `tests/rls.test.ts` couvre la fonction et la RLS dès qu'un projet Supabase de test existe.
 
+## L'éditeur en « mode site » (C3)
+
+La source reste `maquettes/plan-editor.html`, la même que l'artefact. Le site (C4) pose `window.AVYORA_SITE`
+avant d'exécuter l'éditeur ; sans lui, rien ne change (carnet **D76**, `maquettes/carnet/DECISIONS.md`).
+
+| Situation | Comportement |
+|---|---|
+| Artefact, outils de la batterie | `SITE === null` : le chemin d'avant, au caractère près (phrases, clés `localStorage`, aucune requête). |
+| Anonyme sur le site | Le mode local de l'artefact. Après la première pièce, une fois par plan : « Garde ce plan dans ton compte ». |
+| Connecté (`NUAGE`) | « Mes plans » = le compte. Un plan dessiné est rangé d'office (limite gratuite : 1). Sauvegarde `PATCH` regroupée à 2 s avec la révision ; 409 → fenêtre de conflit ; hors ligne → indicateur et nouvel essai ; 402 → fenêtre de la limite. |
+| Plans dessinés avant la connexion | Proposés, jamais repris seuls (« Sur cet appareil », « Ajouter à mon compte »), sauf drapeau `avyora-plan-claim`. |
+| Liens | Construction : `&pid=<uuid>` ou `&pl=<id local>` devant `#plan=`. Rénovation (Pro) : `PATCH {revision, contrat}` puis `/projets/depuis-plan/<id>`. Logo → `/logiciel-plan-maison`. |
+
+Ce que l'amorçage doit poser (contrat, détaillé dans D76) :
+
+```js
+window.AVYORA_PRO = false;            /* toujours un booléen */
+window.AVYORA_SITE = { v: 1, connecte, limite, plans /* GET /api/plans */, plan /* GET /api/plans/:id ou null */,
+  type /* final | renovation | null */, urls: { accueil, editeur, api, inscription, tarifs }, lang: "fr", dev: false };
+```
+
+Clés `localStorage` propres au site : `avyora-plan-rev` (révision et empreinte de ce que le compte a reçu),
+`avyora-plan-invite`, `avyora-plan-claim`.
+
+Contrôle : `node maquettes/tools/site.mjs "$(pwd)/maquettes"` (le source, l'artefact intact, le site simulé par
+interception Puppeteer, sans compte ni serveur réel), puis la batterie complète comparée à la ligne de base de C0.
+
 ## Contrôles de chaque chantier
 
 ```bash

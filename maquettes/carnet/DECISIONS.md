@@ -5124,3 +5124,94 @@ l'aller-retour. Les pages du dossier ne changent pas (Pro et gratuit). À 375 px
 Batterie complète lancée seule, une par une : les 22 contrôles, `planfinal` (625/625) et `vue3d` (182/182), finition,
 couverture et vitest (391 tests) verts, `tsc` sans erreur ; la même batterie, sur le fichier d'avant D75, était déjà verte
 (`planfinal` 579/579). Vu à l'écran à 1 440 (gratuit : le pied, Fichier, le dossier), 1 024 (Pro) et 375 px (le tiroir).
+
+## D76 · L'éditeur en « mode site » : le même fichier, le compte en plus (12/10/2026)
+
+**Demande** (chantier C3 de la mise en ligne de l'éditeur, `scratchpad/plans/plan-plans.md`). Que l'éditeur, servi par le
+site sur `/plan` (C4), range les plans d'un connecté dans son compte (API `/api/plans`, C2), sans que l'artefact ni la
+batterie ne voient la moindre différence.
+
+**Constat.**
+- *Tout le stockage passe par deux fonctions synchrones* (`loadPlans`, `writePlans`) et une clé pour le plan ouvert
+  (`avyora-plan-v2`) : une vingtaine d'appelants, qu'il ne faut pas toucher.
+- *Trois outils figent des lignes littérales* : `V3_THREE` (vue3d), `PRIX_PRO`, `CONSTRUCTION_URL` et
+  `CONSTRUCTION_URL+'#plan='+` (coherence) — et vue3d découpe le module 3D jusqu'à `const planCharge=load();` : la ligne
+  de démarrage ne peut pas changer d'un caractère.
+- *Des failles sans effet en artefact* : `esc()` ne traitait ni `'` ni `>` ; `renderPlans` écrivait `e.id` dans un
+  `onclick` ; `miniPlanSVG` écrivait les coordonnées telles quelles dans les attributs. Sans danger tant que tout vient de
+  l'utilisateur lui-même ; plus avec des données qui reviennent d'un serveur.
+- *Des phrases fausses pour un compte* : « Enregistré sur cet appareil », « Tes plans, sur cet appareil »…
+
+**Décision.**
+1. *La détection* (à côté de `isDev`) : `SITE = window.AVYORA_SITE` (objet) ou `null` ; `NUAGE = SITE.connecte`. `isDev()`
+   rend `false` sur le site sauf `SITE.dev` : `?dev` ne montre plus rien à un visiteur. `isPro()` ne change pas : le site
+   pose toujours `AVYORA_PRO` en booléen.
+2. *Un bloc* `/* ===== MODE SITE (D76) ===== */`, juste après `renderProChip`, en lignes courtes et commentaires en bloc,
+   et douze crochets d'une ligne derrière `if(SITE`, `if(NUAGE`, `NUAGE?` ou `NUAGE&&`. Sans `AVYORA_SITE`, le bloc ne fait
+   que déclarer.
+3. *« Mes plans » dans le compte* : en NUAGE, `loadPlans()` rend une copie de `siteLib` (les cartes de `GET /api/plans`,
+   chacune avec une **ébauche** d'état tirée de l'aperçu serveur : la vignette, le type et la limite marchent sans rien
+   changer ; le plan ouvert porte l'état vivant). `writePlans(o)` compare à `siteLib` : nouveau → `POST` (avec
+   `editeurId` pour un identifiant local : pas de doublon), changé → `PATCH` regroupé à 2 s avec la révision lue, retiré →
+   `DELETE` à 8 s, que l'« Annuler » existant rattrape. Elle rend `true` tout de suite ; l'échec remonte par l'indicateur.
+   `save()` ne change pas : `avyora-plan-v2` reste la copie hors ligne et la garde entre onglets (D48).
+4. *Rangé d'office* : en NUAGE, un plan qui porte du travail entre dans le compte à la première sauvegarde, dans la limite
+   gratuite ; au-delà, l'état « perdu » d'avant. Ouvrir un plan du compte passe par son adresse (`/plan?id=`) ; dupliquer
+   une ébauche lit d'abord l'état (`GET`).
+5. *Le démarrage* : `const planCharge=load();` ne bouge pas ; `load(brut)` lit `brut ?? siteBrut() ?? le tampon`.
+   `siteBrut()` sort d'emblée sans `AVYORA_SITE` ; en NUAGE, il rend le plan demandé (`SITE.plan`, migré par le chemin de
+   `load()`), ou le tampon s'il porte des modifications pas encore parties sur la même révision (renvoyées, et un message le
+   dit). Pour le savoir, `avyora-plan-rev` garde `{id, révision, empreinte de ce que le compte a reçu}`. Un plan du compte
+   resté dans le tampon, sans `?id=`, se rouvre par son adresse. `?type=` démarre un plan du type demandé ; la rénovation
+   reste Pro (D68).
+6. *Les pannes* : `409` → la fenêtre de conflit (`alerterOnglet`, état `conflit`) : « Ouvrir la version enregistrée »
+   (le tampon est abandonné, le plan rouvert) ou « Garder la mienne » (en Pro, l'autre version gardée d'abord en copie
+   « · autre appareil » ; en gratuit, le texte dit que la copie n'est pas possible) puis `PATCH force`. Un tampon modifié sur
+   une révision dépassée ouvre la même fenêtre au démarrage. Pas de réseau → l'état `horsligne` de l'indicateur (« Pas de
+   connexion : ton plan est gardé sur cet appareil, il partira dès que la connexion revient »), nouvel essai à 2 s, 10 s,
+   30 s et au retour du réseau ; `beforeunload` seulement si un envoi a échoué. `402` → `planPaywall()`. `404` → le plan est
+   rangé de nouveau.
+7. *Les plans de l'appareil* (dessinés avant la connexion) : jamais repris sans qu'on le demande. Le plan local ouvert au
+   démarrage est **proposé** (message « Ajouter à mon compte ») et n'est pas rangé d'office ; s'il est remplacé, il reste
+   sur l'appareil. « Mes plans » gagne « Sur cet appareil (n) » avec « Ajouter à mon compte ». Le drapeau
+   `avyora-plan-claim` (posé par l'invitation, lu aussi par le site en C5) fait partir l'ajout tout seul, une fois.
+8. *L'anonyme du site* : le mode local de l'artefact, et après la première pièce une carte, une fois par plan
+   (`avyora-plan-invite`) : « Garde ce plan dans ton compte : tu le retrouves sur tous tes appareils. » · « Créer mon
+   compte gratuit » · « Plus tard ».
+9. *Les liens* : `lienConstruction` est enveloppé (la l. de D75 ne bouge pas) : `&pid=<uuid>` pour un plan du compte,
+   `&pl=<id local>` sinon, toujours devant `#plan=`. Rénovation, Pro, connecté : « Créer l'estimation détaillée » (ou
+   « Mettre à jour l'estimation ») dans le pied d'Estimer : la file vidée, `PATCH {revision, contrat}`, puis
+   `/projets/depuis-plan/<id>` ; en gratuit, « Estimation détaillée · avec Pro ». Les estimations nées du plan se lisent
+   sous le pied du panneau (« Construction · 18 oct. »), dans un nouvel onglet. Le logo devient un lien vers
+   `/logiciel-plan-maison`, après la file. Au retour de l'onglet, la session est relue : un passage à Pro s'applique
+   sans recharger.
+10. *Les textes* : `TXT_LIEU` (appareil / compte) ; en artefact, les phrases d'avant au caractère près.
+11. *Sécurité, aussi en artefact* : `esc()` traite `'` et `>` ; `escJs()` (nouvelle) ne laisse passer que
+    `[A-Za-z0-9_-]` dans les `onclick` de « Mes plans » ; `miniPlanSVG` écrit des nombres. Les résumés et aperçus venus du
+    serveur sont réduits à des nombres et à des codes fermés.
+
+**Contrat de `window.AVYORA_SITE`** (posé par l'amorçage du site, C4) : `{v:1, connecte, limite, plans, plan, type, urls,
+lang, dev}` — `plans` = les cartes de `GET /api/plans`, `plan` = la réponse de `GET /api/plans/:id` telle quelle (`etat`,
+`vue`, `revision`, `estimations`…) ou `null`, `type` = `final`|`final_plan`|`renovation`|`null`, `urls` = `{accueil,
+editeur, api, inscription, tarifs}`. Aucune donnée personnelle.
+
+**Pas fait, et pourquoi.**
+- *La ligne de démarrage* n'est pas réécrite comme le prévoyait le plan (`load(SITE&&SITE.plan?…)`) : vue3d.mjs la fige.
+  Le plan du compte passe par `siteBrut()`, appelé par `load()`.
+- *Les phrases « sur cet appareil » qui restent vraies pour un compte* ne changent pas : le plan pas encore rangé
+  (`clicEnreg`, `annoncerLimite`, la carte du plan ouvert), les onglets d'un même navigateur (`alerterOnglet`), la 3D
+  (« Ce navigateur n'affiche pas la 3D »), et les messages « navigateur plein », qu'un compte ne voit pas (l'écriture ne
+  passe plus par `localStorage`).
+- *`keepalive` à la fermeture* : non (64 Ko au plus, un plan pèse plus) ; le tampon suffit, il repart au chargement suivant.
+- *`langage.mjs`* n'est pas étendu : les phrases du site sont relues par `site.mjs`, la batterie garde sa sortie.
+- *L'artefact* n'est pas republié : seulement après l'accord de Dani (même URL).
+
+**Ce qui ne bouge pas.** Contrat (1.18), `SCHEMA`, clés `localStorage` de l'artefact, `PLAN_LIMIT_FREE`, `DROITS`,
+`contratPlan()`, `V3_THREE`, `PRIX_PRO`, `CONSTRUCTION_URL`, `TARIFS_URL`, l'`@import`, le tutoriel, l'accueil, D68. Clés
+du site seulement : `avyora-plan-rev`, `avyora-plan-invite`, `avyora-plan-claim`.
+
+**Contrôles.** `site.mjs` (nouveau, 80 contrôles) : le source, l'artefact (aucune requête, aucune clé nouvelle, phrases
+d'avant, données hostiles), le site simulé (interception Puppeteer, API en mémoire, aucun compte). La batterie complète,
+outil par outil, donne la sortie de la ligne de base de C0 (mêmes ✓, aucun KO), sauf 4 contrôles de `vue3d` liés à la
+machine (sur batterie à 8 %, la boucle 3D plafonne à 31 i/s et le recentrage animé du double-clic s'arrête à 3,5 cm) : le
+fichier d'avant D76, relancé dans les mêmes conditions, donne les mêmes 4 échecs, aux mêmes valeurs.

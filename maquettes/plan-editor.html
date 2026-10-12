@@ -185,7 +185,7 @@ button,input,select{font:inherit}
 .savest{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;margin-left:-6px;min-width:112px;flex:0 0 auto}
 .overlay.show~#m-confirm.show{background:rgba(20,17,51,.22);backdrop-filter:none}
 .savest.ok svg{color:var(--ok)}
-.savest.err{color:#b45309}
+.savest.err,.savest.horsligne{color:#b45309}
 .savest.perdu,.savest.conflit{color:#b45309;cursor:pointer;border-radius:var(--r-s)}.savest.perdu:hover span,.savest.conflit:hover span{text-decoration:underline}.savest.perdu:focus-visible,.savest.conflit:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
 .confirmrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .confirmrow .ib{flex:0 1 auto}
@@ -1805,7 +1805,10 @@ window.addEventListener('resize',()=>{if(glAncre)glPlacer();});
 /* ---------- Mode développeur : ?dev dans l'adresse ----------
    Seul lui montre l'interrupteur Pro / Gratuit, le contrat, le JSON, « Envoyer vers mon
    estimation » (l'import n'est pas encore branché dans le site) et toute mention de maquette. */
-function isDev(){try{return new URLSearchParams(location.search).has('dev');}catch{return false;}}
+/* D76 · MODE SITE : posé par l'amorçage du site (/plan), absent en artefact (voir le bloc MODE SITE). */
+const SITE=(typeof window.AVYORA_SITE==='object'&&window.AVYORA_SITE)||null;
+const NUAGE=!!(SITE&&SITE.connecte);
+function isDev(){if(SITE&&!SITE.dev)return false;try{return new URLSearchParams(location.search).has('dev');}catch{return false;}}
 document.documentElement.classList.toggle('dev',isDev());
 
 /* ---------- Gratuit / Pro : UNE table, reprise mot pour mot partout ----------
@@ -1833,6 +1836,29 @@ const DROITS={
   plans:{gratuit:'1 plan enregistré',pro:'des plans enregistrés sans limite'},
 };
 const maj=s=>s?s.charAt(0).toUpperCase()+s.slice(1):'';
+/* D76 : où vit le plan. Artefact et anonyme du site : l'appareil, les phrases d'avant au caractère près (site.mjs les
+   compare au HTML et au code d'avant). Connecté : le compte. Les calques image restent sur l'appareil dans les deux cas. */
+const TXT_LIEU=NUAGE?{
+  enreg:dansLib=>dansLib?'Enregistré dans ton compte':'Enregistré sur cet appareil',
+  err:'Pas enregistré dans ton compte : le serveur n\'a pas accepté ce plan. Il reste sur cet appareil ; exporte-le pour le garder.',
+  perdu:'Ce plan est sur cet appareil, mais ton compte garde déjà un plan : il sera perdu si tu en ouvres un autre.',
+  horsligne:'Pas de connexion : ton plan est gardé sur cet appareil, il partira dès que la connexion revient.',
+  videTel:'Aucun plan dans ton compte pour l\'instant. Dessine ton plan sur ordinateur ou tablette : il apparaîtra ici.',
+  plansSub:'Tes plans, dans ton compte. Le plan ouvert s\'enregistre tout seul, dès que tu le dessines.',
+  plansNote:'Tes plans sont enregistrés dans ton compte : tu les retrouves sur tous tes appareils. Les calques image restent sur cet appareil.',
+  accueil:'Ton plan s\'enregistre tout seul, dans ton compte.',
+  calque:'Calque importé — cale son échelle pour des surfaces justes. Il reste sur cet appareil : il ne part pas dans ton compte.'
+}:{
+  enreg:()=>'Enregistré sur cet appareil',
+  err:'Pas enregistré : l\'espace de ce navigateur est plein. Supprime un plan dans « Mes plans » ou exporte celui-ci.',
+  perdu:'Ce plan est sur cet appareil, mais « Mes plans » n\'a plus de place : il sera perdu si tu en ouvres un autre.',
+  horsligne:'Pas de connexion : ton plan est gardé sur cet appareil, il partira dès que la connexion revient.',
+  videTel:'Aucun plan sur ce téléphone. Pour l\'instant, un plan reste enregistré sur l\'appareil où il a été dessiné : ouvre-le sur cet ordinateur ou cette tablette.',
+  plansSub:'Tes plans, sur cet appareil. Le plan ouvert s\'enregistre tout seul ; il est rangé ici avant que tu en ouvres ou en commences un autre.',
+  plansNote:'Tes plans sont enregistrés dans ce navigateur, sur cet appareil.',
+  accueil:'Ton plan s\'enregistre tout seul, sur cet appareil.',
+  calque:'Calque importé — cale son échelle pour des surfaces justes'
+};
 /* Décision de Dani (QCM du 26/09/2026) : le prix de Pro se lit à côté de « Passer Pro ». Le même que la page
    Tarifs du site (lib/i18n/dictionaries.ts, plan mensuel) — coherence.mjs l'exige ; le site peut injecter le
    sien (window.AVYORA_PRIX_PRO). Aucun prix barré, aucune promotion : seulement le prix pratiqué. */
@@ -3780,7 +3806,8 @@ const unitOf=p=>p.poste==='plinthes'?'ml':p.poste==='autre'?(p.unite||'u'):'m²'
 const milliers=s=>s.replace(/\u202f/g,'\u00a0');
 const fmtEur=x=>milliers(Math.round(x).toLocaleString('fr-FR'))+' €';
 const cleanUrl=u=>{u=(u||'').trim();if(!u)return '';if(!/^https?:\/\//i.test(u))u='https://'+u;return u;};
-const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); /* D76 : aussi ' et > */
+const escJs=s=>String(s??'').replace(/[^A-Za-z0-9_-]/g,''); /* D76 : un identifiant écrit dans un onclick, rien d'autre */
 // surface habitable d'une pièce = surface au sol − trémie, moins la part sous 1,80 m (combles)
 function areaNet(lv,f){const r=f.room||{};return Math.max(0,(f.areaInt-tremieArea(lv,f))*(1-(r.lowPct||0)/100));}
 // m² de murs à peindre d'une pièce : périmètre des vrais murs × hauteur − ouvertures
@@ -4039,7 +4066,7 @@ let etatEnreg='ok',enregT=0,enregAt=0,enregOk=true;
    plus rien (ni le plan ouvert, ni « Mes plans ») tant que l'utilisateur n'a pas choisi. */
 const ONGLET=Math.random().toString(36).slice(2,10);
 let conflitOnglet=null;
-const ICO_ENREG={ok:'check',saving:'horloge',err:'alerte',perdu:'alerte',conflit:'conflit'}; /* D59 : des noms du registre */
+const ICO_ENREG={ok:'check',saving:'horloge',err:'alerte',perdu:'alerte',conflit:'conflit',horsligne:'alerte'}; /* D59 : des noms du registre */
 /* Ce qu'il adviendra du plan ouvert si l'on en ouvre un autre : 'rien' (vide ou jamais touché),
    'range' (déjà dans « Mes plans »), 'rangera' (il y sera rangé), 'perdu' (gratuit, place prise). */
 /* D53 (jury final, retention) · En gratuit, l'EXEMPLE n'est jamais rangé dans « Mes plans » : il y
@@ -4049,21 +4076,21 @@ const ICO_ENREG={ok:'check',saving:'horloge',err:'alerte',perdu:'alerte',conflit
    l'exemple — et le message qui le dit porte « Annuler ». 'exemple' : ce qu'il advient de lui. */
 const MSG_EXEMPLE='L\'exemple n\'est pas gardé : il se rouvre depuis Aide › Revoir l\'exemple.';
 const exempleNonGarde=()=>!isPro()&&estExemple();
-function sortDuPlanOuvert(){if(planVide()||planIntact())return 'rien';const lib=loadPlans();if(state.id&&lib[state.id])return 'range';if(exempleNonGarde())return 'exemple';if(isPro()||Object.keys(lib).length<PLAN_LIMIT_FREE)return 'rangera';return 'perdu';}
+function sortDuPlanOuvert(){if(planVide()||planIntact())return 'rien';const lib=loadPlans();if(state.id&&lib[state.id])return 'range';if(NUAGE&&siteSansAuto===state)return 'appareil';if(exempleNonGarde())return 'exemple';if(isPro()||Object.keys(lib).length<PLAN_LIMIT_FREE)return 'rangera';return 'perdu';}
 /* D48 (cj-retention07, cj-integration11, retention05) : « Enregistré » ne se dit plus d'un plan que
    la version gratuite perdra à l'ouverture d'un autre (« Pas dans Mes plans », en orange foncé,
    cliquable), ni d'un plan qu'un autre onglet est en train d'écrire. */
 function afficherEnreg(dansLib){const el=document.getElementById('saveState');if(!el)return;
   let et=conflitOnglet?'conflit':etatEnreg,sort='';
   if(et==='ok'){if(dansLib===undefined)dansLib=!!(state.id&&loadPlans()[state.id]);if(!dansLib){sort=sortDuPlanOuvert();if(sort==='perdu')et='perdu';}}
-  const txt={ok:'Enregistré',saving:'Enregistrement…',err:'Non enregistré',perdu:'Pas dans Mes plans',conflit:'Ouvert dans un autre onglet'}[et];
+  const txt={ok:'Enregistré',saving:'Enregistrement…',err:'Non enregistré',perdu:'Pas dans Mes plans',conflit:'Ouvert dans un autre onglet',horsligne:'Hors connexion'}[et];
   const hh=enregAt?new Date(enregAt).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'';
   el.className='savest '+et;
   el.innerHTML=`${ico(ICO_ENREG[et])}<span>${txt}</span>`;
-  const t=et==='err'?'Pas enregistré : l\'espace de ce navigateur est plein. Supprime un plan dans « Mes plans » ou exporte celui-ci.':et==='saving'?'Enregistrement en cours…'
-    :et==='perdu'?'Version gratuite : '+DROITS.plans.gratuit+'. Ce plan est sur cet appareil, mais « Mes plans » n\'a plus de place : il sera perdu si tu en ouvres un autre. Clique pour voir tes options.'
+  const t=et==='horsligne'?TXT_LIEU.horsligne:et==='err'?TXT_LIEU.err:et==='saving'?'Enregistrement en cours…'
+    :et==='perdu'?'Version gratuite : '+DROITS.plans.gratuit+'. '+TXT_LIEU.perdu+' Clique pour voir tes options.'
     :et==='conflit'?'Ce plan est aussi ouvert dans un autre onglet : cet onglet n\'enregistre plus rien tant que tu n\'as pas choisi. Clique pour choisir.'
-    :'Enregistré sur cet appareil'+(hh?' à '+hh:'')+(dansLib?', et à jour dans « Mes plans »':sort==='rangera'?'. Il sera rangé dans « Mes plans » avant que tu en ouvres un autre.':sort==='exemple'?'. '+MSG_EXEMPLE:'');
+    :TXT_LIEU.enreg(dansLib)+(hh?' à '+hh:'')+(dansLib?', et à jour dans « Mes plans »':sort==='rangera'?'. Il sera rangé dans « Mes plans » avant que tu en ouvres un autre.':sort==='exemple'?'. '+MSG_EXEMPLE:'');
   el.title=t;el.setAttribute('aria-label',t);
   const actif=et==='perdu'||et==='conflit';
   if(actif){el.setAttribute('role','button');el.tabIndex=0;el.onclick=clicEnreg;el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();clicEnreg();}};}
@@ -4074,7 +4101,7 @@ function clicEnreg(){if(conflitOnglet){alerterOnglet();return;}
     choix:[{t:'Passer Pro',fn:()=>passerPro('enregistrement')},{t:'Voir Mes plans',fn:openPlansModal},{t:'Compris',primaire:true}]});}
 function save(){majAnnuler();let ok=true;if(!conflitOnglet){try{localStorage.setItem('avyora-plan-v2',JSON.stringify({state,view,onglet:ONGLET}));}catch{ok=false;}}
   enregOk=ok;etatEnreg='saving';afficherEnreg();clearTimeout(enregT);enregT=setTimeout(synchroMesPlans,450);}
-function synchroMesPlans(){enregT=0;let ok=enregOk;const lib=loadPlans();
+function synchroMesPlans(){if(NUAGE){siteSynchro();return;}enregT=0;let ok=enregOk;const lib=loadPlans();
   if(!conflitOnglet&&state.id&&lib[state.id]){lib[state.id]={...lib[state.id],name:state.name||'Plan sans nom',savedAt:Date.now(),state:JSON.parse(JSON.stringify(state)),view:{...view},resume:resumePlan()};if(!writePlans(lib))ok=false;}
   const avant=etatEnreg;etatEnreg=ok?'ok':'err';if(ok)enregAt=Date.now();afficherEnreg(!!(state.id&&lib[state.id]));
   if(!ok&&avant!=='err')toast('Ton plan n\'a pas pu être enregistré : l\'espace de ce navigateur est plein. Supprime un plan dans « Mes plans » ou exporte celui-ci.',false,{ms:7000});}
@@ -4093,7 +4120,7 @@ function planPorteTravail(st){return !!st&&(st.levels||[]).some(l=>(l.walls||[])
 /* Ranger dans « Mes plans » un plan qui n'est pas celui de cet onglet (celui d'un autre onglet). */
 function rangerEtat(st,vw){const lib=loadPlans();if(st.id&&lib[st.id])return true;if(!isPro()&&Object.keys(lib).length>=PLAN_LIMIT_FREE)return false;
   const id=st.id||uid(),c=JSON.parse(JSON.stringify(st));c.id=id;c.name=nomUnique(c.name||'Plan sans nom',id);lib[id]={id,name:c.name,savedAt:Date.now(),state:c,view:{...(vw||view)},resume:null};return writePlans(lib);}
-function alerterOnglet(){if(!conflitOnglet)return;let autre=null;try{autre=JSON.parse(localStorage.getItem('avyora-plan-v2'));}catch{}
+function alerterOnglet(){if(!conflitOnglet)return;if(conflitOnglet.serveur){siteConflit();return;}let autre=null;try{autre=JSON.parse(localStorage.getItem('avyora-plan-v2'));}catch{}
   const lib=loadPlans(),a=autre&&autre.state,placeAutre=!a||!planPorteTravail(a)||(a.id&&lib[a.id]&&a.id!==state.id)||isPro()||Object.keys(lib).length<PLAN_LIMIT_FREE;
   demander({titre:'Ce plan est aussi ouvert dans un autre onglet',
     texte:`Un autre onglet vient d'enregistrer <b>« ${esc(conflitOnglet.nom)} »</b> sur cet appareil. Pour que l'un n'efface pas l'autre, cet onglet n'enregistre plus rien tant que tu n'as pas choisi.<br><br><b>Continuer ici</b> : ce plan-ci s'enregistre de nouveau${placeAutre?' ; celui de l\'autre onglet est d\'abord rangé dans « Mes plans »':' ; celui de l\'autre onglet ne peut pas être rangé (version gratuite : '+DROITS.plans.gratuit+') et sera remplacé'}.<br><b>Afficher le plan de l'autre onglet</b> : ce plan-ci est d'abord rangé dans « Mes plans ».`,
@@ -4138,6 +4165,7 @@ const planIntact=()=>!!state.origine&&state.origine.sig===empreinte(state);
    suite(nomGardé, pourquoi) — pourquoi : 'perdu' (l'utilisateur a choisi) | undefined. */
 function avantDeRemplacer(suite){enregistrerMaintenant();
   if(planVide()||planIntact()){suite(null);return;}
+  if(NUAGE&&siteGarderSurAppareil()){suite(null);return;}
   const lib=loadPlans(),nom=state.name||'Plan sans nom';
   if(state.id&&lib[state.id]){suite(nom);return;}
   if(exempleNonGarde()){suite(null,'exemple');return;} /* D53 : en gratuit, l'exemple ne prend pas la place de « Mes plans » */
@@ -4200,14 +4228,14 @@ function migrerToiture(st){const t=st&&st.toiture,p=t&&t.projet;if(!p||p.manuel)
    changé l'empreinte de chaque plan enregistré (un plan type jamais touché se serait dit « modifié »). */
 function migrerWorkflow(st){if(st.workflow!==WORKFLOW_FINAL)st.workflow=WORKFLOW_RENO;else st.mode='existant';}
 function migrerEtat(st){if(!st)return;const v=+st.schema||0;if(v<37)migrerSols(st);if(v<47)migrerToiture(st);migrerWorkflow(st);st.schema=SCHEMA;}
-function load(){try{const s=JSON.parse(localStorage.getItem('avyora-plan-v2'));if(s?.state?.levels){state=s.state;state.done=state.done||{};migrerDone(state);migrerEtat(state);state.groups=state.groups||[];state.chantier={...CHANTIER_DEF,...(state.chantier||{})};if(s.view)view=s.view;
+function load(brut){try{const s=JSON.parse(brut??siteBrut()??localStorage.getItem('avyora-plan-v2'));if(s?.state?.levels){state=s.state;state.done=state.done||{};migrerDone(state);migrerEtat(state);state.groups=state.groups||[];state.chantier={...CHANTIER_DEF,...(state.chantier||{})};if(s.view)view=s.view;
   let imgs={};try{imgs=JSON.parse(localStorage.getItem('avyora-plan-images'))||{};}catch{}
   state.levels.forEach(l=>{if(l.bg&&imgs[l.bg.img]){const im=new Image();im.onload=()=>draw();im.src=imgs[l.bg.img];images[l.bg.img]=im;}else if(l.bg)l.bg=null;});
   return true;}}catch{}return false;}
 // ---------- Bibliothèque de plans (multi-plans enregistrés) ----------
 const PLANS_KEY='avyora-plans';
-function loadPlans(){try{return JSON.parse(localStorage.getItem(PLANS_KEY))||{};}catch{return {};}}
-function writePlans(o){try{localStorage.setItem(PLANS_KEY,JSON.stringify(o));return true;}catch{return false;}}
+function loadPlans(){if(NUAGE)return {...siteLib};try{return JSON.parse(localStorage.getItem(PLANS_KEY))||{};}catch{return {};}}
+function writePlans(o){if(NUAGE)return siteEcrire(o);try{localStorage.setItem(PLANS_KEY,JSON.stringify(o));return true;}catch{return false;}}
 // Gratuit = 1 seul plan enregistré ; gérer plusieurs plans = Pro (le vrai site injectera isPro ; ici la maquette lit un flag de test)
 const PLAN_LIMIT_FREE=1;
 // Maquette : PRO PAR DÉFAUT (arbitrage tour 2 : la page seule reste Pro ; le site injecte window.AVYORA_PRO) ; l'interrupteur (?dev) bascule en Gratuit pour tester le parcours free.
@@ -4216,6 +4244,497 @@ function isPro(){if(typeof window.AVYORA_PRO==='boolean')return window.AVYORA_PR
 function togglePro(){try{localStorage.setItem('avyora-plan-pro',isPro()?'0':'1');}catch{}toast(isPro()?'Maquette en mode Pro : détail du chiffrage, multi-plans et export sans filigrane':'Maquette en mode Gratuit : montant total et corps d\'état, 1 plan, export filigrané',true);render();}
 function renderProChip(){const p=isPro(),t=document.getElementById('proTop');document.body.classList.toggle('gratuit',!p);if(t){t.hidden=p;t.href=TARIFS_URL;t.title='AVYORA Pro, '+PRIX_PRO;} /* D41 : « Passer Pro » dans la barre, en gratuit seulement */
   const c=document.getElementById('proChip');if(!c)return;c.innerHTML=p?ico('etoile')+' Pro':ico('cadenas')+' Gratuit';c.classList.toggle('pro',p);}
+/* ===== MODE SITE (D76) =====
+   window.AVYORA_SITE est posé par l'amorçage du site (/plan). Absent (l'artefact, la batterie) : SITE vaut null,
+   aucun crochet ne s'ouvre et l'éditeur suit son chemin d'avant. Connecté (NUAGE) : « Mes plans » vit dans le
+   compte (API /api/plans), tenu en mémoire dans siteLib ; loadPlans() et writePlans() gardent leurs signatures
+   synchrones, le réseau passe derrière, en file. save() ne change pas : avyora-plan-v2 reste la copie hors ligne
+   et la garde entre onglets. Anonyme sur le site : le mode local de l'artefact, plus une invitation après la
+   première pièce. Lignes courtes, commentaires en bloc seulement (jamais de double barre oblique). */
+const SITE_UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const SITE_LOCAL=/^[a-z0-9]{1,24}$/;
+const SITE_URLS=(SITE&&SITE.urls&&typeof SITE.urls==='object')?SITE.urls:{};
+const SITE_API=typeof SITE_URLS.api==='string'?SITE_URLS.api:'/api/plans';
+const SITE_MEMO='avyora-plan-rev';
+let siteLib={};
+let siteRev=0;
+let siteEstim=[];
+let siteEstimPour=null;
+let siteSansAuto=null;
+let siteBrutPris=false;
+let siteRepris=false;
+let siteConflitDepart=null;
+let siteEchec=false;
+let siteFileT=0;
+let siteEssai=0;
+let siteEssaiT=0;
+let siteTache=Promise.resolve();
+const siteFile=new Set();
+const siteSupp={};
+const siteEnvoye={};
+const siteCrea={};
+function siteNum(n){n=+n;return Number.isFinite(n)?n:0;}
+function siteNom(n){return String(n||'').trim().slice(0,120)||'Plan sans nom';}
+function siteUrl(id){
+  const e=typeof SITE_URLS.editeur==='string'?SITE_URLS.editeur:'/plan';
+  return e+'?id='+encodeURIComponent(id);}
+/* le résumé d'une carte : des nombres, et une étape sans balise (il finit dans le HTML de « Mes plans ») */
+function siteResume(r){
+  if(!r||typeof r!=='object'||!Object.keys(r).length)return null;
+  const o={};
+  ['m2','budget'].forEach(k=>{o[k]=Number.isFinite(+r[k])?+r[k]:0;});
+  if(r.projet!=null&&Number.isFinite(+r.projet))o.projet=+r.projet;
+  ['pieces','taches','faites'].forEach(k=>{o[k]=Number.isFinite(+r[k])?Math.max(0,Math.round(+r[k])):0;});
+  if(r.pf===true)o.pf=true;
+  o.prochain=typeof r.prochain==='string'&&r.prochain?esc(r.prochain):null;
+  return o;}
+/* ce que l'API accepte : ni clé nulle, ni nom trop long */
+function siteResumeEnvoi(r){
+  if(!r||typeof r!=='object')return undefined;
+  const o={};Object.keys(r).forEach(k=>{if(r[k]!==null&&r[k]!==undefined)o[k]=r[k];});
+  return o;}
+function siteEtat(st){return Object.assign({},st,{name:siteNom(st&&st.name)});}
+/* une carte de l'API (sans l'état) : une ébauche que miniPlanSVG, workflowDe, renderPlans et la limite lisent */
+function siteCarte(p){
+  const ap=Array.isArray(p.apercu)?p.apercu:[];
+  const murs=ap.filter(Array.isArray).map((m,i)=>({id:'a'+i,
+    a:{x:siteNum(m[0]),y:siteNum(m[1])},b:{x:siteNum(m[2]),y:siteNum(m[3])},
+    type:m[4]==='cloison'||m[4]==='porteur'?m[4]:'mur',
+    st:m[5]==='creer'||m[5]==='demolir'?m[5]:''}));
+  const wf=p.workflow===WORKFLOW_FINAL?WORKFLOW_FINAL:WORKFLOW_RENO;
+  return {id:String(p.id),name:siteNom(p.nom),savedAt:Date.parse(p.updated_at)||0,
+    state:{levels:[{walls:murs}],cur:0,workflow:wf},view:null,resume:siteResume(p.resume),
+    revision:siteNum(p.revision)||1,estimations:siteNum(p.estimations),ebauche:true};}
+if(NUAGE){
+  (Array.isArray(SITE.plans)?SITE.plans:[]).forEach(p=>{
+    if(p&&SITE_UUID.test(String(p.id)))siteLib[p.id]=siteCarte(p);});
+  const P=SITE.plan;
+  if(P&&SITE_UUID.test(String(P.id))&&P.etat&&Array.isArray(P.etat.levels)){
+    siteRev=siteNum(P.revision)||1;siteEstimPour=P.id;
+    siteEstim=(Array.isArray(P.estimations)?P.estimations:[]).filter(x=>x&&SITE_UUID.test(String(x.id)));}
+}
+/* un appel à l'API : {s: statut (0 = pas de réseau), j: corps JSON ou null}. Ne lève jamais. */
+function siteApi(meth,chemin,corps){
+  const o={method:meth,credentials:'same-origin',headers:{Accept:'application/json'}};
+  if(corps!==undefined){o.headers['Content-Type']='application/json';o.body=JSON.stringify(corps);}
+  return fetch(SITE_API+chemin,o)
+    .then(r=>r.text().then(t=>{let j=null;try{j=t?JSON.parse(t):null;}catch{}return {s:r.status,j};}))
+    .catch(()=>({s:0,j:null}));}
+/* la révision du plan ouvert et l'empreinte de ce que le compte a reçu : au chargement suivant, un tampon
+   qui en diffère porte des modifications qui ne sont pas parties */
+function siteMemo(){try{const m=JSON.parse(localStorage.getItem(SITE_MEMO));return m&&typeof m==='object'?m:null;}catch{return null;}}
+function siteMemoriser(emp){
+  if(!NUAGE||!state.id||!SITE_UUID.test(String(state.id))||!emp)return;
+  try{localStorage.setItem(SITE_MEMO,JSON.stringify({id:state.id,rev:siteRev,emp}));}catch{}}
+function siteTamponner(){
+  try{localStorage.setItem('avyora-plan-v2',JSON.stringify({state,view,onglet:ONGLET}));}catch{}
+  siteMemoriser(empreinteTravail(state));}
+/* load(), au démarrage seulement : le plan du compte (?id=), ou le tampon s'il porte des modifications pas
+   encore parties sur la même révision. Un plan du compte resté dans le tampon, sans ?id=, se rouvre par son
+   adresse. undefined : le chemin d'avant (le tampon). */
+function siteBrut(){
+  if(!SITE||siteBrutPris)return undefined;
+  siteBrutPris=true;
+  if(!NUAGE)return undefined;
+  let tampon=null;try{tampon=JSON.parse(localStorage.getItem('avyora-plan-v2'));}catch{}
+  const T=tampon&&tampon.state&&Array.isArray(tampon.state.levels)?tampon.state:null;
+  const P=SITE.plan;
+  if(siteRev){
+    const m=siteMemo();
+    const sale=!!(T&&T.id===P.id&&m&&m.id===P.id&&empreinteTravail(T)!==m.emp);
+    if(sale&&siteNum(m.rev)===siteRev){siteRepris=true;return JSON.stringify({state:T,view:tampon.view||P.vue||undefined});}
+    if(sale)siteConflitDepart={state:T,view:tampon.view||null};
+    const st=Object.assign({},P.etat,{id:P.id,name:siteNom(P.nom||P.etat.name)});
+    return JSON.stringify({state:st,view:P.vue||undefined});}
+  if(T&&SITE_UUID.test(String(T.id))){
+    let q=null;try{q=new URLSearchParams(location.search);}catch{}
+    if(q&&!q.has('id')&&!SITE.type&&siteLib[T.id]){try{location.replace(siteUrl(T.id));}catch{}}
+    return 'null';}
+  return undefined;}
+/* writePlans() en NUAGE : la différence avec siteLib part au serveur (nouveau → POST, changé → PATCH groupé,
+   retiré → DELETE dans 8 s, que l'« Annuler » existant rattrape). Rend true tout de suite. */
+function siteEcrire(o){
+  o=o||{};
+  Object.keys(siteLib).forEach(id=>{if(!o[id])siteRetirer(id);});
+  Object.keys(o).forEach(id=>{
+    const e=o[id];if(!e||typeof e!=='object')return;
+    if(siteSupp[id]){
+      clearTimeout(siteSupp[id].t);delete siteSupp[id];siteLib[id]=e;
+      if(siteSansAuto===state)siteSansAuto=null;
+      return;}
+    const a=siteLib[id];
+    if(!a&&siteCrea[id]){siteCrea[id].retire=false;siteLib[id]=e;return;}
+    if(!a){siteLib[id]=e;siteCreer(id);return;}
+    if(a!==e){
+      const eb=!!a.ebauche&&e.state===a.state;
+      siteLib[id]=Object.assign({},e,{revision:a.revision,ebauche:eb});
+      if(!eb)siteMettreEnFile(id);}});
+  return true;}
+function siteRetirer(id){
+  const e=siteLib[id];delete siteLib[id];siteFile.delete(id);
+  if(siteCrea[id]){siteCrea[id].retire=true;return;}
+  if(!SITE_UUID.test(id))return;
+  if(state.id===id)siteSansAuto=state;
+  siteSupp[id]={e,t:setTimeout(()=>siteSupprimer(id),8000)};}
+function siteSupprimer(id){
+  const x=siteSupp[id];if(!x)return;delete siteSupp[id];
+  siteApi('DELETE','/'+encodeURIComponent(id)).then(r=>{
+    if(r.s===204||r.s===404){delete siteEnvoye[id];return;}
+    if(!x.e)return;
+    siteLib[id]=x.e;siteRafraichirListe();
+    toast('« '+(x.e.name||'Plan sans nom')+' » n\'a pas pu être supprimé de ton compte'+(r.s===0?' : pas de connexion.':'.'));});}
+function siteMettreEnFile(id){
+  siteFile.add(id);
+  if(!siteFileT)siteFileT=setTimeout(siteViderMaintenant,2000);}
+function siteViderMaintenant(){
+  clearTimeout(siteFileT);siteFileT=0;
+  siteTache=siteTache.then(siteVider,siteVider);
+  return siteTache;}
+/* tout ce qui est en route (file et créations), borné : avant de quitter la page ou de relier une estimation */
+function siteAttendre(ms){
+  const crea=Object.values(siteCrea).map(c=>c.p).filter(Boolean);
+  const tout=Promise.all([siteViderMaintenant(),...crea]).catch(()=>{});
+  return Promise.race([tout,new Promise(r=>setTimeout(r,ms||4000))]);}
+async function siteVider(){
+  for(const id of [...siteFile]){
+    const e=siteLib[id];
+    if(!e||e.ebauche){siteFile.delete(id);continue;}
+    if(!SITE_UUID.test(id))continue;
+    const emp=empreinteTravail(e.state);
+    if(siteEnvoye[id]===emp){siteFile.delete(id);continue;}
+    siteFile.delete(id);
+    const corps={revision:e.revision||1,nom:siteNom(e.name),etat:siteEtat(e.state)};
+    if(e.view)corps.vue=e.view;
+    const rs=siteResumeEnvoi(e.resume);if(rs)corps.resume=rs;
+    const r=await siteApi('PATCH','/'+encodeURIComponent(id),corps);
+    if(!siteReponse(id,r,emp))return;}
+  if(!siteFile.size&&!Object.keys(siteCrea).length)siteOk();}
+/* la réponse d'un PATCH : false arrête la file (conflit, réseau) */
+function siteReponse(id,r,emp){
+  if(r.s===200&&r.j){
+    const rev=siteNum(r.j.revision)||1;
+    if(siteLib[id])siteLib[id].revision=rev;
+    siteEnvoye[id]=emp;siteEssai=0;siteEchec=false;
+    if(id===state.id){siteRev=rev;siteMemoriser(emp);}
+    return true;}
+  if(r.s===409&&r.j&&r.j.code==='conflit'){
+    if(id===state.id){
+      conflitOnglet={nom:state.name||'Plan sans nom',serveur:true,revision:siteNum(r.j.revision)};
+      clearTimeout(enregT);enregT=0;siteFile.clear();afficherEnreg();alerterOnglet();}
+    return false;}
+  if(r.s===404){
+    delete siteLib[id];delete siteEnvoye[id];
+    if(id===state.id){delete state.id;siteSansAuto=null;save();toast('Ce plan n\'était plus dans ton compte : il y est rangé de nouveau.',true);}
+    return true;}
+  if(r.s===0||r.s===429||r.s>=500){siteFile.add(id);siteReessayer(r.s===0);return false;}
+  etatEnreg='err';afficherEnreg();
+  return true;}
+/* pas de réseau : l'indicateur le dit, nouvel essai à 2 s, 10 s, puis toutes les 30 s, et au retour du réseau */
+function siteReessayer(hors){
+  siteEchec=true;etatEnreg=hors?'horsligne':'saving';afficherEnreg();
+  clearTimeout(siteEssaiT);
+  const d=[2000,10000,30000][Math.min(siteEssai,2)];siteEssai++;
+  siteEssaiT=setTimeout(siteRelancer,d);}
+function siteRelancer(){
+  clearTimeout(siteEssaiT);siteEssaiT=0;
+  Object.keys(siteLib).forEach(id=>{if(!SITE_UUID.test(id)&&!siteCrea[id])siteCreer(id);});
+  siteViderMaintenant();}
+function siteOk(){if(conflitOnglet)return;etatEnreg='ok';enregAt=Date.now();afficherEnreg();}
+function siteRafraichirListe(){
+  const m=document.getElementById('m-plans');
+  if(m&&m.classList.contains('show'))renderPlans();
+  afficherEnreg();}
+/* POST d'un plan qui entre dans le compte (editeurId : la reprise d'un plan local ne fait pas de doublon) */
+function siteCreer(id){
+  const e=siteLib[id];if(!e||siteCrea[id]||e.ebauche)return;
+  const corps={nom:siteNom(e.name),etat:siteEtat(e.state)};
+  if(e.view)corps.vue=e.view;
+  const rs=siteResumeEnvoi(e.resume);if(rs)corps.resume=rs;
+  if(SITE_LOCAL.test(id))corps.editeurId=id;
+  const c={retire:false,emp:empreinteTravail(e.state)};siteCrea[id]=c;
+  if(etatEnreg!=='horsligne')etatEnreg='saving';
+  afficherEnreg();
+  c.p=siteApi('POST','',corps).then(r=>{delete siteCrea[id];siteCree(id,c,r);});}
+function siteCree(id,c,r){
+  if(r.s===201&&r.j&&SITE_UUID.test(String(r.j.id))){
+    const nid=String(r.j.id),rev=siteNum(r.j.revision)||1,cur=siteLib[id];
+    delete siteLib[id];siteFile.delete(id);
+    if(c.retire||!cur){siteSupp[nid]={e:null,t:0};siteSupprimer(nid);return;}
+    siteLib[nid]=Object.assign({},cur,{id:nid,revision:rev,state:Object.assign({},cur.state,{id:nid})});
+    siteEnvoye[nid]=c.emp;siteEssai=0;siteEchec=false;
+    siteRetirerLocal(id);
+    if(state.id===id){state.id=nid;siteRev=rev;siteMemoriser(c.emp);save();}
+    if(empreinteTravail(siteLib[nid].state)!==c.emp)siteMettreEnFile(nid);
+    if(!siteFile.size&&!Object.keys(siteCrea).length)siteOk();
+    siteRafraichirListe();return;}
+  if(r.s===402||(r.s===409&&r.j&&r.j.code==='plafond')){
+    delete siteLib[id];siteFile.delete(id);
+    if(state.id===id)siteSansAuto=state;
+    etatEnreg='ok';
+    if(r.s===402)planPaywall();
+    else toast('Ton compte a atteint le nombre maximal de plans : supprime un plan pour en ranger un autre.');
+    siteRafraichirListe();return;}
+  if(r.s===0||r.s===429||r.s>=500){siteReessayer(r.s===0);return;}
+  delete siteLib[id];siteFile.delete(id);etatEnreg='err';siteRafraichirListe();}
+/* synchroMesPlans() en NUAGE : un plan qui porte du travail est rangé d'office (dans la limite), un plan rangé
+   part en PATCH groupé. Un plan local proposé (siteSansAuto) n'entre dans le compte que si on le demande. */
+function siteSynchro(){
+  enregT=0;
+  if(conflitOnglet){afficherEnreg();return;}
+  const dans=!!(state.id&&siteLib[state.id]);
+  const place=isPro()||Object.keys(siteLib).length<PLAN_LIMIT_FREE;
+  if(!dans&&siteSansAuto!==state&&planPorteTravail(state)&&!exempleNonGarde()&&place){rangerDansMesPlans();return;}
+  if(dans){
+    const e=siteLib[state.id];
+    siteLib[state.id]=Object.assign({},e,{name:state.name||'Plan sans nom',savedAt:Date.now(),
+      state:JSON.parse(JSON.stringify(state)),view:{...view},resume:resumePlan(),ebauche:false});
+    siteMettreEnFile(state.id);}
+  if(etatEnreg==='saving'&&!siteFile.size&&!Object.keys(siteCrea).length){etatEnreg='ok';enregAt=Date.now();}
+  afficherEnreg(dans);}
+/* un conflit avec le compte (409, ou un tampon modifié sur une révision dépassée) : deux choix */
+function siteConflit(){
+  const c=conflitOnglet,pro=isPro();
+  const garde=pro?'la version enregistrée est d\'abord gardée en copie (« · autre appareil »), puis la tienne la remplace'
+    :'la tienne remplace la version enregistrée. Version gratuite : '+DROITS.plans.gratuit+', la version enregistrée ne peut pas être gardée en copie';
+  demander({titre:'Ce plan a changé ailleurs',
+    texte:`<b>« ${esc(c.nom)} »</b> a été enregistré dans ton compte depuis un autre appareil ou un autre onglet. Pour que l'un n'efface pas l'autre, cet onglet n'enregistre plus rien tant que tu n'as pas choisi.<br><br><b>Ouvrir la version enregistrée</b> : tu retrouves le plan tel qu'il est dans ton compte ; les modifications qui ne sont pas parties sont abandonnées.<br><b>Garder la mienne</b> : ${garde}.`,
+    choix:[{t:'Ouvrir la version enregistrée',fn:siteOuvrirEnregistree},{t:'Garder la mienne',primaire:true,fn:siteGarderMienne}]});}
+function siteOuvrirEnregistree(){
+  const c=conflitOnglet;conflitOnglet=null;siteFile.clear();siteConflitDepart=null;
+  if(c&&c.depart){siteEnvoye[state.id]=empreinteTravail(state);siteTamponner();siteOk();toast('Version enregistrée ouverte',true);return;}
+  try{localStorage.removeItem('avyora-plan-v2');}catch{}
+  location.assign(siteUrl(state.id));}
+async function siteGarderMienne(){
+  const c=conflitOnglet;if(!c)return;
+  if(c.depart&&siteConflitDepart){
+    load(JSON.stringify(siteConflitDepart));siteConflitDepart=null;
+    history=[];future=[];sel=null;resetGestes();panelTab='details';_tachesOuverture=null;afterChange();fitView();baseDecisions();}
+  const id=state.id,pro=isPro();let copie=false;
+  if(pro){
+    const g=await siteApi('GET','/'+encodeURIComponent(id));
+    if(g.s===200&&g.j&&g.j.etat){
+      const nom=nomUnique(siteNom(g.j.nom)+' · autre appareil');
+      const et=Object.assign({},g.j.etat,{name:nom});
+      const r=await siteApi('POST','',{nom,etat:siteEtat(et),vue:g.j.vue||undefined,resume:siteResumeEnvoi(g.j.resume)});
+      if(r.s===201&&r.j&&SITE_UUID.test(String(r.j.id))){
+        const nid=String(r.j.id);et.id=nid;copie=true;
+        siteLib[nid]={id:nid,name:nom,savedAt:Date.now(),state:et,view:g.j.vue||null,resume:siteResume(g.j.resume),revision:siteNum(r.j.revision)||1};
+        siteEnvoye[nid]=empreinteTravail(et);}}}
+  const emp=empreinteTravail(state);
+  const corps={revision:siteRev||1,force:true,nom:siteNom(state.name),etat:siteEtat(state),vue:{...view}};
+  const rs=siteResumeEnvoi(resumePlan());if(rs)corps.resume=rs;
+  const r=await siteApi('PATCH','/'+encodeURIComponent(id),corps);
+  if(r.s===200&&r.j){
+    conflitOnglet=null;siteRev=siteNum(r.j.revision)||siteRev;
+    siteLib[id]=Object.assign({},siteLib[id]||{},{id,name:state.name||'Plan sans nom',savedAt:Date.now(),
+      state:JSON.parse(JSON.stringify(state)),view:{...view},resume:resumePlan(),revision:siteRev,ebauche:false});
+    siteEnvoye[id]=emp;siteTamponner();siteOk();siteRafraichirListe();
+    toast(copie?'Ta version est enregistrée · l\'autre est gardée en copie dans « Mes plans »':'Ta version est enregistrée',true);
+    return;}
+  toast(r.s===0?'Pas de connexion : ta version partira quand tu choisiras de nouveau.':'Ta version n\'a pas pu être enregistrée.');}
+/* ouvrir un plan du compte : par son adresse (le serveur fournit l'état), après avoir vidé la file */
+function siteQuitter(href){enregistrerMaintenant();siteAttendre().then(()=>location.assign(href));}
+function siteOuvrir(id){closeModal();siteQuitter(siteUrl(id));}
+async function siteDupliquer(id){
+  const e=siteLib[id];if(!e)return;
+  if(!isPro()&&Object.keys(siteLib).length>=PLAN_LIMIT_FREE){planPaywall();return;}
+  const ouvert=id===state.id;
+  let st=ouvert?JSON.parse(JSON.stringify(state)):(!e.ebauche&&e.state?JSON.parse(JSON.stringify(e.state)):null);
+  let vw=ouvert?{...view}:e.view,rs=ouvert?resumePlan():e.resume;
+  const rate=s=>toast(s===0?'Pas de connexion : la copie n\'a pas pu être créée.':'La copie n\'a pas pu être créée.');
+  if(!st){
+    const g=await siteApi('GET','/'+encodeURIComponent(id));
+    if(g.s!==200||!g.j||!g.j.etat){rate(g.s);return;}
+    st=g.j.etat;vw=g.j.vue;rs=g.j.resume;}
+  const nom=nomUnique((e.name||'Plan')+' (copie)');st.name=nom;delete st.id;
+  const r=await siteApi('POST','',{nom,etat:siteEtat(st),vue:vw||undefined,resume:siteResumeEnvoi(rs)});
+  if(r.s===402){planPaywall();return;}
+  if(r.s===201&&r.j&&SITE_UUID.test(String(r.j.id))){
+    const nid=String(r.j.id);st.id=nid;
+    siteLib[nid]={id:nid,name:nom,savedAt:Date.now(),state:st,view:vw||null,resume:siteResume(rs),revision:siteNum(r.j.revision)||1};
+    siteEnvoye[nid]=empreinteTravail(st);renderPlans();toast('Copie créée',true);return;}
+  rate(r.s);}
+/* les plans de cet appareil (anonyme d'avant la connexion) : visibles, jamais repris sans qu'on le demande */
+function siteLocauxBruts(){let L={};try{L=JSON.parse(localStorage.getItem(PLANS_KEY))||{};}catch{}return L&&typeof L==='object'?L:{};}
+function siteLocaux(){return Object.values(siteLocauxBruts()).filter(e=>e&&e.id&&e.state&&Array.isArray(e.state.levels)&&e.id!==state.id);}
+function siteRetirerLocal(id){
+  const L=siteLocauxBruts();if(!L[id])return;
+  delete L[id];try{localStorage.setItem(PLANS_KEY,JSON.stringify(L));}catch{}}
+function siteSectionLocale(el){
+  const L=siteLocaux();
+  const ouvert=siteSansAuto===state&&!!state.id&&!siteLib[state.id]&&planPorteTravail(state);
+  if(!L.length&&!ouvert)return;
+  const carte=(id,nom,st,cour)=>`<div class="grp plancard"><span class="pmini" aria-hidden="true">${miniPlanSVG(st)}</span><div class="glink" style="cursor:default"><span class="gname"><b>${esc(nom||'Plan sans nom')}</b>${pastilleType(workflowDe(st))}${cour?' <span class="gn">· ouvert</span>':''}</span></div><button class="ib s" onclick="siteAjouterLocal('${escJs(id)}')" aria-label="Ajouter « ${esc(nom||'Plan sans nom')} » à mon compte">Ajouter à mon compte</button></div>`;
+  const n=L.length+(ouvert?1:0);
+  const h=`<div class="ph" id="siteLocaux" style="margin-top:16px">Sur cet appareil (${n})</div><p class="note" style="margin:0 0 8px">Ces plans sont dans ce navigateur, pas dans ton compte.</p><div class="grouplist">${ouvert?carte(state.id,state.name,state,true):''}${L.map(e=>carte(e.id,e.name,e.state,false)).join('')}</div>`;
+  el.insertAdjacentHTML('beforeend',h);}
+function siteRefusLimite(nom){
+  const autre=Object.values(siteLib)[0];
+  demander({titre:'Version gratuite : '+DROITS.plans.gratuit,
+    texte:`Ton compte garde déjà <b>« ${esc(autre?autre.name:'un autre plan')} »</b>. « ${esc(nom||'Ce plan')} » reste sur cet appareil. ${avecPro('plans')}`,
+    choix:[{t:'Passer Pro',fn:()=>passerPro('mes-plans')},{t:'Compris',primaire:true}]});}
+function siteAjouterLocal(id){
+  id=String(id||'');
+  const ouvert=state.id===id&&!siteLib[id];
+  let src=null;
+  if(ouvert)src={name:state.name,state:JSON.parse(JSON.stringify(state)),view:{...view},resume:resumePlan()};
+  else src=siteLocauxBruts()[id]||null;
+  if(!src||!src.state)return Promise.resolve(false);
+  const nom=siteNom(src.name||src.state.name);
+  if(!isPro()&&Object.keys(siteLib).length>=PLAN_LIMIT_FREE){siteRefusLimite(nom);return Promise.resolve(false);}
+  const corps={nom,etat:siteEtat(Object.assign({},src.state,{name:nom}))};
+  if(src.view)corps.vue=src.view;
+  const rs=siteResumeEnvoi(src.resume);if(rs)corps.resume=rs;
+  if(SITE_LOCAL.test(id))corps.editeurId=id;
+  return siteApi('POST','',corps).then(r=>{
+    if(r.s===201&&r.j&&SITE_UUID.test(String(r.j.id))){
+      const nid=String(r.j.id),rev=siteNum(r.j.revision)||1;
+      const st=Object.assign({},src.state,{id:nid,name:nom});
+      siteLib[nid]={id:nid,name:nom,savedAt:Date.now(),state:st,view:src.view||null,resume:siteResume(src.resume),revision:rev};
+      siteEnvoye[nid]=empreinteTravail(st);
+      siteRetirerLocal(id);
+      if(state.id===id){state.id=nid;state.name=nom;siteSansAuto=null;siteRev=rev;siteMemoriser(siteEnvoye[nid]);save();}
+      siteRafraichirListe();toast('« '+nom+' » est dans ton compte.',true);return true;}
+    if(r.s===402){siteRefusLimite(nom);return false;}
+    toast(r.s===0?'Pas de connexion : « '+nom+' » reste sur cet appareil.':'« '+nom+' » n\'a pas pu être ajouté à ton compte.');
+    return false;});}
+/* avant de remplacer un plan local proposé : il reste sur cet appareil (Mes plans › Sur cet appareil) */
+function siteGarderSurAppareil(){
+  if(siteSansAuto!==state||(state.id&&siteLib[state.id]))return false;
+  if(!state.id)state.id=uid();
+  const L=siteLocauxBruts(),nom=state.name||'Plan sans nom';
+  L[state.id]={id:state.id,name:nom,savedAt:Date.now(),state:JSON.parse(JSON.stringify(state)),view:{...view},resume:resumePlan()};
+  try{localStorage.setItem(PLANS_KEY,JSON.stringify(L));}catch{return false;}
+  setTimeout(()=>toast('« '+nom+' » reste sur cet appareil : Mes plans › Sur cet appareil.',true),60);
+  return true;}
+/* le statut Pro relu au retour de l'onglet (la page Tarifs s'ouvre à côté) */
+function siteRelirePro(){
+  siteApi('GET','/session').then(r=>{
+    if(r.s!==200||!r.j)return;
+    const p=!!r.j.pro;if(p===window.AVYORA_PRO)return;
+    window.AVYORA_PRO=p;renderProChip();render();});}
+/* Rénovation (Pro, connecté) : l'estimation détaillée naît du plan ; le contrat part avec la révision */
+function siteBoutonEstimer(){
+  if(workflowDe(state)!==WORKFLOW_RENO)return '';
+  if(!isPro())return `<button class="ib" onclick="passerPro('estimer')">${ico('cadenas')}Estimation détaillée · avec Pro</button>`;
+  const deja=state.id===siteEstimPour&&siteEstim.some(x=>x.nature==='renovation');
+  return `<button class="ib primary" onclick="siteEstimerDetail()">${ico('estimer')}${deja?'Mettre à jour l\'estimation':'Créer l\'estimation détaillée'}</button>`;}
+async function siteEstimerDetail(){
+  enregistrerMaintenant();
+  if(!(state.id&&siteLib[state.id])&&!rangerDansMesPlans()){toast('Ce plan n\'a pas pu être rangé dans ton compte.');return;}
+  await siteAttendre(8000);
+  if(conflitOnglet){alerterOnglet();return;}
+  if(!SITE_UUID.test(String(state.id))||!siteLib[state.id]){toast('Ton plan n\'est pas encore dans ton compte : réessaie dans un instant.');return;}
+  let contrat=null;try{contrat=contratPlan();}catch{}
+  if(!contrat){toast('L\'estimation n\'a pas pu être créée à partir de ce plan.');return;}
+  const id=state.id;
+  const r=await siteApi('PATCH','/'+encodeURIComponent(id),{revision:siteRev||1,contrat});
+  if(r.s===200&&r.j){
+    siteRev=siteNum(r.j.revision)||siteRev;
+    if(siteLib[id])siteLib[id].revision=siteRev;
+    siteMemoriser(siteEnvoye[id]);
+    location.assign('/projets/depuis-plan/'+encodeURIComponent(id));return;}
+  if(r.s===409&&r.j&&r.j.code==='conflit'){siteReponse(id,r,'');return;}
+  toast(r.s===0?'Pas de connexion : l\'estimation n\'a pas pu être créée.':'L\'estimation n\'a pas pu être créée à partir de ce plan.');}
+/* les estimations nées du plan ouvert, sous le récapitulatif du pied : lecture seule */
+function siteEstimationsHTML(){
+  if(!state.id||state.id!==siteEstimPour||!siteEstim.length)return '';
+  const l=siteEstim.map(x=>{
+    const d=new Date(x.created_at),j=isNaN(d)?'':' · '+d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+    return `<a class="ib s" style="width:100%;justify-content:space-between;margin-top:6px" href="/projets/${encodeURIComponent(x.id)}" target="_blank" rel="noopener"><span>${x.nature==='neuf'?'Construction':'Rénovation'}${esc(j)}</span>${ico('fleche','inl')}</a>`;});
+  return `<div class="siteestim" aria-label="Estimations nées de ce plan">${l.join('')}</div>`;}
+/* anonyme : garder le plan dans un compte, proposé une fois par plan, jamais avant un premier dessin */
+function siteInviter(){
+  if(!SITE||NUAGE||isMobile()||document.getElementById('siteInvite'))return;
+  if(!state.id){state.id=uid();save();}
+  let vus=[];try{vus=JSON.parse(localStorage.getItem('avyora-plan-invite'))||[];}catch{}
+  if(!Array.isArray(vus))vus=[];
+  if(vus.includes(state.id))return;
+  vus.push(state.id);
+  try{localStorage.setItem('avyora-plan-invite',JSON.stringify(vus.slice(-50)));}catch{}
+  const c=document.createElement('div');c.id='siteInvite';c.setAttribute('role','region');c.setAttribute('aria-label','Garder ce plan');
+  c.style.cssText='position:fixed;left:16px;bottom:56px;z-index:18;max-width:340px;padding:12px 16px;'
+    +'background:var(--white);border:1px solid var(--line);border-radius:var(--r-l);'
+    +'box-shadow:var(--sh-pop);font-size:var(--fs-m)';
+  c.innerHTML='<p style="margin:0 0 8px"><b>Garde ce plan dans ton compte</b> : tu le retrouves sur tous tes appareils.</p><div class="btnrow" style="margin:0"><button type="button" class="ib primary" onclick="siteCreerCompte()">Créer mon compte gratuit</button><button type="button" class="ib" onclick="siteFermerInvite()">Plus tard</button></div>';
+  document.body.appendChild(c);}
+function siteFermerInvite(){const c=document.getElementById('siteInvite');if(c)c.remove();}
+function siteCreerCompte(){
+  if(!state.id)state.id=uid();
+  try{localStorage.setItem('avyora-plan-claim',state.id);}catch{}
+  save();enregistrerMaintenant();
+  location.assign(typeof SITE_URLS.inscription==='string'?SITE_URLS.inscription:'/inscription?next=%2Fplan');}
+/* le logo ramène au site (après avoir vidé la file) */
+function siteLogo(){
+  const b=document.querySelector('.top .brand')||document.querySelector('.brand');
+  if(!b||b.tagName==='A')return;
+  const a=document.createElement('a');a.className=b.className;a.innerHTML=b.innerHTML;
+  a.href=typeof SITE_URLS.accueil==='string'?SITE_URLS.accueil:'/logiciel-plan-maison';
+  a.title='Retour au site AVYORA';a.style.color='inherit';a.style.textDecoration='none';
+  a.addEventListener('click',ev=>{
+    if(ev.button!==0||ev.metaKey||ev.ctrlKey||ev.shiftKey||ev.altKey)return;
+    ev.preventDefault();siteQuitter(a.href);});
+  b.replaceWith(a);}
+/* ?type= : un nouveau plan du type demandé ; la rénovation reste Pro (D68) */
+function siteNouveauType(t){
+  const wf=t==='renovation'&&isPro()?WORKFLOW_RENO:WORKFLOW_FINAL;
+  try{localStorage.setItem('avyora-plan-welcome','1');}catch{}
+  const w=document.getElementById('m-welcome');if(w&&w.classList.contains('show'))closeModal();
+  if(!isMobile()){if(!planVide()||workflowDe(state)!==wf)newPlan(undefined,wf);else tracerLesMurs();}
+  if(t==='renovation'&&!isPro())toast('Le projet rénovation est réservé à Pro : ton plan s\'ouvre en Plan final.',false,{action:'Passer Pro',fn:()=>passerPro('type'),ms:9000});}
+/* la fin du démarrage : textes « ton compte », plan ouvert dans siteLib, plan local proposé, drapeau de reprise */
+function siteDemarrerCompte(){
+  [['#m-plans .modal > .sub','plansSub'],['#m-plans .modal > .note','plansNote']].forEach(([s,k])=>{
+    const el=document.querySelector(s);if(el)el.textContent=TXT_LIEU[k];});
+  {const w=document.querySelector('#m-welcome .wnote');
+    const n=w&&[...w.childNodes].filter(x=>x.nodeType===3).pop();
+    if(n)n.textContent=TXT_LIEU.accueil;}
+  window.addEventListener('online',()=>siteRelancer());
+  window.addEventListener('beforeunload',e=>{
+    if(siteEchec&&(siteFile.size||Object.keys(siteCrea).length)){e.preventDefault();e.returnValue='';}});
+  let q=null;try{q=new URLSearchParams(location.search);}catch{}
+  if(siteRev&&state.id===SITE.plan.id){
+    const e=siteLib[state.id]||{};
+    siteLib[state.id]=Object.assign({},e,{id:state.id,name:state.name||'Plan sans nom',savedAt:Date.now(),
+      state:JSON.parse(JSON.stringify(state)),view:{...view},resume:resumePlan(),revision:siteRev,ebauche:false});
+    if(siteConflitDepart){conflitOnglet={nom:state.name||'Plan sans nom',serveur:true,depart:true};afficherEnreg();alerterOnglet();}
+    else if(siteRepris){siteMettreEnFile(state.id);toast('Tes dernières modifications, restées sur cet appareil, partent dans ton compte.',true);}
+    else{siteEnvoye[state.id]=empreinteTravail(state);siteTamponner();}
+    afficherEnreg(true);}
+  else{
+    if(q&&q.has('id'))toast('Ce plan n\'est pas dans ton compte.');
+    if(planPorteTravail(state)&&!(state.id&&siteLib[state.id])){if(!state.id)state.id=uid();siteSansAuto=state;}}
+  let f=null;try{f=localStorage.getItem('avyora-plan-claim');}catch{}
+  if(f){
+    try{localStorage.removeItem('avyora-plan-claim');}catch{}
+    if((siteSansAuto===state&&state.id===f)||siteLocaux().some(e=>e.id===f))siteAjouterLocal(f);}
+  else if(siteSansAuto===state)toast('« '+(state.name||'Ce plan')+' » est sur cet appareil, pas dans ton compte.',false,{action:'Ajouter à mon compte',fn:()=>siteAjouterLocal(state.id),ms:9000});}
+function siteDemarrer(){
+  siteLogo();
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')siteRelirePro();});
+  if(NUAGE)siteDemarrerCompte();
+  const t=SITE.type==='final'?'final_plan':SITE.type;
+  if(!SITE.plan&&(t==='final_plan'||t==='renovation'))siteNouveauType(t);}
+/* les crochets qui enveloppent : le lien vers la construction porte le plan (&pid= du compte, &pl= local),
+   toujours avec #plan= ; l'anonyme est invité après sa première pièce */
+if(SITE){
+  const _lc=lienConstruction;
+  lienConstruction=function(){
+    const u=_lc();if(!u||!state.id)return u;
+    const id=String(state.id);
+    const p=SITE_UUID.test(id)&&siteLib[id]?'&pid=':SITE_LOCAL.test(id)?'&pl=':'';
+    return p?u.replace('#plan=',p+encodeURIComponent(id)+'#plan='):u;};
+  const _cc=chiffrerConstruction;
+  chiffrerConstruction=function(el,o){
+    if(!state.id&&peutChiffrerConstruction()){state.id=uid();save();}
+    if(NUAGE){enregistrerMaintenant();siteViderMaintenant();}
+    return _cc(el,o);};
+}
+if(SITE&&!NUAGE){
+  const _sv=suivre;
+  suivre=function(n,d){_sv(n,d);if(n==='premiere_piece')setTimeout(siteInviter,800);};
+}
+/* ===== fin du MODE SITE (D76) ===== */
 function planPaywall(){renderPlans();openModal('plans');toast('Version gratuite : '+DROITS.plans.gratuit+'. '+avecPro('plans'),false);}
 function savePlanToLibrary(){const lib=loadPlans();const exists=state.id&&lib[state.id];
   if(!exists&&exempleNonGarde()){toast(MSG_EXEMPLE+' Pour garder un plan, dessine le tien : Fichier › Nouveau plan.',true);return false;} /* D53 */
@@ -4224,12 +4743,12 @@ function savePlanToLibrary(){const lib=loadPlans();const exists=state.id&&lib[st
 function openSavedPlan(id){const lib0=loadPlans();if(!lib0[id])return;
   if(id===state.id){closeModal();toast('« '+(lib0[id].name||'Ce plan')+' » est déjà ouvert, à jour',true);return;} /* D38 : « Ouvrir » le plan ouvert rechargeait sa version rangée et perdait les dernières modifications */
   avantDeRemplacer((garde,pq)=>ouvrirPlanRange(id,garde,pq));}
-function ouvrirPlanRange(id,garde,pq){const lib=loadPlans();const e=lib[id];if(!e)return;history.push(snapshot());state=JSON.parse(JSON.stringify(e.state));state.id=id;state.done=state.done||{};migrerDone(state);migrerEtat(state);state.groups=state.groups||[];state.chantier={...CHANTIER_DEF,...(state.chantier||{})};state.cur=Math.min(state.cur||0,state.levels.length-1);if(e.view)view={...e.view};sel=null;resetGestes();panelTab='details';_tachesOuverture=null;chargerCalques();afterChange();fitView();baseDecisions();closeModal();toast('Plan « '+(e.name||'')+' » ouvert'+(garde&&garde!==e.name?' · « '+garde+' » est rangé dans « Mes plans »':pq==='exemple'?' · '+MSG_EXEMPLE:''),true,pq==='exemple'?annulerCe():undefined);suivre('plan_ouvert',{source:'mes-plans'});}
+function ouvrirPlanRange(id,garde,pq){if(NUAGE){siteOuvrir(id);return;}const lib=loadPlans();const e=lib[id];if(!e)return;history.push(snapshot());state=JSON.parse(JSON.stringify(e.state));state.id=id;state.done=state.done||{};migrerDone(state);migrerEtat(state);state.groups=state.groups||[];state.chantier={...CHANTIER_DEF,...(state.chantier||{})};state.cur=Math.min(state.cur||0,state.levels.length-1);if(e.view)view={...e.view};sel=null;resetGestes();panelTab='details';_tachesOuverture=null;chargerCalques();afterChange();fitView();baseDecisions();closeModal();toast('Plan « '+(e.name||'')+' » ouvert'+(garde&&garde!==e.name?' · « '+garde+' » est rangé dans « Mes plans »':pq==='exemple'?' · '+MSG_EXEMPLE:''),true,pq==='exemple'?annulerCe():undefined);suivre('plan_ouvert',{source:'mes-plans'});}
 /* D38 : la petite croix effaçait définitivement, sans confirmation ni retour. Le plan supprimé reste
    récupérable 8 s (« Annuler » dans le message). */
 function deleteSavedPlan(id){const lib=loadPlans();const e=lib[id];if(!e)return;delete lib[id];writePlans(lib);const ouvert=state.id===id;if(ouvert)delete state.id;renderPlans();save();
   toast(`« ${e.name||'Plan sans nom'} » supprimé de « Mes plans »`,false,{action:'Annuler',fn:()=>{const l2=loadPlans();l2[id]=e;writePlans(l2);if(ouvert&&!state.id)state.id=id;if(document.getElementById('m-plans').classList.contains('show'))renderPlans();save();toast(`« ${e.name||'Plan sans nom'} » est de retour dans « Mes plans »`,true);}});}
-function duplicateSavedPlan(id){const lib=loadPlans();const e=lib[id];if(!e)return;if(!isPro()&&Object.keys(lib).length>=PLAN_LIMIT_FREE){planPaywall();return;}const nid=uid();const copy=JSON.parse(JSON.stringify(e));copy.id=nid;copy.name=nomUnique((e.name||'Plan')+' (copie)');copy.savedAt=Date.now();copy.state.name=copy.name;copy.state.id=nid;lib[nid]=copy;writePlans(lib);renderPlans();toast('Copie créée',true);}
+function duplicateSavedPlan(id){if(NUAGE){siteDupliquer(id);return;}const lib=loadPlans();const e=lib[id];if(!e)return;if(!isPro()&&Object.keys(lib).length>=PLAN_LIMIT_FREE){planPaywall();return;}const nid=uid();const copy=JSON.parse(JSON.stringify(e));copy.id=nid;copy.name=nomUnique((e.name||'Plan')+' (copie)');copy.savedAt=Date.now();copy.state.name=copy.name;copy.state.id=nid;lib[nid]=copy;writePlans(lib);renderPlans();toast('Copie créée',true);}
 /* D38 : un seul « Nouveau », qu'on clique en haut ou dans « Mes plans ». */
 function newSavedPlan(){closeModal();nouveauPlan();} /* D68 : le même choix que Fichier › Nouveau plan */
 function openPlansModal(){renderPlans();openModal('plans');}
@@ -4243,7 +4762,7 @@ function resumePlan(){try{const q=quantities(),px=chantierPrix();
 function miniPlanSVG(st){const L0=(st&&st.levels)||[],lv=L0[Math.min(st&&st.cur||0,L0.length-1)]||L0[0];const ws=((lv&&lv.walls)||[]).filter(w=>w.type!=='virtuel'&&w.a&&w.b);
   if(!ws.length)return '<svg viewBox="0 0 10 10"></svg>';
   const xs=ws.flatMap(w=>[w.a.x,w.b.x]),ys=ws.flatMap(w=>[w.a.y,w.b.y]),x0=Math.min(...xs)-0.5,y0=Math.min(...ys)-0.5,bw=Math.max(...xs)-x0+0.5,bh=Math.max(...ys)-y0+0.5,k=Math.max(bw,bh)/40;
-  return `<svg viewBox="${x0} ${y0} ${bw} ${bh}" preserveAspectRatio="xMidYMid meet">${ws.map(w=>`<line x1="${w.a.x}" y1="${w.a.y}" x2="${w.b.x}" y2="${w.b.y}" stroke="${w.st==='creer'?'#b91c1c':'#1e1b4b'}" stroke-width="${(w.type==='cloison'?1.2:2.2)*k}" stroke-linecap="square"${w.st==='demolir'?` stroke-dasharray="${2*k} ${1.4*k}" opacity=".55"`:''}/>`).join('')}</svg>`;}
+  return `<svg viewBox="${x0} ${y0} ${bw} ${bh}" preserveAspectRatio="xMidYMid meet">${ws.map(w=>`<line x1="${+w.a.x}" y1="${+w.a.y}" x2="${+w.b.x}" y2="${+w.b.y}" stroke="${w.st==='creer'?'#b91c1c':'#1e1b4b'}" stroke-width="${(w.type==='cloison'?1.2:2.2)*k}" stroke-linecap="square"${w.st==='demolir'?` stroke-dasharray="${2*k} ${1.4*k}" opacity=".55"`:''}/>`).join('')}</svg>`;}
 function renderPlans(){const lib=loadPlans();const list=Object.values(lib).sort((a,b)=>b.savedAt-a.savedAt);const el=document.getElementById('plansList');
   const fmtDate=t=>{const d=new Date(t);return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});};
   const pro=isPro();const atLimit=!pro&&list.length>=PLAN_LIMIT_FREE;
@@ -4256,18 +4775,18 @@ function renderPlans(){const lib=loadPlans();const list=Object.values(lib).sort(
      le message vide est réservé au cas où il n'y a vraiment rien. */
   const ouvertHors=!planVide()&&!(state.id&&lib[state.id]),so=ouvertHors?sortDuPlanOuvert():'';
   const carteOuverte=ouvertHors?`<div class="grp plancard" id="planOuvertCarte" style="border-color:var(--acc3);background:var(--brand-l)"><span class="pmini" aria-hidden="true">${miniPlanSVG(state)}</span><div class="glink" style="cursor:default"><span class="gname"><b>${esc(state.name||'Mon plan')}</b>${pastilleType(workflowDe(state))} <span class="gouvert">· ${so==='exemple'?'Ouvert · '+MSG_EXEMPLE.replace(/\.$/,''):so==='perdu'?'Ouvert · enregistré sur cet appareil, pas dans Mes plans':'Ouvert · enregistré automatiquement'}</span></span><span class="gres">${resumeTxt(resumePlan(),0)}</span></div></div>`:'';
-  if(!list.length&&!ouvertHors){el.innerHTML=banner+(isMobile()?'<div class="empty">Aucun plan sur ce téléphone. Pour l\'instant, un plan reste enregistré sur l\'appareil où il a été dessiné : ouvre-le sur cet ordinateur ou cette tablette.</div>':'<div class="empty">Aucun plan enregistré pour l\'instant. Dessine ton plan puis clique <b>Enregistrer le plan actuel</b>.</div>');return;}
+  if(!list.length&&!ouvertHors){el.innerHTML=banner+(isMobile()?'<div class="empty">'+TXT_LIEU.videTel+'</div>':'<div class="empty">Aucun plan enregistré pour l\'instant. Dessine ton plan puis clique <b>Enregistrer le plan actuel</b>.</div>');if(NUAGE)siteSectionLocale(el);return;}
   el.innerHTML=banner+'<div class="grouplist">'+carteOuverte+list.map(e=>{const cur=e.id===state.id;const nb=(e.state?.levels||[]).reduce((s,l)=>s+(l.walls?.length||0),0);
     /* D40 : la carte rappelle ce que le plan vaut — surface, budget (Pro), avancement du chantier. Le plan ouvert se lit en direct. */
     const R=cur?resumePlan():e.resume;
     const res=resumeTxt(R,nb);
     return `<div class="grp plancard" style="${cur?'border-color:var(--acc3);background:var(--brand-l)':''}">
     <span class="pmini" aria-hidden="true">${miniPlanSVG(e.state)}</span>
-    <button class="glink" onclick="openSavedPlan('${e.id}')"><span class="gname"><b>${(e.name||'Plan').replace(/</g,'&lt;')}</b>${pastilleType(workflowDe(cur?state:e.state))}${cur?' <span class="gn">· ouvert</span>':''}</span><span class="gres">${res}</span><span class="gn">${fmtDate(e.savedAt)}</span></button>
-    <button class="ib s" onclick="openSavedPlan('${e.id}')">Ouvrir</button>
-    <button class="ib s" onclick="duplicateSavedPlan('${e.id}')" data-tip="Dupliquer" aria-label="Dupliquer le plan « ${esc(e.name||'Plan')} »">${ico('copie')}</button>
-    <button class="gx" onclick="deleteSavedPlan('${e.id}')" data-tip="Supprimer (annulable quelques secondes)" aria-label="Supprimer le plan « ${esc(e.name||'Plan')} »">${ico('x')}</button>
-  </div>`;}).join('')+'</div>';}
+    <button class="glink" onclick="openSavedPlan('${escJs(e.id)}')"><span class="gname"><b>${(e.name||'Plan').replace(/</g,'&lt;')}</b>${pastilleType(workflowDe(cur?state:e.state))}${cur?' <span class="gn">· ouvert</span>':''}</span><span class="gres">${res}</span><span class="gn">${fmtDate(e.savedAt)}</span></button>
+    <button class="ib s" onclick="openSavedPlan('${escJs(e.id)}')">Ouvrir</button>
+    <button class="ib s" onclick="duplicateSavedPlan('${escJs(e.id)}')" data-tip="Dupliquer" aria-label="Dupliquer le plan « ${esc(e.name||'Plan')} »">${ico('copie')}</button>
+    <button class="gx" onclick="deleteSavedPlan('${escJs(e.id)}')" data-tip="Supprimer (annulable quelques secondes)" aria-label="Supprimer le plan « ${esc(e.name||'Plan')} »">${ico('x')}</button>
+  </div>`;}).join('')+'</div>';if(NUAGE)siteSectionLocale(el);}
 
 // ---------- Vue ----------
 const cv=document.getElementById('cv'); let ctx=cv.getContext('2d');
@@ -7438,7 +7957,7 @@ function renderFoot(){
     :`<button type="button" class="budget bcard budgetbtn" onclick="showEstimate()" aria-label="Budget travaux HT : ${eur(px.total)}, ${pluriel(px.nb,'tâche')}. ${tout?'Voir le détail':'Voir la répartition par corps d\'état'}"><span class="bk">Budget travaux HT<span class="bn"><b>${px.nb}</b> ${accord(px.nb,'tâche')}</span></span><span class="bv" id="budgetVal">${eur(px.total)}</span><span class="bs"><small>indicatif · finition ${nomFinition()}</small><b>${tout?'Voir le détail':'Par corps d\'état'}${ico('fleche','inl')}</b></span></button>`; /* R6 : la flèche est une icône SVG, pas le glyphe → */
   const resume=vide||pf?'':`<div class="presume"><b>${fmtM2(hv.area)}</b> habitables${pf?'':' '+(avant?'avant':'après')+' travaux'} · <b>${hv.rooms}</b> pièce${hv.rooms>1?'s':''}${state.levels.length>1?' · <b>'+state.levels.length+'</b> niveaux':''}</div>`;
   {const bp=document.getElementById('budgetPlie');if(bp){bp.hidden=!!vide||pf;if(!vide&&!pf){bp.innerHTML=`<span>Budget HT</span><b>${eur(px.total)}</b><small>${tout?'Voir le détail':'Répartition'}</small>`;bp.setAttribute('aria-label',`Budget travaux HT : ${eur(px.total)}. ${tout?'Voir le détail':'Voir la répartition par corps d\'état'}`);bp.dataset.tip=`Budget travaux HT · ${tout?'voir le détail':'voir la répartition par corps d\'état'}`;}}}
-  F.innerHTML=carte+resume+(isDev()?`<button class="ib devonly" style="width:100%;justify-content:center;margin-top:8px" onclick="ouvrirEnvoi()" ${vide?'disabled':''}>Envoyer vers mon estimation AVYORA (dev)</button>`:'');
+  F.innerHTML=carte+resume+(NUAGE?siteEstimationsHTML():'')+(isDev()?`<button class="ib devonly" style="width:100%;justify-content:center;margin-top:8px" onclick="ouvrirEnvoi()" ${vide?'disabled':''}>Envoyer vers mon estimation AVYORA (dev)</button>`:'');
   /* le bouton du haut : grisé sans pièce, et il dit pourquoi (survol, lecteur d'écran, clic) */
   if(pf){const eb=document.getElementById('estBtnTop'),rienA=!state.levels.some(l=>l.walls.length); /* D67 : « Exporter le plan » — grisé tant qu'il n'y a rien à exporter, et il dit pourquoi */
     if(eb){eb.classList.toggle('attente',rienA);if(rienA)eb.setAttribute('aria-disabled','true');else eb.removeAttribute('aria-disabled');eb.title=rienA?'Rien à exporter pour l\'instant : commence par tes murs':'Le dossier PDF de tes plans, une page par niveau';}
@@ -7743,7 +8262,7 @@ function importBg(file){if(!file)return;if(file.type&&!file.type.startsWith('ima
     const k=Math.min(1,2000/Math.max(im0.width,im0.height));let src=rd.result;
     if(k<1||src.length>1.2e6){try{const c=document.createElement('canvas');c.width=Math.round(im0.width*k);c.height=Math.round(im0.height*k);const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.drawImage(im0,0,0,c.width,c.height);src=c.toDataURL('image/jpeg',0.82);}catch{}}
     const im=new Image();im.onload=()=>{const id=uid();images[id]=im;history.push(snapshot());const mpp=12/im.width;L().bg={img:id,x:-6,y:-im.height*mpp/2,mpp,opacity:.5,locked:false};afterChange();const garde=saveImages();fitView();
-      if(garde)toast('Calque importé — cale son échelle pour des surfaces justes',true);else toast('Calque importé, mais trop lourd pour être gardé sur cet appareil : il disparaîtra au rechargement. Essaie une image plus légère.',false,{ms:7000});};
+      if(garde)toast(TXT_LIEU.calque,true);else toast('Calque importé, mais trop lourd pour être gardé sur cet appareil : il disparaîtra au rechargement. Essaie une image plus légère.',false,{ms:7000});};
     im.src=src;};im0.onerror=()=>toast('Cette image ne s\'ouvre pas : essaie une photo JPEG ou PNG.');im0.src=rd.result;};rd.readAsDataURL(file);}
 function startCalib(){calibMode=true;calib=[];renderPanel();toast('Clique 2 points sur une longueur connue');}
 function applyCalib(){const real=parseFloat(document.getElementById('calibVal').value);const pts=calib.slice();closeModal();const bg=L().bg;if(!bg||pts.length<2||!(real>0)){cancelCalib();return;}const measured=dist(pts[0],pts[1]);const k=real/measured;history.push(snapshot());const p0=pts[0];bg.mpp*=k;bg.x=p0.x+(bg.x-p0.x)*k;bg.y=p0.y+(bg.y-p0.y)*k;calib=[];calibMode=false;afterChange();toast('Échelle calée',true);}
@@ -8218,7 +8737,7 @@ function estimateHTML(q){
   h+=aDecHTML(A);
   if(Z.length)h+=`<div class="ph">Pas encore chiffré (${Z.length})</div><div class="estt nue">${Z.map(t=>ligneTache(t,true)).join('')}</div>${motsHTML(motsDe(Z.map(t=>t.label+' '+(detailTache(t)||'')),vus))}<div class="note" style="margin:6px 0 18px">Ces travaux sont dans ton suivi de chantier, mais aucun prix ne leur correspond encore : ils ne sont <b>pas</b> dans le montant. Ils seront à chiffrer avec ton artisan.</div>`;
   h+=couvertureHTML(q,vus);
-  h+=`<div class="estactions colle"><button class="estimate" onclick="closeModal();exportPlan()">${ICO_EXPORTER}Exporter le dossier</button><button class="ib" onclick="savePlanToLibrary()">${ICO_RANGER}Enregistrer dans « Mes plans »</button></div>`;
+  h+=`<div class="estactions colle"><button class="estimate" onclick="closeModal();exportPlan()">${ICO_EXPORTER}Exporter le dossier</button><button class="ib" onclick="savePlanToLibrary()">${ICO_RANGER}Enregistrer dans « Mes plans »</button>${NUAGE?siteBoutonEstimer():''}</div>`;
   h+=`<details class="qdet"><summary>Toutes les quantités mesurées sur le plan</summary>${quantitesHTML(q)}</details>`;
   if(isDev())h+=`<div class="devbox devonly"><b>Mode développeur</b> · contrat ${esc(CONTRAT_PLAN)} <button class="ib" style="margin-left:8px" onclick="closeModal();ouvrirEnvoi()">Envoyer vers mon estimation AVYORA</button><details><summary>Voir le JSON envoyé au moteur</summary><pre>${esc(JSON.stringify(contratPlan(),null,2))}</pre></details></div>`;
   return h;}
@@ -10381,5 +10900,6 @@ try{if(localStorage.getItem('avyora-plan-phonebanner'))document.getElementById('
 if(firstVisit){if(isPro())openModal('welcome');else try{localStorage.setItem('avyora-plan-welcome','1');}catch{}} /* D68 : en gratuit, aucune question — le Plan final s'ouvre, sa carte « Dessine ton plan final » dit par où commencer */
 /* D48 (cj-retention05) : la page s'ouvre sur un plan */
 baseDecisions();suivre('plan_ouvert',{source:'page',premiereVisite:firstVisit,exemple:estExemple(),vide:planVide()});
+if(SITE)siteDemarrer(); /* D76 : seulement sur le site */
 </script>
 </html>

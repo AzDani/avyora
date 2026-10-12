@@ -266,3 +266,31 @@ fixe de la coupe, facture du moment, Recentrer à part, barre éteinte sans scè
 et la **géométrie de l'architecte** : les quatre types d'escalier (la marche de la fiche), l'épaisseur de plancher, la dalle
 et son chant, le garde-corps ouvert à l'arrivée, la partie basse de toiture (ni bandeau ni tuiles à plat, l'appentis), l'ITE
 sous les pans, la hauteur sous plafond d'une pièce, le retour d'isolant et le recouvrement en applique.
+
+## `tools/site.mjs` — l'éditeur en « mode site » (D76)
+
+```bash
+node maquettes/tools/site.mjs "$(pwd)/maquettes"
+```
+
+Sur le site (`/plan`), l'amorçage pose `window.AVYORA_SITE` avant d'exécuter l'éditeur ; sans lui (l'artefact, tous les
+autres outils), la couche site dort et l'éditeur suit exactement son chemin d'avant. Tout le code du site est dans **un
+bloc** (`/* ===== MODE SITE (D76) ===== */` … `/* ===== fin du MODE SITE (D76) ===== */`, après `renderProChip`) et une
+douzaine de crochets d'une ligne, chacun derrière `if(SITE…`, `if(NUAGE…`, `NUAGE?` ou `NUAGE&&`.
+
+Le contrôle a trois parties :
+- **le source** : le bloc, en lignes courtes et sans double barre oblique ; tout `fetch(` dedans, aucune navigation
+  ajoutée dehors ; chaque crochet gardé ; aucun autre outil n'injecte `AVYORA_SITE` ; les lignes que la batterie fige
+  (`V3_THREE`, `PRIX_PRO`, `CONSTRUCTION_URL+'#plan='+`, `TARIFS_URL`, l'`@import`, `PLAN_LIMIT_FREE`,
+  `const planCharge=load();`) intactes ;
+- **l'artefact**, le fichier tel quel : `SITE === null`, aucune requête ni `fetch`, seulement les clés `localStorage`
+  d'avant, `TXT_LIEU` qui rend les phrases d'avant au caractère près, `lienConstruction()` sans `&pid` ni `&pl`, `?dev`
+  qui marche, et des données hostiles dans « Mes plans » (coordonnée en chaîne, id avec `'`) qui n'injectent rien ;
+- **le site simulé** : la page servie en http par interception Puppeteer, `AVYORA_SITE` injecté, l'API `/api/plans`
+  simulée en mémoire (révisions, limite gratuite, `editeurId`, conflit). Plan injecté migré, sauvegarde groupée avec la
+  révision, 409 et ses deux choix, hors ligne puis retour, tampon renvoyé au chargement, 402, `?dev` neutralisé et
+  gratuit (D68), ouvrir / dupliquer / supprimer / « Annuler », lien neuf `&pid=` ou `&pl=`, logo, invitation anonyme,
+  « Sur cet appareil » et drapeau de reprise, données hostiles du serveur, estimation détaillée d'une rénovation (Pro),
+  estimations reliées, retour au statut Pro.
+
+Il ne crée aucun compte et n'appelle aucun serveur réel : tout passe par l'interception.
