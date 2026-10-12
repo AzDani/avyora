@@ -13,6 +13,9 @@ import type { Locale } from "@/lib/i18n/config";
  * « Mettre à jour l'estimation ». Après un changement du dessin, le contrat en base est donc celui
  * d'avant : y aller tout droit réappliquerait l'ancien plan.
  *
+ * Le lien porte `&projet={id de cette fiche}` : l'éditeur le recopie sur `/projets/depuis-plan/{plan}?projet=…`,
+ * pour que la mise à jour vise CETTE estimation, et non la plus récente des estimations reliées au même plan.
+ *
  * Composant serveur : la page ne le rend que si l'interrupteur est allumé ET qu'un lien existe.
  */
 export default function PlanRelie({
@@ -30,7 +33,9 @@ export default function PlanRelie({
   const t = d.lien;
   const aChange = renovation && planAChange(lien);
   const planHref = `/plan?id=${encodeURIComponent(lien.planId)}`;
-  const majHref = isPro ? planHref : "/tarifs?source=editeur-plan";
+  const majHref = isPro
+    ? `${planHref}&projet=${encodeURIComponent(lien.projectId)}`
+    : "/tarifs?source=editeur-plan";
 
   return (
     <section className="rounded-field border border-brand-200 bg-brand-50 p-4" aria-label={t.vientDe} data-plan-relie="">

@@ -11,6 +11,8 @@
  * Supabase est SIMULÉ (session de test en mémoire) : aucune base réelle n'est touchée, aucun compte créé.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { createElement, type ReactNode } from "react";
 import { prerender } from "react-dom/static";
 import { dict } from "@/lib/i18n/dictionaries";
@@ -278,11 +280,24 @@ describe("C8 · fiche projet : « Vient de ton plan »", () => {
     expect(compter(h, "data-plan-change")).toBe(1);
     expect(h).toContain(dictPlans("fr").lien.aChange);
     const bloc = h.slice(h.indexOf("data-plan-change"));
-    expect(bloc).toContain(`href="/plan?id=${PLAN_A}"`);
+    /* Le lien porte l'estimation de CETTE fiche : l'éditeur la recopie vers depuis-plan (?projet=). */
+    expect(bloc).toContain(`href="/plan?id=${PLAN_A}&amp;projet=${PROJETS.reno.id}"`);
     /* Jamais tout droit vers la validation : elle relirait le contrat d'AVANT le changement du dessin. */
     expect(h).not.toContain("/projets/depuis-plan/");
     expect(h).not.toContain("/tarifs");
     expect(profondeurLiens(h)).toBe(1);
+  });
+
+  it("deux rénovations reliées au même plan : chaque fiche vise SA propre estimation (?projet=)", async () => {
+    /* A (la plus ancienne) et B, nées du même plan : sans ?projet=, la validation prendrait la plus récente. */
+    S.liens = [lien("reno", PLAN_A, "Maison A", AVANT, APRES), lien("seul", PLAN_A, "Maison A", AVANT, APRES)];
+    const r = await charger({ plans: true, user: PRO, projets: ["reno", "seul"] });
+    for (const [cle, autre] of [["reno", "seul"], ["seul", "reno"]] as const) {
+      const h = await r.fiche(cle);
+      const bloc = h.slice(h.indexOf("data-plan-change"));
+      expect(bloc).toContain(`href="/plan?id=${PLAN_A}&amp;projet=${PROJETS[cle].id}"`);
+      expect(h).not.toContain(PROJETS[autre].id);
+    }
   });
 
   it("rénovation, gratuit : « Mettre à jour » mène à Tarifs, avec la pastille Pro", async () => {
@@ -402,5 +417,35 @@ describe("C8 · « Mes projets » : pastille, bande « Tes plans (n) », lien de
     expect(h).toContain(t.bande);
     expect(h).toContain(t.bandeSous);
     expect(h).not.toContain(dictPlans("fr").lien.pastille);
+  });
+});
+
+/* ─── Éditeur : ?projet= recopié vers l'écran de validation ─────────────── */
+
+describe("C8 · éditeur : siteProjetVise recopie ?projet= vers /projets/depuis-plan/", () => {
+  /* La fonction de la source, telle quelle, avec SITE_UUID et un location simulé. */
+  const src = readFileSync(path.join(__dirname, "..", "maquettes", "plan-editor.html"), "utf8");
+  const uuid = src.match(/const SITE_UUID=\/[^\n]*?\/i;/);
+  const fn = src.match(/function siteProjetVise\(id\)\{[\s\S]*?\n {2}return '\?projet='\+encodeURIComponent\(p\.toLowerCase\(\)\);\}/);
+  const vise = (search: string, id: string) =>
+    (new Function("location", `${uuid![0]} ${fn![0]} return siteProjetVise;`)({ search }) as (i: string) => string)(id);
+  const A = "00000000-0000-4000-8000-00000000000a";
+
+  it("le plan de l'URL et un identifiant valide : ?projet= suit", () => {
+    expect(uuid).not.toBeNull();
+    expect(fn).not.toBeNull();
+    expect(vise(`?id=${PLAN_A}&projet=${A}`, PLAN_A)).toBe(`?projet=${A}`);
+    expect(vise(`?id=${PLAN_A.toUpperCase()}&projet=${A.toUpperCase()}`, PLAN_A)).toBe(`?projet=${A}`);
+  });
+
+  it("autre plan ouvert, identifiant invalide ou absent : rien", () => {
+    expect(vise(`?id=${PLAN_B}&projet=${A}`, PLAN_A)).toBe("");
+    expect(vise(`?id=${PLAN_A}&projet=x%27%3E`, PLAN_A)).toBe("");
+    expect(vise(`?id=${PLAN_A}`, PLAN_A)).toBe("");
+    expect(vise("", PLAN_A)).toBe("");
+  });
+
+  it("siteEstimerDetail l'ajoute à l'adresse de validation", () => {
+    expect(src).toContain("location.assign('/projets/depuis-plan/'+encodeURIComponent(id)+siteProjetVise(id));");
   });
 });

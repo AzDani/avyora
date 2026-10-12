@@ -346,8 +346,10 @@ export async function plansDesProjets(ids: string[]): Promise<Map<string, LienPl
 }
 
 /**
- * Le plan a-t-il été modifié depuis le lien (ou le dernier cliché de la rénovation) ? Le trigger de
- * `floor_plans` avance `updated_at` à chaque écriture ; l'éditeur n'écrit que si le dessin a changé.
+ * Le plan a-t-il été écrit depuis le lien (ou le dernier cliché de la rénovation) ? Signal LARGE : le trigger
+ * de `floor_plans` avance `updated_at` à CHAQUE écriture, y compris celles qui ne changent pas le dessin chiffré
+ * (renommage, contrat envoyé puis validation abandonnée, date « Prévu le » du suivi). Faux positifs sans danger,
+ * documentés dans docs/plans/README.md (C8) ; un signal exact demanderait une migration 0005.
  */
 export function planAChange(lien: Pick<LienPlan, "planMaj" | "lienMaj">): boolean {
   const p = Date.parse(lien.planMaj), l = Date.parse(lien.lienMaj);

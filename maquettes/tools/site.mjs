@@ -527,6 +527,13 @@ const posts = (S) => S.log.filter((x) => x.m === "POST");
   const pc = patchs(S).at(-1);
   t["rénovation · le contrat part (PATCH, révision lue), puis /projets/depuis-plan/<id>"] = !!pc && !!pc.c.contrat && pc.c.contrat.workflow === "renovation" && pc.c.revision === 3 && S.nav.at(-1) === "/projets/depuis-plan/" + UUID(6);
   await ctx.close();
+  /* C8 · ouvert depuis la fiche d'une estimation (« Mettre à jour ») : ?projet= suit jusqu'à la validation */
+  const S3 = serveur({ plans: [{ id: UUID(6), nom: "Appart", workflow: "renovation", etat: FIX("exemple"), revision: 3 }] });
+  const { p: p3, ctx: c3 } = await ongletSite(S3, { site: siteDe(S3, { planId: UUID(6) }), chemin: "/plan?id=" + UUID(6) + "&projet=" + UUID(60) });
+  await p3.evaluate(() => { showEstimate(); [...document.querySelectorAll("#estBody .estactions button")].find((x) => /estimation/.test(x.textContent)).click(); });
+  await wait(1500);
+  t["rénovation · ouvert avec &projet= : la validation vise cette estimation (/projets/depuis-plan/<id>?projet=<id>)"] = S3.nav.at(-1) === "/projets/depuis-plan/" + UUID(6) + "?projet=" + UUID(60);
+  await c3.close();
   const S2 = serveur({ pro: false, plans: [{ id: UUID(7), nom: "Appart", workflow: "renovation", etat: FIX("exemple"), revision: 1 }] });
   const { p: p2, ctx: c2 } = await ongletSite(S2, { site: siteDe(S2, { planId: UUID(7) }), pro: false, chemin: "/plan?id=" + UUID(7) });
   const b2 = await p2.evaluate(() => { showEstimate(); return { h: document.getElementById("estBody").innerHTML, est: voitTout() }; });

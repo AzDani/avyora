@@ -4648,9 +4648,15 @@ async function siteEstimerDetail(){
     siteRev=siteNum(r.j.revision)||siteRev;
     if(siteLib[id])siteLib[id].revision=siteRev;
     siteMemoriser(siteEnvoye[id]);
-    location.assign('/projets/depuis-plan/'+encodeURIComponent(id));return;}
+    location.assign('/projets/depuis-plan/'+encodeURIComponent(id)+siteProjetVise(id));return;}
   if(r.s===409&&r.j&&r.j.code==='conflit'){siteReponse(id,r,'');return;}
   toast(r.s===0?'Pas de connexion : l\'estimation n\'a pas pu être créée.':'L\'estimation n\'a pas pu être créée à partir de ce plan.');}
+/* ?projet= : l'estimation que la fiche a demandé de mettre à jour, seulement pour le plan de l'URL */
+function siteProjetVise(id){
+  let q=null;try{q=new URLSearchParams(location.search);}catch{}
+  const p=q?String(q.get('projet')||''):'';
+  if(!p||!SITE_UUID.test(p)||String(q.get('id')||'').toLowerCase()!==String(id).toLowerCase())return '';
+  return '?projet='+encodeURIComponent(p.toLowerCase());}
 /* les estimations nées du plan ouvert, sous le récapitulatif du pied : lecture seule */
 function siteEstimationsHTML(){
   if(!state.id||state.id!==siteEstimPour||!siteEstim.length)return '';
