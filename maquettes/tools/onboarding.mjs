@@ -535,7 +535,9 @@ await p.evaluate(() => { const f = (x) => x.getFullYear() + "-" + String(x.getMo
   const hier = new Date(); hier.setDate(hier.getDate() - 3); const bientot = new Date(); bientot.setDate(bientot.getDate() + 2);
   state.prevu = { [lots[0]]: f(hier), [lots[1]]: f(bientot) }; setPanelTab("details"); save(); });
 await wait(400);
-await p.reload({ waitUntil: "networkidle0" }); await wait(500);
+await p.reload({ waitUntil: "networkidle0" });
+/* jury : le rappel arrive après le rendu ; l'attendre plutôt qu'un délai fixe (la batterie ne dépend plus de la charge) */
+await p.waitForSelector("#pbody .rappel", { timeout: 5000 }).catch(() => {}); await wait(100);
 Object.assign(t, await p.evaluate(() => { const r = {}, T = chantierTasks(), lots = [...new Set(T.map((x) => x.lot))];
   const nR = T.filter((x) => x.lot === lots[0] && !isDone(x.id)).length, R = document.querySelector("#pbody .rappel");
   r["retour · à la réouverture, le panneau dit « N tâches en retard » et ce qui tombe cette semaine"] = !!state.prevu && !!R && R.innerText.includes(pluriel(nR, "tâche") + " en retard") && R.innerText.includes(lots[0]) && /cette semaine/.test(R.innerText) && R.innerText.includes(lots[1]);
