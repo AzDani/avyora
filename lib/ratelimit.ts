@@ -25,9 +25,18 @@ const LIMITERS: Record<LimitKind, Ratelimit | null> = {
   // ne mange pas celui de l'autre). La sauvegarde automatique de l'éditeur est groupée à ~2 s.
   plan: make(Ratelimit.slidingWindow(90, "60 s"), "avyora:plan"), // 90 écritures / min
   planCreation: make(Ratelimit.slidingWindow(20, "3600 s"), "avyora:plan-creation"), // 20 créations / h
+  // Une estimation née d'un plan crée un projet à chaque validation : sa propre catégorie, serrée.
+  planEstimation: make(Ratelimit.slidingWindow(10, "3600 s"), "avyora:plan-estimation"), // 10 / h
 };
 
-export type LimitKind = "auth" | "api" | "ia" | "pdf" | "plan" | "planCreation";
+export type LimitKind = "auth" | "api" | "ia" | "pdf" | "plan" | "planCreation" | "planEstimation";
+
+/**
+ * « Mes plans » : les catégories qui CRÉENT des lignes en base se ferment si le store tombe (fail-closed) ;
+ * les autres restent ouvertes (une sauvegarde de plan refusée ferait croire à une perte). Voir aussi
+ * `limitesAbsentes` (lib/plans/http.ts) : en production, sans Upstash, les écritures sont refusées.
+ */
+const FERMEES_EN_PANNE = new Set<LimitKind>(["planCreation", "planEstimation"]);
 
 /** IP client (best-effort) depuis les en-têtes de proxy. */
 export async function clientIp(): Promise<string> {
@@ -44,7 +53,8 @@ export async function verifierLimite(kind: LimitKind, identifiant: string): Prom
     const { success } = await rl.limit(identifiant);
     return success;
   } catch {
-    // Panne du store : on ne bloque pas l'utilisateur légitime (fail-open contrôlé).
-    return true;
+    // Panne du store : on ne bloque pas l'utilisateur légitime (fail-open contrôlé), sauf pour les créations
+    // de « Mes plans » (fail-closed : sans limite, un compte pourrait créer des lignes sans fin).
+    return !FERMEES_EN_PANNE.has(kind);
   }
 }

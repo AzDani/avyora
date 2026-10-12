@@ -1,11 +1,12 @@
 import { FEATURES } from "@/lib/features";
-import { getUser } from "@/lib/auth";
+import { getUser, estPro } from "@/lib/auth";
 import { verifierLimite } from "@/lib/ratelimit";
 import { MAJEURE_CONTRAT_PLAN, planImportSchema } from "@/lib/validation";
 import { estimationsDuPlan, lireEntete, lirePlan, majPlan, supprimerPlan } from "@/lib/plans/data";
 import { PLAN_CONTRAT_OCTETS_MAX, PLAN_CORPS_MAX, planIdSchema, planMajSchema } from "@/lib/plans/schema";
 import { octetsJsonb } from "@/lib/plans/jsonb";
-import { eteinte, erreur, lireCorpsBorne, repondre, type CodePlans } from "@/lib/plans/http";
+import { problemeProfond } from "@/lib/plans/schema";
+import { eteinte, erreur, limitesAbsentes, lireCorpsBorne, repondre, type CodePlans } from "@/lib/plans/http";
 
 export const runtime = "nodejs";
 
@@ -38,6 +39,9 @@ export async function GET(_req: Request, ctx: Ctx) {
  * Postgres la mesure (CHECK floor_plans_contrat_taille), puis (dans la route) même type de plan.
  */
 function codeContrat(contrat: unknown): CodePlans | null {
+  /* la même garde profonde que l'état (clés interdites, longueur des chaînes, profondeur), avant tout le reste :
+     le contrat est recopié dans project_plans, que les membres du projet lisent */
+  if (problemeProfond(contrat)) return "contrat_invalide";
   if (planImportSchema.safeParse(contrat).success) {
     const n = octetsJsonb(contrat);
     if (n === Infinity) return "contrat_invalide"; /* caractère nul, moitié de paire UTF-16 */
@@ -61,6 +65,7 @@ export async function PATCH(req: Request, ctx: Ctx) {
     if (!user) return erreur("connexion_requise");
     const id = await idValide(ctx);
     if (!id) return erreur("introuvable");
+    if (limitesAbsentes()) return erreur("indisponible");
     if (!(await verifierLimite("plan", user.id))) return erreur("trop_de_requetes");
 
     const corps = await lireCorpsBorne(req, PLAN_CORPS_MAX);
@@ -70,6 +75,15 @@ export async function PATCH(req: Request, ctx: Ctx) {
     const { revision, force, nom, etat, vue, resume, contrat } = v.data;
     if (nom === undefined && etat === undefined && vue === undefined && resume === undefined && contrat === undefined) {
       return erreur("invalide");
+    }
+
+    /* D68 : hors Pro, ni contrat de rénovation, ni PASSAGE d'un plan en rénovation. Un plan déjà en rénovation
+       (Pro redevenu gratuit) reste modifiable : rien n'est retiré. */
+    if (!estPro(user) && (contrat !== undefined || etat?.workflow === "renovation")) {
+      /* l'existence d'abord : le plan d'un autre compte reste un 404, comme ailleurs */
+      const entete = await lireEntete(id);
+      if (!entete) return erreur("introuvable");
+      if (contrat !== undefined || entete.workflow !== "renovation") return erreur("pro_requis");
     }
 
     if (contrat !== undefined) {
@@ -97,6 +111,7 @@ export async function DELETE(_req: Request, ctx: Ctx) {
     if (!user) return erreur("connexion_requise");
     const id = await idValide(ctx);
     if (!id) return erreur("introuvable");
+    if (limitesAbsentes()) return erreur("indisponible");
     if (!(await verifierLimite("plan", user.id))) return erreur("trop_de_requetes");
     if (!(await supprimerPlan(id))) return erreur("introuvable");
     return new Response(null, { status: 204, headers: { "Cache-Control": "private, no-store" } });

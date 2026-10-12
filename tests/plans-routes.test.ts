@@ -244,7 +244,9 @@ async function lire(r: Response): Promise<{ status: number; json: Record<string,
   return { status: r.status, json, texte };
 }
 
-const creer = (extra: Record<string, unknown> = {}, etat = ETAT_RENO) => corps({ nom: "Ma maison", etat, ...extra });
+/* Par défaut : un Projet rénovation pour un Pro, un Plan final pour un gratuit (D68, tenu par le serveur). */
+const creer = (extra: Record<string, unknown> = {}, etat?: unknown) =>
+  corps({ nom: "Ma maison", etat: etat ?? (S.user?.app_metadata?.plan === "pro" ? ETAT_RENO : ETAT_FINAL), ...extra });
 
 beforeEach(() => {
   S.base = { floor_plans: [], project_plans: [], projects: [] };
@@ -324,6 +326,31 @@ describe("401 sans session", () => {
   });
 });
 
+/* ─── Limites de débit absentes en production (jury) ─────────────────────── */
+
+describe("production sans Upstash", () => {
+  const env = { ...process.env };
+  afterEach(() => {
+    for (const k of ["VERCEL_ENV", "UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"]) {
+      if (env[k] === undefined) delete process.env[k];
+      else process.env[k] = env[k];
+    }
+  });
+  it("les écritures répondent 503 indisponible, sans rien écrire ; la lecture reste possible", async () => {
+    const r = await routes();
+    S.user = PRO;
+    process.env.VERCEL_ENV = "production";
+    delete process.env.UPSTASH_REDIS_REST_URL;
+    delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    expect(await lire(await r.liste.POST(creer()))).toMatchObject({ status: 503, json: { code: "indisponible" } });
+    expect(S.base.floor_plans).toHaveLength(0);
+    expect((await r.liste.GET()).status).toBe(200);
+    /* préversion : sans effet */
+    process.env.VERCEL_ENV = "preview";
+    expect((await r.liste.POST(creer())).status).toBe(201);
+  });
+});
+
 /* ─── Création ───────────────────────────────────────────────────────────── */
 
 describe("POST /api/plans", () => {
@@ -346,6 +373,21 @@ describe("POST /api/plans", () => {
     const [a, b] = await Promise.all([r.liste.POST(creer()), r.liste.POST(creer({ nom: "Deux" }))]);
     expect([a.status, b.status].sort()).toEqual([201, 402]);
     expect(S.base.floor_plans).toHaveLength(1);
+  });
+
+  it("D68 côté serveur : un gratuit ne crée pas de Projet rénovation (403 pro_requis), ni n'y passe un plan, ni n'envoie de contrat", async () => {
+    const r = await routes();
+    S.user = GRATUIT;
+    expect(await lire(await r.liste.POST(creer({}, ETAT_RENO)))).toMatchObject({ status: 403, json: { code: "pro_requis" } });
+    expect(S.base.floor_plans).toHaveLength(0);
+    const a = await lire(await r.liste.POST(creer({}, ETAT_FINAL)));
+    expect(a.status).toBe(201);
+    const id = a.json!.id as string;
+    expect(await lire(await r.un.PATCH(patch({ revision: 1, etat: ETAT_RENO }), ctx(id)))).toMatchObject({ status: 403, json: { code: "pro_requis" } });
+    expect(await lire(await r.un.PATCH(patch({ revision: 1, contrat: CONTRAT_FINAL }), ctx(id)))).toMatchObject({ status: 403, json: { code: "pro_requis" } });
+    /* un Projet rénovation déjà rangé (Pro redevenu gratuit) reste modifiable : rien n'est retiré */
+    S.base.floor_plans[0].workflow = "renovation";
+    expect((await lire(await r.un.PATCH(patch({ revision: 1, etat: ETAT_RENO }), ctx(id)))).status).toBe(200);
   });
 
   it("Pro : pas de limite (null), plafond anti-abus → 409 plafond", async () => {
@@ -573,6 +615,16 @@ describe("PATCH /api/plans/[id]", () => {
     expect(c.client).toBe("admin");
     expect(Object.keys(c.args as object).sort()).toEqual(["contrat", "contrat_at"]);
     expect(c.filtres).toContain(`owner_id=${PRO.id}`);
+  });
+
+  it("contrat : la garde profonde de l'état s'applique (clé __proto__ propre, chaîne absurde) → 400 contrat_invalide (jury)", async () => {
+    const { r, id } = await unPlan();
+    const proto = JSON.parse(JSON.stringify(CONTRAT_RENO).replace(/^\{/, '{"__proto__":{"x":1},'));
+    expect(Object.prototype.hasOwnProperty.call(proto, "__proto__")).toBe(true);
+    expect(await lire(await p(r, id, { revision: 1, contrat: proto }))).toMatchObject({ status: 400, json: { code: "contrat_invalide" } });
+    const long = { ...clone(CONTRAT_RENO), notes: "x".repeat(100_001) };
+    expect(await lire(await p(r, id, { revision: 1, contrat: long }))).toMatchObject({ status: 400, json: { code: "contrat_invalide" } });
+    expect(S.base.floor_plans[0].contrat).toBeNull();
   });
 
   it("le plan d'un autre compte : 404 sans aucun appel au service role, même en force", async () => {

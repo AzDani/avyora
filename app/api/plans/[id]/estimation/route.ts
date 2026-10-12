@@ -6,7 +6,7 @@ import { getLocale } from "@/lib/i18n/server";
 import { supabaseServer } from "@/lib/supabase/server";
 import { planIdSchema } from "@/lib/plans/schema";
 import { valider } from "@/lib/plans/estimation";
-import { eteinte, erreur, lireCorpsBorne, repondre } from "@/lib/plans/http";
+import { eteinte, erreur, limitesAbsentes, lireCorpsBorne, repondre } from "@/lib/plans/http";
 
 export const runtime = "nodejs";
 
@@ -34,7 +34,9 @@ export async function POST(req: Request, ctx: Ctx) {
     const user = await getUser();
     if (!user) return erreur("connexion_requise");
     if (!estPro(user)) return erreur("pro_requis");
-    if (!(await verifierLimite("plan", user.id))) return erreur("trop_de_requetes");
+    if (limitesAbsentes()) return erreur("indisponible");
+    /* sa propre catégorie (10 / h) : une validation peut créer un projet, elle ne partage pas le seau des sauvegardes */
+    if (!(await verifierLimite("planEstimation", user.id))) return erreur("trop_de_requetes");
 
     const { id } = await ctx.params;
     if (!planIdSchema.safeParse(id).success) return erreur("introuvable");

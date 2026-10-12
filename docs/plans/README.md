@@ -120,9 +120,9 @@ ou de zod : les textes vivent côté client, en français et en anglais. Aucune 
 |---|---|---|
 | `GET /api/plans/session` | `{ connecte, pro, limite: 1\|null, utilises }` | Sans session : `{connecte:false, pro:false, limite:1, utilises:0}` en 200. Sert à l'affichage : chaque écriture refait le contrôle. |
 | `GET /api/plans` | `{ plans:[{id, nom, workflow, resume, apercu, revision, updated_at, estimations}], limite, utilises }` | 401 sans session. **Jamais l'état.** 100 cartes au plus, les plus récentes d'abord. |
-| `POST /api/plans` | 201 `{ id, revision, deja }` | `planCreerSchema`. Débit `planCreation` (20 / h / compte). Vignette calculée par le serveur. `floor_plans_creer` avec `limite = estPro ? null : 1`. `limite_gratuite` → 402, `plafond_plans` → 409 `plafond`. Même `editeurId` → le même plan, `deja: true`. |
+| `POST /api/plans` | 201 `{ id, revision, deja }` | `planCreerSchema`. Débit `planCreation` (20 / h / compte). Vignette calculée par le serveur. `floor_plans_creer` avec `limite = estPro ? null : 1`. `limite_gratuite` → 402, `plafond_plans` → 409 `plafond`. Même `editeurId` → le même plan, `deja: true`. Projet rénovation hors Pro → 403 `pro_requis` (D68). |
 | `GET /api/plans/[id]` | `{ id, nom, workflow, etat, vue, resume, revision, updated_at, estimations:[{id, nom, nature, created_at}] }` | `id` hors uuid, absent ou d'un autre compte → 404 (on ne dit pas si le plan existe). |
-| `PATCH /api/plans/[id]` | `{ revision }` | `planMajSchema`. Débit `plan` (90 / min / compte). `where revision = attendue` ; 0 ligne → 404 si absent, sinon 409 `{code:"conflit", revision}`. `force: true` écrit sans condition. `contrat` : `planImportSchema` (codes `contrat_invalide`, `contrat_version`), taille mesurée comme Postgres (≤ 1,5 Mo, sinon 413) et même type que le plan (`contrat_workflow`), puis `contrat_at`. Nom, vue ou résumé seuls : la session écrit. État ou contrat : la session vérifie d'abord qu'elle voit le plan (sinon 404, rien n'est écrit), puis le **service role** écrit tout en une requête, filtrée par `id`, `owner_id` et la révision. |
+| `PATCH /api/plans/[id]` | `{ revision }` | `planMajSchema`. Débit `plan` (90 / min / compte). `where revision = attendue` ; 0 ligne → 404 si absent, sinon 409 `{code:"conflit", revision}`. `force: true` écrit sans condition. Hors Pro : ni contrat, ni passage d'un plan en rénovation (403 `pro_requis`) ; un plan déjà en rénovation reste modifiable. `contrat` : garde profonde de l'état, puis `planImportSchema` (codes `contrat_invalide`, `contrat_version`), taille mesurée comme Postgres (≤ 1,5 Mo, sinon 413) et même type que le plan (`contrat_workflow`), puis `contrat_at`. Nom, vue ou résumé seuls : la session écrit. État ou contrat : la session vérifie d'abord qu'elle voit le plan (sinon 404, rien n'est écrit), puis le **service role** écrit tout en une requête, filtrée par `id`, `owner_id` et la révision. |
 | `DELETE /api/plans/[id]` | 204 | Débit `plan`. RLS ; les liens `project_plans.plan_id` repassent à null. |
 
 - **Corps** : lu borné à 1,2 Mo (`content-length`, puis comptage du flux) avant `JSON.parse` ; au-delà, 413.
@@ -514,6 +514,30 @@ secondaire « Plan commencé » (`premiere_piece`) n'existera que si Dani la cr�
   guillemets. En anglais, le rappel cite « “Mes plans” », le nom que l'éditeur (en français) affiche, comme le hub.
 - `POST /api/plans` et `POST /api/projects` : le lien après création ne peut plus changer la réponse, même si la
   session ne se rouvre pas (journalisé). `plan_lien_echoue` porte le `user_id` du compte.
+
+## Retouches du jury (avant C11)
+
+- **Amorçage** : le script de l'éditeur n'est copié qu'après `DOMContentLoaded` (avant, hors localhost, il
+  partait tronqué : SyntaxError, éditeur mort) ; le délai de 6 s court à partir de là. `heberge.mjs` le vérifie
+  en réseau bridé (1,6 Mb/s).
+- **Panne et session expirée** : `AVYORA_SITE.panne` ouvre le tampon tel quel (il repart à la connexion
+  suivante) ; sans compte, un tampon du compte est mis de côté (`avyora-plan-cote`, 5 au plus) et revient à la
+  réouverture du plan connecté. PATCH 400 / 413 → « Non enregistré », jamais « Enregistré » ; 401 → « Session
+  expirée », file gardée, garde de sortie, « Me connecter ».
+- **XSS** : l'éditeur assainit tout état chargé (`assainirEtat` dans `migrerEtat`) et ce que l'on saisit ; l'API
+  borne les noms de niveau et de pièce et le sol (renfort : la session peut écrire `etat` directement).
+- **Préchargement** : aucun `next/link` vers `/plan` (`tests/plans-prechargement.test.ts`) ; balises `<a>`.
+- **Débit** : `planEstimation` (10 / h / compte) pour `POST /api/plans/[id]/estimation` ; `planCreation` et
+  `planEstimation` se ferment si Upstash tombe. En production sans Upstash, toutes les écritures de « Mes plans »
+  répondent 503 `indisponible` (journalisé une fois).
+- **Mise à jour d'une estimation** : le ctx suit le plan (`ctxMisAJour`), sauf les champs corrigés à la main.
+
+### Prérequis du lancement (C11)
+
+1. `UPSTASH_REDIS_REST_URL` et `UPSTASH_REDIS_REST_TOKEN` dans Vercel **Production** (sans elles, les
+   écritures de « Mes plans » répondent 503).
+2. Sur la préversion : `content-encoding` de `/plan` (Vercel doit compresser les 1,3 Mo), puis Lighthouse
+   sur `/`, `/logiciel-plan-maison` et `/plan`.
 
 ## Contrôles de chaque chantier
 
