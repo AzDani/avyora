@@ -3,6 +3,10 @@
 /**
  * Estimation rapide (< 3 min) : 4 questions → preset de lots → MÊME moteur que l'estimateur détaillé.
  * « Affiner » ouvre le détaillé pré-rempli (via le brouillon localStorage). « Enregistrer » crée le projet.
+ *
+ * Édition d'un projet existant (`edit`, page « Modifier » d'un compte gratuit) : le chiffre s'affiche
+ * d'emblée, mais rien n'est mesuré ni déclaré à Google Ads avant une vraie action ; la liste des
+ * pièces et le suivi de chantier sont repris et renvoyés au PATCH (N4, règles dans `rapide-reno.ts`).
  */
 import { useMemo, useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -13,6 +17,8 @@ import { buildDevis, regionCoef, type TypeBien, type Finition } from "@/lib/esti
 import { CATALOG } from "@/lib/estimateur/catalog";
 import { presetRapide, AMPLEURS, type Ampleur, type QuiRealise } from "@/lib/estimateur/presets";
 import { PIECES, presetPieces, type PieceKey, type PieceSel } from "@/lib/estimateur/pieces";
+import { chiffreAfficheRapide, estimationReelleRapide, reponsesRapideReno, type RapideEdit } from "@/lib/estimateur/rapide-reno";
+import { CLE_BROUILLON_RENO, CLE_RECLAMATION_RENO, brouillonRapideReno } from "@/lib/estimateur/brouillon-reno";
 import { suivre } from "@/lib/track";
 import { conversionEstimation } from "@/lib/gtag";
 import { useT, useLocale } from "@/components/i18n/LangProvider";
@@ -34,7 +40,7 @@ const ROOMS: { key: PieceKey; emoji: string; label: string; surf: number }[] = [
 const roomLabel = (k: PieceKey) => ROOMS.find((r) => r.key === k)!;
 // Descriptions d'ampleur adaptées au mode « pièce » (traduites : voir t.piecesAmp dans le dictionnaire).
 
-const DRAFT_KEY = "avyora-estim-v2";
+const DRAFT_KEY = CLE_BROUILLON_RENO;
 // Ordre + niveau de jauge (le texte des cartes vient du dictionnaire i18n).
 const FINITIONS: { v: Finition; lvl: number }[] = [
   { v: "eco", lvl: 1 },
@@ -47,7 +53,13 @@ const QUIS: { v: QuiRealise; lvl: number }[] = [
   { v: "max", lvl: 3 },
 ];
 
-export type RapideEdit = { projectId: string; type?: TypeBien; surface?: number; cp?: string; ampleur?: Ampleur; finition?: Finition; qui?: QuiRealise };
+export type { RapideEdit };
+
+/** Avertissement d'un projet rouvert (détaillé, ou pièces perdues) : même encadré que le rapide du neuf. */
+const AVERT_CSS = `
+.av-rapide .avert{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.5;color:#7a4b00;background:#fff7e6;border:1px solid #f6d999;border-radius:var(--radius-card);padding:11px 14px;margin-bottom:18px}
+.av-rapide .avert svg{flex:0 0 16px;margin-top:2px}
+`;
 
 /**
  * Contexte d'amorçage venu d'une page SEO (déjà validé côté serveur, cf. la page `rapide`).
@@ -67,13 +79,16 @@ export default function EstimateurRapide({
   const router = useRouter();
   // Une pièce transmise par l'URL ouvre directement le mode « pièces » avec cette pièce
   // présélectionnée : le visiteur venait de lire une page sur cette pièce précise.
-  const [mode, setMode] = useState<Mode>(!edit && initial?.piece ? "pieces" : "bien");
+  // Un projet « pièces » rouvert reprend sa liste (ou, enregistré avant N4, une liste à refaire).
+  const [mode, setMode] = useState<Mode>(edit?.pieces?.length || edit?.piecesPerdues || (!edit && initial?.piece) ? "pieces" : "bien");
   const [type, setType] = useState<TypeBien>(edit?.type ?? "Maison");
   const [surface, setSurface] = useState(edit?.surface ?? 100);
   const [pieces, setPieces] = useState<PieceSel[]>(
-    !edit && initial?.piece
-      ? [{ room: initial.piece, surface: initial.surface ?? PIECES.find((x) => x.key === initial.piece)!.surfaceDefaut }]
-      : [],
+    edit?.pieces?.length
+      ? edit.pieces
+      : !edit && initial?.piece
+        ? [{ room: initial.piece, surface: initial.surface ?? PIECES.find((x) => x.key === initial.piece)!.surfaceDefaut }]
+        : [],
   );
   const [cp, setCp] = useState(edit?.cp ?? (!edit ? (initial?.cp ?? "") : ""));
   const [ampleur, setAmpleur] = useState<Ampleur>(edit?.ampleur ?? "complete");
@@ -91,9 +106,11 @@ export default function EstimateurRapide({
    * d'enchères branchée dessus apprenait à acheter n'importe quel clic.
    *
    * Il n'est PAS mis par `initial` (contexte venu d'une page SEO) : cliquer un lien n'est pas
-   * décrire son projet.
+   * décrire son projet. Ni par `edit` : un projet rouvert AFFICHE son chiffre (`affiche`), mais
+   * ne le recompte pas (N4 : avant, `demarre` faux masquait le chiffre d'un projet rouvert).
    */
   const [demarre, setDemarre] = useState(false);
+  const affiche = chiffreAfficheRapide({ demarre, edition: !!edit });
   const [saving, setSaving] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
 
@@ -120,9 +137,10 @@ export default function EstimateurRapide({
 
   const preset = useMemo(() => buildSel(), [mode, type, surface, cp, ampleur, finition, qui, pieces]);
   const tot = useMemo(() => buildDevis(CATALOG, preset.ctx, preset.sel).totaux, [preset]);
-  // `demarre` d'abord : sans lui, les valeurs par défaut rendaient l'estimation valide au
+  // `affiche` d'abord : sans lui, les valeurs par défaut rendaient l'estimation valide au
   // chargement, donc affichaient un prix que personne n'avait demandé.
-  const valid = demarre && (mode === "pieces" ? pieces.length > 0 && totalSurface > 0 : surface > 0);
+  const saisieValide = mode === "pieces" ? pieces.length > 0 && totalSurface > 0 : surface > 0;
+  const valid = affiche && saisieValide;
   const lo = Math.round((tot.ttc * 0.85) / 100) * 100;
   const hi = Math.round((tot.ttc * 1.15) / 100) * 100;
   const m2 = valid && totalSurface > 0 ? Math.round(tot.ttc / totalSurface) : 0;
@@ -140,8 +158,10 @@ export default function EstimateurRapide({
    * Une seule définition, désormais partagée. Le déclenchement automatique l'appliquait ;
    * `affiner()` ne l'appliquait PAS et envoyait la conversion Google Ads sans rien vérifier.
    * Deux portes vers le même compteur, dont une sans serrure.
+   *
+   * Elle exige `demarre`, jamais `affiche` : rouvrir un projet n'est pas une estimation.
    */
-  const estimationReelle = valid && tot.ttc > 0 && /^\d{5}$/.test(cp);
+  const estimationReelle = estimationReelleRapide({ demarre, saisieValide, ttc: tot.ttc, codePostal: cp });
   useEffect(() => {
     if (convFired.current || !estimationReelle) return;
     const id = window.setTimeout(() => {
@@ -198,7 +218,11 @@ export default function EstimateurRapide({
   const countByRoom = (k: PieceKey) => pieces.filter((r) => r.room === k).length;
 
   function saveDraft() {
-    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ v: "estimateur", mode: "rapide", ampleur, qui, ctx: preset.ctx, sel: preset.sel, open: {}, codePostal: cp })); } catch { /* noop */ }
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(brouillonRapideReno({
+        nom: nomProjet(), ampleur, qui, ctx: preset.ctx, sel: preset.sel, codePostal: cp, pieces: mode === "pieces" ? pieces : undefined,
+      })));
+    } catch { /* noop */ }
   }
   function affiner() {
     // Le clic mène toujours à l'estimateur détaillé — mais on ne déclare une estimation terminée,
@@ -234,10 +258,16 @@ export default function EstimateurRapide({
     setSaving(true);
     const nom = nomProjet();
     const typeBien = (mode === "pieces" ? "Appartement" : type) as TypeBien;
-    const reponses = { v: "estimateur", mode: "rapide", ampleur, qui, ctx: preset.ctx, sel: preset.sel, codePostal: cp };
+    // La liste des pièces (pour rouvrir le formulaire tel quel) et le suivi de chantier du projet
+    // rouvert (le PATCH remplace toutes les réponses : sans lui, il était effacé).
+    const reponses = reponsesRapideReno({
+      ampleur, qui, ctx: preset.ctx, sel: preset.sel, codePostal: cp,
+      pieces: mode === "pieces" ? pieces : undefined, statuts: edit?.statuts,
+    });
     try {
       const res = await fetch(edit ? `/api/projects/${edit.projectId}` : "/api/projects", { method: edit ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nom, typeBien, surface: totalSurface, codePostal: cp, reponses }) });
-      if (res.status === 401) { try { localStorage.setItem("avyora-estim-claim", "1"); } catch { /* noop */ } saveDraft(); router.push("/inscription"); return; }
+      // Le brouillon d'abord, le drapeau ensuite : un drapeau sans brouillon ne réclame rien.
+      if (res.status === 401) { saveDraft(); try { localStorage.setItem(CLE_RECLAMATION_RENO, "1"); } catch { /* noop */ } router.push("/inscription"); return; }
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { setErreur(data?.error || t.errSave); setSaving(false); return; }
       try { localStorage.removeItem(DRAFT_KEY); } catch { /* noop */ }
@@ -247,15 +277,21 @@ export default function EstimateurRapide({
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: RAPIDE_CSS }} />
+      <style dangerouslySetInnerHTML={{ __html: RAPIDE_CSS + (edit?.detaille || edit?.piecesPerdues ? AVERT_CSS : "") }} />
       <div className="av-rapide">
+        {(edit?.detaille || edit?.piecesPerdues) && (
+          <div className="avert" role="note">
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8 15 14H1L8 1.8Z" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /><path d="M8 6.2v3.6M8 11.6v.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+            <span>{edit.detaille ? t.avertDetaille : t.avertPiecesPerdues}</span>
+          </div>
+        )}
         <div className="q">
           <div className="qlbl"><span className="n">1</span>{t.step1q}</div>
 
           <div className="glbl">{t.bienEntier}</div>
           <div className="seg" style={{ marginBottom: 14 }}>
             {(["Maison", "Appartement"] as TypeBien[]).map((tb) => (
-              <button key={tb} className={demarre && mode === "bien" && type === tb ? "on" : ""} onClick={() => { setDemarre(true); setMode("bien"); setType(tb); }}>{tb === "Maison" ? t.maison : t.appart}</button>
+              <button key={tb} className={affiche && mode === "bien" && type === tb ? "on" : ""} onClick={() => { setDemarre(true); setMode("bien"); setType(tb); }}>{tb === "Maison" ? t.maison : t.appart}</button>
             ))}
           </div>
 
@@ -401,7 +437,7 @@ export default function EstimateurRapide({
               <div>
                 <div className="lbl">{t.liveLabel}</div>
                 <div className="big">{valid ? <><CountUp value={lo} nf={nf} /> €<span style={{ opacity: .55 }}> – </span><CountUp value={hi} nf={nf} /> €</> : "—"}</div>
-                <div className="sub">{valid ? <>≈ <CountUp value={m2} nf={nf} /> €/m² · {ampName} · ±15 %{regLabel ? <> · {regLabel}</> : ""}</> : !demarre ? t.step1q : (mode === "pieces" ? "Ajoute une pièce" : t.renseigneSurface)}</div>
+                <div className="sub">{valid ? <>≈ <CountUp value={m2} nf={nf} /> €/m² · {ampName} · ±15 %{regLabel ? <> · {regLabel}</> : ""}</> : !affiche ? t.step1q : (mode === "pieces" ? "Ajoute une pièce" : t.renseigneSurface)}</div>
               </div>
               <div className="btns">
                 <button className="ghost" onClick={affiner}>{t.affiner}</button>

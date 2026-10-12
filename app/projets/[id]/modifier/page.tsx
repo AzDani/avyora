@@ -9,6 +9,7 @@ import { getUser, estPro } from "@/lib/auth";
 import { getLocale } from "@/lib/i18n/server";
 import { estNeuf, maisonComplete, type Ctx, type Ampleur, type Finition, type QuiRealise } from "@/lib/estimateur";
 import type { OrigineNeuf } from "@/lib/estimateur/brouillon-neuf";
+import { editionRapideReno } from "@/lib/estimateur/rapide-reno";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +30,7 @@ export default async function ModifierProjet({ params }: { params: Promise<{ id:
   const locale = await getLocale();
   const s = TR[locale];
   const pro = estPro(user);
-  const rep = (projet.reponses ?? {}) as { ctx?: Ctx; codePostal?: string; ampleur?: Ampleur; qui?: QuiRealise; mode?: string; origine?: OrigineNeuf; statuts?: Record<string, number> };
+  const rep = (projet.reponses ?? {}) as { ctx?: Ctx; codePostal?: string; ampleur?: Ampleur; qui?: QuiRealise; mode?: string; origine?: OrigineNeuf; statuts?: Record<string, number>; pieces?: unknown };
   // Construction neuve : jamais les éditeurs de la RÉNOVATION (ils le réenregistreraient en
   // rénovation : catalogue, ampleur). Pro → le détaillé du neuf ; gratuit → le rapide du neuf.
   const neuf = estNeuf(rep.ctx);
@@ -79,17 +80,9 @@ export default async function ModifierProjet({ params }: { params: Promise<{ id:
       ) : pro ? (
         <Estimateur initialState={(projet.reponses as Record<string, unknown>) ?? {}} projectId={projet.id} />
       ) : (
-        <EstimateurRapide
-          edit={{
-            projectId: projet.id,
-            type: rep.ctx?.type,
-            surface: rep.ctx?.surface,
-            cp: projet.code_postal ?? rep.codePostal,
-            ampleur: rep.ampleur,
-            finition: rep.ctx?.finition,
-            qui: rep.qui,
-          }}
-        />
+        /* Rénovation en gratuit : le rapide reprend le projet (pièces, suivi de chantier ; avertissement
+           si c'est un détaillé), affiche son chiffre d'emblée, sans le recompter comme une estimation (N4). */
+        <EstimateurRapide edit={editionRapideReno(projet.id, rep, projet.code_postal)} />
       )}
     </div>
   );

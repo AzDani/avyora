@@ -1,18 +1,23 @@
 import "server-only";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import {
   CATALOG, buildDevis, regionCoef,
   type Ctx, type Selection, type Ampleur, type Finition, type QuiRealise,
 } from "@/lib/estimateur";
 import { normaliserCles } from "@/lib/estimateur/identite";
+import { catT } from "@/lib/estimateur/catalog-i18n";
 import { getLocale } from "@/lib/i18n/server";
 import { dict } from "@/lib/i18n/dictionaries";
 
 /**
  * Page résultat de l'ESTIMATION RAPIDE : récap des réponses + fourchette, mais PAS le détail
- * poste par poste (ça, c'est le détaillé/Pro). Le détail par corps d'état est affiché flouté +
- * verrouillé (teaser). Choix produit : le rapide reste honnête (ordre de grandeur) et le détail
- * devient un argument pour passer en détaillé.
+ * poste par poste (ça, c'est le détaillé/Pro). Choix produit : le rapide reste honnête (ordre de
+ * grandeur) et le détail devient un argument pour passer en détaillé.
+ *
+ * « Où va le budget » (répartition par corps d'état) : un Pro la voit en clair. Un gratuit voit un
+ * teaser flouté et verrouillé fait de données FACTICES : le flou n'est que du CSS, les vrais noms de
+ * lots et les vrais montants ne doivent pas être dans le HTML (N4, modèle `ResultatRapideNeuf`).
  */
 type Reponses = { ctx?: Ctx; sel?: Selection; codePostal?: string; ampleur?: Ampleur; qui?: QuiRealise };
 
@@ -46,6 +51,9 @@ const CSS = `
 .av-rr .lrow{display:flex;align-items:center;gap:9px;font-size:13.5px}
 .av-rr .dot{width:10px;height:10px;border-radius:3px;flex:none}
 .av-rr .lrow .lv{margin-left:auto;font-family:var(--font-geist-mono),monospace;font-weight:600}
+.av-rr .lrow .nm{flex:1;min-width:0}
+.av-rr .lrow .fake{display:block;height:10px;border-radius:99px;background:var(--line-strong)}
+.av-rr .repart{border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface);padding:22px}
 .av-rr .lock{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:11px;padding:20px;background:rgba(248,249,253,.55)}
 .av-rr .lock .ico{width:46px;height:46px;border-radius:14px;background:#fff;border:1px solid var(--line-strong);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 10px 24px -12px rgba(30,27,75,.3)}
 .av-rr .lock h3{font-size:16.5px;font-weight:700}
@@ -81,12 +89,16 @@ export default async function ResultatRapide({
   const quiLabel = reponses.qui ? t.quis[reponses.qui]?.label : "—";
   const typeLabel = ctx.type === "Maison" ? t.typeMaison : t.typeAppart;
 
-  // Donut flouté : vraies proportions par corps d'état (top 5), mais masqué.
-  const lots = [...dv.lots].sort((a, b) => b.ttc - a.ttc);
+  // Répartition par corps d'état (top 4 + « autres ») : la vraie pour un Pro ; pour un gratuit, des
+  // proportions et des lignes factices (barres grises, « ••• € »), rien de son devis.
+  const lots = isPro ? [...dv.lots].sort((a, b) => b.ttc - a.ttc) : [];
   const top = lots.slice(0, 4);
   const autresTtc = lots.slice(4).reduce((s, l) => s + l.ttc, 0);
-  const totalLots = lots.reduce((s, l) => s + l.ttc, 0) || 1;
-  const segs = [...top.map((l) => l.ttc), autresTtc].filter((v) => v > 0);
+  const totalLots = isPro ? lots.reduce((s, l) => s + l.ttc, 0) || 1 : 100;
+  const segs = isPro ? [...top.map((l) => l.ttc), autresTtc].filter((v) => v > 0) : [35, 24, 16, 12, 13];
+  const legende: { k: string; nom: ReactNode; v: string }[] = isPro
+    ? top.map((l) => ({ k: l.corps, nom: catT(locale, "corps", l.corps), v: euro(l.ttc, nf) }))
+    : [62, 48, 55, 40].map((w, i) => ({ k: "f" + i, nom: <span className="fake" style={{ width: w + "%" }} />, v: "••• €" }));
   let off = 25;
   const circles = segs.map((v, i) => {
     const len = (v / totalLots) * 100;
@@ -109,6 +121,21 @@ export default async function ResultatRapide({
         affiner: "Affiner en détaillé →", passPro: "Passer en Pro pour le détail →", refaire: "Refaire une estimation",
         margeInfo: "Estimation indicative basée sur le référentiel de prix AVYORA (France 2026), ajustée à ton code postal — un ordre de grandeur (marge ±15 %) à confirmer par des devis d'artisans. Le détail précis, poste par poste, s'obtient avec l'estimation détaillée.",
         others: "+ autres corps d'état", labor: "% MO" };
+
+  const repartition = (
+    <div className="tt">
+      <svg className="donut" viewBox="0 0 42 42" aria-hidden="true">
+        <circle cx="21" cy="21" r="15.9" fill="none" stroke="#e9eaf3" strokeWidth="7" />
+        {circles}
+      </svg>
+      <div className="legend">
+        {legende.map((l, i) => (
+          <div className="lrow" key={l.k}><span className="dot" style={{ background: SEG_COLORS[i] }} /><span className="nm">{l.nom}</span> <span className="lv">{l.v}</span></div>
+        ))}
+        <div className="lrow"><span className="dot" style={{ background: "#dcdeec" }} /><span className="nm">{L.others}</span> <span className="lv">{isPro && autresTtc > 0 ? euro(autresTtc, nf) : "…"}</span></div>
+      </div>
+    </div>
+  );
 
   const ctaHref = isPro ? `/projets/${projectId}/modifier` : "/tarifs?source=affiner-reno";
   const ctaLabel = isPro ? L.affiner : L.passPro;
@@ -137,27 +164,19 @@ export default async function ResultatRapide({
       </div>
 
       <div className="sec">{L.where} <span className="pro-chip">Pro</span></div>
-      <div className="teaser">
-        <div className="inside">
-          <div className="tt">
-            <svg className="donut" viewBox="0 0 42 42" aria-hidden="true">
-              <circle cx="21" cy="21" r="15.9" fill="none" stroke="#e9eaf3" strokeWidth="7" />
-              {circles}
-            </svg>
-            <div className="legend">
-              {top.map((l, i) => (
-                <div className="lrow" key={l.corps}><span className="dot" style={{ background: SEG_COLORS[i] }} />{l.corps} <span className="lv">{euro(l.ttc, nf)}</span></div>
-              ))}
-              <div className="lrow"><span className="dot" style={{ background: "#dcdeec" }} />{L.others} <span className="lv">…</span></div>
-            </div>
+      {isPro ? (
+        // Un Pro : la répartition en clair, sans cadenas.
+        <div className="repart">{repartition}</div>
+      ) : (
+        <div className="teaser">
+          <div className="inside" aria-hidden="true">{repartition}</div>
+          <div className="lock">
+            <div className="ico">🔒</div>
+            <h3>{L.lockH}</h3>
+            <p>{L.lockP}</p>
           </div>
         </div>
-        <div className="lock">
-          <div className="ico">🔒</div>
-          <h3>{L.lockH}</h3>
-          <p>{L.lockP}</p>
-        </div>
-      </div>
+      )}
 
       <div className="actions">
         <Link href={ctaHref} className="btn btn-primary py-2.5">{ctaLabel}</Link>

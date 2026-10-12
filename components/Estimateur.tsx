@@ -24,6 +24,7 @@ import {
 } from "@/lib/estimateur";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { catT } from "@/lib/estimateur/catalog-i18n";
+import { CLE_BROUILLON_RENO, CLE_BROUILLON_DETAIL_RENO, CLE_RECLAMATION_RENO, brouillonDetailleReno } from "@/lib/estimateur/brouillon-reno";
 
 // Noms des espaces (mode périmètre) traduits pour l'affichage (le FR reste la donnée).
 const ESPACE_EN: Record<string, string> = {
@@ -32,8 +33,8 @@ const ESPACE_EN: Record<string, string> = {
 };
 const espaceNom = (locale: string, nom: string) => (locale === "en" ? ESPACE_EN[nom] ?? nom : nom);
 
-const DRAFT_KEY = "avyora-estim-v2";              // brouillon partagé (mode rapide) — sert de graine « infos du bien »
-const DRAFT_KEY_DETAIL = "avyora-estim-detail-v1"; // brouillon PROPRE au détaillé : ne récupère PAS les postes cochés du rapide
+const DRAFT_KEY = CLE_BROUILLON_RENO;               // brouillon partagé (mode rapide) — sert de graine « infos du bien »
+const DRAFT_KEY_DETAIL = CLE_BROUILLON_DETAIL_RENO; // brouillon PROPRE au détaillé : ne récupère PAS les postes cochés du rapide
 
 type Persisted = { v?: string; ctx?: Partial<Ctx>; sel?: Selection; open?: Record<string, boolean>; codePostal?: string; statuts?: Record<string, number>; custom?: CustomLine[] };
 
@@ -242,7 +243,16 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nom, typeBien: ctx.type, surface: ctx.surface, codePostal, reponses }),
       });
-      if (res.status === 401) { try { localStorage.setItem("avyora-estim-claim", "1"); } catch { /* noop */ } router.push("/inscription"); return; }
+      if (res.status === 401) {
+        // Le brouillon COMPLET d'abord (postes, lignes perso, nom), le drapeau ensuite : sans lui,
+        // `ClaimDraft` créait le projet à partir de l'ancien brouillon du rapide (N4).
+        try {
+          localStorage.setItem(DRAFT_KEY, JSON.stringify(brouillonDetailleReno({ nom, ctx: ctxR, sel, codePostal, custom })));
+          localStorage.setItem(CLE_RECLAMATION_RENO, "1");
+        } catch { /* noop */ }
+        router.push("/inscription");
+        return;
+      }
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { setErreur(data?.error || "Enregistrement impossible."); setSaving(false); return; }
       if (!edition) { try { localStorage.removeItem(DRAFT_KEY_DETAIL); localStorage.removeItem(DRAFT_KEY); } catch { /* noop */ } }

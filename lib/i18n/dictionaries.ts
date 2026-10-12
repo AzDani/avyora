@@ -177,6 +177,9 @@ const fr = {
     auTotal: "au total",
     ajusteSurface: "ajuste la surface de chaque pièce",
     auMoinsUnePiece: "Ajoute au moins une pièce.",
+    // Projet rouvert en gratuit (page « Modifier ») : ce que l'enregistrement va remplacer.
+    avertDetaille: "Tu rouvres une estimation détaillée : le type de bien, la surface, le code postal et la finition sont repris, mais si tu enregistres ici, tes réglages poste par poste et tes lignes personnalisées sont remplacés par l'estimation rapide, celle affichée ci-dessous. Ton suivi de chantier est gardé.",
+    avertPiecesPerdues: "Ce projet a été enregistré avant que la liste des pièces soit gardée : ajoute à nouveau tes pièces pour retrouver ton estimation. Ton suivi de chantier est gardé.",
     proLock: "🔒 Pro",
     lockedLabel: "Multi-pièces · AVYORA Pro",
     lockedBig1: "🔒 ",
@@ -417,6 +420,8 @@ const en: Dict = {
     auTotal: "total",
     ajusteSurface: "adjust each room's area",
     auMoinsUnePiece: "Add at least one room.",
+    avertDetaille: "You are reopening a detailed estimate: the property type, area, ZIP code and finish level are kept, but if you save here, your line-by-line settings and custom lines are replaced by the quick estimate shown below. Your site tracking is kept.",
+    avertPiecesPerdues: "This project was saved before room lists were kept: add your rooms again to get your estimate back. Your site tracking is kept.",
     proLock: "🔒 Pro",
     lockedLabel: "Multi-room · AVYORA Pro",
     lockedBig1: "🔒 ",
