@@ -3,13 +3,15 @@
  *
  * Données pures sorties de la maquette validée (`maquettes/neuf/app.js`, table `Q`) : six
  * groupes, chaque question décrit une réponse de `MaisonNeuve`. Le composant qui les affiche reste
- * générique : il lit cette table, il n'écrit aucune question. Deux clés ne sont pas dans la
- * maison : `$qui` (qui réalise) et `$finition`, qui vont dans les options du chiffrage.
+ * générique : il lit cette table, il n'écrit aucune question. Une clé n'est pas dans la maison :
+ * `$finition`, qui va dans les options du chiffrage. « Qui réalise » n'est plus une question (N3) :
+ * il réécrivait toutes les lignes cochées ; c'est désormais le réglage « Nouveaux postes cochés »,
+ * au-dessus des lots, qui ne touche aucune ligne (`reglerNouveauxNeuf`, `detaille-neuf.ts`).
  */
 import type { MaisonNeuve } from "./neuf";
 import type { TexteFrEn } from "./etapes-neuf";
 
-export type CleQuestionNeuf = keyof MaisonNeuve | "$qui" | "$finition";
+export type CleQuestionNeuf = keyof MaisonNeuve | "$finition";
 export type ValeurQuestionNeuf = string | number | boolean;
 
 export interface QuestionNeuf {
@@ -21,7 +23,7 @@ export interface QuestionNeuf {
   t?: "num" | "cp" | "garage";
   u?: string;
   min?: number; max?: number; step?: number;
-  /** La question n'a d'objet que si… (sinon elle est grisée, « sans objet ici »). */
+  /** La question n'a d'objet que si… (sinon elle est masquée, comme en rénovation). */
   si?: (m: MaisonNeuve) => boolean;
   hint?: TexteFrEn;
 }
@@ -109,13 +111,9 @@ export const QUESTIONS_NEUF: GroupeQuestionsNeuf[] = [
       ["infiltration", { fr: "Infiltration sur la parcelle", en: "Soakaway on the plot" }], ["reseau", { fr: "Réseau public", en: "Public drain" }],
     ] },
   ] },
-  { g: { fr: "Qui pilote, qui réalise, finition", en: "Who manages, who builds, finish" }, qs: [
+  { g: { fr: "Qui pilote, finition", en: "Who manages, finish" }, qs: [
     { k: "pilotage", l: { fr: "Qui pilote", en: "Who manages" }, o: [
       ["moi", { fr: "Moi (lots séparés)", en: "Me (separate trades)" }], ["moe", { fr: "Un maître d'œuvre", en: "A project manager" }],
-    ] },
-    { k: "$qui", l: { fr: "Qui réalise", en: "Who builds" }, o: [
-      // Mêmes libellés que le rapide public (`neuf.saisie.quis`) : le particulier retrouve son choix.
-      ["pros", { fr: "Tout fait faire", en: "All done by pros" }], ["partie", { fr: "J'en fais une partie", en: "I do some of it" }], ["max", { fr: "Je fais le maximum", en: "I do as much as I can" }],
     ] },
     { k: "$finition", l: { fr: "Finition", en: "Finish" }, o: [
       ["eco", { fr: "Éco", en: "Basic" }], ["standard", { fr: "Standard", en: "Standard" }], ["premium", { fr: "Premium", en: "Premium" }],

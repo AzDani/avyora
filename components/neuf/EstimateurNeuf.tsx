@@ -15,9 +15,12 @@
  * sinon le brouillon du détaillé (`avyora-neuf-detail-v1`). Clés propres au neuf : la rénovation ne
  * relit jamais un brouillon neuf.
  *
- * Liste : phases du chantier repliables, et dans chaque phase ses blocs (un lot du catalogue à sa
- * place). Un lot revient parfois deux fois dans la même phase : clé React et ouverture par INDEX
- * de bloc. Aucun montant écrit ici : tout vient du moteur.
+ * Liste : phases du chantier repliables, FERMÉES à l'ouverture (N3 : 9 lignes au lieu de 55 ; ce
+ * qu'on ouvre est gardé dans le brouillon), et dans chaque phase ses blocs (un lot du catalogue à
+ * sa place, avec son icône). Un lot revient parfois deux fois dans la même phase : clé React et
+ * ouverture par INDEX de bloc. Au-dessus des lots, « Nouveaux postes cochés » règle le mode des
+ * postes cochés ensuite, sans toucher une ligne ; « Tout passer en… », confirmé, les réécrit
+ * toutes. Aucun montant écrit ici : tout vient du moteur.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -30,15 +33,15 @@ import { useLocale, useT } from "@/components/i18n/LangProvider";
 import { dictNeuf } from "@/lib/i18n/neuf";
 import { catT } from "@/lib/estimateur/catalog-i18n";
 import {
-  buildDevis, customLotHT, finCoef, geometrieNeuf, isAuto, isLoc, key, regionCoef, autoQty, visibleTask, raisonProNeuf, CATALOG_NEUF, PHASES_NEUF,
-  type CustomLine, type Selection, type LigneSel, type MaisonNeuve, type Lot, type Tache,
+  buildDevis, customLotHT, finCoef, geometrieNeuf, isAuto, isLoc, key, regionCoef, autoQty, visibleTask, raisonProNeuf, CATALOG_NEUF, PHASES_NEUF, ICON,
+  type CustomLine, type Selection, type LigneSel, type MaisonNeuve, type Lot, type Tache, type QuiRealise,
 } from "@/lib/estimateur";
 import { totauxAvecPerso } from "@/lib/estimateur/projet";
 import { INFO_PHASES } from "@/lib/estimateur/etapes-neuf";
 import { QUESTIONS_NEUF, type QuestionNeuf, type ValeurQuestionNeuf, type CleQuestionNeuf } from "@/lib/estimateur/questions-neuf";
 import {
   CLE_BROUILLON_DETAIL_NEUF, BLOCS_NEUF, ctxDetailNeuf, etatParDefaut, changerReponseNeuf, cocherNeufEtat, puReelNeuf, badgeNeuf,
-  diyNeuf, horsDecennaleNeuf, lignesPersoDuBloc, lignePersoNeuf, repriseDepuisReponses,
+  diyNeuf, horsDecennaleNeuf, lignesPersoDuBloc, lignePersoNeuf, repriseDepuisReponses, reglerNouveauxNeuf, toutPasserNeuf, postesQuiChangent,
   lireBrouillonDetailNeuf, enregistrementDetailNeuf, demarchesPhase, ouvertureDetailNeuf, type EtatNeuf, type BlocNeuf,
 } from "@/lib/estimateur/detaille-neuf";
 import { CLE_BROUILLON_NEUF, CLE_AFFINER_NEUF, CLE_RECLAMATION_NEUF, type OrigineNeuf } from "@/lib/estimateur/brouillon-neuf";
@@ -72,8 +75,10 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
 
   const [etat, setEtat] = useState<EtatNeuf>(etatParDefaut);
   const [custom, setCustom] = useState<CustomLine[]>([]);
-  const [open, setOpen] = useState<Record<string, boolean>>({});   // blocs ouverts, par index de bloc
-  const [ferme, setFerme] = useState<Record<string, boolean>>({}); // phases repliées
+  const [open, setOpen] = useState<Record<string, boolean>>({});         // blocs ouverts, par index de bloc
+  const [ouvertes, setOuvertes] = useState<Record<string, boolean>>({}); // phases ouvertes : aucune à l'ouverture
+  const [passer, setPasser] = useState<"ferme" | "choix" | QuiRealise>("ferme"); // « Tout passer en… » : cible, puis confirmation
+  const passerRef = useRef<HTMLButtonElement>(null);
   const [seulementCoches, setSeulementCoches] = useState(false);
   const [view, setView] = useState<"saisie" | "devis">("saisie");
   const [saving, setSaving] = useState(false);
@@ -113,7 +118,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
     }
     let b = null;
     try { b = lireBrouillonDetailNeuf(localStorage.getItem(CLE_BROUILLON_DETAIL_NEUF)); } catch { /* noop */ }
-    if (b) { setEtat(b.etat); setCustom(b.custom); setOpen(b.open); origineRef.current = b.origine; }
+    if (b) { setEtat(b.etat); setCustom(b.custom); setOpen(b.open); setOuvertes(b.ouvertes); origineRef.current = b.origine; }
   }, [initialState]);
 
   // Brouillon local (pas en modification d'un projet : il est déjà enregistré).
@@ -121,10 +126,10 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
     if (!hydrated.current || edition) return;
     try {
       localStorage.setItem(CLE_BROUILLON_DETAIL_NEUF, JSON.stringify({
-        v: "neuf-detail", etat, custom, open, ...(origineRef.current ? { origine: origineRef.current } : {}),
+        v: "neuf-detail", etat, custom, open, ouvertes, ...(origineRef.current ? { origine: origineRef.current } : {}),
       }));
     } catch { /* noop */ }
-  }, [etat, custom, open, edition]);
+  }, [etat, custom, open, ouvertes, edition]);
 
   // ── Chiffrage ──────────────────────────────────────────────────────────────────────────────
   const { maison: maisonSaisie, finition, aleas, budget, qui, sel } = etat;
@@ -166,7 +171,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
 
   function reset() {
     try { localStorage.removeItem(CLE_BROUILLON_DETAIL_NEUF); } catch { /* noop */ }
-    setEtat(etatParDefaut()); setCustom([]); setOpen({}); setFerme({}); setView("saisie");
+    setEtat(etatParDefaut()); setCustom([]); setOpen({}); setOuvertes({}); setPasser("ferme"); setView("saisie");
   }
 
   // ── Enregistrement ─────────────────────────────────────────────────────────────────────────
@@ -199,8 +204,8 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
   }
 
   // ── Questionnaire ──────────────────────────────────────────────────────────────────────────
-  const valeur = (k: CleQuestionNeuf): unknown => (k === "$qui" ? qui : k === "$finition" ? finition : m[k as keyof MaisonNeuve]);
-  function controle(q: QuestionNeuf, actif: boolean) {
+  const valeur = (k: CleQuestionNeuf): unknown => (k === "$finition" ? finition : m[k as keyof MaisonNeuve]);
+  function controle(q: QuestionNeuf) {
     const lbl = q.l[locale];
     if (q.t === "num") {
       const k = q.k as keyof MaisonNeuve;
@@ -231,7 +236,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
     return (
       <div className="pills" role="group" aria-label={lbl}>
         {(q.o ?? []).map(([val, txt]) => (
-          <button type="button" key={String(val)} className="pill" aria-pressed={v === val} disabled={!actif} onClick={() => repondre(q.k, val)}>{txt[locale]}</button>
+          <button type="button" key={String(val)} className="pill" aria-pressed={v === val} onClick={() => repondre(q.k, val)}>{txt[locale]}</button>
         ))}
       </div>
     );
@@ -245,11 +250,24 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
     for (const b of BLOCS_NEUF) r[b.l.p] += customLotHT(lignesPersoDuBloc(custom, b), b.l.c);
     return r;
   }, [dv, custom]);
-  const toutOuvert = BLOCS_NEUF.every((b) => open[b.i]) && PHASES_NEUF.every((p) => !ferme[p]);
-  function basculerTout() {
-    if (toutOuvert) { setOpen({}); return; }
+  const toutOuvert = BLOCS_NEUF.every((b) => open[b.i]) && PHASES_NEUF.every((p) => ouvertes[p]);
+  function basculerTout() { // « Tout replier » revient à la vue d'ouverture : phases et blocs fermés
+    if (toutOuvert) { setOpen({}); setOuvertes({}); return; }
     setOpen(Object.fromEntries(BLOCS_NEUF.map((b) => [b.i, true])));
-    setFerme({});
+    setOuvertes(Object.fromEntries(PHASES_NEUF.map((p) => [p, true])));
+  }
+
+  // ── Qui réalise : les nouveaux postes, et « Tout passer en… » ──────────────────────────────
+  /* Deux choix seulement : « Fait faire » (`pros`) et « Je le fais » (`max`). Un `partie` (repris du
+     rapide, ou d'un projet enregistré avant N3) n'en presse aucun : son texte d'aide le dit, jusqu'à
+     ce qu'on choisisse. */
+  const NOUVEAUX: [QuiRealise, string][] = [["pros", d.faitFaire], ["max", d.jeLeFais]];
+  function fermerPasser() { setPasser("ferme"); passerRef.current?.focus(); }
+  function confirmerPasser() {
+    if (passer !== "pros" && passer !== "max") return;
+    const cible = passer;
+    setEtat((e) => toutPasserNeuf(e, cible));
+    fermerPasser();
   }
 
   function bloc(b: BlocNeuf) {
@@ -268,6 +286,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
       <div key={b.i} className={"acc" + (isOpen ? " open" : "")}>
         <div className="acc-h" role="button" tabIndex={0} aria-expanded={isOpen} onClick={basculer}
           onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); basculer(); } }}>
+          <span className="ic" aria-hidden="true">{ICON[l.c] || "•"}</span>
           <span className="nm">{catT(locale, "corps", l.c)}</span>
           {cnt > 0 && <span className="cnt">{cnt}</span>}
           <span className="amt num">{cnt > 0 ? fmt(amt) + " HT" : ""}</span>
@@ -325,15 +344,14 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
                 <details key={gi} className="grp" open>
                   <summary>{grp.g[locale]}<Chevron /></summary>
                   {grp.qs.map((q) => {
-                    const actif = !q.si || q.si(m);
+                    if (q.si && !q.si(m)) return null; // sans objet ici : masquée, comme en rénovation
                     return (
                       <div key={q.k} className="q">
                         <span className="ql">
                           {q.l[locale]}
                           {q.hint && <span className="hint">{q.hint[locale]}</span>}
-                          {!actif && <span className="hint">{d.sansObjet}</span>}
                         </span>
-                        {controle(q, actif)}
+                        {controle(q)}
                       </div>
                     );
                   })}
@@ -361,6 +379,32 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
             </div>
 
             <div className="intro">{d.intro}</div>
+            <div className="nv">
+              <span className="nv-l" id="nv-l">{d.nouveauxL}</span>
+              <span className="nv-seg" role="group" aria-labelledby="nv-l">
+                {NOUVEAUX.map(([v, txt]) => (
+                  <button type="button" key={v} aria-pressed={qui === v} onClick={() => setEtat((e) => reglerNouveauxNeuf(e, v))}>{txt}</button>
+                ))}
+              </span>
+              <button type="button" ref={passerRef} className="linkbtn nv-tout" aria-expanded={passer !== "ferme"} aria-controls="nv-passer"
+                onClick={() => (passer === "ferme" ? setPasser("choix") : fermerPasser())}>{d.toutPasser}</button>
+              <p className="nv-aide">{d.nouveauxAide[qui] ?? d.nouveauxAide.pros}</p>
+              {passer !== "ferme" && (
+                <div className="nv-conf" id="nv-passer" role="group" aria-labelledby="nv-q" aria-live="polite">
+                  <span className="nv-q" id="nv-q">{d.toutPasserQ}</span>
+                  <span className="nv-seg">
+                    {NOUVEAUX.map(([v, txt]) => (
+                      <button type="button" key={v} aria-pressed={passer === v} onClick={() => setPasser(v)}>{txt}</button>
+                    ))}
+                  </span>
+                  {(passer === "pros" || passer === "max") && <p className="nv-eff">{d.toutPasserConfirme(passer === "max", postesQuiChangent(sel, passer))}</p>}
+                  <span className="nv-act">
+                    {(passer === "pros" || passer === "max") && <button type="button" className="nv-ok" onClick={confirmerPasser}>{d.confirmer}</button>}
+                    <button type="button" className="nv-non" onClick={fermerPasser}>{d.annuler}</button>
+                  </span>
+                </div>
+              )}
+            </div>
             <div className="tools">
               <label className="only">
                 <input type="checkbox" checked={seulementCoches} onChange={(e) => setSeulementCoches(e.target.checked)} />
@@ -374,20 +418,20 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
               let nOn = 0;
               for (const b of blocs) for (const t of b.l.t) if (sel[key(b.l.c, t.n)]?.on) nOn++;
               const nDem = demarchesPhase(ctx, sel, ph);
-              const ouverte = !ferme[ph];
+              const ouverte = !!ouvertes[ph];
               const info = INFO_PHASES[ph];
               const rendus = ouverte ? blocs.map(bloc).filter(Boolean) : [];
               return (
                 <div key={ph}>
                   <button type="button" className={"phase-t" + (ouverte ? " open" : "")} aria-expanded={ouverte}
-                    onClick={() => setFerme((f) => ({ ...f, [ph]: !f[ph] }))}>
+                    onClick={() => setOuvertes((o) => ({ ...o, [ph]: !o[ph] }))}>
                     <span className="chev" aria-hidden="true">
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                     </span>
                     <span className="pt-lbl"><span className="pt-num">{pi + 1}</span> · {catT(locale, "phases", ph)}</span>
                     <span className="pt-meta">{d.postesCoches(nOn)} · {fmt(htPhase[ph] ?? 0)} HT</span>
                   </button>
-                  {info && (
+                  {ouverte && info && (
                     <div className="pjal"><Drapeau /><span><b>{n.jalon}</b> · {info.jalon[locale]}{nDem > 0 ? ` · ${d.demarches(nDem)}` : ""}</span></div>
                   )}
                   {ouverte && (rendus.length ? rendus : <p className="pvide">{d.aucunPoste}</p>)}

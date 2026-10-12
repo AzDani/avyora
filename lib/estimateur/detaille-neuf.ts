@@ -8,13 +8,15 @@
  *   poste par poste. Le contexte du moteur s'en DÉDUIT (`ctxDetailNeuf`) ; on ne le stocke pas ;
  * - changer une réponse ne touche que les postes dont la décision change (`appliquerMaison` avec
  *   l'ancienne maison) : un parquet choisi à la main survit à un changement de toit ;
+ * - « qui réalise » (`qui`) ne vaut que pour les postes cochés ENSUITE (réglage « Nouveaux postes
+ *   cochés », N3) ; seule l'action « Tout passer en… », confirmée, réécrit les lignes déjà cochées ;
  * - les reprises : projet rouvert, « Affiner » depuis le rapide, graine du rapide, brouillon.
  *
  * Mécanique recopiée de la maquette validée (`maquettes/neuf/app.js`, `changerMaison`,
  * `changerQui`, `puLigne`), sur le MÊME moteur que le rapide : une maison décrite pareil coûte pareil.
  */
 import { key, isAuto, isLoc, lineHT, type Ctx, type Selection, type Finition, type Lot, type Tache, type CustomLine } from "./core";
-import { CATALOG_NEUF } from "./catalogue-neuf";
+import { CATALOG_NEUF, PHASES_NEUF } from "./catalogue-neuf";
 import { maisonComplete, maisonParDefaut, reponseDuPoste, type MaisonNeuve } from "./neuf";
 import { ctxNeuf, appliquerMaison, cocherPosteNeuf, soiMemeNeuf, peutFaireNeuf, LOTS_DECENNALE_NEUF, presetMaison, presetNeuf, type RapideNeufInput } from "./presets-neuf";
 import type { QuiRealise } from "./presets";
@@ -60,7 +62,8 @@ export function etatParDefaut(): EtatNeuf {
   return etatDepuisPreset(presetMaison(maisonParDefaut(), { qui: "pros" }), "pros");
 }
 
-/** Qui réalise change : chaque poste coché reprend le « Je le fais » que ce choix lui donne. */
+/** Chaque poste coché reprend le « Je le fais » que `qui` lui donne par défaut : les choix faits
+ *  ligne par ligne sont remplacés. N'est plus appelé que par « Tout passer en… » (`toutPasserNeuf`). */
 export function changerQuiNeuf(sel: Selection, qui: QuiRealise): Selection {
   const out: Selection = { ...sel };
   for (const [k, s] of Object.entries(sel)) {
@@ -72,12 +75,39 @@ export function changerQuiNeuf(sel: Selection, qui: QuiRealise): Selection {
 }
 
 /**
- * Une réponse du questionnaire change. `$qui` et `$finition` règlent le chiffrage ; toute autre clé
- * décrit la maison : seuls les postes dont la décision change bougent, le reste de la sélection
- * (choix faits à la main, quantités, prix, notes) est gardé.
+ * Réglage « Nouveaux postes cochés : Fait faire / Je le fais » (N3, au-dessus des lots). Il ne vaut
+ * que pour les postes cochés ENSUITE, à la main (`cocherNeufEtat`) ou par une réponse
+ * (`appliquerMaison`) : aucune ligne déjà cochée ne change, la sélection est rendue telle quelle.
+ * « Je le fais » = `max` : le défaut du mode « Je fais le maximum », qui laisse la structure, le toit,
+ * les menuiseries extérieures et les branchements aux pros (`PRO_PAR_DEFAUT_MAX`). Un `partie` (repris
+ * du rapide ou d'un projet enregistré) reste tel quel tant qu'on ne choisit pas.
+ */
+export function reglerNouveauxNeuf(e: EtatNeuf, qui: QuiRealise): EtatNeuf {
+  return { ...e, qui };
+}
+
+/** « Tout passer en… », après confirmation : le réglage des nouveaux postes ET toutes les lignes
+ *  cochées passent à `qui` (l'ancien comportement de la question « Qui réalise »). */
+export function toutPasserNeuf(e: EtatNeuf, qui: QuiRealise): EtatNeuf {
+  return { ...e, qui, sel: changerQuiNeuf(e.sel, qui) };
+}
+
+/** Nombre de lignes cochées dont « Tout passer en `qui` » changerait le mode (texte de confirmation). */
+export function postesQuiChangent(sel: Selection, qui: QuiRealise): number {
+  let n = 0;
+  for (const [k, s] of Object.entries(sel)) {
+    const p = PAR_CLE.get(k);
+    if (s?.on && p && !!s.self !== soiMemeNeuf(p.l.c, qui, p.t)) n++;
+  }
+  return n;
+}
+
+/**
+ * Une réponse du questionnaire change. `$finition` règle le chiffrage ; toute autre clé décrit la
+ * maison : seuls les postes dont la décision change bougent, le reste de la sélection (choix faits
+ * à la main, quantités, prix, notes) est gardé.
  */
 export function changerReponseNeuf(e: EtatNeuf, k: CleQuestionNeuf, v: ValeurQuestionNeuf): EtatNeuf {
-  if (k === "$qui") return { ...e, qui: v as QuiRealise, sel: changerQuiNeuf(e.sel, v as QuiRealise) };
   if (k === "$finition") return { ...e, finition: v as Finition };
   const ancienne = ctxDetailNeuf(e).neuf as MaisonNeuve;
   const brute = { ...e.maison, [k]: v } as MaisonNeuve;
@@ -251,14 +281,26 @@ export function ouvertureDetailNeuf(o: { nouveau: boolean; reprise: boolean; aff
   return { frais: true, reprise: o.reprise ? repriseDepuisGraine(o.graine) : null };
 }
 
-/** Brouillon du détaillé (rechargement de la page). */
+/** Brouillon du détaillé (rechargement de la page). `open` : les blocs ouverts, par index de bloc ;
+ *  `ouvertes` : les phases ouvertes, par nom (N3 : toutes fermées sur une page vierge). */
 export interface BrouillonDetailNeuf {
   v: "neuf-detail";
   etat: EtatNeuf;
   custom: CustomLine[];
   open: Record<string, boolean>;
+  ouvertes: Record<string, boolean>;
   origine?: OrigineNeuf;
 }
+
+/** Les phases qui contiennent un bloc ouvert : un brouillon d'avant N3 (sans `ouvertes`, phases
+ *  toujours dépliées) rouvre ainsi les blocs qu'on y regardait. */
+export function phasesDesBlocsOuverts(open: Record<string, boolean>): Record<string, boolean> {
+  const out: Record<string, boolean> = {};
+  for (const b of BLOCS_NEUF) if (open[b.i]) out[b.l.p] = true;
+  return out;
+}
+
+const PHASES = new Set<string>(PHASES_NEUF);
 
 export function lireBrouillonDetailNeuf(raw: string | null | undefined): BrouillonDetailNeuf | null {
   if (!raw) return null;
@@ -266,6 +308,7 @@ export function lireBrouillonDetailNeuf(raw: string | null | undefined): Brouill
   try { d = JSON.parse(raw); } catch { return null; }
   if (!d || d.v !== "neuf-detail" || !d.etat || !d.etat.maison) return null;
   const maison = maisonComplete(d.etat.maison);
+  const open = d.open && typeof d.open === "object" ? d.open : {};
   return {
     v: "neuf-detail",
     etat: {
@@ -276,7 +319,10 @@ export function lireBrouillonDetailNeuf(raw: string | null | undefined): Brouill
       sel: selValide(d.etat.sel), facadeAuto: typeof d.etat.facadeAuto === "boolean" ? d.etat.facadeAuto : facadeAutoDe(maison),
     },
     custom: lignesPersoValides(d.custom),
-    open: d.open && typeof d.open === "object" ? d.open : {},
+    open,
+    ouvertes: d.ouvertes && typeof d.ouvertes === "object" && !Array.isArray(d.ouvertes)
+      ? Object.fromEntries(Object.entries(d.ouvertes).filter(([p, v]) => PHASES.has(p) && v === true))
+      : phasesDesBlocsOuverts(open),
     ...(d.origine ? { origine: d.origine } : {}),
   };
 }

@@ -11,8 +11,10 @@ import {
 import {
   BLOCS_NEUF, ctxDetailNeuf, etatParDefaut, etatDepuisPreset, changerReponseNeuf, changerQuiNeuf, cocherNeuf, cocherNeufEtat, puReelNeuf,
   badgeNeuf, diyNeuf, lignesPersoDuBloc, lignePersoNeuf, repriseDepuisReponses, repriseDepuisAffiner, repriseDepuisGraine,
-  lireBrouillonDetailNeuf, enregistrementDetailNeuf, demarchesPhase, type EtatNeuf,
+  lireBrouillonDetailNeuf, enregistrementDetailNeuf, demarchesPhase, reglerNouveauxNeuf, toutPasserNeuf, postesQuiChangent,
+  phasesDesBlocsOuverts, type EtatNeuf,
 } from "@/lib/estimateur/detaille-neuf";
+import { soiMemeNeuf } from "@/lib/estimateur/presets-neuf";
 import { brouillonRapideNeuf, lireBrouillonNeuf, corpsProjetNeuf } from "@/lib/estimateur/brouillon-neuf";
 import { projetCreateSchema } from "@/lib/validation";
 
@@ -56,16 +58,64 @@ describe("Détaillé neuf · une réponse ne touche que ce qu'elle gouverne", ()
     expect(e.maison.facade).toBe("bardage-composite");
   });
 
-  it("$qui réécrit « Je le fais » des postes cochés ; $finition ne touche pas la sélection", () => {
+  /* N3 : « Qui réalise » n'est plus une question qui réécrit toutes les lignes. Le réglage
+     « Nouveaux postes cochés » ne vaut que pour la suite ; seul « Tout passer en… » réécrit. */
+  it("une ligne basculée à la main survit au changement du réglage « nouveaux postes » ; $finition ne touche pas la sélection", () => {
     const e0 = etatDepuisPreset(presetNeuf(R100), "pros");
-    const e1 = changerReponseNeuf(e0, "$qui", "partie");
-    expect(e1.qui).toBe("partie");
-    expect(Object.values(e1.sel).some((s) => s.on && s.self)).toBe(true);
-    expect(changerQuiNeuf(e1.sel, "pros")).toEqual(changerReponseNeuf(e1, "$qui", "pros").sel);
-    expect(Object.values(changerQuiNeuf(e1.sel, "pros")).some((s) => s.on && s.self)).toBe(false);
-    const e2 = changerReponseNeuf(e0, "$finition", "premium");
-    expect(e2.sel).toBe(e0.sel);
-    expect(ttcDe(e2)).toBeGreaterThan(ttcDe(e0));
+    const peinture = poste("pei-peinture-murs-plaques-neuves");
+    const kP = cle(peinture.t.id);
+    expect(e0.sel[kP]?.on).toBe(true);
+    // Basculée à la main en « Je le fais » (la puce de la ligne), puis le réglage change deux fois.
+    const eMain: EtatNeuf = { ...e0, sel: { ...e0.sel, [kP]: { ...e0.sel[kP], self: true } } };
+    const e1 = reglerNouveauxNeuf(eMain, "max");
+    expect(e1.qui).toBe("max");
+    expect(e1.sel).toBe(eMain.sel);                    // aucune ligne réécrite
+    const e2 = reglerNouveauxNeuf(e1, "pros");
+    expect(e2.sel[kP]?.self).toBe(true);
+    expect(ttcDe(e2)).toBe(ttcDe(eMain));              // même total : rien n'a bougé
+    // Un poste coché ENSUITE prend le réglage du moment…
+    const parquet = poste("rev-parquet-bois"), lP = lotDe(parquet.t.id);
+    expect(cocherNeufEtat(e1, lP, parquet.t).sel[cle(parquet.t.id)]?.self).toBe(soiMemeNeuf(lP.c, "max", parquet.t));
+    expect(soiMemeNeuf(lP.c, "max", parquet.t)).toBe(true);
+    expect(cocherNeufEtat(e2, lP, parquet.t).sel[cle(parquet.t.id)]?.self).toBe(false);
+    // … y compris coché par une réponse, sans toucher la ligne basculée à la main.
+    const e3 = changerReponseNeuf(e1, "chauffage", "poele");
+    expect(e3.sel[kP]?.self).toBe(true);
+    const nouveaux = Object.keys(e3.sel).filter((k) => e3.sel[k]?.on && !eMain.sel[k]?.on);
+    expect(nouveaux.length).toBeGreaterThan(0);
+    const parCle = new Map(CATALOG_NEUF.flatMap((l) => l.t.map((t) => [key(l.c, t.n), { l, t }] as const)));
+    for (const k of nouveaux) {
+      const { l, t } = parCle.get(k)!;
+      expect(!!e3.sel[k].self, k).toBe(soiMemeNeuf(l.c, "max", t));
+    }
+    expect(nouveaux.some((k) => e3.sel[k].self)).toBe(true);
+    const e4 = changerReponseNeuf(e0, "$finition", "premium");
+    expect(e4.sel).toBe(e0.sel);
+    expect(ttcDe(e4)).toBeGreaterThan(ttcDe(e0));
+  });
+
+  it("« Tout passer en… » (après confirmation) réécrit toutes les lignes cochées et le réglage, en comptant ce qui change", () => {
+    const e0 = etatDepuisPreset(presetNeuf(R100), "pros");
+    const kP = cle("pei-peinture-murs-plaques-neuves");
+    const eMain: EtatNeuf = { ...e0, sel: { ...e0.sel, [kP]: { ...e0.sel[kP], self: true } } };
+    expect(postesQuiChangent(eMain.sel, "pros")).toBe(1);            // seule la ligne basculée à la main
+    const ff = toutPasserNeuf(eMain, "pros");
+    expect(ff.qui).toBe("pros");
+    expect(ff.sel).toEqual(changerQuiNeuf(eMain.sel, "pros"));
+    expect(Object.values(ff.sel).some((s) => s.on && s.self)).toBe(false);
+    expect(postesQuiChangent(ff.sel, "pros")).toBe(0);
+    // « Je le fais » = le défaut du mode « le maximum » : la structure reste aux pros.
+    const nMax = postesQuiChangent(ff.sel, "max");
+    const jlf = toutPasserNeuf(ff, "max");
+    expect(jlf.qui).toBe("max");
+    expect(Object.keys(jlf.sel).filter((k) => !!jlf.sel[k].self !== !!ff.sel[k].self).length).toBe(nMax);
+    expect(nMax).toBeGreaterThan(0);
+    expect(jlf.sel[cle("mac-monter-un-mur-en-parpaings")]?.on).toBe(true);
+    expect(jlf.sel[cle("mac-monter-un-mur-en-parpaings")]?.self).toBe(false);
+    expect(jlf.sel[kP]?.self).toBe(true);
+    expect(postesQuiChangent(jlf.sel, "max")).toBe(0);
+    // Les quantités, prix et notes des lignes sont gardés : seul le mode change.
+    for (const [k, s] of Object.entries(jlf.sel)) expect({ ...s, self: undefined }, k).toEqual({ ...ff.sel[k], self: undefined });
   });
 });
 
@@ -237,6 +287,22 @@ describe("Détaillé neuf · reprises", () => {
     expect(bad.etat.qui).toBe("pros");
     expect(bad.etat.finition).toBe("standard");
     expect(lireBrouillonDetailNeuf(JSON.stringify({ v: "estimateur" }))).toBeNull();
+  });
+
+  it("phases ouvertes (N3) : gardées dans le brouillon ; un brouillon d'avant N3 rouvre les phases de ses blocs ouverts", () => {
+    const e = etatParDefaut();
+    const ph = BLOCS_NEUF[3].l.p;
+    const b = lireBrouillonDetailNeuf(JSON.stringify({ v: "neuf-detail", etat: e, custom: [], open: {}, ouvertes: { [ph]: true, "Phase inconnue": true, "Études & permis": false } }))!;
+    expect(b.ouvertes).toEqual({ [ph]: true });
+    // Avant N3 : ni `ouvertes` ni phases repliées dans le brouillon (elles étaient toutes dépliées).
+    const ancien = lireBrouillonDetailNeuf(JSON.stringify({ v: "neuf-detail", etat: e, custom: [], open: { 3: true } }))!;
+    expect(ancien.etat).toEqual(e);
+    expect(ancien.open).toEqual({ 3: true });
+    expect(ancien.ouvertes).toEqual({ [ph]: true });
+    expect(phasesDesBlocsOuverts({})).toEqual({});
+    // Rien d'ouvert, ou des valeurs absurdes : toutes les phases fermées, comme sur une page vierge.
+    expect(lireBrouillonDetailNeuf(JSON.stringify({ v: "neuf-detail", etat: e }))!.ouvertes).toEqual({});
+    expect(lireBrouillonDetailNeuf(JSON.stringify({ v: "neuf-detail", etat: e, ouvertes: [ph] }))!.ouvertes).toEqual({});
   });
 });
 

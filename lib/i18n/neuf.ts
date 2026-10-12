@@ -166,7 +166,6 @@ const fr = {
     eyebrow: "Ta maison",
     titre: "Décris ta maison",
     sous: "Chaque réponse coche, décoche et mesure les postes du chantier. Ce que tu règles à la main poste par poste est gardé.",
-    sansObjet: "sans objet ici",
     oui: "Oui",
     non: "Non",
     garageSurface: "Surface du garage",
@@ -182,6 +181,25 @@ const fr = {
     facultatif: "facultatif",
     aleasL: "Provision aléas",
     intro: "Ouvre une phase, puis un lot : coche les postes, ajuste les quantités. Prix affichés HT ; les taxes et l'assurance n'ont pas de TVA. Sur chaque poste faisable soi-même, maçonnerie et charpente comprises, choisis « Fait faire » ou « Je le fais » ; les postes réservés aux pros (branchements, études, contrôles, pompe à chaleur) l'indiquent.",
+    /* « Qui réalise », sorti du questionnaire (N3) : un réglage pour les postes cochés ensuite, et
+       une action confirmée qui réécrit les lignes déjà cochées. « Je le fais » = mode « le maximum ». */
+    nouveauxL: "Nouveaux postes cochés :",
+    faitFaire: "Fait faire",
+    jeLeFais: "Je le fais",
+    nouveauxAide: {
+      pros: "Les postes que tu coches ensuite, à la main ou par une réponse, arrivent en « Fait faire ». Les lignes déjà cochées gardent leur choix.",
+      max: "Les postes que tu coches ensuite arrivent en « Je le fais » quand c'est possible, sauf la structure, le toit, les menuiseries extérieures et les branchements, à prendre toi-même ligne par ligne. Les lignes déjà cochées gardent leur choix.",
+      partie: "Réglage actuel : « J'en fais une partie ». Les postes de peinture, de sols, de plâtrerie et d'isolation que tu coches ensuite arrivent en « Je le fais », les autres en « Fait faire ». Les lignes déjà cochées gardent leur choix.",
+    } as Record<string, string>,
+    toutPasser: "Tout passer en…",
+    toutPasserQ: "Passer tous les postes cochés en :",
+    toutPasserConfirme: (jeLeFais: boolean, n: number) =>
+      (jeLeFais
+        ? "Chaque poste coché passe en « Je le fais » quand c'est possible ; la structure, le toit, les menuiseries extérieures et les branchements repassent en « Fait faire ». "
+        : "Chaque poste coché passe en « Fait faire ». ")
+      + (n > 0 ? `${n} ligne${n > 1 ? "s" : ""} change${n > 1 ? "nt" : ""} : tes choix faits ligne par ligne sont remplacés.` : "Aucune ligne ne change."),
+    confirmer: "Confirmer",
+    annuler: "Annuler",
     seulementCoches: "Seulement les postes cochés",
     toutDeplier: "Tout déplier",
     toutReplier: "Tout replier",
@@ -379,7 +397,6 @@ const en: typeof fr = {
     eyebrow: "Your house",
     titre: "Describe your house",
     sous: "Each answer ticks, unticks and measures the items of the build. What you set by hand item by item is kept.",
-    sansObjet: "not applicable here",
     oui: "Yes",
     non: "No",
     garageSurface: "Garage area",
@@ -395,6 +412,23 @@ const en: typeof fr = {
     facultatif: "optional",
     aleasL: "Contingency",
     intro: "Open a phase, then a trade: tick the items, adjust quantities. Prices shown excl. VAT; taxes and insurance carry no VAT. On each item you can do yourself, masonry and framing included, choose “Hire out” or “DIY”; items reserved for pros (connections, studies, inspections, heat pump) say so.",
+    nouveauxL: "Newly ticked items:",
+    faitFaire: "Hire out",
+    jeLeFais: "DIY",
+    nouveauxAide: {
+      pros: "Items you tick from now on, by hand or through an answer, come in as “Hire out”. Lines already ticked keep their choice.",
+      max: "Items you tick from now on come in as “DIY” where possible, except the structure, roof, exterior doors and windows and utility connections, which you can take on yourself line by line. Lines already ticked keep their choice.",
+      partie: "Current setting: “I do some of it”. Painting, flooring, plastering and insulation items you tick from now on come in as “DIY”, the rest as “Hire out”. Lines already ticked keep their choice.",
+    } as Record<string, string>,
+    toutPasser: "Switch everything to…",
+    toutPasserQ: "Switch all ticked items to:",
+    toutPasserConfirme: (jeLeFais: boolean, n: number) =>
+      (jeLeFais
+        ? "Every ticked item switches to “DIY” where possible; the structure, roof, exterior doors and windows and utility connections go back to “Hire out”. "
+        : "Every ticked item switches to “Hire out”. ")
+      + (n > 0 ? `${n} line${n > 1 ? "s" : ""} change${n > 1 ? "" : "s"}: the choices you made line by line are replaced.` : "No line changes."),
+    confirmer: "Confirm",
+    annuler: "Cancel",
     seulementCoches: "Ticked items only",
     toutDeplier: "Expand all",
     toutReplier: "Collapse all",
