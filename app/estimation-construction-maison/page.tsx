@@ -8,6 +8,7 @@ import { FEATURES } from "@/lib/features";
 import { og } from "@/lib/seo-og";
 import { contexteNeuf } from "@/lib/neuf-contexte";
 import { dictPlans } from "@/lib/i18n/plans";
+import { clicPlan } from "@/lib/plans/mesure";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
@@ -102,7 +103,7 @@ function LignePlan({ locale }: { locale: Awaited<ReturnType<typeof getLocale>> }
   return (
     <p className="mt-3 text-[14px] text-muted" data-ligne-plan="">
       {t.avant}
-      <Link href="/plan?type=final" className="font-medium text-brand-700 hover:underline">
+      <Link href="/plan?type=final" className="font-medium text-brand-700 hover:underline" {...clicPlan("neuf")}>
         {t.lien}
       </Link>
       {t.apres}

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { clicPlan } from "@/lib/plans/mesure";
 
 export const VITRINE_PLAN = "/logiciel-plan-maison";
 
@@ -29,6 +30,7 @@ export default function OngletPlan({ label, pastille }: { label: string; pastill
       aria-current={ici ? "page" : undefined}
       data-onglet-plan=""
       className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 font-medium text-white transition-colors hover:bg-white/10 aria-[current=page]:bg-white/10"
+      {...clicPlan("nav")}
     >
       <IconePlan className="shrink-0" />
       {label}

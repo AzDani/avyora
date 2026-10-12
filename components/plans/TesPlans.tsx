@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useLocale } from "@/components/i18n/LangProvider";
 import ApercuPlan from "@/components/plans/ApercuPlan";
@@ -16,6 +16,7 @@ import {
   stockageNavigateur,
   type PlanLocal,
 } from "@/lib/plans/local";
+import { clicPlan, mesurerPlan, mesureVitrine } from "@/lib/plans/mesure";
 
 /**
  * « Tes plans », l'îlot client en tête de la vitrine `/logiciel-plan-maison` (C5).
@@ -83,6 +84,7 @@ export default function TesPlans() {
   const [vue, setVue] = useState<Vue>({ v: "chargement" });
   const [telephone, setTelephone] = useState(false);
   const [reprise, setReprise] = useState(false);
+  const vu = useRef(false);
 
   const charger = useCallback(async (): Promise<void> => {
     let r: Response;
@@ -137,6 +139,14 @@ export default function TesPlans() {
     return () => mq?.removeEventListener?.("change", suivre);
   }, [charger]);
 
+  /* C10 : vue_vitrine_plan, une fois l'état connu (pas pendant le chargement, ni sur une erreur de liste) */
+  useEffect(() => {
+    if (vu.current || vue.v === "chargement" || vue.v === "erreur") return;
+    vu.current = true;
+    const plans = vue.v === "compte" ? vue.liste.plans.length : vue.v === "local" ? vue.plans.length : 0;
+    mesurerPlan(mesureVitrine({ connecte: vue.v === "compte", plans, telephone }));
+  }, [vue, telephone]);
+
   return (
     <section className="min-h-[19rem]" aria-live="polite" aria-busy={vue.v === "chargement"}>
       {vue.v === "compte" ? (
@@ -173,7 +183,7 @@ function Appel({ t, telephone, erreur }: { t: DictPlans; telephone: boolean; err
           {telephone ? (
             <EnvoyerLien t={t} />
           ) : (
-            <Link href="/plan" className="btn btn-primary px-5 py-3 text-[15px]">
+            <Link href="/plan" className="btn btn-primary px-5 py-3 text-[15px]" {...clicPlan("vitrine_haut")}>
               {t.hub.creer}
             </Link>
           )}
@@ -390,6 +400,7 @@ function Compte({
                   href={`/plan?id=${encodeURIComponent(p.id)}`}
                   className="btn btn-outline py-2"
                   aria-label={t.hub.ouvrirAria(nom)}
+                  {...clicPlan("vitrine_haut")}
                 >
                   {t.hub.ouvrir}
                 </Link>
@@ -413,11 +424,11 @@ function Compte({
           </Link>
         ) : (
           <>
-            <Link href="/plan?type=final" className="btn btn-primary py-2.5">
+            <Link href="/plan?type=final" className="btn btn-primary py-2.5" {...clicPlan("vitrine_haut")}>
               {t.hub.nouveauPlan}
             </Link>
             {!gratuit && (
-              <Link href="/plan?type=renovation" className="btn btn-outline py-2.5">
+              <Link href="/plan?type=renovation" className="btn btn-outline py-2.5" {...clicPlan("vitrine_haut")}>
                 {t.hub.nouveauReno}
               </Link>
             )}
@@ -484,7 +495,7 @@ function Locaux({ t, plans, telephone }: { t: DictPlans; plans: PlanLocal[]; tel
       )}
       <div className="flex flex-wrap items-center gap-3">
         {telephone && <EnvoyerLien t={t} />}
-        <Link href="/plan" className={telephone ? "btn btn-outline py-2.5" : "btn btn-primary py-2.5"}>
+        <Link href="/plan" className={telephone ? "btn btn-outline py-2.5" : "btn btn-primary py-2.5"} {...clicPlan("vitrine_haut")}>
           {principal.ouvert ? t.hub.reprendre(principal.nom) : t.reprise.ouvrirEditeur}
         </Link>
         <button type="button" className="btn btn-outline py-2.5" onClick={garder}>

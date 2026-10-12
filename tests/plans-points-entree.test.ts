@@ -108,7 +108,8 @@ async function layout(o: Options) {
 /* ─── L'onglet (desktop) et le pied de page ─────────────────────────────────── */
 
 describe("C9 · onglet « Plan 3D » de l'en-tête desktop, et pied de page", () => {
-  const ONGLET = /<a data-onglet-plan="" class="[^"]*" href="\/logiciel-plan-maison">[\s\S]*?<\/a>/;
+  /* C10 : le lien porte son origine de mesure (data-clic-plan, liste fermée de lib/plans/mesure.ts) */
+  const ONGLET = /<a data-onglet-plan="" class="[^"]*" data-clic-plan="nav" href="\/logiciel-plan-maison">[\s\S]*?<\/a>/;
 
   it("interrupteur éteint : ni onglet, ni lien de pied, aucune trace de l'éditeur", async () => {
     for (const locale of LOCALES) {
@@ -171,7 +172,7 @@ describe("C9 · onglet « Plan 3D » de l'en-tête desktop, et pied de page", ()
     for (const locale of LOCALES) {
       const avant = await layout({ plans: false, locale });
       const apres = await layout({ plans: true, locale });
-      const lien = new RegExp(`<a class="[^"]*" href="/logiciel-plan-maison">${dict(locale).footer.plan}</a>`);
+      const lien = new RegExp(`<a class="[^"]*" data-clic-plan="pied" href="/logiciel-plan-maison">${dict(locale).footer.plan}</a>`);
       expect(retirerUne(apres.footer, lien).replace(/© \d{4}/, "")).toBe(avant.footer.replace(/© \d{4}/, ""));
     }
   });
@@ -180,7 +181,7 @@ describe("C9 · onglet « Plan 3D » de l'en-tête desktop, et pied de page", ()
 /* ─── Le menu mobile ─────────────────────────────────────────────────────────── */
 
 describe("C9 · menu mobile", () => {
-  const LIGNE = /<a data-onglet-plan="" class="[^"]*" href="\/logiciel-plan-maison">[\s\S]*?<\/a>/;
+  const LIGNE = /<a data-onglet-plan="" class="[^"]*" data-clic-plan="nav_mobile" href="\/logiciel-plan-maison">[\s\S]*?<\/a>/;
 
   it("allumé : une ligne contrastée juste sous « Nouveau projet », pas un 2ᵉ bouton plein ; sans elle, le menu d'avant", async () => {
     for (const locale of LOCALES) {
@@ -247,7 +248,8 @@ describe("C9 · accueil", () => {
         expect(band).toContain(`srcset="/plans/${nom}-760.webp 760w, /plans/${nom}-1040.webp 1040w"`);
         expect(band).toContain(`src="/plans/${nom}.png" width="1040" height="650" loading="lazy"`);
       }
-      expect(band).toMatch(/<a href="\/plan" class="btn btn-p">(Créer mon plan|Create my plan) →<\/a>/);
+      expect(band).toMatch(/<a href="\/plan" class="btn btn-p" data-clic-plan="accueil">(Créer mon plan|Create my plan) →<\/a>/);
+      expect(band).toContain('href="/logiciel-plan-maison" class="lien" data-clic-plan="accueil"');
       expect(band).toContain('href="/logiciel-plan-maison"');
       expect(band).toContain(locale === "fr" ? "Le dessin se fait sur ordinateur ou tablette." : "The editor is in French for now.");
       expect(band).not.toMatch(PRIX);

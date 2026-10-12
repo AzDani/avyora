@@ -300,7 +300,7 @@ describe("Témoins · en-têtes du site et matcher du proxy", () => {
 
 /** Retire (une fois, et une seule) le lien de C8 de la liste vide. */
 function sansLienDessiner(h: string): string {
-  const re = /<a class="[^"]*" data-dessiner-plan="" href="\/logiciel-plan-maison">[^<]+<\/a>/g;
+  const re = /<a class="[^"]*" data-dessiner-plan="" data-clic-plan="projets" href="\/logiciel-plan-maison">[^<]+<\/a>/g;
   expect(h.match(re)?.length ?? 0).toBe(1);
   return h.replace(re, "");
 }

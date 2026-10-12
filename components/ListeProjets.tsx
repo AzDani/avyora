@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
+import { clicPlan } from "@/lib/plans/mesure";
 
 const TR = {
   fr: {
@@ -293,6 +294,7 @@ export default function ListeProjets({
           href="/logiciel-plan-maison"
           className="group card card-interactive mb-5 flex items-center gap-3 px-4 py-3"
           data-bande-plans=""
+          {...clicPlan("projets")}
         >
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-600" aria-hidden="true">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -368,7 +370,7 @@ export default function ListeProjets({
             {s.estimerPremier}
           </Link>
           {plans && plans.total === 0 && (
-            <Link href="/logiciel-plan-maison" className="text-sm font-medium text-brand-700 hover:underline" data-dessiner-plan="">
+            <Link href="/logiciel-plan-maison" className="text-sm font-medium text-brand-700 hover:underline" data-dessiner-plan="" {...clicPlan("projets")}>
               {plans.textes.dessiner}
             </Link>
           )}

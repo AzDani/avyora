@@ -160,7 +160,7 @@ describe("Éditeur hébergé · transformation au build", () => {
   });
 
   it("le pont de mesure n'émet que la liste fermée, avec des valeurs simples", async () => {
-    const { editeurHeberge, EVENEMENTS_EDITEUR } = await module();
+    const { editeurHeberge, EVENEMENTS_EDITEUR, PROPRIETES_EDITEUR } = await module();
     const out = await editeurHeberge();
     const [config] = scripts(out);
     const vaq: unknown[][] = [];
@@ -170,16 +170,40 @@ describe("Éditeur hébergé · transformation au build", () => {
     expect(window.AVYORA_PRO).toBe(false);
     track("inconnu", { a: 1 });
     expect(vaq).toHaveLength(0);
-    track("vue_3d", { pro: false, n: 2, s: "x", objet: { id: "secret" }, liste: [1], nul: null });
-    expect(vaq).toEqual([["event", { name: "vue_3d", data: { pro: false, n: 2, s: "x", nul: null } }]]);
+    /* C10 : seulement les clés de la liste fermée, des valeurs simples ; une chaîne libre (nom, adresse) est retirée */
+    track("vue_3d", {
+      pro: false, telephone: true, type: "plan_final", taches: 4, suite: null, origine: "Rue des Lilas 3",
+      n: 2, s: "x", nom: "Maison de Camille", cp: "75011", surface: 94.37, objet: { id: "secret" }, liste: [1], modele: "t2",
+      detail: Number.NaN,
+    });
+    expect(vaq).toEqual([["event", { name: "vue_3d", data: { type: "plan_final", taches: 4, suite: null, modele: "t2", pro: false, telephone: true } }]]);
+    /* l'ordre d'envoi : les propriétés de l'événement d'abord, pro et telephone en dernier */
+    expect(Object.keys((vaq[0][1] as { data: object }).data)).toEqual(["type", "modele", "suite", "taches", "pro", "telephone"]);
+    vaq.length = 0;
+    track("plan_enregistre_compte", { pro: false, telephone: false, source: "editeur" });
+    track("plan_limite_gratuit", { pro: false, telephone: false, moment: "reclamation" });
+    track("clic_plan", { origine: "nav" });
+    track("toString", {});
+    expect(vaq).toEqual([
+      ["event", { name: "plan_enregistre_compte", data: { source: "editeur", pro: false, telephone: false } }],
+      ["event", { name: "plan_limite_gratuit", data: { moment: "reclamation", pro: false, telephone: false } }],
+    ]);
     expect([...EVENEMENTS_EDITEUR].sort()).toEqual([
-      "clic_chiffrer_construction", "clic_passer_pro", "estimer_ouvert", "plan_ouvert", "premiere_decision",
-      "premiere_piece", "visite_passee", "visite_terminee", "vue_3d",
+      "clic_chiffrer_construction", "clic_passer_pro", "estimer_ouvert", "plan_enregistre_compte", "plan_limite_gratuit",
+      "plan_ouvert", "premiere_decision", "premiere_piece", "visite_passee", "visite_terminee", "vue_3d",
     ]);
     /* chaque événement émis par la source est dans la liste */
     const emis = new Set([...SOURCE.matchAll(/suivre\('([a-z_0-9]+)'/g)].map((x) => x[1]));
     ["visite_terminee", "visite_passee", "vue_3d"].forEach((n) => expect(SOURCE).toContain(`'${n}'`));
     for (const n of emis) expect(EVENEMENTS_EDITEUR as readonly string[]).toContain(n);
+    /* C10 : chaque clé que la source envoie est dans la liste fermée des propriétés (sinon le relais la retirerait) */
+    const cles = new Set<string>();
+    for (const m of SOURCE.matchAll(/suivre\('[a-z_0-9]+',\{([^}]*)\}/g)) for (const k of m[1].matchAll(/(?:^|[,{?])([A-Za-z_]\w*):/g)) cles.add(k[1]);
+    for (const k of SOURCE.match(/Object\.assign\(\{(pro):isPro\(\),(telephone):isMobile\(\)\}/)!.slice(1)) cles.add(k);
+    expect(cles.size).toBeGreaterThan(10);
+    for (const k of cles) expect(PROPRIETES_EDITEUR as readonly string[], k).toContain(k);
+    /* et aucune ne porte de nom, de code postal ou de surface */
+    for (const k of PROPRIETES_EDITEUR) expect(k).not.toMatch(/nom|name|cp|postal|surface|m2|adresse/i);
   });
 
   it("Vercel Analytics : sur un déploiement Vercel seulement", async () => {

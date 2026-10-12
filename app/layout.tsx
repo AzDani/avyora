@@ -11,6 +11,8 @@ import { getT } from "@/lib/i18n/server";
 import { LangProvider } from "@/components/i18n/LangProvider";
 import LangSwitch from "@/components/i18n/LangSwitch";
 import OngletPlan from "@/components/plans/OngletPlan";
+import SuiviClicsPlan from "@/components/plans/SuiviClicsPlan";
+import { clicPlan } from "@/lib/plans/mesure";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -230,7 +232,7 @@ export default async function RootLayout({
                   </>
                 ) : lienPrixVille}
                 {/* Éditeur de plan (C9) : lien de maillage vers la vitrine, seulement interrupteur allumé. */}
-                {FEATURES.plans && <Link href="/logiciel-plan-maison" className="transition-colors hover:text-brand-700">{t.footer.plan}</Link>}
+                {FEATURES.plans && <Link href="/logiciel-plan-maison" className="transition-colors hover:text-brand-700" {...clicPlan("pied")}>{t.footer.plan}</Link>}
                 <Link href="/mentions-legales" className="transition-colors hover:text-brand-700">{t.footer.mentions}</Link>
                 <Link href="/cgu" className="transition-colors hover:text-brand-700">{t.footer.cgu}</Link>
                 <Link href="/cgv" className="transition-colors hover:text-brand-700">{t.footer.cgv}</Link>
@@ -246,6 +248,8 @@ export default async function RootLayout({
           </div>
         </footer>
         <Analytics />
+        {/* Mesure des clics vers l'éditeur de plan (C10) : une écoute, aucun rendu. */}
+        {FEATURES.plans && <SuiviClicsPlan />}
         </LangProvider>
       </body>
     </html>

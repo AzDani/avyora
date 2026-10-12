@@ -370,7 +370,7 @@ describe("C8 · « Mes projets » : pastille, bande « Tes plans (n) », lien de
     const r = await charger({ plans: true, projets: ["seul"] });
     const h = await r.liste();
     expect(compter(h, "data-bande-plans")).toBe(1);
-    expect(h).toMatch(/href="\/logiciel-plan-maison" data-bande-plans=""|data-bande-plans="" href="\/logiciel-plan-maison"/);
+    expect(h).toMatch(/data-bande-plans="" data-clic-plan="projets" href="\/logiciel-plan-maison"/);
     expect(h).toContain(`${dictPlans("fr").lien.bande}<!-- --> <span class="num font-normal text-faint">(<!-- -->3<!-- -->)</span>`);
     expect(h).not.toContain("data-dessiner-plan");
     expect(profondeurLiens(h)).toBe(1);

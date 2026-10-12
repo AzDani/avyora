@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { CLE_BROUILLON_NEUF, CLE_RECLAMATION_NEUF, RECLAMATION_NEUF, lireBrouillonNeuf, corpsProjetNeuf, reclamationNeufPosee } from "@/lib/estimateur/brouillon-neuf";
+import { mesurerPlan, mesureEstimationNeuf } from "@/lib/plans/mesure";
 
 const TR = {
   fr: { enregistrement: "Enregistrement de ton estimation…" },
@@ -66,6 +67,7 @@ export default function ClaimDraft() {
           const { id } = await res.json();
           try { localStorage.removeItem(CLE_BROUILLON_NEUF); } catch { /* noop */ }
           clear();
+          mesurerPlan(mesureEstimationNeuf(dn));   // C10 : interrupteur allumé, une maison venue d'un plan
           return id as string;
         }
       } catch { /* réseau : on garde le brouillon pour réessayer */ }

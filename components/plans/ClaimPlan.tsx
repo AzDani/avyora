@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { dictPlans, messageReprise } from "@/lib/i18n/plans";
 import { CLE_RECLAMATION_PLAN, reprendrePlanLocal, stockageNavigateur, type ResultatReprise } from "@/lib/plans/local";
+import { mesurerPlan, mesureReprise } from "@/lib/plans/mesure";
 
 /**
  * Reprend dans le compte le plan dessiné sans compte, après l'inscription ou la connexion. Jumeau de
@@ -26,9 +27,11 @@ export default function ClaimPlan({ pro = false, onFini }: { pro?: boolean; onFi
   const [res, setRes] = useState<ResultatReprise | null>(null);
   const [ferme, setFerme] = useState(false);
   const fini = useRef(onFini);
+  const proRef = useRef(pro);
   useEffect(() => {
     fini.current = onFini;
-  }, [onFini]);
+    proRef.current = pro;
+  }, [onFini, pro]);
 
   useEffect(() => {
     if (fait.current) return;
@@ -46,6 +49,7 @@ export default function ClaimPlan({ pro = false, onFini }: { pro?: boolean; onFi
     reprendrePlanLocal(s, (u, i) => fetch(u, i)).then((r) => {
       setEnCours(false);
       setRes(r);
+      mesurerPlan(mesureReprise(r, proRef.current));
       fini.current?.(r);
     });
   }, []);

@@ -3,6 +3,7 @@ import { getT } from "@/lib/i18n/server";
 import { dictNeuf } from "@/lib/i18n/neuf";
 import { FEATURES } from "@/lib/features";
 import { dictPlans } from "@/lib/i18n/plans";
+import { clicPlan } from "@/lib/plans/mesure";
 import type { Locale } from "@/lib/i18n/config";
 import PartirDePlan from "@/components/plans/PartirDePlan";
 
@@ -149,6 +150,7 @@ function BandeauPlan({ neuf, isPro, locale }: { neuf: boolean; isPro: boolean; l
       <Link
         href={neuf ? "/plan?type=final" : isPro ? "/plan?type=renovation" : "/tarifs?source=choix-plan"}
         className="btn btn-outline plan-go"
+        {...(neuf || isPro ? clicPlan("choix") : {})}
       >
         {neuf ? t.neufLien : isPro ? t.renoLien : t.renoLienGratuit}
       </Link>

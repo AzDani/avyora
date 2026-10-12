@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { dictPlans } from "@/lib/i18n/plans";
 import { lirePlansLocaux, stockageNavigateur } from "@/lib/plans/local";
+import { clicPlan } from "@/lib/plans/mesure";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -61,7 +62,7 @@ export default function PartirDePlan({ workflow }: { workflow: Workflow }) {
   return (
     <p className="plan-partir" aria-live="polite">
       {trouve && (
-        <Link href={trouve.href} className="lien" title={trouve.nom}>
+        <Link href={trouve.href} className="lien" title={trouve.nom} {...clicPlan("choix")}>
           {t.partirDe(trouve.nom)}
         </Link>
       )}

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { EnvoyerLien } from "@/components/plans/TesPlans";
 import { dictPlans } from "@/lib/i18n/plans";
+import { clicPlan } from "@/lib/plans/mesure";
 
 /**
  * L'appel du bas de la vitrine (C9). Au serveur (et sur ordinateur ou tablette) : « Créer mon plan » vers
@@ -27,7 +28,7 @@ export default function BoutonCreerPlan({ label }: { label: string }) {
   }, []);
   if (telephone) return <EnvoyerLien t={t} />;
   return (
-    <Link href="/plan" className="btn btn-primary px-5 py-3 text-[15px]">
+    <Link href="/plan" className="btn btn-primary px-5 py-3 text-[15px]" {...clicPlan("vitrine_bas")}>
       {label}
     </Link>
   );

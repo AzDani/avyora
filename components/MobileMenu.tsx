@@ -8,6 +8,7 @@ import LangSwitch from "@/components/i18n/LangSwitch";
 import { I18N_ENABLED } from "@/lib/i18n/config";
 import { FEATURES } from "@/lib/features";
 import { IconePlan, VITRINE_PLAN } from "@/components/plans/OngletPlan";
+import { clicPlan } from "@/lib/plans/mesure";
 
 /**
  * Menu de navigation mobile (< sm) : bouton hamburger + panneau déroulant.
@@ -57,6 +58,7 @@ export default function MobileMenu({ isLoggedIn, prenom, isAdmin, isPro }: { isL
                 onClick={close}
                 data-onglet-plan=""
                 className="mb-1 flex items-center gap-2 rounded-lg bg-brand-50 px-3 py-2.5 text-sm font-semibold text-brand-700 transition-colors hover:bg-brand-100"
+                {...clicPlan("nav_mobile")}
               >
                 <IconePlan className="shrink-0" />
                 <span className="flex-1">{t.nav.plan}</span>

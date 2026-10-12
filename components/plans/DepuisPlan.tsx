@@ -6,6 +6,7 @@ import { useLocale } from "@/components/i18n/LangProvider";
 import { ValidationPlan } from "@/components/ValidationPlan";
 import { dictPlans } from "@/lib/i18n/plans";
 import type { LigneInjectee, RapportInjection } from "@/lib/estimateur/plan-injection";
+import { mesurerPlan, mesureEstimationReno } from "@/lib/plans/mesure";
 
 /**
  * L'écran « depuis le plan » (C7), partie client : le résumé du bien repris du plan, le code postal s'il
@@ -63,8 +64,9 @@ export default function DepuisPlan({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(corps),
       });
-      const j = (await r.json().catch(() => null)) as { projectId?: unknown; code?: unknown } | null;
+      const j = (await r.json().catch(() => null)) as { projectId?: unknown; cree?: unknown; code?: unknown } | null;
       if (r.ok && j && typeof j.projectId === "string") {
+        mesurerPlan(mesureEstimationReno(j.cree));
         router.push(`/projets/${encodeURIComponent(j.projectId)}/modifier`);
         return;
       }

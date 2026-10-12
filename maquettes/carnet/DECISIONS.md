@@ -5222,3 +5222,22 @@ d'avant, données hostiles), le site simulé (interception Puppeteer, API en mé
 outil par outil, donne la sortie de la ligne de base de C0 (mêmes ✓, aucun KO), sauf 4 contrôles de `vue3d` liés à la
 machine (sur batterie à 8 %, la boucle 3D plafonne à 31 i/s et le recentrage animé du double-clic s'arrête à 3,5 cm) : le
 fichier d'avant D76, relancé dans les mêmes conditions, donne les mêmes 4 échecs, aux mêmes valeurs.
+
+## D77 · La mesure du compte : un plan qui entre, un plan refusé (12/10/2026)
+
+**Contexte.** Chantier C10 du site : l'entonnoir de l'éditeur doit dire combien de plans arrivent dans un compte, et
+combien la limite gratuite en refuse. Seul l'éditeur sait quand un plan dessiné connecté est rangé d'office.
+
+**Décision.** Deux événements de plus, émis par `suivre()` comme ceux de D48, en mode site seulement :
+- `plan_enregistre_compte` `{source}` : `editeur` quand un plan rangé d'office entre dans le compte (`siteCree`, 201),
+  `reclamation` quand un plan de cet appareil y entre (`siteAjouterLocal` : drapeau ou « Ajouter à mon compte »). Pas
+  de mesure pour un plan que le compte avait déjà (`deja`).
+- `plan_limite_gratuit` `{moment}` : `reclamation` dans `siteRefusLimite`, `nouveau` dans `planPaywall` quand `NUAGE`
+  (création, copie, rangement refusés au compte gratuit). L'artefact (sans `NUAGE`) n'émet rien de nouveau.
+`pro` et `telephone` s'ajoutent comme partout. Aucun nom de plan. Le relais du site (C4) les ajoute à sa liste fermée,
+et filtre désormais aussi les clés (liste fermée) et les valeurs texte (codes courts).
+
+**Contrôles.** `site.mjs` (91 contrôles) : 402 → `plan_limite_gratuit {moment: nouveau}` une fois ; reprise par
+drapeau puis « Ajouter à mon compte » → deux `plan_enregistre_compte {source: reclamation}` sans nom ; plan rangé
+d'office → `{source: editeur}`. Le contrôle « aucun autre outil n'injecte AVYORA_SITE » cherche une affectation :
+`captures-site.mjs` (C9) le lit seulement.

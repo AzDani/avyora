@@ -50,6 +50,7 @@ import { CountUpNf as CountUp } from "@/components/estimateur/CountUp";
 import { RAPIDE_CSS } from "@/components/estimateur/rapide-styles";
 import BilanRapideNeuf from "./BilanRapideNeuf";
 import { NEUF_CSS } from "./neuf-styles";
+import { mesurerPlan, mesureEstimationNeuf } from "@/lib/plans/mesure";
 
 const FINITIONS: { v: Finition; lvl: number }[] = [
   { v: "eco", lvl: 1 },
@@ -346,6 +347,7 @@ export default function EstimateurRapideNeuf({
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { setErreur(data?.error || s.errSave); setSaving(false); return; }
       try { localStorage.removeItem(CLE_BROUILLON_NEUF); } catch { /* noop */ }
+      if (!edit) mesurerPlan(mesureEstimationNeuf(d));   // C10 : interrupteur allumé, une maison venue d'un plan
       router.push(`/projets/${edit ? edit.projectId : data.id}`);
     } catch { setErreur(s.errReseau); setSaving(false); }
   }

@@ -13,7 +13,21 @@ export type EvenementAvyora =
    * Arrivée par le lien d'un Plan final (construction neuve). Props : `ok`, `niveaux`,
    * `tranche_surface` — jamais le contenu du plan, ni la surface exacte.
    */
-  | "neuf_depuis_plan";
+  | "neuf_depuis_plan"
+  /*
+   * Éditeur de plan (C10), émis seulement interrupteur `FEATURES.plans` allumé, par `lib/plans/mesure.ts` (qui en
+   * fixe les propriétés, toutes fermées). Jamais de nom de plan, de code postal ni de surface.
+   */
+  /** Un clic vers la vitrine ou l'éditeur. Props : `origine` (nav, nav_mobile, accueil, vitrine_haut, vitrine_bas, choix, projets, neuf, pied). */
+  | "clic_plan"
+  /** L'îlot « Tes plans » de la vitrine a trouvé son état. Props : `connecte`, `a_des_plans`, `telephone`. */
+  | "vue_vitrine_plan"
+  /** Un plan entre dans le compte. Props : `source` (reclamation | editeur), `pro`. L'éditeur l'émet aussi, par son relais. */
+  | "plan_enregistre_compte"
+  /** La limite gratuite refuse un plan. Props : `moment` (reclamation | nouveau). L'éditeur l'émet aussi, par son relais. */
+  | "plan_limite_gratuit"
+  /** Une estimation créée depuis un plan. Props : `nature` (neuf | reno), `mode` (rapide | detaille). */
+  | "estimation_depuis_plan";
 
 type Props = Record<string, string | number | boolean | null>;
 

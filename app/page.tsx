@@ -167,7 +167,7 @@ ${PLAN_CSS}<section class="planb" aria-labelledby="planb-titre"><div class="in">
   <h2 id="planb-titre">Dessine ton plan. Vois-le en 3D.</h2>
   <p class="d">Trace tes murs à la souris : chaque pièce se ferme toute seule et affiche sa surface. Ajoute portes, fenêtres et équipements, puis passe en 3D d'un clic.</p>
   <ul><li>Gratuit, sans installation</li><li>Les surfaces calculées pièce par pièce</li>${FEATURES.neuf ? "<li>Ta future maison chiffrée depuis ton plan</li>" : ""}</ul>
-  <div class="cta"><a href="/plan" class="btn btn-p">Créer mon plan →</a><a href="/logiciel-plan-maison" class="lien">Découvrir l'éditeur</a></div>
+  <div class="cta"><a href="/plan" class="btn btn-p" data-clic-plan="accueil">Créer mon plan →</a><a href="/logiciel-plan-maison" class="lien" data-clic-plan="accueil">Découvrir l'éditeur</a></div>
   <p class="note">Le dessin se fait sur ordinateur ou tablette.</p>
 </div>${planVisuels("Plan 2D d'une maison de plain-pied de 94 m² dans l'éditeur AVYORA : pièces nommées, surfaces, cotes et mobilier", "La même maison de 94 m² en 3D dans l'éditeur AVYORA")}</div></section>`;
 const PLAN_BAND_EN = `
@@ -176,7 +176,7 @@ ${PLAN_CSS}<section class="planb" aria-labelledby="planb-titre"><div class="in">
   <h2 id="planb-titre">Draw your floor plan. See it in 3D.</h2>
   <p class="d">Trace your walls with the mouse: each room closes on its own and shows its floor area. Add doors, windows and fixtures, then switch to 3D in one click.</p>
   <ul><li>Free, nothing to install</li><li>Floor areas worked out room by room</li>${FEATURES.neuf ? "<li>Your future house priced from your plan</li>" : ""}</ul>
-  <div class="cta"><a href="/plan" class="btn btn-p">Create my plan →</a><a href="/logiciel-plan-maison" class="lien">Discover the editor</a></div>
+  <div class="cta"><a href="/plan" class="btn btn-p" data-clic-plan="accueil">Create my plan →</a><a href="/logiciel-plan-maison" class="lien" data-clic-plan="accueil">Discover the editor</a></div>
   <p class="note">Drawing works on a computer or tablet. The editor is in French for now.</p>
 </div>${planVisuels("2D plan of a 94 m² single-storey house in the AVYORA editor: named rooms, floor areas, dimensions and furniture", "The same 94 m² house in 3D in the AVYORA editor")}</div></section>`;
 /* La 5ᵉ puce de la rangée de confiance du hero (aucun chiffre). */

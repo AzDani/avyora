@@ -43,6 +43,7 @@ import {
 import { CLE_BROUILLON_NEUF, CLE_AFFINER_NEUF, CLE_RECLAMATION_NEUF, type OrigineNeuf } from "@/lib/estimateur/brouillon-neuf";
 import { NEUF_DETAIL_CSS } from "./detail-styles";
 import DevisNeuf from "./DevisNeuf";
+import { mesurerPlan, mesureEstimationNeuf } from "@/lib/plans/mesure";
 
 const CP = /^\d{5}$/;
 
@@ -192,6 +193,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { setErreur(data?.error || n.saisie.errSave); setSaving(false); return; }
       if (!edition) { try { localStorage.removeItem(CLE_BROUILLON_DETAIL_NEUF); localStorage.removeItem(CLE_BROUILLON_NEUF); } catch { /* noop */ } }
+      if (!edition) mesurerPlan(mesureEstimationNeuf(brouillon));   // C10 : interrupteur allumé, une maison venue d'un plan
       router.push(edition ? `/projets/${projectId}` : `/projets/${data.id}`);
     } catch { setErreur(n.saisie.errReseau); setSaving(false); }
   }

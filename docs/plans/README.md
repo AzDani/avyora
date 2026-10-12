@@ -459,6 +459,47 @@ l'emprise au sol ne compte plus).
 - `coherence.mjs` § 9 : `lib/plans/droits.ts` ⊂ `DROITS` de l'éditeur ; colonnes de la vitrine, puce et encart de Tarifs mot pour mot ;
   le bloc « Plan final » de la vitrine sans aucun des `MOTS` de `planfinal.mjs`.
 
+## La mesure (C10)
+
+Cinq événements Vercel Analytics (`lib/track.ts`), émis par `lib/plans/mesure.ts` **interrupteur allumé seulement**
+(éteint, la rénovation et le neuf mesurent exactement ce qu'ils mesuraient avant). Propriétés fermées : des codes et
+des booléens, jamais un nom de plan, un code postal ni une surface (D48 § 10), trois au plus.
+
+| Événement | Propriétés | Où |
+|---|---|---|
+| `clic_plan` | `origine` : `nav`, `nav_mobile`, `accueil`, `vitrine_haut`, `vitrine_bas`, `choix`, `projets`, `neuf`, `pied` | chaque lien vers `/logiciel-plan-maison` ou `/plan` porte `data-clic-plan="<origine>"` (`clicPlan()`), une seule écoute par délégation (`SuiviClicsPlan`, montée par le layout) ; une origine hors liste est ignorée |
+| `vue_vitrine_plan` | `connecte`, `a_des_plans`, `telephone` | `TesPlans`, une fois l'état connu (pas sur une erreur de liste) |
+| `plan_enregistre_compte` | `source` : `reclamation` \| `editeur`, `pro` | `ClaimPlan` (reprise, pas un « déjà là ») ; l'éditeur (plan rangé d'office : `editeur` ; « Ajouter à mon compte » ou drapeau : `reclamation`) |
+| `plan_limite_gratuit` | `moment` : `reclamation` \| `nouveau` | `ClaimPlan` (402) ; l'éditeur (`siteRefusLimite` : `reclamation` ; `planPaywall` en mode compte : `nouveau`) |
+| `estimation_depuis_plan` | `nature` : `neuf` \| `reno`, `mode` : `rapide` \| `detaille` | neuf : création (POST) d'une maison dont l'origine dit « plan » (rapide, détaillé, reprise `ClaimDraft`) ; rénovation : `/projets/depuis-plan`, création seulement (`cree`) |
+
+**Le relais de l'éditeur** (`window.AVYORA_TRACK`, `lib/editeur/heberger.ts`) : deux listes fermées, les noms
+(`EVENEMENTS_EDITEUR`, onze dont les deux du compte) et les propriétés (`PROPRIETES_EDITEUR`) ; une chaîne qui n'est
+pas un code court (`PROPRIETE_CODE`) est retirée, un nombre non fini aussi. Ordre d'envoi : les propriétés de
+l'événement d'abord, `pro` et `telephone` (ajoutées par l'éditeur) en dernier.
+
+**Limite de l'offre Vercel** (relevée le 12/10/2026, `vercel.com/docs/analytics/limits-and-pricing`) : 2 propriétés par
+événement personnalisé en Pro, 8 avec Web Analytics Plus. Les événements du site en ont 1 à 3 ; ceux de l'éditeur 3 à
+6 (`visite_*`, `plan_ouvert` de la page). En Pro seul, la lecture des propriétés au-delà de 2 est à vérifier en
+préversion (C11) ; c'est déjà le cas d'`estimation_terminee` (4 propriétés).
+
+**Google Ads** : aucune nouvelle conversion. Les enchères restent sur « Estimation terminée ». Une conversion
+secondaire « Plan commencé » (`premiere_piece`) n'existera que si Dani la crée ; son identifiant n'est jamais inventé.
+
+**Entonnoir** : `clic_plan` → `plan_ouvert` → `premiere_piece` → `vue_3d` → `clic_chiffrer_construction` →
+`neuf_depuis_plan` → `estimation_terminee` → `plan_enregistre_compte` → `clic_passer_pro` →
+`vue_tarifs{source:"editeur-plan"}`.
+
+### Contrôles
+
+- `tests/plans-mesure.test.ts` : les mesures pures (un nom inconnu ignoré, rien de personnel, trois propriétés au
+  plus), éteint rien n'est émis, chaque lien vers la vitrine ou l'éditeur porte une origine de la liste et chacune
+  sert, l'écoute montée une fois derrière l'interrupteur, aucune conversion Ads.
+- `tests/editeur-heberge.test.ts` : le relais filtre noms, clés et valeurs ; chaque clé envoyée par la source est
+  dans la liste.
+- `site.mjs` : 402 → `plan_limite_gratuit {moment: nouveau}` ; reprise → `plan_enregistre_compte {source:
+  reclamation}` par plan, sans nom ; plan rangé d'office → `{source: editeur}`.
+
 ## Retouches des vérificateurs (lots 1 et 2)
 
 - Éditeur : `siteNom` tronque par **point de code** (`Array.from`), à 120 unités UTF-16 au plus comme `nomPlan`,

@@ -22,7 +22,8 @@
  *   plan injecté migré puis ouvert ; sauvegarde groupée avec la bonne révision ; 409 et ses deux choix ; hors ligne et
  *   nouvel envoi ; tampon modifié renvoyé au chargement ; 402 ; ?dev neutralisé et gratuit (D68) ; ouvrir, dupliquer,
  *   supprimer et « Annuler » ; lien neuf &pid= / &pl= ; logo ; invitation anonyme ; « Sur cet appareil » et drapeau de
- *   reprise ; données hostiles du serveur ; estimation détaillée d'une rénovation (Pro) ; estimations reliées ; retour Pro.
+ *   reprise ; données hostiles du serveur ; estimation détaillée d'une rénovation (Pro) ; estimations reliées ; retour Pro ;
+ *   la mesure du compte (C10 : plan_enregistre_compte, plan_limite_gratuit, sans nom de plan).
  *
  *   node maquettes/tools/site.mjs "$(pwd)/maquettes"
  *
@@ -54,7 +55,7 @@ t["source · tout fetch( est dans le bloc MODE SITE"] = !/\bfetch\(/.test(HORS) 
   const nues = lignes.filter((l) => !/if\(NUAGE|if\(SITE|NUAGE\?|NUAGE&&|conflitOnglet\.serveur/.test(l) && !/brut\?\?siteBrut\(\)/.test(l));
   t[`source · hors du bloc, chaque appel à la couche site est gardé (${lignes.length} crochets)${nues.length ? " — " + nues.map((l) => l.trim().slice(0, 80)).join(" | ") : ""}`] = lignes.length >= 10 && !nues.length;
   t["source · siteBrut() sort d'emblée sans AVYORA_SITE"] = /function siteBrut\(\)\{\n\s*if\(!SITE\|\|siteBrutPris\)return undefined;/.test(BLOC); }
-{ const autres = fs.readdirSync(SP + "/tools").filter((f) => /\.(mjs|mts|cjs|js)$/.test(f) && f !== "site.mjs").filter((f) => /AVYORA_SITE/.test(fs.readFileSync(SP + "/tools/" + f, "utf8")));
+{ const autres = fs.readdirSync(SP + "/tools").filter((f) => /\.(mjs|mts|cjs|js)$/.test(f) && f !== "site.mjs").filter((f) => /AVYORA_SITE\s*=(?!=)/.test(fs.readFileSync(SP + "/tools/" + f, "utf8"))); /* une affectation : lire (captures-site.mjs, C9) n'est pas injecter */
   t[`source · aucun autre outil n'injecte AVYORA_SITE${autres.length ? " — " + autres.join(", ") : ""}`] = !autres.length; }
 t["source · lignes figées intactes (V3_THREE, PRIX_PRO, CONSTRUCTION_URL+'#plan='+, TARIFS_URL, @import, PLAN_LIMIT_FREE, démarrage)"] =
   /const V3_THREE='https:\/\/cdn\.jsdelivr\.net\/npm\/three@0\.147\.0\/'/.test(SRC) && /const PRIX_PRO=\(typeof window!=='undefined'&&typeof window\.AVYORA_PRIX_PRO==='string'&&window\.AVYORA_PRIX_PRO\)\|\|'/.test(SRC)
@@ -233,7 +234,7 @@ async function ongletSite(S, { site, pro = S.pro, chemin = "/plan", avant = null
   await p.evaluateOnNewDocument((site, pro, avant) => {
     if (location.pathname !== "/plan") return;
     window.AVYORA_SITE = site; window.AVYORA_PRO = pro; window.open = () => ({});
-    window.__ev = []; window.AVYORA_TRACK = (n, d) => window.__ev.push(n);
+    window.__ev = []; window.__evd = []; window.AVYORA_TRACK = (n, d) => { window.__ev.push(n); window.__evd.push([n, d]); };
     try { if (avant && !sessionStorage.getItem("__avant")) { sessionStorage.setItem("__avant", "1"); localStorage.clear(); for (const [k, v] of Object.entries(avant)) localStorage.setItem(k, v); } } catch {}
   }, site, pro, avant);
   await p.goto(HOTE + chemin, { waitUntil: "load" });
@@ -362,6 +363,10 @@ const posts = (S) => S.log.filter((x) => x.m === "POST");
     && await p.evaluate(() => modaleOuverte()?.id === "m-plans" && /Version gratuite/.test(document.getElementById("toast").textContent) && Object.keys(siteLib).length === 0 && siteProp());
   await wait(1200);
   t["site · après un 402 : aucun nouvel essai à chaque modification"] = await p.evaluate(() => { state.name = "X"; afterChange(); return true; }) && (await wait(1200), posts(S).length === 1);
+  /* C10 · la limite gratuite mesurée, une fois, sans nom de plan */
+  t["mesure · 402 : plan_limite_gratuit {moment: nouveau}, une fois, gratuit"] = await p.evaluate(() => {
+    const l = window.__evd.filter((e) => e[0] === "plan_limite_gratuit");
+    return l.length === 1 && l[0][1].moment === "nouveau" && l[0][1].pro === false && !window.__ev.includes("plan_enregistre_compte"); });
   await ctx.close();
 }
 
@@ -462,6 +467,10 @@ const posts = (S) => S.log.filter((x) => x.m === "POST");
   await wait(700);
   t["reprise · « Ajouter à mon compte » : POST avec editeurId, retiré de cet appareil"] = posts(S).length === 2 && posts(S)[1].c.editeurId === "loc9"
     && await p.evaluate(() => !JSON.parse(localStorage.getItem("avyora-plans") || "{}").loc9 && Object.keys(siteLib).length === 2 && !document.getElementById("siteLocaux"));
+  /* C10 · deux plans repris (drapeau, puis « Ajouter à mon compte ») : deux mesures « reclamation », sans nom */
+  t["mesure · reprise : plan_enregistre_compte {source: reclamation, pro} pour chaque plan repris, sans nom de plan"] = await p.evaluate(() => {
+    const l = window.__evd.filter((e) => e[0] === "plan_enregistre_compte");
+    return l.length === 2 && l.every((e) => e[1].source === "reclamation" && e[1].pro === true) && !/Studio|T3 de cet/.test(JSON.stringify(window.__evd)); });
   await ctx.close();
   /* sans drapeau : proposé, jamais envoyé seul */
   const S2 = serveur({ pro: true });
@@ -485,6 +494,9 @@ const posts = (S) => S.log.filter((x) => x.m === "POST");
   await wait(2600);
   t["reprise · un plan dessiné connecté : rangé d'office dans le compte, l'indicateur revient à « Enregistré dans ton compte »"] = posts(S2).length === 1
     && await p2.evaluate(() => /^[0-9a-f-]{36}$/.test(state.id) && !!siteLib[state.id] && siteFile.size === 0 && /ok/.test(document.getElementById("saveState").className) && /dans ton compte/.test(document.getElementById("saveState").title));
+  t["mesure · un plan rangé d'office : plan_enregistre_compte {source: editeur}, une fois"] = await p2.evaluate(() => {
+    const l = window.__evd.filter((e) => e[0] === "plan_enregistre_compte");
+    return l.length === 1 && l[0][1].source === "editeur" && l[0][1].pro === true; });
   await c2.close();
 }
 

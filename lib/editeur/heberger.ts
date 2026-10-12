@@ -36,7 +36,10 @@ export const URLS_EDITEUR = {
   tarifs: "/tarifs?source=editeur-plan",
 } as const;
 
-/** La liste FERMÉE des événements que l'éditeur peut émettre (D48, D75) : tout autre nom est ignoré. */
+/**
+ * La liste FERMÉE des événements que l'éditeur peut émettre (D48, D75, et C10 pour le compte) : tout autre nom
+ * est ignoré.
+ */
 export const EVENEMENTS_EDITEUR = [
   "plan_ouvert",
   "premiere_piece",
@@ -47,7 +50,42 @@ export const EVENEMENTS_EDITEUR = [
   "clic_chiffrer_construction",
   "visite_terminee",
   "visite_passee",
+  /* C10 : un plan entre dans le compte (`source` : editeur | reclamation) ; la limite gratuite refuse un plan
+     (`moment` : nouveau | reclamation). Seulement en mode site connecté. */
+  "plan_enregistre_compte",
+  "plan_limite_gratuit",
 ] as const;
+
+/**
+ * La liste FERMÉE des propriétés que le relais laisse passer (C10). Aucune ne porte de nom de plan, de code postal
+ * ou de surface exacte (D48 § 10) : ce sont des codes, des booléens et des comptes. Toute autre clé est retirée, et
+ * une chaîne qui n'est pas un code court (`PROPRIETE_CODE`) aussi. L'ordre est celui de l'envoi : les propriétés de
+ * l'événement d'abord, `pro` et `telephone` (ajoutées à chaque appel par l'éditeur) en dernier.
+ */
+export const PROPRIETES_EDITEUR = [
+  "origine",
+  "source",
+  "moment",
+  "type",
+  "modele",
+  "suite",
+  "premiereVisite",
+  "exemple",
+  "vide",
+  "travaux",
+  "detail",
+  "repris",
+  "accueil",
+  "taches",
+  "corpsEtat",
+  "etape",
+  "etapes",
+  "pro",
+  "telephone",
+] as const;
+
+/** Une valeur texte admise par le relais : un code (lettres, chiffres, `_`, `-`), 40 caractères au plus. */
+export const PROPRIETE_CODE = /^[A-Za-z0-9][A-Za-z0-9_-]{0,39}$/;
 
 const IMPORT_POLICES =
   "@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@500;600;700&display=swap');";
@@ -86,10 +124,14 @@ function configConstante(): string {
     `window.AVYORA_URLS=${jsSur(URLS_EDITEUR)};`,
     /* la file d'attente de Vercel Analytics, comme @vercel/analytics la pose (initQueue) */
     "window.va=window.va||function(){(window.vaq=window.vaq||[]).push([].slice.call(arguments));};",
+    /* le relais (C10) : un nom de la liste fermée, des clés de la liste fermée, des valeurs simples et courtes */
     `window.AVYORA_TRACK=(function(){var E=${jsSur(EVENEMENTS_EDITEUR)};`,
-    "return function(n,d){if(E.indexOf(n)<0)return;var o={};",
-    "if(d&&typeof d==='object')for(var k in d){if(!Object.prototype.hasOwnProperty.call(d,k))continue;",
-    "var v=d[k];if(v===null||typeof v==='string'||typeof v==='number'||typeof v==='boolean')o[k]=v;}",
+    `var K=${jsSur(PROPRIETES_EDITEUR)};`,
+    `var C=${PROPRIETE_CODE.toString()};`,
+    "return function(n,d){if(typeof n!=='string'||E.indexOf(n)<0)return;var o={};",
+    "if(d&&typeof d==='object')for(var i=0;i<K.length;i++){var k=K[i];",
+    "if(!Object.prototype.hasOwnProperty.call(d,k))continue;var v=d[k];",
+    "if(v===null||typeof v==='boolean'||(typeof v==='number'&&isFinite(v))||(typeof v==='string'&&C.test(v)))o[k]=v;}",
     "try{window.va('event',{name:n,data:o});}catch(e){}};})();",
   ].join("\n");
 }

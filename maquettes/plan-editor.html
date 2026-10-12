@@ -4476,6 +4476,8 @@ function siteCree(id,c,r){
     const nid=String(r.j.id),rev=siteNum(r.j.revision)||1,cur=siteLib[id];
     delete siteLib[id];siteFile.delete(id);
     if(c.retire||!cur){siteSupp[nid]={e:null,t:0};siteSupprimer(nid);return;}
+    /* C10 : un plan entre dans le compte (pas une reprise déjà faite : deja) */
+    if(!r.j.deja)suivre('plan_enregistre_compte',{source:'editeur'});
     siteLib[nid]=Object.assign({},cur,{id:nid,revision:rev,state:Object.assign({},cur.state,{id:nid})});
     siteEnvoye[nid]=c.emp;siteEssai=0;siteEchec=false;
     siteRetirerLocal(id);
@@ -4585,6 +4587,7 @@ function siteSectionLocale(el){
   const h=`<div class="ph" id="siteLocaux" style="margin-top:16px">Sur cet appareil (${n})</div><p class="note" style="margin:0 0 8px">Ces plans sont dans ce navigateur, pas dans ton compte.</p><div class="grouplist">${ouvert?carte(state.id,state.name,state,true):''}${L.map(e=>carte(e.id,e.name,e.state,false)).join('')}</div>`;
   el.insertAdjacentHTML('beforeend',h);}
 function siteRefusLimite(nom){
+  suivre('plan_limite_gratuit',{moment:'reclamation'});
   const autre=Object.values(siteLib)[0];
   demander({titre:'Version gratuite : '+DROITS.plans.gratuit,
     texte:`Ton compte garde déjà <b>« ${esc(autre?autre.name:'un autre plan')} »</b>. « ${esc(nom||'Ce plan')} » reste sur cet appareil. ${avecPro('plans')}`,
@@ -4608,6 +4611,7 @@ function siteAjouterLocal(id){
       const st=Object.assign({},src.state,{id:nid,name:nom});
       siteLib[nid]={id:nid,name:nom,savedAt:Date.now(),state:st,view:src.view||null,resume:siteResume(src.resume),revision:rev};
       siteEnvoye[nid]=empreinteTravail(st);
+      if(!r.j.deja)suivre('plan_enregistre_compte',{source:'reclamation'});
       siteRetirerLocal(id);
       if(state.id===id){siteSansAuto.delete(id);state.id=nid;state.name=nom;siteRev=rev;siteMemoriser(siteEnvoye[nid]);save();}
       siteRafraichirListe();toast('« '+nom+' » est dans ton compte.',true);return true;}
@@ -4772,7 +4776,7 @@ if(SITE&&!NUAGE){
   suivre=function(n,d){_sv(n,d);if(n==='premiere_piece')setTimeout(siteInviter,800);};
 }
 /* ===== fin du MODE SITE (D76) ===== */
-function planPaywall(){renderPlans();openModal('plans');toast('Version gratuite : '+DROITS.plans.gratuit+'. '+avecPro('plans'),false);}
+function planPaywall(){if(NUAGE)suivre('plan_limite_gratuit',{moment:'nouveau'}); /* C10 : un plan de plus refusé au compte gratuit */renderPlans();openModal('plans');toast('Version gratuite : '+DROITS.plans.gratuit+'. '+avecPro('plans'),false);}
 function savePlanToLibrary(){const lib=loadPlans();const exists=state.id&&lib[state.id];
   if(!exists&&exempleNonGarde()){toast(MSG_EXEMPLE+' Pour garder un plan, dessine le tien : Fichier › Nouveau plan.',true);return false;} /* D53 */
   if(!isPro()&&!exists&&Object.keys(lib).length>=PLAN_LIMIT_FREE){planPaywall();return false;}
