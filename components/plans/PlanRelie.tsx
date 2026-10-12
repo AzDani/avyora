@@ -52,9 +52,9 @@ export default function PlanRelie({
             <p className="truncate font-semibold text-ink" title={lien.nom}>{d.commun.cite(lien.nom)}</p>
           </div>
         </div>
-        <Link href={planHref} className="btn btn-outline py-1.5 text-[13px]">
+        <a href={planHref} className="btn btn-outline py-1.5 text-[13px]">
           {t.ouvrirPlan}
-        </Link>
+        </a>
       </div>
 
       {aChange && (
@@ -63,10 +63,17 @@ export default function PlanRelie({
             <p className="text-[14px] font-semibold text-ink">{t.aChange}</p>
             <p className="mt-0.5 text-[13px] text-muted">{t.aChangeSous}</p>
           </div>
-          <Link href={majHref} className="btn btn-primary py-1.5 text-[13px]">
-            {t.mettreAJour}
-            {!isPro && <span className="ml-1.5 rounded-full bg-white/20 px-1.5 py-0.5 text-[10.5px] font-semibold">{t.pro}</span>}
-          </Link>
+          {/* Vers l'éditeur (Pro) : <a>, sans préchargement de /plan ; vers Tarifs (gratuit) : Link. */}
+          {isPro ? (
+            <a href={majHref} className="btn btn-primary py-1.5 text-[13px]">
+              {t.mettreAJour}
+            </a>
+          ) : (
+            <Link href={majHref} className="btn btn-primary py-1.5 text-[13px]">
+              {t.mettreAJour}
+              <span className="ml-1.5 rounded-full bg-white/20 px-1.5 py-0.5 text-[10.5px] font-semibold">{t.pro}</span>
+            </Link>
+          )}
         </div>
       )}
     </section>

@@ -246,10 +246,14 @@ describe("C9 · accueil", () => {
       const band = (await accueil(true, locale)).match(BAND)?.[0] ?? "";
       for (const nom of ["maison-2d", "maison-3d"]) {
         expect(band).toContain(`srcset="/plans/${nom}-760.webp 760w, /plans/${nom}-1040.webp 1040w"`);
-        expect(band).toContain(`src="/plans/${nom}.png" width="1040" height="650" loading="lazy"`);
+        /* la 2D est l'élément LCP au bureau : chargée tout de suite ; la 3D reste différée (jury) */
+        expect(band).toContain(`src="/plans/${nom}.png" width="1040" height="650" loading="${nom === "maison-2d" ? "eager" : "lazy"}"`);
       }
-      expect(band).toMatch(/<a href="\/plan" class="btn btn-p" data-clic-plan="accueil">(Créer mon plan|Create my plan) →<\/a>/);
-      expect(band).toContain('href="/logiciel-plan-maison" class="lien" data-clic-plan="accueil"');
+      /* au bureau « Créer mon plan » → /plan ; au téléphone (on n'y dessine pas) → la vitrine (jury) */
+      expect(band).toMatch(/<a href="\/plan" class="btn btn-p bureau" data-clic-plan="accueil">(Créer mon plan|Create my plan) →<\/a>/);
+      expect(band).toMatch(/<a href="\/logiciel-plan-maison" class="btn btn-p tel" data-clic-plan="accueil">(Créer mon plan|Create my plan) →<\/a>/);
+      expect(band).toContain("@media(max-width:600px){.av-home .planb .bureau{display:none}.av-home .planb .tel{display:inline-flex}}");
+      expect(band).toContain('href="/logiciel-plan-maison" class="lien bureau" data-clic-plan="accueil"');
       expect(band).toContain('href="/logiciel-plan-maison"');
       expect(band).toContain(locale === "fr" ? "Le dessin se fait sur ordinateur ou tablette." : "The editor is in French for now.");
       expect(band).not.toMatch(PRIX);
@@ -380,10 +384,10 @@ describe("C9 · Tarifs", () => {
 /* ─── La page neuf ───────────────────────────────────────────────────────────── */
 
 describe("C9 · /estimation-construction-maison", () => {
-  async function neufPage(plans: boolean, locale: Locale) {
+  async function neufPage(plans: boolean, locale: Locale, sp: Record<string, string> = {}) {
     const r = await charger({ plans, locale });
     const Page = (await import("@/app/estimation-construction-maison/page")).default;
-    return r.rendre(await Page({ searchParams: Promise.resolve({}) }));
+    return r.rendre(await Page({ searchParams: Promise.resolve(sp) }));
   }
   const LIGNE = /<p class="mt-3 text-\[14px\] text-muted" data-ligne-plan="">[\s\S]*?<\/p>/;
 
@@ -398,6 +402,17 @@ describe("C9 · /estimation-construction-maison", () => {
       expect(ligne).toContain(echap(t.lien));
       expect(apres.indexOf("data-ligne-plan")).toBeLessThan(apres.indexOf("</header>"));
       expect(retirerUne(apres, LIGNE)).toBe(avant);
+      /* une balise <a> (pas de préchargement de /plan), et au téléphone la note « sur ordinateur ou tablette » */
+      expect(ligne).toMatch(/<a href="\/plan\?type=final"/);
+      expect(ligne).toContain(echap(dictPlans(locale).hub.dessinNote));
+    }
+  });
+
+  it("arrivée depuis l'éditeur (?source=editeur-plan) : pas de « Pas encore de plan ? » (jury)", async () => {
+    for (const locale of LOCALES) {
+      const html = await neufPage(true, locale, { source: "editeur-plan" });
+      expect(html).not.toContain("data-ligne-plan");
+      expect(html).not.toContain(echap(dictPlans(locale).neuf.avant));
     }
   });
 });

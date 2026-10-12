@@ -89,24 +89,31 @@ export default async function EstimationConstructionMaison({
         <p className="eyebrow">{t.pageEyebrow}</p>
         <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-ink">{t.pageTitre}</h1>
         <p className="mt-1.5 text-[15px] text-muted">{t.pageSous}</p>
-        {/* Éditeur de plan (C9) : la boucle neuf ↔ plan, seulement interrupteur allumé. */}
-        {FEATURES.plans && <LignePlan locale={locale} />}
+        {/* Éditeur de plan (C9) : la boucle neuf ↔ plan, seulement interrupteur allumé, et pas quand on ARRIVE du plan
+            (`?source=editeur-plan` → src « plan ») : « Pas encore de plan ? » contredirait « Ta maison est reprise de ton plan ». */}
+        {FEATURES.plans && initial.src !== "plan" && <LignePlan locale={locale} />}
       </header>
       <EstimateurRapideNeuf isPro={isPro} initial={initial} />
     </div>
   );
 }
 
-/** « Pas encore de plan ? Dessine ta maison : l'estimation reprend ses pièces et sa surface. » → un Plan final. */
+/**
+ * « Pas encore de plan ? Dessine ta maison : l'estimation reprend ses pièces et sa surface. » → un Plan final.
+ * Une balise `<a>` et non `next/link` : `/plan` est une autre application (route handler) que le routeur préchargerait
+ * en entier (1,3 Mo) dès que le lien est visible. Au téléphone, une note dit que le dessin se fait sur ordinateur.
+ */
 function LignePlan({ locale }: { locale: Awaited<ReturnType<typeof getLocale>> }) {
-  const t = dictPlans(locale).neuf;
+  const d = dictPlans(locale);
+  const t = d.neuf;
   return (
     <p className="mt-3 text-[14px] text-muted" data-ligne-plan="">
       {t.avant}
-      <Link href="/plan?type=final" className="font-medium text-brand-700 hover:underline" {...clicPlan("neuf")}>
+      <a href="/plan?type=final" className="font-medium text-brand-700 hover:underline" {...clicPlan("neuf")}>
         {t.lien}
-      </Link>
+      </a>
       {t.apres}
+      <span className="mt-1 hidden text-[13px] text-faint max-[600px]:block">{d.hub.dessinNote}</span>
     </p>
   );
 }

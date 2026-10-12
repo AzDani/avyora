@@ -146,14 +146,18 @@ function BandeauPlan({ neuf, isPro, locale }: { neuf: boolean; isPro: boolean; l
         </p>
         <p className="plan-d">{neuf ? t.neufTexte : t.renoTexte}</p>
         {ouvert && <PartirDePlan workflow={neuf ? "final_plan" : "renovation"} />}
+        {ouvert && <p className="plan-tel">{dictPlans(locale).hub.dessinNote}</p>}
       </div>
-      <Link
-        href={neuf ? "/plan?type=final" : isPro ? "/plan?type=renovation" : "/tarifs?source=choix-plan"}
-        className="btn btn-outline plan-go"
-        {...(neuf || isPro ? clicPlan("choix") : {})}
-      >
-        {neuf ? t.neufLien : isPro ? t.renoLien : t.renoLienGratuit}
-      </Link>
+      {/* Vers l'éditeur : une balise <a> (pas de préchargement de /plan, une autre application de 1,3 Mo) ; vers Tarifs : Link. */}
+      {ouvert ? (
+        <a href={neuf ? "/plan?type=final" : "/plan?type=renovation"} className="btn btn-outline plan-go" {...clicPlan("choix")}>
+          {neuf ? t.neufLien : t.renoLien}
+        </a>
+      ) : (
+        <Link href="/tarifs?source=choix-plan" className="btn btn-outline plan-go">
+          {t.renoLienGratuit}
+        </Link>
+      )}
     </aside>
   );
 }
@@ -220,6 +224,8 @@ const CSS_PLAN = `
 .av-choix .plan-partir .lien:hover{text-decoration:underline}
 .av-choix .plan-band .plan-go{width:auto;flex:none;white-space:nowrap}
 @media (max-width:720px){.av-choix .plan-band{flex-wrap:wrap}.av-choix .plan-ico{display:none}.av-choix .plan-band .plan-go{width:100%}}
+.av-choix .plan-tel{display:none;margin:4px 0 0;font-size:12.5px;color:var(--color-faint)}
+@media (max-width:600px){.av-choix .plan-tel{display:block}}
 `;
 
 /* Bascule de nature (construction neuve) : ajoutée seulement quand le flag est allumé. */

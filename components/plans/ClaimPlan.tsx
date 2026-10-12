@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { dictPlans, messageReprise } from "@/lib/i18n/plans";
 import { CLE_RECLAMATION_PLAN, reprendrePlanLocal, stockageNavigateur, type ResultatReprise } from "@/lib/plans/local";
@@ -74,9 +73,9 @@ export default function ClaimPlan({ pro = false, onFini }: { pro?: boolean; onFi
     >
       <p className="min-w-0 flex-1 leading-relaxed">{m.texte}</p>
       {m.lien && (
-        <Link href={m.lien.href} className="btn btn-outline py-2">
+        <a href={m.lien.href} className="btn btn-outline py-2">
           {m.lien.label}
-        </Link>
+        </a>
       )}
       <button type="button" className="btn btn-ghost py-2" onClick={() => setFerme(true)}>
         {t.reprise.fermer}

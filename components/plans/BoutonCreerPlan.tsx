@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { EnvoyerLien } from "@/components/plans/TesPlans";
 import { dictPlans } from "@/lib/i18n/plans";
@@ -28,8 +27,8 @@ export default function BoutonCreerPlan({ label }: { label: string }) {
   }, []);
   if (telephone) return <EnvoyerLien t={t} />;
   return (
-    <Link href="/plan" className="btn btn-primary px-5 py-3 text-[15px]" {...clicPlan("vitrine_bas")}>
+    <a href="/plan" className="btn btn-primary px-5 py-3 text-[15px]" {...clicPlan("vitrine_bas")}>
       {label}
-    </Link>
+    </a>
   );
 }

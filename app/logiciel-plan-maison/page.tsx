@@ -182,9 +182,9 @@ export default async function LogicielPlanMaison() {
                 <span className="rounded-full bg-positive-soft px-2.5 py-1 text-[11px] font-semibold text-positive">{v.gratuit}</span>
               </p>
               <p className="mt-2 flex-1 text-[14px] leading-relaxed text-muted">{v.construireTexte}</p>
-              <Link href="/plan?type=final" className="mt-4 text-[14px] font-medium text-brand-700 hover:underline" {...clicPlan("vitrine_bas")}>
+              <a href="/plan?type=final" className="mt-4 text-[14px] font-medium text-brand-700 hover:underline" {...clicPlan("vitrine_bas")}>
                 {v.construireLien} →
-              </Link>
+              </a>
             </div>
           )}
           <div className="card flex flex-col p-6">
