@@ -6,9 +6,14 @@ import type { EtatPlan, ResumePlan, WorkflowPlan } from "@/lib/plans/schema";
 /**
  * Couche d'accès « Mes plans » (table `floor_plans`, migration 0004).
  *
- * Tout passe par la session (RLS : le propriétaire seul), SAUF la création : `floor_plans` n'a
- * aucune politique INSERT, la seule porte est la fonction `floor_plans_creer`, exécutable par le
- * service role. La route lui passe la limite gratuite, que la base ne sait pas calculer.
+ * Tout passe par la session (RLS : le propriétaire seul), SAUF :
+ *  - la création : `floor_plans` n'a aucune politique INSERT, la seule porte est la fonction
+ *    `floor_plans_creer`, exécutable par le service role. La route lui passe la limite gratuite, que la
+ *    base ne sait pas calculer ;
+ *  - l'écriture des colonnes du SERVEUR (`apercu`, `workflow`, `schema_etat`, `contrat`, `contrat_at`) :
+ *    la session n'a le droit UPDATE que sur `nom`, `etat`, `vue` et `resume` (0004). Une écriture qui
+ *    touche l'état (donc la vignette et le type) ou le contrat passe par le service role, APRÈS avoir
+ *    vérifié par la session que le plan est visible (RLS), et avec `owner_id` dans la même requête.
  *
  * Les erreurs Supabase ne remontent jamais telles quelles : `ErreurPlans` porte un message
  * générique, la route répond `{ code: "erreur" }`.
@@ -180,13 +185,22 @@ export type MajPlan =
   | { ok: false; code: "introuvable" }
   | { ok: false; code: "conflit"; revision: number };
 
+/** Les colonnes que la session a le droit de modifier (`grant update (…)` de 0004). */
+export const COLONNES_SESSION = ["nom", "etat", "vue", "resume"] as const;
+
 /**
  * Mise à jour sous verrou optimiste : `update … where id and revision = attendue returning revision`.
  * 0 ligne → on relit : absent (ou d'un autre compte) → introuvable, sinon conflit avec la révision
  * du serveur. `force` écrit sans condition (le client a gardé l'autre version en copie).
  * La révision n'est jamais écrite ici : le trigger la tient (elle n'avance que si le dessin change).
+ *
+ * Nom, vue ou résumé seuls : la session écrit (RLS). Dès que l'état ou le contrat change, il faut aussi
+ * écrire des colonnes du serveur (vignette, type, version de schéma, contrat) : la session vérifie
+ * d'abord qu'elle voit le plan, puis le service role écrit TOUT en une requête (atomique), filtrée par
+ * `id`, `owner_id` ET la révision attendue.
  */
 export async function majPlan(
+  ownerId: string,
   id: string,
   attendue: number,
   patch: {
@@ -200,30 +214,54 @@ export async function majPlan(
 ): Promise<MajPlan> {
   const ligne: Record<string, unknown> = {};
   if (patch.nom !== undefined) ligne.nom = patch.nom;
-  if (patch.etat !== undefined) {
-    ligne.etat = patch.etat;
-    ligne.workflow = patch.etat.workflow;
-    ligne.schema_etat = patch.etat.schema;
-    ligne.apercu = apercuDepuisEtat(patch.etat);
-  }
+  if (patch.etat !== undefined) ligne.etat = patch.etat;
   if (patch.vue !== undefined) ligne.vue = patch.vue;
   if (patch.resume !== undefined) ligne.resume = patch.resume ?? {};
+  const serveur: Record<string, unknown> = {};
+  if (patch.etat !== undefined) {
+    serveur.workflow = patch.etat.workflow;
+    serveur.schema_etat = patch.etat.schema;
+    serveur.apercu = apercuDepuisEtat(patch.etat);
+  }
   if (patch.contrat !== undefined) {
-    ligne.contrat = patch.contrat;
-    ligne.contrat_at = new Date().toISOString();
+    serveur.contrat = patch.contrat;
+    serveur.contrat_at = new Date().toISOString();
   }
 
-  const sb = await supabaseServer();
-  let q = sb.from("floor_plans").update(ligne).eq("id", id);
+  if (!Object.keys(serveur).length) {
+    const sb = await supabaseServer();
+    let q = sb.from("floor_plans").update(ligne).eq("id", id);
+    if (!force) q = q.eq("revision", attendue);
+    const { data, error } = await q.select("revision");
+    if (error) throw new ErreurPlans("maj");
+    const r = (data ?? []) as { revision: number }[];
+    if (r.length) return { ok: true, revision: r[0].revision };
+    const entete = await lireEntete(id);
+    if (!entete) return { ok: false, code: "introuvable" };
+    return { ok: false, code: "conflit", revision: entete.revision };
+  }
+
+  /* 1. La session voit-elle ce plan ? (RLS : son propriétaire seul.) Sinon 404, sans rien écrire. */
+  const entete = await lireEntete(id);
+  if (!entete) return { ok: false, code: "introuvable" };
+  if (!force && entete.revision !== attendue) return { ok: false, code: "conflit", revision: entete.revision };
+
+  /* 2. Le service role écrit tout d'un coup, borné au propriétaire et à la révision attendue. */
+  let q = supabaseAdmin()
+    .from("floor_plans")
+    .update({ ...ligne, ...serveur })
+    .eq("id", id)
+    .eq("owner_id", ownerId);
   if (!force) q = q.eq("revision", attendue);
   const { data, error } = await q.select("revision");
-  if (error) throw new ErreurPlans("maj");
+  if (error) throw new ErreurPlans("maj-serveur");
   const r = (data ?? []) as { revision: number }[];
   if (r.length) return { ok: true, revision: r[0].revision };
 
-  const entete = await lireEntete(id);
-  if (!entete) return { ok: false, code: "introuvable" };
-  return { ok: false, code: "conflit", revision: entete.revision };
+  /* 0 ligne : un autre appareil a écrit entre les deux, ou le plan vient d'être supprimé. */
+  const apres = await lireEntete(id);
+  if (!apres) return { ok: false, code: "introuvable" };
+  return { ok: false, code: "conflit", revision: apres.revision };
 }
 
 /** Suppression sous RLS. Les liens `project_plans.plan_id` repassent à null (clé étrangère). */

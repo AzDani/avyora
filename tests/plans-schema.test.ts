@@ -4,7 +4,8 @@
  * Les états acceptés sont des états RÉELS de l'éditeur, exportés par
  * `node maquettes/tools/exporter-etats.mjs "$(pwd)/maquettes" tests/fixtures/plans-etats` :
  * les quatre plans types, l'exemple, le Plan final sur deux niveaux et le pire cas mesuré
- * (6 niveaux, 216 murs, 168 Ko). Les refus visent ce qui finirait en HTML ou en attribut.
+ * (6 niveaux, 216 murs, 168 Ko compacts, 197 Ko dans Postgres). Les refus visent ce qui finirait en
+ * HTML ou en attribut. Les tailles mesurées comme Postgres : tests/plans-jsonb.test.ts.
  */
 import { describe, it, expect } from "vitest";
 import { readdirSync, readFileSync } from "node:fs";
@@ -15,6 +16,7 @@ import {
   planMajSchema,
   resumeSchema,
   problemeProfond,
+  PLAN_CHAINE_MAX,
   PLAN_ETAT_OCTETS_MAX,
 } from "@/lib/plans/schema";
 
@@ -105,13 +107,25 @@ describe("refus", () => {
     refuse(e);
   });
 
-  it("une chaîne de 3 000 caractères (2 000 passent)", () => {
+  it("une longue note ne fait pas refuser le plan (champs libres sans maxlength) ; une chaîne absurde, si", () => {
     const e = base();
     e.name = "x".repeat(100);
-    (e as { notes?: unknown }).notes = "n".repeat(2000);
+    /* Notes du plan, note d'une pièce, texte posé sur le plan : rien ne les borne dans l'éditeur. */
+    (e as { notes?: unknown }).notes = "Garder le parquet. ".repeat(1000);
+    (niveaux(e)[0].rooms as Record<string, unknown>[])[0].note = "n".repeat(50_000);
+    niveaux(e)[0].texts = [{ id: "t1", x: 0, y: 0, text: "é".repeat(20_000) }];
     expect(etatPlanSchema.safeParse(e).success).toBe(true);
-    (e as { notes?: unknown }).notes = "n".repeat(3000);
+    (e as { notes?: unknown }).notes = "n".repeat(PLAN_CHAINE_MAX);
+    expect(etatPlanSchema.safeParse(e).success).toBe(true);
+    (e as { notes?: unknown }).notes = "n".repeat(PLAN_CHAINE_MAX + 1);
     refuse(e);
+  });
+
+  it("une longue chaîne reste refusée si c'est une image data:", () => {
+    const e = base();
+    (e as { notes?: unknown }).notes = "data:image/png;base64," + "A".repeat(40_000);
+    refuse(e);
+    expect(problemeProfond({ n: "data:x" })).toBe("image intégrée refusée");
   });
 
   it("un objet trop profond", () => {

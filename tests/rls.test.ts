@@ -1,22 +1,28 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import path from "node:path";
+import { production, rlsAutorise } from "./rls-garde";
 
 /**
  * Test d'INTÉGRATION de la tenancy (Row-Level Security) contre un Supabase de TEST.
  * Prouve qu'un utilisateur ne peut ni voir ni modifier les projets d'un autre, et qu'un anonyme
  * ne voit aucun projet. Crée puis supprime ses propres comptes de test (auto-nettoyant).
  *
- * Il crée des comptes : il ne tourne JAMAIS sur la base de production. Il ne lit donc pas
+ * Il crée des comptes : il ne tourne JAMAIS sur la base de production. Il ne prend aucune clé dans
  * `.env.local` (qui porte les clés de production) et n'est lancé que si les trois variables
  * d'un projet Supabase de test sont posées dans l'environnement :
  *   RLS_TEST_SUPABASE_URL, RLS_TEST_SUPABASE_ANON_KEY, RLS_TEST_SUPABASE_SERVICE_ROLE_KEY
  * Sans elles, il est ignoré (cas de `npx vitest run` en local et en CI).
+ *
+ * Garde (`tests/rls-garde.ts`) : vitest ne charge pas `.env.local`, donc comparer à l'environnement ne
+ * suffit pas. Le test LIT lui-même les fichiers d'environnement du dépôt et refuse de tourner si l'hôte
+ * de RLS_TEST_SUPABASE_URL (ou la clé anon) est celui de la production, quelle que soit l'écriture de
+ * l'URL. Garde testée sans base par `tests/rls-garde.test.ts`.
  */
 const URL = process.env.RLS_TEST_SUPABASE_URL;
 const ANON = process.env.RLS_TEST_SUPABASE_ANON_KEY;
 const SERVICE = process.env.RLS_TEST_SUPABASE_SERVICE_ROLE_KEY;
-const PROD = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const dispo = Boolean(URL && ANON && SERVICE) && URL !== PROD;
+const dispo = rlsAutorise({ url: URL, anon: ANON, service: SERVICE }, production(path.join(__dirname, "..")));
 
 /** Clients créés dans beforeAll : le corps d'un describe ignoré est quand même exécuté à la collecte. */
 const client = (cle: string) => createClient(URL!, cle, { auth: { persistSession: false } });
@@ -191,10 +197,29 @@ describe.skipIf(!dispo)("RLS — Mes plans (floor_plans, project_plans)", () => 
     expect((await ligne(planA)).nom).toBe("Ma maison");
   });
 
+  it("la session n'écrit que nom, etat, vue et resume ; vignette, type, schéma et contrat sont au serveur", async () => {
+    for (const col of ["nom", "vue", "resume"] as const) {
+      const v = col === "nom" ? "Ma maison" : { z: 1 };
+      const r = await sbA.from("floor_plans").update({ [col]: v }).eq("id", planA).select("id");
+      expect(r.error, col).toBeNull();
+      expect(r.data, col).toHaveLength(1);
+    }
+    for (const [col, v] of [
+      ["apercu", [[0, 0, 1, 0, "mur", ""]]], ["workflow", "renovation"], ["schema_etat", 99],
+      ["contrat", { v: 1 }], ["contrat_at", new Date().toISOString()], ["editeur_id", "zzz"],
+      ["revision", 999], ["owner_id", ids.B], ["created_at", new Date(0).toISOString()],
+    ] as const) {
+      const r = await sbA.from("floor_plans").update({ [col]: v }).eq("id", planA);
+      expect(r.error, col).toBeTruthy();
+    }
+    const l = (await admin.from("floor_plans").select("apercu, workflow, contrat, owner_id").eq("id", planA).single()).data!;
+    expect(l).toMatchObject({ apercu: null, workflow: "final_plan", contrat: null, owner_id: ids.A });
+  });
+
   it("la révision n'avance pas sur vue ou contrat seuls, avance sur etat, et ne se forge pas", async () => {
     const r0 = (await ligne(planA)).revision as number;
     await sbA.from("floor_plans").update({ vue: { z: 2 } }).eq("id", planA);
-    await sbA.from("floor_plans").update({ contrat: { v: 1 }, contrat_at: new Date().toISOString() }).eq("id", planA);
+    await admin.from("floor_plans").update({ contrat: { v: 1 }, contrat_at: new Date().toISOString() }).eq("id", planA);
     await sbA.from("floor_plans").update({ revision: 999 }).eq("id", planA);
     expect((await ligne(planA)).revision).toBe(r0);
     await sbA.from("floor_plans").update({ etat: { ...ETAT, levels: [{ walls: [], openings: [], items: [] }] } }).eq("id", planA);

@@ -7,7 +7,9 @@
  *    la limite (`limite_gratuite`), le plafond (`plafond_plans`) et la reprise sans doublon
  *    (`editeur_id`), de façon atomique (le verrou consultatif) ;
  *  - le trigger : `revision` n'avance que si `etat`, `nom` ou `workflow` changent ;
- *  - la suppression remet `project_plans.plan_id` à null.
+ *  - la suppression remet `project_plans.plan_id` à null ;
+ *  - les droits UPDATE par colonne : la session n'écrit que `nom`, `etat`, `vue`, `resume` ; le service
+ *    role écrit tout, SANS RLS (la simulation ne filtre pour lui que ce que la requête filtre).
  * Aucune base réelle n'est touchée, aucun compte n'est créé.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
@@ -32,7 +34,10 @@ const SECRET = 'relation "public.floor_plans" — détail interne à ne jamais r
 
 type Ligne = Record<string, unknown>;
 type Base = { floor_plans: Ligne[]; project_plans: Ligne[]; projects: Ligne[] };
-type Appel = { client: "session" | "admin"; table?: string; op: string; colonnes?: string; args?: unknown };
+type Client = "session" | "admin";
+type Appel = { client: Client; table?: string; op: string; colonnes?: string; args?: unknown; filtres?: string[] };
+/** `grant update (nom, etat, vue, resume) on floor_plans to authenticated` (0004). */
+const COLONNES_SESSION = ["nom", "etat", "vue", "resume"];
 
 const S = {
   base: { floor_plans: [], project_plans: [], projects: [] } as Base,
@@ -50,7 +55,8 @@ const nouvelId = () => {
 const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
 
 /** RLS des trois tables, telle que 0004 (et 0001 pour projects) la pose, pour le compte de la session. */
-function visible(table: keyof Base, l: Ligne): boolean {
+function visible(client: Client, table: keyof Base, l: Ligne): boolean {
+  if (client === "admin") return true; /* service role : bypassrls */
   const uid = S.user?.id;
   if (!uid) return false;
   if (table === "floor_plans") return l.owner_id === uid;
@@ -86,7 +92,8 @@ class Requete implements PromiseLike<{ data: unknown; error: unknown; count?: nu
   private max: number | null = null;
   private unique = false;
   private valeurs: Ligne | null = null;
-  constructor(private table: keyof Base) {}
+  private noms: string[] = [];
+  constructor(private table: keyof Base, private client: Client = "session") {}
 
   select(colonnes = "*", opts: { count?: string; head?: boolean } = {}) {
     if (this.op === "select") this.opts = opts;
@@ -96,17 +103,21 @@ class Requete implements PromiseLike<{ data: unknown; error: unknown; count?: nu
   update(v: Ligne) { this.op = "update"; this.valeurs = v; return this; }
   delete() { this.op = "delete"; return this; }
   insert(v: Ligne) { this.op = "insert"; this.valeurs = v; return this; }
-  eq(c: string, v: unknown) { this.filtres.push((l) => l[c] === v); return this; }
-  in(c: string, vs: unknown[]) { this.filtres.push((l) => vs.includes(l[c])); return this; }
+  eq(c: string, v: unknown) { this.filtres.push((l) => l[c] === v); this.noms.push(`${c}=${String(v)}`); return this; }
+  in(c: string, vs: unknown[]) { this.filtres.push((l) => vs.includes(l[c])); this.noms.push(`${c} in`); return this; }
   order(col: string, o: { ascending?: boolean } = {}) { this.tri = { col, asc: o.ascending !== false }; return this; }
   limit(n: number) { this.max = n; return this; }
   maybeSingle() { this.unique = true; return this; }
 
   private executer(): { data: unknown; error: unknown; count?: number | null } {
-    S.appels.push({ client: "session", table: this.table, op: this.op, colonnes: this.colonnes ?? undefined, args: this.valeurs ?? undefined });
+    S.appels.push({ client: this.client, table: this.table, op: this.op, colonnes: this.colonnes ?? undefined, args: this.valeurs ?? undefined, filtres: [...this.noms] });
     if (S.panne) return { data: null, error: { message: SECRET, code: "42P01" } };
+    if (this.client === "session" && this.op === "update" && this.table === "floor_plans") {
+      const interdites = Object.keys(this.valeurs!).filter((k) => !COLONNES_SESSION.includes(k));
+      if (interdites.length) return { data: null, error: { message: "permission denied for table floor_plans", code: "42501" } };
+    }
     const lignes = S.base[this.table];
-    const cibles = lignes.filter((l) => visible(this.table, l) && this.filtres.every((f) => f(l)));
+    const cibles = lignes.filter((l) => visible(this.client, this.table, l) && this.filtres.every((f) => f(l)));
 
     if (this.op === "insert") {
       /* 0004 : aucune politique INSERT sur floor_plans, revoke insert pour authenticated. */
@@ -153,7 +164,7 @@ class Requete implements PromiseLike<{ data: unknown; error: unknown; count?: nu
   }
 }
 
-const clientSession = { from: (t: keyof Base) => new Requete(t) };
+const clientSession = { from: (t: keyof Base) => new Requete(t, "session") };
 
 /** floor_plans_creer (0004), exécutée d'un bloc : c'est ce que garantit le verrou consultatif. */
 function rpcCreer(a: Record<string, unknown>) {
@@ -184,7 +195,11 @@ const clientAdmin = {
     if (nom !== "floor_plans_creer") throw new Error("rpc inattendue " + nom);
     return rpcCreer(a);
   },
-  from: () => { throw new Error("le service role ne sert qu'à la création"); },
+  /* Le service role n'écrit QUE floor_plans (colonnes du serveur), jamais une autre table. */
+  from: (t: keyof Base) => {
+    if (t !== "floor_plans") throw new Error("service role inattendu sur " + t);
+    return new Requete(t, "admin");
+  },
 };
 
 /* ─── Chargement des routes ──────────────────────────────────────────────── */
@@ -528,6 +543,77 @@ describe("PATCH /api/plans/[id]", () => {
     expect(S.base.floor_plans[0].workflow).toBe("final_plan");
   });
 
+  it("nom, vue ou résumé seuls : la session écrit (ses colonnes), le service role n'est pas appelé", async () => {
+    const { r, id } = await unPlan();
+    S.appels = [];
+    expect(await lire(await p(r, id, { revision: 1, nom: "Renommé", vue: { zoom: 3 }, resume: { m2: 90 } }))).toMatchObject({ status: 200, json: { revision: 2 } });
+    expect(S.appels.filter((x) => x.client === "admin")).toEqual([]);
+    const maj = S.appels.find((x) => x.op === "update")!;
+    expect(maj.client).toBe("session");
+    expect(Object.keys(maj.args as object).sort()).toEqual(["nom", "resume", "vue"]);
+  });
+
+  it("état ou contrat : la session vérifie d'abord, puis le service role écrit tout d'un coup (propriétaire et révision)", async () => {
+    const { r, id } = await unPlan();
+    S.appels = [];
+    expect(await lire(await p(r, id, { revision: 1, etat: ETAT_RENO, vue: { zoom: 7 } }))).toMatchObject({ status: 200, json: { revision: 1 } });
+    const ops = S.appels.filter((x) => x.op !== "limite").map((x) => `${x.client}:${x.op}`);
+    expect(ops).toEqual(["session:select", "admin:update"]);
+    const maj = S.appels.find((x) => x.op === "update")!;
+    expect(maj.filtres).toEqual([`id=${id}`, `owner_id=${PRO.id}`, "revision=1"]);
+    expect(Object.keys(maj.args as object).sort()).toEqual(["apercu", "etat", "schema_etat", "vue", "workflow"]);
+    /* aucune colonne du serveur n'a été écrite par la session */
+    for (const x of S.appels.filter((y) => y.client === "session" && y.op === "update")) {
+      expect(Object.keys(x.args as object).every((k) => ["nom", "etat", "vue", "resume"].includes(k))).toBe(true);
+    }
+
+    S.appels = [];
+    expect((await lire(await p(r, id, { revision: 1, contrat: CONTRAT_RENO }))).status).toBe(200);
+    const c = S.appels.find((x) => x.op === "update")!;
+    expect(c.client).toBe("admin");
+    expect(Object.keys(c.args as object).sort()).toEqual(["contrat", "contrat_at"]);
+    expect(c.filtres).toContain(`owner_id=${PRO.id}`);
+  });
+
+  it("le plan d'un autre compte : 404 sans aucun appel au service role, même en force", async () => {
+    const { r, id } = await unPlan();
+    S.user = AUTRE;
+    S.appels = [];
+    expect(await lire(await p(r, id, { revision: 1, etat: ETAT_RENO }))).toMatchObject({ status: 404, json: { code: "introuvable" } });
+    expect(await lire(await p(r, id, { revision: 1, etat: ETAT_RENO, force: true }))).toMatchObject({ status: 404 });
+    expect(await lire(await p(r, id, { revision: 1, contrat: CONTRAT_RENO }))).toMatchObject({ status: 404 });
+    expect(S.appels.filter((x) => x.client === "admin")).toEqual([]);
+    expect(S.base.floor_plans[0].contrat).toBeNull();
+  });
+
+  it("révision périmée avec un état : 409 sans écrire ; si un autre appareil écrit entre la vérification et l'écriture, 409 aussi", async () => {
+    const { r, id } = await unPlan();
+    await p(r, id, { revision: 1, nom: "Deux" });
+    S.appels = [];
+    expect(await lire(await p(r, id, { revision: 1, etat: ETAT_RENO }))).toMatchObject({ status: 409, json: { code: "conflit", revision: 2 } });
+    expect(S.appels.filter((x) => x.client === "admin")).toEqual([]);
+    /* course : la ligne change juste après la vérification */
+    const ligne = S.base.floor_plans[0];
+    const entete = Object.getOwnPropertyDescriptor(ligne, "revision")!;
+    let lectures = 0;
+    Object.defineProperty(ligne, "revision", {
+      configurable: true, enumerable: true,
+      get: () => (++lectures > 1 ? 3 : 2),
+      set: (v) => Object.defineProperty(ligne, "revision", { ...entete, value: v, writable: true }),
+    });
+    expect(await lire(await p(r, id, { revision: 2, etat: ETAT_RENO }))).toMatchObject({ status: 409, json: { code: "conflit", revision: 3 } });
+  });
+
+  it("contrat : la taille est mesurée comme Postgres (413), un caractère nul est refusé (400)", async () => {
+    const { r, id } = await unPlan();
+    /* 35 Ko en JSON, plus de 1,5 Mo dans Postgres (chaque 1e-300 s'écrit avec 300 zéros). */
+    const gonfle = { ...CONTRAT_RENO, bruit: Array.from({ length: 5000 }, () => 1e-300) };
+    expect(JSON.stringify(gonfle).length).toBeLessThan(100_000);
+    expect(await lire(await p(r, id, { revision: 1, contrat: gonfle }))).toMatchObject({ status: 413, json: { code: "trop_volumineux" } });
+    expect(await lire(await p(r, id, { revision: 1, contrat: { ...CONTRAT_RENO, note: "a\u0000b" } }))).toMatchObject({ status: 400, json: { code: "contrat_invalide" } });
+    expect(S.base.floor_plans[0].contrat).toBeNull();
+  });
+
   it("400 : rien à écrire, révision absente, état invalide ; 429 sur user.id", async () => {
     const { r, id } = await unPlan();
     expect(await lire(await p(r, id, { revision: 1 }))).toMatchObject({ status: 400, json: { code: "invalide" } });
@@ -578,6 +664,7 @@ describe("aucun error.message dans une réponse", () => {
       await r.liste.POST(creer({ nom: "Deux" })),
       await r.un.GET(rien(), ctx(id)),
       await r.un.PATCH(patch({ revision: 1, nom: "x" }), ctx(id)),
+      await r.un.PATCH(patch({ revision: 1, etat: ETAT_RENO }), ctx(id)),
       await r.un.DELETE(rien(), ctx(id)),
     ]) {
       const l = await lire(rep);

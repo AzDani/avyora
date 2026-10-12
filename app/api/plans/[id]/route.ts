@@ -3,7 +3,8 @@ import { getUser } from "@/lib/auth";
 import { verifierLimite } from "@/lib/ratelimit";
 import { MAJEURE_CONTRAT_PLAN, planImportSchema } from "@/lib/validation";
 import { estimationsDuPlan, lireEntete, lirePlan, majPlan, supprimerPlan } from "@/lib/plans/data";
-import { PLAN_CORPS_MAX, planIdSchema, planMajSchema } from "@/lib/plans/schema";
+import { PLAN_CONTRAT_OCTETS_MAX, PLAN_CORPS_MAX, planIdSchema, planMajSchema } from "@/lib/plans/schema";
+import { octetsJsonb } from "@/lib/plans/jsonb";
 import { eteinte, erreur, lireCorpsBorne, repondre, type CodePlans } from "@/lib/plans/http";
 
 export const runtime = "nodejs";
@@ -32,9 +33,16 @@ export async function GET(_req: Request, ctx: Ctx) {
   }
 }
 
-/** Le contrat d'une estimation de rénovation : même contrôle que l'import, puis même type de plan. */
+/**
+ * Le contrat d'une estimation de rénovation : même contrôle que l'import, puis la taille telle que
+ * Postgres la mesure (CHECK floor_plans_contrat_taille), puis (dans la route) même type de plan.
+ */
 function codeContrat(contrat: unknown): CodePlans | null {
-  if (planImportSchema.safeParse(contrat).success) return null;
+  if (planImportSchema.safeParse(contrat).success) {
+    const n = octetsJsonb(contrat);
+    if (n === Infinity) return "contrat_invalide"; /* caractère nul, moitié de paire UTF-16 */
+    return n > PLAN_CONTRAT_OCTETS_MAX ? "trop_volumineux" : null;
+  }
   const c = (contrat as { contrat?: unknown } | null)?.contrat;
   if (typeof c === "string" && /^\d+\.\d+\.\d+$/.test(c) && Number(c.split(".")[0]) !== MAJEURE_CONTRAT_PLAN) {
     return "contrat_version";
@@ -72,7 +80,7 @@ export async function PATCH(req: Request, ctx: Ctx) {
       if ((contrat as { workflow?: unknown }).workflow !== workflow) return erreur("contrat_workflow");
     }
 
-    const r = await majPlan(id, revision, { nom, etat, vue, resume, contrat }, force === true);
+    const r = await majPlan(user.id, id, revision, { nom, etat, vue, resume, contrat }, force === true);
     if (r.ok) return repondre({ revision: r.revision });
     if (r.code === "conflit") return erreur("conflit", { revision: r.revision });
     return erreur("introuvable");

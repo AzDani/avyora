@@ -6,7 +6,8 @@
 -- Remplace 0003_project_plans.sql (déplacée dans _remplacees/, à ne jamais appliquer).
 -- Procédure et vérifications : docs/plans/README.md. Retour arrière : 0004_floor_plans_retour.sql.
 --
---   floor_plans    le dessin vivant (état de l'éditeur), propriétaire seul.
+--   floor_plans    le dessin vivant (état de l'éditeur), propriétaire seul. La session n'en modifie que
+--                  nom, etat, vue et resume ; vignette, type et contrat sont écrits par le serveur.
 --   project_plans  « cette estimation est née de ce plan » : le lien (plan_id) et, pour la
 --                  rénovation, le cliché figé de ce qui a été chiffré (contrat, contributions,
 --                  rapport : D1). Un projet a au plus une ligne ; un plan peut en avoir plusieurs.
@@ -101,6 +102,15 @@ alter table public.floor_plans enable row level security;
 revoke all on public.floor_plans from anon;
 -- TRUNCATE n'est pas soumis à la RLS : on ne le laisse pas traîner dans les droits par défaut.
 revoke insert, truncate, references, trigger on public.floor_plans from authenticated;
+-- Modification par COLONNE. La session (clé anon + jeton, donc aussi un appel direct à PostgREST) n'écrit
+-- que le dessin et ce qui l'accompagne : nom, etat, vue, resume. La vignette (apercu), le type
+-- (workflow), la version de schéma (schema_etat) et le contrat de rénovation (contrat, contrat_at) sont
+-- écrits par le SERVEUR seul (service role, après avoir vérifié que la session voit le plan) : une
+-- vignette forgée finirait dans un SVG, un contrat forgé dans une estimation. Le droit UPDATE de TABLE
+-- l'emporterait sur les droits de colonne : on le retire (ce qui retire aussi les droits de colonne),
+-- puis on repose les quatre colonnes. Rejouer ces deux lignes donne le même résultat.
+revoke update on public.floor_plans from authenticated;
+grant update (nom, etat, vue, resume) on public.floor_plans to authenticated;
 
 drop policy if exists floor_plans_select on public.floor_plans;
 create policy floor_plans_select on public.floor_plans for select to authenticated using (owner_id = auth.uid());

@@ -55,7 +55,7 @@ touche pas à `projects` ni aux tables de 0001 et 0002.
 
 | Objet | Rôle |
 |---|---|
-| `floor_plans` | Le plan dessiné (état de l'éditeur, vue, résumé, vignette, contrat de rénovation). Propriétaire seul : lecture, modification, suppression. **Aucune politique INSERT.** |
+| `floor_plans` | Le plan dessiné (état de l'éditeur, vue, résumé, vignette, contrat de rénovation). Propriétaire seul : lecture, modification, suppression. **Aucune politique INSERT.** Modification **par colonne** (C1b) : la session n'écrit que `nom`, `etat`, `vue` et `resume` ; `apercu`, `workflow`, `schema_etat`, `contrat` et `contrat_at` sont écrits par le serveur seul (service role). |
 | `floor_plans_creer(...)` | La seule porte de création. Exécutable par le service role seulement. Verrou consultatif par compte, limite passée par la route (1 en gratuit, `null` en Pro), plafond 200, reprise sans doublon par `editeur_id`. Erreurs : `limite_gratuite`, `plafond_plans`. |
 | `floor_plans_touch` (trigger) | `updated_at`, propriétaire et date de création figés. `revision` n'avance que si `etat`, `nom` ou `workflow` changent, et le client ne peut pas la forger. |
 | `project_plans` | Le lien « cette estimation est née de ce plan » (`plan_id`, `on delete set null`) et le cliché de la rénovation. Reprend 0003 : `contrat` devient facultatif. Les membres du projet **lisent**, le propriétaire du projet **écrit**, et ne relie qu'un plan qui est le sien. |
@@ -66,12 +66,17 @@ sa politique laissait écrire tout membre du projet.
 ### Procédure pour le responsable
 
 1. Ouvrir Supabase › SQL editor, coller **tout** `supabase/migrations/0004_floor_plans.sql`, exécuter.
-2. Lancer ces vérifications. On attend : deux lignes à `true`, cinq politiques, puis `false`.
+2. Lancer ces vérifications. On attend : deux lignes à `true`, cinq politiques, `false`, puis
+   `false` et `{etat,nom,resume,vue}`.
    ```sql
    select relname, relrowsecurity from pg_class where relname in ('floor_plans','project_plans');
    select tablename, policyname, cmd from pg_policies where tablename in ('floor_plans','project_plans') order by 1,2;
    select has_function_privilege('authenticated',
      'public.floor_plans_creer(uuid,int,text,text,jsonb,jsonb,jsonb,jsonb,int,text)','execute');
+   select has_table_privilege('authenticated', 'public.floor_plans', 'UPDATE') as table_entiere,
+     array(select attname from pg_attribute where attrelid = 'public.floor_plans'::regclass and attnum > 0
+       and not attisdropped and has_column_privilege('authenticated', 'public.floor_plans', attname, 'UPDATE')
+       order by 1) as colonnes_session;
    ```
    Les cinq politiques : `floor_plans_delete`, `floor_plans_select`, `floor_plans_update`,
    `project_plans_ecriture`, `project_plans_lecture`.
@@ -91,11 +96,18 @@ tous les plans enregistrés**. Il retire `floor_plans`, sa fonction de création
 - Hors ligne, sur un Postgres jetable en mémoire (PGlite, socle Supabase simulé : rôles `anon`,
   `authenticated`, `service_role`, `auth.uid()`, droits par défaut), jamais sur Supabase : 0001 puis
   0004 trois fois, avec et sans 0003 déjà appliquée, puis le comportement (création réservée au service
-  role, limite, plafond, reprise sans doublon, CHECK, isolation, révision, liens, cascades) et le retour
-  arrière deux fois puis 0004 à nouveau.
+  role, limite, plafond, reprise sans doublon, CHECK, isolation, révision, droits par colonne, liens,
+  cascades) et le retour arrière deux fois puis 0004 à nouveau (mêmes droits par colonne).
+- Les tailles mesurées par l'API sont comparées à `octet_length(x::jsonb::text)` du même Postgres jetable :
+  états réels, contrats, vignette extrême, nombres et chaînes extrêmes ; un état à la limite passe zod ET le
+  CHECK, un nombre de plus est refusé par les deux.
 - `tests/rls.test.ts` rejoue les mêmes règles sur un vrai Supabase **de test**. Il crée des comptes :
-  il ne lit pas `.env.local` et ne tourne que si `RLS_TEST_SUPABASE_URL`, `RLS_TEST_SUPABASE_ANON_KEY` et
-  `RLS_TEST_SUPABASE_SERVICE_ROLE_KEY` désignent un projet distinct de la production. Sinon il est ignoré.
+  il ne prend aucune clé dans `.env.local` et ne tourne que si `RLS_TEST_SUPABASE_URL`,
+  `RLS_TEST_SUPABASE_ANON_KEY` et `RLS_TEST_SUPABASE_SERVICE_ROLE_KEY` désignent un projet distinct de la
+  production. Sinon il est ignoré. Sa garde (`tests/rls-garde.ts`, testée par `tests/rls-garde.test.ts`)
+  **lit elle-même** `.env.local` et les autres fichiers d'environnement du dépôt : vitest ne les charge pas,
+  et comparer à l'environnement seul laisserait passer l'URL de production. Elle refuse l'hôte de
+  production quelle que soit l'écriture de l'URL (casse, barre finale, chemin, port) et sa clé anon.
 
 ## API « Mes plans » (C2)
 
@@ -110,18 +122,26 @@ ou de zod : les textes vivent côté client, en français et en anglais. Aucune 
 | `GET /api/plans` | `{ plans:[{id, nom, workflow, resume, apercu, revision, updated_at, estimations}], limite, utilises }` | 401 sans session. **Jamais l'état.** 100 cartes au plus, les plus récentes d'abord. |
 | `POST /api/plans` | 201 `{ id, revision, deja }` | `planCreerSchema`. Débit `planCreation` (20 / h / compte). Vignette calculée par le serveur. `floor_plans_creer` avec `limite = estPro ? null : 1`. `limite_gratuite` → 402, `plafond_plans` → 409 `plafond`. Même `editeurId` → le même plan, `deja: true`. |
 | `GET /api/plans/[id]` | `{ id, nom, workflow, etat, vue, resume, revision, updated_at, estimations:[{id, nom, nature, created_at}] }` | `id` hors uuid, absent ou d'un autre compte → 404 (on ne dit pas si le plan existe). |
-| `PATCH /api/plans/[id]` | `{ revision }` | `planMajSchema`. Débit `plan` (90 / min / compte). `where revision = attendue` ; 0 ligne → 404 si absent, sinon 409 `{code:"conflit", revision}`. `force: true` écrit sans condition. `contrat` : `planImportSchema` (codes `contrat_invalide`, `contrat_version`) et même type que le plan (`contrat_workflow`), puis `contrat_at`. |
+| `PATCH /api/plans/[id]` | `{ revision }` | `planMajSchema`. Débit `plan` (90 / min / compte). `where revision = attendue` ; 0 ligne → 404 si absent, sinon 409 `{code:"conflit", revision}`. `force: true` écrit sans condition. `contrat` : `planImportSchema` (codes `contrat_invalide`, `contrat_version`), taille mesurée comme Postgres (≤ 1,5 Mo, sinon 413) et même type que le plan (`contrat_workflow`), puis `contrat_at`. Nom, vue ou résumé seuls : la session écrit. État ou contrat : la session vérifie d'abord qu'elle voit le plan (sinon 404, rien n'est écrit), puis le **service role** écrit tout en une requête, filtrée par `id`, `owner_id` et la révision. |
 | `DELETE /api/plans/[id]` | 204 | Débit `plan`. RLS ; les liens `project_plans.plan_id` repassent à null. |
 
 - **Corps** : lu borné à 1,2 Mo (`content-length`, puis comptage du flux) avant `JSON.parse` ; au-delà, 413.
 - **Schémas** (`lib/plans/schema.ts`) : fermés sur ce qui finit en HTML ou en attribut (identifiants, coordonnées,
   type et statut des murs, résumé), ouverts (`.loose()`) sur le reste. Une garde parcourt l'entrée **brute**
-  (zod retire `__proto__` en silence) : profondeur ≤ 12, chaîne ≤ 2 000, ni `__proto__` / `constructor` /
-  `prototype`, ni image `data:`. État ≤ 1 Mo, 6 niveaux.
+  (zod retire `__proto__` en silence) : profondeur ≤ 12, chaîne ≤ 100 000 (les notes et textes libres de
+  l'éditeur n'ont pas de maxlength : une longue note ne fait pas refuser le plan), ni `__proto__` /
+  `constructor` / `prototype`, ni image `data:`, ni caractère nul ou moitié de paire UTF-16 (jsonb les
+  refuse). État ≤ 1 Mo, 6 niveaux.
+- **Tailles** (`lib/plans/jsonb.ts`) : mesurées comme les CHECK de 0004, sur le texte du jsonb
+  (`octet_length(x::jsonb::text)`), pas sur le JSON compact : jsonb ajoute une espace après chaque « : » et
+  « , » (+17 % sur un plan réel) et écrit les nombres sans exposant (`3.55e-15` prend 32 octets). Un état
+  accepté par zod n'est donc jamais refusé ensuite par un CHECK (erreur 500).
 - **Vignette** (`lib/plans/apercu.ts`) : `[[ax, ay, bx, by, type, st], …]` du niveau affiché, nombres finis bornés
   à ± 10 000 et arrondis au centimètre, `type` dans `cloison | mur | porteur`, `st` dans `'' | creer | demolir`,
   2 000 murs au plus (moins de 128 Ko dans le pire cas).
-- **Données** (`lib/plans/data.ts`) : tout passe par la session (RLS), sauf la création (service role, RPC).
+- **Données** (`lib/plans/data.ts`) : tout passe par la session (RLS), sauf la création (service role, RPC) et
+  l'écriture des colonnes du serveur (vignette, type, version de schéma, contrat : service role, après la
+  vérification par la session, `owner_id` dans la requête).
 
 ### Tests
 
@@ -129,9 +149,12 @@ ou de zod : les textes vivent côté client, en français et en anglais. Aucune 
   `node maquettes/tools/exporter-etats.mjs "$(pwd)/maquettes" tests/fixtures/plans-etats`) passent sans rien
   perdre ; les injections (attribut, apostrophe, `__proto__`, `data:`, 7 niveaux, 3 000 caractères…) sont refusées.
 - `tests/plans-apercu.test.ts` : nombres et codes fermés, idempotent, sous 128 Ko.
-- `tests/plans-routes.test.ts` : les routes contre un Supabase simulé en mémoire (RLS, fonction de création
-  atomique, trigger de révision, cascade) : 404 interrupteur éteint, 401, 402, 409, 413, 429, aucune fuite
-  d'`error.message`, jamais d'`etat` dans la liste.
+- `tests/plans-jsonb.test.ts` : `octetsJsonb` rend les valeurs relevées sur Postgres (états réels, contrats,
+  cas extrêmes) ; à la limite, accepté ; un nombre de plus, refusé ; la vignette la plus lourde tient (126 000 octets).
+- `tests/plans-routes.test.ts` : les routes contre un Supabase simulé en mémoire (RLS, droits UPDATE par
+  colonne, service role sans RLS, fonction de création atomique, trigger de révision, cascade) : 404
+  interrupteur éteint, 401, 402, 409, 413, 429, aucune fuite d'`error.message`, jamais d'`etat` dans la
+  liste, aucune colonne du serveur écrite par la session, jamais le service role pour le plan d'un autre.
 - Pas d'intégration contre une vraie base : il faudrait des comptes, et la base de dev est la production.
   `tests/rls.test.ts` couvre la fonction et la RLS dès qu'un projet Supabase de test existe.
 
@@ -167,10 +190,16 @@ interception Puppeteer, sans compte ni serveur réel), puis la batterie complèt
 
 ```bash
 npx tsc --noEmit -p .
-npx vitest run                       # dont tests/plans-temoins.test.ts
+CI=1 npx vitest run                  # dont tests/plans-temoins.test.ts
 npm run build
 node maquettes/tools/coherence.mjs
 ```
 
+**`CI=1`** : hors CI, vitest **écrit** un instantané absent au lieu d'échouer. Un témoin supprimé ou renommé
+passerait alors au vert en se régénérant. Avec `CI=1`, un instantané absent ou différent fait échouer la
+suite : les témoins de C0 ne peuvent ni disparaître ni se réécrire en silence.
+
 Dès que `maquettes/plan-editor.html` est touché : la batterie complète de l'éditeur, outil par outil
-(`maquettes/README.md`), comparée à la ligne de base relevée en C0 (tous les outils à `exit=0`).
+(`maquettes/README.md`), comparée à la ligne de base relevée en C0 : tous les outils à `exit=0`, aucun ✓ en
+moins, aucun KO en plus, et chaque total « N/M » (`planfinal`, `site`, `vue3d`, `coherence`…) plein et sans
+contrôle perdu par rapport à la base.
