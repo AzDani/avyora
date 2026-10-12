@@ -88,6 +88,15 @@ describe("injection · D12, une quantité corrigée à la main est épinglée", 
     expect(r3.lignes.find((x) => x.cle === cle)!.etat).toBe("mise-a-jour");
   });
 
+  it("une ligne venue du plan puis décochée à la main reste décochée, signalée comme épinglée (jury)", () => {
+    const cle = key("Carrelage / Revetements", "Carrelage au sol");
+    const r1 = injecterPlan({}, contributions);
+    const decochee: Selection = { ...r1.selection, [cle]: { ...r1.selection[cle], on: false } };
+    const r2 = injecterPlan(decochee, contributions);
+    expect(r2.selection[cle].on).toBe(false);
+    expect(r2.lignes.find((x) => x.cle === cle)!.etat).toBe("epinglee");
+  });
+
   it("une ligne cochée sans quantité manuelle n'est pas épinglée : le plan l'alimente", () => {
     const cle = key("Carrelage / Revetements", "Carrelage au sol");
     const r = injecterPlan({ [cle]: { on: true } }, contributions);

@@ -8,7 +8,8 @@ import { supabaseServer } from "@/lib/supabase/server";
 import { planIdSchema } from "@/lib/plans/schema";
 import { choisirProjet, preparer } from "@/lib/plans/estimation";
 import { piecesEff, sdbEff } from "@/lib/estimateur/core";
-import DepuisPlan from "@/components/plans/DepuisPlan";
+import DepuisPlan, { type ResumeBien } from "@/components/plans/DepuisPlan";
+import type { Ctx } from "@/lib/estimateur/core";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,11 @@ type Props = {
 };
 
 const un = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
+
+/** Le bien tel que l'écran le résume (surface, type, niveaux, pièces, salles de bain, WC, fenêtres). */
+function resumeDe(c: Ctx): ResumeBien {
+  return { surface: c.surface, type: c.type, niveaux: c.niveaux, pieces: piecesEff(c), sdb: sdbEff(c), wc: c.wc, fenetres: c.fenetres };
+}
 
 /**
  * « Mes plans », C7 : l'estimation détaillée de rénovation née d'un plan (Pro). L'éditeur envoie son
@@ -89,19 +95,8 @@ export default async function DepuisPlanPage({ params, searchParams }: Props) {
           lignes={prep.lignes}
           bilan={prep.bilan}
           manqueCodePostal={prep.manqueCodePostal}
-          resume={
-            projet
-              ? null
-              : {
-                  surface: prep.ctxPropose.surface,
-                  type: prep.ctxPropose.type,
-                  niveaux: prep.ctxPropose.niveaux,
-                  pieces: piecesEff(prep.ctxPropose),
-                  sdb: sdbEff(prep.ctxPropose),
-                  wc: prep.ctxPropose.wc,
-                  fenetres: prep.ctxPropose.fenetres,
-                }
-          }
+          resume={resumeDe(prep.ctxPropose)}
+          avant={prep.ctxAvant ? resumeDe(prep.ctxAvant) : null}
         />
       ) : (
         <div className="card p-5 sm:p-6">

@@ -76,7 +76,9 @@ export function injecterPlan(selection: Selection, contributions: Contribution[]
     const quantite = forfait ? 1 : c.quantite;
 
     // D12 : l'utilisateur a corrigé cette quantité à la main → on n'y touche pas, on signale.
-    const epinglee = !!avantLigne && avantLigne.manual === true && avantLigne.plan !== true;
+    // Une ligne venue du plan puis DÉCOCHÉE à la main (on: false, plan: true) est un choix aussi : elle ne revient
+    // pas cochée à la mise à jour suivante, elle est signalée comme épinglée (jury « Mes plans »).
+    const epinglee = !!avantLigne && ((avantLigne.manual === true && avantLigne.plan !== true) || (avantLigne.on === false && avantLigne.plan === true));
     if (epinglee) {
       lignes.push({
         cle, poste: c.poste, lot: poste.lot, nom: poste.nom, unite: poste.tache.u,

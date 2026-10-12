@@ -3,7 +3,7 @@ import { planImportSchema, MAJEURE_CONTRAT_PLAN } from "@/lib/validation";
 import { contributionsDuPlan, type Contribution, type Ignore, type PlanPourCorrespondance } from "@/lib/estimateur/plan-correspondance";
 import { injecterPlan, type LigneInjectee, type RapportInjection } from "@/lib/estimateur/plan-injection";
 import { codePostalDuContrat, ctxDepuisPlan } from "@/lib/estimateur/plan-ctx";
-import type { Ctx, Selection } from "@/lib/estimateur/core";
+import { defaultCtx, type Ctx, type Selection } from "@/lib/estimateur/core";
 import { ErreurPlans } from "@/lib/plans/data";
 import { octetsJsonb } from "@/lib/plans/jsonb";
 import { lienEchoue, VERSION_CONTRAT_DEFAUT } from "@/lib/plans/relier";
@@ -63,8 +63,13 @@ export type Preparation = {
   bilan: RapportInjection["bilan"];
   lignes: LigneInjectee[];
   ignores: Ignore[];
-  /** Le ctx que la CRÉATION écrirait (résumé de l'écran). Une mise à jour ne touche pas au ctx. */
+  /**
+   * Le ctx qu'écrirait la validation : celui du plan pour une CRÉATION ; pour une MISE À JOUR, celui de l'estimation
+   * avec les champs venus du plan recalculés (`ctxMisAJour`), ceux corrigés à la main dans le détaillé gardés.
+   */
   ctxPropose: Ctx;
+  /** Mise à jour seulement : le ctx de l'estimation AVANT (l'écran montre « 58 → 73 m² »). */
+  ctxAvant: Ctx | null;
   /** Création sans code postal valide dans le contrat : l'écran le demande. */
   manqueCodePostal: boolean;
 };
@@ -106,7 +111,13 @@ function contributions(contrat: Obj): { contributions: Contribution[]; ignores: 
  * Un projet neuf relié au même plan (impossible aujourd'hui : un plan a un seul type) est écarté.
  */
 export async function estimationsRenoDuPlan(sb: Sb, planId: string): Promise<ProjetRelie[]> {
-  const { data: liens, error } = await sb.from("project_plans").select("project_id").eq("plan_id", planId).limit(RELIEES_MAX);
+  /* trié AVANT la borne : au-delà de 50 liens, ce sont les plus anciens qui tombent, jamais le plus récent */
+  const { data: liens, error } = await sb
+    .from("project_plans")
+    .select("project_id")
+    .eq("plan_id", planId)
+    .order("updated_at", { ascending: false })
+    .limit(RELIEES_MAX);
   if (error) throw new ErreurPlans("estimation-liens");
   const ids = [...new Set(((liens ?? []) as { project_id: string }[]).map((l) => l.project_id))];
   if (!ids.length) return [];
@@ -139,6 +150,47 @@ export async function choisirProjet(
 }
 
 /**
+ * Les champs du ctx qui viennent du PLAN (`ctxDepuisPlan`) : surface, emprise, niveaux, hauteur, les huit compteurs,
+ * le nombre de pièces et de fenêtres. Le reste (finition, code postal, fiscalité, aléas…) est à l'utilisateur.
+ */
+export const CTX_DU_PLAN = [
+  "perimetre", "type", "surface", "surfaceSol", "surfaceSolManual", "niveaux", "hauteur",
+  "sejour", "cuisine", "chambres", "suites", "couloir", "buanderie", "sdb", "wc", "pieces", "fenetres",
+] as const;
+
+/**
+ * Le ctx d'une estimation MISE À JOUR depuis le plan (jury) : ce ctx « pilote les postes non mesurés (électricité,
+ * ventilation…) », il doit suivre le plan (une extension change la surface). Chaque champ venu du plan prend la
+ * valeur du plan d'aujourd'hui, SAUF s'il a été corrigé à la main dans le détaillé : il diffère alors de ce que
+ * le plan d'avant (le cliché du lien) avait donné, et il est gardé. Sans cliché, le plan décide.
+ */
+export function ctxMisAJour(avant: Obj, nouveau: Ctx, ancien: Ctx | null): Obj {
+  const ctx: Obj = { ...avant };
+  for (const k of CTX_DU_PLAN) {
+    const corrige = ancien != null && avant[k] !== undefined && avant[k] !== ancien[k];
+    if (!corrige) ctx[k] = nouveau[k];
+  }
+  return ctx;
+}
+
+/** Le cliché du lien d'une estimation (contrat et nom du plan au dernier chiffrage), sous RLS. */
+async function clicheDuLien(sb: Sb, projectId: string): Promise<{ contrat: Obj | null; nom: string | null }> {
+  const { data, error } = await sb.from("project_plans").select("contrat, nom").eq("project_id", projectId).maybeSingle();
+  if (error) throw new ErreurPlans("estimation-cliche");
+  const l = (data ?? null) as { contrat?: unknown; nom?: unknown } | null;
+  const c = l?.contrat && typeof l.contrat === "object" && !Array.isArray(l.contrat) ? (l.contrat as Obj) : null;
+  return { contrat: c, nom: typeof l?.nom === "string" ? l.nom : null };
+}
+
+/** Le ctx que la mise à jour écrirait, et celui d'avant (complétés des défauts, pour l'affichage). */
+async function ctxDeLaMiseAJour(sb: Sb, projet: ProjetRelie, contrat: Obj) {
+  const cliche = await clicheDuLien(sb, projet.id);
+  const avant = obj(obj(projet.reponses).ctx);
+  const ctx = ctxMisAJour(avant, ctxDepuisPlan(contrat), cliche.contrat ? ctxDepuisPlan(cliche.contrat) : null);
+  return { ctx, avant, cliche };
+}
+
+/**
  * Ce que l'écran de validation montre. N'ÉCRIT RIEN. `projetRelie` : l'injection est rejouée sur SA
  * sélection du moment (une ligne corrigée à la main y reste épinglée, D12) ; sinon sur une sélection vide.
  */
@@ -149,13 +201,15 @@ export async function preparer(sb: Sb, planId: string, projetRelie?: ProjetRelie
   if ("ok" in c) return c;
   const sel = (obj(projetRelie?.reponses).sel ?? {}) as Selection;
   const rapport = injecterPlan(projetRelie ? sel : {}, c.contributions);
+  const maj = projetRelie ? await ctxDeLaMiseAJour(sb, projetRelie, plan.contrat) : null;
   return {
     ok: true,
     plan: { id: plan.id, nom: plan.nom },
     bilan: rapport.bilan,
     lignes: rapport.lignes,
     ignores: c.ignores,
-    ctxPropose: ctxDepuisPlan(plan.contrat),
+    ctxPropose: maj ? ({ ...defaultCtx(), ...maj.ctx } as Ctx) : ctxDepuisPlan(plan.contrat),
+    ctxAvant: maj ? ({ ...defaultCtx(), ...maj.avant } as Ctx) : null,
     manqueCodePostal: !projetRelie && !codePostalDuContrat(plan.contrat),
   };
 }
@@ -185,7 +239,8 @@ export type Validation = { ok: true; projectId: string; cree: boolean } | Echec;
 /**
  * L'utilisateur a relu et valide. TOUT est recalculé depuis la base :
  *  - estimation reliée (`projetId`, ou la plus récente) : l'injection est rejouée sur sa sélection DU
- *    MOMENT (D12), seule `reponses.sel` change, puis le cliché du lien est remplacé ;
+ *    MOMENT (D12) ; le ctx suit le plan (`ctxMisAJour` : les champs corrigés à la main restent), la surface
+ *    et le nom généré du projet aussi ; puis le cliché du lien est remplacé ;
  *  - sinon (ou `nouvelle`) : un projet détaillé est créé avec le ctx du plan, puis relié. Si le lien ne
  *    peut pas être posé, le projet est supprimé.
  * Les erreurs inattendues de la base lèvent `ErreurPlans` (la route répond `{ code: "erreur" }`).
@@ -208,20 +263,28 @@ export async function valider(
     const projet = choix.projet;
     const avant = obj(projet.reponses);
     const rapport = injecterPlan((avant.sel ?? {}) as Selection, c.contributions);
-    const reponses = { ...avant, sel: rapport.selection };
+    const maj = await ctxDeLaMiseAJour(sb, projet, plan.contrat);
+    const reponses = { ...avant, ctx: maj.ctx, sel: rapport.selection };
     const lien = ligneLien(projet.id, plan, c, rapport);
     if (trop(reponses, lien)) return { ok: false, code: "trop_volumineux" };
 
-    const { data, error } = await sb
-      .from("projects")
-      .update({ reponses, derniere_activite_at: new Date().toISOString() })
-      .eq("id", projet.id)
-      .select("id");
+    const surface = Number(maj.ctx.surface);
+    const surfaceAvant = Number(maj.avant.surface);
+    const patch: Obj = { reponses, derniere_activite_at: new Date().toISOString() };
+    if (Number.isFinite(surface) && surface > 0) patch.surface = surface;
+    /* le nom généré (« Rénovation — « plan » · 58 m² ») suit la surface ; un nom choisi à la main reste */
+    if (maj.cliche.nom != null && projet.nom === nomProjet(o.locale, maj.cliche.nom, surfaceAvant)) {
+      patch.nom = nomProjet(o.locale, plan.nom, surface);
+    }
+    const { data, error } = await sb.from("projects").update(patch).eq("id", projet.id).select("id");
     if (error || ((data ?? []) as unknown[]).length !== 1) throw new ErreurPlans("estimation-maj");
 
     if (!(await poserLien(sb, lien))) {
       /* La sélection d'avant revient : le cliché du lien doit décrire ce qui est chiffré. */
-      await sb.from("projects").update({ reponses: avant }).eq("id", projet.id).select("id");
+      const retour: Obj = { reponses: avant };
+      if ("surface" in patch && Number.isFinite(surfaceAvant) && surfaceAvant > 0) retour.surface = surfaceAvant;
+      if ("nom" in patch) retour.nom = projet.nom;
+      await sb.from("projects").update(retour).eq("id", projet.id).select("id");
       await lienEchoue("estimation-reno-maj", user.id, { projectId: projet.id, planId: plan.id });
       throw new ErreurPlans("estimation-lien");
     }

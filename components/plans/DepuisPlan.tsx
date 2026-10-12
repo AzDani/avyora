@@ -24,6 +24,7 @@ export default function DepuisPlan({
   bilan,
   manqueCodePostal,
   resume,
+  avant = null,
 }: {
   planId: string;
   /** L'estimation reliée à mettre à jour ; `null` : création. */
@@ -32,8 +33,10 @@ export default function DepuisPlan({
   lignes: LigneInjectee[];
   bilan: RapportInjection["bilan"];
   manqueCodePostal: boolean;
-  /** Création seulement : le bien tel que le plan le décrit. */
+  /** Le bien que la validation écrira (création : celui du plan ; mise à jour : l'estimation suivant le plan). */
   resume: ResumeBien | null;
+  /** Mise à jour : le bien de l'estimation AVANT, pour montrer ce qui change (« 58 → 73 m² »). */
+  avant?: ResumeBien | null;
 }) {
   const router = useRouter();
   const locale = useLocale();
@@ -86,20 +89,34 @@ export default function DepuisPlan({
         <section className="card p-5 sm:p-6" aria-labelledby="depuis-plan-bien">
           <h2 id="depuis-plan-bien" className="text-[15px] font-semibold text-ink">{t.leBien}</h2>
           <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 text-[14px] sm:grid-cols-4">
-            {[
-              [t.surface, `${nombre.format(resume.surface)} m²`],
-              [t.type, t.types[resume.type] ?? resume.type],
-              [t.niveaux, nombre.format(resume.niveaux)],
-              [t.pieces, nombre.format(resume.pieces)],
-              [t.sdb, nombre.format(resume.sdb)],
-              [t.wc, nombre.format(resume.wc)],
-              [t.fenetres, nombre.format(resume.fenetres)],
-            ].map(([k, v]) => (
-              <div key={k} className="min-w-0">
-                <dt className="text-[12.5px] text-muted">{k}</dt>
-                <dd className="num font-semibold text-ink">{v}</dd>
-              </div>
-            ))}
+            {(
+              [
+                [t.surface, (r: ResumeBien) => `${nombre.format(r.surface)} m²`],
+                [t.type, (r: ResumeBien) => t.types[r.type] ?? r.type],
+                [t.niveaux, (r: ResumeBien) => nombre.format(r.niveaux)],
+                [t.pieces, (r: ResumeBien) => nombre.format(r.pieces)],
+                [t.sdb, (r: ResumeBien) => nombre.format(r.sdb)],
+                [t.wc, (r: ResumeBien) => nombre.format(r.wc)],
+                [t.fenetres, (r: ResumeBien) => nombre.format(r.fenetres)],
+              ] as const
+            ).map(([k, f]) => {
+              const v = f(resume);
+              const a = avant ? f(avant) : null;
+              return (
+                <div key={k} className="min-w-0">
+                  <dt className="text-[12.5px] text-muted">{k}</dt>
+                  <dd className="num font-semibold text-ink">
+                    {a != null && a !== v ? (
+                      <>
+                        <span className="font-normal text-muted line-through">{a}</span> → {v}
+                      </>
+                    ) : (
+                      v
+                    )}
+                  </dd>
+                </div>
+              );
+            })}
           </dl>
           <p className="mt-3 text-[13px] text-muted">{t.leBienNote}</p>
         </section>
@@ -118,16 +135,22 @@ export default function DepuisPlan({
             maxLength={5}
             pattern="[0-9]{5}"
             value={cp}
-            aria-describedby="depuis-plan-cp-aide"
+            aria-describedby={code === "code_postal" ? "depuis-plan-cp-aide depuis-plan-cp-err" : "depuis-plan-cp-aide"}
             aria-invalid={code === "code_postal" || undefined}
             onChange={(e) => setCp(e.target.value.replace(/\D/g, "").slice(0, 5))}
           />
+          {code === "code_postal" && (
+            <p id="depuis-plan-cp-err" className="mt-2 text-[13.5px] font-medium text-danger">
+              {t.erreurs.code_postal}
+            </p>
+          )}
         </section>
       )}
 
       <ValidationPlan rapport={{ selection: {}, lignes, bilan }} onValider={valider} occupe={occupe} />
 
-      <p role="status" aria-live="polite" className={message ? "text-[14px] font-medium text-danger" : "sr-only"}>
+      {/* les autres erreurs ici ; celle du code postal s'affiche sous son champ (et reste annoncée ici) */}
+      <p role="status" aria-live="polite" className={message && !(code === "code_postal" && manqueCodePostal) ? "text-[14px] font-medium text-danger" : "sr-only"}>
         {message ?? (occupe ? t.envoi : "")}
       </p>
     </div>

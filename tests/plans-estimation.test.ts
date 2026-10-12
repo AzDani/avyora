@@ -425,7 +425,8 @@ describe("POST /api/plans/[id]/estimation · mise à jour d'une estimation reli�
     expect(rep.sel["Divers|Ma ligne"]).toEqual({ on: true, qty: 2 });
     expect(rep.custom).toEqual([{ id: "x", nom: "Ma ligne" }]);
     expect(rep.statuts).toEqual({ a: 1 });
-    expect(rep.ctx).toEqual({ surface: 51, type: "Maison" }); /* le ctx n'est pas touché */
+    /* le ctx suit le plan (jury) : sans cliché d'avant, les champs du plan sont repris (ici la même surface) */
+    expect(rep.ctx).toMatchObject({ surface: 51, type: "Maison", perimetre: "entier", niveaux: 2 });
     const autre = REFERENCE.lignes.find((x) => x.cle !== l.cle)!;
     expect(rep.sel[autre.cle]).toEqual(REFERENCE.selection[autre.cle]);
 
@@ -433,6 +434,33 @@ describe("POST /api/plans/[id]/estimation · mise à jour d'une estimation reli�
     expect(lien.plan_id).toBe(PLAN_RENO);
     expect(lien.contrat).toEqual(CONTRAT);
     expect((lien.rapport as { bilan: { epinglees: number } }).bilan.epinglees).toBe(1);
+  });
+
+  it("après une extension (58 → 72,5 m²), la mise à jour suit le plan : ctx, surface, nom ; un champ corrigé à la main reste (jury)", async () => {
+    const { route } = await charger();
+    const ancien = { ...clone(CONTRAT), area: 58.1 };
+    const nouveau = { ...clone(CONTRAT), area: 72.5 };
+    S.base.floor_plans[0].contrat = nouveau;
+    S.base.floor_plans[0].nom = "Maison";
+    const id = relier({});
+    const { ctxDepuisPlan } = await import("@/lib/estimateur/plan-ctx");
+    /* l'estimation a été créée depuis l'ancien plan ; dans le détaillé, la hauteur a été corrigée à la main */
+    const ctxAncien = ctxDepuisPlan(ancien);
+    S.base.projects[0].reponses = { ...(S.base.projects[0].reponses as object), ctx: { ...ctxAncien, hauteur: 2.9, finition: "premium" } };
+    S.base.projects[0].nom = "Rénovation — « Maison » · 58 m²";
+    S.base.projects[0].surface = 58;
+    S.base.project_plans[0].contrat = ancien;
+
+    const r = await poster(route, PLAN_RENO, {});
+    expect(r.status).toBe(200);
+    const p = S.base.projects[0];
+    const ctx = (p.reponses as { ctx: Record<string, unknown> }).ctx;
+    expect(ctx.surface).toBe(73);
+    expect(ctx.hauteur).toBe(2.9); /* corrigée à la main : gardée */
+    expect(ctx.finition).toBe("premium"); /* un choix de l'utilisateur : jamais touché */
+    expect(p.surface).toBe(73);
+    expect(p.nom).toBe("Rénovation — « Maison » · 73 m²");
+    expect(S.base.project_plans[0].contrat).toEqual(nouveau);
   });
 
   it("projetId choisit l'estimation ; sans lui, la plus récente ; un projet non relié à CE plan → 404", async () => {
