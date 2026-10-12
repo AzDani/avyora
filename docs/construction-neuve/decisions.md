@@ -2,7 +2,7 @@
 
 Tous les chiffres viennent de `calibre.mjs` (maison A = plain-pied 100 m², B = à étage 120 m² + garage, C = ossature bois 90 m², niveau standard). Les sources sont dans `journal-corrections.md` et les fichiers `verif-*.json`.
 
-**État :** le catalogue v1 et ses règles sont branchés dans le moteur (`lib/estimateur/catalog-neuf.json`, `neuf.ts`, `presets-neuf.ts`) ; aucun prix du catalogue rénovation n'a été modifié. Le point 4 (« le maximum soi-même ») est appliqué dans sa version proposée, réversible en une ligne (`PRO_TOUJOURS` dans `presets-neuf.ts`). Les aléas restent à 7 % tant que tu n'as pas tranché le point 3.
+**État :** le catalogue v1 et ses règles sont branchés dans le moteur (`lib/estimateur/catalog-neuf.json`, `neuf.ts`, `presets-neuf.ts`) ; aucun prix du catalogue rénovation n'a été modifié. Le point 4 (« le maximum soi-même ») est appliqué dans sa version proposée, réversible en une ligne (`PRO_PAR_DEFAUT_MAX` dans `presets-neuf.ts`) ; depuis N1, il ne règle plus que le défaut (voir le point 4). Les aléas restent à 7 % tant que tu n'as pas tranché le point 3.
 
 ---
 
@@ -51,6 +51,11 @@ La recherche conseille 10 à 15 %, et les jurys conducteur et économiste recomm
 Aujourd'hui, le moteur compte au prix des seuls matériaux tout ce qui a une fourniture, y compris fondations, charpente, couverture et PAC. Résultat : 958 € TTC/m² sur A, sous le repère de l'auto-construction (1 200-1 600 €/m²).
 - **Option A (proposée) :** structure, clos-couvert, raccordements et PAC toujours faits par des pros. A passe à **1 555 €/m²** (−25 %).
 - **Option B :** garder le moteur tel quel.
+
+**Appliqué (option A), puis précisé en N1 (revue rénovation / neuf, §3) : « possible » et « par défaut » sont deux règles séparées.**
+- **Possible** : « Je le fais » est proposé sur un poste dès qu'il a un prix de fourniture inférieur au prix posé, hors location, frais et pourcentage, comme en rénovation (`peutFaireSoiMeme`, `core.ts`). La maçonnerie, les fondations, la charpente, la couverture, les menuiseries extérieures, la fosse et la micro-station se prennent donc soi-même ligne par ligne dans le détaillé (132 postes sur 209). Une ligne de structure ou de clos-couvert prise soi-même affiche « Fait soi-même : hors garantie décennale. Vérifie avec ton assureur dommages-ouvrage. »
+- **Jamais possible** : les postes qui portent une raison (`pro`) affichent « Pro obligatoire · <raison> » : études et géomètre, concessionnaires, contrôles et attestations, PAC et climatisations (fluides frigorigènes), borne de recharge (IRVE), procédés du poseur. Liste figée : `tests/postes-pro-neuf.txt`. Pour les postes repris de la rénovation, la raison vit provisoirement dans `PRO_PARTAGES_NEUF` (`presets-neuf.ts`), jusqu'à N5.
+- **Par défaut en « le maximum »** : structure, clos-couvert **et raccordements** restent aux pros (`PRO_PAR_DEFAUT_MAX`). Aucun total par défaut ne bouge : A en « le maximum » reste à 189 110 € TTC, 195 743 € avec une fosse, 200 441 € avec une micro-station.
 
 ## 5. Aménagements extérieurs (allée, terrasse, clôture, portail)
 

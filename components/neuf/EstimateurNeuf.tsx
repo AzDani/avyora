@@ -29,7 +29,7 @@ import { useLocale, useT } from "@/components/i18n/LangProvider";
 import { dictNeuf } from "@/lib/i18n/neuf";
 import { catT } from "@/lib/estimateur/catalog-i18n";
 import {
-  buildDevis, customLotHT, finCoef, geometrieNeuf, isAuto, isLoc, key, regionCoef, autoQty, visibleTask, CATALOG_NEUF, PHASES_NEUF,
+  buildDevis, customLotHT, finCoef, geometrieNeuf, isAuto, isLoc, key, regionCoef, autoQty, visibleTask, raisonProNeuf, CATALOG_NEUF, PHASES_NEUF,
   type CustomLine, type Selection, type LigneSel, type MaisonNeuve, type Lot, type Tache,
 } from "@/lib/estimateur";
 import { totauxAvecPerso } from "@/lib/estimateur/projet";
@@ -37,7 +37,7 @@ import { INFO_PHASES } from "@/lib/estimateur/etapes-neuf";
 import { QUESTIONS_NEUF, type QuestionNeuf, type ValeurQuestionNeuf, type CleQuestionNeuf } from "@/lib/estimateur/questions-neuf";
 import {
   CLE_BROUILLON_DETAIL_NEUF, BLOCS_NEUF, ctxDetailNeuf, etatParDefaut, changerReponseNeuf, cocherNeufEtat, puReelNeuf, badgeNeuf,
-  diyNeuf, lignesPersoDuBloc, lignePersoNeuf, repriseDepuisReponses, repriseDepuisAffiner, repriseDepuisGraine,
+  diyNeuf, horsDecennaleNeuf, lignesPersoDuBloc, lignePersoNeuf, repriseDepuisReponses, repriseDepuisAffiner, repriseDepuisGraine,
   lireBrouillonDetailNeuf, enregistrementDetailNeuf, demarchesPhase, type EtatNeuf, type BlocNeuf,
 } from "@/lib/estimateur/detaille-neuf";
 import { CLE_BROUILLON_NEUF, CLE_AFFINER_NEUF, CLE_RECLAMATION_NEUF, type OrigineNeuf } from "@/lib/estimateur/brouillon-neuf";
@@ -282,6 +282,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
             {lignes.map((t) => (
               <Row key={t.n} l={l} t={t} ctx={ctx} sel={sel} coef={finCoef(ctx, l.c)} loc={loc}
                 puReel={puReelNeuf(ctx, sel, l, t)} diy={diyNeuf(l, t)} badge={badgeNeuf(ctx, sel, l, t)}
+                proRaison={raisonProNeuf(t)} horsDecennale={horsDecennaleNeuf(l)}
                 onCheck={() => toggleCheck(l, t)}
                 onChoice={(self) => upd(l.c, t.n, (s) => ({ ...s, self }))}
                 onAuto={() => toggleAuto(l, t)}

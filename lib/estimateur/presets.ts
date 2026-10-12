@@ -25,7 +25,9 @@ export function ampleurLabel(v: Ampleur, type: TypeBien): { label: string; desc:
   return { label: a.label, desc: a.desc };
 }
 
-const DIY_PARTIE = new Set(["Peinture", "Carrelage / Revetements", "Cloisons / Platrerie", "Isolation"]);
+/** Lots qu'un particulier fait couramment lui-même (« J'en fais une partie ») : le MÊME choix en
+ *  rénovation (rapide, par pièce) et en construction neuve. */
+export const DIY_PARTIE = new Set(["Peinture", "Carrelage / Revetements", "Cloisons / Platrerie", "Isolation"]);
 
 type Tache = [corps: string, nom: string];
 

@@ -13,6 +13,14 @@ const fr = {
   sansTva: "sans TVA",
   pctTravaux: "% des travaux",
   pctProjet: "% du projet",
+  /* Ligne de l'estimateur : un poste réservé aux pros, et l'avertissement d'un poste de structure
+     ou de clos-couvert passé en « Je le fais ». */
+  proOblig: "Pro obligatoire",
+  raisonsPro: {
+    concessionnaire: "gestionnaire du réseau", etude: "mission d'expert", controle: "contrôle ou attestation",
+    fluides: "fluides frigorigènes", reglementaire: "installateur qualifié", procede: "machine spécialisée",
+  } as Record<string, string>,
+  horsDecennale: "Fait soi-même : hors garantie décennale. Vérifie avec ton assureur dommages-ouvrage.",
   maisonNiveaux: { pp: "Maison plain-pied", etage: "Maison à étage", combles: "Maison avec combles aménagés" } as Record<string, string>,
   /* Affichage d'un projet neuf : fiche, suivi, résultat rapide, PDF, liste. */
   badgeEstim: "Estimation · construction neuve",
@@ -41,6 +49,12 @@ const en: typeof fr = {
   sansTva: "no VAT",
   pctTravaux: "% of the works",
   pctProjet: "% of the project",
+  proOblig: "Pro required",
+  raisonsPro: {
+    concessionnaire: "utility company", etude: "expert service", controle: "inspection or certificate",
+    fluides: "refrigerant handling", reglementaire: "certified installer", procede: "specialist machinery",
+  } as Record<string, string>,
+  horsDecennale: "DIY: not covered by the 10-year structural warranty. Check with your structural defects insurer.",
   maisonNiveaux: { pp: "Single-storey house", etage: "Two-storey house", combles: "House with converted attic" } as Record<string, string>,
   badgeEstim: "Estimate · new build",
   maisonNeuve: "New house",

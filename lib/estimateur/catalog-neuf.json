@@ -11,6 +11,7 @@
         "u": "forfait",
         "fp": 800,
         "sm": null,
+        "pro": "etude",
         "note": "Indispensable pour dessiner le plan de masse et caler la hauteur de la maison. Souvent déjà fourni en lotissement."
       },
       {
@@ -19,6 +20,7 @@
         "u": "forfait",
         "fp": 920,
         "sm": null,
+        "pro": "etude",
         "note": "Seulement si les limites du terrain ne sont pas encore bornées, surtout pour un terrain « en diffus » (hors lotissement). En lotissement, c'est déjà fait, souvent payé par le vendeur."
       },
       {
@@ -27,6 +29,7 @@
         "u": "forfait",
         "fp": 800,
         "sm": null,
+        "pro": "etude",
         "note": "En zone d'argile moyenne ou forte, c'est au vendeur du terrain de la fournir (loi ELAN). Inutile si la G2 est commandée directement."
       },
       {
@@ -35,6 +38,7 @@
         "u": "forfait",
         "fp": 1600,
         "sm": null,
+        "pro": "etude",
         "note": "Sondages et rapport qui fixent le type et la profondeur des fondations. Sans elle, le prix des fondations n'est qu'une hypothèse « sol courant ». L'assureur dommages-ouvrage la demande souvent."
       },
       {
@@ -43,6 +47,7 @@
         "u": "forfait",
         "fp": 750,
         "sm": null,
+        "pro": "etude",
         "note": "À commander avec la G2 avant-projet si celle-ci signale un sol difficile (argile forte, remblais, pente, fondations spéciales)."
       },
       {
@@ -51,6 +56,7 @@
         "u": "forfait",
         "fp": 2500,
         "sm": null,
+        "pro": "etude",
         "note": "Plans de la maison + toutes les pièces du permis (plan de masse, coupe, façades, insertion, notice), dépôt en mairie. Hors étude thermique et hors suivi de chantier. Au-delà de 150 m² de surface de plancher, l'architecte est obligatoire (poste suivant)."
       },
       {
@@ -59,6 +65,7 @@
         "u": "m2",
         "fp": 30,
         "sm": null,
+        "pro": "etude",
         "note": "Conception et dossier de permis signé par l'architecte, sans suivi de chantier. Quantité = surface de plancher (minimum facturé ≈ 1 500 € HT, soit 50 m²)."
       },
       {
@@ -67,6 +74,7 @@
         "u": "pct",
         "fp": 10,
         "sm": null,
+        "pro": "etude",
         "note": "En pourcentage du montant HT des travaux, dégressif : ≈ 13 à 15 % sous 100 000 € de travaux, 10 à 11 % de 150 000 à 250 000 €. Remplace les deux postes « dossier de permis ». Facilite l'obtention de la dommages-ouvrage."
       },
       {
@@ -75,6 +83,7 @@
         "u": "forfait",
         "fp": 850,
         "sm": null,
+        "pro": "etude",
         "note": "Obligatoire : sans l'attestation, le dossier de permis est incomplet. Fixe le niveau d'isolation et le chauffage. Si le même bureau d'études vend un pack « étude + tests + attestation de fin » (≈ 750-1 215 € HT), il remplace ce poste ET les contrôles de fin de chantier : n'en garder qu'un."
       },
       {
@@ -103,6 +112,7 @@
         "u": "forfait",
         "fp": 350,
         "sm": null,
+        "pro": "etude",
         "note": "Option : prouve que le panneau est resté affiché 2 mois, ce qui protège contre un recours tardif d'un voisin. Honoraires libres : ≈ 265 à 450 € TTC en région, jusqu'à 600 € TTC à Paris."
       },
       {
@@ -111,6 +121,7 @@
         "u": "forfait",
         "fp": 2000,
         "sm": null,
+        "pro": "etude",
         "note": "Dimensionne fondations, planchers, poutres et chaînages à partir de l'étude de sol. Cochée d'office seulement avec un étage, un sous-sol, un toit plat, un sol argileux (moyen/fort) ou en zone sismique 3 à 5. Souvent incluse dans le devis du maçon ou du fournisseur de plancher : à vérifier pour ne pas la payer deux fois."
       },
       {
@@ -171,6 +182,7 @@
         "u": "forfait",
         "fp": 550,
         "sm": null,
+        "pro": "etude",
         "note": "Reporte sur le terrain les angles de la maison d'après le plan de masse du permis et le niveau 0. Protège contre une erreur de distance aux limites."
       },
       {
@@ -239,6 +251,27 @@
       },
       {
         "ref": "loc-nacelle-plateforme-elevatrice"
+      },
+      {
+        "ref": "loc-camion-benne-utilitaire"
+      },
+      {
+        "ref": "loc-decoupeur-scie-carrelage-beton"
+      },
+      {
+        "ref": "loc-groupe-electrogene"
+      },
+      {
+        "ref": "loc-deshumidificateur-chauffage-chantier"
+      },
+      {
+        "ref": "loc-ponceuse-parquet-placo"
+      },
+      {
+        "ref": "loc-aspirateur-de-chantier"
+      },
+      {
+        "ref": "loc-compresseur"
       }
     ]
   },
@@ -310,6 +343,7 @@
         "u": "jour",
         "fp": 500,
         "sm": null,
+        "pro": "procede",
         "note": "Alternative au chiffrage au mètre pour les petits travaux et les reprises. Transport de la pelle et évacuation en plus."
       }
     ]
@@ -710,6 +744,7 @@
         "u": "ml",
         "fp": 80,
         "sm": null,
+        "pro": "procede",
         "note": "À la place de la gouttière zinc ou PVC. Nécessite la machine du poseur."
       },
       {
@@ -844,6 +879,7 @@
         "u": "forfait",
         "fp": 1658,
         "sm": null,
+        "pro": "concessionnaire",
         "note": "Seulement si le réseau public n'arrive pas devant le terrain (terrain isolé). Barème Enedis après réfaction de 40 % (part du coût prise en charge par le tarif du réseau, que le client ne paie pas)."
       },
       {
@@ -852,6 +888,7 @@
         "u": "ml",
         "fp": 68.4,
         "sm": null,
+        "pro": "concessionnaire",
         "note": "Longueur donnée par le devis Enedis."
       },
       {
@@ -1041,6 +1078,7 @@
         "u": "forfait",
         "fp": 270,
         "sm": null,
+        "pro": "controle",
         "note": "Fortement conseillé : à faire juste après les menuiseries, les doublages et le pare-vapeur, AVANT les plaques de plafond et les cloisons, quand on peut encore réparer les fuites. Rater le test final coûte des reprises + un nouveau test."
       }
     ]
@@ -1317,6 +1355,7 @@
         "u": "forfait",
         "fp": 650,
         "sm": null,
+        "pro": "controle",
         "note": "Obligatoires : sans l'attestation, la déclaration d'achèvement est incomplète. Vendus en pack, moins cher que séparément (voir aussi le pack global avec l'étude thermique). Un nouveau test est à payer en cas d'échec."
       },
       {
@@ -1325,6 +1364,7 @@
         "u": "forfait",
         "fp": 292,
         "sm": null,
+        "pro": "controle",
         "note": "Obligatoire en zone d'argile moyenne ou forte (Géorisques). Sans constructeur pour la signer, il faut un contrôleur technique ou un bureau d'études."
       },
       {
@@ -1333,6 +1373,7 @@
         "u": "forfait",
         "fp": 433,
         "sm": null,
+        "pro": "controle",
         "note": "En zone sismique 3 et 4 (zone 5 sur devis). Vérifier auprès de la DDT (direction départementale des territoires, service de l'État) si l'attestation du permis est demandée pour une maison : sinon, ≈ 292 € HT pour l'achèvement seul. Une seule source de prix."
       },
       {

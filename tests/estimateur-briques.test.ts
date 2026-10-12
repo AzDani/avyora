@@ -11,8 +11,8 @@ import { LangProvider } from "@/components/i18n/LangProvider";
 import { Row } from "@/components/estimateur/Row";
 import { CustomLines, Field, Stepper, ChoicePrice } from "@/components/estimateur/partage";
 import { RAPIDE_CSS } from "@/components/estimateur/rapide-styles";
-import { CATALOG_NEUF, presetNeuf } from "@/lib/estimateur";
-import { badgeNeuf, diyNeuf, puReelNeuf } from "@/lib/estimateur/detaille-neuf";
+import { CATALOG_NEUF, presetNeuf, raisonProNeuf } from "@/lib/estimateur";
+import { badgeNeuf, diyNeuf, horsDecennaleNeuf, puReelNeuf } from "@/lib/estimateur/detaille-neuf";
 
 const rien = () => {};
 const ctx: Ctx = { ...defaultCtx(), type: "Maison", surface: 100, surfaceSol: 100 };
@@ -101,9 +101,10 @@ describe("Briques de l'estimateur — rendu figé", () => {
   });
 });
 
-/* Construction neuve (C4) : `Row` reçoit `puReel`, `diy` et `badge`. Sans eux (ci-dessus), le rendu
-   de la rénovation est inchangé ; avec eux, une ligne en % n'a pas de quantité et une démarche
-   n'a pas de montant. */
+/* Construction neuve (C4, N1) : `Row` reçoit `puReel`, `diy`, `badge`, `proRaison` et `horsDecennale`,
+   comme dans `EstimateurNeuf`. Sans eux (ci-dessus), le rendu de la rénovation est inchangé ; avec
+   eux, une ligne en % n'a pas de quantité, une démarche n'a pas de montant, un poste réservé
+   affiche « Pro obligatoire » et un mur monté soi-même rappelle qu'il sort de la décennale. */
 describe("Row · props du neuf", () => {
   const p = presetNeuf({ surface: 100, niveaux: "pp", codePostal: "45000", finition: "standard", qui: "pros" });
   const rowNeuf = (id: string, s?: Selection[string]) => {
@@ -113,6 +114,7 @@ describe("Row · props du neuf", () => {
     return createElement(Row, {
       l, t, ctx: p.ctx, sel, coef: finCoef(p.ctx, l.c), loc: isLoc(l.c),
       puReel: puReelNeuf(p.ctx, sel, l, t), diy: diyNeuf(l, t), badge: badgeNeuf(p.ctx, sel, l, t),
+      proRaison: raisonProNeuf(t), horsDecennale: horsDecennaleNeuf(l),
       onCheck: rien, onChoice: rien, onAuto: rien, onQty: rien, onMat: rien, onVit: rien, onMot: rien,
       onTai: rien, onVar: rien, onNote: rien, onPu: rien, onPm: rien,
     });
@@ -138,4 +140,33 @@ describe("Row · props du neuf", () => {
       expect(html).toMatchSnapshot();
     });
   }
+  it("mur en parpaings (N1) : « Je le fais » proposé ; pris soi-même, la ligne sort de la décennale", () => {
+    const fait = rendre(rowNeuf("mac-monter-un-mur-en-parpaings", { on: true }), "fr");
+    expect(fait).toContain(">Je le fais<");
+    expect(fait).not.toContain("decennale");
+    const soi = rendre(rowNeuf("mac-monter-un-mur-en-parpaings", { on: true, self: true }), "fr");
+    expect(soi).toContain('class="ch onS"');
+    expect(soi).toContain("Fait soi-même : hors garantie décennale. Vérifie avec ton assureur dommages-ouvrage.");
+    const en = rendre(rowNeuf("mac-monter-un-mur-en-parpaings", { on: true, self: true }), "en");
+    expect(en).toContain(">DIY<");
+    expect(en).toContain("not covered by the 10-year structural warranty");
+    // Une peinture prise soi-même n'a pas l'avertissement.
+    expect(rendre(rowNeuf("pei-peinture-murs-plaques-neuves", { on: true, self: true }), "fr")).not.toContain("decennale");
+  });
+  it("raccordement Enedis (N1) : « Pro obligatoire » à la place de « Je le fais »", () => {
+    const fr = rendre(rowNeuf("rac-raccordement-electrique-enedis", { on: true }), "fr");
+    expect(fr).toContain('<span class="pro-oblig">Pro obligatoire · gestionnaire du réseau</span>');
+    expect(fr).not.toContain(">Je le fais<");
+    expect(rendre(rowNeuf("rac-raccordement-electrique-enedis", { on: true }), "en")).toContain("Pro required · utility company");
+    // Décoché : ni bouton ni étiquette, comme toute ligne décochée.
+    expect(rendre(rowNeuf("rac-raccordement-electrique-enedis", { on: false }), "fr")).not.toContain("pro-oblig");
+  });
+  it("PAC (N1) : réservée aux pros, mais un projet enregistré en « Je le fais » garde sa puce active", () => {
+    const neuve = rendre(rowNeuf("cha-pompe-a-chaleur-air-eau", { on: true }), "fr");
+    expect(neuve).toContain("Pro obligatoire · fluides frigorigènes");
+    expect(neuve).not.toContain(">Je le fais<");
+    const ancienne = rendre(rowNeuf("cha-pompe-a-chaleur-air-eau", { on: true, self: true }), "fr");
+    expect(ancienne).toContain('class="ch onS"');
+    expect(ancienne).not.toContain("pro-oblig");
+  });
 });

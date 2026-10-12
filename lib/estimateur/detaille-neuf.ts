@@ -16,7 +16,7 @@
 import { key, isAuto, isLoc, lineHT, type Ctx, type Selection, type Finition, type Lot, type Tache, type CustomLine } from "./core";
 import { CATALOG_NEUF } from "./catalogue-neuf";
 import { maisonComplete, maisonParDefaut, reponseDuPoste, type MaisonNeuve } from "./neuf";
-import { ctxNeuf, appliquerMaison, cocherPosteNeuf, soiMemeNeuf, presetMaison, presetNeuf, type RapideNeufInput } from "./presets-neuf";
+import { ctxNeuf, appliquerMaison, cocherPosteNeuf, soiMemeNeuf, peutFaireNeuf, LOTS_DECENNALE_NEUF, presetMaison, presetNeuf, type RapideNeufInput } from "./presets-neuf";
 import type { QuiRealise } from "./presets";
 import type { CleQuestionNeuf, ValeurQuestionNeuf } from "./questions-neuf";
 import { estJalon } from "./projet";
@@ -66,7 +66,7 @@ export function changerQuiNeuf(sel: Selection, qui: QuiRealise): Selection {
   for (const [k, s] of Object.entries(sel)) {
     const p = PAR_CLE.get(k);
     if (!s?.on || !p) continue;
-    out[k] = { ...s, self: soiMemeNeuf(p.l.c, qui, p.t.id, p.t) };
+    out[k] = { ...s, self: soiMemeNeuf(p.l.c, qui, p.t) };
   }
   return out;
 }
@@ -139,8 +139,14 @@ export function demarchesPhase(ctx: Ctx, sel: Selection, phase: string): number 
   return n;
 }
 
-/** « Je le fais » proposé sur ce poste ? (lots jamais faits soi-même, frais, pourcentages, PAC : non) */
-export const diyNeuf = (l: Lot, t: Tache): boolean => soiMemeNeuf(l.c, "max", t.id, t);
+/** « Je le fais » proposé sur ce poste ? La règle par poste (`peutFaireNeuf`), quel que soit le
+ *  mode : maçonnerie, charpente ou menuiseries se prennent à la main, ligne par ligne. Nom gardé
+ *  (des tests l'importent). */
+export const diyNeuf = (l: Lot, t: Tache): boolean => peutFaireNeuf(l, t);
+
+/** Structure et clos-couvert : passée en « Je le fais », la ligne avertit qu'elle sort de la
+ *  garantie décennale (à vérifier avec l'assureur dommages-ouvrage). */
+export const horsDecennaleNeuf = (l: Lot): boolean => LOTS_DECENNALE_NEUF.has(l.c);
 
 // ── Blocs : un lot du catalogue neuf, à sa place dans une phase ─────────────────────────────────
 /* Un même lot revient dans plusieurs phases, et parfois deux fois dans la même (« Isolation » ×2

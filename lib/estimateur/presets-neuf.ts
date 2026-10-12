@@ -5,15 +5,10 @@
  * au MÊME moteur (`buildDevis(catalogueDe(ctx), ctx, sel)`). Le mode rapide (5 questions) et le
  * mode détaillé passent par les mêmes règles : une maison décrite pareil coûte pareil.
  */
-import { key, type Ctx, type Selection, type Finition, type Tache } from "./core";
+import { key, peutFaireSoiMeme, type Ctx, type Selection, type Finition, type Tache, type Lot, type RaisonPro } from "./core";
 import { POSTE_NEUF } from "./catalogue-neuf";
 import { maisonComplete, geometrieNeuf, decisionsNeuf, exclusifsDe, type MaisonNeuve, type DecisionNeuf, type Niveaux } from "./neuf";
-import type { QuiRealise } from "./presets";
-
-/** Lots qu'un particulier fait couramment lui-même sur une maison neuve (« une partie »). */
-export const DIY_PARTIE_NEUF = new Set(["Peinture", "Carrelage / Revetements", "Cloisons / Platrerie", "Isolation"]);
-/** Lots qu'on ne fait jamais soi-même : démarches, études, assurances, taxes, branchements, contrôles. */
-const JAMAIS_SOI_MEME = new Set(["Etudes / Conception", "Assurance & ouverture du chantier", "Taxes & participations", "Raccordements aux réseaux", "Contrôles & réception", "Location de matériel"]);
+import { DIY_PARTIE, type QuiRealise } from "./presets";
 
 /** Contexte moteur d'une construction neuve. */
 export function ctxNeuf(maison: Partial<MaisonNeuve>, opts: { finition?: Finition; codePostal?: string; aleas?: number } = {}): Ctx {
@@ -30,23 +25,62 @@ export function ctxNeuf(maison: Partial<MaisonNeuve>, opts: { finition?: Finitio
   };
 }
 
-/* « Le maximum » en neuf n'est pas « tout » : la structure, le clos-couvert, les branchements et la
-   pompe à chaleur restent aux artisans (garanties décennales, assurance dommages-ouvrage, matériel).
-   C'est ce qui ramène l'auto-construction dans les prix constatés (1 200 à 1 600 €/m²). */
-const PRO_TOUJOURS = new Set(["Terrassement", "Fondations & soubassement", "Maçonnerie", "Charpente, couverture & structure bois",
-  "Couverture & zinguerie", "Menuiseries exterieures"]);
-/* Une pompe à chaleur, air/eau ou air/air, manipule des fluides frigorigènes : réservé à un
-   professionnel qui a l'attestation de capacité. */
-const PAC = new Set(["cha-pompe-a-chaleur-air-eau", "cha-climatisation-gainable-reversible", "cha-climatisation-reversible-split"]);
+/* « Je le fais » en neuf : deux questions séparées (revue rénovation / neuf, §3).
+   1. Est-ce POSSIBLE ? Une règle par poste, la même qu'en rénovation (`peutFaireSoiMeme`) : la
+      maçonnerie, les fondations, la charpente, la couverture et les menuiseries extérieures se
+      font soi-même ligne par ligne, comme en rénovation. Restent aux pros les postes qui portent
+      une raison (`pro` : études, concessionnaires, contrôles, fluides frigorigènes, IRVE, procédé).
+   2. Que prend le mode « Je fais le maximum » PAR DÉFAUT ? Pas « tout » : voir `PRO_PAR_DEFAUT_MAX`. */
 
-/** « Je le fais » sur un poste du neuf, selon qui réalise. Une prestation pure (pas de prix de
- *  fourniture : échafaudage, étude, contrôle) ou une location (le prix est le même qu'on la
- *  « fasse » ou non : WC de chantier) ne se fait jamais soi-même. */
-export function soiMemeNeuf(lot: string, qui: QuiRealise, id?: string, t?: Tache): boolean {
-  if (JAMAIS_SOI_MEME.has(lot)) return false;
-  if (t && (t.sm == null || t.frais || t.u === "pct" || t.sm >= (t.fp ?? 0))) return false;
-  if (qui === "max") return !PRO_TOUJOURS.has(lot) && !(id && PAC.has(id));
-  return qui === "partie" && DIY_PARTIE_NEUF.has(lot);
+/** Structure et clos-couvert : ce que couvre la garantie décennale de l'artisan. Passé en « Je le
+ *  fais », un de ces postes sort de cette garantie : la ligne le rappelle. */
+export const LOTS_DECENNALE_NEUF = new Set(["Terrassement", "Fondations & soubassement", "Maçonnerie", "Charpente, couverture & structure bois",
+  "Couverture & zinguerie", "Menuiseries exterieures"]);
+
+/* « Le maximum » en neuf n'est pas « tout » : la structure, le clos-couvert et les branchements
+   restent aux artisans PAR DÉFAUT (garanties décennales, assurance dommages-ouvrage, matériel), et
+   la pompe à chaleur n'est jamais faisable soi-même (`PRO_PARTAGES_NEUF`). C'est ce qui ramène
+   l'auto-construction dans les prix constatés (1 200 à 1 600 €/m²). Dans le détaillé, chacun de ces
+   postes se reprend à la main. « Raccordements aux réseaux » garde la fosse et la micro-station aux
+   pros par défaut (décision 4, option A, `docs/construction-neuve/decisions.md`) : aucun total par
+   défaut ne bouge. */
+export const PRO_PAR_DEFAUT_MAX = new Set([...LOTS_DECENNALE_NEUF, "Raccordements aux réseaux"]);
+
+/**
+ * Postes REPRIS de la rénovation (le même objet que `catalog.json`, qu'on ne modifie pas ici) que le
+ * neuf réserve aux pros, avec leur raison. TEMPORAIRE : le chantier N5 porte ce champ `pro` dans
+ * `catalog.json`, pour les deux natures, et supprime cette table.
+ * - La règle seule les ouvrirait (ils ont un prix de fourniture) : PAC et climatisations (fluides
+ *   frigorigènes, attestation de capacité, C. env. art. R543-99 et suivants), branchement au
+ *   tout-à-l'égout (côté réseau public ; la partie privée est `vrd-canalisation-pvc-enterree`), borne
+ *   de recharge (installateur qualifié IRVE au-delà de 3,7 kW, décret 2017-26).
+ * - Déjà sans prix de fourniture : la table ne leur donne que la raison affichée.
+ */
+export const PRO_PARTAGES_NEUF = new Map<string, RaisonPro>([
+  ["cha-pompe-a-chaleur-air-eau", "fluides"], ["cha-climatisation-reversible-split", "fluides"], ["cha-climatisation-gainable-reversible", "fluides"],
+  ["rac-raccordement-au-tout-a-l-egout", "concessionnaire"], ["ele-borne-de-recharge-voiture", "reglementaire"],
+  ["rac-raccordement-electrique-enedis", "concessionnaire"], ["rac-mise-en-service-provisoire-enedis", "concessionnaire"],
+  ["rac-raccordement-eau-potable", "concessionnaire"], ["ele-consuel-attestation-de-conformite", "controle"],
+  ["etu-etude-assainissement-individuel-spanc", "etude"],
+]);
+
+/** Raison qui réserve ce poste du neuf aux pros (étiquette « Pro obligatoire · … »), ou `null`. */
+export function raisonProNeuf(t: Tache): RaisonPro | null {
+  return t.pro ?? PRO_PARTAGES_NEUF.get(t.id) ?? null;
+}
+
+/** « Je le fais » est-il POSSIBLE sur ce poste du neuf ? La règle commune, plus la table temporaire. */
+export function peutFaireNeuf(l: Pick<Lot, "c">, t: Tache): boolean {
+  return peutFaireSoiMeme(l, t) && !PRO_PARTAGES_NEUF.has(t.id);
+}
+
+/** « Je le fais » PAR DÉFAUT sur un poste du neuf, selon qui réalise : jamais là où ce n'est pas
+ *  possible ; en « le maximum », tout sauf `PRO_PAR_DEFAUT_MAX` ; en « une partie », les lots de
+ *  finition (`DIY_PARTIE`, le même choix qu'en rénovation). */
+export function soiMemeNeuf(lot: string, qui: QuiRealise, t: Tache): boolean {
+  if (!peutFaireNeuf({ c: lot }, t)) return false;
+  if (qui === "max") return !PRO_PAR_DEFAUT_MAX.has(lot);
+  return qui === "partie" && DIY_PARTIE.has(lot);
 }
 
 /**
@@ -78,7 +112,7 @@ export function appliquerMaison(maison: MaisonNeuve, sel: Selection, qui?: QuiRe
     out = decocherExclusifs(out, id);
     out[k] = {
       ...(avant ?? {}), on: true,
-      ...(nouveau && qui ? { self: soiMemeNeuf(p.c, qui, id, p.t) } : {}),
+      ...(nouveau && qui ? { self: soiMemeNeuf(p.c, qui, p.t) } : {}),
       ...(d.vsel ? { vsel: { ...(avant?.vsel ?? {}), ...d.vsel } } : {}),
       ...(d.tai ? { tai: d.tai } : {}),
     };
@@ -103,7 +137,7 @@ export function cocherPosteNeuf(sel: Selection, id: string, on: boolean, qui?: Q
   if (!p) return sel;
   const k = key(p.c, p.n);
   const base = on ? decocherExclusifs(sel, id) : { ...sel };
-  base[k] = { ...(sel[k] ?? {}), on, ...(on && !sel[k] && qui ? { self: soiMemeNeuf(p.c, qui, id, p.t) } : {}) };
+  base[k] = { ...(sel[k] ?? {}), on, ...(on && !sel[k] && qui ? { self: soiMemeNeuf(p.c, qui, p.t) } : {}) };
   return base;
 }
 

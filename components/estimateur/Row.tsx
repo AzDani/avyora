@@ -1,17 +1,18 @@
 "use client";
 
 /** Ligne de poste de l'estimateur détaillé : déplacée telle quelle depuis `components/Estimateur.tsx` (C1).
- *  Les props `puReel`, `diy` et `badge` (construction neuve, C4) sont facultatives : absentes, le
- *  rendu est exactement celui d'avant (figé par `tests/estimateur-briques.test.ts`). */
+ *  Les props `puReel`, `diy`, `badge` (construction neuve, C4), `proRaison` et `horsDecennale` (N1)
+ *  sont facultatives : absentes, le rendu est exactement celui d'avant (figé par
+ *  `tests/estimateur-briques.test.ts`). La rénovation ne les passe pas. */
 import { useState } from "react";
 import NumStepper from "@/components/Stepper";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { catT } from "@/lib/estimateur/catalog-i18n";
-import { key, isAuto, autoQty, lineHT, effPrices, type Ctx, type Selection, type Lot, type Tache } from "@/lib/estimateur";
+import { key, isAuto, autoQty, lineHT, effPrices, type Ctx, type Selection, type Lot, type Tache, type RaisonPro } from "@/lib/estimateur";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 import { ChoicePrice, fmt, isUrl } from "./partage";
 
-export function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar, onNote, onPu, onPm, puReel, diy, badge }: {
+export function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar, onNote, onPu, onPm, puReel, diy, badge, proRaison, horsDecennale }: {
   l: Lot; t: Tache; ctx: Ctx; sel: Selection; coef: number; loc: boolean;
   onCheck: () => void; onChoice: (self: boolean) => void; onAuto: () => void; onQty: (v: number) => void;
   onMat: (m: "pvc" | "alu" | "bois") => void; onVit: (v: "double" | "triple") => void; onMot: (m: "manuel" | "motorise") => void; onTai: (z: "petit" | "grand") => void; onVar: (g: string, o: string) => void; onNote: (v: string) => void; onPu: (v: number | null) => void; onPm: (v: number | null) => void;
@@ -22,6 +23,11 @@ export function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQt
   diy?: boolean;
   /** `pct` : « {fp} % des travaux » au lieu d'une quantité ; `jalon` : « Démarche », sans montant. */
   badge?: "pct" | "jalon";
+  /** Poste réservé aux pros : « Pro obligatoire · <raison> » à la place de « Je le fais ». */
+  proRaison?: RaisonPro | null;
+  /** Structure ou clos-couvert : passé en « Je le fais », la ligne rappelle qu'il sort de la
+   *  garantie décennale. */
+  horsDecennale?: boolean;
 }) {
   const locale = useLocale();
   const s = sel[key(l.c, t.n)] || {};
@@ -50,7 +56,8 @@ export function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQt
   const unitPart = badge !== "pct" && t.u !== "forfait" && t.u !== "u" ? "/" + t.u : "";
   // Un frais (taxe, assurance) ne porte pas de TVA : pas de « HT ». N'existe qu'en neuf.
   const uSuffix = t.frais ? unitPart + " · " + nTxt.sansTva : " HT" + unitPart;
-  const avecDiy = diy ?? puMatBase != null;
+  // Un projet enregistré en « Je le fais » sur un poste devenu réservé garde sa puce active.
+  const avecDiy = (diy ?? puMatBase != null) || self;
   const jalon = badge === "jalon";
   const pctTxt = badge === "pct" && t.fp != null && !puEdited
     ? `${t.fp.toLocaleString(locale === "en" ? "en-US" : "fr-FR")} ${t.assiette === "projet" || (t.frais && t.assiette !== "travaux") ? nTxt.pctProjet : nTxt.pctTravaux}`
@@ -106,10 +113,12 @@ export function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQt
             <span className="choice">
               <ChoicePrice label={locale === "en" ? "Hire out" : "Fait faire"} active={!self} activeCls="onA" amount={puv} edited={puEdited}
                 onSelect={() => onChoice(false)} onEdit={(v) => onPu(v)} onReset={() => onPu(null)} />
-              {avecDiy && puMatBase != null && (
+              {avecDiy && puMatBase != null ? (
                 <ChoicePrice label={locale === "en" ? "DIY" : "Je le fais"} active={self} activeCls="onS" amount={puMat} edited={pmEdited}
                   onSelect={() => onChoice(true)} onEdit={(v) => onPm(v)} onReset={() => onPm(null)} />
-              )}
+              ) : proRaison ? (
+                <span className="pro-oblig">{`${nTxt.proOblig} · ${nTxt.raisonsPro[proRaison]}`}</span>
+              ) : null}
             </span>
           )}
           {s.note && !noteOpen && isUrl(s.note) && <a className="notechip" href={s.note} target="_blank" rel="noopener noreferrer" title={s.note}>🔗</a>}
@@ -119,6 +128,7 @@ export function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQt
       ) : (
         <span className="tctl"><span className="unit">{t.u === "forfait" ? catT(locale, "unites", "forfait") : loc ? (locale === "en" ? "/day" : "/jour") : catT(locale, "unites", t.u)}</span></span>
       )}
+      {on && self && horsDecennale && <div className="decennale" role="note">{nTxt.horsDecennale}</div>}
       {on && variant && (
         <div className="tvariants">
           {t.mat && (

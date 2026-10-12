@@ -3,8 +3,9 @@
  *
  * Référence : `tests/fixtures/moteur-neuf.json`, un scénario par ligne (voir `photo.ts`). Elle fige
  * l'état ACTUEL : les chantiers qui doivent changer un montant du neuf (N8, N12…) listent leurs
- * écarts dans leur compte rendu avant de la réécrire ; les autres (N1 : « Je le fais » par poste,
- * sans changer aucun total par défaut) la retrouvent au centime.
+ * écarts dans leur compte rendu avant de la réécrire ; les autres la retrouvent au centime. N1
+ * (« Je le fais » par poste) n'a changé aucun total par défaut : seuls les 18 catalogues cochés
+ * `tout/…` ont bougé, parce qu'ils cochent aussi les 7 locations reprises de la rénovation.
  *
  * Grille :
  * - `rapide/…` : `presetNeuf` sur surface × niveaux × finition × qui × code postal × garage ×

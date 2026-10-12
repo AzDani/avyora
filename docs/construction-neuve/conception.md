@@ -38,7 +38,7 @@ Ce qu'il reste à faire :
 4. **`autoQty` du neuf** : une branche à part qui reprend `geometrie()` + `regles()` de `calibre.mjs`. Les règles rénovation (« Faux plafond » = S…) ne s'appliquent **pas** aux postes repris.
 5. **Clé `key(c, n)`** : elle reste unique (vérifié par `valide-v1.mjs`). Un même nom de lot apparaît dans plusieurs phases, et parfois deux fois dans la même phase (« Carrelage / Revetements » avant et après la peinture, « Isolation » avant et après les plafonds) : l'affichage regroupe par **phase** (`p`), puis par bloc, dans l'ordre du fichier.
 6. **Aléas du neuf** : paramètre propre, **10 % proposé** (7 % en rénovation). Décision Dani.
-7. **« Je le fais » en neuf** : pas sur les `frais` ni sur les prestations pures (`sm` null), comme aujourd'hui ; et, **proposition v1**, jamais sur la structure et le clos-couvert (§ h).
+7. **« Je le fais » en neuf** : pas sur les `frais` ni sur les prestations pures (`sm` null), comme aujourd'hui. La structure et le clos-couvert restent aux pros **par défaut** en « le maximum », mais se prennent soi-même ligne par ligne dans le détaillé depuis N1 (§ h).
 8. **Nouvelles questions** (§ b) : zone sismique, terrain borné, toit à pente faible, gouttière, terre végétale à évacuer, taux communal de la taxe d'aménagement (facultatif).
 
 ---
@@ -219,7 +219,7 @@ Légende : **N** = nouveau poste, **R** = repris du catalogue rénovation (même
 | R | Raccordements aux réseaux | Coffret / tableau de chantier provisoire <br><sub>`rac-coffret-tableau-de-chantier-provisoire`</sub> | forfait | 300 | 1 forfait | toujours |
 | R | Raccordements aux réseaux | Mise en service provisoire (Enedis) <br><sub>`rac-mise-en-service-provisoire-enedis`</sub> | forfait | 250 | 1 forfait | toujours |
 | R | Raccordements aux réseaux | Raccordement eau potable <br><sub>`rac-raccordement-eau-potable`</sub> | forfait | 1 500 | 1 forfait (compteur posé dès l'installation de chantier) | toujours |
-| R | Location de matériel | Mini-pelle (1,5-2,5 t) <br><sub>`loc-mini-pelle-1-5-2-5-t`</sub> | jour | 200 | jours | si « Je le fais » sur le terrassement (sinon jamais) |
+| R | Location de matériel | Mini-pelle (1,5-2,5 t) <br><sub>`loc-mini-pelle-1-5-2-5-t`</sub> | jour | 200 | jours | jamais cochée d'office : ajout à la main. La part d'engin d'un terrassement fait soi-même ira dans son `sm` (méthode réno, N12) ; une règle automatique compterait l'engin deux fois |
 | R | Location de matériel | Livraison mini-pelle (dépose + reprise) <br><sub>`loc-livraison-mini-pelle-depose-reprise`</sub> | forfait | 300 | 1 forfait | avec la mini-pelle louée |
 | R | Location de matériel | Bétonnière <br><sub>`loc-betonniere`</sub> | jour | 35 | jours | option (auto-construction) |
 | R | Location de matériel | Nacelle / plateforme élévatrice <br><sub>`loc-nacelle-plateforme-elevatrice`</sub> | jour | 180 | jours | option (auto-construction) |
@@ -466,7 +466,7 @@ Résultat attendu, en standard et tout fait faire, avec les prix v1 (voir `calib
 |---|---|---|
 | Etudes / Conception | Relevé + plans de l'existant · Plans du projet · Métré & quantitatifs · Diagnostics obligatoires (amiante, plomb, élec) · Diagnostic énergétique (DPE) · Démarches en mairie (DP / permis) · Étude de structure · Dossier d'aides (MaPrimeRénov', CEE) | remplacés par plan topo, G2, RE2020, permis, étude béton armé |
 | Annexes de chantier | Sécurité du chantier | comprise dans l'installation de chantier |
-| Location de matériel | Marteau-piqueur / brise-béton · Ponceuse (parquet / placo) · Aspirateur de chantier · Découpeur / scie (carrelage, béton) · Compresseur · Groupe électrogène · Déshumidificateur / chauffage chantier · Camion benne / utilitaire | matériel de démolition / rénovation ; en neuf seuls mini-pelle, bétonnière et nacelle sont repris |
+| Location de matériel | Marteau-piqueur / brise-béton · Ponceuse (parquet / placo) · Aspirateur de chantier · Découpeur / scie (carrelage, béton) · Compresseur · Groupe électrogène · Déshumidificateur / chauffage chantier · Camion benne / utilitaire | matériel de démolition ; depuis N1, le neuf reprend aussi par `ref` les 7 autres (ponceuse, aspirateur, découpeur, compresseur, groupe électrogène, déshumidificateur, camion benne), pour les ajouts faits à la main |
 | Démolition | tout le lot | rien à démolir sur un terrain nu |
 | Maçonnerie | Ouvrir un mur porteur (petite / grande) · Poutres et poteaux de reprise (IPN, lamellé-collé, acier) · Créer un appui de fenêtre · Créer un seuil de porte · Couler une dalle béton · Consolider fondations / reprise en sous-œuvre · Monter un mur en pierre · Créer / enlever une cheminée en dur | interventions sur l'existant |
 | Charpente, couverture & structure bois | Toiture complète tuile / ardoise · Dépose complète de toiture · Couverture tuiles / ardoise sur support existant · Réfection couverture · Couverture zinc / bac acier · Sous-toiture · Traiter la charpente · Gouttières & descentes · Nettoyer / démousser | remplacés par charpente + couverture neuve tout compris + zinguerie |
@@ -528,7 +528,7 @@ Chaque ligne est un **groupe exclusif** (un seul poste à la fois) ou une **incl
 | **Taxe d'aménagement** ⊃ redevance d'archéologie | Déjà additionnée dans les prix (26,31 / 52,63 €/m², 172,75 €/place). |
 | **Compteur provisoire** | Si le chantier dépasse 1 an, le définitif anticipé revient moins cher. |
 | **Installation de chantier** ⟂ WC de chantier / clôture / bennes | L'installation (400 €) = amenée, panneau, protections ; WC, clôture et bennes à part. Décocher ce que le maçon inclut. |
-| **Location de matériel** | Seulement en « Je le fais » (un artisan amène ses engins). |
+| **Location de matériel** | Ajouts à la main, pour ce qu'on fait soi-même (un artisan amène ses engins). La part d'engin d'un poste fait soi-même va dans son `sm` (N12), jamais en location automatique. |
 | **Escalier bois** quart tournant ⟂ droit en kit ⟂ béton | Un seul escalier ; garde-corps de trémie en plus. |
 
 ---
@@ -536,6 +536,8 @@ Chaque ligne est un **groupe exclusif** (un seul poste à la fois) ou une **incl
 ## h. « Je le fais » en neuf et affichage de la précision
 
 **Qui réalise.** Le moteur valorise un poste fait soi-même à `sm × coef de finition`. Appliqué à tout ce qui a une fourniture, « le maximum » descend à ≈ 960 € TTC/m² (−54 %), sous le repère d'auto-construction (1 200-1 600 €/m²) : le particulier coulerait ses fondations, poserait sa charpente et installerait sa PAC au prix des matériaux. **Proposition v1 (décision Dani)** : en neuf, « le maximum » exclut toujours les lots Terrassement, Fondations & soubassement, Maçonnerie (chapes comprises), Charpente / ossature, Couverture & zinguerie, Menuiseries extérieures, Raccordements et la PAC. On obtient −23 à −27 %, soit ≈ 1 550-1 750 € TTC/m², dans ou juste au-dessus du repère. « Une partie » reste `DIY_PARTIE` (peinture, sols, plâtrerie, isolation : −11 à −13 %).
+
+**Depuis N1 (revue rénovation / neuf, §3)**, « possible » et « par défaut » sont séparés. Ces lots restent aux pros **par défaut** en « le maximum » (`PRO_PAR_DEFAUT_MAX`, les totaux ci-dessus ne bougent pas), mais le détaillé propose « Je le fais » sur chaque poste qui a un prix de fourniture, comme la rénovation (`peutFaireSoiMeme`) : maçonnerie, fondations, charpente, couverture, menuiseries extérieures, fosse et micro-station. Une ligne de structure ou de clos-couvert prise soi-même rappelle qu'elle sort de la garantie décennale. Seuls les postes qui portent une raison `pro` restent fermés : études, concessionnaires, contrôles, PAC et climatisations, borne de recharge, procédés du poseur (`tests/postes-pro-neuf.txt`).
 
 **Finition.** Éco / standard / premium ne déplacent le total que de −2 % / +7 % (la finition ne touche que les matériaux). Le dire dans l'interface et montrer les vrais leviers : sol argileux (+12 %), sous-sol (+10 %), forme, toiture, chauffage (± 3 à 5 %).
 

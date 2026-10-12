@@ -63,7 +63,17 @@ export interface Tache {
    *  tout ce qui n'est pas un frais, études comprises (assurance dommages-ouvrage). Défaut : « projet »
    *  pour un frais, « travaux » sinon. */
   assiette?: "travaux" | "projet";
+  /** Raison qui RÉSERVE ce poste aux professionnels : « Je le fais » n'est pas proposé, la ligne
+   *  affiche « Pro obligatoire · <raison> » à la place. Le moteur ne le lit pas : aucun prix n'en
+   *  dépend. Voir `peutFaireSoiMeme` et la revue rénovation / neuf (§3). */
+  pro?: RaisonPro;
 }
+
+/** Pourquoi un poste reste aux pros : branchement par le gestionnaire du réseau, étude ou mission
+ *  d'un professionnel (géomètre, architecte, bureau d'études), contrôle ou attestation, fluides
+ *  frigorigènes (attestation de capacité), installateur qualifié imposé par un texte (borne IRVE),
+ *  procédé ou machine du poseur (gouttière profilée sur place). */
+export type RaisonPro = "concessionnaire" | "etude" | "controle" | "fluides" | "reglementaire" | "procede";
 
 /** Grille de prix : dims = [clé groupe A, clé groupe B] ; prices["optA|optB"] = { fp, sm } HT. */
 export interface PrixGrille { dims: [string, string]; prices: Record<string, { fp: number; sm: number }> }
@@ -320,6 +330,19 @@ export function defaultCtx(): Ctx {
 
 export const key = (c: string, n: string): string => c + "|" + n;
 export const isLoc = (c: string): boolean => c === LOC;
+
+/**
+ * « Je le fais » est-il POSSIBLE sur ce poste ? Une seule règle, poste par poste, pour les deux
+ * natures : ni location (son prix est le même qu'on la « fasse » ou non), ni frais, ni pourcentage ;
+ * un prix de fourniture `sm` inférieur au prix posé ; aucune raison qui le réserve aux pros (`pro`).
+ * En rénovation, elle décide exactement comme la ligne aujourd'hui (vérifié poste par poste par
+ * `tests/neuf-soi-meme.test.ts`). Le moteur ne la lit pas : aucun prix n'en dépend. Ce que le mode
+ * « Je fais le maximum » prend soi-même PAR DÉFAUT est une autre question (`soiMemeNeuf`).
+ */
+export function peutFaireSoiMeme(l: Pick<Lot, "c">, t: Tache): boolean {
+  return !isLoc(l.c) && !t.frais && t.u !== "pct" && t.sm != null && t.sm < (t.fp ?? 0) && !t.pro;
+}
+
 export const isAppart = (ctx: Ctx): boolean => ctx.type !== "Maison";
 /**
  * Mode « Périmètre » (estimateur détaillé) : rénover une seule pièce/espace.

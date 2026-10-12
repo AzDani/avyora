@@ -5,7 +5,7 @@
  * facture que les tâches sélectionnées, aucun coût fixe caché) et sauvegardable comme un projet.
  */
 import { key, type Ctx, type Selection, type Finition } from "./core";
-import type { Ampleur, QuiRealise } from "./presets";
+import { DIY_PARTIE, type Ampleur, type QuiRealise } from "./presets";
 
 export type PieceKey = "cuisine" | "sdb" | "chambre" | "salon" | "suite" | "buanderie";
 
@@ -19,7 +19,6 @@ export const PIECES: { key: PieceKey; surfaceDefaut: number }[] = [
   { key: "buanderie", surfaceDefaut: 6 },
 ];
 
-const DIY_PARTIE = new Set(["Peinture", "Carrelage / Revetements", "Cloisons / Platrerie", "Isolation"]);
 const AMP_LVL: Record<Ampleur, number> = { rafraich: 0, partielle: 1, complete: 2, lourde: 3 };
 
 type Tache = [corps: string, nom: string, qty: number];

@@ -2,7 +2,8 @@
  * CSS du détaillé neuf (Pro), scopé `.av-neuf-d`. Il s'ajoute à `EST_CSS` (l'estimateur détaillé de
  * la rénovation : cartes, lignes `Row`, lignes perso, barre live, phases repliables `.phase-t`) sans
  * le modifier. Questionnaire en `<details>`, pastilles, « Le moteur en déduit », jalons de phase,
- * badges « Démarche » et « % des travaux ». Porté de `maquettes/neuf/page.html` ; aucun `@import`.
+ * badges « Démarche » et « % des travaux », étiquette « Pro obligatoire » et avertissement « hors
+ * garantie décennale » des lignes. Porté de `maquettes/neuf/page.html` ; aucun `@import`.
  */
 export const NEUF_DETAIL_CSS = `
 .av-neuf-d .grp{border:1px solid var(--line);border-radius:var(--radius-field);background:var(--surface-2);padding:10px 14px;margin-top:10px}
@@ -40,12 +41,15 @@ export const NEUF_DETAIL_CSS = `
 .av-neuf-d .lotnote{font-size:11.5px;color:var(--faint);padding:8px 0 2px;line-height:1.45}
 .av-neuf-d .badge-dem{display:inline-block;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:#fdf1e1;color:#b06d10;white-space:nowrap}
 .av-neuf-d .badge-pct{display:inline-block;font-size:11px;font-weight:600;color:var(--muted);background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:3px 9px;white-space:nowrap}
+.av-neuf-d .pro-oblig{display:inline-flex;align-items:center;max-width:180px;font-size:10.5px;font-weight:600;line-height:1.3;color:var(--muted);background:var(--surface-2);border:1px dashed var(--line-strong);border-radius:8px;padding:4px 8px}
+.av-neuf-d .decennale{grid-column:1/-1;margin:6px 0 0 32px;padding:6px 10px;border-radius:8px;background:#fdf1e1;color:#8a5208;font-size:11.5px;line-height:1.45}
 .av-neuf-d .split-n{position:relative;z-index:1;margin-top:10px;font-size:12px;color:#c9c5ee;line-height:1.5}
 .av-neuf-d .split-n b{color:#fff;font-weight:600;font-family:var(--font-geist-mono),ui-monospace,monospace;white-space:nowrap}
 .av-neuf-d .dtl .dem{font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:#fdf1e1;color:#b06d10;white-space:nowrap}
 .av-neuf-live .m2{font-size:11.5px;color:#c9c5ee;margin-top:5px;font-family:var(--font-geist-mono),ui-monospace,monospace;font-variant-numeric:tabular-nums}
 @media(max-width:560px){
 .av-neuf-d .pjal,.av-neuf-d .pvide{padding-left:4px}
+.av-neuf-d .decennale{margin-left:0}
 .av-neuf-d .pill{min-height:44px}
 /* les postes du neuf ont de longues notes : sur mobile, les commandes passent sous le libellé */
 .av-neuf-d .trow{grid-template-columns:22px minmax(0,1fr)}
