@@ -705,6 +705,47 @@ const posts = (S) => S.log.filter((x) => x.m === "POST");
   await ctx.close();
 }
 
+/* B23 · contre-vérification : un gratuit à la limite ouvre /plan?id=A, dessine un 2e plan B resté sur l'appareil,
+   recharge : B est toujours là (l'adresse a perdu ?id=, le tampon n'est pas écrasé par A) */
+{
+  const A = UUID(7);
+  const S = serveur({ pro: false, plans: [{ id: A, nom: "Plan du compte", workflow: "final_plan", etat: FIX("plan-final-etage"), revision: 1 }] });
+  const { p, ctx } = await ongletSite(S, { site: siteDe(S, { planId: A }), pro: false, chemin: "/plan?id=" + A });
+  await p.evaluate(() => { closeModal(); newPlan(undefined, WORKFLOW_FINAL); });
+  await wait(300);
+  await p.evaluate(() => { [...document.querySelectorAll("#confirmChoix button")].find((x) => x.textContent === "Commencer quand même").click(); });
+  await wait(300);
+  await p.evaluate(() => { closeModal(); state.name = "Plan B sur l'appareil";
+    addWall({ x: 0, y: 0 }, { x: 7, y: 0 }); addWall({ x: 7, y: 0 }, { x: 7, y: 5 }); addWall({ x: 7, y: 5 }, { x: 0, y: 5 }); addWall({ x: 0, y: 5 }, { x: 0, y: 0 }); afterChange(); });
+  await wait(1800);
+  const ad = await p.evaluate(() => ({ q: location.search, id: state.id, nom: state.name, dans: !!siteLib[state.id] }));
+  t["adresse · un plan resté sur l'appareil perd ?id= (gratuit à la limite)"] = ad.q === "" && !ad.dans && ad.nom === "Plan B sur l'appareil";
+  await p.close();
+  const qid = new URLSearchParams(ad.q).get("id");
+  const { p: p2 } = await ongletSite(S, { site: siteDe(S, { planId: qid }), pro: false, chemin: "/plan" + ad.q, ctx });
+  t["adresse · …rechargé : le plan B revient, A reste intact dans le compte"] = await p2.evaluate((nom, n) => state.name === nom && L().walls.length >= 4 && state.levels.length === 1 && n === 1, ad.nom, S.plans.size)
+    && S.plans.get(A).nom === "Plan du compte";
+  await ctx.close();
+}
+
+/* B24 · contre-vérification : side/hinge piégés (parenthèses, point-virgule) ramenés à ±1 au chargement */
+{
+  const etat = FIX("plan-final-etage");
+  const lv = etat.levels.find((l) => (l.openings || []).length);
+  const op = lv.openings.find((o) => o.type === "porte"); op.side = "1));window.__pwn=1;((1"; op.hinge = "-1));window.__pwn=2;((1";
+  const S = serveur({ pro: true, plans: [{ id: UUID(8), nom: "Piège", workflow: "final_plan", etat, revision: 1 }] });
+  const { p, ctx } = await ongletSite(S, { site: siteDe(S, { planId: UUID(8) }), chemin: "/plan?id=" + UUID(8) });
+  const r = await p.evaluate((oid) => {
+    let o = null; state.levels.forEach((l, i) => (l.openings || []).forEach((x) => { if (x.id === oid) { o = x; state.cur = i; } }));
+    sel = { kind: "opening", id: oid }; render();
+    const bs = [...document.querySelectorAll("button[onclick*=\"setOpeningProp('side'\"], button[onclick*=\"setOpeningProp('hinge'\"]")];
+    bs.forEach((b) => b.click());
+    return { n: bs.length, side: o && o.side, hinge: o && o.hinge, pwn: window.__pwn };
+  }, op.id);
+  t["xss · side/hinge piégés : ramenés à ±1, le clic n'exécute rien"] = r.n === 2 && r.pwn === undefined && [1, -1].includes(r.side) && [1, -1].includes(r.hinge);
+  await ctx.close();
+}
+
 let ko = 0;
 for (const [k, ok] of Object.entries(t)) { if (!ok) ko++; console.log((ok ? "  ✓ " : "  ✗ ") + k); }
 console.log(`${Object.keys(t).length - ko}/${Object.keys(t).length} contrôles verts` + (errs.length ? ` · erreurs de page : ${[...new Set(errs)].join(" | ")}` : ""));

@@ -24,9 +24,9 @@ export const FEATURES = {
    * d'avant : les pages du neuf renvoient `notFound()`, aucun point d'entrée n'est affiché.
    */
   neuf: process.env.NEXT_PUBLIC_FEATURE_NEUF !== "0",
-  /** Éditeur de plan en ligne (« Mes plans »). Éteint jusqu'au lancement : NEXT_PUBLIC_FEATURE_PLANS=1 pour l'allumer
-   *  (local, préversion). Au lancement (C11) il passe à `!== "0"` comme `neuf`. */
-  plans: process.env.NEXT_PUBLIC_FEATURE_PLANS === "1",
+  /** Éditeur de plan en ligne (« Mes plans »). En ligne depuis le 12/10/2026 (C11) : NEXT_PUBLIC_FEATURE_PLANS=0
+   *  l'éteint d'urgence sans toucher au code (au build : la variable est lue à la compilation). */
+  plans: process.env.NEXT_PUBLIC_FEATURE_PLANS !== "0",
 } as const;
 
 /**

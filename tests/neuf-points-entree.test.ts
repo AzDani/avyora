@@ -16,7 +16,8 @@ async function charger(neuf: boolean, locale: Locale) {
   vi.resetModules();
   vi.doMock("@/lib/features", async (orig) => {
     const m = await orig<typeof import("@/lib/features")>();
-    return { ...m, FEATURES: { ...m.FEATURES, neuf } };
+    /* les plans à part (leurs points d'entrée ont leurs propres tests) : ici, seul le neuf varie */
+    return { ...m, FEATURES: { ...m.FEATURES, neuf, plans: false } };
   });
   vi.doMock("@/lib/i18n/server", () => ({
     getLocale: async () => locale,

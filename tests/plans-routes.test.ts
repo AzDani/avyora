@@ -336,18 +336,15 @@ describe("production sans Upstash", () => {
       else process.env[k] = env[k];
     }
   });
-  it("les écritures répondent 503 indisponible, sans rien écrire ; la lecture reste possible", async () => {
+  it("les écritures passent (limites en mémoire, voir ratelimit-memoire.test.ts) : plus de 503", async () => {
     const r = await routes();
     S.user = PRO;
     process.env.VERCEL_ENV = "production";
     delete process.env.UPSTASH_REDIS_REST_URL;
     delete process.env.UPSTASH_REDIS_REST_TOKEN;
-    expect(await lire(await r.liste.POST(creer()))).toMatchObject({ status: 503, json: { code: "indisponible" } });
-    expect(S.base.floor_plans).toHaveLength(0);
-    expect((await r.liste.GET()).status).toBe(200);
-    /* préversion : sans effet */
-    process.env.VERCEL_ENV = "preview";
     expect((await r.liste.POST(creer())).status).toBe(201);
+    expect(S.base.floor_plans).toHaveLength(1);
+    expect((await r.liste.GET()).status).toBe(200);
   });
 });
 

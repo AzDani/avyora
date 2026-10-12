@@ -251,8 +251,8 @@ describe("Témoins · interrupteur plans éteint", () => {
 });
 
 describe("Interrupteur plans", () => {
-  it("éteint par défaut, allumé seulement par NEXT_PUBLIC_FEATURE_PLANS=1", async () => {
-    for (const [valeur, attendu] of [[undefined, false], ["", false], ["0", false], ["true", false], ["1", true]] as const) {
+  it("allumé par défaut (C11), éteint seulement par NEXT_PUBLIC_FEATURE_PLANS=0", async () => {
+    for (const [valeur, attendu] of [[undefined, true], ["", true], ["0", false], ["true", true], ["1", true]] as const) {
       vi.resetModules();
       if (valeur === undefined) vi.stubEnv("NEXT_PUBLIC_FEATURE_PLANS", undefined as unknown as string);
       else vi.stubEnv("NEXT_PUBLIC_FEATURE_PLANS", valeur);

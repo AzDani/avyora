@@ -4110,6 +4110,7 @@ function clicEnreg(){if(conflitOnglet){alerterOnglet();return;}
   demander({titre:`« ${esc(nom)} » n'est pas dans « Mes plans »`,texte:`Version gratuite : ${DROITS.plans.gratuit}, et <b>« ${esc(autre?.name||'un autre plan')} »</b> y est déjà. Ce plan-ci reste sur cet appareil tant que tu n'en ouvres pas un autre ; si tu en ouvres un autre, il sera perdu. ${avecPro('plans')}`,
     choix:[{t:'Passer Pro',fn:()=>passerPro('enregistrement')},{t:'Voir Mes plans',fn:openPlansModal},{t:'Compris',primaire:true}]});}
 function save(){majAnnuler();let ok=true;if(!conflitOnglet){try{localStorage.setItem('avyora-plan-v2',JSON.stringify({state,view,onglet:ONGLET}));}catch{ok=false;}}
+  if(NUAGE)siteAdresseSuivre();
   enregOk=ok;etatEnreg='saving';afficherEnreg();clearTimeout(enregT);enregT=setTimeout(synchroMesPlans,450);}
 function synchroMesPlans(){if(NUAGE){siteSynchro();return;}enregT=0;let ok=enregOk;const lib=loadPlans();
   if(!conflitOnglet&&state.id&&lib[state.id]){lib[state.id]={...lib[state.id],name:state.name||'Plan sans nom',savedAt:Date.now(),state:JSON.parse(JSON.stringify(state)),view:{...view},resume:resumePlan()};if(!writePlans(lib))ok=false;}
@@ -4246,6 +4247,7 @@ function assainirEtat(o,k){
   if(typeof o==='string'){
     if(k==='id'||k==='pid'||/Id$/.test(k||''))return o.replace(/[^A-Za-z0-9_-]/g,'');
     if(k==='url')return /^https?:\/\//i.test(o.trim())?texteSur(o):'';
+    if(k==='side'||k==='hinge'){const n=+o;return n<0?-1:n>0?1:0;}
     return texteSur(o);}
   if(Array.isArray(o)){for(let i=0;i<o.length;i++)o[i]=assainirEtat(o[i],k);return o;}
   if(o&&typeof o==='object'){
@@ -4284,7 +4286,7 @@ const SITE_URLS=(SITE&&SITE.urls&&typeof SITE.urls==='object')?SITE.urls:{};
 const SITE_API=typeof SITE_URLS.api==='string'?SITE_URLS.api:'/api/plans';
 const SITE_MEMO='avyora-plan-rev';
 const SITE_COTE='avyora-plan-cote';
-let siteLib={};
+let siteLib={};let siteAdresseActive=false;
 let siteRev=0;
 let siteEstim=[];
 let siteEstimPour=null;
@@ -4804,7 +4806,8 @@ function siteDemarrerCompte(){
   else if(siteProp())toast('« '+(state.name||'Ce plan')+' » est sur cet appareil, pas dans ton compte.',false,{action:'Ajouter à mon compte',fn:()=>siteAjouterLocal(state.id),ms:9000});
   /* « Mettre à jour » depuis la fiche (?projet=) : la fenêtre du budget s'ouvre, avec « Mettre à jour l'estimation » */
   if(siteRev&&siteProjetVise(state.id)&&workflowDe(state)===WORKFLOW_RENO&&isPro()&&!isMobile())
-    setTimeout(()=>{if(!conflitOnglet&&!modaleOuverte())showEstimate();},300);}
+    setTimeout(()=>{if(!conflitOnglet&&!modaleOuverte())showEstimate();},300);
+  siteAdresseActive=true;siteAdresseSuivre();}
 /* l'adresse suit le plan ouvert : ?type= ne sert qu'une fois (un rechargement ne doit pas recréer un plan vide),
    et un plan qui entre dans le compte prend son adresse ?id= */
 function siteAdresse(id){
@@ -4812,6 +4815,17 @@ function siteAdresse(id){
     const q=new URLSearchParams(location.search);q.delete('type');
     if(id){if(q.get('id')===id)return;q.delete('projet');q.set('id',id);}
     const r=q.toString();window.history.replaceState(window.history.state,'',location.pathname+(r?'?'+r:''));
+  }catch{}}
+/* l'adresse suit le plan à l'écran : ?id= seulement pour un plan rangé dans le compte. Un plan resté sur
+   l'appareil (gratuit à la limite, exemple, proposition) la perd : un rechargement rouvre alors le tampon,
+   pas le plan du compte qui l'écraserait (contre-vérification du jury) */
+function siteAdresseSuivre(){
+  if(!siteAdresseActive)return; /* pas avant la fin du démarrage : ?id= y est encore lu (plan introuvable, ?projet=) */
+  const id=state&&state.id?String(state.id):'';
+  if(id&&SITE_UUID.test(id)&&siteLib[id]){siteAdresse(id);return;}
+  try{
+    const q=new URLSearchParams(location.search);if(!q.has('id'))return;
+    q.delete('id');const r=q.toString();window.history.replaceState(window.history.state,'',location.pathname+(r?'?'+r:''));
   }catch{}}
 /* téléphone (on y consulte, on ne dessine pas) : sur un plan vide, un titre qui le dit, le lien à s'envoyer, le retour au site */
 function siteTelephone(){
@@ -7733,7 +7747,7 @@ function renderSelection(lv){
       /* repliée sous une ligne qui dit où elle est : la fiche reste courte, la position se règle sans glisser */
       return plie('op-position','Position sur le mur',`à ${fmt(distanceOuverture(o))} m du ${b.bout}`,`<div class="row"><label>Depuis le ${b.bout}</label><span><input class="fin n" type="number" step="0.01" min="0" max="${Math.max(0,b.Lw-o.w).toFixed(2)}" value="${distanceOuverture(o).toFixed(2)}" onchange="setDistanceOuverture(+this.value)"> m</span></div>
       <div class="row decal"><label>Décaler de 10&nbsp;cm</label><span class="decal4">${B(-1,0,b.hz?'flecheGauche':'flecheHaut')}${B(1,1,b.hz?'fleche':'flecheBas')}</span></div>`);})()}
-    ${def.kind==='door'||def.kind==='door2'||def.kind==='doorwin'||def.kind==='slide'?`<div class="btnrow"><button class="ib" onclick="setOpeningProp('side',-(${o.side||1}))">${ico('retournerV')}Ouvre de l'autre côté</button>${def.kind==='door'||def.kind==='doorwin'?`<button class="ib" onclick="setOpeningProp('hinge',-(${o.hinge||1}))">${ico('retournerH')}Charnière</button>`:''}</div>`:''}
+    ${def.kind==='door'||def.kind==='door2'||def.kind==='doorwin'||def.kind==='slide'?`<div class="btnrow"><button class="ib" onclick="setOpeningProp('side',${o.side<0?1:-1})">${ico('retournerV')}Ouvre de l'autre côté</button>${def.kind==='door'||def.kind==='doorwin'?`<button class="ib" onclick="setOpeningProp('hinge',${o.hinge<0?1:-1})">${ico('retournerH')}Charnière</button>`:''}</div>`:''}
     ${(()=>{
       /* Isoler les tableaux : UN choix par ouverture. Côté par côté, les deux boutons disaient la même
          chose — un retour d'une face habille déjà tout le tableau. */

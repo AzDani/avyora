@@ -22,7 +22,7 @@ export const CODES_PLANS = [
   "pro_requis", // 403 : l'estimation détaillée d'un plan de rénovation est réservée au Pro (C7)
   "contrat_absent", // 400 : le plan n'a pas encore de contrat de rénovation (l'éditeur ne l'a pas envoyé)
   "code_postal", // 400 : code postal absent du contrat, et absent ou malformé dans la requête
-  "indisponible", // 503 : en production, limites de débit absentes (Upstash non configuré)
+  "indisponible", // 503 : réservé (service momentanément indisponible)
   "erreur", // 500
 ] as const;
 export type CodePlans = (typeof CODES_PLANS)[number];
@@ -54,24 +54,6 @@ export function repondre(data: unknown, status = 200): NextResponse {
 
 export function erreur(code: CodePlans, extra?: Record<string, unknown>): NextResponse {
   return repondre({ ...(extra ?? {}), code }, STATUTS[code]);
-}
-
-let limitesSignalees = false;
-
-/**
- * En PRODUCTION, sans les deux clés Upstash, aucune limite de débit ne s'applique (`verifierLimite` répond oui) :
- * un seul compte pourrait enchaîner des écritures de 1,2 Mo sur la base partagée. Les écritures de « Mes plans »
- * répondent alors 503 (l'éditeur réessaie plus tard, rien n'est perdu), et l'absence est journalisée une fois.
- * Préversion et local : sans effet. Prérequis du lancement (docs/plans/README.md, C11).
- */
-export function limitesAbsentes(): boolean {
-  const absentes =
-    process.env.VERCEL_ENV === "production" && !(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
-  if (absentes && !limitesSignalees) {
-    limitesSignalees = true;
-    console.error("[plans] Upstash absent en production : les écritures de « Mes plans » sont refusées (503).");
-  }
-  return absentes;
 }
 
 /** Interrupteur `FEATURES.plans` éteint : la route n'existe pas. */

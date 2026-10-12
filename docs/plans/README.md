@@ -9,15 +9,14 @@ Le travail avance par chantiers (C0 à C11). Chacun est livrable seul, interrupt
 
 ## Interrupteur
 
-`FEATURES.plans` (`lib/features.ts`), **éteint** jusqu'au lancement :
+`FEATURES.plans` (`lib/features.ts`), **allumé depuis le lancement (C11, 12/10/2026)** :
 
 ```ts
-plans: process.env.NEXT_PUBLIC_FEATURE_PLANS === "1",
+plans: process.env.NEXT_PUBLIC_FEATURE_PLANS !== "0",
 ```
 
-- Local ou préversion : `NEXT_PUBLIC_FEATURE_PLANS=1` (au build, la variable est lue à la compilation).
-- Au lancement (C11), il passe à `!== "0"` comme `FEATURES.neuf`, pour garder une extinction d'urgence
-  sans toucher au code.
+- Extinction d'urgence sans toucher au code : `NEXT_PUBLIC_FEATURE_PLANS=0` dans Vercel, puis un nouveau
+  déploiement (la variable est lue à la compilation ; la 404 de `/plan` est figée au build).
 
 Interrupteur éteint : toutes les nouvelles pages et routes répondent 404, aucun point d'entrée n'est
 rendu, `POST /api/projects` ne lit ni `planId` ni `planLocal`, et la rénovation comme le neuf restent
@@ -528,15 +527,20 @@ secondaire « Plan commencé » (`premiere_piece`) n'existera que si Dani la cr�
   borne les noms de niveau et de pièce et le sol (renfort : la session peut écrire `etat` directement).
 - **Préchargement** : aucun `next/link` vers `/plan` (`tests/plans-prechargement.test.ts`) ; balises `<a>`.
 - **Débit** : `planEstimation` (10 / h / compte) pour `POST /api/plans/[id]/estimation` ; `planCreation` et
-  `planEstimation` se ferment si Upstash tombe. En production sans Upstash, toutes les écritures de « Mes plans »
-  répondent 503 `indisponible` (journalisé une fois).
+  `planEstimation` se ferment si Upstash tombe. En production sans Upstash, les trois catégories de « Mes plans »
+  sont tenues **en mémoire, par instance** (`lib/ratelimit.ts`, journalisé une fois) : moins strict qu'un store
+  partagé, mais les plans restent enregistrables (le 503 `indisponible` du jury est retiré au lancement).
+- **Adresse** (contre-vérification) : `?id=` ne désigne que le plan à l'écran s'il est rangé dans le compte
+  (`siteAdresseSuivre`, après le démarrage). Un plan resté sur l'appareil la perd : un rechargement rouvre le
+  tampon, pas le plan du compte qui l'écraserait. `site.mjs` B23.
+- **side / hinge** ramenés à ±1 au chargement et plus interpolés tels quels dans un `onclick` (`site.mjs` B24).
 - **Mise à jour d'une estimation** : le ctx suit le plan (`ctxMisAJour`), sauf les champs corrigés à la main.
 
 ### Prérequis du lancement (C11)
 
-1. `UPSTASH_REDIS_REST_URL` et `UPSTASH_REDIS_REST_TOKEN` dans Vercel **Production** (sans elles, les
-   écritures de « Mes plans » répondent 503).
-2. Sur la préversion : `content-encoding` de `/plan` (Vercel doit compresser les 1,3 Mo), puis Lighthouse
+1. Recommandé, pas bloquant : `UPSTASH_REDIS_REST_URL` et `UPSTASH_REDIS_REST_TOKEN` dans Vercel
+   **Production** (limites partagées entre instances, et les autres catégories du site : connexion, IA, PDF).
+2. Sur la production : `content-encoding` de `/plan` (Vercel doit compresser les 1,3 Mo), puis Lighthouse
    sur `/`, `/logiciel-plan-maison` et `/plan`.
 
 ## Contrôles de chaque chantier

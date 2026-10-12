@@ -33,8 +33,7 @@ export type LimitKind = "auth" | "api" | "ia" | "pdf" | "plan" | "planCreation" 
 
 /**
  * « Mes plans » : les catégories qui CRÉENT des lignes en base se ferment si le store tombe (fail-closed) ;
- * les autres restent ouvertes (une sauvegarde de plan refusée ferait croire à une perte). Voir aussi
- * `limitesAbsentes` (lib/plans/http.ts) : en production, sans Upstash, les écritures sont refusées.
+ * les autres restent ouvertes (une sauvegarde de plan refusée ferait croire à une perte).
  */
 const FERMEES_EN_PANNE = new Set<LimitKind>(["planCreation", "planEstimation"]);
 
@@ -45,10 +44,42 @@ export async function clientIp(): Promise<string> {
   return (xff?.split(",")[0].trim() || h.get("x-real-ip") || "unknown");
 }
 
-/** true = autorisé, false = limite dépassée. No-op (true) si Upstash non configuré. */
+/**
+ * En PRODUCTION sans Upstash, « Mes plans » garde ses limites EN MÉMOIRE, par instance : moins strictes qu'un
+ * store partagé (chaque instance compte de son côté), mais un compte ne peut plus enchaîner les écritures
+ * sans fin, et les plans restent enregistrables. Les autres catégories gardent le no-op d'avant.
+ */
+const MEMOIRE: Partial<Record<LimitKind, { max: number; fenetreMs: number }>> = {
+  plan: { max: 90, fenetreMs: 60_000 },
+  planCreation: { max: 20, fenetreMs: 3_600_000 },
+  planEstimation: { max: 10, fenetreMs: 3_600_000 },
+};
+const traces = new Map<string, number[]>();
+let memoireSignalee = false;
+
+function limiteMemoire(kind: LimitKind, identifiant: string): boolean {
+  const regle = MEMOIRE[kind];
+  if (!regle || process.env.VERCEL_ENV !== "production") return true;
+  if (!memoireSignalee) {
+    memoireSignalee = true;
+    console.warn("[ratelimit] Upstash absent en production : limites de « Mes plans » tenues en mémoire, par instance.");
+  }
+  const maintenant = Date.now();
+  if (traces.size > 5000) {
+    for (const [k, t] of traces) if (!t.length || maintenant - t[t.length - 1] > 3_600_000) traces.delete(k);
+  }
+  const cle = kind + ":" + identifiant;
+  const t = (traces.get(cle) ?? []).filter((x) => maintenant - x < regle.fenetreMs);
+  const ok = t.length < regle.max;
+  if (ok) t.push(maintenant);
+  traces.set(cle, t);
+  return ok;
+}
+
+/** true = autorisé, false = limite dépassée. Sans Upstash : no-op, sauf « Mes plans » en production (en mémoire). */
 export async function verifierLimite(kind: LimitKind, identifiant: string): Promise<boolean> {
   const rl = LIMITERS[kind];
-  if (!rl) return true;
+  if (!rl) return limiteMemoire(kind, identifiant);
   try {
     const { success } = await rl.limit(identifiant);
     return success;

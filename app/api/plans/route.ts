@@ -3,7 +3,7 @@ import { getUser, estPro } from "@/lib/auth";
 import { verifierLimite } from "@/lib/ratelimit";
 import { creerPlan, listerPlans } from "@/lib/plans/data";
 import { PLAN_CORPS_MAX, planCreerSchema } from "@/lib/plans/schema";
-import { eteinte, erreur, limitesAbsentes, lireCorpsBorne, repondre } from "@/lib/plans/http";
+import { eteinte, erreur, lireCorpsBorne, repondre } from "@/lib/plans/http";
 import { lienEchoue, relierEstimationsOrphelines } from "@/lib/plans/relier";
 import { supabaseServer } from "@/lib/supabase/server";
 
@@ -31,7 +31,6 @@ export async function POST(req: Request) {
   try {
     const user = await getUser();
     if (!user) return erreur("connexion_requise");
-    if (limitesAbsentes()) return erreur("indisponible");
     if (!(await verifierLimite("planCreation", user.id))) return erreur("trop_de_requetes");
 
     const corps = await lireCorpsBorne(req, PLAN_CORPS_MAX);

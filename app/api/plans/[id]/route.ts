@@ -6,7 +6,7 @@ import { estimationsDuPlan, lireEntete, lirePlan, majPlan, supprimerPlan } from 
 import { PLAN_CONTRAT_OCTETS_MAX, PLAN_CORPS_MAX, planIdSchema, planMajSchema } from "@/lib/plans/schema";
 import { octetsJsonb } from "@/lib/plans/jsonb";
 import { problemeProfond } from "@/lib/plans/schema";
-import { eteinte, erreur, limitesAbsentes, lireCorpsBorne, repondre, type CodePlans } from "@/lib/plans/http";
+import { eteinte, erreur, lireCorpsBorne, repondre, type CodePlans } from "@/lib/plans/http";
 
 export const runtime = "nodejs";
 
@@ -65,7 +65,6 @@ export async function PATCH(req: Request, ctx: Ctx) {
     if (!user) return erreur("connexion_requise");
     const id = await idValide(ctx);
     if (!id) return erreur("introuvable");
-    if (limitesAbsentes()) return erreur("indisponible");
     if (!(await verifierLimite("plan", user.id))) return erreur("trop_de_requetes");
 
     const corps = await lireCorpsBorne(req, PLAN_CORPS_MAX);
@@ -111,7 +110,6 @@ export async function DELETE(_req: Request, ctx: Ctx) {
     if (!user) return erreur("connexion_requise");
     const id = await idValide(ctx);
     if (!id) return erreur("introuvable");
-    if (limitesAbsentes()) return erreur("indisponible");
     if (!(await verifierLimite("plan", user.id))) return erreur("trop_de_requetes");
     if (!(await supprimerPlan(id))) return erreur("introuvable");
     return new Response(null, { status: 204, headers: { "Cache-Control": "private, no-store" } });
