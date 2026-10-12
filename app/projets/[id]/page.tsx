@@ -11,8 +11,21 @@ import RenameTitre from "@/components/RenameTitre";
 import TelechargerRapport from "@/components/TelechargerRapport";
 import { getLocale } from "@/lib/i18n/server";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
+import { FEATURES } from "@/lib/features";
+import { planDuProjet, type LienPlan } from "@/lib/plans/data";
+import PlanRelie from "@/components/plans/PlanRelie";
 
 export const dynamic = "force-dynamic";
+
+/** Le plan dont ce projet est né (C8). Interrupteur éteint : aucune requête. Une panne ne casse jamais la fiche. */
+async function lienPlan(projectId: string): Promise<LienPlan | null> {
+  if (!FEATURES.plans) return null;
+  try {
+    return await planDuProjet(projectId);
+  } catch {
+    return null;
+  }
+}
 
 const TR = {
   fr: { projets: "Projets" },
@@ -32,6 +45,7 @@ export default async function ProjetPage({ params }: { params: Promise<{ id: str
   const isRapide = reponses.mode === "rapide";
   const neuf = estNeuf(reponses.ctx);
   const refCode = "AVY-" + String(projet.id).replace(/-/g, "").slice(0, 8).toUpperCase();
+  const lien = await lienPlan(String(projet.id));
 
   return (
     <div className="space-y-6">
@@ -61,6 +75,10 @@ export default async function ProjetPage({ params }: { params: Promise<{ id: str
           <ProjetActions id={projet.id} archived={!!projet.archived} />
         </div>
       </div>
+
+      {lien && (
+        <PlanRelie lien={lien} renovation={!neuf} isPro={estPro(user)} locale={locale} />
+      )}
 
       {isRapide
         ? (neuf

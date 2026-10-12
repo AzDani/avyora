@@ -269,3 +269,87 @@ export async function supprimerPlan(id: string): Promise<boolean> {
   if (error) throw new ErreurPlans("supprimer");
   return ((data ?? []) as unknown[]).length > 0;
 }
+
+/* ─── C8 : le lien estimation → plan, affiché sur la fiche et dans « Mes projets » ───────────── */
+
+/** Un projet relié à un plan du compte (`project_plans.plan_id`), tel que la fiche et la liste l'affichent. */
+export type LienPlan = {
+  projectId: string;
+  planId: string;
+  nom: string;
+  /** `floor_plans.updated_at` : la dernière écriture du plan. */
+  planMaj: string;
+  /** `project_plans.updated_at` : la pose du lien, ou le dernier cliché de la rénovation (C7). */
+  lienMaj: string;
+};
+
+/** Ids par requête : un `in (…)` de 100 uuid garde l'adresse PostgREST sous 4 Ko. */
+export const LIENS_PAR_REQUETE = 100;
+
+/** Une seule requête, sous RLS : le lien et, par la clé étrangère, le nom et la date du plan. */
+const COLONNES_LIEN = "project_id, plan_id, updated_at, plan:floor_plans(nom, updated_at)";
+
+type LigneLien = {
+  project_id: string;
+  plan_id: string | null;
+  updated_at: string;
+  plan: { nom: string | null; updated_at: string } | { nom: string | null; updated_at: string }[] | null;
+};
+
+/**
+ * Une ligne `project_plans` → le lien affichable, ou null :
+ *  - `plan_id` null : le plan a été supprimé (`on delete set null`) ;
+ *  - plan absent de la jointure : il n'est pas visible par la session (la RLS de `floor_plans` le réserve à
+ *    son propriétaire ; un membre du projet ne voit donc pas le plan du propriétaire).
+ */
+function versLien(l: LigneLien): LienPlan | null {
+  if (!l || typeof l.project_id !== "string" || typeof l.plan_id !== "string") return null;
+  const plan = Array.isArray(l.plan) ? l.plan[0] : l.plan;
+  if (!plan || typeof plan.updated_at !== "string") return null;
+  return {
+    projectId: l.project_id,
+    planId: l.plan_id,
+    nom: (plan.nom ?? "").trim() || "Plan",
+    planMaj: plan.updated_at,
+    lienMaj: typeof l.updated_at === "string" ? l.updated_at : plan.updated_at,
+  };
+}
+
+/** Le plan dont ce projet est né, ou null (aucun lien, plan supprimé ou invisible). */
+export async function planDuProjet(projectId: string): Promise<LienPlan | null> {
+  const sb = await supabaseServer();
+  const { data, error } = await sb.from("project_plans").select(COLONNES_LIEN).eq("project_id", projectId).maybeSingle();
+  if (error) throw new ErreurPlans("lien-projet");
+  return data ? versLien(data as unknown as LigneLien) : null;
+}
+
+/**
+ * Les plans de plusieurs projets. Clé : l'id du projet. Une requête par tranche de
+ * `LIENS_PAR_REQUETE` projets (une seule pour un compte ordinaire) ; aucune sans projet.
+ */
+export async function plansDesProjets(ids: string[]): Promise<Map<string, LienPlan>> {
+  const out = new Map<string, LienPlan>();
+  const uniques = [...new Set(ids.map(String))];
+  if (!uniques.length) return out;
+  const sb = await supabaseServer();
+  const tranches: string[][] = [];
+  for (let i = 0; i < uniques.length; i += LIENS_PAR_REQUETE) tranches.push(uniques.slice(i, i + LIENS_PAR_REQUETE));
+  const reponses = await Promise.all(tranches.map((t) => sb.from("project_plans").select(COLONNES_LIEN).in("project_id", t)));
+  for (const { data, error } of reponses) {
+    if (error) throw new ErreurPlans("liens-projets");
+    for (const l of (data ?? []) as unknown as LigneLien[]) {
+      const lien = versLien(l);
+      if (lien) out.set(lien.projectId, lien);
+    }
+  }
+  return out;
+}
+
+/**
+ * Le plan a-t-il été modifié depuis le lien (ou le dernier cliché de la rénovation) ? Le trigger de
+ * `floor_plans` avance `updated_at` à chaque écriture ; l'éditeur n'écrit que si le dessin a changé.
+ */
+export function planAChange(lien: Pick<LienPlan, "planMaj" | "lienMaj">): boolean {
+  const p = Date.parse(lien.planMaj), l = Date.parse(lien.lienMaj);
+  return Number.isFinite(p) && Number.isFinite(l) && p > l;
+}

@@ -3,7 +3,8 @@ import type { ResultatReprise } from "@/lib/plans/local";
 
 /**
  * « Mes plans » (éditeur de plan en ligne) : textes du SITE autour de l'éditeur, en FR et en EN.
- * Importé seulement par la vitrine `/logiciel-plan-maison`, `TesPlans`, `ClaimPlan` et `PlanRappel` :
+ * Importé seulement par la vitrine `/logiciel-plan-maison`, `TesPlans`, `ClaimPlan`, `PlanRappel` et, côté
+ * serveur, la fiche et la liste des projets (C8, qui passent leurs quelques textes en props) :
  * il reste hors du dictionnaire global que `LangProvider` envoie à chaque page (même règle que
  * `neuf.ts`). L'intérieur de l'éditeur reste en français (décision de Dani) ; les textes que le site
  * ajoute autour sont tous traduits.
@@ -147,6 +148,19 @@ const fr = {
     auForfait: "au forfait",
     continuer: "J'ai vérifié, continuer vers le détail",
   },
+  /* Le lien estimation → plan (C8) : la fiche projet (`PlanRelie`) et « Mes projets » (`ListeProjets`). */
+  lien: {
+    vientDe: "Vient de ton plan",
+    ouvrirPlan: "Ouvrir le plan",
+    aChange: "Ton plan a changé depuis cette estimation.",
+    aChangeSous: "Ouvre ton plan, puis « Mettre à jour l'estimation » : les lignes que tu as corrigées à la main restent telles quelles.",
+    mettreAJour: "Mettre à jour",
+    pro: "Pro",
+    pastille: "Depuis ton plan",
+    bande: "Tes plans",
+    bandeSous: "Rouvre-les dans l'éditeur, en 2D et en 3D.",
+    dessiner: "ou commence par dessiner ton plan",
+  },
 };
 
 export type DictPlans = typeof fr;
@@ -279,6 +293,18 @@ const en: DictPlans = {
     vide: "Your plan does not include any priced item yet: the detail opens without quantities from the plan.",
     auForfait: "flat rate",
     continuer: "I've checked, continue to the detail",
+  },
+  lien: {
+    vientDe: "From your plan",
+    ouvrirPlan: "Open the plan",
+    aChange: "Your plan has changed since this estimate.",
+    aChangeSous: "Open your plan, then click “Mettre à jour l'estimation”: the lines you corrected by hand stay as they are.",
+    mettreAJour: "Update",
+    pro: "Pro",
+    pastille: "From your plan",
+    bande: "Your plans",
+    bandeSous: "Reopen them in the editor, in 2D and 3D.",
+    dessiner: "or start by drawing your plan",
   },
 };
 

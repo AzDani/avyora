@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { listProjets, type Projet } from "@/lib/data/projects";
 import { estimationProjet, avancementProjet, natureProjet } from "@/lib/estimateur";
-import ListeProjets, { type ProjetCarte } from "@/components/ListeProjets";
+import ListeProjets, { type ProjetCarte, type PlansListe } from "@/components/ListeProjets";
 import ClaimDraft from "@/components/ClaimDraft";
 import ClaimPlan from "@/components/plans/ClaimPlan";
 import ProUpsell from "@/components/ProUpsell";
@@ -9,6 +9,9 @@ import { getUser, estPro } from "@/lib/auth";
 import { getLocale } from "@/lib/i18n/server";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 import { FEATURES } from "@/lib/features";
+import { compterPlans, plansDesProjets, type LienPlan } from "@/lib/plans/data";
+import { dictPlans } from "@/lib/i18n/plans";
+import type { Locale } from "@/lib/i18n/config";
 
 export const dynamic = "force-dynamic";
 
@@ -41,9 +44,10 @@ const TR = {
   },
 } as const;
 
-function versCarte(p: Projet): ProjetCarte {
+function versCarte(p: Projet, liens?: Map<string, LienPlan>): ProjetCarte {
   const est = estimationProjet(p.reponses);
   const av = avancementProjet(p.reponses);
+  const lien = liens?.get(String(p.id));
   return {
     id: p.id,
     nom: p.nom,
@@ -57,6 +61,31 @@ function versCarte(p: Projet): ProjetCarte {
     donePct: av.pct,
     progPct: av.total > 0 ? Math.round((av.prog / av.total) * 100) : 0,
     nature: natureProjet(p.reponses),
+    ...(lien ? { plan: { id: lien.planId, nom: lien.nom } } : {}),
+  };
+}
+
+/**
+ * « Mes plans », C8 : le nombre de plans du compte et les liens projet → plan, pour la bande « Tes plans »
+ * et la pastille « Depuis ton plan ». Interrupteur éteint : `null`, AUCUNE requête (ni `floor_plans` ni
+ * `project_plans`). Une panne ne casse jamais la liste : sans lien ni bande, elle reste celle d'avant.
+ */
+async function plansDeLaListe(
+  ids: string[],
+  locale: Locale,
+): Promise<{ liens: Map<string, LienPlan>; liste: PlansListe } | null> {
+  if (!FEATURES.plans) return null;
+  const [liens, total] = await Promise.all([
+    plansDesProjets(ids).catch(() => new Map<string, LienPlan>()),
+    compterPlans().catch(() => 0),
+  ]);
+  const t = dictPlans(locale).lien;
+  return {
+    liens,
+    liste: {
+      total,
+      textes: { pastille: t.pastille, bande: t.bande, bandeSous: t.bandeSous, dessiner: t.dessiner },
+    },
   };
 }
 
@@ -68,8 +97,9 @@ export default async function ProjetsPage() {
   const [user, actifs, archivesRows, locale] = await Promise.all([getUser(), listProjets(false), listProjets(true), getLocale()]);
   const s = TR[locale];
   const isPro = !!user && estPro(user);
-  const projets = actifs.map(versCarte);
-  const archives = archivesRows.map(versCarte);
+  const plans = await plansDeLaListe([...actifs, ...archivesRows].map((p) => String(p.id)), locale);
+  const projets = actifs.map((p) => versCarte(p, plans?.liens));
+  const archives = archivesRows.map((p) => versCarte(p, plans?.liens));
   const sumTravaux = projets.reduce((s, p) => s + p.ttc, 0);
   const sumSurface = projets.reduce((s, p) => s + p.surface, 0);
   const nbEnChantier = projets.filter((p) => p.statut === "en_cours").length;
@@ -115,7 +145,7 @@ export default async function ProjetsPage() {
 
       {!isPro && <ProUpsell />}
 
-      <ListeProjets projets={projets} archives={archives} />
+      <ListeProjets projets={projets} archives={archives} {...(plans ? { plans: plans.liste } : {})} />
 
       <style>{HERO_CSS}</style>
     </div>

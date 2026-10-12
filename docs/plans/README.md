@@ -381,6 +381,36 @@ projets de rénovation sans plan ; aucune migration (0004 suffit : `project_plan
   message, 375 px sans défilement, contraste AA des alertes. Le parcours réel (dessiner, valider, détaillé,
   « Mettre à jour l'estimation ») se fera en préversion.
 
+## Le lien dans les deux sens (C8)
+
+Plan → estimations : l'éditeur (C3) et les cartes de « Tes plans » (C5). Estimation → plan : la fiche projet et
+« Mes projets », ci-dessous. Interrupteur éteint : aucune requête `project_plans` ni `floor_plans`, HTML inchangé.
+
+| Fichier | Rôle |
+|---|---|
+| `lib/plans/data.ts` | `planDuProjet(projectId)` et `plansDesProjets(ids)` : `select project_id, plan_id, updated_at, plan:floor_plans(nom, updated_at)` sous RLS (une requête par tranche de 100 projets, aucune sans projet). Lien sans `plan_id` (plan supprimé) ou plan absent de la jointure (plan d'un autre compte, invisible par RLS) → ignoré. `planAChange` : `floor_plans.updated_at > project_plans.updated_at`. |
+| `components/plans/PlanRelie.tsx` | Serveur. « Vient de ton plan « {nom} » » · « Ouvrir le plan » (`/plan?id=`). Rénovation dont le plan a changé depuis le cliché : « Ton plan a changé depuis cette estimation » · « Mettre à jour » → l'éditeur `/plan?id=` (Pro), sinon `/tarifs?source=editeur-plan` avec la pastille Pro. **Pas** tout droit vers `/projets/depuis-plan/…` (écart au plan) : cet écran relit `floor_plans.contrat`, que seul l'éditeur calcule et n'envoie qu'au clic sur « Mettre à jour l'estimation » ; après un changement du dessin, il réappliquerait l'ancien plan. Limite : l'éditeur met à jour l'estimation de rénovation reliée **la plus récente** ; passer `?projet=` de l'éditeur à la validation est une retouche de l'éditeur, à faire. |
+| `app/projets/[id]/page.tsx` | La bannière entre l'en-tête et le résultat, seulement si l'interrupteur est allumé et qu'un plan est relié. Une panne de la base n'affiche rien. |
+| `app/projets/page.tsx`, `components/ListeProjets.tsx` | `ProjetCarte.plan?: {id, nom}` → pastille « Depuis ton plan » (`span`, le nom du plan en `title` : la carte est déjà un lien, aucun `<a>` dans un `<a>`). Au moins un plan : bande « Tes plans (n) » → `/logiciel-plan-maison`. Liste vide et aucun plan : lien secondaire « ou commence par dessiner ton plan » (vitrine, qui accueille aussi les téléphones). Les textes arrivent en props (`PlansListe`) : le dictionnaire des plans reste hors du paquet client. |
+| `lib/i18n/plans.ts` | Section `lien`, FR et EN. |
+
+Le signal « a changé » : l'éditeur n'écrit que si le dessin a changé (empreinte de travail), et le trigger de
+`floor_plans` avance `updated_at` à chaque écriture. L'envoi du contrat (« Créer l'estimation détaillée ») avance
+aussi `updated_at` : une **autre** estimation reliée au même plan s'affiche alors « a changé », ce qui est vrai
+(elle ne porte pas ce contrat). Aucune migration.
+
+### Contrôles
+
+- `tests/plans-lien-affichage.test.ts` (Supabase simulé) : données (lien lisible, plan supprimé ou invisible,
+  tranches, panne → `ErreurPlans`, `planAChange`) ; éteint → aucune requête plans, même avec des liens en base ;
+  allumé sans lien, plan supprimé ou invisible → fiche et liste identiques à éteint (FR, EN, gratuit, Pro) ; fiche :
+  bannière, nom échappé, « Mettre à jour » Pro vers l'éditeur (jamais tout droit vers la validation), gratuit vers Tarifs, rien
+  pour une rénovation à jour ni pour une construction ; liste : pastille seulement sur les projets reliés (actifs
+  et archivés), bande « (n) », lien de la liste vide ; profondeur des `<a>` = 1 ; EN.
+- `tests/plans-temoins.test.ts` : session Supabase simulée, et « aucune requête » vérifiée sur la liste et la fiche
+  interrupteur éteint. Le témoin C5 « /projets allumé = éteint » admet, liste vide, le seul lien « ou commence par
+  dessiner ton plan » (ajout voulu de C8).
+
 ## Retouches des vérificateurs (lots 1 et 2)
 
 - Éditeur : `siteNom` tronque par **point de code** (`Array.from`), à 120 unités UTF-16 au plus comme `nomPlan`,

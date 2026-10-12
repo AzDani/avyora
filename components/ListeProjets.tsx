@@ -70,6 +70,18 @@ export type ProjetCarte = {
   progPct: number;
   /** Rénovation ou construction neuve (`natureProjet`). Absent : rénovation. */
   nature?: "reno" | "neuf";
+  /** « Mes plans » (C8) : le plan dont l'estimation est née. Absent : aucun lien (ou interrupteur éteint). */
+  plan?: { id: string; nom: string };
+};
+
+/**
+ * « Mes plans » (C8), passé par la page serveur seulement interrupteur allumé : le nombre de plans du
+ * compte et les quelques textes (le dictionnaire des plans reste hors du paquet client). Absent : la
+ * liste rend exactement le HTML d'avant.
+ */
+export type PlansListe = {
+  total: number;
+  textes: { pastille: string; bande: string; bandeSous: string; dessiner: string };
 };
 
 function euros(n: number): string {
@@ -124,9 +136,11 @@ function StatutBadge({ statut, archived, s }: { statut: StatutChantier; archived
 export default function ListeProjets({
   projets,
   archives,
+  plans,
 }: {
   projets: ProjetCarte[];
   archives: ProjetCarte[];
+  plans?: PlansListe;
 }) {
   const router = useRouter();
   const locale = useLocale();
@@ -203,6 +217,12 @@ export default function ListeProjets({
               <span className="chip num">{p.surface} m²</span>
               <span className="chip num">{p.code_postal}</span>
               {p.nature === "neuf" && <span className="chip">{n.badge}</span>}
+              {/* Une pastille, jamais un lien : la carte entière est déjà un lien (aucun <a> dans un <a>). */}
+              {p.plan && plans && (
+                <span className="chip border-brand-200 bg-brand-50 text-brand-700" title={p.plan.nom} data-depuis-plan="">
+                  {plans.textes.pastille}
+                </span>
+              )}
             </div>
           </div>
           {!modeSelection && (
@@ -268,6 +288,34 @@ export default function ListeProjets({
 
   return (
     <div>
+      {plans && plans.total > 0 && (
+        <Link
+          href="/logiciel-plan-maison"
+          className="group card card-interactive mb-5 flex items-center gap-3 px-4 py-3"
+          data-bande-plans=""
+        >
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-600" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3.5" y="3.5" width="17" height="17" rx="1.5" />
+              <path d="M3.5 12h7v8.5M10.5 7.5v1.5M14 12h6.5M14 3.5V9" />
+            </svg>
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-semibold text-ink">
+              {plans.textes.bande} <span className="num font-normal text-faint">({plans.total})</span>
+            </span>
+            <span className="block text-[13px] text-muted">{plans.textes.bandeSous}</span>
+          </span>
+          <svg
+            width="18" height="18" viewBox="0 0 18 18" fill="none"
+            className="shrink-0 text-faint transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-brand-600"
+            aria-hidden="true"
+          >
+            <path d="M6.5 3.5 12 9l-5.5 5.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </Link>
+      )}
+
       <div className="mb-4 flex items-center justify-between gap-3">
         <h2 className="text-lg font-semibold text-ink">
           {s.mesProjets} <span className="ml-1 text-sm font-normal text-faint">{projets.length}</span>
@@ -319,6 +367,11 @@ export default function ListeProjets({
           <Link href="/projets/nouveau" className="btn btn-primary mt-1 py-2.5">
             {s.estimerPremier}
           </Link>
+          {plans && plans.total === 0 && (
+            <Link href="/logiciel-plan-maison" className="text-sm font-medium text-brand-700 hover:underline" data-dessiner-plan="">
+              {plans.textes.dessiner}
+            </Link>
+          )}
         </div>
       ) : (
         <ul className="stagger grid grid-cols-1 gap-4 md:grid-cols-2">

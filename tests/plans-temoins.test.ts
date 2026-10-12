@@ -61,7 +61,11 @@ type CleProjet = keyof typeof PROJETS;
 const MOCKS = [
   "@/lib/features", "@/lib/i18n/server", "@/lib/auth", "@/lib/data/projects", "next/navigation",
   "next/font/google", "next/script", "@vercel/analytics/react", "@/app/globals.css", "server-only", "react",
+  "@/lib/supabase/server",
 ];
+
+/** Tables lues par la session simulée (C8 : interrupteur éteint, aucune requête plans). */
+const APPELS: string[] = [];
 
 type Options = { plans: boolean; locale: Locale; user?: Utilisateur; projets?: CleProjet[]; menuOuvert?: boolean };
 
@@ -89,6 +93,21 @@ async function charger({ plans, locale, user = "anonyme", projets = [], menuOuve
     return { ...m, useRouter: () => routeur, usePathname: () => "/", useSearchParams: () => new URLSearchParams() };
   });
   vi.doMock("server-only", () => ({}));
+  /* Session Supabase simulée, sans aucune ligne (« Mes plans » : ni plan ni lien). Elle note les tables lues. */
+  vi.doMock("@/lib/supabase/server", () => ({
+    supabaseServer: async () => ({
+      from(table: string) {
+        APPELS.push(table);
+        const vide = { data: [], count: 0, error: null };
+        const q: Record<string, unknown> = {
+          then: (ok: (v: unknown) => unknown, ko?: (e: unknown) => unknown) => Promise.resolve(vide).then(ok, ko),
+          maybeSingle: () => Promise.resolve({ data: null, error: null }),
+        };
+        for (const m of ["select", "eq", "in", "order", "limit"]) q[m] = () => q;
+        return q;
+      },
+    }),
+  }));
   /* Coque : polices, balise Ads et mesure d'audience hors sujet (elles ne portent aucun texte). */
   vi.doMock("next/font/google", () => ({ Geist: () => ({ variable: "" }), Geist_Mono: () => ({ variable: "" }) }));
   vi.doMock("next/script", () => ({ default: vide }));
@@ -121,6 +140,7 @@ const entre = (s: string, debut: string, fin: string) => {
 };
 
 beforeEach(() => {
+  APPELS.length = 0;
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(MAINTENANT);
 });
@@ -199,6 +219,7 @@ describe("Témoins · interrupteur plans éteint", () => {
           const Projets = (await import("@/app/projets/page")).default;
           const h = await r.rendre(await Projets());
           expect(h).toMatchSnapshot(`projets ${locale} ${user} ${nom}`);
+          expect(APPELS).toEqual([]);
         }
       }
     }
@@ -213,6 +234,7 @@ describe("Témoins · interrupteur plans éteint", () => {
           const h = await r.rendre(await Fiche({ params: Promise.resolve({ id: PROJETS[cle].id }) }));
           expect(h).toContain(PROJETS[cle].nom);
           expect(h).toMatchSnapshot(`fiche ${locale} ${user} ${cle}`);
+          expect(APPELS).toEqual([]);
         }
       }
     }
@@ -276,6 +298,13 @@ describe("Témoins · en-têtes du site et matcher du proxy", () => {
   });
 });
 
+/** Retire (une fois, et une seule) le lien de C8 de la liste vide. */
+function sansLienDessiner(h: string): string {
+  const re = /<a class="[^"]*" data-dessiner-plan="" href="\/logiciel-plan-maison">[^<]+<\/a>/g;
+  expect(h.match(re)?.length ?? 0).toBe(1);
+  return h.replace(re, "");
+}
+
 /* ─── C5 : « Mes plans » monté sur /projets et /inscription ────────────────────
    Interrupteur ALLUMÉ, sans drapeau ni plan local : ClaimPlan et PlanRappel ne rendent rien côté serveur.
    /projets et /inscription doivent donc rendre exactement le même HTML qu'interrupteur éteint. */
@@ -291,7 +320,9 @@ describe("Témoins · C5, interrupteur allumé sans plan local", () => {
             const Projets = (await import("@/app/projets/page")).default;
             rendu.push(await r.rendre(await Projets()));
           }
-          expect(rendu[1]).toBe(rendu[0]);
+          /* C8 : liste vide et aucun plan, le seul ajout est le lien secondaire « ou commence par dessiner ton plan ». */
+          const allume = projets.length ? rendu[1] : sansLienDessiner(rendu[1]);
+          expect(allume).toBe(rendu[0]);
         }
       }
     }
