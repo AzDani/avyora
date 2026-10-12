@@ -22,6 +22,11 @@
  * que si un plan arrive). Le fragment ne part jamais au serveur ni dans un événement : la mesure
  * `neuf_depuis_plan` ne porte que `ok`, `niveaux` et une tranche de surface. La maison du plan
  * devient la `base` ; chaque valeur reprise porte un badge tant qu'elle n'est pas changée.
+ *
+ * « Mes plans » (C6, interrupteur allumé) : le lien porte aussi `&pid=` (plan du compte) ou `&pl=`
+ * (plan de l'appareil), lus par `contexteNeuf`. Ils n'entrent dans l'origine QUE si le plan du fragment
+ * est appliqué, et seulement pour le plan lu au montage : un `pid` sans `#plan=` ne relie rien. L'URL
+ * nettoyée les retire aussi.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -35,6 +40,7 @@ import {
 } from "@/lib/estimateur/brouillon-neuf";
 import type { InitialNeuf } from "@/lib/neuf-contexte";
 import type { MaisonDuPlan, RefusPlan } from "@/lib/estimateur/plan-neuf";
+import { FEATURES } from "@/lib/features";
 import { suivre } from "@/lib/track";
 import { conversionEstimation } from "@/lib/gtag";
 import { useT, useLocale } from "@/components/i18n/LangProvider";
@@ -58,6 +64,18 @@ const QUIS: { v: QuiRealise; lvl: number }[] = [
 const CP = /^\d{5}$/;
 
 export type EditNeuf = { projectId: string };
+
+/** La recherche de l'URL, sans `pid` ni `pl` quand « Mes plans » est allumé (sinon telle quelle). */
+function rechercheNettoyee(): string {
+  const q = window.location.search;
+  if (!FEATURES.plans || !q) return q;
+  const p = new URLSearchParams(q);
+  if (!p.has("pid") && !p.has("pl")) return q;
+  p.delete("pid");
+  p.delete("pl");
+  const r = p.toString();
+  return r ? `?${r}` : "";
+}
 
 export default function EstimateurRapideNeuf({
   isPro = false,
@@ -128,6 +146,10 @@ export default function EstimateurRapideNeuf({
   const planRange = useRef(false);
   /** Un plan a été appliqué au formulaire (et n'a pas été retiré depuis). */
   const planApplique = useRef(false);
+  /** Le plan (compte ou appareil) d'où vient le lien, pour l'estimation reliée (C6). */
+  const [lienPlan, setLienPlan] = useState<Pick<OrigineNeuf, "planId" | "planLocal">>({});
+  /** `pid` / `pl` ne valent que pour le fragment lu au montage, pas pour un lien collé ensuite. */
+  const liensConsommes = useRef(false);
   useEffect(() => {
     if (edit) return;
     function lireFragment() {
@@ -135,8 +157,13 @@ export default function EstimateurRapideNeuf({
       try { h = window.location.hash; } catch { /* noop */ }
       if (!h.startsWith("#plan=")) return;
       // L'URL est nettoyée AVANT toute lecture : ni l'historique, ni un partage, ni une mesure ne la voient.
-      try { window.history.replaceState(null, "", window.location.pathname + window.location.search); } catch { /* noop */ }
+      try { window.history.replaceState(null, "", window.location.pathname + rechercheNettoyee()); } catch { /* noop */ }
       const fragment = h.slice(6);
+      const liens: Pick<OrigineNeuf, "planId" | "planLocal"> = liensConsommes.current ? {} : {
+        ...(initial?.planId ? { planId: initial.planId } : {}),
+        ...(initial?.planLocal ? { planLocal: initial.planLocal } : {}),
+      };
+      liensConsommes.current = true;
       import("@/lib/estimateur/plan-neuf").then(({ lirePlanNeuf, trancheSurface }) => {
         const r = lirePlanNeuf(fragment);
         if (r.refus) {
@@ -157,6 +184,7 @@ export default function EstimateurRapideNeuf({
             try { localStorage.removeItem(CLE_BROUILLON_NEUF); } catch { /* noop */ }
           }
           setPlan(null);
+          setLienPlan({});
           setRefusPlan(r.refus);
           suivre("neuf_depuis_plan", { ok: false, niveaux: null, tranche_surface: null });
           return;
@@ -166,6 +194,7 @@ export default function EstimateurRapideNeuf({
         planApplique.current = true;
         setRefusPlan(null);
         setPlan(r);
+        setLienPlan(liens);
         setAgi(true);
         setR((p) => ({
           ...p,
@@ -203,7 +232,7 @@ export default function EstimateurRapideNeuf({
   const baseEff = base ?? plan?.maison ?? retour?.base;
   /** La maison du plan telle qu'elle est CHIFFRÉE (au moins une salle de bain et un WC) : le résumé dit vrai. */
   const planChiffre = useMemo(() => (plan ? maisonComplete(plan.maison) : null), [plan]);
-  const origineEff: OrigineNeuf | undefined = origine ?? (plan ? { source: "plan", contrat: plan.contrat } : undefined);
+  const origineEff: OrigineNeuf | undefined = origine ?? (plan ? { source: "plan", contrat: plan.contrat, ...lienPlan } : undefined);
 
   const maj = (patch: Partial<ReponsesRapideNeuf>) => {
     setAgi(true); setR((r) => ({ ...r, ...patch }));

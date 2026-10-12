@@ -17,6 +17,7 @@ import type { MaisonNeuve, Niveaux } from "./neuf";
 import type { QuiRealise } from "./presets";
 import { dictNeufCommun } from "../i18n/neuf-commun";
 import type { Locale } from "../i18n/config";
+import { nettoyerOrigine } from "../plans/origine";
 
 /** Brouillon du rapide neuf (et graine de l'« Affiner » du neuf). */
 export const CLE_BROUILLON_NEUF = "avyora-neuf-v1";
@@ -44,8 +45,12 @@ export type ReponsesRapideNeuf = {
   garage?: boolean; assainissement?: "collectif" | "fosse";
 };
 
-/** Origine d'une maison venue d'ailleurs que la saisie (le plan, chantier C7). */
-export type OrigineNeuf = { source: "plan"; contrat?: string };
+/**
+ * Origine d'une maison venue d'ailleurs que la saisie : le plan. `planId` (plan du compte, `&pid=`)
+ * ou `planLocal` (plan de l'appareil, `&pl=`) relient l'estimation à son plan (« Mes plans », C6) ;
+ * ils ne sont posés que si `FEATURES.plans` (`contexteNeuf`) et qu'un plan a bien été appliqué.
+ */
+export type OrigineNeuf = { source: "plan"; contrat?: string; planId?: string; planLocal?: string };
 
 export type BrouillonNeuf = {
   v: "estimateur";
@@ -132,10 +137,13 @@ export function lireBrouillonNeuf(raw: string | null | undefined): BrouillonNeuf
   if (!CP.test(codePostal)) return null;
   if (!(Number(d.ctx.surface) > 0)) return null;
   const custom = lignesPersoValides(d.custom);
+  // L'origine garde ses identifiants de plan s'ils sont bien formés, et les retire sinon.
+  const origine = nettoyerOrigine(d.origine);
   return {
     ...(d as BrouillonNeuf), codePostal, mode: d.mode === "detaille" ? "detaille" : "rapide",
     qui: d.qui === "partie" || d.qui === "max" ? d.qui : "pros", sel: selValide(d.sel),
     ...(custom.length ? { custom } : { custom: undefined }),
+    origine,
   };
 }
 

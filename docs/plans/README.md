@@ -300,6 +300,45 @@ restent publics).
   téléphone 375 px, anglais. Le parcours réel (s'inscrire, confirmer dans un autre navigateur, revenir) se fera en
   préversion après l'application de 0004.
 
+## Estimation reliée : Plan final vers la construction neuve (C6)
+
+Le lien « Chiffrer cette maison » de l'éditeur hébergé porte, en plus du fragment `#plan=`, l'identifiant du plan
+dans la **recherche** (un `&pid=` dans le fragment casserait le décodage base64) :
+`/estimation-construction-maison?source=editeur-plan&pid=<uuid>#plan=…` (plan du compte) ou `&pl=<id local>`
+(plan de l'appareil). L'éditeur le fait depuis C3 (`lienConstruction` enveloppé).
+
+| Fichier | Rôle |
+|---|---|
+| `lib/neuf-contexte.ts` | `InitialNeuf.planId` (`planIdSchema`, uuid) et `planLocal` (`editeurIdSchema`), lus depuis `pid` et `pl` **seulement si `FEATURES.plans`**. Un invalide est ignoré. |
+| `lib/estimateur/brouillon-neuf.ts` | `OrigineNeuf` gagne `planId?` et `planLocal?`. `lireBrouillonNeuf` passe l'origine par `nettoyerOrigine` : identifiants bien formés gardés, les autres retirés ; une origine qui n'est pas `source: "plan"` disparaît. |
+| `lib/plans/origine.ts` | Pur (sans zod ni Supabase, il entre dans le bundle de `ClaimDraft`) : `nettoyerOrigine`, et `origineDuPlan(reponses)` côté serveur (projet **neuf**, `source === "plan"`, au moins un identifiant). |
+| `components/neuf/EstimateurRapideNeuf.tsx` | `planId` / `planLocal` n'entrent dans l'origine que si le plan du fragment est **appliqué**, et seulement pour le fragment lu au montage (un lien collé ensuite dans le même onglet n'hérite pas du `pid`). Un `pid` sans `#plan=` ne relie rien. Interrupteur allumé, l'URL nettoyée retire aussi `pid` et `pl`. |
+| `lib/plans/relier.ts` | `relierAuPlan(sb, projectId, origine)` : résout le plan sous RLS (par uuid, sinon par `editeur_id`), puis `upsert project_plans {project_id, plan_id, version, contrat: null, nom}` en `onConflict: project_id` ignoré. `relierEstimationsOrphelines(sb, userId, planId, editeurId)` : les projets neufs de l'utilisateur dont `reponses.origine.planLocal = editeurId` et sans ligne `project_plans`. **Ne lèvent jamais** : un échec est journalisé (`plan_lien_echoue`, sans détail interne) et l'appelant continue. |
+| `app/api/projects/route.ts` | Après `createProjet` : `if (FEATURES.plans && origineDuPlan(reponses)) relierAuPlan(…)`. Sans origine, ou interrupteur éteint : aucune requête `project_plans`. |
+| `app/api/plans/route.ts` | Après une reprise avec `editeurId` : `relierEstimationsOrphelines` (l'ordre « estimation réclamée avant le plan »). La réponse ne change pas. |
+
+**Couvert sans autre code** : « Affiner » (détaillé neuf, Pro) recrée un projet par `POST` en gardant l'origine, il est
+donc relié aussi ; un brouillon anonyme réclamé par `ClaimDraft` est relié dès que le plan est dans le compte, ou à
+la reprise du plan local. Le rapide neuf reste gratuit, le détaillé neuf reste Pro.
+
+**Ne change pas** : le lien `#plan=` de l'éditeur, `planNeufSchema`, `extraitPlanNeuf`, `lirePlanNeuf`,
+`FRAGMENT_PLAN_MAX` ; `PATCH /api/projects/[id]` ne relie jamais ; un projet sans origine de plan ne lit jamais
+`project_plans`.
+
+### Contrôles
+
+- `tests/neuf-plan-relie.test.ts` (Supabase simulé, RLS de 0001 et 0004 reproduite) : `contexteNeuf` (valide,
+  invalide, éteint) ; brouillon conservé et nettoyé ; « Affiner » garde l'origine ; `POST /api/projects` sans origine
+  ou en rénovation → aucune requête de lien ; éteint → aucune ; plan du compte → relié ; plan local déjà repris →
+  relié ; plan d'un autre compte → 0 ligne, projet créé, 200 ; panne → 200 et journal ; `relierEstimationsOrphelines`
+  ne touche que des projets sans lien ; reprise par `POST /api/plans` → l'estimation réclamée avant est reliée.
+- `tests/estimateur-plan-neuf.test.ts`, `neuf-*.test.ts`, `coherence.mjs` § 8 et `planfinal.mjs` (dont
+  `plan-neuf-lien.mts`) : verts, sans modification.
+- Recette navigateur sur `next start`, `POST /api/projects` intercepté (aucun compte) : éteint, l'origine n'a ni
+  `planId` ni `planLocal` et l'URL garde `pid` comme avant ; allumé, `pid` arrive dans l'origine et quitte l'URL,
+  l'anonyme (401) range un brouillon réclamable avec `planLocal`, un `pid` sans `#plan=` ou invalide ne relie rien.
+  Le parcours réel (fiche « Vient de ton plan », C8) se fera en préversion après l'application de 0004.
+
 ## Contrôles de chaque chantier
 
 ```bash

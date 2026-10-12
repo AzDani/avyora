@@ -16,7 +16,9 @@ export type EvenementSecurite =
   | "compte_supprime"
   | "export_donnees"
   | "action_admin"
-  | "acces_refuse";
+  | "acces_refuse"
+  /** Une estimation née d'un plan n'a pas pu être reliée (« Mes plans », C6) : le projet reste créé. */
+  | "plan_lien_echoue";
 
 export async function journaliser(
   type: EvenementSecurite,
