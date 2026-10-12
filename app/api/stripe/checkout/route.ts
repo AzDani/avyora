@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getUser } from "@/lib/auth";
 import { getStripe, priceIdForPlan, type PlanKey } from "@/lib/stripe";
+import { retoursStripe } from "@/lib/nature-projet";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,7 +11,7 @@ export async function POST(req: Request) {
   const user = await getUser();
   if (!user) return NextResponse.json({ error: "Authentification requise" }, { status: 401 });
 
-  const { plan } = await req.json().catch(() => ({ plan: undefined }));
+  const { plan, nature } = await req.json().catch(() => ({ plan: undefined, nature: undefined }));
   const priceId = priceIdForPlan(plan as PlanKey);
   if (!priceId) {
     return NextResponse.json({ error: "Cette offre n'est pas encore configurée." }, { status: 400 });
@@ -39,8 +40,9 @@ export async function POST(req: Request) {
             "J'accepte les conditions générales de vente et je demande l'exécution immédiate du service. AVYORA étant un service numérique fourni dès la souscription, je reconnais renoncer à mon droit de rétractation une fois le service exécuté (art. L221-28 du Code de la consommation).",
         },
       },
-      success_url: `${origin}/bienvenue-pro?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/tarifs?abo=annule`,
+      // La nature du projet (N2, liste fermée) suit le visiteur : `/bienvenue-pro` le ramène à sa maison
+      // neuve, et un paiement abandonné revient sur /tarifs sans la perdre.
+      ...retoursStripe(origin, nature),
     });
     return NextResponse.json({ url: session.url });
   } catch (e) {

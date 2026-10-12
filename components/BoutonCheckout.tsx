@@ -3,9 +3,13 @@
 import { useState } from "react";
 import { suivre } from "@/lib/track";
 import { useT } from "@/components/i18n/LangProvider";
+import type { NatureProjet } from "@/lib/nature-projet";
 
-/** CTA d'abonnement pour un utilisateur connecté : lance Stripe Checkout pour le plan donné. */
-export default function BoutonCheckout({ plan }: { plan: string }) {
+/**
+ * CTA d'abonnement pour un utilisateur connecté : lance Stripe Checkout pour le plan donné.
+ * `nature` (N2) part avec la requête : la route la place dans l'adresse de retour (liste fermée).
+ */
+export default function BoutonCheckout({ plan, nature }: { plan: string; nature?: NatureProjet }) {
   const t = useT();
   const [busy, setBusy] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -19,7 +23,7 @@ export default function BoutonCheckout({ plan }: { plan: string }) {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify(nature ? { plan, nature } : { plan }),
       });
       const data = await res.json().catch(() => ({}));
       if (data?.url) {

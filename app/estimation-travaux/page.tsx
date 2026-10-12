@@ -92,7 +92,8 @@ export default async function NouveauProjetRapide({
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <header className="animate-rise">
         <p className="mb-1 text-[13px]">
-          <Link href="/projets/nouveau" className="text-muted hover:text-brand-700">{t.pageBack}</Link>
+          {/* Retour à l'écran Rapide / Détaillée de la rénovation, sans repasser par la pré-page (N2). */}
+          <Link href="/projets/nouveau?nature=reno" className="text-muted hover:text-brand-700">{t.pageBack}</Link>
         </p>
         <p className="eyebrow">{t.pageEyebrow}</p>
         <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-ink">{t.pageTitre}</h1>

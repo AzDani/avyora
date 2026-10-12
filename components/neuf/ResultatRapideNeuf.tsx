@@ -72,7 +72,7 @@ export default async function ResultatRapideNeuf({
     ? [...dv.lignes].filter((li) => li.ttc > 0).sort((a, b) => b.ttc - a.ttc).slice(0, 5).map((li) => ({ k: li.cle, nom: catLigne(locale, li.nom, li.cle), v: eur(li.ttc) }))
     : [62, 48, 55, 40, 50].map((w, i) => ({ k: "f" + i, nom: <span className="fake" style={{ width: w + "%" }} />, v: "••• €" }));
 
-  const ctaHref = isPro ? `/projets/${projectId}/modifier` : "/tarifs";
+  const ctaHref = isPro ? `/projets/${projectId}/modifier` : "/tarifs?source=affiner-neuf";
   const ctaLabel = isPro ? t.affiner : t.passPro;
 
   return (

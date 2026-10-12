@@ -5,6 +5,7 @@ import { getUser, estPro } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
 import { SuiviVue } from "@/components/SuiviVue";
 import { FEATURES } from "@/lib/features";
+import { lireNature, lireSourceNature, natureDeSource, lienDetaillePro } from "@/lib/nature-projet";
 
 export const metadata = {
   title: "Passer Pro — estimation détaillée poste par poste",
@@ -30,6 +31,12 @@ const PLAN_PAR_DEFAUT: (typeof PLANS_AFFICHES)[number] = "annuel";
  * `choix-plan` du bandeau « Partir de mon plan » de l'écran de choix.
  */
 const SOURCES_PLAN = ["editeur-plan", "choix-plan"] as const;
+/*
+ * N2 : les autres sources, celles qui disent la nature du projet (`affiner-reno`, `affiner-neuf`, `choix-reno`,
+ * `choix-neuf` ; liste fermée `SOURCES_NATURE` de lib/nature-projet.ts), quel que soit l'interrupteur des plans.
+ * La nature vient de la source, sinon de `?nature=` (retour d'inscription ou paiement abandonné). Elle part avec
+ * le paiement (`BoutonCheckout`) et choisit le lien « déjà Pro » : la maison du neuf ou le détaillé rénovation.
+ */
 
 function Check() {
   return (
@@ -42,16 +49,18 @@ function Check() {
 export default async function TarifsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ plan?: string; abo?: string; source?: string }>;
+  searchParams: Promise<{ plan?: string; abo?: string; source?: string; nature?: string }>;
 }) {
-  const [{ plan: planDemande, abo, source: sourceDemandee }, user, { t: tr }] = await Promise.all([searchParams, getUser(), getT()]);
+  const [{ plan: planDemande, abo, source: sourceDemandee, nature: natureDemandee }, user, { t: tr }] = await Promise.all([searchParams, getUser(), getT()]);
   const t = tr.tarifs;
   const dejaPro = estPro(user);
   // Un visiteur qui revient d'une inscription arrive avec le plan qu'il avait choisi AVANT de
   // créer son compte (components/BoutonAbo.tsx pose ce paramètre). On met SON plan en avant
   // plutôt que celui de la maison : il retrouve son choix au lieu de devoir le refaire.
   const misEnAvant = PLANS_AFFICHES.find((k) => k === planDemande) ?? PLAN_PAR_DEFAUT;
-  const source = FEATURES.plans ? SOURCES_PLAN.find((s) => s === sourceDemandee) : undefined;
+  const sourceNature = lireSourceNature(sourceDemandee);
+  const source = (FEATURES.plans ? SOURCES_PLAN.find((s) => s === sourceDemandee) : undefined) ?? sourceNature;
+  const nature = natureDeSource(sourceNature) ?? lireNature(natureDemandee);
 
   return (
     <div className="animate-rise mx-auto max-w-4xl py-4 sm:py-8">
@@ -76,7 +85,7 @@ export default async function TarifsPage({
 
       {dejaPro && (
         <p className="mx-auto mt-6 max-w-md rounded-field border border-positive/25 bg-positive-soft px-4 py-3 text-center text-sm text-positive">
-          {t.dejaProAvant}<Link href="/projets/nouveau/detaille?new=1" className="font-semibold underline">{t.dejaProLien}</Link>.
+          {t.dejaProAvant}<Link href={lienDetaillePro(nature)} className="font-semibold underline">{t.dejaProLien}</Link>.
         </p>
       )}
 
@@ -139,7 +148,7 @@ export default async function TarifsPage({
                   promesse vérifiable — le tarif ne bouge pas pour les premiers abonnés — et non une
                   remise sur un prix fictif. Ne pas réintroduire d'ancrage sans prix réel à l'appui. */}
               <div className="mt-2 text-xs text-faint">{p.note}</div>
-              <div className="mt-5">{user ? <BoutonCheckout plan={key} /> : <BoutonAbo plan={key} />}</div>
+              <div className="mt-5">{user ? <BoutonCheckout plan={key} nature={nature} /> : <BoutonAbo plan={key} nature={nature} />}</div>
             </div>
           );
         })}

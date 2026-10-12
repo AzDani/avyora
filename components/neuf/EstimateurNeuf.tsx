@@ -9,10 +9,11 @@
  * contexte du moteur s'en déduit, et chaque réponse réécrit les seuls postes qu'elle gouverne
  * (`lib/estimateur/detaille-neuf.ts`, testé sans rendu).
  *
- * Reprises, dans l'ordre : projet rouvert (`initialState`, « Modifier ») ; `?new=1` → « Affiner »
- * du rapide (`sessionStorage`), sinon la graine du rapide (`avyora-neuf-v1`), sinon la maison par
- * défaut ; sinon le brouillon du détaillé (`avyora-neuf-detail-v1`). Clés propres au neuf : la
- * rénovation ne relit jamais un brouillon neuf.
+ * Reprises, dans l'ordre : projet rouvert (`initialState`, « Modifier ») ; « Affiner » du rapide
+ * (`sessionStorage`) ; `?reprise=1` (retour du paiement) → la graine du rapide (`avyora-neuf-v1`) ;
+ * `?new=1` → la maison par défaut, page vierge comme en rénovation (`ouvertureDetailNeuf`, N2) ;
+ * sinon le brouillon du détaillé (`avyora-neuf-detail-v1`). Clés propres au neuf : la rénovation ne
+ * relit jamais un brouillon neuf.
  *
  * Liste : phases du chantier repliables, et dans chaque phase ses blocs (un lot du catalogue à sa
  * place). Un lot revient parfois deux fois dans la même phase : clé React et ouverture par INDEX
@@ -37,8 +38,8 @@ import { INFO_PHASES } from "@/lib/estimateur/etapes-neuf";
 import { QUESTIONS_NEUF, type QuestionNeuf, type ValeurQuestionNeuf, type CleQuestionNeuf } from "@/lib/estimateur/questions-neuf";
 import {
   CLE_BROUILLON_DETAIL_NEUF, BLOCS_NEUF, ctxDetailNeuf, etatParDefaut, changerReponseNeuf, cocherNeufEtat, puReelNeuf, badgeNeuf,
-  diyNeuf, horsDecennaleNeuf, lignesPersoDuBloc, lignePersoNeuf, repriseDepuisReponses, repriseDepuisAffiner, repriseDepuisGraine,
-  lireBrouillonDetailNeuf, enregistrementDetailNeuf, demarchesPhase, type EtatNeuf, type BlocNeuf,
+  diyNeuf, horsDecennaleNeuf, lignesPersoDuBloc, lignePersoNeuf, repriseDepuisReponses,
+  lireBrouillonDetailNeuf, enregistrementDetailNeuf, demarchesPhase, ouvertureDetailNeuf, type EtatNeuf, type BlocNeuf,
 } from "@/lib/estimateur/detaille-neuf";
 import { CLE_BROUILLON_NEUF, CLE_AFFINER_NEUF, CLE_RECLAMATION_NEUF, type OrigineNeuf } from "@/lib/estimateur/brouillon-neuf";
 import { marquerReprisePlan } from "@/lib/plans/origine";
@@ -90,28 +91,24 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
       if (r) { setEtat(r.etat); setCustom(r.custom); statutsRef.current = r.statuts; origineRef.current = r.origine; }
       return;
     }
-    let isNew = false, affiner: string | null = null;
+    let isNew = false, reprise = false, affiner: string | null = null, graine: string | null = null;
     try {
-      isNew = new URLSearchParams(window.location.search).get("new") === "1";
+      const q = new URLSearchParams(window.location.search);
+      isNew = q.get("new") === "1";
+      reprise = q.get("reprise") === "1";
       affiner = sessionStorage.getItem(CLE_AFFINER_NEUF);
       if (affiner) sessionStorage.removeItem(CLE_AFFINER_NEUF);
-      if (isNew) { // on retire ?new : un rafraîchissement reprend le travail en cours, pas un départ à neuf
-        const url = new URL(window.location.href); url.searchParams.delete("new");
+      if (isNew || reprise) { // on retire ?new et ?reprise : un rafraîchissement reprend le travail en cours, pas un départ à neuf
+        const url = new URL(window.location.href); url.searchParams.delete("new"); url.searchParams.delete("reprise");
         window.history.replaceState(null, "", url.pathname + url.search);
       }
     } catch { /* noop */ }
-    if (isNew || affiner) {
+    try { graine = localStorage.getItem(CLE_BROUILLON_NEUF); } catch { /* noop */ }
+    const ouverture = ouvertureDetailNeuf({ nouveau: isNew, reprise, affiner, graine });
+    if (ouverture.frais) {
       try { localStorage.removeItem(CLE_BROUILLON_DETAIL_NEUF); } catch { /* noop */ }
-      const depuisRapide = repriseDepuisAffiner(affiner);
-      if (depuisRapide) {
-        setEtat(depuisRapide);
-        // « Affiner » range la graine juste avant : une maison venue d'un plan garde son origine.
-        try { origineRef.current = repriseDepuisGraine(localStorage.getItem(CLE_BROUILLON_NEUF))?.origine; } catch { /* noop */ }
-        return;
-      }
-      let graine = null;
-      try { graine = repriseDepuisGraine(localStorage.getItem(CLE_BROUILLON_NEUF)); } catch { /* noop */ }
-      if (graine) { setEtat(graine.etat); setCustom(graine.custom); origineRef.current = graine.origine; }
+      const r = ouverture.reprise;
+      if (r) { setEtat(r.etat); setCustom(r.custom); origineRef.current = r.origine; }
       return; // sinon : la maison par défaut (état initial)
     }
     let b = null;

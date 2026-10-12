@@ -183,6 +183,9 @@ ${PLAN_CSS}<section class="planb" aria-labelledby="planb-titre"><div class="in">
 const PLAN_TRUST = "<span>plan <b>3D</b></span>";
 const PLAN_TRUST_EN = "<span><b>3D</b> floor plan</span>";
 
+/* Liens « Estimer gratuitement » : ceux du hero mènent à la pré-page « Quel est ton projet ? » ; le bloc final
+   (« Ta rénovation mérite mieux… ») connaît la nature et la saute avec `?nature=reno` (N2). Sans condition sur
+   l'interrupteur : éteint, `/projets/nouveau` ignore `nature` et rend la rénovation, comme avant. */
 const HOME_HTML = `
 <a href="/tarifs" class="promo"><span class="dot"></span>Estimer est <b>gratuit</b> — AVYORA Pro dès 18,85 €/mois <span class="arr">· sans engagement →</span></a>
 <div class="wrap"><header class="hero"><div class="in">
@@ -305,7 +308,7 @@ const HOME_HTML = `
   <div class="final">
     <h2>Ta rénovation mérite mieux qu'un devis au feeling.</h2>
     <p>Lance ta première estimation gratuite. En 3 minutes, tu sauras où tu vas.</p>
-    <div style="margin-top:26px"><a href="/projets/nouveau" class="btn btn-p" style="font-size:16px;padding:16px 32px">Estimer gratuitement →</a></div>
+    <div style="margin-top:26px"><a href="/projets/nouveau?nature=reno" class="btn btn-p" style="font-size:16px;padding:16px 32px">Estimer gratuitement →</a></div>
   </div>
 </div></section>
 `;
@@ -429,7 +432,7 @@ const HOME_HTML_EN = `
   <div class="final">
     <h2>Your renovation deserves better than a gut-feel quote.</h2>
     <p>Start your first free estimate. In 3 minutes, you'll know where you're going.</p>
-    <div style="margin-top:26px"><a href="/projets/nouveau" class="btn btn-p" style="font-size:16px;padding:16px 32px">Estimate for free →</a></div>
+    <div style="margin-top:26px"><a href="/projets/nouveau?nature=reno" class="btn btn-p" style="font-size:16px;padding:16px 32px">Estimate for free →</a></div>
   </div>
 </div></section>
 `;

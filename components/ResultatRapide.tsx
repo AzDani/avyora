@@ -110,7 +110,7 @@ export default async function ResultatRapide({
         margeInfo: "Estimation indicative basée sur le référentiel de prix AVYORA (France 2026), ajustée à ton code postal — un ordre de grandeur (marge ±15 %) à confirmer par des devis d'artisans. Le détail précis, poste par poste, s'obtient avec l'estimation détaillée.",
         others: "+ autres corps d'état", labor: "% MO" };
 
-  const ctaHref = isPro ? `/projets/${projectId}/modifier` : "/tarifs";
+  const ctaHref = isPro ? `/projets/${projectId}/modifier` : "/tarifs?source=affiner-reno";
   const ctaLabel = isPro ? L.affiner : L.passPro;
 
   return (
@@ -161,7 +161,8 @@ export default async function ResultatRapide({
 
       <div className="actions">
         <Link href={ctaHref} className="btn btn-primary py-2.5">{ctaLabel}</Link>
-        <Link href="/projets/nouveau" className="btn btn-outline py-2.5">{L.refaire}</Link>
+        {/* La nature est connue : on saute la pré-page « Quel est ton projet ? » (N2). */}
+        <Link href="/projets/nouveau?nature=reno" className="btn btn-outline py-2.5">{L.refaire}</Link>
       </div>
 
       <p className="note">{L.margeInfo}</p>

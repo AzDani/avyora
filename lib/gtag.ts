@@ -30,13 +30,16 @@ export function adConversion(sendTo: string, params: Record<string, unknown> = {
 }
 
 /**
- * Conversion « Estimation terminée » — une seule fois par session de navigation
- * (l'utilisateur peut cliquer Affiner puis Enregistrer : Google ne doit compter qu'un lead).
+ * Conversion « Estimation terminée » — une seule fois par session de navigation ET par nature
+ * (l'utilisateur peut cliquer Affiner puis Enregistrer : Google ne doit compter qu'un lead ; mais une
+ * rénovation puis une maison neuve, ce sont deux projets). Les deux natures alimentent pour l'instant la
+ * même action : une 2ᵉ action « Estimation neuf » se crée dans la console Google Ads, puis s'ajoute à `CONV`.
  */
-export function conversionEstimation(): void {
+export function conversionEstimation(nature: "reno" | "neuf"): void {
   try {
-    if (sessionStorage.getItem("av_conv_estimation")) return;
-    sessionStorage.setItem("av_conv_estimation", "1");
+    const cle = `av_conv_estimation_${nature}`;
+    if (sessionStorage.getItem(cle)) return;
+    sessionStorage.setItem(cle, "1");
   } catch {
     /* stockage indisponible : on envoie quand même */
   }

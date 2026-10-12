@@ -146,8 +146,8 @@ export default function EstimateurRapide({
     if (convFired.current || !estimationReelle) return;
     const id = window.setTimeout(() => {
       convFired.current = true;
-      suivre("estimation_terminee", { action: "affichee", type: mode === "pieces" ? "pieces" : type, ampleur, src: initial?.src ?? "direct" });
-      conversionEstimation();
+      suivre("estimation_terminee", { action: "affichee", type: mode === "pieces" ? "pieces" : type, ampleur, nature: "reno", src: initial?.src ?? "direct" });
+      conversionEstimation("reno");
     }, 1800);
     return () => window.clearTimeout(id);
   }, [estimationReelle, mode, type, ampleur]);
@@ -204,8 +204,8 @@ export default function EstimateurRapide({
     // Le clic mène toujours à l'estimateur détaillé — mais on ne déclare une estimation terminée,
     // et surtout pas une conversion payante, que s'il y en a réellement eu une.
     if (estimationReelle) {
-      suivre("estimation_terminee", { action: "affiner", type: mode === "pieces" ? "pieces" : type, ampleur, src: initial?.src ?? "direct" });
-      conversionEstimation();
+      suivre("estimation_terminee", { action: "affiner", type: mode === "pieces" ? "pieces" : type, ampleur, nature: "reno", src: initial?.src ?? "direct" });
+      conversionEstimation("reno");
     }
     saveDraft();
     try { sessionStorage.setItem("avyora-affiner", "1"); } catch { /* noop */ }
@@ -229,8 +229,8 @@ export default function EstimateurRapide({
     if (!/^\d{5}$/.test(cp)) { setErreur(t.errCp); return; }
     if (mode === "pieces" && pieces.length === 0) { setErreur(t.auMoinsUnePiece); return; }
     if (!valid) { setErreur(t.errSurface); return; }
-    suivre("estimation_terminee", { action: "enregistrer", type: mode === "pieces" ? "pieces" : type, ampleur, src: initial?.src ?? "direct" });
-    conversionEstimation();
+    suivre("estimation_terminee", { action: "enregistrer", type: mode === "pieces" ? "pieces" : type, ampleur, nature: "reno", src: initial?.src ?? "direct" });
+    conversionEstimation("reno");
     setSaving(true);
     const nom = nomProjet();
     const typeBien = (mode === "pieces" ? "Appartement" : type) as TypeBien;
@@ -393,7 +393,7 @@ export default function EstimateurRapide({
                 <div className="sub">{t.lockedSub}</div>
               </div>
               <div className="btns">
-                <Link className="cta" href="/tarifs">{t.lockedCta}</Link>
+                <Link className="cta" href="/tarifs?source=affiner-reno">{t.lockedCta}</Link>
               </div>
             </>
           ) : (

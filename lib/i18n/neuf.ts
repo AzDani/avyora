@@ -10,11 +10,24 @@ import { dictNeufCommun } from "./neuf-commun";
  */
 const fr = {
   ...dictNeufCommun("fr"),
-  /* Écran de choix (/projets/nouveau) : bascule de nature et cartes du neuf. */
+  /*
+   * Écran de choix (/projets/nouveau). Pré-page « Quel est ton projet ? » (N2) : deux cartes, puis le
+   * surtitre de la 2ᵉ étape (nature choisie, lien « Changer ») ; ensuite les cartes du neuf.
+   * Chaînes simples seulement (le test des points d'entrée les parcourt toutes).
+   */
   choix: {
     natureAria: "Type de projet",
     reno: "Rénovation",
     neuf: "Construction neuve",
+    preTitre: "Quel est ton projet ?",
+    preSous: "Dis-nous ce que tu prépares : les questions et les prix s'y adaptent. Tu choisis ensuite entre l'estimation rapide et la détaillée.",
+    renoDesc: "Un logement existant, maison ou appartement, du rafraîchissement à la rénovation lourde.",
+    renoGo: "Estimer ma rénovation →",
+    neufDesc: "Une maison individuelle à construire, du permis aux clés.",
+    neufGo: "Estimer ma construction →",
+    preHint: "Un appartement ? Choisis Rénovation. Extension, surélévation : pas encore chiffrées.",
+    changer: "Changer",
+    changerAria: "Changer de type de projet",
     titre: "Comment veux-tu estimer ta maison ?",
     sousTitre: "Ta maison, du permis de construire à la remise des clés. Commence rapide, affine quand tu veux — sans rien ressaisir.",
     rapideLead: "5 questions, un budget tout compris immédiat. Idéal pour un premier ordre de grandeur.",
@@ -222,6 +235,15 @@ const en: typeof fr = {
     natureAria: "Project type",
     reno: "Renovation",
     neuf: "New build",
+    preTitre: "What's your project?",
+    preSous: "Tell us what you're planning: the questions and prices adapt to it. Then pick the quick or the detailed estimate.",
+    renoDesc: "An existing home, house or apartment, from a refresh to a major renovation.",
+    renoGo: "Estimate my renovation →",
+    neufDesc: "A single-family house to build, from building permit to move-in.",
+    neufGo: "Estimate my new build →",
+    preHint: "An apartment? Choose Renovation. Home additions and adding a story: not priced yet.",
+    changer: "Change",
+    changerAria: "Change project type",
     titre: "How do you want to estimate your house?",
     sousTitre: "Your house, from building permit to handover. Start quick, refine whenever you like — without re-entering anything.",
     rapideLead: "5 questions, an instant all-in budget. Ideal for a first ballpark figure.",

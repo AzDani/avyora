@@ -231,6 +231,26 @@ export function repriseDepuisGraine(raw: string | null | undefined): RepriseNeuf
   return repriseDepuisReponses(d);
 }
 
+/**
+ * À l'ouverture du détaillé (hors projet rouvert) : repartir à neuf, et de quelle maison, ou reprendre le
+ * brouillon du détaillé (`frais: false`). N2 : `?new=1` part de la maison PAR DÉFAUT, page vierge comme en
+ * rénovation (la graine du rapide n'est plus ressemée) ; la graine `avyora-neuf-v1` n'est relue que sur
+ * `?reprise=1`, le retour du paiement (`/bienvenue-pro`, bandeau « déjà Pro » de `/tarifs`). « Affiner »
+ * (`sessionStorage`) passe avant tout : la maison du rapide, et l'origine « plan » reprise de la graine,
+ * qu'« Affiner » range juste avant.
+ */
+export type OuvertureNeuf = { frais: true; reprise: RepriseNeuf | null } | { frais: false };
+
+export function ouvertureDetailNeuf(o: { nouveau: boolean; reprise: boolean; affiner: string | null; graine: string | null }): OuvertureNeuf {
+  if (!o.nouveau && !o.reprise && !o.affiner) return { frais: false };
+  const etat = repriseDepuisAffiner(o.affiner);
+  if (etat) {
+    const origine = repriseDepuisGraine(o.graine)?.origine;
+    return { frais: true, reprise: { etat, custom: [], ...(origine ? { origine } : {}) } };
+  }
+  return { frais: true, reprise: o.reprise ? repriseDepuisGraine(o.graine) : null };
+}
+
 /** Brouillon du détaillé (rechargement de la page). */
 export interface BrouillonDetailNeuf {
   v: "neuf-detail";

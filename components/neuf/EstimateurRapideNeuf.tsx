@@ -258,7 +258,7 @@ export default function EstimateurRapideNeuf({
     const id = window.setTimeout(() => {
       convFired.current = true;
       suivre("estimation_terminee", { action: "affichee", type: "neuf", nature: "neuf", src });
-      conversionEstimation();
+      conversionEstimation("neuf");
     }, 1800);
     return () => window.clearTimeout(id);
   }, [estimationReelle, src]);
@@ -296,15 +296,16 @@ export default function EstimateurRapideNeuf({
   function affiner() {
     if (estimationReelle) {
       suivre("estimation_terminee", { action: "affiner", type: "neuf", nature: "neuf", src });
-      conversionEstimation();
+      conversionEstimation("neuf");
     }
     saveDraft();
     try { sessionStorage.setItem(CLE_AFFINER_NEUF, JSON.stringify({ R, base: baseEff })); } catch { /* noop */ }
     // Le détaillé du neuf est réservé au Pro : un gratuit va directement aux tarifs (la page du
     // détaillé l'y renverrait de toute façon). Le brouillon reste prêt pour après l'abonnement, et
-    // ses réponses reviennent s'il revient en arrière.
+    // ses réponses reviennent s'il revient en arrière. La source dit la nature jusqu'à Stripe : après
+    // le paiement, `/bienvenue-pro` le ramène à sa maison (N2).
     if (!isPro) { try { sessionStorage.setItem(CLE_RETOUR_NEUF, JSON.stringify({ R, base: baseEff })); } catch { /* noop */ } }
-    router.push(isPro ? "/projets/nouveau/construction?new=1" : "/tarifs");
+    router.push(isPro ? "/projets/nouveau/construction?new=1" : "/tarifs?source=affiner-neuf");
   }
 
   // Une maison venue d'un plan est rangée tout de suite (`avyora-neuf-v1`, avec son origine) : elle
@@ -330,7 +331,7 @@ export default function EstimateurRapideNeuf({
     if (!(R.surface >= 30)) { signaler("surface", s.errSurface); return; }
     setAgi(true);
     suivre("estimation_terminee", { action: "enregistrer", type: "neuf", nature: "neuf", src });
-    conversionEstimation();
+    conversionEstimation("neuf");
     setSaving(true);
     const d = brouillon();
     try {

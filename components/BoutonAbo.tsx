@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { suivre } from "@/lib/track";
 import { useT } from "@/components/i18n/LangProvider";
+import type { NatureProjet } from "@/lib/nature-projet";
 
 /**
  * CTA d'abonnement pour un visiteur NON connecté (page Tarifs).
@@ -13,10 +14,13 @@ import { useT } from "@/components/i18n/LangProvider";
  * de ses projets sans avoir jamais vu d'écran de paiement ; pour payer, il devait retrouver
  * /tarifs tout seul, au pied de page. C'était le trou le plus coûteux du tunnel : on perdait
  * les gens exactement au moment où ils venaient de dire oui.
+ *
+ * La nature du projet (N2), quand /tarifs la connaît, fait le même voyage (`&nature=`) : après
+ * l'inscription, le paiement l'emporte jusqu'à `/bienvenue-pro`, qui ramène vers la bonne estimation.
  */
-export default function BoutonAbo({ plan }: { plan: string }) {
+export default function BoutonAbo({ plan, nature }: { plan: string; nature?: NatureProjet }) {
   const t = useT();
-  const retour = `/tarifs?plan=${encodeURIComponent(plan)}`;
+  const retour = `/tarifs?plan=${encodeURIComponent(plan)}${nature ? `&nature=${nature}` : ""}`;
   return (
     <Link
       href={`/inscription?next=${encodeURIComponent(retour)}`}

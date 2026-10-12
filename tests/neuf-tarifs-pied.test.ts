@@ -104,9 +104,27 @@ describe("/projets/nouveau · metadata", () => {
     }
   });
 
+  it("flag allumé : ?nature=reno garde la metadata d'avant ; sans nature (ou inconnue), celle de la pré-page (N2)", async () => {
+    expect(JSON.stringify(await meta(true, { nature: "reno" }))).toBe(JSON.stringify(AVANT));
+    for (const sp of [{}, { nature: "autre" }, { nature: ["neuf"] }, { nature: "" }]) {
+      const m = await meta(true, sp);
+      // Titre neutre, « rénovation » en tête, 50 caractères (le gabarit ajoute « · AVYORA »).
+      expect(m.title).toBe("Estimer ta rénovation ou ta maison neuve — gratuit");
+      expect(String(m.title).length).toBe(50);
+      expect(String(m.description)).toMatch(/rénovation/i);
+      expect(String(m.description)).toMatch(/maison neuve/i);
+      expect(String(m.description).length).toBeLessThanOrEqual(155);
+      expect(m.alternates).toEqual({ canonical: "/projets/nouveau" });
+      // Son propre Open Graph : og:url n'est plus celle de l'accueil.
+      const og = m.openGraph as { url?: string; title?: string; description?: string };
+      expect(String(og.url)).toMatch(/\/projets\/nouveau$/);
+      expect(og.title).toBe(m.title);
+      expect(og.description).toBe(m.description);
+      expect(`${m.title} ${m.description}`).not.toMatch(/€|\p{Extended_Pictographic}/u);
+    }
+  });
+
   it("flag allumé : titre et description du neuf seulement pour ?nature=neuf, canonical inchangé", async () => {
-    expect(JSON.stringify(await meta(true, {}))).toBe(JSON.stringify(AVANT));
-    expect(JSON.stringify(await meta(true, { nature: "autre" }))).toBe(JSON.stringify(AVANT));
     const n = await meta(true, { nature: "neuf" });
     expect(n.title).not.toBe(AVANT.title);
     expect(String(n.title)).toMatch(/construction/i);

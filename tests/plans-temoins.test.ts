@@ -200,6 +200,14 @@ describe("Témoins · interrupteur plans éteint", () => {
     }
   });
 
+  it("pré-page « Quel est ton projet ? » (FR, EN), 1ʳᵉ étape de /projets/nouveau depuis N2", async () => {
+    for (const locale of LOCALES) {
+      const r = await charger({ plans: PLANS, locale });
+      const ChoixNature = (await import("@/components/ChoixNature")).default;
+      expect(await r.rendre(await ChoixNature())).toMatchSnapshot(`pré-page ${locale}`);
+    }
+  });
+
   it("Tarifs (FR, EN ; anonyme, gratuit, Pro)", async () => {
     for (const locale of LOCALES) {
       for (const user of ["anonyme", "gratuit", "pro"] as const) {

@@ -2,12 +2,22 @@ import { track } from "@vercel/analytics";
 
 /** Événements clés du funnel AVYORA (côté client). No-op silencieux si l'analytics n'est pas chargé. */
 export type EvenementAvyora =
+  /** Props : `action`, `type`, `src`, et `nature` (reno | neuf), que les deux rapides envoient (N2). */
   | "estimation_terminee"
   | "compte_cree"
+  /**
+   * Un clic sur une carte de la pré-page « Quel est ton projet ? » (N2). Props : `nature` (reno | neuf),
+   * liste fermée de `lib/nature-projet.ts`. Entonnoir : vue de /projets/nouveau → clic_nouveau_projet{nature}
+   * → estimation_terminee{nature}.
+   */
   | "clic_nouveau_projet"
   | "clic_sabonner"
   | "clic_telecharger_rapport"
-  /** Arrivée sur la page de tarifs — le mur payant. Sans elle, on ignore combien y parviennent. */
+  /**
+   * Arrivée sur la page de tarifs — le mur payant. Sans elle, on ignore combien y parviennent. Props :
+   * `connecte`, `deja_pro`, `venu_pour`, et `source` quand elle est connue (éditeur de plan, ou la nature :
+   * `affiner-reno`, `affiner-neuf`, `choix-reno`, `choix-neuf`).
+   */
   | "vue_tarifs"
   /**
    * Arrivée par le lien d'un Plan final (construction neuve). Props : `ok`, `niveaux`,

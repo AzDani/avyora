@@ -4,6 +4,7 @@ import { getUser } from "@/lib/auth";
 import { getLocale } from "@/lib/i18n/server";
 import AdConversion from "@/components/AdConversion";
 import { CONV } from "@/lib/gtag";
+import { lireNature, lienDetaillePro } from "@/lib/nature-projet";
 
 
 export const dynamic = "force-dynamic";
@@ -69,17 +70,21 @@ const TR = {
  * Page de célébration après un paiement réussi (success_url du checkout Stripe).
  * On exige d'être connecté (personnalisation) ; on ne bloque PAS sur le statut Pro pour éviter
  * la course avec le webhook Stripe — le client vient de payer, on le félicite tout de suite.
+ *
+ * `?nature=neuf` (N2, posé par l'adresse de retour de Stripe, liste fermée) : interrupteur `FEATURES.neuf`
+ * allumé, le bouton principal reprend la maison décrite dans le rapide du neuf ; sinon, le détaillé de
+ * la rénovation. Lu côté serveur : le bon lien est dans le HTML dès le premier affichage.
  */
 export default async function BienvenueProPage({
   searchParams,
 }: {
-  searchParams: Promise<{ session_id?: string }>;
+  searchParams: Promise<{ session_id?: string; nature?: string }>;
 }) {
   const user = await getUser();
   if (!user) redirect("/connexion?next=/bienvenue-pro");
   const locale = await getLocale();
   const s = TR[locale];
-  const { session_id } = await searchParams;
+  const { session_id, nature } = await searchParams;
 
   return (
     <div className="av-welcome">
@@ -112,7 +117,7 @@ export default async function BienvenueProPage({
           </div>
 
           <div className="wcta">
-            <Link href="/projets/nouveau/detaille?new=1" className="wbtn wbtn-p">{s.ctaPrimary}</Link>
+            <Link href={lienDetaillePro(lireNature(nature))} className="wbtn wbtn-p">{s.ctaPrimary}</Link>
             <Link href="/projets" className="wbtn wbtn-s">{s.ctaSecondary}</Link>
           </div>
 
