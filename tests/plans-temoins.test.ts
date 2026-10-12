@@ -1,0 +1,242 @@
+/**
+ * Témoins de l'éditeur de plan en ligne (chantier C0 du plan « Mes plans »).
+ *
+ * Fige le HTML rendu, interrupteur `FEATURES.plans` ÉTEINT, de toutes les surfaces que les
+ * chantiers suivants vont toucher : en-tête desktop (et pied de page), menu mobile ouvert,
+ * accueil, écran de choix, Tarifs, « Mes projets », fiche projet et sitemap. Les références
+ * vivent dans `tests/__snapshots__/plans-temoins.test.ts.snap` : interrupteur éteint, chaque
+ * chantier doit les retrouver au caractère près.
+ *
+ * Rendu par `prerender` (react-dom/static) et non `renderToStaticMarkup` : les pages contiennent
+ * des composants serveur asynchrones imbriqués (AuthNav, MobileNav, ResultatRapide…), que seul
+ * le rendu en flux sait attendre. Ainsi rien n'est remplacé par un bouchon dans les surfaces figées.
+ */
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { createElement, type ReactElement, type ReactNode } from "react";
+import { prerender } from "react-dom/static";
+import { dict } from "@/lib/i18n/dictionaries";
+import { presetRapide } from "@/lib/estimateur/presets";
+import { presetNeuf } from "@/lib/estimateur/presets-neuf";
+
+type Locale = "fr" | "en";
+type Utilisateur = "anonyme" | "gratuit" | "pro" | "admin";
+const LOCALES = ["fr", "en"] as const;
+const vide = () => null;
+
+/* ─── Données figées ─────────────────────────────────────────────────────────── */
+
+const MAINTENANT = new Date("2026-10-12T10:00:00.000Z");
+
+const UTILISATEURS: Record<Utilisateur, unknown> = {
+  anonyme: null,
+  gratuit: { id: "u-gratuit", email: "camille@exemple.fr", user_metadata: { nom: "Camille" }, app_metadata: {} },
+  pro: { id: "u-pro", email: "alex@exemple.fr", user_metadata: { nom: "Alex" }, app_metadata: { plan: "pro" } },
+  admin: { id: "u-admin", email: "admin@exemple.fr", user_metadata: {}, app_metadata: {} },
+};
+const estAdmin = (u: unknown) => (u as { email?: string } | null)?.email === "admin@exemple.fr";
+const estPro = (u: unknown) =>
+  !!u && (estAdmin(u) || (u as { app_metadata?: { plan?: string } }).app_metadata?.plan === "pro");
+
+const renoRapide = presetRapide({ type: "Maison", surface: 100, codePostal: "45000", ampleur: "complete", finition: "standard", qui: "pros" });
+const neuf = presetNeuf({ surface: 100, niveaux: "pp", codePostal: "45000", finition: "standard", qui: "pros" });
+const R_NEUF = { surface: 100, niveaux: "pp", codePostal: "45000", finition: "standard", qui: "pros" };
+
+const ligne = (n: number, nom: string, reponses: Record<string, unknown>, archived = false, type_bien = "Maison") => ({
+  id: `00000000-0000-4000-8000-00000000000${n}`,
+  nom, type_bien, surface: 100, code_postal: "45000", reponses, archived,
+  created_at: `2026-10-0${n}T09:00:00.000Z`,
+});
+
+const PROJETS = {
+  renoRapide: ligne(1, "Maison Orléans · rapide", { v: "estimateur", mode: "rapide", ampleur: "complete", qui: "pros", ctx: renoRapide.ctx, sel: renoRapide.sel, codePostal: "45000" }),
+  renoDetaille: ligne(2, "Maison Orléans · détaillée", { v: "estimateur", mode: "detaille", ctx: renoRapide.ctx, sel: renoRapide.sel, codePostal: "45000", qui: "pros" }),
+  neufRapide: ligne(3, "Maison neuve · rapide", { v: "estimateur", mode: "rapide", qui: "pros", ctx: neuf.ctx, sel: neuf.sel, codePostal: "45000", R: R_NEUF }),
+  neufDetaille: ligne(4, "Maison neuve · détaillée", { v: "estimateur", mode: "detaille", ctx: neuf.ctx, sel: neuf.sel, codePostal: "45000", qui: "pros" }),
+  archive: ligne(5, "Ancien projet", { v: "estimateur", mode: "rapide", ampleur: "complete", qui: "pros", ctx: renoRapide.ctx, sel: renoRapide.sel, codePostal: "45000" }, true),
+};
+type CleProjet = keyof typeof PROJETS;
+
+/* ─── Chargement des modules, interrupteurs et dépendances simulés ───────────── */
+
+const MOCKS = [
+  "@/lib/features", "@/lib/i18n/server", "@/lib/auth", "@/lib/data/projects", "next/navigation",
+  "next/font/google", "next/script", "@vercel/analytics/react", "@/app/globals.css", "server-only", "react",
+];
+
+type Options = { plans: boolean; locale: Locale; user?: Utilisateur; projets?: CleProjet[]; menuOuvert?: boolean };
+
+async function charger({ plans, locale, user = "anonyme", projets = [], menuOuvert = false }: Options) {
+  vi.resetModules();
+  vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://getavyora.fr");
+  vi.doMock("@/lib/features", async (orig) => {
+    const m = await orig<typeof import("@/lib/features")>();
+    /* Le neuf est en ligne : les témoins figent le site tel qu'il est servi aujourd'hui. */
+    return { ...m, FEATURES: { ...m.FEATURES, neuf: true, plans } };
+  });
+  vi.doMock("@/lib/i18n/server", () => ({
+    getLocale: async () => locale,
+    getT: async () => ({ locale, t: dict(locale) }),
+  }));
+  vi.doMock("@/lib/auth", () => ({ getUser: async () => UTILISATEURS[user], estPro, estAdmin }));
+  const lignes = projets.map((k) => PROJETS[k]);
+  vi.doMock("@/lib/data/projects", () => ({
+    listProjets: async (archived: boolean) => lignes.filter((p) => p.archived === archived),
+    getProjet: async (id: string) => lignes.find((p) => p.id === id) ?? null,
+  }));
+  vi.doMock("next/navigation", async (orig) => {
+    const m = await orig<typeof import("next/navigation")>();
+    const routeur = { push: vide, replace: vide, refresh: vide, back: vide, forward: vide, prefetch: vide };
+    return { ...m, useRouter: () => routeur, usePathname: () => "/", useSearchParams: () => new URLSearchParams() };
+  });
+  vi.doMock("server-only", () => ({}));
+  /* Coque : polices, balise Ads et mesure d'audience hors sujet (elles ne portent aucun texte). */
+  vi.doMock("next/font/google", () => ({ Geist: () => ({ variable: "" }), Geist_Mono: () => ({ variable: "" }) }));
+  vi.doMock("next/script", () => ({ default: vide }));
+  vi.doMock("@vercel/analytics/react", () => ({ Analytics: vide }));
+  vi.doMock("@/app/globals.css", () => ({}));
+  /* Menu mobile : il s'ouvre au clic. Pour le figer ouvert, son état initial `false` part à `true`. */
+  if (menuOuvert) {
+    vi.doMock("react", async (orig) => {
+      const m = await orig<typeof import("react")>();
+      const useState = ((init: unknown) => m.useState(init === false ? true : init)) as typeof m.useState;
+      return { ...m, useState, default: { ...m, useState } };
+    });
+  }
+  const { LangProvider } = await import("@/components/i18n/LangProvider");
+  return {
+    rendre: async (el: ReactNode) => html(createElement(LangProvider, { locale, children: el })),
+  };
+}
+
+async function html(el: ReactElement): Promise<string> {
+  const { prelude } = await prerender(el);
+  return await new Response(prelude).text();
+}
+
+const entre = (s: string, debut: string, fin: string) => {
+  const i = s.indexOf(debut), j = s.indexOf(fin, i);
+  expect(i).toBeGreaterThanOrEqual(0);
+  expect(j).toBeGreaterThan(i);
+  return s.slice(i, j + fin.length);
+};
+
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(MAINTENANT);
+});
+afterEach(() => {
+  for (const m of MOCKS) vi.doUnmock(m);
+  vi.unstubAllEnvs();
+  vi.useRealTimers();
+});
+
+/* ─── Surfaces ───────────────────────────────────────────────────────────────── */
+
+const PLANS = false;
+
+describe("Témoins · interrupteur plans éteint", () => {
+  it("en-tête desktop et pied de page (FR, EN ; anonyme, gratuit, Pro, admin)", async () => {
+    for (const locale of LOCALES) {
+      for (const user of ["anonyme", "gratuit", "pro", "admin"] as const) {
+        const r = await charger({ plans: PLANS, locale, user });
+        const Layout = (await import("@/app/layout")).default;
+        const page = await r.rendre(await Layout({ children: createElement("p", null, "contenu") }));
+        expect(entre(page, "<header", "</header>")).toMatchSnapshot(`en-tête ${locale} ${user}`);
+        expect(entre(page, "<footer", "</footer>").replace(/© \d{4}/, "© ANNÉE")).toMatchSnapshot(`pied ${locale} ${user}`);
+      }
+    }
+  });
+
+  it("menu mobile ouvert (FR, EN ; anonyme, gratuit, Pro, admin)", async () => {
+    for (const locale of LOCALES) {
+      for (const user of ["anonyme", "gratuit", "pro", "admin"] as const) {
+        const r = await charger({ plans: PLANS, locale, user, menuOuvert: true });
+        const { MobileNav } = await import("@/components/MobileNav");
+        const menu = await r.rendre(createElement(MobileNav));
+        expect(menu).toContain('aria-expanded="true"');
+        expect(menu).toMatchSnapshot(`menu ${locale} ${user}`);
+      }
+    }
+  });
+
+  it("accueil (FR, EN)", async () => {
+    for (const locale of LOCALES) {
+      const r = await charger({ plans: PLANS, locale });
+      const Accueil = (await import("@/app/page")).default;
+      expect(await r.rendre(await Accueil({ searchParams: Promise.resolve({}) }))).toMatchSnapshot(`accueil ${locale}`);
+    }
+  });
+
+  it("écran de choix (FR, EN ; rénovation, neuf ; gratuit, Pro)", async () => {
+    for (const locale of LOCALES) {
+      const r = await charger({ plans: PLANS, locale });
+      const Choix = (await import("@/components/ChoixEstimation")).default;
+      for (const nature of ["reno", "neuf"] as const) {
+        for (const isPro of [false, true]) {
+          const h = await r.rendre(await Choix({ isPro, nature }));
+          expect(h).toMatchSnapshot(`choix ${locale} ${nature} ${isPro ? "pro" : "gratuit"}`);
+        }
+      }
+    }
+  });
+
+  it("Tarifs (FR, EN ; anonyme, gratuit, Pro)", async () => {
+    for (const locale of LOCALES) {
+      for (const user of ["anonyme", "gratuit", "pro"] as const) {
+        const r = await charger({ plans: PLANS, locale, user });
+        const Tarifs = (await import("@/app/tarifs/page")).default;
+        expect(await r.rendre(await Tarifs({ searchParams: Promise.resolve({}) }))).toMatchSnapshot(`tarifs ${locale} ${user}`);
+      }
+    }
+  });
+
+  it("« Mes projets » : vide, puis réno rapide + détaillée + neuf + archivé (FR, EN ; gratuit, Pro)", async () => {
+    const tous: CleProjet[] = ["renoRapide", "renoDetaille", "neufRapide", "neufDetaille", "archive"];
+    for (const locale of LOCALES) {
+      for (const user of ["gratuit", "pro"] as const) {
+        for (const [nom, projets] of [["vide", []], ["plein", tous]] as const) {
+          const r = await charger({ plans: PLANS, locale, user, projets: [...projets] });
+          const Projets = (await import("@/app/projets/page")).default;
+          const h = await r.rendre(await Projets());
+          expect(h).toMatchSnapshot(`projets ${locale} ${user} ${nom}`);
+        }
+      }
+    }
+  });
+
+  it("fiche projet : réno rapide, réno détaillée, neuf rapide, neuf détaillé (FR, EN ; gratuit, Pro)", async () => {
+    for (const locale of LOCALES) {
+      for (const user of ["gratuit", "pro"] as const) {
+        for (const cle of ["renoRapide", "renoDetaille", "neufRapide", "neufDetaille"] as const) {
+          const r = await charger({ plans: PLANS, locale, user, projets: [cle] });
+          const Fiche = (await import("@/app/projets/[id]/page")).default;
+          const h = await r.rendre(await Fiche({ params: Promise.resolve({ id: PROJETS[cle].id }) }));
+          expect(h).toContain(PROJETS[cle].nom);
+          expect(h).toMatchSnapshot(`fiche ${locale} ${user} ${cle}`);
+        }
+      }
+    }
+  });
+
+  it("sitemap", async () => {
+    await charger({ plans: PLANS, locale: "fr" });
+    const sitemap = (await import("@/app/sitemap")).default;
+    const entrees = sitemap().map((e) =>
+      [e.url, e.priority, e.changeFrequency, e.lastModified instanceof Date ? e.lastModified.toISOString() : e.lastModified].join(" | "));
+    expect(entrees.length).toBeGreaterThan(50);
+    expect(entrees.join("\n")).toMatchSnapshot("sitemap");
+  });
+});
+
+describe("Interrupteur plans", () => {
+  it("éteint par défaut, allumé seulement par NEXT_PUBLIC_FEATURE_PLANS=1", async () => {
+    for (const [valeur, attendu] of [[undefined, false], ["", false], ["0", false], ["true", false], ["1", true]] as const) {
+      vi.resetModules();
+      if (valeur === undefined) vi.stubEnv("NEXT_PUBLIC_FEATURE_PLANS", undefined as unknown as string);
+      else vi.stubEnv("NEXT_PUBLIC_FEATURE_PLANS", valeur);
+      const { FEATURES } = await import("@/lib/features");
+      expect(FEATURES.plans).toBe(attendu);
+      vi.unstubAllEnvs();
+    }
+  });
+});
