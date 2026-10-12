@@ -294,3 +294,21 @@ Le contrôle a trois parties :
   estimations reliées, retour au statut Pro.
 
 Il ne crée aucun compte et n'appelle aucun serveur réel : tout passe par l'interception.
+
+## `tools/heberge.mjs` — l'éditeur servi par le site sur `/plan` (C4)
+
+```bash
+NEXT_PUBLIC_FEATURE_PLANS=1 npm run build && NEXT_PUBLIC_FEATURE_PLANS=1 npx next start -p 3014
+node maquettes/tools/heberge.mjs "$(pwd)/maquettes" http://localhost:3014 [--captures <dossier>]
+```
+
+Il contrôle la page **réellement servie** (la source transformée au build par `lib/editeur/heberger.ts` : polices et
+Three.js servis depuis `/fonts` et `/vendor`, adresses relatives, config constante, amorçage, script différé), pas le
+fichier source. Sans adresse de serveur (la batterie), il ne fait rien et sort en 0.
+
+En-têtes (CSP de l'éditeur, `X-Robots-Tag`, `/` qui garde la CSP du site), zéro erreur de page, **zéro violation CSP**,
+aucune requête hors de l'origine, polices et 3D (capture WebGL) depuis le site, `AVYORA_PRO === false` sans session,
+`?dev` sans effet, « Passer Pro » et lien vers la construction relatifs ; puis l'amorçage contre l'API `/api/plans`
+simulée par interception (connecté, plan introuvable, panne, délai, anonyme avec `?id=`, `?type=`, paramètres hostiles),
+et le démarrage à 1 440, 768 et 375 px. Aucun compte n'est créé, aucune requête ne part vers la vraie API des plans
+(hors la session anonyme, sans cookie).

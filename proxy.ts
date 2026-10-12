@@ -95,8 +95,9 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Exécute sur tout sauf les assets statiques et images.
+  // Exécute sur tout sauf les assets statiques et images. /vendor (Three.js) et /fonts (Geist) sont des
+  // fichiers de public/ servis à l'éditeur de plan : ils ne paient pas un auth.getUser() chacun.
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|vendor/|fonts/|favicon.ico|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

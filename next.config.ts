@@ -49,6 +49,28 @@ const csp = [
   `worker-src 'self' blob:`,
 ].join("; ");
 
+/**
+ * CSP de l'éditeur de plan (`/plan`, chantier C4), déclarée en SECONDE entrée de headers() : quand deux
+ * entrées posent la même clé, la dernière l'emporte (doc `headers.md`), et une CSP renvoyée par le route
+ * handler serait ignorée. Plus stricte que celle du site : ni balise Ads, ni Supabase en direct (tout passe
+ * par /api/plans), aucune origine tierce (Three.js et les polices sont servis depuis /vendor et /fonts).
+ * Elle garde 'unsafe-inline' : l'éditeur porte des centaines d'attributs on…= et ne pourra pas suivre le
+ * passage du site aux nonces (Phase 3) ; l'avoir à part l'en protège.
+ */
+const cspEditeur = [
+  `default-src 'self'`,
+  `script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com${isDev ? " 'unsafe-eval'" : ""}`,
+  `style-src 'self' 'unsafe-inline'`,
+  `img-src 'self' data: blob:`,
+  `font-src 'self'`,
+  `connect-src 'self' https://va.vercel-scripts.com${isDev ? " ws: http://localhost:*" : ""}`,
+  `frame-ancestors 'none'`,
+  `base-uri 'self'`,
+  `form-action 'self'`,
+  `object-src 'none'`,
+  `worker-src 'self' blob:`,
+].join("; ");
+
 const securityHeaders = [
   { key: "Content-Security-Policy", value: csp },
   { key: "X-Frame-Options", value: "DENY" },
@@ -69,7 +91,18 @@ const nextConfig: NextConfig = {
     "/projets/*/rapport/pdf": ["./node_modules/@sparticuz/chromium/bin/**/*"],
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      /* L'éditeur de plan : sa CSP remplace celle du site (la dernière entrée l'emporte). Inerte tant que
+         /plan répond 404 (interrupteur FEATURES.plans éteint). */
+      {
+        source: "/plan",
+        headers: [
+          { key: "Content-Security-Policy", value: cspEditeur },
+          { key: "X-Robots-Tag", value: "noindex" },
+        ],
+      },
+    ];
   },
   // L'URL technique Vercel (*.vercel.app) sert le même contenu que getavyora.fr → on la redirige
   // en 308 vers le domaine canonique. On cible l'hôte exact pour NE PAS casser les préversions de

@@ -1,5 +1,77 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`Témoins · en-têtes du site et matcher du proxy > headers() : l'entrée « /:path* » ne change pas (development) > headers /:path* development 1`] = `
+{
+  "headers": [
+    {
+      "key": "Content-Security-Policy",
+      "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://www.googletagmanager.com https://www.googleadservices.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://www.googletagmanager.com https://*.google.com https://www.google.fr https://www.googleadservices.com https://*.doubleclick.net https://*.google-analytics.com; font-src 'self'; connect-src 'self' https://va.vercel-scripts.com https://www.googletagmanager.com https://*.google.com https://www.google.fr https://www.googleadservices.com https://*.doubleclick.net https://*.google-analytics.com https://exemple.supabase.co wss://exemple.supabase.co ws: http://localhost:*; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; worker-src 'self' blob:",
+    },
+    {
+      "key": "X-Frame-Options",
+      "value": "DENY",
+    },
+    {
+      "key": "X-Content-Type-Options",
+      "value": "nosniff",
+    },
+    {
+      "key": "Referrer-Policy",
+      "value": "strict-origin-when-cross-origin",
+    },
+    {
+      "key": "Permissions-Policy",
+      "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+    },
+    {
+      "key": "Strict-Transport-Security",
+      "value": "max-age=63072000; includeSubDomains; preload",
+    },
+    {
+      "key": "X-DNS-Prefetch-Control",
+      "value": "on",
+    },
+  ],
+  "source": "/:path*",
+}
+`;
+
+exports[`Témoins · en-têtes du site et matcher du proxy > headers() : l'entrée « /:path* » ne change pas (production) > headers /:path* production 1`] = `
+{
+  "headers": [
+    {
+      "key": "Content-Security-Policy",
+      "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://www.googletagmanager.com https://www.googleadservices.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://www.googletagmanager.com https://*.google.com https://www.google.fr https://www.googleadservices.com https://*.doubleclick.net https://*.google-analytics.com; font-src 'self'; connect-src 'self' https://va.vercel-scripts.com https://www.googletagmanager.com https://*.google.com https://www.google.fr https://www.googleadservices.com https://*.doubleclick.net https://*.google-analytics.com https://exemple.supabase.co wss://exemple.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; worker-src 'self' blob:",
+    },
+    {
+      "key": "X-Frame-Options",
+      "value": "DENY",
+    },
+    {
+      "key": "X-Content-Type-Options",
+      "value": "nosniff",
+    },
+    {
+      "key": "Referrer-Policy",
+      "value": "strict-origin-when-cross-origin",
+    },
+    {
+      "key": "Permissions-Policy",
+      "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+    },
+    {
+      "key": "Strict-Transport-Security",
+      "value": "max-age=63072000; includeSubDomains; preload",
+    },
+    {
+      "key": "X-DNS-Prefetch-Control",
+      "value": "on",
+    },
+  ],
+  "source": "/:path*",
+}
+`;
+
 exports[`Témoins · interrupteur plans éteint > Tarifs (FR, EN ; anonyme, gratuit, Pro) > tarifs en anonyme 1`] = `"<div class="animate-rise mx-auto max-w-4xl py-4 sm:py-8"><header class="text-center"><p class="eyebrow">AVYORA Pro</p><h1 class="mt-2 text-[30px] font-semibold tracking-tight text-ink">Upgrade to the detailed estimate</h1><p class="mx-auto mt-3 max-w-xl text-[15px] leading-relaxed text-muted">The quick estimate stays <b class="text-ink">free</b>. Pro unlocks line-by-line detail, the PDF report, saving and project tracking.</p></header><div class="mt-6 overflow-hidden rounded-panel bg-gradient-to-r from-[#4F46E5] via-[#6d5cf0] to-[#7C3AED] px-6 py-5 text-center text-white shadow-card"><div class="text-[11px] font-bold uppercase tracking-[0.16em] text-indigo-100/90">Launch pricing</div><div class="mt-1 text-[20px] font-semibold tracking-tight">Early subscribers keep their price</div><div class="mt-1 text-[13.5px] text-indigo-100/85">Your rate stays the same for as long as your subscription runs, even when prices go up.</div></div><div class="mx-auto mt-8 grid max-w-2xl gap-4 md:grid-cols-2"><div class="relative flex flex-col rounded-panel border bg-surface p-6 border-line"><div class="text-sm font-semibold text-ink">Monthly</div><div class="mt-3 flex items-baseline gap-1.5"><span class="data text-3xl font-semibold text-ink">€18.85</span><span class="text-sm text-muted">/ month</span></div><div class="mt-2 text-xs text-faint">No commitment</div><div class="mt-5"><a class="btn btn-primary w-full justify-center py-2.5" href="/inscription?next=%2Ftarifs%3Fplan%3Dmensuel">Create my account</a></div></div><div class="relative flex flex-col rounded-panel border bg-surface p-6 border-brand-600 shadow-card ring-1 ring-brand-600/15"><span class="absolute -top-2.5 right-5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide bg-brand-600 text-white">Best price</span><div class="text-sm font-semibold text-ink">Annual, billed once</div><div class="mt-3 flex items-baseline gap-1.5"><span class="data text-3xl font-semibold text-ink">€169</span><span class="text-sm text-muted">/ year</span></div><div class="mt-2 text-xs text-faint">≈ €14.08 / month</div><div class="mt-5"><a class="btn btn-primary w-full justify-center py-2.5" href="/inscription?next=%2Ftarifs%3Fplan%3Dannuel">Create my account</a></div></div></div><div class="mx-auto mt-8 grid max-w-3xl gap-6 rounded-panel border border-line bg-surface p-6 sm:grid-cols-[1fr_240px] sm:items-start sm:gap-8"><div><div class="eyebrow mb-3">Included in Pro</div><ul class="space-y-2.5"><li class="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="mt-0.5 shrink-0 text-brand-600" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"></path></svg>Detailed estimator — all 200 items, line by line</li><li class="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="mt-0.5 shrink-0 text-brand-600" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"></path></svg>DIY vs. hire-out choice on every task</li><li class="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="mt-0.5 shrink-0 text-brand-600" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"></path></svg>PDF report export (bank, contractors)</li><li class="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="mt-0.5 shrink-0 text-brand-600" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"></path></svg>Save all your projects</li><li class="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="mt-0.5 shrink-0 text-brand-600" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"></path></svg>Project tracking, line by line</li><li class="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="mt-0.5 shrink-0 text-brand-600" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"></path></svg>New build: your house detailed phase by phase, from permit to completion</li></ul></div><figure class="mx-auto w-full max-w-[240px]"><picture><source type="image/webp" srcSet="/exemple-rapport-760.webp 760w, /exemple-rapport-1040.webp 1040w" sizes="240px"/><img src="/exemple-rapport.png" alt="Example of a detailed AVYORA estimate report" width="1040" height="1458" loading="lazy" decoding="async" class="w-full rounded-field border border-line shadow-card"/></picture><figcaption class="mt-2.5 text-center text-[11px] leading-snug text-faint">Example of a detailed report — 145 m² house in Bordeaux.</figcaption></figure></div><p class="mt-6 text-center text-[13px] text-muted">Already have an account? <a class="font-medium text-brand-600 hover:underline" href="/connexion">Sign in</a>. Or <a class="font-medium text-brand-600 hover:underline" href="/projets/nouveau">continue with the free quick estimate</a>.</p></div>"`;
 
 exports[`Témoins · interrupteur plans éteint > Tarifs (FR, EN ; anonyme, gratuit, Pro) > tarifs en gratuit 1`] = `"<div class="animate-rise mx-auto max-w-4xl py-4 sm:py-8"><header class="text-center"><p class="eyebrow">AVYORA Pro</p><h1 class="mt-2 text-[30px] font-semibold tracking-tight text-ink">Upgrade to the detailed estimate</h1><p class="mx-auto mt-3 max-w-xl text-[15px] leading-relaxed text-muted">The quick estimate stays <b class="text-ink">free</b>. Pro unlocks line-by-line detail, the PDF report, saving and project tracking.</p></header><div class="mt-6 overflow-hidden rounded-panel bg-gradient-to-r from-[#4F46E5] via-[#6d5cf0] to-[#7C3AED] px-6 py-5 text-center text-white shadow-card"><div class="text-[11px] font-bold uppercase tracking-[0.16em] text-indigo-100/90">Launch pricing</div><div class="mt-1 text-[20px] font-semibold tracking-tight">Early subscribers keep their price</div><div class="mt-1 text-[13.5px] text-indigo-100/85">Your rate stays the same for as long as your subscription runs, even when prices go up.</div></div><div class="mx-auto mt-8 grid max-w-2xl gap-4 md:grid-cols-2"><div class="relative flex flex-col rounded-panel border bg-surface p-6 border-line"><div class="text-sm font-semibold text-ink">Monthly</div><div class="mt-3 flex items-baseline gap-1.5"><span class="data text-3xl font-semibold text-ink">€18.85</span><span class="text-sm text-muted">/ month</span></div><div class="mt-2 text-xs text-faint">No commitment</div><div class="mt-5"><button class="btn btn-primary w-full justify-center py-2.5 disabled:opacity-60">Subscribe</button></div></div><div class="relative flex flex-col rounded-panel border bg-surface p-6 border-brand-600 shadow-card ring-1 ring-brand-600/15"><span class="absolute -top-2.5 right-5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide bg-brand-600 text-white">Best price</span><div class="text-sm font-semibold text-ink">Annual, billed once</div><div class="mt-3 flex items-baseline gap-1.5"><span class="data text-3xl font-semibold text-ink">€169</span><span class="text-sm text-muted">/ year</span></div><div class="mt-2 text-xs text-faint">≈ €14.08 / month</div><div class="mt-5"><button class="btn btn-primary w-full justify-center py-2.5 disabled:opacity-60">Subscribe</button></div></div></div><div class="mx-auto mt-8 grid max-w-3xl gap-6 rounded-panel border border-line bg-surface p-6 sm:grid-cols-[1fr_240px] sm:items-start sm:gap-8"><div><div class="eyebrow mb-3">Included in Pro</div><ul class="space-y-2.5"><li class="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="mt-0.5 shrink-0 text-brand-600" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"></path></svg>Detailed estimator — all 200 items, line by line</li><li class="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="mt-0.5 shrink-0 text-brand-600" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"></path></svg>DIY vs. hire-out choice on every task</li><li class="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="mt-0.5 shrink-0 text-brand-600" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"></path></svg>PDF report export (bank, contractors)</li><li class="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="mt-0.5 shrink-0 text-brand-600" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"></path></svg>Save all your projects</li><li class="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="mt-0.5 shrink-0 text-brand-600" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"></path></svg>Project tracking, line by line</li><li class="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="mt-0.5 shrink-0 text-brand-600" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"></path></svg>New build: your house detailed phase by phase, from permit to completion</li></ul></div><figure class="mx-auto w-full max-w-[240px]"><picture><source type="image/webp" srcSet="/exemple-rapport-760.webp 760w, /exemple-rapport-1040.webp 1040w" sizes="240px"/><img src="/exemple-rapport.png" alt="Example of a detailed AVYORA estimate report" width="1040" height="1458" loading="lazy" decoding="async" class="w-full rounded-field border border-line shadow-card"/></picture><figcaption class="mt-2.5 text-center text-[11px] leading-snug text-faint">Example of a detailed report — 145 m² house in Bordeaux.</figcaption></figure></div><p class="mt-6 text-center text-[13px] text-muted">Prefer to try first? <a class="font-medium text-brand-600 hover:underline" href="/projets/nouveau">continue with the free quick estimate</a>.</p></div>"`;

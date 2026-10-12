@@ -186,6 +186,76 @@ Clés `localStorage` propres au site : `avyora-plan-rev` (révision et empreinte
 Contrôle : `node maquettes/tools/site.mjs "$(pwd)/maquettes"` (le source, l'artefact intact, le site simulé par
 interception Puppeteer, sans compte ni serveur réel), puis la batterie complète comparée à la ligne de base de C0.
 
+## L'éditeur hébergé sur `/plan` (C4)
+
+Page pleine, sans iframe, sur la même origine. `app/plan/route.ts` est un route handler **`force-static`** :
+`next build` le marque `○ /plan` (statique) et le HTML est produit **au build** par `lib/editeur/heberger.ts`,
+qui lit `maquettes/plan-editor.html` et lui applique des remplacements **exacts et comptés**. Un motif trouvé un
+autre nombre de fois que prévu lève une erreur : le build échoue plutôt que de servir une page à moitié transformée.
+La source n'est pas modifiée (la batterie continue de tester le fichier tel quel, l'artefact aussi).
+
+| Motif | Nombre | Devient |
+|---|---|---|
+| `@import` Google Fonts (Geist, Geist Mono) | 1 | deux `@font-face` vers `/fonts/geist/*-Variable.woff2` (polices variables : toutes les graisses) |
+| `https://cdn.jsdelivr.net/npm/three@0.147.0/` | 1 | `/vendor/three@0.147.0/` |
+| `https://getavyora.fr/` | 3 | `/` (tarifs et construction relatifs : une préversion reste sur sa propre origine) |
+| `<meta name="viewport"` | 1 | précédée de `<meta name="robots" content="noindex">` |
+| `\n<script>\n` | 1 | le voile, la config constante, l'amorçage, puis `<script type="text/plain" id="avyora-editeur">` |
+
+- **Config constante** (aucune donnée utilisateur, chaque valeur passée par `JSON.stringify` et `<` → `\u003c`) :
+  `AVYORA_PRO=false`, `AVYORA_PRIX_PRO` (« dès {prix mensuel du dictionnaire} par mois, sans engagement », la phrase
+  de l'éditeur), `AVYORA_URLS`, la file `window.va` de Vercel Analytics (même forme que `initQueue` de
+  `@vercel/analytics` 2.0.1) et `AVYORA_TRACK`, qui ne laisse passer que les neuf événements de D48 et D75, avec des
+  valeurs simples seulement.
+- **Amorçage** (lignes courtes, aucun `//`) : lit `?id=` (uuid) et `?type=` (`final` ou `renovation`, sinon rien),
+  appelle `GET /api/plans/session`, puis, connecté, `GET /api/plans` et `GET /api/plans/:id`. Il pose
+  `AVYORA_PRO` et `AVYORA_SITE` (contrat de C3), exécute le script différé et retire le voile.
+  - Plan introuvable (404) : l'éditeur s'ouvre sans lui et dit « Ce plan n'est pas dans ton compte. » (C3).
+  - Session, liste ou plan en panne, ou plus de 6 s : mode local, gratuit, et « La connexion à ton compte n'a pas
+    abouti : ton plan reste sur cet appareil. Recharge la page pour réessayer. »
+  - Anonyme avec `?id=` : « Connecte-toi pour ouvrir ce plan : il est rangé dans ton compte. »
+- **Vercel Analytics** : `<script defer src="/_vercel/insights/script.js">` seulement quand le build tourne sur
+  Vercel (`VERCEL=1` : production et préversion, où il se vérifie), jamais en local. Pas de balise Ads.
+- **CSP propre** : seconde entrée de `headers()` dans `next.config.ts` pour `source: "/plan"` (la dernière entrée
+  l'emporte ; une CSP renvoyée par le handler serait ignorée). Plus stricte que celle du site : ni Ads, ni Supabase
+  en direct (`connect-src 'self'` et la mesure Vercel), aucune origine tierce. Elle garde `'unsafe-inline'` (les
+  attributs `on…=` de l'éditeur) : le futur passage du site aux nonces ne la touchera pas. Plus `X-Robots-Tag:
+  noindex` ; pas de `Disallow` dans `robots.ts` (il empêcherait de lire le `noindex`). La première entrée
+  (`/:path*`) est figée par un instantané (`tests/plans-temoins.test.ts`, production et développement).
+- **Fichiers servis** :
+
+  | Fichier | Source | Licence |
+  |---|---|---|
+  | `public/vendor/three@0.147.0/build/three.min.js`, `…/examples/js/controls/OrbitControls.js` | `npm pack three@0.147.0` (intégrité npm vérifiée), identiques octet pour octet aux fichiers jsDelivr de l'artefact | MIT, `public/vendor/three@0.147.0/LICENSE` |
+  | `public/fonts/geist/Geist-Variable.woff2`, `GeistMono-Variable.woff2` | `npm pack geist@1.7.2` (`dist/fonts/…`, intégrité npm vérifiée) | OFL 1.1, `public/fonts/geist/LICENSE.txt` |
+
+  Les empreintes sha384 sont figées dans `tests/editeur-heberge.test.ts`. Les polices sont les versions
+  **variables** : le paquet n'a pas de Geist ExtraBold (800) statique, que l'éditeur demandait à Google.
+- **Proxy** : le matcher exclut `vendor/` et `fonts/` (ces fichiers ne paient plus un `auth.getUser()` chacun). Il
+  couvre toujours les pages, `/projets`, `/admin`, `/estimation-travaux`, `/api/projects`, `/api/plans` et `/plan`
+  (instantané dans les témoins).
+- Interrupteur éteint : `GET /plan` → 404 (statique lui aussi) ; la CSP de l'entrée `/plan` est inerte.
+
+### Contrôles
+
+- `tests/editeur-heberge.test.ts` : motifs comptés (et l'échec du build si l'un manque ou déborde), aucune origine
+  externe en sortie, `AVYORA_PRO=false` avant le script différé, un seul `type="text/plain"` qui porte le script de
+  la source au caractère près, config et amorçage valides sans `</script` ni `//`, prix égal au dictionnaire, pont de
+  mesure fermé, Vercel Analytics sur Vercel seulement, route 404 / 200, empreintes et licences.
+- `maquettes/tools/heberge.mjs`, sur `next start` interrupteur allumé (sans adresse, dans la batterie, il ne fait
+  rien) : en-têtes, zéro erreur de page, **zéro violation CSP**, aucune requête hors de l'origine, polices depuis
+  `/fonts`, 3D depuis `/vendor` (capture WebGL), Pro à false, `?dev` sans effet, « Passer Pro » et lien vers la
+  construction relatifs, l'amorçage contre l'API simulée par interception (connecté, 404, panne, délai, anonyme
+  avec `?id=`, `?type=`, paramètres hostiles), et 1 440, 768 et 375 px.
+  ```bash
+  NEXT_PUBLIC_FEATURE_PLANS=1 npm run build && NEXT_PUBLIC_FEATURE_PLANS=1 npx next start -p 3014
+  node maquettes/tools/heberge.mjs "$(pwd)/maquettes" http://localhost:3014 [--captures <dossier>]
+  ```
+- Pas de recette avec un vrai compte : la base de dev est la production. Les parcours connectés passent par l'API
+  simulée ; la recette réelle (dessiner, recharger, retrouver le plan) se fera après l'application de 0004, en
+  préversion.
+- Le logo de l'éditeur mène à `/logiciel-plan-maison`, qui n'existe qu'à partir de C5.
+
 ## Contrôles de chaque chantier
 
 ```bash

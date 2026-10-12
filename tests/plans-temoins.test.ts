@@ -240,3 +240,38 @@ describe("Interrupteur plans", () => {
     }
   });
 });
+
+/* ─── C4 : les en-têtes du site et le matcher du proxy ─────────────────────────
+   L'éditeur hébergé sur /plan reçoit sa propre CSP (seconde entrée de headers()). La première entrée,
+   celle de tout le site, doit rester identique au caractère près ; le proxy, qui n'exclut plus que les
+   fichiers statiques de /vendor et /fonts, doit toujours couvrir les routes privées et l'API. */
+describe("Témoins · en-têtes du site et matcher du proxy", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  for (const env of ["production", "development"] as const) {
+    it(`headers() : l'entrée « /:path* » ne change pas (${env})`, async () => {
+      vi.resetModules();
+      vi.stubEnv("NODE_ENV", env);
+      vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://exemple.supabase.co");
+      const { default: config } = await import("../next.config");
+      const entrees = await config.headers!();
+      expect(entrees[0].source).toBe("/:path*");
+      expect(entrees[0]).toMatchSnapshot(`headers /:path* ${env}`);
+    });
+  }
+
+  it("le matcher du proxy couvre toujours les pages, les routes privées et l'API", async () => {
+    vi.resetModules();
+    const { config } = await import("../proxy");
+    const re = config.matcher.map((m: string) => new RegExp(`^${m}$`));
+    const couvert = (p: string) => re.some((r: RegExp) => r.test(p));
+    for (const p of ["/", "/projets", "/projets/abc", "/admin", "/admin/prix", "/estimation-travaux",
+      "/api/projects", "/api/projects/abc", "/api/plans", "/plan", "/mon-espace", "/tarifs"]) {
+      expect(couvert(p), p).toBe(true);
+    }
+    for (const p of ["/_next/static/x.js", "/favicon.ico", "/logo.png", "/vendor/three@0.147.0/build/three.min.js",
+      "/fonts/geist/Geist-Variable.woff2"]) {
+      expect(couvert(p), p).toBe(false);
+    }
+  });
+});
