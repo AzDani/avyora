@@ -131,7 +131,7 @@ const fr = {
       },
       {
         q: "Ce plan suffit-il pour un permis de construire ?",
-        r: "Non. C'est un plan pour concevoir ta maison et la chiffrer. Un permis de construire demande des pièces graphiques normées (plan de situation, plan de masse, coupe, façades), et le recours à un architecte est obligatoire au-delà de 150 m² de surface de plancher.",
+        r: "Non. C'est un plan pour concevoir ta maison et la chiffrer. Un permis de construire demande des pièces graphiques normées (plan de situation, plan de masse, coupe, façades), et un particulier qui construit pour lui-même doit faire appel à un architecte dès que la surface de plancher ou l'emprise au sol dépasse 150 m².",
       },
     ],
     basTitre: "Dessine ta maison, gratuitement.",
@@ -375,7 +375,7 @@ const en: DictPlans = {
       },
       {
         q: "Is this plan enough for a building permit?",
-        r: "No. It is a plan to design your house and price it. A French building permit requires standardised drawings (location plan, site plan, section, elevations), and hiring an architect is mandatory above 150 m² of floor area (surface de plancher).",
+        r: "No. It is a plan to design your house and price it. A French building permit requires standardised drawings (location plan, site plan, section, elevations), and an individual building for themselves must hire an architect as soon as the floor area (surface de plancher) or the building footprint (emprise au sol) exceeds 150 m².",
       },
     ],
     basTitre: "Draw your house, for free.",

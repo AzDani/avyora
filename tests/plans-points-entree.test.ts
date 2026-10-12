@@ -464,12 +464,11 @@ describe("C9 · la vitrine /logiciel-plan-maison", () => {
     expect([...dictPlans("fr").vitrine.proListe]).toEqual([...COLONNE_PRO]);
   });
 
-  it("FAQ permis : architecte obligatoire au-delà de 150 m² de SURFACE DE PLANCHER (pas d'emprise au sol)", () => {
+  it("FAQ permis : un particulier qui construit pour lui-même, architecte dès que la surface de plancher OU l'emprise au sol dépasse 150 m² (R431-2, jury)", () => {
     const fr = dictPlans("fr").vitrine.faq.find((f) => /permis/.test(f.q))!;
-    expect(fr.r).toContain("au-delà de 150 m² de surface de plancher");
-    expect(fr.r).not.toMatch(/emprise/i);
+    expect(fr.r).toContain("un particulier qui construit pour lui-même doit faire appel à un architecte dès que la surface de plancher ou l'emprise au sol dépasse 150 m²");
     const en = dictPlans("en").vitrine.faq.find((f) => /permit/.test(f.q))!;
-    expect(en.r).toContain("above 150 m² of floor area");
+    expect(en.r).toContain("floor area (surface de plancher) or the building footprint (emprise au sol) exceeds 150 m²");
   });
 
   it("« Tu fais construire » seulement si le neuf est en ligne ; « Tu rénoves » toujours, avec la pastille Pro", async () => {
