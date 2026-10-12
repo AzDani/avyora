@@ -218,7 +218,7 @@ async function ongletSite(S, { site, pro = S.pro, chemin = "/plan", avant = null
   await p.setRequestInterception(true);
   p.on("request", (r) => {
     const u = new URL(r.url());
-    if (u.origin !== HOTE) { r.abort(); return; }
+    if (u.origin !== HOTE) { if (r.isNavigationRequest() && r.frame() === p.mainFrame()) S.nav.push(u.href); r.abort(); return; }
     if (r.isNavigationRequest() && r.frame() === p.mainFrame()) {
       S.nav.push(u.pathname + u.search);
       if (u.pathname === "/plan") { r.respond({ status: 200, contentType: "text/html; charset=utf-8", body: HTML }); return; }
@@ -684,6 +684,24 @@ const posts = (S) => S.log.filter((x) => x.m === "POST");
   });
   t["xss · état piégé : assaini au chargement (‹ › ”), id réduit, lien javascript: retiré, rien ne s'exécute"] = r.pwn === undefined && !r.img
     && !/[<>"]/.test(r.nom) && /^[A-Za-z0-9_-]+$/.test(r.id) && r.url === "";
+  await ctx.close();
+}
+
+/* B22 · ?type= ne sert qu'une fois ; le plan rangé prend son adresse ?id= ; « Passer Pro » ne quitte pas l'éditeur */
+{
+  const S = serveur({ pro: true });
+  const { p, ctx } = await ongletSite(S, { site: siteDe(S, { type: "final" }), chemin: "/plan?type=final" });
+  t["adresse · ?type=final : retiré de l'adresse une fois lu (un rechargement ne recrée pas de plan)"] = await p.evaluate(() => location.search === "" && estPlanFinal());
+  await p.evaluate(() => { addWall({ x: 0, y: 0 }, { x: 6, y: 0 }); addWall({ x: 6, y: 0 }, { x: 6, y: 5 }); addWall({ x: 6, y: 5 }, { x: 0, y: 5 }); addWall({ x: 0, y: 5 }, { x: 0, y: 0 }); afterChange(); });
+  await wait(1500);
+  t["adresse · le plan rangé dans le compte prend son adresse /plan?id=<uuid>"] = await p.evaluate(() => /^[0-9a-f-]{36}$/.test(state.id) && location.search === "?id=" + state.id);
+  const nav0 = S.nav.length;
+  const r = await p.evaluate(() => { let n = 0; window.open = () => { n++; return {}; }; passerPro("test"); return n; });
+  await wait(300);
+  t["Passer Pro · un seul onglet ouvert, l'éditeur reste là"] = r === 1 && S.nav.length === nav0 && await p.evaluate(() => location.pathname === "/plan");
+  await p.evaluate(() => { window.open = () => null; state.name = "Avant Tarifs"; afterChange(); passerPro("test"); });
+  await wait(2500);
+  t["Passer Pro · onglet bloqué : la file part, puis l'onglet va sur Tarifs"] = S.nav.includes("https://getavyora.fr/tarifs?source=editeur-plan") && [...S.plans.values()].some((x) => x.nom === "Avant Tarifs");
   await ctx.close();
 }
 
