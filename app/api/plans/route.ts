@@ -4,7 +4,7 @@ import { verifierLimite } from "@/lib/ratelimit";
 import { creerPlan, listerPlans } from "@/lib/plans/data";
 import { PLAN_CORPS_MAX, planCreerSchema } from "@/lib/plans/schema";
 import { eteinte, erreur, lireCorpsBorne, repondre } from "@/lib/plans/http";
-import { relierEstimationsOrphelines } from "@/lib/plans/relier";
+import { lienEchoue, relierEstimationsOrphelines } from "@/lib/plans/relier";
 import { supabaseServer } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -41,11 +41,23 @@ export async function POST(req: Request) {
 
     const r = await creerPlan(user.id, estPro(user) ? null : 1, { nom, etat, vue, resume, editeurId });
     if (!r.ok) return erreur(r.code);
-    /* Plan local repris : les estimations déjà réclamées pour ce plan local (ordre « estimation
-       avant le plan ») lui sont reliées. Ne lève jamais, ne change pas la réponse. */
-    if (editeurId) await relierEstimationsOrphelines(await supabaseServer(), user.id, r.id, editeurId);
+    /* Le plan est créé : plus rien ne peut changer la réponse (201). */
+    if (editeurId) await relierOrphelines(user.id, r.id, editeurId);
     return repondre({ id: r.id, revision: r.revision, deja: r.deja }, 201);
   } catch {
     return erreur("erreur");
+  }
+}
+
+/**
+ * Plan local repris : les estimations déjà réclamées pour ce plan local (ordre « estimation avant le
+ * plan ») lui sont reliées. NE LÈVE JAMAIS, même si la session elle-même ne peut pas être ouverte :
+ * l'échec est journalisé, et la création reste une 201 (sinon le client réessaierait un plan déjà créé).
+ */
+async function relierOrphelines(userId: string, planId: string, editeurId: string): Promise<void> {
+  try {
+    await relierEstimationsOrphelines(await supabaseServer(), userId, planId, editeurId);
+  } catch {
+    await lienEchoue("orphelines-session", userId, { planId });
   }
 }

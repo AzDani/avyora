@@ -65,6 +65,14 @@ describe("C5 · lib/i18n/plans.ts", () => {
     }
   });
 
+  it("l'anglais cite « Mes plans » sous le nom que l'éditeur affiche (il reste en français), jamais “My plans”", () => {
+    const tous = textes(en);
+    expect(tous.filter((s) => /my plans/i.test(s))).toEqual([]);
+    const cites = tous.filter((s) => s.includes("“Mes plans”"));
+    expect(cites.length).toBeGreaterThanOrEqual(4);
+    expect(cites).toContain(en.rappel.texte);
+  });
+
   it("la mention « éditeur en français » n'existe qu'en anglais", () => {
     expect(fr.page.enFrancais).toBeNull();
     expect(en.page.enFrancais).toBe("The editor is in French for now.");

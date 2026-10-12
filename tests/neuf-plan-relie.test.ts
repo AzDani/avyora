@@ -52,7 +52,9 @@ const S = {
   /** Tables en panne (erreur Postgres sur toute requête). */
   panne: new Set<string>(),
   seq: 0,
-  journal: [] as { type: string; payload?: Record<string, unknown> }[],
+  journal: [] as { type: string; userId?: string | null; payload?: Record<string, unknown> }[],
+  /** Nombre d'ouvertures de session qui réussissent avant que `supabaseServer()` lève (Infinity : jamais). */
+  sessionsOk: Infinity,
 };
 const nouvelId = (prefixe = "aaaaaaaa-aaaa-4aaa-8aaa-") => `${prefixe}${String(++S.seq).padStart(12, "0")}`;
 const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
@@ -184,11 +186,19 @@ async function charger(plans = true) {
     getUser: async () => S.user,
     estPro: (u: User | null) => !!u && u.app_metadata?.plan === "pro",
   }));
-  vi.doMock("@/lib/supabase/server", () => ({ supabaseServer: async () => clientSession }));
+  vi.doMock("@/lib/supabase/server", () => ({
+    supabaseServer: async () => {
+      if (S.sessionsOk <= 0) throw new Error("cookies illisibles");
+      S.sessionsOk--;
+      return clientSession;
+    },
+  }));
   vi.doMock("@/lib/supabase/admin", () => ({ supabaseAdmin: () => clientAdmin }));
   vi.doMock("@/lib/ratelimit", () => ({ verifierLimite: async () => true, clientIp: async () => "127.0.0.1" }));
   vi.doMock("@/lib/audit", () => ({
-    journaliser: async (type: string, o: { payload?: Record<string, unknown> } = {}) => { S.journal.push({ type, payload: o.payload }); },
+    journaliser: async (type: string, o: { userId?: string | null; payload?: Record<string, unknown> } = {}) => {
+      S.journal.push({ type, userId: o.userId, payload: o.payload });
+    },
   }));
   return {
     projets: await import("@/app/api/projects/route"),
@@ -216,6 +226,7 @@ beforeEach(() => {
   S.panne = new Set();
   S.seq = 0;
   S.journal = [];
+  S.sessionsOk = Infinity;
 });
 afterEach(() => {
   for (const m of ["@/lib/features", "@/lib/auth", "@/lib/supabase/server", "@/lib/supabase/admin", "@/lib/ratelimit", "@/lib/audit"]) vi.doUnmock(m);
@@ -348,14 +359,25 @@ describe("POST /api/projects : le lien au plan", () => {
     expect(S.base.projects).toHaveLength(1);
     expect(S.journal).toHaveLength(1);
     expect(S.journal[0].type).toBe("plan_lien_echoue");
+    expect(S.journal[0].userId).toBe(MOI.id);
     expect(JSON.stringify(S.journal[0])).not.toContain("panne");
+  });
+
+  it("la session ne se rouvre pas après la création : 200 quand même, échec journalisé avec user_id", async () => {
+    S.sessionsOk = 1; /* createProjet ouvre la session ; la suivante (le lien) lève */
+    const { projets } = await charger(true);
+    const rep = await projets.POST(postProjet(corpsNeuf({ source: "plan", planId: PLAN_MOI })));
+    expect(rep.status).toBe(200);
+    expect(S.base.projects).toHaveLength(1);
+    expect(S.journal).toEqual([{ type: "plan_lien_echoue", userId: MOI.id, payload: { etape: "session", projectId: S.base.projects[0].id } }]);
+    expect(JSON.stringify(S.journal)).not.toContain("cookies");
   });
 
   it("panne de floor_plans : idem, jamais d'exception", async () => {
     S.panne.add("floor_plans");
     const { projets } = await charger(true);
     expect((await projets.POST(postProjet(corpsNeuf({ source: "plan", planId: PLAN_MOI })))).status).toBe(200);
-    expect(S.journal.map((j) => j.type)).toEqual(["plan_lien_echoue"]);
+    expect(S.journal.map((j) => [j.type, j.userId])).toEqual([["plan_lien_echoue", MOI.id]]);
   });
 
   it("sans session : 401, rien n'est lu", async () => {
@@ -374,7 +396,7 @@ describe("relierAuPlan", () => {
     S.base.floor_plans.push({ id: "bbbbbbbb-bbbb-4bbb-8bbb-000000000009", owner_id: MOI.id, nom: "Autre plan", editeur_id: null });
     S.base.projects.push({ id: "cccccccc-cccc-4ccc-8ccc-000000000001", owner_id: MOI.id, reponses: {} });
     S.base.project_plans.push({ project_id: "cccccccc-cccc-4ccc-8ccc-000000000001", plan_id: PLAN_MOI, version: "1.18.0" });
-    const ok = await relier.relierAuPlan(clientSession as never, "cccccccc-cccc-4ccc-8ccc-000000000001", { planId: "bbbbbbbb-bbbb-4bbb-8bbb-000000000009" });
+    const ok = await relier.relierAuPlan(clientSession as never, MOI.id, "cccccccc-cccc-4ccc-8ccc-000000000001", { planId: "bbbbbbbb-bbbb-4bbb-8bbb-000000000009" });
     expect(ok).toBe(false);
     expect(S.base.project_plans).toEqual([{ project_id: "cccccccc-cccc-4ccc-8ccc-000000000001", plan_id: PLAN_MOI, version: "1.18.0" }]);
   });
@@ -426,6 +448,24 @@ describe("relierEstimationsOrphelines", () => {
     expect(cree.status).toBe(201);
     const { id: planId } = (await cree.json()) as { id: string };
     expect(S.base.project_plans).toEqual([{ project_id: id, plan_id: planId, version: "1.18.4", contrat: null, nom: "Ma maison" }]);
+  });
+
+  it("POST /api/plans : la création reste une 201 même si le lien ne peut pas ouvrir la session", async () => {
+    S.sessionsOk = 0; /* la création passe par le service role ; le lien, lui, lève en ouvrant la session */
+    const { plans } = await charger(true);
+    const cree = await plans.POST(post("http://localhost/api/plans", { nom: "Ma maison", etat: ETAT_FINAL, editeurId: "p7q2" }));
+    expect(cree.status).toBe(201);
+    const { id: planId } = (await cree.json()) as { id: string };
+    expect(S.base.floor_plans.some((l) => l.id === planId)).toBe(true);
+    expect(S.journal).toEqual([{ type: "plan_lien_echoue", userId: MOI.id, payload: { etape: "orphelines-session", planId } }]);
+  });
+
+  it("panne pendant la reprise : 201, l'échec est rattaché au compte (user_id)", async () => {
+    S.panne.add("projects");
+    const { plans } = await charger(true);
+    const cree = await plans.POST(post("http://localhost/api/plans", { nom: "Ma maison", etat: ETAT_FINAL, editeurId: "p7q2" }));
+    expect(cree.status).toBe(201);
+    expect(S.journal.map((j) => [j.type, j.userId, j.payload?.etape])).toEqual([["plan_lien_echoue", MOI.id, "orphelines-projets"]]);
   });
 
   it("POST /api/plans sans editeurId : aucune requête project_plans", async () => {

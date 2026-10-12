@@ -130,7 +130,8 @@ ou de zod : les textes vivent côté client, en français et en anglais. Aucune 
   type et statut des murs, résumé), ouverts (`.loose()`) sur le reste. Une garde parcourt l'entrée **brute**
   (zod retire `__proto__` en silence) : profondeur ≤ 12, chaîne ≤ 100 000 (les notes et textes libres de
   l'éditeur n'ont pas de maxlength : une longue note ne fait pas refuser le plan), ni `__proto__` /
-  `constructor` / `prototype`, ni image `data:`, ni caractère nul ou moitié de paire UTF-16 (jsonb les
+  `constructor` / `prototype`, ni vraie URL `data:` (`data:<type>/<sous-type>` puis `;` ou `,` : une note qui
+  commence par « Data: » passe), ni caractère nul ou moitié de paire UTF-16 (jsonb les
   refuse). État ≤ 1 Mo, 6 niveaux.
 - **Tailles** (`lib/plans/jsonb.ts`) : mesurées comme les CHECK de 0004, sur le texte du jsonb
   (`octet_length(x::jsonb::text)`), pas sur le JSON compact : jsonb ajoute une espace après chaque « : » et
@@ -313,9 +314,9 @@ dans la **recherche** (un `&pid=` dans le fragment casserait le décodage base64
 | `lib/estimateur/brouillon-neuf.ts` | `OrigineNeuf` gagne `planId?` et `planLocal?`. `lireBrouillonNeuf` passe l'origine par `nettoyerOrigine` : identifiants bien formés gardés, les autres retirés ; une origine qui n'est pas `source: "plan"` disparaît. |
 | `lib/plans/origine.ts` | Pur (sans zod ni Supabase, il entre dans le bundle de `ClaimDraft`) : `nettoyerOrigine`, et `origineDuPlan(reponses)` côté serveur (projet **neuf**, `source === "plan"`, au moins un identifiant). |
 | `components/neuf/EstimateurRapideNeuf.tsx` | `planId` / `planLocal` n'entrent dans l'origine que si le plan du fragment est **appliqué**, et seulement pour le fragment lu au montage (un lien collé ensuite dans le même onglet n'hérite pas du `pid`). Un `pid` sans `#plan=` ne relie rien. Interrupteur allumé, l'URL nettoyée retire aussi `pid` et `pl`. |
-| `lib/plans/relier.ts` | `relierAuPlan(sb, projectId, origine)` : résout le plan sous RLS (par uuid, sinon par `editeur_id`), puis `upsert project_plans {project_id, plan_id, version, contrat: null, nom}` en `onConflict: project_id` ignoré. `relierEstimationsOrphelines(sb, userId, planId, editeurId)` : les projets neufs de l'utilisateur dont `reponses.origine.planLocal = editeurId` et sans ligne `project_plans`. **Ne lèvent jamais** : un échec est journalisé (`plan_lien_echoue`, sans détail interne) et l'appelant continue. |
+| `lib/plans/relier.ts` | `relierAuPlan(sb, userId, projectId, origine)` : résout le plan sous RLS (par uuid, sinon par `editeur_id`), puis `upsert project_plans {project_id, plan_id, version, contrat: null, nom}` en `onConflict: project_id` ignoré. `relierEstimationsOrphelines(sb, userId, planId, editeurId)` : les projets neufs de l'utilisateur dont `reponses.origine.planLocal = editeurId` et sans ligne `project_plans`. **Ne lèvent jamais** : un échec est journalisé (`plan_lien_echoue`, avec `user_id`, sans détail interne) et l'appelant continue. |
 | `app/api/projects/route.ts` | Après `createProjet` : `if (FEATURES.plans && origineDuPlan(reponses)) relierAuPlan(…)`. Sans origine, ou interrupteur éteint : aucune requête `project_plans`. |
-| `app/api/plans/route.ts` | Après une reprise avec `editeurId` : `relierEstimationsOrphelines` (l'ordre « estimation réclamée avant le plan »). La réponse ne change pas. |
+| `app/api/plans/route.ts` | Après une reprise avec `editeurId` : `relierEstimationsOrphelines` (l'ordre « estimation réclamée avant le plan »). La réponse ne change pas : l'ouverture de la session elle-même est sous `try`, la création reste une 201. |
 
 **Couvert sans autre code** : « Affiner » (détaillé neuf, Pro) recrée un projet par `POST` en gardant l'origine, il est
 donc relié aussi ; un brouillon anonyme réclamé par `ClaimDraft` est relié dès que le plan est dans le compte, ou à
@@ -338,6 +339,21 @@ la reprise du plan local. Le rapide neuf reste gratuit, le détaillé neuf reste
   `planId` ni `planLocal` et l'URL garde `pid` comme avant ; allumé, `pid` arrive dans l'origine et quitte l'URL,
   l'anonyme (401) range un brouillon réclamable avec `planLocal`, un `pid` sans `#plan=` ou invalide ne relie rien.
   Le parcours réel (fiche « Vient de ton plan », C8) se fera en préversion après l'application de 0004.
+
+## Retouches des vérificateurs (lots 1 et 2)
+
+- Éditeur : `siteNom` tronque par **point de code** (`Array.from`), à 120 unités UTF-16 au plus comme `nomPlan`,
+  et retire les moitiés de paire isolées et le caractère nul : un long nom avec un emoji à la frontière ne fait
+  plus refuser la sauvegarde (400). Testé sur la fonction de la source (`tests/plans-schema.test.ts`).
+- `data:` : seules les vraies URL d'image intégrée sont refusées (`RE_IMAGE_INTEGREE`,
+  `/^\s*data:[a-z]+\/[a-z0-9.+-]+[;,]/i`) ; une note « Data: relevé du géomètre… » est acceptée.
+- `COLONNES_SESSION` vit dans `lib/plans/schema.ts` : `majPlan` construit l'écriture de la session avec, et le test
+  de routes simule le droit par colonne avec la même liste (plus de copie).
+- Amorçage de `/plan` : un `?id=` en majuscules est mis en minuscules (Postgres rend l'uuid en minuscules).
+- Reprise refusée (402) sans nom connu du plan du compte : « Ton compte garde déjà un autre plan. », sans
+  guillemets. En anglais, le rappel cite « “Mes plans” », le nom que l'éditeur (en français) affiche, comme le hub.
+- `POST /api/plans` et `POST /api/projects` : le lien après création ne peut plus changer la réponse, même si la
+  session ne se rouvre pas (journalisé). `plan_lien_echoue` porte le `user_id` du compte.
 
 ## Contrôles de chaque chantier
 

@@ -74,7 +74,7 @@ const fr = {
     ajoute: (nom: string) => `« ${nom} » est dans ton compte.`,
     autresRestent: "Les autres restent sur cet appareil.",
     limite: (autre: string) => `Ton compte garde déjà « ${autre} ». Ce plan reste sur cet appareil.`,
-    autreInconnu: "un autre plan",
+    limiteInconnu: "Ton compte garde déjà un autre plan. Ce plan reste sur cet appareil.",
     plafond: "Ton compte a atteint le nombre maximal de plans : supprime un plan pour en ranger un autre. Ce plan reste sur cet appareil.",
     echec: (nom: string) => `« ${nom} » n'a pas pu être ajouté à ton compte : il reste sur cet appareil. Ouvre l'éditeur pour réessayer.`,
     ouvrirPlan: "Ouvrir le plan",
@@ -150,7 +150,7 @@ const en: DictPlans = {
     ajoute: (nom: string) => `“${nom}” is in your account.`,
     autresRestent: "The others stay on this device.",
     limite: (autre: string) => `Your account already keeps “${autre}”. This plan stays on this device.`,
-    autreInconnu: "another plan",
+    limiteInconnu: "Your account already keeps another plan. This plan stays on this device.",
     plafond: "Your account has reached the maximum number of plans: delete one to save another. This plan stays on this device.",
     echec: (nom: string) => `“${nom}” could not be added to your account: it stays on this device. Open the editor to try again.`,
     ouvrirPlan: "Open the plan",
@@ -160,7 +160,7 @@ const en: DictPlans = {
   },
   rappel: {
     titre: "Your plan is ready",
-    texte: "Create your account: we'll keep it in “My plans” so you can open it anywhere.",
+    texte: "Create your account: we'll keep it in “Mes plans” so you can open it anywhere.",
   },
 };
 
@@ -202,7 +202,8 @@ export function messageReprise(r: ResultatReprise, t: DictPlans, pro: boolean): 
     case "limite":
       return {
         ok: false,
-        texte: t.reprise.limite(r.autre ?? t.reprise.autreInconnu) + " " + t.commun.avecPro,
+        /* nom du plan du compte inconnu : une phrase sans guillemets (ils citent un nom, pas « un autre plan ») */
+        texte: (r.autre ? t.reprise.limite(r.autre) : t.reprise.limiteInconnu) + " " + t.commun.avecPro,
         lien: { href: "/tarifs?source=editeur-plan", label: t.reprise.voirPro },
       };
     case "plafond":

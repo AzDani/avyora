@@ -39,6 +39,11 @@ export const PLAN_APERCU_OCTETS_MAX = 131_072;
 export const PLAN_CONTRAT_OCTETS_MAX = 1_500_000;
 
 const CLES_INTERDITES = new Set(["__proto__", "constructor", "prototype"]);
+/**
+ * Une vraie URL `data:` (`data:<type>/<sous-type>` puis `;` ou `,`), pas une note libre qui commence
+ * par « Data: relevé du… » : une note ne doit jamais faire refuser le plan.
+ */
+export const RE_IMAGE_INTEGREE = /^\s*data:[a-z]+\/[a-z0-9.+-]+[;,]/i;
 
 /** Parcourt toute la valeur (itératif : une profondeur absurde ne fait pas déborder la pile). */
 export function problemeProfond(racine: unknown): string | null {
@@ -47,7 +52,7 @@ export function problemeProfond(racine: unknown): string | null {
     const [v, d] = pile.pop()!;
     if (typeof v === "string") {
       if (v.length > PLAN_CHAINE_MAX) return "chaîne trop longue";
-      if (/^\s*data:/i.test(v)) return "image intégrée refusée";
+      if (RE_IMAGE_INTEGREE.test(v)) return "image intégrée refusée";
       if (texteIrrecevable(v)) return "caractère refusé";
       continue;
     }
@@ -168,3 +173,10 @@ export const planMajSchema = z.object({
 export type PlanMaj = z.infer<typeof planMajSchema>;
 
 export const planIdSchema = z.uuid();
+
+/**
+ * Les colonnes de `floor_plans` que la SESSION a le droit de modifier (`grant update (nom, etat, vue,
+ * resume)` de 0004). `majPlan` n'écrit rien d'autre par la session ; le test de routes simule ce droit
+ * avec cette même liste.
+ */
+export const COLONNES_SESSION = ["nom", "etat", "vue", "resume"] as const;

@@ -4284,7 +4284,12 @@ function siteProposer(){if(!state.id)state.id=uid();siteSansAuto.add(state.id);}
 function siteRendreId(id){
   const l=siteRetraits[id];if(!l)return;delete siteRetraits[id];
   if(state.id===l){siteSansAuto.delete(l);state.id=id;}}
-function siteNom(n){return String(n||'').trim().slice(0,120)||'Plan sans nom';}
+/* le nom tronqué par point de code (jamais une moitié de paire UTF-16, que jsonb refuse), 120 unités UTF-16 au plus comme l'API */
+function siteNom(n){let s='';
+  for(const c of Array.from(String(n||'').trim())){
+    if(c.length===1&&/[\uD800-\uDFFF\u0000]/.test(c))continue;
+    if(s.length+c.length>120)break;s+=c;}
+  return s.trim()||'Plan sans nom';}
 function siteUrl(id){
   const e=typeof SITE_URLS.editeur==='string'?SITE_URLS.editeur:'/plan';
   return e+'?id='+encodeURIComponent(id);}

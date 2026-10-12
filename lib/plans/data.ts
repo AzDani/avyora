@@ -1,7 +1,7 @@
 import { supabaseServer } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { apercuDepuisEtat, type ApercuMur } from "@/lib/plans/apercu";
-import type { EtatPlan, ResumePlan, WorkflowPlan } from "@/lib/plans/schema";
+import { COLONNES_SESSION, type EtatPlan, type ResumePlan, type WorkflowPlan } from "@/lib/plans/schema";
 
 /**
  * Couche d'accès « Mes plans » (table `floor_plans`, migration 0004).
@@ -185,9 +185,6 @@ export type MajPlan =
   | { ok: false; code: "introuvable" }
   | { ok: false; code: "conflit"; revision: number };
 
-/** Les colonnes que la session a le droit de modifier (`grant update (…)` de 0004). */
-export const COLONNES_SESSION = ["nom", "etat", "vue", "resume"] as const;
-
 /**
  * Mise à jour sous verrou optimiste : `update … where id and revision = attendue returning revision`.
  * 0 ligne → on relit : absent (ou d'un autre compte) → introuvable, sinon conflit avec la révision
@@ -212,11 +209,12 @@ export async function majPlan(
   },
   force = false,
 ): Promise<MajPlan> {
+  /* Ce que la session écrit : les seules colonnes de son `grant update (…)` (0004), par construction. */
   const ligne: Record<string, unknown> = {};
-  if (patch.nom !== undefined) ligne.nom = patch.nom;
-  if (patch.etat !== undefined) ligne.etat = patch.etat;
-  if (patch.vue !== undefined) ligne.vue = patch.vue;
-  if (patch.resume !== undefined) ligne.resume = patch.resume ?? {};
+  for (const c of COLONNES_SESSION) {
+    if (patch[c] === undefined) continue;
+    ligne[c] = c === "resume" ? (patch.resume ?? {}) : patch[c];
+  }
   const serveur: Record<string, unknown> = {};
   if (patch.etat !== undefined) {
     serveur.workflow = patch.etat.workflow;

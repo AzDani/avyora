@@ -104,6 +104,8 @@ var q=null;
 try{q=new URLSearchParams(location.search);}catch(e){}
 var id=q?q.get('id'):null;
 if(!id||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))id=null;
+/* Postgres rend l'uuid en minuscules : un lien retapé en majuscules ouvre le même plan */
+else id=id.toLowerCase();
 var type=q?q.get('type'):null;
 if(type!=='final'&&type!=='renovation')type=null;
 var ctl=typeof AbortController==='function'?new AbortController():null;

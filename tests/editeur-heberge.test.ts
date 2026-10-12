@@ -104,6 +104,49 @@ describe("Éditeur hébergé · transformation au build", () => {
     expect(config.corps).not.toMatch(/@|user|email|session/i);
   });
 
+  it("amorçage : un ?id= en majuscules ouvre le plan (l'uuid est normalisé en minuscules)", async () => {
+    const { editeurHeberge } = await module();
+    const out = await editeurHeberge();
+    const [config, amorce] = scripts(out);
+    const ID = "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee";
+    const lancer = async (recherche: string) => {
+      const demandes: string[] = [];
+      const ajoutes: unknown[] = [];
+      const reponse = (s: number, j: unknown) => ({ status: s, text: async () => JSON.stringify(j) });
+      const fetch = async (u: string) => {
+        demandes.push(u);
+        if (u === "/api/plans/session") return reponse(200, { connecte: true, pro: false, limite: 1, utilises: 1 });
+        if (u === "/api/plans") return reponse(200, { plans: [], limite: 1, utilises: 1 });
+        if (u === "/api/plans/" + ID) return reponse(200, { id: ID, nom: "Ma maison", etat: {}, revision: 2 });
+        return reponse(404, { code: "introuvable" });
+      };
+      const win: Record<string, unknown> = {
+        location: { search: recherche }, URLSearchParams, AbortController, fetch, Promise, setTimeout, clearTimeout,
+        document: {
+          getElementById: (i: string) => (i === "avyora-editeur" ? { textContent: "" } : null),
+          createElement: () => ({}),
+          body: { appendChild: (e: unknown) => ajoutes.push(e) },
+        },
+      };
+      win.window = win;
+      new Script(config.corps).runInNewContext(win);
+      new Script(amorce.corps).runInNewContext(win);
+      for (let i = 0; i < 20 && !win.AVYORA_SITE; i++) await new Promise((r) => setTimeout(r, 0));
+      return { site: win.AVYORA_SITE as { connecte: boolean; plan: { id: string } | null }, demandes, ajoutes };
+    };
+    for (const q of ["?id=" + ID, "?id=" + ID.toUpperCase(), "?id=AAAAAAAA-bbbb-4CCC-8ddd-EEEEEEEEEEEE"]) {
+      const r = await lancer(q);
+      expect(r.site.connecte, q).toBe(true);
+      expect(r.site.plan?.id, q).toBe(ID);
+      expect(r.demandes, q).toContain("/api/plans/" + ID);
+      expect(r.ajoutes, q).toHaveLength(1);
+    }
+    /* un id qui n'est pas un uuid reste ignoré : éditeur connecté, sans plan */
+    const r = await lancer("?id=" + ID.toUpperCase() + "x");
+    expect(r.site.plan).toBeNull();
+    expect(r.demandes).toEqual(["/api/plans/session", "/api/plans"]);
+  });
+
   it("le prix injecté vient du dictionnaire (aucun prix écrit dans le code)", async () => {
     const { editeurHeberge, prixProEditeur } = await module();
     const out = await editeurHeberge();

@@ -125,7 +125,18 @@ describe("refus", () => {
     const e = base();
     (e as { notes?: unknown }).notes = "data:image/png;base64," + "A".repeat(40_000);
     refuse(e);
-    expect(problemeProfond({ n: "data:x" })).toBe("image intégrée refusée");
+    expect(problemeProfond({ n: "data:text/html,<b>x</b>" })).toBe("image intégrée refusée");
+    expect(problemeProfond({ n: "  DATA:image/svg+xml;utf8,<svg/>" })).toBe("image intégrée refusée");
+    expect(problemeProfond({ n: "data:application/octet-stream;base64,AAAA" })).toBe("image intégrée refusée");
+  });
+
+  it("une note qui commence par « Data: » est acceptée (ce n'est pas une URL data:)", () => {
+    expect(problemeProfond({ notes: "Data: relevé du géomètre le 12/10" })).toBeNull();
+    expect(problemeProfond({ notes: "data: à vérifier, mur porteur" })).toBeNull();
+    expect(problemeProfond({ notes: "data:x" })).toBeNull();
+    const e = base();
+    (e as { notes?: unknown }).notes = "Data: relevé du géomètre le 12/10";
+    expect(etatPlanSchema.safeParse(e).success).toBe(true);
   });
 
   it("un objet trop profond", () => {
@@ -197,5 +208,32 @@ describe("résumé (la carte de « Mes plans »)", () => {
     expect(resumeSchema.safeParse({ prochain: 'a" onclick="b' }).success).toBe(false);
     expect(resumeSchema.safeParse({ m2: "94" }).success).toBe(false);
     expect(resumeSchema.safeParse({ pieces: 2.5 }).success).toBe(false);
+  });
+});
+
+describe("siteNom de l'éditeur (le nom envoyé à l'API)", () => {
+  /* La fonction de la source, telle quelle : le nom qu'elle rend doit toujours passer nomPlan. */
+  const src = readFileSync(path.join(__dirname, "..", "maquettes", "plan-editor.html"), "utf8");
+  const m = src.match(/function siteNom\(n\)\{[\s\S]*?\n {2}return s\.trim\(\)\|\|'Plan sans nom';\}/);
+  const siteNom = new Function(`${m![0]}; return siteNom;`)() as (n: unknown) => string;
+  const passe = (nom: string) => planMajSchema.safeParse({ revision: 1, nom }).success;
+
+  it("tronque par point de code : jamais de moitié de paire UTF-16, toujours accepté par l'API", () => {
+    expect(m).not.toBeNull();
+    const frontiere = siteNom("a".repeat(119) + "\u{1F600}" + "b");
+    expect(frontiere).toBe("a".repeat(119));
+    expect(passe(frontiere)).toBe(true);
+    const emojis = siteNom("\u{1F3E0}".repeat(100));
+    expect(emojis).toBe("\u{1F3E0}".repeat(60));
+    expect(passe(emojis)).toBe(true);
+    expect(siteNom("Maison \u{1F3E1} des Pins")).toBe("Maison \u{1F3E1} des Pins");
+    expect(siteNom("x".repeat(200))).toBe("x".repeat(120));
+  });
+
+  it("retire les moitiés de paire isolées et le caractère nul ; vide → « Plan sans nom »", () => {
+    expect(siteNom("Mai\uD83Dson\u0000")).toBe("Maison");
+    expect(passe(siteNom("a\uDC00b"))).toBe(true);
+    expect(siteNom("   ")).toBe("Plan sans nom");
+    expect(siteNom(null)).toBe("Plan sans nom");
   });
 });

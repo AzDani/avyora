@@ -15,6 +15,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { readFileSync } from "node:fs";
 import path from "node:path";
+/* `grant update (nom, etat, vue, resume) on floor_plans to authenticated` (0004) : la liste de la production. */
+import { COLONNES_SESSION } from "@/lib/plans/schema";
 
 /* ─── Données ─────────────────────────────────────────────────────────────── */
 
@@ -36,8 +38,6 @@ type Ligne = Record<string, unknown>;
 type Base = { floor_plans: Ligne[]; project_plans: Ligne[]; projects: Ligne[] };
 type Client = "session" | "admin";
 type Appel = { client: Client; table?: string; op: string; colonnes?: string; args?: unknown; filtres?: string[] };
-/** `grant update (nom, etat, vue, resume) on floor_plans to authenticated` (0004). */
-const COLONNES_SESSION = ["nom", "etat", "vue", "resume"];
 
 const S = {
   base: { floor_plans: [], project_plans: [], projects: [] } as Base,
@@ -113,7 +113,7 @@ class Requete implements PromiseLike<{ data: unknown; error: unknown; count?: nu
     S.appels.push({ client: this.client, table: this.table, op: this.op, colonnes: this.colonnes ?? undefined, args: this.valeurs ?? undefined, filtres: [...this.noms] });
     if (S.panne) return { data: null, error: { message: SECRET, code: "42P01" } };
     if (this.client === "session" && this.op === "update" && this.table === "floor_plans") {
-      const interdites = Object.keys(this.valeurs!).filter((k) => !COLONNES_SESSION.includes(k));
+      const interdites = Object.keys(this.valeurs!).filter((k) => !(COLONNES_SESSION as readonly string[]).includes(k));
       if (interdites.length) return { data: null, error: { message: "permission denied for table floor_plans", code: "42501" } };
     }
     const lignes = S.base[this.table];

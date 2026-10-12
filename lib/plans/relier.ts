@@ -23,8 +23,12 @@ export const ORPHELINES_MAX = 50;
 
 type PlanResolu = { id: string; nom: string | null };
 
-async function echec(etape: string, payload: Record<string, unknown>): Promise<void> {
-  await journaliser("plan_lien_echoue", { payload: { etape, ...payload } });
+/**
+ * Journalise un lien raté, rattaché au compte (`activity_log.user_id`) : le diagnostic se fait par
+ * utilisateur. Exportée pour les routes, qui l'appellent si la préparation du lien lève elle-même.
+ */
+export async function lienEchoue(etape: string, userId: string | null, payload: Record<string, unknown> = {}): Promise<void> {
+  await journaliser("plan_lien_echoue", { userId, payload: { etape, ...payload } });
 }
 
 /** Le plan désigné par l'origine, sous RLS (les plans du compte seulement). `null` si aucun. */
@@ -48,7 +52,7 @@ async function resoudrePlan(sb: Sb, origine: OrigineReliable): Promise<PlanResol
  * Après `POST /api/projects` : relie le projet créé au plan de son origine. Un lien déjà posé pour ce
  * projet n'est jamais remplacé (`onConflict: project_id`, ignoré). Rend `true` si une ligne est posée.
  */
-export async function relierAuPlan(sb: Sb, projectId: string, origine: OrigineReliable): Promise<boolean> {
+export async function relierAuPlan(sb: Sb, userId: string | null, projectId: string, origine: OrigineReliable): Promise<boolean> {
   try {
     const plan = await resoudrePlan(sb, origine);
     if (!plan) return false;
@@ -66,12 +70,12 @@ export async function relierAuPlan(sb: Sb, projectId: string, origine: OrigineRe
       )
       .select("project_id");
     if (error) {
-      await echec("relier", { projectId, planId: plan.id });
+      await lienEchoue("relier", userId, { projectId, planId: plan.id });
       return false;
     }
     return ((data ?? []) as unknown[]).length > 0;
   } catch (e) {
-    await echec(e instanceof Error ? e.message : "relier", { projectId });
+    await lienEchoue(e instanceof Error ? e.message : "relier", userId, { projectId });
     return false;
   }
 }
@@ -127,7 +131,7 @@ export async function relierEstimationsOrphelines(sb: Sb, userId: string, planId
     if (error) throw new Error("orphelines-relier");
     return ((data ?? []) as unknown[]).length;
   } catch (e) {
-    await echec(e instanceof Error ? e.message : "orphelines", { planId });
+    await lienEchoue(e instanceof Error ? e.message : "orphelines", userId, { planId });
     return 0;
   }
 }

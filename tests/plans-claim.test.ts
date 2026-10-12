@@ -157,7 +157,15 @@ describe("C5 · reprise d'un plan local (ClaimPlan)", () => {
       "Your account already keeps “Chalet”. This plan stays on this device. With Pro: unlimited saved plans.",
     );
     expect(messageReprise(r, dictPlans("fr"), false)!.lien!.href).toBe("/tarifs?source=editeur-plan");
-    expect(messageReprise({ etat: "limite", nom: "X", autre: null }, dictPlans("fr"), false)!.texte).toContain("« un autre plan »");
+    /* nom du plan du compte inconnu : pas de guillemets autour d'une expression générique */
+    for (const autre of [null, ""]) {
+      expect(messageReprise({ etat: "limite", nom: "X", autre }, dictPlans("fr"), false)!.texte).toBe(
+        "Ton compte garde déjà un autre plan. Ce plan reste sur cet appareil. Avec Pro : des plans enregistrés sans limite.",
+      );
+      expect(messageReprise({ etat: "limite", nom: "X", autre }, dictPlans("en"), false)!.texte).toBe(
+        "Your account already keeps another plan. This plan stays on this device. With Pro: unlimited saved plans.",
+      );
+    }
   });
 
   it("201 → « {nom} » est dans ton compte (FR, EN), « Les autres restent… » seulement s'il en reste", () => {
