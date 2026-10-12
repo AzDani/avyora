@@ -1,3 +1,7 @@
+-- NE PAS APPLIQUER : reprise et corrigée par 0004_floor_plans.sql (12/10/2026).
+-- Sa politique project_plans_access laisserait ÉCRIRE tout membre du projet : rejouée après 0004,
+-- elle rouvrirait cette porte. Gardée ici pour l'historique seulement.
+
 -- Le plan dessiné d'un projet, dans sa propre table.
 --
 -- Pourquoi pas dans `reponses` : ce champ est plafonné à 40 000 caractères sérialisés

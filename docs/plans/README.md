@@ -48,6 +48,55 @@ Un écart sur ces instantanés, interrupteur éteint, est une régression : on c
 régénère pas** les références (`vitest -u` est réservé à un changement voulu de la rénovation ou du neuf,
 hors de ce chantier).
 
+## Base de données (C1)
+
+Une seule migration, **`supabase/migrations/0004_floor_plans.sql`**, idempotente et additive. Elle ne
+touche pas à `projects` ni aux tables de 0001 et 0002.
+
+| Objet | Rôle |
+|---|---|
+| `floor_plans` | Le plan dessiné (état de l'éditeur, vue, résumé, vignette, contrat de rénovation). Propriétaire seul : lecture, modification, suppression. **Aucune politique INSERT.** |
+| `floor_plans_creer(...)` | La seule porte de création. Exécutable par le service role seulement. Verrou consultatif par compte, limite passée par la route (1 en gratuit, `null` en Pro), plafond 200, reprise sans doublon par `editeur_id`. Erreurs : `limite_gratuite`, `plafond_plans`. |
+| `floor_plans_touch` (trigger) | `updated_at`, propriétaire et date de création figés. `revision` n'avance que si `etat`, `nom` ou `workflow` changent, et le client ne peut pas la forger. |
+| `project_plans` | Le lien « cette estimation est née de ce plan » (`plan_id`, `on delete set null`) et le cliché de la rénovation. Reprend 0003 : `contrat` devient facultatif. Les membres du projet **lisent**, le propriétaire du projet **écrit**, et ne relie qu'un plan qui est le sien. |
+
+`0003_project_plans.sql` n'a jamais été appliquée. Elle est rangée dans `supabase/migrations/_remplacees/` :
+sa politique laissait écrire tout membre du projet.
+
+### Procédure pour le responsable
+
+1. Ouvrir Supabase › SQL editor, coller **tout** `supabase/migrations/0004_floor_plans.sql`, exécuter.
+2. Lancer ces vérifications. On attend : deux lignes à `true`, cinq politiques, puis `false`.
+   ```sql
+   select relname, relrowsecurity from pg_class where relname in ('floor_plans','project_plans');
+   select tablename, policyname, cmd from pg_policies where tablename in ('floor_plans','project_plans') order by 1,2;
+   select has_function_privilege('authenticated',
+     'public.floor_plans_creer(uuid,int,text,text,jsonb,jsonb,jsonb,jsonb,int,text)','execute');
+   ```
+   Les cinq politiques : `floor_plans_delete`, `floor_plans_select`, `floor_plans_update`,
+   `project_plans_ecriture`, `project_plans_lecture`.
+3. Ne **jamais** exécuter `supabase/migrations/_remplacees/0003_project_plans.sql`.
+
+Rejouer 0004 ne change rien (ni erreur, ni donnée touchée).
+
+### Retour arrière
+
+`supabase/migrations/0004_floor_plans_retour.sql`, seulement si on abandonne la fonction : il **efface
+tous les plans enregistrés**. Il retire `floor_plans`, sa fonction de création, son trigger et la colonne
+`project_plans.plan_id` (la politique d'écriture est d'abord reposée sans le plan, sinon Postgres refuse).
+`project_plans` reste en place, avec les politiques de 0004.
+
+### Vérifications
+
+- Hors ligne, sur un Postgres jetable en mémoire (PGlite, socle Supabase simulé : rôles `anon`,
+  `authenticated`, `service_role`, `auth.uid()`, droits par défaut), jamais sur Supabase : 0001 puis
+  0004 trois fois, avec et sans 0003 déjà appliquée, puis le comportement (création réservée au service
+  role, limite, plafond, reprise sans doublon, CHECK, isolation, révision, liens, cascades) et le retour
+  arrière deux fois puis 0004 à nouveau.
+- `tests/rls.test.ts` rejoue les mêmes règles sur un vrai Supabase **de test**. Il crée des comptes :
+  il ne lit pas `.env.local` et ne tourne que si `RLS_TEST_SUPABASE_URL`, `RLS_TEST_SUPABASE_ANON_KEY` et
+  `RLS_TEST_SUPABASE_SERVICE_ROLE_KEY` désignent un projet distinct de la production. Sinon il est ignoré.
+
 ## Contrôles de chaque chantier
 
 ```bash
