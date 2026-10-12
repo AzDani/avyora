@@ -24,6 +24,12 @@ export const dynamic = "force-dynamic";
 const PLANS_AFFICHES = ["mensuel", "annuel"] as const;
 /** Plan mis en avant quand le visiteur n'en a choisi aucun. */
 const PLAN_PAR_DEFAUT: (typeof PLANS_AFFICHES)[number] = "annuel";
+/**
+ * Éditeur de plan (C9, derrière FEATURES.plans) : d'où vient le visiteur. Liste fermée, comme `SOURCES_SEO` :
+ * tout autre `?source=` est ignoré. `editeur-plan` vient de l'éditeur (TARIFS_URL) et de la vitrine ;
+ * `choix-plan` du bandeau « Partir de mon plan » de l'écran de choix.
+ */
+const SOURCES_PLAN = ["editeur-plan", "choix-plan"] as const;
 
 function Check() {
   return (
@@ -36,22 +42,23 @@ function Check() {
 export default async function TarifsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ plan?: string; abo?: string }>;
+  searchParams: Promise<{ plan?: string; abo?: string; source?: string }>;
 }) {
-  const [{ plan: planDemande, abo }, user, { t: tr }] = await Promise.all([searchParams, getUser(), getT()]);
+  const [{ plan: planDemande, abo, source: sourceDemandee }, user, { t: tr }] = await Promise.all([searchParams, getUser(), getT()]);
   const t = tr.tarifs;
   const dejaPro = estPro(user);
   // Un visiteur qui revient d'une inscription arrive avec le plan qu'il avait choisi AVANT de
   // créer son compte (components/BoutonAbo.tsx pose ce paramètre). On met SON plan en avant
   // plutôt que celui de la maison : il retrouve son choix au lieu de devoir le refaire.
   const misEnAvant = PLANS_AFFICHES.find((k) => k === planDemande) ?? PLAN_PAR_DEFAUT;
+  const source = FEATURES.plans ? SOURCES_PLAN.find((s) => s === sourceDemandee) : undefined;
 
   return (
     <div className="animate-rise mx-auto max-w-4xl py-4 sm:py-8">
       {/* Le mur payant : sans cette mesure, on ignore combien de visiteurs y parviennent. */}
       <SuiviVue
         evenement="vue_tarifs"
-        props={{ connecte: !!user, deja_pro: dejaPro, venu_pour: planDemande ?? "aucun" }}
+        props={{ connecte: !!user, deja_pro: dejaPro, venu_pour: planDemande ?? "aucun", ...(source ? { source } : {}) }}
       />
       <header className="text-center">
         <p className="eyebrow">{t.eyebrow}</p>
@@ -80,6 +87,21 @@ export default async function TarifsPage({
         <p className="mx-auto mt-6 max-w-md rounded-field border border-line bg-surface-2 px-4 py-3 text-center text-sm text-muted">
           {t.aboAnnule}
         </p>
+      )}
+
+      {/* Venu de l'éditeur de plan (D48, D58) : ce que Pro y ajoute, avec les mots de l'éditeur (DROITS). Aucun prix. */}
+      {source === "editeur-plan" && !dejaPro && (
+        <div className="mx-auto mt-6 max-w-2xl rounded-field border border-brand-200 bg-brand-50 px-5 py-4 text-[14px] text-ink" data-depuis-editeur="">
+          <p className="font-semibold">{t.depuisEditeur}</p>
+          <ul className="mt-2 space-y-1.5">
+            {t.depuisEditeurDroits.map((d) => (
+              <li key={d} className="flex items-start gap-2.5 leading-relaxed">
+                <Check />
+                {d.charAt(0).toUpperCase() + d.slice(1)}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       <div className="mx-auto mt-8 grid max-w-2xl gap-4 md:grid-cols-2">
@@ -137,13 +159,15 @@ export default async function TarifsPage({
           <div className="eyebrow mb-3">{t.inclus}</div>
           <ul className="space-y-2.5">
             {/* Construction neuve : 6ᵉ puce, seulement flag allumé (prix et offres inchangés). */}
-            {[...t.features, ...(FEATURES.neuf ? [t.featureNeuf] : [])].map((f) => (
+            {/* Éditeur de plan : 7ᵉ puce, après le neuf, seulement interrupteur allumé. */}
+            {[...t.features, ...(FEATURES.neuf ? [t.featureNeuf] : []), ...(FEATURES.plans ? [t.featurePlan] : [])].map((f) => (
               <li key={f} className="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink">
                 <Check />
                 {f}
               </li>
             ))}
           </ul>
+          {FEATURES.plans && <p className="mt-4 text-[13px] text-muted">{t.planGratuit}</p>}
         </div>
         <figure className="mx-auto w-full max-w-[240px]">
           <picture>

@@ -190,7 +190,7 @@ function Appel({ t, telephone, erreur }: { t: DictPlans; telephone: boolean; err
 
 /* ─── Le lien vers l'éditeur, au téléphone ───────────────────────────────────── */
 
-function EnvoyerLien({ t, secondaire = false }: { t: DictPlans; secondaire?: boolean }) {
+export function EnvoyerLien({ t, secondaire = false }: { t: DictPlans; secondaire?: boolean }) {
   const [partage, setPartage] = useState(false);
   const [copie, setCopie] = useState(false);
   useEffect(() => {

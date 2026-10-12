@@ -404,5 +404,77 @@ console.log("\n8. Lien du Plan final vers l'estimation de la construction");
   }
 }
 
+/* ── 9. L'éditeur sur le site (C9) : la vitrine /logiciel-plan-maison et la page Tarifs disent les droits Gratuit / Pro
+   avec les mots de l'éditeur (table DROITS), au caractère près (lib/plans/droits.ts en garde la copie) ; et quand la
+   vitrine parle d'un Plan final, elle n'emploie aucun des mots interdits d'un Plan final (D75, MOTS de planfinal.mjs). ── */
+console.log("\n9. Éditeur de plan sur le site : droits Gratuit / Pro et mots d'un Plan final");
+{
+  const manque = [];
+  const lit = (f) => (fs.existsSync(f) ? fs.readFileSync(f, "utf8") : null);
+  const DR = lit("lib/plans/droits.ts"), I18N = lit("lib/i18n/plans.ts"), DICO = lit("lib/i18n/dictionaries.ts");
+  const VITRINE = lit("app/logiciel-plan-maison/page.tsx"), TARIFS = lit("app/tarifs/page.tsx"), PF = lit("maquettes/tools/planfinal.mjs");
+  /* la table DROITS de l'éditeur, lue telle quelle (un littéral d'objet) */
+  let droits = null;
+  {
+    const i = MAQ.indexOf("const DROITS={"), j = MAQ.indexOf("\n};", i);
+    try { droits = i < 0 ? null : new Function("return " + MAQ.slice(i + "const DROITS=".length, j + 2))(); } catch (e) { manque.push("DROITS illisible : " + e.message); }
+  }
+  const phrases = new Set();
+  const cueillir = (o) => { for (const x of Object.values(o || {})) { if (typeof x === "string") phrases.add(x); else if (x && typeof x === "object") cueillir(x); } };
+  cueillir(droits);
+  if (!droits || !phrases.size) manque.push("table DROITS introuvable dans l'éditeur");
+  if (!DR || !I18N || !DICO || !VITRINE || !TARIFS || !PF) manque.push("fichier du site introuvable (droits.ts, plans.ts, dictionaries.ts, vitrine, Tarifs ou planfinal.mjs)");
+  else {
+    /* la copie du site : chaque phrase est dans DROITS */
+    const bloc = DR.slice(DR.indexOf("export const DROITS_EDITEUR = {"), DR.indexOf("} as const;"));
+    const copie = Object.fromEntries([...bloc.matchAll(/^\s*(\w+): "([^"]*)",/gm)].map((m) => [m[1], m[2]]));
+    for (const [k, x] of Object.entries(copie)) if (!phrases.has(x)) manque.push(`lib/plans/droits.ts · ${k} « ${x} » n'est plus dans DROITS`);
+    const liste = (nom) => { const m = DR.match(new RegExp("export const " + nom + " = \\[([\\s\\S]*?)\\] as const;")); return m ? m[1].split(/,(?![^(]*\))/).map((x) => x.trim()).filter(Boolean) : null; };
+    const valeurs = (nom) => (liste(nom) || []).map((r) => { const c = r.match(/^D\.(\w+)(\.split\(","\)\[0\])?$/); return c && copie[c[1]] ? (c[2] ? copie[c[1]].split(",")[0] : copie[c[1]]) : null; });
+    for (const nom of ["COLONNE_GRATUIT", "COLONNE_PRO", "PUCE_TARIFS"]) {
+      const v = valeurs(nom);
+      if (!v.length || v.includes(null)) manque.push(`lib/plans/droits.ts · ${nom} illisible (des D.<clé> seulement)`);
+    }
+    const gratuit = valeurs("COLONNE_GRATUIT"), pro = valeurs("COLONNE_PRO"), puce = valeurs("PUCE_TARIFS");
+    /* une phrase de la colonne Gratuit est un droit gratuit (pas un droit Pro seul) */
+    const gratuits = new Set(); const proSeuls = new Set();
+    for (const d of Object.values(droits || {})) {
+      const g = d?.gratuit, p = d?.pro;
+      if (typeof g === "string") gratuits.add(g);
+      if (typeof p === "string" && p !== g) proSeuls.add(p);
+      for (const sous of Object.values(d || {})) if (sous && typeof sous === "object") { if (typeof sous.gratuit === "string") gratuits.add(sous.gratuit); if (typeof sous.pro === "string" && sous.pro !== sous.gratuit) proSeuls.add(sous.pro); }
+      if (typeof d?.planFinal === "string") gratuits.add(d.planFinal);
+    }
+    for (const x of gratuit) if (x && !gratuits.has(x)) manque.push(`colonne Gratuit : « ${x} » n'est pas un droit gratuit de DROITS`);
+    for (const x of pro) if (x && !proSeuls.has(x)) manque.push(`colonne Pro : « ${x} » n'est pas un droit que Pro ajoute (DROITS)`);
+    /* la vitrine affiche ces deux colonnes */
+    if (!/gratuitListe: \[\.\.\.COLONNE_GRATUIT\]/.test(I18N) || !/proListe: \[\.\.\.COLONNE_PRO\]/.test(I18N)) manque.push("lib/i18n/plans.ts : la vitrine FR ne reprend pas COLONNE_GRATUIT / COLONNE_PRO");
+    if (!/v\.gratuitListe\.map/.test(VITRINE) || !/v\.proListe\.map/.test(VITRINE)) manque.push("la vitrine n'affiche pas les colonnes Gratuit / Pro");
+    if (/aggregateRating|reviewCount|ratingValue/.test(VITRINE)) manque.push("la vitrine déclare une note ou des avis (JSON-LD)");
+    /* la page Tarifs : la puce et l'encart « Tu viens de l'éditeur de plan » */
+    const fr = DICO.slice(DICO.indexOf("const fr = {"), DICO.indexOf("const en: Dict"));
+    const puceDico = (fr.match(/featurePlan:\s*"([^"]+)"/) || [])[1];
+    const attendu = "Éditeur de plan : " + puce.join(" ; ");
+    if (puceDico !== attendu) manque.push(`Tarifs · featurePlan « ${puceDico ?? "?"} » ≠ « ${attendu} »`);
+    const encart = [...((fr.match(/depuisEditeurDroits:\s*\[([\s\S]*?)\]/) || [])[1] || "").matchAll(/"([^"]*)"/g)].map((m) => m[1]);
+    if (JSON.stringify(encart) !== JSON.stringify(pro)) manque.push("Tarifs · depuisEditeurDroits ≠ COLONNE_PRO");
+    if (!/t\.featureNeuf\][^\n]*t\.featurePlan/.test(TARIFS)) manque.push("Tarifs : la puce featurePlan n'est pas après featureNeuf");
+    /* les mots d'un Plan final : le bloc « Plan final » de la vitrine (FR), son haut de page et la colonne Gratuit */
+    let MOTS = null;
+    { const i = PF.indexOf("const MOTS = ["), j = PF.indexOf("\n];", i); try { MOTS = new Function("return " + PF.slice(i + "const MOTS = ".length, j + 3))(); } catch (e) { manque.push("MOTS illisible : " + e.message); } }
+    const a = I18N.indexOf("/* § 9 · Plan final : début */"), b = I18N.indexOf("/* § 9 · Plan final : fin */");
+    const haut = I18N.slice(I18N.indexOf("  page: {"), I18N.indexOf("\n  },", I18N.indexOf("  page: {")));
+    if (a < 0 || b < a) manque.push("lib/i18n/plans.ts : bloc « Plan final » de la vitrine introuvable");
+    else if (MOTS) {
+      const chaines = [...(I18N.slice(a, b) + haut).matchAll(/"((?:[^"\\]|\\.)*)"/g)].map((m) => m[1]).concat(gratuit.filter(Boolean));
+      for (const c of chaines) for (const [re, nom] of MOTS) if (re.test(c)) manque.push(`Plan final, mot interdit ${nom} : « ${c} »`);
+      if (!chaines.length) manque.push("bloc « Plan final » vide");
+      else console.log(`  · ${chaines.length} phrase(s) de la vitrine lues comme un Plan final, ${MOTS.length} mots interdits`);
+    }
+    if (!manque.length) console.log(`  ✓ vitrine : ${gratuit.length} droits gratuits, ${pro.length} droits Pro · Tarifs : la puce (${puce.length} droits) et l'encart, mot pour mot de DROITS`);
+  }
+  if (manque.length) KO("éditeur de plan sur le site : divergence avec l'éditeur", manque.join(" · "));
+}
+
 console.log(dur ? `✗ ${dur} divergence(s) à corriger · ${mou} point(s) à savoir` : `✓ aucune divergence · ${mou} point(s) à savoir`);
 process.exit(dur ? 1 : 0);

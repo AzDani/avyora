@@ -79,5 +79,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...(FEATURES.neuf
       ? [{ url: `${siteUrl}/estimation-construction-maison`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.9 }]
       : []),
+    // Éditeur de plan : la vitrine seulement (`/plan`, l'éditeur, est noindex et n'y figure pas).
+    ...(FEATURES.plans
+      ? [{ url: `${siteUrl}/logiciel-plan-maison`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.9 }]
+      : []),
   ];
 }

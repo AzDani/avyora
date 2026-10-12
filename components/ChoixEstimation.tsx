@@ -2,6 +2,9 @@ import Link from "next/link";
 import { getT } from "@/lib/i18n/server";
 import { dictNeuf } from "@/lib/i18n/neuf";
 import { FEATURES } from "@/lib/features";
+import { dictPlans } from "@/lib/i18n/plans";
+import type { Locale } from "@/lib/i18n/config";
+import PartirDePlan from "@/components/plans/PartirDePlan";
 
 /**
  * Écran de choix au lancement d'une estimation : Rapide (gratuit) vs Détaillée (Pro).
@@ -31,7 +34,7 @@ export default async function ChoixEstimation({ isPro, nature = "reno" }: { isPr
 
   return (
     <div className="av-choix">
-      <style dangerouslySetInnerHTML={{ __html: FEATURES.neuf ? CSS + CSS_NATURE : CSS }} />
+      <style dangerouslySetInnerHTML={{ __html: (FEATURES.neuf ? CSS + CSS_NATURE : CSS) + (FEATURES.plans ? CSS_PLAN : "") }} />
 
       {/* Flag éteint : l'en-tête seul, à sa place d'origine (ni bascule ni trou dans l'arbre rendu). */}
       {FEATURES.neuf ? (
@@ -108,11 +111,48 @@ export default async function ChoixEstimation({ isPro, nature = "reno" }: { isPr
         </section>
       </div>
 
+      {/* Éditeur de plan (C9) : un bandeau sous la grille, pas une 3ᵉ carte (la grille Gratuit / Pro ne bouge pas). */}
+      {FEATURES.plans && <BandeauPlan neuf={neuf} isPro={isPro} locale={locale} />}
+
       <div className="hint">
         <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.4" /><path d="M10 9v5M10 6.2v.2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
         <span>{t.hintAvant}<b>{t.hintFort}</b>{t.hintApres}</span>
       </div>
     </div>
+  );
+}
+
+/**
+ * « Partir de mon plan » : neuf → un Plan final (`/plan?type=final`) ; rénovation en Pro → un Projet rénovation
+ * (`/plan?type=renovation`) ; rénovation en gratuit → la même phrase, la pastille Pro et `/tarifs?source=choix-plan`
+ * (D68 : le Projet rénovation est Pro). L'îlot `PartirDePlan` propose en plus le plan le plus récent du bon type.
+ */
+function BandeauPlan({ neuf, isPro, locale }: { neuf: boolean; isPro: boolean; locale: Locale }) {
+  const t = dictPlans(locale).choix;
+  const ouvert = neuf || isPro;
+  return (
+    <aside className="plan-band" aria-label={t.titre}>
+      <span className="plan-ico" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 16 16" fill="none">
+          <path d="M2.5 7.2 8 2.6l5.5 4.6V13a.8.8 0 0 1-.8.8H3.3a.8.8 0 0 1-.8-.8V7.2Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+          <path d="M6.3 13.8V9.6h3.4v4.2" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+        </svg>
+      </span>
+      <div className="plan-txt">
+        <p className="plan-titre">
+          {t.titre}
+          {!ouvert && <span className="tag propill">{t.pro}</span>}
+        </p>
+        <p className="plan-d">{neuf ? t.neufTexte : t.renoTexte}</p>
+        {ouvert && <PartirDePlan workflow={neuf ? "final_plan" : "renovation"} />}
+      </div>
+      <Link
+        href={neuf ? "/plan?type=final" : isPro ? "/plan?type=renovation" : "/tarifs?source=choix-plan"}
+        className="btn btn-outline plan-go"
+      >
+        {neuf ? t.neufLien : isPro ? t.renoLien : t.renoLienGratuit}
+      </Link>
+    </aside>
   );
 }
 
@@ -164,6 +204,20 @@ const CSS = `
 .av-choix .hint{margin-top:22px;background:var(--color-surface-2);border:1px solid var(--color-line);border-radius:14px;padding:13px 16px;font-size:13px;color:var(--color-muted);display:flex;gap:10px;align-items:center;line-height:1.5}
 .av-choix .hint svg{flex:none;color:var(--color-brand-500)}
 .av-choix .hint b{color:var(--color-ink);font-weight:600}
+`;
+
+/* Bandeau « Partir de mon plan » (éditeur de plan, C9) : ajouté seulement quand FEATURES.plans est allumé. */
+const CSS_PLAN = `
+.av-choix .plan-band{margin-top:18px;display:flex;align-items:center;gap:16px;background:var(--color-surface);border:1px dashed var(--color-brand-200);border-radius:16px;padding:16px 18px}
+.av-choix .plan-ico{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;flex:none;background:var(--color-brand-50);color:var(--color-brand-600)}
+.av-choix .plan-txt{flex:1;min-width:0}
+.av-choix .plan-titre{margin:0;font-size:15px;font-weight:600;color:var(--color-ink);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.av-choix .plan-d{margin:3px 0 0;font-size:13.5px;color:var(--color-muted);line-height:1.5}
+.av-choix .plan-partir{margin:4px 0 0;min-height:1.25rem;font-size:13.5px}
+.av-choix .plan-partir .lien{color:var(--color-brand-600);font-weight:500;text-decoration:none}
+.av-choix .plan-partir .lien:hover{text-decoration:underline}
+.av-choix .plan-band .plan-go{width:auto;flex:none;white-space:nowrap}
+@media (max-width:720px){.av-choix .plan-band{flex-wrap:wrap}.av-choix .plan-ico{display:none}.av-choix .plan-band .plan-go{width:100%}}
 `;
 
 /* Bascule de nature (construction neuve) : ajoutée seulement quand le flag est allumé. */

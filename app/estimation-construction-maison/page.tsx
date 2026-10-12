@@ -7,6 +7,7 @@ import { getUser, estPro } from "@/lib/auth";
 import { FEATURES } from "@/lib/features";
 import { og } from "@/lib/seo-og";
 import { contexteNeuf } from "@/lib/neuf-contexte";
+import { dictPlans } from "@/lib/i18n/plans";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
@@ -87,8 +88,24 @@ export default async function EstimationConstructionMaison({
         <p className="eyebrow">{t.pageEyebrow}</p>
         <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-ink">{t.pageTitre}</h1>
         <p className="mt-1.5 text-[15px] text-muted">{t.pageSous}</p>
+        {/* Éditeur de plan (C9) : la boucle neuf ↔ plan, seulement interrupteur allumé. */}
+        {FEATURES.plans && <LignePlan locale={locale} />}
       </header>
       <EstimateurRapideNeuf isPro={isPro} initial={initial} />
     </div>
+  );
+}
+
+/** « Pas encore de plan ? Dessine ta maison : l'estimation reprend ses pièces et sa surface. » → un Plan final. */
+function LignePlan({ locale }: { locale: Awaited<ReturnType<typeof getLocale>> }) {
+  const t = dictPlans(locale).neuf;
+  return (
+    <p className="mt-3 text-[14px] text-muted" data-ligne-plan="">
+      {t.avant}
+      <Link href="/plan?type=final" className="font-medium text-brand-700 hover:underline">
+        {t.lien}
+      </Link>
+      {t.apres}
+    </p>
   );
 }

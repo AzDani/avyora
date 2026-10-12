@@ -427,6 +427,38 @@ aujourd'hui : aucune migration.
   interrupteur éteint. Le témoin C5 « /projets allumé = éteint » admet, liste vide, le seul lien « ou commence par
   dessiner ton plan » (ajout voulu de C8).
 
+## La mise en avant (C9)
+
+Tout est derrière `FEATURES.plans` ; éteint, chaque surface garde son HTML au caractère près (témoins C0).
+
+| Où | Quoi | Fichiers |
+|---|---|---|
+| En-tête desktop | Onglet « Plan 3D » + pastille « Gratuit », premier lien, blanc plein, `aria-current` sur la vitrine | `components/plans/OngletPlan.tsx`, `app/layout.tsx` |
+| Largeur de l'en-tête | Mesurée à 640, 768 et 1 024 px (anonyme, gratuit au prénom long, admin ; FR et EN). Allumé : navigation inline dès `md` (menu en dessous : l'en-tête d'un connecté débordait déjà à 640 et 768 px, interrupteur éteint), prénom en icône sous `xl`, « Admin » et « Déconnexion » en icône sous `lg`, langue au pied entre `md` et `lg` | `app/layout.tsx`, `components/auth/AuthNav.tsx` |
+| Menu mobile | Ligne contrastée sous « Nouveau projet » (pas un 2ᵉ bouton plein) | `components/MobileMenu.tsx` |
+| Accueil | `PLAN_BAND` / `PLAN_BAND_EN` juste après le hero, deux vraies captures, 5ᵉ puce de confiance ; 3ᵉ puce seulement si `FEATURES.neuf` | `app/page.tsx` |
+| Écran de choix | Bandeau « Partir de mon plan » sous la grille (neuf → `/plan?type=final`, réno Pro → `?type=renovation`, réno gratuit → `/tarifs?source=choix-plan`) ; l'îlot `PartirDePlan` propose le plan le plus récent du bon type | `components/ChoixEstimation.tsx`, `components/plans/PartirDePlan.tsx` |
+| Tarifs | Puce `featurePlan` après `featureNeuf`, ligne « Dessiner ton plan… reste gratuit », `?source=editeur-plan|choix-plan` passé à `vue_tarifs`, encart « Tu viens de l'éditeur de plan » | `app/tarifs/page.tsx`, `lib/i18n/dictionaries.ts` |
+| Pied de page | « Plan de maison 3D » | `app/layout.tsx` |
+| Page neuf | « Pas encore de plan ? Dessine ta maison… » → `/plan?type=final` | `app/estimation-construction-maison/page.tsx` |
+| Vitrine | Captures, trois gestes, ce que tu peux faire, après le plan, Gratuit / Pro (mots de `DROITS`), FAQ, JSON-LD `WebApplication` (sans note ni avis) + `BreadcrumbList` + `FAQPage`, image de partage composée | `app/logiciel-plan-maison/page.tsx`, `lib/i18n/plans.ts`, `lib/plans/droits.ts` |
+| Sitemap | `/logiciel-plan-maison` (0,9, mensuelle) ; `/plan` jamais | `app/sitemap.ts` |
+
+**Captures** (`public/plans/`) : vraies, produites par `node maquettes/tools/captures-site.mjs "$(pwd)/maquettes" http://localhost:3014 public/plans`
+sur un `next start` interrupteur allumé : `/plan` en gratuit, sans `?dev`, plan type « Maison · 94 m² » (Plan final), 1 440 × 900 à 2×,
+réduites en webp 760 / 1040 et PNG 1040, plus `og-plan.png` (1 200 × 630). Sans adresse, l'outil sort en 0 (batterie).
+
+**FAQ permis** : architecte obligatoire au-delà de 150 m² de **surface de plancher** (réponse ministérielle, JO du 18/12/2018, QE 6969 :
+l'emprise au sol ne compte plus).
+
+### Contrôles
+
+- `tests/plans-points-entree.test.ts` : éteint, aucune trace ; allumé, chaque surface = celle d'avant + l'ajout (retiré, on retrouve le
+  HTML éteint), grille de choix identique, section de l'accueil juste après le hero (FR, EN), puce après celle du neuf, sitemap, vitrine
+  (contenu, JSON-LD, métadonnées), dimensions des captures.
+- `coherence.mjs` § 9 : `lib/plans/droits.ts` ⊂ `DROITS` de l'éditeur ; colonnes de la vitrine, puce et encart de Tarifs mot pour mot ;
+  le bloc « Plan final » de la vitrine sans aucun des `MOTS` de `planfinal.mjs`.
+
 ## Retouches des vérificateurs (lots 1 et 2)
 
 - Éditeur : `siteNom` tronque par **point de code** (`Array.from`), à 120 unités UTF-16 au plus comme `nomPlan`,

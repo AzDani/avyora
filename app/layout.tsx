@@ -10,6 +10,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { getT } from "@/lib/i18n/server";
 import { LangProvider } from "@/components/i18n/LangProvider";
 import LangSwitch from "@/components/i18n/LangSwitch";
+import OngletPlan from "@/components/plans/OngletPlan";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -164,8 +165,12 @@ export default async function RootLayout({
         <header className="sticky top-0 z-40 bg-canvas px-3 pb-2 pt-3 sm:px-4 sm:pt-4">
           <div className="mx-auto flex h-16 max-w-5xl items-center justify-between rounded-2xl border border-white/10 bg-[#1E1B4B] px-4 shadow-[0_10px_30px_-12px_rgba(30,27,75,0.55)] sm:px-6">
             <Wordmark />
-            {/* Desktop (≥ sm) : navigation inline */}
-            <nav aria-label="Navigation principale" className="hidden items-center gap-1 text-sm sm:flex">
+            {/* Desktop (≥ sm) : navigation inline. Éditeur de plan allumé (C9) : l'onglet de plus ne tient pas entre 640 et
+                768 px (mesuré : l'en-tête d'un connecté y débordait déjà), la navigation inline commence donc à md ; en
+                dessous, le menu (qui porte la même ligne « Plan 3D »). Entre md et lg, la langue reste au pied de page. */}
+            <nav aria-label="Navigation principale" className={FEATURES.plans ? "hidden items-center gap-1 text-sm md:flex" : "hidden items-center gap-1 text-sm sm:flex"}>
+              {/* Éditeur de plan (C9) : premier lien, mis en avant, seulement interrupteur allumé. */}
+              {FEATURES.plans && <OngletPlan label={t.nav.plan} pastille={t.nav.planPastille} />}
               <Link
                 href="/projets"
                 className="rounded-lg px-3 py-1.5 text-indigo-200/90 transition-colors hover:bg-white/10 hover:text-white"
@@ -181,15 +186,24 @@ export default async function RootLayout({
                 </Link>
               )}
               <AuthNav />
-              <span className="mx-1 h-4 w-px bg-white/15" aria-hidden="true" />
-              <LangSwitch tone="dark" />
+              {FEATURES.plans ? (
+                <span className="hidden items-center lg:inline-flex">
+                  <span className="mx-1 h-4 w-px bg-white/15" aria-hidden="true" />
+                  <LangSwitch tone="dark" />
+                </span>
+              ) : (
+                <>
+                  <span className="mx-1 h-4 w-px bg-white/15" aria-hidden="true" />
+                  <LangSwitch tone="dark" />
+                </>
+              )}
               <Link href="/projets/nouveau" className="btn btn-primary ml-1 py-2">
                 {t.nav.nouveauProjet}
               </Link>
             </nav>
 
             {/* Mobile (< sm) : menu hamburger */}
-            <div className="sm:hidden">
+            <div className={FEATURES.plans ? "md:hidden" : "sm:hidden"}>
               <MobileNav />
             </div>
           </div>
@@ -215,6 +229,8 @@ export default async function RootLayout({
                     <Link href="/estimation-construction-maison" className="transition-colors hover:text-brand-700">{t.footer.construction}</Link>
                   </>
                 ) : lienPrixVille}
+                {/* Éditeur de plan (C9) : lien de maillage vers la vitrine, seulement interrupteur allumé. */}
+                {FEATURES.plans && <Link href="/logiciel-plan-maison" className="transition-colors hover:text-brand-700">{t.footer.plan}</Link>}
                 <Link href="/mentions-legales" className="transition-colors hover:text-brand-700">{t.footer.mentions}</Link>
                 <Link href="/cgu" className="transition-colors hover:text-brand-700">{t.footer.cgu}</Link>
                 <Link href="/cgv" className="transition-colors hover:text-brand-700">{t.footer.cgv}</Link>

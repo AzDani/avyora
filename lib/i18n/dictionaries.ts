@@ -17,6 +17,9 @@ const fr = {
     monCompte: "Mon compte",
     nouveauProjet: "Nouveau projet",
     menu: "Menu",
+    /* Éditeur de plan (FEATURES.plans) : l'onglet et sa pastille. */
+    plan: "Plan 3D",
+    planPastille: "Gratuit",
   },
   footer: {
     guides: "Guides des prix",
@@ -29,6 +32,7 @@ const fr = {
     cookies: "Cookies",
     tarifs: "Tarifs",
     construction: "Construction neuve",
+    plan: "Plan de maison 3D",
     tagline:
       "Estimations indicatives basées sur le référentiel de prix AVYORA (France 2026). À confirmer par des devis d'artisans.",
   },
@@ -102,6 +106,19 @@ const fr = {
       "Suivi de chantier, poste par poste",
     ],
     featureNeuf: "Construction neuve : ta maison détaillée phase par phase, du permis à l'achèvement",
+    /* Éditeur de plan (FEATURES.plans) : les droits Pro avec les mots de l'éditeur (DROITS, lib/plans/droits.ts),
+       vérifiés par coherence.mjs § 9. Aucun prix. */
+    featurePlan:
+      "Éditeur de plan : des plans enregistrés sans limite ; le projet rénovation, pour partir de ton logement tel qu'il est et chiffrer ce qui change ; le dossier PDF de tes plans sans filigrane",
+    planGratuit: "Dessiner ton plan et le voir en 3D reste gratuit.",
+    depuisEditeur: "Tu viens de l'éditeur de plan. Avec Pro :",
+    depuisEditeurDroits: [
+      "des plans enregistrés sans limite",
+      "le dossier PDF de tes plans sans filigrane, avec le contrôle du plan et les surfaces",
+      "le projet rénovation, pour partir de ton logement tel qu'il est et chiffrer ce qui change",
+      "le détail tâche par tâche, avec le prix de chaque tâche",
+      "le suivi de chantier avec le prix de chaque tâche, et ce qui est déjà réalisé",
+    ],
     plans: {
       mensuel: { nom: "Mensuel", prix: "18,85 €", unite: "/ mois", note: "Sans engagement", tag: "" },
       "annuel-mois": { nom: "Annuel, payé au mois", prix: "16,15 €", unite: "/ mois", note: "Engagement 12 mois", tag: "" },
@@ -243,6 +260,8 @@ const en: Dict = {
     monCompte: "My account",
     nouveauProjet: "New project",
     menu: "Menu",
+    plan: "3D plan",
+    planPastille: "Free",
   },
   footer: {
     guides: "Price guides",
@@ -255,6 +274,7 @@ const en: Dict = {
     cookies: "Cookies",
     tarifs: "Pricing",
     construction: "New build",
+    plan: "3D house plan",
     tagline:
       "Indicative estimates based on the AVYORA price reference (France 2026). Confirm with contractor quotes.",
   },
@@ -328,6 +348,17 @@ const en: Dict = {
       "Project tracking, line by line",
     ],
     featureNeuf: "New build: your house detailed phase by phase, from permit to completion",
+    featurePlan:
+      "Floor plan editor: unlimited saved plans; the renovation project, to start from your home as it is and price what changes; the PDF file of your plans without watermark",
+    planGratuit: "Drawing your plan and viewing it in 3D stays free.",
+    depuisEditeur: "You're coming from the floor plan editor. With Pro:",
+    depuisEditeurDroits: [
+      "unlimited saved plans",
+      "the PDF file of your plans without watermark, with the plan check and the floor areas",
+      "the renovation project, to start from your home as it is and price what changes",
+      "the task-by-task detail, with the price of each task",
+      "site tracking with the price of each task, and what is already done",
+    ],
     plans: {
       mensuel: { nom: "Monthly", prix: "€18.85", unite: "/ month", note: "No commitment", tag: "" },
       "annuel-mois": { nom: "Annual, billed monthly", prix: "€16.15", unite: "/ month", note: "12-month commitment", tag: "" },

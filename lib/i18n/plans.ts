@@ -1,5 +1,6 @@
 import type { Locale } from "./config";
 import type { ResultatReprise } from "@/lib/plans/local";
+import { COLONNE_GRATUIT, COLONNE_PRO } from "@/lib/plans/droits";
 
 /**
  * « Mes plans » (éditeur de plan en ligne) : textes du SITE autour de l'éditeur, en FR et en EN.
@@ -68,6 +69,100 @@ const fr = {
     garder: "Garde-le dans ton compte",
     garderSous: "Crée ton compte gratuit : tu le retrouves sur tous tes appareils.",
     ouvert: "ouvert",
+  },
+  /* La vitrine `/logiciel-plan-maison`, sous l'îlot « Tes plans » (C9). Seulement ce que l'éditeur sait faire.
+     coherence.mjs § 9 lit le bloc « Plan final » ci-dessous avec les mots interdits d'un Plan final (D75, `MOTS`). */
+  vitrine: {
+    /* § 9 · Plan final : début */
+    comment: "Comment ça marche",
+    legende2d: "Le plan en 2D : pièces, surfaces et cotes, calculées par l'éditeur.",
+    legende3d: "La même maison en 3D, d'un clic.",
+    alt2d: "Plan 2D d'une maison de plain-pied de 94 m² dans l'éditeur AVYORA : pièces nommées, surfaces, cotes et mobilier",
+    alt3d: "La même maison de 94 m² en 3D dans l'éditeur AVYORA",
+    gestesTitre: "En trois gestes",
+    gestes: [
+      { titre: "Trace le contour, puis les cloisons", texte: "Chaque pièce se ferme toute seule et affiche sa surface." },
+      { titre: "Pose portes, fenêtres et équipements", texte: "Ils s'aimantent aux murs : salle de bain, cuisine, mobilier." },
+      { titre: "Regarde en 3D, et chiffre", texte: "La 3D se construit depuis ton plan, d'un clic. Tu fais construire ? « Chiffrer cette maison » ouvre son coût de construction." },
+    ],
+    capacitesTitre: "Ce que tu peux faire",
+    capacitesSous: "Tout ce qui suit existe dans l'éditeur, aujourd'hui.",
+    capacites: [
+      "Murs, cloisons et murs porteurs, chacun à son épaisseur",
+      "Les pièces détectées toutes seules, avec la surface de chacune",
+      "Portes et fenêtres aimantées aux murs",
+      "Salle de bain, cuisine et mobilier à placer",
+      "Plusieurs niveaux, et les escaliers qui les relient",
+      "Les cotes, pour lire chaque longueur",
+      "Décalquer un plan que tu as déjà : importe son image et cale son échelle",
+      "Le contrôle du plan : dégagements conseillés, 9 m² et 2,20 m sous plafond du décret décence",
+      "La vue 3D de ton plan, et la visite à hauteur d'yeux",
+      "Le dossier PDF de tes plans",
+    ],
+    apresTitre: "Et après le plan ?",
+    construireTitre: "Tu fais construire",
+    construireTexte: "Ton plan devient le coût de construction de ta maison : ses pièces, sa surface et ses niveaux sont repris.",
+    construireLien: "Dessiner ma maison",
+    gratuit: "Gratuit",
+    faqTitre: "Questions fréquentes",
+    faq: [
+      {
+        q: "Faut-il installer un logiciel ?",
+        r: "Non. L'éditeur s'ouvre dans ton navigateur, sur ordinateur ou tablette : rien à télécharger, rien à installer.",
+      },
+      {
+        q: "C'est vraiment gratuit ?",
+        r: "Oui pour dessiner ton plan, le voir en 3D, lire ses surfaces et garder un plan enregistré. Pro ajoute les plans enregistrés sans limite, le projet rénovation chiffré et le dossier PDF sans filigrane.",
+      },
+      {
+        q: "Ça marche sur téléphone ?",
+        r: "Tu y consultes tes plans. Le dessin, lui, se fait sur ordinateur ou tablette : depuis ton téléphone, envoie-toi le lien.",
+      },
+      {
+        q: "Où sont enregistrés mes plans ?",
+        r: "Sur ton appareil tant que tu n'as pas de compte. Avec un compte, dans ton compte : tu les retrouves sur tous tes appareils. Les calques image restent sur l'appareil où tu les as importés.",
+      },
+      {
+        q: "Puis-je partir d'un plan que j'ai déjà ?",
+        r: "Oui : importe l'image de ton plan en calque, cale son échelle, puis décalque les murs.",
+      },
+      {
+        q: "Ce plan suffit-il pour un permis de construire ?",
+        r: "Non. C'est un plan pour concevoir ta maison et la chiffrer. Un permis de construire demande des pièces graphiques normées (plan de situation, plan de masse, coupe, façades), et le recours à un architecte est obligatoire au-delà de 150 m² de surface de plancher.",
+      },
+    ],
+    basTitre: "Dessine ta maison, gratuitement.",
+    basSous: "Murs, pièces, surfaces et 3D, dans ton navigateur.",
+    basCta: "Créer mon plan",
+    /* § 9 · Plan final : fin */
+    renoverTitre: "Tu rénoves",
+    renoverTexte: "Pars de ton logement tel qu'il est, décide tes travaux : le budget suit chaque décision, corps d'état par corps d'état, jusqu'au suivi du chantier.",
+    renoverLien: "Voir ce que Pro ajoute",
+    pro: "Pro",
+    offresTitre: "Gratuit ou Pro",
+    offresGratuitSous: "Avec ou sans compte.",
+    offresProSous: "Tout ce qui est gratuit, et :",
+    offresVoir: "Voir les offres Pro",
+    /* Les mots de l'éditeur (DROITS), au caractère près : lib/plans/droits.ts. */
+    gratuitListe: [...COLONNE_GRATUIT] as string[],
+    proListe: [...COLONNE_PRO] as string[],
+  },
+  /* L'écran de choix (`/projets/nouveau`) : le bandeau « Partir de mon plan », sous les deux cartes (C9). */
+  choix: {
+    titre: "Partir de mon plan",
+    neufTexte: "Tu as déjà une idée de ta maison ? Dessine-la : ses pièces et sa surface remplissent l'estimation.",
+    neufLien: "Dessiner ma maison →",
+    renoTexte: "Pars de ton logement tel qu'il est : dessine-le, décide tes travaux, le budget suit chaque décision.",
+    renoLien: "Dessiner mon logement →",
+    renoLienGratuit: "Débloquer avec Pro →",
+    pro: "Pro",
+    partirDe: (nom: string) => `Partir de « ${nom} » →`,
+  },
+  /* La page de la construction (`/estimation-construction-maison`) : la ligne vers l'éditeur (C9). */
+  neuf: {
+    avant: "Pas encore de plan ? ",
+    lien: "Dessine ta maison",
+    apres: " : l'estimation reprend ses pièces et sa surface.",
   },
   /* La reprise d'un plan local dans le compte (`ClaimPlan`). */
   reprise: {
@@ -218,6 +313,105 @@ const en: DictPlans = {
     garder: "Keep it in your account",
     garderSous: "Create your free account: you'll find it on all your devices.",
     ouvert: "open",
+  },
+  vitrine: {
+    comment: "How it works",
+    legende2d: "The plan in 2D: rooms, floor areas and dimensions, worked out by the editor.",
+    legende3d: "The same house in 3D, in one click.",
+    alt2d: "2D plan of a 94 m² single-storey house in the AVYORA editor: named rooms, floor areas, dimensions and furniture",
+    alt3d: "The same 94 m² house in 3D in the AVYORA editor",
+    gestesTitre: "In three steps",
+    gestes: [
+      { titre: "Trace the outline, then the partitions", texte: "Each room closes on its own and shows its floor area." },
+      { titre: "Place doors, windows and fittings", texte: "They snap to the walls: bathroom, kitchen, furniture." },
+      { titre: "View it in 3D, and price it", texte: "The 3D model is built from your plan, in one click. Building a house? “Chiffrer cette maison” opens its construction cost." },
+    ],
+    capacitesTitre: "What you can do",
+    capacitesSous: "Everything below is in the editor today.",
+    capacites: [
+      "Walls, partitions and load-bearing walls, each at its own thickness",
+      "Rooms detected on their own, with the floor area of each",
+      "Doors and windows that snap to the walls",
+      "Bathroom, kitchen and furniture to place",
+      "Several levels, and the stairs between them",
+      "Dimensions, to read every length",
+      "Trace over a plan you already have: import its image and set its scale",
+      "The plan check: recommended clearances, 9 m² and 2.20 m ceiling height from the French decent-housing decree",
+      "The 3D view of your plan, and the walkthrough at eye level",
+      "The PDF file of your plans",
+    ],
+    apresTitre: "After the plan?",
+    construireTitre: "Building a house",
+    construireTexte: "Your plan becomes the construction cost of your house: its rooms, floor area and levels are carried over.",
+    construireLien: "Draw my house",
+    gratuit: "Free",
+    faqTitre: "Frequently asked questions",
+    faq: [
+      {
+        q: "Do I need to install any software?",
+        r: "No. The editor opens in your browser, on a computer or a tablet: nothing to download, nothing to install.",
+      },
+      {
+        q: "Is it really free?",
+        r: "Yes to draw your plan, view it in 3D, read its floor areas and keep one saved plan. Pro adds unlimited saved plans, the priced renovation project and the PDF file without watermark.",
+      },
+      {
+        q: "Does it work on a phone?",
+        r: "You can view your plans there. Drawing works on a computer or a tablet: from your phone, send yourself the link.",
+      },
+      {
+        q: "Where are the plans I draw saved?",
+        r: "On your device as long as you have no account. With an account, in your account: you'll find them on all your devices. Image layers stay on the device where you imported them.",
+      },
+      {
+        q: "Can I start from a plan I already have?",
+        r: "Yes: import the image of your plan as a layer, set its scale, then trace the walls over it.",
+      },
+      {
+        q: "Is this plan enough for a building permit?",
+        r: "No. It is a plan to design your house and price it. A French building permit requires standardised drawings (location plan, site plan, section, elevations), and hiring an architect is mandatory above 150 m² of floor area (surface de plancher).",
+      },
+    ],
+    basTitre: "Draw your house, for free.",
+    basSous: "Walls, rooms, floor areas and 3D, in your browser.",
+    basCta: "Create my plan",
+    renoverTitre: "Renovating",
+    renoverTexte: "Start from your home as it is, decide your work: the budget follows every decision, trade by trade, all the way to site tracking.",
+    renoverLien: "See what Pro adds",
+    pro: "Pro",
+    offresTitre: "Free or Pro",
+    offresGratuitSous: "With or without an account.",
+    offresProSous: "Everything that is free, plus:",
+    offresVoir: "See Pro plans",
+    gratuitListe: [
+      "draw your final plan",
+      "the floor areas and the plan check",
+      "the 3D view of your plan",
+      "the PDF file of your plans, watermarked",
+      "1 saved plan",
+    ],
+    proListe: [
+      "unlimited saved plans",
+      "the PDF file of your plans without watermark, with the plan check and the floor areas",
+      "the renovation project, to start from your home as it is and price what changes",
+      "the task-by-task detail, with the price of each task",
+      "site tracking with the price of each task, and what is already done",
+    ],
+  },
+  choix: {
+    titre: "Start from my plan",
+    neufTexte: "Already picturing your house? Draw it: its rooms and floor area fill in the estimate.",
+    neufLien: "Draw my house →",
+    renoTexte: "Start from your home as it is: draw it, decide your work, the budget follows every decision.",
+    renoLien: "Draw my home →",
+    renoLienGratuit: "Unlock with Pro →",
+    pro: "Pro",
+    partirDe: (nom: string) => `Start from “${nom}” →`,
+  },
+  neuf: {
+    avant: "No plan yet? ",
+    lien: "Draw your house",
+    apres: ": the estimate picks up its rooms and floor area.",
   },
   reprise: {
     enCours: "Saving your plan to your account…",

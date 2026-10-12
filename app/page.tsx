@@ -153,6 +153,36 @@ const NEUF_BAND = `
 const NEUF_BAND_EN = `
   <style>.av-home a.strip-neuf{display:block;margin-top:34px;text-decoration:none;color:inherit;background:var(--surface);border:1.5px solid var(--brand);box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s}.av-home a.strip-neuf:hover{transform:translateY(-2px);box-shadow:0 14px 30px -14px rgba(79,70,229,.45)}.av-home a.strip-neuf:focus-visible{outline:3px solid var(--brand-200);outline-offset:3px}.av-home a.strip-neuf .go{display:inline-block;margin-top:14px;padding:10px 18px;border-radius:999px;background:var(--brand);color:#fff;font-weight:600;font-size:14px}@media (prefers-reduced-motion:reduce){.av-home a.strip-neuf{transition:none}.av-home a.strip-neuf:hover{transform:none}}</style><a href="/estimation-construction-maison" class="strip strip-neuf"><div class="t">Building a new home?</div><div class="d">Estimate your new house, from building permit to handover: studies, taxes, construction and utility hookups. Free, in 5 questions.</div><span class="go">Estimate my build →</span></a>`;
 
+/* Éditeur de plan (C9) : section sombre juste après le hero, insérée seulement quand FEATURES.plans est allumé (éteint :
+   HTML d'origine au caractère près, comme NEUF_BAND). Deux vraies captures de l'éditeur (la Maison 94 m², en gratuit,
+   2D puis 3D), webp 760 / 1040 et PNG de repli, largeur et hauteur posées. Le hero et ses boutons ne bougent pas : la
+   conversion Ads reste « Estimation terminée ». La 3ᵉ puce (le chiffrage depuis le plan) seulement si le neuf est en
+   ligne. Ni prix ni emoji ; pour un Plan final, ni « estimer », ni « budget », ni « neuf », ni « travaux » (D75). */
+const PLAN_CSS = `<style>.av-home .planb{margin-top:22px;background:linear-gradient(150deg,var(--nuit-2),var(--nuit));color:#fff;border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-hero)}.av-home .planb .in{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr);gap:40px;align-items:center;padding:48px 40px}.av-home .planb .eyebrow{color:var(--accent-300)}.av-home .planb h2{font-size:clamp(25px,3.4vw,34px);font-weight:700;margin-top:10px;line-height:1.12}.av-home .planb p.d{color:#d7d4f2;font-size:15.5px;margin-top:14px;line-height:1.6}.av-home .planb ul{list-style:none;margin:18px 0 0;padding:0;display:grid;gap:9px}.av-home .planb li{display:flex;gap:10px;align-items:flex-start;font-size:14.5px;line-height:1.5}.av-home .planb li::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--accent);margin-top:8px}.av-home .planb .cta{display:flex;gap:12px 20px;flex-wrap:wrap;align-items:center;margin-top:26px}.av-home .planb a.lien{color:var(--accent-300);font-weight:600;font-size:14.5px}.av-home .planb a.lien:hover{color:#fff}.av-home .planb .note{font-size:12.5px;color:#a9a5d6;margin-top:14px}.av-home .planb .vis{position:relative;padding-bottom:16%}.av-home .planb .p2d{display:block;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,.14);box-shadow:0 30px 60px -30px rgba(0,0,0,.6);background:#fff}.av-home .planb .p3d{display:block;position:absolute;right:-2%;bottom:0;width:60%;border-radius:12px;overflow:hidden;border:2px solid rgba(255,255,255,.85);box-shadow:0 26px 50px -20px rgba(0,0,0,.65);background:#fff}.av-home .planb img{display:block;width:100%;height:auto}@media(max-width:820px){.av-home .planb .in{grid-template-columns:1fr;padding:36px 22px;gap:30px}.av-home .planb .p3d{right:0}}</style>`;
+const planVisuels = (alt2d: string, alt3d: string) =>
+  `<div class="vis"><picture class="p2d"><source type="image/webp" srcset="/plans/maison-2d-760.webp 760w, /plans/maison-2d-1040.webp 1040w" sizes="(max-width:820px) 92vw, 520px"><img src="/plans/maison-2d.png" width="1040" height="650" loading="lazy" decoding="async" alt="${alt2d}"></picture><picture class="p3d"><source type="image/webp" srcset="/plans/maison-3d-760.webp 760w, /plans/maison-3d-1040.webp 1040w" sizes="(max-width:820px) 56vw, 320px"><img src="/plans/maison-3d.png" width="1040" height="650" loading="lazy" decoding="async" alt="${alt3d}"></picture></div>`;
+const PLAN_BAND = `
+${PLAN_CSS}<section class="planb" aria-labelledby="planb-titre"><div class="in"><div>
+  <p class="eyebrow">Éditeur de plan · Gratuit</p>
+  <h2 id="planb-titre">Dessine ton plan. Vois-le en 3D.</h2>
+  <p class="d">Trace tes murs à la souris : chaque pièce se ferme toute seule et affiche sa surface. Ajoute portes, fenêtres et équipements, puis passe en 3D d'un clic.</p>
+  <ul><li>Gratuit, sans installation</li><li>Les surfaces calculées pièce par pièce</li>${FEATURES.neuf ? "<li>Ta future maison chiffrée depuis ton plan</li>" : ""}</ul>
+  <div class="cta"><a href="/plan" class="btn btn-p">Créer mon plan →</a><a href="/logiciel-plan-maison" class="lien">Découvrir l'éditeur</a></div>
+  <p class="note">Le dessin se fait sur ordinateur ou tablette.</p>
+</div>${planVisuels("Plan 2D d'une maison de plain-pied de 94 m² dans l'éditeur AVYORA : pièces nommées, surfaces, cotes et mobilier", "La même maison de 94 m² en 3D dans l'éditeur AVYORA")}</div></section>`;
+const PLAN_BAND_EN = `
+${PLAN_CSS}<section class="planb" aria-labelledby="planb-titre"><div class="in"><div>
+  <p class="eyebrow">Floor plan editor · Free</p>
+  <h2 id="planb-titre">Draw your floor plan. See it in 3D.</h2>
+  <p class="d">Trace your walls with the mouse: each room closes on its own and shows its floor area. Add doors, windows and fixtures, then switch to 3D in one click.</p>
+  <ul><li>Free, nothing to install</li><li>Floor areas worked out room by room</li>${FEATURES.neuf ? "<li>Your future house priced from your plan</li>" : ""}</ul>
+  <div class="cta"><a href="/plan" class="btn btn-p">Create my plan →</a><a href="/logiciel-plan-maison" class="lien">Discover the editor</a></div>
+  <p class="note">Drawing works on a computer or tablet. The editor is in French for now.</p>
+</div>${planVisuels("2D plan of a 94 m² single-storey house in the AVYORA editor: named rooms, floor areas, dimensions and furniture", "The same 94 m² house in 3D in the AVYORA editor")}</div></section>`;
+/* La 5ᵉ puce de la rangée de confiance du hero (aucun chiffre). */
+const PLAN_TRUST = "<span>plan <b>3D</b></span>";
+const PLAN_TRUST_EN = "<span><b>3D</b> floor plan</span>";
+
 const HOME_HTML = `
 <a href="/tarifs" class="promo"><span class="dot"></span>Estimer est <b>gratuit</b> — AVYORA Pro dès 18,85 €/mois <span class="arr">· sans engagement →</span></a>
 <div class="wrap"><header class="hero"><div class="in">
@@ -164,9 +194,9 @@ const HOME_HTML = `
     <a href="/tarifs" class="btn btn-w">Voir les tarifs</a>
   </div>
   <div class="trust">
-    <span><b>200</b> postes de prix</span><span>suivi de <b>chantier</b></span><span>carnet <b>matériaux</b></span><span><b>multi</b>-projets</span>
+    <span><b>200</b> postes de prix</span><span>suivi de <b>chantier</b></span><span>carnet <b>matériaux</b></span><span><b>multi</b>-projets</span>${FEATURES.plans ? PLAN_TRUST : ""}
   </div>
-</div></header></div>
+</div></header></div>${FEATURES.plans ? PLAN_BAND : ""}
 
 <section class="blk"><div class="wrap">
   <div class="center">
@@ -291,9 +321,9 @@ const HOME_HTML_EN = `
     <a href="/tarifs" class="btn btn-w">See pricing</a>
   </div>
   <div class="trust">
-    <span><b>200</b> price items</span><span>site <b>tracking</b></span><span>materials <b>notebook</b></span><span><b>multi</b>-projects</span>
+    <span><b>200</b> price items</span><span>site <b>tracking</b></span><span>materials <b>notebook</b></span><span><b>multi</b>-projects</span>${FEATURES.plans ? PLAN_TRUST_EN : ""}
   </div>
-</div></header></div>
+</div></header></div>${FEATURES.plans ? PLAN_BAND_EN : ""}
 
 <section class="blk"><div class="wrap">
   <div class="center">
