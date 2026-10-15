@@ -16,9 +16,9 @@ import { CountUp } from "./estimateur/CountUp";
 import { Row } from "./estimateur/Row";
 import { fmt, Field, Stepper, CustomLines } from "./estimateur/partage";
 import {
-  CATALOG, PHASES, finCoef, ICON, LOC, defaultCtx, key, isLoc, visible, visibleTask,
+  CATALOG, PHASES, ICON, LOC, defaultCtx, key, isLoc, visible, visibleTask,
   nbFen, nbPieces, deriveSol, autoQty, isAuto, qtyOf, effRate, lotHT,
-  totals, buildDevis, regionCoef, piecesEff, sdbEff, customLotHT, customTotals, ESPACES,
+  totals, buildDevis, regionCoef, piecesEff, sdbEff, customLotHT, customTotals, totauxAvecPerso, tauxPerso, tauxPersoPossibles, ESPACES,
   espacesCompo, selectedEspaces,
   type Ctx, type Selection, type TypeBien, type Finition, type Lot, type Tache, type CustomLine,
 } from "@/lib/estimateur";
@@ -48,7 +48,8 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
   const [codePostal, setCodePostal] = useState("");
   const [view, setView] = useState<"saisie" | "devis">("saisie");
   const [custom, setCustom] = useState<CustomLine[]>([]);
-  const addCustom = (lot: string) => setCustom((p) => [...p, { id: (crypto.randomUUID?.() ?? String(Date.now() + Math.random())), lot, nom: "", prix: 0, unite: "u", qte: 1, note: "", tva: 10, on: true, draft: true }]);
+  // TVA par défaut selon le régime du projet (`tauxPerso`) : 20 % en « Neuf / −2 ans / local pro », 10 % sinon.
+  const addCustom = (lot: string) => setCustom((p) => [...p, { id: (crypto.randomUUID?.() ?? String(Date.now() + Math.random())), lot, nom: "", prix: 0, unite: "u", qte: 1, note: "", tva: tauxPerso(ctx), on: true, draft: true }]);
   const updCustom = (id: string, patch: Partial<CustomLine>) => setCustom((p) => p.map((x) => (x.id === id ? { ...x, ...patch } : x)));
   const delCustom = (id: string) => setCustom((p) => p.filter((x) => x.id !== id));
   const [saving, setSaving] = useState(false);
@@ -113,7 +114,8 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
 
   // ctx effectif = ctx + code postal → le moteur applique le coefficient régional (MO).
   const ctxR = useMemo(() => ({ ...ctx, codePostal }), [ctx, codePostal]);
-  const tot = useMemo(() => totals(CATALOG, ctxR, sel), [ctxR, sel]);
+  // Lignes perso comprises (D8) : le même total que la vue devis, la fiche, la liste et le PDF.
+  const tot = useMemo(() => totauxAvecPerso(totals(CATALOG, ctxR, sel), custom, ctxR.aleas), [ctxR, sel, custom]);
   const reg = regionCoef(codePostal);
   const locale = useLocale();
 
@@ -473,7 +475,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                           <div className="acc-b">
                             {loc && <div className="locnote">Prix indicatifs <b>/jour</b> — à confirmer auprès du loueur. Indiquez le nombre de jours.</div>}
                             {l.t.filter((t) => visibleTask(ctx, t)).map((t) => (
-                              <Row key={t.n} l={l} t={t} ctx={ctxR} sel={sel} coef={finCoef(ctx, l.c)} loc={loc}
+                              <Row key={t.n} l={l} t={t} ctx={ctxR} sel={sel} loc={loc}
                                 onCheck={() => toggleCheck(l, t)}
                                 onChoice={(self) => upd(l.c, t.n, (s) => ({ ...s, self }))}
                                 onAuto={() => toggleAuto(l, t)}
@@ -495,7 +497,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                               />
                             ))}
                             {canCustom && (
-                              <CustomLines lines={cLines} onAdd={() => addCustom(l.c)} onUpd={updCustom} onDel={delCustom} />
+                              <CustomLines lines={cLines} onAdd={() => addCustom(l.c)} onUpd={updCustom} onDel={delCustom} tvas={(courant) => tauxPersoPossibles(ctx, courant)} />
                             )}
                           </div>
                         )}
@@ -553,9 +555,11 @@ const FINIS: { v: Finition; lvl: number; eye: string; label: string; desc: strin
 function DevisView({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Selection; custom?: CustomLine[] }) {
   const dv = useMemo(() => buildDevis(CATALOG, ctx, sel), [ctx, sel]);
   const { totaux: t0, bilan: b, lots, lignes } = dv;
+  // Le total du projet, lignes perso comprises : le même calcul partout (`totauxAvecPerso`, D8).
+  const t = totauxAvecPerso(t0, custom, ctx.aleas);
   const cu = customTotals(custom);
-  const t = { ht: t0.ht + cu.ht, tva: t0.tva + cu.tva, aleas: t0.aleas + cu.ht * ((ctx.aleas || 0) / 100), get ttc() { return this.ht + this.tva + this.aleas; } };
-  const max = lots.length ? Math.max(...lots.map((x) => x.ttc)) : 1;
+  const persoTtc = cu.ht + cu.tva;
+  const max = Math.max(1, ...lots.map((x) => x.ttc), persoTtc);
 
   return (
     <div>
@@ -587,7 +591,7 @@ function DevisView({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Selection; custom
       <div className="card">
         <h2>Répartition par phase & lot</h2>
         <div className="sub">Montants TTC — où part votre budget</div>
-        {!lots.length ? <div className="empty">Aucun travaux sélectionné. Retournez à « Ma saisie ».</div> : (
+        {!lots.length && !persoTtc ? <div className="empty">Aucun travaux sélectionné. Retournez à « Ma saisie ».</div> : (
           PHASES.map((ph) => {
             const pl = lots.filter((x) => x.phase === ph).sort((a, c) => c.ttc - a.ttc);
             if (!pl.length) return null;
@@ -604,6 +608,13 @@ function DevisView({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Selection; custom
               </div>
             );
           })
+        )}
+        {persoTtc > 0 && (
+          <div className="devlot">
+            <span>Lignes personnalisées</span>
+            <span className="track"><span className="fill" style={{ width: (persoTtc / max) * 100 + "%" }} /></span>
+            <span className="v">{fmt(persoTtc)}</span>
+          </div>
         )}
       </div>
 

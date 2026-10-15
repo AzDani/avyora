@@ -3,7 +3,7 @@
  * (liste, mon-espace, fiche). Tout part de `reponses = { v:"estimateur", ctx, sel }`.
  * Aucune dépendance à l'ancien moteur.
  */
-import { buildDevis, statutLigne, key, PHASES, customTotals, type Ctx, type Selection, type DevisLot, type Tache, type Totaux, type CustomLine } from "./core";
+import { buildDevis, statutLigne, key, PHASES, customTotals, regionCoef, type Ctx, type Selection, type DevisLot, type Tache, type Totaux, type CustomLine } from "./core";
 import { catalogueDe, PHASES_NEUF } from "./catalogue-neuf";
 import { normaliserCles } from "./identite";
 
@@ -21,15 +21,22 @@ export type ProjetEstim = {
 
 type Rep = { v?: string; ctx?: Ctx; sel?: Selection; statuts?: Record<string, number>; custom?: unknown };
 
+/** Lignes personnalisées qui comptent : des objets, cochées et validées (pas en cours d'édition). */
+export function persoValidees(custom: unknown): CustomLine[] {
+  return Array.isArray(custom)
+    ? (custom as CustomLine[]).filter((x) => !!x && typeof x === "object" && x.on !== false && !x.draft)
+    : [];
+}
+
 /**
- * Construction neuve : totaux du devis + lignes personnalisées validées (leur HT, leur TVA, et les
- * aléas sur leur HT), le même calcul que la vue devis et le PDF. Un projet neuf a ainsi le même
- * total partout (barre live, fiche, liste, devis, PDF). La rénovation ne l'appelle pas : sa fiche
- * et sa liste gardent leur calcul (décision à prendre à part, elle changerait un écran réno).
+ * Totaux du devis + lignes personnalisées validées (leur HT, leur TVA, et les aléas sur leur HT).
+ * UN SEUL total, pour les deux natures et partout : barre live, vue devis, fiche, liste des
+ * projets, tableau de bord, admin, PDF (décision D8 de Dani, chantier N7 de la revue rénovation /
+ * neuf). Avant, la rénovation comptait ses lignes perso dans le devis et le PDF, mais pas dans la
+ * barre live, la fiche ni la liste : deux totaux pour un même projet.
  */
 export function totauxAvecPerso(t: Totaux, custom: unknown, aleasPct: number | undefined): Totaux {
-  const lignes = Array.isArray(custom) ? (custom as CustomLine[]).filter((x) => !!x && typeof x === "object") : [];
-  const cu = customTotals(lignes);
+  const cu = customTotals(persoValidees(custom));
   if (!cu.ht && !cu.tva) return t;
   const ht = t.ht + cu.ht, tva = t.tva + cu.tva, aleas = t.aleas + cu.ht * ((aleasPct || 0) / 100);
   return { ht, tva, aleas, ttc: ht + tva + aleas };
@@ -69,8 +76,8 @@ export function estimationProjet(reponses: unknown): ProjetEstim | null {
   const ctx = r.ctx as Ctx;
   const dv = buildDevis(catalogueDe(ctx), ctx, r.sel || {});
   const surface = ctx.surface || 0;
-  // Rénovation : `dv.totaux` tel quel (inchangé). Neuf : + lignes personnalisées.
-  const t = estNeuf(ctx) ? totauxAvecPerso(dv.totaux, r.custom, ctx.aleas) : dv.totaux;
+  // Lignes personnalisées comprises, rénovation comme neuf : le même total que la fiche et le PDF.
+  const t = totauxAvecPerso(dv.totaux, r.custom, ctx.aleas);
   return {
     ttc: t.ttc,
     ht: t.ht,
@@ -118,6 +125,26 @@ export function lotsParCorps(lots: DevisLot[]): (DevisLot & { phases: string[] }
   return [...m.values()];
 }
 
+/** Phase d'un lot qui n'existe que par des lignes personnalisées (aucun poste du catalogue coché). */
+export const PHASE_PERSO = "Personnalisé";
+
+/**
+ * « Où part le budget » : un lot par corps d'état (`lotsParCorps`), plus les lignes perso validées,
+ * TTC à leur taux, chacune dans le lot de son corps. Un corps qui n'a que des lignes perso devient
+ * un lot à part (phase `PHASE_PERSO`) : sans lui, la ligne disparaissait du camembert de la fiche
+ * neuve. La somme des lots = le TTC du projet hors aléas (`totauxAvecPerso`), pour les deux natures.
+ */
+export function lotsAvecPerso(lots: DevisLot[], custom: unknown): (DevisLot & { phases: string[] })[] {
+  const out = lotsParCorps(lots);
+  for (const x of persoValidees(custom)) {
+    const h = (x.prix || 0) * (x.qte || 0), ttc = h + (h * (x.tva || 0)) / 100;
+    const ex = out.find((l) => l.corps === x.lot);
+    if (ex) ex.ttc += ttc;
+    else out.push({ corps: x.lot, phase: PHASE_PERSO, ttc, phases: [PHASE_PERSO] });
+  }
+  return out;
+}
+
 /** Clé d'une ligne (`key(lot, nom)`) → poste du catalogue du projet : pour reconnaître un jalon
  *  ou un frais depuis une `DevisLigne`. */
 export function tachesParCle(ctx: Pick<Ctx, "nature"> | null | undefined): Map<string, Tache> {
@@ -130,14 +157,15 @@ export function tachesParCle(ctx: Pick<Ctx, "nature"> | null | undefined): Map<s
  *  fourniture. La rénovation n'en a aucun (aucun frais au catalogue). */
 export const estJalon = (t?: Tache | null): boolean => !!t?.frais && (t.fp ?? 0) === 0 && !t.sm;
 
-// Label régional (informatif — les prix du catalogue sont nationaux, pas de coef régional).
-const IDF = ["75", "77", "78", "91", "92", "93", "94", "95"];
-const METROPOLES = ["69", "13", "33", "31", "59", "44", "67", "34", "06", "35", "38", "21", "76", "37", "51", "63", "86", "25", "54", "57", "68", "30", "84", "83", "64", "49", "42", "29", "56", "14"];
+/**
+ * Zone régionale d'un projet : celle que le moteur applique à la main-d'œuvre (`regionCoef`), et
+ * aucune autre. Avant, la fiche affichait un second zonage maison (« Île-de-France », « Grande
+ * métropole », « France ») qui pouvait contredire le chiffrage : Lille en « Grande métropole »
+ * mais à la moyenne nationale, Paris en « Île-de-France » mais à +20 % (revue rénovation / neuf, N7).
+ * Libellé français : l'écran le traduit avec `dict(locale).rapide.zones`.
+ */
 export function regionLabel(codePostal?: string): string {
-  const d = (codePostal || "").slice(0, 2);
-  if (IDF.includes(d)) return "Île-de-France";
-  if (METROPOLES.includes(d)) return "Grande métropole";
-  return "France";
+  return regionCoef(codePostal).zone;
 }
 
 /** Conseils / accompagnement technique dérivés de la sélection. */

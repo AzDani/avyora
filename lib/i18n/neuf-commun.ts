@@ -29,6 +29,8 @@ const fr = {
   annexes: "études, taxes, assurance, branchements",
   fraisHorsTva: "Frais hors TVA",
   fraisSeg: "Frais (taxes, assurance)",
+  /* « Qui fait quoi » (fiche et PDF, rénovation comme neuf) : la part des lignes perso, comptées dans le total (D8). */
+  persoSeg: "Lignes perso",
   chambre: "chambre",
   chambres: "chambres",
   moisChantier: "mois de chantier",
@@ -37,7 +39,8 @@ const fr = {
   progNoteBold: "nombre de postes et démarches",
   eyebrowListe: "Estimation construction",
   introListe: "Tes estimations de rénovation et de construction, retrouvées et modifiables à tout moment.",
-  /* Camembert « Où part le budget » d'un projet neuf : au-delà de 8 corps, une part « autres ». */
+  /* Camembert « Où part le budget » d'un projet neuf : au-delà de 8 corps, une part « autres ». Son
+     centre (rénovation comme neuf) : la somme des corps d'état, TTC sans la provision pour aléas. */
   autresCorps: "Autres corps d'état",
   donutTotal: "TTC hors aléas",
 };
@@ -62,6 +65,7 @@ const en: typeof fr = {
   annexes: "studies, taxes, insurance, connections",
   fraisHorsTva: "Fees (no VAT)",
   fraisSeg: "Fees (taxes, insurance)",
+  persoSeg: "Custom lines",
   chambre: "bedroom",
   chambres: "bedrooms",
   moisChantier: "months on site",

@@ -10,11 +10,11 @@ import { EST_CSS } from "./estimateur-styles";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { catT, catLigne } from "@/lib/estimateur/catalog-i18n";
 import {
-  CATALOG, buildDevis, ICON, visible, lineHT, effRate, statutLigne, cleLegacy, regionCoef, piecesEff, type Ctx, type Selection, type CustomLine,
-  catalogueDe, estNeuf, phasesDe, lotsParCorps, tachesParCle, estJalon, geometrieNeuf, maisonComplete,
+  buildDevis, totals, customTotals, ICON, statutLigne, cleLegacy, regionCoef, piecesEff, type Ctx, type Selection,
+  catalogueDe, estNeuf, phasesDe, tachesParCle, estJalon, geometrieNeuf, maisonComplete,
 } from "@/lib/estimateur";
 import { decoupe, INFO_PHASES, qteNeuf, premiersCorps } from "@/lib/estimateur/etapes-neuf";
-import { totauxAvecPerso } from "@/lib/estimateur/projet";
+import { totauxAvecPerso, persoValidees, lotsAvecPerso } from "@/lib/estimateur/projet";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 import { normaliserCles } from "@/lib/estimateur/identite";
 
@@ -74,7 +74,6 @@ const TR = {
     whereBudget: "Où part le budget",
     whereBudgetSub1: "Par corps d’état — montants TTC · ",
     whereBudgetSub2: " corps chiffrés",
-    totalInclTax: "Total TTC",
     siteTracking: "Suivi du chantier",
     theDetails: "Le détail",
     siteTrackingSub: "Marque l’avancement de chaque poste : à démarrer → en cours → terminé",
@@ -153,7 +152,6 @@ const TR = {
     whereBudget: "Where the budget goes",
     whereBudgetSub1: "By trade — amounts incl. tax · ",
     whereBudgetSub2: " trades priced",
-    totalInclTax: "Total incl. tax",
     siteTracking: "Site tracking",
     theDetails: "The details",
     siteTrackingSub: "Mark the progress of each item: to start → in progress → done",
@@ -359,9 +357,11 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
     return <div className="card p-5 text-sm text-muted">{s.unavailable}</div>;
   }
   const { totaux: t0, bilan: b, lots, lignes } = dv;
-  // Construction neuve : les lignes perso comptent dans le total, comme dans le devis et le PDF.
-  // Rénovation : `dv.totaux` tel quel.
-  const t = neuf ? totauxAvecPerso(t0, reponses?.custom, ctx.aleas) : t0;
+  // Les lignes perso comptent dans le total, rénovation comme neuf (D8) : le même chiffre que la
+  // barre live, le devis, la liste des projets et le PDF.
+  const perso = persoValidees(reponses?.custom);
+  const t = totauxAvecPerso(t0, perso, ctx.aleas);
+  const persoHT = customTotals(perso).ht;
   const pc = (n: number) => (t.ht > 0 ? Math.round((n / t.ht) * 100) : 0); // part du coût HT
 
   // Stats
@@ -382,32 +382,17 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
 
   // Valeur « tout fait faire » (MO incluse partout) → juge l'AMPLEUR réelle du chantier,
   // indépendamment de ce que l'utilisateur pose lui-même (ce qui fait baisser son €/m² sans
-  // réduire l'ampleur des travaux). C'est ce qui est comparable aux repères marché.
-  let ffHT = 0, ffTVA = 0, ffAleasBase = 0;
-  CATALOG.filter((l) => visible(ctx, l)).forEach((l) =>
-    l.t.forEach((tk) => {
-      const ht = lineHT(ctx, selFF, l, tk); // même calcul que le devis (coef régional, finition, variantes)
-      if (!ht) return;
-      ffHT += ht;
-      ffTVA += (ht * effRate(l, tk, selFF, ctx)) / 100;
-      if (l.c !== "Etudes / Conception") ffAleasBase += ht;
-    })
-  );
-  const ffTTC = ffHT + ffTVA + ffAleasBase * ((ctx.aleas || 0) / 100);
+  // réduire l'ampleur des travaux). C'est ce qui est comparable aux repères marché. Le moteur la
+  // chiffre sur le catalogue DU PROJET (celui du neuf pour une construction : la boucle recopiée
+  // d'avant lisait toujours la rénovation), lignes perso comprises comme dans `eurM2`.
+  const ffTTC = totauxAvecPerso(totals(catalogueDe(ctx), ctx, selFF), perso, ctx.aleas).ttc;
   const eurM2FF = ctx.surface > 0 ? ffTTC / ctx.surface : 0; // ampleur (tout fait faire)
   const rep = repereM2(eurM2FF); // le repère se base sur l'ampleur, pas sur ton coût
   const diyGap = eurM2FF - eurM2 > 30; // écart significatif → tu poses beaucoup toi-même
-  // Un lot par corps d'état (en neuf, un corps revient dans plusieurs phases). Rénovation : identité.
-  const lotsCorps = lotsParCorps(lots);
-  // Neuf : les lignes perso s'ajoutent à leur corps d'état (TTC), comme dans le PDF.
-  if (neuf && Array.isArray(reponses?.custom)) {
-    for (const x of reponses.custom as CustomLine[]) {
-      if (!x || typeof x !== "object" || x.on === false || x.draft) continue;
-      const h = (x.prix || 0) * (x.qte || 0), ttc = h + (h * (x.tva || 0)) / 100;
-      const ex = lotsCorps.find((l) => l.corps === x.lot);
-      if (ex) ex.ttc += ttc;
-    }
-  }
+  // Un lot par corps d'état (en neuf, un corps revient dans plusieurs phases), plus les lignes perso
+  // (TTC) dans leur corps d'état, rénovation comme neuf, comme dans le PDF : la somme des tranches =
+  // le total hors aléas.
+  const lotsCorps = lotsAvecPerso(lots, perso);
   const lotsTri = [...lotsCorps].sort((a, x) => x.ttc - a.ttc);
   const top = lotsTri[0];
   // Tranches du camembert « Où part le budget » (corps d'état, ordonnés par taille).
@@ -424,9 +409,12 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
     return { corps: l.corps, ttc: l.ttc, color: RAMP[Math.min(i, RAMP.length - 1)], d: arcPath(100, 100, 92, 62, a0, a1), pct: budgetTotal > 0 ? (l.ttc / budgetTotal) * 100 : 0 };
   });
 
-  // Ventilation TVA par taux (depuis les lignes)
+  // Ventilation TVA par taux (depuis les lignes, lignes perso comprises : leur TVA est dans le total).
+  // Arrondi au dixième : à l'entier, le taux de 5,5 % sortait « 6 % » ou « 5 % » selon l'arrondi
+  // flottant de la ligne, et la pastille affichait « 10 % · 6 % · 5 % ».
   const tvaByRate: Record<number, number> = {};
-  lignes.forEach((li) => { if (li.ht > 0 && li.tva > 0) { const r = Math.round((li.tva / li.ht) * 100); tvaByRate[r] = (tvaByRate[r] || 0) + li.tva; } });
+  lignes.forEach((li) => { if (li.ht > 0 && li.tva > 0) { const r = Math.round((li.tva / li.ht) * 1000) / 10; tvaByRate[r] = (tvaByRate[r] || 0) + li.tva; } });
+  perso.forEach((x) => { const h = (x.prix || 0) * (x.qte || 0); if (h > 0 && x.tva > 0) tvaByRate[x.tva] = (tvaByRate[x.tva] || 0) + (h * x.tva) / 100; });
   const tauxPresents = Object.keys(tvaByRate).map(Number).sort((a, x) => x - a);
 
   const budget = ctx.budget || 0;
@@ -512,6 +500,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
           <i style={{ width: `${t.ht > 0 ? (b.matA / t.ht) * 100 : 0}%`, background: "var(--accent-300)" }} />
           <i style={{ width: `${t.ht > 0 ? (b.achat / t.ht) * 100 : 0}%`, background: "var(--accent-600)" }} />
           {b.frais > 0 && <i style={{ width: `${t.ht > 0 ? (b.frais / t.ht) * 100 : 0}%`, background: "var(--line-strong)" }} />}
+          {persoHT > 0 && <i style={{ width: `${t.ht > 0 ? (persoHT / t.ht) * 100 : 0}%`, background: "var(--faint)" }} />}
         </div>
         <div className="legend">
           <span><span className="dot" style={{ background: "var(--brand)" }} />{s.laborCap} <b>{fmt(b.moA)}</b> <span className="pct">{pc(b.moA)}&nbsp;%</span></span>
@@ -519,6 +508,9 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
           <span><span className="dot" style={{ background: "var(--accent-600)" }} />{s.matYou} <b>{fmt(b.achat)}</b> <span className="pct">{pc(b.achat)}&nbsp;%</span></span>
           {b.frais > 0 && (
             <span><span className="dot" style={{ background: "var(--line-strong)" }} />{n.fraisSeg} <b>{fmt(b.frais)}</b> <span className="pct">{pc(b.frais)}&nbsp;%</span></span>
+          )}
+          {persoHT > 0 && (
+            <span><span className="dot" style={{ background: "var(--faint)" }} />{n.persoSeg} <b>{fmt(persoHT)}</b> <span className="pct">{pc(persoHT)}&nbsp;%</span></span>
           )}
         </div>
         <div className="cards">
@@ -547,7 +539,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
                 </path>
               ))}
             </svg>
-            <div className="center"><div className="v">{fmt(budgetTotal)}</div><div className="kk">{neuf ? n.donutTotal : s.totalInclTax}</div></div>
+            <div className="center"><div className="v">{fmt(budgetTotal)}</div><div className="kk">{n.donutTotal}</div></div>
           </div>
           <div className="legend">
             {slices.map((s) => (

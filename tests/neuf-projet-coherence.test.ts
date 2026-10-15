@@ -110,10 +110,13 @@ describe("Neuf · une ligne perso compte partout dans le total", () => {
     expect(estimationProjet(reponses({ custom: ignorees }))!.ttc).toBe(dv.totaux.ttc);
   });
 
-  it("rénovation : estimationProjet ignore toujours les lignes perso (inchangé)", async () => {
+  /* Inversé volontairement par N7 (décision D8 de Dani, 13/10/2026) : la rénovation compte elle
+     aussi ses lignes perso partout, comme le neuf. Avant, sa liste et sa fiche les ignoraient. */
+  it("rénovation : estimationProjet compte aussi les lignes perso (D8)", async () => {
     const { presetRapide } = await import("@/lib/estimateur");
     const pr = presetRapide({ type: "Maison", surface: 100, codePostal: "45000", ampleur: "complete", finition: "standard", qui: "pros" } as never);
     const r = { v: "estimateur", mode: "detaille", ctx: pr.ctx, sel: pr.sel, codePostal: "45000" };
-    expect(estimationProjet({ ...r, custom })!.ttc).toBe(estimationProjet(r)!.ttc);
+    const sans = estimationProjet(r)!.ttc;
+    expect(estimationProjet({ ...r, custom })!.ttc).toBeCloseTo(sans + 1000 + 200 + 1000 * ((pr.ctx.aleas || 0) / 100), 6);
   });
 });

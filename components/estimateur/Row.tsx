@@ -1,24 +1,23 @@
 "use client";
 
 /** Ligne de poste de l'estimateur détaillé : déplacée telle quelle depuis `components/Estimateur.tsx` (C1).
- *  Les props `puReel`, `diy`, `badge` (construction neuve, C4), `proRaison` et `horsDecennale` (N1)
- *  sont facultatives : absentes, le rendu est exactement celui d'avant (figé par
- *  `tests/estimateur-briques.test.ts`). La rénovation ne les passe pas. */
+ *  Les props `diy`, `badge` (construction neuve, C4), `proRaison` et `horsDecennale` (N1) sont
+ *  facultatives : absentes, la ligne est celle de la rénovation (figée par
+ *  `tests/estimateur-briques.test.ts`). Les prix unitaires des deux puces viennent du moteur
+ *  (`puReel`, N7) pour les deux natures : prix unitaire × quantité = montant de la ligne, région et
+ *  barème de finition du poste compris. */
 import { useState } from "react";
 import NumStepper from "@/components/Stepper";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { catT } from "@/lib/estimateur/catalog-i18n";
-import { key, isAuto, autoQty, lineHT, effPrices, type Ctx, type Selection, type Lot, type Tache, type RaisonPro } from "@/lib/estimateur";
+import { key, isAuto, autoQty, lineHT, effPrices, puReel, type Ctx, type Selection, type Lot, type Tache, type RaisonPro } from "@/lib/estimateur";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 import { ChoicePrice, fmt, isUrl } from "./partage";
 
-export function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar, onNote, onPu, onPm, puReel, diy, badge, proRaison, horsDecennale }: {
-  l: Lot; t: Tache; ctx: Ctx; sel: Selection; coef: number; loc: boolean;
+export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar, onNote, onPu, onPm, diy, badge, proRaison, horsDecennale }: {
+  l: Lot; t: Tache; ctx: Ctx; sel: Selection; loc: boolean;
   onCheck: () => void; onChoice: (self: boolean) => void; onAuto: () => void; onQty: (v: number) => void;
   onMat: (m: "pvc" | "alu" | "bois") => void; onVit: (v: "double" | "triple") => void; onMot: (m: "manuel" | "motorise") => void; onTai: (z: "petit" | "grand") => void; onVar: (g: string, o: string) => void; onNote: (v: string) => void; onPu: (v: number | null) => void; onPm: (v: number | null) => void;
-  /** Prix unitaire « Fait faire » réel, calculé par le moteur pour une quantité de 1 (frais, `pct` :
-   *  seul ce calcul est juste). Fourni, il remplace le calcul local. */
-  puReel?: number | null;
   /** « Je le fais » proposé ? Défaut : dès que le poste a un prix de fourniture (rénovation). */
   diy?: boolean;
   /** `pct` : « {fp} % des travaux » au lieu d'une quantité ; `jalon` : « Démarche », sans montant. */
@@ -35,29 +34,25 @@ export function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQt
   const [noteOpen, setNoteOpen] = useState<boolean>(false);
   const [puEdit, setPuEdit] = useState<boolean>(false);
   const variant = !!(t.mat || t.vitrage || t.moto || t.taille || (t.vars && t.vars.length));
-  const fcoef = (t.fixe || variant) ? 1 : coef;
   const ep = effPrices(t, s, ctx);
   const matSel = s.mat || t.matDef || (ctx.finition === "premium" ? "alu" : "pvc");
   const vitSel = s.vit || "double";
   const motSel = s.mot || "motorise";
   const taiSel = s.tai || "grand";
-  // Finition sur MATÉRIAUX uniquement ; MO fixe. Prix unitaires indicatifs (hors coef régional).
-  const puMatBase = ep.sm != null ? ep.sm * fcoef : null;                                 // matériaux × finition
-  const puvBase = ep.fp != null ? (ep.sm != null ? ep.sm * fcoef + (ep.fp - ep.sm) : ep.fp) : null; // fait-faire = matériaux + MO
-  const moUnit = ep.fp != null && ep.sm != null ? ep.fp - ep.sm : 0;                       // MO unitaire (pour l'affichage lié)
+  /* Prix unitaires = ce que le moteur compte pour une unité (`puReel`) : région, barème de finition
+     du poste, variantes, prix perso (`pu` en « Fait faire », `pm` en « Je le fais »), frais et
+     pourcentage. Une formule locale les recalculait avant sans la région ni le barème propre au
+     poste : prix unitaire × quantité ne faisait pas le montant de la ligne. */
   const pmEdited = s.pm != null;
-  const puMat = pmEdited ? s.pm! : puMatBase;                                              // « Je le fais » (matériaux)
   const puEdited = s.pu != null;
-  const puv = puReel !== undefined ? puReel                                                // neuf : le moteur, quantité 1
-    : puEdited ? s.pu!                                                                     // total figé (devis)
-    : pmEdited && puMatBase != null ? s.pm! + moUnit                                       // matériaux perso + MO
-    : puvBase;                                                                             // calcul normal
+  const puMat = ep.sm != null ? puReel(ctx, sel, l, t, true) : null;                     // « Je le fais » (matériaux)
+  const puv = ep.fp != null || puEdited ? puReel(ctx, sel, l, t, false) : null;           // « Fait faire »
   const nTxt = dictNeufCommun(locale);
   const unitPart = badge !== "pct" && t.u !== "forfait" && t.u !== "u" ? "/" + t.u : "";
   // Un frais (taxe, assurance) ne porte pas de TVA : pas de « HT ». N'existe qu'en neuf.
   const uSuffix = t.frais ? unitPart + " · " + nTxt.sansTva : " HT" + unitPart;
   // Un projet enregistré en « Je le fais » sur un poste devenu réservé garde sa puce active.
-  const avecDiy = (diy ?? puMatBase != null) || self;
+  const avecDiy = (diy ?? ep.sm != null) || self;
   const jalon = badge === "jalon";
   const pctTxt = badge === "pct" && t.fp != null && !puEdited
     ? `${t.fp.toLocaleString(locale === "en" ? "en-US" : "fr-FR")} ${t.assiette === "projet" || (t.frais && t.assiette !== "travaux") ? nTxt.pctProjet : nTxt.pctTravaux}`
@@ -113,7 +108,7 @@ export function Row({ l, t, ctx, sel, coef, loc, onCheck, onChoice, onAuto, onQt
             <span className="choice">
               <ChoicePrice label={locale === "en" ? "Hire out" : "Fait faire"} active={!self} activeCls="onA" amount={puv} edited={puEdited}
                 onSelect={() => onChoice(false)} onEdit={(v) => onPu(v)} onReset={() => onPu(null)} />
-              {avecDiy && puMatBase != null ? (
+              {avecDiy && puMat != null ? (
                 <ChoicePrice label={locale === "en" ? "DIY" : "Je le fais"} active={self} activeCls="onS" amount={puMat} edited={pmEdited}
                   onSelect={() => onChoice(true)} onEdit={(v) => onPm(v)} onReset={() => onPm(null)} />
               ) : proRaison ? (

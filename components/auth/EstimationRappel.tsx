@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CATALOG, buildDevis, catalogueDe, type Ctx, type Selection } from "@/lib/estimateur";
+import { totauxAvecPerso } from "@/lib/estimateur/projet";
 import { CLE_BROUILLON_NEUF, lireBrouillonNeuf, reclamationNeufPosee } from "@/lib/estimateur/brouillon-neuf";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
@@ -9,6 +10,7 @@ import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 /**
  * Affiché sur /inscription quand l'utilisateur arrive depuis une estimation (brouillon présent) :
  * « Ton estimation est prête — on te la garde ». Rien si pas de brouillon (arrivée directe).
+ * La fourchette part du même total que le projet qui sera créé : lignes perso comprises (D8).
  */
 const DRAFT_KEY = "avyora-estim-v2";
 const fmt = (n: number) => n.toLocaleString("fr-FR");
@@ -23,7 +25,7 @@ export function EstimationRappel() {
     try {
       if (reclamationNeufPosee((k) => localStorage.getItem(k))) {
         const d = lireBrouillonNeuf(localStorage.getItem(CLE_BROUILLON_NEUF));
-        const ttc = d ? buildDevis(catalogueDe(d.ctx), d.ctx, d.sel).totaux.ttc : 0;
+        const ttc = d ? totauxAvecPerso(buildDevis(catalogueDe(d.ctx), d.ctx, d.sel).totaux, d.custom, d.ctx.aleas).ttc : 0;
         if (d && ttc > 0) {
           const lo = Math.round((ttc * 0.85) / 100) * 100;
           const hi = Math.round((ttc * 1.15) / 100) * 100;
@@ -37,9 +39,9 @@ export function EstimationRappel() {
     try {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (!raw) return;
-      const d = JSON.parse(raw) as { ctx?: Ctx; sel?: Selection };
+      const d = JSON.parse(raw) as { ctx?: Ctx; sel?: Selection; custom?: unknown };
       if (!d?.ctx || !d?.sel) return;
-      const ttc = buildDevis(CATALOG, d.ctx, d.sel).totaux.ttc;
+      const ttc = totauxAvecPerso(buildDevis(CATALOG, d.ctx, d.sel).totaux, d.custom, d.ctx.aleas).ttc;
       if (!(ttc > 0)) return;
       const lo = Math.round((ttc * 0.85) / 100) * 100;
       const hi = Math.round((ttc * 1.15) / 100) * 100;

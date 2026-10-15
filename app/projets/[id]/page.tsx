@@ -11,6 +11,7 @@ import RenameTitre from "@/components/RenameTitre";
 import TelechargerRapport from "@/components/TelechargerRapport";
 import { getLocale } from "@/lib/i18n/server";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
+import { dict } from "@/lib/i18n/dictionaries";
 import { FEATURES } from "@/lib/features";
 import { planDuProjet, type LienPlan } from "@/lib/plans/data";
 import PlanRelie from "@/components/plans/PlanRelie";
@@ -46,6 +47,8 @@ export default async function ProjetPage({ params }: { params: Promise<{ id: str
   const neuf = estNeuf(reponses.ctx);
   const refCode = "AVY-" + String(projet.id).replace(/-/g, "").slice(0, 8).toUpperCase();
   const lien = await lienPlan(String(projet.id));
+  // La zone que le moteur applique à la main-d'œuvre (`regionCoef`), traduite comme dans l'estimateur.
+  const zone = regionLabel(projet.code_postal);
 
   return (
     <div className="space-y-6">
@@ -66,7 +69,7 @@ export default async function ProjetPage({ params }: { params: Promise<{ id: str
             {!neuf && <span className="chip capitalize">{projet.type_bien}</span>}
             <span className="chip num">{projet.surface} m²</span>
             <span className="chip num">{projet.code_postal}</span>
-            <span className="chip">{regionLabel(projet.code_postal)}</span>
+            <span className="chip">{dict(locale).rapide.zones[zone] ?? zone}</span>
             {neuf && <span className="chip">{dictNeufCommun(locale).badge}</span>}
           </div>
         </div>

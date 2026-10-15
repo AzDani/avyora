@@ -1,6 +1,6 @@
 import {
   buildDevis, regionCoef, ICON, customTotals, piecesEff, sdbEff, type Ctx, type Selection, type CustomLine, catalogueDe, estNeuf,
-  lotsParCorps, maisonComplete, PHASES_NEUF,
+  totauxAvecPerso, persoValidees, lotsAvecPerso, maisonComplete, PHASES_NEUF,
 } from "@/lib/estimateur";
 import { parPhase, INFO_PHASES, premiersCorps } from "@/lib/estimateur/etapes-neuf";
 import { dictNeuf } from "@/lib/i18n/neuf";
@@ -152,18 +152,17 @@ export async function RapportPDF({
     ? { ...reponses.ctx, codePostal: reponses.ctx.codePostal ?? reponses.codePostal }
     : undefined;
   const sel = normaliserCles((reponses?.sel ?? {}) as Selection);
-  const custom = (reponses?.custom ?? []) as CustomLine[];
-  const customVal = custom.filter((x) => x.on !== false && !x.draft); // lignes perso validées
+  const customVal: CustomLine[] = persoValidees(reponses?.custom); // lignes perso validées
   if (!ctx) return null;
 
   const neuf = estNeuf(ctx);
   const n = dictNeuf(locale);
   const dv = buildDevis(catalogueDe(ctx), ctx, sel);
   const b = dv.bilan;
-  // Totaux = postes par défaut + lignes personnalisées (les aléas s'appliquent aussi au HT perso).
-  const cu = customTotals(custom);
-  const t = { ht: dv.totaux.ht + cu.ht, tva: dv.totaux.tva + cu.tva, aleas: dv.totaux.aleas + cu.ht * ((ctx.aleas || 0) / 100), ttc: 0 };
-  t.ttc = t.ht + t.tva + t.aleas;
+  // Totaux = postes par défaut + lignes personnalisées (les aléas s'appliquent aussi au HT perso) :
+  // le seul calcul du total, celui de la fiche, de la liste et du devis (`totauxAvecPerso`, D8).
+  const cu = customTotals(customVal);
+  const t = totauxAvecPerso(dv.totaux, customVal, ctx.aleas);
   const lo = Math.round((t.ttc * 0.85) / 100) * 100;
   const hi = Math.round((t.ttc * 1.15) / 100) * 100;
   const eurM2 = ctx.surface > 0 ? Math.round(t.ttc / ctx.surface) : 0;
@@ -172,16 +171,9 @@ export async function RapportPDF({
   const appart = ctx.type !== "Maison";
   const dateStr = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
 
-  // Camembert + tableau : corps d'état (défaut) + lignes perso repliées par lot (comme les postes par défaut).
-  const customTtcByLot: Record<string, number> = {};
-  for (const x of customVal) { const h = (x.prix || 0) * (x.qte || 0); customTtcByLot[x.lot] = (customTtcByLot[x.lot] || 0) + h + (h * (x.tva || 0)) / 100; }
-  // Un lot par corps d'état (en neuf, un corps revient dans plusieurs phases). Rénovation : identité.
-  const mergedLots = lotsParCorps(dv.lots).map((l) => ({ corps: l.corps, phase: l.phase, ttc: l.ttc }));
-  for (const [lot, ttc] of Object.entries(customTtcByLot)) {
-    const ex = mergedLots.find((l) => l.corps === lot);
-    if (ex) ex.ttc += ttc; else mergedLots.push({ corps: lot, phase: "Personnalisé", ttc });
-  }
-  const lots = mergedLots.sort((a, c) => c.ttc - a.ttc);
+  // Camembert + tableau : un lot par corps d'état (en neuf, un corps revient dans plusieurs phases),
+  // lignes perso repliées dans leur corps (`lotsAvecPerso`, le même calcul que la fiche).
+  const lots = lotsAvecPerso(dv.lots, customVal).map((l) => ({ corps: l.corps, phase: l.phase, ttc: l.ttc })).sort((a, c) => c.ttc - a.ttc);
   const budgetTotal = lots.reduce((s, l) => s + l.ttc, 0);
   const maxV = lots.length ? lots[0].ttc : 1;
 
@@ -207,7 +199,7 @@ export async function RapportPDF({
   // Construction neuve : la maison décrite, le TTC par phase (+ lignes perso), les étapes.
   const maison = neuf ? maisonComplete(ctx.neuf) : null;
   const phNeuf = neuf ? parPhase(dv) : null;
-  const persoTtc = Object.values(customTtcByLot).reduce((a, v) => a + v, 0);
+  const persoTtc = cu.ht + cu.tva;
   const maxPh = phNeuf ? Math.max(1, ...PHASES_NEUF.map((p) => phNeuf[p] ?? 0), persoTtc) : 1;
 
   return (
@@ -288,7 +280,7 @@ export async function RapportPDF({
                 <path key={s.corps} d={s.d} fill={s.color} stroke="#fff" strokeWidth={2} />
               ))}
             </svg>
-            <div className="center"><div className="v num">{euro(budgetTotal)}</div><div className="k">{neuf ? n.donutTotal : "Total TTC"}</div></div>
+            <div className="center"><div className="v num">{euro(budgetTotal)}</div><div className="k">{n.donutTotal}</div></div>
           </div>
           <div className="legend">
             {legendCols.map((col, ci) => (
@@ -315,12 +307,14 @@ export async function RapportPDF({
           <span style={{ width: pcHt(b.matA) + "%", background: "var(--accent-300)" }} />
           <span style={{ width: pcHt(b.achat) + "%", background: "var(--violet)" }} />
           {b.frais > 0 && <span style={{ width: pcHt(b.frais) + "%", background: "var(--line-strong)" }} />}
+          {cu.ht > 0 && <span style={{ width: pcHt(cu.ht) + "%", background: "var(--faint)" }} />}
         </div>
         <div className="qlg">
           <span className="i"><span className="d" style={{ background: "var(--brand)" }} />Main-d&apos;œuvre <b>{euro(b.moA)}</b> <span className="pct">{pcHt(b.moA)} %</span></span>
           <span className="i"><span className="d" style={{ background: "var(--accent-300)" }} />Matériaux (pros) <b>{euro(b.matA)}</b> <span className="pct">{pcHt(b.matA)} %</span></span>
           <span className="i"><span className="d" style={{ background: "var(--violet)" }} />Matériaux (vous) <b>{euro(b.achat)}</b> <span className="pct">{pcHt(b.achat)} %</span></span>
           {b.frais > 0 && <span className="i"><span className="d" style={{ background: "var(--line-strong)" }} />{n.fraisSeg} <b>{euro(b.frais)}</b> <span className="pct">{pcHt(b.frais)} %</span></span>}
+          {cu.ht > 0 && <span className="i"><span className="d" style={{ background: "var(--faint)" }} />{n.persoSeg} <b>{euro(cu.ht)}</b> <span className="pct">{pcHt(cu.ht)} %</span></span>}
         </div>
         <div className="cards">
           <div className="qc"><div className="k">Fait faire (artisans) <span className="p">{pcHt(b.paye)} %</span></div><div className="v">{euro(b.paye)}</div><div className="d">MO {euro(b.moA)} · fournitures {euro(b.matA)}</div></div>

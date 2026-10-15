@@ -6,13 +6,13 @@
 import { describe, it, expect } from "vitest";
 import { createElement, type ReactElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { CATALOG, defaultCtx, finCoef, isLoc, key, type Ctx, type Selection, type CustomLine } from "@/lib/estimateur";
+import { CATALOG, defaultCtx, isLoc, key, type Ctx, type Selection, type CustomLine } from "@/lib/estimateur";
 import { LangProvider } from "@/components/i18n/LangProvider";
 import { Row } from "@/components/estimateur/Row";
 import { CustomLines, Field, Stepper, ChoicePrice } from "@/components/estimateur/partage";
 import { RAPIDE_CSS } from "@/components/estimateur/rapide-styles";
 import { CATALOG_NEUF, presetNeuf, raisonProNeuf } from "@/lib/estimateur";
-import { badgeNeuf, diyNeuf, horsDecennaleNeuf, puReelNeuf } from "@/lib/estimateur/detaille-neuf";
+import { badgeNeuf, diyNeuf, horsDecennaleNeuf } from "@/lib/estimateur/detaille-neuf";
 
 const rien = () => {};
 const ctx: Ctx = { ...defaultCtx(), type: "Maison", surface: 100, surfaceSol: 100 };
@@ -36,7 +36,7 @@ function row(c: string, n: string, s?: Selection[string]) {
   const l = lot(c), t = tache(c, n);
   const sel: Selection = s ? { [key(c, n)]: s } : {};
   return createElement(Row, {
-    l, t, ctx: ctxR, sel, coef: finCoef(ctx, l.c), loc: isLoc(l.c),
+    l, t, ctx: ctxR, sel, loc: isLoc(l.c),
     onCheck: rien, onChoice: rien, onAuto: rien, onQty: rien, onMat: rien, onVit: rien, onMot: rien,
     onTai: rien, onVar: rien, onNote: rien, onPu: rien, onPm: rien,
   });
@@ -101,8 +101,8 @@ describe("Briques de l'estimateur — rendu figé", () => {
   });
 });
 
-/* Construction neuve (C4, N1) : `Row` reçoit `puReel`, `diy`, `badge`, `proRaison` et `horsDecennale`,
-   comme dans `EstimateurNeuf`. Sans eux (ci-dessus), le rendu de la rénovation est inchangé ; avec
+/* Construction neuve (C4, N1) : `Row` reçoit `diy`, `badge`, `proRaison` et `horsDecennale`,
+   comme dans `EstimateurNeuf` (le prix unitaire vient du moteur pour les deux natures, N7). Sans eux (ci-dessus), le rendu de la rénovation est inchangé ; avec
    eux, une ligne en % n'a pas de quantité, une démarche n'a pas de montant, un poste réservé
    affiche « Pro obligatoire » et un mur monté soi-même rappelle qu'il sort de la décennale. */
 describe("Row · props du neuf", () => {
@@ -112,8 +112,8 @@ describe("Row · props du neuf", () => {
     const t = l.t.find((x) => x.id === id)!;
     const sel: Selection = s ? { ...p.sel, [key(l.c, t.n)]: s } : p.sel;
     return createElement(Row, {
-      l, t, ctx: p.ctx, sel, coef: finCoef(p.ctx, l.c), loc: isLoc(l.c),
-      puReel: puReelNeuf(p.ctx, sel, l, t), diy: diyNeuf(l, t), badge: badgeNeuf(p.ctx, sel, l, t),
+      l, t, ctx: p.ctx, sel, loc: isLoc(l.c),
+      diy: diyNeuf(l, t), badge: badgeNeuf(p.ctx, sel, l, t),
       proRaison: raisonProNeuf(t), horsDecennale: horsDecennaleNeuf(l),
       onCheck: rien, onChoice: rien, onAuto: rien, onQty: rien, onMat: rien, onVit: rien, onMot: rien,
       onTai: rien, onVar: rien, onNote: rien, onPu: rien, onPm: rien,

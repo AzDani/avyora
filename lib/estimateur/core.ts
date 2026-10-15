@@ -663,6 +663,17 @@ export function lineHT(ctx: Ctx, sel: Selection, l: Lot, t: Tache): number {
   return fp * R.mo * q;
 }
 /**
+ * Prix unitaire RÉEL d'un poste : ce que le moteur compte pour UNE unité, en « Fait faire »
+ * (`self` faux) ou en « Je le fais » (`self` vrai). Région, finition (barème du poste compris),
+ * variantes, prix perso, frais et pourcentage : tout passe par `lineHT`, donc le prix unitaire
+ * affiché × la quantité = le montant de la ligne. Une seule formule pour les deux natures et
+ * les deux puces de la ligne (revue rénovation / neuf, N7).
+ */
+export function puReel(ctx: Ctx, sel: Selection, l: Lot, t: Tache, self = false): number {
+  const k = key(l.c, t.n);
+  return lineHT(ctx, { ...sel, [k]: { ...(sel[k] ?? {}), on: true, manual: true, qty: 1, self } }, l, t);
+}
+/**
  * Base d'un poste en pourcentage. « travaux » : tout le HT hors études et hors frais, sans les
  * autres pourcentages. « projet » : tout ce qui n'est pas un frais, études et honoraires compris.
  * Un pourcentage « projet » peut donc compter un pourcentage « travaux », jamais l'inverse : le
@@ -691,6 +702,19 @@ export function lotHT(ctx: Ctx, sel: Selection, l: Lot): number {
  *  la ligne s'affiche. La rénovation ne l'écrit ni ne la lit ; les totaux l'ignorent. */
 export interface CustomLine { id: string; lot: string; nom: string; prix: number; unite: string; qte: number; note?: string; tva: number; on?: boolean; draft?: boolean; phase?: string; }
 const clOn = (x: CustomLine): boolean => x.on !== false && !x.draft; // validée (cochée) et non en cours d'édition
+/** TVA d'une nouvelle ligne perso : 20 % en construction neuve et en régime « pro » (logement de
+ *  moins de deux ans, local professionnel), comme tous les postes du moteur ; 10 % sinon. Avant,
+ *  une ligne perso partait à 10 % même dans un projet tout à 20 %. */
+export function tauxPerso(ctx: Pick<Ctx, "nature" | "fiscal">): number {
+  return ctx.nature === "neuf" || ctx.fiscal === "pro" ? 20 : 10;
+}
+/** Taux proposés par le sélecteur de TVA d'une ligne perso : 20 % seul quand le projet est tout à
+ *  20 % (neuf, régime « pro »), sinon 5,5 / 10 / 20 %. Le taux déjà enregistré d'une ligne reste
+ *  proposé (`courant`) : rien n'est réécrit dans son dos. */
+export function tauxPersoPossibles(ctx: Pick<Ctx, "nature" | "fiscal">, courant?: number): number[] {
+  const base = tauxPerso(ctx) === 20 ? [20] : [5.5, 10, 20];
+  return courant != null && !base.includes(courant) ? [...base, courant].sort((a, b) => a - b) : base;
+}
 /** Total HT des lignes perso VALIDÉES d'un lot donné. */
 export function customLotHT(lines: CustomLine[], lot: string): number {
   return lines.filter((x) => x.lot === lot && clOn(x)).reduce((s, x) => s + (x.prix || 0) * (x.qte || 0), 0);

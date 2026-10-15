@@ -68,8 +68,12 @@ export function Stepper({ label, hint, value, onStep }: { label: string; hint?: 
 
 export const isUrl = (s?: string) => /^https?:\/\//i.test((s || "").trim());
 export const CL_UNITS = ["m²", "ml", "u", "forfait", "jour", "m³", "tonne"];
-/** `guideTva` (facultatif, construction neuve) remplace le texte du guide « Quelle TVA ? » de la rénovation. */
-export function CustomLines({ lines, onAdd, onUpd, onDel, guideTva }: { lines: CustomLine[]; onAdd: () => void; onUpd: (id: string, patch: Partial<CustomLine>) => void; onDel: (id: string) => void; guideTva?: React.ReactNode }) {
+const TVAS_DEFAUT = [5.5, 10, 20];
+const tvaTxt = (v: number) => String(v).replace(".", ",") + " %";
+/** `guideTva` (facultatif, construction neuve) remplace le texte du guide « Quelle TVA ? » de la rénovation.
+ *  `tvas` (facultatif) : les taux que le sélecteur propose pour une ligne, selon le régime du projet
+ *  (`tauxPersoPossibles`) et le taux déjà enregistré de la ligne. Absent : 5,5 / 10 / 20 %. */
+export function CustomLines({ lines, onAdd, onUpd, onDel, guideTva, tvas }: { lines: CustomLine[]; onAdd: () => void; onUpd: (id: string, patch: Partial<CustomLine>) => void; onDel: (id: string) => void; guideTva?: React.ReactNode; tvas?: (courant: number) => number[] }) {
   const [guide, setGuide] = useState<string | null>(null);
   const [confirmDel, setConfirmDel] = useState<string | null>(null);
   const askDel = (id: string) => { setConfirmDel(id); setTimeout(() => setConfirmDel((c) => (c === id ? null : c)), 3000); };
@@ -109,7 +113,7 @@ export function CustomLines({ lines, onAdd, onUpd, onDel, guideTva }: { lines: C
           <div className="clr">
             <span className="cl-lk">🔗</span>
             <input className="cl-note" placeholder="Note ou lien matériau (https://…)" value={l.note || ""} onChange={(e) => onUpd(l.id, { note: e.target.value })} />
-            <label className="cl-tvalab">TVA <select value={String(l.tva)} onChange={(e) => onUpd(l.id, { tva: parseFloat(e.target.value) })}><option value="5.5">5,5 %</option><option value="10">10 %</option><option value="20">20 %</option></select></label>
+            <label className="cl-tvalab">TVA <select value={String(l.tva)} onChange={(e) => onUpd(l.id, { tva: parseFloat(e.target.value) })}>{(tvas ? tvas(l.tva) : TVAS_DEFAUT).map((v) => <option key={v} value={String(v)}>{tvaTxt(v)}</option>)}</select></label>
             <button type="button" className="cl-info" onClick={() => setGuide(guide === l.id ? null : l.id)} title="Guide TVA">i</button>
           </div>
           {guide === l.id && <div className="cl-guide">{guideTva ?? <><b>Quelle TVA ?</b> · <b>5,5 %</b> réno énergétique · <b>10 %</b> amélioration logement +2 ans (standard) · <b>20 %</b> neuf, −2 ans, local pro ou matériaux seuls.</>}</div>}

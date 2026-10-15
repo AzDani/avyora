@@ -33,14 +33,14 @@ import { useLocale, useT } from "@/components/i18n/LangProvider";
 import { dictNeuf } from "@/lib/i18n/neuf";
 import { catT } from "@/lib/estimateur/catalog-i18n";
 import {
-  buildDevis, customLotHT, finCoef, geometrieNeuf, isAuto, isLoc, key, regionCoef, autoQty, visibleTask, raisonProNeuf, CATALOG_NEUF, PHASES_NEUF, ICON,
+  buildDevis, customLotHT, geometrieNeuf, isAuto, isLoc, key, regionCoef, autoQty, visibleTask, raisonProNeuf, tauxPersoPossibles, CATALOG_NEUF, PHASES_NEUF, ICON,
   type CustomLine, type Selection, type LigneSel, type MaisonNeuve, type Lot, type Tache, type QuiRealise,
 } from "@/lib/estimateur";
 import { totauxAvecPerso } from "@/lib/estimateur/projet";
 import { INFO_PHASES } from "@/lib/estimateur/etapes-neuf";
 import { QUESTIONS_NEUF, type QuestionNeuf, type ValeurQuestionNeuf, type CleQuestionNeuf } from "@/lib/estimateur/questions-neuf";
 import {
-  CLE_BROUILLON_DETAIL_NEUF, BLOCS_NEUF, ctxDetailNeuf, etatParDefaut, changerReponseNeuf, cocherNeufEtat, puReelNeuf, badgeNeuf,
+  CLE_BROUILLON_DETAIL_NEUF, BLOCS_NEUF, ctxDetailNeuf, etatParDefaut, changerReponseNeuf, cocherNeufEtat, badgeNeuf,
   diyNeuf, horsDecennaleNeuf, lignesPersoDuBloc, lignePersoNeuf, repriseDepuisReponses, reglerNouveauxNeuf, toutPasserNeuf, postesQuiChangent,
   lireBrouillonDetailNeuf, enregistrementDetailNeuf, demarchesPhase, ouvertureDetailNeuf, type EtatNeuf, type BlocNeuf,
 } from "@/lib/estimateur/detaille-neuf";
@@ -296,8 +296,8 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
           <div className="acc-b">
             {l.note && <div className="lotnote">{catT(locale, "notes", l.note)}</div>}
             {lignes.map((t) => (
-              <Row key={t.n} l={l} t={t} ctx={ctx} sel={sel} coef={finCoef(ctx, l.c)} loc={loc}
-                puReel={puReelNeuf(ctx, sel, l, t)} diy={diyNeuf(l, t)} badge={badgeNeuf(ctx, sel, l, t)}
+              <Row key={t.n} l={l} t={t} ctx={ctx} sel={sel} loc={loc}
+                diy={diyNeuf(l, t)} badge={badgeNeuf(ctx, sel, l, t)}
                 proRaison={raisonProNeuf(t)} horsDecennale={horsDecennaleNeuf(l)}
                 onCheck={() => toggleCheck(l, t)}
                 onChoice={(self) => upd(l.c, t.n, (s) => ({ ...s, self }))}
@@ -313,7 +313,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
                 onPm={(x) => upd(l.c, t.n, (s) => { const nx = { ...s }; if (x == null) delete nx.pm; else { nx.pm = x; delete nx.pu; } return nx; })}
               />
             ))}
-            <CustomLines lines={cLines} onAdd={() => addCustom(l.c, l.p)} onUpd={updCustom} onDel={delCustom} guideTva={d.guideTva} />
+            <CustomLines lines={cLines} onAdd={() => addCustom(l.c, l.p)} onUpd={updCustom} onDel={delCustom} guideTva={d.guideTva} tvas={(courant) => tauxPersoPossibles(ctx, courant)} />
           </div>
         )}
       </div>

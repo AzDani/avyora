@@ -8,7 +8,7 @@
  */
 import { useMemo } from "react";
 import {
-  buildDevis, customTotals, tachesParCle, estJalon, CATALOG_NEUF, PHASES_NEUF, type Ctx, type Selection, type CustomLine,
+  buildDevis, customTotals, totauxAvecPerso, tachesParCle, estJalon, CATALOG_NEUF, PHASES_NEUF, type Ctx, type Selection, type CustomLine,
 } from "@/lib/estimateur";
 import { decoupe, qteNeuf } from "@/lib/estimateur/etapes-neuf";
 import { catT, catLigne } from "@/lib/estimateur/catalog-i18n";
@@ -24,10 +24,10 @@ export default function DevisNeuf({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Se
   const dv = useMemo(() => buildDevis(CATALOG_NEUF, ctx, sel), [ctx, sel]);
   const taches = useMemo(() => tachesParCle(ctx), [ctx]);
   const { totaux: t0, bilan: b, lots, lignes } = dv;
-  // Lignes perso : comptées comme dans le devis de la rénovation (HT, leur TVA, les aléas).
+  // Lignes perso comprises (HT, leur TVA, les aléas) : le seul calcul du total, partout (`totauxAvecPerso`).
+  const t = totauxAvecPerso(t0, custom, ctx.aleas);
   const cu = customTotals(custom);
-  const t = { ht: t0.ht + cu.ht, tva: t0.tva + cu.tva, aleas: t0.aleas + cu.ht * ((ctx.aleas || 0) / 100) };
-  const ttc = t.ht + t.tva + t.aleas;
+  const ttc = t.ttc;
   const cut = decoupe(dv);
   const max = lots.length ? Math.max(...lots.map((x) => x.ttc)) : 1;
   const persoTtc = cu.ht + cu.tva;

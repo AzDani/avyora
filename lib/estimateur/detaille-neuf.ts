@@ -15,7 +15,7 @@
  * Mécanique recopiée de la maquette validée (`maquettes/neuf/app.js`, `changerMaison`,
  * `changerQui`, `puLigne`), sur le MÊME moteur que le rapide : une maison décrite pareil coûte pareil.
  */
-import { key, isAuto, isLoc, lineHT, type Ctx, type Selection, type Finition, type Lot, type Tache, type CustomLine } from "./core";
+import { key, isAuto, isLoc, lineHT, puReel, tauxPerso, type Ctx, type Selection, type Finition, type Lot, type Tache, type CustomLine } from "./core";
 import { CATALOG_NEUF, PHASES_NEUF } from "./catalogue-neuf";
 import { maisonComplete, maisonParDefaut, reponseDuPoste, type MaisonNeuve } from "./neuf";
 import { ctxNeuf, appliquerMaison, cocherPosteNeuf, soiMemeNeuf, peutFaireNeuf, LOTS_DECENNALE_NEUF, presetMaison, presetNeuf, type RapideNeufInput } from "./presets-neuf";
@@ -144,10 +144,11 @@ export function cocherNeuf(ctx: Ctx, sel: Selection, l: Lot, t: Tache, qui: QuiR
 }
 
 /** Prix unitaire « Fait faire » réel : ce que le moteur compte pour une quantité de 1 (région,
- *  finition, frais, pourcentage compris). Pour un poste en `pct`, c'est son montant. */
+ *  finition, frais, pourcentage compris). Pour un poste en `pct`, c'est son montant. Alias de
+ *  `puReel` (core), que la ligne de l'estimateur appelle désormais pour les deux natures (N7) ;
+ *  nom gardé, des tests l'importent. */
 export function puReelNeuf(ctx: Ctx, sel: Selection, l: Lot, t: Tache): number {
-  const k = key(l.c, t.n);
-  return lineHT(ctx, { ...sel, [k]: { ...(sel[k] ?? {}), on: true, manual: true, qty: 1, self: false } }, l, t);
+  return puReel(ctx, sel, l, t, false);
 }
 
 /** Badge d'une ligne : `pct` (un pourcentage, sans quantité) ; `jalon` (une démarche gratuite),
@@ -204,9 +205,9 @@ export function lignesPersoDuBloc(custom: CustomLine[], b: BlocNeuf): CustomLine
   });
 }
 
-/** Nouvelle ligne perso d'un bloc : TVA 20 % (construction neuve), rangée dans sa phase. */
+/** Nouvelle ligne perso d'un bloc : TVA de la construction neuve (`tauxPerso` : 20 %), rangée dans sa phase. */
 export function lignePersoNeuf(lot: string, phase: string, id: string): CustomLine {
-  return { id, lot, phase, nom: "", prix: 0, unite: "u", qte: 1, note: "", tva: 20, on: true, draft: true };
+  return { id, lot, phase, nom: "", prix: 0, unite: "u", qte: 1, note: "", tva: tauxPerso({ nature: "neuf" }), on: true, draft: true };
 }
 
 // ── Reprises ─────────────────────────────────────────────────────────────────────────────────
