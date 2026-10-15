@@ -44,12 +44,12 @@ export function emailValide(email: string): boolean {
  * La destination du lien : l'intention (`next`), si c'est un chemin interne, sinon la page par défaut. Sans
  * intention, l'inscription mène aux questions de profil (/onboarding, facultatives, bouton « Passer »), la
  * connexion à ses projets. Refusés : tout ce qui n'est pas un chemin interne (`cheminInterne` : `//hôte`,
- * `/\hôte`, URL absolue), les caractères de contrôle, et un `next` démesuré (plus de 512 caractères).
+ * `/\hôte`, URL absolue, caractères de contrôle et espaces), et un `next` démesuré (plus de 512 caractères).
  */
 export function destinationLien(next: string | null | undefined, page: PageAcces): string {
   const defaut = page === "connexion" ? "/projets" : "/onboarding";
   const n = typeof next === "string" ? next.trim() : "";
-  if (!n || n.length > 512 || /[\u0000-\u001f\u007f]/.test(n)) return defaut;
+  if (n.length > 512) return defaut;
   return cheminInterne(n, defaut);
 }
 

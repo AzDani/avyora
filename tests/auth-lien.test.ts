@@ -52,7 +52,7 @@ describe("lib/auth-lien : fonctions pures", () => {
     expect(destinationLien("  /plan  ", "connexion")).toBe("/plan");
     expect(destinationLien(undefined, "inscription")).toBe("/onboarding");
     expect(destinationLien("", "connexion")).toBe("/projets");
-    for (const x of ["//evil.com", "/\\evil.com", "https://evil.com/x", "javascript:alert(1)", "projets", "/a\nb", "/a\u0000", `/${"x".repeat(600)}`]) {
+    for (const x of ["//evil.com", "/\\evil.com", "https://evil.com/x", "javascript:alert(1)", "projets", "/a\nb", "/a\u0000", "/\t/evil.com", "/\n/evil.com", `/${"x".repeat(600)}`]) {
       expect(destinationLien(x, "inscription"), JSON.stringify(x)).toBe("/onboarding");
       expect(destinationLien(x, "connexion"), JSON.stringify(x)).toBe("/projets");
     }
@@ -369,10 +369,15 @@ describe("/auth/callback et /auth/confirm : le retour du lien", () => {
     expect(S.mesures).toEqual([["compte_cree", { confirme: true, destination: "/plan", methode: "google" }]]);
   });
 
-  it("next assaini au retour : //hôte et URL absolues mènent à /projets", async () => {
-    for (const n of ["%2F%2Fevil.com", "https%3A%2F%2Fevil.com", "%2F%5Cevil.com"]) {
+  it("next assaini au retour : //hôte, URL absolues et caractères de contrôle mènent à /projets", async () => {
+    for (const n of ["%2F%2Fevil.com", "https%3A%2F%2Fevil.com", "%2F%5Cevil.com", "%2F%09%2Fevil.com", "%2F%0A%2Fevil.com"]) {
       const r = await retour("callback", `https://getavyora.fr/auth/callback?code=abc&next=${n}`, NOUVEAU_LIEN());
       expect(r.location, n).toBe("https://getavyora.fr/projets");
+    }
+    // Sans code (lien déjà servi) : le retour vers /connexion ne transporte pas l'intention piégée.
+    for (const n of ["%2F%09%2Fevil.com", "%2F%0A%2Fevil.com"]) {
+      const r = await retour("callback", `https://getavyora.fr/auth/callback?next=${n}`, null);
+      expect(r.location, n).toBe("https://getavyora.fr/connexion?erreur=lien_invalide");
     }
   });
 
@@ -567,6 +572,18 @@ describe("Rendu : /inscription et /connexion commencent par le lien d'accès", (
     expect(await redirection(() => r.connexion({ next: "/projets/abc" }))).toBe("/projets/abc");
     expect(await redirection(() => r.connexion({ next: "https://evil.com" }))).toBe("/projets");
     expect(await redirection(() => r.connexion({}))).toBe("/projets");
+    // « /<tab>/evil.com » : le navigateur retire la tabulation (ou le retour à la ligne) et lit « //evil.com ».
+    for (const next of ["/\t/evil.com", "/\n/evil.com", "/\r\n/evil.com"]) {
+      expect(await redirection(() => r.connexion({ next })), JSON.stringify(next)).toBe("/projets");
+      expect(await redirection(() => r.inscription({ next })), JSON.stringify(next)).toBe("/projets");
+    }
+    r = await charger({ locale: "fr" });
+    for (const next of ["/\t/evil.com", "/\n/evil.com"]) {
+      for (const h of [await r.connexion({ next }), await r.inscription({ next })]) {
+        expect(h).not.toContain('name="next"');
+        expect(h).not.toContain("evil.com");
+      }
+    }
   });
 
   it("l'interrupteur Google : éteint sans variable, allumé seulement par NEXT_PUBLIC_AUTH_GOOGLE=1", async () => {

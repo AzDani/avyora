@@ -26,6 +26,20 @@ describe("cheminInterne", () => {
     expect(cheminInterne("/\\exemple.test")).toBe("/projets");
   });
 
+  it("refuse les caractères de contrôle et les espaces (le navigateur les retire avant de lire l'URL)", () => {
+    // « /<tab>/evil.com » : la tabulation retirée, il reste « //evil.com », un domaine externe.
+    // C'est ce que /connexion?next=%2F%09%2Fevil.com faisait d'une personne déjà connectée.
+    for (const x of ["/\t/evil.com", "/\n/evil.com", "/\r/evil.com", "/\t\\evil.com", "/\u0000/evil.com", "/\u007f/evil.com", " //evil.com", "/ /evil.com", "/projets\n"]) {
+      expect(cheminInterne(x), JSON.stringify(x)).toBe("/projets");
+      expect(cheminInterne(x, ""), JSON.stringify(x)).toBe("");
+    }
+    // Les mêmes, tels que les décode searchParams.
+    expect(cheminInterne(new URLSearchParams("next=%2F%09%2Fevil.com").get("next") ?? undefined)).toBe("/projets");
+    expect(cheminInterne(new URLSearchParams("next=%2F%0A%2Fevil.com").get("next") ?? undefined)).toBe("/projets");
+    // Un chemin légitime encodé reste accepté.
+    expect(cheminInterne("/prix-renovation?ville=saint%20denis")).toBe("/prix-renovation?ville=saint%20denis");
+  });
+
   it("retombe sur le défaut quand il n'y a pas de destination", () => {
     expect(cheminInterne(undefined)).toBe("/projets");
     expect(cheminInterne("")).toBe("/projets");
