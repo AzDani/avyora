@@ -406,7 +406,7 @@ describe("Pendant la bêta, un anonyme qui touche une fonction Pro va créer son
     }
   });
 
-  it("/inscription : l'encart de la bêta ; venu d'une fonction de la bêta, le titre « Gratuit pendant la bêta — crée ton compte »", async () => {
+  it("/inscription : l'encart de la bêta ; venu d'une fonction de la bêta, le titre « Crée ton compte » (le « gratuit » est dans l'encart, une fois)", async () => {
     for (const locale of LOCALES) {
       const b = dict(locale).beta;
       let r = await charger({ locale });

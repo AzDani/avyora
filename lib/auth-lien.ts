@@ -3,12 +3,17 @@
  *
  * Sur /inscription comme sur /connexion, un seul champ, l'adresse e-mail. Supabase envoie un lien
  * (`signInWithOtp`, `shouldCreateUser: true`) : le clic confirme l'adresse ET ouvre la session, sans mot de
- * passe à inventer. Le lien repasse par /auth/callback, qui ramène à l'intention (`next`). Le mot de passe
- * reste possible, replié en second.
+ * passe à inventer, puis ramène à l'intention (`next`). Le mot de passe reste possible, replié en second.
+ *
+ * Deux formes de lien, selon les modèles d'e-mail réglés dans Supabase (docs/beta.md §6) :
+ *  - `{{ .ConfirmationURL }}` (modèle par défaut) → /auth/callback?code=… : flux PKCE, le lien ne connecte que dans
+ *    le navigateur qui l'a demandé, et, pour une adresse NOUVELLE, dans les 5 minutes qui suivent la demande ;
+ *  - le format token_hash → /auth/confirm, puis le bouton de /auth/confirmer : valable sur n'importe quel appareil,
+ *    pendant la durée réglée dans Supabase (1 h), et à l'abri des robots qui ouvrent les liens.
  *
  * Ce module ne contient que des fonctions pures (aucune session, aucune base, aucun stockage) : l'action
- * serveur (`envoyerLienAcces`, lib/actions/auth.ts), le formulaire (components/auth/AccesLien.tsx) et
- * /auth/callback les partagent. Testées dans tests/auth-lien.test.ts.
+ * serveur (`envoyerLienAcces`, lib/actions/auth.ts), le formulaire (components/auth/AccesLien.tsx),
+ * /auth/callback et /auth/confirm les partagent. Testées dans tests/auth-lien.test.ts.
  */
 import { cheminInterne } from "@/lib/next-url";
 import { CLE_RECLAMATION_RENO } from "@/lib/estimateur/brouillon-reno";
@@ -63,6 +68,96 @@ export function reclamationEnAttente(lire: (cle: string) => string | null): bool
   return !!lire(CLE_RECLAMATION_RENO) || lire(CLE_RECLAMATION_NEUF) === "1" || !!lire(CLE_RECLAMATION_PLAN);
 }
 
+/* ─── Le lien au format token_hash (/auth/confirm, puis /auth/confirmer) ───── */
+
+/**
+ * Les types de lien que /auth/confirm accepte : ceux de `verifyOtp` pour un e-mail. Les modèles d'AVYORA envoient
+ * `email` (inscription comme connexion : Supabase cherche le jeton dans les deux colonnes) et `recovery` (mot de
+ * passe oublié) ; les autres restent acceptés pour un modèle qui les nommerait.
+ */
+export const TYPES_LIEN = ["email", "signup", "magiclink", "invite", "recovery", "email_change"] as const;
+export type TypeLien = (typeof TYPES_LIEN)[number];
+
+/** Une valeur lue comme type de lien, sinon rien (le lien est alors invalide). */
+export function lireTypeLien(v: unknown): TypeLien | null {
+  return typeof v === "string" && (TYPES_LIEN as readonly string[]).includes(v) ? (v as TypeLien) : null;
+}
+
+/** La forme d'un `token_hash` de Supabase (`pkce_` puis l'empreinte en hexadécimal, ou l'empreinte seule). */
+const FORME_JETON = /^[A-Za-z0-9_-]{8,256}$/;
+
+/**
+ * L'intention portée par un lien au format token_hash. Les modèles d'e-mail la passent par `next={{ .RedirectTo }}` :
+ * c'est l'`emailRedirectTo` de l'envoi, une URL ABSOLUE du site (`https://getavyora.fr/auth/callback?next=%2Fplan`),
+ * encodée par le modèle. Acceptés : un chemin interne, ou une URL de l'une de NOS origines ; un passage par
+ * /auth/callback ou /auth/confirm est déroulé (on prend le `next` qu'il transporte). Tout le reste mène à `defaut`,
+ * comme la racine du site, où Supabase retombe quand l'adresse de retour n'est pas autorisée.
+ */
+export function intentionDuLien(next: string | null | undefined, origines: readonly string[], defaut = "/projets"): string {
+  const nos = origines.filter((o) => /^https?:\/\//.test(o));
+  let n = typeof next === "string" ? next.trim() : "";
+  for (let tour = 0; tour < 3; tour++) {
+    if (!n || n.length > 2048) return defaut;
+    let chemin = n;
+    if (!n.startsWith("/")) {
+      let u: URL;
+      try {
+        u = new URL(n);
+      } catch {
+        return defaut;
+      }
+      if (!nos.includes(u.origin)) return defaut;
+      chemin = u.pathname + u.search + u.hash;
+      if (chemin === "/") return defaut;
+    }
+    const interne = cheminInterne(chemin, "");
+    if (!interne) return defaut;
+    const q = interne.indexOf("?");
+    const base = q < 0 ? interne : interne.slice(0, q);
+    if (base === "/auth/callback" || base === "/auth/confirm") {
+      n = new URLSearchParams(q < 0 ? "" : interne.slice(q + 1)).get("next")?.trim() ?? "";
+      continue;
+    }
+    return interne.length > 512 ? defaut : interne;
+  }
+  return defaut;
+}
+
+/**
+ * Le lien en attente du bouton « Entrer dans AVYORA » : /auth/confirm le range dans un cookie httpOnly et renvoie vers
+ * /auth/confirmer, une adresse SANS le jeton (ni les mesures de la page ni un en-tête Referer ne le voient). Le jeton
+ * n'est consommé qu'au clic sur le bouton : les robots des messageries qui ouvrent les liens pour les vérifier
+ * (Outlook, antivirus d'entreprise) ne le brûlent pas.
+ */
+export const COOKIE_LIEN = "av-lien";
+/** Durée de vie du cookie : celle du lien lui-même (« Email OTP Expiration », 1 h conseillée, docs/beta.md §6). */
+export const DUREE_COOKIE_LIEN_S = 3600;
+
+export type LienEnAttente = { jeton: string; type: TypeLien; next: string };
+
+/** Le contenu du cookie, écrit par /auth/confirm. */
+export function ecrireLienEnAttente(l: LienEnAttente): string {
+  return JSON.stringify({ h: l.jeton, t: l.type, n: l.next });
+}
+
+/** Le cookie relu (et revérifié : jeton bien formé, type connu, chemin interne), sinon rien. */
+export function lireLienEnAttente(v: string | null | undefined): LienEnAttente | null {
+  if (!v) return null;
+  try {
+    const o = JSON.parse(v) as { h?: unknown; t?: unknown; n?: unknown };
+    const type = lireTypeLien(o.t);
+    if (typeof o.h !== "string" || !FORME_JETON.test(o.h) || !type) return null;
+    return { jeton: o.h, type, next: cheminInterne(typeof o.n === "string" ? o.n : undefined) };
+  } catch {
+    return null;
+  }
+}
+
+/** Un `token_hash` reçu dans l'adresse a-t-il la forme d'un jeton de Supabase ? */
+export function jetonValide(v: unknown): v is string {
+  return typeof v === "string" && FORME_JETON.test(v);
+}
+
 /* ─── La réponse de Supabase ────────────────────────────────────────────────── */
 
 /** Ce que le formulaire dit après la demande : envoyé, ou l'une des trois erreurs qu'il sait traduire. */
@@ -112,7 +207,7 @@ export function metadonneesInscription(o: { methode: MethodeInscription; newslet
   return { cgu_acceptees_le: le, inscription: o.methode, newsletter: o.newsletter, ...(o.newsletter ? { newsletter_le: le } : {}) };
 }
 
-/** Un compte vu au retour du lien : ce que /auth/callback lit pour savoir s'il vient de naître. */
+/** Un compte vu au retour du lien : ce que /auth/callback et /auth/confirmer lisent pour savoir s'il vient de naître. */
 type CompteVu = {
   created_at?: string | null;
   email_confirmed_at?: string | null;
@@ -120,16 +215,24 @@ type CompteVu = {
   app_metadata?: Record<string, unknown> | null;
 };
 
-/** Fenêtre dans laquelle un premier passage par /auth/callback compte comme une création de compte. */
-export const FENETRE_NOUVEAU_COMPTE_MS = 10 * 60_000;
+/**
+ * Fenêtre dans laquelle une première arrivée compte comme une création de compte. Large exprès (24 h) : avec les
+ * liens PKCE, une adresse confirmée par un clic ouvert dans un autre navigateur n'arrive connectée qu'au lien
+ * suivant. Le double compte est évité par la marque `compte_cree_le`, pas par la fenêtre.
+ */
+export const FENETRE_NOUVEAU_COMPTE_MS = 24 * 3_600_000;
+
+/** La marque posée dans `user_metadata` quand `compte_cree` est émis : une seule fois par compte. */
+export const MARQUE_COMPTE_CREE = "compte_cree_le";
 
 /**
- * Le compte vient-il d'être créé, et comment ? `lien` : inscrit par le lien, adresse confirmée à l'instant (le
- * premier clic) ; `google` : compte Google créé à l'instant. Sinon (connexion d'un compte existant, inscription
- * au mot de passe, mesurée par son action), rien. Sert à `compte_cree`, émis une fois, là où le fait est établi.
+ * Le compte vient-il d'être créé, et comment ? `lien` : inscrit par le lien, adresse confirmée il y a peu ;
+ * `google` : compte Google créé il y a peu. Jamais deux fois (marque `compte_cree_le`, posée à la première arrivée).
+ * Sinon (connexion d'un compte existant, inscription au mot de passe, mesurée par son action), rien. Sert à
+ * `compte_cree`, émis une fois, là où le fait est établi.
  */
 export function methodeNouveauCompte(user: CompteVu | null | undefined, maintenant: number = Date.now()): "lien" | "google" | null {
-  if (!user) return null;
+  if (!user || user.user_metadata?.[MARQUE_COMPTE_CREE]) return null;
   const recent = (iso: string | null | undefined) => {
     const t = Date.parse(iso ?? "");
     return Number.isFinite(t) && t <= maintenant + 60_000 && maintenant - t < FENETRE_NOUVEAU_COMPTE_MS;

@@ -8,7 +8,9 @@ import { validerMotDePasse } from "@/lib/password";
 import { journaliser } from "@/lib/audit";
 import { cheminInterne } from "@/lib/next-url";
 import { suivreServeur } from "@/lib/track-server";
-import { destinationLien, emailValide, issueEnvoi, lirePageAcces, metadonneesInscription } from "@/lib/auth-lien";
+import { createHash } from "node:crypto";
+import { COOKIE_LIEN, destinationLien, emailValide, issueEnvoi, lireLienEnAttente, lirePageAcces, metadonneesInscription } from "@/lib/auth-lien";
+import { noterArrivee } from "@/lib/auth-arrivee";
 
 /** État renvoyé aux formulaires (useActionState). */
 export type AuthState = { error?: string; message?: string } | undefined;
@@ -29,6 +31,11 @@ async function origin() {
 
 function cleanEmail(v: FormDataEntryValue | null) {
   return String(v ?? "").trim().toLowerCase();
+}
+
+/** L'empreinte d'une adresse, pour la compter sans la stocker (clés de limite). */
+function empreinte(email: string): string {
+  return createHash("sha256").update(email).digest("hex").slice(0, 32);
 }
 
 
@@ -118,10 +125,12 @@ export type LienState =
 
 /**
  * Envoie le lien d'accès (Supabase `signInWithOtp`). Une adresse inconnue reçoit un lien qui CRÉE le compte
- * (`shouldCreateUser`) ; une adresse connue, un lien de connexion : le clic confirme l'adresse et ouvre la session,
- * puis /auth/callback ramène à l'intention (`next`, assaini). La réponse est la même que l'adresse ait un compte
- * ou non (pas d'énumération). Limites : catégorie `auth`, par IP et par adresse. Les métadonnées (CGU datées,
- * nouveautés) ne s'écrivent qu'à la création du compte.
+ * (`shouldCreateUser`) ; une adresse connue, un lien de connexion : il confirme l'adresse et ouvre la session, puis
+ * ramène à l'intention (`next`, assaini). `emailRedirectTo` sert aux deux formes de lien (docs/beta.md §6) : le lien
+ * PKCE des modèles par défaut y revient (/auth/callback) ; les modèles au format token_hash le transmettent à
+ * /auth/confirm (`next={{ .RedirectTo }}`), qui en tire l'intention. La réponse est la même que l'adresse ait un
+ * compte ou non (pas d'énumération). Limites : catégorie `auth`, par IP et par adresse (en empreinte). Les
+ * métadonnées (CGU datées, nouveautés) ne s'écrivent qu'à la création du compte.
  */
 export async function envoyerLienAcces(_prev: LienState, formData: FormData): Promise<LienState> {
   const email = cleanEmail(formData.get("email"));
@@ -132,7 +141,8 @@ export async function envoyerLienAcces(_prev: LienState, formData: FormData): Pr
   const renvoi = String(formData.get("renvoi") ?? "") === "1";
   if (!emailValide(email)) return { erreur: "email" };
   // Deux compteurs : l'IP (un robot qui essaie mille adresses) et l'adresse (une boîte bombardée depuis mille IP).
-  if (!(await limiteAuthOk()) || !(await verifierLimite("auth", `lien:${email}`))) return { erreur: "limite" };
+  // L'adresse n'est jamais une clé en clair (Upstash, mémoire) : son empreinte suffit à la compter.
+  if (!(await limiteAuthOk()) || !(await verifierLimite("auth", `lien:${empreinte(email)}`))) return { erreur: "limite" };
 
   const supabase = await supabaseServer();
   const { error } = await supabase.auth.signInWithOtp({
@@ -147,6 +157,31 @@ export async function envoyerLienAcces(_prev: LienState, formData: FormData): Pr
   await journaliser("lien_acces_demande", { email, payload: { page, issue, ...(error?.code ? { code: error.code } : {}) } });
   if (issue !== "envoye") return { erreur: issue };
   return { envoye: true, email, renvoi };
+}
+
+// ── Le bouton de /auth/confirmer : le lien au format token_hash est consommé ICI, au clic (B2) ──
+
+/**
+ * « Entrer dans AVYORA » : /auth/confirm a rangé le lien (jeton, type, intention) dans un cookie httpOnly ; le clic
+ * le consomme (`verifyOtp`, sans PKCE : n'importe quel appareil). Réussi : la session est ouverte (cookies), le compte
+ * qui vient de naître est mesuré (`noterArrivee`), puis l'intention. Échoué (lien déjà servi, expiré, remplacé par un
+ * plus récent) ou cookie absent : /connexion le dit et garde l'intention.
+ */
+export async function confirmerLien(): Promise<void> {
+  const cookieStore = await cookies();
+  const lien = lireLienEnAttente(cookieStore.get(COOKIE_LIEN)?.value);
+  cookieStore.set(COOKIE_LIEN, "", { path: "/auth", maxAge: 0, httpOnly: true, sameSite: "lax" }); // à usage unique, comme le lien
+  if (lien) {
+    const supabase = await supabaseServer();
+    const { data, error } = await supabase.auth.verifyOtp({ type: lien.type, token_hash: lien.jeton });
+    if (!error) {
+      await noterArrivee(supabase, data.user, lien.next);
+      redirect(lien.next);
+    }
+  }
+  const retour = new URLSearchParams({ erreur: "lien_invalide" });
+  if (lien && lien.next !== "/projets") retour.set("next", lien.next);
+  redirect(`/connexion?${retour}`);
 }
 
 // ── Demande de réinitialisation (envoie l'email) ──

@@ -35,7 +35,7 @@ export default async function ConnexionPage({
         </>
       }
     >
-      {/* Retour de /auth/callback : le lien a déjà servi, a expiré, ou a été ouvert dans un autre navigateur (PKCE). */}
+      {/* Retour de /auth/callback ou de /auth/confirmer : le lien a déjà servi, a expiré, a été remplacé, ou (PKCE) a été ouvert dans un autre navigateur. */}
       {erreur === "lien_invalide" && (
         <p role="alert" className="mb-5 rounded-field border border-warning/30 bg-warning-soft px-3.5 py-2.5 text-sm leading-relaxed text-ink" data-lien-invalide="">
           {t.lien.lienInvalide}

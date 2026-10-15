@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState, type RefObject } from "react";
+import { startTransition, useActionState, useEffect, useRef, useState, type RefObject } from "react";
 import Link from "next/link";
 import { envoyerLienAcces, type LienState } from "@/lib/actions/auth";
 import { useT } from "@/components/i18n/LangProvider";
@@ -103,8 +103,14 @@ export function AccesParLien({ page, next, source, google }: {
       <form
         action={action}
         className="space-y-4"
-        onSubmit={() => {
+        onSubmit={(e) => {
           try { localStorage.removeItem(CLE_PREFERE_MDP); } catch { /* noop */ }
+          // L'action part d'ici, et non du `action` du formulaire : React remettrait alors le formulaire à zéro après
+          // une erreur, et la case des nouveautés paraîtrait décochée alors qu'elle est cochée (le consentement
+          // envoyé doit être celui qu'on voit). `action` reste pour un envoi avant l'hydratation.
+          e.preventDefault();
+          const donnees = new FormData(e.currentTarget);
+          startTransition(() => action(donnees));
         }}
       >
         <input type="hidden" name="page" value={page} />
@@ -191,9 +197,9 @@ export function AccesParLien({ page, next, source, google }: {
 
 /**
  * L'écran « C'est envoyé » : l'adresse rappelée, « Ouvrir ma messagerie » si son domaine est connu, le conseil
- * d'ouvrir le lien sur le MÊME appareil et le même navigateur (flux PKCE : la clé de l'échange est un cookie de ce
- * navigateur), « Renvoyer » après {@link DELAI_RENVOI_S} s, « Changer d'adresse ». Présentation seule (testée à
- * part) ; l'état vit dans `AccesParLien`.
+ * d'ouvrir le lien sur cet appareil, dans ce navigateur et sans tarder (indispensable tant que les modèles d'e-mail
+ * de Supabase envoient le lien PKCE, simple prudence avec le format token_hash : docs/beta.md §6), « Renvoyer » après
+ * {@link DELAI_RENVOI_S} s, « Changer d'adresse ». Présentation seule (testée à part) ; l'état vit dans `AccesParLien`.
  */
 export function EcranEnvoye({
   email, page, next, newsletter, retour, restant, pending, action, renvoye, erreur, titreRef, onChanger,

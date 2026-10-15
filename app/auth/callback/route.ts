@@ -9,8 +9,11 @@ import { noterArrivee } from "@/lib/auth-arrivee";
  * l'intention (chemin interne seulement).
  *
  * Flux PKCE : la clé de l'échange est un cookie posé par le navigateur qui a DEMANDÉ le lien. Ouvert dans un
- * autre navigateur, ou une deuxième fois, le lien échoue : /connexion dit pourquoi (`erreur=lien_invalide`) et
- * garde l'intention, pour qu'un nouveau lien y ramène.
+ * autre navigateur, ou une deuxième fois, le lien échoue ; pour une adresse NOUVELLE, il échoue aussi plus de
+ * 5 minutes après la demande (l'état PKCE d'une inscription expire au bout de 300 s chez Supabase, quel que soit le
+ * réglage de validité du lien). /connexion dit pourquoi (`erreur=lien_invalide`) et garde l'intention, pour qu'un
+ * nouveau lien y ramène. Les modèles d'e-mail au format token_hash (/auth/confirm, docs/beta.md §6) n'ont aucune de
+ * ces limites : ils ne passent plus par ici, sauf Google.
  */
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);

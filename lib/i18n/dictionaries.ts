@@ -243,7 +243,7 @@ const fr = {
     lockNeuf: "Le détail poste par poste, inclus pendant la bêta",
     /* L'inscription */
     inscriptionEyebrow: "Bêta gratuite",
-    inscriptionTitre: "Gratuit pendant la bêta — crée ton compte",
+    inscriptionTitre: "Crée ton compte",
     /* L'en-tête de l'inscription (B2) : la bêta en une ligne, puis trois bénéfices courts. */
     bandeauTitre: (fin: string) => `Gratuit jusqu'au ${fin} · deviens membre fondateur`,
     benefices: (tarif: string) => [
@@ -310,7 +310,7 @@ const fr = {
     /* Accès par lien e-mail (B2) : inscription et connexion sans mot de passe, le mot de passe replié en second. */
     lien: {
       emailLabel: "Ton adresse e-mail",
-      aideInscription: "Pas de mot de passe : un clic sur le lien reçu confirme ton adresse et te connecte.",
+      aideInscription: "Pas de mot de passe : le lien reçu par e-mail confirme ton adresse et te connecte.",
       aideConnexion: "Un clic sur le lien reçu par e-mail, et tu retrouves ton espace.",
       boutonInscription: "Recevoir mon lien d'accès",
       boutonConnexion: "Recevoir un lien de connexion",
@@ -333,18 +333,32 @@ const fr = {
       /* L'écran « C'est envoyé » */
       envoyeTitre: "C'est envoyé : regarde ta boîte mail",
       envoyeAvant: "On vient d'envoyer un lien à ",
-      envoyeApres: ". Un clic dessus et c'est fait : ton adresse est confirmée, ton espace est ouvert.",
+      envoyeApres: ". Ouvre-le : ton adresse est confirmée et ton espace s'ouvre.",
       envoyeRetour: "Le lien te ramènera là où tu en étais.",
       ouvrirMessagerie: (nom: string) => `Ouvrir ma messagerie (${nom})`,
-      memeAppareilTitre: "Ouvre le lien sur cet appareil",
-      memeAppareil: "Et dans ce même navigateur : c'est lui qui garde la clé de ta connexion. Ouvert sur un autre téléphone ou un autre ordinateur, le lien ne pourra pas te connecter.",
+      memeAppareilTitre: "Le plus sûr : ouvre-le sur cet appareil",
+      memeAppareil: "Dans ce même navigateur, et sans tarder : c'est le chemin le plus sûr pour arriver connecté. Le lien ne sert qu'une fois.",
       rienRecu: "Rien reçu ? Regarde dans les indésirables (spams) ou l'onglet Promotions.",
       renvoyer: "Renvoyer le lien",
       renvoyerDans: (s: number) => `Renvoyer le lien (dans ${s} s)`,
       renvoye: "Nouveau lien envoyé. Utilise celui-ci : le précédent ne fonctionne plus.",
       changer: "Changer d'adresse",
-      /* /connexion?erreur=lien_invalide (retour de /auth/callback) */
-      lienInvalide: "Ce lien ne fonctionne plus : il a déjà servi, il a expiré, ou il a été ouvert dans un autre navigateur. Redemande un lien ici, puis ouvre-le sur cet appareil.",
+      /* /connexion?erreur=lien_invalide (retour de /auth/callback ou du bouton de /auth/confirmer) */
+      lienInvalide: "Ce lien ne fonctionne plus : il a déjà servi, il a expiré, un lien plus récent l'a remplacé, ou il a été ouvert ailleurs que dans le navigateur qui l'a demandé. Redemande un lien ici et ouvre-le sur cet appareil : il te ramènera au même endroit.",
+    },
+    /* /auth/confirmer : le lien au format token_hash, consommé au clic sur le bouton (pas par les robots des messageries). */
+    confirmer: {
+      eyebrow: "Lien d'accès",
+      titre: "Plus qu'un clic",
+      sousEntree: "Un clic sur le bouton : ton adresse est confirmée et ton espace s'ouvre.",
+      sousMotDePasse: "Un clic sur le bouton pour choisir ton nouveau mot de passe.",
+      sousAdresse: "Un clic sur le bouton pour confirmer ta nouvelle adresse e-mail.",
+      boutonEntree: "Entrer dans AVYORA",
+      boutonMotDePasse: "Choisir mon mot de passe",
+      boutonAdresse: "Confirmer ma nouvelle adresse",
+      enCours: "Un instant…",
+      pourquoi: "Pourquoi ce bouton ? Certaines messageries ouvrent les liens toutes seules pour les vérifier : ce clic garantit que c'est bien toi qui entres.",
+      pasToi: "Tu n'as rien demandé ? Ferme simplement cette page : il ne se passera rien.",
     },
   },
 };
@@ -573,7 +587,7 @@ const en: Dict = {
     affinerNeuf: "Phase-by-phase detail — free in beta",
     lockNeuf: "The line-by-line detail, included during the beta",
     inscriptionEyebrow: "Free beta",
-    inscriptionTitre: "Free during the beta — create your account",
+    inscriptionTitre: "Create your account",
     bandeauTitre: (fin: string) => `Free through ${fin} · become a founding member`,
     benefices: (tarif: string) => [
       "Detailed estimate, PDF and floor plans included, no credit card",
@@ -635,7 +649,7 @@ const en: Dict = {
     inBasLien: "Sign in",
     lien: {
       emailLabel: "Your email address",
-      aideInscription: "No password: one click on the link we email you confirms your address and signs you in.",
+      aideInscription: "No password: the link we email you confirms your address and signs you in.",
       aideConnexion: "One click on the link we email you and you're back in your account.",
       boutonInscription: "Email me my access link",
       boutonConnexion: "Email me a sign-in link",
@@ -657,17 +671,30 @@ const en: Dict = {
       },
       envoyeTitre: "Sent! Check your inbox",
       envoyeAvant: "We just sent a link to ",
-      envoyeApres: ". One click and you're all set: your address is confirmed and your account is open.",
+      envoyeApres: ". Open it: your address is confirmed and your account opens.",
       envoyeRetour: "The link will take you right back to where you were.",
       ouvrirMessagerie: (nom: string) => `Open my inbox (${nom})`,
-      memeAppareilTitre: "Open the link on this device",
-      memeAppareil: "And in this same browser: it holds the key to your sign-in. Opened on another phone or computer, the link can't sign you in.",
+      memeAppareilTitre: "Safest: open it on this device",
+      memeAppareil: "In this same browser, and soon: that's the surest way to land signed in. The link works only once.",
       rienRecu: "Nothing yet? Check your spam folder or the Promotions tab.",
       renvoyer: "Resend the link",
       renvoyerDans: (s: number) => `Resend the link (in ${s}s)`,
       renvoye: "New link sent. Use this one: the previous link no longer works.",
       changer: "Use a different address",
-      lienInvalide: "This link no longer works: it was already used, it expired, or it was opened in a different browser. Request a new link here, then open it on this device.",
+      lienInvalide: "This link no longer works: it was already used, it expired, a newer link replaced it, or it was opened outside the browser that requested it. Request a new link here and open it on this device: it'll take you back to the same place.",
+    },
+    confirmer: {
+      eyebrow: "Access link",
+      titre: "One more click",
+      sousEntree: "One click on the button: your address is confirmed and your account opens.",
+      sousMotDePasse: "One click on the button to choose your new password.",
+      sousAdresse: "One click on the button to confirm your new email address.",
+      boutonEntree: "Continue to AVYORA",
+      boutonMotDePasse: "Choose my password",
+      boutonAdresse: "Confirm my new address",
+      enCours: "One moment…",
+      pourquoi: "Why this button? Some email services open links on their own to scan them; this click makes sure it's really you signing in.",
+      pasToi: "Didn't ask for this? Just close this page and nothing will happen.",
     },
   },
 };

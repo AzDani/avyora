@@ -44,9 +44,10 @@ export function AuthShell({
 
           <div className="w-full max-w-sm">
             <p className="eyebrow mb-2">{eyebrow}</p>
-            <h1 className="text-[26px] font-semibold tracking-tight text-ink">{titre}</h1>
+            <h1 className="text-[24px] font-semibold tracking-tight text-ink sm:text-[26px]">{titre}</h1>
             {sousTitre && <p className="mt-2 text-[15px] leading-relaxed text-muted">{sousTitre}</p>}
-            <div className="mt-7">{children}</div>
+            {/* Sur téléphone, tout remonte un peu : le champ e-mail de l'inscription doit apparaître sans défiler (B2). */}
+            <div className="mt-5 sm:mt-7">{children}</div>
             {bas && <div className="mt-7 border-t border-line pt-5 text-sm text-muted">{bas}</div>}
           </div>
         </div>

@@ -12,12 +12,12 @@ export function BandeauBeta({ locale }: { locale: Locale }) {
   const b = dict(locale).beta;
   const l = libellesBeta(locale);
   return (
-    <div className="mb-6 rounded-field border border-brand-200 bg-brand-50 px-4 py-3" data-bandeau-beta="">
+    <div className="mb-4 rounded-field border border-brand-200 bg-brand-50 px-3.5 py-2.5 sm:mb-6 sm:px-4 sm:py-3" data-bandeau-beta="">
       <p className="flex items-start gap-2 text-[13.5px] font-semibold leading-snug text-brand-700">
         <IconeFondateur className="mt-[2px] shrink-0" />
         <span>{b.bandeauTitre(l.fin)}</span>
       </p>
-      <ul className="mt-2 space-y-1 text-[13px] leading-snug text-ink">
+      <ul className="mt-1.5 space-y-0.5 text-[13px] leading-snug text-ink sm:mt-2 sm:space-y-1">
         {b.benefices(l.tarif).map((x) => (
           <li key={x} className="flex items-start gap-2">
             <IconeCoche />

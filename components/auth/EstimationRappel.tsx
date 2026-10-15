@@ -52,9 +52,9 @@ export function EstimationRappel() {
 
   if (!info) return null;
   return (
-    <div className="mb-6 rounded-field border border-brand-200 bg-brand-50 p-4">
+    <div className="mb-4 rounded-field border border-brand-200 bg-brand-50 p-3 sm:mb-6 sm:p-4" data-estimation-rappel="">
       <p className="eyebrow mb-1">Ton estimation est prête</p>
-      <p className="data text-xl font-semibold text-ink">
+      <p className="data text-lg font-semibold text-ink sm:text-xl">
         {fmt(info.lo)} – {fmt(info.hi)} €
       </p>
       <p className="mt-1 text-[13px] leading-relaxed text-muted">

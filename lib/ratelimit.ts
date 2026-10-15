@@ -11,16 +11,18 @@ const url = process.env.UPSTASH_REDIS_REST_URL;
 const token = process.env.UPSTASH_REDIS_REST_TOKEN;
 const redis = url && token ? new Redis({ url, token }) : null;
 
-function make(limiter: ReturnType<typeof Ratelimit.slidingWindow>, prefix = "avyora"): Ratelimit | null {
+function make(limiter: ReturnType<typeof Ratelimit.slidingWindow>, prefix: string): Ratelimit | null {
   return redis ? new Ratelimit({ redis, limiter, prefix, analytics: true }) : null;
 }
 
 // Fenêtres calibrées : auth serrée (anti-brute-force), IA très serrée (coût $), API modérée.
+// Chaque catégorie sous SON préfixe : indexées sur la même IP avec la même fenêtre, auth et api écrivaient sous un
+// préfixe commun dans la même clé Redis, et quelques appels d'API suffisaient à refuser une demande de lien d'accès.
 const LIMITERS: Record<LimitKind, Ratelimit | null> = {
-  auth: make(Ratelimit.slidingWindow(6, "60 s")), // 6 tentatives / min / IP
-  api: make(Ratelimit.slidingWindow(40, "60 s")), // 40 req / min
-  ia: make(Ratelimit.slidingWindow(8, "60 s")), // 8 analyses IA / min
-  pdf: make(Ratelimit.slidingWindow(5, "60 s")), // 5 PDF / min (génération Chrome headless = coûteux)
+  auth: make(Ratelimit.slidingWindow(6, "60 s"), "avyora:auth"), // 6 tentatives / min / IP (et / adresse, en empreinte)
+  api: make(Ratelimit.slidingWindow(40, "60 s"), "avyora:api"), // 40 req / min
+  ia: make(Ratelimit.slidingWindow(8, "60 s"), "avyora:ia"), // 8 analyses IA / min
+  pdf: make(Ratelimit.slidingWindow(5, "60 s"), "avyora:pdf"), // 5 PDF / min (génération Chrome headless = coûteux)
   // « Mes plans », indexés sur user.id, chacun sous son propre préfixe (le compteur d'une catégorie
   // ne mange pas celui de l'autre). La sauvegarde automatique de l'éditeur est groupée à ~2 s.
   plan: make(Ratelimit.slidingWindow(90, "60 s"), "avyora:plan"), // 90 écritures / min

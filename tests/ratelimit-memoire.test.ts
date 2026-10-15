@@ -61,3 +61,34 @@ describe("limites en mémoire sans Upstash", () => {
     for (let i = 0; i < 30; i++) expect(await verifierLimite("auth", "1.2.3.4")).toBe(true);
   });
 });
+
+describe("avec Upstash", () => {
+  it("chaque catégorie sous son propre préfixe : auth ne partage plus sa clé Redis avec api (même IP, même fenêtre)", async () => {
+    vi.resetModules();
+    const prefixes: string[] = [];
+    vi.doMock("@upstash/redis", () => ({ Redis: class {} }));
+    vi.doMock("@upstash/ratelimit", () => {
+      class Ratelimit {
+        static slidingWindow() {
+          return {};
+        }
+        constructor(o: { prefix: string }) {
+          prefixes.push(o.prefix);
+        }
+      }
+      return { Ratelimit };
+    });
+    process.env.UPSTASH_REDIS_REST_URL = "https://exemple.upstash.io";
+    process.env.UPSTASH_REDIS_REST_TOKEN = "jeton-de-test";
+    try {
+      await import("@/lib/ratelimit");
+    } finally {
+      vi.doUnmock("@upstash/redis");
+      vi.doUnmock("@upstash/ratelimit");
+    }
+    expect(prefixes).toHaveLength(7);
+    expect(new Set(prefixes).size).toBe(7);
+    expect(prefixes).toContain("avyora:auth");
+    expect(prefixes).toContain("avyora:api");
+  });
+});

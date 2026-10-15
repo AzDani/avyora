@@ -6,7 +6,8 @@
  *  2. L'action `envoyerLienAcces` (Supabase simulé, aucun e-mail réel) : `signInWithOtp` et ses options, `next`
  *     assaini, les limites (par IP et par adresse), la réponse identique que l'adresse ait un compte ou non, les
  *     erreurs traduites. L'inscription au mot de passe date aussi les CGU et le consentement.
- *  3. /auth/callback et /auth/confirm : `compte_cree` au premier retour (lien, Google), l'intention, le lien invalide.
+ *  3. /auth/callback, /auth/confirm et le bouton de /auth/confirmer : `compte_cree` une fois au premier retour (lien,
+ *     Google), l'intention (déroulée de `{{ .RedirectTo }}`), le jeton consommé au clic seulement, le lien invalide.
  *  4. Le rendu de /inscription et /connexion (FR, EN ; bêta en cours ou non), l'écran « C'est envoyé »,
  *     l'interrupteur Google (éteint par défaut).
  */
@@ -16,8 +17,9 @@ import { prerender } from "react-dom/static";
 import { dict } from "@/lib/i18n/dictionaries";
 import { libellesBeta } from "@/lib/beta";
 import {
-  DELAI_RENVOI_S, FENETRE_NOUVEAU_COMPTE_MS, destinationLien, emailValide, issueEnvoi, lirePageAcces, messagerieDe,
-  metadonneesInscription, methodeNouveauCompte, reclamationEnAttente,
+  COOKIE_LIEN, DELAI_RENVOI_S, FENETRE_NOUVEAU_COMPTE_MS, destinationLien, ecrireLienEnAttente, emailValide, intentionDuLien,
+  issueEnvoi, jetonValide, lireLienEnAttente, lirePageAcces, lireTypeLien, messagerieDe, metadonneesInscription,
+  methodeNouveauCompte, reclamationEnAttente,
 } from "@/lib/auth-lien";
 
 vi.mock("server-only", () => ({}));
@@ -91,7 +93,12 @@ describe("lib/auth-lien : fonctions pures", () => {
     expect(methodeNouveauCompte({ user_metadata: { inscription: "mot_de_passe" }, email_confirmed_at: il(5_000) }, t)).toBeNull();
     expect(methodeNouveauCompte({ user_metadata: {}, email_confirmed_at: il(5_000) }, t)).toBeNull();
     expect(methodeNouveauCompte({ app_metadata: { provider: "google" }, created_at: il(3_000) }, t)).toBe("google");
-    expect(methodeNouveauCompte({ app_metadata: { provider: "google" }, created_at: il(86_400_000) }, t)).toBeNull();
+    expect(methodeNouveauCompte({ app_metadata: { provider: "google" }, created_at: il(FENETRE_NOUVEAU_COMPTE_MS) }, t)).toBeNull();
+    // Adresse confirmée par un clic ouvert ailleurs (PKCE), connectée au lien suivant, deux heures plus tard : comptée.
+    expect(methodeNouveauCompte({ user_metadata: { inscription: "lien" }, email_confirmed_at: il(2 * 3_600_000) }, t)).toBe("lien");
+    // Une fois mesuré (marque posée), plus jamais : un deuxième lien dans la foulée ne crée pas un second compte.
+    expect(methodeNouveauCompte({ user_metadata: { inscription: "lien", compte_cree_le: il(60_000) }, email_confirmed_at: il(90_000) }, t)).toBeNull();
+    expect(methodeNouveauCompte({ user_metadata: { compte_cree_le: il(1_000) }, app_metadata: { provider: "google" }, created_at: il(3_000) }, t)).toBeNull();
     for (const u of [null, undefined, {}, { user_metadata: { inscription: "lien" }, email_confirmed_at: "pas une date" }]) {
       expect(methodeNouveauCompte(u, t)).toBeNull();
     }
@@ -120,6 +127,63 @@ describe("lib/auth-lien : fonctions pures", () => {
 
   it("le délai du renvoi est celui de Supabase (60 s)", () => {
     expect(DELAI_RENVOI_S).toBe(60);
+  });
+
+  it("l'intention d'un lien token_hash : `next={{ .RedirectTo }}` (URL absolue du site, encodée ou non), déroulée", () => {
+    const nos = ["https://getavyora.fr", "http://localhost:3021"];
+    const cas: [string | null | undefined, string][] = [
+      // Le modèle encode {{ .RedirectTo }} (html/template, contexte de requête) : URLSearchParams l'a déjà décodé une fois.
+      ["https://getavyora.fr/auth/callback?next=%2Fprojets%2Fnouveau%2Fdetaille%3Faffiner%3D1", "/projets/nouveau/detaille?affiner=1"],
+      ["https://getavyora.fr/auth/callback?next=%2Fplan", "/plan"],
+      ["https://getavyora.fr/auth/callback?next=%2Fonboarding", "/onboarding"],
+      // Non encodé : le `next` intérieur a été décodé avec l'extérieur, un `?` y reste lisible.
+      ["https://getavyora.fr/auth/callback?next=/projets/nouveau/detaille?affiner=1", "/projets/nouveau/detaille?affiner=1"],
+      ["http://localhost:3021/auth/callback?next=%2Fplan", "/plan"],
+      ["https://getavyora.fr/auth/confirm?next=%2Fplan", "/plan"],
+      ["https://getavyora.fr/plan?id=abc", "/plan?id=abc"],
+      // Un chemin interne écrit en dur dans le modèle (mot de passe oublié).
+      ["/reset/definir", "/reset/definir"],
+      ["/auth/callback?next=%2Fplan", "/plan"],
+      // Supabase retombe sur la Site URL quand l'adresse de retour n'est pas autorisée : pas d'intention.
+      ["https://getavyora.fr", "/projets"],
+      ["https://getavyora.fr/", "/projets"],
+      // Tout ce qui n'est pas à nous, ou pas un chemin interne.
+      ["https://evil.com/auth/callback?next=%2Fplan", "/projets"],
+      ["https://getavyora.fr.evil.com/plan", "/projets"],
+      ["https://getavyora.fr@evil.com/plan", "/projets"],
+      ["//evil.com", "/projets"],
+      ["/\\evil.com", "/projets"],
+      ["javascript:alert(1)", "/projets"],
+      ["https://getavyora.fr/\t/evil.com", "/projets"],
+      ["https://getavyora.fr/auth/callback?next=%2F%2Fevil.com", "/projets"],
+      ["https://getavyora.fr/auth/callback?next=https%3A%2F%2Fevil.com", "/projets"],
+      ["https://getavyora.fr/auth/callback?next=%2F%09%2Fevil.com", "/projets"],
+      // Des passages imbriqués sans fin : on s'arrête.
+      ["/auth/confirm?next=%2Fauth%2Fconfirm%3Fnext%3D%252Fauth%252Fconfirm%253Fnext%253D%25252Fplan", "/projets"],
+      ["", "/projets"],
+      [null, "/projets"],
+      [undefined, "/projets"],
+      [`https://getavyora.fr/${"x".repeat(600)}`, "/projets"],
+    ];
+    for (const [next, attendu] of cas) expect(intentionDuLien(next, nos), JSON.stringify(next)).toBe(attendu);
+    // Aucune origine « null » acceptée, même si on la passait.
+    expect(intentionDuLien("javascript:alert(1)", ["null"])).toBe("/projets");
+  });
+
+  it("le lien en attente du bouton : jeton bien formé, type connu, chemin interne ; sinon rien", () => {
+    expect(lireTypeLien("email")).toBe("email");
+    expect(lireTypeLien("recovery")).toBe("recovery");
+    for (const x of ["", "sms", "phone_change", null, 3]) expect(lireTypeLien(x)).toBeNull();
+    const jeton = "pkce_" + "a1".repeat(28);
+    expect(jetonValide(jeton)).toBe(true);
+    for (const x of ["", "court", "a b c d e f g h", "x".repeat(300), "<script>", null]) expect(jetonValide(x), String(x)).toBe(false);
+    const v = ecrireLienEnAttente({ jeton, type: "email", next: "/plan" });
+    expect(lireLienEnAttente(v)).toEqual({ jeton, type: "email", next: "/plan" });
+    // Un cookie trafiqué : l'intention retombe sur /projets, un jeton ou un type invalide annule tout.
+    expect(lireLienEnAttente(JSON.stringify({ h: jeton, t: "email", n: "//evil.com" }))).toEqual({ jeton, type: "email", next: "/projets" });
+    for (const x of [undefined, "", "{", JSON.stringify({ h: "x", t: "email", n: "/" }), JSON.stringify({ h: jeton, t: "sms", n: "/" })]) {
+      expect(lireLienEnAttente(x), String(x)).toBeNull();
+    }
   });
 });
 
@@ -295,6 +359,31 @@ describe("envoyerLienAcces : le lien d'accès (aucun e-mail réel)", () => {
     vi.restoreAllMocks();
   });
 
+  it("les clés de limite ne portent jamais l'adresse en clair (Upstash, mémoire) : son empreinte", async () => {
+    const cles: [string, string][] = [];
+    vi.doMock("@/lib/ratelimit", () => ({
+      clientIp: async () => S.ip,
+      verifierLimite: async (k: string, id: string) => { cles.push([k, id]); return true; },
+    }));
+    try {
+      const m = await actions();
+      await m.envoyerLienAcces(undefined, fd({ email: "  Camille@Exemple.FR ", page: "inscription" }));
+      await m.envoyerLienAcces(undefined, fd({ email: "camille@exemple.fr", page: "connexion" }));
+      await m.envoyerLienAcces(undefined, fd({ email: "zoe@exemple.fr", page: "connexion" }));
+    } finally {
+      vi.doUnmock("@/lib/ratelimit");
+    }
+    expect(cles.filter(([, id]) => id === "1.2.3.4")).toHaveLength(3);
+    const adresses = cles.filter(([, id]) => id !== "1.2.3.4");
+    expect(adresses.map(([k]) => k)).toEqual(["auth", "auth", "auth"]);
+    for (const [, id] of adresses) {
+      expect(id).toMatch(/^lien:[0-9a-f]{32}$/);
+      expect(id).not.toMatch(/camille|zoe|exemple/i);
+    }
+    expect(adresses[0][1]).toBe(adresses[1][1]); // même adresse, même compteur
+    expect(adresses[2][1]).not.toBe(adresses[0][1]);
+  });
+
   it("l'inscription au mot de passe (repliée) date aussi les CGU et le consentement ; compte_cree porte la méthode", async () => {
     const m = await actions();
     const r = await m.signup(undefined, fd({ nom: "Camille", email: "camille@exemple.fr", password: "chantier2026maison", accept: "on", newsletter: "on" }));
@@ -344,6 +433,16 @@ describe("/auth/callback et /auth/confirm : le retour du lien", () => {
     expect(r).toEqual({ status: 307, location: "https://getavyora.fr/projets/nouveau/detaille?affiner=1" });
     expect(S.mesures).toEqual([["compte_cree", { confirme: true, destination: "/projets/nouveau/detaille?affiner=1", methode: "lien" }]]);
     expect(S.journal).toEqual([["inscription", { userId: "u1", email: "camille@exemple.fr", payload: { methode: "lien" } }]]);
+    // La marque « mesuré » : une seule mise à jour, la marque seule (les métadonnées de l'inscription sont déjà là).
+    expect(appelsMaj).toEqual([{ data: { compte_cree_le: expect.any(String) } }]);
+  });
+
+  it("un deuxième lien dans la foulée (marque posée) : ni compte_cree ni « inscription » une seconde fois", async () => {
+    await retour("callback", "https://getavyora.fr/auth/callback?code=abc&next=%2Fprojets", {
+      ...NOUVEAU_LIEN(), user_metadata: { inscription: "lien", compte_cree_le: il(3 * 60_000) },
+    });
+    expect(S.mesures).toEqual([]);
+    expect(S.journal).toEqual([]);
     expect(appelsMaj).toEqual([]);
   });
 
@@ -365,7 +464,7 @@ describe("/auth/callback et /auth/confirm : le retour du lien", () => {
     await retour("callback", "https://getavyora.fr/auth/callback?code=abc&next=%2Fplan", {
       id: "u2", email: "alex@gmail.com", user_metadata: { full_name: "Alex" }, app_metadata: { provider: "google" }, created_at: il(2_000),
     });
-    expect(appelsMaj).toEqual([{ data: { cgu_acceptees_le: "2026-10-15T10:00:00.000Z", inscription: "google", newsletter: false } }]);
+    expect(appelsMaj).toEqual([{ data: { cgu_acceptees_le: "2026-10-15T10:00:00.000Z", inscription: "google", newsletter: false, compte_cree_le: "2026-10-15T10:00:00.000Z" } }]);
     expect(S.mesures).toEqual([["compte_cree", { confirme: true, destination: "/plan", methode: "google" }]]);
   });
 
@@ -389,12 +488,130 @@ describe("/auth/callback et /auth/confirm : le retour du lien", () => {
     expect(S.mesures).toEqual([]);
   });
 
-  it("/auth/confirm (format token_hash) : même retour, même mesure", async () => {
-    const r = await retour("confirm", "https://getavyora.fr/auth/confirm?token_hash=t&type=email&next=%2Fplan", NOUVEAU_LIEN());
-    expect(r.location).toBe("https://getavyora.fr/plan");
-    expect(S.mesures[0]?.[1]).toMatchObject({ methode: "lien", destination: "/plan" });
-    const ko = await retour("confirm", "https://getavyora.fr/auth/confirm?token_hash=t&type=email&next=%2F%2Fevil.com", null, { code: "otp_expired" });
-    expect(ko.location).toBe("https://getavyora.fr/connexion?erreur=lien_invalide");
+});
+
+describe("/auth/confirm puis le bouton de /auth/confirmer : le lien au format token_hash", () => {
+  const JETON = "pkce_" + "0f".repeat(28);
+  const MOCKS = ["@/lib/supabase/server", "@/lib/audit", "@/lib/track-server", "next/headers", "next/navigation"];
+  afterEach(() => {
+    for (const m of MOCKS) vi.doUnmock(m);
+  });
+
+  /** Le clic dans l'e-mail (ou le robot d'une messagerie) : GET /auth/confirm. */
+  async function ouvrir(url: string) {
+    vi.resetModules();
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://getavyora.fr");
+    const verifs: unknown[] = [];
+    vi.doMock("@/lib/supabase/server", () => ({
+      supabaseServer: async () => ({ auth: { verifyOtp: async (o: unknown) => { verifs.push(o); return { data: { user: null, session: null }, error: null }; } } }),
+    }));
+    const { GET } = await import("@/app/auth/confirm/route");
+    const res = await GET(new Request(url) as never);
+    return { status: res.status, location: res.headers.get("location"), cookie: res.cookies.get(COOKIE_LIEN), verifs };
+  }
+
+  /** Le bouton « Entrer dans AVYORA » : l'action `confirmerLien`, avec le cookie posé par /auth/confirm (ou sans). */
+  async function cliquer(cookie: string | undefined, o: { user?: Record<string, unknown> | null; erreur?: unknown } = {}) {
+    vi.resetModules();
+    S.journal = [];
+    S.mesures = [];
+    const poses: [string, string, Record<string, unknown>][] = [];
+    const verifs: unknown[] = [];
+    const maj: unknown[] = [];
+    vi.doMock("next/headers", () => ({
+      headers: async () => new Headers({ host: "localhost:3021" }),
+      cookies: async () => ({
+        get: (n: string) => (n === COOKIE_LIEN && cookie !== undefined ? { name: n, value: cookie } : undefined),
+        getAll: () => [],
+        set: (n: string, v: string, opt: Record<string, unknown>) => { poses.push([n, v, opt]); },
+        delete: () => {},
+      }),
+    }));
+    vi.doMock("next/navigation", async (orig) => ({
+      ...(await orig<typeof import("next/navigation")>()),
+      redirect: (u: string) => { throw new Redirection(u); },
+    }));
+    vi.doMock("@/lib/supabase/server", () => ({
+      supabaseServer: async () => ({
+        auth: {
+          verifyOtp: async (p: unknown) => {
+            verifs.push(p);
+            return { data: { user: o.user ?? null, session: o.user ? {} : null }, error: o.erreur ?? null };
+          },
+          updateUser: async (p: unknown) => { maj.push(p); return { data: {}, error: null }; },
+        },
+      }),
+    }));
+    vi.doMock("@/lib/audit", () => ({ journaliser: async (type: string, x: Record<string, unknown>) => { S.journal.push([type, x]); } }));
+    vi.doMock("@/lib/track-server", () => ({ suivreServeur: async (nom: string, x: Record<string, unknown>) => { S.mesures.push([nom, x]); } }));
+    const m = await import("@/lib/actions/auth");
+    const url = await redirection(() => m.confirmerLien());
+    return { url, verifs, maj, poses };
+  }
+
+  const il = (ms: number) => new Date(Date.now() - ms).toISOString();
+  const NOUVEAU = () => ({ id: "u1", email: "camille@exemple.fr", user_metadata: { inscription: "lien" }, app_metadata: { provider: "email" }, email_confirmed_at: il(1_000), created_at: il(30 * 60_000) });
+
+  it("le clic dans l'e-mail ne consomme RIEN (robots des messageries) : le lien part dans un cookie httpOnly, l'adresse perd le jeton", async () => {
+    // {{ .RedirectTo }} tel que le modèle l'écrit : l'emailRedirectTo de l'envoi, encodé.
+    const redirectTo = encodeURIComponent("https://getavyora.fr/auth/callback?next=%2Fprojets%2Fnouveau%2Fdetaille%3Faffiner%3D1");
+    const r = await ouvrir(`https://getavyora.fr/auth/confirm?token_hash=${JETON}&type=email&next=${redirectTo}`);
+    expect(r.status).toBe(303);
+    expect(r.location).toBe("https://getavyora.fr/auth/confirmer");
+    expect(r.verifs).toEqual([]);
+    expect(r.cookie).toMatchObject({ name: COOKIE_LIEN, httpOnly: true, sameSite: "lax", secure: true, path: "/auth", maxAge: 3600 });
+    expect(lireLienEnAttente(r.cookie?.value)).toEqual({ jeton: JETON, type: "email", next: "/projets/nouveau/detaille?affiner=1" });
+    // Le mot de passe oublié : l'intention est écrite en dur dans le modèle.
+    const reset = await ouvrir(`https://getavyora.fr/auth/confirm?token_hash=${JETON}&type=recovery&next=/reset/definir`);
+    expect(lireLienEnAttente(reset.cookie?.value)).toEqual({ jeton: JETON, type: "recovery", next: "/reset/definir" });
+    // Une intention qui n'est pas à nous : /projets.
+    const evil = await ouvrir(`https://getavyora.fr/auth/confirm?token_hash=${JETON}&type=email&next=${encodeURIComponent("https://evil.com/plan")}`);
+    expect(lireLienEnAttente(evil.cookie?.value)?.next).toBe("/projets");
+  });
+
+  it("un lien tronqué ou trafiqué (jeton absent, type inconnu) : /connexion le dit, rien n'est rangé", async () => {
+    for (const q of ["type=email", `token_hash=${JETON}`, `token_hash=${JETON}&type=sms`, "token_hash=%3Cx%3E&type=email"]) {
+      const r = await ouvrir(`https://getavyora.fr/auth/confirm?${q}&next=%2Fplan`);
+      expect(r.location, q).toBe("https://getavyora.fr/connexion?erreur=lien_invalide&next=%2Fplan");
+      expect(r.cookie, q).toBeUndefined();
+    }
+    const r = await ouvrir(`https://getavyora.fr/auth/confirm?next=%2F%2Fevil.com`);
+    expect(r.location).toBe("https://getavyora.fr/connexion?erreur=lien_invalide");
+  });
+
+  it("le bouton : verifyOtp (sans PKCE : n'importe quel appareil), compte_cree une fois, puis l'intention ; le cookie est effacé", async () => {
+    const r = await cliquer(ecrireLienEnAttente({ jeton: JETON, type: "email", next: "/projets/nouveau/detaille?affiner=1" }), { user: NOUVEAU() });
+    expect(r.verifs).toEqual([{ type: "email", token_hash: JETON }]);
+    expect(r.url).toBe("/projets/nouveau/detaille?affiner=1");
+    expect(S.mesures).toEqual([["compte_cree", { confirme: true, destination: "/projets/nouveau/detaille?affiner=1", methode: "lien" }]]);
+    expect(S.journal).toEqual([["inscription", { userId: "u1", email: "camille@exemple.fr", payload: { methode: "lien" } }]]);
+    expect(r.maj).toEqual([{ data: { compte_cree_le: expect.any(String) } }]);
+    expect(r.poses).toEqual([[COOKIE_LIEN, "", expect.objectContaining({ path: "/auth", maxAge: 0 })]]);
+  });
+
+  it("Enregistrer sans intention : /projets, où ClaimDraft range l'estimation ; un compte existant : pas de compte_cree", async () => {
+    let r = await cliquer(ecrireLienEnAttente({ jeton: JETON, type: "email", next: "/projets" }), { user: NOUVEAU() });
+    expect(r.url).toBe("/projets");
+    r = await cliquer(ecrireLienEnAttente({ jeton: JETON, type: "email", next: "/projets" }), { user: { ...NOUVEAU(), email_confirmed_at: il(40 * 86_400_000) } });
+    expect(r.url).toBe("/projets");
+    expect(S.mesures).toEqual([]);
+    expect(r.maj).toEqual([]);
+    r = await cliquer(ecrireLienEnAttente({ jeton: JETON, type: "recovery", next: "/reset/definir" }), { user: { ...NOUVEAU(), email_confirmed_at: il(40 * 86_400_000) } });
+    expect(r.verifs).toEqual([{ type: "recovery", token_hash: JETON }]);
+    expect(r.url).toBe("/reset/definir");
+  });
+
+  it("lien déjà servi, expiré ou remplacé : /connexion le dit et garde l'intention ; sans cookie, aucun appel", async () => {
+    let r = await cliquer(ecrireLienEnAttente({ jeton: JETON, type: "email", next: "/plan" }), { erreur: { code: "otp_expired", status: 403 } });
+    expect(r.url).toBe("/connexion?erreur=lien_invalide&next=%2Fplan");
+    expect(S.mesures).toEqual([]);
+    expect(r.poses).toHaveLength(1);
+    r = await cliquer(undefined);
+    expect(r.url).toBe("/connexion?erreur=lien_invalide");
+    expect(r.verifs).toEqual([]);
+    r = await cliquer(JSON.stringify({ h: JETON, t: "sms", n: "/plan" }));
+    expect(r.url).toBe("/connexion?erreur=lien_invalide");
+    expect(r.verifs).toEqual([]);
   });
 });
 
@@ -595,6 +812,54 @@ describe("Rendu : /inscription et /connexion commencent par le lien d'accès", (
       expect(FEATURES.authGoogle, String(v)).toBe(attendu);
       vi.unstubAllEnvs();
     }
+  });
+});
+
+describe("Rendu : /auth/confirmer, le bouton avant d'entrer", () => {
+  const JETON = "pkce_" + "0f".repeat(28);
+  afterEach(() => {
+    for (const m of ["@/lib/i18n/server", "next/headers", "next/navigation"]) vi.doUnmock(m);
+  });
+
+  async function page(locale: Locale, cookie: string | undefined) {
+    vi.resetModules();
+    vi.doMock("@/lib/i18n/server", () => ({ getLocale: async () => locale, getT: async () => ({ locale, t: dict(locale) }) }));
+    vi.doMock("next/headers", () => ({
+      headers: async () => new Headers(),
+      cookies: async () => ({ get: (n: string) => (n === COOKIE_LIEN && cookie !== undefined ? { name: n, value: cookie } : undefined), getAll: () => [] }),
+    }));
+    vi.doMock("next/navigation", async (orig) => ({
+      ...(await orig<typeof import("next/navigation")>()),
+      redirect: (u: string) => { throw new Redirection(u); },
+    }));
+    const { LangProvider } = await import("@/components/i18n/LangProvider");
+    const P = (await import("@/app/auth/confirmer/page")).default;
+    return html(createElement(LangProvider, { locale, children: await P() }));
+  }
+
+  for (const locale of LOCALES) {
+    const c = dict(locale).auth.confirmer;
+    it(`${locale} : « Plus qu'un clic », le bouton, pourquoi ce bouton ; le jeton n'est jamais dans la page`, async () => {
+      const h = await page(locale, ecrireLienEnAttente({ jeton: JETON, type: "email", next: "/plan" }));
+      for (const x of [c.eyebrow, c.titre, c.sousEntree, c.boutonEntree, c.pourquoi, c.pasToi]) expect(h, x).toContain(esc(x));
+      expect(h).toMatch(/<button type="submit" class="btn btn-primary w-full py-3[^"]*" data-confirmer-bouton="">/);
+      expect(h).not.toContain(JETON);
+      expect(h).not.toContain("/plan");
+      const reset = await page(locale, ecrireLienEnAttente({ jeton: JETON, type: "recovery", next: "/reset/definir" }));
+      expect(reset).toContain(esc(c.boutonMotDePasse));
+      expect(reset).toContain(esc(c.sousMotDePasse));
+    });
+  }
+
+  it("sans lien en attente (cookie expiré, page rouverte) : /connexion propose un nouveau lien", async () => {
+    expect(await redirection(() => page("fr", undefined))).toBe("/connexion?erreur=lien_invalide");
+    expect(await redirection(() => page("fr", "{"))).toBe("/connexion?erreur=lien_invalide");
+  });
+
+  it("les textes du bouton existent dans les deux langues, sans « vous » en français", () => {
+    const fr = dict("fr").auth.confirmer;
+    expect(Object.keys(dict("en").auth.confirmer).sort()).toEqual(Object.keys(fr).sort());
+    for (const x of Object.values(fr)) expect(x, x).not.toMatch(/\bvous\b|\bvotre\b|\bvos\b/i);
   });
 });
 
