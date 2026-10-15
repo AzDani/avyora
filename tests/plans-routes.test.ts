@@ -29,6 +29,8 @@ const CONTRAT_FINAL = fixture("plan-final-contrat.json");
 type User = { id: string; email: string; app_metadata: Record<string, unknown> };
 const GRATUIT: User = { id: "11111111-1111-4111-8111-111111111111", email: "camille@exemple.fr", app_metadata: {} };
 const PRO: User = { id: "22222222-2222-4222-8222-222222222222", email: "alex@exemple.fr", app_metadata: { plan: "pro" } };
+/* Un inscrit de la bêta : les droits Pro sans abonnement (lib/auth.ts, `limitePlans` : 30 plans au plus, R4). */
+const BETA: User = { id: "44444444-4444-4444-8444-444444444444", email: "lou@exemple.fr", app_metadata: { beta: true } };
 const AUTRE: User = { id: "33333333-3333-4333-8333-333333333333", email: "sam@exemple.fr", app_metadata: {} };
 const SECRET = 'relation "public.floor_plans" — détail interne à ne jamais renvoyer';
 
@@ -212,7 +214,9 @@ async function routes(plans = true) {
   });
   vi.doMock("@/lib/auth", () => ({
     getUser: async () => S.user,
-    estPro: (u: User | null) => !!u && u.app_metadata?.plan === "pro",
+    estPro: (u: User | null) => !!u && (u.app_metadata?.plan === "pro" || u.app_metadata?.beta === true),
+    /* la vraie règle est testée dans beta.test.ts ; ici, ce que la route en fait */
+    limitePlans: (u: User) => (u.app_metadata?.plan === "pro" ? null : u.app_metadata?.beta === true ? 30 : 1),
   }));
   vi.doMock("@/lib/supabase/server", () => ({ supabaseServer: async () => clientSession }));
   vi.doMock("@/lib/supabase/admin", () => ({ supabaseAdmin: () => clientAdmin }));
@@ -395,6 +399,19 @@ describe("POST /api/plans", () => {
     expect(S.appels.filter((x) => x.op === "rpc").map((x) => (x.args as { p_limite: unknown }).p_limite)).toEqual([null, null]);
     for (let i = 0; i < 198; i++) S.base.floor_plans.push({ id: nouvelId(), owner_id: PRO.id, revision: 1 });
     expect(await lire(await r.liste.POST(creer({ nom: "201e" })))).toMatchObject({ status: 409, json: { code: "plafond" } });
+  });
+
+  it("bêta (R4) : un inscrit sans abonnement range 30 plans au plus ; le 31ᵉ → 409 plafond (l'éditeur le dit en Pro), jamais 402", async () => {
+    const r = await routes();
+    S.user = BETA;
+    expect((await r.liste.POST(creer())).status).toBe(201);
+    expect(S.appels.filter((x) => x.op === "rpc").map((x) => (x.args as { p_limite: unknown }).p_limite)).toEqual([30]);
+    for (let i = 0; i < 29; i++) S.base.floor_plans.push({ id: nouvelId(), owner_id: BETA.id, revision: 1 });
+    expect(await lire(await r.liste.POST(creer({ nom: "31e" })))).toMatchObject({ status: 409, json: { code: "plafond" } });
+    expect(S.base.floor_plans.filter((f) => f.owner_id === BETA.id)).toHaveLength(30);
+    /* l'éditeur et « Mes plans » ne voient pas de limite gratuite (null) : seul le serveur tient le plafond */
+    expect((await lire(await r.liste.GET())).json).toMatchObject({ limite: null });
+    expect((await lire(await r.session.GET())).json).toMatchObject({ pro: true, limite: null });
   });
 
   it("reprise d'un plan local : même editeurId deux fois → le même plan, deja, sans doublon ni 402", async () => {

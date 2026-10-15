@@ -9,10 +9,12 @@ import { getUser } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
 import { cheminInterne } from "@/lib/next-url";
 import { betaActive, lireSourceBeta } from "@/lib/beta";
-import { BandeauBeta } from "@/components/BandeauBeta";
+import { BandeauBeta, PanneauBeta } from "@/components/BandeauBeta";
 import { SuiviVue } from "@/components/SuiviVue";
 
-export const metadata = { title: "Créer un compte", robots: { index: false, follow: true } };
+export async function generateMetadata() {
+  return { title: (await getT()).t.auth.metaInscription, robots: { index: false, follow: true } };
+}
 
 export default async function InscriptionPage({
   searchParams,
@@ -28,17 +30,20 @@ export default async function InscriptionPage({
   const next = nextDemande ? cheminInterne(nextDemande, "") || undefined : undefined;
   const t = tr.auth;
   const suite = next ? `?next=${encodeURIComponent(next)}` : "";
-  // Bêta gratuite (lib/beta.ts) : l'en-tête « gratuit jusqu'au… · deviens membre fondateur » et ses trois bénéfices ;
-  // venu d'une fonction de la bêta (`source`, liste fermée), le titre le dit d'emblée et l'arrivée est mesurée par source.
+  // Bêta gratuite (lib/beta.ts) : l'en-tête « gratuit jusqu'au… · deviens membre fondateur » et ses trois bénéfices, et
+  // le même titre d'où que l'on vienne (« Bêta gratuite · Crée ton compte ») ; venu d'une fonction de la bêta (`source`,
+  // liste fermée), l'arrivée est mesurée par source.
   const beta = betaActive();
   const source = beta ? lireSourceBeta(sourceDemandee) : undefined;
 
   return (
     <AuthShell
-      eyebrow={source ? tr.beta.inscriptionEyebrow : t.inEyebrow}
-      titre={source ? tr.beta.inscriptionTitre : t.inTitre}
+      eyebrow={beta ? tr.beta.inscriptionEyebrow : t.inEyebrow}
+      titre={beta ? tr.beta.inscriptionTitre : t.inTitre}
       // Pendant la bêta, les bénéfices de l'en-tête disent déjà ce que le compte apporte : le champ e-mail remonte.
       sousTitre={beta ? undefined : t.inSous}
+      // Sur ordinateur, la bêta est dans le panneau de marque, à côté du formulaire (le bouton reste au-dessus du pli).
+      panneau={beta ? <PanneauBeta locale={locale} /> : undefined}
       bas={
         <>
           {t.inBasAvant}
@@ -51,7 +56,7 @@ export default async function InscriptionPage({
       {/* Arrivée depuis l'éditeur (drapeau ou next=/plan) : le rappel du plan. Sinon il ne rend rien. */}
       {FEATURES.plans && <PlanRappel next={next} />}
       <EstimationRappel />
-      {beta && <BandeauBeta locale={locale} />}
+      {beta && <BandeauBeta locale={locale} className="lg:hidden" />}
       {source && <SuiviVue evenement="vers_inscription" props={{ source }} cle={source} />}
       <AccesParLien page="inscription" next={next} source={source} google={FEATURES.authGoogle} />
     </AuthShell>

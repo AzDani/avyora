@@ -35,9 +35,14 @@ const gtagScript = "https://www.googletagmanager.com https://www.googleadservice
 const gtagBeacons =
   "https://www.googletagmanager.com https://*.google.com https://www.google.fr https://www.googleadservices.com https://*.doubleclick.net https://*.google-analytics.com";
 
+// CAPTCHA des formulaires d'accès (Cloudflare Turnstile, lib/captcha.ts) : son script et sa fenêtre, seulement quand la
+// clé est fournie (NEXT_PUBLIC_TURNSTILE_SITE_KEY). Sans clé, la CSP d'avant au caractère près.
+const captcha = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? "https://challenges.cloudflare.com" : "";
+
 const csp = [
   `default-src 'self'`,
-  `script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com ${gtagScript}${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com ${gtagScript}${captcha ? ` ${captcha}` : ""}${isDev ? " 'unsafe-eval'" : ""}`,
+  ...(captcha ? [`frame-src 'self' ${captcha}`] : []),
   `style-src 'self' 'unsafe-inline'`,
   `img-src 'self' data: blob: ${gtagBeacons}`,
   `font-src 'self'`,

@@ -18,9 +18,13 @@ import { dict } from "@/lib/i18n/dictionaries";
  *
  * Bêta gratuite (lib/beta.ts) : la session dit si elle court (`betaEditeurPlan`) ; l'amorçage remplace alors la phrase
  * du prix de Pro (`AVYORA_PRIX_PRO`, que l'éditeur lit à son démarrage) et, dans le texte qu'il exécute, le libellé
- * « Passer Pro » (boutons, fenêtres, barre) par « Compte gratuit ». La source n'est pas touchée, ni la page
- * statique : hors bêta, l'éditeur d'avant au caractère près. Les liens mènent toujours à /tarifs, qui pendant la
- * bêta propose « Créer mon compte gratuit » et ramène à l'éditeur.
+ * « Passer Pro » (boutons, fenêtres, barre) par « Compte gratuit », « est réservé à Pro » par « demande un compte,
+ * gratuit pendant la bêta » et « des plans enregistrés sans limite » par « jusqu’à 30 plans enregistrés » (le plafond
+ * d'un inscrit pendant la bêta, `PLANS_MAX_BETA`). Aucun prix n'est donc cité pendant la bêta (la phrase du prix dit
+ * « gratuit pendant la bêta… ») ; si la session ne répond pas (panne, délai), l'éditeur d'avant. Et « Compte gratuit » (barre, liens, boutons, `passerPro`) mène droit à l'inscription,
+ * dans le même onglet, comme l'invitation « Garde ce plan dans ton compte » (`siteCreerCompte` : le plan est enregistré
+ * sur l'appareil et marqué pour la reprise) au lieu de /tarifs dans un nouvel onglet. La source n'est pas touchée, ni
+ * la page statique : hors bêta, l'éditeur d'avant au caractère près.
  */
 
 export const SOURCE_EDITEUR = path.join("maquettes", "plan-editor.html");
@@ -179,6 +183,9 @@ var pret=document.readyState!=='loading';
 var attente=null;
 var minuterie=0;
 var passer=null;
+var reserve=null;
+var plans=null;
+var inscription=null;
 function lancer(s,pro,message){
   window.AVYORA_PRO=!!pro;
   window.AVYORA_SITE=s;
@@ -191,8 +198,23 @@ function lancer(s,pro,message){
     var b=document.getElementById('proTop');
     if(b){b.setAttribute('aria-label',passer);var l=b.querySelector('.lbl');if(l)l.textContent=passer;}
   }
+  if(reserve)code=code.split('est réservé à Pro').join(reserve);
+  if(plans)code=code.split('des plans enregistrés sans limite').join(plans);
+  if(inscription)U.inscription=inscription;
   el.textContent=code;
   document.body.appendChild(el);
+  /* bêta gratuite : « Compte gratuit » mène à l'inscription comme l'invitation (plan gardé, drapeau de reprise) */
+  if(inscription&&typeof window.siteCreerCompte==='function'){
+    var creer=window.siteCreerCompte;
+    window.passerPro=function(o){
+      try{if(typeof window.suivre==='function')window.suivre('clic_passer_pro',{origine:typeof o==='string'?o:'fenetre'});}catch(e){}
+      creer();
+    };
+    if(document.addEventListener)document.addEventListener('click',function(e){
+      var a=e.target&&e.target.closest?e.target.closest('a'):null;
+      if(a&&a.getAttribute('href')===U.tarifs){e.preventDefault();creer();}
+    },true);
+  }
   var v=document.getElementById('avyora-voile');
   if(v&&v.parentNode)v.parentNode.removeChild(v);
   if(message&&typeof window.toast==='function'){try{window.toast(message);}catch(e){}}
@@ -221,6 +243,9 @@ lire(U.api+'/session').then(function(r){
   /* bêta gratuite : la phrase du prix et le libellé de Pro disent la bêta (la session le sait, la page statique non) */
   if(S.beta&&typeof S.beta.prix==='string')window.AVYORA_PRIX_PRO=S.beta.prix;
   if(S.beta&&typeof S.beta.passer==='string'&&/^[A-Za-zÀ-ÿ ]{1,40}$/.test(S.beta.passer))passer=S.beta.passer;
+  if(S.beta&&typeof S.beta.reserve==='string'&&/^[A-Za-zÀ-ÿ ,]{1,80}$/.test(S.beta.reserve))reserve=S.beta.reserve;
+  if(S.beta&&typeof S.beta.plans==='string'&&/^[A-Za-zÀ-ÿ0-9 ’]{1,60}$/.test(S.beta.plans))plans=S.beta.plans;
+  if(S.beta&&typeof S.beta.inscription==='string'&&S.beta.inscription.indexOf('/inscription?')===0&&/^[A-Za-z0-9%=&_.-]{1,200}$/.test(S.beta.inscription.slice(13)))inscription=S.beta.inscription;
   if(S.connecte!==true){local(null,'compte');return;}
   var P=id?lire(U.api+'/'+encodeURIComponent(id)):Promise.resolve(null);
   return Promise.all([lire(U.api),P]).then(function(x){

@@ -156,11 +156,14 @@ const fr = {
     pastille: "Bêta",
     offresTitre: "Tout est gratuit pendant la bêta",
     proSous: (fin: string) => `Avec un compte, gratuit jusqu'au ${fin}. Tout ce qui est gratuit, et :`,
+    /* La 1re ligne de la colonne Pro (« des plans enregistrés sans limite », le droit d'un abonné) pendant la bêta :
+       un inscrit en enregistre `PLANS_MAX_BETA` au plus (lib/beta.ts). */
+    plans: (n: number) => `jusqu'à ${n} plans enregistrés`,
     offresVoir: "Créer mon compte gratuit",
     renoverLien: "Inclus pendant la bêta",
-    faqGratuit: (fin: string) => ({
+    faqGratuit: (fin: string, plans: number) => ({
       q: "C'est vraiment gratuit ?",
-      r: `Oui. Pendant la bêta, jusqu'au ${fin}, tout est gratuit avec un compte : des plans enregistrés sans limite, le projet rénovation chiffré et le dossier PDF sans filigrane. Sans compte, tu dessines ton plan, le vois en 3D, lis ses surfaces et gardes un plan sur ton appareil.`,
+      r: `Oui. Pendant la bêta, jusqu'au ${fin}, tout est gratuit avec un compte : jusqu'à ${plans} plans enregistrés, le projet rénovation chiffré et le dossier PDF sans filigrane. Sans compte, tu dessines ton plan, le vois en 3D, lis ses surfaces et gardes un plan sur ton appareil.`,
     }),
   },
   /* L'écran de choix (`/projets/nouveau`) : le bandeau « Partir de mon plan », sous les deux cartes (C9). */
@@ -421,11 +424,12 @@ const en: DictPlans = {
     pastille: "Beta",
     offresTitre: "Everything is free during the beta",
     proSous: (fin: string) => `With an account, free through ${fin}. Everything that is free, plus:`,
+    plans: (n: number) => `up to ${n} saved plans`,
     offresVoir: "Create my free account",
     renoverLien: "Included during the beta",
-    faqGratuit: (fin: string) => ({
+    faqGratuit: (fin: string, plans: number) => ({
       q: "Is it really free?",
-      r: `Yes. During the beta, through ${fin}, everything is free with an account: unlimited saved plans, the priced renovation project and the PDF file without watermark. Without an account, you draw your plan, view it in 3D, read its floor areas and keep one plan on your device.`,
+      r: `Yes. During the beta, through ${fin}, everything is free with an account: up to ${plans} saved plans, the priced renovation project and the PDF file without watermark. Without an account, you draw your plan, view it in 3D, read its floor areas and keep one plan on your device.`,
     }),
   },
   choix: {

@@ -23,6 +23,12 @@ const LIMITERS: Record<LimitKind, Ratelimit | null> = {
   api: make(Ratelimit.slidingWindow(40, "60 s"), "avyora:api"), // 40 req / min
   ia: make(Ratelimit.slidingWindow(8, "60 s"), "avyora:ia"), // 8 analyses IA / min
   pdf: make(Ratelimit.slidingWindow(5, "60 s"), "avyora:pdf"), // 5 PDF / min (génération Chrome headless = coûteux)
+  // Bêta gratuite : tout inscrit génère des PDF ; un plafond horaire par compte borne la facture (Chrome headless, 60 s max).
+  pdfHeure: make(Ratelimit.slidingWindow(30, "3600 s"), "avyora:pdf-heure"), // 30 PDF / h / compte
+  // Le lien d'accès envoie un e-mail à chaque demande : en plus de `auth` (6 / min / IP), deux plafonds horaires,
+  // l'adresse (en empreinte : une boîte bombardée) et l'IP (un robot qui fait défiler les adresses).
+  lienAdresse: make(Ratelimit.slidingWindow(3, "3600 s"), "avyora:lien-adresse"), // 3 liens / h / adresse (un envoi, deux « Renvoyer »)
+  lienIp: make(Ratelimit.slidingWindow(20, "3600 s"), "avyora:lien-ip"), // 20 liens / h / IP
   // « Mes plans », indexés sur user.id, chacun sous son propre préfixe (le compteur d'une catégorie
   // ne mange pas celui de l'autre). La sauvegarde automatique de l'éditeur est groupée à ~2 s.
   plan: make(Ratelimit.slidingWindow(90, "60 s"), "avyora:plan"), // 90 écritures / min
@@ -31,13 +37,14 @@ const LIMITERS: Record<LimitKind, Ratelimit | null> = {
   planEstimation: make(Ratelimit.slidingWindow(10, "3600 s"), "avyora:plan-estimation"), // 10 / h
 };
 
-export type LimitKind = "auth" | "api" | "ia" | "pdf" | "plan" | "planCreation" | "planEstimation";
+export type LimitKind = "auth" | "api" | "ia" | "pdf" | "pdfHeure" | "lienAdresse" | "lienIp" | "plan" | "planCreation" | "planEstimation";
 
 /**
- * « Mes plans » : les catégories qui CRÉENT des lignes en base se ferment si le store tombe (fail-closed) ;
- * les autres restent ouvertes (une sauvegarde de plan refusée ferait croire à une perte).
+ * Les catégories qui CRÉENT des lignes en base (« Mes plans ») ou qui coûtent cher (le plafond horaire des PDF) se
+ * ferment si le store tombe (fail-closed) ; les autres restent ouvertes (une sauvegarde de plan refusée ferait croire à
+ * une perte, une demande de lien refusée empêcherait d'entrer).
  */
-const FERMEES_EN_PANNE = new Set<LimitKind>(["planCreation", "planEstimation"]);
+const FERMEES_EN_PANNE = new Set<LimitKind>(["planCreation", "planEstimation", "pdfHeure"]);
 
 /** IP client (best-effort) depuis les en-têtes de proxy. */
 export async function clientIp(): Promise<string> {
@@ -47,14 +54,19 @@ export async function clientIp(): Promise<string> {
 }
 
 /**
- * En PRODUCTION sans Upstash, « Mes plans » et l'authentification gardent leurs limites EN MÉMOIRE, par instance :
- * moins strictes qu'un store partagé (chaque instance compte de son côté), mais un compte ne peut plus enchaîner
- * les écritures sans fin, ni un robot les demandes de lien d'accès (B2 : chaque demande envoie un e-mail). Les
- * autres catégories gardent le no-op d'avant.
+ * En PRODUCTION sans Upstash, « Mes plans », l'authentification et les PDF gardent leurs limites EN MÉMOIRE, par
+ * instance : moins strictes qu'un store partagé (chaque instance compte de son côté), mais un compte ne peut plus
+ * enchaîner les écritures ni les PDF sans fin, ni un robot les demandes de lien d'accès (B2 : chaque demande envoie un
+ * e-mail). Les autres catégories (api, ia) gardent le no-op d'avant.
  */
 const MEMOIRE: Partial<Record<LimitKind, { max: number; fenetreMs: number }>> = {
   /* Connexion, inscription, lien d'accès, mot de passe oublié : comme Upstash, par IP et (lien) par adresse. */
   auth: { max: 6, fenetreMs: 60_000 },
+  lienAdresse: { max: 3, fenetreMs: 3_600_000 },
+  lienIp: { max: 20, fenetreMs: 3_600_000 },
+  /* Le PDF du rapport (Chrome headless) : ouvert à tout inscrit pendant la bêta. */
+  pdf: { max: 5, fenetreMs: 60_000 },
+  pdfHeure: { max: 30, fenetreMs: 3_600_000 },
   plan: { max: 90, fenetreMs: 60_000 },
   planCreation: { max: 20, fenetreMs: 3_600_000 },
   planEstimation: { max: 10, fenetreMs: 3_600_000 },
@@ -67,7 +79,7 @@ function limiteMemoire(kind: LimitKind, identifiant: string): boolean {
   if (!regle || process.env.VERCEL_ENV !== "production") return true;
   if (!memoireSignalee) {
     memoireSignalee = true;
-    console.warn("[ratelimit] Upstash absent en production : limites de « Mes plans » et de l'authentification tenues en mémoire, par instance.");
+    console.warn("[ratelimit] Upstash absent en production : limites de « Mes plans », de l'authentification et des PDF tenues en mémoire, par instance.");
   }
   const maintenant = Date.now();
   if (traces.size > 5000) {
@@ -81,7 +93,7 @@ function limiteMemoire(kind: LimitKind, identifiant: string): boolean {
   return ok;
 }
 
-/** true = autorisé, false = limite dépassée. Sans Upstash : no-op, sauf « Mes plans » et l'auth en production (en mémoire). */
+/** true = autorisé, false = limite dépassée. Sans Upstash : no-op, sauf « Mes plans », l'auth et les PDF en production (en mémoire). */
 export async function verifierLimite(kind: LimitKind, identifiant: string): Promise<boolean> {
   const rl = LIMITERS[kind];
   if (!rl) return limiteMemoire(kind, identifiant);

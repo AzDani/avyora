@@ -64,7 +64,7 @@ export default async function ComptePage() {
       <AbonnementSection
         isPro={estAbonne(user)}
         {...(betaActive() ? { beta: { fin: libelles.fin } } : {})}
-        {...(fondateur ? { tarifFondateur: libelles.tarif } : {})}
+        fondateur={fondateur}
       />
 
       <UsernameForm initial={username} />

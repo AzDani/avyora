@@ -3,7 +3,7 @@ import type { User } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase/server";
 import { journaliser } from "@/lib/audit";
-import { betaActive } from "@/lib/beta";
+import { PLANS_MAX_BETA, betaActive } from "@/lib/beta";
 
 /**
  * Utilisateur authentifié courant (server components / route handlers), ou null.
@@ -60,15 +60,27 @@ export function estAbonne(user: User | null): boolean {
 }
 
 /**
- * Droits Pro — l'estimateur détaillé, l'export PDF, la sauvegarde illimitée, le suivi, les plans sans
- * limite. Un abonné les a toujours ; PENDANT LA BÊTA (lib/beta.ts, jusqu'à la fin du 31/12/2026 heure de
- * Paris), tout utilisateur connecté les a aussi : un compte n'existe qu'une fois son e-mail confirmé
- * (confirmation obligatoire côté Supabase), c'est donc l'adresse qu'on voulait. Après la bêta, sans
+ * Droits Pro — l'estimateur détaillé, l'export PDF, la sauvegarde illimitée, le suivi, les plans (sans
+ * limite pour un abonné, {@link limitePlans}). Un abonné les a toujours ; PENDANT LA BÊTA (lib/beta.ts, jusqu'à la fin du 31/12/2026 heure de
+ * Paris), tout utilisateur connecté DONT L'ADRESSE EST CONFIRMÉE les a aussi : c'est l'adresse qu'on voulait.
+ * La confirmation est obligatoire côté Supabase, mais on ne s'en remet pas à ce seul réglage : un compte non
+ * confirmé ou anonyme (si l'un des deux réglages basculait) n'a pas les droits de la bêta. Après la bêta, sans
  * redéploiement, on retombe sur `estAbonne` : exactement le comportement d'avant. Anonyme → jamais Pro.
  */
 export function estPro(user: User | null, maintenant: Date = new Date()): boolean {
   if (!user) return false;
-  return estAbonne(user) || betaActive(maintenant);
+  return estAbonne(user) || (betaActive(maintenant) && !!user.email_confirmed_at && !user.is_anonymous);
+}
+
+/**
+ * Les plans qu'un compte peut enregistrer : la limite que `POST /api/plans` passe à la fonction SQL. Sans limite pour
+ * un abonné (`null` ; le plafond SQL de 200 vaut pour tous) ; pendant la bêta, {@link PLANS_MAX_BETA} pour un inscrit
+ * qui a les droits sans abonnement (contre-examen R4 : pas de quoi remplir la base avec des comptes gratuits) ; 1
+ * sinon (la limite gratuite d'avant).
+ */
+export function limitePlans(user: User, maintenant: Date = new Date()): number | null {
+  if (estAbonne(user)) return null;
+  return estPro(user, maintenant) ? PLANS_MAX_BETA : 1;
 }
 
 /**

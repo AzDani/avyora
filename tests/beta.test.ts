@@ -25,7 +25,7 @@ import { presetRapide } from "@/lib/estimateur/presets";
 import { presetNeuf } from "@/lib/estimateur/presets-neuf";
 import {
   betaActive, finBeta, lireFinBeta, libellesBeta, estMembreFondateur, minuitParis,
-  lienInscriptionBeta, lireSourceBeta, SOURCES_BETA, TARIF_FONDATEUR_MOIS, tarifFondateur, betaEditeurPlan,
+  lienInscriptionBeta, lireSourceBeta, SOURCES_BETA, PLANS_MAX_BETA, betaEditeurPlan, dateInsecable,
 } from "@/lib/beta";
 
 vi.mock("server-only", () => ({}));
@@ -105,7 +105,7 @@ describe("lib/beta : la date de fin", () => {
   it("NEXT_PUBLIC_BETA=0 coupe la bêta tout de suite (et masque les membres fondateurs)", () => {
     bêta("coupée");
     expect(betaActive(PENDANT)).toBe(false);
-    expect(estMembreFondateur({ created_at: "2026-10-01T10:00:00Z" })).toBe(false);
+    expect(estMembreFondateur({ email_confirmed_at: "2026-10-01T10:00:00Z" })).toBe(false);
   });
 
   it("minuit à Paris, hiver et été (le jour peut déborder sur le mois suivant)", () => {
@@ -116,26 +116,29 @@ describe("lib/beta : la date de fin", () => {
     expect(minuitParis(2026, 10, 26).toISOString()).toBe("2026-10-25T23:00:00.000Z");
   });
 
-  it("les textes datés suivent la fin et la constante du tarif fondateur", () => {
+  it("les textes datés suivent la fin ; aucun tarif chiffré (décision de Dani du 16/10/2026) ; la date d'un seul tenant", () => {
     bêta();
-    expect(libellesBeta("fr")).toEqual({ fin: "31 décembre 2026", reprise: "1er janvier 2027", tarif: "18,85\u00a0€" });
-    expect(libellesBeta("en")).toEqual({ fin: "December 31, 2026", reprise: "January 1, 2027", tarif: "€18.85" });
+    expect(libellesBeta("fr")).toEqual({ fin: "31 décembre 2026", reprise: "1er janvier 2027" });
+    expect(libellesBeta("en")).toEqual({ fin: "December 31, 2026", reprise: "January 1, 2027" });
     bêta("allumée", "2027-03-31");
     expect(libellesBeta("fr")).toMatchObject({ fin: "31 mars 2027", reprise: "1er avril 2027" });
-    expect(TARIF_FONDATEUR_MOIS).toBe(18.85);
-    expect(tarifFondateur("fr")).toBe("18,85\u00a0€"); // insécable : « 18,85 » et « € » ne se séparent pas en fin de ligne
-    // Le tarif fondateur est celui du plan mensuel affiché sur /tarifs (au type d'espace près).
-    expect(tarifFondateur("fr").replace("\u00a0", " ")).toBe(dict("fr").tarifs.plans.mensuel.prix);
-    expect(tarifFondateur("en")).toBe(dict("en").tarifs.plans.mensuel.prix);
+    // Plus de constante du tarif fondateur : la promesse est sans chiffre.
+    expect(Object.keys(libellesBeta("fr"))).not.toContain("tarif");
+    expect(dateInsecable("31 décembre 2026")).toBe("31\u00a0décembre\u00a02026");
+    expect(dateInsecable("December 31, 2026")).toBe("December\u00a031,\u00a02026");
+    expect(PLANS_MAX_BETA).toBe(30);
   });
 
-  it("membre fondateur : un compte créé avant la fin de la bêta, et il le reste après", () => {
+  it("membre fondateur : un compte dont l'adresse est confirmée avant la fin de la bêta, et il le reste après", () => {
     bêta();
-    expect(estMembreFondateur({ created_at: "2026-10-01T10:00:00Z" })).toBe(true);
-    expect(estMembreFondateur({ created_at: "2026-12-31T22:59:00Z" })).toBe(true);
-    expect(estMembreFondateur({ created_at: "2026-12-31T23:00:00Z" })).toBe(false);
-    expect(estMembreFondateur({ created_at: "2027-02-01T10:00:00Z" })).toBe(false);
-    for (const u of [null, undefined, {}, { created_at: null }, { created_at: "pas une date" }]) expect(estMembreFondateur(u)).toBe(false);
+    expect(estMembreFondateur({ email_confirmed_at: "2026-10-01T10:00:00Z" })).toBe(true);
+    expect(estMembreFondateur({ email_confirmed_at: "2026-12-31T22:59:00Z" })).toBe(true);
+    expect(estMembreFondateur({ email_confirmed_at: "2026-12-31T23:00:00Z" })).toBe(false);
+    expect(estMembreFondateur({ email_confirmed_at: "2027-02-01T10:00:00Z" })).toBe(false);
+    // Créé pendant la bêta (par n'importe qui, à l'adresse de n'importe qui) mais confirmé en 2027 : pas fondateur.
+    expect(estMembreFondateur({ created_at: "2026-10-01T10:00:00Z", email_confirmed_at: "2027-01-05T10:00:00Z" } as { email_confirmed_at: string })).toBe(false);
+    expect(estMembreFondateur({ created_at: "2026-10-01T10:00:00Z" } as { email_confirmed_at?: string })).toBe(false);
+    for (const u of [null, undefined, {}, { email_confirmed_at: null }, { email_confirmed_at: "pas une date" }]) expect(estMembreFondateur(u)).toBe(false);
   });
 
   it("l'adresse de l'inscription : l'intention encodée, la source de la liste fermée", () => {
@@ -149,8 +152,8 @@ describe("lib/beta : la date de fin", () => {
 
 /* ─── 2. Les droits ──────────────────────────────────────────────────────────── */
 
-const GRATUIT = { id: "u-gratuit", email: "camille@exemple.fr", user_metadata: { nom: "Camille" }, app_metadata: {}, created_at: "2026-10-01T09:00:00.000Z" };
-const ABONNE = { id: "u-pro", email: "alex@exemple.fr", user_metadata: { nom: "Alex" }, app_metadata: { plan: "pro" }, created_at: "2026-09-01T09:00:00.000Z" };
+const GRATUIT = { id: "u-gratuit", email: "camille@exemple.fr", user_metadata: { nom: "Camille" }, app_metadata: {}, created_at: "2026-10-01T09:00:00.000Z", email_confirmed_at: "2026-10-01T09:01:00.000Z" };
+const ABONNE = { id: "u-pro", email: "alex@exemple.fr", user_metadata: { nom: "Alex" }, app_metadata: { plan: "pro" }, created_at: "2026-09-01T09:00:00.000Z", email_confirmed_at: "2026-09-01T09:01:00.000Z" };
 
 describe("lib/auth : estPro pendant et après la bêta", () => {
   async function auth() {
@@ -194,6 +197,29 @@ describe("lib/auth : estPro pendant et après la bêta", () => {
     }
   });
 
+  it("pendant la bêta, une adresse non confirmée ou un compte anonyme n'ont pas les droits (on ne s'en remet pas aux réglages de Supabase)", async () => {
+    bêta();
+    const { estPro } = await auth();
+    const nonConfirme = { ...GRATUIT, email_confirmed_at: null } as unknown as U;
+    const anonyme = { ...GRATUIT, email: undefined, email_confirmed_at: null, is_anonymous: true } as unknown as U;
+    const anonymeConfirme = { ...GRATUIT, is_anonymous: true } as unknown as U;
+    for (const u of [nonConfirme, anonyme, anonymeConfirme]) expect(estPro(u, PENDANT)).toBe(false);
+    // Un abonné reste Pro, même sans confirmation lisible (son statut vient de Stripe ou de PRO_EMAILS).
+    expect(estPro({ ...ABONNE, email_confirmed_at: null } as unknown as U, PENDANT)).toBe(true);
+  });
+
+  it("les plans d'un compte (R4) : sans limite pour un abonné, 30 pour un inscrit pendant la bêta, 1 sinon (et après la bêta)", async () => {
+    bêta();
+    const { limitePlans } = await auth();
+    expect(limitePlans(ABONNE as unknown as NonNullable<U>, PENDANT)).toBeNull();
+    expect(limitePlans(GRATUIT as unknown as NonNullable<U>, PENDANT)).toBe(PLANS_MAX_BETA);
+    expect(limitePlans({ ...GRATUIT, email_confirmed_at: null } as unknown as NonNullable<U>, PENDANT)).toBe(1);
+    expect(limitePlans(GRATUIT as unknown as NonNullable<U>, LENDEMAIN)).toBe(1);
+    expect(limitePlans(ABONNE as unknown as NonNullable<U>, LENDEMAIN)).toBeNull();
+    bêta("coupée");
+    expect(limitePlans(GRATUIT as unknown as NonNullable<U>, PENDANT)).toBe(1);
+  });
+
   it("bêta coupée : estPro = estAbonne, à toute date", async () => {
     bêta("coupée");
     const { estPro } = await auth();
@@ -208,11 +234,12 @@ type Utilisateur = "anonyme" | "gratuit" | "pro" | "admin" | "fondateur";
 
 const UTILISATEURS: Record<Utilisateur, unknown> = {
   anonyme: null,
-  gratuit: { id: "u-gratuit", email: "camille@exemple.fr", user_metadata: { nom: "Camille" }, app_metadata: {} },
-  pro: { id: "u-pro", email: "alex@exemple.fr", user_metadata: { nom: "Alex" }, app_metadata: { plan: "pro" } },
-  admin: { id: "u-admin", email: "admin@exemple.fr", user_metadata: {}, app_metadata: {} },
-  /* un inscrit de la bêta : `created_at` avant la fin, donc membre fondateur */
-  fondateur: { id: "u-fondateur", email: "sam@exemple.fr", user_metadata: { nom: "Sam" }, app_metadata: {}, created_at: "2026-10-12T08:00:00.000Z" },
+  /* adresse confirmée (sans quoi la bêta ne donne rien), mais APRÈS la fin : pas membre fondateur, comme avant */
+  gratuit: { id: "u-gratuit", email: "camille@exemple.fr", user_metadata: { nom: "Camille" }, app_metadata: {}, email_confirmed_at: "2027-01-15T09:00:00.000Z" },
+  pro: { id: "u-pro", email: "alex@exemple.fr", user_metadata: { nom: "Alex" }, app_metadata: { plan: "pro" }, email_confirmed_at: "2027-01-15T09:00:00.000Z" },
+  admin: { id: "u-admin", email: "admin@exemple.fr", user_metadata: {}, app_metadata: {}, email_confirmed_at: "2027-01-15T09:00:00.000Z" },
+  /* un inscrit de la bêta : adresse confirmée avant la fin, donc membre fondateur */
+  fondateur: { id: "u-fondateur", email: "sam@exemple.fr", user_metadata: { nom: "Sam" }, app_metadata: {}, created_at: "2026-10-12T08:00:00.000Z", email_confirmed_at: "2026-10-12T08:01:00.000Z" },
 };
 
 const renoRapide = presetRapide({ type: "Maison", surface: 100, codePostal: "45000", ampleur: "complete", finition: "standard", qui: "pros" });
@@ -389,6 +416,9 @@ describe("Pendant la bêta, un anonyme qui touche une fonction Pro va créer son
     let h = await r.rendre(createElement(EstimateurRapide, { isPro: false, beta: true }));
     expect(h).toContain("Détail poste par poste — gratuit en bêta");
     expect(h).not.toContain("— Pro");
+    // L'introduction ne parle plus d'un bouton « Affiner » qui n'existe pas : elle dit la bêta, comme celle du neuf.
+    expect(h).toContain(esc(dict("fr").beta.introReno));
+    expect(h).not.toContain("« Affiner »");
 
     for (const [sp, attendu] of [
       [{}, "/inscription?source=tarifs"],
@@ -403,31 +433,49 @@ describe("Pendant la bêta, un anonyme qui touche une fonction Pro va créer son
       // Plus de bouton d'abonnement : ni l'inscription « pour payer » (BoutonAbo), ni le paiement (BoutonCheckout).
       expect(h).not.toContain("next=%2Ftarifs%3Fplan");
       expect(h).not.toContain(dict("fr").boutons.redirection);
+      // Pas de grille des offres de 2027 et aucun prix d'après la bêta (décision de Dani du 16/10/2026) : la promesse
+      // fondateur sans chiffre, et un seul bouton « Créer mon compte gratuit ».
+      for (const prix of ["18,85", "169", "14,08", "16,15", "/ an", "/ mois", "€"]) expect(h, prix).not.toContain(prix);
+      expect(h.split(`>${dict("fr").beta.creerCompte}</a>`).length - 1).toBe(1);
+      expect(h.split('class="btn ').length - 1, "un seul bouton").toBe(1);
+      expect(h).toContain(esc(dict("fr").beta.tarifsFondateurTitre));
+      expect(h).toContain(esc(dict("fr").beta.tarifsFondateurNote));
+      // Les plans d'un inscrit : le plafond de la bêta, pas « sans limite » (le droit d'un abonné).
+      expect(h).not.toContain("sans limite");
+      expect(h).toContain(esc(`Éditeur de plan : ${dict("fr").beta.plansEnregistres(PLANS_MAX_BETA)} ;`));
+      // La date du titre ne se coupe pas en fin de ligne (espaces insécables).
+      expect(h).toContain(esc(dict("fr").beta.tarifsTitre("31\u00a0décembre\u00a02026")));
     }
   });
 
-  it("/inscription : l'encart de la bêta ; venu d'une fonction de la bêta, le titre « Crée ton compte » (le « gratuit » est dans l'encart, une fois)", async () => {
+  it("/inscription : l'encart de la bêta, et le même titre « Bêta gratuite · Crée ton compte » d'où que l'on vienne (le « gratuit » est dans l'encart, une fois)", async () => {
     for (const locale of LOCALES) {
       const b = dict(locale).beta;
-      let r = await charger({ locale });
-      let Inscription = (await import("@/app/inscription/page")).default;
-      let h = await r.rendre(await Inscription({ searchParams: Promise.resolve({}) }));
-      expect(h).toContain("data-bandeau-beta");
-      // B2 : l'en-tête en une ligne (« Gratuit jusqu'au… · deviens membre fondateur »), puis trois bénéfices courts.
-      expect(h).toContain(esc(b.bandeauTitre(libellesBeta(locale).fin)));
-      expect(b.benefices(libellesBeta(locale).tarif)).toHaveLength(3);
-      for (const x of b.benefices(libellesBeta(locale).tarif)) expect(h).toContain(esc(x));
-      expect(h).not.toContain(esc(b.inscriptionTitre));
-      r = await charger({ locale });
-      Inscription = (await import("@/app/inscription/page")).default;
-      h = await r.rendre(await Inscription({ searchParams: Promise.resolve({ source: "choix-neuf", next: "/projets/nouveau/construction?new=1" }) }));
-      expect(h).toContain(esc(b.inscriptionTitre));
+      const a = dict(locale).auth;
+      for (const sp of [{}, { source: "choix-neuf", next: "/projets/nouveau/construction?new=1" }, { source: "pirate" }, { next: "/plan" }]) {
+        const r = await charger({ locale });
+        const Inscription = (await import("@/app/inscription/page")).default;
+        const h = await r.rendre(await Inscription({ searchParams: Promise.resolve(sp) }));
+        expect(h, JSON.stringify(sp)).toContain("data-bandeau-beta");
+        // B2 : l'en-tête en une ligne (« Gratuit jusqu'au… · deviens membre fondateur », la date d'un seul tenant), puis
+        // trois bénéfices courts.
+        expect(h).toContain(esc(b.bandeauTitre(dateInsecable(libellesBeta(locale).fin))));
+        expect(b.benefices).toHaveLength(3);
+        for (const x of b.benefices) expect(h).toContain(esc(x));
+        // Contre-examen : l'accès direct et l'invitation de l'éditeur disaient « Bienvenue · Créer un compte ».
+        expect(h).toContain(`<p class="eyebrow mb-2">${esc(b.inscriptionEyebrow)}</p>`);
+        expect(h).toContain(`>${esc(b.inscriptionTitre)}</h1>`);
+        expect(h).not.toContain(`>${esc(a.inTitre)}</h1>`);
+        expect(h).not.toContain(esc(a.inEyebrow));
+      }
+      // L'intention voyage.
+      const r = await charger({ locale });
+      const Inscription = (await import("@/app/inscription/page")).default;
+      const h = await r.rendre(await Inscription({ searchParams: Promise.resolve({ source: "choix-neuf", next: "/projets/nouveau/construction?new=1" }) }));
       expect(h).toContain('name="next" value="/projets/nouveau/construction?new=1"');
-      // Une source inconnue est ignorée.
-      r = await charger({ locale });
-      Inscription = (await import("@/app/inscription/page")).default;
-      h = await r.rendre(await Inscription({ searchParams: Promise.resolve({ source: "pirate" }) }));
-      expect(h).not.toContain(esc(b.inscriptionTitre));
+      // La promesse fondateur, sans chiffre (décision de Dani du 16/10/2026) : un tarif préférentiel annoncé avant la fin.
+      expect(b.benefices[2]).toMatch(locale === "fr" ? /tarif préférentiel garanti à vie, annoncé avant la fin de la bêta/ : /preferred rate guaranteed for life, announced before the beta ends/);
+      expect(h).not.toContain("€");
     }
   });
 
@@ -461,7 +509,13 @@ describe("Pendant la bêta, un anonyme qui touche une fonction Pro va créer son
       const { GET } = await import("@/app/api/plans/session/route");
       return (await GET()).json();
     };
-    const beta = { prix: "gratuit pendant la bêta, jusqu'au 31 décembre 2026, avec un compte", passer: "Compte gratuit" };
+    const beta = {
+      prix: "gratuit pendant la bêta, jusqu'au 31 décembre 2026, avec un compte.",
+      passer: "Compte gratuit",
+      reserve: "demande un compte, gratuit pendant la bêta",
+      plans: "jusqu\u2019à 30 plans enregistrés",
+      inscription: "/inscription?next=%2Fplan&source=editeur-plan",
+    };
     expect(await session("anonyme")).toEqual({ connecte: false, pro: false, limite: 1, utilises: 0, beta });
     expect(await session("gratuit")).toEqual({ connecte: true, pro: true, limite: null, utilises: 2, beta });
     vi.setSystemTime(LENDEMAIN);
@@ -470,21 +524,25 @@ describe("Pendant la bêta, un anonyme qui touche une fonction Pro va créer son
     for (const m of ["@/lib/plans/data"]) vi.doUnmock(m);
   });
 
-  it("l'amorçage de l'éditeur : pendant la bêta, la phrase du prix et « Compte gratuit » à la place de « Passer Pro » ; sinon, l'éditeur d'avant", async () => {
+  it("l'amorçage de l'éditeur : pendant la bêta, la phrase du prix, « Compte gratuit » et l'inscription directe ; sinon, l'éditeur d'avant", async () => {
     vi.resetModules();
-    const { editeurHeberge } = await import("@/lib/editeur/heberger");
+    const { editeurHeberge, URLS_EDITEUR } = await import("@/lib/editeur/heberger");
     const out = await editeurHeberge();
     const [config, amorce, editeur] = [...out.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
     expect(editeur).toContain("Passer Pro");
+    expect(editeur.split("est réservé à Pro").length - 1).toBe(1);
+    expect(editeur.split("des plans enregistrés sans limite").length - 1).toBe(1);
     /* l'amorçage, joué dans un faux navigateur : la session dit (ou non) la bêta, on lit le script qu'il exécute */
     const jouer = async (session: Record<string, unknown>) => {
       const ajoutes: { textContent?: string }[] = [];
       const barre: Record<string, string> = { "aria-label": "Passer Pro" };
       const lbl = { textContent: "Passer Pro" };
+      const ecouteurs: [string, (e: unknown) => void, unknown][] = [];
       const fetch = async (u: string) => ({
         status: 200,
         text: async () => JSON.stringify(u === "/api/plans/session" ? session : { plans: [], limite: 1, utilises: 0 }),
       });
+      const appels: string[] = [];
       const win: Record<string, unknown> = {
         location: { search: "" }, URLSearchParams, AbortController, fetch, Promise, setTimeout, clearTimeout,
         document: {
@@ -494,31 +552,136 @@ describe("Pendant la bêta, un anonyme qui touche une fonction Pro va créer son
             : i === "proTop" ? { setAttribute: (k: string, v: string) => { barre[k] = v; }, querySelector: () => lbl }
             : null,
           createElement: () => ({}),
-          body: { appendChild: (e: { textContent?: string }) => ajoutes.push(e) },
+          addEventListener: (type: string, f: (e: unknown) => void, capture: unknown) => { ecouteurs.push([type, f, capture]); },
+          /* « exécuter » le script de l'éditeur : ses fonctions globales, réduites à ce que l'amorçage appelle */
+          body: {
+            appendChild: (e: { textContent?: string }) => {
+              ajoutes.push(e);
+              win.siteCreerCompte = () => appels.push("creer");
+              win.passerPro = () => appels.push("tarifs");
+              win.suivre = (n: string, d: { origine: string }) => appels.push(`suivre:${n}:${d.origine}`);
+            },
+          },
         },
       };
       win.window = win;
       new Script(config).runInNewContext(win);
       new Script(amorce).runInNewContext(win);
       for (let i = 0; i < 20 && !win.AVYORA_SITE; i++) await new Promise((r) => setTimeout(r, 0));
-      return { code: ajoutes[0]?.textContent ?? "", prix: win.AVYORA_PRIX_PRO, barre: barre["aria-label"], lbl: lbl.textContent };
+      const site = win.AVYORA_SITE as { urls: Record<string, string> };
+      return {
+        code: ajoutes[0]?.textContent ?? "", prix: win.AVYORA_PRIX_PRO, barre: barre["aria-label"], lbl: lbl.textContent,
+        urls: site.urls, ecouteurs, appels, win,
+      };
     };
     const b = betaEditeurPlan();
     expect(b.passer).toBe("Compte gratuit");
+    expect(b.prix.endsWith(".")).toBe(true); // l'éditeur l'écrit aussi au fil d'une phrase (dossier PDF)
+    expect(b.inscription).toBe(lienInscriptionBeta("/plan", "editeur-plan"));
+    // R4 : un inscrit de la bêta enregistre PLANS_MAX_BETA plans au plus (apostrophe typographique : la phrase vit dans
+    // une chaîne entre apostrophes droites du script).
+    expect(b.plans).toBe(`jusqu\u2019à ${PLANS_MAX_BETA} plans enregistrés`);
+    // Aucun prix pendant la bêta (décision de Dani du 16/10/2026).
+    for (const v of Object.values(b)) expect(v).not.toMatch(/€|\d[,.]\d\d/);
     let r = await jouer({ connecte: false, pro: false, limite: 1, utilises: 0, beta: b });
     expect(r.prix).toBe(b.prix);
     expect(r.code).not.toContain("Passer Pro");
-    expect(r.code).toBe(editeur.split("Passer Pro").join("Compte gratuit"));
+    expect(r.code).not.toContain("est réservé à Pro");
+    expect(r.code).not.toContain("sans limite");
+    expect(r.code).toContain("Le projet rénovation demande un compte, gratuit pendant la bêta : ton plan");
+    expect(r.code).toContain(`plans:{gratuit:'1 plan enregistré',pro:'${b.plans}'}`);
+    expect(r.code).toBe(
+      editeur.split("Passer Pro").join("Compte gratuit").split("est réservé à Pro").join(b.reserve).split("des plans enregistrés sans limite").join(b.plans),
+    );
     expect(() => new Script(r.code)).not.toThrow();
     expect([r.barre, r.lbl]).toEqual(["Compte gratuit", "Compte gratuit"]);
-    /* un libellé qui pourrait casser le script (guillemet, accolade…) est refusé : l'éditeur d'avant */
-    r = await jouer({ connecte: false, pro: false, limite: 1, utilises: 0, beta: { prix: b.prix, passer: "x'+alert(1)+'" } });
+    // « Compte gratuit » : l'inscription (intention /plan, source editeur-plan), comme l'invitation, dans le même onglet.
+    expect(r.urls.inscription).toBe("/inscription?next=%2Fplan&source=editeur-plan");
+    (r.win.passerPro as (o: string) => void)("type");
+    expect(r.appels).toEqual(["suivre:clic_passer_pro:type", "creer"]);
+    // Un lien vers /tarifs (la barre, « Passer Pro » des fenêtres) : capté, l'inscription à la place.
+    const clic = r.ecouteurs.find(([type]) => type === "click");
+    expect(clic?.[2]).toBe(true);
+    let empeche = 0;
+    const lien = (href: string) => ({ target: { closest: () => ({ getAttribute: () => href }) }, preventDefault: () => { empeche++; } });
+    clic?.[1](lien(URLS_EDITEUR.tarifs));
+    clic?.[1](lien("/logiciel-plan-maison"));
+    expect(empeche).toBe(1);
+    expect(r.appels.filter((x) => x === "creer")).toHaveLength(2);
+    /* des valeurs qui pourraient casser le script (guillemet, accolade…) ou mener ailleurs sont refusées : l'éditeur d'avant */
+    r = await jouer({
+      connecte: false, pro: false, limite: 1, utilises: 0,
+      beta: { prix: b.prix, passer: "x'+alert(1)+'", reserve: "x');alert(1);('", plans: "x'};alert(1);{'", inscription: "https://evil.com/inscription?x" },
+    });
     expect(r.code).toBe(editeur);
-    /* hors bêta : le script, la phrase du prix et la barre d'avant */
+    expect(r.urls.inscription).toBe(URLS_EDITEUR.inscription);
+    expect(r.ecouteurs.filter(([type]) => type === "click")).toEqual([]);
+    for (const inscription of ["/inscription?next=%2F%2Fevil.com'+x", "//evil.com/inscription?", "/inscription"]) {
+      r = await jouer({ connecte: false, pro: false, limite: 1, utilises: 0, beta: { ...b, inscription } });
+      expect(r.urls.inscription, inscription).toBe(URLS_EDITEUR.inscription);
+    }
+    /* hors bêta : le script, la phrase du prix, la barre et les adresses d'avant */
     r = await jouer({ connecte: false, pro: false, limite: 1, utilises: 0 });
     expect(r.code).toBe(editeur);
     expect(r.prix).not.toBe(b.prix);
     expect([r.barre, r.lbl]).toEqual(["Passer Pro", "Passer Pro"]);
+    expect(r.urls.inscription).toBe(URLS_EDITEUR.inscription);
+    expect(r.ecouteurs.filter(([type]) => type === "click")).toEqual([]);
+  });
+});
+
+/* ─── Membres fondateurs : aucun chiffre pendant la bêta ───────────────────────── */
+
+describe("Membres fondateurs : aucun prix d'après la bêta, nulle part (décision de Dani du 16/10/2026)", () => {
+  /** Un prix d'abonnement : 18,85 €, €18.85, 169 €, 14,08, 16,15, 29 €, 199 €… (le « 0 € » de la bêta n'en est pas un). */
+  const PRIX = /18[,.]85|16[,.]15|14[,.]08|\b169\b|€ ?\d|\d[\u00a0 ]?€|\/ ?mois|\/ ?month|\/ ?an\b|\/ ?year/;
+
+  it("Tarifs, inscription, Mon compte, pastille, CGU, CGV : la promesse sans chiffre, en FR et en EN", async () => {
+    a(PENDANT);
+    for (const locale of LOCALES) {
+      const b = dict(locale).beta;
+      for (const user of ["anonyme", "fondateur"] as const) {
+        const r = await charger({ locale, user, plans: true });
+        const Tarifs = (await import("@/app/tarifs/page")).default;
+        const h = await r.rendre(await Tarifs({ searchParams: Promise.resolve({ source: "editeur-plan" }) }));
+        expect(h, `tarifs ${locale} ${user}`).not.toMatch(PRIX);
+        expect(h).toContain(esc(user === "anonyme" ? b.tarifsFondateurTitre : b.membreFondateurTitre));
+      }
+      let r = await charger({ locale });
+      const Inscription = (await import("@/app/inscription/page")).default;
+      const ins = await r.rendre(await Inscription({ searchParams: Promise.resolve({}) }));
+      expect(ins, `inscription ${locale}`).not.toMatch(PRIX);
+      expect(ins).toContain(esc(b.benefices[2]));
+      r = await charger({ locale, user: "fondateur" });
+      const { PastilleFondateur } = await import("@/components/BandeauBeta");
+      const AbonnementSection = (await import("@/components/AbonnementSection")).default;
+      const compte = await r.rendre(createElement("div", null,
+        createElement(PastilleFondateur, { locale }),
+        createElement(AbonnementSection, { isPro: false, beta: { fin: libellesBeta(locale).fin }, fondateur: true })));
+      expect(compte, `compte ${locale}`).not.toMatch(PRIX);
+      expect(compte).toContain(esc(b.membreFondateurTitre));
+    }
+    for (const page of ["cgu", "cgv"] as const) {
+      const r = await charger({ locale: "fr" });
+      const Page = (await import(`@/app/(legal)/${page}/page`)).default as () => ReactElement;
+      const h = await r.rendre(Page());
+      expect(h, page).not.toMatch(PRIX);
+      expect(h).not.toContain("tarif de lancement");
+      expect(h).toContain("tarif préférentiel");
+      expect(h).toContain("annoncé aux membres avant la fin de la bêta");
+    }
+  });
+
+  it("CGU art. 3 : le compte par lien e-mail, le mot de passe facultatif (avec ou sans la bêta)", async () => {
+    for (const etat of ["allumée", "coupée"] as const) {
+      bêta(etat);
+      const r = await charger({ locale: "fr" });
+      const CGU = (await import("@/app/(legal)/cgu/page")).default;
+      const h = await r.rendre(CGU());
+      expect(h).toContain("confirmée par un lien envoyé à cette adresse");
+      expect(h).toContain("est facultatif");
+      expect(h).not.toContain("requiert une adresse e-mail valide et un mot de passe");
+    }
   });
 });
 
@@ -541,9 +704,11 @@ describe("Accueil pendant la bêta (lib/accueil-beta.ts)", () => {
         expect(pendant).not.toContain(x);
         expect(pendant).toContain(y);
       }
-      // Plus d'appel à payer : le prix ne reste que dans la promesse des membres fondateurs (« à vie », « for life »).
+      // Plus d'appel à payer, et aucun prix d'après la bêta, pas même dans la promesse des membres fondateurs (décision
+      // de Dani du 16/10/2026 : « un tarif préférentiel garanti à vie, annoncé avant la fin de la bêta »).
       expect(pendant).not.toMatch(/AVYORA Pro|Passer Pro|Go Pro|Voir les tarifs|See pricing|dès 18,85|from €18\.85|href="\/tarifs" class="promo"/);
-      expect(pendant.match(/18,85[ \u00a0]€|€18\.85/g)?.length).toBe(2);
+      expect(pendant).not.toMatch(/18[,.]85|€ ?169|169 ?€|14[,.]08|16[,.]15/);
+      expect(pendant).toContain(locale === "fr" ? "tarif préférentiel garanti à vie</b>, annoncé avant la fin de la bêta" : "preferred rate guaranteed for life</b>, announced before the beta ends");
     }
   });
 });
@@ -626,9 +791,11 @@ describe("Témoins · pendant la bêta (12/10/2026)", () => {
       const r = await charger({ locale });
       const AbonnementSection = (await import("@/components/AbonnementSection")).default;
       const l = libellesBeta(locale);
-      const beta = await r.rendre(createElement(AbonnementSection, { isPro: false, beta: { fin: l.fin }, tarifFondateur: l.tarif }));
+      const beta = await r.rendre(createElement(AbonnementSection, { isPro: false, beta: { fin: l.fin }, fondateur: true }));
       expect(beta).toContain(l.fin);
-      expect(beta).toContain(l.tarif);
+      // Membre fondateur, sans chiffre (décision de Dani du 16/10/2026).
+      expect(beta).toContain(locale === "fr" ? "tarif préférentiel garanti à vie, annoncé avant la fin de la bêta" : "preferred rate guaranteed for life, announced before the beta ends");
+      expect(beta).not.toContain("€");
       expect(beta).not.toContain(locale === "fr" ? "résilier" : "cancel my");
       expect(beta).not.toContain('href="/tarifs"');
       expect(beta).toMatchSnapshot(`abonnement bêta ${locale} fondateur`);
@@ -650,8 +817,12 @@ describe("Témoins · pendant la bêta (12/10/2026)", () => {
       expect(h).toContain(esc(vb.offresTitre));
       expect(h).toContain('href="/inscription?next=%2Fplan&amp;source=vitrine-plan"');
       expect(h).not.toContain("/tarifs?source=editeur-plan");
-      const faq = vb.faqGratuit(fin);
+      const faq = vb.faqGratuit(fin, PLANS_MAX_BETA);
       expect(h).toContain(esc(faq.r));
+      // R4 : pendant la bêta, un inscrit enregistre 30 plans au plus ; « sans limite » est le droit d'un abonné.
+      const colonne = entre(h, 'data-colonne="pro"', "</ul>");
+      expect(colonne).toContain(esc(vb.plans(PLANS_MAX_BETA).replace(/^./, (c) => c.toUpperCase())));
+      expect(h).not.toMatch(/sans limite|unlimited saved plans/i);
       expect(h).toContain(JSON.stringify(faq.r).slice(1, -1).replace(/</g, "\\u003c"));
     }
   });

@@ -1,5 +1,5 @@
 import { FEATURES } from "@/lib/features";
-import { getUser, estPro } from "@/lib/auth";
+import { getUser, estPro, limitePlans } from "@/lib/auth";
 import { verifierLimite } from "@/lib/ratelimit";
 import { creerPlan, listerPlans } from "@/lib/plans/data";
 import { PLAN_CORPS_MAX, planCreerSchema } from "@/lib/plans/schema";
@@ -23,8 +23,10 @@ export async function GET() {
 }
 
 /**
- * Range un plan dans le compte. La limite gratuite est tenue par la fonction SQL (seule autorité,
- * sous verrou) : la route lui passe 1 en gratuit, null en Pro.
+ * Range un plan dans le compte. La limite est tenue par la fonction SQL (seule autorité, sous verrou) : la
+ * route lui passe `limitePlans` (1 en gratuit, null pour un abonné, 30 pour un inscrit de la bêta). Celle de la
+ * bêta atteinte, la réponse est « plafond » (409) et non « limite gratuite » (402) : l'éditeur, qui le traite
+ * en Pro, dit « Ton compte a atteint le nombre maximal de plans », sans proposer de passer Pro.
  */
 export async function POST(req: Request) {
   if (!FEATURES.plans) return eteinte();
@@ -41,8 +43,9 @@ export async function POST(req: Request) {
     /* D68 : le Projet rénovation est réservé à Pro, côté serveur aussi */
     if (etat.workflow === "renovation" && !estPro(user)) return erreur("pro_requis");
 
-    const r = await creerPlan(user.id, estPro(user) ? null : 1, { nom, etat, vue, resume, editeurId });
-    if (!r.ok) return erreur(r.code);
+    const limite = limitePlans(user);
+    const r = await creerPlan(user.id, limite, { nom, etat, vue, resume, editeurId });
+    if (!r.ok) return erreur(r.code === "limite_gratuite" && limite !== 1 ? "plafond" : r.code);
     /* Le plan est créé : plus rien ne peut changer la réponse (201). */
     if (editeurId) await relierOrphelines(user.id, r.id, editeurId);
     return repondre({ id: r.id, revision: r.revision, deja: r.deja }, 201);

@@ -158,6 +158,78 @@ export function jetonValide(v: unknown): v is string {
   return typeof v === "string" && FORME_JETON.test(v);
 }
 
+/* ─── Ce navigateur a-t-il demandé ce lien ? (cookie `av-demande`) ──────────── */
+
+/**
+ * Chaque demande faite DEPUIS CE NAVIGATEUR (lien d'accès, inscription au mot de passe, mot de passe oublié) y laisse
+ * une trace : un cookie httpOnly (`av-demande`, chemin `/auth`, 24 h) qui porte, par adresse, son EMPREINTE (HMAC du
+ * serveur, jamais l'adresse), la façon dont elle a été demandée et le choix des nouveautés. Au retour du lien, il dit :
+ *  - si ce navigateur avait demandé un lien pour cette adresse (sinon, l'arrivée est « à vérifier » : un lien relayé
+ *    par quelqu'un d'autre ouvrirait SA session ici, et l'estimation de ce navigateur partirait dans son compte) ;
+ *  - si le mot de passe du compte a été choisi ici (`mdp`) : sinon il est remplacé par un aléa à la confirmation de
+ *    l'adresse (un compte préparé par un tiers avec son mot de passe ne lui reste pas ouvert) ;
+ *  - si la case des nouveautés a été cochée ici : le consentement n'est enregistré qu'à l'arrivée confirmée.
+ */
+export const COOKIE_DEMANDE = "av-demande";
+/** Durée de vie de la trace : 24 h (un lien vaut 1 h ; une inscription au mot de passe se confirme souvent plus tard). */
+export const DUREE_DEMANDE_S = 24 * 3600;
+/** Au plus tant d'adresses gardées (les plus récentes). */
+const DEMANDES_MAX = 5;
+
+/** Comment l'adresse a été demandée ici : lien d'accès, inscription au mot de passe (choisi ici), mot de passe oublié. */
+export type MethodeDemande = "lien" | "mdp" | "reset";
+/** Une demande : `e` l'empreinte de l'adresse, `m` la méthode, `t` l'heure (secondes), `n` la case des nouveautés cochée. */
+export type Demande = { e: string; m: MethodeDemande; t: number; n?: true };
+
+const FORME_EMPREINTE = /^[0-9a-f]{32}$/;
+const METHODES_DEMANDE: readonly MethodeDemande[] = ["lien", "mdp", "reset"];
+
+/** Les demandes du cookie, encore valables (moins de 24 h), sinon une liste vide. Tout ce qui est mal formé est ignoré. */
+export function lireDemandes(v: string | null | undefined, maintenant: number = Date.now()): Demande[] {
+  if (!v) return [];
+  try {
+    const o: unknown = JSON.parse(v);
+    if (!Array.isArray(o)) return [];
+    const s = Math.floor(maintenant / 1000);
+    return o.flatMap((d): Demande[] => {
+      if (!d || typeof d !== "object") return [];
+      const { e, m, t, n } = d as Record<string, unknown>;
+      if (typeof e !== "string" || !FORME_EMPREINTE.test(e)) return [];
+      if (typeof m !== "string" || !(METHODES_DEMANDE as readonly string[]).includes(m)) return [];
+      if (typeof t !== "number" || !Number.isFinite(t) || t > s + 60 || s - t >= DUREE_DEMANDE_S) return [];
+      return [{ e, m: m as MethodeDemande, t, ...(n === true ? { n: true as const } : {}) }];
+    }).slice(-DEMANDES_MAX);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Le cookie après une nouvelle demande. Une même adresse n'a qu'une entrée : la plus récente pour l'heure et la case des
+ * nouveautés (le dernier choix compte), mais `mdp` reste acquis (le mot de passe du compte a bien été choisi ici).
+ */
+export function ajouterDemande(v: string | null | undefined, d: Demande, maintenant: number = Date.now()): string {
+  const avant = lireDemandes(v, maintenant);
+  const meme = avant.find((x) => x.e === d.e);
+  const m: MethodeDemande = meme?.m === "mdp" || d.m === "mdp" ? "mdp" : d.m;
+  const nouvelle: Demande = { e: d.e, m, t: d.t, ...(d.n ? { n: true as const } : {}) };
+  return JSON.stringify([...avant.filter((x) => x.e !== d.e), nouvelle].slice(-DEMANDES_MAX));
+}
+
+/** La demande de cette empreinte d'adresse, si ce navigateur en a fait une dans les dernières 24 h. */
+export function trouverDemande(v: string | null | undefined, empreinte: string, maintenant: number = Date.now()): Demande | null {
+  return lireDemandes(v, maintenant).find((d) => d.e === empreinte) ?? null;
+}
+
+/** L'arrivée « à vérifier » : lib/auth-verifier.ts (le proxy l'importe seul). */
+export { COOKIE_VERIFIER, DUREE_VERIFIER_S } from "@/lib/auth-verifier";
+
+/** La destination après la vérification : un chemin interne hors de /auth (sinon /projets). */
+export function suiteVerification(next: string | null | undefined): string {
+  const n = cheminInterne(typeof next === "string" ? next.trim() : undefined, "/projets");
+  return n === "/auth" || n.startsWith("/auth/") || n.startsWith("/auth?") ? "/projets" : n;
+}
+
 /* ─── La réponse de Supabase ────────────────────────────────────────────────── */
 
 /** Ce que le formulaire dit après la demande : envoyé, ou l'une des trois erreurs qu'il sait traduire. */
@@ -221,6 +293,23 @@ type CompteVu = {
  * suivant. Le double compte est évité par la marque `compte_cree_le`, pas par la fenêtre.
  */
 export const FENETRE_NOUVEAU_COMPTE_MS = 24 * 3_600_000;
+
+/**
+ * Le contrôle du mot de passe à la confirmation de l'adresse (lib/auth-arrivee.ts) : il a lieu à la première arrivée par
+ * lien (ou Google) qui suit la confirmation, dans l'heure, une seule fois par compte (marque `MARQUE_MDP` dans
+ * `app_metadata`, que seul le serveur écrit : un tiers ne peut pas la poser d'avance).
+ */
+export const FENETRE_CONTROLE_MDP_MS = 3_600_000;
+export const MARQUE_MDP = "mdp_controle_le";
+
+type CompteControle = { email_confirmed_at?: string | null; app_metadata?: Record<string, unknown> | null };
+
+/** Le compte vient-il d'être confirmé (dans l'heure), sans que son mot de passe ait déjà été contrôlé ? */
+export function controleMdpAFaire(user: CompteControle | null | undefined, maintenant: number = Date.now()): boolean {
+  if (!user || user.app_metadata?.[MARQUE_MDP]) return false;
+  const t = Date.parse(user.email_confirmed_at ?? "");
+  return Number.isFinite(t) && t <= maintenant + 60_000 && maintenant - t < FENETRE_CONTROLE_MDP_MS;
+}
 
 /** La marque posée dans `user_metadata` quand `compte_cree` est émis : une seule fois par compte. */
 export const MARQUE_COMPTE_CREE = "compte_cree_le";

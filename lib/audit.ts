@@ -12,9 +12,18 @@ export type EvenementSecurite =
   | "inscription"
   | "deconnexion"
   | "reset_demande"
-  /** Un lien d'accès demandé (inscription ou connexion sans mot de passe, B2). Payload : `page`, `issue`, `code` de Supabase. */
+  /**
+   * Un lien d'accès demandé (inscription ou connexion sans mot de passe, B2). Payload : `page`, `issue`, `code` de Supabase,
+   * `empreinte` de l'adresse (HMAC, lib/empreinte.ts) : l'adresse tapée peut être celle d'un tiers, elle n'est pas écrite.
+   */
   | "lien_acces_demande"
   | "mot_de_passe_change"
+  /** À la confirmation de l'adresse, le mot de passe choisi ailleurs que dans ce navigateur est remplacé par un aléa. */
+  | "mot_de_passe_neutralise"
+  /** Un lien ouvert dans un navigateur qui ne l'avait pas demandé (ou par-dessus une autre session) : /auth/verifier. */
+  | "arrivee_a_verifier"
+  /** « Ce n'est pas moi » sur /auth/verifier : déconnecté, rien n'a été rangé dans le compte. */
+  | "arrivee_refusee"
   | "compte_supprime"
   | "export_donnees"
   | "action_admin"

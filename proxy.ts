@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { COOKIE_VERIFIER } from "@/lib/auth-verifier";
 
 /**
  * Proxy Next.js 16 (ex-"middleware") — rafraîchit la session Supabase à chaque requête
@@ -71,6 +72,21 @@ export async function proxy(request: NextRequest) {
     url.pathname = "/connexion";
     url.searchParams.set("next", pathname);
     return NextResponse.redirect(url);
+  }
+
+  // ── Arrivée à vérifier (lib/auth-verifier.ts) ──
+  // Un lien d'accès ouvert dans un navigateur qui ne l'avait pas demandé (ou par-dessus une autre session) : tant que la
+  // personne n'a pas dit « Continuer » ou « Ce n'est pas moi » sur /auth/verifier, toute PAGE y mène. Rien ne part donc
+  // dans ce compte avant (ClaimDraft, ClaimPlan sur /projets, l'éditeur de plan, une estimation enregistrée). Les API,
+  // /auth/* (dont la page elle-même) et les actions (POST) passent ; les cookies de session rafraîchis suivent.
+  if (user && request.method === "GET" && request.cookies.get(COOKIE_VERIFIER)?.value && !pathname.startsWith("/auth/") && !pathname.startsWith("/api/")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth/verifier";
+    url.search = "";
+    url.searchParams.set("next", pathname + request.nextUrl.search);
+    const redirection = NextResponse.redirect(url);
+    response.cookies.getAll().forEach((c) => redirection.cookies.set(c));
+    return redirection;
   }
 
   // ── Gating ADMIN (pages) ──

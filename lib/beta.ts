@@ -3,8 +3,12 @@
  * heure de Paris, TOUT AVYORA est offert à qui a un compte. Il faut un compte (on veut l'adresse e-mail),
  * mais aucun moyen de paiement : rien n'est vendu, rien ne sera prélevé.
  *
- * Source de vérité unique de la bêta : sa date de fin, son interrupteur, le tarif promis aux membres
- * fondateurs, et la liste fermée des « sources » qui envoient un visiteur vers l'inscription. Le reste du site lit ce module ; `estPro` (lib/auth.ts) en tire les droits.
+ * Source de vérité unique de la bêta : sa date de fin, son interrupteur, le plafond des plans d'un inscrit, et la liste
+ * fermée des « sources » qui envoient un visiteur vers l'inscription. Le reste du site lit ce module ; `estPro`
+ * (lib/auth.ts) en tire les droits.
+ *
+ * Membres fondateurs (décision de Dani du 16/10/2026) : AUCUN CHIFFRE pendant la bêta. La promesse est « un tarif
+ * préférentiel garanti à vie, annoncé avant la fin de la bêta » ; aucun prix d'après la bêta n'est affiché.
  *
  * Réglages, dans les variables de Vercel (lues AU BUILD : elles commencent par NEXT_PUBLIC_, un
  * redéploiement est nécessaire pour qu'un changement s'applique) :
@@ -25,10 +29,11 @@ import type { Locale } from "@/lib/i18n/config";
 export const BETA_DERNIER_JOUR = "2026-12-31";
 
 /**
- * Le tarif de lancement promis aux membres fondateurs, en euros par mois. UNE constante : la changer ici
- * change tous les textes qui le citent (accueil, Tarifs, inscription, Mon compte, CGU).
+ * Pendant la bêta, les plans qu'un inscrit NON ABONNÉ peut enregistrer (contre-examen, R4) : de quoi travailler à l'aise,
+ * pas de quoi remplir la base (1,2 Mo par plan au plus). Hors bêta : 1 en gratuit, sans limite pour un abonné (le
+ * plafond SQL de 200 vaut pour tous). Les textes de la bêta qui parlent des plans citent cette constante.
  */
-export const TARIF_FONDATEUR_MOIS = 18.85;
+export const PLANS_MAX_BETA = 30;
 
 /* ─── Heure de Paris ─────────────────────────────────────────────────────────── */
 
@@ -94,33 +99,27 @@ export function betaActive(maintenant: Date = new Date()): boolean {
 }
 
 /**
- * Membre fondateur : un compte créé avant la fin de la bêta (`user.created_at` de Supabase). Le statut
- * reste après la bêta (c'est lui qui garde le tarif de lancement) ; seule la coupure manuelle le masque.
+ * Membre fondateur : un compte dont l'adresse a été CONFIRMÉE avant la fin de la bêta (`user.email_confirmed_at` de
+ * Supabase). Pas la date de création : n'importe qui peut créer un compte (non confirmé) à l'adresse d'un autre avant
+ * la fin, confirmé en 2027 il ne doit pas devenir fondateur. Le statut reste après la bêta (c'est lui qui garde le
+ * tarif préférentiel) ; seule la coupure manuelle le masque.
  */
-export function estMembreFondateur(user: { created_at?: string | null } | null | undefined): boolean {
-  if (!user?.created_at || betaCoupee()) return false;
-  const cree = new Date(user.created_at).getTime();
-  return Number.isFinite(cree) && cree < finBeta().getTime();
+export function estMembreFondateur(user: { email_confirmed_at?: string | null } | null | undefined): boolean {
+  if (!user?.email_confirmed_at || betaCoupee()) return false;
+  const confirme = new Date(user.email_confirmed_at).getTime();
+  return Number.isFinite(confirme) && confirme < finBeta().getTime();
 }
 
 /* ─── Les textes datés ───────────────────────────────────────────────────────── */
-
-/** Le tarif fondateur écrit dans la langue (« 18,85 € », espace insécable avant l'euro ; « €18.85 »). */
-export function tarifFondateur(locale: Locale): string {
-  const n = TARIF_FONDATEUR_MOIS.toFixed(2);
-  return locale === "en" ? `€${n}` : `${n.replace(".", ",")}\u00a0€`;
-}
 
 export type LibellesBeta = {
   /** Le dernier jour de la bêta : « 31 décembre 2026 », « December 31, 2026 ». */
   fin: string;
   /** Le premier jour après la bêta : « 1er janvier 2027 », « January 1, 2027 ». */
   reprise: string;
-  /** Le tarif de lancement des membres fondateurs : « 18,85 € », « €18.85 ». */
-  tarif: string;
 };
 
-/** Les dates et le tarif que les textes de la bêta citent, suivant `NEXT_PUBLIC_BETA_FIN` et la constante. */
+/** Les dates que les textes de la bêta citent, suivant `NEXT_PUBLIC_BETA_FIN`. */
 export function libellesBeta(locale: Locale): LibellesBeta {
   const fin = finBeta();
   const fmt = new Intl.DateTimeFormat(locale === "en" ? "en-US" : "fr-FR", {
@@ -130,8 +129,15 @@ export function libellesBeta(locale: Locale): LibellesBeta {
   return {
     fin: fmt.format(new Date(fin.getTime() - 1)),
     reprise: locale === "en" ? reprise : reprise.replace(/^1 /, "1er "),
-    tarif: tarifFondateur(locale),
   };
+}
+
+/**
+ * Une date qui ne se coupe pas en fin de ligne (« 31 décembre 2026 » sur un téléphone se lisait « 31 » puis « décembre
+ * 2026 ») : ses espaces deviennent insécables. Pour les titres et le bandeau ; le texte suivi garde la date d'origine.
+ */
+export function dateInsecable(date: string): string {
+  return date.replace(/ /g, "\u00a0");
 }
 
 /* ─── Vers l'inscription ─────────────────────────────────────────────────────── */
@@ -168,10 +174,25 @@ export function lienInscriptionBeta(next: string | undefined, source: SourceBeta
 
 /**
  * Ce que `/api/plans/session` (rendue à la requête) donne à l'amorçage de l'éditeur (lib/editeur/heberger.ts) tant
- * que la bêta court : `prix` remplace la phrase du prix de Pro (« Pro gratuit pendant la bêta… ») ; `passer` remplace
- * le libellé « Passer Pro » dans le texte du script, des lettres et des espaces seulement (l'amorçage le revérifie).
- * L'intérieur de l'éditeur reste en français.
+ * que la bêta court :
+ *  - `prix` remplace la phrase du prix de Pro (« Pro gratuit pendant la bêta… », avec son point : l'éditeur l'écrit
+ *    aussi au fil d'une phrase, dans le dossier PDF) ;
+ *  - `passer` remplace le libellé « Passer Pro » dans le texte du script, des lettres et des espaces seulement ;
+ *  - `reserve` remplace « est réservé à Pro » (le projet rénovation ouvert sans compte), lettres, espaces et virgules ;
+ *  - `plans` remplace « des plans enregistrés sans limite » (le droit Pro des plans) : pendant la bêta, un inscrit en
+ *    enregistre {@link PLANS_MAX_BETA} au plus ; lettres, chiffres, espaces et apostrophe typographique (la phrase vit
+ *    dans une chaîne entre apostrophes droites du script) ;
+ *  - `inscription` : l'adresse de l'inscription (intention /plan, source `editeur-plan`) ; « Compte gratuit » (la barre,
+ *    les liens et les boutons qui menaient à /tarifs dans un nouvel onglet) y mène directement, comme l'invitation
+ *    « Garde ce plan dans ton compte », avec le drapeau de reprise du plan.
+ * L'amorçage revérifie chaque valeur. L'intérieur de l'éditeur reste en français.
  */
-export function betaEditeurPlan(): { prix: string; passer: string } {
-  return { prix: `gratuit pendant la bêta, jusqu'au ${libellesBeta("fr").fin}, avec un compte`, passer: "Compte gratuit" };
+export function betaEditeurPlan(): { prix: string; passer: string; reserve: string; plans: string; inscription: string } {
+  return {
+    prix: `gratuit pendant la bêta, jusqu'au ${libellesBeta("fr").fin}, avec un compte.`,
+    passer: "Compte gratuit",
+    reserve: "demande un compte, gratuit pendant la bêta",
+    plans: `jusqu\u2019à ${PLANS_MAX_BETA} plans enregistrés`,
+    inscription: lienInscriptionBeta("/plan", "editeur-plan"),
+  };
 }

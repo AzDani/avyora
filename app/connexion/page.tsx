@@ -6,8 +6,11 @@ import { FEATURES } from "@/lib/features";
 import { getUser } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
 import { cheminInterne } from "@/lib/next-url";
+import { betaActive } from "@/lib/beta";
 
-export const metadata = { title: "Connexion", robots: { index: false, follow: true } };
+export async function generateMetadata() {
+  return { title: (await getT()).t.auth.metaConnexion, robots: { index: false, follow: true } };
+}
 
 export default async function ConnexionPage({
   searchParams,
@@ -29,8 +32,9 @@ export default async function ConnexionPage({
       bas={
         <>
           {t.cxBasAvant}
+          {/* Pendant la bêta, le lien dit qu'il ne coûte rien (lib/beta.ts) ; après, « Créer un compte gratuit ». */}
           <Link href={`/inscription${suite}`} className="font-medium text-brand-600 hover:underline">
-            {t.cxBasLien}
+            {betaActive() ? tr.beta.cxBasLien : t.cxBasLien}
           </Link>
         </>
       }

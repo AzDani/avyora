@@ -4,20 +4,29 @@ import { useEffect, useState } from "react";
 import { CATALOG, buildDevis, catalogueDe, type Ctx, type Selection } from "@/lib/estimateur";
 import { totauxAvecPerso } from "@/lib/estimateur/projet";
 import { CLE_BROUILLON_NEUF, lireBrouillonNeuf, reclamationNeufPosee } from "@/lib/estimateur/brouillon-neuf";
-import { useLocale } from "@/components/i18n/LangProvider";
+import { useLocale, useT } from "@/components/i18n/LangProvider";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 
 /**
  * Affiché sur /inscription quand l'utilisateur arrive depuis une estimation (brouillon présent) :
  * « Ton estimation est prête — on te la garde ». Rien si pas de brouillon (arrivée directe).
  * La fourchette part du même total que le projet qui sera créé : lignes perso comprises (D8).
+ * Traduit (FR / EN), montants au format de l'estimation rapide de la langue. Masqué sur l'écran « C'est envoyé »
+ * (`AuthShell`) : l'écran dit lui-même que le lien ramène là où l'on en était. Compact (une ligne de texte) : sur un
+ * portable (1366 × 657), le champ, le bouton et la mention des CGU restent au-dessus du pli.
  */
 const DRAFT_KEY = "avyora-estim-v2";
-const fmt = (n: number) => n.toLocaleString("fr-FR");
 
 export function EstimationRappel() {
   const [info, setInfo] = useState<{ lo: number; hi: number; label: string } | null>(null);
-  const maisonNeuve = dictNeufCommun(useLocale()).maisonNeuve;
+  const locale = useLocale();
+  const tr = useT();
+  const maisonNeuve = dictNeufCommun(locale).maisonNeuve;
+  const nf = locale === "en" ? "en-US" : "fr-FR";
+  const fmt = (n: number) => n.toLocaleString(nf);
+  // Le type de bien du brouillon est écrit en français (« Maison », « Appartement ») : dit dans la langue de la page.
+  const typeBien = (v: string | undefined) =>
+    v === "Maison" ? tr.rapide.typeMaison : v === "Appartement" ? tr.rapide.typeAppart : v || tr.auth.rappel.bien;
 
   useEffect(() => {
     // Construction neuve (son drapeau posé) : son brouillon, chiffré sur le catalogue du neuf.
@@ -45,23 +54,22 @@ export function EstimationRappel() {
       if (!(ttc > 0)) return;
       const lo = Math.round((ttc * 0.85) / 100) * 100;
       const hi = Math.round((ttc * 1.15) / 100) * 100;
-      const label = `${d.ctx.type ?? "Bien"} ${d.ctx.surface} m²`;
+      const label = `${typeBien(d.ctx.type)} ${d.ctx.surface} m²`;
       setInfo({ lo, hi, label });
     } catch {
       /* pas de brouillon lisible */
     }
-  }, [maisonNeuve]);
+    // relu quand la langue change : `typeBien` en dépend
+  }, [maisonNeuve, locale]);
 
   if (!info) return null;
   return (
-    <div className="mb-4 rounded-field border border-brand-200 bg-brand-50 p-3 sm:mb-6 sm:p-4" data-estimation-rappel="">
-      <p className="eyebrow mb-1">Ton estimation est prête</p>
-      <p className="data text-lg font-semibold text-ink sm:text-xl">
+    <div className="mb-4 rounded-field border border-brand-200 bg-brand-50 p-3 group-has-[[data-lien-envoye]]/auth:hidden sm:mb-5 sm:px-4" data-estimation-rappel="">
+      <p className="eyebrow mb-0.5">{tr.auth.rappel.titre}</p>
+      <p className="data text-lg font-semibold text-ink">
         {fmt(info.lo)} – {fmt(info.hi)} €
       </p>
-      <p className="mt-1 text-[13px] leading-relaxed text-muted">
-        {info.label} — crée ton compte pour la sauvegarder, on te la garde.
-      </p>
+      <p className="mt-0.5 text-[13px] leading-snug text-muted">{tr.auth.rappel.texte(info.label)}</p>
     </div>
   );
 }

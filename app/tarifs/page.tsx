@@ -10,7 +10,7 @@ import type { Locale } from "@/lib/i18n/config";
 import { SuiviVue } from "@/components/SuiviVue";
 import { FEATURES } from "@/lib/features";
 import { lireNature, lireSourceNature, natureDeSource, lienDetaillePro, type NatureProjet } from "@/lib/nature-projet";
-import { betaActive, estMembreFondateur, libellesBeta, lienInscriptionBeta, lireSourceBeta } from "@/lib/beta";
+import { PLANS_MAX_BETA, betaActive, dateInsecable, estMembreFondateur, libellesBeta, lienInscriptionBeta, lireSourceBeta } from "@/lib/beta";
 
 const META: Metadata = {
   title: "Passer Pro — estimation détaillée poste par poste",
@@ -229,9 +229,10 @@ export default async function TarifsPage({
 
 /**
  * /tarifs pendant la bêta gratuite (lib/beta.ts). En tête, la bêta : tout est offert jusqu'à la fin, il suffit
- * d'un compte ; aucun moyen de paiement demandé, rien ne sera prélevé. Puis la promesse des membres
- * fondateurs, et les offres telles qu'elles seront « à partir du » lendemain de la bêta, SANS bouton de
- * paiement (aucune vente pendant la bêta, CGV) :
+ * d'un compte ; aucun moyen de paiement demandé, rien ne sera prélevé. Puis la promesse des membres fondateurs, SANS
+ * CHIFFRE (décision de Dani du 16/10/2026 : « un tarif préférentiel garanti à vie, annoncé avant la fin de la bêta »),
+ * ce qui est inclus, et AUCUNE grille d'offres ni aucun prix d'après la bêta. Un seul bouton, « Créer mon compte
+ * gratuit » ; aucun bouton de paiement (aucune vente pendant la bêta, CGV) :
  *  - anonyme → « Créer mon compte gratuit », qui emporte son intention (`next`) : l'éditeur de plan, ou le
  *    détaillé de sa nature ; sinon l'inscription mène aux questions de profil puis à ses projets ;
  *  - connecté → « Tout est inclus pour toi jusqu'au … », et le lien vers le détaillé ;
@@ -253,6 +254,8 @@ function TarifsBeta({ user, t: tr, locale, source, nature }: {
     source === "editeur-plan" ? "/plan" : source === "choix-plan" ? "/plan?type=renovation" : nature ? lienDetaillePro(nature) : undefined;
   const inscription = lienInscriptionBeta(intention, lireSourceBeta(source) ?? "tarifs");
   const connexion = intention ? `/connexion?next=${encodeURIComponent(intention)}` : "/connexion";
+  // Les plans d'un inscrit pendant la bêta : PLANS_MAX_BETA, pas « sans limite » (le droit d'un abonné, lib/plans/droits.ts).
+  const plansBeta = b.plansEnregistres(PLANS_MAX_BETA);
 
   return (
     <div className="animate-rise mx-auto max-w-4xl py-4 sm:py-8" data-tarifs-beta="">
@@ -262,7 +265,7 @@ function TarifsBeta({ user, t: tr, locale, source, nature }: {
       />
       <header className="text-center">
         <p className="eyebrow">{b.tarifsEyebrow}</p>
-        <h1 className="mt-2 text-[30px] font-semibold tracking-tight text-ink">{b.tarifsTitre(l.fin)}</h1>
+        <h1 className="mt-2 text-[30px] font-semibold tracking-tight text-ink">{b.tarifsTitre(dateInsecable(l.fin))}</h1>
         <p className="mx-auto mt-3 max-w-xl text-[15px] leading-relaxed text-muted">{b.tarifsSous}</p>
       </header>
 
@@ -290,16 +293,17 @@ function TarifsBeta({ user, t: tr, locale, source, nature }: {
       {/* La promesse des membres fondateurs : à un anonyme, ce qu'il gagne à s'inscrire maintenant ; à un inscrit de la
           bêta (il l'est déjà), ce qu'il garde. */}
       {(!user || fondateur) && (
-        <div className="mt-6 overflow-hidden rounded-panel bg-gradient-to-r from-[#4F46E5] via-[#6d5cf0] to-[#7C3AED] px-6 py-5 text-center text-white shadow-card">
-          <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-indigo-100/90">{b.tarifsFondateurTag}</div>
+        <div className="mt-6 overflow-hidden rounded-panel bg-gradient-to-r from-[#4F46E5] via-[#6d5cf0] to-[#7C3AED] px-6 py-5 text-center text-white shadow-card" data-tarifs-fondateur="">
+          <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-indigo-100/90">{user ? b.tarifsFondateurTagConnecte : b.tarifsFondateurTag}</div>
           {user ? (
-            <div className="mt-1 text-[18px] font-semibold tracking-tight">{b.membreFondateurTitre(l.tarif)}</div>
+            <div className="mt-1 text-[18px] font-semibold tracking-tight">{b.membreFondateurTitre}</div>
           ) : (
             <>
               <div className="mt-1 text-[20px] font-semibold tracking-tight">{b.tarifsFondateurTitre}</div>
-              <div className="mt-1 text-[13.5px] text-indigo-100/85">{b.tarifsFondateurSous(l.tarif)}</div>
+              <div className="mt-1 text-[13.5px] text-indigo-100/85">{b.tarifsFondateurSous}</div>
             </>
           )}
+          <div className="mx-auto mt-2 max-w-xl text-[12.5px] text-indigo-100/75">{b.tarifsFondateurNote}</div>
         </div>
       )}
 
@@ -308,7 +312,7 @@ function TarifsBeta({ user, t: tr, locale, source, nature }: {
         <div className="mx-auto mt-6 max-w-2xl rounded-field border border-brand-200 bg-brand-50 px-5 py-4 text-[14px] text-ink" data-depuis-editeur="">
           <p className="font-semibold">{b.tarifsDepuisEditeur}</p>
           <ul className="mt-2 space-y-1.5">
-            {t.depuisEditeurDroits.map((d) => (
+            {[plansBeta, ...t.depuisEditeurDroits.slice(1)].map((d) => (
               <li key={d} className="flex items-start gap-2.5 leading-relaxed">
                 <Check />
                 {d.charAt(0).toUpperCase() + d.slice(1)}
@@ -318,45 +322,11 @@ function TarifsBeta({ user, t: tr, locale, source, nature }: {
         </div>
       )}
 
-      <section className="mx-auto mt-10 max-w-2xl" aria-labelledby="offres-apres-beta">
-        <h2 id="offres-apres-beta" className="text-center text-[18px] font-semibold tracking-tight text-ink">{b.tarifsOffres(l.reprise)}</h2>
-        <p className="mt-1 text-center text-[13.5px] text-muted">{b.tarifsOffresSous(l.fin)}</p>
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
-          {PLANS_AFFICHES.map((key) => {
-            const p = t.plans[key];
-            return (
-              <div key={key} className="relative flex flex-col rounded-panel border border-line bg-surface p-6">
-                {p.tag && (
-                  <span className="absolute -top-2.5 right-5 rounded-full bg-brand-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-700">
-                    {p.tag}
-                  </span>
-                )}
-                <div className="text-sm font-semibold text-ink">{p.nom}</div>
-                <div className="mt-3 flex items-baseline gap-1.5">
-                  <span className="data text-3xl font-semibold text-ink">{p.prix}</span>
-                  <span className="text-sm text-muted">{p.unite}</span>
-                </div>
-                <div className="mt-2 text-xs text-faint">{p.note}</div>
-                <div className="mt-5">
-                  {user ? (
-                    <p className="rounded-field bg-positive-soft px-3 py-2.5 text-center text-[13px] font-medium text-positive">
-                      {abonne ? b.tarifsAbonneCarte : b.tarifsConnecte(l.fin)}
-                    </p>
-                  ) : (
-                    <Link href={inscription} className="btn btn-outline w-full justify-center py-2.5">{b.creerCompte}</Link>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
       <div className="mx-auto mt-8 grid max-w-3xl gap-6 rounded-panel border border-line bg-surface p-6 sm:grid-cols-[1fr_240px] sm:items-start sm:gap-8">
         <div>
           <div className="eyebrow mb-3">{b.tarifsInclus}</div>
           <ul className="space-y-2.5">
-            {[...t.features, ...(FEATURES.neuf ? [t.featureNeuf] : []), ...(FEATURES.plans ? [t.featurePlan] : [])].map((f) => (
+            {[...t.features, ...(FEATURES.neuf ? [t.featureNeuf] : []), ...(FEATURES.plans ? [t.featurePlan.replace(t.depuisEditeurDroits[0], plansBeta)] : [])].map((f) => (
               <li key={f} className="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink">
                 <Check />
                 {f}

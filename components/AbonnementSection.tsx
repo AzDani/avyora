@@ -20,8 +20,8 @@ const TR = {
     betaDesc: (fin: string) => `Bêta gratuite : tu profites de toutes les fonctionnalités jusqu'au ${fin}.`,
     badgeBeta: "Bêta gratuite",
     betaNote: "Aucun moyen de paiement enregistré : rien ne sera prélevé. On te préviendra par e-mail avant la fin de la bêta.",
-    fondateurNote: (tarif: string) => `Membre fondateur : tu gardes le tarif de lancement (${tarif}/mois) à vie quand AVYORA passera payant.`,
-    fondateurNoteApres: (tarif: string) => `Membre fondateur : le tarif de lancement (${tarif}/mois) t'est garanti à vie.`,
+    fondateurNote: "Membre fondateur : un tarif préférentiel garanti à vie, annoncé avant la fin de la bêta.",
+    fondateurNoteApres: "Membre fondateur : ton tarif préférentiel t'est garanti à vie.",
   },
   en: {
     titre: "Subscription",
@@ -38,8 +38,8 @@ const TR = {
     betaDesc: (fin: string) => `Free beta: you have access to every feature through ${fin}.`,
     badgeBeta: "Free beta",
     betaNote: "No payment method on file: nothing will be charged. We'll email you before the beta ends.",
-    fondateurNote: (tarif: string) => `Founding member: you keep the launch price (${tarif}/month) for life once AVYORA becomes paid.`,
-    fondateurNoteApres: (tarif: string) => `Founding member: your launch price (${tarif}/month) is guaranteed for life.`,
+    fondateurNote: "Founding member: a preferred rate guaranteed for life, announced before the beta ends.",
+    fondateurNoteApres: "Founding member: your preferred rate is guaranteed for life.",
   },
 } as const;
 
@@ -50,10 +50,11 @@ const TR = {
  *
  * `isPro` veut dire ABONNÉ (`estAbonne`), pas « droits Pro » : pendant la bêta gratuite (lib/beta.ts), un
  * inscrit a les droits Pro sans abonnement, et ne doit pas se voir proposer de « résilier » quoi que ce soit.
- * `beta` (la date de fin, en toutes lettres) n'est passé que pendant la bêta ; `tarifFondateur` seulement
- * à un membre fondateur (pendant ET après la bêta : le statut reste).
+ * `beta` (la date de fin, en toutes lettres) n'est passé que pendant la bêta ; `fondateur` seulement à un membre
+ * fondateur (pendant ET après la bêta : le statut reste). Aucun chiffre : le tarif préférentiel sera annoncé avant la
+ * fin de la bêta (décision de Dani du 16/10/2026).
  */
-export default function AbonnementSection({ isPro, beta, tarifFondateur }: { isPro: boolean; beta?: { fin: string }; tarifFondateur?: string }) {
+export default function AbonnementSection({ isPro, beta, fondateur = false }: { isPro: boolean; beta?: { fin: string }; fondateur?: boolean }) {
   const locale = useLocale();
   const s = TR[locale];
   const [busy, setBusy] = useState(false);
@@ -115,7 +116,7 @@ export default function AbonnementSection({ isPro, beta, tarifFondateur }: { isP
           </Link>
         )}
         {/* Le statut de membre fondateur reste après la bêta : la promesse passe alors au présent. */}
-        {tarifFondateur && <p className="mt-3 text-[13px] text-muted">{beta ? s.fondateurNote(tarifFondateur) : s.fondateurNoteApres(tarifFondateur)}</p>}
+        {fondateur && <p className="mt-3 text-[13px] text-muted">{beta ? s.fondateurNote : s.fondateurNoteApres}</p>}
         {message && (
           <p className="mt-3 rounded-field border border-line bg-surface-2 px-3.5 py-2.5 text-sm text-muted">
             {message}

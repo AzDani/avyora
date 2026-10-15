@@ -8,8 +8,8 @@ import { CLE_RECLAMATION_PLAN, lirePlansLocaux, planAReprendre, stockageNavigate
 /**
  * Sur /inscription, quand on arrive de l'éditeur (drapeau `avyora-plan-claim`, ou `next=/plan`) :
  * « Ton plan est prêt », son nom, sa surface et ses pièces s'ils sont connus. Jumeau
- * d'`EstimationRappel`, entièrement traduit. Rien sans plan local (arrivée directe) : le HTML serveur
- * de la page ne change pas.
+ * d'`EstimationRappel` (compact comme lui : le bouton reste au-dessus du pli d'un portable), entièrement
+ * traduit. Rien sans plan local (arrivée directe) : le HTML serveur de la page ne change pas.
  */
 export function PlanRappel({ next }: { next?: string }) {
   const locale = useLocale();
@@ -48,10 +48,10 @@ export function PlanRappel({ next }: { next?: string }) {
     .filter(Boolean)
     .join(" · ");
   return (
-    <div className="mb-6 rounded-field border border-brand-200 bg-brand-50 p-4">
-      <p className="eyebrow mb-1">{t.rappel.titre}</p>
+    <div className="mb-4 rounded-field border border-brand-200 bg-brand-50 p-3 group-has-[[data-lien-envoye]]/auth:hidden sm:mb-5 sm:px-4">
+      <p className="eyebrow mb-0.5">{t.rappel.titre}</p>
       <p className="font-semibold text-ink">{detail}</p>
-      <p className="mt-1 text-[13px] leading-relaxed text-muted">{t.rappel.texte}</p>
+      <p className="mt-0.5 text-[13px] leading-snug text-muted">{t.rappel.texte}</p>
     </div>
   );
 }

@@ -9,7 +9,7 @@ export default function CGV() {
   return (
     <article>
       <h1>Conditions Générales de Vente</h1>
-      <p className="maj">Dernière mise à jour : {beta ? "15 octobre 2026" : "6 septembre 2026"}</p>
+      <p className="maj">Dernière mise à jour : {beta ? "16 octobre 2026" : "6 septembre 2026"}</p>
 
 
       <h2>1. Objet et champ d&apos;application</h2>
@@ -28,8 +28,9 @@ export default function CGV() {
             <a href="/cgu">CGU</a> art. 2 bis)&nbsp;: <strong>aucune vente n&apos;a lieu</strong>, aucun Abonnement
             n&apos;est proposé à la souscription et aucun moyen de paiement n&apos;est demandé. Les présentes CGV
             s&apos;appliquent aux souscriptions faites à partir du {l.reprise}, ainsi qu&apos;aux Abonnements souscrits
-            avant la bêta, qui se poursuivent dans leurs conditions. Un membre fondateur (compte créé au plus tard le {l.fin})
-            bénéficie, à vie, du tarif de lancement de l&apos;offre Pro mensuelle&nbsp;: {l.tarif} par mois.
+            avant la bêta, qui se poursuivent dans leurs conditions. Un membre fondateur (compte dont l&apos;adresse e-mail a
+            été confirmée au plus tard le {l.fin}) bénéficie, à vie, d&apos;un tarif préférentiel pour toute souscription faite
+            depuis ce compte&nbsp;; ce tarif est annoncé aux membres avant la fin de la bêta.
           </p>
         </>
       )}

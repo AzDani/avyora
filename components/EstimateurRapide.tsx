@@ -123,7 +123,7 @@ export default function EstimateurRapide({
 
   const T = useT();
   // Bêta : les quelques libellés « Pro » prennent ceux de la bêta (même clés, pour le rendu ci-dessous).
-  const t = beta ? { ...T.rapide, affiner: T.beta.affiner, proLock: T.beta.proLock, lockedLabel: T.beta.lockedLabel, lockedSub: T.beta.lockedSub, lockedCta: T.beta.creerCompteFleche } : T.rapide;
+  const t = beta ? { ...T.rapide, intro: T.beta.introReno, affiner: T.beta.affiner, proLock: T.beta.proLock, lockedLabel: T.beta.lockedLabel, lockedSub: T.beta.lockedSub, lockedCta: T.beta.creerCompteFleche } : T.rapide;
   const versInscription = beta && !isPro;
   const locale = useLocale();
   const nf = locale === "en" ? "en-US" : "fr-FR";

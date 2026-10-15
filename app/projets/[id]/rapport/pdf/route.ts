@@ -15,9 +15,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   if (!user) return NextResponse.redirect(new URL(`/connexion?next=/projets/${id}`, req.url));
   if (!estPro(user)) return NextResponse.redirect(new URL("/tarifs", req.url));
 
-  // Génération PDF = Chrome headless (coûteux) → limite par utilisateur pour protéger le serveur.
+  // Génération PDF = Chrome headless (coûteux) → limites par utilisateur pour protéger le serveur : 5 par minute, et
+  // 30 par heure (pendant la bêta, tout inscrit y a droit ; sans Upstash, tenues en mémoire en production).
   if (!(await verifierLimite("pdf", user.id))) {
     return NextResponse.json({ error: "Trop de générations. Patiente une minute." }, { status: 429 });
+  }
+  if (!(await verifierLimite("pdfHeure", user.id))) {
+    return NextResponse.json({ error: "Trop de générations pour cette heure. Réessaie plus tard." }, { status: 429 });
   }
 
   const projet = await getProjet(id);

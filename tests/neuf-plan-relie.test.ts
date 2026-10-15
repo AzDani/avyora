@@ -185,6 +185,7 @@ async function charger(plans = true) {
   vi.doMock("@/lib/auth", () => ({
     getUser: async () => S.user,
     estPro: (u: User | null) => !!u && u.app_metadata?.plan === "pro",
+    limitePlans: (u: User) => (u.app_metadata?.plan === "pro" ? null : 1),
   }));
   vi.doMock("@/lib/supabase/server", () => ({
     supabaseServer: async () => {

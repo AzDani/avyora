@@ -7,7 +7,7 @@ import { getLocale } from "@/lib/i18n/server";
 import { dictPlans } from "@/lib/i18n/plans";
 import { clicPlan } from "@/lib/plans/mesure";
 import { og } from "@/lib/seo-og";
-import { betaActive, libellesBeta, lienInscriptionBeta } from "@/lib/beta";
+import { PLANS_MAX_BETA, betaActive, libellesBeta, lienInscriptionBeta } from "@/lib/beta";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
@@ -87,7 +87,7 @@ export default async function LogicielPlanMaison() {
   const beta = betaActive();
   const vb = d.vitrineBeta;
   const finBeta = beta ? libellesBeta(locale).fin : "";
-  const faqBeta = beta ? vb.faqGratuit(finBeta) : null;
+  const faqBeta = beta ? vb.faqGratuit(finBeta, PLANS_MAX_BETA) : null;
   const faq = faqBeta ? v.faq.map((f) => (f.q === faqBeta.q ? faqBeta : f)) : v.faq;
 
   /* JSON-LD : l'application (gratuite, sans note ni avis : AVYORA n'a pas d'avis réels), le fil d'Ariane, et la
@@ -227,10 +227,11 @@ export default async function LogicielPlanMaison() {
             <p className="text-[15px] font-semibold text-ink">{beta ? `${v.pro} · ${vb.pastille}` : v.pro}</p>
             <p className="mt-1 text-[13px] text-muted">{beta ? vb.proSous(finBeta) : v.offresProSous}</p>
             <ul className="mt-4 space-y-2.5">
-              {v.proListe.map((x) => (
+              {/* Bêta : la 1re ligne (« des plans enregistrés sans limite », COLONNE_PRO) dit le plafond d'un inscrit. */}
+              {v.proListe.map((x, i) => (
                 <li key={x} className="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink">
                   <Coche pro />
-                  {maj(x)}
+                  {maj(beta && i === 0 ? vb.plans(PLANS_MAX_BETA) : x)}
                 </li>
               ))}
             </ul>

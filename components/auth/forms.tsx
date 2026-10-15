@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { login, signup, requestReset, updatePassword, type AuthState } from "@/lib/actions/auth";
 import { useT } from "@/components/i18n/LangProvider";
+import { Captcha, useCleCaptcha } from "@/components/auth/Captcha";
 
 function Feedback({ state }: { state: AuthState }) {
   if (!state) return null;
@@ -37,6 +38,7 @@ const field = "space-y-1.5";
 export function LoginForm({ next }: { next?: string }) {
   const t = useT().auth;
   const [state, action, pending] = useActionState(login, undefined);
+  const cleCaptcha = useCleCaptcha(state);
   return (
     <form action={action} className="space-y-4">
       <Feedback state={state} />
@@ -62,6 +64,7 @@ export function LoginForm({ next }: { next?: string }) {
         />
         {t.resterConnecte}
       </label>
+      <Captcha key={cleCaptcha} />
       <Submit pending={pending}>{t.seConnecter}</Submit>
     </form>
   );
@@ -71,6 +74,7 @@ export function LoginForm({ next }: { next?: string }) {
 export function SignupForm({ next }: { next?: string }) {
   const t = useT().auth;
   const [state, action, pending] = useActionState(signup, undefined);
+  const cleCaptcha = useCleCaptcha(state);
   return (
     <form action={action} className="space-y-4">
       <Feedback state={state} />
@@ -101,6 +105,7 @@ export function SignupForm({ next }: { next?: string }) {
         <input id="mdp-newsletter" name="newsletter" type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 rounded border-line-strong text-brand-600 accent-brand-600" />
         <span>{t.lien.newsletter}</span>
       </label>
+      <Captcha key={cleCaptcha} />
       <Submit pending={pending}>{t.creerCompte}</Submit>
     </form>
   );
@@ -110,6 +115,7 @@ export function SignupForm({ next }: { next?: string }) {
 export function ResetRequestForm() {
   const t = useT().auth;
   const [state, action, pending] = useActionState(requestReset, undefined);
+  const cleCaptcha = useCleCaptcha(state);
   return (
     <form action={action} className="space-y-4">
       <Feedback state={state} />
@@ -117,6 +123,7 @@ export function ResetRequestForm() {
         <label htmlFor="email" className="field-label">{t.email}</label>
         <input id="email" name="email" type="email" autoComplete="email" required className="input" placeholder={t.emailPlaceholder} />
       </div>
+      <Captcha key={cleCaptcha} />
       <Submit pending={pending}>{t.envoyerLien}</Submit>
     </form>
   );

@@ -6,6 +6,7 @@ import { envoyerLienAcces, type LienState } from "@/lib/actions/auth";
 import { useT } from "@/components/i18n/LangProvider";
 import { LoginForm, SignupForm } from "@/components/auth/forms";
 import { SocialAuth } from "@/components/auth/SocialAuth";
+import { Captcha, useCleCaptcha } from "@/components/auth/Captcha";
 import { DELAI_RENVOI_S, destinationLien, messagerieDe, reclamationEnAttente, type PageAcces } from "@/lib/auth-lien";
 import type { SourceBeta } from "@/lib/beta";
 import { suivre } from "@/lib/track";
@@ -42,6 +43,8 @@ export function AccesParLien({ page, next, source, google }: {
   const [vu, setVu] = useState<LienState>(undefined);
   const champ = useRef<HTMLInputElement>(null);
   const titre = useRef<HTMLHeadingElement>(null);
+  /* Un jeton de CAPTCHA (s'il est allumé, lib/captcha.ts) ne sert qu'une fois : un widget neuf après chaque envoi. */
+  const cleCaptcha = useCleCaptcha(state);
 
   useEffect(() => {
     try {
@@ -87,6 +90,7 @@ export function AccesParLien({ page, next, source, google }: {
         renvoye={!!state && "envoye" in state && state.renvoi}
         erreur={erreur ? t.erreurs[erreur] : null}
         titreRef={titre}
+        cleCaptcha={cleCaptcha}
         onChanger={() => {
           setVu(state);
           setEnvoyeA(null);
@@ -156,6 +160,7 @@ export function AccesParLien({ page, next, source, google }: {
             <span>{t.newsletter}</span>
           </label>
         )}
+        <Captcha key={cleCaptcha} />
         <button type="submit" disabled={pending} className="btn btn-primary w-full py-3 disabled:opacity-60" data-lien-bouton="">
           {pending ? t.envoiEnCours : inscription ? t.boutonInscription : t.boutonConnexion}
         </button>
@@ -202,7 +207,7 @@ export function AccesParLien({ page, next, source, google }: {
  * {@link DELAI_RENVOI_S} s, « Changer d'adresse ». Présentation seule (testée à part) ; l'état vit dans `AccesParLien`.
  */
 export function EcranEnvoye({
-  email, page, next, newsletter, retour, restant, pending, action, renvoye, erreur, titreRef, onChanger,
+  email, page, next, newsletter, retour, restant, pending, action, renvoye, erreur, titreRef, cleCaptcha = 0, onChanger,
 }: {
   email: string;
   page: PageAcces;
@@ -217,6 +222,8 @@ export function EcranEnvoye({
   renvoye: boolean;
   erreur: string | null;
   titreRef?: RefObject<HTMLHeadingElement | null>;
+  /** La `key` du CAPTCHA du renvoi (s'il est allumé) : un widget neuf après chaque envoi. */
+  cleCaptcha?: number;
   onChanger: () => void;
 }) {
   const t = useT().auth.lien;
@@ -267,6 +274,7 @@ export function EcranEnvoye({
           {next && <input type="hidden" name="next" value={next} />}
           {newsletter && <input type="hidden" name="newsletter" value="on" />}
           <input type="hidden" name="renvoi" value="1" />
+          <Captcha key={cleCaptcha} />
           <button
             type="submit"
             disabled={restant > 0 || pending}

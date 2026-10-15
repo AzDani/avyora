@@ -1,8 +1,10 @@
 import "server-only";
+import { randomBytes } from "node:crypto";
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 import { journaliser } from "@/lib/audit";
 import { suivreServeur } from "@/lib/track-server";
-import { MARQUE_COMPTE_CREE, metadonneesInscription, methodeNouveauCompte } from "@/lib/auth-lien";
+import { supabaseAdmin } from "@/lib/supabase/admin";
+import { MARQUE_COMPTE_CREE, MARQUE_MDP, controleMdpAFaire, metadonneesInscription, methodeNouveauCompte, type Demande } from "@/lib/auth-lien";
 
 /**
  * Au retour d'un lien e-mail ou de Google (/auth/callback, le bouton de /auth/confirmer), la session vient d'être
@@ -25,5 +27,62 @@ export async function noterArrivee(supabase: SupabaseClient, user: User | null |
     await suivreServeur("compte_cree", { confirme: true, destination, methode });
   } catch {
     /* mesure ou métadonnées indisponibles : la session est ouverte, on n'interrompt pas le retour */
+  }
+}
+
+/**
+ * Un mot de passe que personne ne connaît : 32 octets aléatoires, plus de quoi satisfaire toute règle de complexité
+ * réglée dans Supabase (minuscule, majuscule, chiffre, symbole), 48 caractères (bcrypt en lit 72).
+ */
+export function motDePasseAleatoire(): string {
+  return `${randomBytes(32).toString("base64url")}-Aa1!`;
+}
+
+/**
+ * Le contrôle de l'arrivée, juste après l'ouverture de la session par un lien (ou Google), AVANT `noterArrivee` :
+ *
+ * 1. Le mot de passe (prise de compte préparée à l'avance). Un tiers peut inscrire l'adresse de quelqu'un d'autre avec
+ *    SON mot de passe : le compte reste non confirmé, et Supabase ne modifie pas un compte non confirmé quand la vraie
+ *    personne s'inscrit à son tour ; le clic sur son lien confirme le compte SANS toucher au mot de passe du tiers, qui
+ *    entrerait ensuite avec. Donc, à la première arrivée qui suit la confirmation (dans l'heure, une seule fois :
+ *    marque `mdp_controle_le` dans `app_metadata`, que seul le serveur écrit), si ce navigateur n'a pas choisi le mot
+ *    de passe lui-même (demande `mdp` dans `av-demande`), il est remplacé par un aléa et les autres sessions sont
+ *    fermées. Prix à payer : un inscrit au mot de passe qui confirme sur un AUTRE appareil passe ensuite par le lien de
+ *    connexion ou « mot de passe oublié ».
+ * 2. Les nouveautés : la case cochée n'est enregistrée qu'ici, à l'arrivée confirmée dans le navigateur qui l'a cochée
+ *    (`n` dans `av-demande`), datée du moment où elle l'a été. Personne ne peut plus abonner l'adresse d'un autre.
+ *
+ * Best-effort, comme `noterArrivee` : un échec ne bloque pas l'arrivée ; sans la marque, le contrôle est refait à
+ * l'arrivée suivante (dans l'heure).
+ */
+export async function controlerArrivee(
+  supabase: SupabaseClient,
+  user: User | null | undefined,
+  demande: Demande | null,
+  maintenant: number = Date.now(),
+): Promise<void> {
+  if (!user) return;
+  try {
+    if (controleMdpAFaire(user, maintenant)) {
+      const garder = demande?.m === "mdp";
+      if (!garder) {
+        const { error } = await supabase.auth.updateUser({ password: motDePasseAleatoire() });
+        if (error) throw error;
+        await supabase.auth.signOut({ scope: "others" });
+        await journaliser("mot_de_passe_neutralise", { userId: user.id });
+      }
+      await supabaseAdmin().auth.admin.updateUserById(user.id, {
+        app_metadata: { [MARQUE_MDP]: new Date(maintenant).toISOString() },
+      });
+    }
+  } catch {
+    /* contrôle refait à la prochaine arrivée (pas de marque) */
+  }
+  try {
+    if (demande?.n && user.user_metadata?.newsletter !== true) {
+      await supabase.auth.updateUser({ data: { newsletter: true, newsletter_le: new Date(demande.t * 1000).toISOString() } });
+    }
+  } catch {
+    /* consentement non enregistré : la case reste à cocher plus tard */
   }
 }
