@@ -214,6 +214,9 @@ La source n'est pas modifiée (la batterie continue de tester le fichier tel que
   - Session, liste ou plan en panne, ou plus de 6 s : mode local, gratuit, et « La connexion à ton compte n'a pas
     abouti : ton plan reste sur cet appareil. Recharge la page pour réessayer. »
   - Anonyme avec `?id=` : « Connecte-toi pour ouvrir ce plan : il est rangé dans ton compte. »
+  - Bêta gratuite (B1, `docs/beta.md`) : la session porte alors `beta: { prix, passer }` ; l'amorçage pose
+    `AVYORA_PRIX_PRO` et remplace « Passer Pro » par « Compte gratuit » dans le texte qu'il exécute et dans la barre.
+    Hors bêta, le champ est absent : rien ne change.
 - **Vercel Analytics** : `<script defer src="/_vercel/insights/script.js">` seulement quand le build tourne sur
   Vercel (`VERCEL=1` : production et préversion, où il se vérifie), jamais en local. Pas de balise Ads.
 - **CSP propre** : seconde entrée de `headers()` dans `next.config.ts` pour `source: "/plan"` (la dernière entrée

@@ -72,13 +72,17 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
     if (initialState && (initialState as Persisted).v === "estimateur") { statutsRef.current = (initialState as Persisted).statuts; load(initialState as Persisted); return; }
 
     // Signaux de « démarrage frais » : lien Nouveau projet (?new=1) ou retour d'« Affiner » (rapide → détaillé).
+    // « Affiner » se dit par sessionStorage dans le même onglet, ou par ?affiner=1 quand le visiteur est passé
+    // par l'inscription (bêta gratuite) : le lien de l'e-mail ouvre un nouvel onglet, sans le sessionStorage.
     let isNew = false, fromAffiner = false;
     try {
-      isNew = new URLSearchParams(window.location.search).get("new") === "1";
-      fromAffiner = sessionStorage.getItem("avyora-affiner") === "1";
+      const q = new URLSearchParams(window.location.search);
+      isNew = q.get("new") === "1";
+      const affinerUrl = q.get("affiner") === "1";
+      fromAffiner = sessionStorage.getItem("avyora-affiner") === "1" || affinerUrl;
       if (fromAffiner) sessionStorage.removeItem("avyora-affiner");
-      if (isNew) { // on retire ?new de l'URL → un rafraîchissement ultérieur reprend le travail en cours, pas un reset
-        const url = new URL(window.location.href); url.searchParams.delete("new");
+      if (isNew || affinerUrl) { // on retire ?new et ?affiner de l'URL → un rafraîchissement reprend le travail en cours, pas un reset
+        const url = new URL(window.location.href); url.searchParams.delete("new"); url.searchParams.delete("affiner");
         window.history.replaceState(null, "", url.pathname + url.search);
       }
     } catch { /* noop */ }

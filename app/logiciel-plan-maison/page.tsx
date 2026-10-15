@@ -7,6 +7,7 @@ import { getLocale } from "@/lib/i18n/server";
 import { dictPlans } from "@/lib/i18n/plans";
 import { clicPlan } from "@/lib/plans/mesure";
 import { og } from "@/lib/seo-og";
+import { betaActive, libellesBeta, lienInscriptionBeta } from "@/lib/beta";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
@@ -81,6 +82,13 @@ export default async function LogicielPlanMaison() {
   const d = dictPlans(locale);
   const t = d.page;
   const v = d.vitrine;
+  // Bêta gratuite (lib/beta.ts) : l'encart des offres, la pastille du projet rénovation et la réponse « C'est vraiment
+  // gratuit ? » disent la bêta ; la colonne Pro garde les mots de l'éditeur (DROITS). Hors bêta, la page d'avant.
+  const beta = betaActive();
+  const vb = d.vitrineBeta;
+  const finBeta = beta ? libellesBeta(locale).fin : "";
+  const faqBeta = beta ? vb.faqGratuit(finBeta) : null;
+  const faq = faqBeta ? v.faq.map((f) => (f.q === faqBeta.q ? faqBeta : f)) : v.faq;
 
   /* JSON-LD : l'application (gratuite, sans note ni avis : AVYORA n'a pas d'avis réels), le fil d'Ariane, et la
      FAQ telle qu'elle est affichée (mêmes questions, mêmes réponses). */
@@ -109,7 +117,7 @@ export default async function LogicielPlanMaison() {
       },
       {
         "@type": "FAQPage",
-        mainEntity: v.faq.map((f) => ({
+        mainEntity: faq.map((f) => ({
           "@type": "Question",
           name: f.q,
           acceptedAnswer: { "@type": "Answer", text: f.r },
@@ -190,18 +198,18 @@ export default async function LogicielPlanMaison() {
           <div className="card flex flex-col p-6">
             <p className="flex items-center gap-2">
               <span className="text-[17px] font-semibold text-ink">{v.renoverTitre}</span>
-              <span className="rounded-full bg-gradient-to-r from-accent-600 to-brand-600 px-2.5 py-1 text-[11px] font-semibold text-white">{v.pro}</span>
+              <span className="rounded-full bg-gradient-to-r from-accent-600 to-brand-600 px-2.5 py-1 text-[11px] font-semibold text-white">{beta ? vb.pastille : v.pro}</span>
             </p>
             <p className="mt-2 flex-1 text-[14px] leading-relaxed text-muted">{v.renoverTexte}</p>
             <a href="#offres" className="mt-4 text-[14px] font-medium text-brand-700 hover:underline">
-              {v.renoverLien} ↓
+              {beta ? vb.renoverLien : v.renoverLien} ↓
             </a>
           </div>
         </div>
       </section>
 
       <section id="offres" aria-labelledby="offres-titre" className="scroll-mt-24">
-        <h2 id="offres-titre" className="text-2xl font-semibold tracking-tight text-ink">{v.offresTitre}</h2>
+        <h2 id="offres-titre" className="text-2xl font-semibold tracking-tight text-ink">{beta ? vb.offresTitre : v.offresTitre}</h2>
         <div className="mt-5 grid gap-4 md:grid-cols-2">
           <div className="rounded-panel border border-line bg-surface p-6" data-colonne="gratuit">
             <p className="text-[15px] font-semibold text-ink">{v.gratuit}</p>
@@ -216,8 +224,8 @@ export default async function LogicielPlanMaison() {
             </ul>
           </div>
           <div className="rounded-panel border border-brand-600 bg-surface p-6 shadow-card ring-1 ring-brand-600/15" data-colonne="pro">
-            <p className="text-[15px] font-semibold text-ink">{v.pro}</p>
-            <p className="mt-1 text-[13px] text-muted">{v.offresProSous}</p>
+            <p className="text-[15px] font-semibold text-ink">{beta ? `${v.pro} · ${vb.pastille}` : v.pro}</p>
+            <p className="mt-1 text-[13px] text-muted">{beta ? vb.proSous(finBeta) : v.offresProSous}</p>
             <ul className="mt-4 space-y-2.5">
               {v.proListe.map((x) => (
                 <li key={x} className="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink">
@@ -226,9 +234,17 @@ export default async function LogicielPlanMaison() {
                 </li>
               ))}
             </ul>
-            <Link href="/tarifs?source=editeur-plan" className="btn btn-outline mt-5 py-2.5">
-              {v.offresVoir}
-            </Link>
+            {/* Bêta : un compte suffit, puis l'éditeur (une balise <a>, comme tout lien qui mène à l'éditeur). La page ne
+                lit pas la session : un connecté qui clique repart directement vers l'éditeur. */}
+            {beta ? (
+              <a href={lienInscriptionBeta("/plan", "vitrine-plan")} className="btn btn-outline mt-5 py-2.5">
+                {vb.offresVoir}
+              </a>
+            ) : (
+              <Link href="/tarifs?source=editeur-plan" className="btn btn-outline mt-5 py-2.5">
+                {v.offresVoir}
+              </Link>
+            )}
           </div>
         </div>
       </section>
@@ -236,7 +252,7 @@ export default async function LogicielPlanMaison() {
       <section aria-labelledby="faq-titre">
         <h2 id="faq-titre" className="text-2xl font-semibold tracking-tight text-ink">{v.faqTitre}</h2>
         <div className="mt-5 divide-y divide-line rounded-panel border border-line bg-surface">
-          {v.faq.map((f) => (
+          {faq.map((f) => (
             <details key={f.q} className="group px-5 py-4">
               <summary className="cursor-pointer list-none text-[15px] font-medium text-ink marker:hidden">
                 <span className="flex items-center justify-between gap-4">

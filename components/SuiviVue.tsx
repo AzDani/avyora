@@ -17,12 +17,17 @@ import { suivre, type EvenementAvyora } from "@/lib/track";
  *  - `sessionStorage` : un rechargement ou un retour arrière remonte un composant neuf — la ref
  *    repart à false, le stockage non. C'est lui qui évite de gonfler le compteur sur la session.
  */
-export function SuiviVue({ evenement, props }: { evenement: EvenementAvyora; props?: Record<string, string | number | boolean> }) {
+export function SuiviVue({ evenement, props, cle: suffixe }: {
+  evenement: EvenementAvyora;
+  props?: Record<string, string | number | boolean>;
+  /** Une fois par session ET par valeur (ex. la source de `vers_inscription`), plutôt qu'une fois par événement. */
+  cle?: string;
+}) {
   const emis = useRef(false);
   useEffect(() => {
     if (emis.current) return;
     emis.current = true;
-    const cle = `av_vue_${evenement}`;
+    const cle = `av_vue_${evenement}${suffixe ? `_${suffixe}` : ""}`;
     try {
       if (sessionStorage.getItem(cle)) return;
       sessionStorage.setItem(cle, "1");
@@ -30,6 +35,6 @@ export function SuiviVue({ evenement, props }: { evenement: EvenementAvyora; pro
       /* stockage indisponible : on émet quand même, la ref suffit pour ce montage */
     }
     suivre(evenement, props);
-  }, [evenement, props]);
+  }, [evenement, props, suffixe]);
   return null;
 }

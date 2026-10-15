@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { getT } from "@/lib/i18n/server";
 import { FEATURES } from "@/lib/features";
+import { betaActive } from "@/lib/beta";
+import { accueilBeta } from "@/lib/accueil-beta";
 
 // Le canonical de l'accueil vit ici (retiré du layout racine où il contaminait toutes les pages).
 export const metadata: Metadata = { alternates: { canonical: "/" } };
@@ -452,7 +454,8 @@ export default async function Accueil({ searchParams }: { searchParams: Promise<
         </div>
       )}
       <style dangerouslySetInnerHTML={{ __html: HOME_CSS }} />
-      <div className="av-home" dangerouslySetInnerHTML={{ __html: en ? HOME_HTML_EN : HOME_HTML }} />
+      {/* Bêta gratuite (lib/beta.ts) : les prix et les « Pro » laissent place à la bêta (lib/accueil-beta.ts). */}
+      <div className="av-home" dangerouslySetInnerHTML={{ __html: betaActive() ? accueilBeta(en ? HOME_HTML_EN : HOME_HTML, locale) : en ? HOME_HTML_EN : HOME_HTML }} />
     </>
   );
 }

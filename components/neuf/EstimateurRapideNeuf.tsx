@@ -52,6 +52,7 @@ import { RAPIDE_CSS } from "@/components/estimateur/rapide-styles";
 import BilanRapideNeuf from "./BilanRapideNeuf";
 import { NEUF_CSS } from "./neuf-styles";
 import { mesurerPlan, mesureEstimationNeuf } from "@/lib/plans/mesure";
+import { lienInscriptionBeta } from "@/lib/beta";
 
 const FINITIONS: { v: Finition; lvl: number }[] = [
   { v: "eco", lvl: 1 },
@@ -81,6 +82,7 @@ function rechercheNettoyee(): string {
 
 export default function EstimateurRapideNeuf({
   isPro = false,
+  beta = false,
   initial,
   edit,
   base,
@@ -90,6 +92,11 @@ export default function EstimateurRapideNeuf({
   statuts,
 }: {
   isPro?: boolean;
+  /**
+   * Bêta gratuite en cours (lib/beta.ts, décidé par la page, côté serveur). Un non-Pro est alors un anonyme :
+   * « Affiner ma maison » et « Enregistrer » l'envoient créer son compte gratuit, pas payer.
+   */
+  beta?: boolean;
   /** Contexte venu de l'URL de la page publique (déjà validé côté serveur). */
   initial?: InitialNeuf;
   /** Édition d'un projet EXISTANT (PATCH). Ne se mélange pas avec `initial`. */
@@ -107,7 +114,9 @@ export default function EstimateurRapideNeuf({
   const router = useRouter();
   const T = useT();
   const locale = useLocale();
-  const s = dictNeuf(locale).saisie;
+  // Bêta : les libellés « Pro » prennent ceux de la bêta (mêmes clés, pour le rendu ci-dessous).
+  const s = beta ? { ...dictNeuf(locale).saisie, introGratuit: T.beta.introNeuf, affinerPro: T.beta.affinerNeuf } : dictNeuf(locale).saisie;
+  const versInscription = beta && !isPro;
   const nf = locale === "en" ? "en-US" : "fr-FR";
 
   const [R, setR] = useState<ReponsesRapideNeuf>(() => ({
@@ -305,7 +314,11 @@ export default function EstimateurRapideNeuf({
     // ses réponses reviennent s'il revient en arrière. La source dit la nature jusqu'à Stripe : après
     // le paiement, `/bienvenue-pro` le ramène à sa maison (N2).
     if (!isPro) { try { sessionStorage.setItem(CLE_RETOUR_NEUF, JSON.stringify({ R, base: baseEff })); } catch { /* noop */ } }
-    router.push(isPro ? "/projets/nouveau/construction?new=1" : "/tarifs?source=affiner-neuf");
+    // Bêta, anonyme : l'inscription d'abord ; le lien de l'e-mail le ramène au détaillé, qui reprend cette maison
+    // (`?reprise=1` lit le brouillon `avyora-neuf-v1` que `saveDraft` vient de ranger).
+    router.push(isPro ? "/projets/nouveau/construction?new=1"
+      : versInscription ? lienInscriptionBeta("/projets/nouveau/construction?reprise=1", "affiner-neuf")
+      : "/tarifs?source=affiner-neuf");
   }
 
   // Une maison venue d'un plan est rangée tout de suite (`avyora-neuf-v1`, avec son origine) : elle
@@ -345,7 +358,7 @@ export default function EstimateurRapideNeuf({
         try { localStorage.setItem(CLE_BROUILLON_NEUF, JSON.stringify(d)); localStorage.setItem(CLE_RECLAMATION_NEUF, "1"); } catch { /* noop */ }
         // Née d'un plan de cet appareil : le plan est repris d'abord (ClaimPlan), l'estimation s'y relie ensuite.
         try { marquerReprisePlan(d.origine, localStorage); } catch { /* noop */ }
-        router.push("/inscription");
+        router.push(beta ? lienInscriptionBeta(undefined, "enregistrer-neuf") : "/inscription");
         return;
       }
       const data = await res.json().catch(() => ({}));

@@ -10,6 +10,7 @@ import { getLocale } from "@/lib/i18n/server";
 import { dict } from "@/lib/i18n/dictionaries";
 import { dictNeuf } from "@/lib/i18n/neuf";
 import BilanRapideNeuf from "./BilanRapideNeuf";
+import { betaActive } from "@/lib/beta";
 
 /**
  * Fiche d'un projet neuf enregistré en mode RAPIDE. Pendant de `ResultatRapide` (rénovation,
@@ -51,7 +52,9 @@ export default async function ResultatRapideNeuf({
   const locale = await getLocale();
   const d = dict(locale);
   const n = dictNeuf(locale);
-  const t = n.rapide;
+  // Bêta gratuite (lib/beta.ts) : la pastille « Pro » et le titre du cadenas disent la bêta.
+  const beta = betaActive();
+  const t = beta ? { ...n.rapide, lockH: d.beta.lockNeuf } : n.rapide;
   const ctx = { ...(reponses.ctx ?? {}), codePostal: reponses.ctx?.codePostal ?? reponses.codePostal } as Ctx;
   const sel = normaliserCles((reponses.sel ?? {}) as Selection);
   const nf = locale === "en" ? "en-US" : "fr-FR";
@@ -90,7 +93,7 @@ export default async function ResultatRapideNeuf({
         <div className="item"><div className="k">{t.quiK}</div><div className="v">{quiLabel}</div></div>
       </div>
 
-      <div className="sec">{t.detailK} <span className="pro-chip">Pro</span></div>
+      <div className="sec">{t.detailK} <span className="pro-chip">{beta ? d.beta.pastille : "Pro"}</span></div>
       <div className="teaser">
         <div className="inside" aria-hidden="true">
           {top.map((li, i) => (

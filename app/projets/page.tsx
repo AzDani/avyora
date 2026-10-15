@@ -12,6 +12,8 @@ import { FEATURES } from "@/lib/features";
 import { compterPlans, plansDesProjets, type LienPlan } from "@/lib/plans/data";
 import { dictPlans } from "@/lib/i18n/plans";
 import type { Locale } from "@/lib/i18n/config";
+import { estMembreFondateur } from "@/lib/beta";
+import { PastilleFondateur } from "@/components/BandeauBeta";
 
 export const dynamic = "force-dynamic";
 
@@ -97,6 +99,8 @@ export default async function ProjetsPage() {
   const [user, actifs, archivesRows, locale] = await Promise.all([getUser(), listProjets(false), listProjets(true), getLocale()]);
   const s = TR[locale];
   const isPro = !!user && estPro(user);
+  // Bêta gratuite (lib/beta.ts) : un compte créé avant la fin de la bêta porte la pastille « Membre fondateur ».
+  const fondateur = estMembreFondateur(user);
   const plans = await plansDeLaListe([...actifs, ...archivesRows].map((p) => String(p.id)), locale);
   const projets = actifs.map((p) => versCarte(p, plans?.liens));
   const archives = archivesRows.map((p) => versCarte(p, plans?.liens));
@@ -119,6 +123,7 @@ export default async function ProjetsPage() {
             <span className="dot" />
             {s.portefeuille}
           </span>
+          {fondateur && <span className="relative z-[1] ml-2 align-middle"><PastilleFondateur locale={locale} sombre /></span>}
           <div className="big">
             <span className="data">{euros(sumTravaux)}</span>
             <small>{s.deTravauxEstimes}</small>
@@ -136,6 +141,7 @@ export default async function ProjetsPage() {
       ) : (
         <header className="animate-rise">
           <p className="eyebrow">{s.portefeuille}</p>
+          {fondateur && <p className="mt-2"><PastilleFondateur locale={locale} /></p>}
           <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-ink">{s.projets}</h1>
           <p className="mt-1.5 text-[15px] text-muted">
             {aDuNeuf ? dictNeufCommun(locale).introListe : s.intro}

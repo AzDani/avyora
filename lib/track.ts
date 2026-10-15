@@ -37,7 +37,14 @@ export type EvenementAvyora =
   /** La limite gratuite refuse un plan. Props : `moment` (reclamation | nouveau). L'éditeur l'émet aussi, par son relais. */
   | "plan_limite_gratuit"
   /** Une estimation créée depuis un plan. Props : `nature` (neuf | reno), `mode` (rapide | detaille). */
-  | "estimation_depuis_plan";
+  | "estimation_depuis_plan"
+  /**
+   * Bêta gratuite (lib/beta.ts) : un visiteur envoyé vers l'inscription par une fonction de la bêta (« Créer
+   * mon compte gratuit » à la place de « Débloquer avec Pro », Affiner, Détaillé, Enregistrer, éditeur de
+   * plan…). Émis à l'ARRIVÉE sur /inscription, une fois par session et par source : un seul point de mesure
+   * pour les liens des pages et les redirections serveur. Props : `source`, liste fermée `SOURCES_BETA`.
+   */
+  | "vers_inscription";
 
 type Props = Record<string, string | number | boolean | null>;
 

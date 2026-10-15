@@ -26,6 +26,7 @@ import Stepper from "@/components/Stepper";
 import { CountUpNf as CountUp } from "@/components/estimateur/CountUp";
 import { RAPIDE_CSS } from "@/components/estimateur/rapide-styles";
 import type { SourceSeo } from "@/lib/seo-source";
+import { lienInscriptionBeta } from "@/lib/beta";
 
 type Mode = "bien" | "pieces";
 // Pièces disponibles (mode « une ou plusieurs pièces ») : emoji, libellé, surface par défaut.
@@ -69,10 +70,16 @@ export type RapideInitial = { cp?: string; piece?: PieceKey; surface?: number; s
 
 export default function EstimateurRapide({
   isPro = false,
+  beta = false,
   edit,
   initial,
 }: {
   isPro?: boolean;
+  /**
+   * Bêta gratuite en cours (lib/beta.ts, décidé par la page, côté serveur). Un non-Pro est alors un anonyme :
+   * « Affiner », le multi-pièces et « Enregistrer » l'envoient créer son compte gratuit, pas payer.
+   */
+  beta?: boolean;
   edit?: RapideEdit;
   initial?: RapideInitial;
 }) {
@@ -115,7 +122,9 @@ export default function EstimateurRapide({
   const [erreur, setErreur] = useState<string | null>(null);
 
   const T = useT();
-  const t = T.rapide;
+  // Bêta : les quelques libellés « Pro » prennent ceux de la bêta (même clés, pour le rendu ci-dessous).
+  const t = beta ? { ...T.rapide, affiner: T.beta.affiner, proLock: T.beta.proLock, lockedLabel: T.beta.lockedLabel, lockedSub: T.beta.lockedSub, lockedCta: T.beta.creerCompteFleche } : T.rapide;
+  const versInscription = beta && !isPro;
   const locale = useLocale();
   const nf = locale === "en" ? "en-US" : "fr-FR";
   // Libellé d'ampleur traduit ("Réno totale" pour la lourde en appartement).
@@ -233,7 +242,21 @@ export default function EstimateurRapide({
     }
     saveDraft();
     try { sessionStorage.setItem("avyora-affiner", "1"); } catch { /* noop */ }
-    router.push("/projets/nouveau/detaille");
+    // Bêta, anonyme : l'inscription d'abord ; le lien de l'e-mail le ramène au détaillé, semé par ce brouillon (?affiner=1).
+    router.push(versInscription ? lienInscriptionBeta("/projets/nouveau/detaille?affiner=1", "affiner-reno") : "/projets/nouveau/detaille");
+  }
+
+  /**
+   * Bêta, anonyme, plusieurs types de pièces : « Créer mon compte gratuit ». Comme « Enregistrer » sans compte,
+   * le brouillon puis le drapeau de réclamation : une fois inscrit, `ClaimDraft` (/projets) crée le projet, multi-pièces
+   * compris (il est Pro pendant la bêta). Le code postal d'abord : sans lui, la réclamation échouerait.
+   */
+  function versInscriptionMultiPieces() {
+    setErreur(null);
+    if (!/^\d{5}$/.test(cp)) { setErreur(t.errCp); return; }
+    saveDraft();
+    try { localStorage.setItem(CLE_RECLAMATION_RENO, "1"); } catch { /* noop */ }
+    router.push(lienInscriptionBeta(undefined, "multi-pieces"));
   }
 
   /** Libellé du projet (ex. « Rénovation — Chambre ×2 + Salle de bain » ou « Rénovation — Maison 100 m² »). */
@@ -267,7 +290,7 @@ export default function EstimateurRapide({
     try {
       const res = await fetch(edit ? `/api/projects/${edit.projectId}` : "/api/projects", { method: edit ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nom, typeBien, surface: totalSurface, codePostal: cp, reponses }) });
       // Le brouillon d'abord, le drapeau ensuite : un drapeau sans brouillon ne réclame rien.
-      if (res.status === 401) { saveDraft(); try { localStorage.setItem(CLE_RECLAMATION_RENO, "1"); } catch { /* noop */ } router.push("/inscription"); return; }
+      if (res.status === 401) { saveDraft(); try { localStorage.setItem(CLE_RECLAMATION_RENO, "1"); } catch { /* noop */ } router.push(beta ? lienInscriptionBeta(undefined, "enregistrer-reno") : "/inscription"); return; }
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { setErreur(data?.error || t.errSave); setSaving(false); return; }
       try { localStorage.removeItem(DRAFT_KEY); } catch { /* noop */ }
@@ -429,8 +452,11 @@ export default function EstimateurRapide({
                 <div className="sub">{t.lockedSub}</div>
               </div>
               <div className="btns">
-                <Link className="cta" href="/tarifs?source=affiner-reno">{t.lockedCta}</Link>
+                {versInscription
+                  ? <button className="cta" onClick={versInscriptionMultiPieces}>{t.lockedCta}</button>
+                  : <Link className="cta" href="/tarifs?source=affiner-reno">{t.lockedCta}</Link>}
               </div>
+              {versInscription && erreur && <div className="err">{erreur}</div>}
             </>
           ) : (
             <>

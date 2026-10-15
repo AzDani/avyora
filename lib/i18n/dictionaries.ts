@@ -219,6 +219,61 @@ const fr = {
       "Corse": "Corse",
     } as Record<string, string>,
   },
+  /*
+   * Bêta gratuite (lib/beta.ts, chantier B1) : ce qui remplace les « Pro », « Débloquer avec Pro » et prix
+   * tant que la bêta court. Les dates et le tarif arrivent en paramètres (`libellesBeta`) : ils suivent
+   * NEXT_PUBLIC_BETA_FIN et la constante TARIF_FONDATEUR_MOIS, jamais écrits en dur ici.
+   */
+  beta: {
+    pastille: "Bêta",
+    inclus: "Inclus pendant la bêta",
+    creerCompte: "Créer mon compte gratuit",
+    creerCompteFleche: "Créer mon compte gratuit →",
+    /* L'écran de choix (`ChoixEstimation`) */
+    choixFootAnonyme: "Gratuit pendant la bêta, il suffit d'un compte.",
+    choixFootConnecte: (fin: string) => `Inclus pendant la bêta, jusqu'au ${fin}`,
+    /* L'estimation rapide de la rénovation (`EstimateurRapide`) */
+    affiner: "Détail poste par poste — gratuit en bêta",
+    proLock: "🔒 Compte",
+    lockedLabel: "Multi-pièces · gratuit pendant la bêta",
+    lockedSub: "Combine plusieurs pièces en un seul projet chiffré : c'est gratuit pendant la bêta, il suffit d'un compte. Une pièce seule reste sans compte.",
+    /* L'estimation rapide du neuf (`EstimateurRapideNeuf`) et les résultats rapides */
+    introNeuf: "Estimation indicative, marge ±15 %. Le détail phase par phase, poste par poste, est gratuit pendant la bêta : il suffit d'un compte.",
+    affinerNeuf: "Détail phase par phase — gratuit en bêta",
+    lockNeuf: "Le détail poste par poste, inclus pendant la bêta",
+    /* L'inscription */
+    inscriptionEyebrow: "Bêta gratuite",
+    inscriptionTitre: "Gratuit pendant la bêta — crée ton compte",
+    bandeauTitre: (fin: string) => `Tout AVYORA est gratuit jusqu'au ${fin}`,
+    bandeauTexte: "Estimation détaillée, rapport PDF, suivi de chantier, plans sans limite : tout est inclus avec un compte. Aucune carte demandée, rien ne sera prélevé.",
+    fondateur: (tarif: string) =>
+      `Inscris-toi pendant la bêta : tu deviens membre fondateur et tu gardes le tarif de lancement (${tarif}/mois) à vie quand AVYORA passera payant.`,
+    /* Membre fondateur (/projets, Mon compte) */
+    membreFondateur: "Membre fondateur",
+    membreFondateurTitre: (tarif: string) => `Tu gardes le tarif de lancement (${tarif}/mois) à vie quand AVYORA passera payant.`,
+    /* Après la bêta : le statut reste, la promesse est tenue (plus de futur). */
+    membreFondateurTitreApres: (tarif: string) => `Le tarif de lancement (${tarif}/mois) t'est garanti à vie.`,
+    /* La page Tarifs */
+    tarifsMetaTitre: "Bêta gratuite — tout AVYORA offert, il suffit d'un compte",
+    tarifsMetaDescription: (fin: string) =>
+      `Estimateur détaillé, rapport PDF, suivi de chantier et plans : tout AVYORA est gratuit jusqu'au ${fin}. Il suffit d'un compte, aucune carte demandée.`,
+    tarifsEyebrow: "Bêta gratuite",
+    tarifsTitre: (fin: string) => `Tout AVYORA est gratuit jusqu'au ${fin}`,
+    tarifsSous: "Il suffit d'un compte. Aucun moyen de paiement n'est demandé, et rien ne sera prélevé automatiquement : ni pendant la bêta, ni après.",
+    tarifsFondateurTag: "Membre fondateur",
+    tarifsFondateurTitre: "Inscris-toi pendant la bêta, garde le tarif de lancement à vie",
+    tarifsFondateurSous: (tarif: string) => `Tu deviens membre fondateur : quand AVYORA passera payant, tu gardes ${tarif}/mois à vie.`,
+    tarifsConnecte: (fin: string) => `Tout est inclus pour toi jusqu'au ${fin}`,
+    tarifsConnecteLien: "Ouvrir l'estimateur détaillé",
+    tarifsAbonneAvant: "Tu as un abonnement en cours : tu le gères depuis ",
+    tarifsAbonneLien: "Mon compte",
+    tarifsAbonneCarte: "Ton abonnement reste actif",
+    tarifsOffres: (reprise: string) => `Les offres, à partir du ${reprise}`,
+    tarifsOffresSous: (fin: string) => `Rien à payer d'ici là : tout ce qui suit est inclus jusqu'au ${fin}.`,
+    tarifsInclus: "Inclus pendant la bêta",
+    tarifsDepuisEditeur: "Tu viens de l'éditeur de plan. Avec un compte, pendant la bêta :",
+    tarifsBasConnecte: "Tu peux aussi ",
+  },
   auth: {
     email: "Email",
     emailPlaceholder: "toi@exemple.fr",
@@ -460,6 +515,49 @@ const en: Dict = {
       "Zone rurale": "Rural area",
       "Corse": "Corsica",
     } as Record<string, string>,
+  },
+  beta: {
+    pastille: "Beta",
+    inclus: "Included during the beta",
+    creerCompte: "Create my free account",
+    creerCompteFleche: "Create my free account →",
+    choixFootAnonyme: "Free during the beta, all you need is an account.",
+    choixFootConnecte: (fin: string) => `Included during the beta, through ${fin}`,
+    affiner: "Line-by-line detail — free in beta",
+    proLock: "🔒 Account",
+    lockedLabel: "Multi-room · free during the beta",
+    lockedSub: "Combine multiple rooms into one estimated project: it's free during the beta, all you need is an account. A single room needs no account.",
+    introNeuf: "Indicative estimate, ±15% margin. The phase-by-phase, line-by-line detail is free during the beta: all you need is an account.",
+    affinerNeuf: "Phase-by-phase detail — free in beta",
+    lockNeuf: "The line-by-line detail, included during the beta",
+    inscriptionEyebrow: "Free beta",
+    inscriptionTitre: "Free during the beta — create your account",
+    bandeauTitre: (fin: string) => `All of AVYORA is free through ${fin}`,
+    bandeauTexte: "Detailed estimate, PDF report, project tracking, unlimited plans: everything is included with an account. No card required, nothing will be charged.",
+    fondateur: (tarif: string) =>
+      `Sign up during the beta: you become a founding member and keep the launch price (${tarif}/month) for life once AVYORA becomes paid.`,
+    membreFondateur: "Founding member",
+    membreFondateurTitre: (tarif: string) => `You keep the launch price (${tarif}/month) for life once AVYORA becomes paid.`,
+    membreFondateurTitreApres: (tarif: string) => `Your launch price (${tarif}/month) is guaranteed for life.`,
+    tarifsMetaTitre: "Free beta — all of AVYORA, all you need is an account",
+    tarifsMetaDescription: (fin: string) =>
+      `Detailed estimator, PDF report, project tracking and floor plans: all of AVYORA is free through ${fin}. All you need is an account, no card required.`,
+    tarifsEyebrow: "Free beta",
+    tarifsTitre: (fin: string) => `All of AVYORA is free through ${fin}`,
+    tarifsSous: "All you need is an account. No payment method is required, and nothing will ever be charged automatically: not during the beta, not after.",
+    tarifsFondateurTag: "Founding member",
+    tarifsFondateurTitre: "Sign up during the beta, keep the launch price for life",
+    tarifsFondateurSous: (tarif: string) => `You become a founding member: once AVYORA becomes paid, you keep ${tarif}/month for life.`,
+    tarifsConnecte: (fin: string) => `Everything is included for you through ${fin}`,
+    tarifsConnecteLien: "Open the detailed estimator",
+    tarifsAbonneAvant: "You have an active subscription: manage it from ",
+    tarifsAbonneLien: "My account",
+    tarifsAbonneCarte: "Your subscription stays active",
+    tarifsOffres: (reprise: string) => `Plans, starting ${reprise}`,
+    tarifsOffresSous: (fin: string) => `Nothing to pay until then: everything below is included through ${fin}.`,
+    tarifsInclus: "Included during the beta",
+    tarifsDepuisEditeur: "You're coming from the floor plan editor. With an account, during the beta:",
+    tarifsBasConnecte: "You can also ",
   },
   auth: {
     email: "Email",

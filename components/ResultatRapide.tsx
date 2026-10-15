@@ -9,6 +9,7 @@ import { normaliserCles } from "@/lib/estimateur/identite";
 import { catT } from "@/lib/estimateur/catalog-i18n";
 import { getLocale } from "@/lib/i18n/server";
 import { dict } from "@/lib/i18n/dictionaries";
+import { betaActive } from "@/lib/beta";
 
 /**
  * Page résultat de l'ESTIMATION RAPIDE : récap des réponses + fourchette, mais PAS le détail
@@ -163,7 +164,8 @@ export default async function ResultatRapide({
         <div className="item" style={{ gridColumn: "1 / -1" }}><span className="ic">👷</span><div><div className="k">{L.quiK}</div><div className="v">{quiLabel}</div></div></div>
       </div>
 
-      <div className="sec">{L.where} <span className="pro-chip">Pro</span></div>
+      {/* Bêta gratuite (lib/beta.ts) : la pastille dit la bêta, plus « Pro ». */}
+      <div className="sec">{L.where} <span className="pro-chip">{betaActive() ? dict(locale).beta.pastille : "Pro"}</span></div>
       {isPro ? (
         // Un Pro : la répartition en clair, sans cadenas.
         <div className="repart">{repartition}</div>

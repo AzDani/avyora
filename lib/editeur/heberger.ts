@@ -15,6 +15,12 @@ import { dict } from "@/lib/i18n/dictionaries";
  * du dictionnaire, adresses relatives, pont de mesure), puis un amorçage qui va chercher la session et le
  * plan par `fetch`, pose `window.AVYORA_SITE` et exécute enfin le script de l'éditeur, différé
  * (`type="text/plain"`) pour que son démarrage synchrone voie déjà le mode site (D76).
+ *
+ * Bêta gratuite (lib/beta.ts) : la session dit si elle court (`betaEditeurPlan`) ; l'amorçage remplace alors la phrase
+ * du prix de Pro (`AVYORA_PRIX_PRO`, que l'éditeur lit à son démarrage) et, dans le texte qu'il exécute, le libellé
+ * « Passer Pro » (boutons, fenêtres, barre) par « Compte gratuit ». La source n'est pas touchée, ni la page
+ * statique : hors bêta, l'éditeur d'avant au caractère près. Les liens mènent toujours à /tarifs, qui pendant la
+ * bêta propose « Créer mon compte gratuit » et ramène à l'éditeur.
  */
 
 export const SOURCE_EDITEUR = path.join("maquettes", "plan-editor.html");
@@ -172,12 +178,20 @@ function site(connecte,limite,plans,plan,quoi){
 var pret=document.readyState!=='loading';
 var attente=null;
 var minuterie=0;
+var passer=null;
 function lancer(s,pro,message){
   window.AVYORA_PRO=!!pro;
   window.AVYORA_SITE=s;
   var src=document.getElementById('avyora-editeur');
   var el=document.createElement('script');
-  el.textContent=src?src.textContent:'';
+  var code=src?src.textContent:'';
+  /* bêta gratuite : « Passer Pro » dit le compte gratuit, dans le script et dans la barre */
+  if(passer){
+    code=code.split('Passer Pro').join(passer);
+    var b=document.getElementById('proTop');
+    if(b){b.setAttribute('aria-label',passer);var l=b.querySelector('.lbl');if(l)l.textContent=passer;}
+  }
+  el.textContent=code;
   document.body.appendChild(el);
   var v=document.getElementById('avyora-voile');
   if(v&&v.parentNode)v.parentNode.removeChild(v);
@@ -204,6 +218,9 @@ else document.addEventListener('DOMContentLoaded',function(){
 lire(U.api+'/session').then(function(r){
   var S=r.j;
   if(r.s!==200||!S||typeof S!=='object')throw new Error('session');
+  /* bêta gratuite : la phrase du prix et le libellé de Pro disent la bêta (la session le sait, la page statique non) */
+  if(S.beta&&typeof S.beta.prix==='string')window.AVYORA_PRIX_PRO=S.beta.prix;
+  if(S.beta&&typeof S.beta.passer==='string'&&/^[A-Za-zÀ-ÿ ]{1,40}$/.test(S.beta.passer))passer=S.beta.passer;
   if(S.connecte!==true){local(null,'compte');return;}
   var P=id?lire(U.api+'/'+encodeURIComponent(id)):Promise.resolve(null);
   return Promise.all([lire(U.api),P]).then(function(x){

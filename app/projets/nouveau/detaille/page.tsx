@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Estimateur from "@/components/Estimateur";
 import { getUser, estPro } from "@/lib/auth";
+import { betaActive, lienInscriptionBeta } from "@/lib/beta";
 
 // noindex : cette page est gatée (redirection vers /connexion ou /tarifs), mais la redirection
 // intervient après le début du streaming — un crawler reçoit donc un 200 avec une coquille vide,
@@ -18,9 +19,12 @@ export const dynamic = "force-dynamic";
 // MAINTENANT : un anonyme va directement sur /tarifs, qui explique l'offre ET propose à la fois de
 // créer un compte et de se connecter. Un seul mur, et c'est le mur honnête — le bouton annonce
 // désormais « Pro », donc personne n'y arrive par surprise.
+//
+// BÊTA GRATUITE (lib/beta.ts) : tout connecté est Pro ; un anonyme va créer son compte gratuit, et
+// revient ICI une fois son adresse confirmée (le lien de l'e-mail le ramène à `next`).
 export default async function NouveauProjetDetaille() {
   const user = await getUser();
-  if (!user) redirect("/tarifs");
+  if (!user) redirect(betaActive() ? lienInscriptionBeta("/projets/nouveau/detaille", "detaille") : "/tarifs");
   if (!estPro(user)) redirect("/tarifs");
 
   return (

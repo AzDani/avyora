@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import EstimateurNeuf from "@/components/neuf/EstimateurNeuf";
 import { getUser, estPro } from "@/lib/auth";
+import { betaActive, lienInscriptionBeta } from "@/lib/beta";
 import { getLocale } from "@/lib/i18n/server";
 import { dictNeuf } from "@/lib/i18n/neuf";
 import { FEATURES } from "@/lib/features";
@@ -16,11 +17,13 @@ export const dynamic = "force-dynamic";
  * explique l'offre et propose de créer un compte ou de se connecter. Le proxy laisse passer
  * `/projets/nouveau*` : la page se garde elle-même. Derrière `FEATURES.neuf` (éteint → 404).
  * `?new=1` (« Affiner » du rapide, nouveau projet) est lu par le composant, côté client.
+ * BÊTA GRATUITE (lib/beta.ts) : un anonyme va créer son compte gratuit et revient sur `?reprise=1`, qui
+ * reprend la maison de son estimation rapide si ce navigateur la garde (sinon la maison par défaut).
  */
 export default async function NouveauProjetConstruction() {
   if (!FEATURES.neuf) notFound();
   const user = await getUser();
-  if (!user) redirect("/tarifs");
+  if (!user) redirect(betaActive() ? lienInscriptionBeta("/projets/nouveau/construction?reprise=1", "construction") : "/tarifs");
   if (!estPro(user)) redirect("/tarifs");
   const d = dictNeuf(await getLocale()).detail;
 

@@ -1,10 +1,19 @@
+import { betaCoupee, libellesBeta } from "@/lib/beta";
+
 export const metadata = { title: "Conditions Générales d'Utilisation", alternates: { canonical: "/cgu" } };
 
+/**
+ * Bêta gratuite (lib/beta.ts) : l'article 2 bis. Page statique : ses dates suivent NEXT_PUBLIC_BETA_FIN au build,
+ * et l'article reste après la fin de la bêta (il fonde le statut de membre fondateur). Coupée à la main
+ * (NEXT_PUBLIC_BETA=0), la page redevient celle d'avant.
+ */
 export default function CGU() {
+  const beta = !betaCoupee();
+  const l = libellesBeta("fr");
   return (
     <article>
       <h1>Conditions Générales d&apos;Utilisation</h1>
-      <p className="maj">Dernière mise à jour : 6 septembre 2026</p>
+      <p className="maj">Dernière mise à jour : {beta ? "15 octobre 2026" : "6 septembre 2026"}</p>
 
       <h2>1. Objet</h2>
       <p>
@@ -22,6 +31,24 @@ export default function CGU() {
         fonctionnalités avancées (estimation détaillée, rapport PDF, suivi de chantier). Les modalités de
         l&apos;offre payante sont détaillées dans les <a href="/cgv">conditions générales de vente</a>.
       </p>
+
+      {beta && (
+        <>
+          <h2>2 bis. Bêta gratuite</h2>
+          <p>
+            Jusqu&apos;au <strong>{l.fin} inclus</strong>{" "}(heure de Paris), le Service est en bêta&nbsp;: toutes ses
+            fonctionnalités, y compris celles présentées comme «&nbsp;Pro&nbsp;», sont accessibles{" "}
+            <strong>gratuitement</strong>{" "}à tout utilisateur disposant d&apos;un compte dont l&apos;adresse e-mail a été
+            confirmée.
+          </p>
+          <ul>
+            <li>Aucun moyen de paiement n&apos;est demandé pendant la bêta, et <strong>aucun prélèvement automatique</strong> n&apos;aura lieu, ni pendant la bêta ni à sa fin. Les abonnements payants souscrits avant la bêta, eux, se poursuivent dans les conditions des <a href="/cgv">CGV</a> et restent résiliables à tout moment.</li>
+            <li>À la fin de la bêta, le compte repasse simplement sur la version gratuite, sans engagement&nbsp;; l&apos;accès aux fonctionnalités payantes ne reprend que par une souscription volontaire, régie par les <a href="/cgv">CGV</a>. Les données de l&apos;utilisateur (projets, plans) sont conservées.</li>
+            <li>Les membres sont <strong>informés par e-mail avant la fin de la bêta</strong>.</li>
+            <li>Tout compte créé au plus tard le {l.fin} (heure de Paris) porte le statut de <strong>membre fondateur</strong>&nbsp;: il bénéficie, à vie, du tarif de lancement de l&apos;offre Pro mensuelle ({l.tarif} par mois) pour toute souscription faite depuis ce compte.</li>
+          </ul>
+        </>
+      )}
 
       <h2>3. Compte utilisateur</h2>
       <ul>

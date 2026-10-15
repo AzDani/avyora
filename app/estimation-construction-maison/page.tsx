@@ -4,6 +4,7 @@ import EstimateurRapideNeuf from "@/components/neuf/EstimateurRapideNeuf";
 import { getLocale } from "@/lib/i18n/server";
 import { dictNeuf } from "@/lib/i18n/neuf";
 import { getUser, estPro } from "@/lib/auth";
+import { betaActive } from "@/lib/beta";
 import { FEATURES } from "@/lib/features";
 import { og } from "@/lib/seo-og";
 import { contexteNeuf } from "@/lib/neuf-contexte";
@@ -93,7 +94,7 @@ export default async function EstimationConstructionMaison({
             (`?source=editeur-plan` → src « plan ») : « Pas encore de plan ? » contredirait « Ta maison est reprise de ton plan ». */}
         {FEATURES.plans && initial.src !== "plan" && <LignePlan locale={locale} />}
       </header>
-      <EstimateurRapideNeuf isPro={isPro} initial={initial} />
+      <EstimateurRapideNeuf isPro={isPro} beta={betaActive()} initial={initial} />
     </div>
   );
 }

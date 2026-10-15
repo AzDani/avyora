@@ -1,10 +1,15 @@
+import { betaCoupee, libellesBeta } from "@/lib/beta";
+
 export const metadata = { title: "Conditions Générales de Vente", alternates: { canonical: "/cgv" } };
 
+/** Bêta gratuite (lib/beta.ts) : l'article 1 bis, aucune vente pendant la bêta. Mêmes règles que les CGU (page statique). */
 export default function CGV() {
+  const beta = !betaCoupee();
+  const l = libellesBeta("fr");
   return (
     <article>
       <h1>Conditions Générales de Vente</h1>
-      <p className="maj">Dernière mise à jour : 6 septembre 2026</p>
+      <p className="maj">Dernière mise à jour : {beta ? "15 octobre 2026" : "6 septembre 2026"}</p>
 
 
       <h2>1. Objet et champ d&apos;application</h2>
@@ -14,6 +19,20 @@ export default function CGV() {
         effectué par un client (« le Client »), qu&apos;il soit consommateur ou professionnel. Toute
         souscription implique l&apos;acceptation pleine et entière des présentes CGV.
       </p>
+
+      {beta && (
+        <>
+          <h2>1 bis. Bêta gratuite&nbsp;: aucune vente</h2>
+          <p>
+            Jusqu&apos;au <strong>{l.fin} inclus</strong> (heure de Paris), AVYORA est en bêta gratuite (voir{" "}
+            <a href="/cgu">CGU</a> art. 2 bis)&nbsp;: <strong>aucune vente n&apos;a lieu</strong>, aucun Abonnement
+            n&apos;est proposé à la souscription et aucun moyen de paiement n&apos;est demandé. Les présentes CGV
+            s&apos;appliquent aux souscriptions faites à partir du {l.reprise}, ainsi qu&apos;aux Abonnements souscrits
+            avant la bêta, qui se poursuivent dans leurs conditions. Un membre fondateur (compte créé au plus tard le {l.fin})
+            bénéficie, à vie, du tarif de lancement de l&apos;offre Pro mensuelle&nbsp;: {l.tarif} par mois.
+          </p>
+        </>
+      )}
 
       <h2>2. Caractéristiques de l&apos;Abonnement</h2>
       <p>

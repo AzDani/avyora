@@ -1,18 +1,30 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import type { User } from "@supabase/supabase-js";
 import BoutonAbo from "@/components/BoutonAbo";
 import BoutonCheckout from "@/components/BoutonCheckout";
-import { getUser, estPro } from "@/lib/auth";
+import { getUser, estPro, estAbonne } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
+import { dict, type Dict } from "@/lib/i18n/dictionaries";
+import type { Locale } from "@/lib/i18n/config";
 import { SuiviVue } from "@/components/SuiviVue";
 import { FEATURES } from "@/lib/features";
-import { lireNature, lireSourceNature, natureDeSource, lienDetaillePro } from "@/lib/nature-projet";
+import { lireNature, lireSourceNature, natureDeSource, lienDetaillePro, type NatureProjet } from "@/lib/nature-projet";
+import { betaActive, estMembreFondateur, libellesBeta, lienInscriptionBeta, lireSourceBeta } from "@/lib/beta";
 
-export const metadata = {
+const META: Metadata = {
   title: "Passer Pro — estimation détaillée poste par poste",
   description:
     "Débloque l'estimateur détaillé AVYORA : 200 postes chiffrés, quantités ajustables, rapport PDF et sauvegarde de tes projets. Dès 18,85 €/mois, sans engagement.",
   alternates: { canonical: "/tarifs" },
 };
+
+/** Hors bêta, la metadata d'avant ; pendant la bêta gratuite (lib/beta.ts), elle dit la bêta (en français, règle SEO du site). */
+export async function generateMetadata(): Promise<Metadata> {
+  if (!betaActive()) return META;
+  const b = dict("fr").beta;
+  return { ...META, title: b.tarifsMetaTitre, description: b.tarifsMetaDescription(libellesBeta("fr").fin) };
+}
 export const dynamic = "force-dynamic";
 
 /**
@@ -51,7 +63,7 @@ export default async function TarifsPage({
 }: {
   searchParams: Promise<{ plan?: string; abo?: string; source?: string; nature?: string }>;
 }) {
-  const [{ plan: planDemande, abo, source: sourceDemandee, nature: natureDemandee }, user, { t: tr }] = await Promise.all([searchParams, getUser(), getT()]);
+  const [{ plan: planDemande, abo, source: sourceDemandee, nature: natureDemandee }, user, { t: tr, locale }] = await Promise.all([searchParams, getUser(), getT()]);
   const t = tr.tarifs;
   const dejaPro = estPro(user);
   // Un visiteur qui revient d'une inscription arrive avec le plan qu'il avait choisi AVANT de
@@ -61,6 +73,9 @@ export default async function TarifsPage({
   const sourceNature = lireSourceNature(sourceDemandee);
   const source = (FEATURES.plans ? SOURCES_PLAN.find((s) => s === sourceDemandee) : undefined) ?? sourceNature;
   const nature = natureDeSource(sourceNature) ?? lireNature(natureDemandee);
+
+  // Bêta gratuite (lib/beta.ts) : une autre page, rendue à part. Hors bêta, le HTML ci-dessous, inchangé.
+  if (betaActive()) return <TarifsBeta user={user} t={tr} locale={locale} source={source} nature={nature} />;
 
   return (
     <div className="animate-rise mx-auto max-w-4xl py-4 sm:py-8">
@@ -205,6 +220,177 @@ export default async function TarifsPage({
           <>{t.paiementBientot}</>
         ) : (
           <>{t.dejaCompteAvant}<Link href="/connexion" className="font-medium text-brand-600 hover:underline">{t.seConnecter}</Link>{t.ou}</>
+        )}
+        <Link href="/projets/nouveau" className="font-medium text-brand-600 hover:underline">{t.continuerGratuit}</Link>.
+      </p>
+    </div>
+  );
+}
+
+/**
+ * /tarifs pendant la bêta gratuite (lib/beta.ts). En tête, la bêta : tout est offert jusqu'à la fin, il suffit
+ * d'un compte ; aucun moyen de paiement demandé, rien ne sera prélevé. Puis la promesse des membres
+ * fondateurs, et les offres telles qu'elles seront « à partir du » lendemain de la bêta, SANS bouton de
+ * paiement (aucune vente pendant la bêta, CGV) :
+ *  - anonyme → « Créer mon compte gratuit », qui emporte son intention (`next`) : l'éditeur de plan, ou le
+ *    détaillé de sa nature ; sinon l'inscription mène aux questions de profil puis à ses projets ;
+ *  - connecté → « Tout est inclus pour toi jusqu'au … », et le lien vers le détaillé ;
+ *  - abonné payant → son abonnement se gère toujours depuis Mon compte (portail Stripe).
+ */
+function TarifsBeta({ user, t: tr, locale, source, nature }: {
+  user: User | null;
+  t: Dict;
+  locale: Locale;
+  source: string | undefined;
+  nature: NatureProjet | undefined;
+}) {
+  const t = tr.tarifs;
+  const b = tr.beta;
+  const l = libellesBeta(locale);
+  const abonne = !!user && estAbonne(user);
+  const fondateur = estMembreFondateur(user);
+  const intention =
+    source === "editeur-plan" ? "/plan" : source === "choix-plan" ? "/plan?type=renovation" : nature ? lienDetaillePro(nature) : undefined;
+  const inscription = lienInscriptionBeta(intention, lireSourceBeta(source) ?? "tarifs");
+  const connexion = intention ? `/connexion?next=${encodeURIComponent(intention)}` : "/connexion";
+
+  return (
+    <div className="animate-rise mx-auto max-w-4xl py-4 sm:py-8" data-tarifs-beta="">
+      <SuiviVue
+        evenement="vue_tarifs"
+        props={{ connecte: !!user, deja_pro: abonne, venu_pour: "aucun", beta: true, ...(source ? { source } : {}) }}
+      />
+      <header className="text-center">
+        <p className="eyebrow">{b.tarifsEyebrow}</p>
+        <h1 className="mt-2 text-[30px] font-semibold tracking-tight text-ink">{b.tarifsTitre(l.fin)}</h1>
+        <p className="mx-auto mt-3 max-w-xl text-[15px] leading-relaxed text-muted">{b.tarifsSous}</p>
+      </header>
+
+      <div className="mx-auto mt-6 max-w-md text-center">
+        {!user ? (
+          <>
+            <Link href={inscription} className="btn btn-primary w-full justify-center py-3 text-[15px]">{b.creerCompte}</Link>
+            <p className="mt-3 text-[13px] text-muted">
+              {t.dejaCompteAvant}<Link href={connexion} className="font-medium text-brand-600 hover:underline">{t.seConnecter}</Link>
+            </p>
+          </>
+        ) : (
+          <p className="rounded-field border border-positive/25 bg-positive-soft px-4 py-3 text-sm text-positive">
+            {/* Un abonné payant garde son abonnement (et sa gestion, portail Stripe) : on ne lui dit pas « jusqu'au 31 décembre ». */}
+            {abonne ? (
+              <>{b.tarifsAbonneAvant}<Link href="/mon-espace/compte" className="font-semibold underline">{b.tarifsAbonneLien}</Link></>
+            ) : (
+              b.tarifsConnecte(l.fin)
+            )}
+            {" — "}<Link href={lienDetaillePro(nature)} className="font-semibold underline">{b.tarifsConnecteLien}</Link>
+          </p>
+        )}
+      </div>
+
+      {/* La promesse des membres fondateurs : à un anonyme, ce qu'il gagne à s'inscrire maintenant ; à un inscrit de la
+          bêta (il l'est déjà), ce qu'il garde. */}
+      {(!user || fondateur) && (
+        <div className="mt-6 overflow-hidden rounded-panel bg-gradient-to-r from-[#4F46E5] via-[#6d5cf0] to-[#7C3AED] px-6 py-5 text-center text-white shadow-card">
+          <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-indigo-100/90">{b.tarifsFondateurTag}</div>
+          {user ? (
+            <div className="mt-1 text-[18px] font-semibold tracking-tight">{b.membreFondateurTitre(l.tarif)}</div>
+          ) : (
+            <>
+              <div className="mt-1 text-[20px] font-semibold tracking-tight">{b.tarifsFondateurTitre}</div>
+              <div className="mt-1 text-[13.5px] text-indigo-100/85">{b.tarifsFondateurSous(l.tarif)}</div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Venu de l'éditeur de plan : ce que le compte y ajoute pendant la bêta, avec les mots de l'éditeur (DROITS). */}
+      {source === "editeur-plan" && (
+        <div className="mx-auto mt-6 max-w-2xl rounded-field border border-brand-200 bg-brand-50 px-5 py-4 text-[14px] text-ink" data-depuis-editeur="">
+          <p className="font-semibold">{b.tarifsDepuisEditeur}</p>
+          <ul className="mt-2 space-y-1.5">
+            {t.depuisEditeurDroits.map((d) => (
+              <li key={d} className="flex items-start gap-2.5 leading-relaxed">
+                <Check />
+                {d.charAt(0).toUpperCase() + d.slice(1)}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <section className="mx-auto mt-10 max-w-2xl" aria-labelledby="offres-apres-beta">
+        <h2 id="offres-apres-beta" className="text-center text-[18px] font-semibold tracking-tight text-ink">{b.tarifsOffres(l.reprise)}</h2>
+        <p className="mt-1 text-center text-[13.5px] text-muted">{b.tarifsOffresSous(l.fin)}</p>
+        <div className="mt-5 grid gap-4 md:grid-cols-2">
+          {PLANS_AFFICHES.map((key) => {
+            const p = t.plans[key];
+            return (
+              <div key={key} className="relative flex flex-col rounded-panel border border-line bg-surface p-6">
+                {p.tag && (
+                  <span className="absolute -top-2.5 right-5 rounded-full bg-brand-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-700">
+                    {p.tag}
+                  </span>
+                )}
+                <div className="text-sm font-semibold text-ink">{p.nom}</div>
+                <div className="mt-3 flex items-baseline gap-1.5">
+                  <span className="data text-3xl font-semibold text-ink">{p.prix}</span>
+                  <span className="text-sm text-muted">{p.unite}</span>
+                </div>
+                <div className="mt-2 text-xs text-faint">{p.note}</div>
+                <div className="mt-5">
+                  {user ? (
+                    <p className="rounded-field bg-positive-soft px-3 py-2.5 text-center text-[13px] font-medium text-positive">
+                      {abonne ? b.tarifsAbonneCarte : b.tarifsConnecte(l.fin)}
+                    </p>
+                  ) : (
+                    <Link href={inscription} className="btn btn-outline w-full justify-center py-2.5">{b.creerCompte}</Link>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <div className="mx-auto mt-8 grid max-w-3xl gap-6 rounded-panel border border-line bg-surface p-6 sm:grid-cols-[1fr_240px] sm:items-start sm:gap-8">
+        <div>
+          <div className="eyebrow mb-3">{b.tarifsInclus}</div>
+          <ul className="space-y-2.5">
+            {[...t.features, ...(FEATURES.neuf ? [t.featureNeuf] : []), ...(FEATURES.plans ? [t.featurePlan] : [])].map((f) => (
+              <li key={f} className="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink">
+                <Check />
+                {f}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <figure className="mx-auto w-full max-w-[240px]">
+          <picture>
+            <source
+              type="image/webp"
+              srcSet="/exemple-rapport-760.webp 760w, /exemple-rapport-1040.webp 1040w"
+              sizes="240px"
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/exemple-rapport.png"
+              alt={t.apercuAlt}
+              width={1040}
+              height={1458}
+              loading="lazy"
+              decoding="async"
+              className="w-full rounded-field border border-line shadow-card"
+            />
+          </picture>
+          <figcaption className="mt-2.5 text-center text-[11px] leading-snug text-faint">{t.apercuLegende}</figcaption>
+        </figure>
+      </div>
+
+      <p className="mt-6 text-center text-[13px] text-muted">
+        {user ? (
+          <>{b.tarifsBasConnecte}</>
+        ) : (
+          <>{t.dejaCompteAvant}<Link href={connexion} className="font-medium text-brand-600 hover:underline">{t.seConnecter}</Link>{t.ou}</>
         )}
         <Link href="/projets/nouveau" className="font-medium text-brand-600 hover:underline">{t.continuerGratuit}</Link>.
       </p>

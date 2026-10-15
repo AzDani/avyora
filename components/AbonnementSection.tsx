@@ -17,6 +17,11 @@ const TR = {
     voirOffres: "Voir les offres Pro",
     indispo: "Indisponible pour le moment. Réessaie plus tard.",
     reseau: "Réseau indisponible. Réessaie.",
+    betaDesc: (fin: string) => `Bêta gratuite : tu profites de toutes les fonctionnalités jusqu'au ${fin}.`,
+    badgeBeta: "Bêta gratuite",
+    betaNote: "Aucun moyen de paiement enregistré : rien ne sera prélevé. On te préviendra par e-mail avant la fin de la bêta.",
+    fondateurNote: (tarif: string) => `Membre fondateur : tu gardes le tarif de lancement (${tarif}/mois) à vie quand AVYORA passera payant.`,
+    fondateurNoteApres: (tarif: string) => `Membre fondateur : le tarif de lancement (${tarif}/mois) t'est garanti à vie.`,
   },
   en: {
     titre: "Subscription",
@@ -30,6 +35,11 @@ const TR = {
     voirOffres: "See Pro plans",
     indispo: "Unavailable right now. Try again later.",
     reseau: "Network unavailable. Try again.",
+    betaDesc: (fin: string) => `Free beta: you have access to every feature through ${fin}.`,
+    badgeBeta: "Free beta",
+    betaNote: "No payment method on file: nothing will be charged. We'll email you before the beta ends.",
+    fondateurNote: (tarif: string) => `Founding member: you keep the launch price (${tarif}/month) for life once AVYORA becomes paid.`,
+    fondateurNoteApres: (tarif: string) => `Founding member: your launch price (${tarif}/month) is guaranteed for life.`,
   },
 } as const;
 
@@ -37,12 +47,18 @@ const TR = {
  * Section « Abonnement » de la page compte. Affiche l'offre en cours et, pour les abonnés,
  * un bouton de gestion/résiliation qui appelle le portail (redirige vers l'URL renvoyée quand
  * le paiement sera branché ; affiche un message d'attente d'ici là).
+ *
+ * `isPro` veut dire ABONNÉ (`estAbonne`), pas « droits Pro » : pendant la bêta gratuite (lib/beta.ts), un
+ * inscrit a les droits Pro sans abonnement, et ne doit pas se voir proposer de « résilier » quoi que ce soit.
+ * `beta` (la date de fin, en toutes lettres) n'est passé que pendant la bêta ; `tarifFondateur` seulement
+ * à un membre fondateur (pendant ET après la bêta : le statut reste).
  */
-export default function AbonnementSection({ isPro }: { isPro: boolean }) {
+export default function AbonnementSection({ isPro, beta, tarifFondateur }: { isPro: boolean; beta?: { fin: string }; tarifFondateur?: string }) {
   const locale = useLocale();
   const s = TR[locale];
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const enBeta = !isPro && !!beta;
 
   async function gerer() {
     if (busy) return;
@@ -69,15 +85,15 @@ export default function AbonnementSection({ isPro }: { isPro: boolean }) {
         <div>
           <h2 className="font-semibold text-ink">{s.titre}</h2>
           <p className="mt-1 text-sm text-muted">
-            {isPro ? s.proDesc : s.gratuitDesc}
+            {isPro ? s.proDesc : beta ? s.betaDesc(beta.fin) : s.gratuitDesc}
           </p>
         </div>
         <span
           className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-            isPro ? "bg-brand-50 text-brand-600" : "bg-surface-2 text-muted"
+            isPro || enBeta ? "bg-brand-50 text-brand-600" : "bg-surface-2 text-muted"
           }`}
         >
-          {isPro ? s.badgePro : s.badgeGratuit}
+          {isPro ? s.badgePro : enBeta ? s.badgeBeta : s.badgeGratuit}
         </span>
       </div>
 
@@ -91,11 +107,15 @@ export default function AbonnementSection({ isPro }: { isPro: boolean }) {
               {s.resiliation}
             </p>
           </>
+        ) : enBeta ? (
+          <p className="text-xs text-faint">{s.betaNote}</p>
         ) : (
           <Link href="/tarifs" className="btn btn-primary py-2 text-[13px]">
             {s.voirOffres}
           </Link>
         )}
+        {/* Le statut de membre fondateur reste après la bêta : la promesse passe alors au présent. */}
+        {tarifFondateur && <p className="mt-3 text-[13px] text-muted">{beta ? s.fondateurNote(tarifFondateur) : s.fondateurNoteApres(tarifFondateur)}</p>}
         {message && (
           <p className="mt-3 rounded-field border border-line bg-surface-2 px-3.5 py-2.5 text-sm text-muted">
             {message}

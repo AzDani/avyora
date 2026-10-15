@@ -2,14 +2,22 @@ import { NextResponse } from "next/server";
 import { getUser } from "@/lib/auth";
 import { getStripe, priceIdForPlan, type PlanKey } from "@/lib/stripe";
 import { retoursStripe } from "@/lib/nature-projet";
+import { betaActive } from "@/lib/beta";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** Crée une session Stripe Checkout (abonnement) pour l'utilisateur connecté et renvoie l'URL. */
+/**
+ * Crée une session Stripe Checkout (abonnement) pour l'utilisateur connecté et renvoie l'URL.
+ * Pendant la bêta gratuite (lib/beta.ts), aucune vente (CGV) : la page Tarifs n'a plus de bouton de
+ * paiement, et la route refuse aussi un appel direct, avant même de lire la requête.
+ */
 export async function POST(req: Request) {
   const user = await getUser();
   if (!user) return NextResponse.json({ error: "Authentification requise" }, { status: 401 });
+  if (betaActive()) {
+    return NextResponse.json({ error: "Pendant la bêta, tout est gratuit : aucun paiement n'est nécessaire." }, { status: 409 });
+  }
 
   const { plan, nature } = await req.json().catch(() => ({ plan: undefined, nature: undefined }));
   const priceId = priceIdForPlan(plan as PlanKey);

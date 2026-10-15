@@ -2,6 +2,7 @@ import Link from "next/link";
 import EstimateurRapide from "@/components/EstimateurRapide";
 import { getT } from "@/lib/i18n/server";
 import { getUser, estPro } from "@/lib/auth";
+import { betaActive } from "@/lib/beta";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
@@ -99,7 +100,7 @@ export default async function NouveauProjetRapide({
         <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-ink">{t.pageTitre}</h1>
         <p className="mt-1.5 text-[15px] text-muted">{t.pageSous}</p>
       </header>
-      <EstimateurRapide isPro={isPro} initial={initial} />
+      <EstimateurRapide isPro={isPro} beta={betaActive()} initial={initial} />
     </div>
   );
 }

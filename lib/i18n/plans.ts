@@ -150,6 +150,19 @@ const fr = {
     gratuitListe: [...COLONNE_GRATUIT] as string[],
     proListe: [...COLONNE_PRO] as string[],
   },
+  /* Bêta gratuite (lib/beta.ts) : la vitrine tant qu'elle court. Hors du bloc « Plan final » de coherence.mjs § 9 ;
+     la date arrive en paramètre (`libellesBeta`). La FAQ remplace « C'est vraiment gratuit ? » (même question). */
+  vitrineBeta: {
+    pastille: "Bêta",
+    offresTitre: "Tout est gratuit pendant la bêta",
+    proSous: (fin: string) => `Avec un compte, gratuit jusqu'au ${fin}. Tout ce qui est gratuit, et :`,
+    offresVoir: "Créer mon compte gratuit",
+    renoverLien: "Inclus pendant la bêta",
+    faqGratuit: (fin: string) => ({
+      q: "C'est vraiment gratuit ?",
+      r: `Oui. Pendant la bêta, jusqu'au ${fin}, tout est gratuit avec un compte : des plans enregistrés sans limite, le projet rénovation chiffré et le dossier PDF sans filigrane. Sans compte, tu dessines ton plan, le vois en 3D, lis ses surfaces et gardes un plan sur ton appareil.`,
+    }),
+  },
   /* L'écran de choix (`/projets/nouveau`) : le bandeau « Partir de mon plan », sous les deux cartes (C9). */
   choix: {
     titre: "Partir de mon plan",
@@ -403,6 +416,17 @@ const en: DictPlans = {
       "the task-by-task detail, with the price of each task",
       "site tracking with the price of each task, and what is already done",
     ],
+  },
+  vitrineBeta: {
+    pastille: "Beta",
+    offresTitre: "Everything is free during the beta",
+    proSous: (fin: string) => `With an account, free through ${fin}. Everything that is free, plus:`,
+    offresVoir: "Create my free account",
+    renoverLien: "Included during the beta",
+    faqGratuit: (fin: string) => ({
+      q: "Is it really free?",
+      r: `Yes. During the beta, through ${fin}, everything is free with an account: unlimited saved plans, the priced renovation project and the PDF file without watermark. Without an account, you draw your plan, view it in 3D, read its floor areas and keep one plan on your device.`,
+    }),
   },
   choix: {
     titre: "Start from my plan",

@@ -3,6 +3,7 @@ import type { User } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase/server";
 import { journaliser } from "@/lib/audit";
+import { betaActive } from "@/lib/beta";
 
 /**
  * Utilisateur authentifié courant (server components / route handlers), ou null.
@@ -41,11 +42,12 @@ export async function getAdmin() {
 }
 
 /**
- * Statut Pro (abonné) — débloque l'estimateur détaillé, l'export PDF, la sauvegarde et le suivi.
- * Ordre : plan Stripe (`app_metadata.plan === 'pro'`, futur webhook) → allow-list PRO_EMAILS
- * (accès manuel en attendant Stripe) → admins Pro d'office. Sans rien → free (fail-safe).
+ * Abonné (payant ou accès manuel) : le statut Pro d'avant la bêta, qui reste après elle.
+ * Ordre : plan Stripe (`app_metadata.plan === 'pro'`, posé par le webhook) → allow-list PRO_EMAILS
+ * (accès manuel) → admins Pro d'office. Sans rien → free (fail-safe). Sert aussi à reconnaître, pendant
+ * la bêta, celui qui a un abonnement à gérer (Mon compte, Tarifs).
  */
-export function estPro(user: User | null): boolean {
+export function estAbonne(user: User | null): boolean {
   if (!user) return false;
   if (estAdmin(user)) return true;
   const plan = (user.app_metadata as { plan?: string } | undefined)?.plan;
@@ -55,6 +57,18 @@ export function estPro(user: User | null): boolean {
     .map((s) => s.trim().toLowerCase())
     .filter(Boolean);
   return !!user.email && allow.includes(user.email.toLowerCase());
+}
+
+/**
+ * Droits Pro — l'estimateur détaillé, l'export PDF, la sauvegarde illimitée, le suivi, les plans sans
+ * limite. Un abonné les a toujours ; PENDANT LA BÊTA (lib/beta.ts, jusqu'à la fin du 31/12/2026 heure de
+ * Paris), tout utilisateur connecté les a aussi : un compte n'existe qu'une fois son e-mail confirmé
+ * (confirmation obligatoire côté Supabase), c'est donc l'adresse qu'on voulait. Après la bêta, sans
+ * redéploiement, on retombe sur `estAbonne` : exactement le comportement d'avant. Anonyme → jamais Pro.
+ */
+export function estPro(user: User | null, maintenant: Date = new Date()): boolean {
+  if (!user) return false;
+  return estAbonne(user) || betaActive(maintenant);
 }
 
 /**
