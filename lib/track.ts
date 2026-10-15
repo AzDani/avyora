@@ -4,7 +4,17 @@ import { track } from "@vercel/analytics";
 export type EvenementAvyora =
   /** Props : `action`, `type`, `src`, et `nature` (reno | neuf), que les deux rapides envoient (N2). */
   | "estimation_terminee"
+  /**
+   * Un compte est créé, émis là où le fait est établi (serveur). Props : `confirme`, `destination`, `methode` :
+   * `mot_de_passe` (action d'inscription, à la création), `lien` ou `google` (/auth/callback, au premier retour).
+   */
   | "compte_cree"
+  /**
+   * Inscription facile (B2) : un lien d'accès est parti (inscription ou connexion sans mot de passe). Émis côté client
+   * quand l'action confirme l'envoi. Props : `source` (la source de la bêta, liste fermée `SOURCES_BETA`, sinon la
+   * page : `inscription` | `connexion`) et `renvoi` (le bouton « Renvoyer »). Jamais l'adresse.
+   */
+  | "lien_acces_envoye"
   /**
    * Un clic sur une carte de la pré-page « Quel est ton projet ? » (N2). Props : `nature` (reno | neuf),
    * liste fermée de `lib/nature-projet.ts`. Entonnoir : vue de /projets/nouveau → clic_nouveau_projet{nature}

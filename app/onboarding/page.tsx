@@ -18,6 +18,9 @@ export async function generateMetadata() {
 export default async function OnboardingPage() {
   const user = await getUser();
   if (!user) redirect("/connexion?next=/onboarding");
+  // Facultatives et posées une fois : un membre qui revient par un lien d'accès sans intention (B2) va à ses
+  // projets, pas une seconde fois aux questions.
+  if ((user.user_metadata as { onboarding_fait?: boolean } | undefined)?.onboarding_fait) redirect("/projets");
   return (
     <div className="py-2">
       <OnboardingForm />

@@ -30,7 +30,8 @@ export function AuthShell({
       <div className="mx-auto grid w-full overflow-hidden rounded-panel border border-line bg-surface shadow-card lg:grid-cols-[minmax(0,1fr)_minmax(0,1.02fr)]">
         {/* ── Formulaire ── */}
         <div className="flex flex-col justify-center p-6 sm:p-10">
-          <Link href="/" className="mb-8 inline-flex items-center gap-2.5 self-start" aria-label="Accueil AVYORA">
+          {/* Sur téléphone, l'en-tête du site montre déjà le logo : le formulaire remonte d'autant (B2). */}
+          <Link href="/" className="mb-8 hidden items-center gap-2.5 self-start sm:inline-flex" aria-label="Accueil AVYORA">
             <svg width="32" height="32" viewBox="0 0 64 64" aria-hidden="true">
               <rect x="2" y="2" width="60" height="60" rx="14" fill="#4F46E5" />
               <path d="M17 45 L32 15 L47 45" fill="none" stroke="#FFFFFF" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />

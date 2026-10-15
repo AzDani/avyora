@@ -45,11 +45,14 @@ export async function clientIp(): Promise<string> {
 }
 
 /**
- * En PRODUCTION sans Upstash, « Mes plans » garde ses limites EN MÉMOIRE, par instance : moins strictes qu'un
- * store partagé (chaque instance compte de son côté), mais un compte ne peut plus enchaîner les écritures
- * sans fin, et les plans restent enregistrables. Les autres catégories gardent le no-op d'avant.
+ * En PRODUCTION sans Upstash, « Mes plans » et l'authentification gardent leurs limites EN MÉMOIRE, par instance :
+ * moins strictes qu'un store partagé (chaque instance compte de son côté), mais un compte ne peut plus enchaîner
+ * les écritures sans fin, ni un robot les demandes de lien d'accès (B2 : chaque demande envoie un e-mail). Les
+ * autres catégories gardent le no-op d'avant.
  */
 const MEMOIRE: Partial<Record<LimitKind, { max: number; fenetreMs: number }>> = {
+  /* Connexion, inscription, lien d'accès, mot de passe oublié : comme Upstash, par IP et (lien) par adresse. */
+  auth: { max: 6, fenetreMs: 60_000 },
   plan: { max: 90, fenetreMs: 60_000 },
   planCreation: { max: 20, fenetreMs: 3_600_000 },
   planEstimation: { max: 10, fenetreMs: 3_600_000 },
@@ -62,7 +65,7 @@ function limiteMemoire(kind: LimitKind, identifiant: string): boolean {
   if (!regle || process.env.VERCEL_ENV !== "production") return true;
   if (!memoireSignalee) {
     memoireSignalee = true;
-    console.warn("[ratelimit] Upstash absent en production : limites de « Mes plans » tenues en mémoire, par instance.");
+    console.warn("[ratelimit] Upstash absent en production : limites de « Mes plans » et de l'authentification tenues en mémoire, par instance.");
   }
   const maintenant = Date.now();
   if (traces.size > 5000) {
@@ -76,7 +79,7 @@ function limiteMemoire(kind: LimitKind, identifiant: string): boolean {
   return ok;
 }
 
-/** true = autorisé, false = limite dépassée. Sans Upstash : no-op, sauf « Mes plans » en production (en mémoire). */
+/** true = autorisé, false = limite dépassée. Sans Upstash : no-op, sauf « Mes plans » et l'auth en production (en mémoire). */
 export async function verifierLimite(kind: LimitKind, identifiant: string): Promise<boolean> {
   const rl = LIMITERS[kind];
   if (!rl) return limiteMemoire(kind, identifiant);

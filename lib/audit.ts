@@ -12,6 +12,8 @@ export type EvenementSecurite =
   | "inscription"
   | "deconnexion"
   | "reset_demande"
+  /** Un lien d'accès demandé (inscription ou connexion sans mot de passe, B2). Payload : `page`, `issue`, `code` de Supabase. */
+  | "lien_acces_demande"
   | "mot_de_passe_change"
   | "compte_supprime"
   | "export_donnees"

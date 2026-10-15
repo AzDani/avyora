@@ -413,7 +413,10 @@ describe("Pendant la bêta, un anonyme qui touche une fonction Pro va créer son
       let Inscription = (await import("@/app/inscription/page")).default;
       let h = await r.rendre(await Inscription({ searchParams: Promise.resolve({}) }));
       expect(h).toContain("data-bandeau-beta");
-      expect(h).toContain(esc(b.fondateur(libellesBeta(locale).tarif)));
+      // B2 : l'en-tête en une ligne (« Gratuit jusqu'au… · deviens membre fondateur »), puis trois bénéfices courts.
+      expect(h).toContain(esc(b.bandeauTitre(libellesBeta(locale).fin)));
+      expect(b.benefices(libellesBeta(locale).tarif)).toHaveLength(3);
+      for (const x of b.benefices(libellesBeta(locale).tarif)) expect(h).toContain(esc(x));
       expect(h).not.toContain(esc(b.inscriptionTitre));
       r = await charger({ locale });
       Inscription = (await import("@/app/inscription/page")).default;

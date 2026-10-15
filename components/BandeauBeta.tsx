@@ -3,22 +3,37 @@ import { betaActive, libellesBeta } from "@/lib/beta";
 import type { Locale } from "@/lib/i18n/config";
 
 /**
- * Bêta gratuite (lib/beta.ts) : l'encart de l'inscription. Ce que le compte donne (tout, jusqu'à la fin de la
- * bêta), ce qu'il ne coûte pas (aucune carte, aucun prélèvement), et ce qu'il promet (membre fondateur, tarif
- * de lancement à vie). Rendu seulement pendant la bêta : la page décide, ce composant ne lit pas l'heure.
+ * Bêta gratuite (lib/beta.ts) : l'en-tête de l'inscription (B2). La bêta en une ligne (« Gratuit jusqu'au 31 décembre
+ * 2026 · deviens membre fondateur »), puis trois bénéfices courts : ce que le compte donne, ce qu'il ne coûte pas
+ * (aucune carte), ce qu'il promet (le tarif de lancement à vie). Court exprès : sur un téléphone, le champ e-mail
+ * doit rester visible sans défiler. Rendu seulement pendant la bêta : la page décide, ce composant ne lit pas l'heure.
  */
 export function BandeauBeta({ locale }: { locale: Locale }) {
   const b = dict(locale).beta;
   const l = libellesBeta(locale);
   return (
-    <div className="mb-5 rounded-field border border-brand-200 bg-brand-50 px-4 py-3.5 text-[13.5px] leading-relaxed text-ink" data-bandeau-beta="">
-      <p className="font-semibold">{b.bandeauTitre(l.fin)}</p>
-      <p className="mt-1 text-muted">{b.bandeauTexte}</p>
-      <p className="mt-2.5 flex items-start gap-2">
-        <IconeFondateur className="mt-[3px] shrink-0 text-brand-600" />
-        <span>{b.fondateur(l.tarif)}</span>
+    <div className="mb-6 rounded-field border border-brand-200 bg-brand-50 px-4 py-3" data-bandeau-beta="">
+      <p className="flex items-start gap-2 text-[13.5px] font-semibold leading-snug text-brand-700">
+        <IconeFondateur className="mt-[2px] shrink-0" />
+        <span>{b.bandeauTitre(l.fin)}</span>
       </p>
+      <ul className="mt-2 space-y-1 text-[13px] leading-snug text-ink">
+        {b.benefices(l.tarif).map((x) => (
+          <li key={x} className="flex items-start gap-2">
+            <IconeCoche />
+            <span>{x}</span>
+          </li>
+        ))}
+      </ul>
     </div>
+  );
+}
+
+function IconeCoche() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="mt-[2px] shrink-0 text-positive">
+      <path d="M3.5 8.5l3 3 6-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 

@@ -96,6 +96,11 @@ export function SignupForm({ next }: { next?: string }) {
           {t.et}<Link href="/confidentialite" className="text-brand-600 hover:underline">{t.confidLien}</Link>.
         </span>
       </label>
+      {/* Facultative et NON cochée (CNIL) : l'action date le consentement s'il est donné (B2). */}
+      <label htmlFor="mdp-newsletter" className="flex cursor-pointer items-start gap-2 text-[13px] leading-snug text-muted">
+        <input id="mdp-newsletter" name="newsletter" type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 rounded border-line-strong text-brand-600 accent-brand-600" />
+        <span>{t.lien.newsletter}</span>
+      </label>
       <Submit pending={pending}>{t.creerCompte}</Submit>
     </form>
   );

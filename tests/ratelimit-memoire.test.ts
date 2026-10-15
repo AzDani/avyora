@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-/* Production sans Upstash : « Mes plans » garde des limites en mémoire (lib/ratelimit.ts), le reste est no-op. */
+/* Production sans Upstash : « Mes plans » et l'authentification (B2) gardent des limites en mémoire (lib/ratelimit.ts),
+   le reste est no-op. */
 const CLES = ["VERCEL_ENV", "UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"] as const;
 const env = Object.fromEntries(CLES.map((k) => [k, process.env[k]]));
 
@@ -38,13 +39,25 @@ describe("limites en mémoire sans Upstash", () => {
     expect(await verifierLimite("plan", "u1")).toBe(false);
   });
 
-  it("les catégories hors « Mes plans » restent sans limite", async () => {
+  it("production : auth 6 / min par identifiant (IP ou adresse du lien d'accès), chacun son seau", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
     const { verifierLimite } = await module("production");
-    for (let i = 0; i < 50; i++) expect(await verifierLimite("auth", "1.2.3.4")).toBe(true);
+    for (let i = 0; i < 6; i++) expect(await verifierLimite("auth", "1.2.3.4")).toBe(true);
+    expect(await verifierLimite("auth", "1.2.3.4")).toBe(false);
+    expect(await verifierLimite("auth", "5.6.7.8")).toBe(true);
+    expect(await verifierLimite("auth", "lien:camille@exemple.fr")).toBe(true);
+  });
+
+  it("les catégories hors « Mes plans » et auth restent sans limite", async () => {
+    const { verifierLimite } = await module("production");
+    for (const k of ["api", "ia", "pdf"] as const) {
+      for (let i = 0; i < 50; i++) expect(await verifierLimite(k, "1.2.3.4")).toBe(true);
+    }
   });
 
   it("préversion et local : sans limite (comme avant)", async () => {
     const { verifierLimite } = await module("preview");
     for (let i = 0; i < 30; i++) expect(await verifierLimite("planCreation", "u1")).toBe(true);
+    for (let i = 0; i < 30; i++) expect(await verifierLimite("auth", "1.2.3.4")).toBe(true);
   });
 });

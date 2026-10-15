@@ -32,6 +32,12 @@ export const FEATURES = {
   /** Éditeur de plan en ligne (« Mes plans »). En ligne depuis le 12/10/2026 (C11) : NEXT_PUBLIC_FEATURE_PLANS=0
    *  l'éteint d'urgence sans toucher au code (au build : la variable est lue à la compilation). */
   plans: process.env.NEXT_PUBLIC_FEATURE_PLANS !== "0",
+  /**
+   * Bouton « Continuer avec Google » sur /inscription et /connexion (B2). ÉTEINT par défaut : il ne s'allume qu'avec
+   * NEXT_PUBLIC_AUTH_GOOGLE=1 dans Vercel (lue au build : redéployer), une fois Google activé dans Supabase
+   * (Authentication → Providers → Google). Allumé avant, le clic finirait sur une erreur de Supabase.
+   */
+  authGoogle: process.env.NEXT_PUBLIC_AUTH_GOOGLE === "1",
 } as const;
 
 /**

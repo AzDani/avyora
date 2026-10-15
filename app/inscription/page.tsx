@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/auth/AuthShell";
-import { SignupForm } from "@/components/auth/forms";
+import { AccesParLien } from "@/components/auth/AccesLien";
 import { EstimationRappel } from "@/components/auth/EstimationRappel";
 import { PlanRappel } from "@/components/plans/PlanRappel";
 import { FEATURES } from "@/lib/features";
@@ -19,15 +19,17 @@ export default async function InscriptionPage({
 }: {
   searchParams: Promise<{ next?: string; source?: string }>;
 }) {
-  // `next` porte l'intention avec laquelle le visiteur arrive ici — typiquement le plan qu'il
-  // vient de choisir sur /tarifs. Il doit survivre à TOUTES les sorties de cette page : le
-  // formulaire, le lien « déjà un compte », et la redirection d'un utilisateur déjà connecté.
-  const [{ next, source: sourceDemandee }, { t: tr, locale }, user] = await Promise.all([searchParams, getT(), getUser()]);
-  if (user) redirect(cheminInterne(next));
+  // `next` porte l'intention avec laquelle le visiteur arrive ici — typiquement la fonction de la bêta qu'il
+  // vient de toucher. Il doit survivre à TOUTES les sorties de cette page : le lien d'accès, le formulaire à
+  // mot de passe, le lien « déjà un compte », et la redirection d'un utilisateur déjà connecté.
+  const [{ next: nextDemande, source: sourceDemandee }, { t: tr, locale }, user] = await Promise.all([searchParams, getT(), getUser()]);
+  if (user) redirect(cheminInterne(nextDemande));
+  // Une intention qui n'est pas un chemin interne est ignorée dès ici (l'action la revérifie de toute façon).
+  const next = nextDemande ? cheminInterne(nextDemande, "") || undefined : undefined;
   const t = tr.auth;
   const suite = next ? `?next=${encodeURIComponent(next)}` : "";
-  // Bêta gratuite (lib/beta.ts) : l'encart « tout est gratuit, il suffit d'un compte » ; venu d'une fonction
-  // de la bêta (`source`, liste fermée), le titre le dit d'emblée et l'arrivée est mesurée par source.
+  // Bêta gratuite (lib/beta.ts) : l'en-tête « gratuit jusqu'au… · deviens membre fondateur » et ses trois bénéfices ;
+  // venu d'une fonction de la bêta (`source`, liste fermée), le titre le dit d'emblée et l'arrivée est mesurée par source.
   const beta = betaActive();
   const source = beta ? lireSourceBeta(sourceDemandee) : undefined;
 
@@ -35,7 +37,8 @@ export default async function InscriptionPage({
     <AuthShell
       eyebrow={source ? tr.beta.inscriptionEyebrow : t.inEyebrow}
       titre={source ? tr.beta.inscriptionTitre : t.inTitre}
-      sousTitre={t.inSous}
+      // Pendant la bêta, les bénéfices de l'en-tête disent déjà ce que le compte apporte : le champ e-mail remonte.
+      sousTitre={beta ? undefined : t.inSous}
       bas={
         <>
           {t.inBasAvant}
@@ -50,7 +53,7 @@ export default async function InscriptionPage({
       <EstimationRappel />
       {beta && <BandeauBeta locale={locale} />}
       {source && <SuiviVue evenement="vers_inscription" props={{ source }} cle={source} />}
-      <SignupForm next={next} />
+      <AccesParLien page="inscription" next={next} source={source} google={FEATURES.authGoogle} />
     </AuthShell>
   );
 }
