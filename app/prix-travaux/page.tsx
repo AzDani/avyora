@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { PROJETS, estimProjet, titreSansPrefixe } from "@/lib/seo-projets";
 import { VILLES_SEO } from "@/lib/villes";
 import { PRIX_MAJ_FR } from "@/lib/prix-maj";
+import { ALEAS_RENO } from "@/lib/estimateur/core";
 import { CtaEstimation } from "@/components/CtaEstimation";
 
 export const dynamic = "force-static";
@@ -95,7 +96,7 @@ export default function PrixTravauxHub() {
     },
     {
       q: "Ces prix incluent-ils la TVA et les imprévus ?",
-      a: "Oui. Les budgets affichés sont TTC, avec le taux de TVA travaux applicable à chaque poste (5,5 %, 10 % ou 20 %), et ils intègrent une provision de 7 % pour imprévus — un chantier de rénovation réserve des surprises une fois les cloisons ouvertes.",
+      a: `Oui. Les budgets affichés sont TTC, avec le taux de TVA travaux applicable à chaque poste (5,5 %, 10 % ou 20 %), et ils intègrent une provision de ${ALEAS_RENO} % pour imprévus — un chantier de rénovation réserve des surprises une fois les cloisons ouvertes.`,
     },
     {
       q: "Le prix change-t-il selon ma ville ?",

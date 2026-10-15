@@ -5,12 +5,12 @@
  * au MÊME moteur (`buildDevis(catalogueDe(ctx), ctx, sel)`). Le mode rapide (5 questions) et le
  * mode détaillé passent par les mêmes règles : une maison décrite pareil coûte pareil.
  */
-import { key, peutFaireSoiMeme, type Ctx, type Selection, type Finition, type Tache, type Lot, type RaisonPro } from "./core";
+import { key, peutFaireSoiMeme, ALEAS_NEUF, type Ctx, type Selection, type Finition, type Tache, type Lot, type RaisonPro } from "./core";
 import { POSTE_NEUF } from "./catalogue-neuf";
 import { maisonComplete, geometrieNeuf, decisionsNeuf, exclusifsDe, type MaisonNeuve, type DecisionNeuf, type Niveaux } from "./neuf";
 import { DIY_PARTIE, type QuiRealise } from "./presets";
 
-/** Contexte moteur d'une construction neuve. */
+/** Contexte moteur d'une construction neuve. Aléas : `ALEAS_NEUF` (7 %) sauf réglage contraire. */
 export function ctxNeuf(maison: Partial<MaisonNeuve>, opts: { finition?: Finition; codePostal?: string; aleas?: number } = {}): Ctx {
   const cp = opts.codePostal ?? maison.codePostal ?? "";
   const h = maisonComplete({ ...maison, codePostal: cp });
@@ -20,7 +20,7 @@ export function ctxNeuf(maison: Partial<MaisonNeuve>, opts: { finition?: Finitio
     niveaux: h.niveaux === "pp" ? 1 : 2, type: "Maison", hauteur: 2.5,
     pieces: g.piecesEff, fenetres: g.nFen + g.nPF + g.nBaie, sdb: h.sdb, wc: h.wc,
     sejour: 1, cuisine: 1, chambres: h.chambres, suites: 0, couloir: 1, buanderie: 0,
-    budget: 0, aleas: opts.aleas ?? 7, finition: opts.finition ?? "standard", fiscal: "pro", codePostal: cp,
+    budget: 0, aleas: opts.aleas ?? ALEAS_NEUF, finition: opts.finition ?? "standard", fiscal: "pro", codePostal: cp,
     nature: "neuf", neuf: h,
   };
 }

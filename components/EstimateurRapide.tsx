@@ -137,11 +137,13 @@ export default function EstimateurRapide({
     : surface;
 
   // {ctx, sel} pour le mode courant, réglages éventuellement remplacés (aperçus des cartes 2-3-4).
+  // Un projet rouvert garde sa provision pour aléas (D7) : seuls les nouveaux prennent le défaut.
   function buildSel(o: { ampleur?: Ampleur; finition?: Finition; qui?: QuiRealise } = {}) {
     const a = o.ampleur ?? ampleur, f = o.finition ?? finition, q = o.qui ?? qui;
-    return mode === "pieces"
+    const p = mode === "pieces"
       ? presetPieces(pieces, a, f, q, cp)
       : presetRapide({ type, surface, codePostal: cp, ampleur: a, finition: f, qui: q });
+    return edit?.aleas != null ? { ...p, ctx: { ...p.ctx, aleas: edit.aleas } } : p;
   }
 
   const preset = useMemo(() => buildSel(), [mode, type, surface, cp, ampleur, finition, qui, pieces]);

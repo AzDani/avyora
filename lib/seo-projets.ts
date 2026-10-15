@@ -3,6 +3,7 @@ import {
   CATALOG,
   buildDevis,
   defaultCtx,
+  ALEAS_RENO,
   key,
   ESPACES,
   type Ctx,
@@ -930,8 +931,9 @@ export interface ProjetEstim {
    * Décomposition du total, telle que le moteur la calcule (`bilan()` + `totals()`), en HT.
    * Publiée nulle part jusqu'ici alors que c'est l'information la plus différenciante du produit :
    * les comparateurs affichent une fourchette, AVYORA peut dire ce qu'il y a dedans.
-   * `aleas` est la provision pour imprévus (7 %), incluse dans tout total publié — seule
-   * /methodologie la nommait, une page de prix qui l'inclut sans le dire n'est pas honnête.
+   * `aleas` est la provision pour imprévus (`ALEAS_RENO`, 10 % : celle d'une rénovation estimée sur
+   * le site), incluse dans tout total publié — seule /methodologie la nommait, une page de prix
+   * qui l'inclut sans le dire n'est pas honnête.
    */
   materiaux: number;
   mainOeuvre: number;
@@ -989,7 +991,7 @@ export function estimProjet(p: Projet, cp = "", surface?: number, tasks?: TacheS
     niveaux: 1,
     finition: "standard",
     codePostal: cp,
-    aleas: 7,
+    aleas: ALEAS_RENO, // la même provision que l'estimateur : la page et l'outil donnent le même chiffre
   };
   if (p.kind === "piece" && p.espace) {
     const e = ESPACES[p.espace];

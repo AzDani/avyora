@@ -397,8 +397,9 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
   const top = lotsTri[0];
   // Tranches du camembert « Où part le budget » (corps d'état, ordonnés par taille).
   const budgetTotal = lotsTri.reduce((s, l) => s + l.ttc, 0);
-  // Neuf : la part du poste le plus lourd sur la même base que la légende du camembert.
-  const topPct = top && t.ttc > 0 ? Math.round((top.ttc / (neuf ? budgetTotal || 1 : t.ttc)) * 100) : 0;
+  // La part du poste le plus lourd sur la même base que la légende du camembert (TTC hors aléas),
+  // rénovation comme neuf : sur le TTC aléas compris, la carte disait 13 % quand la légende disait 14 %.
+  const topPct = top && budgetTotal > 0 ? Math.round((top.ttc / budgetTotal) * 100) : 0;
   let _acc = 0;
   // Neuf : les 8 plus gros corps, le reste en une part « Autres corps d'état ». Rénovation : tous.
   const lotsDonut = neuf ? premiersCorps(lotsTri, n.autresCorps) : lotsTri;

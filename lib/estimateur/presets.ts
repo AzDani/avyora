@@ -4,7 +4,7 @@
  * cohérents entre les deux modes. Différence maison/appartement = l'ENVELOPPE (toiture, façade,
  * charpente) que seule la maison porte, + plus de niveaux/fenêtres. Paniers représentatifs.
  */
-import { key, type Ctx, type Selection, type TypeBien, type Finition } from "./core";
+import { key, ALEAS_RENO, type Ctx, type Selection, type TypeBien, type Finition } from "./core";
 
 export type Ampleur = "rafraich" | "partielle" | "complete" | "lourde";
 export type QuiRealise = "pros" | "partie" | "max";
@@ -87,7 +87,7 @@ export function presetRapide(input: RapideInput): { ctx: Ctx; sel: Selection } {
   const fenetres = Math.max(3, Math.round(surface / (maison ? 13 : 18))); // appart = façade partagée, moins de fenêtres
   const ctx: Ctx = {
     surface, surfaceSol, surfaceSolManual: true, niveaux, type: input.type, hauteur: 2.5,
-    pieces, fenetres, sdb, wc: 1, budget: 0, aleas: 7, finition: input.finition,
+    pieces, fenetres, sdb, wc: 1, budget: 0, aleas: ALEAS_RENO, finition: input.finition,
     codePostal: input.codePostal,
   };
 

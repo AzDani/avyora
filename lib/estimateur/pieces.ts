@@ -4,7 +4,7 @@
  * devis (quantités additionnées par poste) → total juste, sans double-comptage (le moteur ne
  * facture que les tâches sélectionnées, aucun coût fixe caché) et sauvegardable comme un projet.
  */
-import { key, type Ctx, type Selection, type Finition } from "./core";
+import { key, ALEAS_RENO, type Ctx, type Selection, type Finition } from "./core";
 import { DIY_PARTIE, type Ampleur, type QuiRealise } from "./presets";
 
 export type PieceKey = "cuisine" | "sdb" | "chambre" | "salon" | "suite" | "buanderie";
@@ -128,7 +128,7 @@ function ctxPiece(totalSurface: number, finition: Finition, cp: string): Ctx {
   const s = Math.max(2, totalSurface || 0);
   return {
     surface: s, surfaceSol: s, surfaceSolManual: true, niveaux: 1, type: "T3", hauteur: 2.5,
-    pieces: 1, fenetres: 0, sdb: 0, wc: 0, budget: 0, aleas: 7, finition, codePostal: cp,
+    pieces: 1, fenetres: 0, sdb: 0, wc: 0, budget: 0, aleas: ALEAS_RENO, finition, codePostal: cp,
     sejour: 0, cuisine: 0, chambres: 0, suites: 0, couloir: 0, buanderie: 0,
   };
 }

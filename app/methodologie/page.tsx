@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { PRIX_MAJ, PRIX_MAJ_FR } from "@/lib/prix-maj";
+import { ALEAS_RENO, ALEAS_NEUF } from "@/lib/estimateur/core";
 
 export const dynamic = "force-static";
 
@@ -146,8 +147,9 @@ export default function MethodologiePage() {
       <h3>3. La TVA</h3>
       <p>
         Les prix affichés sont <strong>TTC</strong>. Le taux appliqué dépend du poste et de la nature du
-        logement : <strong>10 %</strong> pour la rénovation d&apos;un logement achevé depuis plus de deux ans,
-        <strong> 5,5 %</strong> sur les travaux d&apos;amélioration énergétique (isolation, chauffage performant),
+        logement : <strong>10 %</strong>{" "}
+        pour la rénovation d&apos;un logement achevé depuis plus de deux ans, <strong>5,5 %</strong>{" "}
+        sur les travaux d&apos;amélioration énergétique (isolation, chauffage performant),
         et <strong>20 %</strong> pour le neuf, un logement de moins de deux ans ou un local professionnel.
         Les matériaux que tu achètes seul restent à 20 % dans tous les cas.
       </p>
@@ -155,9 +157,10 @@ export default function MethodologiePage() {
       <h3>4. La provision pour aléas</h3>
       <p>
         Une rénovation réserve des surprises : réseau hors normes découvert en ouvrant un mur, plancher à
-        reprendre, humidité. Une provision de <strong>7 % par défaut</strong> est ajoutée au total, ajustable
-        dans l&apos;estimateur. Elle ne s&apos;applique pas au lot Études, dont le montant est connu à
-        l&apos;avance.
+        reprendre, humidité. Une provision de <strong>{ALEAS_RENO}&nbsp;% par défaut</strong>{" "}
+        est ajoutée au total d&apos;une rénovation ({ALEAS_NEUF}&nbsp;% pour une construction neuve, dont le
+        chantier part de zéro), ajustable dans l&apos;estimateur. Elle ne s&apos;applique ni au lot Études,
+        dont le montant est connu à l&apos;avance, ni aux taxes et à l&apos;assurance d&apos;une construction.
       </p>
 
       <h2>Ce que l&apos;estimation ne fait pas</h2>

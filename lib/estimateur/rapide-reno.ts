@@ -104,6 +104,9 @@ export type RapideEdit = {
   detaille?: boolean;
   /** Projet « pièces » enregistré avant que la liste soit gardée : il rouvre en mode pièces, liste à refaire. */
   piecesPerdues?: boolean;
+  /** Provision pour aléas du projet enregistré : il la GARDE (D7). Sans elle, rouvrir un projet de
+   *  7 % le rechiffrait à 10 % (le défaut des nouveaux projets) et l'enregistrer réécrivait ses aléas. */
+  aleas?: number;
 };
 
 /** Les réponses d'un projet telles qu'enregistrées (les champs non lus ici, `sel`, `custom`…, sont permis). */
@@ -126,6 +129,7 @@ export function editionRapideReno(projectId: string, rep: ReponsesStockees | nul
   const piecesPerdues = !detaille && !pieces && !!ctx.type && ctx.type !== "Maison" && (ctx.type as string) !== "Appartement";
   const statuts = lireStatuts(r.statuts);
   const surface = Number(ctx.surface);
+  const aleas = ctx.aleas;
   const cp = codePostalProjet ?? r.codePostal;
   return {
     projectId,
@@ -139,5 +143,6 @@ export function editionRapideReno(projectId: string, rep: ReponsesStockees | nul
     ...(statuts ? { statuts } : {}),
     ...(detaille ? { detaille: true } : {}),
     ...(piecesPerdues ? { piecesPerdues: true } : {}),
+    ...(typeof aleas === "number" && Number.isFinite(aleas) && aleas >= 0 ? { aleas } : {}),
   };
 }

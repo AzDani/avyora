@@ -320,10 +320,20 @@ export const ICON: Record<string, string> = {
   "Couverture & zinguerie": "🏠", "Réseaux enterrés (VRD)": "🔌", "Contrôles & réception": "✅", "Taxes & participations": "🧾",
 };
 
+/**
+ * Provision pour aléas PAR DÉFAUT d'un nouveau projet, en % du HT hors études et hors frais
+ * (décision D7 de Dani, 13/10/2026) : 10 % en rénovation, où l'on découvre ce que cachent les murs
+ * une fois ouverts ; 7 % en construction neuve, dont le chantier part de zéro. Un projet enregistré
+ * garde la sienne (`ctx.aleas` de ses réponses) : seuls les nouveaux projets prennent ces valeurs.
+ * Les pages publiques (méthode, prix par projet) les citent depuis ces constantes.
+ */
+export const ALEAS_RENO = 10;
+export const ALEAS_NEUF = 7;
+
 export function defaultCtx(): Ctx {
   return {
     surface: 80, surfaceSol: 80, surfaceSolManual: false, niveaux: 1, type: "Maison",
-    hauteur: 2.5, pieces: 6, fenetres: 7, sdb: 1, wc: 1, budget: 60000, aleas: 7, finition: "standard", fiscal: "habitation",
+    hauteur: 2.5, pieces: 6, fenetres: 7, sdb: 1, wc: 1, budget: 60000, aleas: ALEAS_RENO, finition: "standard", fiscal: "habitation",
     sejour: 1, cuisine: 1, chambres: 3, suites: 0, couloir: 1, buanderie: 0,
   };
 }
