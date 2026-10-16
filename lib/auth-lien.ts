@@ -222,7 +222,7 @@ export function trouverDemande(v: string | null | undefined, empreinte: string, 
 }
 
 /** L'arrivée « à vérifier » : lib/auth-verifier.ts (le proxy l'importe seul). */
-export { COOKIE_VERIFIER, DUREE_VERIFIER_S } from "@/lib/auth-verifier";
+export { COOKIE_VERIFIER, DUREE_VERIFIER_S, optionsMarque, verificationEnAttente } from "@/lib/auth-verifier";
 
 /** La destination après la vérification : un chemin interne hors de /auth (sinon /projets). */
 export function suiteVerification(next: string | null | undefined): string {

@@ -145,7 +145,7 @@ exports[`Témoins · pendant la bêta (12/10/2026) > accueil (FR, EN) > accueil 
 @media (forced-colors: active){.av-home .hero h1 .hl{-webkit-text-fill-color:currentColor;color:CanvasText;background:none}}
 @media(max-width:440px){.av-home .steps4,.av-home .pains,.av-home .cred{grid-template-columns:1fr}}
 </style><div class="av-home">
-<a href="/inscription?source=accueil" class="promo"><span class="dot"></span><span style="text-align:center"><b>Free beta</b> — all of AVYORA is free through December 31, 2026 <span class="arr">· create your account →</span></span></a>
+<a href="/inscription?source=accueil" class="promo"><span style="text-align:center"><span class="dot" style="display:inline-block;vertical-align:middle;margin:0 8px 2px 0"></span><b>Free beta</b> — all of AVYORA is free through December 31, 2026 <span class="arr">· create your account →</span></span></a>
 <div class="wrap"><header class="hero"><div class="in">
   <div class="eyebrow">Renovation project manager · France</div>
   <h1>Your renovation's<br><span class="hl">copilot.</span></h1>
@@ -391,7 +391,7 @@ exports[`Témoins · pendant la bêta (12/10/2026) > accueil (FR, EN) > accueil 
 @media (forced-colors: active){.av-home .hero h1 .hl{-webkit-text-fill-color:currentColor;color:CanvasText;background:none}}
 @media(max-width:440px){.av-home .steps4,.av-home .pains,.av-home .cred{grid-template-columns:1fr}}
 </style><div class="av-home">
-<a href="/inscription?source=accueil" class="promo"><span class="dot"></span><span style="text-align:center"><b>Bêta gratuite</b> — tout AVYORA est offert jusqu'au 31 décembre 2026 <span class="arr">· crée ton compte →</span></span></a>
+<a href="/inscription?source=accueil" class="promo"><span style="text-align:center"><span class="dot" style="display:inline-block;vertical-align:middle;margin:0 8px 2px 0"></span><b>Bêta gratuite</b> — tout AVYORA est offert jusqu'au 31 décembre 2026 <span class="arr">· crée ton compte →</span></span></a>
 <div class="wrap"><header class="hero"><div class="in">
   <div class="eyebrow">Gestionnaire de travaux · France</div>
   <h1>Le copilote de<br><span class="hl">tes travaux.</span></h1>

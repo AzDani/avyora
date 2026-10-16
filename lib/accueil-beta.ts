@@ -19,13 +19,15 @@ const COCHE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 export function remplacementsAccueilBeta(locale: Locale): [string, string][] {
   const l = libellesBeta(locale);
   // La date ne se coupe pas en fin de ligne (téléphone) : « 31 décembre 2026 » reste d'un seul tenant.
+  // Le point animé du bandeau est DANS le texte (en ligne, avant « Bêta gratuite ») : sur téléphone, il ne prend plus une
+  // ligne à lui seul au-dessus du texte.
   const fin = dateInsecable(l.fin);
   const inscription = lienInscriptionBeta(undefined, "accueil");
   if (locale === "en") {
     return [
       [
         '<a href="/tarifs" class="promo"><span class="dot"></span>Estimating is <b>free</b> — AVYORA Pro from €18.85/month <span class="arr">· no commitment →</span></a>',
-        `<a href="${inscription}" class="promo"><span class="dot"></span><span style="text-align:center"><b>Free beta</b>\u00a0— all of AVYORA is free through ${fin} <span class="arr">·\u00a0create your account\u00a0→</span></span></a>`,
+        `<a href="${inscription}" class="promo"><span style="text-align:center"><span class="dot" style="display:inline-block;vertical-align:middle;margin:0 8px 2px 0"></span><b>Free beta</b>\u00a0— all of AVYORA is free through ${fin} <span class="arr">·\u00a0create your account\u00a0→</span></span></a>`,
       ],
       ['<a href="/tarifs" class="btn btn-w">See pricing</a>', `<a href="${inscription}" class="btn btn-w">Create my free account</a>`],
       [
@@ -66,7 +68,7 @@ export function remplacementsAccueilBeta(locale: Locale): [string, string][] {
   return [
     [
       '<a href="/tarifs" class="promo"><span class="dot"></span>Estimer est <b>gratuit</b> — AVYORA Pro dès 18,85 €/mois <span class="arr">· sans engagement →</span></a>',
-      `<a href="${inscription}" class="promo"><span class="dot"></span><span style="text-align:center"><b>Bêta gratuite</b>\u00a0— tout AVYORA est offert jusqu'au ${fin} <span class="arr">·\u00a0crée ton compte\u00a0→</span></span></a>`,
+      `<a href="${inscription}" class="promo"><span style="text-align:center"><span class="dot" style="display:inline-block;vertical-align:middle;margin:0 8px 2px 0"></span><b>Bêta gratuite</b>\u00a0— tout AVYORA est offert jusqu'au ${fin} <span class="arr">·\u00a0crée ton compte\u00a0→</span></span></a>`,
     ],
     ['<a href="/tarifs" class="btn btn-w">Voir les tarifs</a>', `<a href="${inscription}" class="btn btn-w">Créer mon compte gratuit</a>`],
     [

@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { RangementEnAttente } from "@/components/auth/RangementEnAttente";
 import { continuerArrivee, refuserArrivee } from "@/lib/actions/auth";
-import { COOKIE_VERIFIER, suiteVerification } from "@/lib/auth-lien";
+import { COOKIE_VERIFIER, suiteVerification, verificationEnAttente } from "@/lib/auth-lien";
 import { getUser } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
 
@@ -17,7 +17,8 @@ export async function generateMetadata() {
  * quelqu'un d'autre y ouvrirait SA session : l'estimation ou le plan de ce navigateur partiraient dans son compte, et
  * tout ce qui serait saisi ensuite aussi. La page montre l'adresse du compte ouvert, EN ENTIER (c'est la sienne s'il
  * l'a demandé ailleurs ; un tiers ne peut pas la maquiller), puis « Oui, c'est mon compte » ou « Ce n'est pas moi ».
- * Tant que ce choix n'est pas fait, le proxy ramène ici toute page : rien n'est rangé avant.
+ * Tant que ce choix n'est pas fait (la marque dure autant que la session, lib/auth-verifier.ts), le proxy ramène ici
+ * toute page et refuse les écritures /api : rien n'est rangé avant.
  *
  * Cas normal (lien demandé sur l'ordinateur, ouvert sur le téléphone) : un clic de plus, « Oui, c'est mon compte ».
  */
@@ -25,7 +26,7 @@ export default async function VerifierPage({ searchParams }: { searchParams: Pro
   const [{ next: nextDemande }, { t: tr }, user, cookieStore] = await Promise.all([searchParams, getT(), getUser(), cookies()]);
   const next = suiteVerification(nextDemande);
   if (!user) redirect("/connexion");
-  if (!cookieStore.get(COOKIE_VERIFIER)?.value) redirect(next);
+  if (!verificationEnAttente(cookieStore.get(COOKIE_VERIFIER)?.value, user.id)) redirect(next);
   const t = tr.auth.verifier;
 
   return (

@@ -17,10 +17,11 @@ import { prerender } from "react-dom/static";
 import { dict } from "@/lib/i18n/dictionaries";
 import { dateInsecable, libellesBeta } from "@/lib/beta";
 import {
-  COOKIE_DEMANDE, COOKIE_LIEN, COOKIE_VERIFIER, DELAI_RENVOI_S, DUREE_DEMANDE_S, FENETRE_CONTROLE_MDP_MS, FENETRE_NOUVEAU_COMPTE_MS,
-  MARQUE_MDP, ajouterDemande, controleMdpAFaire, destinationLien, ecrireLienEnAttente, emailValide, intentionDuLien, issueEnvoi,
-  jetonValide, lireDemandes, lireLienEnAttente, lirePageAcces, lireTypeLien, messagerieDe, metadonneesInscription,
-  methodeNouveauCompte, reclamationEnAttente, suiteVerification, trouverDemande, type Demande,
+  COOKIE_DEMANDE, COOKIE_LIEN, COOKIE_VERIFIER, DELAI_RENVOI_S, DUREE_DEMANDE_S, DUREE_VERIFIER_S, FENETRE_CONTROLE_MDP_MS,
+  FENETRE_NOUVEAU_COMPTE_MS, MARQUE_MDP, ajouterDemande, controleMdpAFaire, destinationLien, ecrireLienEnAttente, emailValide,
+  intentionDuLien, issueEnvoi, jetonValide, lireDemandes, lireLienEnAttente, lirePageAcces, lireTypeLien, messagerieDe,
+  metadonneesInscription, methodeNouveauCompte, reclamationEnAttente, suiteVerification, trouverDemande, verificationEnAttente,
+  type Demande,
 } from "@/lib/auth-lien";
 import { empreinteAdresse, secretEmpreinte } from "@/lib/empreinte";
 import { createHash } from "node:crypto";
@@ -285,6 +286,9 @@ const S = {
   connexions: [] as unknown[],
 };
 
+/** Le mot de passe que la connexion simulée refuse. */
+const MDP_REFUSE = "mauvais-mot-de-passe-2026";
+
 /** Le magasin de cookies de `next/headers`, simulé sur `S.cookies`. */
 const magasin = () => ({
   get: (n: string) => (S.cookies.has(n) ? { name: n, value: S.cookies.get(n) as string } : undefined),
@@ -326,7 +330,12 @@ async function actions(env: "production" | "local" = "local") {
           return { data: { user: { id: "u-nouveau", created_at: S.creeLe ?? new Date().toISOString() }, session: S.session }, error: null };
         },
         resetPasswordForEmail: async (_e: string, o: unknown) => { S.resets.push(o); return { data: {}, error: null }; },
-        signInWithPassword: async (o: unknown) => { S.connexions.push(o); return { data: { user: { id: "u1" } }, error: null }; },
+        signInWithPassword: async (o: { password?: string }) => {
+          S.connexions.push(o);
+          return o.password === MDP_REFUSE
+            ? { data: { user: null }, error: { message: "Invalid login credentials" } }
+            : { data: { user: { id: "u1" } }, error: null };
+        },
         updateUser: async (p: unknown) => { S.majs.push(p); return { data: {}, error: null }; },
       },
     }),
@@ -539,6 +548,41 @@ describe("envoyerLienAcces : le lien d'accès (aucun e-mail réel)", () => {
     expect(demandeIci("camille@exemple.fr")?.m).toBe("lien");
   });
 
+  it("un compte créé par un tiers une minute avant l'inscription n'est pas « né de cet appel » : sa date est comparée à l'heure lue juste avant", async () => {
+    for (const [creeLe, attendu] of [
+      [new Date(MAINTENANT.getTime() - 60_000).toISOString(), "lien"], // une minute avant : déjà là
+      [new Date(MAINTENANT.getTime() - 110_000).toISOString(), "lien"], // dans les deux minutes de l'ancienne règle : déjà là
+      [new Date(MAINTENANT.getTime() - 3_000).toISOString(), "mdp"], // décalage d'horloges (5 s au plus) : né de l'appel
+      [MAINTENANT.toISOString(), "mdp"],
+    ] as const) {
+      S.creeLe = creeLe;
+      S.cookies = new Map();
+      const m = await actions();
+      await m.signup(undefined, fd({ email: "camille@exemple.fr", password: "chantier2026maison" }));
+      expect(demandeIci("camille@exemple.fr")?.m, creeLe).toBe(attendu);
+    }
+  });
+
+  it("un mot de passe refusé (pas de chiffre, trop courant) ne consomme pas les envois de l'adresse : le lien reste possible", async () => {
+    const m = await actions("production");
+    for (let i = 0; i < 5; i++) {
+      const r = await m.signup(undefined, fd({ email: "camille@exemple.fr", password: "chantierdemaison" }));
+      expect(r?.error, String(i)).toMatch(/chiffre/);
+    }
+    expect(S.inscriptions).toEqual([]);
+    expect(await m.envoyerLienAcces(undefined, fd({ email: "camille@exemple.fr", page: "inscription" }))).toMatchObject({ envoye: true });
+  });
+
+  it("le journal ne garde pas en clair l'adresse tapée d'une inscription au mot de passe (non confirmée) ni d'une connexion échouée", async () => {
+    const m = await actions();
+    await m.signup(undefined, fd({ email: "Camille@Exemple.fr", password: "chantier2026maison" }));
+    expect(S.journal).toEqual([["inscription", { userId: "u-nouveau", payload: { methode: "mot_de_passe", empreinte: empreinteAdresse("camille@exemple.fr") } }]]);
+    S.journal = [];
+    expect(await m.login(undefined, fd({ email: "zoe@exemple.fr", password: MDP_REFUSE }))).toEqual({ error: "Email ou mot de passe incorrect." });
+    expect(S.journal).toEqual([["connexion_echouee", { payload: { empreinte: empreinteAdresse("zoe@exemple.fr") } }]]);
+    expect(JSON.stringify(S.journal)).not.toMatch(/zoe|camille|exemple/i);
+  });
+
   it("sans confirmation d'e-mail (réglage Supabase), la session s'ouvre ici même : le consentement est enregistré tout de suite", async () => {
     S.session = { access_token: "x" };
     const m = await actions();
@@ -551,6 +595,18 @@ describe("envoyerLienAcces : le lien d'accès (aucun e-mail réel)", () => {
     }
     expect(url).toBe("/onboarding");
     expect(S.majs).toEqual([{ data: { newsletter: true, newsletter_le: "2026-10-15T10:00:00.000Z" } }]);
+  });
+
+  it("une inscription qui ouvre la session, une connexion au mot de passe : une arrivée « à vérifier » d'avant est oubliée", async () => {
+    S.session = { access_token: "x" };
+    S.cookies = new Map([[COOKIE_VERIFIER, "u-tiers"]]);
+    let m = await actions();
+    await redirection(async () => { try { await m.signup(undefined, fd({ email: "camille@exemple.fr", password: "chantier2026maison" })); } catch { /* NEXT_REDIRECT */ } });
+    expect(S.cookies.has(COOKIE_VERIFIER)).toBe(false);
+    S.cookies = new Map([[COOKIE_VERIFIER, "u-tiers"]]);
+    m = await actions();
+    await redirection(async () => { try { await m.login(undefined, fd({ email: "camille@exemple.fr", password: "chantier2026maison" })); } catch { /* NEXT_REDIRECT */ } });
+    expect(S.cookies.has(COOKIE_VERIFIER)).toBe(false);
   });
 
   it("CAPTCHA préparé (lib/captcha.ts) : le jeton du formulaire part vers Supabase (lien, inscription, connexion, mot de passe oublié) ; sans jeton, rien de plus", async () => {
@@ -900,7 +956,9 @@ describe("/auth/confirm puis le bouton de /auth/confirmer : le lien au format to
     const attaquant = { ...NOUVEAU(), id: "u-tiers", email: "tiers@exemple.fr", email_confirmed_at: il(40 * 86_400_000), app_metadata: { provider: "email", [MARQUE_MDP]: il(1_000) } };
     const r = await cliquer(ecrireLienEnAttente({ jeton: JETON, type: "email", next: "/projets" }), { user: attaquant, demandes: ici("camille@exemple.fr") });
     expect(r.url).toBe("/auth/verifier?next=%2Fprojets");
-    expect(r.poses).toContainEqual([COOKIE_VERIFIER, "1", expect.objectContaining({ httpOnly: true, path: "/", maxAge: 3600, sameSite: "lax" })]);
+    // La marque porte le compte ouvert et dure autant que la session (400 jours) : un choix laissé en suspens ne la fait pas
+    // expirer avant elle.
+    expect(r.poses).toContainEqual([COOKIE_VERIFIER, "u-tiers", expect.objectContaining({ httpOnly: true, path: "/", maxAge: DUREE_VERIFIER_S, sameSite: "lax" })]);
     expect(S.journal).toContainEqual(["arrivee_a_verifier", { userId: "u-tiers", payload: { type: "email", autreSession: false } }]);
     // Sans aucune trace du tout (lien demandé sur un autre appareil, le cas normal) : pareil, un clic de plus.
     const r2 = await cliquer(ecrireLienEnAttente({ jeton: JETON, type: "email", next: "/plan" }), { user: NOUVEAU() });
@@ -976,7 +1034,7 @@ describe("/auth/verifier : « C'est bien ton compte ? »", () => {
   for (const locale of LOCALES) {
     it(`${locale} : l'adresse du compte ouvert EN ENTIER, « Oui, c'est mon compte » (vers l'intention), « Ce n'est pas moi »`, async () => {
       const t = dict(locale).auth.verifier;
-      const r = await preparer(locale, CAMILLE, { [COOKIE_VERIFIER]: "1" });
+      const r = await preparer(locale, CAMILLE, { [COOKIE_VERIFIER]: "u1" });
       const h = await r.page("/plan");
       for (const x of [t.eyebrow, t.titre, t.connecteAvec, t.pourquoi, t.continuer, t.pasMoi, t.pasMoiAide]) expect(h, x).toContain(esc(x));
       expect(h).toMatch(/data-verifier-adresse="">camille@exemple\.fr</);
@@ -989,21 +1047,24 @@ describe("/auth/verifier : « C'est bien ton compte ? »", () => {
   it("sans arrivée à vérifier : droit à l'intention ; sans session : /connexion ; une intention vers /auth ou ailleurs : /projets", async () => {
     let r = await preparer("fr", CAMILLE, {});
     expect(await redirection(() => r.page("/plan"))).toBe("/plan");
-    r = await preparer("fr", null, { [COOKIE_VERIFIER]: "1" });
+    r = await preparer("fr", null, { [COOKIE_VERIFIER]: "u1" });
     expect(await redirection(() => r.page("/plan"))).toBe("/connexion");
-    r = await preparer("fr", CAMILLE, { [COOKIE_VERIFIER]: "1" });
+    // La marque d'un AUTRE compte (une session ouverte ensuite, par la personne elle-même) : rien à vérifier.
+    r = await preparer("fr", CAMILLE, { [COOKIE_VERIFIER]: "u-tiers" });
+    expect(await redirection(() => r.page("/plan"))).toBe("/plan");
+    r = await preparer("fr", CAMILLE, { [COOKIE_VERIFIER]: "u1" });
     for (const next of ["/auth/verifier?next=%2Fplan", "//evil.com", "https://evil.com"]) {
       expect(await r.page(next)).toContain('<input type="hidden" name="next" value="/projets"/>');
     }
   });
 
   it("« Oui, c'est mon compte » : la vérification est oubliée, l'intention (assainie) ; « Ce n'est pas moi » : déconnecté ici, journal, /connexion", async () => {
-    let r = await preparer("fr", CAMILLE, { [COOKIE_VERIFIER]: "1" });
+    let r = await preparer("fr", CAMILLE, { [COOKIE_VERIFIER]: "u1" });
     expect(await redirection(() => r.actions.continuerArrivee(fd({ next: "/plan" })))).toBe("/plan");
     expect(S.cookies.has(COOKIE_VERIFIER)).toBe(false);
-    r = await preparer("fr", CAMILLE, { [COOKIE_VERIFIER]: "1" });
+    r = await preparer("fr", CAMILLE, { [COOKIE_VERIFIER]: "u1" });
     expect(await redirection(() => r.actions.continuerArrivee(fd({ next: "/auth/confirmer" })))).toBe("/projets");
-    r = await preparer("fr", CAMILLE, { [COOKIE_VERIFIER]: "1" });
+    r = await preparer("fr", CAMILLE, { [COOKIE_VERIFIER]: "u1" });
     expect(await redirection(() => r.actions.refuserArrivee())).toBe("/connexion");
     expect(r.sorties).toEqual([{ scope: "local" }]);
     expect(S.cookies.has(COOKIE_VERIFIER)).toBe(false);
@@ -1029,24 +1090,58 @@ describe("proxy : une arrivée « à vérifier » ramène toute page à /auth/ve
     const { NextRequest } = await import("next/server");
     const { proxy } = await import("@/proxy");
     const req = new NextRequest(url, { method: o.methode ?? "GET", headers: o.cookie ? { cookie: o.cookie } : {} });
-    const res = await proxy(req);
-    return res.headers.get("location");
+    return proxy(req);
   }
+  const ou = async (url: string, o: { user?: unknown; cookie?: string; methode?: string } = {}) => (await passer(url, o)).headers.get("location");
   const CAMILLE = { id: "u1", email: "camille@exemple.fr" };
+  const MARQUE = `${COOKIE_VERIFIER}=u1`;
 
-  it("connecté avec la marque : toute page mène à la vérification, l'intention gardée ; /auth, /api et les actions passent", async () => {
-    expect(await passer("https://getavyora.fr/projets", { user: CAMILLE, cookie: `${COOKIE_VERIFIER}=1` })).toBe("https://getavyora.fr/auth/verifier?next=%2Fprojets");
-    expect(await passer("https://getavyora.fr/plan?id=abc", { user: CAMILLE, cookie: `${COOKIE_VERIFIER}=1` })).toBe("https://getavyora.fr/auth/verifier?next=%2Fplan%3Fid%3Dabc");
-    expect(await passer("https://getavyora.fr/", { user: CAMILLE, cookie: `${COOKIE_VERIFIER}=1` })).toBe("https://getavyora.fr/auth/verifier?next=%2F");
-    for (const u of ["https://getavyora.fr/auth/verifier?next=%2F", "https://getavyora.fr/api/projects"]) {
-      expect(await passer(u, { user: CAMILLE, cookie: `${COOKIE_VERIFIER}=1` }), u).toBeNull();
+  it("connecté avec la marque de CE compte : toute page mène à la vérification, l'intention gardée ; /auth, les lectures /api et les actions passent", async () => {
+    expect(await ou("https://getavyora.fr/projets", { user: CAMILLE, cookie: MARQUE })).toBe("https://getavyora.fr/auth/verifier?next=%2Fprojets");
+    expect(await ou("https://getavyora.fr/mon-espace", { user: CAMILLE, cookie: MARQUE })).toBe("https://getavyora.fr/auth/verifier?next=%2Fmon-espace");
+    expect(await ou("https://getavyora.fr/plan?id=abc", { user: CAMILLE, cookie: MARQUE })).toBe("https://getavyora.fr/auth/verifier?next=%2Fplan%3Fid%3Dabc");
+    expect(await ou("https://getavyora.fr/", { user: CAMILLE, cookie: MARQUE })).toBe("https://getavyora.fr/auth/verifier?next=%2F");
+    for (const u of ["https://getavyora.fr/auth/verifier?next=%2F", "https://getavyora.fr/api/projects", "https://getavyora.fr/api/plans/session"]) {
+      const r = await passer(u, { user: CAMILLE, cookie: MARQUE });
+      expect(r.headers.get("location"), u).toBeNull();
+      expect(r.status, u).toBe(200);
     }
-    expect(await passer("https://getavyora.fr/projets", { user: CAMILLE, cookie: `${COOKIE_VERIFIER}=1`, methode: "POST" })).toBeNull();
+    expect(await ou("https://getavyora.fr/projets", { user: CAMILLE, cookie: MARQUE, methode: "POST" })).toBeNull();
   });
 
-  it("sans la marque, ou sans session : rien ne change", async () => {
-    expect(await passer("https://getavyora.fr/projets", { user: CAMILLE })).toBeNull();
-    expect(await passer("https://getavyora.fr/plan", { cookie: `${COOKIE_VERIFIER}=1` })).toBeNull();
+  it("la marque dure autant que la session : renouvelée (400 jours) à chaque page ramenée, jamais plus courte que les cookies de Supabase", async () => {
+    const { DEFAULT_COOKIE_OPTIONS } = await import("@supabase/ssr/dist/main/utils/constants");
+    expect(DUREE_VERIFIER_S).toBeGreaterThanOrEqual(DEFAULT_COOKIE_OPTIONS.maxAge as number);
+    const r = await passer("https://getavyora.fr/projets", { user: CAMILLE, cookie: MARQUE });
+    const pose = r.cookies.get(COOKIE_VERIFIER);
+    expect(pose).toMatchObject({ value: "u1", path: "/", maxAge: DUREE_VERIFIER_S, httpOnly: true, sameSite: "lax", secure: true });
+    expect(r.headers.get("set-cookie")).toMatch(/av-verifier=u1;.*Max-Age=34560000/);
+  });
+
+  it("une écriture /api pendant la vérification (onglet resté ouvert, ClaimDraft, éditeur de plan) : refusée, 403, rien n'est rangé", async () => {
+    for (const [u, methode] of [
+      ["https://getavyora.fr/api/projects", "POST"],
+      ["https://getavyora.fr/api/plans", "POST"],
+      ["https://getavyora.fr/api/plans/abc", "PUT"],
+      ["https://getavyora.fr/api/projects/abc", "PATCH"],
+      ["https://getavyora.fr/api/projects/abc", "DELETE"],
+    ] as const) {
+      const r = await passer(u, { user: CAMILLE, cookie: MARQUE, methode });
+      expect(r.status, `${methode} ${u}`).toBe(403);
+      expect(await r.json()).toEqual({ error: "verification_requise" });
+    }
+    // Sans la marque, ou sans session (le webhook de Stripe) : l'écriture passe jusqu'à sa route.
+    expect((await passer("https://getavyora.fr/api/projects", { user: CAMILLE, methode: "POST" })).status).toBe(200);
+    expect((await passer("https://getavyora.fr/api/stripe/webhook", { cookie: MARQUE, methode: "POST" })).status).toBe(200);
+  });
+
+  it("sans la marque, sans session, ou avec la marque d'un AUTRE compte : rien ne change", async () => {
+    expect(await ou("https://getavyora.fr/projets", { user: CAMILLE })).toBeNull();
+    expect(await ou("https://getavyora.fr/plan", { cookie: MARQUE })).toBeNull();
+    expect(await ou("https://getavyora.fr/projets", { user: CAMILLE, cookie: `${COOKIE_VERIFIER}=u-tiers` })).toBeNull();
+    expect((await passer("https://getavyora.fr/api/projects", { user: CAMILLE, cookie: `${COOKIE_VERIFIER}=u-tiers`, methode: "POST" })).status).toBe(200);
+    expect(verificationEnAttente("u1", "u1")).toBe(true);
+    for (const [m, u] of [["", "u1"], ["u1", ""], [undefined, "u1"], ["u1", null], ["1", "u1"]] as const) expect(verificationEnAttente(m, u), `${m} ${u}`).toBe(false);
   });
 });
 

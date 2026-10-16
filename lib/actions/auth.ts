@@ -10,8 +10,8 @@ import { cheminInterne } from "@/lib/next-url";
 import { suivreServeur } from "@/lib/track-server";
 import { empreinteAdresse } from "@/lib/empreinte";
 import {
-  COOKIE_DEMANDE, COOKIE_LIEN, COOKIE_VERIFIER, DUREE_DEMANDE_S, DUREE_VERIFIER_S, ajouterDemande, destinationLien, emailValide,
-  issueEnvoi, lireLienEnAttente, lirePageAcces, metadonneesInscription, suiteVerification, trouverDemande, type MethodeDemande,
+  COOKIE_DEMANDE, COOKIE_LIEN, COOKIE_VERIFIER, DUREE_DEMANDE_S, ajouterDemande, destinationLien, emailValide, issueEnvoi,
+  lireLienEnAttente, lirePageAcces, metadonneesInscription, optionsMarque, suiteVerification, trouverDemande, type MethodeDemande,
 } from "@/lib/auth-lien";
 import { controlerArrivee, noterArrivee } from "@/lib/auth-arrivee";
 import { CHAMP_CAPTCHA, jetonCaptcha } from "@/lib/captcha";
@@ -79,7 +79,13 @@ async function noterDemande(email: string, m: MethodeDemande, newsletter = false
   cookieStore.set(COOKIE_DEMANDE, v, { httpOnly: true, sameSite: "lax", secure: await enHttps(), path: "/auth", maxAge: DUREE_DEMANDE_S });
 }
 
-/** L'arrivée n'est plus « à vérifier » (connexion de la personne elle-même, « Continuer », déconnexion). */
+/**
+ * Tolérance entre l'horloge de Supabase (`created_at`) et la nôtre, pour reconnaître un compte né de CETTE inscription :
+ * sa date de création doit suivre l'heure lue juste avant l'appel, à cette marge près (serveurs synchronisés en NTP).
+ */
+const DECALAGE_HORLOGES_MS = 5_000;
+
+/** L'arrivée n'est plus « à vérifier » (connexion de la personne elle-même, « Oui, c'est mon compte », déconnexion). */
 async function oublierVerification(): Promise<void> {
   (await cookies()).set(COOKIE_VERIFIER, "", { path: "/", maxAge: 0, httpOnly: true, sameSite: "lax" });
 }
@@ -97,7 +103,8 @@ export async function login(_prev: AuthState, formData: FormData): Promise<AuthS
   const supabase = await supabaseServer({ remember });
   const { data, error } = await supabase.auth.signInWithPassword({ email, password, options: optionsCaptcha(formData) });
   if (error) {
-    await journaliser("connexion_echouee", { email });
+    // L'adresse tapée peut être celle de n'importe qui : le journal n'en garde que l'empreinte.
+    await journaliser("connexion_echouee", { payload: { empreinte: empreinteAdresse(email) } });
     return { error: error.message === "Invalid login credentials"
       ? "Email ou mot de passe incorrect."
       : error.message };
@@ -125,11 +132,14 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
   // questionnaire entre son oui et l'écran de paiement : on l'emmène là où il allait.
   const dest = cheminInterne(String(formData.get("next") ?? ""), "/onboarding");
   if (!email || !password) return { error: "Renseigne ton email et ton mot de passe." };
-  if (!(await limitesEnvoiOk(email))) return { error: TROP_DE_TENTATIVES };
+  // Le mot de passe d'abord : un refus (« Ajoute au moins un chiffre ») ne consomme pas les envois de l'adresse, que la
+  // demande d'un lien d'accès partage (3 / h).
   const faible = validerMotDePasse(password);
   if (faible) return { error: faible };
+  if (!(await limitesEnvoiOk(email))) return { error: TROP_DE_TENTATIVES };
 
   const supabase = await supabaseServer();
+  const avantAppel = Date.now();
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -145,11 +155,12 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
   });
   if (error) return { error: error.message };
 
-  // Le mot de passe n'est « choisi ici » que si le compte vient de naître : un compte déjà là et non confirmé (inscrit
-  // plus tôt, peut-être par un tiers) garde l'ancien mot de passe chez Supabase, qui sera donc remplacé par un aléa à la
-  // confirmation (lib/auth-arrivee.ts). Un compte confirmé déjà là répond comme un nouveau (Supabase masque) : sans effet.
+  // Le mot de passe n'est « choisi ici » que si le compte est né de CET appel (créé après l'heure lue juste avant) : un
+  // compte déjà là et non confirmé (inscrit plus tôt, même une minute avant, peut-être par un tiers) garde l'ancien mot
+  // de passe chez Supabase, qui sera donc remplacé par un aléa à la confirmation (lib/auth-arrivee.ts). Un compte
+  // confirmé déjà là répond comme un nouveau (Supabase masque) : sans effet.
   const cree = Date.parse(data.user?.created_at ?? "");
-  const neuf = Number.isFinite(cree) && Math.abs(Date.now() - cree) < 120_000;
+  const neuf = Number.isFinite(cree) && cree >= avantAppel - DECALAGE_HORLOGES_MS && cree <= Date.now() + DECALAGE_HORLOGES_MS;
   await noterDemande(email, neuf ? "mdp" : "lien", newsletter);
   // Sans confirmation d'e-mail (réglage Supabase), la session est ouverte ici même, dans ce navigateur : le consentement aussi.
   if (data.session && newsletter) {
@@ -158,13 +169,19 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
     } catch { /* consentement non enregistré : la case reste à cocher plus tard */ }
   }
 
-  await journaliser("inscription", { userId: data.user?.id, email });
+  // Compte pas encore confirmé, adresse peut-être celle d'un tiers : l'empreinte seulement (l'adresse est écrite à
+  // l'arrivée confirmée, lib/auth-arrivee.ts).
+  await journaliser("inscription", { userId: data.user?.id, payload: { methode: "mot_de_passe", empreinte: empreinteAdresse(email) } });
   // `compte_cree` part d'ICI, là où le fait est établi, et non d'une page d'atterrissage.
   // `confirme` distingue les deux issues ci-dessous : compte utilisable tout de suite, ou
   // compte en attente d'un clic dans un email — c'est-à-dire un visiteur qui quitte le site.
   await suivreServeur("compte_cree", { confirme: !!data.session, destination: dest, methode: "mot_de_passe" });
-  // Selon la config Supabase : si la confirmation email est requise, pas de session tout de suite.
-  if (data.session) redirect(dest);
+  // Selon la config Supabase : si la confirmation email est requise, pas de session tout de suite. Ouverte ici, par la
+  // personne elle-même : une arrivée « à vérifier » d'avant ne la concerne plus.
+  if (data.session) {
+    await oublierVerification();
+    redirect(dest);
+  }
   // La confirmation d'email étant active, cet écran est la pièce maîtresse du parcours d'achat :
   // c'est le seul moment où le visiteur doit quitter le site. Le lien de l'email OUVRE la session
   // et le ramène à `dest` (cf. emailRedirectTo ci-dessus) — lui dire « puis connecte-toi »
@@ -241,7 +258,8 @@ export async function envoyerLienAcces(_prev: LienState, formData: FormData): Pr
  * Connexion forcée (un lien relayé par quelqu'un d'autre ouvrirait SA session ici, et l'estimation de ce navigateur
  * partirait dans son compte) : si ce navigateur n'a demandé aucun lien pour cette adresse (cookie `av-demande`), ou si
  * une autre session y était ouverte, l'arrivée est « à vérifier » : /auth/verifier montre l'adresse du compte ouvert,
- * « Continuer » ou « Ce n'est pas moi », et rien n'est rangé dans le compte avant ce choix (proxy).
+ * « Oui, c'est mon compte » ou « Ce n'est pas moi », et rien n'est rangé dans le compte avant ce choix, si longtemps
+ * qu'il se fasse attendre (proxy ; la marque dure autant que la session, lib/auth-verifier.ts).
  */
 export async function confirmerLien(): Promise<void> {
   const cookieStore = await cookies();
@@ -262,9 +280,10 @@ export async function confirmerLien(): Promise<void> {
       await controlerArrivee(supabase, user, demande);
       await noterArrivee(supabase, user, lien.next);
       const autreSession = !!avant && avant !== user?.id;
-      if (!demande || autreSession) {
-        cookieStore.set(COOKIE_VERIFIER, "1", { path: "/", maxAge: DUREE_VERIFIER_S, httpOnly: true, sameSite: "lax", secure: await enHttps() });
-        await journaliser("arrivee_a_verifier", { userId: user?.id, payload: { type: lien.type, autreSession } });
+      if (user && (!demande || autreSession)) {
+        // La marque porte le compte ouvert et dure autant que la session (lib/auth-verifier.ts).
+        cookieStore.set(COOKIE_VERIFIER, user.id, optionsMarque(await enHttps()));
+        await journaliser("arrivee_a_verifier", { userId: user.id, payload: { type: lien.type, autreSession } });
         redirect(`/auth/verifier?next=${encodeURIComponent(lien.next)}`);
       }
       await oublierVerification();
@@ -278,7 +297,7 @@ export async function confirmerLien(): Promise<void> {
 
 // ── /auth/verifier : « C'est bien ton compte ? » ──
 
-/** « Oui, continuer » : l'arrivée est vérifiée, l'intention (assainie, hors /auth). */
+/** « Oui, c'est mon compte » : l'arrivée est vérifiée, l'intention (assainie, hors /auth). */
 export async function continuerArrivee(formData: FormData): Promise<void> {
   await oublierVerification();
   redirect(suiteVerification(String(formData.get("next") ?? "")));
