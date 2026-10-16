@@ -420,10 +420,10 @@ describe("envoyerLienAcces : le lien d'accès (aucun e-mail réel)", () => {
     // Le journal ne garde que l'empreinte de l'adresse (elle peut être celle d'un tiers).
     expect(S.journal).toEqual([["lien_acces_demande", { payload: { page: "inscription", issue: "envoye", empreinte: empreinteAdresse("camille@exemple.fr") } }]]);
     expect(JSON.stringify(S.journal)).not.toMatch(/camille|exemple/i);
-    // La trace de ce navigateur : httpOnly, chemin /auth, 24 h ; l'empreinte, jamais l'adresse.
+    // La trace de ce navigateur : httpOnly, chemin / (relue par les actions de /inscription et /connexion), 24 h ; l'empreinte, jamais l'adresse.
     expect(demandeIci("camille@exemple.fr")).toEqual({ e: empreinteAdresse("camille@exemple.fr"), m: "lien", t: SEC });
     const pose = S.poses.find(([n]) => n === COOKIE_DEMANDE);
-    expect(pose?.[2]).toMatchObject({ httpOnly: true, sameSite: "lax", secure: true, path: "/auth", maxAge: 86_400 });
+    expect(pose?.[2]).toMatchObject({ httpOnly: true, sameSite: "lax", secure: true, path: "/", maxAge: 86_400 });
     expect(pose?.[1]).not.toMatch(/camille|exemple/i);
     // La création du compte n'est pas connue ici (pas d'énumération) : `compte_cree` part de /auth/callback.
     expect(S.mesures).toEqual([]);

@@ -80,7 +80,9 @@ async function noterDemande(email: string, m: MethodeDemande, newsletter = false
   const v = ajouterDemande(cookieStore.get(COOKIE_DEMANDE)?.value, {
     e: empreinteAdresse(email), m, t: Math.floor(Date.now() / 1000), ...(newsletter ? { n: true as const } : {}),
   });
-  cookieStore.set(COOKIE_DEMANDE, v, { httpOnly: true, sameSite: "lax", secure: await enHttps(), path: "/auth", maxAge: DUREE_DEMANDE_S });
+  /* chemin « / » : les actions qui l'écrivent sont envoyées sur /inscription et /connexion ; sur « /auth », le navigateur ne
+     la leur renverrait pas, et chaque demande repartirait d'une trace vide (2e adresse, mot de passe choisi ici puis lien) */
+  cookieStore.set(COOKIE_DEMANDE, v, { httpOnly: true, sameSite: "lax", secure: await enHttps(), path: "/", maxAge: DUREE_DEMANDE_S });
 }
 
 /**
