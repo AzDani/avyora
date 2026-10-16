@@ -17,15 +17,19 @@ import { CountUp } from "./estimateur/CountUp";
 import { Row } from "./estimateur/Row";
 import { fmt, Field, Stepper, CustomLines } from "./estimateur/partage";
 import {
-  CATALOG, PHASES, ICON, LOC, defaultCtx, key, isLoc, visible, visibleTask,
-  nbFen, nbPieces, deriveSol, autoQty, isAuto, qtyOf, effRate, lotHT,
-  totals, buildDevis, regionCoef, piecesEff, sdbEff, customLotHT, customTotals, totauxAvecPerso, tauxPerso, tauxPersoPossibles, ESPACES,
-  espacesCompo, selectedEspaces,
+  CATALOG, PHASES, ICON, key, isLoc, visible, visibleTask, lotHT,
+  totals, buildDevis, regionCoef, customLotHT, customTotals, totauxAvecPerso, tauxPerso, tauxPersoPossibles, ESPACES,
   type Ctx, type Selection, type TypeBien, type Finition, type Lot, type Tache, type CustomLine,
 } from "@/lib/estimateur";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { catT } from "@/lib/estimateur/catalog-i18n";
 import { CLE_BROUILLON_RENO, CLE_BROUILLON_DETAIL_RENO, CLE_RECLAMATION_RENO, brouillonDetailleReno } from "@/lib/estimateur/brouillon-reno";
+import {
+  etatDepuis, etatVierge, projetReno, ouvertureDetailReno, majNombre, majSol, majType, pasCtx, compteurPiece, pasPiece,
+  choisirPerimetre, basculerEspace, ajouterExemplaire, retirerExemplaire, surfaceExemplaire, majZone, basculerDressing, recapReno,
+  majLigne, cocherReno, basculerAuto, ligneQuantite, lignePrix, ligneMateriaux, manqueReno, nomProjetReno, corpsProjetReno,
+  type EtatReno, type PieceDetail,
+} from "@/lib/estimateur/detaille-reno";
 
 // Noms des espaces (mode périmètre) traduits pour l'affichage (le FR reste la donnée).
 const ESPACE_EN: Record<string, string> = {
@@ -37,18 +41,18 @@ const espaceNom = (locale: string, nom: string) => (locale === "en" ? ESPACE_EN[
 const DRAFT_KEY = CLE_BROUILLON_RENO;               // brouillon partagé (mode rapide) — sert de graine « infos du bien »
 const DRAFT_KEY_DETAIL = CLE_BROUILLON_DETAIL_RENO; // brouillon PROPRE au détaillé : ne récupère PAS les postes cochés du rapide
 
-type Persisted = { v?: string; ctx?: Partial<Ctx>; sel?: Selection; open?: Record<string, boolean>; codePostal?: string; statuts?: Record<string, number>; custom?: CustomLine[] };
-
 export default function Estimateur({ initialState, projectId }: { initialState?: Record<string, unknown>; projectId?: string } = {}) {
   const router = useRouter();
   const edition = !!projectId;
 
-  const [ctx, setCtx] = useState<Ctx>(defaultCtx);
-  const [sel, setSel] = useState<Selection>({});
-  const [open, setOpen] = useState<Record<string, boolean>>({});
-  const [codePostal, setCodePostal] = useState("");
+  // Projet rouvert (« Modifier ») : son état dès le premier rendu, celui du serveur compris.
+  const [depart] = useState<EtatReno>(() => etatDepuis(projetReno(initialState)) ?? etatVierge());
+  const [ctx, setCtx] = useState<Ctx>(depart.ctx);
+  const [sel, setSel] = useState<Selection>(depart.sel);
+  const [open, setOpen] = useState<Record<string, boolean>>(depart.open);
+  const [codePostal, setCodePostal] = useState(depart.codePostal);
   const [view, setView] = useState<"saisie" | "devis">("saisie");
-  const [custom, setCustom] = useState<CustomLine[]>([]);
+  const [custom, setCustom] = useState<CustomLine[]>(depart.custom);
   // TVA par défaut selon le régime du projet (`tauxPerso`) : 20 % en « Neuf / −2 ans / local pro », 10 % sinon.
   const addCustom = (lot: string) => setCustom((p) => [...p, { id: (crypto.randomUUID?.() ?? String(Date.now() + Math.random())), lot, nom: "", prix: 0, unite: "u", qte: 1, note: "", tva: tauxPerso(ctx), on: true, draft: true }]);
   const updCustom = (id: string, patch: Partial<CustomLine>) => setCustom((p) => p.map((x) => (x.id === id ? { ...x, ...patch } : x)));
@@ -58,20 +62,14 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
   const hydrated = useRef(false);
   const statutsRef = useRef<Record<string, number> | undefined>(undefined); // suivi de chantier à préserver en modif
 
-  // Hydratation initiale : édition (initialState) prioritaire, sinon brouillon local.
+  /* Hydratation : un projet rouvert est déjà posé (premier rendu) ; sinon « Nouveau projet », « Affiner »
+     ou le brouillon du détaillé (`ouvertureDetailReno`). */
+  function poser(e: EtatReno) { setCtx(e.ctx); setSel(e.sel); setOpen(e.open); setCodePostal(e.codePostal); setCustom(e.custom); }
   useEffect(() => {
     if (hydrated.current) return;
     hydrated.current = true;
-    const load = (d: Persisted | null) => {
-      if (!d) return false;
-      if (d.ctx) setCtx({ ...defaultCtx(), ...d.ctx });
-      if (d.sel) setSel(d.sel);
-      if (d.open) setOpen(d.open);
-      if (d.codePostal) setCodePostal(d.codePostal);
-      if (d.custom) setCustom(d.custom);
-      return true;
-    };
-    if (initialState && (initialState as Persisted).v === "estimateur") { statutsRef.current = (initialState as Persisted).statuts; load(initialState as Persisted); return; }
+    const projet = projetReno(initialState);
+    if (projet) { statutsRef.current = projet.statuts; return; }
 
     // Signaux de « démarrage frais » : lien Nouveau projet (?new=1) ou retour d'« Affiner » (rapide → détaillé).
     // « Affiner » se dit par sessionStorage dans le même onglet, ou par ?affiner=1 quand le visiteur est passé
@@ -89,22 +87,14 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
       }
     } catch { /* noop */ }
 
-    if (isNew || fromAffiner) {
-      // Nouveau projet → page VIERGE (rien coché, aucun résidu). « Affiner » récupère UNIQUEMENT les infos du bien.
-      try { localStorage.removeItem(DRAFT_KEY_DETAIL); } catch { /* noop */ }
-      if (fromAffiner) {
-        try {
-          const seed = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null") as Persisted | null;
-          if (seed?.ctx) setCtx({ ...defaultCtx(), ...seed.ctx });
-          if (seed?.codePostal) setCodePostal(seed.codePostal);
-        } catch { /* noop */ }
-      }
-      return;
-    }
-
-    // Sinon : reprise d'un travail en cours (rafraîchissement / retour navigateur) sur le même projet.
-    try { if (load(JSON.parse(localStorage.getItem(DRAFT_KEY_DETAIL) || "null"))) return; } catch { /* noop */ }
-    // Première visite sans brouillon en cours : page vierge (on ne sème plus une estimation rapide périmée hors « Affiner »).
+    // Nouveau projet → page VIERGE (rien coché, aucun résidu). « Affiner » récupère UNIQUEMENT les infos du bien.
+    // Sinon : reprise d'un travail en cours (rafraîchissement / retour navigateur) sur le même projet ; sans brouillon,
+    // page vierge (on ne sème plus une estimation rapide périmée hors « Affiner »).
+    let graine: string | null = null, brouillon: string | null = null;
+    try { graine = localStorage.getItem(DRAFT_KEY); brouillon = localStorage.getItem(DRAFT_KEY_DETAIL); } catch { /* noop */ }
+    const o = ouvertureDetailReno({ nouveau: isNew, affiner: fromAffiner, graine, brouillon });
+    if (o.effacer) { try { localStorage.removeItem(DRAFT_KEY_DETAIL); } catch { /* noop */ } }
+    if (o.etat) poser(o.etat);
   }, [initialState]);
 
   // Sauvegarde brouillon local.
@@ -120,135 +110,45 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
   const reg = regionCoef(codePostal);
   const locale = useLocale();
 
-  // ── Mises à jour du contexte ──────────────────────────────────────────────
+  // ── Mises à jour du contexte (règles : `lib/estimateur/detaille-reno.ts`) ─────────────────
   function patchCtx(p: Partial<Ctx>) { setCtx((c) => ({ ...c, ...p })); }
-  function onNum(field: keyof Ctx, raw: string) {
-    const val = parseFloat(raw) || 0;
-    setCtx((c) => {
-      const next = { ...c, [field]: val } as Ctx;
-      if ((field === "surface" || field === "niveaux") && !next.surfaceSolManual) next.surfaceSol = deriveSol(next);
-      return next;
-    });
-  }
-  function onSol(raw: string) { patchCtx({ surfaceSol: parseFloat(raw) || 0, surfaceSolManual: true }); }
-  function onType(t: TypeBien) { patchCtx({ type: t, pieces: nbPieces(t), fenetres: nbFen(t) }); }
-  // ── Mode « pièces ciblées » : plusieurs pièces, chacune ×N à S m² (compat ancien champ `espace`) ──
-  // Carte {clé espace → {n, s}} courante, reconstruite depuis l'ancien champ `espace` si besoin.
-  // Carte {clé → surfaces[]} courante, normalisée depuis n'importe quel format stocké (arrays, ancien {n,s}, ancien `espace`).
-  function espMap(): Record<string, number[]> {
-    const m: Record<string, number[]> = {};
-    for (const e of selectedEspaces(ctx)) m[e.k] = [...e.surfaces];
-    return m;
-  }
-  // Applique une sélection : cas « suite seule » = ancien éditeur de zones ; sinon compo multi (sommes).
-  function applyEspaces(map: Record<string, number[]>) {
-    const keys = Object.keys(map);
-    if (!keys.length) return;
-    if (keys.length === 1 && keys[0] === "suite" && (map.suite?.length ?? 0) === 1) {
-      const e = ESPACES.suite;
-      patchCtx({ perimetre: "piece", type: "Maison", espaces: undefined, espace: "suite", surface: e.surface, surfaceSol: e.surface, surfaceSolManual: true, ...e.ctx });
-    } else {
-      patchCtx({ perimetre: "piece", type: "Maison", espace: undefined, espaces: map, ...espacesCompo(map) });
-    }
-  }
-  function onPerimetre(m: "entier" | "piece") {
-    if (m === "entier") { patchCtx({ perimetre: "entier", espace: undefined, espaces: undefined }); return; }
-    const cur = espMap();
-    applyEspaces(Object.keys(cur).length ? cur : { chambre: [ESPACES.chambre.surface] });
-  }
-  function toggleEspace(k: string) {
-    const m = espMap();
-    if (m[k]) { if (Object.keys(m).length === 1) return; delete m[k]; } // on garde toujours au moins une pièce
-    else m[k] = [ESPACES[k]?.surface ?? 12];
-    applyEspaces(m);
-  }
-  function addInstance(k: string) {
-    const m = espMap(); if (!ESPACES[k]) return;
-    m[k] = [...(m[k] || []), ESPACES[k].surface]; // un exemplaire de plus (ex. 2e SDB), à sa propre surface
-    applyEspaces(m);
-  }
-  function removeInstance(k: string, i: number) {
-    const m = espMap(); if (!m[k]) return;
-    m[k] = m[k].filter((_, j) => j !== i);
-    if (!m[k].length) { if (Object.keys(m).length === 1) m[k] = [ESPACES[k].surface]; else delete m[k]; }
-    applyEspaces(m);
-  }
-  function setInstanceS(k: string, i: number, val: number) {
-    const m = espMap(); if (!m[k]) return;
-    m[k] = m[k].map((s, j) => (j === i ? Math.max(1, Math.round(val) || 1) : s));
-    applyEspaces(m);
-  }
-  // Suite parentale : surface totale = somme des zones (chambre + SDB + dressing éventuel).
-  function syncSuite(next: Ctx): Ctx {
-    next.surface = (next.zChambre ?? 0) + (next.zSdb ?? 0) + (next.avecDressing ? (next.zDressing ?? 0) : 0);
-    next.surfaceSol = next.surface; next.surfaceSolManual = true;
-    return next;
-  }
-  function setZone(z: "zChambre" | "zSdb" | "zDressing", delta: number) {
-    setCtx((c) => syncSuite({ ...c, [z]: Math.max(z === "zSdb" ? 2 : 1, ((c[z] as number | undefined) ?? 0) + delta) } as Ctx));
-  }
-  function toggleDressing() { setCtx((c) => syncSuite({ ...c, avecDressing: !c.avecDressing } as Ctx)); }
-  // Compteur simple d'un champ de ctx (niveaux, sdb, wc, fenetres).
-  function stepCtx(field: keyof Ctx, delta: number, min: number) { patchCtx({ [field]: Math.max(min, ((ctx[field] as number) || 0) + delta) } as Partial<Ctx>); }
-  // Compteurs du détail des pièces : on matérialise tout le détail puis on applique le delta.
-  const BD_KEYS = ["sejour", "cuisine", "chambres", "suites", "couloir", "buanderie"] as const;
-  const BD_DEF: Record<string, number> = { sejour: 1, cuisine: 1, chambres: 3, suites: 0, couloir: 1, buanderie: 0 };
-  const bd = (f: (typeof BD_KEYS)[number]) => (ctx[f] as number | undefined) ?? BD_DEF[f];
-  function stepBd(f: (typeof BD_KEYS)[number], delta: number, min: number) {
-    const cur: Record<string, number> = {};
-    for (const k of BD_KEYS) cur[k] = (ctx[k] as number | undefined) ?? BD_DEF[k];
-    cur[f] = Math.max(min, cur[f] + delta);
-    patchCtx(cur as Partial<Ctx>);
-  }
+  const onNum = (field: keyof Ctx, raw: string) => setCtx((c) => majNombre(c, field, raw));
+  const onSol = (raw: string) => setCtx((c) => majSol(c, raw));
+  const onType = (t: TypeBien) => setCtx((c) => majType(c, t));
+  // Mode « pièces ciblées » : plusieurs pièces, chacune ×N à S m² ; une suite parentale seule a ses zones.
+  const onPerimetre = (m: "entier" | "piece") => setCtx((c) => choisirPerimetre(c, m));
+  const toggleEspace = (k: string) => setCtx((c) => basculerEspace(c, k));
+  const addInstance = (k: string) => setCtx((c) => ajouterExemplaire(c, k));
+  const removeInstance = (k: string, i: number) => setCtx((c) => retirerExemplaire(c, k, i));
+  const setInstanceS = (k: string, i: number, val: number) => setCtx((c) => surfaceExemplaire(c, k, i, val));
+  const setZone = (z: "zChambre" | "zSdb" | "zDressing", delta: number) => setCtx((c) => majZone(c, z, delta));
+  const toggleDressing = () => setCtx(basculerDressing);
+  // Compteurs : un champ du contexte (niveaux, sdb, wc, fenetres) ou une pièce du détail.
+  const stepCtx = (field: keyof Ctx, delta: number, min: number) => setCtx((c) => pasCtx(c, field, delta, min));
+  const bd = (f: PieceDetail) => compteurPiece(ctx, f);
+  const stepBd = (f: PieceDetail, delta: number, min: number) => setCtx((c) => pasPiece(c, f, delta, min));
 
   // ── Mises à jour de la sélection ──────────────────────────────────────────
-  function upd(c: string, n: string, patch: (s: Selection[string]) => Selection[string]) {
-    setSel((prev) => { const k = key(c, n); return { ...prev, [k]: patch(prev[k] || {}) }; });
-  }
-  function toggleCheck(l: Lot, t: Tache) {
-    upd(l.c, t.n, (s) => {
-      const on = !s.on;
-      const next = { ...s, on };
-      /* Cocher une ligne, c'est en demander au moins une. Sans quantité automatique — c'est le
-         cas de TOUT le lot menuiseries extérieures — la ligne restait à 0 € jusqu'à ce qu'on
-         tape un nombre : cocher « Baie vitrée » n'ajoutait rien, et la poche du galandage, qui
-         suit la baie, n'ajoutait rien non plus. Une ligne cochée qui ne coûte rien ressemble à
-         une panne. Les postes à quantité automatique ne sont pas touchés : la leur est calculée. */
-      if (on && next.qty == null && (isLoc(l.c) || !isAuto(ctx, l.c, t.n))) next.qty = 1;
-      return next;
-    });
-  }
-  function toggleAuto(l: Lot, t: Tache) {
-    upd(l.c, t.n, (s) => {
-      const manual = !s.manual;
-      const next = { ...s, manual };
-      if (manual && next.qty == null) next.qty = autoQty(ctx, l.c, t.n, sel) ?? 0;
-      return next;
-    });
-  }
+  const upd = (c: string, n: string, patch: (s: Selection[string]) => Selection[string]) => setSel((prev) => majLigne(prev, c, n, patch));
+  const toggleCheck = (l: Lot, t: Tache) => setSel((prev) => cocherReno(ctx, prev, l, t));
+  const toggleAuto = (l: Lot, t: Tache) => setSel((prev) => basculerAuto(ctx, prev, l, t));
   function reset() {
     try { localStorage.removeItem(DRAFT_KEY_DETAIL); } catch { /* noop */ }
-    setCtx(defaultCtx()); setSel({}); setOpen({}); setCodePostal(""); setCustom([]); setView("saisie");
+    poser(etatVierge()); setView("saisie");
   }
 
   // ── Sauvegarde projet ─────────────────────────────────────────────────────
   async function enregistrer() {
     setErreur(null);
-    if (!/^\d{5}$/.test(codePostal)) { setErreur("Renseignez un code postal (5 chiffres) dans « Votre projet »."); setView("saisie"); return; }
-    if (!(ctx.surface > 0)) { setErreur("Renseignez la surface habitable."); setView("saisie"); return; }
+    const manque = manqueReno(ctx, codePostal);
+    if (manque) { setErreur(manque === "cp" ? "Renseignez un code postal (5 chiffres) dans « Votre projet »." : "Renseignez la surface habitable."); setView("saisie"); return; }
     setSaving(true);
-    const espLabel = ctx.perimetre === "piece"
-      ? selectedEspaces(ctx).map(({ k, surfaces }) => `${surfaces.length > 1 ? surfaces.length + " " : ""}${ESPACES[k]?.nom ?? k}`).join(" + ")
-      : "";
-    const nom = (espLabel
-      ? `Rénovation — ${espLabel} · ${ctx.surface} m²`
-      : `Rénovation — ${ctx.type} ${ctx.surface} m²`).slice(0, 110);
-    const reponses = { v: "estimateur", mode: "detaille", ctx: ctxR, sel, codePostal, custom, ...(statutsRef.current ? { statuts: statutsRef.current } : {}) };
+    const nom = nomProjetReno(ctx);
     try {
       const res = await fetch(edition ? `/api/projects/${projectId}` : "/api/projects", {
         method: edition ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nom, typeBien: ctx.type, surface: ctx.surface, codePostal, reponses }),
+        body: JSON.stringify(corpsProjetReno({ nom, ctx: ctxR, sel, codePostal, custom, statuts: statutsRef.current })),
       });
       if (res.status === 401) {
         // Le brouillon COMPLET d'abord (postes, lignes perso, nom), le drapeau ensuite : sans lui,
@@ -268,17 +168,13 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
   }
 
   // ── Récap du bien ─────────────────────────────────────────────────────────
-  const appart = ctx.type !== "Maison";
-  const piece = ctx.perimetre === "piece";
-  const suite = piece && ctx.espace === "suite";
-  const espSel = piece ? selectedEspaces(ctx) : [];
+  const r = recapReno(ctx);
+  const { appart, piece, suite } = r;
+  const espSel = r.espaces;
   const espKeys = new Set(espSel.map((e) => e.k));
-  const espTotal = espSel.reduce((sum, e) => sum + e.surfaces.reduce((a, b) => a + b, 0), 0);
-  const pTot = piecesEff(ctx), sdbTot = sdbEff(ctx);
-  const SS = ctx.surfaceSol || ctx.surface;
-  const facade = Math.round(4 * Math.sqrt(SS) * ctx.hauteur * (ctx.niveaux || 1) * 1.25);
-  const roof = Math.round(SS * 1.4);
-  const etage = Math.max(0, ctx.surface - SS);
+  const espTotal = r.espacesSurface;
+  const pTot = r.pieces, sdbTot = r.sdb;
+  const SS = r.emprise, facade = r.facade, roof = r.toiture, etage = r.etage;
 
   const budget = ctx.budget;
   const over = budget > 0 && tot.ttc > budget;
@@ -481,7 +377,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                                 onChoice={(self) => upd(l.c, t.n, (s) => ({ ...s, self }))}
                                 onAuto={() => toggleAuto(l, t)}
                                 /* D12 : corriger une quantité à la main épingle la ligne — le plan cesse de l'alimenter. */
-                                onQty={(v) => upd(l.c, t.n, (s) => ({ ...s, qty: v, manual: isAuto(ctx, l.c, t.n) ? true : s.manual, plan: undefined }))}
+                                onQty={(v) => upd(l.c, t.n, ligneQuantite(ctx, l, t, v))}
                                 onMat={(m) => upd(l.c, t.n, (s) => ({ ...s, mat: m }))}
                                 onVit={(v) => upd(l.c, t.n, (s) => ({ ...s, vit: v }))}
                                 onMot={(m) => upd(l.c, t.n, (s) => ({ ...s, mot: m }))}
@@ -493,8 +389,8 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                                    baie, donc rien de visible là où on clique. */
                                 onVar={(g, o) => upd(l.c, t.n, (s) => ({ ...s, vsel: { ...(s.vsel || {}), [g]: o } }))}
                                 onNote={(v) => upd(l.c, t.n, (s) => ({ ...s, note: v }))}
-                                onPu={(v) => upd(l.c, t.n, (s) => { const n = { ...s }; if (v == null) delete n.pu; else n.pu = v; return n; })}
-                                onPm={(v) => upd(l.c, t.n, (s) => { const n = { ...s }; if (v == null) delete n.pm; else { n.pm = v; delete n.pu; } return n; })}
+                                onPu={(v) => upd(l.c, t.n, lignePrix(v))}
+                                onPm={(v) => upd(l.c, t.n, ligneMateriaux(v))}
                               />
                             ))}
                             {canCustom && (
@@ -553,7 +449,7 @@ const FINIS: { v: Finition; lvl: number; eye: string; label: string; desc: strin
   { v: "premium", lvl: 3, eye: "Haut de gamme", label: "Premium", desc: "Matériaux nobles : parquet, grand format, cuisine équipée haut de gamme." },
 ];
 
-function DevisView({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Selection; custom?: CustomLine[] }) {
+export function DevisView({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Selection; custom?: CustomLine[] }) {
   const dv = useMemo(() => buildDevis(CATALOG, ctx, sel), [ctx, sel]);
   const { totaux: t0, bilan: b, lots, lignes } = dv;
   // Le total du projet, lignes perso comprises : le même calcul partout (`totauxAvecPerso`, D8).
