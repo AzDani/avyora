@@ -13,14 +13,20 @@ const fr = {
   sansTva: "sans TVA",
   pctTravaux: "% des travaux",
   pctProjet: "% du projet",
-  /* Ligne de l'estimateur : un poste réservé aux pros, et l'avertissement d'un poste de structure
-     ou de clos-couvert passé en « Je le fais ». */
+  /* Ligne de l'estimateur (rénovation comme neuf) : un poste réservé aux pros, l'avertissement d'un
+     poste de structure ou de clos-couvert passé en « Je le fais » (D4), et ce qu'un pro doit encore
+     faire sur une PAC, une climatisation ou une borne prise soi-même (D2). */
   proOblig: "Pro obligatoire",
   raisonsPro: {
     concessionnaire: "gestionnaire du réseau", etude: "mission d'expert", controle: "contrôle ou attestation",
     fluides: "fluides frigorigènes", reglementaire: "installateur qualifié", procede: "machine spécialisée",
   } as Record<string, string>,
   horsDecennale: "Fait soi-même : hors garantie décennale. Vérifie avec ton assureur dommages-ouvrage.",
+  horsDecennaleReno: "Fait soi-même : hors garantie décennale. Vérifie avec ton assureur ; pour un mur porteur ou une charpente, une étude est conseillée.",
+  mentionsSoiMeme: {
+    fluides: "Manipulation du fluide frigorigène : attestation de capacité requise pour la mise en service.",
+    irve: "Borne de plus de 3,7 kW : pose par un installateur qualifié IRVE exigée (décret 2017-26).",
+  } as Record<string, string>,
   maisonNiveaux: { pp: "Maison plain-pied", etage: "Maison à étage", combles: "Maison avec combles aménagés" } as Record<string, string>,
   /* Affichage d'un projet neuf : fiche, suivi, résultat rapide, PDF, liste. */
   badgeEstim: "Estimation · construction neuve",
@@ -58,6 +64,11 @@ const en: typeof fr = {
     fluides: "refrigerant handling", reglementaire: "certified installer", procede: "specialist machinery",
   } as Record<string, string>,
   horsDecennale: "DIY: not covered by the 10-year structural warranty. Check with your structural defects insurer.",
+  horsDecennaleReno: "DIY: not covered by the 10-year structural warranty. Check with your insurer; for a load-bearing wall or roof framing, an engineering study is recommended.",
+  mentionsSoiMeme: {
+    fluides: "Refrigerant handling: a certified technician (attestation de capacité) is required to commission the system.",
+    irve: "Charger over 3.7 kW: installation by an IRVE-certified electrician is required (decree 2017-26).",
+  } as Record<string, string>,
   maisonNiveaux: { pp: "Single-storey house", etage: "Two-storey house", combles: "House with converted attic" } as Record<string, string>,
   badgeEstim: "Estimate · new build",
   maisonNeuve: "New house",

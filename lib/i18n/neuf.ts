@@ -91,7 +91,7 @@ const fr = {
     quis: {
       pros: { eye: "Clé en main", label: "Tout fait faire", desc: "Un artisan pour chaque lot, avec sa garantie décennale. Tu coordonnes, ils construisent." },
       partie: { eye: "Le bon compromis", label: "J'en fais une partie", desc: "Tu prends la peinture, les sols, la plâtrerie ou l'isolation ; les artisans font le reste." },
-      max: { eye: "Budget mini", label: "Je fais le maximum", desc: "Tout ce qui se fait soi-même. La structure, le toit, les menuiseries extérieures, les branchements et la pompe à chaleur restent aux pros dans cette estimation ; dans le détaillé, tu peux prendre toi-même la structure, le toit et les menuiseries, poste par poste." },
+      max: { eye: "Budget mini", label: "Je fais le maximum", desc: "Tout ce qui se fait soi-même. La structure, le toit, les menuiseries extérieures, les branchements et la pompe à chaleur restent aux pros dans cette estimation ; dans le détaillé, tu peux les prendre toi-même poste par poste, sauf les raccordements faits par le gestionnaire du réseau." },
     } as Record<string, { eye: string; label: string; desc: string }>,
     q4: "Pour finir",
     facultatif: "facultatif",
@@ -180,7 +180,7 @@ const fr = {
     budgetMax: "Budget max",
     facultatif: "facultatif",
     aleasL: "Provision aléas",
-    intro: "Ouvre une phase, puis un lot : coche les postes, ajuste les quantités. Prix affichés HT ; les taxes et l'assurance n'ont pas de TVA. Sur chaque poste faisable soi-même, maçonnerie et charpente comprises, choisis « Fait faire » ou « Je le fais » ; les postes réservés aux pros (branchements, études, contrôles, pompe à chaleur) l'indiquent.",
+    intro: "Ouvre une phase, puis un lot : coche les postes, ajuste les quantités. Prix affichés HT ; les taxes et l'assurance n'ont pas de TVA. Sur chaque poste faisable soi-même, maçonnerie, charpente et pompe à chaleur comprises, choisis « Fait faire » ou « Je le fais » ; les postes réservés aux pros (branchements au réseau, études, contrôles) l'indiquent.",
     /* « Qui réalise », sorti du questionnaire (N3) : un réglage pour les postes cochés ensuite, et
        une action confirmée qui réécrit les lignes déjà cochées. « Je le fais » = mode « le maximum ». */
     nouveauxL: "Nouveaux postes cochés :",
@@ -188,7 +188,7 @@ const fr = {
     jeLeFais: "Je le fais",
     nouveauxAide: {
       pros: "Les postes que tu coches ensuite, à la main ou par une réponse, arrivent en « Fait faire ». Les lignes déjà cochées gardent leur choix.",
-      max: "Les postes que tu coches ensuite arrivent en « Je le fais » quand c'est possible, sauf la structure, le toit, les menuiseries extérieures et les branchements, à prendre toi-même ligne par ligne. Les lignes déjà cochées gardent leur choix.",
+      max: "Les postes que tu coches ensuite arrivent en « Je le fais » quand c'est possible, sauf la structure, le toit, les menuiseries extérieures, les branchements, la pompe à chaleur, la climatisation et la borne de recharge, à prendre toi-même ligne par ligne. Les lignes déjà cochées gardent leur choix.",
       partie: "Réglage actuel : « J'en fais une partie ». Les postes de peinture, de sols, de plâtrerie et d'isolation que tu coches ensuite arrivent en « Je le fais », les autres en « Fait faire ». Les lignes déjà cochées gardent leur choix.",
     } as Record<string, string>,
     toutPasser: "Tout passer en…",
@@ -324,7 +324,7 @@ const en: typeof fr = {
     quis: {
       pros: { eye: "Turnkey", label: "All done by pros", desc: "A tradesperson for each trade, with their 10-year warranty. You coordinate, they build." },
       partie: { eye: "The sweet spot", label: "I do some of it", desc: "You take on painting, floors, plastering or insulation; the trades do the rest." },
-      max: { eye: "Minimum budget", label: "I do as much as I can", desc: "Everything you can do yourself. Structure, roof, exterior doors and windows, utility connections and the heat pump stay with the pros in this estimate; in the detailed estimate, you can take on the structure, roof, doors and windows yourself, item by item." },
+      max: { eye: "Minimum budget", label: "I do as much as I can", desc: "Everything you can do yourself. Structure, roof, exterior doors and windows, utility connections and the heat pump stay with the pros in this estimate; in the detailed estimate, you can take them on yourself item by item, except the connections made by the utility company." },
     } as Record<string, { eye: string; label: string; desc: string }>,
     q4: "To finish",
     facultatif: "optional",
@@ -411,13 +411,13 @@ const en: typeof fr = {
     budgetMax: "Max budget",
     facultatif: "optional",
     aleasL: "Contingency",
-    intro: "Open a phase, then a trade: tick the items, adjust quantities. Prices shown excl. VAT; taxes and insurance carry no VAT. On each item you can do yourself, masonry and framing included, choose “Hire out” or “DIY”; items reserved for pros (connections, studies, inspections, heat pump) say so.",
+    intro: "Open a phase, then a trade: tick the items, adjust quantities. Prices shown excl. VAT; taxes and insurance carry no VAT. On each item you can do yourself, masonry, framing and heat pump included, choose “Hire out” or “DIY”; items reserved for pros (utility connections, studies, inspections) say so.",
     nouveauxL: "Newly ticked items:",
     faitFaire: "Hire out",
     jeLeFais: "DIY",
     nouveauxAide: {
       pros: "Items you tick from now on, by hand or through an answer, come in as “Hire out”. Lines already ticked keep their choice.",
-      max: "Items you tick from now on come in as “DIY” where possible, except the structure, roof, exterior doors and windows and utility connections, which you can take on yourself line by line. Lines already ticked keep their choice.",
+      max: "Items you tick from now on come in as “DIY” where possible, except the structure, roof, exterior doors and windows, utility connections, heat pump, air conditioning and EV charger, which you can take on yourself line by line. Lines already ticked keep their choice.",
       partie: "Current setting: “I do some of it”. Painting, flooring, plastering and insulation items you tick from now on come in as “DIY”, the rest as “Hire out”. Lines already ticked keep their choice.",
     } as Record<string, string>,
     toutPasser: "Switch everything to…",

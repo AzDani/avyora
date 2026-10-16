@@ -19,10 +19,6 @@ rac-raccordement-electrique-enedis concessionnaire
 rac-extension-reseau-electrique-part-fixe concessionnaire
 rac-extension-reseau-electrique-au-metre concessionnaire
 rac-raccordement-au-tout-a-l-egout concessionnaire
-ele-borne-de-recharge-voiture reglementaire
-cha-pompe-a-chaleur-air-eau fluides
-cha-climatisation-gainable-reversible fluides
-cha-climatisation-reversible-split fluides
 rec-test-etancheite-intermediaire controle
 ele-consuel-attestation-de-conformite controle
 rec-controles-re2020-fin-de-chantier controle

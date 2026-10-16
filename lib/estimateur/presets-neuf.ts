@@ -5,7 +5,7 @@
  * au MÊME moteur (`buildDevis(catalogueDe(ctx), ctx, sel)`). Le mode rapide (5 questions) et le
  * mode détaillé passent par les mêmes règles : une maison décrite pareil coûte pareil.
  */
-import { key, peutFaireSoiMeme, ALEAS_NEUF, type Ctx, type Selection, type Finition, type Tache, type Lot, type RaisonPro } from "./core";
+import { key, peutFaireSoiMeme, ALEAS_NEUF, LOTS_DECENNALE, type Ctx, type Selection, type Finition, type Tache, type Lot, type RaisonPro } from "./core";
 import { POSTE_NEUF } from "./catalogue-neuf";
 import { maisonComplete, geometrieNeuf, decisionsNeuf, exclusifsDe, type MaisonNeuve, type DecisionNeuf, type Niveaux } from "./neuf";
 import { DIY_PARTIE, type QuiRealise } from "./presets";
@@ -27,38 +27,45 @@ export function ctxNeuf(maison: Partial<MaisonNeuve>, opts: { finition?: Finitio
 
 /* « Je le fais » en neuf : deux questions séparées (revue rénovation / neuf, §3).
    1. Est-ce POSSIBLE ? Une règle par poste, la même qu'en rénovation (`peutFaireSoiMeme`) : la
-      maçonnerie, les fondations, la charpente, la couverture et les menuiseries extérieures se
-      font soi-même ligne par ligne, comme en rénovation. Restent aux pros les postes qui portent
-      une raison (`pro` : études, concessionnaires, contrôles, fluides frigorigènes, IRVE, procédé).
+      maçonnerie, les fondations, la charpente, la couverture, les menuiseries extérieures, la pompe
+      à chaleur, les climatisations et la borne de recharge se font soi-même ligne par ligne, comme
+      en rénovation (décision D2 du 13/10/2026). Restent aux pros les postes qui portent une raison
+      (`pro` : études, concessionnaires, contrôles, procédé).
    2. Que prend le mode « Je fais le maximum » PAR DÉFAUT ? Pas « tout » : voir `PRO_PAR_DEFAUT_MAX`. */
 
-/** Structure et clos-couvert : ce que couvre la garantie décennale de l'artisan. Passé en « Je le
- *  fais », un de ces postes sort de cette garantie : la ligne le rappelle. */
-export const LOTS_DECENNALE_NEUF = new Set(["Terrassement", "Fondations & soubassement", "Maçonnerie", "Charpente, couverture & structure bois",
-  "Couverture & zinguerie", "Menuiseries exterieures"]);
+/** Structure et clos-couvert : la liste commune aux deux natures (`LOTS_DECENNALE`, core). Nom gardé
+ *  (des tests l'importent). */
+export const LOTS_DECENNALE_NEUF = LOTS_DECENNALE;
 
 /* « Le maximum » en neuf n'est pas « tout » : la structure, le clos-couvert et les branchements
-   restent aux artisans PAR DÉFAUT (garanties décennales, assurance dommages-ouvrage, matériel), et
-   la pompe à chaleur n'est jamais faisable soi-même (`PRO_PARTAGES_NEUF`). C'est ce qui ramène
-   l'auto-construction dans les prix constatés (1 200 à 1 600 €/m²). Dans le détaillé, chacun de ces
-   postes se reprend à la main. « Raccordements aux réseaux » garde la fosse et la micro-station aux
-   pros par défaut (décision 4, option A, `docs/construction-neuve/decisions.md`) : aucun total par
-   défaut ne bouge. */
+   restent aux artisans PAR DÉFAUT (garanties décennales, assurance dommages-ouvrage, matériel). C'est
+   ce qui ramène l'auto-construction dans les prix constatés (1 200 à 1 600 €/m²). Dans le détaillé,
+   chacun de ces postes se reprend à la main. « Raccordements aux réseaux » garde la fosse et la
+   micro-station aux pros par défaut (décision 4, option A, `docs/construction-neuve/decisions.md`) :
+   aucun total par défaut ne bouge. */
 export const PRO_PAR_DEFAUT_MAX = new Set([...LOTS_DECENNALE_NEUF, "Raccordements aux réseaux"]);
+
+/** Postes faisables soi-même que « le maximum » laisse pourtant aux pros PAR DÉFAUT : la pompe à
+ *  chaleur et les climatisations (mise en service par un frigoriste), la borne de recharge
+ *  (installateur IRVE au-delà de 3,7 kW). Décision D2 du 13/10/2026 : on peut les prendre soi-même,
+ *  ligne par ligne, avec une mention (`MENTIONS_SOI_MEME`), mais le défaut ne change pas : la maison A
+ *  de 100 m² en « le maximum » reste à 189 110 € TTC. */
+export const POSTES_PRO_PAR_DEFAUT_MAX = new Set(["cha-pompe-a-chaleur-air-eau", "cha-climatisation-reversible-split",
+  "cha-climatisation-gainable-reversible", "ele-borne-de-recharge-voiture"]);
 
 /**
  * Postes REPRIS de la rénovation (le même objet que `catalog.json`, qu'on ne modifie pas ici) que le
- * neuf réserve aux pros, avec leur raison. TEMPORAIRE : le chantier N5 porte ce champ `pro` dans
- * `catalog.json`, pour les deux natures, et supprime cette table.
- * - La règle seule les ouvrirait (ils ont un prix de fourniture) : PAC et climatisations (fluides
- *   frigorigènes, attestation de capacité, C. env. art. R543-99 et suivants), branchement au
- *   tout-à-l'égout (côté réseau public ; la partie privée est `vrd-canalisation-pvc-enterree`), borne
- *   de recharge (installateur qualifié IRVE au-delà de 3,7 kW, décret 2017-26).
- * - Déjà sans prix de fourniture : la table ne leur donne que la raison affichée.
+ * neuf réserve aux pros, avec leur raison : les branchements par le gestionnaire du réseau, le
+ * Consuel et l'étude SPANC.
+ * - La règle seule ouvrirait le branchement au tout-à-l'égout (il a un prix de fourniture) : en neuf,
+ *   c'est la partie publique, faite par le service des eaux ; la partie privée est
+ *   `vrd-canalisation-pvc-enterree`. La rénovation, elle, le laisse faisable (D2).
+ * - Les autres sont déjà sans prix de fourniture : la table ne leur donne que la raison affichée.
+ * La pompe à chaleur, les climatisations et la borne de recharge n'y sont plus depuis la décision D2
+ * du 13/10/2026 : faisables soi-même, en neuf comme en rénovation.
  */
 export const PRO_PARTAGES_NEUF = new Map<string, RaisonPro>([
-  ["cha-pompe-a-chaleur-air-eau", "fluides"], ["cha-climatisation-reversible-split", "fluides"], ["cha-climatisation-gainable-reversible", "fluides"],
-  ["rac-raccordement-au-tout-a-l-egout", "concessionnaire"], ["ele-borne-de-recharge-voiture", "reglementaire"],
+  ["rac-raccordement-au-tout-a-l-egout", "concessionnaire"],
   ["rac-raccordement-electrique-enedis", "concessionnaire"], ["rac-mise-en-service-provisoire-enedis", "concessionnaire"],
   ["rac-raccordement-eau-potable", "concessionnaire"], ["ele-consuel-attestation-de-conformite", "controle"],
   ["etu-etude-assainissement-individuel-spanc", "etude"],
@@ -75,11 +82,12 @@ export function peutFaireNeuf(l: Pick<Lot, "c">, t: Tache): boolean {
 }
 
 /** « Je le fais » PAR DÉFAUT sur un poste du neuf, selon qui réalise : jamais là où ce n'est pas
- *  possible ; en « le maximum », tout sauf `PRO_PAR_DEFAUT_MAX` ; en « une partie », les lots de
- *  finition (`DIY_PARTIE`, le même choix qu'en rénovation). */
+ *  possible ; en « le maximum », tout sauf les lots de `PRO_PAR_DEFAUT_MAX` et les postes de
+ *  `POSTES_PRO_PAR_DEFAUT_MAX` ; en « une partie », les lots de finition (`DIY_PARTIE`, le même choix
+ *  qu'en rénovation). */
 export function soiMemeNeuf(lot: string, qui: QuiRealise, t: Tache): boolean {
   if (!peutFaireNeuf({ c: lot }, t)) return false;
-  if (qui === "max") return !PRO_PAR_DEFAUT_MAX.has(lot);
+  if (qui === "max") return !PRO_PAR_DEFAUT_MAX.has(lot) && !POSTES_PRO_PAR_DEFAUT_MAX.has(t.id);
   return qui === "partie" && DIY_PARTIE.has(lot);
 }
 

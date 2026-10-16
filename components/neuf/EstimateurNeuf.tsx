@@ -41,12 +41,13 @@ import { INFO_PHASES } from "@/lib/estimateur/etapes-neuf";
 import { QUESTIONS_NEUF, type QuestionNeuf, type ValeurQuestionNeuf, type CleQuestionNeuf } from "@/lib/estimateur/questions-neuf";
 import {
   CLE_BROUILLON_DETAIL_NEUF, BLOCS_NEUF, ctxDetailNeuf, etatParDefaut, changerReponseNeuf, cocherNeufEtat, badgeNeuf,
-  diyNeuf, horsDecennaleNeuf, lignesPersoDuBloc, lignePersoNeuf, repriseDepuisReponses, reglerNouveauxNeuf, toutPasserNeuf, postesQuiChangent,
+  lignesPersoDuBloc, lignePersoNeuf, repriseDepuisReponses, reglerNouveauxNeuf, toutPasserNeuf, postesQuiChangent,
   lireBrouillonDetailNeuf, enregistrementDetailNeuf, demarchesPhase, ouvertureDetailNeuf, type EtatNeuf, type BlocNeuf,
 } from "@/lib/estimateur/detaille-neuf";
 import { CLE_BROUILLON_NEUF, CLE_AFFINER_NEUF, CLE_RECLAMATION_NEUF, type OrigineNeuf } from "@/lib/estimateur/brouillon-neuf";
 import { marquerReprisePlan } from "@/lib/plans/origine";
 import { NEUF_DETAIL_CSS } from "./detail-styles";
+import { ROW_SOI_CSS } from "@/components/estimateur/row-styles";
 import DevisNeuf from "./DevisNeuf";
 import { mesurerPlan, mesureEstimationNeuf } from "@/lib/plans/mesure";
 
@@ -297,8 +298,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
             {l.note && <div className="lotnote">{catT(locale, "notes", l.note)}</div>}
             {lignes.map((t) => (
               <Row key={t.n} l={l} t={t} ctx={ctx} sel={sel} loc={loc}
-                diy={diyNeuf(l, t)} badge={badgeNeuf(ctx, sel, l, t)}
-                proRaison={raisonProNeuf(t)} horsDecennale={horsDecennaleNeuf(l)}
+                badge={badgeNeuf(ctx, sel, l, t)} proRaison={raisonProNeuf(t)}
                 onCheck={() => toggleCheck(l, t)}
                 onChoice={(self) => upd(l.c, t.n, (s) => ({ ...s, self }))}
                 onAuto={() => toggleAuto(l, t)}
@@ -325,7 +325,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: EST_CSS + NEUF_DETAIL_CSS }} />
+      <style dangerouslySetInnerHTML={{ __html: EST_CSS + ROW_SOI_CSS + NEUF_DETAIL_CSS }} />
       <div className="av-estim av-neuf-d">
         <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
           <div className="views">

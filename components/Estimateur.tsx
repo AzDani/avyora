@@ -12,6 +12,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import NumStepper from "@/components/Stepper";
 import { EST_CSS } from "./estimateur-styles";
+import { ROW_SOI_CSS } from "./estimateur/row-styles";
 import { CountUp } from "./estimateur/CountUp";
 import { Row } from "./estimateur/Row";
 import { fmt, Field, Stepper, CustomLines } from "./estimateur/partage";
@@ -285,7 +286,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: EST_CSS }} />
+      <style dangerouslySetInnerHTML={{ __html: EST_CSS + ROW_SOI_CSS }} />
       <div className="av-estim">
         <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
           <div className="views">
@@ -447,7 +448,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
             </div>
 
             <div className="intro">
-              Ouvrez les lots concernés, cochez les travaux, ajustez les quantités. Prix affichés <b>HT</b>. Pour chaque travail, choisissez <b>« Fait faire »</b> (artisan) ou <b>« Je le fais »</b> — les 2 prix s’affichent.
+              Ouvre les lots concernés, coche les travaux, ajuste les quantités. Prix affichés <b>HT</b>. Sur chaque travail faisable soi-même, électricité, mur porteur et charpente compris, choisis <b>« Fait faire »</b> (artisan) ou <b>« Je le fais »</b> — les 2 prix s’affichent. Pris soi-même, un poste de maçonnerie, de charpente, de couverture ou de menuiseries extérieures sort de la garantie décennale ; pour un mur porteur ou une charpente, une étude est conseillée.
             </div>
 
             {PHASES.map((ph, i) => {

@@ -171,12 +171,14 @@ export function demarchesPhase(ctx: Ctx, sel: Selection, phase: string): number 
 }
 
 /** « Je le fais » proposé sur ce poste ? La règle par poste (`peutFaireNeuf`), quel que soit le
- *  mode : maçonnerie, charpente ou menuiseries se prennent à la main, ligne par ligne. Nom gardé
- *  (des tests l'importent). */
+ *  mode : maçonnerie, charpente, menuiseries ou pompe à chaleur se prennent à la main, ligne par
+ *  ligne. La ligne (`Row`) applique la même règle d'elle-même (`peutFaireSoiMeme` hors raison
+ *  « pro ») ; nom gardé, des tests l'importent. */
 export const diyNeuf = (l: Lot, t: Tache): boolean => peutFaireNeuf(l, t);
 
 /** Structure et clos-couvert : passée en « Je le fais », la ligne avertit qu'elle sort de la
- *  garantie décennale (à vérifier avec l'assureur dommages-ouvrage). */
+ *  garantie décennale (à vérifier avec l'assureur dommages-ouvrage). `Row` le décide d'elle-même
+ *  pour les deux natures (`horsDecennaleSoiMeme`) ; nom gardé, des tests l'importent. */
 export const horsDecennaleNeuf = (l: Lot): boolean => LOTS_DECENNALE_NEUF.has(l.c);
 
 // ── Blocs : un lot du catalogue neuf, à sa place dans une phase ─────────────────────────────────

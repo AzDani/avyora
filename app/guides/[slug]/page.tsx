@@ -797,13 +797,34 @@ function BodyDIY() {
         rentable de le faire soi-même</strong>. On économise sur le temps, pas sur la matière.
       </p>
 
-      <h2>Les lots à ne pas toucher</h2>
+      <h2>Les lots qui engagent plus que votre budget</h2>
       <p>
-        Certains travaux ne relèvent pas de l&apos;arbitrage économique. L&apos;électricité et le gaz
-        engagent votre sécurité et la conformité de l&apos;installation ; toucher à la structure
-        (mur porteur, charpente) sans étude met le bâtiment en jeu ; l&apos;amiante et le plomb
-        relèvent d&apos;entreprises certifiées et d&apos;une évacuation réglementée. Ce guide ne
-        donne volontairement aucun mode opératoire sur ces sujets.
+        Certains travaux ne relèvent pas seulement de l&apos;arbitrage économique. Les faire
+        soi-même reste possible, à condition de savoir faire, de faire vérifier ce qui doit
+        l&apos;être et d&apos;accepter que ce poste sorte de la garantie décennale.
+      </p>
+      <ul>
+        <li>
+          <strong>L&apos;électricité et le gaz</strong>{" "}engagent votre sécurité et la conformité de
+          l&apos;installation : une installation électrique suit la norme NF C 15-100, et une
+          installation de gaz neuve ou modifiée doit être certifiée conforme avant la mise en gaz.
+        </li>
+        <li>
+          <strong>La structure</strong>{" "}(mur porteur, charpente, toiture) : une étude est conseillée
+          avant d&apos;ouvrir ou de modifier quoi que ce soit, car c&apos;est le bâtiment qui est en jeu.
+        </li>
+        <li>
+          <strong>Une pompe à chaleur ou une climatisation</strong>{" "}se pose soi-même ; dès qu&apos;il
+          faut raccorder ou charger le circuit de fluide frigorigène (modèle split), la mise en
+          service demande un professionnel titulaire de l&apos;attestation de capacité.
+        </li>
+        <li>
+          <strong>L&apos;amiante et le plomb</strong>, eux, relèvent d&apos;entreprises certifiées et
+          d&apos;une évacuation réglementée : l&apos;estimateur ne les propose pas en « je le fais ».
+        </li>
+      </ul>
+      <p>
+        Ce guide ne donne volontairement aucun mode opératoire sur ces sujets.
       </p>
       <p>
         Point rarement dit : <strong>un poste que vous réalisez vous-même n&apos;est couvert par
@@ -842,7 +863,9 @@ function BodyDIY() {
       <p>
         L&apos;estimateur AVYORA permet exactement cet arbitrage : pour chaque poste, vous choisissez
         « fait faire » ou « je le fais », et le total se recalcule avec la bonne TVA et la bonne part
-        de main-d&apos;œuvre.
+        de main-d&apos;œuvre. Sur un poste de maçonnerie, de charpente, de couverture ou de
+        menuiseries extérieures pris soi-même, la ligne rappelle qu&apos;il sort de la garantie
+        décennale.
       </p>
 
       <Cta label="Comparer les deux scénarios sur votre projet" />
@@ -860,7 +883,7 @@ function faqDIY() {
   const meilleur = parLot[0], pire = parLot[parLot.length - 1];
   return [
     { q: "Combien économise-t-on en faisant ses travaux soi-même ?", a: `Cela dépend entièrement du poste. Sur le référentiel AVYORA, la part de main-d'œuvre va d'environ ${pire.partMO} % (${pire.lot.toLowerCase()}) à ${meilleur.partMO} % (${meilleur.lot.toLowerCase()}). Un pourcentage unique d'économie n'a donc aucun sens : il faut raisonner poste par poste.` },
-    { q: "Quels travaux peut-on faire soi-même sans risque ?", a: "La peinture, la pose de sols souples ou stratifiés, la dépose et le curage sont accessibles à un particulier soigneux. L'électricité, le gaz, la structure porteuse, la charpente, l'amiante et le plomb ne relèvent pas d'un arbitrage économique : ils engagent la sécurité et la conformité." },
+    { q: "Quels travaux peut-on faire soi-même sans risque ?", a: "La peinture, la pose de sols souples ou stratifiés, la dépose et le curage sont accessibles à un particulier soigneux. L'électricité, le gaz, la structure porteuse et la charpente restent possibles, mais ils engagent la sécurité et la conformité : un poste fait soi-même sort de la garantie décennale, une étude est conseillée pour la structure, et une installation électrique ou de gaz doit être conforme. L'amiante et le plomb relèvent d'entreprises certifiées." },
     { q: "Paie-t-on plus de TVA quand on achète les matériaux soi-même ?", a: "Oui, et c'est le coût caché le plus souvent oublié. Les travaux facturés par un artisan en rénovation relèvent d'un taux réduit, tandis que les matériaux achetés directement par un particulier sont à 20 %. Une partie de l'économie de main-d'œuvre est donc reprise par l'écart de TVA." },
     { q: "Un travail fait soi-même est-il couvert par la garantie décennale ?", a: "Non. La garantie décennale couvre l'entreprise qui a réalisé l'ouvrage : un poste que vous réalisez vous-même n'est couvert par personne. En cas de sinistre lié à ce poste, vous en répondez seul. Vérifiez votre situation auprès de votre assureur avant de commencer." },
     { q: "Sur quels postes faire soi-même rapporte-t-il le moins ?", a: `Sur ceux où le prix est dominé par le produit et non par la pose : ${parLot.slice(-3).map((l) => l.lot.toLowerCase()).join(", ")}. Plus un poste est cher à l'achat, moins le faire soi-même déplace le total.` },

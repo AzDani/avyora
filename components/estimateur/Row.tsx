@@ -1,32 +1,30 @@
 "use client";
 
 /** Ligne de poste de l'estimateur détaillé : déplacée telle quelle depuis `components/Estimateur.tsx` (C1).
- *  Les props `diy`, `badge` (construction neuve, C4), `proRaison` et `horsDecennale` (N1) sont
- *  facultatives : absentes, la ligne est celle de la rénovation (figée par
- *  `tests/estimateur-briques.test.ts`). Les prix unitaires des deux puces viennent du moteur
- *  (`puReel`, N7) pour les deux natures : prix unitaire × quantité = montant de la ligne, région et
- *  barème de finition du poste compris. */
+ *  Les props `badge` (construction neuve, C4) et `proRaison` (N1) sont facultatives : absentes, la
+ *  ligne est celle de la rénovation (figée par `tests/estimateur-briques.test.ts`). « Je le fais »
+ *  suit une seule règle pour les deux natures (`peutFaireSoiMeme`, N5) ; l'avertissement « hors
+ *  garantie décennale » et les mentions d'un poste faisable soi-même (PAC, climatisation, borne)
+ *  aussi (D2, D4). Les prix unitaires des deux puces viennent du moteur (`puReel`, N7) pour les deux
+ *  natures : prix unitaire × quantité = montant de la ligne, région et barème de finition du poste
+ *  compris. */
 import { useState } from "react";
 import NumStepper from "@/components/Stepper";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { catT } from "@/lib/estimateur/catalog-i18n";
-import { key, isAuto, autoQty, lineHT, effPrices, puReel, type Ctx, type Selection, type Lot, type Tache, type RaisonPro } from "@/lib/estimateur";
+import { key, isAuto, autoQty, lineHT, effPrices, puReel, peutFaireSoiMeme, horsDecennaleSoiMeme, MENTIONS_SOI_MEME, type Ctx, type Selection, type Lot, type Tache, type RaisonPro } from "@/lib/estimateur";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 import { ChoicePrice, fmt, isUrl } from "./partage";
 
-export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar, onNote, onPu, onPm, diy, badge, proRaison, horsDecennale }: {
+export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar, onNote, onPu, onPm, badge, proRaison }: {
   l: Lot; t: Tache; ctx: Ctx; sel: Selection; loc: boolean;
   onCheck: () => void; onChoice: (self: boolean) => void; onAuto: () => void; onQty: (v: number) => void;
   onMat: (m: "pvc" | "alu" | "bois") => void; onVit: (v: "double" | "triple") => void; onMot: (m: "manuel" | "motorise") => void; onTai: (z: "petit" | "grand") => void; onVar: (g: string, o: string) => void; onNote: (v: string) => void; onPu: (v: number | null) => void; onPm: (v: number | null) => void;
-  /** « Je le fais » proposé ? Défaut : dès que le poste a un prix de fourniture (rénovation). */
-  diy?: boolean;
   /** `pct` : « {fp} % des travaux » au lieu d'une quantité ; `jalon` : « Démarche », sans montant. */
   badge?: "pct" | "jalon";
-  /** Poste réservé aux pros : « Pro obligatoire · <raison> » à la place de « Je le fais ». */
+  /** Poste réservé aux pros : « Pro obligatoire · <raison> » à la place de « Je le fais ». Défaut :
+   *  la raison du poste (`t.pro`). Le neuf passe aussi celle de ses postes repris (`raisonProNeuf`). */
   proRaison?: RaisonPro | null;
-  /** Structure ou clos-couvert : passé en « Je le fais », la ligne rappelle qu'il sort de la
-   *  garantie décennale. */
-  horsDecennale?: boolean;
 }) {
   const locale = useLocale();
   const s = sel[key(l.c, t.n)] || {};
@@ -51,8 +49,17 @@ export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onM
   const unitPart = badge !== "pct" && t.u !== "forfait" && t.u !== "u" ? "/" + t.u : "";
   // Un frais (taxe, assurance) ne porte pas de TVA : pas de « HT ». N'existe qu'en neuf.
   const uSuffix = t.frais ? unitPart + " · " + nTxt.sansTva : " HT" + unitPart;
-  // Un projet enregistré en « Je le fais » sur un poste devenu réservé garde sa puce active.
-  const avecDiy = (diy ?? ep.sm != null) || self;
+  /* « Je le fais » proposé : la même règle par poste pour les deux natures (`peutFaireSoiMeme`), hors
+     poste réservé aux pros. En rénovation, elle décide exactement comme l'ancienne (« dès que le poste
+     a un prix de fourniture », vérifié poste par poste et variante par variante par
+     `tests/estimateur-briques.test.ts`). Un projet enregistré en « Je le fais » sur un poste devenu
+     réservé garde sa puce active. */
+  const raison = proRaison ?? t.pro ?? null;
+  const avecDiy = (peutFaireSoiMeme(l, t) && !raison) || self;
+  /* Pris soi-même : un poste de structure ou de clos-couvert sort de la garantie décennale ; une PAC,
+     une climatisation ou une borne reste faisable, avec ce qu'un pro doit encore faire (D2, D4). */
+  const horsDecennale = horsDecennaleSoiMeme(l, t);
+  const mention = MENTIONS_SOI_MEME[t.id];
   const jalon = badge === "jalon";
   const pctTxt = badge === "pct" && t.fp != null && !puEdited
     ? `${t.fp.toLocaleString(locale === "en" ? "en-US" : "fr-FR")} ${t.assiette === "projet" || (t.frais && t.assiette !== "travaux") ? nTxt.pctProjet : nTxt.pctTravaux}`
@@ -111,8 +118,8 @@ export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onM
               {avecDiy && puMat != null ? (
                 <ChoicePrice label={locale === "en" ? "DIY" : "Je le fais"} active={self} activeCls="onS" amount={puMat} edited={pmEdited}
                   onSelect={() => onChoice(true)} onEdit={(v) => onPm(v)} onReset={() => onPm(null)} />
-              ) : proRaison ? (
-                <span className="pro-oblig">{`${nTxt.proOblig} · ${nTxt.raisonsPro[proRaison]}`}</span>
+              ) : raison ? (
+                <span className="pro-oblig">{`${nTxt.proOblig} · ${nTxt.raisonsPro[raison]}`}</span>
               ) : null}
             </span>
           )}
@@ -123,7 +130,8 @@ export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onM
       ) : (
         <span className="tctl"><span className="unit">{t.u === "forfait" ? catT(locale, "unites", "forfait") : loc ? (locale === "en" ? "/day" : "/jour") : catT(locale, "unites", t.u)}</span></span>
       )}
-      {on && self && horsDecennale && <div className="decennale" role="note">{nTxt.horsDecennale}</div>}
+      {on && self && horsDecennale && <div className="decennale" role="note">{ctx.nature === "neuf" ? nTxt.horsDecennale : nTxt.horsDecennaleReno}</div>}
+      {on && self && mention && <div className="mention-soi" role="note">{nTxt.mentionsSoiMeme[mention]}</div>}
       {on && variant && (
         <div className="tvariants">
           {t.mat && (

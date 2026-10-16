@@ -97,6 +97,26 @@ export default function MethodologiePage() {
         une dépose — il n&apos;y a rien à acheter, seulement du temps de travail.
       </p>
 
+      <h2>Faire soi-même : ce que l&apos;estimation propose</h2>
+      <p>
+        « Je le fais » est proposé sur chaque poste qui a un prix fourniture et n&apos;est pas réservé aux
+        pros, en rénovation comme en construction neuve : électricité, plomberie, mur porteur, charpente
+        ou pompe à chaleur compris.
+        C&apos;est à toi de juger ce que tu sais faire. Trois rappels accompagnent ce choix :
+      </p>
+      <ul className="nope">
+        <li><strong>Hors garantie décennale.</strong>{" "}Un poste de maçonnerie, de charpente, de couverture ou de menuiseries extérieures fait soi-même n&apos;est couvert par aucune garantie décennale. Pour un mur porteur ou une charpente, une étude est conseillée.</li>
+        <li><strong>Fluide frigorigène.</strong>{" "}Une pompe à chaleur ou une climatisation se pose soi-même ; dès qu&apos;il faut raccorder ou charger le circuit de fluide frigorigène (modèle split), la mise en service demande un professionnel titulaire de l&apos;attestation de capacité.</li>
+        <li><strong>Pro obligatoire.</strong>{" "}Quelques postes restent réservés aux professionnels et l&apos;affichent : les raccordements faits par le gestionnaire du réseau, les contrôles et attestations, les études (géomètre, architecte, bureau d&apos;études).</li>
+      </ul>
+      <p>
+        Dans l&apos;estimation rapide d&apos;une rénovation, « Je fais un max moi-même » met en
+        « Je le fais » tout ce qui peut l&apos;être, électricité et structure comprises. En construction neuve,
+        « Je fais le maximum » laisse par défaut aux pros la structure, le toit, les menuiseries
+        extérieures, les branchements et la pompe à chaleur : tu peux les reprendre poste par poste
+        dans l&apos;estimation détaillée.
+      </p>
+
       <h2>Les quatre ajustements appliqués à chaque poste</h2>
 
       <h3>1. Le niveau de finition</h3>

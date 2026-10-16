@@ -59,15 +59,13 @@ export const NEUF_DETAIL_CSS = `
 .av-neuf-d .lotnote{font-size:11.5px;color:var(--faint);padding:8px 0 2px;line-height:1.45}
 .av-neuf-d .badge-dem{display:inline-block;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:#fdf1e1;color:#b06d10;white-space:nowrap}
 .av-neuf-d .badge-pct{display:inline-block;font-size:11px;font-weight:600;color:var(--muted);background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:3px 9px;white-space:nowrap}
-.av-neuf-d .pro-oblig{display:inline-flex;align-items:center;max-width:180px;font-size:10.5px;font-weight:600;line-height:1.3;color:var(--muted);background:var(--surface-2);border:1px dashed var(--line-strong);border-radius:8px;padding:4px 8px}
-.av-neuf-d .decennale{grid-column:1/-1;margin:6px 0 0 32px;padding:6px 10px;border-radius:8px;background:#fdf1e1;color:#8a5208;font-size:11.5px;line-height:1.45}
 .av-neuf-d .split-n{position:relative;z-index:1;margin-top:10px;font-size:12px;color:#c9c5ee;line-height:1.5}
 .av-neuf-d .split-n b{color:#fff;font-weight:600;font-family:var(--font-geist-mono),ui-monospace,monospace;white-space:nowrap}
 .av-neuf-d .dtl .dem{font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:#fdf1e1;color:#b06d10;white-space:nowrap}
 .av-neuf-live .m2{font-size:11.5px;color:#c9c5ee;margin-top:5px;font-family:var(--font-geist-mono),ui-monospace,monospace;font-variant-numeric:tabular-nums}
 @media(max-width:560px){
 .av-neuf-d .pjal,.av-neuf-d .pvide{padding-left:4px}
-.av-neuf-d .decennale{margin-left:0}
+.av-neuf-d .decennale,.av-neuf-d .mention-soi{margin-left:0}
 .av-neuf-d .pill{min-height:44px}
 .av-neuf-d .nv-seg button,.av-neuf-d .nv-act button,.av-neuf-d .nv-tout{min-height:44px}
 .av-neuf-d .nv-tout{margin-left:0}

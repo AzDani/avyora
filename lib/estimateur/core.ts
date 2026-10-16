@@ -71,8 +71,10 @@ export interface Tache {
 
 /** Pourquoi un poste reste aux pros : branchement par le gestionnaire du réseau, étude ou mission
  *  d'un professionnel (géomètre, architecte, bureau d'études), contrôle ou attestation, fluides
- *  frigorigènes (attestation de capacité), installateur qualifié imposé par un texte (borne IRVE),
- *  procédé ou machine du poseur (gouttière profilée sur place). */
+ *  frigorigènes (attestation de capacité), installateur qualifié imposé par un texte, procédé ou
+ *  machine du poseur (gouttière profilée sur place). « fluides » et « reglementaire » ne servent plus
+ *  depuis la décision D2 du 13/10/2026 (PAC, climatisations et borne faisables soi-même, avec une
+ *  mention : `MENTIONS_SOI_MEME`) ; ils restent disponibles avec leur libellé. */
 export type RaisonPro = "concessionnaire" | "etude" | "controle" | "fluides" | "reglementaire" | "procede";
 
 /** Grille de prix : dims = [clé groupe A, clé groupe B] ; prices["optA|optB"] = { fp, sm } HT. */
@@ -352,6 +354,30 @@ export const isLoc = (c: string): boolean => c === LOC;
 export function peutFaireSoiMeme(l: Pick<Lot, "c">, t: Tache): boolean {
   return !isLoc(l.c) && !t.frais && t.u !== "pct" && t.sm != null && t.sm < (t.fp ?? 0) && !t.pro;
 }
+
+/** Structure et clos-couvert : ce que couvre la garantie décennale de l'artisan. Passé en « Je le
+ *  fais », un poste de ces lots en sort : la ligne le rappelle, en rénovation comme en neuf
+ *  (décision D4 a du 13/10/2026 : affichage seul, aucun prix n'en dépend). La maçonnerie, la charpente
+ *  et les menuiseries extérieures existent dans les deux catalogues ; les trois autres lots, en neuf. */
+export const LOTS_DECENNALE = new Set(["Terrassement", "Fondations & soubassement", "Maçonnerie", "Charpente, couverture & structure bois",
+  "Couverture & zinguerie", "Menuiseries exterieures"]);
+
+/** La ligne prise en « Je le fais » rappelle-t-elle « hors garantie décennale » ? Les lots de
+ *  `LOTS_DECENNALE`, plus l'abattage d'un mur porteur, rangé en Démolition dans la rénovation. */
+export function horsDecennaleSoiMeme(l: Pick<Lot, "c">, t: Pick<Tache, "id">): boolean {
+  return LOTS_DECENNALE.has(l.c) || t.id === "dem-abattre-un-mur-porteur";
+}
+
+/** Ce qu'une ligne prise en « Je le fais » rappelle sans bloquer, quand un professionnel reste
+ *  exigé à une étape précise : la mise en service d'un circuit de fluide frigorigène (attestation de
+ *  capacité, C. env. art. R543-99 et suivants) ou la pose d'une borne de plus de 3,7 kW (installateur
+ *  qualifié IRVE, décret 2017-26). Décision D2 du 13/10/2026 : ces postes restent faisables soi-même,
+ *  en rénovation comme en neuf. Le moteur ne lit pas cette table. */
+export type MentionSoiMeme = "fluides" | "irve";
+export const MENTIONS_SOI_MEME: Readonly<Record<string, MentionSoiMeme>> = {
+  "cha-pompe-a-chaleur-air-eau": "fluides", "cha-climatisation-reversible-split": "fluides",
+  "cha-climatisation-gainable-reversible": "fluides", "ele-borne-de-recharge-voiture": "irve",
+};
 
 export const isAppart = (ctx: Ctx): boolean => ctx.type !== "Maison";
 /**

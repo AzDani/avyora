@@ -208,7 +208,7 @@ const fr = {
     quis: {
       pros: { eye: "Clé en main", label: "Tout par des pros", desc: "Des artisans font tout : devis, garanties décennales, zéro effort de ta part." },
       partie: { eye: "Le bon compromis", label: "J'en bricole une partie", desc: "Un mix : tu fais une partie, les pros le reste. Estimation moyenne — tu répartiras chaque poste juste après." },
-      max: { eye: "Budget mini", label: "Je fais un max moi-même", desc: "Tu fais tout ce qui est faisable toi-même ; les pros seulement sur l'obligatoire (élec, gaz…)." },
+      max: { eye: "Budget mini", label: "Je fais un max moi-même", desc: "Tout ce qui se fait soi-même, électricité et structure comprises (hors garantie décennale). Tu ajusteras chaque poste juste après." },
     },
     zones: {
       "Moyenne nationale": "Moyenne nationale",
@@ -605,7 +605,7 @@ const en: Dict = {
     quis: {
       pros: { eye: "Turnkey", label: "All by pros", desc: "Contractors do everything: quotes, warranties, zero effort on your side." },
       partie: { eye: "The sweet spot", label: "I DIY some of it", desc: "A mix: you do part, pros do the rest. Average estimate — you'll split each item right after." },
-      max: { eye: "Rock-bottom budget", label: "I DIY as much as I can", desc: "You do everything you can yourself; pros only on the mandatory work (electrical, gas…)." },
+      max: { eye: "Rock-bottom budget", label: "I DIY as much as I can", desc: "Everything you can do yourself, electrical and structural work included (not covered by the 10-year warranty). You'll adjust each item right after." },
     },
     zones: {
       "Moyenne nationale": "National average",
