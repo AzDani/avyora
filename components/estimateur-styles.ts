@@ -44,8 +44,10 @@ export const EST_CSS = `
 .av-estim .phase-t.open .chev{transform:rotate(0deg);background:var(--surface);color:var(--muted)}
 .av-estim .phase-t:not(.open) .chev{background:rgba(79,70,229,.1);border-color:rgba(79,70,229,.3);color:var(--brand)}
 .av-estim .phase-t:hover .chev{border-color:var(--brand);color:var(--brand)}
-.av-estim .phase-t .pt-lbl{flex:1;min-width:0}
-.av-estim .phase-t .pt-meta{font-family:var(--font-geist-mono),monospace;letter-spacing:0;text-transform:none;color:var(--faint);font-weight:500;font-size:11px}
+/* le libellé ne descend pas sous son mot le plus long (sur mobile, en anglais, il passait sous les chiffres) : ce sont
+   les chiffres qui vont à la ligne, calés à droite */
+.av-estim .phase-t .pt-lbl{flex:1}
+.av-estim .phase-t .pt-meta{font-family:var(--font-geist-mono),monospace;letter-spacing:0;text-transform:none;color:var(--faint);font-weight:500;font-size:11px;text-align:right}
 .av-estim .phase-t:hover .pt-lbl{text-decoration:underline}
 /* un titre de phase qui ne replie rien (rénovation, « Mon devis ») n'a pas la main : seul le bouton du neuf l'a */
 .av-estim div.phase-t{cursor:default}
