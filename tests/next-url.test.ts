@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { cheminInterne } from "@/lib/next-url";
+import { cheminInterne, premierParam } from "@/lib/next-url";
 
 /**
  * Cette garde est la seule chose qui sépare un paramètre d'URL d'une redirection ouverte.
@@ -50,5 +50,16 @@ describe("cheminInterne", () => {
     expect(cheminInterne(undefined, "/onboarding")).toBe("/onboarding");
     expect(cheminInterne("//exemple.test", "/onboarding")).toBe("/onboarding");
     expect(cheminInterne("/tarifs?plan=annuel", "/onboarding")).toBe("/tarifs?plan=annuel");
+  });
+
+  it("un paramètre répété (`?next=/a&next=//evil.com`) arrive en tableau : le premier compte, jamais d'erreur 500", () => {
+    expect(premierParam(["/plan", "//evil.com"])).toBe("/plan");
+    expect(premierParam(["//evil.com", "/plan"])).toBe("//evil.com");
+    expect(premierParam("/plan")).toBe("/plan");
+    expect(premierParam(undefined)).toBeUndefined();
+    expect(cheminInterne(premierParam(["//evil.com", "/plan"]))).toBe("/projets");
+    // Un tableau qui arriverait quand même : le défaut, sans lever d'erreur.
+    expect(cheminInterne(["/plan", "//evil.com"] as unknown as string)).toBe("/projets");
+    expect(cheminInterne(42 as unknown as string, "/onboarding")).toBe("/onboarding");
   });
 });

@@ -517,7 +517,7 @@ export default function EstimateurRapideNeuf({
           <div>
             <div className="lbl">{s.liveLabel}</div>
             <div className="big">{valid ? <><CountUp value={lo} nf={nf} /> €<span style={{ opacity: .55 }}> – </span><CountUp value={hi} nf={nf} /> €</> : "—"}</div>
-            <div className="sub">{valid ? <>≈ <CountUp value={m2} nf={nf} /> {s.parM2} · ±15 %{regLabel ? <> · {regLabel}</> : ""}</> : !affiche ? s.attente : s.errSurface}</div>
+            <div className="sub">{valid ? <>≈ <CountUp value={m2} nf={nf} /> {s.parM2} · {locale === "en" ? "±15%" : "±15 %"}{regLabel ? <> · {regLabel}</> : ""}</> : !affiche ? s.attente : s.errSurface}</div>
           </div>
           <div className="btns">
             <button type="button" className="ghost" onClick={affiner}>{isPro ? s.affiner : s.affinerPro}</button>

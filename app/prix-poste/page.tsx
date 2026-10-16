@@ -62,7 +62,7 @@ export default function PrixPosteHub() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <p className="fil">
-        <Link href="/">Accueil</Link> <span aria-hidden="true">›</span> Prix par corps d&apos;état
+        <Link href="/">Accueil</Link> <span aria-hidden="true">›</span>{" "}Prix par corps d&apos;état
       </p>
 
       <h1>Prix des travaux par corps d&apos;état</h1>
@@ -87,8 +87,8 @@ export default function PrixPosteHub() {
 
       <h2>Où part l&apos;argent : la part de main-d&apos;œuvre par corps d&apos;état</h2>
       <p>
-        Le référentiel AVYORA compte {stats.postes} postes répartis sur {stats.lots} corps
-        d&apos;état, dont {stats.avecFourniture} portent à la fois un prix posé et un prix de
+        Le référentiel AVYORA compte {stats.postes} postes répartis sur {stats.lots}{" "}corps
+        d&apos;état, dont {stats.avecFourniture}{" "}portent à la fois un prix posé et un prix de
         fourniture seule. L&apos;écart entre les deux, c&apos;est la main-d&apos;œuvre — et sa part
         varie énormément d&apos;un métier à l&apos;autre.
       </p>
@@ -110,13 +110,13 @@ export default function PrixPosteHub() {
         </table>
       </div>
       <p className="note">
-        {dispo.size} corps d&apos;état détaillés pour l&apos;instant ; les autres sont chiffrés dans
+        {dispo.size}{" "}corps d&apos;état détaillés pour l&apos;instant ; les autres sont chiffrés dans
         l&apos;estimateur et dans les <Link href="/prix-travaux">pages par type de travaux</Link>.
       </p>
 
       <h2>Aller plus loin</h2>
       <p>
-        <Link href="/guides/faire-soi-meme-ou-artisan">Faire soi-même ou faire faire</Link> : ce que
+        <Link href="/guides/faire-soi-meme-ou-artisan">Faire soi-même ou faire faire</Link>{" "}: ce que
         la part de main-d&apos;œuvre change vraiment au budget ·{" "}
         <Link href="/guides/verifier-devis-travaux">vérifier un devis de travaux</Link> ·{" "}
         <Link href="/prix-travaux">prix par type de travaux</Link> ·{" "}

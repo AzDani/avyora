@@ -19,15 +19,16 @@ export default function CGU() {
       <h2>1. Objet</h2>
       <p>
         Les présentes conditions générales d&apos;utilisation (« CGU ») régissent l&apos;accès et
-        l&apos;utilisation du site et du service <strong>AVYORA</strong> (« le Service »), un outil
-        d&apos;estimation du coût de travaux de rénovation. En accédant au Service, l&apos;utilisateur
-        accepte sans réserve les présentes CGU.
+        l&apos;utilisation du site et du service <strong>AVYORA</strong>{" "}(« le Service »), un outil
+        d&apos;estimation du coût de travaux de rénovation et de construction d&apos;une maison neuve, avec un
+        éditeur de plan de maison. En accédant au Service, l&apos;utilisateur accepte sans réserve les présentes CGU.
       </p>
 
       <h2>2. Description du Service</h2>
       <p>
-        AVYORA permet d&apos;obtenir une estimation indicative du coût de travaux de rénovation à partir
-        d&apos;informations saisies (type de bien, surface, localisation, nature des travaux…). Le Service
+        AVYORA permet d&apos;obtenir une estimation indicative du coût de travaux de rénovation ou de construction
+        d&apos;une maison neuve à partir d&apos;informations saisies (type de bien, surface, localisation, nature des
+        travaux…), et de dessiner le plan d&apos;un logement. Le Service
         propose une version gratuite (estimation) et une offre payante « Pro » donnant accès à des
         fonctionnalités avancées (estimation détaillée, rapport PDF, suivi de chantier). Les modalités de
         l&apos;offre payante sont détaillées dans les <a href="/cgv">conditions générales de vente</a>.
@@ -62,7 +63,7 @@ export default function CGU() {
 
       <h2>4. Caractère indicatif des estimations</h2>
       <p>
-        Les estimations sont fournies <strong>à titre purement indicatif</strong> et comportent une marge
+        Les estimations sont fournies <strong>à titre purement indicatif</strong>{" "}et comportent une marge
         d&apos;incertitude. Elles ne constituent ni un devis, ni un engagement contractuel, ni un conseil en
         maîtrise d&apos;œuvre. Seuls des devis établis par des professionnels qualifiés font foi. L&apos;utilisateur
         reste seul décisionnaire de ses travaux et de ses dépenses.

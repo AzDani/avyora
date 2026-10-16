@@ -18,10 +18,10 @@ import { dict } from "@/lib/i18n/dictionaries";
 import { dateInsecable, libellesBeta } from "@/lib/beta";
 import {
   COOKIE_DEMANDE, COOKIE_LIEN, COOKIE_VERIFIER, DELAI_RENVOI_S, DUREE_DEMANDE_S, DUREE_VERIFIER_S, FENETRE_CONTROLE_MDP_MS,
-  FENETRE_NOUVEAU_COMPTE_MS, MARQUE_MDP, ajouterDemande, controleMdpAFaire, destinationLien, ecrireLienEnAttente, emailValide,
-  intentionDuLien, issueEnvoi, jetonValide, lireDemandes, lireLienEnAttente, lirePageAcces, lireTypeLien, messagerieDe,
-  metadonneesInscription, methodeNouveauCompte, reclamationEnAttente, suiteVerification, trouverDemande, verificationEnAttente,
-  type Demande,
+  FENETRE_NOUVEAU_COMPTE_MS, MARQUE_MDP, MARQUE_MDP_EMAIL, METADONNEES_D_UN_TIERS, ajouterDemande, consentementNouveautes, controleMdpAFaire,
+  destinationLien, ecrireLienEnAttente, emailValide, intentionDuLien, issueEnvoi, issueReset, jetonValide, lireDemandes, lireLienEnAttente,
+  lirePageAcces, lireTypeLien, messagerieDe, metadonneesEffacees, metadonneesInscription, methodeNouveauCompte, reclamationEnAttente,
+  suiteVerification, trouverDemande, verificationEnAttente, type Demande,
 } from "@/lib/auth-lien";
 import { empreinteAdresse, secretEmpreinte } from "@/lib/empreinte";
 import { createHash } from "node:crypto";
@@ -78,12 +78,24 @@ describe("lib/auth-lien : fonctions pures", () => {
     expect(issueEnvoi({ code: "email_address_not_authorized", status: 400 })).toBe("envoi");
   });
 
-  it("les métadonnées : CGU datées, case des nouveautés non cochée par défaut, consentement daté s'il est donné", () => {
-    expect(metadonneesInscription({ methode: "lien", newsletter: false, maintenant: MAINTENANT }))
-      .toEqual({ cgu_acceptees_le: "2026-10-15T10:00:00.000Z", inscription: "lien", newsletter: false });
-    expect(metadonneesInscription({ methode: "mot_de_passe", newsletter: true, maintenant: MAINTENANT })).toEqual({
-      cgu_acceptees_le: "2026-10-15T10:00:00.000Z", inscription: "mot_de_passe", newsletter: true, newsletter_le: "2026-10-15T10:00:00.000Z",
-    });
+  it("les métadonnées : CGU datées dans user_metadata ; le consentement aux nouveautés, daté, à part (app_metadata, serveur seul)", () => {
+    expect(metadonneesInscription({ methode: "lien", maintenant: MAINTENANT })).toEqual({ cgu_acceptees_le: "2026-10-15T10:00:00.000Z", inscription: "lien" });
+    expect(metadonneesInscription({ methode: "mot_de_passe", maintenant: MAINTENANT })).toEqual({ cgu_acceptees_le: "2026-10-15T10:00:00.000Z", inscription: "mot_de_passe" });
+    expect(consentementNouveautes(MAINTENANT)).toEqual({ newsletter: true, newsletter_le: "2026-10-15T10:00:00.000Z" });
+    // Ce qu'un tiers a pu écrire d'avance (inscription directe auprès de Supabase) et que le site affiche ou lit : effacé (`null`).
+    expect(metadonneesEffacees()).toEqual({ nom: null, username: null, profil: null, profil_le: null, onboarding_fait: null, newsletter: null, newsletter_le: null });
+    expect(METADONNEES_D_UN_TIERS).not.toContain("cgu_acceptees_le");
+  });
+
+  it("mot de passe oublié : tout ce qui dépend de l'adresse répond comme un envoi (pas d'énumération) ; l'adresse mal formée et la limite par IP sont dites", () => {
+    expect(issueReset(null)).toBe("envoye");
+    // « attends 52 secondes » ne vient que d'une adresse qui a un compte (Supabase n'écrit pas aux autres).
+    for (const e of [{ code: "over_email_send_rate_limit", status: 429 }, { status: 429 }, { code: "unexpected_failure", status: 500 }, { code: "user_banned", status: 400 }]) {
+      expect(issueReset(e), JSON.stringify(e)).toBe("envoye");
+    }
+    expect(issueReset({ code: "over_request_rate_limit", status: 429 })).toBe("limite");
+    expect(issueReset({ code: "email_address_invalid", status: 400 })).toBe("email");
+    expect(issueReset({ code: "validation_failed", status: 400 })).toBe("email");
   });
 
   it("le compte qui vient de naître : lien (adresse confirmée à l'instant) ou Google (créé à l'instant)", () => {
@@ -244,14 +256,30 @@ describe("lib/auth-lien : la trace des demandes de ce navigateur (av-demande) et
     for (const x of [undefined, "", "{", "{}", "[1]", JSON.stringify({ e: E1 })]) expect(lireDemandes(x, T)).toEqual([]);
   });
 
-  it("le contrôle du mot de passe : à faire dans l'heure qui suit la confirmation, une fois (marque serveur)", () => {
+  it("le contrôle du mot de passe : dans l'heure qui suit la confirmation, une fois (marque serveur) ; refait si l'adresse a changé", () => {
     const il = (ms: number) => new Date(T - ms).toISOString();
+    const C = "camille@exemple.fr";
     expect(FENETRE_CONTROLE_MDP_MS).toBe(3_600_000);
-    expect(controleMdpAFaire({ email_confirmed_at: il(1_000), app_metadata: {} }, T)).toBe(true);
-    expect(controleMdpAFaire({ email_confirmed_at: il(59 * 60_000), app_metadata: { provider: "email" } }, T)).toBe(true);
-    expect(controleMdpAFaire({ email_confirmed_at: il(61 * 60_000), app_metadata: {} }, T)).toBe(false);
-    expect(controleMdpAFaire({ email_confirmed_at: il(1_000), app_metadata: { [MARQUE_MDP]: il(500) } }, T)).toBe(false);
-    for (const u of [null, undefined, {}, { email_confirmed_at: null }, { email_confirmed_at: "pas une date" }]) expect(controleMdpAFaire(u, T)).toBe(false);
+    expect(controleMdpAFaire({ email: C, email_confirmed_at: il(1_000), app_metadata: {} }, T)).toBe("confirmation");
+    expect(controleMdpAFaire({ email: C, email_confirmed_at: il(59 * 60_000), app_metadata: { provider: "email" } }, T)).toBe("confirmation");
+    // Confirmé il y a plus d'une heure, jamais contrôlé (compte d'avant B2) : l'adresse est retenue, le mot de passe gardé.
+    expect(controleMdpAFaire({ email: C, email_confirmed_at: il(61 * 60_000), app_metadata: {} }, T)).toBe("noter");
+    // Contrôlé, adresse retenue : rien.
+    expect(controleMdpAFaire({ email: C, email_confirmed_at: il(1_000), app_metadata: { [MARQUE_MDP]: il(500), [MARQUE_MDP_EMAIL]: C } }, T)).toBeNull();
+    expect(controleMdpAFaire({ email: " Camille@Exemple.FR", email_confirmed_at: il(9e9), app_metadata: { [MARQUE_MDP]: il(9e9), [MARQUE_MDP_EMAIL]: C } }, T)).toBeNull();
+    // Contrôlé avant que l'adresse soit retenue : on la retient, sans rien toucher.
+    expect(controleMdpAFaire({ email: C, email_confirmed_at: il(1_000), app_metadata: { [MARQUE_MDP]: il(500) } }, T)).toBe("noter");
+    // Le compte d'un tiers passé à l'adresse de sa victime (changement d'adresse confirmé chez Supabase) : à refaire,
+    // quelle que soit l'ancienneté de la confirmation.
+    expect(controleMdpAFaire({ email: C, email_confirmed_at: il(40 * 86_400_000), app_metadata: { [MARQUE_MDP]: il(9e9), [MARQUE_MDP_EMAIL]: "tiers@exemple.fr" } }, T)).toBe("changement");
+    // Le même compte, jamais passé par le site (aucune marque), ou contrôlé sans adresse retenue : Supabase a envoyé une
+    // demande de changement d'adresse.
+    expect(controleMdpAFaire({ email: C, email_confirmed_at: il(40 * 86_400_000), email_change_sent_at: il(600_000), app_metadata: {} }, T)).toBe("changement");
+    expect(controleMdpAFaire({ email: C, email_confirmed_at: il(30 * 60_000), email_change_sent_at: il(600_000), app_metadata: {} }, T)).toBe("changement");
+    expect(controleMdpAFaire({ email: C, email_confirmed_at: il(9e9), email_change_sent_at: il(600_000), app_metadata: { [MARQUE_MDP]: il(9e9) } }, T)).toBe("changement");
+    // Une marque ou une adresse retenue posées par l'utilisateur (user_metadata) ne comptent pas.
+    expect(controleMdpAFaire({ email: C, email_confirmed_at: il(1_000), app_metadata: {}, user_metadata: { [MARQUE_MDP]: il(1), [MARQUE_MDP_EMAIL]: C } } as never, T)).toBe("confirmation");
+    for (const u of [null, undefined, {}, { email_confirmed_at: null }, { email: C, email_confirmed_at: "pas une date" }]) expect(controleMdpAFaire(u, T)).toBeNull();
   });
 
   it("après la vérification : un chemin interne hors de /auth, sinon /projets", () => {
@@ -284,6 +312,8 @@ const S = {
   session: null as unknown,
   resets: [] as unknown[],
   connexions: [] as unknown[],
+  /** Les écritures du serveur (clé service_role) : `app_metadata`. */
+  admin: [] as [string, unknown][],
 };
 
 /** Le mot de passe que la connexion simulée refuse. */
@@ -329,7 +359,7 @@ async function actions(env: "production" | "local" = "local") {
           S.inscriptions.push(o);
           return { data: { user: { id: "u-nouveau", created_at: S.creeLe ?? new Date().toISOString() }, session: S.session }, error: null };
         },
-        resetPasswordForEmail: async (_e: string, o: unknown) => { S.resets.push(o); return { data: {}, error: null }; },
+        resetPasswordForEmail: async (_e: string, o: unknown) => { S.resets.push(o); return { data: {}, error: S.erreur }; },
         signInWithPassword: async (o: { password?: string }) => {
           S.connexions.push(o);
           return o.password === MDP_REFUSE
@@ -340,12 +370,15 @@ async function actions(env: "production" | "local" = "local") {
       },
     }),
   }));
+  vi.doMock("@/lib/supabase/admin", () => ({
+    supabaseAdmin: () => ({ auth: { admin: { updateUserById: async (id: string, o: unknown) => { S.admin.push([id, o]); return { data: {}, error: null }; } } } }),
+  }));
   vi.doMock("@/lib/audit", () => ({ journaliser: async (type: string, o: Record<string, unknown>) => { S.journal.push([type, o]); } }));
   vi.doMock("@/lib/track-server", () => ({ suivreServeur: async (nom: string, p: Record<string, unknown>) => { S.mesures.push([nom, p]); } }));
   return import("@/lib/actions/auth");
 }
 
-const ACTION_MOCKS = ["next/headers", "@/lib/supabase/server", "@/lib/audit", "@/lib/track-server"];
+const ACTION_MOCKS = ["next/headers", "@/lib/supabase/server", "@/lib/supabase/admin", "@/lib/audit", "@/lib/track-server"];
 
 describe("envoyerLienAcces : le lien d'accès (aucun e-mail réel)", () => {
   beforeEach(() => {
@@ -362,6 +395,7 @@ describe("envoyerLienAcces : le lien d'accès (aucun e-mail réel)", () => {
     S.session = null;
     S.resets = [];
     S.connexions = [];
+    S.admin = [];
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(MAINTENANT);
   });
@@ -380,7 +414,7 @@ describe("envoyerLienAcces : le lien d'accès (aucun e-mail réel)", () => {
       options: {
         shouldCreateUser: true,
         emailRedirectTo: "https://getavyora.fr/auth/callback?next=%2Fprojets%2Fnouveau%2Fdetaille%3Faffiner%3D1",
-        data: { cgu_acceptees_le: "2026-10-15T10:00:00.000Z", inscription: "lien", newsletter: false },
+        data: { cgu_acceptees_le: "2026-10-15T10:00:00.000Z", inscription: "lien" },
       },
     }]);
     // Le journal ne garde que l'empreinte de l'adresse (elle peut être celle d'un tiers).
@@ -399,8 +433,9 @@ describe("envoyerLienAcces : le lien d'accès (aucun e-mail réel)", () => {
     const m = await actions();
     const r = await m.envoyerLienAcces(undefined, fd({ email: "camille@exemple.fr", page: "inscription", newsletter: "on", renvoi: "1" }));
     expect(r).toEqual({ envoye: true, email: "camille@exemple.fr", renvoi: true });
-    expect(S.otp[0].options.data).toEqual({ cgu_acceptees_le: "2026-10-15T10:00:00.000Z", inscription: "lien", newsletter: false });
+    expect(S.otp[0].options.data).toEqual({ cgu_acceptees_le: "2026-10-15T10:00:00.000Z", inscription: "lien" });
     expect(demandeIci("camille@exemple.fr")).toEqual({ e: empreinteAdresse("camille@exemple.fr"), m: "lien", t: SEC, n: true });
+    expect(S.admin).toEqual([]);
     expect(S.otp[0].options.emailRedirectTo).toBe("https://getavyora.fr/auth/callback?next=%2Fonboarding");
   });
 
@@ -409,7 +444,7 @@ describe("envoyerLienAcces : le lien d'accès (aucun e-mail réel)", () => {
     await m.envoyerLienAcces(undefined, fd({ email: "camille@exemple.fr", page: "connexion", newsletter: "on" }));
     expect(S.otp[0].options.shouldCreateUser).toBe(true);
     expect(S.otp[0].options.emailRedirectTo).toBe("https://getavyora.fr/auth/callback?next=%2Fprojets");
-    expect(S.otp[0].options.data.newsletter).toBe(false);
+    expect(S.otp[0].options.data).not.toHaveProperty("newsletter");
     expect(S.otp[0].options.data).not.toHaveProperty("newsletter_le");
     expect(demandeIci("camille@exemple.fr")).not.toHaveProperty("n");
   });
@@ -466,7 +501,7 @@ describe("envoyerLienAcces : le lien d'accès (aucun e-mail réel)", () => {
     }
   });
 
-  it("production sans Upstash : 6 demandes / min par IP, 20 / h par IP, puis 3 / h par adresse quelle que soit l'IP", async () => {
+  it("production sans Upstash : 6 demandes / min par IP, 20 / h par IP, puis 3 / h pour une même adresse depuis une même IP", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
     let m = await actions("production");
     for (let i = 0; i < 6; i++) {
@@ -477,17 +512,24 @@ describe("envoyerLienAcces : le lien d'accès (aucun e-mail réel)", () => {
     S.ip = "5.6.7.8";
     expect(await m.envoyerLienAcces(undefined, fd({ email: "x9@exemple.fr", page: "inscription" }))).toMatchObject({ envoye: true });
 
-    // Une même adresse, depuis des IP différentes : la quatrième demande de l'heure est refusée (3 / h par adresse : un
-    // envoi et deux « Renvoyer »).
+    // Une même adresse depuis une même IP : la quatrième demande de l'heure est refusée (un envoi et deux « Renvoyer »),
+    // même à une minute d'intervalle.
     m = await actions("production");
     S.otp = [];
+    S.ip = "10.0.0.1";
     for (let i = 0; i < 3; i++) {
-      S.ip = `10.0.0.${i}`;
+      vi.setSystemTime(MAINTENANT.getTime() + i * 61_000);
       expect(await m.envoyerLienAcces(undefined, fd({ email: "cible@exemple.fr", page: "connexion" }))).toMatchObject({ envoye: true });
     }
-    S.ip = "10.0.0.99";
+    vi.setSystemTime(MAINTENANT.getTime() + 3 * 61_000);
     expect(await m.envoyerLienAcces(undefined, fd({ email: "cible@exemple.fr", page: "connexion" }))).toEqual({ erreur: "limite" });
     expect(S.otp).toHaveLength(3);
+    // La même adresse depuis d'autres IP : pas de plafond toutes IP confondues (intervalle de 60 s de Supabase, CAPTCHA).
+    for (let i = 0; i < 5; i++) {
+      S.ip = `10.0.1.${i}`;
+      expect(await m.envoyerLienAcces(undefined, fd({ email: "cible@exemple.fr", page: "connexion" })), String(i)).toMatchObject({ envoye: true });
+    }
+    vi.setSystemTime(MAINTENANT);
 
     // Une même IP qui fait défiler les adresses, une par minute : la vingt et unième de l'heure est refusée.
     m = await actions("production");
@@ -500,6 +542,26 @@ describe("envoyerLienAcces : le lien d'accès (aucun e-mail réel)", () => {
     vi.setSystemTime(MAINTENANT.getTime() + 21 * 61_000);
     expect(await m.envoyerLienAcces(undefined, fd({ email: "liste99@exemple.fr", page: "inscription" }))).toEqual({ erreur: "limite" });
     expect(S.otp).toHaveLength(20);
+    vi.restoreAllMocks();
+  });
+
+  it("verrouillage ciblé (2e contre-examen, sonde A7) : un tiers qui demande trois liens par heure pour l'adresse d'une personne ne l'empêche ni de recevoir le sien, ni « mot de passe oublié »", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const m = await actions("production");
+    S.ip = "6.6.6.6";
+    for (let i = 0; i < 3; i++) {
+      vi.setSystemTime(MAINTENANT.getTime() + i * 61_000);
+      expect(await m.envoyerLienAcces(undefined, fd({ email: "victime@exemple.fr", page: "connexion" }))).toMatchObject({ envoye: true });
+    }
+    vi.setSystemTime(MAINTENANT.getTime() + 3 * 61_000);
+    expect(await m.envoyerLienAcces(undefined, fd({ email: "victime@exemple.fr", page: "connexion" }))).toEqual({ erreur: "limite" });
+    // La personne, depuis chez elle, dans la même heure.
+    S.ip = "81.1.2.3";
+    expect(await m.envoyerLienAcces(undefined, fd({ email: "victime@exemple.fr", page: "connexion" }))).toMatchObject({ envoye: true });
+    expect(await m.requestReset(undefined, fd({ email: "victime@exemple.fr" }))).toMatchObject({ message: expect.any(String) });
+    expect(S.otp).toHaveLength(4);
+    expect(S.resets).toHaveLength(1);
+    vi.setSystemTime(MAINTENANT);
     vi.restoreAllMocks();
   });
 
@@ -521,10 +583,11 @@ describe("envoyerLienAcces : le lien d'accès (aucun e-mail réel)", () => {
     const adresses = cles.filter(([, id]) => id !== "1.2.3.4");
     expect(adresses.map(([k]) => k)).toEqual(["lienAdresse", "lienAdresse", "lienAdresse"]);
     for (const [, id] of adresses) {
-      expect(id).toMatch(/^[0-9a-f]{32}$/);
+      // L'adresse (en empreinte) depuis cette IP : jamais un compteur que d'autres IP rempliraient.
+      expect(id).toMatch(/^[0-9a-f]{32}:1\.2\.3\.4$/);
       expect(id).not.toMatch(/camille|zoe|exemple/i);
     }
-    expect(adresses[0][1]).toBe(empreinteAdresse("camille@exemple.fr")); // HMAC du serveur, pas un SHA-256 sans sel
+    expect(adresses[0][1]).toBe(`${empreinteAdresse("camille@exemple.fr")}:1.2.3.4`); // HMAC du serveur, pas un SHA-256 sans sel
     expect(adresses[0][1]).toBe(adresses[1][1]); // même adresse, même compteur
     expect(adresses[2][1]).not.toBe(adresses[0][1]);
   });
@@ -533,9 +596,8 @@ describe("envoyerLienAcces : le lien d'accès (aucun e-mail réel)", () => {
     const m = await actions();
     const r = await m.signup(undefined, fd({ nom: "Camille", email: "camille@exemple.fr", password: "chantier2026maison", accept: "on", newsletter: "on" }));
     expect(r).toMatchObject({ message: expect.any(String) });
-    expect(S.inscriptions[0].options.data).toEqual({
-      nom: "Camille", cgu_acceptees_le: "2026-10-15T10:00:00.000Z", inscription: "mot_de_passe", newsletter: false,
-    });
+    expect(S.inscriptions[0].options.data).toEqual({ nom: "Camille", cgu_acceptees_le: "2026-10-15T10:00:00.000Z", inscription: "mot_de_passe" });
+    expect(JSON.stringify(S.inscriptions[0].options.data)).not.toContain("newsletter");
     expect(demandeIci("camille@exemple.fr")).toEqual({ e: empreinteAdresse("camille@exemple.fr"), m: "mdp", t: SEC, n: true });
     expect(S.mesures).toEqual([["compte_cree", { confirme: false, destination: "/onboarding", methode: "mot_de_passe" }]]);
   });
@@ -594,7 +656,9 @@ describe("envoyerLienAcces : le lien d'accès (aucun e-mail réel)", () => {
       url = String((e as { digest?: string }).digest ?? "").split(";")[2];
     }
     expect(url).toBe("/onboarding");
-    expect(S.majs).toEqual([{ data: { newsletter: true, newsletter_le: "2026-10-15T10:00:00.000Z" } }]);
+    // Dans app_metadata, que seul le serveur écrit.
+    expect(S.admin).toEqual([["u-nouveau", { app_metadata: { newsletter: true, newsletter_le: "2026-10-15T10:00:00.000Z" } }]]);
+    expect(S.majs).toEqual([]);
   });
 
   it("une inscription qui ouvre la session, une connexion au mot de passe : une arrivée « à vérifier » d'avant est oubliée", async () => {
@@ -633,6 +697,33 @@ describe("envoyerLienAcces : le lien d'accès (aucun e-mail réel)", () => {
     expect(r).toMatchObject({ message: expect.any(String) });
     expect(demandeIci("camille@exemple.fr")?.m).toBe("reset");
     expect(S.journal).toEqual([["reset_demande", { payload: { empreinte: empreinteAdresse("camille@exemple.fr") } }]]);
+  });
+
+  it("mot de passe oublié (2e contre-examen, sonde A8) : la même réponse, la même trace, que l'adresse ait un compte ou non ; jamais le message brut de Supabase", async () => {
+    const reponses: unknown[] = [];
+    const traces: boolean[] = [];
+    // Adresse inconnue (Supabase répond comme un envoi) ; adresse connue redemandée avant 60 s ; SMTP en panne.
+    for (const erreur of [null, { code: "over_email_send_rate_limit", status: 429, message: "For security purposes, you can only request this after 52 seconds." }, { code: "unexpected_failure", status: 500, message: "Error sending recovery email" }]) {
+      S.erreur = erreur;
+      S.cookies = new Map();
+      const m = await actions();
+      reponses.push(await m.requestReset(undefined, fd({ email: "camille@exemple.fr" })));
+      traces.push(!!demandeIci("camille@exemple.fr"));
+    }
+    for (const r of reponses) expect(r).toEqual(reponses[0]);
+    expect(JSON.stringify(reponses)).not.toMatch(/security|seconds|recovery/i);
+    expect(traces).toEqual([true, true, true]);
+    // Le journal garde le code (l'empreinte seulement).
+    expect(S.journal.at(-1)).toEqual(["reset_demande", { payload: { empreinte: empreinteAdresse("camille@exemple.fr"), issue: "envoye", code: "unexpected_failure" } }]);
+    // Une adresse mal formée, sans appel ; la limite par IP de Supabase, dite.
+    S.erreur = null;
+    S.resets = [];
+    let m = await actions();
+    expect(await m.requestReset(undefined, fd({ email: "camille@" }))).toEqual({ error: expect.stringMatching(/pas valide/) });
+    expect(S.resets).toEqual([]);
+    S.erreur = { code: "over_request_rate_limit", status: 429 };
+    m = await actions();
+    expect(await m.requestReset(undefined, fd({ email: "camille@exemple.fr" }))).toEqual({ error: expect.stringMatching(/Trop de tentatives/) });
   });
 });
 
@@ -680,7 +771,7 @@ describe("/auth/callback et /auth/confirm : le retour du lien", () => {
 
   const il = (ms: number) => new Date(Date.now() - ms).toISOString();
   /** Un compte confirmé il y a longtemps, dont le mot de passe a déjà été contrôlé : seule la mesure compte ici. */
-  const CONTROLE = { app_metadata: { provider: "email", [MARQUE_MDP]: "2026-10-01T00:00:00.000Z" } };
+  const CONTROLE = { app_metadata: { provider: "email", [MARQUE_MDP]: "2026-10-01T00:00:00.000Z", [MARQUE_MDP_EMAIL]: "camille@exemple.fr" } };
   const NOUVEAU_LIEN = () => ({ id: "u1", email: "camille@exemple.fr", user_metadata: { inscription: "lien" }, app_metadata: { provider: "email" }, email_confirmed_at: il(4_000), created_at: il(120_000) });
   /** Les appels qui portent des métadonnées (la mesure, les nouveautés), sans ceux du mot de passe. */
   const donnees = () => appelsMaj.filter((o) => !(o as { password?: string }).password);
@@ -727,7 +818,7 @@ describe("/auth/callback et /auth/confirm : le retour du lien", () => {
     await retour("callback", "https://getavyora.fr/auth/callback?code=abc&next=%2Fplan", {
       id: "u2", email: "alex@gmail.com", user_metadata: { full_name: "Alex" }, app_metadata: { provider: "google" }, created_at: il(2_000),
     });
-    expect(appelsMaj).toEqual([{ data: { cgu_acceptees_le: "2026-10-15T10:00:00.000Z", inscription: "google", newsletter: false, compte_cree_le: "2026-10-15T10:00:00.000Z" } }]);
+    expect(appelsMaj).toEqual([{ data: { cgu_acceptees_le: "2026-10-15T10:00:00.000Z", inscription: "google", compte_cree_le: "2026-10-15T10:00:00.000Z" } }]);
     expect(S.mesures).toEqual([["compte_cree", { confirme: true, destination: "/plan", methode: "google" }]]);
   });
 
@@ -762,7 +853,8 @@ describe("/auth/callback et /auth/confirm : le retour du lien", () => {
     const mdp = appelsMaj.find((o) => (o as { password?: string }).password) as { password: string } | undefined;
     expect(mdp?.password).toMatch(/^[A-Za-z0-9_-]{43}-Aa1!$/);
     expect(sorties).toEqual([{ scope: "others" }]);
-    expect(marques).toEqual([["u1", { app_metadata: { [MARQUE_MDP]: expect.any(String) } }]]);
+    // La marque : l'heure et l'adresse contrôlée ; ce que le tiers a pu écrire d'avance (nom, pseudo, profil) : effacé.
+    expect(marques).toEqual([["u1", { app_metadata: { [MARQUE_MDP]: expect.any(String), [MARQUE_MDP_EMAIL]: "camille@exemple.fr" }, user_metadata: metadonneesEffacees() }]]);
     expect(S.journal).toContainEqual(["mot_de_passe_neutralise", { userId: "u1" }]);
     // Deux arrivées : deux aléas différents.
     const premier = mdp?.password;
@@ -776,7 +868,8 @@ describe("/auth/callback et /auth/confirm : le retour du lien", () => {
     }, null, trace("camille@exemple.fr", { m: "mdp" }));
     expect(appelsMaj.filter((o) => (o as { password?: string }).password)).toEqual([]);
     expect(sorties).toEqual([]);
-    expect(marques).toEqual([["u1", { app_metadata: { [MARQUE_MDP]: expect.any(String) } }]]);
+    // Né dans ce navigateur : le nom tapé ici reste.
+    expect(marques).toEqual([["u1", { app_metadata: { [MARQUE_MDP]: expect.any(String), [MARQUE_MDP_EMAIL]: "camille@exemple.fr" } }]]);
     // La trace d'une AUTRE adresse ne compte pas.
     await retour("callback", "https://getavyora.fr/auth/callback?code=abc&next=%2Fonboarding", {
       ...NOUVEAU_LIEN(), user_metadata: { inscription: "mot_de_passe" },
@@ -790,6 +883,9 @@ describe("/auth/callback et /auth/confirm : le retour du lien", () => {
     expect(marques).toEqual([]);
     await retour("callback", "https://getavyora.fr/auth/callback?code=abc&next=%2Fprojets", { ...NOUVEAU_LIEN(), email_confirmed_at: il(61 * 60_000) });
     expect(appelsMaj.filter((o) => (o as { password?: string }).password)).toEqual([]);
+    // Un compte d'avant (jamais contrôlé, confirmé depuis longtemps) : son adresse est retenue, rien d'autre.
+    expect(marques).toEqual([["u1", { app_metadata: { [MARQUE_MDP]: expect.any(String), [MARQUE_MDP_EMAIL]: "camille@exemple.fr" } }]]);
+    expect(sorties).toEqual([]);
     // Le tiers peut écrire dans user_metadata à l'inscription, pas dans app_metadata : sa « marque » est ignorée.
     await retour("callback", "https://getavyora.fr/auth/callback?code=abc&next=%2Fprojets", {
       ...NOUVEAU_LIEN(), user_metadata: { inscription: "lien", [MARQUE_MDP]: "2099-01-01T00:00:00.000Z" },
@@ -799,16 +895,64 @@ describe("/auth/callback et /auth/confirm : le retour du lien", () => {
 
   /* ─── Les nouveautés : seulement à l'arrivée confirmée, dans le navigateur qui a coché ─── */
 
-  it("la case cochée dans ce navigateur : enregistrée à l'arrivée, datée du moment où elle a été cochée ; sinon rien", async () => {
+  it("la case cochée dans ce navigateur : enregistrée à l'arrivée, datée du moment où elle a été cochée, dans app_metadata (serveur seul) ; sinon rien", async () => {
     const t = Math.floor(Date.now() / 1000) - 120;
     await retour("callback", "https://getavyora.fr/auth/callback?code=abc&next=%2Fprojets", NOUVEAU_LIEN(), null, trace("camille@exemple.fr", { n: true, t }));
-    expect(donnees()).toContainEqual({ data: { newsletter: true, newsletter_le: new Date(t * 1000).toISOString() } });
+    expect(marques).toContainEqual(["u1", { app_metadata: { newsletter: true, newsletter_le: new Date(t * 1000).toISOString() } }]);
+    expect(donnees().filter((o) => JSON.stringify(o).includes("newsletter"))).toEqual([]); // jamais dans user_metadata
     // Ouvert dans un autre navigateur (aucune trace) : rien.
     await retour("callback", "https://getavyora.fr/auth/callback?code=abc&next=%2Fprojets", NOUVEAU_LIEN());
-    expect(donnees().filter((o) => JSON.stringify(o).includes("newsletter"))).toEqual([]);
+    expect(marques.filter(([, o]) => JSON.stringify((o as { app_metadata?: unknown }).app_metadata ?? {}).includes("newsletter"))).toEqual([]);
     // Déjà abonné : pas de nouvelle date.
-    await retour("callback", "https://getavyora.fr/auth/callback?code=abc&next=%2Fprojets", { ...NOUVEAU_LIEN(), ...CONTROLE, user_metadata: { inscription: "lien", newsletter: true, compte_cree_le: il(1_000) } }, null, trace("camille@exemple.fr", { n: true }));
+    await retour("callback", "https://getavyora.fr/auth/callback?code=abc&next=%2Fprojets", {
+      ...NOUVEAU_LIEN(), app_metadata: { ...CONTROLE.app_metadata, newsletter: true }, user_metadata: { inscription: "lien", compte_cree_le: il(1_000) },
+    }, null, trace("camille@exemple.fr", { n: true }));
     expect(appelsMaj).toEqual([]);
+    expect(marques).toEqual([]);
+  });
+
+  it("2e contre-examen, sonde A6 : un compte préparé par un tiers avec newsletter, nom, pseudo, profil (appel direct à Supabase) ; la personne s'inscrit sans cocher : rien ne reste", async () => {
+    const tiers = { newsletter: true, newsletter_le: "2026-10-14T08:00:00.000Z", nom: "Ton compte est suspendu, appelle le 08…", username: "support", profil: { role: "x" }, onboarding_fait: true };
+    await retour("callback", "https://getavyora.fr/auth/callback?code=abc&next=%2Fprojets", {
+      ...NOUVEAU_LIEN(), user_metadata: { inscription: "lien", ...tiers },
+    }, null, trace("camille@exemple.fr"));
+    expect(marques).toEqual([["u1", { app_metadata: { [MARQUE_MDP]: expect.any(String), [MARQUE_MDP_EMAIL]: "camille@exemple.fr" }, user_metadata: metadonneesEffacees() }]]);
+    for (const k of Object.keys(tiers)) expect(metadonneesEffacees(), k).toHaveProperty(k, null);
+    // Le consentement de la doc se lit dans app_metadata : la case du tiers (user_metadata) n'y est jamais recopiée.
+    expect(JSON.stringify(marques)).not.toMatch(/"newsletter":true/);
+  });
+
+  it("2e contre-examen, sonde A5 « GAP » : le compte d'un tiers passé à l'adresse de la personne (changement d'adresse) : mot de passe remplacé, sessions fermées, consentement de l'ancienne adresse retiré", async () => {
+    // Le tiers a créé, confirmé et contrôlé SON compte (tiers@), puis l'a passé à camille@, qui a cliqué « Confirm Change of Email ».
+    const passe = {
+      ...NOUVEAU_LIEN(), email_confirmed_at: il(40 * 86_400_000), email_change_sent_at: il(3_600_000),
+      user_metadata: { inscription: "mot_de_passe", nom: "Tiers" },
+      app_metadata: { provider: "email", [MARQUE_MDP]: il(30 * 86_400_000), [MARQUE_MDP_EMAIL]: "tiers@exemple.fr", newsletter: true, newsletter_le: il(30 * 86_400_000) },
+    };
+    // Même avec la trace « mot de passe choisi ici » (une inscription au mot de passe sur un compte confirmé ne change rien chez Supabase).
+    const r = await retour("callback", "https://getavyora.fr/auth/callback?code=abc&next=%2Fprojets", passe, null, trace("camille@exemple.fr", { m: "mdp", n: true }));
+    expect(r.location).toBe("https://getavyora.fr/projets");
+    expect(appelsMaj.filter((o) => (o as { password?: string }).password)).toHaveLength(1);
+    expect(sorties).toEqual([{ scope: "others" }]);
+    expect(S.journal).toContainEqual(["mot_de_passe_neutralise", { userId: "u1", payload: { raison: "changement_adresse" } }]);
+    expect(marques[0]).toEqual(["u1", {
+      app_metadata: { [MARQUE_MDP]: expect.any(String), [MARQUE_MDP_EMAIL]: "camille@exemple.fr", newsletter: null, newsletter_le: null },
+      user_metadata: metadonneesEffacees(),
+    }]);
+    // La case cochée ICI par la personne : enregistrée pour sa propre adresse.
+    expect(marques[1]).toEqual(["u1", { app_metadata: { newsletter: true, newsletter_le: expect.any(String) } }]);
+    // Jamais passé par le site (aucune marque), confirmé depuis longtemps : la demande de changement d'adresse suffit.
+    await retour("callback", "https://getavyora.fr/auth/callback?code=abc&next=%2Fprojets", {
+      ...passe, app_metadata: { provider: "email" },
+    }, null, trace("camille@exemple.fr"));
+    expect(appelsMaj.filter((o) => (o as { password?: string }).password)).toHaveLength(1);
+    expect(sorties).toEqual([{ scope: "others" }]);
+    // Une fois contrôlé (adresse retenue = adresse du compte) : plus rien.
+    await retour("callback", "https://getavyora.fr/auth/callback?code=abc&next=%2Fprojets", {
+      ...passe, app_metadata: { provider: "email", [MARQUE_MDP]: il(1_000), [MARQUE_MDP_EMAIL]: "camille@exemple.fr" },
+    }, null, trace("camille@exemple.fr"));
+    expect(appelsMaj.filter((o) => (o as { password?: string }).password)).toEqual([]);
+    expect(marques).toEqual([]);
   });
 });
 
@@ -982,7 +1126,7 @@ describe("/auth/confirm puis le bouton de /auth/confirmer : le lien au format to
     expect(r.url).toBe("/projets");
     expect(r.maj.filter((x) => (x as { password?: string }).password)).toHaveLength(1);
     expect(r.sorties).toEqual([{ scope: "others" }]);
-    expect(r.marques).toEqual([["u1", { app_metadata: { [MARQUE_MDP]: expect.any(String) } }]]);
+    expect(r.marques).toEqual([["u1", { app_metadata: { [MARQUE_MDP]: expect.any(String), [MARQUE_MDP_EMAIL]: "camille@exemple.fr" }, user_metadata: metadonneesEffacees() }]]);
     // Choisi ici (trace « mdp ») : gardé.
     const r2 = await cliquer(ecrireLienEnAttente({ jeton: JETON, type: "email", next: "/projets" }), {
       user: { ...NOUVEAU(), user_metadata: { inscription: "mot_de_passe" } }, demandes: ici("camille@exemple.fr", { m: "mdp" }),
@@ -1082,21 +1226,21 @@ describe("proxy : une arrivée « à vérifier » ramène toute page à /auth/ve
   afterEach(() => {
     vi.doUnmock("@supabase/ssr");
   });
-  async function passer(url: string, o: { user?: unknown; cookie?: string; methode?: string } = {}) {
+  async function passer(url: string, o: { user?: unknown; cookie?: string; methode?: string; entetes?: Record<string, string> } = {}) {
     vi.resetModules();
     vi.doMock("@supabase/ssr", () => ({
       createServerClient: () => ({ auth: { getUser: async () => ({ data: { user: o.user ?? null } }) } }),
     }));
     const { NextRequest } = await import("next/server");
     const { proxy } = await import("@/proxy");
-    const req = new NextRequest(url, { method: o.methode ?? "GET", headers: o.cookie ? { cookie: o.cookie } : {} });
+    const req = new NextRequest(url, { method: o.methode ?? "GET", headers: { ...(o.entetes ?? {}), ...(o.cookie ? { cookie: o.cookie } : {}) } });
     return proxy(req);
   }
   const ou = async (url: string, o: { user?: unknown; cookie?: string; methode?: string } = {}) => (await passer(url, o)).headers.get("location");
   const CAMILLE = { id: "u1", email: "camille@exemple.fr" };
   const MARQUE = `${COOKIE_VERIFIER}=u1`;
 
-  it("connecté avec la marque de CE compte : toute page mène à la vérification, l'intention gardée ; /auth, les lectures /api et les actions passent", async () => {
+  it("connecté avec la marque de CE compte : toute page mène à la vérification, l'intention gardée ; /auth et les lectures /api passent", async () => {
     expect(await ou("https://getavyora.fr/projets", { user: CAMILLE, cookie: MARQUE })).toBe("https://getavyora.fr/auth/verifier?next=%2Fprojets");
     expect(await ou("https://getavyora.fr/mon-espace", { user: CAMILLE, cookie: MARQUE })).toBe("https://getavyora.fr/auth/verifier?next=%2Fmon-espace");
     expect(await ou("https://getavyora.fr/plan?id=abc", { user: CAMILLE, cookie: MARQUE })).toBe("https://getavyora.fr/auth/verifier?next=%2Fplan%3Fid%3Dabc");
@@ -1106,7 +1250,20 @@ describe("proxy : une arrivée « à vérifier » ramène toute page à /auth/ve
       expect(r.headers.get("location"), u).toBeNull();
       expect(r.status, u).toBe(200);
     }
-    expect(await ou("https://getavyora.fr/projets", { user: CAMILLE, cookie: MARQUE, methode: "POST" })).toBeNull();
+    // Les deux boutons de /auth/verifier (actions serveur, POST sur la page elle-même) passent.
+    const bouton = await passer("https://getavyora.fr/auth/verifier?next=%2F", { user: CAMILLE, cookie: MARQUE, methode: "POST", entetes: { "next-action": "7f00" } });
+    expect(bouton.status).toBe(200);
+    expect(bouton.headers.get("location")).toBeNull();
+  });
+
+  it("2e contre-examen, sonde A4 : une action serveur d'un onglet resté ouvert (profil d'onboarding, pseudo) pendant la vérification : refusée, 403", async () => {
+    for (const u of ["https://getavyora.fr/onboarding", "https://getavyora.fr/mon-espace/compte", "https://getavyora.fr/projets", "https://getavyora.fr/"]) {
+      const r = await passer(u, { user: CAMILLE, cookie: MARQUE, methode: "POST", entetes: { "next-action": "7f00" } });
+      expect(r.status, u).toBe(403);
+      expect(await r.json()).toEqual({ error: "verification_requise" });
+    }
+    // Sans la marque : l'action passe jusqu'à sa page.
+    expect((await passer("https://getavyora.fr/onboarding", { user: CAMILLE, methode: "POST", entetes: { "next-action": "7f00" } })).status).toBe(200);
   });
 
   it("la marque dure autant que la session : renouvelée (400 jours) à chaque page ramenée, jamais plus courte que les cookies de Supabase", async () => {
@@ -1207,6 +1364,19 @@ const balise = (h: string, id: string) => {
 describe("Rendu : /inscription et /connexion commencent par le lien d'accès", () => {
   afterEach(() => {
     for (const m of PAGE_MOCKS) vi.doUnmock(m);
+  });
+
+  it("2e contre-examen : un `next` répété (/connexion?next=/a&next=//evil.com) n'est plus une erreur 500 ; le premier compte, assaini", async () => {
+    const p = await charger({ locale: "fr" });
+    const tableau = (o: Record<string, string[]>) => o as unknown as Record<string, string>;
+    const cx = await p.connexion(tableau({ next: ["/plan", "//evil.com"], erreur: ["lien_invalide", "x"] }));
+    expect(cx).toContain('value="/plan"');
+    expect(cx).toContain("data-lien-invalide");
+    const ins = await p.inscription(tableau({ next: ["//evil.com", "/plan"], source: ["editeur-plan", "x"] }));
+    expect(ins).not.toContain("evil.com");
+    const q = await charger({ locale: "fr", user: { id: "u1", email: "camille@exemple.fr" } });
+    expect(await redirection(() => q.connexion(tableau({ next: ["/plan", "//evil.com"] })))).toBe("/plan");
+    expect(await redirection(() => q.inscription(tableau({ next: ["//evil.com", "/plan"] })))).toBe("/projets");
   });
 
   for (const locale of LOCALES) {

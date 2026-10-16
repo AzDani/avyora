@@ -103,7 +103,7 @@ const TR = {
     badge: "Estimate · renovation",
     inclTax: "incl. tax",
     mostLikely: "Most likely",
-    margin: "margin ±15 %",
+    margin: "margin ±15%",
     labor: "labor",
     workExclTax: "Work (excl. tax)",
     vat: "VAT",

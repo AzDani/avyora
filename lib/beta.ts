@@ -175,8 +175,8 @@ export function lienInscriptionBeta(next: string | undefined, source: SourceBeta
 /**
  * Ce que `/api/plans/session` (rendue à la requête) donne à l'amorçage de l'éditeur (lib/editeur/heberger.ts) tant
  * que la bêta court :
- *  - `prix` remplace la phrase du prix de Pro (« Pro gratuit pendant la bêta… », avec son point : l'éditeur l'écrit
- *    aussi au fil d'une phrase, dans le dossier PDF) ;
+ *  - `prix` remplace la phrase du prix de Pro (« Gratuit pendant la bêta… », sans « Pro » devant : l'amorçage le retire,
+ *    `TEXTES_BETA_EDITEUR` ; avec sa majuscule et son point : l'éditeur l'écrit après une phrase, dans le dossier PDF) ;
  *  - `passer` remplace le libellé « Passer Pro » dans le texte du script, des lettres et des espaces seulement ;
  *  - `reserve` remplace « est réservé à Pro » (le projet rénovation ouvert sans compte), lettres, espaces et virgules ;
  *  - `plans` remplace « des plans enregistrés sans limite » (le droit Pro des plans) : pendant la bêta, un inscrit en
@@ -189,7 +189,7 @@ export function lienInscriptionBeta(next: string | undefined, source: SourceBeta
  */
 export function betaEditeurPlan(): { prix: string; passer: string; reserve: string; plans: string; inscription: string } {
   return {
-    prix: `gratuit pendant la bêta, jusqu'au ${libellesBeta("fr").fin}, avec un compte.`,
+    prix: `Gratuit pendant la bêta, jusqu'au ${libellesBeta("fr").fin}, avec un compte.`,
     passer: "Compte gratuit",
     reserve: "demande un compte, gratuit pendant la bêta",
     plans: `jusqu\u2019à ${PLANS_MAX_BETA} plans enregistrés`,

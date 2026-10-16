@@ -175,7 +175,7 @@ export default function PrixTravauxHub() {
       <h2>Quels travaux sont surtout de la main-d&apos;œuvre ?</h2>
       <p>
         À budget égal, deux chantiers n&apos;ont pas la même structure de coût. Ce tableau classe les
-        {" "}{PROJETS.length} projets par part de main-d&apos;œuvre — c&apos;est elle qui décide si
+        {" "}{PROJETS.length}{" "}projets par part de main-d&apos;œuvre — c&apos;est elle qui décide si
         faire soi-même a un intérêt, et pourquoi le prix bouge d&apos;une région à l&apos;autre.
       </p>
       <div className="tw surf">
@@ -204,16 +204,16 @@ export default function PrixTravauxHub() {
 
       <h2>Comment lire ces prix</h2>
       <p>
-        Chaque page donne une <strong>fourchette TTC</strong> pour un projet type, décomposée corps
+        Chaque page donne une <strong>fourchette TTC</strong>{" "}pour un projet type, décomposée corps
         d&apos;état par corps d&apos;état. Trois choses à garder en tête avant de comparer avec un devis.
       </p>
       <p>
-        <strong>Le prix dépend d&apos;abord de l&apos;ampleur, pas de la surface.</strong> Refaire les
+        <strong>Le prix dépend d&apos;abord de l&apos;ampleur, pas de la surface.</strong>{" "}Refaire les
         joints d&apos;une salle de bain ou la reprendre à nu n&apos;ont rien à voir, à surface égale.
         C&apos;est pourquoi chaque page décrit précisément le projet chiffré.
       </p>
       <p>
-        <strong>Fournitures et main-d&apos;œuvre ne varient pas de la même façon.</strong> Les
+        <strong>Fournitures et main-d&apos;œuvre ne varient pas de la même façon.</strong>{" "}Les
         matériaux coûtent à peu près pareil partout en France ; la pose suit le marché local. Nos pages
         affichent les deux séparément quand la donnée existe, ce qui permet aussi de chiffrer ce
         qu&apos;on ferait soi-même.

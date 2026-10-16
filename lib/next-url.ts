@@ -17,6 +17,16 @@
  * Une chaîne vide ou externe retombe sur `defaut`.
  */
 export function cheminInterne(next: string | undefined, defaut = "/projets"): string {
-  if (!next || /[\s\u0000-\u001f\u007f-\u009f]/.test(next)) return defaut;
+  // Un paramètre répété (`?next=/a&next=/b`) arrive en tableau : tout ce qui n'est pas une chaîne retombe sur `defaut`.
+  if (typeof next !== "string" || !next || /[\s\u0000-\u001f\u007f-\u009f]/.test(next)) return defaut;
   return next.startsWith("/") && !next.startsWith("//") && !next.startsWith("/\\") ? next : defaut;
+}
+
+/**
+ * Un paramètre d'adresse tel que Next le donne à une page : une chaîne, un tableau quand il est répété
+ * (`?next=/a&next=/b`), ou rien. On garde le premier ; sans cela, `next.startsWith` sur un tableau faisait tomber la
+ * page en erreur 500.
+ */
+export function premierParam(v: string | string[] | undefined): string | undefined {
+  return Array.isArray(v) ? v[0] : v;
 }

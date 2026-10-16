@@ -356,12 +356,9 @@ function TarifsBeta({ user, t: tr, locale, source, nature }: {
         </figure>
       </div>
 
+      {/* « Déjà un compte ? Se connecter » est déjà sous le bouton : en bas, seulement l'estimation rapide (2e contre-examen). */}
       <p className="mt-6 text-center text-[13px] text-muted">
-        {user ? (
-          <>{b.tarifsBasConnecte}</>
-        ) : (
-          <>{t.dejaCompteAvant}<Link href={connexion} className="font-medium text-brand-600 hover:underline">{t.seConnecter}</Link>{t.ou}</>
-        )}
+        {b.tarifsBasConnecte}
         <Link href="/projets/nouveau" className="font-medium text-brand-600 hover:underline">{t.continuerGratuit}</Link>.
       </p>
     </div>

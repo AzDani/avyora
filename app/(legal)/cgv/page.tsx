@@ -47,7 +47,7 @@ export default function CGV() {
       <ul>
         <li>Les prix sont indiqués en euros, <strong>toutes taxes comprises (TTC)</strong>, sur la page <a href="/tarifs">Tarifs</a>.</li>
         <li>L&apos;éditeur relève de la franchise en base de TVA&nbsp;: <strong>TVA non applicable, art. 293 B du CGI</strong>. Les prix affichés sont donc nets de TVA.</li>
-        <li>Les éventuelles remises de lancement sont affichées avec le prix de référence barré et s&apos;appliquent dans les conditions et la durée indiquées.</li>
+        <li>Les éventuelles remises sont indiquées avec leurs conditions et leur durée&nbsp;; le prix affiché est le prix pratiqué, sans prix de référence barré.</li>
         <li>L&apos;éditeur peut modifier ses prix à tout moment&nbsp;; le prix applicable est celui en vigueur lors de la souscription. Toute évolution tarifaire d&apos;un abonnement en cours est notifiée au Client avant reconduction.</li>
       </ul>
 
@@ -68,7 +68,7 @@ export default function CGV() {
       <h3>5.2 Reconduction tacite</h3>
       <p>
         L&apos;Abonnement est reconductible tacitement pour des périodes successives de même durée.
-        Conformément à l&apos;article <strong>L215-1 du Code de la consommation</strong> (loi Chatel), pour les
+        Conformément à l&apos;article <strong>L215-1 du Code de la consommation</strong>{" "}(loi Chatel), pour les
         abonnements à durée déterminée reconductibles, le Client consommateur est informé par écrit, au plus
         tôt trois mois et au plus tard un mois avant le terme de la période, de la possibilité de ne pas
         reconduire. À défaut d&apos;information, le Client peut résilier gratuitement à tout moment à compter de
@@ -93,7 +93,7 @@ export default function CGV() {
         L&apos;Abonnement portant sur un <strong>contenu/service numérique fourni immédiatement</strong>, le
         Client qui demande à accéder aux fonctionnalités Pro dès la souscription est invité à donner son{" "}
         <strong>accord exprès à l&apos;exécution immédiate</strong> et à <strong>renoncer expressément à son
-        droit de rétractation</strong> pour la partie déjà exécutée (art. L221-28 13°). En l&apos;absence de
+        droit de rétractation</strong>{" "}pour la partie déjà exécutée (art. L221-28 13°). En l&apos;absence de
         cette renonciation, le droit de rétractation s&apos;exerce dans les conditions de droit commun. Pour
         l&apos;exercer, le Client adresse une demande non ambiguë à&nbsp;: contact@getavyora.fr.
       </p>
@@ -107,7 +107,7 @@ export default function CGV() {
 
       <h2>8. Nature du Service — absence de garantie de résultat</h2>
       <p>
-        Les estimations sont indicatives (voir <a href="/cgu">CGU</a> art. 4). L&apos;Abonnement donne accès à
+        Les estimations sont indicatives (voir <a href="/cgu">CGU</a>{" "}art. 4). L&apos;Abonnement donne accès à
         un outil d&apos;aide à la décision&nbsp;; il ne comporte aucune garantie quant à l&apos;exactitude des
         coûts réels des travaux.
       </p>

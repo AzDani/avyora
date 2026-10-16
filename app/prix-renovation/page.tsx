@@ -71,7 +71,7 @@ export default function PrixRenovationHub() {
       </header>
 
       <p className="mt-4 rounded-field border border-line bg-surface-2 px-4 py-3 text-[13.5px] leading-relaxed text-muted">
-        <strong className="text-ink">Ta ville n&apos;est pas dans la liste ?</strong> C&apos;est normal, et
+        <strong className="text-ink">Ta ville n&apos;est pas dans la liste ?</strong>{" "}C&apos;est normal, et
         c&apos;est volontaire : nous ne publions une page dédiée que là où le coût de la main-d&apos;œuvre
         s&apos;écarte réellement de la moyenne française. Partout ailleurs, cette page dirait exactement la
         même chose — autant t&apos;envoyer directement au prix national, qui s&apos;applique tel quel chez toi.{" "}
@@ -134,20 +134,20 @@ export default function PrixRenovationHub() {
       </p>
       <p>
         C&apos;est pourquoi AVYORA applique un coefficient au seul coût de pose, par département.
-        Il va de <strong>−10 %</strong> dans les zones rurales à <strong>+20 %</strong> à Paris et en
+        Il va de <strong>−10 %</strong> dans les zones rurales à <strong>+20 %</strong>{" "}à Paris et en
         petite couronne. Sur une rénovation complète de 100 m², cet écart représente plusieurs
         milliers d&apos;euros — assez pour changer un projet.
       </p>
       <p>
         Ce barème est un <strong>indice interne</strong>, pas un indice public : nous préférons
         l&apos;écrire. La{" "}
-        <Link href="/methodologie">page méthodologie</Link> détaille comment il est construit et ce
+        <Link href="/methodologie">page méthodologie</Link>{" "}détaille comment il est construit et ce
         qu&apos;il ne prétend pas faire.
       </p>
 
       <h2>Et si ta ville n&apos;est pas dans la liste ?</h2>
       <p>
-        Les {VILLES_SEO.length} villes ci-dessus sont celles où le coût de la main-d&apos;œuvre
+        Les {VILLES_SEO.length}{" "}villes ci-dessus sont celles où le coût de la main-d&apos;œuvre
         s&apos;écarte réellement de la moyenne. Partout ailleurs, le prix national du tableau
         s&apos;applique tel quel — une page dédiée n&apos;aurait rien de plus à t&apos;apprendre.
         L&apos;estimateur, lui, accepte <strong>n&apos;importe quel code postal français</strong> et

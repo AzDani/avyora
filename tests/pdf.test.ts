@@ -115,3 +115,38 @@ describe("lib/pdf : la session reste sur le site, rien ne sort", () => {
     expect(cookies).toEqual([]);
   });
 });
+
+describe("la route du PDF : les plafonds par compte ET par IP (2e contre-examen)", () => {
+  const MOCKS = ["@/lib/auth", "@/lib/data/projects", "@/lib/pdf", "@/lib/ratelimit"];
+  afterEach(() => {
+    for (const m of MOCKS) vi.doUnmock(m);
+  });
+
+  async function telecharger(refus: string | null) {
+    vi.resetModules();
+    const appels: [string, string][] = [];
+    const generes: string[] = [];
+    vi.doMock("@/lib/auth", () => ({ getUser: async () => ({ id: "u1", email: "camille@exemple.fr" }), estPro: () => true }));
+    vi.doMock("@/lib/data/projects", () => ({ getProjet: async (id: string) => ({ id }) }));
+    vi.doMock("@/lib/pdf", () => ({ genererRapportPDF: async (u: string) => { generes.push(u); return new Uint8Array([37, 80, 68, 70]); } }));
+    vi.doMock("@/lib/ratelimit", () => ({
+      clientIp: async () => "6.6.6.6",
+      verifierLimite: async (k: string, id: string) => { appels.push([k, id]); return k !== refus; },
+    }));
+    const { GET } = await import("@/app/projets/[id]/rapport/pdf/route");
+    const r = await GET(new Request("https://getavyora.fr/projets/abc/rapport/pdf"), { params: Promise.resolve({ id: "abc" }) });
+    return { status: r.status, appels, generes };
+  }
+
+  it("chaque génération compte pour le compte (minute, heure) et pour l'IP (heure) ; un plafond atteint : 429, aucun Chrome", async () => {
+    const ok = await telecharger(null);
+    expect(ok.status).toBe(200);
+    expect(ok.appels).toEqual([["pdf", "u1"], ["pdfHeure", "u1"], ["pdfIp", "6.6.6.6"]]);
+    expect(ok.generes).toHaveLength(1);
+    for (const k of ["pdf", "pdfHeure", "pdfIp"]) {
+      const r = await telecharger(k);
+      expect(r.status, k).toBe(429);
+      expect(r.generes, k).toEqual([]);
+    }
+  });
+});

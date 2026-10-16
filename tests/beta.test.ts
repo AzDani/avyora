@@ -510,7 +510,7 @@ describe("Pendant la bêta, un anonyme qui touche une fonction Pro va créer son
       return (await GET()).json();
     };
     const beta = {
-      prix: "gratuit pendant la bêta, jusqu'au 31 décembre 2026, avec un compte.",
+      prix: "Gratuit pendant la bêta, jusqu'au 31 décembre 2026, avec un compte.",
       passer: "Compte gratuit",
       reserve: "demande un compte, gratuit pendant la bêta",
       plans: "jusqu\u2019à 30 plans enregistrés",
@@ -526,7 +526,7 @@ describe("Pendant la bêta, un anonyme qui touche une fonction Pro va créer son
 
   it("l'amorçage de l'éditeur : pendant la bêta, la phrase du prix, « Compte gratuit » et l'inscription directe ; sinon, l'éditeur d'avant", async () => {
     vi.resetModules();
-    const { editeurHeberge, URLS_EDITEUR } = await import("@/lib/editeur/heberger");
+    const { editeurHeberge, URLS_EDITEUR, TEXTES_BETA_EDITEUR } = await import("@/lib/editeur/heberger");
     const out = await editeurHeberge();
     const [config, amorce, editeur] = [...out.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
     expect(editeur).toContain("Passer Pro");
@@ -535,7 +535,7 @@ describe("Pendant la bêta, un anonyme qui touche une fonction Pro va créer son
     /* l'amorçage, joué dans un faux navigateur : la session dit (ou non) la bêta, on lit le script qu'il exécute */
     const jouer = async (session: Record<string, unknown>) => {
       const ajoutes: { textContent?: string }[] = [];
-      const barre: Record<string, string> = { "aria-label": "Passer Pro" };
+      const barre: Record<string, string> = { "aria-label": "Passer Pro", href: "/tarifs?source=editeur-plan", target: "_blank" };
       const lbl = { textContent: "Passer Pro" };
       const ecouteurs: [string, (e: unknown) => void, unknown][] = [];
       const fetch = async (u: string) => ({
@@ -549,7 +549,7 @@ describe("Pendant la bêta, un anonyme qui touche une fonction Pro va créer son
           readyState: "complete",
           getElementById: (i: string) =>
             i === "avyora-editeur" ? { textContent: editeur }
-            : i === "proTop" ? { setAttribute: (k: string, v: string) => { barre[k] = v; }, querySelector: () => lbl }
+            : i === "proTop" ? { setAttribute: (k: string, v: string) => { barre[k] = v; }, removeAttribute: (k: string) => { delete barre[k]; }, querySelector: () => lbl }
             : null,
           createElement: () => ({}),
           addEventListener: (type: string, f: (e: unknown) => void, capture: unknown) => { ecouteurs.push([type, f, capture]); },
@@ -570,7 +570,7 @@ describe("Pendant la bêta, un anonyme qui touche une fonction Pro va créer son
       for (let i = 0; i < 20 && !win.AVYORA_SITE; i++) await new Promise((r) => setTimeout(r, 0));
       const site = win.AVYORA_SITE as { urls: Record<string, string> };
       return {
-        code: ajoutes[0]?.textContent ?? "", prix: win.AVYORA_PRIX_PRO, barre: barre["aria-label"], lbl: lbl.textContent,
+        code: ajoutes[0]?.textContent ?? "", prix: win.AVYORA_PRIX_PRO, barre: barre["aria-label"], lbl: lbl.textContent, puce: { ...barre },
         urls: site.urls, ecouteurs, appels, win,
       };
     };
@@ -590,11 +590,26 @@ describe("Pendant la bêta, un anonyme qui touche une fonction Pro va créer son
     expect(r.code).not.toContain("sans limite");
     expect(r.code).toContain("Le projet rénovation demande un compte, gratuit pendant la bêta : ton plan");
     expect(r.code).toContain(`plans:{gratuit:'1 plan enregistré',pro:'${b.plans}'}`);
+    // Les explications parlent du compte (2e contre-examen) : « Sans compte », « Avec un compte », la phrase du prix sans « Pro ».
+    for (const [avant] of TEXTES_BETA_EDITEUR) expect(editeur, avant).toContain(avant);
+    expect(r.code).not.toMatch(/Version gratuite|Avec Pro|AVYORA Pro, |Ce que Pro ajoute|avec Pro<|c'est Pro\./);
+    expect(r.code).toContain("Sans compte : ");
+    expect(r.code).toContain("const avecPro=k=>'Avec un compte : '+DROITS[k].pro+'.';");
+    expect(r.code).toContain('<span class="prixpro">${esc(PRIX_PRO)}</span>');
+    expect(r.code).toContain("t.title=PRIX_PRO;");
+    // Les liens « Compte gratuit » portent l'adresse de l'inscription (clic molette, nouvel onglet : l'inscription aussi).
+    expect(r.code).toContain(`const TARIFS_URL='${b.inscription}';`);
+    expect(r.code).not.toContain(`TARIFS_URL='${URLS_EDITEUR.tarifs}'`);
     expect(r.code).toBe(
-      editeur.split("Passer Pro").join("Compte gratuit").split("est réservé à Pro").join(b.reserve).split("des plans enregistrés sans limite").join(b.plans),
+      TEXTES_BETA_EDITEUR.reduce(
+        (c, [avant, apres]) => c.split(avant).join(apres),
+        editeur.split("Passer Pro").join("Compte gratuit").split("est réservé à Pro").join(b.reserve).split("des plans enregistrés sans limite").join(b.plans),
+      ).split(`TARIFS_URL='${URLS_EDITEUR.tarifs}'`).join(`TARIFS_URL='${b.inscription}'`),
     );
     expect(() => new Script(r.code)).not.toThrow();
     expect([r.barre, r.lbl]).toEqual(["Compte gratuit", "Compte gratuit"]);
+    // La pastille de la barre : l'inscription, dans le même onglet (plus de target="_blank").
+    expect(r.puce).toEqual({ "aria-label": "Compte gratuit", href: b.inscription });
     // « Compte gratuit » : l'inscription (intention /plan, source editeur-plan), comme l'invitation, dans le même onglet.
     expect(r.urls.inscription).toBe("/inscription?next=%2Fplan&source=editeur-plan");
     (r.win.passerPro as (o: string) => void)("type");
@@ -605,9 +620,10 @@ describe("Pendant la bêta, un anonyme qui touche une fonction Pro va créer son
     let empeche = 0;
     const lien = (href: string) => ({ target: { closest: () => ({ getAttribute: () => href }) }, preventDefault: () => { empeche++; } });
     clic?.[1](lien(URLS_EDITEUR.tarifs));
+    clic?.[1](lien(b.inscription));
     clic?.[1](lien("/logiciel-plan-maison"));
-    expect(empeche).toBe(1);
-    expect(r.appels.filter((x) => x === "creer")).toHaveLength(2);
+    expect(empeche).toBe(2);
+    expect(r.appels.filter((x) => x === "creer")).toHaveLength(3);
     /* des valeurs qui pourraient casser le script (guillemet, accolade…) ou mener ailleurs sont refusées : l'éditeur d'avant */
     r = await jouer({
       connecte: false, pro: false, limite: 1, utilises: 0,

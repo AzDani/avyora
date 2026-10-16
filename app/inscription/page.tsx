@@ -7,7 +7,7 @@ import { PlanRappel } from "@/components/plans/PlanRappel";
 import { FEATURES } from "@/lib/features";
 import { getUser } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
-import { cheminInterne } from "@/lib/next-url";
+import { cheminInterne, premierParam } from "@/lib/next-url";
 import { betaActive, lireSourceBeta } from "@/lib/beta";
 import { BandeauBeta, PanneauBeta } from "@/components/BandeauBeta";
 import { SuiviVue } from "@/components/SuiviVue";
@@ -19,12 +19,15 @@ export async function generateMetadata() {
 export default async function InscriptionPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string; source?: string }>;
+  searchParams: Promise<{ next?: string | string[]; source?: string | string[] }>;
 }) {
   // `next` porte l'intention avec laquelle le visiteur arrive ici — typiquement la fonction de la bêta qu'il
   // vient de toucher. Il doit survivre à TOUTES les sorties de cette page : le lien d'accès, le formulaire à
   // mot de passe, le lien « déjà un compte », et la redirection d'un utilisateur déjà connecté.
-  const [{ next: nextDemande, source: sourceDemandee }, { t: tr, locale }, user] = await Promise.all([searchParams, getT(), getUser()]);
+  const [sp, { t: tr, locale }, user] = await Promise.all([searchParams, getT(), getUser()]);
+  // Un paramètre répété arrive en tableau : le premier compte.
+  const nextDemande = premierParam(sp.next);
+  const sourceDemandee = premierParam(sp.source);
   if (user) redirect(cheminInterne(nextDemande));
   // Une intention qui n'est pas un chemin interne est ignorée dès ici (l'action la revérifie de toute façon).
   const next = nextDemande ? cheminInterne(nextDemande, "") || undefined : undefined;

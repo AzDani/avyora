@@ -465,7 +465,7 @@ export default function EstimateurRapide({
               <div>
                 <div className="lbl">{t.liveLabel}</div>
                 <div className="big">{valid ? <><CountUp value={lo} nf={nf} /> €<span style={{ opacity: .55 }}> – </span><CountUp value={hi} nf={nf} /> €</> : "—"}</div>
-                <div className="sub">{valid ? <>≈ <CountUp value={m2} nf={nf} /> €/m² · {ampName} · ±15 %{regLabel ? <> · {regLabel}</> : ""}</> : !affiche ? t.step1q : (mode === "pieces" ? "Ajoute une pièce" : t.renseigneSurface)}</div>
+                <div className="sub">{valid ? <>≈ <CountUp value={m2} nf={nf} /> €/m² · {ampName} · {locale === "en" ? "±15%" : "±15 %"}{regLabel ? <> · {regLabel}</> : ""}</> : !affiche ? t.step1q : (mode === "pieces" ? "Ajoute une pièce" : t.renseigneSurface)}</div>
               </div>
               <div className="btns">
                 <button className="ghost" onClick={affiner}>{t.affiner}</button>

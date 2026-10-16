@@ -5,7 +5,7 @@ import { AccesParLien } from "@/components/auth/AccesLien";
 import { FEATURES } from "@/lib/features";
 import { getUser } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
-import { cheminInterne } from "@/lib/next-url";
+import { cheminInterne, premierParam } from "@/lib/next-url";
 import { betaActive } from "@/lib/beta";
 
 export async function generateMetadata() {
@@ -15,9 +15,12 @@ export async function generateMetadata() {
 export default async function ConnexionPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string; erreur?: string }>;
+  searchParams: Promise<{ next?: string | string[]; erreur?: string | string[] }>;
 }) {
-  const [{ next: nextDemande, erreur }, { t: tr }, user] = await Promise.all([searchParams, getT(), getUser()]);
+  const [sp, { t: tr }, user] = await Promise.all([searchParams, getT(), getUser()]);
+  // Un paramètre répété arrive en tableau : le premier compte.
+  const nextDemande = premierParam(sp.next);
+  const erreur = premierParam(sp.erreur);
   // Déjà connecté (un second clic sur le lien, un onglet resté ouvert) : directement à l'intention.
   if (user) redirect(cheminInterne(nextDemande));
   const next = nextDemande ? cheminInterne(nextDemande, "") || undefined : undefined;

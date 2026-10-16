@@ -41,6 +41,7 @@ describe("Éditeur hébergé · transformation au build", () => {
       ["@import Google Fonts", 1],
       ["Three.js (jsDelivr)", 1],
       ["adresses absolues du site", 3],
+      ["repli du prix de Pro", 1],
       ["meta viewport", 1],
       ["script principal", 1],
     ]);
@@ -84,7 +85,9 @@ describe("Éditeur hébergé · transformation au build", () => {
     /* le script différé est le script de la source, au caractère près */
     const src = scripts(SOURCE);
     expect(src).toHaveLength(1);
-    const attendu = src[0].corps.replace("https://cdn.jsdelivr.net/npm/three@0.147.0/", "/vendor/three@0.147.0/").split("https://getavyora.fr/").join("/");
+    const { prixProEditeur, prixProHorsBeta } = await module();
+    const attendu = src[0].corps.replace("https://cdn.jsdelivr.net/npm/three@0.147.0/", "/vendor/three@0.147.0/").split("https://getavyora.fr/").join("/")
+      .replace(`||'${prixProHorsBeta()}'`, `||${JSON.stringify(prixProEditeur())}`);
     expect(S[2].corps).toBe(attendu);
     /* le voile précède les scripts : il couvre l'éditeur dès l'affichage */
     expect(out.indexOf('id="avyora-voile"')).toBeLessThan(iPro);
@@ -147,14 +150,29 @@ describe("Éditeur hébergé · transformation au build", () => {
     expect(r.demandes).toEqual(["/api/plans/session", "/api/plans"]);
   });
 
-  it("le prix injecté vient du dictionnaire (aucun prix écrit dans le code)", async () => {
-    const { editeurHeberge, prixProEditeur } = await module();
-    const out = await editeurHeberge();
+  it("le prix injecté vient du dictionnaire (aucun prix écrit dans le code) ; construite pendant la bêta, la page n'en porte aucun", async () => {
     const prix = dict("fr").tarifs.plans.mensuel.prix;
-    expect(prixProEditeur()).toContain(prix);
+    // Hors bêta (coupée) : le prix du dictionnaire, dans la configuration et dans le repli de l'éditeur.
+    vi.stubEnv("NEXT_PUBLIC_BETA", "0");
+    vi.resetModules();
+    let M = await module();
+    let out = await M.editeurHeberge();
+    expect(M.prixProEditeur()).toContain(prix);
+    expect(M.prixProEditeur()).toBe(M.prixProHorsBeta());
     const m = out.match(/window\.AVYORA_PRIX_PRO=("[^"]*");/);
     expect(m).not.toBeNull();
-    expect(JSON.parse(m![1])).toBe(prixProEditeur());
+    expect(JSON.parse(m![1])).toBe(M.prixProEditeur());
+    expect(out.split(prix).length - 1).toBe(2);
+    // Pendant la bêta (2e contre-examen) : aucun chiffre dans la page, même dans son code source ou en cas de panne de la session.
+    vi.stubEnv("NEXT_PUBLIC_BETA", "1");
+    vi.resetModules();
+    M = await module();
+    out = await M.editeurHeberge();
+    expect(M.prixProEditeur(new Date("2026-10-16T12:00:00Z"))).toBe("sans engagement");
+    expect(M.prixProEditeur(new Date("2027-01-01T12:00:00Z"))).toBe(M.prixProHorsBeta());
+    expect(out).not.toContain(prix);
+    expect(out).not.toMatch(/\d+,\d{2}\s*€|€\s*\d|par mois/);
+    expect(out).toContain('window.AVYORA_PRIX_PRO="sans engagement";');
     const src = readFileSync(path.join(RACINE, "lib/editeur/heberger.ts"), "utf8");
     expect(src).not.toMatch(/\d+,\d{2}\s*€|€\s*\d/);
   });

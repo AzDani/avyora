@@ -48,7 +48,7 @@ describe("limites en mémoire sans Upstash", () => {
     expect(await verifierLimite("auth", "lien:camille@exemple.fr")).toBe(true);
   });
 
-  it("production : le lien d'accès, 3 / h par adresse et 20 / h par IP", async () => {
+  it("production : le lien d'accès, 3 / h par adresse et IP (l'action passe `empreinte:ip`) et 20 / h par IP", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => {});
     const { verifierLimite } = await module("production");
     for (let i = 0; i < 3; i++) expect(await verifierLimite("lienAdresse", "a".repeat(32))).toBe(true);
@@ -73,6 +73,22 @@ describe("limites en mémoire sans Upstash", () => {
         expect(await verifierLimite("pdfHeure", "u3"), String(i)).toBe(true);
       }
       expect(await verifierLimite("pdfHeure", "u3")).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("production : le PDF, 60 / h par IP (N comptes depuis une même machine ne multiplient pas la facture)", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      const { verifierLimite } = await module("production");
+      for (let i = 0; i < 60; i++) {
+        vi.setSystemTime(new Date(Date.parse("2026-10-15T11:00:00Z") + i * 30_000));
+        expect(await verifierLimite("pdfIp", "6.6.6.6"), String(i)).toBe(true);
+      }
+      expect(await verifierLimite("pdfIp", "6.6.6.6")).toBe(false);
+      expect(await verifierLimite("pdfIp", "81.1.2.3")).toBe(true);
     } finally {
       vi.useRealTimers();
     }
@@ -116,9 +132,9 @@ describe("avec Upstash", () => {
       vi.doUnmock("@upstash/redis");
       vi.doUnmock("@upstash/ratelimit");
     }
-    expect(prefixes).toHaveLength(10);
-    expect(new Set(prefixes).size).toBe(10);
-    for (const p of ["avyora:auth", "avyora:api", "avyora:pdf", "avyora:pdf-heure", "avyora:lien-adresse", "avyora:lien-ip"]) expect(prefixes).toContain(p);
+    expect(prefixes).toHaveLength(11);
+    expect(new Set(prefixes).size).toBe(11);
+    for (const p of ["avyora:auth", "avyora:api", "avyora:pdf", "avyora:pdf-heure", "avyora:pdf-ip", "avyora:lien-adresse", "avyora:lien-ip"]) expect(prefixes).toContain(p);
   });
 
   it("store en panne : le plafond horaire des PDF se ferme (fail-closed), le lien d'accès reste ouvert", async () => {
@@ -140,6 +156,7 @@ describe("avec Upstash", () => {
     try {
       const { verifierLimite } = await import("@/lib/ratelimit");
       expect(await verifierLimite("pdfHeure", "u1")).toBe(false);
+      expect(await verifierLimite("pdfIp", "1.2.3.4")).toBe(false);
       expect(await verifierLimite("planCreation", "u1")).toBe(false);
       expect(await verifierLimite("lienAdresse", "a".repeat(32))).toBe(true);
       expect(await verifierLimite("pdf", "u1")).toBe(true);

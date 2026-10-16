@@ -150,7 +150,7 @@ export default async function ResultatRapide({
         <div className="lbl">{L.budget}</div>
         <div className="big">{euro(lo, nf)} <small>–</small> {euro(hi, nf)}</div>
         <div className="meta">
-          ≈ <b className="mono">{m2.toLocaleString(nf)} €/m²</b> · {ampLabel?.toLowerCase()} · {locale === "en" ? "margin" : "marge"} <b>±15 %</b>
+          ≈ <b className="mono">{m2.toLocaleString(nf)} €/m²</b> · {ampLabel?.toLowerCase()} · {locale === "en" ? "margin" : "marge"} <b>{locale === "en" ? "±15%" : "±15 %"}</b>
           {cp.length >= 2 && reg.zone ? <> · <b>{zone}</b>{moPct ? ` (${moPct > 0 ? "+" : ""}${moPct} ${L.labor})` : ""}</> : null}
         </div>
       </div>

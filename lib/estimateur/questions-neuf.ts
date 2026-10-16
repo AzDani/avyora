@@ -38,7 +38,7 @@ export const QUESTIONS_NEUF: GroupeQuestionsNeuf[] = [
     { k: "surface", l: { fr: "Surface habitable", en: "Living area" }, t: "num", u: "m²", min: 30, max: 400, step: 5 },
     { k: "codePostal", l: { fr: "Code postal", en: "Postcode" }, t: "cp" },
     { k: "niveaux", l: { fr: "Niveaux", en: "Levels" }, o: [
-      ["pp", { fr: "Plain-pied", en: "Single storey" }], ["etage", { fr: "À étage", en: "Two storeys" }], ["combles", { fr: "Combles aménagés", en: "Converted attic" }],
+      ["pp", { fr: "Plain-pied", en: "Single story" }], ["etage", { fr: "À étage", en: "Two stories" }], ["combles", { fr: "Combles aménagés", en: "Converted attic" }],
     ] },
     { k: "forme", l: { fr: "Forme", en: "Shape" }, o: [
       ["rect", { fr: "Simple", en: "Simple" }], ["L", { fr: "En L", en: "L-shaped" }], ["complexe", { fr: "Complexe", en: "Complex" }],

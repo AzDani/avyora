@@ -22,6 +22,11 @@ const fr = {
     planPastille: "Gratuit",
   },
   footer: {
+    /* Le lien d'évitement (premier lien de la page) et le libellé de la navigation du pied de page. */
+    allerAuContenu: "Aller au contenu",
+    navPied: "Liens de bas de page",
+    methodologie: "Méthodologie",
+    prixPoste: "Prix par corps d'état",
     guides: "Guides des prix",
     prixTravaux: "Prix des travaux",
     prixVille: "Prix par ville",
@@ -100,7 +105,7 @@ const fr = {
     inclus: "Inclus dans Pro",
     features: [
       "Estimateur détaillé — les 200 postes, au poste près",
-      "Choix fait-faire / je fais sur chaque tâche",
+      "« Je le fais » ou un artisan, au choix sur chaque tâche",
       "Export du rapport PDF (banque, artisans)",
       "Sauvegarde de tous tes projets",
       "Suivi de chantier, poste par poste",
@@ -383,7 +388,7 @@ const fr = {
     /* /inscription après « Enregistrer » une estimation (`EstimationRappel`) */
     rappel: {
       titre: "Ton estimation est prête",
-      texte: (bien: string) => `${bien} — crée ton compte, on te la garde.`,
+      texte: (bien: string) => `${bien} — on la range dans ton compte.`,
       bien: "Bien",
     },
     /* Le panneau de marque des pages d'accès (`AuthShell`, ordinateur) */
@@ -392,7 +397,7 @@ const fr = {
       titreA: "De l'idée au",
       titreB: "chantier fini.",
       parcours: [
-        { verbe: "Estime", suite: "ton budget en 3 min — 200 postes, précision ±15 %" },
+        { verbe: "Estime", suite: "ton budget en 3 min, puis affine-le sur 200 postes — marge ±15 %" },
         { verbe: "Choisis", suite: "matériaux & artisans, garde tes liens produits" },
         { verbe: "Suis", suite: "l'avancement de ton chantier, poste par poste" },
         { verbe: "Pilote", suite: "ton budget et tous tes projets au même endroit" },
@@ -422,6 +427,10 @@ const en: Dict = {
     planPastille: "Free",
   },
   footer: {
+    allerAuContenu: "Skip to content",
+    navPied: "Footer links",
+    methodologie: "Methodology",
+    prixPoste: "Prices by trade",
     guides: "Price guides",
     prixTravaux: "Renovation costs",
     prixVille: "Prices by city",
@@ -723,7 +732,7 @@ const en: Dict = {
       envoyeRetour: "The link will take you right back to where you were.",
       ouvrirMessagerie: (nom: string) => `Open my inbox (${nom})`,
       memeAppareilTitre: "Safest: open it on this device",
-      memeAppareil: "In this same browser, and soon: you'll arrive signed in. The link works only once.",
+      memeAppareil: "In this same browser, right away: you'll arrive signed in. The link works only once.",
       rienRecu: "Nothing yet? Check your spam folder or the Promotions tab.",
       renvoyer: "Resend the link",
       renvoyerDans: (s: number) => `Resend the link (in ${s}s)`,
@@ -757,7 +766,7 @@ const en: Dict = {
     },
     rappel: {
       titre: "Your estimate is ready",
-      texte: (bien: string) => `${bien} — create your account, we'll keep it for you.`,
+      texte: (bien: string) => `${bien} — we'll save it to your account.`,
       bien: "Property",
     },
     panneau: {
@@ -765,7 +774,7 @@ const en: Dict = {
       titreA: "From idea to",
       titreB: "finished project.",
       parcours: [
-        { verbe: "Estimate", suite: "your budget in 3 min — 200 items, ±15% accuracy" },
+        { verbe: "Estimate", suite: "your budget in 3 min, then refine it across 200 items — ±15% margin" },
         { verbe: "Choose", suite: "materials & contractors, keep your product links" },
         { verbe: "Track", suite: "your project's progress, item by item" },
         { verbe: "Manage", suite: "your budget and all your projects in one place" },

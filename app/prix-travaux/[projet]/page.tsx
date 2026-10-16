@@ -461,7 +461,7 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
         </table>
       </div>
       <p className="note">
-        La provision pour imprévus est <strong>déjà incluse</strong> dans le budget affiché en haut
+        La provision pour imprévus est <strong>déjà incluse</strong>{" "}dans le budget affiché en haut
         de page : un chantier de rénovation réserve des surprises une fois les cloisons ouvertes, et
         un chiffrage qui les ignore est faux par construction. La TVA s&apos;ajoute ensuite au taux
         applicable à chaque poste (5,5 %, 10 % ou 20 %) — voir <Link href="/methodologie">la méthode</Link>.

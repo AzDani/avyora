@@ -113,7 +113,8 @@ export default function MethodologiePage() {
         Dans l&apos;estimation rapide d&apos;une rénovation, « Je fais un max moi-même » met en
         « Je le fais » tout ce qui peut l&apos;être, électricité et structure comprises. En construction neuve,
         « Je fais le maximum » laisse par défaut aux pros la structure, le toit, les menuiseries
-        extérieures, les branchements et la pompe à chaleur : tu peux les reprendre poste par poste
+        extérieures, les branchements, la pompe à chaleur, la climatisation et la borne de recharge : tu peux
+        les reprendre poste par poste
         dans l&apos;estimation détaillée.
       </p>
 

@@ -50,6 +50,11 @@ export function remplacementsAccueilBeta(locale: Locale): [string, string][] {
         '<div class="pct">That\'s <b>0.02 %</b> of the budget to control all of it.</div>',
         '<div class="pct">Then, for founding members, a <b>preferred rate guaranteed for life</b>, announced before the beta ends.</div>',
       ],
+      // Sans prix affiché, « plus cher qu'une année d'AVYORA » ne compare plus rien (2e contre-examen).
+      [
+        '<div class="punch">A <em>single forgotten item</em> in a quote often costs more than a <em>whole year</em> of AVYORA.</div>',
+        '<div class="punch">A <em>single forgotten item</em> in a quote can cost hundreds, even thousands of euros. During the beta, AVYORA costs you <em>nothing</em>.</div>',
+      ],
       ['<span class="lance">Launch pricing · locked for early subscribers</span>', `<span class="lance">Free beta · through ${fin}</span>`],
       ["<h2>Free to estimate. Pro to unlock everything.</h2>", "<h2>Everything is free during the beta.</h2>"],
       [
@@ -86,6 +91,11 @@ export function remplacementsAccueilBeta(locale: Locale): [string, string][] {
     [
       '<div class="pct">Soit <b>0,02 %</b> du budget pour le maîtriser entièrement.</div>',
       '<div class="pct">Puis, pour les membres fondateurs, un <b>tarif préférentiel garanti à vie</b>, annoncé avant la fin de la bêta.</div>',
+    ],
+    // Sans prix affiché, « plus cher qu'une année d'AVYORA » ne compare plus rien (2e contre-examen).
+    [
+      '<div class="punch">Un <em>seul poste oublié</em> dans un devis coûte souvent plus cher qu\'une <em>année entière</em> d\'AVYORA.</div>',
+      '<div class="punch">Un <em>seul poste oublié</em> dans un devis peut coûter des centaines, voire des milliers d\'euros. Pendant la bêta, AVYORA ne te coûte <em>rien</em>.</div>',
     ],
     ['<span class="lance">Tarif de lancement · bloqué pour les premiers abonnés</span>', `<span class="lance">Bêta gratuite · jusqu'au ${fin}</span>`],
     ["<h2>Gratuit pour estimer. Pro pour piloter.</h2>", "<h2>Tout est gratuit pendant la bêta.</h2>"],

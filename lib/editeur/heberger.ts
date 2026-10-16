@@ -2,6 +2,7 @@ import "server-only";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { dict } from "@/lib/i18n/dictionaries";
+import { betaActive } from "@/lib/beta";
 
 /**
  * L'éditeur de plan servi par le site sur `/plan` (chantier C4).
@@ -20,11 +21,17 @@ import { dict } from "@/lib/i18n/dictionaries";
  * du prix de Pro (`AVYORA_PRIX_PRO`, que l'éditeur lit à son démarrage) et, dans le texte qu'il exécute, le libellé
  * « Passer Pro » (boutons, fenêtres, barre) par « Compte gratuit », « est réservé à Pro » par « demande un compte,
  * gratuit pendant la bêta » et « des plans enregistrés sans limite » par « jusqu’à 30 plans enregistrés » (le plafond
- * d'un inscrit pendant la bêta, `PLANS_MAX_BETA`). Aucun prix n'est donc cité pendant la bêta (la phrase du prix dit
- * « gratuit pendant la bêta… ») ; si la session ne répond pas (panne, délai), l'éditeur d'avant. Et « Compte gratuit » (barre, liens, boutons, `passerPro`) mène droit à l'inscription,
- * dans le même onglet, comme l'invitation « Garde ce plan dans ton compte » (`siteCreerCompte` : le plan est enregistré
- * sur l'appareil et marqué pour la reprise) au lieu de /tarifs dans un nouvel onglet. La source n'est pas touchée, ni
- * la page statique : hors bêta, l'éditeur d'avant au caractère près.
+ * d'un inscrit pendant la bêta, `PLANS_MAX_BETA`) ; les explications de l'éditeur disent le compte plutôt que Pro
+ * (`TEXTES_BETA_EDITEUR` : « Sans compte : … », « Avec un compte : … », la phrase du prix sans « Pro » devant). Aucun
+ * prix n'est donc cité pendant la bêta (la phrase du prix dit « Gratuit pendant la bêta… »). Et « Compte gratuit »
+ * (barre, liens, boutons, `passerPro`) mène droit à l'inscription, dans le même onglet, comme l'invitation « Garde ce
+ * plan dans ton compte » (`siteCreerCompte` : le plan est enregistré sur l'appareil et marqué pour la reprise) au lieu
+ * de /tarifs dans un nouvel onglet : l'adresse des liens elle-même devient celle de l'inscription (un clic molette ou
+ * « Ouvrir dans un nouvel onglet » y mène aussi). La source n'est pas touchée : hors bêta, l'éditeur d'avant.
+ *
+ * Si la session ne répond pas (panne, délai), l'éditeur d'avant, mais sans prix pendant la bêta : la page statique,
+ * construite pendant la bêta, ne porte aucun prix, ni dans sa configuration ni dans le repli de l'éditeur
+ * (`prixProEditeur` : « sans engagement »). Construite après la bêta, le prix du dictionnaire, comme avant.
  */
 
 export const SOURCE_EDITEUR = path.join("maquettes", "plan-editor.html");
@@ -105,10 +112,36 @@ export function jsSur(v: unknown): string {
   return JSON.stringify(v).replace(/</g, "\\u003c").replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
 }
 
-/** La phrase du prix, comme l'éditeur l'écrit lui-même (« dès … par mois, sans engagement »), prix du dictionnaire. */
-export function prixProEditeur(): string {
+/** La phrase du prix hors bêta, comme l'éditeur l'écrit lui-même dans son repli (« dès … par mois, sans engagement »). */
+export function prixProHorsBeta(): string {
   return `dès ${dict("fr").tarifs.plans.mensuel.prix} par mois, sans engagement`;
 }
+
+/**
+ * La phrase du prix que la page statique porte (configuration et repli de l'éditeur), lue AU BUILD : hors bêta, le
+ * prix du dictionnaire ; pendant la bêta, aucun chiffre (décision de Dani du 16/10/2026), même dans le code source de
+ * la page et quand la session ne répond pas (« Pro sans engagement »). Une page construite pendant la bêta le reste
+ * jusqu'au redéploiement suivant (docs/beta.md §3).
+ */
+export function prixProEditeur(maintenant: Date = new Date()): string {
+  return betaActive(maintenant) ? "sans engagement" : prixProHorsBeta();
+}
+
+/**
+ * Pendant la bêta (la session le dit), les explications de l'éditeur parlent du compte, pas de Pro : un visiteur sans
+ * compte lit « Sans compte : 1 plan enregistré », « Avec un compte : … », la phrase du prix sans « Pro » devant (elle
+ * dit « Gratuit pendant la bêta… »), et l'infobulle de la barre la reprend seule. Remplacements EXACTS dans le texte du
+ * script, faits par l'amorçage ; des textes fixes (aucune valeur venue du réseau).
+ */
+export const TEXTES_BETA_EDITEUR: readonly (readonly [string, string])[] = [
+  ["Version gratuite", "Sans compte"],
+  ["Avec Pro : ", "Avec un compte : "],
+  ["Ce que Pro ajoute", "Ce qu\u2019un compte ajoute"],
+  ["Estimation détaillée · avec Pro", "Estimation détaillée · avec un compte"],
+  ["dans l'ordre du chantier : c'est Pro.", "dans l'ordre du chantier : avec un compte."],
+  ['<span class="prixpro">Pro ${esc(PRIX_PRO)}</span>', '<span class="prixpro">${esc(PRIX_PRO)}</span>'],
+  ["t.title='AVYORA Pro, '+PRIX_PRO", "t.title=PRIX_PRO"],
+];
 
 const FONT_FACES = [
   `@font-face{font-family:'Geist';src:url('${POLICES.sans}') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}`,
@@ -153,6 +186,7 @@ function amorcage(): string {
   return `(function(){
 var fait=false;
 var T=${jsSur(TXT_AMORCE)};
+var BT=${jsSur(TEXTES_BETA_EDITEUR)};
 var U=window.AVYORA_URLS;
 var q=null;
 try{q=new URLSearchParams(location.search);}catch(e){}
@@ -200,7 +234,14 @@ function lancer(s,pro,message){
   }
   if(reserve)code=code.split('est réservé à Pro').join(reserve);
   if(plans)code=code.split('des plans enregistrés sans limite').join(plans);
-  if(inscription)U.inscription=inscription;
+  if(passer)for(var i=0;i<BT.length;i++)code=code.split(BT[i][0]).join(BT[i][1]);
+  /* bêta gratuite : les liens « Compte gratuit » portent l'adresse de l'inscription (clic molette compris) */
+  if(inscription){
+    U.inscription=inscription;
+    code=code.split("TARIFS_URL='"+U.tarifs+"'").join("TARIFS_URL='"+inscription+"'");
+    var c=document.getElementById('proTop');
+    if(c&&c.removeAttribute){c.removeAttribute('target');c.setAttribute('href',inscription);}
+  }
   el.textContent=code;
   document.body.appendChild(el);
   /* bêta gratuite : « Compte gratuit » mène à l'inscription comme l'invitation (plan gardé, drapeau de reprise) */
@@ -212,7 +253,8 @@ function lancer(s,pro,message){
     };
     if(document.addEventListener)document.addEventListener('click',function(e){
       var a=e.target&&e.target.closest?e.target.closest('a'):null;
-      if(a&&a.getAttribute('href')===U.tarifs){e.preventDefault();creer();}
+      var h=a?a.getAttribute('href'):null;
+      if(h===U.tarifs||h===inscription){e.preventDefault();creer();}
     },true);
   }
   var v=document.getElementById('avyora-voile');
@@ -272,6 +314,8 @@ export function motifs(): Motif[] {
     { quoi: "@import Google Fonts", motif: IMPORT_POLICES, nombre: 1, par: FONT_FACES },
     { quoi: "Three.js (jsDelivr)", motif: "https://cdn.jsdelivr.net/npm/three@0.147.0/", nombre: 1, par: VENDOR_THREE },
     { quoi: "adresses absolues du site", motif: "https://getavyora.fr/", nombre: 3, par: "/" },
+    /* le repli de l'éditeur quand le site ne donne pas de phrase : la même que la configuration (aucun prix en bêta) */
+    { quoi: "repli du prix de Pro", motif: `||'${prixProHorsBeta()}'`, nombre: 1, par: `||${jsSur(prixProEditeur())}` },
     { quoi: "meta viewport", motif: '<meta name="viewport"', nombre: 1, par: '<meta name="robots" content="noindex">\n<meta name="viewport"' },
     {
       quoi: "script principal",

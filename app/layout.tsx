@@ -149,7 +149,7 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="" />
       </head>
       <body className="flex min-h-full flex-col">
-        <a href="#contenu" className="skip-link">Aller au contenu</a>
+        <a href="#contenu" className="skip-link">{t.footer.allerAuContenu}</a>
         {/* Google Ads — balise de base (suivi des conversions). Les événements de
             conversion sont déclenchés via lib/gtag.ts sur les actions clés. */}
         <Script
@@ -216,13 +216,13 @@ export default async function RootLayout({
         <footer className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6">
           <div className="border-t border-line pt-6">
             <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3">
-              <nav aria-label="Liens de bas de page" className="flex flex-wrap gap-x-5 gap-y-0 text-xs font-medium text-muted [&>a]:inline-flex [&>a]:items-center [&>a]:py-2.5">
-                <Link href="/methodologie" className="transition-colors hover:text-brand-700">Méthodologie</Link>
+              <nav aria-label={t.footer.navPied} className="flex flex-wrap gap-x-5 gap-y-0 text-xs font-medium text-muted [&>a]:inline-flex [&>a]:items-center [&>a]:py-2.5">
+                <Link href="/methodologie" className="transition-colors hover:text-brand-700">{t.footer.methodologie}</Link>
                 <Link href="/guides" className="transition-colors hover:text-brand-700">{t.footer.guides}</Link>
                 <Link href="/prix-travaux" className="transition-colors hover:text-brand-700">{t.footer.prixTravaux}</Link>
                 {/* Seul hub éditorial qui manquait au pied de page : il n'avait que 5 liens entrants
                     contre ~500 pour les trois autres. Une ligne, et le cluster corps d'état existe. */}
-                <Link href="/prix-poste" className="transition-colors hover:text-brand-700">Prix par corps d&apos;état</Link>
+                <Link href="/prix-poste" className="transition-colors hover:text-brand-700">{t.footer.prixPoste}</Link>
                 {/* Construction neuve : lien de maillage vers la page publique, seulement flag allumé
                     (éteint : le lien « Prix par ville » seul, arbre rendu d'origine). */}
                 {FEATURES.neuf ? (

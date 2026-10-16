@@ -78,15 +78,16 @@ export async function proxy(request: NextRequest) {
   // Un lien d'accès ouvert dans un navigateur qui ne l'avait pas demandé (ou par-dessus une autre session) : tant que la
   // personne n'a pas dit « Oui, c'est mon compte » ou « Ce n'est pas moi » sur /auth/verifier, toute PAGE y mène (et la
   // marque est renouvelée : elle dure autant que la session). Rien ne part donc dans ce compte avant (ClaimDraft,
-  // ClaimPlan sur /projets, l'éditeur de plan, une estimation enregistrée) ; les écritures /api sont refusées (un onglet
-  // resté ouvert). /auth/* (dont la page elle-même), les lectures /api et les actions passent ; les cookies de session
-  // rafraîchis suivent.
+  // ClaimPlan sur /projets, l'éditeur de plan, une estimation enregistrée) ; toute écriture hors de /auth est refusée :
+  // les écritures /api et les actions serveur (POST d'une page, en-tête `Next-Action`) d'un onglet resté ouvert, qui
+  // rangeraient sinon un profil ou un pseudo dans ce compte. /auth/* (dont la page elle-même et ses deux boutons) et les
+  // lectures passent ; les cookies de session rafraîchis suivent.
   if (user && verificationEnAttente(request.cookies.get(COOKIE_VERIFIER)?.value, user.id)) {
     const relayer = (r: NextResponse) => {
       response.cookies.getAll().forEach((c) => r.cookies.set(c));
       return r;
     };
-    if (pathname.startsWith("/api/") && !["GET", "HEAD", "OPTIONS"].includes(request.method)) {
+    if (!pathname.startsWith("/auth/") && !["GET", "HEAD", "OPTIONS"].includes(request.method)) {
       return relayer(NextResponse.json({ error: "verification_requise" }, { status: 403 }));
     }
     if (request.method === "GET" && !pathname.startsWith("/auth/") && !pathname.startsWith("/api/")) {

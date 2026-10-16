@@ -99,7 +99,7 @@ describe("Neuf · corps de la requête de création", () => {
 
   it("le nom vient du même endroit pour la fiche et pour la réclamation", () => {
     expect(nomDepuisIndex).toBe(nomProjetNeuf);
-    expect(corpsProjetNeuf(brouillonRapideNeuf({ R, ctx: p.ctx, sel: p.sel }), "en").nom).toBe("New build — Single-storey house 100 m²");
+    expect(corpsProjetNeuf(brouillonRapideNeuf({ R, ctx: p.ctx, sel: p.sel }), "en").nom).toBe("New build — Single-story house 100 m²");
   });
 });
 

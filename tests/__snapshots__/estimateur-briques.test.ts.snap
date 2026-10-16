@@ -103,6 +103,7 @@ exports[`Briques de l'estimateur — rendu figé > RAPIDE_CSS (déplacé tel que
 .av-rapide .qcard .save{font-family:var(--font-geist-mono),monospace;font-size:10px;font-weight:600;color:var(--good);background:var(--good-bg);padding:2px 6px;border-radius:999px;white-space:nowrap}
 @media(max-width:560px){.av-rapide .quis{grid-template-columns:1fr}.av-rapide .qcard .d{min-height:0}}
 .av-rapide .intro{font-size:12.5px;color:var(--faint);text-align:center;margin-top:6px}
+.av-rapide :is(input,select,textarea,button){scroll-margin-bottom:128px}
 .av-rapide-live{--nuit:#1E1B4B;--nuit-2:#241f5e;--accent-300:#c4b5fd;--radius-panel:1.5rem;--ease:cubic-bezier(.22,.72,.2,1);position:sticky;bottom:16px;z-index:20;margin-top:20px;border-radius:var(--radius-panel);background:linear-gradient(140deg,var(--nuit),var(--nuit-2));box-shadow:0 22px 54px -22px rgba(30,27,75,.7);border:1px solid rgba(255,255,255,.08)}
 .av-rapide-live .in{padding:14px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .av-rapide-live .lbl{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-300);font-weight:600}

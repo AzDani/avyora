@@ -232,8 +232,8 @@ function LeviersPrix() {
       <h3>1. Le niveau de finition</h3>
       <p>
         C&apos;est le levier le plus puissant, et le plus indolore. Passer du premium au standard fait
-        baisser la facture d&apos;environ <strong>12 %</strong> sur les lots techniques (maçonnerie,
-        électricité, isolation) et jusqu&apos;à <strong>22 %</strong> sur les lots où le choix des
+        baisser la facture d&apos;environ <strong>12 %</strong>{" "}sur les lots techniques (maçonnerie,
+        électricité, isolation) et jusqu&apos;à <strong>22 %</strong>{" "}sur les lots où le choix des
         matériaux domine — carrelage, peinture, cuisine. En éco, l&apos;écart monte respectivement à
         <strong> 17 %</strong> et <strong>33 %</strong>.
       </p>
@@ -299,7 +299,7 @@ function BodyAppartement() {
       <p className="lead">
         En 2026, rénover un appartement coûte en moyenne <strong>{euro(g("rafraich").appartM2)}/m²</strong>{" "}pour un
         rafraîchissement et jusqu&apos;à <strong>{euro(complete.appartM2)}/m²</strong>{" "}pour une{" "}
-        <strong>rénovation complète</strong> (finition standard, tout confié à des artisans). Le prix dépend surtout de
+        <strong>rénovation complète</strong>{" "}(finition standard, tout confié à des artisans). Le prix dépend surtout de
         l&apos;ampleur des travaux, de la finition et de la région.
       </p>
 
@@ -403,7 +403,7 @@ function BodyMaison() {
       <p className="lead">
         En 2026, rénover une maison coûte en moyenne <strong>{euro(complete.maisonM2)}/m²</strong>{" "}pour une{" "}
         <strong>rénovation complète</strong>, et jusqu&apos;à <strong>{euro(lourde.maisonM2)}/m²</strong>{" "}pour une{" "}
-        <strong>rénovation lourde</strong> incluant l&apos;enveloppe (toiture, façade, charpente). Plus cher qu&apos;un
+        <strong>rénovation lourde</strong>{" "}incluant l&apos;enveloppe (toiture, façade, charpente). Plus cher qu&apos;un
         appartement, car la maison porte tout le bâti.
       </p>
 
@@ -467,8 +467,8 @@ function BodyMaison() {
       <h2>Cas de la maison ancienne</h2>
       <p>
         Une maison ancienne (avant 1975, souvent non isolée) cumule les chantiers : <strong>isolation</strong> à reprendre,{" "}
-        <strong>réseaux</strong> électriques et de plomberie à refaire, parfois <strong>humidité</strong> ou assainissement.
-        On bascule vite sur une réno lourde — mais c&apos;est aussi là que les <strong>aides</strong> (MaPrimeRénov&apos;,
+        <strong>réseaux</strong> électriques et de plomberie à refaire, parfois <strong>humidité</strong>{" "}ou assainissement.
+        On bascule vite sur une réno lourde — mais c&apos;est aussi là que les <strong>aides</strong>{" "}(MaPrimeRénov&apos;,
         CEE) réduisent le plus la note sur les postes énergétiques.
       </p>
 
@@ -569,7 +569,7 @@ function BodyOrdre() {
       <h2>Et si vous faites une partie vous-même ?</h2>
       <p>
         L&apos;auto-rénovation change le calendrier, pas l&apos;ordre. Deux points d&apos;attention :
-        les postes que vous gardez doivent s&apos;insérer <strong>sans bloquer les artisans</strong> —
+        les postes que vous gardez doivent s&apos;insérer <strong>sans bloquer les artisans</strong>{" "}—
         un plaquiste qui attend votre isolation pendant trois week-ends, c&apos;est un planning qui
         dérape. Et l&apos;électricité comme le gaz relèvent d&apos;obligations de conformité :
         l&apos;estimateur vous laisse choisir poste par poste entre « fait faire » et « je le fais »,
@@ -738,12 +738,12 @@ function BodyDIY() {
       <p>
         Un prix de travaux se décompose en deux choses : ce qu&apos;on achète et ce qu&apos;on fait.
         Le référentiel AVYORA porte les deux pour <strong>{stats.avecFourniture} postes sur{" "}
-        {stats.postes}</strong> ({stats.pctAvec} %) : un prix fourni-posé et un prix fourniture seule.
+        {stats.postes}</strong> ({stats.pctAvec}{" "}%) : un prix fourni-posé et un prix fourniture seule.
         L&apos;écart entre les deux, c&apos;est exactement ce que vous ne payez pas si vous le faites
         vous-même.
       </p>
       <p>
-        Les {stats.sansFourniture} postes restants n&apos;ont pas de prix fourniture parce
+        Les {stats.sansFourniture}{" "}postes restants n&apos;ont pas de prix fourniture parce
         qu&apos;il n&apos;y a rien à acheter : ce sont des prestations pures — études, diagnostics,
         démarches, raccordements. Faire soi-même n&apos;y a aucun sens.
       </p>
@@ -840,7 +840,7 @@ function BodyDIY() {
       <h2>Ce que l&apos;économie annoncée oublie</h2>
       <ul>
         <li>
-          <strong>La TVA.</strong> C&apos;est le coût caché le plus systématiquement ignoré. Sur une
+          <strong>La TVA.</strong>{" "}C&apos;est le coût caché le plus systématiquement ignoré. Sur une
           facture d&apos;artisan en rénovation, les travaux relèvent d&apos;un taux réduit. Les
           matériaux que vous achetez seul sont, eux, à <strong>20 %</strong>. L&apos;estimateur
           applique cette règle automatiquement : une partie de l&apos;économie de main-d&apos;œuvre
@@ -935,7 +935,7 @@ function BodyBudget() {
         <strong>{CTX_APPART.surface} m²</strong> demande <strong>{lignes.find((l) => l.poste === "Peinture des murs")!.a} m²</strong>{" "}
         de peinture murale, parce qu&apos;on peint des murs, pas un sol. Une maison de{" "}
         <strong>{CTX_MAISON.surfaceSol} m² d&apos;emprise au sol</strong> porte{" "}
-        <strong>{lignes.find((l) => l.poste.startsWith("Réfection couverture"))!.m} m²</strong> de toiture,
+        <strong>{lignes.find((l) => l.poste.startsWith("Réfection couverture"))!.m} m²</strong>{" "}de toiture,
         parce qu&apos;un toit est incliné. Ces écarts ne sont pas des détails : ils décident du budget.
       </p>
 
@@ -973,7 +973,7 @@ function BodyBudget() {
 
       <h2>Surface habitable et emprise au sol ne sont pas la même chose</h2>
       <p>
-        C&apos;est la confusion la plus coûteuse. La <strong>surface habitable</strong> est celle qu&apos;on
+        C&apos;est la confusion la plus coûteuse. La <strong>surface habitable</strong>{" "}est celle qu&apos;on
         vit : elle commande la peinture, les sols, l&apos;électricité. L&apos;<strong>emprise au sol</strong>{" "}
         est l&apos;ombre du bâtiment : elle commande la toiture et la façade. Sur une maison à étage,
         la seconde vaut à peu près la moitié de la première — et se tromper de surface sur un poste
@@ -989,12 +989,12 @@ function BodyBudget() {
       <ul>
         <li>
           <strong>Salles de bain</strong> — chaque suite parentale porte la sienne : le moteur compte
-          les salles de bain déclarées <em>plus</em> les suites. Une faïence chiffrée sur une seule
+          les salles de bain déclarées <em>plus</em>{" "}les suites. Une faïence chiffrée sur une seule
           salle de bain alors que le logement en a deux, c&apos;est {lignes.find((l) => l.poste.startsWith("Faïence"))!.a} m²
           de carrelage mural manquants.
         </li>
         <li>
-          <strong>Portes et radiateurs</strong> — un par pièce. Le nombre de pièces se déduit des
+          <strong>Portes et radiateurs</strong>{" "}— un par pièce. Le nombre de pièces se déduit des
           espaces déclarés (séjour, cuisine, chambres, suites, couloir, buanderie), pas d&apos;une
           typologie « T3 » qui ne dit rien de l&apos;agencement réel.
         </li>

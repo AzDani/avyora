@@ -255,6 +255,21 @@ export function issueEnvoi(error: { code?: string; status?: number } | null | un
   return "envoi";
 }
 
+/**
+ * L'issue d'une demande « mot de passe oublié » (`resetPasswordForEmail`). Supabase n'envoie rien à une adresse sans
+ * compte et répond comme un envoi réussi ; une adresse qui en a un peut répondre autrement (intervalle de 60 s entre deux
+ * envois, `over_email_send_rate_limit`, « For security purposes, you can only request this after 52 seconds » ; SMTP en
+ * panne…). Tout ce qui peut dépendre de l'adresse répond donc comme un envoi (pas d'énumération). Seuls sont dits : une
+ * adresse mal formée, et la limite par IP de Supabase (`over_request_rate_limit`), qui ne dépend pas de l'adresse.
+ */
+export function issueReset(error: { code?: string; status?: number } | null | undefined): "envoye" | "limite" | "email" {
+  if (!error) return "envoye";
+  const code = error.code ?? "";
+  if (code === "over_request_rate_limit") return "limite";
+  if (code === "email_address_invalid" || code === "validation_failed") return "email";
+  return "envoye";
+}
+
 /* ─── Les métadonnées du compte ─────────────────────────────────────────────── */
 
 /** Comment le compte a été créé : le lien e-mail (B2), le formulaire à mot de passe, ou Google. */
@@ -264,19 +279,40 @@ export type MetadonneesInscription = {
   /** Horodatage de l'acceptation des CGU et de la politique de confidentialité (ISO). */
   cgu_acceptees_le: string;
   inscription: MethodeInscription;
-  /** La case « nouveautés d'AVYORA », NON cochée par défaut ; `newsletter_le` date le consentement (CNIL). */
-  newsletter: boolean;
-  newsletter_le?: string;
 };
 
 /**
  * Ce que l'inscription écrit dans `user_metadata` (options.data de Supabase, appliqué à la CRÉATION du compte
- * seulement : un compte existant garde les siennes). L'acceptation des CGU est datée ; le consentement aux
- * nouveautés aussi, et seulement s'il est donné.
+ * seulement : un compte existant garde les siennes) : l'acceptation des CGU, datée, et la méthode. Le consentement aux
+ * nouveautés n'y est jamais : `user_metadata` s'écrit aussi en appelant Supabase directement (clé publique), il vit
+ * donc dans `app_metadata` ({@link consentementNouveautes}).
  */
-export function metadonneesInscription(o: { methode: MethodeInscription; newsletter: boolean; maintenant?: Date }): MetadonneesInscription {
-  const le = (o.maintenant ?? new Date()).toISOString();
-  return { cgu_acceptees_le: le, inscription: o.methode, newsletter: o.newsletter, ...(o.newsletter ? { newsletter_le: le } : {}) };
+export function metadonneesInscription(o: { methode: MethodeInscription; maintenant?: Date }): MetadonneesInscription {
+  return { cgu_acceptees_le: (o.maintenant ?? new Date()).toISOString(), inscription: o.methode };
+}
+
+/**
+ * Le consentement aux nouveautés d'AVYORA (case NON cochée par défaut, CNIL), daté : écrit dans `app_metadata`, que
+ * SEUL le serveur écrit (clé service_role). Un tiers qui inscrit l'adresse d'un autre en appelant Supabase directement
+ * peut remplir `user_metadata`, jamais `app_metadata` : personne ne peut abonner l'adresse d'un autre. Pour envoyer
+ * les nouveautés : `app_metadata.newsletter` vaut `true` et `email_confirmed_at` est non nul (docs/beta.md §6).
+ */
+export function consentementNouveautes(le: Date): { newsletter: true; newsletter_le: string } {
+  return { newsletter: true, newsletter_le: le.toISOString() };
+}
+
+/**
+ * Ce qu'un tiers a pu écrire d'avance dans `user_metadata` d'un compte à l'adresse d'un autre (inscription directe
+ * auprès de Supabase, ou compte passé à l'adresse d'un autre) et que le site affiche ou lit : le nom (« Bonjour … »
+ * dans la barre), le pseudo, le profil et son questionnaire, et une ancienne case des nouveautés. Effacé au contrôle de
+ * l'arrivée (lib/auth-arrivee.ts) quand le compte n'a pas été préparé dans ce navigateur : Supabase retire une clé
+ * mise à `null`.
+ */
+export const METADONNEES_D_UN_TIERS = ["nom", "username", "profil", "profil_le", "onboarding_fait", "newsletter", "newsletter_le"] as const;
+
+/** Les métadonnées d'un tiers, à effacer (`null` retire la clé). */
+export function metadonneesEffacees(): Record<(typeof METADONNEES_D_UN_TIERS)[number], null> {
+  return Object.fromEntries(METADONNEES_D_UN_TIERS.map((k) => [k, null])) as Record<(typeof METADONNEES_D_UN_TIERS)[number], null>;
 }
 
 /** Un compte vu au retour du lien : ce que /auth/callback et /auth/confirmer lisent pour savoir s'il vient de naître. */
@@ -295,20 +331,50 @@ type CompteVu = {
 export const FENETRE_NOUVEAU_COMPTE_MS = 24 * 3_600_000;
 
 /**
- * Le contrôle du mot de passe à la confirmation de l'adresse (lib/auth-arrivee.ts) : il a lieu à la première arrivée par
- * lien (ou Google) qui suit la confirmation, dans l'heure, une seule fois par compte (marque `MARQUE_MDP` dans
- * `app_metadata`, que seul le serveur écrit : un tiers ne peut pas la poser d'avance).
+ * Le contrôle du mot de passe (lib/auth-arrivee.ts), à une arrivée par lien (ou Google). Deux moments :
+ *  - la CONFIRMATION de l'adresse : la première arrivée qui la suit, dans l'heure, une seule fois par compte (marque
+ *    `MARQUE_MDP` dans `app_metadata`, que seul le serveur écrit : un tiers ne peut pas la poser d'avance) ;
+ *  - un CHANGEMENT d'adresse : la marque retient l'adresse contrôlée (`MARQUE_MDP_EMAIL`). Un compte passé à l'adresse
+ *    d'un autre (le tiers crée et confirme SON compte, demande à Supabase de le passer à l'adresse de sa victime, qui
+ *    clique l'e-mail « Confirm Change of Email » sans l'avoir demandé) garde le mot de passe du tiers : quand l'adresse
+ *    du compte n'est plus celle qui a été contrôlée, le contrôle est refait. Un compte qui n'a pas d'adresse retenue
+ *    (contrôlé avant elle, ou jamais passé par le site) est contrôlé si Supabase a envoyé une demande de changement
+ *    d'adresse (`email_change_sent_at`) ; sinon son adresse est simplement retenue (`noter`), sans toucher au mot de
+ *    passe (les comptes d'avant B2 gardent le leur).
+ * Au changement, le mot de passe est TOUJOURS remplacé : il a été posé par qui tenait le compte avant le changement,
+ * jamais choisi dans ce navigateur pour cette adresse (une inscription au mot de passe sur un compte confirmé ne
+ * change rien chez Supabase, qui répond comme pour un compte neuf).
  */
 export const FENETRE_CONTROLE_MDP_MS = 3_600_000;
 export const MARQUE_MDP = "mdp_controle_le";
+export const MARQUE_MDP_EMAIL = "mdp_controle_email";
 
-type CompteControle = { email_confirmed_at?: string | null; app_metadata?: Record<string, unknown> | null };
+/** Le contrôle à faire à cette arrivée : `confirmation`, `changement` (d'adresse), `noter` (retenir l'adresse seule), ou rien. */
+export type ControleMdp = "confirmation" | "changement" | "noter" | null;
 
-/** Le compte vient-il d'être confirmé (dans l'heure), sans que son mot de passe ait déjà été contrôlé ? */
-export function controleMdpAFaire(user: CompteControle | null | undefined, maintenant: number = Date.now()): boolean {
-  if (!user || user.app_metadata?.[MARQUE_MDP]) return false;
+type CompteControle = {
+  email?: string | null;
+  email_confirmed_at?: string | null;
+  email_change_sent_at?: string | null;
+  app_metadata?: Record<string, unknown> | null;
+};
+
+const adresseNette = (v: unknown) => (typeof v === "string" ? v.trim().toLowerCase() : "");
+
+export function controleMdpAFaire(user: CompteControle | null | undefined, maintenant: number = Date.now()): ControleMdp {
+  if (!user) return null;
+  const email = adresseNette(user.email);
+  const retenue = adresseNette(user.app_metadata?.[MARQUE_MDP_EMAIL]);
+  const changementDemande = !!user.email_change_sent_at;
+  if (user.app_metadata?.[MARQUE_MDP]) {
+    if (retenue) return retenue !== email ? "changement" : null;
+    return changementDemande ? "changement" : email ? "noter" : null;
+  }
   const t = Date.parse(user.email_confirmed_at ?? "");
-  return Number.isFinite(t) && t <= maintenant + 60_000 && maintenant - t < FENETRE_CONTROLE_MDP_MS;
+  if (!Number.isFinite(t)) return null;
+  if (changementDemande) return "changement";
+  if (t <= maintenant + 60_000 && maintenant - t < FENETRE_CONTROLE_MDP_MS) return "confirmation";
+  return email ? "noter" : null;
 }
 
 /** La marque posée dans `user_metadata` quand `compte_cree` est émis : une seule fois par compte. */

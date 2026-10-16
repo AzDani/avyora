@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getProjet } from "@/lib/data/projects";
 import { getUser, estPro } from "@/lib/auth";
 import { genererRapportPDF } from "@/lib/pdf";
-import { verifierLimite } from "@/lib/ratelimit";
+import { clientIp, verifierLimite } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,11 +16,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   if (!estPro(user)) return NextResponse.redirect(new URL("/tarifs", req.url));
 
   // Génération PDF = Chrome headless (coûteux) → limites par utilisateur pour protéger le serveur : 5 par minute, et
-  // 30 par heure (pendant la bêta, tout inscrit y a droit ; sans Upstash, tenues en mémoire en production).
+  // 30 par heure (pendant la bêta, tout inscrit y a droit ; sans Upstash, tenues en mémoire en production) ; et 60 par
+  // heure par IP (un compte ne coûte rien : N comptes depuis une même machine ne multiplient pas la facture).
   if (!(await verifierLimite("pdf", user.id))) {
     return NextResponse.json({ error: "Trop de générations. Patiente une minute." }, { status: 429 });
   }
-  if (!(await verifierLimite("pdfHeure", user.id))) {
+  if (!(await verifierLimite("pdfHeure", user.id)) || !(await verifierLimite("pdfIp", await clientIp()))) {
     return NextResponse.json({ error: "Trop de générations pour cette heure. Réessaie plus tard." }, { status: 429 });
   }
 

@@ -10,9 +10,11 @@ import { cheminInterne } from "@/lib/next-url";
 import { suivreServeur } from "@/lib/track-server";
 import { empreinteAdresse } from "@/lib/empreinte";
 import {
-  COOKIE_DEMANDE, COOKIE_LIEN, COOKIE_VERIFIER, DUREE_DEMANDE_S, ajouterDemande, destinationLien, emailValide, issueEnvoi,
-  lireLienEnAttente, lirePageAcces, metadonneesInscription, optionsMarque, suiteVerification, trouverDemande, type MethodeDemande,
+  COOKIE_DEMANDE, COOKIE_LIEN, COOKIE_VERIFIER, DUREE_DEMANDE_S, ajouterDemande, consentementNouveautes, destinationLien, emailValide,
+  issueEnvoi, issueReset, lireLienEnAttente, lirePageAcces, metadonneesInscription, optionsMarque, suiteVerification, trouverDemande,
+  type MethodeDemande,
 } from "@/lib/auth-lien";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { controlerArrivee, noterArrivee } from "@/lib/auth-arrivee";
 import { CHAMP_CAPTCHA, jetonCaptcha } from "@/lib/captcha";
 
@@ -28,16 +30,18 @@ async function limiteAuthOk(): Promise<boolean> {
 
 /**
  * Les actions qui ENVOIENT un e-mail (lien d'accès, inscription au mot de passe, mot de passe oublié) : en plus de la
- * limite `auth` (6 / min / IP), 20 par heure et par IP (un robot qui fait défiler les adresses) et 3 par heure et par
- * adresse, en empreinte (une boîte bombardée depuis mille IP : un envoi et deux « Renvoyer »). Supabase garde en plus
- * son intervalle de 60 s par adresse.
+ * limite `auth` (6 / min / IP), 20 par heure et par IP (un robot qui fait défiler les adresses) et 3 par heure pour une
+ * même adresse DEPUIS une même IP (un envoi et deux « Renvoyer » ; l'adresse en empreinte). Pas de plafond par adresse
+ * toutes IP confondues : quiconque tape l'adresse d'un autre trois fois par heure l'empêcherait de recevoir son lien,
+ * donc d'entrer (2e contre-examen). Une boîte bombardée depuis beaucoup d'IP reste freinée par l'intervalle de 60 s
+ * que Supabase impose entre deux envois à la même adresse, puis par le CAPTCHA (docs/beta.md §7).
  */
 async function limitesEnvoiOk(email: string): Promise<boolean> {
   const ip = await clientIp();
   return (
     (await verifierLimite("auth", ip)) &&
     (await verifierLimite("lienIp", ip)) &&
-    (await verifierLimite("lienAdresse", empreinteAdresse(email)))
+    (await verifierLimite("lienAdresse", `${empreinteAdresse(email)}:${ip}`))
   );
 }
 
@@ -148,7 +152,7 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
     // L'acceptation des CGU (mention sous le bouton), datée (B2). Les nouveautés : pas ici (n'importe qui peut taper
     // n'importe quelle adresse), mais à l'arrivée confirmée, dans ce navigateur (cookie `av-demande`).
     options: {
-      data: { nom, ...metadonneesInscription({ methode: "mot_de_passe", newsletter: false }) },
+      data: { nom, ...metadonneesInscription({ methode: "mot_de_passe" }) },
       emailRedirectTo: `${await origin()}/auth/callback?next=${encodeURIComponent(dest)}`,
       ...optionsCaptcha(formData),
     },
@@ -162,10 +166,11 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
   const cree = Date.parse(data.user?.created_at ?? "");
   const neuf = Number.isFinite(cree) && cree >= avantAppel - DECALAGE_HORLOGES_MS && cree <= Date.now() + DECALAGE_HORLOGES_MS;
   await noterDemande(email, neuf ? "mdp" : "lien", newsletter);
-  // Sans confirmation d'e-mail (réglage Supabase), la session est ouverte ici même, dans ce navigateur : le consentement aussi.
-  if (data.session && newsletter) {
+  // Sans confirmation d'e-mail (réglage Supabase), la session est ouverte ici même, dans ce navigateur : le consentement
+  // aussi, dans `app_metadata` (lib/auth-lien.ts, `consentementNouveautes`).
+  if (data.session && newsletter && data.user?.id) {
     try {
-      await supabase.auth.updateUser({ data: { newsletter: true, newsletter_le: new Date().toISOString() } });
+      await supabaseAdmin().auth.admin.updateUserById(data.user.id, { app_metadata: consentementNouveautes(new Date()) });
     } catch { /* consentement non enregistré : la case reste à cocher plus tard */ }
   }
 
@@ -234,7 +239,7 @@ export async function envoyerLienAcces(_prev: LienState, formData: FormData): Pr
       // Les CGU datées. Les nouveautés : jamais à la création (n'importe qui peut taper l'adresse d'un autre, et Supabase
       // ne met plus à jour un compte non confirmé) ; la case part dans la trace de ce navigateur et n'est enregistrée
       // qu'à l'arrivée confirmée, ici (lib/auth-arrivee.ts).
-      data: metadonneesInscription({ methode: "lien", newsletter: false }),
+      data: metadonneesInscription({ methode: "lien" }),
       ...optionsCaptcha(formData),
     },
   });
@@ -314,9 +319,16 @@ export async function refuserArrivee(): Promise<void> {
 }
 
 // ── Demande de réinitialisation (envoie l'email) ──
+/**
+ * « Mot de passe oublié ». La réponse ne dit jamais si l'adresse a un compte : Supabase n'écrit pas à une adresse
+ * inconnue et répond comme un envoi réussi, alors qu'une adresse connue peut répondre « attends 52 secondes », « envoi
+ * impossible »… (`issueReset` : tout ce qui dépend de l'adresse répond comme un envoi ; le journal garde le code). La
+ * trace de la demande est posée dans tous ces cas : son cookie, présent ou non, ne doit pas le dire non plus.
+ */
 export async function requestReset(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const email = cleanEmail(formData.get("email"));
   if (!email) return { error: "Renseigne ton email." };
+  if (!emailValide(email)) return { error: "Cette adresse e-mail n'est pas valide. Vérifie-la." };
   if (!(await limitesEnvoiOk(email))) return { error: TROP_DE_TENTATIVES };
 
   const supabase = await supabaseServer();
@@ -324,10 +336,12 @@ export async function requestReset(_prev: AuthState, formData: FormData): Promis
     redirectTo: `${await origin()}/auth/callback?next=/reset/definir`,
     ...optionsCaptcha(formData),
   });
-  if (error) return { error: error.message };
-  await noterDemande(email, "reset");
+  const issue = issueReset(error);
   // L'adresse tapée peut être celle d'un tiers : le journal n'en garde que l'empreinte.
-  await journaliser("reset_demande", { payload: { empreinte: empreinteAdresse(email) } });
+  await journaliser("reset_demande", { payload: { empreinte: empreinteAdresse(email), ...(error ? { issue, ...(error.code ? { code: error.code } : {}) } : {}) } });
+  if (issue === "limite") return { error: TROP_DE_TENTATIVES };
+  if (issue === "email") return { error: "Cette adresse e-mail n'est pas valide. Vérifie-la." };
+  await noterDemande(email, "reset");
   return { message: "Si un compte existe pour cet email, tu recevras un lien pour définir ton mot de passe." };
 }
 

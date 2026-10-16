@@ -117,13 +117,13 @@ export default function GuidesHub() {
         humidité, plancher à reprendre. Le m² sert à cadrer un budget, pas à le figer.
       </p>
       <p>
-        <strong>L&apos;ampleur pèse plus que la surface.</strong> Entre un rafraîchissement et une
+        <strong>L&apos;ampleur pèse plus que la surface.</strong>{" "}Entre un rafraîchissement et une
         rénovation lourde, le coût au m² est multiplié par cinq environ. Avant de chercher « le prix au
         m² », il faut donc savoir ce qu&apos;on refait réellement — et c&apos;est souvent là que le
         budget se décide.
       </p>
       <p>
-        <strong>La main-d&apos;œuvre décide de l&apos;écart régional.</strong> Les fournitures coûtent à
+        <strong>La main-d&apos;œuvre décide de l&apos;écart régional.</strong>{" "}Les fournitures coûtent à
         peu près pareil partout ; la pose, non. C&apos;est pourquoi un même chantier ne se chiffre pas
         pareil à Paris et dans la Creuse — voir les{" "}
         <Link href="/prix-renovation">prix ville par ville</Link>.
@@ -147,7 +147,7 @@ export default function GuidesHub() {
       </p>
       <p>
         <strong>Tu hésites à mettre la main à la pâte</strong> →{" "}
-        <Link href="/guides/faire-soi-meme-ou-artisan">faire soi-même ou faire faire</Link> : la part
+        <Link href="/guides/faire-soi-meme-ou-artisan">faire soi-même ou faire faire</Link>{" "}: la part
         de main-d&apos;œuvre lot par lot, et ce que l&apos;économie annoncée oublie.
       </p>
       <p>

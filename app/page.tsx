@@ -180,7 +180,7 @@ ${PLAN_CSS}<section class="planb" aria-labelledby="planb-titre"><div class="in">
   <ul><li>Free, nothing to install</li><li>Floor areas worked out room by room</li>${FEATURES.neuf ? "<li>Your future house priced from your plan</li>" : ""}</ul>
   <div class="cta"><a href="/plan" class="btn btn-p bureau" data-clic-plan="accueil">Create my plan →</a><a href="/logiciel-plan-maison" class="btn btn-p tel" data-clic-plan="accueil">Create my plan →</a><a href="/logiciel-plan-maison" class="lien bureau" data-clic-plan="accueil">Discover the editor</a></div>
   <p class="note">Drawing works on a computer or tablet. The editor is in French for now.</p>
-</div>${planVisuels("2D plan of a 94 m² single-storey house in the AVYORA editor: named rooms, floor areas, dimensions and furniture", "The same 94 m² house in 3D in the AVYORA editor")}</div></section>`;
+</div>${planVisuels("2D plan of a 94 m² single-story house in the AVYORA editor: named rooms, floor areas, dimensions and furniture", "The same 94 m² house in 3D in the AVYORA editor")}</div></section>`;
 /* La 5ᵉ puce de la rangée de confiance du hero (aucun chiffre). */
 const PLAN_TRUST = "<span>plan <b>3D</b></span>";
 const PLAN_TRUST_EN = "<span><b>3D</b> floor plan</span>";
@@ -257,7 +257,7 @@ const HOME_HTML = `
     <p>Concrètement, voilà où l'outil se rembourse — dès le premier chantier.</p>
   </div>
   <div class="eco">
-    <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><h3>Chiffre ton économie en bricolant</h3><p>Selon ce que tu fais toi-même, AVYORA t'indique combien tu économises sur la main-d'œuvre — <b>jusqu'à −55 %</b>.</p></div></div>
+    <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><h3>Chiffre ton économie en bricolant</h3><p>Selon ce que tu fais toi-même, AVYORA t'indique combien tu économises sur la main-d'œuvre — <b>souvent plus de la moitié du budget</b>.</p></div></div>
     <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg></div><div><h3>Repère un devis surévalué</h3><p>Compare chaque poste au prix de marché. Un artisan +10 % sur 50&nbsp;000&nbsp;€, c'est 5&nbsp;000&nbsp;€.</p></div></div>
     <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div><h3>Négocie — et emprunte serein</h3><p>Un rapport PDF chiffré poste par poste : à présenter à tes artisans pour négocier, et à ta banque pour appuyer ton dossier de prêt.</p></div></div>
     <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></div><div><h3>Anticipe les imprévus</h3><p>La provision aléas est intégrée : plus de mauvaise surprise en cours de chantier.</p></div></div>
@@ -381,7 +381,7 @@ const HOME_HTML_EN = `
     <p>Here's exactly where it pays for itself — from the very first project.</p>
   </div>
   <div class="eco">
-    <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><h3>Quantify your DIY savings</h3><p>Depending on what you do yourself, AVYORA shows how much you save on labor — <b>up to −55 %</b>.</p></div></div>
+    <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><h3>Quantify your DIY savings</h3><p>Depending on what you do yourself, AVYORA shows how much you save on labor — <b>often more than half the budget</b>.</p></div></div>
     <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg></div><div><h3>Spot an overpriced quote</h3><p>Compare each item to the market price. A contractor +10 % on €50,000 is €5,000.</p></div></div>
     <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div><h3>Negotiate — and borrow with confidence</h3><p>A PDF report priced line by line: to negotiate with your contractors, and to back your loan application at the bank.</p></div></div>
     <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></div><div><h3>Plan for the unexpected</h3><p>A contingency allowance is built in: no more nasty surprises mid-project.</p></div></div>
@@ -416,15 +416,15 @@ const HOME_HTML_EN = `
 </div></section>
 
 <section class="blk" style="padding-top:0"><div class="wrap">
-  <div class="center"><p class="eyebrow">How much does it cost?</p><h2>Renovation prices, line by line.</h2><p>The average budget for each project, itemised and adjusted to your region — before you even start.</p></div>
+  <div class="center"><p class="eyebrow">How much does it cost?</p><h2>Renovation prices, line by line.</h2><p>The average budget for each project, itemized and adjusted to your region — before you even start.</p></div>
   <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:22px">
     <a href="/prix-travaux/renovation-salle-de-bain" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">🛁 Bathroom</a>
     <a href="/prix-travaux/renovation-cuisine" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">🍳 Kitchen</a>
     <a href="/prix-travaux/refaire-toiture" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">🏠 Roof</a>
     <a href="/prix-travaux/peinture-interieure" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">🎨 Painting</a>
-    <a href="/prix-travaux/renovation-electrique" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">⚡ Electrics</a>
+    <a href="/prix-travaux/renovation-electrique" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">⚡ Electrical</a>
     <a href="/prix-travaux/remplacement-fenetres" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">🪟 Windows</a>
-    <a href="/prix-travaux/isolation-combles" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">🧊 Loft insulation</a>
+    <a href="/prix-travaux/isolation-combles" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">🧊 Attic insulation</a>
     <a href="/prix-travaux/remplacer-baignoire-par-douche" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600">🚿 Bath → shower</a>
     <a href="/prix-travaux" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand);color:#fff;border-radius:999px;padding:9px 18px;font-size:14px;font-weight:600">All projects →</a>
   </div>
