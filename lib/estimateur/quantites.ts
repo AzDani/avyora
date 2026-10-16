@@ -7,7 +7,8 @@
  * natures lisent donc ici les formules qu'elles ont en commun.
  *
  * Le sens est choisi formule par formule (revue rénovation / neuf, chantier N8) :
- * - robinetterie de lavabo : une par vasque, donc deux avec un meuble double vasque (adopté en neuf) ;
+ * - robinetterie de lavabo : deux par salle de bain avec un meuble double vasque (adopté en neuf) ; la
+ *   rénovation suit en plus la quantité saisie du meuble (une par vasque), le neuf non (`robinetsNeuf`) ;
  * - étanchéité sous carrelage (SPEC) : la rénovation mesure la zone de chaque douche cochée ; le neuf
  *   garde 6,5 m² par salle de bain et n'ajoute que le supplément d'une douche plus grande (`specNeuf`) ;
  * - spots, sols, faïence, plinthes : la même formule des deux côtés ;
@@ -23,13 +24,23 @@ export interface LigneQuantite {
   vsel?: Record<string, string>;
 }
 
-/** Robinetterie de lavabo = nombre de vasques : la quantité du meuble-vasque (une par salle de bain
- *  tant qu'elle est automatique), ×2 pour un meuble double vasque. Meuble non coché : une par salle de bain. */
-export function robinetsLavabo(meubleVasque: LigneQuantite | undefined, sdb: number): number {
+/** Vasques d'un meuble : deux pour un meuble double vasque, une sinon. */
+const vasquesParMeuble = (mv: LigneQuantite): number => (mv.vsel && mv.vsel["config"] === "double" ? 2 : 1);
+
+/** Robinetterie de lavabo en rénovation = nombre de vasques : la quantité du meuble-vasque (une par
+ *  salle de bain tant qu'elle est automatique), ×2 pour un meuble double vasque. Meuble non coché : une
+ *  par salle de bain. */
+export function robinetsReno(meubleVasque: LigneQuantite | undefined, sdb: number): number {
   const mv = meubleVasque;
-  return mv && mv.on
-    ? (mv.manual ? (mv.qty ?? 0) : sdb) * (mv.vsel && mv.vsel["config"] === "double" ? 2 : 1)
-    : sdb;
+  return mv && mv.on ? (mv.manual ? (mv.qty ?? 0) : sdb) * vasquesParMeuble(mv) : sdb;
+}
+
+/** Robinetterie de lavabo en construction neuve : une par salle de bain, deux avec un meuble double
+ *  vasque coché. La quantité tapée sur le meuble n'y entre pas : avant N8, la robinetterie du neuf
+ *  valait le nombre de salles de bain quelle que soit cette quantité, et un projet enregistré ne doit
+ *  pas bouger ; seule la double vasque, variante admise par la revue, est chiffrée en plus. */
+export function robinetsNeuf(meubleVasque: LigneQuantite | undefined, sdb: number): number {
+  return meubleVasque?.on ? sdb * vasquesParMeuble(meubleVasque) : sdb;
 }
 
 /** Surface d'étanchéité par salle de bain quand aucune douche n'est choisie (estimation moyenne). */

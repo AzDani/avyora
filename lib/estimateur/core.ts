@@ -22,7 +22,7 @@ export type TypeBien = "Studio" | "T2" | "T3" | "T4" | "Maison";
 import { CATALOG } from "./catalog";
 import { catalogueDe } from "./catalogue-neuf";
 import { autoQtyNeuf, type MaisonNeuve } from "./neuf";
-import { robinetsLavabo, specReno, spots, solCarrele, solSec, faienceSdb, plinthes } from "./quantites";
+import { robinetsReno, specReno, spots, solCarrele, solSec, faienceSdb, plinthes } from "./quantites";
 
 export interface VarOpt { k: string; label: string; coef: number; tva?: number;
   /** Poste que CETTE option déclenche ailleurs au catalogue, sans changer le prix de la ligne.
@@ -563,7 +563,7 @@ export function autoQty(ctx: Ctx, c: string, n: string, sel: Selection): number 
   /* Formules partagées avec le neuf (`quantites.ts`) : la robinetterie compte les vasques (×2 pour un
      meuble double vasque) ; l'étanchéité sous carrelage (SPEC) mesure la zone de chaque douche cochée,
      sol du bac et 3 parois jusqu'à ≈ 2 m, selon sa dimension (aucune douche : 6,5 m² par SDB). */
-  const vasques = robinetsLavabo(sel[key("Plomberie", "Meuble-vasque")], SDB);
+  const vasques = robinetsReno(sel[key("Plomberie", "Meuble-vasque")], SDB);
   const specArea = specReno([sel[key("Plomberie", "Bac de douche")], sel[key("Plomberie", "Douche à l'italienne")]], SDB);
   if (c === "Cloisons / Platrerie" && n === FINI) return derivedFinitions(ctx, sel);
   /* Le caisson à galandage se DÉDUIT de la menuiserie, il ne se coche plus dans son coin. Une
