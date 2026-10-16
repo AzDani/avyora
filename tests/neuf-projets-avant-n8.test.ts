@@ -18,7 +18,11 @@
  * - `detaille-variantes` : un meuble double vasque et un bac 150×90, les deux variantes que N8 chiffre
  *   désormais (écart ADMIS par la revue, listé ici et dans le compte rendu) ;
  * - `detaille-double-vasque-manuel` : un meuble double vasque à quantité tapée (3) ; seule la double
- *   vasque compte (écart admis), pas la quantité du meuble.
+ *   vasque compte (écart admis), pas la quantité du meuble ;
+ * - `detaille-italienne-150x90` (2 salles de bain) et `detaille-italienne-150x90-3sdb` : une douche à
+ *   l'italienne 150×90 cochée à la main (quantité 1 posée au cochage, sans drapeau `manual`). La fiche
+ *   et le détaillé rouvert comptent la même douche, une seule, dans l'étanchéité (N8, vérification) ;
+ *   la zone qu'elle ajoute est l'écart admis du grand bac.
  */
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
@@ -139,8 +143,34 @@ describe("N8 · écart admis : un meuble double vasque et un bac 150×90 sont ch
       expect(Math.round(p.ttc - r.ttc)).toBe(ECART_DOUBLE_VASQUE_TTC);
     }
   });
+
+  it("douche à l'italienne 150×90 cochée à la main avant N8 : la fiche et le détaillé rouvert chiffrent la même douche", () => {
+    const italienne = cle("plo-douche-a-l-italienne");
+    for (const [nom, sdb, aire] of [["detaille-italienne-150x90", 2, 14.39], ["detaille-italienne-150x90-3sdb", 3, 20.89]] as const) {
+      const r = REF[nom];
+      expect(r.reponses.ctx.neuf!.sdb).toBe(sdb);
+      expect(r.reponses.sel[italienne]).toEqual({ on: true, self: false, qty: 1, vsel: { dim: "150x90" } });
+      const fiche = photo(r.reponses);
+      const rep = repriseDepuisReponses(r.reponses)!;
+      const detail = photo({ ctx: ctxDetailNeuf(rep.etat), sel: rep.etat.sel });
+      // Un seul total (D8) : l'écran de la fiche et le détaillé rouvert, ligne par ligne.
+      expect(detail.lignes).toEqual(fiche.lignes);
+      expect(detail.ttc).toBeCloseTo(fiche.ttc, 6);
+      const changees = [...new Set([...Object.keys(fiche.lignes), ...Object.keys(r.lignes)])]
+        .filter((k) => JSON.stringify(fiche.lignes[k]) !== JSON.stringify(r.lignes[k]));
+      expect(changees.sort()).toEqual([spec, dommagesOuvrage].sort());
+      expect(fiche.lignes[italienne]).toEqual(r.lignes[italienne]);   // toujours une douche, au même prix
+      expect(r.lignes[spec][0]).toBe(6.5 * sdb);
+      expect(fiche.lignes[spec][0]).toBe(aire);                       // 6,5 m² par salle de bain + 1,39 m² pour UNE douche 150×90
+      expect(Math.round(fiche.ttc - r.ttc)).toBe(ECART_ITALIENNE_TTC);
+    }
+  });
 });
 
+/** L'écart TTC des projets `detaille-italienne-150x90` (2 ou 3 salles de bain), admis : 1,39 m²
+ *  d'étanchéité pour la seule douche cochée et l'assurance dommages-ouvrage qui la suit, TVA et aléas
+ *  compris (+66,57 €). */
+const ECART_ITALIENNE_TTC = 67;
 /** L'écart TTC du projet `detaille-variantes`, admis : une robinetterie (+160 € HT), 1,39 m²
  *  d'étanchéité (+51 € HT), l'assurance dommages-ouvrage qui les suit (+7 €), TVA et aléas compris. */
 const ECART_VARIANTES_TTC = 275;

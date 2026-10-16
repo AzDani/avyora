@@ -302,11 +302,14 @@ const idfCp = (cp?: string) => /^(75|77|78|91|92|93|94|95)/.test((cp || "").repl
 const clePoste = (id: string): string => { const p = POSTE_NEUF.get(id); return p ? p.c + "|" + p.n : ""; };
 
 /** Postes dont la quantité suit AUSSI la sélection, comme en rénovation : la robinetterie double avec
- *  un meuble double vasque, l'étanchéité de douche ajoute la zone d'un bac 150×90. */
+ *  un meuble double vasque, l'étanchéité de douche ajoute la zone d'un bac 150×90. La sélection est lue
+ *  comme le détaillé rouvert la lit (`selAvantN8`) : une douche à l'italienne cochée avant N8 compte
+ *  pour sa quantité, sur la fiche comme au détaillé — un seul total. */
 const SELON_SELECTION = new Set(["plo-robinetterie-lavabo", "rev-etancheite-sous-carrelage-spec-douche"]);
 function quantitesSelonSelection(h: MaisonNeuve, sel: Selection): Record<string, number> {
   const { sdb } = piecesNeuf(h);
-  const ligne = (id: string) => sel[clePoste(id)];
+  const s = selAvantN8(sel);
+  const ligne = (id: string) => s[clePoste(id)];
   return {
     "plo-robinetterie-lavabo": robinetsNeuf(ligne("plo-meuble-vasque"), sdb),
     "rev-etancheite-sous-carrelage-spec-douche": specNeuf([ligne("plo-bac-de-douche"), ligne("plo-douche-a-l-italienne")], sdb),
