@@ -32,18 +32,10 @@ describe("C6 · traductions EN du catalogue neuf", () => {
 
   it("les unités, les variantes et les notes (du lot comme du poste) aussi", () => {
     const manque = neuf.filter(([k, s]) => k !== "corps" && k !== "phases" && k !== "postes" && !aTraductionEN(k, s));
-    /* Seules exceptions : des chaînes COMMUNES aux deux catalogues (postes repris de la rénovation :
-       poutre et poteau béton armé, clim gainable, baie et porte coulissantes), sans traduction avant
-       C6. Les traduire changerait l'écran anglais de la rénovation : décision à part, pas celle de
-       ce chantier. */
-    expect([...new Set(manque.map(([k, s]) => `${k}:${s}`))].sort()).toEqual([
-      "notes:chauffe + rafraîchit (chaud/froid) · soufflage par gaines, maison entière — groupe extérieur, unité gainable, réseau de gaines et pose compris",
-      "notes:coffrage, ferraillage et coulage — coulé en place",
-      "notes:coffrage, ferraillage, coulage et étaiement — coulée en place",
-      "vopts:Coulissante",
-      "vopts:En applique",
-      "vopts:À galandage",
-    ].sort());
+    /* Les dernières exceptions (chaînes COMMUNES aux deux catalogues : poutre et poteau béton armé, clim
+       gainable, baie et porte coulissantes) sont traduites depuis N6, qui met les deux détaillés
+       entièrement en anglais. */
+    expect([...new Set(manque.map(([k, s]) => `${k}:${s}`))]).toEqual([]);
     const reno = new Set(chaines(CATALOG).map(([k, s]) => `${k}:${s}`));
     for (const [k, s] of manque) expect(reno.has(`${k}:${s}`)).toBe(true);
   });
@@ -66,31 +58,13 @@ describe("C6 · traductions EN du catalogue neuf", () => {
     for (const [k, s] of neuf) if (k !== "unites") expect(catT("fr", k, s)).toBe(s);
   });
 
-  it("la rénovation n'est pas touchée : ses chaînes sans traduction anglaise (antérieures à C6) le restent, tous types confondus", () => {
-    /* Liste figée : traduire une chaîne commune aux deux catalogues changerait l'écran anglais de la
-       rénovation et doit faire échouer ce test (décision à prendre à part). */
+  it("la rénovation aussi a toutes ses chaînes en anglais (N6), sans repli sur le français, tous types confondus", () => {
+    /* Avant N6, 19 chaînes de la rénovation restaient sans anglais (liste figée ici : les traduire changeait
+       l'écran anglais de la rénovation). N6 met le détaillé entièrement en anglais : la liste est vide, et
+       une chaîne ajoutée au catalogue sans sa traduction fait échouer ce test. Le français ne bouge pas. */
     const sans = [...new Set(chaines(CATALOG).filter(([k, s]) => !aTraductionEN(k, s)).map(([k, s]) => `${k}:${s}`))];
-    expect(sans.sort()).toEqual([
-      "notes:prix indicatifs /jour — à confirmer au loueur",
-      "notes:reprise de charge à chiffrer à part (poutre) + étude BET obligatoire",
-      "notes:fourniture, étaiement, appuis et scellement — remplace le mur porteur déposé",
-      "notes:fourniture, étaiement, appuis et scellement — alternative bois à l'IPN, laissée apparente",
-      "notes:coffrage, ferraillage, coulage et étaiement — coulée en place",
-      "notes:fourniture, platines, scellement — reprend une charge ponctuelle là où une poutre ne franchit pas la portée",
-      "notes:fourniture, sabots et fixations — alternative bois, laissée apparente",
-      "notes:coffrage, ferraillage et coulage — coulé en place",
-      "notes:moellons maçonnés au mortier",
-      "postes:Isolation par l'extérieur (ITE) sous bardage",
-      "notes:ITE avec parement rapporté sur ossature ventilée, au lieu de l'enduit sur isolant",
-      "notes:prix base PVC ; alu +30-50 %, bois +40-70 %",
-      "vopts:Coulissante",
-      "vopts:À galandage",
-      "postes:Caisson à galandage (châssis + habillage)",
-      "notes:poche où coulisse une porte/baie à galandage — en plus de la menuiserie coulissante",
-      "notes:chauffe + rafraîchit (chaud/froid) · soufflage par gaines, maison entière — groupe extérieur, unité gainable, réseau de gaines et pose compris",
-      "vopts:En applique",
-      "notes:prendre SOIT 'cuisine tout compris', SOIT les lignes détaillées (jamais les deux)",
-    ].sort());
+    expect(sans).toEqual([]);
+    for (const [k, s] of chaines(CATALOG)) if (k !== "unites") expect(catT("fr", k, s)).toBe(s);
   });
 
   it("une ligne de devis avec sa variante se lit en anglais (catLigne), et rien ne change en FR", () => {

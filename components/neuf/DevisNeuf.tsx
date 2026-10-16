@@ -2,9 +2,10 @@
 
 /**
  * Vue « Mon devis » du détaillé neuf : la version construction neuve du `DevisView` de la
- * rénovation (qui n'est pas touché). Catalogue du neuf, TVA 20 %, frais hors TVA, découpe
- * construction / annexes, répartition par phase du chantier (un lot revient dans plusieurs phases :
- * clé `phase + corps`), démarches affichées comme telles. Aucun montant écrit : tout vient du moteur.
+ * rénovation. Catalogue du neuf, TVA 20 %, frais hors TVA, découpe construction / annexes,
+ * répartition par phase du chantier (un lot revient dans plusieurs phases : clé `phase + corps`),
+ * démarches affichées comme telles. Aucun montant écrit : tout vient du moteur. L'affichage est celui
+ * de la rénovation (`VueDevis`, chantier N6) : ce composant n'en prépare que les données.
  */
 import { useMemo } from "react";
 import {
@@ -14,8 +15,8 @@ import { decoupe, qteNeuf } from "@/lib/estimateur/etapes-neuf";
 import { catT, catLigne } from "@/lib/estimateur/catalog-i18n";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { dictNeuf } from "@/lib/i18n/neuf";
-import { CountUp } from "@/components/estimateur/CountUp";
 import { fmt } from "@/components/estimateur/partage";
+import { VueDevis, type DonneesDevis } from "@/components/estimateur/VueDevis";
 
 export default function DevisNeuf({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Selection; custom?: CustomLine[] }) {
   const locale = useLocale();
@@ -27,101 +28,59 @@ export default function DevisNeuf({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Se
   // Lignes perso comprises (HT, leur TVA, les aléas) : le seul calcul du total, partout (`totauxAvecPerso`).
   const t = totauxAvecPerso(t0, custom, ctx.aleas);
   const cu = customTotals(custom);
-  const ttc = t.ttc;
   const cut = decoupe(dv);
   const max = lots.length ? Math.max(...lots.map((x) => x.ttc)) : 1;
   const persoTtc = cu.ht + cu.tva;
   const finLbl = n.saisie.finitions[ctx.finition]?.label ?? ctx.finition;
   const nf = locale === "en" ? "en-US" : "fr-FR";
 
-  return (
-    <div>
-      <div className="hero">
-        <span className="glow g1" /><span className="glow g2" />
-        <div className="eb"><span className="dot" />{d.devisEb}</div>
-        <div className="tt"><CountUp value={ttc} /><small>{d.ttc}</small></div>
-        <div className="brk">
-          <div className="pill"><span className="k">{d.travauxHt}</span><br /><span className="v num">{fmt(t.ht - b.frais)}</span></div>
-          <div className="pill"><span className="k">{d.tva}</span><br /><span className="v num">{fmt(t.tva)}</span></div>
-          {b.frais > 0 && <div className="pill"><span className="k">{n.fraisHorsTva}</span><br /><span className="v num">{fmt(b.frais)}</span></div>}
-          <div className="pill"><span className="k">{d.aleas(ctx.aleas)}</span><br /><span className="v num">{fmt(t.aleas)}</span></div>
-          <div className="pill"><span className="k">{d.budgetMax}</span><br /><span className="v num">{fmt(ctx.budget)}</span></div>
-        </div>
-        <p className="split-n">{n.dontConstr} <b>{fmt(cut.constr)}</b> · {n.annexes} <b>{fmt(cut.annexes)}</b></p>
-        <div className="tvahint">{d.heroHint}</div>
-      </div>
-
-      <div className="card">
-        <h2>{d.bilanT}</h2>
-        <div className="sub">{d.bilanSous}</div>
-        <div className="bilan">
-          <div className="btile pre"><div className="k">{d.paye}</div><div className="v num">{fmt(b.paye)}</div><div className="sub2">{d.dontMat(fmt(b.matA), fmt(b.moA))}</div></div>
-          <div className="btile mat"><div className="k">{d.achat}</div><div className="v num">{fmt(b.achat)}</div></div>
-          <div className="btile eco"><div className="k">{d.eco}</div><div className="v num">{b.eco > 0 ? "+ " + fmt(b.eco) : fmt(0)}</div></div>
-        </div>
-      </div>
-
-      <div className="card">
-        <h2>{d.repT}</h2>
-        <div className="sub">{d.repSous}</div>
-        {!lots.length ? <div className="empty">{d.vide}</div> : (
-          PHASES_NEUF.map((ph) => {
-            // Un lot peut revenir deux fois dans la même phase : on additionne ses blocs.
-            const parCorps = new Map<string, number>();
-            for (const x of lots) if (x.phase === ph) parCorps.set(x.corps, (parCorps.get(x.corps) ?? 0) + x.ttc);
-            const pl = [...parCorps].sort((a, c) => c[1] - a[1]);
-            if (!pl.length) return null;
-            return (
-              <div key={ph}>
-                <div className="phase-t">{catT(locale, "phases", ph)}</div>
-                {pl.map(([corps, v]) => (
-                  <div key={ph + "|" + corps} className="devlot">
-                    <span>{catT(locale, "corps", corps)}</span>
-                    <span className="track"><span className="fill" style={{ width: (v / max) * 100 + "%" }} /></span>
-                    <span className="v">{fmt(v)}</span>
-                  </div>
-                ))}
-              </div>
-            );
-          })
-        )}
-        {persoTtc > 0 && (
-          <div className="devlot">
-            <span>{d.perso}</span>
-            <span className="track"><span className="fill" style={{ width: Math.min(100, (persoTtc / max) * 100) + "%" }} /></span>
-            <span className="v">{fmt(persoTtc)}</span>
-          </div>
-        )}
-      </div>
-
-      {!!lignes.length && (
-        <div className="card">
-          <h2>{d.detailT}</h2>
-          <div className="sub">{d.detailSous}</div>
-          {lignes.map((li) => {
-            const tk = taches.get(li.cle);
-            const jalon = estJalon(tk) && li.ttc === 0;
-            const pctPerso = sel[li.cle]?.pu != null;
-            const q = li.unite === "forfait" ? "—"
-              : li.unite === "pct" ? (tk?.fp != null && !pctPerso ? `${tk.fp.toLocaleString(nf)} ${tk.assiette === "projet" || (tk.frais && tk.assiette !== "travaux") ? n.pctProjet : n.pctTravaux}` : "—")
-              : qteNeuf(locale, li.qty, li.unite, li.mode === "location");
-            return (
-              <div key={li.cle} className="dtl">
-                <span>{catLigne(locale, li.nom, li.cle)}</span>
-                <span className="q">{jalon ? "—" : q}</span>
-                {jalon ? <span className="dem">{n.demarche}</span> : (
-                  <span className={"mode " + (li.mode === "location" ? "mL" : li.mode === "je-fais" ? "mS" : "mA")}>
-                    {li.mode === "location" ? d.modeLocation : li.mode === "je-fais" ? d.modeJeFais : d.modeFaitFaire}
-                  </span>
-                )}
-                <span className="m">{jalon ? "" : fmt(li.ttc)}</span>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      <div className="foot">{d.pied(finLbl)}</div>
-    </div>
-  );
+  const donnees: DonneesDevis = {
+    eb: d.devisEb, ttc: t.ttc, ttcUnite: d.ttc,
+    pilules: [
+      { k: d.travauxHt, v: t.ht - b.frais }, { k: d.tva, v: t.tva },
+      ...(b.frais > 0 ? [{ k: n.fraisHorsTva, v: b.frais }] : []),
+      { k: d.aleas(ctx.aleas), v: t.aleas }, { k: d.budgetMax, v: ctx.budget },
+    ],
+    apresPilules: <p className="split-n">{n.dontConstr} <b>{fmt(cut.constr)}</b> · {n.annexes} <b>{fmt(cut.annexes)}</b></p>,
+    hint: d.heroHint,
+    bilan: {
+      titre: d.bilanT, sous: d.bilanSous,
+      paye: d.paye, payeV: b.paye, payeSous: d.dontMat(fmt(b.matA), fmt(b.moA)),
+      achat: d.achat, achatV: b.achat, eco: d.eco, ecoV: b.eco,
+    },
+    repartition: {
+      titre: d.repT, sous: d.repSous,
+      vide: !lots.length ? d.vide : null,
+      phases: PHASES_NEUF.flatMap((ph) => {
+        // Un lot peut revenir deux fois dans la même phase : on additionne ses blocs.
+        const parCorps = new Map<string, number>();
+        for (const x of lots) if (x.phase === ph) parCorps.set(x.corps, (parCorps.get(x.corps) ?? 0) + x.ttc);
+        const pl = [...parCorps].sort((a, c) => c[1] - a[1]);
+        return pl.length ? [{
+          cle: ph, nom: catT(locale, "phases", ph),
+          lots: pl.map(([corps, v]) => ({ cle: ph + "|" + corps, nom: catT(locale, "corps", corps), v, pct: (v / max) * 100 })),
+        }] : [];
+      }),
+      perso: persoTtc > 0 ? { cle: "perso", nom: d.perso, v: persoTtc, pct: Math.min(100, (persoTtc / max) * 100) } : null,
+    },
+    detail: {
+      titre: d.detailT, sous: d.detailSous,
+      lignes: lignes.map((li) => {
+        const tk = taches.get(li.cle);
+        const jalon = estJalon(tk) && li.ttc === 0;
+        const pctPerso = sel[li.cle]?.pu != null;
+        const q = li.unite === "forfait" ? "—"
+          : li.unite === "pct" ? (tk?.fp != null && !pctPerso ? `${tk.fp.toLocaleString(nf)} ${tk.assiette === "projet" || (tk.frais && tk.assiette !== "travaux") ? n.pctProjet : n.pctTravaux}` : "—")
+          : qteNeuf(locale, li.qty, li.unite, li.mode === "location");
+        return {
+          cle: li.cle, nom: catLigne(locale, li.nom, li.cle), q: jalon ? "—" : q,
+          mode: jalon ? "dem" : li.mode === "location" ? "mL" : li.mode === "je-fais" ? "mS" : "mA",
+          modeTxt: jalon ? n.demarche : li.mode === "location" ? d.modeLocation : li.mode === "je-fais" ? d.modeJeFais : d.modeFaitFaire,
+          m: jalon ? "" : fmt(li.ttc),
+        };
+      }),
+    },
+    pied: d.pied(finLbl),
+  };
+  return <VueDevis d={donnees} />;
 }

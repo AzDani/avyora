@@ -1,0 +1,112 @@
+"use client";
+
+/**
+ * Briques du questionnaire des estimations détaillées (« Parle-nous du bien ») : celles de la
+ * rénovation (`components/Estimateur.tsx`), partagées avec le neuf (chantier N6 de la revue
+ * rénovation / neuf ; le questionnaire du neuf les prend en N9). Aucun texte ici : chaque appelant
+ * passe les siens (`dictDetail`, `dictNeuf`). Styles : `EST_CSS` (`.tpills`, `.segf`, `.finc`, `.uinp`,
+ * `.drtoggle`, `.recap`).
+ *
+ * Accessibilité : un choix est un groupe nommé (`role="group"`, `aria-label`) de boutons qui disent
+ * s'ils sont pressés (`aria-pressed`), comme les pastilles du neuf ; la classe `on` garde le style.
+ */
+import type { ReactNode } from "react";
+import type { RegionCoef } from "@/lib/estimateur";
+
+/** Intertitre d'une rubrique du questionnaire. */
+export function Intertitre({ children }: { children: ReactNode }) {
+  return <div className="gl">{children}</div>;
+}
+
+export interface OptionChoix<T extends string> { v: T; label: ReactNode }
+
+/** Pastilles : un choix parmi plusieurs (type de bien), ou plusieurs (`actif` vrai sur chaque pièce choisie). */
+export function Pastilles<T extends string>({ options, actif, onChoix, aria }: {
+  options: OptionChoix<T>[]; actif: (v: T) => boolean; onChoix: (v: T) => void; aria: string;
+}) {
+  return (
+    <div className="tpills" role="group" aria-label={aria}>
+      {options.map((o) => (
+        <button key={o.v} type="button" className={"tpill" + (actif(o.v) ? " on" : "")} aria-pressed={actif(o.v)} onClick={() => onChoix(o.v)}>{o.label}</button>
+      ))}
+    </div>
+  );
+}
+
+/** Segment : deux (ou trois) choix exclusifs côte à côte (périmètre, régime de TVA). */
+export function Segment<T extends string>({ options, valeur, onChoix, aria }: {
+  options: OptionChoix<T>[]; valeur: T; onChoix: (v: T) => void; aria: string;
+}) {
+  return (
+    <div className="segf" role="group" aria-label={aria}>
+      {options.map((o) => (
+        <button key={o.v} type="button" className={valeur === o.v ? "on" : ""} aria-pressed={valeur === o.v} onClick={() => onChoix(o.v)}>{o.label}</button>
+      ))}
+    </div>
+  );
+}
+
+export interface CarteFinition<T extends string> { v: T; lvl: number; eye: string; label: string; desc: string }
+
+/** Cartes du niveau de finition : objectif, nom, description et jauge de 1 à 3 barres. */
+export function CartesFinition<T extends string>({ cartes, valeur, onChoix, aria }: {
+  cartes: CarteFinition<T>[]; valeur: T; onChoix: (v: T) => void; aria: string;
+}) {
+  return (
+    <div className="finc" role="group" aria-label={aria}>
+      {cartes.map((f) => (
+        <button key={f.v} type="button" className={"fc" + (valeur === f.v ? " on" : "")} aria-pressed={valeur === f.v} onClick={() => onChoix(f.v)}>
+          <span className="fh"><span className="g3">{[0, 1, 2].map((k) => <i key={k} className={k < f.lvl ? "f" : ""} />)}</span><span className="ck" /></span>
+          <span className="fe">{f.eye}</span>
+          <span className="ft">{f.label}</span>
+          <span className="fd">{f.desc}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** Code postal : 5 chiffres au plus, rien d'autre ne passe. `id` le relie à son libellé (`Field htmlFor`). */
+export function ChampCodePostal({ valeur, onChange, placeholder, id }: {
+  valeur: string; onChange: (cp: string) => void; placeholder: string; id?: string;
+}) {
+  return (
+    <div className="uinp">
+      <input id={id} inputMode="numeric" maxLength={5} autoComplete="postal-code" placeholder={placeholder} value={valeur}
+        onChange={(e) => onChange(e.target.value.replace(/\D/g, "").slice(0, 5))} />
+    </div>
+  );
+}
+
+/** Interrupteur oui / non sous une grille (dressing de la suite ; « cuisine équipée » du neuf en N9). */
+export function Interrupteur({ actif, onBascule, texteActif, texteInactif }: {
+  actif: boolean; onBascule: () => void; texteActif: ReactNode; texteInactif: ReactNode;
+}) {
+  return (
+    <button type="button" className={"drtoggle" + (actif ? " on" : "")} aria-pressed={actif} onClick={onBascule}>
+      <span className="dot" aria-hidden="true" />{actif ? texteActif : texteInactif}
+    </button>
+  );
+}
+
+/** Récapitulatif du bien : une ligne de tête, puis une ligne par élément (`lignes`, puis la zone). */
+export function Recap({ tete, lignes = [], zone }: { tete: ReactNode; lignes?: ReactNode[]; zone?: ReactNode }) {
+  return (
+    <div className="recap">
+      {tete}
+      {lignes.map((l, i) => <div key={i} style={{ marginTop: 6 }}>{l}</div>)}
+      {zone && <div style={{ marginTop: 6 }}>{zone}</div>}
+    </div>
+  );
+}
+
+/** Ligne « zone » du récapitulatif : la zone du code postal et ses écarts de main-d'œuvre et de matériaux. */
+export function ZoneRecap({ reg, zone, mo, mat }: { reg: RegionCoef; zone: string; mo: (p: string) => string; mat: (p: string) => string }) {
+  return (
+    <>
+      📍 <b>{zone}</b>
+      {reg.mo !== 1 && <> · {mo((reg.mo > 1 ? "+" : "") + Math.round((reg.mo - 1) * 100))}</>}
+      {reg.mat !== 1 && <> · {mat("+" + Math.round((reg.mat - 1) * 100))}</>}
+    </>
+  );
+}

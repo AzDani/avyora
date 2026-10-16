@@ -339,7 +339,10 @@ const EN: Record<CatKind, Record<string, string>> = {
     "Taxe d'aménagement + redevance d'archéologie — places de stationnement extérieures": "Development tax + archaeology levy — outdoor parking spaces",
     "Participation pour le raccordement au tout-à-l'égout (PFAC)": "Sewer connection levy (PFAC)",
     "Redevances du SPANC (service public d'assainissement non collectif) : contrôle de conception + contrôle de bonne exécution": "SPANC fees (public service for private sewage systems): design check + installation check",
-    "Déclaration des éléments d'imposition sur impots.gouv (« Gérer mes biens immobiliers ») dans les 90 jours après l'achèvement (démarche gratuite)": "Declaration of taxable property details on impots.gouv (\"Gérer mes biens immobiliers\") within 90 days after completion (free step)"
+    "Déclaration des éléments d'imposition sur impots.gouv (« Gérer mes biens immobiliers ») dans les 90 jours après l'achèvement (démarche gratuite)": "Declaration of taxable property details on impots.gouv (\"Gérer mes biens immobiliers\") within 90 days after completion (free step)",
+    /* Rénovation : postes restés sans anglais jusqu'au chantier N6 (détaillé entièrement en anglais) */
+    "Isolation par l'extérieur (ITE) sous bardage": "Exterior insulation (EWI) under cladding",
+    "Caisson à galandage (châssis + habillage)": "Pocket door frame (frame + trim)"
   },
   "phases": {
     "Gros œuvre & clos-couvert": "Structural work & weatherproofing",
@@ -420,7 +423,11 @@ const EN: Record<CatKind, Record<string, string>> = {
     /* Construction neuve */
     "Fort": "High",
     "Hors Île-de-France": "Outside Paris region",
-    "Île-de-France": "Paris region (Île-de-France)"
+    "Île-de-France": "Paris region (Île-de-France)",
+    /* Communs aux deux catalogues, sans anglais jusqu'au chantier N6 */
+    "Coulissante": "Sliding",
+    "À galandage": "Pocket",
+    "En applique": "Surface-mounted"
   },
   "notes": {
     "isolant + ossature + plaque ; bandes et enduit comptés à part": "insulation + framing + board; taping and skim coat billed separately",
@@ -617,7 +624,22 @@ const EN: Record<CatKind, Record<string, string>> = {
     "Réclamée par la collectivité en plus du branchement. Montant fixé par délibération de la collectivité (à demander au service assainissement). Pas de TVA. Seulement avec le tout-à-l'égout.": "Charged by the local authority on top of the connection. Amount set by a decision of the local authority (ask the sewer service). No VAT. Only with mains sewer.",
     "Facturées par la collectivité, en plus de l'étude d'assainissement individuel. Montant voté localement (≈ 250 à 280 € dans les exemples relevés), souvent sans TVA. Pendant de la participation au tout-à-l'égout (PFAC) quand on n'est pas raccordé à l'égout.": "Billed by the local authority, on top of the private sewage study. Amount voted locally (≈ €250 to €280 in the examples found), often without VAT. The counterpart of the sewer connection levy (PFAC) when you are not connected to the sewer.",
     "Elle déclenche le calcul de la taxe d'aménagement.": "It triggers the calculation of the development tax.",
-    "1re passe : gaines et boîtes posées avant les doublages et les plafonds. Installation complète au m² : tableau, prises, éclairages, réseau internet (RJ45) et fibre intérieure compris.": "1st pass: conduits and boxes laid before the linings and ceilings. Complete installation per m²: panel, sockets, lighting, internet network (RJ45) and indoor fiber included."
+    "1re passe : gaines et boîtes posées avant les doublages et les plafonds. Installation complète au m² : tableau, prises, éclairages, réseau internet (RJ45) et fibre intérieure compris.": "1st pass: conduits and boxes laid before the linings and ceilings. Complete installation per m²: panel, sockets, lighting, internet network (RJ45) and indoor fiber included.",
+    /* Rénovation (et postes repris par le neuf) : notes restées sans anglais jusqu'au chantier N6 */
+    "prix indicatifs /jour — à confirmer au loueur": "indicative prices /day — confirm with the rental company",
+    "reprise de charge à chiffrer à part (poutre) + étude BET obligatoire": "load transfer priced separately (beam) + structural engineering study required",
+    "fourniture, étaiement, appuis et scellement — remplace le mur porteur déposé": "supply, shoring, bearings and anchoring — replaces the removed load-bearing wall",
+    "fourniture, étaiement, appuis et scellement — alternative bois à l'IPN, laissée apparente": "supply, shoring, bearings and anchoring — timber alternative to the steel I-beam, left exposed",
+    "coffrage, ferraillage, coulage et étaiement — coulée en place": "formwork, rebar, pouring and shoring — cast in place",
+    "fourniture, platines, scellement — reprend une charge ponctuelle là où une poutre ne franchit pas la portée": "supply, base plates, anchoring — carries a point load where a beam can't span the distance",
+    "fourniture, sabots et fixations — alternative bois, laissée apparente": "supply, hangers and fixings — timber alternative, left exposed",
+    "coffrage, ferraillage et coulage — coulé en place": "formwork, rebar and pouring — cast in place",
+    "moellons maçonnés au mortier": "rubble stone laid in mortar",
+    "ITE avec parement rapporté sur ossature ventilée, au lieu de l'enduit sur isolant": "exterior insulation with cladding on a ventilated frame, instead of render over the insulation",
+    "prix base PVC ; alu +30-50 %, bois +40-70 %": "base price in PVC; aluminum +30-50%, wood +40-70%",
+    "poche où coulisse une porte/baie à galandage — en plus de la menuiserie coulissante": "the pocket a door or patio door slides into — on top of the sliding unit itself",
+    "chauffe + rafraîchit (chaud/froid) · soufflage par gaines, maison entière — groupe extérieur, unité gainable, réseau de gaines et pose compris": "heats + cools (hot/cold) · ducted air, whole house — outdoor unit, ducted unit, duct network and installation included",
+    "prendre SOIT 'cuisine tout compris', SOIT les lignes détaillées (jamais les deux)": "take EITHER the all-in kitchen OR the detailed lines (never both)"
   }
 };
 

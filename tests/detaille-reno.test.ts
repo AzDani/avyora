@@ -3,6 +3,8 @@
  * l'écran faisait sur place, sorti en fonctions et testé sans rendu, sur le modèle du neuf.
  */
 import { describe, it, expect } from "vitest";
+import fs from "node:fs";
+import { dictDetail } from "@/lib/i18n/detail";
 import { CATALOG, defaultCtx, autoQty, key, type Ctx, type Lot, type Tache } from "@/lib/estimateur";
 import {
   etatVierge, etatDepuis, projetReno, ouvertureDetailReno, majNombre, majSol, majType, pasCtx, compteurPiece, pasPiece,
@@ -183,5 +185,35 @@ describe("Enregistrement", () => {
       reponses: { v: "estimateur", mode: "detaille", ctx, sel: {}, codePostal: "45000", custom: [], statuts: { "a|b": 2 } },
     });
     expect("statuts" in corpsProjetReno({ nom: "N", ctx, sel: {}, codePostal: "45000", custom: [] }).reponses).toBe(false);
+  });
+});
+
+describe("Textes du détaillé (`dictDetail`)", () => {
+  const cles = (o: unknown, p = ""): string[] => (!o || typeof o !== "object" ? [p]
+    : Object.entries(o as Record<string, unknown>).flatMap(([k, v]) => (typeof v === "function" ? [p + k] : cles(v, p + k + "."))));
+  const lire = (f: string) => fs.readFileSync(f, "utf8");
+
+  it("FR et EN ont les mêmes clés (hors tables de traduction des données, vides en français)", () => {
+    const sansTables = (l: string[]) => l.filter((k) => !/^(bien\.espaces|perso\.unites)\./.test(k) && k !== "bien.espaces." && k !== "perso.unites.");
+    expect(sansTables(cles(dictDetail("en"))).sort()).toEqual(sansTables(cles(dictDetail("fr"))).sort());
+  });
+
+  it("hors du dictionnaire global (chargé sur chaque page) ; le rapide de la rénovation ne l'embarque pas", () => {
+    expect(lire("lib/i18n/dictionaries.ts")).not.toMatch(/i18n\/detail|from "\.\/detail/);
+    expect(lire("components/i18n/LangProvider.tsx")).not.toMatch(/detail/);
+    expect(lire("components/EstimateurRapide.tsx")).not.toMatch(/i18n\/detail|estimateur\/(partage|Row|intake|ListeLots|BarreLive|VueDevis)/);
+    expect(lire("components/Stepper.tsx")).not.toMatch(/i18n\/detail/);
+  });
+
+  it("tutoiement : aucun « vous » dans les textes français", () => {
+    const tout = JSON.stringify(dictDetail("fr")) + Object.values(dictDetail("fr").devis).filter((v) => typeof v === "function").map((f) => String(f)).join(" ");
+    expect(tout).not.toMatch(/\b(vous|votre|vos|Renseignez|Indiquez|Retournez|Demandez|Désactivez|Réessayez)\b/);
+  });
+
+  it("le nom du projet en anglais : type et pièces traduits, la nature aussi", () => {
+    const B = dictDetail("en").bien;
+    const mots = { projet: dictDetail("en").projet, type: (t: string) => B.types[t] ?? t, espace: (n: string) => B.espaces[n] ?? n };
+    expect(nomProjetReno({ ...base(), type: "T3", surface: 65 }, mots)).toBe("Renovation — 2-bedroom 65 m²");
+    expect(nomProjetReno(ajouterExemplaire(choisirPerimetre(base(), "piece"), "chambre"), mots)).toBe("Renovation — 2 Bedroom · 24 m²");
   });
 });

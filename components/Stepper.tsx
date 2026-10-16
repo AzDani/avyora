@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useLocale } from "@/components/i18n/LangProvider";
+
+/* Libellés des deux boutons pour un lecteur d'écran (le rapide l'utilise aussi : deux mots ici plutôt
+   qu'un dictionnaire de plus dans son paquet). */
+const ARIA = { fr: { moins: "Diminuer", plus: "Augmenter" }, en: { moins: "Decrease", plus: "Increase" } } as const;
 
 /**
  * Contrôle numérique unifié (surface / quantité). Gros boutons ±step, champ tapable, flèches natives
@@ -29,6 +34,7 @@ export default function Stepper({
   /** Pour relier un `<label htmlFor>` au champ (facultatif : absent, le rendu ne change pas). */
   id?: string;
 }) {
+  const aria = ARIA[useLocale()] ?? ARIA.fr;
   const dp = step < 1 ? 2 : 0;
   const clamp = (n: number) => {
     if (min != null && n < min) n = min;
@@ -60,8 +66,8 @@ export default function Stepper({
     <input id={id} type="number" inputMode="decimal" value={raw} min={min} max={max} step={step}
       onFocus={() => { editing.current = true; }} onChange={onInput} onBlur={onBlur} />
   );
-  const minus = <button type="button" onClick={() => bump(-step)} disabled={min != null && value <= min} aria-label="Diminuer">−</button>;
-  const plus = <button type="button" onClick={() => bump(step)} disabled={max != null && value >= max} aria-label="Augmenter">+</button>;
+  const minus = <button type="button" onClick={() => bump(-step)} disabled={min != null && value <= min} aria-label={aria.moins}>−</button>;
+  const plus = <button type="button" onClick={() => bump(step)} disabled={max != null && value >= max} aria-label={aria.plus}>+</button>;
 
   const cls = ["av-step", field ? "field" : "", compact ? "compact" : "", block ? "block" : "", className].filter(Boolean).join(" ");
 

@@ -3,10 +3,9 @@
 /**
  * Estimation DÉTAILLÉE d'une construction neuve (Pro) : « Affiner ma maison ».
  *
- * Composant séparé de l'estimateur détaillé de la rénovation (`components/Estimateur.tsx`, non
- * touché) : il en réutilise les briques déplacées en C1 (`Row`, `CustomLines`, `Field`, `CountUp`,
- * `EST_CSS`, barre live), mais pas le modèle. Ici l'état est la DESCRIPTION de la maison ; le
- * contexte du moteur s'en déduit, et chaque réponse réécrit les seuls postes qu'elle gouverne
+ * Composant séparé de l'estimateur détaillé de la rénovation (`components/Estimateur.tsx`) : il en
+ * partage les briques (`components/estimateur/*`, `EST_CSS`), mais pas le modèle. Ici l'état est la
+ * DESCRIPTION de la maison ; le contexte du moteur s'en déduit, et chaque réponse réécrit les seuls postes qu'elle gouverne
  * (`lib/estimateur/detaille-neuf.ts`, testé sans rendu).
  *
  * Reprises, dans l'ordre : projet rouvert (`initialState`, « Modifier ») ; « Affiner » du rapide
@@ -21,19 +20,26 @@
  * ouverture par INDEX de bloc. Au-dessus des lots, « Nouveaux postes cochés » règle le mode des
  * postes cochés ensuite, sans toucher une ligne ; « Tout passer en… », confirmé, les réécrit
  * toutes. Aucun montant écrit ici : tout vient du moteur.
+ *
+ * N6 : l'écran prend les briques partagées avec la rénovation (`ChoixVue`, `ListeLots`, `TitrePhase`,
+ * `BlocLot`, `LignesLot`, `BarreLive` ; « Mon devis » : `VueDevis`), sans changer son rendu. Son
+ * questionnaire reste le sien jusqu'à N9.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import NumStepper from "@/components/Stepper";
 import { EST_CSS } from "@/components/estimateur-styles";
-import { CountUp } from "@/components/estimateur/CountUp";
-import { Row } from "@/components/estimateur/Row";
 import { fmt, Field, CustomLines } from "@/components/estimateur/partage";
+import { ListeLots, TitrePhase, BlocLot, LignesLot } from "@/components/estimateur/ListeLots";
+import { BarreLive } from "@/components/estimateur/BarreLive";
+import { ChoixVue } from "@/components/estimateur/VueDevis";
+import { dictDetail } from "@/lib/i18n/detail";
+import { majLigne, basculerAuto } from "@/lib/estimateur/detaille-reno";
 import { useLocale, useT } from "@/components/i18n/LangProvider";
 import { dictNeuf } from "@/lib/i18n/neuf";
 import { catT } from "@/lib/estimateur/catalog-i18n";
 import {
-  buildDevis, customLotHT, geometrieNeuf, isAuto, isLoc, key, regionCoef, autoQty, visibleTask, raisonProNeuf, tauxPersoPossibles, CATALOG_NEUF, PHASES_NEUF, ICON,
+  buildDevis, customLotHT, geometrieNeuf, isLoc, key, regionCoef, visibleTask, raisonProNeuf, tauxPersoPossibles, CATALOG_NEUF, PHASES_NEUF, ICON,
   type CustomLine, type Selection, type LigneSel, type MaisonNeuve, type Lot, type Tache, type QuiRealise,
 } from "@/lib/estimateur";
 import { totauxAvecPerso } from "@/lib/estimateur/projet";
@@ -70,6 +76,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
   const T = useT();
   const n = dictNeuf(locale);
   const d = n.detail;
+  const dl = dictDetail(locale);
   const nf = locale === "en" ? "en-US" : "fr-FR";
   const nb = (v: number, dec = 0) => (Math.round((v || 0) * 10 ** dec) / 10 ** dec).toLocaleString(nf);
   const edition = !!projectId;
@@ -153,18 +160,9 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
   // ── Mises à jour ───────────────────────────────────────────────────────────────────────────
   const repondre = (k: CleQuestionNeuf, v: ValeurQuestionNeuf) => setEtat((e) => changerReponseNeuf(e, k, v));
   const majSel = (f: (s: Selection) => Selection) => setEtat((e) => ({ ...e, sel: f(e.sel) }));
-  function upd(c: string, nom: string, patch: (s: LigneSel) => LigneSel) {
-    majSel((prev) => { const k = key(c, nom); return { ...prev, [k]: patch(prev[k] || {}) }; });
-  }
+  const upd = (c: string, nom: string, patch: (s: LigneSel) => LigneSel) => majSel((prev) => majLigne(prev, c, nom, patch));
   const toggleCheck = (l: Lot, t: Tache) => setEtat((e) => cocherNeufEtat(e, l, t));
-  function toggleAuto(l: Lot, t: Tache) {
-    upd(l.c, t.n, (s) => {
-      const manual = !s.manual;
-      const next = { ...s, manual };
-      if (manual && next.qty == null) next.qty = autoQty(ctx, l.c, t.n, sel) ?? 0;
-      return next;
-    });
-  }
+  const toggleAuto = (l: Lot, t: Tache) => majSel((prev) => basculerAuto(ctx, prev, l, t));
   const addCustom = (lot: string, phase: string) =>
     setCustom((p) => [...p, lignePersoNeuf(lot, phase, crypto.randomUUID?.() ?? String(Date.now() + Math.random()))]);
   const updCustom = (id: string, patch: Partial<CustomLine>) => setCustom((p) => p.map((x) => (x.id === id ? { ...x, ...patch } : x)));
@@ -284,55 +282,23 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
     const loc = isLoc(l.c);
     const basculer = () => setOpen((o) => ({ ...o, [b.i]: !o[b.i] }));
     return (
-      <div key={b.i} className={"acc" + (isOpen ? " open" : "")}>
-        <div className="acc-h" role="button" tabIndex={0} aria-expanded={isOpen} onClick={basculer}
-          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); basculer(); } }}>
-          <span className="ic" aria-hidden="true">{ICON[l.c] || "•"}</span>
-          <span className="nm">{catT(locale, "corps", l.c)}</span>
-          {cnt > 0 && <span className="cnt">{cnt}</span>}
-          <span className="amt num">{cnt > 0 ? fmt(amt) + " HT" : ""}</span>
-          <span className="car">›</span>
-        </div>
-        {isOpen && (
-          <div className="acc-b">
-            {l.note && <div className="lotnote">{catT(locale, "notes", l.note)}</div>}
-            {lignes.map((t) => (
-              <Row key={t.n} l={l} t={t} ctx={ctx} sel={sel} loc={loc}
-                badge={badgeNeuf(ctx, sel, l, t)} proRaison={raisonProNeuf(t)}
-                onCheck={() => toggleCheck(l, t)}
-                onChoice={(self) => upd(l.c, t.n, (s) => ({ ...s, self }))}
-                onAuto={() => toggleAuto(l, t)}
-                onQty={(v) => upd(l.c, t.n, (s) => ({ ...s, qty: v, manual: isAuto(ctx, l.c, t.n) ? true : s.manual, plan: undefined }))}
-                onMat={(x) => upd(l.c, t.n, (s) => ({ ...s, mat: x }))}
-                onVit={(x) => upd(l.c, t.n, (s) => ({ ...s, vit: x }))}
-                onMot={(x) => upd(l.c, t.n, (s) => ({ ...s, mot: x }))}
-                onTai={(x) => upd(l.c, t.n, (s) => ({ ...s, tai: x }))}
-                onVar={(g, o) => upd(l.c, t.n, (s) => ({ ...s, vsel: { ...(s.vsel || {}), [g]: o } }))}
-                onNote={(x) => upd(l.c, t.n, (s) => ({ ...s, note: x }))}
-                onPu={(x) => upd(l.c, t.n, (s) => { const nx = { ...s }; if (x == null) delete nx.pu; else nx.pu = x; return nx; })}
-                onPm={(x) => upd(l.c, t.n, (s) => { const nx = { ...s }; if (x == null) delete nx.pm; else { nx.pm = x; delete nx.pu; } return nx; })}
-              />
-            ))}
-            <CustomLines lines={cLines} onAdd={() => addCustom(l.c, l.p)} onUpd={updCustom} onDel={delCustom} guideTva={d.guideTva} tvas={(courant) => tauxPersoPossibles(ctx, courant)} />
-          </div>
-        )}
-      </div>
+      <BlocLot key={b.i} ouvert={isOpen} entete={{
+        icone: ICON[l.c] || "•", nom: catT(locale, "corps", l.c), cnt, ouvert: isOpen, onBascule: basculer,
+        montant: cnt > 0 ? fmt(amt) + " " + dl.liste.ht : "",
+      }}>
+        {l.note && <div className="lotnote">{catT(locale, "notes", l.note)}</div>}
+        <LignesLot l={l} taches={lignes} ctx={ctx} sel={sel} loc={loc} maj={upd} onCocher={toggleCheck} onAuto={toggleAuto}
+          options={(t) => ({ badge: badgeNeuf(ctx, sel, l, t), proRaison: raisonProNeuf(t) })} />
+        <CustomLines lines={cLines} onAdd={() => addCustom(l.c, l.p)} onUpd={updCustom} onDel={delCustom} guideTva={d.guideTva} tvas={(courant) => tauxPersoPossibles(ctx, courant)} />
+      </BlocLot>
     );
   }
-
-  const over = budget > 0 && tot.ttc > budget;
-  const pct = budget > 0 ? Math.min(100, (tot.ttc / budget) * 100) : 0;
 
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: EST_CSS + ROW_SOI_CSS + NEUF_DETAIL_CSS }} />
       <div className="av-estim av-neuf-d">
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
-          <div className="views">
-            <button type="button" className={view === "saisie" ? "on" : ""} onClick={() => setView("saisie")}>{d.vueSaisie}</button>
-            <button type="button" className={view === "devis" ? "on" : ""} onClick={() => setView("devis")}>{d.vueDevis}</button>
-          </div>
-        </div>
+        <ChoixVue vue={view} onVue={setView} saisie={d.vueSaisie} devis={d.vueDevis} aria={dl.vues.aria} />
 
         {view === "saisie" && (
           <div>
@@ -405,39 +371,32 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
                 </div>
               )}
             </div>
-            <div className="tools">
-              <label className="only">
-                <input type="checkbox" checked={seulementCoches} onChange={(e) => setSeulementCoches(e.target.checked)} />
-                {d.seulementCoches}
-              </label>
-              <button type="button" className="linkbtn" onClick={basculerTout}>{toutOuvert ? d.toutReplier : d.toutDeplier}</button>
-            </div>
-
-            {PHASES_NEUF.map((ph, pi) => {
-              const blocs = BLOCS_NEUF.filter((b) => b.l.p === ph);
-              let nOn = 0;
-              for (const b of blocs) for (const t of b.l.t) if (sel[key(b.l.c, t.n)]?.on) nOn++;
-              const nDem = demarchesPhase(ctx, sel, ph);
-              const ouverte = !!ouvertes[ph];
-              const info = INFO_PHASES[ph];
-              const rendus = ouverte ? blocs.map(bloc).filter(Boolean) : [];
-              return (
-                <div key={ph}>
-                  <button type="button" className={"phase-t" + (ouverte ? " open" : "")} aria-expanded={ouverte}
-                    onClick={() => setOuvertes((o) => ({ ...o, [ph]: !o[ph] }))}>
-                    <span className="chev" aria-hidden="true">
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                    </span>
-                    <span className="pt-lbl"><span className="pt-num">{pi + 1}</span> · {catT(locale, "phases", ph)}</span>
-                    <span className="pt-meta">{d.postesCoches(nOn)} · {fmt(htPhase[ph] ?? 0)} HT</span>
-                  </button>
-                  {ouverte && info && (
-                    <div className="pjal"><Drapeau /><span><b>{n.jalon}</b> · {info.jalon[locale]}{nDem > 0 ? ` · ${d.demarches(nDem)}` : ""}</span></div>
-                  )}
-                  {ouverte && (rendus.length ? rendus : <p className="pvide">{d.aucunPoste}</p>)}
-                </div>
-              );
-            })}
+            <ListeLots
+              outils={{
+                seulement: seulementCoches, onSeulement: setSeulementCoches, texteSeulement: d.seulementCoches,
+                toutOuvert, onTout: basculerTout, texteDeplier: d.toutDeplier, texteReplier: d.toutReplier,
+              }}
+              phases={PHASES_NEUF.map((ph, pi) => {
+                const blocs = BLOCS_NEUF.filter((b) => b.l.p === ph);
+                let nOn = 0;
+                for (const b of blocs) for (const t of b.l.t) if (sel[key(b.l.c, t.n)]?.on) nOn++;
+                const nDem = demarchesPhase(ctx, sel, ph);
+                const ouverte = !!ouvertes[ph];
+                const info = INFO_PHASES[ph];
+                const rendus = ouverte ? blocs.map(bloc).filter(Boolean) : [];
+                return {
+                  cle: ph,
+                  titre: <TitrePhase num={pi + 1} nom={catT(locale, "phases", ph)} meta={<>{d.postesCoches(nOn)} · {fmt(htPhase[ph] ?? 0)} {dl.liste.ht}</>}
+                    ouvert={ouverte} onBascule={() => setOuvertes((o) => ({ ...o, [ph]: !o[ph] }))} />,
+                  contenu: <>
+                    {ouverte && info && (
+                      <div className="pjal"><Drapeau /><span><b>{n.jalon}</b> · {info.jalon[locale]}{nDem > 0 ? ` · ${d.demarches(nDem)}` : ""}</span></div>
+                    )}
+                    {ouverte && (rendus.length ? rendus : <p className="pvide">{d.aucunPoste}</p>)}
+                  </>,
+                };
+              })}
+            />
 
             <div style={{ textAlign: "center", marginTop: 14 }}>
               <button type="button" className="resetbtn" onClick={reset}>↺ {d.reset}</button>
@@ -448,31 +407,14 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
         {view === "devis" && <DevisNeuf ctx={ctx} sel={sel} custom={custom} />}
       </div>
 
-      {/* Barre live sticky (structure de la rénovation) */}
-      <div className={"av-estim-live av-neuf-live" + (budget > 0 ? "" : " nobudget")}>
-        <div className="live-in">
-          <div className="totb">
-            <div className="lbl">{d.totalK}</div>
-            <div className="big"><CountUp value={tot.ttc} /><small>{d.ttc}</small></div>
-            <div className="m2">≈ {fmt(m2)} {d.parM2}{frais > 0 ? <> · {d.dontFrais} {fmt(frais)}</> : null}</div>
-          </div>
-          <div className="jauge">
-            <div className="jtext">
-              {budget > 0
-                ? <>{d.budgetTxt(fmt(budget))} · {over ? <b style={{ color: "#fca5a5" }}>{d.depasse(fmt(tot.ttc - budget))}</b> : <>{d.reste(fmt(budget - tot.ttc))}</>}</>
-                : d.sansBudget}
-            </div>
-            <div className="jbar"><div className={"jfill" + (over ? " over" : "")} style={{ width: pct + "%" }} /></div>
-          </div>
-          <button type="button" className="cta" onClick={() => { setView(view === "devis" ? "saisie" : "devis"); window.scrollTo(0, 0); }}>
-            {view === "devis" ? d.retourSaisie : d.voirDevis}
-          </button>
-          <button type="button" className="save" onClick={enregistrer} disabled={saving}>
-            {saving ? d.enregistrement : edition ? d.enregistrerModifs : d.enregistrer}
-          </button>
-          {erreur && <div className="err" role="alert">{erreur}</div>}
-        </div>
-      </div>
+      {/* Barre live sticky (la même que la rénovation), avec le prix au m² et les frais */}
+      <BarreLive total={tot.ttc} budget={budget} vue={view} onVue={setView} onEnregistrer={enregistrer} saving={saving} edition={edition} erreur={erreur}
+        className="av-neuf-live"
+        m2={<div className="m2">≈ {fmt(m2)} {d.parM2}{frais > 0 ? <> · {d.dontFrais} {fmt(frais)}</> : null}</div>}
+        t={{
+          totalK: d.totalK, ttc: d.ttc, budget: d.budgetTxt, depasse: d.depasse, reste: d.reste, sansBudget: d.sansBudget,
+          voirDevis: d.voirDevis, modifier: d.retourSaisie, enregistrer: d.enregistrer, enregistrerModifs: d.enregistrerModifs, enregistrement: d.enregistrement,
+        }} />
     </>
   );
 }

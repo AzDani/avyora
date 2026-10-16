@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import Estimateur from "@/components/Estimateur";
 import { getUser, estPro } from "@/lib/auth";
 import { betaActive, lienInscriptionBeta } from "@/lib/beta";
+import { getLocale } from "@/lib/i18n/server";
+import { dictDetail } from "@/lib/i18n/detail";
 
 // noindex : cette page est gatée (redirection vers /connexion ou /tarifs), mais la redirection
 // intervient après le début du streaming — un crawler reçoit donc un 200 avec une coquille vide,
@@ -26,15 +28,14 @@ export default async function NouveauProjetDetaille() {
   const user = await getUser();
   if (!user) redirect(betaActive() ? lienInscriptionBeta("/projets/nouveau/detaille", "detaille") : "/tarifs");
   if (!estPro(user)) redirect("/tarifs");
+  const t = dictDetail(await getLocale()).page;
 
   return (
     <div className="space-y-6">
       <header className="animate-rise">
-        <p className="eyebrow">Estimation détaillée</p>
-        <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-ink">Ajuster poste par poste</h1>
-        <p className="mt-1.5 text-[15px] text-muted">
-          Coche les travaux, ajuste les quantités — ton devis se construit en direct.
-        </p>
+        <p className="eyebrow">{t.eyebrow}</p>
+        <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-ink">{t.titre}</h1>
+        <p className="mt-1.5 text-[15px] text-muted">{t.sous}</p>
       </header>
       <Estimateur />
     </div>

@@ -7,13 +7,14 @@
  *  garantie décennale » et les mentions d'un poste faisable soi-même (PAC, climatisation, borne)
  *  aussi (D2, D4). Les prix unitaires des deux puces viennent du moteur (`puReel`, N7) pour les deux
  *  natures : prix unitaire × quantité = montant de la ligne, région et barème de finition du poste
- *  compris. */
+ *  compris. Textes : `dictDetail` (N6), au tutoiement, en français et en anglais. */
 import { useState } from "react";
 import NumStepper from "@/components/Stepper";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { catT } from "@/lib/estimateur/catalog-i18n";
 import { key, isAuto, autoQty, lineHT, effPrices, puReel, peutFaireSoiMeme, horsDecennaleSoiMeme, MENTIONS_SOI_MEME, type Ctx, type Selection, type Lot, type Tache, type RaisonPro } from "@/lib/estimateur";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
+import { dictDetail } from "@/lib/i18n/detail";
 import { ChoicePrice, fmt, isUrl } from "./partage";
 
 export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar, onNote, onPu, onPm, badge, proRaison }: {
@@ -46,9 +47,11 @@ export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onM
   const puMat = ep.sm != null ? puReel(ctx, sel, l, t, true) : null;                     // « Je le fais » (matériaux)
   const puv = ep.fp != null || puEdited ? puReel(ctx, sel, l, t, false) : null;           // « Fait faire »
   const nTxt = dictNeufCommun(locale);
-  const unitPart = badge !== "pct" && t.u !== "forfait" && t.u !== "u" ? "/" + t.u : "";
+  const dl = dictDetail(locale), L = dl.ligne;
+  // Unité du prix unitaire : telle quelle en français (« /m2 »), écrite en anglais (« /m² », « /day »).
+  const unitPart = badge !== "pct" && t.u !== "forfait" && t.u !== "u" ? "/" + (locale === "en" ? catT(locale, "unites", t.u) : t.u) : "";
   // Un frais (taxe, assurance) ne porte pas de TVA : pas de « HT ». N'existe qu'en neuf.
-  const uSuffix = t.frais ? unitPart + " · " + nTxt.sansTva : " HT" + unitPart;
+  const uSuffix = t.frais ? unitPart + " · " + nTxt.sansTva : " " + dl.liste.ht + unitPart;
   /* « Je le fais » proposé : la même règle par poste pour les deux natures (`peutFaireSoiMeme`), hors
      poste réservé aux pros. En rénovation, elle décide exactement comme l'ancienne (« dès que le poste
      a un prix de fourniture », vérifié poste par poste et variante par variante par
@@ -69,10 +72,10 @@ export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onM
 
   return (
     <div className="trow">
-      <button className={"cbx" + (on ? " on" : "")} onClick={onCheck} aria-label={on ? "Décocher" : "Cocher"} />
+      <button className={"cbx" + (on ? " on" : "")} onClick={onCheck} aria-label={on ? L.decocher : L.cocher} />
       <span className="tn">{catT(locale, "postes", t.n)}
         <span className={"pu" + (puEdited ? " edited" : "")}>
-          {jalon ? <span className="badge-dem">{nTxt.demarche}</span> : puv == null ? (locale === "en" ? "price on quote" : "prix sur devis") : puEdit ? (
+          {jalon ? <span className="badge-dem">{nTxt.demarche}</span> : puv == null ? L.surDevis : puEdit ? (
             <input
               className="puin" type="number" inputMode="decimal" autoFocus defaultValue={Math.round(puv)}
               onFocus={(e) => e.currentTarget.select()}
@@ -82,9 +85,9 @@ export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onM
             />
           ) : (
             <>
-              <span className="puval" title="Double-clique pour ajuster à ton prix" onDoubleClick={() => setPuEdit(true)}>{fmt(puv) + uSuffix}</span>
-              {puEdited && <span className="pubadge">perso</span>}
-              {puEdited && <button type="button" className="pureset" title="Rétablir le prix AVYORA par défaut" onClick={() => onPu(null)}>↺</button>}
+              <span className="puval" title={L.prixDblClic} onDoubleClick={() => setPuEdit(true)}>{fmt(puv) + uSuffix}</span>
+              {puEdited && <span className="pubadge">{L.perso}</span>}
+              {puEdited && <button type="button" className="pureset" title={L.prixReset} onClick={() => onPu(null)}>↺</button>}
             </>
           )}
           {t.note && !puEdit && <span className="punote"> · {catT(locale, "notes", t.note)}</span>}
@@ -96,27 +99,27 @@ export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onM
             <>
               {s.manual
                 ? <NumStepper compact value={s.qty != null ? s.qty : autoVal} min={0} onChange={onQty} />
-                : <span className="qauto num" title="calculé automatiquement depuis vos infos de départ">{autoVal}</span>}
+                : <span className="qauto num" title={L.autoTitre}>{autoVal}</span>}
               <span className="unit">{catT(locale, "unites", t.u)}</span>
               <span className="swiwrap">
-                <button className={"swi" + (!s.manual ? " on" : "")} onClick={onAuto} title="Auto = quantité calculée. Désactivez pour saisir à la main."><span className="knob" /></button>
-                <span className={"swilbl" + (!s.manual ? " on" : "")}>{!s.manual ? "auto" : (locale === "en" ? "manual" : "manuel")}</span>
+                <button className={"swi" + (!s.manual ? " on" : "")} onClick={onAuto} title={L.autoBouton}><span className="knob" /></button>
+                <span className={"swilbl" + (!s.manual ? " on" : "")}>{!s.manual ? L.auto : L.manuel}</span>
               </span>
             </>
           ) : (
             <>
               <NumStepper compact value={s.qty != null ? s.qty : (loc ? 1 : 0)} min={0} onChange={onQty} />
-              <span className="unit">{loc ? (locale === "en" ? "day" : "j") : catT(locale, "unites", t.u)}</span>
+              <span className="unit">{loc ? L.jour : catT(locale, "unites", t.u)}</span>
             </>
           ))}
           {/* Une taxe ou une prime d'assurance (frais, % du projet : neuf seulement) ne se « fait » pas
               faire : pas de puce de mode, son prix reste ajustable sur le libellé (double-clic). */}
           {!loc && !jalon && !t.frais && badge !== "pct" && (
             <span className="choice">
-              <ChoicePrice label={locale === "en" ? "Hire out" : "Fait faire"} active={!self} activeCls="onA" amount={puv} edited={puEdited}
+              <ChoicePrice label={L.faitFaire} active={!self} activeCls="onA" amount={puv} edited={puEdited}
                 onSelect={() => onChoice(false)} onEdit={(v) => onPu(v)} onReset={() => onPu(null)} />
               {avecDiy && puMat != null ? (
-                <ChoicePrice label={locale === "en" ? "DIY" : "Je le fais"} active={self} activeCls="onS" amount={puMat} edited={pmEdited}
+                <ChoicePrice label={L.jeLeFais} active={self} activeCls="onS" amount={puMat} edited={pmEdited}
                   onSelect={() => onChoice(true)} onEdit={(v) => onPm(v)} onReset={() => onPm(null)} />
               ) : raison ? (
                 <span className="pro-oblig">{`${nTxt.proOblig} · ${nTxt.raisonsPro[raison]}`}</span>
@@ -124,46 +127,46 @@ export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onM
             </span>
           )}
           {s.note && !noteOpen && isUrl(s.note) && <a className="notechip" href={s.note} target="_blank" rel="noopener noreferrer" title={s.note}>🔗</a>}
-          <button type="button" className={"notebtn" + (s.note ? " has" : "")} onClick={() => setNoteOpen((o) => !o)} title={s.note ? "Voir / modifier la note" : "Ajouter une note / un lien"}>📝</button>
+          <button type="button" className={"notebtn" + (s.note ? " has" : "")} onClick={() => setNoteOpen((o) => !o)} title={s.note ? L.noteVoir : L.noteAjouter}>📝</button>
           {!jalon && <span className="lineamt num">{fmt(lineHT(ctx, sel, l, t))}</span>}
         </span>
       ) : (
-        <span className="tctl"><span className="unit">{t.u === "forfait" ? catT(locale, "unites", "forfait") : loc ? (locale === "en" ? "/day" : "/jour") : catT(locale, "unites", t.u)}</span></span>
+        <span className="tctl"><span className="unit">{t.u === "forfait" ? catT(locale, "unites", "forfait") : loc ? L.parJour : catT(locale, "unites", t.u)}</span></span>
       )}
       {on && self && horsDecennale && <div className="decennale" role="note">{ctx.nature === "neuf" ? nTxt.horsDecennale : nTxt.horsDecennaleReno}</div>}
       {on && self && mention && <div className="mention-soi" role="note">{nTxt.mentionsSoiMeme[mention]}</div>}
       {on && variant && (
         <div className="tvariants">
           {t.mat && (
-            <span className="vg"><span className="vlab">{locale === "en" ? "Material" : "Matériau"}</span>
+            <span className="vg"><span className="vlab">{L.materiau}</span>
               <span className="vseg">
-                <button type="button" className={matSel === "pvc" ? "on" : ""} onClick={() => onMat("pvc")}>PVC</button>
-                <button type="button" className={matSel === "bois" ? "on" : ""} onClick={() => onMat("bois")}>Bois</button>
-                <button type="button" className={matSel === "alu" ? "on" : ""} onClick={() => onMat("alu")}>{locale === "en" ? "Aluminium" : "Alu"}</button>
+                <button type="button" className={matSel === "pvc" ? "on" : ""} onClick={() => onMat("pvc")}>{L.materiaux.pvc}</button>
+                <button type="button" className={matSel === "bois" ? "on" : ""} onClick={() => onMat("bois")}>{L.materiaux.bois}</button>
+                <button type="button" className={matSel === "alu" ? "on" : ""} onClick={() => onMat("alu")}>{L.materiaux.alu}</button>
               </span>
             </span>
           )}
           {t.vitrage && (
-            <span className="vg"><span className="vlab">{locale === "en" ? "Glazing" : "Vitrage"}</span>
+            <span className="vg"><span className="vlab">{L.vitrage}</span>
               <span className="vseg">
-                <button type="button" className={vitSel === "double" ? "on" : ""} onClick={() => onVit("double")}>{locale === "en" ? "Double" : "Double"}</button>
-                <button type="button" className={vitSel === "triple" ? "on" : ""} onClick={() => onVit("triple")}>{locale === "en" ? "Triple" : "Triple"}</button>
+                <button type="button" className={vitSel === "double" ? "on" : ""} onClick={() => onVit("double")}>{L.vitrages.double}</button>
+                <button type="button" className={vitSel === "triple" ? "on" : ""} onClick={() => onVit("triple")}>{L.vitrages.triple}</button>
               </span>
             </span>
           )}
           {t.moto && (
-            <span className="vg"><span className="vlab">{locale === "en" ? "Motorization" : "Motorisation"}</span>
+            <span className="vg"><span className="vlab">{L.motorisation}</span>
               <span className="vseg">
-                <button type="button" className={motSel === "manuel" ? "on" : ""} onClick={() => onMot("manuel")}>{locale === "en" ? "Manual" : "Manuel"}</button>
-                <button type="button" className={motSel === "motorise" ? "on" : ""} onClick={() => onMot("motorise")}>{locale === "en" ? "Motorized" : "Motorisé"}</button>
+                <button type="button" className={motSel === "manuel" ? "on" : ""} onClick={() => onMot("manuel")}>{L.motorisations.manuel}</button>
+                <button type="button" className={motSel === "motorise" ? "on" : ""} onClick={() => onMot("motorise")}>{L.motorisations.motorise}</button>
               </span>
             </span>
           )}
           {t.taille && (
-            <span className="vg"><span className="vlab">{locale === "en" ? "Size" : "Taille"}</span>
+            <span className="vg"><span className="vlab">{L.taille}</span>
               <span className="vseg">
-                <button type="button" className={taiSel === "petit" ? "on" : ""} onClick={() => onTai("petit")}>{locale === "en" ? "Small" : "Petit"}</button>
-                <button type="button" className={taiSel === "grand" ? "on" : ""} onClick={() => onTai("grand")}>{locale === "en" ? "Large" : "Grand"}</button>
+                <button type="button" className={taiSel === "petit" ? "on" : ""} onClick={() => onTai("petit")}>{L.tailles.petit}</button>
+                <button type="button" className={taiSel === "grand" ? "on" : ""} onClick={() => onTai("grand")}>{L.tailles.grand}</button>
               </span>
             </span>
           )}
@@ -187,9 +190,9 @@ export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onM
       {on && noteOpen && (
         <div className="tnote">
           <span className="cl-lk">🔗</span>
-          <input className="cl-note" autoFocus placeholder="Note ou lien matériau (https://…)" value={s.note || ""} onChange={(e) => onNote(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") setNoteOpen(false); }} />
-          {isUrl(s.note) && <a className="cl-open" href={s.note} target="_blank" rel="noopener noreferrer">Ouvrir ↗</a>}
-          <button type="button" className="notedone" onClick={() => setNoteOpen(false)} title="OK">✓</button>
+          <input className="cl-note" autoFocus placeholder={L.notePlaceholder} value={s.note || ""} onChange={(e) => onNote(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") setNoteOpen(false); }} />
+          {isUrl(s.note) && <a className="cl-open" href={s.note} target="_blank" rel="noopener noreferrer">{L.ouvrir}</a>}
+          <button type="button" className="notedone" onClick={() => setNoteOpen(false)} title={L.ok}>✓</button>
         </div>
       )}
     </div>

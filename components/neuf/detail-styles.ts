@@ -4,7 +4,8 @@
  * le modifier. Questionnaire en `<details>`, pastilles, « Le moteur en déduit », jalons de phase,
  * badges « Démarche » et « % des travaux », étiquette « Pro obligatoire » et avertissement « hors
  * garantie décennale » des lignes, ligne « Nouveaux postes cochés » et confirmation de « Tout passer
- * en… » (`.nv`, N3). Porté de `maquettes/neuf/page.html` ; aucun `@import`.
+ * en… » (`.nv`, N3). Porté de `maquettes/neuf/page.html` ; aucun `@import`. Les outils de la liste
+ * (`.tools`), les vues et les boutons de la barre live en 44 px sont dans `EST_CSS` (N6, partagés).
  */
 export const NEUF_DETAIL_CSS = `
 .av-neuf-d .grp{border:1px solid var(--line);border-radius:var(--radius-field);background:var(--surface-2);padding:10px 14px;margin-top:10px}
@@ -28,10 +29,6 @@ export const NEUF_DETAIL_CSS = `
 .av-neuf-d .zone{font-size:12px;color:var(--faint)}
 .av-neuf-d .deduit{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:14px;padding:12px 14px;border-radius:var(--radius-field);background:var(--brand-50);font-size:12.5px;color:var(--muted)}
 .av-neuf-d .deduit b{color:var(--ink);font-family:var(--font-geist-mono),ui-monospace,monospace;font-variant-numeric:tabular-nums;font-weight:600}
-.av-neuf-d .tools{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px 12px;margin:10px 2px 0}
-.av-neuf-d .only{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);cursor:pointer;min-height:40px}
-.av-neuf-d .only input{width:18px;height:18px;accent-color:var(--brand)}
-.av-neuf-d .linkbtn{background:none;border:0;color:var(--brand-700);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;min-height:40px;padding:0 4px}
 .av-neuf-d .nv{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:12px 0 0;padding:10px 14px;border:1px solid var(--line);border-radius:var(--radius-field);background:var(--surface)}
 .av-neuf-d .nv-l{font-size:13px;font-weight:600;color:var(--ink)}
 .av-neuf-d .nv-seg{display:inline-flex;gap:3px;background:var(--surface-2);border:1px solid var(--line-strong);border-radius:999px;padding:3px}
@@ -72,8 +69,6 @@ export const NEUF_DETAIL_CSS = `
 /* les postes du neuf ont de longues notes : sur mobile, les commandes passent sous le libellé */
 .av-neuf-d .trow{grid-template-columns:22px minmax(0,1fr)}
 .av-neuf-d .trow .tctl{grid-column:2/-1;justify-content:flex-start}
-.av-neuf-d .views button{min-height:44px}
-.av-neuf-live .cta,.av-neuf-live .save{min-height:44px}
 .av-neuf-live .totb{flex-wrap:wrap;row-gap:2px}
 .av-neuf-live .m2{flex-basis:100%;margin-top:0}
 }

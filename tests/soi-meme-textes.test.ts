@@ -16,6 +16,7 @@ import fs from "node:fs";
 import { presetRapide } from "@/lib/estimateur";
 import { dict } from "@/lib/i18n/dictionaries";
 import { dictNeuf } from "@/lib/i18n/neuf";
+import { dictDetail } from "@/lib/i18n/detail";
 
 async function texteCompile(fichier: string): Promise<string> {
   const swc = await import("next/dist/build/swc/index.js");
@@ -44,9 +45,12 @@ describe("D4 (a) · rénovation : « Je fais un max moi-même » dit ce qu'il fa
   });
 
   it("le détaillé rénovation : « Je le fais » possible sur la structure, hors décennale, étude conseillée", () => {
-    const src = fs.readFileSync("components/Estimateur.tsx", "utf8");
-    expect(src).toContain("Sur chaque travail faisable soi-même, électricité, mur porteur et charpente compris, choisis <b>« Fait faire »</b>");
-    expect(src).toContain("sort de la garantie décennale ; pour un mur porteur ou une charpente, une étude est conseillée.");
+    // Depuis N6, le texte vit dans `dictDetail` (gras : `**…**`) ; l'écran l'affiche avec `gras`.
+    const intro = dictDetail("fr").liste.intro;
+    expect(intro).toContain("Sur chaque travail faisable soi-même, électricité, mur porteur et charpente compris, choisis **« Fait faire »**");
+    expect(intro).toContain("sort de la garantie décennale ; pour un mur porteur ou une charpente, une étude est conseillée.");
+    expect(dictDetail("en").liste.intro).toContain("not covered by the 10-year structural warranty; for a load-bearing wall or roof framing, an engineering study is recommended.");
+    expect(fs.readFileSync("components/Estimateur.tsx", "utf8")).toContain("{gras(dl.liste.intro)}");
   });
 
   it("le guide « faire soi-même ou artisan » : possible, hors décennale, étude conseillée pour la structure", async () => {

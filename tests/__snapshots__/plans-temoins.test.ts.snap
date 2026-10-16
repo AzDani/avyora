@@ -656,6 +656,8 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim .phase-t .pt-lbl{flex:1;min-width:0}
 .av-estim .phase-t .pt-meta{font-family:var(--font-geist-mono),monospace;letter-spacing:0;text-transform:none;color:var(--faint);font-weight:500;font-size:11px}
 .av-estim .phase-t:hover .pt-lbl{text-decoration:underline}
+/* un titre de phase qui ne replie rien (rénovation, « Mon devis ») n'a pas la main : seul le bouton du neuf l'a */
+.av-estim div.phase-t{cursor:default}
 .av-estim .acc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);margin-bottom:10px;overflow:hidden;transition:border-color .2s var(--ease)}
 .av-estim .acc.open{border-color:var(--brand-200)}
 .av-estim .acc-h{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;user-select:none}
@@ -761,6 +763,11 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim .cl-icon:hover{color:var(--brand)}
 .av-estim .cl-delconfirm{border:1px solid var(--danger);background:var(--danger);color:#fff;font-family:var(--font-geist-sans);font-weight:700;font-size:11px;border-radius:8px;padding:5px 9px;cursor:pointer;white-space:nowrap}
 .av-estim .resetbtn{background:none;border:0;color:var(--faint);font-size:12px;cursor:pointer;text-decoration:underline}
+/* Outils de la liste (« Seulement les postes cochés », « Tout déplier » : ListeLots) */
+.av-estim .tools{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px 12px;margin:10px 2px 0}
+.av-estim .only{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);cursor:pointer;min-height:40px}
+.av-estim .only input{width:18px;height:18px;accent-color:var(--brand)}
+.av-estim .linkbtn{background:none;border:0;color:var(--brand-700);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;min-height:40px;padding:0 4px}
 
 .av-estim .hero{border-radius:var(--radius-panel);padding:28px;color:#edebff;background:linear-gradient(140deg,var(--nuit),var(--nuit-2) 55%,var(--nuit-3));box-shadow:var(--shadow-hero);position:relative;overflow:hidden;margin-bottom:16px}
 .av-estim .hero .glow{position:absolute;border-radius:50%;filter:blur(64px);pointer-events:none}
@@ -837,7 +844,7 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim-live.nobudget .jauge{display:none}
 .av-estim-live .jtext{font-size:11px}
 .av-estim-live .jbar{height:6px;margin-top:4px}
-.av-estim-live .cta,.av-estim-live .save{flex:1;min-width:0;padding:11px 8px;font-size:13px;white-space:nowrap}
+.av-estim-live .cta,.av-estim-live .save{flex:1;min-width:0;padding:11px 8px;font-size:13px;white-space:nowrap;min-height:44px}
 }
 
 @media(prefers-reduced-motion:reduce){.av-estim *,.av-estim-live *{transition:none!important}}
@@ -880,6 +887,9 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim .finc .ft{font-size:14px;font-weight:600;margin-top:2px}
 .av-estim .finc .fd{font-size:10.5px;color:var(--muted);margin-top:5px;line-height:1.45;min-height:54px}
 @media(max-width:560px){.av-estim .stpg{grid-template-columns:1fr}.av-estim .finc{grid-template-columns:1fr}.av-estim .finc .fd{min-height:0}
+/* mobile : cibles tactiles de 44 px (pastilles, segments, interrupteur, vues), boutons des compteurs de 40 px */
+.av-estim .tpill,.av-estim .segf button,.av-estim .drtoggle,.av-estim .views button{min-height:44px}
+.av-estim .stp button{width:40px;height:40px}
 /* mobile : champs ≥ 16px, sinon iOS Safari zoome la page à chaque focus (quantités, prix, coefs…) */
 .av-estim .fld input,.av-estim .fld select,.av-estim .qty,.av-estim .qauto,.av-estim .puin,.av-estim .chin{font-size:16px}}
 
@@ -1093,6 +1103,8 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim .phase-t .pt-lbl{flex:1;min-width:0}
 .av-estim .phase-t .pt-meta{font-family:var(--font-geist-mono),monospace;letter-spacing:0;text-transform:none;color:var(--faint);font-weight:500;font-size:11px}
 .av-estim .phase-t:hover .pt-lbl{text-decoration:underline}
+/* un titre de phase qui ne replie rien (rénovation, « Mon devis ») n'a pas la main : seul le bouton du neuf l'a */
+.av-estim div.phase-t{cursor:default}
 .av-estim .acc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);margin-bottom:10px;overflow:hidden;transition:border-color .2s var(--ease)}
 .av-estim .acc.open{border-color:var(--brand-200)}
 .av-estim .acc-h{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;user-select:none}
@@ -1198,6 +1210,11 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim .cl-icon:hover{color:var(--brand)}
 .av-estim .cl-delconfirm{border:1px solid var(--danger);background:var(--danger);color:#fff;font-family:var(--font-geist-sans);font-weight:700;font-size:11px;border-radius:8px;padding:5px 9px;cursor:pointer;white-space:nowrap}
 .av-estim .resetbtn{background:none;border:0;color:var(--faint);font-size:12px;cursor:pointer;text-decoration:underline}
+/* Outils de la liste (« Seulement les postes cochés », « Tout déplier » : ListeLots) */
+.av-estim .tools{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px 12px;margin:10px 2px 0}
+.av-estim .only{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);cursor:pointer;min-height:40px}
+.av-estim .only input{width:18px;height:18px;accent-color:var(--brand)}
+.av-estim .linkbtn{background:none;border:0;color:var(--brand-700);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;min-height:40px;padding:0 4px}
 
 .av-estim .hero{border-radius:var(--radius-panel);padding:28px;color:#edebff;background:linear-gradient(140deg,var(--nuit),var(--nuit-2) 55%,var(--nuit-3));box-shadow:var(--shadow-hero);position:relative;overflow:hidden;margin-bottom:16px}
 .av-estim .hero .glow{position:absolute;border-radius:50%;filter:blur(64px);pointer-events:none}
@@ -1274,7 +1291,7 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim-live.nobudget .jauge{display:none}
 .av-estim-live .jtext{font-size:11px}
 .av-estim-live .jbar{height:6px;margin-top:4px}
-.av-estim-live .cta,.av-estim-live .save{flex:1;min-width:0;padding:11px 8px;font-size:13px;white-space:nowrap}
+.av-estim-live .cta,.av-estim-live .save{flex:1;min-width:0;padding:11px 8px;font-size:13px;white-space:nowrap;min-height:44px}
 }
 
 @media(prefers-reduced-motion:reduce){.av-estim *,.av-estim-live *{transition:none!important}}
@@ -1317,6 +1334,9 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim .finc .ft{font-size:14px;font-weight:600;margin-top:2px}
 .av-estim .finc .fd{font-size:10.5px;color:var(--muted);margin-top:5px;line-height:1.45;min-height:54px}
 @media(max-width:560px){.av-estim .stpg{grid-template-columns:1fr}.av-estim .finc{grid-template-columns:1fr}.av-estim .finc .fd{min-height:0}
+/* mobile : cibles tactiles de 44 px (pastilles, segments, interrupteur, vues), boutons des compteurs de 40 px */
+.av-estim .tpill,.av-estim .segf button,.av-estim .drtoggle,.av-estim .views button{min-height:44px}
+.av-estim .stp button{width:40px;height:40px}
 /* mobile : champs ≥ 16px, sinon iOS Safari zoome la page à chaque focus (quantités, prix, coefs…) */
 .av-estim .fld input,.av-estim .fld select,.av-estim .qty,.av-estim .qauto,.av-estim .puin,.av-estim .chin{font-size:16px}}
 
@@ -1490,6 +1510,8 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim .phase-t .pt-lbl{flex:1;min-width:0}
 .av-estim .phase-t .pt-meta{font-family:var(--font-geist-mono),monospace;letter-spacing:0;text-transform:none;color:var(--faint);font-weight:500;font-size:11px}
 .av-estim .phase-t:hover .pt-lbl{text-decoration:underline}
+/* un titre de phase qui ne replie rien (rénovation, « Mon devis ») n'a pas la main : seul le bouton du neuf l'a */
+.av-estim div.phase-t{cursor:default}
 .av-estim .acc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);margin-bottom:10px;overflow:hidden;transition:border-color .2s var(--ease)}
 .av-estim .acc.open{border-color:var(--brand-200)}
 .av-estim .acc-h{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;user-select:none}
@@ -1595,6 +1617,11 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim .cl-icon:hover{color:var(--brand)}
 .av-estim .cl-delconfirm{border:1px solid var(--danger);background:var(--danger);color:#fff;font-family:var(--font-geist-sans);font-weight:700;font-size:11px;border-radius:8px;padding:5px 9px;cursor:pointer;white-space:nowrap}
 .av-estim .resetbtn{background:none;border:0;color:var(--faint);font-size:12px;cursor:pointer;text-decoration:underline}
+/* Outils de la liste (« Seulement les postes cochés », « Tout déplier » : ListeLots) */
+.av-estim .tools{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px 12px;margin:10px 2px 0}
+.av-estim .only{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);cursor:pointer;min-height:40px}
+.av-estim .only input{width:18px;height:18px;accent-color:var(--brand)}
+.av-estim .linkbtn{background:none;border:0;color:var(--brand-700);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;min-height:40px;padding:0 4px}
 
 .av-estim .hero{border-radius:var(--radius-panel);padding:28px;color:#edebff;background:linear-gradient(140deg,var(--nuit),var(--nuit-2) 55%,var(--nuit-3));box-shadow:var(--shadow-hero);position:relative;overflow:hidden;margin-bottom:16px}
 .av-estim .hero .glow{position:absolute;border-radius:50%;filter:blur(64px);pointer-events:none}
@@ -1671,7 +1698,7 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim-live.nobudget .jauge{display:none}
 .av-estim-live .jtext{font-size:11px}
 .av-estim-live .jbar{height:6px;margin-top:4px}
-.av-estim-live .cta,.av-estim-live .save{flex:1;min-width:0;padding:11px 8px;font-size:13px;white-space:nowrap}
+.av-estim-live .cta,.av-estim-live .save{flex:1;min-width:0;padding:11px 8px;font-size:13px;white-space:nowrap;min-height:44px}
 }
 
 @media(prefers-reduced-motion:reduce){.av-estim *,.av-estim-live *{transition:none!important}}
@@ -1714,6 +1741,9 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim .finc .ft{font-size:14px;font-weight:600;margin-top:2px}
 .av-estim .finc .fd{font-size:10.5px;color:var(--muted);margin-top:5px;line-height:1.45;min-height:54px}
 @media(max-width:560px){.av-estim .stpg{grid-template-columns:1fr}.av-estim .finc{grid-template-columns:1fr}.av-estim .finc .fd{min-height:0}
+/* mobile : cibles tactiles de 44 px (pastilles, segments, interrupteur, vues), boutons des compteurs de 40 px */
+.av-estim .tpill,.av-estim .segf button,.av-estim .drtoggle,.av-estim .views button{min-height:44px}
+.av-estim .stp button{width:40px;height:40px}
 /* mobile : champs ≥ 16px, sinon iOS Safari zoome la page à chaque focus (quantités, prix, coefs…) */
 .av-estim .fld input,.av-estim .fld select,.av-estim .qty,.av-estim .qauto,.av-estim .puin,.av-estim .chin{font-size:16px}}
 
@@ -1927,6 +1957,8 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim .phase-t .pt-lbl{flex:1;min-width:0}
 .av-estim .phase-t .pt-meta{font-family:var(--font-geist-mono),monospace;letter-spacing:0;text-transform:none;color:var(--faint);font-weight:500;font-size:11px}
 .av-estim .phase-t:hover .pt-lbl{text-decoration:underline}
+/* un titre de phase qui ne replie rien (rénovation, « Mon devis ») n'a pas la main : seul le bouton du neuf l'a */
+.av-estim div.phase-t{cursor:default}
 .av-estim .acc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);margin-bottom:10px;overflow:hidden;transition:border-color .2s var(--ease)}
 .av-estim .acc.open{border-color:var(--brand-200)}
 .av-estim .acc-h{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;user-select:none}
@@ -2032,6 +2064,11 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim .cl-icon:hover{color:var(--brand)}
 .av-estim .cl-delconfirm{border:1px solid var(--danger);background:var(--danger);color:#fff;font-family:var(--font-geist-sans);font-weight:700;font-size:11px;border-radius:8px;padding:5px 9px;cursor:pointer;white-space:nowrap}
 .av-estim .resetbtn{background:none;border:0;color:var(--faint);font-size:12px;cursor:pointer;text-decoration:underline}
+/* Outils de la liste (« Seulement les postes cochés », « Tout déplier » : ListeLots) */
+.av-estim .tools{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px 12px;margin:10px 2px 0}
+.av-estim .only{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);cursor:pointer;min-height:40px}
+.av-estim .only input{width:18px;height:18px;accent-color:var(--brand)}
+.av-estim .linkbtn{background:none;border:0;color:var(--brand-700);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;min-height:40px;padding:0 4px}
 
 .av-estim .hero{border-radius:var(--radius-panel);padding:28px;color:#edebff;background:linear-gradient(140deg,var(--nuit),var(--nuit-2) 55%,var(--nuit-3));box-shadow:var(--shadow-hero);position:relative;overflow:hidden;margin-bottom:16px}
 .av-estim .hero .glow{position:absolute;border-radius:50%;filter:blur(64px);pointer-events:none}
@@ -2108,7 +2145,7 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim-live.nobudget .jauge{display:none}
 .av-estim-live .jtext{font-size:11px}
 .av-estim-live .jbar{height:6px;margin-top:4px}
-.av-estim-live .cta,.av-estim-live .save{flex:1;min-width:0;padding:11px 8px;font-size:13px;white-space:nowrap}
+.av-estim-live .cta,.av-estim-live .save{flex:1;min-width:0;padding:11px 8px;font-size:13px;white-space:nowrap;min-height:44px}
 }
 
 @media(prefers-reduced-motion:reduce){.av-estim *,.av-estim-live *{transition:none!important}}
@@ -2151,6 +2188,9 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim .finc .ft{font-size:14px;font-weight:600;margin-top:2px}
 .av-estim .finc .fd{font-size:10.5px;color:var(--muted);margin-top:5px;line-height:1.45;min-height:54px}
 @media(max-width:560px){.av-estim .stpg{grid-template-columns:1fr}.av-estim .finc{grid-template-columns:1fr}.av-estim .finc .fd{min-height:0}
+/* mobile : cibles tactiles de 44 px (pastilles, segments, interrupteur, vues), boutons des compteurs de 40 px */
+.av-estim .tpill,.av-estim .segf button,.av-estim .drtoggle,.av-estim .views button{min-height:44px}
+.av-estim .stp button{width:40px;height:40px}
 /* mobile : champs ≥ 16px, sinon iOS Safari zoome la page à chaque focus (quantités, prix, coefs…) */
 .av-estim .fld input,.av-estim .fld select,.av-estim .qty,.av-estim .qauto,.av-estim .puin,.av-estim .chin{font-size:16px}}
 
@@ -2324,6 +2364,8 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim .phase-t .pt-lbl{flex:1;min-width:0}
 .av-estim .phase-t .pt-meta{font-family:var(--font-geist-mono),monospace;letter-spacing:0;text-transform:none;color:var(--faint);font-weight:500;font-size:11px}
 .av-estim .phase-t:hover .pt-lbl{text-decoration:underline}
+/* un titre de phase qui ne replie rien (rénovation, « Mon devis ») n'a pas la main : seul le bouton du neuf l'a */
+.av-estim div.phase-t{cursor:default}
 .av-estim .acc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);margin-bottom:10px;overflow:hidden;transition:border-color .2s var(--ease)}
 .av-estim .acc.open{border-color:var(--brand-200)}
 .av-estim .acc-h{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;user-select:none}
@@ -2429,6 +2471,11 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim .cl-icon:hover{color:var(--brand)}
 .av-estim .cl-delconfirm{border:1px solid var(--danger);background:var(--danger);color:#fff;font-family:var(--font-geist-sans);font-weight:700;font-size:11px;border-radius:8px;padding:5px 9px;cursor:pointer;white-space:nowrap}
 .av-estim .resetbtn{background:none;border:0;color:var(--faint);font-size:12px;cursor:pointer;text-decoration:underline}
+/* Outils de la liste (« Seulement les postes cochés », « Tout déplier » : ListeLots) */
+.av-estim .tools{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px 12px;margin:10px 2px 0}
+.av-estim .only{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);cursor:pointer;min-height:40px}
+.av-estim .only input{width:18px;height:18px;accent-color:var(--brand)}
+.av-estim .linkbtn{background:none;border:0;color:var(--brand-700);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;min-height:40px;padding:0 4px}
 
 .av-estim .hero{border-radius:var(--radius-panel);padding:28px;color:#edebff;background:linear-gradient(140deg,var(--nuit),var(--nuit-2) 55%,var(--nuit-3));box-shadow:var(--shadow-hero);position:relative;overflow:hidden;margin-bottom:16px}
 .av-estim .hero .glow{position:absolute;border-radius:50%;filter:blur(64px);pointer-events:none}
@@ -2505,7 +2552,7 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim-live.nobudget .jauge{display:none}
 .av-estim-live .jtext{font-size:11px}
 .av-estim-live .jbar{height:6px;margin-top:4px}
-.av-estim-live .cta,.av-estim-live .save{flex:1;min-width:0;padding:11px 8px;font-size:13px;white-space:nowrap}
+.av-estim-live .cta,.av-estim-live .save{flex:1;min-width:0;padding:11px 8px;font-size:13px;white-space:nowrap;min-height:44px}
 }
 
 @media(prefers-reduced-motion:reduce){.av-estim *,.av-estim-live *{transition:none!important}}
@@ -2548,6 +2595,9 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim .finc .ft{font-size:14px;font-weight:600;margin-top:2px}
 .av-estim .finc .fd{font-size:10.5px;color:var(--muted);margin-top:5px;line-height:1.45;min-height:54px}
 @media(max-width:560px){.av-estim .stpg{grid-template-columns:1fr}.av-estim .finc{grid-template-columns:1fr}.av-estim .finc .fd{min-height:0}
+/* mobile : cibles tactiles de 44 px (pastilles, segments, interrupteur, vues), boutons des compteurs de 40 px */
+.av-estim .tpill,.av-estim .segf button,.av-estim .drtoggle,.av-estim .views button{min-height:44px}
+.av-estim .stp button{width:40px;height:40px}
 /* mobile : champs ≥ 16px, sinon iOS Safari zoome la page à chaque focus (quantités, prix, coefs…) */
 .av-estim .fld input,.av-estim .fld select,.av-estim .qty,.av-estim .qauto,.av-estim .puin,.av-estim .chin{font-size:16px}}
 
@@ -2761,6 +2811,8 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim .phase-t .pt-lbl{flex:1;min-width:0}
 .av-estim .phase-t .pt-meta{font-family:var(--font-geist-mono),monospace;letter-spacing:0;text-transform:none;color:var(--faint);font-weight:500;font-size:11px}
 .av-estim .phase-t:hover .pt-lbl{text-decoration:underline}
+/* un titre de phase qui ne replie rien (rénovation, « Mon devis ») n'a pas la main : seul le bouton du neuf l'a */
+.av-estim div.phase-t{cursor:default}
 .av-estim .acc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);margin-bottom:10px;overflow:hidden;transition:border-color .2s var(--ease)}
 .av-estim .acc.open{border-color:var(--brand-200)}
 .av-estim .acc-h{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;user-select:none}
@@ -2866,6 +2918,11 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim .cl-icon:hover{color:var(--brand)}
 .av-estim .cl-delconfirm{border:1px solid var(--danger);background:var(--danger);color:#fff;font-family:var(--font-geist-sans);font-weight:700;font-size:11px;border-radius:8px;padding:5px 9px;cursor:pointer;white-space:nowrap}
 .av-estim .resetbtn{background:none;border:0;color:var(--faint);font-size:12px;cursor:pointer;text-decoration:underline}
+/* Outils de la liste (« Seulement les postes cochés », « Tout déplier » : ListeLots) */
+.av-estim .tools{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px 12px;margin:10px 2px 0}
+.av-estim .only{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);cursor:pointer;min-height:40px}
+.av-estim .only input{width:18px;height:18px;accent-color:var(--brand)}
+.av-estim .linkbtn{background:none;border:0;color:var(--brand-700);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;min-height:40px;padding:0 4px}
 
 .av-estim .hero{border-radius:var(--radius-panel);padding:28px;color:#edebff;background:linear-gradient(140deg,var(--nuit),var(--nuit-2) 55%,var(--nuit-3));box-shadow:var(--shadow-hero);position:relative;overflow:hidden;margin-bottom:16px}
 .av-estim .hero .glow{position:absolute;border-radius:50%;filter:blur(64px);pointer-events:none}
@@ -2942,7 +2999,7 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim-live.nobudget .jauge{display:none}
 .av-estim-live .jtext{font-size:11px}
 .av-estim-live .jbar{height:6px;margin-top:4px}
-.av-estim-live .cta,.av-estim-live .save{flex:1;min-width:0;padding:11px 8px;font-size:13px;white-space:nowrap}
+.av-estim-live .cta,.av-estim-live .save{flex:1;min-width:0;padding:11px 8px;font-size:13px;white-space:nowrap;min-height:44px}
 }
 
 @media(prefers-reduced-motion:reduce){.av-estim *,.av-estim-live *{transition:none!important}}
@@ -2985,6 +3042,9 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim .finc .ft{font-size:14px;font-weight:600;margin-top:2px}
 .av-estim .finc .fd{font-size:10.5px;color:var(--muted);margin-top:5px;line-height:1.45;min-height:54px}
 @media(max-width:560px){.av-estim .stpg{grid-template-columns:1fr}.av-estim .finc{grid-template-columns:1fr}.av-estim .finc .fd{min-height:0}
+/* mobile : cibles tactiles de 44 px (pastilles, segments, interrupteur, vues), boutons des compteurs de 40 px */
+.av-estim .tpill,.av-estim .segf button,.av-estim .drtoggle,.av-estim .views button{min-height:44px}
+.av-estim .stp button{width:40px;height:40px}
 /* mobile : champs ≥ 16px, sinon iOS Safari zoome la page à chaque focus (quantités, prix, coefs…) */
 .av-estim .fld input,.av-estim .fld select,.av-estim .qty,.av-estim .qauto,.av-estim .puin,.av-estim .chin{font-size:16px}}
 
@@ -3158,6 +3218,8 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim .phase-t .pt-lbl{flex:1;min-width:0}
 .av-estim .phase-t .pt-meta{font-family:var(--font-geist-mono),monospace;letter-spacing:0;text-transform:none;color:var(--faint);font-weight:500;font-size:11px}
 .av-estim .phase-t:hover .pt-lbl{text-decoration:underline}
+/* un titre de phase qui ne replie rien (rénovation, « Mon devis ») n'a pas la main : seul le bouton du neuf l'a */
+.av-estim div.phase-t{cursor:default}
 .av-estim .acc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);margin-bottom:10px;overflow:hidden;transition:border-color .2s var(--ease)}
 .av-estim .acc.open{border-color:var(--brand-200)}
 .av-estim .acc-h{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;user-select:none}
@@ -3263,6 +3325,11 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim .cl-icon:hover{color:var(--brand)}
 .av-estim .cl-delconfirm{border:1px solid var(--danger);background:var(--danger);color:#fff;font-family:var(--font-geist-sans);font-weight:700;font-size:11px;border-radius:8px;padding:5px 9px;cursor:pointer;white-space:nowrap}
 .av-estim .resetbtn{background:none;border:0;color:var(--faint);font-size:12px;cursor:pointer;text-decoration:underline}
+/* Outils de la liste (« Seulement les postes cochés », « Tout déplier » : ListeLots) */
+.av-estim .tools{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px 12px;margin:10px 2px 0}
+.av-estim .only{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);cursor:pointer;min-height:40px}
+.av-estim .only input{width:18px;height:18px;accent-color:var(--brand)}
+.av-estim .linkbtn{background:none;border:0;color:var(--brand-700);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;min-height:40px;padding:0 4px}
 
 .av-estim .hero{border-radius:var(--radius-panel);padding:28px;color:#edebff;background:linear-gradient(140deg,var(--nuit),var(--nuit-2) 55%,var(--nuit-3));box-shadow:var(--shadow-hero);position:relative;overflow:hidden;margin-bottom:16px}
 .av-estim .hero .glow{position:absolute;border-radius:50%;filter:blur(64px);pointer-events:none}
@@ -3339,7 +3406,7 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim-live.nobudget .jauge{display:none}
 .av-estim-live .jtext{font-size:11px}
 .av-estim-live .jbar{height:6px;margin-top:4px}
-.av-estim-live .cta,.av-estim-live .save{flex:1;min-width:0;padding:11px 8px;font-size:13px;white-space:nowrap}
+.av-estim-live .cta,.av-estim-live .save{flex:1;min-width:0;padding:11px 8px;font-size:13px;white-space:nowrap;min-height:44px}
 }
 
 @media(prefers-reduced-motion:reduce){.av-estim *,.av-estim-live *{transition:none!important}}
@@ -3382,6 +3449,9 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim .finc .ft{font-size:14px;font-weight:600;margin-top:2px}
 .av-estim .finc .fd{font-size:10.5px;color:var(--muted);margin-top:5px;line-height:1.45;min-height:54px}
 @media(max-width:560px){.av-estim .stpg{grid-template-columns:1fr}.av-estim .finc{grid-template-columns:1fr}.av-estim .finc .fd{min-height:0}
+/* mobile : cibles tactiles de 44 px (pastilles, segments, interrupteur, vues), boutons des compteurs de 40 px */
+.av-estim .tpill,.av-estim .segf button,.av-estim .drtoggle,.av-estim .views button{min-height:44px}
+.av-estim .stp button{width:40px;height:40px}
 /* mobile : champs ≥ 16px, sinon iOS Safari zoome la page à chaque focus (quantités, prix, coefs…) */
 .av-estim .fld input,.av-estim .fld select,.av-estim .qty,.av-estim .qauto,.av-estim .puin,.av-estim .chin{font-size:16px}}
 
@@ -3595,6 +3665,8 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim .phase-t .pt-lbl{flex:1;min-width:0}
 .av-estim .phase-t .pt-meta{font-family:var(--font-geist-mono),monospace;letter-spacing:0;text-transform:none;color:var(--faint);font-weight:500;font-size:11px}
 .av-estim .phase-t:hover .pt-lbl{text-decoration:underline}
+/* un titre de phase qui ne replie rien (rénovation, « Mon devis ») n'a pas la main : seul le bouton du neuf l'a */
+.av-estim div.phase-t{cursor:default}
 .av-estim .acc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);margin-bottom:10px;overflow:hidden;transition:border-color .2s var(--ease)}
 .av-estim .acc.open{border-color:var(--brand-200)}
 .av-estim .acc-h{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;user-select:none}
@@ -3700,6 +3772,11 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim .cl-icon:hover{color:var(--brand)}
 .av-estim .cl-delconfirm{border:1px solid var(--danger);background:var(--danger);color:#fff;font-family:var(--font-geist-sans);font-weight:700;font-size:11px;border-radius:8px;padding:5px 9px;cursor:pointer;white-space:nowrap}
 .av-estim .resetbtn{background:none;border:0;color:var(--faint);font-size:12px;cursor:pointer;text-decoration:underline}
+/* Outils de la liste (« Seulement les postes cochés », « Tout déplier » : ListeLots) */
+.av-estim .tools{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px 12px;margin:10px 2px 0}
+.av-estim .only{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);cursor:pointer;min-height:40px}
+.av-estim .only input{width:18px;height:18px;accent-color:var(--brand)}
+.av-estim .linkbtn{background:none;border:0;color:var(--brand-700);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;min-height:40px;padding:0 4px}
 
 .av-estim .hero{border-radius:var(--radius-panel);padding:28px;color:#edebff;background:linear-gradient(140deg,var(--nuit),var(--nuit-2) 55%,var(--nuit-3));box-shadow:var(--shadow-hero);position:relative;overflow:hidden;margin-bottom:16px}
 .av-estim .hero .glow{position:absolute;border-radius:50%;filter:blur(64px);pointer-events:none}
@@ -3776,7 +3853,7 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim-live.nobudget .jauge{display:none}
 .av-estim-live .jtext{font-size:11px}
 .av-estim-live .jbar{height:6px;margin-top:4px}
-.av-estim-live .cta,.av-estim-live .save{flex:1;min-width:0;padding:11px 8px;font-size:13px;white-space:nowrap}
+.av-estim-live .cta,.av-estim-live .save{flex:1;min-width:0;padding:11px 8px;font-size:13px;white-space:nowrap;min-height:44px}
 }
 
 @media(prefers-reduced-motion:reduce){.av-estim *,.av-estim-live *{transition:none!important}}
@@ -3819,6 +3896,9 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-estim .finc .ft{font-size:14px;font-weight:600;margin-top:2px}
 .av-estim .finc .fd{font-size:10.5px;color:var(--muted);margin-top:5px;line-height:1.45;min-height:54px}
 @media(max-width:560px){.av-estim .stpg{grid-template-columns:1fr}.av-estim .finc{grid-template-columns:1fr}.av-estim .finc .fd{min-height:0}
+/* mobile : cibles tactiles de 44 px (pastilles, segments, interrupteur, vues), boutons des compteurs de 40 px */
+.av-estim .tpill,.av-estim .segf button,.av-estim .drtoggle,.av-estim .views button{min-height:44px}
+.av-estim .stp button{width:40px;height:40px}
 /* mobile : champs ≥ 16px, sinon iOS Safari zoome la page à chaque focus (quantités, prix, coefs…) */
 .av-estim .fld input,.av-estim .fld select,.av-estim .qty,.av-estim .qauto,.av-estim .puin,.av-estim .chin{font-size:16px}}
 

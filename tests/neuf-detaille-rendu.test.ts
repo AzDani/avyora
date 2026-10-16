@@ -77,7 +77,10 @@ describe("N3 · détaillé neuf à l'ouverture", () => {
 
   it("chaque bloc porte l'icône de son lot, comme en rénovation", () => {
     const src = fs.readFileSync("components/neuf/EstimateurNeuf.tsx", "utf8");
-    expect(src).toContain('<span className="ic" aria-hidden="true">{ICON[l.c] || "•"}</span>');
+    // N6 : l'en-tête de lot est la brique partagée avec la rénovation (`EnteteLot`), qui reçoit l'icône.
+    expect(src).toContain('icone: ICON[l.c] || "•"');
+    expect(fs.readFileSync("components/estimateur/ListeLots.tsx", "utf8")).toContain('<span className="ic" aria-hidden="true">{icone}</span>');
+    expect(fs.readFileSync("components/Estimateur.tsx", "utf8")).toContain('icone: ICON[l.c] || "•"');
     // Le réglage « nouveaux postes » ne réécrit rien ; seule l'action confirmée appelle `changerQuiNeuf`.
     expect(src).not.toMatch(/changerQuiNeuf|"\$qui"/);
     expect(src).toContain("toutPasserNeuf(e, cible)");

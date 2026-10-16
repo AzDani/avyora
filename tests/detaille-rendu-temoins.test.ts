@@ -19,7 +19,9 @@ import { LangProvider } from "@/components/i18n/LangProvider";
 import Estimateur, { DevisView } from "@/components/Estimateur";
 import EstimateurNeuf from "@/components/neuf/EstimateurNeuf";
 import DevisNeuf from "@/components/neuf/DevisNeuf";
-import { defaultCtx, espacesCompo, presetNeuf, key, type Ctx, type Selection, type CustomLine } from "@/lib/estimateur";
+import { CATALOG, CATALOG_NEUF, defaultCtx, espacesCompo, presetNeuf, raisonProNeuf, isLoc, key, type Ctx, type Selection, type CustomLine } from "@/lib/estimateur";
+import { badgeNeuf } from "@/lib/estimateur/detaille-neuf";
+import { LignesLot } from "@/components/estimateur/ListeLots";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: () => {}, replace: () => {}, refresh: () => {}, back: () => {}, forward: () => {}, prefetch: () => {} }) }));
 
@@ -103,4 +105,43 @@ describe("Détaillé neuf : rendu de fond figé (N6)", () => {
       expect(rendre(createElement(DevisNeuf, { ctx: { ...p.ctx, budget: 250000 }, sel: p.sel, custom: [{ ...PERSO[0], phase: "Gros œuvre" }] }), locale)).toMatchSnapshot();
     });
   }
+});
+
+/* N6 : les deux détaillés existent entièrement en anglais. Chaque texte visible, `title`, `aria-label` et
+   `placeholder` des rendus anglais est passé au crible : aucune lettre accentuée ni mot français courant (« ton »
+   et « surface », anglais aussi, n'y sont pas), hors noms propres (Île-de-France, MaPrimeRénov, Géorisques…), mots
+   anglais d'origine française (façade) et données saisies (lignes perso). */
+describe("N6 · en anglais, aucune chaîne française", () => {
+  const FR = /[àâçèéêëîïôûùœ«»]|\b(le|la|les|des|du|une|et|ou|avec|sans|dans|sur|aux|est|ta|tes|vous|votre|vos|par|pièces?|travaux|prix|devis|lignes?|maison|chambres?|salles?|bain|niveaux?|TVA|HT|TTC|perso|cocher|décocher|moins|plus|jours?)\b/i;
+  const PERMIS = [/[Ff]açade/g, /Gérer mes biens immobiliers/g, /Géorisques/g, /\(attestation de capacité\)/g, /Île-de-France/g, /MaPrimeRénov/g, /Muret jardin|Sans lien|Brouillon|Lave-mains/g];
+  const textes = (html: string): string[] => [...html.matchAll(/>([^<]+)<|(?:title|aria-label|placeholder)="([^"]*)"/g)]
+    .map((m) => (m[1] ?? m[2] ?? "").replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&amp;/g, "&").trim()).filter(Boolean);
+  const francais = (html: string) => [...new Set(textes(html).filter((t) => FR.test(PERMIS.reduce((s, r) => s.replace(r, ""), t))))];
+
+  it("rénovation : page vierge, chaque état de référence, et tout ouvert, tout coché", () => {
+    expect(francais(rendre(createElement(Estimateur), "en"))).toEqual([]);
+    for (const [nom, e] of Object.entries(ETATS_RENO))
+      expect(francais(rendre(createElement(Detaille, { initialState: { v: "estimateur", ...e }, projectId: "p1" }), "en")), nom).toEqual([]);
+    const tout: Selection = {}, ouverts: Record<string, boolean> = {};
+    for (const l of CATALOG) { ouverts[l.c] = true; for (const t of l.t) tout[key(l.c, t.n)] = { on: true, self: !!t.sm }; }
+    const maison = { ...ETATS_RENO.maison, sel: tout, open: ouverts };
+    expect(francais(rendre(createElement(Detaille, { initialState: { v: "estimateur", ...maison } }), "en"))).toEqual([]);
+    const ctx = { ...defaultCtx(), ...maison.ctx, codePostal: maison.codePostal } as Ctx;
+    expect(francais(rendre(createElement(DevisView, { ctx, sel: tout, custom: PERSO }), "en"))).toEqual([]);
+  });
+
+  it("neuf : ouverture, chaque lot tout coché (lignes du catalogue neuf), « Mon devis »", () => {
+    expect(francais(rendre(createElement(EstimateurNeuf), "en"))).toEqual([]);
+    const p = presetNeuf({ surface: 120, niveaux: "etage", codePostal: "33000", finition: "standard", qui: "pros", garage: true });
+    const tout: Selection = {};
+    for (const l of CATALOG_NEUF) for (const t of l.t) tout[key(l.c, t.n)] = { ...p.sel[key(l.c, t.n)], on: true };
+    for (const l of CATALOG_NEUF) {
+      const html = rendre(createElement(LignesLot, {
+        l, taches: l.t, ctx: p.ctx, sel: tout, loc: isLoc(l.c), maj: () => {}, onCocher: () => {}, onAuto: () => {},
+        options: (t) => ({ badge: badgeNeuf(p.ctx, tout, l, t), proRaison: raisonProNeuf(t) }),
+      }), "en");
+      expect(francais(html), l.c).toEqual([]);
+    }
+    expect(francais(rendre(createElement(DevisNeuf, { ctx: p.ctx, sel: tout, custom: PERSO }), "en"))).toEqual([]);
+  });
 });
