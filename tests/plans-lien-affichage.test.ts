@@ -139,6 +139,8 @@ function profondeurLiens(h: string): number {
   return max;
 }
 const compter = (h: string, s: string) => h.split(s).length - 1;
+/** Un texte tel que React l'écrit dans le HTML (apostrophes, guillemets, chevrons échappés). */
+const echapper = (x: string) => x.replace(/&/g, "&amp;").replace(/'/g, "&#x27;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 beforeEach(() => {
   S.liens = [];
@@ -310,13 +312,33 @@ describe("C8 · fiche projet : « Vient de ton plan »", () => {
     expect(h).not.toContain("/projets/depuis-plan/");
   });
 
-  it("rénovation à jour, ou construction dont le plan a changé : pas de « Ton plan a changé »", async () => {
-    S.liens = [lien("reno", PLAN_A, "Maison A", APRES, AVANT), lien("neuf", PLAN_B, "Maison B", AVANT, APRES)];
+  it("rénovation ou construction à jour : pas de « Ton plan a changé »", async () => {
+    S.liens = [lien("reno", PLAN_A, "Maison A", APRES, AVANT), lien("neuf", PLAN_B, "Maison B", APRES, AVANT)];
     const r = await charger({ plans: true, user: PRO, projets: ["reno", "neuf"] });
     for (const cle of ["reno", "neuf"] as const) {
       const h = await r.fiche(cle);
       expect(h).toContain("data-plan-relie");
       expect(h).not.toContain("data-plan-change");
+    }
+  });
+
+  /* N8 (inversé volontairement) : avant, une construction ne disait jamais que son plan avait changé. */
+  it("construction dont le plan a changé : « Ton plan a changé », rechiffrer depuis l'éditeur, sans « Mettre à jour » ni Tarifs", async () => {
+    S.liens = [lien("neuf", PLAN_B, "Maison B", AVANT, APRES)];
+    for (const user of [PRO, GRATUIT]) {
+      const r = await charger({ plans: true, user, projets: ["neuf"] });
+      const h = await r.fiche("neuf");
+      const t = dictPlans("fr").lien;
+      expect(compter(h, "data-plan-change")).toBe(1);
+      expect(h).toContain(t.aChange);
+      expect(h).toContain(echapper(t.aChangeSousNeuf));
+      expect(h).not.toContain(echapper(t.aChangeSous));
+      const banniere = h.slice(h.indexOf("data-plan-relie"), h.indexOf("</section>", h.indexOf("data-plan-relie")));
+      expect(banniere).not.toContain(`>${t.mettreAJour}`);
+      expect(banniere).not.toContain("projet=");
+      expect(banniere).not.toContain("/tarifs");
+      expect(banniere).toContain(`href="/plan?id=${PLAN_B}"`);
+      expect(profondeurLiens(h)).toBe(1);
     }
   });
 
@@ -329,13 +351,16 @@ describe("C8 · fiche projet : « Vient de ton plan »", () => {
   });
 
   it("en anglais", async () => {
-    S.liens = [lien("reno", PLAN_A, "Maison A", AVANT, APRES)];
-    const r = await charger({ plans: true, locale: "en", user: PRO, projets: ["reno"] });
+    S.liens = [lien("reno", PLAN_A, "Maison A", AVANT, APRES), lien("neuf", PLAN_B, "Maison B", AVANT, APRES)];
+    const r = await charger({ plans: true, locale: "en", user: PRO, projets: ["reno", "neuf"] });
     const h = await r.fiche("reno");
     const t = dictPlans("en").lien;
     for (const s of [t.vientDe, t.ouvrirPlan, t.aChange, t.mettreAJour]) expect(h).toContain(s);
     expect(h).toContain("“Maison A”");
     expect(h).not.toContain(dictPlans("fr").lien.vientDe);
+    const hn = await r.fiche("neuf");
+    for (const s of [t.vientDe, t.aChange, echapper(t.aChangeSousNeuf)]) expect(hn).toContain(s);
+    expect(hn).not.toContain(dictPlans("fr").lien.aChangeSousNeuf);
   });
 });
 

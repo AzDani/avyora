@@ -40,6 +40,7 @@ import { dictNeuf } from "@/lib/i18n/neuf";
 import { catT } from "@/lib/estimateur/catalog-i18n";
 import {
   buildDevis, customLotHT, geometrieNeuf, isLoc, key, regionCoef, visibleTask, raisonProNeuf, tauxPersoPossibles, CATALOG_NEUF, PHASES_NEUF, ICON,
+  BORNES_NEUF, GARAGE_MIN_SAISI,
   type CustomLine, type Selection, type LigneSel, type MaisonNeuve, type Lot, type Tache, type QuiRealise,
 } from "@/lib/estimateur";
 import { totauxAvecPerso } from "@/lib/estimateur/projet";
@@ -208,8 +209,9 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
     const lbl = q.l[locale];
     if (q.t === "num") {
       const k = q.k as keyof MaisonNeuve;
-      const borne = (v: number) => Math.min(q.max ?? v, Math.max(q.min ?? v, v));
-      return <NumStepper value={Number(m[k]) || 0} min={q.min} max={q.max} step={q.step} unit={q.u} onChange={(v) => repondre(q.k, borne(v))} />;
+      const min = q.minDe ? q.minDe(m) : q.min;
+      const borne = (v: number) => Math.min(q.max ?? v, Math.max(min ?? v, v));
+      return <NumStepper value={Number(m[k]) || 0} min={min} max={q.max} step={q.step} unit={q.u} onChange={(v) => repondre(q.k, borne(v))} />;
     }
     if (q.t === "cp") {
       return (
@@ -227,7 +229,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
             <button type="button" className="pill" aria-pressed={!m.garage} onClick={() => repondre("garage", 0)}>{d.non}</button>
             <button type="button" className="pill" aria-pressed={m.garage > 0} onClick={() => { if (!m.garage) repondre("garage", 20); }}>{d.oui}</button>
           </div>
-          {m.garage > 0 && <NumStepper value={m.garage} min={10} max={80} step={5} unit="m²" onChange={(v) => repondre("garage", Math.min(80, Math.max(10, v)))} />}
+          {m.garage > 0 && <NumStepper value={m.garage} min={GARAGE_MIN_SAISI} max={BORNES_NEUF.garage.max} step={5} unit="m²" onChange={(v) => repondre("garage", Math.min(BORNES_NEUF.garage.max, Math.max(GARAGE_MIN_SAISI, v)))} />}
         </div>
       );
     }
@@ -311,11 +313,12 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
                   <summary>{grp.g[locale]}<Chevron /></summary>
                   {grp.qs.map((q) => {
                     if (q.si && !q.si(m)) return null; // sans objet ici : masquée, comme en rénovation
+                    const hint = q.hintDe?.(m) ?? q.hint;
                     return (
                       <div key={q.k} className="q">
                         <span className="ql">
                           {q.l[locale]}
-                          {q.hint && <span className="hint">{q.hint[locale]}</span>}
+                          {hint && <span className="hint">{hint[locale]}</span>}
                         </span>
                         {controle(q)}
                       </div>

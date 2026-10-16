@@ -5,9 +5,11 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { buildDevis, catalogueDe, presetMaison, maisonComplete, maisonParDefaut, GARAGE_MAX, DISTANCE_RESEAUX_MAX } from "@/lib/estimateur";
-import { encoderFragmentPlan, extraitPlanNeuf, lirePlanNeuf, planNeufSchema } from "@/lib/estimateur/plan-neuf";
-import { lireBrouillonNeuf, nomProjetNeuf, lignesPersoValides } from "@/lib/estimateur/brouillon-neuf";
+import { buildDevis, catalogueDe, presetMaison, maisonComplete, maisonParDefaut, GARAGE_MAX, DISTANCE_RESEAUX_MAX, BORNES_NEUF } from "@/lib/estimateur";
+import { encoderFragmentPlan, extraitPlanNeuf, lirePlanNeuf, planNeufSchema, SURFACE_PLAN_MIN, SURFACE_PLAN_MAX } from "@/lib/estimateur/plan-neuf";
+import { lireBrouillonNeuf, nomProjetNeuf, lignesPersoValides, lireReponsesRapideNeuf } from "@/lib/estimateur/brouillon-neuf";
+import { QUESTIONS_NEUF } from "@/lib/estimateur/questions-neuf";
+import { contexteNeuf } from "@/lib/neuf-contexte";
 import { lireBrouillonDetailNeuf, repriseDepuisReponses } from "@/lib/estimateur/detaille-neuf";
 
 const MAISON94 = JSON.parse(readFileSync(path.join(__dirname, "fixtures", "plan-final-contrat.json"), "utf8"));
@@ -56,6 +58,34 @@ describe("Neuf · maisonComplete ramène les réponses dans les bornes et les ch
   it("une saisie normale ne change pas", () => {
     const m = { surface: 140, niveaux: "etage", garage: 25, murs: "brique", distanceReseaux: 40, codePostal: "69003" } as const;
     expect(maisonComplete(m)).toMatchObject(m);
+  });
+});
+
+describe("N8 · une seule table de bornes (BORNES_NEUF)", () => {
+  const q = (k: string) => QUESTIONS_NEUF.flatMap((g) => g.qs).find((x) => x.k === k)!;
+  it("les questions du détaillé, le plan, le rapide relu et le lien public lisent la même table", () => {
+    for (const k of ["surface", "chambres", "sdb", "wc", "distanceReseaux"] as const) {
+      expect([q(k).min, q(k).max], k).toEqual([BORNES_NEUF[k].min, BORNES_NEUF[k].max]);
+    }
+    expect([SURFACE_PLAN_MIN, SURFACE_PLAN_MAX]).toEqual([BORNES_NEUF.surface.min, BORNES_NEUF.surface.max]);
+    expect([GARAGE_MAX, DISTANCE_RESEAUX_MAX]).toEqual([BORNES_NEUF.garage.max, BORNES_NEUF.distanceReseaux.max]);
+    const R = { surface: 400, niveaux: "pp", finition: "standard", qui: "pros", codePostal: "45000" };
+    expect(lireReponsesRapideNeuf(R)?.surface).toBe(400);
+    expect(lireReponsesRapideNeuf({ ...R, surface: 401 })).toBeNull();
+    expect(contexteNeuf({ surface: "400" }).surface).toBe(400);
+    expect(contexteNeuf({ surface: "401" }).surface).toBeUndefined();
+  });
+  it("maisonComplete ramène chaque compteur dans sa borne, la surface comprise (400 m², comme le formulaire)", () => {
+    const m = maisonComplete({ surface: 1e6, sejour: 99, cuisines: 99, chambres: 99, suites: -3, sdb: 99, wc: 0, couloir: 99, buanderie: 99, menuiseries: 1e6 });
+    expect(m).toMatchObject({ surface: 400, sejour: 5, cuisines: 3, chambres: 10, suites: 0, sdb: 6, wc: 1, couloir: 10, buanderie: 4, menuiseries: 80 });
+    expect(maisonComplete({ menuiseries: 2.6 }).menuiseries).toBe(3);
+    expect(maisonComplete({ menuiseries: "12" as never })).not.toHaveProperty("menuiseries");
+    expect(maisonComplete({ suites: "1" as never }).suites).toBe(0);
+  });
+  it("au moins une salle de bain, suites comprises ; au moins un WC", () => {
+    expect(maisonComplete({ sdb: 0 }).sdb).toBe(1);
+    expect(maisonComplete({ sdb: 0, suites: 1 })).toMatchObject({ sdb: 0, suites: 1 });
+    expect(maisonComplete({ wc: 0 }).wc).toBe(1);
   });
 });
 

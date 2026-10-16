@@ -11,7 +11,7 @@ import { useLocale } from "@/components/i18n/LangProvider";
 import { catT, catLigne } from "@/lib/estimateur/catalog-i18n";
 import {
   buildDevis, totals, customTotals, ICON, statutLigne, cleLegacy, regionCoef, piecesEff, type Ctx, type Selection,
-  catalogueDe, estNeuf, phasesDe, tachesParCle, estJalon, geometrieNeuf, maisonComplete,
+  catalogueDe, estNeuf, phasesDe, tachesParCle, estJalon, geometrieNeuf, maisonComplete, piecesNeuf,
 } from "@/lib/estimateur";
 import { decoupe, INFO_PHASES, qteNeuf, premiersCorps } from "@/lib/estimateur/etapes-neuf";
 import { totauxAvecPerso, persoValidees, lotsAvecPerso } from "@/lib/estimateur/projet";
@@ -425,6 +425,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
   const cut = neuf ? decoupe(dv) : null;
   const maison = neuf ? maisonComplete(ctx.neuf) : null;
   const moisChantier = maison ? geometrieNeuf(maison).moisChantier : 0;
+  const chambresMaison = maison ? piecesNeuf(maison).chambres : 0;   // suites parentales comprises
   const tache = (cle: string) => taches?.get(cle);
   const nbTaches = lignes.length;
 
@@ -485,7 +486,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
           <div className="k">{s.theSite}</div>
           <div className="v"><span className="num">{nbLots}</span> {nbLots > 1 ? s.tradeWordP : s.tradeWord} · <span className="num">{nbTaches}</span> {nbTaches > 1 ? s.itemWordP : s.itemWord}</div>
           {maison ? (
-            <p className="sub">{maison.surface} m² · {maison.chambres} {maison.chambres > 1 ? n.chambres : n.chambre} · {n.niveauxCourt[maison.niveaux] ?? n.niveauxCourt.pp} · ≈ {moisChantier} {n.moisChantier}</p>
+            <p className="sub">{maison.surface} m² · {chambresMaison} {chambresMaison > 1 ? n.chambres : n.chambre} · {n.niveauxCourt[maison.niveaux] ?? n.niveauxCourt.pp} · ≈ {moisChantier} {n.moisChantier}</p>
           ) : (
             <p className="sub">{ctx.surface} m² · {piecesEff(ctx) || ctx.pieces} {s.roomsWord} · {s.ceiling} {ctx.hauteur} m</p>
           )}

@@ -9,7 +9,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { buildDevis, catalogueDe, presetMaison, maisonComplete } from "@/lib/estimateur";
+import { buildDevis, catalogueDe, presetMaison, presetNeuf, maisonComplete, geometrieNeuf, quantitesNeuf, piecesNeuf, sdbEff } from "@/lib/estimateur";
 import {
   planNeufSchema, decoderFragmentPlan, encoderFragmentPlan, extraitPlanNeuf, maisonDepuisPlan, lirePlanNeuf,
   trancheSurface, FRAGMENT_PLAN_MAX, type PlanNeuf, type MaisonDuPlan,
@@ -65,18 +65,29 @@ describe("C7 · fixtures Plan final réelles", () => {
 });
 
 describe("C7 · maisonDepuisPlan", () => {
-  it("Maison 94 → plain-pied rectangle 94 m², 3 chambres, 1 SDB, 1 WC, sans garage ; le moteur la chiffre", () => {
+  /* N8 (adapté volontairement) : le plan donne les huit compteurs de la rénovation, zéros compris, une
+     suite reste une suite (avant : fondue dans les chambres et les salles de bain), les menuiseries
+     dessinées et l'emprise mesurée du rez-de-chaussée, garage retiré. */
+  it("Maison 94 → plain-pied rectangle 94 m², séjour, cuisine, 3 chambres, 1 SDB, 1 WC, buanderie, 8 menuiseries ; le moteur la chiffre", () => {
     const m = maison(MAISON94);
-    expect(m.maison).toEqual({ surface: 94, niveaux: "pp", forme: "rect", garage: 0, chambres: 3, sdb: 1, wc: 1 });
-    expect(m.repris).toEqual(["surface", "niveaux", "forme", "garage", "chambres", "sdb", "wc"]);
+    expect(m.maison).toEqual({
+      surface: 94, niveaux: "pp", forme: "rect", garage: 0,
+      sejour: 1, cuisines: 1, chambres: 3, suites: 0, sdb: 1, wc: 1, couloir: 0, buanderie: 1, menuiseries: 8, emprise: 104.1,
+    });
+    expect(m.repris).toEqual(["surface", "niveaux", "forme", "garage", "sejour", "cuisines", "chambres", "suites", "sdb", "wc", "couloir", "buanderie", "menuiseries", "emprise"]);
+    expect(m.finition).toBe("standard");
     expect(m.avertissements).toEqual([]);
     expect(m.contrat).toBe("1.18.0");
     expect(ttc(m)).toBeGreaterThan(100_000);
   });
 
-  it("maison à étage : étage, forme en L, garage 34 m², suite = chambre + SDB, WC de la suite compté, escalier béton", () => {
+  it("maison à étage : étage, forme en L, garage 34 m², la suite reste une suite (chambre + SDB), WC de la suite compté, escalier béton", () => {
     const m = maison(ETAGE);
-    expect(m.maison).toEqual({ surface: 185, niveaux: "etage", forme: "L", garage: 34, chambres: 5, sdb: 2, wc: 2, escalier: "beton" });
+    expect(m.maison).toEqual({
+      surface: 185, niveaux: "etage", forme: "L", garage: 34,
+      sejour: 1, cuisines: 1, chambres: 4, suites: 1, sdb: 1, wc: 2, couloir: 1, buanderie: 1, menuiseries: 8,
+      emprise: 104.1, escalier: "beton",
+    });
     expect(m.repris).toContain("escalier");
     expect(ttc(m)).toBeGreaterThan(ttc(maison(MAISON94)));
   });
@@ -168,6 +179,7 @@ describe("C7 · maisonDepuisPlan", () => {
     }
     const m = maison(c);
     expect(m.maison.sdb).toBe(0);
+    expect(m.maison.suites).toBe(0);
     expect(m.maison.wc).toBe(0);
     expect(m.avertissements).toContain("sanitaires");
     const h = maisonComplete(m.maison);
@@ -175,6 +187,54 @@ describe("C7 · maisonDepuisPlan", () => {
     expect(h.wc).toBe(1);
     expect(maison(MAISON94).avertissements).not.toContain("sanitaires");
     expect(maison(ETAGE).avertissements).not.toContain("sanitaires");
+  });
+
+  it("N8 · une suite garde sa suite jusqu'au chiffrage : 5 chambres et 2 salles de bain comptées, comme avant", () => {
+    const m = maisonComplete(maison(ETAGE).maison);
+    expect([m.chambres, m.suites, m.sdb]).toEqual([4, 1, 1]);
+    const { ctx } = presetMaison(m, { codePostal: "45000" });
+    expect([ctx.chambres, ctx.suites, ctx.sdb]).toEqual([4, 1, 1]);
+    expect(sdbEff(ctx)).toBe(2);
+    expect(piecesNeuf(m)).toMatchObject({ chambres: 5, sdb: 2 });
+    const q = quantitesNeuf(m);
+    expect(q["rev-faience-carrelage-mural"]).toBe(24);          // 12 m² par salle de bain, celle de la suite comprise
+    expect(q["cha-seche-serviette"]).toBe(2);
+  });
+
+  it("N8 · menuiseries : les fenêtres, portes-fenêtres et baies dessinées, ni la porte d'entrée ni celle du garage ; aucune → déduites", () => {
+    expect(maison(MAISON94).maison.menuiseries).toBe(8);
+    const c = copie(MAISON94);
+    c.detailNiveaux[0].menuiseries.push({ type: "fenetre", l: 1, h: 1.2 }, { type: "porte_entree", l: 1, h: 2.15 }, { type: "garage", l: 2.4, h: 2 });
+    expect(maison(c).maison.menuiseries).toBe(9);
+    const g = geometrieNeuf(maisonComplete(maison(c).maison));
+    expect(g.nFen + g.nPF + g.nBaie).toBe(9);
+    const sans = copie(MAISON94);
+    sans.detailNiveaux[0].menuiseries = [];
+    expect(maison(sans).maison.menuiseries).toBeUndefined();
+    expect(maison(sans).repris).not.toContain("menuiseries");
+  });
+
+  it("N8 · emprise : celle du rez-de-chaussée, garage retiré (1,1 × son aire) ; oubliée si la maison change", () => {
+    expect(maison(MAISON94).maison.emprise).toBe(104.1);
+    expect(maison(ETAGE).maison.emprise).toBe(Math.round((141.1 - 1.1 * 33.64) * 10) / 10);
+    expect(geometrieNeuf(maisonComplete(maison(MAISON94).maison)).E).toBe(104.1);
+    // Une autre surface dans le rapide : l'emprise du plan ne vaut plus, elle se déduit de la surface.
+    const base = maison(MAISON94).maison;
+    const autre = presetNeuf({ surface: 140, niveaux: "pp", codePostal: "45000", finition: "standard", qui: "pros" }, base);
+    expect(autre.ctx.neuf?.emprise).toBeUndefined();
+    const meme = presetNeuf({ surface: 94, niveaux: "pp", codePostal: "45000", finition: "standard", qui: "pros" }, base);
+    expect(meme.ctx.neuf?.emprise).toBe(104.1);
+  });
+
+  it("N8 · finition du plan reprise (clé de l'extrait), une valeur inconnue refusée par le schéma", () => {
+    const c = copie(MAISON94);
+    c.contexte.finition = "premium";
+    expect(maison(c).finition).toBe("premium");
+    expect((extraitPlanNeuf(c) as { contexte: { finition: string } }).contexte.finition).toBe("premium");
+    c.contexte.finition = "luxe";
+    expect(planNeufSchema.safeParse(extraitPlanNeuf(c)).success).toBe(false);
+    delete c.contexte.finition;
+    expect(maison(c).finition).toBeUndefined();
   });
 
   it("les défauts non décrits par le plan (murs, toiture, chauffage) restent ceux du moteur", () => {

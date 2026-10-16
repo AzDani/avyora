@@ -46,11 +46,14 @@ describe("Neuf · brouillon du rapide", () => {
   });
 
   it("une maison venue d'ailleurs (base) survit à l'aller-retour", () => {
-    const base = { ...maisonComplete({ surface: 140, niveaux: "combles" }), chambres: 4, assainissement: "micro" as const };
+    // N8 : une maison de plan porte aussi une suite, des menuiseries et une emprise mesurée.
+    const base = { ...maisonComplete({ surface: 140, niveaux: "combles" }), chambres: 4, suites: 1, menuiseries: 11, emprise: 95, assainissement: "micro" as const };
     const r2 = { ...R, surface: 140, niveaux: "combles" as const, assainissement: undefined };
     const p2 = presetNeuf(r2, base);
     const relu = lireBrouillonNeuf(JSON.stringify(brouillonRapideNeuf({ R: r2, ctx: p2.ctx, sel: p2.sel, base, origine: { source: "plan" } })))!;
     expect(relu.base?.chambres).toBe(4);
+    expect([relu.base?.suites, relu.base?.menuiseries, relu.base?.emprise]).toEqual([1, 11, 95]);
+    expect([p2.ctx.neuf?.suites, p2.ctx.neuf?.menuiseries, p2.ctx.neuf?.emprise]).toEqual([1, 11, 95]);
     expect(relu.origine).toEqual({ source: "plan" });
     expect(ttcDe(presetNeuf(relu.R!, relu.base))).toBe(ttcDe(p2));
     expect(p2.ctx.neuf?.assainissement).toBe("micro");

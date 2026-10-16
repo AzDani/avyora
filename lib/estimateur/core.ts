@@ -22,6 +22,7 @@ export type TypeBien = "Studio" | "T2" | "T3" | "T4" | "Maison";
 import { CATALOG } from "./catalog";
 import { catalogueDe } from "./catalogue-neuf";
 import { autoQtyNeuf, type MaisonNeuve } from "./neuf";
+import { robinetsLavabo, specReno, spots, solCarrele, solSec, faienceSdb, plinthes } from "./quantites";
 
 export interface VarOpt { k: string; label: string; coef: number; tva?: number;
   /** Poste que CETTE option déclenche ailleurs au catalogue, sans changer le prix de la ligne.
@@ -559,27 +560,11 @@ export function autoQty(ctx: Ctx, c: string, n: string, sel: Selection): number 
   const P = piecesEff(ctx), SDB = sdbEff(ctx);
   const placo = S * (ctx.hauteur + 1); // murs (≈ S×h) + plafond (S) — surface de placo/enduit
   const rj45 = (ctx.chambres ?? 0) + (ctx.suites ?? 0) + ((ctx.sejour ?? 0) > 0 ? 1 : 0); // 1 / chambre + suite + salon
-  // Robinetterie lavabo = nb de vasques (meuble simple = 1, double = 2) × quantité du meuble-vasque
-  const mv = sel[key("Plomberie", "Meuble-vasque")];
-  const vasques = mv && mv.on
-    ? (mv.manual ? (mv.qty ?? 0) : SDB) * (mv.vsel && mv.vsel["config"] === "double" ? 2 : 1)
-    : SDB;
-  // Étanchéité sous carrelage (SPEC) : toute la zone de la douche en contact avec l'eau =
-  // sol du bac + 3 parois jusqu'à ~2 m, calculé depuis la dimension du bac/italienne sélectionné.
-  const specArea = (() => {
-    const dims: Record<string, [number, number]> = { "120x80": [120, 80], "150x90": [150, 90] };
-    let area = 0;
-    for (const nm of ["Bac de douche", "Douche à l'italienne"]) {
-      const p = sel[key("Plomberie", nm)];
-      if (!p?.on) continue;
-      const [w, d] = dims[(p.vsel && p.vsel["dim"]) || "120x80"] || [120, 80];
-      const wm = w / 100, dm = d / 100;
-      const per = wm * dm + (wm + 2 * dm) * 2; // sol + fond + 2 côtés, hauteur 2 m
-      const q = p.manual ? (p.qty ?? 1) : SDB;
-      area += per * (q || 1);
-    }
-    return area > 0 ? area : SDB * 6.5; // pas de bac coché → estimation moyenne par SDB
-  })();
+  /* Formules partagées avec le neuf (`quantites.ts`) : la robinetterie compte les vasques (×2 pour un
+     meuble double vasque) ; l'étanchéité sous carrelage (SPEC) mesure la zone de chaque douche cochée,
+     sol du bac et 3 parois jusqu'à ≈ 2 m, selon sa dimension (aucune douche : 6,5 m² par SDB). */
+  const vasques = robinetsLavabo(sel[key("Plomberie", "Meuble-vasque")], SDB);
+  const specArea = specReno([sel[key("Plomberie", "Bac de douche")], sel[key("Plomberie", "Douche à l'italienne")]], SDB);
   if (c === "Cloisons / Platrerie" && n === FINI) return derivedFinitions(ctx, sel);
   /* Le caisson à galandage se DÉDUIT de la menuiserie, il ne se coche plus dans son coin. Une
      baie ou une porte coulissante posée « à galandage » a besoin d'une poche dans la cloison :
@@ -603,11 +588,11 @@ export function autoQty(ctx: Ctx, c: string, n: string, sel: Selection): number 
     "Chape traditionnelle": S, "Chape liquide": S, "Plancher chauffant": S,
     "Pose d'un pare-vapeur": placo, "Ratissage léger": placo, "Ratissage lourd": placo,
     "Sous-couche / primaire": S * ctx.hauteur,
-    "Faïence / carrelage mural": SDB * 12, "Cloison pièce humide (hydrofuge)": SDB * 12,
+    "Faïence / carrelage mural": faienceSdb(SDB), "Cloison pièce humide (hydrofuge)": faienceSdb(SDB),
     "Étanchéité sous carrelage (SPEC douche)": specArea,
     "Porte intérieure battante": P, "Radiateurs électriques": P,
     "Prise internet / TV (RJ45)": rj45,
-    "Spots encastrés (LED)": Math.round(S / 2),
+    "Spots encastrés (LED)": spots(S),
     "WC": ctx.wc,
     "Bac de douche": SDB, "Colonne de douche": SDB, "Douche à l'italienne": SDB,
     "Paroi de douche": SDB, "Cabine complète (parois + porte)": SDB,
@@ -617,12 +602,12 @@ export function autoQty(ctx: Ctx, c: string, n: string, sel: Selection): number 
     "Ventilation (VMC)": 1, "Sèche-serviette": SDB,
     "Monter une cloison": S * 0.35, "Doubler un mur": facade,
     "Créer un plancher bois": Math.max(0, S - SS), "Plancher béton (étage créé)": Math.max(0, S - SS),
-    "Carrelage au sol": suiteZ ? zSol : S * 0.6,
-    "Sol stratifié (imitation bois)": suiteZ ? zLiving : S * 0.4, "Parquet bois": suiteZ ? zLiving : S * 0.4,
-    "Ponçage + vitrification parquet": suiteZ ? zLiving : S * 0.4,
-    "Sol souple (PVC, lino)": suiteZ ? zLiving : S * 0.4, "Moquette": suiteZ ? zLiving : S * 0.4,
-    "Béton ciré / résine": suiteZ ? zLiving : S * 0.6,
-    "Plinthes": 4 * Math.sqrt(S * P), "Seuils / barres de seuil": P, "Peinture des boiseries": P,
+    "Carrelage au sol": suiteZ ? zSol : solCarrele(S),
+    "Sol stratifié (imitation bois)": suiteZ ? zLiving : solSec(S), "Parquet bois": suiteZ ? zLiving : solSec(S),
+    "Ponçage + vitrification parquet": suiteZ ? zLiving : solSec(S),
+    "Sol souple (PVC, lino)": suiteZ ? zLiving : solSec(S), "Moquette": suiteZ ? zLiving : solSec(S),
+    "Béton ciré / résine": suiteZ ? zLiving : solCarrele(S),
+    "Plinthes": plinthes(S, P), "Seuils / barres de seuil": P, "Peinture des boiseries": P,
     "Traiter la charpente": roof, "Charpente traditionnelle (hors couverture)": roof, "Charpente en fermettes (hors couverture)": roof,
     "Toiture complète tuile (charpente + couverture)": roof, "Toiture complète ardoise (charpente + couverture)": roof,
     "Dépose complète de toiture (couverture + charpente)": roof,

@@ -11,7 +11,12 @@
  * - `rapide/…` : `presetNeuf` sur surface × niveaux × finition × qui × code postal × garage ×
  *   eaux usées (tout-à-l'égout, fosse, micro-station) — 2 592 maisons ;
  * - `maison/A|B|C/…` : les trois maisons de calage du neuf (`decisions.md`), par finition et par qui ;
- * - `tout/A|B|C/…` : tout le catalogue neuf coché, en « fait faire » puis en « je le fais ».
+ * - `tout/A|B|C/…` : tout le catalogue neuf coché, en « fait faire » puis en « je le fais » ;
+ * - `n8/A|B/…` (chantier N8) : les réponses de la rénovation que le neuf chiffre désormais — une suite
+ *   parentale, les autres pièces, des menuiseries saisies, une emprise mesurée, et les options à
+ *   quantité automatique cochées à la main avec une double vasque et un bac 150×90.
+ *
+ * N8 n'a changé aucun des 2 637 scénarios d'avant : il a ajouté les 10 scénarios `n8/…`.
  *
  * Réécriture VOLONTAIRE (écarts listés dans le compte rendu du chantier) :
  *   TEMOINS_MAJ=1 CI=1 npx vitest run tests/temoins/moteur-neuf.test.ts
@@ -44,6 +49,18 @@ const MAISONS: Record<"A" | "B" | "C", Partial<MaisonNeuve>> = {
   C: { ...BASE, surface: 90, niveaux: "pp", chambres: 3, sdb: 1, wc: 1, garage: 0, murs: "ossature" }, // ossature bois 90 m²
 };
 
+/** Les options à quantité automatique depuis N8, cochées comme à la main (sans quantité), et les variantes de sanitaires. */
+function avecOptions(p: { ctx: Ctx; sel: Selection }): { ctx: Ctx; sel: Selection } {
+  const sel: Selection = { ...p.sel };
+  for (const id of ["ele-spots-encastres-led", "plo-robinetterie-baignoire", "rev-moquette", "rev-beton-cire-resine"]) {
+    const x = POSTE_NEUF.get(id)!;
+    sel[key(x.c, x.n)] = { on: true };
+  }
+  sel[key("Plomberie", "Meuble-vasque")] = { ...sel[key("Plomberie", "Meuble-vasque")], on: true, vsel: { config: "double" } };
+  sel[key("Plomberie", "Bac de douche")] = { ...sel[key("Plomberie", "Bac de douche")], on: true, vsel: { dim: "150x90" } };
+  return { ctx: p.ctx, sel };
+}
+
 function grille(): Scenario[] {
   const out: Scenario[] = [];
   for (const surface of [80, 100, 120, 160])
@@ -75,6 +92,16 @@ function grille(): Scenario[] {
             return { ctx: ctxNeuf(m, { finition, codePostal: "45000" }), sel };
           },
         });
+  for (const k of ["A", "B"] as const) {
+    const m = MAISONS[k];
+    const avec = (o: Partial<MaisonNeuve>) => () => presetMaison({ ...m, ...o }, { codePostal: "45000" });
+    const ch = m.chambres ?? 3, sdb = m.sdb ?? 1;
+    out.push({ cle: `n8/${k}/suite`, cree: avec({ chambres: ch - 1, suites: 1, sdb: sdb - 1 }) });
+    out.push({ cle: `n8/${k}/pieces`, cree: avec({ couloir: 2, buanderie: 1 }) });
+    out.push({ cle: `n8/${k}/menuiseries`, cree: avec({ menuiseries: 14 }) });
+    out.push({ cle: `n8/${k}/emprise`, cree: avec({ emprise: k === "A" ? 110 : 66 }) });
+    out.push({ cle: `n8/${k}/options`, cree: () => avecOptions(presetMaison(m, { codePostal: "45000" })) });
+  }
   return out;
 }
 
@@ -85,8 +112,8 @@ const photo = (s: Scenario): Photo => {
 };
 
 describe("T5 · moteur neuf", () => {
-  it("la grille compte 2 592 maisons du rapide, 27 maisons de calage et 18 catalogues cochés", () => {
-    expect(GRILLE.length).toBe(2592 + 27 + 18);
+  it("la grille compte 2 592 maisons du rapide, 27 maisons de calage, 18 catalogues cochés et 10 maisons N8", () => {
+    expect(GRILLE.length).toBe(2592 + 27 + 18 + 10);
     expect(new Set(GRILLE.map((s) => s.cle)).size).toBe(GRILLE.length);
   });
 

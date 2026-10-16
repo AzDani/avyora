@@ -17,7 +17,7 @@
  */
 import { key, isAuto, isLoc, lineHT, puReel, tauxPerso, type Ctx, type Selection, type Finition, type Lot, type Tache, type CustomLine } from "./core";
 import { CATALOG_NEUF, PHASES_NEUF } from "./catalogue-neuf";
-import { maisonComplete, maisonParDefaut, reponseDuPoste, type MaisonNeuve } from "./neuf";
+import { maisonComplete, maisonParDefaut, reponseDuPoste, selAvantN8, type MaisonNeuve } from "./neuf";
 import { ctxNeuf, appliquerMaison, cocherPosteNeuf, soiMemeNeuf, peutFaireNeuf, LOTS_DECENNALE_NEUF, presetMaison, presetNeuf, type RapideNeufInput } from "./presets-neuf";
 import type { QuiRealise } from "./presets";
 import type { CleQuestionNeuf, ValeurQuestionNeuf } from "./questions-neuf";
@@ -111,6 +111,9 @@ export function changerReponseNeuf(e: EtatNeuf, k: CleQuestionNeuf, v: ValeurQue
   if (k === "$finition") return { ...e, finition: v as Finition };
   const ancienne = ctxDetailNeuf(e).neuf as MaisonNeuve;
   const brute = { ...e.maison, [k]: v } as MaisonNeuve;
+  // Une emprise mesurée sur un plan ne vaut que pour la maison mesurée : une autre surface ou d'autres
+  // niveaux l'oublient, l'emprise se déduit alors de la surface.
+  if ((k === "surface" || k === "niveaux") && v !== e.maison[k]) delete brute.emprise;
   let facadeAuto = e.facadeAuto;
   if (k === "murs" && facadeAuto) brute.facade = v === "ossature" ? "bardage-bois" : "enduit";
   if (k === "facade") facadeAuto = false;
@@ -227,7 +230,7 @@ export function repriseDepuisReponses(reponses: unknown): RepriseNeuf | null {
     maison, finition: r.ctx.finition ?? "standard", qui: r.qui ?? "pros",
     aleas: typeof r.ctx.aleas === "number" ? r.ctx.aleas : ctxNeuf(maison).aleas,
     budget: typeof r.ctx.budget === "number" ? r.ctx.budget : 0,
-    sel: selValide(r.sel), facadeAuto: facadeAutoDe(maison),
+    sel: selAvantN8(selValide(r.sel)), facadeAuto: facadeAutoDe(maison),
   };
   return {
     etat, custom: lignesPersoValides(r.custom),
@@ -319,7 +322,7 @@ export function lireBrouillonDetailNeuf(raw: string | null | undefined): Brouill
       qui: QUIS.has(String(d.etat.qui)) ? d.etat.qui : "pros",
       aleas: typeof d.etat.aleas === "number" ? d.etat.aleas : ctxNeuf(maison).aleas,
       budget: typeof d.etat.budget === "number" ? d.etat.budget : 0,
-      sel: selValide(d.etat.sel), facadeAuto: typeof d.etat.facadeAuto === "boolean" ? d.etat.facadeAuto : facadeAutoDe(maison),
+      sel: selAvantN8(selValide(d.etat.sel)), facadeAuto: typeof d.etat.facadeAuto === "boolean" ? d.etat.facadeAuto : facadeAutoDe(maison),
     },
     custom: lignesPersoValides(d.custom),
     open,

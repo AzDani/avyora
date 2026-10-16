@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import {
-  buildDevis, catalogueDe, geometrieNeuf, maisonComplete, PHASES_NEUF, type Ctx, type Selection, type QuiRealise,
+  buildDevis, catalogueDe, geometrieNeuf, maisonComplete, piecesNeuf, PHASES_NEUF, type Ctx, type Selection, type QuiRealise,
 } from "@/lib/estimateur";
 import { decoupe, parPhase, surcoutArgile, EXTERIEURS_HORS_PERIMETRE } from "@/lib/estimateur/etapes-neuf";
 import { catT } from "@/lib/estimateur/catalog-i18n";
@@ -78,6 +78,7 @@ export default function BilanRapideNeuf({
   const ph = parPhase(dv);
   const max = Math.max(0, ...PHASES_NEUF.map((p) => ph[p] ?? 0));
   const mois = geometrieNeuf(maison).moisChantier;
+  const chambres = piecesNeuf(maison).chambres;   // suites parentales comprises
   // Avertissement « sans étude de sol » : la même maison sur un sol argileux, chiffrée par le moteur.
   const argile = surcoutArgile(maison, { finition: ctx.finition, qui, codePostal: ctx.codePostal, aleas: ctx.aleas });
   const ext = EXTERIEURS_HORS_PERIMETRE;
@@ -94,7 +95,7 @@ export default function BilanRapideNeuf({
         <div className="kpi"><div className="v data">{eur(cut.annexes)}</div><div className="l">{n.annexes}</div></div>
       </div>
       <div className="small">
-        + {t.aleas} <span className="data">{eur(cut.aleas)}</span> ({ctx.aleas} {n.pctTravaux}) · {maison.chambres} {maison.chambres > 1 ? n.chambres : n.chambre} · ≈ {mois} {n.moisChantier}
+        + {t.aleas} <span className="data">{eur(cut.aleas)}</span> ({ctx.aleas} {n.pctTravaux}) · {chambres} {chambres > 1 ? n.chambres : n.chambre} · ≈ {mois} {n.moisChantier}
       </div>
       <div className="hr" />
       <div className="k" style={{ marginBottom: 6 }}>{t.phasesK}</div>

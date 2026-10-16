@@ -268,6 +268,8 @@ const fr = {
     ouvrirPlan: "Ouvrir le plan",
     aChange: "Ton plan a changé depuis cette estimation.",
     aChangeSous: "Ouvre ton plan, puis « Mettre à jour l'estimation » : les lignes que tu as corrigées à la main restent telles quelles.",
+    /** Construction neuve : l'éditeur ne met pas à jour une estimation existante, il en chiffre une nouvelle. */
+    aChangeSousNeuf: "Ouvre ton plan, puis « Chiffrer cette maison » : une nouvelle estimation part du plan à jour, celle-ci reste telle quelle.",
     mettreAJour: "Mettre à jour",
     pro: "Pro",
     pastille: "Depuis ton plan",
@@ -527,6 +529,7 @@ const en: DictPlans = {
     ouvrirPlan: "Open the plan",
     aChange: "Your plan has changed since this estimate.",
     aChangeSous: "Open your plan, then click “Mettre à jour l'estimation”: the lines you corrected by hand stay as they are.",
+    aChangeSousNeuf: "Open your plan, then click “Chiffrer cette maison”: a new estimate starts from the updated plan, and this one stays as it is.",
     mettreAJour: "Update",
     pro: "Pro",
     pastille: "From your plan",

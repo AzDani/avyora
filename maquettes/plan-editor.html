@@ -8694,7 +8694,7 @@ const LIEN_CONSTRUCTION_MAX=20000; /* caractères du fragment ; le site en accep
 function extraitConstruction(c){c=c||contratPlan();const b=c.bien||{},x=c.contexte||{};
   return {contrat:c.contrat,workflow:c.workflow,
     bien:{niveaux:b.niveaux,emprise:b.emprise,empriseRectangle:b.empriseRectangle,empriseApprochee:b.empriseApprochee},
-    area:c.area,contexte:{codePostal:x.codePostal??null,typeBien:x.typeBien??null},
+    area:c.area,contexte:{codePostal:x.codePostal??null,typeBien:x.typeBien??null,finition:x.finition??null},
     detailNiveaux:(c.detailNiveaux||[]).map(n=>({id:n.id,hauteur:n.hauteur,emprise:n.emprise,
       rooms:(n.rooms||[]).map(r=>({id:r.id,type:r.type,area:r.area,horsHabitable:r.horsHabitable,exterieur:r.exterieur,sousPentePct:r.sousPentePct})),
       equipements:(n.equipements||[]).filter(e=>EQUIP_CONSTRUCTION.has(e.type)).map(e=>({type:e.type,piece:e.piece??null,materiau:e.materiau??null})),

@@ -1,6 +1,6 @@
 import {
   buildDevis, regionCoef, ICON, customTotals, piecesEff, sdbEff, type Ctx, type Selection, type CustomLine, catalogueDe, estNeuf,
-  totauxAvecPerso, persoValidees, lotsAvecPerso, maisonComplete, PHASES_NEUF,
+  totauxAvecPerso, persoValidees, lotsAvecPerso, maisonComplete, piecesNeuf, PHASES_NEUF,
 } from "@/lib/estimateur";
 import { parPhase, INFO_PHASES, premiersCorps } from "@/lib/estimateur/etapes-neuf";
 import { dictNeuf } from "@/lib/i18n/neuf";
@@ -232,7 +232,7 @@ export async function RapportPDF({
             <span><b>{n.maisonNeuve}</b></span><span>·</span>
             <span><b className="num">{maison.surface}</b> {n.pdf.habitables}</span><span>·</span>
             <span>{n.niveauxCourt[maison.niveaux] ?? n.niveauxCourt.pp}</span><span>·</span>
-            <span><b className="num">{maison.chambres}</b> {maison.chambres > 1 ? n.chambres : n.chambre}</span><span>·</span>
+            <span><b className="num">{piecesNeuf(maison).chambres}</b> {piecesNeuf(maison).chambres > 1 ? n.chambres : n.chambre}</span><span>·</span>
             <span>{n.pdf.murs[maison.murs] ?? maison.murs}</span>
             {ctx.codePostal ? <><span>·</span><span className="num">{ctx.codePostal}</span></> : null}
           </div>

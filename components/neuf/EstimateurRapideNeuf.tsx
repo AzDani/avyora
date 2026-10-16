@@ -31,7 +31,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  buildDevis, catalogueDe, presetNeuf, regionCoef, maisonComplete,
+  buildDevis, catalogueDe, presetNeuf, regionCoef, maisonComplete, piecesNeuf, BORNES_NEUF,
   type Finition, type QuiRealise, type MaisonNeuve, type Niveaux,
 } from "@/lib/estimateur";
 import {
@@ -191,6 +191,7 @@ export default function EstimateurRapideNeuf({
               niveaux: initial?.niveaux ?? "pp",
               garage: false,
               codePostal: initial?.cp ?? "",
+              finition: "standard",
             }));
             try { localStorage.removeItem(CLE_BROUILLON_NEUF); } catch { /* noop */ }
           }
@@ -213,6 +214,7 @@ export default function EstimateurRapideNeuf({
           niveaux: m.niveaux ?? p.niveaux,
           garage: (m.garage ?? 0) > 0,
           codePostal: m.codePostal ?? p.codePostal,
+          finition: r.finition ?? p.finition,
         }));
         suivre("neuf_depuis_plan", { ok: true, niveaux: m.niveaux ?? null, tranche_surface: trancheSurface(m.surface ?? 0) });
       }).catch(() => setRefusPlan("illisible"));
@@ -394,7 +396,8 @@ export default function EstimateurRapideNeuf({
               {s.planResume({
                 surface: Math.round(planChiffre.surface).toLocaleString(nf),
                 niveaux: s.niveaux[planChiffre.niveaux],
-                chambres: planChiffre.chambres, sdb: planChiffre.sdb, wc: planChiffre.wc,
+                // Une suite parentale est une chambre ET une salle de bain : le résumé compte comme le moteur.
+                chambres: piecesNeuf(planChiffre).chambres, sdb: piecesNeuf(planChiffre).sdb, wc: planChiffre.wc,
                 garage: planChiffre.garage > 0 ? Math.round(planChiffre.garage).toLocaleString(nf) : null,
               })}
               {plan.avertissements.length > 0 && (
@@ -410,7 +413,7 @@ export default function EstimateurRapideNeuf({
           <div className="fields">
             <div className="fld">
               <label htmlFor="neuf-surface">{s.surfaceLabel}{badge("surface")}</label>
-              <Stepper block id="neuf-surface" value={R.surface} min={30} max={400} step={5} unit="m²" onChange={(n) => maj({ surface: n })} />
+              <Stepper block id="neuf-surface" value={R.surface} min={BORNES_NEUF.surface.min} max={BORNES_NEUF.surface.max} step={5} unit="m²" onChange={(n) => maj({ surface: n })} />
             </div>
             <div className="fld">
               <label htmlFor="neuf-cp">{s.cpLabel}{badge("codePostal")}</label>

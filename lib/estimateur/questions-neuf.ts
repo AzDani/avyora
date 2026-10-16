@@ -10,6 +10,7 @@
  */
 import type { MaisonNeuve } from "./neuf";
 import type { TexteFrEn } from "./etapes-neuf";
+import { BORNES_NEUF } from "./bornes-neuf";
 
 export type CleQuestionNeuf = keyof MaisonNeuve | "$finition";
 export type ValeurQuestionNeuf = string | number | boolean;
@@ -22,20 +23,35 @@ export interface QuestionNeuf {
   /** Saisie : nombre (stepper), code postal, garage (avec / sans, surface). */
   t?: "num" | "cp" | "garage";
   u?: string;
+  /** Bornes d'une saisie : celles du moteur (`BORNES_NEUF`), jamais recopiées. */
   min?: number; max?: number; step?: number;
+  /** Minimum qui dépend de la maison (salles de bain : 0 s'il y a une suite parentale, sinon 1). */
+  minDe?: (m: MaisonNeuve) => number;
   /** La question n'a d'objet que si… (sinon elle est masquée, comme en rénovation). */
   si?: (m: MaisonNeuve) => boolean;
   hint?: TexteFrEn;
+  /** Aide qui dépend de la maison ; elle passe avant `hint` quand elle existe. */
+  hintDe?: (m: MaisonNeuve) => TexteFrEn | null;
 }
 
 export interface GroupeQuestionsNeuf { g: TexteFrEn; qs: QuestionNeuf[] }
 
 const oui = { fr: "Oui", en: "Yes" };
 const non = { fr: "Non", en: "No" };
+const B = BORNES_NEUF;
+/* Une suite parentale (venue d'un plan) est une chambre ET une salle de bain : les deux compteurs la
+   disent, sans la compter (le compteur des suites arrive avec le questionnaire de la réno, N9). */
+const avecSuites = (chambre: boolean) => (m: MaisonNeuve): TexteFrEn | null => {
+  const n = m.suites ?? 0;
+  if (n <= 0) return null;
+  return chambre
+    ? { fr: `+ ${n} suite${n > 1 ? "s" : ""} parentale${n > 1 ? "s" : ""}`, en: `+ ${n} master suite${n > 1 ? "s" : ""}` }
+    : { fr: `+ ${n} dans ${n > 1 ? "les suites" : "la suite"}`, en: `+ ${n} in the suite${n > 1 ? "s" : ""}` };
+};
 
 export const QUESTIONS_NEUF: GroupeQuestionsNeuf[] = [
   { g: { fr: "La maison", en: "The house" }, qs: [
-    { k: "surface", l: { fr: "Surface habitable", en: "Living area" }, t: "num", u: "m²", min: 30, max: 400, step: 5 },
+    { k: "surface", l: { fr: "Surface habitable", en: "Living area" }, t: "num", u: "m²", min: B.surface.min, max: B.surface.max, step: 5 },
     { k: "codePostal", l: { fr: "Code postal", en: "Postcode" }, t: "cp" },
     { k: "niveaux", l: { fr: "Niveaux", en: "Levels" }, o: [
       ["pp", { fr: "Plain-pied", en: "Single story" }], ["etage", { fr: "À étage", en: "Two stories" }], ["combles", { fr: "Combles aménagés", en: "Converted attic" }],
@@ -44,9 +60,11 @@ export const QUESTIONS_NEUF: GroupeQuestionsNeuf[] = [
       ["rect", { fr: "Simple", en: "Simple" }], ["L", { fr: "En L", en: "L-shaped" }], ["complexe", { fr: "Complexe", en: "Complex" }],
     ] },
     { k: "garage", l: { fr: "Garage accolé", en: "Attached garage" }, t: "garage" },
-    { k: "chambres", l: { fr: "Chambres", en: "Bedrooms" }, t: "num", min: 1, max: 8, step: 1 },
-    { k: "sdb", l: { fr: "Salles d'eau", en: "Bathrooms" }, t: "num", min: 1, max: 4, step: 1 },
-    { k: "wc", l: { fr: "WC", en: "Toilets" }, t: "num", min: 1, max: 4, step: 1 },
+    { k: "chambres", l: { fr: "Chambres", en: "Bedrooms" }, t: "num", min: B.chambres.min, max: B.chambres.max, step: 1, hintDe: avecSuites(true) },
+    // Au moins une salle de bain, suites parentales comprises (règle de `maisonComplete`).
+    { k: "sdb", l: { fr: "Salles d'eau", en: "Bathrooms" }, t: "num", min: B.sdb.min, max: B.sdb.max, step: 1,
+      minDe: (m) => ((m.suites ?? 0) > 0 ? B.sdb.min : 1), hintDe: avecSuites(false) },
+    { k: "wc", l: { fr: "WC", en: "Toilets" }, t: "num", min: B.wc.min, max: B.wc.max, step: 1 },
     { k: "cuisine", l: { fr: "Cuisine équipée", en: "Fitted kitchen" }, o: [[true, oui], [false, non]] },
   ] },
   { g: { fr: "Structure", en: "Structure" }, qs: [
@@ -98,7 +116,7 @@ export const QUESTIONS_NEUF: GroupeQuestionsNeuf[] = [
       [1, { fr: "1-2 ou je ne sais pas", en: "1-2 or I don't know" }], [3, { fr: "3", en: "3" }], [4, { fr: "4", en: "4" }], [5, { fr: "5", en: "5" }],
     ] },
     { k: "viabilise", l: { fr: "Terrain viabilisé", en: "Serviced plot" }, o: [[true, oui], [false, non]], hint: { fr: "réseaux devant le terrain", en: "utilities at the plot boundary" } },
-    { k: "distanceReseaux", l: { fr: "Distance maison – rue", en: "House to street distance" }, t: "num", u: "m", min: 0, max: 200, step: 5 },
+    { k: "distanceReseaux", l: { fr: "Distance maison – rue", en: "House to street distance" }, t: "num", u: "m", min: B.distanceReseaux.min, max: B.distanceReseaux.max, step: 5 },
     { k: "lotissement", l: { fr: "Lotissement", en: "Housing estate" }, o: [[false, non], [true, oui]] },
     { k: "borne", l: { fr: "Terrain déjà borné", en: "Boundaries already marked" }, o: [[true, oui], [false, non]], si: (m) => !m.lotissement },
     { k: "evacTerreVegetale", l: { fr: "Terre végétale à évacuer", en: "Topsoil to remove" }, o: [

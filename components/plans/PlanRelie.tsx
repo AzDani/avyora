@@ -5,8 +5,11 @@ import type { Locale } from "@/lib/i18n/config";
 
 /**
  * « Mes plans », C8 : sur la fiche d'une estimation née d'un plan, la bannière « Vient de ton plan »
- * et le lien vers l'éditeur. Pour une RÉNOVATION dont le plan a été modifié depuis le dernier cliché
- * (`floor_plans.updated_at > project_plans.updated_at`) : « Ton plan a changé » et « Mettre à jour ».
+ * et le lien vers l'éditeur. Quand le plan a été modifié depuis le dernier cliché
+ * (`floor_plans.updated_at > project_plans.updated_at`) : « Ton plan a changé ». Pour une RÉNOVATION,
+ * avec « Mettre à jour ». Pour une CONSTRUCTION NEUVE (N8), sans bouton de plus : l'éditeur ne met pas
+ * à jour une estimation de construction, il en chiffre une nouvelle (« Chiffrer cette maison »), ce que
+ * dit le texte ; « Ouvrir le plan » y mène.
  *
  * « Mettre à jour » ouvre l'ÉDITEUR (Pro ; sinon Tarifs), pas directement `/projets/depuis-plan/…` : cet
  * écran relit `floor_plans.contrat`, que seul l'éditeur sait calculer et qu'il n'envoie qu'au clic sur
@@ -31,7 +34,7 @@ export default function PlanRelie({
 }) {
   const d = dictPlans(locale);
   const t = d.lien;
-  const aChange = renovation && planAChange(lien);
+  const aChange = planAChange(lien);
   const planHref = `/plan?id=${encodeURIComponent(lien.planId)}`;
   const majHref = isPro
     ? `${planHref}&projet=${encodeURIComponent(lien.projectId)}`
@@ -61,10 +64,10 @@ export default function PlanRelie({
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-brand-200 pt-3" data-plan-change="">
           <div className="min-w-0">
             <p className="text-[14px] font-semibold text-ink">{t.aChange}</p>
-            <p className="mt-0.5 text-[13px] text-muted">{t.aChangeSous}</p>
+            <p className="mt-0.5 text-[13px] text-muted">{renovation ? t.aChangeSous : t.aChangeSousNeuf}</p>
           </div>
           {/* Vers l'éditeur (Pro) : <a>, sans préchargement de /plan ; vers Tarifs (gratuit) : Link. */}
-          {isPro ? (
+          {!renovation ? null : isPro ? (
             <a href={majHref} className="btn btn-primary py-1.5 text-[13px]">
               {t.mettreAJour}
             </a>

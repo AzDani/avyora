@@ -11,8 +11,10 @@
  * 1. `decoderFragmentPlan` : borne PUIS décode (longueur, alphabet, base64url, UTF-8, JSON) ;
  * 2. `planNeufSchema` : valide l'extrait (types fermés, bornes, tableaux plafonnés, clés en trop
  *    retirées : le nom du plan ou une note n'entrent jamais) ;
- * 3. `maisonDepuisPlan` : traduit le plan en description de maison (`Partial<MaisonNeuve>`).
- *    Murs, toiture, chauffage… ne sont PAS dans le contrat : ils restent les défauts du moteur.
+ * 3. `maisonDepuisPlan` : traduit le plan en description de maison (`Partial<MaisonNeuve>`) : les
+ *    compteurs de pièces de la rénovation (suites à part), les menuiseries, l'emprise mesurée, et la
+ *    finition choisie dans le plan (chantier N8). Murs, toiture, chauffage… ne sont PAS dans le
+ *    contrat : ils restent les défauts du moteur.
  *
  * Aucun texte ne vient du fragment : les avertissements et les refus sont des CLÉS, traduites à
  * l'affichage. Ce module importe zod : il n'est PAS réexporté par `lib/estimateur/index.ts`, pour
@@ -21,7 +23,8 @@
  */
 import { z } from "zod";
 import { compteursDepuisPlan, type PiecePlan, type TypePiecePlan } from "./plan-mapping";
-import { GARAGE_MAX, type MaisonNeuve, type Niveaux } from "./neuf";
+import { BORNES_NEUF, GARAGE_MAX, type MaisonNeuve, type Niveaux } from "./neuf";
+import type { Finition } from "./core";
 
 /** Les 22 types de pièces de l'éditeur (ROOM_TYPES), identiques à `TypePiecePlan`. */
 const TYPES_PIECE = [
@@ -37,9 +40,9 @@ const TYPES_OUVERTURE = [
 
 /** Longueur maximale du fragment (caractères base64url) : l'éditeur coupe à 20 000. */
 export const FRAGMENT_PLAN_MAX = 24_000;
-/** Bornes de la surface reprise : celles du rapide (Stepper 30-400, `contexteNeuf`). */
-export const SURFACE_PLAN_MIN = 30;
-export const SURFACE_PLAN_MAX = 400;
+/** Bornes de la surface reprise : celles de toutes les réponses du neuf (`BORNES_NEUF`). */
+export const SURFACE_PLAN_MIN = BORNES_NEUF.surface.min;
+export const SURFACE_PLAN_MAX = BORNES_NEUF.surface.max;
 /** Version minimale du contrat : `workflow` existe à partir de 1.18. */
 const VERSION_MIN = 18;
 
@@ -60,6 +63,7 @@ export const planNeufSchema = z.object({
   contexte: z.object({
     codePostal: z.string().max(10).nullable(),
     typeBien: z.enum(["maison", "appartement"]).nullable(),
+    finition: z.enum(["eco", "standard", "premium"]).nullable(),
   }).partial().optional(),
   detailNiveaux: z.array(z.object({
     id,
@@ -131,7 +135,7 @@ export function extraitPlanNeuf(c: Record<string, unknown>): Record<string, unkn
     contrat: c.contrat, workflow: c.workflow,
     bien: { niveaux: bien.niveaux, emprise: bien.emprise, empriseRectangle: bien.empriseRectangle, empriseApprochee: bien.empriseApprochee },
     area: c.area,
-    contexte: { codePostal: ctx.codePostal ?? null, typeBien: ctx.typeBien ?? null },
+    contexte: { codePostal: ctx.codePostal ?? null, typeBien: ctx.typeBien ?? null, finition: ctx.finition ?? null },
     detailNiveaux: t(c.detailNiveaux).map((n) => ({
       id: n.id, hauteur: n.hauteur, emprise: n.emprise,
       rooms: t(n.rooms).map((r) => ({ id: r.id, type: r.type, area: r.area, horsHabitable: r.horsHabitable, exterieur: r.exterieur, sousPentePct: r.sousPentePct })),
@@ -154,34 +158,44 @@ export interface MaisonDuPlan {
   maison: Partial<MaisonNeuve>;
   /** Les champs qui viennent du plan (badge « repris de ton plan »). */
   repris: (keyof MaisonNeuve)[];
+  /** La finition choisie dans le plan (elle règle le chiffrage, pas la maison). Absente : celle du formulaire. */
+  finition?: Finition;
   avertissements: CleAvertissement[];
   /** Version du contrat lu (gardée dans `reponses.origine`). */
   contrat: string;
 }
 
 const EAU = new Set(["douche", "baignoire"]);
+/** Ouvertures comptées dans les menuiseries extérieures : fenêtres, portes-fenêtres et baies, comme le
+ *  compteur « Menuiseries ext. » de la rénovation (`plan-ctx.ts`) ; ni la porte d'entrée ni celle du garage. */
+const MENUISERIES = new Set(["fenetre", "fenetre_p", "porte_fenetre", "baie"]);
 const NON_CHIFFRES = new Set(["grange", "atelier", "exterieur"]);
 const habitable = (r: PlanNeuf["detailNiveaux"][number]["rooms"][number]) => !r.horsHabitable && !r.exterieur;
 
 /**
  * Traduit un Plan final validé en description de maison (règles de la carte du plan § 2) :
- * surface = aire habitable arrondie, ramenée entre 30 et 400 m² (bornes du rapide) ; niveaux selon l'habitable au-dessus du rez-de-chaussée
+ * surface = aire habitable arrondie, ramenée dans les bornes du neuf (30-400 m²) ; niveaux selon l'habitable au-dessus du rez-de-chaussée
  * (moins de 5 m² → plain-pied, sous pente → combles, sinon étage) ; forme selon emprise /
- * rectangle ; chambres = chambres + suites ; salles de bain = sdb + suites (règle de l'appareil
- * de `compteursDepuisPlan`) ; WC ; garage = somme des aires `garage` ; escalier s'il est choisi ;
- * code postal s'il est valide. Un appartement est refusé : le neuf chiffre une maison. Le schéma
- * garantit déjà un Plan final (`workflow: "final_plan"`, contrat 1.18 ou plus).
+ * rectangle ; les huit compteurs de la rénovation, zéros compris (`compteursDepuisPlan`, règle de
+ * l'appareil : une suite reste une suite, sa salle de bain est comptée par le moteur) ; garage = somme
+ * des aires `garage` ; menuiseries = fenêtres, portes-fenêtres et baies dessinées ; emprise = celle du
+ * rez-de-chaussée moins le garage (1,1 × son aire, comme la géométrie du neuf) ; escalier s'il est
+ * choisi ; code postal s'il est valide ; finition du plan. Un appartement est refusé : le neuf chiffre
+ * une maison. Le schéma garantit déjà un Plan final (`workflow: "final_plan"`, contrat 1.18 ou plus).
  */
 export function maisonDepuisPlan(c: PlanNeuf): MaisonDuPlan | { refus: RefusPlan } {
   if (c.contexte?.typeBien === "appartement") return { refus: "appartement" };
   const N = c.detailNiveaux;
 
   const pieces: PiecePlan[] = [];
-  let garage = 0;
-  for (const n of N) for (const r of n.rooms) {
-    const eq = n.equipements.filter((e) => e.piece === r.id);
-    pieces.push({ type: r.type, doucheOuBaignoire: eq.some((e) => EAU.has(e.type)), cuvettes: eq.filter((e) => e.type === "wc").length });
-    if (r.type === "garage") garage += r.area;
+  let garage = 0, menuiseries = 0;
+  for (const n of N) {
+    for (const r of n.rooms) {
+      const eq = n.equipements.filter((e) => e.piece === r.id);
+      pieces.push({ type: r.type, doucheOuBaignoire: eq.some((e) => EAU.has(e.type)), cuvettes: eq.filter((e) => e.type === "wc").length });
+      if (r.type === "garage") garage += r.area;
+    }
+    menuiseries += n.menuiseries.filter((m) => MENUISERIES.has(m.type)).length;
   }
   const k = compteursDepuisPlan(pieces);
 
@@ -194,11 +208,21 @@ export function maisonDepuisPlan(c: PlanNeuf): MaisonDuPlan | { refus: RefusPlan
   const ratio = emprise && empriseRectangle ? emprise / empriseRectangle : 1;
   const forme: MaisonNeuve["forme"] = ratio >= 0.95 ? "rect" : ratio >= 0.7 ? "L" : "complexe";
 
+  /* Les compteurs sont TOUS écrits, zéros compris (règle 3 de D4, `plan-mapping.ts`) : sinon les
+     défauts du moteur (un séjour, une cuisine, un couloir) chiffreraient des pièces que le plan n'a pas. */
   const maison: Partial<MaisonNeuve> = {
     surface: Math.min(SURFACE_PLAN_MAX, Math.max(SURFACE_PLAN_MIN, Math.round(c.area))), niveaux, forme, garage: Math.min(GARAGE_MAX, Math.round(garage)),
-    chambres: k.chambres + k.suites, sdb: k.sdb + k.suites, wc: k.wc,
+    sejour: k.sejour, cuisines: k.cuisine, chambres: k.chambres, suites: k.suites, sdb: k.sdb, wc: k.wc, couloir: k.couloir, buanderie: k.buanderie,
   };
-  const repris: (keyof MaisonNeuve)[] = ["surface", "niveaux", "forme", "garage", "chambres", "sdb", "wc"];
+  const repris: (keyof MaisonNeuve)[] = ["surface", "niveaux", "forme", "garage", "sejour", "cuisines", "chambres", "suites", "sdb", "wc", "couloir", "buanderie"];
+  // Un plan sans aucune fenêtre dessinée ne dit rien des menuiseries : elles se déduisent de la surface.
+  if (menuiseries > 0) { maison.menuiseries = menuiseries; repris.push("menuiseries"); }
+  // L'emprise mesurée du rez-de-chaussée, garage retiré (la géométrie du neuf le compte à part).
+  const rdc = N[0];
+  const garageRdc = rdc.rooms.filter((r) => r.type === "garage").reduce((s, r) => s + r.area, 0);
+  const empriseRdc = rdc.emprise ?? c.bien.emprise;
+  const empriseMaison = empriseRdc != null ? Math.round((empriseRdc - 1.1 * garageRdc) * 10) / 10 : 0;
+  if (empriseMaison > 0) { maison.emprise = empriseMaison; repris.push("emprise"); }
 
   if (niveaux !== "pp") {
     const materiaux = N.flatMap((n) => n.equipements.filter((e) => e.type === "escalier").map((e) => e.materiau));
@@ -213,13 +237,14 @@ export function maisonDepuisPlan(c: PlanNeuf): MaisonDuPlan | { refus: RefusPlan
   if (c.area < SURFACE_PLAN_MIN) avertissements.push("petiteSurface");
   if (Math.round(c.area) > SURFACE_PLAN_MAX) avertissements.push("grandeSurface");
   if (Math.round(garage) > GARAGE_MAX) avertissements.push("grandGarage");
-  // Le moteur chiffre toujours au moins une salle de bain et un WC (`maisonComplete`).
-  if (maison.sdb === 0 || maison.wc === 0) avertissements.push("sanitaires");
+  // Le moteur chiffre toujours au moins une salle de bain (suites comprises) et un WC (`maisonComplete`).
+  if (k.sdb + k.suites === 0 || k.wc === 0) avertissements.push("sanitaires");
   if (toutes.some((r) => r.type === "cave")) avertissements.push("cave");
   if (toutes.some((r) => NON_CHIFFRES.has(r.type) || r.exterieur)) avertissements.push("nonChiffre");
   if (N.filter((n) => habitableDe(n) >= 5).length >= 3) avertissements.push("troisNiveaux");
 
-  return { maison, repris, avertissements, contrat: c.contrat };
+  const finition = c.contexte?.finition ?? undefined;
+  return { maison, repris, ...(finition ? { finition } : {}), avertissements, contrat: c.contrat };
 }
 
 /**

@@ -18,6 +18,7 @@ import type { QuiRealise } from "./presets";
 import { dictNeufCommun } from "../i18n/neuf-commun";
 import type { Locale } from "../i18n/config";
 import { nettoyerOrigine } from "../plans/origine";
+import { surfaceNeufValide } from "./bornes-neuf";
 
 /** Brouillon du rapide neuf (et graine de l'« Affiner » du neuf). */
 export const CLE_BROUILLON_NEUF = "avyora-neuf-v1";
@@ -112,7 +113,7 @@ export function lireReponsesRapideNeuf(x: unknown): ReponsesRapideNeuf | null {
   if (!x || typeof x !== "object") return null;
   const r = x as Record<string, unknown>;
   const surface = Number(r.surface);
-  if (!Number.isFinite(surface) || surface < 30 || surface > 400) return null;
+  if (!surfaceNeufValide(surface)) return null;
   if (typeof r.niveaux !== "string" || !NIVEAUX.includes(r.niveaux)) return null;
   if (typeof r.finition !== "string" || !FINITIONS.includes(r.finition)) return null;
   if (typeof r.qui !== "string" || !QUIS.includes(r.qui)) return null;

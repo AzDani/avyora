@@ -14,11 +14,19 @@
  * Les formules et leurs justifications sont dans le dossier de conception du neuf (ratios sourcés
  * ou raisonnés, marqués comme tels). Aucun prix ici : les prix sont au catalogue, lus par le moteur.
  *
+ * La maison se décrit avec les MÊMES compteurs de pièces que la rénovation (séjour, cuisine,
+ * chambres, suites, salles de bain, WC, couloir, buanderie, menuiseries : revue rénovation / neuf,
+ * chantier N8). Les formules qu'elle partage avec la rénovation sont dans `quantites.ts`.
+ *
  * Ce fichier n'importe RIEN du moteur à l'exécution (seulement des types) : le moteur l'appelle
- * depuis `autoQty`, et l'inverse créerait un cycle.
+ * depuis `autoQty`, et l'inverse créerait un cycle. `quantites.ts` et `bornes-neuf.ts` n'importent rien.
  */
 import { POSTE_NEUF } from "./catalogue-neuf";
-import type { Ctx, Selection } from "./core";
+import type { Ctx, LigneSel, Selection } from "./core";
+import { BORNES_NEUF, dansBorne, type Borne } from "./bornes-neuf";
+import { robinetsLavabo, specNeuf, spots, solCarrele, solSec, faienceSdb, plinthes } from "./quantites";
+
+export { BORNES_NEUF, GARAGE_MAX, DISTANCE_RESEAUX_MAX, GARAGE_MIN_SAISI, type Borne } from "./bornes-neuf";
 
 export type Niveaux = "pp" | "etage" | "combles";
 export interface MaisonNeuve {
@@ -26,7 +34,19 @@ export interface MaisonNeuve {
   niveaux: Niveaux;                // plain-pied, à étage, combles aménagés
   forme: "rect" | "L" | "complexe";
   garage: number;                  // surface intérieure du garage accolé (m²), 0 = sans garage
-  chambres: number; sdb: number; wc: number;
+  chambres: number;                // chambres HORS suites parentales
+  sdb: number;                     // salles de bain HORS suites (SDB + suites ≥ 1)
+  wc: number;
+  /* Les autres compteurs de la rénovation (N8). Une maison décrite avant eux se relit avec leurs
+     valeurs par défaut (`maisonComplete`), qui chiffrent exactement comme avant. */
+  sejour: number; cuisines: number; couloir: number; buanderie: number;
+  suites: number;                  // suites parentales : une chambre ET sa salle de bain
+  /** Menuiseries extérieures saisies (fenêtres + portes-fenêtres + baies). Absentes, ou égales au nombre
+   *  déduit : déduites de la surface (≈ 18 % de surface vitrée), comme avant N8. */
+  menuiseries?: number;
+  /** Emprise extérieure de la maison, garage non compris (m²), mesurée sur un plan. Absente : déduite
+   *  de la surface du rez-de-chaussée (murs et cloisons ≈ 14 %). */
+  emprise?: number;
   plancherBas: "terre-plein" | "vide-sanitaire" | "sous-sol";
   murs: "parpaing" | "brique" | "monomur" | "cellulaire" | "ossature";
   toiture: "2pans" | "4pans" | "plat";
@@ -47,17 +67,20 @@ export interface MaisonNeuve {
   lotissement: boolean;            // terrain de lotissement : plan topo et bornage fournis par le lotisseur
   borne: boolean;                  // terrain déjà borné (sinon : bornage par un géomètre-expert)
   evacTerreVegetale: boolean;      // évacuer la terre végétale décapée (sinon gardée en tas sur le terrain)
-  cuisine: boolean;                // cuisine équipée comprise
+  cuisine: boolean;                // cuisine équipée comprise (aussi ouverte sur le séjour : `cuisines` peut valoir 0)
   pilotage: "moi" | "moe";         // je coordonne les artisans / je confie une mission complète
   codePostal?: string;
 }
 
-/** Description par défaut : la maison la plus courante (plain-pied, parpaing, dalle, tuiles, PAC). */
+/** Description par défaut : la maison la plus courante (plain-pied, parpaing, dalle, tuiles, PAC).
+ *  Chambres, salles de bain et WC suivent la surface ; un séjour, une cuisine, un couloir, ni suite ni
+ *  buanderie : 3 + chambres pièces, comme `defaultCtx()` en rénovation. */
 export function maisonParDefaut(surface = 100): MaisonNeuve {
-  const s = Math.max(30, surface || 100);
+  const s = Math.max(BORNES_NEUF.surface.min, surface || 100);
   return {
     surface: s, niveaux: s > 110 ? "etage" : "pp", forme: "rect", garage: 0,
     chambres: Math.min(5, Math.max(2, Math.round(s / 30))), sdb: s > 110 ? 2 : 1, wc: s > 110 ? 2 : 1,
+    sejour: 1, cuisines: 1, couloir: 1, buanderie: 0, suites: 0,
     plancherBas: "terre-plein", murs: "parpaing", toiture: "2pans", penteFaible: false, couverture: "terre-cuite", gouttiere: "zinc",
     facade: "enduit", chauffage: "pac-eau", vmc: "simple", escalier: "bois", assainissement: "collectif", eauxPluviales: "infiltration",
     terrain: "plat", argile: "non", sismique: 1, viabilise: true, distanceReseaux: 15, lotissement: false, borne: true,
@@ -65,10 +88,13 @@ export function maisonParDefaut(surface = 100): MaisonNeuve {
   };
 }
 
-/** Bornes des réponses chiffrées, celles du détaillé (garage 10-80 m², distance 0-200 m). Une
- *  valeur venue d'un plan, d'un brouillon ou de l'API ne les dépasse pas. */
-export const GARAGE_MAX = 80;
-export const DISTANCE_RESEAUX_MAX = 200;
+/** Les compteurs de pièces, dans l'ordre de la rénovation (`Estimateur.tsx`). */
+const COMPTEURS = ["sejour", "cuisines", "chambres", "suites", "sdb", "wc", "couloir", "buanderie"] as const;
+
+/** Surface habitable du rez-de-chaussée (combles aménagés : ≈ 1/1,7 de la surface au rez-de-chaussée). */
+const shRdcDe = (surface: number, niv: Niveaux): number => (niv === "pp" ? surface : niv === "etage" ? surface / 2 : surface / 1.7);
+/** Emprise extérieure que la surface donne : le rez-de-chaussée + murs et cloisons (≈ 14 %). */
+const empriseDeduite = (h: Pick<MaisonNeuve, "surface" | "niveaux">): number => shRdcDe(Math.max(1, h.surface), h.niveaux) / 0.86;
 
 /** Réponses à choix : une valeur hors liste (brouillon trafiqué, ancienne version) garde le défaut. */
 const CHOIX: Partial<Record<keyof MaisonNeuve, readonly unknown[]>> = {
@@ -85,8 +111,13 @@ const CHOIX: Partial<Record<keyof MaisonNeuve, readonly unknown[]>> = {
  * Une réponse vide (undefined, NaN — un champ effacé) ne remplace jamais une valeur par défaut :
  * sinon les quantités qui en dépendent passeraient à NaN et sortiraient du total sans rien dire.
  * Une réponse d'un autre type que le défaut (texte au lieu d'un nombre…), hors des choix possibles,
- * ou une clé inconnue est ignorée ; les nombres sont ramenés dans les bornes du formulaire.
- * Pour toute saisie faite par les formulaires, le résultat est le même qu'avant ces contrôles.
+ * ou une clé inconnue est ignorée ; les nombres sont ramenés dans les bornes de `BORNES_NEUF`, les
+ * mêmes que celles des questions et du plan. Pour toute saisie faite par les formulaires, le résultat
+ * est le même qu'avant ces contrôles.
+ *
+ * Une maison enregistrée avant les compteurs de la rénovation (N8) n'a ni `sejour`, ni `cuisines`, ni
+ * `couloir`, ni `suites`, ni `buanderie` : elle prend leurs valeurs par défaut et se chiffre au centime
+ * comme avant. Son booléen `cuisine` (cuisine équipée) est gardé tel quel.
  */
 export function maisonComplete(h: Partial<MaisonNeuve> | undefined | null): MaisonNeuve {
   const surfaceSaisie = h?.surface != null && Number.isFinite(h.surface) ? h.surface : undefined;
@@ -96,24 +127,49 @@ export function maisonComplete(h: Partial<MaisonNeuve> | undefined | null): Mais
   for (const [k, v] of Object.entries(src)) {
     if (v === undefined || v === null || (typeof v === "number" && !Number.isFinite(v))) continue;
     if (k === "codePostal") { if (typeof v === "string") m.codePostal = v; continue; }
+    // Réponses facultatives, absentes des défauts : un nombre seulement.
+    if (k === "menuiseries" || k === "emprise") { if (typeof v === "number") m[k] = v; continue; }
     if (!Object.hasOwn(d, k) || typeof v !== typeof (d as unknown as Record<string, unknown>)[k]) continue;
     const choix = CHOIX[k as keyof MaisonNeuve];
     if (choix && !choix.includes(v)) continue;
     m[k] = v;
   }
-  const entier = (v: number, min: number, max: number) => Math.min(max, Math.max(min, Math.round(v)));
-  m.surface = Math.min(1000, Math.max(30, m.surface));
-  m.chambres = entier(m.chambres, 0, 10);
-  m.sdb = entier(m.sdb, 1, 6);
-  m.wc = entier(m.wc, 1, 6);
-  m.garage = Math.min(GARAGE_MAX, Math.max(0, m.garage));
-  m.distanceReseaux = Math.min(DISTANCE_RESEAUX_MAX, Math.max(0, m.distanceReseaux));
-  m.sismique = entier(m.sismique, 1, 5) as MaisonNeuve["sismique"];
+  const entier = (v: number, b: Borne) => dansBorne(Math.round(v), b);
+  const B = BORNES_NEUF;
+  m.surface = dansBorne(m.surface, B.surface);
+  for (const k of COMPTEURS) m[k] = entier(m[k], B[k]);
+  if (m.sdb + m.suites < 1) m.sdb = 1;               // au moins une salle de bain, suites comprises
+  if (m.menuiseries != null) m.menuiseries = entier(m.menuiseries, B.menuiseries);
+  m.garage = dansBorne(m.garage, B.garage);
+  m.distanceReseaux = dansBorne(m.distanceReseaux, B.distanceReseaux);
+  m.sismique = entier(m.sismique, { min: 1, max: 5 }) as MaisonNeuve["sismique"];
   if (m.murs === "ossature" && !(src as Partial<MaisonNeuve>).facade) m.facade = "bardage-bois";
   // Des combles aménagés supposent un toit en pente : sous un toit plat, l'étage est un vrai étage.
   if (m.toiture === "plat" && m.niveaux === "combles") m.niveaux = "etage";
+  // Une emprise mesurée ne vaut que pour la maison mesurée : hors de 0,7 à 1,5 fois l'emprise que la
+  // surface donne (une autre surface, d'autres niveaux), elle est oubliée et l'emprise se déduit.
+  if (m.emprise != null) {
+    const e = empriseDeduite(m);
+    if (!(m.emprise >= 0.7 * e && m.emprise <= 1.5 * e)) delete m.emprise;
+  }
   return m;
 }
+
+/**
+ * Les pièces de la maison, comptées comme en rénovation : une suite parentale est une chambre ET une
+ * salle de bain (`sdbEff` du moteur). `pieces` = séjour + cuisines + couloir + chambres (suites
+ * comprises) + buanderie : avec les défauts, 3 + chambres, comme avant. Une maison décrite avant ces
+ * compteurs (sans eux) prend leurs valeurs par défaut.
+ */
+export function piecesNeuf(h: Pick<MaisonNeuve, "chambres" | "sdb" | "wc"> & Partial<MaisonNeuve>): { chambres: number; sdb: number; wc: number; buanderie: number; pieces: number } {
+  const suites = h.suites ?? 0, buanderie = h.buanderie ?? 0;
+  const chambres = h.chambres + suites, sdb = h.sdb + suites;
+  return { chambres, sdb, wc: h.wc, buanderie, pieces: (h.sejour ?? 1) + (h.cuisines ?? 1) + (h.couloir ?? 1) + chambres + buanderie };
+}
+
+/** Surfaces unitaires des menuiseries (m²), celles des quantités : porte d'entrée, baie vitrée,
+ *  porte-fenêtre, fenêtre. */
+const OUV = { entree: 2.2, baie: 5.16, pf: 2.58, fenetre: 1.25 } as const;
 
 export interface GeometrieNeuf {
   SH: number; SP: number; shRdc: number; shHaut: number;
@@ -132,9 +188,10 @@ export interface GeometrieNeuf {
 export function geometrieNeuf(h: MaisonNeuve): GeometrieNeuf {
   const SH = Math.max(1, h.surface);
   const niv = h.niveaux;
-  const shRdc = niv === "pp" ? SH : niv === "etage" ? SH / 2 : SH / 1.7;
+  const shRdc = shRdcDe(SH, niv);
   const shHaut = niv === "pp" ? 0 : SH - shRdc;
-  const E = shRdc / 0.86;                                   // emprise extérieure (murs + cloisons ≈ 14 %)
+  // emprise extérieure : mesurée sur un plan, sinon le rez-de-chaussée + murs et cloisons (≈ 14 %)
+  const E = h.emprise != null && h.emprise > 0 ? h.emprise : shRdc / 0.86;
   const kP = { rect: 1, L: 1.12, complexe: 1.25 }[h.forme];
   const l = Math.sqrt(E / 1.3), L = 1.3 * l;                // rectangle équivalent 1,3 : 1
   const P = kP * 2 * (L + l);
@@ -159,12 +216,23 @@ export function geometrieNeuf(h: MaisonNeuve): GeometrieNeuf {
   const hEgout = niv === "pp" ? 3.0 : niv === "etage" ? 5.7 : 4.0;
   const nDesc = plat ? 2 : Math.max(2, Math.ceil(egout / 11));
   const mlDesc = G && niv !== "pp" ? (nDesc - 1) * hEgout + 2.6 : nDesc * hEgout; // la descente du garage fait 2,6 m
-  const ch = h.chambres, sdb = h.sdb, wc = h.wc;
-  const nBaie = 1 + (SH >= 130 ? 1 : 0);
-  const nPF = niv === "pp" ? Math.max(1, Math.round(ch / 2)) : 1;
-  const aOuv = 0.18 * SH;                                    // surface vitrée ≈ 18 % de la surface habitable
+  const pc = piecesNeuf(h);
+  const ch = pc.chambres, sdb = pc.sdb, wc = pc.wc;          // suites comprises dans les chambres ET les salles de bain
+  let nBaie = 1 + (SH >= 130 ? 1 : 0);
+  let nPF = niv === "pp" ? Math.max(1, Math.round(ch / 2)) : 1;
+  let aOuv = 0.18 * SH;                                      // surface vitrée ≈ 18 % de la surface habitable
   const nFenMin = sdb + wc + 1 + Math.max(0, ch - nPF);      // une fenêtre par pièce sans porte-fenêtre ni baie
-  const nFen = Math.max(nFenMin, Math.round((aOuv - 2.2 - 5.16 * nBaie - 2.58 * nPF) / 1.25));
+  let nFen = Math.max(nFenMin, Math.round((aOuv - OUV.entree - OUV.baie * nBaie - OUV.pf * nPF) / OUV.fenetre));
+  const n = h.menuiseries;
+  if (n != null && n !== nFen + nPF + nBaie) {
+    // Nombre saisi (autre que le nombre déduit, qui garde la formule) : les baies et les portes-fenêtres
+    // déduites restent, dans la limite du nombre, les fenêtres font le reste ; la surface vitrée se
+    // recalcule sur ces nombres, avec les surfaces unitaires des quantités (murs et façade cohérents).
+    nBaie = Math.min(nBaie, n);
+    nPF = Math.min(nPF, n - nBaie);
+    nFen = n - nBaie - nPF;
+    aOuv = OUV.entree + OUV.baie * nBaie + OUV.pf * nPF + OUV.fenetre * nFen;
+  }
   const nVR = Math.max(0, nFen + nPF + nBaie - (sdb + wc));
   const hMur = niv === "pp" ? 2.7 : niv === "etage" ? 5.4 : 3.7;
   const acroteres = plat ? 0.6 * P : 0;
@@ -180,14 +248,14 @@ export function geometrieNeuf(h: MaisonNeuve): GeometrieNeuf {
   const plafonds = (SH - shCombles) * 1.03 + shCombles * 0.3;
   const rampants = niv === "combles" && !plat ? toiture * 0.75 : 0;
   const shSousComblesPerdus = plat || niv === "combles" ? 0 : niv === "etage" ? shHaut : SH;
-  const hydro = 12 * sdb;
+  const hydro = faienceSdb(sdb);
   const cloisons = Math.max(0, 0.8 * SH - hydro);
-  const faience = 12 * sdb;
+  const faience = faienceSdb(sdb);
   const facadeBrute = P * hEgout + pignons + (G ? Lg3 * 2.8 : 0);
-  const grandesOuv = 5.16 * nBaie + 2.58 * nPF + 2.2 + (G ? 4.8 : 0);
+  const grandesOuv = OUV.baie * nBaie + OUV.pf * nPF + OUV.entree + (G ? 4.8 : 0);
   const facadeNette = facadeBrute - grandesOuv;
-  const piecesEff = 3 + ch;                                   // séjour + cuisine + couloir + chambres
-  const nPortesInt = ch + sdb + wc + 1;
+  const piecesEff = pc.pieces;                                // séjour + cuisines + couloir + chambres + suites + buanderie
+  const nPortesInt = ch + sdb + wc + 1 + pc.buanderie;        // chambres + SDB + WC + 1 (conception) + la buanderie
   const decapage = Etot + 2 * Ptot + 16;                      // la maison + 2 m autour
   const plancherEtage = niv === "pp" ? 0 : niv === "etage" ? shHaut / 0.9 : shRdc / 0.9;
   const dalleInt = E - 0.2 * P;
@@ -230,16 +298,59 @@ export function reponseDuPoste(id: string): { k: "couverture" | "gouttiere" | "f
 }
 const idfCp = (cp?: string) => /^(75|77|78|91|92|93|94|95)/.test((cp || "").replace(/\D/g, ""));
 
+/* Clé de sélection d'un poste du neuf (`key(lot, nom)` du moteur, qu'on n'importe pas à l'exécution). */
+const clePoste = (id: string): string => { const p = POSTE_NEUF.get(id); return p ? p.c + "|" + p.n : ""; };
+
+/** Postes dont la quantité suit AUSSI la sélection, comme en rénovation : la robinetterie compte les
+ *  vasques (meuble double vasque), l'étanchéité de douche ajoute la zone d'un bac 150×90. */
+const SELON_SELECTION = new Set(["plo-robinetterie-lavabo", "rev-etancheite-sous-carrelage-spec-douche"]);
+function quantitesSelonSelection(h: MaisonNeuve, sel: Selection): Record<string, number> {
+  const { sdb } = piecesNeuf(h);
+  const ligne = (id: string) => sel[clePoste(id)];
+  return {
+    "plo-robinetterie-lavabo": robinetsLavabo(ligne("plo-meuble-vasque"), sdb),
+    "rev-etancheite-sous-carrelage-spec-douche": specNeuf([ligne("plo-bac-de-douche"), ligne("plo-douche-a-l-italienne")], sdb),
+  };
+}
+
 /**
- * Quantité de chaque poste du neuf, par identifiant. Une quantité ne dépend que de la maison —
- * jamais de ce qui est coché — : un poste que l'utilisateur coche lui-même (une gouttière PVC à la
- * place du zinc, une isolation sous chape) arrive avec la bonne quantité.
+ * Options du neuf qui ont une quantité automatique depuis N8, comme en rénovation (spots, douche à
+ * l'italienne, robinetterie de baignoire, moquette, béton ciré). Cochées avant, elles portent la
+ * quantité saisie au cochage (1) ou à la main, sans drapeau `manual` : cette quantité reste celle de
+ * l'utilisateur, un projet enregistré ne change pas (`autoQtyNeuf` pour la fiche et le PDF,
+ * `selAvantN8` pour le détaillé rouvert). Repasser la ligne en « auto » prend la quantité calculée.
  */
-export function quantitesNeuf(h: MaisonNeuve): Record<string, number> {
+export const AUTO_DEPUIS_N8 = new Set(["ele-spots-encastres-led", "plo-douche-a-l-italienne", "plo-robinetterie-baignoire", "rev-moquette", "rev-beton-cire-resine"]);
+
+/** Une ligne d'avant N8 sur une de ces options : une quantité, sans drapeau `manual`. */
+const quantiteAvantN8 = (s: LigneSel | undefined): boolean => !!s && s.manual === undefined && s.qty != null;
+
+/** Le détaillé rouvert sur une sélection d'avant N8 : ses options devenues automatiques gardent leur
+ *  quantité, marquée « manuelle » (ce qu'elle était), avec le bouton « auto » pour la calculer. Même
+ *  montant qu'avant, et l'écran dit vrai. Sans ligne concernée, la sélection est rendue telle quelle. */
+export function selAvantN8(sel: Selection): Selection {
+  let out = sel;
+  for (const id of AUTO_DEPUIS_N8) {
+    const k = clePoste(id);
+    if (!quantiteAvantN8(sel[k])) continue;
+    if (out === sel) out = { ...sel };
+    out[k] = { ...sel[k], manual: true };
+  }
+  return out;
+}
+
+/**
+ * Quantité de chaque poste du neuf, par identifiant. Une quantité dépend de la maison et, pour deux
+ * postes, de la variante choisie ailleurs (`SELON_SELECTION`) — jamais de ce qui est coché : un poste
+ * que l'utilisateur coche lui-même (une gouttière PVC à la place du zinc, une isolation sous chape)
+ * arrive avec la bonne quantité.
+ */
+export function quantitesNeuf(h: MaisonNeuve, sel: Selection = {}): Record<string, number> {
   const g = geometrieNeuf(h);
   const Q: Record<string, number> = {};
   const q = (id: string, v: number) => { Q[id] = r2(v); };
-  const SH = g.SH, sdb = h.sdb, collectif = h.assainissement === "collectif", D = Math.max(0, h.distanceReseaux);
+  const pc = piecesNeuf(h);
+  const SH = g.SH, sdb = pc.sdb, collectif = h.assainissement === "collectif", D = Math.max(0, h.distanceReseaux);
   const etage = etageDe(h), ssol = h.plancherBas === "sous-sol";
   // Études & permis
   q("etu-architecte-mission-permis", g.SP);
@@ -312,7 +423,7 @@ export function quantitesNeuf(h: MaisonNeuve): Record<string, number> {
   q("cha-plancher-chauffant-eau-hors-chape", SH);
   for (const id of ["mac-chape-liquide", "mac-chape-traditionnelle"]) q(id, SH);
   q("cha-conduit-de-fumee-isole", etage ? 8.5 : 6);
-  q("cha-radiateurs-electriques", h.chambres);
+  q("cha-radiateurs-electriques", pc.chambres);                  // un radiateur par chambre, suites comprises
   q("cha-ventilation-vmc", 1);
   q("cha-seche-serviette", sdb);
   for (const id of ["iso-doublage-isolant-colle", "iso-isolation-des-murs-par-l-interieur"]) q(id, g.doublage);
@@ -326,16 +437,19 @@ export function quantitesNeuf(h: MaisonNeuve): Record<string, number> {
   q("clo-trappe-de-visite", 1);
   q("clo-cacher-tuyaux-gaines-coffrage", 2 * 2.7);               // gaine technique (chute, VMC) qui traverse l'étage
   // Finitions & équipements
-  q("rev-carrelage-au-sol", 0.6 * SH);
-  for (const id of ["rev-sol-stratifie-imitation-bois", "rev-parquet-bois", "rev-sol-souple-pvc-lino"]) q(id, 0.4 * SH);
+  q("rev-carrelage-au-sol", solCarrele(SH));
+  q("rev-beton-cire-resine", solCarrele(SH));
+  for (const id of ["rev-sol-stratifie-imitation-bois", "rev-parquet-bois", "rev-sol-souple-pvc-lino", "rev-moquette"]) q(id, solSec(SH));
   q("rev-faience-carrelage-mural", g.faience);
-  q("rev-etancheite-sous-carrelage-spec-douche", 6.5 * sdb);
-  q("rev-plinthes", 4 * Math.sqrt(SH * g.piecesEff));
+  q("rev-plinthes", plinthes(SH, g.piecesEff));
   q("pei-peinture-murs-plaques-neuves", g.doublage + 2 * g.refends + 2 * (g.cloisons + g.hydro) - g.faience - 3.4 * g.nPortesInt);
   q("pei-peinture-plafonds-plaques-neuves", g.plafonds + g.rampants);
   q("min-porte-interieure-battante", g.nPortesInt);
   q("plo-wc", h.wc);
-  for (const id of ["plo-meuble-vasque", "plo-robinetterie-lavabo", "plo-bac-de-douche", "plo-paroi-de-douche", "plo-colonne-de-douche", "plo-miroir"]) q(id, sdb);
+  for (const id of ["plo-meuble-vasque", "plo-bac-de-douche", "plo-paroi-de-douche", "plo-colonne-de-douche", "plo-miroir",
+    "plo-douche-a-l-italienne", "plo-robinetterie-baignoire"]) q(id, sdb);
+  for (const [id, v] of Object.entries(quantitesSelonSelection(h, sel))) q(id, v);
+  q("ele-spots-encastres-led", spots(SH));
   q("cui-cuisine-complete-neuve-tout-compris", Math.max(2.5, Math.round((SH / 28) * 10) / 10));
   // Réception & taxes
   q("anx-nettoyage-de-fin-de-chantier", SH + g.G);
@@ -433,7 +547,7 @@ export function decisionsNeuf(h: MaisonNeuve): Record<string, DecisionNeuf> {
   // Second œuvre
   tous(["ele-installation-electrique-maison-neuve", "plo-reseaux-plomberie-maison-neuve", "cha-seche-serviette", "rec-test-etancheite-intermediaire",
     "clo-faux-plafond", "clo-monter-une-cloison", "clo-cloison-piece-humide-hydrofuge"]);
-  regle("plo-chauffe-eau-thermodynamique", true, { tai: h.chambres >= 4 ? "grand" : "petit" });
+  regle("plo-chauffe-eau-thermodynamique", true, { tai: piecesNeuf(h).chambres >= 4 ? "grand" : "petit" });
   const pacEau = h.chauffage === "pac-eau";
   tous(["cha-pompe-a-chaleur-air-eau", "cha-plancher-chauffant-eau-hors-chape", "mac-chape-liquide"], pacEau);
   regle("mac-chape-traditionnelle", !pacEau);
@@ -451,7 +565,7 @@ export function decisionsNeuf(h: MaisonNeuve): Record<string, DecisionNeuf> {
     "pei-peinture-plafonds-plaques-neuves", "rev-sol-stratifie-imitation-bois", "rev-plinthes", "min-porte-interieure-battante",
     "plo-wc", "plo-meuble-vasque", "plo-robinetterie-lavabo", "plo-bac-de-douche", "plo-paroi-de-douche", "plo-colonne-de-douche"]);
   regle("min-porte-interieure-ame-pleine", g.G > 0);              // porte pleine entre le garage et la maison
-  regle("cui-cuisine-complete-neuve-tout-compris", h.cuisine);
+  regle("cui-cuisine-complete-neuve-tout-compris", h.cuisine);   // le booléen seul : une cuisine ouverte sur le séjour (cuisines = 0) s'équipe aussi
   // Réception & achèvement
   tous(["ele-consuel-attestation-de-conformite", "rec-controles-re2020-fin-de-chantier", "rec-proces-verbal-de-reception",
     "rec-declaration-achevement-daact", "anx-nettoyage-de-fin-de-chantier", "tax-declaration-elements-imposition"]);
@@ -508,10 +622,12 @@ const CACHE = new Map<string, Record<string, number>>();
 const CLE_VERS_ID = new Map<string, string>();
 for (const [id, p] of POSTE_NEUF) CLE_VERS_ID.set(p.c + "|" + p.n, id);
 
-/** `autoQty` du neuf : la quantité d'un poste tirée de la maison décrite dans `ctx.neuf`. */
-export function autoQtyNeuf(ctx: Ctx, c: string, n: string, _sel: Selection): number | null {
+/** `autoQty` du neuf : la quantité d'un poste tirée de la maison décrite dans `ctx.neuf` (et, pour
+ *  la robinetterie et l'étanchéité de douche, de la variante choisie dans `sel`). */
+export function autoQtyNeuf(ctx: Ctx, c: string, n: string, sel: Selection): number | null {
   const id = CLE_VERS_ID.get(c + "|" + n);
   if (!id) return null;
+  if (AUTO_DEPUIS_N8.has(id) && quantiteAvantN8(sel[c + "|" + n])) return sel[c + "|" + n].qty!;   // quantité d'avant N8, gardée
   const h = ctx.neuf ?? null;
   const m = maisonComplete({ ...(h ?? {}), surface: h?.surface ?? ctx.surface, codePostal: h?.codePostal ?? ctx.codePostal });
   const cle = JSON.stringify(m);
@@ -521,6 +637,6 @@ export function autoQtyNeuf(ctx: Ctx, c: string, n: string, _sel: Selection): nu
     if (CACHE.size > 200) CACHE.clear();
     CACHE.set(cle, Q);
   }
-  const v = Q[id];
+  const v = SELON_SELECTION.has(id) ? r2(quantitesSelonSelection(m, sel)[id]) : Q[id];
   return v == null ? null : v;
 }

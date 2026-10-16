@@ -1064,7 +1064,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 <span class="ql">Bedrooms</span>
 <span class="av-step">
 <button type="button" aria-label="Decrease">−</button>
-<input type="number" inputMode="decimal" min="1" max="8" step="1" value="3"/>
+<input type="number" inputMode="decimal" min="0" max="10" step="1" value="3"/>
 <button type="button" aria-label="Increase">+</button>
 </span>
 </div>
@@ -1072,7 +1072,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 <span class="ql">Bathrooms</span>
 <span class="av-step">
 <button type="button" disabled="" aria-label="Decrease">−</button>
-<input type="number" inputMode="decimal" min="1" max="4" step="1" value="1"/>
+<input type="number" inputMode="decimal" min="1" max="6" step="1" value="1"/>
 <button type="button" aria-label="Increase">+</button>
 </span>
 </div>
@@ -1080,7 +1080,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 <span class="ql">Toilets</span>
 <span class="av-step">
 <button type="button" disabled="" aria-label="Decrease">−</button>
-<input type="number" inputMode="decimal" min="1" max="4" step="1" value="1"/>
+<input type="number" inputMode="decimal" min="1" max="6" step="1" value="1"/>
 <button type="button" aria-label="Increase">+</button>
 </span>
 </div>
@@ -2560,7 +2560,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 <span class="ql">Chambres</span>
 <span class="av-step">
 <button type="button" aria-label="Diminuer">−</button>
-<input type="number" inputMode="decimal" min="1" max="8" step="1" value="3"/>
+<input type="number" inputMode="decimal" min="0" max="10" step="1" value="3"/>
 <button type="button" aria-label="Augmenter">+</button>
 </span>
 </div>
@@ -2568,7 +2568,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 <span class="ql">Salles d&#x27;eau</span>
 <span class="av-step">
 <button type="button" disabled="" aria-label="Diminuer">−</button>
-<input type="number" inputMode="decimal" min="1" max="4" step="1" value="1"/>
+<input type="number" inputMode="decimal" min="1" max="6" step="1" value="1"/>
 <button type="button" aria-label="Augmenter">+</button>
 </span>
 </div>
@@ -2576,7 +2576,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 <span class="ql">WC</span>
 <span class="av-step">
 <button type="button" disabled="" aria-label="Diminuer">−</button>
-<input type="number" inputMode="decimal" min="1" max="4" step="1" value="1"/>
+<input type="number" inputMode="decimal" min="1" max="6" step="1" value="1"/>
 <button type="button" aria-label="Augmenter">+</button>
 </span>
 </div>

@@ -7,10 +7,12 @@
  */
 import { key, peutFaireSoiMeme, ALEAS_NEUF, LOTS_DECENNALE, type Ctx, type Selection, type Finition, type Tache, type Lot, type RaisonPro } from "./core";
 import { POSTE_NEUF } from "./catalogue-neuf";
-import { maisonComplete, geometrieNeuf, decisionsNeuf, exclusifsDe, type MaisonNeuve, type DecisionNeuf, type Niveaux } from "./neuf";
+import { maisonComplete, geometrieNeuf, decisionsNeuf, exclusifsDe, BORNES_NEUF, type MaisonNeuve, type DecisionNeuf, type Niveaux } from "./neuf";
 import { DIY_PARTIE, type QuiRealise } from "./presets";
 
-/** Contexte moteur d'une construction neuve. Aléas : `ALEAS_NEUF` (7 %) sauf réglage contraire. */
+/** Contexte moteur d'une construction neuve. Aléas : `ALEAS_NEUF` (7 %) sauf réglage contraire. Les
+ *  compteurs de pièces sont ceux de la maison, sous les noms de la rénovation : `piecesEff` et `sdbEff`
+ *  du moteur (suites comprises) disent la même chose que la géométrie du neuf. */
 export function ctxNeuf(maison: Partial<MaisonNeuve>, opts: { finition?: Finition; codePostal?: string; aleas?: number } = {}): Ctx {
   const cp = opts.codePostal ?? maison.codePostal ?? "";
   const h = maisonComplete({ ...maison, codePostal: cp });
@@ -19,7 +21,7 @@ export function ctxNeuf(maison: Partial<MaisonNeuve>, opts: { finition?: Finitio
     surface: Math.round(h.surface), surfaceSol: Math.round(g.E), surfaceSolManual: true,
     niveaux: h.niveaux === "pp" ? 1 : 2, type: "Maison", hauteur: 2.5,
     pieces: g.piecesEff, fenetres: g.nFen + g.nPF + g.nBaie, sdb: h.sdb, wc: h.wc,
-    sejour: 1, cuisine: 1, chambres: h.chambres, suites: 0, couloir: 1, buanderie: 0,
+    sejour: h.sejour, cuisine: h.cuisines, chambres: h.chambres, suites: h.suites, couloir: h.couloir, buanderie: h.buanderie,
     budget: 0, aleas: opts.aleas ?? ALEAS_NEUF, finition: opts.finition ?? "standard", fiscal: "pro", codePostal: cp,
     nature: "neuf", neuf: h,
   };
@@ -160,13 +162,16 @@ export type RapideNeufInput = {
  * `base` (facultatif) : une maison déjà décrite (plan importé, projet détaillé qu'on rouvre en
  * édition gratuite). Ses réponses servent de défauts ; les questions du rapide passent par-dessus.
  * Un garage déjà décrit garde sa surface quand la réponse reste « avec garage », un assainissement
- * déjà décrit (micro-station) reste tant que le rapide ne répond pas. Sans `base`, la sortie est
- * exactement celle d'avant (vérifié par test).
+ * déjà décrit (micro-station) reste tant que le rapide ne répond pas. Une emprise mesurée sur un plan
+ * ne vaut que pour la maison mesurée : une autre surface ou d'autres niveaux l'oublient (l'emprise se
+ * déduit alors de la surface). Sans `base`, la sortie est exactement celle d'avant (vérifié par test).
  */
 export function presetNeuf(input: RapideNeufInput, base?: Partial<MaisonNeuve>): { ctx: Ctx; sel: Selection } {
-  const surface = Math.max(30, input.surface || 0);
+  const surface = Math.max(BORNES_NEUF.surface.min, input.surface || 0);
+  const { emprise, ...decrite } = base ?? {};
+  const memeMaison = base?.surface === surface && base?.niveaux === input.niveaux;
   const maison = maisonComplete({
-    ...(base ?? {}),
+    ...decrite, ...(memeMaison && emprise != null ? { emprise } : {}),
     surface, niveaux: input.niveaux, garage: input.garage ? (base?.garage || 20) : 0,
     assainissement: input.assainissement ?? base?.assainissement ?? "collectif", codePostal: input.codePostal,
   });
