@@ -554,6 +554,10 @@ const FINIS: { v: Finition; lvl: number; eye: string; label: string; desc: strin
 ];
 
 function DevisView({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Selection; custom?: CustomLine[] }) {
+  const locale = useLocale();
+  /* Libellé d'affichage d'une clé du catalogue : en français, écrit (« Électricité », « m² ») par `catT` ;
+     l'écran anglais garde son affichage d'avant. La clé, elle, ne change pas. */
+  const aff = (kind: "corps" | "unites", cle: string) => (locale === "en" ? cle : catT("fr", kind, cle));
   const dv = useMemo(() => buildDevis(CATALOG, ctx, sel), [ctx, sel]);
   const { totaux: t0, bilan: b, lots, lignes } = dv;
   // Le total du projet, lignes perso comprises : le même calcul partout (`totauxAvecPerso`, D8).
@@ -601,7 +605,7 @@ function DevisView({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Selection; custom
                 <div className="phase-t">{ph}</div>
                 {pl.map((x) => (
                   <div key={x.corps} className="devlot">
-                    <span>{ICON[x.corps] || ""} {x.corps}</span>
+                    <span>{ICON[x.corps] || ""} {aff("corps", x.corps)}</span>
                     <span className="track"><span className="fill" style={{ width: (x.ttc / max) * 100 + "%" }} /></span>
                     <span className="v">{fmt(x.ttc)}</span>
                   </div>
@@ -626,7 +630,7 @@ function DevisView({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Selection; custom
           {lignes.map((li, idx) => (
             <div key={idx} className="dtl">
               <span>{li.nom}</span>
-              <span className="q">{li.unite === "forfait" ? "—" : li.qty + " " + (li.mode === "location" ? "j" : li.unite)}</span>
+              <span className="q">{li.unite === "forfait" ? "—" : li.qty + " " + (li.mode === "location" ? "j" : aff("unites", li.unite))}</span>
               <span className={"mode " + (li.mode === "location" ? "mL" : li.mode === "je-fais" ? "mS" : "mA")}>
                 {li.mode === "location" ? "location" : li.mode === "je-fais" ? "je fais" : "fait faire"}
               </span>

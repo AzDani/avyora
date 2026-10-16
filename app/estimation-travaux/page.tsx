@@ -11,14 +11,14 @@ import type { PieceKey } from "@/lib/estimateur";
 import { sourceSeoValide } from "@/lib/seo-source";
 
 export const metadata = {
-  title: "Estimation travaux gratuite — budget rénovation en 3 minutes",
+  title: "Estimation travaux gratuite — budget rénovation en 2 minutes",
   description:
     "Calcule gratuitement le budget de tes travaux de rénovation : 4 questions, une fourchette chiffrée ajustée à ton code postal. Sans inscription.",
   alternates: { canonical: "/estimation-travaux" },
 };
 export const dynamic = "force-dynamic";
 
-// Estimation rapide (< 3 min), gratuite. « Affiner » ouvre le détaillé (/detaille).
+// Estimation rapide (< 2 min), gratuite. « Affiner » ouvre le détaillé (/detaille).
 // L'assemblage multi-pièces (2 types de pièces différents) est réservé au Pro.
 /**
  * Contexte transmis par les pages SEO (?cp=&piece=&surface=), VALIDÉ ICI.

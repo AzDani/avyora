@@ -9,6 +9,7 @@ import { og } from "@/lib/seo-og";
 import { CtaEstimation } from "@/components/CtaEstimation";
 import { PIECES_ESTIMATEUR } from "@/lib/seo-projets";
 import type { PieceKey } from "@/lib/estimateur";
+import { catT } from "@/lib/estimateur/catalog-i18n";
 
 export const dynamic = "force-static";
 // Ensemble fini de pages : tout slug hors liste renvoie un vrai 404 (pas de soft-404 à 200).
@@ -57,7 +58,7 @@ export async function generateMetadata({ params }: { params: Promise<{ projet: s
     title: liste
       ? `Prix ${p.titreSeo ?? titreSansPrefixe(p.h1)} 2026 — ${liste} m²`
       : `${p.h1.replace(" en 2026", "")} — coût moyen 2026`,
-    description: `Combien coûte ${p.nomQuestion ?? p.nom} ? Budget moyen ${euro(f.lo)} à ${euro(f.hi)}, poste par poste.${parSurf} Estimation gratuite en 3 minutes.`,
+    description: `Combien coûte ${p.nomQuestion ?? p.nom} ? Budget moyen ${euro(f.lo)} à ${euro(f.hi)}, poste par poste.${parSurf} Estimation gratuite en 2 minutes.`,
     alternates: { canonical: `/prix-travaux/${p.slug}` },
     openGraph: og({ title: p.h1, description: `Combien coûte ${p.nomQuestion ?? p.nom} ? Budget détaillé poste par poste.`, path: `/prix-travaux/${p.slug}` }),
   };
@@ -205,7 +206,7 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
     },
     {
       q: `Comment obtenir un chiffre précis pour mon projet ?`,
-      a: `Utilise l'estimateur AVYORA : en 3 minutes, tu obtiens une fourchette chiffrée adaptée à ta surface, tes travaux et ton code postal.`,
+      a: `Utilise l'estimateur AVYORA : en 2 minutes, tu obtiens une fourchette chiffrée adaptée à ta surface, tes travaux et ton code postal.`,
     },
   ];
 
@@ -273,14 +274,14 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
           {est.lots.map((lot) => (
             <Fragment key={lot.corps}>
               <tr className="lot">
-                <td>{lot.corps}</td>
+                <td>{catT("fr", "corps", lot.corps)}</td>
                 <td></td>
                 <td className="num">{euro(lot.ttc)}</td>
               </tr>
               {lot.lignes.map((li, i) => (
                 <tr className="line" key={lot.corps + i}>
                   <td>{li.nom}</td>
-                  <td className="num" style={{ textAlign: "left", fontFamily: "inherit", color: "var(--color-faint)" }}>{li.qty} {li.unite}</td>
+                  <td className="num" style={{ textAlign: "left", fontFamily: "inherit", color: "var(--color-faint)" }}>{li.qty} {catT("fr", "unites", li.unite)}</td>
                   <td className="num">{euro(li.ttc)}</td>
                 </tr>
               ))}
@@ -344,7 +345,7 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
 
       <CtaEstimation
         src="projet"
-        titre={`Estime ${p.nom} en 3 minutes`}
+        titre={`Estime ${p.nom} en 2 minutes`}
         piece={pieceEstimateur}
         surface={pieceEstimateur ? p.surface : undefined}
         libelle={pieceEstimateur ? `Estimer ${p.nom}` : "Estimer mes travaux"}

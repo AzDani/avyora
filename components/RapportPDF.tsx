@@ -412,7 +412,8 @@ export async function RapportPDF({
                 return (
                   <tr key={x.id}>
                     <td>{x.nom}</td>
-                    <td className="ph">{x.qte} {catT(locale, "unites", x.unite)} × {euro(x.prix)} · {x.lot}</td>
+                    {/* Lot : libellé accentué en français (« Électricité ») ; en anglais, la clé comme avant (section titrée en français). */}
+                    <td className="ph">{x.qte} {catT(locale, "unites", x.unite)} × {euro(x.prix)} · {locale === "en" ? x.lot : catT(locale, "corps", x.lot)}</td>
                     <td className="amt">{euro(ttc)}</td>
                   </tr>
                 );

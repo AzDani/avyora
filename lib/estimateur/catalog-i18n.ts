@@ -1,6 +1,12 @@
-// AUTO-GÉNÉRÉ (gen_catalog_en.py) — traductions EN pour l'AFFICHAGE de l'estimateur détaillé.
+// Traductions EN pour l'AFFICHAGE des chaînes du catalogue (estimateur, page projet, PDF, pages SEO).
+// Fichier MAINTENU À LA MAIN : il a été généré à l'origine (gen_catalog_en.py, script absent du dépôt),
+// puis complété à la main (unités du neuf…). Ne pas le régénérer sans reporter ces ajouts.
 // Le catalogue reste en FR (clés du moteur). Ces maps ne servent qu'à afficher en anglais.
 // Clés = chaînes FR EXACTES du catalogue. Repli sur le FR si une clé manque.
+// En FRANÇAIS, `catT` passe par `libelleFr` (catalog-fr.ts) : corps d'état accentués (« Électricité »
+// pour la clé « Electricite »), unités écrites (« m³ », « % »… : voir la table). Ne pas retirer cet appel.
+import { libelleFr } from "./catalog-fr";
+
 export type CatKind = "corps" | "postes" | "phases" | "unites" | "vgroups" | "vopts" | "notes";
 
 const EN: Record<CatKind, Record<string, string>> = {
@@ -621,14 +627,16 @@ const EN: Record<CatKind, Record<string, string>> = {
   }
 };
 
-const UNITES_FR: Record<string, string> = { pct: "%", m3: "m³" };
-
-/** Traduit une chaîne du catalogue pour l'affichage. En FR (ou clé absente) → renvoie la valeur d'origine. */
+/**
+ * Libellé d'AFFICHAGE d'une chaîne du catalogue. En anglais : sa traduction (repli sur le FR).
+ * En français : la chaîne d'origine, sauf les clés restées sans accents (« Electricite »), qui
+ * s'affichent accentuées (« Électricité »), et les unités écrites (« m3 » → « m³ », « pct » → « % »…) :
+ * voir `libelleFr` (catalog-fr.ts). La clé, elle, ne change jamais : ne pas utiliser le résultat pour
+ * retrouver un poste, un lot ou un statut.
+ */
 export function catT(locale: string, kind: CatKind, fr: string | undefined | null): string {
   if (!fr) return fr ?? "";
-  /* Unités propres à la construction neuve : « pct » (un pourcentage du projet) et « m3 ». Les
-     unités de la rénovation (dont « m2 ») restent affichées telles quelles, comme avant. */
-  if (locale !== "en") return kind === "unites" ? (UNITES_FR[fr] ?? fr) : fr;
+  if (locale !== "en") return libelleFr(kind, fr);
   return EN[kind][fr] ?? fr;
 }
 

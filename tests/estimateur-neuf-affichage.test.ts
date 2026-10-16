@@ -230,8 +230,8 @@ describe("Neuf · données d'affichage", () => {
 
 /* ── Unités ── */
 describe("catT · unités", () => {
-  it("FR : « m2 » reste brut (comme avant), « pct » → « % », « m3 » → « m³ »", () => {
-    expect(catT("fr", "unites", "m2")).toBe("m2");
+  it("FR : « m2 » → « m² » (16/10/2026, la clé reste « m2 »), « pct » → « % », « m3 » → « m³ »", () => {
+    expect(catT("fr", "unites", "m2")).toBe("m²");
     expect(catT("fr", "unites", "pct")).toBe("%");
     expect(catT("fr", "unites", "m3")).toBe("m³");
     expect(catT("fr", "unites", "forfait")).toBe("forfait");

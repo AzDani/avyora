@@ -133,7 +133,7 @@ describe("Prix unitaire affiché = celui du moteur (puReel)", () => {
   it("la ligne affiche le prix régional : Paris, peinture des murs, 10 m²", () => {
     const r = ligne(ctxParis, "Peinture", "Peinture des murs", { on: true, manual: true, qty: 10 });
     expect(r.ff * 10).toBeCloseTo(r.montant, 6);
-    expect(r.html).toContain(`<span class="puval" title="Double-clique pour ajuster à ton prix">${prix(r.ff)} HT/m2</span>`);
+    expect(r.html).toContain(`<span class="puval" title="Double-clique pour ajuster à ton prix">${prix(r.ff)} HT/m²</span>`);
     expect(r.html).toContain(`<b title="Double-clique pour mettre ton prix">${prix(r.diy)}</b>`);
     // Avant N7 : sm × finition + (fp − sm), sans la main-d'œuvre parisienne.
     const t = CATALOG.find((x) => x.c === "Peinture")!.t.find((x) => x.n === "Peinture des murs")!;
@@ -142,7 +142,7 @@ describe("Prix unitaire affiché = celui du moteur (puReel)", () => {
 
   it("le barème de finition PROPRE au poste : une couverture (G2) rangée dans le lot charpente (G1)", () => {
     const r = ligne(defaultCtx(), "Charpente, couverture & structure bois", "Couverture tuiles (sur support existant)", { on: true, manual: true, qty: 1 });
-    expect(r.html).toContain(`${prix(r.montant)} HT/m2`);
+    expect(r.html).toContain(`${prix(r.montant)} HT/m²`);
   });
 
   it("une variante neutre (porte coulissante, à galandage ou non) garde le coefficient de finition", () => {

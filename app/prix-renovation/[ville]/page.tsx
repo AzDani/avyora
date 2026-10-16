@@ -125,7 +125,7 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
     },
     {
       q: `Comment obtenir une estimation précise pour mon bien à ${v.nom} ?`,
-      a: `Utilisez l'estimateur AVYORA : en 3 minutes, vous obtenez une fourchette chiffrée adaptée à votre surface, vos travaux et votre code postal.`,
+      a: `Utilisez l'estimateur AVYORA : en 2 minutes, vous obtenez une fourchette chiffrée adaptée à votre surface, vos travaux et votre code postal.`,
     },
   ];
 
@@ -217,7 +217,7 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
 
       <CtaEstimation
         src="ville"
-        titre={`Estime ton projet à ${v.nom} en 3 minutes`}
+        titre={`Estime ton projet à ${v.nom} en 2 minutes`}
         cp={v.cp}
         libelle={`Estimer mes travaux à ${v.nom}`}
         sousTitre={`Gratuit, sans inscription — l'estimation part déjà ajustée à la main-d'œuvre de ${v.nom}.`}

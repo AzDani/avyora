@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { CATALOG, CATALOG_NEUF, PHASES_NEUF, buildDevis, presetMaison } from "@/lib/estimateur";
 import { catT, catLigne, aTraductionEN, type CatKind } from "@/lib/estimateur/catalog-i18n";
+import { FR_AFFICHAGE } from "@/lib/estimateur/catalog-fr";
 
 /* C6 · le catalogue de la construction neuve s'affiche en anglais sans aucun repli sur le français. */
 
@@ -62,8 +63,9 @@ describe("C6 · traductions EN du catalogue neuf", () => {
     expect([...new Set(suspects)]).toEqual([]);
   });
 
-  it("le français ne bouge pas : en FR, catT rend la chaîne d'origine (hors unités pct/m3)", () => {
-    for (const [k, s] of neuf) if (k !== "unites") expect(catT("fr", k, s)).toBe(s);
+  it("le français ne bouge pas : en FR, catT rend la chaîne d'origine (hors unités pct/m3 et clés sans accents)", () => {
+    /* Seule exception : les clés restées sans accents (« Electricite ») s'affichent accentuées (catalog-fr.ts). */
+    for (const [k, s] of neuf) if (k !== "unites") expect(catT("fr", k, s)).toBe(FR_AFFICHAGE[k]?.[s] ?? s);
   });
 
   it("la rénovation n'est pas touchée : ses chaînes sans traduction anglaise (antérieures à C6) le restent, tous types confondus", () => {

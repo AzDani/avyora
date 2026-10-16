@@ -11,6 +11,7 @@ import { og } from "@/lib/seo-og";
 import { CtaEstimation } from "@/components/CtaEstimation";
 import { PIECES_ESTIMATEUR } from "@/lib/seo-projets";
 import type { PieceKey } from "@/lib/estimateur";
+import { catT } from "@/lib/estimateur/catalog-i18n";
 
 export const dynamic = "force-static";
 // Ensemble fini : hors matrice = 404. Les couples retirés sont redirigés en 308 par next.config.ts.
@@ -154,7 +155,7 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
     },
     {
       q: `Comment obtenir un chiffre précis pour mon projet à ${v.nom} ?`,
-      a: `Utilise l'estimateur AVYORA : en 3 minutes, tu obtiens une fourchette adaptée à ta surface, tes travaux et ton code postal (${v.cp.slice(0, 2)}...).`,
+      a: `Utilise l'estimateur AVYORA : en 2 minutes, tu obtiens une fourchette adaptée à ta surface, tes travaux et ton code postal (${v.cp.slice(0, 2)}...).`,
     },
   ];
 
@@ -242,14 +243,14 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
           {est.lots.map((lot) => (
             <Fragment key={lot.corps}>
               <tr className="lot">
-                <td>{lot.corps}</td>
+                <td>{catT("fr", "corps", lot.corps)}</td>
                 <td></td>
                 <td className="num">{euro(lot.ttc)}</td>
               </tr>
               {lot.lignes.map((li, i) => (
                 <tr className="line" key={lot.corps + i}>
                   <td>{li.nom}</td>
-                  <td className="num" style={{ textAlign: "left", fontFamily: "inherit", color: "var(--color-faint)" }}>{li.qty} {li.unite}</td>
+                  <td className="num" style={{ textAlign: "left", fontFamily: "inherit", color: "var(--color-faint)" }}>{li.qty} {catT("fr", "unites", li.unite)}</td>
                   <td className="num">{euro(li.ttc)}</td>
                 </tr>
               ))}
@@ -267,7 +268,7 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
 
       <CtaEstimation
         src="matrice"
-        titre={`Estime ${p.nom} à ${v.nom} en 3 minutes`}
+        titre={`Estime ${p.nom} à ${v.nom} en 2 minutes`}
         cp={v.cp}
         piece={pieceEstimateur}
         surface={pieceEstimateur ? p.surface : undefined}

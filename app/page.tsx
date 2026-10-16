@@ -309,7 +309,7 @@ const HOME_HTML = `
 <section class="blk" style="padding-top:0"><div class="wrap">
   <div class="final">
     <h2>Ta rénovation mérite mieux qu'un devis au feeling.</h2>
-    <p>Lance ta première estimation gratuite. En 3 minutes, tu sauras où tu vas.</p>
+    <p>Lance ta première estimation gratuite. En 2 minutes, tu sauras où tu vas.</p>
     <div style="margin-top:26px"><a href="/projets/nouveau?nature=reno" class="btn btn-p" style="font-size:16px;padding:16px 32px">Estimer gratuitement →</a></div>
   </div>
 </div></section>
@@ -350,7 +350,7 @@ const HOME_HTML_EN = `
     <h2>Know where you're going, from day one.</h2>
   </div>
   <div class="steps">
-    <div class="stepc"><div class="n">1</div><h3>Describe your property</h3><p>4 questions, under 3 minutes. Type, area, scope, finish.</p></div>
+    <div class="stepc"><div class="n">1</div><h3>Describe your property</h3><p>4 questions, under 2 minutes. Type, area, scope, finish.</p></div>
     <div class="stepc"><div class="n">2</div><h3>Get your range</h3><p>An instant budget, ±15 %, adjusted to your region's market price.</p></div>
     <div class="stepc"><div class="n">3</div><h3>Refine line by line</h3><p>All 200 items, DIY vs. hire-out, and the PDF report — with AVYORA&nbsp;Pro.</p></div>
   </div>${FEATURES.neuf ? NEUF_BAND_EN : ""}
@@ -433,7 +433,7 @@ const HOME_HTML_EN = `
 <section class="blk" style="padding-top:0"><div class="wrap">
   <div class="final">
     <h2>Your renovation deserves better than a gut-feel quote.</h2>
-    <p>Start your first free estimate. In 3 minutes, you'll know where you're going.</p>
+    <p>Start your first free estimate. In 2 minutes, you'll know where you're going.</p>
     <div style="margin-top:26px"><a href="/projets/nouveau?nature=reno" class="btn btn-p" style="font-size:16px;padding:16px 32px">Estimate for free →</a></div>
   </div>
 </div></section>

@@ -46,7 +46,8 @@ export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onM
   const puMat = ep.sm != null ? puReel(ctx, sel, l, t, true) : null;                     // « Je le fais » (matériaux)
   const puv = ep.fp != null || puEdited ? puReel(ctx, sel, l, t, false) : null;           // « Fait faire »
   const nTxt = dictNeufCommun(locale);
-  const unitPart = badge !== "pct" && t.u !== "forfait" && t.u !== "u" ? "/" + t.u : "";
+  // Unité du prix unitaire : écrite en français (« /m² », « /m³ ») ; la clé reste « m2 ». L'anglais ne change pas.
+  const unitPart = badge !== "pct" && t.u !== "forfait" && t.u !== "u" ? "/" + (locale === "en" ? t.u : catT(locale, "unites", t.u)) : "";
   // Un frais (taxe, assurance) ne porte pas de TVA : pas de « HT ». N'existe qu'en neuf.
   const uSuffix = t.frais ? unitPart + " · " + nTxt.sansTva : " HT" + unitPart;
   /* « Je le fais » proposé : la même règle par poste pour les deux natures (`peutFaireSoiMeme`), hors
