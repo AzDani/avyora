@@ -7,7 +7,10 @@
  *   9 phases et 37 blocs ; dans un lot présent à plusieurs étapes du chantier, un sous-titre d'étape ;
  * - une ligne de choix par groupe exclusif et par lot : un clic choisit, décoche l'autre et met la réponse
  *   du questionnaire à jour ; les questions couverture, gouttières et façade sortent du questionnaire ;
- * - au-delà de 150 m² de surface de plancher, le dossier de permis par un dessinateur est désactivé ;
+ * - au-delà de 150 m² de surface de plancher, le dossier de permis par un dessinateur est désactivé ; une
+ *   couverture contraire à la toiture décrite aussi (vérification de N10) ;
+ * - les murs : le parpaing (réponse par défaut, hors du groupe car il porte aussi le garage) a son bouton ;
+ *   le béton cellulaire 30 cm fait sortir la maison du parpaing (vérification de N10) ;
  * - un ancien projet avec deux alternatives cochées les montre toutes deux, avec un avertissement ;
  * - les démarches gratuites et les frais (taxes, assurance) sortent de la liste et de son compteur.
  * Présentation seule : les clés `key(lot, nom)` ne changent pas, aucun total ne bouge (T1, T5, T6).
@@ -19,11 +22,12 @@ import { LangProvider } from "@/components/i18n/LangProvider";
 import { ListeNeuf, CarteFraisNeuf, type ActionsListeNeuf } from "@/components/neuf/ListeNeuf";
 import {
   buildDevis, catalogueDe, key, presetMaison, maisonParDefaut, maisonComplete, geometrieNeuf, PHASES, CATALOG_NEUF, POSTE_NEUF,
-  GROUPES_EXCLUSIFS_NEUF, SEUIL_ARCHITECTE_M2, type Selection, type MaisonNeuve,
+  GROUPES_EXCLUSIFS_NEUF, SEUIL_ARCHITECTE_M2, ID_PARPAING, type Selection, type MaisonNeuve,
 } from "@/lib/estimateur";
 import {
   GRANDES_PHASES_NEUF, LOTS_NEUF, LIGNES_CHOIX_NEUF, POSTES_FRAIS_NEUF, CARTE_FRAIS, CARTE_DEMARCHES, elementsLotNeuf, lotsAffichesNeuf, ouvrablesNeuf,
-  postesCochesNeuf, estDemarcheNeuf, estFraisNeuf, alternativeIndisponibleNeuf, alternativeMontreeNeuf, type ElementLotNeuf, type PosteListeNeuf,
+  postesCochesNeuf, estDemarcheNeuf, estFraisNeuf, alternativeIndisponibleNeuf, alternativeMontreeNeuf, raisonIndisponibleNeuf, type ElementLotNeuf,
+  type PosteListeNeuf,
 } from "@/lib/estimateur/liste-neuf";
 import { ctxDetailNeuf, etatParDefaut, etatDepuisPreset, changerReponseNeuf, choisirNeuf, cocherNeufEtat, type EtatNeuf } from "@/lib/estimateur/detaille-neuf";
 import { TOUTES_QUESTIONS_NEUF } from "@/lib/estimateur/questions-neuf";
@@ -96,17 +100,21 @@ describe("N10 · 4 grandes phases, chaque lot une fois", () => {
       .toContain("Taxes & participations");
   });
 
-  it("164 lignes de travaux pour les 209 postes : 8 démarches et 6 frais sortis, 31 alternatives sur leur ligne de choix", () => {
+  it("163 lignes de travaux pour les 209 postes : 8 démarches et 6 frais sortis, 32 alternatives sur leur ligne de choix (164 avec un garage)", () => {
     const tous = CATALOG_NEUF.flatMap((l) => l.t);
     expect(tous).toHaveLength(209);
     expect(tous.filter(estDemarcheNeuf)).toHaveLength(8);
     expect(tous.filter(estFraisNeuf)).toHaveLength(6);
     expect(POSTES_FRAIS_NEUF.map((p) => p.t.id)).toEqual(tous.filter(estFraisNeuf).map((t) => t.id));
     const absorbees = LIGNES_CHOIX_NEUF.reduce((s, g) => s + g.alternatives.length - 1, 0);
-    expect(absorbees).toBe(31);
+    expect(absorbees).toBe(32);
     const e = etatParDefaut();
     const ctx = ctxDetailNeuf(e);
-    expect(LOTS_NEUF.reduce((s, { c }) => s + lignesDe(elementsLotNeuf(ctx, {}, c)), 0)).toBe(209 - 8 - 6 - 31);
+    expect(LOTS_NEUF.reduce((s, { c }) => s + lignesDe(elementsLotNeuf(ctx, {}, c)), 0)).toBe(209 - 8 - 6 - 32);
+    // avec un garage et des murs en brique, le parpaing ne porte que le garage : une ligne à part
+    const g = changerReponseNeuf(changerReponseNeuf(e, "garage", 20), "murs", "brique");
+    const ctxG = ctxDetailNeuf(g);
+    expect(LOTS_NEUF.reduce((s, { c }) => s + lignesDe(elementsLotNeuf(ctxG, {}, c)), 0)).toBe(209 - 8 - 6 - 31);
   });
 
   it("un lot présent à plusieurs étapes du chantier : un sous-titre par étape, dans l'ordre du chantier ; sinon aucun", () => {
@@ -127,17 +135,19 @@ describe("N10 · lignes de choix", () => {
     expect(LIGNES_CHOIX_NEUF).toHaveLength(16);
     const vus = new Set<string>();
     for (const g of LIGNES_CHOIX_NEUF) {
-      const groupe = GROUPES_EXCLUSIFS_NEUF.find((x) => x.includes(g.alternatives[0].id))!;
+      const groupe = GROUPES_EXCLUSIFS_NEUF.find((x) => x.includes(g.alternatives[g.alternatives[0].id === ID_PARPAING ? 1 : 0].id))!;
       expect(groupe, g.cle).toBeDefined();
       for (const a of g.alternatives) {
         expect(POSTE_NEUF.get(a.id)?.c, a.id).toBe(g.lot);
-        expect(groupe, a.id).toContain(a.id);
+        // seule alternative hors groupe : le parpaing des murs, qui porte aussi le garage
+        if (a.id === ID_PARPAING) { expect(g.cle).toBe("murs"); expect(GROUPES_EXCLUSIFS_NEUF.flat()).not.toContain(a.id); }
+        else expect(groupe, a.id).toContain(a.id);
         expect(vus.has(a.id), a.id).toBe(false);
         vus.add(a.id);
         expect(a.court.fr && a.court.en && a.court.fr.length <= 30 && a.court.en.length <= 30, a.id).toBeTruthy();
       }
       // toutes les alternatives du groupe rangées dans ce lot sont sur la ligne
-      expect(groupe.filter((id) => POSTE_NEUF.get(id)?.c === g.lot).sort(), g.cle).toEqual(g.alternatives.map((a) => a.id).sort());
+      expect(groupe.filter((id) => POSTE_NEUF.get(id)?.c === g.lot).sort(), g.cle).toEqual(g.alternatives.map((a) => a.id).filter((id) => id !== ID_PARPAING).sort());
     }
     // un groupe dont plusieurs postes sont dans le même lot a toujours sa ligne ; les autres (l'escalier : un
     // poste par lot ; l'ossature bois, seule de son groupe en charpente) restent des lignes de leur lot
@@ -199,12 +209,108 @@ describe("N10 · lignes de choix", () => {
     expect(on(cocherNeufEtat(e, fosse.l, fosse.t), "rac-assainissement-fosse-toutes-eaux-5-eh")).toBe(false);
   });
 
-  it("une alternative sans réponse (radier, béton cellulaire 30 cm) ne touche que la sélection", () => {
+  it("une alternative sans réponse (le radier) ne touche que la sélection", () => {
     const e0 = etatParDefaut();
     const radier = poste("fon-radier-general");
     const e = choisirNeuf(e0, radier.l, radier.t);
     expect(e.maison).toBe(e0.maison);
     expect([on(e, "fon-radier-general"), on(e, "fon-dalle-terre-plein-isolee")]).toEqual([true, false]);
+  });
+
+  it("les murs (vérification de N10) : le parpaing par défaut a son bouton, le béton cellulaire 30 cm sort la maison du parpaing", () => {
+    const murs = ["mac-monter-un-mur-en-brique", "mac-mur-brique-monomur", "mac-mur-beton-cellulaire-20-cm", "mac-mur-beton-cellulaire-30-cm", "toi-mur-ossature-bois-isole"];
+    const lesMurs = (e: EtatNeuf) => [ID_PARPAING, ...murs].filter((id) => on(e, id));
+    const ligneMurs = (e: EtatNeuf) => elementsLotNeuf(ctxDetailNeuf(e), e.sel, "Maçonnerie").find((x) => x.type === "choix" && x.ligne.cle === "murs") as
+      Extract<ElementLotNeuf, { type: "choix" }>;
+    const e0 = etatParDefaut();
+    expect([e0.maison.murs, e0.maison.garage]).toEqual(["parpaing", 0]);
+    // maison par défaut : le parpaing est la ligne des murs, son bouton est pressé ; plus de brique décochée dessous
+    expect(ligneMurs(e0).membres[0].t.id).toBe(ID_PARPAING);
+    for (const locale of ["fr", "en"] as const) {
+      const html = lotHtml(liste(e0, { "Maçonnerie": true }, locale), catT(locale, "corps", "Maçonnerie"));
+      expect(html).toContain(`class="on" aria-pressed="true">${locale === "fr" ? "Parpaing" : "Concrete block"}</button>`);
+      expect(html).toContain(echapper(catT(locale, "postes", poste(ID_PARPAING).t.n)));
+      expect(html).not.toContain(echapper(catT(locale, "postes", poste("mac-monter-un-mur-en-brique").t.n)));
+    }
+    // béton cellulaire 30 cm : la réponse passe à « béton cellulaire », le parpaing se décoche (plus de murs comptés deux fois)
+    const bc = poste("mac-mur-beton-cellulaire-30-cm");
+    const e1 = choisirNeuf(e0, bc.l, bc.t);
+    expect(e1.maison.murs).toBe("cellulaire");
+    expect(lesMurs(e1)).toEqual(["mac-mur-beton-cellulaire-30-cm"]);
+    // le même résultat que « béton cellulaire » au questionnaire puis le 30 cm sur la ligne
+    const viaQuestion = changerReponseNeuf(e0, "murs", "cellulaire");
+    expect(lesMurs(viaQuestion)).toEqual(["mac-mur-beton-cellulaire-20-cm"]);
+    expect(ttc(choisirNeuf(viaQuestion, bc.l, bc.t))).toBeCloseTo(ttc(e1), 6);
+    expect(ttc(e1)).toBeLessThan(ttc({ ...e0, sel: { ...e0.sel, [cle(bc.t.id)]: { on: true } } }));
+    // retour au parpaing par son bouton, par sa case ou par le questionnaire : la maison par défaut, au centime
+    const pp = poste(ID_PARPAING);
+    for (const e2 of [choisirNeuf(e1, pp.l, pp.t), cocherNeufEtat(e1, pp.l, pp.t), changerReponseNeuf(e1, "murs", "parpaing")]) {
+      expect(e2.maison.murs).toBe("parpaing");
+      expect(lesMurs(e2)).toEqual([ID_PARPAING]);
+      expect(ttc(e2)).toBeCloseTo(ttc(e0), 6);
+    }
+    // depuis la brique aussi
+    const br = poste("mac-monter-un-mur-en-brique");
+    const eb = choisirNeuf(e0, br.l, br.t);
+    expect([eb.maison.murs, lesMurs(eb)]).toEqual(["brique", ["mac-monter-un-mur-en-brique"]]);
+    expect(lesMurs(choisirNeuf(eb, pp.l, pp.t))).toEqual([ID_PARPAING]);
+    // un ancien projet en parpaing avec le 30 cm coché en plus : les deux sur la ligne, sous l'avertissement ; « Parpaing » décoche l'autre
+    const deux: EtatNeuf = { ...e0, sel: { ...e0.sel, [cle(bc.t.id)]: { on: true } } };
+    expect(ligneMurs(deux).membres.filter(({ l, t }) => deux.sel[key(l.c, t.n)]?.on)).toHaveLength(2);
+    expect(lesMurs(choisirNeuf(deux, pp.l, pp.t))).toEqual([ID_PARPAING]);
+  });
+
+  it("les murs avec un garage : le parpaing qui ne porte que le garage est une ligne à part, sa case ne change pas les murs", () => {
+    const g0 = changerReponseNeuf(etatParDefaut(), "garage", 20);
+    const br = poste("mac-monter-un-mur-en-brique"), pp = poste(ID_PARPAING), bc = poste("mac-mur-beton-cellulaire-30-cm");
+    const g1 = choisirNeuf(g0, br.l, br.t);
+    expect([on(g1, ID_PARPAING), on(g1, "mac-monter-un-mur-en-brique")]).toEqual([true, true]);   // le garage reste en parpaing
+    const els = elementsLotNeuf(ctxDetailNeuf(g1), g1.sel, "Maçonnerie");
+    const ligne = els.find((x) => x.type === "choix" && x.ligne.cle === "murs") as Extract<ElementLotNeuf, { type: "choix" }>;
+    expect(ligne.membres.map((p) => p.t.id)).not.toContain(ID_PARPAING);
+    expect(ligne.boutons.map((p) => p.t.id)).toContain(ID_PARPAING);
+    expect(els.some((x) => x.type === "poste" && x.p.t.id === ID_PARPAING)).toBe(true);
+    // à l'écran : pas d'avertissement, le bouton « Parpaing » n'est pas pressé (la ligne des murs est la brique)
+    const html = lotHtml(liste(g1, { "Maçonnerie": true }), "Maçonnerie");
+    expect(html).not.toContain("choixl doublon");
+    expect(html).toContain('class="" aria-pressed="false">Parpaing</button>');
+    expect(html).toContain('class="on" aria-pressed="true">Brique</button>');
+    // la case du parpaing (le garage) : décoche, recoche, les murs restent en brique
+    const g2 = cocherNeufEtat(cocherNeufEtat(g1, pp.l, pp.t), pp.l, pp.t);
+    expect([g2.maison.murs, on(g2, ID_PARPAING), on(g2, "mac-monter-un-mur-en-brique")]).toEqual(["brique", true, true]);
+    expect(ttc(g2)).toBeCloseTo(ttc(g1), 6);
+    // le bouton « Parpaing » : la maison repasse en parpaing, comme au départ
+    const g3 = choisirNeuf(g1, pp.l, pp.t);
+    expect([g3.maison.murs, on(g3, "mac-monter-un-mur-en-brique")]).toEqual(["parpaing", false]);
+    expect(ttc(g3)).toBeCloseTo(ttc(g0), 6);
+    // le béton cellulaire 30 cm : le parpaing ne garde que le garage
+    const g4 = choisirNeuf(g0, bc.l, bc.t);
+    expect([g4.maison.murs, on(g4, ID_PARPAING), on(g4, bc.t.id)]).toEqual(["cellulaire", true, true]);
+    const ctx4 = ctxDetailNeuf(g4);
+    const parpaing = buildDevis(catalogueDe(ctx4), ctx4, g4.sel).lignes.find((li) => li.cle === cle(ID_PARPAING))!;
+    expect(parpaing.qty).toBeCloseTo(geometrieNeuf(g4.maison).mursGarage, 2);
+  });
+
+  it("une couverture contraire à la toiture est désactivée : le toit-terrasse sur un toit à pans, les tuiles sur un toit plat", () => {
+    const e0 = etatParDefaut();
+    expect(raisonIndisponibleNeuf(e0.maison, "cou-toiture-terrasse-isolee")).toBe("toiture");
+    expect(raisonIndisponibleNeuf(e0.maison, "cou-couverture-ardoise-naturelle")).toBeNull();
+    const plat = changerReponseNeuf(e0, "toiture", "plat");
+    expect(on(plat, "cou-toiture-terrasse-isolee")).toBe(true);
+    for (const id of ["cou-couverture-tuiles-terre-cuite", "cou-couverture-bac-acier", "cou-couverture-zinc-joint-debout"]) expect(raisonIndisponibleNeuf(plat.maison, id), id).toBe("toiture");
+    expect(raisonIndisponibleNeuf(plat.maison, "cou-toiture-terrasse-isolee")).toBeNull();
+    // aucune couverture cochée : la ligne montre celle que la toiture permet
+    const membres = LIGNES_CHOIX_NEUF.find((g) => g.cle === "couverture")!.alternatives.map((a) => poste(a.id));
+    expect(alternativeMontreeNeuf(e0.maison, membres).t.id).toBe("cou-couverture-tuiles-terre-cuite");
+    expect(alternativeMontreeNeuf(plat.maison, membres).t.id).toBe("cou-toiture-terrasse-isolee");
+    for (const locale of ["fr", "en"] as const) {
+      const d = dictNeuf(locale).detail;
+      const html = lotHtml(liste(e0, { "Couverture & zinguerie": true }, locale), catT(locale, "corps", "Couverture & zinguerie"));
+      expect(html).toContain(`aria-pressed="false" disabled="" title="${echapper(d.selonToiture)}">${locale === "fr" ? "Toit-terrasse" : "Flat roof"}</button>`);
+      const h2 = lotHtml(liste(plat, { "Couverture & zinguerie": true }, locale), catT(locale, "corps", "Couverture & zinguerie"));
+      expect(compte(h2, new RegExp(`disabled="" title="${echapper(d.selonToiture)}"`, "g"))).toBe(6);
+      expect(h2).toContain(`class="on" aria-pressed="true">${locale === "fr" ? "Toit-terrasse" : "Flat roof"}</button>`);
+    }
   });
 
   it("au-delà de 150 m² de surface de plancher, le dossier de permis par un dessinateur est désactivé", () => {

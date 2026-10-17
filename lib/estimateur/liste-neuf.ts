@@ -25,7 +25,7 @@
  */
 import { key, lineHT, visibleTask, type Ctx, type CustomLine, type Lot, type Selection, type Tache } from "./core";
 import { CATALOG_NEUF } from "./catalogue-neuf";
-import { geometrieNeuf, reponseDuPoste, SEUIL_ARCHITECTE_M2, type MaisonNeuve } from "./neuf";
+import { geometrieNeuf, parpaingAuChoixDesMurs, reponseDuPoste, ID_PARPAING, SEUIL_ARCHITECTE_M2, type MaisonNeuve } from "./neuf";
 import { estJalon } from "./projet";
 import type { TexteFrEn } from "./etapes-neuf";
 
@@ -86,7 +86,9 @@ const alt = (id: string, fr: string, en: string): AlternativeNeuf => ({ id, cour
 /**
  * Une ligne par groupe exclusif et par lot (`GROUPES_EXCLUSIFS_NEUF`, vérifié par
  * `tests/neuf-corps-etat.test.ts`) : 16 lignes pour 17 groupes, l'escalier n'ayant qu'un poste par lot.
- * Les libellés courts des boutons sont ceux du questionnaire quand la réponse existe.
+ * Les libellés courts des boutons sont ceux du questionnaire quand la réponse existe. Une alternative
+ * hors groupe : le parpaing des murs (la réponse par défaut), qui porte aussi le garage — quand il ne
+ * porte que lui, il est une ligne à part et son bouton choisit les murs en parpaing (`elementsLotNeuf`).
  */
 export const LIGNES_CHOIX_NEUF: LigneChoixNeuf[] = [
   { cle: "etude-sol", lot: "Etudes / Conception", titre: { fr: "Étude de sol", en: "Soil study" }, alternatives: [
@@ -101,7 +103,7 @@ export const LIGNES_CHOIX_NEUF: LigneChoixNeuf[] = [
     alt("fon-dalle-terre-plein-isolee", "Dalle sur terre-plein", "Slab on grade"), alt("fon-vide-sanitaire-complet", "Vide sanitaire", "Crawl space"),
     alt("fon-sous-sol-enterre", "Sous-sol", "Basement"), alt("fon-radier-general", "Radier général", "Raft foundation")] },
   { cle: "murs", lot: "Maçonnerie", titre: { fr: "Murs extérieurs", en: "Exterior walls" }, alternatives: [
-    alt("mac-monter-un-mur-en-brique", "Brique", "Brick"), alt("mac-mur-brique-monomur", "Brique monomur", "Insulating brick"),
+    alt(ID_PARPAING, "Parpaing", "Concrete block"), alt("mac-monter-un-mur-en-brique", "Brique", "Brick"), alt("mac-mur-brique-monomur", "Brique monomur", "Insulating brick"),
     alt("mac-mur-beton-cellulaire-20-cm", "Béton cellulaire 20 cm", "Aerated concrete 20 cm"), alt("mac-mur-beton-cellulaire-30-cm", "Béton cellulaire 30 cm", "Aerated concrete 30 cm")] },
   { cle: "chape", lot: "Maçonnerie", titre: { fr: "Chape", en: "Screed" }, alternatives: [
     alt("mac-chape-liquide", "Liquide", "Self-leveling"), alt("mac-chape-traditionnelle", "Traditionnelle", "Traditional")] },
@@ -136,15 +138,24 @@ for (const g of LIGNES_CHOIX_NEUF) for (const a of g.alternatives) LIGNE_DE.set(
 /** La ligne de choix d'un poste, s'il en a une. */
 export const ligneChoixDe = (id: string): LigneChoixNeuf | undefined => LIGNE_DE.get(id);
 
-/** L'alternative ne peut pas être choisie pour cette maison : le dossier de permis par un dessinateur
- *  au-delà de 150 m² de surface de plancher (l'architecte y est obligatoire). */
-export function alternativeIndisponibleNeuf(m: MaisonNeuve, id: string): boolean {
-  return id === "etu-dossier-permis-dessinateur" && geometrieNeuf(m).SP > SEUIL_ARCHITECTE_M2;
+const TOIT_PLAT = "cou-toiture-terrasse-isolee";
+const COUVERTURES_EN_PENTE = new Set((LIGNES_CHOIX_NEUF.find((g) => g.cle === "couverture")?.alternatives ?? []).map((a) => a.id).filter((id) => id !== TOIT_PLAT));
+
+/** Pourquoi l'alternative ne peut pas être choisie pour cette maison : le dossier de permis par un
+ *  dessinateur au-delà de 150 m² de surface de plancher (l'architecte y est obligatoire) ; une couverture
+ *  qui ne va pas avec la toiture décrite (le toit-terrasse sur un toit à pans, des tuiles sur un toit
+ *  plat : la toiture se change dans le questionnaire, elle décide aussi de la charpente et des combles). */
+export function raisonIndisponibleNeuf(m: MaisonNeuve, id: string): "architecte" | "toiture" | null {
+  if (id === "etu-dossier-permis-dessinateur" && geometrieNeuf(m).SP > SEUIL_ARCHITECTE_M2) return "architecte";
+  if (id === TOIT_PLAT ? m.toiture !== "plat" : COUVERTURES_EN_PENTE.has(id) && m.toiture === "plat") return "toiture";
+  return null;
 }
+export const alternativeIndisponibleNeuf = (m: MaisonNeuve, id: string): boolean => raisonIndisponibleNeuf(m, id) != null;
 
 /** Le poste qu'une ligne de choix montre quand aucune alternative n'est cochée (sa case le cocherait) :
  *  parmi celles possibles pour cette maison, celle que la réponse de la maison désigne (la couverture
- *  décrite…), sinon la première. Jamais le dessinateur au-delà de 150 m² : c'est alors l'architecte. */
+ *  décrite, les murs…), sinon la première. Jamais le dessinateur au-delà de 150 m² : c'est alors
+ *  l'architecte ; jamais une couverture qui ne va pas avec la toiture. */
 export function alternativeMontreeNeuf(m: MaisonNeuve, membres: PosteListeNeuf[]): PosteListeNeuf {
   const possibles = membres.filter(({ t }) => !alternativeIndisponibleNeuf(m, t.id));
   const reponse = possibles.find(({ t }) => { const r = reponseDuPoste(t.id); return !!r && (m as unknown as Record<string, unknown>)[r.k] === r.v; });
@@ -156,7 +167,9 @@ export type ElementLotNeuf =
   | { type: "etape"; phase: string }
   | { type: "note"; l: Lot }
   | { type: "poste"; p: PosteListeNeuf }
-  | { type: "choix"; ligne: LigneChoixNeuf; membres: PosteListeNeuf[] };
+  /** `membres` : les postes de la ligne (ses rangées, son compte) ; `boutons` : toutes ses alternatives,
+   *  le parpaing compris quand il est une ligne à part (il ne porte alors que le garage). */
+  | { type: "choix"; ligne: LigneChoixNeuf; membres: PosteListeNeuf[]; boutons: PosteListeNeuf[] };
 
 /** Le poste reste-t-il dans la liste des travaux ? Ni frais (carte), ni démarche gratuite (liste
  *  « Démarches ») ; une démarche à laquelle on a donné un prix redevient une ligne. */
@@ -169,9 +182,13 @@ export function posteDansListeNeuf(ctx: Ctx, sel: Selection, { l, t }: PosteList
  * Les éléments d'un lot, dans l'ordre du chantier : ses postes, une ligne par groupe d'alternatives (à
  * la place de sa première alternative), la note de chaque bloc du catalogue devant ses postes, et un
  * sous-titre d'étape devant chaque étape quand le lot en a plusieurs. Un lot sans poste n'a aucun
- * élément : il ne s'affiche pas (sauf s'il a des lignes perso).
+ * élément : il ne s'affiche pas (sauf s'il a des lignes perso). Le parpaing qui ne porte que le garage
+ * d'une maison aux autres murs (`parpaingAuChoixDesMurs`) est une ligne à part ; la ligne des murs garde
+ * son bouton.
  */
 export function elementsLotNeuf(ctx: Ctx, sel: Selection, lot: string): ElementLotNeuf[] {
+  const m = ctx.neuf as MaisonNeuve | undefined;
+  const surLaLigne = (id: string) => id !== ID_PARPAING || !m || parpaingAuChoixDesMurs(m);
   const postes = (PAR_LOT.get(lot) ?? []).filter((p) => posteDansListeNeuf(ctx, sel, p));
   const plusieursEtapes = new Set(postes.map((p) => p.l.p)).size > 1;
   const out: ElementLotNeuf[] = [];
@@ -179,7 +196,7 @@ export function elementsLotNeuf(ctx: Ctx, sel: Selection, lot: string): ElementL
   let bloc: Lot | null = null;
   for (const p of postes) {
     const ligne = ligneChoixDe(p.t.id);
-    const dansLigne = !!ligne && ligne.lot === lot;
+    const dansLigne = !!ligne && ligne.lot === lot && surLaLigne(p.t.id);
     if (dansLigne && vues.has(ligne.cle)) continue;
     if (p.l !== bloc) {
       if (plusieursEtapes && p.l.p !== bloc?.p) out.push({ type: "etape", phase: p.l.p });
@@ -188,8 +205,9 @@ export function elementsLotNeuf(ctx: Ctx, sel: Selection, lot: string): ElementL
     }
     if (dansLigne) {
       vues.add(ligne.cle);
-      const membres = ligne.alternatives.map((a) => postes.find((x) => x.t.id === a.id)).filter((x): x is PosteListeNeuf => !!x);
-      out.push(membres.length > 1 ? { type: "choix", ligne, membres } : { type: "poste", p });
+      const boutons = ligne.alternatives.map((a) => postes.find((x) => x.t.id === a.id)).filter((x): x is PosteListeNeuf => !!x);
+      const membres = boutons.filter((x) => surLaLigne(x.t.id));
+      out.push(boutons.length > 1 ? { type: "choix", ligne, membres, boutons } : { type: "poste", p });
     } else out.push({ type: "poste", p });
   }
   return out;

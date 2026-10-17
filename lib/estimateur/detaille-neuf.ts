@@ -17,7 +17,10 @@
  */
 import { key, isAuto, isLoc, lineHT, puReel, tauxPerso, type Ctx, type Selection, type Finition, type Lot, type Tache, type CustomLine } from "./core";
 import { CATALOG_NEUF, POSTE_NEUF } from "./catalogue-neuf";
-import { exclusifsDe, geometrieNeuf, maisonComplete, maisonParDefaut, reponseDuPoste, selAvantN8, type MaisonNeuve } from "./neuf";
+import {
+  ecartesParLeChoix, exclusifsDe, geometrieNeuf, maisonComplete, maisonParDefaut, parpaingAuChoixDesMurs, reponseDuPoste, selAvantN8, ID_PARPAING,
+  type MaisonNeuve,
+} from "./neuf";
 import { BORNES_NEUF, minSdbNeuf } from "./bornes-neuf";
 import { ctxNeuf, appliquerMaison, cocherPosteNeuf, soiMemeNeuf, peutFaireNeuf, LOTS_DECENNALE_NEUF, presetMaison, presetNeuf, type RapideNeufInput } from "./presets-neuf";
 import type { QuiRealise } from "./presets";
@@ -128,7 +131,22 @@ export function changerReponseNeuf(e: EtatNeuf, k: CleQuestionNeuf, v: ValeurQue
   if (k === "facade") facadeAuto = false;
   // La maison gardée est celle que le moteur chiffre (bornes, toit plat → pas de combles…).
   const maison = ctxDetailNeuf({ ...e, maison: brute }).neuf as MaisonNeuve;
-  return { ...e, maison, facadeAuto, sel: appliquerMaison(maison, e.sel, e.qui, ancienne) };
+  let sel = appliquerMaison(maison, e.sel, e.qui, ancienne);
+  // Des murs en parpaing : le parpaing, hors du groupe des murs, ne décoche rien en se cochant ; un mur
+  // choisi sur la ligne sans être la réponse (le béton cellulaire 30 cm) serait compté en plus.
+  if (k === "murs" && v === "parpaing" && ancienne.murs !== "parpaing") sel = decocherIds(sel, ecartesParLeChoix(ID_PARPAING));
+  return { ...e, maison, facadeAuto, sel };
+}
+
+/** Décoche ces postes (ceux qui ne sont pas cochés restent tels quels). */
+function decocherIds(sel: Selection, ids: string[]): Selection {
+  const out: Selection = { ...sel };
+  for (const id of ids) {
+    const p = POSTE_NEUF.get(id);
+    const k = p ? key(p.c, p.n) : "";
+    if (out[k]?.on) out[k] = { ...out[k], on: false };
+  }
+  return out;
 }
 
 /** Menuiseries extérieures de la maison (fenêtres + portes-fenêtres + baies) : le nombre saisi, sinon
@@ -162,10 +180,11 @@ export function pasCompteurNeuf(e: EtatNeuf, k: CompteurNeuf, delta: number): Et
 /**
  * Coche ou décoche un poste à la main depuis l'état du détaillé (la case d'une ligne). Cocher, c'est
  * CHOISIR ce poste (`choisirNeuf`) : s'il correspond à une réponse de la maison, la réponse suit. Décocher
- * ne change pas la réponse (aucun autre choix n'est alors désigné).
+ * ne change pas la réponse (aucun autre choix n'est alors désigné). Le parpaing qui ne porte que le
+ * garage (une ligne à part, `parpaingAuChoixDesMurs`) se coche seulement : les murs de la maison restent.
  */
 export function cocherNeufEtat(e: EtatNeuf, l: Lot, t: Tache): EtatNeuf {
-  if (!e.sel[key(l.c, t.n)]?.on) return choisirNeuf(e, l, t);
+  if (!e.sel[key(l.c, t.n)]?.on && (t.id !== ID_PARPAING || parpaingAuChoixDesMurs(e.maison))) return choisirNeuf(e, l, t);
   return { ...e, sel: cocherNeuf(ctxDetailNeuf(e), e.sel, l, t, e.qui) };
 }
 
@@ -178,8 +197,9 @@ const FACADES_GROUPE = new Set(exclusifsDe("fac-enduit-monocouche-machine").conc
  *    les postes qu'elle gouverne suivent (l'étude SPANC avec la fosse…), le reste est gardé. La question
  *    affiche le choix réel, et un « Modifier » qui repart de la maison chiffre la même chose.
  * 2. Puis le poste est coché et les autres postes de son groupe exclusif décochés : il est le seul choix,
- *    même là où la réponse ne le coche pas (une couverture sur un toit plat) ou n'existe pas (le radier).
- *    Un ancien projet qui avait deux alternatives cochées n'en garde qu'une.
+ *    même là où la réponse ne le coche pas ou n'existe pas (le radier). Choisir le parpaing (murs de la
+ *    maison) décoche les autres murs, béton cellulaire 30 cm compris (`ecartesParLeChoix`). Un ancien
+ *    projet qui avait deux alternatives cochées n'en garde qu'une.
  * Choisir une façade (ITE comprise) arrête le « la façade suit les murs ».
  */
 export function choisirNeuf(e: EtatNeuf, l: Lot, t: Tache): EtatNeuf {
@@ -187,16 +207,8 @@ export function choisirNeuf(e: EtatNeuf, l: Lot, t: Tache): EtatNeuf {
   const r = t.id ? reponseDuPoste(t.id) : null;
   if (r && (x.maison as unknown as Record<string, unknown>)[r.k] !== r.v) x = changerReponseNeuf(x, r.k, r.v);
   const k = key(l.c, t.n);
-  let sel: Selection;
-  if (!x.sel[k]?.on) sel = cocherNeuf(ctxDetailNeuf(x), x.sel, l, t, x.qui);
-  else {
-    sel = { ...x.sel };
-    for (const id of t.id ? exclusifsDe(t.id) : []) {
-      const p = POSTE_NEUF.get(id);
-      const ka = p ? key(p.c, p.n) : "";
-      if (sel[ka]?.on) sel[ka] = { ...sel[ka], on: false };
-    }
-  }
+  const coche = x.sel[k]?.on ? x.sel : cocherNeuf(ctxDetailNeuf(x), x.sel, l, t, x.qui);
+  const sel = decocherIds(coche, t.id ? ecartesParLeChoix(t.id) : []);
   return { ...x, sel, facadeAuto: t.id && FACADES_GROUPE.has(t.id) ? false : x.facadeAuto };
 }
 

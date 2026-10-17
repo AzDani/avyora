@@ -10,7 +10,9 @@
  *   bloc du catalogue avec sa note ;
  * - les postes qui s'excluent sur une ligne de choix : la ligne du poste retenu et ses alternatives en
  *   boutons ; un clic choisit (l'appelant coche, décoche l'autre et met la réponse à jour) ; deux
- *   alternatives cochées (un ancien projet) : les deux lignes, sous un avertissement ;
+ *   alternatives cochées (un ancien projet) : les deux lignes, sous un avertissement ; une alternative
+ *   qui ne va pas avec la maison (dessinateur au-delà de 150 m², couverture contraire à la toiture) est
+ *   désactivée, sa raison en infobulle ;
  * - la carte « Taxes, assurance et frais » (`CarteFraisNeuf`, sous le questionnaire, près du budget) et la
  *   liste « Démarches » (gratuites, en fin de liste) : hors du compte des postes, qui ne compte que les travaux.
  * Les clés `key(lot, nom)` ne changent pas. Aucun montant écrit ici : tout vient du moteur (`htParCle`).
@@ -30,7 +32,7 @@ import { INFO_PHASES } from "@/lib/estimateur/etapes-neuf";
 import { badgeNeuf, lignesPersoDuLot } from "@/lib/estimateur/detaille-neuf";
 import {
   GRANDES_PHASES_NEUF, POSTES_FRAIS_NEUF, CARTE_FRAIS, CARTE_DEMARCHES, elementsLotNeuf, lotsAffichesNeuf, postesDesElements, postesCochesNeuf,
-  alternativeMontreeNeuf, alternativeIndisponibleNeuf, type PosteListeNeuf, type LigneChoixNeuf,
+  alternativeMontreeNeuf, raisonIndisponibleNeuf, type PosteListeNeuf, type LigneChoixNeuf,
 } from "@/lib/estimateur/liste-neuf";
 
 /** Ce que la liste fait faire à l'écran : régler une ligne, cocher, choisir une alternative, les lignes perso. */
@@ -78,17 +80,23 @@ export function ListeNeuf(props: PropsCommunes & { custom: CustomLine[]; outils:
   const d = dictNeuf(locale).detail, dl = dictDetail(locale);
   const { coche, htDe, rangee } = rangees(props);
 
+  const raison = (id: string) => {
+    const r = raisonIndisponibleNeuf(m, id);
+    return r === "architecte" ? d.architecteObligatoire : r === "toiture" ? d.selonToiture : null;
+  };
+
   /** Une ligne de choix : le poste retenu et ses alternatives ; aucune cochée : celle que la maison
-   *  désigne, décochée ; deux cochées (un ancien projet) : les deux, sous un avertissement. */
-  function ligneChoix(ligne: LigneChoixNeuf, membres: PosteListeNeuf[]) {
+   *  désigne, décochée ; deux cochées (un ancien projet) : les deux, sous un avertissement. Le bouton
+   *  « Parpaing » quand le parpaing ne porte que le garage (une ligne à part) : jamais pressé. */
+  function ligneChoix(ligne: LigneChoixNeuf, membres: PosteListeNeuf[], boutons: PosteListeNeuf[]) {
     const cochees = membres.filter(coche);
     if (seulementCoches && !cochees.length) return null;
     const montrees = cochees.length ? cochees : [alternativeMontreeNeuf(m, membres)];
     const selecteur = (
-      <SelecteurChoix titre={ligne.titre[locale]} onChoisir={(id) => { const p = membres.find((x) => x.t.id === id); if (p && !alternativeIndisponibleNeuf(m, id)) actions.choisir(p); }}
-        alternatives={membres.map((p) => ({
-          v: p.t.id, label: ligne.alternatives.find((a) => a.id === p.t.id)?.court[locale] ?? p.t.n, actif: coche(p),
-          indisponible: alternativeIndisponibleNeuf(m, p.t.id) ? d.architecteObligatoire : null,
+      <SelecteurChoix titre={ligne.titre[locale]} onChoisir={(id) => { const p = boutons.find((x) => x.t.id === id); if (p && !raison(id)) actions.choisir(p); }}
+        alternatives={boutons.map((p) => ({
+          v: p.t.id, label: ligne.alternatives.find((a) => a.id === p.t.id)?.court[locale] ?? p.t.n, actif: membres.includes(p) && coche(p),
+          indisponible: raison(p.t.id),
         }))} />
     );
     return (
@@ -114,7 +122,7 @@ export function ListeNeuf(props: PropsCommunes & { custom: CustomLine[]; outils:
         {elements.map((e) => {
           if (e.type === "etape") return <SousEtape key={"e-" + e.phase}>{catT(locale, "phases", e.phase)}</SousEtape>;
           if (e.type === "note") return <div key={"n-" + e.l.p + e.l.t[0]?.id} className="lotnote">{catT(locale, "notes", e.l.note ?? "")}</div>;
-          if (e.type === "choix") return ligneChoix(e.ligne, e.membres);
+          if (e.type === "choix") return ligneChoix(e.ligne, e.membres, e.boutons);
           return seulementCoches && !coche(e.p) ? null : rangee(e.p);
         })}
         <CustomLines lines={cLines} onAdd={() => actions.ajouterPerso(c)} onUpd={actions.majPerso} onDel={actions.supprimerPerso} guideTva={d.guideTva}

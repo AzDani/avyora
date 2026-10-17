@@ -289,11 +289,13 @@ const GOUTTIERES = { zinc: "cou-gouttiere-zinc", pvc: "cou-gouttiere-pvc", alu: 
 const FACADES = { enduit: "fac-enduit-monocouche-machine", "bardage-bois": "fac-bardage", "bardage-composite": "fac-bardage-composite" } as const;
 
 /* Les autres réponses qui désignent UN poste d'un groupe exclusif (N10) : le plancher bas, les murs,
-   l'escalier, les eaux usées, le chauffage et qui pilote. Le béton cellulaire 30 cm (sans doublage) et
-   le radier n'ont pas de réponse : les choisir ne touche que la sélection. */
+   l'escalier, les eaux usées, le chauffage et qui pilote. Les murs en parpaing aussi, bien que le
+   parpaing reste hors du groupe des murs (il porte aussi le garage). Le radier n'a pas de réponse : le
+   choisir ne touche que la sélection. */
 const AUTRES_REPONSES: Partial<Record<keyof MaisonNeuve, Record<string, string>>> = {
   plancherBas: { "terre-plein": "fon-dalle-terre-plein-isolee", "vide-sanitaire": "fon-vide-sanitaire-complet", "sous-sol": "fon-sous-sol-enterre" },
-  murs: { brique: "mac-monter-un-mur-en-brique", monomur: "mac-mur-brique-monomur", cellulaire: "mac-mur-beton-cellulaire-20-cm", ossature: "toi-mur-ossature-bois-isole" },
+  murs: { parpaing: "mac-monter-un-mur-en-parpaings", brique: "mac-monter-un-mur-en-brique", monomur: "mac-mur-brique-monomur",
+    cellulaire: "mac-mur-beton-cellulaire-20-cm", ossature: "toi-mur-ossature-bois-isole" },
   escalier: { bois: "min-escalier-bois-quart-tournant", beton: "mac-escalier-en-beton" },
   assainissement: { collectif: "rac-raccordement-au-tout-a-l-egout", fosse: "rac-assainissement-fosse-toutes-eaux-5-eh", micro: "rac-assainissement-micro-station-5-eh" },
   chauffage: { "pac-eau": "cha-pompe-a-chaleur-air-eau", "pac-air": "cha-climatisation-gainable-reversible" },
@@ -318,8 +320,18 @@ export function reponseDuPoste(id: string): { k: CleReponsePoste; v: string } | 
   }
   // Les plans et le permis faits sans maître d'œuvre : c'est « Moi » qui pilote.
   if (id === "etu-architecte-mission-permis" || id === "etu-dossier-permis-dessinateur") return { k: "pilotage", v: "moi" };
+  // Le béton cellulaire 30 cm est un mur en béton cellulaire comme le 20 cm : la maison sort du parpaing
+  // (le parpaing ne garde que le garage), la question « Murs » dit « Béton cellulaire ».
+  if (id === "mac-mur-beton-cellulaire-30-cm") return { k: "murs", v: "cellulaire" };
   return null;
 }
+
+/** Le mur en parpaing : hors du groupe exclusif des murs, car il porte aussi les murs du garage. */
+export const ID_PARPAING = "mac-monter-un-mur-en-parpaings";
+
+/** Le parpaing est-il un des choix des murs (la ligne de choix « Murs extérieurs ») ? Oui, sauf quand il
+ *  ne porte que le garage d'une maison aux autres murs : il est alors une ligne à part. */
+export const parpaingAuChoixDesMurs = (m: MaisonNeuve): boolean => m.murs === "parpaing" || !(m.garage > 0);
 
 /** Au-delà de cette surface de plancher (m²), l'architecte est obligatoire pour le permis : le dossier
  *  par un dessinateur n'est plus possible (code de l'urbanisme, art. R431-2). */
@@ -643,6 +655,13 @@ export const GROUPES_EXCLUSIFS_NEUF: string[][] = [
 /** Les autres postes du (des) groupe(s) exclusif(s) d'un poste. */
 export function exclusifsDe(id: string): string[] {
   return GROUPES_EXCLUSIFS_NEUF.filter((g) => g.includes(id)).flat().filter((x) => x !== id);
+}
+
+/** Ce que CHOISIR un poste écarte (une ligne de choix, sa case) : les autres postes de son groupe ; pour
+ *  le parpaing, choisi pour les murs de la maison, tous les autres murs (il reste hors du groupe : le
+ *  cocher pour le garage seul, ou le cocher par la description, n'en décoche aucun). */
+export function ecartesParLeChoix(id: string): string[] {
+  return id === ID_PARPAING ? GROUPES_EXCLUSIFS_NEUF.find((g) => g.includes("mac-monter-un-mur-en-brique")) ?? [] : exclusifsDe(id);
 }
 
 /* La géométrie et les quantités sont recalculées à chaque ligne affichée : on les garde pour une

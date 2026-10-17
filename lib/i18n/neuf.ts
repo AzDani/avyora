@@ -215,6 +215,7 @@ const fr = {
     /* Ligne de choix (N10) : des postes qui s'excluent, sur une seule ligne. */
     choixDoublon: "Deux choix sont cochés ici alors qu'un seul sert d'habitude : garde le bon, décoche l'autre.",
     architecteObligatoire: "Au-delà de 150 m² de surface de plancher, l'architecte est obligatoire.",
+    selonToiture: "Ne va pas avec la toiture décrite plus haut : change d'abord la toiture dans le questionnaire.",
     /* Hors de la liste des travaux (N10), hors du compte des postes : les frais et les démarches. */
     fraisT: "Taxes, assurance et frais",
     fraisSous: "sans TVA",
@@ -454,6 +455,7 @@ const en: typeof fr = {
     toutReplier: "Collapse all",
     choixDoublon: "Two options are ticked here where one is usually enough: keep the right one, untick the other.",
     architecteObligatoire: "Above 150 m² of floor area, an architect is mandatory.",
+    selonToiture: "Doesn't match the roof described above: change the roof type in the questionnaire first.",
     fraisT: "Taxes, insurance and fees",
     fraisSous: "no VAT",
     fraisNote: "Not works: development tax, sewer connection levy (PFAC) or septic inspections (SPANC), structural defects insurance. No VAT or contingency, counted in the total.",
