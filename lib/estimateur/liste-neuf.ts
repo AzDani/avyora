@@ -213,6 +213,23 @@ export function elementsLotNeuf(ctx: Ctx, sel: Selection, lot: string): ElementL
   return out;
 }
 
+/**
+ * Où vont les notes des blocs d'un lot (N11) : elles ne s'écrivent plus dans la liste, elles sont en
+ * infobulle. Chaque note va au sous-titre d'étape qui la précède (un lot présent à plusieurs étapes), sinon
+ * à l'en-tête du lot (un lot d'une seule étape, même s'il a plusieurs blocs : l'isolation, les sols). Les
+ * notes sont les chaînes du catalogue (clés de traduction, `catT(locale, "notes", note)`).
+ */
+export function notesDuLotNeuf(elements: ElementLotNeuf[]): { entete: string[]; etapes: Record<string, string[]> } {
+  const entete: string[] = [];
+  const etapes: Record<string, string[]> = {};
+  let etape: string | null = null;
+  for (const e of elements) {
+    if (e.type === "etape") etape = e.phase;
+    else if (e.type === "note" && e.l.note) (etape ? (etapes[etape] ??= []) : entete).push(e.l.note);
+  }
+  return { entete, etapes };
+}
+
 /** Les postes d'éléments de lot (une ligne de choix : toutes ses alternatives). */
 export function postesDesElements(elements: ElementLotNeuf[]): PosteListeNeuf[] {
   return elements.flatMap((e) => (e.type === "poste" ? [e.p] : e.type === "choix" ? e.membres : []));

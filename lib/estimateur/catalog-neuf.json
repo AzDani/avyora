@@ -8,6 +8,7 @@
       {
         "id": "etu-plan-topographique",
         "n": "Plan topographique du terrain (géomètre : niveaux, limites, arbres, réseaux visibles)",
+        "nc": "Plan topographique du terrain",
         "u": "forfait",
         "fp": 800,
         "sm": null,
@@ -17,6 +18,7 @@
       {
         "id": "etu-bornage-du-terrain",
         "n": "Bornage du terrain par un géomètre-expert",
+        "nc": "Bornage du terrain (géomètre-expert)",
         "u": "forfait",
         "fp": 920,
         "sm": null,
@@ -26,6 +28,7 @@
       {
         "id": "etu-etude-de-sol-g1",
         "n": "Étude de sol préalable G1 (si le vendeur ne l'a pas fournie)",
+        "nc": "Étude de sol G1 préalable",
         "u": "forfait",
         "fp": 800,
         "sm": null,
@@ -35,6 +38,7 @@
       {
         "id": "etu-etude-de-sol-g2-avp",
         "n": "Étude de sol G2 avant-projet (dit comment fonder la maison)",
+        "nc": "Étude de sol G2 avant-projet",
         "u": "forfait",
         "fp": 1600,
         "sm": null,
@@ -44,6 +48,7 @@
       {
         "id": "etu-etude-de-sol-g2-pro",
         "n": "Étude de sol G2 projet (complément : calcul détaillé des fondations)",
+        "nc": "Étude de sol G2 projet (complément)",
         "u": "forfait",
         "fp": 750,
         "sm": null,
@@ -53,6 +58,7 @@
       {
         "id": "etu-dossier-permis-dessinateur",
         "n": "Plans et dossier de permis de construire par un dessinateur ou maître d'œuvre (jusqu'à 150 m²)",
+        "nc": "Plans et permis : dessinateur (≤ 150 m²)",
         "u": "forfait",
         "fp": 2500,
         "sm": null,
@@ -62,6 +68,7 @@
       {
         "id": "etu-architecte-mission-permis",
         "n": "Architecte : plans et dossier de permis (obligatoire au-delà de 150 m² de surface de plancher)",
+        "nc": "Plans et permis : architecte",
         "u": "m2",
         "fp": 30,
         "sm": null,
@@ -71,6 +78,7 @@
       {
         "id": "etu-maitrise-d-oeuvre-complete",
         "n": "Architecte ou maître d'œuvre : mission complète (plans, choix des artisans, suivi du chantier, réception)",
+        "nc": "Maîtrise d'œuvre : mission complète",
         "u": "pct",
         "fp": 10,
         "sm": null,
@@ -80,6 +88,7 @@
       {
         "id": "etu-etude-thermique-re2020",
         "n": "Étude thermique RE2020 + attestation à joindre au permis",
+        "nc": "Étude thermique RE2020 + attestation",
         "u": "forfait",
         "fp": 850,
         "sm": null,
@@ -92,6 +101,7 @@
       {
         "id": "etu-depot-du-permis-de-construire",
         "n": "Dépôt du permis de construire en mairie (démarche gratuite, instruction ≈ 2 mois)",
+        "nc": "Dépôt du permis de construire",
         "u": "forfait",
         "fp": 0,
         "sm": null,
@@ -101,6 +111,7 @@
       {
         "id": "etu-panneau-affichage-permis",
         "n": "Panneau d'affichage du permis de construire (80 × 120 cm) et sa fixation",
+        "nc": "Panneau d'affichage du permis",
         "u": "u",
         "fp": 20,
         "sm": 20,
@@ -109,6 +120,7 @@
       {
         "id": "etu-constat-affichage-commissaire",
         "n": "Constat d'affichage du permis par un commissaire de justice (3 passages)",
+        "nc": "Constat d'affichage (commissaire de justice)",
         "u": "forfait",
         "fp": 350,
         "sm": null,
@@ -118,6 +130,7 @@
       {
         "id": "etu-etude-beton-arme",
         "n": "Étude béton armé : calcul de la structure et plans de ferraillage pour le maçon",
+        "nc": "Étude béton armé (plans de ferraillage)",
         "u": "forfait",
         "fp": 2000,
         "sm": null,
@@ -127,6 +140,7 @@
       {
         "id": "etu-demandes-de-raccordement",
         "n": "Demandes de raccordement Enedis, eau et égout, dès le permis obtenu (démarche gratuite)",
+        "nc": "Demandes de raccordement aux réseaux",
         "u": "forfait",
         "fp": 0,
         "sm": null,
@@ -144,6 +158,7 @@
       {
         "id": "ass-assurance-dommages-ouvrage",
         "n": "Assurance dommages-ouvrage (obligatoire, souscrite avant l'ouverture du chantier)",
+        "nc": "Assurance dommages-ouvrage",
         "u": "pct",
         "fp": 3.5,
         "sm": null,
@@ -153,6 +168,7 @@
       {
         "id": "ass-declaration-ouverture-de-chantier",
         "n": "Déclaration d'ouverture de chantier en mairie (démarche gratuite)",
+        "nc": "Déclaration d'ouverture de chantier",
         "u": "forfait",
         "fp": 0,
         "sm": null,
@@ -170,6 +186,7 @@
       {
         "id": "anx-declaration-dt-reseaux",
         "n": "Déclaration de projet de travaux (DT) aux exploitants de réseaux enterrés, sur le guichet unique des réseaux, avant tout terrassement (démarche gratuite)",
+        "nc": "Déclaration de travaux (DT) aux réseaux",
         "u": "forfait",
         "fp": 0,
         "sm": null,
@@ -179,6 +196,7 @@
       {
         "id": "anx-implantation-par-geometre",
         "n": "Implantation de la maison sur le terrain par un géomètre (angles et niveau du plancher)",
+        "nc": "Implantation de la maison (géomètre)",
         "u": "forfait",
         "fp": 550,
         "sm": null,
@@ -191,6 +209,7 @@
       {
         "id": "anx-cloture-de-chantier",
         "n": "Clôture de chantier (panneaux grillagés sur plots, pose et dépose)",
+        "nc": "Clôture de chantier",
         "u": "ml",
         "fp": 30,
         "sm": 24,
@@ -199,6 +218,7 @@
       {
         "id": "anx-wc-de-chantier",
         "n": "WC de chantier (cabine louée pour les ouvriers)",
+        "nc": "WC de chantier",
         "u": "jour",
         "fp": 8,
         "sm": 8,
@@ -207,6 +227,7 @@
       {
         "id": "anx-acces-de-chantier-empierre",
         "n": "Accès de chantier empierré pour les camions : géotextile (toile qui sépare la terre des cailloux) et grave compactée (cailloux et sable tassés)",
+        "nc": "Accès de chantier empierré",
         "u": "m2",
         "fp": 20,
         "sm": 8,
@@ -284,6 +305,7 @@
       {
         "id": "ter-debroussaillage",
         "n": "Débroussaillage du terrain (avec évacuation des déchets verts)",
+        "nc": "Débroussaillage du terrain",
         "u": "m2",
         "fp": 1,
         "sm": null,
@@ -292,6 +314,7 @@
       {
         "id": "ter-decapage-terre-vegetale",
         "n": "Décapage de la terre végétale (20 à 30 cm) mise en tas sur le terrain",
+        "nc": "Décapage de la terre végétale",
         "u": "m2",
         "fp": 4,
         "sm": null,
@@ -300,6 +323,7 @@
       {
         "id": "ter-fouilles-en-rigole",
         "n": "Fouilles en rigole pour les semelles (seulement en chiffrage détaillé des fondations)",
+        "nc": "Fouilles en rigole (chiffrage détaillé)",
         "u": "ml",
         "fp": 35,
         "sm": null,
@@ -308,6 +332,7 @@
       {
         "id": "ter-fouilles-en-pleine-masse",
         "n": "Fouilles en pleine masse (grand décaissement : sous-sol, terrain en pente)",
+        "nc": "Fouilles en pleine masse",
         "u": "m3",
         "fp": 12,
         "sm": null,
@@ -316,6 +341,7 @@
       {
         "id": "ter-evacuation-des-terres",
         "n": "Évacuation des terres en décharge (chargement, transport, redevance)",
+        "nc": "Évacuation des terres en décharge",
         "u": "m3",
         "fp": 22,
         "sm": null,
@@ -324,6 +350,7 @@
       {
         "id": "ter-remblai-peripherique",
         "n": "Remblai autour des fondations avec les terres du chantier, compacté",
+        "nc": "Remblai autour des fondations",
         "u": "m3",
         "fp": 22,
         "sm": null,
@@ -332,6 +359,7 @@
       {
         "id": "ter-apport-remblai-grave",
         "n": "Apport de remblai en grave compactée (cailloux et sable tassés) : mise à niveau, plateforme, sous dallage",
+        "nc": "Apport de remblai en grave compactée",
         "u": "m3",
         "fp": 38,
         "sm": 20,
@@ -340,6 +368,7 @@
       {
         "id": "ter-journee-terrassier-mini-pelle",
         "n": "Journée de terrassier avec mini-pelle et conducteur (travail en régie, payé à la journée)",
+        "nc": "Journée de terrassier avec mini-pelle",
         "u": "jour",
         "fp": 500,
         "sm": null,
@@ -379,6 +408,7 @@
       {
         "id": "fon-beton-de-proprete",
         "n": "Béton de propreté au fond des fouilles (chiffrage détaillé seulement)",
+        "nc": "Béton de propreté (chiffrage détaillé)",
         "u": "ml",
         "fp": 12,
         "sm": 4,
@@ -387,6 +417,7 @@
       {
         "id": "fon-semelle-filante-beton-arme-seul",
         "n": "Semelle filante – béton armé seul, dans une fouille déjà creusée (chiffrage détaillé)",
+        "nc": "Semelle filante seule (chiffrage détaillé)",
         "u": "ml",
         "fp": 85,
         "sm": 63,
@@ -395,6 +426,7 @@
       {
         "id": "fon-semelle-isolee-sous-poteau",
         "n": "Semelle isolée sous poteau (plot en béton armé ≈ 80 × 80 × 40 cm), fouille comprise",
+        "nc": "Semelle isolée sous poteau",
         "u": "u",
         "fp": 240,
         "sm": 110,
@@ -403,6 +435,7 @@
       {
         "id": "fon-longrine-beton-arme",
         "n": "Longrine en béton armé (poutre enterrée entre plots ou sous un mur)",
+        "nc": "Longrine en béton armé",
         "u": "ml",
         "fp": 70,
         "sm": 30,
@@ -411,6 +444,7 @@
       {
         "id": "fon-radier-general",
         "n": "Radier général (dalle de fondation épaisse sous toute la maison)",
+        "nc": "Radier général",
         "u": "m2",
         "fp": 160,
         "sm": null,
@@ -419,6 +453,7 @@
       {
         "id": "fon-surcout-sol-argileux",
         "n": "Surcoût des fondations en sol argileux (ordre de grandeur avant l'étude G2)",
+        "nc": "Surcoût des fondations en sol argileux",
         "u": "forfait",
         "fp": 12500,
         "sm": null,
@@ -445,6 +480,7 @@
       {
         "id": "fon-mur-de-soubassement",
         "n": "Mur de soubassement en parpaings sur les semelles (2-3 rangs), arase étanche comprise",
+        "nc": "Mur de soubassement en parpaings",
         "u": "ml",
         "fp": 85,
         "sm": 15,
@@ -453,6 +489,7 @@
       {
         "id": "fon-arase-etanche",
         "n": "Arase étanche seule (coupure contre les remontées d'humidité en pied de mur)",
+        "nc": "Arase étanche seule",
         "u": "ml",
         "fp": 12,
         "sm": 4,
@@ -461,6 +498,7 @@
       {
         "id": "fon-drain-peripherique",
         "n": "Drain autour de la maison, posé dans la fouille ouverte : gravier, géotextile (toile filtrante qui retient la terre), membrane, regards",
+        "nc": "Drain autour de la maison",
         "u": "ml",
         "fp": 60,
         "sm": 25,
@@ -469,6 +507,7 @@
       {
         "id": "fon-reseaux-sous-dallage-poses",
         "n": "Réseaux sous dallage posés et testés avant le coulage (évacuations, fourreaux) — compris dans la plomberie et l'électricité",
+        "nc": "Réseaux sous dallage (avant le coulage)",
         "u": "forfait",
         "fp": 0,
         "sm": null,
@@ -478,6 +517,7 @@
       {
         "id": "fon-dalle-terre-plein-isolee",
         "n": "Dalle sur terre-plein complète et isolée : hérisson (couche de cailloux sous la dalle), film, isolant RE2020, treillis, béton ≈ 12 cm",
+        "nc": "Dalle sur terre-plein isolée",
         "u": "m2",
         "fp": 140,
         "sm": 50,
@@ -486,6 +526,7 @@
       {
         "id": "fon-vide-sanitaire-complet",
         "n": "Vide sanitaire complet (murs ≈ 80 cm et plancher béton isolé au-dessus du vide)",
+        "nc": "Vide sanitaire complet",
         "u": "m2",
         "fp": 180,
         "sm": 95,
@@ -494,6 +535,7 @@
       {
         "id": "fon-sous-sol-enterre",
         "n": "Sous-sol enterré (gros œuvre brut, ordre de grandeur)",
+        "nc": "Sous-sol enterré (ordre de grandeur)",
         "u": "m2",
         "fp": 250,
         "sm": null,
@@ -502,6 +544,7 @@
       {
         "id": "fon-dalle-garage-non-isolee",
         "n": "Dalle du garage sur terre-plein, non isolée : hérisson (couche de cailloux sous la dalle), film, treillis, béton",
+        "nc": "Dalle du garage, non isolée",
         "u": "m2",
         "fp": 112,
         "sm": 32,
@@ -524,6 +567,7 @@
       {
         "id": "mac-mur-brique-monomur",
         "n": "Murs extérieurs en brique monomur 30 à 37,5 cm (brique isolante, sans doublage obligatoire)",
+        "nc": "Murs en brique monomur",
         "u": "m2",
         "fp": 125,
         "sm": 80,
@@ -532,6 +576,7 @@
       {
         "id": "mac-mur-beton-cellulaire-20-cm",
         "n": "Murs extérieurs en béton cellulaire 20 cm (à doubler d'un isolant intérieur)",
+        "nc": "Murs en béton cellulaire 20 cm (à doubler)",
         "u": "m2",
         "fp": 114,
         "sm": 34,
@@ -540,6 +585,7 @@
       {
         "id": "mac-mur-beton-cellulaire-30-cm",
         "n": "Murs extérieurs en béton cellulaire 30 à 36,5 cm (mur isolant, sans doublage)",
+        "nc": "Murs en béton cellulaire 30 cm (isolant)",
         "u": "m2",
         "fp": 130,
         "sm": 80,
@@ -548,6 +594,7 @@
       {
         "id": "mac-mur-beton-banche",
         "n": "Murs en béton banché (voile coulé) : murs enterrés, sous-sol, garage enterré",
+        "nc": "Murs en béton banché",
         "u": "m2",
         "fp": 140,
         "sm": null,
@@ -556,6 +603,7 @@
       {
         "id": "mac-chainage-horizontal",
         "n": "Chaînage horizontal en béton armé (ceinture en haut des murs, au niveau du plancher d'étage et le long des pignons)",
+        "nc": "Chaînage horizontal en béton armé",
         "u": "ml",
         "fp": 37,
         "sm": 14,
@@ -564,6 +612,7 @@
       {
         "id": "mac-raidisseur-chainage-vertical",
         "n": "Raidisseur (poteau en béton armé dans le mur : angles, côtés des grandes baies)",
+        "nc": "Raidisseur (chaînage vertical)",
         "u": "u",
         "fp": 88,
         "sm": 28,
@@ -572,6 +621,7 @@
       {
         "id": "mac-linteau-beton-arme",
         "n": "Linteau au-dessus d'une fenêtre ou d'une porte (béton armé ou prélinteau, jusqu'à ≈ 2,5 m)",
+        "nc": "Linteau en béton armé (jusqu'à 2,5 m)",
         "u": "u",
         "fp": 98,
         "sm": 28,
@@ -580,6 +630,7 @@
       {
         "id": "mac-appui-fenetre-seuil-prefabrique",
         "n": "Appui de fenêtre ou seuil de porte en béton préfabriqué (posé)",
+        "nc": "Appui de fenêtre ou seuil préfabriqué",
         "u": "u",
         "fp": 81,
         "sm": 51,
@@ -597,6 +648,7 @@
       {
         "id": "mac-rupteurs-thermiques-plancher",
         "n": "Rupteurs de ponts thermiques ou planelles isolées en rive du plancher d'étage",
+        "nc": "Rupteurs de ponts thermiques",
         "u": "ml",
         "fp": 19.6,
         "sm": 9.45,
@@ -616,6 +668,7 @@
       {
         "id": "toi-mur-ossature-bois-isole",
         "n": "Murs extérieurs en ossature bois isolés (montants 145 mm, isolant, frein-vapeur, panneau de contreventement, pare-pluie et tasseaux)",
+        "nc": "Murs extérieurs en ossature bois isolés",
         "u": "m2",
         "fp": 148,
         "sm": 63,
@@ -661,6 +714,7 @@
       {
         "id": "cou-couverture-tuiles-terre-cuite",
         "n": "Couverture en tuiles terre cuite tout compris (écran sous-toiture, liteaux, tuiles, rives, faîtage ventilé)",
+        "nc": "Couverture tuiles terre cuite, tout compris",
         "u": "m2",
         "fp": 92,
         "sm": 39,
@@ -669,6 +723,7 @@
       {
         "id": "cou-couverture-tuiles-beton",
         "n": "Couverture en tuiles béton tout compris (écran, liteaux, tuiles, rives, faîtage ventilé)",
+        "nc": "Couverture tuiles béton, tout compris",
         "u": "m2",
         "fp": 65,
         "sm": 29,
@@ -677,6 +732,7 @@
       {
         "id": "cou-couverture-ardoise-naturelle",
         "n": "Couverture en ardoise naturelle tout compris (écran, liteaux ou voliges, crochets, faîtage, rives)",
+        "nc": "Couverture ardoise naturelle, tout compris",
         "u": "m2",
         "fp": 146,
         "sm": 66,
@@ -685,6 +741,7 @@
       {
         "id": "cou-couverture-ardoise-fibres-ciment",
         "n": "Couverture en ardoises fibres-ciment tout compris (écran, liteaux, crochets, accessoires)",
+        "nc": "Couverture ardoise fibrociment, tout compris",
         "u": "m2",
         "fp": 107,
         "sm": 42,
@@ -693,6 +750,7 @@
       {
         "id": "cou-couverture-bac-acier",
         "n": "Couverture en bac acier anti-condensation (plaques, faîtage, rives, closoirs)",
+        "nc": "Couverture bac acier anti-condensation",
         "u": "m2",
         "fp": 66,
         "sm": 36,
@@ -701,6 +759,7 @@
       {
         "id": "cou-couverture-zinc-joint-debout",
         "n": "Couverture zinc à joint debout sur voligeage (voliges, écran, zinc, faîtage, rives)",
+        "nc": "Couverture zinc à joint debout",
         "u": "m2",
         "fp": 170,
         "sm": 60,
@@ -709,6 +768,7 @@
       {
         "id": "cou-toiture-terrasse-isolee",
         "n": "Toiture-terrasse isolée (pare-vapeur, isolant, étanchéité, relevés) — support compté à part",
+        "nc": "Toiture-terrasse isolée (hors support)",
         "u": "m2",
         "fp": 140,
         "sm": null,
@@ -717,6 +777,7 @@
       {
         "id": "cou-couvertine-acrotere",
         "n": "Couvertine d'acrotère en aluminium laqué (dessus des murets d'un toit plat)",
+        "nc": "Couvertine d'acrotère en alu laqué",
         "u": "ml",
         "fp": 45,
         "sm": null,
@@ -725,6 +786,7 @@
       {
         "id": "cou-gouttiere-zinc",
         "n": "Gouttière zinc posée (crochets, naissances, angles)",
+        "nc": "Gouttière zinc",
         "u": "ml",
         "fp": 65,
         "sm": 30,
@@ -733,6 +795,7 @@
       {
         "id": "cou-gouttiere-pvc",
         "n": "Gouttière PVC posée (crochets, naissances, angles)",
+        "nc": "Gouttière PVC",
         "u": "ml",
         "fp": 34,
         "sm": 12,
@@ -741,6 +804,7 @@
       {
         "id": "cou-gouttiere-alu-continu",
         "n": "Gouttière aluminium laqué en continu (profilée sur place, sans raccord)",
+        "nc": "Gouttière alu en continu",
         "u": "ml",
         "fp": 80,
         "sm": null,
@@ -750,6 +814,7 @@
       {
         "id": "cou-descente-eaux-pluviales",
         "n": "Descente d'eaux pluviales avec coudes et colliers",
+        "nc": "Descente d'eaux pluviales",
         "u": "ml",
         "fp": 37,
         "sm": 10,
@@ -758,6 +823,7 @@
       {
         "id": "cou-sous-face-pvc",
         "n": "Sous-face des débords de toit en PVC (lambris + profilés + ventilation)",
+        "nc": "Sous-face des débords en PVC",
         "u": "m2",
         "fp": 43,
         "sm": 19,
@@ -766,6 +832,7 @@
       {
         "id": "cou-sous-face-bois",
         "n": "Sous-face des débords de toit en lambris bois lasuré",
+        "nc": "Sous-face des débords en bois",
         "u": "m2",
         "fp": 49,
         "sm": 22,
@@ -817,6 +884,7 @@
       {
         "id": "vrd-tranchee-reseaux",
         "n": "Tranchée pour réseaux enterrés (ouverture, lit de sable, grillage avertisseur, rebouchage)",
+        "nc": "Tranchée pour réseaux enterrés",
         "u": "ml",
         "fp": 25,
         "sm": null,
@@ -825,6 +893,7 @@
       {
         "id": "vrd-fourreaux-arrivees",
         "n": "Fourreaux d'arrivée électricité, eau et fibre (3 gaines + grillages avertisseurs)",
+        "nc": "Fourreaux électricité, eau et fibre",
         "u": "ml",
         "fp": 15,
         "sm": 7,
@@ -833,6 +902,7 @@
       {
         "id": "vrd-tube-pehd-eau-potable",
         "n": "Tube d'eau potable en PEHD (polyéthylène, tuyau noir souple) de 25 mm, du compteur à la maison, tiré dans le fourreau (raccords non compris)",
+        "nc": "Tube d'eau potable du compteur à la maison",
         "u": "ml",
         "fp": 4.41,
         "sm": 4.22,
@@ -841,6 +911,7 @@
       {
         "id": "vrd-canalisation-pvc-enterree",
         "n": "Canalisation PVC enterrée (eaux usées vers l'égout ou la fosse, eaux de pluie vers le puits)",
+        "nc": "Canalisation PVC enterrée",
         "u": "ml",
         "fp": 30,
         "sm": 8,
@@ -849,6 +920,7 @@
       {
         "id": "vrd-regard-de-visite",
         "n": "Regard de visite ou de branchement avec tampon",
+        "nc": "Regard de visite ou de branchement",
         "u": "u",
         "fp": 150,
         "sm": 40,
@@ -857,6 +929,7 @@
       {
         "id": "vrd-puits-infiltration",
         "n": "Puits d'infiltration des eaux de pluie : buses, gravier, géotextile (toile filtrante qui retient la terre), tampon",
+        "nc": "Puits d'infiltration des eaux de pluie",
         "u": "u",
         "fp": 1500,
         "sm": 750,
@@ -876,6 +949,7 @@
       {
         "id": "rac-extension-reseau-electrique-part-fixe",
         "n": "Extension du réseau électrique Enedis jusqu'au terrain — part fixe",
+        "nc": "Extension du réseau Enedis : part fixe",
         "u": "forfait",
         "fp": 1658,
         "sm": null,
@@ -885,6 +959,7 @@
       {
         "id": "rac-extension-reseau-electrique-au-metre",
         "n": "Extension du réseau électrique Enedis — par mètre de réseau à créer",
+        "nc": "Extension du réseau Enedis : au mètre",
         "u": "ml",
         "fp": 68.4,
         "sm": null,
@@ -911,6 +986,7 @@
       {
         "id": "fac-echafaudage-de-facade",
         "n": "Échafaudage de façade (montage, location pendant l'enduit, démontage)",
+        "nc": "Échafaudage de façade",
         "u": "m2",
         "fp": 12,
         "sm": null,
@@ -925,6 +1001,7 @@
       {
         "id": "fac-bardage-composite",
         "n": "Bardage composite sur ossature avec pare-pluie",
+        "nc": "Bardage composite",
         "u": "m2",
         "fp": 161,
         "sm": 96,
@@ -944,6 +1021,7 @@
       {
         "id": "ele-installation-electrique-maison-neuve",
         "n": "Installation électrique complète d'une maison neuve (norme NF C 15-100)",
+        "nc": "Installation électrique complète",
         "u": "m2",
         "fp": 100,
         "sm": 40,
@@ -972,6 +1050,7 @@
       {
         "id": "plo-reseaux-plomberie-maison-neuve",
         "n": "Plomberie d'une maison neuve : réseaux d'eau froide, eau chaude et évacuations (sans les appareils)",
+        "nc": "Réseaux de plomberie (sans les appareils)",
         "u": "m2",
         "fp": 54,
         "sm": 22,
@@ -997,6 +1076,7 @@
       {
         "id": "cha-plancher-chauffant-eau-hors-chape",
         "n": "Plancher chauffant à eau (isolant à plots, tubes, collecteur) — hors chape",
+        "nc": "Plancher chauffant à eau (hors chape)",
         "u": "m2",
         "fp": 58,
         "sm": 28,
@@ -1017,6 +1097,7 @@
       {
         "id": "cha-conduit-de-fumee-isole",
         "n": "Conduit de fumée isolé double paroi pour poêle (traversées, sortie et étanchéité de toit)",
+        "nc": "Conduit de fumée isolé pour poêle",
         "u": "ml",
         "fp": 260,
         "sm": null,
@@ -1042,6 +1123,7 @@
       {
         "id": "iso-doublage-isolant-colle",
         "n": "Doublage isolant collé des murs extérieurs : plaque de plâtre + polyuréthane, R (pouvoir isolant) ≥ 3,7",
+        "nc": "Doublage isolant collé (R ≥ 3,7)",
         "u": "m2",
         "fp": 52,
         "sm": 30,
@@ -1059,6 +1141,7 @@
       {
         "id": "iso-isolant-sous-chape",
         "n": "Isolant sous chape : panneaux polyuréthane posés sur la dalle, R (pouvoir isolant) ≥ 3",
+        "nc": "Isolant sous chape (R ≥ 3)",
         "u": "m2",
         "fp": 35,
         "sm": 23,
@@ -1075,6 +1158,7 @@
       {
         "id": "rec-test-etancheite-intermediaire",
         "n": "Test d'étanchéité à l'air intermédiaire (après les doublages, avant les plafonds et les cloisons)",
+        "nc": "Test d'étanchéité à l'air intermédiaire",
         "u": "forfait",
         "fp": 270,
         "sm": null,
@@ -1118,6 +1202,7 @@
       {
         "id": "anx-benne-second-oeuvre",
         "n": "Deuxième benne pour le second œuvre (chutes de plaques, emballages, isolants)",
+        "nc": "Benne du second œuvre",
         "u": "forfait",
         "fp": 400,
         "sm": null,
@@ -1179,6 +1264,7 @@
       {
         "id": "pei-peinture-murs-plaques-neuves",
         "n": "Peinture des murs sur plaques neuves : impression (sous-couche) + 2 couches",
+        "nc": "Peinture des murs (plaques neuves)",
         "u": "m2",
         "fp": 26.1,
         "sm": 5.1,
@@ -1187,6 +1273,7 @@
       {
         "id": "pei-peinture-plafonds-plaques-neuves",
         "n": "Peinture des plafonds sur plaques neuves : impression (sous-couche) + 2 couches",
+        "nc": "Peinture des plafonds (plaques neuves)",
         "u": "m2",
         "fp": 30.1,
         "sm": 5.1,
@@ -1244,6 +1331,7 @@
       {
         "id": "min-escalier-bois-quart-tournant",
         "n": "Escalier intérieur en bois quart tournant, sur mesure, posé avec sa rampe",
+        "nc": "Escalier bois quart tournant sur mesure",
         "u": "u",
         "fp": 4338,
         "sm": 1988,
@@ -1352,6 +1440,7 @@
       {
         "id": "rec-controles-re2020-fin-de-chantier",
         "n": "Contrôles RE2020 de fin de chantier : test d'étanchéité à l'air + contrôle de la ventilation + attestation RE2020",
+        "nc": "Contrôles RE2020 de fin de chantier",
         "u": "forfait",
         "fp": 650,
         "sm": null,
@@ -1361,6 +1450,7 @@
       {
         "id": "rec-attestation-argile-daact",
         "n": "Attestation « argile » (retrait-gonflement) à joindre à la déclaration d'achèvement",
+        "nc": "Attestation « argile » à l'achèvement",
         "u": "forfait",
         "fp": 292,
         "sm": null,
@@ -1370,6 +1460,7 @@
       {
         "id": "rec-attestations-parasismiques",
         "n": "Attestations parasismiques (au dépôt du permis + à l'achèvement)",
+        "nc": "Attestations parasismiques",
         "u": "forfait",
         "fp": 433,
         "sm": null,
@@ -1379,6 +1470,7 @@
       {
         "id": "rec-proces-verbal-de-reception",
         "n": "Réception des travaux avec chaque artisan (procès-verbal, réserves) — démarche gratuite",
+        "nc": "Réception des travaux (procès-verbal)",
         "u": "forfait",
         "fp": 0,
         "sm": null,
@@ -1388,6 +1480,7 @@
       {
         "id": "rec-declaration-achevement-daact",
         "n": "Déclaration d'achèvement et de conformité des travaux en mairie (DAACT) — démarche gratuite",
+        "nc": "Déclaration d'achèvement (DAACT)",
         "u": "forfait",
         "fp": 0,
         "sm": null,
@@ -1416,6 +1509,7 @@
       {
         "id": "tax-taxe-amenagement-100-premiers-m2",
         "n": "Taxe d'aménagement + redevance d'archéologie — 100 premiers m² (résidence principale)",
+        "nc": "Taxe d'aménagement : 100 premiers m²",
         "u": "m2",
         "fp": 26.31,
         "sm": null,
@@ -1443,6 +1537,7 @@
       {
         "id": "tax-taxe-amenagement-au-dela-100-m2",
         "n": "Taxe d'aménagement + redevance d'archéologie — m² au-delà de 100",
+        "nc": "Taxe d'aménagement : m² au-delà de 100",
         "u": "m2",
         "fp": 52.63,
         "sm": null,
@@ -1470,6 +1565,7 @@
       {
         "id": "tax-taxe-amenagement-stationnement",
         "n": "Taxe d'aménagement + redevance d'archéologie — places de stationnement extérieures",
+        "nc": "Taxe d'aménagement : places extérieures",
         "u": "u",
         "fp": 172.75,
         "sm": null,
@@ -1497,6 +1593,7 @@
       {
         "id": "tax-pfac-participation-tout-a-l-egout",
         "n": "Participation pour le raccordement au tout-à-l'égout (PFAC)",
+        "nc": "Participation au tout-à-l'égout (PFAC)",
         "u": "forfait",
         "fp": 2000,
         "sm": null,
@@ -1506,6 +1603,7 @@
       {
         "id": "tax-redevances-spanc-controles",
         "n": "Redevances du SPANC (service public d'assainissement non collectif) : contrôle de conception + contrôle de bonne exécution",
+        "nc": "Redevances du SPANC (contrôles)",
         "u": "forfait",
         "fp": 270,
         "sm": null,
@@ -1515,6 +1613,7 @@
       {
         "id": "tax-declaration-elements-imposition",
         "n": "Déclaration des éléments d'imposition sur impots.gouv (« Gérer mes biens immobiliers ») dans les 90 jours après l'achèvement (démarche gratuite)",
+        "nc": "Déclaration des éléments d'imposition",
         "u": "forfait",
         "fp": 0,
         "sm": null,

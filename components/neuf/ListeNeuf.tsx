@@ -6,8 +6,10 @@
  * (données pures, testées) ; ici, l'affichage, avec les briques de la rénovation (`ListeLots`,
  * `TitrePhase`, `BlocLot`, `LignesLot`) :
  * - 4 grandes phases en intertitres, chaque lot UNE fois, fermé tant qu'on ne l'ouvre pas ;
- * - dans un lot présent à plusieurs étapes du chantier, ses postes sous un sous-titre d'étape, chaque
- *   bloc du catalogue avec sa note ;
+ * - dans un lot présent à plusieurs étapes du chantier, ses postes sous un sous-titre d'étape ;
+ * - les notes des blocs du catalogue en infobulle (N11) : sur l'icône d'information du sous-titre de leur
+ *   étape, sinon de l'en-tête du lot (`notesDuLotNeuf`) ; un clic les déplie. Dans les lignes, le libellé
+ *   court du poste (`nc`) ; son libellé complet et sa note sont repliés derrière l'icône de la ligne (`Row`) ;
  * - les postes qui s'excluent sur une ligne de choix : la ligne du poste retenu et ses alternatives en
  *   boutons ; un clic choisit (l'appelant coche, décoche l'autre et met la réponse à jour) ; deux
  *   alternatives cochées (un ancien projet) : les deux lignes, sous un avertissement ; une alternative
@@ -31,7 +33,7 @@ import {
 import { INFO_PHASES } from "@/lib/estimateur/etapes-neuf";
 import { badgeNeuf, lignesPersoDuLot } from "@/lib/estimateur/detaille-neuf";
 import {
-  GRANDES_PHASES_NEUF, POSTES_FRAIS_NEUF, CARTE_FRAIS, CARTE_DEMARCHES, elementsLotNeuf, lotsAffichesNeuf, postesDesElements, postesCochesNeuf,
+  GRANDES_PHASES_NEUF, POSTES_FRAIS_NEUF, CARTE_FRAIS, CARTE_DEMARCHES, elementsLotNeuf, lotsAffichesNeuf, notesDuLotNeuf, postesDesElements, postesCochesNeuf,
   alternativeMontreeNeuf, raisonIndisponibleNeuf, type PosteListeNeuf, type LigneChoixNeuf,
 } from "@/lib/estimateur/liste-neuf";
 
@@ -114,14 +116,16 @@ export function ListeNeuf(props: PropsCommunes & { custom: CustomLine[]; outils:
     if (seulementCoches && cnt === 0) return null;
     const ouvert = !!open[c];
     const amt = htDe(postesDesElements(elements)) + customLotHT(cLines, c);
+    const notes = notesDuLotNeuf(elements);
+    const traduire = (xs: string[]) => xs.map((x) => catT(locale, "notes", x));
     return (
       <BlocLot key={c} ouvert={ouvert} entete={{
         icone: ICON[c] || "•", nom: catT(locale, "corps", c), cnt, ouvert, onBascule: () => onBascule(c),
-        montant: cnt > 0 ? fmt(amt) + " " + dl.liste.ht : "",
+        montant: cnt > 0 ? fmt(amt) + " " + dl.liste.ht : "", notes: traduire(notes.entete),
       }}>
         {elements.map((e) => {
-          if (e.type === "etape") return <SousEtape key={"e-" + e.phase}>{catT(locale, "phases", e.phase)}</SousEtape>;
-          if (e.type === "note") return <div key={"n-" + e.l.p + e.l.t[0]?.id} className="lotnote">{catT(locale, "notes", e.l.note ?? "")}</div>;
+          if (e.type === "etape") return <SousEtape key={"e-" + e.phase} notes={traduire(notes.etapes[e.phase] ?? [])} labelInfo={dl.liste.infoNote}>{catT(locale, "phases", e.phase)}</SousEtape>;
+          if (e.type === "note") return null;           // en infobulle (N11) : sous-titre d'étape ou en-tête du lot
           if (e.type === "choix") return ligneChoix(e.ligne, e.membres, e.boutons);
           return seulementCoches && !coche(e.p) ? null : rangee(e.p);
         })}

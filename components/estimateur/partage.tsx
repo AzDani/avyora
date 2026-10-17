@@ -22,6 +22,35 @@ export function gras(s: string): ReactNode {
 }
 
 // ── Sous-composants ───────────────────────────────────────────────────────────
+/** L'icône d'information (ⓘ) des notes repliées (N11). */
+export function IconeInfo() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M8 7.3v3.9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <circle cx="8" cy="4.9" r="0.95" fill="currentColor" />
+    </svg>
+  );
+}
+
+/**
+ * Une note repliée derrière l'icône d'information (revue rénovation / neuf, N11) : un clic la déplie
+ * (`TexteInfo`, sous son libellé) ou la replie. `titre` : l'infobulle au survol (la note d'un lot ou d'une
+ * étape) ; sans lui, l'infobulle répète `label`.
+ */
+export function BoutonInfo({ ouvert, onBascule, label, titre }: { ouvert: boolean; onBascule: () => void; label: string; titre?: string }) {
+  return (
+    <button type="button" className={"ibtn" + (ouvert ? " on" : "")} aria-expanded={ouvert} aria-label={label} title={titre ?? label} onClick={onBascule}>
+      <IconeInfo />
+    </button>
+  );
+}
+
+/** Le texte d'une note dépliée : un paragraphe par morceau (libellé complet du poste, note…). */
+export function TexteInfo({ morceaux }: { morceaux: ReactNode[] }) {
+  return <div className="tinfo" role="note">{morceaux.map((m, i) => <p key={i}>{m}</p>)}</div>;
+}
+
 /** Prix « Fait faire » / « Je le fais » : clic = choisir le mode, double-clic sur le montant = éditer son prix, ↺ = reset. */
 export function ChoicePrice({ label, active, activeCls, amount, edited, onSelect, onEdit, onReset }: {
   label: string; active: boolean; activeCls: string; amount: number | null; edited: boolean;

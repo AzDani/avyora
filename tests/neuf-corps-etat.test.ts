@@ -32,7 +32,7 @@ import {
 import { ctxDetailNeuf, etatParDefaut, etatDepuisPreset, changerReponseNeuf, choisirNeuf, cocherNeufEtat, type EtatNeuf } from "@/lib/estimateur/detaille-neuf";
 import { TOUTES_QUESTIONS_NEUF } from "@/lib/estimateur/questions-neuf";
 import { INFO_PHASES } from "@/lib/estimateur/etapes-neuf";
-import { catT } from "@/lib/estimateur/catalog-i18n";
+import { catT, catPoste } from "@/lib/estimateur/catalog-i18n";
 import { dictNeuf } from "@/lib/i18n/neuf";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: () => {}, replace: () => {}, refresh: () => {}, back: () => {}, forward: () => {}, prefetch: () => {} }) }));
@@ -61,9 +61,10 @@ function liste(e: EtatNeuf, open: Record<string, boolean>, locale: "fr" | "en" =
   const el = createElement("div", null, createElement(CarteFraisNeuf, props), createElement(ListeNeuf, { ...props, custom: [], outils: OUTILS }));
   return renderToStaticMarkup(createElement(LangProvider, { locale, children: el }));
 }
-/** Le contenu d'un lot ouvert dans le HTML : de son en-tête au lot suivant. */
+/** Le contenu d'un lot ouvert dans le HTML : de son en-tête au lot suivant. Le nom du lot est suivi de la fin
+ *  de son `<span>` ou de l'icône de ses notes (N11). */
 const lotHtml = (html: string, nom: string) => {
-  const i = html.indexOf(`<span class="nm">${echapper(nom)}</span>`);
+  const i = html.indexOf(`<span class="nm">${echapper(nom)}<`);
   const suite = html.slice(i + 1).search(/<div class="acc(?: open)?">/);
   return html.slice(i, suite < 0 ? undefined : i + 1 + suite);
 };
@@ -229,8 +230,8 @@ describe("N10 · lignes de choix", () => {
     for (const locale of ["fr", "en"] as const) {
       const html = lotHtml(liste(e0, { "Maçonnerie": true }, locale), catT(locale, "corps", "Maçonnerie"));
       expect(html).toContain(`class="on" aria-pressed="true">${locale === "fr" ? "Parpaing" : "Concrete block"}</button>`);
-      expect(html).toContain(echapper(catT(locale, "postes", poste(ID_PARPAING).t.n)));
-      expect(html).not.toContain(echapper(catT(locale, "postes", poste("mac-monter-un-mur-en-brique").t.n)));
+      expect(html).toContain(echapper(catPoste(locale, poste(ID_PARPAING).t)));
+      expect(html).not.toContain(echapper(catPoste(locale, poste("mac-monter-un-mur-en-brique").t)));
     }
     // béton cellulaire 30 cm : la réponse passe à « béton cellulaire », le parpaing se décoche (plus de murs comptés deux fois)
     const bc = poste("mac-mur-beton-cellulaire-30-cm");
@@ -343,14 +344,14 @@ describe("N10 · lignes de choix", () => {
     expect(compte(html, /class="choixl"/g)).toBe(3);                      // couverture, gouttières, sous-face
     expect(compte(html, /role="group" aria-label="Couverture"/g)).toBe(1);
     expect(compte(html, /aria-pressed="true"/g)).toBe(3);
-    expect(html).toContain(echapper(catT("fr", "postes", poste("cou-couverture-tuiles-terre-cuite").t.n)));
-    expect(html).not.toContain(echapper(catT("fr", "postes", poste("cou-couverture-ardoise-naturelle").t.n)));
+    expect(html).toContain(echapper(catPoste("fr", poste("cou-couverture-tuiles-terre-cuite").t)));
+    expect(html).not.toContain(echapper(catPoste("fr", poste("cou-couverture-ardoise-naturelle").t)));
     // toutes décochées : la ligne de la couverture que la maison décrit, décochée, aucun bouton pressé
     const sansToit: EtatNeuf = { ...e0, maison: { ...e0.maison, couverture: "zinc" }, sel: { ...e0.sel, [cle("cou-couverture-tuiles-terre-cuite")]: { on: false } } };
     const membres = LIGNES_CHOIX_NEUF.find((g) => g.cle === "couverture")!.alternatives.map((a) => poste(a.id));
     expect(alternativeMontreeNeuf(sansToit.maison, membres).t.id).toBe("cou-couverture-zinc-joint-debout");
     const h2 = lotHtml(liste(sansToit, { "Couverture & zinguerie": true }), "Couverture & zinguerie");
-    expect(h2).toContain(echapper(catT("fr", "postes", poste("cou-couverture-zinc-joint-debout").t.n)));
+    expect(h2).toContain(echapper(catPoste("fr", poste("cou-couverture-zinc-joint-debout").t)));
     expect(compte(h2, /aria-pressed="true"/g)).toBe(2);
     // « Seulement les postes cochés » : la ligne de choix sans alternative cochée disparaît
     const h3 = lotHtml(liste(sansToit, { "Couverture & zinguerie": true }, "fr", true), "Couverture & zinguerie");
@@ -364,8 +365,8 @@ describe("N10 · lignes de choix", () => {
       const html = lotHtml(liste(deux, { "Couverture & zinguerie": true }, locale), catT(locale, "corps", "Couverture & zinguerie"));
       expect(compte(html, /class="choixl doublon"/g)).toBe(1);
       expect(html).toContain(`<p class="choixl-av" role="note">${echapper(dictNeuf(locale).detail.choixDoublon)}</p>`);
-      expect(html).toContain(echapper(catT(locale, "postes", poste("cou-couverture-tuiles-terre-cuite").t.n)));
-      expect(html).toContain(echapper(catT(locale, "postes", poste("cou-couverture-ardoise-naturelle").t.n)));
+      expect(html).toContain(echapper(catPoste(locale, poste("cou-couverture-tuiles-terre-cuite").t)));
+      expect(html).toContain(echapper(catPoste(locale, poste("cou-couverture-ardoise-naturelle").t)));
       expect(compte(html, new RegExp(`role="group" aria-label="${locale === "fr" ? "Couverture" : "Roofing"}"`, "g"))).toBe(1);
     }
     // le total compte les deux, comme avant N10 (rien n'est décoché sans qu'on le demande)
@@ -402,7 +403,7 @@ describe("N10 · démarches et frais hors de la liste et des compteurs", () => {
       const frais = html.slice(html.indexOf('class="frais-c"'), html.indexOf('class="tools"'));
       expect(compte(frais, /class="trow"/g)).toBe(6);
       expect(frais).not.toContain('class="cnt"');
-      for (const { t } of POSTES_FRAIS_NEUF) expect(frais).toContain(echapper(catT(locale, "postes", t.n)));
+      for (const { t } of POSTES_FRAIS_NEUF) expect(frais).toContain(echapper(catPoste(locale, t)));
       const dem = html.slice(html.indexOf('class="dem-c"'));
       const n = Object.values(INFO_PHASES).reduce((s, p) => s + p.dem.length, 0);
       expect(compte(dem, /<li>/g)).toBe(n);

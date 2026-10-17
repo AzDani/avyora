@@ -749,7 +749,7 @@
         "u": "m2",
         "fp": 90,
         "sm": 40,
-        "note": "bois / composite sur ossature ventilée — PVC ~40-80, fibrociment ~60-110, métal/zinc jusqu'à ~200 €/m²"
+        "note": "bois sur ossature ventilée — PVC ~40-80, fibrociment ~60-110, composite ~160, métal/zinc jusqu'à ~200 €/m²"
       },
       {
         "id": "fac-elements-decoratifs-corniches-bandeaux",
@@ -895,7 +895,7 @@
         "note": "largeur ~4 m — base alu manuel"
       }
     ],
-    "note": "prix base PVC ; alu +30-50 %, bois +40-70 %"
+    "note": "prix de base en alu ; PVC −20 à −40 %, bois +5 % — le prix affiché suit le matériau choisi"
   },
   {
     "c": "Isolation",
@@ -925,7 +925,7 @@
         "fp": 55,
         "sm": 15,
         "tva": 5.5,
-        "note": "isolant + ossature + plaque ; bandes et enduit comptés à part"
+        "note": "isolant + ossature + plaque ; bandes et enduit : voir Cloisons / Plâtrerie"
       },
       {
         "id": "iso-isolation-du-sol-plancher-bas",

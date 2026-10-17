@@ -40,6 +40,11 @@ export interface Tache {
    *  alias de `identite.ts`. Voir la décision D16 du 19/09/2026. */
   id: string;
   n: string;            // nom
+  /** Libellé COURT d'affichage (45 caractères au plus) d'un poste propre au neuf, lu par la ligne de la
+   *  liste (`Row`) à la place de `n` ; le libellé complet reste derrière l'icône d'information de la
+   *  ligne, et partout ailleurs (« Mon devis », fiche, PDF). Ce n'est PAS une clé : `key(lot, n)`, les
+   *  sélections enregistrées et les correspondances ne lisent que `n` (revue rénovation / neuf, N11). */
+  nc?: string;
   u: string;            // unité : m2 | ml | u | point | forfait | jour | pct
   fp: number | null;    // fourni-posé HT
   sm: number | null;    // sans MO (fourniture) HT ; null = prestation

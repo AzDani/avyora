@@ -106,6 +106,8 @@ const fr = {
     ht: "HT",
     locNote: "Prix indicatifs **/jour** — à confirmer auprès du loueur. Indique le nombre de jours.",
     reset: "Tout réinitialiser",
+    /** Icône d'information d'une note de lot ou d'étape (N11) : son infobulle est la note elle-même. */
+    infoNote: "À savoir",
   },
   /* Barre live (les deux détaillés) */
   live: {
@@ -176,6 +178,8 @@ const fr = {
     jeLeFais: "Je le fais",
     noteVoir: "Voir / modifier la note",
     noteAjouter: "Ajouter une note / un lien",
+    /** Icône d'information de la ligne (N11) : déplie le libellé complet et la note du poste. */
+    info: "Voir le détail du poste",
     notePlaceholder: "Note ou lien matériau (https://…)",
     ouvrir: "Ouvrir ↗",
     ok: "OK",
@@ -306,6 +310,7 @@ const en: typeof fr = {
     ht: "excl. VAT",
     locNote: "Indicative prices **/day** — confirm with the rental company. Enter the number of days.",
     reset: "Reset everything",
+    infoNote: "Good to know",
   },
   live: {
     totalK: "Estimated total",
@@ -370,6 +375,7 @@ const en: typeof fr = {
     jeLeFais: "DIY",
     noteVoir: "View / edit the note",
     noteAjouter: "Add a note / a link",
+    info: "See item details",
     notePlaceholder: "Note or material link (https://…)",
     ouvrir: "Open ↗",
     ok: "OK",

@@ -6,8 +6,9 @@
  * hauteur en lecture seule (`.ro`), les choix techniques repliés derrière leur ligne de résumé
  * (`.tech`). Le champ en faute (`aria-invalid`) et la case « Niveaux » en lecture seule sont ceux de
  * la rénovation (`INTAKE_CSS`, A7). Puis la liste rangée par corps d'état (N10) : sous-titres d'étape
- * dans un lot (`.setape`), lignes de choix (`.choixl`, `.tchoix`), carte « Taxes, assurance et frais »
- * et liste « Démarches » (`.frais-c`, `.dem-c`) ; badges « Démarche » et « % des travaux »,
+ * dans un lot (`.setape`, son infobulle et celle de l'en-tête du lot : `.acc-info`, N11), lignes de choix
+ * (`.choixl`, `.tchoix`), carte « Taxes, assurance et frais » et liste « Démarches » (`.frais-c`,
+ * `.dem-c`) ; badges « Démarche » et « % des travaux »,
  * étiquette « Pro obligatoire » et avertissement « hors garantie décennale » des lignes, ligne
  * « Nouveaux postes cochés » et confirmation de « Tout passer en… » (`.nv`, N3). Porté de
  * `maquettes/neuf/page.html` ; aucun `@import`. Les outils de la liste (`.tools`), les vues et les
@@ -61,8 +62,12 @@ export const NEUF_DETAIL_CSS = `
 .av-neuf-d .acc-h .acc-sous{font-weight:500;color:var(--faint);font-size:12.5px}
 .av-neuf-d .lotnote{font-size:11.5px;color:var(--faint);padding:8px 0 2px;line-height:1.45}
 /* N10 : un lot présent à plusieurs étapes du chantier, ses postes sous un sous-titre d'étape */
-.av-neuf-d .setape{font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--brand);padding:14px 0 0}
+.av-neuf-d .setape{display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--brand);padding:14px 0 0}
 .av-neuf-d .setape:first-child{padding-top:8px}
+/* N11 : les notes des blocs en infobulle, sur l'icône du sous-titre d'étape ou de l'en-tête du lot ; un clic les déplie */
+.av-neuf-d .setape+.tinfo{margin:6px 0 2px}
+.av-neuf-d .acc-info{padding:0 18px 12px}
+.av-neuf-d .acc-info .tinfo{margin:0}
 /* ligne de choix : la ligne du poste retenu, ses alternatives en boutons dessous (le style des variantes) */
 .av-neuf-d .choixl{border-bottom:1px solid var(--line)}
 .av-neuf-d .choixl:last-child{border-bottom:0}
@@ -97,13 +102,14 @@ export const NEUF_DETAIL_CSS = `
 @media(max-width:560px){
 .av-neuf-d .tchoix{padding-left:0;grid-column:2/-1}
 .av-neuf-d .choix-g .vseg button{min-height:40px}
-.av-neuf-d .decennale,.av-neuf-d .mention-soi{margin-left:0}
+.av-neuf-d .decennale,.av-neuf-d .mention-soi,.av-neuf-d .trow .tinfo{margin-left:0}
 .av-neuf-d .tech{padding-left:12px}
 .av-neuf-d .tech-r{flex-wrap:wrap}
 .av-neuf-d .tech-btn{min-height:44px}
 .av-neuf-d .nv-seg button,.av-neuf-d .nv-act button,.av-neuf-d .nv-tout{min-height:44px}
 .av-neuf-d .nv-tout{margin-left:0}
-/* les postes du neuf ont de longues notes : sur mobile, les commandes passent sous le libellé */
+/* sur mobile, les commandes passent sous le libellé (puces, « Pro obligatoire », boutons des lignes de choix) ; les
+   notes, longues, sont repliées depuis N11 */
 .av-neuf-d .trow{grid-template-columns:22px minmax(0,1fr)}
 .av-neuf-d .trow .tctl{grid-column:2/-1;justify-content:flex-start}
 /* barre live : la ligne du total de la rénovation (A7, vérification). Rien n'y est coupé à une hauteur

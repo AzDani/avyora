@@ -13,6 +13,7 @@ const chaines = (lots: typeof CATALOG) => {
     if (l.note) out.push(["notes", l.note]);
     for (const t of l.t) {
       out.push(["postes", t.n], ["unites", t.u]);
+      if (t.nc) out.push(["postes", t.nc]);            // libellé court d'affichage (N11)
       if (t.note) out.push(["notes", t.note]);
       for (const g of ((t as { vars?: Var[] }).vars ?? [])) {
         out.push(["vgroups", g.label]);

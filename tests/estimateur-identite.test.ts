@@ -84,7 +84,8 @@ describe("D16 · garde : rien dans le moteur ne cite un poste qui n'existe pas",
     const bloc = src.slice(debut, src.indexOf("\n  },", debut)); /* jusqu'à la fin du bloc, pas jusqu'au bloc suivant */
     const noms = [...bloc.matchAll(/^\s*"([^"]+)":\s*"/gm)].map((m) => m[1]);
     expect(noms.length).toBeGreaterThan(150);
-    const connus = new Set([...CATALOG, ...CATALOG_NEUF].flatMap((l) => l.t.map((t) => t.n)));
+    /* Un libellé réel : celui d'un poste (`n`) ou son libellé court d'affichage (`nc`, postes propres au neuf, N11). */
+    const connus = new Set([...CATALOG, ...CATALOG_NEUF].flatMap((l) => l.t.flatMap((t) => (t.nc ? [t.n, t.nc] : [t.n]))));
     expect(noms.filter((n) => !connus.has(n))).toEqual([]);
   });
 });

@@ -7,15 +7,18 @@
  *  garantie décennale » et les mentions d'un poste faisable soi-même (PAC, climatisation, borne)
  *  aussi (D2, D4). Les prix unitaires des deux puces viennent du moteur (`puReel`, N7) pour les deux
  *  natures : prix unitaire × quantité = montant de la ligne, région et barème de finition du poste
- *  compris. Textes : `dictDetail` (N6), au tutoiement, en français et en anglais. */
+ *  compris. Textes : `dictDetail` (N6), au tutoiement, en français et en anglais. Libellé et note (N11) : la
+ *  ligne montre le libellé court d'un poste propre au neuf (`nc`, 45 caractères au plus) ; sa note, et son
+ *  libellé complet quand il est raccourci, restent derrière l'icône d'information, repliés, pour les deux
+ *  natures. */
 import { useState, type ReactNode } from "react";
 import NumStepper from "@/components/Stepper";
 import { useLocale } from "@/components/i18n/LangProvider";
-import { catT } from "@/lib/estimateur/catalog-i18n";
+import { catT, catPoste } from "@/lib/estimateur/catalog-i18n";
 import { key, isAuto, autoQty, lineHT, effPrices, puReel, peutFaireSoiMeme, horsDecennaleSoiMeme, MENTIONS_SOI_MEME, type Ctx, type Selection, type Lot, type Tache, type RaisonPro } from "@/lib/estimateur";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 import { dictDetail } from "@/lib/i18n/detail";
-import { ChoicePrice, fmt, isUrl } from "./partage";
+import { BoutonInfo, ChoicePrice, TexteInfo, fmt, isUrl } from "./partage";
 
 export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar, onNote, onPu, onPm, badge, proRaison, choix }: {
   l: Lot; t: Tache; ctx: Ctx; sel: Selection; loc: boolean;
@@ -34,6 +37,7 @@ export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onM
   const s = sel[key(l.c, t.n)] || {};
   const on = !!s.on, self = !!s.self;
   const [noteOpen, setNoteOpen] = useState<boolean>(false);
+  const [infoOpen, setInfoOpen] = useState<boolean>(false);
   const [puEdit, setPuEdit] = useState<boolean>(false);
   const variant = !!(t.mat || t.vitrage || t.moto || t.taille || (t.vars && t.vars.length));
   const ep = effPrices(t, s, ctx);
@@ -70,13 +74,16 @@ export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onM
   const pctTxt = badge === "pct" && t.fp != null && !puEdited
     ? `${t.fp.toLocaleString(locale === "en" ? "en-US" : "fr-FR")} ${t.assiette === "projet" || (t.frais && t.assiette !== "travaux") ? nTxt.pctProjet : nTxt.pctTravaux}`
     : null;
+  /* Le détail replié derrière l'icône d'information : le libellé complet quand la ligne en montre un
+     court (neuf), puis la note du catalogue. */
+  const info = [t.nc ? catT(locale, "postes", t.n) : null, t.note ? catT(locale, "notes", t.note) : null].filter((x): x is string => !!x);
   const au = isAuto(ctx, l.c, t.n);
   const autoVal = au ? autoQty(ctx, l.c, t.n, sel) ?? 0 : 0;
 
   return (
     <div className="trow">
       <button className={"cbx" + (on ? " on" : "")} onClick={onCheck} aria-label={on ? L.decocher : L.cocher} />
-      <span className="tn">{catT(locale, "postes", t.n)}
+      <span className="tn">{catPoste(locale, t)}
         <span className={"pu" + (puEdited ? " edited" : "")}>
           {jalon ? <span className="badge-dem">{nTxt.demarche}</span> : puv == null ? L.surDevis : puEdit ? (
             <input
@@ -93,7 +100,7 @@ export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onM
               {puEdited && <button type="button" className="pureset" title={L.prixReset} onClick={() => onPu(null)}>↺</button>}
             </>
           )}
-          {t.note && !puEdit && <span className="punote"> · {catT(locale, "notes", t.note)}</span>}
+          {info.length > 0 && !puEdit && <BoutonInfo ouvert={infoOpen} onBascule={() => setInfoOpen((o) => !o)} label={L.info} />}
         </span>
       </span>
       {on ? (
@@ -136,6 +143,7 @@ export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onM
       ) : (
         <span className="tctl"><span className="unit">{t.u === "forfait" ? catT(locale, "unites", "forfait") : loc ? L.parJour : catT(locale, "unites", t.u)}</span></span>
       )}
+      {infoOpen && info.length > 0 && <TexteInfo morceaux={info} />}
       {choix && <div className="tchoix">{choix}</div>}
       {on && self && horsDecennale && <div className="decennale" role="note">{ctx.nature === "neuf" ? nTxt.horsDecennale : nTxt.horsDecennaleReno}</div>}
       {on && self && mention && <div className="mention-soi" role="note">{nTxt.mentionsSoiMeme[mention]}</div>}

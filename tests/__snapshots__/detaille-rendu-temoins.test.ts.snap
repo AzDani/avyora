@@ -1295,9 +1295,19 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 <div>
 <div class="phase-t">1 · Preparation</div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Everything done at the desk before digging: plot surveys, mandatory studies, drawings and permit file.">
 <span class="ic" aria-hidden="true">📐</span>
-<span class="nm">Studies / Design</span>
+<span class="nm">Studies / Design<span class="ibtn" aria-hidden="true" title="Everything done at the desk before digging: plot surveys, mandatory studies, drawings and permit file.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">5</span>
 <span class="amt num">5 770 € excl. VAT</span>
 <span class="car">›</span>
@@ -1313,9 +1323,19 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 </div>
 </div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Only for work you do yourself. Indicative prices per day.">
 <span class="ic" aria-hidden="true">🛠️</span>
-<span class="nm">Equipment rental</span>
+<span class="nm">Equipment rental<span class="ibtn" aria-hidden="true" title="Only for work you do yourself. Indicative prices per day.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>
@@ -1334,18 +1354,38 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 <div>
 <div class="phase-t">2 · Structural work &amp; weatherproofing</div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Preparing the ground and digging. Footing trenches are ALREADY in the price of the complete footing.">
 <span class="ic" aria-hidden="true">🚜</span>
-<span class="nm">Earthworks</span>
+<span class="nm">Earthworks<span class="ibtn" aria-hidden="true" title="Preparing the ground and digging. Footing trenches are ALREADY in the price of the complete footing.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">3</span>
 <span class="amt num">1 365 € excl. VAT</span>
 <span class="car">›</span>
 </div>
 </div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Base walls and ground floor: choose ONE solution (ground-bearing slab, crawl space, basement or raft). Services that pass through the slab are laid before pouring.">
 <span class="ic" aria-hidden="true">🧱</span>
-<span class="nm">Foundations &amp; base walls</span>
+<span class="nm">Foundations &amp; base walls<span class="ibtn" aria-hidden="true" title="Base walls and ground floor: choose ONE solution (ground-bearing slab, crawl space, basement or raft). Services that pass through the slab are laid before pouring.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">2</span>
 <span class="amt num">18 759 € excl. VAT</span>
 <span class="car">›</span>
@@ -1370,36 +1410,76 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 </div>
 </div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="New roofing ALL-IN (underlay, battens, verges and ridge of a 2-pitch roof). Its completion marks the house as WATERTIGHT (roof on).">
 <span class="ic" aria-hidden="true">🏠</span>
-<span class="nm">Roofing &amp; gutters</span>
+<span class="nm">Roofing &amp; gutters<span class="ibtn" aria-hidden="true" title="New roofing ALL-IN (underlay, battens, verges and ridge of a 2-pitch roof). Its completion marks the house as WATERTIGHT (roof on).">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">4</span>
 <span class="amt num">16 353 € excl. VAT</span>
 <span class="car">›</span>
 </div>
 </div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Their installation marks the house as AIRTIGHT (windows and doors fitted, house closed). Base price in aluminium: PVC is cheaper.">
 <span class="ic" aria-hidden="true">🪟</span>
-<span class="nm">Exterior joinery</span>
+<span class="nm">Exterior joinery<span class="ibtn" aria-hidden="true" title="Their installation marks the house as AIRTIGHT (windows and doors fitted, house closed). Base price in aluminium: PVC is cheaper.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">5</span>
 <span class="amt num">9 540 € excl. VAT</span>
 <span class="car">›</span>
 </div>
 </div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Private part, from the plot boundary to the house: paid by the person having the house built, never included in Enedis, water or sewer quotes. The rainwater network and the backfill at the foot of the walls are done BEFORE the render.">
 <span class="ic" aria-hidden="true">🔌</span>
-<span class="nm">Underground utilities</span>
+<span class="nm">Underground utilities<span class="ibtn" aria-hidden="true" title="Private part, from the plot boundary to the house: paid by the person having the house built, never included in Enedis, water or sewer quotes. The rainwater network and the backfill at the foot of the walls are done BEFORE the render.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">6</span>
 <span class="amt num">5 487 € excl. VAT</span>
 <span class="car">›</span>
 </div>
 </div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Render or cladding, once the services and backfill are done at the foot of the walls: the shell is closed. Can run in parallel with the finishing work.">
 <span class="ic" aria-hidden="true">🎨</span>
-<span class="nm">Façade</span>
+<span class="nm">Façade<span class="ibtn" aria-hidden="true" title="Render or cladding, once the services and backfill are done at the foot of the walls: the shell is closed. Can run in parallel with the finishing work.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">2</span>
 <span class="amt num">4 303 € excl. VAT</span>
 <span class="car">›</span>
@@ -1409,18 +1489,40 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 <div>
 <div class="phase-t">3 · Finishing work</div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Insulated linings and vapor barrier (except insulating clay block / timber-frame walls). Lining prices include joint tape, not the paint. Careful airtightness membrane: a condition for passing the RE2020 test. Blown insulation in the unused loft, once the ceilings are up.">
 <span class="ic" aria-hidden="true">🧊</span>
-<span class="nm">Insulation</span>
+<span class="nm">Insulation<span class="ibtn" aria-hidden="true" title="Insulated linings and vapor barrier (except insulating clay block / timber-frame walls). Lining prices include joint tape, not the paint. Careful airtightness membrane: a condition for passing the RE2020 test.
+
+Blown insulation in the unused loft, once the ceilings are up.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">3</span>
 <span class="amt num">7 312 € excl. VAT</span>
 <span class="car">›</span>
 </div>
 </div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Ceilings first (continuity of the membrane), then partitions. Board prices include joint tape. &quot;Fur out a wall&quot; counts here as plasterboard without insulation: inner facing of timber-frame walls and of both faces of internal load-bearing walls.">
 <span class="ic" aria-hidden="true">🧱</span>
-<span class="nm">Partitions / Plastering</span>
+<span class="nm">Partitions / Plastering<span class="ibtn" aria-hidden="true" title="Ceilings first (continuity of the membrane), then partitions. Board prices include joint tape. &quot;Fur out a wall&quot; counts here as plasterboard without insulation: inner facing of timber-frame walls and of both faces of internal load-bearing walls.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">4</span>
 <span class="amt num">8 343 € excl. VAT</span>
 <span class="car">›</span>
@@ -1445,36 +1547,78 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 </div>
 </div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="The system is set by the RE2020 thermal study. The most common: air-to-water heat pump + underfloor heating + heat pump water heater. The air-to-water heat pump is priced for heating only: hot water comes from the heat pump water heater. No gas boiler alone in a new build.">
 <span class="ic" aria-hidden="true">🔥</span>
-<span class="nm">Heating / Ventilation</span>
+<span class="nm">Heating / Ventilation<span class="ibtn" aria-hidden="true" title="The system is set by the RE2020 thermal study. The most common: air-to-water heat pump + underfloor heating + heat pump water heater. The air-to-water heat pump is priced for heating only: hot water comes from the heat pump water heater. No gas boiler alone in a new build.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">4</span>
 <span class="amt num">16 549 € excl. VAT</span>
 <span class="car">›</span>
 </div>
 </div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Floor and wall tiling before painting. On a new screed: no removal or leveling (floor smoothing compound). Bedroom floors and skirting boards AFTER painting.">
 <span class="ic" aria-hidden="true">🎨</span>
-<span class="nm">Tiling / Flooring</span>
+<span class="nm">Tiling / Flooring<span class="ibtn" aria-hidden="true" title="Floor and wall tiling before painting. On a new screed: no removal or leveling (floor smoothing compound).
+
+Bedroom floors and skirting boards AFTER painting.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">5</span>
 <span class="amt num">7 883 € excl. VAT</span>
 <span class="car">›</span>
 </div>
 </div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="On new plasterboard: primer + 2 coats, no heavy preparation.">
 <span class="ic" aria-hidden="true">🖌️</span>
-<span class="nm">Painting</span>
+<span class="nm">Painting<span class="ibtn" aria-hidden="true" title="On new plasterboard: primer + 2 coats, no heavy preparation.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">2</span>
 <span class="amt num">8 274 € excl. VAT</span>
 <span class="car">›</span>
 </div>
 </div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Doors (including the solid door between the garage and the house), closets, wooden staircase.">
 <span class="ic" aria-hidden="true">🚪</span>
-<span class="nm">Interior joinery</span>
+<span class="nm">Interior joinery<span class="ibtn" aria-hidden="true" title="Doors (including the solid door between the garage and the house), closets, wooden staircase.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">1</span>
 <span class="amt num">1 736 € excl. VAT</span>
 <span class="car">›</span>
@@ -1484,9 +1628,19 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 <div>
 <div class="phase-t">4 · Equipment &amp; handover</div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Take EITHER &quot;Full new kitchen — all-in&quot; OR the detailed lines (never both). Water/power connection points are already in the networks.">
 <span class="ic" aria-hidden="true">🍳</span>
-<span class="nm">Kitchen</span>
+<span class="nm">Kitchen<span class="ibtn" aria-hidden="true" title="Take EITHER &quot;Full new kitchen — all-in&quot; OR the detailed lines (never both). Water/power connection points are already in the networks.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">1</span>
 <span class="amt num">5 933 € excl. VAT</span>
 <span class="car">›</span>
@@ -2841,9 +2995,19 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 <div>
 <div class="phase-t">1 · Préparation</div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Tout ce qui se fait au bureau avant de creuser : relevés du terrain, études obligatoires, plans et dossier de permis.">
 <span class="ic" aria-hidden="true">📐</span>
-<span class="nm">Études / Conception</span>
+<span class="nm">Études / Conception<span class="ibtn" aria-hidden="true" title="Tout ce qui se fait au bureau avant de creuser : relevés du terrain, études obligatoires, plans et dossier de permis.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">5</span>
 <span class="amt num">5 770 € HT</span>
 <span class="car">›</span>
@@ -2859,9 +3023,19 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 </div>
 </div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Uniquement pour les travaux faits soi-même. Prix indicatifs par jour.">
 <span class="ic" aria-hidden="true">🛠️</span>
-<span class="nm">Location de matériel</span>
+<span class="nm">Location de matériel<span class="ibtn" aria-hidden="true" title="Uniquement pour les travaux faits soi-même. Prix indicatifs par jour.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>
@@ -2880,18 +3054,38 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 <div>
 <div class="phase-t">2 · Gros œuvre &amp; clos-couvert</div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Préparer le terrain et creuser. Les fouilles des semelles sont DÉJÀ dans le prix de la semelle complète.">
 <span class="ic" aria-hidden="true">🚜</span>
-<span class="nm">Terrassement</span>
+<span class="nm">Terrassement<span class="ibtn" aria-hidden="true" title="Préparer le terrain et creuser. Les fouilles des semelles sont DÉJÀ dans le prix de la semelle complète.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">3</span>
 <span class="amt num">1 365 € HT</span>
 <span class="car">›</span>
 </div>
 </div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Soubassement et plancher bas : choisir UNE solution (dalle sur terre-plein, vide sanitaire, sous-sol ou radier). Les réseaux qui traversent la dalle sont posés avant le coulage.">
 <span class="ic" aria-hidden="true">🧱</span>
-<span class="nm">Fondations &amp; soubassement</span>
+<span class="nm">Fondations &amp; soubassement<span class="ibtn" aria-hidden="true" title="Soubassement et plancher bas : choisir UNE solution (dalle sur terre-plein, vide sanitaire, sous-sol ou radier). Les réseaux qui traversent la dalle sont posés avant le coulage.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">2</span>
 <span class="amt num">18 759 € HT</span>
 <span class="car">›</span>
@@ -2916,36 +3110,76 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 </div>
 </div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Couverture neuve TOUT COMPRIS (écran, liteaux, rives et faîtage d&#x27;un toit 2 pans). Sa fin marque le HORS D&#x27;EAU (toit posé).">
 <span class="ic" aria-hidden="true">🏠</span>
-<span class="nm">Couverture &amp; zinguerie</span>
+<span class="nm">Couverture &amp; zinguerie<span class="ibtn" aria-hidden="true" title="Couverture neuve TOUT COMPRIS (écran, liteaux, rives et faîtage d&#x27;un toit 2 pans). Sa fin marque le HORS D&#x27;EAU (toit posé).">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">4</span>
 <span class="amt num">16 353 € HT</span>
 <span class="car">›</span>
 </div>
 </div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Leur pose marque le HORS D&#x27;AIR (fenêtres et portes posées, maison fermée). Prix de base en aluminium : le PVC revient moins cher.">
 <span class="ic" aria-hidden="true">🪟</span>
-<span class="nm">Menuiseries extérieures</span>
+<span class="nm">Menuiseries extérieures<span class="ibtn" aria-hidden="true" title="Leur pose marque le HORS D&#x27;AIR (fenêtres et portes posées, maison fermée). Prix de base en aluminium : le PVC revient moins cher.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">5</span>
 <span class="amt num">9 540 € HT</span>
 <span class="car">›</span>
 </div>
 </div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Partie privée, de la limite du terrain à la maison : à la charge de celui qui fait construire, jamais comprise dans les devis Enedis, eau ou égout. Le réseau d&#x27;eaux de pluie et le remblai en pied de mur se font AVANT l&#x27;enduit.">
 <span class="ic" aria-hidden="true">🔌</span>
-<span class="nm">Réseaux enterrés (VRD)</span>
+<span class="nm">Réseaux enterrés (VRD)<span class="ibtn" aria-hidden="true" title="Partie privée, de la limite du terrain à la maison : à la charge de celui qui fait construire, jamais comprise dans les devis Enedis, eau ou égout. Le réseau d&#x27;eaux de pluie et le remblai en pied de mur se font AVANT l&#x27;enduit.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">6</span>
 <span class="amt num">5 487 € HT</span>
 <span class="car">›</span>
 </div>
 </div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Enduit ou bardage, une fois les réseaux et le remblai faits au pied des murs : fin du clos et couvert. Peut avancer en parallèle du second œuvre.">
 <span class="ic" aria-hidden="true">🎨</span>
-<span class="nm">Façade</span>
+<span class="nm">Façade<span class="ibtn" aria-hidden="true" title="Enduit ou bardage, une fois les réseaux et le remblai faits au pied des murs : fin du clos et couvert. Peut avancer en parallèle du second œuvre.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">2</span>
 <span class="amt num">4 303 € HT</span>
 <span class="car">›</span>
@@ -2955,18 +3189,40 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 <div>
 <div class="phase-t">3 · Second œuvre</div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Doublages isolants et pare-vapeur (sauf murs isolants monomur / ossature bois). Les prix des doublages comprennent les bandes à joints, pas la peinture. Membrane d&#x27;étanchéité à l&#x27;air soignée : condition du test RE2020. Isolant soufflé dans les combles perdus, une fois les plafonds posés.">
 <span class="ic" aria-hidden="true">🧊</span>
-<span class="nm">Isolation</span>
+<span class="nm">Isolation<span class="ibtn" aria-hidden="true" title="Doublages isolants et pare-vapeur (sauf murs isolants monomur / ossature bois). Les prix des doublages comprennent les bandes à joints, pas la peinture. Membrane d&#x27;étanchéité à l&#x27;air soignée : condition du test RE2020.
+
+Isolant soufflé dans les combles perdus, une fois les plafonds posés.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">3</span>
 <span class="amt num">7 312 € HT</span>
 <span class="car">›</span>
 </div>
 </div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Plafonds d&#x27;abord (continuité de la membrane), puis cloisons. Les prix des plaques comprennent les bandes à joints. « Doubler un mur » compte ici une plaque de plâtre sans isolant : habillage intérieur des murs à ossature bois et des deux faces des murs porteurs intérieurs.">
 <span class="ic" aria-hidden="true">🧱</span>
-<span class="nm">Cloisons / Plâtrerie</span>
+<span class="nm">Cloisons / Plâtrerie<span class="ibtn" aria-hidden="true" title="Plafonds d&#x27;abord (continuité de la membrane), puis cloisons. Les prix des plaques comprennent les bandes à joints. « Doubler un mur » compte ici une plaque de plâtre sans isolant : habillage intérieur des murs à ossature bois et des deux faces des murs porteurs intérieurs.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">4</span>
 <span class="amt num">8 343 € HT</span>
 <span class="car">›</span>
@@ -2991,36 +3247,78 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 </div>
 </div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Le système est fixé par l&#x27;étude thermique RE2020. Le plus courant : pompe à chaleur air/eau + plancher chauffant + chauffe-eau thermodynamique. La pompe à chaleur air/eau est chiffrée pour le chauffage seul : l&#x27;eau chaude est produite par le chauffe-eau thermodynamique. Pas de chaudière gaz seule en neuf.">
 <span class="ic" aria-hidden="true">🔥</span>
-<span class="nm">Chauffage / VMC</span>
+<span class="nm">Chauffage / VMC<span class="ibtn" aria-hidden="true" title="Le système est fixé par l&#x27;étude thermique RE2020. Le plus courant : pompe à chaleur air/eau + plancher chauffant + chauffe-eau thermodynamique. La pompe à chaleur air/eau est chiffrée pour le chauffage seul : l&#x27;eau chaude est produite par le chauffe-eau thermodynamique. Pas de chaudière gaz seule en neuf.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">4</span>
 <span class="amt num">16 549 € HT</span>
 <span class="car">›</span>
 </div>
 </div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Carrelage et faïence avant la peinture. Sur chape neuve : pas de dépose ni de ragréage (enduit de lissage du sol). Sols des chambres et plinthes APRÈS la peinture.">
 <span class="ic" aria-hidden="true">🎨</span>
-<span class="nm">Carrelage / Revêtements</span>
+<span class="nm">Carrelage / Revêtements<span class="ibtn" aria-hidden="true" title="Carrelage et faïence avant la peinture. Sur chape neuve : pas de dépose ni de ragréage (enduit de lissage du sol).
+
+Sols des chambres et plinthes APRÈS la peinture.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">5</span>
 <span class="amt num">7 883 € HT</span>
 <span class="car">›</span>
 </div>
 </div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Sur plaques neuves : impression (sous-couche) + 2 couches, sans préparation lourde.">
 <span class="ic" aria-hidden="true">🖌️</span>
-<span class="nm">Peinture</span>
+<span class="nm">Peinture<span class="ibtn" aria-hidden="true" title="Sur plaques neuves : impression (sous-couche) + 2 couches, sans préparation lourde.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">2</span>
 <span class="amt num">8 274 € HT</span>
 <span class="car">›</span>
 </div>
 </div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Portes (dont la porte pleine entre le garage et la maison), placards, escalier bois.">
 <span class="ic" aria-hidden="true">🚪</span>
-<span class="nm">Menuiseries intérieures</span>
+<span class="nm">Menuiseries intérieures<span class="ibtn" aria-hidden="true" title="Portes (dont la porte pleine entre le garage et la maison), placards, escalier bois.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">1</span>
 <span class="amt num">1 736 € HT</span>
 <span class="car">›</span>
@@ -3030,9 +3328,19 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 <div>
 <div class="phase-t">4 · Équipements &amp; réception</div>
 <div class="acc">
-<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false" aria-description="Prendre SOIT « cuisine tout compris », SOIT les lignes détaillées (jamais les deux). Les attentes eau/électricité sont déjà dans les réseaux.">
 <span class="ic" aria-hidden="true">🍳</span>
-<span class="nm">Cuisine</span>
+<span class="nm">Cuisine<span class="ibtn" aria-hidden="true" title="Prendre SOIT « cuisine tout compris », SOIT les lignes détaillées (jamais les deux). Les attentes eau/électricité sont déjà dans les réseaux.">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</span>
+</span>
 <span class="cnt">1</span>
 <span class="amt num">5 933 € HT</span>
 <span class="car">›</span>
@@ -3693,7 +4001,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · appartement 1`] = `
 </button>
 <span class="tn">Railing / guardrail<span class="pu">
 <span class="puval" title="Double-click to set your own price">173 € excl. VAT/lin. m</span>
-<span class="punote"> · wood 60-220, metal/iron 150-400, glass 300-800 €/lm depending on material</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -4244,7 +4561,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </button>
 <span class="tn">Mini excavator delivery (drop-off + pickup)<span class="pu">
 <span class="puval" title="Double-click to set your own price">300 € excl. VAT</span>
-<span class="punote"> · ~€150 drop-off + €150 pickup</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -4313,7 +4639,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </button>
 <span class="tn">Open a load-bearing wall — small (door/window)<span class="pu">
 <span class="puval" title="Double-click to set your own price">2 840 € excl. VAT</span>
-<span class="punote"> · delicate + structural engineer study required</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -4325,7 +4660,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </button>
 <span class="tn">Open a load-bearing wall — large (2.5 m, bay)<span class="pu">
 <span class="puval" title="Double-click to set your own price">5 120 € excl. VAT</span>
-<span class="punote"> · delicate + structural engineer study required</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -4337,7 +4681,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </button>
 <span class="tn">Load-transfer beam (steel I-beam)<span class="pu">
 <span class="puval" title="Double-click to set your own price">540 € excl. VAT/lin. m</span>
-<span class="punote"> · supply, shoring, bearings and anchoring — replaces the removed load-bearing wall</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -4349,7 +4702,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </button>
 <span class="tn">Load-transfer beam (glulam timber)<span class="pu">
 <span class="puval" title="Double-click to set your own price">210 € excl. VAT/lin. m</span>
-<span class="punote"> · supply, shoring, bearings and anchoring — timber alternative to the steel I-beam, left exposed</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -4361,7 +4723,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </button>
 <span class="tn">Load-transfer beam (reinforced concrete)<span class="pu">
 <span class="puval" title="Double-click to set your own price">298 € excl. VAT/lin. m</span>
-<span class="punote"> · formwork, rebar, pouring and shoring — cast in place</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -4373,7 +4744,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </button>
 <span class="tn">Load-bearing post (steel H-column)<span class="pu">
 <span class="puval" title="Double-click to set your own price">622 € excl. VAT</span>
-<span class="punote"> · supply, base plates, anchoring — carries a point load where a beam can&#x27;t span the distance</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -4385,7 +4765,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </button>
 <span class="tn">Load-bearing post (glulam timber)<span class="pu">
 <span class="puval" title="Double-click to set your own price">396 € excl. VAT</span>
-<span class="punote"> · supply, hangers and fixings — timber alternative, left exposed</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -4397,7 +4786,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </button>
 <span class="tn">Load-bearing post (reinforced concrete)<span class="pu">
 <span class="puval" title="Double-click to set your own price">518 € excl. VAT</span>
-<span class="punote"> · formwork, rebar and pouring — cast in place</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -4513,7 +4911,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </button>
 <span class="tn">Reinforce foundations / underpinning<span class="pu">
 <span class="puval" title="Double-click to set your own price">310 € excl. VAT/lin. m</span>
-<span class="punote"> · = strip footing × 2 — price varies a lot with the exact task</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -4563,7 +4970,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </button>
 <span class="tn">Build a stone wall<span class="pu">
 <span class="puval" title="Double-click to set your own price">280 € excl. VAT/m²</span>
-<span class="punote"> · rubble stone laid in mortar</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -4766,7 +5182,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </button>
 <span class="tn">Sliding patio door<span class="pu">
 <span class="puval" title="Double-click to set your own price">2 320 € excl. VAT</span>
-<span class="punote"> · aluminium only</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -4818,7 +5243,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </button>
 <span class="tn">Garage door<span class="pu">
 <span class="puval" title="Double-click to set your own price">1 280 € excl. VAT</span>
-<span class="punote"> · motorized sectional — up-and-over ~€700, high-end up to ~€2,500</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -4830,7 +5264,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </button>
 <span class="tn">Roller shutters<span class="pu">
 <span class="puval" title="Double-click to set your own price">690 € excl. VAT</span>
-<span class="punote"> · motor included (radio/solar) — simple manual ~€300-450</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -4853,7 +5296,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </button>
 <span class="tn">Exterior blinds / sun shades<span class="pu">
 <span class="puval" title="Double-click to set your own price">1 060 € excl. VAT</span>
-<span class="punote"> · awning or adjustable sun shade, per module</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -4865,7 +5317,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </button>
 <span class="tn">Insect screens<span class="pu">
 <span class="puval" title="Double-click to set your own price">218 € excl. VAT</span>
-<span class="punote"> · roll-up, standard window — fixed frame ~€100, bay/pleated door €300-500</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -4888,7 +5349,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </button>
 <span class="tn">Swing gate (4 m)<span class="pu">
 <span class="puval" title="Double-click to set your own price">2 120 € excl. VAT</span>
-<span class="punote"> · ~4 m wide — base manual aluminium</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -4930,7 +5400,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </button>
 <span class="tn">Sliding gate (4 m)<span class="pu">
 <span class="puval" title="Double-click to set your own price">4 224 € excl. VAT</span>
-<span class="punote"> · ~4 m wide — base manual aluminium</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -4986,7 +5465,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </button>
 <span class="tn">Redo all plumbing (pipework, excl. fixtures)<span class="pu">
 <span class="puval" title="Double-click to set your own price">68 € excl. VAT/m²</span>
-<span class="punote"> · per m² of house</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -5067,7 +5555,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </button>
 <span class="tn">Countertop<span class="pu">
 <span class="puval" title="Double-click to set your own price">95 € excl. VAT/lin. m</span>
-<span class="punote"> · required for a sit-on basin</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -5204,7 +5701,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </button>
 <span class="tn">Electric water heater (tank)<span class="pu">
 <span class="puval" title="Double-click to set your own price">1 060 € excl. VAT</span>
-<span class="punote"> · storage tank · Small ~150 L / Large ~250 L</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -5216,7 +5722,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </button>
 <span class="tn">Instant electric water heater<span class="pu">
 <span class="puval" title="Double-click to set your own price">610 € excl. VAT</span>
-<span class="punote"> · Small single point / Large shower · multi-point</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -5228,7 +5743,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </button>
 <span class="tn">Heat-pump water heater<span class="pu">
 <span class="puval" title="Double-click to set your own price">3 400 € excl. VAT</span>
-<span class="punote"> · heat pump · Small ~200 L / Large ~270 L</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -6359,7 +6883,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · suite 1`] = `
 </button>
 <span class="tn">Redo all plumbing (pipework, excl. fixtures)<span class="pu">
 <span class="puval" title="Double-click to set your own price">60 € excl. VAT/m²</span>
-<span class="punote"> · per m² of house</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -6415,7 +6948,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · suite 1`] = `
 </button>
 <span class="tn">Countertop<span class="pu">
 <span class="puval" title="Double-click to set your own price">90 € excl. VAT/lin. m</span>
-<span class="punote"> · required for a sit-on basin</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -6551,7 +7093,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · suite 1`] = `
 </button>
 <span class="tn">Electric water heater (tank)<span class="pu">
 <span class="puval" title="Double-click to set your own price">1 005 € excl. VAT</span>
-<span class="punote"> · storage tank · Small ~150 L / Large ~250 L</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -6563,7 +7114,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · suite 1`] = `
 </button>
 <span class="tn">Instant electric water heater<span class="pu">
 <span class="puval" title="Double-click to set your own price">580 € excl. VAT</span>
-<span class="punote"> · Small single point / Large shower · multi-point</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -6575,7 +7135,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · suite 1`] = `
 </button>
 <span class="tn">Heat-pump water heater<span class="pu">
 <span class="puval" title="Double-click to set your own price">3 300 € excl. VAT</span>
-<span class="punote"> · heat pump · Small ~200 L / Large ~270 L</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -7263,7 +7832,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · appartement 1`] = `
 </button>
 <span class="tn">Garde-corps<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">173 € HT/ml</span>
-<span class="punote"> · bois 60-220, métal/fer 150-400, verre 300-800 €/ml selon matériau</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -7814,7 +8392,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </button>
 <span class="tn">Livraison mini-pelle (dépose + reprise)<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">300 € HT</span>
-<span class="punote"> · ~150 € dépose + 150 € reprise</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -7883,7 +8470,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </button>
 <span class="tn">Ouvrir un mur porteur — petite (porte/fenêtre)<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">2 840 € HT</span>
-<span class="punote"> · délicat + étude BET obligatoire</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -7895,7 +8491,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </button>
 <span class="tn">Ouvrir un mur porteur — grande (2,5 m, baie)<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">5 120 € HT</span>
-<span class="punote"> · délicat + étude BET obligatoire</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -7907,7 +8512,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </button>
 <span class="tn">Poutre de reprise de charge (IPN / HEA)<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">540 € HT/ml</span>
-<span class="punote"> · fourniture, étaiement, appuis et scellement — remplace le mur porteur déposé</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -7919,7 +8533,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </button>
 <span class="tn">Poutre de reprise de charge (lamellé-collé)<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">210 € HT/ml</span>
-<span class="punote"> · fourniture, étaiement, appuis et scellement — alternative bois à l&#x27;IPN, laissée apparente</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -7931,7 +8554,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </button>
 <span class="tn">Poutre de reprise de charge (béton armé)<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">298 € HT/ml</span>
-<span class="punote"> · coffrage, ferraillage, coulage et étaiement — coulée en place</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -7943,7 +8575,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </button>
 <span class="tn">Poteau de reprise (acier HEA / HEB)<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">622 € HT</span>
-<span class="punote"> · fourniture, platines, scellement — reprend une charge ponctuelle là où une poutre ne franchit pas la portée</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -7955,7 +8596,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </button>
 <span class="tn">Poteau de reprise (lamellé-collé)<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">396 € HT</span>
-<span class="punote"> · fourniture, sabots et fixations — alternative bois, laissée apparente</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -7967,7 +8617,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </button>
 <span class="tn">Poteau de reprise (béton armé)<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">518 € HT</span>
-<span class="punote"> · coffrage, ferraillage et coulage — coulé en place</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -8083,7 +8742,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </button>
 <span class="tn">Consolider fondations / reprise en sous-œuvre<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">310 € HT/ml</span>
-<span class="punote"> · = semelle filante × 2 — prix très variable selon la tâche exacte</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -8133,7 +8801,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </button>
 <span class="tn">Monter un mur en pierre<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">280 € HT/m²</span>
-<span class="punote"> · moellons maçonnés au mortier</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -8336,7 +9013,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </button>
 <span class="tn">Baie vitrée<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">2 320 € HT</span>
-<span class="punote"> · uniquement en aluminium</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -8388,7 +9074,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </button>
 <span class="tn">Porte de garage<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">1 280 € HT</span>
-<span class="punote"> · sectionnelle motorisée — basculante ~700 €, modèle haut de gamme jusqu&#x27;à ~2 500 €</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -8400,7 +9095,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </button>
 <span class="tn">Volets roulants<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">690 € HT</span>
-<span class="punote"> · motorisé inclus (radio/solaire) — manuel simple ~300-450 €</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -8423,7 +9127,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </button>
 <span class="tn">Stores extérieurs / brise-soleil<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">1 060 € HT</span>
-<span class="punote"> · store banne ou brise-soleil orientable (BSO), par module</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -8435,7 +9148,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </button>
 <span class="tn">Moustiquaires<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">218 € HT</span>
-<span class="punote"> · enroulable, fenêtre standard — cadre fixe ~100 €, baie/porte plissée 300-500 €</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -8458,7 +9180,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </button>
 <span class="tn">Portail battant (4 m)<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">2 120 € HT</span>
-<span class="punote"> · largeur ~4 m — base alu manuel</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -8500,7 +9231,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </button>
 <span class="tn">Portail coulissant (4 m)<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">4 224 € HT</span>
-<span class="punote"> · largeur ~4 m — base alu manuel</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -8556,7 +9296,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </button>
 <span class="tn">Refaire toute la plomberie (réseau, hors appareils)<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">68 € HT/m²</span>
-<span class="punote"> · m² de maison</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -8637,7 +9386,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </button>
 <span class="tn">Plan de travail<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">95 € HT/ml</span>
-<span class="punote"> · requis pour une vasque à poser</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -8774,7 +9532,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </button>
 <span class="tn">Chauffe-eau électrique (cumulus)<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">1 060 € HT</span>
-<span class="punote"> · cumulus à accumulation · Petit ~150 L / Grand ~250 L</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -8786,7 +9553,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </button>
 <span class="tn">Chauffe-eau électrique instantané<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">610 € HT</span>
-<span class="punote"> · Petit point d&#x27;eau / Grand douche · multi-points</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -8798,7 +9574,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </button>
 <span class="tn">Chauffe-eau thermodynamique<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">3 400 € HT</span>
-<span class="punote"> · PAC · Petit ~200 L / Grand ~270 L</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -9929,7 +10714,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · suite 1`] = `
 </button>
 <span class="tn">Refaire toute la plomberie (réseau, hors appareils)<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">60 € HT/m²</span>
-<span class="punote"> · m² de maison</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -9985,7 +10779,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · suite 1`] = `
 </button>
 <span class="tn">Plan de travail<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">90 € HT/ml</span>
-<span class="punote"> · requis pour une vasque à poser</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -10121,7 +10924,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · suite 1`] = `
 </button>
 <span class="tn">Chauffe-eau électrique (cumulus)<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">1 005 € HT</span>
-<span class="punote"> · cumulus à accumulation · Petit ~150 L / Grand ~250 L</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -10133,7 +10945,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · suite 1`] = `
 </button>
 <span class="tn">Chauffe-eau électrique instantané<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">580 € HT</span>
-<span class="punote"> · Petit point d&#x27;eau / Grand douche · multi-points</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
@@ -10145,7 +10966,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · suite 1`] = `
 </button>
 <span class="tn">Chauffe-eau thermodynamique<span class="pu">
 <span class="puval" title="Double-clique pour ajuster à ton prix">3 300 € HT</span>
-<span class="punote"> · PAC · Petit ~200 L / Grand ~270 L</span>
+<button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+<circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
+</circle>
+<path d="M8 7.3v3.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+</path>
+<circle cx="8" cy="4.9" r="0.95" fill="currentColor">
+</circle>
+</svg>
+</button>
 </span>
 </span>
 <span class="tctl">
