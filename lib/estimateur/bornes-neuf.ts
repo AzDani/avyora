@@ -41,8 +41,9 @@ export const BORNES_NEUF = {
 export const GARAGE_MAX = BORNES_NEUF.garage.max;
 export const DISTANCE_RESEAUX_MAX = BORNES_NEUF.distanceReseaux.max;
 
-/** Surface minimale proposée pour un garage, quand il y en a un (le « Oui » du questionnaire). */
-export const GARAGE_MIN_SAISI = 10;
+/** Minimum des salles de bain HORS suites : 0 quand une suite parentale a la sienne, sinon 1 (SDB + suites ≥ 1).
+ *  Lu par la question et le compteur du détaillé (N9). */
+export const minSdbNeuf = (m: { suites?: number }): number => ((m.suites ?? 0) > 0 ? BORNES_NEUF.sdb.min : 1);
 
 /** Ramène un nombre dans une borne (sans l'arrondir). */
 export const dansBorne = (v: number, b: Borne): number => Math.min(b.max, Math.max(b.min, v));

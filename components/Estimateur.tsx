@@ -24,7 +24,7 @@ import { BarreLive } from "./estimateur/BarreLive";
 import { VueDevis, ChoixVue, type DonneesDevis } from "./estimateur/VueDevis";
 import {
   CATALOG, PHASES, ICON, key, isLoc, visible, visibleTask, lotHT,
-  totals, buildDevis, regionCoef, customLotHT, customTotals, totauxAvecPerso, tauxPerso, tauxPersoPossibles, ESPACES,
+  totals, buildDevis, regionCoef, customLotHT, customTotals, totauxAvecPerso, tauxPerso, tauxPersoPossibles, ESPACES, ALEAS_RENO,
   type Ctx, type Selection, type TypeBien, type Finition, type Lot, type Tache, type CustomLine,
 } from "@/lib/estimateur";
 import { useLocale, useT } from "@/components/i18n/LangProvider";
@@ -310,7 +310,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
               <Intertitre>{B.budgetT}</Intertitre>
               <div className="depart">
                 <Field label={<>{B.budgetMax} <span style={{ color: "var(--faint)" }}>{B.facultatif}</span></>} htmlFor="av-reno-budget"><NumStepper field id="av-reno-budget" value={ctx.budget} min={0} step={1000} unit="€" onChange={(n) => onNum("budget", String(n))} /></Field>
-                <Field label={<>{B.aleas} <span style={{ color: "var(--faint)" }}>{B.aleasReco}</span></>} htmlFor="av-reno-aleas"><NumStepper field id="av-reno-aleas" value={ctx.aleas} min={0} max={20} unit="%" onChange={(n) => onNum("aleas", String(n))} /></Field>
+                <Field label={<>{B.aleas} <span style={{ color: "var(--faint)" }}>{B.aleasReco(ALEAS_RENO)}</span></>} htmlFor="av-reno-aleas"><NumStepper field id="av-reno-aleas" value={ctx.aleas} min={0} max={20} unit="%" onChange={(n) => onNum("aleas", String(n))} /></Field>
               </div>
               <Recap
                 tete={piece

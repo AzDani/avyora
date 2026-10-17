@@ -1012,310 +1012,227 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 <div>
 <div class="card">
 <div class="eyebrow">Your house</div>
-<h2>Describe your house</h2>
-<div class="sub">Each answer ticks, unticks and measures the items of the build. What you set by hand item by item is kept.</div>
-<details class="grp" open="">
-<summary>The house<svg class="chev" width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
-<path d="m5 7.5 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</summary>
-<div class="q">
-<span class="ql">Living area</span>
-<span class="av-step">
-<button type="button" aria-label="Decrease">−</button>
-<input type="number" inputMode="decimal" min="30" max="400" step="5" value="100"/>
-<span class="u">m²</span>
-<button type="button" aria-label="Increase">+</button>
-</span>
-</div>
-<div class="q">
-<span class="ql">Postcode</span>
-<div class="rowflex">
-<input class="cpin" inputMode="numeric" maxLength="5" autoComplete="postal-code" aria-label="Postcode" placeholder="e.g. 45000" value=""/>
+<h2>Tell us about your house</h2>
+<div class="sub">Each answer ticks and measures the items; you adjust them afterwards. What you set by hand, item by item, is kept.</div>
+<div class="gl">House type</div>
+<div class="typef">
+<div class="typef-g">
+<div class="tpills" role="group" aria-label="Levels">
+<button type="button" class="tpill on" aria-pressed="true">Single-story</button>
+<button type="button" class="tpill" aria-pressed="false">Two-story</button>
+<button type="button" class="tpill" aria-pressed="false">Converted attic</button>
 </div>
 </div>
-<div class="q">
-<span class="ql">Levels</span>
-<div class="pills" role="group" aria-label="Levels">
-<button type="button" class="pill" aria-pressed="true">Single story</button>
-<button type="button" class="pill" aria-pressed="false">Two stories</button>
-<button type="button" class="pill" aria-pressed="false">Converted attic</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Shape</span>
-<div class="pills" role="group" aria-label="Shape">
-<button type="button" class="pill" aria-pressed="true">Simple</button>
-<button type="button" class="pill" aria-pressed="false">L-shaped</button>
-<button type="button" class="pill" aria-pressed="false">Complex</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Attached garage</span>
-<div class="rowflex">
-<div class="pills" role="group" aria-label="Attached garage">
-<button type="button" class="pill" aria-pressed="true">No</button>
-<button type="button" class="pill" aria-pressed="false">Yes</button>
+<div class="typef-g">
+<span class="typef-l" aria-hidden="true">Shape</span>
+<div class="tpills" role="group" aria-label="Shape">
+<button type="button" class="tpill on" aria-pressed="true">Simple</button>
+<button type="button" class="tpill" aria-pressed="false">L-shaped</button>
+<button type="button" class="tpill" aria-pressed="false">Complex</button>
 </div>
 </div>
 </div>
-<div class="q">
-<span class="ql">Bedrooms</span>
-<span class="av-step">
-<button type="button" aria-label="Decrease">−</button>
-<input type="number" inputMode="decimal" min="0" max="10" step="1" value="3"/>
-<button type="button" aria-label="Increase">+</button>
-</span>
-</div>
-<div class="q">
-<span class="ql">Bathrooms</span>
-<span class="av-step">
-<button type="button" disabled="" aria-label="Decrease">−</button>
-<input type="number" inputMode="decimal" min="1" max="6" step="1" value="1"/>
-<button type="button" aria-label="Increase">+</button>
-</span>
-</div>
-<div class="q">
-<span class="ql">Toilets</span>
-<span class="av-step">
-<button type="button" disabled="" aria-label="Decrease">−</button>
-<input type="number" inputMode="decimal" min="1" max="6" step="1" value="1"/>
-<button type="button" aria-label="Increase">+</button>
-</span>
-</div>
-<div class="q">
-<span class="ql">Fitted kitchen</span>
-<div class="pills" role="group" aria-label="Fitted kitchen">
-<button type="button" class="pill" aria-pressed="true">Yes</button>
-<button type="button" class="pill" aria-pressed="false">No</button>
-</div>
-</div>
-</details>
-<details class="grp" open="">
-<summary>Structure<svg class="chev" width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
-<path d="m5 7.5 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</summary>
-<div class="q">
-<span class="ql">Ground floor</span>
-<div class="pills" role="group" aria-label="Ground floor">
-<button type="button" class="pill" aria-pressed="true">Slab on grade</button>
-<button type="button" class="pill" aria-pressed="false">Crawl space</button>
-<button type="button" class="pill" aria-pressed="false">Basement</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Walls</span>
-<div class="pills" role="group" aria-label="Walls">
-<button type="button" class="pill" aria-pressed="true">Concrete block</button>
-<button type="button" class="pill" aria-pressed="false">Brick</button>
-<button type="button" class="pill" aria-pressed="false">Insulating brick</button>
-<button type="button" class="pill" aria-pressed="false">Aerated concrete</button>
-<button type="button" class="pill" aria-pressed="false">Timber frame</button>
-</div>
-</div>
-</details>
-<details class="grp" open="">
-<summary>Roof and façade<svg class="chev" width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
-<path d="m5 7.5 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</summary>
-<div class="q">
-<span class="ql">Roof</span>
-<div class="pills" role="group" aria-label="Roof">
-<button type="button" class="pill" aria-pressed="true">Gable</button>
-<button type="button" class="pill" aria-pressed="false">Hip</button>
-<button type="button" class="pill" aria-pressed="false">Flat roof</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Roofing</span>
-<div class="pills" role="group" aria-label="Roofing">
-<button type="button" class="pill" aria-pressed="true">Clay tiles</button>
-<button type="button" class="pill" aria-pressed="false">Concrete tiles</button>
-<button type="button" class="pill" aria-pressed="false">Slate</button>
-<button type="button" class="pill" aria-pressed="false">Fibre-cement slate</button>
-<button type="button" class="pill" aria-pressed="false">Steel sheet</button>
-<button type="button" class="pill" aria-pressed="false">Zinc</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Low-pitch roof</span>
-<div class="pills" role="group" aria-label="Low-pitch roof">
-<button type="button" class="pill" aria-pressed="true">No (≈ 35°)</button>
-<button type="button" class="pill" aria-pressed="false">Yes, barrel tiles (≈ 17°)</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Gutters</span>
-<div class="pills" role="group" aria-label="Gutters">
-<button type="button" class="pill" aria-pressed="true">Zinc</button>
-<button type="button" class="pill" aria-pressed="false">PVC</button>
-<button type="button" class="pill" aria-pressed="false">Seamless aluminium</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Façade</span>
-<div class="pills" role="group" aria-label="Façade">
-<button type="button" class="pill" aria-pressed="true">Render</button>
-<button type="button" class="pill" aria-pressed="false">Wood cladding</button>
-<button type="button" class="pill" aria-pressed="false">Composite cladding</button>
-</div>
-</div>
-</details>
-<details class="grp" open="">
-<summary>Heating and comfort<svg class="chev" width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
-<path d="m5 7.5 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</summary>
-<div class="q">
-<span class="ql">Heating</span>
-<div class="pills" role="group" aria-label="Heating">
-<button type="button" class="pill" aria-pressed="true">Air-to-water heat pump + underfloor heating</button>
-<button type="button" class="pill" aria-pressed="false">Ducted air-to-air heat pump</button>
-<button type="button" class="pill" aria-pressed="false">Pellet stove + radiators</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Ventilation</span>
-<div class="pills" role="group" aria-label="Ventilation">
-<button type="button" class="pill" aria-pressed="true">Single-flow</button>
-<button type="button" class="pill" aria-pressed="false">Heat recovery (dual-flow)</button>
-</div>
-</div>
-</details>
-<details class="grp" open="">
-<summary>Plot and utilities<svg class="chev" width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
-<path d="m5 7.5 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</summary>
-<div class="q">
-<span class="ql">Plot</span>
-<div class="pills" role="group" aria-label="Plot">
-<button type="button" class="pill" aria-pressed="true">Flat</button>
-<button type="button" class="pill" aria-pressed="false">Sloping</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Clay soil (Géorisques)</span>
-<div class="pills" role="group" aria-label="Clay soil (Géorisques)">
-<button type="button" class="pill" aria-pressed="true">No or I don&#x27;t know</button>
-<button type="button" class="pill" aria-pressed="false">Medium</button>
-<button type="button" class="pill" aria-pressed="false">High</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Seismic zone</span>
-<div class="pills" role="group" aria-label="Seismic zone">
-<button type="button" class="pill" aria-pressed="true">1-2 or I don&#x27;t know</button>
-<button type="button" class="pill" aria-pressed="false">3</button>
-<button type="button" class="pill" aria-pressed="false">4</button>
-<button type="button" class="pill" aria-pressed="false">5</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Serviced plot<span class="hint">utilities at the plot boundary</span>
-</span>
-<div class="pills" role="group" aria-label="Serviced plot">
-<button type="button" class="pill" aria-pressed="true">Yes</button>
-<button type="button" class="pill" aria-pressed="false">No</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">House to street distance</span>
-<span class="av-step">
-<button type="button" aria-label="Decrease">−</button>
-<input type="number" inputMode="decimal" min="0" max="200" step="5" value="15"/>
-<span class="u">m</span>
-<button type="button" aria-label="Increase">+</button>
-</span>
-</div>
-<div class="q">
-<span class="ql">Housing estate</span>
-<div class="pills" role="group" aria-label="Housing estate">
-<button type="button" class="pill" aria-pressed="true">No</button>
-<button type="button" class="pill" aria-pressed="false">Yes</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Boundaries already marked</span>
-<div class="pills" role="group" aria-label="Boundaries already marked">
-<button type="button" class="pill" aria-pressed="true">Yes</button>
-<button type="button" class="pill" aria-pressed="false">No</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Topsoil to remove</span>
-<div class="pills" role="group" aria-label="Topsoil to remove">
-<button type="button" class="pill" aria-pressed="true">No, kept on site</button>
-<button type="button" class="pill" aria-pressed="false">Yes</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Wastewater</span>
-<div class="pills" role="group" aria-label="Wastewater">
-<button type="button" class="pill" aria-pressed="true">Mains sewer</button>
-<button type="button" class="pill" aria-pressed="false">Septic tank</button>
-<button type="button" class="pill" aria-pressed="false">Micro treatment plant</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Rainwater</span>
-<div class="pills" role="group" aria-label="Rainwater">
-<button type="button" class="pill" aria-pressed="true">Soakaway on the plot</button>
-<button type="button" class="pill" aria-pressed="false">Public drain</button>
-</div>
-</div>
-</details>
-<details class="grp" open="">
-<summary>Who manages, finish<svg class="chev" width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
-<path d="m5 7.5 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</summary>
-<div class="q">
-<span class="ql">Who manages</span>
-<div class="pills" role="group" aria-label="Who manages">
-<button type="button" class="pill" aria-pressed="true">Me (separate trades)</button>
-<button type="button" class="pill" aria-pressed="false">A project manager</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Finish</span>
-<div class="pills" role="group" aria-label="Finish">
-<button type="button" class="pill" aria-pressed="false">Basic</button>
-<button type="button" class="pill" aria-pressed="true">Standard</button>
-<button type="button" class="pill" aria-pressed="false">Premium</button>
-</div>
-</div>
-</details>
-<div class="deduit">
-<span>The engine works out:</span>
-<span>footprint <b>116 m²</b>
-</span>
-<span>floor area <b>102 m²</b>
-</span>
-<span>perimeter <b>43.5 m</b>
-</span>
-<span>roof <b>164 m²</b>
-</span>
-<span>4 windows, 2 French doors, 1 patio door</span>
-<span>
-<b>build ≈ 9 months</b>
-</span>
-</div>
-<div class="gl">Budget and contingency</div>
+<div class="gl">Areas</div>
 <div class="depart">
 <div class="fld">
-<label>Max budget <span style="color:var(--faint)">· optional</span>
+<label for="av-neuf-surface">Living area</label>
+<span class="av-step field">
+<input id="av-neuf-surface" type="number" inputMode="decimal" min="30" max="400" step="5" value="100"/>
+<span class="u">m²</span>
+<span class="st">
+<button type="button" aria-label="Decrease">−</button>
+<button type="button" aria-label="Increase">+</button>
+</span>
+</span>
+<div style="font-size:11.5px;color:var(--faint);line-height:1.45;margin-top:6px">All floors added up, excluding the garage.</div>
+</div>
+<div class="fld">
+<label for="av-neuf-garage">Attached garage</label>
+<span class="av-step field">
+<input id="av-neuf-garage" type="number" inputMode="decimal" min="0" max="80" step="5" value="0"/>
+<span class="u">m²</span>
+<span class="st">
+<button type="button" disabled="" aria-label="Decrease">−</button>
+<button type="button" aria-label="Increase">+</button>
+</span>
+</span>
+<div style="font-size:11.5px;color:var(--faint);line-height:1.45;margin-top:6px">0 = no garage</div>
+</div>
+<div class="fld">
+<label for="av-neuf-codePostal">ZIP code of the plot</label>
+<div class="uinp">
+<input id="av-neuf-codePostal" inputMode="numeric" maxLength="5" autoComplete="postal-code" placeholder="e.g. 45000" value=""/>
+</div>
+</div>
+<div class="fld">
+<label for="av-neuf-hauteur">Ceiling height</label>
+<output id="av-neuf-hauteur" class="ro">
+<span class="num">2.50</span>
+<span class="u">m</span>
+</output>
+<div style="font-size:11.5px;color:var(--faint);line-height:1.45;margin-top:6px">Standard for a new house.</div>
+</div>
+</div>
+<div class="gl">Rooms &amp; layout <span style="text-transform:none;letter-spacing:0;font-weight:500">· every room counts in the estimate</span>
+</div>
+<div class="stpg">
+<div class="stp">
+<span class="l">Living room</span>
+<span class="c">
+<button type="button" aria-label="Decrease">−</button>
+<span class="v num">1</span>
+<button type="button" aria-label="Increase">+</button>
+</span>
+</div>
+<div class="stp">
+<span class="l">Kitchen</span>
+<span class="c">
+<button type="button" aria-label="Decrease">−</button>
+<span class="v num">1</span>
+<button type="button" aria-label="Increase">+</button>
+</span>
+</div>
+<div class="stp">
+<span class="l">Bedrooms</span>
+<span class="c">
+<button type="button" aria-label="Decrease">−</button>
+<span class="v num">3</span>
+<button type="button" aria-label="Increase">+</button>
+</span>
+</div>
+<div class="stp">
+<span class="l">Master suite<small>bedroom + bathroom</small>
+</span>
+<span class="c">
+<button type="button" aria-label="Decrease">−</button>
+<span class="v num">0</span>
+<button type="button" aria-label="Increase">+</button>
+</span>
+</div>
+<div class="stp">
+<span class="l">Bathrooms<small>excl. suites</small>
+</span>
+<span class="c">
+<button type="button" aria-label="Decrease">−</button>
+<span class="v num">1</span>
+<button type="button" aria-label="Increase">+</button>
+</span>
+</div>
+<div class="stp">
+<span class="l">Toilets</span>
+<span class="c">
+<button type="button" aria-label="Decrease">−</button>
+<span class="v num">1</span>
+<button type="button" aria-label="Increase">+</button>
+</span>
+</div>
+<div class="stp">
+<span class="l">Hallway</span>
+<span class="c">
+<button type="button" aria-label="Decrease">−</button>
+<span class="v num">1</span>
+<button type="button" aria-label="Increase">+</button>
+</span>
+</div>
+<div class="stp">
+<span class="l">Laundry / storage room</span>
+<span class="c">
+<button type="button" aria-label="Decrease">−</button>
+<span class="v num">0</span>
+<button type="button" aria-label="Increase">+</button>
+</span>
+</div>
+<div class="stp">
+<span class="l">Exterior doors &amp; windows<small>windows, patio doors</small>
+</span>
+<span class="c">
+<button type="button" aria-label="Decrease">−</button>
+<span class="v num">7</span>
+<button type="button" aria-label="Increase">+</button>
+</span>
+</div>
+<button type="button" class="drtoggle on" aria-pressed="true">
+<span class="dot" aria-hidden="true">
+</span>Fitted kitchen included</button>
+</div>
+<div class="gl">Technical choices <span style="text-transform:none;letter-spacing:0;font-weight:500">· common settings prefilled</span>
+</div>
+<div class="tech">
+<div class="tech-r">
+<p class="tech-res">Concrete block · slab · gable roof, clay tiles · render · air-to-water heat pump · mains sewer</p>
+<button type="button" class="linkbtn tech-btn" aria-expanded="false" aria-controls="av-neuf-tech">Change</button>
+</div>
+<div id="av-neuf-tech">
+</div>
+</div>
+<div class="gl">Finish level</div>
+<div class="finc" role="group" aria-label="Finish level">
+<button type="button" class="fc" aria-pressed="false">
+<span class="fh">
+<span class="g3">
+<i class="f">
+</i>
+<i class="">
+</i>
+<i class="">
+</i>
+</span>
+<span class="ck">
+</span>
+</span>
+<span class="fe">Controlled budget</span>
+<span class="ft">Basic</span>
+<span class="fd">Sturdy entry level: laminate floors, standard tiles, simple bathroom fittings and kitchen.</span>
+</button>
+<button type="button" class="fc on" aria-pressed="true">
+<span class="fh">
+<span class="g3">
+<i class="f">
+</i>
+<i class="f">
+</i>
+<i class="">
+</i>
+</span>
+<span class="ck">
+</span>
+</span>
+<span class="fe">Most common</span>
+<span class="ft">Standard</span>
+<span class="fd">Good value, mid-range brands. The right balance for a main home.</span>
+</button>
+<button type="button" class="fc" aria-pressed="false">
+<span class="fh">
+<span class="g3">
+<i class="f">
+</i>
+<i class="f">
+</i>
+<i class="f">
+</i>
+</span>
+<span class="ck">
+</span>
+</span>
+<span class="fe">High end</span>
+<span class="ft">Premium</span>
+<span class="fd">Hardwood floors, large-format tiles, high-end bathroom fittings and kitchen.</span>
+</button>
+</div>
+<div class="gl">Who manages the build</div>
+<div class="segf" role="group" aria-label="Who manages the build">
+<button type="button" class="on" aria-pressed="true">Me (separate trades)</button>
+<button type="button" class="" aria-pressed="false">A project manager</button>
+</div>
+<div class="gl">VAT rate</div>
+<div class="locnote">New build: <b>20% VAT</b> on all works, no reduced rate. Taxes and structural defects insurance carry no VAT.</div>
+<div class="gl">Budget &amp; contingency</div>
+<div class="depart">
+<div class="fld">
+<label for="av-neuf-budget">Max budget <span style="color:var(--faint)">· optional</span>
 </label>
 <span class="av-step field">
-<input type="number" inputMode="decimal" min="0" step="1000" value="0"/>
+<input id="av-neuf-budget" type="number" inputMode="decimal" min="0" step="1000" value="0"/>
 <span class="u">€</span>
 <span class="st">
 <button type="button" disabled="" aria-label="Decrease">−</button>
@@ -1324,15 +1241,21 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 </span>
 </div>
 <div class="fld">
-<label>Contingency</label>
+<label for="av-neuf-aleas">Contingency <span style="color:var(--faint)">· rec. ≥ 7</span>
+</label>
 <span class="av-step field">
-<input type="number" inputMode="decimal" min="0" max="20" step="1" value="7"/>
+<input id="av-neuf-aleas" type="number" inputMode="decimal" min="0" max="20" step="1" value="7"/>
 <span class="u">%</span>
 <span class="st">
 <button type="button" aria-label="Decrease">−</button>
 <button type="button" aria-label="Increase">+</button>
 </span>
 </span>
+</div>
+</div>
+<div class="recap">🏠 <b>Single-story house</b> · 100 m² living area · footprint ~116 m² → exterior walls ≈ <b>149 m²</b> · roof ≈ <b>164 m²</b>
+<div style="margin-top:6px">→ <b>6 rooms</b> in total · <b>1 bathroom</b> · 7 exterior doors &amp; windows (4 windows, 2 French doors, 1 patio door)</div>
+<div style="margin-top:6px">→ floor area ≈ 102 m² · perimeter ≈ 43.5 m · <b>build ≈ 9 months</b>
 </div>
 </div>
 </div>
@@ -2508,310 +2431,227 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 <div>
 <div class="card">
 <div class="eyebrow">Ta maison</div>
-<h2>Décris ta maison</h2>
-<div class="sub">Chaque réponse coche, décoche et mesure les postes du chantier. Ce que tu règles à la main poste par poste est gardé.</div>
-<details class="grp" open="">
-<summary>La maison<svg class="chev" width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
-<path d="m5 7.5 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</summary>
-<div class="q">
-<span class="ql">Surface habitable</span>
-<span class="av-step">
-<button type="button" aria-label="Diminuer">−</button>
-<input type="number" inputMode="decimal" min="30" max="400" step="5" value="100"/>
-<span class="u">m²</span>
-<button type="button" aria-label="Augmenter">+</button>
-</span>
-</div>
-<div class="q">
-<span class="ql">Code postal</span>
-<div class="rowflex">
-<input class="cpin" inputMode="numeric" maxLength="5" autoComplete="postal-code" aria-label="Code postal" placeholder="ex. 45000" value=""/>
+<h2>Parle-nous de ta maison</h2>
+<div class="sub">Chaque réponse coche et mesure les postes ; tu ajustes ensuite. Ce que tu règles à la main, poste par poste, est gardé.</div>
+<div class="gl">Type de maison</div>
+<div class="typef">
+<div class="typef-g">
+<div class="tpills" role="group" aria-label="Niveaux">
+<button type="button" class="tpill on" aria-pressed="true">Plain-pied</button>
+<button type="button" class="tpill" aria-pressed="false">À étage</button>
+<button type="button" class="tpill" aria-pressed="false">Combles aménagés</button>
 </div>
 </div>
-<div class="q">
-<span class="ql">Niveaux</span>
-<div class="pills" role="group" aria-label="Niveaux">
-<button type="button" class="pill" aria-pressed="true">Plain-pied</button>
-<button type="button" class="pill" aria-pressed="false">À étage</button>
-<button type="button" class="pill" aria-pressed="false">Combles aménagés</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Forme</span>
-<div class="pills" role="group" aria-label="Forme">
-<button type="button" class="pill" aria-pressed="true">Simple</button>
-<button type="button" class="pill" aria-pressed="false">En L</button>
-<button type="button" class="pill" aria-pressed="false">Complexe</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Garage accolé</span>
-<div class="rowflex">
-<div class="pills" role="group" aria-label="Garage accolé">
-<button type="button" class="pill" aria-pressed="true">Non</button>
-<button type="button" class="pill" aria-pressed="false">Oui</button>
+<div class="typef-g">
+<span class="typef-l" aria-hidden="true">Forme</span>
+<div class="tpills" role="group" aria-label="Forme">
+<button type="button" class="tpill on" aria-pressed="true">Simple</button>
+<button type="button" class="tpill" aria-pressed="false">En L</button>
+<button type="button" class="tpill" aria-pressed="false">Complexe</button>
 </div>
 </div>
 </div>
-<div class="q">
-<span class="ql">Chambres</span>
-<span class="av-step">
-<button type="button" aria-label="Diminuer">−</button>
-<input type="number" inputMode="decimal" min="0" max="10" step="1" value="3"/>
-<button type="button" aria-label="Augmenter">+</button>
-</span>
-</div>
-<div class="q">
-<span class="ql">Salles d&#x27;eau</span>
-<span class="av-step">
-<button type="button" disabled="" aria-label="Diminuer">−</button>
-<input type="number" inputMode="decimal" min="1" max="6" step="1" value="1"/>
-<button type="button" aria-label="Augmenter">+</button>
-</span>
-</div>
-<div class="q">
-<span class="ql">WC</span>
-<span class="av-step">
-<button type="button" disabled="" aria-label="Diminuer">−</button>
-<input type="number" inputMode="decimal" min="1" max="6" step="1" value="1"/>
-<button type="button" aria-label="Augmenter">+</button>
-</span>
-</div>
-<div class="q">
-<span class="ql">Cuisine équipée</span>
-<div class="pills" role="group" aria-label="Cuisine équipée">
-<button type="button" class="pill" aria-pressed="true">Oui</button>
-<button type="button" class="pill" aria-pressed="false">Non</button>
-</div>
-</div>
-</details>
-<details class="grp" open="">
-<summary>Structure<svg class="chev" width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
-<path d="m5 7.5 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</summary>
-<div class="q">
-<span class="ql">Plancher bas</span>
-<div class="pills" role="group" aria-label="Plancher bas">
-<button type="button" class="pill" aria-pressed="true">Dalle sur terre-plein</button>
-<button type="button" class="pill" aria-pressed="false">Vide sanitaire</button>
-<button type="button" class="pill" aria-pressed="false">Sous-sol</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Murs</span>
-<div class="pills" role="group" aria-label="Murs">
-<button type="button" class="pill" aria-pressed="true">Parpaing</button>
-<button type="button" class="pill" aria-pressed="false">Brique</button>
-<button type="button" class="pill" aria-pressed="false">Brique monomur</button>
-<button type="button" class="pill" aria-pressed="false">Béton cellulaire</button>
-<button type="button" class="pill" aria-pressed="false">Ossature bois</button>
-</div>
-</div>
-</details>
-<details class="grp" open="">
-<summary>Toit et façade<svg class="chev" width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
-<path d="m5 7.5 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</summary>
-<div class="q">
-<span class="ql">Toiture</span>
-<div class="pills" role="group" aria-label="Toiture">
-<button type="button" class="pill" aria-pressed="true">2 pans</button>
-<button type="button" class="pill" aria-pressed="false">4 pans</button>
-<button type="button" class="pill" aria-pressed="false">Toit plat</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Couverture</span>
-<div class="pills" role="group" aria-label="Couverture">
-<button type="button" class="pill" aria-pressed="true">Tuiles terre cuite</button>
-<button type="button" class="pill" aria-pressed="false">Tuiles béton</button>
-<button type="button" class="pill" aria-pressed="false">Ardoise</button>
-<button type="button" class="pill" aria-pressed="false">Ardoise fibres-ciment</button>
-<button type="button" class="pill" aria-pressed="false">Bac acier</button>
-<button type="button" class="pill" aria-pressed="false">Zinc</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Toit à pente faible</span>
-<div class="pills" role="group" aria-label="Toit à pente faible">
-<button type="button" class="pill" aria-pressed="true">Non (≈ 35°)</button>
-<button type="button" class="pill" aria-pressed="false">Oui, tuile canal (≈ 17°)</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Gouttières</span>
-<div class="pills" role="group" aria-label="Gouttières">
-<button type="button" class="pill" aria-pressed="true">Zinc</button>
-<button type="button" class="pill" aria-pressed="false">PVC</button>
-<button type="button" class="pill" aria-pressed="false">Alu continu</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Façade</span>
-<div class="pills" role="group" aria-label="Façade">
-<button type="button" class="pill" aria-pressed="true">Enduit</button>
-<button type="button" class="pill" aria-pressed="false">Bardage bois</button>
-<button type="button" class="pill" aria-pressed="false">Bardage composite</button>
-</div>
-</div>
-</details>
-<details class="grp" open="">
-<summary>Chauffage et confort<svg class="chev" width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
-<path d="m5 7.5 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</summary>
-<div class="q">
-<span class="ql">Chauffage</span>
-<div class="pills" role="group" aria-label="Chauffage">
-<button type="button" class="pill" aria-pressed="true">PAC air/eau + plancher chauffant</button>
-<button type="button" class="pill" aria-pressed="false">PAC air/air gainable</button>
-<button type="button" class="pill" aria-pressed="false">Poêle à granulés + radiateurs</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Ventilation</span>
-<div class="pills" role="group" aria-label="Ventilation">
-<button type="button" class="pill" aria-pressed="true">Simple flux</button>
-<button type="button" class="pill" aria-pressed="false">Double flux</button>
-</div>
-</div>
-</details>
-<details class="grp" open="">
-<summary>Terrain et réseaux<svg class="chev" width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
-<path d="m5 7.5 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</summary>
-<div class="q">
-<span class="ql">Terrain</span>
-<div class="pills" role="group" aria-label="Terrain">
-<button type="button" class="pill" aria-pressed="true">Plat</button>
-<button type="button" class="pill" aria-pressed="false">En pente</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Sol argileux (Géorisques)</span>
-<div class="pills" role="group" aria-label="Sol argileux (Géorisques)">
-<button type="button" class="pill" aria-pressed="true">Non ou je ne sais pas</button>
-<button type="button" class="pill" aria-pressed="false">Moyen</button>
-<button type="button" class="pill" aria-pressed="false">Fort</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Zone sismique</span>
-<div class="pills" role="group" aria-label="Zone sismique">
-<button type="button" class="pill" aria-pressed="true">1-2 ou je ne sais pas</button>
-<button type="button" class="pill" aria-pressed="false">3</button>
-<button type="button" class="pill" aria-pressed="false">4</button>
-<button type="button" class="pill" aria-pressed="false">5</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Terrain viabilisé<span class="hint">réseaux devant le terrain</span>
-</span>
-<div class="pills" role="group" aria-label="Terrain viabilisé">
-<button type="button" class="pill" aria-pressed="true">Oui</button>
-<button type="button" class="pill" aria-pressed="false">Non</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Distance maison – rue</span>
-<span class="av-step">
-<button type="button" aria-label="Diminuer">−</button>
-<input type="number" inputMode="decimal" min="0" max="200" step="5" value="15"/>
-<span class="u">m</span>
-<button type="button" aria-label="Augmenter">+</button>
-</span>
-</div>
-<div class="q">
-<span class="ql">Lotissement</span>
-<div class="pills" role="group" aria-label="Lotissement">
-<button type="button" class="pill" aria-pressed="true">Non</button>
-<button type="button" class="pill" aria-pressed="false">Oui</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Terrain déjà borné</span>
-<div class="pills" role="group" aria-label="Terrain déjà borné">
-<button type="button" class="pill" aria-pressed="true">Oui</button>
-<button type="button" class="pill" aria-pressed="false">Non</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Terre végétale à évacuer</span>
-<div class="pills" role="group" aria-label="Terre végétale à évacuer">
-<button type="button" class="pill" aria-pressed="true">Non, gardée sur place</button>
-<button type="button" class="pill" aria-pressed="false">Oui</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Eaux usées</span>
-<div class="pills" role="group" aria-label="Eaux usées">
-<button type="button" class="pill" aria-pressed="true">Tout-à-l&#x27;égout</button>
-<button type="button" class="pill" aria-pressed="false">Fosse toutes eaux</button>
-<button type="button" class="pill" aria-pressed="false">Micro-station</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Eaux de pluie</span>
-<div class="pills" role="group" aria-label="Eaux de pluie">
-<button type="button" class="pill" aria-pressed="true">Infiltration sur la parcelle</button>
-<button type="button" class="pill" aria-pressed="false">Réseau public</button>
-</div>
-</div>
-</details>
-<details class="grp" open="">
-<summary>Qui pilote, finition<svg class="chev" width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
-<path d="m5 7.5 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</summary>
-<div class="q">
-<span class="ql">Qui pilote</span>
-<div class="pills" role="group" aria-label="Qui pilote">
-<button type="button" class="pill" aria-pressed="true">Moi (lots séparés)</button>
-<button type="button" class="pill" aria-pressed="false">Un maître d&#x27;œuvre</button>
-</div>
-</div>
-<div class="q">
-<span class="ql">Finition</span>
-<div class="pills" role="group" aria-label="Finition">
-<button type="button" class="pill" aria-pressed="false">Éco</button>
-<button type="button" class="pill" aria-pressed="true">Standard</button>
-<button type="button" class="pill" aria-pressed="false">Premium</button>
-</div>
-</div>
-</details>
-<div class="deduit">
-<span>Le moteur en déduit :</span>
-<span>emprise <b>116 m²</b>
-</span>
-<span>surface de plancher <b>102 m²</b>
-</span>
-<span>périmètre <b>43,5 m</b>
-</span>
-<span>toiture <b>164 m²</b>
-</span>
-<span>4 fenêtres, 2 porte-fenêtres, 1 baie</span>
-<span>
-<b>chantier ≈ 9 mois</b>
-</span>
-</div>
-<div class="gl">Budget et imprévus</div>
+<div class="gl">Surfaces</div>
 <div class="depart">
 <div class="fld">
-<label>Budget max <span style="color:var(--faint)">· facultatif</span>
+<label for="av-neuf-surface">Surface habitable</label>
+<span class="av-step field">
+<input id="av-neuf-surface" type="number" inputMode="decimal" min="30" max="400" step="5" value="100"/>
+<span class="u">m²</span>
+<span class="st">
+<button type="button" aria-label="Diminuer">−</button>
+<button type="button" aria-label="Augmenter">+</button>
+</span>
+</span>
+<div style="font-size:11.5px;color:var(--faint);line-height:1.45;margin-top:6px">Tous les niveaux additionnés, hors garage.</div>
+</div>
+<div class="fld">
+<label for="av-neuf-garage">Garage accolé</label>
+<span class="av-step field">
+<input id="av-neuf-garage" type="number" inputMode="decimal" min="0" max="80" step="5" value="0"/>
+<span class="u">m²</span>
+<span class="st">
+<button type="button" disabled="" aria-label="Diminuer">−</button>
+<button type="button" aria-label="Augmenter">+</button>
+</span>
+</span>
+<div style="font-size:11.5px;color:var(--faint);line-height:1.45;margin-top:6px">0 = sans garage</div>
+</div>
+<div class="fld">
+<label for="av-neuf-codePostal">Code postal du terrain</label>
+<div class="uinp">
+<input id="av-neuf-codePostal" inputMode="numeric" maxLength="5" autoComplete="postal-code" placeholder="ex. 45000" value=""/>
+</div>
+</div>
+<div class="fld">
+<label for="av-neuf-hauteur">Hauteur sous plafond</label>
+<output id="av-neuf-hauteur" class="ro">
+<span class="num">2,50</span>
+<span class="u">m</span>
+</output>
+<div style="font-size:11.5px;color:var(--faint);line-height:1.45;margin-top:6px">Standard d&#x27;une maison neuve.</div>
+</div>
+</div>
+<div class="gl">Pièces &amp; configuration <span style="text-transform:none;letter-spacing:0;font-weight:500">· chaque pièce compte dans le chiffrage</span>
+</div>
+<div class="stpg">
+<div class="stp">
+<span class="l">Séjour / salon</span>
+<span class="c">
+<button type="button" aria-label="moins">−</button>
+<span class="v num">1</span>
+<button type="button" aria-label="plus">+</button>
+</span>
+</div>
+<div class="stp">
+<span class="l">Cuisine</span>
+<span class="c">
+<button type="button" aria-label="moins">−</button>
+<span class="v num">1</span>
+<button type="button" aria-label="plus">+</button>
+</span>
+</div>
+<div class="stp">
+<span class="l">Chambres</span>
+<span class="c">
+<button type="button" aria-label="moins">−</button>
+<span class="v num">3</span>
+<button type="button" aria-label="plus">+</button>
+</span>
+</div>
+<div class="stp">
+<span class="l">Suite parentale<small>chambre + SDB</small>
+</span>
+<span class="c">
+<button type="button" aria-label="moins">−</button>
+<span class="v num">0</span>
+<button type="button" aria-label="plus">+</button>
+</span>
+</div>
+<div class="stp">
+<span class="l">Salles de bain<small>hors suite</small>
+</span>
+<span class="c">
+<button type="button" aria-label="moins">−</button>
+<span class="v num">1</span>
+<button type="button" aria-label="plus">+</button>
+</span>
+</div>
+<div class="stp">
+<span class="l">WC</span>
+<span class="c">
+<button type="button" aria-label="moins">−</button>
+<span class="v num">1</span>
+<button type="button" aria-label="plus">+</button>
+</span>
+</div>
+<div class="stp">
+<span class="l">Couloir / dégagement</span>
+<span class="c">
+<button type="button" aria-label="moins">−</button>
+<span class="v num">1</span>
+<button type="button" aria-label="plus">+</button>
+</span>
+</div>
+<div class="stp">
+<span class="l">Buanderie / cellier</span>
+<span class="c">
+<button type="button" aria-label="moins">−</button>
+<span class="v num">0</span>
+<button type="button" aria-label="plus">+</button>
+</span>
+</div>
+<div class="stp">
+<span class="l">Menuiseries ext.<small>fenêtres, baies</small>
+</span>
+<span class="c">
+<button type="button" aria-label="moins">−</button>
+<span class="v num">7</span>
+<button type="button" aria-label="plus">+</button>
+</span>
+</div>
+<button type="button" class="drtoggle on" aria-pressed="true">
+<span class="dot" aria-hidden="true">
+</span>Cuisine équipée comprise</button>
+</div>
+<div class="gl">Choix techniques <span style="text-transform:none;letter-spacing:0;font-weight:500">· réglages courants préremplis</span>
+</div>
+<div class="tech">
+<div class="tech-r">
+<p class="tech-res">Parpaing · dalle · 2 pans tuiles · enduit · PAC air/eau · tout-à-l&#x27;égout</p>
+<button type="button" class="linkbtn tech-btn" aria-expanded="false" aria-controls="av-neuf-tech">Modifier</button>
+</div>
+<div id="av-neuf-tech">
+</div>
+</div>
+<div class="gl">Niveau de finition</div>
+<div class="finc" role="group" aria-label="Niveau de finition">
+<button type="button" class="fc" aria-pressed="false">
+<span class="fh">
+<span class="g3">
+<i class="f">
+</i>
+<i class="">
+</i>
+<i class="">
+</i>
+</span>
+<span class="ck">
+</span>
+</span>
+<span class="fe">Budget maîtrisé</span>
+<span class="ft">Éco</span>
+<span class="fd">Entrée de gamme robuste : sol stratifié, carrelage standard, sanitaires et cuisine simples.</span>
+</button>
+<button type="button" class="fc on" aria-pressed="true">
+<span class="fh">
+<span class="g3">
+<i class="f">
+</i>
+<i class="f">
+</i>
+<i class="">
+</i>
+</span>
+<span class="ck">
+</span>
+</span>
+<span class="fe">Le plus courant</span>
+<span class="ft">Standard</span>
+<span class="fd">Bon rapport qualité-prix, marques milieu de gamme. Le bon équilibre pour une résidence principale.</span>
+</button>
+<button type="button" class="fc" aria-pressed="false">
+<span class="fh">
+<span class="g3">
+<i class="f">
+</i>
+<i class="f">
+</i>
+<i class="f">
+</i>
+</span>
+<span class="ck">
+</span>
+</span>
+<span class="fe">Haut de gamme</span>
+<span class="ft">Premium</span>
+<span class="fd">Parquet, carrelage grand format, sanitaires et cuisine haut de gamme.</span>
+</button>
+</div>
+<div class="gl">Qui pilote le chantier</div>
+<div class="segf" role="group" aria-label="Qui pilote le chantier">
+<button type="button" class="on" aria-pressed="true">Moi (lots séparés)</button>
+<button type="button" class="" aria-pressed="false">Un maître d&#x27;œuvre</button>
+</div>
+<div class="gl">Régime de TVA</div>
+<div class="locnote">Construction neuve : <b>TVA 20 %</b> sur tous les travaux, aucun taux réduit. Les taxes et l&#x27;assurance dommages-ouvrage n&#x27;ont pas de TVA.</div>
+<div class="gl">Budget &amp; imprévus</div>
+<div class="depart">
+<div class="fld">
+<label for="av-neuf-budget">Budget max <span style="color:var(--faint)">· facultatif</span>
 </label>
 <span class="av-step field">
-<input type="number" inputMode="decimal" min="0" step="1000" value="0"/>
+<input id="av-neuf-budget" type="number" inputMode="decimal" min="0" step="1000" value="0"/>
 <span class="u">€</span>
 <span class="st">
 <button type="button" disabled="" aria-label="Diminuer">−</button>
@@ -2820,15 +2660,21 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 </span>
 </div>
 <div class="fld">
-<label>Provision aléas</label>
+<label for="av-neuf-aleas">Provision aléas <span style="color:var(--faint)">· reco ≥ 7</span>
+</label>
 <span class="av-step field">
-<input type="number" inputMode="decimal" min="0" max="20" step="1" value="7"/>
+<input id="av-neuf-aleas" type="number" inputMode="decimal" min="0" max="20" step="1" value="7"/>
 <span class="u">%</span>
 <span class="st">
 <button type="button" aria-label="Diminuer">−</button>
 <button type="button" aria-label="Augmenter">+</button>
 </span>
 </span>
+</div>
+</div>
+<div class="recap">🏠 <b>Maison plain-pied</b> · 100 m² habitables · emprise au sol ~116 m² → murs extérieurs ≈ <b>149 m²</b> · toiture ≈ <b>164 m²</b>
+<div style="margin-top:6px">→ <b>6 pièces</b> au total · <b>1 salle de bain</b> · 7 menuiseries ext. (4 fenêtres, 2 porte-fenêtres, 1 baie)</div>
+<div style="margin-top:6px">→ surface de plancher ≈ 102 m² · périmètre ≈ 43,5 m · <b>chantier ≈ 9 mois</b>
 </div>
 </div>
 </div>
@@ -3468,7 +3314,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · appartement 1`] = `
 </span>
 </div>
 <div class="fld">
-<label for="av-reno-aleas">Contingency <span style="color:var(--faint)">· rec. ≥ 5</span>
+<label for="av-reno-aleas">Contingency <span style="color:var(--faint)">· rec. ≥ 10</span>
 </label>
 <span class="av-step field">
 <input id="av-reno-aleas" type="number" inputMode="decimal" min="0" max="20" step="1" value="10"/>
@@ -3984,7 +3830,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </span>
 </div>
 <div class="fld">
-<label for="av-reno-aleas">Contingency <span style="color:var(--faint)">· rec. ≥ 5</span>
+<label for="av-reno-aleas">Contingency <span style="color:var(--faint)">· rec. ≥ 10</span>
 </label>
 <span class="av-step field">
 <input id="av-reno-aleas" type="number" inputMode="decimal" min="0" max="20" step="1" value="10"/>
@@ -5469,16 +5315,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · page vierge 1`] = `
 <label for="av-reno-budget">Max budget <span style="color:var(--faint)">· optional</span>
 </label>
 <span class="av-step field">
-<input id="av-reno-budget" type="number" inputMode="decimal" min="0" step="1000" value="60000"/>
+<input id="av-reno-budget" type="number" inputMode="decimal" min="0" step="1000" value="0"/>
 <span class="u">€</span>
 <span class="st">
-<button type="button" aria-label="Decrease">−</button>
+<button type="button" disabled="" aria-label="Decrease">−</button>
 <button type="button" aria-label="Increase">+</button>
 </span>
 </span>
 </div>
 <div class="fld">
-<label for="av-reno-aleas">Contingency <span style="color:var(--faint)">· rec. ≥ 5</span>
+<label for="av-reno-aleas">Contingency <span style="color:var(--faint)">· rec. ≥ 10</span>
 </label>
 <span class="av-step field">
 <input id="av-reno-aleas" type="number" inputMode="decimal" min="0" max="20" step="1" value="10"/>
@@ -5674,7 +5520,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · page vierge 1`] = `
 </div>
 </div>
 </div>
-<div class="av-estim-live">
+<div class="av-estim-live nobudget">
 <div class="live-in">
 <div class="totb">
 <div class="lbl">Estimated total</div>
@@ -5684,7 +5530,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · page vierge 1`] = `
 </div>
 </div>
 <div class="jauge">
-<div class="jtext">Max budget 60 000 € · 60 000 € left</div>
+<div class="jtext">No max budget set</div>
 <div class="jbar">
 <div class="jfill" style="width:0%">
 </div>
@@ -5883,7 +5729,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · pieces 1`] = `
 </span>
 </div>
 <div class="fld">
-<label for="av-reno-aleas">Contingency <span style="color:var(--faint)">· rec. ≥ 5</span>
+<label for="av-reno-aleas">Contingency <span style="color:var(--faint)">· rec. ≥ 10</span>
 </label>
 <span class="av-step field">
 <input id="av-reno-aleas" type="number" inputMode="decimal" min="0" max="20" step="1" value="10"/>
@@ -6166,16 +6012,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · suite 1`] = `
 <label for="av-reno-budget">Max budget <span style="color:var(--faint)">· optional</span>
 </label>
 <span class="av-step field">
-<input id="av-reno-budget" type="number" inputMode="decimal" min="0" step="1000" value="60000"/>
+<input id="av-reno-budget" type="number" inputMode="decimal" min="0" step="1000" value="0"/>
 <span class="u">€</span>
 <span class="st">
-<button type="button" aria-label="Decrease">−</button>
+<button type="button" disabled="" aria-label="Decrease">−</button>
 <button type="button" aria-label="Increase">+</button>
 </span>
 </span>
 </div>
 <div class="fld">
-<label for="av-reno-aleas">Contingency <span style="color:var(--faint)">· rec. ≥ 5</span>
+<label for="av-reno-aleas">Contingency <span style="color:var(--faint)">· rec. ≥ 10</span>
 </label>
 <span class="av-step field">
 <input id="av-reno-aleas" type="number" inputMode="decimal" min="0" max="20" step="1" value="10"/>
@@ -6540,7 +6386,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · suite 1`] = `
 </div>
 </div>
 </div>
-<div class="av-estim-live">
+<div class="av-estim-live nobudget">
 <div class="live-in">
 <div class="totb">
 <div class="lbl">Estimated total</div>
@@ -6550,9 +6396,9 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · suite 1`] = `
 </div>
 </div>
 <div class="jauge">
-<div class="jtext">Max budget 60 000 € · 58 614 € left</div>
+<div class="jtext">No max budget set</div>
 <div class="jbar">
-<div class="jfill" style="width:2.31%">
+<div class="jfill" style="width:0%">
 </div>
 </div>
 </div>
@@ -7038,7 +6884,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · appartement 1`] = `
 </span>
 </div>
 <div class="fld">
-<label for="av-reno-aleas">Provision aléas <span style="color:var(--faint)">· reco ≥ 5</span>
+<label for="av-reno-aleas">Provision aléas <span style="color:var(--faint)">· reco ≥ 10</span>
 </label>
 <span class="av-step field">
 <input id="av-reno-aleas" type="number" inputMode="decimal" min="0" max="20" step="1" value="10"/>
@@ -7554,7 +7400,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </span>
 </div>
 <div class="fld">
-<label for="av-reno-aleas">Provision aléas <span style="color:var(--faint)">· reco ≥ 5</span>
+<label for="av-reno-aleas">Provision aléas <span style="color:var(--faint)">· reco ≥ 10</span>
 </label>
 <span class="av-step field">
 <input id="av-reno-aleas" type="number" inputMode="decimal" min="0" max="20" step="1" value="10"/>
@@ -9039,16 +8885,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · page vierge 1`] = `
 <label for="av-reno-budget">Budget max <span style="color:var(--faint)">· facultatif</span>
 </label>
 <span class="av-step field">
-<input id="av-reno-budget" type="number" inputMode="decimal" min="0" step="1000" value="60000"/>
+<input id="av-reno-budget" type="number" inputMode="decimal" min="0" step="1000" value="0"/>
 <span class="u">€</span>
 <span class="st">
-<button type="button" aria-label="Diminuer">−</button>
+<button type="button" disabled="" aria-label="Diminuer">−</button>
 <button type="button" aria-label="Augmenter">+</button>
 </span>
 </span>
 </div>
 <div class="fld">
-<label for="av-reno-aleas">Provision aléas <span style="color:var(--faint)">· reco ≥ 5</span>
+<label for="av-reno-aleas">Provision aléas <span style="color:var(--faint)">· reco ≥ 10</span>
 </label>
 <span class="av-step field">
 <input id="av-reno-aleas" type="number" inputMode="decimal" min="0" max="20" step="1" value="10"/>
@@ -9244,7 +9090,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · page vierge 1`] = `
 </div>
 </div>
 </div>
-<div class="av-estim-live">
+<div class="av-estim-live nobudget">
 <div class="live-in">
 <div class="totb">
 <div class="lbl">Total estimé</div>
@@ -9254,7 +9100,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · page vierge 1`] = `
 </div>
 </div>
 <div class="jauge">
-<div class="jtext">Budget max 60 000 € · reste 60 000 €</div>
+<div class="jtext">Budget max non défini</div>
 <div class="jbar">
 <div class="jfill" style="width:0%">
 </div>
@@ -9453,7 +9299,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · pieces 1`] = `
 </span>
 </div>
 <div class="fld">
-<label for="av-reno-aleas">Provision aléas <span style="color:var(--faint)">· reco ≥ 5</span>
+<label for="av-reno-aleas">Provision aléas <span style="color:var(--faint)">· reco ≥ 10</span>
 </label>
 <span class="av-step field">
 <input id="av-reno-aleas" type="number" inputMode="decimal" min="0" max="20" step="1" value="10"/>
@@ -9736,16 +9582,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · suite 1`] = `
 <label for="av-reno-budget">Budget max <span style="color:var(--faint)">· facultatif</span>
 </label>
 <span class="av-step field">
-<input id="av-reno-budget" type="number" inputMode="decimal" min="0" step="1000" value="60000"/>
+<input id="av-reno-budget" type="number" inputMode="decimal" min="0" step="1000" value="0"/>
 <span class="u">€</span>
 <span class="st">
-<button type="button" aria-label="Diminuer">−</button>
+<button type="button" disabled="" aria-label="Diminuer">−</button>
 <button type="button" aria-label="Augmenter">+</button>
 </span>
 </span>
 </div>
 <div class="fld">
-<label for="av-reno-aleas">Provision aléas <span style="color:var(--faint)">· reco ≥ 5</span>
+<label for="av-reno-aleas">Provision aléas <span style="color:var(--faint)">· reco ≥ 10</span>
 </label>
 <span class="av-step field">
 <input id="av-reno-aleas" type="number" inputMode="decimal" min="0" max="20" step="1" value="10"/>
@@ -10110,7 +9956,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · suite 1`] = `
 </div>
 </div>
 </div>
-<div class="av-estim-live">
+<div class="av-estim-live nobudget">
 <div class="live-in">
 <div class="totb">
 <div class="lbl">Total estimé</div>
@@ -10120,9 +9966,9 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · suite 1`] = `
 </div>
 </div>
 <div class="jauge">
-<div class="jtext">Budget max 60 000 € · reste 58 614 €</div>
+<div class="jtext">Budget max non défini</div>
 <div class="jbar">
-<div class="jfill" style="width:2.31%">
+<div class="jfill" style="width:0%">
 </div>
 </div>
 </div>

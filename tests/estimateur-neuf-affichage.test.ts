@@ -212,7 +212,8 @@ describe("Neuf · données d'affichage", () => {
       for (const q of g.qs) {
         expect(q.l.fr && q.l.en, q.k).toBeTruthy();
         if (q.k === "$finition") continue; // « Qui réalise » n'est plus une question (N3)
-        if (q.k !== "codePostal") expect(q.k in defaut, q.k).toBe(true);
+        // Le code postal et les menuiseries (absentes tant qu'on ne les règle pas : déduites de la surface, N8)
+        if (q.k !== "codePostal" && q.k !== "menuiseries") expect(q.k in defaut, q.k).toBe(true);
         expect(!!q.o !== !!q.t, q.k).toBe(true); // soit des choix, soit une saisie
         for (const [v, lib] of q.o ?? []) {
           expect(lib.fr && lib.en).toBeTruthy();

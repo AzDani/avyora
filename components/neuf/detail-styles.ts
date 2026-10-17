@@ -1,34 +1,40 @@
 /**
  * CSS du détaillé neuf (Pro), scopé `.av-neuf-d`. Il s'ajoute à `EST_CSS` (l'estimateur détaillé de
- * la rénovation : cartes, lignes `Row`, lignes perso, barre live, phases repliables `.phase-t`) sans
- * le modifier. Questionnaire en `<details>`, pastilles, « Le moteur en déduit », jalons de phase,
- * badges « Démarche » et « % des travaux », étiquette « Pro obligatoire » et avertissement « hors
- * garantie décennale » des lignes, ligne « Nouveaux postes cochés » et confirmation de « Tout passer
- * en… » (`.nv`, N3). Porté de `maquettes/neuf/page.html` ; aucun `@import`. Les outils de la liste
- * (`.tools`), les vues et les boutons de la barre live en 44 px sont dans `EST_CSS` (N6, partagés).
+ * la rénovation : cartes, questionnaire « Parle-nous du bien », lignes `Row`, lignes perso, barre
+ * live, phases repliables `.phase-t`) sans le modifier. Le questionnaire est celui de la rénovation
+ * (N9) : ici, ce qui n'appartient qu'au neuf — le type et la forme sur une rangée (`.typef`), la
+ * hauteur en lecture seule (`.ro`), les choix techniques repliés derrière leur ligne de résumé
+ * (`.tech`), le champ en faute (`aria-invalid`). Puis jalons de phase, badges « Démarche » et « % des
+ * travaux », étiquette « Pro obligatoire » et avertissement « hors garantie décennale » des lignes,
+ * ligne « Nouveaux postes cochés » et confirmation de « Tout passer en… » (`.nv`, N3). Porté de
+ * `maquettes/neuf/page.html` ; aucun `@import`. Les outils de la liste (`.tools`), les vues et les
+ * boutons de la barre live en 44 px sont dans `EST_CSS` (N6, partagés).
  */
 export const NEUF_DETAIL_CSS = `
-.av-neuf-d .grp{border:1px solid var(--line);border-radius:var(--radius-field);background:var(--surface-2);padding:10px 14px;margin-top:10px}
-.av-neuf-d .grp>summary{list-style:none;cursor:pointer;font-weight:600;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:36px}
-.av-neuf-d .grp>summary::-webkit-details-marker{display:none}
-.av-neuf-d .grp>summary .chev{flex:none;transition:transform .15s var(--ease);color:var(--faint)}
-.av-neuf-d .grp[open]>summary .chev{transform:rotate(180deg)}
-.av-neuf-d .q{padding:11px 0;border-top:1px solid var(--line)}
-.av-neuf-d .q:first-of-type{border-top:0}
-.av-neuf-d .ql{display:block;font-weight:500;font-size:13px;margin-bottom:8px;color:var(--ink)}
-.av-neuf-d .ql .hint{font-weight:400;color:var(--faint);font-size:11.5px;margin-left:6px}
-.av-neuf-d .pills{display:flex;flex-wrap:wrap;gap:6px}
-.av-neuf-d .pill{font-family:var(--font-geist-sans),system-ui,sans-serif;border:1px solid var(--line-strong);background:var(--surface);border-radius:999px;padding:8px 13px;min-height:38px;cursor:pointer;font-size:13px;line-height:1.2;color:var(--ink);transition:background .12s,border-color .12s}
-.av-neuf-d .pill:hover:not(:disabled){border-color:var(--brand)}
-.av-neuf-d .pill[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
-.av-neuf-d .pill:disabled{opacity:.4;cursor:not-allowed}
-.av-neuf-d .pill:focus-visible{outline:2px solid var(--accent-600);outline-offset:2px}
-.av-neuf-d .rowflex{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
-.av-neuf-d .cpin{width:120px;font-family:var(--font-geist-mono),ui-monospace,monospace;font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--radius-field);padding:9px 11px;min-height:40px;outline:none}
-.av-neuf-d .cpin:focus{border-color:var(--brand);box-shadow:0 0 0 4px color-mix(in srgb,var(--brand) 14%,transparent)}
-.av-neuf-d .zone{font-size:12px;color:var(--faint)}
-.av-neuf-d .deduit{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:14px;padding:12px 14px;border-radius:var(--radius-field);background:var(--brand-50);font-size:12.5px;color:var(--muted)}
-.av-neuf-d .deduit b{color:var(--ink);font-family:var(--font-geist-mono),ui-monospace,monospace;font-variant-numeric:tabular-nums;font-weight:600}
+.av-neuf-d .typef{display:flex;flex-wrap:wrap;align-items:center;gap:10px 26px}
+.av-neuf-d .typef-g{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
+.av-neuf-d .typef-l{font-size:11.5px;font-weight:500;color:var(--muted)}
+.av-neuf-d .fld>.av-step.field{display:flex}
+.av-neuf-d .gl+.locnote{padding-top:0}
+.av-neuf-d .stpg .drtoggle{margin-top:0;width:100%;min-height:46px;border-radius:var(--radius-field);padding:7px 13px;text-align:left}
+.av-neuf-d .ro{display:flex;align-items:center;height:38px;border:1px solid var(--line);border-radius:var(--radius-field);background:var(--surface-2);padding:0 11px;color:var(--muted)}
+.av-neuf-d .ro .num{flex:1;font-size:14px;font-weight:600}
+.av-neuf-d .ro .u{font-size:12px;color:var(--faint);font-weight:600;padding-left:8px}
+.av-neuf-d .uinp:has(input[aria-invalid="true"]){border-color:var(--danger);box-shadow:0 0 0 3px color-mix(in srgb,var(--danger) 15%,transparent)}
+.av-neuf-d .tech{border:1px solid var(--line);border-radius:var(--radius-field);background:var(--surface-2);padding:4px 6px 4px 14px}
+.av-neuf-d .tech.open{background:var(--surface);border-color:var(--brand-200);padding-bottom:14px}
+.av-neuf-d .tech-r{display:flex;align-items:center;gap:6px 12px}
+.av-neuf-d .tech-res{flex:1;margin:0;padding:6px 0;font-size:12.5px;line-height:1.5;color:var(--muted)}
+.av-neuf-d .tech-btn{flex:none;align-self:center}
+.av-neuf-d .tech-btn:focus-visible{outline:2px solid var(--accent-600);outline-offset:2px;border-radius:6px}
+.av-neuf-d .tg{margin-top:12px;padding-right:8px}
+.av-neuf-d .tg-t{font-size:12px;font-weight:600;color:var(--ink);padding:8px 0 10px;border-top:1px solid var(--line)}
+.av-neuf-d .techg{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));grid-auto-flow:row dense;gap:14px 22px}
+.av-neuf-d .tq{min-width:0}
+.av-neuf-d .tq.large{grid-column:1/-1}
+.av-neuf-d .tq-l{font-size:11.5px;color:var(--muted);margin-bottom:6px;font-weight:500}
+.av-neuf-d .tq-l small{display:block;font-size:10.5px;color:var(--faint);font-weight:400;margin-top:1px}
+.av-neuf-d .tq .segf button{line-height:1.25}
 .av-neuf-d .nv{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:12px 0 0;padding:10px 14px;border:1px solid var(--line);border-radius:var(--radius-field);background:var(--surface)}
 .av-neuf-d .nv-l{font-size:13px;font-weight:600;color:var(--ink)}
 .av-neuf-d .nv-seg{display:inline-flex;gap:3px;background:var(--surface-2);border:1px solid var(--line-strong);border-radius:999px;padding:3px}
@@ -63,7 +69,9 @@ export const NEUF_DETAIL_CSS = `
 @media(max-width:560px){
 .av-neuf-d .pjal,.av-neuf-d .pvide{padding-left:4px}
 .av-neuf-d .decennale,.av-neuf-d .mention-soi{margin-left:0}
-.av-neuf-d .pill{min-height:44px}
+.av-neuf-d .tech{padding-left:12px}
+.av-neuf-d .tech-r{flex-wrap:wrap}
+.av-neuf-d .tech-btn{min-height:44px}
 .av-neuf-d .nv-seg button,.av-neuf-d .nv-act button,.av-neuf-d .nv-tout{min-height:44px}
 .av-neuf-d .nv-tout{margin-left:0}
 /* les postes du neuf ont de longues notes : sur mobile, les commandes passent sous le libellé */

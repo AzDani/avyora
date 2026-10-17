@@ -118,12 +118,13 @@ describe("N8 · l'emprise mesurée sur un plan", () => {
 
 describe("N8 · le questionnaire du détaillé dit les suites venues d'un plan", () => {
   const q = (k: string) => QUESTIONS_NEUF.flatMap((g) => g.qs).find((x) => x.k === k)!;
-  it("chambres et salles d'eau : une aide « + 1 suite » ; aucune sans suite", () => {
-    const m = maisonComplete({ ...A, chambres: 2, suites: 1, sdb: 0 });
-    expect(q("chambres").hintDe?.(m)).toEqual({ fr: "+ 1 suite parentale", en: "+ 1 master suite" });
-    expect(q("sdb").hintDe?.(m)).toEqual({ fr: "+ 1 dans la suite", en: "+ 1 in the suite" });
-    expect(q("sdb").hintDe?.(maisonComplete({ ...A, suites: 2, sdb: 0 }))?.fr).toBe("+ 2 dans les suites");
-    expect(q("chambres").hintDe?.(maisonComplete(A))).toBeNull();
+  /* N9 : la suite a son propre compteur, comme en rénovation (« Suite parentale · chambre + SDB ») ;
+     chambres et salles de bain se comptent hors suites (« hors suite »). L'aide « + 1 suite » d'N8, qui la
+     disait faute de compteur, n'a plus d'objet. */
+  it("la suite a son compteur ; les salles de bain se comptent hors suite (N9)", () => {
+    expect(q("suites")).toMatchObject({ section: "pieces", vue: "compteur", hint: { fr: "chambre + SDB", en: "bedroom + bathroom" } });
+    expect(q("sdb").hint).toEqual({ fr: "hors suite", en: "excl. suites" });
+    expect(q("chambres").hint).toBeUndefined();
   });
   it("le minimum des salles d'eau tombe à 0 quand une suite a la sienne", () => {
     expect(q("sdb").minDe?.(maisonComplete(A))).toBe(1);

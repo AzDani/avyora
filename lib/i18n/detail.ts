@@ -74,7 +74,8 @@ const fr = {
     budgetMax: "Budget max",
     facultatif: "· facultatif",
     aleas: "Provision aléas",
-    aleasReco: "· reco ≥ 5",
+    /** Provision recommandée, selon la nature du chantier (D7) : `ALEAS_RENO` ou `ALEAS_NEUF`. */
+    aleasReco: (n: number) => `· reco ≥ ${n}`,
   },
   /* Récapitulatif sous le questionnaire */
   recap: {
@@ -277,7 +278,7 @@ const en: typeof fr = {
     budgetMax: "Max budget",
     facultatif: "· optional",
     aleas: "Contingency",
-    aleasReco: "· rec. ≥ 5",
+    aleasReco: (n: number) => `· rec. ≥ ${n}`,
   },
   recap: {
     pieces: "Selected rooms",

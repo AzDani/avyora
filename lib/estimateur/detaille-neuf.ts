@@ -17,7 +17,8 @@
  */
 import { key, isAuto, isLoc, lineHT, puReel, tauxPerso, type Ctx, type Selection, type Finition, type Lot, type Tache, type CustomLine } from "./core";
 import { CATALOG_NEUF, PHASES_NEUF } from "./catalogue-neuf";
-import { maisonComplete, maisonParDefaut, reponseDuPoste, selAvantN8, type MaisonNeuve } from "./neuf";
+import { geometrieNeuf, maisonComplete, maisonParDefaut, reponseDuPoste, selAvantN8, type MaisonNeuve } from "./neuf";
+import { BORNES_NEUF, minSdbNeuf } from "./bornes-neuf";
 import { ctxNeuf, appliquerMaison, cocherPosteNeuf, soiMemeNeuf, peutFaireNeuf, LOTS_DECENNALE_NEUF, presetMaison, presetNeuf, type RapideNeufInput } from "./presets-neuf";
 import type { QuiRealise } from "./presets";
 import type { CleQuestionNeuf, ValeurQuestionNeuf } from "./questions-neuf";
@@ -114,12 +115,47 @@ export function changerReponseNeuf(e: EtatNeuf, k: CleQuestionNeuf, v: ValeurQue
   // Une emprise mesurée sur un plan ne vaut que pour la maison mesurée : une autre surface ou d'autres
   // niveaux l'oublient, l'emprise se déduit alors de la surface.
   if ((k === "surface" || k === "niveaux") && v !== e.maison[k]) delete brute.emprise;
+  // Menuiseries ramenées au nombre que la surface donne : plus de saisie, le nombre suit de nouveau la
+  // maison (la formule d'avant N8, `geometrieNeuf`).
+  if (k === "menuiseries") {
+    const sans = { ...brute };
+    delete sans.menuiseries;
+    if (v === menuiseriesNeuf(maisonComplete(sans))) delete brute.menuiseries;
+  }
   let facadeAuto = e.facadeAuto;
   if (k === "murs" && facadeAuto) brute.facade = v === "ossature" ? "bardage-bois" : "enduit";
   if (k === "facade") facadeAuto = false;
   // La maison gardée est celle que le moteur chiffre (bornes, toit plat → pas de combles…).
   const maison = ctxDetailNeuf({ ...e, maison: brute }).neuf as MaisonNeuve;
   return { ...e, maison, facadeAuto, sel: appliquerMaison(maison, e.sel, e.qui, ancienne) };
+}
+
+/** Menuiseries extérieures de la maison (fenêtres + portes-fenêtres + baies) : le nombre saisi, sinon
+ *  celui que la surface donne. C'est la valeur du compteur « Menuiseries ext. » (N9). */
+export function menuiseriesNeuf(m: MaisonNeuve): number {
+  const g = geometrieNeuf(m);
+  return g.nFen + g.nPF + g.nBaie;
+}
+
+/** Les compteurs de la grille « Pièces et configuration » (ceux de la rénovation) et leur réponse. */
+export type CompteurNeuf = "sejour" | "cuisines" | "chambres" | "suites" | "sdb" | "wc" | "couloir" | "buanderie" | "menuiseries";
+
+/** Valeur affichée d'un compteur. */
+export function valeurCompteurNeuf(m: MaisonNeuve, k: CompteurNeuf): number {
+  return k === "menuiseries" ? menuiseriesNeuf(m) : m[k];
+}
+
+/**
+ * Un « − » ou un « + » d'un compteur (N9) : borné par `BORNES_NEUF`, au moins une salle de bain en
+ * comptant les suites, au moins un WC ; puis la réponse change comme les autres (`changerReponseNeuf`).
+ * Un pas qui sort des bornes ne change rien.
+ */
+export function pasCompteurNeuf(e: EtatNeuf, k: CompteurNeuf, delta: number): EtatNeuf {
+  const m = e.maison;
+  const actuel = valeurCompteurNeuf(m, k);
+  const min = k === "sdb" ? minSdbNeuf(m) : BORNES_NEUF[k].min;
+  const v = Math.min(BORNES_NEUF[k].max, Math.max(min, actuel + delta));
+  return v === actuel ? e : changerReponseNeuf(e, k, v);
 }
 
 /**

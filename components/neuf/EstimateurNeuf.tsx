@@ -22,14 +22,21 @@
  * toutes. Aucun montant écrit ici : tout vient du moteur.
  *
  * N6 : l'écran prend les briques partagées avec la rénovation (`ChoixVue`, `ListeLots`, `TitrePhase`,
- * `BlocLot`, `LignesLot`, `BarreLive` ; « Mon devis » : `VueDevis`), sans changer son rendu. Son
- * questionnaire reste le sien jusqu'à N9.
+ * `BlocLot`, `LignesLot`, `BarreLive` ; « Mon devis » : `VueDevis`), sans changer son rendu.
+ *
+ * N9 : le questionnaire est celui de la rénovation (`components/estimateur/intake.tsx`) : une carte
+ * « Parle-nous de ta maison », ses intertitres dans le même ordre (type de maison, surfaces, la même
+ * grille de compteurs, puis les choix techniques REPLIÉS derrière une ligne de résumé, la finition en
+ * cartes, qui pilote, la TVA, le budget, le récapitulatif). Chaque question dit sa rubrique et son
+ * contrôle (`section`, `vue` : `questions-neuf.ts`) ; un nombre tapé n'est pris qu'à la sortie du champ.
+ * Un projet rouvert est posé dès le premier rendu, serveur compris (comme la rénovation depuis N6).
  */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import NumStepper from "@/components/Stepper";
 import { EST_CSS } from "@/components/estimateur-styles";
-import { fmt, Field, CustomLines } from "@/components/estimateur/partage";
+import { fmt, gras, Field, Stepper, CustomLines } from "@/components/estimateur/partage";
+import { Intertitre, Pastilles, Segment, CartesFinition, ChampCodePostal, Interrupteur, Recap, ZoneRecap } from "@/components/estimateur/intake";
 import { ListeLots, TitrePhase, BlocLot, LignesLot } from "@/components/estimateur/ListeLots";
 import { BarreLive } from "@/components/estimateur/BarreLive";
 import { ChoixVue } from "@/components/estimateur/VueDevis";
@@ -40,16 +47,19 @@ import { dictNeuf } from "@/lib/i18n/neuf";
 import { catT } from "@/lib/estimateur/catalog-i18n";
 import {
   buildDevis, customLotHT, geometrieNeuf, isLoc, key, regionCoef, visibleTask, raisonProNeuf, tauxPersoPossibles, CATALOG_NEUF, PHASES_NEUF, ICON,
-  BORNES_NEUF, GARAGE_MIN_SAISI,
-  type CustomLine, type Selection, type LigneSel, type MaisonNeuve, type Lot, type Tache, type QuiRealise,
+  ALEAS_NEUF,
+  type CustomLine, type Selection, type LigneSel, type MaisonNeuve, type Lot, type Tache, type QuiRealise, type Finition,
 } from "@/lib/estimateur";
 import { totauxAvecPerso } from "@/lib/estimateur/projet";
 import { INFO_PHASES } from "@/lib/estimateur/etapes-neuf";
-import { QUESTIONS_NEUF, type QuestionNeuf, type ValeurQuestionNeuf, type CleQuestionNeuf } from "@/lib/estimateur/questions-neuf";
+import {
+  QUESTIONS_NEUF, questionsVisibles, resumeTechniqueNeuf, type QuestionNeuf, type ValeurQuestionNeuf, type CleQuestionNeuf,
+} from "@/lib/estimateur/questions-neuf";
 import {
   CLE_BROUILLON_DETAIL_NEUF, BLOCS_NEUF, ctxDetailNeuf, etatParDefaut, changerReponseNeuf, cocherNeufEtat, badgeNeuf,
   lignesPersoDuBloc, lignePersoNeuf, repriseDepuisReponses, reglerNouveauxNeuf, toutPasserNeuf, postesQuiChangent,
-  lireBrouillonDetailNeuf, enregistrementDetailNeuf, demarchesPhase, ouvertureDetailNeuf, type EtatNeuf, type BlocNeuf,
+  lireBrouillonDetailNeuf, enregistrementDetailNeuf, demarchesPhase, ouvertureDetailNeuf, pasCompteurNeuf, valeurCompteurNeuf,
+  type EtatNeuf, type BlocNeuf, type CompteurNeuf,
 } from "@/lib/estimateur/detaille-neuf";
 import { CLE_BROUILLON_NEUF, CLE_AFFINER_NEUF, CLE_RECLAMATION_NEUF, type OrigineNeuf } from "@/lib/estimateur/brouillon-neuf";
 import { marquerReprisePlan } from "@/lib/plans/origine";
@@ -60,11 +70,11 @@ import { mesurerPlan, mesureEstimationNeuf } from "@/lib/plans/mesure";
 
 const CP = /^\d{5}$/;
 
-const Chevron = () => (
-  <svg className="chev" width="18" height="18" viewBox="0 0 20 20" aria-hidden="true">
-    <path d="m5 7.5 5 5 5-5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
+/** Niveaux de finition : la jauge des cartes (1 à 3 barres), comme la rénovation. */
+const NIVEAUX_FINITION: Record<Finition, number> = { eco: 1, standard: 2, premium: 3 };
+/** Identifiants des champs : libellés (`htmlFor`), champ en faute (`aria-describedby`). */
+const ID = (k: string) => `av-neuf-${k}`;
+const ID_ERREUR = "av-neuf-err";
 const Drapeau = () => (
   <svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true">
     <path d="M3.5 14.5V2.2M3.5 2.6h8.2l-1.8 3 1.8 3H3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
@@ -77,13 +87,15 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
   const T = useT();
   const n = dictNeuf(locale);
   const d = n.detail;
-  const dl = dictDetail(locale);
+  const dl = dictDetail(locale), R = dl.recap;
   const nf = locale === "en" ? "en-US" : "fr-FR";
   const nb = (v: number, dec = 0) => (Math.round((v || 0) * 10 ** dec) / 10 ** dec).toLocaleString(nf);
   const edition = !!projectId;
 
-  const [etat, setEtat] = useState<EtatNeuf>(etatParDefaut);
-  const [custom, setCustom] = useState<CustomLine[]>([]);
+  // Projet rouvert (« Modifier ») : son état dès le premier rendu, celui du serveur compris.
+  const [depart] = useState(() => (initialState ? repriseDepuisReponses(initialState) : null));
+  const [etat, setEtat] = useState<EtatNeuf>(() => depart?.etat ?? etatParDefaut());
+  const [custom, setCustom] = useState<CustomLine[]>(() => depart?.custom ?? []);
   const [open, setOpen] = useState<Record<string, boolean>>({});         // blocs ouverts, par index de bloc
   const [ouvertes, setOuvertes] = useState<Record<string, boolean>>({}); // phases ouvertes : aucune à l'ouverture
   const [passer, setPasser] = useState<"ferme" | "choix" | QuiRealise>("ferme"); // « Tout passer en… » : cible, puis confirmation
@@ -92,19 +104,20 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
   const [view, setView] = useState<"saisie" | "devis">("saisie");
   const [saving, setSaving] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
+  /** Le champ en faute (« Enregistrer » sans code postal) : marqué, puis focalisé (`signal`). */
+  const [champErr, setChampErr] = useState<"codePostal" | "surface" | null>(null);
+  const [signal, setSignal] = useState(0);
+  /** Choix techniques : repliés à l'ouverture, une ligne de résumé les dit. */
+  const [techOuvert, setTechOuvert] = useState(false);
   const hydrated = useRef(false);
-  const statutsRef = useRef<Record<string, number> | undefined>(undefined); // suivi de chantier gardé en modification
-  const origineRef = useRef<OrigineNeuf | undefined>(undefined);           // maison venue d'un plan
+  const statutsRef = useRef<Record<string, number> | undefined>(depart?.statuts); // suivi de chantier gardé en modification
+  const origineRef = useRef<OrigineNeuf | undefined>(depart?.origine);            // maison venue d'un plan
 
   // ── Reprise ────────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (hydrated.current) return;
     hydrated.current = true;
-    if (initialState) {
-      const r = repriseDepuisReponses(initialState);
-      if (r) { setEtat(r.etat); setCustom(r.custom); statutsRef.current = r.statuts; origineRef.current = r.origine; }
-      return;
-    }
+    if (initialState) return; // projet rouvert : déjà posé au premier rendu
     let isNew = false, reprise = false, affiner: string | null = null, graine: string | null = null;
     try {
       const q = new URLSearchParams(window.location.search);
@@ -175,10 +188,20 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
   }
 
   // ── Enregistrement ─────────────────────────────────────────────────────────────────────────
+  /** Le champ en faute : marqué (`aria-invalid`), la saisie réaffichée, puis le champ focalisé. */
+  function signaler(champ: "codePostal" | "surface", msg: string) {
+    setErreur(msg); setChampErr(champ); setView("saisie"); setSignal((x) => x + 1);
+  }
+  useEffect(() => {
+    if (!signal || !champErr) return;
+    const el = document.getElementById(ID(champErr));
+    if (el) { el.scrollIntoView({ block: "center", behavior: "smooth" }); el.focus({ preventScroll: true }); }
+  }, [signal, champErr]);
+
   async function enregistrer() {
-    setErreur(null);
-    if (!CP.test(m.codePostal ?? "")) { setErreur(d.errCp); setView("saisie"); return; }
-    if (!(m.surface > 0)) { setErreur(d.errSurface); setView("saisie"); return; }
+    setErreur(null); setChampErr(null);
+    if (!CP.test(m.codePostal ?? "")) { signaler("codePostal", d.errCp); return; }
+    if (!(m.surface > 0)) { signaler("surface", d.errSurface); return; }
     setSaving(true);
     const { brouillon, corps } = enregistrementDetailNeuf(etat, { custom, statuts: statutsRef.current, origine: origineRef.current, locale });
     try {
@@ -203,44 +226,67 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
     } catch { setErreur(n.saisie.errReseau); setSaving(false); }
   }
 
-  // ── Questionnaire ──────────────────────────────────────────────────────────────────────────
+  // ── Questionnaire « Parle-nous de ta maison » (N9) ─────────────────────────────────────────
+  /* Une question choisit son contrôle (`vue`) ; les valeurs (texte, nombre, booléen) passent par leur
+     texte dans les pastilles, segments et cartes, puis reviennent telles quelles dans la réponse. */
+  const B = dl.bien;
   const valeur = (k: CleQuestionNeuf): unknown => (k === "$finition" ? finition : m[k as keyof MaisonNeuve]);
-  function controle(q: QuestionNeuf) {
-    const lbl = q.l[locale];
-    if (q.t === "num") {
-      const k = q.k as keyof MaisonNeuve;
-      const min = q.minDe ? q.minDe(m) : q.min;
-      const borne = (v: number) => Math.min(q.max ?? v, Math.max(min ?? v, v));
-      return <NumStepper value={Number(m[k]) || 0} min={min} max={q.max} step={q.step} unit={q.u} onChange={(v) => repondre(q.k, borne(v))} />;
+  const options = (q: QuestionNeuf) => (q.o ?? []).map(([v, txt]) => ({ v: String(v), label: txt[locale] }));
+  const choisir = (q: QuestionNeuf) => (sv: string) => {
+    const o = (q.o ?? []).find(([v]) => String(v) === sv);
+    if (o) repondre(q.k, o[0]);
+  };
+  function choix(q: QuestionNeuf) {
+    const lbl = q.l[locale], v = String(valeur(q.k));
+    if (q.vue === "segment") return <Segment aria={lbl} valeur={v} onChoix={choisir(q)} options={options(q)} />;
+    if (q.vue === "cartes") {
+      const cartes = (q.o ?? []).map(([val, txt]) => {
+        const c = q.k === "$finition" ? n.saisie.finitions[String(val)] : null;
+        const t = q.cartes?.[String(val)];
+        return {
+          v: String(val), label: c?.label ?? txt[locale], eye: c?.eye ?? t?.eye[locale] ?? "", desc: c?.desc ?? t?.desc[locale] ?? "",
+          ...(q.k === "$finition" ? { lvl: NIVEAUX_FINITION[val as Finition] } : {}),
+        };
+      });
+      return <CartesFinition aria={lbl} valeur={v} onChoix={choisir(q)} cartes={cartes} />;
     }
-    if (q.t === "cp") {
+    return <Pastilles aria={lbl} actif={(x) => x === v} onChoix={choisir(q)} options={options(q)} />;
+  }
+  /** Un nombre (surface, garage, distance) : pris à la sortie du champ, borné par la question. */
+  function champ(q: QuestionNeuf) {
+    const k = q.k as keyof MaisonNeuve;
+    const borne = (v: number) => Math.min(q.max ?? v, Math.max(q.min ?? v, v));
+    return <NumStepper field aLaSortie id={ID(q.k)} value={Number(m[k]) || 0} min={q.min} max={q.max} step={q.step} unit={q.u} onChange={(v) => repondre(q.k, borne(v))} />;
+  }
+  const cp = m.codePostal ?? "";
+  const zoneTxt = cp.length >= 2 ? <>{zoneLbl}{regDelta ? ` · ${regDelta > 0 ? "+" : ""}${regDelta} ${T.rapide.moSuffix}` : ""}</> : undefined;
+  function majCp(v: string) {
+    repondre("codePostal", v);
+    if (champErr === "codePostal" && CP.test(v)) { setChampErr(null); setErreur(null); }
+  }
+  const sousTitre = (txt: string) => <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 500 }}>{txt}</span>;
+
+  /** Les choix techniques, dépliés : un sous-titre par groupe, chaque question avec son libellé. */
+  function technique() {
+    return QUESTIONS_NEUF.map((g) => {
+      const qs = g.qs.filter((q) => q.section === "technique" && (!q.si || q.si(m)));
+      if (!qs.length) return null;
       return (
-        <div className="rowflex">
-          <input className="cpin" inputMode="numeric" maxLength={5} autoComplete="postal-code" aria-label={lbl} placeholder={n.saisie.cpPlaceholder}
-            value={m.codePostal ?? ""} onChange={(e) => repondre("codePostal", e.target.value.replace(/\D/g, "").slice(0, 5))} />
-          {(m.codePostal ?? "").length >= 2 && <span className="zone">{zoneLbl}{regDelta ? ` · ${regDelta > 0 ? "+" : ""}${regDelta} ${T.rapide.moSuffix}` : ""}</span>}
-        </div>
-      );
-    }
-    if (q.t === "garage") {
-      return (
-        <div className="rowflex">
-          <div className="pills" role="group" aria-label={lbl}>
-            <button type="button" className="pill" aria-pressed={!m.garage} onClick={() => repondre("garage", 0)}>{d.non}</button>
-            <button type="button" className="pill" aria-pressed={m.garage > 0} onClick={() => { if (!m.garage) repondre("garage", 20); }}>{d.oui}</button>
+        <div key={g.g.fr} className="tg">
+          <div className="tg-t">{g.g[locale]}</div>
+          <div className="techg">
+            {qs.map((q) => (q.vue === "champ"
+              ? <div key={q.k} className="tq"><Field label={q.l[locale]} hint={q.hint?.[locale]} htmlFor={ID(q.k)}>{champ(q)}</Field></div>
+              : (
+                <div key={q.k} className={"tq" + (q.vue === "cartes" || (q.o?.length ?? 0) > 4 ? " large" : "")}>
+                  <div className="tq-l">{q.l[locale]}{q.hint && <small>{q.hint[locale]}</small>}</div>
+                  {choix(q)}
+                </div>
+              )))}
           </div>
-          {m.garage > 0 && <NumStepper value={m.garage} min={GARAGE_MIN_SAISI} max={BORNES_NEUF.garage.max} step={5} unit="m²" onChange={(v) => repondre("garage", Math.min(BORNES_NEUF.garage.max, Math.max(GARAGE_MIN_SAISI, v)))} />}
         </div>
       );
-    }
-    const v = valeur(q.k);
-    return (
-      <div className="pills" role="group" aria-label={lbl}>
-        {(q.o ?? []).map(([val, txt]) => (
-          <button type="button" key={String(val)} className="pill" aria-pressed={v === val} onClick={() => repondre(q.k, val)}>{txt[locale]}</button>
-        ))}
-      </div>
-    );
+    });
   }
 
   // ── Liste des phases ───────────────────────────────────────────────────────────────────────
@@ -308,43 +354,82 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
               <div className="eyebrow">{d.eyebrow}</div>
               <h2>{d.titre}</h2>
               <div className="sub">{d.sous}</div>
-              {QUESTIONS_NEUF.map((grp, gi) => (
-                <details key={gi} className="grp" open>
-                  <summary>{grp.g[locale]}<Chevron /></summary>
-                  {grp.qs.map((q) => {
-                    if (q.si && !q.si(m)) return null; // sans objet ici : masquée, comme en rénovation
-                    const hint = q.hintDe?.(m) ?? q.hint;
-                    return (
-                      <div key={q.k} className="q">
-                        <span className="ql">
-                          {q.l[locale]}
-                          {hint && <span className="hint">{hint[locale]}</span>}
-                        </span>
-                        {controle(q)}
-                      </div>
-                    );
-                  })}
-                </details>
-              ))}
-              <div className="deduit">
-                <span>{d.deduitK}</span>
-                <span>{d.emprise} <b>{nb(geo.Etot)} m²</b></span>
-                <span>{d.plancher} <b>{nb(geo.SP)} m²</b></span>
-                <span>{d.perimetre} <b>{nb(geo.P, 1)} m</b></span>
-                <span>{d.toiture} <b>{nb(geo.toiture)} m²</b></span>
-                <span>{d.ouvertures(geo.nFen, geo.nPF, geo.nBaie)}</span>
-                <span><b>{d.chantier(geo.moisChantier)}</b></span>
+
+              <Intertitre>{d.typeT}</Intertitre>
+              <div className="typef">
+                {questionsVisibles(m, "type").map((q) => (
+                  <div key={q.k} className="typef-g">
+                    {q.k !== "niveaux" && <span className="typef-l" aria-hidden="true">{q.l[locale]}</span>}
+                    {choix(q)}
+                  </div>
+                ))}
               </div>
 
-              <div className="gl">{d.budgetT}</div>
+              <Intertitre>{B.surfacesT}</Intertitre>
               <div className="depart">
-                <Field label={<>{d.budgetMax} <span style={{ color: "var(--faint)" }}>· {d.facultatif}</span></>}>
-                  <NumStepper field value={budget} min={0} step={1000} unit="€" onChange={(v) => setEtat((e) => ({ ...e, budget: Math.max(0, v || 0) }))} />
-                </Field>
-                <Field label={d.aleasL}>
-                  <NumStepper field value={aleas} min={0} max={20} unit="%" onChange={(v) => setEtat((e) => ({ ...e, aleas: Math.min(20, Math.max(0, v || 0)) }))} />
+                {questionsVisibles(m, "surfaces").map((q) => (
+                  <Field key={q.k} label={q.l[locale]} hint={q.vue === "cp" ? zoneTxt : q.hint?.[locale]} htmlFor={ID(q.k)}>
+                    {q.vue === "cp"
+                      ? <ChampCodePostal id={ID(q.k)} valeur={cp} onChange={majCp} placeholder={n.saisie.cpPlaceholder} invalide={champErr === "codePostal"} erreurId={ID_ERREUR} />
+                      : champ(q)}
+                  </Field>
+                ))}
+                <Field label={B.hauteur} hint={d.hauteurAide} htmlFor={ID("hauteur")}>
+                  <output id={ID("hauteur")} className="ro"><span className="num">{d.hauteurValeur}</span><span className="u">m</span></output>
                 </Field>
               </div>
+
+              <Intertitre>{B.piecesConfT} {sousTitre(B.piecesConfSous)}</Intertitre>
+              {/* La grille de la rénovation ; l'interrupteur « Cuisine équipée comprise » en dernière case
+                  (neuf compteurs + lui : cinq rangées pleines sur ordinateur). */}
+              <div className="stpg">
+                {questionsVisibles(m, "pieces").map((q) => (q.vue === "interrupteur"
+                  ? <Interrupteur key={q.k} actif={!!valeur(q.k)} onBascule={() => repondre(q.k, !valeur(q.k))} texteActif={q.l[locale]} texteInactif={d.cuisineOff} />
+                  : <Stepper key={q.k} label={q.l[locale]} hint={q.hint?.[locale]} value={valeurCompteurNeuf(m, q.k as CompteurNeuf)}
+                    onStep={(dt) => setEtat((e) => pasCompteurNeuf(e, q.k as CompteurNeuf, dt))} />))}
+              </div>
+
+              <Intertitre>{d.techT} {sousTitre(d.techSous)}</Intertitre>
+              <div className={"tech" + (techOuvert ? " open" : "")}>
+                <div className="tech-r">
+                  <p className="tech-res">{resumeTechniqueNeuf(m, locale)}</p>
+                  <button type="button" className="linkbtn tech-btn" aria-expanded={techOuvert} aria-controls={ID("tech")}
+                    onClick={() => setTechOuvert((o) => !o)}>{techOuvert ? d.techReplier : d.techModifier}</button>
+                </div>
+                <div id={ID("tech")}>{techOuvert && technique()}</div>
+              </div>
+
+              {questionsVisibles(m, "finition").map((q) => (
+                <Fragment key={q.k}><Intertitre>{B.finitionT}</Intertitre>{choix(q)}</Fragment>
+              ))}
+
+              {questionsVisibles(m, "pilotage").map((q) => (
+                <Fragment key={q.k}><Intertitre>{q.l[locale]}</Intertitre>{choix(q)}</Fragment>
+              ))}
+
+              <Intertitre>{B.tvaT}</Intertitre>
+              <div className="locnote">{gras(d.tvaNote)}</div>
+
+              <Intertitre>{B.budgetT}</Intertitre>
+              <div className="depart">
+                <Field label={<>{B.budgetMax} <span style={{ color: "var(--faint)" }}>{B.facultatif}</span></>} htmlFor={ID("budget")}>
+                  <NumStepper field aLaSortie id={ID("budget")} value={budget} min={0} step={1000} unit="€" onChange={(v) => setEtat((e) => ({ ...e, budget: Math.max(0, v || 0) }))} />
+                </Field>
+                <Field label={<>{B.aleas} <span style={{ color: "var(--faint)" }}>{B.aleasReco(ALEAS_NEUF)}</span></>} htmlFor={ID("aleas")}>
+                  <NumStepper field aLaSortie id={ID("aleas")} value={aleas} min={0} max={20} unit="%" onChange={(v) => setEtat((e) => ({ ...e, aleas: Math.min(20, Math.max(0, v || 0)) }))} />
+                </Field>
+              </div>
+              <Recap
+                tete={<>🏠 <b>{n.maisonNiveaux[m.niveaux] ?? n.maisonNiveaux.pp}</b> · {R.habitables(Math.round(geo.SH))}
+                  {geo.G > 0 && <> · {d.recapGarage(Math.round(geo.G))}</>} · {R.emprise(Math.round(geo.Etot))}
+                  {" "}→ {R.murs} <b>{nb(geo.facadeNette) + "\u00a0m²"}</b> · {R.toiture} <b>{nb(geo.toiture) + "\u00a0m²"}</b></>}
+                lignes={[
+                  <>→ <b>{R.piecesTotal(geo.piecesEff)}</b> {R.auTotal} · <b>{R.sdb(m.sdb + m.suites)}</b>{m.suites > 0 && <>{R.dontSuite(m.suites)}</>}
+                    {" "}· {R.menuiseries(geo.nFen + geo.nPF + geo.nBaie)} ({d.ouvertures(geo.nFen, geo.nPF, geo.nBaie)})</>,
+                  <>→ {d.recapPlancher(nb(geo.SP))} · {d.recapPerimetre(nb(geo.P, 1))} · <b>{d.chantier(geo.moisChantier)}</b></>,
+                ]}
+                zone={cp.length >= 2 && <ZoneRecap reg={reg} zone={zoneLbl} mo={R.mo} mat={R.mat} />}
+              />
             </div>
 
             <div className="intro">{d.intro}</div>
@@ -412,7 +497,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
 
       {/* Barre live sticky (la même que la rénovation), avec le prix au m² et les frais */}
       <BarreLive total={tot.ttc} budget={budget} vue={view} onVue={setView} onEnregistrer={enregistrer} saving={saving} edition={edition} erreur={erreur}
-        className="av-neuf-live"
+        erreurId={ID_ERREUR} className="av-neuf-live"
         m2={<div className="m2">≈ {fmt(m2)} {d.parM2}{frais > 0 ? <> · {d.dontFrais} {fmt(frais)}</> : null}</div>}
         t={{
           totalK: d.totalK, ttc: d.ttc, budget: d.budgetTxt, depasse: d.depasse, reste: d.reste, sansBudget: d.sansBudget,

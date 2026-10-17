@@ -26,7 +26,7 @@ import type { Ctx, LigneSel, Selection } from "./core";
 import { BORNES_NEUF, dansBorne, type Borne } from "./bornes-neuf";
 import { robinetsNeuf, specNeuf, spots, solCarrele, solSec, faienceSdb, plinthes } from "./quantites";
 
-export { BORNES_NEUF, GARAGE_MAX, DISTANCE_RESEAUX_MAX, GARAGE_MIN_SAISI, type Borne } from "./bornes-neuf";
+export { BORNES_NEUF, GARAGE_MAX, DISTANCE_RESEAUX_MAX, type Borne } from "./bornes-neuf";
 
 export type Niveaux = "pp" | "etage" | "combles";
 export interface MaisonNeuve {

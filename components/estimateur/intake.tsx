@@ -3,7 +3,7 @@
 /**
  * Briques du questionnaire des estimations détaillées (« Parle-nous du bien ») : celles de la
  * rénovation (`components/Estimateur.tsx`), partagées avec le neuf (chantier N6 de la revue
- * rénovation / neuf ; le questionnaire du neuf les prend en N9). Aucun texte ici : chaque appelant
+ * rénovation / neuf ; le questionnaire du neuf les prend depuis N9). Aucun texte ici : chaque appelant
  * passe les siens (`dictDetail`, `dictNeuf`). Styles : `EST_CSS` (`.tpills`, `.segf`, `.finc`, `.uinp`,
  * `.drtoggle`, `.recap`).
  *
@@ -46,9 +46,11 @@ export function Segment<T extends string>({ options, valeur, onChoix, aria }: {
   );
 }
 
-export interface CarteFinition<T extends string> { v: T; lvl: number; eye: string; label: string; desc: string }
+/** Une carte : objectif, nom, description, et la jauge de 1 à 3 barres d'un niveau de finition
+ *  (`lvl`). Sans `lvl` (chauffage du neuf, N9), pas de jauge. */
+export interface CarteFinition<T extends string> { v: T; lvl?: number; eye: string; label: string; desc: string }
 
-/** Cartes du niveau de finition : objectif, nom, description et jauge de 1 à 3 barres. */
+/** Cartes à description : le niveau de finition (avec sa jauge) ; le chauffage du neuf (sans). */
 export function CartesFinition<T extends string>({ cartes, valeur, onChoix, aria }: {
   cartes: CarteFinition<T>[]; valeur: T; onChoix: (v: T) => void; aria: string;
 }) {
@@ -56,7 +58,7 @@ export function CartesFinition<T extends string>({ cartes, valeur, onChoix, aria
     <div className="finc" role="group" aria-label={aria}>
       {cartes.map((f) => (
         <button key={f.v} type="button" className={"fc" + (valeur === f.v ? " on" : "")} aria-pressed={valeur === f.v} onClick={() => onChoix(f.v)}>
-          <span className="fh"><span className="g3">{[0, 1, 2].map((k) => <i key={k} className={k < f.lvl ? "f" : ""} />)}</span><span className="ck" /></span>
+          <span className="fh">{f.lvl != null ? <span className="g3">{[0, 1, 2].map((k) => <i key={k} className={k < f.lvl! ? "f" : ""} />)}</span> : <span />}<span className="ck" /></span>
           <span className="fe">{f.eye}</span>
           <span className="ft">{f.label}</span>
           <span className="fd">{f.desc}</span>
@@ -66,19 +68,21 @@ export function CartesFinition<T extends string>({ cartes, valeur, onChoix, aria
   );
 }
 
-/** Code postal : 5 chiffres au plus, rien d'autre ne passe. `id` le relie à son libellé (`Field htmlFor`). */
-export function ChampCodePostal({ valeur, onChange, placeholder, id }: {
-  valeur: string; onChange: (cp: string) => void; placeholder: string; id?: string;
+/** Code postal : 5 chiffres au plus, rien d'autre ne passe. `id` le relie à son libellé (`Field htmlFor`).
+ *  `invalide` (facultatif, neuf) : le champ en faute à l'enregistrement (`aria-invalid`, liée à `erreurId`). */
+export function ChampCodePostal({ valeur, onChange, placeholder, id, invalide, erreurId }: {
+  valeur: string; onChange: (cp: string) => void; placeholder: string; id?: string; invalide?: boolean; erreurId?: string;
 }) {
   return (
     <div className="uinp">
       <input id={id} inputMode="numeric" maxLength={5} autoComplete="postal-code" placeholder={placeholder} value={valeur}
+        aria-invalid={invalide || undefined} aria-describedby={invalide ? erreurId : undefined}
         onChange={(e) => onChange(e.target.value.replace(/\D/g, "").slice(0, 5))} />
     </div>
   );
 }
 
-/** Interrupteur oui / non sous une grille (dressing de la suite ; « cuisine équipée » du neuf en N9). */
+/** Interrupteur oui / non sous une grille (dressing de la suite ; « cuisine équipée comprise » du neuf, N9). */
 export function Interrupteur({ actif, onBascule, texteActif, texteInactif }: {
   actif: boolean; onBascule: () => void; texteActif: ReactNode; texteInactif: ReactNode;
 }) {

@@ -99,7 +99,7 @@ export interface Ctx {
   fenetres: number;
   sdb: number;                // salles de bain HORS suite parentale
   wc: number;
-  budget: number;
+  budget: number;             // budget max saisi (0 = non défini) : hors des totaux, seulement la jauge et la fiche
   aleas: number;              // % provision aléas
   finition: Finition;
   fiscal?: "habitation" | "pro"; // régime TVA : habitation +2 ans (10/5,5 %) ou neuf/−2 ans/local pro (20 %)
@@ -333,10 +333,12 @@ export const ICON: Record<string, string> = {
 export const ALEAS_RENO = 10;
 export const ALEAS_NEUF = 7;
 
+/** Le bien par défaut d'un nouveau projet de rénovation. Budget max à 0, « non défini », comme en
+ *  construction neuve (revue rénovation / neuf, N9 ; avant : 60 000 € proposés d'office). */
 export function defaultCtx(): Ctx {
   return {
     surface: 80, surfaceSol: 80, surfaceSolManual: false, niveaux: 1, type: "Maison",
-    hauteur: 2.5, pieces: 6, fenetres: 7, sdb: 1, wc: 1, budget: 60000, aleas: ALEAS_RENO, finition: "standard", fiscal: "habitation",
+    hauteur: 2.5, pieces: 6, fenetres: 7, sdb: 1, wc: 1, budget: 0, aleas: ALEAS_RENO, finition: "standard", fiscal: "habitation",
     sejour: 1, cuisine: 1, chambres: 3, suites: 0, couloir: 1, buanderie: 0,
   };
 }
