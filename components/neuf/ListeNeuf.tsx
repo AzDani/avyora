@@ -8,8 +8,9 @@
  * - 4 grandes phases en intertitres, chaque lot UNE fois, fermé tant qu'on ne l'ouvre pas ;
  * - dans un lot présent à plusieurs étapes du chantier, ses postes sous un sous-titre d'étape ;
  * - les notes des blocs du catalogue en infobulle (N11) : sur l'icône d'information du sous-titre de leur
- *   étape, sinon de l'en-tête du lot (`notesDuLotNeuf`) ; un clic les déplie. Dans les lignes, le libellé
- *   court du poste (`nc`) ; son libellé complet et sa note sont repliés derrière l'icône de la ligne (`Row`) ;
+ *   étape, sinon sur le bouton « À savoir » en tête du lot ouvert (`notesDuLotNeuf`) ; un clic les déplie.
+ *   Dans les lignes, le libellé court du poste (`nc`) ; son libellé complet et sa note sont repliés derrière
+ *   l'icône de la ligne (`Row`) ;
  * - les postes qui s'excluent sur une ligne de choix : la ligne du poste retenu et ses alternatives en
  *   boutons ; un clic choisit (l'appelant coche, décoche l'autre et met la réponse à jour) ; deux
  *   alternatives cochées (un ancien projet) : les deux lignes, sous un avertissement ; une alternative
@@ -119,13 +120,13 @@ export function ListeNeuf(props: PropsCommunes & { custom: CustomLine[]; outils:
     const notes = notesDuLotNeuf(elements);
     const traduire = (xs: string[]) => xs.map((x) => catT(locale, "notes", x));
     return (
-      <BlocLot key={c} ouvert={ouvert} entete={{
+      <BlocLot key={c} ouvert={ouvert} notes={traduire(notes.entete)} labelInfo={dl.liste.infoNote} entete={{
         icone: ICON[c] || "•", nom: catT(locale, "corps", c), cnt, ouvert, onBascule: () => onBascule(c),
-        montant: cnt > 0 ? fmt(amt) + " " + dl.liste.ht : "", notes: traduire(notes.entete),
+        montant: cnt > 0 ? fmt(amt) + " " + dl.liste.ht : "",
       }}>
         {elements.map((e) => {
           if (e.type === "etape") return <SousEtape key={"e-" + e.phase} notes={traduire(notes.etapes[e.phase] ?? [])} labelInfo={dl.liste.infoNote}>{catT(locale, "phases", e.phase)}</SousEtape>;
-          if (e.type === "note") return null;           // en infobulle (N11) : sous-titre d'étape ou en-tête du lot
+          if (e.type === "note") return null;           // en infobulle (N11) : sous-titre d'étape ou « À savoir » du lot
           if (e.type === "choix") return ligneChoix(e.ligne, e.membres, e.boutons);
           return seulementCoches && !coche(e.p) ? null : rangee(e.p);
         })}

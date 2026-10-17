@@ -61,10 +61,9 @@ function liste(e: EtatNeuf, open: Record<string, boolean>, locale: "fr" | "en" =
   const el = createElement("div", null, createElement(CarteFraisNeuf, props), createElement(ListeNeuf, { ...props, custom: [], outils: OUTILS }));
   return renderToStaticMarkup(createElement(LangProvider, { locale, children: el }));
 }
-/** Le contenu d'un lot ouvert dans le HTML : de son en-tête au lot suivant. Le nom du lot est suivi de la fin
- *  de son `<span>` ou de l'icône de ses notes (N11). */
+/** Le contenu d'un lot ouvert dans le HTML : de son en-tête au lot suivant. */
 const lotHtml = (html: string, nom: string) => {
-  const i = html.indexOf(`<span class="nm">${echapper(nom)}<`);
+  const i = html.indexOf(`<span class="nm">${echapper(nom)}</span>`);
   const suite = html.slice(i + 1).search(/<div class="acc(?: open)?">/);
   return html.slice(i, suite < 0 ? undefined : i + 1 + suite);
 };

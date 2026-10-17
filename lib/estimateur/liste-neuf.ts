@@ -216,7 +216,8 @@ export function elementsLotNeuf(ctx: Ctx, sel: Selection, lot: string): ElementL
 /**
  * Où vont les notes des blocs d'un lot (N11) : elles ne s'écrivent plus dans la liste, elles sont en
  * infobulle. Chaque note va au sous-titre d'étape qui la précède (un lot présent à plusieurs étapes), sinon
- * à l'en-tête du lot (un lot d'une seule étape, même s'il a plusieurs blocs : l'isolation, les sols). Les
+ * au lot (`entete` : un lot d'une seule étape, même s'il a plusieurs blocs : l'isolation, les sols ; affichées
+ * en tête du lot ouvert, derrière le bouton « À savoir », pas dans son en-tête). Les
  * notes sont les chaînes du catalogue (clés de traduction, `catT(locale, "notes", note)`).
  */
 export function notesDuLotNeuf(elements: ElementLotNeuf[]): { entete: string[]; etapes: Record<string, string[]> } {

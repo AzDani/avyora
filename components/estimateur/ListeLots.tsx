@@ -11,8 +11,9 @@
  * (simples intertitres), chaque lot une fois ; il y ajoute ses sous-titres d'étape (`SousEtape`) et ses
  * lignes de choix (`LigneChoix`, `SelecteurChoix`) pour les postes qui s'excluent. Le titre de phase
  * repliable (`TitrePhase` avec `onBascule`) reste disponible. Depuis N11, les notes de lot du neuf ne sont plus
- * écrites dans la liste : elles sont en infobulle, sur l'icône d'information de leur sous-titre d'étape ou de
- * l'en-tête du lot (`notes`), et se déplient d'un clic (`TexteInfo`).
+ * écrites dans la liste : elles sont en infobulle, sur l'icône d'information de leur sous-titre d'étape ou, en
+ * tête du lot ouvert, sur le bouton « À savoir » (`NotesLot`), et se déplient d'un clic (`TexteInfo`). L'en-tête
+ * du lot reste celui de la rénovation, sans icône.
  */
 import { useState, type ReactNode } from "react";
 import { Row } from "./Row";
@@ -36,26 +37,15 @@ export function TitrePhase({ num, nom, meta, ouvert, onBascule }: {
   );
 }
 
-/**
- * En-tête d'un lot : bouton (clavier : Entrée, Espace) qui l'ouvre ; icône, nom, postes cochés, montant HT.
- * `notes` (neuf, N11, déjà traduites) : une icône d'information après le nom, l'infobulle au survol ; un clic sur l'icône
- * déplie les notes sous l'en-tête (`infoOuverte`, `onInfo`) sans ouvrir le lot. L'icône n'est pas un second
- * bouton dans le bouton : les lecteurs d'écran lisent les notes dans la description de l'en-tête.
- */
-export function EnteteLot({ icone, nom, cnt, montant, ouvert, onBascule, notes, infoOuverte, onInfo }: {
+/** En-tête d'un lot : bouton (clavier : Entrée, Espace) qui l'ouvre ; icône, nom, postes cochés, montant HT. */
+export function EnteteLot({ icone, nom, cnt, montant, ouvert, onBascule }: {
   icone: ReactNode; nom: ReactNode; cnt: number; montant: ReactNode; ouvert: boolean; onBascule: () => void;
-  notes?: string[]; infoOuverte?: boolean; onInfo?: () => void;
 }) {
-  const textes = notes ?? [];
   return (
     <div className="acc-h" role="button" tabIndex={0} aria-expanded={ouvert} onClick={onBascule}
-      aria-description={textes.length ? textes.join(" ") : undefined}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onBascule(); } }}>
       <span className="ic" aria-hidden="true">{icone}</span>
-      <span className="nm">{nom}{textes.length > 0 && (
-        <span className={"ibtn" + (infoOuverte ? " on" : "")} aria-hidden="true" title={textes.join("\n\n")}
-          onClick={(e) => { e.stopPropagation(); onInfo?.(); }}><IconeInfo /></span>
-      )}</span>
+      <span className="nm">{nom}</span>
       {cnt > 0 && <span className="cnt">{cnt}</span>}
       <span className="amt num">{montant}</span>
       <span className="car">›</span>
@@ -63,18 +53,37 @@ export function EnteteLot({ icone, nom, cnt, montant, ouvert, onBascule, notes, 
   );
 }
 
-/** Un lot repliable : son en-tête, ses notes dépliées (neuf, N11), et ouvert, son contenu (lignes, lignes perso). */
-export function BlocLot({ ouvert, entete, children }: {
-  ouvert: boolean; entete: Omit<Parameters<typeof EnteteLot>[0], "infoOuverte" | "onInfo">; children: ReactNode;
+/**
+ * Un lot repliable : son en-tête, et ouvert, son contenu (lignes, lignes perso). `notes` (neuf, N11, déjà
+ * traduites) : les notes du lot, en tête de son contenu (`NotesLot`, `labelInfo`). Pas dans l'en-tête : sur
+ * un téléphone, le nom du lot y a peu de place et l'icône lui ajoutait une ligne (N11, vérification).
+ */
+export function BlocLot({ ouvert, entete, notes, labelInfo, children }: {
+  ouvert: boolean; entete: Parameters<typeof EnteteLot>[0]; notes?: string[]; labelInfo?: string; children: ReactNode;
 }) {
-  const [info, setInfo] = useState(false);
-  const notes = entete.notes ?? [];
   return (
     <div className={"acc" + (ouvert ? " open" : "")}>
-      <EnteteLot {...entete} infoOuverte={info} onInfo={() => setInfo((o) => !o)} />
-      {info && notes.length > 0 && <div className="acc-info"><TexteInfo morceaux={notes} /></div>}
-      {ouvert && <div className="acc-b">{children}</div>}
+      <EnteteLot {...entete} />
+      {ouvert && (
+        <div className="acc-b">
+          {notes && notes.length > 0 && <NotesLot notes={notes} label={labelInfo ?? ""} />}
+          {children}
+        </div>
+      )}
     </div>
+  );
+}
+
+/** Les notes d'un lot (neuf, N11), en tête du lot ouvert : un bouton « ⓘ À savoir » (`label`), les notes en
+ *  infobulle au survol ; un clic les déplie dessous (`TexteInfo`). */
+export function NotesLot({ notes, label }: { notes: string[]; label: string }) {
+  const [info, setInfo] = useState(false);
+  return (
+    <>
+      <button type="button" className={"acc-info" + (info ? " on" : "")} aria-expanded={info} title={notes.join("\n\n")}
+        onClick={() => setInfo((o) => !o)}><IconeInfo />{label}</button>
+      {info && <TexteInfo morceaux={notes} />}
+    </>
   );
 }
 

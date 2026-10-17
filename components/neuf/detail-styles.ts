@@ -6,7 +6,7 @@
  * hauteur en lecture seule (`.ro`), les choix techniques repliés derrière leur ligne de résumé
  * (`.tech`). Le champ en faute (`aria-invalid`) et la case « Niveaux » en lecture seule sont ceux de
  * la rénovation (`INTAKE_CSS`, A7). Puis la liste rangée par corps d'état (N10) : sous-titres d'étape
- * dans un lot (`.setape`, son infobulle et celle de l'en-tête du lot : `.acc-info`, N11), lignes de choix
+ * dans un lot (`.setape`, son infobulle et le bouton « À savoir » du lot : `.acc-info`, N11), lignes de choix
  * (`.choixl`, `.tchoix`), carte « Taxes, assurance et frais » et liste « Démarches » (`.frais-c`,
  * `.dem-c`) ; badges « Démarche » et « % des travaux »,
  * étiquette « Pro obligatoire » et avertissement « hors garantie décennale » des lignes, ligne
@@ -64,10 +64,13 @@ export const NEUF_DETAIL_CSS = `
 /* N10 : un lot présent à plusieurs étapes du chantier, ses postes sous un sous-titre d'étape */
 .av-neuf-d .setape{display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--brand);padding:14px 0 0}
 .av-neuf-d .setape:first-child{padding-top:8px}
-/* N11 : les notes des blocs en infobulle, sur l'icône du sous-titre d'étape ou de l'en-tête du lot ; un clic les déplie */
+/* N11 : les notes des blocs en infobulle, sur l'icône du sous-titre d'étape ou sur le bouton « À savoir » en tête du
+   lot ouvert (pas dans l'en-tête, où l'icône ajoutait une ligne sur mobile) ; un clic les déplie */
 .av-neuf-d .setape+.tinfo{margin:6px 0 2px}
-.av-neuf-d .acc-info{padding:0 18px 12px}
-.av-neuf-d .acc-info .tinfo{margin:0}
+.av-neuf-d .acc-info{display:inline-flex;align-items:center;gap:6px;margin:10px 0 2px -5px;padding:3px 10px 3px 5px;border:0;border-radius:999px;background:none;font:inherit;font-size:11.5px;font-weight:600;color:var(--muted);cursor:pointer;transition:color .12s var(--ease),background .12s var(--ease)}
+.av-neuf-d .acc-info:hover,.av-neuf-d .acc-info.on{color:var(--brand);background:var(--brand-50)}
+.av-neuf-d .acc-info:focus-visible{outline:2px solid var(--accent-600);outline-offset:1px}
+.av-neuf-d .acc-info+.tinfo{margin:6px 0 2px}
 /* ligne de choix : la ligne du poste retenu, ses alternatives en boutons dessous (le style des variantes) */
 .av-neuf-d .choixl{border-bottom:1px solid var(--line)}
 .av-neuf-d .choixl:last-child{border-bottom:0}
@@ -103,6 +106,9 @@ export const NEUF_DETAIL_CSS = `
 .av-neuf-d .tchoix{padding-left:0;grid-column:2/-1}
 .av-neuf-d .choix-g .vseg button{min-height:40px}
 .av-neuf-d .decennale,.av-neuf-d .mention-soi,.av-neuf-d .trow .tinfo{margin-left:0}
+/* le bouton « À savoir » d'un lot : une cible de 40 px, comme l'icône d'information, sans pousser la ligne */
+.av-neuf-d .acc-info{position:relative}
+.av-neuf-d .acc-info::after{content:"";position:absolute;inset:-9px -4px;border-radius:999px}
 .av-neuf-d .tech{padding-left:12px}
 .av-neuf-d .tech-r{flex-wrap:wrap}
 .av-neuf-d .tech-btn{min-height:44px}

@@ -8,7 +8,9 @@
  *   libellé complet.
  * - La note d'un poste (et son libellé complet quand la ligne en montre un court) est repliée derrière une
  *   icône d'information, pour les deux natures. Les notes des blocs du neuf ne sont plus écrites dans la
- *   liste : elles sont en infobulle, sur le sous-titre de leur étape, sinon sur l'en-tête du lot.
+ *   liste : elles sont en infobulle, sur le sous-titre de leur étape, sinon sur un bouton « À savoir » en tête du
+ *   lot ouvert. Pas dans l'en-tête du lot (N11, vérification) : sur un téléphone, le nom du lot y a peu de place et
+ *   l'icône lui ajoutait une ligne ; l'en-tête reste celui de la rénovation.
  * - Notes partagées de `catalog.json` réécrites pour valoir dans les deux contextes : bardage, isolation
  *   par l'intérieur, lot Menuiseries extérieures. Pas la PAC : la décision D6 n'est pas prise.
  * - Critère de fin : le texte « tout déplié » du neuf est proche de celui de la réno. Mesuré avant N11
@@ -169,17 +171,17 @@ function detailleReno(locale: "fr" | "en", ouvert: boolean) {
 }
 
 describe("N11 · notes de lot du neuf en infobulle", () => {
-  it("chaque note va au sous-titre de son étape, sinon à l'en-tête du lot", () => {
+  it("chaque note va au sous-titre de son étape, sinon au lot", () => {
     const e = etatParDefaut();
     const ctx = ctxDetailNeuf(e);
     const notes = (c: string) => notesDuLotNeuf(elementsLotNeuf(ctx, e.sel, c));
     const blocs = (c: string) => CATALOG_NEUF.filter((l) => l.c === c);
-    // Maçonnerie : trois étapes, une note chacune, rien sur l'en-tête
+    // Maçonnerie : trois étapes, une note chacune, rien au lot
     const mac = notes("Maçonnerie");
     expect(mac.entete).toEqual([]);
     expect(Object.keys(mac.etapes)).toEqual(["Fondations & plancher bas", "Murs & planchers", "Second œuvre"]);
     for (const l of blocs("Maçonnerie")) expect(mac.etapes[l.p]).toEqual([l.note]);
-    // Isolation : deux blocs dans la même étape, pas de sous-titre : les deux notes sur l'en-tête
+    // Isolation : deux blocs dans la même étape, pas de sous-titre : les deux notes au lot
     expect(notes("Isolation")).toEqual({ entete: blocs("Isolation").map((l) => l.note), etapes: {} });
     // Terrassement : un bloc
     expect(notes("Terrassement")).toEqual({ entete: [blocs("Terrassement")[0].note], etapes: {} });
@@ -196,14 +198,24 @@ describe("N11 · notes de lot du neuf en infobulle", () => {
         if (l.note) expect(texte, l.note).not.toContain(catT(locale, "notes", l.note));
         for (const t of l.t) if (t.note) expect(texte, t.id).not.toContain(catT(locale, "notes", t.note));
       }
-      // chaque note d'un bloc affiché est dans une infobulle (sous-titre d'étape ou en-tête)
+      // chaque note d'un bloc affiché est dans une infobulle (sous-titre d'étape ou « À savoir » du lot)
       const titres = [...html.matchAll(/title="([^"]*)"/g)].map((m) => m[1]).join("\n");
       for (const c of new Set(CATALOG_NEUF.map((l) => l.c))) {
         const { entete, etapes } = notesDuLotNeuf(elementsLotNeuf(ctx, {}, c));
         for (const n of [...entete, ...Object.values(etapes).flat()]) expect(titres, n).toContain(echapper(catT(locale, "notes", n)));
       }
-      // en-tête de lot : l'icône n'est pas un second bouton, la note est dans la description de l'en-tête
-      expect(html).toMatch(/<div class="acc-h" role="button" tabindex="0" aria-expanded="true" aria-description="[^"]+"><span class="ic" aria-hidden="true">[^<]*<\/span><span class="nm">[^<]+<span class="ibtn" aria-hidden="true" title="/);
+      // notes du lot : un vrai bouton « À savoir » en tête du lot ouvert, son infobulle est la note ; un par lot qui en a
+      const label = echapper(dictDetail(locale).liste.infoNote);
+      const boutons = [...html.matchAll(/<div class="acc-b"><button type="button" class="acc-info" aria-expanded="false" title="([^"]+)"><svg[^]*?<\/svg>([^<]*)<\/button>/g)];
+      const avecNotes = [...new Set(CATALOG_NEUF.map((l) => l.c))].filter((c) => notesDuLotNeuf(elementsLotNeuf(ctx, {}, c)).entete.length > 0);
+      expect(avecNotes.length).toBeGreaterThan(10);
+      expect(boutons.length).toBe(avecNotes.length);
+      for (const b of boutons) expect(b[2]).toBe(label);
+      const terr = notesDuLotNeuf(elementsLotNeuf(ctx, {}, "Terrassement")).entete;
+      expect(boutons.map((b) => b[1])).toContain(echapper(terr.map((n) => catT(locale, "notes", n)).join("\n\n")));
+      // l'en-tête du lot : celui de la rénovation, sans icône ni description
+      expect(html).not.toMatch(/<span class="nm">[^<]+<span class="ibtn"/);
+      expect(html).not.toContain("aria-description");
       // sous-titre d'étape : un vrai bouton, son infobulle est la note
       expect(html).toContain(`<div class="setape">${echapper(catT(locale, "phases", "Fondations & plancher bas"))}<button type="button" class="ibtn" aria-expanded="false" aria-label="${echapper(dictDetail(locale).liste.infoNote)}" title="`);
       expect(html).not.toContain('class="lotnote">' + echapper(catT(locale, "notes", CATALOG_NEUF[0].note)));
