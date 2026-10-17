@@ -1506,7 +1506,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">📋</span>
-<span class="nm">Paperwork <span class="acc-sous">· free</span>
+<span class="nm">Paperwork <span class="acc-sous">· step by step</span>
 </span>
 <span class="amt num">
 </span>
@@ -3052,7 +3052,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">📋</span>
-<span class="nm">Démarches <span class="acc-sous">· gratuites</span>
+<span class="nm">Démarches <span class="acc-sous">· étape par étape</span>
 </span>
 <span class="amt num">
 </span>

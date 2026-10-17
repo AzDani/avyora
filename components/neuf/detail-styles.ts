@@ -55,6 +55,8 @@ export const NEUF_DETAIL_CSS = `
 .av-neuf-d .nv-act button{font-family:var(--font-geist-sans),system-ui,sans-serif;font-size:12.5px;font-weight:600;border-radius:999px;padding:6px 14px;min-height:34px;cursor:pointer}
 .av-neuf-d .nv-ok{background:var(--brand);border:1px solid var(--brand);color:#fff}
 .av-neuf-d .nv-non{background:var(--surface);border:1px solid var(--line-strong);color:var(--ink)}
+/* « Mon devis » (VueDevis, dans une .card) : les 9 titres de phase gardent leur hauteur d'avant N10 */
+.av-neuf-d .card .phase-t{min-height:44px}
 .av-neuf-d .acc-h{min-height:48px}
 .av-neuf-d .acc-h .acc-sous{font-weight:500;color:var(--faint);font-size:12.5px}
 .av-neuf-d .lotnote{font-size:11.5px;color:var(--faint);padding:8px 0 2px;line-height:1.45}

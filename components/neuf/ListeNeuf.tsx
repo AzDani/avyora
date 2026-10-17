@@ -139,7 +139,7 @@ export function ListeNeuf(props: PropsCommunes & { custom: CustomLine[]; outils:
         const lots = gp.lots.filter((c) => affiches.includes(c)).map(lot).filter(Boolean);
         return lots.length ? [{ cle: gp.nom, titre: <TitrePhase num={i + 1} nom={catT(locale, "phases", gp.nom)} />, contenu: lots }] : [];
       })} />
-      {/* Les démarches gratuites du chantier, étape par étape (`INFO_PHASES`) : hors des postes. */}
+      {/* Les démarches du chantier, étape par étape (`INFO_PHASES`) : hors des postes, rien au total. */}
       <div className="dem-c">
         <BlocLot ouvert={ouvertDem} entete={{
           icone: "📋", nom: <>{d.demarchesT} <span className="acc-sous">· {d.demarchesSous}</span></>, cnt: 0, ouvert: ouvertDem,
