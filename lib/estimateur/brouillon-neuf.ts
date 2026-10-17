@@ -24,7 +24,7 @@ import { surfaceNeufValide } from "./bornes-neuf";
 export const CLE_BROUILLON_NEUF = "avyora-neuf-v1";
 /** `sessionStorage` : « Affiner » vient d'être cliqué dans le rapide neuf. */
 export const CLE_AFFINER_NEUF = "avyora-affiner-neuf";
-/** `sessionStorage` : un gratuit a cliqué « Détail phase par phase — Pro » et part vers /tarifs.
+/** `sessionStorage` : un gratuit a cliqué « Détail lot par lot — Pro » et part vers /tarifs.
  *  Au retour (bouton Précédent), le rapide reprend ses réponses au lieu d'un formulaire vide. */
 export const CLE_RETOUR_NEUF = "avyora-neuf-retour";
 /** Drapeau de réclamation du neuf (valeur « 1 »), distinct de celui de la rénovation. */

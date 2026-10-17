@@ -110,7 +110,7 @@ const fr = {
       "Sauvegarde de tous tes projets",
       "Suivi de chantier, poste par poste",
     ],
-    featureNeuf: "Construction neuve : ta maison détaillée phase par phase, du permis à l'achèvement",
+    featureNeuf: "Construction neuve : ta maison détaillée lot par lot, du permis à l'achèvement",
     /* Éditeur de plan (FEATURES.plans) : les droits Pro avec les mots de l'éditeur (DROITS, lib/plans/droits.ts),
        vérifiés par coherence.mjs § 9. Aucun prix. */
     featurePlan:
@@ -244,9 +244,9 @@ const fr = {
     lockedLabel: "Multi-pièces · gratuit pendant la bêta",
     lockedSub: "Combine plusieurs pièces en un seul projet chiffré : c'est gratuit pendant la bêta, il suffit d'un compte. Une pièce seule se chiffre sans compte.",
     /* L'estimation rapide du neuf (`EstimateurRapideNeuf`) et les résultats rapides */
-    introNeuf: "Estimation indicative, marge ±15 %. Le détail phase par phase, poste par poste, est gratuit pendant la bêta : il suffit d'un compte.",
+    introNeuf: "Estimation indicative, marge ±15 %. Le détail lot par lot, poste par poste, est gratuit pendant la bêta : il suffit d'un compte.",
     introReno: "Estimation indicative, marge ±15 %. Le détail poste par poste est gratuit pendant la bêta : il suffit d'un compte.",
-    affinerNeuf: "Détail phase par phase — gratuit en bêta",
+    affinerNeuf: "Détail lot par lot — gratuit en bêta",
     lockNeuf: "Le détail poste par poste, inclus pendant la bêta",
     /* L'inscription */
     inscriptionEyebrow: "Bêta gratuite",
@@ -514,7 +514,7 @@ const en: Dict = {
       "Save all your projects",
       "Project tracking, line by line",
     ],
-    featureNeuf: "New build: your house detailed phase by phase, from permit to completion",
+    featureNeuf: "New build: your house detailed trade by trade, from permit to completion",
     featurePlan:
       "Floor plan editor: unlimited saved plans; the renovation project, to start from your home as it is and price what changes; the PDF file of your plans without watermark",
     planGratuit: "Drawing your plan and viewing it in 3D stays free.",
@@ -636,9 +636,9 @@ const en: Dict = {
     proLock: "🔒 Account",
     lockedLabel: "Multi-room · free during the beta",
     lockedSub: "Combine multiple rooms into one estimated project: it's free during the beta, all you need is an account. A single room is priced without an account.",
-    introNeuf: "Indicative estimate, ±15% margin. The phase-by-phase, line-by-line detail is free during the beta: all you need is an account.",
+    introNeuf: "Indicative estimate, ±15% margin. The trade-by-trade, line-by-line detail is free during the beta: all you need is an account.",
     introReno: "Indicative estimate, ±15% margin. The line-by-line detail is free during the beta: all you need is an account.",
-    affinerNeuf: "Phase-by-phase detail — free in beta",
+    affinerNeuf: "Trade-by-trade detail — free in beta",
     lockNeuf: "The line-by-line detail, included during the beta",
     inscriptionEyebrow: "Free beta",
     inscriptionTitre: "Create your account",

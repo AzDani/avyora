@@ -9,11 +9,12 @@ import {
   CATALOG_NEUF, POSTE_NEUF, GROUPES_EXCLUSIFS_NEUF, type CustomLine, type Selection,
 } from "@/lib/estimateur";
 import {
-  BLOCS_NEUF, ctxDetailNeuf, etatParDefaut, etatDepuisPreset, changerReponseNeuf, changerQuiNeuf, cocherNeuf, cocherNeufEtat, puReelNeuf,
-  badgeNeuf, diyNeuf, lignesPersoDuBloc, lignePersoNeuf, repriseDepuisReponses, repriseDepuisAffiner, repriseDepuisGraine,
-  lireBrouillonDetailNeuf, enregistrementDetailNeuf, demarchesPhase, reglerNouveauxNeuf, toutPasserNeuf, postesQuiChangent,
-  phasesDesBlocsOuverts, type EtatNeuf,
+  ctxDetailNeuf, etatParDefaut, etatDepuisPreset, changerReponseNeuf, changerQuiNeuf, cocherNeuf, cocherNeufEtat, puReelNeuf,
+  badgeNeuf, diyNeuf, lignesPersoDuLot, lignePersoNeuf, repriseDepuisReponses, repriseDepuisAffiner, repriseDepuisGraine,
+  lireBrouillonDetailNeuf, enregistrementDetailNeuf, reglerNouveauxNeuf, toutPasserNeuf, postesQuiChangent,
+  type EtatNeuf,
 } from "@/lib/estimateur/detaille-neuf";
+import { LOTS_NEUF, elementsLotNeuf, postesCochesNeuf, posteDansListeNeuf, premiereEtapeNeuf } from "@/lib/estimateur/liste-neuf";
 import { soiMemeNeuf } from "@/lib/estimateur/presets-neuf";
 import { brouillonRapideNeuf, lireBrouillonNeuf, corpsProjetNeuf } from "@/lib/estimateur/brouillon-neuf";
 import { projetCreateSchema } from "@/lib/validation";
@@ -158,20 +159,18 @@ describe("Détaillé neuf · lignes et badges", () => {
     expect(badgeNeuf(ctx, avecPrix, l, t)).toBeUndefined();
   });
 
-  it("le compteur de démarches d'une phase ne compte que les lignes cochées au badge « jalon »", () => {
-    const total = () => [...new Set(CATALOG_NEUF.map((l) => l.p))].reduce((s, p) => s + demarchesPhase(ctx, e.sel, p), 0);
-    const attendu = CATALOG_NEUF.flatMap((l) => l.t.filter((t) => e.sel[key(l.c, t.n)]?.on && badgeNeuf(ctx, e.sel, l, t) === "jalon")).length;
-    expect(attendu).toBeGreaterThan(0);
-    expect(total()).toBe(attendu);
-    // Une démarche cochée à laquelle on donne un prix sort du compte de sa phase.
-    const l = CATALOG_NEUF.find((x) => x.t.some((t) => e.sel[key(x.c, t.n)]?.on && badgeNeuf(ctx, e.sel, x, t) === "jalon"))!;
-    const t = l.t.find((x) => e.sel[key(l.c, x.n)]?.on && badgeNeuf(ctx, e.sel, l, x) === "jalon")!;
-    const avant = demarchesPhase(ctx, e.sel, l.p);
+  /* N10 : les démarches gratuites sortent de la liste des postes (liste « Démarches ») et de son compteur ;
+     une démarche à laquelle on donne un prix redevient une ligne de son lot, comptée. */
+  it("les démarches au badge « jalon » ne sont ni dans la liste des travaux ni dans le compteur de leur lot", () => {
+    const jalons = CATALOG_NEUF.flatMap((l) => l.t.filter((t) => e.sel[key(l.c, t.n)]?.on && badgeNeuf(ctx, e.sel, l, t) === "jalon").map((t) => ({ l, t })));
+    expect(jalons.length).toBe(8);
+    for (const p of jalons) expect(posteDansListeNeuf(ctx, e.sel, p), p.t.id).toBe(false);
+    // Une démarche cochée à laquelle on donne un prix revient dans son lot et dans son compteur.
+    const { l, t } = jalons.find((p) => p.l.c === "Etudes / Conception")!;
+    const avant = postesCochesNeuf(e.sel, elementsLotNeuf(ctx, e.sel, l.c));
     const avecPrix: Selection = { ...e.sel, [key(l.c, t.n)]: { ...e.sel[key(l.c, t.n)], on: true, pu: 150 } };
-    expect(demarchesPhase(ctx, avecPrix, l.p)).toBe(avant - 1);
-    // Décochée : elle sort aussi du compte.
-    const off: Selection = { ...e.sel, [key(l.c, t.n)]: { ...e.sel[key(l.c, t.n)], on: false } };
-    expect(demarchesPhase(ctx, off, l.p)).toBe(avant - 1);
+    expect(posteDansListeNeuf(ctx, avecPrix, { l, t })).toBe(true);
+    expect(postesCochesNeuf(avecPrix, elementsLotNeuf(ctx, avecPrix, l.c))).toBe(avant + 1);
   });
 
   it("les postes en pourcentage ont le badge pct et un prix réel égal à leur montant", () => {
@@ -194,29 +193,27 @@ describe("Détaillé neuf · lignes et badges", () => {
   });
 });
 
-describe("Détaillé neuf · lignes perso par phase", () => {
-  it("{lot: Maçonnerie, phase: Murs & planchers} : une seule fois dans les totaux et sous un seul bloc", () => {
+describe("Détaillé neuf · lignes perso par lot (N10 : chaque lot une fois)", () => {
+  it("{lot: Maçonnerie, phase: Murs & planchers} : une seule fois dans les totaux et sous un seul lot", () => {
     const ligne: CustomLine = { ...lignePersoNeuf("Maçonnerie", "Murs & planchers", "x1"), nom: "Seuil", prix: 300, qte: 2, draft: false };
     expect(ligne.tva).toBe(20);
     const tot = customTotals([ligne]);
     expect(tot.ht).toBe(600);
     expect(tot.tva).toBeCloseTo(120, 6);
-    const blocs = BLOCS_NEUF.filter((b) => lignesPersoDuBloc([ligne], b).length);
-    expect(blocs.map((b) => [b.l.p, b.l.c])).toEqual([["Murs & planchers", "Maçonnerie"]]);
+    expect(LOTS_NEUF.filter(({ c }) => lignesPersoDuLot([ligne], c).length).map(({ c }) => c)).toEqual(["Maçonnerie"]);
   });
 
-  it("lot présent deux fois dans la même phase : la ligne va sous le PREMIER bloc", () => {
-    const ligne = lignePersoNeuf("Isolation", "Second œuvre", "x2");
-    const blocs = BLOCS_NEUF.filter((b) => b.l.c === "Isolation" && b.l.p === "Second œuvre");
-    expect(blocs.length).toBe(2);
-    expect(lignesPersoDuBloc([ligne], blocs[0])).toHaveLength(1);
-    expect(lignesPersoDuBloc([ligne], blocs[1])).toHaveLength(0);
-  });
-
-  it("une ligne sans phase s'affiche sous le premier bloc de son lot", () => {
+  it("quelle que soit son étape (ou sans étape), une ligne perso s'affiche sous son lot, une seule fois", () => {
+    const isolation = lignePersoNeuf("Isolation", "Second œuvre", "x2");
     const { phase: _p, ...sansPhase } = lignePersoNeuf("Maçonnerie", "Second œuvre", "x3");
-    const blocs = BLOCS_NEUF.filter((b) => lignesPersoDuBloc([sansPhase as CustomLine], b).length);
-    expect(blocs.map((b) => b.l.p)).toEqual(["Fondations & plancher bas"]);
+    const lots = LOTS_NEUF.map(({ c }) => [c, lignesPersoDuLot([isolation, sansPhase as CustomLine], c).map((x) => x.id)] as const).filter(([, ids]) => ids.length);
+    expect(lots).toEqual([["Maçonnerie", ["x3"]], ["Isolation", ["x2"]]]);
+  });
+
+  it("une ligne perso ajoutée à un lot prend sa première étape du chantier", () => {
+    expect(premiereEtapeNeuf("Maçonnerie")).toBe("Fondations & plancher bas");
+    expect(premiereEtapeNeuf("Peinture")).toBe("Finitions & équipements");
+    expect(premiereEtapeNeuf("Lot inconnu")).toBe("");
   });
 });
 
@@ -280,29 +277,28 @@ describe("Détaillé neuf · reprises", () => {
 
   it("brouillon du détaillé : relu tel quel, valeurs absurdes écartées", () => {
     const e = changerReponseNeuf(etatParDefaut(), "murs", "brique");
-    const b = lireBrouillonDetailNeuf(JSON.stringify({ v: "neuf-detail", etat: e, custom: [], open: { 3: true } }))!;
+    const b = lireBrouillonDetailNeuf(JSON.stringify({ v: "neuf-detail", etat: e, custom: [], open: { Maçonnerie: true } }))!;
     expect(b.etat).toEqual(e);
-    expect(b.open).toEqual({ 3: true });
+    expect(b.open).toEqual({ Maçonnerie: true });
     const bad = lireBrouillonDetailNeuf(JSON.stringify({ v: "neuf-detail", etat: { ...e, qui: "nimporte", finition: 3 }, open: [] }))!;
     expect(bad.etat.qui).toBe("pros");
     expect(bad.etat.finition).toBe("standard");
     expect(lireBrouillonDetailNeuf(JSON.stringify({ v: "estimateur" }))).toBeNull();
   });
 
-  it("phases ouvertes (N3) : gardées dans le brouillon ; un brouillon d'avant N3 rouvre les phases de ses blocs ouverts", () => {
+  it("lots ouverts (N10) : gardés par nom de lot ; un brouillon d'avant (blocs par index, phases de N3) rouvre les lots de ses blocs", () => {
     const e = etatParDefaut();
-    const ph = BLOCS_NEUF[3].l.p;
-    const b = lireBrouillonDetailNeuf(JSON.stringify({ v: "neuf-detail", etat: e, custom: [], open: {}, ouvertes: { [ph]: true, "Phase inconnue": true, "Études & permis": false } }))!;
-    expect(b.ouvertes).toEqual({ [ph]: true });
-    // Avant N3 : ni `ouvertes` ni phases repliées dans le brouillon (elles étaient toutes dépliées).
-    const ancien = lireBrouillonDetailNeuf(JSON.stringify({ v: "neuf-detail", etat: e, custom: [], open: { 3: true } }))!;
+    const b = lireBrouillonDetailNeuf(JSON.stringify({ v: "neuf-detail", etat: e, custom: [], open: { Façade: true, "$frais": true, "$demarches": true, "Lot inconnu": true, Peinture: false } }))!;
+    expect(b.open).toEqual({ Façade: true, "$frais": true, "$demarches": true });
+    // Avant N10 : `open` par index de bloc (3 : « Raccordements aux réseaux » du terrain ; 25 : les chapes,
+    // en « Maçonnerie »), `ouvertes` par phase (N3) : les lots des blocs ouverts, une fois chacun.
+    const ancien = lireBrouillonDetailNeuf(JSON.stringify({ v: "neuf-detail", etat: e, custom: [], open: { 3: true, 9: true, 25: true, 99: true, 6: false }, ouvertes: { "Murs & planchers": true } }))!;
     expect(ancien.etat).toEqual(e);
-    expect(ancien.open).toEqual({ 3: true });
-    expect(ancien.ouvertes).toEqual({ [ph]: true });
-    expect(phasesDesBlocsOuverts({})).toEqual({});
-    // Rien d'ouvert, ou des valeurs absurdes : toutes les phases fermées, comme sur une page vierge.
-    expect(lireBrouillonDetailNeuf(JSON.stringify({ v: "neuf-detail", etat: e }))!.ouvertes).toEqual({});
-    expect(lireBrouillonDetailNeuf(JSON.stringify({ v: "neuf-detail", etat: e, ouvertes: [ph] }))!.ouvertes).toEqual({});
+    expect(ancien.open).toEqual({ "Raccordements aux réseaux": true, "Maçonnerie": true });
+    expect(ancien).not.toHaveProperty("ouvertes");
+    // Rien d'ouvert, ou des valeurs absurdes : tout fermé, comme sur une page vierge.
+    expect(lireBrouillonDetailNeuf(JSON.stringify({ v: "neuf-detail", etat: e }))!.open).toEqual({});
+    expect(lireBrouillonDetailNeuf(JSON.stringify({ v: "neuf-detail", etat: e, open: [3] }))!.open).toEqual({});
   });
 });
 

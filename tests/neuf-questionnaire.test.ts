@@ -225,9 +225,11 @@ describe("N9 · mêmes réponses, mêmes totaux", () => {
 describe("N9 · la ligne de résumé des choix techniques dit vrai", () => {
   it("les réglages courants, en français et en anglais", () => {
     const m = maisonParDefaut();
-    expect(resumeTechniqueNeuf(m, "fr")).toBe("Parpaing · dalle · 2 pans tuiles · enduit · PAC air/eau · tout-à-l'égout");
-    expect(resumeTechniqueNeuf(m, "en")).toBe("Concrete block · slab · gable roof, clay tiles · render · air-to-water heat pump · mains sewer");
-    expect(resumeTechniqueNeuf(maisonComplete({ toiture: "plat", gouttiere: "pvc" }), "fr")).toBe("Parpaing · dalle · toit plat · enduit · PAC air/eau · tout-à-l'égout");
+    // N10 : la couverture, les gouttières et la façade se choisissent sur leur ligne de choix, dans leur lot.
+    expect(resumeTechniqueNeuf(m, "fr")).toBe("Parpaing · dalle · 2 pans · PAC air/eau · tout-à-l'égout");
+    expect(resumeTechniqueNeuf(m, "en")).toBe("Concrete block · slab · gable roof · air-to-water heat pump · mains sewer");
+    expect(resumeTechniqueNeuf(maisonComplete({ toiture: "plat", gouttiere: "pvc" }), "fr")).toBe("Parpaing · dalle · toit plat · PAC air/eau · tout-à-l'égout");
+    expect(resumeTechniqueNeuf(maisonComplete({ couverture: "ardoise", gouttiere: "pvc", facade: "bardage-bois" }), "fr")).toBe(resumeTechniqueNeuf(m, "fr"));
   });
 
   it("chaque réponse technique qui s'écarte du réglage courant change la ligne", () => {

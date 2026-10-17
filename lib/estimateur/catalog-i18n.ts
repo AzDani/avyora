@@ -355,7 +355,9 @@ const EN: Record<CatKind, Record<string, string>> = {
     "Préparation": "Preparation",
     "Second œuvre": "Finishing work",
     "Équipements": "Equipment",
-    /* Construction neuve */
+    /* Construction neuve : la 4ᵉ grande phase du détaillé (N10, rangement par corps d'état), puis les
+       9 étapes du chantier (« Mon devis », fiche, PDF, sous-titres d'étape des lots) */
+    "Équipements & réception": "Equipment & handover",
     "Études & permis": "Studies & permit",
     "Terrain & terrassement": "Site & earthworks",
     "Fondations & plancher bas": "Foundations & ground floor slab",

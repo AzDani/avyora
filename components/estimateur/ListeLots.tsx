@@ -6,8 +6,11 @@
  * repris du neuf), lignes `Row` branchées sur la sélection, outils « Seulement les postes cochés » et
  * « Tout déplier ». Aucun texte en dur : chaque appelant passe les siens ; aucun montant calculé ici.
  *
- * Les outils et les phases repliables ne servent qu'au neuf pour l'instant : la rénovation les reçoit
- * quand son écran pourra changer (N6 la garde identique).
+ * Les outils ne servent qu'au neuf pour l'instant : la rénovation les reçoit quand son écran pourra
+ * changer (N6 la garde identique). Depuis N10, le neuf est rangé comme la rénovation : 4 titres de phase
+ * (simples intertitres), chaque lot une fois ; il y ajoute ses sous-titres d'étape (`SousEtape`) et ses
+ * lignes de choix (`LigneChoix`, `SelecteurChoix`) pour les postes qui s'excluent. Le titre de phase
+ * repliable (`TitrePhase` avec `onBascule`) reste disponible.
  */
 import type { ReactNode } from "react";
 import { Row } from "./Row";
@@ -62,13 +65,13 @@ export function BlocLot({ ouvert, entete, children }: {
  * Les lignes d'un lot, chacune branchée sur la sélection : `maj(lot, poste, réglage)` applique un
  * réglage de ligne (`lib/estimateur/detaille-reno.ts`) ; cocher et l'interrupteur auto / manuel
  * restent à l'appelant (le neuf coche avec ses postes exclusifs). `options` : ce que le neuf ajoute à
- * une ligne (badge « % » ou « démarche », raison d'un poste réservé aux pros).
+ * une ligne (badge « % » ou « démarche », raison d'un poste réservé aux pros, boutons d'une ligne de choix).
  */
 export function LignesLot({ l, taches, ctx, sel, loc, maj, onCocher, onAuto, options }: {
   l: Lot; taches: Tache[]; ctx: Ctx; sel: Selection; loc: boolean;
   maj: (c: string, n: string, patch: (s: LigneSel) => LigneSel) => void;
   onCocher: (l: Lot, t: Tache) => void; onAuto: (l: Lot, t: Tache) => void;
-  options?: (t: Tache) => { badge?: "pct" | "jalon"; proRaison?: RaisonPro | null };
+  options?: (t: Tache) => { badge?: "pct" | "jalon"; proRaison?: RaisonPro | null; choix?: ReactNode };
 }) {
   return (
     <>
@@ -92,6 +95,45 @@ export function LignesLot({ l, taches, ctx, sel, loc, maj, onCocher, onAuto, opt
         />
       ))}
     </>
+  );
+}
+
+/** Sous-titre d'étape du chantier dans un lot qui revient à plusieurs étapes (neuf, N10). */
+export function SousEtape({ children }: { children: ReactNode }) {
+  return <div className="setape">{children}</div>;
+}
+
+/**
+ * Les alternatives d'une ligne de choix (neuf, N10) : un groupe de boutons sous le libellé du poste. Un
+ * clic choisit l'alternative (l'appelant la coche, décoche les autres, met la réponse à jour). Une
+ * alternative indisponible pour cette maison est désactivée, avec sa raison en infobulle.
+ */
+export function SelecteurChoix({ titre, alternatives, onChoisir }: {
+  titre: string;
+  alternatives: { v: string; label: string; actif: boolean; indisponible?: string | null }[];
+  onChoisir: (v: string) => void;
+}) {
+  return (
+    <span className="vg choix-g" role="group" aria-label={titre}>
+      <span className="vlab" aria-hidden="true">{titre}</span>
+      <span className="vseg">
+        {alternatives.map((a) => (
+          <button type="button" key={a.v} className={a.actif ? "on" : ""} aria-pressed={a.actif} disabled={!!a.indisponible}
+            title={a.indisponible ?? undefined} onClick={() => onChoisir(a.v)}>{a.label}</button>
+        ))}
+      </span>
+    </span>
+  );
+}
+
+/** Une ligne de choix : la ligne du poste retenu (ses boutons d'alternatives dessous). Deux alternatives
+ *  cochées (un ancien projet) : les deux lignes, sous un avertissement. */
+export function LigneChoix({ avertissement, children }: { avertissement?: ReactNode; children: ReactNode }) {
+  return (
+    <div className={"choixl" + (avertissement ? " doublon" : "")}>
+      {avertissement && <p className="choixl-av" role="note">{avertissement}</p>}
+      {children}
+    </div>
   );
 }
 

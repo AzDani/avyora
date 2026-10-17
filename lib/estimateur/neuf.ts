@@ -288,14 +288,42 @@ const COUVERTURES = { "terre-cuite": "cou-couverture-tuiles-terre-cuite", beton:
 const GOUTTIERES = { zinc: "cou-gouttiere-zinc", pvc: "cou-gouttiere-pvc", alu: "cou-gouttiere-alu-continu" } as const;
 const FACADES = { enduit: "fac-enduit-monocouche-machine", "bardage-bois": "fac-bardage", "bardage-composite": "fac-bardage-composite" } as const;
 
-/** Poste du catalogue → la réponse de la maison qui le choisit (couverture, gouttière, façade).
- *  Cocher ce poste à la main dans le détaillé met la réponse à jour : la description dit vrai. */
-export function reponseDuPoste(id: string): { k: "couverture" | "gouttiere" | "facade"; v: string } | null {
+/* Les autres réponses qui désignent UN poste d'un groupe exclusif (N10) : le plancher bas, les murs,
+   l'escalier, les eaux usées, le chauffage et qui pilote. Le béton cellulaire 30 cm (sans doublage) et
+   le radier n'ont pas de réponse : les choisir ne touche que la sélection. */
+const AUTRES_REPONSES: Partial<Record<keyof MaisonNeuve, Record<string, string>>> = {
+  plancherBas: { "terre-plein": "fon-dalle-terre-plein-isolee", "vide-sanitaire": "fon-vide-sanitaire-complet", "sous-sol": "fon-sous-sol-enterre" },
+  murs: { brique: "mac-monter-un-mur-en-brique", monomur: "mac-mur-brique-monomur", cellulaire: "mac-mur-beton-cellulaire-20-cm", ossature: "toi-mur-ossature-bois-isole" },
+  escalier: { bois: "min-escalier-bois-quart-tournant", beton: "mac-escalier-en-beton" },
+  assainissement: { collectif: "rac-raccordement-au-tout-a-l-egout", fosse: "rac-assainissement-fosse-toutes-eaux-5-eh", micro: "rac-assainissement-micro-station-5-eh" },
+  chauffage: { "pac-eau": "cha-pompe-a-chaleur-air-eau", "pac-air": "cha-climatisation-gainable-reversible" },
+  pilotage: { moe: "etu-maitrise-d-oeuvre-complete" },
+};
+
+/** Les réponses du questionnaire qui désignent chacune un poste d'un groupe exclusif. */
+export type CleReponsePoste = "couverture" | "gouttiere" | "facade" | "plancherBas" | "murs" | "escalier" | "assainissement" | "chauffage" | "pilotage";
+
+/**
+ * Poste du catalogue → la réponse de la maison qui le choisit (couverture, gouttière, façade ; depuis
+ * N10 aussi le plancher bas, les murs, l'escalier, les eaux usées, le chauffage, et « qui pilote » pour
+ * la maîtrise d'œuvre, l'architecte et le dessinateur). Choisir ce poste dans le détaillé met la réponse
+ * à jour : la description dit vrai.
+ */
+export function reponseDuPoste(id: string): { k: CleReponsePoste; v: string } | null {
   for (const [k, table] of [["couverture", COUVERTURES], ["gouttiere", GOUTTIERES], ["facade", FACADES]] as const) {
     for (const [v, pid] of Object.entries(table)) if (pid === id) return { k, v };
   }
+  for (const [k, table] of Object.entries(AUTRES_REPONSES)) {
+    for (const [v, pid] of Object.entries(table ?? {})) if (pid === id) return { k: k as CleReponsePoste, v };
+  }
+  // Les plans et le permis faits sans maître d'œuvre : c'est « Moi » qui pilote.
+  if (id === "etu-architecte-mission-permis" || id === "etu-dossier-permis-dessinateur") return { k: "pilotage", v: "moi" };
   return null;
 }
+
+/** Au-delà de cette surface de plancher (m²), l'architecte est obligatoire pour le permis : le dossier
+ *  par un dessinateur n'est plus possible (code de l'urbanisme, art. R431-2). */
+export const SEUIL_ARCHITECTE_M2 = 150;
 const idfCp = (cp?: string) => /^(75|77|78|91|92|93|94|95)/.test((cp || "").replace(/\D/g, ""));
 
 /* Clé de sélection d'un poste du neuf (`key(lot, nom)` du moteur, qu'on n'importe pas à l'exécution). */
@@ -486,8 +514,8 @@ export function decisionsNeuf(h: MaisonNeuve): Record<string, DecisionNeuf> {
   regle("etu-etude-de-sol-g2-avp", true);
   regle("etu-etude-de-sol-g2-pro", h.argile === "fort" || h.terrain === "pente" || ssol);
   regle("etu-maitrise-d-oeuvre-complete", moe);
-  regle("etu-architecte-mission-permis", !moe && g.SP > 150);
-  regle("etu-dossier-permis-dessinateur", !moe && g.SP <= 150);
+  regle("etu-architecte-mission-permis", !moe && g.SP > SEUIL_ARCHITECTE_M2);
+  regle("etu-dossier-permis-dessinateur", !moe && g.SP <= SEUIL_ARCHITECTE_M2);
   regle("etu-etude-beton-arme", etage || ssol || !toitPente || argileMF(h) || h.sismique >= 3);
   regle("etu-etude-assainissement-individuel-spanc", !collectif);
   tous(["etu-etude-thermique-re2020", "etu-depot-du-permis-de-construire", "etu-panneau-affichage-permis", "etu-demandes-de-raccordement",

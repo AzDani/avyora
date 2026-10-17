@@ -1,11 +1,13 @@
 /**
  * CSS du détaillé neuf (Pro), scopé `.av-neuf-d`. Il s'ajoute à `EST_CSS` (l'estimateur détaillé de
  * la rénovation : cartes, questionnaire « Parle-nous du bien », lignes `Row`, lignes perso, barre
- * live, phases repliables `.phase-t`) sans le modifier. Le questionnaire est celui de la rénovation
+ * live, titres de phase `.phase-t`) sans le modifier. Le questionnaire est celui de la rénovation
  * (N9) : ici, ce qui n'appartient qu'au neuf — le type et la forme sur une rangée (`.typef`), la
  * hauteur en lecture seule (`.ro`), les choix techniques repliés derrière leur ligne de résumé
  * (`.tech`). Le champ en faute (`aria-invalid`) et la case « Niveaux » en lecture seule sont ceux de
- * la rénovation (`INTAKE_CSS`, A7). Puis jalons de phase, badges « Démarche » et « % des travaux »,
+ * la rénovation (`INTAKE_CSS`, A7). Puis la liste rangée par corps d'état (N10) : sous-titres d'étape
+ * dans un lot (`.setape`), lignes de choix (`.choixl`, `.tchoix`), carte « Taxes, assurance et frais »
+ * et liste « Démarches » (`.frais-c`, `.dem-c`) ; badges « Démarche » et « % des travaux »,
  * étiquette « Pro obligatoire » et avertissement « hors garantie décennale » des lignes, ligne
  * « Nouveaux postes cochés » et confirmation de « Tout passer en… » (`.nv`, N3). Porté de
  * `maquettes/neuf/page.html` ; aucun `@import`. Les outils de la liste (`.tools`), les vues et les
@@ -53,14 +55,31 @@ export const NEUF_DETAIL_CSS = `
 .av-neuf-d .nv-act button{font-family:var(--font-geist-sans),system-ui,sans-serif;font-size:12.5px;font-weight:600;border-radius:999px;padding:6px 14px;min-height:34px;cursor:pointer}
 .av-neuf-d .nv-ok{background:var(--brand);border:1px solid var(--brand);color:#fff}
 .av-neuf-d .nv-non{background:var(--surface);border:1px solid var(--line-strong);color:var(--ink)}
-.av-neuf-d .phase-t{min-height:44px}
-.av-neuf-d .phase-t .pt-num{font-family:var(--font-geist-mono),ui-monospace,monospace;letter-spacing:0}
-.av-neuf-d .pjal{display:flex;gap:7px;align-items:flex-start;font-size:11.5px;color:var(--muted);padding:2px 2px 10px 36px;line-height:1.45}
-.av-neuf-d .pjal svg{flex:0 0 13px;margin-top:2px;color:var(--accent-600)}
-.av-neuf-d .pjal b{color:var(--ink);font-weight:600}
-.av-neuf-d .pvide{font-size:12.5px;color:var(--faint);padding:2px 2px 12px 36px}
 .av-neuf-d .acc-h{min-height:48px}
+.av-neuf-d .acc-h .acc-sous{font-weight:500;color:var(--faint);font-size:12.5px}
 .av-neuf-d .lotnote{font-size:11.5px;color:var(--faint);padding:8px 0 2px;line-height:1.45}
+/* N10 : un lot présent à plusieurs étapes du chantier, ses postes sous un sous-titre d'étape */
+.av-neuf-d .setape{font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--brand);padding:14px 0 0}
+.av-neuf-d .setape:first-child{padding-top:8px}
+/* ligne de choix : la ligne du poste retenu, ses alternatives en boutons dessous (le style des variantes) */
+.av-neuf-d .choixl{border-bottom:1px solid var(--line)}
+.av-neuf-d .choixl:last-child{border-bottom:0}
+.av-neuf-d .choixl .trow{border-bottom:0}
+.av-neuf-d .choixl .trow+.trow{border-top:1px dashed var(--line)}
+.av-neuf-d .choixl-av{margin:8px 0 0;padding:7px 10px;border-radius:8px;background:#fdf1e1;color:#8a5208;font-size:11.5px;line-height:1.45}
+.av-neuf-d .tchoix{grid-column:1/-1;padding:0 0 2px 32px}
+.av-neuf-d .choix-g{flex-wrap:wrap;align-items:center}
+.av-neuf-d .choix-g .vseg{flex-wrap:wrap;border-radius:14px}
+.av-neuf-d .choix-g .vseg button{line-height:1.3}
+.av-neuf-d .choix-g .vseg button:disabled{opacity:.45;cursor:not-allowed;color:var(--muted)}
+.av-neuf-d .choix-g .vseg button:focus-visible{outline:2px solid var(--accent-600);outline-offset:1px}
+/* carte « Taxes, assurance et frais » (près du budget) et liste « Démarches » (fin de liste) */
+.av-neuf-d .frais-c{margin-top:14px}
+.av-neuf-d .dem-c{margin-top:14px}
+.av-neuf-d .dem-l{list-style:none;margin:0;padding:4px 0 2px}
+.av-neuf-d .dem-l li{display:flex;gap:7px;align-items:flex-start;font-size:12px;color:var(--muted);padding:5px 0;line-height:1.45}
+.av-neuf-d .dem-l svg{flex:0 0 13px;margin-top:2px;color:var(--accent-600)}
+.av-neuf-d .dem-l b{color:var(--ink);font-weight:600}
 .av-neuf-d .badge-dem{display:inline-block;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:#fdf1e1;color:#b06d10;white-space:nowrap}
 .av-neuf-d .badge-pct{display:inline-block;font-size:11px;font-weight:600;color:var(--muted);background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:3px 9px;white-space:nowrap}
 .av-neuf-d .split-n{position:relative;z-index:1;margin-top:10px;font-size:12px;color:#c9c5ee;line-height:1.5}
@@ -74,7 +93,8 @@ export const NEUF_DETAIL_CSS = `
 @media(min-width:1024px){.av-neuf-live .totb{max-width:400px}}
 .av-neuf-live .m2-f{white-space:nowrap}
 @media(max-width:560px){
-.av-neuf-d .pjal,.av-neuf-d .pvide{padding-left:4px}
+.av-neuf-d .tchoix{padding-left:0;grid-column:2/-1}
+.av-neuf-d .choix-g .vseg button{min-height:40px}
 .av-neuf-d .decennale,.av-neuf-d .mention-soi{margin-left:0}
 .av-neuf-d .tech{padding-left:12px}
 .av-neuf-d .tech-r{flex-wrap:wrap}

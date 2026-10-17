@@ -16,7 +16,8 @@
  * - `vue` : le contrôle, selon la question : segment pour deux choix, pastilles de trois à six, cartes
  *   (chauffage, finition), compteur, champ (un nombre pris à la sortie du champ), code postal,
  *   interrupteur (« Cuisine équipée comprise »).
- * Dans les choix techniques, les groupes (Structure, Toit et façade…) sont les sous-titres.
+ * Dans les choix techniques, les groupes (Structure, Toit…) sont les sous-titres. La couverture, les
+ * gouttières et la façade n'y sont plus (N10) : elles se choisissent sur leur ligne de choix, dans leur lot.
  */
 import { maisonParDefaut, type MaisonNeuve } from "./neuf";
 import type { TexteFrEn } from "./etapes-neuf";
@@ -107,23 +108,15 @@ export const QUESTIONS_NEUF: GroupeQuestionsNeuf[] = [
       ["bois", { fr: "Bois quart tournant", en: "Wooden quarter-turn" }], ["beton", { fr: "Béton", en: "Concrete" }],
     ], si: (m) => m.niveaux !== "pp" },
   ] },
-  { g: { fr: "Toit et façade", en: "Roof and façade" }, qs: [
+  /* La couverture, les gouttières et la façade se choisissent sur leur ligne de choix, dans leur lot
+     (N10 : « Couverture & zinguerie », « Façade ») ; la réponse de la maison suit (`choisirNeuf`). */
+  { g: { fr: "Toit", en: "Roof" }, qs: [
     { k: "toiture", l: { fr: "Toiture", en: "Roof" }, section: "technique", vue: "pastilles", o: [
       ["2pans", { fr: "2 pans", en: "Gable" }], ["4pans", { fr: "4 pans", en: "Hip" }], ["plat", { fr: "Toit plat", en: "Flat roof" }],
     ] },
-    { k: "couverture", l: { fr: "Couverture", en: "Roofing" }, section: "technique", vue: "pastilles", o: [
-      ["terre-cuite", { fr: "Tuiles terre cuite", en: "Clay tiles" }], ["beton", { fr: "Tuiles béton", en: "Concrete tiles" }], ["ardoise", { fr: "Ardoise", en: "Slate" }],
-      ["ardoise-fibro", { fr: "Ardoise fibres-ciment", en: "Fiber-cement slate" }], ["bac-acier", { fr: "Bac acier", en: "Steel sheet" }], ["zinc", { fr: "Zinc", en: "Zinc" }],
-    ], si: (m) => m.toiture !== "plat" },
     { k: "penteFaible", l: { fr: "Toit à pente faible", en: "Low-pitch roof" }, section: "technique", vue: "segment", o: [
       [false, { fr: "Non (≈ 35°)", en: "No (≈ 35°)" }], [true, { fr: "Oui, tuile canal (≈ 17°)", en: "Yes, barrel tiles (≈ 17°)" }],
     ], si: (m) => m.toiture !== "plat" },
-    { k: "gouttiere", l: { fr: "Gouttières", en: "Gutters" }, section: "technique", vue: "pastilles", o: [
-      ["zinc", { fr: "Zinc", en: "Zinc" }], ["pvc", { fr: "PVC", en: "PVC" }], ["alu", { fr: "Alu continu", en: "Seamless aluminum" }],
-    ], si: (m) => m.toiture !== "plat" },
-    { k: "facade", l: { fr: "Façade", en: "Façade" }, section: "technique", vue: "pastilles", o: [
-      ["enduit", { fr: "Enduit", en: "Render" }], ["bardage-bois", { fr: "Bardage bois", en: "Wood cladding" }], ["bardage-composite", { fr: "Bardage composite", en: "Composite cladding" }],
-    ] },
   ] },
   { g: { fr: "Chauffage et confort", en: "Heating and comfort" }, qs: [
     { k: "chauffage", l: { fr: "Chauffage", en: "Heating" }, section: "technique", vue: "cartes", o: [
@@ -187,14 +180,11 @@ export function questionsVisibles(m: MaisonNeuve, section: SectionNeuf): Questio
 
 // ── La ligne de résumé des choix techniques (repliés) ───────────────────────────────────────────
 type Court = Record<string, TexteFrEn>;
-const COURT: Record<"murs" | "plancherBas" | "toiture" | "couverture" | "facade" | "chauffage" | "assainissement", Court> = {
+const COURT: Record<"murs" | "plancherBas" | "toiture" | "chauffage" | "assainissement", Court> = {
   murs: { parpaing: { fr: "Parpaing", en: "Concrete block" }, brique: { fr: "Brique", en: "Brick" }, monomur: { fr: "Monomur", en: "Insulating brick" },
     cellulaire: { fr: "Béton cellulaire", en: "Aerated concrete" }, ossature: { fr: "Ossature bois", en: "Timber frame" } },
   plancherBas: { "terre-plein": { fr: "dalle", en: "slab" }, "vide-sanitaire": { fr: "vide sanitaire", en: "crawl space" }, "sous-sol": { fr: "sous-sol", en: "basement" } },
   toiture: { "2pans": { fr: "2 pans", en: "gable roof" }, "4pans": { fr: "4 pans", en: "hip roof" }, plat: { fr: "toit plat", en: "flat roof" } },
-  couverture: { "terre-cuite": { fr: "tuiles", en: "clay tiles" }, beton: { fr: "tuiles béton", en: "concrete tiles" }, ardoise: { fr: "ardoise", en: "slate" },
-    "ardoise-fibro": { fr: "ardoise fibres-ciment", en: "fiber-cement slate" }, "bac-acier": { fr: "bac acier", en: "steel sheet" }, zinc: { fr: "zinc", en: "zinc" } },
-  facade: { enduit: { fr: "enduit", en: "render" }, "bardage-bois": { fr: "bardage bois", en: "wood cladding" }, "bardage-composite": { fr: "bardage composite", en: "composite cladding" } },
   chauffage: { "pac-eau": { fr: "PAC air/eau", en: "air-to-water heat pump" }, "pac-air": { fr: "PAC air/air", en: "air-to-air heat pump" }, poele: { fr: "poêle à granulés", en: "pellet stove" } },
   assainissement: { collectif: { fr: "tout-à-l'égout", en: "mains sewer" }, fosse: { fr: "fosse toutes eaux", en: "septic tank" }, micro: { fr: "micro-station", en: "micro treatment plant" } },
 };
@@ -203,7 +193,6 @@ const COURT: Record<"murs" | "plancherBas" | "toiture" | "couverture" | "facade"
 const AUTRES: { k: keyof MaisonNeuve; si?: (m: MaisonNeuve) => boolean; texte: (v: never) => TexteFrEn }[] = [
   { k: "escalier", si: (m) => m.niveaux !== "pp", texte: (v: MaisonNeuve["escalier"]) => (v === "beton" ? { fr: "escalier béton", en: "concrete staircase" } : { fr: "escalier bois", en: "wooden staircase" }) },
   { k: "penteFaible", si: (m) => m.toiture !== "plat", texte: (v: boolean) => (v ? { fr: "pente faible", en: "low pitch" } : { fr: "pente ≈ 35°", en: "≈ 35° pitch" }) },
-  { k: "gouttiere", si: (m) => m.toiture !== "plat", texte: (v: MaisonNeuve["gouttiere"]) => ({ fr: `gouttières ${{ zinc: "zinc", pvc: "PVC", alu: "alu" }[v]}`, en: `${{ zinc: "zinc", pvc: "PVC", alu: "aluminum" }[v]} gutters` }) },
   { k: "vmc", texte: (v: MaisonNeuve["vmc"]) => (v === "double" ? { fr: "VMC double flux", en: "dual-flow ventilation" } : { fr: "VMC simple flux", en: "single-flow ventilation" }) },
   { k: "terrain", texte: (v: MaisonNeuve["terrain"]) => (v === "pente" ? { fr: "terrain en pente", en: "sloping plot" } : { fr: "terrain plat", en: "flat plot" }) },
   { k: "argile", texte: (v: MaisonNeuve["argile"]) => ({ non: { fr: "sol non argileux", en: "no clay soil" }, moyen: { fr: "sol argileux moyen", en: "medium clay soil" }, fort: { fr: "sol argileux fort", en: "high clay soil" } })[v] },
@@ -217,18 +206,15 @@ const AUTRES: { k: keyof MaisonNeuve; si?: (m: MaisonNeuve) => boolean; texte: (
 ];
 
 /**
- * La ligne de résumé des choix techniques, repliés : murs · plancher bas · toit · façade · chauffage ·
- * eaux usées (« Parpaing · dalle · 2 pans tuiles · enduit · PAC air/eau · tout-à-l'égout »), puis
- * chaque autre réponse qui s'écarte du réglage courant (`maisonParDefaut`) et qui a un objet pour
- * cette maison : la ligne dit vrai sans rien déplier.
+ * La ligne de résumé des choix techniques, repliés : murs · plancher bas · toit · chauffage · eaux usées
+ * (« Parpaing · dalle · 2 pans · PAC air/eau · tout-à-l'égout »), puis chaque autre réponse qui s'écarte
+ * du réglage courant (`maisonParDefaut`) et qui a un objet pour cette maison : la ligne dit vrai sans rien
+ * déplier. La couverture, les gouttières et la façade n'y sont plus depuis N10 : elles se choisissent sur
+ * leur ligne de choix, dans leur lot.
  */
 export function resumeTechniqueNeuf(m: MaisonNeuve, locale: Locale): string {
   const t = (x: TexteFrEn | undefined) => (x ? x[locale] ?? x.fr : "");
-  const pente = m.toiture !== "plat";
-  const toit = pente
-    ? (locale === "en" ? `${t(COURT.toiture[m.toiture])}, ${t(COURT.couverture[m.couverture])}` : `${t(COURT.toiture[m.toiture])} ${t(COURT.couverture[m.couverture])}`)
-    : t(COURT.toiture.plat);
-  const items = [t(COURT.murs[m.murs]), t(COURT.plancherBas[m.plancherBas]), toit, t(COURT.facade[m.facade]), t(COURT.chauffage[m.chauffage]),
+  const items = [t(COURT.murs[m.murs]), t(COURT.plancherBas[m.plancherBas]), t(COURT.toiture[m.toiture]), t(COURT.chauffage[m.chauffage]),
     t(COURT.assainissement[m.assainissement])];
   const D = maisonParDefaut(m.surface);
   for (const a of AUTRES) {

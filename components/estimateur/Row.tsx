@@ -1,14 +1,14 @@
 "use client";
 
 /** Ligne de poste de l'estimateur détaillé : déplacée telle quelle depuis `components/Estimateur.tsx` (C1).
- *  Les props `badge` (construction neuve, C4) et `proRaison` (N1) sont facultatives : absentes, la
+ *  Les props `badge` (construction neuve, C4), `proRaison` (N1) et `choix` (N10) sont facultatives : absentes, la
  *  ligne est celle de la rénovation (figée par `tests/estimateur-briques.test.ts`). « Je le fais »
  *  suit une seule règle pour les deux natures (`peutFaireSoiMeme`, N5) ; l'avertissement « hors
  *  garantie décennale » et les mentions d'un poste faisable soi-même (PAC, climatisation, borne)
  *  aussi (D2, D4). Les prix unitaires des deux puces viennent du moteur (`puReel`, N7) pour les deux
  *  natures : prix unitaire × quantité = montant de la ligne, région et barème de finition du poste
  *  compris. Textes : `dictDetail` (N6), au tutoiement, en français et en anglais. */
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import NumStepper from "@/components/Stepper";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { catT } from "@/lib/estimateur/catalog-i18n";
@@ -17,7 +17,7 @@ import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 import { dictDetail } from "@/lib/i18n/detail";
 import { ChoicePrice, fmt, isUrl } from "./partage";
 
-export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar, onNote, onPu, onPm, badge, proRaison }: {
+export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar, onNote, onPu, onPm, badge, proRaison, choix }: {
   l: Lot; t: Tache; ctx: Ctx; sel: Selection; loc: boolean;
   onCheck: () => void; onChoice: (self: boolean) => void; onAuto: () => void; onQty: (v: number) => void;
   onMat: (m: "pvc" | "alu" | "bois") => void; onVit: (v: "double" | "triple") => void; onMot: (m: "manuel" | "motorise") => void; onTai: (z: "petit" | "grand") => void; onVar: (g: string, o: string) => void; onNote: (v: string) => void; onPu: (v: number | null) => void; onPm: (v: number | null) => void;
@@ -26,6 +26,9 @@ export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onM
   /** Poste réservé aux pros : « Pro obligatoire · <raison> » à la place de « Je le fais ». Défaut :
    *  la raison du poste (`t.pro`). Le neuf passe aussi celle de ses postes repris (`raisonProNeuf`). */
   proRaison?: RaisonPro | null;
+  /** Ligne de choix du neuf (N10) : les alternatives du poste, en boutons, sous son libellé, cochée ou
+   *  non. Absente (rénovation), la ligne ne change pas. */
+  choix?: ReactNode;
 }) {
   const locale = useLocale();
   const s = sel[key(l.c, t.n)] || {};
@@ -133,6 +136,7 @@ export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onM
       ) : (
         <span className="tctl"><span className="unit">{t.u === "forfait" ? catT(locale, "unites", "forfait") : loc ? L.parJour : catT(locale, "unites", t.u)}</span></span>
       )}
+      {choix && <div className="tchoix">{choix}</div>}
       {on && self && horsDecennale && <div className="decennale" role="note">{ctx.nature === "neuf" ? nTxt.horsDecennale : nTxt.horsDecennaleReno}</div>}
       {on && self && mention && <div className="mention-soi" role="note">{nTxt.mentionsSoiMeme[mention]}</div>}
       {on && variant && (

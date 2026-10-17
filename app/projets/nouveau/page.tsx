@@ -19,7 +19,7 @@ const META_RENO: Metadata = {
 const META_NEUF: Metadata = {
   title: "Estimer la construction de ta maison neuve",
   description:
-    "Choisis ton mode d'estimation : rapide et gratuite en 5 questions, ou détaillée phase par phase, du permis à la remise des clés. Prix ajustés à ta région.",
+    "Choisis ton mode d'estimation : rapide et gratuite en 5 questions, ou détaillée lot par lot, du permis à la remise des clés. Prix ajustés à ta région.",
   alternates: { canonical: "/projets/nouveau" },
 };
 // Pré-page « Quel est ton projet ? » (N2, flag allumé, sans nature) : un titre neutre qui garde

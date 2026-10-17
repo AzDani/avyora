@@ -14,12 +14,16 @@
  * sinon le brouillon du détaillé (`avyora-neuf-detail-v1`). Clés propres au neuf : la rénovation ne
  * relit jamais un brouillon neuf.
  *
- * Liste : phases du chantier repliables, FERMÉES à l'ouverture (N3 : 9 lignes au lieu de 55 ; ce
- * qu'on ouvre est gardé dans le brouillon), et dans chaque phase ses blocs (un lot du catalogue à
- * sa place, avec son icône). Un lot revient parfois deux fois dans la même phase : clé React et
- * ouverture par INDEX de bloc. Au-dessus des lots, « Nouveaux postes cochés » règle le mode des
- * postes cochés ensuite, sans toucher une ligne ; « Tout passer en… », confirmé, les réécrit
- * toutes. Aucun montant écrit ici : tout vient du moteur.
+ * Liste (N10, décision D1) : rangée par corps d'état comme la rénovation (`ListeNeuf`, décidée par
+ * `lib/estimateur/liste-neuf.ts`) : 4 grandes phases en intertitres, chaque lot UNE fois, fermé à
+ * l'ouverture (ce qu'on ouvre est gardé dans le brouillon, par nom de lot) ; dans un lot présent à
+ * plusieurs étapes du chantier, ses postes sous un sous-titre d'étape ; les postes qui s'excluent sur une
+ * ligne de choix (un clic choisit, décoche l'autre et met la réponse à jour : `choisirNeuf`). Les taxes,
+ * l'assurance et les frais ont leur carte sous le questionnaire, près du budget (`CarteFraisNeuf`) ; les
+ * démarches gratuites leur liste en fin de page : les compteurs de postes ne comptent que les travaux.
+ * Au-dessus des lots, « Nouveaux postes cochés » règle le mode des postes cochés ensuite, sans toucher
+ * une ligne ; « Tout passer en… », confirmé, les réécrit toutes. Aucun montant écrit ici : tout vient du
+ * moteur. La chronologie en 9 phases reste dans « Mon devis » (`DevisNeuf`), la fiche et le PDF.
  *
  * N6 : l'écran prend les briques partagées avec la rénovation (`ChoixVue`, `ListeLots`, `TitrePhase`,
  * `BlocLot`, `LignesLot`, `BarreLive` ; « Mon devis » : `VueDevis`), sans changer son rendu.
@@ -42,34 +46,32 @@ import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import NumStepper from "@/components/Stepper";
 import { EST_CSS } from "@/components/estimateur-styles";
-import { fmt, gras, Field, Stepper, CustomLines } from "@/components/estimateur/partage";
+import { fmt, gras, Field, Stepper } from "@/components/estimateur/partage";
 import {
   Intertitre, Pastilles, Segment, CartesFinition, ChampCodePostal, Interrupteur, Recap, ZoneRecap, CompteurFixe, useChampEnFaute,
 } from "@/components/estimateur/intake";
-import { ListeLots, TitrePhase, BlocLot, LignesLot } from "@/components/estimateur/ListeLots";
 import { BarreLive } from "@/components/estimateur/BarreLive";
 import { ChoixVue } from "@/components/estimateur/VueDevis";
 import { dictDetail } from "@/lib/i18n/detail";
 import { majLigne, basculerAuto } from "@/lib/estimateur/detaille-reno";
 import { useLocale, useT } from "@/components/i18n/LangProvider";
 import { dictNeuf } from "@/lib/i18n/neuf";
-import { catT } from "@/lib/estimateur/catalog-i18n";
 import {
-  buildDevis, customLotHT, geometrieNeuf, isLoc, key, regionCoef, visibleTask, raisonProNeuf, tauxPersoPossibles, CATALOG_NEUF, PHASES_NEUF, ICON,
-  ALEAS_NEUF,
+  buildDevis, geometrieNeuf, regionCoef, CATALOG_NEUF, ALEAS_NEUF,
   type CustomLine, type Selection, type LigneSel, type MaisonNeuve, type Lot, type Tache, type QuiRealise, type Finition,
 } from "@/lib/estimateur";
 import { totauxAvecPerso } from "@/lib/estimateur/projet";
-import { INFO_PHASES } from "@/lib/estimateur/etapes-neuf";
 import {
   QUESTIONS_NEUF, questionsVisibles, resumeTechniqueNeuf, type QuestionNeuf, type ValeurQuestionNeuf, type CleQuestionNeuf,
 } from "@/lib/estimateur/questions-neuf";
 import {
-  CLE_BROUILLON_DETAIL_NEUF, BLOCS_NEUF, ctxDetailNeuf, etatParDefaut, changerReponseNeuf, cocherNeufEtat, badgeNeuf,
-  lignesPersoDuBloc, lignePersoNeuf, repriseDepuisReponses, reglerNouveauxNeuf, toutPasserNeuf, postesQuiChangent,
-  lireBrouillonDetailNeuf, enregistrementDetailNeuf, demarchesPhase, ouvertureDetailNeuf, pasCompteurNeuf, valeurCompteurNeuf,
-  type EtatNeuf, type BlocNeuf, type CompteurNeuf,
+  CLE_BROUILLON_DETAIL_NEUF, ctxDetailNeuf, etatParDefaut, changerReponseNeuf, cocherNeufEtat, choisirNeuf,
+  lignePersoNeuf, repriseDepuisReponses, reglerNouveauxNeuf, toutPasserNeuf, postesQuiChangent,
+  lireBrouillonDetailNeuf, enregistrementDetailNeuf, ouvertureDetailNeuf, pasCompteurNeuf, valeurCompteurNeuf,
+  type EtatNeuf, type CompteurNeuf,
 } from "@/lib/estimateur/detaille-neuf";
+import { ouvrablesNeuf, premiereEtapeNeuf, type PosteListeNeuf } from "@/lib/estimateur/liste-neuf";
+import { ListeNeuf, CarteFraisNeuf, type ActionsListeNeuf } from "./ListeNeuf";
 import { CLE_BROUILLON_NEUF, CLE_AFFINER_NEUF, CLE_RECLAMATION_NEUF, type OrigineNeuf } from "@/lib/estimateur/brouillon-neuf";
 import { marquerReprisePlan } from "@/lib/plans/origine";
 import { NEUF_DETAIL_CSS } from "./detail-styles";
@@ -85,11 +87,6 @@ const NIVEAUX_FINITION: Record<Finition, number> = { eco: 1, standard: 2, premiu
 /** Identifiants des champs : libellés (`htmlFor`), champ en faute (`aria-describedby`). */
 const ID = (k: string) => `av-neuf-${k}`;
 const ID_ERREUR = "av-neuf-err";
-const Drapeau = () => (
-  <svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true">
-    <path d="M3.5 14.5V2.2M3.5 2.6h8.2l-1.8 3 1.8 3H3.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
-  </svg>
-);
 
 export default function EstimateurNeuf({ initialState, projectId }: { initialState?: Record<string, unknown>; projectId?: string } = {}) {
   const router = useRouter();
@@ -106,8 +103,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
   const [depart] = useState(() => (initialState ? repriseDepuisReponses(initialState) : null));
   const [etat, setEtat] = useState<EtatNeuf>(() => depart?.etat ?? etatParDefaut());
   const [custom, setCustom] = useState<CustomLine[]>(() => depart?.custom ?? []);
-  const [open, setOpen] = useState<Record<string, boolean>>({});         // blocs ouverts, par index de bloc
-  const [ouvertes, setOuvertes] = useState<Record<string, boolean>>({}); // phases ouvertes : aucune à l'ouverture
+  const [open, setOpen] = useState<Record<string, boolean>>({});         // lots et cartes ouverts, par nom : aucun à l'ouverture
   const [passer, setPasser] = useState<"ferme" | "choix" | QuiRealise>("ferme"); // « Tout passer en… » : cible, puis confirmation
   const passerRef = useRef<HTMLButtonElement>(null);
   const [seulementCoches, setSeulementCoches] = useState(false);
@@ -149,7 +145,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
     }
     let b = null;
     try { b = lireBrouillonDetailNeuf(localStorage.getItem(CLE_BROUILLON_DETAIL_NEUF)); } catch { /* noop */ }
-    if (b) { setEtat(b.etat); setCustom(b.custom); setOpen(b.open); setOuvertes(b.ouvertes); origineRef.current = b.origine; }
+    if (b) { setEtat(b.etat); setCustom(b.custom); setOpen(b.open); origineRef.current = b.origine; }
   }, [initialState]);
 
   // Brouillon local (pas en modification d'un projet : il est déjà enregistré).
@@ -157,10 +153,10 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
     if (!hydrated.current || edition) return;
     try {
       localStorage.setItem(CLE_BROUILLON_DETAIL_NEUF, JSON.stringify({
-        v: "neuf-detail", etat, custom, open, ouvertes, ...(origineRef.current ? { origine: origineRef.current } : {}),
+        v: "neuf-detail", etat, custom, open, ...(origineRef.current ? { origine: origineRef.current } : {}),
       }));
     } catch { /* noop */ }
-  }, [etat, custom, open, ouvertes, edition]);
+  }, [etat, custom, open, edition]);
 
   // ── Chiffrage ──────────────────────────────────────────────────────────────────────────────
   const { maison: maisonSaisie, finition, aleas, budget, qui, sel } = etat;
@@ -184,15 +180,16 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
   const majSel = (f: (s: Selection) => Selection) => setEtat((e) => ({ ...e, sel: f(e.sel) }));
   const upd = (c: string, nom: string, patch: (s: LigneSel) => LigneSel) => majSel((prev) => majLigne(prev, c, nom, patch));
   const toggleCheck = (l: Lot, t: Tache) => setEtat((e) => cocherNeufEtat(e, l, t));
+  const choisirPoste = (p: PosteListeNeuf) => setEtat((e) => choisirNeuf(e, p.l, p.t));
   const toggleAuto = (l: Lot, t: Tache) => majSel((prev) => basculerAuto(ctx, prev, l, t));
-  const addCustom = (lot: string, phase: string) =>
-    setCustom((p) => [...p, lignePersoNeuf(lot, phase, crypto.randomUUID?.() ?? String(Date.now() + Math.random()))]);
+  const addCustom = (lot: string) =>
+    setCustom((p) => [...p, lignePersoNeuf(lot, premiereEtapeNeuf(lot), crypto.randomUUID?.() ?? String(Date.now() + Math.random()))]);
   const updCustom = (id: string, patch: Partial<CustomLine>) => setCustom((p) => p.map((x) => (x.id === id ? { ...x, ...patch } : x)));
   const delCustom = (id: string) => setCustom((p) => p.filter((x) => x.id !== id));
 
   function reset() {
     try { localStorage.removeItem(CLE_BROUILLON_DETAIL_NEUF); } catch { /* noop */ }
-    setEtat(etatParDefaut()); setCustom([]); setOpen({}); setOuvertes({}); setPasser("ferme"); setView("saisie");
+    setEtat(etatParDefaut()); setCustom([]); setOpen({}); setPasser("ferme"); setView("saisie");
   }
 
   // ── Enregistrement ─────────────────────────────────────────────────────────────────────────
@@ -302,21 +299,6 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
     });
   }
 
-  // ── Liste des phases ───────────────────────────────────────────────────────────────────────
-  const htPhase = useMemo(() => {
-    const r: Record<string, number> = {};
-    for (const p of PHASES_NEUF) r[p] = 0;
-    for (const li of dv.lignes) r[li.phase] = (r[li.phase] ?? 0) + li.ht;
-    for (const b of BLOCS_NEUF) r[b.l.p] += customLotHT(lignesPersoDuBloc(custom, b), b.l.c);
-    return r;
-  }, [dv, custom]);
-  const toutOuvert = BLOCS_NEUF.every((b) => open[b.i]) && PHASES_NEUF.every((p) => ouvertes[p]);
-  function basculerTout() { // « Tout replier » revient à la vue d'ouverture : phases et blocs fermés
-    if (toutOuvert) { setOpen({}); setOuvertes({}); return; }
-    setOpen(Object.fromEntries(BLOCS_NEUF.map((b) => [b.i, true])));
-    setOuvertes(Object.fromEntries(PHASES_NEUF.map((p) => [p, true])));
-  }
-
   // ── Qui réalise : les nouveaux postes, et « Tout passer en… » ──────────────────────────────
   /* Deux choix seulement : « Fait faire » (`pros`) et « Je le fais » (`max`). Un `partie` (repris du
      rapide, ou d'un projet enregistré avant N3) n'en presse aucun : son texte d'aide le dit, jusqu'à
@@ -330,30 +312,17 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
     fermerPasser();
   }
 
-  function bloc(b: BlocNeuf) {
-    const l = b.l;
-    const taches = l.t.filter((t) => visibleTask(ctx, t));
-    const cLines = lignesPersoDuBloc(custom, b);
-    const coche = (t: Tache) => !!sel[key(l.c, t.n)]?.on;
-    const cnt = taches.filter(coche).length + cLines.filter((x) => x.on !== false && !x.draft).length;
-    if (seulementCoches && cnt === 0) return null;
-    const isOpen = !!open[b.i];
-    const amt = taches.reduce((s, t) => s + (htParCle.get(key(l.c, t.n)) ?? 0), 0) + customLotHT(cLines, l.c);
-    const lignes = seulementCoches ? taches.filter(coche) : taches;
-    const loc = isLoc(l.c);
-    const basculer = () => setOpen((o) => ({ ...o, [b.i]: !o[b.i] }));
-    return (
-      <BlocLot key={b.i} ouvert={isOpen} entete={{
-        icone: ICON[l.c] || "•", nom: catT(locale, "corps", l.c), cnt, ouvert: isOpen, onBascule: basculer,
-        montant: cnt > 0 ? fmt(amt) + " " + dl.liste.ht : "",
-      }}>
-        {l.note && <div className="lotnote">{catT(locale, "notes", l.note)}</div>}
-        <LignesLot l={l} taches={lignes} ctx={ctx} sel={sel} loc={loc} maj={upd} onCocher={toggleCheck} onAuto={toggleAuto}
-          options={(t) => ({ badge: badgeNeuf(ctx, sel, l, t), proRaison: raisonProNeuf(t) })} />
-        <CustomLines lines={cLines} onAdd={() => addCustom(l.c, l.p)} onUpd={updCustom} onDel={delCustom} guideTva={d.guideTva} tvas={(courant) => tauxPersoPossibles(ctx, courant)} />
-      </BlocLot>
-    );
+  // ── Liste par corps d'état (N10 : `ListeNeuf`) ─────────────────────────────────────────────
+  const ouvrables = ouvrablesNeuf(ctx, sel, custom);
+  const toutOuvert = ouvrables.every((k) => open[k]);
+  function basculerTout() { // « Tout replier » revient à la vue d'ouverture : lots et cartes fermés
+    setOpen(toutOuvert ? {} : Object.fromEntries(ouvrables.map((k) => [k, true])));
   }
+  const basculer = (k: string) => setOpen((o) => ({ ...o, [k]: !o[k] }));
+  const actions: ActionsListeNeuf = {
+    maj: upd, cocher: toggleCheck, auto: toggleAuto, choisir: choisirPoste, ajouterPerso: addCustom, majPerso: updCustom, supprimerPerso: delCustom,
+  };
+  const liste = { ctx, sel, maison: m, htParCle, open, onBascule: basculer, seulementCoches, actions };
 
   return (
     <>
@@ -444,6 +413,8 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
               />
             </div>
 
+            <CarteFraisNeuf {...liste} />
+
             <div className="intro">{d.intro}</div>
             <div className="nv">
               <span className="nv-l" id="nv-l">{d.nouveauxL}</span>
@@ -471,32 +442,10 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
                 </div>
               )}
             </div>
-            <ListeLots
-              outils={{
-                seulement: seulementCoches, onSeulement: setSeulementCoches, texteSeulement: d.seulementCoches,
-                toutOuvert, onTout: basculerTout, texteDeplier: d.toutDeplier, texteReplier: d.toutReplier,
-              }}
-              phases={PHASES_NEUF.map((ph, pi) => {
-                const blocs = BLOCS_NEUF.filter((b) => b.l.p === ph);
-                let nOn = 0;
-                for (const b of blocs) for (const t of b.l.t) if (sel[key(b.l.c, t.n)]?.on) nOn++;
-                const nDem = demarchesPhase(ctx, sel, ph);
-                const ouverte = !!ouvertes[ph];
-                const info = INFO_PHASES[ph];
-                const rendus = ouverte ? blocs.map(bloc).filter(Boolean) : [];
-                return {
-                  cle: ph,
-                  titre: <TitrePhase num={pi + 1} nom={catT(locale, "phases", ph)} meta={<>{d.postesCoches(nOn)} · {fmt(htPhase[ph] ?? 0)} {dl.liste.ht}</>}
-                    ouvert={ouverte} onBascule={() => setOuvertes((o) => ({ ...o, [ph]: !o[ph] }))} />,
-                  contenu: <>
-                    {ouverte && info && (
-                      <div className="pjal"><Drapeau /><span><b>{n.jalon}</b> · {info.jalon[locale]}{nDem > 0 ? ` · ${d.demarches(nDem)}` : ""}</span></div>
-                    )}
-                    {ouverte && (rendus.length ? rendus : <p className="pvide">{d.aucunPoste}</p>)}
-                  </>,
-                };
-              })}
-            />
+            <ListeNeuf {...liste} custom={custom} outils={{
+              seulement: seulementCoches, onSeulement: setSeulementCoches, texteSeulement: d.seulementCoches,
+              toutOuvert, onTout: basculerTout, texteDeplier: d.toutDeplier, texteReplier: d.toutReplier,
+            }} />
 
             <div style={{ textAlign: "center", marginTop: 14 }}>
               <button type="button" className="resetbtn" onClick={reset}>↺ {d.reset}</button>

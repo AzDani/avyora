@@ -1166,7 +1166,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 </div>
 <div class="tech">
 <div class="tech-r">
-<p class="tech-res">Concrete block · slab · gable roof, clay tiles · render · air-to-water heat pump · mains sewer</p>
+<p class="tech-res">Concrete block · slab · gable roof · air-to-water heat pump · mains sewer</p>
 <button type="button" class="linkbtn tech-btn" aria-expanded="false" aria-controls="av-neuf-tech">Change</button>
 </div>
 <div id="av-neuf-tech">
@@ -1266,7 +1266,18 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 </div>
 </div>
 </div>
-<div class="intro">Open a phase, then a trade: tick the items, adjust quantities. Prices shown excl. VAT; taxes and insurance carry no VAT. On each item you can do yourself, masonry, framing and heat pump included, choose “Hire out” or “DIY”; items reserved for pros (utility connections, studies, inspections) say so.</div>
+<div class="frais-c">
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🧾</span>
+<span class="nm">Taxes, insurance and fees <span class="acc-sous">· no VAT</span>
+</span>
+<span class="amt num">11 561 €</span>
+<span class="car">›</span>
+</div>
+</div>
+</div>
+<div class="intro">Open a trade: tick the items, adjust quantities. Where items rule each other out (roofing, façade, screed…), pick on their line: your answer follows. Prices shown excl. VAT. On each item you can do yourself, masonry, framing and heat pump included, choose “Hire out” or “DIY”; items reserved for pros (utility connections, studies, inspections) say so.</div>
 <div class="nv">
 <span class="nv-l" id="nv-l">Newly ticked items:</span>
 <span class="nv-seg" role="group" aria-labelledby="nv-l">
@@ -1282,121 +1293,226 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 <button type="button" class="linkbtn">Expand all</button>
 </div>
 <div>
-<button type="button" class="phase-t" aria-expanded="false">
-<span class="chev" aria-hidden="true">
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-<path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
+<div class="phase-t">1 · Preparation</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">📐</span>
+<span class="nm">Studies / Design</span>
+<span class="cnt">5</span>
+<span class="amt num">5 770 € excl. VAT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🚧</span>
+<span class="nm">Site facilities</span>
+<span class="cnt">6</span>
+<span class="amt num">4 910 € excl. VAT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🛠️</span>
+<span class="nm">Equipment rental</span>
+<span class="amt num">
 </span>
-<span class="pt-lbl">
-<span class="pt-num">1</span> · Studies &amp; permit</span>
-<span class="pt-meta">9 items ticked · 12 263 € excl. VAT</span>
-</button>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🔌</span>
+<span class="nm">Utility connections</span>
+<span class="cnt">5</span>
+<span class="amt num">6 550 € excl. VAT</span>
+<span class="car">›</span>
+</div>
+</div>
 </div>
 <div>
-<button type="button" class="phase-t" aria-expanded="false">
-<span class="chev" aria-hidden="true">
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-<path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</span>
-<span class="pt-lbl">
-<span class="pt-num">2</span> · Site &amp; earthworks</span>
-<span class="pt-meta">11 items ticked · 6 925 € excl. VAT</span>
-</button>
+<div class="phase-t">2 · Structural work &amp; weatherproofing</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🚜</span>
+<span class="nm">Earthworks</span>
+<span class="cnt">3</span>
+<span class="amt num">1 365 € excl. VAT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🧱</span>
+<span class="nm">Foundations &amp; base walls</span>
+<span class="cnt">2</span>
+<span class="amt num">18 759 € excl. VAT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🧱</span>
+<span class="nm">Masonry</span>
+<span class="cnt">7</span>
+<span class="amt num">23 313 € excl. VAT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🪵</span>
+<span class="nm">Framing, roofing &amp; timber structure</span>
+<span class="cnt">1</span>
+<span class="amt num">12 331 € excl. VAT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🏠</span>
+<span class="nm">Roofing &amp; gutters</span>
+<span class="cnt">4</span>
+<span class="amt num">16 353 € excl. VAT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🪟</span>
+<span class="nm">Exterior joinery</span>
+<span class="cnt">5</span>
+<span class="amt num">9 540 € excl. VAT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🔌</span>
+<span class="nm">Underground utilities</span>
+<span class="cnt">6</span>
+<span class="amt num">5 487 € excl. VAT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🎨</span>
+<span class="nm">Façade</span>
+<span class="cnt">2</span>
+<span class="amt num">4 303 € excl. VAT</span>
+<span class="car">›</span>
+</div>
+</div>
 </div>
 <div>
-<button type="button" class="phase-t" aria-expanded="false">
-<span class="chev" aria-hidden="true">
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-<path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</span>
-<span class="pt-lbl">
-<span class="pt-num">3</span> · Foundations &amp; ground floor slab</span>
-<span class="pt-meta">5 items ticked · 24 991 € excl. VAT</span>
-</button>
+<div class="phase-t">3 · Finishing work</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🧊</span>
+<span class="nm">Insulation</span>
+<span class="cnt">3</span>
+<span class="amt num">7 312 € excl. VAT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🧱</span>
+<span class="nm">Partitions / Plastering</span>
+<span class="cnt">4</span>
+<span class="amt num">8 343 € excl. VAT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">⚡</span>
+<span class="nm">Electrical</span>
+<span class="cnt">3</span>
+<span class="amt num">10 182 € excl. VAT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🚿</span>
+<span class="nm">Plumbing</span>
+<span class="cnt">8</span>
+<span class="amt num">9 701 € excl. VAT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🔥</span>
+<span class="nm">Heating / Ventilation</span>
+<span class="cnt">4</span>
+<span class="amt num">16 549 € excl. VAT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🎨</span>
+<span class="nm">Tiling / Flooring</span>
+<span class="cnt">5</span>
+<span class="amt num">7 883 € excl. VAT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🖌️</span>
+<span class="nm">Painting</span>
+<span class="cnt">2</span>
+<span class="amt num">8 274 € excl. VAT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🚪</span>
+<span class="nm">Interior joinery</span>
+<span class="cnt">1</span>
+<span class="amt num">1 736 € excl. VAT</span>
+<span class="car">›</span>
+</div>
+</div>
 </div>
 <div>
-<button type="button" class="phase-t" aria-expanded="false">
-<span class="chev" aria-hidden="true">
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-<path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</span>
-<span class="pt-lbl">
-<span class="pt-num">4</span> · Walls &amp; floors</span>
-<span class="pt-meta">5 items ticked · 13 802 € excl. VAT</span>
-</button>
+<div class="phase-t">4 · Equipment &amp; handover</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🍳</span>
+<span class="nm">Kitchen</span>
+<span class="cnt">1</span>
+<span class="amt num">5 933 € excl. VAT</span>
+<span class="car">›</span>
 </div>
-<div>
-<button type="button" class="phase-t" aria-expanded="false">
-<span class="chev" aria-hidden="true">
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-<path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</span>
-<span class="pt-lbl">
-<span class="pt-num">5</span> · Weathertight shell</span>
-<span class="pt-meta">10 items ticked · 38 225 € excl. VAT</span>
-</button>
 </div>
-<div>
-<button type="button" class="phase-t" aria-expanded="false">
-<span class="chev" aria-hidden="true">
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-<path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</span>
-<span class="pt-lbl">
-<span class="pt-num">6</span> · Utilities &amp; façade</span>
-<span class="pt-meta">10 items ticked · 14 290 € excl. VAT</span>
-</button>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">✅</span>
+<span class="nm">Inspections &amp; handover</span>
+<span class="cnt">2</span>
+<span class="amt num">920 € excl. VAT</span>
+<span class="car">›</span>
 </div>
-<div>
-<button type="button" class="phase-t" aria-expanded="false">
-<span class="chev" aria-hidden="true">
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-<path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</span>
-<span class="pt-lbl">
-<span class="pt-num">7</span> · Finishing work</span>
-<span class="pt-meta">17 items ticked · 53 772 € excl. VAT</span>
-</button>
 </div>
-<div>
-<button type="button" class="phase-t" aria-expanded="false">
-<span class="chev" aria-hidden="true">
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-<path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</span>
-<span class="pt-lbl">
-<span class="pt-num">8</span> · Finishes &amp; fittings</span>
-<span class="pt-meta">15 items ticked · 25 910 € excl. VAT</span>
-</button>
 </div>
-<div>
-<button type="button" class="phase-t" aria-expanded="false">
-<span class="chev" aria-hidden="true">
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-<path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
+<div class="dem-c">
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">📋</span>
+<span class="nm">Paperwork <span class="acc-sous">· free</span>
 </span>
-<span class="pt-lbl">
-<span class="pt-num">9</span> · Handover &amp; completion</span>
-<span class="pt-meta">10 items ticked · 6 898 € excl. VAT</span>
-</button>
+<span class="amt num">
+</span>
+<span class="car">›</span>
+</div>
+</div>
 </div>
 <div style="text-align:center;margin-top:14px">
 <button type="button" class="resetbtn">↺ Reset everything</button>
@@ -2596,7 +2712,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 </div>
 <div class="tech">
 <div class="tech-r">
-<p class="tech-res">Parpaing · dalle · 2 pans tuiles · enduit · PAC air/eau · tout-à-l&#x27;égout</p>
+<p class="tech-res">Parpaing · dalle · 2 pans · PAC air/eau · tout-à-l&#x27;égout</p>
 <button type="button" class="linkbtn tech-btn" aria-expanded="false" aria-controls="av-neuf-tech">Modifier</button>
 </div>
 <div id="av-neuf-tech">
@@ -2696,7 +2812,18 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 </div>
 </div>
 </div>
-<div class="intro">Ouvre une phase, puis un lot : coche les postes, ajuste les quantités. Prix affichés HT ; les taxes et l&#x27;assurance n&#x27;ont pas de TVA. Sur chaque poste faisable soi-même, maçonnerie, charpente et pompe à chaleur comprises, choisis « Fait faire » ou « Je le fais » ; les postes réservés aux pros (branchements au réseau, études, contrôles) l&#x27;indiquent.</div>
+<div class="frais-c">
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🧾</span>
+<span class="nm">Taxes, assurance et frais <span class="acc-sous">· sans TVA</span>
+</span>
+<span class="amt num">11 561 €</span>
+<span class="car">›</span>
+</div>
+</div>
+</div>
+<div class="intro">Ouvre un lot : coche les postes, ajuste les quantités. Quand des postes s&#x27;excluent (couverture, façade, chape…), choisis sur leur ligne : ta réponse suit. Prix affichés HT. Sur chaque poste faisable soi-même, maçonnerie, charpente et pompe à chaleur comprises, choisis « Fait faire » ou « Je le fais » ; les postes réservés aux pros (branchements au réseau, études, contrôles) l&#x27;indiquent.</div>
 <div class="nv">
 <span class="nv-l" id="nv-l">Nouveaux postes cochés :</span>
 <span class="nv-seg" role="group" aria-labelledby="nv-l">
@@ -2712,121 +2839,226 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 <button type="button" class="linkbtn">Tout déplier</button>
 </div>
 <div>
-<button type="button" class="phase-t" aria-expanded="false">
-<span class="chev" aria-hidden="true">
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-<path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
+<div class="phase-t">1 · Préparation</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">📐</span>
+<span class="nm">Études / Conception</span>
+<span class="cnt">5</span>
+<span class="amt num">5 770 € HT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🚧</span>
+<span class="nm">Annexes de chantier</span>
+<span class="cnt">6</span>
+<span class="amt num">4 910 € HT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🛠️</span>
+<span class="nm">Location de matériel</span>
+<span class="amt num">
 </span>
-<span class="pt-lbl">
-<span class="pt-num">1</span> · Études &amp; permis</span>
-<span class="pt-meta">9 postes cochés · 12 263 € HT</span>
-</button>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🔌</span>
+<span class="nm">Raccordements aux réseaux</span>
+<span class="cnt">5</span>
+<span class="amt num">6 550 € HT</span>
+<span class="car">›</span>
+</div>
+</div>
 </div>
 <div>
-<button type="button" class="phase-t" aria-expanded="false">
-<span class="chev" aria-hidden="true">
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-<path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</span>
-<span class="pt-lbl">
-<span class="pt-num">2</span> · Terrain &amp; terrassement</span>
-<span class="pt-meta">11 postes cochés · 6 925 € HT</span>
-</button>
+<div class="phase-t">2 · Gros œuvre &amp; clos-couvert</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🚜</span>
+<span class="nm">Terrassement</span>
+<span class="cnt">3</span>
+<span class="amt num">1 365 € HT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🧱</span>
+<span class="nm">Fondations &amp; soubassement</span>
+<span class="cnt">2</span>
+<span class="amt num">18 759 € HT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🧱</span>
+<span class="nm">Maçonnerie</span>
+<span class="cnt">7</span>
+<span class="amt num">23 313 € HT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🪵</span>
+<span class="nm">Charpente, couverture &amp; structure bois</span>
+<span class="cnt">1</span>
+<span class="amt num">12 331 € HT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🏠</span>
+<span class="nm">Couverture &amp; zinguerie</span>
+<span class="cnt">4</span>
+<span class="amt num">16 353 € HT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🪟</span>
+<span class="nm">Menuiseries extérieures</span>
+<span class="cnt">5</span>
+<span class="amt num">9 540 € HT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🔌</span>
+<span class="nm">Réseaux enterrés (VRD)</span>
+<span class="cnt">6</span>
+<span class="amt num">5 487 € HT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🎨</span>
+<span class="nm">Façade</span>
+<span class="cnt">2</span>
+<span class="amt num">4 303 € HT</span>
+<span class="car">›</span>
+</div>
+</div>
 </div>
 <div>
-<button type="button" class="phase-t" aria-expanded="false">
-<span class="chev" aria-hidden="true">
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-<path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</span>
-<span class="pt-lbl">
-<span class="pt-num">3</span> · Fondations &amp; plancher bas</span>
-<span class="pt-meta">5 postes cochés · 24 991 € HT</span>
-</button>
+<div class="phase-t">3 · Second œuvre</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🧊</span>
+<span class="nm">Isolation</span>
+<span class="cnt">3</span>
+<span class="amt num">7 312 € HT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🧱</span>
+<span class="nm">Cloisons / Plâtrerie</span>
+<span class="cnt">4</span>
+<span class="amt num">8 343 € HT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">⚡</span>
+<span class="nm">Électricité</span>
+<span class="cnt">3</span>
+<span class="amt num">10 182 € HT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🚿</span>
+<span class="nm">Plomberie</span>
+<span class="cnt">8</span>
+<span class="amt num">9 701 € HT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🔥</span>
+<span class="nm">Chauffage / VMC</span>
+<span class="cnt">4</span>
+<span class="amt num">16 549 € HT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🎨</span>
+<span class="nm">Carrelage / Revêtements</span>
+<span class="cnt">5</span>
+<span class="amt num">7 883 € HT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🖌️</span>
+<span class="nm">Peinture</span>
+<span class="cnt">2</span>
+<span class="amt num">8 274 € HT</span>
+<span class="car">›</span>
+</div>
+</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🚪</span>
+<span class="nm">Menuiseries intérieures</span>
+<span class="cnt">1</span>
+<span class="amt num">1 736 € HT</span>
+<span class="car">›</span>
+</div>
+</div>
 </div>
 <div>
-<button type="button" class="phase-t" aria-expanded="false">
-<span class="chev" aria-hidden="true">
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-<path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</span>
-<span class="pt-lbl">
-<span class="pt-num">4</span> · Murs &amp; planchers</span>
-<span class="pt-meta">5 postes cochés · 13 802 € HT</span>
-</button>
+<div class="phase-t">4 · Équipements &amp; réception</div>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">🍳</span>
+<span class="nm">Cuisine</span>
+<span class="cnt">1</span>
+<span class="amt num">5 933 € HT</span>
+<span class="car">›</span>
 </div>
-<div>
-<button type="button" class="phase-t" aria-expanded="false">
-<span class="chev" aria-hidden="true">
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-<path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</span>
-<span class="pt-lbl">
-<span class="pt-num">5</span> · Clos &amp; couvert</span>
-<span class="pt-meta">10 postes cochés · 38 225 € HT</span>
-</button>
 </div>
-<div>
-<button type="button" class="phase-t" aria-expanded="false">
-<span class="chev" aria-hidden="true">
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-<path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</span>
-<span class="pt-lbl">
-<span class="pt-num">6</span> · Réseaux &amp; façade</span>
-<span class="pt-meta">10 postes cochés · 14 290 € HT</span>
-</button>
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">✅</span>
+<span class="nm">Contrôles &amp; réception</span>
+<span class="cnt">2</span>
+<span class="amt num">920 € HT</span>
+<span class="car">›</span>
 </div>
-<div>
-<button type="button" class="phase-t" aria-expanded="false">
-<span class="chev" aria-hidden="true">
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-<path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</span>
-<span class="pt-lbl">
-<span class="pt-num">7</span> · Second œuvre</span>
-<span class="pt-meta">17 postes cochés · 53 772 € HT</span>
-</button>
 </div>
-<div>
-<button type="button" class="phase-t" aria-expanded="false">
-<span class="chev" aria-hidden="true">
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-<path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
-</span>
-<span class="pt-lbl">
-<span class="pt-num">8</span> · Finitions &amp; équipements</span>
-<span class="pt-meta">15 postes cochés · 25 910 € HT</span>
-</button>
 </div>
-<div>
-<button type="button" class="phase-t" aria-expanded="false">
-<span class="chev" aria-hidden="true">
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-<path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-</path>
-</svg>
+<div class="dem-c">
+<div class="acc">
+<div class="acc-h" role="button" tabindex="0" aria-expanded="false">
+<span class="ic" aria-hidden="true">📋</span>
+<span class="nm">Démarches <span class="acc-sous">· gratuites</span>
 </span>
-<span class="pt-lbl">
-<span class="pt-num">9</span> · Réception &amp; achèvement</span>
-<span class="pt-meta">10 postes cochés · 6 898 € HT</span>
-</button>
+<span class="amt num">
+</span>
+<span class="car">›</span>
+</div>
+</div>
 </div>
 <div style="text-align:center;margin-top:14px">
 <button type="button" class="resetbtn">↺ Tout réinitialiser</button>

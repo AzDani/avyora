@@ -16,13 +16,14 @@
  * `changerQui`, `puLigne`), sur le MÊME moteur que le rapide : une maison décrite pareil coûte pareil.
  */
 import { key, isAuto, isLoc, lineHT, puReel, tauxPerso, type Ctx, type Selection, type Finition, type Lot, type Tache, type CustomLine } from "./core";
-import { CATALOG_NEUF, PHASES_NEUF } from "./catalogue-neuf";
-import { geometrieNeuf, maisonComplete, maisonParDefaut, reponseDuPoste, selAvantN8, type MaisonNeuve } from "./neuf";
+import { CATALOG_NEUF, POSTE_NEUF } from "./catalogue-neuf";
+import { exclusifsDe, geometrieNeuf, maisonComplete, maisonParDefaut, reponseDuPoste, selAvantN8, type MaisonNeuve } from "./neuf";
 import { BORNES_NEUF, minSdbNeuf } from "./bornes-neuf";
 import { ctxNeuf, appliquerMaison, cocherPosteNeuf, soiMemeNeuf, peutFaireNeuf, LOTS_DECENNALE_NEUF, presetMaison, presetNeuf, type RapideNeufInput } from "./presets-neuf";
 import type { QuiRealise } from "./presets";
 import type { CleQuestionNeuf, ValeurQuestionNeuf } from "./questions-neuf";
 import { estJalon } from "./projet";
+import { ouvertsDepuisBrouillon } from "./liste-neuf";
 import { corpsProjetNeuf, lignesPersoValides, selValide, type BrouillonNeuf, type OrigineNeuf } from "./brouillon-neuf";
 import type { Locale } from "../i18n/config";
 
@@ -159,17 +160,44 @@ export function pasCompteurNeuf(e: EtatNeuf, k: CompteurNeuf, delta: number): Et
 }
 
 /**
- * Coche un poste à la main depuis l'état du détaillé. Si ce poste correspond à une réponse de la
- * maison (couverture en ardoise, gouttière PVC, bardage…), la réponse suit : la question affiche
- * le choix réel, et un « Modifier » qui repart de la maison chiffre la même chose. Décocher ne
- * change pas la réponse (aucun autre choix n'est alors désigné).
+ * Coche ou décoche un poste à la main depuis l'état du détaillé (la case d'une ligne). Cocher, c'est
+ * CHOISIR ce poste (`choisirNeuf`) : s'il correspond à une réponse de la maison, la réponse suit. Décocher
+ * ne change pas la réponse (aucun autre choix n'est alors désigné).
  */
 export function cocherNeufEtat(e: EtatNeuf, l: Lot, t: Tache): EtatNeuf {
-  const sel = cocherNeuf(ctxDetailNeuf(e), e.sel, l, t, e.qui);
-  const on = !!sel[key(l.c, t.n)]?.on;
-  const r = on && t.id ? reponseDuPoste(t.id) : null;
-  if (!r || (e.maison as unknown as Record<string, unknown>)[r.k] === r.v) return { ...e, sel };
-  return { ...e, sel, maison: { ...e.maison, [r.k]: r.v } as MaisonNeuve, facadeAuto: r.k === "facade" ? false : e.facadeAuto };
+  if (!e.sel[key(l.c, t.n)]?.on) return choisirNeuf(e, l, t);
+  return { ...e, sel: cocherNeuf(ctxDetailNeuf(e), e.sel, l, t, e.qui) };
+}
+
+const FACADES_GROUPE = new Set(exclusifsDe("fac-enduit-monocouche-machine").concat("fac-enduit-monocouche-machine"));
+
+/**
+ * Choisit un poste (N10) : un clic sur une alternative d'une ligne de choix, ou la case d'une ligne.
+ * 1. S'il correspond à une réponse de la maison (couverture en ardoise, fosse toutes eaux, vide
+ *    sanitaire, murs en brique…), la réponse change comme dans le questionnaire (`changerReponseNeuf`) :
+ *    les postes qu'elle gouverne suivent (l'étude SPANC avec la fosse…), le reste est gardé. La question
+ *    affiche le choix réel, et un « Modifier » qui repart de la maison chiffre la même chose.
+ * 2. Puis le poste est coché et les autres postes de son groupe exclusif décochés : il est le seul choix,
+ *    même là où la réponse ne le coche pas (une couverture sur un toit plat) ou n'existe pas (le radier).
+ *    Un ancien projet qui avait deux alternatives cochées n'en garde qu'une.
+ * Choisir une façade (ITE comprise) arrête le « la façade suit les murs ».
+ */
+export function choisirNeuf(e: EtatNeuf, l: Lot, t: Tache): EtatNeuf {
+  let x = e;
+  const r = t.id ? reponseDuPoste(t.id) : null;
+  if (r && (x.maison as unknown as Record<string, unknown>)[r.k] !== r.v) x = changerReponseNeuf(x, r.k, r.v);
+  const k = key(l.c, t.n);
+  let sel: Selection;
+  if (!x.sel[k]?.on) sel = cocherNeuf(ctxDetailNeuf(x), x.sel, l, t, x.qui);
+  else {
+    sel = { ...x.sel };
+    for (const id of t.id ? exclusifsDe(t.id) : []) {
+      const p = POSTE_NEUF.get(id);
+      const ka = p ? key(p.c, p.n) : "";
+      if (sel[ka]?.on) sel[ka] = { ...sel[ka], on: false };
+    }
+  }
+  return { ...x, sel, facadeAuto: t.id && FACADES_GROUPE.has(t.id) ? false : x.facadeAuto };
 }
 
 /** Coche ou décoche un poste à la main : décoche les postes exclusifs (deux couvertures ne
@@ -198,17 +226,6 @@ export function badgeNeuf(ctx: Ctx, sel: Selection, l: Lot, t: Tache): "pct" | "
   return undefined;
 }
 
-/** Nombre de démarches d'une phase, affiché à côté de son jalon : les lignes cochées dont le badge
- *  est « jalon » (montant nul). Une démarche à laquelle on a donné un prix n'en est plus une. */
-export function demarchesPhase(ctx: Ctx, sel: Selection, phase: string): number {
-  let n = 0;
-  for (const l of CATALOG_NEUF) {
-    if (l.p !== phase) continue;
-    for (const t of l.t) if (sel[key(l.c, t.n)]?.on && badgeNeuf(ctx, sel, l, t) === "jalon") n++;
-  }
-  return n;
-}
-
 /** « Je le fais » proposé sur ce poste ? La règle par poste (`peutFaireNeuf`), quel que soit le
  *  mode : maçonnerie, charpente, menuiseries ou pompe à chaleur se prennent à la main, ligne par
  *  ligne. La ligne (`Row`) applique la même règle d'elle-même (`peutFaireSoiMeme` hors raison
@@ -220,33 +237,18 @@ export const diyNeuf = (l: Lot, t: Tache): boolean => peutFaireNeuf(l, t);
  *  pour les deux natures (`horsDecennaleSoiMeme`) ; nom gardé, des tests l'importent. */
 export const horsDecennaleNeuf = (l: Lot): boolean => LOTS_DECENNALE_NEUF.has(l.c);
 
-// ── Blocs : un lot du catalogue neuf, à sa place dans une phase ─────────────────────────────────
-/* Un même lot revient dans plusieurs phases, et parfois deux fois dans la même (« Isolation » ×2
-   en second œuvre) : un bloc s'identifie donc par son INDEX dans le catalogue, pas par son nom. */
-export interface BlocNeuf { l: Lot; i: number }
-export const BLOCS_NEUF: BlocNeuf[] = CATALOG_NEUF.map((l, i) => ({ l, i }));
-
+// ── Lignes perso ────────────────────────────────────────────────────────────────────────────────
 const PAR_CLE = new Map<string, { l: Lot; t: Tache }>();
 for (const l of CATALOG_NEUF) for (const t of l.t) PAR_CLE.set(key(l.c, t.n), { l, t });
 
-/** Le premier bloc de ce lot dans cette phase (sans phase : le premier bloc du lot). */
-function premierBloc(lot: string, phase?: string): number {
-  const b = BLOCS_NEUF.find((x) => x.l.c === lot && (phase == null || x.l.p === phase));
-  return b ? b.i : -1;
+/** Lignes perso affichées sous un lot (N10 : chaque lot n'apparaît qu'une fois) : toutes celles de ce
+ *  lot, quelle que soit leur étape du chantier. */
+export function lignesPersoDuLot(custom: CustomLine[], lot: string): CustomLine[] {
+  return custom.filter((x) => x.lot === lot);
 }
 
-/** Lignes perso affichées sous ce bloc : celles de son lot et de sa phase, sous le PREMIER bloc
- *  de ce lot dans cette phase (une ligne ne s'affiche qu'une fois, même si le lot y revient).
- *  Une ligne sans phase (ou d'une phase inconnue) va sous le premier bloc de son lot. */
-export function lignesPersoDuBloc(custom: CustomLine[], b: BlocNeuf): CustomLine[] {
-  return custom.filter((x) => {
-    if (x.lot !== b.l.c) return false;
-    const cible = x.phase != null && premierBloc(x.lot, x.phase) >= 0 ? premierBloc(x.lot, x.phase) : premierBloc(x.lot);
-    return cible === b.i;
-  });
-}
-
-/** Nouvelle ligne perso d'un bloc : TVA de la construction neuve (`tauxPerso` : 20 %), rangée dans sa phase. */
+/** Nouvelle ligne perso d'un lot : TVA de la construction neuve (`tauxPerso` : 20 %), rangée à une étape
+ *  du chantier (la première du lot : `premiereEtapeNeuf`). */
 export function lignePersoNeuf(lot: string, phase: string, id: string): CustomLine {
   return { id, lot, phase, nom: "", prix: 0, unite: "u", qte: 1, note: "", tva: tauxPerso({ nature: "neuf" }), on: true, draft: true };
 }
@@ -323,26 +325,16 @@ export function ouvertureDetailNeuf(o: { nouveau: boolean; reprise: boolean; aff
   return { frais: true, reprise: o.reprise ? repriseDepuisGraine(o.graine) : null };
 }
 
-/** Brouillon du détaillé (rechargement de la page). `open` : les blocs ouverts, par index de bloc ;
- *  `ouvertes` : les phases ouvertes, par nom (N3 : toutes fermées sur une page vierge). */
+/** Brouillon du détaillé (rechargement de la page). `open` : les lots ouverts, par nom de lot, et les
+ *  deux cartes (`$frais`, `$demarches`) ; tout est fermé sur une page vierge. N10 : un brouillon d'avant
+ *  (blocs ouverts par index, phases ouvertes de N3) rouvre les lots de ses blocs (`ouvertsDepuisBrouillon`). */
 export interface BrouillonDetailNeuf {
   v: "neuf-detail";
   etat: EtatNeuf;
   custom: CustomLine[];
   open: Record<string, boolean>;
-  ouvertes: Record<string, boolean>;
   origine?: OrigineNeuf;
 }
-
-/** Les phases qui contiennent un bloc ouvert : un brouillon d'avant N3 (sans `ouvertes`, phases
- *  toujours dépliées) rouvre ainsi les blocs qu'on y regardait. */
-export function phasesDesBlocsOuverts(open: Record<string, boolean>): Record<string, boolean> {
-  const out: Record<string, boolean> = {};
-  for (const b of BLOCS_NEUF) if (open[b.i]) out[b.l.p] = true;
-  return out;
-}
-
-const PHASES = new Set<string>(PHASES_NEUF);
 
 export function lireBrouillonDetailNeuf(raw: string | null | undefined): BrouillonDetailNeuf | null {
   if (!raw) return null;
@@ -350,7 +342,6 @@ export function lireBrouillonDetailNeuf(raw: string | null | undefined): Brouill
   try { d = JSON.parse(raw); } catch { return null; }
   if (!d || d.v !== "neuf-detail" || !d.etat || !d.etat.maison) return null;
   const maison = maisonComplete(d.etat.maison);
-  const open = d.open && typeof d.open === "object" ? d.open : {};
   return {
     v: "neuf-detail",
     etat: {
@@ -361,10 +352,7 @@ export function lireBrouillonDetailNeuf(raw: string | null | undefined): Brouill
       sel: selAvantN8(selValide(d.etat.sel)), facadeAuto: typeof d.etat.facadeAuto === "boolean" ? d.etat.facadeAuto : facadeAutoDe(maison),
     },
     custom: lignesPersoValides(d.custom),
-    open,
-    ouvertes: d.ouvertes && typeof d.ouvertes === "object" && !Array.isArray(d.ouvertes)
-      ? Object.fromEntries(Object.entries(d.ouvertes).filter(([p, v]) => PHASES.has(p) && v === true))
-      : phasesDesBlocsOuverts(open),
+    open: ouvertsDepuisBrouillon(d.open),
     ...(d.origine ? { origine: d.origine } : {}),
   };
 }
