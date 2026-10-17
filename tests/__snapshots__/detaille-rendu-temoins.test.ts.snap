@@ -1411,8 +1411,10 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 <span>0</span>
 <small>€ incl. tax</small>
 </div>
-<div class="m2">≈ 2 468 €<span class="m2-l"> / m² of living area</span>
+<div class="m2">
+<span class="m2-v">≈ 2 468 €<span class="m2-l"> / m² of living area</span>
 <span class="m2-c">/m²</span> <span class="m2-f">· incl. fees without VAT 11 561 €</span>
+</span>
 </div>
 </div>
 <div class="jauge">
@@ -2839,8 +2841,10 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 <span>0</span>
 <small>€ TTC</small>
 </div>
-<div class="m2">≈ 2 468 €<span class="m2-l"> / m² habitable</span>
+<div class="m2">
+<span class="m2-v">≈ 2 468 €<span class="m2-l"> / m² habitable</span>
 <span class="m2-c">/m²</span> <span class="m2-f">· dont frais hors TVA 11 561 €</span>
+</span>
 </div>
 </div>
 <div class="jauge">

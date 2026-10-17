@@ -68,8 +68,10 @@ export const NEUF_DETAIL_CSS = `
 .av-neuf-d .dtl .dem{font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:#fdf1e1;color:#b06d10;white-space:nowrap}
 .av-neuf-live .m2{font-size:11.5px;color:#c9c5ee;margin-top:5px;font-family:var(--font-geist-mono),ui-monospace,monospace;font-variant-numeric:tabular-nums}
 .av-neuf-live .m2-c{display:none}
-/* le prix au m² passe sur deux lignes plutôt que de pousser les boutons sous le total (anglais, A7) */
-.av-neuf-live .totb{max-width:400px}
+/* le prix au m² passe sur deux lignes plutôt que de pousser les boutons sous le total (anglais, A7) : sur
+   ordinateur seulement, où les boutons tiennent alors sur la ligne ; sur tablette ils passent dessous de
+   toute façon et le prix au m² garde sa ligne (A7, vérification) */
+@media(min-width:1024px){.av-neuf-live .totb{max-width:400px}}
 .av-neuf-live .m2-f{white-space:nowrap}
 @media(max-width:560px){
 .av-neuf-d .pjal,.av-neuf-d .pvide{padding-left:4px}
@@ -82,11 +84,19 @@ export const NEUF_DETAIL_CSS = `
 /* les postes du neuf ont de longues notes : sur mobile, les commandes passent sous le libellé */
 .av-neuf-d .trow{grid-template-columns:22px minmax(0,1fr)}
 .av-neuf-d .trow .tctl{grid-column:2/-1;justify-content:flex-start}
-/* barre live : la hauteur de la rénovation (A7). Le prix au m², court, au bout de la ligne du total s'il y
-   tient ; sinon il passe à la ligne suivante, masquée (22 px : la ligne du total de la rénovation). Les
-   frais hors TVA restent sur ordinateur et dans « Mon devis » */
-.av-neuf-live .totb{max-width:none;flex-wrap:wrap;max-height:22px;overflow:hidden}
-.av-neuf-live .m2{margin:0 0 0 auto;font-size:10.5px;line-height:15px;white-space:nowrap}
+/* barre live : la ligne du total de la rénovation (A7, vérification). Rien n'y est coupé à une hauteur
+   fixe : le libellé passe d'abord sur deux lignes, le montant ne descend sous le libellé que s'il ne
+   tient vraiment pas à côté (en anglais sous 300 px, ou texte agrandi), et la ligne grandit avec le
+   texte, comme en rénovation. Le prix au m², court, prend la place qui reste au bout de la ligne : s'il
+   n'y tient pas en entier, il passe à la seconde ligne de sa propre zone, haute d'une ligne (1lh) et
+   coupée ; l'espace sans chasse du ::before offre la coupure. La marge négative rend l'écart du flex :
+   sans prix au m², la ligne est celle de la rénovation. Les frais hors TVA restent sur ordinateur et
+   dans « Mon devis » */
+.av-neuf-live .totb{flex-wrap:wrap}
+.av-neuf-live .lbl{flex:1000 1 0;min-width:min-content;max-width:max-content}
+.av-neuf-live .m2{flex:1 1 0;min-width:0;margin:0 0 0 -9px;font-size:10.5px;line-height:1.45;height:1.45em;height:1lh;overflow:hidden;overflow:clip;text-align:right}
+.av-neuf-live .m2::before{content:"\\200b"}
+.av-neuf-live .m2-v{display:inline-block;padding-left:9px;white-space:nowrap}
 .av-neuf-live .m2-l,.av-neuf-live .m2-f{display:none}
 .av-neuf-live .m2-c{display:inline}
 }

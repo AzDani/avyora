@@ -510,8 +510,8 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
       {/* Barre live sticky (la même que la rénovation), avec le prix au m² et les frais */}
       <BarreLive total={tot.ttc} budget={budget} vue={view} onVue={setView} onEnregistrer={enregistrer} saving={saving} edition={edition} erreur={erreur}
         erreurId={ID_ERREUR} className="av-neuf-live"
-        m2={<div className="m2">≈ {fmt(m2)}<span className="m2-l"> {d.parM2}</span><span className="m2-c">{d.parM2Court}</span>
-          {frais > 0 ? <> <span className="m2-f">· {d.dontFrais} {fmt(frais)}</span></> : null}</div>}
+        m2={<div className="m2"><span className="m2-v">≈ {fmt(m2)}<span className="m2-l"> {d.parM2}</span><span className="m2-c">{d.parM2Court}</span>
+          {frais > 0 ? <> <span className="m2-f">· {d.dontFrais} {fmt(frais)}</span></> : null}</span></div>}
         t={{
           totalK: d.totalK, ttc: d.ttc, budget: d.budgetTxt, depasse: d.depasse, reste: d.reste, sansBudget: d.sansBudget,
           voirDevis: d.voirDevis, modifier: d.retourSaisie, enregistrer: d.enregistrer, enregistrerModifs: d.enregistrerModifs, enregistrement: d.enregistrement,

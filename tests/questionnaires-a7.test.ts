@@ -122,7 +122,7 @@ describe("A7 · les deux questionnaires côte à côte", () => {
     });
 
     it(`${locale} (6) : barre live — le prix au m² court sur mobile, sur la ligne du total`, () => {
-      expect(neuf).toMatch(new RegExp(`<div class="m2">≈ [^<]+<span class="m2-l"> ${echapper(d.parM2)}</span><span class="m2-c">/m²</span>`));
+      expect(neuf).toMatch(new RegExp(`<div class="m2"><span class="m2-v">≈ [^<]+<span class="m2-l"> ${echapper(d.parM2)}</span><span class="m2-c">/m²</span>`));
       expect(d.parM2Court).toBe("/m²");
     });
 
@@ -133,12 +133,22 @@ describe("A7 · les deux questionnaires côte à côte", () => {
     });
   }
 
-  it("(6) : sur mobile, la ligne du total garde la hauteur de la rénovation (22 px), le prix au m² ne s'y montre que s'il tient", () => {
+  it("(6) : sur mobile, la ligne du total de la rénovation, le prix au m² ne s'y montre que s'il tient (en entier)", () => {
     const mobile = NEUF_DETAIL_CSS.slice(NEUF_DETAIL_CSS.indexOf("@media(max-width:560px)"));
-    expect(mobile).toContain(".av-neuf-live .totb{max-width:none;flex-wrap:wrap;max-height:22px;overflow:hidden}");
+    // A7, vérification : jamais de hauteur fixe ni de coupe sur la ligne du total (le montant y disparaissait
+    // en anglais sous 335 px, et avec un texte agrandi) ; seule la zone du prix au m² est coupée, à une ligne
+    // de son propre texte (1lh). La mesure au navigateur : tests/neuf-barre-live.test.ts
+    expect(mobile).toContain(".av-neuf-live .totb{flex-wrap:wrap}");
+    expect(NEUF_DETAIL_CSS).not.toMatch(/\.totb\{[^}]*(max-height|overflow)/);
+    expect(mobile).toContain(".av-neuf-live .m2{flex:1 1 0;min-width:0;margin:0 0 0 -9px;font-size:10.5px;line-height:1.45;height:1.45em;height:1lh;overflow:hidden;overflow:clip;text-align:right}");
+    expect(mobile).toContain('.av-neuf-live .m2::before{content:"\\200b"}');
+    expect(mobile).toContain(".av-neuf-live .m2-v{display:inline-block;padding-left:9px;white-space:nowrap}");
     expect(mobile).toContain(".av-neuf-live .m2-l,.av-neuf-live .m2-f{display:none}");
     expect(mobile).toContain(".av-neuf-live .m2-c{display:inline}");
     expect(mobile).not.toMatch(/\.m2\{flex-basis:100%/);
+    // le plafond de 400 px (prix au m² sur deux lignes, boutons sur la ligne) : sur ordinateur seulement
+    expect(NEUF_DETAIL_CSS).toContain("@media(min-width:1024px){.av-neuf-live .totb{max-width:400px}}");
+    expect(NEUF_DETAIL_CSS.match(/max-width:400px/g)).toHaveLength(1);
     // la ligne du total de la rénovation : un nombre de 21 px (hauteur de ligne 1) et son libellé, alignés sur la ligne de base
     expect(EST_CSS).toContain(".av-estim-live .big{font-size:21px}");
     expect(EST_CSS).toContain(".av-estim-live .totb{flex-basis:100%;display:flex;align-items:baseline;gap:9px}");
