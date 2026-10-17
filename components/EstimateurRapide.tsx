@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Estimation rapide (< 3 min) : 4 questions → preset de lots → MÊME moteur que l'estimateur détaillé.
+ * Estimation rapide (< 2 min) : 4 questions → preset de lots → MÊME moteur que l'estimateur détaillé.
  * « Affiner » ouvre le détaillé pré-rempli (via le brouillon localStorage). « Enregistrer » crée le projet.
  *
  * Édition d'un projet existant (`edit`, page « Modifier » d'un compte gratuit) : le chiffre s'affiche

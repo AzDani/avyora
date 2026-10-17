@@ -47,7 +47,7 @@ La scène de référence des tests de correspondance se régénère avec
 à relancer quand le contrat change, puis à relire : les quantités attendues sont dans les tests.
 
 Les états réels de l'éditeur que l'API « Mes plans » doit accepter (quatre plans types, l'exemple, le Plan
-final sur deux niveaux, le pire cas de 168 Ko) se régénèrent avec
+final sur deux niveaux, le pire cas de 234 Ko) se régénèrent avec
 `node maquettes/tools/exporter-etats.mjs "$(pwd)/maquettes" tests/fixtures/plans-etats` — à relancer quand
 `SCHEMA` change. Sans dossier de sortie (dans la batterie), l'outil ne fait rien et sort en 0.
 

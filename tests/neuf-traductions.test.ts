@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { CATALOG, CATALOG_NEUF, PHASES_NEUF, buildDevis, presetMaison } from "@/lib/estimateur";
 import { catT, catLigne, aTraductionEN, type CatKind } from "@/lib/estimateur/catalog-i18n";
+import { FR_AFFICHAGE } from "@/lib/estimateur/catalog-fr";
 
 /* C6 · le catalogue de la construction neuve s'affiche en anglais sans aucun repli sur le français. */
 
@@ -54,17 +55,19 @@ describe("C6 · traductions EN du catalogue neuf", () => {
     expect([...new Set(suspects)]).toEqual([]);
   });
 
-  it("le français ne bouge pas : en FR, catT rend la chaîne d'origine (hors unités pct/m3)", () => {
-    for (const [k, s] of neuf) if (k !== "unites") expect(catT("fr", k, s)).toBe(s);
+  it("le français ne bouge pas : en FR, catT rend la chaîne d'origine (hors unités pct/m3 et clés sans accents)", () => {
+    /* Seule exception : les clés restées sans accents (« Electricite ») s'affichent accentuées (catalog-fr.ts). */
+    for (const [k, s] of neuf) if (k !== "unites") expect(catT("fr", k, s)).toBe(FR_AFFICHAGE[k]?.[s] ?? s);
   });
 
   it("la rénovation aussi a toutes ses chaînes en anglais (N6), sans repli sur le français, tous types confondus", () => {
     /* Avant N6, 19 chaînes de la rénovation restaient sans anglais (liste figée ici : les traduire changeait
        l'écran anglais de la rénovation). N6 met le détaillé entièrement en anglais : la liste est vide, et
-       une chaîne ajoutée au catalogue sans sa traduction fait échouer ce test. Le français ne bouge pas. */
+       une chaîne ajoutée au catalogue sans sa traduction fait échouer ce test. Le français ne bouge pas,
+       hors clés restées sans accents (« Electricite »), affichées accentuées (catalog-fr.ts). */
     const sans = [...new Set(chaines(CATALOG).filter(([k, s]) => !aTraductionEN(k, s)).map(([k, s]) => `${k}:${s}`))];
     expect(sans).toEqual([]);
-    for (const [k, s] of chaines(CATALOG)) if (k !== "unites") expect(catT("fr", k, s)).toBe(s);
+    for (const [k, s] of chaines(CATALOG)) if (k !== "unites") expect(catT("fr", k, s)).toBe(FR_AFFICHAGE[k]?.[s] ?? s);
   });
 
   it("une ligne de devis avec sa variante se lit en anglais (catLigne), et rien ne change en FR", () => {

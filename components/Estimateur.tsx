@@ -387,7 +387,8 @@ export function DevisView({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Selection;
       titre: D.detailT, sous: D.detailSous,
       lignes: lignes.map((li) => ({
         cle: li.cle, nom: catLigne(locale, li.nom, li.cle),
-        q: li.unite === "forfait" ? "—" : D.qte(li.qty, locale === "en" ? catT(locale, "unites", li.unite) : li.unite, li.mode === "location"),
+        // Unité écrite (« m² », « m³ ») en français comme en anglais ; la clé reste « m2 ».
+        q: li.unite === "forfait" ? "—" : D.qte(li.qty, catT(locale, "unites", li.unite), li.mode === "location"),
         mode: li.mode === "location" ? "mL" : li.mode === "je-fais" ? "mS" : "mA",
         modeTxt: li.mode === "location" ? D.modes.location : li.mode === "je-fais" ? D.modes.jeFais : D.modes.faitFaire,
         m: fmt(li.ttc),

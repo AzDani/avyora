@@ -14,7 +14,7 @@ export const dynamic = "force-static";
 export const metadata: Metadata = {
   title: "Prix d'une rénovation par ville en France (2026)",
   description:
-    "Coût d'une rénovation au m² selon votre ville : Paris, Lyon, Marseille, Bordeaux… Prix par type de travaux et estimation gratuite en 3 minutes.",
+    "Coût d'une rénovation au m² selon votre ville : Paris, Lyon, Marseille, Bordeaux… Prix par type de travaux et estimation gratuite en 2 minutes.",
   alternates: { canonical: "/prix-renovation" },
 };
 

@@ -48,8 +48,8 @@ export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onM
   const puv = ep.fp != null || puEdited ? puReel(ctx, sel, l, t, false) : null;           // « Fait faire »
   const nTxt = dictNeufCommun(locale);
   const dl = dictDetail(locale), L = dl.ligne;
-  // Unité du prix unitaire : telle quelle en français (« /m2 »), écrite en anglais (« /m² », « /day »).
-  const unitPart = badge !== "pct" && t.u !== "forfait" && t.u !== "u" ? "/" + (locale === "en" ? catT(locale, "unites", t.u) : t.u) : "";
+  // Unité du prix unitaire : écrite en français (« /m² », « /m³ ») comme en anglais (« /m² », « /day ») ; la clé reste « m2 ».
+  const unitPart = badge !== "pct" && t.u !== "forfait" && t.u !== "u" ? "/" + catT(locale, "unites", t.u) : "";
   // Un frais (taxe, assurance) ne porte pas de TVA : pas de « HT ». N'existe qu'en neuf.
   const uSuffix = t.frais ? unitPart + " · " + nTxt.sansTva : " " + dl.liste.ht + unitPart;
   /* « Je le fais » proposé : la même règle par poste pour les deux natures (`peutFaireSoiMeme`), hors

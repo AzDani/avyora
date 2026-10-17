@@ -1566,7 +1566,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · Mon devis 1`] = `
 <div>
 <div class="phase-t">Études &amp; permis</div>
 <div class="devlot">
-<span>Etudes / Conception</span>
+<span>Études / Conception</span>
 <span class="track">
 <span class="fill" style="width:23.890218909150843%">
 </span>
@@ -1628,7 +1628,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · Mon devis 1`] = `
 <span class="v">9 348 €</span>
 </div>
 <div class="devlot">
-<span>Electricite</span>
+<span>Électricité</span>
 <span class="track">
 <span class="fill" style="width:1.466528289472626%">
 </span>
@@ -1658,7 +1658,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · Mon devis 1`] = `
 <span class="v">17 207 €</span>
 </div>
 <div class="devlot">
-<span>Menuiseries exterieures</span>
+<span>Menuiseries extérieures</span>
 <span class="track">
 <span class="fill" style="width:41.10418604888799%">
 </span>
@@ -1712,7 +1712,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · Mon devis 1`] = `
 <span class="v">21 807 €</span>
 </div>
 <div class="devlot">
-<span>Electricite</span>
+<span>Électricité</span>
 <span class="track">
 <span class="fill" style="width:34.62899057722459%">
 </span>
@@ -1736,7 +1736,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · Mon devis 1`] = `
 <span class="v">5 530 €</span>
 </div>
 <div class="devlot">
-<span>Cloisons / Platrerie</span>
+<span>Cloisons / Plâtrerie</span>
 <span class="track">
 <span class="fill" style="width:13.550733812910156%">
 </span>
@@ -1771,7 +1771,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · Mon devis 1`] = `
 <div>
 <div class="phase-t">Finitions &amp; équipements</div>
 <div class="devlot">
-<span>Menuiseries interieures</span>
+<span>Menuiseries intérieures</span>
 <span class="track">
 <span class="fill" style="width:21.18036438781101%">
 </span>
@@ -1795,7 +1795,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · Mon devis 1`] = `
 <span class="v">5 080 €</span>
 </div>
 <div class="devlot">
-<span>Carrelage / Revetements</span>
+<span>Carrelage / Revêtements</span>
 <span class="track">
 <span class="fill" style="width:10.898138351143452%">
 </span>
@@ -1846,7 +1846,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · Mon devis 1`] = `
 <span class="v">811 €</span>
 </div>
 <div class="devlot">
-<span>Electricite</span>
+<span>Électricité</span>
 <span class="track">
 <span class="fill" style="width:0.5534961608654749%">
 </span>
@@ -6637,7 +6637,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · Mon devis (maison, li
 <div>
 <div class="phase-t">Gros œuvre &amp; clos-couvert</div>
 <div class="devlot">
-<span>🪟 Menuiseries exterieures</span>
+<span>🪟 Menuiseries extérieures</span>
 <span class="track">
 <span class="fill" style="width:100%">
 </span>
@@ -6692,19 +6692,19 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · Mon devis (maison, li
 </div>
 <div class="dtl">
 <span>Chape traditionnelle</span>
-<span class="q">120 m2</span>
+<span class="q">120 m²</span>
 <span class="mode mA">fait faire</span>
 <span class="m">4 963 €</span>
 </div>
 <div class="dtl">
 <span>Chape liquide</span>
-<span class="q">42 m2</span>
+<span class="q">42 m²</span>
 <span class="mode mS">je fais</span>
 <span class="m">1 008 €</span>
 </div>
 <div class="dtl">
 <span>Monter un mur en parpaings</span>
-<span class="q">12 m2</span>
+<span class="q">12 m²</span>
 <span class="mode mA">fait faire</span>
 <span class="m">805 €</span>
 </div>
@@ -6740,7 +6740,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · Mon devis (maison, li
 </div>
 <div class="dtl">
 <span>Peinture des murs</span>
-<span class="q">300 m2</span>
+<span class="q">300 m²</span>
 <span class="mode mS">je fais</span>
 <span class="m">1 800 €</span>
 </div>
@@ -7060,7 +7060,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · appartement 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">📐</span>
-<span class="nm">Etudes / Conception</span>
+<span class="nm">Études / Conception</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>
@@ -7127,11 +7127,11 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · appartement 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Créer un plancher bois<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">86 € HT/m2</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">86 € HT/m²</span>
 </span>
 </span>
 <span class="tctl">
-<span class="unit">m2</span>
+<span class="unit">m²</span>
 </span>
 </div>
 <div class="trow">
@@ -7174,11 +7174,11 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · appartement 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Mur en ossature bois<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">87 € HT/m2</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">87 € HT/m²</span>
 </span>
 </span>
 <span class="tctl">
-<span class="unit">m2</span>
+<span class="unit">m²</span>
 </span>
 </div>
 <div class="clwrap">
@@ -7198,7 +7198,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · appartement 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">🪟</span>
-<span class="nm">Menuiseries exterieures</span>
+<span class="nm">Menuiseries extérieures</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>
@@ -7219,7 +7219,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · appartement 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">🧱</span>
-<span class="nm">Cloisons / Platrerie</span>
+<span class="nm">Cloisons / Plâtrerie</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>
@@ -7228,7 +7228,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · appartement 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">⚡</span>
-<span class="nm">Electricite</span>
+<span class="nm">Électricité</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>
@@ -7255,7 +7255,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · appartement 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">🎨</span>
-<span class="nm">Carrelage / Revetements</span>
+<span class="nm">Carrelage / Revêtements</span>
 <span class="cnt">1</span>
 <span class="amt num">2 340 € HT</span>
 <span class="car">›</span>
@@ -7273,7 +7273,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · appartement 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">🚪</span>
-<span class="nm">Menuiseries interieures</span>
+<span class="nm">Menuiseries intérieures</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>
@@ -7578,7 +7578,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">📐</span>
-<span class="nm">Etudes / Conception</span>
+<span class="nm">Études / Conception</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>
@@ -7900,23 +7900,23 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Couler une dalle béton<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">76 € HT/m2</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">76 € HT/m²</span>
 </span>
 </span>
 <span class="tctl">
-<span class="unit">m2</span>
+<span class="unit">m²</span>
 </span>
 </div>
 <div class="trow">
 <button class="cbx on" aria-label="Décocher">
 </button>
 <span class="tn">Chape traditionnelle<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">38 € HT/m2</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">38 € HT/m²</span>
 </span>
 </span>
 <span class="tctl">
 <span class="qauto num" title="calculé automatiquement depuis tes infos de départ">120</span>
-<span class="unit">m2</span>
+<span class="unit">m²</span>
 <span class="swiwrap">
 <button class="swi on" title="Auto = quantité calculée. Désactive pour saisir à la main.">
 <span class="knob">
@@ -7938,7 +7938,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx on" aria-label="Décocher">
 </button>
 <span class="tn">Chape liquide<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">44 € HT/m2</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">44 € HT/m²</span>
 </span>
 </span>
 <span class="tctl">
@@ -7947,7 +7947,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <input type="number" inputMode="decimal" min="0" step="1" value="42"/>
 <button type="button" aria-label="Augmenter">+</button>
 </span>
-<span class="unit">m2</span>
+<span class="unit">m²</span>
 <span class="swiwrap">
 <button class="swi" title="Auto = quantité calculée. Désactive pour saisir à la main.">
 <span class="knob">
@@ -7994,7 +7994,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx on" aria-label="Décocher">
 </button>
 <span class="tn">Monter un mur en parpaings<span class="pu edited">
-<span class="puval" title="Double-clique pour ajuster à ton prix">61 € HT/m2</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">61 € HT/m²</span>
 <span class="pubadge">perso</span>
 <button type="button" class="pureset" title="Rétablir le prix AVYORA par défaut">↺</button>
 </span>
@@ -8005,7 +8005,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <input type="number" inputMode="decimal" min="0" step="1" value="12"/>
 <button type="button" aria-label="Augmenter">+</button>
 </span>
-<span class="unit">m2</span>
+<span class="unit">m²</span>
 <span class="choice">
 <span class="ch onA edited" role="button" tabindex="0">Fait faire<b title="Double-clique pour mettre ton prix">61 €</b>
 <span class="chreset" role="button" title="Prix AVYORA par défaut">↺</span>
@@ -8021,23 +8021,23 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Monter un mur en brique<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">101 € HT/m2</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">101 € HT/m²</span>
 </span>
 </span>
 <span class="tctl">
-<span class="unit">m2</span>
+<span class="unit">m²</span>
 </span>
 </div>
 <div class="trow">
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Monter un mur en pierre<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">280 € HT/m2</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">280 € HT/m²</span>
 <span class="punote"> · moellons maçonnés au mortier</span>
 </span>
 </span>
 <span class="tctl">
-<span class="unit">m2</span>
+<span class="unit">m²</span>
 </span>
 </div>
 <div class="trow">
@@ -8066,11 +8066,11 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Plancher béton (étage créé)<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">134 € HT/m2</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">134 € HT/m²</span>
 </span>
 </span>
 <span class="tctl">
-<span class="unit">m2</span>
+<span class="unit">m²</span>
 </span>
 </div>
 <div class="clwrap">
@@ -8173,7 +8173,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <div class="acc open">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="true">
 <span class="ic" aria-hidden="true">🪟</span>
-<span class="nm">Menuiseries exterieures</span>
+<span class="nm">Menuiseries extérieures</span>
 <span class="cnt">3</span>
 <span class="amt num">11 040 € HT</span>
 <span class="car">›</span>
@@ -8427,7 +8427,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">🧱</span>
-<span class="nm">Cloisons / Platrerie</span>
+<span class="nm">Cloisons / Plâtrerie</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>
@@ -8436,7 +8436,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">⚡</span>
-<span class="nm">Electricite</span>
+<span class="nm">Électricité</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>
@@ -8455,12 +8455,12 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Refaire toute la plomberie (réseau, hors appareils)<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">68 € HT/m2</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">68 € HT/m²</span>
 <span class="punote"> · m² de maison</span>
 </span>
 </span>
 <span class="tctl">
-<span class="unit">m2</span>
+<span class="unit">m²</span>
 </span>
 </div>
 <div class="trow">
@@ -8750,7 +8750,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">🎨</span>
-<span class="nm">Carrelage / Revetements</span>
+<span class="nm">Carrelage / Revêtements</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>
@@ -8768,7 +8768,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">🚪</span>
-<span class="nm">Menuiseries interieures</span>
+<span class="nm">Menuiseries intérieures</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>
@@ -9070,7 +9070,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · page vierge 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">📐</span>
-<span class="nm">Etudes / Conception</span>
+<span class="nm">Études / Conception</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>
@@ -9145,7 +9145,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · page vierge 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">🪟</span>
-<span class="nm">Menuiseries exterieures</span>
+<span class="nm">Menuiseries extérieures</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>
@@ -9166,7 +9166,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · page vierge 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">🧱</span>
-<span class="nm">Cloisons / Platrerie</span>
+<span class="nm">Cloisons / Plâtrerie</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>
@@ -9175,7 +9175,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · page vierge 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">⚡</span>
-<span class="nm">Electricite</span>
+<span class="nm">Électricité</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>
@@ -9202,7 +9202,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · page vierge 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">🎨</span>
-<span class="nm">Carrelage / Revetements</span>
+<span class="nm">Carrelage / Revêtements</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>
@@ -9220,7 +9220,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · page vierge 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">🚪</span>
-<span class="nm">Menuiseries interieures</span>
+<span class="nm">Menuiseries intérieures</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>
@@ -9498,7 +9498,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · pieces 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">🧱</span>
-<span class="nm">Cloisons / Platrerie</span>
+<span class="nm">Cloisons / Plâtrerie</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>
@@ -9507,7 +9507,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · pieces 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">⚡</span>
-<span class="nm">Electricite</span>
+<span class="nm">Électricité</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>
@@ -9534,7 +9534,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · pieces 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">🎨</span>
-<span class="nm">Carrelage / Revetements</span>
+<span class="nm">Carrelage / Revêtements</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>
@@ -9552,7 +9552,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · pieces 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">🚪</span>
-<span class="nm">Menuiseries interieures</span>
+<span class="nm">Menuiseries intérieures</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>
@@ -9800,7 +9800,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · suite 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">🧱</span>
-<span class="nm">Cloisons / Platrerie</span>
+<span class="nm">Cloisons / Plâtrerie</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>
@@ -9809,7 +9809,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · suite 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">⚡</span>
-<span class="nm">Electricite</span>
+<span class="nm">Électricité</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>
@@ -9828,12 +9828,12 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · suite 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Refaire toute la plomberie (réseau, hors appareils)<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">60 € HT/m2</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">60 € HT/m²</span>
 <span class="punote"> · m² de maison</span>
 </span>
 </span>
 <span class="tctl">
-<span class="unit">m2</span>
+<span class="unit">m²</span>
 </span>
 </div>
 <div class="trow">
@@ -10080,7 +10080,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · suite 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">🎨</span>
-<span class="nm">Carrelage / Revetements</span>
+<span class="nm">Carrelage / Revêtements</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>
@@ -10098,7 +10098,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · suite 1`] = `
 <div class="acc">
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">🚪</span>
-<span class="nm">Menuiseries interieures</span>
+<span class="nm">Menuiseries intérieures</span>
 <span class="amt num">
 </span>
 <span class="car">›</span>

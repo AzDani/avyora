@@ -6,6 +6,7 @@ import { VILLES_SEO } from "@/lib/villes";
 import { PRIX_MAJ, PRIX_MAJ_FR } from "@/lib/prix-maj";
 import { prixNational, estim, posteRef, partMainOeuvreParLot, postesSansFourniture, catalogueStats } from "@/lib/seo-prix";
 import { autoQty, defaultCtx, type Ctx } from "@/lib/estimateur";
+import { catT } from "@/lib/estimateur/catalog-i18n";
 import { og } from "@/lib/seo-og";
 import { CtaEstimation } from "@/components/CtaEstimation";
 
@@ -172,7 +173,7 @@ function faqAppartement() {
     },
     {
       q: "Comment avoir un chiffre précis pour mon appartement ?",
-      a: "Utilise l'estimateur AVYORA : en 3 minutes, tu obtiens une fourchette chiffrée adaptée à ta surface, tes travaux et ton code postal.",
+      a: "Utilise l'estimateur AVYORA : en 2 minutes, tu obtiens une fourchette chiffrée adaptée à ta surface, tes travaux et ton code postal.",
     },
   ];
 }
@@ -201,7 +202,7 @@ function faqMaison() {
     },
     {
       q: "Comment obtenir un chiffre précis pour ma maison ?",
-      a: "L'estimateur AVYORA calcule une fourchette adaptée à ta surface, ton type de travaux et ton code postal en 3 minutes.",
+      a: "L'estimateur AVYORA calcule une fourchette adaptée à ta surface, ton type de travaux et ton code postal en 2 minutes.",
     },
   ];
 }
@@ -349,7 +350,7 @@ function BodyAppartement() {
         complète rejouée sur la surface et l&apos;ampleur de sa ligne.
       </p>
 
-      <Cta label="Estime ton appartement en 3 minutes" />
+      <Cta label="Estime ton appartement en 2 minutes" />
 
       <h2>Ce qui est inclus selon l&apos;ampleur</h2>
       <ul>
@@ -452,7 +453,7 @@ function BodyMaison() {
         surface et l&apos;ampleur de sa ligne.
       </p>
 
-      <Cta label="Estime ta maison en 3 minutes" />
+      <Cta label="Estime ta maison en 2 minutes" />
 
       <h2>Les postes spécifiques à la maison</h2>
       <p>Ce sont eux qui creusent l&apos;écart avec l&apos;appartement, surtout en rénovation lourde :</p>
@@ -655,7 +656,7 @@ function BodyDevis() {
         <tbody>
           {reperes.map((r) => (
             <tr key={r.nom}>
-              <td>{r.nom}<br /><span className="note">{r.lot}</span></td>
+              <td>{r.nom}<br /><span className="note">{catT("fr", "corps", r.lot)}</span></td>
               <td className="num">{euro(r.fp)} / {r.unite === "m2" ? "m²" : r.unite}</td>
               <td className="num">{r.sm != null ? `${euro(r.sm)} / ${r.unite === "m2" ? "m²" : r.unite}` : "—"}</td>
             </tr>
@@ -759,7 +760,7 @@ function BodyDIY() {
           <tbody>
             {parLot.map((l) => (
               <tr key={l.lot}>
-                <td>{l.lot}</td>
+                <td>{catT("fr", "corps", l.lot)}</td>
                 <td className="num">{l.partMO} %</td>
                 <td className="num">{l.avecFourniture} / {l.postes}</td>
               </tr>
@@ -774,7 +775,7 @@ function BodyDIY() {
 
       <h2>Les postes où faire soi-même rapporte le plus</h2>
       <p>
-        En tête : {top.map((l, i) => <span key={l.lot}>{i > 0 ? ", " : ""}<strong>{l.lot.toLowerCase()}</strong> ({l.partMO} %)</span>)}.
+        En tête : {top.map((l, i) => <span key={l.lot}>{i > 0 ? ", " : ""}<strong>{catT("fr", "corps", l.lot).toLowerCase()}</strong> ({l.partMO} %)</span>)}.
         Ce sont des travaux à faible technicité et à forte intensité de temps — exactement ce
         qu&apos;un particulier motivé peut absorber.
       </p>
@@ -788,7 +789,7 @@ function BodyDIY() {
 
       <h2>Ceux où ça ne rapporte presque rien</h2>
       <p>
-        À l&apos;autre bout : {bas.map((l, i) => <span key={l.lot}>{i > 0 ? ", " : ""}<strong>{l.lot.toLowerCase()}</strong> ({l.partMO} %)</span>)}.
+        À l&apos;autre bout : {bas.map((l, i) => <span key={l.lot}>{i > 0 ? ", " : ""}<strong>{catT("fr", "corps", l.lot).toLowerCase()}</strong> ({l.partMO} %)</span>)}.
         Ici le prix est dominé par le produit, pas par la pose.
         {cuisine && <> Une cuisine complète est chiffrée <strong>{cuisine.fp} €/ml</strong> posée contre <strong>{cuisine.sm} €/ml</strong> de meubles : monter soi-même ne déplace qu&apos;une petite part du total.</>}
       </p>
@@ -834,7 +835,7 @@ function BodyDIY() {
       </p>
       <p className="note">
         Lots sans prix fourniture dans le référentiel, donc non basculables en « je le fais » :{" "}
-        {lotsSansF.join(", ")}. Détail poste par poste : <Link href="/prix-poste">prix par corps d&apos;état</Link>.
+        {lotsSansF.map((l) => catT("fr", "corps", l)).join(", ")}. Détail poste par poste : <Link href="/prix-poste">prix par corps d&apos;état</Link>.
       </p>
 
       <h2>Ce que l&apos;économie annoncée oublie</h2>
@@ -882,11 +883,11 @@ function faqDIY() {
   const parLot = partMainOeuvreParLot();
   const meilleur = parLot[0], pire = parLot[parLot.length - 1];
   return [
-    { q: "Combien économise-t-on en faisant ses travaux soi-même ?", a: `Cela dépend entièrement du poste. Sur le référentiel AVYORA, la part de main-d'œuvre va d'environ ${pire.partMO} % (${pire.lot.toLowerCase()}) à ${meilleur.partMO} % (${meilleur.lot.toLowerCase()}). Un pourcentage unique d'économie n'a donc aucun sens : il faut raisonner poste par poste.` },
+    { q: "Combien économise-t-on en faisant ses travaux soi-même ?", a: `Cela dépend entièrement du poste. Sur le référentiel AVYORA, la part de main-d'œuvre va d'environ ${pire.partMO} % (${catT("fr", "corps", pire.lot).toLowerCase()}) à ${meilleur.partMO} % (${catT("fr", "corps", meilleur.lot).toLowerCase()}). Un pourcentage unique d'économie n'a donc aucun sens : il faut raisonner poste par poste.` },
     { q: "Quels travaux peut-on faire soi-même sans risque ?", a: "La peinture, la pose de sols souples ou stratifiés, la dépose et le curage sont accessibles à un particulier soigneux. L'électricité, le gaz, la structure porteuse et la charpente restent possibles, mais ils engagent la sécurité et la conformité : un poste fait soi-même sort de la garantie décennale, une étude est conseillée pour la structure, et une installation électrique ou de gaz doit être conforme. L'amiante et le plomb relèvent d'entreprises certifiées." },
     { q: "Paie-t-on plus de TVA quand on achète les matériaux soi-même ?", a: "Oui, et c'est le coût caché le plus souvent oublié. Les travaux facturés par un artisan en rénovation relèvent d'un taux réduit, tandis que les matériaux achetés directement par un particulier sont à 20 %. Une partie de l'économie de main-d'œuvre est donc reprise par l'écart de TVA." },
     { q: "Un travail fait soi-même est-il couvert par la garantie décennale ?", a: "Non. La garantie décennale couvre l'entreprise qui a réalisé l'ouvrage : un poste que vous réalisez vous-même n'est couvert par personne. En cas de sinistre lié à ce poste, vous en répondez seul. Vérifiez votre situation auprès de votre assureur avant de commencer." },
-    { q: "Sur quels postes faire soi-même rapporte-t-il le moins ?", a: `Sur ceux où le prix est dominé par le produit et non par la pose : ${parLot.slice(-3).map((l) => l.lot.toLowerCase()).join(", ")}. Plus un poste est cher à l'achat, moins le faire soi-même déplace le total.` },
+    { q: "Sur quels postes faire soi-même rapporte-t-il le moins ?", a: `Sur ceux où le prix est dominé par le produit et non par la pose : ${parLot.slice(-3).map((l) => catT("fr", "corps", l.lot).toLowerCase()).join(", ")}. Plus un poste est cher à l'achat, moins le faire soi-même déplace le total.` },
     { q: "Combien de postes du référentiel peut-on basculer en « je le fais » ?", a: `${s.avecFourniture} sur ${s.postes} (${s.pctAvec} %) portent un prix fourniture seule et peuvent donc être arbitrés. Les ${s.sansFourniture} autres sont des prestations pures — études, diagnostics, démarches, raccordements — où il n'y a rien à acheter.` },
   ];
 }

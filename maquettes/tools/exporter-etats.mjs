@@ -7,7 +7,7 @@
  *
  * Sept états : les quatre plans types (en rénovation), l'exemple, le Plan final sur deux niveaux
  * (la scène de référence partagée) et le pire cas plausible mesuré pour dimensionner la base
- * (6 niveaux, chacun trois maisons accolées : environ 168 Ko).
+ * (6 niveaux, chacun trois maisons accolées : environ 234 Ko depuis la Maison à couloir du 16/10/2026, 168 Ko avant).
  *
  * Sans dossier de sortie (la batterie lance chaque outil avec le seul dossier des maquettes), il
  * ne fait rien et sort en 0.

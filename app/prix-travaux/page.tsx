@@ -169,7 +169,7 @@ export default function PrixTravauxHub() {
       <CtaEstimation
         src="hub"
         titre="Ton projet n&apos;est pas dans la liste ?"
-        sousTitre="L&apos;estimateur AVYORA chiffre n&apos;importe quel projet, pièce par pièce, en 3 minutes — gratuit."
+        sousTitre="L&apos;estimateur AVYORA chiffre n&apos;importe quel projet, pièce par pièce, en 2 minutes — gratuit."
       />
 
       <h2>Quels travaux sont surtout de la main-d&apos;œuvre ?</h2>

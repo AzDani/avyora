@@ -5,6 +5,14 @@
  * JSON compact : une espace après « : » et « , », des nombres sans exposant. Les valeurs attendues
  * ci-dessous ont été relevées sur un vrai Postgres 16 (PGlite) par `scratchpad/plans/c1-pg/tailles.mts`,
  * qui compare aussi chaque état réel et vérifie qu'un état accepté par zod passe le CHECK.
+ *
+ * 16/10/2026 · le plan type « Maison » a été refait (D78 : un couloir dessert les chambres). Ce qui en dérive (maison,
+ * pire-cas, plan-final-etage, plan-final-contrat) a été régénéré, et ces quatre fichiers n'ont pas encore été relevés
+ * sur Postgres : ils vont dans CALCULEES (valeurs rendues par octetsJsonb : elles figent la taille, elles ne prouvent
+ * rien sur la fonction ; à relever par tailles.mts avant fusion). Leurs versions d'avant, celles que Postgres a
+ * mesurées, sont gardées telles quelles dans `fixtures/plans-jsonb/*-avant-couloir.json` : elles restent des lignes
+ * du tableau POSTGRES (dont le grand échantillon de 197 Ko), la base du rapport compact / jsonb et celle du test de
+ * limite exacte, avec les chiffres relevés.
  */
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
@@ -31,14 +39,22 @@ const POSTGRES: Array<[string, unknown, number]> = [
   ["clés", { "é": 1, "a\"b": 2, "\n": 3, "": 4, "😀": [] }, 48],
   ["imbrication", { a: { b: { c: [[[{}]]] } } }, 29],
   ["état exemple.json", fixture("plans-etats/exemple.json"), 9467],
-  ["état maison.json", fixture("plans-etats/maison.json"), 10645],
-  ["état pire-cas.json", fixture("plans-etats/pire-cas.json"), 196669],
-  ["état plan-final-etage.json", fixture("plans-etats/plan-final-etage.json"), 13320],
+  ["état maison-avant-couloir.json (la Maison d'avant le 16/10/2026, figée)", fixture("plans-jsonb/maison-avant-couloir.json"), 10645],
+  ["état pire-cas-avant-couloir.json (figé)", fixture("plans-jsonb/pire-cas-avant-couloir.json"), 196669],
+  ["état plan-final-etage-avant-couloir.json (figé)", fixture("plans-jsonb/plan-final-etage-avant-couloir.json"), 13320],
   ["état studio.json", fixture("plans-etats/studio.json"), 4810],
   ["état t2.json", fixture("plans-etats/t2.json"), 8254],
   ["état t3.json", fixture("plans-etats/t3.json"), 8781],
   ["contrat plan-contrat.json", fixture("plan-contrat.json"), 21031],
-  ["contrat plan-final-contrat.json", fixture("plan-final-contrat.json"), 28600],
+  ["contrat plan-final-contrat-avant-couloir.json (figé)", fixture("plans-jsonb/plan-final-contrat-avant-couloir.json"), 28600],
+];
+
+/* Les états issus de la Maison du 16/10/2026 : CALCULÉS par octetsJsonb (pas encore relevés sur Postgres). */
+const CALCULEES: Array<[string, unknown, number]> = [
+  ["état maison.json", fixture("plans-etats/maison.json"), 14695],
+  ["état pire-cas.json", fixture("plans-etats/pire-cas.json"), 271392],
+  ["état plan-final-etage.json", fixture("plans-etats/plan-final-etage.json"), 17408],
+  ["contrat plan-final-contrat.json", fixture("plan-final-contrat.json"), 38565],
 ];
 
 describe("octetsJsonb = octet_length(valeur::jsonb::text)", () => {
@@ -46,8 +62,12 @@ describe("octetsJsonb = octet_length(valeur::jsonb::text)", () => {
     expect(octetsJsonb(v)).toBe(attendu);
   });
 
+  it.each(CALCULEES)("%s (taille calculée, à relever sur Postgres)", (_nom, v, attendu) => {
+    expect(octetsJsonb(v)).toBe(attendu);
+  });
+
   it("le JSON compact sous-estime : +17 % sur un plan réel", () => {
-    const e = fixture("plans-etats/pire-cas.json");
+    const e = fixture("plans-jsonb/pire-cas-avant-couloir.json"); /* le grand échantillon mesuré par Postgres */
     const compact = Buffer.byteLength(JSON.stringify(e));
     expect(octetsJsonb(e) / compact).toBeGreaterThan(1.15);
   });
@@ -73,7 +93,7 @@ describe("octetsJsonb = octet_length(valeur::jsonb::text)", () => {
 
 describe("un état accepté par zod n'est jamais refusé par le CHECK", () => {
   /* Le bruit de la géométrie : 21 octets en JSON compact, 32 dans Postgres. */
-  const base = fixture("plans-etats/maison.json") as Record<string, unknown>;
+  const base = fixture("plans-jsonb/maison-avant-couloir.json") as Record<string, unknown>; /* la Maison mesurée par Postgres */
   const avec = (n: number) => ({ ...base, bruit: Array.from({ length: n }, () => 3.552713678800501e-15) });
 
   it("à la limite exacte de Postgres : accepté ; un nombre de plus : refusé", () => {

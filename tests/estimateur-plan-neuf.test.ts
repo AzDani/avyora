@@ -67,12 +67,14 @@ describe("C7 · fixtures Plan final réelles", () => {
 describe("C7 · maisonDepuisPlan", () => {
   /* N8 (adapté volontairement) : le plan donne les huit compteurs de la rénovation, zéros compris, une
      suite reste une suite (avant : fondue dans les chambres et les salles de bain), les menuiseries
-     dessinées et l'emprise mesurée du rez-de-chaussée, garage retiré. */
-  it("Maison 94 → plain-pied rectangle 94 m², séjour, cuisine, 3 chambres, 1 SDB, 1 WC, buanderie, 8 menuiseries ; le moteur la chiffre", () => {
+     dessinées et l'emprise mesurée du rez-de-chaussée, garage retiré. Depuis D78 (17/10/2026), le plan type
+     « Maison · 94 m² » a un couloir et dix ouvertures (5 fenêtres, 3 petites fenêtres, 1 porte-fenêtre,
+     1 baie), même emprise : ses compteurs suivent la nouvelle géométrie. */
+  it("Maison 94 → plain-pied rectangle 94 m², séjour, cuisine, 3 chambres, 1 SDB, 1 WC, couloir, buanderie, 10 menuiseries ; le moteur la chiffre", () => {
     const m = maison(MAISON94);
     expect(m.maison).toEqual({
       surface: 94, niveaux: "pp", forme: "rect", garage: 0,
-      sejour: 1, cuisines: 1, chambres: 3, suites: 0, sdb: 1, wc: 1, couloir: 0, buanderie: 1, menuiseries: 8, emprise: 104.1,
+      sejour: 1, cuisines: 1, chambres: 3, suites: 0, sdb: 1, wc: 1, couloir: 1, buanderie: 1, menuiseries: 10, emprise: 104.1,
     });
     expect(m.repris).toEqual(["surface", "niveaux", "forme", "garage", "sejour", "cuisines", "chambres", "suites", "sdb", "wc", "couloir", "buanderie", "menuiseries", "emprise"]);
     expect(m.finition).toBe("standard");
@@ -85,7 +87,7 @@ describe("C7 · maisonDepuisPlan", () => {
     const m = maison(ETAGE);
     expect(m.maison).toEqual({
       surface: 185, niveaux: "etage", forme: "L", garage: 34,
-      sejour: 1, cuisines: 1, chambres: 4, suites: 1, sdb: 1, wc: 2, couloir: 1, buanderie: 1, menuiseries: 8,
+      sejour: 1, cuisines: 1, chambres: 4, suites: 1, sdb: 1, wc: 2, couloir: 2, buanderie: 1, menuiseries: 10,
       emprise: 104.1, escalier: "beton",
     });
     expect(m.repris).toContain("escalier");
@@ -202,12 +204,12 @@ describe("C7 · maisonDepuisPlan", () => {
   });
 
   it("N8 · menuiseries : les fenêtres, portes-fenêtres et baies dessinées, ni la porte d'entrée ni celle du garage ; aucune → déduites", () => {
-    expect(maison(MAISON94).maison.menuiseries).toBe(8);
+    expect(maison(MAISON94).maison.menuiseries).toBe(10);  // D78 : 5 fenêtres, 3 petites, 1 porte-fenêtre, 1 baie
     const c = copie(MAISON94);
     c.detailNiveaux[0].menuiseries.push({ type: "fenetre", l: 1, h: 1.2 }, { type: "porte_entree", l: 1, h: 2.15 }, { type: "garage", l: 2.4, h: 2 });
-    expect(maison(c).maison.menuiseries).toBe(9);
+    expect(maison(c).maison.menuiseries).toBe(11);
     const g = geometrieNeuf(maisonComplete(maison(c).maison));
-    expect(g.nFen + g.nPF + g.nBaie).toBe(9);
+    expect(g.nFen + g.nPF + g.nBaie).toBe(11);
     const sans = copie(MAISON94);
     sans.detailNiveaux[0].menuiseries = [];
     expect(maison(sans).maison.menuiseries).toBeUndefined();

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { POSTES_PAGES } from "@/lib/seo-postes";
 import { partMainOeuvreParLot, catalogueStats } from "@/lib/seo-prix";
 import { PRIX_MAJ_FR } from "@/lib/prix-maj";
+import { catT } from "@/lib/estimateur/catalog-i18n";
 
 export const dynamic = "force-static";
 
@@ -100,7 +101,7 @@ export default function PrixPosteHub() {
               const page = POSTES_PAGES.find((p) => p.lot === l.lot);
               return (
                 <tr key={l.lot}>
-                  <td>{l.lot}</td>
+                  <td>{catT("fr", "corps", l.lot)}</td>
                   <td className="num">{l.partMO} %</td>
                   <td>{page ? <Link href={`/prix-poste/${page.slug}`}>voir</Link> : <span className="soon">—</span>}</td>
                 </tr>
