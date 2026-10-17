@@ -5241,3 +5241,52 @@ et filtre désormais aussi les clés (liste fermée) et les valeurs texte (codes
 drapeau puis « Ajouter à mon compte » → deux `plan_enregistre_compte {source: reclamation}` sans nom ; plan rangé
 d'office → `{source: editeur}`. Le contrôle « aucun autre outil n'injecte AVYORA_SITE » cherche une affectation :
 `captures-site.mjs` (C9) le lit seulement.
+
+## D78 · La Maison 94 m² refaite : un couloir dessert les chambres (16-17/10/2026)
+
+**Contexte.** Signalé par Dani : la distribution du plan type « Maison · 94 m² » est illogique. Diagnostic : aucun
+couloir. La Chambre 1 ne s'atteignait qu'en traversant la Chambre 3, la Chambre 2 s'ouvrait dans la salle de bain, et
+le WC ne s'atteignait que par la salle de bain. Un plan type est un logement à adapter (D50) : il doit être juste
+d'emblée.
+
+**Décision.** Même emprise (12,5 × 8 m sur axes, plain-pied, murs de 20 cm), nouvelle distribution dans
+`TEMPLATES` (id `maison`) :
+- la porte d'entrée donne sur un hall ouvert sur le séjour-cuisine (compté dans le Séjour, avec un placard d'entrée) ;
+  au fond du hall, une porte ferme la zone nuit ;
+- un couloir (0,98 m libres, 4,4 m²) dessert les trois chambres (11,1 à 12,1 m²), la salle de bain (6,4 m², baignoire
+  de 180, double vasque) et le WC (2,2 m², lave-mains, porte de 73 cm) ; la buanderie (2,5 m²) s'ouvre sur la cuisine,
+  sa porte ouvre côté cuisine ;
+- aucune pièce ne se traverse, le WC n'ouvre ni sur le séjour ni sur la cuisine ;
+- cuisine linéaire contre la façade nord, sans îlot (l'îlot de l'éditeur porte toujours une plaque) : plan de travail
+  avec la plaque, 1,16 m de préparation, évier sous la fenêtre (allège 1,10 m, robinet au droit du meneau),
+  lave-vaisselle, réfrigérateur en bout ; le poêle reste au carrefour hall / cuisine, décollé de la cloison, avec
+  1,20 m de passage devant lui (pare-feu à prévoir) ;
+- 93,7 m² habitables : le nom « Maison · 94 m² » et `m2:94` restent vrais à l'arrondi ;
+- ZÉRO point au contrôle (D50) : en Plan final, et en Rénovation seulement « Toiture non décrite », gardé exprès ;
+  aucune porte qui balaie un meuble ou une autre porte, aucune fenêtre qui bute sur un meuble plus haut que son allège,
+  le tableau électrique hors du débattement de la porte d'entrée, interrupteurs côté poignée et à 10 cm au moins des
+  huisseries, prises au minimum de la NF C 15-100 (3 par chambre, 6 en cuisine, 7 socles au séjour, 1 au couloir).
+- `der(k)`, locale au modèle : la dernière ouverture ou le dernier équipement posé, pour en régler une cote (hauteur et
+  allège d'une fenêtre, longueur du plan, largeur d'une porte, taille du lave-mains). La vignette de la galerie appelle
+  `build` avec `O` et `I` muets : `der` rend alors `{}`, et rien ne plante.
+
+**Fichiers régénérés.** États `maison`, `pire-cas` (234 Ko compacts) et `plan-final-etage` (`exporter-etats.mjs`),
+contrats `plan-final-contrat` et `plan-final-etage-contrat` (`fixture-contrat.mjs --final`). T2, studio, T3 et
+l'exemple ne bougent pas. Les versions d'avant, celles que Postgres a mesurées, sont figées dans
+`tests/fixtures/plans-jsonb/*-avant-couloir.json` : elles gardent leurs lignes du tableau POSTGRES de
+`tests/plans-jsonb.test.ts` (10 645, 196 669, 13 320 et 28 600 octets) et portent le test de limite exacte. Les
+tailles des nouvelles sont calculées par `octetsJsonb` (tableau CALCULEES), à relever sur Postgres avant fusion.
+
+**Captures du site refaites.** `public/plans` (accueil, vitrine `/logiciel-plan-maison`, image de partage) montrait
+l'ancienne Maison. Refaites par `captures-site.mjs` sur le site construit dans ce dossier (`next build --webpack` : le
+`node_modules` en lien symbolique arrête Turbopack ; Supabase factice, que `/plan` n'interroge pas pour un visiteur
+anonyme) : l'éditeur tel qu'un visiteur le voit pendant la bêta, « Compte gratuit » à la place de « Passer Pro ».
+`heberge.mjs` sur ce site : 39/39 hors bêta ; pendant la bêta, 7 contrôles écrits avant la bêta (B1) attendent
+encore « Passer Pro » et /tarifs, sans rapport avec la Maison.
+
+**Questions laissées à Dani.** La cuisine sans îlot ; le placard d'entrée ; le WC tel quel (au fond du couloir, en
+longueur, cuvette dans l'axe de la porte, lave-mains près de la porte).
+
+**Contrôles.** Syntaxe, `review`, `jonctions`, `contrat`, puis la batterie complète, outil par outil, un seul Chrome à
+la fois : mêmes nombres de ✓ qu'avant, aucun KO. `metier.mjs` rejoue ses tests sur les nouvelles cloisons (D53, D54).
+`vitest` et `tsc` passent.

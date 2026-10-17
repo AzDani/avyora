@@ -474,7 +474,7 @@ describe("POST /api/plans", () => {
     expect(S.appels.filter((x) => x.op === "rpc")).toEqual([]);
   });
 
-  it("le pire cas mesuré (168 Ko) passe", async () => {
+  it("le pire cas mesuré (234 Ko) passe", async () => {
     const r = await routes();
     S.user = PRO;
     expect((await r.liste.POST(creer({}, fixture("plans-etats/pire-cas.json")))).status).toBe(201);

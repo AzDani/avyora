@@ -4,8 +4,9 @@
  * Les états acceptés sont des états RÉELS de l'éditeur, exportés par
  * `node maquettes/tools/exporter-etats.mjs "$(pwd)/maquettes" tests/fixtures/plans-etats` :
  * les quatre plans types, l'exemple, le Plan final sur deux niveaux et le pire cas mesuré
- * (6 niveaux, 216 murs, 168 Ko compacts, 197 Ko dans Postgres). Les refus visent ce qui finirait en
- * HTML ou en attribut. Les tailles mesurées comme Postgres : tests/plans-jsonb.test.ts.
+ * (6 niveaux, 252 murs, 234 Ko compacts, 271 Ko dans Postgres d'après octetsJsonb ; régénéré avec la Maison à
+ * couloir du 16/10/2026 ; la version d'avant, 197 Ko relevés sur Postgres, est figée dans fixtures/plans-jsonb).
+ * Les refus visent ce qui finirait en HTML ou en attribut. Les tailles mesurées comme Postgres : tests/plans-jsonb.test.ts.
  */
 import { describe, it, expect } from "vitest";
 import { readdirSync, readFileSync } from "node:fs";

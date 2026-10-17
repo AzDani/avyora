@@ -8298,7 +8298,7 @@ function couperMurA(w,t,pt){const m=pt?{...pt}:add(w.a,mul(sub(w.b,w.a),t));
   (state.groups||[]).forEach(g=>{if(g.wallIds.includes(w.id)&&!g.wallIds.includes(w2.id))g.wallIds.push(w2.id);});
   L().openings.forEach(o=>{if(o.wallId===w.id){if(o.t>t){o.wallId=w2.id;o.t=(o.t-t)/(1-t);}else o.t=o.t/t;}});L().walls.push(w2);return w2;}
 /* D53 (jury final, pro) · « À démolir » sur un mur que d'autres murs touchent entre ses bouts
-   abattait TOUTE sa longueur : sur la Maison, la cloison Chambre 2 / Cuisine (4 m) emportait aussi
+   abattait TOUTE sa longueur : sur l'ancienne Maison (avant le 16/10/2026), la cloison Chambre 2 / Cuisine (4 m) emportait aussi
    celles de la Salle de bain et de la Buanderie (8 m, 3 portes), cinq pièces fondues en une, trois
    extrémités de mur en l'air. Un mur se lit désormais en TRONÇONS, d'une jonction à l'autre, et le
    geste ne vise que le tronçon de la pièce visée : l'endroit cliqué, sinon la pièce choisie juste
@@ -8330,7 +8330,7 @@ function tronconsHTML(w){if(isMobile()||mode()==='final'||!w||isVirtual(w)||wst(
   return `<div class="troncons" style="margin-top:10px"><div style="display:flex;align-items:center;gap:2px;margin-bottom:5px"><label for="tronconSel" style="font-size:12px;font-weight:600;color:var(--muted)">« ${LEX.etat.demolir} » vise</label>${gl('troncon')}</div><select id="tronconSel" class="fin" style="width:100%;max-width:100%" onchange="viserTroncon(this.value)">${opts}<option value="tout"${tv?'':' selected'}>Tout le mur · ${fmt(Lw)} m</option></select></div>`;}
 /* Une séparation (ligne de zone, sans mur) qui s'appuyait au milieu du tronçon démoli garde ses zones : la
    part du tronçon qui ne fait pas face à la pièce visée devient, après travaux seulement, le prolongement
-   de cette séparation (sur la Maison, Cuisine / Séjour s'arrête à 3,50 m sur la cloison de 4 m de la
+   de cette séparation (sur l'ancienne Maison, avant le 16/10/2026, Cuisine / Séjour s'arrête à 3,50 m sur la cloison de 4 m de la
    Chambre 2). Sans elle, son bout restait en l'air et le Séjour disparaissait dans la pièce ouverte.
    Une séparation ne se chiffre pas. `tc` : l'endroit visé sur c (0 à 1), sinon `piece`, sinon la plus
    longue part. Rend la part ouverte {t0, t1} de c. */
@@ -9344,21 +9344,26 @@ const TEMPLATES=[
      I('prise',0.8,0.13,0);I('prise',2.7,0.13,0);I('interrupteur',3.37,1.0,H/2);I('prise',0.8,3.63,0);I('prise',2.7,3.63,0);I('interrupteur',3.37,5.5,H/2);I('prise2',9.87,1.0,H/2);I('prise2',9.87,2.4,H/2);I('prise',5.5,6.87,H);I('interrupteur',8.9,6.87,H);I('prise',9.87,4.9,H/2);I('interrupteur',5.0,4.73,0);
      [[1.75,2.4],[1.75,5.9],[4.85,5.8],[6.75,5.8],[6.5,3.2],[8.75,1.5],[8.6,5.8]].forEach(([x,y])=>I('lumiere',x,y,0));
      return [[0,0,3.5,3.5,'chambre','Parquet'],[0,3.5,3.5,7,'chambre','Parquet'],[3.5,4.6,6.2,7,'sdb','Carrelage'],[6.2,4.6,7.3,7,'wc','Carrelage'],[7.5,0,10,3,'cuisine','Carrelage'],[7.3,4.6,10,7,'entree','Carrelage'],[3.5,0,7.5,4.6,'sejour','Parquet']];}},
-  {id:'maison',bien:'maison',name:'Maison · 94 m²',desc:'Plain-pied 3 chambres, grand séjour-cuisine, salle de bain, WC, buanderie. Murs parpaing 20 cm.',m2:94,
-   build(lv,W,O,I){const H=Math.PI;
+  {id:'maison',bien:'maison',name:'Maison · 94 m²',desc:'Plain-pied 3 chambres desservies par un couloir, grand séjour-cuisine, salle de bain, WC avec lave-mains, buanderie. Murs parpaing 20 cm.',m2:94,
+   build(lv,W,O,I){const H=Math.PI,der=k=>lv[k][lv[k].length-1]||{}; /* der : la dernière ouverture ou le dernier équipement posé, pour en régler une cote (la vignette appelle build avec O et I muets) */
+     /* D78 · 16/10/2026 (signalé par Dani : distribution illogique ; diagnostic : aucun couloir) · L'ancienne Maison n'avait aucun couloir : une chambre ne s'atteignait qu'en traversant une autre, une autre s'ouvrait dans la salle de bain, le WC ne s'atteignait que par la salle de bain. Refaite sur la même emprise (12,5 × 8 m, murs de 20 cm) : la porte d'entrée donne sur un hall ouvert sur le séjour-cuisine (compté dans le Séjour) ; au fond du hall, une porte ferme la zone nuit et ouvre sur le couloir (0,98 m libres) qui dessert les trois chambres, la salle de bain et le WC ; la buanderie s'ouvre sur la cuisine. Aucune pièce ne se traverse, le WC n'ouvre ni sur le séjour ni sur la cuisine. 93,7 m² habitables (« 94 m² » à l'arrondi), et toujours ZÉRO point au contrôle (D50) : portes, meubles, interrupteurs côté poignée replacés pour que rien ne tape. 17/10/2026 (deux revues d'architecte) : cuisine linéaire d'ouest en est, plan avec la plaque, 1,16 m de préparation, évier sous la fenêtre (allège 1,10 m, robinet au droit du meneau), lave-vaisselle, réfrigérateur en bout ; plus d'îlot ni de seconde plaque ; aucune fenêtre ne bute sur un meuble haut ; Chambre 3 : tête de lit au sud, loin du WC, 1,20 m libres devant la fenêtre ; tableau électrique hors du débattement de la porte d'entrée ; porte de la buanderie ouverte côté cuisine, hors du lave-linge ; WC avec lave-mains ; baignoire de 180 ; interrupteurs à 10 cm au moins des huisseries, aucun dans la cloison derrière le poêle ; poêle décollé de la cloison, 1,20 m de passage devant lui (pare-feu à prévoir) ; prises au minimum de la NF C 15-100 (3 par chambre, 7 socles au séjour, 1 au couloir) ; porte de la Chambre 2 hors de l'axe de l'entrée. */
      const top=W([0,0],[12.5,0],'mur'),right=W([12.5,0],[12.5,8],'mur'),bottom=W([12.5,8],[0,8],'mur'),left=W([0,8],[0,0],'mur');
-     const c1=W([4,0],[4,8],'cloison'),c2=W([0,4],[4,4],'cloison'),c3=W([7,0],[7,8],'cloison'),c4=W([4,4],[7,4],'cloison'),c5=W([4,6.2],[7,6.2],'cloison'),c6=W([5.3,6.2],[5.3,8],'cloison');
-     W([7,3.5],[10.2,3.5],'virtuel');W([10.2,0],[10.2,3.5],'virtuel');
-     O(bottom,(12.5-8.0)/12.5,'porte_entree',1,1);O(top,2/12.5,'fenetre',1);O(top,5.5/12.5,'fenetre',1);O(left,(8-6)/8,'fenetre',1);O(right,1.6/8,'fenetre',-1);O(right,5.6/8,'baie',-1);O(bottom,(12.5-1.6)/12.5,'porte_fenetre',1);O(top,11.2/12.5,'fenetre_p',1);O(bottom,(12.5-5.9)/12.5,'fenetre_p',1);
-     O(c1,1.2/8,'porte',1,-1);O(c1,5.2/8,'porte',1,-1);O(c3,1.0/8,'porte',1,-1);O(c3,5.0/8,'porte',1,-1);O(c3,6.75/8,'porte',1,-1);O(c5,0.5/3,'porte',1,-1);
-     I('lit',2,1.15,0);I('armoire',3.65,2.6,H/2);I('lit',2,4.4,0);I('armoire',0.35,6.6,3*H/2);I('lit1',5.5,1.15,0);I('bureau',6.65,3.0,H/2);
-     I('baignoire',4.95,4.5,0);I('vasque2',5.5,5.915,H);I('wc',4.65,7.65,H);I('lave_linge',5.7,7.6,H);I('cumulus',6.65,7.6,0);
-     I('plan',8.5,0.4,0);I('ilot',8.6,2.1,0);I('frigo',10.0,0.425,0);I('canape',11.95,5.2,H/2);I('table',9.0,5.8,0);I('poele',7.35,4.0,3*H/2);
-     I('radiateur',2,0.15,0);I('radiateur',2,4.15,0);I('radiateur',5.5,0.15,0);I('radiateur',9.5,7.85,H);I('seche_serviette',4.15,5.2,3*H/2);I('tableau',5.85,6.35,0);
-     I('prise',0.8,0.13,0);I('prise',3.2,0.13,0);I('interrupteur',3.87,0.7,H/2);I('prise',0.8,4.13,0);I('prise',3.2,4.13,0);I('interrupteur',3.87,4.7,H/2);I('prise',4.6,0.13,0);I('prise',6.4,0.13,0);I('interrupteur',6.87,0.6,H/2);
-     I('prise2',9.2,0.13,0);I('prise2',12.37,1.0,H/2);I('prise',12.37,4.0,H/2);I('prise',8.6,7.87,H);I('interrupteur',8.6,7.87,H);I('interrupteur',7.13,7.4,3*H/2);I('interrupteur',4.13,5.9,3*H/2);
-     [[2,2.4],[2,6.4],[5.5,2.4],[5.5,5.1],[4.65,7.1],[6.15,7.1],[9.7,2.1],[9.8,5.7]].forEach(([x,y])=>I('lumiere',x,y,0));
-     return [[0,0,4,4,'chambre','Parquet'],[0,4,4,8,'chambre','Parquet'],[4,0,7,4,'chambre','Parquet'],[4,4,7,6.2,'sdb','Carrelage'],[4,6.2,5.3,8,'wc','Carrelage'],[5.3,6.2,7,8,'buanderie','Carrelage'],[7,0,10.2,3.5,'cuisine','Carrelage'],[7,3.5,12.5,8,'sejour','Parquet']];}},
+     const cA=W([0,3.65],[7,3.65],'cloison'),cB=W([3.5,0],[3.5,3.65],'cloison'),cC=W([0,4.7],[7,4.7],'cloison'),cD=W([2.4,3.65],[2.4,4.7],'cloison'),cE=W([3.65,4.7],[3.65,8],'cloison'),cF=W([5.75,4.7],[5.75,8],'cloison'),cG=W([7,0],[7,4.7],'cloison'),cH=W([7,1.9],[8.5,1.9],'cloison');W([8.5,0],[8.5,1.9],'cloison');
+     W([7,3.5],[12.5,3.5],'virtuel');
+     O(bottom,(12.5-6.375)/12.5,'porte_entree',1,-1);
+     O(left,6.8/8,'fenetre',1);O(top,4.6/12.5,'fenetre',1);O(left,1.1/8,'fenetre',1);O(left,3.825/8,'fenetre_p',1);O(bottom,(12.5-4.7)/12.5,'fenetre_p',1);O(top,7.42/12.5,'fenetre_p',1);
+     O(top,10.61/12.5,'fenetre',1);Object.assign(der('openings'),{allege:1.1,h:1.05});O(right,2.1/8,'porte_fenetre',1);O(right,4.2/8,'fenetre',-1);O(bottom,(12.5-10.0)/12.5,'baie',1);
+     O(cA,2.95/7,'porte',-1,-1);O(cA,5.4/7,'porte',-1,-1);O(cC,3.0/7,'porte',1,-1);O(cC,4.2/7,'porte',1,1);O(cC,6.3/7,'porte',1,1);O(cD,0.5,'porte',1,-1);der('openings').w=0.73;O(cH,0.5,'porte',1,1);
+     I('lit',1.78,1.15,0);I('armoire',0.4,2.95,3*H/2);I('lit',4.535,1.75,3*H/2);I('armoire',6.665,1.4,H/2);I('lit1',1.85,6.9,H);I('bureau',0.45,5.45,3*H/2);I('armoire',3.315,6.6,H/2);
+     I('baignoire',4.585,7.525,H);der('items').w=1.8;I('vasque2',5.465,5.55,H/2);I('wc',0.425,4.175,3*H/2);I('lavabo',1.6,3.81,0);Object.assign(der('items'),{w:0.4,h:0.25});I('lave_linge',7.4,0.4,0);I('cumulus',8.15,0.4,0);
+     I('plan',9.4675,0.4,0);der('items').w=1.865;I('evier',10.8,0.4,0);I('lave_vaisselle',11.5,0.4,0);I('frigo',12.1,0.425,0);I('table',9.85,4.45,0);I('canape',11.95,6.0,H/2);I('poele',7.55,4.0,3*H/2);I('armoire',7.95,7.6,H);
+     I('radiateur',0.15,1.2,3*H/2);I('radiateur',4.6,0.15,0);I('radiateur',0.15,6.9,3*H/2);I('radiateur',12.35,4.2,H/2);I('seche_serviette',3.75,6.4,3*H/2);I('tableau',5.85,6.45,3*H/2);
+     I('prise',0.7,0.13,0);I('prise',2.85,0.13,0);I('interrupteur',2.38,3.52,H);I('prise',3.37,1.6,H/2);I('prise',3.665,0.6,3*H/2);I('prise',3.665,2.9,3*H/2);I('prise',6.835,2.45,H/2);I('interrupteur',4.83,3.52,H);
+     I('prise',0.13,5.9,3*H/2);I('prise',1.15,7.87,H);I('prise',2.55,7.87,H);I('interrupteur',2.43,4.83,0);I('prise',5.585,6.3,H/2);I('interrupteur',4.77,4.83,0);I('interrupteur',2.2,3.78,0);
+     I('interrupteur',6.87,4.5,H/2);I('interrupteur',3.6,4.57,H);I('prise',4.9,4.57,H);I('interrupteur',6.875,4.83,0);I('interrupteur',7.0,7.87,H);I('interrupteur',7.22,7.87,H);I('prise',7.8,0.13,0);I('interrupteur',8.32,1.77,H);
+     I('prise2',9.5,0.13,0);I('prise2',9.85,0.13,0);I('prise2',12.37,1.0,H/2);I('interrupteur',7.13,3.2,3*H/2);I('prise',12.37,4.93,H/2);I('prise2',12.37,6.6,H/2);I('prise',12.37,7.4,H/2);I('prise2',11.38,7.87,H);I('prise',5.88,5.95,3*H/2);
+     [[1.78,1.86],[5.25,1.85],[1.85,6.3],[4.7,6.2],[1.3,4.175],[3.6,4.175],[5.6,4.175],[6.375,6.3],[7.75,1.0],[10.45,1.5],[9.85,4.45],[10.0,6.0]].forEach(([x,y])=>I('lumiere',x,y,0));
+     return [[0,0,3.5,3.65,'chambre','Parquet'],[3.5,0,7,3.65,'chambre','Parquet'],[0,3.65,2.4,4.7,'wc','Carrelage'],[2.4,3.65,7,4.7,'couloir','Parquet'],[0,4.7,3.65,8,'chambre','Parquet'],[3.65,4.7,5.75,8,'sdb','Carrelage'],[7,0,8.5,1.9,'buanderie','Carrelage'],[7,0,12.5,3.5,'cuisine','Carrelage'],[5.75,3.5,12.5,8,'sejour','Parquet']];}},
 ];
 function loadTemplate(id,wf){
   const T=TEMPLATES.find(t=>t.id===id);if(!T)return;closeModal();

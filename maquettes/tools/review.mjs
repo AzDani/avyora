@@ -1,5 +1,7 @@
 import puppeteer from "puppeteer-core";
+import fs from "node:fs";
 const SP=process.argv[2], OUT=SP+"/review";
+fs.mkdirSync(OUT,{recursive:true}); /* maquettes/review est ignoré par git : un clone neuf ne l'a pas */
 const b=await puppeteer.launch({executablePath:"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",headless:true,args:["--no-sandbox","--force-device-scale-factor=1"]});
 const p=await b.newPage();const errs=[],warns=[];p.on("pageerror",e=>errs.push(e.message));p.on("console",m=>{if(m.type()==='warning'||m.type()==='error')warns.push(m.text().slice(0,160));});
 await p.setViewport({width:1400,height:900,deviceScaleFactor:1});
