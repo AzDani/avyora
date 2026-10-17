@@ -4,9 +4,10 @@
  * live, phases repliables `.phase-t`) sans le modifier. Le questionnaire est celui de la rénovation
  * (N9) : ici, ce qui n'appartient qu'au neuf — le type et la forme sur une rangée (`.typef`), la
  * hauteur en lecture seule (`.ro`), les choix techniques repliés derrière leur ligne de résumé
- * (`.tech`), le champ en faute (`aria-invalid`). Puis jalons de phase, badges « Démarche » et « % des
- * travaux », étiquette « Pro obligatoire » et avertissement « hors garantie décennale » des lignes,
- * ligne « Nouveaux postes cochés » et confirmation de « Tout passer en… » (`.nv`, N3). Porté de
+ * (`.tech`). Le champ en faute (`aria-invalid`) et la case « Niveaux » en lecture seule sont ceux de
+ * la rénovation (`INTAKE_CSS`, A7). Puis jalons de phase, badges « Démarche » et « % des travaux »,
+ * étiquette « Pro obligatoire » et avertissement « hors garantie décennale » des lignes, ligne
+ * « Nouveaux postes cochés » et confirmation de « Tout passer en… » (`.nv`, N3). Porté de
  * `maquettes/neuf/page.html` ; aucun `@import`. Les outils de la liste (`.tools`), les vues et les
  * boutons de la barre live en 44 px sont dans `EST_CSS` (N6, partagés).
  */
@@ -14,13 +15,13 @@ export const NEUF_DETAIL_CSS = `
 .av-neuf-d .typef{display:flex;flex-wrap:wrap;align-items:center;gap:10px 26px}
 .av-neuf-d .typef-g{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
 .av-neuf-d .typef-l{font-size:11.5px;font-weight:500;color:var(--muted)}
-.av-neuf-d .fld>.av-step.field{display:flex}
+/* les surfaces (et la distance aux réseaux) remplissent leur colonne, comme celles de la rénovation ; « Budget
+   & imprévus » garde la largeur du champ, comme en rénovation (A7) */
+.av-neuf-d .surf .fld>.av-step.field,.av-neuf-d .tq .fld>.av-step.field{display:flex}
 .av-neuf-d .gl+.locnote{padding-top:0}
-.av-neuf-d .stpg .drtoggle{margin-top:0;width:100%;min-height:46px;border-radius:var(--radius-field);padding:7px 13px;text-align:left}
 .av-neuf-d .ro{display:flex;align-items:center;height:38px;border:1px solid var(--line);border-radius:var(--radius-field);background:var(--surface-2);padding:0 11px;color:var(--muted)}
 .av-neuf-d .ro .num{flex:1;font-size:14px;font-weight:600}
 .av-neuf-d .ro .u{font-size:12px;color:var(--faint);font-weight:600;padding-left:8px}
-.av-neuf-d .uinp:has(input[aria-invalid="true"]){border-color:var(--danger);box-shadow:0 0 0 3px color-mix(in srgb,var(--danger) 15%,transparent)}
 .av-neuf-d .tech{border:1px solid var(--line);border-radius:var(--radius-field);background:var(--surface-2);padding:4px 6px 4px 14px}
 .av-neuf-d .tech.open{background:var(--surface);border-color:var(--brand-200);padding-bottom:14px}
 .av-neuf-d .tech-r{display:flex;align-items:center;gap:6px 12px}
@@ -66,6 +67,10 @@ export const NEUF_DETAIL_CSS = `
 .av-neuf-d .split-n b{color:#fff;font-weight:600;font-family:var(--font-geist-mono),ui-monospace,monospace;white-space:nowrap}
 .av-neuf-d .dtl .dem{font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:#fdf1e1;color:#b06d10;white-space:nowrap}
 .av-neuf-live .m2{font-size:11.5px;color:#c9c5ee;margin-top:5px;font-family:var(--font-geist-mono),ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.av-neuf-live .m2-c{display:none}
+/* le prix au m² passe sur deux lignes plutôt que de pousser les boutons sous le total (anglais, A7) */
+.av-neuf-live .totb{max-width:400px}
+.av-neuf-live .m2-f{white-space:nowrap}
 @media(max-width:560px){
 .av-neuf-d .pjal,.av-neuf-d .pvide{padding-left:4px}
 .av-neuf-d .decennale,.av-neuf-d .mention-soi{margin-left:0}
@@ -77,7 +82,12 @@ export const NEUF_DETAIL_CSS = `
 /* les postes du neuf ont de longues notes : sur mobile, les commandes passent sous le libellé */
 .av-neuf-d .trow{grid-template-columns:22px minmax(0,1fr)}
 .av-neuf-d .trow .tctl{grid-column:2/-1;justify-content:flex-start}
-.av-neuf-live .totb{flex-wrap:wrap;row-gap:2px}
-.av-neuf-live .m2{flex-basis:100%;margin-top:0}
+/* barre live : la hauteur de la rénovation (A7). Le prix au m², court, au bout de la ligne du total s'il y
+   tient ; sinon il passe à la ligne suivante, masquée (22 px : la ligne du total de la rénovation). Les
+   frais hors TVA restent sur ordinateur et dans « Mon devis » */
+.av-neuf-live .totb{max-width:none;flex-wrap:wrap;max-height:22px;overflow:hidden}
+.av-neuf-live .m2{margin:0 0 0 auto;font-size:10.5px;line-height:15px;white-space:nowrap}
+.av-neuf-live .m2-l,.av-neuf-live .m2-f{display:none}
+.av-neuf-live .m2-c{display:inline}
 }
 `;

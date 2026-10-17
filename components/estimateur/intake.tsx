@@ -10,7 +10,7 @@
  * Accessibilité : un choix est un groupe nommé (`role="group"`, `aria-label`) de boutons qui disent
  * s'ils sont pressés (`aria-pressed`), comme les pastilles du neuf ; la classe `on` garde le style.
  */
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import type { RegionCoef } from "@/lib/estimateur";
 
 /** Intertitre d'une rubrique du questionnaire. */
@@ -69,7 +69,7 @@ export function CartesFinition<T extends string>({ cartes, valeur, onChoix, aria
 }
 
 /** Code postal : 5 chiffres au plus, rien d'autre ne passe. `id` le relie à son libellé (`Field htmlFor`).
- *  `invalide` (facultatif, neuf) : le champ en faute à l'enregistrement (`aria-invalid`, liée à `erreurId`). */
+ *  `invalide` (facultatif) : le champ en faute à l'enregistrement (`aria-invalid`, lié à `erreurId`). */
 export function ChampCodePostal({ valeur, onChange, placeholder, id, invalide, erreurId }: {
   valeur: string; onChange: (cp: string) => void; placeholder: string; id?: string; invalide?: boolean; erreurId?: string;
 }) {
@@ -78,6 +78,38 @@ export function ChampCodePostal({ valeur, onChange, placeholder, id, invalide, e
       <input id={id} inputMode="numeric" maxLength={5} autoComplete="postal-code" placeholder={placeholder} value={valeur}
         aria-invalid={invalide || undefined} aria-describedby={invalide ? erreurId : undefined}
         onChange={(e) => onChange(e.target.value.replace(/\D/g, "").slice(0, 5))} />
+    </div>
+  );
+}
+
+/**
+ * Le champ en faute à l'enregistrement (« Enregistrer » sans code postal) : `signaler` le marque
+ * (`champ`, que l'appelant passe en `aria-invalid`), puis le centre et lui donne le focus, une fois
+ * la saisie réaffichée. Le même comportement dans les deux détaillés (A7) ; `effacer` le démarque.
+ */
+export function useChampEnFaute<K extends string>() {
+  const [faute, setFaute] = useState<{ champ: K; id: string; n: number } | null>(null);
+  useEffect(() => {
+    if (!faute) return;
+    const el = document.getElementById(faute.id);
+    if (el) { el.scrollIntoView({ block: "center", behavior: "smooth" }); el.focus({ preventScroll: true }); }
+  }, [faute]);
+  return {
+    champ: faute?.champ ?? null,
+    /** `id` : celui du champ à focaliser (son `htmlFor`). Signaler deux fois de suite refocalise. */
+    signaler: (champ: K, id: string) => setFaute((f) => ({ champ, id, n: (f?.n ?? 0) + 1 })),
+    effacer: () => setFaute(null),
+  };
+}
+
+/** Une case de la grille de compteurs qui se lit sans se régler : le nombre de niveaux du neuf, que le
+ *  type de maison décide (A7 : la grille garde les paires de la rénovation, dont « Niveaux » ouvre la
+ *  première). Même case que `Stepper` ; la valeur à la place des boutons, alignée sur les leurs. */
+export function CompteurFixe({ label, hint, valeur, id }: { label: string; hint?: string; valeur: number; id: string }) {
+  return (
+    <div className="stp fixe">
+      <span className="l" id={id + "-l"}>{label}{hint && <small>{hint}</small>}</span>
+      <output id={id} className="c" aria-labelledby={id + "-l"}><span className="v num">{valeur}</span></output>
     </div>
   );
 }

@@ -82,8 +82,10 @@ const fr = {
     niveauxLabel: "Plain-pied ou à étage",
     niveaux: { pp: "Plain-pied", etage: "À étage", combles: "Combles aménagés" } as Record<string, string>,
     q2: "Niveau de finition",
+    /* Noms et accroches : ceux de la rénovation (A7), en français comme en anglais ; les descriptions
+       parlent du neuf. Le détaillé neuf prend les cartes de la rénovation (`dictDetail().bien.finitions`). */
     finitions: {
-      eco: { eye: "Budget maîtrisé", label: "Éco", desc: "Entrée de gamme robuste : sol stratifié, carrelage standard, sanitaires et cuisine simples." },
+      eco: { eye: "Locatif · budget maîtrisé", label: "Éco", desc: "Entrée de gamme robuste : sol stratifié, carrelage standard, sanitaires et cuisine simples." },
       standard: { eye: "Le plus courant", label: "Standard", desc: "Bon rapport qualité-prix, marques milieu de gamme. Le bon équilibre pour une résidence principale." },
       premium: { eye: "Haut de gamme", label: "Premium", desc: "Parquet, carrelage grand format, sanitaires et cuisine haut de gamme." },
     } as Record<string, { eye: string; label: string; desc: string }>,
@@ -170,6 +172,8 @@ const fr = {
     titre: "Parle-nous de ta maison",
     sous: "Chaque réponse coche et mesure les postes ; tu ajustes ensuite. Ce que tu règles à la main, poste par poste, est gardé.",
     typeT: "Type de maison",
+    /** La case « Niveaux » de la grille, en lecture seule : le type de maison la décide (A7). */
+    niveauxAide: "d'après le type de maison",
     hauteurValeur: "2,50",
     hauteurAide: "Standard d'une maison neuve.",
     cuisineOff: "Ajouter la cuisine équipée",
@@ -216,6 +220,8 @@ const fr = {
     totalK: "Total estimé",
     ttc: "€ TTC",
     parM2: "/ m² habitable",
+    /** Sur mobile, la barre live garde la hauteur de la rénovation : le prix au m² court, sans les frais (A7). */
+    parM2Court: "/m²",
     dontFrais: "dont frais hors TVA",
     budgetTxt: (b: string) => `Budget max ${b}`,
     depasse: (x: string) => `dépassé de ${x}`,
@@ -321,9 +327,9 @@ const en: typeof fr = {
     niveaux: { pp: "Single-story", etage: "Two-story", combles: "Converted attic" } as Record<string, string>,
     q2: "Finish level",
     finitions: {
-      eco: { eye: "Controlled budget", label: "Basic", desc: "Sturdy entry level: laminate floors, standard tiles, simple bathroom fittings and kitchen." },
+      eco: { eye: "Rental · budget-conscious", label: "Economy", desc: "Sturdy entry level: laminate floors, standard tiles, simple bathroom fittings and kitchen." },
       standard: { eye: "Most common", label: "Standard", desc: "Good value, mid-range brands. The right balance for a main home." },
-      premium: { eye: "High end", label: "Premium", desc: "Hardwood floors, large-format tiles, high-end bathroom fittings and kitchen." },
+      premium: { eye: "High-end", label: "Premium", desc: "Hardwood floors, large-format tiles, high-end bathroom fittings and kitchen." },
     } as Record<string, { eye: string; label: string; desc: string }>,
     q3: "Who does the work",
     quis: {
@@ -403,6 +409,7 @@ const en: typeof fr = {
     titre: "Tell us about your house",
     sous: "Each answer ticks and measures the items; you adjust them afterwards. What you set by hand, item by item, is kept.",
     typeT: "House type",
+    niveauxAide: "set by the house type",
     hauteurValeur: "2.50",
     hauteurAide: "Standard for a new house.",
     cuisineOff: "Add the fitted kitchen",
@@ -446,6 +453,7 @@ const en: typeof fr = {
     totalK: "Estimated total",
     ttc: "€ incl. tax",
     parM2: "/ m² of living area",
+    parM2Court: "/m²",
     dontFrais: "incl. fees without VAT",
     budgetTxt: (b: string) => `Max budget ${b}`,
     depasse: (x: string) => `over by ${x}`,

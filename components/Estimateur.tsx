@@ -11,14 +11,19 @@
  * l'écran est fait des briques partagées avec le neuf (`components/estimateur/intake.tsx`, `ListeLots`,
  * `BarreLive`, `VueDevis`) et ses textes sont dans `dictDetail` (français au tutoiement, anglais). Rendu
  * figé par `tests/detaille-rendu-temoins.test.ts`.
+ *
+ * A7 : « Enregistrer » sans code postal se comporte comme dans le neuf : le champ est marqué
+ * (`aria-invalid`, relié au message de la barre live), la saisie réaffichée, puis le champ focalisé
+ * (`useChampEnFaute`, brique partagée).
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import NumStepper from "@/components/Stepper";
 import { EST_CSS } from "./estimateur-styles";
 import { ROW_SOI_CSS } from "./estimateur/row-styles";
+import { INTAKE_CSS } from "./estimateur/intake-styles";
 import { fmt, gras, Field, Stepper, CustomLines } from "./estimateur/partage";
-import { Intertitre, Pastilles, Segment, CartesFinition, ChampCodePostal, Interrupteur, Recap, ZoneRecap } from "./estimateur/intake";
+import { Intertitre, Pastilles, Segment, CartesFinition, ChampCodePostal, Interrupteur, Recap, ZoneRecap, useChampEnFaute } from "./estimateur/intake";
 import { ListeLots, TitrePhase, BlocLot, LignesLot } from "./estimateur/ListeLots";
 import { BarreLive } from "./estimateur/BarreLive";
 import { VueDevis, ChoixVue, type DonneesDevis } from "./estimateur/VueDevis";
@@ -42,6 +47,9 @@ const DRAFT_KEY = CLE_BROUILLON_RENO;               // brouillon partagé (mode 
 const DRAFT_KEY_DETAIL = CLE_BROUILLON_DETAIL_RENO; // brouillon PROPRE au détaillé : ne récupère PAS les postes cochés du rapide
 
 const TYPES: TypeBien[] = ["Studio", "T2", "T3", "T4", "Maison"];
+/** Les champs qu'« Enregistrer » peut signaler (`manqueReno`), et le message qui les décrit. */
+const ID_CHAMP = { cp: "av-reno-cp", surface: "av-reno-surface" } as const;
+const ID_ERREUR = "av-reno-err";
 const NIVEAUX_FINITION: Record<Finition, number> = { eco: 1, standard: 2, premium: 3 };
 
 export default function Estimateur({ initialState, projectId }: { initialState?: Record<string, unknown>; projectId?: string } = {}) {
@@ -62,6 +70,8 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
   const delCustom = (id: string) => setCustom((p) => p.filter((x) => x.id !== id));
   const [saving, setSaving] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
+  /** Le champ en faute (« Enregistrer » sans code postal) : marqué, puis focalisé, comme dans le neuf. */
+  const faute = useChampEnFaute<keyof typeof ID_CHAMP>();
   const hydrated = useRef(false);
   const statutsRef = useRef<Record<string, number> | undefined>(undefined); // suivi de chantier à préserver en modif
 
@@ -146,9 +156,9 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
 
   // ── Sauvegarde projet ─────────────────────────────────────────────────────
   async function enregistrer() {
-    setErreur(null);
+    setErreur(null); faute.effacer();
     const manque = manqueReno(ctx, codePostal);
-    if (manque) { setErreur(dl.erreurs[manque]); setView("saisie"); return; }
+    if (manque) { setErreur(dl.erreurs[manque]); setView("saisie"); faute.signaler(manque, ID_CHAMP[manque]); return; }
     setSaving(true);
     const nom = nomProjetReno(ctx, { projet: dl.projet, type: (t) => B.types[t] ?? t, espace: espaceNom });
     try {
@@ -172,6 +182,11 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
       if (!edition) { try { localStorage.removeItem(DRAFT_KEY_DETAIL); localStorage.removeItem(DRAFT_KEY); } catch { /* noop */ } }
       router.push(edition ? `/projets/${projectId}` : `/projets/${data.id}`);
     } catch { setErreur(dl.erreurs.reseau); setSaving(false); }
+  }
+
+  function majCp(v: string) {
+    setCodePostal(v);
+    if (faute.champ === "cp" && /^\d{5}$/.test(v)) { faute.effacer(); setErreur(null); }
   }
 
   // ── Récap du bien ─────────────────────────────────────────────────────────
@@ -204,7 +219,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: EST_CSS + ROW_SOI_CSS }} />
+      <style dangerouslySetInnerHTML={{ __html: EST_CSS + ROW_SOI_CSS + INTAKE_CSS }} />
       <div className="av-estim">
         <ChoixVue vue={view} onVue={setView} saisie={dl.vues.saisie} devis={dl.vues.devis} aria={dl.vues.aria} />
 
@@ -279,7 +294,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                   </Field>
                 )}
                 <Field label={B.hauteur} htmlFor="av-reno-hauteur"><NumStepper field id="av-reno-hauteur" value={ctx.hauteur} min={2} step={0.1} unit="m" onChange={(n) => onNum("hauteur", String(n))} /></Field>
-                <Field label={B.cp} htmlFor="av-reno-cp"><ChampCodePostal id="av-reno-cp" valeur={codePostal} onChange={setCodePostal} placeholder={B.cpExemple} /></Field>
+                <Field label={B.cp} htmlFor="av-reno-cp"><ChampCodePostal id={ID_CHAMP.cp} valeur={codePostal} onChange={majCp} placeholder={B.cpExemple} invalide={faute.champ === "cp"} erreurId={ID_ERREUR} /></Field>
               </div>
 
               {!piece && (<>
@@ -342,7 +357,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
         {view === "devis" && <DevisView ctx={ctxR} sel={sel} custom={custom} />}
       </div>
 
-      <BarreLive total={tot.ttc} budget={budget} vue={view} onVue={setView} onEnregistrer={enregistrer} saving={saving} edition={edition} erreur={erreur} t={dl.live} />
+      <BarreLive total={tot.ttc} budget={budget} vue={view} onVue={setView} onEnregistrer={enregistrer} saving={saving} edition={edition} erreur={erreur} erreurId={ID_ERREUR} t={dl.live} />
     </>
   );
 }

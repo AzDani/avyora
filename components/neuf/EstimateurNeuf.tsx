@@ -30,13 +30,22 @@
  * cartes, qui pilote, la TVA, le budget, le récapitulatif). Chaque question dit sa rubrique et son
  * contrôle (`section`, `vue` : `questions-neuf.ts`) ; un nombre tapé n'est pris qu'à la sortie du champ.
  * Un projet rouvert est posé dès le premier rendu, serveur compris (comme la rénovation depuis N6).
+ *
+ * A7 (contrôle de l'étape 1, les deux questionnaires côte à côte) : les surfaces dans l'ordre de la
+ * rénovation (habitable, garage, hauteur, code postal, son exemple « 33000 », la zone dite au seul
+ * récapitulatif) ; la grille de compteurs aux paires de la rénovation (« Niveaux » en lecture seule,
+ * décidé par le type de maison), l'interrupteur « Cuisine équipée comprise » sous elle ; les cartes de
+ * finition de la rénovation ; « Budget & imprévus » aussi compacts ; une barre live de la hauteur de la
+ * rénovation sur mobile ; le champ en faute signalé par la brique partagée (`useChampEnFaute`).
  */
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import NumStepper from "@/components/Stepper";
 import { EST_CSS } from "@/components/estimateur-styles";
 import { fmt, gras, Field, Stepper, CustomLines } from "@/components/estimateur/partage";
-import { Intertitre, Pastilles, Segment, CartesFinition, ChampCodePostal, Interrupteur, Recap, ZoneRecap } from "@/components/estimateur/intake";
+import {
+  Intertitre, Pastilles, Segment, CartesFinition, ChampCodePostal, Interrupteur, Recap, ZoneRecap, CompteurFixe, useChampEnFaute,
+} from "@/components/estimateur/intake";
 import { ListeLots, TitrePhase, BlocLot, LignesLot } from "@/components/estimateur/ListeLots";
 import { BarreLive } from "@/components/estimateur/BarreLive";
 import { ChoixVue } from "@/components/estimateur/VueDevis";
@@ -65,6 +74,7 @@ import { CLE_BROUILLON_NEUF, CLE_AFFINER_NEUF, CLE_RECLAMATION_NEUF, type Origin
 import { marquerReprisePlan } from "@/lib/plans/origine";
 import { NEUF_DETAIL_CSS } from "./detail-styles";
 import { ROW_SOI_CSS } from "@/components/estimateur/row-styles";
+import { INTAKE_CSS } from "@/components/estimateur/intake-styles";
 import DevisNeuf from "./DevisNeuf";
 import { mesurerPlan, mesureEstimationNeuf } from "@/lib/plans/mesure";
 
@@ -104,9 +114,8 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
   const [view, setView] = useState<"saisie" | "devis">("saisie");
   const [saving, setSaving] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
-  /** Le champ en faute (« Enregistrer » sans code postal) : marqué, puis focalisé (`signal`). */
-  const [champErr, setChampErr] = useState<"codePostal" | "surface" | null>(null);
-  const [signal, setSignal] = useState(0);
+  /** Le champ en faute (« Enregistrer » sans code postal) : marqué, puis focalisé, comme en rénovation. */
+  const faute = useChampEnFaute<"codePostal" | "surface">();
   /** Choix techniques : repliés à l'ouverture, une ligne de résumé les dit. */
   const [techOuvert, setTechOuvert] = useState(false);
   const hydrated = useRef(false);
@@ -168,7 +177,6 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
   const m2 = ctx.surface > 0 ? tot.ttc / ctx.surface : 0;
   const geo = useMemo(() => geometrieNeuf(m), [m]);
   const reg = regionCoef(m.codePostal);
-  const regDelta = Math.round((reg.mo - 1) * 100);
   const zoneLbl = (T.rapide.zones as Record<string, string>)[reg.zone] ?? reg.zone;
 
   // ── Mises à jour ───────────────────────────────────────────────────────────────────────────
@@ -190,16 +198,11 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
   // ── Enregistrement ─────────────────────────────────────────────────────────────────────────
   /** Le champ en faute : marqué (`aria-invalid`), la saisie réaffichée, puis le champ focalisé. */
   function signaler(champ: "codePostal" | "surface", msg: string) {
-    setErreur(msg); setChampErr(champ); setView("saisie"); setSignal((x) => x + 1);
+    setErreur(msg); setView("saisie"); faute.signaler(champ, ID(champ));
   }
-  useEffect(() => {
-    if (!signal || !champErr) return;
-    const el = document.getElementById(ID(champErr));
-    if (el) { el.scrollIntoView({ block: "center", behavior: "smooth" }); el.focus({ preventScroll: true }); }
-  }, [signal, champErr]);
 
   async function enregistrer() {
-    setErreur(null); setChampErr(null);
+    setErreur(null); faute.effacer();
     if (!CP.test(m.codePostal ?? "")) { signaler("codePostal", d.errCp); return; }
     if (!(m.surface > 0)) { signaler("surface", d.errSurface); return; }
     setSaving(true);
@@ -241,7 +244,8 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
     if (q.vue === "segment") return <Segment aria={lbl} valeur={v} onChoix={choisir(q)} options={options(q)} />;
     if (q.vue === "cartes") {
       const cartes = (q.o ?? []).map(([val, txt]) => {
-        const c = q.k === "$finition" ? n.saisie.finitions[String(val)] : null;
+        // Finition : les cartes de la rénovation (noms, accroches, descriptions : A7).
+        const c = q.k === "$finition" ? B.finitions[String(val)] : null;
         const t = q.cartes?.[String(val)];
         return {
           v: String(val), label: c?.label ?? txt[locale], eye: c?.eye ?? t?.eye[locale] ?? "", desc: c?.desc ?? t?.desc[locale] ?? "",
@@ -259,11 +263,20 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
     return <NumStepper field aLaSortie id={ID(q.k)} value={Number(m[k]) || 0} min={q.min} max={q.max} step={q.step} unit={q.u} onChange={(v) => repondre(q.k, borne(v))} />;
   }
   const cp = m.codePostal ?? "";
-  const zoneTxt = cp.length >= 2 ? <>{zoneLbl}{regDelta ? ` · ${regDelta > 0 ? "+" : ""}${regDelta} ${T.rapide.moSuffix}` : ""}</> : undefined;
   function majCp(v: string) {
     repondre("codePostal", v);
-    if (champErr === "codePostal" && CP.test(v)) { setChampErr(null); setErreur(null); }
+    if (faute.champ === "codePostal" && CP.test(v)) { faute.effacer(); setErreur(null); }
   }
+  /** Un champ des surfaces : un nombre, ou le code postal (son exemple et sa zone : ceux de la rénovation). */
+  const champSurface = (q: QuestionNeuf) => (
+    <Field key={q.k} label={q.l[locale]} hint={q.hint?.[locale]} htmlFor={ID(q.k)}>
+      {q.vue === "cp"
+        ? <ChampCodePostal id={ID(q.k)} valeur={cp} onChange={majCp} placeholder={B.cpExemple} invalide={faute.champ === "codePostal"} erreurId={ID_ERREUR} />
+        : champ(q)}
+    </Field>
+  );
+  const surfaces = questionsVisibles(m, "surfaces");
+  const pieces = questionsVisibles(m, "pieces");
   const sousTitre = (txt: string) => <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 500 }}>{txt}</span>;
 
   /** Les choix techniques, dépliés : un sous-titre par groupe, chaque question avec son libellé. */
@@ -344,7 +357,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: EST_CSS + ROW_SOI_CSS + NEUF_DETAIL_CSS }} />
+      <style dangerouslySetInnerHTML={{ __html: EST_CSS + ROW_SOI_CSS + INTAKE_CSS + NEUF_DETAIL_CSS }} />
       <div className="av-estim av-neuf-d">
         <ChoixVue vue={view} onVue={setView} saisie={d.vueSaisie} devis={d.vueDevis} aria={dl.vues.aria} />
 
@@ -365,29 +378,28 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
                 ))}
               </div>
 
+              {/* L'ordre de la rénovation : habitable, garage (à la place de la surface au sol), hauteur, code postal. */}
               <Intertitre>{B.surfacesT}</Intertitre>
-              <div className="depart">
-                {questionsVisibles(m, "surfaces").map((q) => (
-                  <Field key={q.k} label={q.l[locale]} hint={q.vue === "cp" ? zoneTxt : q.hint?.[locale]} htmlFor={ID(q.k)}>
-                    {q.vue === "cp"
-                      ? <ChampCodePostal id={ID(q.k)} valeur={cp} onChange={majCp} placeholder={n.saisie.cpPlaceholder} invalide={champErr === "codePostal"} erreurId={ID_ERREUR} />
-                      : champ(q)}
-                  </Field>
-                ))}
+              <div className="depart surf">
+                {surfaces.filter((q) => q.vue !== "cp").map(champSurface)}
                 <Field label={B.hauteur} hint={d.hauteurAide} htmlFor={ID("hauteur")}>
                   <output id={ID("hauteur")} className="ro"><span className="num">{d.hauteurValeur}</span><span className="u">m</span></output>
                 </Field>
+                {surfaces.filter((q) => q.vue === "cp").map(champSurface)}
               </div>
 
               <Intertitre>{B.piecesConfT} {sousTitre(B.piecesConfSous)}</Intertitre>
-              {/* La grille de la rénovation ; l'interrupteur « Cuisine équipée comprise » en dernière case
-                  (neuf compteurs + lui : cinq rangées pleines sur ordinateur). */}
+              {/* La grille de la rénovation, à ses paires : « Niveaux » ouvre la première rangée, en lecture
+                  seule (le type de maison le décide) ; l'interrupteur « Cuisine équipée comprise » dessous,
+                  comme celui du dressing. */}
               <div className="stpg">
-                {questionsVisibles(m, "pieces").map((q) => (q.vue === "interrupteur"
-                  ? <Interrupteur key={q.k} actif={!!valeur(q.k)} onBascule={() => repondre(q.k, !valeur(q.k))} texteActif={q.l[locale]} texteInactif={d.cuisineOff} />
-                  : <Stepper key={q.k} label={q.l[locale]} hint={q.hint?.[locale]} value={valeurCompteurNeuf(m, q.k as CompteurNeuf)}
+                <CompteurFixe id={ID("niveaux-n")} label={B.compteurs.niveaux} hint={d.niveauxAide} valeur={ctx.niveaux} />
+                {pieces.filter((q) => q.vue === "compteur").map((q) => (
+                  <Stepper key={q.k} label={q.l[locale]} hint={q.hint?.[locale]} value={valeurCompteurNeuf(m, q.k as CompteurNeuf)}
                     onStep={(dt) => setEtat((e) => pasCompteurNeuf(e, q.k as CompteurNeuf, dt))} />))}
               </div>
+              {pieces.filter((q) => q.vue === "interrupteur").map((q) => (
+                <Interrupteur key={q.k} actif={!!valeur(q.k)} onBascule={() => repondre(q.k, !valeur(q.k))} texteActif={q.l[locale]} texteInactif={d.cuisineOff} />))}
 
               <Intertitre>{d.techT} {sousTitre(d.techSous)}</Intertitre>
               <div className={"tech" + (techOuvert ? " open" : "")}>
@@ -498,7 +510,8 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
       {/* Barre live sticky (la même que la rénovation), avec le prix au m² et les frais */}
       <BarreLive total={tot.ttc} budget={budget} vue={view} onVue={setView} onEnregistrer={enregistrer} saving={saving} edition={edition} erreur={erreur}
         erreurId={ID_ERREUR} className="av-neuf-live"
-        m2={<div className="m2">≈ {fmt(m2)} {d.parM2}{frais > 0 ? <> · {d.dontFrais} {fmt(frais)}</> : null}</div>}
+        m2={<div className="m2">≈ {fmt(m2)}<span className="m2-l"> {d.parM2}</span><span className="m2-c">{d.parM2Court}</span>
+          {frais > 0 ? <> <span className="m2-f">· {d.dontFrais} {fmt(frais)}</span></> : null}</div>}
         t={{
           totalK: d.totalK, ttc: d.ttc, budget: d.budgetTxt, depasse: d.depasse, reste: d.reste, sansBudget: d.sansBudget,
           voirDevis: d.voirDevis, modifier: d.retourSaisie, enregistrer: d.enregistrer, enregistrerModifs: d.enregistrerModifs, enregistrement: d.enregistrement,

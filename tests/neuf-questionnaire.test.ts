@@ -70,11 +70,14 @@ describe("N9 · une seule carte, les intertitres de la rénovation dans le même
       expect(intertitres(neuf).filter((t) => communs.includes(t))).toEqual(communs);
     });
 
-    it(`${locale} : la même grille de compteurs que la rénovation, mêmes libellés et même ordre (sans « Niveaux »)`, () => {
+    it(`${locale} : la même grille de compteurs que la rénovation, mêmes libellés et même ordre (« Niveaux » en lecture seule)`, () => {
+      // Les compteurs réglables ; « Niveaux », que le type de maison décide, ouvre la grille du neuf en
+      // lecture seule (`stp fixe`), aux mêmes paires que la rénovation (A7 : tests/questionnaires-a7.test.ts).
       const cr = compteurs(reno), cn = compteurs(neuf);
       expect(cr[0]).toBe(B.compteurs.niveaux);
       expect(cn).toEqual(cr.slice(1));
       expect(cn).toHaveLength(9);
+      expect(neuf).toContain(`<div class="stp fixe"><span class="l" id="av-neuf-niveaux-n-l">${echapper(B.compteurs.niveaux)}<small>`);
     });
 
     it(`${locale} : choix techniques repliés, une ligne de résumé et « Modifier »`, () => {
@@ -278,7 +281,7 @@ describe("N9 · anciens projets et brouillons relus", () => {
 });
 
 describe("N9 · le champ en faute, le budget à 0, l'anglais", () => {
-  it("code postal manquant : marqué (aria-invalid), relié au message ; la rénovation ne change pas", () => {
+  it("code postal manquant : marqué (aria-invalid), relié au message ; la rénovation fait de même depuis A7", () => {
     const avec = renderToStaticMarkup(createElement(ChampCodePostal, { valeur: "", onChange: () => {}, placeholder: "x", id: "c", invalide: true, erreurId: "e" }));
     expect(avec).toContain('aria-invalid="true" aria-describedby="e"');
     const sans = renderToStaticMarkup(createElement(ChampCodePostal, { valeur: "", onChange: () => {}, placeholder: "x", id: "c" }));

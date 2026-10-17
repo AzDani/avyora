@@ -20,7 +20,8 @@ export function jaugeBudget(total: number, budget: number): { over: boolean; pct
   return { over: budget > 0 && total > budget, pct: budget > 0 ? Math.min(100, (total / budget) * 100) : 0 };
 }
 
-/** `erreurId` (facultatif, neuf) : l'`id` du message d'erreur, que le champ en faute cite (`aria-describedby`). */
+/** `erreurId` (facultatif) : l'`id` du message d'erreur, que le champ en faute cite (`aria-describedby`) ;
+ *  les deux détaillés le passent (A7). */
 export function BarreLive({ total, budget, m2, vue, onVue, onEnregistrer, saving, edition, erreur, erreurId, t, className }: {
   total: number; budget: number; m2?: ReactNode; vue: "saisie" | "devis"; onVue: (v: "saisie" | "devis") => void;
   onEnregistrer: () => void; saving: boolean; edition: boolean; erreur: string | null; erreurId?: string; t: TextesBarreLive; className?: string;

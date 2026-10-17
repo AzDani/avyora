@@ -1033,7 +1033,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 </div>
 </div>
 <div class="gl">Areas</div>
-<div class="depart">
+<div class="depart surf">
 <div class="fld">
 <label for="av-neuf-surface">Living area</label>
 <span class="av-step field">
@@ -1059,12 +1059,6 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 <div style="font-size:11.5px;color:var(--faint);line-height:1.45;margin-top:6px">0 = no garage</div>
 </div>
 <div class="fld">
-<label for="av-neuf-codePostal">ZIP code of the plot</label>
-<div class="uinp">
-<input id="av-neuf-codePostal" inputMode="numeric" maxLength="5" autoComplete="postal-code" placeholder="e.g. 45000" value=""/>
-</div>
-</div>
-<div class="fld">
 <label for="av-neuf-hauteur">Ceiling height</label>
 <output id="av-neuf-hauteur" class="ro">
 <span class="num">2.50</span>
@@ -1072,10 +1066,23 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 </output>
 <div style="font-size:11.5px;color:var(--faint);line-height:1.45;margin-top:6px">Standard for a new house.</div>
 </div>
+<div class="fld">
+<label for="av-neuf-codePostal">ZIP code of the plot</label>
+<div class="uinp">
+<input id="av-neuf-codePostal" inputMode="numeric" maxLength="5" autoComplete="postal-code" placeholder="33000" value=""/>
+</div>
+</div>
 </div>
 <div class="gl">Rooms &amp; layout <span style="text-transform:none;letter-spacing:0;font-weight:500">· every room counts in the estimate</span>
 </div>
 <div class="stpg">
+<div class="stp fixe">
+<span class="l" id="av-neuf-niveaux-n-l">Floors<small>set by the house type</small>
+</span>
+<output id="av-neuf-niveaux-n" class="c" aria-labelledby="av-neuf-niveaux-n-l">
+<span class="v num">1</span>
+</output>
+</div>
 <div class="stp">
 <span class="l">Living room</span>
 <span class="c">
@@ -1151,10 +1158,10 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 <button type="button" aria-label="Increase">+</button>
 </span>
 </div>
+</div>
 <button type="button" class="drtoggle on" aria-pressed="true">
 <span class="dot" aria-hidden="true">
 </span>Fitted kitchen included</button>
-</div>
 <div class="gl">Technical choices <span style="text-transform:none;letter-spacing:0;font-weight:500">· common settings prefilled</span>
 </div>
 <div class="tech">
@@ -1180,9 +1187,9 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 <span class="ck">
 </span>
 </span>
-<span class="fe">Controlled budget</span>
-<span class="ft">Basic</span>
-<span class="fd">Sturdy entry level: laminate floors, standard tiles, simple bathroom fittings and kitchen.</span>
+<span class="fe">Rental · budget-conscious</span>
+<span class="ft">Economy</span>
+<span class="fd">Sturdy entry level: laminate, standard tile, flat-pack kitchen.</span>
 </button>
 <button type="button" class="fc on" aria-pressed="true">
 <span class="fh">
@@ -1199,7 +1206,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 </span>
 <span class="fe">Most common</span>
 <span class="ft">Standard</span>
-<span class="fd">Good value, mid-range brands. The right balance for a main home.</span>
+<span class="fd">Great value, mid-range brands, clean finishes.</span>
 </button>
 <button type="button" class="fc" aria-pressed="false">
 <span class="fh">
@@ -1214,9 +1221,9 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 <span class="ck">
 </span>
 </span>
-<span class="fe">High end</span>
+<span class="fe">High-end</span>
 <span class="ft">Premium</span>
-<span class="fd">Hardwood floors, large-format tiles, high-end bathroom fittings and kitchen.</span>
+<span class="fd">Fine materials: hardwood, large-format tile, high-end fitted kitchen.</span>
 </button>
 </div>
 <div class="gl">Who manages the build</div>
@@ -1404,7 +1411,9 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 <span>0</span>
 <small>€ incl. tax</small>
 </div>
-<div class="m2">≈ 2 468 € / m² of living area · incl. fees without VAT 11 561 €</div>
+<div class="m2">≈ 2 468 €<span class="m2-l"> / m² of living area</span>
+<span class="m2-c">/m²</span> <span class="m2-f">· incl. fees without VAT 11 561 €</span>
+</div>
 </div>
 <div class="jauge">
 <div class="jtext">No max budget set</div>
@@ -2452,7 +2461,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 </div>
 </div>
 <div class="gl">Surfaces</div>
-<div class="depart">
+<div class="depart surf">
 <div class="fld">
 <label for="av-neuf-surface">Surface habitable</label>
 <span class="av-step field">
@@ -2478,12 +2487,6 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 <div style="font-size:11.5px;color:var(--faint);line-height:1.45;margin-top:6px">0 = sans garage</div>
 </div>
 <div class="fld">
-<label for="av-neuf-codePostal">Code postal du terrain</label>
-<div class="uinp">
-<input id="av-neuf-codePostal" inputMode="numeric" maxLength="5" autoComplete="postal-code" placeholder="ex. 45000" value=""/>
-</div>
-</div>
-<div class="fld">
 <label for="av-neuf-hauteur">Hauteur sous plafond</label>
 <output id="av-neuf-hauteur" class="ro">
 <span class="num">2,50</span>
@@ -2491,10 +2494,23 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 </output>
 <div style="font-size:11.5px;color:var(--faint);line-height:1.45;margin-top:6px">Standard d&#x27;une maison neuve.</div>
 </div>
+<div class="fld">
+<label for="av-neuf-codePostal">Code postal du terrain</label>
+<div class="uinp">
+<input id="av-neuf-codePostal" inputMode="numeric" maxLength="5" autoComplete="postal-code" placeholder="33000" value=""/>
+</div>
+</div>
 </div>
 <div class="gl">Pièces &amp; configuration <span style="text-transform:none;letter-spacing:0;font-weight:500">· chaque pièce compte dans le chiffrage</span>
 </div>
 <div class="stpg">
+<div class="stp fixe">
+<span class="l" id="av-neuf-niveaux-n-l">Niveaux<small>d&#x27;après le type de maison</small>
+</span>
+<output id="av-neuf-niveaux-n" class="c" aria-labelledby="av-neuf-niveaux-n-l">
+<span class="v num">1</span>
+</output>
+</div>
 <div class="stp">
 <span class="l">Séjour / salon</span>
 <span class="c">
@@ -2570,10 +2586,10 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 <button type="button" aria-label="plus">+</button>
 </span>
 </div>
+</div>
 <button type="button" class="drtoggle on" aria-pressed="true">
 <span class="dot" aria-hidden="true">
 </span>Cuisine équipée comprise</button>
-</div>
 <div class="gl">Choix techniques <span style="text-transform:none;letter-spacing:0;font-weight:500">· réglages courants préremplis</span>
 </div>
 <div class="tech">
@@ -2599,9 +2615,9 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 <span class="ck">
 </span>
 </span>
-<span class="fe">Budget maîtrisé</span>
+<span class="fe">Locatif · budget maîtrisé</span>
 <span class="ft">Éco</span>
-<span class="fd">Entrée de gamme robuste : sol stratifié, carrelage standard, sanitaires et cuisine simples.</span>
+<span class="fd">Entrée de gamme robuste : stratifié, carrelage standard, cuisine en kit.</span>
 </button>
 <button type="button" class="fc on" aria-pressed="true">
 <span class="fh">
@@ -2618,7 +2634,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 </span>
 <span class="fe">Le plus courant</span>
 <span class="ft">Standard</span>
-<span class="fd">Bon rapport qualité-prix, marques milieu de gamme. Le bon équilibre pour une résidence principale.</span>
+<span class="fd">Bon rapport qualité-prix, marques milieu de gamme, finitions soignées.</span>
 </button>
 <button type="button" class="fc" aria-pressed="false">
 <span class="fh">
@@ -2635,7 +2651,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 </span>
 <span class="fe">Haut de gamme</span>
 <span class="ft">Premium</span>
-<span class="fd">Parquet, carrelage grand format, sanitaires et cuisine haut de gamme.</span>
+<span class="fd">Matériaux nobles : parquet, grand format, cuisine équipée haut de gamme.</span>
 </button>
 </div>
 <div class="gl">Qui pilote le chantier</div>
@@ -2823,7 +2839,9 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 <span>0</span>
 <small>€ TTC</small>
 </div>
-<div class="m2">≈ 2 468 € / m² habitable · dont frais hors TVA 11 561 €</div>
+<div class="m2">≈ 2 468 €<span class="m2-l"> / m² habitable</span>
+<span class="m2-c">/m²</span> <span class="m2-f">· dont frais hors TVA 11 561 €</span>
+</div>
 </div>
 <div class="jauge">
 <div class="jtext">Budget max non défini</div>
@@ -6896,7 +6914,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · appartement 1`] = `
 </span>
 </div>
 </div>
-<div class="recap">🏠 <b>Appartement</b> · 65 m² habitables · <b>1 niveau</b> · emprise au sol ~65 m² · plafond 2.5 m<div style="margin-top:6px">→ <b>6 pièces</b> au total · <b>1 salle de bain</b> · 7 menuiseries ext.</div>
+<div class="recap">🏠 <b>Appartement</b> · 65 m² habitables · <b>1 niveau</b> · emprise au sol ~65 m² · plafond 2,5 m<div style="margin-top:6px">→ <b>6 pièces</b> au total · <b>1 salle de bain</b> · 7 menuiseries ext.</div>
 <div style="margin-top:6px">📍 <b>Grande agglomération</b> · main-d’œuvre +4 %</div>
 </div>
 </div>
@@ -7412,7 +7430,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </span>
 </div>
 </div>
-<div class="recap">🏠 <b>Maison</b> · 120 m² habitables · <b>2 niveaux</b> · emprise au sol ~60 m² · plafond 2.5 m → murs extérieurs ≈ <b>194 m²</b> · toiture ≈ <b>84 m²</b>
+<div class="recap">🏠 <b>Maison</b> · 120 m² habitables · <b>2 niveaux</b> · emprise au sol ~60 m² · plafond 2,5 m → murs extérieurs ≈ <b>194 m²</b> · toiture ≈ <b>84 m²</b>
 <span style="color:var(--faint)"> (dont ~60 m² à l’étage)</span>
 <div style="margin-top:6px">→ <b>7 pièces</b> au total · <b>2 salles de bain</b> (dont 1 en suite) · 10 menuiseries ext.</div>
 <div style="margin-top:6px">📍 <b>Paris &amp; petite couronne</b> · main-d’œuvre +20 %</div>
@@ -8906,7 +8924,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · page vierge 1`] = `
 </span>
 </div>
 </div>
-<div class="recap">🏠 <b>Maison</b> · 80 m² habitables · <b>1 niveau</b> · emprise au sol ~80 m² · plafond 2.5 m → murs extérieurs ≈ <b>112 m²</b> · toiture ≈ <b>112 m²</b>
+<div class="recap">🏠 <b>Maison</b> · 80 m² habitables · <b>1 niveau</b> · emprise au sol ~80 m² · plafond 2,5 m → murs extérieurs ≈ <b>112 m²</b> · toiture ≈ <b>112 m²</b>
 <div style="margin-top:6px">→ <b>6 pièces</b> au total · <b>1 salle de bain</b> · 7 menuiseries ext.</div>
 </div>
 </div>
@@ -9311,7 +9329,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · pieces 1`] = `
 </span>
 </div>
 </div>
-<div class="recap">🎯 <b>Pièces ciblées</b> · 28 m² · plafond 2.5 m<div style="margin-top:6px">→ 2 Chambre · 1 Salle de bain</div>
+<div class="recap">🎯 <b>Pièces ciblées</b> · 28 m² · plafond 2,5 m<div style="margin-top:6px">→ 2 Chambre · 1 Salle de bain</div>
 </div>
 </div>
 <div class="intro">Ouvre les lots concernés, coche les travaux, ajuste les quantités. Prix affichés <b>HT</b>. Sur chaque travail faisable soi-même, électricité, mur porteur et charpente compris, choisis <b>« Fait faire »</b> (artisan) ou <b>« Je le fais »</b> — les 2 prix s’affichent. Pris soi-même, un poste de maçonnerie, de charpente, de couverture ou de menuiseries extérieures sort de la garantie décennale ; pour un mur porteur ou une charpente, une étude est conseillée.</div>
@@ -9603,7 +9621,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · suite 1`] = `
 </span>
 </div>
 </div>
-<div class="recap">🎯 <b>Pièces ciblées</b> · 25 m² · plafond 2.5 m<div style="margin-top:6px">→ 1 Suite parentale</div>
+<div class="recap">🎯 <b>Pièces ciblées</b> · 25 m² · plafond 2,5 m<div style="margin-top:6px">→ 1 Suite parentale</div>
 <div style="margin-top:6px">📍 <b>Zone tendue</b> · main-d’œuvre +10 %</div>
 </div>
 </div>

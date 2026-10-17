@@ -80,7 +80,8 @@ const fr = {
   /* Récapitulatif sous le questionnaire */
   recap: {
     pieces: "Pièces ciblées",
-    plafond: (h: number) => `plafond ${h} m`,
+    /** Hauteur sous plafond, à la virgule française (« 2,5 m »). */
+    plafond: (h: number) => `plafond ${String(h).replace(".", ",")} m`,
     piece: (n: number, nom: string) => `${n} ${nom}`,
     appart: "Appartement",
     maison: "Maison",

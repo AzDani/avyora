@@ -81,7 +81,8 @@ export const QUESTIONS_NEUF: GroupeQuestionsNeuf[] = [
     { k: "garage", l: { fr: "Garage accolé", en: "Attached garage" }, section: "surfaces", vue: "champ", t: "num", u: "m²",
       min: B.garage.min, max: B.garage.max, step: 5, hint: { fr: "0 = sans garage", en: "0 = no garage" } },
     { k: "codePostal", l: { fr: "Code postal du terrain", en: "ZIP code of the plot" }, section: "surfaces", vue: "cp", t: "cp" },
-    // La grille de la rénovation, dans son ordre (sans « Niveaux » : le type de maison le dit).
+    // La grille de la rénovation, dans son ordre. « Niveaux », qui l'ouvre, n'est pas une question : le type
+    // de maison le décide, l'écran l'affiche en lecture seule (A7). L'interrupteur se pose sous la grille.
     compteur("sejour", "sejour", B.sejour),
     compteur("cuisines", "cuisine", B.cuisines),
     compteur("chambres", "chambres", B.chambres),
@@ -166,9 +167,9 @@ export const QUESTIONS_NEUF: GroupeQuestionsNeuf[] = [
     ] },
   ] },
   { g: { fr: "Finition et pilotage", en: "Finish and management" }, qs: [
-    // Cartes : les textes du rapide (`dictNeuf().saisie.finitions`), comme la rénovation reprend les siens.
+    // Cartes : celles de la rénovation (`dictDetail().bien.finitions`) : mêmes noms, accroches et descriptions (A7).
     { k: "$finition", l: { fr: "Niveau de finition", en: "Finish level" }, section: "finition", vue: "cartes", o: [
-      ["eco", { fr: "Éco", en: "Basic" }], ["standard", { fr: "Standard", en: "Standard" }], ["premium", { fr: "Premium", en: "Premium" }],
+      ["eco", { fr: "Éco", en: "Economy" }], ["standard", { fr: "Standard", en: "Standard" }], ["premium", { fr: "Premium", en: "Premium" }],
     ] },
     { k: "pilotage", l: { fr: "Qui pilote le chantier", en: "Who manages the build" }, section: "pilotage", vue: "segment", o: [
       ["moi", { fr: "Moi (lots séparés)", en: "Me (separate trades)" }], ["moe", { fr: "Un maître d'œuvre", en: "A project manager" }],
