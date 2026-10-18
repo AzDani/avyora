@@ -56,7 +56,7 @@ export default async function AdminOverview() {
         <Kpi k="Inscrits" v={String(s.totalInscrits)} d={`+${s.nouveaux30j} sur 30 j`} good={s.nouveaux30j > 0} />
         <Kpi k="Projets créés" v={String(s.totalProjets)} d={budgetsMoyens(s.budgetMoyen, s.budgetMoyenNeuf)} />
         <Kpi k="Comptes Pro" v={String(s.totalPro)} d="mode test Stripe" />
-        <Kpi k="Onboarding complété" v={`${s.onboardingPct} %`} d={`${inscrits.filter((i) => i.onboardingFait).length} / ${s.totalInscrits}`} />
+        <Kpi k="Onboarding complété" v={`${s.onboardingPct}\u00a0%`} d={`${inscrits.filter((i) => i.onboardingFait).length} / ${s.totalInscrits}`} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">

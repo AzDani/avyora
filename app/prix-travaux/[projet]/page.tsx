@@ -186,7 +186,7 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
   const faq = [
     {
       q: `Combien coûte ${nomQ} en 2026 ?`,
-      a: `Comptez en moyenne ${euro(f.lo)} à ${euro(f.hi)} pour ${p.base} (finition standard, travaux confiés à des artisans, marge ±15 %). Le prix exact dépend de la surface, des équipements et de la région.`,
+      a: `Comptez en moyenne ${euro(f.lo)} à ${euro(f.hi)} pour ${p.base} (finition standard, travaux confiés à des artisans, marge ±15\u00a0%). Le prix exact dépend de la surface, des équipements et de la région.`,
     },
     ...(parSurface.length > 1
       ? [
@@ -261,7 +261,7 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
         <span className="v">{euro(f.lo)} – {euro(f.hi)}</span>
         <span className="sub">budget moyen · {p.base}</span>
       </div>
-      <p className="note">Prix TTC indicatifs, finition standard, travaux confiés à des artisans, marge ±15 %{ratioTexte}. Base de calcul : moteur AVYORA.</p>
+      <p className="note">Prix TTC indicatifs, finition standard, travaux confiés à des artisans, marge ±15&nbsp;%{ratioTexte}. Base de calcul : moteur AVYORA.</p>
 
       <h2>Le détail du budget, poste par poste</h2>
       <p>Voici comment se répartit le budget pour {p.base}, corps d&apos;état par corps d&apos;état :</p>
@@ -324,7 +324,7 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
             Chaque ligne rejoue le même panier de travaux sur la surface indiquée : les ouvrages de
             sol et de plafond suivent la surface, la faïence et la peinture murale suivent le
             périmètre (donc la racine de la surface), et les équipements restent à l&apos;unité.
-            Fourchettes ±15 %, finition standard, moyenne nationale.
+            Fourchettes ±15&nbsp;%, finition standard, moyenne nationale.
           </p>
 
           {cles.map((r) => (
@@ -388,7 +388,7 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
           <p className="note">
             Chaque ligne rejoue le même panier de travaux : seul l&apos;équipement indiqué change — la
             surface, la faïence, le sol et l&apos;électricité restent identiques. Montants TTC hors
-            marge ±15 %, pour que l&apos;écart entre deux lignes reste lisible ; finition standard,
+            marge ±15&nbsp;%, pour que l&apos;écart entre deux lignes reste lisible ; finition standard,
             moyenne nationale. Pour un chantier limité à ce seul poste, voir{" "}
             <Link href="/prix-travaux/douche-italienne">le prix d&apos;une douche à l&apos;italienne</Link>{" "}
             et <Link href="/prix-travaux/remplacer-baignoire-par-douche">le remplacement d&apos;une baignoire par une douche</Link>.
@@ -420,7 +420,7 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
             </table>
           </div>
           <p className="note">
-            Montants TTC sans la marge ±15 %, pour que l&apos;écart entre deux lignes reste lisible.
+            Montants TTC sans la marge ±15&nbsp;%, pour que l&apos;écart entre deux lignes reste lisible.
             Chaque option est une variante du référentiel AVYORA appliquée au panier de référence
             ({euro(refTtc)}) — l&apos;écart est calculé, pas estimé à la louche.
           </p>
@@ -441,22 +441,22 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
             <tr>
               <td>Matériaux et fournitures</td>
               <td className="num">{euro(est.materiaux)}</td>
-              <td className="num">{pctMat} %</td>
+              <td className="num">{pctMat}&nbsp;%</td>
             </tr>
             <tr>
               <td>Main-d&apos;œuvre</td>
               <td className="num">{euro(est.mainOeuvre)}</td>
-              <td className="num">{pctMo} %</td>
+              <td className="num">{pctMo}&nbsp;%</td>
             </tr>
             <tr>
               <td>Provision pour imprévus</td>
               <td className="num">{euro(est.aleas)}</td>
-              <td className="num">{pctAleas} %</td>
+              <td className="num">{pctAleas}&nbsp;%</td>
             </tr>
             <tr className="lot">
               <td>Total HT, provision comprise</td>
               <td className="num">{euro(baseHT)}</td>
-              <td className="num">100 %</td>
+              <td className="num">100&nbsp;%</td>
             </tr>
           </tbody>
         </table>
@@ -465,7 +465,7 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
         La provision pour imprévus est <strong>déjà incluse</strong>{" "}dans le budget affiché en haut
         de page : un chantier de rénovation réserve des surprises une fois les cloisons ouvertes, et
         un chiffrage qui les ignore est faux par construction. La TVA s&apos;ajoute ensuite au taux
-        applicable à chaque poste (5,5 %, 10 % ou 20 %) — voir <Link href="/methodologie">la méthode</Link>.
+        applicable à chaque poste (5,5&nbsp;%, 10&nbsp;% ou 20&nbsp;%) — voir <Link href="/methodologie">la méthode</Link>.
       </p>
       <p className="note">
         L&apos;écart entre matériaux et main-d&apos;œuvre est aussi ce qui décide si faire soi-même
@@ -508,7 +508,7 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
         </tbody>
       </table>
       </div>
-      <p className="note">Fourchettes ±15 %. Consulte le prix ajusté à ta ville ci-dessous.</p>
+      <p className="note">Fourchettes ±15&nbsp;%. Consulte le prix ajusté à ta ville ci-dessous.</p>
 
       {MATRIX_SLUGS.has(p.slug) && (
         <>

@@ -138,13 +138,14 @@ describe("D7 · les textes publics citent la constante, plus « 7 % » en dur", 
     const c = await texteCompile("app/methodologie/page.tsx");
     // Aléas : « 10 % par défaut est ajoutée au total d'une rénovation (7 % pour une construction neuve ».
     expect(c).toMatch(/ALEAS_RENO,\s*"\u00a0% par défaut"\s*\]\s*\}\),\s*" ",\s*"est ajoutée au total d'une rénovation \(",\s*ALEAS_NEUF,\s*"\u00a0% pour une construction neuve/);
-    // TVA (même défaut, déjà en ligne avant D7) : « 10 % pour la rénovation », « 5,5 % sur les travaux ».
-    expect(c).toMatch(/children: "10 %"\s*\}\),\s*" ",\s*"pour la rénovation/);
-    expect(c).toMatch(/deux ans, ",\s*\/\*#__PURE__\*\/ _jsx\("strong", \{\s*children: "5,5 %"\s*\}\),\s*" ",\s*"sur les travaux/);
+    // TVA (même défaut, déjà en ligne avant D7) : « 10 % pour la rénovation », « 5,5 % sur les travaux » ; « % » après
+    // une espace insécable depuis F1.
+    expect(c).toMatch(/children: "10\u00a0%"\s*\}\),\s*" ",\s*"pour la rénovation/);
+    expect(c).toMatch(/deux ans, ",\s*\/\*#__PURE__\*\/ _jsx\("strong", \{\s*children: "5,5\u00a0%"\s*\}\),\s*" ",\s*"sur les travaux/);
     // Aucun texte de ces deux paragraphes collé à l'élément qui le précède.
     expect(c).not.toMatch(/\}\),\s*"(est ajoutée|pour la rénovation|sur les travaux)/);
     const faq = fs.readFileSync("app/prix-travaux/page.tsx", "utf8");
-    expect(faq).toContain("provision de ${ALEAS_RENO} % pour imprévus");
+    expect(faq).toContain("provision de ${ALEAS_RENO}\\u00a0% pour imprévus");
     expect(faq).not.toContain("provision de 7 %");
   });
 });

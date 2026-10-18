@@ -31,6 +31,7 @@ import { presetMaison, maisonParDefaut, regionCoef, type MaisonNeuve } from "@/l
 import { dictDetail } from "@/lib/i18n/detail";
 import { dictNeuf } from "@/lib/i18n/neuf";
 import { dict, type Dict } from "@/lib/i18n/dictionaries";
+import { signePct } from "@/lib/i18n/nombres";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: () => {}, replace: () => {}, refresh: () => {}, back: () => {}, forward: () => {}, prefetch: () => {} }) }));
 
@@ -95,7 +96,7 @@ describe("A7 · les deux questionnaires côte à côte", () => {
       const reg = regionCoef("75011");
       expect(reg.mo).toBeGreaterThan(1);
       expect(html).toContain(`📍 <b>${echapper(dict(locale).rapide.zones[reg.zone as keyof Dict["rapide"]["zones"]] ?? reg.zone)}</b> · ${echapper(dictDetail(locale).recap.mo("+" + Math.round((reg.mo - 1) * 100)))}`);
-      expect(html).not.toContain(dict(locale).rapide.moSuffix);
+      expect(html).not.toContain(signePct(locale) + " " + dict(locale).rapide.moSuffix);   // « +10 % MO » du rapide (F1 : le signe à part)
       expect(fs.readFileSync("components/neuf/EstimateurNeuf.tsx", "utf8")).not.toMatch(/moSuffix|cpPlaceholder/);
     });
 
@@ -108,13 +109,17 @@ describe("A7 · les deux questionnaires côte à côte", () => {
       expect(budget).toContain('id="av-neuf-budget"');
     });
 
-    it(`${locale} (5) : les cartes de finition de la rénovation, mêmes noms et mêmes accroches`, () => {
-      expect(bloc(neuf, '<div class="finc"')).toBe(bloc(reno, '<div class="finc"'));
+    it(`${locale} (5) : les cartes de finition de la rénovation, mêmes noms et mêmes accroches (sauf l'accroche Éco, F1)`, () => {
+      // Décision de Dani (18/10) : en neuf, « Budget maîtrisé » seul ; la rénovation garde « Locatif · budget maîtrisé ».
+      const ecoNeuf = dictNeuf(locale).saisie.finitions.eco.eye!;
+      expect(ecoNeuf).toBe(locale === "fr" ? "Budget maîtrisé" : "Budget-conscious");
+      expect(bloc(neuf, '<div class="finc"')).toBe(bloc(reno, '<div class="finc"').replace(`<span class="fe">${echapper(B.finitions.eco.eye)}</span>`, `<span class="fe">${echapper(ecoNeuf)}</span>`));
+      expect(bloc(neuf, '<div class="finc"')).not.toBe(bloc(reno, '<div class="finc"'));
       // Le rapide du neuf prend désormais les noms et accroches du rapide de la rénovation (N13) : sa propre
       // table ne garde que les descriptions. Ceux-là sont aussi ceux des cartes du détaillé.
       const rapide = dict(locale).rapide.finitions as Record<string, { label: string; eye: string }>, ref = B.finitions;
       for (const f of ["eco", "standard", "premium"]) {
-        expect(Object.keys(dictNeuf(locale).saisie.finitions[f]), f).toEqual(["desc"]);
+        expect(Object.keys(dictNeuf(locale).saisie.finitions[f]), f).toEqual(f === "eco" ? ["eye", "desc"] : ["desc"]);
         expect([rapide[f].label, rapide[f].eye], f).toEqual([ref[f].label, ref[f].eye]);
         expect(q("$finition").o!.find(([v]) => v === f)![1][locale], f).toBe(ref[f].label);
       }

@@ -103,7 +103,7 @@ export default function PrixRenovationHub() {
       <p>
         Avant de regarder le prix dans ta ville, voici le repère national. Ces montants sont calculés
         par le moteur AVYORA sur un appartement type de 70 m² et une maison type de 100 m², finition
-        standard, travaux confiés à des artisans — TTC, fourchette ±15 %.
+        standard, travaux confiés à des artisans — TTC, fourchette ±15&nbsp;%.
       </p>
       <div className="tw">
         <table>
@@ -134,7 +134,7 @@ export default function PrixRenovationHub() {
       </p>
       <p>
         C&apos;est pourquoi AVYORA applique un coefficient au seul coût de pose, par département.
-        Il va de <strong>−10 %</strong> dans les zones rurales à <strong>+20 %</strong>{" "}à Paris et en
+        Il va de <strong>−10&nbsp;%</strong> dans les zones rurales à <strong>+20&nbsp;%</strong>{" "}à Paris et en
         petite couronne. Sur une rénovation complète de 100 m², cet écart représente plusieurs
         milliers d&apos;euros — assez pour changer un projet.
       </p>

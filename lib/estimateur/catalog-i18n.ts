@@ -796,6 +796,19 @@ export function catLigne(locale: string, nom: string, cle?: string): string {
   return `${catT(locale, "postes", base)} (${parts.join(", ")})`;
 }
 
+/**
+ * Libellé COURT d'une ligne de devis : celui de `catLigne`, le libellé court du poste (`nc`, N11) à la place
+ * de son libellé quand il en a un, la variante choisie gardée. Sert à la fiche d'une estimation rapide de
+ * construction (« Tes postes les plus lourds », F1), où les libellés longs du catalogue débordaient. Sans
+ * `nc`, rend `catLigne`.
+ */
+export function catLigneCourte(locale: string, nom: string, cle: string, t?: { n: string; nc?: string } | null): string {
+  const long = catLigne(locale, nom, cle);
+  if (!t?.nc || !nom.startsWith(t.n)) return long;
+  const base = catT(locale, "postes", t.n);
+  return catT(locale, "postes", t.nc) + (long.startsWith(base) ? long.slice(base.length) : nom.slice(t.n.length));
+}
+
 /** Vrai si la chaîne a sa traduction anglaise (sans repli sur le FR). Sert aux tests. */
 export function aTraductionEN(kind: CatKind, fr: string): boolean {
   return Object.prototype.hasOwnProperty.call(EN[kind], fr);

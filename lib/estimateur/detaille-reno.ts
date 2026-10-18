@@ -11,6 +11,7 @@
  * - chaque réponse du questionnaire rend un NOUVEAU contexte (surface au sol qui suit la surface et
  *   les niveaux, type de bien, périmètre « pièces ciblées », suite parentale, compteurs) ;
  * - les réglages d'une ligne (`Row`) rendent une nouvelle ligne : les mêmes pour le neuf ;
+ * - les outils de la liste, « Seulement les postes cochés » et « Tout déplier », comme le neuf ;
  * - les reprises (projet rouvert, « Affiner » depuis le rapide, brouillon) et le corps de
  *   l'enregistrement.
  *
@@ -18,7 +19,7 @@
  * `tests/detaille-rendu-temoins.test.ts`).
  */
 import {
-  defaultCtx, deriveSol, nbFen, nbPieces, ESPACES, espacesCompo, selectedEspaces, piecesEff, sdbEff, key, isLoc, isAuto, autoQty,
+  defaultCtx, deriveSol, nbFen, nbPieces, ESPACES, espacesCompo, selectedEspaces, piecesEff, sdbEff, key, isLoc, isAuto, autoQty, visibleTask,
   type Ctx, type Selection, type LigneSel, type TypeBien, type Lot, type Tache, type CustomLine,
 } from "./core";
 
@@ -263,6 +264,29 @@ export const ligneMateriaux = (v: number | null) => (s: LigneSel): LigneSel => {
   if (v == null) delete n.pm; else { n.pm = v; delete n.pu; }
   return n;
 };
+
+// ── Liste des lots : « Seulement les postes cochés » et « Tout déplier », comme le neuf ───────
+/** Les postes d'un lot que la liste montre : ceux du bien (`visibleTask`) ; avec « Seulement les postes
+ *  cochés », les cochés seuls. */
+export function postesAffichesReno(ctx: Ctx, sel: Selection, l: Lot, seulementCoches: boolean): Tache[] {
+  return l.t.filter((t) => visibleTask(ctx, t) && (!seulementCoches || !!sel[key(l.c, t.n)]?.on));
+}
+
+/** Le compteur de l'en-tête d'un lot : ses postes cochés (ceux du bien) et ses lignes perso validées.
+ *  Un lot à 0 disparaît sous « Seulement les postes cochés ». */
+export function cochesDuLotReno(ctx: Ctx, sel: Selection, l: Lot, custom: CustomLine[]): number {
+  return postesAffichesReno(ctx, sel, l, true).length + custom.filter((x) => x.lot === l.c && x.on !== false && !x.draft).length;
+}
+
+/** Vrai quand tous les lots montrés (`lots`, déjà filtrés pour le bien) sont ouverts : le bouton dit alors
+ *  « Tout replier ». */
+export const toutOuvertReno = (lots: Lot[], open: Record<string, boolean>): boolean => lots.every((l) => open[l.c]);
+
+/** « Tout déplier » ouvre les lots montrés ; « Tout replier » revient à la vue d'ouverture, tous fermés
+ *  (comme le neuf). */
+export function basculerToutReno(lots: Lot[], open: Record<string, boolean>): Record<string, boolean> {
+  return toutOuvertReno(lots, open) ? {} : Object.fromEntries(lots.map((l) => [l.c, true]));
+}
 
 // ── Enregistrement ───────────────────────────────────────────────────────────────────────────
 /** Ce qui manque pour enregistrer : un code postal à 5 chiffres, puis une surface. */

@@ -243,8 +243,10 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
     if (q.vue === "segment") return <Segment aria={lbl} valeur={v} onChoix={choisir(q)} options={options(q)} />;
     if (q.vue === "cartes") {
       const cartes = (q.o ?? []).map(([val, txt]) => {
-        // Finition : les cartes de la rénovation (noms, accroches, descriptions : A7).
-        const c = q.k === "$finition" ? B.finitions[String(val)] : null;
+        // Finition : les cartes de la rénovation (noms, accroches, descriptions : A7), sauf l'accroche de la
+        // carte Éco, celle du rapide du neuf (« Budget maîtrisé », sans « Locatif » : décision de Dani du 18/10).
+        const fin = q.k === "$finition" ? B.finitions[String(val)] : null;
+        const c = fin ? { ...fin, eye: n.saisie.finitions[String(val)]?.eye ?? fin.eye } : null;
         const t = q.cartes?.[String(val)];
         return {
           v: String(val), label: c?.label ?? txt[locale], eye: c?.eye ?? t?.eye[locale] ?? "", desc: c?.desc ?? t?.desc[locale] ?? "",
@@ -445,8 +447,8 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
               )}
             </div>
             <ListeNeuf {...liste} custom={custom} outils={{
-              seulement: seulementCoches, onSeulement: setSeulementCoches, texteSeulement: d.seulementCoches,
-              toutOuvert, onTout: basculerTout, texteDeplier: d.toutDeplier, texteReplier: d.toutReplier,
+              seulement: seulementCoches, onSeulement: setSeulementCoches, texteSeulement: dl.liste.seulementCoches,
+              toutOuvert, onTout: basculerTout, texteDeplier: dl.liste.toutDeplier, texteReplier: dl.liste.toutReplier,
             }} />
 
             <div style={{ textAlign: "center", marginTop: 14 }}>

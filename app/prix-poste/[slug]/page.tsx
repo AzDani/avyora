@@ -124,7 +124,7 @@ export default async function PrixPostePage({ params }: { params: Promise<{ slug
         donne le coût des matériaux si vous posez vous-même : l&apos;écart entre les deux colonnes
         correspond à la main-d&apos;œuvre.
         {partMO && (
-          <> Sur ce lot, elle représente environ <strong>{partMO.partMO} %</strong> du prix posé.</>
+          <> Sur ce lot, elle représente environ <strong>{partMO.partMO}&nbsp;%</strong> du prix posé.</>
         )}
       </p>
 

@@ -60,6 +60,7 @@ import BilanRapideNeuf from "./BilanRapideNeuf";
 import { NEUF_CSS } from "./neuf-styles";
 import { mesurerPlan, mesureEstimationNeuf } from "@/lib/plans/mesure";
 import { lienInscriptionBeta } from "@/lib/beta";
+import { signePct } from "@/lib/i18n/nombres";
 
 const FINITIONS: { v: Finition; lvl: number }[] = [
   { v: "eco", lvl: 1 },
@@ -125,8 +126,11 @@ export default function EstimateurRapideNeuf({
   const s = beta ? { ...dictNeuf(locale).saisie, introGratuit: T.beta.introNeuf, affinerPro: T.beta.affinerNeuf } : dictNeuf(locale).saisie;
   const rn = dictNeuf(locale).rapide;
   /* Finition et « qui réalise » : titres, noms et accroches communs aux deux rapides (`dict().rapide`, N13) ;
-     le neuf ne remplace que la description. */
-  const carteFin = (v: Finition) => ({ ...T.rapide.finitions[v], desc: s.finitions[v]?.desc ?? T.rapide.finitions[v].desc });
+     le neuf ne remplace que la description, et l'accroche de la carte Éco (« Budget maîtrisé » : décision
+     de Dani du 18/10, « Locatif » ne parle qu'à la rénovation). */
+  const carteFin = (v: Finition) => ({
+    ...T.rapide.finitions[v], eye: s.finitions[v]?.eye ?? T.rapide.finitions[v].eye, desc: s.finitions[v]?.desc ?? T.rapide.finitions[v].desc,
+  });
   const carteQui = (v: QuiRealise) => ({ ...T.rapide.quis[v], desc: s.quis[v]?.desc ?? T.rapide.quis[v].desc });
   const versInscription = beta && !isPro;
   const nf = locale === "en" ? "en-US" : "fr-FR";
@@ -301,7 +305,8 @@ export default function EstimateurRapideNeuf({
   const reg = regionCoef(R.codePostal);
   const regDelta = Math.round((reg.mo - 1) * 100);
   const zoneLbl = T.rapide.zones[reg.zone] ?? reg.zone;
-  const regLabel = R.codePostal.length >= 2 ? `${zoneLbl}${regDelta ? ` · ${regDelta > 0 ? "+" : ""}${regDelta} ${T.rapide.moSuffix}` : ""}` : "";
+  // « +10 % MO » / « +4% labor », comme la rénovation (F1).
+  const regLabel = R.codePostal.length >= 2 ? `${zoneLbl}${regDelta ? ` · ${regDelta > 0 ? "+" : ""}${regDelta}${signePct(locale)} ${T.rapide.moSuffix}` : ""}` : "";
 
   // Le bouton du cadenas du bilan (mémoïsé) appelle toujours la version courante d'« Affiner ».
   const affinerRef = useRef<() => void>(() => {});
@@ -491,7 +496,7 @@ export default function EstimateurRapideNeuf({
                   <span className="d">{qi.desc}</span>
                   <span className="amt">
                     <span className="p">≈ <b>{price.toLocaleString(nf)} €</b> / m²</span>
-                    {pct > 0 && <span className="save">−{pct}{locale === "en" ? "%" : " %"}</span>}
+                    {pct > 0 && <span className="save">−{pct}{signePct(locale)}</span>}
                   </span>
                 </button>
               );
@@ -548,7 +553,7 @@ export default function EstimateurRapideNeuf({
           <div>
             <div className="lbl">{s.liveLabel}</div>
             <div className="big">{valid ? <><CountUp value={lo} nf={nf} /> €<span style={{ opacity: .55 }}> – </span><CountUp value={hi} nf={nf} /> €</> : "—"}</div>
-            <div className="sub">{valid ? <>≈ <CountUp value={m2} nf={nf} /> {s.parM2} · {locale === "en" ? "±15%" : "±15 %"}{regLabel ? <> · {regLabel}</> : ""}</> : !affiche ? s.attente : s.errSurface}</div>
+            <div className="sub">{valid ? <>≈ <CountUp value={m2} nf={nf} /> {s.parM2} · {locale === "en" ? "±15%" : "±15\u00a0%"}{regLabel ? <> · {regLabel}</> : ""}</> : !affiche ? s.attente : s.errSurface}</div>
           </div>
           <div className="btns">
             <button type="button" className="ghost" onClick={affiner}>{isPro ? s.affiner : s.affinerPro}</button>

@@ -89,7 +89,7 @@ export default function GuidesHub() {
       <h2>Le repère national, en un coup d&apos;œil</h2>
       <p>
         Avant d&apos;entrer dans le détail, voici l&apos;ordre de grandeur. Appartement type de 70 m²,
-        maison type de 100 m², finition standard, travaux confiés à des artisans — TTC, fourchette ±15 %.
+        maison type de 100 m², finition standard, travaux confiés à des artisans — TTC, fourchette ±15&nbsp;%.
       </p>
       <div className="tw">
         <table>

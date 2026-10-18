@@ -19,6 +19,8 @@ export const RAPIDE_CSS = `
 .av-rapide .fld input{width:100%;font-family:var(--font-geist-sans);font-size:16px;color:var(--ink);background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--radius-field);padding:11px 12px;outline:none;transition:.15s}
 .av-rapide .fld input:focus{border-color:var(--brand);box-shadow:0 0 0 4px color-mix(in srgb,var(--brand) 14%,transparent)}
 .av-rapide .seg button,.av-rapide .fld input{min-height:44px}
+/* Le champ Surface des deux rapides (« − 100 m² + ») : de la hauteur du champ du code postal, à côté (F1). */
+.av-rapide .av-step.block{height:48px}
 .av-rapide .fld input[aria-invalid="true"]{border-color:#e0434b;box-shadow:0 0 0 3px rgba(224,67,75,.15)}
 .av-rapide .cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .av-rapide .amp{display:flex;flex-direction:column;text-align:left;background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--radius-card);padding:14px;cursor:pointer;transition:.16s var(--ease);position:relative}
@@ -124,7 +126,8 @@ export const RAPIDE_CSS = `
 .av-rapide-live a.cta{text-decoration:none;display:inline-flex;align-items:center}
 .av-rapide-live .cta,.av-rapide-live .ghost{min-height:44px}
 @media(max-width:520px){.av-rapide .prow{flex-wrap:wrap}.av-rapide .prow .pname{flex-basis:100%}
-/* mobile : cibles tactiles ≥ 36px sur les −/+ et « retirer » (26–28px au doigt, c'est trop petit) */
-.av-rapide .rstep button,.av-rapide .stepper button,.av-rapide .prm{width:36px;height:36px}.av-rapide .rstep .rn{min-width:20px;font-size:13px}.av-rapide .prow input{min-height:36px;font-size:16px}}
+/* mobile : cibles tactiles de 44 px sur les −/+ des pièces, leur surface et « retirer » (26–28 px au doigt, c'est trop petit ; F1) */
+.av-rapide .rstep button,.av-rapide .stepper button,.av-rapide .prm{width:44px;height:44px}.av-rapide .rstep .rn{min-width:20px;font-size:13px}.av-rapide .prow input{min-height:36px;font-size:16px}
+.av-rapide .prow .av-step.compact{height:44px}.av-rapide .prow .av-step.compact button{width:44px}}
 @media (prefers-reduced-motion:reduce){.av-rapide *,.av-rapide-live *{transition:none!important}}
 `;

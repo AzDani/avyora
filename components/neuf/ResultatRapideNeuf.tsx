@@ -1,11 +1,11 @@
 import "server-only";
 import Link from "next/link";
 import {
-  buildDevis, catalogueDe, regionCoef, maisonComplete,
+  buildDevis, catalogueDe, regionCoef, maisonComplete, tachesParCle,
   type Ctx, type Selection, type Finition, type QuiRealise,
 } from "@/lib/estimateur";
 import { normaliserCles } from "@/lib/estimateur/identite";
-import { catLigne } from "@/lib/estimateur/catalog-i18n";
+import { catLigneCourte } from "@/lib/estimateur/catalog-i18n";
 import { getLocale } from "@/lib/i18n/server";
 import { dict } from "@/lib/i18n/dictionaries";
 import { dictNeuf } from "@/lib/i18n/neuf";
@@ -20,6 +20,9 @@ import { betaActive } from "@/lib/beta";
  * Règle commune de l'aperçu (D9, N13), la même qu'en rénovation : un compte qui a les droits (abonné,
  * ou inscrit pendant la bêta, `estPro`) voit la répartition par phase et les postes en clair, sans
  * cadenas ; sinon des données FACTICES, floutées sous un cadenas (le flou n'est que du CSS).
+ *
+ * F1 : les postes les plus lourds prennent leur libellé court (`nc`, N11), et la ligne « + autres postes »
+ * dit son montant, comme « + autres corps d'état » en rénovation (le reste des lignes, TTC hors aléas).
  */
 type Reponses = { ctx?: Ctx; sel?: Selection; codePostal?: string; qui?: QuiRealise };
 
@@ -42,6 +45,7 @@ const CSS = `
 .av-rn .lrow:last-child{border-bottom:0}
 .av-rn .dot{width:10px;height:10px;border-radius:3px;flex:none}
 .av-rn .lrow .nm{min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:520px){.av-rn .lrow .nm{white-space:normal;line-height:1.3}}
 .av-rn .lrow .fake{display:block;height:10px;border-radius:99px;background:var(--line-strong)}
 .av-rn .lrow .lv{margin-left:auto;font-family:var(--font-geist-mono),monospace;font-weight:600;white-space:nowrap}
 .av-rn .lock{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:11px;padding:20px;background:rgba(248,249,253,.55)}
@@ -84,9 +88,12 @@ export default async function ResultatRapideNeuf({
   // Un gratuit ne reçoit PAS le détail dans le HTML (le flou n'est que du CSS) : des lignes factices
   // (barres grises, « ••• € ») sous un cadenas. Un Pro voit les vrais postes les plus lourds, en clair.
   const dv = isPro ? buildDevis(catalogueDe(ctx), ctx, sel) : null;
+  const taches = dv ? tachesParCle(ctx) : null;
+  const tri = dv ? [...dv.lignes].filter((li) => li.ttc > 0).sort((a, b) => b.ttc - a.ttc) : [];
   const top = dv
-    ? [...dv.lignes].filter((li) => li.ttc > 0).sort((a, b) => b.ttc - a.ttc).slice(0, 5).map((li) => ({ k: li.cle, nom: catLigne(locale, li.nom, li.cle), v: eur(li.ttc) }))
+    ? tri.slice(0, 5).map((li) => ({ k: li.cle, nom: catLigneCourte(locale, li.nom, li.cle, taches?.get(li.cle)), v: eur(li.ttc) }))
     : [62, 48, 55, 40, 50].map((w, i) => ({ k: "f" + i, nom: <span className="fake" style={{ width: w + "%" }} />, v: "••• €" }));
+  const autresTtc = tri.slice(5).reduce((s, li) => s + li.ttc, 0);
 
   const lignes = (
     <>
@@ -97,7 +104,7 @@ export default async function ResultatRapideNeuf({
           <span className="lv">{li.v}</span>
         </div>
       ))}
-      <div className="lrow"><span className="dot" style={{ background: SEG[SEG.length - 1] }} />{t.autres} <span className="lv">…</span></div>
+      <div className="lrow"><span className="dot" style={{ background: SEG[SEG.length - 1] }} /><span className="nm">{t.autres}</span> <span className="lv">{dv && autresTtc > 0 ? eur(autresTtc) : "…"}</span></div>
     </>
   );
 

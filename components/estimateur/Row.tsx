@@ -19,7 +19,7 @@ import { key, isAuto, autoQty, lineHT, effPrices, puReel, peutFaireSoiMeme, hors
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 import { dictDetail } from "@/lib/i18n/detail";
 import { BoutonInfo, ChoicePrice, TexteInfo, fmt, isUrl } from "./partage";
-import { nombre } from "@/lib/i18n/nombres";
+import { nombre, pourcent } from "@/lib/i18n/nombres";
 
 export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar, onNote, onPu, onPm, badge, proRaison, choix }: {
   l: Lot; t: Tache; ctx: Ctx; sel: Selection; loc: boolean;
@@ -73,7 +73,7 @@ export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onM
   const mention = MENTIONS_SOI_MEME[t.id];
   const jalon = badge === "jalon";
   const pctTxt = badge === "pct" && t.fp != null && !puEdited
-    ? `${t.fp.toLocaleString(locale === "en" ? "en-US" : "fr-FR")} ${t.assiette === "projet" || (t.frais && t.assiette !== "travaux") ? nTxt.pctProjet : nTxt.pctTravaux}`
+    ? `${pourcent(locale, t.fp, 3)} ${t.assiette === "projet" || (t.frais && t.assiette !== "travaux") ? nTxt.pctProjet : nTxt.pctTravaux}`
     : null;
   /* Le détail replié derrière l'icône d'information : le libellé complet quand la ligne en montre un
      court (neuf), puis la note du catalogue. */

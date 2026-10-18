@@ -16,6 +16,7 @@ import { catT, catLigne } from "@/lib/estimateur/catalog-i18n";
 import { useLocale, useT } from "@/components/i18n/LangProvider";
 import { dictNeuf } from "@/lib/i18n/neuf";
 import { fmt } from "@/components/estimateur/partage";
+import { pourcent } from "@/lib/i18n/nombres";
 import { VueDevis, type DonneesDevis } from "@/components/estimateur/VueDevis";
 
 export default function DevisNeuf({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Selection; custom?: CustomLine[] }) {
@@ -34,7 +35,6 @@ export default function DevisNeuf({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Se
   const persoTtc = cu.ht + cu.tva;
   // Le nom de la finition : celui des deux rapides (N13), le même que les cartes du questionnaire.
   const finLbl = T.rapide.finitions[ctx.finition]?.label ?? ctx.finition;
-  const nf = locale === "en" ? "en-US" : "fr-FR";
 
   const donnees: DonneesDevis = {
     eb: d.devisEb, ttc: t.ttc, ttcUnite: d.ttc,
@@ -72,7 +72,7 @@ export default function DevisNeuf({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Se
         const jalon = estJalon(tk) && li.ttc === 0;
         const pctPerso = sel[li.cle]?.pu != null;
         const q = li.unite === "forfait" ? "—"
-          : li.unite === "pct" ? (tk?.fp != null && !pctPerso ? `${tk.fp.toLocaleString(nf)} ${tk.assiette === "projet" || (tk.frais && tk.assiette !== "travaux") ? n.pctProjet : n.pctTravaux}` : "—")
+          : li.unite === "pct" ? (tk?.fp != null && !pctPerso ? `${pourcent(locale, tk.fp, 3)} ${tk.assiette === "projet" || (tk.frais && tk.assiette !== "travaux") ? n.pctProjet : n.pctTravaux}` : "—")
           : qteNeuf(locale, li.qty, li.unite, li.mode === "location");
         return {
           cle: li.cle, nom: catLigne(locale, li.nom, li.cle), q: jalon ? "—" : q,

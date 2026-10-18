@@ -12,7 +12,6 @@ export const NEUF_CSS = `
 .av-neuf .glbl .opt{font-weight:500;letter-spacing:.04em;text-transform:none;color:var(--muted);margin-left:6px}
 .av-neuf .intro{color:var(--muted)}
 .av-neuf .fields{margin-bottom:14px}
-.av-neuf .av-step.block{height:46px}
 .av-neuf .avert{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.5;color:#7a4b00;background:#fff7e6;border:1px solid #f6d999;border-radius:var(--radius-card);padding:11px 14px;margin-bottom:18px}
 .av-neuf .avert svg{flex:0 0 16px;margin-top:2px}
 .av-neuf .plan-ok{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.5;color:var(--ink);background:var(--brand-50);border:1px solid var(--brand-200);border-radius:var(--radius-card);padding:11px 14px;margin-bottom:18px}

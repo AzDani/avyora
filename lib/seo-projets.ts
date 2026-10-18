@@ -346,7 +346,7 @@ export const PROJETS: Projet[] = [
     uniteBase: { tache: "Réfection couverture tuiles (dépose + écran + liteaux)", label: "m² de couverture" },
     base: "une réfection de couverture tuiles d'environ 120 m² (maison de 100 m² au sol)",
     lead:
-      "Refaire une toiture, c'est protéger tout le reste de la maison. Le prix se calcule au m² de couverture (souvent 20 à 30 % de plus que la surface habitable, à cause de la pente) et dépend fortement du matériau.",
+      "Refaire une toiture, c'est protéger tout le reste de la maison. Le prix se calcule au m² de couverture (souvent 20 à 30\u00a0% de plus que la surface habitable, à cause de la pente) et dépend fortement du matériau.",
     inclus: [
       "Dépose de l'ancienne couverture, écran sous-toiture et liteaux neufs.",
       "Couverture tuiles neuve posée.",
@@ -418,7 +418,7 @@ export const PROJETS: Projet[] = [
     uniteBase: { tache: "Isolation des combles perdus (soufflage)", label: "m² isolé" },
     base: "l'isolation de 70 m² de combles perdus par soufflage",
     lead:
-      "L'isolation des combles est le meilleur rapport gain/euro de toute la rénovation énergétique : jusqu'à 30 % des déperditions de chaleur passent par le toit. Le soufflage de combles perdus est la solution la plus économique.",
+      "L'isolation des combles est le meilleur rapport gain/euro de toute la rénovation énergétique : jusqu'à 30\u00a0% des déperditions de chaleur passent par le toit. Le soufflage de combles perdus est la solution la plus économique.",
     inclus: [
       "Soufflage d'isolant en combles perdus (forte épaisseur).",
     ],

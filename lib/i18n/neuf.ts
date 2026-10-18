@@ -51,7 +51,7 @@ const fr = {
     sub: "Un ordre de grandeur immédiat à partir de tes réponses. Affine ta maison pour un chiffrage précis.",
     /* La fourchette en grand, comme la rénovation (N13) ; le total exact, valeur centrale, en repère. */
     budgetK: "Budget estimé · TTC tout compris",
-    marge: "marge ±15 %",
+    marge: "marge ±15\u00a0%",
     centreK: "estimation centrale",
     parM2: "par m² habitable",
     constr: "la construction",
@@ -89,7 +89,7 @@ const fr = {
     affiner: "Affiner ma maison →",
     passPro: "Passer en Pro pour le détail →",
     refaire: "Refaire une estimation",
-    margeInfo: "Estimation indicative basée sur le référentiel de prix AVYORA pour la construction neuve (France 2026) : un ordre de grandeur (marge ±15 %) à confirmer par des devis d'artisans.",
+    margeInfo: "Estimation indicative basée sur le référentiel de prix AVYORA pour la construction neuve (France 2026) : un ordre de grandeur (marge ±15\u00a0%) à confirmer par des devis d'artisans.",
   },
   /* Estimation rapide publique (/estimation-construction-maison) et son édition gratuite. */
   saisie: {
@@ -100,17 +100,19 @@ const fr = {
     q1: "Ta maison",
     surfaceLabel: "Surface habitable",
     cpLabel: "Code postal du terrain",
-    cpPlaceholder: "ex. 45000",
+    cpPlaceholder: "ex. 33000",   // le même exemple que la rénovation (F1)
     niveauxLabel: "Type de maison",
     niveaux: { pp: "Plain-pied", etage: "À étage", combles: "Combles aménagés" } as Record<string, string>,
     /* Les questions 2 et 3 (finition, qui réalise) : titres, noms et accroches de la rénovation
        (`dict().rapide`, N13), en français comme en anglais ; le neuf ne remplace que la description.
-       Le détaillé neuf prend les cartes de la rénovation (`dictDetail().bien.finitions`). */
+       Le détaillé neuf prend les cartes de la rénovation (`dictDetail().bien.finitions`). Seule exception,
+       l'accroche de la carte Éco (décision de Dani, 18/10) : « Budget maîtrisé », sans « Locatif », qui ne
+       parle qu'à la rénovation ; le rapide, la page publique et le détaillé du neuf la prennent ici. */
     finitions: {
-      eco: { desc: "Entrée de gamme robuste : sol stratifié, carrelage standard, sanitaires et cuisine simples." },
+      eco: { eye: "Budget maîtrisé", desc: "Entrée de gamme robuste : sol stratifié, carrelage standard, sanitaires et cuisine simples." },
       standard: { desc: "Bon rapport qualité-prix, marques milieu de gamme. Le bon équilibre pour une résidence principale." },
       premium: { desc: "Parquet, carrelage grand format, sanitaires et cuisine haut de gamme." },
-    } as Record<string, { desc: string }>,
+    } as Record<string, { eye?: string; desc: string }>,
     quis: {
       pros: { desc: "Un artisan pour chaque lot, avec sa garantie décennale. Tu coordonnes, ils construisent." },
       partie: { desc: "Tu prends la peinture, les sols, la plâtrerie ou l'isolation ; les artisans font le reste." },
@@ -126,8 +128,8 @@ const fr = {
     defauts: "Le reste prend les réglages les plus courants : rectangle simple, murs en parpaing, dalle sur terre-plein, toit 2 pans en tuiles, pompe à chaleur et plancher chauffant.",
     defautsBase: "Le reste reprend la description de ta maison : forme, murs, toit, chauffage, pièces.",
     avertDetaille: "Tu rouvres une estimation détaillée : la description de ta maison est gardée, mais si tu enregistres ici, tes réglages poste par poste et tes lignes personnalisées sont remplacés par l'estimation rapide, celle affichée ci-dessous. Ton suivi de chantier est gardé.",
-    intro: "Estimation indicative, marge ±15 %. « Affiner ma maison » ouvre le détail poste par poste.",
-    introGratuit: "Estimation indicative, marge ±15 %. Le détail lot par lot, poste par poste, fait partie du Pro.",
+    intro: "Estimation indicative, marge ±15\u00a0%. « Affiner ma maison » ouvre le détail poste par poste.",
+    introGratuit: "Estimation indicative, marge ±15\u00a0%. Le détail lot par lot, poste par poste, fait partie du Pro.",
     liveLabel: "Construction neuve · TTC",
     attente: "Plain-pied ou à étage ? Réponds pour voir ton budget",
     parM2: "€/m²",
@@ -177,7 +179,7 @@ const fr = {
     etapesHint: "Du permis à la remise des clés",
     jalon: "Jalon",
     duree: "Durée",
-    pied: "TVA 20 % (construction neuve) ; taxes, participations et assurance dommages-ouvrage sans TVA ni aléas. Non compris : terrain, notaire, aménagements extérieurs, aides et frais de prêt.",
+    pied: "TVA 20\u00a0% (construction neuve) ; taxes, participations et assurance dommages-ouvrage sans TVA ni aléas. Non compris : terrain, notaire, aménagements extérieurs, aides et frais de prêt.",
   },
   /* Estimation détaillée (Pro) : /projets/nouveau/construction et « Modifier » d'un projet neuf. */
   detail: {
@@ -202,7 +204,7 @@ const fr = {
     techSous: "· réglages courants préremplis",
     techModifier: "Modifier",
     techReplier: "Replier",
-    tvaNote: "Construction neuve : **TVA 20 %** sur tous les travaux, aucun taux réduit. Les taxes et l'assurance dommages-ouvrage n'ont pas de TVA.",
+    tvaNote: "Construction neuve : **TVA 20\u00a0%** sur tous les travaux, aucun taux réduit. Les taxes et l'assurance dommages-ouvrage n'ont pas de TVA.",
     /* Récapitulatif sous le questionnaire (`Recap`), tiré de la géométrie de la maison. */
     recapGarage: (m2: number) => `garage ${m2}\u00a0m²`,
     recapPlancher: (m2: string) => `surface de plancher ≈ ${m2}\u00a0m²`,
@@ -230,9 +232,6 @@ const fr = {
       + (n > 0 ? `${n} ligne${n > 1 ? "s" : ""} change${n > 1 ? "nt" : ""} : tes choix faits ligne par ligne sont remplacés.` : "Aucune ligne ne change."),
     confirmer: "Confirmer",
     annuler: "Annuler",
-    seulementCoches: "Seulement les postes cochés",
-    toutDeplier: "Tout déplier",
-    toutReplier: "Tout replier",
     /* Ligne de choix (N10) : des postes qui s'excluent, sur une seule ligne. */
     choixDoublon: "Deux choix sont cochés ici alors qu'un seul sert d'habitude : garde le bon, décoche l'autre.",
     architecteObligatoire: "Au-delà de 150 m² de surface de plancher, l'architecte est obligatoire.",
@@ -244,7 +243,7 @@ const fr = {
     demarchesT: "Démarches",
     demarchesSous: "étape par étape",
     demarchesNote: "Les formalités du chantier, dans l'ordre. Ce ne sont pas des postes : cette liste n'ajoute rien au total. Ce qui a un prix est compté ailleurs : l'assurance dommages-ouvrage et les taxes dans « Taxes, assurance et frais », le constat d'affichage dans les études, les branchements dans les raccordements. Dans « Mon devis » et le rapport PDF, elles gardent leur place dans le chantier.",
-    guideTva: "Construction neuve : TVA 20 % sur tous les travaux, aucun taux réduit. Une taxe ou une assurance n'a pas de TVA.",
+    guideTva: "Construction neuve : TVA 20\u00a0% sur tous les travaux, aucun taux réduit. Une taxe ou une assurance n'a pas de TVA.",
     reset: "Tout réinitialiser",
     totalK: "Total estimé",
     ttc: "€ TTC",
@@ -265,9 +264,9 @@ const fr = {
     errSurface: "Renseigne la surface habitable.",
     devisEb: "Ton estimation · construction neuve",
     travauxHt: "Travaux HT",
-    tva: "TVA 20 %",
-    aleas: (n: number) => `Aléas ${n} %`,
-    heroHint: "TVA 20 % sur toute la construction neuve, sans taux réduit. Taxes, participations et assurance dommages-ouvrage : sans TVA ni aléas.",
+    tva: "TVA 20\u00a0%",
+    aleas: (n: number) => `Aléas ${n}\u00a0%`,
+    heroHint: "TVA 20\u00a0% sur toute la construction neuve, sans taux réduit. Taxes, participations et assurance dommages-ouvrage : sans TVA ni aléas.",
     bilanT: "Le bilan de tes choix",
     bilanSous: "Ce que tu paies, et ce que tu économises en faisant toi-même (HT)",
     paye: "Payé aux artisans (fourni-posé)",
@@ -283,7 +282,7 @@ const fr = {
     modeJeFais: "je fais",
     modeFaitFaire: "fait faire",
     perso: "Lignes personnalisées",
-    pied: (f: string) => `Estimation indicative AVYORA : prix moyens du marché 2026 pour la construction neuve, finition ${f}. TVA 20 % ; taxes, participations et dommages-ouvrage sans TVA. Hors terrain, notaire, aménagements extérieurs et aides. Demande 2 ou 3 devis par lot pour affiner.`,
+    pied: (f: string) => `Estimation indicative AVYORA : prix moyens du marché 2026 pour la construction neuve, finition ${f}. TVA 20\u00a0% ; taxes, participations et dommages-ouvrage sans TVA. Hors terrain, notaire, aménagements extérieurs et aides. Demande 2 ou 3 devis par lot pour affiner.`,
   },
 };
 
@@ -367,14 +366,14 @@ const en: typeof fr = {
     q1: "Your house",
     surfaceLabel: "Living area",
     cpLabel: "ZIP code of the plot",
-    cpPlaceholder: "e.g. 45000",
+    cpPlaceholder: "e.g. 33000",
     niveauxLabel: "House type",
     niveaux: { pp: "Single-story", etage: "Two-story", combles: "Converted attic" } as Record<string, string>,
     finitions: {
-      eco: { desc: "Sturdy entry level: laminate floors, standard tiles, simple bathroom fittings and kitchen." },
+      eco: { eye: "Budget-conscious", desc: "Sturdy entry level: laminate floors, standard tiles, simple bathroom fittings and kitchen." },
       standard: { desc: "Good value, mid-range brands. The right balance for a main home." },
       premium: { desc: "Hardwood floors, large-format tiles, high-end bathroom fittings and kitchen." },
-    } as Record<string, { desc: string }>,
+    } as Record<string, { eye?: string; desc: string }>,
     quis: {
       pros: { desc: "A tradesperson for each trade, with their 10-year warranty. You coordinate, they build." },
       partie: { desc: "You take on painting, floors, plastering or insulation; the trades do the rest." },
@@ -392,7 +391,7 @@ const en: typeof fr = {
     avertDetaille: "You are reopening a detailed estimate: your house's description is kept, but if you save here, your line-by-line settings and custom lines are replaced by the quick estimate shown below. Your site tracking is kept.",
     intro: "Indicative estimate, ±15% margin. “Refine my house” opens the line-by-line detail.",
     introGratuit: "Indicative estimate, ±15% margin. The trade-by-trade, line-by-line detail is part of Pro.",
-    liveLabel: "New build · incl. tax",
+    liveLabel: "New build · incl. VAT",
     attente: "Single-story or two-story? Answer to see your budget",
     parM2: "€/m²",
     affiner: "Refine my house",
@@ -485,9 +484,6 @@ const en: typeof fr = {
       + (n > 0 ? `${n} line${n > 1 ? "s" : ""} change${n > 1 ? "" : "s"}: the choices you made line by line are replaced.` : "No line changes."),
     confirmer: "Confirm",
     annuler: "Cancel",
-    seulementCoches: "Checked items only",
-    toutDeplier: "Expand all",
-    toutReplier: "Collapse all",
     choixDoublon: "Two options are checked here where one is usually enough: keep the right one, uncheck the other.",
     architecteObligatoire: "Above 150 m² of floor area, an architect is mandatory.",
     selonToiture: "Doesn't match the roof described above: change the roof type in the questionnaire first.",
@@ -500,7 +496,7 @@ const en: typeof fr = {
     guideTva: "New build: 20% VAT on all works, no reduced rate. A tax or an insurance premium carries no VAT.",
     reset: "Reset everything",
     totalK: "Estimated total",
-    ttc: "€ incl. tax",
+    ttc: "€ incl. VAT",
     parM2: "/ m² of living area",
     parM2Court: "/m²",
     dontFrais: "incl. fees without VAT",
@@ -527,10 +523,10 @@ const en: typeof fr = {
     achat: "Bought or hired by you",
     eco: "Saved by doing it yourself",
     repT: "Breakdown by phase and trade",
-    repSous: "Amounts incl. tax: where your budget goes",
+    repSous: "Amounts incl. VAT: where your budget goes",
     vide: "No item checked. Go back to “My inputs”.",
     detailT: "Item detail",
-    detailSous: "Your selection, line by line (incl. tax)",
+    detailSous: "Your selection, line by line (incl. VAT)",
     modeLocation: "rental",
     modeJeFais: "DIY",
     modeFaitFaire: "hire out",

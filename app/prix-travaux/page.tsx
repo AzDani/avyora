@@ -92,11 +92,11 @@ export default function PrixTravauxHub() {
     },
     {
       q: "Quelle part du prix est de la main-d'œuvre ?",
-      a: `Elle varie du simple au double selon le métier : environ ${plusMo.partMo} % pour ${plusMo.nom}, contre ${moinsMo.partMo} % pour ${moinsMo.nom}, où ce sont les fournitures qui pèsent. C'est ce rapport qui décide si faire soi-même vaut le coup.`,
+      a: `Elle varie du simple au double selon le métier : environ ${plusMo.partMo}\u00a0% pour ${plusMo.nom}, contre ${moinsMo.partMo}\u00a0% pour ${moinsMo.nom}, où ce sont les fournitures qui pèsent. C'est ce rapport qui décide si faire soi-même vaut le coup.`,
     },
     {
       q: "Ces prix incluent-ils la TVA et les imprévus ?",
-      a: `Oui. Les budgets affichés sont TTC, avec le taux de TVA travaux applicable à chaque poste (5,5 %, 10 % ou 20 %), et ils intègrent une provision de ${ALEAS_RENO} % pour imprévus — un chantier de rénovation réserve des surprises une fois les cloisons ouvertes.`,
+      a: `Oui. Les budgets affichés sont TTC, avec le taux de TVA travaux applicable à chaque poste (5,5\u00a0%, 10\u00a0% ou 20\u00a0%), et ils intègrent une provision de ${ALEAS_RENO}\u00a0% pour imprévus — un chantier de rénovation réserve des surprises une fois les cloisons ouvertes.`,
     },
     {
       q: "Le prix change-t-il selon ma ville ?",
@@ -188,7 +188,7 @@ export default function PrixTravauxHub() {
               <tr key={r.slug}>
                 <td><Link href={`/prix-travaux/${r.slug}`}>{r.nom}</Link></td>
                 <td className="num">{euro(r.ttc)}</td>
-                <td className="num">{r.partMo} %</td>
+                <td className="num">{r.partMo}&nbsp;%</td>
               </tr>
             ))}
           </tbody>

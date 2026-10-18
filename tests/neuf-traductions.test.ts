@@ -24,6 +24,13 @@ const chaines = (lots: typeof CATALOG) => {
   return out;
 };
 
+/** Ce que le français affiche d'une chaîne du catalogue : sa forme accentuée, et dans une note « % » après une espace
+ *  insécable (F1, `libelleFr`). */
+const affichageFr = (k: CatKind, s: string): string => {
+  const v = FR_AFFICHAGE[k]?.[s] ?? s;
+  return k === "notes" ? v.replace(/(\d) %/g, "$1\u00a0%") : v;
+};
+
 describe("C6 · traductions EN du catalogue neuf", () => {
   const neuf = chaines(CATALOG_NEUF);
 
@@ -57,18 +64,20 @@ describe("C6 · traductions EN du catalogue neuf", () => {
   });
 
   it("le français ne bouge pas : en FR, catT rend la chaîne d'origine (hors unités pct/m3 et clés sans accents)", () => {
-    /* Seule exception : les clés restées sans accents (« Electricite ») s'affichent accentuées (catalog-fr.ts). */
-    for (const [k, s] of neuf) if (k !== "unites") expect(catT("fr", k, s)).toBe(FR_AFFICHAGE[k]?.[s] ?? s);
+    /* Exceptions : les clés restées sans accents (« Electricite ») s'affichent accentuées, et dans une note « % » suit
+       une espace insécable (F1) ; catalog-fr.ts. */
+    for (const [k, s] of neuf) if (k !== "unites") expect(catT("fr", k, s)).toBe(affichageFr(k, s));
   });
 
   it("la rénovation aussi a toutes ses chaînes en anglais (N6), sans repli sur le français, tous types confondus", () => {
     /* Avant N6, 19 chaînes de la rénovation restaient sans anglais (liste figée ici : les traduire changeait
        l'écran anglais de la rénovation). N6 met le détaillé entièrement en anglais : la liste est vide, et
        une chaîne ajoutée au catalogue sans sa traduction fait échouer ce test. Le français ne bouge pas,
-       hors clés restées sans accents (« Electricite »), affichées accentuées (catalog-fr.ts). */
+       hors clés restées sans accents (« Electricite »), affichées accentuées, et espace insécable avant « % » dans une
+       note (F1) ; catalog-fr.ts. */
     const sans = [...new Set(chaines(CATALOG).filter(([k, s]) => !aTraductionEN(k, s)).map(([k, s]) => `${k}:${s}`))];
     expect(sans).toEqual([]);
-    for (const [k, s] of chaines(CATALOG)) if (k !== "unites") expect(catT("fr", k, s)).toBe(FR_AFFICHAGE[k]?.[s] ?? s);
+    for (const [k, s] of chaines(CATALOG)) if (k !== "unites") expect(catT("fr", k, s)).toBe(affichageFr(k, s));
   });
 
   it("une ligne de devis avec sa variante se lit en anglais (catLigne), et rien ne change en FR", () => {

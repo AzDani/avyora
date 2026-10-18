@@ -135,15 +135,15 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
 
   const coefPhrase =
     moPct > 0
-      ? `la main-d'œuvre y est environ ${moPct} % plus chère que la moyenne nationale`
+      ? `la main-d'œuvre y est environ ${moPct}\u00a0% plus chère que la moyenne nationale`
       : moPct < 0
-        ? `la main-d'œuvre y est environ ${Math.abs(moPct)} % moins chère que la moyenne nationale`
+        ? `la main-d'œuvre y est environ ${Math.abs(moPct)}\u00a0% moins chère que la moyenne nationale`
         : `la main-d'œuvre y est dans la moyenne nationale`;
 
   const faq = [
     {
       q: `Combien coûte ${p.nomQuestion ?? p.nom} à ${v.nom} en 2026 ?`,
-      a: `À ${v.nom}, comptez en moyenne ${euro(f.lo)} à ${euro(f.hi)} pour ${p.base} (finition standard, artisans, marge ±15 %). Ce budget tient compte du coût local de la main-d'œuvre.`,
+      a: `À ${v.nom}, comptez en moyenne ${euro(f.lo)} à ${euro(f.hi)} pour ${p.base} (finition standard, artisans, marge ±15\u00a0%). Ce budget tient compte du coût local de la main-d'œuvre.`,
     },
     {
       q: `Pourquoi le prix est-il différent à ${v.nom} ?`,
@@ -229,7 +229,7 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
         <span className="sub">budget moyen à {v.nom} · {p.base}</span>
       </div>
       <p className="note">
-        Prix TTC indicatifs, finition standard, artisans, marge ±15 %. Zone « {reg.zone} » : {coefPhrase}.
+        Prix TTC indicatifs, finition standard, artisans, marge ±15&nbsp;%. Zone « {reg.zone} » : {coefPhrase}.
         {ecart !== 0 ? ` Soit ${ecart > 0 ? "environ " + euro(Math.abs(ecart)) + " de plus" : "environ " + euro(Math.abs(ecart)) + " de moins"} qu'en moyenne nationale.` : ""}
       </p>
 

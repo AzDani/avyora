@@ -5,6 +5,7 @@ import type { Locale } from "./config";
  * (revue rénovation / neuf, N14). Au tutoiement, comme le reste du produit ; en anglais américain.
  * Ce qui est propre au neuf (phases du chantier, démarches, pied de page) reste dans `dictNeuf().pdf`.
  * Aucun montant ici : les chiffres viennent du moteur, les nombres sont formatés par `lib/i18n/nombres`.
+ * « main-d’œuvre » avec l'apostrophe typographique, comme la fiche et le détaillé (F1).
  */
 const fr = {
   pageTitre: "Rapport d'estimation",
@@ -16,8 +17,8 @@ const fr = {
   niveaux: (n: number): string => (n > 1 ? "niveaux" : "niveau"),
   pieces: (n: number): string => (n > 1 ? "pièces" : "pièce"),
   sdb: (_n: number): string => "SDB",
-  mainOeuvre: "main-d'œuvre",
-  heroK: "Estimation TTC · marge ±15 %",
+  mainOeuvre: "main-d’œuvre",
+  heroK: "Estimation TTC · marge ±15\u00a0%",
   ttc: "TTC",
   probable: "Estimation la plus probable :",
   finition: (f: string) => `finition ${f}`,
@@ -30,7 +31,7 @@ const fr = {
   budgetHint: "Montants TTC · par corps d'état",
   quiT: "Qui fait quoi",
   quiHint: "Répartition HT",
-  mo: "Main-d'œuvre",
+  mo: "Main-d’œuvre",
   matPros: "Matériaux (pros)",
   matToi: "Matériaux (toi)",
   faitFaire: "Fait faire (artisans)",
@@ -38,7 +39,7 @@ const fr = {
   tuRealises: "Tu réalises",
   tuRealisesD: "fournitures des postes que tu poses",
   economie: "Économie de MO",
-  economieD: "main-d'œuvre évitée en faisant une partie",
+  economieD: "main-d’œuvre évitée en faisant une partie",
   corpsT: "Détail par corps d'état",
   corpsCol: "Corps d'état",
   phase: "Phase",
@@ -53,7 +54,7 @@ const fr = {
   notesHint: "Tes repères produits",
   piedGras: "Estimation indicative",
   pied: (zone: string, finition: string, aleas: string) =>
-    ` générée par AVYORA à partir des informations saisies — marge ±15 %. Elle ne constitue pas un devis et n'engage aucun artisan. Les prix intègrent un coefficient régional appliqué à la main-d'œuvre (zone : ${zone}) et le niveau de finition « ${finition} ». Provision pour aléas de ${aleas} incluse.`,
+    ` générée par AVYORA à partir des informations saisies — marge ±15\u00a0%. Elle ne constitue pas un devis et n'engage aucun artisan. Les prix intègrent un coefficient régional appliqué à la main-d’œuvre (zone : ${zone}) et le niveau de finition « ${finition} ». Provision pour aléas de ${aleas} incluse.`,
   signature: " · estime tes travaux avant de signer · getavyora.fr",
 };
 

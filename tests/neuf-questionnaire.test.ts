@@ -89,7 +89,7 @@ describe("N9 · une seule carte, les intertitres de la rénovation dans le même
 
     it(`${locale} : hauteur 2,50 m en lecture seule, note TVA 20 %, aléas recommandés, récapitulatif partagé`, () => {
       expect(neuf).toContain(`<output id="av-neuf-hauteur" class="ro"><span class="num">${d.hauteurValeur}</span><span class="u">m</span></output>`);
-      expect(neuf).toMatch(locale === "fr" ? /<b>TVA 20 %<\/b>/ : /<b>20% VAT<\/b>/);
+      expect(neuf).toMatch(locale === "fr" ? /<b>TVA 20\u00a0%<\/b>/ : /<b>20% VAT<\/b>/);   // espace insécable (F1)
       // aléas recommandés selon la nature (D7) : 7 % en neuf, 10 % en rénovation (même texte, `dictDetail`)
       expect(neuf).toContain(echapper(B.aleasReco(ALEAS_NEUF)));
       expect(reno).toContain(echapper(B.aleasReco(ALEAS_RENO)));

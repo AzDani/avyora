@@ -86,7 +86,7 @@ describe("N4 · rapide réno : l'affichage et la conversion sont séparés", () 
     const p = presetRapide(BIEN);
     const rouvert = rendreRapide({ edit: editionRapideReno("p1", { mode: "rapide", ampleur: "complete", qui: "pros", ctx: p.ctx, sel: p.sel, codePostal: "45000" }, "45000") });
     expect(grosChiffre(rouvert)).toContain('class="num"');
-    expect(rouvert).toContain("±15 %");
+    expect(rouvert).toContain("±15\u00a0%");   // espace insécable (F1)
     expect(rouvert).toContain('<button type="button" class="on" aria-pressed="true">🏠 Maison</button>');
     expect(rouvert).not.toContain('class="avert"');
   });
@@ -131,7 +131,7 @@ describe("N4 · rapide réno : un projet « pièces » rouvre avec sa liste", ()
     const h = rendreRapide({ edit: editionRapideReno("p2b", rep, "33000") });
     expect((h.match(/class="prow"/g) ?? []).length).toBe(2);
     expect(grosChiffre(h)).toContain('class="num"');
-    expect(h).toContain("±15 %");
+    expect(h).toContain("±15\u00a0%");
   });
 
   it("enregistré avant N4 (sans liste) : il rouvre en mode pièces, avec un avertissement", () => {

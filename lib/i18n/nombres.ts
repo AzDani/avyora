@@ -18,7 +18,11 @@ export function euros(locale: Locale | string, n: number): string {
   return Math.round(Number.isFinite(n) ? n : 0).toLocaleString(nfDe(locale)) + " €";
 }
 
-/** Un pourcentage : « 5,5 % » en français (l'espace d'avant, inchangé), « 5.5% » en anglais. */
+/** Le signe « % » d'un pourcentage déjà écrit : collé en anglais (« 7% »), après une espace INSÉCABLE en
+ *  français (« 7 % »), pour que « % » ne passe jamais seul à la ligne (F1). */
+export const signePct = (locale: Locale | string): string => (locale === "en" ? "%" : "\u00a0%");
+
+/** Un pourcentage : « 5,5 % » en français (espace insécable), « 5.5% » en anglais. */
 export function pourcent(locale: Locale | string, n: number, dec = 1): string {
-  return nombre(locale, n, dec) + (locale === "en" ? "%" : " %");
+  return nombre(locale, n, dec) + signePct(locale);
 }

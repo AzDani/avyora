@@ -6,8 +6,8 @@
  * repris du neuf), lignes `Row` branchées sur la sélection, outils « Seulement les postes cochés » et
  * « Tout déplier ». Aucun texte en dur : chaque appelant passe les siens ; aucun montant calculé ici.
  *
- * Les outils ne servent qu'au neuf pour l'instant : la rénovation les reçoit quand son écran pourra
- * changer (N6 la garde identique). Depuis N10, le neuf est rangé comme la rénovation : 4 titres de phase
+ * Les outils servent aux deux détaillés depuis F1 (décision de Dani du 18/10 ; N6 avait gardé l'écran de la
+ * rénovation identique). Depuis N10, le neuf est rangé comme la rénovation : 4 titres de phase
  * (simples intertitres), chaque lot une fois ; il y ajoute ses sous-titres d'étape (`SousEtape`) et ses
  * lignes de choix (`LigneChoix`, `SelecteurChoix`) pour les postes qui s'excluent. Le titre de phase
  * repliable (`TitrePhase` avec `onBascule`) reste disponible. Depuis N11, les notes de lot du neuf ne sont plus

@@ -29,7 +29,10 @@ export const FR_AFFICHAGE: Partial<Record<CatKind, Record<string, string>>> = {
   unites: { m2: "m²", m3: "m³", pct: "%" },
 };
 
-/** Libellé français d'affichage d'une chaîne du catalogue : sa forme corrigée, sinon la chaîne elle-même. */
+/** Libellé français d'affichage d'une chaîne du catalogue : sa forme corrigée, sinon la chaîne elle-même. Dans
+ *  une note, « % » suit une espace insécable (« TVA 10 % ») pour ne jamais passer seul à la ligne (F1) : la
+ *  chaîne du catalogue, qui sert de clé aux traductions, ne change pas. */
 export function libelleFr(kind: CatKind, fr: string): string {
-  return FR_AFFICHAGE[kind]?.[fr] ?? fr;
+  const v = FR_AFFICHAGE[kind]?.[fr] ?? fr;
+  return kind === "notes" ? v.replace(/(\d) %/g, "$1\u00a0%") : v;
 }

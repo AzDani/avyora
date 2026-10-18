@@ -112,17 +112,19 @@ describe("N13 · rapide neuf : la 1re question commence par Plain-pied / À éta
 });
 
 describe("N13 · finition et « qui réalise » : les libellés de la rénovation, la description du neuf", () => {
-  it("le dictionnaire du neuf ne garde que les descriptions, et plus ses propres titres", () => {
+  it("le dictionnaire du neuf ne garde que les descriptions, et plus ses propres titres (sauf l'accroche Éco, F1)", () => {
     for (const l of LOCALES) {
       const s = dictNeuf(l).saisie as Record<string, unknown>;
       expect("q2" in s || "q3" in s).toBe(false);
-      for (const f of ["eco", "standard", "premium"]) expect(Object.keys(dictNeuf(l).saisie.finitions[f])).toEqual(["desc"]);
+      // Décision de Dani (18/10) : en neuf, la carte Éco dit « Budget maîtrisé » / « Budget-conscious », sans « Locatif ».
+      expect(dictNeuf(l).saisie.finitions.eco).toEqual({ eye: l === "fr" ? "Budget maîtrisé" : "Budget-conscious", desc: expect.any(String) });
+      for (const f of ["standard", "premium"]) expect(Object.keys(dictNeuf(l).saisie.finitions[f])).toEqual(["desc"]);
       for (const q of ["pros", "partie", "max"]) expect(Object.keys(dictNeuf(l).saisie.quis[q])).toEqual(["desc"]);
     }
   });
 
   for (const l of LOCALES) {
-    it(`${l} : mêmes titres, mêmes noms et accroches des deux côtés`, () => {
+    it(`${l} : mêmes titres, mêmes noms et accroches des deux côtés (l'accroche Éco du neuf à part, F1)`, () => {
       const T = dict(l).rapide, s = dictNeuf(l).saisie;
       const hn = neuf({}, l), hr = reno({}, l);
       expect(hn).toContain(`<span class="n">2</span>${esc(T.step3)}</div>`);
@@ -131,9 +133,12 @@ describe("N13 · finition et « qui réalise » : les libellés de la rénovatio
       expect(hr).toContain(`<span class="n">4</span>${esc(T.step4)}</div>`);
       for (const f of ["eco", "standard", "premium"] as const) {
         const fi = T.finitions[f];
-        expect(hn).toContain(`<span class="eye">${esc(fi.eye)}</span><span class="t">${esc(fi.label)}</span><span class="d">${esc(s.finitions[f].desc)}</span>`);
+        expect(hn).toContain(`<span class="eye">${esc(s.finitions[f].eye ?? fi.eye)}</span><span class="t">${esc(fi.label)}</span><span class="d">${esc(s.finitions[f].desc)}</span>`);
         expect(hr).toContain(`<span class="eye">${esc(fi.eye)}</span><span class="t">${esc(fi.label)}</span><span class="d">${esc(fi.desc)}</span>`);
       }
+      // La rénovation garde « Locatif · budget maîtrisé » ; le neuf ne le dit nulle part.
+      expect(T.finitions.eco.eye).toBe(l === "fr" ? "Locatif · budget maîtrisé" : "Rental · budget-conscious");
+      expect(hn).not.toContain(esc(T.finitions.eco.eye));
       for (const q of ["pros", "partie", "max"] as const) {
         const qi = T.quis[q];
         expect(hn).toContain(`<span class="eye">${esc(qi.eye)}</span><span class="t">${esc(qi.label)}</span><span class="d">${esc(s.quis[q].desc)}</span>`);

@@ -26,7 +26,7 @@ const TR = {
     badge: "Estimation · rénovation",
     inclTax: "TTC",
     mostLikely: "Le plus probable",
-    margin: "marge ±15 %",
+    margin: "marge ±15\u00a0%",
     labor: "main-d’œuvre",
     workExclTax: "Travaux HT",
     vat: "TVA",
@@ -104,7 +104,7 @@ const TR = {
     badge: "Estimate · renovation",
     inclTax: "incl. tax",
     mostLikely: "Most likely",
-    margin: "margin ±15%",
+    margin: "±15% margin",
     labor: "labor",
     workExclTax: "Work (excl. tax)",
     vat: "VAT",
@@ -488,7 +488,9 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
         <div className="stat">
           <div className="k">{s.biggestItem}</div>
           <div className="v" style={{ fontSize: 20 }}>{top ? `${ICON[top.corps] || ""} ${catT(locale, "corps", top.corps)}` : "—"}</div>
-          <p className="sub">{top ? `${fmt(top.ttc)} · ${pourcent(locale, topPct, 0)} ${s.ofBudget}` : ""}</p>
+          {/* Le montant en chiffres à chasse fixe, comme les autres cartes : en Geist à 12 px, l'espace fine des milliers
+              ne se voyait presque pas (« 14148 € », F1). */}
+          <p className="sub">{top ? <><span className="num">{fmt(top.ttc)}</span> · {pourcent(locale, topPct, 0)} {s.ofBudget}</> : ""}</p>
         </div>
         <div className="stat">
           <div className="k">{s.theSite}</div>
@@ -625,7 +627,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
                 // sauf si un prix perso l'a figée (le pourcentage n'est alors plus ce qui la chiffre).
                 const qtyTxt = li.unite === "pct"
                   ? (tk?.fp != null && sel[li.cle]?.pu == null
-                    ? `${nb(tk.fp, 3)}\u00a0${tk.assiette === "projet" || (tk.frais && tk.assiette !== "travaux") ? n.pctProjet : n.pctTravaux}`
+                    ? `${pourcent(locale, tk.fp, 3)} ${tk.assiette === "projet" || (tk.frais && tk.assiette !== "travaux") ? n.pctProjet : n.pctTravaux}`
                     : "—")
                   : qteNeuf(locale, li.qty, li.unite, li.mode === "location");
                 const st = statutLigne(statuts, li);

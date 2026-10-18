@@ -29,19 +29,19 @@ const LOTS = [
 
 const FINITIONS = [
   { lot: "Études, démolition, location, raccordements", eco: "—", std: "—", prem: "—", note: "aucun écart : une benne coûte le même prix quelle que soit la finition" },
-  { lot: "Maçonnerie, charpente, isolation, électricité, chauffage", eco: "−17 %", std: "−12 %", prem: "référence", note: "écart faible : le technique varie peu" },
-  { lot: "Façade, cloisons, plomberie, menuiseries", eco: "−25 %", std: "−17 %", prem: "référence", note: "écart moyen" },
-  { lot: "Carrelage, peinture, cuisine", eco: "−33 %", std: "−22 %", prem: "référence", note: "écart fort : c'est là que le choix des matériaux pèse le plus" },
+  { lot: "Maçonnerie, charpente, isolation, électricité, chauffage", eco: "−17\u00a0%", std: "−12\u00a0%", prem: "référence", note: "écart faible : le technique varie peu" },
+  { lot: "Façade, cloisons, plomberie, menuiseries", eco: "−25\u00a0%", std: "−17\u00a0%", prem: "référence", note: "écart moyen" },
+  { lot: "Carrelage, peinture, cuisine", eco: "−33\u00a0%", std: "−22\u00a0%", prem: "référence", note: "écart fort : c'est là que le choix des matériaux pèse le plus" },
 ];
 
 const REGIONS = [
-  { zone: "Paris & petite couronne", dep: "75, 92, 93, 94", mo: "+20 %" },
-  { zone: "Zone tendue", dep: "77, 78, 91, 95, 06, 83, 13, 69, 74, 73", mo: "+10 %" },
-  { zone: "Grande agglomération", dep: "33, 31, 44, 35, 59, 67, 34, 38, 21, 54, 68, 64, 63, 76", mo: "+4 %" },
+  { zone: "Paris & petite couronne", dep: "75, 92, 93, 94", mo: "+20\u00a0%" },
+  { zone: "Zone tendue", dep: "77, 78, 91, 95, 06, 83, 13, 69, 74, 73", mo: "+10\u00a0%" },
+  { zone: "Grande agglomération", dep: "33, 31, 44, 35, 59, 67, 34, 38, 21, 54, 68, 64, 63, 76", mo: "+4\u00a0%" },
   { zone: "Moyenne nationale", dep: "tous les autres départements", mo: "référence" },
-  { zone: "Zone rurale", dep: "23, 15, 58, 55, 52, 08, 36, 48, 32, 46, 09, 88, 70, 03, 43, 12, 19, 89, 05, 53, 61", mo: "−10 %" },
-  { zone: "Corse", dep: "20", mo: "+8 % (et +5 % sur les matériaux)" },
-  { zone: "Outre-mer", dep: "971 à 974", mo: "+5 % (et +15 % sur les matériaux)" },
+  { zone: "Zone rurale", dep: "23, 15, 58, 55, 52, 08, 36, 48, 32, 46, 09, 88, 70, 03, 43, 12, 19, 89, 05, 53, 61", mo: "−10\u00a0%" },
+  { zone: "Corse", dep: "20", mo: "+8\u00a0% (et +5\u00a0% sur les matériaux)" },
+  { zone: "Outre-mer", dep: "971 à 974", mo: "+5\u00a0% (et +15\u00a0% sur les matériaux)" },
 ];
 
 export default function MethodologiePage() {
@@ -168,11 +168,12 @@ export default function MethodologiePage() {
       <h3>3. La TVA</h3>
       <p>
         Les prix affichés sont <strong>TTC</strong>. Le taux appliqué dépend du poste et de la nature du
-        logement : <strong>10 %</strong>{" "}
-        pour la rénovation d&apos;un logement achevé depuis plus de deux ans, <strong>5,5 %</strong>{" "}
+        logement : <strong>10&nbsp;%</strong>{" "}
+        pour la rénovation d&apos;un logement achevé depuis plus de deux ans, <strong>5,5&nbsp;%</strong>{" "}
         sur les travaux d&apos;amélioration énergétique (isolation, chauffage performant),
-        et <strong>20 %</strong> pour le neuf, un logement de moins de deux ans ou un local professionnel.
-        Les matériaux que tu achètes seul restent à 20 % dans tous les cas.
+        et <strong>20&nbsp;%</strong>{" "}
+        pour le neuf, un logement de moins de deux ans ou un local professionnel.
+        Les matériaux que tu achètes seul restent à 20&nbsp;% dans tous les cas.
       </p>
 
       <h3>4. La provision pour aléas</h3>
@@ -190,7 +191,7 @@ export default function MethodologiePage() {
         <li><strong>Elle ne remplace pas une étude technique.</strong> Ouvrir un mur porteur, reprendre une charpente ou traiter de l&apos;humidité demande l&apos;avis d&apos;un professionnel — l&apos;estimation les chiffre à titre indicatif.</li>
         <li><strong>Elle ne connaît pas l&apos;état réel de ton bien.</strong> Deux maisons de 100 m² du même âge peuvent différer du simple au double selon ce que cachent les murs.</li>
         <li><strong>Elle n&apos;inclut ni les aides, ni le foncier, ni les frais annexes</strong> (notaire, assurance dommages-ouvrage, déménagement, relogement).</li>
-        <li><strong>Une fourchette reste une fourchette.</strong> AVYORA annonce ±15 % : c&apos;est un ordre de grandeur pour décider, pas un engagement de prix.</li>
+        <li><strong>Une fourchette reste une fourchette.</strong> AVYORA annonce ±15&nbsp;% : c&apos;est un ordre de grandeur pour décider, pas un engagement de prix.</li>
       </ul>
 
       <h2>Comment les prix évoluent</h2>

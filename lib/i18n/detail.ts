@@ -72,7 +72,7 @@ const fr = {
        bouton passe sur deux lignes équilibrées (« Logement de / plus de 2 ans »). */
     tvaHabitation: "Logement de plus\u00a0de\u00a02\u00a0ans",
     tvaPro: "Moins de 2\u00a0ans ou local\u00a0pro",
-    tvaNote: "**Logement de plus de 2 ans** : TVA réduite **10 %** (et **5,5 %** sur la rénovation énergétique — isolation, chauffage performant…). **Logement de moins de 2 ans ou local professionnel** : tout à **20 %** ; pour une maison à construire, choisis « Construction neuve ». Les matériaux que tu achètes seul (« Je le fais ») restent à **20 %** dans tous les cas.",
+    tvaNote: "**Logement de plus de 2 ans** : TVA réduite **10\u00a0%** (et **5,5\u00a0%** sur la rénovation énergétique — isolation, chauffage performant…). **Logement de moins de 2 ans ou local professionnel** : tout à **20\u00a0%** ; pour une maison à construire, choisis « Construction neuve ». Les matériaux que tu achètes seul (« Je le fais ») restent à **20\u00a0%** dans tous les cas.",
     budgetT: "Budget & imprévus",
     budgetMax: "Budget max",
     facultatif: "· facultatif",
@@ -99,8 +99,8 @@ const fr = {
     sdb: (n: number) => `${n} salle${n > 1 ? "s" : ""} de bain`,
     dontSuite: (n: number) => ` (dont ${n} en suite)`,
     menuiseries: (n: number) => `${n} menuiseries ext.`,
-    mo: (p: string) => `main-d’œuvre ${p} %`,
-    mat: (p: string) => `matériaux ${p} %`,
+    mo: (p: string) => `main-d’œuvre ${p}\u00a0%`,
+    mat: (p: string) => `matériaux ${p}\u00a0%`,
   },
   /* Liste des lots */
   liste: {
@@ -111,6 +111,10 @@ const fr = {
     reset: "Tout réinitialiser",
     /** Icône d'information d'une note de lot ou d'étape (N11) : son infobulle est la note elle-même. */
     infoNote: "À savoir",
+    /** Outils de la liste (`ListeLots`), les mêmes dans les deux détaillés. */
+    seulementCoches: "Seulement les postes cochés",
+    toutDeplier: "Tout déplier",
+    toutReplier: "Tout replier",
   },
   /* Barre live (les deux détaillés) */
   live: {
@@ -138,11 +142,11 @@ const fr = {
   devis: {
     eb: "Ton estimation · rénovation",
     travauxHt: "Travaux HT",
-    tva: (pro: boolean): string => (pro ? "TVA 20 %" : "TVA 10 / 5,5 %"),
-    aleas: (n: number) => `Aléas ${n} %`,
+    tva: (pro: boolean): string => (pro ? "TVA 20\u00a0%" : "TVA 10 / 5,5\u00a0%"),
+    aleas: (n: number) => `Aléas ${n}\u00a0%`,
     budgetMax: "Budget max",
-    hintPro: "TVA 20 % — logement de moins de 2 ans ou local professionnel.",
-    hintHabitation: "TVA réduite 10 % (5,5 % sur la rénovation énergétique) — logement de plus de 2 ans. Matériaux achetés seul (« Je le fais ») à 20 %.",
+    hintPro: "TVA 20\u00a0% — logement de moins de 2 ans ou local professionnel.",
+    hintHabitation: "TVA réduite 10\u00a0% (5,5\u00a0% sur la rénovation énergétique) — logement de plus de 2 ans. Matériaux achetés seul (« Je le fais ») à 20\u00a0%.",
     bilanT: "Le bilan de tes choix",
     bilanHt: "(HT)",
     bilanSous: "Ce que tu paies, et ce que tu économises en faisant toi-même",
@@ -159,7 +163,7 @@ const fr = {
     modes: { location: "location", jeFais: "je fais", faitFaire: "fait faire" },
     /** Quantité d'une ligne : nombre et unité du catalogue, « j » pour une location. */
     qte: (q: number, unite: string, location: boolean) => q.toLocaleString("fr-FR") + " " + (location ? "j" : unite),
-    pied: (finition: string) => `Estimation indicative AVYORA — prix moyens marché 2026, finition ${finition}. TVA réelle par poste (énergie 5,5 %, travaux fourni-posé 10 %, études & achats « Je le fais » 20 %). Hors aides. Demande 2-3 devis pour affiner.`,
+    pied: (finition: string) => `Estimation indicative AVYORA — prix moyens marché 2026, finition ${finition}. TVA réelle par poste (énergie 5,5\u00a0%, travaux fourni-posé 10\u00a0%, études & achats « Je le fais » 20\u00a0%). Hors aides. Demande 2-3 devis pour affiner.`,
     /** Finition citée au pied : la valeur enregistrée (« standard »), comme avant N6. */
     finitionPied: (f: string) => f,
   },
@@ -209,7 +213,7 @@ const fr = {
     prixTitre: "prix HT",
     tva: "TVA",
     guideTitre: "Guide TVA",
-    guide: "**Quelle TVA ?** · **5,5 %** réno énergétique · **10 %** amélioration logement +2 ans (standard) · **20 %** neuf, −2 ans, local pro ou matériaux seuls.",
+    guide: "**Quelle TVA ?** · **5,5\u00a0%** réno énergétique · **10\u00a0%** amélioration logement +2 ans (standard) · **20\u00a0%** neuf, −2 ans, local pro ou matériaux seuls.",
     valider: "✓ Valider la tâche",
     annuler: "Annuler",
     ajouter: "＋ Ajouter une ligne personnalisée",
@@ -314,6 +318,9 @@ const en: typeof fr = {
     locNote: "Indicative prices **/day** — confirm with the rental company. Enter the number of days.",
     reset: "Reset everything",
     infoNote: "Good to know",
+    seulementCoches: "Checked items only",
+    toutDeplier: "Expand all",
+    toutReplier: "Collapse all",
   },
   live: {
     totalK: "Estimated total",

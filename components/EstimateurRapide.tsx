@@ -35,6 +35,7 @@ import { RAPIDE_CSS } from "@/components/estimateur/rapide-styles";
 import { useChampEnFaute } from "@/components/estimateur/champ-en-faute";
 import type { SourceSeo } from "@/lib/seo-source";
 import { lienInscriptionBeta } from "@/lib/beta";
+import { signePct } from "@/lib/i18n/nombres";
 
 type Mode = "bien" | "pieces";
 // Pièces disponibles (mode « une ou plusieurs pièces ») : emoji, libellé, surface par défaut.
@@ -242,7 +243,8 @@ export default function EstimateurRapide({
   const reg = regionCoef(cp);
   const regDelta = Math.round((reg.mo - 1) * 100);
   const zoneLbl = t.zones[reg.zone] ?? reg.zone;
-  const regLabel = cp.length >= 2 ? `${zoneLbl}${regDelta ? ` · ${regDelta > 0 ? "+" : ""}${regDelta} ${t.moSuffix}` : ""}` : "";
+  // « +10 % MO » / « +4% labor » : le signe « % » collé en anglais, après une espace insécable en français (F1).
+  const regLabel = cp.length >= 2 ? `${zoneLbl}${regDelta ? ` · ${regDelta > 0 ? "+" : ""}${regDelta}${signePct(locale)} ${t.moSuffix}` : ""}` : "";
 
   // ── Gestion des pièces (mode multi) ── chaque ajout = une LIGNE (instance) avec sa propre surface.
   const nbPieces = pieces.length;
@@ -417,7 +419,8 @@ export default function EstimateurRapide({
             {mode === "bien" && (
               <div className="fld">
                 <label htmlFor={ID_CHAMP.surface}>{t.surfaceLabel}</label>
-                <Stepper field id={ID_CHAMP.surface} invalide={faute.champ === "surface"} value={surface} min={8} unit="m²"
+                {/* Le champ du rapide du neuf (F1) : « − 100 m² + » en pleine largeur, boutons de 44 px. */}
+                <Stepper block id={ID_CHAMP.surface} invalide={faute.champ === "surface"} value={surface} min={8} unit="m²"
                   onChange={(n) => { setDemarre(true); setSurface(n); if (faute.champ === "surface" && n > 0) { faute.effacer(); setErreur(null); } }} />
               </div>
             )}
@@ -494,7 +497,7 @@ export default function EstimateurRapide({
                   <span className="d">{qi.desc}</span>
                   <span className="amt">
                     {locked ? <span className="lock">{t.proLock}</span> : <span className="p">≈ <b>{price.toLocaleString(nf)} €</b> / m²</span>}
-                    {!locked && pct > 0 && <span className="save">−{pct}{locale === "en" ? "%" : " %"}</span>}
+                    {!locked && pct > 0 && <span className="save">−{pct}{signePct(locale)}</span>}
                   </span>
                 </button>
               );
@@ -526,7 +529,7 @@ export default function EstimateurRapide({
               <div>
                 <div className="lbl">{t.liveLabel}</div>
                 <div className="big">{valid ? <><CountUp value={lo} nf={nf} /> €<span style={{ opacity: .55 }}> – </span><CountUp value={hi} nf={nf} /> €</> : "—"}</div>
-                <div className="sub">{valid ? <>≈ <CountUp value={m2} nf={nf} /> €/m² · {ampName} · {locale === "en" ? "±15%" : "±15 %"}{regLabel ? <> · {regLabel}</> : ""}</> : !affiche ? t.step1q : (mode === "pieces" ? t.ajoutePiece : t.renseigneSurface)}</div>
+                <div className="sub">{valid ? <>≈ <CountUp value={m2} nf={nf} /> €/m² · {ampName} · {locale === "en" ? "±15%" : "±15\u00a0%"}{regLabel ? <> · {regLabel}</> : ""}</> : !affiche ? t.step1q : (mode === "pieces" ? t.ajoutePiece : t.renseigneSurface)}</div>
               </div>
               <div className="btns">
                 <button type="button" className="ghost" onClick={affiner}>{libAffiner}</button>

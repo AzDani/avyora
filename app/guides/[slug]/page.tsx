@@ -157,11 +157,11 @@ function faqAppartement() {
   return [
     {
       q: "Combien coûte la rénovation complète d'un appartement au m² ?",
-      a: `En moyenne nationale, comptez environ ${euro(complete.appartM2)}/m² pour une rénovation complète d'appartement (finition standard, travaux confiés à des artisans), soit une fourchette de ±15 % selon l'état du bien.`,
+      a: `En moyenne nationale, comptez environ ${euro(complete.appartM2)}/m² pour une rénovation complète d'appartement (finition standard, travaux confiés à des artisans), soit une fourchette de ±15\u00a0% selon l'état du bien.`,
     },
     {
       q: "Combien coûte la rénovation d'un appartement de 50 m² ?",
-      a: `Pour un appartement de 50 m², comptez environ ${euro(estim("", "T3", 50, "rafraich").ttc)} pour un rafraîchissement, ${euro(estim("", "T3", 50, "complete").ttc)} pour une rénovation complète et ${euro(estim("", "T3", 50, "lourde").ttc)} pour une rénovation totale (curage et redistribution). Budgets TTC, finition standard, marge ±15 %.`,
+      a: `Pour un appartement de 50 m², comptez environ ${euro(estim("", "T3", 50, "rafraich").ttc)} pour un rafraîchissement, ${euro(estim("", "T3", 50, "complete").ttc)} pour une rénovation complète et ${euro(estim("", "T3", 50, "lourde").ttc)} pour une rénovation totale (curage et redistribution). Budgets TTC, finition standard, marge ±15\u00a0%.`,
     },
     {
       q: "Rafraîchissement ou rénovation complète : quelle différence de prix ?",
@@ -169,7 +169,7 @@ function faqAppartement() {
     },
     {
       q: "Qu'est-ce qui fait grimper la facture ?",
-      a: "Le niveau de finition (premium ≈ +25 à +40 %), l'état initial (réseaux hors normes, humidité), la redistribution des pièces (abattre des murs), et la région (main-d'œuvre).",
+      a: "Le niveau de finition (premium ≈ +25 à +40\u00a0%), l'état initial (réseaux hors normes, humidité), la redistribution des pièces (abattre des murs), et la région (main-d'œuvre).",
     },
     {
       q: "Comment avoir un chiffre précis pour mon appartement ?",
@@ -190,7 +190,7 @@ function faqMaison() {
     },
     {
       q: "Combien coûte la rénovation d'une maison de 120 m² ?",
-      a: `Pour une maison de 120 m², comptez environ ${euro(estim("", "Maison", 120, "complete").ttc)} pour une rénovation complète et ${euro(estim("", "Maison", 120, "lourde").ttc)} pour une rénovation lourde incluant l'enveloppe (toiture, façade, charpente). Budgets TTC, finition standard, marge ±15 %.`,
+      a: `Pour une maison de 120 m², comptez environ ${euro(estim("", "Maison", 120, "complete").ttc)} pour une rénovation complète et ${euro(estim("", "Maison", 120, "lourde").ttc)} pour une rénovation lourde incluant l'enveloppe (toiture, façade, charpente). Budgets TTC, finition standard, marge ±15\u00a0%.`,
     },
     {
       q: "Pourquoi une maison coûte-t-elle plus cher qu'un appartement au m² ?",
@@ -233,10 +233,10 @@ function LeviersPrix() {
       <h3>1. Le niveau de finition</h3>
       <p>
         C&apos;est le levier le plus puissant, et le plus indolore. Passer du premium au standard fait
-        baisser la facture d&apos;environ <strong>12 %</strong>{" "}sur les lots techniques (maçonnerie,
-        électricité, isolation) et jusqu&apos;à <strong>22 %</strong>{" "}sur les lots où le choix des
+        baisser la facture d&apos;environ <strong>12&nbsp;%</strong>{" "}sur les lots techniques (maçonnerie,
+        électricité, isolation) et jusqu&apos;à <strong>22&nbsp;%</strong>{" "}sur les lots où le choix des
         matériaux domine — carrelage, peinture, cuisine. En éco, l&apos;écart monte respectivement à
-        <strong> 17 %</strong> et <strong>33 %</strong>.
+        <strong> 17&nbsp;%</strong> et <strong>33&nbsp;%</strong>.
       </p>
       <p>
         Autrement dit : l&apos;essentiel de l&apos;économie se joue sur ce qui se voit, pas sur ce qui
@@ -317,7 +317,7 @@ function BodyAppartement() {
         </tbody>
       </table>
       </div>
-      <p className="note">Prix TTC indicatifs, moyenne nationale, finition standard, marge ±15 %. Base : appartement 70 m².</p>
+      <p className="note">Prix TTC indicatifs, moyenne nationale, finition standard, marge ±15&nbsp;%. Base : appartement 70 m².</p>
 
       <h2>Budget total selon la surface et l&apos;ampleur</h2>
       <p>
@@ -345,7 +345,7 @@ function BodyAppartement() {
       </table>
       </div>
       <p className="note">
-        Budgets TTC, finition standard, travaux confiés à des artisans, marge ±15 % sur chaque
+        Budgets TTC, finition standard, travaux confiés à des artisans, marge ±15&nbsp;% sur chaque
         montant. Calculés par le moteur AVYORA, pas recopiés : chaque cellule est une estimation
         complète rejouée sur la surface et l&apos;ampleur de sa ligne.
       </p>
@@ -363,7 +363,7 @@ function BodyAppartement() {
       <h2>Ce qui fait varier le prix</h2>
       <p>
         À surface égale, deux appartements peuvent afficher des budgets très différents. Les principaux facteurs :
-        le <strong>niveau de finition</strong> (le premium ajoute facilement 25 à 40 %), l&apos;<strong>état initial</strong>{" "}
+        le <strong>niveau de finition</strong> (le premium ajoute facilement 25 à 40&nbsp;%), l&apos;<strong>état initial</strong>{" "}
         (réseaux vétustes, humidité, amiante avant 1997), la <strong>redistribution</strong> (abattre des cloisons ou un
         mur porteur), et la <strong>région</strong>.
       </p>
@@ -421,7 +421,7 @@ function BodyMaison() {
         </tbody>
       </table>
       </div>
-      <p className="note">Prix TTC indicatifs, moyenne nationale, finition standard, marge ±15 %. Base : maison 100 m².</p>
+      <p className="note">Prix TTC indicatifs, moyenne nationale, finition standard, marge ±15&nbsp;%. Base : maison 100 m².</p>
 
       <h2>Budget total selon la surface et l&apos;ampleur</h2>
       <p>
@@ -448,7 +448,7 @@ function BodyMaison() {
       </table>
       </div>
       <p className="note">
-        Budgets TTC, finition standard, travaux confiés à des artisans, marge ±15 % sur chaque
+        Budgets TTC, finition standard, travaux confiés à des artisans, marge ±15&nbsp;% sur chaque
         montant. Chaque cellule est une estimation complète rejouée par le moteur AVYORA sur la
         surface et l&apos;ampleur de sa ligne.
       </p>
@@ -610,7 +610,7 @@ const ALERTES = [
   { t: "Un poste que vous n'avez pas demandé", d: "Ça arrive, et c'est parfois justifié (un support à reprendre). Mais cela doit être dit et expliqué, pas glissé dans la liste." },
   { t: "Un poste manquant", d: "Plus dangereux qu'un poste cher : la dépose de l'ancien sol, l'évacuation des gravats, les raccords après percement. Absents du devis, ils reviendront en cours de chantier au prix fort." },
   { t: "Un acompte élevé", d: "Un acompte se pratique, mais un artisan qui réclame la moitié avant d'avoir commencé mérite au minimum une question." },
-  { t: "Une TVA à 20 % sur tout", d: "En rénovation d'un logement de plus de deux ans, la plupart des postes relèvent de 10 %, et les travaux d'amélioration énergétique de 5,5 %. Une TVA uniformément à 20 % doit être justifiée." },
+  { t: "Une TVA à 20\u00a0% sur tout", d: "En rénovation d'un logement de plus de deux ans, la plupart des postes relèvent de 10\u00a0%, et les travaux d'amélioration énergétique de 5,5\u00a0%. Une TVA uniformément à 20\u00a0% doit être justifiée." },
 ];
 
 function BodyDevis() {
@@ -647,8 +647,8 @@ function BodyDevis() {
       <p>
         Ces montants viennent du référentiel AVYORA : <strong>fourni-posé, hors taxes, finition
         standard</strong>, au niveau national. Ils servent à situer une ligne — pas à contester un
-        devis au centime. Un écart de 20 % s&apos;explique très bien (accès difficile, support à
-        reprendre, région). Un écart de 200 % mérite une question.
+        devis au centime. Un écart de 20&nbsp;% s&apos;explique très bien (accès difficile, support à
+        reprendre, région). Un écart de 200&nbsp;% mérite une question.
       </p>
       <div className="tw">
       <table>
@@ -703,7 +703,7 @@ function BodyDevis() {
 
 function faqDevis() {
   return [
-    { q: "Comment savoir si un devis de travaux est trop cher ?", a: "Comparez poste par poste à des prix repères plutôt que le total à un autre total. Un écart de 20 % sur une ligne s'explique souvent (accès, support, région) ; un écart de 200 % mérite une explication écrite." },
+    { q: "Comment savoir si un devis de travaux est trop cher ?", a: "Comparez poste par poste à des prix repères plutôt que le total à un autre total. Un écart de 20\u00a0% sur une ligne s'explique souvent (accès, support, région) ; un écart de 200\u00a0% mérite une explication écrite." },
     { q: "Que doit obligatoirement contenir un devis ?", a: "L'identification de l'entreprise, le détail de chaque poste avec quantité, unité et prix unitaire, le taux de TVA, ce qui est fourni, la durée de validité et les conditions de paiement. Sans prix unitaires, un devis n'est pas comparable." },
     { q: "Un devis est-il payant ?", a: "Le plus souvent il est gratuit, mais un devis impliquant un déplacement long ou une étude technique peut être facturé. Cela doit vous être annoncé avant." },
     { q: "Quel est le poste le plus souvent oublié dans un devis ?", a: "La dépose et l'évacuation : enlever l'ancien sol, sortir les gravats, reboucher après percement. Ces postes existent bel et bien et reviennent en cours de chantier s'ils ne sont pas chiffrés au départ." },
@@ -729,7 +729,7 @@ function BodyDIY() {
   return (
     <>
       <p className="lead">
-        On lit partout qu&apos;on économise « environ 30 % » en faisant ses travaux soi-même. Ce
+        On lit partout qu&apos;on économise « environ 30&nbsp;% » en faisant ses travaux soi-même. Ce
         chiffre ne veut rien dire : l&apos;économie dépend entièrement du poste. Sur certains, la
         main-d&apos;œuvre représente les trois quarts de la facture ; sur d&apos;autres, à peine le
         tiers. Voici le calcul, lot par lot.
@@ -761,7 +761,7 @@ function BodyDIY() {
             {parLot.map((l) => (
               <tr key={l.lot}>
                 <td>{catT("fr", "corps", l.lot)}</td>
-                <td className="num">{l.partMO} %</td>
+                <td className="num">{l.partMO}&nbsp;%</td>
                 <td className="num">{l.avecFourniture} / {l.postes}</td>
               </tr>
             ))}
@@ -775,7 +775,7 @@ function BodyDIY() {
 
       <h2>Les postes où faire soi-même rapporte le plus</h2>
       <p>
-        En tête : {top.map((l, i) => <span key={l.lot}>{i > 0 ? ", " : ""}<strong>{catT("fr", "corps", l.lot).toLowerCase()}</strong> ({l.partMO} %)</span>)}.
+        En tête : {top.map((l, i) => <span key={l.lot}>{i > 0 ? ", " : ""}<strong>{catT("fr", "corps", l.lot).toLowerCase()}</strong> ({l.partMO}&nbsp;%)</span>)}.
         Ce sont des travaux à faible technicité et à forte intensité de temps — exactement ce
         qu&apos;un particulier motivé peut absorber.
       </p>
@@ -789,7 +789,7 @@ function BodyDIY() {
 
       <h2>Ceux où ça ne rapporte presque rien</h2>
       <p>
-        À l&apos;autre bout : {bas.map((l, i) => <span key={l.lot}>{i > 0 ? ", " : ""}<strong>{catT("fr", "corps", l.lot).toLowerCase()}</strong> ({l.partMO} %)</span>)}.
+        À l&apos;autre bout : {bas.map((l, i) => <span key={l.lot}>{i > 0 ? ", " : ""}<strong>{catT("fr", "corps", l.lot).toLowerCase()}</strong> ({l.partMO}&nbsp;%)</span>)}.
         Ici le prix est dominé par le produit, pas par la pose.
         {cuisine && <> Une cuisine complète est chiffrée <strong>{cuisine.fp} €/ml</strong> posée contre <strong>{cuisine.sm} €/ml</strong> de meubles : monter soi-même ne déplace qu&apos;une petite part du total.</>}
       </p>
@@ -843,7 +843,7 @@ function BodyDIY() {
         <li>
           <strong>La TVA.</strong>{" "}C&apos;est le coût caché le plus systématiquement ignoré. Sur une
           facture d&apos;artisan en rénovation, les travaux relèvent d&apos;un taux réduit. Les
-          matériaux que vous achetez seul sont, eux, à <strong>20 %</strong>. L&apos;estimateur
+          matériaux que vous achetez seul sont, eux, à <strong>20&nbsp;%</strong>. L&apos;estimateur
           applique cette règle automatiquement : une partie de l&apos;économie de main-d&apos;œuvre
           est reprise par l&apos;écart de TVA.
         </li>
@@ -883,12 +883,12 @@ function faqDIY() {
   const parLot = partMainOeuvreParLot();
   const meilleur = parLot[0], pire = parLot[parLot.length - 1];
   return [
-    { q: "Combien économise-t-on en faisant ses travaux soi-même ?", a: `Cela dépend entièrement du poste. Sur le référentiel AVYORA, la part de main-d'œuvre va d'environ ${pire.partMO} % (${catT("fr", "corps", pire.lot).toLowerCase()}) à ${meilleur.partMO} % (${catT("fr", "corps", meilleur.lot).toLowerCase()}). Un pourcentage unique d'économie n'a donc aucun sens : il faut raisonner poste par poste.` },
+    { q: "Combien économise-t-on en faisant ses travaux soi-même ?", a: `Cela dépend entièrement du poste. Sur le référentiel AVYORA, la part de main-d'œuvre va d'environ ${pire.partMO}\u00a0% (${catT("fr", "corps", pire.lot).toLowerCase()}) à ${meilleur.partMO}\u00a0% (${catT("fr", "corps", meilleur.lot).toLowerCase()}). Un pourcentage unique d'économie n'a donc aucun sens : il faut raisonner poste par poste.` },
     { q: "Quels travaux peut-on faire soi-même sans risque ?", a: "La peinture, la pose de sols souples ou stratifiés, la dépose et le curage sont accessibles à un particulier soigneux. L'électricité, le gaz, la structure porteuse et la charpente restent possibles, mais ils engagent la sécurité et la conformité : un poste fait soi-même sort de la garantie décennale, une étude est conseillée pour la structure, et une installation électrique ou de gaz doit être conforme. L'amiante et le plomb relèvent d'entreprises certifiées." },
-    { q: "Paie-t-on plus de TVA quand on achète les matériaux soi-même ?", a: "Oui, et c'est le coût caché le plus souvent oublié. Les travaux facturés par un artisan en rénovation relèvent d'un taux réduit, tandis que les matériaux achetés directement par un particulier sont à 20 %. Une partie de l'économie de main-d'œuvre est donc reprise par l'écart de TVA." },
+    { q: "Paie-t-on plus de TVA quand on achète les matériaux soi-même ?", a: "Oui, et c'est le coût caché le plus souvent oublié. Les travaux facturés par un artisan en rénovation relèvent d'un taux réduit, tandis que les matériaux achetés directement par un particulier sont à 20\u00a0%. Une partie de l'économie de main-d'œuvre est donc reprise par l'écart de TVA." },
     { q: "Un travail fait soi-même est-il couvert par la garantie décennale ?", a: "Non. La garantie décennale couvre l'entreprise qui a réalisé l'ouvrage : un poste que vous réalisez vous-même n'est couvert par personne. En cas de sinistre lié à ce poste, vous en répondez seul. Vérifiez votre situation auprès de votre assureur avant de commencer." },
     { q: "Sur quels postes faire soi-même rapporte-t-il le moins ?", a: `Sur ceux où le prix est dominé par le produit et non par la pose : ${parLot.slice(-3).map((l) => catT("fr", "corps", l.lot).toLowerCase()).join(", ")}. Plus un poste est cher à l'achat, moins le faire soi-même déplace le total.` },
-    { q: "Combien de postes du référentiel peut-on basculer en « je le fais » ?", a: `${s.avecFourniture} sur ${s.postes} (${s.pctAvec} %) portent un prix fourniture seule et peuvent donc être arbitrés. Les ${s.sansFourniture} autres sont des prestations pures — études, diagnostics, démarches, raccordements — où il n'y a rien à acheter.` },
+    { q: "Combien de postes du référentiel peut-on basculer en « je le fais » ?", a: `${s.avecFourniture} sur ${s.postes} (${s.pctAvec}\u00a0%) portent un prix fourniture seule et peuvent donc être arbitrés. Les ${s.sansFourniture} autres sont des prestations pures — études, diagnostics, démarches, raccordements — où il n'y a rien à acheter.` },
   ];
 }
 
@@ -905,12 +905,12 @@ const REGLES: { poste: string; regle: string }[] = [
   { poste: "Peinture des murs", regle: "surface habitable × hauteur sous plafond" },
   { poste: "Peinture des plafonds", regle: "surface habitable" },
   { poste: "Ratissage léger", regle: "surface × (hauteur + 1) — les murs plus le plafond" },
-  { poste: "Carrelage au sol", regle: "60 % de la surface (pièces humides et de passage)" },
-  { poste: "Parquet bois", regle: "40 % de la surface (pièces de vie et chambres)" },
+  { poste: "Carrelage au sol", regle: "60\u00a0% de la surface (pièces humides et de passage)" },
+  { poste: "Parquet bois", regle: "40\u00a0% de la surface (pièces de vie et chambres)" },
   { poste: "Plinthes", regle: "4 × √(surface × nombre de pièces) — le périmètre cumulé" },
   { poste: "Spots encastrés (LED)", regle: "un spot pour 2 m²" },
   { poste: "Faïence / carrelage mural", regle: "12 m² par salle de bain" },
-  { poste: "Monter une cloison", regle: "35 % de la surface" },
+  { poste: "Monter une cloison", regle: "35\u00a0% de la surface" },
   { poste: "Réfection couverture tuiles (dépose + écran + liteaux)", regle: "emprise au sol × 1,4 (la pente)" },
   { poste: "Enduit monocouche (machine)", regle: "4 × √emprise × hauteur × niveaux × 1,25" },
   { poste: "Gouttières & descentes", regle: "4 × √emprise + 4 × hauteur × niveaux" },
@@ -1018,7 +1018,7 @@ function BodyBudget() {
       </p>
       <p>
         C&apos;est d&apos;ailleurs leur usage le plus utile : quand un artisan annonce une quantité, vous
-        pouvez la confronter à la règle plutôt qu&apos;à votre intuition. Un écart de 10 % est normal ;
+        pouvez la confronter à la règle plutôt qu&apos;à votre intuition. Un écart de 10&nbsp;% est normal ;
         un facteur deux mérite une question.
       </p>
 
@@ -1051,11 +1051,11 @@ function faqBudget() {
     },
     {
       q: "Pourquoi la façade ne se calcule-t-elle pas comme une surface ?",
-      a: "Parce que c'est un périmètre multiplié par une hauteur. Le moteur prend quatre fois la racine carrée de l'emprise au sol, multiplie par la hauteur et par le nombre de niveaux, puis ajoute 25 % pour les retours, pignons et débords. Un bâtiment deux fois plus grand au sol n'a que 1,4 fois plus de murs extérieurs.",
+      a: "Parce que c'est un périmètre multiplié par une hauteur. Le moteur prend quatre fois la racine carrée de l'emprise au sol, multiplie par la hauteur et par le nombre de niveaux, puis ajoute 25\u00a0% pour les retours, pignons et débords. Un bâtiment deux fois plus grand au sol n'a que 1,4 fois plus de murs extérieurs.",
     },
     {
       q: "Ces règles remplacent-elles la visite d'un artisan ?",
-      a: "Non. Elles décrivent un logement ordinaire et ignorent les particularités — géométrie complexe, murs de refend, hauteurs inhabituelles. Leur usage est de donner un ordre de grandeur justifiable, et de repérer une quantité aberrante sur un devis reçu : un écart de 10 % est normal, un facteur deux mérite une question.",
+      a: "Non. Elles décrivent un logement ordinaire et ignorent les particularités — géométrie complexe, murs de refend, hauteurs inhabituelles. Leur usage est de donner un ordre de grandeur justifiable, et de repérer une quantité aberrante sur un devis reçu : un écart de 10\u00a0% est normal, un facteur deux mérite une question.",
     },
   ];
 }

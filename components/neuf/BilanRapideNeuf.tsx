@@ -7,6 +7,7 @@ import { catT } from "@/lib/estimateur/catalog-i18n";
 import { dictNeuf } from "@/lib/i18n/neuf";
 import { dict } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
+import { pourcent } from "@/lib/i18n/nombres";
 
 /**
  * Bilan d'une estimation RAPIDE de construction neuve (maquette validée `maquettes/neuf/app.js`,
@@ -124,7 +125,7 @@ export default function BilanRapideNeuf({
         <div className="kpi"><div className="v data">{eur(cut.annexes)}</div><div className="l">{n.annexes}</div></div>
       </div>
       <div className="small">
-        + {t.aleas} <span className="data">{eur(cut.aleas)}</span> ({ctx.aleas} {n.pctTravaux}) · {chambres} {chambres > 1 ? n.chambres : n.chambre} · ≈ {mois} {n.moisChantier}
+        + {t.aleas} <span className="data">{eur(cut.aleas)}</span> ({pourcent(locale, ctx.aleas)} {n.pctTravaux}) · {chambres} {chambres > 1 ? n.chambres : n.chambre} · ≈ {mois} {n.moisChantier}
       </div>
       <div className="hr" />
       <div className="k" style={{ marginBottom: 6 }}>{t.phasesK}{!ph && <span className="chip">{beta ? dict(locale).beta.pastille : "Pro"}</span>}</div>

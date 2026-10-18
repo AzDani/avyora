@@ -80,7 +80,9 @@ export const EST_CSS = `
 .av-estim .tctl{display:flex;align-items:center;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 .av-estim .qty{width:66px;font-family:var(--font-geist-mono);font-size:13px;text-align:right;background:var(--surface);border:1px solid var(--line-strong);border-radius:8px;padding:6px 8px;outline:none;color:var(--ink)}
 .av-estim .qty:focus{border-color:var(--brand)}
-.av-estim .qauto{width:66px;font-family:var(--font-geist-mono);font-size:13px;text-align:right;color:var(--muted);background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+/* Quantité automatique : au moins la largeur du champ de quantité, plus quand le nombre est long (« 1 368,32 » à 16 px
+   sur mobile débordait de sa case de 66 px) ; jamais coupée. */
+.av-estim .qauto{min-width:66px;flex:none;white-space:nowrap;font-family:var(--font-geist-mono);font-size:13px;text-align:right;color:var(--muted);background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
 .av-estim .unit{font-size:11px;color:var(--muted);min-width:30px}
 .av-estim .swiwrap{display:inline-flex;align-items:center;gap:6px}
 .av-estim .swi{position:relative;width:34px;height:20px;border-radius:999px;background:var(--line-strong);cursor:pointer;transition:background .18s var(--ease);flex:0 0 auto;border:0;padding:0}

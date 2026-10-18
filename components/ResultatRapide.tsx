@@ -10,6 +10,7 @@ import { catT } from "@/lib/estimateur/catalog-i18n";
 import { getLocale } from "@/lib/i18n/server";
 import { dict } from "@/lib/i18n/dictionaries";
 import { betaActive } from "@/lib/beta";
+import { pourcent } from "@/lib/i18n/nombres";
 
 /**
  * Page résultat de l'ESTIMATION RAPIDE : récap des réponses + fourchette, mais PAS le détail
@@ -121,13 +122,15 @@ export default async function ResultatRapide({
         affiner: "Refine in detail →", passPro: "Go Pro for the detail →", refaire: "New estimate",
         margeInfo: `Indicative estimate from the AVYORA price reference (France 2026), adjusted to your ZIP code — a ballpark (±15% margin) to confirm with contractor quotes. The precise, line-by-line breakdown comes with the detailed estimate.`,
         sub: "An instant range from your answers. Refine line by line for a precise, itemized estimate.",
-        others: "+ other trades", labor: "% labor" }
+        others: "+ other trades", labor: "labor", marge: "margin" }
     : { resume: "Ton estimation en résumé", where: "Où va le budget", budget: "Budget estimé · TTC",
         typeBien: "Type de bien", loc: "Localisation", ampleurK: "Ampleur des travaux", finitionK: "Niveau de finition", quiK: "Qui réalise les travaux",
         lockH: "Le détail poste par poste, c'est le Pro", lockP: "Vois où part chaque euro, ajuste chaque poste, choisis « je fais / fait faire », et sors un rapport PDF à comparer avec les artisans.",
         affiner: "Affiner en détaillé →", passPro: "Passer en Pro pour le détail →", refaire: "Refaire une estimation",
-        margeInfo: "Estimation indicative basée sur le référentiel de prix AVYORA (France 2026), ajustée à ton code postal — un ordre de grandeur (marge ±15 %) à confirmer par des devis d'artisans. Le détail précis, poste par poste, s'obtient avec l'estimation détaillée.",
-        others: "+ autres corps d'état", labor: "% MO" };
+        margeInfo: "Estimation indicative basée sur le référentiel de prix AVYORA (France 2026), ajustée à ton code postal — un ordre de grandeur (marge ±15\u00a0%) à confirmer par des devis d'artisans. Le détail précis, poste par poste, s'obtient avec l'estimation détaillée.",
+        // Le sous-titre manquait en français : la fiche affichait un paragraphe vide (F1).
+        sub: "Une fourchette immédiate à partir de tes réponses. Affine poste par poste pour une estimation précise et détaillée.",
+        others: "+ autres corps d'état", labor: "MO", marge: "marge" };
 
   const repartition = (
     <div className="tt">
@@ -158,8 +161,9 @@ export default async function ResultatRapide({
         <div className="lbl">{L.budget}</div>
         <div className="big">{euro(lo, nf)} <small>–</small> {euro(hi, nf)}</div>
         <div className="meta">
-          ≈ <b className="mono">{m2.toLocaleString(nf)} €/m²</b> · {ampLabel?.toLowerCase()} · {locale === "en" ? "margin" : "marge"} <b>{locale === "en" ? "±15%" : "±15 %"}</b>
-          {cp.length >= 2 && reg.zone ? <> · <b>{zone}</b>{moPct ? ` (${moPct > 0 ? "+" : ""}${moPct} ${L.labor})` : ""}</> : null}
+          {/* « marge ±15 % » / « ±15% margin » : l'ordre de chaque langue, le même partout (F1). */}
+          ≈ <b className="mono">{m2.toLocaleString(nf)} €/m²</b> · {ampLabel?.toLowerCase()} · {locale === "en" ? <><b>±15%</b> {L.marge}</> : <>{L.marge} <b>±15&nbsp;%</b></>}
+          {cp.length >= 2 && reg.zone ? <> · <b>{zone}</b>{moPct ? ` (${moPct > 0 ? "+" : ""}${pourcent(locale, moPct, 0)} ${L.labor})` : ""}</> : null}
         </div>
       </div>
 

@@ -86,7 +86,7 @@ export default async function FicheInscrit({ params }: { params: Promise<{ id: s
                 <div className="flex items-center gap-4">
                   <span className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-muted">
                     <span className="h-2 w-2 rounded-full" style={{ background: STATUT_DOT[pr.statut] }} />
-                    {STATUT_LABEL[pr.statut]}{pr.statut === "en_cours" ? ` · ${pr.pct} %` : ""}
+                    {STATUT_LABEL[pr.statut]}{pr.statut === "en_cours" ? ` · ${pr.pct}\u00a0%` : ""}
                   </span>
                   <span className="num font-semibold text-brand-700">{pr.ttc != null ? euros(pr.ttc) : "—"}</span>
                   <span className="text-[12px] font-semibold text-brand-700">Voir →</span>

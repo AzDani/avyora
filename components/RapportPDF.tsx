@@ -165,6 +165,8 @@ export async function RapportPDF({
   const r = dictRapport(locale);
   const rapide = dict(locale).rapide;
   const fmt = (v: number) => nombre(locale, v);
+  // Une surface garde ses décimales (« 72,5 m² », « 72.5 m² ») : arrondie, elle disait 73 m² (F1).
+  const surf = (v: number) => nombre(locale, v, 2);
   const euro = (v: number) => euros(locale, v);
   const dv = buildDevis(catalogueDe(ctx), ctx, sel);
   const b = dv.bilan;
@@ -242,7 +244,7 @@ export async function RapportPDF({
           {maison ? (
           <div className="row">
             <span><b>{n.maisonNeuve}</b></span><span>·</span>
-            <span><b className="num">{maison.surface}</b> {n.pdf.habitables}</span><span>·</span>
+            <span><b className="num">{surf(maison.surface)}</b> {n.pdf.habitables}</span><span>·</span>
             <span>{n.niveauxCourt[maison.niveaux] ?? n.niveauxCourt.pp}</span><span>·</span>
             <span><b className="num">{piecesNeuf(maison).chambres}</b> {piecesNeuf(maison).chambres > 1 ? n.chambres : n.chambre}</span><span>·</span>
             <span>{n.pdf.murs[maison.murs] ?? maison.murs}</span>
@@ -251,7 +253,7 @@ export async function RapportPDF({
           ) : (
           <div className="row">
             <span>{appart ? "🏢" : "🏠"} <b>{libelleTypeBien(locale, ctx.type)}</b></span><span>·</span>
-            <span><b className="num">{fmt(ctx.surface)}</b> {r.habitables}</span><span>·</span>
+            <span><b className="num">{surf(ctx.surface)}</b> {r.habitables}</span><span>·</span>
             <span><b className="num">{ctx.niveaux}</b> {r.niveaux(ctx.niveaux)}</span><span>·</span>
             <span><b className="num">{piecesEff(ctx) || ctx.pieces}</b> {r.pieces(piecesEff(ctx) || ctx.pieces)}</span><span>·</span>
             {/* SDB effectives = SDB classiques + suites parentales — c'est ce que le devis chiffre. */}

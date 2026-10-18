@@ -102,7 +102,7 @@ export default function PrixPosteHub() {
               return (
                 <tr key={l.lot}>
                   <td>{catT("fr", "corps", l.lot)}</td>
-                  <td className="num">{l.partMO} %</td>
+                  <td className="num">{l.partMO}&nbsp;%</td>
                   <td>{page ? <Link href={`/prix-poste/${page.slug}`}>voir</Link> : <span className="soon">—</span>}</td>
                 </tr>
               );

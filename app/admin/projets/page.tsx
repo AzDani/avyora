@@ -49,7 +49,7 @@ export default async function AdminProjets() {
                 <td className="whitespace-nowrap px-4 py-3">
                   <span className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-muted">
                     <span className="h-2 w-2 rounded-full" style={{ background: STATUT_DOT[p.statut] }} />
-                    {STATUT_LABEL[p.statut]}{p.statut === "en_cours" ? ` · ${p.pct} %` : ""}
+                    {STATUT_LABEL[p.statut]}{p.statut === "en_cours" ? ` · ${p.pct}\u00a0%` : ""}
                   </span>
                 </td>
                 <td className="num whitespace-nowrap px-4 py-3 text-faint">{fdate(p.createdAt)}</td>

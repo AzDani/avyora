@@ -15,6 +15,11 @@
  * A7 : « Enregistrer » sans code postal se comporte comme dans le neuf : le champ est marqué
  * (`aria-invalid`, relié au message de la barre live), la saisie réaffichée, puis le champ focalisé
  * (`useChampEnFaute`, brique partagée).
+ *
+ * F1 (décision de Dani du 18/10) : la liste a les outils du neuf, « Seulement les postes cochés » (un lot
+ * sans poste coché ni ligne perso disparaît, une phase vide aussi) et « Tout déplier » / « Tout replier »
+ * (`ListeLots`, règles dans `detaille-reno.ts`). Le filtre ne se garde pas : il n'est ni dans le brouillon
+ * ni dans le projet, comme dans le neuf.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -28,7 +33,7 @@ import { ListeLots, TitrePhase, BlocLot, LignesLot } from "./estimateur/ListeLot
 import { BarreLive } from "./estimateur/BarreLive";
 import { VueDevis, ChoixVue, type DonneesDevis } from "./estimateur/VueDevis";
 import {
-  CATALOG, PHASES, ICON, key, isLoc, visible, visibleTask, lotHT,
+  CATALOG, PHASES, ICON, isLoc, visible, lotHT,
   totals, buildDevis, regionCoef, customLotHT, customTotals, totauxAvecPerso, tauxPerso, tauxPersoPossibles, ESPACES, ALEAS_RENO,
   type Ctx, type Selection, type TypeBien, type Finition, type Lot, type Tache, type CustomLine,
 } from "@/lib/estimateur";
@@ -40,7 +45,7 @@ import { suivre } from "@/lib/track";
 import {
   etatDepuis, etatVierge, projetReno, ouvertureDetailReno, majNombre, majSol, majType, pasCtx, compteurPiece, pasPiece,
   choisirPerimetre, basculerEspace, ajouterExemplaire, retirerExemplaire, surfaceExemplaire, majZone, basculerDressing, recapReno,
-  majLigne, cocherReno, basculerAuto, manqueReno, nomProjetReno, corpsProjetReno,
+  majLigne, cocherReno, basculerAuto, manqueReno, nomProjetReno, corpsProjetReno, postesAffichesReno, cochesDuLotReno, toutOuvertReno, basculerToutReno,
   type EtatReno, type PieceDetail,
 } from "@/lib/estimateur/detaille-reno";
 
@@ -62,6 +67,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
   const [ctx, setCtx] = useState<Ctx>(depart.ctx);
   const [sel, setSel] = useState<Selection>(depart.sel);
   const [open, setOpen] = useState<Record<string, boolean>>(depart.open);
+  const [seulementCoches, setSeulementCoches] = useState(false);   // « Seulement les postes cochés » : non gardé, comme le neuf
   const [codePostal, setCodePostal] = useState(depart.codePostal);
   const [view, setView] = useState<"saisie" | "devis">("saisie");
   const [custom, setCustom] = useState<CustomLine[]>(depart.custom);
@@ -198,11 +204,14 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
   const espKeys = new Set(espSel.map((e) => e.k));
   const SS = r.emprise;
   const budget = ctx.budget;
+  // Les lots du bien (périmètre, type de bien) : ceux de la liste, et ce que « Tout déplier » ouvre.
+  const lotsMontres = CATALOG.filter((l) => visible(ctx, l));
 
   // ── Un lot : en-tête, lignes du catalogue, lignes perso ────────────────────
   function bloc(l: Lot) {
     const cLines = custom.filter((x) => x.lot === l.c);
-    const cnt = l.t.filter((t) => visibleTask(ctx, t) && sel[key(l.c, t.n)]?.on).length + cLines.filter((x) => x.on !== false && !x.draft).length;
+    const cnt = cochesDuLotReno(ctx, sel, l, custom);
+    if (seulementCoches && cnt === 0) return null;
     const isOpen = !!open[l.c];
     const loc = isLoc(l.c);
     return (
@@ -212,7 +221,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
         onBascule: () => setOpen((o) => ({ ...o, [l.c]: !o[l.c] })),
       }}>
         {loc && <div className="locnote">{gras(dl.liste.locNote)}</div>}
-        <LignesLot l={l} taches={l.t.filter((t) => visibleTask(ctx, t))} ctx={ctxR} sel={sel} loc={loc} maj={upd} onCocher={toggleCheck} onAuto={toggleAuto} />
+        <LignesLot l={l} taches={postesAffichesReno(ctx, sel, l, seulementCoches)} ctx={ctxR} sel={sel} loc={loc} maj={upd} onCocher={toggleCheck} onAuto={toggleAuto} />
         {/* ligne perso disponible sur tous les lots */}
         <CustomLines lines={cLines} onAdd={() => addCustom(l.c)} onUpd={updCustom} onDel={delCustom} tvas={(courant) => tauxPersoPossibles(ctx, courant)} />
       </BlocLot>
@@ -345,9 +354,13 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
 
             <div className="intro">{gras(dl.liste.intro)}</div>
 
-            <ListeLots phases={PHASES.flatMap((ph, i) => {
-              const lots = CATALOG.filter((l) => l.p === ph && visible(ctx, l));
-              return lots.length ? [{ cle: ph, titre: <TitrePhase num={i + 1} nom={catT(locale, "phases", ph)} />, contenu: lots.map(bloc) }] : [];
+            <ListeLots outils={{
+              seulement: seulementCoches, onSeulement: setSeulementCoches, texteSeulement: dl.liste.seulementCoches,
+              toutOuvert: toutOuvertReno(lotsMontres, open), onTout: () => setOpen((o) => basculerToutReno(lotsMontres, o)),
+              texteDeplier: dl.liste.toutDeplier, texteReplier: dl.liste.toutReplier,
+            }} phases={PHASES.flatMap((ph, i) => {
+              const lots = lotsMontres.filter((l) => l.p === ph).map(bloc).filter(Boolean);
+              return lots.length ? [{ cle: ph, titre: <TitrePhase num={i + 1} nom={catT(locale, "phases", ph)} />, contenu: lots }] : [];
             })} />
 
             <div style={{ textAlign: "center", marginTop: 14 }}>

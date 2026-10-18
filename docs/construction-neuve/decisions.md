@@ -131,3 +131,7 @@ Le calage le permet : A est à +2 % et B sans garage à 0 % du repère EPTB. C (
 - Limite connue : les rampants des combles aménagés n'ont pas de bandes, en neuf comme en rénovation (`journal-corrections.md` § 10).
 - Reste ouvert, pour les deux natures à la fois : D5 (a) de la revue (les plaques comprennent-elles déjà leurs bandes ? 2 ou 3 devis à faire sourcer).
 
+
+## 12. Doublage intérieur avec une ITE ou des murs en béton cellulaire 30 cm
+
+**Tranché le 18/10/2026.** Dani : « non, pas automatique, comme ça les gens choisissent ». Cocher l'isolation par l'extérieur (ITE) ou choisir des murs en béton cellulaire 30 cm (mur isolant) ne décoche **pas** le doublage intérieur (collé ou isolation des murs par l'intérieur) : c'est à l'utilisateur de le décocher s'il n'en veut pas. Le comportement en ligne depuis N10 ne change pas, aucun prix ne bouge. La table des conflits de `conception.md` (§ g) le dit.

@@ -227,7 +227,7 @@ const HOME_HTML = `
   <div class="pains">
     <div class="pain"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h6M8 17h4"/></svg></span><h3>Devis illisibles</h3><p>Un prix global, aucune façon de savoir s'il est juste.</p></div>
     <div class="pain"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><h3>Postes oubliés</h3><p>Ils réapparaissent en plein chantier — toujours plus cher.</p></div>
-    <div class="pain"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M23 6l-9.5 9.5-5-5L1 18M17 6h6v6"/></svg></span><h3>Budgets qui explosent</h3><p>+20, +30 % en cours de route, sans t'avoir prévenu.</p></div>
+    <div class="pain"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M23 6l-9.5 9.5-5-5L1 18M17 6h6v6"/></svg></span><h3>Budgets qui explosent</h3><p>+20, +30&nbsp;% en cours de route, sans t'avoir prévenu.</p></div>
     <div class="pain"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span><h3>Suivi éparpillé</h3><p>Devis, liens, choix de matériaux : tout est dispersé.</p></div>
   </div>
 </div></section>
@@ -246,7 +246,7 @@ const HOME_HTML = `
     <div class="vs">vs</div>
     <div class="cbox small"><div class="k">AVYORA Pro</div><div class="v">18,85 €/mois</div></div>
   </div>
-  <div class="pct">Soit <b>0,02 %</b> du budget pour le maîtriser entièrement.</div>
+  <div class="pct">Soit <b>0,02&nbsp;%</b> du budget pour le maîtriser entièrement.</div>
   <div class="punch">Un <em>seul poste oublié</em> dans un devis coûte souvent plus cher qu'une <em>année entière</em> d'AVYORA.</div>
 </div></div></div></section>
 
@@ -258,7 +258,7 @@ const HOME_HTML = `
   </div>
   <div class="eco">
     <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><h3>Chiffre ton économie en bricolant</h3><p>Selon ce que tu fais toi-même, AVYORA t'indique combien tu économises sur la main-d'œuvre — <b>souvent plus de la moitié du budget</b>.</p></div></div>
-    <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg></div><div><h3>Repère un devis surévalué</h3><p>Compare chaque poste au prix de marché. Un artisan +10 % sur 50&nbsp;000&nbsp;€, c'est 5&nbsp;000&nbsp;€.</p></div></div>
+    <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg></div><div><h3>Repère un devis surévalué</h3><p>Compare chaque poste au prix de marché. Un artisan +10&nbsp;% sur 50&nbsp;000&nbsp;€, c'est 5&nbsp;000&nbsp;€.</p></div></div>
     <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div><h3>Négocie — et emprunte serein</h3><p>Un rapport PDF chiffré poste par poste : à présenter à tes artisans pour négocier, et à ta banque pour appuyer ton dossier de prêt.</p></div></div>
     <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></div><div><h3>Anticipe les imprévus</h3><p>La provision aléas est intégrée : plus de mauvaise surprise en cours de chantier.</p></div></div>
   </div>
@@ -270,7 +270,7 @@ const HOME_HTML = `
     <div class="s"><div class="v">200</div><div class="l">postes de prix chiffrés</div></div>
     <div class="s"><div class="v">18</div><div class="l">corps d'état couverts</div></div>
     <div class="s"><div class="v">2026</div><div class="l">prix du marché français</div></div>
-    <div class="s"><div class="v">±15 %</div><div class="l">marge de la fourchette</div></div>
+    <div class="s"><div class="v">±15&nbsp;%</div><div class="l">marge de la fourchette</div></div>
   </div>
 </div></section>
 
@@ -339,7 +339,7 @@ const HOME_HTML_EN = `
   <div class="pains">
     <div class="pain"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h6M8 17h4"/></svg></span><h3>Unreadable quotes</h3><p>One lump sum, no way to tell if it's fair.</p></div>
     <div class="pain"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span><h3>Forgotten items</h3><p>They resurface mid-project — always pricier.</p></div>
-    <div class="pain"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M23 6l-9.5 9.5-5-5L1 18M17 6h6v6"/></svg></span><h3>Budgets that blow up</h3><p>+20, +30 % along the way, with no heads-up.</p></div>
+    <div class="pain"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M23 6l-9.5 9.5-5-5L1 18M17 6h6v6"/></svg></span><h3>Budgets that blow up</h3><p>+20, +30% along the way, with no heads-up.</p></div>
     <div class="pain"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg></span><h3>Zero comparison</h3><p>No market benchmark: you sign and cross your fingers.</p></div>
   </div>
 </div></section>
@@ -351,7 +351,7 @@ const HOME_HTML_EN = `
   </div>
   <div class="steps">
     <div class="stepc"><div class="n">1</div><h3>Describe your property</h3><p>4 questions, under 2 minutes. Type, area, scope, finish.</p></div>
-    <div class="stepc"><div class="n">2</div><h3>Get your range</h3><p>An instant budget, ±15 %, adjusted to your region's market price.</p></div>
+    <div class="stepc"><div class="n">2</div><h3>Get your range</h3><p>An instant budget, ±15%, adjusted to your region's market price.</p></div>
     <div class="stepc"><div class="n">3</div><h3>Refine line by line</h3><p>All 200 items, DIY vs. hire-out, and the PDF report — with AVYORA&nbsp;Pro.</p></div>
   </div>${FEATURES.neuf ? NEUF_BAND_EN : ""}
 </div></section>
@@ -370,7 +370,7 @@ const HOME_HTML_EN = `
     <div class="vs">vs</div>
     <div class="cbox small"><div class="k">AVYORA Pro</div><div class="v">€18.85/mo</div></div>
   </div>
-  <div class="pct">That's <b>0.02 %</b> of the budget to control all of it.</div>
+  <div class="pct">That's <b>0.02%</b> of the budget to control all of it.</div>
   <div class="punch">A <em>single forgotten item</em> in a quote often costs more than a <em>whole year</em> of AVYORA.</div>
 </div></div></div></section>
 
@@ -382,7 +382,7 @@ const HOME_HTML_EN = `
   </div>
   <div class="eco">
     <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><h3>Quantify your DIY savings</h3><p>Depending on what you do yourself, AVYORA shows how much you save on labor — <b>often more than half the budget</b>.</p></div></div>
-    <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg></div><div><h3>Spot an overpriced quote</h3><p>Compare each item to the market price. A contractor +10 % on €50,000 is €5,000.</p></div></div>
+    <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg></div><div><h3>Spot an overpriced quote</h3><p>Compare each item to the market price. A contractor +10% on €50,000 is €5,000.</p></div></div>
     <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div><h3>Negotiate — and borrow with confidence</h3><p>A PDF report priced line by line: to negotiate with your contractors, and to back your loan application at the bank.</p></div></div>
     <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></div><div><h3>Plan for the unexpected</h3><p>A contingency allowance is built in: no more nasty surprises mid-project.</p></div></div>
   </div>
@@ -394,7 +394,7 @@ const HOME_HTML_EN = `
     <div class="s"><div class="v">200</div><div class="l">priced items</div></div>
     <div class="s"><div class="v">18</div><div class="l">trades covered</div></div>
     <div class="s"><div class="v">2026</div><div class="l">French market prices</div></div>
-    <div class="s"><div class="v">±15 %</div><div class="l">range on the estimate</div></div>
+    <div class="s"><div class="v">±15%</div><div class="l">range on the estimate</div></div>
   </div>
 </div></section>
 

@@ -47,7 +47,7 @@ export function remplacementsAccueilBeta(locale: Locale): [string, string][] {
         '<div class="cbox small"><div class="k">AVYORA during the beta</div><div class="v">€0</div></div>',
       ],
       [
-        '<div class="pct">That\'s <b>0.02 %</b> of the budget to control all of it.</div>',
+        '<div class="pct">That\'s <b>0.02%</b> of the budget to control all of it.</div>',
         '<div class="pct">Then, for founding members, a <b>preferred rate guaranteed for life</b>, announced before the beta ends.</div>',
       ],
       // Sans prix affiché, « plus cher qu'une année d'AVYORA » ne compare plus rien (2e contre-examen).
@@ -89,7 +89,7 @@ export function remplacementsAccueilBeta(locale: Locale): [string, string][] {
       '<div class="cbox small"><div class="k">AVYORA pendant la bêta</div><div class="v">0 €</div></div>',
     ],
     [
-      '<div class="pct">Soit <b>0,02 %</b> du budget pour le maîtriser entièrement.</div>',
+      '<div class="pct">Soit <b>0,02&nbsp;%</b> du budget pour le maîtriser entièrement.</div>',
       '<div class="pct">Puis, pour les membres fondateurs, un <b>tarif préférentiel garanti à vie</b>, annoncé avant la fin de la bêta.</div>',
     ],
     // Sans prix affiché, « plus cher qu'une année d'AVYORA » ne compare plus rien (2e contre-examen).

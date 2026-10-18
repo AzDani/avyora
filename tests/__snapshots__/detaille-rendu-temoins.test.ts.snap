@@ -12,7 +12,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · Mon devis 1`] = `
 </span>Your estimate · new build</div>
 <div class="tt">
 <span>0</span>
-<small>€ incl. tax</small>
+<small>€ incl. VAT</small>
 </div>
 <div class="brk">
 <div class="pill">
@@ -66,7 +66,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · Mon devis 1`] = `
 </div>
 <div class="card">
 <h2>Breakdown by phase and trade</h2>
-<div class="sub">Amounts incl. tax: where your budget goes</div>
+<div class="sub">Amounts incl. VAT: where your budget goes</div>
 <div>
 <div class="phase-t">Studies &amp; permit</div>
 <div class="devlot">
@@ -369,7 +369,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · Mon devis 1`] = `
 </div>
 <div class="card">
 <h2>Item detail</h2>
-<div class="sub">Your selection, line by line (incl. tax)</div>
+<div class="sub">Your selection, line by line (incl. VAT)</div>
 <div class="dtl">
 <span>Topographic survey of the plot (surveyor: levels, boundaries, trees, visible utilities)</span>
 <span class="q">—</span>
@@ -422,7 +422,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · Mon devis 1`] = `
 </div>
 <div class="dtl">
 <span>Builder&#x27;s latent-defect insurance (dommages-ouvrage, mandatory, taken out before work starts)</span>
-<span class="q">3.5 % of the project</span>
+<span class="q">3.5% of the project</span>
 <span class="mode mA">hire out</span>
 <span class="m">7,519 €</span>
 </div>
@@ -1193,7 +1193,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 <span class="ck">
 </span>
 </span>
-<span class="fe">Rental · budget-conscious</span>
+<span class="fe">Budget-conscious</span>
 <span class="ft">Economy</span>
 <span class="fd">Sturdy entry level: laminate, standard tile, ready-to-assemble kitchen.</span>
 </button>
@@ -1531,7 +1531,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 <div class="lbl">Estimated total</div>
 <div class="big">
 <span>0</span>
-<small>€ incl. tax</small>
+<small>€ incl. VAT</small>
 </div>
 <div class="m2">
 <span class="m2-v">≈ 2,532 €<span class="m2-l"> / m² of living area</span>
@@ -1573,7 +1573,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · Mon devis 1`] = `
 <span class="v num">216 637 €</span>
 </div>
 <div class="pill">
-<span class="k">TVA 20 %</span>
+<span class="k">TVA 20 %</span>
 <br/>
 <span class="v num">43 147 €</span>
 </div>
@@ -1583,7 +1583,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · Mon devis 1`] = `
 <span class="v num">14 538 €</span>
 </div>
 <div class="pill">
-<span class="k">Aléas 7 %</span>
+<span class="k">Aléas 7 %</span>
 <br/>
 <span class="v num">14 599 €</span>
 </div>
@@ -1595,7 +1595,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · Mon devis 1`] = `
 </div>
 <p class="split-n">dont la construction <b>239 972 €</b> · études, taxes, assurance, branchements <b>32 370 €</b>
 </p>
-<div class="tvahint">TVA 20 % sur toute la construction neuve, sans taux réduit. Taxes, participations et assurance dommages-ouvrage : sans TVA ni aléas.</div>
+<div class="tvahint">TVA 20 % sur toute la construction neuve, sans taux réduit. Taxes, participations et assurance dommages-ouvrage : sans TVA ni aléas.</div>
 </div>
 <div class="card">
 <h2>Le bilan de tes choix</h2>
@@ -1974,7 +1974,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · Mon devis 1`] = `
 </div>
 <div class="dtl">
 <span>Assurance dommages-ouvrage (obligatoire, souscrite avant l&#x27;ouverture du chantier)</span>
-<span class="q">3,5 % du projet</span>
+<span class="q">3,5 % du projet</span>
 <span class="mode mA">fait faire</span>
 <span class="m">7 519 €</span>
 </div>
@@ -2555,7 +2555,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · Mon devis 1`] = `
 </span>
 </div>
 </div>
-<div class="foot">Estimation indicative AVYORA : prix moyens du marché 2026 pour la construction neuve, finition Standard. TVA 20 % ; taxes, participations et dommages-ouvrage sans TVA. Hors terrain, notaire, aménagements extérieurs et aides. Demande 2 ou 3 devis par lot pour affiner.</div>
+<div class="foot">Estimation indicative AVYORA : prix moyens du marché 2026 pour la construction neuve, finition Standard. TVA 20 % ; taxes, participations et dommages-ouvrage sans TVA. Hors terrain, notaire, aménagements extérieurs et aides. Demande 2 ou 3 devis par lot pour affiner.</div>
 </div>"
 `;
 
@@ -2745,7 +2745,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 <span class="ck">
 </span>
 </span>
-<span class="fe">Locatif · budget maîtrisé</span>
+<span class="fe">Budget maîtrisé</span>
 <span class="ft">Éco</span>
 <span class="fd">Entrée de gamme robuste : stratifié, carrelage standard, cuisine en kit.</span>
 </button>
@@ -2790,7 +2790,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 <button type="button" class="" aria-pressed="false">Un maître d&#x27;œuvre</button>
 </div>
 <div class="gl">Régime de TVA</div>
-<div class="locnote">Construction neuve : <b>TVA 20 %</b> sur tous les travaux, aucun taux réduit. Les taxes et l&#x27;assurance dommages-ouvrage n&#x27;ont pas de TVA.</div>
+<div class="locnote">Construction neuve : <b>TVA 20 %</b> sur tous les travaux, aucun taux réduit. Les taxes et l&#x27;assurance dommages-ouvrage n&#x27;ont pas de TVA.</div>
 <div class="gl">Budget &amp; imprévus</div>
 <div class="depart">
 <div class="fld">
@@ -3597,6 +3597,11 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · appartement 1`] = `
 </div>
 </div>
 <div class="intro">Open the trades you need, check the work items, adjust the quantities. Prices shown <b>excl. VAT</b>. On every item you can do yourself, electrical, load-bearing walls and roof framing included, choose <b>“Hire out”</b> (contractor) or <b>“DIY”</b> — both prices are shown. Done yourself, a masonry, roof framing, roofing or exterior door and window item is not covered by the 10-year structural warranty; for a load-bearing wall or roof framing, an engineering study is recommended.</div>
+<div class="tools">
+<label class="only">
+<input type="checkbox"/>Checked items only</label>
+<button type="button" class="linkbtn">Expand all</button>
+</div>
 <div>
 <div class="phase-t">1 · Preparation</div>
 <div class="acc">
@@ -4124,6 +4129,11 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </div>
 </div>
 <div class="intro">Open the trades you need, check the work items, adjust the quantities. Prices shown <b>excl. VAT</b>. On every item you can do yourself, electrical, load-bearing walls and roof framing included, choose <b>“Hire out”</b> (contractor) or <b>“DIY”</b> — both prices are shown. Done yourself, a masonry, roof framing, roofing or exterior door and window item is not covered by the 10-year structural warranty; for a load-bearing wall or roof framing, an engineering study is recommended.</div>
+<div class="tools">
+<label class="only">
+<input type="checkbox"/>Checked items only</label>
+<button type="button" class="linkbtn">Expand all</button>
+</div>
 <div>
 <div class="phase-t">1 · Preparation</div>
 <div class="acc">
@@ -5823,6 +5833,11 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · page vierge 1`] = `
 </div>
 </div>
 <div class="intro">Open the trades you need, check the work items, adjust the quantities. Prices shown <b>excl. VAT</b>. On every item you can do yourself, electrical, load-bearing walls and roof framing included, choose <b>“Hire out”</b> (contractor) or <b>“DIY”</b> — both prices are shown. Done yourself, a masonry, roof framing, roofing or exterior door and window item is not covered by the 10-year structural warranty; for a load-bearing wall or roof framing, an engineering study is recommended.</div>
+<div class="tools">
+<label class="only">
+<input type="checkbox"/>Checked items only</label>
+<button type="button" class="linkbtn">Expand all</button>
+</div>
 <div>
 <div class="phase-t">1 · Preparation</div>
 <div class="acc">
@@ -6227,6 +6242,11 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · pieces 1`] = `
 </div>
 </div>
 <div class="intro">Open the trades you need, check the work items, adjust the quantities. Prices shown <b>excl. VAT</b>. On every item you can do yourself, electrical, load-bearing walls and roof framing included, choose <b>“Hire out”</b> (contractor) or <b>“DIY”</b> — both prices are shown. Done yourself, a masonry, roof framing, roofing or exterior door and window item is not covered by the 10-year structural warranty; for a load-bearing wall or roof framing, an engineering study is recommended.</div>
+<div class="tools">
+<label class="only">
+<input type="checkbox"/>Checked items only</label>
+<button type="button" class="linkbtn">Expand all</button>
+</div>
 <div>
 <div class="phase-t">1 · Preparation</div>
 <div class="acc">
@@ -6520,6 +6540,11 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · suite 1`] = `
 </div>
 </div>
 <div class="intro">Open the trades you need, check the work items, adjust the quantities. Prices shown <b>excl. VAT</b>. On every item you can do yourself, electrical, load-bearing walls and roof framing included, choose <b>“Hire out”</b> (contractor) or <b>“DIY”</b> — both prices are shown. Done yourself, a masonry, roof framing, roofing or exterior door and window item is not covered by the 10-year structural warranty; for a load-bearing wall or roof framing, an engineering study is recommended.</div>
+<div class="tools">
+<label class="only">
+<input type="checkbox"/>Checked items only</label>
+<button type="button" class="linkbtn">Expand all</button>
+</div>
 <div>
 <div class="phase-t">1 · Preparation</div>
 <div class="acc">
@@ -6956,12 +6981,12 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · Mon devis (maison, li
 <span class="v num">22 801 €</span>
 </div>
 <div class="pill">
-<span class="k">TVA 10 / 5,5 %</span>
+<span class="k">TVA 10 / 5,5 %</span>
 <br/>
 <span class="v num">2 567 €</span>
 </div>
 <div class="pill">
-<span class="k">Aléas 10 %</span>
+<span class="k">Aléas 10 %</span>
 <br/>
 <span class="v num">2 280 €</span>
 </div>
@@ -6971,7 +6996,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · Mon devis (maison, li
 <span class="v num">150 000 €</span>
 </div>
 </div>
-<div class="tvahint">TVA réduite 10 % (5,5 % sur la rénovation énergétique) — logement de plus de 2 ans. Matériaux achetés seul (« Je le fais ») à 20 %.</div>
+<div class="tvahint">TVA réduite 10 % (5,5 % sur la rénovation énergétique) — logement de plus de 2 ans. Matériaux achetés seul (« Je le fais ») à 20 %.</div>
 </div>
 <div class="card">
 <h2>Le bilan de tes choix <span style="font-weight:400;color:var(--muted);font-size:12px">(HT)</span>
@@ -7118,7 +7143,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · Mon devis (maison, li
 <span class="m">1 800 €</span>
 </div>
 </div>
-<div class="foot">Estimation indicative AVYORA — prix moyens marché 2026, finition premium. TVA réelle par poste (énergie 5,5 %, travaux fourni-posé 10 %, études &amp; achats « Je le fais » 20 %). Hors aides. Demande 2-3 devis pour affiner.</div>
+<div class="foot">Estimation indicative AVYORA — prix moyens marché 2026, finition premium. TVA réelle par poste (énergie 5,5 %, travaux fourni-posé 10 %, études &amp; achats « Je le fais » 20 %). Hors aides. Demande 2-3 devis pour affiner.</div>
 </div>"
 `;
 
@@ -7143,12 +7168,12 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · Mon devis (maison, li
 <span class="v num">0 €</span>
 </div>
 <div class="pill">
-<span class="k">TVA 20 %</span>
+<span class="k">TVA 20 %</span>
 <br/>
 <span class="v num">0 €</span>
 </div>
 <div class="pill">
-<span class="k">Aléas 10 %</span>
+<span class="k">Aléas 10 %</span>
 <br/>
 <span class="v num">0 €</span>
 </div>
@@ -7158,7 +7183,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · Mon devis (maison, li
 <span class="v num">150 000 €</span>
 </div>
 </div>
-<div class="tvahint">TVA 20 % — logement de moins de 2 ans ou local professionnel.</div>
+<div class="tvahint">TVA 20 % — logement de moins de 2 ans ou local professionnel.</div>
 </div>
 <div class="card">
 <h2>Le bilan de tes choix <span style="font-weight:400;color:var(--muted);font-size:12px">(HT)</span>
@@ -7185,7 +7210,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · Mon devis (maison, li
 <div class="sub">Montants TTC — où part ton budget</div>
 <div class="empty">Aucun travaux sélectionné. Retourne à « Ma saisie ».</div>
 </div>
-<div class="foot">Estimation indicative AVYORA — prix moyens marché 2026, finition premium. TVA réelle par poste (énergie 5,5 %, travaux fourni-posé 10 %, études &amp; achats « Je le fais » 20 %). Hors aides. Demande 2-3 devis pour affiner.</div>
+<div class="foot">Estimation indicative AVYORA — prix moyens marché 2026, finition premium. TVA réelle par poste (énergie 5,5 %, travaux fourni-posé 10 %, études &amp; achats « Je le fais » 20 %). Hors aides. Demande 2-3 devis pour affiner.</div>
 </div>"
 `;
 
@@ -7395,7 +7420,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · appartement 1`] = `
 <button type="button" class="on" aria-pressed="true">Moins de 2 ans ou local pro</button>
 </div>
 <div class="locnote">
-<b>Logement de plus de 2 ans</b> : TVA réduite <b>10 %</b> (et <b>5,5 %</b> sur la rénovation énergétique — isolation, chauffage performant…). <b>Logement de moins de 2 ans ou local professionnel</b> : tout à <b>20 %</b> ; pour une maison à construire, choisis « Construction neuve ». Les matériaux que tu achètes seul (« Je le fais ») restent à <b>20 %</b> dans tous les cas.</div>
+<b>Logement de plus de 2 ans</b> : TVA réduite <b>10 %</b> (et <b>5,5 %</b> sur la rénovation énergétique — isolation, chauffage performant…). <b>Logement de moins de 2 ans ou local professionnel</b> : tout à <b>20 %</b> ; pour une maison à construire, choisis « Construction neuve ». Les matériaux que tu achètes seul (« Je le fais ») restent à <b>20 %</b> dans tous les cas.</div>
 <div class="gl">Budget &amp; imprévus</div>
 <div class="depart">
 <div class="fld">
@@ -7424,10 +7449,15 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · appartement 1`] = `
 </div>
 </div>
 <div class="recap">🏠 <b>Appartement</b> · 65 m² habitables · <b>1 niveau</b> · emprise au sol ~65 m² · plafond 2,5 m<div style="margin-top:6px">→ <b>6 pièces</b> au total · <b>1 salle de bain</b> · 7 menuiseries ext.</div>
-<div style="margin-top:6px">📍 <b>Grande agglomération</b> · main-d’œuvre +4 %</div>
+<div style="margin-top:6px">📍 <b>Grande agglomération</b> · main-d’œuvre +4 %</div>
 </div>
 </div>
 <div class="intro">Ouvre les lots concernés, coche les travaux, ajuste les quantités. Prix affichés <b>HT</b>. Sur chaque travail faisable soi-même, électricité, mur porteur et charpente compris, choisis <b>« Fait faire »</b> (artisan) ou <b>« Je le fais »</b> — les 2 prix s’affichent. Pris soi-même, un poste de maçonnerie, de charpente, de couverture ou de menuiseries extérieures sort de la garantie décennale ; pour un mur porteur ou une charpente, une étude est conseillée.</div>
+<div class="tools">
+<label class="only">
+<input type="checkbox"/>Seulement les postes cochés</label>
+<button type="button" class="linkbtn">Tout déplier</button>
+</div>
 <div>
 <div class="phase-t">1 · Préparation</div>
 <div class="acc">
@@ -7920,7 +7950,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button type="button" class="" aria-pressed="false">Moins de 2 ans ou local pro</button>
 </div>
 <div class="locnote">
-<b>Logement de plus de 2 ans</b> : TVA réduite <b>10 %</b> (et <b>5,5 %</b> sur la rénovation énergétique — isolation, chauffage performant…). <b>Logement de moins de 2 ans ou local professionnel</b> : tout à <b>20 %</b> ; pour une maison à construire, choisis « Construction neuve ». Les matériaux que tu achètes seul (« Je le fais ») restent à <b>20 %</b> dans tous les cas.</div>
+<b>Logement de plus de 2 ans</b> : TVA réduite <b>10 %</b> (et <b>5,5 %</b> sur la rénovation énergétique — isolation, chauffage performant…). <b>Logement de moins de 2 ans ou local professionnel</b> : tout à <b>20 %</b> ; pour une maison à construire, choisis « Construction neuve ». Les matériaux que tu achètes seul (« Je le fais ») restent à <b>20 %</b> dans tous les cas.</div>
 <div class="gl">Budget &amp; imprévus</div>
 <div class="depart">
 <div class="fld">
@@ -7951,10 +7981,15 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <div class="recap">🏠 <b>Maison</b> · 120 m² habitables · <b>2 niveaux</b> · emprise au sol ~60 m² · plafond 2,5 m → murs extérieurs ≈ <b>194 m²</b> · toiture ≈ <b>84 m²</b>
 <span style="color:var(--faint)"> (dont ~60 m² à l’étage)</span>
 <div style="margin-top:6px">→ <b>7 pièces</b> au total · <b>2 salles de bain</b> (dont 1 en suite) · 10 menuiseries ext.</div>
-<div style="margin-top:6px">📍 <b>Paris &amp; petite couronne</b> · main-d’œuvre +20 %</div>
+<div style="margin-top:6px">📍 <b>Paris &amp; petite couronne</b> · main-d’œuvre +20 %</div>
 </div>
 </div>
 <div class="intro">Ouvre les lots concernés, coche les travaux, ajuste les quantités. Prix affichés <b>HT</b>. Sur chaque travail faisable soi-même, électricité, mur porteur et charpente compris, choisis <b>« Fait faire »</b> (artisan) ou <b>« Je le fais »</b> — les 2 prix s’affichent. Pris soi-même, un poste de maçonnerie, de charpente, de couverture ou de menuiseries extérieures sort de la garantie décennale ; pour un mur porteur ou une charpente, une étude est conseillée.</div>
+<div class="tools">
+<label class="only">
+<input type="checkbox"/>Seulement les postes cochés</label>
+<button type="button" class="linkbtn">Tout déplier</button>
+</div>
 <div>
 <div class="phase-t">1 · Préparation</div>
 <div class="acc">
@@ -9621,7 +9656,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · page vierge 1`] = `
 <button type="button" class="" aria-pressed="false">Moins de 2 ans ou local pro</button>
 </div>
 <div class="locnote">
-<b>Logement de plus de 2 ans</b> : TVA réduite <b>10 %</b> (et <b>5,5 %</b> sur la rénovation énergétique — isolation, chauffage performant…). <b>Logement de moins de 2 ans ou local professionnel</b> : tout à <b>20 %</b> ; pour une maison à construire, choisis « Construction neuve ». Les matériaux que tu achètes seul (« Je le fais ») restent à <b>20 %</b> dans tous les cas.</div>
+<b>Logement de plus de 2 ans</b> : TVA réduite <b>10 %</b> (et <b>5,5 %</b> sur la rénovation énergétique — isolation, chauffage performant…). <b>Logement de moins de 2 ans ou local professionnel</b> : tout à <b>20 %</b> ; pour une maison à construire, choisis « Construction neuve ». Les matériaux que tu achètes seul (« Je le fais ») restent à <b>20 %</b> dans tous les cas.</div>
 <div class="gl">Budget &amp; imprévus</div>
 <div class="depart">
 <div class="fld">
@@ -9654,6 +9689,11 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · page vierge 1`] = `
 </div>
 </div>
 <div class="intro">Ouvre les lots concernés, coche les travaux, ajuste les quantités. Prix affichés <b>HT</b>. Sur chaque travail faisable soi-même, électricité, mur porteur et charpente compris, choisis <b>« Fait faire »</b> (artisan) ou <b>« Je le fais »</b> — les 2 prix s’affichent. Pris soi-même, un poste de maçonnerie, de charpente, de couverture ou de menuiseries extérieures sort de la garantie décennale ; pour un mur porteur ou une charpente, une étude est conseillée.</div>
+<div class="tools">
+<label class="only">
+<input type="checkbox"/>Seulement les postes cochés</label>
+<button type="button" class="linkbtn">Tout déplier</button>
+</div>
 <div>
 <div class="phase-t">1 · Préparation</div>
 <div class="acc">
@@ -10026,7 +10066,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · pieces 1`] = `
 <button type="button" class="" aria-pressed="false">Moins de 2 ans ou local pro</button>
 </div>
 <div class="locnote">
-<b>Logement de plus de 2 ans</b> : TVA réduite <b>10 %</b> (et <b>5,5 %</b> sur la rénovation énergétique — isolation, chauffage performant…). <b>Logement de moins de 2 ans ou local professionnel</b> : tout à <b>20 %</b> ; pour une maison à construire, choisis « Construction neuve ». Les matériaux que tu achètes seul (« Je le fais ») restent à <b>20 %</b> dans tous les cas.</div>
+<b>Logement de plus de 2 ans</b> : TVA réduite <b>10 %</b> (et <b>5,5 %</b> sur la rénovation énergétique — isolation, chauffage performant…). <b>Logement de moins de 2 ans ou local professionnel</b> : tout à <b>20 %</b> ; pour une maison à construire, choisis « Construction neuve ». Les matériaux que tu achètes seul (« Je le fais ») restent à <b>20 %</b> dans tous les cas.</div>
 <div class="gl">Budget &amp; imprévus</div>
 <div class="depart">
 <div class="fld">
@@ -10058,6 +10098,11 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · pieces 1`] = `
 </div>
 </div>
 <div class="intro">Ouvre les lots concernés, coche les travaux, ajuste les quantités. Prix affichés <b>HT</b>. Sur chaque travail faisable soi-même, électricité, mur porteur et charpente compris, choisis <b>« Fait faire »</b> (artisan) ou <b>« Je le fais »</b> — les 2 prix s’affichent. Pris soi-même, un poste de maçonnerie, de charpente, de couverture ou de menuiseries extérieures sort de la garantie décennale ; pour un mur porteur ou une charpente, une étude est conseillée.</div>
+<div class="tools">
+<label class="only">
+<input type="checkbox"/>Seulement les postes cochés</label>
+<button type="button" class="linkbtn">Tout déplier</button>
+</div>
 <div>
 <div class="phase-t">1 · Préparation</div>
 <div class="acc">
@@ -10318,7 +10363,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · suite 1`] = `
 <button type="button" class="" aria-pressed="false">Moins de 2 ans ou local pro</button>
 </div>
 <div class="locnote">
-<b>Logement de plus de 2 ans</b> : TVA réduite <b>10 %</b> (et <b>5,5 %</b> sur la rénovation énergétique — isolation, chauffage performant…). <b>Logement de moins de 2 ans ou local professionnel</b> : tout à <b>20 %</b> ; pour une maison à construire, choisis « Construction neuve ». Les matériaux que tu achètes seul (« Je le fais ») restent à <b>20 %</b> dans tous les cas.</div>
+<b>Logement de plus de 2 ans</b> : TVA réduite <b>10 %</b> (et <b>5,5 %</b> sur la rénovation énergétique — isolation, chauffage performant…). <b>Logement de moins de 2 ans ou local professionnel</b> : tout à <b>20 %</b> ; pour une maison à construire, choisis « Construction neuve ». Les matériaux que tu achètes seul (« Je le fais ») restent à <b>20 %</b> dans tous les cas.</div>
 <div class="gl">Budget &amp; imprévus</div>
 <div class="depart">
 <div class="fld">
@@ -10347,10 +10392,15 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · suite 1`] = `
 </div>
 </div>
 <div class="recap">🎯 <b>Pièces ciblées</b> · 25 m² · plafond 2,5 m<div style="margin-top:6px">→ 1 Suite parentale</div>
-<div style="margin-top:6px">📍 <b>Zone tendue</b> · main-d’œuvre +10 %</div>
+<div style="margin-top:6px">📍 <b>Zone tendue</b> · main-d’œuvre +10 %</div>
 </div>
 </div>
 <div class="intro">Ouvre les lots concernés, coche les travaux, ajuste les quantités. Prix affichés <b>HT</b>. Sur chaque travail faisable soi-même, électricité, mur porteur et charpente compris, choisis <b>« Fait faire »</b> (artisan) ou <b>« Je le fais »</b> — les 2 prix s’affichent. Pris soi-même, un poste de maçonnerie, de charpente, de couverture ou de menuiseries extérieures sort de la garantie décennale ; pour un mur porteur ou une charpente, une étude est conseillée.</div>
+<div class="tools">
+<label class="only">
+<input type="checkbox"/>Seulement les postes cochés</label>
+<button type="button" class="linkbtn">Tout déplier</button>
+</div>
 <div>
 <div class="phase-t">1 · Préparation</div>
 <div class="acc">

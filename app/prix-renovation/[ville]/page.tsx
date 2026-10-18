@@ -102,18 +102,18 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
   // (cf. /methodologie). On décrit donc ce que l'outil applique, sans affirmer un fait de marché.
   const coefPhrase =
     moPct > 0
-      ? `AVYORA y applique un coefficient de +${moPct} % sur la main-d'œuvre`
+      ? `AVYORA y applique un coefficient de +${moPct}\u00a0% sur la main-d'œuvre`
       : moPct < 0
-        ? `AVYORA y applique un coefficient de −${Math.abs(moPct)} % sur la main-d'œuvre`
+        ? `AVYORA y applique un coefficient de −${Math.abs(moPct)}\u00a0% sur la main-d'œuvre`
         : `AVYORA n'y applique aucun ajustement de main-d'œuvre`;
   // Variante courte, pour les phrases qui nomment déjà AVYORA (évite « AVYORA … AVYORA y applique »).
   const coefCourt =
-    moPct > 0 ? `+${moPct} % sur la main-d'œuvre` : moPct < 0 ? `−${Math.abs(moPct)} % sur la main-d'œuvre` : `aucun ajustement`;
+    moPct > 0 ? `+${moPct}\u00a0% sur la main-d'œuvre` : moPct < 0 ? `−${Math.abs(moPct)}\u00a0% sur la main-d'œuvre` : `aucun ajustement`;
 
   const faq = [
     {
       q: `Combien coûte une rénovation complète à ${v.nom} ?`,
-      a: `Comptez environ ${euro(complete.appartM2)}/m² pour un appartement, soit à peu près ${euro(totalCompletAppart)} pour 70 m² (fourchette ±15 %, finition standard, travaux confiés à des artisans).`,
+      a: `Comptez environ ${euro(complete.appartM2)}/m² pour un appartement, soit à peu près ${euro(totalCompletAppart)} pour 70 m² (fourchette ±15\u00a0%, finition standard, travaux confiés à des artisans).`,
     },
     {
       q: `Pourquoi les prix diffèrent-ils à ${v.nom} ?`,
@@ -196,7 +196,7 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
       </table>
       </div>
       <p style={{ fontSize: 12.5, color: "var(--color-faint)" }}>
-        Prix TTC indicatifs, travaux confiés à des artisans, finition standard, marge ±15 %. Base :
+        Prix TTC indicatifs, travaux confiés à des artisans, finition standard, marge ±15&nbsp;%. Base :
         appartement 70 m² / maison 100 m². À affiner selon l&apos;état du bien.
       </p>
 

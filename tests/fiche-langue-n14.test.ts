@@ -141,7 +141,7 @@ describe("N14 · fiche : plus de chaîne en dur, nombres dans la langue de la pa
     expect(euros("en", 101077.4)).toBe("101,077 €");
     expect(nombre("fr", 130.78, 2)).toBe("130,78");
     expect(nombre("en", 130.78, 2)).toBe("130.78");
-    expect(pourcent("fr", 5.5)).toBe("5,5 %");
+    expect(pourcent("fr", 5.5)).toBe("5,5\u00a0%");   // espace insécable (F1)
     expect(pourcent("en", 5.5)).toBe("5.5%");
     expect(dictDetail("fr").devis.qte(130.78, "m²", false)).toBe("130,78 m²");
     expect(dictDetail("en").devis.qte(130.78, "m²", false)).toBe("130.78 m²");

@@ -355,7 +355,7 @@ export function contributionsDuPlan(plan: PlanPourCorrespondance): { contributio
         : m.type === "coulissante" ? { pose: "applique" } : undefined;
       if (poste) add(poste, 1, src, m.etat === "remplacer" ? "Menuiserie remplacée" : "Menuiserie neuve",
         pose,
-        m.mat || m.vitrage ? undefined : "Matériau et vitrage non choisis : le devis applique ses défauts (PVC hors finition premium, double vitrage). L'alu coûte 67 % de plus que le PVC, le bois 75 %.",
+        m.mat || m.vitrage ? undefined : "Matériau et vitrage non choisis : le devis applique ses défauts (PVC hors finition premium, double vitrage). L'alu coûte 67\u00a0% de plus que le PVC, le bois 75\u00a0%.",
         choixMenuiserie(m));
       else if (m.type !== "passage") ignores.push({ quoi: m.type, pourquoi: "aucun poste au catalogue pour ce type de menuiserie", sources: src });
       /* La poche du galandage n'a PLUS de ligne : son prix est une plus-value portée par la
