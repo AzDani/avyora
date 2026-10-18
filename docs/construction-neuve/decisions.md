@@ -44,6 +44,8 @@ En lotissement, le coffret est souvent déjà en limite : Selectra l'annonce à 
 | Total tout compris, aléas 7 % | 246 760 € | 314 750 € | 245 320 € |
 | Total tout compris, aléas 10 % | 252 150 € | 321 600 € | 250 680 € |
 
+Tranché en D7 (revue rénovation / neuf) : le neuf reste à 7 %. Depuis D5 (bandes de plâtre à part, § 11), les totaux à 7 % sont de 253 172 €, 323 991 € et 251 172 €.
+
 La recherche conseille 10 à 15 %, et les jurys conducteur et économiste recommandent 10 %. **Proposition : 10 %.**
 
 ## 4. « Je fais le maximum moi-même » en neuf
@@ -111,3 +113,20 @@ Proposé par le jury économiste :
 > « Estimation à ± 10 % des coûts moyens constatés en France pour une maison simple (enquête officielle SDES 2024). Votre terrain, votre région et vos devis feront la différence. Hors terrain, notaire et aménagements extérieurs. »
 
 Le calage le permet : A est à +2 % et B sans garage à 0 % du repère EPTB. C (ossature bois) est à +13 % : ne pas afficher de précision pour l'ossature bois.
+
+## 11. Bandes de plâtre : une ligne à part, comme en rénovation (décision D5 de Dani)
+
+**Tranché, appliqué le 17/10/2026.** Dani : « dans la rénovation on a une ligne à part ; fais la même logique que la réno ». En neuf, les bandes et l'enduit des plaques ne sont plus « compris dans les plaques » : c'est la ligne de la rénovation, « Finitions plâtrerie (bandes, enduit) », reprise par `ref` (même poste, même prix : 15 € HT/m², 5 € de fourniture), cochée avec les plaques, faisable soi-même. Sa quantité suit les m² de plaques cochées : faux plafonds, cloisons et cloisons hydrofuges sur leurs deux faces, « Doubler un mur », doublage collé ou sur ossature. Détail, formule et preuve : `journal-corrections.md` § 8.
+
+| | A | B | C |
+|---|---:|---:|---:|
+| Plaques cochées (m²) | 347,16 | 500,72 | 317,08 |
+| Total tout compris avant D5 (aléas 7 %) | 246 762 € | 314 745 € | 245 317 € |
+| **Depuis D5** | **253 172 €** (+2,6 %) | **323 991 €** (+2,9 %) | **251 172 €** (+2,4 %) |
+
+- La rénovation ne bouge pas : sa formule (`derivedFinitions`) et ses prix sont les mêmes, T1 à 0 écart.
+- « Le maximum » (§ 4) : A passe de 189 110 € à 190 990 € (195 743 → 197 623 € avec une fosse, 200 441 → 202 321 € avec une micro-station). La ligne y est prise soi-même, comme toute la plâtrerie.
+- Prix au m² de l'estimation rapide (/estimation-construction-maison, 100 m² plain-pied, moyenne nationale, tout fait faire) : ≈ 2 468 → ≈ 2 532 €/m² en standard.
+- Un projet neuf enregistré avant D5 garde son total : sa sélection n'a pas la ligne (décochée dans le détaillé rouvert).
+- Reste ouvert, pour les deux natures à la fois : D5 (a) de la revue (les plaques comprennent-elles déjà leurs bandes ? 2 ou 3 devis à faire sourcer).
+

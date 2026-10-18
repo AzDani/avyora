@@ -357,6 +357,37 @@ function quantitesSelonSelection(h: MaisonNeuve, sel: Selection): Record<string,
 }
 
 /**
+ * Bandes et enduit des plaques de plâtre : une ligne à part, comme en rénovation (décision D5 de Dani).
+ * C'est le MÊME poste que la rénovation (« Finitions plâtrerie (bandes, enduit) », repris par `ref`, au même
+ * prix), et sa quantité suit les plaques COCHÉES, à leur quantité effective (calculée, ou saisie à la main),
+ * comme `derivedFinitions` en rénovation : décocher les faux plafonds retire leurs bandes, corriger la
+ * surface d'une cloison corrige les siennes. Une cloison se ferme sur ses deux faces ; un doublage, un
+ * plafond ou un parement sur une seule.
+ *
+ * Toutes les plaques que le neuf chiffre ont leurs bandes, là où la formule de la rénovation ne lit que
+ * les cloisons, les faux plafonds et le plus grand de « Doubler un mur » et de l'isolation par l'intérieur
+ * (la même façade) : le doublage collé (propre au neuf) et la cloison hydrofuge y entrent aussi, et « Doubler
+ * un mur » S'AJOUTE au doublage des murs extérieurs, parce qu'en neuf il habille d'autres parois (les deux
+ * faces du refend, le parement de l'ossature bois).
+ */
+export const ID_BANDES_PLATRE = "clo-finitions-platrerie-bandes-enduit";
+const PLAQUES_NEUF: ReadonlyArray<readonly [id: string, faces: number]> = [
+  ["clo-faux-plafond", 1], ["clo-monter-une-cloison", 2], ["clo-cloison-piece-humide-hydrofuge", 2], ["clo-doubler-un-mur", 1],
+  ["iso-doublage-isolant-colle", 1], ["iso-isolation-des-murs-par-l-interieur", 1],
+];
+
+/** m² de plaques cochées dans `sel`, d'après les quantités `Q` de la maison (`quantitesNeuf`). */
+function m2PlaquesCochees(Q: Record<string, number>, sel: Selection): number {
+  let m2 = 0;
+  for (const [id, faces] of PLAQUES_NEUF) {
+    const s = sel[clePoste(id)];
+    if (!s?.on) continue;
+    m2 += faces * (s.manual ? (s.qty ?? 0) : (Q[id] ?? 0));
+  }
+  return m2;
+}
+
+/**
  * Options du neuf qui ont une quantité automatique depuis N8, comme en rénovation (spots, douche à
  * l'italienne, robinetterie de baignoire, moquette, béton ciré). Cochées avant, elles portent la
  * quantité saisie au cochage (1) ou à la main, sans drapeau `manual` : cette quantité reste celle de
@@ -386,7 +417,9 @@ export function selAvantN8(sel: Selection): Selection {
  * Quantité de chaque poste du neuf, par identifiant. Une quantité dépend de la maison et, pour deux
  * postes, de la variante choisie ailleurs (`SELON_SELECTION`) — jamais de ce qui est coché : un poste
  * que l'utilisateur coche lui-même (une gouttière PVC à la place du zinc, une isolation sous chape)
- * arrive avec la bonne quantité.
+ * arrive avec la bonne quantité. Seule exception, hors de cette table : les bandes de plâtre
+ * (`ID_BANDES_PLATRE`), qui suivent les plaques cochées et que calcule `autoQtyNeuf`, comme
+ * `derivedFinitions` hors de la table de la rénovation.
  */
 export function quantitesNeuf(h: MaisonNeuve, sel: Selection = {}): Record<string, number> {
   const g = geometrieNeuf(h);
@@ -590,6 +623,7 @@ export function decisionsNeuf(h: MaisonNeuve): Record<string, DecisionNeuf> {
   // Second œuvre
   tous(["ele-installation-electrique-maison-neuve", "plo-reseaux-plomberie-maison-neuve", "cha-seche-serviette", "rec-test-etancheite-intermediaire",
     "clo-faux-plafond", "clo-monter-une-cloison", "clo-cloison-piece-humide-hydrofuge"]);
+  regle(ID_BANDES_PLATRE, true);                                 // cochée avec les plaques (D5) : les faux plafonds le sont toujours
   regle("plo-chauffe-eau-thermodynamique", true, { tai: piecesNeuf(h).chambres >= 4 ? "grand" : "petit" });
   const pacEau = h.chauffage === "pac-eau";
   tous(["cha-pompe-a-chaleur-air-eau", "cha-plancher-chauffant-eau-hors-chape", "mac-chape-liquide"], pacEau);
@@ -673,7 +707,8 @@ const CLE_VERS_ID = new Map<string, string>();
 for (const [id, p] of POSTE_NEUF) CLE_VERS_ID.set(p.c + "|" + p.n, id);
 
 /** `autoQty` du neuf : la quantité d'un poste tirée de la maison décrite dans `ctx.neuf` (et, pour
- *  la robinetterie et l'étanchéité de douche, de la variante choisie dans `sel`). */
+ *  la robinetterie et l'étanchéité de douche, de la variante choisie dans `sel` ; pour les bandes de
+ *  plâtre, des plaques cochées dans `sel`). */
 export function autoQtyNeuf(ctx: Ctx, c: string, n: string, sel: Selection): number | null {
   const id = CLE_VERS_ID.get(c + "|" + n);
   if (!id) return null;
@@ -687,6 +722,7 @@ export function autoQtyNeuf(ctx: Ctx, c: string, n: string, sel: Selection): num
     if (CACHE.size > 200) CACHE.clear();
     CACHE.set(cle, Q);
   }
+  if (id === ID_BANDES_PLATRE) return r2(m2PlaquesCochees(Q, sel));
   const v = SELON_SELECTION.has(id) ? r2(quantitesSelonSelection(m, sel)[id]) : Q[id];
   return v == null ? null : v;
 }

@@ -96,8 +96,12 @@ describe("N11 · libellés courts des postes propres au neuf", () => {
     for (const l of CATALOG) for (const t of l.t) expect(t.nc, t.id).toBeUndefined();
   });
 
-  it("aucune clé ne change : les 209 clés (lot, libellé) du neuf sont celles d'avant N11", () => {
-    const cles = CATALOG_NEUF.flatMap((l) => l.t.map((t) => key(l.c, t.n)));
+  it("aucune clé ne change : les 209 clés (lot, libellé) du neuf sont celles d'avant N11 (D5 n'en a qu'ajouté une)", () => {
+    const toutes = CATALOG_NEUF.flatMap((l) => l.t.map((t) => key(l.c, t.n)));
+    // D5 : les bandes de plâtre, une ligne à part comme en rénovation ; aucune autre clé n'a bougé
+    const bandes = key("Cloisons / Platrerie", "Finitions plâtrerie (bandes, enduit)");
+    expect(toutes.filter((k) => k === bandes)).toHaveLength(1);
+    const cles = toutes.filter((k) => k !== bandes);
     expect(cles).toHaveLength(209);
     expect(createHash("sha256").update(cles.join("\n")).digest("hex").slice(0, 16)).toBe("50ccd858201a722d");
   });

@@ -100,9 +100,9 @@ describe("N10 · 4 grandes phases, chaque lot une fois", () => {
       .toContain("Taxes & participations");
   });
 
-  it("163 lignes de travaux pour les 209 postes : 8 démarches et 6 frais sortis, 32 alternatives sur leur ligne de choix (164 avec un garage)", () => {
+  it("164 lignes de travaux pour les 210 postes : 8 démarches et 6 frais sortis, 32 alternatives sur leur ligne de choix (165 avec un garage)", () => {
     const tous = CATALOG_NEUF.flatMap((l) => l.t);
-    expect(tous).toHaveLength(209);
+    expect(tous).toHaveLength(210);                   // 209 + les bandes de plâtre, une ligne à part comme en rénovation (D5)
     expect(tous.filter(estDemarcheNeuf)).toHaveLength(8);
     expect(tous.filter(estFraisNeuf)).toHaveLength(6);
     expect(POSTES_FRAIS_NEUF.map((p) => p.t.id)).toEqual(tous.filter(estFraisNeuf).map((t) => t.id));
@@ -110,11 +110,11 @@ describe("N10 · 4 grandes phases, chaque lot une fois", () => {
     expect(absorbees).toBe(32);
     const e = etatParDefaut();
     const ctx = ctxDetailNeuf(e);
-    expect(LOTS_NEUF.reduce((s, { c }) => s + lignesDe(elementsLotNeuf(ctx, {}, c)), 0)).toBe(209 - 8 - 6 - 32);
+    expect(LOTS_NEUF.reduce((s, { c }) => s + lignesDe(elementsLotNeuf(ctx, {}, c)), 0)).toBe(210 - 8 - 6 - 32);
     // avec un garage et des murs en brique, le parpaing ne porte que le garage : une ligne à part
     const g = changerReponseNeuf(changerReponseNeuf(e, "garage", 20), "murs", "brique");
     const ctxG = ctxDetailNeuf(g);
-    expect(LOTS_NEUF.reduce((s, { c }) => s + lignesDe(elementsLotNeuf(ctxG, {}, c)), 0)).toBe(209 - 8 - 6 - 31);
+    expect(LOTS_NEUF.reduce((s, { c }) => s + lignesDe(elementsLotNeuf(ctxG, {}, c)), 0)).toBe(210 - 8 - 6 - 31);
   });
 
   it("un lot présent à plusieurs étapes du chantier : un sous-titre par étape, dans l'ordre du chantier ; sinon aucun", () => {

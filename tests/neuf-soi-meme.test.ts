@@ -42,15 +42,16 @@ function decision(l: Lot, t: Tache): string {
 }
 
 describe("Neuf · « Je le fais » possible : une décision par poste", () => {
-  it("209 postes (202 + 7 locations reprises) : 136 en « Je le fais », 26 réservés aux pros, le reste sans objet", () => {
-    expect(POSTES.length).toBe(209);
+  it("210 postes (202 + 7 locations reprises + les bandes de plâtre) : 137 en « Je le fais », 26 réservés aux pros, le reste sans objet", () => {
+    expect(POSTES.length).toBe(210);
     const n: Record<string, number> = {};
     for (const { l, t } of POSTES) { const d = decision(l, t).split(":")[0]; n[d] = (n[d] ?? 0) + 1; }
     // 74 avant N1 ; + 57 postes des lots structure / clos-couvert, + fosse, + micro-station = 133 ;
     // + la PAC, les 2 climatisations et la borne de recharge (D2 = non au « Pro obligatoire ») = 137 ;
-    // − le branchement au tout-à-l'égout, côté réseau public en neuf = 136.
+    // − le branchement au tout-à-l'égout, côté réseau public en neuf = 136 ;
+    // + les bandes de plâtre, une ligne à part reprise de la rénovation (D5), faisables comme en rénovation = 137.
     expect(n).toEqual({
-      "je-le-fais": 136, pro: 26,
+      "je-le-fais": 137, pro: 26,
       frais: 14,                    // 8 démarches gratuites et 6 taxes ou assurance : jamais de choix
       location: 11,                 // 4 + les 7 reprises de la rénovation
       "sans-fourniture": 20,        // 17 attendent un prix de fourniture sourcé (N12), 2 bennes, la provision argile
@@ -156,7 +157,7 @@ describe("Neuf · même règle que la rénovation", () => {
     expect(n).toBeGreaterThan(200);
   });
 
-  it("les 110 postes repris décident comme en rénovation, sauf le branchement au tout-à-l'égout (côté réseau public en neuf)", () => {
+  it("les 111 postes repris décident comme en rénovation, sauf le branchement au tout-à-l'égout (côté réseau public en neuf)", () => {
     const reno = new Map(CATALOG.flatMap((l) => l.t.map((t) => [t.id, l] as const)));
     const ecarts: string[] = [];
     let n = 0;
@@ -165,7 +166,7 @@ describe("Neuf · même règle que la rénovation", () => {
       n++;
       if (diyNeuf(l, t) !== peutFaireSoiMeme(reno.get(t.id)!, t)) ecarts.push(t.id);
     }
-    expect(n).toBe(110);
+    expect(n).toBe(111);                              // 110 + les bandes de plâtre (D5)
     expect(ecarts).toEqual(["rac-raccordement-au-tout-a-l-egout"]);
   });
 });
@@ -188,19 +189,21 @@ describe("Neuf · « Je fais le maximum » : ce qui est pris par défaut", () =>
     }
   });
 
-  it("totaux par défaut inchangés : 100 m² plain-pied en « le maximum » à 189 110 €, 195 743 € avec une fosse, 200 441 € avec une micro-station", () => {
+  /* D2 n'a changé aucun de ces totaux (189 110 €, 195 743 €, 200 441 €). D5 les relève tous de 1 880 € : les
+     bandes de plâtre, une ligne à part comme en rénovation, prises en « Je le fais » (fournitures seules). */
+  it("totaux par défaut : 100 m² plain-pied en « le maximum » à 190 990 €, 197 623 € avec une fosse, 202 321 € avec une micro-station", () => {
     const ttc = (p: ReturnType<typeof presetNeuf>) => Math.round(buildDevis(catalogueDe(p.ctx), p.ctx, p.sel).totaux.ttc);
     const R = { surface: 100, niveaux: "pp" as const, codePostal: "45000", finition: "standard" as const, qui: "max" as QuiRealise };
-    expect(ttc(presetNeuf({ ...R, assainissement: "collectif" }))).toBe(189110);
-    expect(ttc(presetNeuf({ ...R, assainissement: "fosse" }))).toBe(195743);
-    expect(ttc(presetNeuf(R, { assainissement: "micro" }))).toBe(200441);
+    expect(ttc(presetNeuf({ ...R, assainissement: "collectif" }))).toBe(190990);
+    expect(ttc(presetNeuf({ ...R, assainissement: "fosse" }))).toBe(197623);
+    expect(ttc(presetNeuf(R, { assainissement: "micro" }))).toBe(202321);
     // La maison de calage A (decisions.md) : la même.
     const A: Partial<MaisonNeuve> = {
       surface: 100, niveaux: "pp", chambres: 3, sdb: 1, wc: 1, garage: 0, forme: "rect", murs: "parpaing", plancherBas: "terre-plein", toiture: "2pans",
       couverture: "terre-cuite", chauffage: "pac-eau", vmc: "simple", assainissement: "collectif", eauxPluviales: "infiltration", distanceReseaux: 15,
       terrain: "plat", argile: "non", sismique: 1, codePostal: "45000", escalier: "bois", lotissement: false, borne: true, pilotage: "moi", gouttiere: "zinc",
     };
-    expect(ttc(presetMaison(A, { finition: "standard", qui: "max", codePostal: "45000" }))).toBe(189110);
+    expect(ttc(presetMaison(A, { finition: "standard", qui: "max", codePostal: "45000" }))).toBe(190990);
   });
 
   it("passer tout en « le maximum » ne prend ni la PAC, ni la borne, ni la fosse, ni les murs ; garde ce qui était pris", () => {

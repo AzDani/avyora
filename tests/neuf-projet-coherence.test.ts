@@ -24,9 +24,9 @@ const rendre = (el: ReturnType<typeof createElement>, locale: "fr" | "en" = "fr"
 const texte = (html: string) => html.replace(/<style[\s\S]*?<\/style>/g, "").replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/&#x27;|&#39;/g, "'").replace(/[\s\u00a0\u202f]+/g, " ");
 
 describe("Neuf · un même projet, un même chiffre", () => {
-  it("le cas de référence vaut 246 762 € TTC, chiffré sur le catalogue neuf", () => {
-    expect(Math.round(dv.totaux.ttc)).toBe(246762);
-    expect(dv.lignes.length).toBe(92);
+  it("le cas de référence vaut 253 172 € TTC, chiffré sur le catalogue neuf", () => {
+    expect(Math.round(dv.totaux.ttc)).toBe(253172);   // 246 762 € + les bandes de plâtre, une ligne à part (D5)
+    expect(dv.lignes.length).toBe(93);
   });
 
   it("liste et admin (estimationProjet) = fiche (buildDevis sur catalogueDe)", () => {
@@ -47,13 +47,13 @@ describe("Neuf · un même projet, un même chiffre", () => {
     expect(t).toContain("TVA (20 %)");
     expect(t).not.toMatch(/TVA \((?:0|[^)]*· 0) %/);
     expect(t).toContain("3 chambres · plain-pied");
-    expect(t).toContain(`${lotsParCorps(dv.lots).length} corps · 92 postes`);
+    expect(t).toContain(`${lotsParCorps(dv.lots).length} corps · 93 postes`);
     expect(t).not.toContain("Ampleur");
     // L'assurance dommages-ouvrage se calcule sur le projet (études comprises), pas sur les travaux.
     expect(t).toContain("3,5 % du projet");
   });
 
-  it("le suivi range les 92 lignes dans les 9 phases, seule la phase en cours dépliée", () => {
+  it("le suivi range les 93 lignes dans les 9 phases, seule la phase en cours dépliée", () => {
     const html = rendre(createElement(EstimationResultat, { reponses: reponses() as never, projectId: "p1" }));
     const parPhase = phasesDe(ctx).reduce((s, ph) => s + dv.lignes.filter((li) => li.phase === ph).length, 0);
     expect(parPhase).toBe(dv.lignes.length);
@@ -73,7 +73,7 @@ describe("Neuf · un même projet, un même chiffre", () => {
     const statuts: Record<string, number> = {};
     for (const ph of phasesDe(ctx)) for (const li of dv.lignes) if (li.phase === ph) statuts[li.cle] = 2;
     const av = avancementProjet(reponses({ statuts }));
-    expect(av).toMatchObject({ total: 92, done: 92, statut: "termine", pct: 100 });
+    expect(av).toMatchObject({ total: 93, done: 93, statut: "termine", pct: 100 });
     const html = rendre(createElement(EstimationResultat, { reponses: reponses({ statuts }) as never, projectId: "p1" }));
     expect((html.match(/class="jal ok"/g) ?? []).length).toBe(PHASES_NEUF.length);
     // une seule démarche à faire : pas terminé

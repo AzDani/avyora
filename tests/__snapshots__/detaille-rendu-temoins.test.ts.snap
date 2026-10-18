@@ -18,22 +18,22 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · Mon devis 1`] = `
 <div class="pill">
 <span class="k">Works excl. VAT</span>
 <br/>
-<span class="v num">214 559 €</span>
+<span class="v num">216 637 €</span>
 </div>
 <div class="pill">
 <span class="k">VAT 20%</span>
 <br/>
-<span class="v num">42 732 €</span>
+<span class="v num">43 147 €</span>
 </div>
 <div class="pill">
 <span class="k">Fees (no VAT)</span>
 <br/>
-<span class="v num">14 465 €</span>
+<span class="v num">14 538 €</span>
 </div>
 <div class="pill">
 <span class="k">Contingency 7%</span>
 <br/>
-<span class="v num">14 453 €</span>
+<span class="v num">14 599 €</span>
 </div>
 <div class="pill">
 <span class="k">Max budget</span>
@@ -41,7 +41,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · Mon devis 1`] = `
 <span class="v num">250 000 €</span>
 </div>
 </div>
-<p class="split-n">of which construction <b>237 478 €</b> · studies, taxes, insurance, connections <b>32 297 €</b>
+<p class="split-n">of which construction <b>239 972 €</b> · studies, taxes, insurance, connections <b>32 370 €</b>
 </p>
 <div class="tvahint">20% VAT on the whole new build, no reduced rate. Taxes, levies and structural defects insurance: no VAT, no contingency.</div>
 </div>
@@ -56,11 +56,11 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · Mon devis 1`] = `
 </div>
 <div class="btile mat">
 <div class="k">Bought or hired by you</div>
-<div class="v num">14 280 €</div>
+<div class="v num">16 358 €</div>
 </div>
 <div class="btile eco">
 <div class="k">Saved by doing it yourself</div>
-<div class="v num">+ 29 195 €</div>
+<div class="v num">+ 34 403 €</div>
 </div>
 </div>
 </div>
@@ -80,10 +80,10 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · Mon devis 1`] = `
 <div class="devlot">
 <span>Insurance &amp; site opening</span>
 <span class="track">
-<span class="fill" style="width:18.347740011507362%">
+<span class="fill" style="width:18.526940257729578%">
 </span>
 </span>
-<span class="v">7 447 €</span>
+<span class="v">7 519 €</span>
 </div>
 </div>
 <div>
@@ -232,20 +232,20 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · Mon devis 1`] = `
 <span class="v">11 310 €</span>
 </div>
 <div class="devlot">
+<span>Partitions / Plastering</span>
+<span class="track">
+<span class="fill" style="width:19.69474225481468%">
+</span>
+</span>
+<span class="v">7 993 €</span>
+</div>
+<div class="devlot">
 <span>Masonry</span>
 <span class="track">
 <span class="fill" style="width:13.624520882842464%">
 </span>
 </span>
 <span class="v">5 530 €</span>
-</div>
-<div class="devlot">
-<span>Partitions / Plastering</span>
-<span class="track">
-<span class="fill" style="width:13.550733812910156%">
-</span>
-</span>
-<span class="v">5 500 €</span>
 </div>
 <div class="devlot">
 <span>Insulation</span>
@@ -424,7 +424,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · Mon devis 1`] = `
 <span>Builder&#x27;s latent-defect insurance (dommages-ouvrage, mandatory, taken out before work starts)</span>
 <span class="q">3.5 % of the project</span>
 <span class="mode mA">hire out</span>
-<span class="m">7 447 €</span>
+<span class="m">7 519 €</span>
 </div>
 <div class="dtl">
 <span>Notice of work start filed at the town hall (free step)</span>
@@ -806,6 +806,12 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · Mon devis 1`] = `
 <span class="q">1 unit</span>
 <span class="mode mS">DIY</span>
 <span class="m">30 €</span>
+</div>
+<div class="dtl">
+<span>Plaster finishing (taping, skim)</span>
+<span class="q">501 m²</span>
+<span class="mode mS">DIY</span>
+<span class="m">2 494 €</span>
 </div>
 <div class="dtl">
 <span>Second skip for the finishing work (board offcuts, packaging, insulation)</span>
@@ -1272,7 +1278,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 <span class="ic" aria-hidden="true">🧾</span>
 <span class="nm">Taxes, insurance and fees <span class="acc-sous">· no VAT</span>
 </span>
-<span class="amt num">11 561 €</span>
+<span class="amt num">11 733 €</span>
 <span class="car">›</span>
 </div>
 </div>
@@ -1421,8 +1427,8 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">🧱</span>
 <span class="nm">Partitions / Plastering</span>
-<span class="cnt">4</span>
-<span class="amt num">8 343 € excl. VAT</span>
+<span class="cnt">5</span>
+<span class="amt num">13 256 € excl. VAT</span>
 <span class="car">›</span>
 </div>
 </div>
@@ -1528,8 +1534,8 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 <small>€ incl. tax</small>
 </div>
 <div class="m2">
-<span class="m2-v">≈ 2 468 €<span class="m2-l"> / m² of living area</span>
-<span class="m2-c">/m²</span> <span class="m2-f">· incl. fees without VAT 11 561 €</span>
+<span class="m2-v">≈ 2 532 €<span class="m2-l"> / m² of living area</span>
+<span class="m2-c">/m²</span> <span class="m2-f">· incl. fees without VAT 11 733 €</span>
 </span>
 </div>
 </div>
@@ -1564,22 +1570,22 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · Mon devis 1`] = `
 <div class="pill">
 <span class="k">Travaux HT</span>
 <br/>
-<span class="v num">214 559 €</span>
+<span class="v num">216 637 €</span>
 </div>
 <div class="pill">
 <span class="k">TVA 20 %</span>
 <br/>
-<span class="v num">42 732 €</span>
+<span class="v num">43 147 €</span>
 </div>
 <div class="pill">
 <span class="k">Frais hors TVA</span>
 <br/>
-<span class="v num">14 465 €</span>
+<span class="v num">14 538 €</span>
 </div>
 <div class="pill">
 <span class="k">Aléas 7 %</span>
 <br/>
-<span class="v num">14 453 €</span>
+<span class="v num">14 599 €</span>
 </div>
 <div class="pill">
 <span class="k">Budget max</span>
@@ -1587,7 +1593,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · Mon devis 1`] = `
 <span class="v num">250 000 €</span>
 </div>
 </div>
-<p class="split-n">dont la construction <b>237 478 €</b> · études, taxes, assurance, branchements <b>32 297 €</b>
+<p class="split-n">dont la construction <b>239 972 €</b> · études, taxes, assurance, branchements <b>32 370 €</b>
 </p>
 <div class="tvahint">TVA 20 % sur toute la construction neuve, sans taux réduit. Taxes, participations et assurance dommages-ouvrage : sans TVA ni aléas.</div>
 </div>
@@ -1602,11 +1608,11 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · Mon devis 1`] = `
 </div>
 <div class="btile mat">
 <div class="k">Acheté ou loué par toi</div>
-<div class="v num">14 280 €</div>
+<div class="v num">16 358 €</div>
 </div>
 <div class="btile eco">
 <div class="k">Économie en faisant toi-même</div>
-<div class="v num">+ 29 195 €</div>
+<div class="v num">+ 34 403 €</div>
 </div>
 </div>
 </div>
@@ -1626,10 +1632,10 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · Mon devis 1`] = `
 <div class="devlot">
 <span>Assurance &amp; ouverture du chantier</span>
 <span class="track">
-<span class="fill" style="width:18.347740011507362%">
+<span class="fill" style="width:18.526940257729578%">
 </span>
 </span>
-<span class="v">7 447 €</span>
+<span class="v">7 519 €</span>
 </div>
 </div>
 <div>
@@ -1778,20 +1784,20 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · Mon devis 1`] = `
 <span class="v">11 310 €</span>
 </div>
 <div class="devlot">
+<span>Cloisons / Plâtrerie</span>
+<span class="track">
+<span class="fill" style="width:19.69474225481468%">
+</span>
+</span>
+<span class="v">7 993 €</span>
+</div>
+<div class="devlot">
 <span>Maçonnerie</span>
 <span class="track">
 <span class="fill" style="width:13.624520882842464%">
 </span>
 </span>
 <span class="v">5 530 €</span>
-</div>
-<div class="devlot">
-<span>Cloisons / Plâtrerie</span>
-<span class="track">
-<span class="fill" style="width:13.550733812910156%">
-</span>
-</span>
-<span class="v">5 500 €</span>
 </div>
 <div class="devlot">
 <span>Isolation</span>
@@ -1970,7 +1976,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · Mon devis 1`] = `
 <span>Assurance dommages-ouvrage (obligatoire, souscrite avant l&#x27;ouverture du chantier)</span>
 <span class="q">3,5 % du projet</span>
 <span class="mode mA">fait faire</span>
-<span class="m">7 447 €</span>
+<span class="m">7 519 €</span>
 </div>
 <div class="dtl">
 <span>Déclaration d&#x27;ouverture de chantier en mairie (démarche gratuite)</span>
@@ -2352,6 +2358,12 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · Mon devis 1`] = `
 <span class="q">1 u</span>
 <span class="mode mS">je fais</span>
 <span class="m">30 €</span>
+</div>
+<div class="dtl">
+<span>Finitions plâtrerie (bandes, enduit)</span>
+<span class="q">501 m²</span>
+<span class="mode mS">je fais</span>
+<span class="m">2 494 €</span>
 </div>
 <div class="dtl">
 <span>Deuxième benne pour le second œuvre (chutes de plaques, emballages, isolants)</span>
@@ -2818,7 +2830,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 <span class="ic" aria-hidden="true">🧾</span>
 <span class="nm">Taxes, assurance et frais <span class="acc-sous">· sans TVA</span>
 </span>
-<span class="amt num">11 561 €</span>
+<span class="amt num">11 733 €</span>
 <span class="car">›</span>
 </div>
 </div>
@@ -2967,8 +2979,8 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 <div class="acc-h" role="button" tabindex="0" aria-expanded="false">
 <span class="ic" aria-hidden="true">🧱</span>
 <span class="nm">Cloisons / Plâtrerie</span>
-<span class="cnt">4</span>
-<span class="amt num">8 343 € HT</span>
+<span class="cnt">5</span>
+<span class="amt num">13 256 € HT</span>
 <span class="car">›</span>
 </div>
 </div>
@@ -3074,8 +3086,8 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 <small>€ TTC</small>
 </div>
 <div class="m2">
-<span class="m2-v">≈ 2 468 €<span class="m2-l"> / m² habitable</span>
-<span class="m2-c">/m²</span> <span class="m2-f">· dont frais hors TVA 11 561 €</span>
+<span class="m2-v">≈ 2 532 €<span class="m2-l"> / m² habitable</span>
+<span class="m2-c">/m²</span> <span class="m2-f">· dont frais hors TVA 11 733 €</span>
 </span>
 </div>
 </div>

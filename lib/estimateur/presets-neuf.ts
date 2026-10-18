@@ -51,7 +51,8 @@ export const PRO_PAR_DEFAUT_MAX = new Set([...LOTS_DECENNALE_NEUF, "Raccordement
  *  chaleur et les climatisations (mise en service par un frigoriste), la borne de recharge
  *  (installateur IRVE au-delà de 3,7 kW). Décision D2 du 13/10/2026 : on peut les prendre soi-même,
  *  ligne par ligne, avec une mention (`MENTIONS_SOI_MEME`), mais le défaut ne change pas : la maison A
- *  de 100 m² en « le maximum » reste à 189 110 € TTC. */
+ *  de 100 m² en « le maximum » restait à 189 110 € TTC (190 990 € depuis D5, qui ajoute les bandes de
+ *  plâtre). */
 export const POSTES_PRO_PAR_DEFAUT_MAX = new Set(["cha-pompe-a-chaleur-air-eau", "cha-climatisation-reversible-split",
   "cha-climatisation-gainable-reversible", "ele-borne-de-recharge-voiture"]);
 
