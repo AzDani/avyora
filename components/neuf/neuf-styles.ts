@@ -11,10 +11,7 @@ export const NEUF_CSS = `
 .av-neuf .glbl{color:var(--muted);font-size:11.5px}
 .av-neuf .glbl .opt{font-weight:500;letter-spacing:.04em;text-transform:none;color:var(--muted);margin-left:6px}
 .av-neuf .intro{color:var(--muted)}
-.av-neuf .fld input[aria-invalid="true"]{border-color:#e0434b;box-shadow:0 0 0 3px rgba(224,67,75,.15)}
-.av-neuf .seg button{min-height:44px}
 .av-neuf .fields{margin-bottom:14px}
-.av-neuf .fld input{min-height:44px}
 .av-neuf .av-step.block{height:46px}
 .av-neuf .avert{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.5;color:#7a4b00;background:#fff7e6;border:1px solid #f6d999;border-radius:var(--radius-card);padding:11px 14px;margin-bottom:18px}
 .av-neuf .avert svg{flex:0 0 16px;margin-top:2px}
@@ -22,8 +19,16 @@ export const NEUF_CSS = `
 .av-neuf .plan-ok svg{flex:0 0 16px;margin-top:2px;color:var(--brand)}
 .av-neuf .plan-ok ul{margin:6px 0 0;padding-left:16px;color:var(--muted)}
 .av-neuf .repris{display:inline-block;margin-left:8px;padding:1px 7px;border-radius:999px;background:var(--brand-50);color:var(--brand);font-size:10.5px;font-weight:600;letter-spacing:0;text-transform:none;vertical-align:1px}
-.av-neuf .bilan{margin:6px 0 4px}
-.av-neuf .attente{border:1px dashed var(--line-strong);border-radius:var(--radius-panel);padding:22px;text-align:center;font-size:13.5px;color:var(--muted);background:var(--surface)}
+/* Le bilan replié (N13) : une ligne « Le bilan de ta maison », le bilan sombre dessous une fois déplié. */
+.av-neuf .pli{margin:6px 0 4px;border:1px solid var(--line-strong);border-radius:var(--radius-panel);background:var(--surface)}
+.av-neuf .pli summary{list-style:none;display:flex;align-items:center;gap:12px;min-height:44px;padding:13px 18px;cursor:pointer;border-radius:var(--radius-panel)}
+.av-neuf .pli summary::-webkit-details-marker{display:none}
+.av-neuf .pli summary:focus-visible{outline:3px solid var(--brand-200);outline-offset:2px}
+.av-neuf .pli .pli-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.av-neuf .pli .pli-t b{font-size:14.5px;font-weight:600;color:var(--ink)}
+.av-neuf .pli .pli-t span{font-size:12.5px;color:var(--muted);line-height:1.4}
+.av-neuf .pli .chev{flex:none;color:var(--brand);transition:transform .15s var(--ease)}
+.av-neuf .pli[open] .chev{transform:rotate(180deg)}
+.av-neuf .pli .bilan{padding:0 8px 8px}
 @media(max-width:560px){.av-neuf .fields{grid-template-columns:1fr}}
-.av-neuf-live .cta,.av-neuf-live .ghost{min-height:44px}
 `;

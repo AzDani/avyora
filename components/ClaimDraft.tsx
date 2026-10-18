@@ -6,6 +6,7 @@ import { useLocale } from "@/components/i18n/LangProvider";
 import { CLE_BROUILLON_NEUF, CLE_RECLAMATION_NEUF, RECLAMATION_NEUF, lireBrouillonNeuf, corpsProjetNeuf, reclamationNeufPosee } from "@/lib/estimateur/brouillon-neuf";
 import { CLE_BROUILLON_RENO, CLE_BROUILLON_DETAIL_RENO, CLE_RECLAMATION_RENO, lireBrouillonReno, corpsReclamationReno } from "@/lib/estimateur/brouillon-reno";
 import { mesurerPlan, mesureEstimationNeuf } from "@/lib/plans/mesure";
+import { suivre } from "@/lib/track";
 
 const TR = {
   fr: { enregistrement: "Enregistrement de ton estimation…" },
@@ -67,6 +68,7 @@ export default function ClaimDraft() {
           try { localStorage.removeItem(CLE_BROUILLON_NEUF); } catch { /* noop */ }
           clear();
           mesurerPlan(mesureEstimationNeuf(dn));   // C10 : interrupteur allumé, une maison venue d'un plan
+          suivre("projet_enregistre", { nature: "neuf", mode: dn.mode === "detaille" ? "detaille" : "rapide", edition: false });
           return id as string;
         }
       } catch { /* réseau : on garde le brouillon pour réessayer */ }
@@ -94,6 +96,7 @@ export default function ClaimDraft() {
           // Un détaillé réclamé est enregistré : son travail en cours ne doit pas revenir au prochain détaillé.
           try { localStorage.removeItem(DRAFT_KEY); if (d.mode === "detaille") localStorage.removeItem(CLE_BROUILLON_DETAIL_RENO); } catch { /* noop */ }
           clearFlag();
+          suivre("projet_enregistre", { nature: "reno", mode: d.mode === "detaille" ? "detaille" : "rapide", edition: false });
           return id as string;
         }
       } catch { /* réseau : on garde le brouillon pour réessayer */ }

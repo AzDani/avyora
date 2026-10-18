@@ -435,7 +435,7 @@ Légende : **N** = nouveau poste, **R** = repris du catalogue rénovation (même
 
 ## e. Mode rapide du neuf
 
-**5 questions + 2 facultatives :** surface habitable ; plain-pied ou à étage ; code postal ; finition ; qui réalise ; *(facultatif)* garage accolé ; *(facultatif)* tout-à-l'égout / fosse. On réutilise le **même** `regles()` avec les défauts ci-dessous : mêmes chiffres en rapide et en détaillé (principe de `presetRapide`).
+**4 questions, comptées comme la rénovation (N13 de la revue rénovation / neuf : une question = un bloc numéroté) :** 1. la maison (plain-pied ou à étage, surface habitable, code postal) ; 2. finition ; 3. qui réalise ; 4. *(facultatifs)* garage accolé, tout-à-l'égout / fosse. Avant N13, on comptait les réponses (« 5 questions + 2 facultatives »). On réutilise le **même** `regles()` avec les défauts ci-dessous : mêmes chiffres en rapide et en détaillé (principe de `presetRapide`).
 
 | Réponse dérivée | Valeur par défaut en rapide | Raison |
 |---|---|---|

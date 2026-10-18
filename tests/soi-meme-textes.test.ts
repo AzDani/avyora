@@ -70,7 +70,9 @@ describe("D4 (a) · rénovation : « Je fais un max moi-même » dit ce qu'il fa
     expect(c).toContain("Faire soi-même : ce que l'estimation propose");
     for (const [titre, suite] of [["Hors garantie décennale.", "Un poste de maçonnerie"], ["Fluide frigorigène.", "Une pompe à chaleur"], ["Pro obligatoire.", "Quelques postes"]])
       expect(c, titre).toMatch(new RegExp(`children: "${titre.replace(".", "\\.")}"\\s*\\}\\),\\s*" ",\\s*"${suite}`));
-    expect(c).toContain("« Je fais le maximum » laisse par défaut aux pros la structure");
+    // N13 : le choix porte le même nom dans les deux rapides (« Je fais un max moi-même ») ; le neuf le décrit.
+    expect(c).toContain("En construction neuve, le même choix laisse par défaut aux pros la structure");
+    expect(c).not.toContain("« Je fais le maximum »");
   });
 });
 

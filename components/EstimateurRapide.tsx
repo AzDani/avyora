@@ -7,6 +7,11 @@
  * Édition d'un projet existant (`edit`, page « Modifier » d'un compte gratuit) : le chiffre s'affiche
  * d'emblée, mais rien n'est mesuré ni déclaré à Google Ads avant une vraie action ; la liste des
  * pièces et le suivi de chantier sont repris et renvoyés au PATCH (N4, règles dans `rapide-reno.ts`).
+ *
+ * Aligné sur le rapide du neuf (N13) : libellés selon le compte (droits, bêta, édition), « Affiner »
+ * d'un visiteur sans les droits droit vers /tarifs avec ses réponses rendues au retour, boutons qui
+ * disent s'ils sont pressés, champ en faute marqué et focalisé. La mesure et la conversion Google Ads
+ * ne bougent pas : une fois, 1,8 s après une fourchette stable (`estimationReelle`).
  */
 import { useMemo, useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -17,7 +22,9 @@ import { buildDevis, regionCoef, type TypeBien, type Finition } from "@/lib/esti
 import { CATALOG } from "@/lib/estimateur/catalog";
 import { presetRapide, AMPLEURS, type Ampleur, type QuiRealise } from "@/lib/estimateur/presets";
 import { PIECES, presetPieces, type PieceKey, type PieceSel } from "@/lib/estimateur/pieces";
-import { chiffreAfficheRapide, estimationReelleRapide, reponsesRapideReno, type RapideEdit } from "@/lib/estimateur/rapide-reno";
+import {
+  chiffreAfficheRapide, estimationReelleRapide, reponsesRapideReno, lireRetourRapideReno, CLE_RETOUR_RENO, type RapideEdit, type RetourRapideReno,
+} from "@/lib/estimateur/rapide-reno";
 import { CLE_BROUILLON_RENO, CLE_RECLAMATION_RENO, brouillonRapideReno } from "@/lib/estimateur/brouillon-reno";
 import { suivre } from "@/lib/track";
 import { conversionEstimation } from "@/lib/gtag";
@@ -25,6 +32,7 @@ import { useT, useLocale } from "@/components/i18n/LangProvider";
 import Stepper from "@/components/Stepper";
 import { CountUpNf as CountUp } from "@/components/estimateur/CountUp";
 import { RAPIDE_CSS } from "@/components/estimateur/rapide-styles";
+import { useChampEnFaute } from "@/components/estimateur/champ-en-faute";
 import type { SourceSeo } from "@/lib/seo-source";
 import { lienInscriptionBeta } from "@/lib/beta";
 
@@ -39,6 +47,9 @@ const ROOMS: { key: PieceKey; emoji: string; label: string; surf: number }[] = [
   { key: "buanderie", emoji: "🧺", label: "Buanderie", surf: 6 },
 ];
 const roomLabel = (k: PieceKey) => ROOMS.find((r) => r.key === k)!;
+/** Les champs qu'« Enregistrer » peut signaler (marqués `aria-invalid`, puis focalisés) et la ligne d'erreur. */
+const ID_CHAMP = { cp: "rapide-cp", surface: "rapide-surface" } as const;
+const ID_ERREUR = "rapide-err";
 // Descriptions d'ampleur adaptées au mode « pièce » (traduites : voir t.piecesAmp dans le dictionnaire).
 
 const DRAFT_KEY = CLE_BROUILLON_RENO;
@@ -117,14 +128,42 @@ export default function EstimateurRapide({
    * ne le recompte pas (N4 : avant, `demarre` faux masquait le chiffre d'un projet rouvert).
    */
   const [demarre, setDemarre] = useState(false);
-  const affiche = chiffreAfficheRapide({ demarre, edition: !!edit });
+  /** Retour de /tarifs (« Affiner » sans les droits, N13) : ses réponses reviennent et le chiffre s'affiche,
+   *  mais ce n'est pas une nouvelle action (ni mesure, ni conversion), comme un projet rouvert. */
+  const [retour, setRetour] = useState(false);
+  const affiche = chiffreAfficheRapide({ demarre, edition: !!edit, retour });
   const [saving, setSaving] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
+  const faute = useChampEnFaute<keyof typeof ID_CHAMP>();
+  /** Une erreur d'« Enregistrer » : le message, et le champ en faute marqué et focalisé (comme le neuf). */
+  const signaler = (msg: string, champ?: keyof typeof ID_CHAMP) => {
+    setErreur(msg);
+    if (champ) faute.signaler(champ, ID_CHAMP[champ]); else faute.effacer();
+  };
+
+  useEffect(() => {
+    if (edit) return;
+    try {
+      const brut = sessionStorage.getItem(CLE_RETOUR_RENO);
+      if (!brut) return;
+      sessionStorage.removeItem(CLE_RETOUR_RENO);
+      const r = lireRetourRapideReno(JSON.parse(brut));
+      if (!r) return;
+      setMode(r.mode); setType(r.type); setSurface(r.surface); setPieces(r.pieces); setCp(r.cp);
+      setAmpleur(r.ampleur); setFinition(r.finition); setQui(r.qui);
+      setRetour(true);
+    } catch { /* stockage illisible : formulaire vierge */ }
+    // Une seule lecture, au montage.
+  }, []);
 
   const T = useT();
   // Bêta : les quelques libellés « Pro » prennent ceux de la bêta (même clés, pour le rendu ci-dessous).
-  const t = beta ? { ...T.rapide, intro: T.beta.introReno, affiner: T.beta.affiner, proLock: T.beta.proLock, lockedLabel: T.beta.lockedLabel, lockedSub: T.beta.lockedSub, lockedCta: T.beta.creerCompteFleche } : T.rapide;
+  const t = beta ? { ...T.rapide, introGratuit: T.beta.introReno, affiner: T.beta.affiner, proLock: T.beta.proLock, lockedLabel: T.beta.lockedLabel, lockedSub: T.beta.lockedSub, lockedCta: T.beta.creerCompteFleche } : T.rapide;
   const versInscription = beta && !isPro;
+  /* Selon le compte (N13, comme le neuf) : qui a les droits (abonné, ou inscrit pendant la bêta) ne lit ni « Pro »
+     ni « gratuit » ; un anonyme lit la bêta (ou « Pro » après elle) ; un projet rouvert s'enregistre, sans « gratuit ». */
+  const libAffiner = isPro ? t.affinerInclus : t.affiner;
+  const libEnregistrer = isPro || edit ? t.enregistrerCompte : t.enregistrer;
   const locale = useLocale();
   const nf = locale === "en" ? "en-US" : "fr-FR";
   // Libellé d'ampleur traduit ("Réno totale" pour la lourde en appartement).
@@ -244,8 +283,18 @@ export default function EstimateurRapide({
     }
     saveDraft();
     try { sessionStorage.setItem("avyora-affiner", "1"); } catch { /* noop */ }
+    // Sans les droits, hors bêta (ou projet rouvert) : /tarifs directement (le détaillé l'y renverrait, sans la
+    // source), et ses réponses reviennent s'il revient en arrière. Le brouillon reste prêt pour après l'abonnement.
+    // Un projet rouvert se relit depuis le projet : rien à ranger (la clé resterait pour la page publique).
+    const versTarifs = !isPro && !versInscription;
+    if (versTarifs && !edit) {
+      const r: RetourRapideReno = { mode, type, surface, pieces, cp, ampleur, finition, qui };
+      try { sessionStorage.setItem(CLE_RETOUR_RENO, JSON.stringify(r)); } catch { /* noop */ }
+    }
     // Bêta, anonyme : l'inscription d'abord ; le lien de l'e-mail le ramène au détaillé, semé par ce brouillon (?affiner=1).
-    router.push(versInscription ? lienInscriptionBeta("/projets/nouveau/detaille?affiner=1", "affiner-reno") : "/projets/nouveau/detaille");
+    router.push(versInscription ? lienInscriptionBeta("/projets/nouveau/detaille?affiner=1", "affiner-reno")
+      : versTarifs ? "/tarifs?source=affiner-reno"
+      : "/projets/nouveau/detaille");
   }
 
   /**
@@ -254,8 +303,8 @@ export default function EstimateurRapide({
    * compris (il est Pro pendant la bêta). Le code postal d'abord : sans lui, la réclamation échouerait.
    */
   function versInscriptionMultiPieces() {
-    setErreur(null);
-    if (!/^\d{5}$/.test(cp)) { setErreur(t.errCp); return; }
+    setErreur(null); faute.effacer();
+    if (!/^\d{5}$/.test(cp)) { signaler(t.errCp, "cp"); return; }
     saveDraft();
     try { localStorage.setItem(CLE_RECLAMATION_RENO, "1"); } catch { /* noop */ }
     router.push(lienInscriptionBeta(undefined, "multi-pieces"));
@@ -274,10 +323,10 @@ export default function EstimateurRapide({
   }
 
   async function enregistrer() {
-    setErreur(null);
-    if (!/^\d{5}$/.test(cp)) { setErreur(t.errCp); return; }
-    if (mode === "pieces" && pieces.length === 0) { setErreur(t.auMoinsUnePiece); return; }
-    if (!valid) { setErreur(t.errSurface); return; }
+    setErreur(null); faute.effacer();
+    if (!/^\d{5}$/.test(cp)) { signaler(t.errCp, "cp"); return; }
+    if (mode === "pieces" && pieces.length === 0) { signaler(t.auMoinsUnePiece); return; }
+    if (!valid) { signaler(t.errSurface, mode === "bien" ? "surface" : undefined); return; }
     suivre("estimation_terminee", { action: "enregistrer", type: mode === "pieces" ? "pieces" : type, ampleur, nature: "reno", src: initial?.src ?? "direct" });
     conversionEstimation("reno");
     setSaving(true);
@@ -296,6 +345,7 @@ export default function EstimateurRapide({
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { setErreur(data?.error || t.errSave); setSaving(false); return; }
       try { localStorage.removeItem(DRAFT_KEY); } catch { /* noop */ }
+      suivre("projet_enregistre", { nature: "reno", mode: "rapide", edition: !!edit });
       router.push(`/projets/${edit ? edit.projectId : data.id}`);
     } catch { setErreur(t.errReseau); setSaving(false); }
   }
@@ -314,20 +364,21 @@ export default function EstimateurRapide({
           <div className="qlbl"><span className="n">1</span>{t.step1q}</div>
 
           <div className="glbl">{t.bienEntier}</div>
-          <div className="seg" style={{ marginBottom: 14 }}>
-            {(["Maison", "Appartement"] as TypeBien[]).map((tb) => (
-              <button key={tb} className={affiche && mode === "bien" && type === tb ? "on" : ""} onClick={() => { setDemarre(true); setMode("bien"); setType(tb); }}>{tb === "Maison" ? t.maison : t.appart}</button>
-            ))}
+          <div className="seg" role="group" aria-label={t.bienEntier} style={{ marginBottom: 14 }}>
+            {(["Maison", "Appartement"] as TypeBien[]).map((tb) => {
+              const on = affiche && mode === "bien" && type === tb;
+              return <button type="button" key={tb} className={on ? "on" : ""} aria-pressed={on} onClick={() => { setDemarre(true); setMode("bien"); setType(tb); }}>{tb === "Maison" ? t.maison : t.appart}</button>;
+            })}
           </div>
 
           <div className="glbl">{t.uneOuPlusieurs}</div>
-          <div className="rgrid">
+          <div className="rgrid" role="group" aria-label={t.uneOuPlusieurs}>
             {ROOMS.map((r) => {
               const n = countByRoom(r.key);
               return (
                 <div key={r.key} className={"rcard" + (mode === "pieces" && n > 0 ? " on" : "")}>
                   <button type="button" className="rname" onClick={() => { setDemarre(true); ajouterPiece(r.key); }}>
-                    <span className="rem">{r.emoji}</span> {roomName(r.key)}
+                    <span className="rem" aria-hidden="true">{r.emoji}</span> {roomName(r.key)}
                   </button>
                   <span className="rstep">
                     <button type="button" onClick={() => { setDemarre(true); retirerUne(r.key); }} disabled={n === 0} aria-label={`${t.retirerUne} ${roomName(r.key)}`}>−</button>
@@ -353,7 +404,7 @@ export default function EstimateurRapide({
                     <div className="prow" key={i}>
                       <span className="pname">{meta.emoji} {roomName(r.room)}{ord}</span>
                       <Stepper compact value={r.surface} min={2} unit="m²" onChange={(n) => { setDemarre(true); setPieceSurf(i, n); }} />
-                      <button className="prm" onClick={() => { setDemarre(true); retirerPiece(i); }} aria-label={t.supprimer}>✕</button>
+                      <button type="button" className="prm" onClick={() => { setDemarre(true); retirerPiece(i); }} aria-label={`${t.supprimer} ${roomName(r.room)}${ord}`}>✕</button>
                     </div>
                   );
                 })}
@@ -365,21 +416,31 @@ export default function EstimateurRapide({
           <div className="fields">
             {mode === "bien" && (
               <div className="fld">
-                <label>{t.surfaceLabel}</label>
-                <Stepper field value={surface} min={8} unit="m²" onChange={(n) => { setDemarre(true); setSurface(n); }} />
+                <label htmlFor={ID_CHAMP.surface}>{t.surfaceLabel}</label>
+                <Stepper field id={ID_CHAMP.surface} invalide={faute.champ === "surface"} value={surface} min={8} unit="m²"
+                  onChange={(n) => { setDemarre(true); setSurface(n); if (faute.champ === "surface" && n > 0) { faute.effacer(); setErreur(null); } }} />
               </div>
             )}
-            <div className="fld" style={mode === "pieces" ? { gridColumn: "1 / -1" } : undefined}><label>{t.cpLabel}</label><input inputMode="numeric" maxLength={5} placeholder={t.cpPlaceholder} value={cp} onChange={(e) => { setDemarre(true); setCp(e.target.value.replace(/\D/g, "").slice(0, 5)); }} /></div>
+            <div className="fld" style={mode === "pieces" ? { gridColumn: "1 / -1" } : undefined}>
+              <label htmlFor={ID_CHAMP.cp}>{t.cpLabel}</label>
+              <input id={ID_CHAMP.cp} inputMode="numeric" maxLength={5} autoComplete="postal-code" placeholder={t.cpPlaceholder} value={cp}
+                aria-invalid={faute.champ === "cp" || undefined} aria-describedby={faute.champ === "cp" ? ID_ERREUR : undefined}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/\D/g, "").slice(0, 5);
+                  setDemarre(true); setCp(v);
+                  if (faute.champ === "cp" && /^\d{5}$/.test(v)) { faute.effacer(); setErreur(null); }
+                }} />
+            </div>
           </div>
         </div>
 
         <div className="q">
           <div className="qlbl"><span className="n">2</span>{t.step2}</div>
-          <div className="cards">
+          <div className="cards" role="group" aria-label={t.step2}>
             {AMPLEURS.map((a, i) => {
               const al = ampCard(a.v);
               return (
-                <button key={a.v} className={"amp" + (ampleur === a.v ? " on" : "")} onClick={() => { setDemarre(true); setAmpleur(a.v); }}>
+                <button type="button" key={a.v} className={"amp" + (ampleur === a.v ? " on" : "")} aria-pressed={ampleur === a.v} onClick={() => { setDemarre(true); setAmpleur(a.v); }}>
                   <span className="head">
                     <span className="gauge">{[0, 1, 2, 3].map((k) => <i key={k} className={k <= i ? "f" : ""} />)}</span>
                     <span className="chk" />
@@ -395,11 +456,11 @@ export default function EstimateurRapide({
 
         <div className="q">
           <div className="qlbl"><span className="n">3</span>{t.step3}</div>
-          <div className="fins">
+          <div className="fins" role="group" aria-label={t.step3}>
             {FINITIONS.map((f) => {
               const fi = t.finitions[f.v];
               return (
-              <button key={f.v} className={"fin" + (finition === f.v ? " on" : "")} onClick={() => { setDemarre(true); setFinition(f.v); }}>
+              <button type="button" key={f.v} className={"fin" + (finition === f.v ? " on" : "")} aria-pressed={finition === f.v} onClick={() => { setDemarre(true); setFinition(f.v); }}>
                 <span className="head">
                   <span className="g3">{[0, 1, 2].map((k) => <i key={k} className={k < f.lvl ? "f" : ""} />)}</span>
                   <span className="chk" />
@@ -416,14 +477,14 @@ export default function EstimateurRapide({
 
         <div className="q">
           <div className="qlbl"><span className="n">4</span>{t.step4}</div>
-          <div className="quis">
+          <div className="quis" role="group" aria-label={t.step4}>
             {QUIS.map((q) => {
               const qi = t.quis[q.v];
               const price = m2ByQui[q.v] || 0;
               const base = m2ByQui.pros || 0;
               const pct = base > 0 && price > 0 ? Math.round((1 - price / base) * 100) : 0;
               return (
-                <button key={q.v} className={"qcard" + (qui === q.v ? " on" : "")} onClick={() => { setDemarre(true); setQui(q.v); }}>
+                <button type="button" key={q.v} className={"qcard" + (qui === q.v ? " on" : "")} aria-pressed={qui === q.v} onClick={() => { setDemarre(true); setQui(q.v); }}>
                   <span className="head">
                     <span className="g3">{[0, 1, 2].map((k) => <i key={k} className={k < q.lvl ? "f" : ""} />)}</span>
                     <span className="chk" />
@@ -441,7 +502,7 @@ export default function EstimateurRapide({
           </div>
         </div>
 
-        <p className="intro">{t.intro}</p>
+        <p className="intro">{isPro ? t.intro : t.introGratuit}</p>
       </div>
 
       <div className={"av-rapide-live" + (locked ? " lk" : "")}>
@@ -455,23 +516,23 @@ export default function EstimateurRapide({
               </div>
               <div className="btns">
                 {versInscription
-                  ? <button className="cta" onClick={versInscriptionMultiPieces}>{t.lockedCta}</button>
+                  ? <button type="button" className="cta" onClick={versInscriptionMultiPieces}>{t.lockedCta}</button>
                   : <Link className="cta" href="/tarifs?source=affiner-reno">{t.lockedCta}</Link>}
               </div>
-              {versInscription && erreur && <div className="err">{erreur}</div>}
+              {versInscription && erreur && <div className="err" id={ID_ERREUR} role="alert">{erreur}</div>}
             </>
           ) : (
             <>
               <div>
                 <div className="lbl">{t.liveLabel}</div>
                 <div className="big">{valid ? <><CountUp value={lo} nf={nf} /> €<span style={{ opacity: .55 }}> – </span><CountUp value={hi} nf={nf} /> €</> : "—"}</div>
-                <div className="sub">{valid ? <>≈ <CountUp value={m2} nf={nf} /> €/m² · {ampName} · {locale === "en" ? "±15%" : "±15 %"}{regLabel ? <> · {regLabel}</> : ""}</> : !affiche ? t.step1q : (mode === "pieces" ? "Ajoute une pièce" : t.renseigneSurface)}</div>
+                <div className="sub">{valid ? <>≈ <CountUp value={m2} nf={nf} /> €/m² · {ampName} · {locale === "en" ? "±15%" : "±15 %"}{regLabel ? <> · {regLabel}</> : ""}</> : !affiche ? t.step1q : (mode === "pieces" ? t.ajoutePiece : t.renseigneSurface)}</div>
               </div>
               <div className="btns">
-                <button className="ghost" onClick={affiner}>{t.affiner}</button>
-                <button className="cta" onClick={enregistrer} disabled={saving}>{saving ? t.enregistrement : t.enregistrer}</button>
+                <button type="button" className="ghost" onClick={affiner}>{libAffiner}</button>
+                <button type="button" className="cta" onClick={enregistrer} disabled={saving}>{saving ? t.enregistrement : libEnregistrer}</button>
               </div>
-              {erreur && <div className="err">{erreur}</div>}
+              {erreur && <div className="err" id={ID_ERREUR} role="alert">{erreur}</div>}
             </>
           )}
         </div>

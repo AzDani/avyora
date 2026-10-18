@@ -3,6 +3,8 @@ import EstimateurRapide from "@/components/EstimateurRapide";
 import { getT } from "@/lib/i18n/server";
 import { getUser, estPro } from "@/lib/auth";
 import { betaActive } from "@/lib/beta";
+import { FEATURES } from "@/lib/features";
+import PasserelleRapide from "@/components/PasserelleRapide";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
@@ -50,7 +52,7 @@ export default async function NouveauProjetRapide({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const [{ t: tr }, user, sp] = await Promise.all([getT(), getUser(), searchParams]);
+  const [{ t: tr, locale }, user, sp] = await Promise.all([getT(), getUser(), searchParams]);
   const t = tr.rapide;
   const isPro = !!user && estPro(user);
   const initial = contexte(sp);
@@ -101,6 +103,8 @@ export default async function NouveauProjetRapide({
         <p className="mt-1.5 text-[15px] text-muted">{t.pageSous}</p>
       </header>
       <EstimateurRapide isPro={isPro} beta={betaActive()} initial={initial} />
+      {/* N13 : vers le rapide du neuf, interrupteur allumé seulement (éteint, la page d'avant au caractère près). */}
+      {FEATURES.neuf && <PasserelleRapide vers="neuf" locale={locale} />}
     </div>
   );
 }

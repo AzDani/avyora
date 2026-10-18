@@ -79,6 +79,7 @@ import { ROW_SOI_CSS } from "@/components/estimateur/row-styles";
 import { INTAKE_CSS } from "@/components/estimateur/intake-styles";
 import DevisNeuf from "./DevisNeuf";
 import { mesurerPlan, mesureEstimationNeuf } from "@/lib/plans/mesure";
+import { suivre } from "@/lib/track";
 
 const CP = /^\d{5}$/;
 
@@ -222,6 +223,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
       if (!res.ok) { setErreur(data?.error || n.saisie.errSave); setSaving(false); return; }
       if (!edition) { try { localStorage.removeItem(CLE_BROUILLON_DETAIL_NEUF); localStorage.removeItem(CLE_BROUILLON_NEUF); } catch { /* noop */ } }
       if (!edition) mesurerPlan(mesureEstimationNeuf(brouillon));   // C10 : interrupteur allumé, une maison venue d'un plan
+      suivre("projet_enregistre", { nature: "neuf", mode: "detaille", edition });
       router.push(edition ? `/projets/${projectId}` : `/projets/${data.id}`);
     } catch { setErreur(n.saisie.errReseau); setSaving(false); }
   }

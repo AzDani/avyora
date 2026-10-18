@@ -19,6 +19,8 @@ import { betaActive } from "@/lib/beta";
  * « Où va le budget » (répartition par corps d'état) : un Pro la voit en clair. Un gratuit voit un
  * teaser flouté et verrouillé fait de données FACTICES : le flou n'est que du CSS, les vrais noms de
  * lots et les vrais montants ne doivent pas être dans le HTML (N4, modèle `ResultatRapideNeuf`).
+ * C'est la règle commune de l'aperçu (D9, N13), que la répartition par phase du neuf suit aussi ;
+ * pendant la bêta, le cadenas dit la bêta, comme celui du neuf.
  */
 type Reponses = { ctx?: Ctx; sel?: Selection; codePostal?: string; ampleur?: Ampleur; qui?: QuiRealise };
 
@@ -138,6 +140,8 @@ export default async function ResultatRapide({
     </div>
   );
 
+  const beta = betaActive();
+  const lockH = beta ? dict(locale).beta.lockDetail : L.lockH;
   const ctaHref = isPro ? `/projets/${projectId}/modifier` : "/tarifs?source=affiner-reno";
   const ctaLabel = isPro ? L.affiner : L.passPro;
 
@@ -165,7 +169,7 @@ export default async function ResultatRapide({
       </div>
 
       {/* Bêta gratuite (lib/beta.ts) : la pastille dit la bêta, plus « Pro ». */}
-      <div className="sec">{L.where} <span className="pro-chip">{betaActive() ? dict(locale).beta.pastille : "Pro"}</span></div>
+      <div className="sec">{L.where} <span className="pro-chip">{beta ? dict(locale).beta.pastille : "Pro"}</span></div>
       {isPro ? (
         // Un Pro : la répartition en clair, sans cadenas.
         <div className="repart">{repartition}</div>
@@ -174,7 +178,7 @@ export default async function ResultatRapide({
           <div className="inside" aria-hidden="true">{repartition}</div>
           <div className="lock">
             <div className="ico">🔒</div>
-            <h3>{L.lockH}</h3>
+            <h3>{lockH}</h3>
             <p>{L.lockP}</p>
           </div>
         </div>

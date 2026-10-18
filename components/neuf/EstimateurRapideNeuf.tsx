@@ -1,8 +1,15 @@
 "use client";
 
 /**
- * Estimation RAPIDE d'une construction neuve : 5 questions (+ garage, eaux usées) → `presetNeuf`
- * → MÊME moteur que le détaillé (`buildDevis(catalogueDe(ctx), ctx, sel)`).
+ * Estimation RAPIDE d'une construction neuve : 4 questions, numérotées comme celles de la rénovation
+ * (1 la maison, 2 la finition, 3 qui réalise, 4 garage et eaux usées) → `presetNeuf` → MÊME moteur que
+ * le détaillé (`buildDevis(catalogueDe(ctx), ctx, sel)`).
+ *
+ * Aligné sur le rapide de la rénovation (N13) : la 1re question commence par le type de maison
+ * (plain-pied / à étage), finition et « qui réalise » ont les titres, noms et accroches de la
+ * rénovation (seule la description parle du neuf), la fourchette est le gros chiffre (barre live) et
+ * le bilan est replié sous les questions. Sa répartition par phase suit la règle commune de l'aperçu
+ * (D9) : réelle pour un compte qui a les droits, factice et floutée sinon.
  *
  * Recopie la MÉCANIQUE d'`EstimateurRapide` (rénovation) sans en importer la logique : drapeau
  * « a répondu », estimation réelle (saisie valide + total > 0 + code postal), conversion différée
@@ -116,6 +123,11 @@ export default function EstimateurRapideNeuf({
   const locale = useLocale();
   // Bêta : les libellés « Pro » prennent ceux de la bêta (mêmes clés, pour le rendu ci-dessous).
   const s = beta ? { ...dictNeuf(locale).saisie, introGratuit: T.beta.introNeuf, affinerPro: T.beta.affinerNeuf } : dictNeuf(locale).saisie;
+  const rn = dictNeuf(locale).rapide;
+  /* Finition et « qui réalise » : titres, noms et accroches communs aux deux rapides (`dict().rapide`, N13) ;
+     le neuf ne remplace que la description. */
+  const carteFin = (v: Finition) => ({ ...T.rapide.finitions[v], desc: s.finitions[v]?.desc ?? T.rapide.finitions[v].desc });
+  const carteQui = (v: QuiRealise) => ({ ...T.rapide.quis[v], desc: s.quis[v]?.desc ?? T.rapide.quis[v].desc });
   const versInscription = beta && !isPro;
   const nf = locale === "en" ? "en-US" : "fr-FR";
 
@@ -291,9 +303,17 @@ export default function EstimateurRapideNeuf({
   const zoneLbl = T.rapide.zones[reg.zone] ?? reg.zone;
   const regLabel = R.codePostal.length >= 2 ? `${zoneLbl}${regDelta ? ` · ${regDelta > 0 ? "+" : ""}${regDelta} ${T.rapide.moSuffix}` : ""}` : "";
 
+  // Le bouton du cadenas du bilan (mémoïsé) appelle toujours la version courante d'« Affiner ».
+  const affinerRef = useRef<() => void>(() => {});
+  affinerRef.current = affiner;
+  /* Le bilan, replié sous les questions (N13). Sa répartition par phase : réelle pour un compte qui a les
+     droits (abonné, inscrit pendant la bêta), sinon factice et floutée, avec le chemin vers le détail (D9). */
   const bilan = useMemo(
-    () => (valid ? <BilanRapideNeuf ctx={preset.ctx} sel={preset.sel} qui={R.qui} locale={locale} /> : null),
-    [valid, preset, R.qui, locale],
+    () => (valid ? (
+      <BilanRapideNeuf ctx={preset.ctx} sel={preset.sel} qui={R.qui} locale={locale} reel={isPro} beta={beta}
+        ctaVerrou={<button type="button" className="cta-v" onClick={() => affinerRef.current()}>{versInscription ? T.beta.creerCompteFleche : rn.passPro}</button>} />
+    ) : null),
+    [valid, preset, R.qui, locale, isPro, beta, versInscription, T, rn],
   );
 
   const niveauxOpts: Niveaux[] = ["pp", "etage", ...(baseEff?.niveaux === "combles" ? (["combles"] as Niveaux[]) : [])];
@@ -367,6 +387,7 @@ export default function EstimateurRapideNeuf({
       if (!res.ok) { setErreur(data?.error || s.errSave); setSaving(false); return; }
       try { localStorage.removeItem(CLE_BROUILLON_NEUF); } catch { /* noop */ }
       if (!edit) mesurerPlan(mesureEstimationNeuf(d));   // C10 : interrupteur allumé, une maison venue d'un plan
+      suivre("projet_enregistre", { nature: "neuf", mode: "rapide", edition: !!edit });
       router.push(`/projets/${edit ? edit.projectId : data.id}`);
     } catch { setErreur(s.errReseau); setSaving(false); }
   }
@@ -409,11 +430,17 @@ export default function EstimateurRapideNeuf({
 
         <div className="q">
           <div className="qlbl"><span className="n">1</span>{s.q1}</div>
-          <p className="sub-q">{plan && !base ? s.defautsPlan : baseEff ? s.defautsBase : s.defauts}</p>
+          <div className="glbl">{s.niveauxLabel}{badge("niveaux")}</div>
+          <div className="seg" role="group" aria-label={s.niveauxLabel} style={{ marginBottom: 14 }}>
+            {niveauxOpts.map((v) => {
+              const on = affiche && R.niveaux === v;
+              return <button type="button" key={v} className={on ? "on" : ""} aria-pressed={on} onClick={() => maj({ niveaux: v })}>{s.niveaux[v]}</button>;
+            })}
+          </div>
           <div className="fields">
             <div className="fld">
               <label htmlFor="neuf-surface">{s.surfaceLabel}{badge("surface")}</label>
-              <Stepper block id="neuf-surface" value={R.surface} min={BORNES_NEUF.surface.min} max={BORNES_NEUF.surface.max} step={5} unit="m²" onChange={(n) => maj({ surface: n })} />
+              <Stepper block id="neuf-surface" invalide={champErr === "surface"} value={R.surface} min={BORNES_NEUF.surface.min} max={BORNES_NEUF.surface.max} step={5} unit="m²" onChange={(n) => maj({ surface: n })} />
             </div>
             <div className="fld">
               <label htmlFor="neuf-cp">{s.cpLabel}{badge("codePostal")}</label>
@@ -421,20 +448,14 @@ export default function EstimateurRapideNeuf({
                 onChange={(e) => maj({ codePostal: e.target.value.replace(/\D/g, "").slice(0, 5) })} />
             </div>
           </div>
-          <div className="glbl">{s.niveauxLabel}{badge("niveaux")}</div>
-          <div className="seg" role="group" aria-label={s.niveauxLabel}>
-            {niveauxOpts.map((v) => {
-              const on = affiche && R.niveaux === v;
-              return <button type="button" key={v} className={on ? "on" : ""} aria-pressed={on} onClick={() => maj({ niveaux: v })}>{s.niveaux[v]}</button>;
-            })}
-          </div>
+          <p className="sub-q">{plan && !base ? s.defautsPlan : baseEff ? s.defautsBase : s.defauts}</p>
         </div>
 
         <div className="q">
-          <div className="qlbl"><span className="n">2</span>{s.q2}</div>
-          <div className="fins">
+          <div className="qlbl"><span className="n">2</span>{T.rapide.step3}</div>
+          <div className="fins" role="group" aria-label={T.rapide.step3}>
             {FINITIONS.map((f) => {
-              const fi = s.finitions[f.v];
+              const fi = carteFin(f.v);
               return (
                 <button type="button" key={f.v} className={"fin" + (R.finition === f.v ? " on" : "")} aria-pressed={R.finition === f.v} onClick={() => maj({ finition: f.v })}>
                   <span className="head">
@@ -452,10 +473,10 @@ export default function EstimateurRapideNeuf({
         </div>
 
         <div className="q">
-          <div className="qlbl"><span className="n">3</span>{s.q3}</div>
-          <div className="quis">
+          <div className="qlbl"><span className="n">3</span>{T.rapide.step4}</div>
+          <div className="quis" role="group" aria-label={T.rapide.step4}>
             {QUIS.map((q) => {
-              const qi = s.quis[q.v];
+              const qi = carteQui(q.v);
               const price = m2ByQui[q.v] || 0;
               const ref = m2ByQui.pros || 0;
               const pct = ref > 0 && price > 0 ? Math.round((1 - price / ref) * 100) : 0;
@@ -508,9 +529,16 @@ export default function EstimateurRapideNeuf({
           </div>
         </div>
 
-        <div className="bilan">
-          {bilan ?? <div className="attente">{s.attente}</div>}
-        </div>
+        {/* Le bilan replié, comme la rénovation n'en montre aucun : la fourchette reste dans la barre (N13). */}
+        {bilan && (
+          <details className="pli">
+            <summary>
+              <span className="pli-t"><b>{rn.bilanPli}</b><span>{rn.bilanPliSous}</span></span>
+              <svg className="chev" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </summary>
+            <div className="bilan">{bilan}</div>
+          </details>
+        )}
 
         <p className="intro">{isPro ? s.intro : s.introGratuit}</p>
       </div>

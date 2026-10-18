@@ -49,6 +49,12 @@ export type EvenementAvyora =
   /** Une estimation créée depuis un plan. Props : `nature` (neuf | reno), `mode` (rapide | detaille). */
   | "estimation_depuis_plan"
   /**
+   * Un projet enregistré (N13) : réponse positive de l'API, à la création, à la modification ou à la réclamation d'un
+   * brouillon après l'inscription (`ClaimDraft`). Props : `nature` (reno | neuf), `mode` (rapide | detaille),
+   * `edition` (vrai : un projet existant réenregistré). Fin de l'entonnoir : estimation_terminee → projet_enregistre.
+   */
+  | "projet_enregistre"
+  /**
    * Bêta gratuite (lib/beta.ts) : un visiteur envoyé vers l'inscription par une fonction de la bêta (« Créer
    * mon compte gratuit » à la place de « Débloquer avec Pro », Affiner, Détaillé, Enregistrer, éditeur de
    * plan…). Émis à l'ARRIVÉE sur /inscription, une fois par session et par source : un seul point de mesure

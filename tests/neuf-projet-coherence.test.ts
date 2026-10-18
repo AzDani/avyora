@@ -83,14 +83,18 @@ describe("Neuf · un même projet, un même chiffre", () => {
   });
 
   it("le bilan rapide : même TTC, les 9 phases, les extérieurs formatés depuis lib/, FR et EN", () => {
-    const t = texte(renderToStaticMarkup(createElement(BilanRapideNeuf, { ctx: ctx as Ctx, sel: sel as Selection, qui: "pros", locale: "fr" })));
-    expect(t).toContain(`Total TTC tout compris ${eur(dv.totaux.ttc)} €`);
+    const t = texte(renderToStaticMarkup(createElement(BilanRapideNeuf, { ctx: ctx as Ctx, sel: sel as Selection, qui: "pros", locale: "fr", reel: true })));
+    // N13 : la fourchette en grand, comme la rénovation ; le même TTC en repère, « estimation centrale ».
+    const r100 = (n: number) => Math.round(n / 100) * 100;
+    expect(t).toContain(`Budget estimé · TTC tout compris ${eur(r100(dv.totaux.ttc * 0.85))} € – ${eur(r100(dv.totaux.ttc * 1.15))} €`);
+    expect(t).toContain(`${eur(dv.totaux.ttc)} € estimation centrale`);
     for (const ph of PHASES_NEUF) expect(t).toContain(ph);
     expect(t).toContain("≈ 8 000 € à 20 000 € sur 600 à 800 m² de terrain");
     expect(t).toMatch(/compte environ \+\d[\d ]* €/);
     expect(t).not.toMatch(/NaN|undefined/);
-    const en = texte(renderToStaticMarkup(createElement(BilanRapideNeuf, { ctx: ctx as Ctx, sel: sel as Selection, qui: "pros", locale: "en" })));
-    expect(en).toContain("All-in total incl. tax");
+    const en = texte(renderToStaticMarkup(createElement(BilanRapideNeuf, { ctx: ctx as Ctx, sel: sel as Selection, qui: "pros", locale: "en", reel: true })));
+    expect(en).toContain("Estimated budget · all-in, incl. tax");
+    expect(en).toContain("central estimate");
     expect(en).not.toMatch(/NaN|undefined/);
   });
 });

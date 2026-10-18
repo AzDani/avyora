@@ -71,7 +71,7 @@ describe("N4 · rapide réno : l'affichage et la conversion sont séparés", () 
 
   it("l'écran branche la conversion automatique et « Affiner » sur `demarre`, jamais sur l'édition", () => {
     const src = lire("components/EstimateurRapide.tsx");
-    expect(src).toContain("const affiche = chiffreAfficheRapide({ demarre, edition: !!edit });");
+    expect(src).toContain("const affiche = chiffreAfficheRapide({ demarre, edition: !!edit, retour });");
     expect(src).toContain("const estimationReelle = estimationReelleRapide({ demarre, saisieValide, ttc: tot.ttc, codePostal: cp });");
     expect(src).toContain("if (convFired.current || !estimationReelle) return;");
     // « Affiner » ne mesure et ne convertit que derrière la même règle.
@@ -87,7 +87,7 @@ describe("N4 · rapide réno : l'affichage et la conversion sont séparés", () 
     const rouvert = rendreRapide({ edit: editionRapideReno("p1", { mode: "rapide", ampleur: "complete", qui: "pros", ctx: p.ctx, sel: p.sel, codePostal: "45000" }, "45000") });
     expect(grosChiffre(rouvert)).toContain('class="num"');
     expect(rouvert).toContain("±15 %");
-    expect(rouvert).toContain('<button class="on">🏠 Maison</button>');
+    expect(rouvert).toContain('<button type="button" class="on" aria-pressed="true">🏠 Maison</button>');
     expect(rouvert).not.toContain('class="avert"');
   });
 });
@@ -118,7 +118,8 @@ describe("N4 · rapide réno : un projet « pièces » rouvre avec sa liste", ()
     expect(h).toContain("Chambre 1");
     expect(h).toContain("Chambre 2");
     expect(h).toContain("3 pièces · 31 m² au total");
-    expect(h).not.toContain('<button class="on">');                   // ni Maison ni Appartement cochés
+    expect(h).not.toContain('class="on" aria-pressed="true">🏠');      // ni Maison ni Appartement cochés
+    expect(h).not.toContain('class="on" aria-pressed="true">🏢');
     expect(grosChiffre(h)).toBe("🔒 3 pièces à chiffrer");             // le verrou « multi-pièces » d'un gratuit, inchangé
     expect(grosChiffre(rendreRapide({ isPro: true, edit: editionRapideReno("p2", reponses, "33000") }))).toContain('class="num"');
   });

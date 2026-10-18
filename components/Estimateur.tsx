@@ -36,6 +36,7 @@ import { useLocale, useT } from "@/components/i18n/LangProvider";
 import { catT, catLigne } from "@/lib/estimateur/catalog-i18n";
 import { dictDetail } from "@/lib/i18n/detail";
 import { CLE_BROUILLON_RENO, CLE_BROUILLON_DETAIL_RENO, CLE_RECLAMATION_RENO, brouillonDetailleReno } from "@/lib/estimateur/brouillon-reno";
+import { suivre } from "@/lib/track";
 import {
   etatDepuis, etatVierge, projetReno, ouvertureDetailReno, majNombre, majSol, majType, pasCtx, compteurPiece, pasPiece,
   choisirPerimetre, basculerEspace, ajouterExemplaire, retirerExemplaire, surfaceExemplaire, majZone, basculerDressing, recapReno,
@@ -180,6 +181,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { setErreur(data?.error || dl.erreurs.save); setSaving(false); return; }
       if (!edition) { try { localStorage.removeItem(DRAFT_KEY_DETAIL); localStorage.removeItem(DRAFT_KEY); } catch { /* noop */ } }
+      suivre("projet_enregistre", { nature: "reno", mode: "detaille", edition });
       router.push(edition ? `/projets/${projectId}` : `/projets/${data.id}`);
     } catch { setErreur(dl.erreurs.reseau); setSaving(false); }
   }

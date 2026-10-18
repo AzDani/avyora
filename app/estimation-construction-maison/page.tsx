@@ -10,6 +10,7 @@ import { og } from "@/lib/seo-og";
 import { contexteNeuf } from "@/lib/neuf-contexte";
 import { dictPlans } from "@/lib/i18n/plans";
 import { clicPlan } from "@/lib/plans/mesure";
+import PasserelleRapide from "@/components/PasserelleRapide";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
@@ -19,7 +20,7 @@ const siteUrl =
 // 60 au total), description ≤ 155. Le titre ne répète pas « AVYORA ».
 const TITRE = "Estimation construction maison neuve gratuite";
 const DESCRIPTION =
-  "Estime le prix de construction de ta maison neuve en 5 questions : un budget complet, du permis à la remise des clés, ajusté à ton code postal. Gratuit.";
+  "Estime le prix de construction de ta maison neuve en 4 questions : un budget complet, du permis à la remise des clés, ajusté à ton code postal. Gratuit.";
 
 export const metadata = {
   title: TITRE,
@@ -67,7 +68,7 @@ export default async function EstimationConstructionMaison({
         inLanguage: "fr-FR",
         isAccessibleForFree: true,
         description:
-          "Estime gratuitement le budget de construction d'une maison neuve : cinq questions, un budget complet du permis à la remise des clés, ajusté à ton code postal, sans inscription.",
+          "Estime gratuitement le budget de construction d'une maison neuve : quatre questions, un budget complet du permis à la remise des clés, ajusté à ton code postal, sans inscription.",
         offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
         publisher: { "@id": `${siteUrl}/#organization` },
       },
@@ -95,6 +96,8 @@ export default async function EstimationConstructionMaison({
         {FEATURES.plans && initial.src !== "plan" && <LignePlan locale={locale} />}
       </header>
       <EstimateurRapideNeuf isPro={isPro} beta={betaActive()} initial={initial} />
+      {/* N13 : vers le rapide de la rénovation (la page entière est derrière l'interrupteur). */}
+      <PasserelleRapide vers="reno" locale={locale} />
     </div>
   );
 }

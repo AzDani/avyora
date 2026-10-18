@@ -13,9 +13,13 @@ import BilanRapideNeuf from "./BilanRapideNeuf";
 import { betaActive } from "@/lib/beta";
 
 /**
- * Fiche d'un projet neuf enregistré en mode RAPIDE. Pendant de `ResultatRapide` (rénovation,
- * inchangé) : le bilan de la maquette en clair (total, phases, exclusions, alerte argile), puis
- * le détail poste par poste flouté en teaser Pro, comme la répartition du rapide rénovation.
+ * Fiche d'un projet neuf enregistré en mode RAPIDE. Pendant de `ResultatRapide` (rénovation) : le
+ * bilan de la maquette (fourchette en grand, repères, exclusions, alerte argile), le résumé (garage et
+ * eaux usées compris), puis les postes les plus lourds.
+ *
+ * Règle commune de l'aperçu (D9, N13), la même qu'en rénovation : un compte qui a les droits (abonné,
+ * ou inscrit pendant la bêta, `estPro`) voit la répartition par phase et les postes en clair, sans
+ * cadenas ; sinon des données FACTICES, floutées sous un cadenas (le flou n'est que du CSS).
  */
 type Reponses = { ctx?: Ctx; sel?: Selection; codePostal?: string; qui?: QuiRealise };
 
@@ -27,7 +31,9 @@ const CSS = `
 .av-rn .pro-chip{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--accent);background:#f3ecff;padding:3px 9px;border-radius:999px}
 .av-rn .recap{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 @media(max-width:520px){.av-rn .recap{grid-template-columns:1fr}}
-.av-rn .item{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:13px 15px}
+.av-rn .item{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:13px 15px;display:flex;align-items:center;gap:12px}
+.av-rn .item .ic{width:34px;height:34px;border-radius:10px;background:#eef1ff;display:flex;align-items:center;justify-content:center;font-size:17px;flex:none}
+.av-rn .repart{border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface);padding:16px 22px}
 .av-rn .item .k{font-size:11.5px;color:var(--faint)}
 .av-rn .item .v{font-size:14.5px;font-weight:600;margin-top:1px}
 .av-rn .teaser{position:relative;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;background:var(--surface)}
@@ -54,7 +60,7 @@ export default async function ResultatRapideNeuf({
   const n = dictNeuf(locale);
   // Bêta gratuite (lib/beta.ts) : la pastille « Pro » et le titre du cadenas disent la bêta.
   const beta = betaActive();
-  const t = beta ? { ...n.rapide, lockH: d.beta.lockNeuf } : n.rapide;
+  const t = beta ? { ...n.rapide, lockH: d.beta.lockDetail } : n.rapide;
   const ctx = { ...(reponses.ctx ?? {}), codePostal: reponses.ctx?.codePostal ?? reponses.codePostal } as Ctx;
   const sel = normaliserCles((reponses.sel ?? {}) as Selection);
   const nf = locale === "en" ? "en-US" : "fr-FR";
@@ -64,16 +70,32 @@ export default async function ResultatRapideNeuf({
   const cp = ctx.codePostal ?? "";
   const reg = regionCoef(cp);
   const zone = d.rapide.zones[reg.zone] ?? reg.zone;
-  // Les libellés du rapide du NEUF (ceux que le particulier a cliqués), pas ceux de la rénovation.
-  const finLabel = (ctx.finition && n.saisie.finitions[ctx.finition as Finition]?.label) || "—";
-  const quiLabel = (reponses.qui && n.saisie.quis[reponses.qui]?.label) || "—";
+  // Les libellés que le particulier a cliqués : ceux des deux rapides, communs depuis N13.
+  const finLabel = (ctx.finition && d.rapide.finitions[ctx.finition as Finition]?.label) || "—";
+  const quiLabel = (reponses.qui && d.rapide.quis[reponses.qui]?.label) || "—";
+  const s = n.saisie;
+  const garageLabel = maison.garage > 0 ? s.garageOui(Math.round(maison.garage).toLocaleString(nf)) : s.garageNon;
+  const eauxLabel = s.eaux[maison.assainissement] ?? s.eaux.collectif;
 
-  // Teaser flouté. Un gratuit ne reçoit PAS le détail dans le HTML (le flou n'est que du CSS) :
-  // des lignes factices (barres grises, « ••• € »). Un Pro voit les vrais postes les plus lourds.
+  // Un gratuit ne reçoit PAS le détail dans le HTML (le flou n'est que du CSS) : des lignes factices
+  // (barres grises, « ••• € ») sous un cadenas. Un Pro voit les vrais postes les plus lourds, en clair.
   const dv = isPro ? buildDevis(catalogueDe(ctx), ctx, sel) : null;
   const top = dv
     ? [...dv.lignes].filter((li) => li.ttc > 0).sort((a, b) => b.ttc - a.ttc).slice(0, 5).map((li) => ({ k: li.cle, nom: catLigne(locale, li.nom, li.cle), v: eur(li.ttc) }))
     : [62, 48, 55, 40, 50].map((w, i) => ({ k: "f" + i, nom: <span className="fake" style={{ width: w + "%" }} />, v: "••• €" }));
+
+  const lignes = (
+    <>
+      {top.map((li, i) => (
+        <div className="lrow" key={li.k}>
+          <span className="dot" style={{ background: SEG[i] ?? SEG[SEG.length - 1] }} />
+          <span className="nm">{li.nom}</span>
+          <span className="lv">{li.v}</span>
+        </div>
+      ))}
+      <div className="lrow"><span className="dot" style={{ background: SEG[SEG.length - 1] }} />{t.autres} <span className="lv">…</span></div>
+    </>
+  );
 
   const ctaHref = isPro ? `/projets/${projectId}/modifier` : "/tarifs?source=affiner-neuf";
   const ctaLabel = isPro ? t.affiner : t.passPro;
@@ -83,39 +105,37 @@ export default async function ResultatRapideNeuf({
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <p className="text-[15px] text-muted -mt-2 mb-4">{t.sub}</p>
 
-      <BilanRapideNeuf ctx={ctx} sel={sel} qui={reponses.qui} locale={locale} />
+      <BilanRapideNeuf ctx={ctx} sel={sel} qui={reponses.qui} locale={locale} reel={isPro} beta={beta} />
 
       <div className="sec">{t.resume}</div>
       <div className="recap">
-        <div className="item"><div className="k">{t.maisonK}</div><div className="v">{n.maisonNeuve} · <span className="data">{maison.surface}</span> m² · {n.niveauxCourt[maison.niveaux] ?? n.niveauxCourt.pp}</div></div>
-        <div className="item"><div className="k">{t.locK}</div><div className="v">{cp || "—"}{cp && reg.zone ? ` · ${zone}` : ""}</div></div>
-        <div className="item"><div className="k">{t.finitionK}</div><div className="v">{finLabel}</div></div>
-        <div className="item"><div className="k">{t.quiK}</div><div className="v">{quiLabel}</div></div>
+        <div className="item"><span className="ic" aria-hidden="true">🏠</span><div><div className="k">{t.maisonK}</div><div className="v">{n.maisonNeuve} · <span className="data">{maison.surface}</span> m² · {n.niveauxCourt[maison.niveaux] ?? n.niveauxCourt.pp}</div></div></div>
+        <div className="item"><span className="ic" aria-hidden="true">📍</span><div><div className="k">{t.locK}</div><div className="v">{cp || "—"}{cp && reg.zone ? ` · ${zone}` : ""}</div></div></div>
+        <div className="item"><span className="ic" aria-hidden="true">✨</span><div><div className="k">{t.finitionK}</div><div className="v">{finLabel}</div></div></div>
+        <div className="item"><span className="ic" aria-hidden="true">👷</span><div><div className="k">{t.quiK}</div><div className="v">{quiLabel}</div></div></div>
+        <div className="item"><span className="ic" aria-hidden="true">🚗</span><div><div className="k">{t.garageK}</div><div className="v">{garageLabel}</div></div></div>
+        <div className="item"><span className="ic" aria-hidden="true">💧</span><div><div className="k">{t.eauxK}</div><div className="v">{eauxLabel}</div></div></div>
       </div>
 
-      <div className="sec">{t.detailK} <span className="pro-chip">{beta ? d.beta.pastille : "Pro"}</span></div>
-      <div className="teaser">
-        <div className="inside" aria-hidden="true">
-          {top.map((li, i) => (
-            <div className="lrow" key={li.k}>
-              <span className="dot" style={{ background: SEG[i] ?? SEG[SEG.length - 1] }} />
-              <span className="nm">{li.nom}</span>
-              <span className="lv">{li.v}</span>
+      <div className="sec">{isPro ? t.detailProK : t.detailK} <span className="pro-chip">{beta ? d.beta.pastille : "Pro"}</span></div>
+      {isPro ? (
+        // Un Pro : ses postes les plus lourds en clair, sans cadenas (comme la répartition de la rénovation).
+        <div className="repart">{lignes}</div>
+      ) : (
+        <div className="teaser">
+          <div className="inside" aria-hidden="true">{lignes}</div>
+          <div className="lock">
+            <div className="ico">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="5" y="11" width="14" height="10" rx="2" />
+                <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+              </svg>
             </div>
-          ))}
-          <div className="lrow"><span className="dot" style={{ background: SEG[SEG.length - 1] }} />{t.autres} <span className="lv">…</span></div>
-        </div>
-        <div className="lock">
-          <div className="ico">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <rect x="5" y="11" width="14" height="10" rx="2" />
-              <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-            </svg>
+            <h3>{t.lockH}</h3>
+            <p>{t.lockP}</p>
           </div>
-          <h3>{t.lockH}</h3>
-          <p>{t.lockP}</p>
         </div>
-      </div>
+      )}
 
       <div className="actions">
         <Link href={ctaHref} className="btn btn-primary py-2.5">{ctaLabel}</Link>

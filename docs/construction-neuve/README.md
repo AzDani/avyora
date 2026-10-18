@@ -10,7 +10,7 @@ construire à la déclaration d'achèvement (enduits compris), avec le **même m
 | `lib/estimateur/catalog-neuf.json` | Le chantier dans l'ordre : 9 phases, lots, 202 postes (99 propres au neuf, 103 repris de la rénovation par `{"ref": id}` — même objet, même prix). |
 | `lib/estimateur/catalogue-neuf.ts` | Chargement, `CATALOG_NEUF`, `PHASES_NEUF`, `catalogueDe(ctx)`. |
 | `lib/estimateur/neuf.ts` | La maison à construire (`MaisonNeuve`), sa géométrie, la quantité de chaque poste, ce que chaque réponse coche ou décoche. |
-| `lib/estimateur/presets-neuf.ts` | `presetNeuf` (mode rapide, 5 questions) et `presetMaison` (mode détaillé), `appliquerMaison`. |
+| `lib/estimateur/presets-neuf.ts` | `presetNeuf` (mode rapide, 4 questions) et `presetMaison` (mode détaillé), `appliquerMaison`. |
 | `lib/estimateur/core.ts` | `ctx.nature = "neuf"` : TVA 20 % partout ; postes `frais` (taxes, assurance) sans TVA, aléas, région ni finition ; unité `pct` (dommages-ouvrage, maîtrise d'œuvre). |
 | `tests/estimateur-neuf.test.ts` | Règles, identifiants figés (`tests/postes-ids-neuf.txt`), TVA, frais, pourcentages, calage sur l'enquête officielle EPTB 2024. |
 
@@ -42,7 +42,7 @@ node maquettes/neuf/controle.cjs <dossier>       # 26 contrôles dans Chrome hea
 
 | Où | Quoi |
 |---|---|
-| `/estimation-construction-maison` | Estimation rapide, publique et gratuite (5 questions), indexée. Lit aussi un plan venu de l'éditeur (`#plan=`, `lib/estimateur/plan-neuf.ts`). |
+| `/estimation-construction-maison` | Estimation rapide, publique et gratuite (4 questions), indexée. Lit aussi un plan venu de l'éditeur (`#plan=`, `lib/estimateur/plan-neuf.ts`). |
 | `/projets/nouveau/construction` | Estimation détaillée, Pro (phase par phase, poste par poste). |
 | `/projets/nouveau?nature=neuf` | Bascule « Rénovation / Construction neuve » de l'écran de choix. |
 | Fiche, suivi, PDF, liste, admin | Un projet neuf (`reponses.ctx.nature = "neuf"`) se chiffre et s'affiche avec le catalogue du neuf, par phase. |

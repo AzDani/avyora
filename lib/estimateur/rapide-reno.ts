@@ -9,7 +9,8 @@
  * - les réponses enregistrées : la liste des pièces (sans elle, un projet « pièces » rouvert
  *   redevenait un « T3 » de la surface totale) et le suivi de chantier (le PATCH remplace toutes
  *   les réponses : sans eux dans le corps, il était effacé) ;
- * - la reprise d'un projet rouvert en gratuit (`/projets/[id]/modifier`).
+ * - la reprise d'un projet rouvert en gratuit (`/projets/[id]/modifier`) ;
+ * - les réponses rendues au retour de /tarifs (N13, comme le rapide du neuf).
  *
  * Aucun code du moteur à l'exécution (types seulement) : la page de modification, `ClaimDraft`
  * (via `brouillon-reno.ts`) et les tests le lisent sans embarquer le catalogue.
@@ -30,11 +31,12 @@ const QUIS: readonly string[] = ["pros", "partie", "max"];
 
 /**
  * Le chiffre s'affiche-t-il ? Dès que le visiteur a répondu quelque chose (`demarre`), ou d'emblée
- * pour un projet rouvert (`edition`) : sa description est une vraie saisie, faite avant.
- * Un contexte venu d'une page SEO ne compte pas : cliquer un lien n'est pas décrire son projet.
+ * pour un projet rouvert (`edition`) et pour des réponses rendues au retour de /tarifs (`retour`) :
+ * c'est une vraie saisie, faite avant. Un contexte venu d'une page SEO ne compte pas : cliquer un
+ * lien n'est pas décrire son projet.
  */
-export function chiffreAfficheRapide(p: { demarre: boolean; edition: boolean }): boolean {
-  return p.demarre || p.edition;
+export function chiffreAfficheRapide(p: { demarre: boolean; edition: boolean; retour?: boolean }): boolean {
+  return p.demarre || p.edition || !!p.retour;
 }
 
 /**
@@ -89,6 +91,43 @@ function lireStatuts(x: unknown): Record<string, number> | undefined {
   if (!x || typeof x !== "object" || Array.isArray(x)) return undefined;
   const out = Object.fromEntries(Object.entries(x as Record<string, unknown>).filter(([, v]) => typeof v === "number" && Number.isFinite(v))) as Record<string, number>;
   return Object.keys(out).length ? out : undefined;
+}
+
+/* ─── Retour de /tarifs (N13) ─────────────────────────────────────────────────────────────── */
+
+/**
+ * « Affiner » d'un visiteur sans les droits mène directement à `/tarifs?source=affiner-reno` (avant :
+ * un détour par `/projets/nouveau/detaille`, qui l'y renvoyait, et ses réponses étaient perdues). Ses
+ * réponses sont rangées sous cette clé, dans l'onglet (sessionStorage), et relues au retour, comme
+ * le rapide du neuf (`CLE_RETOUR_NEUF`). Le chiffre revient, mais pas la mesure : ce n'est pas une
+ * nouvelle estimation.
+ */
+export const CLE_RETOUR_RENO = "avyora-reno-retour";
+
+export type RetourRapideReno = {
+  mode: "bien" | "pieces"; type: TypeBien; surface: number; pieces: PieceSel[]; cp: string;
+  ampleur: Ampleur; finition: Finition; qui: QuiRealise;
+};
+
+/** Relit les réponses rangées au départ vers /tarifs : `null` si une seule est hors des choix du formulaire. */
+export function lireRetourRapideReno(x: unknown): RetourRapideReno | null {
+  if (!x || typeof x !== "object" || Array.isArray(x)) return null;
+  const r = x as Record<string, unknown>;
+  const surface = Number(r.surface);
+  if (r.mode !== "bien" && r.mode !== "pieces") return null;
+  if (r.type !== "Maison" && r.type !== "Appartement") return null;
+  if (!Number.isFinite(surface) || surface <= 0 || surface > 10_000) return null;
+  if (typeof r.cp !== "string" || !/^\d{0,5}$/.test(r.cp)) return null;
+  if (typeof r.ampleur !== "string" || !AMPLEURS.includes(r.ampleur)) return null;
+  if (typeof r.finition !== "string" || !FINITIONS.includes(r.finition)) return null;
+  if (typeof r.qui !== "string" || !QUIS.includes(r.qui)) return null;
+  const pieces = lirePiecesRapide(r.pieces) ?? [];
+  if (r.mode === "pieces" && !pieces.length) return null;
+  return {
+    // « Appartement » : le type du rapide, que `presetRapide` chiffre (le moteur ne le nomme pas, cf. `editionRapideReno`).
+    mode: r.mode, type: r.type as TypeBien, surface, pieces, cp: r.cp,
+    ampleur: r.ampleur as Ampleur, finition: r.finition as Finition, qui: r.qui as QuiRealise,
+  };
 }
 
 /* ─── Projet rouvert en gratuit ───────────────────────────────────────────────────────────── */

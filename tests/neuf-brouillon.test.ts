@@ -134,7 +134,7 @@ describe("Neuf · contexte de l'URL publique", () => {
 describe("Neuf · alerte argile du bilan", () => {
   const rendre = (argile: "non" | "moyen") => {
     const p = presetNeuf(R, { argile });
-    return renderToStaticMarkup(createElement(BilanRapideNeuf, { ctx: p.ctx, sel: p.sel, qui: "pros", locale: "fr" }));
+    return renderToStaticMarkup(createElement(BilanRapideNeuf, { ctx: p.ctx, sel: p.sel, qui: "pros", locale: "fr", reel: true }));
   };
   it("affichée pour une maison sans argile, avec un surcoût chiffré", () => {
     expect(rendre("non")).toContain('class="alert-n"');

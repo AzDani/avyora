@@ -110,8 +110,11 @@ describe("A7 · les deux questionnaires côte à côte", () => {
 
     it(`${locale} (5) : les cartes de finition de la rénovation, mêmes noms et mêmes accroches`, () => {
       expect(bloc(neuf, '<div class="finc"')).toBe(bloc(reno, '<div class="finc"'));
-      const rapide = dictNeuf(locale).saisie.finitions, ref = B.finitions;
+      // Le rapide du neuf prend désormais les noms et accroches du rapide de la rénovation (N13) : sa propre
+      // table ne garde que les descriptions. Ceux-là sont aussi ceux des cartes du détaillé.
+      const rapide = dict(locale).rapide.finitions as Record<string, { label: string; eye: string }>, ref = B.finitions;
       for (const f of ["eco", "standard", "premium"]) {
+        expect(Object.keys(dictNeuf(locale).saisie.finitions[f]), f).toEqual(["desc"]);
         expect([rapide[f].label, rapide[f].eye], f).toEqual([ref[f].label, ref[f].eye]);
         expect(q("$finition").o!.find(([v]) => v === f)![1][locale], f).toBe(ref[f].label);
       }
@@ -173,8 +176,10 @@ describe("A7 · les deux questionnaires côte à côte", () => {
     expect(EST_CSS).not.toContain("aria-invalid");
     expect(reno).toContain("EST_CSS + ROW_SOI_CSS + INTAKE_CSS");
     expect(neuf).toContain("EST_CSS + ROW_SOI_CSS + INTAKE_CSS + NEUF_DETAIL_CSS");
-    // la brique : focalise le champ signalé, une fois la saisie réaffichée
-    const brique = fs.readFileSync("components/estimateur/intake.tsx", "utf8");
+    // la brique : focalise le champ signalé, une fois la saisie réaffichée (dans son module depuis N13, que le rapide
+    // de la rénovation prend aussi ; les briques du questionnaire la réexportent)
+    const brique = fs.readFileSync("components/estimateur/champ-en-faute.ts", "utf8");
     expect(brique).toContain("el.focus({ preventScroll: true })");
+    expect(fs.readFileSync("components/estimateur/intake.tsx", "utf8")).toContain('export { useChampEnFaute } from "./champ-en-faute";');
   });
 });

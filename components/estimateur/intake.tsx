@@ -10,7 +10,7 @@
  * Accessibilité : un choix est un groupe nommé (`role="group"`, `aria-label`) de boutons qui disent
  * s'ils sont pressés (`aria-pressed`), comme les pastilles du neuf ; la classe `on` garde le style.
  */
-import { useEffect, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import type { RegionCoef } from "@/lib/estimateur";
 
 /** Intertitre d'une rubrique du questionnaire. */
@@ -82,25 +82,9 @@ export function ChampCodePostal({ valeur, onChange, placeholder, id, invalide, e
   );
 }
 
-/**
- * Le champ en faute à l'enregistrement (« Enregistrer » sans code postal) : `signaler` le marque
- * (`champ`, que l'appelant passe en `aria-invalid`), puis le centre et lui donne le focus, une fois
- * la saisie réaffichée. Le même comportement dans les deux détaillés (A7) ; `effacer` le démarque.
- */
-export function useChampEnFaute<K extends string>() {
-  const [faute, setFaute] = useState<{ champ: K; id: string; n: number } | null>(null);
-  useEffect(() => {
-    if (!faute) return;
-    const el = document.getElementById(faute.id);
-    if (el) { el.scrollIntoView({ block: "center", behavior: "smooth" }); el.focus({ preventScroll: true }); }
-  }, [faute]);
-  return {
-    champ: faute?.champ ?? null,
-    /** `id` : celui du champ à focaliser (son `htmlFor`). Signaler deux fois de suite refocalise. */
-    signaler: (champ: K, id: string) => setFaute((f) => ({ champ, id, n: (f?.n ?? 0) + 1 })),
-    effacer: () => setFaute(null),
-  };
-}
+/** Le champ en faute à l'enregistrement : dans son module (`champ-en-faute.ts`), que le rapide de la rénovation
+ *  importe sans embarquer les briques du questionnaire (N13). */
+export { useChampEnFaute } from "./champ-en-faute";
 
 /** Une case de la grille de compteurs qui se lit sans se régler : le nombre de niveaux du neuf, que le
  *  type de maison décide (A7 : la grille garde les paires de la rénovation, dont « Niveaux » ouvre la

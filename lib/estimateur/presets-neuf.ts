@@ -2,7 +2,7 @@
  * CONSTRUCTION NEUVE — du questionnaire au chiffrage.
  *
  * Comme `presetRapide` pour la rénovation : une description de maison devient `ctx + sel`, envoyés
- * au MÊME moteur (`buildDevis(catalogueDe(ctx), ctx, sel)`). Le mode rapide (5 questions) et le
+ * au MÊME moteur (`buildDevis(catalogueDe(ctx), ctx, sel)`). Le mode rapide (4 questions) et le
  * mode détaillé passent par les mêmes règles : une maison décrite pareil coûte pareil.
  */
 import { key, peutFaireSoiMeme, ALEAS_NEUF, LOTS_DECENNALE, type Ctx, type Selection, type Finition, type Tache, type Lot, type RaisonPro } from "./core";
@@ -158,7 +158,7 @@ export type RapideNeufInput = {
 };
 
 /**
- * Mode rapide du neuf : 5 questions (+ garage, assainissement), le reste par défaut.
+ * Mode rapide du neuf : 4 questions (la maison, la finition, qui réalise, garage et eaux usées), le reste par défaut.
  *
  * `base` (facultatif) : une maison déjà décrite (plan importé, projet détaillé qu'on rouvre en
  * édition gratuite). Ses réponses servent de défauts ; les questions du rapide passent par-dessus.

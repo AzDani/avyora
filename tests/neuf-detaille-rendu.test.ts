@@ -60,7 +60,7 @@ describe("N3 et N10 · détaillé neuf à l'ouverture", () => {
       expect(compte(html, /class="drtoggle( on)?"/g)).toBe(1);
       expect(html).not.toContain(echapper(toutes.find((q) => q.k === "escalier")!.l[locale]));
       expect(html).not.toMatch(/sans objet ici|not applicable here/);
-      expect(html).not.toMatch(/Qui réalise|Who builds|J&#x27;en fais une partie|I do some of it/);
+      expect(html).not.toMatch(/Qui réalise|Who builds|J&#x27;en bricole une partie|I DIY some of it/);
       expect(html).not.toMatch(/<button[^>]*disabled=""[^>]*class="pill"|class="pill"[^>]*disabled=""/);
     });
 

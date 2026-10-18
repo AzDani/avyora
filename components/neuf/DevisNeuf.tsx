@@ -13,13 +13,14 @@ import {
 } from "@/lib/estimateur";
 import { decoupe, qteNeuf } from "@/lib/estimateur/etapes-neuf";
 import { catT, catLigne } from "@/lib/estimateur/catalog-i18n";
-import { useLocale } from "@/components/i18n/LangProvider";
+import { useLocale, useT } from "@/components/i18n/LangProvider";
 import { dictNeuf } from "@/lib/i18n/neuf";
 import { fmt } from "@/components/estimateur/partage";
 import { VueDevis, type DonneesDevis } from "@/components/estimateur/VueDevis";
 
 export default function DevisNeuf({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Selection; custom?: CustomLine[] }) {
   const locale = useLocale();
+  const T = useT();
   const n = dictNeuf(locale);
   const d = n.detail;
   const dv = useMemo(() => buildDevis(CATALOG_NEUF, ctx, sel), [ctx, sel]);
@@ -31,7 +32,8 @@ export default function DevisNeuf({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Se
   const cut = decoupe(dv);
   const max = lots.length ? Math.max(...lots.map((x) => x.ttc)) : 1;
   const persoTtc = cu.ht + cu.tva;
-  const finLbl = n.saisie.finitions[ctx.finition]?.label ?? ctx.finition;
+  // Le nom de la finition : celui des deux rapides (N13), le même que les cartes du questionnaire.
+  const finLbl = T.rapide.finitions[ctx.finition]?.label ?? ctx.finition;
   const nf = locale === "en" ? "en-US" : "fr-FR";
 
   const donnees: DonneesDevis = {

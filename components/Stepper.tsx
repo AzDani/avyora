@@ -41,7 +41,7 @@ export function valeurSortie(texte: string, { min, max, step = 1 }: { min?: numb
  * seule la sortie du champ (ou Entrée) la transmet, une fois. Les boutons −/+ la transmettent toujours.
  */
 export default function Stepper({
-  value, onChange, min, max, step = 1, unit, field, compact, block, className = "", id, aLaSortie,
+  value, onChange, min, max, step = 1, unit, field, compact, block, className = "", id, aLaSortie, invalide,
 }: {
   value: number;
   onChange: (n: number) => void;
@@ -58,6 +58,8 @@ export default function Stepper({
   /** La frappe n'est transmise qu'à la sortie du champ (ou sur Entrée), une seule fois, et seulement si
    *  la valeur a changé. Absent : chaque frappe est transmise, comme avant. */
   aLaSortie?: boolean;
+  /** Le champ est en faute (« Enregistrer » sans surface) : `aria-invalid` sur le champ. Absent : rendu inchangé. */
+  invalide?: boolean;
 }) {
   const aria = ARIA[useLocale()] ?? ARIA.fr;
   const dp = step < 1 ? 2 : 0;
@@ -86,7 +88,7 @@ export default function Stepper({
     if (!aLaSortie || n !== value) onChange(n);
   };
   const input = (
-    <input id={id} type="number" inputMode="decimal" value={raw} min={min} max={max} step={step}
+    <input id={id} type="number" inputMode="decimal" value={raw} min={min} max={max} step={step} aria-invalid={invalide || undefined}
       onFocus={() => { editing.current = true; }} onChange={onInput} onBlur={onBlur}
       onKeyDown={aLaSortie ? (e) => { if (e.key === "Enter") e.currentTarget.blur(); } : undefined} />
   );
