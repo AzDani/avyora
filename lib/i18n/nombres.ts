@@ -26,3 +26,18 @@ export const signePct = (locale: Locale | string): string => (locale === "en" ? 
 export function pourcent(locale: Locale | string, n: number, dec = 1): string {
   return nombre(locale, n, dec) + signePct(locale);
 }
+
+/**
+ * Un montant tapé à la main, quelle que soit la langue : « 1 500 », « 1500,50 », « 1.234,56 » (FR),
+ * « 1,500 », « 1,500.50 » (EN). Le DERNIER séparateur (point ou virgule) est la décimale s'il est suivi
+ * d'un ou deux chiffres, sinon un séparateur de milliers. Illisible : NaN.
+ */
+export function lireMontant(texte: string): number {
+  const t = String(texte ?? "").replace(/[\s  €]/g, "");
+  if (!/^\d[\d.,]*$/.test(t)) return NaN;
+  const i = Math.max(t.lastIndexOf(","), t.lastIndexOf("."));
+  if (i < 0) return Number(t);
+  const apres = t.slice(i + 1);
+  if (apres.length >= 1 && apres.length <= 2) return Number(t.slice(0, i).replace(/[.,]/g, "") + "." + apres);
+  return Number(t.replace(/[.,]/g, ""));
+}

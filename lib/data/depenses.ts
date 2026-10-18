@@ -8,6 +8,9 @@ import type { Depense } from "@/lib/estimateur/budget-reel";
 
 type Ligne = { id: string; corps_etat: string; libelle: string; montant: number; created_at: string };
 
+/** Plafond de dépenses par projet : bien au-delà d'un vrai chantier, il borne la table pendant la bêta. */
+export const MAX_DEPENSES = 500;
+
 const versDepense = (l: Ligne): Depense => ({ id: l.id, corps: l.corps_etat, libelle: l.libelle, montant: Number(l.montant) || 0, date: l.created_at });
 
 /** Les dépenses d'un projet, de la plus récente à la plus ancienne. Une panne rend une liste vide. */
@@ -17,9 +20,17 @@ export async function listDepenses(projectId: string): Promise<Depense[]> {
     .from("expenses")
     .select("id, corps_etat, libelle, montant, created_at")
     .eq("project_id", projectId)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(MAX_DEPENSES);
   if (error) return [];
   return ((data ?? []) as Ligne[]).map(versDepense);
+}
+
+/** Nombre de dépenses d'un projet (pour le plafond). */
+export async function compterDepenses(projectId: string): Promise<number> {
+  const sb = await supabaseServer();
+  const { count } = await sb.from("expenses").select("id", { count: "exact", head: true }).eq("project_id", projectId);
+  return count ?? 0;
 }
 
 export async function ajouterDepense(projectId: string, d: { corps: string; libelle: string; montant: number }): Promise<Depense | null> {

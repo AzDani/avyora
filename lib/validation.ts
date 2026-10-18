@@ -59,7 +59,8 @@ export const pieceSchema = z.object({
 export const depenseSchema = z.object({
   corpsEtat: z.string().trim().min(1).max(60),
   libelle: z.string().trim().min(1).max(200),
-  montant: z.coerce.number().positive().max(100_000_000),
+  // 5 M€ au plus : la colonne `montant` est un real (float4), exact au centime jusqu'à ~130 000 €, à l'euro au-delà.
+  montant: z.coerce.number().positive().max(5_000_000),
 });
 
 export const chantierStatutSchema = z.object({

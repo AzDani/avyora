@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getProjet } from "@/lib/data/projects";
-import { ajouterDepense } from "@/lib/data/depenses";
+import { ajouterDepense, compterDepenses, MAX_DEPENSES } from "@/lib/data/depenses";
 import { getUser, estPro } from "@/lib/auth";
 import { verifierLimite } from "@/lib/ratelimit";
 import { valider, jsonBody, depenseSchema } from "@/lib/validation";
@@ -26,6 +26,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (!projet) return NextResponse.json({ error: "Projet introuvable" }, { status: 404 });
   const permis = new Set([...corpsDuProjet(projet.reponses), CORPS_AUTRE]);
   if (!permis.has(v.data.corpsEtat)) return NextResponse.json({ error: "Données invalides." }, { status: 400 });
+
+  if ((await compterDepenses(id)) >= MAX_DEPENSES) return NextResponse.json({ error: "Nombre maximal de dépenses atteint" }, { status: 409 });
 
   const d = await ajouterDepense(id, { corps: v.data.corpsEtat, libelle: v.data.libelle, montant: v.data.montant });
   if (!d) return NextResponse.json({ error: "Enregistrement impossible" }, { status: 500 });

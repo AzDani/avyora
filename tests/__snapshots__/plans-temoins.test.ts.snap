@@ -1876,7 +1876,7 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-bud .tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}
 .av-bud .tile{border:1px solid var(--line,#e6e7ef);border-radius:12px;padding:10px 12px;min-width:0}
 .av-bud .tile .k{font-size:12px;color:var(--muted,#6b6f86)}
-.av-bud .tile .v{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
+.av-bud .tile .v{font-size:clamp(15px,2.2vw,19px);overflow-wrap:anywhere;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
 .av-bud .tile .s{font-size:11.5px;color:var(--muted,#6b6f86);margin-top:2px}
 .av-bud .tile.bad .v{color:#b42318}.av-bud .tile.good .v{color:#067647}
 .av-bud .alerts{display:flex;flex-direction:column;gap:6px;margin:4px 0 14px}
@@ -1913,7 +1913,7 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 @media (max-width:640px){
   .av-bud .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
   .av-bud form{grid-template-columns:1fr 1fr}
-  .av-bud form label.lib{grid-column:1/-1}
+  .av-bud form label.lib,.av-bud form label:first-child{grid-column:1/-1}
   .av-bud .row{grid-template-columns:minmax(0,1fr) auto}
   .av-bud .row .bar{grid-column:1/-1;grid-row:2}
 }
@@ -2368,7 +2368,7 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-bud .tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}
 .av-bud .tile{border:1px solid var(--line,#e6e7ef);border-radius:12px;padding:10px 12px;min-width:0}
 .av-bud .tile .k{font-size:12px;color:var(--muted,#6b6f86)}
-.av-bud .tile .v{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
+.av-bud .tile .v{font-size:clamp(15px,2.2vw,19px);overflow-wrap:anywhere;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
 .av-bud .tile .s{font-size:11.5px;color:var(--muted,#6b6f86);margin-top:2px}
 .av-bud .tile.bad .v{color:#b42318}.av-bud .tile.good .v{color:#067647}
 .av-bud .alerts{display:flex;flex-direction:column;gap:6px;margin:4px 0 14px}
@@ -2405,7 +2405,7 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 @media (max-width:640px){
   .av-bud .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
   .av-bud form{grid-template-columns:1fr 1fr}
-  .av-bud form label.lib{grid-column:1/-1}
+  .av-bud form label.lib,.av-bud form label:first-child{grid-column:1/-1}
   .av-bud .row{grid-template-columns:minmax(0,1fr) auto}
   .av-bud .row .bar{grid-column:1/-1;grid-row:2}
 }
@@ -3716,7 +3716,7 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-bud .tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}
 .av-bud .tile{border:1px solid var(--line,#e6e7ef);border-radius:12px;padding:10px 12px;min-width:0}
 .av-bud .tile .k{font-size:12px;color:var(--muted,#6b6f86)}
-.av-bud .tile .v{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
+.av-bud .tile .v{font-size:clamp(15px,2.2vw,19px);overflow-wrap:anywhere;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
 .av-bud .tile .s{font-size:11.5px;color:var(--muted,#6b6f86);margin-top:2px}
 .av-bud .tile.bad .v{color:#b42318}.av-bud .tile.good .v{color:#067647}
 .av-bud .alerts{display:flex;flex-direction:column;gap:6px;margin:4px 0 14px}
@@ -3753,7 +3753,7 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 @media (max-width:640px){
   .av-bud .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
   .av-bud form{grid-template-columns:1fr 1fr}
-  .av-bud form label.lib{grid-column:1/-1}
+  .av-bud form label.lib,.av-bud form label:first-child{grid-column:1/-1}
   .av-bud .row{grid-template-columns:minmax(0,1fr) auto}
   .av-bud .row .bar{grid-column:1/-1;grid-row:2}
 }
@@ -4208,7 +4208,7 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 .av-bud .tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}
 .av-bud .tile{border:1px solid var(--line,#e6e7ef);border-radius:12px;padding:10px 12px;min-width:0}
 .av-bud .tile .k{font-size:12px;color:var(--muted,#6b6f86)}
-.av-bud .tile .v{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
+.av-bud .tile .v{font-size:clamp(15px,2.2vw,19px);overflow-wrap:anywhere;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
 .av-bud .tile .s{font-size:11.5px;color:var(--muted,#6b6f86);margin-top:2px}
 .av-bud .tile.bad .v{color:#b42318}.av-bud .tile.good .v{color:#067647}
 .av-bud .alerts{display:flex;flex-direction:column;gap:6px;margin:4px 0 14px}
@@ -4245,7 +4245,7 @@ exports[`Témoins · interrupteur plans éteint > fiche projet : réno rapide, r
 @media (max-width:640px){
   .av-bud .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
   .av-bud form{grid-template-columns:1fr 1fr}
-  .av-bud form label.lib{grid-column:1/-1}
+  .av-bud form label.lib,.av-bud form label:first-child{grid-column:1/-1}
   .av-bud .row{grid-template-columns:minmax(0,1fr) auto}
   .av-bud .row .bar{grid-column:1/-1;grid-row:2}
 }

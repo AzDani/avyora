@@ -111,15 +111,16 @@ describe("corpsDuProjet", () => {
 
 describe("routes /api/projects/[id]/depenses", () => {
   const ID = "11111111-1111-4111-8111-111111111111", DID = "22222222-2222-4222-8222-222222222222";
-  const S = { user: null as null | { id: string }, pro: true, limite: true, projet: reno as unknown, ajout: [] as unknown[], suppr: [] as unknown[] };
+  const S = { nb: 0, user: null as null | { id: string }, pro: true, limite: true, projet: reno as unknown, ajout: [] as unknown[], suppr: [] as unknown[] };
   const MOCKS = ["@/lib/auth", "@/lib/ratelimit", "@/lib/data/projects", "@/lib/data/depenses"];
   beforeEach(() => {
     vi.resetModules();
-    Object.assign(S, { user: { id: "u1" }, pro: true, limite: true, projet: reno, ajout: [], suppr: [] });
+    Object.assign(S, { nb: 0, user: { id: "u1" }, pro: true, limite: true, projet: reno, ajout: [], suppr: [] });
     vi.doMock("@/lib/auth", () => ({ getUser: async () => S.user, estPro: () => S.pro }));
     vi.doMock("@/lib/ratelimit", () => ({ verifierLimite: async () => S.limite }));
     vi.doMock("@/lib/data/projects", () => ({ getProjet: async () => (S.projet ? { id: ID, reponses: S.projet } : null) }));
     vi.doMock("@/lib/data/depenses", () => ({
+      MAX_DEPENSES: 500, compterDepenses: async () => S.nb,
       ajouterDepense: async (pid: string, d: unknown) => { S.ajout.push([pid, d]); return { id: DID, ...(d as object), date: "x" }; },
       supprimerDepense: async (pid: string, did: string) => { S.suppr.push([pid, did]); return true; },
     }));
@@ -151,6 +152,14 @@ describe("routes /api/projects/[id]/depenses", () => {
     S.projet = null; expect((await post({ corpsEtat: corps(), libelle: "x", montant: 1 })).status).toBe(404);
     expect(S.ajout).toEqual([]);
   });
+  it("plafond : 500 dépenses par projet, la 501e refusée en 409", async () => {
+    S.nb = 500;
+    expect((await post({ corpsEtat: corps(), libelle: "x", montant: 1 })).status).toBe(409);
+    expect(S.ajout).toEqual([]);
+  });
+  it("montant au-delà de 5 M€ refusé", async () => {
+    expect((await post({ corpsEtat: corps(), libelle: "x", montant: 6_000_000 })).status).toBe(400);
+  });
   it("suppression : 204, identifiants malformés 404, anonyme 401", async () => {
     const { DELETE } = await import("@/app/api/projects/[id]/depenses/[depenseId]/route");
     const del = (id: string, did: string) => DELETE(new Request("http://x", { method: "DELETE" }), { params: Promise.resolve({ id, depenseId: did }) });
@@ -159,4 +168,13 @@ describe("routes /api/projects/[id]/depenses", () => {
     expect((await del(ID, "pas-un-uuid")).status).toBe(404);
     S.user = null; expect((await del(ID, DID)).status).toBe(401);
   });
+});
+
+describe("lireMontant : saisie en FR comme en EN", async () => {
+  const { lireMontant } = await import("@/lib/i18n/nombres");
+  it.each([
+    ["1500", 1500], ["1 500", 1500], ["1\u202f500", 1500], ["1500,5", 1500.5], ["1500,50", 1500.5], ["1.234,56", 1234.56],
+    ["1,500", 1500], ["1,500.50", 1500.5], ["12.5", 12.5], ["1 500 €", 1500], ["1.500.000", 1500000],
+  ])("« %s » → %s", (t, v) => expect(lireMontant(t as string)).toBeCloseTo(v as number, 2));
+  it.each(["", "abc", "-5", "1,5,a"])("« %s » illisible", (t) => expect(Number.isNaN(lireMontant(t))).toBe(true));
 });

@@ -10,7 +10,7 @@ import { useMemo, useState } from "react";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { catT } from "@/lib/estimateur/catalog-i18n";
 import { bilanBudget, corpsDuProjet, CORPS_AUTRE, type Depense, type Alerte } from "@/lib/estimateur/budget-reel";
-import { euros, pourcent } from "@/lib/i18n/nombres";
+import { euros, pourcent, lireMontant } from "@/lib/i18n/nombres";
 
 const TR = {
   fr: {
@@ -71,7 +71,7 @@ const CSS = `
 .av-bud .tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}
 .av-bud .tile{border:1px solid var(--line,#e6e7ef);border-radius:12px;padding:10px 12px;min-width:0}
 .av-bud .tile .k{font-size:12px;color:var(--muted,#6b6f86)}
-.av-bud .tile .v{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
+.av-bud .tile .v{font-size:clamp(15px,2.2vw,19px);overflow-wrap:anywhere;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
 .av-bud .tile .s{font-size:11.5px;color:var(--muted,#6b6f86);margin-top:2px}
 .av-bud .tile.bad .v{color:#b42318}.av-bud .tile.good .v{color:#067647}
 .av-bud .alerts{display:flex;flex-direction:column;gap:6px;margin:4px 0 14px}
@@ -108,7 +108,7 @@ const CSS = `
 @media (max-width:640px){
   .av-bud .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
   .av-bud form{grid-template-columns:1fr 1fr}
-  .av-bud form label.lib{grid-column:1/-1}
+  .av-bud form label.lib,.av-bud form label:first-child{grid-column:1/-1}
   .av-bud .row{grid-template-columns:minmax(0,1fr) auto}
   .av-bud .row .bar{grid-column:1/-1;grid-row:2}
 }
@@ -123,7 +123,7 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales }:
   const nomCorps = (c: string): string => (c === CORPS_AUTRE ? t.autre : catT(locale, "corps", c));
   const dateCourte = (iso: string): string => {
     const d = new Date(iso);
-    return Number.isNaN(d.getTime()) ? "" : d.toLocaleDateString(locale === "en" ? "en-US" : "fr-FR", { day: "2-digit", month: "short" });
+    return Number.isNaN(d.getTime()) ? "" : d.toLocaleDateString(locale === "en" ? "en-US" : "fr-FR", { day: "2-digit", month: "short", timeZone: "Europe/Paris" });
   };
 
   const [depenses, setDepenses] = useState<Depense[]>(initiales);
@@ -140,7 +140,7 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales }:
 
   async function ajouter(e: React.FormEvent) {
     e.preventDefault();
-    const m = Number(montant.replace(/\s/g, "").replace(",", "."));
+    const m = lireMontant(montant);
     if (!libelle.trim() || !(m > 0)) { setErr(true); return; }
     setBusy(true); setErr(false);
     try {
@@ -245,7 +245,7 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales }:
           <input value={libelle} onChange={(e) => setLibelle(e.target.value)} placeholder={t.libellePh} maxLength={200} aria-invalid={err && !libelle.trim()} />
         </label>
         <label><span>{t.montant}</span>
-          <input value={montant} onChange={(e) => setMontant(e.target.value)} inputMode="decimal" placeholder="0" aria-invalid={err && !(Number(montant.replace(/\s/g, "").replace(",", ".")) > 0)} />
+          <input value={montant} onChange={(e) => setMontant(e.target.value)} inputMode="decimal" placeholder="0" aria-invalid={err && !(lireMontant(montant) > 0)} />
         </label>
         <button type="submit" className="add" disabled={busy}>{busy ? t.enCours : t.valider}</button>
       </form>
