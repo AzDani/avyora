@@ -45,7 +45,7 @@ Règles suivies : un prix nouveau n'est changé que sur une source lue avec un c
 
 | Poste | Raison |
 |---|---|
-| `clo-bandes-a-joints-plaques-neuves` (6,2 €/m²) | **Doublon confirmé** (verif-second) : les prix de marché qui valident cloisons, plafonds et doublages comprennent déjà les bandes (Prix-Pose « rails, montants, fixations et bandes » ; travaux.com « fourniture + pose + joints »). −2 100 € HT sur A. L'autre option (garder les bandes et baisser les plaques) est impossible sans toucher aux prix repris. **Remplacé depuis par la décision D5 de Dani** : les bandes reviennent sur une ligne à part, celle de la rénovation (§ 8). |
+| `clo-bandes-a-joints-plaques-neuves` (6,2 €/m²) | **Doublon confirmé** (verif-second) : les prix de marché qui valident cloisons, plafonds et doublages comprennent déjà les bandes (Prix-Pose « rails, montants, fixations et bandes » ; travaux.com « fourniture + pose + joints »). −2 100 € HT sur A. L'autre option (garder les bandes et baisser les plaques) est impossible sans toucher aux prix repris. **Remplacé depuis par la décision D5 de Dani** : les bandes reviennent sur une ligne à part, celle de la rénovation (§ 10). |
 
 ## 4. Quantités et cochages (dans `calibre.mjs`, reportés au § c / § d de la conception)
 
@@ -149,7 +149,7 @@ Règles suivies : un prix nouveau n'est changé que sur une source lue avec un c
 
 Lit désormais `catalog-neuf.v1.json`. Bugs corrigés : seuil de l'architecte (SH → SP), question lotissement sans effet, peinture du monomur à 0, double compte du sous-sol, forfait « benne × 2 » impossible dans le moteur (2ᵉ poste), toit plat sans dalle. Ajouts : aléas paramétrables (10 % / 7 %), modes « Qui réalise » (tout fait faire, une partie, le maximum restreint, le maximum du moteur actuel), 3 finitions, variantes A-OB et A-SS, effet de chaque correction de prix repris, questions v1 (sismique, borné, pente faible, gouttière, terre végétale, pilotage).
 
-## 8. Après la v1 : bandes de plâtre à part, comme en rénovation (décision D5 de Dani, appliquée le 17/10/2026)
+## 10. Après la v1 : bandes de plâtre à part, comme en rénovation (décision D5 de Dani, appliquée le 17/10/2026)
 
 Dani : « dans la rénovation on a une ligne à part ; fais la même logique que la réno ». Le retrait du § 3 est remplacé : ce n'est pas le poste du brouillon qui revient (`clo-bandes-a-joints-plaques-neuves`, 6,2 €/m²), c'est **le poste de la rénovation, repris par `ref`** : `clo-finitions-platrerie-bandes-enduit`, « Finitions plâtrerie (bandes, enduit) », 15 € HT/m² fourni-posé dont 5 € de fourniture (14,15 € en finition standard). Aucun prix ne change : ni celui de la ligne, ni ceux des plaques.
 
@@ -174,6 +174,8 @@ Dani : « dans la rénovation on a une ligne à part ; fais la même logique que
 Sur A, l'écart se décompose exactement : ligne 4 912,31 € HT + TVA 20 % (982,46 €) + aléas 7 % (343,86 €) + dommages-ouvrage 3,5 % de la ligne (171,93 €, un frais : ni TVA ni aléas) = 6 410,57 €. Sur les 2 647 scénarios de T5, la même maison sans la ligne redonne la référence d'avant D5 au centime : rien d'autre ne bouge que la ligne et ce qui la prend dans sa base (dommages-ouvrage ; maîtrise d'œuvre complète quand elle est cochée ; aléas ; TVA). Sur les 2 647 scénarios, la hausse va de +0,5 % à +3,3 % (médiane +1,0 %).
 
 **À savoir** : verif-second jugeait que les prix de marché des plaques comprennent déjà les bandes (§ 3). Dani a choisi la convention de la rénovation pour les deux natures : les prix des plaques (partagés, inchangés) s'entendent hors bandes, le doublage collé aussi. Si les devis demandés en D5 (a) montrent que les plaques les comprennent, la correction (baisser les plaques ou retirer la ligne) vaudra d'un coup pour la rénovation et le neuf.
+
+**Limite connue** : l'isolation des combles aménagés (rampants, poste partagé `iso-isolation-des-combles-amenages-rampants`) n'entre pas dans la quantité de la ligne, comme en rénovation (`derivedFinitions` ne la compte pas non plus). La note du lot Cloisons / Plâtrerie (« Bandes et enduit de toutes les plaques ») est donc un peu trop large pour une maison à combles aménagés. L'ajouter au neuf seul ferait à nouveau diverger les deux natures ; l'ajouter aux deux changerait des prix de la rénovation : à décider à part.
 
 **Projets enregistrés** : la sélection d'un projet neuf enregistré avant D5 n'a pas la ligne. Son total ne bouge pas (liste, fiche, PDF, détaillé rouvert) et la ligne y apparaît décochée, à cocher à la main. Tout nouveau chiffrage l'a : rapide, détaillé, « Affiner », rapide rouvert puis réenregistré.
 
