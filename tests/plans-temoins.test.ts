@@ -242,7 +242,9 @@ describe("Témoins · interrupteur plans éteint", () => {
           const h = await r.rendre(await Fiche({ params: Promise.resolve({ id: PROJETS[cle].id }) }));
           expect(h).toContain(PROJETS[cle].nom);
           expect(h).toMatchSnapshot(`fiche ${locale} ${user} ${cle}`);
-          expect(APPELS).toEqual([]);
+          /* Interrupteur plans éteint : aucune table des plans lue. Seule lecture admise : les dépenses
+             réelles (M5) d'une estimation détaillée, pour un compte Pro. */
+          expect(APPELS.filter((t) => t !== "expenses")).toEqual([]);
         }
       }
     }

@@ -18,6 +18,8 @@ import { totauxAvecPerso, persoValidees, lotsAvecPerso } from "@/lib/estimateur/
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 import { normaliserCles } from "@/lib/estimateur/identite";
 import { euros, nombre, pourcent } from "@/lib/i18n/nombres";
+import BudgetReel from "@/components/BudgetReel";
+import type { Depense } from "@/lib/estimateur/budget-reel";
 
 // Traductions de l'interface (chrome/UI uniquement) — les données (corps d'état, postes) restent telles quelles.
 const TR = {
@@ -307,7 +309,7 @@ const NEUF_CSS = `
 }
 `;
 
-export default function EstimationResultat({ reponses, projectId, readOnly }: { reponses: { ctx?: Ctx; sel?: Selection; statuts?: Record<string, number>; codePostal?: string; custom?: unknown }; projectId?: string; readOnly?: boolean }) {
+export default function EstimationResultat({ reponses, projectId, readOnly, depenses }: { reponses: { ctx?: Ctx; sel?: Selection; statuts?: Record<string, number>; codePostal?: string; custom?: unknown }; projectId?: string; readOnly?: boolean; /** Dépenses réelles (M5) : la fiche du propriétaire les passe, l'admin et la lecture seule non. */ depenses?: Depense[] }) {
   const locale = useLocale();
   const s = TR[locale];
   const rapide = useT().rapide; // zones et niveaux de finition : les libellés des deux rapides
@@ -321,6 +323,8 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
   const n = dictNeufCommun(locale);
   const taches = useMemo(() => (neuf ? tachesParCle(ctx) : null), [neuf, ctx]);
   const [statuts, setStatuts] = useState<Record<string, number>>(reponses?.statuts || {});
+  // Dépenses réelles (M5) : les statuts À JOUR du suivi (un lot terminé fixe sa prévision sur le réel).
+  const repBudget = useMemo(() => ({ ...reponses, statuts }), [reponses, statuts]);
   const [closedPh, setClosedPh] = useState<Record<string, boolean>>({}); // phases repliées (Suivi / Détail)
   const togglePh = useCallback((ph: string) => setClosedPh((p) => ({ ...p, [ph]: !p[ph] })), []);
   const dv = useMemo(() => (ctx ? buildDevis(catalogueDe(ctx), ctx, sel) : null), [ctx, sel]);
@@ -565,6 +569,9 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
           </div>
         </div>
       </div>
+
+      {/* Dépenses réelles (M5) : prévu / réel par corps d'état, alertes, prévision finale */}
+      {projectId && depenses && !readOnly && <BudgetReel reponses={repBudget} projectId={projectId} depenses={depenses} />}
 
       {/* Détail par lot + suivi de chantier (statuts sauvegardés quand projet enregistré) */}
       <div className="card">

@@ -16,6 +16,7 @@ import { dict } from "@/lib/i18n/dictionaries";
 import { FEATURES } from "@/lib/features";
 import { planDuProjet, type LienPlan } from "@/lib/plans/data";
 import PlanRelie from "@/components/plans/PlanRelie";
+import { listDepenses } from "@/lib/data/depenses";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +51,8 @@ export default async function ProjetPage({ params }: { params: Promise<{ id: str
   const lien = await lienPlan(String(projet.id));
   // La zone que le moteur applique à la main-d'œuvre (`regionCoef`), traduite comme dans l'estimateur.
   const zone = regionLabel(projet.code_postal);
+  // Dépenses réelles (M5) : sur l'estimation détaillée, pour un compte Pro (pendant la bêta, tout compte confirmé).
+  const depenses = !isRapide && estPro(user) ? await listDepenses(String(projet.id)) : undefined;
 
   return (
     <div className="space-y-6">
@@ -89,7 +92,7 @@ export default async function ProjetPage({ params }: { params: Promise<{ id: str
         ? (neuf
           ? <ResultatRapideNeuf reponses={reponses} projectId={projet.id} isPro={estPro(user)} />
           : <ResultatRapide reponses={reponses} projectId={projet.id} isPro={estPro(user)} />)
-        : <EstimationResultat reponses={reponses} projectId={projet.id} />}
+        : <EstimationResultat reponses={reponses} projectId={projet.id} depenses={depenses} />}
     </div>
   );
 }
