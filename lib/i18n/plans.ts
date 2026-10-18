@@ -393,7 +393,7 @@ const en: DictPlans = {
       },
       {
         q: "Is this plan enough for a building permit?",
-        r: "No. It is a plan to design your house and price it. A French building permit requires standardised drawings (location plan, site plan, section, elevations), and an individual building for themselves must hire an architect as soon as the floor area (surface de plancher) or the building footprint (emprise au sol) exceeds 150 m².",
+        r: "No. It is a plan to design your house and price it. A French building permit requires standardized drawings (location plan, site plan, section, elevations), and an individual building for themselves must hire an architect as soon as the floor area (surface de plancher) or the building footprint (emprise au sol) exceeds 150 m².",
       },
     ],
     basTitre: "Draw your house, for free.",
@@ -485,7 +485,7 @@ const en: DictPlans = {
     fenetres: "Windows",
     types: { Maison: "House", Studio: "Studio", T2: "2-room apartment", T3: "3-room apartment", T4: "4-room apartment" } as Record<string, string>,
     codePostal: "Property ZIP code (France)",
-    codePostalAide: "It sets labour costs for your region.",
+    codePostalAide: "It sets labor costs for your region.",
     envoi: "Preparing your estimate…",
     ouvrirPlan: "Open the plan",
     erreurs: {

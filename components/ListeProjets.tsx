@@ -4,7 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/components/i18n/LangProvider";
-import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
+import { dictNeufCommun, libelleTypeBien } from "@/lib/i18n/neuf-commun";
+import PastillesProjet from "@/components/PastillesProjet";
+import { euros as eurosLocale, nombre, pourcent } from "@/lib/i18n/nombres";
+import type { Locale } from "@/lib/i18n/config";
 import { clicPlan } from "@/lib/plans/mesure";
 
 const TR = {
@@ -16,6 +19,7 @@ const TR = {
     chantierTermine: "Chantier terminé",
     chantierEnCours: "Chantier en cours",
     estimationTravaux: "Estimation travaux",
+    ttc: "TTC",
     mesProjets: "Mes projets",
     desarchiver: "Désarchiver",
     archiver: "Archiver",
@@ -38,6 +42,7 @@ const TR = {
     chantierTermine: "Project done",
     chantierEnCours: "Project in progress",
     estimationTravaux: "Work estimate",
+    ttc: "incl. tax",
     mesProjets: "My projects",
     desarchiver: "Unarchive",
     archiver: "Archive",
@@ -71,6 +76,8 @@ export type ProjetCarte = {
   progPct: number;
   /** Rénovation ou construction neuve (`natureProjet`). Absent : rénovation. */
   nature?: "reno" | "neuf";
+  /** Estimation rapide ou détaillée (`modeProjet`). Absent : détaillée, comme la fiche. */
+  mode?: "rapide" | "detaille";
   /** « Mes plans » (C8) : le plan dont l'estimation est née. Absent : aucun lien (ou interrupteur éteint). */
   plan?: { id: string; nom: string };
 };
@@ -85,7 +92,9 @@ export type PlansListe = {
   textes: { pastille: string; bande: string; bandeSous: string; dessiner: string };
 };
 
-function euros(n: number): string {
+/** Français : le format monétaire d'avant, au caractère près. Anglais : « 92,000 € », comme le rapide (N14). */
+function euros(n: number, locale: Locale): string {
+  if (locale === "en") return eurosLocale(locale, n);
   return new Intl.NumberFormat("fr-FR", {
     style: "currency",
     currency: "EUR",
@@ -214,10 +223,11 @@ export default function ListeProjets({
           <div className="min-w-0 flex-1">
             <h3 className="truncate font-semibold text-ink">{p.nom}</h3>
             <div className="mt-2 flex flex-wrap gap-1.5">
-              {p.nature !== "neuf" && <span className="chip capitalize">{p.type_bien}</span>}
+              {/* La nature et le mode d'abord, comme sur la fiche (N14). */}
+              <PastillesProjet nature={p.nature === "neuf" ? "neuf" : "reno"} mode={p.mode ?? "detaille"} locale={locale} />
+              {p.nature !== "neuf" && <span className="chip capitalize">{libelleTypeBien(locale, p.type_bien)}</span>}
               <span className="chip num">{p.surface} m²</span>
               <span className="chip num">{p.code_postal}</span>
-              {p.nature === "neuf" && <span className="chip">{n.badge}</span>}
               {/* Une pastille, jamais un lien : la carte entière est déjà un lien (aucun <a> dans un <a>). */}
               {p.plan && plans && (
                 <span className="chip border-brand-200 bg-brand-50 text-brand-700" title={p.plan.nom} data-depuis-plan="">
@@ -241,7 +251,7 @@ export default function ListeProjets({
           <div className="mt-3.5">
             <div className="mb-1.5 flex items-center justify-between text-[10.5px] text-faint">
               <span>{p.statut === "termine" ? s.chantierTermine : s.chantierEnCours}</span>
-              <b className="data font-semibold text-muted">{p.donePct} %</b>
+              <b className="data font-semibold text-muted">{pourcent(locale, p.donePct, 0)}</b>
             </div>
             <div className="flex h-1.5 overflow-hidden rounded-full bg-line">
               <span className="bg-positive" style={{ width: p.donePct + "%" }} />
@@ -256,11 +266,11 @@ export default function ListeProjets({
           <div className="min-w-0">
             <p className="eyebrow">{p.nature === "neuf" ? n.eyebrowListe : s.estimationTravaux}</p>
             <p className="data mt-1 text-[17px] font-semibold text-ink">
-              {euros(p.ttc)} <span className="text-faint text-sm font-normal">TTC</span>
+              {euros(p.ttc, locale)} <span className="text-faint text-sm font-normal">{s.ttc}</span>
             </p>
             {p.surface > 0 && (
               <p className="mt-0.5 text-[11.5px] text-muted">
-                ≈ <b className="data font-semibold text-ink">{Math.round(p.eurM2).toLocaleString("fr-FR")}</b> €/m²
+                ≈ <b className="data font-semibold text-ink">{nombre(locale, p.eurM2)}</b> €/m²
               </p>
             )}
           </div>

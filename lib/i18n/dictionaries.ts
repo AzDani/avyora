@@ -480,16 +480,16 @@ const en: Dict = {
     hintApres: " — you can switch to detailed anytime, your answers are kept.",
   },
   upsell: {
-    eyebrow: "AVYORA Pro · Renovation manager",
+    eyebrow: "AVYORA Pro · Project manager",
     titrePre: "Switch to ",
-    titreFort: "renovation manager mode.",
+    titreFort: "project manager mode.",
     txtA: "Where others stop at the price, ",
     txtF1: "AVYORA Pro manages your whole project",
     txtM: ": estimate to the line, choose your materials, track progress and steer your budget — ",
     txtF2: "from the first quote to the finished site",
     txtEnd: ".",
     steps: ["Estimate", "Choose", "Track", "Steer"],
-    f1: "Detailed quote, 200 line items",
+    f1: "Itemized estimate, 200 line items",
     f2: "PDF report to compare with contractors",
     f3: "Materials notebook (your product links)",
     f4: "Unlimited project tracking",
@@ -511,7 +511,7 @@ const en: Dict = {
     dejaProLien: "open the detailed estimator",
     apercuLegende: "Example of a detailed report — 145 m² house in Bordeaux.",
     apercuAlt: "Example of a detailed AVYORA estimate report",
-    aboAnnule: "Payment cancelled — nothing was charged. You can pick up where you left off.",
+    aboAnnule: "Payment canceled — nothing was charged. You can pick up where you left off.",
     inclus: "Included in Pro",
     features: [
       "Detailed estimator — all 200 items, line by line",
@@ -617,9 +617,9 @@ const en: Dict = {
       lourdeAppart: { label: "Total reno", desc: "Stripped back: gut + reconfigure, all new." },
     },
     finitions: {
-      eco: { eye: "Rental · budget-conscious", label: "Economy", desc: "Sturdy entry level: laminate floor, standard tile, flat-pack kitchen, basic fixtures." },
+      eco: { eye: "Rental · budget-conscious", label: "Economy", desc: "Sturdy entry level: laminate floor, standard tile, ready-to-assemble kitchen, basic fixtures." },
       standard: { eye: "Most common", label: "Standard", desc: "Great value: mid-range brands, clean finishes. Ideal for a primary home." },
-      premium: { eye: "High-end", label: "Premium", desc: "Fine materials: hardwood, large-format tile, high-end fitted kitchen, careful workmanship." },
+      premium: { eye: "High-end", label: "Premium", desc: "Fine materials: hardwood, large-format tile, high-end custom kitchen, careful workmanship." },
     },
     quis: {
       pros: { eye: "Turnkey", label: "All by pros", desc: "Contractors do everything: quotes, warranties, zero effort on your side." },
@@ -780,7 +780,7 @@ const en: Dict = {
       bien: "Property",
     },
     panneau: {
-      badge: "Renovation manager · France",
+      badge: "Project manager · France",
       titreA: "From idea to",
       titreB: "finished project.",
       parcours: [

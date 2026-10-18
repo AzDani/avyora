@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getInscrit, labelTues, labelObjectif, labelMaturite } from "@/lib/data/admin";
+import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 
 export const dynamic = "force-dynamic";
 
@@ -8,6 +9,8 @@ const euros = (n: number) => new Intl.NumberFormat("fr-FR", { style: "currency",
 const fdate = (s: string) => new Date(s).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
 const STATUT_LABEL: Record<string, string> = { estimation: "Estimé", en_cours: "En cours", termine: "Terminé" };
 const STATUT_DOT: Record<string, string> = { estimation: "#4f46e5", en_cours: "#e0a325", termine: "#0f9d6b" };
+/** Nature et mode des projets (N14), avec les libellés des pastilles de la fiche. L'admin est en français. */
+const NC = dictNeufCommun("fr");
 
 function KV({ lab, val }: { lab: string; val: string }) {
   return (
@@ -76,8 +79,8 @@ export default async function FicheInscrit({ params }: { params: Promise<{ id: s
               >
                 <div>
                   <div className="font-semibold text-ink">{pr.nom}</div>
-                  <div className="mt-0.5 text-[12.5px] text-muted capitalize">
-                    {pr.typeBien} · <span className="num">{pr.surface} m²</span> · <span className="num">{pr.codePostal}</span>
+                  <div className="mt-0.5 text-[12.5px] text-muted">
+                    {pr.nature === "neuf" ? NC.badge : NC.badgeReno} · {pr.mode === "rapide" ? NC.modeRapide : NC.modeDetaille} · <span className="capitalize">{pr.typeBien}</span> · <span className="num">{pr.surface} m²</span> · <span className="num">{pr.codePostal}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">

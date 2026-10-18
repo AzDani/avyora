@@ -19,6 +19,7 @@ import { key, isAuto, autoQty, lineHT, effPrices, puReel, peutFaireSoiMeme, hors
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 import { dictDetail } from "@/lib/i18n/detail";
 import { BoutonInfo, ChoicePrice, TexteInfo, fmt, isUrl } from "./partage";
+import { nombre } from "@/lib/i18n/nombres";
 
 export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onMat, onVit, onMot, onTai, onVar, onNote, onPu, onPm, badge, proRaison, choix }: {
   l: Lot; t: Tache; ctx: Ctx; sel: Selection; loc: boolean;
@@ -95,7 +96,7 @@ export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onM
             />
           ) : (
             <>
-              <span className="puval" title={L.prixDblClic} onDoubleClick={() => setPuEdit(true)}>{fmt(puv) + uSuffix}</span>
+              <span className="puval" title={L.prixDblClic} onDoubleClick={() => setPuEdit(true)}>{fmt(puv, locale) + uSuffix}</span>
               {puEdited && <span className="pubadge">{L.perso}</span>}
               {puEdited && <button type="button" className="pureset" title={L.prixReset} onClick={() => onPu(null)}>↺</button>}
             </>
@@ -109,7 +110,7 @@ export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onM
             <>
               {s.manual
                 ? <NumStepper compact value={s.qty != null ? s.qty : autoVal} min={0} onChange={onQty} />
-                : <span className="qauto num" title={L.autoTitre}>{autoVal}</span>}
+                : <span className="qauto num" title={L.autoTitre}>{nombre(locale, autoVal, 2)}</span>}
               <span className="unit">{catT(locale, "unites", t.u)}</span>
               <span className="swiwrap">
                 <button className={"swi" + (!s.manual ? " on" : "")} onClick={onAuto} title={L.autoBouton}><span className="knob" /></button>
@@ -138,7 +139,7 @@ export function Row({ l, t, ctx, sel, loc, onCheck, onChoice, onAuto, onQty, onM
           )}
           {s.note && !noteOpen && isUrl(s.note) && <a className="notechip" href={s.note} target="_blank" rel="noopener noreferrer" title={s.note}>🔗</a>}
           <button type="button" className={"notebtn" + (s.note ? " has" : "")} onClick={() => setNoteOpen((o) => !o)} title={s.note ? L.noteVoir : L.noteAjouter}>📝</button>
-          {!jalon && <span className="lineamt num">{fmt(lineHT(ctx, sel, l, t))}</span>}
+          {!jalon && <span className="lineamt num">{fmt(lineHT(ctx, sel, l, t), locale)}</span>}
         </span>
       ) : (
         <span className="tctl"><span className="unit">{t.u === "forfait" ? catT(locale, "unites", "forfait") : loc ? L.parJour : catT(locale, "unites", t.u)}</span></span>

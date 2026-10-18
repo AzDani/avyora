@@ -491,7 +491,7 @@ export default function EstimateurRapideNeuf({
                   <span className="d">{qi.desc}</span>
                   <span className="amt">
                     <span className="p">≈ <b>{price.toLocaleString(nf)} €</b> / m²</span>
-                    {pct > 0 && <span className="save">−{pct} %</span>}
+                    {pct > 0 && <span className="save">−{pct}{locale === "en" ? "%" : " %"}</span>}
                   </span>
                 </button>
               );

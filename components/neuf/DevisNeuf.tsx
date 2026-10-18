@@ -43,11 +43,11 @@ export default function DevisNeuf({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Se
       ...(b.frais > 0 ? [{ k: n.fraisHorsTva, v: b.frais }] : []),
       { k: d.aleas(ctx.aleas), v: t.aleas }, { k: d.budgetMax, v: ctx.budget },
     ],
-    apresPilules: <p className="split-n">{n.dontConstr} <b>{fmt(cut.constr)}</b> · {n.annexes} <b>{fmt(cut.annexes)}</b></p>,
+    apresPilules: <p className="split-n">{n.dontConstr} <b>{fmt(cut.constr, locale)}</b> · {n.annexes} <b>{fmt(cut.annexes, locale)}</b></p>,
     hint: d.heroHint,
     bilan: {
       titre: d.bilanT, sous: d.bilanSous,
-      paye: d.paye, payeV: b.paye, payeSous: d.dontMat(fmt(b.matA), fmt(b.moA)),
+      paye: d.paye, payeV: b.paye, payeSous: d.dontMat(fmt(b.matA, locale), fmt(b.moA, locale)),
       achat: d.achat, achatV: b.achat, eco: d.eco, ecoV: b.eco,
     },
     repartition: {
@@ -78,7 +78,7 @@ export default function DevisNeuf({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Se
           cle: li.cle, nom: catLigne(locale, li.nom, li.cle), q: jalon ? "—" : q,
           mode: jalon ? "dem" : li.mode === "location" ? "mL" : li.mode === "je-fais" ? "mS" : "mA",
           modeTxt: jalon ? n.demarche : li.mode === "location" ? d.modeLocation : li.mode === "je-fais" ? d.modeJeFais : d.modeFaitFaire,
-          m: jalon ? "" : fmt(li.ttc),
+          m: jalon ? "" : fmt(li.ttc, locale),
         };
       }),
     },

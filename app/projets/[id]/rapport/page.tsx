@@ -4,9 +4,13 @@ import { getUser, estPro } from "@/lib/auth";
 import { RapportPDF } from "@/components/RapportPDF";
 import { PrintBar } from "@/components/PrintBar";
 import type { Ctx, Selection, CustomLine } from "@/lib/estimateur";
+import { getLocale } from "@/lib/i18n/server";
+import { dictRapport } from "@/lib/i18n/rapport";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Rapport d'estimation", robots: { index: false, follow: false } };
+export async function generateMetadata() {
+  return { title: dictRapport(await getLocale()).pageTitre, robots: { index: false, follow: false } };
+}
 
 // Rapport imprimable (print-to-PDF) — réservé aux abonnés Pro, propriétaire du projet.
 export default async function RapportPage({ params }: { params: Promise<{ id: string }> }) {

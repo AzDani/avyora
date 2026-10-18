@@ -104,6 +104,12 @@ export function natureProjet(reponses: unknown): "reno" | "neuf" {
   return estNeuf((reponses as Rep | null)?.ctx) ? "neuf" : "reno";
 }
 
+/** Mode d'un projet enregistré : « rapide » seulement s'il est écrit tel quel, sinon détaillé (sans
+ *  `mode`, la fiche affiche déjà le résultat détaillé). Pastilles de la fiche, de la liste et de l'admin (N14). */
+export function modeProjet(reponses: unknown): "rapide" | "detaille" {
+  return (reponses as { mode?: unknown } | null)?.mode === "rapide" ? "rapide" : "detaille";
+}
+
 /** Phases d'affichage. Rénovation : exactement `PHASES` (même référence, même ordre). */
 export function phasesDe(ctx?: Pick<Ctx, "nature"> | null): readonly string[] {
   return estNeuf(ctx) ? PHASES_NEUF : PHASES;

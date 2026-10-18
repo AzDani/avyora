@@ -8,6 +8,12 @@ import type { Locale } from "./config";
  */
 const fr = {
   badge: "Construction neuve",
+  /* Pastilles de la fiche, de la liste des projets et de l'admin (N14) : la nature du projet (`badge`
+     pour le neuf) et son mode, et le type de bien enregistré (écrit en français dans la base). */
+  badgeReno: "Rénovation",
+  modeRapide: "Rapide",
+  modeDetaille: "Détaillée",
+  typesBien: { maison: "Maison", appartement: "Appartement", immeuble: "Immeuble", "maison neuve": "Maison neuve" } as Record<string, string>,
   projetNom: "Construction neuve",
   demarche: "Démarche",
   sansTva: "sans TVA",
@@ -53,6 +59,10 @@ const fr = {
 
 const en: typeof fr = {
   badge: "New build",
+  badgeReno: "Renovation",
+  modeRapide: "Quick",
+  modeDetaille: "Detailed",
+  typesBien: { maison: "House", appartement: "Apartment", immeuble: "Building", "maison neuve": "New house" } as Record<string, string>,
   projetNom: "New build",
   demarche: "Admin step",
   sansTva: "no VAT",
@@ -94,4 +104,11 @@ const DICTS: Record<Locale, DictNeufCommun> = { fr, en };
 
 export function dictNeufCommun(locale: Locale): DictNeufCommun {
   return DICTS[locale] ?? fr;
+}
+
+/** Le type de bien d'un projet (`type_bien`, écrit en français et en minuscules ou non selon l'écran
+ *  qui l'a enregistré : « Maison », « appartement »…), dit dans la langue de la page. Inconnu : tel quel. */
+export function libelleTypeBien(locale: Locale, typeBien: string | null | undefined): string {
+  const v = (typeBien ?? "").trim();
+  return dictNeufCommun(locale).typesBien[v.toLowerCase()] ?? v;
 }

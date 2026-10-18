@@ -34,7 +34,7 @@ import {
 import { INFO_PHASES } from "@/lib/estimateur/etapes-neuf";
 import { badgeNeuf, lignesPersoDuLot } from "@/lib/estimateur/detaille-neuf";
 import {
-  GRANDES_PHASES_NEUF, POSTES_FRAIS_NEUF, CARTE_FRAIS, CARTE_DEMARCHES, elementsLotNeuf, lotsAffichesNeuf, notesDuLotNeuf, postesDesElements, postesCochesNeuf,
+  GRANDES_PHASES_NEUF, POSTES_FRAIS_NEUF, sousTitreEtapeNeuf, CARTE_FRAIS, CARTE_DEMARCHES, elementsLotNeuf, lotsAffichesNeuf, notesDuLotNeuf, postesDesElements, postesCochesNeuf,
   alternativeMontreeNeuf, raisonIndisponibleNeuf, type PosteListeNeuf, type LigneChoixNeuf,
 } from "@/lib/estimateur/liste-neuf";
 
@@ -122,10 +122,10 @@ export function ListeNeuf(props: PropsCommunes & { custom: CustomLine[]; outils:
     return (
       <BlocLot key={c} ouvert={ouvert} notes={traduire(notes.entete)} labelInfo={dl.liste.infoNote} entete={{
         icone: ICON[c] || "•", nom: catT(locale, "corps", c), cnt, ouvert, onBascule: () => onBascule(c),
-        montant: cnt > 0 ? fmt(amt) + " " + dl.liste.ht : "",
+        montant: cnt > 0 ? fmt(amt, locale) + " " + dl.liste.ht : "",
       }}>
         {elements.map((e) => {
-          if (e.type === "etape") return <SousEtape key={"e-" + e.phase} notes={traduire(notes.etapes[e.phase] ?? [])} labelInfo={dl.liste.infoNote}>{catT(locale, "phases", e.phase)}</SousEtape>;
+          if (e.type === "etape") return <SousEtape key={"e-" + e.phase} notes={traduire(notes.etapes[e.phase] ?? [])} labelInfo={dl.liste.infoNote}>{sousTitreEtapeNeuf(e.phase)?.[locale] ?? catT(locale, "phases", e.phase)}</SousEtape>;
           if (e.type === "note") return null;           // en infobulle (N11) : sous-titre d'étape ou « À savoir » du lot
           if (e.type === "choix") return ligneChoix(e.ligne, e.membres, e.boutons);
           return seulementCoches && !coche(e.p) ? null : rangee(e.p);
@@ -181,7 +181,7 @@ export function CarteFraisNeuf(props: PropsCommunes) {
     <div className="frais-c">
       <BlocLot ouvert={ouvert} entete={{
         icone: "🧾", nom: <>{d.fraisT} <span className="acc-sous">· {d.fraisSous}</span></>, cnt: 0, ouvert, onBascule: () => onBascule(CARTE_FRAIS),
-        montant: amt > 0 ? fmt(amt) : "",
+        montant: amt > 0 ? fmt(amt, locale) : "",
       }}>
         <div className="lotnote">{d.fraisNote}</div>
         {(seulementCoches ? cochees : postes).map((p) => rangee(p))}

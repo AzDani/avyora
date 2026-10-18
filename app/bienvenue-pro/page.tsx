@@ -44,7 +44,7 @@ const TR = {
   },
   en: {
     feats: [
-      "Detailed quote, 200 line items",
+      "Itemized estimate, 200 line items",
       "PDF report to compare",
       "Materials list & links",
       "Unlimited project tracking",
@@ -53,8 +53,8 @@ const TR = {
     ],
     badge: "Welcome to AVYORA Pro",
     title: "Congratulations, you're Pro! 🎉",
-    subPre: "Your subscription is active. The whole ",
-    subStrong: "renovation manager",
+    subPre: "Your subscription is active. Your whole ",
+    subStrong: "project toolkit",
     subPost: " is unlocked.",
     unlockTitle: "What you unlock",
     ctaPrimary: "Start my detailed estimate →",

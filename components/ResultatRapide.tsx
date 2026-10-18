@@ -66,8 +66,12 @@ const CSS = `
 `;
 
 export default async function ResultatRapide({
-  reponses, projectId, isPro,
-}: { reponses: Reponses; projectId: string; isPro: boolean }) {
+  reponses, projectId, isPro, readOnly,
+}: {
+  reponses: Reponses; projectId: string; isPro: boolean;
+  /** Vue admin en lecture seule (N14) : sans les boutons « Affiner » et « Refaire », qui mènent aux écrans du particulier. */
+  readOnly?: boolean;
+}) {
   const locale = await getLocale();
   const t = dict(locale).rapide;
   const ctx = (reponses.ctx ?? {}) as Ctx;
@@ -116,7 +120,7 @@ export default async function ResultatRapide({
         lockH: "The line-by-line detail is Pro", lockP: "See where every euro goes, adjust each item, choose DIY / hire out, and export a PDF report to compare with contractors.",
         affiner: "Refine in detail →", passPro: "Go Pro for the detail →", refaire: "New estimate",
         margeInfo: `Indicative estimate from the AVYORA price reference (France 2026), adjusted to your ZIP code — a ballpark (±15% margin) to confirm with contractor quotes. The precise, line-by-line breakdown comes with the detailed estimate.`,
-        sub: "An instant range from your answers. Refine line by line for a precise quote.",
+        sub: "An instant range from your answers. Refine line by line for a precise, itemized estimate.",
         others: "+ other trades", labor: "% labor" }
     : { resume: "Ton estimation en résumé", where: "Où va le budget", budget: "Budget estimé · TTC",
         typeBien: "Type de bien", loc: "Localisation", ampleurK: "Ampleur des travaux", finitionK: "Niveau de finition", quiK: "Qui réalise les travaux",
@@ -184,11 +188,13 @@ export default async function ResultatRapide({
         </div>
       )}
 
-      <div className="actions">
-        <Link href={ctaHref} className="btn btn-primary py-2.5">{ctaLabel}</Link>
-        {/* La nature est connue : on saute la pré-page « Quel est ton projet ? » (N2). */}
-        <Link href="/projets/nouveau?nature=reno" className="btn btn-outline py-2.5">{L.refaire}</Link>
-      </div>
+      {!readOnly && (
+        <div className="actions">
+          <Link href={ctaHref} className="btn btn-primary py-2.5">{ctaLabel}</Link>
+          {/* La nature est connue : on saute la pré-page « Quel est ton projet ? » (N2). */}
+          <Link href="/projets/nouveau?nature=reno" className="btn btn-outline py-2.5">{L.refaire}</Link>
+        </div>
+      )}
 
       <p className="note">{L.margeInfo}</p>
     </div>

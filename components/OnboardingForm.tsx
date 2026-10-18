@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { enregistrerProfil, sauterOnboarding, type ProfilData } from "@/lib/actions/profil";
+import { FEATURES } from "@/lib/features";
 
 // Régions françaises : noms propres conservés tels quels (identiques FR/EN) et utilisés
 // aussi comme valeur enregistrée. On ne traduit que le libellé de la question « Ta région ».
@@ -11,7 +12,9 @@ const REGIONS = ["Île-de-France", "Auvergne-Rhône-Alpes", "Nouvelle-Aquitaine"
 
 // Traductions co-localisées. IMPORTANT : les `v` (valeurs enregistrées dans le profil) ne changent
 // jamais ; seuls les `l` (libellés affichés) sont traduits. Pour l'âge et le canal, la valeur
-// enregistrée reste la chaîne française (v), affichée via son libellé traduit.
+// enregistrée reste la chaîne française (v), affichée via son libellé traduit. « Où en es-tu ? » a
+// aussi les étapes d'une construction neuve (`neuf`, N14 : terrain, permis), affichées tant que
+// l'interrupteur `FEATURES.neuf` est allumé ; leurs libellés admin sont dans `lib/data/admin.ts`.
 const TR = {
   fr: {
     tues: [
@@ -28,6 +31,9 @@ const TR = {
     maturite: [
       { v: "renseigne", l: "Je me renseigne" },
       { v: "bien_en_vue", l: "J'ai un bien en vue" },
+      { v: "terrain_en_vue", l: "J'ai un terrain en vue", neuf: true },
+      { v: "terrain", l: "J'ai mon terrain", neuf: true },
+      { v: "permis", l: "Permis déposé ou obtenu", neuf: true },
       { v: "proprietaire", l: "Déjà propriétaire" },
       { v: "travaux", l: "Travaux en cours" },
     ],
@@ -77,8 +83,11 @@ const TR = {
     maturite: [
       { v: "renseigne", l: "Just researching" },
       { v: "bien_en_vue", l: "I have a property in mind" },
+      { v: "terrain_en_vue", l: "I have a plot in mind", neuf: true },
+      { v: "terrain", l: "I own my plot", neuf: true },
+      { v: "permis", l: "Permit filed or granted", neuf: true },
       { v: "proprietaire", l: "Already an owner" },
-      { v: "travaux", l: "Renovation underway" },
+      { v: "travaux", l: "Work underway" },
     ],
     ages: [
       { v: "–30 ans", l: "Under 30" },
@@ -206,7 +215,7 @@ export default function OnboardingForm({ initial, contexte = "onboarding" }: { i
 
       <div className="q"><div className="lab">{s.qTuEs} <span className="multi">{s.multi}</span></div><Multi opts={s.tues} sel={tuEs} set={wrap(setTuEs)} /></div>
       <div className="q"><div className="lab">{s.qObjectif}</div><Single opts={s.objectif.map((o) => o.l)} sel={s.objectif.find((o) => o.v === objectif)?.l ?? ""} set={(l) => wrap(setObjectif)(s.objectif.find((o) => o.l === l)?.v ?? "")} /></div>
-      <div className="q"><div className="lab">{s.qMaturite} <span className="multi">{s.multi}</span></div><Multi opts={s.maturite} sel={maturite} set={wrap(setMaturite)} /></div>
+      <div className="q"><div className="lab">{s.qMaturite} <span className="multi">{s.multi}</span></div><Multi opts={s.maturite.filter((o) => FEATURES.neuf || !("neuf" in o) || maturite.includes(o.v))} sel={maturite} set={wrap(setMaturite)} /></div>
       <div className="q"><div className="lab">{s.qRegion}</div><Single opts={REGIONS} sel={region} set={wrap(setRegion)} /></div>
       <div className="q"><div className="lab">{s.qAge}</div><Single opts={s.ages.map((o) => o.l)} sel={s.ages.find((o) => o.v === age)?.l ?? ""} set={(l) => wrap(setAge)(s.ages.find((o) => o.l === l)?.v ?? "")} /></div>
       <div className="q"><div className="lab">{s.qCanal}</div><Single opts={s.canaux.map((o) => o.l)} sel={s.canaux.find((o) => o.v === canal)?.l ?? ""} set={(l) => wrap(setCanal)(s.canaux.find((o) => o.l === l)?.v ?? "")} /></div>

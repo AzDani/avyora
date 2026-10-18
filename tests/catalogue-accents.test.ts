@@ -181,12 +181,13 @@ describe("Accents · rendu français des écrans qui affichent les corps d'état
     });
   }
 
-  it("rapport PDF en anglais : le lot d'une ligne perso reste la clé, comme avant (section titrée en français)", async () => {
+  it("rapport PDF en anglais : le lot d'une ligne perso est traduit, comme le reste du rapport (N14)", async () => {
     LOCALE.v = "en";
     const { RapportPDF } = await import("@/components/RapportPDF");
     const el = await RapportPDF({ reponses: reponses(reno, PERSO) as never, nom: "Project", refCode: "AVY-TEST" });
     const t = lu(renderToStaticMarkup(el!));
-    expect(t).toMatch(/× 100 € · Etudes \/ Conception/);
+    expect(t).toMatch(/× 100 € · Studies \/ Design/);
+    expect(t).not.toContain("Etudes / Conception");
     expect(t).not.toContain("Électricité");
   });
 

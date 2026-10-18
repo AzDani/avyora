@@ -65,7 +65,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
   const [codePostal, setCodePostal] = useState(depart.codePostal);
   const [view, setView] = useState<"saisie" | "devis">("saisie");
   const [custom, setCustom] = useState<CustomLine[]>(depart.custom);
-  // TVA par défaut selon le régime du projet (`tauxPerso`) : 20 % en « Neuf / −2 ans / local pro », 10 % sinon.
+  // TVA par défaut selon le régime du projet (`tauxPerso`) : 20 % en « Moins de 2 ans ou local pro », 10 % sinon.
   const addCustom = (lot: string) => setCustom((p) => [...p, { id: (crypto.randomUUID?.() ?? String(Date.now() + Math.random())), lot, nom: "", prix: 0, unite: "u", qte: 1, note: "", tva: tauxPerso(ctx), on: true, draft: true }]);
   const updCustom = (id: string, patch: Partial<CustomLine>) => setCustom((p) => p.map((x) => (x.id === id ? { ...x, ...patch } : x)));
   const delCustom = (id: string) => setCustom((p) => p.filter((x) => x.id !== id));
@@ -208,7 +208,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
     return (
       <BlocLot key={l.c} ouvert={isOpen} entete={{
         icone: ICON[l.c] || "•", nom: catT(locale, "corps", l.c), cnt, ouvert: isOpen,
-        montant: cnt > 0 ? fmt(lotHT(ctx, sel, l) + customLotHT(custom, l.c)) + " " + dl.liste.ht : "",
+        montant: cnt > 0 ? fmt(lotHT(ctx, sel, l) + customLotHT(custom, l.c), locale) + " " + dl.liste.ht : "",
         onBascule: () => setOpen((o) => ({ ...o, [l.c]: !o[l.c] })),
       }}>
         {loc && <div className="locnote">{gras(dl.liste.locNote)}</div>}
@@ -385,7 +385,7 @@ export function DevisView({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Selection;
     hint: pro ? D.hintPro : D.hintHabitation,
     bilan: {
       titre: D.bilanT, titreNote: D.bilanHt, sous: D.bilanSous,
-      paye: D.paye, payeV: b.paye, payeSous: D.dontMat(fmt(b.matA), fmt(b.moA)),
+      paye: D.paye, payeV: b.paye, payeSous: D.dontMat(fmt(b.matA, locale), fmt(b.moA, locale)),
       achat: D.achat, achatV: b.achat, eco: D.eco, ecoV: b.eco,
     },
     repartition: {
@@ -408,7 +408,7 @@ export function DevisView({ ctx, sel, custom = [] }: { ctx: Ctx; sel: Selection;
         q: li.unite === "forfait" ? "—" : D.qte(li.qty, catT(locale, "unites", li.unite), li.mode === "location"),
         mode: li.mode === "location" ? "mL" : li.mode === "je-fais" ? "mS" : "mA",
         modeTxt: li.mode === "location" ? D.modes.location : li.mode === "je-fais" ? D.modes.jeFais : D.modes.faitFaire,
-        m: fmt(li.ttc),
+        m: fmt(li.ttc, locale),
       })),
     },
     pied: D.pied(D.finitionPied(ctx.finition)),

@@ -34,10 +34,10 @@ export const INFO_PHASES: Record<string, InfoPhase> = {
     jalon: { fr: "Permis purgé + DO souscrite + DOC déposée : chantier ouvert", en: "Permit cleared + defects insurance taken out + start-of-works notice filed: site open" },
     duree: { fr: "5 à 6 mois (permis + purge)", en: "5 to 6 months (permit + clearance)" },
     dem: [
-      { quand: { fr: "Avant", en: "Before" }, quoi: { fr: "Dépôt du permis de construire en mairie : instruction ≈ 2 mois", en: "Building permit filed at the town hall: review ≈ 2 months" } },
-      { quand: { fr: "Permis obtenu", en: "Permit granted" }, quoi: { fr: "Affichage du permis sur le terrain, constaté par un commissaire de justice : recours des tiers 2 mois, retrait 3 mois", en: "Permit posted on the plot, recorded by a bailiff: third-party appeals 2 months, withdrawal 3 months" } },
+      { quand: { fr: "Avant", en: "Before" }, quoi: { fr: "Dépôt du permis de construire en mairie : instruction ≈ 2 mois", en: "Building permit filed at the city hall: review ≈ 2 months" } },
+      { quand: { fr: "Permis obtenu", en: "Permit granted" }, quoi: { fr: "Affichage du permis sur le terrain, constaté par un commissaire de justice : recours des tiers 2 mois, retrait 3 mois", en: "Permit posted on the plot, recorded by a court officer: third-party appeals 2 months, withdrawal 3 months" } },
       { quand: { fr: "Permis obtenu", en: "Permit granted" }, quoi: { fr: "Demandes de raccordement Enedis, eau et égout tout de suite (délai Enedis 2 à 6 mois)", en: "Request the electricity, water and sewer connections right away (Enedis takes 2 to 6 months)" } },
-      { quand: { fr: "Avant travaux", en: "Before works" }, quoi: { fr: "Assurance dommages-ouvrage souscrite, puis déclaration d'ouverture de chantier (DOC) en mairie", en: "Structural defects insurance taken out, then start-of-works notice (DOC) filed at the town hall" } },
+      { quand: { fr: "Avant travaux", en: "Before works" }, quoi: { fr: "Assurance dommages-ouvrage souscrite, puis déclaration d'ouverture de chantier (DOC) en mairie", en: "Structural defects insurance taken out, then start-of-works notice (DOC) filed at the city hall" } },
     ],
   },
   "Terrain & terrassement": {
@@ -54,7 +54,7 @@ export const INFO_PHASES: Record<string, InfoPhase> = {
   "Fondations & plancher bas": {
     quoi: {
       fr: "Semelles, boucle de terre, réseaux sous dallage posés et testés par le plombier et l'électricien, soubassement et dalle (ou vide sanitaire, ou sous-sol).",
-      en: "Footings, earthing loop, under-slab pipes and ducts laid and tested by the plumber and electrician, base walls and slab (or crawl space, or basement).",
+      en: "Footings, grounding loop, under-slab pipes and ducts laid and tested by the plumber and electrician, base walls and slab (or crawl space, or basement).",
     },
     jalon: { fr: "Plancher bas coulé (≈ 25 % des appels de fonds en contrat de construction)", en: "Ground floor poured (≈ 25% of stage payments under a building contract)" },
     duree: { fr: "Compris dans les 4 à 6 mois du gros œuvre", en: "Within the 4 to 6 months of structural work" },
@@ -83,7 +83,7 @@ export const INFO_PHASES: Record<string, InfoPhase> = {
   "Réseaux & façade": {
     quoi: {
       fr: "Tranchées, fourreaux, tube d'eau, regards, eaux pluviales et remblai au pied des murs, branchements définitifs (électricité, égout ou assainissement individuel), puis enduit ou bardage.",
-      en: "Trenches, ducts, water pipe, inspection chambers, rainwater and backfill along the walls, permanent connections (electricity, sewer or private septic system), then render or cladding.",
+      en: "Trenches, ducts, water pipe, inspection chambers, rainwater and backfill along the walls, permanent connections (electricity, sewer or private septic system), then stucco or siding.",
     },
     jalon: { fr: "Branchements faits + façade finie", en: "Connections done + façade finished" },
     duree: { fr: "Pendant le second œuvre (pas de durée propre dans la conception)", en: "During the interior work (no separate duration in the design)" },
@@ -94,7 +94,7 @@ export const INFO_PHASES: Record<string, InfoPhase> = {
   "Second œuvre": {
     quoi: {
       fr: "1re passe électricité, plomberie, chauffage et VMC, doublages et pare-vapeur, test d'étanchéité intermédiaire, plafonds et cloisons, soufflage des combles, chapes et séchage.",
-      en: "First fix for electrics, plumbing, heating and ventilation, wall linings and vapour barrier, interim airtightness test, ceilings and partitions, blown loft insulation, screeds and drying.",
+      en: "Rough-in for electrics, plumbing, heating and ventilation, wall linings and vapor barrier, interim airtightness test, ceilings and partitions, blown attic insulation, screeds and drying.",
     },
     jalon: { fr: "Cloisons finies + chape sèche (≈ 75 %)", en: "Partitions finished + screed dry (≈ 75%)" },
     duree: {
@@ -108,7 +108,7 @@ export const INFO_PHASES: Record<string, InfoPhase> = {
   "Finitions & équipements": {
     quoi: {
       fr: "Carrelage et faïence, peinture, sols et plinthes, portes, escalier bois et garde-corps, sanitaires, cuisine.",
-      en: "Floor and wall tiling, painting, floors and skirting, doors, wooden staircase and railings, bathroom fittings, kitchen.",
+      en: "Floor and wall tiling, painting, floors and baseboards, doors, wooden staircase and railings, bathroom fittings, kitchen.",
     },
     jalon: { fr: "Équipements posés (≈ 95 %)", en: "Fittings installed (≈ 95%)" },
     duree: { fr: "1 à 2 mois", en: "1 to 2 months" },
@@ -117,16 +117,16 @@ export const INFO_PHASES: Record<string, InfoPhase> = {
   "Réception & achèvement": {
     quoi: {
       fr: "Consuel puis mise en service du compteur, contrôles RE2020 (test final, VMC, attestation n° 2), attestations argile ou parasismique selon le terrain, nettoyage, réception avec chaque artisan, levée des réserves.",
-      en: "Electrical safety certificate (Consuel) then meter activation, RE2020 checks (final test, ventilation, certificate no. 2), clay-soil or seismic certificates depending on the plot, cleaning, handover with each tradesperson, snagging cleared.",
+      en: "Electrical safety certificate (Consuel) then meter activation, RE2020 checks (final test, ventilation, certificate no. 2), clay-soil or seismic certificates depending on the plot, cleaning, handover with each tradesperson, punch list cleared.",
     },
     jalon: { fr: "PV de réception (départ des garanties) puis DAACT déposée", en: "Handover report (warranties start) then completion declaration (DAACT) filed" },
     duree: { fr: "Conformité acquise 3 mois après la DAACT", en: "Compliance granted 3 months after the DAACT" },
     dem: [
       { quand: { fr: "Fin des travaux", en: "End of works" }, quoi: { fr: "Consuel, puis mise en service du compteur définitif", en: "Consuel, then activation of the permanent meter" } },
       { quand: { fr: "Réception", en: "Handover" }, quoi: { fr: "Procès-verbal de réception avec chaque artisan : les garanties démarrent", en: "Handover report signed with each tradesperson: the warranties start" } },
-      { quand: { fr: "Après la réception", en: "After handover" }, quoi: { fr: "Déclaration d'achèvement et de conformité (DAACT) en mairie", en: "Completion and compliance declaration (DAACT) filed at the town hall" } },
+      { quand: { fr: "Après la réception", en: "After handover" }, quoi: { fr: "Déclaration d'achèvement et de conformité (DAACT) en mairie", en: "Completion and compliance declaration (DAACT) filed at the city hall" } },
       { quand: { fr: "Sous 90 jours", en: "Within 90 days" }, quoi: { fr: "Déclaration des éléments d'imposition sur impots.gouv", en: "Property tax declaration on impots.gouv" } },
-      { quand: { fr: "Après l'achèvement", en: "After completion" }, quoi: { fr: "Taxe d'aménagement, puis PFAC (égout) ou redevances SPANC", en: "Development tax, then sewer connection levy (PFAC) or septic inspection fees (SPANC)" } },
+      { quand: { fr: "Après l'achèvement", en: "After completion" }, quoi: { fr: "Taxe d'aménagement, puis PFAC (égout) ou redevances SPANC", en: "Development tax, then sewer connection fee (PFAC) or septic inspection fees (SPANC)" } },
     ],
   },
 };

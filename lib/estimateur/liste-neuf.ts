@@ -34,15 +34,18 @@ export interface PosteListeNeuf { l: Lot; t: Tache }
 
 /**
  * Les 4 grandes phases de la rénovation (`PHASES`, même ordre, mêmes noms ; la dernière dit aussi la
- * réception), et les lots du neuf que chacune range, dans l'ordre de la rénovation pour les lots
- * communs. Les noms sont des clés d'affichage (`catT(locale, "phases", nom)`). « Assurance &
+ * réception), et les lots du neuf que chacune range. Les lots communs gardent l'ordre de la rénovation
+ * (`catalog.json` : Maçonnerie, Charpente, Façade, Menuiseries extérieures ; Isolation… Menuiseries
+ * intérieures) ; un lot propre au neuf se range à côté de son voisin de métier (Terrassement et
+ * Fondations avant la Maçonnerie, Couverture & zinguerie après la Charpente, les Réseaux enterrés en
+ * fin de gros œuvre). Les noms sont des clés d'affichage (`catT(locale, "phases", nom)`). « Assurance &
  * ouverture du chantier » et « Taxes & participations » ne s'affichent que s'il leur reste une ligne
  * (une démarche à laquelle on a donné un prix, une ligne perso) : leurs frais vont dans la carte.
  */
 export const GRANDES_PHASES_NEUF: { nom: string; lots: string[] }[] = [
   { nom: "Préparation", lots: ["Etudes / Conception", "Assurance & ouverture du chantier", "Annexes de chantier", "Location de matériel", "Raccordements aux réseaux"] },
   { nom: "Gros œuvre & clos-couvert", lots: ["Terrassement", "Fondations & soubassement", "Maçonnerie", "Charpente, couverture & structure bois",
-    "Couverture & zinguerie", "Menuiseries exterieures", "Réseaux enterrés (VRD)", "Façade"] },
+    "Couverture & zinguerie", "Façade", "Menuiseries exterieures", "Réseaux enterrés (VRD)"] },
   { nom: "Second œuvre", lots: ["Isolation", "Cloisons / Platrerie", "Electricite", "Plomberie", "Chauffage / VMC", "Carrelage / Revetements", "Peinture", "Menuiseries interieures"] },
   { nom: "Équipements & réception", lots: ["Cuisine", "Contrôles & réception", "Taxes & participations"] },
 ];
@@ -97,8 +100,8 @@ export const LIGNES_CHOIX_NEUF: LigneChoixNeuf[] = [
     alt("etu-dossier-permis-dessinateur", "Dessinateur", "Draftsperson"), alt("etu-architecte-mission-permis", "Architecte", "Architect"),
     alt("etu-maitrise-d-oeuvre-complete", "Maîtrise d'œuvre complète", "Full project management")] },
   { cle: "eaux-usees", lot: "Raccordements aux réseaux", titre: { fr: "Eaux usées", en: "Wastewater" }, alternatives: [
-    alt("rac-raccordement-au-tout-a-l-egout", "Tout-à-l'égout", "Mains sewer"), alt("rac-assainissement-fosse-toutes-eaux-5-eh", "Fosse toutes eaux", "Septic tank"),
-    alt("rac-assainissement-micro-station-5-eh", "Micro-station", "Micro treatment plant")] },
+    alt("rac-raccordement-au-tout-a-l-egout", "Tout-à-l'égout", "Public sewer"), alt("rac-assainissement-fosse-toutes-eaux-5-eh", "Fosse toutes eaux", "Septic tank"),
+    alt("rac-assainissement-micro-station-5-eh", "Micro-station", "Aerobic treatment unit")] },
   { cle: "plancher-bas", lot: "Fondations & soubassement", titre: { fr: "Plancher bas", en: "Ground floor" }, alternatives: [
     alt("fon-dalle-terre-plein-isolee", "Dalle sur terre-plein", "Slab on grade"), alt("fon-vide-sanitaire-complet", "Vide sanitaire", "Crawl space"),
     alt("fon-sous-sol-enterre", "Sous-sol", "Basement"), alt("fon-radier-general", "Radier général", "Raft foundation")] },
@@ -121,8 +124,8 @@ export const LIGNES_CHOIX_NEUF: LigneChoixNeuf[] = [
   { cle: "volets", lot: "Menuiseries exterieures", titre: { fr: "Volets", en: "Shutters" }, alternatives: [
     alt("mex-volets-roulants", "Roulants", "Roller"), alt("mex-volets-battants", "Battants", "Hinged")] },
   { cle: "facade", lot: "Façade", titre: { fr: "Façade", en: "Façade" }, alternatives: [
-    alt("fac-enduit-monocouche-machine", "Enduit", "Render"), alt("fac-bardage", "Bardage bois", "Wood cladding"),
-    alt("fac-bardage-composite", "Bardage composite", "Composite cladding"), alt("fac-isolation-par-l-exterieur-ite", "Isolation par l'extérieur", "Exterior insulation")] },
+    alt("fac-enduit-monocouche-machine", "Enduit", "Stucco"), alt("fac-bardage", "Bardage bois", "Wood siding"),
+    alt("fac-bardage-composite", "Bardage composite", "Composite siding"), alt("fac-isolation-par-l-exterieur-ite", "Isolation par l'extérieur", "Exterior insulation")] },
   { cle: "isolation-murs", lot: "Isolation", titre: { fr: "Isolation des murs", en: "Wall insulation" }, alternatives: [
     alt("iso-doublage-isolant-colle", "Doublage collé", "Bonded lining"), alt("iso-isolation-des-murs-par-l-interieur", "Par l'intérieur (ITI)", "Interior insulation")] },
   { cle: "chauffage", lot: "Chauffage / VMC", titre: { fr: "Pompe à chaleur", en: "Heat pump" }, alternatives: [
@@ -161,6 +164,19 @@ export function alternativeMontreeNeuf(m: MaisonNeuve, membres: PosteListeNeuf[]
   const reponse = possibles.find(({ t }) => { const r = reponseDuPoste(t.id); return !!r && (m as unknown as Record<string, unknown>)[r.k] === r.v; });
   return reponse ?? possibles[0] ?? membres[0];
 }
+
+/**
+ * Le sous-titre d'une étape du chantier dans un lot (N14) : le nom de l'étape, sauf « Second œuvre »,
+ * qui se confondait avec la grande phase « 3 · Second œuvre » (la Maçonnerie, rangée en gros œuvre, y
+ * a ses chapes ; l'Électricité, rangée en second œuvre, y repassait sous le même nom). Il dit ce que
+ * l'étape contient. Affichage seulement : la clé d'étape (`l.p`) ne change pas, et « Mon devis », la fiche
+ * et le PDF, qui suivent les 9 étapes sans grande phase à côté, gardent leur nom.
+ */
+const SOUS_TITRES_ETAPE: Record<string, TexteFrEn> = {
+  "Second œuvre": { fr: "Réseaux, cloisons & chapes", en: "Rough-in, partitions & screeds" },
+};
+/** Le libellé propre au sous-titre d'une étape, s'il en a un ; sinon `null` (le nom de l'étape traduit). */
+export const sousTitreEtapeNeuf = (phase: string): TexteFrEn | null => SOUS_TITRES_ETAPE[phase] ?? null;
 
 // ── Ce qu'un lot affiche ─────────────────────────────────────────────────────────────────────────
 export type ElementLotNeuf =

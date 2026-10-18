@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { listProjets, type Projet } from "@/lib/data/projects";
-import { estimationProjet, avancementProjet, natureProjet } from "@/lib/estimateur";
+import { estimationProjet, avancementProjet, natureProjet, modeProjet } from "@/lib/estimateur";
 import ListeProjets, { type ProjetCarte, type PlansListe } from "@/components/ListeProjets";
 import ClaimDraft from "@/components/ClaimDraft";
 import ClaimPlan from "@/components/plans/ClaimPlan";
@@ -12,6 +12,7 @@ import { FEATURES } from "@/lib/features";
 import { compterPlans, plansDesProjets, type LienPlan } from "@/lib/plans/data";
 import { dictPlans } from "@/lib/i18n/plans";
 import type { Locale } from "@/lib/i18n/config";
+import { euros as eurosLocale, nombre } from "@/lib/i18n/nombres";
 import { estMembreFondateur } from "@/lib/beta";
 import { PastilleFondateur } from "@/components/BandeauBeta";
 
@@ -63,6 +64,7 @@ function versCarte(p: Projet, liens?: Map<string, LienPlan>): ProjetCarte {
     donePct: av.pct,
     progPct: av.total > 0 ? Math.round((av.prog / av.total) * 100) : 0,
     nature: natureProjet(p.reponses),
+    mode: modeProjet(p.reponses),
     ...(lien ? { plan: { id: lien.planId, nom: lien.nom } } : {}),
   };
 }
@@ -91,7 +93,9 @@ async function plansDeLaListe(
   };
 }
 
-function euros(n: number): string {
+/** Français : le format monétaire d'avant, au caractère près. Anglais : « 92,000 € », comme le rapide (N14). */
+function euros(n: number, locale: Locale): string {
+  if (locale === "en") return eurosLocale(locale, n);
   return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
 }
 
@@ -125,16 +129,16 @@ export default async function ProjetsPage() {
           </span>
           {fondateur && <span className="relative z-[1] ml-2 align-middle"><PastilleFondateur locale={locale} sombre /></span>}
           <div className="big">
-            <span className="data">{euros(sumTravaux)}</span>
+            <span className="data">{euros(sumTravaux, locale)}</span>
             <small>{s.deTravauxEstimes}</small>
           </div>
           <p className="cap">
-            {s.cap(projets.length, sumSurface.toLocaleString("fr-FR"), nbEnChantier)}
+            {s.cap(projets.length, nombre(locale, sumSurface), nbEnChantier)}
           </p>
           <div className="pills">
             <Pill k={s.projetsActifs} v={`${projets.length}`} />
-            <Pill k={s.valeurTravaux} v={euros(sumTravaux)} accent />
-            <Pill k={s.surfaceCumulee} v={`${sumSurface.toLocaleString("fr-FR")} m²`} />
+            <Pill k={s.valeurTravaux} v={euros(sumTravaux, locale)} accent />
+            <Pill k={s.surfaceCumulee} v={`${nombre(locale, sumSurface)} m²`} />
             <Pill k={s.enChantier} v={`${nbEnChantier}`} />
           </div>
         </header>

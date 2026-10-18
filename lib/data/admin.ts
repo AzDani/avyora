@@ -1,7 +1,7 @@
 import "server-only";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { estAdmin } from "@/lib/auth";
-import { estimationProjet, avancementProjet, natureProjet, type StatutChantier } from "@/lib/estimateur/projet";
+import { estimationProjet, avancementProjet, natureProjet, modeProjet, type StatutChantier } from "@/lib/estimateur/projet";
 
 /**
  * Couche de données ADMIN — lecture cross-tenant via le client service-role (bypass RLS).
@@ -31,6 +31,8 @@ export type AdminProjet = {
   pct: number;
   /** Rénovation ou construction neuve. */
   nature: "reno" | "neuf";
+  /** Estimation rapide ou détaillée. */
+  mode: "rapide" | "detaille";
 };
 
 export type AdminInscrit = {
@@ -48,7 +50,11 @@ export type AdminInscrit = {
 // ── Libellés lisibles (les valeurs stockées sont des clés pour tuEs/objectif/maturité) ──
 export const L_TUES: Record<string, string> = { particulier: "Particulier", investisseur: "Investisseur locatif", pro: "Professionnel" };
 export const L_OBJECTIF: Record<string, string> = { residence: "Résidence principale", locatif: "Investissement locatif", revente: "Achat-revente", client: "Pour un client" };
-export const L_MATURITE: Record<string, string> = { renseigne: "Je me renseigne", bien_en_vue: "A un bien en vue", proprietaire: "Déjà propriétaire", travaux: "Travaux en cours" };
+export const L_MATURITE: Record<string, string> = {
+  renseigne: "Je me renseigne", bien_en_vue: "A un bien en vue", proprietaire: "Déjà propriétaire", travaux: "Travaux en cours",
+  // Étapes d'une construction neuve (onboarding, N14)
+  terrain_en_vue: "A un terrain en vue", terrain: "A son terrain", permis: "Permis déposé ou obtenu",
+};
 export const labelTues = (v: string) => L_TUES[v] ?? v;
 export const labelObjectif = (v: string) => L_OBJECTIF[v] ?? v;
 export const labelMaturite = (v: string) => L_MATURITE[v] ?? v;
@@ -67,7 +73,7 @@ function mapProjet(r: Row): AdminProjet {
   return {
     id: r.id, ownerId: r.owner_id, nom: r.nom, typeBien: r.type_bien,
     surface: r.surface, codePostal: r.code_postal, createdAt: r.created_at,
-    ttc: estim ? estim.ttc : null, statut: av.statut, pct: av.pct, nature: natureProjet(r.reponses),
+    ttc: estim ? estim.ttc : null, statut: av.statut, pct: av.pct, nature: natureProjet(r.reponses), mode: modeProjet(r.reponses),
   };
 }
 

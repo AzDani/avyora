@@ -55,7 +55,7 @@ function layout(opts: { preheader: string; eyebrow: string; titre: string; corps
         </td></tr>
         <!-- Pied -->
         <tr><td style="padding:18px 28px 24px;border-top:1px solid #eef0f6;font-family:Arial,Helvetica,sans-serif">
-          <p style="font-size:11px;color:#8a8fa8;line-height:1.6;margin:0">AVYORA · estimateur de rénovation. Cet e-mail t'est envoyé suite à ton activité sur AVYORA.</p>
+          <p style="font-size:11px;color:#8a8fa8;line-height:1.6;margin:0">AVYORA · estimation de travaux, en rénovation comme en construction neuve. Cet e-mail t'est envoyé suite à ton activité sur AVYORA.</p>
         </td></tr>
       </table>
     </td></tr>

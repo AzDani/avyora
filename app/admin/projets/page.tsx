@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { listInscrits } from "@/lib/data/admin";
+import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 
 export const dynamic = "force-dynamic";
 
@@ -7,6 +8,8 @@ const euros = (n: number) => new Intl.NumberFormat("fr-FR", { style: "currency",
 const fdate = (s: string) => new Date(s).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "2-digit" });
 const STATUT_LABEL: Record<string, string> = { estimation: "Estimé", en_cours: "En cours", termine: "Terminé" };
 const STATUT_DOT: Record<string, string> = { estimation: "#4f46e5", en_cours: "#e0a325", termine: "#0f9d6b" };
+/** Libellés de la nature et du mode (N14) : les mêmes que les pastilles de la fiche. L'admin est en français. */
+const n = dictNeufCommun("fr");
 
 export default async function AdminProjets() {
   const inscrits = await listInscrits();
@@ -23,20 +26,22 @@ export default async function AdminProjets() {
         <table className="w-full border-collapse text-[13px]">
           <thead>
             <tr className="text-[11px] uppercase tracking-[0.05em] text-faint">
-              {["Projet", "Propriétaire", "Bien", "Surface", "CP", "Budget estimé", "Avancement", "Créé le"].map((h) => (
+              {["Projet", "Propriétaire", "Nature", "Mode", "Bien", "Surface", "CP", "Budget estimé", "Avancement", "Créé le"].map((h) => (
                 <th key={h} className="whitespace-nowrap border-b border-line px-4 py-3 text-left font-semibold">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {projets.length === 0 ? (
-              <tr><td colSpan={8} className="px-4 py-10 text-center text-muted">Aucun projet enregistré.</td></tr>
+              <tr><td colSpan={10} className="px-4 py-10 text-center text-muted">Aucun projet enregistré.</td></tr>
             ) : projets.map((p) => (
               <tr key={p.id} className="border-b border-line last:border-0 hover:bg-surface-2">
                 <td className="px-4 py-3"><Link href={`/admin/projets/${p.id}`} className="font-semibold text-ink hover:text-brand-700">{p.nom}</Link></td>
                 <td className="whitespace-nowrap px-4 py-3 text-muted">
                   <Link href={`/admin/inscrits/${p.ownerId}`} className="hover:text-brand-700">{p.email}</Link>
                 </td>
+                <td className="whitespace-nowrap px-4 py-3" data-nature={p.nature}>{p.nature === "neuf" ? n.badge : n.badgeReno}</td>
+                <td className="whitespace-nowrap px-4 py-3 text-muted" data-mode={p.mode}>{p.mode === "rapide" ? n.modeRapide : n.modeDetaille}</td>
                 <td className="px-4 py-3 capitalize">{p.typeBien}</td>
                 <td className="num whitespace-nowrap px-4 py-3">{p.surface} m²</td>
                 <td className="num px-4 py-3">{p.codePostal}</td>

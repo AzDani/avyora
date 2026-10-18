@@ -4,6 +4,10 @@ import {
 } from "@/lib/estimateur";
 import { parPhase, INFO_PHASES, premiersCorps } from "@/lib/estimateur/etapes-neuf";
 import { dictNeuf } from "@/lib/i18n/neuf";
+import { dictRapport } from "@/lib/i18n/rapport";
+import { dict } from "@/lib/i18n/dictionaries";
+import { libelleTypeBien } from "@/lib/i18n/neuf-commun";
+import { euros, nombre, pourcent, nfDe } from "@/lib/i18n/nombres";
 import { normaliserCles } from "@/lib/estimateur/identite";
 import { catT, catLigne } from "@/lib/estimateur/catalog-i18n";
 import { getLocale } from "@/lib/i18n/server";
@@ -14,10 +18,11 @@ const estUrl = (s: string) => /^https?:\/\//i.test(s.trim());
  * Rapport d'estimation imprimable (print-to-PDF). Rendu pur depuis les réponses du projet.
  * Style scopé .av-rapport ; à l'impression, la nav/footer du layout sont masquées et la page passe en A4.
  * Reprend le langage visuel du produit : hero fourchette, camembert par corps d'état, qui-fait-quoi, détail.
+ * Textes : `dictRapport` (N14), au tutoiement, en français et en anglais américain ; nombres, montants et
+ * date dans la langue de la page (en français, exactement le format d'avant).
  */
-const fmt = (n: number) => Math.round(n).toLocaleString("fr-FR");
-const euro = (n: number) => fmt(n) + " €";
-const pctLabel = (p: number) => (p >= 1 ? Math.round(p) : Math.round(p * 10) / 10).toLocaleString("fr-FR") + " %";
+// % lisible : entier au-delà de 1 %, une décimale en dessous.
+const pctLabel = (locale: string, p: number) => pourcent(locale, p >= 1 ? Math.round(p) : Math.round(p * 10) / 10);
 
 // Camembert : dégradé de marque ordonné par taille (plus gros = plus foncé), jamais un arc-en-ciel.
 const RAMP = ["#1E1B4B", "#3b2f96", "#4f46e5", "#635bf0", "#7c3aed", "#9061f2", "#a78bfa", "#bda6fb", "#cdbdfc", "#ddd0fe", "#e7ddfe", "#efe8ff", "#f4eeff", "#f8f4ff"];
@@ -76,7 +81,7 @@ const RAPPORT_CSS = `
 .av-rapport .chart{display:flex;align-items:center;gap:24px}
 .av-rapport .donut{position:relative;flex:none;width:184px;height:184px}
 .av-rapport .donut svg{width:184px;height:184px}
-.av-rapport .donut .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.av-rapport .donut .center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 36px}
 .av-rapport .donut .center .v{font-family:var(--font-geist-mono),monospace;font-size:15px;font-weight:600}
 .av-rapport .donut .center .k{font-size:8px;color:var(--faint);text-transform:uppercase;letter-spacing:.12em;margin-top:2px}
 .av-rapport .legend{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:2px 20px}
@@ -157,6 +162,10 @@ export async function RapportPDF({
 
   const neuf = estNeuf(ctx);
   const n = dictNeuf(locale);
+  const r = dictRapport(locale);
+  const rapide = dict(locale).rapide;
+  const fmt = (v: number) => nombre(locale, v);
+  const euro = (v: number) => euros(locale, v);
   const dv = buildDevis(catalogueDe(ctx), ctx, sel);
   const b = dv.bilan;
   // Totaux = postes par défaut + lignes personnalisées (les aléas s'appliquent aussi au HT perso) :
@@ -169,7 +178,10 @@ export async function RapportPDF({
   const reg = regionCoef(ctx.codePostal);
   const moPct = Math.round((reg.mo - 1) * 100);
   const appart = ctx.type !== "Maison";
-  const dateStr = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+  const dateStr = new Date().toLocaleDateString(nfDe(locale), { day: "numeric", month: "long", year: "numeric" });
+  const zone = rapide.zones[reg.zone] ?? reg.zone;
+  const finition = (ctx.finition && rapide.finitions[ctx.finition]?.label) || ctx.finition || "";
+  const aleas = pourcent(locale, ctx.aleas || 0);
 
   // Camembert + tableau : un lot par corps d'état (en neuf, un corps revient dans plusieurs phases),
   // lignes perso repliées dans leur corps (`lotsAvecPerso`, le même calcul que la fiche).
@@ -213,19 +225,19 @@ export async function RapportPDF({
           <div className="logo">A</div>
           <div>
             <div className="wm">AVY<b>ORA</b></div>
-            <div className="tag">Estime tes travaux avant de signer</div>
+            <div className="tag">{r.tag}</div>
           </div>
         </div>
         <div className="doc">
-          <span className="pill">Rapport d&apos;estimation</span>
-          <div className="m">Réf. {refCode} · {dateStr}</div>
+          <span className="pill">{r.pill}</span>
+          <div className="m">{r.ref} {refCode} · {dateStr}</div>
         </div>
       </div>
 
       {/* Le bien */}
       <div className="bien">
         <div>
-          <div className="eyebrow">Le bien</div>
+          <div className="eyebrow">{r.bien}</div>
           <div className="ttl">{nom}</div>
           {maison ? (
           <div className="row">
@@ -238,41 +250,41 @@ export async function RapportPDF({
           </div>
           ) : (
           <div className="row">
-            <span>{appart ? "🏢" : "🏠"} <b>{ctx.type}</b></span><span>·</span>
-            <span><b className="num">{ctx.surface}</b> m² habitables</span><span>·</span>
-            <span><b className="num">{ctx.niveaux}</b> niveau{ctx.niveaux > 1 ? "x" : ""}</span><span>·</span>
-            <span><b className="num">{piecesEff(ctx) || ctx.pieces}</b> pièces</span><span>·</span>
+            <span>{appart ? "🏢" : "🏠"} <b>{libelleTypeBien(locale, ctx.type)}</b></span><span>·</span>
+            <span><b className="num">{fmt(ctx.surface)}</b> {r.habitables}</span><span>·</span>
+            <span><b className="num">{ctx.niveaux}</b> {r.niveaux(ctx.niveaux)}</span><span>·</span>
+            <span><b className="num">{piecesEff(ctx) || ctx.pieces}</b> {r.pieces(piecesEff(ctx) || ctx.pieces)}</span><span>·</span>
             {/* SDB effectives = SDB classiques + suites parentales — c'est ce que le devis chiffre. */}
-            <span><b className="num">{sdbEff(ctx)}</b> SDB</span>
+            <span><b className="num">{sdbEff(ctx)}</b> {r.sdb(sdbEff(ctx))}</span>
             {ctx.codePostal ? <><span>·</span><span className="num">{ctx.codePostal}</span></> : null}
           </div>
           )}
         </div>
-        <div className="zone">📍 {reg.zone}{moPct ? ` · main-d’œuvre ${moPct > 0 ? "+" : ""}${moPct} %` : ""}</div>
+        <div className="zone">📍 {zone}{moPct ? ` · ${r.mainOeuvre} ${moPct > 0 ? "+" : ""}${pourcent(locale, moPct, 0)}` : ""}</div>
       </div>
 
       {/* Hero estimation */}
       <div className="hero">
         <div>
-          <div className="eyebrow" style={{ color: "var(--faint)" }}>Estimation TTC · marge ±15 %</div>
-          <div className="four"><span className="num">{fmt(lo)}</span><span className="s">–</span><span className="num">{fmt(hi)}</span> €<span className="u">TTC</span></div>
-          <div className="cap">Estimation la plus probable : <b className="num">{fmt(t.ttc)} €</b> TTC · finition {ctx.finition}</div>
+          <div className="eyebrow" style={{ color: "var(--faint)" }}>{r.heroK}</div>
+          <div className="four"><span className="num">{fmt(lo)}</span><span className="s">–</span><span className="num">{fmt(hi)}</span> €<span className="u">{r.ttc}</span></div>
+          <div className="cap">{r.probable} <b className="num">{euro(t.ttc)}</b> {r.ttc} · {r.finition(finition.toLowerCase())}</div>
         </div>
-        <div className="m2"><div className="v"><span className="num">{fmt(eurM2)}</span> €</div><div className="k">par m²</div></div>
+        <div className="m2"><div className="v"><span className="num">{fmt(eurM2)}</span> €</div><div className="k">{r.parM2}</div></div>
       </div>
 
       {/* Totaux */}
       <div className={neuf ? "tot t5" : "tot"}>
-        <div className="c"><div className="k">Travaux HT</div><div className="v">{euro(neuf ? t.ht - b.frais : t.ht)}</div></div>
+        <div className="c"><div className="k">{r.travauxHt}</div><div className="v">{euro(neuf ? t.ht - b.frais : t.ht)}</div></div>
         {neuf && <div className="c"><div className="k">{n.pdf.fraisHorsTva}</div><div className="v">{euro(b.frais)}</div></div>}
-        <div className="c"><div className="k">TVA</div><div className="v">{euro(t.tva)}</div></div>
-        <div className="c"><div className="k">Provision aléas {ctx.aleas} %</div><div className="v">{euro(t.aleas)}</div></div>
-        <div className="c big"><div className="k">Total TTC estimé</div><div className="v">{euro(t.ttc)}</div></div>
+        <div className="c"><div className="k">{r.tva}</div><div className="v">{euro(t.tva)}</div></div>
+        <div className="c"><div className="k">{r.aleas(aleas)}</div><div className="v">{euro(t.aleas)}</div></div>
+        <div className="c big"><div className="k">{r.totalTtc}</div><div className="v">{euro(t.ttc)}</div></div>
       </div>
 
       {/* Où part le budget */}
       <div className="sec">
-        <div className="sec-t">Où part le budget <span className="hint">Montants TTC · par corps d&apos;état</span></div>
+        <div className="sec-t">{r.budgetT} <span className="hint">{r.budgetHint}</span></div>
         <div className="chart">
           <div className="donut">
             <svg viewBox="0 0 200 200" aria-hidden="true">
@@ -290,7 +302,7 @@ export async function RapportPDF({
                     <span className="dot" style={{ background: s.color }} />
                     <span className="nm">{ICON[s.corps] || ""} {catT(locale, "corps", s.corps)}</span>
                     <span className="am">{euro(s.ttc)}</span>
-                    <span className="pc">{pctLabel(s.pct)}</span>
+                    <span className="pc">{pctLabel(locale, s.pct)}</span>
                   </div>
                 ))}
               </div>
@@ -301,7 +313,7 @@ export async function RapportPDF({
 
       {/* Qui fait quoi */}
       <div className="sec">
-        <div className="sec-t">Qui fait quoi <span className="hint">Répartition HT</span></div>
+        <div className="sec-t">{r.quiT} <span className="hint">{r.quiHint}</span></div>
         <div className="split">
           <span style={{ width: pcHt(b.moA) + "%", background: "var(--brand)" }} />
           <span style={{ width: pcHt(b.matA) + "%", background: "var(--accent-300)" }} />
@@ -310,16 +322,16 @@ export async function RapportPDF({
           {cu.ht > 0 && <span style={{ width: pcHt(cu.ht) + "%", background: "var(--faint)" }} />}
         </div>
         <div className="qlg">
-          <span className="i"><span className="d" style={{ background: "var(--brand)" }} />Main-d&apos;œuvre <b>{euro(b.moA)}</b> <span className="pct">{pcHt(b.moA)} %</span></span>
-          <span className="i"><span className="d" style={{ background: "var(--accent-300)" }} />Matériaux (pros) <b>{euro(b.matA)}</b> <span className="pct">{pcHt(b.matA)} %</span></span>
-          <span className="i"><span className="d" style={{ background: "var(--violet)" }} />Matériaux (vous) <b>{euro(b.achat)}</b> <span className="pct">{pcHt(b.achat)} %</span></span>
-          {b.frais > 0 && <span className="i"><span className="d" style={{ background: "var(--line-strong)" }} />{n.fraisSeg} <b>{euro(b.frais)}</b> <span className="pct">{pcHt(b.frais)} %</span></span>}
-          {cu.ht > 0 && <span className="i"><span className="d" style={{ background: "var(--faint)" }} />{n.persoSeg} <b>{euro(cu.ht)}</b> <span className="pct">{pcHt(cu.ht)} %</span></span>}
+          <span className="i"><span className="d" style={{ background: "var(--brand)" }} />{r.mo} <b>{euro(b.moA)}</b> <span className="pct">{pourcent(locale, pcHt(b.moA), 0)}</span></span>
+          <span className="i"><span className="d" style={{ background: "var(--accent-300)" }} />{r.matPros} <b>{euro(b.matA)}</b> <span className="pct">{pourcent(locale, pcHt(b.matA), 0)}</span></span>
+          <span className="i"><span className="d" style={{ background: "var(--violet)" }} />{r.matToi} <b>{euro(b.achat)}</b> <span className="pct">{pourcent(locale, pcHt(b.achat), 0)}</span></span>
+          {b.frais > 0 && <span className="i"><span className="d" style={{ background: "var(--line-strong)" }} />{n.fraisSeg} <b>{euro(b.frais)}</b> <span className="pct">{pourcent(locale, pcHt(b.frais), 0)}</span></span>}
+          {cu.ht > 0 && <span className="i"><span className="d" style={{ background: "var(--faint)" }} />{n.persoSeg} <b>{euro(cu.ht)}</b> <span className="pct">{pourcent(locale, pcHt(cu.ht), 0)}</span></span>}
         </div>
         <div className="cards">
-          <div className="qc"><div className="k">Fait faire (artisans) <span className="p">{pcHt(b.paye)} %</span></div><div className="v">{euro(b.paye)}</div><div className="d">MO {euro(b.moA)} · fournitures {euro(b.matA)}</div></div>
-          <div className="qc"><div className="k">Vous réalisez <span className="p">{pcHt(b.achat)} %</span></div><div className="v">{euro(b.achat)}</div><div className="d">fournitures des postes que vous posez</div></div>
-          <div className="qc good"><div className="k">Économie de MO</div><div className="v">{euro(b.eco)}</div><div className="d">main-d&apos;œuvre évitée en faisant une partie</div></div>
+          <div className="qc"><div className="k">{r.faitFaire} <span className="p">{pourcent(locale, pcHt(b.paye), 0)}</span></div><div className="v">{euro(b.paye)}</div><div className="d">{r.moFournitures(euro(b.moA), euro(b.matA))}</div></div>
+          <div className="qc"><div className="k">{r.tuRealises} <span className="p">{pourcent(locale, pcHt(b.achat), 0)}</span></div><div className="v">{euro(b.achat)}</div><div className="d">{r.tuRealisesD}</div></div>
+          <div className="qc good"><div className="k">{r.economie}</div><div className="v">{euro(b.eco)}</div><div className="d">{r.economieD}</div></div>
         </div>
       </div>
 
@@ -351,9 +363,9 @@ export async function RapportPDF({
       ) : (
       /* Détail par corps d'état */
       <div className="sec">
-        <div className="sec-t">Détail par corps d&apos;état</div>
+        <div className="sec-t">{r.corpsT}</div>
         <table>
-          <thead><tr><th>Corps d&apos;état</th><th>Phase</th><th>Poids</th><th className="amt">Montant TTC</th></tr></thead>
+          <thead><tr><th>{r.corpsCol}</th><th>{r.phase}</th><th>{r.poids}</th><th className="amt">{r.montant}</th></tr></thead>
           <tbody>
             {slices.map((s) => (
               <tr key={s.corps}>
@@ -363,7 +375,7 @@ export async function RapportPDF({
                 <td className="amt">{euro(s.ttc)}</td>
               </tr>
             ))}
-            <tr className="tot-row"><td>Total travaux (hors aléas)</td><td /><td /><td className="amt">{euro(budgetTotal)}</td></tr>
+            <tr className="tot-row"><td>{r.totalTravaux}</td><td /><td /><td className="amt">{euro(budgetTotal)}</td></tr>
           </tbody>
         </table>
       </div>
@@ -402,9 +414,9 @@ export async function RapportPDF({
       {/* Lignes personnalisées */}
       {customVal.length > 0 && (
         <div className="sec">
-          <div className="sec-t">Lignes personnalisées <span className="hint">Ajoutées par vous</span></div>
+          <div className="sec-t">{r.persoT} <span className="hint">{r.persoHint}</span></div>
           <table>
-            <thead><tr><th>Désignation</th><th>Détail</th><th className="amt">Montant TTC</th></tr></thead>
+            <thead><tr><th>{r.designation}</th><th>{r.detail}</th><th className="amt">{r.montant}</th></tr></thead>
             <tbody>
               {customVal.map((x) => {
                 const h = (x.prix || 0) * (x.qte || 0);
@@ -412,8 +424,8 @@ export async function RapportPDF({
                 return (
                   <tr key={x.id}>
                     <td>{x.nom}</td>
-                    {/* Lot : libellé accentué en français (« Électricité ») ; en anglais, la clé comme avant (section titrée en français). */}
-                    <td className="ph">{x.qte} {catT(locale, "unites", x.unite)} × {euro(x.prix)} · {locale === "en" ? x.lot : catT(locale, "corps", x.lot)}</td>
+                    {/* Lot : libellé accentué en français (« Électricité »), traduit en anglais (« Electrical »). */}
+                    <td className="ph">{nombre(locale, x.qte, 2)} {catT(locale, "unites", x.unite)} × {euro(x.prix)} · {catT(locale, "corps", x.lot)}</td>
                     <td className="amt">{euro(ttc)}</td>
                   </tr>
                 );
@@ -426,11 +438,11 @@ export async function RapportPDF({
       {/* Notes & liens matériaux */}
       {notes.length > 0 && (
         <div className="sec">
-          <div className="sec-t">Notes &amp; liens matériaux <span className="hint">Vos repères produits</span></div>
+          <div className="sec-t">{r.notesT} <span className="hint">{r.notesHint}</span></div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             {notes.map((n, i) => (
               <div key={i} style={{ display: "flex", gap: 10, fontSize: 12, lineHeight: 1.4, borderBottom: "1px solid #e9eaf3", paddingBottom: 6 }}>
-                <span style={{ fontWeight: 600, minWidth: 150, color: "#15172b" }}>{neuf ? catLigne(locale, n.poste, n.cle) : catT(locale, "postes", n.poste)}</span>
+                <span style={{ fontWeight: 600, minWidth: 150, color: "#15172b" }}>{catLigne(locale, n.poste, n.cle)}</span>
                 {estUrl(n.note)
                   ? <a href={n.note} style={{ color: "#4f46e5", wordBreak: "break-all" }}>{n.note}</a>
                   : <span style={{ color: "#565a75" }}>{catT(locale, "notes", n.note)}</span>}
@@ -441,9 +453,9 @@ export async function RapportPDF({
       )}
 
       <div className="foot">
-        <b>Estimation indicative</b> générée par AVYORA à partir des informations saisies — marge ±15 %. Elle ne constitue pas un devis et n&apos;engage aucun artisan. Les prix intègrent un coefficient régional appliqué à la main-d&apos;œuvre (zone : {reg.zone}) et le niveau de finition « {ctx.finition} ». Provision pour aléas de {ctx.aleas} % incluse.<br />
+        <b>{r.piedGras}</b>{r.pied(zone, finition, aleas)}<br />
         {neuf && <>{n.pdf.pied}<br /></>}
-        <b>AVYORA</b> · estime tes travaux avant de signer · getavyora.fr
+        <b>AVYORA</b>{r.signature}
       </div>
     </div>
   );

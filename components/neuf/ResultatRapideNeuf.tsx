@@ -53,8 +53,12 @@ const CSS = `
 `;
 
 export default async function ResultatRapideNeuf({
-  reponses, projectId, isPro,
-}: { reponses: Reponses; projectId: string; isPro: boolean }) {
+  reponses, projectId, isPro, readOnly,
+}: {
+  reponses: Reponses; projectId: string; isPro: boolean;
+  /** Vue admin en lecture seule (N14) : sans les boutons « Affiner » et « Refaire », qui mènent aux écrans du particulier. */
+  readOnly?: boolean;
+}) {
   const locale = await getLocale();
   const d = dict(locale);
   const n = dictNeuf(locale);
@@ -137,10 +141,12 @@ export default async function ResultatRapideNeuf({
         </div>
       )}
 
-      <div className="actions">
-        <Link href={ctaHref} className="btn btn-primary py-2.5">{ctaLabel}</Link>
-        <Link href="/projets/nouveau?nature=neuf" className="btn btn-outline py-2.5">{t.refaire}</Link>
-      </div>
+      {!readOnly && (
+        <div className="actions">
+          <Link href={ctaHref} className="btn btn-primary py-2.5">{ctaLabel}</Link>
+          <Link href="/projets/nouveau?nature=neuf" className="btn btn-outline py-2.5">{t.refaire}</Link>
+        </div>
+      )}
 
       <p className="note">{t.margeInfo}</p>
     </div>

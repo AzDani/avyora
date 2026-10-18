@@ -9,6 +9,8 @@
 import type { ReactNode } from "react";
 import { CountUp } from "./CountUp";
 import { fmt } from "./partage";
+import { useLocale } from "@/components/i18n/LangProvider";
+import { nfDe } from "@/lib/i18n/nombres";
 
 export interface TextesBarreLive {
   totalK: string; ttc: string; budget: (b: string) => string; depasse: (x: string) => string; reste: (x: string) => string;
@@ -27,18 +29,19 @@ export function BarreLive({ total, budget, m2, vue, onVue, onEnregistrer, saving
   onEnregistrer: () => void; saving: boolean; edition: boolean; erreur: string | null; erreurId?: string; t: TextesBarreLive; className?: string;
 }) {
   const { over, pct } = jaugeBudget(total, budget);
+  const locale = useLocale();
   return (
     <div className={"av-estim-live" + (className ? " " + className : "") + (budget > 0 ? "" : " nobudget")}>
       <div className="live-in">
         <div className="totb">
           <div className="lbl">{t.totalK}</div>
-          <div className="big"><CountUp value={total} /><small>{t.ttc}</small></div>
+          <div className="big"><CountUp value={total} nf={nfDe(locale)} /><small>{t.ttc}</small></div>
           {m2}
         </div>
         <div className="jauge">
           <div className="jtext">
             {budget > 0
-              ? <>{t.budget(fmt(budget))} · {over ? <b style={{ color: "#fca5a5" }}>{t.depasse(fmt(total - budget))}</b> : <>{t.reste(fmt(budget - total))}</>}</>
+              ? <>{t.budget(fmt(budget, locale))} · {over ? <b style={{ color: "#fca5a5" }}>{t.depasse(fmt(total - budget, locale))}</b> : <>{t.reste(fmt(budget - total, locale))}</>}</>
               : t.sansBudget}
           </div>
           <div className="jbar"><div className={"jfill" + (over ? " over" : "")} style={{ width: pct + "%" }} /></div>

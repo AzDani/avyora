@@ -11,8 +11,11 @@ import NumStepper from "@/components/Stepper";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { dictDetail } from "@/lib/i18n/detail";
 import type { CustomLine } from "@/lib/estimateur";
+import { euros } from "@/lib/i18n/nombres";
 
-export const fmt = (n: number): string => Math.round(n).toLocaleString("fr-FR") + " €";
+/** Un montant arrondi à l'euro, dans la langue de la page (N14) : « 92 000 € » en français (le format
+ *  d'avant), « 92,000 € » en anglais. */
+export const fmt = (n: number, locale: string = "fr"): string => euros(locale, n);
 
 /** Un texte du dictionnaire avec ses passages en gras (`**…**`) : `<b>` autour de chacun. */
 export function gras(s: string): ReactNode {
@@ -57,7 +60,8 @@ export function ChoicePrice({ label, active, activeCls, amount, edited, onSelect
   onSelect: () => void; onEdit: (v: number) => void; onReset: () => void;
 }) {
   const [ed, setEd] = useState(false);
-  const t = dictDetail(useLocale()).ligne;
+  const locale = useLocale();
+  const t = dictDetail(locale).ligne;
   return (
     <span
       className={"ch" + (active ? " " + activeCls : "") + (edited ? " edited" : "")}
@@ -76,7 +80,7 @@ export function ChoicePrice({ label, active, activeCls, amount, edited, onSelect
           onKeyDown={(e) => { e.stopPropagation(); if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") setEd(false); }}
         />
       ) : (
-        <b onDoubleClick={(e) => { e.stopPropagation(); setEd(true); }} title={t.choixPrixTitre}>{amount != null ? fmt(amount) : "—"}</b>
+        <b onDoubleClick={(e) => { e.stopPropagation(); setEd(true); }} title={t.choixPrixTitre}>{amount != null ? fmt(amount, locale) : "—"}</b>
       )}
       {edited && !ed && <span className="chreset" role="button" title={t.choixPrixReset} onClick={(e) => { e.stopPropagation(); onReset(); }}>↺</span>}
     </span>
@@ -131,7 +135,7 @@ export function CustomLines({ lines, onAdd, onUpd, onDel, guideTva, tvas }: { li
         if (!l.draft) return (
           <div className="trow" key={l.id}>
             <button type="button" className={"cbx" + (on ? " on" : "")} onClick={() => onUpd(l.id, { on: !on })} aria-label={on ? dictDetail(locale).ligne.decocher : dictDetail(locale).ligne.cocher} />
-            <span className="tn">{l.nom || t.sansNom}<span className="pu">{fmt(l.prix || 0)} {ht}/{unite(l.unite)}{isUrl(l.note) ? " · " : ""}{isUrl(l.note) && <a className="cl-open" href={l.note} target="_blank" rel="noopener noreferrer">{t.lien}</a>}</span></span>
+            <span className="tn">{l.nom || t.sansNom}<span className="pu">{fmt(l.prix || 0, locale)} {ht}/{unite(l.unite)}{isUrl(l.note) ? " · " : ""}{isUrl(l.note) && <a className="cl-open" href={l.note} target="_blank" rel="noopener noreferrer">{t.lien}</a>}</span></span>
             <span className="tctl">
               <NumStepper compact value={l.qte} min={0} onChange={(v) => onUpd(l.id, { qte: v })} />
               <span className="unit">{unite(l.unite)}</span>
@@ -139,7 +143,7 @@ export function CustomLines({ lines, onAdd, onUpd, onDel, guideTva, tvas }: { li
               {confirmDel === l.id
                 ? <button type="button" className="cl-delconfirm" onClick={() => { onDel(l.id); setConfirmDel(null); }}>{t.supprimerQ}</button>
                 : <button type="button" className="cl-icon" onClick={() => askDel(l.id)} title={t.supprimer}>🗑</button>}
-              <span className="lineamt num">{fmt((l.prix || 0) * (l.qte || 0))}</span>
+              <span className="lineamt num">{fmt((l.prix || 0) * (l.qte || 0), locale)}</span>
             </span>
           </div>
         );
@@ -154,7 +158,7 @@ export function CustomLines({ lines, onAdd, onUpd, onDel, guideTva, tvas }: { li
             <select className="cl-unite" value={l.unite} onChange={(e) => onUpd(l.id, { unite: e.target.value })}>{CL_UNITS.map((u) => <option key={u} value={unite(u) !== u ? u : undefined}>{unite(u)}</option>)}</select>
             <span className="cl-sep">×</span>
             <NumStepper compact value={l.qte} min={0} onChange={(v) => onUpd(l.id, { qte: v })} />
-            <span className="cl-total num">= {fmt((l.prix || 0) * (l.qte || 0))}</span>
+            <span className="cl-total num">= {fmt((l.prix || 0) * (l.qte || 0), locale)}</span>
           </div>
           <div className="clr">
             <span className="cl-lk">🔗</span>

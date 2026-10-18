@@ -78,7 +78,7 @@ describe("C6 · traductions EN du catalogue neuf", () => {
     const argile = lignes.find((li) => li.nom.startsWith("Surcoût des fondations en sol argileux"))!;
     expect(catLigne("en", argile.nom, argile.cle)).toBe("Extra foundation cost on clay soil (ballpark before the G2 study) (high)");
     const fen = lignes.find((li) => li.nom.startsWith("Fenêtres ("))!;
-    expect(catLigne("en", fen.nom, fen.cle)).toMatch(/^Windows \((PVC|aluminium|wood), (double|triple) glazing\)$/);
+    expect(catLigne("en", fen.nom, fen.cle)).toMatch(/^Windows \((PVC|aluminum|wood), (double|triple)-pane\)$/);
     const fr = lignes.filter((li) => catLigne("en", li.nom, li.cle) === li.nom && /[a-z]/.test(li.nom)).map((li) => li.nom);
     expect(fr).toEqual([]);
   });

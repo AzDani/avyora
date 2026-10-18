@@ -10,7 +10,8 @@ import { regionLabel, estNeuf, type Ctx, type Selection, type Ampleur, type QuiR
 import RenameTitre from "@/components/RenameTitre";
 import TelechargerRapport from "@/components/TelechargerRapport";
 import { getLocale } from "@/lib/i18n/server";
-import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
+import { libelleTypeBien } from "@/lib/i18n/neuf-commun";
+import PastillesProjet from "@/components/PastillesProjet";
 import { dict } from "@/lib/i18n/dictionaries";
 import { FEATURES } from "@/lib/features";
 import { planDuProjet, type LienPlan } from "@/lib/plans/data";
@@ -65,12 +66,13 @@ export default async function ProjetPage({ params }: { params: Promise<{ id: str
           </Link>
           <RenameTitre id={projet.id} nom={projet.nom} />
           <div className="mt-2.5 flex flex-wrap gap-1.5">
-            {/* Neuf : la puce « Construction neuve » dit déjà le type (« Maison Neuve » en doublon). */}
-            {!neuf && <span className="chip capitalize">{projet.type_bien}</span>}
+            {/* La nature et le mode d'abord (N14), puis le bien. Neuf : la pastille « Construction neuve »
+                dit déjà le type (« Maison neuve » en doublon). */}
+            <PastillesProjet nature={neuf ? "neuf" : "reno"} mode={isRapide ? "rapide" : "detaille"} locale={locale} />
+            {!neuf && <span className="chip capitalize">{libelleTypeBien(locale, projet.type_bien)}</span>}
             <span className="chip num">{projet.surface} m²</span>
             <span className="chip num">{projet.code_postal}</span>
             <span className="chip">{dict(locale).rapide.zones[zone] ?? zone}</span>
-            {neuf && <span className="chip">{dictNeufCommun(locale).badge}</span>}
           </div>
         </div>
         <div className="flex flex-col items-end gap-2">

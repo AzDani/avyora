@@ -94,7 +94,7 @@ export const QUESTIONS_NEUF: GroupeQuestionsNeuf[] = [
     compteur("buanderie", "buanderie", B.buanderie),
     // Absent de la maison tant qu'on ne le règle pas : le nombre déduit de la surface (`menuiseriesNeuf`).
     compteur("menuiseries", "fenetres", B.menuiseries, { hint: lib("fenetresAide") }),
-    { k: "cuisine", l: { fr: "Cuisine équipée comprise", en: "Fitted kitchen included" }, section: "pieces", vue: "interrupteur", o: [[true, oui], [false, non]] },
+    { k: "cuisine", l: { fr: "Cuisine équipée comprise", en: "Kitchen cabinets & appliances included" }, section: "pieces", vue: "interrupteur", o: [[true, oui], [false, non]] },
   ] },
   { g: { fr: "Structure", en: "Structure" }, qs: [
     { k: "plancherBas", l: { fr: "Plancher bas", en: "Ground floor" }, section: "technique", vue: "pastilles", o: [
@@ -120,12 +120,12 @@ export const QUESTIONS_NEUF: GroupeQuestionsNeuf[] = [
   ] },
   { g: { fr: "Chauffage et confort", en: "Heating and comfort" }, qs: [
     { k: "chauffage", l: { fr: "Chauffage", en: "Heating" }, section: "technique", vue: "cartes", o: [
-      ["pac-eau", { fr: "PAC air/eau + plancher chauffant", en: "Air-to-water heat pump + underfloor heating" }],
+      ["pac-eau", { fr: "PAC air/eau + plancher chauffant", en: "Air-to-water heat pump + radiant floor heating" }],
       ["pac-air", { fr: "PAC air/air gainable", en: "Ducted air-to-air heat pump" }],
       ["poele", { fr: "Poêle à granulés + radiateurs", en: "Pellet stove + radiators" }],
     ], cartes: {
       "pac-eau": { eye: { fr: "Le plus courant", en: "Most common" },
-        desc: { fr: "Une pompe à chaleur et un plancher chauffant à eau, coulé dans une chape liquide.", en: "A heat pump and water-based underfloor heating, set in a self-leveling screed." } },
+        desc: { fr: "Une pompe à chaleur et un plancher chauffant à eau, coulé dans une chape liquide.", en: "A heat pump and water-based radiant floor heating, set in a self-leveling screed." } },
       "pac-air": { eye: { fr: "Chaud et froid", en: "Heating and cooling" },
         desc: { fr: "Une pompe à chaleur gainable : de l'air chaud ou frais par des bouches, sur une chape classique.", en: "A ducted heat pump: warm or cool air through vents, on a standard screed." } },
       poele: { eye: { fr: "Le moins cher à poser", en: "Lowest upfront cost" },
@@ -153,7 +153,7 @@ export const QUESTIONS_NEUF: GroupeQuestionsNeuf[] = [
       [false, { fr: "Non, gardée sur place", en: "No, kept on site" }], [true, oui],
     ] },
     { k: "assainissement", l: { fr: "Eaux usées", en: "Wastewater" }, section: "technique", vue: "pastilles", o: [
-      ["collectif", { fr: "Tout-à-l'égout", en: "Mains sewer" }], ["fosse", { fr: "Fosse toutes eaux", en: "Septic tank" }], ["micro", { fr: "Micro-station", en: "Micro treatment plant" }],
+      ["collectif", { fr: "Tout-à-l'égout", en: "Public sewer" }], ["fosse", { fr: "Fosse toutes eaux", en: "Septic tank" }], ["micro", { fr: "Micro-station", en: "Aerobic treatment unit" }],
     ] },
     { k: "eauxPluviales", l: { fr: "Eaux de pluie", en: "Rainwater" }, section: "technique", vue: "segment", o: [
       ["infiltration", { fr: "Infiltration sur la parcelle", en: "Soaked into the plot" }], ["reseau", { fr: "Réseau public", en: "Public storm drain" }],
@@ -186,7 +186,7 @@ const COURT: Record<"murs" | "plancherBas" | "toiture" | "chauffage" | "assainis
   plancherBas: { "terre-plein": { fr: "dalle", en: "slab" }, "vide-sanitaire": { fr: "vide sanitaire", en: "crawl space" }, "sous-sol": { fr: "sous-sol", en: "basement" } },
   toiture: { "2pans": { fr: "2 pans", en: "gable roof" }, "4pans": { fr: "4 pans", en: "hip roof" }, plat: { fr: "toit plat", en: "flat roof" } },
   chauffage: { "pac-eau": { fr: "PAC air/eau", en: "air-to-water heat pump" }, "pac-air": { fr: "PAC air/air", en: "air-to-air heat pump" }, poele: { fr: "poêle à granulés", en: "pellet stove" } },
-  assainissement: { collectif: { fr: "tout-à-l'égout", en: "mains sewer" }, fosse: { fr: "fosse toutes eaux", en: "septic tank" }, micro: { fr: "micro-station", en: "micro treatment plant" } },
+  assainissement: { collectif: { fr: "tout-à-l'égout", en: "public sewer" }, fosse: { fr: "fosse toutes eaux", en: "septic tank" }, micro: { fr: "micro-station", en: "aerobic treatment unit" } },
 };
 
 /* Les autres réponses techniques : citées dans la ligne seulement quand elles s'écartent du réglage courant. */

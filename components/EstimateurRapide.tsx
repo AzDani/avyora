@@ -494,7 +494,7 @@ export default function EstimateurRapide({
                   <span className="d">{qi.desc}</span>
                   <span className="amt">
                     {locked ? <span className="lock">{t.proLock}</span> : <span className="p">≈ <b>{price.toLocaleString(nf)} €</b> / m²</span>}
-                    {!locked && pct > 0 && <span className="save">−{pct} %</span>}
+                    {!locked && pct > 0 && <span className="save">−{pct}{locale === "en" ? "%" : " %"}</span>}
                   </span>
                 </button>
               );

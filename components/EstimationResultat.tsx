@@ -7,7 +7,7 @@
  */
 import { useMemo, useState, useCallback } from "react";
 import { EST_CSS } from "./estimateur-styles";
-import { useLocale } from "@/components/i18n/LangProvider";
+import { useLocale, useT } from "@/components/i18n/LangProvider";
 import { catT, catLigne } from "@/lib/estimateur/catalog-i18n";
 import {
   buildDevis, totals, customTotals, ICON, statutLigne, cleLegacy, regionCoef, piecesEff, type Ctx, type Selection,
@@ -17,6 +17,7 @@ import { decoupe, INFO_PHASES, qteNeuf, premiersCorps } from "@/lib/estimateur/e
 import { totauxAvecPerso, persoValidees, lotsAvecPerso } from "@/lib/estimateur/projet";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 import { normaliserCles } from "@/lib/estimateur/identite";
+import { euros, nombre, pourcent } from "@/lib/i18n/nombres";
 
 // Traductions de l'interface (chrome/UI uniquement) — les données (corps d'état, postes) restent telles quelles.
 const TR = {
@@ -178,9 +179,10 @@ const TR = {
   },
 } as const;
 
-const fmt = (n: number): string => Math.round(n).toLocaleString("fr-FR") + " €";
+// Montants, nombres et pourcentages dans la langue de la page (N14) : en français, exactement le
+// format d'avant (« 92 000 € », « 5,5 % ») ; en anglais, « 92,000 € », « 5.5% ».
 // % lisible : entier au-delà de 1 %, une décimale en dessous → jamais « 0 % » pour un lot chiffré.
-const pctLabel = (p: number): string => (p >= 1 ? Math.round(p) : Math.round(p * 10) / 10).toLocaleString("fr-FR") + " %";
+const pctLabel = (locale: string, p: number): string => pourcent(locale, p >= 1 ? Math.round(p) : Math.round(p * 10) / 10);
 
 // Camembert « Où part le budget » : dégradé de marque ordonné par taille (plus gros = plus foncé).
 const RAMP = ["#1E1B4B", "#3b2f96", "#4f46e5", "#635bf0", "#7c3aed", "#9061f2", "#a78bfa", "#bda6fb", "#cdbdfc", "#ddd0fe"];
@@ -308,6 +310,9 @@ const NEUF_CSS = `
 export default function EstimationResultat({ reponses, projectId, readOnly }: { reponses: { ctx?: Ctx; sel?: Selection; statuts?: Record<string, number>; codePostal?: string; custom?: unknown }; projectId?: string; readOnly?: boolean }) {
   const locale = useLocale();
   const s = TR[locale];
+  const rapide = useT().rapide; // zones et niveaux de finition : les libellés des deux rapides
+  const fmt = (v: number): string => euros(locale, v);
+  const nb = (v: number, dec = 0): string => nombre(locale, v, dec);
   // Sécurité rétro-compat : le code postal (coef régional) était stocké hors ctx dans d'anciens projets.
   // `ctx` et `sel` ne changent qu'avec `reponses` : le devis n'est plus recalculé à chaque clic du suivi.
   const ctx = useMemo(() => (reponses?.ctx ? { ...reponses.ctx, codePostal: reponses.ctx.codePostal ?? reponses.codePostal } : undefined), [reponses]);
@@ -363,6 +368,9 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
   const t = totauxAvecPerso(t0, perso, ctx.aleas);
   const persoHT = customTotals(perso).ht;
   const pc = (n: number) => (t.ht > 0 ? Math.round((n / t.ht) * 100) : 0); // part du coût HT
+  const pcTxt = (n: number) => (locale === "en" ? pc(n) + "%" : pc(n) + "\u00a0%"); // « 31 % » / « 31% »
+  // Unité d'une quantité : « 6 units » au pluriel en anglais (le français garde « u »).
+  const uniteTxt = (u: string, q: number) => (locale === "en" && u === "u" && q !== 1 ? "units" : catT(locale, "unites", u));
 
   // Stats
   const eurM2 = ctx.surface > 0 ? t.ttc / ctx.surface : 0; // ton coût réel (avec ton bricolage)
@@ -438,19 +446,19 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
       <div className="hero">
         <span className="glow g1" /><span className="glow g2" />
         <div className="eb"><span className="dot" />{neuf ? n.badgeEstim : s.badge}</div>
-        <div className="four"><span className="num">{lo.toLocaleString("fr-FR")}</span><span className="s">–</span><span className="num">{hi.toLocaleString("fr-FR")}</span> €<small>{s.inclTax}</small></div>
-        <div className="cap">{s.mostLikely} <b>{Math.round(t.ttc).toLocaleString("fr-FR")} €</b> · ≈ <b>{Math.round(eurM2).toLocaleString("fr-FR")} €/m²</b> · {s.margin}</div>
+        <div className="four"><span className="num">{nb(lo)}</span><span className="s">–</span><span className="num">{nb(hi)}</span> €<small>{s.inclTax}</small></div>
+        <div className="cap">{s.mostLikely} <b>{fmt(t.ttc)}</b> · ≈ <b>{nb(eurM2)} €/m²</b> · {s.margin}</div>
         {ctx.codePostal && (
-          <div className="zone">📍 {reg.zone}{moPct ? ` · ${s.labor} ${moPct > 0 ? "+" : ""}${moPct} %` : ""}</div>
+          <div className="zone">📍 {rapide.zones[reg.zone] ?? reg.zone}{moPct ? ` · ${s.labor} ${moPct > 0 ? "+" : ""}${pourcent(locale, moPct, 0)}` : ""}</div>
         )}
         <div className="brk">
           <div className="pill"><span className="k">{s.workExclTax}</span><br /><span className="v num">{fmt(neuf ? t.ht - b.frais : t.ht)}</span></div>
           {neuf && b.frais > 0 && (
             <div className="pill"><span className="k">{n.fraisHorsTva}</span><br /><span className="v num">{fmt(b.frais)}</span></div>
           )}
-          <div className="pill"><span className="k">{s.vat} {tauxPresents.length ? "(" + tauxPresents.map((r) => (r === 5.5 ? "5,5" : r) + " %").join(" · ") + ")" : ""}</span><br /><span className="v num">{fmt(t.tva)}</span></div>
-          <div className="pill"><span className="k">{s.contingency} {ctx.aleas} %</span><br /><span className="v num">{fmt(t.aleas)}</span></div>
-          <div className="pill"><span className="k">{s.finish}</span><br /><span className="v" style={{ textTransform: "capitalize" }}>{ctx.finition}</span></div>
+          <div className="pill"><span className="k">{s.vat} {tauxPresents.length ? "(" + tauxPresents.map((r) => pourcent(locale, r)).join(" · ") + ")" : ""}</span><br /><span className="v num">{fmt(t.tva)}</span></div>
+          <div className="pill"><span className="k">{s.contingency} {pourcent(locale, ctx.aleas || 0)}</span><br /><span className="v num">{fmt(t.aleas)}</span></div>
+          <div className="pill"><span className="k">{s.finish}</span><br /><span className="v" style={{ textTransform: "capitalize" }}>{rapide.finitions[ctx.finition]?.label ?? ctx.finition}</span></div>
           {budget > 0 && (
             <div className="pill"><span className="k">{s.budgetLabel} · {over ? s.budgetOver : s.budgetLeft}</span><br /><span className="v num">{over ? "− " + fmt(t.ttc - budget) : fmt(budget - t.ttc)}</span></div>
           )}
@@ -462,7 +470,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
       <div className="stats">
         <div className="stat">
           <div className="k">{s.pricePerM2}</div>
-          <div className="v"><span className="num">{Math.round(eurM2).toLocaleString("fr-FR")}</span> €/m²</div>
+          <div className="v"><span className="num">{nb(eurM2)}</span> €/m²</div>
           <p className="sub">{s.realCost}{!neuf && diyGap ? s.diyLot : ""}</p>
           {cut ? (
             <p className="split-neuf">{n.dontConstr} <b>{fmt(cut.constr)}</b> · {n.annexes} <b>{fmt(cut.annexes)}</b></p>
@@ -470,7 +478,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
           <div className="rep">
             <div style={{ fontSize: 11.5, fontWeight: 600, color: "var(--ink)", marginBottom: 4 }}>
               {s.scopeLabel}{s.ampleur[rep.key]}
-              {diyGap && <span style={{ color: "var(--muted)", fontWeight: 500 }}> · ≈ <span className="num">{Math.round(eurM2FF).toLocaleString("fr-FR")}</span> €/m² {s.allHiredOut}</span>}
+              {diyGap && <span style={{ color: "var(--muted)", fontWeight: 500 }}> · ≈ <span className="num">{nb(eurM2FF)}</span> €/m² {s.allHiredOut}</span>}
             </div>
             <div className="bar"><span className="mark" style={{ left: rep.posPct + "%" }} /></div>
             <div className="scale"><span>{s.scaleRefresh}</span><span>{s.scalePartial}</span><span>{s.scaleComplete}</span><span>{s.scaleHeavy}</span></div>
@@ -480,7 +488,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
         <div className="stat">
           <div className="k">{s.biggestItem}</div>
           <div className="v" style={{ fontSize: 20 }}>{top ? `${ICON[top.corps] || ""} ${catT(locale, "corps", top.corps)}` : "—"}</div>
-          <p className="sub">{top ? `${fmt(top.ttc)} · ${topPct} % ${s.ofBudget}` : ""}</p>
+          <p className="sub">{top ? `${fmt(top.ttc)} · ${pourcent(locale, topPct, 0)} ${s.ofBudget}` : ""}</p>
         </div>
         <div className="stat">
           <div className="k">{s.theSite}</div>
@@ -488,7 +496,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
           {maison ? (
             <p className="sub">{maison.surface} m² · {chambresMaison} {chambresMaison > 1 ? n.chambres : n.chambre} · {n.niveauxCourt[maison.niveaux] ?? n.niveauxCourt.pp} · ≈ {moisChantier} {n.moisChantier}</p>
           ) : (
-            <p className="sub">{ctx.surface} m² · {piecesEff(ctx) || ctx.pieces} {s.roomsWord} · {s.ceiling} {ctx.hauteur} m</p>
+            <p className="sub">{ctx.surface} m² · {piecesEff(ctx) || ctx.pieces} {s.roomsWord} · {s.ceiling} {nb(ctx.hauteur, 2)} m</p>
           )}
         </div>
       </div>
@@ -505,19 +513,19 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
           {persoHT > 0 && <i style={{ width: `${t.ht > 0 ? (persoHT / t.ht) * 100 : 0}%`, background: "var(--faint)" }} />}
         </div>
         <div className="legend">
-          <span><span className="dot" style={{ background: "var(--brand)" }} />{s.laborCap} <b>{fmt(b.moA)}</b> <span className="pct">{pc(b.moA)}&nbsp;%</span></span>
-          <span><span className="dot" style={{ background: "var(--accent-300)" }} />{s.matPros} <b>{fmt(b.matA)}</b> <span className="pct">{pc(b.matA)}&nbsp;%</span></span>
-          <span><span className="dot" style={{ background: "var(--accent-600)" }} />{s.matYou} <b>{fmt(b.achat)}</b> <span className="pct">{pc(b.achat)}&nbsp;%</span></span>
+          <span><span className="dot" style={{ background: "var(--brand)" }} />{s.laborCap} <b>{fmt(b.moA)}</b> <span className="pct">{pcTxt(b.moA)}</span></span>
+          <span><span className="dot" style={{ background: "var(--accent-300)" }} />{s.matPros} <b>{fmt(b.matA)}</b> <span className="pct">{pcTxt(b.matA)}</span></span>
+          <span><span className="dot" style={{ background: "var(--accent-600)" }} />{s.matYou} <b>{fmt(b.achat)}</b> <span className="pct">{pcTxt(b.achat)}</span></span>
           {b.frais > 0 && (
-            <span><span className="dot" style={{ background: "var(--line-strong)" }} />{n.fraisSeg} <b>{fmt(b.frais)}</b> <span className="pct">{pc(b.frais)}&nbsp;%</span></span>
+            <span><span className="dot" style={{ background: "var(--line-strong)" }} />{n.fraisSeg} <b>{fmt(b.frais)}</b> <span className="pct">{pcTxt(b.frais)}</span></span>
           )}
           {persoHT > 0 && (
-            <span><span className="dot" style={{ background: "var(--faint)" }} />{n.persoSeg} <b>{fmt(persoHT)}</b> <span className="pct">{pc(persoHT)}&nbsp;%</span></span>
+            <span><span className="dot" style={{ background: "var(--faint)" }} />{n.persoSeg} <b>{fmt(persoHT)}</b> <span className="pct">{pcTxt(persoHT)}</span></span>
           )}
         </div>
         <div className="cards">
-          <div className="qc"><div className="k">{s.hireOut} <span className="pct">{pc(b.paye)}&nbsp;%</span></div><div className="v">{fmt(b.paye)}</div><div className="d">{s.hireOutD1}<br />{s.moAbbr} {fmt(b.moA)} · {s.supplies} {fmt(b.matA)}</div></div>
-          <div className="qc"><div className="k">{s.diySelf} <span className="pct">{pc(b.achat)}&nbsp;%</span></div><div className="v">{fmt(b.achat)}</div><div className="d">{s.diyD1}<br />{s.diyD2}</div></div>
+          <div className="qc"><div className="k">{s.hireOut} <span className="pct">{pcTxt(b.paye)}</span></div><div className="v">{fmt(b.paye)}</div><div className="d">{s.hireOutD1}<br />{s.moAbbr} {fmt(b.moA)} · {s.supplies} {fmt(b.matA)}</div></div>
+          <div className="qc"><div className="k">{s.diySelf} <span className="pct">{pcTxt(b.achat)}</span></div><div className="v">{fmt(b.achat)}</div><div className="d">{s.diyD1}<br />{s.diyD2}</div></div>
           <div className="qc good"><div className="k">{s.savings}</div><div className="v">{fmt(b.eco)}</div><div className="d">{s.savingsD1}<br />{s.savingsD2}</div></div>
         </div>
         {b.eco > 0 && (
@@ -537,7 +545,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
             <svg viewBox="0 0 200 200" aria-hidden="true">
               {slices.map((s) => (
                 <path key={s.corps} d={s.d} fill={s.color} stroke="var(--surface)" strokeWidth={2}>
-                  <title>{`${catT(locale, "corps", s.corps)} — ${fmt(s.ttc)} · ${pctLabel(s.pct)}`}</title>
+                  <title>{`${catT(locale, "corps", s.corps)} — ${fmt(s.ttc)} · ${pctLabel(locale, s.pct)}`}</title>
                 </path>
               ))}
             </svg>
@@ -549,7 +557,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
                 <span className="dot" style={{ background: s.color }} />
                 <span className="nm">{ICON[s.corps] || ""} {catT(locale, "corps", s.corps)}</span>
                 <span className="am">{fmt(s.ttc)}</span>
-                <span className="pc">{pctLabel(s.pct)}</span>
+                <span className="pc">{pctLabel(locale, s.pct)}</span>
               </div>
             ))}
           </div>
@@ -569,7 +577,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
           return (
             <div className="prog">
               <div className="prow">
-                <div className="ppct">{pctDone} %<small>{s.doneWord}</small></div>
+                <div className="ppct">{pourcent(locale, pctDone, 0)}<small>{s.doneWord}</small></div>
                 <div className="plbl">{total} {total > 1 ? s.itemWordP : s.itemWord} {total > 1 ? s.trackedP : s.trackedS}</div>
               </div>
               <div className="ptrack">
@@ -617,7 +625,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
                 // sauf si un prix perso l'a figée (le pourcentage n'est alors plus ce qui la chiffre).
                 const qtyTxt = li.unite === "pct"
                   ? (tk?.fp != null && sel[li.cle]?.pu == null
-                    ? `${tk.fp.toLocaleString(locale === "en" ? "en-US" : "fr-FR")}\u00a0${tk.assiette === "projet" || (tk.frais && tk.assiette !== "travaux") ? n.pctProjet : n.pctTravaux}`
+                    ? `${nb(tk.fp, 3)}\u00a0${tk.assiette === "projet" || (tk.frais && tk.assiette !== "travaux") ? n.pctProjet : n.pctTravaux}`
                     : "—")
                   : qteNeuf(locale, li.qty, li.unite, li.mode === "location");
                 const st = statutLigne(statuts, li);
@@ -625,11 +633,12 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
                 return (
                   <div key={i} className={"dtl" + (projectId ? " chant" : "")}>
                     <span>
-                      {neuf ? catLigne(locale, li.nom, li.cle) : catT(locale, "postes", li.nom)}
+                      {/* Variante comprise (« Windows (PVC, double-pane) ») : les deux natures, comme « Mon devis ». */}
+                      {catLigne(locale, li.nom, li.cle)}
                       {projectId && li.unite !== "forfait" && (
                         neuf
                           ? <span style={{ color: "var(--faint)", fontWeight: 400 }}> · {qtyTxt}</span>
-                          : <span style={{ color: "var(--faint)", fontWeight: 400 }}> · {li.qty} {li.mode === "location" ? s.dayAbbr : catT(locale, "unites", li.unite)}</span>
+                          : <span style={{ color: "var(--faint)", fontWeight: 400 }}> · {nb(li.qty, 2)} {li.mode === "location" ? s.dayAbbr : uniteTxt(li.unite, li.qty)}</span>
                       )}
                     </span>
                     {projectId ? (
@@ -649,7 +658,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly }: { 
                       </>
                     ) : (
                       <>
-                        <span className="q">{li.unite === "forfait" ? "—" : neuf ? qtyTxt : li.qty + " " + (li.mode === "location" ? s.dayAbbr : catT(locale, "unites", li.unite))}</span>
+                        <span className="q">{li.unite === "forfait" ? "—" : neuf ? qtyTxt : nb(li.qty, 2) + " " + (li.mode === "location" ? s.dayAbbr : uniteTxt(li.unite, li.qty))}</span>
                         <span className={"mode " + (li.mode === "location" ? "mL" : li.mode === "je-fais" ? "mS" : "mA")}>
                           {li.mode === "location" ? s.modeRental : li.mode === "je-fais" ? s.modeDIY : s.modeHireOut}
                         </span>

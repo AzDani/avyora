@@ -10,6 +10,8 @@
 import type { ReactNode } from "react";
 import { CountUp } from "./CountUp";
 import { fmt } from "./partage";
+import { useLocale } from "@/components/i18n/LangProvider";
+import { nfDe } from "@/lib/i18n/nombres";
 
 export interface LotDevisVue { cle: string; nom: string; v: number; pct: number }
 export interface LigneDevisVue {
@@ -42,15 +44,16 @@ export interface DonneesDevis {
 
 export function VueDevis({ d }: { d: DonneesDevis }) {
   const { bilan: b, repartition: r } = d;
+  const locale = useLocale();
   return (
     <div>
       <div className="hero">
         <span className="glow g1" /><span className="glow g2" />
         <div className="eb"><span className="dot" />{d.eb}</div>
-        <div className="tt"><CountUp value={d.ttc} /><small>{d.ttcUnite}</small></div>
+        <div className="tt"><CountUp value={d.ttc} nf={nfDe(locale)} /><small>{d.ttcUnite}</small></div>
         <div className="brk">
           {d.pilules.map((p) => (
-            <div key={p.k} className="pill"><span className="k">{p.k}</span><br /><span className="v num">{fmt(p.v)}</span></div>
+            <div key={p.k} className="pill"><span className="k">{p.k}</span><br /><span className="v num">{fmt(p.v, locale)}</span></div>
           ))}
         </div>
         {d.apresPilules}
@@ -61,9 +64,9 @@ export function VueDevis({ d }: { d: DonneesDevis }) {
         <h2>{b.titre}{b.titreNote && <> <span style={{ fontWeight: 400, color: "var(--muted)", fontSize: 12 }}>{b.titreNote}</span></>}</h2>
         <div className="sub">{b.sous}</div>
         <div className="bilan">
-          <div className="btile pre"><div className="k">{b.paye}</div><div className="v num">{fmt(b.payeV)}</div><div className="sub2">{b.payeSous}</div></div>
-          <div className="btile mat"><div className="k">{b.achat}</div><div className="v num">{fmt(b.achatV)}</div></div>
-          <div className="btile eco"><div className="k">{b.eco}</div><div className="v num">{b.ecoV > 0 ? "+ " + fmt(b.ecoV) : fmt(0)}</div></div>
+          <div className="btile pre"><div className="k">{b.paye}</div><div className="v num">{fmt(b.payeV, locale)}</div><div className="sub2">{b.payeSous}</div></div>
+          <div className="btile mat"><div className="k">{b.achat}</div><div className="v num">{fmt(b.achatV, locale)}</div></div>
+          <div className="btile eco"><div className="k">{b.eco}</div><div className="v num">{b.ecoV > 0 ? "+ " + fmt(b.ecoV, locale) : fmt(0, locale)}</div></div>
         </div>
       </div>
 
@@ -100,11 +103,12 @@ export function VueDevis({ d }: { d: DonneesDevis }) {
 }
 
 function LigneRepartition({ x }: { x: LotDevisVue }) {
+  const locale = useLocale();
   return (
     <div className="devlot">
       <span>{x.nom}</span>
       <span className="track"><span className="fill" style={{ width: x.pct + "%" }} /></span>
-      <span className="v">{fmt(x.v)}</span>
+      <span className="v">{fmt(x.v, locale)}</span>
     </div>
   );
 }
