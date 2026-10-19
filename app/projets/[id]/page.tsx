@@ -17,6 +17,7 @@ import { FEATURES } from "@/lib/features";
 import { planDuProjet, type LienPlan } from "@/lib/plans/data";
 import PlanRelie from "@/components/plans/PlanRelie";
 import { listDepenses } from "@/lib/data/depenses";
+import { lireSaisie } from "@/lib/investissement/saisie";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +54,8 @@ export default async function ProjetPage({ params }: { params: Promise<{ id: str
   const zone = regionLabel(projet.code_postal);
   // Dépenses réelles (M5) : sur l'estimation détaillée, pour un compte Pro (pendant la bêta, tout compte confirmé).
   const depenses = !isRapide && estPro(user) ? await listDepenses(String(projet.id)) : undefined;
+  // Investissement (M3) : même règle ; la saisie est déjà dans les réponses du projet.
+  const invest = !isRapide && estPro(user) ? lireSaisie(reponses) : undefined;
 
   return (
     <div className="space-y-6">
@@ -92,7 +95,7 @@ export default async function ProjetPage({ params }: { params: Promise<{ id: str
         ? (neuf
           ? <ResultatRapideNeuf reponses={reponses} projectId={projet.id} isPro={estPro(user)} />
           : <ResultatRapide reponses={reponses} projectId={projet.id} isPro={estPro(user)} />)
-        : <EstimationResultat reponses={reponses} projectId={projet.id} depenses={depenses} />}
+        : <EstimationResultat reponses={reponses} projectId={projet.id} depenses={depenses} invest={invest} />}
     </div>
   );
 }

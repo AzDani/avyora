@@ -1,0 +1,137 @@
+/**
+ * Ce que l'utilisateur saisit dans la section « Investissement » de la fiche projet (module M3), tel qu'il est
+ * enregistré dans `reponses.invest`, et le passage aux entrées du moteur : un champ laissé vide (null) prend une
+ * valeur par défaut tirée du projet (travaux de l'estimation, département du code postal, type de bien…).
+ */
+import { z } from "zod";
+import { departement } from "./impot";
+import { DEFAUTS } from "./regles";
+import type { EntreeLocation, NiveauLoyer } from "./location";
+
+/** Champs numériques saisissables, avec leurs bornes (montants en €, taux et parts en %). */
+export const CHAMPS = {
+  prix: [0, 50_000_000], fraisNotaire: [0, 5_000_000], fraisAgence: [0, 5_000_000], travaux: [0, 20_000_000],
+  travauxDeductiblesPct: [0, 100], mobilier: [0, 1_000_000], valeurApres: [0, 50_000_000],
+  apport: [0, 50_000_000], taux: [0, 20], dureeAns: [1, 30], assurancePct: [0, 3], fraisDossier: [0, 500_000],
+  loyerNu: [0, 500_000], loyerMeuble: [0, 500_000], loyerBailleurPrive: [0, 500_000], vacanceMois: [0, 12],
+  taxeFonciere: [0, 500_000], coproNonRecup: [0, 500_000], pno: [0, 100_000], gestionPct: [0, 30], entretien: [0, 500_000], cfe: [0, 100_000],
+  revenu: [0, 50_000_000], parts: [1, 20],
+  horizon: [1, 30], indexLoyers: [-5, 10], indexCharges: [-5, 10], indexRevenu: [-5, 10], terrainPct: [0, 90],
+  comptableLmnp: [0, 50_000], comptableSciIr: [0, 50_000], comptableIs: [0, 50_000], creationSociete: [0, 50_000],
+} as const;
+export type ChampNum = keyof typeof CHAMPS;
+
+export type SaisieLocation = Partial<Record<ChampNum, number | null>> & {
+  neuf?: boolean | null;
+  collectif?: boolean | null;
+  immeuble15ans?: boolean | null;
+  couple?: boolean;
+  renoEnergetique?: boolean;
+  niveauBailleurPrive?: NiveauLoyer;
+  /** Travaux : suivre la prévision des dépenses réelles (M5) dès qu'il y en a. */
+  suiviReel?: boolean;
+};
+
+export type SaisieInvest = { actif: boolean; strategie: "location" | "revente"; location: SaisieLocation };
+
+const champsNum = Object.fromEntries(
+  (Object.keys(CHAMPS) as ChampNum[]).map((k) => [k, z.number().finite().min(CHAMPS[k][0]).max(CHAMPS[k][1]).nullable().optional()]),
+) as Record<ChampNum, z.ZodOptional<z.ZodNullable<z.ZodNumber>>>;
+
+export const investSchema = z.object({
+  actif: z.boolean(),
+  strategie: z.enum(["location", "revente"]),
+  location: z.object({
+    ...champsNum,
+    neuf: z.boolean().nullable().optional(),
+    collectif: z.boolean().nullable().optional(),
+    immeuble15ans: z.boolean().nullable().optional(),
+    couple: z.boolean().optional(),
+    renoEnergetique: z.boolean().optional(),
+    niveauBailleurPrive: z.enum(["intermediaire", "social", "tres_social"]).optional(),
+    suiviReel: z.boolean().optional(),
+  }).strict(),
+}).strict();
+
+/** Ce que le projet apporte aux valeurs par défaut. */
+export type ContexteProjet = {
+  codePostal?: string;
+  typeBien?: string;
+  nature?: "reno" | "neuf";
+  /** Travaux de l'estimation, aléas compris. */
+  travauxEstimes: number;
+  /** Prévision de fin de chantier des dépenses réelles (M5), s'il y a des dépenses. */
+  travauxPrevision?: number;
+};
+
+const v = (x: number | null | undefined, d: number): number => (typeof x === "number" && Number.isFinite(x) ? x : d);
+
+/** Travaux retenus : la saisie, sinon la prévision des dépenses réelles (si suivie), sinon l'estimation. */
+export function travauxRetenus(s: SaisieLocation, p: ContexteProjet): { montant: number; source: "saisie" | "reel" | "estimation" } {
+  if (typeof s.travaux === "number") return { montant: s.travaux, source: "saisie" };
+  if (s.suiviReel !== false && p.travauxPrevision != null) return { montant: Math.round(p.travauxPrevision), source: "reel" };
+  return { montant: Math.round(p.travauxEstimes), source: "estimation" };
+}
+
+/** Les entrées du moteur, ou null tant que les 3 champs indispensables manquent (prix, loyer, revenus du foyer). */
+export function entreeDepuisSaisie(s: SaisieLocation, p: ContexteProjet): EntreeLocation | null {
+  if (!(v(s.prix, 0) > 0) || !(v(s.loyerNu, 0) > 0 || v(s.loyerMeuble, 0) > 0) || s.revenu == null) return null;
+  return completer(s, p);
+}
+
+/** Toutes les entrées, champs vides remplacés par leur valeur par défaut (aussi pour les afficher dans les champs). */
+export function completer(s: SaisieLocation, p: ContexteProjet): EntreeLocation {
+  const neuf = s.neuf ?? p.nature === "neuf";
+  const collectif = s.collectif ?? (p.typeBien ? p.typeBien !== "Maison" : true);
+  const loyerNu = v(s.loyerNu, Math.round(v(s.loyerMeuble, 0) / 1.15));
+  const loyerMeuble = v(s.loyerMeuble, Math.round(loyerNu * 1.15));
+  const prix = v(s.prix, 0);
+  return {
+    prix,
+    neuf,
+    dept: departement(p.codePostal),
+    fraisNotaire: typeof s.fraisNotaire === "number" ? s.fraisNotaire : null,
+    fraisAgence: v(s.fraisAgence, 0),
+    travaux: travauxRetenus(s, p).montant,
+    travauxDeductiblesPct: v(s.travauxDeductiblesPct, neuf ? 0 : 100),
+    mobilier: v(s.mobilier, 5_000),
+    collectif,
+    immeuble15ans: s.immeuble15ans ?? !neuf,
+    apport: v(s.apport, 0),
+    taux: v(s.taux, 3.5),
+    dureeAns: v(s.dureeAns, 20),
+    assurancePct: v(s.assurancePct, 0.3),
+    fraisDossier: v(s.fraisDossier, 1_500),
+    loyerNu,
+    loyerMeuble,
+    loyerBailleurPrive: v(s.loyerBailleurPrive, loyerNu),
+    vacanceMois: v(s.vacanceMois, 0.5),
+    taxeFonciere: v(s.taxeFonciere, loyerNu),
+    coproNonRecup: v(s.coproNonRecup, collectif ? 600 : 0),
+    pno: v(s.pno, collectif ? 150 : 250),
+    gestionPct: v(s.gestionPct, 0),
+    entretien: v(s.entretien, 400),
+    cfe: v(s.cfe, 300),
+    revenu: v(s.revenu, 0),
+    parts: v(s.parts, s.couple ? 2 : 1),
+    couple: !!s.couple,
+    horizon: v(s.horizon, 20),
+    indexLoyers: v(s.indexLoyers, 1.5),
+    indexCharges: v(s.indexCharges, 2),
+    indexRevenu: v(s.indexRevenu, 1),
+    terrainPct: v(s.terrainPct, collectif ? DEFAUTS.terrainPct : 20),
+    renoEnergetique: !!s.renoEnergetique,
+    niveauBailleurPrive: s.niveauBailleurPrive ?? "intermediaire",
+    comptableLmnp: v(s.comptableLmnp, DEFAUTS.comptableLmnp),
+    comptableSciIr: v(s.comptableSciIr, DEFAUTS.comptableSciIr),
+    comptableIs: v(s.comptableIs, DEFAUTS.comptableIs),
+    creationSociete: v(s.creationSociete, DEFAUTS.creationSociete),
+  };
+}
+
+/** Saisie lue dans les réponses d'un projet (tolérante : une valeur abîmée est ignorée, pas bloquante). */
+export function lireSaisie(reponses: unknown): SaisieInvest {
+  const brut = (reponses as { invest?: unknown } | null)?.invest;
+  const r = investSchema.safeParse(brut);
+  return r.success ? (r.data as SaisieInvest) : { actif: false, strategie: "location", location: {} };
+}

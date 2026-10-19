@@ -107,8 +107,10 @@ const CSS = `
 .av-bud .nmb{display:block;min-width:0}
 .av-bud .nm{display:flex;align-items:center;gap:8px;min-width:0;font-size:13px;font-weight:600}
 .av-bud .nm .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.av-bud .stp{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;padding:2px 9px;border-radius:999px;border:1px solid var(--line-strong);color:var(--muted);background:var(--surface)}
-.av-bud .stp.hors{background:#fdecec;border-color:transparent;color:#b42318}
+.av-bud .bud-p{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;padding:2px 9px;border-radius:999px;border:1px solid var(--line-strong);color:var(--muted);background:var(--surface)}
+.av-bud .bud-p.st1{background:#fdf1e1;border-color:#f0c98a;color:#b06d10}
+.av-bud .bud-p.st2{background:#e6f7f0;border-color:transparent;color:#0f9d6b}
+.av-bud .bud-p.hors{background:#fdecec;border-color:transparent;color:#b42318}
 .av-bud .chv{flex:none;color:var(--faint);transition:transform .2s var(--ease);transform:rotate(-90deg)}
 .av-bud .brow[aria-expanded="true"] .chv{transform:rotate(0deg);color:var(--brand)}
 .av-bud .btrack{position:relative;display:block;margin-top:8px;height:8px;border-radius:999px;background:var(--line)}
@@ -270,10 +272,10 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales }:
   };
 
   const statut = (l: LigneBudget) =>
-    l.etat === "hors_estimation" ? <span className="stp hors">{t.stHors}</span>
-      : l.termine ? <span className="stp st2">{"✓ " + t.stFait}</span>
-        : l.demarre || l.reel > 0 ? <span className="stp st1">{t.stCours}</span>
-          : <span className="stp">{t.stAttente}</span>;
+    l.etat === "hors_estimation" ? <span className="bud-p hors">{t.stHors}</span>
+      : l.termine ? <span className="bud-p st2">{"✓ " + t.stFait}</span>
+        : l.demarre || l.reel > 0 ? <span className="bud-p st1">{t.stCours}</span>
+          : <span className="bud-p">{t.stAttente}</span>;
 
   const barre = (l: LigneBudget) => {
     const ech = Math.max(l.prevu, l.reel, 1);

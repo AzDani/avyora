@@ -19,7 +19,9 @@ import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 import { normaliserCles } from "@/lib/estimateur/identite";
 import { euros, nombre, pourcent } from "@/lib/i18n/nombres";
 import BudgetReel from "@/components/BudgetReel";
-import type { Depense } from "@/lib/estimateur/budget-reel";
+import { bilanBudget, type Depense } from "@/lib/estimateur/budget-reel";
+import Investissement from "@/components/Investissement";
+import type { ContexteProjet, SaisieInvest } from "@/lib/investissement/saisie";
 
 // Traductions de l'interface (chrome/UI uniquement) — les données (corps d'état, postes) restent telles quelles.
 const TR = {
@@ -309,7 +311,7 @@ const NEUF_CSS = `
 }
 `;
 
-export default function EstimationResultat({ reponses, projectId, readOnly, depenses }: { reponses: { ctx?: Ctx; sel?: Selection; statuts?: Record<string, number>; codePostal?: string; custom?: unknown }; projectId?: string; readOnly?: boolean; /** Dépenses réelles (M5) : la fiche du propriétaire les passe, l'admin et la lecture seule non. */ depenses?: Depense[] }) {
+export default function EstimationResultat({ reponses, projectId, readOnly, depenses, invest }: { reponses: { ctx?: Ctx; sel?: Selection; statuts?: Record<string, number>; codePostal?: string; custom?: unknown }; projectId?: string; readOnly?: boolean; /** Dépenses réelles (M5) : la fiche du propriétaire les passe, l'admin et la lecture seule non. */ depenses?: Depense[]; /** Section « Investissement » (M3) : même règle que les dépenses. */ invest?: SaisieInvest }) {
   const locale = useLocale();
   const s = TR[locale];
   const rapide = useT().rapide; // zones et niveaux de finition : les libellés des deux rapides
@@ -325,6 +327,14 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
   const [statuts, setStatuts] = useState<Record<string, number>>(reponses?.statuts || {});
   // Dépenses réelles (M5) : les statuts À JOUR du suivi (un lot terminé fixe sa prévision sur le réel).
   const repBudget = useMemo(() => ({ ...reponses, statuts }), [reponses, statuts]);
+  // Investissement (M3) : travaux de l'estimation (aléas compris) et, s'il y a des dépenses, la prévision de fin de chantier.
+  const ctxInvest = useMemo((): ContexteProjet | null => {
+    if (!invest) return null;
+    const b = bilanBudget(repBudget, depenses ?? []);
+    if (!b) return null;
+    const c = reponses.ctx;
+    return { codePostal: c?.codePostal ?? reponses.codePostal, typeBien: c?.type, nature: c?.nature === "neuf" ? "neuf" : "reno", travauxEstimes: b.estimation, travauxPrevision: depenses && depenses.length ? b.prevision : undefined };
+  }, [invest, repBudget, depenses, reponses]);
   const [closedPh, setClosedPh] = useState<Record<string, boolean>>({}); // phases repliées (Suivi / Détail)
   const togglePh = useCallback((ph: string) => setClosedPh((p) => ({ ...p, [ph]: !p[ph] })), []);
   const dv = useMemo(() => (ctx ? buildDevis(catalogueDe(ctx), ctx, sel) : null), [ctx, sel]);
@@ -571,6 +581,8 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
       </div>
 
       {/* Dépenses réelles (M5) : prévu / réel par corps d'état, alertes, prévision finale */}
+      {projectId && invest && ctxInvest && !readOnly && <Investissement projectId={projectId} saisie={invest} contexte={ctxInvest} />}
+
       {projectId && depenses && !readOnly && <BudgetReel reponses={repBudget} projectId={projectId} depenses={depenses} />}
 
       {/* Détail par lot + suivi de chantier (statuts sauvegardés quand projet enregistré) */}
