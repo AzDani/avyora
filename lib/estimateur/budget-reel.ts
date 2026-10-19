@@ -36,6 +36,8 @@ export type LigneBudget = {
   /** part du prévu consommée (0 si rien de prévu). */
   part: number;
   termine: boolean;
+  /** au moins un poste « en cours » ou « terminé » dans le suivi de chantier. */
+  demarre: boolean;
   prevision: number;
   etat: EtatCorps;
 };
@@ -79,17 +81,20 @@ export function bilanBudget(reponses: unknown, depenses: Depense[]): BilanBudget
   const totaux = totauxAvecPerso(dv.totaux, r.custom, ctx.aleas);
 
   // Un corps est terminé quand il a des postes et qu'ils sont tous « terminés » dans le suivi.
-  const postes = new Map<string, { n: number; faits: number }>();
+  const postes = new Map<string, { n: number; faits: number; lances: number }>();
   for (const li of dv.lignes) {
-    const p = postes.get(li.corps) ?? { n: 0, faits: 0 };
+    const p = postes.get(li.corps) ?? { n: 0, faits: 0, lances: 0 };
     p.n++;
-    if (statutLigne(statuts, li) === 2) p.faits++;
+    const st = statutLigne(statuts, li);
+    if (st === 2) p.faits++;
+    if (st >= 1) p.lances++;
     postes.set(li.corps, p);
   }
   const termine = (corps: string): boolean => {
     const p = postes.get(corps);
     return !!p && p.n > 0 && p.faits === p.n;
   };
+  const demarre = (corps: string): boolean => (postes.get(corps)?.lances ?? 0) > 0;
 
   const reelPar = new Map<string, number>();
   for (const d of depenses) reelPar.set(d.corps, (reelPar.get(d.corps) ?? 0) + (Number(d.montant) || 0));
@@ -102,11 +107,11 @@ export function bilanBudget(reponses: unknown, depenses: Depense[]): BilanBudget
     const etat: EtatCorps = reel > prevu + 0.005 ? "depasse" : !fini && prevu > 0 && part >= SEUIL_ATTENTION ? "attention" : "ok";
     // Terminé SANS aucune dépense saisie : on n'en sait rien, la prévision garde le prévu.
     const prevision = fini && reel > 0 ? reel : Math.max(prevu, reel);
-    lignes.push({ corps: lot.corps, prevu: r2(prevu), reel: r2(reel), ecart: r2(reel - prevu), part, termine: fini, prevision: r2(prevision), etat });
+    lignes.push({ corps: lot.corps, prevu: r2(prevu), reel: r2(reel), ecart: r2(reel - prevu), part, termine: fini, demarre: demarre(lot.corps), prevision: r2(prevision), etat });
   }
   // Dépenses sur un corps que l'estimation ne prévoyait pas (« Autre », un lot ajouté sur le chantier…).
   for (const [corps, reel] of reelPar) {
-    lignes.push({ corps, prevu: 0, reel: r2(reel), ecart: r2(reel), part: 0, termine: false, prevision: r2(reel), etat: "hors_estimation" });
+    lignes.push({ corps, prevu: 0, reel: r2(reel), ecart: r2(reel), part: 0, termine: false, demarre: true, prevision: r2(reel), etat: "hors_estimation" });
   }
 
   const prevu = r2(lignes.reduce((s, l) => s + l.prevu, 0));
