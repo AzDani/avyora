@@ -7,6 +7,7 @@ import { z } from "zod";
 import { departement } from "./impot";
 import { DEFAUTS } from "./regles";
 import type { EntreeLocation, NiveauLoyer } from "./location";
+import type { EntreeRevente } from "./revente";
 
 /** Champs numériques saisissables, avec leurs bornes (montants en €, taux et parts en %). */
 export const CHAMPS = {
@@ -32,7 +33,21 @@ export type SaisieLocation = Partial<Record<ChampNum, number | null>> & {
   suiviReel?: boolean;
 };
 
-export type SaisieInvest = { actif: boolean; strategie: "location" | "revente"; location: SaisieLocation };
+/** Champs propres à l'achat-revente ; l'achat, les travaux et le crédit sont partagés avec la location. */
+export const CHAMPS_REVENTE = {
+  prixRevente: [0, 50_000_000], dureeMois: [1, 120], fraisAgenceVente: [0, 5_000_000], diagnostics: [0, 50_000],
+  mainlevee: [0, 500_000], travauxEntreprisePct: [0, 100], chargesPortage: [0, 500_000],
+} as const;
+export type ChampRevente = keyof typeof CHAMPS_REVENTE;
+export type SaisieRevente = Partial<Record<ChampRevente, number | null>> & {
+  etatNeuf?: boolean;
+  sansIra?: boolean;
+  habite?: boolean;
+  primo?: boolean;
+  nbVendeurs?: 1 | 2;
+};
+
+export type SaisieInvest = { actif: boolean; strategie: "location" | "revente"; location: SaisieLocation; revente?: SaisieRevente };
 
 const champsNum = Object.fromEntries(
   (Object.keys(CHAMPS) as ChampNum[]).map((k) => [k, z.number().finite().min(CHAMPS[k][0]).max(CHAMPS[k][1]).nullable().optional()]),
@@ -51,6 +66,14 @@ export const investSchema = z.object({
     niveauBailleurPrive: z.enum(["intermediaire", "social", "tres_social"]).optional(),
     suiviReel: z.boolean().optional(),
   }).strict(),
+  revente: z.object({
+    ...(Object.fromEntries((Object.keys(CHAMPS_REVENTE) as ChampRevente[]).map((k) => [k, z.number().finite().min(CHAMPS_REVENTE[k][0]).max(CHAMPS_REVENTE[k][1]).nullable().optional()])) as Record<ChampRevente, z.ZodOptional<z.ZodNullable<z.ZodNumber>>>),
+    etatNeuf: z.boolean().optional(),
+    sansIra: z.boolean().optional(),
+    habite: z.boolean().optional(),
+    primo: z.boolean().optional(),
+    nbVendeurs: z.union([z.literal(1), z.literal(2)]).optional(),
+  }).strict().optional(),
 }).strict();
 
 /** Ce que le projet apporte aux valeurs par défaut. */
@@ -134,4 +157,45 @@ export function lireSaisie(reponses: unknown): SaisieInvest {
   const brut = (reponses as { invest?: unknown } | null)?.invest;
   const r = investSchema.safeParse(brut);
   return r.success ? (r.data as SaisieInvest) : { actif: false, strategie: "location", location: {} };
+}
+
+/** Entrées de l'achat-revente, champs vides remplacés par leur valeur par défaut. L'achat, les travaux et le
+ *  crédit viennent de la saisie commune (bloc « Achat » et « Crédit »). */
+export function completerRevente(s: SaisieInvest, p: ContexteProjet): EntreeRevente {
+  const l = completer(s.location, p);
+  const r = s.revente ?? {};
+  return {
+    prix: l.prix,
+    neuf: l.neuf,
+    dept: l.dept,
+    fraisNotaire: l.fraisNotaire,
+    fraisAgence: l.fraisAgence,
+    travaux: l.travaux,
+    travauxEntreprisePct: v(r.travauxEntreprisePct, 100),
+    etatNeuf: !!r.etatNeuf,
+    apport: l.apport,
+    taux: l.taux,
+    dureeAns: l.dureeAns,
+    assurancePct: l.assurancePct,
+    fraisDossier: l.fraisDossier,
+    sansIra: !!r.sansIra,
+    taxeFonciere: v(s.location.taxeFonciere, Math.round(l.prix * 0.008)),
+    chargesAnnuelles: v(r.chargesPortage, l.collectif ? 1_200 : 500),
+    dureeMois: v(r.dureeMois, 12),
+    prixRevente: v(r.prixRevente, 0),
+    fraisAgenceVente: v(r.fraisAgenceVente, 0),
+    diagnostics: v(r.diagnostics, 500),
+    mainlevee: typeof r.mainlevee === "number" ? r.mainlevee : null,
+    habite: !!r.habite,
+    primo: !!r.primo,
+    nbVendeurs: r.nbVendeurs ?? (s.location.couple ? 2 : 1),
+    comptableIs: l.comptableIs,
+    creationSociete: l.creationSociete,
+  };
+}
+
+/** Entrées de l'achat-revente, ou null tant que le prix d'achat et le prix de revente manquent. */
+export function entreeRevente(s: SaisieInvest, p: ContexteProjet): EntreeRevente | null {
+  if (!(v(s.location.prix, 0) > 0) || !(v(s.revente?.prixRevente, 0) > 0)) return null;
+  return completerRevente(s, p);
 }

@@ -11,7 +11,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { euros, pourcent, nombre, lireMontant } from "@/lib/i18n/nombres";
 import { simulerLocation, type Regime, type ResultatRegime, type Alerte } from "@/lib/investissement/location";
-import { entreeDepuisSaisie, completer, travauxRetenus, type ChampNum, type ContexteProjet, type SaisieInvest, type SaisieLocation } from "@/lib/investissement/saisie";
+import { entreeDepuisSaisie, completer, travauxRetenus, entreeRevente, completerRevente, type ChampNum, type ChampRevente, type ContexteProjet, type SaisieInvest, type SaisieLocation, type SaisieRevente } from "@/lib/investissement/saisie";
+import { simulerRevente, type CadreRevente, type ResultatCadre, type AlerteRevente } from "@/lib/investissement/revente";
 import { fraisNotaire } from "@/lib/investissement/impot";
 
 const TR = {
@@ -71,6 +72,46 @@ const TR = {
       sci_ir_comptable: "En location nue, la SCI ajoute des frais (comptable, création) sans avantage fiscal : son intérêt est surtout la transmission.",
     } as Record<Alerte, string>,
     avertissement: "Simulation indicative selon les règles fiscales en vigueur au 19/10/2026, à valider avec un expert-comptable. Hypothèses : mise en location au 1er janvier de l'année 1, pas d'autres revenus fonciers ni meublés dans le foyer, impôt compté l'année des loyers (l'IS l'année suivante), barème de l'impôt revalorisé comme tes revenus, mobilier non renouvelé, travaux amortis sur 15 ans en meublé et en société, pas de revente.",
+    rv: {
+      groupe: "Revente",
+      sub: "Ce que l'opération te rapporte après impôts, selon le cadre dans lequel tu achètes et revends.",
+      champs: {
+        prixRevente: "Prix de revente", dureeMois: "Durée de l'opération (achat → vente)", fraisAgenceVente: "Frais d'agence à la vente",
+        diagnostics: "Diagnostics de vente", mainlevee: "Mainlevée d'hypothèque", travauxEntreprisePct: "Part des travaux d'amélioration faits par des entreprises (comptée dans la plus-value)",
+        chargesPortage: "Charges pendant l'opération, par an (copropriété, assurance, énergie)",
+      } as Record<ChampRevente, string>,
+      habite: "J'habite le bien jusqu'à la vente (résidence principale)",
+      primo: "Primo-accédant : pas propriétaire de ta résidence principale depuis 2 ans",
+      etatNeuf: "Rénovation lourde qui rend le bien neuf (structure, façades, ou 2/3 de chaque lot de second œuvre)",
+      sansIra: "Pas d'indemnités de remboursement anticipé (prêt relais ou indemnités négociées)",
+      vendeurs: "Nombre de vendeurs", unVendeur: "1 vendeur", deuxVendeurs: "2 vendeurs (couple, indivision)",
+      auto03: "0,3 % du prêt",
+      manque: "Indique le prix d'achat (bloc « Achat ») et le prix de revente : le résultat apparaît tout de suite.",
+      net: (m: number) => `net après impôts, en ${m} mois`,
+      parAn: (p: string) => `Soit ${p} par an sur l'argent que tu engages`,
+      perte: (m: string) => `Opération à perte : il faudrait revendre au moins ${m}`,
+      coutOp: "Coût de l'opération", mise: "Ton argent engagé", prixMin: "Prix de revente minimum", duree: "Durée",
+      comparer: "Comparer les cadres", enMois: (m: number) => `en ${m} mois`,
+      hCadre: "Cadre", hAvant: "Avant impôts", hImpots: "Impôts", hNet: "Net", hAn: "Par an", hMin: "Prix minimum",
+      cadres: { particulier: "Particulier · plus-value immobilière", residence_principale: "Résidence principale · exonérée", marchand_biens: "Marchand de biens · société à l'IS" } as Record<CadreRevente, string>,
+      raisons: { rp_pas_habite: "seulement si tu y habites jusqu'à la vente", particulier_habite: "tu y habites : c'est ta résidence principale", mdb_habite: "une société ne vend pas ta résidence principale" },
+      lignes: {
+        prixRevente: "Prix de revente", fraisVente: "Frais de vente (agence, diagnostics, mainlevée)", achat: "Achat et frais d'achat", travaux: "Travaux",
+        credit: "Crédit (intérêts, assurance, frais, indemnités)", portage: "Charges pendant l'opération", sanction: "Droits de mutation rappelés (revente après 5 ans)",
+        tva: "TVA sur le prix de revente", gainAvant: "Gain avant impôts", impotPV: "Impôt sur la plus-value", isPfu: "Impôt sur les sociétés, puis PFU", gainNet: "Gain net",
+      } as Record<string, string>,
+      pv: (pv: string, n: number, ir: string, ps: string, st: string) => `Plus-value imposable : ${pv} · détention ${n} an${n > 1 ? "s" : ""} plein${n > 1 ? "s" : ""} · abattement ${ir} (impôt) et ${ps} (prélèvements sociaux) · surtaxe ${st}`,
+      alertes: {
+        rp_courte: "Moins de 12 mois d'occupation : il n'y a pas de durée minimale, mais le fisc peut contester si l'occupation ne lui paraît pas réelle. Garde des preuves (factures, courrier, assurance).",
+        rp_requalification: "Enchaîner les achats-reventes de ta résidence principale peut te faire requalifier en marchand de biens : plus d'exonération, impôt sur le revenu et cotisations sociales. L'exonération n'est jamais garantie.",
+        particulier_requalification: "Des achats-reventes réguliers, avec l'intention de revendre dès l'achat, peuvent te faire requalifier en marchand de biens et imposer comme un professionnel.",
+        mdb_conditions: "Marchand de biens : société assujettie à la TVA, engagement de revendre sous 5 ans pour les droits réduits, comptabilité commerciale. Le gain est imposé à l'IS, puis au PFU quand tu te le verses. Les indemnités de remboursement anticipé d'un prêt à une société dépendent du contrat (pas de plafond légal).",
+        mdb_sanction: "Revente après 5 ans : les droits de mutation normaux sont rappelés, avec 0,20 % d'intérêt de retard par mois depuis l'achat (compté ici jusqu'à la vente ; une régularisation spontanée à 5 ans coûte moins).",
+        mdb_tva_neuf: "Bien neuf ou rendu neuf par les travaux : la revente supporte une TVA de 20 % sur le prix total ; la TVA des travaux est récupérée.",
+        moins_value: "Moins-value : aucun impôt, mais elle ne se reporte sur aucune autre opération.",
+      } as Record<AlerteRevente, string>,
+      avertissement: "Simulation indicative selon les règles fiscales en vigueur au 19/10/2026, à valider avec un expert-comptable ou un notaire. Hypothèses : crédit amortissable remboursé à la vente, un seul exercice fiscal pour la société, pas d'option pour la TVA sur la marge, travaux comptés à leur coût toutes taxes comprises.",
+    },
     enregistre: "Enregistré", enregistrement: "Enregistrement…", erreur: "Enregistrement impossible, tes changements restent affichés.",
   },
   en: {
@@ -129,6 +170,46 @@ const TR = {
       sci_ir_comptable: "For unfurnished rental, an SCI adds costs (accountant, setup) with no tax benefit: it's mainly useful for estate planning.",
     } as Record<Alerte, string>,
     avertissement: "Indicative simulation under French tax rules as of 10/19/2026, to be checked with a chartered accountant. Assumptions: rental starts January 1 of year 1, no other rental income in the household, tax counted in the year of the rent (corporate tax the year after), tax brackets indexed like your income, furniture not replaced, work depreciated over 15 years for furnished and company regimes, no sale.",
+    rv: {
+      groupe: "Resale",
+      sub: "What the deal earns you after tax, depending on how you buy and resell (French rules).",
+      champs: {
+        prixRevente: "Resale price", dureeMois: "Length of the deal (purchase → sale)", fraisAgenceVente: "Agency fees on sale",
+        diagnostics: "Sale inspections", mainlevee: "Mortgage release", travauxEntreprisePct: "Share of improvement work done by contractors (counted in the capital gain)",
+        chargesPortage: "Holding costs per year (condo, insurance, utilities)",
+      } as Record<ChampRevente, string>,
+      habite: "I live in the property until the sale (main residence)",
+      primo: "First-time buyer: no main residence owned in the last 2 years",
+      etatNeuf: "Heavy renovation that makes the property new (structure, façades, or 2/3 of each finishing trade)",
+      sansIra: "No early repayment penalty (bridge loan or negotiated)",
+      vendeurs: "Number of sellers", unVendeur: "1 seller", deuxVendeurs: "2 sellers (couple, joint ownership)",
+      auto03: "0.3% of the loan",
+      manque: "Enter the purchase price (Purchase block) and the resale price: the result shows up right away.",
+      net: (m: number) => `net after tax, over ${m} months`,
+      parAn: (p: string) => `That's ${p} a year on the money you put in`,
+      perte: (m: string) => `Loss-making deal: you'd need to sell for at least ${m}`,
+      coutOp: "Deal cost", mise: "Your money in", prixMin: "Break-even resale price", duree: "Length",
+      comparer: "Compare setups", enMois: (m: number) => `over ${m} months`,
+      hCadre: "Setup", hAvant: "Before tax", hImpots: "Taxes", hNet: "Net", hAn: "Per year", hMin: "Break-even",
+      cadres: { particulier: "Individual · capital gains tax", residence_principale: "Main residence · tax-exempt", marchand_biens: "Property dealer · corporate tax" } as Record<CadreRevente, string>,
+      raisons: { rp_pas_habite: "only if you live there until the sale", particulier_habite: "you live there: it's your main residence", mdb_habite: "a company can't sell your main residence" },
+      lignes: {
+        prixRevente: "Resale price", fraisVente: "Sale costs (agency, inspections, release)", achat: "Purchase and closing costs", travaux: "Renovation work",
+        credit: "Loan (interest, insurance, fees, penalties)", portage: "Holding costs", sanction: "Transfer duties recalled (sale after 5 years)",
+        tva: "VAT on the resale price", gainAvant: "Gain before tax", impotPV: "Capital gains tax", isPfu: "Corporate tax, then flat tax", gainNet: "Net gain",
+      } as Record<string, string>,
+      pv: (pv: string, n: number, ir: string, ps: string, st: string) => `Taxable gain: ${pv} · held ${n} full year${n > 1 ? "s" : ""} · allowance ${ir} (income tax) and ${ps} (social levies) · surtax ${st}`,
+      alertes: {
+        rp_courte: "Under 12 months of occupancy: there's no legal minimum, but the tax office can challenge it if the occupancy doesn't look real. Keep proof (bills, mail, insurance).",
+        rp_requalification: "Repeatedly buying and reselling your main residence can get you reclassified as a property dealer: no exemption, income tax and social contributions. The exemption is never guaranteed.",
+        particulier_requalification: "Regular buy-and-resell deals, intended for resale from the start, can get you reclassified as a property dealer and taxed as a business.",
+        mdb_conditions: "Property dealer: VAT-registered company, commitment to resell within 5 years for reduced duties, business accounts. The gain is taxed at the corporate rate, then at the flat tax when you pay it out. Early repayment penalties on a company loan depend on the contract (no legal cap).",
+        mdb_sanction: "Sale after 5 years: normal transfer duties are recalled, plus 0.20% late interest per month since the purchase (counted here until the sale; settling voluntarily at 5 years costs less).",
+        mdb_tva_neuf: "New or renovated-to-new property: the sale bears 20% VAT on the full price; VAT on the work is recovered.",
+        moins_value: "Capital loss: no tax, but it can't be offset against any other deal.",
+      } as Record<AlerteRevente, string>,
+      avertissement: "Indicative simulation under French tax rules as of 10/19/2026, to be checked with a chartered accountant or notary. Assumptions: amortizing loan repaid at sale, a single tax year for the company, no VAT-on-margin option, work counted at its VAT-inclusive cost.",
+    },
     enregistre: "Saved", enregistrement: "Saving…", erreur: "Couldn't save, your changes are still shown.",
   },
 } as const;
@@ -170,6 +251,12 @@ const CSS = `
 .av-inv .verdict.g{background:#e6f7f0;color:#0f9d6b}
 .av-inv .prog .chip b{font-family:var(--font-geist-mono),monospace}
 .av-inv .rh,.av-inv .rrow{display:grid;grid-template-columns:minmax(0,1fr) 92px 92px 104px 92px;gap:12px;align-items:center}
+.av-inv .rh.rv,.av-inv .rrow.rv{grid-template-columns:minmax(0,1fr) 92px 84px 92px 60px 96px}
+.av-inv .decomp{display:flex;flex-direction:column;margin:0}
+.av-inv .decomp div{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px dashed var(--line);font-size:12.5px}
+.av-inv .decomp dt{color:var(--muted)}
+.av-inv .decomp dd{margin:0;white-space:nowrap}
+.av-inv .decomp .tot dt,.av-inv .decomp .tot dd{color:var(--ink);font-weight:600}
 .av-inv .rh{font-size:11px;color:var(--faint);padding:6px 0 4px}
 .av-inv .rh span:not(:first-child),.av-inv .rrow .c{text-align:right}
 .av-inv .rrow{width:100%;font:inherit;color:var(--ink);background:none;border:0;border-bottom:1px solid var(--line);padding:11px 2px;cursor:pointer;text-align:left;min-height:44px}
@@ -204,7 +291,7 @@ const CSS = `
 .av-inv .etat.err{color:#b42318}
 @media (max-width:640px){
   .av-inv .rh{display:none}
-  .av-inv .rrow{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:8px;align-items:start}
+  .av-inv .rrow,.av-inv .rrow.rv{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:8px;align-items:start}
   .av-inv .rrow .nmb{grid-column:1/-1}
   .av-inv .rrow .c{text-align:left}
   .av-inv .c .lb{display:block;font-family:var(--font-geist-sans);font-size:10.5px;color:var(--faint);letter-spacing:0;margin-bottom:2px}
@@ -278,7 +365,13 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
   // Valeurs par défaut affichées dans les champs vides, même avant les 3 champs indispensables.
   const defauts = useMemo(() => completer(loc, contexte), [loc, contexte]);
   // Blocs ouverts au départ : ceux où il manque un champ indispensable (fixé une fois : pas de repli en pleine saisie).
-  const [ouvertsInit] = useState(() => ({ achat: !loc.prix, loyers: !(loc.loyerNu || loc.loyerMeuble), foyer: loc.revenu == null }));
+  const [ouvertsInit] = useState(() => ({ achat: !loc.prix, loyers: !(loc.loyerNu || loc.loyerMeuble), foyer: loc.revenu == null, revente: !s.revente?.prixRevente }));
+  const rvs: SaisieRevente = s.revente ?? {};
+  const majR = (patch: Partial<SaisieRevente>) => setS((x) => ({ ...x, revente: { ...(x.revente ?? {}), ...patch } }));
+  const entreeR = useMemo(() => entreeRevente(s, contexte), [s, contexte]);
+  const resR = useMemo(() => (entreeR ? simulerRevente(entreeR) : null), [entreeR]);
+  const defR = useMemo(() => completerRevente(s, contexte), [s, contexte]);
+  const [ouvertR, setOuvertR] = useState<CadreRevente | null>(null);
   const travaux = travauxRetenus(loc, contexte);
 
   if (!s.actif) {
@@ -306,9 +399,20 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
   );
   const notaireAuto = loc.prix ? fraisNotaire(loc.prix, d.dept, d.neuf) : 0;
 
-  const groupes: { cle: keyof typeof t.groupes; resume: string; contenu: React.ReactNode; ouvert?: boolean }[] = [
+  const revente = s.strategie === "revente";
+  const tr = t.rv;
+  const champR = (k: ChampRevente, unite: string, defaut: string) => (
+    <Num key={k} id={`inv-r-${k}`} label={tr.champs[k]} valeur={rvs[k]} defaut={defaut} unite={unite} onChange={(v) => majR({ [k]: v } as Partial<SaisieRevente>)} />
+  );
+  const ckR = (cle: "habite" | "primo" | "etatNeuf" | "sansIra", label: string) => (
+    <label className="inv-k" key={cle}>
+      <input type="checkbox" checked={!!rvs[cle]} onChange={(e) => majR({ [cle]: e.target.checked })} />
+      <span>{label}</span>
+    </label>
+  );
+  const groupesLoc: { cle: string; titre: string; resume: string; contenu: React.ReactNode; ouvert?: boolean }[] = [
     {
-      cle: "achat", ouvert: ouvertsInit.achat,
+      cle: "achat", titre: t.groupes.achat, ouvert: ouvertsInit.achat,
       resume: loc.prix ? fmt(loc.prix) : "",
       contenu: <>
         {champ("prix", "€", "")}
@@ -325,7 +429,7 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
       </>,
     },
     {
-      cle: "credit",
+      cle: "credit", titre: t.groupes.credit,
       resume: `${pourcent(locale, d.taux, 2)} · ${n0(d.dureeAns)} ${t.unites.ans}`,
       contenu: <>
         {champ("apport", "€", "0")}
@@ -336,7 +440,7 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
       </>,
     },
     {
-      cle: "loyers", ouvert: ouvertsInit.loyers,
+      cle: "loyers", titre: t.groupes.loyers, ouvert: ouvertsInit.loyers,
       resume: loc.loyerNu || loc.loyerMeuble ? `${fmt(d.loyerNu)} · ${fmt(d.loyerMeuble)}` : "",
       contenu: <>
         {champ("loyerNu", "€", loc.loyerMeuble ? auto(n0(d.loyerNu)) : "")}
@@ -346,7 +450,7 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
       </>,
     },
     {
-      cle: "charges",
+      cle: "charges", titre: t.groupes.charges,
       resume: fmt(d.taxeFonciere + d.coproNonRecup + d.pno + d.entretien),
       contenu: <>
         {champ("taxeFonciere", "€", n0(d.taxeFonciere))}
@@ -358,7 +462,7 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
       </>,
     },
     {
-      cle: "foyer", ouvert: ouvertsInit.foyer,
+      cle: "foyer", titre: t.groupes.foyer, ouvert: ouvertsInit.foyer,
       resume: loc.revenu != null ? fmt(loc.revenu) : "",
       contenu: <>
         {champ("revenu", "€", "")}
@@ -367,7 +471,7 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
       </>,
     },
     {
-      cle: "hypo",
+      cle: "hypo", titre: t.groupes.hypo,
       resume: `${n0(d.horizon)} ${t.unites.ans}`,
       contenu: <>
         {champ("horizon", t.unites.ans, n0(d.horizon))}
@@ -388,6 +492,82 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
       </>,
     },
   ];
+
+  const groupesRev: typeof groupesLoc = [
+    groupesLoc[0],
+    groupesLoc[1],
+    {
+      cle: "revente", titre: tr.groupe, ouvert: ouvertsInit.revente,
+      resume: rvs.prixRevente ? `${fmt(rvs.prixRevente)} · ${n0(defR.dureeMois)} ${t.unites.mois}` : "",
+      contenu: <>
+        {champR("prixRevente", "€", "")}
+        {champR("dureeMois", t.unites.mois, n0(defR.dureeMois))}
+        {champR("fraisAgenceVente", "€", "0")}
+        {champR("diagnostics", "€", n0(defR.diagnostics))}
+        {champR("mainlevee", "€", tr.auto03)}
+        {champR("chargesPortage", "€", n0(defR.chargesAnnuelles))}
+        {champ("taxeFonciere", "€", n0(defR.taxeFonciere))}
+        {champR("travauxEntreprisePct", "%", n0(defR.travauxEntreprisePct))}
+        <label className="inv-f" htmlFor="inv-vendeurs"><span>{tr.vendeurs}</span>
+          <select id="inv-vendeurs" value={defR.nbVendeurs} onChange={(e) => majR({ nbVendeurs: e.target.value === "2" ? 2 : 1 })}>
+            <option value="1">{tr.unVendeur}</option><option value="2">{tr.deuxVendeurs}</option>
+          </select>
+        </label>
+        {ckR("habite", tr.habite)}
+        {rvs.habite && ckR("primo", tr.primo)}
+        {ckR("etatNeuf", tr.etatNeuf)}
+        {ckR("sansIra", tr.sansIra)}
+      </>,
+    },
+    {
+      cle: "hypoR", titre: t.groupes.hypo, resume: "",
+      contenu: <>
+        {champ("comptableIs", "€", n0(d.comptableIs))}
+        {champ("creationSociete", "€", n0(d.creationSociete))}
+      </>,
+    },
+  ];
+  const groupes = revente ? groupesRev : groupesLoc;
+  const bestR = resR?.cadres.find((c) => c.cadre === resR.meilleur) ?? null;
+  const ordreR = resR ? [...resR.cadres].sort((a, b) => Number(b.eligible) - Number(a.eligible) || b.gainNet - a.gainNet) : [];
+  const ligneR = (r: ResultatCadre) => {
+    const ouv = ouvertR === r.cadre;
+    const estBest = r.cadre === resR?.meilleur;
+    const cls = (v: number) => "c mono" + (v > 0.005 ? " pos" : v < -0.005 ? " neg" : "");
+    return (
+      <div key={r.cadre}>
+        <button type="button" className={"rrow rv" + (estBest ? " best" : "") + (r.eligible ? "" : " off")} aria-expanded={ouv} onClick={() => setOuvertR(ouv ? null : r.cadre)}>
+          <span className="nmb">
+            <span className="nm">
+              {CHEVRON("chv2")}
+              <span className="t">{tr.cadres[r.cadre]}</span>
+              {estBest && <span className="inv-p best">{t.meilleur}</span>}
+              {!r.eligible && <span className="inv-p off">{t.nonEligible}</span>}
+            </span>
+            {!r.eligible && r.raison && <span className="raison">{tr.raisons[r.raison]}</span>}
+          </span>
+          <span className={cls(r.gainAvant)}><span className="lb">{tr.hAvant}</span>{signe(r.gainAvant)}</span>
+          <span className="c mono"><span className="lb">{tr.hImpots}</span>{fmt(r.impots)}</span>
+          <span className={cls(r.gainNet)}><span className="lb">{tr.hNet}</span>{signe(r.gainNet)}</span>
+          <span className={cls(r.rendementAnnuel)}><span className="lb">{tr.hAn}</span>{r.rendementAnnuel <= -1 ? "—" : r.rendementAnnuel > 9.99 ? "> 999 %" : pc(r.rendementAnnuel, 0)}</span>
+          <span className="c mono"><span className="lb">{tr.hMin}</span>{fmt(r.prixMinimum)}</span>
+        </button>
+        {ouv && (
+          <div className="det">
+            <dl className="decomp">
+              {r.detail.map((l) => (
+                <div key={l.cle} className={l.cle === "gainAvant" || l.cle === "gainNet" ? "tot" : ""}>
+                  <dt>{tr.lignes[l.cle] ?? l.cle}</dt><dd className="mono">{l.cle === "prixRevente" ? fmt(l.montant) : signe(l.montant)}</dd>
+                </div>
+              ))}
+            </dl>
+            {r.pv && <p className="note">{tr.pv(fmt(r.pv.brute), r.pv.annees, pc(r.pv.abattIR, 2), pc(r.pv.abattPS, 2), fmt(r.pv.surtaxe))}</p>}
+            {r.alertes.map((a) => <div key={a} className="al">{tr.alertes[a]}</div>)}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const best = res?.regimes.find((r) => r.regime === res.meilleur) ?? null;
   const ordre = res ? [...res.regimes].sort((a, b) => Number(b.eligible) - Number(a.eligible) || b.cumulApresImpot - a.cumulApresImpot) : [];
@@ -452,21 +632,50 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
           {etat === "en_cours" ? t.enregistrement : etat === "ok" ? t.enregistre : etat === "erreur" ? t.erreur : ""}
         </span>
       </div>
-      <div className="sub">{t.sub}</div>
+      <div className="sub">{revente ? tr.sub : t.sub}</div>
 
       <div className="seg" role="group">
-        <button type="button" aria-pressed={s.strategie === "location"} onClick={() => setS((x) => ({ ...x, strategie: "location" }))}>{t.location}</button>
-        <button type="button" aria-pressed={false} disabled>{t.revente}<small>{t.bientot}</small></button>
+        <button type="button" aria-pressed={!revente} onClick={() => setS((x) => ({ ...x, strategie: "location" }))}>{t.location}</button>
+        <button type="button" aria-pressed={revente} onClick={() => setS((x) => ({ ...x, strategie: "revente" }))}>{t.revente}</button>
       </div>
 
       {groupes.map((g) => (
         <details key={g.cle} className="grp" open={g.ouvert}>
-          <summary>{CHEVRON("chv")}<span>{t.groupes[g.cle]}</span><span className="res">{g.resume}</span></summary>
+          <summary>{CHEVRON("chv")}<span>{g.titre}</span><span className="res">{g.resume}</span></summary>
           <div className="champs">{g.contenu}</div>
         </details>
       ))}
 
-      {!res || !best ? <p className="manque">{t.manque}</p> : (
+      {revente && (!resR || !bestR ? <p className="manque">{tr.manque}</p> : (
+        <>
+          <div className="prog">
+            <div className="prow">
+              <div className={"ppct" + (bestR.gainNet < -0.5 ? " neg" : "")}>
+                <span className="nw">{signe(bestR.gainNet)}</span><small>{tr.net(defR.dureeMois)}</small>
+              </div>
+              <div className="plbl">{t.avec + " " + tr.cadres[bestR.cadre]}</div>
+            </div>
+            <div className={"verdict " + (bestR.gainNet >= 0 ? "g" : "r")}>
+              {bestR.gainNet >= 0 ? tr.parAn(bestR.rendementAnnuel > 9.99 ? "> 999 %" : pc(bestR.rendementAnnuel, 0)) : tr.perte(fmt(bestR.prixMinimum))}
+            </div>
+            <div className="chips">
+              <span className="chip"><span>{tr.coutOp}</span><b>{fmt(resR.coutOperation)}</b></span>
+              <span className="chip"><span>{tr.mise}</span><b>{fmt(bestR.mise)}</b></span>
+              <span className="chip"><span>{tr.prixMin}</span><b>{fmt(bestR.prixMinimum)}</b></span>
+              <span className="chip"><span>{tr.duree}</span><b>{n0(defR.dureeMois) + " " + t.unites.mois}</b></span>
+            </div>
+          </div>
+
+          <div className="phase-t">
+            <span className="pt-lbl">{tr.comparer}</span>
+            <span className="pt-meta">{tr.enMois(defR.dureeMois)}</span>
+          </div>
+          <div className="rh rv" aria-hidden="true"><span>{tr.hCadre}</span><span>{tr.hAvant}</span><span>{tr.hImpots}</span><span>{tr.hNet}</span><span>{tr.hAn}</span><span>{tr.hMin}</span></div>
+          {ordreR.map(ligneR)}
+        </>
+      ))}
+
+      {!revente && (!res || !best ? <p className="manque">{t.manque}</p> : (
         <>
           <div className="prog">
             <div className="prow">
@@ -495,9 +704,9 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
           <div className="rh" aria-hidden="true"><span>{t.hRegime}</span><span>{t.hAn1}</span><span>{t.hMoy}</span><span>{t.hImpots}</span><span>{t.hEcart}</span></div>
           {ordre.map(ligne)}
         </>
-      )}
+      ))}
 
-      <p className="avert">{t.avertissement}</p>
+      <p className="avert">{revente ? tr.avertissement : t.avertissement}</p>
       <button type="button" className="lien disc" onClick={() => setS((x) => ({ ...x, actif: false }))}>{t.desactiver}</button>
     </div>
   );
