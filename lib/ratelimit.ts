@@ -39,10 +39,11 @@ const LIMITERS: Record<LimitKind, Ratelimit | null> = {
   planCreation: make(Ratelimit.slidingWindow(20, "3600 s"), "avyora:plan-creation"), // 20 créations / h
   // Une estimation née d'un plan crée un projet à chaque validation : sa propre catégorie, serrée.
   planEstimation: make(Ratelimit.slidingWindow(10, "3600 s"), "avyora:plan-estimation"), // 10 / h
+  marche: make(Ratelimit.slidingWindow(30, "60 s"), "avyora:marche"), // 30 demandes de prix du marché / min / compte
 };
 
 export type LimitKind =
-  | "auth" | "api" | "ia" | "pdf" | "pdfHeure" | "pdfIp" | "lienAdresse" | "lienIp" | "plan" | "planCreation" | "planEstimation";
+  | "auth" | "api" | "ia" | "pdf" | "pdfHeure" | "pdfIp" | "lienAdresse" | "lienIp" | "plan" | "planCreation" | "planEstimation" | "marche";
 
 /**
  * Les catégories qui CRÉENT des lignes en base (« Mes plans ») ou qui coûtent cher (le plafond horaire des PDF) se
@@ -76,6 +77,8 @@ const MEMOIRE: Partial<Record<LimitKind, { max: number; fenetreMs: number }>> = 
   plan: { max: 90, fenetreMs: 60_000 },
   planCreation: { max: 20, fenetreMs: 3_600_000 },
   planEstimation: { max: 10, fenetreMs: 3_600_000 },
+  /* Prix du marché (M3) : chaque demande peut télécharger plusieurs Mo de ventes DVF. */
+  marche: { max: 30, fenetreMs: 60_000 },
 };
 const traces = new Map<string, number[]>();
 let memoireSignalee = false;

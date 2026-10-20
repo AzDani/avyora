@@ -13,13 +13,13 @@ describe("valeurs par défaut et champs indispensables", () => {
     expect(entreeDepuisSaisie({ prix: 150_000, loyerNu: 800 }, P)).toBeNull();
     expect(entreeDepuisSaisie({ prix: 150_000, loyerNu: 800, revenu: 40_000 }, P)).not.toBeNull();
   });
-  it("défauts tirés du projet : département, appartement, travaux de l'estimation, loyer meublé + 15 %", () => {
+  it("défauts tirés du projet : département, appartement, travaux de l'estimation, loyer meublé + 12 %", () => {
     const e = completer({ prix: 150_000, loyerNu: 800, revenu: 40_000 }, P);
     expect(e.dept).toBe("75");
     expect(e.collectif).toBe(true);
     expect(e.neuf).toBe(false);
     expect(e.travaux).toBe(32_400);
-    expect(e.loyerMeuble).toBe(920);
+    expect(e.loyerMeuble).toBe(896);
     expect(e.travauxDeductiblesPct).toBe(100);
     expect(e.terrainPct).toBe(15);
     expect(e.fraisNotaire).toBeNull();

@@ -5,13 +5,13 @@
  */
 import { z } from "zod";
 import { departement } from "./impot";
-import { DEFAUTS } from "./regles";
+import { DEFAUTS, MAJORATION_MEUBLE } from "./regles";
 import { REGIMES, type EntreeLocation, type NiveauLoyer, type Regime } from "./location";
 import { CADRES, type CadreRevente, type EntreeRevente } from "./revente";
 
 /** Champs numériques saisissables, avec leurs bornes (montants en €, taux et parts en %). */
 export const CHAMPS = {
-  prix: [0, 50_000_000], fraisNotaire: [0, 5_000_000], fraisAgence: [0, 5_000_000], travaux: [0, 20_000_000],
+  prix: [0, 50_000_000], surface: [5, 2_000], fraisNotaire: [0, 5_000_000], fraisAgence: [0, 5_000_000], travaux: [0, 20_000_000],
   travauxDeductiblesPct: [0, 100], mobilier: [0, 1_000_000], valeurApres: [0, 50_000_000],
   apport: [0, 50_000_000], taux: [0, 20], dureeAns: [1, 30], assurancePct: [0, 3], fraisDossier: [0, 500_000],
   loyerNu: [0, 500_000], loyerMeuble: [0, 500_000], loyerBailleurPrive: [0, 500_000], vacanceMois: [0, 12],
@@ -35,6 +35,8 @@ export type SaisieLocation = Partial<Record<ChampNum, number | null>> & {
   suiviReel?: boolean;
   /** Le régime que l'utilisateur envisage, comparé au meilleur (null = pas encore choisi). */
   choix?: Regime | null;
+  /** Commune choisie (code INSEE) quand le code postal en couvre plusieurs ; sert aux prix du marché. */
+  codeCommune?: string | null;
 };
 
 /** Champs propres à l'achat-revente ; l'achat, les travaux et le crédit sont partagés avec la location. */
@@ -73,6 +75,7 @@ export const investSchema = z.object({
     niveauBailleurPrive: z.enum(["intermediaire", "social", "tres_social"]).optional(),
     suiviReel: z.boolean().optional(),
     choix: z.enum(REGIMES as [Regime, ...Regime[]]).nullable().optional(),
+    codeCommune: z.string().regex(/^[0-9][0-9AB][0-9]{3}$/).nullable().optional(),
   }).strict(),
   revente: z.object({
     ...(Object.fromEntries((Object.keys(CHAMPS_REVENTE) as ChampRevente[]).map((k) => [k, z.number().finite().min(CHAMPS_REVENTE[k][0]).max(CHAMPS_REVENTE[k][1]).nullable().optional()])) as Record<ChampRevente, z.ZodOptional<z.ZodNullable<z.ZodNumber>>>),
@@ -90,6 +93,8 @@ export type ContexteProjet = {
   codePostal?: string;
   typeBien?: string;
   nature?: "reno" | "neuf";
+  /** Surface habitable de l'estimation (m²). */
+  surface?: number;
   /** Travaux de l'estimation, aléas compris. */
   travauxEstimes: number;
   /** Prévision de fin de chantier des dépenses réelles (M5), s'il y a des dépenses. */
@@ -116,8 +121,8 @@ export function completer(s: SaisieLocation, p: ContexteProjet): EntreeLocation 
   const neuf = s.neuf ?? p.nature === "neuf";
   const terrainABatir = s.terrain ?? p.nature === "neuf";
   const collectif = s.collectif ?? (p.typeBien ? p.typeBien !== "Maison" : true);
-  const loyerNu = v(s.loyerNu, Math.round(v(s.loyerMeuble, 0) / 1.15));
-  const loyerMeuble = v(s.loyerMeuble, Math.round(loyerNu * 1.15));
+  const loyerNu = v(s.loyerNu, Math.round(v(s.loyerMeuble, 0) / (1 + MAJORATION_MEUBLE)));
+  const loyerMeuble = v(s.loyerMeuble, Math.round(loyerNu * (1 + MAJORATION_MEUBLE)));
   const prix = v(s.prix, 0);
   return {
     prix,

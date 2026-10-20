@@ -333,7 +333,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
     const b = bilanBudget(repBudget, depenses ?? []);
     if (!b) return null;
     const c = reponses.ctx;
-    return { codePostal: c?.codePostal ?? reponses.codePostal, typeBien: c?.type, nature: c?.nature === "neuf" ? "neuf" : "reno", travauxEstimes: b.estimation, travauxPrevision: depenses && depenses.length ? b.prevision : undefined };
+    return { codePostal: c?.codePostal ?? reponses.codePostal, typeBien: c?.type, nature: c?.nature === "neuf" ? "neuf" : "reno", surface: c?.surface, travauxEstimes: b.estimation, travauxPrevision: depenses && depenses.length ? b.prevision : undefined };
   }, [invest, repBudget, depenses, reponses]);
   const [closedPh, setClosedPh] = useState<Record<string, boolean>>({}); // phases repliées (Suivi / Détail)
   const togglePh = useCallback((ph: string) => setClosedPh((p) => ({ ...p, [ph]: !p[ph] })), []);

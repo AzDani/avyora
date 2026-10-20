@@ -15,6 +15,8 @@ import { entreeDepuisSaisie, completer, travauxRetenus, entreeRevente, completer
 import { simulerRevente, CADRES, type CadreRevente, type ResultatCadre, type AlerteRevente } from "@/lib/investissement/revente";
 import { conseilsLocation, conseilsRevente, ecartLocation, ecartRevente, type CleConseilLocation, type CleConseilRevente } from "@/lib/investissement/conseils";
 import { fraisNotaire } from "@/lib/investissement/impot";
+import { MAJORATION_MEUBLE } from "@/lib/investissement/regles";
+import type { Marche } from "@/lib/marche/serveur";
 
 const TR = {
   fr: {
@@ -26,7 +28,7 @@ const TR = {
     location: "Location", revente: "Achat-revente", bientot: "bientôt",
     groupes: { achat: "Achat", credit: "Crédit", loyers: "Loyers", charges: "Charges du propriétaire", foyer: "Ton foyer fiscal", hypo: "Hypothèses" },
     champs: {
-      prix: "Prix d'achat", fraisNotaire: "Frais de notaire", fraisAgence: "Frais d'agence", travaux: "Travaux",
+      prix: "Prix d'achat", surface: "Surface habitable", fraisNotaire: "Frais de notaire", fraisAgence: "Frais d'agence", travaux: "Travaux",
       travauxDeductiblesPct: "Travaux déductibles en location nue", mobilier: "Mobilier (meublé)", valeurApres: "Valeur du bien après travaux",
       apport: "Apport", taux: "Taux du crédit", dureeAns: "Durée", assurancePct: "Assurance emprunteur (du capital, par an)", fraisDossier: "Frais de dossier et de garantie",
       loyerNu: "Loyer mensuel nu (hors charges)", loyerMeuble: "Loyer mensuel meublé (hors charges)", loyerBailleurPrive: "Loyer plafonné du statut du bailleur privé", vacanceMois: "Vacance locative par an",
@@ -91,6 +93,30 @@ const TR = {
       lmnp_revente: () => "À la revente, les amortissements déduits en LMNP réel sont retirés du prix d'achat pour calculer la plus-value (depuis 2025). L'impôt économisé pendant la location reste en général bien supérieur, surtout si tu gardes le bien longtemps (abattements pour durée de détention).",
       sci_ir_transmission: () => "Une SCI à l'IR n'économise pas d'impôt sur les loyers : elle sert à transmettre ou à acheter à plusieurs. Si ce n'est pas ton but, la détention en direct coûte moins cher.",
     } as Record<CleConseilLocation, (v: number) => string>,
+    mk: {
+      commune: "Commune",
+      chargement: "Recherche des prix du marché…",
+      loyer: (c: string, m: string) => `Marché à ${c} : loyers d'annonce non meublés de la carte des loyers ${m} (ANIL), charges estimées retirées.`,
+      loyerVal: (hc: string, bas: string, haut: string) => `${hc} €/m² hors charges · fourchette ${bas} à ${haut} €/m²`,
+      loyerConseil: (nu: string, meuble: string, p: string) => `Pour ta surface : environ ${nu} par mois en nu, ${meuble} en meublé (+${p}).`,
+      peuFiable: "Peu d'annonces dans la commune : indicateur à prendre avec prudence.",
+      encadre: (c: string) => `Loyers encadrés à ${c} : le loyer ne peut pas dépasser le loyer de référence majoré de ton quartier, même si le marché est plus haut. Vérifie-le sur le simulateur officiel de ta ville.`,
+      utiliser: "Utiliser ces loyers", utiliserPrix: (m: string) => `Utiliser ${m}`,
+      loyerTropHaut: (k: string, x: string, h: string) => `Ton loyer ${k} (${x} €/m²) dépasse le haut de la fourchette du marché (${h} €/m²) : il risque de ne pas se louer à ce prix, et toute la simulation en dépend.`,
+      nu: "nu", meuble: "meublé",
+      ventes: (n: number, t: string, proche: boolean, c: string, d: string, f: string) => `${n} ${t} ${proche ? "de surface proche " : ""}vendus à ${c} entre ${d} et ${f} (DVF, ventes notariées).`,
+      types: { appartement: "appartements", maison: "maisons" },
+      ventesVal: (med: string, p25: string, p75: string) => `Médiane ${med} €/m² · la moitié des ventes entre ${p25} et ${p75} €/m²`,
+      ventesConseil: (bas: string, haut: string) => `Pour ta surface : ${bas} (prix médian) à ${haut} (haut de fourchette). Un bien rénové vise plutôt le haut.`,
+      neufNote: "Les ventes publiques sont surtout de l'ancien : une maison neuve se vend en général plus cher.",
+      exemples: "Voir les ventes les plus proches",
+      horsDvf: "Pas de données publiques de ventes en Alsace-Moselle ni à Mayotte : pas de fourchette de prix ici.",
+      peuDeVentes: "Trop peu de ventes comparables dans la commune pour donner une fourchette de prix.",
+      indisponible: "Les données de ventes sont indisponibles pour le moment.",
+      revTropHaut: (x: string, p90: string) => `Ton prix de revente (${x} €/m²) est au-dessus de 90 % des ventes du secteur (${p90} €/m²) : l'opération repose sur un prix hors marché.`,
+      revHaut: (x: string, p75: string) => `Ton prix de revente (${x} €/m²) dépasse 3 ventes sur 4 du secteur (${p75} €/m²) : réaliste seulement pour un bien très bien rénové ou placé.`,
+      source: "Sources : DVF (DGFiP, Etalab) ; estimations ANIL à partir des données du Groupe SeLoger et de leboncoin.",
+    },
     rv: {
       groupe: "Revente",
       sub: "Ce que l'opération te rapporte après impôts, selon le cadre dans lequel tu achètes et revends.",
@@ -155,7 +181,7 @@ const TR = {
     location: "Rental", revente: "Buy and resell", bientot: "coming soon",
     groupes: { achat: "Purchase", credit: "Loan", loyers: "Rent", charges: "Owner costs", foyer: "Your tax household", hypo: "Assumptions" },
     champs: {
-      prix: "Purchase price", fraisNotaire: "Notary fees", fraisAgence: "Agency fees", travaux: "Renovation work",
+      prix: "Purchase price", surface: "Living area", fraisNotaire: "Notary fees", fraisAgence: "Agency fees", travaux: "Renovation work",
       travauxDeductiblesPct: "Work deductible for unfurnished rental", mobilier: "Furniture (furnished)", valeurApres: "Value after renovation",
       apport: "Down payment", taux: "Loan rate", dureeAns: "Term", assurancePct: "Loan insurance (of principal, per year)", fraisDossier: "Loan and guarantee fees",
       loyerNu: "Monthly rent, unfurnished (excl. charges)", loyerMeuble: "Monthly rent, furnished (excl. charges)", loyerBailleurPrive: "Capped rent, private landlord status", vacanceMois: "Vacancy per year",
@@ -220,6 +246,30 @@ const TR = {
       lmnp_revente: () => "On resale, depreciation deducted under LMNP actual expenses is taken off the purchase price when computing the capital gain (since 2025). The tax saved while renting is usually far larger, especially if you keep the property for a long time (holding-period allowances).",
       sci_ir_transmission: () => "An SCI under income tax doesn't save tax on rent: it's for estate planning or buying with others. If that's not your goal, owning directly costs less.",
     } as Record<CleConseilLocation, (v: number) => string>,
+    mk: {
+      commune: "Town",
+      chargement: "Looking up market prices…",
+      loyer: (c: string, m: string) => `Market in ${c}: unfurnished asking rents from the ${m} rent map (ANIL), estimated charges removed.`,
+      loyerVal: (hc: string, bas: string, haut: string) => `€${hc}/m² excl. charges · range €${bas} to €${haut}/m²`,
+      loyerConseil: (nu: string, meuble: string, p: string) => `For your size: about ${nu} a month unfurnished, ${meuble} furnished (+${p}).`,
+      peuFiable: "Few listings in this town: treat this figure with caution.",
+      encadre: (c: string) => `Rent control in ${c}: rent can't exceed your area's capped reference rent, even if the market is higher. Check it on your city's official simulator.`,
+      utiliser: "Use these rents", utiliserPrix: (m: string) => `Use ${m}`,
+      loyerTropHaut: (k: string, x: string, h: string) => `Your ${k} rent (€${x}/m²) is above the top of the market range (€${h}/m²): it may not rent at that price, and the whole simulation depends on it.`,
+      nu: "unfurnished", meuble: "furnished",
+      ventes: (n: number, t: string, proche: boolean, c: string, d: string, f: string) => `${n} ${t} ${proche ? "of similar size " : ""}sold in ${c} between ${d} and ${f} (DVF, notarized sales).`,
+      types: { appartement: "apartments", maison: "houses" },
+      ventesVal: (med: string, p25: string, p75: string) => `Median €${med}/m² · half of sales between €${p25} and €${p75}/m²`,
+      ventesConseil: (bas: string, haut: string) => `For your size: ${bas} (median) to ${haut} (top of range). A renovated property aims for the top.`,
+      neufNote: "Public sales are mostly older homes: a new house usually sells for more.",
+      exemples: "See the closest sales",
+      horsDvf: "No public sales data in Alsace-Moselle or Mayotte: no price range here.",
+      peuDeVentes: "Too few comparable sales in this town to give a price range.",
+      indisponible: "Sales data is unavailable right now.",
+      revTropHaut: (x: string, p90: string) => `Your resale price (€${x}/m²) is above 90% of local sales (€${p90}/m²): the deal relies on an off-market price.`,
+      revHaut: (x: string, p75: string) => `Your resale price (€${x}/m²) beats 3 sales out of 4 locally (€${p75}/m²): realistic only for a very well renovated or located property.`,
+      source: "Sources: DVF (French tax authority, Etalab); ANIL estimates from Groupe SeLoger and leboncoin data.",
+    },
     rv: {
       groupe: "Resale",
       sub: "What the deal earns you after tax, depending on how you buy and resell (French rules).",
@@ -352,6 +402,13 @@ const CSS = `
 .av-inv .avert{font-size:11.5px;color:var(--faint);margin:14px 0 0;line-height:1.5}
 .av-inv .etat{font-size:11.5px;color:var(--faint)}
 .av-inv .etat.err{color:#b42318}
+.av-inv .mk{grid-column:1/-1;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);padding:10px 12px;font-size:12.5px;line-height:1.5;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.av-inv .mk b{color:var(--ink);font-weight:600}
+.av-inv .mk .v{font-family:var(--font-geist-mono),monospace;font-variant-numeric:tabular-nums;color:var(--ink);font-size:13px}
+.av-inv .mk .lien{min-height:36px;padding:4px 0}
+.av-inv .mk details summary{cursor:pointer;color:var(--brand);font-weight:600;min-height:32px;display:flex;align-items:center}
+.av-inv .mk ul{margin:4px 0 0;padding-left:18px;font-family:var(--font-geist-mono),monospace;font-size:12px}
+.av-inv .mk .al{margin-top:4px}
 .av-inv .inv-p.mine{border-color:var(--brand);color:var(--brand)}
 .av-inv label.inv-f.chs{max-width:420px;margin-top:16px}
 .av-inv .chx{border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.5;margin-top:8px;border:1px solid}
@@ -446,6 +503,26 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
   const [ouvertR, setOuvertR] = useState<CadreRevente | null>(null);
   const travaux = travauxRetenus(loc, contexte);
 
+  // Prix du marché (ventes DVF, loyers ANIL) de la commune, pour conseiller le loyer et le prix de revente.
+  const surfaceBien = typeof loc.surface === "number" ? loc.surface : contexte.surface ?? 0;
+  const [marche, setMarche] = useState<Marche | null>(null);
+  const [marcheEtat, setMarcheEtat] = useState<"" | "charge" | "erreur">("");
+  useEffect(() => {
+    const cp = contexte.codePostal;
+    if (!s.actif || !cp || !/^\d{5}$/.test(cp) || !(surfaceBien >= 5)) return;
+    const q = new URLSearchParams({ cp, surface: String(Math.round(surfaceBien)) });
+    if (contexte.typeBien) q.set("type", contexte.typeBien);
+    if (loc.codeCommune) q.set("insee", loc.codeCommune);
+    const ctrl = new AbortController();
+    const h = setTimeout(async () => {
+      setMarcheEtat("charge");
+      const r = await fetch(`/api/marche?${q}`, { signal: ctrl.signal }).catch(() => null);
+      if (ctrl.signal.aborted) return;
+      if (r && r.ok) { setMarche((await r.json()) as Marche); setMarcheEtat(""); } else setMarcheEtat("erreur");
+    }, 600);
+    return () => { clearTimeout(h); ctrl.abort(); };
+  }, [s.actif, contexte.codePostal, contexte.typeBien, surfaceBien, loc.codeCommune]);
+
   if (!s.actif) {
     return (
       <div className="card av-inv">
@@ -474,6 +551,66 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
 
   const revente = s.strategie === "revente";
   const tr = t.rv;
+
+  // ── Prix du marché ──
+  const mk = t.mk;
+  const arrondi = (v: number, pas: number): number => Math.round(v / pas) * pas;
+  const dateMk = (x: string): string => new Date(x + "T00:00:00Z").toLocaleDateString(locale === "fr" ? "fr-FR" : "en-US", { month: "long", year: "numeric", timeZone: "UTC" });
+  const L = marche?.loyer ?? null, V = marche?.ventes ?? null, nomC = marche?.commune?.nom ?? "";
+  const m2 = (v: number): string => nombre(locale, v, 1);
+  const loyerNuMk = L && surfaceBien ? arrondi(L.hc * surfaceBien, 10) : 0;
+  const loyerMeubleMk = arrondi(loyerNuMk * (1 + MAJORATION_MEUBLE), 10);
+  const alertesLoyer: string[] = [];
+  if (L && surfaceBien > 0) {
+    if (loc.loyerNu && loc.loyerNu / surfaceBien > L.hcHaut) alertesLoyer.push(mk.loyerTropHaut(mk.nu, m2(loc.loyerNu / surfaceBien), m2(L.hcHaut)));
+    if (loc.loyerMeuble && loc.loyerMeuble / surfaceBien > L.hcHaut * (1 + MAJORATION_MEUBLE)) alertesLoyer.push(mk.loyerTropHaut(mk.meuble, m2(loc.loyerMeuble / surfaceBien), m2(L.hcHaut * (1 + MAJORATION_MEUBLE))));
+  }
+  const alertesRevente: string[] = [];
+  if (V && surfaceBien > 0 && rvs.prixRevente) {
+    const x = rvs.prixRevente / surfaceBien;
+    if (x > V.p90) alertesRevente.push(mk.revTropHaut(n0(x), n0(V.p90)));
+    else if (x > V.p75) alertesRevente.push(mk.revHaut(n0(x), n0(V.p75)));
+  }
+  const chargeMk = marcheEtat === "charge" && !marche ? <div className="mk" key="mk">{mk.chargement}</div> : null;
+  const blocLoyer = marche ? (
+    <div className="mk" key="mk">
+      {L ? <>
+        <span>{mk.loyer(nomC, L.millesime)}</span>
+        <span className="v">{mk.loyerVal(m2(L.hc), m2(L.hcBas), m2(L.hcHaut))}</span>
+        {loyerNuMk > 0 && <span>{mk.loyerConseil(fmt(loyerNuMk), fmt(loyerMeubleMk), pourcent(locale, MAJORATION_MEUBLE * 100, 0))}</span>}
+        {!L.fiable && <span>{mk.peuFiable}</span>}
+        {loyerNuMk > 0 && <button type="button" className="lien" onClick={() => maj({ loyerNu: loyerNuMk, loyerMeuble: loyerMeubleMk })}>{mk.utiliser}</button>}
+      </> : null}
+      {marche.encadrement && <div className="al">{mk.encadre(nomC)}</div>}
+      {alertesLoyer.map((a) => <div key={a} className="al">{a}</div>)}
+      <span className="note">{mk.source}</span>
+    </div>
+  ) : chargeMk;
+  const prixMed = V && surfaceBien ? arrondi(V.med * surfaceBien, 1_000) : 0, prixHaut = V && surfaceBien ? arrondi(V.p75 * surfaceBien, 1_000) : 0;
+  const blocVentes = marche ? (
+    <div className="mk" key="mk">
+      {V ? <>
+        <span>{mk.ventes(V.n, mk.types[contexte.typeBien === "Maison" ? "maison" : "appartement"], V.surfaceProche, nomC, dateMk(V.debut), dateMk(V.fin))}</span>
+        <span className="v">{mk.ventesVal(n0(V.med), n0(V.p25), n0(V.p75))}</span>
+        {prixHaut > 0 && <span>{mk.ventesConseil(fmt(prixMed), fmt(prixHaut))}</span>}
+        {contexte.nature === "neuf" && <span>{mk.neufNote}</span>}
+        {prixHaut > 0 && <button type="button" className="lien" onClick={() => majR({ prixRevente: prixHaut })}>{mk.utiliserPrix(fmt(prixHaut))}</button>}
+        <details>
+          <summary>{mk.exemples}</summary>
+          <ul>{V.exemples.map((e, i) => <li key={i}>{dateMk(e.date)} · {n0(e.surface)} m² · {fmt(e.prix)} · {n0(e.m2)} €/m²</li>)}</ul>
+        </details>
+      </> : <span>{marche.ventesAbsentes === "hors_dvf" ? mk.horsDvf : marche.ventesAbsentes === "indisponible" ? mk.indisponible : mk.peuDeVentes}</span>}
+      {alertesRevente.map((a) => <div key={a} className="al">{a}</div>)}
+      <span className="note">{mk.source}</span>
+    </div>
+  ) : chargeMk;
+  const choixCommune = marche && marche.communes.length > 1 ? (
+    <label className="inv-f" htmlFor="inv-commune" key="commune"><span>{mk.commune}</span>
+      <select id="inv-commune" value={marche.commune?.code ?? ""} onChange={(e) => maj({ codeCommune: e.target.value })}>
+        {marche.communes.map((c) => <option key={c.code} value={c.code}>{c.nom}</option>)}
+      </select>
+    </label>
+  ) : null;
   const champR = (k: ChampRevente, unite: string, defaut: string) => (
     <Num key={k} id={`inv-r-${k}`} label={tr.champs[k]} valeur={rvs[k]} defaut={defaut} unite={unite} onChange={(v) => majR({ [k]: v } as Partial<SaisieRevente>)} />
   );
@@ -489,6 +626,8 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
       resume: loc.prix ? fmt(loc.prix) : "",
       contenu: <>
         {champ("prix", "€", "")}
+        {champ("surface", "m²", contexte.surface ? n0(contexte.surface) : "")}
+        {choixCommune}
         {champ("fraisNotaire", "€", notaireAuto ? auto(n0(notaireAuto)) : t.auto)}
         {champ("fraisAgence", "€", "0")}
         {champ("travaux", "€", n0(travaux.montant), travaux.source === "saisie" ? undefined : t.sourceTravaux[travaux.source])}
@@ -521,6 +660,7 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
         {champ("loyerMeuble", "€", loc.loyerNu ? auto(n0(d.loyerMeuble)) : "")}
         {champ("loyerBailleurPrive", "€", n0(d.loyerBailleurPrive))}
         {champ("vacanceMois", t.unites.mois, nombre(locale, d.vacanceMois, 1))}
+        {blocLoyer}
       </>,
     },
     {
@@ -591,6 +731,7 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
         {rvs.habite && ckR("primo", tr.primo)}
         {ckR("etatNeuf", tr.etatNeuf)}
         {ckR("sansIra", tr.sansIra)}
+        {blocVentes}
       </>,
     },
     {
@@ -726,6 +867,8 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
         </details>
       ))}
 
+      {revente && alertesRevente.map((a) => <div key={a} className="al">{a}</div>)}
+      {!revente && alertesLoyer.map((a) => <div key={a} className="al">{a}</div>)}
       {revente && (!resR || !bestR ? <p className="manque">{tr.manque}</p> : (
         <>
           <div className="prog">

@@ -102,6 +102,10 @@ export const FRAIS_ACHAT = {
 } as const;
 
 /** Valeurs par défaut non officielles (marquées « à confirmer » dans le document), modifiables par l'utilisateur. */
+/** Majoration du loyer meublé sur le loyer nu. Pas de chiffre national officiel : +14 % à Paris (loyers de référence
+ *  de l'encadrement, 2025), environ +10 % le plus souvent cité ailleurs ; on retient le milieu. */
+export const MAJORATION_MEUBLE = 0.12;
+
 export const DEFAUTS = {
   comptableLmnp: 500,
   comptableSciIr: 400,

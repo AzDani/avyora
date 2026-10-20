@@ -132,9 +132,9 @@ describe("avec Upstash", () => {
       vi.doUnmock("@upstash/redis");
       vi.doUnmock("@upstash/ratelimit");
     }
-    expect(prefixes).toHaveLength(11);
-    expect(new Set(prefixes).size).toBe(11);
-    for (const p of ["avyora:auth", "avyora:api", "avyora:pdf", "avyora:pdf-heure", "avyora:pdf-ip", "avyora:lien-adresse", "avyora:lien-ip"]) expect(prefixes).toContain(p);
+    expect(prefixes).toHaveLength(12);
+    expect(new Set(prefixes).size).toBe(12);
+    for (const p of ["avyora:auth", "avyora:api", "avyora:pdf", "avyora:pdf-heure", "avyora:pdf-ip", "avyora:lien-adresse", "avyora:lien-ip", "avyora:marche"]) expect(prefixes).toContain(p);
   });
 
   it("store en panne : le plafond horaire des PDF se ferme (fail-closed), le lien d'accès reste ouvert", async () => {
