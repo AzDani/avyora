@@ -338,8 +338,10 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
   const avecTuiles = !!projectId && !readOnly;
   const [espace, setEspace] = useState<Espace>("estim");
   useEffect(() => {
-    const e = ANCRES_INV[window.location.hash.slice(1)];
-    if (e) setEspace(e);
+    const lire = () => setEspace(ANCRES_INV[window.location.hash.slice(1)] ?? "estim");
+    if (window.location.hash) lire();
+    window.addEventListener("hashchange", lire);
+    return () => window.removeEventListener("hashchange", lire);
   }, []);
   const choisirEspace = useCallback((e: Espace) => {
     setEspace(e);
@@ -474,7 +476,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
   const donneesTuiles = {
     estim: { ttc: t.ttc, m2: eurM2 },
     chantier: { fait: lignes.filter((li) => statutLigne(statuts, li) === 2).length, enCours: lignes.filter((li) => statutLigne(statuts, li) === 1).length, total: lignes.length },
-    budget: depensesLive && bilanLive ? { prevision: bilanLive.prevision, estimation: bilanLive.estimation, nbDepenses: depensesLive.length, depasse: bilanLive.alertes.some((a) => a.type === "depasse") } : undefined,
+    budget: depensesLive && bilanLive ? { prevision: bilanLive.prevision, estimation: bilanLive.estimation, paye: bilanLive.reel, nbDepenses: depensesLive.length, depasse: bilanLive.alertes.some((a) => a.type === "depasse") } : undefined,
     invest: invest && ctxInvest ? resumeInvest : undefined,
   };
   const masque = (e: Espace): boolean => avecTuiles && espace !== e;
