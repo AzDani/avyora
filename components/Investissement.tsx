@@ -17,6 +17,7 @@ import { conseilsLocation, conseilsRevente, ecartLocation, ecartRevente, type Cl
 import { fraisNotaire } from "@/lib/investissement/impot";
 import { MAJORATION_MEUBLE } from "@/lib/investissement/regles";
 import type { Marche } from "@/lib/marche/serveur";
+import type { ResumeInvest } from "@/components/TuilesProjet";
 
 const TR = {
   fr: {
@@ -117,6 +118,7 @@ const TR = {
       source: "Sources : DVF (DGFiP, Etalab) ; estimations ANIL à partir des données du Groupe SeLoger et de leboncoin.",
     },
     rv: {
+      resume: (c: string) => `net en achat-revente · ${c}`,
       groupe: "Revente",
       sub: "Ce que l'opération te rapporte après impôts, selon le cadre dans lequel tu achètes et revends.",
       champs: {
@@ -269,6 +271,7 @@ const TR = {
       source: "Sources: DVF (French tax authority, Etalab); ANIL estimates from Groupe SeLoger and leboncoin data.",
     },
     rv: {
+      resume: (c: string) => `net, buy-to-resell · ${c}`,
       groupe: "Resale",
       sub: "What the deal earns you after tax, depending on how you buy and resell (French rules).",
       champs: {
@@ -458,9 +461,9 @@ function Num({ id, label, valeur, defaut, unite, aide, onChange }: { id: string;
   );
 }
 
-type Props = { projectId: string; saisie: SaisieInvest; contexte: ContexteProjet };
+type Props = { projectId: string; saisie: SaisieInvest; contexte: ContexteProjet; onResume?: (r: ResumeInvest) => void };
 
-export default function Investissement({ projectId, saisie: initiale, contexte }: Props) {
+export default function Investissement({ projectId, saisie: initiale, contexte, onResume }: Props) {
   const locale = useLocale();
   const t = TR[locale];
   const fmt = (v: number): string => euros(locale, v);
@@ -500,6 +503,19 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
   const defR = useMemo(() => completerRevente(s, contexte), [s, contexte]);
   const [ouvertR, setOuvertR] = useState<CadreRevente | null>(null);
   const travaux = travauxRetenus(loc, contexte);
+
+  // Résumé pour la tuile « Investissement » du tableau de bord du projet.
+  useEffect(() => {
+    if (!onResume) return;
+    if (!s.actif) return onResume({ etat: "off" });
+    if (s.strategie === "revente") {
+      const b = resR?.cadres.find((c) => c.cadre === resR.meilleur);
+      onResume(b ? { etat: "ok", strategie: "revente", valeur: signe(b.gainNet), detail: t.rv.resume(t.rv.cadres[b.cadre]), ton: b.gainNet >= 0 ? "pos" : "neg" } : { etat: "incomplet", strategie: "revente" });
+    } else {
+      const b = res?.regimes.find((r) => r.regime === res.meilleur);
+      onResume(b ? { etat: "ok", strategie: "location", valeur: signe(b.cfMensuelMoyen) + t.parMoisCourt, detail: t.regimes[b.regime], ton: b.cfMensuelMoyen >= 0 ? "pos" : "neg" } : { etat: "incomplet", strategie: "location" });
+    }
+  }, [onResume, s.actif, s.strategie, res, resR, locale]);
 
   // Prix du marché (ventes DVF, loyers ANIL) de la commune, pour conseiller le loyer et le prix de revente.
   const surfaceBien = typeof loc.surface === "number" ? loc.surface : contexte.surface ?? 0;

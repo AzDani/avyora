@@ -5,7 +5,7 @@
  * Remplace l'ancien RapportEstimation pour les projets au format estimateur. Même esthétique que
  * l'estimateur (hero nuit, Geist Mono, tuiles), + statistiques de travaux « à connaître ».
  */
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import { EST_CSS } from "./estimateur-styles";
 import { useLocale, useT } from "@/components/i18n/LangProvider";
 import { catT, catLigne } from "@/lib/estimateur/catalog-i18n";
@@ -22,6 +22,7 @@ import BudgetReel from "@/components/BudgetReel";
 import { bilanBudget, type Depense } from "@/lib/estimateur/budget-reel";
 import Investissement from "@/components/Investissement";
 import type { ContexteProjet, SaisieInvest } from "@/lib/investissement/saisie";
+import TuilesProjet, { CSS_TUILES, type Espace, type ResumeInvest } from "@/components/TuilesProjet";
 
 // Traductions de l'interface (chrome/UI uniquement) — les données (corps d'état, postes) restent telles quelles.
 const TR = {
@@ -311,6 +312,9 @@ const NEUF_CSS = `
 }
 `;
 
+const ANCRES: Record<Espace, string> = { estim: "estimation", chantier: "chantier", budget: "budget", invest: "investissement" };
+const ANCRES_INV: Record<string, Espace> = Object.fromEntries(Object.entries(ANCRES).map(([k, v]) => [v, k as Espace]));
+
 export default function EstimationResultat({ reponses, projectId, readOnly, depenses, invest }: { reponses: { ctx?: Ctx; sel?: Selection; statuts?: Record<string, number>; codePostal?: string; custom?: unknown }; projectId?: string; readOnly?: boolean; /** Dépenses réelles (M5) : la fiche du propriétaire les passe, l'admin et la lecture seule non. */ depenses?: Depense[]; /** Section « Investissement » (M3) : même règle que les dépenses. */ invest?: SaisieInvest }) {
   const locale = useLocale();
   const s = TR[locale];
@@ -327,14 +331,28 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
   const [statuts, setStatuts] = useState<Record<string, number>>(reponses?.statuts || {});
   // Dépenses réelles (M5) : les statuts À JOUR du suivi (un lot terminé fixe sa prévision sur le réel).
   const repBudget = useMemo(() => ({ ...reponses, statuts }), [reponses, statuts]);
+  // Dépenses à jour (la section Budget réel les remonte à chaque ajout ou suppression) : tuile Budget et travaux de l'investissement.
+  const [depensesLive, setDepensesLive] = useState<Depense[] | undefined>(depenses);
+  const [resumeInvest, setResumeInvest] = useState<ResumeInvest | null>(null);
+  // Tableau de bord (projet enregistré) : un espace affiché à la fois, choisi par les tuiles, retenu dans l'adresse (#chantier…).
+  const avecTuiles = !!projectId && !readOnly;
+  const [espace, setEspace] = useState<Espace>("estim");
+  useEffect(() => {
+    const e = ANCRES_INV[window.location.hash.slice(1)];
+    if (e) setEspace(e);
+  }, []);
+  const choisirEspace = useCallback((e: Espace) => {
+    setEspace(e);
+    try { window.history.replaceState(null, "", e === "estim" ? window.location.pathname + window.location.search : "#" + ANCRES[e]); } catch {}
+  }, []);
   // Investissement (M3) : travaux de l'estimation (aléas compris) et, s'il y a des dépenses, la prévision de fin de chantier.
   const ctxInvest = useMemo((): ContexteProjet | null => {
     if (!invest) return null;
-    const b = bilanBudget(repBudget, depenses ?? []);
+    const b = bilanBudget(repBudget, depensesLive ?? []);
     if (!b) return null;
     const c = reponses.ctx;
-    return { codePostal: c?.codePostal ?? reponses.codePostal, typeBien: c?.type, nature: c?.nature === "neuf" ? "neuf" : "reno", surface: c?.surface, travauxEstimes: b.estimation, travauxPrevision: depenses && depenses.length ? b.prevision : undefined };
-  }, [invest, repBudget, depenses, reponses]);
+    return { codePostal: c?.codePostal ?? reponses.codePostal, typeBien: c?.type, nature: c?.nature === "neuf" ? "neuf" : "reno", surface: c?.surface, travauxEstimes: b.estimation, travauxPrevision: depensesLive && depensesLive.length ? b.prevision : undefined };
+  }, [invest, repBudget, depensesLive, reponses]);
   const [closedPh, setClosedPh] = useState<Record<string, boolean>>({}); // phases repliées (Suivi / Détail)
   const togglePh = useCallback((ph: string) => setClosedPh((p) => ({ ...p, [ph]: !p[ph] })), []);
   const dv = useMemo(() => (ctx ? buildDevis(catalogueDe(ctx), ctx, sel) : null), [ctx, sel]);
@@ -451,11 +469,24 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
   const tache = (cle: string) => taches?.get(cle);
   const nbTaches = lignes.length;
 
+  // Tableau de bord : le résumé de chaque espace.
+  const bilanLive = depensesLive ? bilanBudget(repBudget, depensesLive) : null;
+  const donneesTuiles = {
+    estim: { ttc: t.ttc, m2: eurM2 },
+    chantier: { fait: lignes.filter((li) => statutLigne(statuts, li) === 2).length, enCours: lignes.filter((li) => statutLigne(statuts, li) === 1).length, total: lignes.length },
+    budget: depensesLive && bilanLive ? { prevision: bilanLive.prevision, estimation: bilanLive.estimation, nbDepenses: depensesLive.length, depasse: bilanLive.alertes.some((a) => a.type === "depasse") } : undefined,
+    invest: invest && ctxInvest ? resumeInvest : undefined,
+  };
+  const masque = (e: Espace): boolean => avecTuiles && espace !== e;
+
   return (
     <div className="av-estim">
       <style dangerouslySetInnerHTML={{ __html: EST_CSS + EXTRA_CSS }} />
       {neuf && <style dangerouslySetInnerHTML={{ __html: NEUF_CSS }} />}
+      {avecTuiles && <style dangerouslySetInnerHTML={{ __html: CSS_TUILES }} />}
+      {avecTuiles && <TuilesProjet donnees={donneesTuiles} actif={espace} onChoisir={choisirEspace} />}
 
+      <div id="espace-estim" hidden={masque("estim")}>
       {/* Hero */}
       <div className="hero">
         <span className="glow g1" /><span className="glow g2" />
@@ -581,12 +612,22 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
       </div>
 
       {/* Dépenses réelles (M5) : prévu / réel par corps d'état, alertes, prévision finale */}
-      {projectId && invest && ctxInvest && !readOnly && <Investissement projectId={projectId} saisie={invest} contexte={ctxInvest} />}
+      </div>
 
-      {projectId && depenses && !readOnly && <BudgetReel reponses={repBudget} projectId={projectId} depenses={depenses} />}
+      {projectId && invest && ctxInvest && !readOnly && (
+        <div id="espace-invest" hidden={masque("invest")}>
+          <Investissement projectId={projectId} saisie={invest} contexte={ctxInvest} onResume={setResumeInvest} />
+        </div>
+      )}
+
+      {projectId && depenses && !readOnly && (
+        <div id="espace-budget" hidden={masque("budget")}>
+          <BudgetReel reponses={repBudget} projectId={projectId} depenses={depenses} onChange={setDepensesLive} />
+        </div>
+      )}
 
       {/* Détail par lot + suivi de chantier (statuts sauvegardés quand projet enregistré) */}
-      <div className="card">
+      <div className="card" id="espace-chantier" hidden={masque("chantier")}>
         <h2>{projectId ? s.siteTracking : s.theDetails}</h2>
         <div className="sub">{projectId ? s.siteTrackingSub : s.detailsSub}</div>
         {projectId && (() => {

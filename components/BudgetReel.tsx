@@ -7,7 +7,7 @@
  * Rendu à l'intérieur d'EstimationResultat : reprend ses styles (.card, .sub, .prog, .phase-t, .st1/.st2
  * du suivi de chantier) ; le reste est scopé .av-bud.
  */
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { catT } from "@/lib/estimateur/catalog-i18n";
 import { bilanBudget, corpsDuProjet, CORPS_AUTRE, type Depense, type Alerte, type LigneBudget } from "@/lib/estimateur/budget-reel";
@@ -161,13 +161,13 @@ const CSS = `
 @media (prefers-reduced-motion:reduce){.av-bud .gtrack i,.av-bud .btrack i,.av-bud .chv{transition:none}}
 `;
 
-type Props = { reponses: unknown; projectId: string; depenses: Depense[] };
+type Props = { reponses: unknown; projectId: string; depenses: Depense[]; onChange?: (depenses: Depense[]) => void };
 
 /** Ordre de lecture : ce qui dépasse d'abord, puis ce qui approche du prévu, puis le reste. */
 const rang = (l: LigneBudget): number =>
   l.etat === "depasse" || l.etat === "hors_estimation" ? 0 : l.etat === "attention" ? 1 : l.reel > 0 ? 2 : 3;
 
-export default function BudgetReel({ reponses, projectId, depenses: initiales }: Props) {
+export default function BudgetReel({ reponses, projectId, depenses: initiales, onChange }: Props) {
   const locale = useLocale();
   const t = TR[locale];
   const fmt = (v: number): string => euros(locale, v);
@@ -181,6 +181,8 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales }:
   };
 
   const [depenses, setDepenses] = useState<Depense[]>(initiales);
+  // Le tableau de bord du projet (tuile Budget) et l'investissement suivent les dépenses à jour.
+  useEffect(() => { onChange?.(depenses); }, [depenses, onChange]);
   const corps = useMemo(() => corpsDuProjet(reponses), [reponses]);
   const bilan = useMemo(() => bilanBudget(reponses, depenses), [reponses, depenses]);
   const [choix, setChoix] = useState<string>(corps[0] ?? CORPS_AUTRE);
