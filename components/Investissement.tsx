@@ -104,8 +104,7 @@ const TR = {
       utiliser: "Utiliser ces loyers", utiliserPrix: (m: string) => `Utiliser ${m}`,
       loyerTropHaut: (k: string, x: string, h: string) => `Ton loyer ${k} (${x} €/m²) dépasse le haut de la fourchette du marché (${h} €/m²) : il risque de ne pas se louer à ce prix, et toute la simulation en dépend.`,
       nu: "nu", meuble: "meublé",
-      ventes: (n: number, t: string, proche: boolean, c: string, d: string, f: string) => `${n} ${t} ${proche ? "de surface proche " : ""}vendus à ${c} entre ${d} et ${f} (DVF, ventes notariées).`,
-      types: { appartement: "appartements", maison: "maisons" },
+      ventes: (n: number, t: "appartement" | "maison", proche: boolean, c: string, d: string, f: string) => `${n} ${t === "maison" ? "maisons" : "appartements"} ${proche ? "de surface proche " : ""}${t === "maison" ? "vendues" : "vendus"} à ${c} entre ${d} et ${f} (DVF, ventes notariées).`,
       ventesVal: (med: string, p25: string, p75: string) => `Médiane ${med} €/m² · la moitié des ventes entre ${p25} et ${p75} €/m²`,
       ventesConseil: (bas: string, haut: string) => `Pour ta surface : ${bas} (prix médian) à ${haut} (haut de fourchette). Un bien rénové vise plutôt le haut.`,
       neufNote: "Les ventes publiques sont surtout de l'ancien : une maison neuve se vend en général plus cher.",
@@ -257,8 +256,7 @@ const TR = {
       utiliser: "Use these rents", utiliserPrix: (m: string) => `Use ${m}`,
       loyerTropHaut: (k: string, x: string, h: string) => `Your ${k} rent (€${x}/m²) is above the top of the market range (€${h}/m²): it may not rent at that price, and the whole simulation depends on it.`,
       nu: "unfurnished", meuble: "furnished",
-      ventes: (n: number, t: string, proche: boolean, c: string, d: string, f: string) => `${n} ${t} ${proche ? "of similar size " : ""}sold in ${c} between ${d} and ${f} (DVF, notarized sales).`,
-      types: { appartement: "apartments", maison: "houses" },
+      ventes: (n: number, t: "appartement" | "maison", proche: boolean, c: string, d: string, f: string) => `${n} ${t === "maison" ? "houses" : "apartments"} ${proche ? "of similar size " : ""}sold in ${c} between ${d} and ${f} (DVF, notarized sales).`,
       ventesVal: (med: string, p25: string, p75: string) => `Median €${med}/m² · half of sales between €${p25} and €${p75}/m²`,
       ventesConseil: (bas: string, haut: string) => `For your size: ${bas} (median) to ${haut} (top of range). A renovated property aims for the top.`,
       neufNote: "Public sales are mostly older homes: a new house usually sells for more.",
@@ -590,7 +588,7 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
   const blocVentes = marche ? (
     <div className="mk" key="mk">
       {V ? <>
-        <span>{mk.ventes(V.n, mk.types[contexte.typeBien === "Maison" ? "maison" : "appartement"], V.surfaceProche, nomC, dateMk(V.debut), dateMk(V.fin))}</span>
+        <span>{mk.ventes(V.n, contexte.typeBien === "Maison" ? "maison" : "appartement", V.surfaceProche, nomC, dateMk(V.debut), dateMk(V.fin))}</span>
         <span className="v">{mk.ventesVal(n0(V.med), n0(V.p25), n0(V.p75))}</span>
         {prixHaut > 0 && <span>{mk.ventesConseil(fmt(prixMed), fmt(prixHaut))}</span>}
         {contexte.nature === "neuf" && <span>{mk.neufNote}</span>}
