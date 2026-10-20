@@ -15,7 +15,13 @@ export type NiveauLoyer = "intermediaire" | "social" | "tres_social";
 export type EntreeLocation = {
   // Achat
   prix: number;
+  /** Logement neuf (achevé depuis peu, ou construit) : taux du bailleur privé, travaux non déductibles. */
   neuf: boolean;
+  /** Construction neuve : le prix d'achat est celui du terrain (droits pleins, rien d'amortissable) et la maison,
+   *  ce sont les travaux, amortis comme un bâti. Absent = false. */
+  terrainABatir?: boolean;
+  /** Location nue au réel : travaux déductibles payés sur 1, 2 ou 3 années civiles (absent = 1). Sert aux conseils. */
+  travauxSurAnnees?: number;
   dept: string;
   /** Frais de notaire saisis à la main ; null = calculés (droits du département, émoluments, débours). */
   fraisNotaire: number | null;
@@ -156,8 +162,15 @@ export function simulerLocation(e: EntreeLocation): ResultatLocation {
   const terrain = borne(e.terrainPct, 90) / 100, partDeductible = borne(e.travauxDeductiblesPct, 100) / 100;
   const niveau: NiveauLoyer = e.niveauBailleurPrive in BAILLEUR_PRIVE.plafond ? e.niveauBailleurPrive : "intermediaire";
   const prix = pos(e.prix), travaux = pos(e.travaux), mobilier = pos(e.mobilier);
-  const notaire = e.fraisNotaire != null && e.fraisNotaire >= 0 ? e.fraisNotaire : fraisNotaire(prix, e.dept, e.neuf);
+  // Un terrain à bâtir acheté à un particulier paie les droits pleins, même si la maison sera neuve.
+  const tab = !!e.terrainABatir;
+  const notaire = e.fraisNotaire != null && e.fraisNotaire >= 0 ? e.fraisNotaire : fraisNotaire(prix, e.dept, e.neuf && !tab);
   const agence = pos(e.fraisAgence), dossier = pos(e.fraisDossier);
+  // Ce qui s'amortit : le bâti acheté (hors terrain) et les travaux sur 15 ans ; en construction neuve, la maison
+  // construite (les « travaux ») s'amortit par composants comme un bâti, et le terrain jamais.
+  const batiAmort = tab ? travaux : prix * (1 - terrain);
+  const nTravaux = Number.isFinite(e.travauxSurAnnees) ? Math.min(3, Math.max(1, Math.round(e.travauxSurAnnees as number))) : 1;
+  const travauxAmort = tab ? 0 : travaux;
   const coutNu = prix + notaire + agence + travaux + dossier;
 
   const fl = (y: number): number => Math.pow(1 + pct(e.indexLoyers), y - 1);
@@ -220,7 +233,7 @@ export function simulerLocation(e: EntreeLocation): ResultatLocation {
     const alertes: Alerte[] = [];
     const annees: AnneeSim[] = [];
     const bp = regime === "bailleur_prive";
-    const baseBP = BAILLEUR_PRIVE.baseQuotePrix * prix + (e.neuf ? 0 : travaux);
+    const baseBP = BAILLEUR_PRIVE.baseQuotePrix * (prix + (tab ? travaux : 0)) + (e.neuf ? 0 : travaux);
     const tauxBP = BAILLEUR_PRIVE.taux[e.neuf ? "neuf" : "ancien"][niveau];
     const plafondBP = BAILLEUR_PRIVE.plafond[niveau];
     let cumulBP = 0, csgPrec = 0;
@@ -235,7 +248,7 @@ export function simulerLocation(e: EntreeLocation): ResultatLocation {
       let amortBP = 0;
       if (bp) { amortBP = Math.min(tauxBP * baseBP, plafondBP, baseBP - cumulBP); cumulBP += amortBP; }
       // Bailleur privé dans l'ancien : les travaux sont dans la base amortie, donc pas déduits une seconde fois.
-      const travauxDed = y === 1 && !(bp && !e.neuf) ? travaux * partDeductible : 0;
+      const travauxDed = y <= nTravaux && !(bp && !e.neuf) ? (travaux * partDeductible) / nTravaux : 0;
       const C = cb + (R > 0 ? FORFAIT_GESTION_LOCAL : 0) + comptable + travauxDed + amortBP;
       let rfNet = 0, imputable = 0;
       if (regime === "nu_micro") {
@@ -245,7 +258,7 @@ export function simulerLocation(e: EntreeLocation): ResultatLocation {
         if (res >= 0) {
           rfNet = imputer(stock, res, y, DEFICIT_FONCIER.reportAns);
         } else {
-          const P = e.renoEnergetique && y === 1 ? Math.min(DEFICIT_FONCIER.plafondRenoEnergetique, DEFICIT_FONCIER.plafond + travauxDed) : DEFICIT_FONCIER.plafond;
+          const P = e.renoEnergetique && y <= nTravaux ? Math.min(DEFICIT_FONCIER.plafondRenoEnergetique, DEFICIT_FONCIER.plafond + travauxDed) : DEFICIT_FONCIER.plafond;
           if (R >= I) {
             const d = I + C - R;
             imputable = Math.min(d, P);
@@ -288,7 +301,7 @@ export function simulerLocation(e: EntreeLocation): ResultatLocation {
     const { ech } = f;
     const deficits: Stock = [], reportGlobal: Stock = [];
     let stockARD = 0, csgPrec = 0;
-    const bati = prix * (1 - terrain);
+    const bati = batiAmort;
     const annees: AnneeSim[] = [];
     const alertes: Alerte[] = [];
     for (let y = 1; y <= H; y++) {
@@ -303,7 +316,7 @@ export function simulerLocation(e: EntreeLocation): ResultatLocation {
         base = R - Math.min(R, Math.max(MICRO_BIC.abattement * R, MICRO_BIC.abattementMin));
       } else {
         const Cb = c.interets + assu + (y === 1 ? dossier + notaire + agence : 0) + cb + cfe;
-        const A = amortBati(bati, y, DEFAUTS.composants[0].duree) + lineaire(travaux, DEFAUTS.dureeTravauxAns, y) + lineaire(mobilier, DEFAUTS.dureeMobilierAns, y);
+        const A = amortBati(bati, y, DEFAUTS.composants[0].duree) + lineaire(travauxAmort, DEFAUTS.dureeTravauxAns, y) + lineaire(mobilier, DEFAUTS.dureeMobilierAns, y);
         const plafond = Math.max(0, R - Cb);
         const deduit = Math.min(A + stockARD, plafond);
         stockARD += A - deduit;
@@ -337,7 +350,7 @@ export function simulerLocation(e: EntreeLocation): ResultatLocation {
     const regime: Regime = meuble ? "is_meuble" : "is_nu";
     const f = financement(meuble, true);
     const { ech } = f;
-    const bati = prix * (1 - terrain);
+    const bati = batiAmort;
     let stockDef = 0, isDu = 0, tresor = 0, cca = Math.min(pos(e.apport), coutNu + (meuble ? mobilier : 0) + pos(e.creationSociete));
     let reserves = 0;
     const annees: AnneeSim[] = [];
@@ -351,7 +364,7 @@ export function simulerLocation(e: EntreeLocation): ResultatLocation {
       const cfe = meuble ? cfeAnnee(y) : 0;
       const frais = (pos(e.comptableIs) + DEFAUTS.fraisBancairesSociete) * fc(y);
       const unique = y === 1 ? dossier + notaire + agence + pos(e.creationSociete) : 0;
-      const A = amortBati(bati, y, DEFAUTS.grosOeuvreIsAns) + lineaire(travaux, DEFAUTS.dureeTravauxAns, y) + (meuble ? lineaire(mobilier, DEFAUTS.dureeMobilierAns, y) : 0);
+      const A = amortBati(bati, y, DEFAUTS.grosOeuvreIsAns) + lineaire(travauxAmort, DEFAUTS.dureeTravauxAns, y) + (meuble ? lineaire(mobilier, DEFAUTS.dureeMobilierAns, y) : 0);
       const res = R - cb - crl - cfe - frais - c.interets - assu - unique - A;
       let b = 0;
       if (res < 0) stockDef += -res;

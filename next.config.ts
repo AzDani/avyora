@@ -20,7 +20,9 @@ const supabaseWs = supabaseHost ? `wss://${supabaseHost}` : "";
 // Google Ads (gtag.js) : le tag est chargé dans app/layout.tsx. Sans ces origines, la CSP bloque le
 // script ET les pings de conversion — window.gtag reste indéfini et AUCUNE conversion ne remonte.
 // Origines documentées par Google pour le Google tag + conversions Ads.
-const gtagScript = "https://www.googletagmanager.com https://www.googleadservices.com";
+// googleads.g.doubleclick.net : le tag y charge un SCRIPT (/pagead/viewthroughconversion) à chaque
+// page — bloqué en prod jusqu'au 19/10/2026, constaté en console sur getavyora.fr.
+const gtagScript = "https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net";
 // Origines de collecte des conversions. Trois pièges rencontrés, chacun constaté en navigateur :
 //  1. *.doubleclick.net et NON *.g.doubleclick.net — la collecte passe aussi par ad.doubleclick.net.
 //  2. www.googleadservices.com — point de collecte principal (/pagead/conversion et /ccm/conversion).

@@ -6,8 +6,8 @@
 import { z } from "zod";
 import { departement } from "./impot";
 import { DEFAUTS } from "./regles";
-import type { EntreeLocation, NiveauLoyer } from "./location";
-import type { EntreeRevente } from "./revente";
+import { REGIMES, type EntreeLocation, type NiveauLoyer, type Regime } from "./location";
+import { CADRES, type CadreRevente, type EntreeRevente } from "./revente";
 
 /** Champs numériques saisissables, avec leurs bornes (montants en €, taux et parts en %). */
 export const CHAMPS = {
@@ -24,6 +24,8 @@ export type ChampNum = keyof typeof CHAMPS;
 
 export type SaisieLocation = Partial<Record<ChampNum, number | null>> & {
   neuf?: boolean | null;
+  /** Le prix d'achat est celui d'un terrain à bâtir (construction neuve) ; null = déduit de la nature du projet. */
+  terrain?: boolean | null;
   collectif?: boolean | null;
   immeuble15ans?: boolean | null;
   couple?: boolean;
@@ -31,6 +33,8 @@ export type SaisieLocation = Partial<Record<ChampNum, number | null>> & {
   niveauBailleurPrive?: NiveauLoyer;
   /** Travaux : suivre la prévision des dépenses réelles (M5) dès qu'il y en a. */
   suiviReel?: boolean;
+  /** Le régime que l'utilisateur envisage, comparé au meilleur (null = pas encore choisi). */
+  choix?: Regime | null;
 };
 
 /** Champs propres à l'achat-revente ; l'achat, les travaux et le crédit sont partagés avec la location. */
@@ -45,6 +49,8 @@ export type SaisieRevente = Partial<Record<ChampRevente, number | null>> & {
   habite?: boolean;
   primo?: boolean;
   nbVendeurs?: 1 | 2;
+  /** Le cadre que l'utilisateur envisage, comparé au meilleur. */
+  choix?: CadreRevente | null;
 };
 
 export type SaisieInvest = { actif: boolean; strategie: "location" | "revente"; location: SaisieLocation; revente?: SaisieRevente };
@@ -59,12 +65,14 @@ export const investSchema = z.object({
   location: z.object({
     ...champsNum,
     neuf: z.boolean().nullable().optional(),
+    terrain: z.boolean().nullable().optional(),
     collectif: z.boolean().nullable().optional(),
     immeuble15ans: z.boolean().nullable().optional(),
     couple: z.boolean().optional(),
     renoEnergetique: z.boolean().optional(),
     niveauBailleurPrive: z.enum(["intermediaire", "social", "tres_social"]).optional(),
     suiviReel: z.boolean().optional(),
+    choix: z.enum(REGIMES as [Regime, ...Regime[]]).nullable().optional(),
   }).strict(),
   revente: z.object({
     ...(Object.fromEntries((Object.keys(CHAMPS_REVENTE) as ChampRevente[]).map((k) => [k, z.number().finite().min(CHAMPS_REVENTE[k][0]).max(CHAMPS_REVENTE[k][1]).nullable().optional()])) as Record<ChampRevente, z.ZodOptional<z.ZodNullable<z.ZodNumber>>>),
@@ -73,6 +81,7 @@ export const investSchema = z.object({
     habite: z.boolean().optional(),
     primo: z.boolean().optional(),
     nbVendeurs: z.union([z.literal(1), z.literal(2)]).optional(),
+    choix: z.enum(CADRES as [CadreRevente, ...CadreRevente[]]).nullable().optional(),
   }).strict().optional(),
 }).strict();
 
@@ -105,6 +114,7 @@ export function entreeDepuisSaisie(s: SaisieLocation, p: ContexteProjet): Entree
 /** Toutes les entrées, champs vides remplacés par leur valeur par défaut (aussi pour les afficher dans les champs). */
 export function completer(s: SaisieLocation, p: ContexteProjet): EntreeLocation {
   const neuf = s.neuf ?? p.nature === "neuf";
+  const terrainABatir = s.terrain ?? p.nature === "neuf";
   const collectif = s.collectif ?? (p.typeBien ? p.typeBien !== "Maison" : true);
   const loyerNu = v(s.loyerNu, Math.round(v(s.loyerMeuble, 0) / 1.15));
   const loyerMeuble = v(s.loyerMeuble, Math.round(loyerNu * 1.15));
@@ -112,6 +122,7 @@ export function completer(s: SaisieLocation, p: ContexteProjet): EntreeLocation 
   return {
     prix,
     neuf,
+    terrainABatir,
     dept: departement(p.codePostal),
     fraisNotaire: typeof s.fraisNotaire === "number" ? s.fraisNotaire : null,
     fraisAgence: v(s.fraisAgence, 0),
@@ -167,6 +178,7 @@ export function completerRevente(s: SaisieInvest, p: ContexteProjet): EntreeReve
   return {
     prix: l.prix,
     neuf: l.neuf,
+    terrainABatir: l.terrainABatir,
     dept: l.dept,
     fraisNotaire: l.fraisNotaire,
     fraisAgence: l.fraisAgence,

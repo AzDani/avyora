@@ -10,9 +10,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { euros, pourcent, nombre, lireMontant } from "@/lib/i18n/nombres";
-import { simulerLocation, type Regime, type ResultatRegime, type Alerte } from "@/lib/investissement/location";
+import { simulerLocation, REGIMES, type Regime, type ResultatRegime, type Alerte } from "@/lib/investissement/location";
 import { entreeDepuisSaisie, completer, travauxRetenus, entreeRevente, completerRevente, type ChampNum, type ChampRevente, type ContexteProjet, type SaisieInvest, type SaisieLocation, type SaisieRevente } from "@/lib/investissement/saisie";
-import { simulerRevente, type CadreRevente, type ResultatCadre, type AlerteRevente } from "@/lib/investissement/revente";
+import { simulerRevente, CADRES, type CadreRevente, type ResultatCadre, type AlerteRevente } from "@/lib/investissement/revente";
+import { conseilsLocation, conseilsRevente, ecartLocation, ecartRevente, type CleConseilLocation, type CleConseilRevente } from "@/lib/investissement/conseils";
 import { fraisNotaire } from "@/lib/investissement/impot";
 
 const TR = {
@@ -71,7 +72,25 @@ const TR = {
       is_sans_revente: "À l'IS, la revente taxe tous les amortissements, sans abattement : sans revente, cette simulation avantage l'IS.",
       sci_ir_comptable: "En location nue, la SCI ajoute des frais (comptable, création) sans avantage fiscal : son intérêt est surtout la transmission.",
     } as Record<Alerte, string>,
-    avertissement: "Simulation indicative selon les règles fiscales en vigueur au 19/10/2026, à valider avec un expert-comptable. Hypothèses : mise en location au 1er janvier de l'année 1, pas d'autres revenus fonciers ni meublés dans le foyer, impôt compté l'année des loyers (l'IS l'année suivante), barème de l'impôt revalorisé comme tes revenus, mobilier non renouvelé, travaux amortis sur 15 ans en meublé et en société, pas de revente.",
+    avertissement: "Simulation indicative selon les règles fiscales en vigueur au 19/10/2026, à valider avec un expert-comptable. Hypothèses : mise en location au 1er janvier de l'année 1, pas d'autres revenus fonciers ni meublés dans le foyer, impôt compté l'année des loyers (l'IS l'année suivante), barème de l'impôt revalorisé comme tes revenus, mobilier non renouvelé, travaux amortis sur 15 ans en meublé et en société (en construction neuve, la maison s'amortit comme un bâti et le terrain jamais), pas de revente.",
+    terrain: "Le prix d'achat est celui d'un terrain à bâtir (construction neuve, terrain acheté à un particulier)",
+    prixTerrain: "Prix du terrain",
+    choix: "Le régime que tu envisages", pasChoisi: "Pas encore choisi", tonChoix: "Ton choix",
+    choixBon: (c: string) => `Bon choix : ${c} est le régime le plus intéressant pour ce projet.`,
+    choixPerte: (c: string, p: string, h: number, m: string) => `Avec ${c}, tu gagnerais ${p} de moins sur ${h} ans qu'avec ${m}.`,
+    choixImpots: (i: string) => ` Dont ${i} d'impôts en plus.`,
+    choixHorsImpots: " L'écart vient des frais et des loyers, pas des impôts.",
+    choixNonEligible: (c: string, r: string, m: string) => `${c} n'est pas possible ici (${r}). Le meilleur régime possible : ${m}.`,
+    astuces: "Pour payer moins d'impôts", astucesMeta: (n: number) => `${n} piste${n > 1 ? "s" : ""}`,
+    gainSur: (m: string, n: number) => `+${m} sur ${n} ans`, aSavoir: "À savoir",
+    conseils: {
+      deficit_reno: () => "Si tes travaux font passer le logement d'une classe énergie E, F ou G à A, B, C ou D, le déficit foncier imputable sur ton revenu monte jusqu'à 21 400 € par an au lieu de 10 700 € (dépenses payées jusqu'au 31/12/2027, option à cocher sur la déclaration 2044). Garde les DPE d'avant et d'après.",
+      etaler_travaux: (n: number) => `Paie tes travaux sur ${n} années civiles (par exemple une partie en décembre, le reste en janvier) : chaque année ouvre son propre plafond de 10 700 € imputable sur ton revenu, au lieu d'un seul.`,
+      terrain_ventilation: (p: number) => `La part du terrain (${p} % ici) ne s'amortit pas. Si elle est réellement plus faible, fais-la justifier (rapport d'expert, acte, prix des terrains voisins) : 5 points de moins rapportent ce montant. Le fisc peut contester une part non justifiée.`,
+      is_compte_courant: () => "En société, apporte ton argent en compte courant d'associé plutôt qu'en capital : il te sera remboursé sans impôt avant tout dividende (c'est ce que suppose la simulation). Les dividendes, eux, paient le PFU de 31,4 %.",
+      lmnp_revente: () => "À la revente, les amortissements déduits en LMNP réel sont retirés du prix d'achat pour calculer la plus-value (depuis 2025). L'impôt économisé pendant la location reste en général bien supérieur, surtout si tu gardes le bien longtemps (abattements pour durée de détention).",
+      sci_ir_transmission: () => "Une SCI à l'IR n'économise pas d'impôt sur les loyers : elle sert à transmettre ou à acheter à plusieurs. Si ce n'est pas ton but, la détention en direct coûte moins cher.",
+    } as Record<CleConseilLocation, (v: number) => string>,
     rv: {
       groupe: "Revente",
       sub: "Ce que l'opération te rapporte après impôts, selon le cadre dans lequel tu achètes et revends.",
@@ -110,6 +129,19 @@ const TR = {
         mdb_tva_neuf: "Bien neuf ou rendu neuf par les travaux : la revente supporte une TVA de 20 % sur le prix total ; la TVA des travaux est récupérée.",
         moins_value: "Moins-value : aucun impôt, mais elle ne se reporte sur aucune autre opération.",
       } as Record<AlerteRevente, string>,
+      choix: "Le cadre que tu envisages",
+      choixBon: (c: string) => `Bon choix : ${c} est le cadre le plus intéressant pour cette opération.`,
+      choixPerte: (c: string, p: string, m: string) => `Avec ${c}, tu gagnerais ${p} de moins qu'avec ${m}.`,
+      choixNonEligible: (c: string, r: string, m: string) => `${c} n'est pas possible ici (${r}). Le meilleur cadre possible : ${m}.`,
+      conseils: {
+        rv_residence: () => "Si c'est vraiment ta résidence principale jusqu'à la vente (tu y vis ; courrier, impôts et factures à cette adresse), la plus-value est exonérée. Le fisc vérifie que l'occupation est réelle.",
+        rv_factures: () => "Fais faire les travaux d'amélioration par des entreprises qui te facturent : leurs factures s'ajoutent au prix d'achat et réduisent la plus-value. Les travaux faits toi-même et les matériaux achetés seuls ne comptent pas.",
+        rv_deux_vendeurs: () => "Achetez à deux (couple, indivision) : le seuil de 50 000 € de la surtaxe sur les grosses plus-values s'apprécie par vendeur.",
+        rv_detention_5ans: () => "Revends après 5 ans pleins : les abattements pour durée de détention commencent, et tu peux compter 15 % du prix d'achat en travaux sans facture si c'est plus avantageux. Le gain tient compte des mois de crédit et de charges en plus.",
+        rv_ira: () => "Fais supprimer les indemnités de remboursement anticipé dans l'offre de prêt (à négocier avant de signer), ou finance l'opération avec un prêt relais. Elles ne sont jamais dues en cas de mutation professionnelle.",
+        rv_mdb_5ans: () => "Revends avant 5 ans : au-delà, les droits de mutation normaux sont rappelés, avec des intérêts de retard.",
+        rv_mdb_reinvestir: () => "Laisse le gain dans la société pour financer l'opération suivante : le PFU de 31,4 % n'est dû que quand tu te verses le gain en dividendes. Ce montant reste disponible pour réinvestir.",
+      } as Record<CleConseilRevente, (v: number) => string>,
       avertissement: "Simulation indicative selon les règles fiscales en vigueur au 19/10/2026, à valider avec un expert-comptable ou un notaire. Hypothèses : crédit amortissable remboursé à la vente, un seul exercice fiscal pour la société, pas d'option pour la TVA sur la marge, travaux comptés à leur coût toutes taxes comprises.",
     },
     enregistre: "Enregistré", enregistrement: "Enregistrement…", erreur: "Enregistrement impossible, tes changements restent affichés.",
@@ -169,7 +201,25 @@ const TR = {
       is_sans_revente: "Under corporate tax, a sale taxes all depreciation with no allowance: without a sale, this simulation favors the company.",
       sci_ir_comptable: "For unfurnished rental, an SCI adds costs (accountant, setup) with no tax benefit: it's mainly useful for estate planning.",
     } as Record<Alerte, string>,
-    avertissement: "Indicative simulation under French tax rules as of 10/19/2026, to be checked with a chartered accountant. Assumptions: rental starts January 1 of year 1, no other rental income in the household, tax counted in the year of the rent (corporate tax the year after), tax brackets indexed like your income, furniture not replaced, work depreciated over 15 years for furnished and company regimes, no sale.",
+    avertissement: "Indicative simulation under French tax rules as of 10/19/2026, to be checked with a chartered accountant. Assumptions: rental starts January 1 of year 1, no other rental income in the household, tax counted in the year of the rent (corporate tax the year after), tax brackets indexed like your income, furniture not replaced, work depreciated over 15 years for furnished and company regimes (for a new build, the house is depreciated like a building and the land never), no sale.",
+    terrain: "The purchase price is for a building plot (new build, land bought from an individual)",
+    prixTerrain: "Land price",
+    choix: "The regime you have in mind", pasChoisi: "Not decided yet", tonChoix: "Your pick",
+    choixBon: (c: string) => `Good pick: ${c} is the best regime for this project.`,
+    choixPerte: (c: string, p: string, h: number, m: string) => `With ${c}, you'd earn ${p} less over ${h} years than with ${m}.`,
+    choixImpots: (i: string) => ` That includes ${i} more in taxes.`,
+    choixHorsImpots: " The gap comes from costs and rent, not taxes.",
+    choixNonEligible: (c: string, r: string, m: string) => `${c} isn't possible here (${r}). The best available regime: ${m}.`,
+    astuces: "Ways to pay less tax", astucesMeta: (n: number) => `${n} idea${n > 1 ? "s" : ""}`,
+    gainSur: (m: string, n: number) => `+${m} over ${n} years`, aSavoir: "Good to know",
+    conseils: {
+      deficit_reno: () => "If your work moves the home from energy class E, F or G to A, B, C or D, the rental loss you can offset against your income rises to €21,400 a year instead of €10,700 (spending paid by 12/31/2027, option on form 2044). Keep the before and after energy reports.",
+      etaler_travaux: (n: number) => `Pay for the work over ${n} calendar years (for example part in December, the rest in January): each year opens its own €10,700 cap against your income, instead of just one.`,
+      terrain_ventilation: (p: number) => `The land share (${p}% here) can't be depreciated. If it's really lower, get it documented (expert report, deed, nearby land prices): 5 points less earns you this amount. The tax office can challenge an undocumented split.`,
+      is_compte_courant: () => "In a company, put your money in as a shareholder loan rather than share capital: it's paid back tax-free before any dividend (as this simulation assumes). Dividends pay the 31.4% flat tax.",
+      lmnp_revente: () => "On resale, depreciation deducted under LMNP actual expenses is taken off the purchase price when computing the capital gain (since 2025). The tax saved while renting is usually far larger, especially if you keep the property for a long time (holding-period allowances).",
+      sci_ir_transmission: () => "An SCI under income tax doesn't save tax on rent: it's for estate planning or buying with others. If that's not your goal, owning directly costs less.",
+    } as Record<CleConseilLocation, (v: number) => string>,
     rv: {
       groupe: "Resale",
       sub: "What the deal earns you after tax, depending on how you buy and resell (French rules).",
@@ -208,6 +258,19 @@ const TR = {
         mdb_tva_neuf: "New or renovated-to-new property: the sale bears 20% VAT on the full price; VAT on the work is recovered.",
         moins_value: "Capital loss: no tax, but it can't be offset against any other deal.",
       } as Record<AlerteRevente, string>,
+      choix: "The setup you have in mind",
+      choixBon: (c: string) => `Good pick: ${c} is the best setup for this deal.`,
+      choixPerte: (c: string, p: string, m: string) => `With ${c}, you'd earn ${p} less than with ${m}.`,
+      choixNonEligible: (c: string, r: string, m: string) => `${c} isn't possible here (${r}). The best available setup: ${m}.`,
+      conseils: {
+        rv_residence: () => "If it's truly your main residence until the sale (you live there; mail, taxes and bills at that address), the capital gain is tax-exempt. The tax office checks that the occupancy is real.",
+        rv_factures: () => "Have improvement work done by contractors who invoice you: their invoices are added to the purchase price and lower the capital gain. Work you do yourself and materials bought alone don't count.",
+        rv_deux_vendeurs: () => "Buy as two (couple, joint ownership): the €50,000 threshold of the surtax on large capital gains applies per seller.",
+        rv_detention_5ans: () => "Sell after 5 full years: holding-period allowances start, and you can count 15% of the purchase price as work without invoices if that's better. The gain accounts for the extra months of loan and costs.",
+        rv_ira: () => "Get early repayment penalties removed from the loan offer (negotiate before signing), or finance the deal with a bridge loan. They're never due after a job relocation.",
+        rv_mdb_5ans: () => "Sell within 5 years: after that, normal transfer duties are recalled with late interest.",
+        rv_mdb_reinvestir: () => "Keep the gain in the company to fund the next deal: the 31.4% flat tax is only due when you pay yourself dividends. This amount stays available to reinvest.",
+      } as Record<CleConseilRevente, (v: number) => string>,
       avertissement: "Indicative simulation under French tax rules as of 10/19/2026, to be checked with a chartered accountant or notary. Assumptions: amortizing loan repaid at sale, a single tax year for the company, no VAT-on-margin option, work counted at its VAT-inclusive cost.",
     },
     enregistre: "Saved", enregistrement: "Saving…", erreur: "Couldn't save, your changes are still shown.",
@@ -289,7 +352,16 @@ const CSS = `
 .av-inv .avert{font-size:11.5px;color:var(--faint);margin:14px 0 0;line-height:1.5}
 .av-inv .etat{font-size:11.5px;color:var(--faint)}
 .av-inv .etat.err{color:#b42318}
+.av-inv .inv-p.mine{border-color:var(--brand);color:var(--brand)}
+.av-inv label.inv-f.chs{max-width:420px;margin-top:16px}
+.av-inv .chx{border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.5;margin-top:8px;border:1px solid}
+.av-inv .chx.g{background:#e6f7f0;color:#0b6e4b;border-color:#b5e6d2}
+.av-inv .chx.r{background:#fdecec;color:#8f1d14;border-color:#f3c0bb}
+.av-inv .cs{display:flex;gap:14px;align-items:flex-start;justify-content:space-between;padding:11px 2px;border-bottom:1px solid var(--line);font-size:13px;line-height:1.5;color:var(--ink)}
+.av-inv .cs .gn{flex:none;font-family:var(--font-geist-mono),monospace;font-variant-numeric:tabular-nums;font-weight:600;font-size:12px;color:#0f9d6b;background:#e6f7f0;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.av-inv .cs .gn.i{color:var(--muted);background:var(--surface-2);font-family:inherit}
 @media (max-width:640px){
+  .av-inv .cs{flex-direction:column;gap:6px}
   .av-inv .rh{display:none}
   .av-inv .rrow,.av-inv .rrow.rv{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:8px;align-items:start}
   .av-inv .rrow .nmb{grid-column:1/-1}
@@ -388,16 +460,17 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
   const n0 = (v: number): string => nombre(locale, v, 0);
   const d = defauts;
   const champ = (k: ChampNum, unite: string, defaut: string, aide?: string) => (
-    <Num key={k} id={`inv-${k}`} label={t.champs[k]} valeur={loc[k]} defaut={defaut} unite={unite} aide={aide} onChange={(v) => maj({ [k]: v } as Partial<SaisieLocation>)} />
+    <Num key={k} id={`inv-${k}`} label={k === "prix" && tab ? t.prixTerrain : t.champs[k]} valeur={loc[k]} defaut={defaut} unite={unite} aide={aide} onChange={(v) => maj({ [k]: v } as Partial<SaisieLocation>)} />
   );
   const auto = (v: string): string => `${v} (${t.auto})`;
-  const ck = (cle: "neuf" | "collectif" | "immeuble15ans" | "couple" | "renoEnergetique" | "suiviReel", label: string, valeur: boolean) => (
+  const ck = (cle: "neuf" | "terrain" | "collectif" | "immeuble15ans" | "couple" | "renoEnergetique" | "suiviReel", label: string, valeur: boolean) => (
     <label className="inv-k" key={cle}>
       <input type="checkbox" checked={valeur} onChange={(e) => maj({ [cle]: e.target.checked } as Partial<SaisieLocation>)} />
       <span>{label}</span>
     </label>
   );
-  const notaireAuto = loc.prix ? fraisNotaire(loc.prix, d.dept, d.neuf) : 0;
+  const tab = !!d.terrainABatir;
+  const notaireAuto = loc.prix ? fraisNotaire(loc.prix, d.dept, d.neuf && !tab) : 0;
 
   const revente = s.strategie === "revente";
   const tr = t.rv;
@@ -422,7 +495,8 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
         {champ("travauxDeductiblesPct", "%", n0(d.travauxDeductiblesPct))}
         {champ("mobilier", "€", n0(d.mobilier))}
         {champ("valeurApres", "€", "")}
-        {ck("neuf", t.neuf, d.neuf)}
+        {(contexte.nature === "neuf" || loc.terrain != null) && ck("terrain", t.terrain, tab)}
+        {!tab && ck("neuf", t.neuf, d.neuf)}
         {ck("collectif", t.collectif, d.collectif)}
         {ck("immeuble15ans", t.immeuble15, d.immeuble15ans)}
         {contexte.travauxPrevision != null && loc.travaux == null && ck("suiviReel", t.suiviReel, loc.suiviReel !== false)}
@@ -478,7 +552,7 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
         {champ("indexLoyers", "%", nombre(locale, d.indexLoyers, 1))}
         {champ("indexCharges", "%", nombre(locale, d.indexCharges, 1))}
         {champ("indexRevenu", "%", nombre(locale, d.indexRevenu, 1))}
-        {champ("terrainPct", "%", n0(d.terrainPct))}
+        {!tab && champ("terrainPct", "%", n0(d.terrainPct))}
         {champ("comptableLmnp", "€", n0(d.comptableLmnp))}
         {champ("comptableSciIr", "€", n0(d.comptableSciIr))}
         {champ("comptableIs", "€", n0(d.comptableIs))}
@@ -542,6 +616,7 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
               {CHEVRON("chv2")}
               <span className="t">{tr.cadres[r.cadre]}</span>
               {estBest && <span className="inv-p best">{t.meilleur}</span>}
+              {r.cadre === rvs.choix && <span className="inv-p mine">{t.tonChoix}</span>}
               {!r.eligible && <span className="inv-p off">{t.nonEligible}</span>}
             </span>
             {!r.eligible && r.raison && <span className="raison">{tr.raisons[r.raison]}</span>}
@@ -569,7 +644,11 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
     );
   };
 
+  const ecR = resR ? ecartRevente(resR, rvs.choix) : null;
+  const csR = resR && entreeR ? conseilsRevente(entreeR, resR, rvs.choix) : [];
   const best = res?.regimes.find((r) => r.regime === res.meilleur) ?? null;
+  const ecL = res ? ecartLocation(res, loc.choix) : null;
+  const csL = res && entree ? conseilsLocation(entree, res, loc.choix) : [];
   const ordre = res ? [...res.regimes].sort((a, b) => Number(b.eligible) - Number(a.eligible) || b.cumulApresImpot - a.cumulApresImpot) : [];
   const H = entree?.horizon ?? 20;
 
@@ -586,6 +665,7 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
               {CHEVRON("chv2")}
               <span className="t">{t.regimes[r.regime]}</span>
               {estBest && <span className="inv-p best">{t.meilleur}</span>}
+              {r.regime === loc.choix && <span className="inv-p mine">{t.tonChoix}</span>}
               {!r.eligible && <span className="inv-p off">{t.nonEligible}</span>}
               {r.regime === "bailleur_prive" && <span className="inv-p new">{t.aConfirmer}</span>}
             </span>
@@ -666,12 +746,41 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
             </div>
           </div>
 
+          <label className="inv-f chs" htmlFor="inv-r-choix"><span>{tr.choix}</span>
+            <select id="inv-r-choix" value={rvs.choix ?? ""} onChange={(e) => majR({ choix: e.target.value ? (e.target.value as CadreRevente) : null })}>
+              <option value="">{t.pasChoisi}</option>
+              {CADRES.map((k) => <option key={k} value={k}>{tr.cadres[k]}</option>)}
+            </select>
+          </label>
+          {ecR && (
+            <div className={"chx " + (ecR.bon ? "g" : "r")} role="status">
+              {ecR.bon ? tr.choixBon(tr.cadres[ecR.choix])
+                : !ecR.eligible && ecR.raison ? tr.choixNonEligible(tr.cadres[ecR.choix], tr.raisons[ecR.raison as keyof typeof tr.raisons], tr.cadres[ecR.meilleur])
+                : tr.choixPerte(tr.cadres[ecR.choix], fmt(ecR.perte), tr.cadres[ecR.meilleur]) + (ecR.impotsEnPlus > 0 ? t.choixImpots(fmt(ecR.impotsEnPlus)) : "")}
+            </div>
+          )}
+
           <div className="phase-t">
             <span className="pt-lbl">{tr.comparer}</span>
             <span className="pt-meta">{tr.enMois(defR.dureeMois)}</span>
           </div>
           <div className="rh rv" aria-hidden="true"><span>{tr.hCadre}</span><span>{tr.hAvant}</span><span>{tr.hImpots}</span><span>{tr.hNet}</span><span>{tr.hAn}</span><span>{tr.hMin}</span></div>
           {ordreR.map(ligneR)}
+
+          {csR.length > 0 && (
+            <>
+              <div className="phase-t">
+                <span className="pt-lbl">{t.astuces}</span>
+                <span className="pt-meta">{t.astucesMeta(csR.length)}</span>
+              </div>
+              {csR.map((c) => (
+                <div key={c.cle} className="cs">
+                  <span>{tr.conseils[c.cle](c.valeur ?? 0)}</span>
+                  {c.gain != null ? <span className="gn">{signe(c.gain)}</span> : <span className="gn i">{t.aSavoir}</span>}
+                </div>
+              ))}
+            </>
+          )}
         </>
       ))}
 
@@ -697,12 +806,41 @@ export default function Investissement({ projectId, saisie: initiale, contexte }
             </div>
           </div>
 
+          <label className="inv-f chs" htmlFor="inv-choix"><span>{t.choix}</span>
+            <select id="inv-choix" value={loc.choix ?? ""} onChange={(e) => maj({ choix: e.target.value ? (e.target.value as Regime) : null })}>
+              <option value="">{t.pasChoisi}</option>
+              {REGIMES.map((k) => <option key={k} value={k}>{t.regimes[k]}</option>)}
+            </select>
+          </label>
+          {ecL && (
+            <div className={"chx " + (ecL.bon ? "g" : "r")} role="status">
+              {ecL.bon ? t.choixBon(t.regimes[ecL.choix])
+                : !ecL.eligible && ecL.raison ? t.choixNonEligible(t.regimes[ecL.choix], t.raisons[ecL.raison as keyof typeof t.raisons], t.regimes[ecL.meilleur])
+                : t.choixPerte(t.regimes[ecL.choix], fmt(ecL.perte), H, t.regimes[ecL.meilleur]) + (ecL.impotsEnPlus > 0 ? t.choixImpots(fmt(ecL.impotsEnPlus)) : t.choixHorsImpots)}
+            </div>
+          )}
+
           <div className="phase-t">
             <span className="pt-lbl">{t.comparer}</span>
             <span className="pt-meta">{t.surAns(H)}</span>
           </div>
           <div className="rh" aria-hidden="true"><span>{t.hRegime}</span><span>{t.hAn1}</span><span>{t.hMoy}</span><span>{t.hImpots}</span><span>{t.hEcart}</span></div>
           {ordre.map(ligne)}
+
+          {csL.length > 0 && (
+            <>
+              <div className="phase-t">
+                <span className="pt-lbl">{t.astuces}</span>
+                <span className="pt-meta">{t.astucesMeta(csL.length)}</span>
+              </div>
+              {csL.map((c) => (
+                <div key={c.cle} className="cs">
+                  <span>{t.conseils[c.cle](c.valeur ?? 0)}</span>
+                  {c.gain != null ? <span className="gn">{t.gainSur(fmt(c.gain), H)}</span> : <span className="gn i">{t.aSavoir}</span>}
+                </div>
+              ))}
+            </>
+          )}
         </>
       ))}
 

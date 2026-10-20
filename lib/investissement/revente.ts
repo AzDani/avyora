@@ -15,14 +15,17 @@ export const PV = {
   seuilExoneration: 15_000,
 } as const;
 /** Droits réduits du marchand de biens (art. 1115) et intérêt de retard en cas de non-revente sous 5 ans (art. 1840 G ter, 1727). */
-export const MDB = { taux: 0.00715, delaiMois: 60, interetMois: 0.002 } as const;
+export const MDB = { taux: 0.00715, delaiMois: 60, interetMois: 0.002, engagementConstruire: 125 } as const;
 
 export type CadreRevente = "particulier" | "residence_principale" | "marchand_biens";
 export const CADRES: CadreRevente[] = ["particulier", "residence_principale", "marchand_biens"];
 
 export type EntreeRevente = {
   prix: number;
+  /** Bien neuf : acheté neuf, ou construit (avec terrainABatir). */
   neuf: boolean;
+  /** Construction neuve : le prix d'achat est celui d'un terrain à bâtir, supposé acheté à un particulier (sans TVA). */
+  terrainABatir?: boolean;
   dept: string;
   /** Frais de notaire saisis ; null = calculés selon le cadre (droits pleins, primo-accédant, 0,715 % du marchand). */
   fraisNotaire: number | null;
@@ -71,6 +74,8 @@ export type ResultatCadre = {
   rendementAnnuel: number;
   prixMinimum: number;
   detail: LigneDetail[];
+  /** Marchand de biens : la part de l'impôt qui est de l'IS (le reste est le PFU, dû seulement si tu te verses le gain). */
+  isSociete?: number;
   /** Plus-value du particulier : brute, années de détention, abattements. */
   pv?: { brute: number; annees: number; abattIR: number; abattPS: number; surtaxe: number };
   alertes: AlerteRevente[];
@@ -125,11 +130,15 @@ function fraisAchatCadre(e: EntreeRevente, cadre: CadreRevente): number {
   const csi = Math.max(FRAIS_ACHAT.csi.min, prix * FRAIS_ACHAT.csi.taux);
   const tva = FRAIS_ACHAT.tvaEmoluments[e.dept] ?? FRAIS_ACHAT.tvaEmoluments.defaut;
   const emol = emolumentsHT(prix) * (1 + tva);
-  if (cadre === "marchand_biens") return Math.round(prix * MDB.taux + csi + emol + FRAIS_ACHAT.debours);
-  if (cadre === "residence_principale" && e.primo && !e.neuf) {
+  const tab = !!e.terrainABatir;
+  // Marchand qui construit : l'engagement de construire sous 4 ans remplace celui de revendre, droit fixe de 125 €
+  // (art. 1594-0 G A I et 691 bis).
+  if (cadre === "marchand_biens") return Math.round((tab ? MDB.engagementConstruire : prix * MDB.taux) + csi + emol + FRAIS_ACHAT.debours);
+  // Taux du primo-accédant : achat d'un logement, jamais d'un terrain.
+  if (cadre === "residence_principale" && e.primo && !e.neuf && !tab) {
     return Math.round(prix * (tauxPrimo(e.dept) * FRAIS_ACHAT.coefDept + FRAIS_ACHAT.taxeCommunale) + csi + emol + FRAIS_ACHAT.debours);
   }
-  return fraisNotaire(prix, e.dept, e.neuf);
+  return fraisNotaire(prix, e.dept, e.neuf && !tab);
 }
 
 /** Intérêts et capital remboursés sur les `mois` premiers mois d'un prêt amortissable, et capital restant dû. */
@@ -144,7 +153,7 @@ function credit(capital: number, tauxAnnuel: number, dureeAns: number, mois: num
   return { interets, capital: cap, crd: Math.max(0, crd) };
 }
 
-function calculCadre(e: EntreeRevente, cadre: CadreRevente, prixRevente: number): ResultatCadre {
+export function calculCadre(e: EntreeRevente, cadre: CadreRevente, prixRevente: number): ResultatCadre {
   const prix = pos(e.prix), travaux = pos(e.travaux);
   const mois = Number.isFinite(e.dureeMois) ? Math.max(1, Math.round(e.dureeMois)) : 12;
   const duree = Number.isFinite(e.dureeAns) ? Math.min(30, Math.max(1, e.dureeAns)) : 20;
@@ -164,7 +173,7 @@ function calculCadre(e: EntreeRevente, cadre: CadreRevente, prixRevente: number)
   const fraisVente = pos(e.fraisAgenceVente) + pos(e.diagnostics);
   // Marchand de biens : pas revendu sous 5 ans → droits de droit commun + intérêt de retard depuis l'achat.
   // Rien à rappeler pour un achat neuf : son droit commun est déjà la taxe réduite.
-  const sanction = societe && !e.neuf && mois > MDB.delaiMois
+  const sanction = societe && !e.neuf && !e.terrainABatir && mois > MDB.delaiMois
     ? (() => { const droits = prix * (tauxDepartement(e.dept) * FRAIS_ACHAT.coefDept + FRAIS_ACHAT.taxeCommunale); return droits + droits * MDB.interetMois * (mois - 1); })()
     : 0;
   // TVA de revente du marchand : 20 % du prix total si l'immeuble est rendu neuf par les travaux, ou acheté neuf et
@@ -173,7 +182,8 @@ function calculCadre(e: EntreeRevente, cadre: CadreRevente, prixRevente: number)
   const neufTva = societe && (e.etatNeuf || (e.neuf && mois <= MDB.delaiMois));
   const tvaRevente = neufTva ? prixRevente - prixRevente / 1.2 : 0;
   const sixieme = (x: number): number => x - x / 1.2;
-  const tvaAchatRecup = neufTva && e.neuf ? sixieme(prix) : 0;
+  // Terrain acheté à un particulier : pas de TVA payée, donc rien à récupérer.
+  const tvaAchatRecup = neufTva && e.neuf && !e.terrainABatir ? sixieme(prix) : 0;
   const tvaTravauxRecup = neufTva ? sixieme(travaux) : 0;
   const tvaFraisRecup = neufTva ? sixieme(pos(e.fraisAgence) + pos(e.fraisAgenceVente) + (societe ? pos(e.comptableIs) * Math.ceil(mois / 12) : 0)) : 0;
 
@@ -182,6 +192,7 @@ function calculCadre(e: EntreeRevente, cadre: CadreRevente, prixRevente: number)
   const alertes: AlerteRevente[] = [];
   let impots = 0;
   let pv: ResultatCadre["pv"];
+  let isSociete: number | undefined;
 
   if (cadre === "particulier") {
     const annees = Math.floor(mois / 12);
@@ -209,6 +220,7 @@ function calculCadre(e: EntreeRevente, cadre: CadreRevente, prixRevente: number)
     const is = gainAvant > 0 ? isAn(gainAvant) : 0;
     const pfu = gainAvant > 0 ? PFU * (gainAvant - is) : 0;
     impots = is + pfu;
+    isSociete = r2(is);
     alertes.push("mdb_conditions");
     if (sanction > 0) alertes.push("mdb_sanction");
     if (neufTva) alertes.push("mdb_tva_neuf");
@@ -233,7 +245,7 @@ function calculCadre(e: EntreeRevente, cadre: CadreRevente, prixRevente: number)
 
   return {
     cadre, eligible: true, gainAvant: r2(gainAvant), impots: r2(impots), gainNet: r2(gainNet), mise: r2(mise),
-    rendementAnnuel: annuel, prixMinimum: 0, detail, pv, alertes,
+    rendementAnnuel: annuel, prixMinimum: 0, detail, pv, alertes, ...(isSociete != null ? { isSociete } : {}),
   };
 }
 
