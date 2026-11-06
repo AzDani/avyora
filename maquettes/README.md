@@ -40,7 +40,16 @@ node maquettes/tools/jonctions.mjs "$(pwd)/maquettes"
 
 # 4. contrat : identifiants uniques, provenances qui pointent juste, choix non tranchés à null
 node maquettes/tools/contrat.mjs "$(pwd)/maquettes"
+
+# 5. unités (bouton « m / ft ») : conversions, champs en pieds-pouces, longueur tapée, plan enregistré inchangé
+node maquettes/tools/unites.mjs "$(pwd)/maquettes"
 ```
+
+**Unités.** Le plan est toujours enregistré et calculé en mètres. Toute mesure AFFICHÉE passe par `uL`, `uLL`, `uML`,
+`uCm`, `fmtM2` ou `uNum2`/`uU2` (jamais `fmt(x)+' m'` en dur), et toute longueur TAPÉE par `lireLong`. Les champs
+numériques suivis de « m » ou « cm » sont convertis tout seuls en pieds-pouces (`champImperial`) : leur `value` rend
+toujours des mètres (ou des centimètres) au code de l'éditeur. Restent en métrique, volontairement : les règles
+françaises citées (9 m², 2,20 m, Blondel, largeur de porte), les prix et unités du catalogue (€/m², ml).
 
 La scène de référence des tests de correspondance se régénère avec
 `node maquettes/tools/fixture-contrat.mjs "$(pwd)/maquettes" tests/fixtures/plan-contrat.json` —
