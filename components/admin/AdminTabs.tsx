@@ -7,6 +7,7 @@ const TABS: [string, string][] = [
   ["/admin", "Vue d'ensemble"],
   ["/admin/inscrits", "Inscrits"],
   ["/admin/projets", "Projets"],
+  ["/admin/plans", "Plans"],
 ];
 
 export default function AdminTabs() {

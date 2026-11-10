@@ -309,7 +309,7 @@ function scriptAnalytics(): string {
 
 type Motif = { quoi: string; motif: string; nombre: number; par: string };
 
-export function motifs(): Motif[] {
+export function motifs(admin = false): Motif[] {
   return [
     { quoi: "@import Google Fonts", motif: IMPORT_POLICES, nombre: 1, par: FONT_FACES },
     { quoi: "Three.js (jsDelivr)", motif: "https://cdn.jsdelivr.net/npm/three@0.147.0/", nombre: 1, par: VENDOR_THREE },
@@ -321,9 +321,10 @@ export function motifs(): Motif[] {
       quoi: "script principal",
       motif: "\n<script>\n",
       nombre: 1,
-      par:
-        `\n${VOILE}\n<script>\n${configConstante()}\n</script>\n<script>\n${amorcage()}\n</script>\n` +
-        `${scriptAnalytics()}<script type="text/plain" id="avyora-editeur">\n`,
+      par: admin
+        ? `\n${VOILE}\n<script>\n${amorcageAdmin()}\n</script>\n<script type="text/plain" id="avyora-editeur">\n`
+        : `\n${VOILE}\n<script>\n${configConstante()}\n</script>\n<script>\n${amorcage()}\n</script>\n` +
+          `${scriptAnalytics()}<script type="text/plain" id="avyora-editeur">\n`,
     },
   ];
 }
@@ -335,9 +336,66 @@ export function compter(s: string, m: string): number {
   return n;
 }
 
+/**
+ * L'amorçage de la vue admin (`/admin/plans/editeur?id=…`) : l'éditeur en LECTURE SEULE sur le plan d'un compte.
+ * - Bac à sable : AVANT l'éditeur, `localStorage` est remplacé par une mémoire propre à l'onglet. L'éditeur tourne
+ *   dans son mode « artefact » (pas d'AVYORA_SITE : aucun appel à /api/plans), et ses sauvegardes automatiques
+ *   finissent dans cette mémoire : rien n'arrive au compte du propriétaire, rien ne remplace le brouillon de l'appareil.
+ *   Si le remplacement échoue, l'éditeur ne démarre PAS.
+ * - Le plan arrive par /api/admin/plans/[id] (réservé admin) et devient le brouillon de la mémoire, Pro affiché.
+ * - Un bandeau rappelle la lecture seule ; l'unité (m / ft) et l'affichage choisis sur l'appareil sont repris.
+ * Aucune donnée dans la page : elle est statique, le plan vient du réseau.
+ */
+function amorcageAdmin(): string {
+  return `(function(){
+window.AVYORA_PRO=true;
+var vrai=null;try{vrai=window.localStorage;}catch(e){}
+var mem={};
+function garder(k){try{var v=vrai&&vrai.getItem(k);if(v!=null)mem[k]=v;}catch(e){}}
+garder('avyora-plan-unite');garder('avyora-plan-view');
+var faux={getItem:function(k){return Object.prototype.hasOwnProperty.call(mem,k)?mem[k]:null;},
+  setItem:function(k,v){mem[String(k)]=String(v);},removeItem:function(k){delete mem[k];},
+  clear:function(){mem={};},key:function(i){return Object.keys(mem)[i]||null;}};
+Object.defineProperty(faux,'length',{get:function(){return Object.keys(mem).length;}});
+try{Object.defineProperty(window,'localStorage',{configurable:true,get:function(){return faux;}});}catch(e){}
+var sur=false;try{sur=window.localStorage===faux;}catch(e){}
+function dire(t){var v=document.getElementById('avyora-voile');if(v)v.textContent=t;}
+var q=null;try{q=new URLSearchParams(location.search);}catch(e){}
+var id=q?q.get('id'):null;
+if(!id||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))id=null;
+function demarrer(P){
+  mem['avyora-plan-welcome']='1';mem['avyora-plan-pro']='1';
+  var st={};for(var k in P.etat)if(Object.prototype.hasOwnProperty.call(P.etat,k))st[k]=P.etat[k];
+  st.id=P.id;st.name=P.nom;
+  mem['avyora-plan-v2']=JSON.stringify({state:st,view:P.vue||undefined});
+  var src=document.getElementById('avyora-editeur');
+  var el=document.createElement('script');el.textContent=src?src.textContent:'';
+  document.body.appendChild(el);
+  var v=document.getElementById('avyora-voile');if(v&&v.parentNode)v.parentNode.removeChild(v);
+  document.title='Admin · '+P.nom;
+  var b=document.createElement('div');b.setAttribute('role','status');
+  b.style.cssText='position:fixed;left:50%;bottom:52px;transform:translateX(-50%);z-index:2147483646;background:#fdf1e1;color:#8a530b;border:1px solid #f0c98a;border-radius:999px;padding:7px 14px;font:600 12.5px Geist,system-ui,sans-serif;box-shadow:0 6px 18px rgba(30,27,75,.18);pointer-events:none;max-width:92vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+  b.textContent='Vue admin · lecture seule · plan de '+(P.proprietaire||'?')+' · rien n\u2019est enregistr\u00e9';
+  document.body.appendChild(b);
+}
+function lancer(){
+  if(!sur){dire('Vue admin impossible dans ce navigateur : rien n\u2019a été ouvert.');return;}
+  if(!id){dire('Plan introuvable.');return;}
+  fetch('/api/admin/plans/'+id,{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}})
+    .then(function(r){return r.json().then(function(j){return {s:r.status,j:j};});})
+    .then(function(r){
+      if(r.s===401||r.s===403){dire('Accès réservé à l\u2019admin.');return;}
+      if(r.s!==200||!r.j||!r.j.etat||!Array.isArray(r.j.etat.levels)){dire('Plan introuvable.');return;}
+      demarrer(r.j);
+    }).catch(function(){dire('Le plan n\u2019a pas pu être chargé. Recharge la page.');});
+}
+if(document.readyState!=='loading')lancer();else document.addEventListener('DOMContentLoaded',lancer);
+})();`;
+}
+
 /** La transformation pure : compte TOUS les motifs sur la source d'origine, puis remplace. */
-export function transformerEditeur(source: string): string {
-  const M = motifs();
+export function transformerEditeur(source: string, admin = false): string {
+  const M = motifs(admin);
   for (const m of M) {
     const n = compter(source, m.motif);
     if (n !== m.nombre) {
@@ -347,6 +405,12 @@ export function transformerEditeur(source: string): string {
   let out = source;
   for (const m of M) out = out.split(m.motif).join(m.par);
   return out;
+}
+
+/** Le HTML de la vue admin en lecture seule (`/admin/plans/editeur`), lu et transformé au build. */
+export async function editeurAdmin(): Promise<string> {
+  const source = await readFile(path.join(process.cwd(), SOURCE_EDITEUR), "utf8");
+  return transformerEditeur(source, true);
 }
 
 /** Le HTML servi sur /plan, lu et transformé au build. */

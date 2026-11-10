@@ -109,6 +109,14 @@ const nextConfig: NextConfig = {
           { key: "X-Robots-Tag", value: "noindex" },
         ],
       },
+      /* Le même éditeur, en lecture seule pour l'admin : même CSP. */
+      {
+        source: "/admin/plans/editeur",
+        headers: [
+          { key: "Content-Security-Policy", value: cspEditeur },
+          { key: "X-Robots-Tag", value: "noindex" },
+        ],
+      },
     ];
   },
   // L'URL technique Vercel (*.vercel.app) sert le même contenu que getavyora.fr → on la redirige

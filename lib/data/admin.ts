@@ -2,6 +2,7 @@ import "server-only";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { estAdmin } from "@/lib/auth";
 import { estimationProjet, avancementProjet, natureProjet, modeProjet, type StatutChantier } from "@/lib/estimateur/projet";
+import type { ApercuMur } from "@/lib/plans/apercu";
 
 /**
  * Couche de données ADMIN — lecture cross-tenant via le client service-role (bypass RLS).
@@ -193,5 +194,82 @@ export function statsGlobales(inscrits: AdminInscrit[]): AdminStats {
     parRegion: compter(inscrits.map((i) => i.profil?.region ?? "")),
     budgetMoyen: moyenne("reno"),
     budgetMoyenNeuf: moyenne("neuf"),
+  };
+}
+
+// ── Plans (« Mes plans », table floor_plans) ──
+export type AdminPlan = {
+  id: string;
+  ownerId: string;
+  email: string;
+  nom: string;
+  /** Plan final (construction) ou projet de rénovation. */
+  workflow: "final_plan" | "renovation";
+  m2: number | null;
+  pieces: number | null;
+  budget: number | null;
+  apercu: ApercuMur[] | null;
+  createdAt: string;
+  updatedAt: string;
+  /** Estimations nées de ce plan (liens project_plans). */
+  estimations: string[];
+};
+
+type RowPlan = {
+  id: string; owner_id: string; nom: string; workflow: string; resume: unknown; apercu: unknown;
+  created_at: string; updated_at: string;
+};
+
+const nombreOuNull = (v: unknown): number | null => (typeof v === "number" && Number.isFinite(v) ? v : null);
+
+/** Les adresses des comptes, par id (une seule lecture d'Auth). */
+async function emailsParId(): Promise<Map<string, string>> {
+  const { data, error } = await supabaseAdmin().auth.admin.listUsers({ page: 1, perPage: 1000 });
+  if (error) throw new Error(error.message);
+  return new Map(data.users.map((u) => [u.id, u.email ?? "—"]));
+}
+
+/** Tous les plans enregistrés (bypass RLS), les plus récemment modifiés d'abord. Sans l'état complet : la liste n'en a pas besoin. */
+export async function listPlansAdmin(): Promise<AdminPlan[]> {
+  const sb = supabaseAdmin();
+  const [{ data, error }, liens, emails] = await Promise.all([
+    sb.from("floor_plans").select("id, owner_id, nom, workflow, resume, apercu, created_at, updated_at").order("updated_at", { ascending: false }),
+    sb.from("project_plans").select("plan_id, project_id"),
+    emailsParId(),
+  ]);
+  if (error) throw new Error(error.message);
+  const parPlan = new Map<string, string[]>();
+  for (const l of (liens.data ?? []) as { plan_id: string; project_id: string }[]) parPlan.set(l.plan_id, [...(parPlan.get(l.plan_id) ?? []), l.project_id]);
+  return ((data ?? []) as RowPlan[]).map((r) => {
+    const res = (r.resume && typeof r.resume === "object" ? r.resume : {}) as Record<string, unknown>;
+    return {
+      id: r.id, ownerId: r.owner_id, email: emails.get(r.owner_id) ?? "—", nom: r.nom,
+      workflow: r.workflow === "final_plan" ? "final_plan" : "renovation",
+      m2: nombreOuNull(res.m2), pieces: nombreOuNull(res.pieces), budget: nombreOuNull(res.budget),
+      apercu: Array.isArray(r.apercu) ? (r.apercu as ApercuMur[]) : null,
+      createdAt: r.created_at, updatedAt: r.updated_at,
+      estimations: parPlan.get(r.id) ?? [],
+    };
+  });
+}
+
+/** Un plan quelconque AVEC son état (bypass RLS) — pour l'ouvrir en lecture seule dans l'éditeur. */
+export async function getPlanAdmin(id: string): Promise<{
+  id: string; ownerId: string; email: string; nom: string; workflow: "final_plan" | "renovation";
+  etat: Record<string, unknown>; vue: unknown; updatedAt: string;
+} | null> {
+  const { data } = await supabaseAdmin()
+    .from("floor_plans")
+    .select("id, owner_id, nom, workflow, etat, vue, updated_at")
+    .eq("id", id)
+    .maybeSingle();
+  if (!data) return null;
+  const r = data as { id: string; owner_id: string; nom: string; workflow: string; etat: unknown; vue: unknown; updated_at: string };
+  const { data: u } = await supabaseAdmin().auth.admin.getUserById(r.owner_id);
+  return {
+    id: r.id, ownerId: r.owner_id, email: u.user?.email ?? "—", nom: r.nom,
+    workflow: r.workflow === "final_plan" ? "final_plan" : "renovation",
+    etat: (r.etat && typeof r.etat === "object" ? r.etat : {}) as Record<string, unknown>,
+    vue: r.vue ?? null, updatedAt: r.updated_at,
   };
 }

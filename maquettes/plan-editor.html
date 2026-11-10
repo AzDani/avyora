@@ -5369,7 +5369,7 @@ function clickAction(raw){
   if(tool==='mur'){
     if(rectMode){ // pièce rectangulaire rapide : le clic pose le coin haut-gauche
       const {p}=snapPoint(raw,null);const {L:Lr,l}=rectMode;const c=[p,v(p.x+Lr,p.y),v(p.x+Lr,p.y+l),v(p.x,p.y+l)];
-      chain=[];chainWallIds=[];for(let i=0;i<4;i++)addWall(c[i],c[(i+1)%4]);chain=c.slice();endChain(true);rectMode=null;toast('Pièce de '+fmt(Lr)+' × '+uL(l)+' posée',true);return;
+      chain=[];chainWallIds=[];for(let i=0;i<4;i++)addWall(c[i],c[(i+1)%4]);chain=c.slice();endChain(true);rectMode=null;toast('Pièce de '+uLL(Lr,l)+' posée',true);return;
     }
     const ref=chain.length?chain[chain.length-1]:null; const {p}=snapPoint(raw,ref);
     if(chain.length&&dist(p,chain[0])<1e-6&&chain.length>=3){addWall(chain[chain.length-1],p);endChain(true);return;}
@@ -6465,7 +6465,7 @@ function draw(){
    if(vide&&!carte&&!exporting){ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#64627F';ctx.font='700 18px Geist, sans-serif';
      const tx=ghost?['Trace l\'étage par-dessus le niveau du dessous (en filigrane)','Les murs porteurs et l\'escalier du dessous te servent de repère · outil « Murs » (M)']
        :mode()==='final'?['Ce plan est vide','Dessine ton logement en vue '+nomVue('existant')+'.']
-       :rectMode?['Clique pour poser le coin haut-gauche de la pièce',fmt(rectMode.L)+' × '+uL(rectMode.l)+' · Échap pour annuler']
+       :rectMode?['Clique pour poser le coin haut-gauche de la pièce',uLL(rectMode.L,rectMode.l)+' · Échap pour annuler']
        :null; /* D65 : la feuille blanche ne redit plus « clique le 1er coin » (la barre d'état le dit) : un pictogramme */
      if(!tx){pictoPremierCoin(W,H);}else{
      /* D43 : la consigne passe à la ligne quand le plan est étroit (tablette en portrait, téléphone) — elle était coupée des deux côtés */
@@ -8397,7 +8397,7 @@ function demolirTroncon(tv){const w=tv.w,Lw=wallLen(w),id0=w.id,pt=t=>{const j=t
 function couperAuxJonctions(){const w=findWall(sel&&sel.id);if(!w||enLectureSeule())return;const J=jonctionsInterieures(L(),w);if(!J.length){splitWall();return;}
   history.push(snapshot());if(history.length>80)history.shift();future=[];let cur=w,t0=0;const P=[w];
   J.forEach(j=>{const w2=couperMurA(cur,(j.t-t0)/(1-t0),j.p);P.push(w2);cur=w2;t0=j.t;});_visee=null;afterChange();
-  toast(`Mur coupé en ${P.length} tronçons (${P.map(p=>fmt(wallLen(p))).join(' · ')} m) : clique celui à changer.`,true,annulerCe());}
+  toast(`Mur coupé en ${P.length} tronçons (${P.map(p=>uL(wallLen(p))).join(' · ')}) : clique celui à changer.`,true,annulerCe());}
 function toggleOpeningOpt(k){const o=L().openings.find(o=>o.id===sel.id);if(!o)return;history.push(snapshot());o.opts=o.opts||[];const i=o.opts.indexOf(k);if(i>=0)o.opts.splice(i,1);else o.opts.push(k);afterChange();}
 function setTableaux(on){const o=L().openings.find(x=>x.id===sel.id);const w=o&&L().walls.find(x=>x.id===o.wallId);if(w)poserTableaux(o,w,!!on);}
 function setOpeningProp(k,val){const o=L().openings.find(o=>o.id===sel.id);if(o&&dimHorsBorne('opening',o,k,val,x=>{if(sel&&sel.id===o.id)setOpeningProp(k,x);}))return;if(k==='volet'&&val==='battant'&&o.type==='baie')val='roulant';if(k==='ouvrant'&&val==='galandage')o.pose='applique';if(k==='pose'&&val!=='applique'&&ouvrantOf(o)==='galandage')o.ouvrant='coulissant';if(k==='st'&&(val==='creer'||val==='remplacer')&&o.vitrage==='simple')o.vitrage='double';history.push(snapshot());if(k==='type'){const d=OPENINGS[val];o.type=val;o.w=d.w;o.h=d.h;if(d.kind==='gap'&&o.st==='remplacer')delete o.st;if(val==='baie')o.mat='alu';else if(!matsFor(o).includes(o.mat))delete o.mat;}else if(k==='st'){if(val==='existant')delete o.st;else o.st=val;
