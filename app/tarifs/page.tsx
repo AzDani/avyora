@@ -16,7 +16,7 @@ import { PLANS_MAX_BETA, betaActive, dateInsecable, estMembreFondateur, libelles
 const META: Metadata = {
   title: "Passer Pro — estimation détaillée poste par poste",
   description:
-    "Débloque l'estimateur détaillé AVYORA : 200 postes chiffrés, quantités ajustables, rapport PDF et sauvegarde de tes projets. Dès 18,85 €/mois, sans engagement.",
+    "Débloque l'estimateur détaillé AVYORA : plus de 200 postes chiffrés, quantités ajustables, rapport PDF, projets sauvegardés. Dès 18,85 €/mois, sans engagement.",
   alternates: { canonical: "/tarifs" },
 };
 

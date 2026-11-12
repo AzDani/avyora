@@ -8,7 +8,7 @@ import { villeBySlug } from "@/lib/villes";
 import { deptInfo } from "@/lib/geo";
 import { regionCoef } from "@/lib/estimateur";
 import { seoMeta, titreCourt } from "@/lib/seo-og";
-import { phraseCoef, phraseFournitures, raisonFournitures, lieuVille } from "@/lib/seo-textes";
+import { phraseCoef, coefCourt, phraseFournitures, raisonFournitures, lieuVille } from "@/lib/seo-textes";
 import { CtaEstimation } from "@/components/CtaEstimation";
 import { PIECES_ESTIMATEUR } from "@/lib/seo-projets";
 import type { PieceKey } from "@/lib/estimateur";
@@ -152,7 +152,7 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
     },
     {
       q: `Pourquoi le prix est-il différent à ${v.nom} ?`,
-      a: `${phraseFournitures(reg)} Pour ${v.nom}, classée « ${reg.zone} » dans le barème régional AVYORA (un indice interne), ${coefPhrase}${reg.mat !== 1 ? ` (${raisonFournitures(reg)})` : ""}.`,
+      a: `${phraseFournitures(reg)} Pour ${v.nom}, classée « ${reg.zone} » dans le barème régional AVYORA (un indice interne) : ${coefCourt(reg)}${reg.mat !== 1 ? ` (${raisonFournitures(reg)})` : ""}.`,
     },
     {
       q: `Qu'est-ce qui fait varier ce budget ?`,

@@ -73,7 +73,8 @@ export function dansRegion(region: string): string {
  */
 export function lieuVille(nom: string, dep: DeptInfo): string {
   if (!dep.nom) return nom;
-  const base = `${nom} (${dep.num} · ${dep.nom})`;
+  // « Saint-Denis de La Réunion (974) » et non « … (974 · La Réunion) » : le nom porte déjà le département.
+  const base = nom.includes(dep.nom) ? `${nom} (${dep.num})` : `${nom} (${dep.num} · ${dep.nom})`;
   const region = regionNette(dep);
   return region && region !== dep.nom ? `${base}, ${dansRegion(region)}` : base;
 }

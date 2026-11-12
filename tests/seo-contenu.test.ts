@@ -197,6 +197,7 @@ describe("phrases des pages ville : honnêtes et sans coquilles", () => {
     expect(lieuVille("Cayenne", deptInfo("97300"))).toBe("Cayenne (973 · Guyane)");
     expect(lieuVille("Lyon", deptInfo("69001"))).toBe("Lyon (69 · Rhône), en Auvergne-Rhône-Alpes");
     expect(lieuVille("Roubaix", deptInfo("59100"))).toBe("Roubaix (59 · Nord), dans les Hauts-de-France");
+    expect(lieuVille("Saint-Denis de La Réunion", deptInfo("97400"))).toBe("Saint-Denis de La Réunion (974)");
     expect(situationVille("Cayenne", deptInfo("97300"))).toBe("Cayenne se situe en Guyane, département d'outre-mer (973).");
     expect(situationVille("Saint-Denis de La Réunion", deptInfo("97400"))).toBe("Saint-Denis de La Réunion se situe à La Réunion, département d'outre-mer (974).");
     expect(situationVille("Ajaccio", deptInfo("20000"))).toBe("Ajaccio se situe en Corse.");

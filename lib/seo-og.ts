@@ -10,7 +10,7 @@ const siteUrl =
  * absente = clic gagné puis retour immédiat. Source unique : le layout racine et l'accueil la lisent.
  */
 export const DESCRIPTION_SITE =
-  "Estime le coût de tes travaux de rénovation au prix du marché français : 200 postes chiffrés, 18 corps d'état, prix ajustés à ta région — avant de signer.";
+  "Estime le coût de tes travaux de rénovation au prix du marché français : plus de 200 postes chiffrés, 18 corps d'état, ajustés à ta région — avant de signer.";
 
 /**
  * Bloc Open Graph d'une page, complété des valeurs de marque.
