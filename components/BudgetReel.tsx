@@ -186,6 +186,8 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales, o
   const plus = (v: number): string => "+" + fmt(v);
   const moins = (v: number): string => "−" + fmt(Math.abs(v));
   const pct = (v: number): string => pourcent(locale, v, 0);
+  /** L'écart global, au dixième : le même chiffre que la tuile « Budget réel » du tableau de bord (TuilesProjet). */
+  const pctEcart = (v: number): string => pourcent(locale, v, 1);
   const nomCorps = (c: string): string => (c === CORPS_AUTRE ? t.autre : catT(locale, "corps", c));
   const dateCourte = (iso: string): string => {
     const d = new Date(iso);
@@ -279,9 +281,9 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales, o
   const ecart = bilan.ecartPrevision;
   const ecartPct = bilan.estimation > 0 ? (ecart / bilan.estimation) * 100 : 0;
   const verdict = ecart > 0.5
-    ? { cls: "r", txt: t.verdictSur(plus(ecart), "+" + pct(ecartPct)) }
+    ? { cls: "r", txt: t.verdictSur(plus(ecart), "+" + pctEcart(ecartPct)) }
     : ecart < -0.5
-      ? { cls: "g", txt: t.verdictSous(fmt(Math.abs(ecart)), "−" + pct(Math.abs(ecartPct))) }
+      ? { cls: "g", txt: t.verdictSous(fmt(Math.abs(ecart)), "−" + pctEcart(Math.abs(ecartPct))) }
       : { cls: "n", txt: t.verdictPile };
   const alertes = bilan.alertes.map(texteAlerte).filter((x): x is { cls: string; txt: string } => !!x);
   const reste = Math.max(0, bilan.prevision - bilan.reel);

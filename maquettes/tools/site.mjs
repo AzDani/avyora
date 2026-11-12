@@ -554,23 +554,23 @@ const posts = (S) => S.log.filter((x) => x.m === "POST");
   await c2.close();
 }
 
-/* B16 · supprimer le plan ouvert : il reste ouvert sur cet appareil ; ni une modification ni Annuler (Ctrl+Z) ne le
-   remettent dans le compte ; « Annuler » du message lui rend son id du compte */
+/* B16 · supprimer le plan ouvert le FERME (revue 12/11) : une feuille blanche du même type le remplace ; ni une
+   modification ni Annuler (Ctrl+Z) ne le remettent dans le compte ; « Annuler » du message le rouvre avec son id du compte */
 {
   const S = serveur({ plans: [{ id: UUID(10), nom: "À supprimer", workflow: "final_plan", etat: FIX("plan-final-etage"), revision: 2 },
     { id: UUID(12), nom: "Gardé", workflow: "final_plan", etat: FIX("plan-final-etage"), revision: 1 }] });
   const { p, ctx } = await ongletSite(S, { site: siteDe(S, { planId: UUID(10) }), chemin: "/plan?id=" + UUID(10) });
   await p.evaluate((id) => { openPlansModal(); deleteSavedPlan(id); closeModal(); }, UUID(10));
   await wait(8600);
-  t["suppression · le plan ouvert supprimé : DELETE à 8 s, il reste ouvert sous un id local, proposé"] = S.log.filter((x) => x.m === "DELETE").length === 1 && !S.plans.has(UUID(10))
-    && await p.evaluate(() => /^[a-z0-9]{1,24}$/.test(state.id) && siteProp() && sortDuPlanOuvert() === "appareil");
+  t["suppression · le plan ouvert supprimé : DELETE à 8 s, une feuille blanche du même type le remplace"] = S.log.filter((x) => x.m === "DELETE").length === 1 && !S.plans.has(UUID(10))
+    && await p.evaluate((id) => state.id !== id && planVide() && workflowDe(state) === "final_plan" && sortDuPlanOuvert() === "rien", UUID(10));
   await p.evaluate(() => { history.push(snapshot()); state.name = "Modifié après suppression"; afterChange(); });
   await wait(2800);
   t["suppression · une modification ensuite : aucun POST"] = posts(S).length === 0;
   await p.evaluate(() => undo());
   await wait(2800);
   t["suppression · une modification puis Annuler (Ctrl+Z) : aucun POST, le plan n'est pas ressuscité"] = posts(S).length === 0 && !S.plans.has(UUID(10))
-    && await p.evaluate((id) => siteProp() && !siteLib[id] && Object.keys(siteLib).length === 1, UUID(10));
+    && await p.evaluate((id) => !siteLib[id] && Object.keys(siteLib).length === 1, UUID(10));
   await ctx.close();
   const { p: q, ctx: c2 } = await ongletSite(S, { site: siteDe(S, { planId: UUID(12) }), chemin: "/plan?id=" + UUID(12) });
   await q.evaluate((id) => { openPlansModal(); deleteSavedPlan(id); closeModal(); }, UUID(12));

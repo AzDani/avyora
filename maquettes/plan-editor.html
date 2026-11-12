@@ -4938,8 +4938,19 @@ if(NUAGE){
   const _dsp=deleteSavedPlan;
   deleteSavedPlan=function(id){
     const ouvert=state.id===id&&!!siteLib[id];
+    if(!ouvert){_dsp(id);return;}
+    /* revue 12/11 : le plan supprimé restait ouvert (« enregistré automatiquement ») et revenait au rechargement. Il
+       est maintenant fermé : une feuille blanche du même type le remplace, rien n'est rangé ni gardé. « Annuler »
+       (8 s, avant la suppression réelle) le remet dans le compte et le rouvre tel qu'il était. */
+    const e=loadPlans()[id],garde=JSON.parse(JSON.stringify(state)),vue={...view},wf=workflowDe(state);
     _dsp(id);
-    if(ouvert&&!state.id){siteProposer();siteRetraits[id]=state.id;save();}};
+    history=[];future=[];_tachesOuverture=null;state=blankState();state.workflow=wf;state.name=nomUnique(state.name);
+    sel=null;resetGestes();panelTab='details';afterChange();fitView();baseDecisions();save();renderPlans();
+    toast(`« ${e.name||'Plan sans nom'} » supprimé de « Mes plans »`,false,{action:'Annuler',fn:()=>{
+      const l2=loadPlans();l2[id]=e;writePlans(l2);
+      state=garde;state.id=id;view=vue;sel=null;resetGestes();afterChange();fitView();baseDecisions();save();
+      if(document.getElementById('m-plans').classList.contains('show'))renderPlans();
+      toast(`« ${e.name||'Plan sans nom'} » est de retour dans « Mes plans »`,true);}});};
 }
 if(SITE&&!NUAGE){
   const _sv=suivre;
@@ -5001,7 +5012,7 @@ function renderPlans(){const lib=loadPlans();const list=Object.values(lib).sort(
      ouvrir un autre. Il s'affiche désormais toujours en première carte (surface, montant, avancement) ;
      le message vide est réservé au cas où il n'y a vraiment rien. */
   const ouvertHors=!planVide()&&!(state.id&&lib[state.id]),so=ouvertHors?sortDuPlanOuvert():'';
-  const carteOuverte=ouvertHors?`<div class="grp plancard" id="planOuvertCarte" style="border-color:var(--acc3);background:var(--brand-l)"><span class="pmini" aria-hidden="true">${miniPlanSVG(state)}</span><div class="glink" style="cursor:default"><span class="gname"><b>${esc(state.name||'Mon plan')}</b>${pastilleType(workflowDe(state))} <span class="gouvert">· ${so==='exemple'?'Ouvert · '+MSG_EXEMPLE.replace(/\.$/,''):so==='perdu'?'Ouvert · enregistré sur cet appareil, pas dans Mes plans':'Ouvert · enregistré automatiquement'}</span></span><span class="gres">${resumeTxt(resumePlan(),0)}</span></div></div>`:'';
+  const carteOuverte=ouvertHors?`<div class="grp plancard" id="planOuvertCarte" style="border-color:var(--acc3);background:var(--brand-l)"><span class="pmini" aria-hidden="true">${miniPlanSVG(state)}</span><div class="glink" style="cursor:default"><span class="gname"><b>${esc(state.name||'Mon plan')}</b>${pastilleType(workflowDe(state))} <span class="gouvert">· ${so==='exemple'?'Ouvert · '+MSG_EXEMPLE.replace(/\.$/,''):so==='perdu'||so==='appareil'?'Ouvert · enregistré sur cet appareil, pas dans Mes plans':'Ouvert · enregistré automatiquement'}</span></span><span class="gres">${resumeTxt(resumePlan(),0)}</span></div></div>`:'';
   if(!list.length&&!ouvertHors){el.innerHTML=banner+(isMobile()?'<div class="empty">'+TXT_LIEU.videTel+'</div>':'<div class="empty">Aucun plan enregistré pour l\'instant. Dessine ton plan puis clique <b>Enregistrer le plan actuel</b>.</div>');if(NUAGE)siteSectionLocale(el);return;}
   el.innerHTML=banner+'<div class="grouplist">'+carteOuverte+list.map(e=>{const cur=e.id===state.id;const nb=(e.state?.levels||[]).reduce((s,l)=>s+(l.walls?.length||0),0);
     /* D40 : la carte rappelle ce que le plan vaut — surface, budget (Pro), avancement du chantier. Le plan ouvert se lit en direct. */
@@ -6184,7 +6195,7 @@ function ouvrirMenu(m,focusDernier){fermerMenus();const [b,p]=MENUS[m].map(i=>do
 function fermerMenus(rendreFocus){if(!menuOuvert)return;const [b,p]=MENUS[menuOuvert].map(i=>document.getElementById(i));if(p)p.hidden=true;if(b)b.setAttribute('aria-expanded','false');menuOuvert=null;if(rendreFocus&&b)try{b.focus();}catch{}}
 function basculerMenu(m){if(menuOuvert===m)fermerMenus(true);else{if(m==='fichier')majMenuFichier();ouvrirMenu(m);}}
 /* D48 (cj-qa05) : ce que « Nouveau plan » fera du plan ouvert, dit tel quel — y compris en gratuit. */
-function phraseSortie(){const o=sortDuPlanOuvert();return o==='rien'?'Rien à ranger : le plan ouvert est vide ou jamais modifié':o==='range'?'Le plan ouvert est déjà dans Mes plans, à jour':o==='rangera'?'Le plan ouvert est d\'abord rangé dans Mes plans':o==='exemple'?MSG_EXEMPLE.replace(/\.$/,''):'Version gratuite : Mes plans est plein, on te demandera avant';}
+function phraseSortie(){const o=sortDuPlanOuvert();return o==='rien'?'Rien à ranger : le plan ouvert est vide ou jamais modifié':o==='range'?'Le plan ouvert est déjà dans Mes plans, à jour':o==='rangera'?'Le plan ouvert est d\'abord rangé dans Mes plans':o==='exemple'?MSG_EXEMPLE.replace(/\.$/,''):o==='appareil'?'Le plan ouvert n\'est pas dans ton compte : il reste sur cet appareil':'Version gratuite : Mes plans est plein, on te demandera avant';}
 function majMenuFichier(){const s=document.querySelector('#newBtn small');if(s)s.textContent=phraseSortie();}
 function menuAction(fn){fermerMenus(true);fn();}
 /* « Visite guidée » : la visite de 5 bulles si elle existe (chantier onboarding), sinon le guide en 3 étapes. */
