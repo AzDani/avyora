@@ -169,6 +169,33 @@ export function planAReprendre(locaux: PlanLocal[], drapeau: string | null): Pla
   return reprenables.find((p) => p.ouvert) ?? reprenables[0] ?? null;
 }
 
+/**
+ * Le plan que rappelle /inscription (`PlanRappel`) : seulement si l'on y arrive pour l'éditeur (drapeau de reprise, ou
+ * `next` = /plan…), et s'il y a un plan local à reprendre. L'éditeur demande un compte (décision de Dani du
+ * 12/11/2026) : un ancien brouillon y arrive aussi SANS drapeau (le proxy renvoie /plan à l'inscription). Le rappel
+ * promet « on le range dans Mes plans » : le drapeau est alors posé, pour que l'éditeur connecté (ou `ClaimPlan` sur
+ * /projets) le range au retour, comme « Crée ton compte pour le retrouver » sur la vitrine.
+ */
+export function planDuRappel(s: Stockage, next: string | undefined): PlanLocal | null {
+  let drapeau: string | null = null;
+  try {
+    drapeau = s.getItem(CLE_RECLAMATION_PLAN);
+  } catch {
+    drapeau = null;
+  }
+  const versEditeur = next === "/plan" || (typeof next === "string" && next.startsWith("/plan?"));
+  if (!drapeau && !versEditeur) return null;
+  const p = planAReprendre(lirePlansLocaux(s), drapeau);
+  if (p && !drapeau) {
+    try {
+      s.setItem(CLE_RECLAMATION_PLAN, p.id);
+    } catch {
+      /* sans stockage, l'éditeur connecté propose « Ajouter à mon compte » */
+    }
+  }
+  return p;
+}
+
 /** Le tampon sans id (un plan jamais rangé) en reçoit un, comme `siteInviter` le fait dans l'éditeur. */
 export function assurerIdTampon(s: Stockage): string | null {
   const tampon = lire(s, CLE_TAMPON_PLAN);

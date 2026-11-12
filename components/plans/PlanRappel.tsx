@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { dictPlans, formatsPlans } from "@/lib/i18n/plans";
-import { CLE_RECLAMATION_PLAN, lirePlansLocaux, planAReprendre, stockageNavigateur } from "@/lib/plans/local";
+import { planDuRappel, stockageNavigateur } from "@/lib/plans/local";
 
 /**
  * Sur /inscription, quand on arrive de l'éditeur (drapeau `avyora-plan-claim`, ou `next=/plan`) :
  * « Ton plan est prêt », son nom, sa surface et ses pièces s'ils sont connus. Jumeau
  * d'`EstimationRappel` (compact comme lui : le bouton reste au-dessus du pli d'un portable), entièrement
- * traduit. Rien sans plan local (arrivée directe) : le HTML serveur de la page ne change pas.
+ * traduit. Rien sans plan local (arrivée directe) : le HTML serveur de la page ne change pas. Arrivé sans drapeau avec un
+ * brouillon (le proxy renvoie /plan à l'inscription), le drapeau est posé (`planDuRappel`) : la promesse du rappel tient.
  */
 export function PlanRappel({ next }: { next?: string }) {
   const locale = useLocale();
@@ -19,15 +20,7 @@ export function PlanRappel({ next }: { next?: string }) {
   useEffect(() => {
     const s = stockageNavigateur();
     if (!s) return;
-    let drapeau: string | null = null;
-    try {
-      drapeau = s.getItem(CLE_RECLAMATION_PLAN);
-    } catch {
-      drapeau = null;
-    }
-    const versEditeur = next === "/plan" || (typeof next === "string" && next.startsWith("/plan?"));
-    if (!drapeau && !versEditeur) return;
-    const p = planAReprendre(lirePlansLocaux(s), drapeau);
+    const p = planDuRappel(s, next);
     if (!p) return;
     const m2 = Number(p.resume?.m2);
     const pieces = Number(p.resume?.pieces);

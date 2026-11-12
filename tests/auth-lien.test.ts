@@ -1410,8 +1410,6 @@ describe("proxy : l'éditeur de plan demande un compte (décision du 12/11/2026)
   it("sans session : /plan mène à l'inscription, l'adresse voulue EN ENTIER dans `next`, source « plan »", async () => {
     expect(await ou("https://getavyora.fr/plan")).toBe("https://getavyora.fr/inscription?next=%2Fplan&source=plan");
     expect(await ou("https://getavyora.fr/plan?type=final")).toBe("https://getavyora.fr/inscription?next=%2Fplan%3Ftype%3Dfinal&source=plan");
-    expect(await ou("https://getavyora.fr/plan?id=1f0e&projet=p2"))
-      .toBe("https://getavyora.fr/inscription?next=%2Fplan%3Fid%3D1f0e%26projet%3Dp2&source=plan");
     expect(await ou("https://getavyora.fr/plan", { methode: "HEAD" })).toBe("https://getavyora.fr/inscription?next=%2Fplan&source=plan");
     const r = await passer("https://getavyora.fr/plan?type=renovation");
     expect(r.status).toBe(307);
@@ -1419,6 +1417,16 @@ describe("proxy : l'éditeur de plan demande un compte (décision du 12/11/2026)
     const next = new URL(r.headers.get("location")!).searchParams.get("next") ?? undefined;
     expect(cheminInterne(next)).toBe("/plan?type=renovation");
     expect(lireSourceBeta(new URL(r.headers.get("location")!).searchParams.get("source"))).toBe("plan");
+  });
+
+  it("sans session, un plan ou un projet DU COMPTE (`?id=`, `?projet=`) : la connexion, l'adresse voulue en entier", async () => {
+    expect(await ou("https://getavyora.fr/plan?id=1f0e&projet=p2")).toBe("https://getavyora.fr/connexion?next=%2Fplan%3Fid%3D1f0e%26projet%3Dp2");
+    expect(await ou("https://getavyora.fr/plan?id=1f0e")).toBe("https://getavyora.fr/connexion?next=%2Fplan%3Fid%3D1f0e");
+    expect(await ou("https://getavyora.fr/plan?projet=p2&type=renovation")).toBe("https://getavyora.fr/connexion?next=%2Fplan%3Fprojet%3Dp2%26type%3Drenovation");
+    const r = await passer("https://getavyora.fr/plan?id=1f0e&projet=p2");
+    expect(r.status).toBe(307);
+    const next = new URL(r.headers.get("location")!).searchParams.get("next") ?? undefined;
+    expect(cheminInterne(next)).toBe("/plan?id=1f0e&projet=p2");
   });
 
   it("un `next` glissé dans l'adresse de l'éditeur fait partie de l'intention, il ne la remplace pas", async () => {
