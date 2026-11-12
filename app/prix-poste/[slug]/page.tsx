@@ -2,9 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { POSTES_PAGES, postePageBySlug } from "@/lib/seo-postes";
-import { posteRef, partMainOeuvreParLot } from "@/lib/seo-prix";
+import { posteRef, partMainOeuvreParLot, ttc, TVA_FOURNITURE_SEULE } from "@/lib/seo-prix";
 import { PRIX_MAJ, PRIX_MAJ_FR } from "@/lib/prix-maj";
-import { og } from "@/lib/seo-og";
+import { seoMeta } from "@/lib/seo-og";
 import { CtaEstimation } from "@/components/CtaEstimation";
 
 export const dynamic = "force-static";
@@ -26,12 +26,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const p = postePageBySlug(slug);
   if (!p) return { title: "Prix par corps d'état" };
-  return {
-    title: p.title,
-    description: p.description,
-    alternates: { canonical: `/prix-poste/${p.slug}` },
-    openGraph: og({ title: p.title, description: p.description, path: `/prix-poste/${p.slug}` }),
-  };
+  return seoMeta({ title: p.title, description: p.description, path: `/prix-poste/${p.slug}` });
 }
 
 export default async function PrixPostePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -45,6 +40,9 @@ export default async function PrixPostePage({ params }: { params: Promise<{ slug
     lignes: g.postes.map((nom) => posteRef(nom)).filter((x): x is NonNullable<typeof x> => x != null),
   }));
   const partMO = partMainOeuvreParLot().find((l) => l.lot === p.lot);
+  // TVA réellement appliquée sur ce lot (les taux distincts de ses postes) : 10 % ou 5,5 %.
+  const tauxLot = [...new Set(groupes.flatMap((g) => g.lignes.map((l) => l.tva)))].sort((a, b) => b - a);
+  const pct = (n: number) => `${n.toLocaleString("fr-FR")}\u00a0%`;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -103,14 +101,14 @@ export default async function PrixPostePage({ params }: { params: Promise<{ slug
           <div className="tw">
             <table>
               <thead>
-                <tr><th>Poste</th><th>Fourni-posé</th><th>Fourniture seule</th></tr>
+                <tr><th>Poste</th><th>Fourni-posé (TTC)</th><th>Fourniture seule (TTC)</th></tr>
               </thead>
               <tbody>
                 {g.lignes.map((l) => (
                   <tr key={l.nom}>
                     <td>{l.nom}</td>
-                    <td className="num">{euro(l.fp)} / {unite(l.unite)}</td>
-                    <td className="num">{l.sm != null ? `${euro(l.sm)} / ${unite(l.unite)}` : "—"}</td>
+                    <td className="num">{euro(ttc(l.fp, l.tva))} / {unite(l.unite)}</td>
+                    <td className="num">{l.sm != null ? `${euro(ttc(l.sm, TVA_FOURNITURE_SEULE))} / ${unite(l.unite)}` : "—"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -119,10 +117,14 @@ export default async function PrixPostePage({ params }: { params: Promise<{ slug
         </section>
       ))}
 
+      {/* TTC, comme toutes les autres pages de prix du site (avant : HT ici seulement, des montants qui ne
+          se recoupaient pas d'une page à l'autre). Taux = ceux de l'estimateur (lib/seo-prix.ts, posteRef). */}
       <p className="note">
-        Prix HT, fourni-posé, finition standard, au niveau national. La colonne « fourniture seule »
-        donne le coût des matériaux si vous posez vous-même : l&apos;écart entre les deux colonnes
-        correspond à la main-d&apos;œuvre.
+        Prix TTC, finition standard, au niveau national : TVA à {tauxLot.map(pct).join(" ou ")}{" "}
+        sur le fourni-posé d&apos;un artisan (rénovation d&apos;un logement de plus de deux ans), et à{" "}
+        {pct(TVA_FOURNITURE_SEULE)}{" "}sur les matériaux que tu achètes toi-même. La colonne « fourniture seule »
+        donne le coût des matériaux si tu poses toi-même : hors taxes, l&apos;écart entre les deux
+        colonnes correspond à la main-d&apos;œuvre.
         {partMO && (
           <> Sur ce lot, elle représente environ <strong>{partMO.partMO}&nbsp;%</strong> du prix posé.</>
         )}

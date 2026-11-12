@@ -2,7 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { PROJETS, estimProjet, titreSansPrefixe } from "@/lib/seo-projets";
 import { VILLES_SEO } from "@/lib/villes";
-import { PRIX_MAJ_FR } from "@/lib/prix-maj";
+import { PRIX_MAJ_FR, ANNEE_PRIX } from "@/lib/prix-maj";
+import { seoMeta } from "@/lib/seo-og";
 import { ALEAS_RENO } from "@/lib/estimateur/core";
 import { CtaEstimation } from "@/components/CtaEstimation";
 
@@ -18,12 +19,12 @@ const four = (ttc: number) => {
   return { lo: r(ttc * 0.85), hi: r(ttc * 1.15) };
 };
 
-export const metadata: Metadata = {
-  title: "Prix des travaux de rénovation par type (2026)",
-  description:
-    "Combien coûtent vos travaux ? Prix moyens 2026, poste par poste : salle de bain, cuisine, toiture, façade, isolation, électricité, peinture.",
-  alternates: { canonical: "/prix-travaux" },
-};
+export const metadata: Metadata = seoMeta({
+  title: `Prix des travaux de rénovation par type (${ANNEE_PRIX})`,
+  description: `Combien coûtent tes travaux ? Prix moyens ${ANNEE_PRIX}, poste par poste : salle de bain, cuisine, toiture, façade, isolation, électricité, peinture.`,
+  path: "/prix-travaux",
+  type: "website",
+});
 
 const CSS = `
 .av-seo{max-width:860px;margin:0 auto}
@@ -121,7 +122,7 @@ export default function PrixTravauxHub() {
           itemListElement: PROJETS.map((p, i) => ({
             "@type": "ListItem",
             position: i + 1,
-            name: p.h1.replace(" en 2026", ""),
+            name: p.h1.replace(` en ${ANNEE_PRIX}`, ""),
             url: `${siteUrl}/prix-travaux/${p.slug}`,
           })),
         },
@@ -149,17 +150,17 @@ export default function PrixTravauxHub() {
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      <h1>Prix des travaux de rénovation en 2026</h1>
+      <h1>Prix des travaux de rénovation en {ANNEE_PRIX}</h1>
       <p className="lead">
-        Combien coûtent vos travaux ? Retrouvez le budget moyen de chaque projet, <strong>détaillé poste par poste</strong>,
-        calculé avec le moteur AVYORA. Puis affinez l&apos;estimation à votre bien et votre code postal, gratuitement.
+        Combien coûtent tes travaux ? Retrouve le budget moyen de chaque projet, <strong>détaillé poste par poste</strong>,
+        calculé avec le moteur AVYORA. Puis affine l&apos;estimation à ton bien et ton code postal, gratuitement.
       </p>
 
       <div className="av-grid">
         {cards.map((c) => (
           <Link key={c.slug} href={`/prix-travaux/${c.slug}`} className="av-card">
             <div className="e">{c.emoji}</div>
-            <div className="t">{c.h1.replace("Prix ", "").replace("d'une ", "").replace("d'un ", "").replace("pour ", "").replace(" en 2026", "")}</div>
+            <div className="t">{c.h1.replace("Prix ", "").replace("d'une ", "").replace("d'un ", "").replace("pour ", "").replace(` en ${ANNEE_PRIX}`, "")}</div>
             <div className="p">{euro(c.lo)} – {euro(c.hi)}</div>
             <div className="s">{c.base}</div>
           </Link>

@@ -1,4 +1,12 @@
-export const metadata = { title: "Mentions légales", alternates: { canonical: "/mentions-legales" } };
+import { seoMeta } from "@/lib/seo-og";
+// Métadonnées propres à la page : sans description, elle reprenait celle de l'accueil (cf. seoMeta).
+export const metadata = seoMeta({
+  title: "Mentions légales",
+  description:
+    "Mentions légales du site getavyora.fr : éditeur, hébergeur, contact et propriété intellectuelle.",
+  path: "/mentions-legales",
+  type: "website",
+});
 
 export default function MentionsLegales() {
   return (

@@ -1,4 +1,12 @@
-export const metadata = { title: "Politique de confidentialité", alternates: { canonical: "/confidentialite" } };
+import { seoMeta } from "@/lib/seo-og";
+// Métadonnées propres à la page : sans description, elle reprenait celle de l'accueil (cf. seoMeta).
+export const metadata = seoMeta({
+  title: "Politique de confidentialité",
+  description:
+    "Comment AVYORA collecte, utilise et protège tes données personnelles (RGPD) : finalités, durées de conservation et droits.",
+  path: "/confidentialite",
+  type: "website",
+});
 
 export default function Confidentialite() {
   return (

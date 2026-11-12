@@ -3,11 +3,11 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { GUIDES, guideBySlug } from "@/lib/guides";
 import { VILLES_SEO } from "@/lib/villes";
-import { PRIX_MAJ, PRIX_MAJ_FR } from "@/lib/prix-maj";
+import { PRIX_MAJ, PRIX_MAJ_FR, ANNEE_PRIX } from "@/lib/prix-maj";
 import { prixNational, estim, posteRef, partMainOeuvreParLot, postesSansFourniture, catalogueStats } from "@/lib/seo-prix";
 import { autoQty, defaultCtx, type Ctx } from "@/lib/estimateur";
 import { catT } from "@/lib/estimateur/catalog-i18n";
-import { og } from "@/lib/seo-og";
+import { seoMeta } from "@/lib/seo-og";
 import { CtaEstimation } from "@/components/CtaEstimation";
 
 export const dynamic = "force-static";
@@ -33,12 +33,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const g = guideBySlug(slug);
   if (!g) return { title: "Guide des prix" };
-  return {
-    title: g.title,
-    description: g.description,
-    alternates: { canonical: `/guides/${g.slug}` },
-    openGraph: og({ title: g.title, description: g.description, path: `/guides/${g.slug}` }),
-  };
+  return seoMeta({ title: g.title, description: g.description, path: `/guides/${g.slug}` });
 }
 
 const CSS = `
@@ -157,11 +152,11 @@ function faqAppartement() {
   return [
     {
       q: "Combien coûte la rénovation complète d'un appartement au m² ?",
-      a: `En moyenne nationale, comptez environ ${euro(complete.appartM2)}/m² pour une rénovation complète d'appartement (finition standard, travaux confiés à des artisans), soit une fourchette de ±15\u00a0% selon l'état du bien.`,
+      a: `En moyenne nationale, compte environ ${euro(complete.appartM2)}/m² pour une rénovation complète d'appartement (finition standard, travaux confiés à des artisans), soit une fourchette de ±15\u00a0% selon l'état du bien.`,
     },
     {
       q: "Combien coûte la rénovation d'un appartement de 50 m² ?",
-      a: `Pour un appartement de 50 m², comptez environ ${euro(estim("", "T3", 50, "rafraich").ttc)} pour un rafraîchissement, ${euro(estim("", "T3", 50, "complete").ttc)} pour une rénovation complète et ${euro(estim("", "T3", 50, "lourde").ttc)} pour une rénovation totale (curage et redistribution). Budgets TTC, finition standard, marge ±15\u00a0%.`,
+      a: `Pour un appartement de 50 m², compte environ ${euro(estim("", "T3", 50, "rafraich").ttc)} pour un rafraîchissement, ${euro(estim("", "T3", 50, "complete").ttc)} pour une rénovation complète et ${euro(estim("", "T3", 50, "lourde").ttc)} pour une rénovation totale (curage et redistribution). Budgets TTC, finition standard, marge ±15\u00a0%.`,
     },
     {
       q: "Rafraîchissement ou rénovation complète : quelle différence de prix ?",
@@ -186,11 +181,11 @@ function faqMaison() {
   return [
     {
       q: "Combien coûte la rénovation complète d'une maison au m² ?",
-      a: `En moyenne nationale, comptez environ ${euro(complete.maisonM2)}/m² pour une rénovation complète de maison, et jusqu'à ${euro(lourde.maisonM2)}/m² pour une rénovation lourde (avec enveloppe : toiture, façade, charpente).`,
+      a: `En moyenne nationale, compte environ ${euro(complete.maisonM2)}/m² pour une rénovation complète de maison, et jusqu'à ${euro(lourde.maisonM2)}/m² pour une rénovation lourde (avec enveloppe : toiture, façade, charpente).`,
     },
     {
       q: "Combien coûte la rénovation d'une maison de 120 m² ?",
-      a: `Pour une maison de 120 m², comptez environ ${euro(estim("", "Maison", 120, "complete").ttc)} pour une rénovation complète et ${euro(estim("", "Maison", 120, "lourde").ttc)} pour une rénovation lourde incluant l'enveloppe (toiture, façade, charpente). Budgets TTC, finition standard, marge ±15\u00a0%.`,
+      a: `Pour une maison de 120 m², compte environ ${euro(estim("", "Maison", 120, "complete").ttc)} pour une rénovation complète et ${euro(estim("", "Maison", 120, "lourde").ttc)} pour une rénovation lourde incluant l'enveloppe (toiture, façade, charpente). Budgets TTC, finition standard, marge ±15\u00a0%.`,
     },
     {
       q: "Pourquoi une maison coûte-t-elle plus cher qu'un appartement au m² ?",
@@ -244,7 +239,7 @@ function LeviersPrix() {
         toucher à la qualité technique.
       </p>
 
-      <h3>2. Ce que vous faites vous-même</h3>
+      <h3>2. Ce que tu fais toi-même</h3>
       <p>
         Chaque poste du référentiel porte deux prix : fourni-posé, et fourniture seule. L&apos;écart,
         c&apos;est la main-d&apos;œuvre — et il est spectaculaire sur les postes accessibles.
@@ -260,7 +255,7 @@ function LeviersPrix() {
       <p>
         Attention à ne pas confondre économie et illusion : peindre soi-même est à la portée de
         beaucoup, refaire une installation électrique ne l&apos;est pas, et certains travaux engagent
-        votre responsabilité comme votre assurance. L&apos;estimateur permet de trancher poste par
+        ta responsabilité comme ton assurance. L&apos;estimateur permet de trancher poste par
         poste et de voir l&apos;économie réelle avant de s&apos;engager.
       </p>
 
@@ -298,7 +293,7 @@ function BodyAppartement() {
   return (
     <>
       <p className="lead">
-        En 2026, rénover un appartement coûte en moyenne <strong>{euro(g("rafraich").appartM2)}/m²</strong>{" "}pour un
+        En {ANNEE_PRIX}, rénover un appartement coûte en moyenne <strong>{euro(g("rafraich").appartM2)}/m²</strong>{" "}pour un
         rafraîchissement et jusqu&apos;à <strong>{euro(complete.appartM2)}/m²</strong>{" "}pour une{" "}
         <strong>rénovation complète</strong>{" "}(finition standard, tout confié à des artisans). Le prix dépend surtout de
         l&apos;ampleur des travaux, de la finition et de la région.
@@ -402,7 +397,7 @@ function BodyMaison() {
   return (
     <>
       <p className="lead">
-        En 2026, rénover une maison coûte en moyenne <strong>{euro(complete.maisonM2)}/m²</strong>{" "}pour une{" "}
+        En {ANNEE_PRIX}, rénover une maison coûte en moyenne <strong>{euro(complete.maisonM2)}/m²</strong>{" "}pour une{" "}
         <strong>rénovation complète</strong>, et jusqu&apos;à <strong>{euro(lourde.maisonM2)}/m²</strong>{" "}pour une{" "}
         <strong>rénovation lourde</strong>{" "}incluant l&apos;enveloppe (toiture, façade, charpente). Plus cher qu&apos;un
         appartement, car la maison porte tout le bâti.
@@ -518,15 +513,15 @@ function BodyOrdre() {
   return (
     <>
       <p className="lead">
-        L&apos;ordre des travaux n&apos;est pas une question de confort : c&apos;est ce qui décide si vous
-        payez chaque poste une fois ou deux. La règle tient en une phrase — <strong>on va du plus
+        L&apos;ordre des travaux n&apos;est pas une question de confort : c&apos;est ce qui décide si tu
+        paies chaque poste une fois ou deux. La règle tient en une phrase — <strong>on va du plus
         structurel au plus fragile</strong>, et on ne referme jamais un mur avant d&apos;avoir fait passer
         ce qui doit y passer.
       </p>
 
       <h2>Les 9 phases, dans l&apos;ordre</h2>
       <p>
-        C&apos;est la séquence que suit le chiffrage AVYORA lot par lot. Selon votre projet, certaines
+        C&apos;est la séquence que suit le chiffrage AVYORA lot par lot. Selon ton projet, certaines
         phases sautent — mais leur ordre relatif, lui, ne change pas.
       </p>
       {/* Une séquence d'étapes est une liste ORDONNÉE : c'est le balisage que Google attend pour
@@ -556,7 +551,7 @@ function BodyOrdre() {
 
       <h2>Les trois jalons à retenir</h2>
       <p>
-        Si vous ne retenez qu&apos;une chose, retenez ces trois portes que le chantier franchit dans
+        Si tu ne retiens qu&apos;une chose, retiens ces trois portes que le chantier franchit dans
         cet ordre :
       </p>
       <ol>
@@ -565,15 +560,15 @@ function BodyOrdre() {
         <li><strong>Avant fermeture</strong> — le dernier moment pour faire passer un câble ou un tuyau (phase 6). Après, chaque oubli se paie en démolition.</li>
       </ol>
 
-      <Cta label="Chiffrer votre rénovation, lot par lot" />
+      <Cta label="Chiffrer ta rénovation, lot par lot" />
 
-      <h2>Et si vous faites une partie vous-même ?</h2>
+      <h2>Et si tu fais une partie toi-même ?</h2>
       <p>
         L&apos;auto-rénovation change le calendrier, pas l&apos;ordre. Deux points d&apos;attention :
-        les postes que vous gardez doivent s&apos;insérer <strong>sans bloquer les artisans</strong>{" "}—
-        un plaquiste qui attend votre isolation pendant trois week-ends, c&apos;est un planning qui
+        les postes que tu gardes doivent s&apos;insérer <strong>sans bloquer les artisans</strong>{" "}—
+        un plaquiste qui attend ton isolation pendant trois week-ends, c&apos;est un planning qui
         dérape. Et l&apos;électricité comme le gaz relèvent d&apos;obligations de conformité :
-        l&apos;estimateur vous laisse choisir poste par poste entre « fait faire » et « je le fais »,
+        l&apos;estimateur te laisse choisir poste par poste entre « fait faire » et « je le fais »,
         mais ce choix-là mérite réflexion.
       </p>
 
@@ -590,7 +585,7 @@ function faqOrdre() {
     { q: "Quand poser les fenêtres dans une rénovation ?", a: "Après la toiture et avant le second œuvre intérieur. Les menuiseries assurent la mise hors d'air : le chantier devient chauffable et les enduits peuvent sécher correctement." },
     { q: "Faut-il isoler avant ou après l'électricité ?", a: "Après. Les gaines électriques et les réseaux passent en premier, l'isolation et le doublage viennent les refermer. L'inverse oblige à rouvrir." },
     { q: "Quand poser le carrelage ou le parquet ?", a: "En phase 7, après les réseaux et l'isolation, avant les finitions. Assez tard pour ne pas subir les travaux salissants, assez tôt pour que les plinthes et les portes s'ajustent dessus." },
-    { q: "Combien de temps dure une rénovation complète ?", a: "Cela dépend entièrement de l'ampleur et de la coordination des corps d'état. AVYORA chiffre le budget, pas la durée : demandez un planning à chaque artisan et vérifiez qu'ils s'enchaînent." },
+    { q: "Combien de temps dure une rénovation complète ?", a: "Cela dépend entièrement de l'ampleur et de la coordination des corps d'état. AVYORA chiffre le budget, pas la durée : demande un planning à chaque artisan et vérifie qu'ils s'enchaînent." },
   ];
 }
 
@@ -605,9 +600,9 @@ const REPERES = [
 ];
 
 const ALERTES = [
-  { t: "Un prix global, sans détail", d: "« Rénovation complète : 48 000 € ». Impossible à vérifier, impossible à comparer, et impossible de retirer un poste pour faire baisser la note. Exigez le détail par poste, avec quantité et prix unitaire." },
-  { t: "Des quantités absentes ou rondes", d: "« Peinture : forfait ». Une peinture se chiffre au m². Si la surface n'apparaît pas, vous ne pouvez pas savoir si elle est juste — et un écart de 30 m² passe inaperçu." },
-  { t: "Un poste que vous n'avez pas demandé", d: "Ça arrive, et c'est parfois justifié (un support à reprendre). Mais cela doit être dit et expliqué, pas glissé dans la liste." },
+  { t: "Un prix global, sans détail", d: "« Rénovation complète : 48 000 € ». Impossible à vérifier, impossible à comparer, et impossible de retirer un poste pour faire baisser la note. Exige le détail par poste, avec quantité et prix unitaire." },
+  { t: "Des quantités absentes ou rondes", d: "« Peinture : forfait ». Une peinture se chiffre au m². Si la surface n'apparaît pas, tu ne peux pas savoir si elle est juste — et un écart de 30 m² passe inaperçu." },
+  { t: "Un poste que tu n'as pas demandé", d: "Ça arrive, et c'est parfois justifié (un support à reprendre). Mais cela doit être dit et expliqué, pas glissé dans la liste." },
   { t: "Un poste manquant", d: "Plus dangereux qu'un poste cher : la dépose de l'ancien sol, l'évacuation des gravats, les raccords après percement. Absents du devis, ils reviendront en cours de chantier au prix fort." },
   { t: "Un acompte élevé", d: "Un acompte se pratique, mais un artisan qui réclame la moitié avant d'avoir commencé mérite au minimum une question." },
   { t: "Une TVA à 20\u00a0% sur tout", d: "En rénovation d'un logement de plus de deux ans, la plupart des postes relèvent de 10\u00a0%, et les travaux d'amélioration énergétique de 5,5\u00a0%. Une TVA uniformément à 20\u00a0% doit être justifiée." },
@@ -626,7 +621,7 @@ function BodyDevis() {
 
       <h2>Ce qu&apos;un devis doit contenir</h2>
       <p>
-        Avant même de regarder les montants, vérifiez que le document vous permet de comparer. Un devis
+        Avant même de regarder les montants, vérifie que le document te permet de comparer. Un devis
         exploitable identifie clairement l&apos;entreprise (raison sociale, adresse, SIRET, assurance
         décennale pour les travaux qui la requièrent) et détaille&nbsp;:
       </p>
@@ -635,11 +630,11 @@ function BodyDevis() {
         <li>la <strong>quantité et l&apos;unité</strong> (m², ml, unité, forfait) ;</li>
         <li>le <strong>prix unitaire</strong>, et pas seulement le total de la ligne ;</li>
         <li>le <strong>taux de TVA</strong> appliqué par poste ;</li>
-        <li>ce qui est <strong>fourni par l&apos;entreprise</strong> et ce qui reste à votre charge ;</li>
+        <li>ce qui est <strong>fourni par l&apos;entreprise</strong> et ce qui reste à ta charge ;</li>
         <li>les <strong>conditions</strong> : durée de validité, délai d&apos;exécution, échéancier de paiement.</li>
       </ul>
       <p className="note">
-        Cette liste vous sert à comparer et à vous protéger ; elle ne remplace pas un conseil juridique.
+        Cette liste te sert à comparer et à te protéger ; elle ne remplace pas un conseil juridique.
         Les obligations légales exactes dépendent de la nature et du montant des travaux.
       </p>
 
@@ -665,8 +660,8 @@ function BodyDevis() {
       </table>
       </div>
       <p className="note">
-        Colonne « fourniture seule » : le coût des matériaux si vous posez vous-même. L&apos;écart avec
-        le fourni-posé vous donne la part de main-d&apos;œuvre. Pour le détail d&apos;un corps d&apos;état,
+        Colonne « fourniture seule » : le coût des matériaux si tu poses toi-même. L&apos;écart avec
+        le fourni-posé te donne la part de main-d&apos;œuvre. Pour le détail d&apos;un corps d&apos;état,
         voir les <Link href="/prix-poste">prix par corps d&apos;état</Link>. Prix mis à jour le {PRIX_MAJ_FR} —{" "}
         <Link href="/methodologie">comment ils sont établis</Link>.
       </p>
@@ -679,7 +674,7 @@ function BodyDevis() {
         </div>
       ))}
 
-      <Cta label="Chiffrer votre projet pour comparer les devis" />
+      <Cta label="Chiffrer ton projet pour comparer les devis" />
 
       <h2>Comparer plusieurs devis sans se tromper</h2>
       <p>
@@ -687,11 +682,11 @@ function BodyDevis() {
         périmètre. La méthode qui marche&nbsp;:
       </p>
       <ul>
-        <li><strong>Alignez les périmètres d&apos;abord.</strong> Listez les postes du devis le plus détaillé, puis cherchez-les dans l&apos;autre. Les lignes manquantes expliquent souvent tout l&apos;écart.</li>
-        <li><strong>Comparez poste à poste, pas totaux à totaux.</strong> Un devis peut être moins cher sur la peinture et bien plus cher sur l&apos;électricité.</li>
-        <li><strong>Vérifiez qui fournit quoi.</strong> Un devis « pose seule » sera toujours moins cher — et ce n&apos;est pas le même service.</li>
-        <li><strong>Demandez les postes absents par écrit.</strong> « La dépose de l&apos;ancien carrelage est-elle comprise ? » Une réponse écrite vaut engagement.</li>
-        <li><strong>Méfiez-vous du devis nettement le moins cher.</strong> Neuf fois sur dix, il ne contient pas la même chose — le reste arrive en avenant.</li>
+        <li><strong>Aligne les périmètres d&apos;abord.</strong> Liste les postes du devis le plus détaillé, puis cherche-les dans l&apos;autre. Les lignes manquantes expliquent souvent tout l&apos;écart.</li>
+        <li><strong>Compare poste à poste, pas totaux à totaux.</strong> Un devis peut être moins cher sur la peinture et bien plus cher sur l&apos;électricité.</li>
+        <li><strong>Vérifie qui fournit quoi.</strong> Un devis « pose seule » sera toujours moins cher — et ce n&apos;est pas le même service.</li>
+        <li><strong>Demande les postes absents par écrit.</strong> « La dépose de l&apos;ancien carrelage est-elle comprise ? » Une réponse écrite vaut engagement.</li>
+        <li><strong>Méfie-toi du devis nettement le moins cher.</strong> Neuf fois sur dix, il ne contient pas la même chose — le reste arrive en avenant.</li>
       </ul>
 
       <Faq items={faqDevis()} />
@@ -703,9 +698,9 @@ function BodyDevis() {
 
 function faqDevis() {
   return [
-    { q: "Comment savoir si un devis de travaux est trop cher ?", a: "Comparez poste par poste à des prix repères plutôt que le total à un autre total. Un écart de 20\u00a0% sur une ligne s'explique souvent (accès, support, région) ; un écart de 200\u00a0% mérite une explication écrite." },
+    { q: "Comment savoir si un devis de travaux est trop cher ?", a: "Compare poste par poste à des prix repères plutôt que le total à un autre total. Un écart de 20\u00a0% sur une ligne s'explique souvent (accès, support, région) ; un écart de 200\u00a0% mérite une explication écrite." },
     { q: "Que doit obligatoirement contenir un devis ?", a: "L'identification de l'entreprise, le détail de chaque poste avec quantité, unité et prix unitaire, le taux de TVA, ce qui est fourni, la durée de validité et les conditions de paiement. Sans prix unitaires, un devis n'est pas comparable." },
-    { q: "Un devis est-il payant ?", a: "Le plus souvent il est gratuit, mais un devis impliquant un déplacement long ou une étude technique peut être facturé. Cela doit vous être annoncé avant." },
+    { q: "Un devis est-il payant ?", a: "Le plus souvent il est gratuit, mais un devis impliquant un déplacement long ou une étude technique peut être facturé. Cela doit t'être annoncé avant." },
     { q: "Quel est le poste le plus souvent oublié dans un devis ?", a: "La dépose et l'évacuation : enlever l'ancien sol, sortir les gravats, reboucher après percement. Ces postes existent bel et bien et reviennent en cours de chantier s'ils ne sont pas chiffrés au départ." },
     { q: "Peut-on négocier un devis de travaux ?", a: "On négocie plus efficacement le périmètre que le prix : retirer un poste, en réaliser un soi-même, décaler une phase. Demander « un geste » sur un total détaillé aboutit rarement." },
   ];
@@ -740,8 +735,8 @@ function BodyDIY() {
         Un prix de travaux se décompose en deux choses : ce qu&apos;on achète et ce qu&apos;on fait.
         Le référentiel AVYORA porte les deux pour <strong>{stats.avecFourniture} postes sur{" "}
         {stats.postes}</strong> ({stats.pctAvec}{" "}%) : un prix fourni-posé et un prix fourniture seule.
-        L&apos;écart entre les deux, c&apos;est exactement ce que vous ne payez pas si vous le faites
-        vous-même.
+        L&apos;écart entre les deux, c&apos;est exactement ce que tu ne paies pas si tu le fais
+        toi-même.
       </p>
       <p>
         Les {stats.sansFourniture}{" "}postes restants n&apos;ont pas de prix fourniture parce
@@ -783,7 +778,7 @@ function BodyDIY() {
         Concrètement :{" "}
         {peinture && <>la peinture des murs revient à <strong>{peinture.fp} €/m²</strong> posée contre <strong>{peinture.sm} €/m²</strong> de fournitures. </>}
         {carrelage && <>Le carrelage au sol : <strong>{carrelage.fp} €/m²</strong> posé contre <strong>{carrelage.sm} €/m²</strong> de matériaux. </>}
-        Sur un logement entier, l&apos;écart se compte en milliers d&apos;euros — au prix de vos
+        Sur un logement entier, l&apos;écart se compte en milliers d&apos;euros — au prix de tes
         week-ends.
       </p>
 
@@ -798,7 +793,7 @@ function BodyDIY() {
         rentable de le faire soi-même</strong>. On économise sur le temps, pas sur la matière.
       </p>
 
-      <h2>Les lots qui engagent plus que votre budget</h2>
+      <h2>Les lots qui engagent plus que ton budget</h2>
       <p>
         Certains travaux ne relèvent pas seulement de l&apos;arbitrage économique. Les faire
         soi-même reste possible, à condition de savoir faire, de faire vérifier ce qui doit
@@ -806,7 +801,7 @@ function BodyDIY() {
       </p>
       <ul>
         <li>
-          <strong>L&apos;électricité et le gaz</strong>{" "}engagent votre sécurité et la conformité de
+          <strong>L&apos;électricité et le gaz</strong>{" "}engagent ta sécurité et la conformité de
           l&apos;installation : une installation électrique suit la norme NF C 15-100, et une
           installation de gaz neuve ou modifiée doit être certifiée conforme avant la mise en gaz.
         </li>
@@ -828,9 +823,9 @@ function BodyDIY() {
         Ce guide ne donne volontairement aucun mode opératoire sur ces sujets.
       </p>
       <p>
-        Point rarement dit : <strong>un poste que vous réalisez vous-même n&apos;est couvert par
-        aucune garantie décennale</strong>. Si le sinistre vient de là, vous en répondez seul, et
-        votre assureur peut vous opposer un défaut de couverture. Cela vaut d&apos;être vérifié
+        Point rarement dit : <strong>un poste que tu réalises toi-même n&apos;est couvert par
+        aucune garantie décennale</strong>. Si le sinistre vient de là, tu en réponds seul, et
+        ton assureur peut t&apos;opposer un défaut de couverture. Cela vaut d&apos;être vérifié
         auprès de lui avant de commencer, pas après.
       </p>
       <p className="note">
@@ -843,33 +838,33 @@ function BodyDIY() {
         <li>
           <strong>La TVA.</strong>{" "}C&apos;est le coût caché le plus systématiquement ignoré. Sur une
           facture d&apos;artisan en rénovation, les travaux relèvent d&apos;un taux réduit. Les
-          matériaux que vous achetez seul sont, eux, à <strong>20&nbsp;%</strong>. L&apos;estimateur
+          matériaux que tu achètes seul sont, eux, à <strong>20&nbsp;%</strong>. L&apos;estimateur
           applique cette règle automatiquement : une partie de l&apos;économie de main-d&apos;œuvre
           est reprise par l&apos;écart de TVA.
         </li>
         <li><strong>La location de matériel.</strong> Ponceuse, échafaudage roulant, carrelette, malaxeur : facturés à la journée, ils s&apos;accumulent sur un chantier qui dure.</li>
-        <li><strong>L&apos;évacuation.</strong> Benne, déchetterie, allers-retours : un artisan l&apos;inclut dans son prix, vous non.</li>
+        <li><strong>L&apos;évacuation.</strong> Benne, déchetterie, allers-retours : un artisan l&apos;inclut dans son prix, toi non.</li>
         <li><strong>Les reprises.</strong> Un travail à reprendre coûte deux fois — et un artisan appelé pour rattraper facture plus cher qu&apos;un artisan appelé dès le départ.</li>
-        <li><strong>Votre temps.</strong> Il n&apos;a pas de prix au bilan, mais il en a un dans votre vie. Un logement entier repeint, c&apos;est des dizaines d&apos;heures.</li>
+        <li><strong>Ton temps.</strong> Il n&apos;a pas de prix au bilan, mais il en a un dans ta vie. Un logement entier repeint, c&apos;est des dizaines d&apos;heures.</li>
       </ul>
 
       <h2>Comment arbitrer, poste par poste</h2>
       <p>
         La bonne méthode n&apos;est pas de choisir « tout soi-même » ou « tout artisan », mais de
         trancher ligne par ligne. Trois critères suffisent : la part de main-d&apos;œuvre du poste
-        (le tableau ci-dessus), votre capacité réelle à le faire proprement, et l&apos;effet sur le
-        planning — un poste que vous retardez bloque les artisans qui viennent après, et{" "}
+        (le tableau ci-dessus), ta capacité réelle à le faire proprement, et l&apos;effet sur le
+        planning — un poste que tu retardes bloque les artisans qui viennent après, et{" "}
         <Link href="/guides/ordre-travaux-renovation">l&apos;ordre des travaux</Link> ne se négocie pas.
       </p>
       <p>
-        L&apos;estimateur AVYORA permet exactement cet arbitrage : pour chaque poste, vous choisissez
+        L&apos;estimateur AVYORA permet exactement cet arbitrage : pour chaque poste, tu choisis
         « fait faire » ou « je le fais », et le total se recalcule avec la bonne TVA et la bonne part
         de main-d&apos;œuvre. Sur un poste de maçonnerie, de charpente, de couverture ou de
         menuiseries extérieures pris soi-même, la ligne rappelle qu&apos;il sort de la garantie
         décennale.
       </p>
 
-      <Cta label="Comparer les deux scénarios sur votre projet" />
+      <Cta label="Comparer les deux scénarios sur ton projet" />
 
       <Faq items={faqDIY()} />
       <GuidesPratiques sauf="faire-soi-meme-ou-artisan" />
@@ -886,7 +881,7 @@ function faqDIY() {
     { q: "Combien économise-t-on en faisant ses travaux soi-même ?", a: `Cela dépend entièrement du poste. Sur le référentiel AVYORA, la part de main-d'œuvre va d'environ ${pire.partMO}\u00a0% (${catT("fr", "corps", pire.lot).toLowerCase()}) à ${meilleur.partMO}\u00a0% (${catT("fr", "corps", meilleur.lot).toLowerCase()}). Un pourcentage unique d'économie n'a donc aucun sens : il faut raisonner poste par poste.` },
     { q: "Quels travaux peut-on faire soi-même sans risque ?", a: "La peinture, la pose de sols souples ou stratifiés, la dépose et le curage sont accessibles à un particulier soigneux. L'électricité, le gaz, la structure porteuse et la charpente restent possibles, mais ils engagent la sécurité et la conformité : un poste fait soi-même sort de la garantie décennale, une étude est conseillée pour la structure, et une installation électrique ou de gaz doit être conforme. L'amiante et le plomb relèvent d'entreprises certifiées." },
     { q: "Paie-t-on plus de TVA quand on achète les matériaux soi-même ?", a: "Oui, et c'est le coût caché le plus souvent oublié. Les travaux facturés par un artisan en rénovation relèvent d'un taux réduit, tandis que les matériaux achetés directement par un particulier sont à 20\u00a0%. Une partie de l'économie de main-d'œuvre est donc reprise par l'écart de TVA." },
-    { q: "Un travail fait soi-même est-il couvert par la garantie décennale ?", a: "Non. La garantie décennale couvre l'entreprise qui a réalisé l'ouvrage : un poste que vous réalisez vous-même n'est couvert par personne. En cas de sinistre lié à ce poste, vous en répondez seul. Vérifiez votre situation auprès de votre assureur avant de commencer." },
+    { q: "Un travail fait soi-même est-il couvert par la garantie décennale ?", a: "Non. La garantie décennale couvre l'entreprise qui a réalisé l'ouvrage : un poste que tu réalises toi-même n'est couvert par personne. En cas de sinistre lié à ce poste, tu en réponds seul. Vérifie ta situation auprès de ton assureur avant de commencer." },
     { q: "Sur quels postes faire soi-même rapporte-t-il le moins ?", a: `Sur ceux où le prix est dominé par le produit et non par la pose : ${parLot.slice(-3).map((l) => catT("fr", "corps", l.lot).toLowerCase()).join(", ")}. Plus un poste est cher à l'achat, moins le faire soi-même déplace le total.` },
     { q: "Combien de postes du référentiel peut-on basculer en « je le fais » ?", a: `${s.avecFourniture} sur ${s.postes} (${s.pctAvec}\u00a0%) portent un prix fourniture seule et peuvent donc être arbitrés. Les ${s.sansFourniture} autres sont des prestations pures — études, diagnostics, démarches, raccordements — où il n'y a rien à acheter.` },
   ];
@@ -1017,12 +1012,12 @@ function BodyBudget() {
         aberrante sur un devis reçu.
       </p>
       <p>
-        C&apos;est d&apos;ailleurs leur usage le plus utile : quand un artisan annonce une quantité, vous
-        pouvez la confronter à la règle plutôt qu&apos;à votre intuition. Un écart de 10&nbsp;% est normal ;
+        C&apos;est d&apos;ailleurs leur usage le plus utile : quand un artisan annonce une quantité, tu
+        peux la confronter à la règle plutôt qu&apos;à ton intuition. Un écart de 10&nbsp;% est normal ;
         un facteur deux mérite une question.
       </p>
 
-      <Cta label="Chiffrer votre projet avec ces règles" />
+      <Cta label="Chiffrer ton projet avec ces règles" />
 
       <h2>Aller plus loin</h2>
       <p>

@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import { VILLES_SEO } from "@/lib/villes";
 import { PROJETS } from "@/lib/seo-projets";
 import { prixNational } from "@/lib/seo-prix";
-import { PRIX_MAJ_FR } from "@/lib/prix-maj";
+import { PRIX_MAJ_FR, ANNEE_PRIX } from "@/lib/prix-maj";
+import { seoMeta } from "@/lib/seo-og";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
@@ -11,12 +12,13 @@ const siteUrl =
 
 export const dynamic = "force-static";
 
-export const metadata: Metadata = {
-  title: "Prix d'une rénovation par ville en France (2026)",
+export const metadata: Metadata = seoMeta({
+  title: `Prix d'une rénovation par ville en France (${ANNEE_PRIX})`,
   description:
-    "Coût d'une rénovation au m² selon votre ville : Paris, Lyon, Marseille, Bordeaux… Prix par type de travaux et estimation gratuite en 2 minutes.",
-  alternates: { canonical: "/prix-renovation" },
-};
+    "Coût d'une rénovation au m² selon ta ville : Paris, Lyon, Marseille, Bordeaux… Prix par type de travaux et estimation gratuite en 2 minutes.",
+  path: "/prix-renovation",
+  type: "website",
+});
 
 
 // Fil d'Ariane balise : aide Google a comprendre la hierarchie du site et enrichit le resultat.
@@ -36,7 +38,7 @@ const jsonLd = {
       url: `${siteUrl}/prix-renovation`,
       name: "Prix d'une rénovation par ville",
       inLanguage: "fr-FR",
-      description: "Coût d'une rénovation au m² selon votre ville en France.",
+      description: "Coût d'une rénovation au m² selon ta ville en France.",
         // ItemList : dit explicitement à Google ce que ce hub RÉPERTORIE. Sans elle, une
         // CollectionPage n'annonce qu'un type, pas son contenu. Les entrées sont dérivées de la
         // même source que la page affiche — elles ne peuvent pas diverger du rendu.
@@ -99,7 +101,7 @@ export default function PrixRenovationHub() {
         ))}
       </div>
 
-      <h2>Combien coûte une rénovation en France en 2026 ?</h2>
+      <h2>Combien coûte une rénovation en France en {ANNEE_PRIX} ?</h2>
       <p>
         Avant de regarder le prix dans ta ville, voici le repère national. Ces montants sont calculés
         par le moteur AVYORA sur un appartement type de 70 m² et une maison type de 100 m², finition

@@ -1,4 +1,5 @@
 import "server-only";
+import { ANNEE_PRIX } from "./prix-maj";
 import {
   CATALOG,
   buildDevis,
@@ -143,7 +144,7 @@ export const PROJETS: Projet[] = [
     slug: "renovation-salle-de-bain",
     nom: "une salle de bain",
     titre: "salle de bain",
-    h1: "Prix d'une rénovation de salle de bain en 2026",
+    h1: `Prix d'une rénovation de salle de bain en ${ANNEE_PRIX}`,
     emoji: "🛁",
     kind: "piece",
     espace: "sdb",
@@ -240,7 +241,7 @@ export const PROJETS: Projet[] = [
     slug: "renovation-cuisine",
     nom: "une cuisine",
     titre: "cuisine",
-    h1: "Prix d'une rénovation de cuisine en 2026",
+    h1: `Prix d'une rénovation de cuisine en ${ANNEE_PRIX}`,
     emoji: "🍳",
     kind: "piece",
     espace: "cuisine",
@@ -289,7 +290,7 @@ export const PROJETS: Projet[] = [
     slug: "renovation-chambre",
     nom: "une chambre",
     titre: "chambre",
-    h1: "Prix d'une rénovation de chambre en 2026",
+    h1: `Prix d'une rénovation de chambre en ${ANNEE_PRIX}`,
     emoji: "🛏️",
     kind: "piece",
     espace: "chambre",
@@ -336,7 +337,7 @@ export const PROJETS: Projet[] = [
     slug: "refaire-toiture",
     nom: "une toiture",
     titre: "toiture",
-    h1: "Prix pour refaire une toiture en 2026",
+    h1: `Prix pour refaire une toiture en ${ANNEE_PRIX}`,
     emoji: "🏠",
     kind: "maison",
     surface: 100,
@@ -374,7 +375,7 @@ export const PROJETS: Projet[] = [
     slug: "ravalement-facade",
     nom: "une façade",
     titre: "façade",
-    h1: "Prix d'un ravalement de façade en 2026",
+    h1: `Prix d'un ravalement de façade en ${ANNEE_PRIX}`,
     emoji: "🧱",
     kind: "maison",
     surface: 100,
@@ -408,7 +409,7 @@ export const PROJETS: Projet[] = [
     slug: "isolation-combles",
     nom: "des combles",
     titre: "combles",
-    h1: "Prix pour isoler des combles en 2026",
+    h1: `Prix pour isoler des combles en ${ANNEE_PRIX}`,
     emoji: "🧊",
     kind: "maison",
     surface: 100,
@@ -439,7 +440,7 @@ export const PROJETS: Projet[] = [
     slug: "renovation-electrique",
     nom: "une installation électrique",
     titre: "électricité",
-    h1: "Prix d'une rénovation électrique en 2026",
+    h1: `Prix d'une rénovation électrique en ${ANNEE_PRIX}`,
     emoji: "⚡",
     kind: "appart",
     surface: 70,
@@ -471,7 +472,7 @@ export const PROJETS: Projet[] = [
     slug: "peinture-interieure",
     nom: "de la peinture",
     titre: "peinture",
-    h1: "Prix d'une peinture intérieure en 2026",
+    h1: `Prix d'une peinture intérieure en ${ANNEE_PRIX}`,
     emoji: "🎨",
     kind: "appart",
     surface: 70,
@@ -505,7 +506,7 @@ export const PROJETS: Projet[] = [
     slug: "remplacer-baignoire-par-douche",
     nom: "un remplacement de baignoire par une douche",
     titre: "baignoire remplacée par une douche",
-    h1: "Prix pour remplacer une baignoire par une douche en 2026",
+    h1: `Prix pour remplacer une baignoire par une douche en ${ANNEE_PRIX}`,
     emoji: "🚿",
     kind: "piece",
     espace: "sdb",
@@ -547,7 +548,7 @@ export const PROJETS: Projet[] = [
     slug: "douche-italienne",
     nom: "une douche à l'italienne",
     titre: "douche à l'italienne",
-    h1: "Prix d'une douche à l'italienne en 2026",
+    h1: `Prix d'une douche à l'italienne en ${ANNEE_PRIX}`,
     emoji: "🚿",
     kind: "piece",
     espace: "sdb",
@@ -586,7 +587,7 @@ export const PROJETS: Projet[] = [
     slug: "amenagement-combles",
     nom: "un aménagement de combles",
     titre: "aménagement de combles",
-    h1: "Prix pour aménager des combles en 2026",
+    h1: `Prix pour aménager des combles en ${ANNEE_PRIX}`,
     emoji: "🪜",
     kind: "maison",
     // `base` annonce 40 m² de combles et toutes les tâches sont calibrées sur 40 : déclarer 100
@@ -639,7 +640,7 @@ export const PROJETS: Projet[] = [
     slug: "remplacement-fenetres",
     nom: "un remplacement de fenêtres",
     titre: "fenêtres",
-    h1: "Prix pour changer ses fenêtres en 2026",
+    h1: `Prix pour changer ses fenêtres en ${ANNEE_PRIX}`,
     emoji: "🪟",
     kind: "maison",
     surface: 100,
@@ -676,8 +677,9 @@ export const PROJETS: Projet[] = [
     slug: "pose-carrelage",
     nom: "une pose de carrelage",
     titre: "pose de carrelage",
-    h1: "Prix de pose de carrelage au m² en 2026",
-    emoji: "◻️",
+    h1: `Prix de pose de carrelage au m² en ${ANNEE_PRIX}`,
+    // L'ancien pictogramme (carré blanc) passait pour un caractère manquant sur plusieurs systèmes.
+    emoji: "🟫",
     kind: "appart",
     surface: 40,
     type: "T3",
@@ -711,7 +713,7 @@ export const PROJETS: Projet[] = [
     slug: "pose-parquet",
     nom: "une pose de parquet",
     titre: "pose de parquet",
-    h1: "Prix de pose de parquet au m² en 2026",
+    h1: `Prix de pose de parquet au m² en ${ANNEE_PRIX}`,
     emoji: "🪵",
     kind: "appart",
     surface: 40,
@@ -744,7 +746,7 @@ export const PROJETS: Projet[] = [
     slug: "pompe-a-chaleur",
     nom: "une pompe à chaleur",
     titre: "pompe à chaleur",
-    h1: "Prix d'une pompe à chaleur en 2026",
+    h1: `Prix d'une pompe à chaleur en ${ANNEE_PRIX}`,
     emoji: "🌡️",
     kind: "maison",
     surface: 100,
@@ -778,7 +780,7 @@ export const PROJETS: Projet[] = [
     slug: "poele-a-bois",
     nom: "un poêle à bois",
     titre: "poêle à bois",
-    h1: "Prix d'un poêle à bois en 2026",
+    h1: `Prix d'un poêle à bois en ${ANNEE_PRIX}`,
     emoji: "🔥",
     kind: "maison",
     surface: 100,
@@ -805,7 +807,7 @@ export const PROJETS: Projet[] = [
 ];
 
 /**
- * « Prix d'une rénovation de salle de bain en 2026 » → « rénovation de salle de bain ».
+ * « Prix d'une rénovation de salle de bain en 2026 » → « rénovation de salle de bain » (l'année est ANNEE_PRIX).
  * SOURCE UNIQUE : le gabarit projet et le gabarit ville doivent composer leurs titles à partir d'ici,
  * sinon les deux libellés divergent au premier ajustement de `h1`.
  */
@@ -816,7 +818,7 @@ export const titreSansPrefixe = (h1: string) =>
     .replace("Prix pour ", "")
     .replace("Prix de ", "")
     .replace("Prix ", "")
-    .replace(" en 2026", "");
+    .replace(` en ${ANNEE_PRIX}`, "");
 
 /**
  * Espaces de `Projet` qui correspondent à une pièce que l'estimateur rapide sait présélectionner

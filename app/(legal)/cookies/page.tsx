@@ -1,6 +1,13 @@
 import GererCookies from "@/components/GererCookies";
-
-export const metadata = { title: "Politique cookies", alternates: { canonical: "/cookies" } };
+import { seoMeta } from "@/lib/seo-og";
+// Métadonnées propres à la page : sans description, elle reprenait celle de l'accueil (cf. seoMeta).
+export const metadata = seoMeta({
+  title: "Politique cookies",
+  description:
+    "Les cookies déposés par AVYORA, leur finalité, leur durée, et comment donner ou retirer ton consentement.",
+  path: "/cookies",
+  type: "website",
+});
 
 /**
  * Politique cookies. À tenir à jour avec le code : bandeau et Google Ads (lib/consentement.ts, lib/gtag.ts), cookies

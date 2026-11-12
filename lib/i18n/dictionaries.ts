@@ -289,7 +289,8 @@ const fr = {
     /* Les plans d'un inscrit pendant la bêta (`PLANS_MAX_BETA`) : à la place de « des plans enregistrés sans limite ». */
     plansEnregistres: (n: number) => `jusqu'à ${n} plans enregistrés`,
     /* La page Tarifs */
-    tarifsMetaTitre: "Bêta gratuite — tout AVYORA offert, il suffit d'un compte",
+    /* ≤ 60 caractères avec le suffixe « · AVYORA » (sinon Google coupe), et sans répéter la marque. */
+    tarifsMetaTitre: "Bêta gratuite : tout est offert avec un compte",
     tarifsMetaDescription: (fin: string) =>
       `Estimateur détaillé, rapport PDF, suivi de chantier et plans : tout AVYORA est gratuit jusqu'au ${fin}. Il suffit d'un compte, aucune carte demandée.`,
     tarifsEyebrow: "Bêta gratuite",
@@ -687,7 +688,7 @@ const en: Dict = {
     membreFondateurTitre: "Your preferred rate is guaranteed for life: it will be announced before the beta ends.",
     membreFondateurTitreApres: "Your founding member preferred rate is guaranteed for life.",
     plansEnregistres: (n: number) => `up to ${n} saved plans`,
-    tarifsMetaTitre: "Free beta — all of AVYORA, all you need is an account",
+    tarifsMetaTitre: "Free beta: everything included with an account",
     tarifsMetaDescription: (fin: string) =>
       `Detailed estimator, PDF report, project tracking and floor plans: all of AVYORA is free through ${fin}. All you need is an account, no card required.`,
     tarifsEyebrow: "Free beta",

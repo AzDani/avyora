@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { POSTES_PAGES } from "@/lib/seo-postes";
 import { partMainOeuvreParLot, catalogueStats } from "@/lib/seo-prix";
 import { PRIX_MAJ_FR } from "@/lib/prix-maj";
+import { seoMeta } from "@/lib/seo-og";
 import { catT } from "@/lib/estimateur/catalog-i18n";
 
 export const dynamic = "force-static";
@@ -11,12 +12,13 @@ const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
 
-export const metadata: Metadata = {
+export const metadata: Metadata = seoMeta({
   title: "Prix des travaux par corps d'état",
   description:
-    "Le prix de chaque corps d'état, poste par poste : fourni-posé et fourniture seule, pour comprendre ce que contient une ligne de devis.",
-  alternates: { canonical: "/prix-poste" },
-};
+    "Le prix TTC de chaque corps d'état, poste par poste : fourni-posé et fourniture seule, pour comprendre ce que contient une ligne de devis.",
+  path: "/prix-poste",
+  type: "website",
+});
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -55,7 +57,6 @@ const jsonLd = {
 export default function PrixPosteHub() {
   const stats = catalogueStats();
   const parLot = partMainOeuvreParLot();
-  const dispo = new Set(POSTES_PAGES.map((p) => p.lot));
 
   return (
     <div className="av-hub mx-auto max-w-3xl">
@@ -95,15 +96,17 @@ export default function PrixPosteHub() {
       </p>
       <div className="tw">
         <table>
-          <thead><tr><th>Corps d&apos;état</th><th>Part main-d&apos;œuvre</th><th>Page</th></tr></thead>
+          {/* Plus de colonne « Page » à moitié vide ni de mention d'un chantier en cours : un corps d'état qui
+              a sa page détaillée porte simplement le lien sur son nom. */}
+          <thead><tr><th>Corps d&apos;état</th><th>Part main-d&apos;œuvre</th></tr></thead>
           <tbody>
             {parLot.map((l) => {
               const page = POSTES_PAGES.find((p) => p.lot === l.lot);
+              const nom = catT("fr", "corps", l.lot);
               return (
                 <tr key={l.lot}>
-                  <td>{catT("fr", "corps", l.lot)}</td>
+                  <td>{page ? <Link href={`/prix-poste/${page.slug}`}>{nom}</Link> : nom}</td>
                   <td className="num">{l.partMO}&nbsp;%</td>
-                  <td>{page ? <Link href={`/prix-poste/${page.slug}`}>voir</Link> : <span className="soon">—</span>}</td>
                 </tr>
               );
             })}
@@ -111,7 +114,7 @@ export default function PrixPosteHub() {
         </table>
       </div>
       <p className="note">
-        {dispo.size}{" "}corps d&apos;état détaillés pour l&apos;instant ; les autres sont chiffrés dans
+        Les corps d&apos;état soulignés ont leur page détaillée, poste par poste. Tous sont chiffrés dans
         l&apos;estimateur et dans les <Link href="/prix-travaux">pages par type de travaux</Link>.
       </p>
 
@@ -137,6 +140,7 @@ const HUB_CSS = `
 .av-hub p{font-size:15px;line-height:1.7;color:var(--color-muted);margin:10px 0}
 .av-hub .note{font-size:12.5px;color:var(--color-faint)}
 .av-hub p a,.av-hub td a{color:var(--color-brand-700);font-weight:500}
+.av-hub td a{text-decoration:underline;text-underline-offset:2px}
 .av-hub p a{text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px;text-decoration-color:color-mix(in srgb,currentColor 45%,transparent)}
 .av-hub .cards{display:grid;gap:12px;margin-top:20px}
 @media(min-width:640px){.av-hub .cards{grid-template-columns:1fr 1fr}}
@@ -146,10 +150,9 @@ const HUB_CSS = `
 .av-hub .card .d{font-size:13.5px;color:var(--color-muted);margin-top:6px;line-height:1.55}
 .av-hub .card .go{font-size:13.5px;font-weight:600;color:var(--color-brand-600);margin-top:12px}
 .av-hub .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:14px 0;border:1px solid var(--color-line);border-radius:12px}
-.av-hub table{width:100%;border-collapse:collapse;font-size:14px;min-width:420px}
+.av-hub table{width:100%;border-collapse:collapse;font-size:14px}
 .av-hub th{text-align:left;background:var(--color-surface-2);color:var(--color-ink);font-weight:600;font-size:12.5px;padding:10px 12px}
 .av-hub td{padding:10px 12px;border-top:1px solid var(--color-line);color:var(--color-muted)}
 .av-hub td.num{font-family:var(--font-geist-mono),monospace;text-align:right;color:var(--color-ink);font-weight:600;white-space:nowrap}
-.av-hub .soon{color:var(--color-faint)}
 @media(max-width:560px){.av-hub p{font-size:16px}}
 `;

@@ -1,4 +1,5 @@
 import "server-only";
+import { ANNEE_PRIX } from "./prix-maj";
 
 /**
  * Pages « prix par corps d'état » (/prix-poste/[slug]).
@@ -42,7 +43,7 @@ export const POSTES_PAGES: PostePage[] = [
     h1: "Prix du placo au m² : cloison, doublage et faux plafond",
     title: "Prix du placo au m² : cloison, doublage, plafond",
     description:
-      "Combien coûte le placo au m² en 2026 ? Prix d'une cloison, d'un doublage, d'un faux plafond et des finitions, ouvrage par ouvrage.",
+      `Combien coûte le placo au m² en ${ANNEE_PRIX} ? Prix TTC d'une cloison, d'un doublage, d'un faux plafond et des finitions, ouvrage par ouvrage.`,
     resume: "Cloison, doublage, faux plafond et finitions : les prix que les devis regroupent sous « placo ».",
     lead:
       "« Placo » désigne cinq ouvrages différents, qui n'ont ni le même prix ni le même temps de pose. Un devis qui les regroupe sous une seule ligne est impossible à vérifier. Voici le détail, poste par poste.",
@@ -89,7 +90,7 @@ export const POSTES_PAGES: PostePage[] = [
         titre: "Poser soi-même : ce que ça change",
         corps: [
           "La plâtrerie est l'un des lots où la main-d'œuvre pèse le plus, donc l'un des plus rentables à faire soi-même — si le résultat tient. Un mur mal ratissé se voit à la première lumière rasante, et une reprise coûte plus cher que la pose initiale.",
-          "La colonne « fourniture seule » des tableaux ci-dessus donne le prix des matériaux si vous posez vous-même.",
+          "La colonne « fourniture seule » des tableaux ci-dessus donne le prix des matériaux si tu poses toi-même.",
         ],
       },
     ],
@@ -104,7 +105,7 @@ export const POSTES_PAGES: PostePage[] = [
       },
       {
         q: "Les finitions sont-elles comprises dans le prix du placo ?",
-        a: "Pas toujours, et c'est la principale source de mauvaise surprise. Poser les plaques, traiter les joints et ratisser la surface avant peinture sont trois opérations distinctes. Vérifiez que votre devis les mentionne.",
+        a: "Pas toujours, et c'est la principale source de mauvaise surprise. Poser les plaques, traiter les joints et ratisser la surface avant peinture sont trois opérations distinctes. Vérifie que ton devis les mentionne.",
       },
       {
         q: "Faut-il une cloison hydrofuge dans une salle de bain ?",
@@ -121,10 +122,10 @@ export const POSTES_PAGES: PostePage[] = [
   {
     slug: "plomberie",
     lot: "Plomberie",
-    h1: "Prix de la plomberie : refaire une installation en 2026",
-    title: "Prix plomberie 2026 : refaire toute l'installation",
+    h1: `Prix de la plomberie : refaire une installation en ${ANNEE_PRIX}`,
+    title: `Prix plomberie ${ANNEE_PRIX} : refaire toute l'installation`,
     description:
-      "Combien coûte la plomberie en rénovation ? Le réseau au m², les appareils à l'unité, et ce que recouvre vraiment une ligne de devis.",
+      "Combien coûte la plomberie en rénovation ? Le réseau au m², les appareils à l'unité (prix TTC), et ce que recouvre vraiment une ligne de devis.",
     resume: "Le réseau au m² et les appareils à l'unité : les deux prix que les devis mélangent.",
     lead:
       "Un devis de plomberie mélange presque toujours deux choses qui n'ont rien à voir : le réseau, chiffré à la surface du logement, et les appareils, chiffrés à l'unité. Les séparer est le seul moyen de comparer deux devis.",
@@ -143,7 +144,7 @@ export const POSTES_PAGES: PostePage[] = [
       },
       {
         titre: "Salle de bain : baignoire, vasques et WC",
-        intro: "Les appareils courants, avec leur robinetterie. Le prix fourniture seule permet de chiffrer l'achat si vous posez vous-même.",
+        intro: "Les appareils courants, avec leur robinetterie. Le prix fourniture seule permet de chiffrer l'achat si tu poses toi-même.",
         postes: ["Installer une baignoire", "Robinetterie baignoire", "Meuble-vasque", "Vasque", "Robinetterie lavabo", "Miroir", "WC"],
       },
       {
@@ -162,21 +163,21 @@ export const POSTES_PAGES: PostePage[] = [
         ],
       },
       {
-        titre: "La pose seule si vous achetez les appareils",
+        titre: "La pose seule si tu achètes les appareils",
         corps: [
           "La colonne « fourniture seule » donne le prix des appareils sans la pose. L'écart avec le fourni-posé correspond au travail du plombier.",
-          "Attention à un piège fréquent : un appareil acheté par vos soins n'engage pas l'artisan qui le pose sur la qualité du produit, et une fuite due à l'appareil peut échapper à sa garantie. Mieux vaut en parler avant, pas après.",
+          "Attention à un piège fréquent : un appareil acheté par tes soins n'engage pas l'artisan qui le pose sur la qualité du produit, et une fuite due à l'appareil peut échapper à sa garantie. Mieux vaut en parler avant, pas après.",
         ],
       },
     ],
     faq: [
       {
         q: "Combien coûte la réfection complète de la plomberie ?",
-        a: "Le réseau se chiffre au m² habitable, hors appareils. Le tableau ci-dessus donne le prix au m² ; les appareils sanitaires s'ajoutent ensuite à l'unité, selon ce que vous installez.",
+        a: "Le réseau se chiffre au m² habitable, hors appareils. Le tableau ci-dessus donne le prix au m² ; les appareils sanitaires s'ajoutent ensuite à l'unité, selon ce que tu installes.",
       },
       {
         q: "Pourquoi séparer le réseau et les appareils dans un devis ?",
-        a: "Parce que ce sont deux logiques de prix différentes : le réseau dépend de la surface et de l'état de l'existant, les appareils dépendent de ce que vous choisissez. Un devis qui les regroupe est impossible à comparer avec un autre.",
+        a: "Parce que ce sont deux logiques de prix différentes : le réseau dépend de la surface et de l'état de l'existant, les appareils dépendent de ce que tu choisis. Un devis qui les regroupe est impossible à comparer avec un autre.",
       },
       {
         q: "Une douche à l'italienne coûte-t-elle plus cher qu'un bac ?",
@@ -184,7 +185,7 @@ export const POSTES_PAGES: PostePage[] = [
       },
       {
         q: "Quel chauffe-eau choisir entre cumulus et thermodynamique ?",
-        a: "Le thermodynamique coûte nettement plus cher à l'achat mais consomme beaucoup moins. Le calcul dépend de votre consommation et de la durée pendant laquelle vous garderez le logement. Certains travaux d'amélioration énergétique relèvent d'un taux de TVA réduit sous conditions : renseignez-vous sur impots.gouv.fr ou auprès de votre installateur.",
+        a: "Le thermodynamique coûte nettement plus cher à l'achat mais consomme beaucoup moins. Le calcul dépend de ta consommation et de la durée pendant laquelle tu garderas le logement. Certains travaux d'amélioration énergétique relèvent d'un taux de TVA réduit sous conditions : renseigne-toi sur impots.gouv.fr ou auprès de ton installateur.",
       },
       {
         q: "Peut-on faire sa plomberie soi-même ?",

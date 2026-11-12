@@ -57,9 +57,13 @@ export function CtaEstimation({
       <p className="mt-1 text-sm text-muted">
         {sousTitre ?? "Gratuit, sans inscription — une fourchette chiffrée adaptée à ton bien et ton code postal."}
       </p>
+      {/* `.btn` interdit le retour à la ligne (white-space: nowrap, line-height 1) : avec un libellé
+          généré (« Estimer un remplacement de baignoire par une douche à Marseille → », 493 px), le
+          bouton sortait de l'écran et toute la page défilait en largeur sur mobile. Ici le libellé
+          passe à la ligne dans la carte, avec un interligne lisible. */}
       <Link
         href={`/estimation-travaux${qs ? `?${qs}` : ""}`}
-        className="btn btn-primary mt-3 min-h-[48px] py-2.5"
+        className="btn btn-primary mt-3 min-h-[48px] max-w-full whitespace-normal py-2.5 text-center leading-snug"
       >
         {libelle ?? "Estimer mes travaux"} →
       </Link>
