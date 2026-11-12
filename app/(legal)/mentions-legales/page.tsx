@@ -4,7 +4,7 @@ export default function MentionsLegales() {
   return (
     <article>
       <h1>Mentions légales</h1>
-      <p className="maj">Dernière mise à jour : 12 septembre 2026</p>
+      <p className="maj">Dernière mise à jour : 12 novembre 2026</p>
 
       <p>
         Conformément à l&apos;article 6 III de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans
@@ -31,7 +31,7 @@ export default function MentionsLegales() {
       <p>Le Site est hébergé par&nbsp;:</p>
       <div className="box">
         <p><strong>Vercel Inc.</strong></p>
-        <p>340 S Lemon Ave #4133, Walnut, CA 91789, États-Unis</p>
+        <p>440 N Barranca Avenue #4133, Covina, CA 91723, États-Unis</p>
         <p>Site&nbsp;: <a href="https://vercel.com" target="_blank" rel="noopener noreferrer">vercel.com</a></p>
       </div>
       <p>

@@ -41,12 +41,15 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
           </Link>
         ))}
       </nav>
-      {children}
-      <div className="mt-12 rounded-xl border border-line bg-surface-2 p-4 text-xs leading-relaxed text-faint">
-        Ce document est fourni à titre informatif et constitue une base à personnaliser. Avant mise en
-        production commerciale, fais-le valider par un professionnel du droit (notamment les clauses de
-        vente, d&apos;abonnement et de protection des données).
+      {/* Les pages légales sont statiques et n'existent qu'en français : un visiteur anglophone (interface EN) doit
+          savoir, avant de les accepter, que c'est la version française qui fait foi. Toujours affiché (page statique). */}
+      <div lang="en" className="mb-6 rounded-xl border border-line bg-surface-2 px-4 py-3 text-xs leading-relaxed text-faint">
+        <strong>English:</strong> these legal documents are available in French only. The French version is the
+        only legally binding version.
       </div>
+      {children}
+      {/* Rappel interne (ne pas publier) : faire relire ces textes par un professionnel du droit, en priorité les
+          clauses de vente, d'abonnement et de protection des données. */}
     </div>
   );
 }

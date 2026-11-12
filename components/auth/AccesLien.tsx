@@ -165,7 +165,7 @@ export function AccesParLien({ page, next, source, google }: {
           {pending ? t.envoiEnCours : inscription ? t.boutonInscription : t.boutonConnexion}
         </button>
         <p className="text-center text-[12px] leading-snug text-faint">
-          {t.mentionAvant}
+          {inscription ? t.mentionAvantCreation : t.mentionAvant}
           <Link href="/cgu" className="text-brand-600 hover:underline">{t.mentionCgu}</Link>
           {t.mentionEt}
           <Link href="/confidentialite" className="text-brand-600 hover:underline">{t.mentionConfid}</Link>.

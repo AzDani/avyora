@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Script from "next/script";
 import Link from "next/link";
-import { AW_ID } from "@/lib/gtag";
 import { AuthNav } from "@/components/auth/AuthNav";
 import { MobileNav } from "@/components/MobileNav";
 import { FEATURES } from "@/lib/features";
@@ -13,6 +11,8 @@ import LangSwitch from "@/components/i18n/LangSwitch";
 import OngletPlan from "@/components/plans/OngletPlan";
 import SuiviClicsPlan from "@/components/plans/SuiviClicsPlan";
 import { clicPlan } from "@/lib/plans/mesure";
+import ConsentementCookies from "@/components/ConsentementCookies";
+import GererCookies from "@/components/GererCookies";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -143,22 +143,10 @@ export default async function RootLayout({
       lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <head>
-        {/* Le tag Ads est un tiers cross-origin charge pendant la fenetre du LCP :
-            on prepare DNS + TCP + TLS a l'avance plutot que de les payer a ce moment-la. */}
-        <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="" />
-      </head>
+      {/* Google Ads n'est plus posé ici (ni script, ni preconnect) : traceur publicitaire, il attend le consentement
+          du visiteur. Le bandeau <ConsentementCookies /> le charge après « Tout accepter » (lib/gtag.ts). */}
       <body className="flex min-h-full flex-col">
         <a href="#contenu" className="skip-link">{t.footer.allerAuContenu}</a>
-        {/* Google Ads — balise de base (suivi des conversions). Les événements de
-            conversion sont déclenchés via lib/gtag.ts sur les actions clés. */}
-        <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${AW_ID}`}
-          strategy="afterInteractive"
-        />
-        <Script id="gtag-init" strategy="afterInteractive">
-          {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${AW_ID}');`}
-        </Script>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
@@ -238,7 +226,10 @@ export default async function RootLayout({
                 <Link href="/cgv" className="transition-colors hover:text-brand-700">{t.footer.cgv}</Link>
                 <Link href="/confidentialite" className="transition-colors hover:text-brand-700">{t.footer.confidentialite}</Link>
                 <Link href="/cookies" className="transition-colors hover:text-brand-700">{t.footer.cookies}</Link>
+                {/* Rouvre le bandeau de consentement : le choix se retire aussi simplement qu'il se donne (CNIL). */}
+                <GererCookies label={t.footer.gererCookies} />
                 <Link href="/tarifs" className="transition-colors hover:text-brand-700">{t.footer.tarifs}</Link>
+                <a href="mailto:contact@getavyora.fr" className="transition-colors hover:text-brand-700">{t.footer.contact}</a>
               </nav>
               <LangSwitch tone="light" />
             </div>
@@ -247,7 +238,9 @@ export default async function RootLayout({
             </p>
           </div>
         </footer>
+        {/* Vercel Analytics : mesure agrégée SANS cookie, exemptée de consentement (voir /cookies). */}
         <Analytics />
+        <ConsentementCookies />
         {/* Mesure des clics vers l'éditeur de plan (C10) : une écoute, aucun rendu. */}
         {FEATURES.plans && <SuiviClicsPlan />}
         </LangProvider>

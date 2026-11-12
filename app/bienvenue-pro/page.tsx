@@ -5,6 +5,8 @@ import { getLocale } from "@/lib/i18n/server";
 import AdConversion from "@/components/AdConversion";
 import { CONV } from "@/lib/gtag";
 import { lireNature, lienDetaillePro } from "@/lib/nature-projet";
+import { getStripe } from "@/lib/stripe";
+import { idSessionValide, paiementVerifie, type PaiementVerifie, type SessionCheckout } from "@/lib/paiement-verifie";
 
 
 export const dynamic = "force-dynamic";
@@ -22,7 +24,7 @@ export async function generateMetadata() {
 const TR = {
   fr: {
     feats: [
-      "Devis détaillé, 200 postes",
+      "Estimation détaillée, 200 postes",
       "Rapport PDF à comparer",
       "Carnet matériaux & liens",
       "Suivi de chantier illimité",
@@ -67,9 +69,25 @@ const TR = {
 } as const;
 
 /**
+ * La session Stripe de l'adresse de retour, relue côté serveur : un paiement vérifié du compte connecté, sinon `null`
+ * (identifiant absent ou mal formé, Stripe injoignable, session d'un autre compte, non terminée ou impayée).
+ */
+async function lirePaiement(sessionId: string | undefined, userId: string): Promise<PaiementVerifie | null> {
+  if (!idSessionValide(sessionId)) return null;
+  try {
+    const s = await getStripe().checkout.sessions.retrieve(sessionId);
+    return paiementVerifie(s as unknown as SessionCheckout, userId);
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Page de célébration après un paiement réussi (success_url du checkout Stripe).
- * On exige d'être connecté (personnalisation) ; on ne bloque PAS sur le statut Pro pour éviter
- * la course avec le webhook Stripe — le client vient de payer, on le félicite tout de suite.
+ * On exige d'être connecté, puis un VRAI paiement : la session Stripe (`session_id`) est relue côté serveur et doit être
+ * terminée, payée et faite par ce compte (lib/paiement-verifie.ts). Sinon, retour à /projets : ni félicitations, ni
+ * conversion « Abonnement ». On ne bloque PAS sur le statut Pro, pour éviter la course avec le webhook Stripe : la
+ * session payée suffit à prouver l'achat.
  *
  * `?nature=neuf` (N2, posé par l'adresse de retour de Stripe, liste fermée) : interrupteur `FEATURES.neuf`
  * allumé, le bouton principal reprend la maison décrite dans le rapide du neuf ; sinon, le détaillé de
@@ -80,20 +98,27 @@ export default async function BienvenueProPage({
 }: {
   searchParams: Promise<{ session_id?: string; nature?: string }>;
 }) {
+  const { session_id, nature } = await searchParams;
   const user = await getUser();
-  if (!user) redirect("/connexion?next=/bienvenue-pro");
+  if (!user) {
+    // L'identifiant de session suit la connexion (seulement s'il a la forme attendue), sinon le retour ne prouverait rien.
+    const retour = idSessionValide(session_id) ? `/bienvenue-pro?session_id=${session_id}` : "/bienvenue-pro";
+    redirect(`/connexion?next=${encodeURIComponent(retour)}`);
+  }
+  const paiement = await lirePaiement(session_id, user.id);
+  if (!paiement) redirect("/projets");
   const locale = await getLocale();
   const s = TR[locale];
-  const { session_id, nature } = await searchParams;
 
   return (
     <div className="av-welcome">
-      {/* Conversion Google Ads « Abonnement » — déclenchée après un paiement Stripe réussi.
-          transactionId = id de session Stripe → Google déduplique si la page est rechargée. */}
+      {/* Conversion Google Ads « Abonnement » — paiement Stripe vérifié, montant réel, et seulement avec le consentement
+          aux cookies publicitaires (lib/gtag.ts). transactionId = id de session Stripe → Google déduplique un rechargement. */}
       <AdConversion
         sendTo={CONV.abonnement}
-        value={1.0}
-        transactionId={session_id}
+        value={paiement.valeur ?? undefined}
+        currency={paiement.devise}
+        transactionId={paiement.transactionId}
       />
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="wcard">

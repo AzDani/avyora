@@ -162,13 +162,19 @@ describe("/bienvenue-pro : l'abonné venu du neuf retrouve sa maison", () => {
     await avecNeuf(neuf);
     vi.doMock("@/lib/i18n/server", () => ({ getLocale: async () => "fr", getT: async () => ({ locale: "fr", t: dict("fr") }) }));
     vi.doMock("@/lib/auth", () => ({ getUser: async () => ({ id: "u-pro", email: "alex@exemple.fr", app_metadata: { plan: "pro" } }) }));
+    // La page relit la session Stripe (paiement vérifié) : une session payée par ce compte.
+    vi.doMock("@/lib/stripe", () => ({
+      getStripe: () => ({
+        checkout: { sessions: { retrieve: async (id: string) => ({ id, status: "complete", payment_status: "paid", client_reference_id: "u-pro", amount_total: 16900, currency: "eur" }) } },
+      }),
+    }));
     const Page = (await import("@/app/bienvenue-pro/page")).default;
     return renderToStaticMarkup((await Page({ searchParams: Promise.resolve(sp) })) as ReactElement);
   }
   const cta = (h: string) => h.match(/<a class="wbtn wbtn-p" href="([^"]+)"/)?.[1];
 
   it("nature=neuf et interrupteur allumé → la construction reprise ; sinon le détaillé rénovation", async () => {
-    const S = { session_id: "cs_test_1" };
+    const S = { session_id: "cs_test_a1B2c3D4e5F6" };
     expect(cta(await bienvenue(true, { ...S, nature: "neuf" }))).toBe("/projets/nouveau/construction?reprise=1");
     expect(cta(await bienvenue(false, { ...S, nature: "neuf" }))).toBe("/projets/nouveau/detaille?new=1");
     for (const sp of [S, { ...S, nature: "reno" }, { ...S, nature: "pirate" }, { ...S, nature: "" }] as Record<string, string>[]) {
@@ -177,7 +183,7 @@ describe("/bienvenue-pro : l'abonné venu du neuf retrouve sa maison", () => {
   });
 
   it("seul le lien change : le reste de la page est celui d'avant", async () => {
-    const S = { session_id: "cs_test_1" };
+    const S = { session_id: "cs_test_a1B2c3D4e5F6" };
     const avant = await bienvenue(true, S);
     const neuf = await bienvenue(true, { ...S, nature: "neuf" });
     expect(neuf.replace("/projets/nouveau/construction?reprise=1", "/projets/nouveau/detaille?new=1")).toBe(avant);
@@ -301,7 +307,10 @@ describe("Mesure : clic_nouveau_projet, estimation_terminee, conversion par natu
     vi.resetModules();
     const envoyes: unknown[] = [];
     const stock = new Map<string, string>();
-    vi.stubGlobal("window", { gtag: (...a: unknown[]) => envoyes.push(a) });
+    // Le visiteur a accepté les cookies publicitaires (lib/consentement.ts) et la balise est déjà chargée.
+    const { CLE_CONSENTEMENT, serialiserChoix } = await import("@/lib/consentement");
+    const consentement = serialiserChoix("accepte");
+    vi.stubGlobal("window", { gtag: (...a: unknown[]) => envoyes.push(a), __avGtag: true, localStorage: { getItem: (k: string) => (k === CLE_CONSENTEMENT ? consentement : null) } });
     vi.stubGlobal("sessionStorage", { getItem: (k: string) => stock.get(k) ?? null, setItem: (k: string, v: string) => void stock.set(k, v) });
     const { conversionEstimation, CONV } = await import("@/lib/gtag");
     conversionEstimation("reno");

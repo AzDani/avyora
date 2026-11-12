@@ -1414,7 +1414,7 @@ describe("Rendu : /inscription et /connexion commencent par le lien d'accès", (
       // Le bouton, puis la mention sous le bouton, avec ses deux liens.
       const bouton = h.indexOf(esc(l.boutonInscription));
       expect(bouton).toBeGreaterThan(-1);
-      const mention = h.indexOf(esc(l.mentionAvant));
+      const mention = h.indexOf(esc(l.mentionAvantCreation));
       expect(mention).toBeGreaterThan(bouton);
       expect(h.slice(mention, mention + 400)).toMatch(/href="\/cgu"[\s\S]*href="\/confidentialite"/);
       // L'intention voyage avec le lien ET avec le formulaire replié ; « Déjà un compte » aussi.

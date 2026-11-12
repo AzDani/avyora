@@ -16,14 +16,14 @@ const TR = {
     projets: "Mes projets",
     eyebrow: "Compte & confidentialité",
     titre: "Mon compte",
-    sous: "Gère ton compte et la suppression de tes données.",
+    sous: "Gère ton compte, télécharge ou supprime tes données.",
   },
   en: {
     metaTitle: "My account — AVYORA",
     projets: "My projects",
     eyebrow: "Account & privacy",
     titre: "My account",
-    sous: "Manage your account and the deletion of your data.",
+    sous: "Manage your account, download or delete your data.",
   },
 } as const;
 

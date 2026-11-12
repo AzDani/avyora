@@ -8,9 +8,12 @@ import { useLocale } from "@/components/i18n/LangProvider";
 // littéralement côté serveur (lib/actions/compte.ts). On ne traduit que les consignes autour.
 const TR = {
   fr: {
+    exportTitre: "Télécharger mes données",
+    exportDesc: "Une copie de toutes tes données (compte, profil, projets, estimations, dépenses, plans), dans un fichier JSON lisible et réutilisable ailleurs.",
+    exportBouton: "Télécharger mes données",
     titre: "Supprimer mon compte",
     descAvant: "Supprime définitivement ton compte ",
-    descApres: " et toutes tes données (projets, estimations, devis, fichiers). ",
+    descApres: " et toutes tes données (projets, estimations, dépenses, plans). ",
     irreversible: "Cette action est irréversible.",
     bouton: "Supprimer mon compte",
     consigneAvant: "Tape ",
@@ -20,9 +23,12 @@ const TR = {
     annuler: "Annuler",
   },
   en: {
+    exportTitre: "Download my data",
+    exportDesc: "A copy of all your data (account, profile, projects, estimates, expenses, floor plans) in a JSON file you can read and reuse elsewhere.",
+    exportBouton: "Download my data",
     titre: "Delete my account",
     descAvant: "Permanently delete your account ",
-    descApres: " and all your data (projects, estimates, quotes, files). ",
+    descApres: " and all your data (projects, estimates, expenses, floor plans). ",
     irreversible: "This action is irreversible.",
     bouton: "Delete my account",
     consigneAvant: "Type ",
@@ -41,6 +47,15 @@ export default function CompteActions({ email }: { email: string }) {
 
   return (
     <div className="space-y-6">
+      {/* Accès et portabilité RGPD : l'export JSON du compte (app/api/mon-compte/export, lib/export-donnees.ts). */}
+      <section className="card p-5">
+        <h2 className="font-semibold text-ink">{s.exportTitre}</h2>
+        <p className="mt-1 text-sm text-muted">{s.exportDesc}</p>
+        <a href="/api/mon-compte/export" download className="btn btn-outline mt-3 py-2">
+          {s.exportBouton}
+        </a>
+      </section>
+
       {/* Suppression RGPD */}
       <section className="card border-danger/25 p-5">
         <h2 className="font-semibold text-danger">{s.titre}</h2>
