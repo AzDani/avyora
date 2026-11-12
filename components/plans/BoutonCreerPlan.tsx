@@ -5,12 +5,15 @@ import { useLocale } from "@/components/i18n/LangProvider";
 import { EnvoyerLien } from "@/components/plans/TesPlans";
 import { dictPlans } from "@/lib/i18n/plans";
 import { clicPlan } from "@/lib/plans/mesure";
+import { lienEditeurPlan } from "@/lib/beta";
 
 /**
- * L'appel du bas de la vitrine (C9). Au serveur (et sur ordinateur ou tablette) : « Créer mon plan » vers
- * `/plan`. Au téléphone, où l'on ne dessine pas, il devient « M'envoyer le lien », comme l'îlot « Tes plans ».
+ * L'appel du bas de la vitrine (C9). Au serveur (et sur ordinateur ou tablette) : l'éditeur demande un compte
+ * (décision de Dani du 12/11/2026), donc « Crée ton compte gratuit pour dessiner » vers l'inscription (retour à
+ * l'éditeur) pour un visiteur sans compte, « Ouvrir l'éditeur » vers `/plan` pour une personne connectée. Au
+ * téléphone, où l'on ne dessine pas, il devient « M'envoyer le lien », comme l'îlot « Tes plans ».
  */
-export default function BoutonCreerPlan({ label }: { label: string }) {
+export default function BoutonCreerPlan({ connecte }: { connecte: boolean }) {
   const t = dictPlans(useLocale());
   const [telephone, setTelephone] = useState(false);
   useEffect(() => {
@@ -27,8 +30,8 @@ export default function BoutonCreerPlan({ label }: { label: string }) {
   }, []);
   if (telephone) return <EnvoyerLien t={t} />;
   return (
-    <a href="/plan" className="btn btn-primary px-5 py-3 text-[15px]" {...clicPlan("vitrine_bas")}>
-      {label}
+    <a href={lienEditeurPlan("/plan", connecte, "vitrine-plan")} className="btn btn-primary px-5 py-3 text-[15px]" {...clicPlan("vitrine_bas")}>
+      {connecte ? t.hub.ouvrirEditeur : t.hub.creer}
     </a>
   );
 }

@@ -25,7 +25,7 @@ import { presetRapide } from "@/lib/estimateur/presets";
 import { presetNeuf } from "@/lib/estimateur/presets-neuf";
 import {
   betaActive, finBeta, lireFinBeta, libellesBeta, estMembreFondateur, minuitParis,
-  lienInscriptionBeta, lireSourceBeta, SOURCES_BETA, PLANS_MAX_BETA, betaEditeurPlan, dateInsecable,
+  lienInscriptionBeta, lienEditeurPlan, lireSourceBeta, SOURCES_BETA, PLANS_MAX_BETA, betaEditeurPlan, dateInsecable,
 } from "@/lib/beta";
 
 vi.mock("server-only", () => ({}));
@@ -147,6 +147,14 @@ describe("lib/beta : la date de fin", () => {
     expect(lienInscriptionBeta(undefined, "multi-pieces")).toBe("/inscription?source=multi-pieces");
     for (const s of SOURCES_BETA) expect(lireSourceBeta(s)).toBe(s);
     for (const x of [undefined, "", "pirate", "tarifs ", ["tarifs"], 1]) expect(lireSourceBeta(x)).toBeUndefined();
+  });
+
+  it("l'éditeur de plan demande un compte : le lien tel quel connecté, l'inscription (retour à l'éditeur) sinon", () => {
+    expect(lireSourceBeta("plan")).toBe("plan");
+    expect(lienEditeurPlan("/plan", true, "vitrine-plan")).toBe("/plan");
+    expect(lienEditeurPlan("/plan?type=final", true, "construction")).toBe("/plan?type=final");
+    expect(lienEditeurPlan("/plan", false, "vitrine-plan")).toBe("/inscription?next=%2Fplan&source=vitrine-plan");
+    expect(lienEditeurPlan("/plan?type=final", false, "construction")).toBe("/inscription?next=%2Fplan%3Ftype%3Dfinal&source=construction");
   });
 });
 

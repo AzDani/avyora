@@ -19,6 +19,7 @@ import {
   empreintePlan,
   lirePlansLocaux,
   planAReprendre,
+  planDuRappel,
   planPorteTravail,
   reprendrePlanLocal,
   type Stockage,
@@ -252,6 +253,31 @@ describe("C5 · reprise d'un plan local (ClaimPlan)", () => {
     const tamponCompte = { state: dessine("dddddddd-dddd-4ddd-8ddd-dddddddddddd", "Du compte"), view: {} };
     expect(lirePlansLocaux(stockage({ [CLE_TAMPON_PLAN]: tamponCompte }))).toEqual([]);
     expect(lirePlansLocaux(stockage({ [CLE_TAMPON_PLAN]: "{pas du json", [CLE_PLANS_LOCAUX]: "[]" }))).toEqual([]);
+  });
+
+  it("compte obligatoire (12/11/2026) · le rappel de /inscription pose le drapeau d'un brouillon arrivé sans lui", () => {
+    const tampon = { state: dessine("abc1234", "Ma maison"), view: {} };
+    /* arrivé par le proxy (/plan → /inscription?next=/plan…), sans drapeau : le plan est rappelé ET marqué */
+    for (const next of ["/plan", "/plan?type=final"]) {
+      const s = stockage({ [CLE_TAMPON_PLAN]: tampon });
+      expect(planDuRappel(s, next)?.id).toBe("abc1234");
+      expect(s.getItem(CLE_RECLAMATION_PLAN)).toBe("abc1234");
+    }
+    /* un drapeau déjà posé (vitrine, éditeur) n'est pas remplacé */
+    const lib = { aaa1111: entree("aaa1111", "Ancien", 1) };
+    const s = stockage({ [CLE_TAMPON_PLAN]: tampon, [CLE_PLANS_LOCAUX]: lib, [CLE_RECLAMATION_PLAN]: "aaa1111" });
+    expect(planDuRappel(s, "/plan")?.id).toBe("aaa1111");
+    expect(s.getItem(CLE_RECLAMATION_PLAN)).toBe("aaa1111");
+    /* une inscription pour autre chose (ou sans intention) : rien de rappelé, rien de marqué */
+    for (const next of [undefined, "/tarifs", "/planning", "/plans/x"]) {
+      const t = stockage({ [CLE_TAMPON_PLAN]: tampon });
+      expect(planDuRappel(t, next)).toBeNull();
+      expect(t.getItem(CLE_RECLAMATION_PLAN)).toBeNull();
+    }
+    /* vers l'éditeur mais sans plan local : rien */
+    const vide = stockage();
+    expect(planDuRappel(vide, "/plan")).toBeNull();
+    expect(vide.getItem(CLE_RECLAMATION_PLAN)).toBeNull();
   });
 
   it("le corps de la reprise suit siteAjouterLocal : nom borné, résumé sans clé nulle, editeurId seulement pour un id local", () => {

@@ -210,8 +210,8 @@ describe("C9 · menu mobile", () => {
 /* ─── L'accueil ──────────────────────────────────────────────────────────────── */
 
 describe("C9 · accueil", () => {
-  async function accueil(plans: boolean, locale: Locale, neuf = true) {
-    const r = await charger({ plans, locale, neuf });
+  async function accueil(plans: boolean, locale: Locale, neuf = true, user: Utilisateur = "anonyme") {
+    const r = await charger({ plans, locale, neuf, user });
     const Accueil = (await import("@/app/page")).default;
     return r.rendre(await Accueil({ searchParams: Promise.resolve({}) }));
   }
@@ -241,7 +241,7 @@ describe("C9 · accueil", () => {
     }
   });
 
-  it("allumé : deux vraies captures (webp 760 / 1040 + PNG, largeur et hauteur), « Créer mon plan » → /plan, la vitrine, la note", async () => {
+  it("allumé : deux vraies captures (webp 760 / 1040 + PNG, largeur et hauteur), le bouton vers l'éditeur (par l'inscription sans compte), la vitrine, la note", async () => {
     for (const locale of LOCALES) {
       const band = (await accueil(true, locale)).match(BAND)?.[0] ?? "";
       for (const nom of ["maison-2d", "maison-3d"]) {
@@ -249,8 +249,11 @@ describe("C9 · accueil", () => {
         /* la 2D est l'élément LCP au bureau : chargée tout de suite ; la 3D reste différée (jury) */
         expect(band).toContain(`src="/plans/${nom}.png" width="1040" height="650" loading="${nom === "maison-2d" ? "eager" : "lazy"}"`);
       }
-      /* au bureau « Créer mon plan » → /plan ; au téléphone (on n'y dessine pas) → la vitrine (jury) */
-      expect(band).toMatch(/<a href="\/plan" class="btn btn-p bureau" data-clic-plan="accueil">(Créer mon plan|Create my plan) →<\/a>/);
+      /* au bureau, sans compte (l'éditeur en demande un, 12/11/2026) : l'inscription, qui ramène à l'éditeur, et le
+         bouton le dit ; au téléphone (on n'y dessine pas) → la vitrine (jury) */
+      expect(band).toContain(`<a href="/inscription?next=%2Fplan&amp;source=accueil" class="btn btn-p bureau" data-clic-plan="accueil">${locale === "fr" ? "Crée ton compte gratuit pour dessiner" : "Create your free account to start drawing"} →</a>`);
+      expect(band).not.toContain('href="/plan"');
+      expect(band).toContain(locale === "fr" ? "<li>Gratuit avec un compte, sans installation</li>" : "<li>Free with an account, nothing to install</li>");
       expect(band).toMatch(/<a href="\/logiciel-plan-maison" class="btn btn-p tel" data-clic-plan="accueil">(Créer mon plan|Create my plan) →<\/a>/);
       expect(band).toContain("@media(max-width:600px){.av-home .planb .bureau{display:none}.av-home .planb .tel{display:inline-flex}}");
       expect(band).toContain('href="/logiciel-plan-maison" class="lien bureau" data-clic-plan="accueil"');
@@ -259,6 +262,14 @@ describe("C9 · accueil", () => {
       expect(band).not.toMatch(PRIX);
       expect(band).not.toMatch(EMOJI);
       expect(band).not.toMatch(/\b(estimer|budget|neuf|travaux)\b/i);
+    }
+  });
+
+  it("connecté : « Créer mon plan » → /plan, directement", async () => {
+    for (const locale of LOCALES) {
+      const band = (await accueil(true, locale, true, "gratuit")).match(BAND)?.[0] ?? "";
+      expect(band).toMatch(/<a href="\/plan" class="btn btn-p bureau" data-clic-plan="accueil">(Créer mon plan|Create my plan) →<\/a>/);
+      expect(band).not.toContain("/inscription?");
     }
   });
 
@@ -273,10 +284,10 @@ describe("C9 · accueil", () => {
 /* ─── L'écran de choix ───────────────────────────────────────────────────────── */
 
 describe("C9 · écran de choix : le bandeau « Partir de mon plan »", () => {
-  async function choix(plans: boolean, locale: Locale, isPro: boolean, nature: "reno" | "neuf") {
+  async function choix(plans: boolean, locale: Locale, isPro: boolean, nature: "reno" | "neuf", connecte = isPro) {
     const r = await charger({ plans, locale });
     const Choix = (await import("@/components/ChoixEstimation")).default;
-    return r.rendre(await Choix({ isPro, nature }));
+    return r.rendre(await Choix({ isPro, nature, connecte }));
   }
   const BANDEAU = /<aside class="plan-band"[\s\S]*?<\/aside>/;
   const grille = (h: string) => h.slice(h.indexOf('<div class="grid">'), h.indexOf("</section></div>") + "</section></div>".length);
@@ -299,17 +310,25 @@ describe("C9 · écran de choix : le bandeau « Partir de mon plan »", () => {
     }
   });
 
-  it("neuf → Plan final ; rénovation Pro → Projet rénovation ; rénovation gratuit → pastille Pro et Tarifs", async () => {
+  it("neuf → Plan final (sans compte : par l'inscription) ; rénovation Pro → Projet rénovation ; rénovation gratuit → pastille Pro et Tarifs", async () => {
     for (const locale of LOCALES) {
       const t = dictPlans(locale).choix;
-      const b = async (isPro: boolean, nature: "reno" | "neuf") => (await choix(true, locale, isPro, nature)).match(BANDEAU)![0];
-      for (const isPro of [false, true]) {
-        const n = await b(isPro, "neuf");
+      const b = async (isPro: boolean, nature: "reno" | "neuf", connecte = isPro) => (await choix(true, locale, isPro, nature, connecte)).match(BANDEAU)![0];
+      for (const [isPro, connecte] of [[false, true], [true, true]] as const) {
+        const n = await b(isPro, "neuf", connecte);
         expect(n).toContain(`href="/plan?type=final"`);
+        expect(n).toContain(echap(t.neufLien));
         expect(n).toContain(echap(t.neufTexte));
         expect(n).not.toContain("propill");
         expect(n).toContain('class="plan-partir"');
       }
+      /* sans compte : l'éditeur en demande un (12/11/2026) ; l'inscription, qui ramène au Plan final, et le bouton le dit */
+      const anonyme = await b(false, "neuf", false);
+      expect(anonyme).toContain(`href="/inscription?next=%2Fplan%3Ftype%3Dfinal&amp;source=choix-plan"`);
+      expect(anonyme).toContain(`>${echap(dictPlans(locale).hub.creer)} →</a>`);
+      expect(anonyme).not.toMatch(/href="\/plan[?"]/);
+      expect(anonyme).toContain(echap(t.neufTexte));
+      expect(anonyme).toContain('class="plan-partir"');
       const pro = await b(true, "reno");
       expect(pro).toContain(`href="/plan?type=renovation"`);
       expect(pro).toContain(echap(t.renoLien));
@@ -384,8 +403,8 @@ describe("C9 · Tarifs", () => {
 /* ─── La page neuf ───────────────────────────────────────────────────────────── */
 
 describe("C9 · /estimation-construction-maison", () => {
-  async function neufPage(plans: boolean, locale: Locale, sp: Record<string, string> = {}) {
-    const r = await charger({ plans, locale });
+  async function neufPage(plans: boolean, locale: Locale, sp: Record<string, string> = {}, user: Utilisateur = "anonyme") {
+    const r = await charger({ plans, locale, user });
     const Page = (await import("@/app/estimation-construction-maison/page")).default;
     return r.rendre(await Page({ searchParams: Promise.resolve(sp) }));
   }
@@ -394,17 +413,33 @@ describe("C9 · /estimation-construction-maison", () => {
   it("allumé : « Pas encore de plan ? Dessine ta maison… » vers un Plan final, dans l'en-tête ; éteint : rien", async () => {
     for (const locale of LOCALES) {
       const t = dictPlans(locale).neuf;
-      const avant = await neufPage(false, locale);
-      const apres = await neufPage(true, locale);
+      const avant = await neufPage(false, locale, {}, "gratuit");
+      const apres = await neufPage(true, locale, {}, "gratuit");
       expect(avant).not.toContain("/plan?");
       const ligne = apres.match(LIGNE)?.[0] ?? "";
       expect(ligne).toContain(`href="/plan?type=final"`);
       expect(ligne).toContain(echap(t.lien));
+      expect(ligne).toContain(echap(t.apres));
       expect(apres.indexOf("data-ligne-plan")).toBeLessThan(apres.indexOf("</header>"));
       expect(retirerUne(apres, LIGNE)).toBe(avant);
       /* une balise <a> (pas de préchargement de /plan), et au téléphone la note « sur ordinateur ou tablette » */
       expect(ligne).toMatch(/<a href="\/plan\?type=final"/);
       expect(ligne).toContain(echap(dictPlans(locale).hub.dessinNote));
+    }
+  });
+
+  it("sans compte : « Dessine ta maison avec un compte gratuit », vers l'inscription qui ramène au Plan final", async () => {
+    for (const locale of LOCALES) {
+      const t = dictPlans(locale).neuf;
+      const avant = await neufPage(false, locale);
+      const apres = await neufPage(true, locale);
+      const ligne = apres.match(LIGNE)?.[0] ?? "";
+      expect(ligne).toContain(`href="/inscription?next=%2Fplan%3Ftype%3Dfinal&amp;source=construction"`);
+      expect(ligne).not.toMatch(/href="\/plan[?"]/);
+      expect(ligne).toContain(echap(t.lien));
+      expect(ligne).toContain(echap(t.apresAnonyme));
+      expect(t.apresAnonyme).toMatch(locale === "fr" ? /avec un compte gratuit/ : /with a free account/);
+      expect(retirerUne(apres, LIGNE)).toBe(avant);
     }
   });
 
@@ -425,12 +460,8 @@ type MetaVitrine = { title: string; description: string; alternates: { canonical
 describe("C9 · la vitrine /logiciel-plan-maison", () => {
   async function vitrine(locale: Locale, neuf = true) {
     const r = await charger({ plans: true, locale, neuf });
-    vi.doMock("@/lib/auth", () => ({
-      getUser: async () => {
-        throw new Error("la vitrine a lu la session");
-      },
-      estPro: () => false,
-    }));
+    /* un visiteur sans compte (ce que Google voit) : la vitrine ne lit que la présence d'une session */
+    vi.doMock("@/lib/auth", () => ({ getUser: async () => null, estPro: () => false }));
     const mod = await import("@/app/logiciel-plan-maison/page");
     return { html: await r.rendre(await mod.default()), metadata: (await mod.generateMetadata()) as unknown as MetaVitrine };
   }

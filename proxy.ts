@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { COOKIE_VERIFIER, optionsMarque, verificationEnAttente } from "@/lib/auth-verifier";
+import { lienInscriptionBeta } from "@/lib/beta";
+import { FEATURES } from "@/lib/features";
 
 /**
  * Proxy Next.js 16 (ex-"middleware") — rafraîchit la session Supabase à chaque requête
@@ -75,6 +77,23 @@ export async function proxy(request: NextRequest) {
     url.search = "";
     url.searchParams.set("next", pathname + request.nextUrl.search);
     return NextResponse.redirect(url);
+  }
+
+  // ── L'éditeur de plan demande un compte (décision de Dani du 12/11/2026) ──
+  // /plan est une route statique (app/plan/route.ts, rendue au build) : seul le proxy peut la garder. Un visiteur sans
+  // session part à l'INSCRIPTION (pas à /connexion : c'est le plus souvent un nouveau venu ; /inscription propose
+  // « Déjà un compte ? » avec la même intention), l'adresse voulue EN ENTIER dans `next` (`?type=final`, `?id=…`), la
+  // source `plan` pour la mesure. `next` est revérifié au retour (`cheminInterne`). /admin/plans/editeur, la vue
+  // admin, est déjà gardée plus bas. Interrupteur éteint : /plan répond 404, sans détour.
+  // Exception (relecture) : `?id=` ou `?projet=` désigne un plan ou un projet RANGÉ DANS UN COMPTE (« Ouvrir » de « Mes
+  // plans », la fiche d'un projet, un favori) : la personne a déjà un compte, sa session est tombée. Elle part à
+  // /connexion (même intention dans `next`), comme le « Connecte-toi pour ouvrir ce plan » de l'éditeur avant, et non
+  // vers « Crée ton compte ». /connexion propose « Pas encore de compte ? » avec la même intention.
+  if (pathname === "/plan" && !user && FEATURES.plans) {
+    const voulu = pathname + request.nextUrl.search;
+    const duCompte = request.nextUrl.searchParams.has("id") || request.nextUrl.searchParams.has("projet");
+    const cible = duCompte ? `/connexion?next=${encodeURIComponent(voulu)}` : lienInscriptionBeta(voulu, "plan");
+    return NextResponse.redirect(new URL(cible, request.url));
   }
 
   // ── Arrivée à vérifier (lib/auth-verifier.ts) ──

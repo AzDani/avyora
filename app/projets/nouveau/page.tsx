@@ -75,10 +75,10 @@ export const dynamic = "force-dynamic";
 export default async function NouveauProjet({ searchParams }: { searchParams: Promise<SP> }) {
   if (!FEATURES.neuf) {
     const user = await getUser();
-    return <ChoixEstimation isPro={!!user && estPro(user)} nature="reno" />;
+    return <ChoixEstimation isPro={!!user && estPro(user)} connecte={!!user} nature="reno" />;
   }
   const nature = lireNature((await searchParams).nature);
   if (!nature) return <ChoixNature />;
   const user = await getUser();
-  return <ChoixEstimation isPro={!!user && estPro(user)} nature={nature} />;
+  return <ChoixEstimation isPro={!!user && estPro(user)} connecte={!!user} nature={nature} />;
 }

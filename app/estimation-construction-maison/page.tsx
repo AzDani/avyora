@@ -4,7 +4,7 @@ import EstimateurRapideNeuf from "@/components/neuf/EstimateurRapideNeuf";
 import { getLocale } from "@/lib/i18n/server";
 import { dictNeuf } from "@/lib/i18n/neuf";
 import { getUser, estPro } from "@/lib/auth";
-import { betaActive } from "@/lib/beta";
+import { betaActive, lienEditeurPlan } from "@/lib/beta";
 import { FEATURES } from "@/lib/features";
 import { og } from "@/lib/seo-og";
 import { META_EN, metaSelonLangue } from "@/lib/i18n/meta";
@@ -98,7 +98,7 @@ export default async function EstimationConstructionMaison({
         <p className="mt-1.5 text-[15px] text-muted">{t.pageSous}</p>
         {/* Éditeur de plan (C9) : la boucle neuf ↔ plan, seulement interrupteur allumé, et pas quand on ARRIVE du plan
             (`?source=editeur-plan` → src « plan ») : « Pas encore de plan ? » contredirait « Ta maison est reprise de ton plan ». */}
-        {FEATURES.plans && initial.src !== "plan" && <LignePlan locale={locale} />}
+        {FEATURES.plans && initial.src !== "plan" && <LignePlan locale={locale} connecte={!!user} />}
       </header>
       <EstimateurRapideNeuf isPro={isPro} beta={betaActive()} connecte={!!user} initial={initial} />
       {/* N13 : vers le rapide de la rénovation (la page entière est derrière l'interrupteur). */}
@@ -111,17 +111,19 @@ export default async function EstimationConstructionMaison({
  * « Pas encore de plan ? Dessine ta maison : l'estimation reprend ses pièces et sa surface. » → un Plan final.
  * Une balise `<a>` et non `next/link` : `/plan` est une autre application (route handler) que le routeur préchargerait
  * en entier (1,3 Mo) dès que le lien est visible. Au téléphone, une note dit que le dessin se fait sur ordinateur.
+ * L'éditeur demande un compte (décision de Dani du 12/11/2026) : sans compte, « Dessine ta maison avec un compte
+ * gratuit », vers l'inscription, qui ramène à l'éditeur.
  */
-function LignePlan({ locale }: { locale: Awaited<ReturnType<typeof getLocale>> }) {
+function LignePlan({ locale, connecte }: { locale: Awaited<ReturnType<typeof getLocale>>; connecte: boolean }) {
   const d = dictPlans(locale);
   const t = d.neuf;
   return (
     <p className="mt-3 text-[14px] text-muted" data-ligne-plan="">
       {t.avant}
-      <a href="/plan?type=final" className="font-medium text-brand-700 hover:underline" {...clicPlan("neuf")}>
+      <a href={lienEditeurPlan("/plan?type=final", connecte, "construction")} className="font-medium text-brand-700 hover:underline" {...clicPlan("neuf")}>
         {t.lien}
       </a>
-      {t.apres}
+      {connecte ? t.apres : t.apresAnonyme}
       <span className="mt-1 hidden text-[13px] text-faint max-[600px]:block">{d.hub.dessinNote}</span>
     </p>
   );

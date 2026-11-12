@@ -152,7 +152,7 @@ export const SOURCES_BETA = [
   "affiner-reno", "affiner-neuf", "multi-pieces",
   "enregistrer-reno", "enregistrer-neuf",
   "detaille", "construction",
-  "editeur-plan", "vitrine-plan",
+  "editeur-plan", "vitrine-plan", "plan",
   "tarifs", "accueil",
   "entete", "menu-mobile",
 ] as const;
@@ -170,6 +170,16 @@ export function lireSourceBeta(v: unknown): SourceBeta | undefined {
  */
 export function lienInscriptionBeta(next: string | undefined, source: SourceBeta): string {
   return `/inscription?${next ? `next=${encodeURIComponent(next)}&` : ""}source=${source}`;
+}
+
+/**
+ * Un lien vers l'éditeur de plan (`/plan`, `/plan?type=final`…), qui demande un compte (décision de Dani du 12/11/2026) :
+ * tel quel pour une personne connectée ; pour un visiteur sans compte, l'inscription, qui le ramène à l'éditeur une fois
+ * son compte créé (`next`). Le proxy renvoie de toute façon un visiteur sans session de /plan vers l'inscription (source
+ * `plan`) : ce lien lui évite le détour, et dit d'où il vient.
+ */
+export function lienEditeurPlan(cible: string, connecte: boolean, source: SourceBeta): string {
+  return connecte ? cible : lienInscriptionBeta(cible, source);
 }
 
 /* ─── L'éditeur de plan ──────────────────────────────────────────────────────── */

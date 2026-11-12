@@ -25,7 +25,12 @@ import { betaActive, libellesBeta, lienInscriptionBeta } from "@/lib/beta";
  * « Inclus pendant la bêta », un anonyme « Créer mon compte gratuit », qui l'emmène à l'inscription puis, son
  * adresse confirmée, au détaillé qu'il voulait. Hors bêta, le HTML d'avant au caractère près.
  */
-export default async function ChoixEstimation({ isPro, nature = "reno" }: { isPro: boolean; nature?: "reno" | "neuf" }) {
+export default async function ChoixEstimation({ isPro, nature = "reno", connecte = isPro }: {
+  isPro: boolean;
+  nature?: "reno" | "neuf";
+  /** Une session est là (un Pro l'est toujours) : l'éditeur de plan demande un compte. */
+  connecte?: boolean;
+}) {
   const { t: tr, locale } = await getT();
   const neuf = FEATURES.neuf && nature === "neuf";
   const n = dictNeuf(locale).choix;
@@ -133,7 +138,7 @@ export default async function ChoixEstimation({ isPro, nature = "reno" }: { isPr
       </div>
 
       {/* Éditeur de plan (C9) : un bandeau sous la grille, pas une 3ᵉ carte (la grille Gratuit / Pro ne bouge pas). */}
-      {FEATURES.plans && <BandeauPlan neuf={neuf} isPro={isPro} locale={locale} beta={beta} />}
+      {FEATURES.plans && <BandeauPlan neuf={neuf} isPro={isPro} connecte={connecte} locale={locale} beta={beta} />}
 
       <div className="hint">
         <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.4" /><path d="M10 9v5M10 6.2v.2" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
@@ -148,8 +153,10 @@ export default async function ChoixEstimation({ isPro, nature = "reno" }: { isPr
  * (`/plan?type=renovation`) ; rénovation en gratuit → la même phrase, la pastille Pro et `/tarifs?source=choix-plan`
  * (D68 : le Projet rénovation est Pro). L'îlot `PartirDePlan` propose en plus le plan le plus récent du bon type.
  * Bêta gratuite : la pastille « Bêta » et « Créer mon compte gratuit », qui ramène à l'éditeur une fois le compte créé.
+ * L'éditeur demande un compte (décision de Dani du 12/11/2026) : sans compte, le Plan final du neuf passe par
+ * l'inscription (« Crée ton compte gratuit pour dessiner »), qui ramène à l'éditeur.
  */
-function BandeauPlan({ neuf, isPro, locale, beta = false }: { neuf: boolean; isPro: boolean; locale: Locale; beta?: boolean }) {
+function BandeauPlan({ neuf, isPro, connecte, locale, beta = false }: { neuf: boolean; isPro: boolean; connecte: boolean; locale: Locale; beta?: boolean }) {
   const t = dictPlans(locale).choix;
   const b = dict(locale).beta;
   const ouvert = neuf || isPro;
@@ -171,7 +178,12 @@ function BandeauPlan({ neuf, isPro, locale, beta = false }: { neuf: boolean; isP
         {ouvert && <p className="plan-tel">{dictPlans(locale).hub.dessinNote}</p>}
       </div>
       {/* Vers l'éditeur : une balise <a> (pas de préchargement de /plan, une autre application de 1,3 Mo) ; vers Tarifs : Link. */}
-      {ouvert ? (
+      {ouvert && !connecte ? (
+        /* Sans compte (le neuf : un Plan final est ouvert à tous les inscrits) : l'inscription, puis l'éditeur. */
+        <a href={lienInscriptionBeta("/plan?type=final", "choix-plan")} className="btn btn-outline plan-go" {...clicPlan("choix")}>
+          {`${dictPlans(locale).hub.creer} →`}
+        </a>
+      ) : ouvert ? (
         <a href={neuf ? "/plan?type=final" : "/plan?type=renovation"} className="btn btn-outline plan-go" {...clicPlan("choix")}>
           {neuf ? t.neufLien : t.renoLien}
         </a>
