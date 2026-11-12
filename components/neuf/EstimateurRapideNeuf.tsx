@@ -370,8 +370,8 @@ export default function EstimateurRapideNeuf({
     if (!CP.test(R.codePostal)) { signaler("cp", s.errCp); return; }
     if (!(R.surface >= 30)) { signaler("surface", s.errSurface); return; }
     setAgi(true);
-    suivre("estimation_terminee", { action: "enregistrer", type: "neuf", nature: "neuf", src });
-    conversionEstimation("neuf");
+    // La conversion « estimation » compte une création, pas la modification d'un projet existant.
+    if (!edit) { suivre("estimation_terminee", { action: "enregistrer", type: "neuf", nature: "neuf", src }); conversionEstimation("neuf"); }
     setSaving(true);
     const d = brouillon();
     try {

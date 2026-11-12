@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { CATALOG, buildDevis, catalogueDe, type Ctx, type Selection } from "@/lib/estimateur";
 import { totauxAvecPerso } from "@/lib/estimateur/projet";
 import { CLE_BROUILLON_NEUF, lireBrouillonNeuf, reclamationNeufPosee } from "@/lib/estimateur/brouillon-neuf";
+import { CLE_BROUILLON_RENO, lireBrouillonReno, libelleBrouillonReno } from "@/lib/estimateur/brouillon-reno";
 import { useLocale, useT } from "@/components/i18n/LangProvider";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 
@@ -14,8 +15,12 @@ import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
  * Traduit (FR / EN), montants au format de l'estimation rapide de la langue. Masqué sur l'écran « C'est envoyé »
  * (`AuthShell`) : l'écran dit lui-même que le lien ramène là où l'on en était. Compact (une ligne de texte) : sur un
  * portable (1366 × 657), le champ, le bouton et la mention des CGU restent au-dessus du pli.
+ *
+ * Rénovation : le brouillon est relu comme pour sa réclamation (`lireBrouillonReno` : code postal à
+ * 5 chiffres, surface non nulle). Un « Détail poste par poste » cliqué sur un formulaire vierge ne
+ * range plus rien, et un vieux brouillon sans code postal ne s'affiche plus comme « ton estimation ».
  */
-const DRAFT_KEY = "avyora-estim-v2";
+const DRAFT_KEY = CLE_BROUILLON_RENO;
 
 export function EstimationRappel() {
   const [info, setInfo] = useState<{ lo: number; hi: number; label: string } | null>(null);
@@ -27,6 +32,7 @@ export function EstimationRappel() {
   // Le type de bien du brouillon est écrit en français (« Maison », « Appartement ») : dit dans la langue de la page.
   const typeBien = (v: string | undefined) =>
     v === "Maison" ? tr.rapide.typeMaison : v === "Appartement" ? tr.rapide.typeAppart : v || tr.auth.rappel.bien;
+  const piece = (k: string) => tr.rapide.rooms[k] ?? k;
 
   useEffect(() => {
     // Construction neuve (son drapeau posé) : son brouillon, chiffré sur le catalogue du neuf.
@@ -46,15 +52,14 @@ export function EstimationRappel() {
       /* stockage illisible : on retombe sur le chemin de la rénovation */
     }
     try {
-      const raw = localStorage.getItem(DRAFT_KEY);
-      if (!raw) return;
-      const d = JSON.parse(raw) as { ctx?: Ctx; sel?: Selection; custom?: unknown };
-      if (!d?.ctx || !d?.sel) return;
-      const ttc = totauxAvecPerso(buildDevis(CATALOG, d.ctx, d.sel).totaux, d.custom, d.ctx.aleas).ttc;
+      const d = lireBrouillonReno(localStorage.getItem(DRAFT_KEY));
+      if (!d) return;
+      const ctx = d.ctx as Ctx;
+      const ttc = totauxAvecPerso(buildDevis(CATALOG, ctx, d.sel as Selection).totaux, d.custom, ctx.aleas).ttc;
       if (!(ttc > 0)) return;
       const lo = Math.round((ttc * 0.85) / 100) * 100;
       const hi = Math.round((ttc * 1.15) / 100) * 100;
-      const label = `${typeBien(d.ctx.type)} ${d.ctx.surface} m²`;
+      const label = libelleBrouillonReno(d, { type: typeBien, piece }, nf);
       setInfo({ lo, hi, label });
     } catch {
       /* pas de brouillon lisible */

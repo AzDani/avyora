@@ -16,7 +16,7 @@
  */
 import type { Ctx, Selection, CustomLine } from "./core";
 import type { Ampleur, QuiRealise } from "./presets";
-import type { PieceSel } from "./pieces";
+import type { PieceKey, PieceSel } from "./pieces";
 import { lirePiecesRapide } from "./rapide-reno";
 
 /** Brouillon de la rénovation : celui du rapide, graine d'« Affiner », et brouillon réclamé après un 401. */
@@ -86,6 +86,27 @@ export function lireBrouillonReno(raw: string | null | undefined): BrouillonReno
     ...(custom.length ? { custom } : {}),
     ...(pieces ? { pieces } : {}),
   };
+}
+
+/**
+ * Ce que le rappel de /inscription dit du brouillon (« Salle de bain 5 m² — on la range dans ton
+ * compte ») : ses pièces en mode « pièces », sinon le type de bien et la surface. Avant, le rappel
+ * lisait toujours `ctx.type`, qui vaut « T3 » pour un rapide par pièces (`ctxPiece`) : une salle de
+ * bain s'annonçait « T3 5 m² ». Les noms viennent de l'écran, dans sa langue.
+ */
+export function libelleBrouillonReno(
+  d: Pick<BrouillonReno, "ctx" | "pieces">,
+  noms: { type: (v: string | undefined) => string; piece: (k: PieceKey) => string },
+  nf: string,
+): string {
+  const m2 = (n: number) => `${(Math.round(n * 10) / 10).toLocaleString(nf)} m²`;
+  if (d.pieces?.length) {
+    const nb = new Map<PieceKey, number>();
+    for (const r of d.pieces) nb.set(r.room, (nb.get(r.room) ?? 0) + 1);
+    const total = d.pieces.reduce((s, r) => s + r.surface, 0);
+    return `${[...nb].map(([k, n]) => `${noms.piece(k)}${n > 1 ? ` ×${n}` : ""}`).join(" + ")} ${m2(total)}`;
+  }
+  return `${noms.type(d.ctx.type)} ${m2(Number(d.ctx.surface) || 0)}`;
 }
 
 /** Corps du POST `/api/projects` qui crée le projet réclamé (lignes perso et pièces comprises). */

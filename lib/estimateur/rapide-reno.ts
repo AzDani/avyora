@@ -19,7 +19,17 @@ import type { Ctx, Selection, TypeBien, Finition } from "./core";
 import type { Ampleur, QuiRealise } from "./presets";
 import type { PieceKey, PieceSel } from "./pieces";
 
-const CP = /^\d{5}$/;
+/**
+ * Un code postal qui existe dans la zone que le moteur chiffre : métropole (01 à 95, Corse comprise)
+ * et départements d'outre-mer (971 à 974, 976), ceux qu'ajuste `regionCoef`. Avant, `\d{5}` suffisait :
+ * 00000, 99999 ou un code de collectivité du Pacifique (98800) passaient pour la « moyenne
+ * nationale », et « Enregistrer » les acceptait.
+ */
+const CP = /^(?:(?:0[1-9]|[1-8]\d|9[0-5])\d{3}|97[1-46]\d{2})$/;
+export const codePostalValide = (cp: string): boolean => CP.test(cp);
+
+/** Surface d'une pièce du mode « pièces » (m²) : au-delà, ce n'est plus une pièce. */
+export const SURFACE_MAX_PIECE = 200;
 
 /** Les pièces du mode « une ou plusieurs pièces » (mêmes clés que `PIECES`, recopiées pour ne pas importer le moteur). */
 export const CLES_PIECES: readonly PieceKey[] = ["cuisine", "sdb", "chambre", "salon", "suite", "buanderie"];
@@ -31,24 +41,30 @@ const QUIS: readonly string[] = ["pros", "partie", "max"];
 
 /**
  * Le chiffre s'affiche-t-il ? Dès que le visiteur a répondu quelque chose (`demarre`), ou d'emblée
- * pour un projet rouvert (`edition`) et pour des réponses rendues au retour de /tarifs (`retour`) :
- * c'est une vraie saisie, faite avant. Un contexte venu d'une page SEO ne compte pas : cliquer un
- * lien n'est pas décrire son projet.
+ * pour un projet rouvert (`edition`), pour des réponses rendues au retour arrière ou au rechargement
+ * (`retour`) — une vraie saisie, faite avant — et pour une pièce venue d'une page de prix
+ * (`prerempli`) : le visiteur y a lu une fourchette, il doit retrouver la même sans recliquer.
+ * L'affichage seulement : la mesure et la conversion attendent une vraie action (`demarre`).
+ *
+ * Et jamais sans un bien CHOISI (`typeChoisi`, absent = choisi) : « Maison, 100 m² » sont des valeurs
+ * par défaut ; taper son seul code postal affichait le budget d'une maison que personne n'avait décrite.
  */
-export function chiffreAfficheRapide(p: { demarre: boolean; edition: boolean; retour?: boolean }): boolean {
-  return p.demarre || p.edition || !!p.retour;
+export function chiffreAfficheRapide(p: { demarre: boolean; edition: boolean; retour?: boolean; prerempli?: boolean; typeChoisi?: boolean }): boolean {
+  return (p.demarre || p.edition || !!p.retour || !!p.prerempli) && p.typeChoisi !== false;
 }
 
 /**
  * Ce qui fait une estimation RÉELLE, celle qu'on mesure et qu'on déclare à Google Ads : une action
- * du visiteur, une saisie valide, un total non nul et un code postal (c'est lui qui rend le chiffre
- * propre au visiteur et qui signale une intention).
+ * du visiteur, un bien choisi, une saisie valide, un total non nul et un code postal qui existe
+ * (c'est lui qui rend le chiffre propre au visiteur et qui signale une intention).
  *
- * `demarre`, jamais `edition` : rouvrir un projet affiche son chiffre, mais ne le recompte pas.
- * Sans cette séparation, rouvrir un projet enverrait une conversion au bout de 1,8 s.
+ * `demarre`, jamais `edition` : rouvrir un projet affiche son chiffre, mais ne le recompte pas. Et
+ * le MODIFIER non plus (`edition` vrai) : la conversion « estimation » compte une création, pas la
+ * retouche d'un projet déjà compté. Sans cette séparation, rouvrir un projet enverrait une
+ * conversion au bout de 1,8 s.
  */
-export function estimationReelleRapide(p: { demarre: boolean; saisieValide: boolean; ttc: number; codePostal: string }): boolean {
-  return p.demarre && p.saisieValide && p.ttc > 0 && CP.test(p.codePostal);
+export function estimationReelleRapide(p: { demarre: boolean; saisieValide: boolean; ttc: number; codePostal: string; edition?: boolean; typeChoisi?: boolean }): boolean {
+  return p.demarre && !p.edition && p.typeChoisi !== false && p.saisieValide && p.ttc > 0 && CP.test(p.codePostal);
 }
 
 /* ─── Réponses enregistrées ───────────────────────────────────────────────────────────────── */
@@ -93,14 +109,14 @@ function lireStatuts(x: unknown): Record<string, number> | undefined {
   return Object.keys(out).length ? out : undefined;
 }
 
-/* ─── Retour de /tarifs (N13) ─────────────────────────────────────────────────────────────── */
+/* ─── Réponses gardées dans l'onglet (retour arrière, rechargement, /tarifs) ─────────────────── */
 
 /**
- * « Affiner » d'un visiteur sans les droits mène directement à `/tarifs?source=affiner-reno` (avant :
- * un détour par `/projets/nouveau/detaille`, qui l'y renvoyait, et ses réponses étaient perdues). Ses
- * réponses sont rangées sous cette clé, dans l'onglet (sessionStorage), et relues au retour, comme
- * le rapide du neuf (`CLE_RETOUR_NEUF`). Le chiffre revient, mais pas la mesure : ce n'est pas une
- * nouvelle estimation.
+ * Les réponses du formulaire, rangées dans l'onglet (sessionStorage) à CHAQUE changement dès qu'un
+ * chiffre s'affiche, et relues au montage : un retour arrière (depuis /inscription, /tarifs…) ou un
+ * rechargement rend le formulaire tel qu'il était. Avant, elles n'étaient rangées que sur le chemin
+ * de /tarifs (N13), que la bêta n'emprunte plus : le visiteur qui hésitait à s'inscrire revenait sur
+ * un formulaire vierge. Le chiffre revient, mais pas la mesure : ce n'est pas une nouvelle estimation.
  */
 export const CLE_RETOUR_RENO = "avyora-reno-retour";
 
@@ -109,14 +125,15 @@ export type RetourRapideReno = {
   ampleur: Ampleur; finition: Finition; qui: QuiRealise;
 };
 
-/** Relit les réponses rangées au départ vers /tarifs : `null` si une seule est hors des choix du formulaire. */
+/** Relit les réponses rangées dans l'onglet : `null` si une seule est hors des choix du formulaire. */
 export function lireRetourRapideReno(x: unknown): RetourRapideReno | null {
   if (!x || typeof x !== "object" || Array.isArray(x)) return null;
   const r = x as Record<string, unknown>;
   const surface = Number(r.surface);
   if (r.mode !== "bien" && r.mode !== "pieces") return null;
   if (r.type !== "Maison" && r.type !== "Appartement") return null;
-  if (!Number.isFinite(surface) || surface <= 0 || surface > 10_000) return null;
+  // 500 m² : `SURFACE_MAX_RAPIDE` (presets.ts), recopiée pour ne pas importer le moteur.
+  if (!Number.isFinite(surface) || surface <= 0 || surface > 500) return null;
   if (typeof r.cp !== "string" || !/^\d{0,5}$/.test(r.cp)) return null;
   if (typeof r.ampleur !== "string" || !AMPLEURS.includes(r.ampleur)) return null;
   if (typeof r.finition !== "string" || !FINITIONS.includes(r.finition)) return null;
