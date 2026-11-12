@@ -216,7 +216,7 @@ export default async function RootLayout({
         <footer className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6">
           <div className="border-t border-line pt-6">
             <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3">
-              <nav aria-label={t.footer.navPied} className="flex flex-wrap gap-x-5 gap-y-0 text-xs font-medium text-muted [&>a]:inline-flex [&>a]:items-center [&>a]:py-2.5">
+              <nav aria-label={t.footer.navPied} className="flex flex-wrap gap-x-3 gap-y-0 text-xs font-medium text-muted [&>a]:inline-flex [&>a]:min-h-11 [&>a]:min-w-11 [&>a]:items-center [&>a]:justify-center [&>a]:px-1">
                 <Link href="/methodologie" className="transition-colors hover:text-brand-700">{t.footer.methodologie}</Link>
                 <Link href="/guides" className="transition-colors hover:text-brand-700">{t.footer.guides}</Link>
                 <Link href="/prix-travaux" className="transition-colors hover:text-brand-700">{t.footer.prixTravaux}</Link>

@@ -100,9 +100,9 @@ const CSS = `
 }
 .av-seo .astuce{border-left:3px solid var(--color-brand-600);background:var(--color-brand-50);border-radius:0 10px 10px 0;padding:12px 16px;margin:16px 0;font-size:14px;color:var(--color-ink)}
 .av-seo .astuce b{color:var(--color-brand-700)}
-.av-seo .faq details{border:1px solid var(--color-line);border-radius:12px;padding:12px 16px;margin-bottom:10px;background:var(--color-surface)}
-.av-seo .faq summary{font-weight:600;color:var(--color-ink);cursor:pointer;font-size:14.5px}
-.av-seo .faq p{margin:8px 0 0}
+.av-seo .faq details{border:1px solid var(--color-line);border-radius:12px;margin-bottom:10px;background:var(--color-surface)}
+.av-seo .faq summary{font-weight:600;color:var(--color-ink);cursor:pointer;font-size:14.5px;padding:12px 16px}
+.av-seo .faq p{margin:-4px 0 0;padding:0 16px 12px}
 .av-seo .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .av-seo .chips a{font-size:13px;color:var(--color-brand-600);background:var(--color-brand-50);border-radius:999px;padding:5px 12px;text-decoration:none}
 .av-seo .chips a:hover{background:var(--color-brand-100)}

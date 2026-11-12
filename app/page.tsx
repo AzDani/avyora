@@ -25,8 +25,11 @@ const jsonLd = {
   offers: { "@type": "Offer", price: "0", priceCurrency: "EUR", description: "Première estimation gratuite" },
 };
 
+/* Puces du héros (.trust) : texte en ligne, sans inline-flex ni gap (le gap s'insérait entre le <b> et le texte voisin :
+   « multi -projets »). La police à chasse fixe est réservée aux chiffres (classe .num), plus aux mots en gras (héros,
+   bandeau, « Fais le calcul »). --faint suit le jeton du site (#6a6f88, contraste AA sur fond clair). */
 const HOME_CSS = `
-.av-home{--canvas:#f5f6fb;--surface:#fff;--surface-2:#f8f9fd;--ink:#15172b;--muted:#565a75;--faint:#898ea8;--line:#e9eaf3;--line-strong:#dcdeec;--brand:#4f46e5;--brand-700:#4338ca;--brand-weak:#eef1ff;--brand-200:#c7ccfe;--violet:#7c3aed;--accent:#a78bfa;--accent-300:#c4b5fd;--good:#0f9d6b;--good-bg:#e6f6ef;--nuit:#1E1B4B;--nuit-2:#241f5e;--nuit-3:#191640;--r:1.15rem;--r-lg:1.5rem;--ease:cubic-bezier(.22,.72,.2,1);--shadow:0 1px 3px rgba(30,27,75,.05),0 10px 26px -12px rgba(30,27,75,.14);--shadow-hero:0 24px 60px -26px rgba(30,27,75,.55);font-family:var(--font-geist-sans),system-ui,sans-serif;color:var(--ink);line-height:1.5}
+.av-home{--canvas:#f5f6fb;--surface:#fff;--surface-2:#f8f9fd;--ink:#15172b;--muted:#565a75;--faint:#6a6f88;--line:#e9eaf3;--line-strong:#dcdeec;--brand:#4f46e5;--brand-700:#4338ca;--brand-weak:#eef1ff;--brand-200:#c7ccfe;--violet:#7c3aed;--accent:#a78bfa;--accent-300:#c4b5fd;--good:#0f9d6b;--good-bg:#e6f6ef;--nuit:#1E1B4B;--nuit-2:#241f5e;--nuit-3:#191640;--r:1.15rem;--r-lg:1.5rem;--ease:cubic-bezier(.22,.72,.2,1);--shadow:0 1px 3px rgba(30,27,75,.05),0 10px 26px -12px rgba(30,27,75,.14);--shadow-hero:0 24px 60px -26px rgba(30,27,75,.55);font-family:var(--font-geist-sans),system-ui,sans-serif;color:var(--ink);line-height:1.5}
 .av-home .num{font-family:var(--font-geist-mono),ui-monospace,monospace;font-variant-numeric:tabular-nums}
 .av-home .wrap{max-width:100%;margin:0;padding:0}
 .av-home .eyebrow{font-size:11px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--brand)}
@@ -49,9 +52,9 @@ const HOME_CSS = `
 .av-home .hero p.sub{font-size:clamp(16px,2vw,19px);color:#d7d4f2;margin:20px auto 0;max-width:600px;line-height:1.55}
 .av-home .hero .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:30px}
 .av-home .hero .trust{display:flex;gap:10px 26px;justify-content:center;flex-wrap:wrap;margin-top:36px;font-size:13px;color:#b7b3e0}
-.av-home .hero .trust b{font-family:var(--font-geist-mono),monospace;color:#fff;font-weight:600}
-.av-home .hero .trust span{display:inline-flex;align-items:center;gap:8px}
-.av-home .hero .trust span::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--accent)}
+.av-home .hero .trust b{color:#fff;font-weight:600}
+.av-home .hero .trust span{display:inline-block;white-space:nowrap}
+.av-home .hero .trust span::before{content:"";display:inline-block;vertical-align:middle;width:5px;height:5px;border-radius:50%;background:var(--accent);margin:0 8px 2px 0}
 .av-home section.blk{padding:60px 0}
 .av-home .center{text-align:center;max-width:640px;margin:0 auto 40px}
 .av-home .center h2{font-size:clamp(25px,3.4vw,34px);font-weight:700;margin-top:10px}
@@ -86,7 +89,7 @@ const HOME_CSS = `
 .av-home .roi .cbox.small .v{font-size:25px;color:var(--accent-300)}
 .av-home .roi .vs{font-family:var(--font-geist-mono),monospace;font-size:19px;color:#8a86bd;font-weight:600}
 .av-home .roi .pct{margin-top:26px;font-size:15px;color:#d7d4f2}
-.av-home .roi .pct b{font-family:var(--font-geist-mono),monospace;color:#fff}
+.av-home .roi .pct b{color:#fff}
 .av-home .roi .punch{max-width:640px;margin:28px auto 0;font-size:19px;font-weight:600;line-height:1.4}
 .av-home .roi .punch em{color:var(--accent-300);font-style:normal}
 .av-home .eco{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -115,7 +118,6 @@ const HOME_CSS = `
 .av-home .promo{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;background:linear-gradient(90deg,var(--brand),var(--violet));color:#fff;border-radius:999px;padding:11px 22px;margin-bottom:16px;font-size:13.5px;font-weight:600;box-shadow:0 14px 30px -16px rgba(124,58,237,.65)}
 .av-home .promo .dot{width:8px;height:8px;border-radius:50%;background:#fff;animation:avpulse 2s ease-in-out infinite}
 @keyframes avpulse{0%,100%{opacity:.35}50%{opacity:1}}
-.av-home .promo b{font-family:var(--font-geist-mono),monospace}
 .av-home .promo .arr{opacity:.85}
 .av-home a.promo:hover{filter:brightness(1.05)}
 .av-home .demo{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);overflow:hidden;max-width:720px;margin:0 auto}
@@ -182,8 +184,8 @@ ${PLAN_CSS}<section class="planb" aria-labelledby="planb-titre"><div class="in">
   <p class="note">Drawing works on a computer or tablet. The editor is in French for now.</p>
 </div>${planVisuels("2D plan of a 94 m² single-story house in the AVYORA editor: named rooms, floor areas, dimensions and furniture", "The same 94 m² house in 3D in the AVYORA editor")}</div></section>`;
 /* La 5ᵉ puce de la rangée de confiance du hero (aucun chiffre). */
-const PLAN_TRUST = "<span>plan <b>3D</b></span>";
-const PLAN_TRUST_EN = "<span><b>3D</b> floor plan</span>";
+const PLAN_TRUST = "<span>plan <b class=\"num\">3D</b></span>";
+const PLAN_TRUST_EN = "<span><b class=\"num\">3D</b> floor plan</span>";
 
 /* Liens « Estimer gratuitement » : ceux du hero mènent à la pré-page « Quel est ton projet ? » ; le bloc final
    (« Ta rénovation mérite mieux… ») connaît la nature et la saute avec `?nature=reno` (N2). Sans condition sur
@@ -199,7 +201,7 @@ const HOME_HTML = `
     <a href="/tarifs" class="btn btn-w">Voir les tarifs</a>
   </div>
   <div class="trust">
-    <span><b>200</b> postes de prix</span><span>suivi de <b>chantier</b></span><span>carnet <b>matériaux</b></span><span><b>multi</b>-projets</span>${FEATURES.plans ? PLAN_TRUST : ""}
+    <span><b class="num">200</b> postes de prix</span><span>suivi de <b>chantier</b></span><span>carnet <b>matériaux</b></span><span><b>multi</b>-projets</span>${FEATURES.plans ? PLAN_TRUST : ""}
   </div>
 </div></header></div>${FEATURES.plans ? PLAN_BAND : ""}
 
@@ -246,7 +248,7 @@ const HOME_HTML = `
     <div class="vs">vs</div>
     <div class="cbox small"><div class="k">AVYORA Pro</div><div class="v">18,85 €/mois</div></div>
   </div>
-  <div class="pct">Soit <b>0,02&nbsp;%</b> du budget pour le maîtriser entièrement.</div>
+  <div class="pct">Soit <b class="num">0,02&nbsp;%</b> du budget pour le maîtriser entièrement.</div>
   <div class="punch">Un <em>seul poste oublié</em> dans un devis coûte souvent plus cher qu'une <em>année entière</em> d'AVYORA.</div>
 </div></div></div></section>
 
@@ -258,7 +260,7 @@ const HOME_HTML = `
   </div>
   <div class="eco">
     <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><h3>Chiffre ton économie en bricolant</h3><p>Selon ce que tu fais toi-même, AVYORA t'indique combien tu économises sur la main-d'œuvre — <b>souvent plus de la moitié du budget</b>.</p></div></div>
-    <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg></div><div><h3>Repère un devis surévalué</h3><p>Compare chaque poste au prix de marché. Un artisan +10&nbsp;% sur 50&nbsp;000&nbsp;€, c'est 5&nbsp;000&nbsp;€.</p></div></div>
+    <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg></div><div><h3>Repère un devis surévalué</h3><p>Compare ton devis, ligne par ligne, à ton estimation détaillée au prix du marché. Un artisan +10&nbsp;% sur 50&nbsp;000&nbsp;€, c'est 5&nbsp;000&nbsp;€.</p></div></div>
     <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div><h3>Négocie — et emprunte serein</h3><p>Un rapport PDF chiffré poste par poste : à présenter à tes artisans pour négocier, et à ta banque pour appuyer ton dossier de prêt.</p></div></div>
     <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></div><div><h3>Anticipe les imprévus</h3><p>La provision aléas est intégrée : plus de mauvaise surprise en cours de chantier.</p></div></div>
   </div>
@@ -278,7 +280,7 @@ const HOME_HTML = `
   <div class="price">
     <span class="lance">Tarif de lancement · bloqué pour les premiers abonnés</span>
     <h2>Gratuit pour estimer. Pro pour piloter.</h2>
-    <div class="p"><span class="big">18,85 €</span> / mois — détaillé 200 postes, rapport PDF, carnet matériaux, suivi de chantier &amp; multi-projets.</div>
+    <div class="p"><span class="big">18,85 €</span> / mois — estimation détaillée (200 postes), rapport PDF, carnet matériaux, suivi de chantier et multi-projets.</div>
     <div class="cta">
       <a href="/tarifs" class="btn btn-o">Passer Pro</a>
       <a href="/tarifs" class="btn btn-w">Voir tous les plans</a>
@@ -326,7 +328,7 @@ const HOME_HTML_EN = `
     <a href="/tarifs" class="btn btn-w">See pricing</a>
   </div>
   <div class="trust">
-    <span><b>200</b> price items</span><span>site <b>tracking</b></span><span>materials <b>notebook</b></span><span><b>multi</b>-projects</span>${FEATURES.plans ? PLAN_TRUST_EN : ""}
+    <span><b class="num">200</b> price items</span><span>site <b>tracking</b></span><span>materials <b>notebook</b></span><span><b>multi</b>-projects</span>${FEATURES.plans ? PLAN_TRUST_EN : ""}
   </div>
 </div></header></div>${FEATURES.plans ? PLAN_BAND_EN : ""}
 
@@ -370,7 +372,7 @@ const HOME_HTML_EN = `
     <div class="vs">vs</div>
     <div class="cbox small"><div class="k">AVYORA Pro</div><div class="v">€18.85/mo</div></div>
   </div>
-  <div class="pct">That's <b>0.02%</b> of the budget to control all of it.</div>
+  <div class="pct">That's <b class="num">0.02%</b> of the budget to control all of it.</div>
   <div class="punch">A <em>single forgotten item</em> in a quote often costs more than a <em>whole year</em> of AVYORA.</div>
 </div></div></div></section>
 
@@ -382,7 +384,7 @@ const HOME_HTML_EN = `
   </div>
   <div class="eco">
     <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><h3>Quantify your DIY savings</h3><p>Depending on what you do yourself, AVYORA shows how much you save on labor — <b>often more than half the budget</b>.</p></div></div>
-    <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg></div><div><h3>Spot an overpriced quote</h3><p>Compare each item to the market price. A contractor +10% on €50,000 is €5,000.</p></div></div>
+    <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg></div><div><h3>Spot an overpriced quote</h3><p>Compare your quote, line by line, with your itemized estimate at market prices. A contractor +10% on €50,000 is €5,000.</p></div></div>
     <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div><h3>Negotiate — and borrow with confidence</h3><p>A PDF report priced line by line: to negotiate with your contractors, and to back your loan application at the bank.</p></div></div>
     <div class="ecard"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></div><div><h3>Plan for the unexpected</h3><p>A contingency allowance is built in: no more nasty surprises mid-project.</p></div></div>
   </div>
@@ -402,7 +404,7 @@ const HOME_HTML_EN = `
   <div class="price">
     <span class="lance">Launch pricing · locked for early subscribers</span>
     <h2>Free to estimate. Pro to unlock everything.</h2>
-    <div class="p"><span class="big">€18.85</span> / month — detailed 200 items, PDF report, saving and project tracking.</div>
+    <div class="p"><span class="big">€18.85</span> / month — itemized estimate (200 items), PDF report, saving and project tracking.</div>
     <div class="cta">
       <a href="/tarifs" class="btn btn-o">Go Pro</a>
       <a href="/tarifs" class="btn btn-w">See all plans</a>

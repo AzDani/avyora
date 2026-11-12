@@ -7,6 +7,7 @@ import { useLocale } from "./LangProvider";
 /**
  * Sélecteur de langue FR/EN, discret. Pose le cookie av-lang puis rafraîchit (re-render serveur
  * avec la nouvelle langue). `tone` adapte les couleurs au fond (clair = footer, sombre = menu nuit).
+ * Chaque bouton fait au moins 44 × 44 px (cible tactile ; ils mesuraient 31 × 32 px au téléphone).
  */
 export default function LangSwitch({ tone = "light" }: { tone?: "light" | "dark" }) {
   const router = useRouter();
@@ -30,7 +31,7 @@ export default function LangSwitch({ tone = "light" }: { tone?: "light" | "dark"
         type="button"
         onClick={() => set("fr")}
         aria-pressed={locale === "fr"}
-        className={`px-2 py-2 transition-colors ${locale === "fr" ? `${active} font-semibold` : `${base} hover:${active}`}`}
+        className={`inline-flex min-h-11 min-w-11 items-center justify-center px-2 transition-colors ${locale === "fr" ? `${active} font-semibold` : `${base} hover:${active}`}`}
       >
         FR
       </button>
@@ -39,7 +40,7 @@ export default function LangSwitch({ tone = "light" }: { tone?: "light" | "dark"
         type="button"
         onClick={() => set("en")}
         aria-pressed={locale === "en"}
-        className={`px-2 py-2 transition-colors ${locale === "en" ? `${active} font-semibold` : `${base} hover:${active}`}`}
+        className={`inline-flex min-h-11 min-w-11 items-center justify-center px-2 transition-colors ${locale === "en" ? `${active} font-semibold` : `${base} hover:${active}`}`}
       >
         EN
       </button>

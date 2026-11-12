@@ -47,7 +47,7 @@ export function remplacementsAccueilBeta(locale: Locale): [string, string][] {
         '<div class="cbox small"><div class="k">AVYORA during the beta</div><div class="v">€0</div></div>',
       ],
       [
-        '<div class="pct">That\'s <b>0.02%</b> of the budget to control all of it.</div>',
+        '<div class="pct">That\'s <b class="num">0.02%</b> of the budget to control all of it.</div>',
         '<div class="pct">Then, for founding members, a <b>preferred rate guaranteed for life</b>, announced before the beta ends.</div>',
       ],
       // Sans prix affiché, « plus cher qu'une année d'AVYORA » ne compare plus rien (2e contre-examen).
@@ -58,12 +58,17 @@ export function remplacementsAccueilBeta(locale: Locale): [string, string][] {
       ['<span class="lance">Launch pricing · locked for early subscribers</span>', `<span class="lance">Free beta · through ${fin}</span>`],
       ["<h2>Free to estimate. Pro to unlock everything.</h2>", "<h2>Everything is free during the beta.</h2>"],
       [
-        '<div class="p"><span class="big">€18.85</span> / month — detailed 200 items, PDF report, saving and project tracking.</div>',
-        `<div class="p"><span class="big">€0</span> — detailed 200 items, PDF report, saving and project tracking, free for everyone who signs up. Sign up during the beta: you become a founding member, with a preferred rate guaranteed for life, announced before the beta ends.</div>`,
+        '<div class="p"><span class="big">€18.85</span> / month — itemized estimate (200 items), PDF report, saving and project tracking.</div>',
+        `<div class="p"><span class="big">€0</span> — itemized estimate (200 items), PDF report, saving and project tracking, free for everyone who signs up. Sign up during the beta: you become a founding member, with a preferred rate guaranteed for life, announced before the beta ends.</div>`,
       ],
       [
         '<a href="/tarifs" class="btn btn-o">Go Pro</a>\n      <a href="/tarifs" class="btn btn-w">See all plans</a>',
         `<a href="${inscription}" class="btn btn-o">Create my free account</a>\n      <a href="/tarifs" class="btn btn-w">About the beta</a>`,
+      ],
+      // « Return on investment » : AVYORA ne coûte rien pendant la bêta, « more than it costs » et « pays for itself » se contredisaient.
+      [
+        "<p class=\"eyebrow\">Return on investment</p>\n    <h2>AVYORA saves you far more than it costs.</h2>\n    <p>Here's exactly where it pays for itself — from the very first project.</p>",
+        "<p class=\"eyebrow\">Your savings</p>\n    <h2>What AVYORA saves you.</h2>\n    <p>Here's exactly where it saves you money — from the very first project.</p>",
       ],
       [`${COCHE}Free to try</span>`, `${COCHE}No card required</span>`],
       [`${COCHE}No commitment</span>`, `${COCHE}Nothing will be charged</span>`],
@@ -89,7 +94,7 @@ export function remplacementsAccueilBeta(locale: Locale): [string, string][] {
       '<div class="cbox small"><div class="k">AVYORA pendant la bêta</div><div class="v">0 €</div></div>',
     ],
     [
-      '<div class="pct">Soit <b>0,02&nbsp;%</b> du budget pour le maîtriser entièrement.</div>',
+      '<div class="pct">Soit <b class="num">0,02&nbsp;%</b> du budget pour le maîtriser entièrement.</div>',
       '<div class="pct">Puis, pour les membres fondateurs, un <b>tarif préférentiel garanti à vie</b>, annoncé avant la fin de la bêta.</div>',
     ],
     // Sans prix affiché, « plus cher qu'une année d'AVYORA » ne compare plus rien (2e contre-examen).
@@ -100,12 +105,18 @@ export function remplacementsAccueilBeta(locale: Locale): [string, string][] {
     ['<span class="lance">Tarif de lancement · bloqué pour les premiers abonnés</span>', `<span class="lance">Bêta gratuite · jusqu'au ${fin}</span>`],
     ["<h2>Gratuit pour estimer. Pro pour piloter.</h2>", "<h2>Tout est gratuit pendant la bêta.</h2>"],
     [
-      '<div class="p"><span class="big">18,85 €</span> / mois — détaillé 200 postes, rapport PDF, carnet matériaux, suivi de chantier &amp; multi-projets.</div>',
-      `<div class="p"><span class="big">0 €</span> — détaillé 200 postes, rapport PDF, carnet matériaux, suivi de chantier &amp; multi-projets, offerts à tous les inscrits. Inscris-toi pendant la bêta : tu deviens membre fondateur, avec un tarif préférentiel garanti à vie, annoncé avant la fin de la bêta.</div>`,
+      '<div class="p"><span class="big">18,85 €</span> / mois — estimation détaillée (200 postes), rapport PDF, carnet matériaux, suivi de chantier et multi-projets.</div>',
+      `<div class="p"><span class="big">0 €</span> — estimation détaillée (200 postes), rapport PDF, carnet matériaux, suivi de chantier et multi-projets, offerts à tous les inscrits. Inscris-toi pendant la bêta : tu deviens membre fondateur, avec un tarif préférentiel garanti à vie, annoncé avant la fin de la bêta.</div>`,
     ],
     [
       '<a href="/tarifs" class="btn btn-o">Passer Pro</a>\n      <a href="/tarifs" class="btn btn-w">Voir tous les plans</a>',
       `<a href="${inscription}" class="btn btn-o">Créer mon compte gratuit</a>\n      <a href="/tarifs" class="btn btn-w">Tout savoir sur la bêta</a>`,
+    ],
+    // « Le retour sur investissement » : AVYORA ne coûte rien pendant la bêta, « plus qu'il ne coûte » et « se rembourse »
+    // contredisaient le bloc « Fais le calcul » juste au-dessus.
+    [
+      "<p class=\"eyebrow\">Le retour sur investissement</p>\n    <h2>AVYORA te fait gagner bien plus qu'il ne coûte.</h2>\n    <p>Concrètement, voilà où l'outil se rembourse — dès le premier chantier.</p>",
+      "<p class=\"eyebrow\">Tes économies</p>\n    <h2>Ce qu'AVYORA te fait économiser.</h2>\n    <p>Concrètement, voilà où l'outil te fait gagner de l'argent — dès le premier chantier.</p>",
     ],
     [`${COCHE}Gratuit pour tester</span>`, `${COCHE}Aucune carte demandée</span>`],
     [`${COCHE}Sans engagement</span>`, `${COCHE}Rien ne sera prélevé</span>`],

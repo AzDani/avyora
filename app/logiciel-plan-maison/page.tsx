@@ -187,7 +187,8 @@ export default async function LogicielPlanMaison() {
             <div className="card flex flex-col p-6">
               <p className="flex items-center gap-2">
                 <span className="text-[17px] font-semibold text-ink">{v.construireTitre}</span>
-                <span className="rounded-full bg-positive-soft px-2.5 py-1 text-[11px] font-semibold text-positive">{v.gratuit}</span>
+                {/* Vert foncé : le vert du thème (text-positive) ne faisait que 3,1:1 sur son fond pâle, en 11 px (AA : 4,5:1). */}
+                <span className="rounded-full bg-positive-soft px-2.5 py-1 text-[11px] font-semibold text-[#0b7a53]">{v.gratuit}</span>
               </p>
               <p className="mt-2 flex-1 text-[14px] leading-relaxed text-muted">{v.construireTexte}</p>
               <a href="/plan?type=final" className="mt-4 text-[14px] font-medium text-brand-700 hover:underline" {...clicPlan("vitrine_bas")}>
@@ -254,14 +255,15 @@ export default async function LogicielPlanMaison() {
         <h2 id="faq-titre" className="text-2xl font-semibold tracking-tight text-ink">{v.faqTitre}</h2>
         <div className="mt-5 divide-y divide-line rounded-panel border border-line bg-surface">
           {faq.map((f) => (
-            <details key={f.q} className="group px-5 py-4">
-              <summary className="cursor-pointer list-none text-[15px] font-medium text-ink marker:hidden">
+            /* Toute la carte cliquable : la marge intérieure est sur <summary> (qui ouvre), pas sur <details> (inerte). */
+            <details key={f.q} className="group">
+              <summary className="block cursor-pointer list-none px-5 py-4 text-[15px] font-medium text-ink marker:hidden">
                 <span className="flex items-center justify-between gap-4">
                   {f.q}
                   <span aria-hidden="true" className="text-faint transition-transform group-open:rotate-45">+</span>
                 </span>
               </summary>
-              <p className="mt-2 text-[14px] leading-relaxed text-muted">{f.r}</p>
+              <p className="-mt-2 px-5 pb-4 text-[14px] leading-relaxed text-muted">{f.r}</p>
             </details>
           ))}
         </div>

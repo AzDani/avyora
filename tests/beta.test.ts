@@ -442,7 +442,13 @@ describe("Pendant la bêta, un anonyme qui touche une fonction Pro va créer son
       expect(h).toContain(esc(dict("fr").beta.tarifsFondateurNote));
       // Les plans d'un inscrit : le plafond de la bêta, pas « sans limite » (le droit d'un abonné).
       expect(h).not.toContain("sans limite");
-      expect(h).toContain(esc(`Éditeur de plan : ${dict("fr").beta.plansEnregistres(PLANS_MAX_BETA)} ;`));
+      // La puce de l'éditeur de plan : trois puces courtes (plus d'énumération à points-virgules).
+      for (const puce of dict("fr").beta.pucesPlan(PLANS_MAX_BETA)) expect(h).toContain(`</svg>${esc(puce)}</li>`);
+      expect(h).toContain(esc(`jusqu'à ${PLANS_MAX_BETA} plans enregistrés`));
+      expect(h).not.toContain("Éditeur de plan : ");
+      // Le bas de page d'un anonyme : plus de « continuer » (il n'a rien commencé).
+      expect(h).toContain(esc(dict("fr").beta.tarifsBasLienAnonyme));
+      expect(h).not.toContain("continuer avec");
       // La date du titre ne se coupe pas en fin de ligne (espaces insécables).
       expect(h).toContain(esc(dict("fr").beta.tarifsTitre("31\u00a0décembre\u00a02026")));
     }
@@ -784,6 +790,12 @@ describe("Témoins · pendant la bêta (12/10/2026)", () => {
         const page = await r.rendre(await Layout({ children: createElement("p", null, "contenu") }));
         const tete = entre(page, "<header", "</header>");
         expect(tete).not.toContain(dict(locale).nav.passerPro);
+        // Un visiteur sans compte : « Créer mon compte gratuit » dans l'en-tête, vers l'inscription de la bêta (source `entete`).
+        const appel = `href="${lienInscriptionBeta(undefined, "entete")}"`;
+        if (user === "anonyme") {
+          expect(tete).toContain(appel);
+          expect(tete).toContain(`>${esc(dict(locale).beta.creerCompte)}</a>`);
+        } else expect(tete).not.toContain(appel);
         expect(tete).toMatchSnapshot(`en-tête bêta ${locale} ${user}`);
       }
     }

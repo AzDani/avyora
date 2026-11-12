@@ -94,7 +94,7 @@ export default async function TarifsPage({
 
       <div className="mt-6 overflow-hidden rounded-panel bg-gradient-to-r from-[#4F46E5] via-[#6d5cf0] to-[#7C3AED] px-6 py-5 text-center text-white shadow-card">
         <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-indigo-100/90">{t.lancTag}</div>
-        <div className="mt-1 text-[20px] font-semibold tracking-tight">{t.lancTitre}</div>
+        <h2 className="mt-1 text-[20px] font-semibold tracking-tight">{t.lancTitre}</h2>
         <div className="mt-1 text-[13.5px] text-indigo-100/85">{t.lancSous}</div>
       </div>
 
@@ -116,7 +116,7 @@ export default async function TarifsPage({
       {/* Venu de l'éditeur de plan (D48, D58) : ce que Pro y ajoute, avec les mots de l'éditeur (DROITS). Aucun prix. */}
       {source === "editeur-plan" && !dejaPro && (
         <div className="mx-auto mt-6 max-w-2xl rounded-field border border-brand-200 bg-brand-50 px-5 py-4 text-[14px] text-ink" data-depuis-editeur="">
-          <p className="font-semibold">{t.depuisEditeur}</p>
+          <h2 className="font-semibold">{t.depuisEditeur}</h2>
           <ul className="mt-2 space-y-1.5">
             {t.depuisEditeurDroits.map((d) => (
               <li key={d} className="flex items-start gap-2.5 leading-relaxed">
@@ -150,7 +150,7 @@ export default async function TarifsPage({
                   {p.tag}
                 </span>
               )}
-              <div className="text-sm font-semibold text-ink">{p.nom}</div>
+              <h2 className="text-sm font-semibold text-ink">{p.nom}</h2>
               <div className="mt-3 flex items-baseline gap-1.5">
                 <span className="data text-3xl font-semibold text-ink">{p.prix}</span>
                 <span className="text-sm text-muted">{p.unite}</span>
@@ -180,7 +180,7 @@ export default async function TarifsPage({
           variantes sont déjà dans public/ et rien ici n'a besoin d'être transformé. */}
       <div className="mx-auto mt-8 grid max-w-3xl gap-6 rounded-panel border border-line bg-surface p-6 sm:grid-cols-[1fr_240px] sm:items-start sm:gap-8">
         <div>
-          <div className="eyebrow mb-3">{t.inclus}</div>
+          <h2 className="eyebrow mb-3">{t.inclus}</h2>
           <ul className="space-y-2.5">
             {/* Construction neuve : 6ᵉ puce, seulement flag allumé (prix et offres inchangés). */}
             {/* Éditeur de plan : 7ᵉ puce, après le neuf, seulement interrupteur allumé. */}
@@ -226,6 +226,11 @@ export default async function TarifsPage({
     </div>
   );
 }
+
+/*
+ * Hiérarchie des titres (h1 puis h2) : les titres de blocs (offres, « Inclus… », membres fondateurs, encart de l'éditeur)
+ * sont des h2, avec les mêmes classes qu'avant ; la page n'avait qu'un h1.
+ */
 
 /**
  * /tarifs pendant la bêta gratuite (lib/beta.ts). En tête, la bêta : tout est offert jusqu'à la fin, il suffit
@@ -296,10 +301,10 @@ function TarifsBeta({ user, t: tr, locale, source, nature }: {
         <div className="mt-6 overflow-hidden rounded-panel bg-gradient-to-r from-[#4F46E5] via-[#6d5cf0] to-[#7C3AED] px-6 py-5 text-center text-white shadow-card" data-tarifs-fondateur="">
           <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-indigo-100/90">{user ? b.tarifsFondateurTagConnecte : b.tarifsFondateurTag}</div>
           {user ? (
-            <div className="mt-1 text-[18px] font-semibold tracking-tight">{b.membreFondateurTitre}</div>
+            <h2 className="mt-1 text-[18px] font-semibold tracking-tight">{b.membreFondateurTitre}</h2>
           ) : (
             <>
-              <div className="mt-1 text-[20px] font-semibold tracking-tight">{b.tarifsFondateurTitre}</div>
+              <h2 className="mt-1 text-[20px] font-semibold tracking-tight">{b.tarifsFondateurTitre}</h2>
               <div className="mt-1 text-[13.5px] text-indigo-100/85">{b.tarifsFondateurSous}</div>
             </>
           )}
@@ -310,7 +315,7 @@ function TarifsBeta({ user, t: tr, locale, source, nature }: {
       {/* Venu de l'éditeur de plan : ce que le compte y ajoute pendant la bêta, avec les mots de l'éditeur (DROITS). */}
       {source === "editeur-plan" && (
         <div className="mx-auto mt-6 max-w-2xl rounded-field border border-brand-200 bg-brand-50 px-5 py-4 text-[14px] text-ink" data-depuis-editeur="">
-          <p className="font-semibold">{b.tarifsDepuisEditeur}</p>
+          <h2 className="font-semibold">{b.tarifsDepuisEditeur}</h2>
           <ul className="mt-2 space-y-1.5">
             {[plansBeta, ...t.depuisEditeurDroits.slice(1)].map((d) => (
               <li key={d} className="flex items-start gap-2.5 leading-relaxed">
@@ -324,9 +329,10 @@ function TarifsBeta({ user, t: tr, locale, source, nature }: {
 
       <div className="mx-auto mt-8 grid max-w-3xl gap-6 rounded-panel border border-line bg-surface p-6 sm:grid-cols-[1fr_240px] sm:items-start sm:gap-8">
         <div>
-          <div className="eyebrow mb-3">{b.tarifsInclus}</div>
+          <h2 className="eyebrow mb-3">{b.tarifsInclus}</h2>
           <ul className="space-y-2.5">
-            {[...t.features, ...(FEATURES.neuf ? [t.featureNeuf] : []), ...(FEATURES.plans ? [t.featurePlan.replace(t.depuisEditeurDroits[0], plansBeta)] : [])].map((f) => (
+            {/* Éditeur de plan : trois puces courtes plutôt qu'une énumération à points-virgules. */}
+            {[...t.features, ...(FEATURES.neuf ? [t.featureNeuf] : []), ...(FEATURES.plans ? b.pucesPlan(PLANS_MAX_BETA) : [])].map((f) => (
               <li key={f} className="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink">
                 <Check />
                 {f}
@@ -358,8 +364,8 @@ function TarifsBeta({ user, t: tr, locale, source, nature }: {
 
       {/* « Déjà un compte ? Se connecter » est déjà sous le bouton : en bas, seulement l'estimation rapide (2e contre-examen). */}
       <p className="mt-6 text-center text-[13px] text-muted">
-        {b.tarifsBasConnecte}
-        <Link href="/projets/nouveau" className="font-medium text-brand-600 hover:underline">{t.continuerGratuit}</Link>.
+        {user ? b.tarifsBasConnecte : b.tarifsBasAnonyme}
+        <Link href="/projets/nouveau" className="font-medium text-brand-600 hover:underline">{user ? b.tarifsBasLienConnecte : b.tarifsBasLienAnonyme}</Link>.
       </p>
     </div>
   );

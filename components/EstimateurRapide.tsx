@@ -363,7 +363,7 @@ export default function EstimateurRapide({
           </div>
         )}
         <div className="q">
-          <div className="qlbl"><span className="n">1</span>{t.step1q}</div>
+          <h2 className="qlbl"><span className="n" aria-hidden="true">1</span>{t.step1q}</h2>
 
           <div className="glbl">{t.bienEntier}</div>
           <div className="seg" role="group" aria-label={t.bienEntier} style={{ marginBottom: 14 }}>
@@ -438,7 +438,7 @@ export default function EstimateurRapide({
         </div>
 
         <div className="q">
-          <div className="qlbl"><span className="n">2</span>{t.step2}</div>
+          <h2 className="qlbl"><span className="n" aria-hidden="true">2</span>{t.step2}</h2>
           <div className="cards" role="group" aria-label={t.step2}>
             {AMPLEURS.map((a, i) => {
               const al = ampCard(a.v);
@@ -458,7 +458,7 @@ export default function EstimateurRapide({
         </div>
 
         <div className="q">
-          <div className="qlbl"><span className="n">3</span>{t.step3}</div>
+          <h2 className="qlbl"><span className="n" aria-hidden="true">3</span>{t.step3}</h2>
           <div className="fins" role="group" aria-label={t.step3}>
             {FINITIONS.map((f) => {
               const fi = t.finitions[f.v];
@@ -479,7 +479,7 @@ export default function EstimateurRapide({
         </div>
 
         <div className="q">
-          <div className="qlbl"><span className="n">4</span>{t.step4}</div>
+          <h2 className="qlbl"><span className="n" aria-hidden="true">4</span>{t.step4}</h2>
           <div className="quis" role="group" aria-label={t.step4}>
             {QUIS.map((q) => {
               const qi = t.quis[q.v];

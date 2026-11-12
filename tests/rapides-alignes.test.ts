@@ -62,7 +62,9 @@ describe("N13 · « 4 questions » des deux côtés", () => {
   it("chaque rapide a 4 questions numérotées de 1 à 4", () => {
     for (const l of LOCALES) {
       for (const h of [reno({}, l), neuf({}, l)]) {
-        expect([...h.matchAll(/<span class="n">(\d)<\/span>/g)].map((m) => m[1])).toEqual(["1", "2", "3", "4"]);
+        expect([...h.matchAll(/<span class="n" aria-hidden="true">(\d)<\/span>/g)].map((m) => m[1])).toEqual(["1", "2", "3", "4"]);
+        // Chaque question est un titre h2 (hiérarchie des titres de la page : un h1, puis une étape par h2).
+        expect(h.match(/<h2 class="qlbl">/g)).toHaveLength(4);
       }
     }
   });
@@ -96,7 +98,7 @@ describe("N13 · rapide neuf : la 1re question commence par Plain-pied / À éta
   for (const l of LOCALES) {
     it(l, () => {
       const h = neuf({}, l), s = dictNeuf(l).saisie;
-      const q1 = h.indexOf('<span class="n">1</span>');
+      const q1 = h.indexOf('<span class="n" aria-hidden="true">1</span>');
       const type = h.indexOf(`<div class="glbl">${esc(s.niveauxLabel)}`);
       const pp = h.indexOf(`>${esc(s.niveaux.pp)}</button>`);
       const surface = h.indexOf('id="neuf-surface"');
@@ -104,7 +106,7 @@ describe("N13 · rapide neuf : la 1re question commence par Plain-pied / À éta
       expect(q1).toBeGreaterThan(-1);
       expect([q1 < type, type < pp, pp < surface, surface < cp]).toEqual([true, true, true, true]);
       // Le type de maison est le premier intitulé de la question, juste après son titre.
-      expect(h.slice(q1).replace(/^[\s\S]*?<\/div>/, "").startsWith(`<div class="glbl">${esc(s.niveauxLabel)}`)).toBe(true);
+      expect(h.slice(q1).replace(/^[\s\S]*?<\/h2>/, "").startsWith(`<div class="glbl">${esc(s.niveauxLabel)}`)).toBe(true);
       expect(h).toContain(`role="group" aria-label="${esc(s.niveauxLabel)}"`);
       expect(s.niveauxLabel).toBe(l === "fr" ? "Type de maison" : "House type");
     });
@@ -127,10 +129,10 @@ describe("N13 · finition et « qui réalise » : les libellés de la rénovatio
     it(`${l} : mêmes titres, mêmes noms et accroches des deux côtés (l'accroche Éco du neuf à part, F1)`, () => {
       const T = dict(l).rapide, s = dictNeuf(l).saisie;
       const hn = neuf({}, l), hr = reno({}, l);
-      expect(hn).toContain(`<span class="n">2</span>${esc(T.step3)}</div>`);
-      expect(hn).toContain(`<span class="n">3</span>${esc(T.step4)}</div>`);
-      expect(hr).toContain(`<span class="n">3</span>${esc(T.step3)}</div>`);
-      expect(hr).toContain(`<span class="n">4</span>${esc(T.step4)}</div>`);
+      expect(hn).toContain(`<span class="n" aria-hidden="true">2</span>${esc(T.step3)}</h2>`);
+      expect(hn).toContain(`<span class="n" aria-hidden="true">3</span>${esc(T.step4)}</h2>`);
+      expect(hr).toContain(`<span class="n" aria-hidden="true">3</span>${esc(T.step3)}</h2>`);
+      expect(hr).toContain(`<span class="n" aria-hidden="true">4</span>${esc(T.step4)}</h2>`);
       for (const f of ["eco", "standard", "premium"] as const) {
         const fi = T.finitions[f];
         expect(hn).toContain(`<span class="eye">${esc(s.finitions[f].eye ?? fi.eye)}</span><span class="t">${esc(fi.label)}</span><span class="d">${esc(s.finitions[f].desc)}</span>`);

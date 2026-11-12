@@ -434,7 +434,7 @@ export default function EstimateurRapideNeuf({
         )}
 
         <div className="q">
-          <div className="qlbl"><span className="n">1</span>{s.q1}</div>
+          <h2 className="qlbl"><span className="n" aria-hidden="true">1</span>{s.q1}</h2>
           <div className="glbl">{s.niveauxLabel}{badge("niveaux")}</div>
           <div className="seg" role="group" aria-label={s.niveauxLabel} style={{ marginBottom: 14 }}>
             {niveauxOpts.map((v) => {
@@ -457,7 +457,7 @@ export default function EstimateurRapideNeuf({
         </div>
 
         <div className="q">
-          <div className="qlbl"><span className="n">2</span>{T.rapide.step3}</div>
+          <h2 className="qlbl"><span className="n" aria-hidden="true">2</span>{T.rapide.step3}</h2>
           <div className="fins" role="group" aria-label={T.rapide.step3}>
             {FINITIONS.map((f) => {
               const fi = carteFin(f.v);
@@ -478,7 +478,7 @@ export default function EstimateurRapideNeuf({
         </div>
 
         <div className="q">
-          <div className="qlbl"><span className="n">3</span>{T.rapide.step4}</div>
+          <h2 className="qlbl"><span className="n" aria-hidden="true">3</span>{T.rapide.step4}</h2>
           <div className="quis" role="group" aria-label={T.rapide.step4}>
             {QUIS.map((q) => {
               const qi = carteQui(q.v);
@@ -505,7 +505,7 @@ export default function EstimateurRapideNeuf({
         </div>
 
         <div className="q">
-          <div className="qlbl"><span className="n">4</span>{s.q4}</div>
+          <h2 className="qlbl"><span className="n" aria-hidden="true">4</span>{s.q4}</h2>
           <div className="grp">
             <div className="glbl">{s.garageLabel}<span className="opt">{s.facultatif}</span>{badge("garage")}</div>
             <div className="seg" role="group" aria-label={s.garageLabel}>
