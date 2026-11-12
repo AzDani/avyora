@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { enregistrerProfil, sauterOnboarding, type ProfilData } from "@/lib/actions/profil";
 import { FEATURES } from "@/lib/features";
 
 // Régions françaises : noms propres conservés tels quels (identiques FR/EN) et utilisés
-// aussi comme valeur enregistrée. On ne traduit que le libellé de la question « Ta région ».
+// aussi comme valeur enregistrée. Seul « Outre-mer », qui n'est pas un nom propre, a un libellé anglais (la valeur
+// enregistrée reste « Outre-mer »).
 const REGIONS = ["Île-de-France", "Auvergne-Rhône-Alpes", "Nouvelle-Aquitaine", "Occitanie", "PACA", "Hauts-de-France", "Grand Est", "Pays de la Loire", "Bretagne", "Normandie", "Bourgogne-Franche-Comté", "Centre-Val de Loire", "Corse", "Outre-mer"];
+const LIBELLE_REGION: Record<"fr" | "en", Record<string, string>> = { fr: {}, en: { "Outre-mer": "Overseas France" } };
 
 // Traductions co-localisées. IMPORTANT : les `v` (valeurs enregistrées dans le profil) ne changent
 // jamais ; seuls les `l` (libellés affichés) sont traduits. Pour l'âge et le canal, la valeur
@@ -137,24 +139,26 @@ const CSS = `
 .av-onb .note{font-size:11px;color:var(--color-faint);margin-top:14px;text-align:center}
 `;
 
-function Multi({ opts, sel, set }: { opts: readonly { v: string; l: string }[]; sel: string[]; set: (v: string[]) => void }) {
+/* Les pastilles disent leur état aux lecteurs d'écran (`aria-pressed`, pas seulement la classe « on »), et chaque
+   groupe est nommé par sa question (`role="group"`, `aria-labelledby`). */
+function Multi({ opts, sel, set, labelId }: { opts: readonly { v: string; l: string }[]; sel: string[]; set: (v: string[]) => void; labelId: string }) {
   return (
-    <div className="pills">
+    <div className="pills" role="group" aria-labelledby={labelId}>
       {opts.map((o) => {
         const on = sel.includes(o.v);
         return (
-          <button key={o.v} type="button" className={"pill" + (on ? " on" : "")} onClick={() => set(on ? sel.filter((x) => x !== o.v) : [...sel, o.v])}>{o.l}</button>
+          <button key={o.v} type="button" aria-pressed={on} className={"pill" + (on ? " on" : "")} onClick={() => set(on ? sel.filter((x) => x !== o.v) : [...sel, o.v])}>{o.l}</button>
         );
       })}
     </div>
   );
 }
 
-function Single({ opts, sel, set }: { opts: string[]; sel: string; set: (v: string) => void }) {
+function Single({ opts, sel, set, labelId, libelle }: { opts: string[]; sel: string; set: (v: string) => void; labelId: string; libelle?: (o: string) => string }) {
   return (
-    <div className="pills">
+    <div className="pills" role="group" aria-labelledby={labelId}>
       {opts.map((o) => (
-        <button key={o} type="button" className={"pill" + (sel === o ? " on" : "")} onClick={() => set(sel === o ? "" : o)}>{o}</button>
+        <button key={o} type="button" aria-pressed={sel === o} className={"pill" + (sel === o ? " on" : "")} onClick={() => set(sel === o ? "" : o)}>{libelle ? libelle(o) : o}</button>
       ))}
     </div>
   );
@@ -170,6 +174,8 @@ export default function OnboardingForm({ initial, contexte = "onboarding" }: { i
   const locale = useLocale();
   const s = TR[locale];
   const compte = contexte === "compte";
+  const id = useId();
+  const q = (n: string) => `${id}-${n}`;
   const [tuEs, setTuEs] = useState<string[]>(initial?.tuEs ?? []);
   const [objectif, setObjectif] = useState(initial?.objectif ?? "");
   const [maturite, setMaturite] = useState<string[]>(initial?.maturite ?? []);
@@ -213,12 +219,12 @@ export default function OnboardingForm({ initial, contexte = "onboarding" }: { i
         </>
       )}
 
-      <div className="q"><div className="lab">{s.qTuEs} <span className="multi">{s.multi}</span></div><Multi opts={s.tues} sel={tuEs} set={wrap(setTuEs)} /></div>
-      <div className="q"><div className="lab">{s.qObjectif}</div><Single opts={s.objectif.map((o) => o.l)} sel={s.objectif.find((o) => o.v === objectif)?.l ?? ""} set={(l) => wrap(setObjectif)(s.objectif.find((o) => o.l === l)?.v ?? "")} /></div>
-      <div className="q"><div className="lab">{s.qMaturite} <span className="multi">{s.multi}</span></div><Multi opts={s.maturite.filter((o) => FEATURES.neuf || !("neuf" in o) || maturite.includes(o.v))} sel={maturite} set={wrap(setMaturite)} /></div>
-      <div className="q"><div className="lab">{s.qRegion}</div><Single opts={REGIONS} sel={region} set={wrap(setRegion)} /></div>
-      <div className="q"><div className="lab">{s.qAge}</div><Single opts={s.ages.map((o) => o.l)} sel={s.ages.find((o) => o.v === age)?.l ?? ""} set={(l) => wrap(setAge)(s.ages.find((o) => o.l === l)?.v ?? "")} /></div>
-      <div className="q"><div className="lab">{s.qCanal}</div><Single opts={s.canaux.map((o) => o.l)} sel={s.canaux.find((o) => o.v === canal)?.l ?? ""} set={(l) => wrap(setCanal)(s.canaux.find((o) => o.l === l)?.v ?? "")} /></div>
+      <div className="q"><div className="lab" id={q("tues")}>{s.qTuEs} <span className="multi">{s.multi}</span></div><Multi labelId={q("tues")} opts={s.tues} sel={tuEs} set={wrap(setTuEs)} /></div>
+      <div className="q"><div className="lab" id={q("objectif")}>{s.qObjectif}</div><Single labelId={q("objectif")} opts={s.objectif.map((o) => o.l)} sel={s.objectif.find((o) => o.v === objectif)?.l ?? ""} set={(l) => wrap(setObjectif)(s.objectif.find((o) => o.l === l)?.v ?? "")} /></div>
+      <div className="q"><div className="lab" id={q("maturite")}>{s.qMaturite} <span className="multi">{s.multi}</span></div><Multi labelId={q("maturite")} opts={s.maturite.filter((o) => FEATURES.neuf || !("neuf" in o) || maturite.includes(o.v))} sel={maturite} set={wrap(setMaturite)} /></div>
+      <div className="q"><div className="lab" id={q("region")}>{s.qRegion}</div><Single labelId={q("region")} opts={REGIONS} sel={region} set={wrap(setRegion)} libelle={(r) => LIBELLE_REGION[locale][r] ?? r} /></div>
+      <div className="q"><div className="lab" id={q("age")}>{s.qAge}</div><Single labelId={q("age")} opts={s.ages.map((o) => o.l)} sel={s.ages.find((o) => o.v === age)?.l ?? ""} set={(l) => wrap(setAge)(s.ages.find((o) => o.l === l)?.v ?? "")} /></div>
+      <div className="q"><div className="lab" id={q("canal")}>{s.qCanal}</div><Single labelId={q("canal")} opts={s.canaux.map((o) => o.l)} sel={s.canaux.find((o) => o.v === canal)?.l ?? ""} set={(l) => wrap(setCanal)(s.canaux.find((o) => o.l === l)?.v ?? "")} /></div>
 
       <div className="acts">
         {compte ? (

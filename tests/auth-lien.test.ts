@@ -24,6 +24,8 @@ import {
   suiteVerification, trouverDemande, verificationEnAttente, type Demande,
 } from "@/lib/auth-lien";
 import { empreinteAdresse, secretEmpreinte } from "@/lib/empreinte";
+import { MESSAGES_AUTH, messageCompteCree } from "@/lib/auth-messages";
+import { cheminInterne } from "@/lib/next-url";
 import { createHash } from "node:crypto";
 
 vi.mock("server-only", () => ({}));
@@ -69,9 +71,15 @@ describe("lib/auth-lien : fonctions pures", () => {
   it("l'issue de Supabase : ce qui dépend de l'adresse répond « envoyé » (pas d'énumération)", () => {
     expect(issueEnvoi(null)).toBe("envoye");
     for (const code of ["user_banned", "signup_disabled", "otp_disabled", "user_not_found"]) expect(issueEnvoi({ code, status: 422 }), code).toBe("envoye");
-    expect(issueEnvoi({ code: "over_email_send_rate_limit", status: 429 })).toBe("limite");
-    expect(issueEnvoi({ code: "over_request_rate_limit" })).toBe("limite");
-    expect(issueEnvoi({ status: 429 })).toBe("limite");
+    // L'intervalle de Supabase entre deux e-mails à la MÊME adresse : la personne vient d'en demander un (« limite »).
+    expect(issueEnvoi({ code: "over_email_send_rate_limit", status: 429, message: "For security purposes, you can only request this after 52 seconds." })).toBe("limite");
+    expect(issueEnvoi({ status: 429, message: "For security purposes, you can only request this after 1 second." })).toBe("limite");
+    // La limite GLOBALE d'envoi du projet (même code, autre texte), la limite par IP de Supabase (celle de nos serveurs) :
+    // tout le monde à la fois, « saturation » (constat 20 : « utilise le dernier lien reçu » était faux pour un nouveau visiteur).
+    expect(issueEnvoi({ code: "over_email_send_rate_limit", status: 429, message: "Email rate limit exceeded" })).toBe("saturation");
+    expect(issueEnvoi({ code: "over_email_send_rate_limit", status: 429 })).toBe("saturation");
+    expect(issueEnvoi({ code: "over_request_rate_limit" })).toBe("saturation");
+    expect(issueEnvoi({ status: 429 })).toBe("saturation");
     expect(issueEnvoi({ code: "email_address_invalid", status: 400 })).toBe("email");
     expect(issueEnvoi({ code: "validation_failed", status: 400 })).toBe("email");
     expect(issueEnvoi({ code: "unexpected_failure", status: 500 })).toBe("envoi");
@@ -314,10 +322,16 @@ const S = {
   connexions: [] as unknown[],
   /** Les écritures du serveur (clé service_role) : `app_metadata`. */
   admin: [] as [string, unknown][],
+  /** L'erreur que `signUp` renvoie (aucune par défaut). */
+  erreurInscription: null as ErreurSupabase,
+  /** La langue de la requête (`x-av-locale`, posé par le proxy). */
+  locale: "fr" as "fr" | "en",
 };
 
 /** Le mot de passe que la connexion simulée refuse. */
 const MDP_REFUSE = "mauvais-mot-de-passe-2026";
+/** Le mot de passe d'un compte dont l'adresse n'est pas encore confirmée. */
+const MDP_NON_CONFIRME = "pas-encore-confirme-2026";
 
 /** Le magasin de cookies de `next/headers`, simulé sur `S.cookies`. */
 const magasin = () => ({
@@ -345,7 +359,7 @@ async function actions(env: "production" | "local" = "local") {
   vi.stubEnv("UPSTASH_REDIS_REST_URL", "");
   vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "");
   vi.doMock("next/headers", () => ({
-    headers: async () => new Headers({ "x-forwarded-for": S.ip, host: "localhost:3021" }),
+    headers: async () => new Headers({ "x-forwarded-for": S.ip, host: "localhost:3021", "x-av-locale": S.locale }),
     cookies: async () => magasin(),
   }));
   vi.doMock("@/lib/supabase/server", () => ({
@@ -357,11 +371,14 @@ async function actions(env: "production" | "local" = "local") {
         },
         signUp: async (o: (typeof S.inscriptions)[number]) => {
           S.inscriptions.push(o);
-          return { data: { user: { id: "u-nouveau", created_at: S.creeLe ?? new Date().toISOString() }, session: S.session }, error: null };
+          return S.erreurInscription
+            ? { data: { user: null, session: null }, error: S.erreurInscription }
+            : { data: { user: { id: "u-nouveau", created_at: S.creeLe ?? new Date().toISOString() }, session: S.session }, error: null };
         },
         resetPasswordForEmail: async (_e: string, o: unknown) => { S.resets.push(o); return { data: {}, error: S.erreur }; },
         signInWithPassword: async (o: { password?: string }) => {
           S.connexions.push(o);
+          if (o.password === MDP_NON_CONFIRME) return { data: { user: null }, error: { code: "email_not_confirmed", status: 400, message: "Email not confirmed" } };
           return o.password === MDP_REFUSE
             ? { data: { user: null }, error: { message: "Invalid login credentials" } }
             : { data: { user: { id: "u1" } }, error: null };
@@ -396,6 +413,8 @@ describe("envoyerLienAcces : le lien d'accès (aucun e-mail réel)", () => {
     S.resets = [];
     S.connexions = [];
     S.admin = [];
+    S.erreurInscription = null;
+    S.locale = "fr";
     vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(MAINTENANT);
   });
@@ -640,9 +659,47 @@ describe("envoyerLienAcces : le lien d'accès (aucun e-mail réel)", () => {
     await m.signup(undefined, fd({ email: "Camille@Exemple.fr", password: "chantier2026maison" }));
     expect(S.journal).toEqual([["inscription", { userId: "u-nouveau", payload: { methode: "mot_de_passe", empreinte: empreinteAdresse("camille@exemple.fr") } }]]);
     S.journal = [];
-    expect(await m.login(undefined, fd({ email: "zoe@exemple.fr", password: MDP_REFUSE }))).toEqual({ error: "Email ou mot de passe incorrect." });
+    expect(await m.login(undefined, fd({ email: "zoe@exemple.fr", password: MDP_REFUSE }))).toEqual({ error: expect.stringMatching(/^Adresse e-mail ou mot de passe incorrect\. .*lien de connexion/) });
     expect(S.journal).toEqual([["connexion_echouee", { payload: { empreinte: empreinteAdresse("zoe@exemple.fr") } }]]);
     expect(JSON.stringify(S.journal)).not.toMatch(/zoe|camille|exemple/i);
+  });
+
+  it("les erreurs de Supabase sont traduites (constat 82) : jamais le texte brut, en anglais ; FR / EN selon la langue", async () => {
+    let m = await actions();
+    expect(await m.login(undefined, fd({ email: "zoe@exemple.fr", password: MDP_NON_CONFIRME }))).toEqual({ error: MESSAGES_AUTH.fr.nonConfirme });
+    expect(S.journal.at(-1)).toEqual(["connexion_echouee", { payload: { empreinte: empreinteAdresse("zoe@exemple.fr"), code: "email_not_confirmed" } }]);
+    S.erreurInscription = { code: "over_email_send_rate_limit", status: 429, message: "Email rate limit exceeded" };
+    const r = await m.signup(undefined, fd({ email: "camille@exemple.fr", password: "chantier2026maison" }));
+    expect(r).toEqual({ error: MESSAGES_AUTH.fr.saturation });
+    expect(JSON.stringify(r)).not.toMatch(/rate limit/i);
+    expect(S.cookies.has(COOKIE_DEMANDE)).toBe(false);
+    S.erreurInscription = { code: "weird_new_code", status: 500, message: "Database error saving new user" };
+    expect(await m.signup(undefined, fd({ email: "camille@exemple.fr", password: "chantier2026maison" }))).toEqual({ error: MESSAGES_AUTH.fr.inconnue });
+    S.erreurInscription = null;
+    // En anglais (l'en-tête posé par le proxy) : la même table, en anglais, y compris un mot de passe refusé.
+    S.locale = "en";
+    m = await actions();
+    expect(await m.login(undefined, fd({ email: "zoe@exemple.fr", password: MDP_REFUSE }))).toEqual({ error: MESSAGES_AUTH.en.identifiants });
+    expect(await m.signup(undefined, fd({ email: "camille@exemple.fr", password: "chantierdemaison" }))).toEqual({ error: MESSAGES_AUTH.en.motDePasseFaible });
+    expect(await m.login(undefined, fd({ email: "", password: "" }))).toEqual({ error: MESSAGES_AUTH.en.champsManquants });
+  });
+
+  it("« le lien te ramènera à ton abonnement » : jamais pendant la bêta, où rien n'est vendu (constat 89)", async () => {
+    try {
+      // La bêta allumée (vitest.config.ts la coupe par défaut), le 15/10/2026.
+      vi.stubEnv("NEXT_PUBLIC_BETA", "1");
+      const m = await actions();
+      const r = await m.signup(undefined, fd({ email: "camille@exemple.fr", password: "chantier2026maison", next: "/tarifs?plan=annuel" }));
+      expect(r).toEqual({ message: messageCompteCree("fr", false) });
+      expect(r?.message).toMatch(/te connectera directement/);
+      expect(r?.message).not.toMatch(/abonnement/);
+      // Après la bêta (ou bêta coupée), l'intention d'achat le dit.
+      vi.stubEnv("NEXT_PUBLIC_BETA", "0");
+      const m2 = await actions();
+      expect(await m2.signup(undefined, fd({ email: "zoe@exemple.fr", password: "chantier2026maison", next: "/tarifs?plan=annuel" }))).toEqual({ message: messageCompteCree("fr", true) });
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it("sans confirmation d'e-mail (réglage Supabase), la session s'ouvre ici même : le consentement est enregistré tout de suite", async () => {
@@ -849,7 +906,8 @@ describe("/auth/callback et /auth/confirm : le retour du lien", () => {
     const r = await retour("callback", "https://getavyora.fr/auth/callback?code=abc&next=%2Fprojets", {
       ...NOUVEAU_LIEN(), user_metadata: { inscription: "mot_de_passe" },
     }, null, trace("camille@exemple.fr"));
-    expect(r.location).toBe("https://getavyora.fr/projets");
+    // Inscrit au mot de passe : la page qui dit que le mot de passe a été désactivé, puis l'intention (constat 19).
+    expect(r.location).toBe("https://getavyora.fr/auth/mot-de-passe-desactive?next=%2Fprojets");
     const mdp = appelsMaj.find((o) => (o as { password?: string }).password) as { password: string } | undefined;
     expect(mdp?.password).toMatch(/^[A-Za-z0-9_-]{43}-Aa1!$/);
     expect(sorties).toEqual([{ scope: "others" }]);
@@ -931,7 +989,7 @@ describe("/auth/callback et /auth/confirm : le retour du lien", () => {
     };
     // Même avec la trace « mot de passe choisi ici » (une inscription au mot de passe sur un compte confirmé ne change rien chez Supabase).
     const r = await retour("callback", "https://getavyora.fr/auth/callback?code=abc&next=%2Fprojets", passe, null, trace("camille@exemple.fr", { m: "mdp", n: true }));
-    expect(r.location).toBe("https://getavyora.fr/projets");
+    expect(r.location).toBe("https://getavyora.fr/auth/mot-de-passe-desactive?next=%2Fprojets");
     expect(appelsMaj.filter((o) => (o as { password?: string }).password)).toHaveLength(1);
     expect(sorties).toEqual([{ scope: "others" }]);
     expect(S.journal).toContainEqual(["mot_de_passe_neutralise", { userId: "u1", payload: { raison: "changement_adresse" } }]);
@@ -1123,7 +1181,8 @@ describe("/auth/confirm puis le bouton de /auth/confirmer : le lien au format to
     const r = await cliquer(ecrireLienEnAttente({ jeton: JETON, type: "email", next: "/projets" }), {
       user: { ...NOUVEAU(), user_metadata: { inscription: "mot_de_passe" } }, demandes: ici(),
     });
-    expect(r.url).toBe("/projets");
+    // Le mot de passe choisi deux minutes plus tôt ne marche plus : on le dit (constat 19), puis l'intention.
+    expect(r.url).toBe("/auth/mot-de-passe-desactive?next=%2Fprojets");
     expect(r.maj.filter((x) => (x as { password?: string }).password)).toHaveLength(1);
     expect(r.sorties).toEqual([{ scope: "others" }]);
     expect(r.marques).toEqual([["u1", { app_metadata: { [MARQUE_MDP]: expect.any(String), [MARQUE_MDP_EMAIL]: "camille@exemple.fr" }, user_metadata: metadonneesEffacees() }]]);
@@ -1133,6 +1192,18 @@ describe("/auth/confirm puis le bouton de /auth/confirmer : le lien au format to
     });
     expect(r2.maj.filter((x) => (x as { password?: string }).password)).toEqual([]);
     expect(r2.sorties).toEqual([]);
+    expect(r2.url).toBe("/projets");
+    // Le cas courant du constat 19 : inscrit au mot de passe sur l'ordinateur, confirmé sur le téléphone (aucune trace
+    // ici) : « à vérifier », et /auth/verifier dit que le mot de passe a été désactivé.
+    const r3 = await cliquer(ecrireLienEnAttente({ jeton: JETON, type: "email", next: "/onboarding" }), {
+      user: { ...NOUVEAU(), user_metadata: { inscription: "mot_de_passe" } },
+    });
+    expect(r3.url).toBe("/auth/verifier?next=%2Fonboarding&mdp=desactive");
+    // Un inscrit par le lien n'a jamais choisi de mot de passe : rien à annoncer.
+    const r4 = await cliquer(ecrireLienEnAttente({ jeton: JETON, type: "email", next: "/onboarding" }), { user: NOUVEAU() });
+    expect(r4.url).toBe("/auth/verifier?next=%2Fonboarding");
+    const r5 = await cliquer(ecrireLienEnAttente({ jeton: JETON, type: "email", next: "/onboarding" }), { user: NOUVEAU(), demandes: ici() });
+    expect(r5.url).toBe("/onboarding");
   });
 });
 
@@ -1254,6 +1325,18 @@ describe("proxy : une arrivée « à vérifier » ramène toute page à /auth/ve
     const bouton = await passer("https://getavyora.fr/auth/verifier?next=%2F", { user: CAMILLE, cookie: MARQUE, methode: "POST", entetes: { "next-action": "7f00" } });
     expect(bouton.status).toBe(200);
     expect(bouton.headers.get("location")).toBeNull();
+  });
+
+  it("déconnecté sur une page privée : /connexion, la page voulue EN ENTIER dans `next` (constats 88 et 100), rien d'autre sur /connexion", async () => {
+    expect(await ou("https://getavyora.fr/projets/abc?x=1")).toBe("https://getavyora.fr/connexion?next=%2Fprojets%2Fabc%3Fx%3D1");
+    expect(await ou("https://getavyora.fr/projets/depuis-plan/1f0e?nouvelle=1&projet=p2"))
+      .toBe("https://getavyora.fr/connexion?next=%2Fprojets%2Fdepuis-plan%2F1f0e%3Fnouvelle%3D1%26projet%3Dp2");
+    expect(await ou("https://getavyora.fr/mon-espace")).toBe("https://getavyora.fr/connexion?next=%2Fmon-espace");
+    // Un `next` déjà présent dans l'adresse privée ne remplace pas l'intention : il en fait partie (et /connexion le revérifie).
+    expect(await ou("https://getavyora.fr/projets?next=%2F%2Fevil.com")).toBe("https://getavyora.fr/connexion?next=%2Fprojets%3Fnext%3D%252F%252Fevil.com");
+    // Le retour de /connexion n'accepte qu'un chemin relatif commençant par un seul « / ».
+    expect(cheminInterne("/projets/abc?x=1")).toBe("/projets/abc?x=1");
+    for (const x of ["//evil.com", "/\\evil.com", "https://evil.com"]) expect(cheminInterne(x), x).toBe("/projets");
   });
 
   it("2e contre-examen, sonde A4 : une action serveur d'un onglet resté ouvert (profil d'onboarding, pseudo) pendant la vérification : refusée, 403", async () => {
@@ -1627,7 +1710,7 @@ describe("Rendu : l'écran « C'est envoyé »", () => {
     const fr = dict("fr").auth.lien;
     const en = dict("en").auth.lien;
     expect(Object.keys(en).sort()).toEqual(Object.keys(fr).sort());
-    expect(Object.keys(en.erreurs).sort()).toEqual(["email", "envoi", "limite"]);
+    expect(Object.keys(en.erreurs).sort()).toEqual(["email", "envoi", "limite", "saturation"]);
     const textes = Object.values(fr).flatMap((v) => (typeof v === "string" ? [v] : typeof v === "function" ? [v("Gmail" as never)] : Object.values(v)));
     for (const x of textes) expect(x, x).not.toMatch(/\bvous\b|\bvotre\b|\bvos\b/i);
     expect(fr.boutonInscription).toBe("Recevoir mon lien d'accès");

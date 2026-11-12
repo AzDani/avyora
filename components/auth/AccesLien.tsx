@@ -148,7 +148,7 @@ export function AccesParLien({ page, next, source, google }: {
           </p>
         </div>
         {inscription && (
-          <label htmlFor="lien-newsletter" className="flex cursor-pointer items-start gap-2 text-[13px] leading-snug text-muted">
+          <label htmlFor="lien-newsletter" className="flex min-h-11 cursor-pointer items-start gap-2 py-1.5 text-[13px] leading-snug text-muted">
             <input
               id="lien-newsletter"
               name="newsletter"
@@ -166,9 +166,10 @@ export function AccesParLien({ page, next, source, google }: {
         </button>
         <p className="text-center text-[12px] leading-snug text-faint">
           {t.mentionAvant}
-          <Link href="/cgu" className="text-brand-600 hover:underline">{t.mentionCgu}</Link>
+          {/* Le rembourrage d'un lien en ligne agrandit sa zone tactile (44 px) sans bouger le texte. */}
+          <Link href="/cgu" className="py-3.5 text-brand-600 hover:underline">{t.mentionCgu}</Link>
           {t.mentionEt}
-          <Link href="/confidentialite" className="text-brand-600 hover:underline">{t.mentionConfid}</Link>.
+          <Link href="/confidentialite" className="py-3.5 text-brand-600 hover:underline">{t.mentionConfid}</Link>.
         </p>
       </form>
 
@@ -186,14 +187,19 @@ export function AccesParLien({ page, next, source, google }: {
           } catch { /* noop */ }
         }}
       >
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-medium text-ink [&::-webkit-details-marker]:hidden">
+        {/* Le résumé couvre le rembourrage du cadre (-my-3 py-3) : 44 px de zone tactile, sans changer la hauteur. */}
+        <summary className="-my-3 flex cursor-pointer list-none items-center justify-between gap-3 py-3 text-sm font-medium text-ink [&::-webkit-details-marker]:hidden">
           {inscription ? t.plieInscription : t.plieConnexion}
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="shrink-0 text-faint transition-transform group-open:rotate-180">
             <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </summary>
-        <div className="mt-4 pb-1">
-          {inscription ? <SignupForm next={suite || undefined} /> : <LoginForm next={suite || undefined} />}
+        {/* Rendu dès le HTML (le dépliant marche avant l'hydratation), puis remonté à l'ouverture (`key`) : il reprend
+            l'adresse déjà tapée dans le champ du lien, une seule saisie. */}
+        <div className="mt-7 pb-1">
+          {inscription
+            ? <SignupForm key={mdpOuvert ? "ouvert" : "ferme"} next={suite || undefined} defaultEmail={email.trim() || undefined} />
+            : <LoginForm key={mdpOuvert ? "ouvert" : "ferme"} next={suite || undefined} defaultEmail={email.trim() || undefined} />}
         </div>
       </details>
     </div>
@@ -278,12 +284,12 @@ export function EcranEnvoye({
           <button
             type="submit"
             disabled={restant > 0 || pending}
-            className="text-sm font-medium text-brand-600 hover:underline disabled:cursor-not-allowed disabled:text-faint disabled:no-underline"
+            className="min-h-11 text-sm font-medium text-brand-600 hover:underline disabled:cursor-not-allowed disabled:text-faint disabled:no-underline"
           >
             {pending ? t.envoiEnCours : restant > 0 ? t.renvoyerDans(restant) : t.renvoyer}
           </button>
         </form>
-        <button type="button" onClick={onChanger} className="text-sm font-medium text-muted hover:text-ink hover:underline">
+        <button type="button" onClick={onChanger} className="min-h-11 text-sm font-medium text-muted hover:text-ink hover:underline">
           {t.changer}
         </button>
       </div>

@@ -68,9 +68,12 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/admin");
 
   if (estPrive && !user) {
+    // La page voulue revient EN ENTIER dans `next` (ses paramètres compris : `?nouvelle=1` de « depuis un plan »…), et
+    // /connexion n'hérite d'aucun d'eux. `next` est revérifié au retour (`cheminInterne` : un chemin relatif seulement).
     const url = request.nextUrl.clone();
     url.pathname = "/connexion";
-    url.searchParams.set("next", pathname);
+    url.search = "";
+    url.searchParams.set("next", pathname + request.nextUrl.search);
     return NextResponse.redirect(url);
   }
 

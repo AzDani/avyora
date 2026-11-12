@@ -11,12 +11,16 @@ import { suivreServeur } from "@/lib/track-server";
 import { empreinteAdresse } from "@/lib/empreinte";
 import {
   COOKIE_DEMANDE, COOKIE_LIEN, COOKIE_VERIFIER, DUREE_DEMANDE_S, ajouterDemande, consentementNouveautes, destinationLien, emailValide,
-  issueEnvoi, issueReset, lireLienEnAttente, lirePageAcces, metadonneesInscription, optionsMarque, suiteVerification, trouverDemande,
+  issueEnvoi, issueReset, lienMdpDesactive, lireLienEnAttente, lirePageAcces, metadonneesInscription, optionsMarque, suiteVerification,
+  trouverDemande,
   type MethodeDemande,
 } from "@/lib/auth-lien";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { controlerArrivee, noterArrivee } from "@/lib/auth-arrivee";
 import { CHAMP_CAPTCHA, jetonCaptcha } from "@/lib/captcha";
+import { MESSAGES_AUTH, cleErreurAuth, messageAuth, messageCompteCree } from "@/lib/auth-messages";
+import { getLocale } from "@/lib/i18n/server";
+import { betaActive } from "@/lib/beta";
 
 /** État renvoyé aux formulaires (useActionState). */
 export type AuthState = { error?: string; message?: string } | undefined;
@@ -103,17 +107,17 @@ export async function login(_prev: AuthState, formData: FormData): Promise<AuthS
   const password = String(formData.get("password") ?? "");
   const next = String(formData.get("next") ?? "/projets");
   const remember = String(formData.get("remember") ?? "") === "on"; // case cochée par défaut
-  if (!email || !password) return { error: "Renseigne ton email et ton mot de passe." };
-  if (!(await limiteAuthOk())) return { error: TROP_DE_TENTATIVES };
+  const locale = await getLocale();
+  if (!email || !password) return { error: MESSAGES_AUTH[locale].champsManquants };
+  if (!(await limiteAuthOk())) return { error: MESSAGES_AUTH[locale].tropDeTentatives };
 
   const supabase = await supabaseServer({ remember });
   const { data, error } = await supabase.auth.signInWithPassword({ email, password, options: optionsCaptcha(formData) });
   if (error) {
     // L'adresse tapée peut être celle de n'importe qui : le journal n'en garde que l'empreinte.
-    await journaliser("connexion_echouee", { payload: { empreinte: empreinteAdresse(email) } });
-    return { error: error.message === "Invalid login credentials"
-      ? "Email ou mot de passe incorrect."
-      : error.message };
+    // Le code de Supabase est gardé (jamais son texte, qui part sinon tel quel à l'écran, en anglais).
+    await journaliser("connexion_echouee", { payload: { empreinte: empreinteAdresse(email), ...(error.code ? { code: error.code } : {}) } });
+    return { error: messageAuth(error, locale) };
   }
   // Mémorise la préférence pour que le middleware garde la même politique de cookies au refresh.
   const cookieStore = await cookies();
@@ -137,12 +141,13 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
   // cliqué un plan sur /tarifs, donc `next=/tarifs?plan=…`), on ne lui inflige pas un
   // questionnaire entre son oui et l'écran de paiement : on l'emmène là où il allait.
   const dest = cheminInterne(String(formData.get("next") ?? ""), "/onboarding");
-  if (!email || !password) return { error: "Renseigne ton email et ton mot de passe." };
+  const locale = await getLocale();
+  if (!email || !password) return { error: MESSAGES_AUTH[locale].champsManquants };
   // Le mot de passe d'abord : un refus (« Ajoute au moins un chiffre ») ne consomme pas les envois de l'adresse, que la
-  // demande d'un lien d'accès partage (3 / h).
+  // demande d'un lien d'accès partage (3 / h). Le détail de lib/password.ts est en français : en anglais, les règles.
   const faible = validerMotDePasse(password);
-  if (faible) return { error: faible };
-  if (!(await limitesEnvoiOk(email))) return { error: TROP_DE_TENTATIVES };
+  if (faible) return { error: locale === "en" ? MESSAGES_AUTH.en.motDePasseFaible : faible };
+  if (!(await limitesEnvoiOk(email))) return { error: MESSAGES_AUTH[locale].tropDeTentatives };
 
   const supabase = await supabaseServer();
   const avantAppel = Date.now();
@@ -159,7 +164,13 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
       ...optionsCaptcha(formData),
     },
   });
-  if (error) return { error: error.message };
+  if (error) {
+    // Le message traduit (jamais le texte brut de Supabase) ; le code au journal, et la saturation de l'envoi d'e-mails
+    // dans les journaux de Vercel (une alerte à poser dessus : docs/beta.md §4.9).
+    await journaliser("inscription_echouee", { payload: { methode: "mot_de_passe", empreinte: empreinteAdresse(email), ...(error.code ? { code: error.code } : {}) } });
+    if (cleErreurAuth(error) === "saturation") console.error("[auth] saturation de l'envoi d'e-mails (Supabase)", error.code ?? error.status);
+    return { error: messageAuth(error, locale) };
+  }
 
   // Le mot de passe n'est « choisi ici » que si le compte est né de CET appel (créé après l'heure lue juste avant) : un
   // compte déjà là et non confirmé (inscrit plus tôt, même une minute avant, peut-être par un tiers) garde l'ancien mot
@@ -193,10 +204,8 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
   // c'est le seul moment où le visiteur doit quitter le site. Le lien de l'email OUVRE la session
   // et le ramène à `dest` (cf. emailRedirectTo ci-dessus) — lui dire « puis connecte-toi »
   // l'envoyait faire une étape dont il n'a pas besoin, juste avant de payer.
-  const suite = dest.startsWith("/tarifs")
-    ? "Le lien te ramènera directement à ton abonnement."
-    : "Le lien te connectera directement.";
-  return { message: `Compte créé ! Ouvre ta boîte mail pour confirmer ton adresse. ${suite}` };
+  // « Ton abonnement » seulement hors bêta : pendant la bêta, rien n'est vendu (un ancien lien vers /tarifs?plan=…).
+  return { message: messageCompteCree(locale, dest.startsWith("/tarifs") && !betaActive()) };
 }
 
 // ── Lien d'accès : inscription et connexion sans mot de passe (B2) ──
@@ -207,7 +216,7 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
  */
 export type LienState =
   | { envoye: true; email: string; renvoi: boolean }
-  | { erreur: "email" | "limite" | "envoi" }
+  | { erreur: "email" | "limite" | "saturation" | "envoi" }
   | undefined;
 
 /**
@@ -246,6 +255,8 @@ export async function envoyerLienAcces(_prev: LienState, formData: FormData): Pr
     },
   });
   const issue = issueEnvoi(error);
+  // La limite d'envoi de Supabase atteinte par tout le monde : visible dans les journaux de Vercel (alerte à y poser).
+  if (issue === "saturation") console.error("[auth] saturation de l'envoi d'e-mails (Supabase)", error?.code ?? error?.status);
   // Le journal ne garde que l'empreinte : l'adresse tapée peut être celle d'un tiers (minimisation).
   await journaliser("lien_acces_demande", { payload: { page, issue, empreinte: empreinteAdresse(email), ...(error?.code ? { code: error.code } : {}) } });
   if (issue !== "envoye") return { erreur: issue };
@@ -284,17 +295,19 @@ export async function confirmerLien(): Promise<void> {
     if (!error) {
       const user = data.user;
       const demande = user?.email ? trouverDemande(cookieStore.get(COOKIE_DEMANDE)?.value, empreinteAdresse(user.email)) : null;
-      await controlerArrivee(supabase, user, demande);
+      // Mot de passe remplacé par sécurité (inscrit au mot de passe qui confirme sur un AUTRE appareil, le cas courant) :
+      // on le dit, sinon le mot de passe choisi deux minutes plus tôt répondrait « incorrect » sans explication.
+      const { mdpDesactive } = await controlerArrivee(supabase, user, demande);
       await noterArrivee(supabase, user, lien.next);
       const autreSession = !!avant && avant !== user?.id;
       if (user && (!demande || autreSession)) {
         // La marque porte le compte ouvert et dure autant que la session (lib/auth-verifier.ts).
         cookieStore.set(COOKIE_VERIFIER, user.id, optionsMarque(await enHttps()));
         await journaliser("arrivee_a_verifier", { userId: user.id, payload: { type: lien.type, autreSession } });
-        redirect(`/auth/verifier?next=${encodeURIComponent(lien.next)}`);
+        redirect(`/auth/verifier?next=${encodeURIComponent(lien.next)}${mdpDesactive ? "&mdp=desactive" : ""}`);
       }
       await oublierVerification();
-      redirect(lien.next);
+      redirect(mdpDesactive ? lienMdpDesactive(lien.next) : lien.next);
     }
   }
   const retour = new URLSearchParams({ erreur: "lien_invalide" });
@@ -358,9 +371,8 @@ export async function updatePassword(_prev: AuthState, formData: FormData): Prom
   const supabase = await supabaseServer();
   const { data, error } = await supabase.auth.updateUser({ password });
   if (error) {
-    return { error: error.message.includes("session")
-      ? "Lien expiré ou invalide. Redemande un email de réinitialisation."
-      : error.message };
+    // Traduit (même mot de passe que l'ancien, trop faible, session expirée…) : jamais le texte brut de Supabase.
+    return { error: messageAuth(error, await getLocale()) };
   }
   await journaliser("mot_de_passe_change", { userId: data.user?.id, email: data.user?.email });
   redirect("/projets");

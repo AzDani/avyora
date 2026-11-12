@@ -38,13 +38,19 @@ function resumeDe(c: Ctx): ResumeBien {
 export default async function DepuisPlanPage({ params, searchParams }: Props) {
   if (!FEATURES.plans) notFound();
   const { planId: brut } = await params;
+  const sp = await searchParams;
   const user = await getUser();
-  if (!user) redirect(`/connexion?next=${encodeURIComponent(`/projets/depuis-plan/${brut}`)}`);
+  if (!user) {
+    // `?projet=` et `?nouvelle=1` survivent à la connexion : sans eux, la page choisirait une autre estimation.
+    const q = new URLSearchParams();
+    for (const [k, v] of Object.entries(sp)) for (const x of Array.isArray(v) ? v : v === undefined ? [] : [v]) q.append(k, x);
+    const ici = `/projets/depuis-plan/${encodeURIComponent(brut)}${q.size ? `?${q}` : ""}`;
+    redirect(`/connexion?next=${encodeURIComponent(ici)}`);
+  }
   if (!estPro(user)) redirect("/tarifs?source=editeur-plan");
   if (!planIdSchema.safeParse(brut).success) notFound();
   const planId = brut.toLowerCase();
 
-  const sp = await searchParams;
   const projetVoulu = un(sp.projet);
   const nouvelle = un(sp.nouvelle) === "1";
   const locale = await getLocale();

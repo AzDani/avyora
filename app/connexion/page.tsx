@@ -36,7 +36,7 @@ export default async function ConnexionPage({
         <>
           {t.cxBasAvant}
           {/* Pendant la bêta, le lien dit qu'il ne coûte rien (lib/beta.ts) ; après, « Créer un compte gratuit ». */}
-          <Link href={`/inscription${suite}`} className="font-medium text-brand-600 hover:underline">
+          <Link href={`/inscription${suite}`} className="py-3.5 font-medium text-brand-600 hover:underline">
             {betaActive() ? tr.beta.cxBasLien : t.cxBasLien}
           </Link>
         </>

@@ -16,6 +16,7 @@
  * /auth/callback et /auth/confirm les partagent. Testées dans tests/auth-lien.test.ts.
  */
 import { cheminInterne } from "@/lib/next-url";
+import { intervalleParAdresse } from "@/lib/auth-messages";
 import { CLE_RECLAMATION_RENO } from "@/lib/estimateur/brouillon-reno";
 import { CLE_RECLAMATION_NEUF } from "@/lib/estimateur/brouillon-neuf";
 import { CLE_RECLAMATION_PLAN } from "@/lib/plans/origine";
@@ -224,6 +225,17 @@ export function trouverDemande(v: string | null | undefined, empreinte: string, 
 /** L'arrivée « à vérifier » : lib/auth-verifier.ts (le proxy l'importe seul). */
 export { COOKIE_VERIFIER, DUREE_VERIFIER_S, optionsMarque, verificationEnAttente } from "@/lib/auth-verifier";
 
+/**
+ * La page qui annonce un mot de passe désactivé par sécurité (`mdpDesactiveAAnnoncer`), puis mène à l'intention. Sur
+ * /auth (le proxy la laisse passer même quand l'arrivée est « à vérifier »).
+ */
+export const PAGE_MDP_DESACTIVE = "/auth/mot-de-passe-desactive";
+
+/** L'adresse de cette page, avec l'intention (revérifiée par la page, `suiteVerification`). */
+export function lienMdpDesactive(next: string): string {
+  return `${PAGE_MDP_DESACTIVE}?next=${encodeURIComponent(next)}`;
+}
+
 /** La destination après la vérification : un chemin interne hors de /auth (sinon /projets). */
 export function suiteVerification(next: string | null | undefined): string {
   const n = cheminInterne(typeof next === "string" ? next.trim() : undefined, "/projets");
@@ -232,8 +244,13 @@ export function suiteVerification(next: string | null | undefined): string {
 
 /* ─── La réponse de Supabase ────────────────────────────────────────────────── */
 
-/** Ce que le formulaire dit après la demande : envoyé, ou l'une des trois erreurs qu'il sait traduire. */
-export type IssueEnvoi = "envoye" | "limite" | "email" | "envoi";
+/**
+ * Ce que le formulaire dit après la demande : envoyé, ou l'une des erreurs qu'il sait traduire. `limite` dépend de la
+ * personne (notre limite par IP ou par adresse, l'intervalle de Supabase entre deux e-mails à la même adresse) ;
+ * `saturation`, de tout le monde (la limite GLOBALE d'envoi d'e-mails du projet Supabase, ou sa limite par IP, qui
+ * est celle de nos serveurs) : à un nouveau visiteur, on ne dit pas « utilise le dernier lien reçu ».
+ */
+export type IssueEnvoi = "envoye" | "limite" | "saturation" | "email" | "envoi";
 
 /**
  * Codes de Supabase qui dépendent de l'ADRESSE (compte banni, inscriptions fermées…). Les afficher dirait à qui
@@ -243,14 +260,19 @@ const COMME_ENVOYE = new Set(["user_banned", "signup_disabled", "otp_disabled", 
 
 /**
  * L'issue d'une demande de lien, à partir de l'erreur renvoyée par `signInWithOtp` (ou de son absence). Les
- * limites (429, la nôtre comme celle de Supabase) et une adresse refusée sont dites ; le reste qui ne dépend pas
- * de l'adresse (SMTP en panne, configuration) devient « l'e-mail n'a pas pu partir ».
+ * limites de Supabase et une adresse refusée sont dites : l'intervalle entre deux e-mails à la même adresse
+ * (« you can only request this after 52 seconds ») est une `limite` ; la limite globale d'envoi (« Email rate limit
+ * exceeded », même code) et la limite par IP (celle de nos serveurs), une `saturation`. Le reste qui ne dépend pas de
+ * l'adresse (SMTP en panne, configuration) devient « l'e-mail n'a pas pu partir ». Notre propre limite ne passe pas par
+ * ici (l'action répond `limite` avant d'appeler Supabase).
  */
-export function issueEnvoi(error: { code?: string; status?: number } | null | undefined): IssueEnvoi {
+export function issueEnvoi(error: { code?: string; status?: number; message?: string } | null | undefined): IssueEnvoi {
   if (!error) return "envoye";
   const code = error.code ?? "";
   if (COMME_ENVOYE.has(code)) return "envoye";
-  if (code === "over_email_send_rate_limit" || code === "over_request_rate_limit" || error.status === 429) return "limite";
+  if (code === "over_email_send_rate_limit" || code === "over_request_rate_limit" || error.status === 429) {
+    return intervalleParAdresse(error) ? "limite" : "saturation";
+  }
   if (code === "email_address_invalid" || code === "validation_failed") return "email";
   return "envoi";
 }
@@ -375,6 +397,19 @@ export function controleMdpAFaire(user: CompteControle | null | undefined, maint
   if (changementDemande) return "changement";
   if (t <= maintenant + 60_000 && maintenant - t < FENETRE_CONTROLE_MDP_MS) return "confirmation";
   return email ? "noter" : null;
+}
+
+/**
+ * Le mot de passe vient d'être remplacé par un aléa (`controlerArrivee`) : faut-il le dire ? Oui si la personne pouvait
+ * en connaître un : inscrite au mot de passe (`user_metadata.inscription`, lu AVANT l'effacement), ou un changement
+ * d'adresse (un compte qui a pu s'en donner un). Un inscrit par le lien, à la confirmation, n'en a jamais choisi.
+ */
+export function mdpDesactiveAAnnoncer(
+  controle: ControleMdp,
+  user: { user_metadata?: Record<string, unknown> | null } | null | undefined,
+): boolean {
+  if (controle === "changement") return true;
+  return controle === "confirmation" && user?.user_metadata?.inscription === "mot_de_passe";
 }
 
 /** La marque posée dans `user_metadata` quand `compte_cree` est émis : une seule fois par compte. */

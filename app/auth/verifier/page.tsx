@@ -22,8 +22,8 @@ export async function generateMetadata() {
  *
  * Cas normal (lien demandé sur l'ordinateur, ouvert sur le téléphone) : un clic de plus, « Oui, c'est mon compte ».
  */
-export default async function VerifierPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
-  const [{ next: nextDemande }, { t: tr }, user, cookieStore] = await Promise.all([searchParams, getT(), getUser(), cookies()]);
+export default async function VerifierPage({ searchParams }: { searchParams: Promise<{ next?: string; mdp?: string }> }) {
+  const [{ next: nextDemande, mdp }, { t: tr }, user, cookieStore] = await Promise.all([searchParams, getT(), getUser(), cookies()]);
   const next = suiteVerification(nextDemande);
   if (!user) redirect("/connexion");
   if (!verificationEnAttente(cookieStore.get(COOKIE_VERIFIER)?.value, user.id)) redirect(next);
@@ -37,6 +37,12 @@ export default async function VerifierPage({ searchParams }: { searchParams: Pro
           <p className="mt-0.5 break-words text-[16px] font-semibold text-ink" data-verifier-adresse="">{user.email}</p>
         </div>
         <p className="text-[13.5px] leading-relaxed text-muted">{t.pourquoi}</p>
+        {/* Le mot de passe vient d'être remplacé par sécurité (confirmerLien, lib/auth-arrivee.ts) : on le dit ici. */}
+        {mdp === "desactive" && (
+          <p role="status" className="rounded-field border border-warning/30 bg-warning-soft px-3.5 py-2.5 text-[13px] leading-relaxed text-ink" data-verifier-mdp-desactive="">
+            {t.mdpDesactive}
+          </p>
+        )}
         <RangementEnAttente texte={t.rangement} />
         <form action={continuerArrivee}>
           <input type="hidden" name="next" value={next} />

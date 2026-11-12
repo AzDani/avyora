@@ -483,7 +483,7 @@ describe("Pendant la bêta, un anonyme qui touche une fonction Pro va créer son
     const creer = vi.fn(async () => ({ url: "https://checkout.stripe.test/s" }));
     const route = async () => {
       vi.resetModules();
-      vi.doMock("@/lib/auth", () => ({ getUser: async () => UTILISATEURS.gratuit }));
+      vi.doMock("@/lib/auth", () => ({ getUser: async () => UTILISATEURS.gratuit, estAbonne: () => false }));
       vi.doMock("@/lib/stripe", () => ({ getStripe: () => ({ checkout: { sessions: { create: creer } } }), priceIdForPlan: () => "price_test" }));
       const { POST } = await import("@/app/api/stripe/checkout/route");
       return POST(new Request("https://getavyora.fr/api/stripe/checkout", { method: "POST", body: JSON.stringify({ plan: "mensuel" }) }));
