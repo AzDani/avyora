@@ -36,6 +36,23 @@ export function pageFigee(rendu: Locale, choisie: Locale | null, enCours: boolea
 }
 
 /**
+ * Ce que fait un clic sur `l` : rien (déjà la langue du rendu et du choix), « recaler » (enregistrer le choix s'il
+ * diffère, puis rafraîchir sans transition) ou « basculer » (enregistrer, puis rafraîchir en transition).
+ *
+ * « Recaler » couvre deux cas où le choix enregistré diffère de la langue du rendu. Sur une page en français
+ * seulement, le rafraîchissement ne change rien (la page reste en français, EN reste grisé). Mais le même état se
+ * rencontre après une navigation depuis une telle page vers une page traduite : le layout racine ne se re-rend pas
+ * à la navigation, l'en-tête reste en français autour d'un contenu en anglais. Le rafraîchissement remet alors tout
+ * dans la même langue ; sans lui, EN grisé laisserait l'utilisateur coincé. Pas de transition : `enCours`
+ * dégriserait EN le temps de la requête, pour rien sur une page en français seulement.
+ */
+export function actionClic(l: Locale, rendu: Locale, choisie: Locale | null, figee: boolean): "rien" | "recaler" | "basculer" {
+  if (l === rendu && (choisie === null || choisie === l)) return "rien";
+  if (l === rendu || figee) return "recaler";
+  return "basculer";
+}
+
+/**
  * Sélecteur de langue FR/EN, discret. Pose le cookie av-lang puis rafraîchit (re-render serveur
  * avec la nouvelle langue). `tone` adapte les couleurs au fond (clair = footer, sombre = menu nuit).
  *
@@ -57,14 +74,11 @@ export default function LangSwitch({ tone = "light" }: { tone?: "light" | "dark"
   const figee = pageFigee(locale, choisie, enCours);
 
   function set(l: Locale) {
-    if (l === locale) {
-      // La page est déjà dans cette langue : seul le choix enregistré peut différer (page en français seulement).
-      if (choisie !== null && choisie !== l) ecrireChoix(l);
-      return;
-    }
-    if (figee) return; // la page n'existe pas dans cette langue
-    ecrireChoix(l);
-    startTransition(() => router.refresh());
+    const action = actionClic(l, locale, choisie, figee);
+    if (action === "rien") return;
+    if (choisie !== l) ecrireChoix(l);
+    if (action === "recaler") router.refresh();
+    else startTransition(() => router.refresh());
   }
 
   const base = tone === "dark" ? "text-indigo-200/70" : "text-faint";

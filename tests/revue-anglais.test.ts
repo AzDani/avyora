@@ -13,7 +13,7 @@ import { euros, eurosM2, euroAvant, euroApres } from "@/lib/i18n/nombres";
 import { META_EN, metaSelonLangue } from "@/lib/i18n/meta";
 import { validerMotDePasse } from "@/lib/password";
 import { LangProvider } from "@/components/i18n/LangProvider";
-import { pageFigee, FRANCAIS_SEULEMENT } from "@/components/i18n/LangSwitch";
+import { actionClic, pageFigee, FRANCAIS_SEULEMENT } from "@/components/i18n/LangSwitch";
 import type { Locale } from "@/lib/i18n/config";
 
 const LOCALES = ["fr", "en"] as const;
@@ -179,6 +179,17 @@ describe("120 · sélecteur de langue sur une page pré-rendue en français", ()
     expect(pageFigee("en", "en", false)).toBe(false); // page traduite
     expect(pageFigee("fr", "fr", false)).toBe(false);
     expect(pageFigee("fr", null, false)).toBe(false); // pas encore de choix (ou côté serveur)
+  });
+  it("un clic : rien, recaler (sans transition) ou basculer ; EN grisé recale au lieu de ne rien faire", () => {
+    expect(actionClic("fr", "fr", null, false)).toBe("rien"); // FR sur une page française, aucun choix
+    expect(actionClic("fr", "fr", "fr", false)).toBe("rien");
+    expect(actionClic("en", "fr", null, false)).toBe("basculer"); // page traduite : on recharge en anglais
+    expect(actionClic("en", "fr", "fr", false)).toBe("basculer");
+    expect(actionClic("fr", "en", "en", false)).toBe("basculer");
+    // Page en français seulement (ou en-tête resté en français après une navigation) : le choix EN est déjà
+    // enregistré, EN est grisé ; un clic rafraîchit quand même, ce qui remet d'aplomb un en-tête resté en retard.
+    expect(actionClic("en", "fr", "en", true)).toBe("recaler");
+    expect(actionClic("fr", "fr", "en", true)).toBe("recaler"); // FR : le choix repasse à « fr »
   });
   it("l'info-bulle le dit dans les deux langues", () => {
     expect(FRANCAIS_SEULEMENT).toBe("Page available in French only · Page disponible en français uniquement");
