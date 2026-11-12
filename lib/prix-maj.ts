@@ -39,9 +39,9 @@ export const SITE_MAJ = "2026-11-12";
  * « Dernière mise à jour : … »). À mettre à jour EN MÊME TEMPS que la page.
  */
 export const LEGAL_MAJ: Record<"mentions-legales" | "cgu" | "cgv" | "confidentialite" | "cookies", string> = {
-  "mentions-legales": "2026-09-12",
+  "mentions-legales": "2026-11-12",
   cgu: "2026-10-16",
-  cgv: "2026-10-16",
-  confidentialite: "2026-09-06",
-  cookies: "2026-09-06",
+  cgv: "2026-11-12",
+  confidentialite: "2026-11-12",
+  cookies: "2026-11-12",
 };

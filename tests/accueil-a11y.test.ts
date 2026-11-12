@@ -168,7 +168,9 @@ describe("cibles tactiles d'au moins 44 px", () => {
   it("liens du pied de page, boutons FR / EN", () => {
     expect(lire("app/layout.tsx")).toContain("[&>a]:min-h-11 [&>a]:min-w-11");
     const langue = lire("components/i18n/LangSwitch.tsx");
-    expect(langue.split("min-h-11 min-w-11").length - 1).toBe(2);
+    // Les deux boutons (FR, EN) sortent d'une seule boucle : la classe y figure une fois, pour les deux.
+    expect(langue).toMatch(/\(\["fr", "en"\] as const\)\.map/);
+    expect(langue.split("min-h-11 min-w-11").length - 1).toBe(1);
   });
 
   it("puces de villes et de projets des pages de prix et des guides : padding 10px 14px partout", () => {

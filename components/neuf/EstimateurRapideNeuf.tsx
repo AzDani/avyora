@@ -492,7 +492,7 @@ export default function EstimateurRapideNeuf({
                   <span className="eye">{fi.eye}</span>
                   <span className="t">{fi.label}</span>
                   <span className="d">{fi.desc}</span>
-                  <span className="amt">{valid ? <>≈ <b>{euroAvant(locale) + (m2ByFin[f.v] || 0).toLocaleString(nf) + euroApres(locale)}</b>{parM2}</> : <>—{parM2}</>}</span>
+                  <span className="amt">{valid ? <>≈ <b>{euroAvant(locale) + (m2ByFin[f.v] || 0).toLocaleString(nf) + euroApres(locale)}</b>{parM2}</> : <>— €{parM2}</>}</span>
                 </button>
               );
             })}
@@ -519,7 +519,7 @@ export default function EstimateurRapideNeuf({
                   <span className="d">{qi.desc}</span>
                   <span className="amt">
                     {/* Pas de prix avant que la maison soit décrite : la barre dit « Réponds pour voir ton budget » (n° 74). */}
-                    <span className="p">{valid ? <>≈ <b>{euroAvant(locale) + price.toLocaleString(nf) + euroApres(locale)}</b>{parM2}</> : <>—{parM2}</>}</span>
+                    <span className="p">{valid ? <>≈ <b>{euroAvant(locale) + price.toLocaleString(nf) + euroApres(locale)}</b>{parM2}</> : <>— €{parM2}</>}</span>
                     {valid && pct > 0 && <span className="save">−{pct}{signePct(locale)}</span>}
                   </span>
                 </button>

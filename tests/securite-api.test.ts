@@ -60,10 +60,15 @@ describe("POST /api/projects/[id]/statut", () => {
       getProjet: async (id: string) => (id === PROJET ? { id, reponses: S.reponses } : null),
     }));
     vi.doMock("@/lib/supabase/server", () => ({
+      /* La fonction SQL atomique (lib/data/reponses-projet.ts) n'est pas appliquée ici : la route retombe sur la
+         lecture-réécriture (update(...).eq(id).select("id")), dont on observe l'écriture. */
       supabaseServer: async () => ({
+        rpc: async () => ({ data: null, error: { code: "PGRST202", message: "fonction absente" } }),
         from: () => ({
           update: (v: Record<string, unknown>) => ({
-            eq: async () => { S.ecrit = v; return { error: S.erreurUpdate }; },
+            eq: () => ({
+              select: async () => { S.ecrit = v; return { data: S.erreurUpdate ? null : [{ id: PROJET }], error: S.erreurUpdate }; },
+            }),
           }),
         }),
       }),

@@ -50,6 +50,14 @@ afterEach(() => {
 
 /* ─── Métadonnées : og:url, og:title et carte X propres à chaque page ─────────── */
 
+/** Titre français d'une page dont les métadonnées passent par generateMetadata (langue du visiteur) : lu dans la source. */
+function titreSource(mod: string): string {
+  const src = lire(mod.replace("@/", "") + ".tsx");
+  const m = src.match(/title: "([^"]+)"/);
+  if (!m) throw new Error("titre introuvable : " + mod);
+  return m[1];
+}
+
 describe("métadonnées propres à chaque page (plus l'URL ni le titre de l'accueil)", () => {
   it("le layout racine ne porte plus que les valeurs de marque", () => {
     const src = lire("app/layout.tsx");
@@ -138,7 +146,7 @@ describe("titles : 60 caractères au plus, « · AVYORA » compris", () => {
     const { POSTES_PAGES } = await import("@/lib/seo-postes");
     for (const p of POSTES_PAGES) voir(p.slug, p.title);
     for (const f of ["@/app/estimation-travaux/page", "@/app/guides/page", "@/app/prix-travaux/page", "@/app/prix-renovation/page", "@/app/prix-poste/page"])
-      voir(f, (await import(f)).metadata.title);
+      voir(f, (await import(f)).metadata?.title ?? titreSource(f));
     const { dict } = await import("@/lib/i18n/dictionaries");
     voir("/tarifs (bêta)", dict("fr").beta.tarifsMetaTitre);
     expect(trop).toEqual([]);
