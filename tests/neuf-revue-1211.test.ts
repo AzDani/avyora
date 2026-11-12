@@ -17,7 +17,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
   buildDevis, catalogueDe, presetNeuf, presetMaison, key, finCoefTask, LOT_FIN, variantLabel, minusculeInitiale, ECART_ECO_NEUF,
-  maisonParDefaut, dureeChantier, geometrieNeuf, maisonComplete, appliquerFinitionNeuf, defaultCtx, CATALOG,
+  maisonParDefaut, dureeChantier, geometrieNeuf, maisonComplete, appliquerFinitionNeuf, defaultCtx, CATALOG, cleLegacy, statutLigne,
   type Finition, type Selection,
 } from "@/lib/estimateur";
 import { POSTE_NEUF, CATALOG_NEUF } from "@/lib/estimateur/catalogue-neuf";
@@ -170,6 +170,20 @@ describe("n° 69, 72, 73 · libellés", () => {
     expect(variantLabel(taxe.t, { on: true, vsel: { zone: "hors-idf" } })).toBe(" (hors Île-de-France)");
     // La traduction anglaise d'une variante se lit toujours (sa table est en minuscules).
     expect(catLigne("en", "Miroir (petit, LED)", "Plomberie|Miroir")).toBe(catLigne("en", "Miroir (petit, led)", "Plomberie|Miroir"));
+  });
+
+  it("variantes : un statut de chantier rangé à l'ancienne clé (« Plinthes (mdf) ») se relit encore", () => {
+    const { ctx, sel } = presetRapide({ type: "T3", surface: 70, ampleur: "complete", finition: "standard", qui: "pros", codePostal: "75011" });
+    const plinthes = CATALOG.flatMap((l) => l.t.map((t) => ({ l, t }))).find((x) => x.t.id === "rev-plinthes")!;
+    const k = key(plinthes.l.c, plinthes.t.n);
+    const li = buildDevis(CATALOG, ctx, { ...sel, [k]: { ...(sel[k] ?? {}), on: true, vsel: { ...(sel[k]?.vsel ?? {}), type: "mdf" } } })
+      .lignes.find((x) => x.cle === k)!;
+    expect(li.nom).toContain("MDF");
+    expect(li.nomAvant).toBe(li.nom.replace("MDF", "mdf"));
+    expect(cleLegacy(li)).toBe(key(li.corps, li.nomAvant!));
+    expect(statutLigne({ [key(li.corps, li.nomAvant!)]: 2 }, li)).toBe(2);
+    // Une ligne dont l'écriture n'a pas changé ne porte pas `nomAvant`.
+    expect(buildDevis(CATALOG, ctx, sel).lignes.every((x) => x.nomAvant == null || x.nomAvant !== x.nom)).toBe(true);
   });
 
   it("surface hors bornes : détectée, et le message dit la borne", () => {

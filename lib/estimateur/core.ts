@@ -199,8 +199,9 @@ export function effPrices(t: Tache, s?: LigneSel, ctx?: Ctx): { fp: number | nul
   const arr = t.frais ? (v: number) => Math.round(v * 100) / 100 : Math.round;
   return rendre(t.fp != null ? arr(t.fp * f) : null, t.sm != null ? arr(t.sm * f) : null);
 }
-/** Suffixe d'étiquette variante (matériau / vitrage) pour l'affichage. */
-export function variantLabel(t: Tache, s?: LigneSel, ctx?: Ctx): string {
+/** Suffixe d'étiquette variante (matériau / vitrage) pour l'affichage. `ancien` : l'écriture d'avant le
+ *  12/11/2026 (libellés de variante tout en minuscules), pour relire les anciennes clés de statut. */
+export function variantLabel(t: Tache, s?: LigneSel, ctx?: Ctx, ancien = false): string {
   const p: string[] = [];
   if (t.mat) { const m = (s && s.mat) || t.matDef || defMat(ctx); p.push(m === "alu" ? "alu" : m === "bois" ? "bois" : "PVC"); }
   if (t.vitrage) p.push(((s && s.vit) || DEFAULT_VIT) === "triple" ? "triple vitrage" : "double vitrage");
@@ -208,7 +209,8 @@ export function variantLabel(t: Tache, s?: LigneSel, ctx?: Ctx): string {
   if (t.taille) p.push(((s && s.tai) || DEFAULT_TAILLE) === "petit" ? "petit" : "grand");
   if (t.vars) for (const g of t.vars) {
     const chosen = (s && s.vsel && s.vsel[g.k]) || g.opts[0].k;
-    p.push(minusculeInitiale((g.opts.find((o) => o.k === chosen) || g.opts[0]).label));
+    const label = (g.opts.find((o) => o.k === chosen) || g.opts[0]).label;
+    p.push(ancien ? label.toLowerCase() : minusculeInitiale(label));
   }
   return p.length ? " (" + p.join(", ") + ")" : "";
 }
@@ -233,6 +235,9 @@ export interface DevisLigne {
   cle: string;
   corps: string; phase: string; nom: string; unite: string;
   qty: number; mode: Mode; ht: number; tva: number; ttc: number;
+  /** `nom` tel que le moteur l'écrivait avant le 12/11/2026 (variantes tout en minuscules : « (mdf) »,
+   *  « (sans led) »), seulement quand il diffère : l'ancienne clé de statut (`cleLegacy`) le lit encore. */
+  nomAvant?: string;
 }
 export interface DevisLot { corps: string; phase: string; ttc: number; }
 export interface Devis { totaux: Totaux; bilan: Bilan; lots: DevisLot[]; lignes: DevisLigne[]; }
@@ -829,7 +834,7 @@ export function bilan(catalog: Lot[], ctx: Ctx, sel: Selection): Bilan {
 /** Ancienne clé d'une ligne (nom + libellé de variante) si elle diffère de la clé stable.
  *  Sert à relire les projets enregistrés avant l'unification, et à les nettoyer au premier clic. */
 export function cleLegacy(li: DevisLigne): string | null {
-  const k = key(li.corps, li.nom);
+  const k = key(li.corps, li.nomAvant ?? li.nom);   // l'écriture d'alors (« Plinthes (mdf) »), pas celle d'aujourd'hui
   return k === li.cle ? null : k;
 }
 
@@ -856,10 +861,12 @@ export function buildDevis(catalog: Lot[], ctx: Ctx, sel: Selection): Devis {
       const ht = lineHT(ctx, sel, l, t);
       const r = effRate(l, t, sel, ctx);
       const mode: Mode = isLoc(l.c) ? "location" : s.self ? "je-fais" : "fait-faire";
+      const nom = t.n + variantLabel(t, s, ctx), nomAvant = t.n + variantLabel(t, s, ctx, true);
       lignes.push({
         cle: key(l.c, t.n),
-        corps: l.c, phase: l.p, nom: t.n + variantLabel(t, s, ctx), unite: t.u,
+        corps: l.c, phase: l.p, nom, unite: t.u,
         qty: qtyOf(ctx, sel, l.c, t), mode, ht, tva: (ht * r) / 100, ttc: ht * (1 + r / 100),
+        ...(nomAvant !== nom ? { nomAvant } : {}),
       });
     });
   });

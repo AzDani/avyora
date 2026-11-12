@@ -36,7 +36,7 @@ const FINITIONS = [
 
 const REGIONS = [
   { zone: "Paris & petite couronne", dep: "75, 92, 93, 94", mo: "+20\u00a0%" },
-  { zone: "Zone tendue", dep: "77, 78, 91, 95, 06, 83, 13, 69, 74, 73", mo: "+10\u00a0%" },
+  { zone: "Secteur très demandé", dep: "77, 78, 91, 95, 06, 83, 13, 69, 74, 73", mo: "+10\u00a0%" },
   { zone: "Grande agglomération", dep: "33, 31, 44, 35, 59, 67, 34, 38, 21, 54, 68, 64, 63, 76", mo: "+4\u00a0%" },
   { zone: "Moyenne nationale", dep: "tous les autres départements", mo: "référence" },
   { zone: "Zone rurale", dep: "23, 15, 58, 55, 52, 08, 36, 48, 32, 46, 09, 88, 70, 03, 43, 12, 19, 89, 05, 53, 61", mo: "−10\u00a0%" },
@@ -139,6 +139,11 @@ export default function MethodologiePage() {
           </tbody>
         </table>
       </div>
+      <p>
+        En <strong>construction neuve</strong>, la finition éco s&apos;écarte deux fois plus du standard
+        (−22&nbsp;%, −33&nbsp;% et −44&nbsp;% au lieu de −17&nbsp;%, −25&nbsp;% et −33&nbsp;%) : le total d&apos;une
+        maison porte aussi les études, les taxes, les branchements et le gros œuvre, que la finition ne touche pas.
+      </p>
 
       <h3>2. La région</h3>
       <p>
