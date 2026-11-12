@@ -80,6 +80,8 @@ import { INTAKE_CSS } from "@/components/estimateur/intake-styles";
 import DevisNeuf from "./DevisNeuf";
 import { mesurerPlan, mesureEstimationNeuf } from "@/lib/plans/mesure";
 import { suivre } from "@/lib/track";
+import VisiteGuidee, { type EtapeVisite } from "@/components/visite/VisiteGuidee";
+import { dictVisite } from "@/lib/i18n/visite";
 
 const CP = /^\d{5}$/;
 
@@ -88,6 +90,16 @@ const NIVEAUX_FINITION: Record<Finition, number> = { eco: 1, standard: 2, premiu
 /** Identifiants des champs : libellés (`htmlFor`), champ en faute (`aria-describedby`). */
 const ID = (k: string) => `av-neuf-${k}`;
 const ID_ERREUR = "av-neuf-err";
+/**
+ * Cibles de la visite guidée DANS la liste des lots (briques partagées : sélecteurs CSS, `querySelector` prend le
+ * premier) : les outils de la liste et l'en-tête du premier lot (pas la carte des démarches, rangée après les phases).
+ */
+/** Les quatre premières cases d'une grille de compteurs (`data-visite`) : le halo les entoure toutes. */
+const PREMIERS_COMPTEURS = (nom: string) => [1, 2, 3, 4].map((k) => `[data-visite="${nom}"] > :nth-child(${k})`);
+const CIBLES_LISTE_VISITE = {
+  outils: ".av-neuf-d .tools",
+  premierLot: ".av-neuf-d .tools ~ div:not(.dem-c) .acc-h",
+} as const;
 
 export default function EstimateurNeuf({ initialState, projectId }: { initialState?: Record<string, unknown>; projectId?: string } = {}) {
   const router = useRouter();
@@ -118,6 +130,9 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
   const hydrated = useRef(false);
   const statutsRef = useRef<Record<string, number> | undefined>(depart?.statuts); // suivi de chantier gardé en modification
   const origineRef = useRef<OrigineNeuf | undefined>(depart?.origine);            // maison venue d'un plan
+  /** Le formulaire arrive rempli (« Affiner » du rapide, retour du paiement, brouillon repris avec un code postal ou
+   *  des lignes perso) : la visite ne s'invite pas, son bouton reste là. Un projet rouvert (`edition`) l'est d'office. */
+  const [repris, setRepris] = useState(false);
 
   // ── Reprise ────────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -141,12 +156,16 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
     if (ouverture.frais) {
       try { localStorage.removeItem(CLE_BROUILLON_DETAIL_NEUF); } catch { /* noop */ }
       const r = ouverture.reprise;
-      if (r) { setEtat(r.etat); setCustom(r.custom); origineRef.current = r.origine; }
+      if (r) { setEtat(r.etat); setCustom(r.custom); origineRef.current = r.origine; setRepris(true); }
       return; // sinon : la maison par défaut (état initial)
     }
     let b = null;
     try { b = lireBrouillonDetailNeuf(localStorage.getItem(CLE_BROUILLON_DETAIL_NEUF)); } catch { /* noop */ }
-    if (b) { setEtat(b.etat); setCustom(b.custom); setOpen(b.open); origineRef.current = b.origine; }
+    if (b) {
+      setEtat(b.etat); setCustom(b.custom); setOpen(b.open); origineRef.current = b.origine;
+      // Une page seulement rouverte (brouillon de la maison par défaut, rangé au passage) n'est pas « préremplie ».
+      if (b.custom.length > 0 || !!b.etat.maison.codePostal || !!b.origine) setRepris(true);
+    }
   }, [initialState]);
 
   // Brouillon local (pas en modification d'un projet : il est déjà enregistré).
@@ -238,9 +257,10 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
     const o = (q.o ?? []).find(([v]) => String(v) === sv);
     if (o) repondre(q.k, o[0]);
   };
-  function choix(q: QuestionNeuf) {
+  /** `visite` : la cible d'une bulle de la visite guidée (`data-visite` sur le groupe), facultative. */
+  function choix(q: QuestionNeuf, visite?: string) {
     const lbl = q.l[locale], v = String(valeur(q.k));
-    if (q.vue === "segment") return <Segment aria={lbl} valeur={v} onChoix={choisir(q)} options={options(q)} />;
+    if (q.vue === "segment") return <Segment visite={visite} aria={lbl} valeur={v} onChoix={choisir(q)} options={options(q)} />;
     if (q.vue === "cartes") {
       const cartes = (q.o ?? []).map(([val, txt]) => {
         // Finition : les cartes de la rénovation (noms, accroches, descriptions : A7), sauf l'accroche de la
@@ -253,9 +273,9 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
           ...(q.k === "$finition" ? { lvl: NIVEAUX_FINITION[val as Finition] } : {}),
         };
       });
-      return <CartesFinition aria={lbl} valeur={v} onChoix={choisir(q)} cartes={cartes} />;
+      return <CartesFinition visite={visite} aria={lbl} valeur={v} onChoix={choisir(q)} cartes={cartes} />;
     }
-    return <Pastilles aria={lbl} actif={(x) => x === v} onChoix={choisir(q)} options={options(q)} />;
+    return <Pastilles visite={visite} aria={lbl} actif={(x) => x === v} onChoix={choisir(q)} options={options(q)} />;
   }
   /** Un nombre (surface, garage, distance) : pris à la sortie du champ, borné par la question. */
   function champ(q: QuestionNeuf) {
@@ -328,21 +348,38 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
   };
   const liste = { ctx, sel, maison: m, htParCle, open, onBascule: basculer, seulementCoches, actions };
 
+  // ── Visite guidée (bulles ancrées aux `data-visite` et aux cibles de la liste) ─────────────────
+  const etapesVisite = useMemo<EtapeVisite[]>(() => {
+    const tv = dictVisite(locale).detailleNeuf;
+    return [
+      { id: "maison", cible: ["neuf-d-titre", "neuf-d-type"], ...tv.maison },
+      { id: "surfaces", cible: "neuf-d-surfaces", ...tv.surfaces },
+      // Téléphone : la grille passe sur une colonne, plus haute que l'écran ; ses quatre premières cases.
+      { id: "pieces", cible: "neuf-d-pieces", cibleMobile: PREMIERS_COMPTEURS("neuf-d-pieces"), ...tv.pieces },
+      { id: "technique", cible: "neuf-d-technique", ...tv.technique },
+      { id: "finition", cible: ["neuf-d-finition", "neuf-d-pilotage"], ...tv.finition },
+      { id: "postes", cible: [CIBLES_LISTE_VISITE.outils, CIBLES_LISTE_VISITE.premierLot], ...tv.postes },
+      { id: "soi", cible: "neuf-d-nouveaux", ...tv.soi },
+      { id: "barre", cible: ["neuf-d-total", "neuf-d-jauge", "neuf-d-devis", "neuf-d-enregistrer"], place: ["haut"], ...tv.barre },
+    ];
+  }, [locale]);
+
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: EST_CSS + ROW_SOI_CSS + INTAKE_CSS + NEUF_DETAIL_CSS }} />
       <div className="av-estim av-neuf-d">
+        <VisiteGuidee id="detailleNeuf" etapes={etapesVisite} prerempli={edition || repris} />
         <ChoixVue vue={view} onVue={setView} saisie={d.vueSaisie} devis={d.vueDevis} aria={dl.vues.aria} />
 
         {view === "saisie" && (
           <div>
             <div className="card">
               <div className="eyebrow">{d.eyebrow}</div>
-              <h2>{d.titre}</h2>
+              <h2 data-visite="neuf-d-titre">{d.titre}</h2>
               <div className="sub">{d.sous}</div>
 
               <Intertitre>{d.typeT}</Intertitre>
-              <div className="typef">
+              <div className="typef" data-visite="neuf-d-type">
                 {questionsVisibles(m, "type").map((q) => (
                   <div key={q.k} className="typef-g">
                     {q.k !== "niveaux" && <span className="typef-l" aria-hidden="true">{q.l[locale]}</span>}
@@ -353,7 +390,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
 
               {/* L'ordre de la rénovation : habitable, garage (à la place de la surface au sol), hauteur, code postal. */}
               <Intertitre>{B.surfacesT}</Intertitre>
-              <div className="depart surf">
+              <div className="depart surf" data-visite="neuf-d-surfaces">
                 {surfaces.filter((q) => q.vue !== "cp").map(champSurface)}
                 <Field label={B.hauteur} hint={d.hauteurAide} htmlFor={ID("hauteur")}>
                   <output id={ID("hauteur")} className="ro"><span className="num">{d.hauteurValeur}</span><span className="u">m</span></output>
@@ -365,7 +402,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
               {/* La grille de la rénovation, à ses paires : « Niveaux » ouvre la première rangée, en lecture
                   seule (le type de maison le décide) ; l'interrupteur « Cuisine équipée comprise » dessous,
                   comme celui du dressing. */}
-              <div className="stpg">
+              <div className="stpg" data-visite="neuf-d-pieces">
                 <CompteurFixe id={ID("niveaux-n")} label={B.compteurs.niveaux} hint={d.niveauxAide} valeur={ctx.niveaux} />
                 {pieces.filter((q) => q.vue === "compteur").map((q) => (
                   <Stepper key={q.k} label={q.l[locale]} hint={q.hint?.[locale]} value={valeurCompteurNeuf(m, q.k as CompteurNeuf)}
@@ -376,7 +413,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
 
               <Intertitre>{d.techT} {sousTitre(d.techSous)}</Intertitre>
               <div className={"tech" + (techOuvert ? " open" : "")}>
-                <div className="tech-r">
+                <div className="tech-r" data-visite="neuf-d-technique">
                   <p className="tech-res">{resumeTechniqueNeuf(m, locale)}</p>
                   <button type="button" className="linkbtn tech-btn" aria-expanded={techOuvert} aria-controls={ID("tech")}
                     onClick={() => setTechOuvert((o) => !o)}>{techOuvert ? d.techReplier : d.techModifier}</button>
@@ -385,11 +422,11 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
               </div>
 
               {questionsVisibles(m, "finition").map((q) => (
-                <Fragment key={q.k}><Intertitre>{B.finitionT}</Intertitre>{choix(q)}</Fragment>
+                <Fragment key={q.k}><Intertitre>{B.finitionT}</Intertitre>{choix(q, "neuf-d-finition")}</Fragment>
               ))}
 
               {questionsVisibles(m, "pilotage").map((q) => (
-                <Fragment key={q.k}><Intertitre>{q.l[locale]}</Intertitre>{choix(q)}</Fragment>
+                <Fragment key={q.k}><Intertitre>{q.l[locale]}</Intertitre>{choix(q, "neuf-d-pilotage")}</Fragment>
               ))}
 
               <Intertitre>{B.tvaT}</Intertitre>
@@ -420,7 +457,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
             <CarteFraisNeuf {...liste} />
 
             <div className="intro">{d.intro}</div>
-            <div className="nv">
+            <div className="nv" data-visite="neuf-d-nouveaux">
               <span className="nv-l" id="nv-l">{d.nouveauxL}</span>
               <span className="nv-seg" role="group" aria-labelledby="nv-l">
                 {NOUVEAUX.map(([v, txt]) => (
@@ -463,6 +500,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
       {/* Barre live sticky (la même que la rénovation), avec le prix au m² et les frais */}
       <BarreLive total={tot.ttc} budget={budget} vue={view} onVue={setView} onEnregistrer={enregistrer} saving={saving} edition={edition} erreur={erreur}
         erreurId={ID_ERREUR} className="av-neuf-live"
+        visite={{ total: "neuf-d-total", jauge: "neuf-d-jauge", devis: "neuf-d-devis", enregistrer: "neuf-d-enregistrer" }}
         m2={<div className="m2"><span className="m2-v">≈ {fmt(m2, locale)}<span className="m2-l"> {d.parM2}</span><span className="m2-c">{d.parM2Court}</span>
           {frais > 0 ? <> <span className="m2-f">· {d.dontFrais} {fmt(frais, locale)}</span></> : null}</span></div>}
         t={{

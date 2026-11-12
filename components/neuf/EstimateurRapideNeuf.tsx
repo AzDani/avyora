@@ -61,6 +61,8 @@ import { NEUF_CSS } from "./neuf-styles";
 import { mesurerPlan, mesureEstimationNeuf } from "@/lib/plans/mesure";
 import { lienInscriptionBeta } from "@/lib/beta";
 import { euroApres, euroAvant, signePct } from "@/lib/i18n/nombres";
+import VisiteGuidee, { type EtapeVisite } from "@/components/visite/VisiteGuidee";
+import { dictVisite } from "@/lib/i18n/visite";
 
 const FINITIONS: { v: Finition; lvl: number }[] = [
   { v: "eco", lvl: 1 },
@@ -192,12 +194,16 @@ export default function EstimateurRapideNeuf({
   const [lienPlan, setLienPlan] = useState<Pick<OrigineNeuf, "planId" | "planLocal">>({});
   /** `pid` / `pl` ne valent que pour le fragment lu au montage, pas pour un lien collé ensuite. */
   const liensConsommes = useRef(false);
+  /** Un lien de plan (`#plan=`) est arrivé : le formulaire va se remplir, la visite ne s'invite pas (bouton seul). Posé
+   *  avant le décodage (asynchrone), dans le même rendu que la lecture de la mémoire de la visite : aucun clignotement. */
+  const [lienPlanRecu, setLienPlanRecu] = useState(false);
   useEffect(() => {
     if (edit) return;
     function lireFragment() {
       let h = "";
       try { h = window.location.hash; } catch { /* noop */ }
       if (!h.startsWith("#plan=")) return;
+      setLienPlanRecu(true);
       // L'URL est nettoyée AVANT toute lecture : ni l'historique, ni un partage, ni une mesure ne la voient.
       try { window.history.replaceState(null, "", window.location.pathname + rechercheNettoyee()); } catch { /* noop */ }
       const fragment = h.slice(6);
@@ -336,6 +342,26 @@ export default function EstimateurRapideNeuf({
     [valid, preset, R.qui, locale, isPro, beta, versInscription, T, rn],
   );
 
+  /**
+   * Visite guidée (bulles ancrées aux `data-visite` ci-dessous) : la maison, surface et code postal du terrain,
+   * finition, qui construit, garage et eaux usées, la barre (toujours affichée : collante avec un chiffre, à sa place
+   * sans), puis ses boutons. Formulaire arrivé rempli (projet rouvert, réponses rendues au retour de /tarifs, lien
+   * prérempli d'une page de prix, code postal dans l'URL, plan) : pas d'invitation, le bouton seulement.
+   */
+  const etapesVisite = useMemo<EtapeVisite[]>(() => {
+    const tv = dictVisite(locale).rapideNeuf;
+    return [
+      { id: "maison", cible: ["neuf-maison-titre", "neuf-maison"], ...tv.maison },
+      { id: "champs", cible: "neuf-champs", ...tv.champs },
+      { id: "finition", cible: "neuf-finition", ...tv.finition },
+      { id: "qui", cible: "neuf-qui", ...tv.qui },
+      { id: "options", cible: "neuf-options", ...tv.options },
+      { id: "budget", cible: "neuf-budget", place: ["haut"], ...tv.budget },
+      { id: "suite", cible: "neuf-actions", place: ["haut"], ...tv.suite },
+    ];
+  }, [locale]);
+  const formulaireRempli = !!edit || !!retour || prerempli || !!initial?.cp || lienPlanRecu || !!plan || !!base;
+
   const niveauxOpts: Niveaux[] = ["pp", "etage", ...(baseEff?.niveaux === "combles" ? (["combles"] as Niveaux[]) : [])];
   const eauxOpts: ("collectif" | "fosse" | "micro")[] = ["collectif", "fosse", ...(baseEff?.assainissement === "micro" ? (["micro"] as const) : [])];
   const eauxActif = R.assainissement ?? (baseEff?.assainissement === "micro" ? "micro" : "collectif");
@@ -419,6 +445,7 @@ export default function EstimateurRapideNeuf({
     <>
       <style dangerouslySetInnerHTML={{ __html: RAPIDE_CSS + NEUF_CSS }} />
       <div className="av-rapide av-neuf">
+        <VisiteGuidee id="rapideNeuf" etapes={etapesVisite} prerempli={formulaireRempli} />
         {avertDetaille && (
           <div className="avert" role="note">
             <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8 15 14H1L8 1.8Z" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /><path d="M8 6.2v3.6M8 11.6v.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
@@ -453,14 +480,14 @@ export default function EstimateurRapideNeuf({
 
         <div className="q">
           <h2 className="qlbl"><span className="n" aria-hidden="true">1</span>{s.q1}</h2>
-          <div className="glbl">{s.niveauxLabel}{badge("niveaux")}</div>
-          <div className="seg" role="group" aria-label={s.niveauxLabel} style={{ marginBottom: 14 }}>
+          <div className="glbl" data-visite="neuf-maison-titre">{s.niveauxLabel}{badge("niveaux")}</div>
+          <div className="seg" role="group" aria-label={s.niveauxLabel} data-visite="neuf-maison" style={{ marginBottom: 14 }}>
             {niveauxOpts.map((v) => {
               const on = affiche && R.niveaux === v;
               return <button type="button" key={v} className={on ? "on" : ""} aria-pressed={on} onClick={() => maj({ niveaux: v })}>{s.niveaux[v]}</button>;
             })}
           </div>
-          <div className="fields">
+          <div className="fields" data-visite="neuf-champs">
             <div className="fld">
               <label htmlFor="neuf-surface">{s.surfaceLabel}{badge("surface")}</label>
               <Stepper block id="neuf-surface" invalide={champErr === "surface"} value={R.surface} min={BORNES_NEUF.surface.min} max={BORNES_NEUF.surface.max} step={5} unit="m²"
@@ -480,7 +507,7 @@ export default function EstimateurRapideNeuf({
 
         <div className="q">
           <h2 className="qlbl"><span className="n" aria-hidden="true">2</span>{T.rapide.step3}</h2>
-          <div className="fins" role="group" aria-label={T.rapide.step3}>
+          <div className="fins" role="group" aria-label={T.rapide.step3} data-visite="neuf-finition">
             {FINITIONS.map((f) => {
               const fi = carteFin(f.v);
               return (
@@ -502,7 +529,7 @@ export default function EstimateurRapideNeuf({
 
         <div className="q">
           <h2 className="qlbl"><span className="n" aria-hidden="true">3</span>{T.rapide.step4}</h2>
-          <div className="quis" role="group" aria-label={T.rapide.step4}>
+          <div className="quis" role="group" aria-label={T.rapide.step4} data-visite="neuf-qui">
             {QUIS.map((q) => {
               const qi = carteQui(q.v);
               const price = m2ByQui[q.v] || 0;
@@ -528,7 +555,7 @@ export default function EstimateurRapideNeuf({
           </div>
         </div>
 
-        <div className="q">
+        <div className="q" data-visite="neuf-options">
           <h2 className="qlbl"><span className="n" aria-hidden="true">4</span>{s.q4}</h2>
           <div className="grp">
             <div className="glbl">{s.garageLabel}<span className="opt">{s.facultatif}</span>{badge("garage")}</div>
@@ -573,14 +600,14 @@ export default function EstimateurRapideNeuf({
       </div>
 
       {/* Sans chiffre, la barre ne colle pas au bas d'un téléphone : elle y cachait le code postal (n° 71). */}
-      <div className={"av-rapide-live av-neuf-live" + (affiche ? "" : " attente")}>
+      <div className={"av-rapide-live av-neuf-live" + (affiche ? "" : " attente")} data-visite="neuf-budget">
         <div className="in">
           <div>
             <div className="lbl">{s.liveLabel}</div>
             <div className="big">{valid ? <>{euroAvant(locale)}<CountUp value={lo} nf={nf} />{euroApres(locale)}<span style={{ opacity: .55 }}> – </span>{euroAvant(locale)}<CountUp value={hi} nf={nf} />{euroApres(locale)}</> : "—"}</div>
             <div className="sub">{valid ? <>≈ {euroAvant(locale)}<CountUp value={m2} nf={nf} />{locale === "en" ? "" : " "}{s.parM2} · {locale === "en" ? "±15%" : "±15\u00a0%"}{regLabel ? <> · {regLabel}</> : ""}</> : !affiche ? s.attente : s.errSurface}</div>
           </div>
-          <div className="btns">
+          <div className="btns" data-visite="neuf-actions">
             <button type="button" className="ghost" onClick={affiner}>{isPro ? s.affiner : s.affinerPro}</button>
             <button type="button" className="cta" onClick={enregistrer} disabled={saving}>{saving ? s.enregistrement : isPro || edit ? s.enregistrer : s.enregistrerGratuit}</button>
           </div>

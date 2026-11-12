@@ -29,6 +29,10 @@ import { dictVisite } from "@/lib/i18n/visite";
 import { LangProvider } from "@/components/i18n/LangProvider";
 import VisiteGuidee from "@/components/visite/VisiteGuidee";
 import EstimateurRapide from "@/components/EstimateurRapide";
+import EstimateurRapideNeuf from "@/components/neuf/EstimateurRapideNeuf";
+import Estimateur from "@/components/Estimateur";
+import EstimateurNeuf from "@/components/neuf/EstimateurNeuf";
+import { CATALOG, defaultCtx, visible, key } from "@/lib/estimateur";
 
 const LOCALES = ["fr", "en"] as const;
 const sansStyle = (h: string) => h.replace(/<style[^>]*>[\s\S]*?<\/style>/g, "");
@@ -124,6 +128,18 @@ describe("invitation « Te guider en 1 minute ? »", () => {
 
 describe("étapes : cibles absentes, repli, ordre", () => {
   const E = (id: string, cible: EtapeVisite["cible"], repli?: EtapeVisite["repli"]): EtapeVisite => ({ id, cible, repli, titre: id, texte: id });
+
+  it("téléphone : `cibleMobile` remplace `cible` (même repli) ; ordinateur et étapes sans elle : inchangées", () => {
+    const e: EtapeVisite = { id: "g", cible: "grille", cibleMobile: ["c1", "c2"], repli: "r", titre: "g", texte: "g" };
+    expect(resoudreEtapes([e], () => true)[0].cibles).toEqual(["grille"]);
+    expect(resoudreEtapes([e], () => true, true)[0].cibles).toEqual(["c1", "c2"]);
+    expect(resoudreEtapes([e], (n) => n === "r", true)[0].cibles).toEqual(["r"]);
+    expect(resoudreEtapes([E("a", "a")], () => true, true)[0].cibles).toEqual(["a"]);
+    // Le composant résout avec le format de l'écran, au lancement et au passage téléphone ↔ ordinateur.
+    const src = lire("components/visite/VisiteGuidee.tsx");
+    expect(src).toContain("resoudreEtapes(etapes, (nom) => !!elementDe(nom), mobile)");
+    expect(src).toContain("resoudreEtapes(etapes, (nom) => !!elementDe(nom), m)");
+  });
 
   it("`data-visite` par défaut, un sélecteur CSS tel quel", () => {
     expect(selecteurCible("rapide-cp")).toBe('[data-visite="rapide-cp"]');
@@ -279,7 +295,7 @@ describe("textes FR / EN (lib/i18n/visite.ts)", () => {
     expect(en.commun.etape(2, 7)).toBe("Step 2 of 7");
   });
   it("bulles courtes : 1 à 2 phrases, un titre bref", () => {
-    for (const d of [fr, en]) for (const e of Object.values(d.rapideReno)) {
+    for (const d of [fr, en]) for (const id of ESTIMATEURS_VISITE) for (const e of Object.values(d[id])) {
       expect(e.titre.length).toBeLessThanOrEqual(32);
       expect(e.texte.split(/[.!?](\s|$)/).filter((x) => x && x.trim()).length).toBeLessThanOrEqual(3);
       expect(e.texte.length).toBeLessThanOrEqual(190);
@@ -346,5 +362,186 @@ describe("accessibilité et CSS de la bulle (source)", () => {
     expect(VISITE_CSS).toContain("prefers-reduced-motion:reduce");
     expect(VISITE_CSS).toMatch(/@media \(max-width:560px\)\{[\s\S]*min-height:44px/);
     expect(src).toContain('"(prefers-reduced-motion: reduce)"');
+  });
+});
+
+/* ─── Les trois autres estimateurs : rapide neuf, détaillé rénovation, détaillé neuf ─────────────────────── */
+
+/**
+ * Une cible est présente dans le rendu serveur : `data-visite="nom"`, ou, pour un sélecteur CSS (cibles DANS la liste
+ * des lots, faite de briques partagées), chacun de ses maillons (`.acc.open`, `.trow`…) porté par au moins un élément
+ * (toutes ses classes à la fois). `:not(…)` est ignoré. Sans DOM dans la suite : une vérification de présence, pas
+ * l'ordre exact des maillons (celui-ci est relu à la main dans le navigateur).
+ */
+function ciblePresente(h: string, nom: string): boolean {
+  if (!/^[.#[]/.test(nom)) return h.includes(`data-visite="${nom}"`);
+  // Un attribut cité (`[data-visite="…"] > :nth-child(2)`) : posé dans la page.
+  for (const m of nom.matchAll(/\[data-visite="([^"]+)"\]/g)) if (!h.includes(`data-visite="${m[1]}"`)) return false;
+  const elements = [...h.matchAll(/class="([^"]*)"/g)].map((m) => new Set(m[1].split(/\s+/)));
+  const maillons = nom.replace(/:not\([^)]*\)/g, "").split(/[\s~>+]+/).filter(Boolean);
+  return maillons.every((m) => {
+    const classes = [...m.matchAll(/\.([\w-]+)/g)].map((x) => x[1]);
+    if (!classes.length) return true; // un type seul (`div`)
+    return elements.some((el) => classes.every((c) => el.has(c)));
+  });
+}
+const nomsDe = (e: EtapeVisite) => [...[e.cible ?? []].flat(), ...[e.repli ?? []].flat(), ...[e.cibleMobile ?? []].flat()];
+
+const RapideNeuf = EstimateurRapideNeuf as unknown;
+const Detaille = Estimateur as unknown;
+const DetailleNeuf = EstimateurNeuf as unknown;
+/** Un projet de rénovation rouvert, son premier lot ouvert et sa première ligne cochée : « Fait faire » / « Je le fais »
+ *  n'apparaissent que sur une ligne cochée. */
+const PREMIER_LOT = CATALOG.find((l) => visible(defaultCtx(), l))!;
+const RENO_LOT_OUVERT = {
+  v: "estimateur", ctx: defaultCtx(), sel: { [key(PREMIER_LOT.c, PREMIER_LOT.t[0].n)]: { on: true } }, open: { [PREMIER_LOT.c]: true }, codePostal: "", custom: [],
+};
+
+const ESTIMATEURS: { id: "rapideNeuf" | "detailleReno" | "detailleNeuf"; el: unknown; props: object; ordre: string[]; premiere: string; fichier: string }[] = [
+  { id: "rapideNeuf", el: RapideNeuf, props: {}, ordre: ["maison", "champs", "finition", "qui", "options", "budget", "suite"], premiere: "neuf-maison-titre", fichier: "components/neuf/EstimateurRapideNeuf.tsx" },
+  { id: "detailleReno", el: Detaille, props: { initialState: RENO_LOT_OUVERT }, ordre: ["bien", "surfaces", "pieces", "finition", "postes", "soi", "total", "suite"], premiere: "detail-bien", fichier: "components/Estimateur.tsx" },
+  { id: "detailleNeuf", el: DetailleNeuf, props: {}, ordre: ["maison", "surfaces", "pieces", "technique", "finition", "postes", "soi", "barre"], premiere: "neuf-d-titre", fichier: "components/neuf/EstimateurNeuf.tsx" },
+];
+
+describe("rapide neuf, détaillé rénovation, détaillé neuf : chacun sa visite", () => {
+  for (const E of ESTIMATEURS) {
+    it(`${E.id} : 5 à 8 étapes dans l'ordre de l'écran, chaque cible (et repli) présente, textes de la langue, bouton en haut`, () => {
+      for (const l of LOCALES) {
+        PROPS.derniers = [];
+        const h = rendre(E.el, E.props, l);
+        const p = PROPS.derniers.at(-1)!;
+        expect(p.id).toBe(E.id);
+        const etapes = p.etapes as EtapeVisite[];
+        expect(etapes.map((e) => e.id)).toEqual(E.ordre);
+        expect(etapes.length).toBeGreaterThanOrEqual(5);
+        expect(etapes.length).toBeLessThanOrEqual(8);
+        const tv = dictVisite(l)[E.id] as Record<string, { titre: string; texte: string }>;
+        // Toutes les entrées du dictionnaire servent, et rien que celles-là.
+        expect(Object.keys(tv).sort()).toEqual([...E.ordre].sort());
+        for (const e of etapes) {
+          expect({ titre: e.titre, texte: e.texte }).toEqual(tv[e.id]);
+          expect(e.cible).not.toBeNull(); // jamais une bulle sans cible au milieu de l'écran
+          // Le repli des pièces (pastilles du mode « pièces ciblées ») : vérifié dans ce mode, plus bas.
+          for (const nom of nomsDe(e)) if (nom !== "detail-pieces-choix") expect(ciblePresente(h, nom), `${E.id} · ${e.id} · ${nom}`).toBe(true);
+        }
+        expect(h.indexOf("av-visite-aide")).toBeGreaterThan(-1);
+        expect(h.indexOf("av-visite-aide")).toBeLessThan(h.indexOf(`data-visite="${E.premiere}"`));
+      }
+    });
+
+    it(`${E.id} : au téléphone, aucune cible plus haute que l'écran (la grille de compteurs : ses quatre premières cases)`, () => {
+      PROPS.derniers = [];
+      rendre(E.el, E.props);
+      const etapes = PROPS.derniers.at(-1)!.etapes as EtapeVisite[];
+      const pieces = etapes.find((e) => e.id === "pieces");
+      if (!pieces) return; // le rapide neuf n'a pas de grille
+      expect(pieces.cibleMobile).toHaveLength(4);
+      for (const c of [pieces.cibleMobile ?? []].flat()) expect(c).toMatch(new RegExp(`^\\[data-visite="${pieces.cible}"\\] > :nth-child\\(\\d\\)$`));
+      // Ordinateur : la grille entière ; téléphone : ses premières cases, la même étape au même rang.
+      const tout = () => true;
+      expect(resoudreEtapes(etapes, tout).find((e) => e.id === "pieces")!.cibles).toEqual([pieces.cible]);
+      const m = resoudreEtapes(etapes, tout, true);
+      expect(m.find((e) => e.id === "pieces")!.cibles).toEqual(pieces.cibleMobile);
+      expect(m.map((e) => e.id)).toEqual(resoudreEtapes(etapes, tout).map((e) => e.id));
+    });
+
+    it(`${E.id} : chaque nom data-visite cité est posé dans le code source (ou par une brique qui le reçoit)`, () => {
+      PROPS.derniers = [];
+      rendre(E.el, E.props);
+      const src = lire(E.fichier);
+      for (const e of PROPS.derniers.at(-1)!.etapes as EtapeVisite[]) for (const nom of nomsDe(e)) {
+        if (/^[.#[]/.test(nom)) continue;
+        expect(src.includes(`"${nom}"`), `${E.id} · ${nom}`).toBe(true);
+      }
+    });
+
+    it(`${E.id} : le formulaire rendu est le même avec la visite, à la rangée du bouton près`, () => {
+      const h = rendre(E.el, E.props);
+      const sansVisite = h.replace(/<div class="av-visite-barre">[\s\S]*?<\/button><\/div>/, "").replace(/ data-visite="[^"]*"/g, "");
+      expect(sansVisite).not.toContain("av-visite");
+      expect(sansVisite).not.toContain("data-visite");
+    });
+  }
+
+  it("les textes du neuf parlent du neuf : aucun mot de la rénovation", () => {
+    for (const l of LOCALES) for (const id of ["rapideNeuf", "detailleNeuf"] as const) {
+      const t = textes(dictVisite(l)[id]).join(" ");
+      expect(t).not.toMatch(l === "fr" ? /r[ée]nov|rafra[iî]ch/i : /renovat|refresh/i);
+    }
+  });
+
+  it("prérempli (bouton seul, pas d'invitation) : projet rouvert, lien prérempli, retour ; pas une arrivée directe", () => {
+    const prerempli = (el: unknown, props: object) => { PROPS.derniers = []; rendre(el, props); return PROPS.derniers.at(-1)?.prerempli; };
+    // Rapide neuf : page de prix (`?surface=`, `?niveaux=`, `?cp=`), projet rouvert ; pas une source seule.
+    expect(prerempli(RapideNeuf, {})).toBe(false);
+    expect(prerempli(RapideNeuf, { initial: { src: "prix-ville" } })).toBe(false);
+    expect(prerempli(RapideNeuf, { initial: { surface: 120 } })).toBe(true);
+    expect(prerempli(RapideNeuf, { initial: { niveaux: "etage" } })).toBe(true);
+    expect(prerempli(RapideNeuf, { initial: { cp: "33000" } })).toBe(true);
+    expect(prerempli(RapideNeuf, { edit: { projectId: "p1" }, initialR: { surface: 100, codePostal: "33000" } })).toBe(true);
+    // Détaillés : « Modifier » (projectId) → bouton seul ; une page neuve → invitation possible.
+    expect(prerempli(Detaille, {})).toBe(false);
+    expect(prerempli(Detaille, { initialState: RENO_LOT_OUVERT, projectId: "p1" })).toBe(true);
+    expect(prerempli(DetailleNeuf, {})).toBe(false);
+    expect(prerempli(DetailleNeuf, { initialState: { v: "neuf-detail" }, projectId: "p1" })).toBe(true);
+    // Côté client (effets, hors rendu serveur) : retour de /tarifs, lien de plan, « Affiner », brouillon repris.
+    const rn = lire("components/neuf/EstimateurRapideNeuf.tsx");
+    expect(rn).toMatch(/const formulaireRempli = !!edit \|\| !!retour \|\| prerempli \|\| !!initial\?\.cp \|\| lienPlanRecu/);
+    expect(rn).toMatch(/if \(!h\.startsWith\("#plan="\)\) return;\s*setLienPlanRecu\(true\);/);
+    expect(lire("components/Estimateur.tsx")).toMatch(/if \(fromAffiner \|\| Object\.keys\(o\.etat\.sel\)\.length > 0[^)]*\) setRepris\(true\)/);
+    const dn = lire("components/neuf/EstimateurNeuf.tsx");
+    expect(dn).toMatch(/setCustom\(r\.custom\); origineRef\.current = r\.origine; setRepris\(true\);/);
+    expect(dn).toContain("prerempli={edition || repris}");
+  });
+
+  it("détaillé rénovation, « Un pro ou toi ? » : sur une ligne cochée, sinon la 1re ligne d'un lot ouvert, sinon le 1er lot", () => {
+    const soiDe = (props: object) => {
+      PROPS.derniers = [];
+      const h = rendre(Detaille, props);
+      const etapes = PROPS.derniers.at(-1)!.etapes as EtapeVisite[];
+      const l = resoudreEtapes(etapes, (n) => ciblePresente(h, n));
+      return { l, cibles: l.find((e) => e.id === "soi")!.cibles };
+    };
+    // L'arrivée : aucun lot ouvert, aucune ligne. Toutes les étapes restent, la bulle se pose sur le premier lot.
+    const arrivee = soiDe({});
+    expect(arrivee.l.map((e) => e.id)).toEqual(["bien", "surfaces", "pieces", "finition", "postes", "soi", "total", "suite"]);
+    expect(arrivee.cibles).toEqual([".av-estim .tools ~ div .acc-h"]);
+    // Un lot ouvert, rien de coché : sa première ligne.
+    const ouvert = soiDe({ initialState: { ...RENO_LOT_OUVERT, sel: {} } });
+    expect(ouvert.cibles).toEqual([".av-estim .acc.open .trow"]);
+    // Une ligne cochée : son « Fait faire » / « Je le fais ».
+    expect(soiDe({ initialState: RENO_LOT_OUVERT }).cibles).toEqual([".av-estim .acc.open .trow .choice"]);
+    PROPS.derniers = [];
+    rendre(Detaille, {});
+    const etapes = PROPS.derniers.at(-1)!.etapes as EtapeVisite[];
+    // Pièces ciblées : la grille de compteurs n'existe pas, les pastilles des pièces la remplacent.
+    const pieces = etapes.find((e) => e.id === "pieces")!;
+    const hp = rendre(Detaille, { initialState: { v: "estimateur", ctx: { ...defaultCtx(), perimetre: "piece", espaces: { chambre: [12] } }, sel: {}, open: {}, codePostal: "", custom: [] } });
+    expect(ciblePresente(hp, "detail-pieces")).toBe(false);
+    expect(ciblePresente(hp, "detail-pieces-choix")).toBe(true);
+    const r = resoudreEtapes([pieces], (n) => ciblePresente(hp, n));
+    expect(r[0].cibles).toEqual(["detail-pieces-choix"]);
+  });
+
+  it("téléphone sans budget (jauge cachée) : le total seul ; vue « Mon devis » : seules les étapes de la barre restent", () => {
+    for (const id of ["detailleReno", "detailleNeuf"] as const) {
+      PROPS.derniers = [];
+      rendre(id === "detailleReno" ? Detaille : DetailleNeuf, {});
+      const etapes = PROPS.derniers.at(-1)!.etapes as EtapeVisite[];
+      const barre = new Set(etapes.flatMap((e) => [e.cible ?? []].flat()).filter((n) => /(total|devis|enregistrer)$/.test(n)));
+      const l = resoudreEtapes(etapes, (n) => barre.has(n));
+      expect(l.length).toBeGreaterThan(0);
+      for (const e of l) for (const c of e.cibles) expect(c).not.toMatch(/jauge/);
+    }
+  });
+
+  it("la visite ne touche à rien : aucune requête au rendu des trois estimateurs", () => {
+    const fetchOrig = globalThis.fetch;
+    const espion = vi.fn();
+    globalThis.fetch = espion as never;
+    try {
+      for (const E of ESTIMATEURS) for (const l of LOCALES) rendre(E.el, E.props, l);
+      expect(espion).not.toHaveBeenCalled();
+    } finally { globalThis.fetch = fetchOrig; }
   });
 });

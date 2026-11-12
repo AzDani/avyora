@@ -43,6 +43,8 @@ import { dictDetail } from "@/lib/i18n/detail";
 import { CLE_BROUILLON_RENO, CLE_BROUILLON_DETAIL_RENO, CLE_RECLAMATION_RENO, brouillonDetailleReno } from "@/lib/estimateur/brouillon-reno";
 import { suivre } from "@/lib/track";
 import { messageErreurApi } from "@/lib/i18n/erreurs-api";
+import VisiteGuidee, { type EtapeVisite } from "@/components/visite/VisiteGuidee";
+import { dictVisite } from "@/lib/i18n/visite";
 import {
   etatDepuis, etatVierge, projetReno, ouvertureDetailReno, majNombre, majSol, majType, pasCtx, compteurPiece, pasPiece,
   choisirPerimetre, basculerEspace, ajouterExemplaire, retirerExemplaire, surfaceExemplaire, majZone, basculerDressing, recapReno,
@@ -58,6 +60,19 @@ const TYPES: TypeBien[] = ["Studio", "T2", "T3", "T4", "Maison"];
 const ID_CHAMP = { cp: "av-reno-cp", surface: "av-reno-surface" } as const;
 const ID_ERREUR = "av-reno-err";
 const NIVEAUX_FINITION: Record<Finition, number> = { eco: 1, standard: 2, premium: 3 };
+/**
+ * Cibles de la visite guidée DANS la liste des lots (briques partagées : sélecteurs CSS, `querySelector` prend le
+ * premier) : les outils de la liste, l'en-tête du premier lot, la première ligne d'un lot ouvert, et « Fait faire » /
+ * « Je le fais » d'une ligne cochée (ils n'apparaissent qu'une fois la ligne cochée).
+ */
+/** Les quatre premières cases d'une grille de compteurs (`data-visite`) : le halo les entoure toutes. */
+const PREMIERS_COMPTEURS = (nom: string) => [1, 2, 3, 4].map((k) => `[data-visite="${nom}"] > :nth-child(${k})`);
+const CIBLES_LISTE_VISITE = {
+  outils: ".av-estim .tools",
+  premierLot: ".av-estim .tools ~ div .acc-h",
+  ligneOuverte: ".av-estim .acc.open .trow",
+  choixLigne: ".av-estim .acc.open .trow .choice",
+} as const;
 
 export default function Estimateur({ initialState, projectId }: { initialState?: Record<string, unknown>; projectId?: string } = {}) {
   const router = useRouter();
@@ -82,6 +97,9 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
   const faute = useChampEnFaute<keyof typeof ID_CHAMP>();
   const hydrated = useRef(false);
   const statutsRef = useRef<Record<string, number> | undefined>(undefined); // suivi de chantier à préserver en modif
+  /** Le formulaire arrive rempli (« Affiner » depuis le rapide, brouillon repris avec des réponses) : la visite ne
+   *  s'invite pas, son bouton reste là. Un projet rouvert (`edition`) l'est d'office. */
+  const [repris, setRepris] = useState(false);
 
   /* Hydratation : un projet rouvert est déjà posé (premier rendu) ; sinon « Nouveau projet », « Affiner »
      ou le brouillon du détaillé (`ouvertureDetailReno`). */
@@ -115,7 +133,11 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
     try { graine = localStorage.getItem(DRAFT_KEY); brouillon = localStorage.getItem(DRAFT_KEY_DETAIL); } catch { /* noop */ }
     const o = ouvertureDetailReno({ nouveau: isNew, affiner: fromAffiner, graine, brouillon });
     if (o.effacer) { try { localStorage.removeItem(DRAFT_KEY_DETAIL); } catch { /* noop */ } }
-    if (o.etat) poser(o.etat);
+    if (o.etat) {
+      poser(o.etat);
+      // Une page seulement rouverte (brouillon vierge rangé au passage) n'est pas « préremplie ».
+      if (fromAffiner || Object.keys(o.etat.sel).length > 0 || o.etat.custom.length > 0 || !!o.etat.codePostal) setRepris(true);
+    }
   }, [initialState]);
 
   // Sauvegarde brouillon local.
@@ -211,6 +233,26 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
   // Les lots du bien (périmètre, type de bien) : ceux de la liste, et ce que « Tout déplier » ouvre.
   const lotsMontres = CATALOG.filter((l) => visible(ctx, l));
 
+  // ── Visite guidée (bulles ancrées aux `data-visite` et aux cibles de la liste) ──────────────
+  /* « Un pro ou toi ? » : sur « Fait faire » / « Je le fais » d'une ligne cochée ; sinon sur la première ligne d'un lot
+     ouvert ; sinon (l'arrivée : aucun lot ouvert) sur l'en-tête du premier lot. La visite n'ouvre ni ne coche rien. */
+  const lotOuvert = Object.values(open).some(Boolean);
+  const etapesVisite = useMemo<EtapeVisite[]>(() => {
+    const tv = dictVisite(locale).detailleReno;
+    return [
+      { id: "bien", cible: ["detail-bien", "detail-perimetre"], ...tv.bien },
+      { id: "surfaces", cible: "detail-surfaces", ...tv.surfaces },
+      // Logement entier : la grille de compteurs ; pièces ciblées : les pastilles des pièces.
+      // Téléphone : la grille passe sur une colonne, plus haute que l'écran ; ses quatre premières cases.
+      { id: "pieces", cible: "detail-pieces", cibleMobile: PREMIERS_COMPTEURS("detail-pieces"), repli: "detail-pieces-choix", ...tv.pieces },
+      { id: "finition", cible: "detail-finition", ...tv.finition },
+      { id: "postes", cible: [CIBLES_LISTE_VISITE.outils, CIBLES_LISTE_VISITE.premierLot], ...tv.postes },
+      { id: "soi", cible: CIBLES_LISTE_VISITE.choixLigne, repli: lotOuvert ? CIBLES_LISTE_VISITE.ligneOuverte : CIBLES_LISTE_VISITE.premierLot, ...tv.soi },
+      { id: "total", cible: ["detail-total", "detail-jauge"], place: ["haut"], ...tv.total },
+      { id: "suite", cible: ["detail-devis", "detail-enregistrer"], place: ["haut"], ...tv.suite },
+    ];
+  }, [locale, lotOuvert]);
+
   // ── Un lot : en-tête, lignes du catalogue, lignes perso ────────────────────
   function bloc(l: Lot) {
     const cLines = custom.filter((x) => x.lot === l.c);
@@ -236,22 +278,23 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
     <>
       <style dangerouslySetInnerHTML={{ __html: EST_CSS + ROW_SOI_CSS + INTAKE_CSS }} />
       <div className="av-estim">
+        <VisiteGuidee id="detailleReno" etapes={etapesVisite} prerempli={edition || repris} />
         <ChoixVue vue={view} onVue={setView} saisie={dl.vues.saisie} devis={dl.vues.devis} aria={dl.vues.aria} />
 
         {view === "saisie" && (
           <div>
             <div className="card">
               <div className="eyebrow">{B.eyebrow}</div>
-              <h2>{B.titre}</h2>
+              <h2 data-visite="detail-bien">{B.titre}</h2>
               <div className="sub">{B.sous}</div>
               <Intertitre>{B.perimetreT}</Intertitre>
-              <Segment aria={B.perimetreT} valeur={piece ? "piece" : "entier"} onChoix={onPerimetre}
+              <Segment visite="detail-perimetre" aria={B.perimetreT} valeur={piece ? "piece" : "entier"} onChoix={onPerimetre}
                 options={[{ v: "entier", label: B.entier }, { v: "piece", label: B.pieces }]} />
 
               {piece ? (
                 <>
                   <Intertitre>{B.piecesQ}</Intertitre>
-                  <Pastilles aria={B.piecesQ} actif={(k) => espKeys.has(k)} onChoix={toggleEspace}
+                  <Pastilles visite="detail-pieces-choix" aria={B.piecesQ} actif={(k) => espKeys.has(k)} onChoix={toggleEspace}
                     options={Object.entries(ESPACES).map(([k, e]) => ({ v: k, label: <>{e.emoji} {espaceNom(e.nom)}</> }))} />
                   <div className="locnote" style={{ marginTop: 10 }}>{B.piecesAide}</div>
                   {!suite && (
@@ -297,7 +340,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
                 </div>
               )}
 
-              <div className="depart">
+              <div className="depart" data-visite="detail-surfaces">
                 {!piece && (
                   <Field label={B.surfaceHab} hint={B.surfaceHabAide} htmlFor="av-reno-surface">
                     <NumStepper field id="av-reno-surface" value={ctx.surface} min={1} unit="m²" onChange={(n) => onNum("surface", String(n))} />
@@ -314,7 +357,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
 
               {!piece && (<>
               <Intertitre>{B.piecesConfT} <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 500 }}>{B.piecesConfSous}</span></Intertitre>
-              <div className="stpg">
+              <div className="stpg" data-visite="detail-pieces">
                 <Stepper label={B.compteurs.niveaux} hint={B.compteurs.niveauxAide} value={ctx.niveaux} onStep={(d) => stepCtx("niveaux", d, 1)} />
                 <Stepper label={B.compteurs.sejour} value={bd("sejour")} onStep={(d) => stepBd("sejour", d, 0)} />
                 <Stepper label={B.compteurs.cuisine} value={bd("cuisine")} onStep={(d) => stepBd("cuisine", d, 0)} />
@@ -329,7 +372,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
               </>)}
 
               <Intertitre>{B.finitionT}</Intertitre>
-              <CartesFinition aria={B.finitionT} valeur={ctx.finition} onChoix={(f) => patchCtx({ finition: f })}
+              <CartesFinition visite="detail-finition" aria={B.finitionT} valeur={ctx.finition} onChoix={(f) => patchCtx({ finition: f })}
                 cartes={(["eco", "standard", "premium"] as Finition[]).map((v) => ({ v, lvl: NIVEAUX_FINITION[v], ...B.finitions[v] }))} />
 
               <Intertitre>{B.tvaT}</Intertitre>
@@ -376,7 +419,8 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
         {view === "devis" && <DevisView ctx={ctxR} sel={sel} custom={custom} />}
       </div>
 
-      <BarreLive total={tot.ttc} budget={budget} vue={view} onVue={setView} onEnregistrer={enregistrer} saving={saving} edition={edition} erreur={erreur} erreurId={ID_ERREUR} t={dl.live} />
+      <BarreLive total={tot.ttc} budget={budget} vue={view} onVue={setView} onEnregistrer={enregistrer} saving={saving} edition={edition} erreur={erreur} erreurId={ID_ERREUR} t={dl.live}
+        visite={{ total: "detail-total", jauge: "detail-jauge", devis: "detail-devis", enregistrer: "detail-enregistrer" }} />
     </>
   );
 }

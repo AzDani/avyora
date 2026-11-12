@@ -7,6 +7,9 @@
  * passe les siens (`dictDetail`, `dictNeuf`). Styles : `EST_CSS` (`.tpills`, `.segf`, `.finc`, `.uinp`,
  * `.drtoggle`, `.recap`).
  *
+ * Visite guidée (`components/visite/VisiteGuidee.tsx`) : `visite` (facultatif) pose `data-visite` sur le groupe, la
+ * cible d'une bulle ; absent, rien n'est rendu.
+ *
  * Accessibilité : un choix est un groupe nommé (`role="group"`, `aria-label`) de boutons qui disent
  * s'ils sont pressés (`aria-pressed`), comme les pastilles du neuf ; la classe `on` garde le style.
  */
@@ -21,11 +24,11 @@ export function Intertitre({ children }: { children: ReactNode }) {
 export interface OptionChoix<T extends string> { v: T; label: ReactNode }
 
 /** Pastilles : un choix parmi plusieurs (type de bien), ou plusieurs (`actif` vrai sur chaque pièce choisie). */
-export function Pastilles<T extends string>({ options, actif, onChoix, aria }: {
-  options: OptionChoix<T>[]; actif: (v: T) => boolean; onChoix: (v: T) => void; aria: string;
+export function Pastilles<T extends string>({ options, actif, onChoix, aria, visite }: {
+  options: OptionChoix<T>[]; actif: (v: T) => boolean; onChoix: (v: T) => void; aria: string; visite?: string;
 }) {
   return (
-    <div className="tpills" role="group" aria-label={aria}>
+    <div className="tpills" role="group" aria-label={aria} data-visite={visite}>
       {options.map((o) => (
         <button key={o.v} type="button" className={"tpill" + (actif(o.v) ? " on" : "")} aria-pressed={actif(o.v)} onClick={() => onChoix(o.v)}>{o.label}</button>
       ))}
@@ -34,11 +37,11 @@ export function Pastilles<T extends string>({ options, actif, onChoix, aria }: {
 }
 
 /** Segment : deux (ou trois) choix exclusifs côte à côte (périmètre, régime de TVA). */
-export function Segment<T extends string>({ options, valeur, onChoix, aria }: {
-  options: OptionChoix<T>[]; valeur: T; onChoix: (v: T) => void; aria: string;
+export function Segment<T extends string>({ options, valeur, onChoix, aria, visite }: {
+  options: OptionChoix<T>[]; valeur: T; onChoix: (v: T) => void; aria: string; visite?: string;
 }) {
   return (
-    <div className="segf" role="group" aria-label={aria}>
+    <div className="segf" role="group" aria-label={aria} data-visite={visite}>
       {options.map((o) => (
         <button key={o.v} type="button" className={valeur === o.v ? "on" : ""} aria-pressed={valeur === o.v} onClick={() => onChoix(o.v)}>{o.label}</button>
       ))}
@@ -51,11 +54,11 @@ export function Segment<T extends string>({ options, valeur, onChoix, aria }: {
 export interface CarteFinition<T extends string> { v: T; lvl?: number; eye: string; label: string; desc: string }
 
 /** Cartes à description : le niveau de finition (avec sa jauge) ; le chauffage du neuf (sans). */
-export function CartesFinition<T extends string>({ cartes, valeur, onChoix, aria }: {
-  cartes: CarteFinition<T>[]; valeur: T; onChoix: (v: T) => void; aria: string;
+export function CartesFinition<T extends string>({ cartes, valeur, onChoix, aria, visite }: {
+  cartes: CarteFinition<T>[]; valeur: T; onChoix: (v: T) => void; aria: string; visite?: string;
 }) {
   return (
-    <div className="finc" role="group" aria-label={aria}>
+    <div className="finc" role="group" aria-label={aria} data-visite={visite}>
       {cartes.map((f) => (
         <button key={f.v} type="button" className={"fc" + (valeur === f.v ? " on" : "")} aria-pressed={valeur === f.v} onClick={() => onChoix(f.v)}>
           <span className="fh">{f.lvl != null ? <span className="g3">{[0, 1, 2].map((k) => <i key={k} className={k < f.lvl! ? "f" : ""} />)}</span> : <span />}<span className="ck" /></span>

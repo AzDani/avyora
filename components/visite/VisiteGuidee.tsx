@@ -179,7 +179,7 @@ function Bulle({ id, etapes, t, origine, onFin }: {
 
   // Les étapes jouables, au lancement : sans aucune, la visite se referme sans rien mémoriser.
   useLayoutEffect(() => {
-    const l = resoudreEtapes(etapes, (nom) => !!elementDe(nom));
+    const l = resoudreEtapes(etapes, (nom) => !!elementDe(nom), mobile);
     if (!l.length) { onFin(null, 0, 0); return; }
     setListe(l);
     // Une fois, même quand React rejoue les effets du montage (mode strict, en développement).
@@ -263,7 +263,7 @@ function Bulle({ id, etapes, t, origine, onFin }: {
       if (m === courant.current.mobile) { suivre(); return; }
       const { i, liste } = courant.current;
       const ici = liste[i]?.id;
-      const l = resoudreEtapes(etapes, (nom) => !!elementDe(nom));
+      const l = resoudreEtapes(etapes, (nom) => !!elementDe(nom), m);
       if (!l.length) { onFin(null, 0, 0); return; }
       const j = l.findIndex((e) => e.id === ici);
       setMobile(m); setListe(l); setI(j >= 0 ? j : Math.min(i, l.length - 1));

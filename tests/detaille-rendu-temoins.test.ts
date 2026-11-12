@@ -22,13 +22,15 @@ import DevisNeuf from "@/components/neuf/DevisNeuf";
 import { CATALOG, CATALOG_NEUF, defaultCtx, espacesCompo, presetNeuf, raisonProNeuf, isLoc, key, type Ctx, type Selection, type CustomLine } from "@/lib/estimateur";
 import { badgeNeuf } from "@/lib/estimateur/detaille-neuf";
 import { LignesLot } from "@/components/estimateur/ListeLots";
+import { sansVisite } from "./sans-visite";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: () => {}, replace: () => {}, refresh: () => {}, back: () => {}, forward: () => {}, prefetch: () => {} }) }));
 
 const LOCALES = ["fr", "en"] as const;
 /** Le détaillé avec ses props (paramètre par défaut `= {}` : `createElement` ne les infère pas). */
 const Detaille = Estimateur as FunctionComponent<{ initialState?: Record<string, unknown>; projectId?: string }>;
-const propre = (html: string) => html.replace(/<style[^>]*>[\s\S]*?<\/style>/g, "").replace(/></g, ">\n<");
+/** Sans la visite guidée (son bouton, ses `data-visite`) : les témoins figent le formulaire, la visite a ses tests. */
+const propre = (html: string) => sansVisite(html.replace(/<style[^>]*>[\s\S]*?<\/style>/g, "")).replace(/></g, ">\n<");
 const rendre = (el: ReactElement, locale: "fr" | "en") => propre(renderToStaticMarkup(createElement(LangProvider, { locale, children: el })));
 
 const MAC = "Maçonnerie", MEN = "Menuiseries exterieures", PLO = "Plomberie", LOC = "Location de matériel";

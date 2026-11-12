@@ -86,6 +86,12 @@ export type EtapeVisite = {
   texte: string;
   /** Côtés préférés de la bulle (ordinateur) ; au téléphone, la bulle est une feuille en bas (ou en haut). */
   place?: Cote[];
+  /**
+   * Au téléphone seulement, la cible à montrer À LA PLACE de `cible` (même forme, même repli) : pour une cible plus
+   * haute que l'écran au-dessus de la feuille (une grille de compteurs passée sur une colonne), sa première partie.
+   * Absente : `cible`, partout.
+   */
+  cibleMobile?: string | string[];
 };
 export type EtapeResolue = EtapeVisite & { cibles: string[] };
 
@@ -99,12 +105,13 @@ export function selecteurCible(nom: string): string {
 /**
  * Les étapes jouables MAINTENANT : chaque cible résolue sur ce qui est présent et visible (`present`), le repli
  * sinon ; une étape sans rien à montrer est retirée. Recalculé au lancement et quand l'écran change de format.
+ * `mobile` : la cible du téléphone (`cibleMobile`) remplace `cible` quand l'étape en a une.
  */
-export function resoudreEtapes(etapes: EtapeVisite[], present: (nom: string) => boolean): EtapeResolue[] {
+export function resoudreEtapes(etapes: EtapeVisite[], present: (nom: string) => boolean, mobile = false): EtapeResolue[] {
   const out: EtapeResolue[] = [];
   for (const e of etapes) {
     if (e.cible === null) { out.push({ ...e, cibles: [] }); continue; }
-    let c = enListe(e.cible).filter(present);
+    let c = enListe(mobile && e.cibleMobile ? e.cibleMobile : e.cible).filter(present);
     if (!c.length) c = enListe(e.repli).filter(present);
     if (c.length) out.push({ ...e, cibles: c });
   }

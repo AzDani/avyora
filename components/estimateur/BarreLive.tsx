@@ -22,23 +22,28 @@ export function jaugeBudget(total: number, budget: number): { over: boolean; pct
   return { over: budget > 0 && total > budget, pct: budget > 0 ? Math.min(100, (total / budget) * 100) : 0 };
 }
 
+/** Les cibles de la visite guidée dans la barre (`data-visite`, facultatives) : le total, la jauge, « Voir mon devis »,
+ *  « Enregistrer ». Absentes : rien n'est rendu. */
+export interface CiblesVisiteBarre { total?: string; jauge?: string; devis?: string; enregistrer?: string }
+
 /** `erreurId` (facultatif) : l'`id` du message d'erreur, que le champ en faute cite (`aria-describedby`) ;
  *  les deux détaillés le passent (A7). */
-export function BarreLive({ total, budget, m2, vue, onVue, onEnregistrer, saving, edition, erreur, erreurId, t, className }: {
+export function BarreLive({ total, budget, m2, vue, onVue, onEnregistrer, saving, edition, erreur, erreurId, t, className, visite }: {
   total: number; budget: number; m2?: ReactNode; vue: "saisie" | "devis"; onVue: (v: "saisie" | "devis") => void;
   onEnregistrer: () => void; saving: boolean; edition: boolean; erreur: string | null; erreurId?: string; t: TextesBarreLive; className?: string;
+  visite?: CiblesVisiteBarre;
 }) {
   const { over, pct } = jaugeBudget(total, budget);
   const locale = useLocale();
   return (
     <div className={"av-estim-live" + (className ? " " + className : "") + (budget > 0 ? "" : " nobudget")}>
       <div className="live-in">
-        <div className="totb">
+        <div className="totb" data-visite={visite?.total}>
           <div className="lbl">{t.totalK}</div>
           <div className="big">{euroAvant(locale)}<CountUp value={total} nf={nfDe(locale)} /><small>{t.ttc}</small></div>
           {m2}
         </div>
-        <div className="jauge">
+        <div className="jauge" data-visite={visite?.jauge}>
           <div className="jtext">
             {budget > 0
               ? <>{t.budget(fmt(budget, locale))} · {over ? <b style={{ color: "#fca5a5" }}>{t.depasse(fmt(total - budget, locale))}</b> : <>{t.reste(fmt(budget - total, locale))}</>}</>
@@ -46,10 +51,10 @@ export function BarreLive({ total, budget, m2, vue, onVue, onEnregistrer, saving
           </div>
           <div className="jbar"><div className={"jfill" + (over ? " over" : "")} style={{ width: pct + "%" }} /></div>
         </div>
-        <button type="button" className="cta" onClick={() => { onVue(vue === "devis" ? "saisie" : "devis"); window.scrollTo(0, 0); }}>
+        <button type="button" className="cta" data-visite={visite?.devis} onClick={() => { onVue(vue === "devis" ? "saisie" : "devis"); window.scrollTo(0, 0); }}>
           {vue === "devis" ? t.modifier : t.voirDevis}
         </button>
-        <button type="button" className="save" onClick={onEnregistrer} disabled={saving}>
+        <button type="button" className="save" data-visite={visite?.enregistrer} onClick={onEnregistrer} disabled={saving}>
           {saving ? t.enregistrement : edition ? t.enregistrerModifs : t.enregistrer}
         </button>
         {erreur && <div className="err" role="alert" id={erreurId}>{erreur}</div>}

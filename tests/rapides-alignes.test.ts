@@ -32,6 +32,7 @@ import EstimateurRapide from "@/components/EstimateurRapide";
 import EstimateurRapideNeuf from "@/components/neuf/EstimateurRapideNeuf";
 import BilanRapideNeuf from "@/components/neuf/BilanRapideNeuf";
 import PasserelleRapide from "@/components/PasserelleRapide";
+import { sansVisite } from "./sans-visite";
 
 vi.mock("next/navigation", async (orig) => {
   const m = await orig<typeof import("next/navigation")>();
@@ -47,8 +48,9 @@ type Loc = (typeof LOCALES)[number];
 const lire = (f: string) => fs.readFileSync(f, "utf8");
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/'/g, "&#x27;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const sansStyle = (h: string) => h.replace(/<style[^>]*>[\s\S]*?<\/style>/g, "");
+/** Sans la visite guidée (son bouton, ses `data-visite`) : elle a ses propres tests (`visite-guidee.test.ts`). */
 const avecLangue = (el: Parameters<typeof createElement>[0], props: object, locale: Loc) =>
-  sansStyle(renderToStaticMarkup(createElement(LangProvider, { locale, children: createElement(el as never, props as never) })));
+  sansVisite(sansStyle(renderToStaticMarkup(createElement(LangProvider, { locale, children: createElement(el as never, props as never) }))));
 const reno = (props: Parameters<typeof EstimateurRapide>[0], locale: Loc = "fr") => avecLangue(EstimateurRapide, props, locale);
 const neuf = (props: Parameters<typeof EstimateurRapideNeuf>[0], locale: Loc = "fr") => avecLangue(EstimateurRapideNeuf, props, locale);
 /** Les montants comme le produit : « 92 000 € » en français, « €92,000 » en anglais (lib/i18n/nombres.ts). */

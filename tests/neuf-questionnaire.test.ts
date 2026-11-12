@@ -29,6 +29,7 @@ import {
 import { buildDevis, catalogueDe, presetMaison, maisonParDefaut, maisonComplete, defaultCtx, BORNES_NEUF, ALEAS_NEUF, ALEAS_RENO, type Ctx, type Selection, type MaisonNeuve } from "@/lib/estimateur";
 import { dictDetail } from "@/lib/i18n/detail";
 import { dictNeuf } from "@/lib/i18n/neuf";
+import { sansVisite } from "./sans-visite";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: () => {}, replace: () => {}, refresh: () => {}, back: () => {}, forward: () => {}, prefetch: () => {} }) }));
 
@@ -36,7 +37,8 @@ const LOCALES = ["fr", "en"] as const;
 type Loc = (typeof LOCALES)[number];
 const Neuf = EstimateurNeuf as FunctionComponent<{ initialState?: Record<string, unknown>; projectId?: string }>;
 const sansStyle = (html: string) => html.replace(/<style[^>]*>[\s\S]*?<\/style>/g, "");
-const rendre = (el: ReturnType<typeof createElement>, locale: Loc) => sansStyle(renderToStaticMarkup(createElement(LangProvider, { locale, children: el })));
+/** Sans la visite guidée (son bouton, ses `data-visite`) : elle a ses propres tests (`visite-guidee.test.ts`). */
+const rendre = (el: ReturnType<typeof createElement>, locale: Loc) => sansVisite(sansStyle(renderToStaticMarkup(createElement(LangProvider, { locale, children: el }))));
 const echapper = (s: string) => s.replace(/&/g, "&amp;").replace(/'/g, "&#x27;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const desechapper = (s: string) => s.replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
 const compte = (html: string, motif: RegExp) => (html.match(motif) ?? []).length;
