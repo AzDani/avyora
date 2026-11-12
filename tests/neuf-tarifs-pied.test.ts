@@ -91,6 +91,8 @@ describe("/projets/nouveau · metadata", () => {
     description:
       "Choisis ton mode d'estimation : rapide et gratuite en 4 questions, ou détaillée poste par poste. Prix du marché français ajustés à ta région.",
     alternates: { canonical: "/projets/nouveau" },
+    // Revue SEO du 12/11/2026 : écran de choix sans contenu propre, en `noindex, follow` dans ses trois états.
+    robots: { index: false, follow: true },
   };
   const meta = async (neuf: boolean, sp: { nature?: string | string[] }) => {
     await charger(neuf, "fr");
@@ -115,6 +117,7 @@ describe("/projets/nouveau · metadata", () => {
       expect(String(m.description)).toMatch(/maison neuve/i);
       expect(String(m.description).length).toBeLessThanOrEqual(155);
       expect(m.alternates).toEqual({ canonical: "/projets/nouveau" });
+      expect(m.robots).toEqual({ index: false, follow: true });
       // Son propre Open Graph : og:url n'est plus celle de l'accueil.
       const og = m.openGraph as { url?: string; title?: string; description?: string };
       expect(String(og.url)).toMatch(/\/projets\/nouveau$/);

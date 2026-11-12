@@ -3,11 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { projetBySlug, projetsMatrix, estimProjet, MATRIX_SLUGS, MATRIX_VILLES, liensDe, titreSansPrefixe, matriceIndexable } from "@/lib/seo-projets";
-import { PRIX_MAJ, PRIX_MAJ_FR } from "@/lib/prix-maj";
+import { PRIX_MAJ, PRIX_MAJ_FR, ANNEE_PRIX } from "@/lib/prix-maj";
 import { villeBySlug } from "@/lib/villes";
 import { deptInfo } from "@/lib/geo";
 import { regionCoef } from "@/lib/estimateur";
-import { og } from "@/lib/seo-og";
+import { seoMeta, titreCourt } from "@/lib/seo-og";
+import { phraseCoef, phraseFournitures, raisonFournitures, lieuVille } from "@/lib/seo-textes";
 import { CtaEstimation } from "@/components/CtaEstimation";
 import { PIECES_ESTIMATEUR } from "@/lib/seo-projets";
 import type { PieceKey } from "@/lib/estimateur";
@@ -53,19 +54,23 @@ export async function generateMetadata({ params }: { params: Promise<{ projet: s
   // toiture à Strasbourg » est agrammatical. Constaté sur 120 des 400 pages ville.
   const sujet = p.titreSeo ?? titreSansPrefixe(p.h1);
   return {
-    title: `Prix ${sujet} à ${v.nom} (2026)`,
-    // Longueur visée ≤ 160 car. : au-delà, Google tronque en pleine phrase. Les noms de ville longs
-    // (Boulogne-Billancourt, Saint-Étienne) pèsent jusqu'à 20 car., d'où une base volontairement courte.
-    description: descCourte(
-      `Combien coûte ${p.nomQuestion ?? p.nom} à ${v.nom} ? Budget ${euro(f.lo)} à ${euro(f.hi)}, ajusté à la main-d'œuvre locale et détaillé poste par poste.`,
-      `Combien coûte ${p.nomQuestion ?? p.nom} à ${v.nom} ? Budget ${euro(f.lo)} à ${euro(f.hi)}, ajusté à la main-d'œuvre locale.`,
-    ),
-    alternates: { canonical: `/prix-travaux/${p.slug}/${v.slug}` },
+    ...seoMeta({
+      // ≤ 60 caractères avec « · AVYORA » (sinon Google coupe) : on retire d'abord l'année, puis la marque.
+      title: titreCourt(`Prix ${sujet} à ${v.nom} (${ANNEE_PRIX})`, `Prix ${sujet} à ${v.nom}`, `Prix ${sujet} ${v.nom}`),
+      description: descCourte(
+        `Combien coûte ${p.nomQuestion ?? p.nom} à ${v.nom} ? Budget ${euro(f.lo)} à ${euro(f.hi)}, ajusté à la main-d'œuvre locale et détaillé poste par poste.`,
+        `Combien coûte ${p.nomQuestion ?? p.nom} à ${v.nom} ? Budget ${euro(f.lo)} à ${euro(f.hi)}, ajusté à la main-d'œuvre locale.`,
+      ),
+      path: `/prix-travaux/${p.slug}/${v.slug}`,
+      titreSocial: `Prix ${sujet} à ${v.nom}`,
+      descriptionSociale: `Budget détaillé poste par poste à ${v.nom}.`,
+    }),
+    // Description : longueur visée ≤ 160 car. — au-delà, Google tronque en pleine phrase. Les noms de
+    // ville longs (Boulogne-Billancourt, Saint-Étienne) pèsent jusqu'à 20 car., d'où une base courte.
     // `noindex, follow` hors des villes déclarées au sitemap : ces pages sont identiques à 96,7 %
     // à celles de la même zone de main-d'œuvre (cf. matriceIndexable). `follow` est délibéré —
     // on veut que Google continue de suivre leurs liens vers le hub et la page nationale.
     ...(matriceIndexable(v.slug) ? {} : { robots: { index: false, follow: true } }),
-    openGraph: og({ title: `Prix ${sujet} à ${v.nom}`, description: `Budget détaillé poste par poste à ${v.nom}.`, path: `/prix-travaux/${p.slug}/${v.slug}` }),
   };
 }
 
@@ -74,6 +79,9 @@ const CSS = `
 .av-seo h1{font-size:clamp(23px,4vw,31px);font-weight:600;letter-spacing:-.02em;color:var(--color-ink);margin:0}
 .av-seo .tw,.av-guide .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:14px 0}
 .av-seo .tw table,.av-guide .tw table{margin:0;min-width:420px}
+@media(max-width:480px){.av-seo .tw table{min-width:0}.av-seo th,.av-seo td{padding:8px 6px}.av-seo th{text-transform:none;letter-spacing:0;font-size:12px}}
+.av-seo .titre{display:flex;align-items:baseline;gap:.4em}
+.av-seo .titre .emo{font-size:clamp(23px,4vw,31px);line-height:1.2;flex:none}
 .av-seo .fil{font-size:12.5px;color:var(--color-faint);margin-bottom:12px}
 .av-seo .fil a{color:var(--color-muted)}
 .av-seo .fil a:hover{color:var(--color-brand-700)}
@@ -126,28 +134,25 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
   const f = four(est.ttc);
   const reg = regionCoef(v.cp);
   const dep = deptInfo(v.cp);
-  const moPct = Math.round((reg.mo - 1) * 100);
   // `titreSeo` d'abord : dérivé de `h1`, le sujet est parfois un GROUPE VERBAL, et « Prix refaire une
   // toiture à Strasbourg » est agrammatical. Constaté sur 120 des 400 pages ville.
   const sujet = p.titreSeo ?? titreSansPrefixe(p.h1);
   const pieceEstimateur = PIECES_ESTIMATEUR.has(p.espace ?? "") ? (p.espace as PieceKey) : undefined;
   const ecart = est.ttc - estNat.ttc;
 
-  const coefPhrase =
-    moPct > 0
-      ? `la main-d'œuvre y est environ ${moPct}\u00a0% plus chère que la moyenne nationale`
-      : moPct < 0
-        ? `la main-d'œuvre y est environ ${Math.abs(moPct)}\u00a0% moins chère que la moyenne nationale`
-        : `la main-d'œuvre y est dans la moyenne nationale`;
+  // Ce que le barème AVYORA APPLIQUE (indice interne, cf. /methodologie), jamais un fait de marché :
+  // « la main-d'œuvre y est 10 % plus chère » affirmait ce qu'aucune source publique n'établit.
+  const coefPhrase = phraseCoef(reg);
 
   const faq = [
     {
-      q: `Combien coûte ${p.nomQuestion ?? p.nom} à ${v.nom} en 2026 ?`,
-      a: `À ${v.nom}, comptez en moyenne ${euro(f.lo)} à ${euro(f.hi)} pour ${p.base} (finition standard, artisans, marge ±15\u00a0%). Ce budget tient compte du coût local de la main-d'œuvre.`,
+      q: `Combien coûte ${p.nomQuestion ?? p.nom} à ${v.nom} en ${ANNEE_PRIX} ?`,
+      // `p.base` finit souvent par sa propre parenthèse : la précision suit un tiret, pas « ) ( ».
+      a: `À ${v.nom}, compte en moyenne ${euro(f.lo)} à ${euro(f.hi)} pour ${p.base} — finition standard, artisans, marge ±15\u00a0%. Ce budget tient compte du coût local de la main-d'œuvre.`,
     },
     {
       q: `Pourquoi le prix est-il différent à ${v.nom} ?`,
-      a: `Les fournitures sont à un prix national, mais la main-d'œuvre varie selon la zone. À ${v.nom} (zone « ${reg.zone} »), ${coefPhrase}.`,
+      a: `${phraseFournitures(reg)} Pour ${v.nom}, classée « ${reg.zone} » dans le barème régional AVYORA (un indice interne), ${coefPhrase}${reg.mat !== 1 ? ` (${raisonFournitures(reg)})` : ""}.`,
     },
     {
       q: `Qu'est-ce qui fait varier ce budget ?`,
@@ -167,7 +172,7 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
         // Google demande une image pour le résultat enrichi Article (et pour Discover).
         // On réutilise l'image OG générée par app/opengraph-image.tsx : 1200×630, ratio 1.91:1.
         image: [`${siteUrl}/opengraph-image`],
-        headline: `Prix ${sujet} à ${v.nom} en 2026`,
+        headline: `Prix ${sujet} à ${v.nom} en ${ANNEE_PRIX}`,
         description: `Prix de ${p.nomQuestion ?? p.nom} à ${v.nom}, ajusté à la main-d'œuvre locale et détaillé poste par poste.`,
         inLanguage: "fr-FR",
         author: { "@type": "Organization", name: "AVYORA" },
@@ -214,9 +219,13 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
         <span aria-hidden="true">›</span> {v.nom}
       </p>
 
-      <h1>{p.emoji} Prix {sujet} à {v.nom} en 2026</h1>
+      {/* L'emoji hors du h1 : il était lu en premier par les lecteurs d'écran et entrait dans le titre. */}
+      <div className="titre">
+        <span className="emo" aria-hidden="true">{p.emoji}</span>
+        <h1>Prix {sujet} à {v.nom} en {ANNEE_PRIX}</h1>
+      </div>
       <p className="lead">
-        À {dep.nom ? `${v.nom} (${dep.num} · ${dep.nom})` : v.nom}{dep.region ? `, en ${dep.region}` : ""}, {p.lead.charAt(0).toLowerCase() + p.lead.slice(1)}
+        À {lieuVille(v.nom, dep)}, {p.lead.charAt(0).toLowerCase() + p.lead.slice(1)}
       </p>
       {/* Provenance et fraîcheur des prix : ces 400 pages sont la famille la plus volumineuse du site
           et n'en portaient aucune trace, alors que les pages villes et projets l'affichent. */}
@@ -229,7 +238,7 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
         <span className="sub">budget moyen à {v.nom} · {p.base}</span>
       </div>
       <p className="note">
-        Prix TTC indicatifs, finition standard, artisans, marge ±15&nbsp;%. Zone « {reg.zone} » : {coefPhrase}.
+        Prix TTC indicatifs, finition standard, artisans, marge ±15&nbsp;%. Classement « {reg.zone} » : {coefPhrase} (barème interne).
         {ecart !== 0 ? ` Soit ${ecart > 0 ? "environ " + euro(Math.abs(ecart)) + " de plus" : "environ " + euro(Math.abs(ecart)) + " de moins"} qu'en moyenne nationale.` : ""}
       </p>
 

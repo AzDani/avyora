@@ -56,10 +56,10 @@ describe("D4 (a) · rénovation : « Je fais un max moi-même » dit ce qu'il fa
   it("le guide « faire soi-même ou artisan » : possible, hors décennale, étude conseillée pour la structure", async () => {
     const src = fs.readFileSync("app/guides/[slug]/page.tsx", "utf8");
     expect(src).not.toContain("Les lots à ne pas toucher");
-    expect(src).toContain("<h2>Les lots qui engagent plus que votre budget</h2>");
+    expect(src).toContain("<h2>Les lots qui engagent plus que ton budget</h2>");
     expect(src).toContain("L'électricité, le gaz, la structure porteuse et la charpente restent possibles");
     const c = await texteCompile("app/guides/[slug]/page.tsx");
-    for (const debut of ["engagent votre sécurité", "(mur porteur, charpente, toiture)", "se pose soi-même ; dès qu'il"])
+    for (const debut of ["engagent ta sécurité", "(mur porteur, charpente, toiture)", "se pose soi-même ; dès qu'il"])
       expect(c, debut).toMatch(new RegExp(`\\}\\),\\s*" ",\\s*"${debut.replace(/[()]/g, "\\$&")}`));
     expect(c).toContain("une étude est conseillée avant d'ouvrir ou de modifier quoi que ce soit");
     expect(c).toContain("la ligne rappelle qu'il sort de la garantie décennale.");

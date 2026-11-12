@@ -3,9 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { PROJETS, projetBySlug, estimProjet, MATRIX_SLUGS, MATRIX_VILLES, liensDe, titreSansPrefixe, panierVariante, matriceIndexable } from "@/lib/seo-projets";
-import { PRIX_MAJ, PRIX_MAJ_FR } from "@/lib/prix-maj";
+import { PRIX_MAJ, PRIX_MAJ_FR, ANNEE_PRIX } from "@/lib/prix-maj";
 import { VILLES_SEO } from "@/lib/villes";
-import { og } from "@/lib/seo-og";
+import { seoMeta, titreCourt } from "@/lib/seo-og";
 import { CtaEstimation } from "@/components/CtaEstimation";
 import { PIECES_ESTIMATEUR } from "@/lib/seo-projets";
 import type { PieceKey } from "@/lib/estimateur";
@@ -50,18 +50,22 @@ export async function generateMetadata({ params }: { params: Promise<{ projet: s
   // qui ressortent sur ces requêtes listent les surfaces DANS LEUR TITLE. On s'aligne sur ce format,
   // mais uniquement pour les projets qui ont un barème : les 13 autres gardent leur title à l'octet.
   // Trois surfaces repères seulement (mini, référence, maxi) : les lister toutes pousserait le title
-  // au-delà de 70 caractères avec le suffixe « · AVYORA » et le ferait tronquer en SERP.
+  // au-delà de 70 caractères avec le suffixe « · AVYORA » et le ferait tronquer en SERP. Même là, un
+  // sujet long dépasse les 60 caractères : `titreCourt` retombe alors sur une formulation plus courte.
   const reperes = s && s.length > 1 ? [...new Set([s[0], p.surface, s[s.length - 1]])].sort((a, b) => a - b) : [];
   const liste = reperes.length > 1 ? `${reperes.slice(0, -1).join(", ")} et ${reperes[reperes.length - 1]}` : "";
   const parSurf = s && s.length > 1 ? ` Barème de ${s[0]} à ${s[s.length - 1]} m².` : "";
-  return {
+  const sujet = p.titreSeo ?? titreSansPrefixe(p.h1);
+  const A = ANNEE_PRIX;
+  return seoMeta({
     title: liste
-      ? `Prix ${p.titreSeo ?? titreSansPrefixe(p.h1)} 2026 — ${liste} m²`
-      : `${p.h1.replace(" en 2026", "")} — coût moyen 2026`,
+      ? titreCourt(`Prix ${sujet} ${A} — ${liste} m²`, `Prix ${sujet} ${A} : coût moyen`, `Prix ${sujet} ${A}`)
+      : titreCourt(`${p.h1.replace(` en ${A}`, "")} — coût moyen ${A}`, `Prix ${sujet} : coût moyen ${A}`, `Prix ${sujet} ${A}`),
     description: `Combien coûte ${p.nomQuestion ?? p.nom} ? Budget moyen ${euro(f.lo)} à ${euro(f.hi)}, poste par poste.${parSurf} Estimation gratuite en 2 minutes.`,
-    alternates: { canonical: `/prix-travaux/${p.slug}` },
-    openGraph: og({ title: p.h1, description: `Combien coûte ${p.nomQuestion ?? p.nom} ? Budget détaillé poste par poste.`, path: `/prix-travaux/${p.slug}` }),
-  };
+    path: `/prix-travaux/${p.slug}`,
+    titreSocial: p.h1,
+    descriptionSociale: `Combien coûte ${p.nomQuestion ?? p.nom} ? Budget détaillé poste par poste.`,
+  });
 }
 
 const CSS = `
@@ -69,6 +73,9 @@ const CSS = `
 .av-seo h1{font-size:clamp(24px,4vw,32px);font-weight:600;letter-spacing:-.02em;color:var(--color-ink);margin:0}
 .av-seo .tw,.av-guide .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:14px 0}
 .av-seo .tw table,.av-guide .tw table{margin:0;min-width:420px}
+@media(max-width:480px){.av-seo .tw table{min-width:0}.av-seo th,.av-seo td{padding:8px 6px}.av-seo th{text-transform:none;letter-spacing:0;font-size:12px}}
+.av-seo .titre{display:flex;align-items:baseline;gap:.4em}
+.av-seo .titre .emo{font-size:clamp(24px,4vw,32px);line-height:1.2;flex:none}
 .av-seo .lead{font-size:15px;color:var(--color-muted);margin-top:12px;line-height:1.7}
 .av-seo .prixmaj{font-size:12.5px;color:var(--color-faint);margin-top:10px}
 .av-seo .prixmaj a{color:var(--color-brand-700);font-weight:500}
@@ -185,14 +192,15 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
 
   const faq = [
     {
-      q: `Combien coûte ${nomQ} en 2026 ?`,
-      a: `Comptez en moyenne ${euro(f.lo)} à ${euro(f.hi)} pour ${p.base} (finition standard, travaux confiés à des artisans, marge ±15\u00a0%). Le prix exact dépend de la surface, des équipements et de la région.`,
+      q: `Combien coûte ${nomQ} en ${ANNEE_PRIX} ?`,
+      // `p.base` finit souvent par sa propre parenthèse : la précision suit un tiret, pas « ) ( ».
+      a: `Compte en moyenne ${euro(f.lo)} à ${euro(f.hi)} pour ${p.base} — finition standard, travaux confiés à des artisans, marge ±15\u00a0%. Le prix exact dépend de la surface, des équipements et de la région.`,
     },
     ...(parSurface.length > 1
       ? [
           {
             q: `Quel budget pour ${nomQ} de ${parSurface[0].s} m² ou de ${parSurface[parSurface.length - 1].s} m² ?`,
-            a: `Comptez environ ${euro(parSurface[0].lo)} à ${euro(parSurface[0].hi)} pour ${parSurface[0].s} m², et ${euro(parSurface[parSurface.length - 1].lo)} à ${euro(parSurface[parSurface.length - 1].hi)} pour ${parSurface[parSurface.length - 1].s} m². Le prix au m² baisse quand la pièce s'agrandit : les équipements coûtent la même chose quelle que soit la surface, seuls les revêtements suivent.`,
+            a: `Compte environ ${euro(parSurface[0].lo)} à ${euro(parSurface[0].hi)} pour ${parSurface[0].s} m², et ${euro(parSurface[parSurface.length - 1].lo)} à ${euro(parSurface[parSurface.length - 1].hi)} pour ${parSurface[parSurface.length - 1].s} m². Le prix au m² baisse quand la pièce s'agrandit : les équipements coûtent la même chose quelle que soit la surface, seuls les revêtements suivent.`,
           },
         ]
       : []),
@@ -202,7 +210,7 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
     },
     {
       q: `Le budget change-t-il selon la ville ?`,
-      a: `Oui : les fournitures sont à un prix national, mais la main-d'œuvre varie. Pour ${p.base}, comptez environ ${euro(regions.find((r) => r.nom === "Paris")!.ttc)} à Paris contre ${euro(regions.find((r) => r.nom === "Moyenne France")!.ttc)} en moyenne nationale.`,
+      a: `Oui : les fournitures sont à un prix national, mais la main-d'œuvre varie. Pour ${p.base}, compte environ ${euro(regions.find((r) => r.nom === "Paris")!.ttc)} à Paris contre ${euro(regions.find((r) => r.nom === "Moyenne France")!.ttc)} en moyenne nationale.`,
     },
     {
       q: `Comment obtenir un chiffre précis pour mon projet ?`,
@@ -219,7 +227,7 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
         // On réutilise l'image OG générée par app/opengraph-image.tsx : 1200×630, ratio 1.91:1.
         image: [`${siteUrl}/opengraph-image`],
         headline: p.h1,
-        description: `Prix de ${nomQ} en 2026, détaillé poste par poste.`,
+        description: `Prix de ${nomQ} en ${ANNEE_PRIX}, détaillé poste par poste.`,
         inLanguage: "fr-FR",
         author: { "@type": "Organization", name: "AVYORA" },
         publisher: { "@id": `${siteUrl}/#organization` },
@@ -253,7 +261,11 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
         <Link href="/prix-travaux" className="text-muted hover:text-brand-700">← Prix des travaux par type</Link>
       </p>
 
-      <h1>{p.emoji} {p.h1}</h1>
+      {/* L'emoji hors du h1 : il était lu en premier par les lecteurs d'écran et entrait dans le titre. */}
+      <div className="titre">
+        <span className="emo" aria-hidden="true">{p.emoji}</span>
+        <h1>{p.h1}</h1>
+      </div>
       <p className="lead">{p.lead}</p>
       <p className="prixmaj">Prix mis à jour le {PRIX_MAJ_FR} · <Link href="/methodologie">d&apos;où viennent ces prix ?</Link></p>
 

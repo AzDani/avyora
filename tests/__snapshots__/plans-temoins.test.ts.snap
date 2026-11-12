@@ -85,7 +85,7 @@ exports[`Témoins · interrupteur plans éteint > Tarifs (FR, EN ; anonyme, grat
 exports[`Témoins · interrupteur plans éteint > Tarifs (FR, EN ; anonyme, gratuit, Pro) > tarifs fr pro 1`] = `"<div class="animate-rise mx-auto max-w-4xl py-4 sm:py-8"><header class="text-center"><p class="eyebrow">AVYORA Pro</p><h1 class="mt-2 text-[30px] font-semibold tracking-tight text-ink">Passe à l&#x27;estimation détaillée</h1><p class="mx-auto mt-3 max-w-xl text-[15px] leading-relaxed text-muted">L&#x27;estimation rapide reste <b class="text-ink">gratuite</b>. Pro débloque le détail au poste près, le rapport PDF, la sauvegarde et le suivi de chantier.</p></header><div class="mt-6 overflow-hidden rounded-panel bg-gradient-to-r from-[#4F46E5] via-[#6d5cf0] to-[#7C3AED] px-6 py-5 text-center text-white shadow-card"><div class="text-[11px] font-bold uppercase tracking-[0.16em] text-indigo-100/90">Tarif de lancement</div><div class="mt-1 text-[20px] font-semibold tracking-tight">Le prix des premiers abonnés ne bougera pas</div><div class="mt-1 text-[13.5px] text-indigo-100/85">Tu gardes ce tarif tant que ton abonnement court, même quand les prix augmenteront.</div></div><p class="mx-auto mt-6 max-w-md rounded-field border border-positive/25 bg-positive-soft px-4 py-3 text-center text-sm text-positive">Tu es déjà Pro — <a class="font-semibold underline" href="/projets/nouveau/detaille?new=1">ouvrir l&#x27;estimateur détaillé</a>.</p><div class="mx-auto mt-8 grid max-w-2xl gap-4 md:grid-cols-2"><div class="relative flex flex-col rounded-panel border bg-surface p-6 border-line"><div class="text-sm font-semibold text-ink">Mensuel</div><div class="mt-3 flex items-baseline gap-1.5"><span class="data text-3xl font-semibold text-ink">18,85 €</span><span class="text-sm text-muted">/ mois</span></div><div class="mt-2 text-xs text-faint">Sans engagement</div><div class="mt-5"><button class="btn btn-primary w-full justify-center py-2.5 disabled:opacity-60">S&#x27;abonner</button></div></div><div class="relative flex flex-col rounded-panel border bg-surface p-6 border-brand-600 shadow-card ring-1 ring-brand-600/15"><span class="absolute -top-2.5 right-5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide bg-brand-600 text-white">Meilleur prix</span><div class="text-sm font-semibold text-ink">Annuel, payé d&#x27;un coup</div><div class="mt-3 flex items-baseline gap-1.5"><span class="data text-3xl font-semibold text-ink">169 €</span><span class="text-sm text-muted">/ an</span></div><div class="mt-2 text-xs text-faint">≈ 14,08 € / mois</div><div class="mt-5"><button class="btn btn-primary w-full justify-center py-2.5 disabled:opacity-60">S&#x27;abonner</button></div></div></div><div class="mx-auto mt-8 grid max-w-3xl gap-6 rounded-panel border border-line bg-surface p-6 sm:grid-cols-[1fr_240px] sm:items-start sm:gap-8"><div><div class="eyebrow mb-3">Inclus dans Pro</div><ul class="space-y-2.5"><li class="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="mt-0.5 shrink-0 text-brand-600" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"></path></svg>Estimateur détaillé — les 200 postes, au poste près</li><li class="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="mt-0.5 shrink-0 text-brand-600" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"></path></svg>« Je le fais » ou un artisan, au choix sur chaque tâche</li><li class="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="mt-0.5 shrink-0 text-brand-600" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"></path></svg>Export du rapport PDF (banque, artisans)</li><li class="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="mt-0.5 shrink-0 text-brand-600" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"></path></svg>Sauvegarde de tous tes projets</li><li class="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="mt-0.5 shrink-0 text-brand-600" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"></path></svg>Suivi de chantier, poste par poste</li><li class="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" class="mt-0.5 shrink-0 text-brand-600" aria-hidden="true"><path d="M20 6 9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"></path></svg>Construction neuve : ta maison détaillée lot par lot, du permis à l&#x27;achèvement</li></ul></div><figure class="mx-auto w-full max-w-[240px]"><picture><source type="image/webp" srcSet="/exemple-rapport-760.webp 760w, /exemple-rapport-1040.webp 1040w" sizes="240px"/><img src="/exemple-rapport.png" alt="Exemple de rapport d&#x27;estimation détaillée AVYORA" width="1040" height="1458" loading="lazy" decoding="async" class="w-full rounded-field border border-line shadow-card"/></picture><figcaption class="mt-2.5 text-center text-[11px] leading-snug text-faint">Exemple de rapport détaillé — maison 145 m² à Bordeaux.</figcaption></figure></div><p class="mt-6 text-center text-[13px] text-muted">Tu préfères tester d&#x27;abord ? <a class="font-medium text-brand-600 hover:underline" href="/projets/nouveau">continuer avec l&#x27;estimation rapide gratuite</a>.</p></div>"`;
 
 exports[`Témoins · interrupteur plans éteint > accueil (FR, EN) > accueil en 1`] = `
-"<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"AVYORA","url":"https://getavyora.fr","applicationCategory":"FinanceApplication","operatingSystem":"Web","inLanguage":"fr-FR","description":"Estime le coût de tes travaux de rénovation au prix du marché français, au poste près et ajusté à ta région — avant de signer.","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR","description":"Première estimation gratuite"}}</script><style>
+"<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"AVYORA","url":"https://getavyora.fr","applicationCategory":"BusinessApplication","operatingSystem":"Web","inLanguage":"fr-FR","isAccessibleForFree":true,"description":"Estime le coût de tes travaux de rénovation au prix du marché français, au poste près et ajusté à ta région — avant de signer.","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR","description":"Estimation rapide gratuite, sans inscription"}}</script><style>
 .av-home{--canvas:#f5f6fb;--surface:#fff;--surface-2:#f8f9fd;--ink:#15172b;--muted:#565a75;--faint:#898ea8;--line:#e9eaf3;--line-strong:#dcdeec;--brand:#4f46e5;--brand-700:#4338ca;--brand-weak:#eef1ff;--brand-200:#c7ccfe;--violet:#7c3aed;--accent:#a78bfa;--accent-300:#c4b5fd;--good:#0f9d6b;--good-bg:#e6f6ef;--nuit:#1E1B4B;--nuit-2:#241f5e;--nuit-3:#191640;--r:1.15rem;--r-lg:1.5rem;--ease:cubic-bezier(.22,.72,.2,1);--shadow:0 1px 3px rgba(30,27,75,.05),0 10px 26px -12px rgba(30,27,75,.14);--shadow-hero:0 24px 60px -26px rgba(30,27,75,.55);font-family:var(--font-geist-sans),system-ui,sans-serif;color:var(--ink);line-height:1.5}
 .av-home .num{font-family:var(--font-geist-mono),ui-monospace,monospace;font-variant-numeric:tabular-nums}
 .av-home .wrap{max-width:100%;margin:0;padding:0}
@@ -331,7 +331,7 @@ exports[`Témoins · interrupteur plans éteint > accueil (FR, EN) > accueil en 
 `;
 
 exports[`Témoins · interrupteur plans éteint > accueil (FR, EN) > accueil fr 1`] = `
-"<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"AVYORA","url":"https://getavyora.fr","applicationCategory":"FinanceApplication","operatingSystem":"Web","inLanguage":"fr-FR","description":"Estime le coût de tes travaux de rénovation au prix du marché français, au poste près et ajusté à ta région — avant de signer.","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR","description":"Première estimation gratuite"}}</script><style>
+"<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"AVYORA","url":"https://getavyora.fr","applicationCategory":"BusinessApplication","operatingSystem":"Web","inLanguage":"fr-FR","isAccessibleForFree":true,"description":"Estime le coût de tes travaux de rénovation au prix du marché français, au poste près et ajusté à ta région — avant de signer.","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR","description":"Estimation rapide gratuite, sans inscription"}}</script><style>
 .av-home{--canvas:#f5f6fb;--surface:#fff;--surface-2:#f8f9fd;--ink:#15172b;--muted:#565a75;--faint:#898ea8;--line:#e9eaf3;--line-strong:#dcdeec;--brand:#4f46e5;--brand-700:#4338ca;--brand-weak:#eef1ff;--brand-200:#c7ccfe;--violet:#7c3aed;--accent:#a78bfa;--accent-300:#c4b5fd;--good:#0f9d6b;--good-bg:#e6f6ef;--nuit:#1E1B4B;--nuit-2:#241f5e;--nuit-3:#191640;--r:1.15rem;--r-lg:1.5rem;--ease:cubic-bezier(.22,.72,.2,1);--shadow:0 1px 3px rgba(30,27,75,.05),0 10px 26px -12px rgba(30,27,75,.14);--shadow-hero:0 24px 60px -26px rgba(30,27,75,.55);font-family:var(--font-geist-sans),system-ui,sans-serif;color:var(--ink);line-height:1.5}
 .av-home .num{font-family:var(--font-geist-mono),ui-monospace,monospace;font-variant-numeric:tabular-nums}
 .av-home .wrap{max-width:100%;margin:0;padding:0}
@@ -5186,20 +5186,19 @@ exports[`Témoins · interrupteur plans éteint > pré-page « Quel est ton proj
 `;
 
 exports[`Témoins · interrupteur plans éteint > sitemap > sitemap 1`] = `
-"https://getavyora.fr/ | 1 | weekly | 2026-10-12T10:00:00.000Z
-https://getavyora.fr/projets/nouveau | 0.8 | monthly | 2026-10-12T10:00:00.000Z
+"https://getavyora.fr/ | 1 | weekly | 2026-11-12
 https://getavyora.fr/methodologie | 0.7 | monthly | 2026-09-19
-https://getavyora.fr/guides | 0.8 | monthly | 2026-10-12T10:00:00.000Z
-https://getavyora.fr/guides/prix-renovation-appartement | 0.8 | monthly | 2026-10-12T10:00:00.000Z
-https://getavyora.fr/guides/prix-renovation-maison | 0.8 | monthly | 2026-10-12T10:00:00.000Z
-https://getavyora.fr/guides/ordre-travaux-renovation | 0.8 | monthly | 2026-10-12T10:00:00.000Z
-https://getavyora.fr/guides/verifier-devis-travaux | 0.8 | monthly | 2026-10-12T10:00:00.000Z
-https://getavyora.fr/guides/faire-soi-meme-ou-artisan | 0.8 | monthly | 2026-10-12T10:00:00.000Z
-https://getavyora.fr/guides/calculer-budget-travaux | 0.8 | monthly | 2026-10-12T10:00:00.000Z
+https://getavyora.fr/guides | 0.8 | monthly | 2026-09-19
+https://getavyora.fr/guides/prix-renovation-appartement | 0.8 | monthly | 2026-09-19
+https://getavyora.fr/guides/prix-renovation-maison | 0.8 | monthly | 2026-09-19
+https://getavyora.fr/guides/ordre-travaux-renovation | 0.8 | monthly | 2026-09-19
+https://getavyora.fr/guides/verifier-devis-travaux | 0.8 | monthly | 2026-09-19
+https://getavyora.fr/guides/faire-soi-meme-ou-artisan | 0.8 | monthly | 2026-09-19
+https://getavyora.fr/guides/calculer-budget-travaux | 0.8 | monthly | 2026-09-19
 https://getavyora.fr/prix-poste | 0.8 | monthly | 2026-09-19
 https://getavyora.fr/prix-poste/platrerie-cloisons | 0.8 | monthly | 2026-09-19
 https://getavyora.fr/prix-poste/plomberie | 0.8 | monthly | 2026-09-19
-https://getavyora.fr/prix-travaux | 0.9 | monthly | 2026-10-12T10:00:00.000Z
+https://getavyora.fr/prix-travaux | 0.9 | monthly | 2026-09-19
 https://getavyora.fr/prix-travaux/renovation-salle-de-bain | 0.8 | monthly | 2026-09-19
 https://getavyora.fr/prix-travaux/renovation-cuisine | 0.8 | monthly | 2026-09-19
 https://getavyora.fr/prix-travaux/renovation-chambre | 0.8 | monthly | 2026-09-19
@@ -5246,7 +5245,7 @@ https://getavyora.fr/prix-travaux/remplacement-fenetres/toulouse | 0.5 | monthly
 https://getavyora.fr/prix-travaux/pose-carrelage/paris | 0.5 | monthly | 2026-09-19
 https://getavyora.fr/prix-travaux/pose-carrelage/marseille | 0.5 | monthly | 2026-09-19
 https://getavyora.fr/prix-travaux/pose-carrelage/toulouse | 0.5 | monthly | 2026-09-19
-https://getavyora.fr/prix-renovation | 0.8 | monthly | 2026-10-12T10:00:00.000Z
+https://getavyora.fr/prix-renovation | 0.8 | monthly | 2026-09-19
 https://getavyora.fr/prix-renovation/paris | 0.7 | monthly | 2026-09-19
 https://getavyora.fr/prix-renovation/marseille | 0.7 | monthly | 2026-09-19
 https://getavyora.fr/prix-renovation/lyon | 0.7 | monthly | 2026-09-19
@@ -5321,14 +5320,14 @@ https://getavyora.fr/prix-renovation/fort-de-france | 0.7 | monthly | 2026-09-19
 https://getavyora.fr/prix-renovation/pointe-a-pitre | 0.7 | monthly | 2026-09-19
 https://getavyora.fr/prix-renovation/saint-denis-reunion | 0.7 | monthly | 2026-09-19
 https://getavyora.fr/prix-renovation/cayenne | 0.7 | monthly | 2026-09-19
-https://getavyora.fr/tarifs | 0.6 | monthly | 2026-10-12T10:00:00.000Z
-https://getavyora.fr/mentions-legales | 0.3 | yearly | 2026-10-12T10:00:00.000Z
-https://getavyora.fr/cgu | 0.3 | yearly | 2026-10-12T10:00:00.000Z
-https://getavyora.fr/cgv | 0.3 | yearly | 2026-10-12T10:00:00.000Z
-https://getavyora.fr/confidentialite | 0.3 | yearly | 2026-10-12T10:00:00.000Z
-https://getavyora.fr/cookies | 0.3 | yearly | 2026-10-12T10:00:00.000Z
-https://getavyora.fr/estimation-travaux | 0.9 | monthly | 2026-10-12T10:00:00.000Z
-https://getavyora.fr/estimation-construction-maison | 0.9 | monthly | 2026-10-12T10:00:00.000Z"
+https://getavyora.fr/tarifs | 0.6 | monthly | 2026-11-12
+https://getavyora.fr/mentions-legales | 0.3 | yearly | 2026-09-12
+https://getavyora.fr/cgu | 0.3 | yearly | 2026-10-16
+https://getavyora.fr/cgv | 0.3 | yearly | 2026-10-16
+https://getavyora.fr/confidentialite | 0.3 | yearly | 2026-09-06
+https://getavyora.fr/cookies | 0.3 | yearly | 2026-09-06
+https://getavyora.fr/estimation-travaux | 0.9 | monthly | 2026-11-12
+https://getavyora.fr/estimation-construction-maison | 0.9 | monthly | 2026-11-12"
 `;
 
 exports[`Témoins · interrupteur plans éteint > « Mes projets » : vide, puis réno rapide + détaillée + neuf + archivé (FR, EN ; gratuit, Pro) > projets en gratuit plein 1`] = `

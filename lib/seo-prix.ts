@@ -1,5 +1,5 @@
 import "server-only";
-import { CATALOG, buildDevis, presetRapide, AMPLEURS, ampleurLabel, regionCoef, effPrices, finCoefTask, defaultCtx, type Ampleur, type TypeBien, type Finition } from "@/lib/estimateur";
+import { CATALOG, buildDevis, presetRapide, AMPLEURS, ampleurLabel, regionCoef, effPrices, effRate, finCoefTask, defaultCtx, type Ampleur, type TypeBien, type Finition } from "@/lib/estimateur";
 
 /**
  * `label` est le libellé NEUTRE, à garder sur les grilles qui affichent côte à côte une colonne
@@ -48,7 +48,18 @@ export function prixNational(): PrixLigne[] {
 
 export { regionCoef };
 
-export type PosteRef = { lot: string; nom: string; unite: string; fp: number; sm: number | null };
+/**
+ * `fp` et `sm` sont HT. `tva` est le taux que l'estimateur applique au fourni-posé de ce poste (10 % ou
+ * 5,5 % en rénovation d'un logement de plus de deux ans) ; la fourniture seule, achetée par le
+ * particulier, est toujours à TVA_FOURNITURE_SEULE. Cf. `ttc()`.
+ */
+export type PosteRef = { lot: string; nom: string; unite: string; fp: number; sm: number | null; tva: number };
+
+/** TVA sur les matériaux qu'un particulier achète lui-même (« Je le fais ») — la règle du moteur (effRate). */
+export const TVA_FOURNITURE_SEULE = 20;
+
+/** Montant TTC arrondi à l'euro, depuis un HT et un taux en %. */
+export const ttc = (ht: number, taux: number): number => Math.round(ht * (1 + taux / 100));
 
 /**
  * Prix de référence d'un poste du catalogue, pour les guides éditoriaux.
@@ -65,7 +76,9 @@ export function posteRef(nom: string, finition: Finition = "standard"): PosteRef
     const { fp, sm } = effPrices(t, undefined, ctx);
     if (fp == null) return null;
     const c = finCoefTask(ctx, l, t);
-    return { lot: l.c, nom: t.n, unite: t.u, fp: Math.round(fp * c), sm: sm == null ? null : Math.round(sm * c) };
+    // Même taux que l'estimateur pour ce poste confié à un artisan (sélection par défaut, logement +2 ans).
+    const tva = effRate(l, t, {}, ctx);
+    return { lot: l.c, nom: t.n, unite: t.u, fp: Math.round(fp * c), sm: sm == null ? null : Math.round(sm * c), tva };
   }
   return null;
 }
@@ -98,6 +111,17 @@ export function postesSansFourniture(): { lot: string; nom: string }[] {
   const out: { lot: string; nom: string }[] = [];
   for (const l of CATALOG) for (const t of l.t) if (t.sm == null) out.push({ lot: l.c, nom: t.n });
   return out;
+}
+
+/**
+ * Nombre de postes du catalogue par unité de mesure (`m2`, `u`, `forfait`, `ml`, `jour`), du plus
+ * fréquent au moins fréquent. Pour /methodologie, qui écrivait « au m² (77 postes) » en dur alors que
+ * le catalogue en comptait 80 : une page « transparence » doit lire ses chiffres, pas les recopier.
+ */
+export function postesParUnite(): { unite: string; n: number }[] {
+  const n = new Map<string, number>();
+  for (const l of CATALOG) for (const t of l.t) n.set(t.u, (n.get(t.u) ?? 0) + 1);
+  return [...n].map(([unite, k]) => ({ unite, n: k })).sort((a, b) => b.n - a.n || a.unite.localeCompare(b.unite));
 }
 
 /** Compteurs globaux du catalogue, pour ne jamais écrire « 200 postes » ou « 18 lots » en dur. */

@@ -1,6 +1,14 @@
+import { seoMeta } from "@/lib/seo-og";
 import { betaCoupee, libellesBeta } from "@/lib/beta";
 
-export const metadata = { title: "Conditions Générales d'Utilisation", alternates: { canonical: "/cgu" } };
+// Métadonnées propres à la page : sans description, elle reprenait celle de l'accueil (cf. seoMeta).
+export const metadata = seoMeta({
+  title: "Conditions Générales d'Utilisation",
+  description:
+    "Conditions générales d'utilisation d'AVYORA : accès au service, compte, bêta gratuite, responsabilités et données.",
+  path: "/cgu",
+  type: "website",
+});
 
 /**
  * Bêta gratuite (lib/beta.ts) : l'article 2 bis. Page statique : ses dates suivent NEXT_PUBLIC_BETA_FIN au build,

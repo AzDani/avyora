@@ -1,29 +1,55 @@
 import type { Metadata } from "next";
 import { getT } from "@/lib/i18n/server";
 import { FEATURES } from "@/lib/features";
-import { betaActive } from "@/lib/beta";
+import { betaActive, libellesBeta } from "@/lib/beta";
+import { og, DESCRIPTION_SITE } from "@/lib/seo-og";
+import { ANNEE_PRIX } from "@/lib/prix-maj";
 import { accueilBeta } from "@/lib/accueil-beta";
 
 // Le canonical de l'accueil vit ici (retiré du layout racine où il contaminait toutes les pages).
-export const metadata: Metadata = { alternates: { canonical: "/" } };
+// Son aperçu de partage aussi : le layout racine ne porte plus que les valeurs de marque (cf. seoMeta).
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+  openGraph: og({ title: "AVYORA — sache ce que ça coûte. Avant de signer.", description: DESCRIPTION_SITE, path: "/", type: "website" }),
+  twitter: { card: "summary_large_image", title: "AVYORA — estime tes travaux avant de signer", description: DESCRIPTION_SITE },
+};
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
 
-// Données structurées (JSON-LD) : aide les moteurs à comprendre qu'AVYORA est une application web.
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  name: "AVYORA",
-  url: siteUrl,
-  applicationCategory: "FinanceApplication",
-  operatingSystem: "Web",
-  inLanguage: "fr-FR",
-  description:
-    "Estime le coût de tes travaux de rénovation au prix du marché français, au poste près et ajusté à ta région — avant de signer.",
-  offers: { "@type": "Offer", price: "0", priceCurrency: "EUR", description: "Première estimation gratuite" },
-};
+/**
+ * Données structurées (JSON-LD) : aide les moteurs à comprendre qu'AVYORA est une application web.
+ *
+ * L'offre décrit ce qui est RÉELLEMENT ouvert (cf. lib/beta.ts) : pendant la bêta, tout est gratuit
+ * avec un compte ; après, l'estimation rapide reste gratuite. Pas d'offre Pro payante ici tant que le
+ * paiement n'est pas ouvert : annoncer un prix inactif aux moteurs serait une donnée structurée fausse.
+ * Calculée à la requête (la page est dynamique) : la fin de la bêta la fait basculer d'elle-même.
+ * « BusinessApplication », comme la page de la construction neuve : AVYORA n'est pas un outil financier.
+ */
+function jsonLdAccueil() {
+  const beta = betaActive();
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: "AVYORA",
+    url: siteUrl,
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web",
+    inLanguage: "fr-FR",
+    isAccessibleForFree: true,
+    description:
+      "Estime le coût de tes travaux de rénovation au prix du marché français, au poste près et ajusté à ta région — avant de signer.",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "EUR",
+      description: beta
+        ? `Gratuit pendant la bêta, jusqu'au ${libellesBeta("fr").fin}, avec un compte`
+        : "Estimation rapide gratuite, sans inscription",
+    },
+  };
+}
 
 const HOME_CSS = `
 .av-home{--canvas:#f5f6fb;--surface:#fff;--surface-2:#f8f9fd;--ink:#15172b;--muted:#565a75;--faint:#898ea8;--line:#e9eaf3;--line-strong:#dcdeec;--brand:#4f46e5;--brand-700:#4338ca;--brand-weak:#eef1ff;--brand-200:#c7ccfe;--violet:#7c3aed;--accent:#a78bfa;--accent-300:#c4b5fd;--good:#0f9d6b;--good-bg:#e6f6ef;--nuit:#1E1B4B;--nuit-2:#241f5e;--nuit-3:#191640;--r:1.15rem;--r-lg:1.5rem;--ease:cubic-bezier(.22,.72,.2,1);--shadow:0 1px 3px rgba(30,27,75,.05),0 10px 26px -12px rgba(30,27,75,.14);--shadow-hero:0 24px 60px -26px rgba(30,27,75,.55);font-family:var(--font-geist-sans),system-ui,sans-serif;color:var(--ink);line-height:1.5}
@@ -269,7 +295,7 @@ const HOME_HTML = `
   <div class="cred">
     <div class="s"><div class="v">200</div><div class="l">postes de prix chiffrés</div></div>
     <div class="s"><div class="v">18</div><div class="l">corps d'état couverts</div></div>
-    <div class="s"><div class="v">2026</div><div class="l">prix du marché français</div></div>
+    <div class="s"><div class="v">${ANNEE_PRIX}</div><div class="l">prix du marché français</div></div>
     <div class="s"><div class="v">±15&nbsp;%</div><div class="l">marge de la fourchette</div></div>
   </div>
 </div></section>
@@ -393,7 +419,7 @@ const HOME_HTML_EN = `
   <div class="cred">
     <div class="s"><div class="v">200</div><div class="l">priced items</div></div>
     <div class="s"><div class="v">18</div><div class="l">trades covered</div></div>
-    <div class="s"><div class="v">2026</div><div class="l">French market prices</div></div>
+    <div class="s"><div class="v">${ANNEE_PRIX}</div><div class="l">French market prices</div></div>
     <div class="s"><div class="v">±15%</div><div class="l">range on the estimate</div></div>
   </div>
 </div></section>
@@ -444,7 +470,7 @@ export default async function Accueil({ searchParams }: { searchParams: Promise<
   const en = locale === "en";
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdAccueil()) }} />
       {compte === "supprime" && (
         <div className="card mb-8 flex items-center gap-3 border-positive/25 bg-positive-soft p-4 text-sm text-positive">
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">

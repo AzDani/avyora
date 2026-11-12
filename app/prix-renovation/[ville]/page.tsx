@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { VILLES_SEO, villeBySlug, villesProches, nbMemeRegion } from "@/lib/villes";
+import { VILLES_SEO, villeBySlug, villesProches, RAYON_PROCHES_KM } from "@/lib/villes";
 import { prixVille, regionCoef } from "@/lib/seo-prix";
 import { deptInfo } from "@/lib/geo";
-import { PRIX_MAJ_FR } from "@/lib/prix-maj";
+import { PRIX_MAJ_FR, ANNEE_PRIX } from "@/lib/prix-maj";
+import { seoMeta, titreCourt } from "@/lib/seo-og";
+import { phraseCoef, coefCourt, phraseFournitures, raisonFournitures, lieuVille, regionParenthese, situationVille } from "@/lib/seo-textes";
 import { MATRIX_SLUGS, MATRIX_VILLES, matriceIndexable } from "@/lib/seo-projets";
 import { CtaEstimation } from "@/components/CtaEstimation";
 
@@ -27,22 +29,26 @@ export async function generateMetadata({ params }: { params: Promise<{ ville: st
   if (!v) return { title: "Prix rénovation" };
   const grille = prixVille(v.cp);
   const complete = grille.find((g) => g.v === "complete")?.appartM2 ?? 0;
-  const dep = deptInfo(v.cp);
-  const zone = dep.region ? ` (${dep.region})` : "";
-  return {
-    title: `Prix rénovation à ${v.nom} (2026) — coût au m²`,
+  const zone = regionParenthese(deptInfo(v.cp));
+  return seoMeta({
+    // ≤ 60 caractères avec « · AVYORA » : les noms longs (Boulogne-Billancourt) perdent « — coût au m² ».
+    title: titreCourt(
+      `Prix rénovation à ${v.nom} (${ANNEE_PRIX}) — coût au m²`,
+      `Prix rénovation à ${v.nom} (${ANNEE_PRIX})`,
+      `Prix rénovation ${v.nom} ${ANNEE_PRIX}`,
+    ),
     // ≤ 160 car. : « Estimation gratuite en 3 minutes » poussait toutes les pages au-delà, donc
     // tronquait la seule information locale — le prix au m². On garde le chiffre, on coupe le slogan.
     description: `Combien coûte une rénovation à ${v.nom}${zone} ? Prix au m² par ampleur de travaux, à partir de ${euro(complete)}/m² en réno complète.`,
-    alternates: { canonical: `/prix-renovation/${v.slug}` },
-  };
+    path: `/prix-renovation/${v.slug}`,
+  });
 }
 
 const CSS = `
 .av-seo{max-width:760px;margin:0 auto}
 .av-seo h1{font-size:clamp(24px,4vw,32px);font-weight:600;letter-spacing:-.02em;color:var(--color-ink);margin:0}
 .av-seo .tw,.av-guide .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:14px 0}
-.av-seo .tw table,.av-guide .tw table{margin:0;min-width:420px}
+.av-seo .tw table,.av-guide .tw table{margin:0}
 .av-seo .fil{font-size:12.5px;color:var(--color-faint);margin-bottom:12px}
 .av-seo .fil a{color:var(--color-muted)}
 .av-seo .lead{font-size:15px;color:var(--color-muted);margin-top:12px;line-height:1.7}
@@ -70,6 +76,14 @@ const CSS = `
 .av-seo .note{font-size:13.5px}
 .av-seo .lead{font-size:16.5px}
 }
+/* Mobile : les trois colonnes tiennent dans 358 px (avant : min-width 420 px, la colonne « Maison »
+   sortait du cadre sans aucun signe qu'on pouvait faire défiler). Le conteneur .tw garde son
+   overflow-x:auto en dernier recours. */
+@media(max-width:480px){
+.av-seo th,.av-seo td{padding:8px 6px}
+.av-seo th{text-transform:none;letter-spacing:0;font-size:12px}
+.av-seo td.num{white-space:nowrap}
+}
 `;
 
 export default async function PrixVille({ params }: { params: Promise<{ ville: string }> }) {
@@ -80,12 +94,9 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
   const grille = prixVille(v.cp);
   // Maillage : région d'abord, puis rotation déterministe. Sans la rotation, chaque page listait
   // les 16 mêmes métropoles et 34 villes sur 74 n'avaient qu'un seul lien entrant.
-  const proches = villesProches(v.slug);
-  const nbRegion = nbMemeRegion(v.slug);
+  const { autour, ailleurs } = villesProches(v.slug);
   const reg = regionCoef(v.cp);
   const dep = deptInfo(v.cp);
-  const localisation = dep.nom ? `${v.nom} (${dep.num} · ${dep.nom})` : v.nom;
-  const moPct = Math.round((reg.mo - 1) * 100);
   // Jonction du silo géographique vers la matrice — mais UNIQUEMENT vers une page indexable.
   // L'argument d'origine (« ça désorpheline la matrice ») est mort depuis que 320 de ces pages
   // sont en noindex : y envoyer un lien depuis une page indexable et déclarée au sitemap dépense
@@ -100,24 +111,18 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
 
   // Formulation honnête : ce coefficient est un indice INTERNE AVYORA, sans source publique
   // (cf. /methodologie). On décrit donc ce que l'outil applique, sans affirmer un fait de marché.
-  const coefPhrase =
-    moPct > 0
-      ? `AVYORA y applique un coefficient de +${moPct}\u00a0% sur la main-d'œuvre`
-      : moPct < 0
-        ? `AVYORA y applique un coefficient de −${Math.abs(moPct)}\u00a0% sur la main-d'œuvre`
-        : `AVYORA n'y applique aucun ajustement de main-d'œuvre`;
-  // Variante courte, pour les phrases qui nomment déjà AVYORA (évite « AVYORA … AVYORA y applique »).
-  const coefCourt =
-    moPct > 0 ? `+${moPct}\u00a0% sur la main-d'œuvre` : moPct < 0 ? `−${Math.abs(moPct)}\u00a0% sur la main-d'œuvre` : `aucun ajustement`;
+  // Phrases partagées avec la matrice : lib/seo-textes.ts.
+  const coefPhrase = phraseCoef(reg);
+  const pourquoi = `Pour ${v.nom}, classée « ${reg.zone} », ${coefPhrase}${reg.mat !== 1 ? ` (${raisonFournitures(reg)})` : ""}.`;
 
   const faq = [
     {
       q: `Combien coûte une rénovation complète à ${v.nom} ?`,
-      a: `Comptez environ ${euro(complete.appartM2)}/m² pour un appartement, soit à peu près ${euro(totalCompletAppart)} pour 70 m² (fourchette ±15\u00a0%, finition standard, travaux confiés à des artisans).`,
+      a: `Compte environ ${euro(complete.appartM2)}/m² pour un appartement, soit à peu près ${euro(totalCompletAppart)} pour 70 m² (fourchette ±15\u00a0%, finition standard, travaux confiés à des artisans).`,
     },
     {
       q: `Pourquoi les prix diffèrent-ils à ${v.nom} ?`,
-      a: `Les fournitures sont à un prix national ; c'est la main-d'œuvre qui varie. ${v.nom} est classée « ${reg.zone} » dans le barème régional AVYORA, un indice interne établi par département : ${coefCourt}. La méthode est détaillée sur la page Méthodologie.`,
+      a: `${phraseFournitures(reg)} ${v.nom} est classée « ${reg.zone} » dans le barème régional AVYORA, un indice interne établi par département : ${coefCourt(reg)}. La méthode est détaillée sur la page Méthodologie.`,
     },
     {
       q: `Rénover un appartement ou une maison, quelle différence de prix ?`,
@@ -125,7 +130,7 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
     },
     {
       q: `Comment obtenir une estimation précise pour mon bien à ${v.nom} ?`,
-      a: `Utilisez l'estimateur AVYORA : en 2 minutes, vous obtenez une fourchette chiffrée adaptée à votre surface, vos travaux et votre code postal.`,
+      a: `Utilise l'estimateur AVYORA : en 2 minutes, tu obtiens une fourchette chiffrée adaptée à ta surface, tes travaux et ton code postal.`,
     },
   ];
 
@@ -168,12 +173,12 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
         <Link href="/">Accueil</Link> <span aria-hidden="true">›</span>{" "}
         <Link href="/prix-renovation">Prix par ville</Link> <span aria-hidden="true">›</span> {v.nom}
       </p>
-      <h1>Prix d&apos;une rénovation à {v.nom} en 2026</h1>
+      <h1>Prix d&apos;une rénovation à {v.nom} en {ANNEE_PRIX}</h1>
       <p className="lead">
-        À {localisation}{dep.region ? <>, en {dep.region}</> : null}, une <strong>rénovation complète</strong> coûte en
+        À {lieuVille(v.nom, dep)}, une <strong>rénovation complète</strong> coûte en
         moyenne <strong>{euro(complete.appartM2)}/m²</strong> pour un appartement — de{" "}
         <strong>{euro(partielle.appartM2)}/m²</strong> pour une réno partielle à{" "}
-        <strong>{euro(lourde.maisonM2)}/m²</strong> pour une réno lourde de maison. Zone tarifaire :{" "}
+        <strong>{euro(lourde.maisonM2)}/m²</strong> pour une réno lourde de maison. Classement tarifaire :{" "}
         « {reg.zone} » — {coefPhrase} (<Link href="/methodologie">barème interne, méthode détaillée ici</Link>).
       </p>
       <p className="prixmaj">Prix mis à jour le {PRIX_MAJ_FR} · <Link href="/methodologie">d&apos;où viennent ces prix ?</Link></p>
@@ -182,7 +187,7 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
       <div className="tw">
       <table>
         <thead>
-          <tr><th>Type de travaux</th><th>Appartement (€/m²)</th><th>Maison (€/m²)</th></tr>
+          <tr><th>Type de travaux</th><th>Appart. (€/m²)</th><th>Maison (€/m²)</th></tr>
         </thead>
         <tbody>
           {grille.map((g) => (
@@ -203,15 +208,15 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
       <h2>Pourquoi ces prix à {v.nom} ?</h2>
       <p>
         Le coût d&apos;une rénovation dépend surtout de deux choses : le <strong>prix des matériaux</strong>{" "}
-        (globalement national) et le <strong>coût de la main-d&apos;œuvre</strong>, qui varie selon la région.
-        À {v.nom} (zone « {reg.zone} »), {coefPhrase}. C&apos;est pourquoi AVYORA ajuste automatiquement
-        l&apos;estimation à ton code postal.
+        ({reg.mat === 1 ? "globalement national" : "majoré ici par rapport à la métropole continentale"}) et le{" "}
+        <strong>coût de la main-d&apos;œuvre</strong>, qui varie selon la région.{" "}
+        {pourquoi}{" "}C&apos;est pourquoi l&apos;estimation s&apos;ajuste automatiquement à ton code postal.
       </p>
       {dep.nom && (
         <p>
-          {v.nom} se situe en {dep.region} (département {dep.nom}, {dep.num}). Le tarif horaire des artisans y est{" "}
-          {moPct > 0 ? "supérieur à" : moPct < 0 ? "inférieur à" : "proche de"}{" "}la moyenne française, ce qui explique
-          l&apos;écart de prix avec d&apos;autres régions.
+          {situationVille(v.nom, dep)}{" "}Le barème AVYORA classe chaque département dans une zone : c&apos;est
+          ce classement, un indice interne et non une mesure du tarif horaire local, qui explique
+          l&apos;écart de prix avec d&apos;autres villes.
         </p>
       )}
 
@@ -257,14 +262,25 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
         <Link href="/prix-travaux" className="font-medium text-brand-600 hover:underline">tous les travaux</Link>.
       </p>
 
-      <h2>{nbRegion > 0 ? `Prix de la rénovation autour de ${v.nom}` : "Prix de la rénovation ailleurs en France"}</h2>
-      <p>
-        {nbRegion > 0
-          ? `Les villes de la même région partagent un marché de la main-d'œuvre proche : leurs prix se comparent mieux à ${v.nom} que ceux d'une métropole à l'autre bout du pays.`
-          : `Quelques repères ailleurs en France, pour situer ${v.nom} dans l'échelle des prix.`}
-      </p>
+      {/* Deux blocs (lib/villes.ts, villesProches) : « autour de » ne liste que des villes à moins de
+          RAYON_PROCHES_KM ; la rotation de maillage, elle, est titrée honnêtement « ailleurs en France ». */}
+      {autour.length > 0 && (
+        <>
+          <h2>Prix de la rénovation autour de {v.nom}</h2>
+          <p>
+            {`Villes à moins de ${RAYON_PROCHES_KM} km de ${v.nom} : des repères plus proches que ceux d'une métropole à l'autre bout du pays.`}
+          </p>
+          <div className="villes">
+            {autour.map((x) => (
+              <Link key={x.slug} href={`/prix-renovation/${x.slug}`}>{x.nom}</Link>
+            ))}
+          </div>
+        </>
+      )}
+      <h2>Prix de la rénovation ailleurs en France</h2>
+      <p>{`Quelques repères ailleurs en France, pour situer ${v.nom} dans l'échelle des prix.`}</p>
       <div className="villes">
-        {proches.map((x) => (
+        {ailleurs.map((x) => (
           <Link key={x.slug} href={`/prix-renovation/${x.slug}`}>{x.nom}</Link>
         ))}
         <Link href="/prix-renovation">Toutes les villes →</Link>

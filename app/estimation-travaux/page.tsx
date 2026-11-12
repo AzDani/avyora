@@ -11,13 +11,16 @@ const siteUrl =
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
 import type { PieceKey } from "@/lib/estimateur";
 import { sourceSeoValide } from "@/lib/seo-source";
+import { seoMeta } from "@/lib/seo-og";
 
-export const metadata = {
-  title: "Estimation travaux gratuite — budget rénovation en 2 minutes",
+// Title ≤ 60 caractères avec « · AVYORA » ; og:url et carte X propres à la page (cf. seoMeta).
+export const metadata = seoMeta({
+  title: "Estimation travaux gratuite : budget rénovation",
   description:
     "Calcule gratuitement le budget de tes travaux de rénovation : 4 questions, une fourchette chiffrée ajustée à ton code postal. Sans inscription.",
-  alternates: { canonical: "/estimation-travaux" },
-};
+  path: "/estimation-travaux",
+  type: "website",
+});
 export const dynamic = "force-dynamic";
 
 // Estimation rapide (< 2 min), gratuite. « Affiner » ouvre le détaillé (/detaille).

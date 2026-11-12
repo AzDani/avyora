@@ -1,4 +1,12 @@
-export const metadata = { title: "Politique cookies", alternates: { canonical: "/cookies" } };
+import { seoMeta } from "@/lib/seo-og";
+// Métadonnées propres à la page : sans description, elle reprenait celle de l'accueil (cf. seoMeta).
+export const metadata = seoMeta({
+  title: "Politique cookies",
+  description:
+    "Les cookies déposés par AVYORA, leur finalité et leur durée, et comment les gérer.",
+  path: "/cookies",
+  type: "website",
+});
 
 export default function Cookies() {
   return (

@@ -1,6 +1,14 @@
+import { seoMeta } from "@/lib/seo-og";
 import { betaCoupee, libellesBeta } from "@/lib/beta";
 
-export const metadata = { title: "Conditions Générales de Vente", alternates: { canonical: "/cgv" } };
+// Métadonnées propres à la page : sans description, elle reprenait celle de l'accueil (cf. seoMeta).
+export const metadata = seoMeta({
+  title: "Conditions Générales de Vente",
+  description:
+    "Conditions générales de vente de l'abonnement AVYORA Pro : prix, paiement, droit de rétractation et résiliation.",
+  path: "/cgv",
+  type: "website",
+});
 
 /** Bêta gratuite (lib/beta.ts) : l'article 1 bis, aucune vente pendant la bêta. Mêmes règles que les CGU (page statique). */
 export default function CGV() {

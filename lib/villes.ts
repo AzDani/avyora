@@ -148,7 +148,9 @@ export const VILLES: Ville[] = [
   // ── Outre-mer ──
   { slug: "fort-de-france", nom: "Fort-de-France", cp: "97200" },
   { slug: "pointe-a-pitre", nom: "Pointe-à-Pitre", cp: "97110" },
-  { slug: "saint-denis-reunion", nom: "Saint-Denis (La Réunion)", cp: "97400" },
+  // « de La Réunion » plutôt que « (La Réunion) » : le nom entre dans des titles et des phrases qui ont
+  // déjà leurs parenthèses (« Prix rénovation à Saint-Denis (La Réunion) (2026) »).
+  { slug: "saint-denis-reunion", nom: "Saint-Denis de La Réunion", cp: "97400" },
   { slug: "cayenne", nom: "Cayenne", cp: "97300" },
 ];
 
@@ -177,53 +179,87 @@ export const MATRIX_VILLES_RETIREES: Ville[] = VILLES.slice(0, 40).filter(
 );
 
 /**
- * Villes à proposer en maillage depuis la page d'une ville donnée.
+ * Position (latitude, longitude en degrés) de chaque ville qui a une page — sert à ne proposer
+ * « autour de » une ville que des villes RÉELLEMENT proches. Précision du centre-ville, largement
+ * suffisante pour un rayon de 150 km. Une ville ajoutée à `VILLES_SEO` doit y figurer (vérifié par
+ * tests/seo-contenu.test.ts) ; sans position, elle n'apparaît que dans « ailleurs en France ».
+ */
+export const COORDS: Record<string, readonly [number, number]> = {
+  paris: [48.857, 2.352], marseille: [43.296, 5.37], lyon: [45.764, 4.836], toulouse: [43.605, 1.444],
+  nice: [43.71, 7.262], nantes: [47.218, -1.554], montpellier: [43.611, 3.877], strasbourg: [48.573, 7.752],
+  bordeaux: [44.838, -0.579], lille: [50.629, 3.057], rennes: [48.117, -1.678], toulon: [43.124, 5.928],
+  grenoble: [45.188, 5.724], dijon: [47.322, 5.041], "aix-en-provence": [43.529, 5.447],
+  "clermont-ferrand": [45.778, 3.087], "le-havre": [49.494, 0.108], rouen: [49.443, 1.099],
+  nancy: [48.692, 6.184], annecy: [45.899, 6.129], versailles: [48.804, 2.13], villeurbanne: [45.767, 4.88],
+  mulhouse: [47.75, 7.336], pau: [43.295, -0.371], "boulogne-billancourt": [48.836, 2.24],
+  nanterre: [48.892, 2.207], montreuil: [48.864, 2.443], "saint-denis": [48.936, 2.357],
+  creteil: [48.79, 2.455], argenteuil: [48.948, 2.248], cergy: [49.036, 2.063],
+  "evry-courcouronnes": [48.629, 2.441], meaux: [48.96, 2.879], melun: [48.54, 2.661],
+  roubaix: [50.692, 3.178], tourcoing: [50.724, 3.161], dunkerque: [51.034, 2.377],
+  valenciennes: [50.358, 3.524], cannes: [43.552, 7.017], antibes: [43.58, 7.125], frejus: [43.433, 6.737],
+  beziers: [43.344, 3.216], gap: [44.559, 6.079], mende: [44.518, 3.5], foix: [42.965, 1.607],
+  auch: [43.646, 0.586], cahors: [44.448, 1.441], rodez: [44.351, 2.575], bayonne: [43.493, -1.475],
+  "brive-la-gaillarde": [45.159, 1.533], gueret: [46.171, 1.871], "saint-malo": [48.649, -2.026],
+  "saint-nazaire": [47.273, -2.214], laval: [48.073, -0.77], chateauroux: [46.811, 1.691],
+  chambery: [45.564, 5.918], montlucon: [46.34, 2.603], aurillac: [44.927, 2.44],
+  "le-puy-en-velay": [45.043, 3.885], nevers: [46.99, 3.159], auxerre: [47.798, 3.567],
+  vesoul: [47.623, 6.155], colmar: [48.079, 7.358], epinal: [48.173, 6.45],
+  "charleville-mezieres": [49.773, 4.72], verdun: [49.16, 5.384], chaumont: [48.111, 5.139],
+  alencon: [48.432, 0.091], ajaccio: [41.919, 8.738], bastia: [42.697, 9.451],
+  "fort-de-france": [14.616, -61.059], "pointe-a-pitre": [16.241, -61.533],
+  "saint-denis-reunion": [-20.882, 55.45], cayenne: [4.922, -52.313],
+};
+
+/** Distance à vol d'oiseau entre deux villes, en km (formule de haversine) ; Infinity sans position. */
+export function distanceKm(a: string, b: string): number {
+  const pa = COORDS[a], pb = COORDS[b];
+  if (!pa || !pb) return Infinity;
+  const rad = Math.PI / 180;
+  const dLat = (pb[0] - pa[0]) * rad, dLon = (pb[1] - pa[1]) * rad;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(pa[0] * rad) * Math.cos(pb[0] * rad) * Math.sin(dLon / 2) ** 2;
+  return 2 * 6371 * Math.asin(Math.sqrt(h));
+}
+
+/** Rayon du bloc « autour de » : au-delà, ce n'est plus le même bassin d'artisans. */
+export const RAYON_PROCHES_KM = 150;
+
+/**
+ * Villes à proposer en maillage depuis la page d'une ville donnée, en DEUX listes :
  *
- * POURQUOI. Chaque page ville listait les 16 PREMIÈRES de `VILLES_SEO`, c'est-à-dire toujours les
- * mêmes grandes métropoles. Mesuré sur le HTML généré : 34 des 74 pages villes n'avaient qu'UN
- * SEUL lien entrant, celui du hub — les petites villes n'étaient citées nulle part.
+ *  - `autour` : les villes à moins de RAYON_PROCHES_KM, de la plus proche à la plus lointaine
+ *    (6 au plus). C'est la seule liste qu'on peut honnêtement titrer « autour de [ville] ».
+ *  - `ailleurs` : une ROTATION déterministe sur la liste complète, décalée par l'index de la ville
+ *    courante, qui complète jusqu'à `n` liens. Elle porte le maillage : chaque ville apparaît dans
+ *    la rotation d'autant de pages qu'il y a de places, au lieu de dépendre de sa taille.
  *
- * Deux sources, dans cet ordre :
- *  1. les villes de la même RÉGION (contexte réel pour le lecteur : mêmes artisans, même marché) ;
- *  2. une ROTATION déterministe sur la liste complète, décalée par l'index de la ville courante.
- *     C'est elle qui garantit la couverture : chaque ville apparaît dans la rotation d'autant de
- *     pages qu'il y a de places, au lieu de dépendre de sa taille.
+ * POURQUOI DEUX LISTES. Une seule liste mélangeait les deux sous le titre « autour de » : la page de
+ * Roubaix proposait Cannes, Gap et Foix « autour de Roubaix ». Et avant la rotation, chaque page
+ * listait les 16 mêmes métropoles — 34 des 74 pages villes n'avaient qu'UN SEUL lien entrant.
  *
  * Déterministe (aucun aléa) : le rendu statique doit être stable d'un build à l'autre.
  */
-/** Région d'un code postal. Import RELATIF : next.config.ts lit ce fichier sans l'alias « @/ ». */
-const regionDe = (cp: string): string => deptInfo(cp).region;
-
-export function villesProches(slug: string, n = 12): Ville[] {
+export function villesProches(slug: string, n = 12): { autour: Ville[]; ailleurs: Ville[] } {
   const i = VILLES_SEO.findIndex((x) => x.slug === slug);
-  if (i < 0) return VILLES_SEO.slice(0, n);
-  const moi = VILLES_SEO[i];
-  const maRegion = regionDe(moi.cp);
-  const out: Ville[] = [];
-  const vu = new Set<string>([slug]);
-
-  if (maRegion) {
-    for (const v of VILLES_SEO) {
-      if (vu.has(v.slug) || regionDe(v.cp) !== maRegion) continue;
-      out.push(v); vu.add(v.slug);
-      if (out.length >= Math.min(6, n)) break;
-    }
-  }
-  for (let k = 1; out.length < n && k <= VILLES_SEO.length; k++) {
+  if (i < 0) return { autour: [], ailleurs: VILLES_SEO.slice(0, n) };
+  const autour = VILLES_SEO
+    .filter((v) => v.slug !== slug)
+    .map((v) => ({ v, d: distanceKm(slug, v.slug) }))
+    .filter((x) => x.d <= RAYON_PROCHES_KM)
+    .sort((a, b) => a.d - b.d)
+    .slice(0, Math.min(6, n))
+    .map((x) => x.v);
+  const vu = new Set<string>([slug, ...autour.map((v) => v.slug)]);
+  const ailleurs: Ville[] = [];
+  for (let k = 1; autour.length + ailleurs.length < n && k <= VILLES_SEO.length; k++) {
     const v = VILLES_SEO[(i + k) % VILLES_SEO.length];
     if (vu.has(v.slug)) continue;
-    out.push(v); vu.add(v.slug);
+    ailleurs.push(v); vu.add(v.slug);
   }
-  return out;
+  return { autour, ailleurs };
 }
 
-/** Nombre de villes de la même région que `slug` (hors elle-même), pour formuler la phrase. */
-export function nbMemeRegion(slug: string): number {
-  const moi = VILLES_SEO.find((x) => x.slug === slug);
-  if (!moi) return 0;
-  const r = regionDe(moi.cp);
-  return r ? VILLES_SEO.filter((v) => v.slug !== slug && regionDe(v.cp) === r).length : 0;
-}
+/** Région d'un code postal. Import RELATIF : next.config.ts lit ce fichier sans l'alias « @/ ». */
+const regionDe = (cp: string): string => deptInfo(cp).region;
 
 export const regionDeVille = (slug: string): string =>
   regionDe(VILLES_SEO.find((x) => x.slug === slug)?.cp ?? "");

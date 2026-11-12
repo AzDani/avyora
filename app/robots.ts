@@ -22,8 +22,8 @@ export default function robots(): MetadataRoute.Robots {
       //
       // /projets/ ferme la liste des projets et leur détail (307 vers /connexion, donc du budget
       // d'exploration dépensé pour rien), SANS fermer le funnel public qui vit sous le même préfixe.
-      // L'Allow plus spécifique l'emporte chez Googlebot ; /projets/nouveau est au sitemap, le
-      // bloquer couperait l'entonnoir. L'estimateur, lui, vit désormais sur /estimation-travaux,
+      // L'Allow plus spécifique l'emporte chez Googlebot ; /projets/nouveau est en noindex (hors
+      // sitemap), mais ce noindex n'est lu que si la page reste explorable : ne pas retirer cet Allow. L'estimateur, lui, vit désormais sur /estimation-travaux,
       // hors de ce préfixe — il n'a plus besoin d'exception.
       allow: ["/", "/projets/nouveau"],
       // « /projets$ » ferme la route EXACTE sans toucher au sous-arbre : le lien « Projets » de

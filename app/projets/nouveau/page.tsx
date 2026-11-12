@@ -8,11 +8,20 @@ import { og } from "@/lib/seo-og";
 
 type SP = { nature?: string | string[] };
 
+/**
+ * `noindex, follow` dans les trois états : c'est un écran de CHOIX (deux boutons), sans contenu propre,
+ * qui concurrençait les vraies pages d'entrée (/estimation-travaux, /estimation-construction-maison)
+ * sur les mêmes intentions. Il sort donc aussi du sitemap. `follow` : ses liens restent suivis.
+ * ⚠️ Garder l'`Allow: /projets/nouveau` de robots.ts : un noindex n'est lu que si la page est explorable.
+ */
+const ROBOTS = { index: false, follow: true } as const;
+
 const META_RENO: Metadata = {
   title: "Estimer ses travaux de rénovation — gratuit, sans inscription",
   description:
     "Choisis ton mode d'estimation : rapide et gratuite en 4 questions, ou détaillée poste par poste. Prix du marché français ajustés à ta région.",
   alternates: { canonical: "/projets/nouveau" },
+  robots: ROBOTS,
 };
 // Variante construction neuve (`?nature=neuf`, flag allumé seulement). Le canonical ne bouge pas :
 // la variante n'est pas une page à indexer à part.
@@ -21,6 +30,7 @@ const META_NEUF: Metadata = {
   description:
     "Choisis ton mode d'estimation : rapide et gratuite en 4 questions, ou détaillée lot par lot, du permis à la remise des clés. Prix ajustés à ta région.",
   alternates: { canonical: "/projets/nouveau" },
+  robots: ROBOTS,
 };
 // Pré-page « Quel est ton projet ? » (N2, flag allumé, sans nature) : un titre neutre qui garde
 // « rénovation » en tête, et son propre Open Graph (sinon `og:url` resterait celle de l'accueil).
@@ -31,6 +41,7 @@ const META_NATURE: Metadata = {
   title: TITRE_NATURE,
   description: DESCRIPTION_NATURE,
   alternates: { canonical: "/projets/nouveau" },
+  robots: ROBOTS,
   openGraph: og({ title: TITRE_NATURE, description: DESCRIPTION_NATURE, path: "/projets/nouveau", type: "website" }),
   // Sans lui, X reprendrait le titre et la description du layout, qui ne parlent que de rénovation.
   twitter: { card: "summary_large_image", title: TITRE_NATURE, description: DESCRIPTION_NATURE },

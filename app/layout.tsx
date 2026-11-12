@@ -13,6 +13,7 @@ import LangSwitch from "@/components/i18n/LangSwitch";
 import OngletPlan from "@/components/plans/OngletPlan";
 import SuiviClicsPlan from "@/components/plans/SuiviClicsPlan";
 import { clicPlan } from "@/lib/plans/mesure";
+import { DESCRIPTION_SITE } from "@/lib/seo-og";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -29,10 +30,9 @@ const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
 
-// Doit décrire ce que le produit fait RÉELLEMENT aujourd'hui (cf. lib/features.ts : devis et
-// rentabilite sont désactivés). Promettre une fonction absente = clic gagné puis retour immédiat.
-const description =
-  "Estime le coût de tes travaux de rénovation au prix du marché français : 200 postes chiffrés, 18 corps d'état, prix ajustés à ta région — avant de signer.";
+// Doit décrire ce que le produit fait RÉELLEMENT aujourd'hui : texte et règle dans lib/seo-og.ts
+// (l'accueil la reprend pour son aperçu de partage).
+const description = DESCRIPTION_SITE;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -48,18 +48,18 @@ export const metadata: Metadata = {
   authors: [{ name: "AVYORA" }],
   // PAS de canonical ici : dans le layout racine il est hérité par toute page qui n'en déclare pas,
   // qui se signale alors à Google comme un duplicata de l'accueil. Chaque page porte le sien.
+  // Valeurs de MARQUE seulement : ni `url`, ni `title`, ni `description`. Next ne fusionne pas les
+  // métadonnées en profondeur — une page sans `openGraph` hérite de cet objet tel quel. Avec l'URL et
+  // le titre de l'accueil ici, /tarifs, /methodologie ou /cgu se partageaient comme l'accueil
+  // (og:url = accueil). Sans eux, Next reprend le title et la description de la page ; les pages
+  // indexables posent en plus leur og:url via `seoMeta` (lib/seo-og.ts), l'accueil compris.
   openGraph: {
     type: "website",
     locale: "fr_FR",
-    url: siteUrl,
     siteName: "AVYORA",
-    title: "AVYORA — sache ce que ça coûte. Avant de signer.",
-    description,
   },
   twitter: {
     card: "summary_large_image",
-    title: "AVYORA — estime tes travaux avant de signer",
-    description,
   },
   robots: {
     index: true,

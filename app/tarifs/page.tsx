@@ -9,6 +9,7 @@ import { dict, type Dict } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
 import { SuiviVue } from "@/components/SuiviVue";
 import { FEATURES } from "@/lib/features";
+import { seoMeta } from "@/lib/seo-og";
 import { lireNature, lireSourceNature, natureDeSource, lienDetaillePro, type NatureProjet } from "@/lib/nature-projet";
 import { PLANS_MAX_BETA, betaActive, dateInsecable, estMembreFondateur, libellesBeta, lienInscriptionBeta, lireSourceBeta } from "@/lib/beta";
 
@@ -21,9 +22,10 @@ const META: Metadata = {
 
 /** Hors bêta, la metadata d'avant ; pendant la bêta gratuite (lib/beta.ts), elle dit la bêta (en français, règle SEO du site). */
 export async function generateMetadata(): Promise<Metadata> {
-  if (!betaActive()) return META;
+  // og:url, og:title et carte X propres à /tarifs (avant : ceux de l'accueil, hérités du layout).
+  if (!betaActive()) return seoMeta({ title: META.title as string, description: META.description as string, path: "/tarifs", type: "website" });
   const b = dict("fr").beta;
-  return { ...META, title: b.tarifsMetaTitre, description: b.tarifsMetaDescription(libellesBeta("fr").fin) };
+  return seoMeta({ title: b.tarifsMetaTitre, description: b.tarifsMetaDescription(libellesBeta("fr").fin), path: "/tarifs", type: "website" });
 }
 export const dynamic = "force-dynamic";
 

@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import { GUIDES } from "@/lib/guides";
 import { PROJETS } from "@/lib/seo-projets";
 import { prixNational } from "@/lib/seo-prix";
-import { PRIX_MAJ_FR } from "@/lib/prix-maj";
+import { PRIX_MAJ_FR, ANNEE_PRIX } from "@/lib/prix-maj";
+import { seoMeta } from "@/lib/seo-og";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
@@ -11,12 +12,13 @@ const siteUrl =
 
 export const dynamic = "force-static";
 
-export const metadata: Metadata = {
-  title: "Guides des prix de la rénovation en France (2026)",
+export const metadata: Metadata = seoMeta({
+  title: `Guides des prix de la rénovation en France (${ANNEE_PRIX})`,
   description:
-    "Combien coûte une rénovation en 2026 ? Guides des prix au m² par type de bien, budgets chiffrés par surface et facteurs de prix.",
-  alternates: { canonical: "/guides" },
-};
+    `Combien coûte une rénovation en ${ANNEE_PRIX} ? Guides des prix au m² par type de bien, budgets chiffrés par surface et facteurs de prix.`,
+  path: "/guides",
+  type: "website",
+});
 
 
 // Fil d'Ariane balise : aide Google a comprendre la hierarchie du site et enrichit le resultat.
@@ -63,10 +65,10 @@ export default function GuidesHub() {
       <header className="animate-rise">
         <p className="eyebrow">Guides des prix</p>
         <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-ink">
-          Combien coûte une rénovation en 2026 ?
+          Combien coûte une rénovation en {ANNEE_PRIX} ?
         </h1>
         <p className="mt-2 text-[15px] text-muted">
-          Des repères de prix au m² fiables, calculés avec le référentiel AVYORA (France 2026), par type de bien
+          Des repères de prix au m² fiables, calculés avec le référentiel AVYORA (France {ANNEE_PRIX}), par type de bien
           et par type de travaux. Puis affine gratuitement pour ton projet.
         </p>
         <Link href="/estimation-travaux" className="btn btn-primary mt-4 min-h-[48px] py-2.5">Estimer mes travaux →</Link>
@@ -79,7 +81,7 @@ export default function GuidesHub() {
             href={`/guides/${g.slug}`}
             className="card card-interactive flex flex-col p-5"
           >
-            <span className="text-[15px] font-semibold text-ink">{g.h1.replace(" en 2026", "")}</span>
+            <span className="text-[15px] font-semibold text-ink">{g.h1.replace(` en ${ANNEE_PRIX}`, "")}</span>
             <span className="mt-1.5 text-sm text-muted">{g.resume}</span>
             <span className="mt-3 text-sm font-medium text-brand-600">Lire le guide →</span>
           </Link>
