@@ -58,7 +58,7 @@ const TR = {
     verdictSous: (m: string, p: string) => `${m} under the estimate (${p})`,
     verdictPile: "Right on the estimate",
     paye: "Paid so far", reste: "Still to pay, contingency included", repere: "Estimate",
-    nbDep: (n: number) => `${n} expense${n > 1 ? "s" : ""}`,
+    nbDep: (n: number) => `${n} expense${n === 1 ? "" : "s"}`,
     parCorps: "Planned vs actual by trade",
     hCorps: "Trade", hPrevu: "Planned", hReel: "Actual", hEcart: "Variance",
     stFait: "Done", stCours: "In progress", stAttente: "Not started", stHors: "Not in estimate",

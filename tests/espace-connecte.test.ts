@@ -296,4 +296,22 @@ describe("Résiliation des abonnements Stripe avant la suppression du compte", (
     const f = fauxStripe({ search: "panne" });
     expect(await resilierAbonnementsUtilisateur(f.stripe, { id: UID, app_metadata: null })).toEqual([]);
   });
+
+  it("identifiants inconnus de Stripe (client supprimé, ancien mode test) : rien à résilier, la suppression n'est pas bloquée ; une autre erreur bloque", async () => {
+    const { resilierAbonnementsUtilisateur } = await import("@/lib/stripe");
+    const absent = Object.assign(new Error("No such customer"), { code: "resource_missing" });
+    const annules: string[] = [];
+    const stripe = {
+      subscriptions: {
+        retrieve: async () => { throw absent; },
+        list: async () => { throw absent; },
+        search: async () => ({ data: [{ id: "sub_9", status: "active" }] }),
+        cancel: async (id: string) => { annules.push(id); return { id, status: "canceled" }; },
+      },
+    };
+    const r = await resilierAbonnementsUtilisateur(stripe, { id: UID, app_metadata: { stripe_subscription_id: "sub_x", stripe_customer_id: "cus_x" } });
+    expect(r).toEqual(["sub_9"]);
+    const panne = { ...stripe, subscriptions: { ...stripe.subscriptions, list: async () => { throw new Error("réseau"); } } };
+    await expect(resilierAbonnementsUtilisateur(panne, { id: UID, app_metadata: { stripe_customer_id: "cus_x" } })).rejects.toThrow();
+  });
 });

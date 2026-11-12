@@ -30,6 +30,11 @@ export function priceIdForPlan(plan: PlanKey): string | undefined {
 /** Statuts d'un abonnement qui peut encore prélever : on le résilie. `canceled` et `incomplete_expired` : rien à faire. */
 const STATUTS_A_RESILIER = new Set(["active", "trialing", "past_due", "unpaid", "incomplete", "paused"]);
 
+/** Erreur Stripe « ressource inconnue » (abonnement ou client qui n'existe pas, ou plus, pour cette clé). */
+function ressourceAbsente(e: unknown): boolean {
+  return !!e && typeof e === "object" && (e as { code?: unknown }).code === "resource_missing";
+}
+
 /** Ce que la résiliation utilise de Stripe (le client réel, ou un faux dans les tests). */
 export type StripeResiliation = {
   subscriptions: {
@@ -67,8 +72,14 @@ export async function resilierAbonnementsUtilisateur(
 
   const aResilier = new Set<string>();
   const garder = (s: { id: string; status: string }) => { if (STATUTS_A_RESILIER.has(s.status)) aResilier.add(s.id); };
-  if (subId) garder(await stripe.subscriptions.retrieve(subId));
-  if (custId) (await stripe.subscriptions.list({ customer: custId, status: "all", limit: 100 })).data.forEach(garder);
+  // Un identifiant que Stripe ne connaît plus (client supprimé dans le tableau de bord, identifiant posé
+  // en mode test puis clé live…) : il n'y a rien à résilier. Sans ce cas, la suppression RGPD du compte
+  // restait bloquée pour toujours. Toute autre erreur (réseau, clé invalide) arrête la suppression.
+  const sauvAbsent = async (f: () => Promise<void>) => {
+    try { await f(); } catch (e) { if (!ressourceAbsente(e)) throw e; }
+  };
+  if (subId) await sauvAbsent(async () => garder(await stripe.subscriptions.retrieve(subId)));
+  if (custId) await sauvAbsent(async () => (await stripe.subscriptions.list({ customer: custId, status: "all", limit: 100 })).data.forEach(garder));
   // Recherche par métadonnée : un filet. L'identifiant est un UUID (aucun guillemet possible dans la requête).
   if (/^[0-9a-f-]{36}$/i.test(user.id)) {
     try {
