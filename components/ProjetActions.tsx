@@ -4,11 +4,13 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/components/i18n/LangProvider";
+import { messageErreurApi } from "@/lib/i18n/erreurs-api";
 
 const TR = {
   fr: {
-    supprImpossible: "Suppression impossible. Réessayez.",
-    reseauIndispo: "Réseau indisponible. Réessayez.",
+    supprImpossible: "Suppression impossible. Réessaie.",
+    archivageImpossible: "Modification impossible. Réessaie.",
+    reseauIndispo: "Réseau indisponible. Réessaie.",
     modifier: "Modifier",
     archiver: "Archiver",
     desarchiver: "Désarchiver",
@@ -20,6 +22,7 @@ const TR = {
   },
   en: {
     supprImpossible: "Couldn't delete. Try again.",
+    archivageImpossible: "Couldn't update. Try again.",
     reseauIndispo: "Network unavailable. Try again.",
     modifier: "Edit",
     archiver: "Archive",
@@ -44,14 +47,26 @@ export default function ProjetActions({ id, archived }: { id: string; archived: 
   const [confirmer, setConfirmer] = useState(false);
   const [suppression, setSuppression] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
+  const [archivage, setArchivage] = useState(false);
 
+  // Archiver / désarchiver : état de chargement, et un message si le serveur refuse ou si le réseau tombe.
   async function archiver() {
-    await fetch(`/api/projects/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ archived: !archived }),
-    });
-    router.refresh();
+    if (archivage) return;
+    setArchivage(true);
+    setErreur(null);
+    try {
+      const res = await fetch(`/api/projects/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ archived: !archived }),
+      });
+      if (!res.ok) { setErreur(messageErreurApi(locale, res.status, s.archivageImpossible)); return; }
+      router.refresh();
+    } catch {
+      setErreur(s.reseauIndispo);
+    } finally {
+      setArchivage(false);
+    }
   }
 
   async function supprimer() {
@@ -61,8 +76,8 @@ export default function ProjetActions({ id, archived }: { id: string; archived: 
     try {
       const res = await fetch(`/api/projects/${id}`, { method: "DELETE" });
       if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        setErreur(d?.error || s.supprImpossible);
+        // Le message vient du statut, traduit (le serveur répond en français).
+        setErreur(messageErreurApi(locale, res.status, s.supprImpossible));
         setSuppression(false);
         return;
       }
@@ -82,8 +97,8 @@ export default function ProjetActions({ id, archived }: { id: string; archived: 
         </svg>
         {s.modifier}
       </Link>
-      <button onClick={archiver} className="btn btn-ghost py-2 text-[13px]" title={archived ? s.desarchiver : s.archiver}>
-        {archived ? s.desarchiver : s.archiver}
+      <button onClick={archiver} disabled={archivage} className="btn btn-ghost py-2 text-[13px] disabled:opacity-60" title={archived ? s.desarchiver : s.archiver}>
+        {archivage ? "…" : archived ? s.desarchiver : s.archiver}
       </button>
 
       {confirmer ? (

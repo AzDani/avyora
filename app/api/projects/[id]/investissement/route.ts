@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
-import { getProjet } from "@/lib/data/projects";
+import { majCleReponses } from "@/lib/data/reponses-projet";
 import { getUser, estPro } from "@/lib/auth";
 import { verifierLimite } from "@/lib/ratelimit";
 import { valider, jsonBody } from "@/lib/validation";
 import { investSchema } from "@/lib/investissement/saisie";
-import { supabaseServer } from "@/lib/supabase/server";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -25,12 +24,11 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   const v = valider(investSchema, await jsonBody(req));
   if (!v.ok) return v.res;
 
-  const projet = await getProjet(id);
-  if (!projet) return NextResponse.json({ error: "Projet introuvable" }, { status: 404 });
-
-  const reponses = { ...(projet.reponses as Record<string, unknown>), invest: v.data };
-  const sb = await supabaseServer();
-  const { error } = await sb.from("projects").update({ reponses }).eq("id", id);
-  if (error) return NextResponse.json({ error: "Enregistrement impossible" }, { status: 500 });
+  // Seule la clé `invest`, atomique (lib/data/reponses-projet.ts) : un clic du suivi de chantier au même
+  // moment n'est plus effacé par cette sauvegarde (ni l'inverse).
+  const r = await majCleReponses(id, "invest", v.data);
+  if (r === "introuvable") return NextResponse.json({ error: "Projet introuvable" }, { status: 404 });
+  if (r === "refuse") return NextResponse.json({ error: "Modification non autorisée" }, { status: 403 });
+  if (r === "erreur") return NextResponse.json({ error: "Enregistrement impossible" }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

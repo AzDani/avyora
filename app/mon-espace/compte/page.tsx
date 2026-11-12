@@ -12,14 +12,14 @@ import { getLocale } from "@/lib/i18n/server";
 
 const TR = {
   fr: {
-    metaTitle: "Mon compte — AVYORA",
+    metaTitle: "Mon compte", // le gabarit du layout ajoute « · AVYORA »
     projets: "Mes projets",
     eyebrow: "Compte & confidentialité",
     titre: "Mon compte",
     sous: "Gère ton compte et la suppression de tes données.",
   },
   en: {
-    metaTitle: "My account — AVYORA",
+    metaTitle: "My account",
     projets: "My projects",
     eyebrow: "Account & privacy",
     titre: "My account",
@@ -31,7 +31,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   const locale = await getLocale();
-  return { title: TR[locale].metaTitle };
+  return { title: TR[locale].metaTitle, robots: { index: false, follow: false } };
 }
 
 export default async function ComptePage() {

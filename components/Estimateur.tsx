@@ -42,6 +42,7 @@ import { catT, catLigne } from "@/lib/estimateur/catalog-i18n";
 import { dictDetail } from "@/lib/i18n/detail";
 import { CLE_BROUILLON_RENO, CLE_BROUILLON_DETAIL_RENO, CLE_RECLAMATION_RENO, brouillonDetailleReno } from "@/lib/estimateur/brouillon-reno";
 import { suivre } from "@/lib/track";
+import { messageErreurApi } from "@/lib/i18n/erreurs-api";
 import {
   etatDepuis, etatVierge, projetReno, ouvertureDetailReno, majNombre, majSol, majType, pasCtx, compteurPiece, pasPiece,
   choisirPerimetre, basculerEspace, ajouterExemplaire, retirerExemplaire, surfaceExemplaire, majZone, basculerDressing, recapReno,
@@ -164,7 +165,9 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
   // ── Sauvegarde projet ─────────────────────────────────────────────────────
   async function enregistrer() {
     setErreur(null); faute.effacer();
-    const manque = manqueReno(ctx, codePostal);
+    // Sans poste : refus explicite (sinon la fiche affichait « 0 – 0 € » sans rien expliquer).
+    const manque = manqueReno(ctx, codePostal, { sel, custom });
+    if (manque === "postes") { setErreur(dl.erreurs.postes); setView("saisie"); return; }
     if (manque) { setErreur(dl.erreurs[manque]); setView("saisie"); faute.signaler(manque, ID_CHAMP[manque]); return; }
     setSaving(true);
     const nom = nomProjetReno(ctx, { projet: dl.projet, type: (t) => B.types[t] ?? t, espace: espaceNom });
@@ -185,7 +188,8 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
         return;
       }
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) { setErreur(data?.error || dl.erreurs.save); setSaving(false); return; }
+      // Le message vient du statut, dans la langue de l'écran (le texte du serveur est en français).
+      if (!res.ok) { setErreur(messageErreurApi(locale, res.status, dl.erreurs.save)); setSaving(false); return; }
       if (!edition) { try { localStorage.removeItem(DRAFT_KEY_DETAIL); localStorage.removeItem(DRAFT_KEY); } catch { /* noop */ } }
       suivre("projet_enregistre", { nature: "reno", mode: "detaille", edition });
       router.push(edition ? `/projets/${projectId}` : `/projets/${data.id}`);

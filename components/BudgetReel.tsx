@@ -12,6 +12,7 @@ import { useLocale } from "@/components/i18n/LangProvider";
 import { catT } from "@/lib/estimateur/catalog-i18n";
 import { bilanBudget, corpsDuProjet, CORPS_AUTRE, type Depense, type Alerte, type LigneBudget } from "@/lib/estimateur/budget-reel";
 import { euros, pourcent, lireMontant } from "@/lib/i18n/nombres";
+import { messageErreurApi } from "@/lib/i18n/erreurs-api";
 
 const TR = {
   fr: {
@@ -34,9 +35,13 @@ const TR = {
     libCorps: "Corps d'état", libelle: "Libellé", libellePh: "ex. facture plombier, acompte 30 %",
     montant: "Montant TTC (€)", valider: "Ajouter", enCours: "…",
     autre: "Autre (hors estimation)",
-    supprimer: "Supprimer", confirmer: "Supprimer cette dépense ?",
+    supprimer: "Supprimer", confirmer: "Supprimer cette dépense ?", annuler: "Annuler",
     vide: "Aucune dépense pour l'instant. Ajoute la première facture ou le premier acompte : la comparaison apparaît tout de suite.",
     erreur: "Enregistrement impossible. Vérifie le montant et réessaie.",
+    erreurServeur: "Enregistrement impossible. Réessaie dans un instant.",
+    limite: "Limite de 500 dépenses atteinte pour ce projet.",
+    session: "Ta session a expiré. Reconnecte-toi puis réessaie.",
+    erreurSuppr: "La dépense n'a pas pu être supprimée.",
     alerte: {
       depasse: (c: string, m: string) => `${c} : ${m} au-dessus du prévu.`,
       attention: (c: string, p: string) => `${c} : ${p} du prévu déjà dépensés, alors que le lot n'est pas terminé.`,
@@ -64,9 +69,13 @@ const TR = {
     libCorps: "Trade", libelle: "Label", libellePh: "e.g. plumber invoice, 30% deposit",
     montant: "Amount incl. VAT (€)", valider: "Add", enCours: "…",
     autre: "Other (not in estimate)",
-    supprimer: "Delete", confirmer: "Delete this expense?",
+    supprimer: "Delete", confirmer: "Delete this expense?", annuler: "Cancel",
     vide: "No expenses yet. Add your first invoice or deposit: the comparison shows up right away.",
     erreur: "Could not save. Check the amount and try again.",
+    erreurServeur: "Could not save. Try again in a moment.",
+    limite: "This project has reached the limit of 500 expenses.",
+    session: "Your session has expired. Sign in again, then retry.",
+    erreurSuppr: "The expense couldn't be deleted.",
     alerte: {
       depasse: (c: string, m: string) => `${c}: ${m} over plan.`,
       attention: (c: string, p: string) => `${c}: ${p} of the plan already spent, and the trade isn't finished.`,
@@ -134,6 +143,9 @@ const CSS = `
 .av-bud .hl .m{font-weight:600}
 .av-bud .hl button{width:44px;height:44px;border:0;background:none;color:var(--faint);cursor:pointer;border-radius:10px;font-size:15px}
 .av-bud .hl button:hover{background:#fdecec;color:#b42318}
+.av-bud .hl-conf{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:12.5px;color:#b42318;font-weight:500}
+.av-bud .hl-conf button{height:36px;border-radius:10px;padding:0 14px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid var(--line-strong);background:var(--surface);color:var(--muted)}
+.av-bud .hl-conf button.oui{background:#b42318;border-color:#b42318;color:#fff}
 .av-bud .lien{border:0;background:none;color:var(--brand);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;padding:8px 0;min-height:44px;text-align:left}
 .av-bud .pied{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px}
 .av-bud button.add{height:44px;border-radius:12px;padding:0 18px;font:inherit;font-size:13.5px;font-weight:600;background:var(--brand);color:#fff;border:0;cursor:pointer;box-shadow:var(--shadow-sm)}
@@ -189,7 +201,9 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales, o
   const [libelle, setLibelle] = useState("");
   const [montant, setMontant] = useState("");
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState(false);
+  /** Le message d'erreur affiché (saisie, serveur, suppression) ; `champs` : la saisie est en cause. */
+  const [err, setErr] = useState<{ msg: string; champs: boolean } | null>(null);
+  const [aSupprimer, setASupprimer] = useState<string | null>(null);
   const [tous, setTous] = useState(false);
   const [ouvert, setOuvert] = useState<string | null>(null);
   const [saisie, setSaisie] = useState(initiales.length === 0);
@@ -200,28 +214,44 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales, o
   async function ajouter(e: React.FormEvent) {
     e.preventDefault();
     const m = lireMontant(montant);
-    if (!libelle.trim() || !(m > 0)) { setErr(true); return; }
-    setBusy(true); setErr(false);
+    if (!libelle.trim() || !(m > 0)) { setErr({ msg: t.erreur, champs: true }); return; }
+    setBusy(true); setErr(null);
     try {
       const r = await fetch(`/api/projects/${projectId}/depenses`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ corpsEtat: choix, libelle: libelle.trim(), montant: m }),
       });
       const j = await r.json().catch(() => null);
-      if (!r.ok || !j?.depense) { setErr(true); return; }
+      if (!r.ok || !j?.depense) { setErr(erreurAjout(r.status)); return; }
       setDepenses((l) => [j.depense as Depense, ...l]);
       // On déplie le corps d'état concerné : la dépense ajoutée se voit tout de suite.
       setOuvert(choix);
       setLibelle(""); setMontant("");
-    } catch { setErr(true); } finally { setBusy(false); }
+    } catch { setErr({ msg: messageErreurApi(locale, 0, t.erreurServeur), champs: false }); } finally { setBusy(false); }
   }
 
+  /** Le message d'un ajout refusé, selon le statut : la limite de 500 dépenses (409) ou la session ne
+   *  sont pas une erreur de montant (avant, tout disait « Vérifie le montant »). */
+  function erreurAjout(statut: number): { msg: string; champs: boolean } {
+    if (statut === 400) return { msg: t.erreur, champs: true };
+    if (statut === 409) return { msg: t.limite, champs: false };
+    if (statut === 401 || statut === 403) return { msg: t.session, champs: false };
+    return { msg: messageErreurApi(locale, statut, t.erreurServeur), champs: false };
+  }
+
+  // Suppression : confirmation EN LIGNE (deux clics), comme les projets ; window.confirm est bloqué dans
+  // les iframes et ouvre une boîte système. Un échec remet la ligne ET le dit.
   async function supprimer(d: Depense) {
-    if (!window.confirm(t.confirmer)) return;
+    setASupprimer(null);
+    setErr(null);
     const avant = depenses;
     setDepenses((l) => l.filter((x) => x.id !== d.id));
     const r = await fetch(`/api/projects/${projectId}/depenses/${d.id}`, { method: "DELETE" }).catch(() => null);
-    if (!r || !r.ok) setDepenses(avant);
+    if (!r || !r.ok) {
+      setDepenses(avant);
+      const cause = r && (r.status === 401 || r.status === 403) ? t.session : messageErreurApi(locale, r?.status ?? 0, "");
+      setErr({ msg: (t.erreurSuppr + " " + cause).trim(), champs: false });
+    }
   }
 
   function saisirIci(c: string) {
@@ -354,11 +384,20 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales, o
                 {ouv && (
                   <div className="det">
                     {siennes.map((d) => (
-                      <div key={d.id} className="hl">
-                        <span className="d mono">{dateCourte(d.date)}</span>
-                        <span className="tx" title={d.libelle}>{d.libelle}</span>
-                        <span className="m mono">{fmt(d.montant)}</span>
-                        <button type="button" onClick={() => supprimer(d)} aria-label={`${t.supprimer} ${d.libelle}`}>✕</button>
+                      <div key={d.id}>
+                        <div className="hl">
+                          <span className="d mono">{dateCourte(d.date)}</span>
+                          <span className="tx" title={d.libelle}>{d.libelle}</span>
+                          <span className="m mono">{fmt(d.montant)}</span>
+                          <button type="button" onClick={() => setASupprimer(aSupprimer === d.id ? null : d.id)} aria-expanded={aSupprimer === d.id} aria-label={`${t.supprimer} ${d.libelle}`}>✕</button>
+                        </div>
+                        {aSupprimer === d.id && (
+                          <div className="hl-conf">
+                            <span>{t.confirmer}</span>
+                            <button type="button" className="oui" onClick={() => supprimer(d)}>{t.supprimer}</button>
+                            <button type="button" onClick={() => setASupprimer(null)}>{t.annuler}</button>
+                          </div>
+                        )}
                       </div>
                     ))}
                     <button type="button" className="lien" onClick={() => saisirIci(l.corps)}>{"+ " + t.ajouterIci}</button>
@@ -392,15 +431,15 @@ export default function BudgetReel({ reponses, projectId, depenses: initiales, o
             </select>
           </label>
           <label className="lib"><span>{t.libelle}</span>
-            <input ref={refLibelle} value={libelle} onChange={(e) => setLibelle(e.target.value)} placeholder={t.libellePh} maxLength={200} aria-invalid={err && !libelle.trim()} />
+            <input ref={refLibelle} value={libelle} onChange={(e) => setLibelle(e.target.value)} placeholder={t.libellePh} maxLength={200} aria-invalid={!!err?.champs && !libelle.trim()} />
           </label>
           <label><span>{t.montant}</span>
-            <input value={montant} onChange={(e) => setMontant(e.target.value)} inputMode="decimal" placeholder="0" aria-invalid={err && !(lireMontant(montant) > 0)} />
+            <input value={montant} onChange={(e) => setMontant(e.target.value)} inputMode="decimal" placeholder="0" aria-invalid={!!err?.champs && !(lireMontant(montant) > 0)} />
           </label>
           <button type="submit" className="add" disabled={busy}>{busy ? t.enCours : t.valider}</button>
         </form>
       )}
-      {err && <div className="err" role="alert">{t.erreur}</div>}
+      {err && <div className="err" role="alert">{err.msg}</div>}
     </div>
   );
 }

@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { cache } from "react";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getProjet } from "@/lib/data/projects";
 import { getUser, estPro } from "@/lib/auth";
@@ -21,6 +23,16 @@ import { lireSaisie } from "@/lib/investissement/saisie";
 
 export const dynamic = "force-dynamic";
 
+/** Le projet, lu une fois par requête pour le titre d'onglet ET la page (React `cache`). */
+const lireProjet = cache((id: string) => getProjet(id));
+
+/** Titre d'onglet : le nom du projet (« Appart rue Victor Hugo · AVYORA »). Page privée : jamais indexée. */
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const projet = await lireProjet(id);
+  return { ...(projet?.nom ? { title: projet.nom } : {}), robots: { index: false, follow: false } };
+}
+
 /** Le plan dont ce projet est né (C8). Interrupteur éteint : aucune requête. Une panne ne casse jamais la fiche. */
 async function lienPlan(projectId: string): Promise<LienPlan | null> {
   if (!FEATURES.plans) return null;
@@ -39,7 +51,7 @@ const TR = {
 // Fiche projet — 100 % moteur estimateur : en-tête + résultat + téléchargement PDF direct.
 export default async function ProjetPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const projet = await getProjet(id);
+  const projet = await lireProjet(id);
   if (!projet) notFound();
 
   const user = await getUser();

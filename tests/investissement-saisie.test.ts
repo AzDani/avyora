@@ -55,16 +55,25 @@ describe("valeurs par défaut et champs indispensables", () => {
 
 describe("route /api/projects/[id]/investissement", () => {
   const ID = "11111111-1111-4111-8111-111111111111";
-  const S = { user: null as null | { id: string }, pro: true, limite: true, projet: {} as unknown, maj: [] as unknown[] };
+  /* `sql` : la fonction SQL de 0005_reponses_maj_cle.sql est appliquée (écriture atomique de la seule clé) ;
+     sinon PostgREST répond PGRST202 et la route retombe sur la réécriture de `reponses`. `rpc` : ses appels. */
+  const S = { user: null as null | { id: string }, pro: true, limite: true, projet: {} as unknown, maj: [] as unknown[], sql: false, rpc: [] as unknown[] };
   const MOCKS = ["@/lib/auth", "@/lib/ratelimit", "@/lib/data/projects", "@/lib/supabase/server"];
   beforeEach(() => {
     vi.resetModules();
-    Object.assign(S, { user: { id: "u1" }, pro: true, limite: true, projet: { ctx: { surface: 50 }, statuts: { a: 2 } }, maj: [] });
+    Object.assign(S, { user: { id: "u1" }, pro: true, limite: true, projet: { ctx: { surface: 50 }, statuts: { a: 2 } }, maj: [], sql: false, rpc: [] });
     vi.doMock("@/lib/auth", () => ({ getUser: async () => S.user, estPro: () => S.pro }));
     vi.doMock("@/lib/ratelimit", () => ({ verifierLimite: async () => S.limite }));
     vi.doMock("@/lib/data/projects", () => ({ getProjet: async () => (S.projet ? { id: ID, reponses: S.projet } : null) }));
     vi.doMock("@/lib/supabase/server", () => ({
-      supabaseServer: async () => ({ from: () => ({ update: (x: unknown) => { S.maj.push(x); return { eq: async () => ({ error: null }) }; } }) }),
+      supabaseServer: async () => ({
+        rpc: async (nom: string, args: unknown) => {
+          if (!S.sql) return { data: null, error: { code: "PGRST202", message: "fonction inconnue" } };
+          S.rpc.push({ nom, args });
+          return { data: !!S.projet, error: null };
+        },
+        from: () => ({ update: (x: unknown) => { S.maj.push(x); return { eq: () => ({ select: async () => ({ data: S.projet ? [{ id: ID }] : [], error: null }) }) }; } }),
+      }),
     }));
   });
   afterEach(() => { for (const m of MOCKS) vi.doUnmock(m); });
@@ -90,5 +99,13 @@ describe("route /api/projects/[id]/investissement", () => {
     expect((await put(valide, "pas-un-uuid")).status).toBe(404);
     S.projet = null; expect((await put(valide)).status).toBe(404);
     expect(S.maj).toEqual([]);
+  });
+  it("migration appliquée : la seule clé `invest`, écrite par la fonction SQL (rien n'est relu ni réécrit)", async () => {
+    S.sql = true;
+    const r = await put(valide);
+    expect(r.status).toBe(200);
+    expect(S.rpc).toEqual([{ nom: "projet_reponses_cle_maj", args: { p_projet: ID, p_cle: "invest", p_valeur: valide } }]);
+    expect(S.maj).toEqual([]);
+    S.projet = null; expect((await put(valide)).status).toBe(404);
   });
 });

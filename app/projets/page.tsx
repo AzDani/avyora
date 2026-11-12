@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { listProjets, type Projet } from "@/lib/data/projects";
 import { estimationProjet, avancementProjet, natureProjet, modeProjet } from "@/lib/estimateur";
 import ListeProjets, { type ProjetCarte, type PlansListe } from "@/components/ListeProjets";
@@ -17,6 +18,13 @@ import { estMembreFondateur } from "@/lib/beta";
 import { PastilleFondateur } from "@/components/BandeauBeta";
 
 export const dynamic = "force-dynamic";
+
+/** Titre d'onglet « Mes projets · AVYORA » (gabarit du layout) : sans lui, toutes les pages privées
+ *  portaient le titre de l'accueil. Page privée : jamais indexée. */
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  return { title: locale === "en" ? "My projects" : "Mes projets", robots: { index: false, follow: false } };
+}
 
 const TR = {
   fr: {

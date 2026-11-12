@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { cache } from "react";
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import Estimateur from "@/components/Estimateur";
 import EstimateurRapide from "@/components/EstimateurRapide";
@@ -18,6 +20,17 @@ const TR = {
   en: { retour: "Back to project", titre: "Edit the estimate", sous: "adjust your entries, your choices are already here." },
 } as const;
 
+/** Le projet, lu une fois par requête pour le titre d'onglet ET la page (React `cache`). */
+const lireProjet = cache((id: string) => getProjet(id));
+
+/** Titre d'onglet : « Modifier · <nom du projet> · AVYORA ». Page privée : jamais indexée. */
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const [projet, locale] = await Promise.all([lireProjet(id).catch(() => null), getLocale()]);
+  const verbe = locale === "en" ? "Edit" : "Modifier";
+  return { title: projet?.nom ? `${verbe} · ${projet.nom}` : TR[locale].titre, robots: { index: false, follow: false } };
+}
+
 // Édition d'un projet. FREE = éditeur RAPIDE uniquement (le détaillé est réservé au Pro).
 // PRO = éditeur détaillé (poste par poste). Non connecté → connexion.
 export default async function ModifierProjet({ params }: { params: Promise<{ id: string }> }) {
@@ -25,7 +38,7 @@ export default async function ModifierProjet({ params }: { params: Promise<{ id:
   const user = await getUser();
   if (!user) redirect(`/connexion?next=/projets/${id}/modifier`);
 
-  const projet = await getProjet(id);
+  const projet = await lireProjet(id);
   if (!projet) notFound();
   const locale = await getLocale();
   const s = TR[locale];

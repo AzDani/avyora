@@ -19,9 +19,10 @@
  * `tests/detaille-rendu-temoins.test.ts`).
  */
 import {
-  defaultCtx, deriveSol, nbFen, nbPieces, ESPACES, espacesCompo, selectedEspaces, piecesEff, sdbEff, key, isLoc, isAuto, autoQty, visibleTask,
+  buildDevis, defaultCtx, deriveSol, nbFen, nbPieces, ESPACES, espacesCompo, selectedEspaces, piecesEff, sdbEff, key, isLoc, isAuto, autoQty, visibleTask,
   type Ctx, type Selection, type LigneSel, type TypeBien, type Lot, type Tache, type CustomLine,
 } from "./core";
+import { CATALOG } from "./catalog";
 
 // ── État ─────────────────────────────────────────────────────────────────────────────────────
 /** Ce que le détaillé garde : le brouillon local (`avyora-estim-detail-v1`) et les réponses d'un projet. */
@@ -289,21 +290,33 @@ export function basculerToutReno(lots: Lot[], open: Record<string, boolean>): Re
 }
 
 // ── Enregistrement ───────────────────────────────────────────────────────────────────────────
-/** Ce qui manque pour enregistrer : un code postal à 5 chiffres, puis une surface. */
-export function manqueReno(ctx: Ctx, codePostal: string): "cp" | "surface" | null {
+/** Ce qui manque pour enregistrer : un code postal à 5 chiffres, puis une surface, puis (quand la
+ *  sélection est donnée) au moins un poste chiffré ou une ligne perso validée. Sans ce dernier contrôle,
+ *  un projet vide s'enregistrait et sa fiche affichait « 0 – 0 € » sans explication. */
+export function manqueReno(ctx: Ctx, codePostal: string, postes?: { sel: Selection; custom?: CustomLine[] }): "cp" | "surface" | "postes" | null {
   if (!/^\d{5}$/.test(codePostal)) return "cp";
   if (!(ctx.surface > 0)) return "surface";
+  if (postes && !aDesPostesReno(ctx, postes.sel, postes.custom ?? [])) return "postes";
   return null;
+}
+
+/** Vrai quand l'estimation a au moins un poste : une ligne du devis (le moteur ne garde que les postes
+ *  cochés ET montrés pour ce bien) ou une ligne perso cochée et validée. */
+export function aDesPostesReno(ctx: Ctx, sel: Selection, custom: CustomLine[]): boolean {
+  if (custom.some((x) => !!x && x.on !== false && !x.draft)) return true;
+  return buildDevis(CATALOG, ctx, sel).lignes.length > 0;
 }
 
 /** Mots du nom de projet : la nature, le type de bien et le nom d'une pièce, dans la langue de l'écran. */
 export interface MotsNomReno { projet: string; type: (t: TypeBien) => string; espace: (nom: string) => string }
 const MOTS_FR: MotsNomReno = { projet: "Rénovation", type: (t) => t, espace: (nom) => nom };
 
-/** Nom du projet (110 caractères au plus) : « Rénovation — Maison 120 m² » ou « Rénovation — 2 Chambre + Salle de bain · 28 m² ». */
+/** Nom du projet (110 caractères au plus) : « Rénovation — Maison 120 m² » ou « Rénovation — Chambre ×2 + Salle de bain · 28 m² ».
+ *  Plusieurs exemplaires d'une pièce s'écrivent « ×2 », comme dans le rapide : « 2 Chambre » n'était
+ *  accordé dans aucune langue. */
 export function nomProjetReno(ctx: Ctx, mots: MotsNomReno = MOTS_FR): string {
   const espLabel = ctx.perimetre === "piece"
-    ? selectedEspaces(ctx).map(({ k, surfaces }) => `${surfaces.length > 1 ? surfaces.length + " " : ""}${mots.espace(ESPACES[k]?.nom ?? k)}`).join(" + ")
+    ? selectedEspaces(ctx).map(({ k, surfaces }) => `${mots.espace(ESPACES[k]?.nom ?? k)}${surfaces.length > 1 ? ` ×${surfaces.length}` : ""}`).join(" + ")
     : "";
   return (espLabel
     ? `${mots.projet} — ${espLabel} · ${ctx.surface} m²`

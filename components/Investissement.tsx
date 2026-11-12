@@ -7,7 +7,7 @@
  * automatique dans `reponses.invest` via /api/projects/[id]/investissement. Styles repris du suivi de chantier
  * (.card, .sub, .prog, .phase-t d'EstimationResultat) ; le reste est scopé .av-inv.
  */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { euros, pourcent, nombre, lireMontant } from "@/lib/i18n/nombres";
 import { simulerLocation, REGIMES, type Regime, type ResultatRegime, type Alerte } from "@/lib/investissement/location";
@@ -237,7 +237,7 @@ const TR = {
     choixImpots: (i: string) => ` That includes ${i} more in taxes.`,
     choixHorsImpots: " The gap comes from costs and rent, not taxes.",
     choixNonEligible: (c: string, r: string, m: string) => `${c} isn't possible here (${r}). The best available regime: ${m}.`,
-    astuces: "Ways to pay less tax", astucesMeta: (n: number) => `${n} idea${n > 1 ? "s" : ""}`,
+    astuces: "Ways to pay less tax", astucesMeta: (n: number) => `${n} idea${n === 1 ? "" : "s"}`,
     gainSur: (m: string, n: number) => `+${m} over ${n} years`, aSavoir: "Good to know",
     conseils: {
       deficit_reno: () => "If your work moves the home from energy class E, F or G to A, B, C or D, the rental loss you can offset against your income rises to €21,400 a year instead of €10,700 (spending paid by 12/31/2027, option on form 2044). Keep the before and after energy reports.",
@@ -299,7 +299,7 @@ const TR = {
         credit: "Loan (interest, insurance, fees, penalties)", portage: "Holding costs", sanction: "Transfer duties recalled (sale after 5 years)",
         tva: "VAT on the resale price", gainAvant: "Gain before tax", impotPV: "Capital gains tax", isPfu: "Corporate tax, then flat tax", gainNet: "Net gain",
       } as Record<string, string>,
-      pv: (pv: string, n: number, ir: string, ps: string, st: string) => `Taxable gain: ${pv} · held ${n} full year${n > 1 ? "s" : ""} · allowance ${ir} (income tax) and ${ps} (social levies) · surtax ${st}`,
+      pv: (pv: string, n: number, ir: string, ps: string, st: string) => `Taxable gain: ${pv} · held ${n} full year${n === 1 ? "" : "s"} · allowance ${ir} (income tax) and ${ps} (social levies) · surtax ${st}`,
       alertes: {
         rp_courte: "Under 12 months of occupancy: there's no legal minimum, but the tax office can challenge it if the occupancy doesn't look real. Keep proof (bills, mail, insurance).",
         rp_requalification: "Repeatedly buying and reselling your main residence can get you reclassified as a property dealer: no exemption, income tax and social contributions. The exemption is never guaranteed.",
@@ -475,18 +475,47 @@ export default function Investissement({ projectId, saisie: initiale, contexte, 
   const [ouvert, setOuvert] = useState<Regime | null>(null);
   const premier = useRef(true);
 
-  // Enregistrement automatique, 1,2 s après la dernière frappe.
+  // Enregistrement automatique, 1,2 s après la dernière frappe. La saisie pas encore envoyée est gardée
+  // (`enAttente`) : si l'on quitte la fiche avant le délai (lien « Projets », onglet fermé, appli mise en
+  // arrière-plan), elle part tout de suite. Tous les envois sont en `keepalive` : la requête survit à la
+  // page, y compris celle déjà partie au moment où l'on quitte (la saisie fait quelques Ko, sous la limite de 64 Ko).
+  const enAttente = useRef<SaisieInvest | null>(null);
+  const envoyer = useCallback((saisie: SaisieInvest) =>
+    fetch(`/api/projects/${projectId}/investissement`, {
+      method: "PUT", keepalive: true, headers: { "Content-Type": "application/json" }, body: JSON.stringify(saisie),
+    }).catch(() => null), [projectId]);
   useEffect(() => {
     if (premier.current) { premier.current = false; return; }
+    enAttente.current = s;
     setEtat("en_cours");
     const h = setTimeout(async () => {
-      const r = await fetch(`/api/projects/${projectId}/investissement`, {
-        method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(s),
-      }).catch(() => null);
-      setEtat(r && r.ok ? "ok" : "erreur");
+      const saisie = enAttente.current;
+      if (!saisie) return; // déjà partie (sortie de page)
+      enAttente.current = null;
+      const r = await envoyer(saisie);
+      const ok = !!r && r.ok;
+      // Échec : la saisie redevient « en attente », la sortie de page la renverra.
+      if (!ok && !enAttente.current) enAttente.current = saisie;
+      setEtat(ok ? "ok" : "erreur");
     }, 1200);
     return () => clearTimeout(h);
-  }, [s, projectId]);
+  }, [s, envoyer]);
+  useEffect(() => {
+    const vider = () => {
+      const saisie = enAttente.current;
+      if (!saisie) return;
+      enAttente.current = null;
+      void envoyer(saisie).then((r) => setEtat(r && r.ok ? "ok" : "erreur"));
+    };
+    const surVisibilite = () => { if (document.visibilityState === "hidden") vider(); };
+    window.addEventListener("pagehide", vider);
+    document.addEventListener("visibilitychange", surVisibilite);
+    return () => {
+      window.removeEventListener("pagehide", vider);
+      document.removeEventListener("visibilitychange", surVisibilite);
+      vider(); // démontage : navigation dans l'appli (« ← Projets », autre fiche)
+    };
+  }, [envoyer]);
 
   const loc = s.location;
   const maj = (patch: Partial<SaisieLocation>) => setS((x) => ({ ...x, location: { ...x.location, ...patch } }));

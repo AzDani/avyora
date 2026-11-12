@@ -5,7 +5,8 @@
  * Remplace l'ancien RapportEstimation pour les projets au format estimateur. Même esthétique que
  * l'estimateur (hero nuit, Geist Mono, tuiles), + statistiques de travaux « à connaître ».
  */
-import { useMemo, useState, useCallback, useEffect } from "react";
+import { useMemo, useState, useCallback, useEffect, useRef } from "react";
+import Link from "next/link";
 import { EST_CSS } from "./estimateur-styles";
 import { useLocale, useT } from "@/components/i18n/LangProvider";
 import { catT, catLigne } from "@/lib/estimateur/catalog-i18n";
@@ -23,6 +24,9 @@ import { bilanBudget, type Depense } from "@/lib/estimateur/budget-reel";
 import Investissement from "@/components/Investissement";
 import type { ContexteProjet, SaisieInvest } from "@/lib/investissement/saisie";
 import TuilesProjet, { CSS_TUILES, type Espace, type ResumeInvest } from "@/components/TuilesProjet";
+import { clicStatut, statutsApres } from "@/lib/estimateur/statuts";
+import { messageErreurApi } from "@/lib/i18n/erreurs-api";
+import { accord } from "@/lib/i18n/pluriel";
 
 // Traductions de l'interface (chrome/UI uniquement) — les données (corps d'état, postes) restent telles quelles.
 const TR = {
@@ -103,6 +107,10 @@ const TR = {
     modeRental: "location",
     modeDIY: "je fais",
     modeHireOut: "fait faire",
+    statutNonEnregistre: "Statut non enregistré. Réessaie.",
+    vide: "Aucun poste dans cette estimation",
+    videSub: "Aucun poste n'est coché : il n'y a rien à chiffrer pour l'instant. Ajoute les travaux prévus pour obtenir ton estimation.",
+    ajouterPostes: "Ajouter des postes",
   },
   en: {
     unavailable: "Estimate unavailable for this project.",
@@ -181,6 +189,10 @@ const TR = {
     modeRental: "rental",
     modeDIY: "DIY",
     modeHireOut: "hire out",
+    statutNonEnregistre: "Status not saved. Try again.",
+    vide: "No line items in this estimate",
+    videSub: "No line item is checked, so there's nothing to price yet. Add the planned work to get your estimate.",
+    ajouterPostes: "Add line items",
   },
 } as const;
 
@@ -372,25 +384,43 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
   }, [neuf, dv, ctx, reponses]);
 
   // Suivi de chantier : statut par tâche (0 à démarrer, 1 en cours, 2 terminé), sauvegardé côté serveur.
+  // Les écritures partent UNE PAR UNE, dans l'ordre des clics (file d'attente) : deux tapes rapides
+  // (À démarrer → En cours → Terminé) arrivent dans l'ordre. Un échec (session expirée, réseau…) est
+  // dit à l'utilisateur, l'affichage revient au dernier état confirmé par le serveur et les clics encore
+  // en attente sont abandonnés (ils partaient d'un état qui n'existe plus).
+  const statutsRef = useRef<Record<string, number>>(statuts);       // état affiché, à jour entre deux rendus
+  const confirmesRef = useRef<Record<string, number>>(reponses?.statuts || {}); // ce que le serveur a enregistré
+  const fileRef = useRef<Promise<void>>(Promise.resolve());
+  const generationRef = useRef(0);
+  const [erreurStatut, setErreurStatut] = useState<string | null>(null);
   const cycle = useCallback((k: string, legacy?: string | null) => {
-    setStatuts((prev) => {
-      const vu = prev[k] != null ? prev[k] : (legacy != null ? prev[legacy] : undefined) || 0;
-      const next = (vu + 1) % 3;
-      const copy = { ...prev };
-      if (next === 0) delete copy[k]; else copy[k] = next;
-      const purge = legacy != null && copy[legacy] != null;
-      if (purge) delete copy[legacy];
-      if (projectId && !readOnly) {
-        const post = (key: string, state: number) => fetch(`/api/projects/${projectId}/statut`, {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ key, state }),
-        }).catch(() => {});
-        post(k, next);
-        if (purge) post(legacy, 0); /* l'ancienne clé (avec variante) disparaît de l'enregistrement */
+    const clic = clicStatut(statutsRef.current, k, legacy);
+    statutsRef.current = clic.statuts;
+    setStatuts(clic.statuts);
+    setErreurStatut(null);
+    if (!projectId || readOnly) return;
+    const generation = generationRef.current;
+    fileRef.current = fileRef.current.then(async () => {
+      for (const e of clic.envois) {
+        if (generation !== generationRef.current) return; // un envoi précédent a échoué : abandon
+        let res: Response | null = null;
+        try {
+          res = await fetch(`/api/projects/${projectId}/statut`, {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ key: e.cle, state: e.etat }),
+          });
+        } catch { res = null; }
+        if (!res || !res.ok) {
+          generationRef.current++;
+          statutsRef.current = { ...confirmesRef.current };
+          setStatuts(statutsRef.current);
+          setErreurStatut(messageErreurApi(locale, res?.status, s.statutNonEnregistre));
+          return;
+        }
+        confirmesRef.current = statutsApres(confirmesRef.current, e.cle, e.etat);
       }
-      return copy;
     });
-  }, [projectId, readOnly]);
+  }, [projectId, readOnly, locale, s]);
 
   if (!ctx || !dv) {
     return <div className="card p-5 text-sm text-muted">{s.unavailable}</div>;
@@ -399,6 +429,21 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
   // Les lignes perso comptent dans le total, rénovation comme neuf (D8) : le même chiffre que la
   // barre live, le devis, la liste des projets et le PDF.
   const perso = persoValidees(reponses?.custom);
+  // Aucun poste (projet enregistré sans rien de coché) : un état vide qui dit quoi faire, au lieu d'un
+  // « 0 – 0 € », d'un camembert vide et d'un chantier « Pas encore commencé ».
+  if (lignes.length === 0 && perso.length === 0) {
+    return (
+      <div className="card flex flex-col items-center gap-3 px-6 py-12 text-center" data-estimation-vide="">
+        <div>
+          <p className="font-semibold text-ink">{s.vide}</p>
+          <p className="mt-1 text-sm text-muted">{s.videSub}</p>
+        </div>
+        {projectId && !readOnly && (
+          <Link href={`/projets/${projectId}/modifier`} className="btn btn-primary mt-1 py-2.5">{s.ajouterPostes}</Link>
+        )}
+      </div>
+    );
+  }
   const t = totauxAvecPerso(t0, perso, ctx.aleas);
   const persoHT = customTotals(perso).ht;
   const pc = (n: number) => (t.ht > 0 ? Math.round((n / t.ht) * 100) : 0); // part du coût HT
@@ -541,9 +586,9 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
         </div>
         <div className="stat">
           <div className="k">{s.theSite}</div>
-          <div className="v"><span className="num">{nbLots}</span> {nbLots > 1 ? s.tradeWordP : s.tradeWord} · <span className="num">{nbTaches}</span> {nbTaches > 1 ? s.itemWordP : s.itemWord}</div>
+          <div className="v"><span className="num">{nbLots}</span> {accord(locale, nbLots, s.tradeWord, s.tradeWordP)} · <span className="num">{nbTaches}</span> {accord(locale, nbTaches, s.itemWord, s.itemWordP)}</div>
           {maison ? (
-            <p className="sub">{maison.surface} m² · {chambresMaison} {chambresMaison > 1 ? n.chambres : n.chambre} · {n.niveauxCourt[maison.niveaux] ?? n.niveauxCourt.pp} · ≈ {moisChantier} {n.moisChantier}</p>
+            <p className="sub">{maison.surface} m² · {chambresMaison} {accord(locale, chambresMaison, n.chambre, n.chambres)} · {n.niveauxCourt[maison.niveaux] ?? n.niveauxCourt.pp} · ≈ {moisChantier} {n.moisChantier}</p>
           ) : (
             <p className="sub">{ctx.surface} m² · {piecesEff(ctx) || ctx.pieces} {s.roomsWord} · {s.ceiling} {nb(ctx.hauteur, 2)} m</p>
           )}
@@ -642,18 +687,19 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
             <div className="prog">
               <div className="prow">
                 <div className="ppct">{pourcent(locale, pctDone, 0)}<small>{s.doneWord}</small></div>
-                <div className="plbl">{total} {total > 1 ? s.itemWordP : s.itemWord} {total > 1 ? s.trackedP : s.trackedS}</div>
+                <div className="plbl">{total} {accord(locale, total, s.itemWord, s.itemWordP)} {accord(locale, total, s.trackedS, s.trackedP)}</div>
               </div>
               <div className="ptrack">
                 <span className="pfill" style={{ width: pctDone + "%" }} />
                 <span className="pprog" style={{ width: pctProg + "%" }} />
               </div>
               <div className="chips">
-                <span className="chip done"><span className="cd" /><b>{done}</b> {done > 1 ? s.doneP : s.doneS}</span>
+                <span className="chip done"><span className="cd" /><b>{done}</b> {accord(locale, done, s.doneS, s.doneP)}</span>
                 <span className="chip cur"><span className="cd" /><b>{prog}</b> {s.inProgress}</span>
                 <span className="chip wait"><span className="cd" /><b>{total - done - prog}</b> {s.toStart}</span>
               </div>
               <p className="prognote">{s.progNoteA}<b>{neuf ? n.progNoteBold : s.progNoteBold}</b>{s.progNoteB}</p>
+              {erreurStatut && <p role="alert" style={{ color: "#b42318", fontSize: 12.5, fontWeight: 500, margin: "8px 0 0" }}>{erreurStatut}</p>}
             </div>
           );
         })()}
@@ -669,7 +715,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </span>
                 <span className="pt-lbl">{catT(locale, "phases", ph)}</span>
-                <span className="pt-meta">{projectId ? `${donePh}/${lignesPh.length}` : `${lignesPh.length} ${lignesPh.length > 1 ? s.itemWordP : s.itemWord}`}</span>
+                <span className="pt-meta">{projectId ? `${donePh}/${lignesPh.length}` : `${lignesPh.length} ${accord(locale, lignesPh.length, s.itemWord, s.itemWordP)}`}</span>
               </button>
               {neuf && INFO_PHASES[ph] && (() => {
                 const ok = !!projectId && donePh === lignesPh.length;
