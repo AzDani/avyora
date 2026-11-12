@@ -24,7 +24,7 @@ exports[`Briques de l'estimateur — rendu figé > Field et Stepper 4`] = `"<div
 
 exports[`Briques de l'estimateur — rendu figé > RAPIDE_CSS (déplacé tel quel, partagé avec le rapide neuf) 1`] = `
 "
-.av-rapide{--canvas:#f5f6fb;--surface:#fff;--ink:#15172b;--muted:#565a75;--faint:#898ea8;--line:#e9eaf3;--line-strong:#dcdeec;--brand:#4f46e5;--brand-50:#eef1ff;--brand-200:#c7ccfe;--accent-300:#c4b5fd;--accent-600:#7c3aed;--nuit:#1E1B4B;--nuit-2:#241f5e;--good:#0f9d6b;--good-bg:#e6f7f0;--radius-field:.7rem;--radius-card:1.15rem;--radius-panel:1.5rem;--ease:cubic-bezier(.22,.72,.2,1);color:var(--ink);font-family:var(--font-geist-sans),system-ui,sans-serif}
+.av-rapide{--canvas:#f5f6fb;--surface:#fff;--ink:#15172b;--muted:#565a75;--faint:#676b8a;--line:#e9eaf3;--line-strong:#dcdeec;--brand:#4f46e5;--brand-50:#eef1ff;--brand-200:#c7ccfe;--accent-300:#c4b5fd;--accent-600:#7c3aed;--nuit:#1E1B4B;--nuit-2:#241f5e;--good:#0b7a53;--good-bg:#e6f7f0;--radius-field:.7rem;--radius-card:1.15rem;--radius-panel:1.5rem;--ease:cubic-bezier(.22,.72,.2,1);color:var(--ink);font-family:var(--font-geist-sans),system-ui,sans-serif}
 .av-rapide *{box-sizing:border-box}
 .av-rapide .num{font-family:var(--font-geist-mono),ui-monospace,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .av-rapide .q{margin-bottom:22px}
@@ -149,6 +149,28 @@ exports[`Briques de l'estimateur — rendu figé > RAPIDE_CSS (déplacé tel que
 /* mobile : cibles tactiles de 44 px sur les −/+ des pièces, leur surface et « retirer » (26–28 px au doigt, c'est trop petit ; F1) */
 .av-rapide .rstep button,.av-rapide .stepper button,.av-rapide .prm{width:44px;height:44px}.av-rapide .rstep .rn{min-width:20px;font-size:13px}.av-rapide .prow input{min-height:36px;font-size:16px}
 .av-rapide .prow .av-step.compact{height:44px}.av-rapide .prow .av-step.compact button{width:44px}}
+/* Sous un champ : hypothèses du chiffrage, plafond de surface, code postal inconnu (relié par aria-describedby). */
+.av-rapide .fhint{font-size:12px;line-height:1.4;color:var(--muted);margin-top:6px}
+.av-rapide .fhint.err{color:#b4232c;font-weight:500}
+.av-rapide .qcard .qsame{font-size:11px;line-height:1.4;color:var(--muted);margin-top:6px}
+/* « Détail poste par poste » sous le formulaire : téléphone seulement (la barre ne le porte plus). */
+.av-rapide .affiner-m{display:none}
+@media(max-width:560px){
+.av-rapide .rcard .rname{min-height:44px}
+.av-rapide .affiner-m{display:block;margin-top:14px}
+.av-rapide .affiner-m button{width:100%;min-height:44px;font-family:var(--font-geist-sans);font-weight:600;font-size:14px;color:var(--brand);background:var(--brand-50);border:1px solid var(--brand-200);border-radius:999px;padding:10px 16px;cursor:pointer}
+.av-reno-live{bottom:8px}
+.av-reno-live.vide{display:none}
+.av-reno-live .in{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px 10px;padding:10px 14px}
+.av-reno-live .in>div:first-child{display:contents}
+.av-reno-live .lbl,.av-reno-live .ghost{display:none}
+.av-reno-live .big{grid-column:1/-1;font-size:19px;margin-top:0;white-space:nowrap}
+.av-reno-live .sub{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:0}
+.av-reno-live .btns{margin-left:0;flex-wrap:nowrap}
+.av-reno-live .cta{padding:10px 14px;font-size:13px}
+.av-reno-live .err{grid-column:1/-1}
+.av-rapide:has(:is(input,select,textarea):focus)+.av-reno-live{position:static}
+}
 @media (prefers-reduced-motion:reduce){.av-rapide *,.av-rapide-live *{transition:none!important}}
 "
 `;

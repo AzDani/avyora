@@ -183,7 +183,15 @@ const fr = {
     enregistrerCompte: "Enregistrer",
     enregistrement: "Enregistrement…",
     errCp: "Renseigne un code postal (5 chiffres).",
+    /* Revue du 12/11/2026 : un code postal qui n'existe pas (00000, 99999) ou hors de la zone chiffrée (collectivités du Pacifique…). */
+    errCpInconnu: "Ce code postal n'existe pas ou n'est pas couvert (métropole, Corse et DROM).",
     errSurface: "Renseigne la surface.",
+    /** Sous le champ surface quand elle atteint le plafond du rapide. */
+    surfaceMax: (max: number) => `${max} m² au plus ici : au-delà, passe par l'estimation détaillée.`,
+    /** Les hypothèses que le rapide déduit de la surface (elles font sauter le prix à 91 et 111 m²). */
+    hypotheses: (niveaux: number, sdb: number) => `Chiffré pour ${niveaux} niveau${niveaux > 1 ? "x" : ""} et ${sdb} salle${sdb > 1 ? "s" : ""} de bain`,
+    /** Carte « Je fais un max » quand elle coûte autant que « J'en bricole une partie ». */
+    quiIdentique: "Même prix ici : à cette ampleur, tout se fait déjà soi-même.",
     errSave: "Enregistrement impossible.",
     errReseau: "Réseau indisponible. Réessaie.",
     projetNom: "Rénovation",
@@ -637,7 +645,11 @@ const en: Dict = {
     enregistrerCompte: "Save",
     enregistrement: "Saving…",
     errCp: "Enter a ZIP code (5 digits).",
+    errCpInconnu: "This ZIP code doesn't exist or isn't covered (mainland France, Corsica and overseas departments).",
     errSurface: "Enter the area.",
+    surfaceMax: (max: number) => `${max} m² at most here: beyond that, use the detailed estimate.`,
+    hypotheses: (niveaux: number, sdb: number) => `Priced for ${niveaux} floor${niveaux > 1 ? "s" : ""} and ${sdb} bathroom${sdb > 1 ? "s" : ""}`,
+    quiIdentique: "Same price here: at this scope, everything is already DIY.",
     errSave: "Couldn't save.",
     errReseau: "Network unavailable. Try again.",
     projetNom: "Renovation",

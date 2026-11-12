@@ -5,6 +5,7 @@
  * charpente) que seule la maison porte, + plus de niveaux/fenêtres. Paniers représentatifs.
  */
 import { key, ALEAS_RENO, type Ctx, type Selection, type TypeBien, type Finition } from "./core";
+import { solCarrele } from "./quantites";
 
 export type Ampleur = "rafraich" | "partielle" | "complete" | "lourde";
 export type QuiRealise = "pros" | "partie" | "max";
@@ -31,10 +32,31 @@ export const DIY_PARTIE = new Set(["Peinture", "Carrelage / Revetements", "Clois
 
 type Tache = [corps: string, nom: string];
 
+/**
+ * Bornes de la surface du rapide « bien entier » (m²). En dessous de 8 m², ce n'est plus un bien ;
+ * au-delà de 500 m², les paniers représentatifs (1 cuisine, 1 WC, 2 salles de bain au plus) ne
+ * décrivent plus rien de réel : 10 000 m² donnaient 357 ml de cuisine et un seul WC. Mêmes bornes
+ * que les liens des pages de prix (`app/estimation-travaux/page.tsx`) ; au-delà, l'estimation
+ * détaillée.
+ */
+export const SURFACE_MIN_RAPIDE = 8;
+export const SURFACE_MAX_RAPIDE = 500;
+
+/** Surface chiffrée par le rapide : celle saisie, ramenée dans les bornes (vide ou illisible → le minimum). */
+export const surfaceRapide = (s: number): number =>
+  Math.min(SURFACE_MAX_RAPIDE, Math.max(SURFACE_MIN_RAPIDE, Number.isFinite(s) ? s : 0));
+
+// Les sols : UNE couche par zone, jamais deux. La zone « sèche » (séjour, chambres, 40 %) prend le
+// stratifié à toutes les ampleurs ; la zone « carrelable » (pièces d'eau, entrée, cuisine, 60 %) prend
+// un sol souple au rafraîchissement, puis le carrelage dès la réno partielle, qui le REMPLACE. Avant,
+// stratifié ET sol souple couvraient chacun 40 % (la même zone, deux fois), et le carrelage s'y
+// ajoutait : 84 m² de sol pour un appartement de 60 m² (revue du 12/11/2026).
+const SOL_SOUPLE: Tache = ["Carrelage / Revetements", "Sol souple (PVC, lino)"];
+
 // ── Intérieur (maison ET appartement), cumulatif ──
 const RAFRAICH: Tache[] = [
   ["Peinture", "Peinture des murs"], ["Peinture", "Peinture des plafonds"], ["Peinture", "Préparation des surfaces"],
-  ["Carrelage / Revetements", "Sol stratifié (imitation bois)"], ["Carrelage / Revetements", "Sol souple (PVC, lino)"], ["Carrelage / Revetements", "Plinthes"],
+  ["Carrelage / Revetements", "Sol stratifié (imitation bois)"], ["Carrelage / Revetements", "Plinthes"],
 ];
 const PARTIELLE_ADD: Tache[] = [
   ["Carrelage / Revetements", "Carrelage au sol"], ["Carrelage / Revetements", "Faïence / carrelage mural"],
@@ -78,7 +100,7 @@ export type RapideInput = { type: TypeBien; surface: number; codePostal: string;
 
 /** Construit ctx + sel pour le mode rapide. Dérive pièces/SDB/niveaux depuis la surface + le type. */
 export function presetRapide(input: RapideInput): { ctx: Ctx; sel: Selection } {
-  const surface = Math.max(8, input.surface || 0);
+  const surface = surfaceRapide(input.surface || 0);
   const maison = input.type === "Maison";
   const niveaux = maison && surface > 90 ? 2 : 1;             // une maison a souvent 2 niveaux
   const surfaceSol = maison ? Math.round(surface / niveaux) : surface;
@@ -92,7 +114,9 @@ export function presetRapide(input: RapideInput): { ctx: Ctx; sel: Selection } {
   };
 
   let tasks = [...RAFRAICH];
-  if (input.ampleur !== "rafraich") tasks = tasks.concat(PARTIELLE_ADD);
+  // Rafraîchissement : sol souple sur la zone carrelable ; au-delà, le carrelage la couvre à sa place.
+  if (input.ampleur === "rafraich") tasks.push(SOL_SOUPLE);
+  else tasks = tasks.concat(PARTIELLE_ADD);
   if (input.ampleur === "complete" || input.ampleur === "lourde") {
     tasks = tasks.concat(COMPLETE_ADD);
     if (maison) tasks = tasks.concat(MAISON_COMPLETE);
@@ -106,6 +130,8 @@ export function presetRapide(input: RapideInput): { ctx: Ctx; sel: Selection } {
 
   const lourde = input.ampleur === "lourde";
   const qManuel: Record<string, number> = {
+    // La zone du carrelage (celle que le moteur donne au « Carrelage au sol »), pas les 40 % d'un sol sec.
+    [key(...SOL_SOUPLE)]: Math.round(solCarrele(surface)),
     [key("Menuiseries exterieures", "Fenêtres")]: fenetres,
     [key("Cuisine", "Cuisine complète neuve — tout compris")]: Math.max(2.5, Math.round(surface / 28)),
     [key("Maçonnerie", "Chape traditionnelle")]: surface,

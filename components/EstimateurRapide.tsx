@@ -20,10 +20,11 @@ import Link from "next/link";
 // de la construction neuve, qui n'a rien à faire dans le bundle de cette page.
 import { buildDevis, regionCoef, type TypeBien, type Finition } from "@/lib/estimateur/core";
 import { CATALOG } from "@/lib/estimateur/catalog";
-import { presetRapide, AMPLEURS, type Ampleur, type QuiRealise } from "@/lib/estimateur/presets";
+import { presetRapide, AMPLEURS, SURFACE_MIN_RAPIDE, SURFACE_MAX_RAPIDE, type Ampleur, type QuiRealise } from "@/lib/estimateur/presets";
 import { PIECES, presetPieces, type PieceKey, type PieceSel } from "@/lib/estimateur/pieces";
 import {
-  chiffreAfficheRapide, estimationReelleRapide, reponsesRapideReno, lireRetourRapideReno, CLE_RETOUR_RENO, type RapideEdit, type RetourRapideReno,
+  chiffreAfficheRapide, estimationReelleRapide, reponsesRapideReno, lireRetourRapideReno, codePostalValide, CLE_RETOUR_RENO, SURFACE_MAX_PIECE,
+  type RapideEdit, type RetourRapideReno,
 } from "@/lib/estimateur/rapide-reno";
 import { CLE_BROUILLON_RENO, CLE_RECLAMATION_RENO, brouillonRapideReno } from "@/lib/estimateur/brouillon-reno";
 import { suivre } from "@/lib/track";
@@ -51,6 +52,9 @@ const roomLabel = (k: PieceKey) => ROOMS.find((r) => r.key === k)!;
 /** Les champs qu'« Enregistrer » peut signaler (marqués `aria-invalid`, puis focalisés) et la ligne d'erreur. */
 const ID_CHAMP = { cp: "rapide-cp", surface: "rapide-surface" } as const;
 const ID_ERREUR = "rapide-err";
+const ID_CP_INCONNU = "rapide-cp-inconnu";
+/** L'adresse de la page (chemin + paramètres) : les réponses gardées dans l'onglet ne valent que pour elle. */
+const adresseCourante = () => (typeof window === "undefined" ? "" : window.location.pathname + window.location.search);
 // Descriptions d'ampleur adaptées au mode « pièce » (traduites : voir t.piecesAmp dans le dictionnaire).
 
 const DRAFT_KEY = CLE_BROUILLON_RENO;
@@ -85,8 +89,15 @@ export default function EstimateurRapide({
   beta = false,
   edit,
   initial,
+  connecte,
 }: {
   isPro?: boolean;
+  /**
+   * Le visiteur est-il connecté (décidé par la page, côté serveur) ? `false` : « Enregistrer » range le
+   * brouillon et mène droit à l'inscription, sans POST voué au 401 (une erreur en console à chaque clic).
+   * Absent : on ne sait pas, le POST tranche (le 401 reste géré, pour une session expirée).
+   */
+  connecte?: boolean;
   /**
    * Bêta gratuite en cours (lib/beta.ts, décidé par la page, côté serveur). Un non-Pro est alors un anonyme :
    * « Affiner », le multi-pièces et « Enregistrer » l'envoient créer son compte gratuit, pas payer.
@@ -129,10 +140,18 @@ export default function EstimateurRapide({
    * ne le recompte pas (N4 : avant, `demarre` faux masquait le chiffre d'un projet rouvert).
    */
   const [demarre, setDemarre] = useState(false);
-  /** Retour de /tarifs (« Affiner » sans les droits, N13) : ses réponses reviennent et le chiffre s'affiche,
+  /**
+   * Le bien a-t-il été CHOISI (Maison ou Appartement cliqué) ? « Maison » est une valeur par défaut :
+   * sans ce drapeau, taper son seul code postal affichait — et déclarait à Google Ads — le budget
+   * d'une maison de 100 m² que personne n'avait choisie. Le mode « pièces » est un choix en soi.
+   */
+  const [bienChoisi, setBienChoisi] = useState(!!edit);
+  const typeChoisi = mode === "pieces" || bienChoisi;
+  /** Retour arrière, rechargement ou retour de /tarifs : ses réponses reviennent et le chiffre s'affiche,
    *  mais ce n'est pas une nouvelle action (ni mesure, ni conversion), comme un projet rouvert. */
   const [retour, setRetour] = useState(false);
-  const affiche = chiffreAfficheRapide({ demarre, edition: !!edit, retour });
+  // Une pièce venue d'une page de prix : la fourchette de la page s'affiche d'emblée (sans conversion).
+  const affiche = chiffreAfficheRapide({ demarre, edition: !!edit, retour, prerempli: !edit && !!initial?.piece, typeChoisi });
   const [saving, setSaving] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const faute = useChampEnFaute<keyof typeof ID_CHAMP>();
@@ -142,16 +161,25 @@ export default function EstimateurRapide({
     if (champ) faute.signaler(champ, ID_CHAMP[champ]); else faute.effacer();
   };
 
+  // Une seule lecture, même quand React rejoue les effets du montage (mode strict, en développement) :
+  // sinon la 2ᵉ lecture relisait les valeurs d'arrivée que l'enregistrement venait de ranger, et
+  // écrasait les réponses rendues (une pièce venue d'une page de prix revenait à son état d'arrivée).
+  const retourLu = useRef(false);
   useEffect(() => {
-    if (edit) return;
+    if (edit || retourLu.current) return;
+    retourLu.current = true;
     try {
       const brut = sessionStorage.getItem(CLE_RETOUR_RENO);
       if (!brut) return;
       sessionStorage.removeItem(CLE_RETOUR_RENO);
-      const r = lireRetourRapideReno(JSON.parse(brut));
+      const lu = JSON.parse(brut) as { url?: unknown };
+      // Rangées depuis une autre adresse (une autre page de prix, d'autres paramètres) : la nouvelle l'emporte.
+      if (typeof lu?.url === "string" && lu.url !== adresseCourante()) return;
+      const r = lireRetourRapideReno(lu);
       if (!r) return;
       setMode(r.mode); setType(r.type); setSurface(r.surface); setPieces(r.pieces); setCp(r.cp);
       setAmpleur(r.ampleur); setFinition(r.finition); setQui(r.qui);
+      setBienChoisi(true);
       setRetour(true);
     } catch { /* stockage illisible : formulaire vierge */ }
     // Une seule lecture, au montage.
@@ -194,7 +222,21 @@ export default function EstimateurRapide({
   const valid = affiche && saisieValide;
   const lo = Math.round((tot.ttc * 0.85) / 100) * 100;
   const hi = Math.round((tot.ttc * 1.15) / 100) * 100;
-  const m2 = valid && totalSurface > 0 ? Math.round(tot.ttc / totalSurface) : 0;
+  // Le €/m² divise par la surface CHIFFRÉE (bornée par le moteur), jamais par celle en cours de frappe :
+  // « 1 » tapé donnait 24 033 €/m² (le total d'un bien de 8 m² divisé par 1).
+  const surfaceChiffree = (c: { surface: number }) => (c.surface > 0 ? c.surface : 0);
+  const m2 = valid && surfaceChiffree(preset.ctx) > 0 ? Math.round(tot.ttc / surfaceChiffree(preset.ctx)) : 0;
+
+  /**
+   * Les réponses gardées dans l'onglet à chaque changement, dès qu'un chiffre s'affiche : un retour
+   * arrière (depuis l'inscription, /tarifs…) ou un rechargement les rend (lues au montage, plus haut).
+   * Avec l'adresse de la page : une autre page de prix amorce son propre formulaire.
+   */
+  useEffect(() => {
+    if (edit || !affiche) return;
+    const r: RetourRapideReno & { url: string } = { mode, type, surface, pieces, cp, ampleur, finition, qui, url: adresseCourante() };
+    try { sessionStorage.setItem(CLE_RETOUR_RENO, JSON.stringify(r)); } catch { /* stockage indisponible : rien de gardé */ }
+  }, [edit, affiche, mode, type, surface, pieces, cp, ampleur, finition, qui]);
 
   // Conversion « Estimation terminée » : l'estimateur rapide affiche le prix EN DIRECT (pas de bouton « calculer »),
   // donc le moment de valeur = une fourchette valide restée stable ~1,8 s. On déclenche alors la conversion Google Ads
@@ -212,7 +254,7 @@ export default function EstimateurRapide({
    *
    * Elle exige `demarre`, jamais `affiche` : rouvrir un projet n'est pas une estimation.
    */
-  const estimationReelle = estimationReelleRapide({ demarre, saisieValide, ttc: tot.ttc, codePostal: cp });
+  const estimationReelle = estimationReelleRapide({ demarre, saisieValide, ttc: tot.ttc, codePostal: cp, edition: !!edit, typeChoisi });
   useEffect(() => {
     if (convFired.current || !estimationReelle) return;
     const id = window.setTimeout(() => {
@@ -223,20 +265,25 @@ export default function EstimateurRapide({
     return () => window.clearTimeout(id);
   }, [estimationReelle, mode, type, ampleur]);
   const ampName = ampCard(ampleur).label.toLowerCase();
+  /** Aperçu d'une carte : le €/m² d'un réglage, sur la surface chiffrée (0 sans saisie). */
+  function parM2(p: ReturnType<typeof buildSel>): number {
+    const s = totalSurface > 0 ? surfaceChiffree(p.ctx) : 0;
+    return s > 0 ? Math.round(buildDevis(CATALOG, p.ctx, p.sel).totaux.ttc / s) : 0;
+  }
 
   const m2ByAmp = useMemo(() => {
     const out: Record<string, number> = {};
-    for (const a of AMPLEURS) { const p = buildSel({ ampleur: a.v }); out[a.v] = totalSurface > 0 ? Math.round(buildDevis(CATALOG, p.ctx, p.sel).totaux.ttc / totalSurface) : 0; }
+    for (const a of AMPLEURS) { const p = buildSel({ ampleur: a.v }); out[a.v] = parM2(p); }
     return out;
   }, [mode, type, surface, cp, finition, qui, pieces]);
   const m2ByFin = useMemo(() => {
     const out: Record<string, number> = {};
-    for (const f of ["eco", "standard", "premium"] as Finition[]) { const p = buildSel({ finition: f }); out[f] = totalSurface > 0 ? Math.round(buildDevis(CATALOG, p.ctx, p.sel).totaux.ttc / totalSurface) : 0; }
+    for (const f of ["eco", "standard", "premium"] as Finition[]) { const p = buildSel({ finition: f }); out[f] = parM2(p); }
     return out;
   }, [mode, type, surface, cp, ampleur, qui, pieces]);
   const m2ByQui = useMemo(() => {
     const out: Record<string, number> = {};
-    for (const q of ["pros", "partie", "max"] as QuiRealise[]) { const p = buildSel({ qui: q }); out[q] = totalSurface > 0 ? Math.round(buildDevis(CATALOG, p.ctx, p.sel).totaux.ttc / totalSurface) : 0; }
+    for (const q of ["pros", "partie", "max"] as QuiRealise[]) { const p = buildSel({ qui: q }); out[q] = parM2(p); }
     return out;
   }, [mode, type, surface, cp, ampleur, finition, pieces]);
 
@@ -244,7 +291,9 @@ export default function EstimateurRapide({
   const regDelta = Math.round((reg.mo - 1) * 100);
   const zoneLbl = t.zones[reg.zone] ?? reg.zone;
   // « +10 % MO » / « +4% labor » : le signe « % » collé en anglais, après une espace insécable en français (F1).
-  const regLabel = cp.length >= 2 ? `${zoneLbl}${regDelta ? ` · ${regDelta > 0 ? "+" : ""}${regDelta}${signePct(locale)} ${t.moSuffix}` : ""}` : "";
+  // Cinq chiffres qui ne forment pas un code postal couvert : signalé sous le champ, et pas de zone affichée.
+  const cpInconnu = cp.length === 5 && !codePostalValide(cp);
+  const regLabel = cp.length >= 2 && !cpInconnu ? `${zoneLbl}${regDelta ? ` · ${regDelta > 0 ? "+" : ""}${regDelta}${signePct(locale)} ${t.moSuffix}` : ""}` : "";
 
   // ── Gestion des pièces (mode multi) ── chaque ajout = une LIGNE (instance) avec sa propre surface.
   const nbPieces = pieces.length;
@@ -283,16 +332,15 @@ export default function EstimateurRapide({
       suivre("estimation_terminee", { action: "affiner", type: mode === "pieces" ? "pieces" : type, ampleur, nature: "reno", src: initial?.src ?? "direct" });
       conversionEstimation("reno");
     }
-    saveDraft();
+    // Le brouillon seulement s'il y a une estimation : un formulaire vierge rangeait « Maison 100 m² »,
+    // que l'inscription présentait comme « ton estimation ». Sinon, un ancien brouillon est retiré.
+    if (valid) saveDraft();
+    else { try { localStorage.removeItem(DRAFT_KEY); } catch { /* noop */ } }
     try { sessionStorage.setItem("avyora-affiner", "1"); } catch { /* noop */ }
     // Sans les droits, hors bêta (ou projet rouvert) : /tarifs directement (le détaillé l'y renverrait, sans la
-    // source), et ses réponses reviennent s'il revient en arrière. Le brouillon reste prêt pour après l'abonnement.
-    // Un projet rouvert se relit depuis le projet : rien à ranger (la clé resterait pour la page publique).
+    // source). Ses réponses reviennent s'il revient en arrière : elles sont gardées dans l'onglet à chaque
+    // changement (plus haut), quel que soit le chemin. Le brouillon reste prêt pour après l'abonnement.
     const versTarifs = !isPro && !versInscription;
-    if (versTarifs && !edit) {
-      const r: RetourRapideReno = { mode, type, surface, pieces, cp, ampleur, finition, qui };
-      try { sessionStorage.setItem(CLE_RETOUR_RENO, JSON.stringify(r)); } catch { /* noop */ }
-    }
     // Bêta, anonyme : l'inscription d'abord ; le lien de l'e-mail le ramène au détaillé, semé par ce brouillon (?affiner=1).
     router.push(versInscription ? lienInscriptionBeta("/projets/nouveau/detaille?affiner=1", "affiner-reno")
       : versTarifs ? "/tarifs?source=affiner-reno"
@@ -306,10 +354,17 @@ export default function EstimateurRapide({
    */
   function versInscriptionMultiPieces() {
     setErreur(null); faute.effacer();
-    if (!/^\d{5}$/.test(cp)) { signaler(t.errCp, "cp"); return; }
+    if (!codePostalValide(cp)) { signaler(cp.length === 5 ? t.errCpInconnu : t.errCp, "cp"); return; }
     saveDraft();
     try { localStorage.setItem(CLE_RECLAMATION_RENO, "1"); } catch { /* noop */ }
     router.push(lienInscriptionBeta(undefined, "multi-pieces"));
+  }
+
+  /** « Enregistrer » sans compte : le brouillon d'abord, le drapeau ensuite (un drapeau sans brouillon ne réclame rien). */
+  function versInscriptionEnregistrer() {
+    saveDraft();
+    try { localStorage.setItem(CLE_RECLAMATION_RENO, "1"); } catch { /* noop */ }
+    router.push(beta ? lienInscriptionBeta(undefined, "enregistrer-reno") : "/inscription");
   }
 
   /** Libellé du projet (ex. « Rénovation — Chambre ×2 + Salle de bain » ou « Rénovation — Maison 100 m² »). */
@@ -326,11 +381,16 @@ export default function EstimateurRapide({
 
   async function enregistrer() {
     setErreur(null); faute.effacer();
-    if (!/^\d{5}$/.test(cp)) { signaler(t.errCp, "cp"); return; }
+    if (!codePostalValide(cp)) { signaler(cp.length === 5 ? t.errCpInconnu : t.errCp, "cp"); return; }
     if (mode === "pieces" && pieces.length === 0) { signaler(t.auMoinsUnePiece); return; }
     if (!valid) { signaler(t.errSurface, mode === "bien" ? "surface" : undefined); return; }
-    suivre("estimation_terminee", { action: "enregistrer", type: mode === "pieces" ? "pieces" : type, ampleur, nature: "reno", src: initial?.src ?? "direct" });
-    conversionEstimation("reno");
+    // La conversion « estimation » compte une CRÉATION : enregistrer la modification d'un projet n'en est pas une.
+    if (!edit) {
+      suivre("estimation_terminee", { action: "enregistrer", type: mode === "pieces" ? "pieces" : type, ampleur, nature: "reno", src: initial?.src ?? "direct" });
+      conversionEstimation("reno");
+    }
+    // Visiteur anonyme (connu de la page) : le brouillon, le drapeau, l'inscription — sans POST voué au 401.
+    if (connecte === false && !edit) { versInscriptionEnregistrer(); return; }
     setSaving(true);
     const nom = nomProjet();
     const typeBien = (mode === "pieces" ? "Appartement" : type) as TypeBien;
@@ -343,7 +403,8 @@ export default function EstimateurRapide({
     try {
       const res = await fetch(edit ? `/api/projects/${edit.projectId}` : "/api/projects", { method: edit ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nom, typeBien, surface: totalSurface, codePostal: cp, reponses }) });
       // Le brouillon d'abord, le drapeau ensuite : un drapeau sans brouillon ne réclame rien.
-      if (res.status === 401) { saveDraft(); try { localStorage.setItem(CLE_RECLAMATION_RENO, "1"); } catch { /* noop */ } router.push(beta ? lienInscriptionBeta(undefined, "enregistrer-reno") : "/inscription"); return; }
+      // Session expirée (ou page qui ne sait pas) : même chemin que l'anonyme.
+      if (res.status === 401) { versInscriptionEnregistrer(); return; }
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { setErreur(data?.error || t.errSave); setSaving(false); return; }
       try { localStorage.removeItem(DRAFT_KEY); } catch { /* noop */ }
@@ -369,7 +430,7 @@ export default function EstimateurRapide({
           <div className="seg" role="group" aria-label={t.bienEntier} style={{ marginBottom: 14 }}>
             {(["Maison", "Appartement"] as TypeBien[]).map((tb) => {
               const on = affiche && mode === "bien" && type === tb;
-              return <button type="button" key={tb} className={on ? "on" : ""} aria-pressed={on} onClick={() => { setDemarre(true); setMode("bien"); setType(tb); }}>{tb === "Maison" ? t.maison : t.appart}</button>;
+              return <button type="button" key={tb} className={on ? "on" : ""} aria-pressed={on} onClick={() => { setDemarre(true); setBienChoisi(true); setMode("bien"); setType(tb); }}>{tb === "Maison" ? t.maison : t.appart}</button>;
             })}
           </div>
 
@@ -405,7 +466,7 @@ export default function EstimateurRapide({
                   return (
                     <div className="prow" key={i}>
                       <span className="pname">{meta.emoji} {roomName(r.room)}{ord}</span>
-                      <Stepper compact value={r.surface} min={2} unit="m²" onChange={(n) => { setDemarre(true); setPieceSurf(i, n); }} />
+                      <Stepper compact aLaSortie value={r.surface} min={2} max={SURFACE_MAX_PIECE} unit="m²" onChange={(n) => { setDemarre(true); setPieceSurf(i, n); }} />
                       <button type="button" className="prm" onClick={() => { setDemarre(true); retirerPiece(i); }} aria-label={`${t.supprimer} ${roomName(r.room)}${ord}`}>✕</button>
                     </div>
                   );
@@ -419,20 +480,25 @@ export default function EstimateurRapide({
             {mode === "bien" && (
               <div className="fld">
                 <label htmlFor={ID_CHAMP.surface}>{t.surfaceLabel}</label>
-                {/* Le champ du rapide du neuf (F1) : « − 100 m² + » en pleine largeur, boutons de 44 px. */}
-                <Stepper block id={ID_CHAMP.surface} invalide={faute.champ === "surface"} value={surface} min={8} unit="m²"
+                {/* Le champ du rapide du neuf (F1) : « − 100 m² + » en pleine largeur, boutons de 44 px. La valeur est
+                    prise à la sortie du champ (comme le neuf), bornée : le total ne saute pas à chaque chiffre tapé. */}
+                <Stepper block aLaSortie id={ID_CHAMP.surface} invalide={faute.champ === "surface"} value={surface} min={SURFACE_MIN_RAPIDE} max={SURFACE_MAX_RAPIDE} unit="m²"
                   onChange={(n) => { setDemarre(true); setSurface(n); if (faute.champ === "surface" && n > 0) { faute.effacer(); setErreur(null); } }} />
+                {surface >= SURFACE_MAX_RAPIDE
+                  ? <div className="fhint">{t.surfaceMax(SURFACE_MAX_RAPIDE)}</div>
+                  : valid && <div className="fhint">{t.hypotheses(preset.ctx.niveaux, preset.ctx.sdb)}</div>}
               </div>
             )}
             <div className="fld" style={mode === "pieces" ? { gridColumn: "1 / -1" } : undefined}>
               <label htmlFor={ID_CHAMP.cp}>{t.cpLabel}</label>
               <input id={ID_CHAMP.cp} inputMode="numeric" maxLength={5} autoComplete="postal-code" placeholder={t.cpPlaceholder} value={cp}
-                aria-invalid={faute.champ === "cp" || undefined} aria-describedby={faute.champ === "cp" ? ID_ERREUR : undefined}
+                aria-invalid={faute.champ === "cp" || cpInconnu || undefined} aria-describedby={faute.champ === "cp" ? ID_ERREUR : cpInconnu ? ID_CP_INCONNU : undefined}
                 onChange={(e) => {
                   const v = e.target.value.replace(/\D/g, "").slice(0, 5);
                   setDemarre(true); setCp(v);
-                  if (faute.champ === "cp" && /^\d{5}$/.test(v)) { faute.effacer(); setErreur(null); }
+                  if (faute.champ === "cp" && codePostalValide(v)) { faute.effacer(); setErreur(null); }
                 }} />
+              {cpInconnu && <div className="fhint err" id={ID_CP_INCONNU}>{t.errCpInconnu}</div>}
             </div>
           </div>
         </div>
@@ -450,7 +516,7 @@ export default function EstimateurRapide({
                   </span>
                   <span className="t">{al.label}</span>
                   <span className="d">{al.desc}</span>
-                  <span className="amt">{locked ? <span className="lock">{t.proLock}</span> : <>≈ <b>{(m2ByAmp[a.v] || 0).toLocaleString(nf)} €</b> / m²</>}</span>
+                  <span className="amt">{locked ? <span className="lock">{t.proLock}</span> : valid && m2ByAmp[a.v] > 0 ? <>≈ <b>{m2ByAmp[a.v].toLocaleString(nf)} €</b> / m²</> : "—"}</span>
                 </button>
               );
             })}
@@ -471,7 +537,7 @@ export default function EstimateurRapide({
                 <span className="eye">{fi.eye}</span>
                 <span className="t">{fi.label}</span>
                 <span className="d">{fi.desc}</span>
-                <span className="amt">{locked ? <span className="lock">{t.proLock}</span> : <>≈ <b>{(m2ByFin[f.v] || 0).toLocaleString(nf)} €</b> / m²</>}</span>
+                <span className="amt">{locked ? <span className="lock">{t.proLock}</span> : valid && m2ByFin[f.v] > 0 ? <>≈ <b>{m2ByFin[f.v].toLocaleString(nf)} €</b> / m²</> : "—"}</span>
               </button>
               );
             })}
@@ -485,7 +551,9 @@ export default function EstimateurRapide({
               const qi = t.quis[q.v];
               const price = m2ByQui[q.v] || 0;
               const base = m2ByQui.pros || 0;
-              const pct = base > 0 && price > 0 ? Math.round((1 - price / base) * 100) : 0;
+              const pct = valid && base > 0 && price > 0 ? Math.round((1 - price / base) * 100) : 0;
+              // « Je fais un max » au prix de « J'en bricole une partie » (tout le panier se fait déjà soi-même) : dit, pas laissé en doublon muet.
+              const identique = valid && !locked && q.v === "max" && price > 0 && price === (m2ByQui.partie || 0);
               return (
                 <button type="button" key={q.v} className={"qcard" + (qui === q.v ? " on" : "")} aria-pressed={qui === q.v} onClick={() => { setDemarre(true); setQui(q.v); }}>
                   <span className="head">
@@ -495,8 +563,9 @@ export default function EstimateurRapide({
                   <span className="eye">{qi.eye}</span>
                   <span className="t">{qi.label}</span>
                   <span className="d">{qi.desc}</span>
+                  {identique && <span className="qsame">{t.quiIdentique}</span>}
                   <span className="amt">
-                    {locked ? <span className="lock">{t.proLock}</span> : <span className="p">≈ <b>{price.toLocaleString(nf)} €</b> / m²</span>}
+                    {locked ? <span className="lock">{t.proLock}</span> : valid && price > 0 ? <span className="p">≈ <b>{price.toLocaleString(nf)} €</b> / m²</span> : <span className="p">—</span>}
                     {!locked && pct > 0 && <span className="save">−{pct}{signePct(locale)}</span>}
                   </span>
                 </button>
@@ -506,9 +575,12 @@ export default function EstimateurRapide({
         </div>
 
         <p className="intro">{isPro ? t.intro : t.introGratuit}</p>
+        {/* Téléphone : « Détail poste par poste » vit ici, sous le formulaire ; la barre collante ne garde
+            que le prix et « Enregistrer », sur deux lignes au plus (elle couvrait un quart de l'écran). */}
+        {!locked && <div className="affiner-m"><button type="button" className="ghost-m" onClick={affiner}>{libAffiner}</button></div>}
       </div>
 
-      <div className={"av-rapide-live" + (locked ? " lk" : "")}>
+      <div className={"av-rapide-live av-reno-live" + (locked ? " lk" : "") + (!locked && !valid && !erreur ? " vide" : "")}>
         <div className="in">
           {locked ? (
             <>

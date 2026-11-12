@@ -361,9 +361,9 @@ describe("N13 · rapide réno : accessibilité (comme le rapide du neuf)", () =>
     const src = lire("components/EstimateurRapide.tsx");
     expect(src).toContain('import { useChampEnFaute } from "@/components/estimateur/champ-en-faute";');
     expect(src).toContain('const ID_CHAMP = { cp: "rapide-cp", surface: "rapide-surface" } as const;');
-    expect(src).toContain('if (!/^\\d{5}$/.test(cp)) { signaler(t.errCp, "cp"); return; }');
+    expect(src).toContain('if (!codePostalValide(cp)) { signaler(cp.length === 5 ? t.errCpInconnu : t.errCp, "cp"); return; }');
     expect(src).toContain('signaler(t.errSurface, mode === "bien" ? "surface" : undefined)');
-    expect(src).toContain('aria-invalid={faute.champ === "cp" || undefined} aria-describedby={faute.champ === "cp" ? ID_ERREUR : undefined}');
+    expect(src).toContain('aria-invalid={faute.champ === "cp" || cpInconnu || undefined} aria-describedby={faute.champ === "cp" ? ID_ERREUR : cpInconnu ? ID_CP_INCONNU : undefined}');
     expect(src).toContain('invalide={faute.champ === "surface"}');
     expect(src).toContain('<div className="err" id={ID_ERREUR} role="alert">{erreur}</div>');
     expect(lire("components/Stepper.tsx")).toContain("aria-invalid={invalide || undefined}");
@@ -415,7 +415,8 @@ describe("N13 · rapide réno : « Affiner » sans les droits mène à /tarifs, 
   it("anonyme hors bêta (ou projet rouvert) : /tarifs?source=affiner-reno ; bêta : l'inscription ; compte : le détaillé", () => {
     const src = lire("components/EstimateurRapide.tsx");
     expect(src).toContain("const versTarifs = !isPro && !versInscription;");
-    expect(src).toContain("if (versTarifs && !edit) {");
+    // Revue du 12/11/2026 : les réponses sont gardées à chaque changement (plus seulement vers /tarifs), hors projet rouvert.
+    expect(src).toContain("if (edit || !affiche) return;");
     expect(src).toContain("sessionStorage.setItem(CLE_RETOUR_RENO, JSON.stringify(r));");
     expect(src).toMatch(/router\.push\(versInscription \? lienInscriptionBeta\("\/projets\/nouveau\/detaille\?affiner=1", "affiner-reno"\)\s*: versTarifs \? "\/tarifs\?source=affiner-reno"\s*: "\/projets\/nouveau\/detaille"\);/);
   });
@@ -426,7 +427,7 @@ describe("N13 · rapide réno : « Affiner » sans les droits mène à /tarifs, 
 describe("N13 · rapide réno : estimation_terminee et la conversion Google Ads partent exactement comme avant", () => {
   const src = lire("components/EstimateurRapide.tsx");
   it("une fois, 1,8 s après une fourchette stable, sur `estimationReelle` (bloc identique à celui d'avant N13)", () => {
-    expect(src).toContain(`  const estimationReelle = estimationReelleRapide({ demarre, saisieValide, ttc: tot.ttc, codePostal: cp });
+    expect(src).toContain(`  const estimationReelle = estimationReelleRapide({ demarre, saisieValide, ttc: tot.ttc, codePostal: cp, edition: !!edit, typeChoisi });
   useEffect(() => {
     if (convFired.current || !estimationReelle) return;
     const id = window.setTimeout(() => {
@@ -443,12 +444,15 @@ describe("N13 · rapide réno : estimation_terminee et la conversion Google Ads 
       suivre("estimation_terminee", { action: "affiner", type: mode === "pieces" ? "pieces" : type, ampleur, nature: "reno", src: initial?.src ?? "direct" });
       conversionEstimation("reno");
     }`);
-    expect(src).toContain(`    suivre("estimation_terminee", { action: "enregistrer", type: mode === "pieces" ? "pieces" : type, ampleur, nature: "reno", src: initial?.src ?? "direct" });
-    conversionEstimation("reno");`);
+    // Revue du 12/11/2026 : « Enregistrer » ne compte qu'une création (pas la modification d'un projet).
+    expect(src).toContain(`    if (!edit) {
+      suivre("estimation_terminee", { action: "enregistrer", type: mode === "pieces" ? "pieces" : type, ampleur, nature: "reno", src: initial?.src ?? "direct" });
+      conversionEstimation("reno");
+    }`);
     expect(src.split('suivre("estimation_terminee"').length - 1).toBe(3);
     expect(src.split("conversionEstimation(").length - 1).toBe(3);
     // Les deux conditions qui font une estimation réelle, inchangées.
-    expect(lire("lib/estimateur/rapide-reno.ts")).toContain("return p.demarre && p.saisieValide && p.ttc > 0 && CP.test(p.codePostal);");
+    expect(lire("lib/estimateur/rapide-reno.ts")).toContain("return p.demarre && !p.edition && p.typeChoisi !== false && p.saisieValide && p.ttc > 0 && CP.test(p.codePostal);");
     expect(lire("lib/gtag.ts")).toContain("const cle = `av_conv_estimation_${nature}`;");
   });
 

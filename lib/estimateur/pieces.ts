@@ -6,6 +6,7 @@
  */
 import { key, ALEAS_RENO, type Ctx, type Selection, type Finition } from "./core";
 import { DIY_PARTIE, type Ampleur, type QuiRealise } from "./presets";
+import { panierPiece, qtyReference, type PieceReference } from "./paniers-pieces";
 
 export type PieceKey = "cuisine" | "sdb" | "chambre" | "salon" | "suite" | "buanderie";
 
@@ -22,6 +23,9 @@ export const PIECES: { key: PieceKey; surfaceDefaut: number }[] = [
 const AMP_LVL: Record<Ampleur, number> = { rafraich: 0, partielle: 1, complete: 2, lourde: 3 };
 
 type Tache = [corps: string, nom: string, qty: number];
+
+/** Pièces dont la « Réno complète » est le panier de leur page de prix (`paniers-pieces.ts`). */
+const REFERENCE: ReadonlySet<PieceKey> = new Set<PieceReference>(["cuisine", "sdb", "chambre"]);
 
 /** Liste des tâches d'une pièce pour une surface + une ampleur (cumulatif : niveau N inclut 0..N). */
 export function pieceTasks(room: PieceKey, s: number, ampleur: Ampleur): Tache[] {
@@ -53,6 +57,14 @@ export function pieceTasks(room: PieceKey, s: number, ampleur: Ampleur): Tache[]
     ["Maçonnerie", "Chape traditionnelle", surf],
   ];
 
+  // Cuisine, salle de bain, chambre : dès la réno complète, le panier de la page de prix de la pièce
+  // (la même fourchette des deux côtés du bouton « Estimer ») ; la réno lourde y ajoute la mise à nu.
+  if (lvl >= 2 && REFERENCE.has(room)) {
+    out.push(...panierPiece(room as PieceReference, surf).map(([c, n, q]): Tache => [c, n, q]));
+    if (lvl >= 3) out.push(...curage());
+    return out;
+  }
+
   // Base (rafraîchissement) : peinture + sol, selon la pièce.
   const wet = room === "cuisine" || room === "sdb" || room === "buanderie";
   out.push(...paint(), ...(wet ? floorTile() : floorLam()));
@@ -60,7 +72,8 @@ export function pieceTasks(room: PieceKey, s: number, ampleur: Ampleur): Tache[]
   if (room === "cuisine") {
     if (lvl >= 1) out.push(
       ["Carrelage / Revetements", "Faïence / carrelage mural", Math.round(surf * 0.4) + 2], // crédence
-      ["Cuisine", "Cuisine complète neuve — tout compris", Math.max(2.5, Math.round(surf / 3.5))],
+      // La même longueur de cuisine qu'à la réno complète : la cuisine ne rétrécit pas avec l'ampleur.
+      ["Cuisine", "Cuisine complète neuve — tout compris", qtyReference("cuisine", "Cuisine complète neuve — tout compris", surf) ?? Math.max(2.5, Math.round(surf / 3.5))],
     );
     if (lvl >= 2) out.push(...elec(Math.round(surf / 2) + 3));
     if (lvl >= 3) out.push(...curage());

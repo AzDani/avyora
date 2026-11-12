@@ -5,7 +5,7 @@ import { statutsApres } from "@/lib/estimateur/statuts";
 /**
  * Écritures d'UNE clé de `projects.reponses` (suivi de chantier, investissement), sans réécrire le reste.
  *
- * Voie normale : une fonction SQL (supabase/migrations/0005_reponses_maj_cle.sql) qui modifie la clé dans
+ * Voie normale : une fonction SQL (supabase/migrations/0006_reponses_maj_cle.sql) qui modifie la clé dans
  * un seul UPDATE, donc atomique : deux clics de statut rapprochés, ou un statut et une sauvegarde de
  * l'Investissement, ne s'effacent plus. Session de l'utilisateur : la RLS s'applique.
  *

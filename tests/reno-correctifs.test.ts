@@ -71,8 +71,9 @@ describe("N4 · rapide réno : l'affichage et la conversion sont séparés", () 
 
   it("l'écran branche la conversion automatique et « Affiner » sur `demarre`, jamais sur l'édition", () => {
     const src = lire("components/EstimateurRapide.tsx");
-    expect(src).toContain("const affiche = chiffreAfficheRapide({ demarre, edition: !!edit, retour });");
-    expect(src).toContain("const estimationReelle = estimationReelleRapide({ demarre, saisieValide, ttc: tot.ttc, codePostal: cp });");
+    expect(src).toContain("const affiche = chiffreAfficheRapide({ demarre, edition: !!edit, retour, prerempli: !edit && !!initial?.piece, typeChoisi });");
+    // Revue du 12/11/2026 : l'édition est passée à la règle, qui la refuse (une modification n'est pas une création).
+    expect(src).toContain("const estimationReelle = estimationReelleRapide({ demarre, saisieValide, ttc: tot.ttc, codePostal: cp, edition: !!edit, typeChoisi });");
     expect(src).toContain("if (convFired.current || !estimationReelle) return;");
     // « Affiner » ne mesure et ne convertit que derrière la même règle.
     expect(src).toMatch(/function affiner\(\) \{[\s\S]*?if \(estimationReelle\) \{\s*suivre\("estimation_terminee"[\s\S]*?conversionEstimation\("reno"\);\s*\}/);
@@ -253,7 +254,9 @@ describe("N4 · détaillé réno : un 401 range le brouillon complet, ClaimDraft
     expect(brouillon).toBeGreaterThan(-1);
     expect(drapeau).toBeGreaterThan(brouillon);
     const rapide = lire("components/EstimateurRapide.tsx");
-    expect(rapide).toMatch(/if \(res\.status === 401\) \{ saveDraft\(\); try \{ localStorage\.setItem\(CLE_RECLAMATION_RENO, "1"\);/);
+    // Le rapide : 401 (session expirée) et anonyme connu passent par le même chemin, brouillon puis drapeau.
+    expect(rapide).toContain("if (res.status === 401) { versInscriptionEnregistrer(); return; }");
+    expect(rapide).toMatch(/function versInscriptionEnregistrer\(\) \{\s*saveDraft\(\);\s*try \{ localStorage\.setItem\(CLE_RECLAMATION_RENO, "1"\);/);
     const claim = lire("components/ClaimDraft.tsx");
     expect(claim).toContain("JSON.stringify(corpsReclamationReno(d))");
   });

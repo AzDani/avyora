@@ -55,7 +55,7 @@ describe("valeurs par défaut et champs indispensables", () => {
 
 describe("route /api/projects/[id]/investissement", () => {
   const ID = "11111111-1111-4111-8111-111111111111";
-  /* `sql` : la fonction SQL de 0005_reponses_maj_cle.sql est appliquée (écriture atomique de la seule clé) ;
+  /* `sql` : la fonction SQL de 0006_reponses_maj_cle.sql est appliquée (écriture atomique de la seule clé) ;
      sinon PostgREST répond PGRST202 et la route retombe sur la réécriture de `reponses`. `rpc` : ses appels. */
   const S = { user: null as null | { id: string }, pro: true, limite: true, projet: {} as unknown, maj: [] as unknown[], sql: false, rpc: [] as unknown[] };
   const MOCKS = ["@/lib/auth", "@/lib/ratelimit", "@/lib/data/projects", "@/lib/supabase/server"];

@@ -12,6 +12,7 @@ const siteUrl =
 import type { PieceKey } from "@/lib/estimateur";
 import { sourceSeoValide } from "@/lib/seo-source";
 import { seoMeta } from "@/lib/seo-og";
+import { codePostalValide } from "@/lib/estimateur/rapide-reno";
 
 // Title ≤ 60 caractères avec « · AVYORA » ; og:url et carte X propres à la page (cf. seoMeta).
 export const metadata = seoMeta({
@@ -40,9 +41,9 @@ function contexte(sp: Record<string, string | string[] | undefined>) {
   const pieceBrut = lire("piece");
   const surfBrut = Number(lire("surface"));
   return {
-    // 01000–98999 : la plage réelle des codes postaux français. « 99999 » passait un \d{5} naïf et
-    // amorçait le formulaire avec une valeur qui n'existe pas.
-    cp: typeof cpBrut === "string" && /^(0[1-9]|[1-8]\d|9[0-8])\d{3}$/.test(cpBrut) ? cpBrut : undefined,
+    // La règle du formulaire (`codePostalValide`) : métropole, Corse et DROM. « 99999 » passait un \d{5}
+    // naïf et amorçait le formulaire avec une valeur qui n'existe pas.
+    cp: typeof cpBrut === "string" && codePostalValide(cpBrut) ? cpBrut : undefined,
     piece: PIECES_OK.has(pieceBrut as PieceKey) ? (pieceBrut as PieceKey) : undefined,
     surface: Number.isFinite(surfBrut) && surfBrut >= 1 && surfBrut <= 500 ? surfBrut : undefined,
     // Famille de page d'origine : liste fermée, pour qu'un paramètre bricolé ne pollue pas les stats.
@@ -105,7 +106,8 @@ export default async function NouveauProjetRapide({
         <h1 className="mt-1.5 text-3xl font-semibold tracking-tight text-ink">{t.pageTitre}</h1>
         <p className="mt-1.5 text-[15px] text-muted">{t.pageSous}</p>
       </header>
-      <EstimateurRapide isPro={isPro} beta={betaActive()} initial={initial} />
+      {/* `connecte` : un anonyme qui enregistre va droit à l'inscription, sans POST voué au 401. */}
+      <EstimateurRapide isPro={isPro} beta={betaActive()} initial={initial} connecte={!!user} />
       {/* N13 : vers le rapide du neuf, interrupteur allumé seulement (éteint, la page d'avant au caractère près). */}
       {FEATURES.neuf && <PasserelleRapide vers="neuf" locale={locale} />}
     </div>
