@@ -7,6 +7,8 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { createElement } from "react";
 import { prerender } from "react-dom/static";
 
+/** Les métadonnées de la vitrine, dans la langue de la page (lib/i18n/meta.ts). */
+type MetaVitrine = { title: string; description: string; alternates: { canonical: string }; openGraph: { images: unknown; siteName: string; locale: string } };
 const MOCKS = ["@/lib/features", "@/lib/i18n/server", "@/lib/auth", "server-only"];
 
 async function page(plans: boolean, locale: "fr" | "en") {
@@ -28,7 +30,7 @@ async function page(plans: boolean, locale: "fr" | "en") {
   const { LangProvider } = await import("@/components/i18n/LangProvider");
   const el = await mod.default();
   const { prelude } = await prerender(createElement(LangProvider, { locale, children: el }));
-  return { html: await new Response(prelude).text(), metadata: mod.metadata };
+  return { html: await new Response(prelude).text(), metadata: (await mod.generateMetadata()) as unknown as MetaVitrine };
 }
 
 afterEach(() => {
@@ -58,10 +60,17 @@ describe("C5 · /logiciel-plan-maison", () => {
   });
 
   it("EN : interface en anglais et « The editor is in French for now »", async () => {
-    const { html } = await page(true, "en");
+    const { html, metadata } = await page(true, "en");
     expect(html).toContain("Draw your house plan for free, and see it in 3D");
     expect(html).toContain("Create my plan, free");
     expect(html).toContain("The editor is in French for now.");
     expect(html).not.toContain("Créer mon plan");
+    /* revue anglais (constat 122) : l'onglet et l'aperçu de partage en anglais, le canonical et l'image gardés */
+    expect(metadata.title).toBe("Free house floor plan software, in 2D and 3D");
+    expect(metadata.title.length).toBeLessThanOrEqual(51);
+    expect(metadata.description.length).toBeLessThanOrEqual(155);
+    expect(metadata.alternates.canonical).toBe("/logiciel-plan-maison");
+    expect(metadata.openGraph.locale).toBe("en_US");
+    expect(metadata.openGraph.siteName).toBe("AVYORA");
   });
 });

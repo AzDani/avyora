@@ -5,11 +5,14 @@ import { AccesParLien } from "@/components/auth/AccesLien";
 import { FEATURES } from "@/lib/features";
 import { getUser } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
+import { META_EN, metaSelonLangue } from "@/lib/i18n/meta";
 import { cheminInterne, premierParam } from "@/lib/next-url";
 import { betaActive } from "@/lib/beta";
 
 export async function generateMetadata() {
-  return { title: (await getT()).t.auth.metaConnexion, robots: { index: false, follow: true } };
+  const { locale, t } = await getT();
+  // La description et l'aperçu de partage suivent aussi la langue (sinon, ceux du layout, en français).
+  return metaSelonLangue(locale, { title: t.auth.metaConnexion, robots: { index: false, follow: true } }, { title: t.auth.metaConnexion, ...META_EN.connexion });
 }
 
 export default async function ConnexionPage({

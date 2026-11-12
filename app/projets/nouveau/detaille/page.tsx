@@ -3,12 +3,16 @@ import Estimateur from "@/components/Estimateur";
 import { getUser, estPro } from "@/lib/auth";
 import { betaActive, lienInscriptionBeta } from "@/lib/beta";
 import { getLocale } from "@/lib/i18n/server";
+import { META_EN, metaSelonLangue } from "@/lib/i18n/meta";
 import { dictDetail } from "@/lib/i18n/detail";
 
 // noindex : cette page est gatée (redirection vers /connexion ou /tarifs), mais la redirection
 // intervient après le début du streaming — un crawler reçoit donc un 200 avec une coquille vide,
 // ce que Google interprète comme un soft 404. Aucune demande de recherche ne la vise de toute façon.
-export const metadata = { robots: { index: false, follow: false } };
+/** Sans titre propre : celui du layout en français ; traduit pour un visiteur qui a choisi EN (lib/i18n/meta.ts). */
+export async function generateMetadata() {
+  return metaSelonLangue(await getLocale(), { robots: { index: false, follow: false } }, META_EN.defaut);
+}
 export const dynamic = "force-dynamic";
 
 // Estimation détaillée (poste par poste) — réservée aux abonnés Pro.

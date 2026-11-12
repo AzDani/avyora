@@ -7,13 +7,16 @@ import { PlanRappel } from "@/components/plans/PlanRappel";
 import { FEATURES } from "@/lib/features";
 import { getUser } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
+import { META_EN, metaSelonLangue } from "@/lib/i18n/meta";
 import { cheminInterne, premierParam } from "@/lib/next-url";
 import { betaActive, lireSourceBeta } from "@/lib/beta";
 import { BandeauBeta, PanneauBeta } from "@/components/BandeauBeta";
 import { SuiviVue } from "@/components/SuiviVue";
 
 export async function generateMetadata() {
-  return { title: (await getT()).t.auth.metaInscription, robots: { index: false, follow: true } };
+  const { locale, t } = await getT();
+  // La description et l'aperçu de partage suivent aussi la langue (sinon, ceux du layout, en français).
+  return metaSelonLangue(locale, { title: t.auth.metaInscription, robots: { index: false, follow: true } }, { title: t.auth.metaInscription, ...META_EN.inscription });
 }
 
 export default async function InscriptionPage({

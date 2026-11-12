@@ -158,7 +158,7 @@ export default async function RootLayout({
             {/* Desktop (≥ sm) : navigation inline. Éditeur de plan allumé (C9) : l'onglet de plus ne tient pas entre 640 et
                 768 px (mesuré : l'en-tête d'un connecté y débordait déjà), la navigation inline commence donc à md ; en
                 dessous, le menu (qui porte la même ligne « Plan 3D »). Entre md et lg, la langue reste au pied de page. */}
-            <nav aria-label="Navigation principale" className={FEATURES.plans ? "hidden items-center gap-1 text-sm md:flex" : "hidden items-center gap-1 text-sm sm:flex"}>
+            <nav aria-label={t.nav.navPrincipale} className={FEATURES.plans ? "hidden items-center gap-1 text-sm md:flex" : "hidden items-center gap-1 text-sm sm:flex"}>
               {/* Éditeur de plan (C9) : premier lien, mis en avant, seulement interrupteur allumé. */}
               {FEATURES.plans && <OngletPlan label={t.nav.plan} pastille={t.nav.planPastille} />}
               <Link

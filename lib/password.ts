@@ -12,15 +12,34 @@ const MDP_COURANTS = new Set([
   "motdepasse1", "azerty123", "soleil", "bonjour", "loulou", "doudou",
 ]);
 
+/** Les refus, dans la langue de la page (revue anglais, constat 86). Français par défaut. */
+const MESSAGES = {
+  fr: {
+    court: "Le mot de passe doit faire au moins 12 caractères.",
+    long: "Mot de passe trop long (200 caractères max).",
+    lettre: "Ajoute au moins une lettre.",
+    chiffre: "Ajoute au moins un chiffre.",
+    courant: "Ce mot de passe est trop courant — choisis-en un autre.",
+  },
+  en: {
+    court: "Your password must be at least 12 characters long.",
+    long: "Password too long (200 characters max).",
+    lettre: "Add at least one letter.",
+    chiffre: "Add at least one number.",
+    courant: "This password is too common — choose another one.",
+  },
+};
+
 /**
  * ≥ 12 caractères, au moins une lettre et un chiffre, pas dans la liste des plus courants.
- * Renvoie un message d'erreur ou null si OK.
+ * Renvoie un message d'erreur (en français, ou dans `locale`) ou null si OK.
  */
-export function validerMotDePasse(pwd: string): string | null {
-  if (pwd.length < 12) return "Le mot de passe doit faire au moins 12 caractères.";
-  if (pwd.length > 200) return "Mot de passe trop long (200 caractères max).";
-  if (!/[a-zA-Z]/.test(pwd)) return "Ajoute au moins une lettre.";
-  if (!/[0-9]/.test(pwd)) return "Ajoute au moins un chiffre.";
-  if (MDP_COURANTS.has(pwd.toLowerCase())) return "Ce mot de passe est trop courant — choisis-en un autre.";
+export function validerMotDePasse(pwd: string, locale: "fr" | "en" = "fr"): string | null {
+  const m = MESSAGES[locale === "en" ? "en" : "fr"];
+  if (pwd.length < 12) return m.court;
+  if (pwd.length > 200) return m.long;
+  if (!/[a-zA-Z]/.test(pwd)) return m.lettre;
+  if (!/[0-9]/.test(pwd)) return m.chiffre;
+  if (MDP_COURANTS.has(pwd.toLowerCase())) return m.courant;
   return null;
 }

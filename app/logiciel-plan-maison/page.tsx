@@ -7,6 +7,7 @@ import { getLocale } from "@/lib/i18n/server";
 import { dictPlans } from "@/lib/i18n/plans";
 import { clicPlan } from "@/lib/plans/mesure";
 import { og } from "@/lib/seo-og";
+import { META_EN, metaSelonLangue } from "@/lib/i18n/meta";
 import { PLANS_MAX_BETA, betaActive, libellesBeta, lienInscriptionBeta } from "@/lib/beta";
 
 const siteUrl =
@@ -21,13 +22,17 @@ const DESCRIPTION =
 /** L'image de partage : la vraie capture 2D et 3D de la Maison 94 m², composée en 1200 × 630 (C9). */
 const IMAGE_OG = { url: `${siteUrl}/plans/og-plan.png`, width: 1200, height: 630, alt: TITRE };
 
-export const metadata = {
+const META = {
   title: TITRE,
   description: DESCRIPTION,
   alternates: { canonical: "/logiciel-plan-maison" },
   openGraph: { ...og({ title: TITRE, description: DESCRIPTION, path: "/logiciel-plan-maison", type: "website" }), images: [IMAGE_OG] },
   twitter: { card: "summary_large_image" as const, title: TITRE, description: DESCRIPTION, images: [IMAGE_OG.url] },
 };
+/** En français pour les robots (sans cookie av-lang) ; en anglais pour un visiteur qui a choisi EN (lib/i18n/meta.ts). */
+export async function generateMetadata() {
+  return metaSelonLangue(await getLocale(), META, META_EN.logicielPlan);
+}
 
 const maj = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 

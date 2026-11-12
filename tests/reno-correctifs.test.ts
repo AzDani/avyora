@@ -29,6 +29,7 @@ import { CLE_RECLAMATION, CLE_BROUILLON_NEUF } from "@/lib/estimateur/brouillon-
 import { catT } from "@/lib/estimateur/catalog-i18n";
 import { projetCreateSchema, projetPatchSchema } from "@/lib/validation";
 import { dict } from "@/lib/i18n/dictionaries";
+import { euros, euroApres, euroAvant } from "@/lib/i18n/nombres";
 import { LangProvider } from "@/components/i18n/LangProvider";
 import EstimateurRapide from "@/components/EstimateurRapide";
 
@@ -297,12 +298,13 @@ describe("N4 · fiche d'un rapide réno : aucune vraie répartition dans le HTML
     const lots = [...dv.lots].filter((l) => l.ttc > 0).sort((a, b) => b.ttc - a.ttc);
 
     for (const locale of ["fr", "en"] as const) {
-      const nf = locale === "en" ? "en-US" : "fr-FR";
-      const euro = (n: number) => Math.round(n).toLocaleString(nf) + " €";
+      // Les montants comme le produit : « 92 000 € » / « €92,000 », et le factice « ••• € » / « €••• » (lib/i18n/nombres.ts).
+      const euro = (n: number) => euros(locale, n);
+      const factice = euroAvant(locale) + "•••" + euroApres(locale);
 
       it(`${nomCas} · ${locale} · gratuit : ni nom de lot, ni montant de lot, ni proportions réelles`, async () => {
         const h = await rendreFiche(reponses, false, locale);
-        expect(h).toContain("••• €");
+        expect(h).toContain(factice);
         expect(h).toContain('class="lock"');
         for (const l of lots) {
           for (const nom of new Set([l.corps, catT(locale, "corps", l.corps)])) expect(h, nom).not.toContain(`>${echapper(nom)}<`);
@@ -317,7 +319,7 @@ describe("N4 · fiche d'un rapide réno : aucune vraie répartition dans le HTML
       it(`${nomCas} · ${locale} · Pro : la vraie répartition, sans cadenas`, async () => {
         const h = await rendreFiche(reponses, true, locale);
         expect(h).not.toContain('class="lock"');
-        expect(h).not.toContain("••• €");
+        expect(h).not.toContain(factice);
         for (const l of lots.slice(0, 4)) {
           expect(h).toContain(`>${echapper(catT(locale, "corps", l.corps))}<`);
           expect(h).toContain(echapper(euro(l.ttc)));

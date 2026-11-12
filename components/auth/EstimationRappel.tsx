@@ -7,6 +7,7 @@ import { CLE_BROUILLON_NEUF, lireBrouillonNeuf, reclamationNeufPosee } from "@/l
 import { CLE_BROUILLON_RENO, lireBrouillonReno, libelleBrouillonReno } from "@/lib/estimateur/brouillon-reno";
 import { useLocale, useT } from "@/components/i18n/LangProvider";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
+import { euroApres, euroAvant } from "@/lib/i18n/nombres";
 
 /**
  * Affiché sur /inscription quand l'utilisateur arrive depuis une estimation (brouillon présent) :
@@ -72,7 +73,7 @@ export function EstimationRappel() {
     <div className="mb-4 rounded-field border border-brand-200 bg-brand-50 p-3 group-has-[[data-lien-envoye]]/auth:hidden sm:mb-5 sm:px-4" data-estimation-rappel="">
       <p className="eyebrow mb-0.5">{tr.auth.rappel.titre}</p>
       <p className="data text-lg font-semibold text-ink">
-        {fmt(info.lo)} – {fmt(info.hi)} €
+        {euroAvant(locale) + fmt(info.lo)} – {euroAvant(locale) + fmt(info.hi) + euroApres(locale)}
       </p>
       <p className="mt-0.5 text-[13px] leading-snug text-muted">{tr.auth.rappel.texte(info.label)}</p>
     </div>

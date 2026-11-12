@@ -7,7 +7,7 @@ import { dictNeuf } from "@/lib/i18n/neuf";
 import { dictRapport } from "@/lib/i18n/rapport";
 import { dict } from "@/lib/i18n/dictionaries";
 import { libelleTypeBien } from "@/lib/i18n/neuf-commun";
-import { euros, nombre, pourcent, nfDe } from "@/lib/i18n/nombres";
+import { euros, euroApres, euroAvant, nombre, pourcent, nfDe } from "@/lib/i18n/nombres";
 import { accord } from "@/lib/i18n/pluriel";
 import { normaliserCles } from "@/lib/estimateur/identite";
 import { catT, catLigne } from "@/lib/estimateur/catalog-i18n";
@@ -271,10 +271,10 @@ export async function RapportPDF({
       <div className="hero">
         <div>
           <div className="eyebrow" style={{ color: "var(--faint)" }}>{r.heroK}</div>
-          <div className="four"><span className="num">{fmt(lo)}</span><span className="s">–</span><span className="num">{fmt(hi)}</span> €<span className="u">{r.ttc}</span></div>
+          <div className="four"><span className="num">{euroAvant(locale)}{fmt(lo)}</span><span className="s">–</span><span className="num">{euroAvant(locale)}{fmt(hi)}</span>{euroApres(locale)}<span className="u">{r.ttc}</span></div>
           <div className="cap">{r.probable} <b className="num">{euro(t.ttc)}</b> {r.ttc} · {r.finition(finition.toLowerCase())}</div>
         </div>
-        <div className="m2"><div className="v"><span className="num">{fmt(eurM2)}</span> €</div><div className="k">{r.parM2}</div></div>
+        <div className="m2"><div className="v"><span className="num">{euroAvant(locale)}{fmt(eurM2)}</span>{euroApres(locale)}</div><div className="k">{r.parM2}</div></div>
       </div>
 
       {/* Totaux */}

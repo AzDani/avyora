@@ -7,7 +7,7 @@ import { catT } from "@/lib/estimateur/catalog-i18n";
 import { dictNeuf } from "@/lib/i18n/neuf";
 import { dict } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
-import { pourcent } from "@/lib/i18n/nombres";
+import { euroApres, euroAvant, euros, pourcent } from "@/lib/i18n/nombres";
 
 /**
  * Bilan d'une estimation RAPIDE de construction neuve (maquette validée `maquettes/neuf/app.js`,
@@ -95,7 +95,7 @@ export default function BilanRapideNeuf({
   const n = dictNeuf(locale);
   const t = n.rapide;
   const nf = locale === "en" ? "en-US" : "fr-FR";
-  const eur = (v: number) => Math.round(v || 0).toLocaleString(nf) + " €";
+  const eur = (v: number) => euros(locale, v || 0);
   const num = (v: number) => Math.round(v || 0).toLocaleString(nf);
 
   const dv = buildDevis(catalogueDe(ctx), ctx, sel);
@@ -151,7 +151,7 @@ export default function BilanRapideNeuf({
               <div className="bar" key={i}>
                 <span className="t"><span className="fake" style={{ width: nom + "%" }} /></span>
                 <span className="track"><span className="fill" style={{ width: w + "%" }} /></span>
-                <span className="v">••• €</span>
+                <span className="v">{euroAvant(locale) + "•••" + euroApres(locale)}</span>
               </div>
             ))}
           </div>

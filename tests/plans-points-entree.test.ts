@@ -133,7 +133,7 @@ describe("C9 · onglet « Plan 3D » de l'en-tête desktop, et pied de page", ()
         expect(onglet).toContain("text-white");
         expect(onglet).toContain("<svg");
         expect(onglet).not.toContain("aria-current");
-        const nav = apres.header.slice(apres.header.indexOf('<nav aria-label="Navigation principale"'));
+        const nav = apres.header.slice(apres.header.indexOf(`<nav aria-label="${t.navPrincipale}"`));
         expect(nav.indexOf("data-onglet-plan")).toBeLessThan(nav.indexOf('href="/projets"'));
         expect(nav.indexOf("<a")).toBe(nav.indexOf("<a data-onglet-plan"));
         /* le reste de l'en-tête dit les mêmes mots, dans le même ordre (seule la mise en page compacte change) */
@@ -147,7 +147,7 @@ describe("C9 · onglet « Plan 3D » de l'en-tête desktop, et pied de page", ()
       const t = dict(locale).nav;
       for (const user of ["anonyme", "gratuit", "admin"] as const) {
         const { header } = await layout({ plans: true, locale, user });
-        expect(header).toContain('<nav aria-label="Navigation principale" class="hidden items-center gap-1 text-sm md:flex">');
+        expect(header).toContain(`<nav aria-label="${t.navPrincipale}" class="hidden items-center gap-1 text-sm md:flex">`); // traduit (revue anglais, constat 128)
         expect(header).toContain('<div class="md:hidden">');
         expect(header).toMatch(/<span class="hidden items-center lg:inline-flex"><span class="mx-1 h-4 w-px bg-white\/15" aria-hidden="true"><\/span><div class="inline-flex/);
         if (user === "anonyme") continue;
@@ -419,6 +419,9 @@ describe("C9 · /estimation-construction-maison", () => {
 
 /* ─── La vitrine ─────────────────────────────────────────────────────────────── */
 
+/** Les métadonnées de la vitrine, dans la langue de la page (lib/i18n/meta.ts). */
+type MetaVitrine = { title: string; description: string; alternates: { canonical: string }; openGraph: { images: unknown; siteName: string; locale: string } };
+
 describe("C9 · la vitrine /logiciel-plan-maison", () => {
   async function vitrine(locale: Locale, neuf = true) {
     const r = await charger({ plans: true, locale, neuf });
@@ -429,7 +432,7 @@ describe("C9 · la vitrine /logiciel-plan-maison", () => {
       estPro: () => false,
     }));
     const mod = await import("@/app/logiciel-plan-maison/page");
-    return { html: await r.rendre(await mod.default()), metadata: mod.metadata };
+    return { html: await r.rendre(await mod.default()), metadata: (await mod.generateMetadata()) as unknown as MetaVitrine };
   }
   const jsonLd = (h: string) => {
     const m = h.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);

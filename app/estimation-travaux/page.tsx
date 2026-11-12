@@ -1,6 +1,7 @@
 import Link from "next/link";
 import EstimateurRapide from "@/components/EstimateurRapide";
-import { getT } from "@/lib/i18n/server";
+import { getLocale, getT } from "@/lib/i18n/server";
+import { META_EN, metaSelonLangue } from "@/lib/i18n/meta";
 import { getUser, estPro } from "@/lib/auth";
 import { betaActive } from "@/lib/beta";
 import { FEATURES } from "@/lib/features";
@@ -15,13 +16,17 @@ import { seoMeta } from "@/lib/seo-og";
 import { codePostalValide } from "@/lib/estimateur/rapide-reno";
 
 // Title ≤ 60 caractères avec « · AVYORA » ; og:url et carte X propres à la page (cf. seoMeta).
-export const metadata = seoMeta({
+const META = seoMeta({
   title: "Estimation travaux gratuite : budget rénovation",
   description:
     "Calcule gratuitement le budget de tes travaux de rénovation : 4 questions, une fourchette chiffrée ajustée à ton code postal. Sans inscription.",
   path: "/estimation-travaux",
   type: "website",
 });
+/** En français pour les robots (sans cookie av-lang) ; en anglais pour un visiteur qui a choisi EN (lib/i18n/meta.ts). */
+export async function generateMetadata() {
+  return metaSelonLangue(await getLocale(), META, META_EN.estimationTravaux);
+}
 export const dynamic = "force-dynamic";
 
 // Estimation rapide (< 2 min), gratuite. « Affiner » ouvre le détaillé (/detaille).

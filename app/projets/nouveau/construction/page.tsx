@@ -3,12 +3,16 @@ import EstimateurNeuf from "@/components/neuf/EstimateurNeuf";
 import { getUser, estPro } from "@/lib/auth";
 import { betaActive, lienInscriptionBeta } from "@/lib/beta";
 import { getLocale } from "@/lib/i18n/server";
+import { META_EN, metaSelonLangue } from "@/lib/i18n/meta";
 import { dictNeuf } from "@/lib/i18n/neuf";
 import { FEATURES } from "@/lib/features";
 
 // noindex : page gatée, comme le détaillé de la rénovation (`/projets/nouveau/detaille`). La
 // redirection arrive après le début du streaming : un robot recevrait une coquille vide.
-export const metadata = { robots: { index: false, follow: false } };
+/** Sans titre propre : celui du layout en français ; traduit pour un visiteur qui a choisi EN (lib/i18n/meta.ts). */
+export async function generateMetadata() {
+  return metaSelonLangue(await getLocale(), { robots: { index: false, follow: false } }, META_EN.defaut);
+}
 export const dynamic = "force-dynamic";
 
 /**

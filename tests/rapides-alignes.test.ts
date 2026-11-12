@@ -26,6 +26,7 @@ import { chiffreAfficheRapide, editionRapideReno, lireRetourRapideReno, CLE_RETO
 import type { ReponsesRapideNeuf } from "@/lib/estimateur/brouillon-neuf";
 import { dict } from "@/lib/i18n/dictionaries";
 import { dictNeuf } from "@/lib/i18n/neuf";
+import { euros, euroApres, euroAvant } from "@/lib/i18n/nombres";
 import { LangProvider } from "@/components/i18n/LangProvider";
 import EstimateurRapide from "@/components/EstimateurRapide";
 import EstimateurRapideNeuf from "@/components/neuf/EstimateurRapideNeuf";
@@ -50,7 +51,10 @@ const avecLangue = (el: Parameters<typeof createElement>[0], props: object, loca
   sansStyle(renderToStaticMarkup(createElement(LangProvider, { locale, children: createElement(el as never, props as never) })));
 const reno = (props: Parameters<typeof EstimateurRapide>[0], locale: Loc = "fr") => avecLangue(EstimateurRapide, props, locale);
 const neuf = (props: Parameters<typeof EstimateurRapideNeuf>[0], locale: Loc = "fr") => avecLangue(EstimateurRapideNeuf, props, locale);
-const eur = (v: number, l: Loc) => Math.round(v).toLocaleString(l === "en" ? "en-US" : "fr-FR") + " €";
+/** Les montants comme le produit : « 92 000 € » en français, « €92,000 » en anglais (lib/i18n/nombres.ts). */
+const eur = (v: number, l: Loc) => euros(l, v);
+/** Le montant factice d'une barre verrouillée : « ••• € » / « €••• ». */
+const factice = (l: Loc) => euroAvant(l) + "•••" + euroApres(l);
 
 const R: ReponsesRapideNeuf = { surface: 120, niveaux: "etage", codePostal: "45000", finition: "standard", qui: "pros", garage: true, assainissement: "fosse" };
 /** Un projet neuf rouvert : le chiffre s'affiche d'emblée (le bilan avec). */
@@ -180,7 +184,7 @@ describe("N13 · bilan du neuf : la fourchette en grand, comme la rénovation", 
         expect(h).toContain(`>${esc(catT(l, "phases", ph9))}</span>`);
         expect(h).toContain(esc(eur(ph[ph9] ?? 0, l)));
       }
-      expect(h).not.toContain("••• €");
+      expect(h).not.toContain(factice(l));
       expect(h).not.toContain('class="verrou"');
     });
 
@@ -194,7 +198,7 @@ describe("N13 · bilan du neuf : la fourchette en grand, comme la rénovation", 
           expect(h, ph9).not.toContain(`>${esc(catT(l, "phases", ph9))}<`);
           expect(h, ph9).not.toContain(esc(eur(ph[ph9] ?? 0, l)));
         }
-        expect(h.split("••• €").length - 1).toBe(9);
+        expect(h.split(factice(l)).length - 1).toBe(9);
         expect(h).toContain('<div class="bars" aria-hidden="true">');
         const t = dictNeuf(l).rapide;
         expect(h).toContain(`<b>${esc(beta ? t.phasesLockBetaH : t.phasesLockH)}</b>`);
@@ -226,9 +230,9 @@ describe("N13 · rapide neuf : le bilan replié sous les questions, la règle co
         expect(h).not.toMatch(/<details class="pli" open/);
       }
       expect(pro).toContain(esc(eur(ph[PHASES_NEUF[0]] ?? 0, l)));
-      expect(pro).not.toContain("••• €");
+      expect(pro).not.toContain(factice(l));
       expect(gratuit).not.toContain(esc(eur(ph[PHASES_NEUF[0]] ?? 0, l)));
-      expect(gratuit).toContain("••• €");
+      expect(gratuit).toContain(factice(l));
       expect(gratuit).toContain(`>${esc(t.passPro)}</button>`);
       // Bêta, anonyme : le cadenas mène à l'inscription gratuite.
       const anonyme = neuf({ beta: true, edit: { projectId: "p1" }, initialR: R }, l);
@@ -289,7 +293,7 @@ describe("N13 · fiche d'un rapide neuf", () => {
       const h = await ficheNeuf(reponses, true, l);
       expect(h).not.toContain('class="lock"');
       expect(h).not.toContain('class="verrou"');
-      expect(h).not.toContain("••• €");
+      expect(h).not.toContain(factice(l));
       expect(h).toContain(esc(dictNeuf(l).rapide.detailProK));
       for (const li of lourds) expect(h).toContain(esc(eur(li.ttc, l)));
       for (const ph9 of PHASES_NEUF) expect(h).toContain(esc(eur(ph[ph9] ?? 0, l)));

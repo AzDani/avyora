@@ -5,9 +5,10 @@ import BoutonAbo from "@/components/BoutonAbo";
 import BoutonCheckout from "@/components/BoutonCheckout";
 import { getUser, estPro, estAbonne } from "@/lib/auth";
 import { PAGE_GESTION_ABONNEMENT } from "@/lib/abonnement";
-import { getT } from "@/lib/i18n/server";
+import { getLocale, getT } from "@/lib/i18n/server";
 import { dict, type Dict } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
+import { META_EN, metaSelonLangue } from "@/lib/i18n/meta";
 import { SuiviVue } from "@/components/SuiviVue";
 import { FEATURES } from "@/lib/features";
 import { seoMeta } from "@/lib/seo-og";
@@ -21,12 +22,23 @@ const META: Metadata = {
   alternates: { canonical: "/tarifs" },
 };
 
-/** Hors bêta, la metadata d'avant ; pendant la bêta gratuite (lib/beta.ts), elle dit la bêta (en français, règle SEO du site). */
+/**
+ * Hors bêta, la metadata d'avant ; pendant la bêta gratuite (lib/beta.ts), elle dit la bêta. En français pour les
+ * robots (règle SEO du site : ils n'envoient pas le cookie av-lang) ; en anglais pour un visiteur qui a choisi EN,
+ * comme la page (lib/i18n/meta.ts).
+ */
 export async function generateMetadata(): Promise<Metadata> {
-  // og:url, og:title et carte X propres à /tarifs (avant : ceux de l'accueil, hérités du layout).
-  if (!betaActive()) return seoMeta({ title: META.title as string, description: META.description as string, path: "/tarifs", type: "website" });
-  const b = dict("fr").beta;
-  return seoMeta({ title: b.tarifsMetaTitre, description: b.tarifsMetaDescription(libellesBeta("fr").fin), path: "/tarifs", type: "website" });
+  // og:url, og:title et carte X propres à /tarifs (avant : ceux de l'accueil, hérités du layout) ; en anglais,
+  // titre et aperçu suivent la langue (lib/i18n/meta.ts).
+  const locale = await getLocale();
+  if (!betaActive()) {
+    return metaSelonLangue(locale, seoMeta({ title: META.title as string, description: META.description as string, path: "/tarifs", type: "website" }), META_EN.tarifs);
+  }
+  const metaBeta = (l: Locale) => {
+    const b = dict(l).beta;
+    return { title: b.tarifsMetaTitre, description: b.tarifsMetaDescription(libellesBeta(l).fin) };
+  };
+  return metaSelonLangue(locale, seoMeta({ ...metaBeta("fr"), path: "/tarifs", type: "website" }), { ...metaBeta("en"), path: META_EN.tarifs.path });
 }
 export const dynamic = "force-dynamic";
 

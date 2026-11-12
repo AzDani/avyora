@@ -186,7 +186,7 @@ describe("Accents · rendu français des écrans qui affichent les corps d'état
     const { RapportPDF } = await import("@/components/RapportPDF");
     const el = await RapportPDF({ reponses: reponses(reno, PERSO) as never, nom: "Project", refCode: "AVY-TEST" });
     const t = lu(renderToStaticMarkup(el!));
-    expect(t).toMatch(/× 100 € · Studies \/ Design/);
+    expect(t).toMatch(/× €100 · Studies \/ Design/); // l'euro devant le montant en anglais (lib/i18n/nombres.ts)
     expect(t).not.toContain("Etudes / Conception");
     expect(t).not.toContain("Électricité");
   });

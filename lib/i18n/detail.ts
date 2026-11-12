@@ -325,7 +325,8 @@ const en: typeof fr = {
   },
   live: {
     totalK: "Estimated total",
-    ttc: "€ incl. VAT",
+    /* L'euro passe devant le total en anglais (« €92,000 incl. VAT », lib/i18n/nombres.ts) : ici, seulement la mention. */
+    ttc: "incl. VAT",
     budget: (b: string) => `Max budget ${b}`,
     depasse: (x: string) => `over by ${x}`,
     reste: (x: string) => `${x} left`,

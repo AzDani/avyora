@@ -9,10 +9,15 @@ import EstimateurNeuf from "@/components/neuf/EstimateurNeuf";
 import { getProjet } from "@/lib/data/projects";
 import { getUser, estPro } from "@/lib/auth";
 import { getLocale } from "@/lib/i18n/server";
+import { META_EN, metaSelonLangue } from "@/lib/i18n/meta";
 import { estNeuf, maisonComplete, type Ctx, type Ampleur, type Finition, type QuiRealise } from "@/lib/estimateur";
 import type { OrigineNeuf } from "@/lib/estimateur/brouillon-neuf";
 import { editionRapideReno } from "@/lib/estimateur/rapide-reno";
 
+/** Sans titre propre : celui du layout en français ; traduit pour un visiteur qui a choisi EN (lib/i18n/meta.ts). */
+export async function generateMetadata() {
+  return metaSelonLangue(await getLocale(), {}, META_EN.defaut);
+}
 export const dynamic = "force-dynamic";
 
 const TR = {

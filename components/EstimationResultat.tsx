@@ -18,7 +18,7 @@ import { decoupe, INFO_PHASES, qteNeuf, premiersCorps } from "@/lib/estimateur/e
 import { totauxAvecPerso, persoValidees, lotsAvecPerso } from "@/lib/estimateur/projet";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 import { normaliserCles } from "@/lib/estimateur/identite";
-import { euros, nombre, pourcent } from "@/lib/i18n/nombres";
+import { euros, euroApres, euroAvant, eurosM2, nombre, pourcent } from "@/lib/i18n/nombres";
 import BudgetReel from "@/components/BudgetReel";
 import { bilanBudget, type Depense } from "@/lib/estimateur/budget-reel";
 import Investissement from "@/components/Investissement";
@@ -538,8 +538,8 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
       <div className="hero">
         <span className="glow g1" /><span className="glow g2" />
         <div className="eb"><span className="dot" />{neuf ? n.badgeEstim : s.badge}</div>
-        <div className="four"><span className="num">{nb(lo)}</span><span className="s">–</span><span className="num">{nb(hi)}</span> €<small>{s.inclTax}</small></div>
-        <div className="cap">{s.mostLikely} <b>{fmt(t.ttc)}</b> · ≈ <b>{nb(eurM2)} €/m²</b> · {s.margin}</div>
+        <div className="four"><span className="num">{euroAvant(locale)}{nb(lo)}</span><span className="s">–</span><span className="num">{euroAvant(locale)}{nb(hi)}</span>{euroApres(locale)}<small>{s.inclTax}</small></div>
+        <div className="cap">{s.mostLikely} <b>{fmt(t.ttc)}</b> · ≈ <b>{eurosM2(locale, eurM2)}</b> · {s.margin}</div>
         {ctx.codePostal && (
           <div className="zone">📍 {rapide.zones[reg.zone] ?? reg.zone}{moPct ? ` · ${s.labor} ${moPct > 0 ? "+" : ""}${pourcent(locale, moPct, 0)}` : ""}</div>
         )}
@@ -562,7 +562,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
       <div className="stats">
         <div className="stat">
           <div className="k">{s.pricePerM2}</div>
-          <div className="v"><span className="num">{nb(eurM2)}</span> €/m²</div>
+          <div className="v"><span className="num">{euroAvant(locale)}{nb(eurM2)}</span>{`${euroApres(locale)}/m²`}</div>
           <p className="sub">{s.realCost}{!neuf && diyGap ? s.diyLot : ""}</p>
           {cut ? (
             <p className="split-neuf">{n.dontConstr} <b>{fmt(cut.constr)}</b> · {n.annexes} <b>{fmt(cut.annexes)}</b></p>
@@ -570,7 +570,7 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
           <div className="rep">
             <div style={{ fontSize: 11.5, fontWeight: 600, color: "var(--ink)", marginBottom: 4 }}>
               {s.scopeLabel}{s.ampleur[rep.key]}
-              {diyGap && <span style={{ color: "var(--muted)", fontWeight: 500 }}> · ≈ <span className="num">{nb(eurM2FF)}</span> €/m² {s.allHiredOut}</span>}
+              {diyGap && <span style={{ color: "var(--muted)", fontWeight: 500 }}> · ≈ <span className="num">{euroAvant(locale)}{nb(eurM2FF)}</span>{`${euroApres(locale)}/m² `}{s.allHiredOut}</span>}
             </div>
             <div className="bar"><span className="mark" style={{ left: rep.posPct + "%" }} /></div>
             <div className="scale"><span>{s.scaleRefresh}</span><span>{s.scalePartial}</span><span>{s.scaleComplete}</span><span>{s.scaleHeavy}</span></div>

@@ -110,7 +110,7 @@ describe("N14 · fiche : plus de chaîne en dur, nombres dans la langue de la pa
     expect(t).toContain(`Contingency ${reno.ctx.aleas}%`);
     expect(t).toContain("Economy");                        // et non « eco »
     expect(t).toContain("ceiling 2.5 m");
-    expect(t).toMatch(/\d{1,3},\d{3} €/);                  // « 101,077 € »
+    expect(t).toMatch(/€\d{1,3},\d{3}/);                  // « €101,077 »
     expect(t).not.toMatch(/\d \d{3} €/);                   // jamais « 101 077 € » en anglais
     expect(t).not.toMatch(FRANCAIS);
   });
@@ -138,7 +138,7 @@ describe("N14 · fiche : plus de chaîne en dur, nombres dans la langue de la pa
 
   it("le format : montants, nombres et pourcentages", () => {
     expect(euros("fr", 101077.4).replace(/ /g, " ")).toBe("101 077 €");
-    expect(euros("en", 101077.4)).toBe("101,077 €");
+    expect(euros("en", 101077.4)).toBe("€101,077"); // l'euro devant en anglais (revue anglais, constat 123)
     expect(nombre("fr", 130.78, 2)).toBe("130,78");
     expect(nombre("en", 130.78, 2)).toBe("130.78");
     expect(pourcent("fr", 5.5)).toBe("5,5\u00a0%");   // espace insécable (F1)
@@ -162,9 +162,9 @@ describe("N14 · rapport PDF : un dictionnaire FR/EN, au tutoiement", () => {
       const t = (await rapport(p, "en", PERSO)).replace("Projet", "");
       expect(t).toContain("Estimate report");
       expect(t).toContain("Who does what");
-      expect(t).toMatch(/\d{1,3},\d{3} €/);
+      expect(t).toMatch(/€\d{1,3},\d{3}/);
       expect(t).not.toMatch(FRANCAIS);
-      expect(t).toContain("12.5 m² × 1,000 € · Painting");   // la ligne perso, lot traduit
+      expect(t).toContain("12.5 m² × €1,000 · Painting");   // la ligne perso, lot traduit
     }
   });
 

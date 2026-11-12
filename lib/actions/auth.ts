@@ -5,6 +5,7 @@ import { headers, cookies } from "next/headers";
 import { supabaseServer } from "@/lib/supabase/server";
 import { verifierLimite, clientIp } from "@/lib/ratelimit";
 import { validerMotDePasse } from "@/lib/password";
+import { getT } from "@/lib/i18n/server";
 import { journaliser } from "@/lib/audit";
 import { cheminInterne } from "@/lib/next-url";
 import { suivreServeur } from "@/lib/track-server";
@@ -341,10 +342,12 @@ export async function refuserArrivee(): Promise<void> {
  * trace de la demande est posée dans tous ces cas : son cookie, présent ou non, ne doit pas le dire non plus.
  */
 export async function requestReset(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  // Les messages dans la langue de la page (revue anglais, constat 86) : le proxy pose `x-av-locale` sur l'action aussi.
+  const r = (await getT()).t.auth.reset;
   const email = cleanEmail(formData.get("email"));
-  if (!email) return { error: "Renseigne ton email." };
-  if (!emailValide(email)) return { error: "Cette adresse e-mail n'est pas valide. Vérifie-la." };
-  if (!(await limitesEnvoiOk(email))) return { error: TROP_DE_TENTATIVES };
+  if (!email) return { error: r.emailVide };
+  if (!emailValide(email)) return { error: r.emailInvalide };
+  if (!(await limitesEnvoiOk(email))) return { error: r.trop };
 
   const supabase = await supabaseServer();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -354,19 +357,20 @@ export async function requestReset(_prev: AuthState, formData: FormData): Promis
   const issue = issueReset(error);
   // L'adresse tapée peut être celle d'un tiers : le journal n'en garde que l'empreinte.
   await journaliser("reset_demande", { payload: { empreinte: empreinteAdresse(email), ...(error ? { issue, ...(error.code ? { code: error.code } : {}) } : {}) } });
-  if (issue === "limite") return { error: TROP_DE_TENTATIVES };
-  if (issue === "email") return { error: "Cette adresse e-mail n'est pas valide. Vérifie-la." };
+  if (issue === "limite") return { error: r.trop };
+  if (issue === "email") return { error: r.emailInvalide };
   await noterDemande(email, "reset");
-  return { message: "Si un compte existe pour cet email, tu recevras un lien pour définir ton mot de passe." };
+  return { message: r.envoye };
 }
 
 // ── Définition du nouveau mot de passe (après clic sur le lien de l'email) ──
 export async function updatePassword(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const password = String(formData.get("password") ?? "");
   const confirm = String(formData.get("confirm") ?? "");
-  const faible = validerMotDePasse(password);
+  const { locale, t } = await getT();
+  const faible = validerMotDePasse(password, locale);
   if (faible) return { error: faible };
-  if (password !== confirm) return { error: "Les deux mots de passe ne correspondent pas." };
+  if (password !== confirm) return { error: t.auth.reset.differents };
 
   const supabase = await supabaseServer();
   const { data, error } = await supabase.auth.updateUser({ password });

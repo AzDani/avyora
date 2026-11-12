@@ -11,7 +11,7 @@ import type { ReactNode } from "react";
 import { CountUp } from "./CountUp";
 import { fmt } from "./partage";
 import { useLocale } from "@/components/i18n/LangProvider";
-import { nfDe } from "@/lib/i18n/nombres";
+import { euroAvant, nfDe } from "@/lib/i18n/nombres";
 
 export interface LotDevisVue { cle: string; nom: string; v: number; pct: number }
 export interface LigneDevisVue {
@@ -50,7 +50,7 @@ export function VueDevis({ d }: { d: DonneesDevis }) {
       <div className="hero">
         <span className="glow g1" /><span className="glow g2" />
         <div className="eb"><span className="dot" />{d.eb}</div>
-        <div className="tt"><CountUp value={d.ttc} nf={nfDe(locale)} /><small>{d.ttcUnite}</small></div>
+        <div className="tt">{euroAvant(locale)}<CountUp value={d.ttc} nf={nfDe(locale)} /><small>{d.ttcUnite}</small></div>
         <div className="brk">
           {d.pilules.map((p) => (
             <div key={p.k} className="pill"><span className="k">{p.k}</span><br /><span className="v num">{fmt(p.v, locale)}</span></div>

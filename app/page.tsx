@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { getT } from "@/lib/i18n/server";
+import { getLocale, getT } from "@/lib/i18n/server";
+import { META_EN, metaSelonLangue } from "@/lib/i18n/meta";
 import { FEATURES } from "@/lib/features";
 import { betaActive, libellesBeta } from "@/lib/beta";
 import { og, DESCRIPTION_SITE } from "@/lib/seo-og";
@@ -7,12 +8,16 @@ import { ANNEE_PRIX } from "@/lib/prix-maj";
 import { accueilBeta } from "@/lib/accueil-beta";
 
 // Le canonical de l'accueil vit ici (retiré du layout racine où il contaminait toutes les pages).
-// Son aperçu de partage aussi : le layout racine ne porte plus que les valeurs de marque (cf. seoMeta).
-export const metadata: Metadata = {
+// Son aperçu de partage aussi : le layout racine ne porte plus que les valeurs de marque (cf. seoMeta). En anglais
+// (cookie av-lang, jamais chez un robot), le titre et l'aperçu de partage suivent la page (lib/i18n/meta.ts).
+const META: Metadata = {
   alternates: { canonical: "/" },
   openGraph: og({ title: "AVYORA — sache ce que ça coûte. Avant de signer.", description: DESCRIPTION_SITE, path: "/", type: "website" }),
   twitter: { card: "summary_large_image", title: "AVYORA — estime tes travaux avant de signer", description: DESCRIPTION_SITE },
 };
+export async function generateMetadata(): Promise<Metadata> {
+  return metaSelonLangue(await getLocale(), META, META_EN.accueil);
+}
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??

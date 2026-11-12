@@ -9,6 +9,7 @@ import { catLigneCourte } from "@/lib/estimateur/catalog-i18n";
 import { getLocale } from "@/lib/i18n/server";
 import { dict } from "@/lib/i18n/dictionaries";
 import { dictNeuf } from "@/lib/i18n/neuf";
+import { euroApres, euroAvant, euros } from "@/lib/i18n/nombres";
 import BilanRapideNeuf from "./BilanRapideNeuf";
 import { betaActive } from "@/lib/beta";
 
@@ -72,7 +73,7 @@ export default async function ResultatRapideNeuf({
   const ctx = { ...(reponses.ctx ?? {}), codePostal: reponses.ctx?.codePostal ?? reponses.codePostal } as Ctx;
   const sel = normaliserCles((reponses.sel ?? {}) as Selection);
   const nf = locale === "en" ? "en-US" : "fr-FR";
-  const eur = (v: number) => Math.round(v || 0).toLocaleString(nf) + " €";
+  const eur = (v: number) => euros(locale, v || 0);
 
   const maison = maisonComplete(ctx.neuf);
   const cp = ctx.codePostal ?? "";
@@ -92,7 +93,7 @@ export default async function ResultatRapideNeuf({
   const tri = dv ? [...dv.lignes].filter((li) => li.ttc > 0).sort((a, b) => b.ttc - a.ttc) : [];
   const top = dv
     ? tri.slice(0, 5).map((li) => ({ k: li.cle, nom: catLigneCourte(locale, li.nom, li.cle, taches?.get(li.cle)), v: eur(li.ttc) }))
-    : [62, 48, 55, 40, 50].map((w, i) => ({ k: "f" + i, nom: <span className="fake" style={{ width: w + "%" }} />, v: "••• €" }));
+    : [62, 48, 55, 40, 50].map((w, i) => ({ k: "f" + i, nom: <span className="fake" style={{ width: w + "%" }} />, v: euroAvant(locale) + "•••" + euroApres(locale) }));
   const autresTtc = tri.slice(5).reduce((s, li) => s + li.ttc, 0);
 
   const lignes = (

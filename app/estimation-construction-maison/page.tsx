@@ -7,6 +7,7 @@ import { getUser, estPro } from "@/lib/auth";
 import { betaActive } from "@/lib/beta";
 import { FEATURES } from "@/lib/features";
 import { og } from "@/lib/seo-og";
+import { META_EN, metaSelonLangue } from "@/lib/i18n/meta";
 import { contexteNeuf } from "@/lib/neuf-contexte";
 import { dictPlans } from "@/lib/i18n/plans";
 import { clicPlan } from "@/lib/plans/mesure";
@@ -22,7 +23,7 @@ const TITRE = "Estimation construction maison neuve gratuite";
 const DESCRIPTION =
   "Estime le prix de construction de ta maison neuve en 4 questions : un budget complet, du permis à la remise des clés, ajusté à ton code postal. Gratuit.";
 
-export const metadata = {
+const META = {
   title: TITRE,
   description: DESCRIPTION,
   alternates: { canonical: "/estimation-construction-maison" },
@@ -30,6 +31,10 @@ export const metadata = {
   // Sans lui, X reprendrait le titre et la description du layout, qui parlent de rénovation.
   twitter: { card: "summary_large_image" as const, title: TITRE, description: DESCRIPTION },
 };
+/** En français pour les robots (sans cookie av-lang) ; en anglais pour un visiteur qui a choisi EN (lib/i18n/meta.ts). */
+export async function generateMetadata() {
+  return metaSelonLangue(await getLocale(), META, META_EN.construction);
+}
 export const dynamic = "force-dynamic";
 
 /**

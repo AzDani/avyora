@@ -2,9 +2,11 @@ import type { Locale } from "./config";
 
 /**
  * Nombres et montants dans la langue de la page (revue rénovation / neuf, N14) : virgule et espace
- * fine en français (« 130,78 m² », « 92 000 € »), point et virgule en anglais américain (« 130.78 m² »,
- * « 92,000 € », l'euro après le montant comme dans tout le produit). Sans dépendance : utilisable côté
- * serveur comme dans un composant client.
+ * fine en français (« 130,78 m² », « 92 000 € »), point et virgule en anglais américain (« 130.78 m² »).
+ * L'euro suit la convention de chaque langue : après le montant en français (« 92 000 € »), AVANT en
+ * anglais (« €92,000 », « €967/m² »), comme l'accueil, /tarifs et tout le dictionnaire anglais (revue
+ * anglais, constat 123 : l'anglais mélangeait « €80,000 » et « 74,000 € »). Sans dépendance : utilisable
+ * côté serveur comme dans un composant client.
  */
 export const nfDe = (locale: Locale | string): string => (locale === "en" ? "en-US" : "fr-FR");
 
@@ -13,9 +15,24 @@ export function nombre(locale: Locale | string, n: number, dec = 0): string {
   return (Number.isFinite(n) ? n : 0).toLocaleString(nfDe(locale), { maximumFractionDigits: dec });
 }
 
-/** Un montant arrondi à l'euro, « € » après le nombre. */
+/** Un montant arrondi à l'euro : « 92 000 € » en français, « €92,000 » en anglais (« -€1,200 » s'il est négatif). */
 export function euros(locale: Locale | string, n: number): string {
-  return Math.round(Number.isFinite(n) ? n : 0).toLocaleString(nfDe(locale)) + " €";
+  const v = Math.round(Number.isFinite(n) ? n : 0) || 0; // jamais « -0 »
+  if (locale === "en") return (v < 0 ? "-" : "") + euroAvant(locale) + Math.abs(v).toLocaleString("en-US");
+  return v.toLocaleString(nfDe(locale)) + euroApres(locale);
+}
+
+/**
+ * Le symbole « € » autour d'un montant déjà écrit à part (un compteur animé, un nombre dans son propre
+ * `<span>`) : `euroAvant` se met devant le nombre (« € » en anglais, rien en français), `euroApres` derrière
+ * (« € » précédé d'une espace en français, rien en anglais). Les deux, toujours ensemble : `{euroAvant}{n}{euroApres}`.
+ */
+export const euroAvant = (locale: Locale | string): string => (locale === "en" ? "€" : "");
+export const euroApres = (locale: Locale | string): string => (locale === "en" ? "" : " €");
+
+/** Un montant au m², `dec` décimales au plus : « 967 €/m² » en français, « €967/m² » en anglais. */
+export function eurosM2(locale: Locale | string, n: number, dec = 0): string {
+  return locale === "en" ? `€${nombre(locale, n, dec)}/m²` : `${nombre(locale, n, dec)} €/m²`;
 }
 
 /** Le signe « % » d'un pourcentage déjà écrit : collé en anglais (« 7% »), après une espace INSÉCABLE en

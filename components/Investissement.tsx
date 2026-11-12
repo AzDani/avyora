@@ -9,7 +9,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale } from "@/components/i18n/LangProvider";
-import { euros, pourcent, nombre, lireMontant } from "@/lib/i18n/nombres";
+import { euros, eurosM2, pourcent, nombre, lireMontant } from "@/lib/i18n/nombres";
 import { simulerLocation, REGIMES, type Regime, type ResultatRegime, type Alerte } from "@/lib/investissement/location";
 import { entreeDepuisSaisie, completer, travauxRetenus, entreeRevente, completerRevente, type ChampNum, type ChampRevente, type ContexteProjet, type SaisieInvest, type SaisieLocation, type SaisieRevente } from "@/lib/investissement/saisie";
 import { simulerRevente, CADRES, type CadreRevente, type ResultatCadre, type AlerteRevente } from "@/lib/investissement/revente";
@@ -640,7 +640,7 @@ export default function Investissement({ projectId, saisie: initiale, contexte, 
         {prixHaut > 0 && <button type="button" className="lien" onClick={() => majR({ prixRevente: prixHaut })}>{mk.utiliserPrix(fmt(prixHaut))}</button>}
         <details>
           <summary>{mk.exemples}</summary>
-          <ul>{V.exemples.map((e, i) => <li key={i}>{dateMk(e.date)} · {n0(e.surface)} m² · {fmt(e.prix)} · {n0(e.m2)} €/m²</li>)}</ul>
+          <ul>{V.exemples.map((e, i) => <li key={i}>{dateMk(e.date)} · {n0(e.surface)} m² · {fmt(e.prix)} · {eurosM2(locale, e.m2)}</li>)}</ul>
         </details>
       </> : <span>{marche.ventesAbsentes === "hors_dvf" ? mk.horsDvf : marche.ventesAbsentes === "indisponible" ? mk.indisponible : mk.peuDeVentes}</span>}
       {alertesRevente.map((a) => <div key={a} className="al">{a}</div>)}

@@ -6,7 +6,7 @@
  * autres). Les chiffres sont préparés par EstimationResultat ; ce composant ne fait que les mettre en forme.
  */
 import { useLocale } from "@/components/i18n/LangProvider";
-import { euros, nombre, pourcent } from "@/lib/i18n/nombres";
+import { euros, eurosM2, nombre, pourcent } from "@/lib/i18n/nombres";
 
 export type Espace = "estim" | "chantier" | "budget" | "invest";
 
@@ -104,7 +104,7 @@ export default function TuilesProjet({ donnees: d, actif, onChoisir }: { donnees
         {tuile("estim", <>
           <span className="k">{t.estim}</span>
           <span className="v">{fmt(d.estim.ttc)}</span>
-          <span className="s">{nombre(locale, d.estim.m2, 0)} €/m² · {t.marge}</span>
+          <span className="s">{eurosM2(locale, d.estim.m2)} · {t.marge}</span>
           <span className="go">{t.go.estim} →</span>
         </>)}
         {tuile("chantier", <>

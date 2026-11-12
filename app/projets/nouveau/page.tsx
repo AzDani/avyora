@@ -5,6 +5,8 @@ import type { Metadata } from "next";
 import { FEATURES } from "@/lib/features";
 import { lireNature } from "@/lib/nature-projet";
 import { og } from "@/lib/seo-og";
+import { getLocale } from "@/lib/i18n/server";
+import { META_EN, metaSelonLangue } from "@/lib/i18n/meta";
 
 type SP = { nature?: string | string[] };
 
@@ -47,11 +49,19 @@ const META_NATURE: Metadata = {
   twitter: { card: "summary_large_image", title: TITRE_NATURE, description: DESCRIPTION_NATURE },
 };
 
-/** Flag éteint : exactement la metadata de la rénovation, quel que soit `?nature`. */
+/**
+ * Flag éteint : exactement la metadata de la rénovation, quel que soit `?nature`. En anglais (cookie av-lang, jamais
+ * chez un robot), la même, traduite (lib/i18n/meta.ts).
+ */
 export async function generateMetadata({ searchParams }: { searchParams: Promise<SP> }): Promise<Metadata> {
-  if (!FEATURES.neuf) return META_RENO;
+  const locale = await getLocale();
+  if (!FEATURES.neuf) return metaSelonLangue(locale, META_RENO, META_EN.nouveauReno);
   const nature = lireNature((await searchParams).nature);
-  return nature === "neuf" ? META_NEUF : nature === "reno" ? META_RENO : META_NATURE;
+  return nature === "neuf"
+    ? metaSelonLangue(locale, META_NEUF, META_EN.nouveauNeuf)
+    : nature === "reno"
+      ? metaSelonLangue(locale, META_RENO, META_EN.nouveauReno)
+      : metaSelonLangue(locale, META_NATURE, META_EN.nouveauNature);
 }
 export const dynamic = "force-dynamic";
 

@@ -2,12 +2,15 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { useT } from "@/components/i18n/LangProvider";
 
 /**
  * Frontière d'erreur (App Router) : capture les erreurs de rendu et affiche un écran de marque
- * avec une action de réessai. Ne fuit aucun détail technique à l'utilisateur.
+ * avec une action de réessai. Ne fuit aucun détail technique à l'utilisateur. Dans la langue de la page : le
+ * layout racine (et son LangProvider) reste affiché autour d'elle.
  */
 export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+  const t = useT().erreur;
   useEffect(() => {
     // Journalisation côté client (sans données sensibles) — pourra être branchée à un service.
     console.error("Erreur de rendu:", error?.digest ?? error?.message);
@@ -20,15 +23,13 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
           <path d="M12 8v5m0 3h.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
         </svg>
       </span>
-      <h1 className="mt-4 text-2xl font-semibold text-ink">Une erreur est survenue</h1>
-      <p className="mt-2 text-[15px] leading-relaxed text-muted">
-        Quelque chose s&apos;est mal passé de notre côté. Tu peux réessayer — tes données sont en sécurité.
-      </p>
+      <h1 className="mt-4 text-2xl font-semibold text-ink">{t.titre}</h1>
+      <p className="mt-2 text-[15px] leading-relaxed text-muted">{t.texte}</p>
       <div className="mt-6 flex flex-wrap justify-center gap-3">
-        <button onClick={reset} className="btn btn-primary py-2.5">Réessayer</button>
-        <Link href="/" className="btn btn-outline py-2.5">Retour à l&apos;accueil</Link>
+        <button onClick={reset} className="btn btn-primary py-2.5">{t.reessayer}</button>
+        <Link href="/" className="btn btn-outline py-2.5">{t.accueil}</Link>
       </div>
-      {error?.digest && <p className="mt-4 text-xs text-faint">Réf. {error.digest}</p>}
+      {error?.digest && <p className="mt-4 text-xs text-faint">{t.ref} {error.digest}</p>}
     </div>
   );
 }
