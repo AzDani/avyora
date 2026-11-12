@@ -1,22 +1,23 @@
 "use client";
 
-import { useActionState } from "react";
+import { startTransition, useActionState, type FormEvent } from "react";
 import Link from "next/link";
 import { login, signup, requestReset, updatePassword, type AuthState } from "@/lib/actions/auth";
 import { useT } from "@/components/i18n/LangProvider";
 import { Captcha, useCleCaptcha } from "@/components/auth/Captcha";
+import { validerMotDePasse } from "@/lib/password";
 
 function Feedback({ state }: { state: AuthState }) {
   if (!state) return null;
   if (state.error)
     return (
-      <p className="mb-4 rounded-field border border-danger/25 bg-danger-soft px-3.5 py-2.5 text-sm text-danger">
+      <p role="alert" className="mb-4 rounded-field border border-danger/25 bg-danger-soft px-3.5 py-2.5 text-sm text-danger">
         {state.error}
       </p>
     );
   if (state.message)
     return (
-      <p className="mb-4 rounded-field border border-positive/25 bg-positive-soft px-3.5 py-2.5 text-sm text-positive">
+      <p role="status" className="mb-4 rounded-field border border-positive/25 bg-positive-soft px-3.5 py-2.5 text-sm text-positive">
         {state.message}
       </p>
     );
@@ -33,28 +34,60 @@ function Submit({ pending, children }: { pending: boolean; children: string }) {
 }
 
 const field = "space-y-1.5";
+/* Zones tactiles (44 px de haut) : le rembourrage vertical d'un lien en ligne agrandit la zone cliquable sans bouger le texte. */
+const lienTactile = "py-3.5";
+/* Une case et son libellé : tout le libellé est cliquable, sur au moins 44 px de haut. */
+const libelleCase = "flex min-h-11 cursor-pointer items-start gap-2 py-1.5 text-[13px] leading-snug text-muted";
+
+/**
+ * L'envoi sans remise à zéro : avec `<form action={…}>`, React 19 VIDE le formulaire à la fin de chaque envoi, même
+ * refusé (un mot de passe sans chiffre effaçait le prénom, l'adresse et la case des CGU). L'action part donc d'ici,
+ * dans une transition (comme `AccesParLien`) ; `action` reste sur le formulaire pour un envoi avant l'hydratation.
+ */
+function envoyerSansRemise(action: (fd: FormData) => void) {
+  return (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const donnees = new FormData(e.currentTarget);
+    startTransition(() => action(donnees));
+  };
+}
+
+/**
+ * Les règles complètes du mot de passe (lib/password.ts, la même fonction que le serveur) appliquées par le navigateur
+ * avant l'envoi : « motdepassesanschiffre » n'est plus accepté par le formulaire puis refusé par le serveur.
+ */
+function verifierRegles(message: string) {
+  return (e: FormEvent<HTMLInputElement>) => {
+    const v = e.currentTarget.value;
+    e.currentTarget.setCustomValidity(v && validerMotDePasse(v) ? message : "");
+  };
+}
 
 // ── Connexion ──
-export function LoginForm({ next }: { next?: string }) {
+/** `defaultEmail` : l'adresse déjà tapée dans le champ du lien (`AccesParLien`), reprise au dépliage. */
+export function LoginForm({ next, defaultEmail }: { next?: string; defaultEmail?: string }) {
   const t = useT().auth;
   const [state, action, pending] = useActionState(login, undefined);
   const cleCaptcha = useCleCaptcha(state);
   return (
-    <form action={action} className="space-y-4">
+    <form action={action} onSubmit={envoyerSansRemise(action)} className="space-y-4">
       <Feedback state={state} />
       {next && <input type="hidden" name="next" value={next} />}
       <div className={field}>
-        <label htmlFor="email" className="field-label">{t.email}</label>
-        <input id="email" name="email" type="email" autoComplete="email" required className="input" placeholder={t.emailPlaceholder} />
+        <label htmlFor="email" className="field-label">{t.lien.emailLabel}</label>
+        <input id="email" name="email" type="email" autoComplete="email" required className="input" placeholder={t.emailPlaceholder} defaultValue={defaultEmail} />
       </div>
       <div className={field}>
         <div className="flex items-center justify-between">
           <label htmlFor="password" className="field-label">{t.motDePasse}</label>
-          <Link href="/reset" className="text-xs text-brand-600 hover:underline">{t.oublie}</Link>
+          {/* Élément de flex (bloc) : la marge négative annule la hauteur ajoutée, la zone tactile reste de 44 px. */}
+          <Link href="/reset" className="-my-3.5 py-3.5 text-xs text-brand-600 hover:underline">{t.oublie}</Link>
         </div>
-        <input id="password" name="password" type="password" autoComplete="current-password" required className="input" placeholder="••••••••" />
+        {/* Pas de « •••••••• » en indication : il faisait croire à un mot de passe déjà enregistré. */}
+        {/* `relative` : le champ passe au-dessus de la zone tactile de « Oublié ? », qui déborde de quelques pixels sur lui. */}
+        <input id="password" name="password" type="password" autoComplete="current-password" required className="input relative" />
       </div>
-      <label htmlFor="remember" className="flex cursor-pointer items-center gap-2 text-sm text-muted">
+      <label htmlFor="remember" className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-muted">
         <input
           id="remember"
           name="remember"
@@ -71,12 +104,12 @@ export function LoginForm({ next }: { next?: string }) {
 }
 
 // ── Inscription ──
-export function SignupForm({ next }: { next?: string }) {
+export function SignupForm({ next, defaultEmail }: { next?: string; defaultEmail?: string }) {
   const t = useT().auth;
   const [state, action, pending] = useActionState(signup, undefined);
   const cleCaptcha = useCleCaptcha(state);
   return (
-    <form action={action} className="space-y-4">
+    <form action={action} onSubmit={envoyerSansRemise(action)} className="space-y-4">
       <Feedback state={state} />
       {/* Transporte l'intention d'achat jusqu'à l'action serveur, comme le fait LoginForm.
           C'est ce champ qui évite qu'un visiteur venu payer finisse dans sa liste de projets. */}
@@ -86,15 +119,26 @@ export function SignupForm({ next }: { next?: string }) {
         <input id="nom" name="nom" type="text" autoComplete="given-name" className="input" placeholder={t.prenomPlaceholder} />
       </div>
       <div className={field}>
-        <label htmlFor="email" className="field-label">{t.email}</label>
-        <input id="email" name="email" type="email" autoComplete="email" required className="input" placeholder={t.emailPlaceholder} />
+        <label htmlFor="email" className="field-label">{t.lien.emailLabel}</label>
+        <input id="email" name="email" type="email" autoComplete="email" required className="input" placeholder={t.emailPlaceholder} defaultValue={defaultEmail} />
       </div>
       <div className={field}>
         <label htmlFor="password" className="field-label">{t.motDePasse}</label>
-        <input id="password" name="password" type="password" autoComplete="new-password" required minLength={12} className="input" placeholder={t.mdpMin} />
+        <input
+          id="password"
+          name="password"
+          type="password"
+          autoComplete="new-password"
+          required
+          minLength={12}
+          className="input"
+          aria-describedby="mdp-regles"
+          onInput={verifierRegles(t.mdpRegles)}
+        />
+        <p id="mdp-regles" className="pt-0.5 text-[12.5px] leading-snug text-muted">{t.mdpRegles}</p>
       </div>
       {/* Facultative et NON cochée (CNIL) : l'action date le consentement s'il est donné (B2). */}
-      <label htmlFor="mdp-newsletter" className="flex cursor-pointer items-start gap-2 text-[13px] leading-snug text-muted">
+      <label htmlFor="mdp-newsletter" className={libelleCase}>
         <input id="mdp-newsletter" name="newsletter" type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 rounded border-line-strong text-brand-600 accent-brand-600" />
         <span>{t.lien.newsletter}</span>
       </label>
@@ -118,7 +162,7 @@ export function ResetRequestForm() {
   const [state, action, pending] = useActionState(requestReset, undefined);
   const cleCaptcha = useCleCaptcha(state);
   return (
-    <form action={action} className="space-y-4">
+    <form action={action} onSubmit={envoyerSansRemise(action)} className="space-y-4">
       <Feedback state={state} />
       <div className={field}>
         <label htmlFor="email" className="field-label">{t.email}</label>
@@ -135,15 +179,26 @@ export function UpdatePasswordForm() {
   const t = useT().auth;
   const [state, action, pending] = useActionState(updatePassword, undefined);
   return (
-    <form action={action} className="space-y-4">
+    <form action={action} onSubmit={envoyerSansRemise(action)} className="space-y-4">
       <Feedback state={state} />
       <div className={field}>
         <label htmlFor="password" className="field-label">{t.nouveauMdp}</label>
-        <input id="password" name="password" type="password" autoComplete="new-password" required minLength={12} className="input" placeholder={t.mdpMin} />
+        <input
+          id="password"
+          name="password"
+          type="password"
+          autoComplete="new-password"
+          required
+          minLength={12}
+          className="input"
+          aria-describedby="nouveau-mdp-regles"
+          onInput={verifierRegles(t.mdpRegles)}
+        />
+        <p id="nouveau-mdp-regles" className="pt-0.5 text-[12.5px] leading-snug text-muted">{t.mdpRegles}</p>
       </div>
       <div className={field}>
         <label htmlFor="confirm" className="field-label">{t.confirmMdp}</label>
-        <input id="confirm" name="confirm" type="password" autoComplete="new-password" required minLength={12} className="input" placeholder="••••••••" />
+        <input id="confirm" name="confirm" type="password" autoComplete="new-password" required minLength={12} className="input" />
       </div>
       <Submit pending={pending}>{t.enregistrer}</Submit>
     </form>

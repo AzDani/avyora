@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { supabaseServer } from "@/lib/supabase/server";
 import { cheminInterne } from "@/lib/next-url";
 import { controlerArrivee, noterArrivee } from "@/lib/auth-arrivee";
-import { COOKIE_DEMANDE, COOKIE_VERIFIER, trouverDemande } from "@/lib/auth-lien";
+import { COOKIE_DEMANDE, COOKIE_VERIFIER, lienMdpDesactive, trouverDemande } from "@/lib/auth-lien";
 import { empreinteAdresse } from "@/lib/empreinte";
 
 /**
@@ -34,10 +34,11 @@ export async function GET(request: NextRequest) {
     if (!error) {
       const cookieStore = await cookies();
       const email = data.user?.email;
-      await controlerArrivee(supabase, data.user, email ? trouverDemande(cookieStore.get(COOKIE_DEMANDE)?.value, empreinteAdresse(email)) : null);
+      const { mdpDesactive } = await controlerArrivee(supabase, data.user, email ? trouverDemande(cookieStore.get(COOKIE_DEMANDE)?.value, empreinteAdresse(email)) : null);
       await noterArrivee(supabase, data.user, next);
       cookieStore.set(COOKIE_VERIFIER, "", { path: "/", maxAge: 0, httpOnly: true, sameSite: "lax" });
-      return NextResponse.redirect(`${origin}${next}`);
+      // Mot de passe remplacé par sécurité : la page qui le dit, puis l'intention.
+      return NextResponse.redirect(`${origin}${mdpDesactive ? lienMdpDesactive(next) : next}`);
     }
   }
   const retour = new URLSearchParams({ erreur: "lien_invalide" });

@@ -1,8 +1,26 @@
 import { NextResponse } from "next/server";
-import { getUser } from "@/lib/auth";
+import { getUser, estAbonne } from "@/lib/auth";
 import { getStripe, priceIdForPlan, type PlanKey } from "@/lib/stripe";
 import { retoursStripe } from "@/lib/nature-projet";
 import { betaActive } from "@/lib/beta";
+import { PAGE_GESTION_ABONNEMENT, abonnementEnCours } from "@/lib/abonnement";
+
+/**
+ * La réponse à qui a déjà un abonnement : 409, et la page où le gérer (le bouton y mène). La langue : l'en-tête que le
+ * proxy pose sur chaque requête (`x-av-locale`).
+ */
+function dejaAbonne(req: Request) {
+  const en = req.headers.get("x-av-locale") === "en";
+  return NextResponse.json(
+    {
+      error: en
+        ? "You already have an active subscription. Manage it from My account."
+        : "Tu as déjà un abonnement en cours. Gère-le depuis Mon compte.",
+      portail: PAGE_GESTION_ABONNEMENT,
+    },
+    { status: 409 },
+  );
+}
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,6 +29,10 @@ export const dynamic = "force-dynamic";
  * Crée une session Stripe Checkout (abonnement) pour l'utilisateur connecté et renvoie l'URL.
  * Pendant la bêta gratuite (lib/beta.ts), aucune vente (CGV) : la page Tarifs n'a plus de bouton de
  * paiement, et la route refuse aussi un appel direct, avant même de lire la requête.
+ *
+ * Un abonné ne repaie pas : Stripe crée sinon simplement un 2e abonnement sur le même client. Refus si le compte est
+ * déjà abonné (`estAbonne` : plan posé par le webhook, accès manuel), puis, le client Stripe connu, si Stripe lui
+ * connaît un abonnement en cours (le webhook a pu ne pas encore passer). La réponse renvoie vers Mon compte (portail).
  */
 export async function POST(req: Request) {
   const user = await getUser();
@@ -18,6 +40,7 @@ export async function POST(req: Request) {
   if (betaActive()) {
     return NextResponse.json({ error: "Pendant la bêta, tout est gratuit : aucun paiement n'est nécessaire." }, { status: 409 });
   }
+  if (estAbonne(user)) return dejaAbonne(req);
 
   const { plan, nature } = await req.json().catch(() => ({ plan: undefined, nature: undefined }));
   const priceId = priceIdForPlan(plan as PlanKey);
@@ -30,6 +53,10 @@ export async function POST(req: Request) {
 
   try {
     const stripe = getStripe();
+    if (customerId) {
+      const abonnements = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 20 });
+      if (abonnements.data.some((a) => abonnementEnCours(a.status))) return dejaAbonne(req);
+    }
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],

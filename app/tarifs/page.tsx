@@ -4,6 +4,7 @@ import type { User } from "@supabase/supabase-js";
 import BoutonAbo from "@/components/BoutonAbo";
 import BoutonCheckout from "@/components/BoutonCheckout";
 import { getUser, estPro, estAbonne } from "@/lib/auth";
+import { PAGE_GESTION_ABONNEMENT } from "@/lib/abonnement";
 import { getT } from "@/lib/i18n/server";
 import { dict, type Dict } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
@@ -68,6 +69,9 @@ export default async function TarifsPage({
   const [{ plan: planDemande, abo, source: sourceDemandee, nature: natureDemandee }, user, { t: tr, locale }] = await Promise.all([searchParams, getUser(), getT()]);
   const t = tr.tarifs;
   const dejaPro = estPro(user);
+  // Un abonnement en cours (plan Stripe, accès manuel) : plus de bouton « S'abonner », qui créait un 2e abonnement
+  // sur le même client Stripe ; la route le refuse aussi (app/api/stripe/checkout).
+  const abonne = estAbonne(user);
   // Un visiteur qui revient d'une inscription arrive avec le plan qu'il avait choisi AVANT de
   // créer son compte (components/BoutonAbo.tsx pose ce paramètre). On met SON plan en avant
   // plutôt que celui de la maison : il retrouve son choix au lieu de devoir le refaire.
@@ -165,7 +169,15 @@ export default async function TarifsPage({
                   promesse vérifiable — le tarif ne bouge pas pour les premiers abonnés — et non une
                   remise sur un prix fictif. Ne pas réintroduire d'ancrage sans prix réel à l'appui. */}
               <div className="mt-2 text-xs text-faint">{p.note}</div>
-              <div className="mt-5">{user ? <BoutonCheckout plan={key} nature={nature} /> : <BoutonAbo plan={key} nature={nature} />}</div>
+              <div className="mt-5">
+                {abonne ? (
+                  <Link href={PAGE_GESTION_ABONNEMENT} className="btn btn-outline w-full justify-center py-2.5">{t.gererAbo}</Link>
+                ) : user ? (
+                  <BoutonCheckout plan={key} nature={nature} />
+                ) : (
+                  <BoutonAbo plan={key} nature={nature} />
+                )}
+              </div>
             </div>
           );
         })}
@@ -258,6 +270,7 @@ function TarifsBeta({ user, t: tr, locale, source, nature }: {
   const connexion = intention ? `/connexion?next=${encodeURIComponent(intention)}` : "/connexion";
   // Les plans d'un inscrit pendant la bêta : PLANS_MAX_BETA, pas « sans limite » (le droit d'un abonné, lib/plans/droits.ts).
   const plansBeta = b.plansEnregistres(PLANS_MAX_BETA);
+  const faq = b.tarifsFaq(l.reprise, FEATURES.plans);
 
   return (
     <div className="animate-rise mx-auto max-w-4xl py-4 sm:py-8" data-tarifs-beta="">
@@ -357,6 +370,19 @@ function TarifsBeta({ user, t: tr, locale, source, nature }: {
           <figcaption className="mt-2.5 text-center text-[11px] leading-snug text-faint">{t.apercuLegende}</figcaption>
         </figure>
       </div>
+
+      {/* Ce que deviennent les projets et les plans après la bêta, sans abonnement : la vérité du code (lib/auth.ts). */}
+      <section className="mx-auto mt-8 max-w-3xl" data-tarifs-faq="">
+        <h2 className="text-[18px] font-semibold tracking-tight text-ink">{b.tarifsFaqTitre}</h2>
+        <dl className="mt-4 space-y-4">
+          {faq.map(({ q, r }) => (
+            <div key={q} className="rounded-field border border-line bg-surface px-5 py-4">
+              <dt className="text-[14.5px] font-semibold text-ink">{q}</dt>
+              <dd className="mt-1.5 text-[14px] leading-relaxed text-muted">{r}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
 
       {/* « Déjà un compte ? Se connecter » est déjà sous le bouton : en bas, seulement l'estimation rapide (2e contre-examen). */}
       <p className="mt-6 text-center text-[13px] text-muted">

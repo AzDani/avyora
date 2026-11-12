@@ -114,6 +114,8 @@ const fr = {
     apercuLegende: "Exemple de rapport détaillé — maison 145 m² à Bordeaux.",
     apercuAlt: "Exemple de rapport d'estimation détaillée AVYORA",
     aboAnnule: "Paiement annulé — rien n'a été débité. Tu peux reprendre quand tu veux.",
+    /* Un abonné en cours ne voit plus « S'abonner » : il gère son abonnement (portail Stripe, Mon compte). */
+    gererAbo: "Gérer mon abonnement",
     inclus: "Inclus dans Pro",
     features: [
       "Estimateur détaillé — les 200 postes, au poste près",
@@ -308,6 +310,27 @@ const fr = {
     tarifsInclus: "Inclus pendant la bêta",
     tarifsDepuisEditeur: "Tu viens de l'éditeur de plan. Avec un compte, pendant la bêta :",
     tarifsBasConnecte: "Tu peux aussi ",
+    /* Questions fréquentes de /tarifs pendant la bêta. Ce que dit le code après la bêta (lib/auth.ts : `estPro` revient à
+       `estAbonne`, `limitePlans` à 1 ; docs/beta.md §3) : rien n'est effacé, l'avancé demande un abonnement. Aucun prix. */
+    tarifsFaqTitre: "Questions fréquentes",
+    tarifsFaq: (reprise: string, plans: boolean) => [
+      {
+        q: `Que se passe-t-il le ${reprise} si je ne m'abonne pas ?`,
+        r: `Rien n'est effacé : tes projets et tes estimations restent dans ton compte, et tu peux toujours les ouvrir. Ton compte repasse en gratuit : l'estimation rapide reste ouverte (un projet détaillé se rouvre dans l'estimation rapide), mais l'estimation détaillée, le rapport PDF et le suivi de chantier demandent alors un abonnement.${plans ? " Tes plans restent tous lisibles et modifiables ; un compte gratuit est limité à un plan : en ajouter un au-delà demandera un abonnement." : ""} Ta pastille de membre fondateur reste.`,
+      },
+      {
+        q: "Faut-il une carte bancaire ?",
+        r: "Non. Aucun moyen de paiement n'est demandé pendant la bêta, et rien ne sera prélevé automatiquement : quand AVYORA passera payant, tu t'abonnes seulement si tu le veux.",
+      },
+      {
+        q: "Quand connaîtrai-je le tarif des membres fondateurs ?",
+        r: "Il sera annoncé avant la fin de la bêta. Il est garanti à vie aux membres fondateurs, c'est-à-dire aux comptes dont l'adresse a été confirmée pendant la bêta.",
+      },
+      {
+        q: "Puis-je supprimer mon compte ?",
+        r: "Oui, à tout moment, depuis Mon compte : ton compte et tout ce qu'il contient (projets, estimations, plans) sont alors effacés définitivement.",
+      },
+    ],
     /* /connexion : « Pas encore de compte ? » */
     cxBasLien: "Crée ton compte, gratuit pendant la bêta",
   },
@@ -321,6 +344,8 @@ const fr = {
     prenom: "Prénom",
     prenomPlaceholder: "Camille",
     mdpMin: "12 caractères minimum",
+    /* Les règles COMPLÈTES du mot de passe (lib/password.ts), sous le champ : le navigateur les fait respecter avant l'envoi. */
+    mdpRegles: "12 caractères minimum, dont au moins une lettre et un chiffre.",
     creerCompte: "Créer mon compte",
     envoyerLien: "Envoyer le lien",
     nouveauMdp: "Nouveau mot de passe",
@@ -361,6 +386,8 @@ const fr = {
       erreurs: {
         email: "Cette adresse e-mail ne semble pas valide. Vérifie-la.",
         limite: "Trop de demandes pour le moment. Utilise le dernier lien reçu, ou patiente un peu avant d'en redemander un.",
+        /* La limite d'envoi de Supabase atteinte par TOUT le monde (issueEnvoi) : rien à voir avec ce visiteur. */
+        saturation: "Notre service d'e-mails est très sollicité en ce moment : réessaie dans quelques minutes.",
         envoi: "L'e-mail n'a pas pu partir. Réessaie dans un instant, ou passe par un mot de passe ci-dessous.",
       },
       /* L'écran « C'est envoyé » */
@@ -404,6 +431,18 @@ const fr = {
       continuer: "Oui, c'est mon compte",
       pasMoi: "Ce n'est pas moi : me déconnecter",
       pasMoiAide: "Cette adresse n'est pas la tienne ? Déconnecte-toi : rien de ce que tu as fait ici n'y sera rangé.",
+      /* ?mdp=desactive : le mot de passe vient d'être remplacé par sécurité (lib/auth-arrivee.ts). */
+      mdpDesactive: "Par sécurité, ton mot de passe a été désactivé : ton adresse a été confirmée dans un autre navigateur que celui où il avait été choisi (ou l'adresse du compte vient de changer). Tu es bien connecté ici ; pour en choisir un nouveau, utilise « Oublié ? » sur la page de connexion.",
+    },
+    /* /auth/mot-de-passe-desactive : la même annonce, quand aucune vérification n'est demandée. */
+    mdpDesactive: {
+      metaTitre: "Mot de passe désactivé",
+      eyebrow: "Sécurité",
+      titre: "Ton mot de passe a été désactivé",
+      texte: "Par sécurité, nous l'avons désactivé : ton adresse a été confirmée dans un autre navigateur (ou sur un autre appareil) que celui où tu l'avais choisi, ou l'adresse du compte vient de changer. Tu es bien connecté.",
+      aide: "Pour te reconnecter plus tard : un lien de connexion par e-mail, ou un nouveau mot de passe, à choisir maintenant.",
+      choisir: "Choisir un nouveau mot de passe",
+      continuer: "Continuer",
     },
     /* /inscription après « Enregistrer » une estimation (`EstimationRappel`) */
     rappel: {
@@ -418,7 +457,7 @@ const fr = {
       titreB: "chantier fini.",
       parcours: [
         { verbe: "Estime", suite: "ton budget en 2 min, puis affine-le sur 200 postes — marge ±15\u00a0%" },
-        { verbe: "Choisis", suite: "matériaux & artisans, garde tes liens produits" },
+        { verbe: "Choisis", suite: "tes matériaux et qui fait quoi, garde tes liens produits" },
         { verbe: "Suis", suite: "l'avancement de ton chantier, poste par poste" },
         { verbe: "Pilote", suite: "ton budget et tous tes projets au même endroit" },
       ],
@@ -536,6 +575,7 @@ const en: Dict = {
     apercuLegende: "Example of a detailed report — 145 m² house in Bordeaux.",
     apercuAlt: "Example of a detailed AVYORA estimate report",
     aboAnnule: "Payment canceled — nothing was charged. You can pick up where you left off.",
+    gererAbo: "Manage my subscription",
     inclus: "Included in Pro",
     features: [
       "Detailed estimator — all 200 items, line by line",
@@ -706,6 +746,25 @@ const en: Dict = {
     tarifsInclus: "Included during the beta",
     tarifsDepuisEditeur: "You're coming from the floor plan editor. With an account, during the beta:",
     tarifsBasConnecte: "You can also ",
+    tarifsFaqTitre: "Frequently asked questions",
+    tarifsFaq: (reprise: string, plans: boolean) => [
+      {
+        q: `What happens on ${reprise} if I don't subscribe?`,
+        r: `Nothing is deleted: your projects and estimates stay in your account, and you can still open them. Your account goes back to free: the quick estimate stays open (a detailed project reopens in the quick estimate), but the detailed estimate, the PDF report and project tracking then require a subscription.${plans ? " All your floor plans stay viewable and editable; a free account is limited to one plan, so adding one beyond that will require a subscription." : ""} Your founding member badge stays.`,
+      },
+      {
+        q: "Do I need a credit card?",
+        r: "No. No payment method is requested during the beta, and nothing will be charged automatically: once AVYORA becomes paid, you subscribe only if you want to.",
+      },
+      {
+        q: "When will I know the founding member rate?",
+        r: "It will be announced before the beta ends. It's guaranteed for life to founding members, meaning accounts whose email address was confirmed during the beta.",
+      },
+      {
+        q: "Can I delete my account?",
+        r: "Yes, at any time, from My account: your account and everything in it (projects, estimates, floor plans) are then permanently deleted.",
+      },
+    ],
     cxBasLien: "Create your account, free during the beta",
   },
   auth: {
@@ -718,6 +777,7 @@ const en: Dict = {
     prenom: "First name",
     prenomPlaceholder: "Alex",
     mdpMin: "12 characters minimum",
+    mdpRegles: "At least 12 characters, including at least one letter and one number.",
     creerCompte: "Create my account",
     envoyerLien: "Send the link",
     nouveauMdp: "New password",
@@ -756,6 +816,7 @@ const en: Dict = {
       erreurs: {
         email: "This email address doesn't look valid. Please check it.",
         limite: "Too many requests for now. Use the last link you received, or wait a bit before requesting another one.",
+        saturation: "Our email service is very busy right now: try again in a few minutes.",
         envoi: "The email couldn't be sent. Try again in a moment, or use a password below.",
       },
       envoyeTitre: "Sent! Check your inbox",
@@ -795,6 +856,16 @@ const en: Dict = {
       continuer: "Yes, it's my account",
       pasMoi: "Not me: sign me out",
       pasMoiAide: "Not your address? Sign out: nothing you did here will be saved to it.",
+      mdpDesactive: "For security, your password has been disabled: your address was confirmed in a different browser from the one where it was chosen (or the account's address just changed). You're signed in here; to choose a new one, use “Forgot?” on the sign-in page.",
+    },
+    mdpDesactive: {
+      metaTitre: "Password disabled",
+      eyebrow: "Security",
+      titre: "Your password has been disabled",
+      texte: "For security, we disabled it: your address was confirmed in a different browser (or on another device) from the one where you chose it, or the account's address just changed. You're signed in.",
+      aide: "To sign in again later: a sign-in link by email, or a new password you can choose now.",
+      choisir: "Choose a new password",
+      continuer: "Continue",
     },
     rappel: {
       titre: "Your estimate is ready",
@@ -807,7 +878,7 @@ const en: Dict = {
       titreB: "finished project.",
       parcours: [
         { verbe: "Estimate", suite: "your budget in 2 min, then refine it across 200 items — ±15% margin" },
-        { verbe: "Choose", suite: "materials & contractors, keep your product links" },
+        { verbe: "Choose", suite: "your materials and who does what, keep your product links" },
         { verbe: "Track", suite: "your project's progress, item by item" },
         { verbe: "Manage", suite: "your budget and all your projects in one place" },
       ],

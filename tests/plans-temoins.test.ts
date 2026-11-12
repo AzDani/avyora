@@ -81,7 +81,7 @@ async function charger({ plans, locale, user = "anonyme", projets = [], menuOuve
     getLocale: async () => locale,
     getT: async () => ({ locale, t: dict(locale) }),
   }));
-  vi.doMock("@/lib/auth", () => ({ getUser: async () => UTILISATEURS[user], estPro, estAdmin }));
+  vi.doMock("@/lib/auth", () => ({ getUser: async () => UTILISATEURS[user], estPro, estAbonne: estPro, estAdmin }));
   const lignes = projets.map((k) => PROJETS[k]);
   vi.doMock("@/lib/data/projects", () => ({
     listProjets: async (archived: boolean) => lignes.filter((p) => p.archived === archived),

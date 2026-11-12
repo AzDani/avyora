@@ -31,6 +31,11 @@ export default function BoutonCheckout({ plan, nature }: { plan: string; nature?
         return;
       }
       setErreur(data?.error || t.boutons.indisponible);
+      // Déjà abonné (409) : le message, puis la page où gérer l'abonnement (portail Stripe), jamais un 2e paiement.
+      if (typeof data?.portail === "string" && data.portail.startsWith("/") && !data.portail.startsWith("//")) {
+        window.location.href = data.portail;
+        return;
+      }
     } catch {
       setErreur(t.boutons.reseau);
     } finally {

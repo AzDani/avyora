@@ -10,6 +10,8 @@ export type EvenementSecurite =
   | "connexion_reussie"
   | "connexion_echouee"
   | "inscription"
+  /** L'inscription au mot de passe refusée par Supabase. Payload : `code` de Supabase, `empreinte` de l'adresse. */
+  | "inscription_echouee"
   | "deconnexion"
   | "reset_demande"
   /**

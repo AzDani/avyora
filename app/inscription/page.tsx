@@ -50,7 +50,7 @@ export default async function InscriptionPage({
       bas={
         <>
           {t.inBasAvant}
-          <Link href={`/connexion${suite}`} className="font-medium text-brand-600 hover:underline">
+          <Link href={`/connexion${suite}`} className="py-3.5 font-medium text-brand-600 hover:underline">
             {t.inBasLien}
           </Link>
         </>

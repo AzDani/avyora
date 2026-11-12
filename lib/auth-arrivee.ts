@@ -5,8 +5,8 @@ import { journaliser } from "@/lib/audit";
 import { suivreServeur } from "@/lib/track-server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import {
-  MARQUE_COMPTE_CREE, MARQUE_MDP, MARQUE_MDP_EMAIL, consentementNouveautes, controleMdpAFaire, metadonneesEffacees, metadonneesInscription,
-  methodeNouveauCompte, type Demande,
+  MARQUE_COMPTE_CREE, MARQUE_MDP, MARQUE_MDP_EMAIL, consentementNouveautes, controleMdpAFaire, mdpDesactiveAAnnoncer, metadonneesEffacees,
+  metadonneesInscription, methodeNouveauCompte, type Demande,
 } from "@/lib/auth-lien";
 
 /**
@@ -64,15 +64,20 @@ export function motDePasseAleatoire(): string {
  *
  * Best-effort, comme `noterArrivee` : un échec ne bloque pas l'arrivée ; sans la marque, le contrôle est refait à
  * l'arrivée suivante (dans l'heure, ou tant que l'adresse diffère de l'adresse contrôlée).
+ *
+ * Renvoie `mdpDesactive` : le mot de passe vient d'être remplacé ET la personne pouvait en connaître un (inscrite au
+ * mot de passe, ou un changement d'adresse). Sans le lui dire, elle tapait ensuite le mot de passe choisi deux minutes
+ * plus tôt et lisait « incorrect » : l'appelant l'annonce (/auth/verifier ou /auth/mot-de-passe-desactive).
  */
 export async function controlerArrivee(
   supabase: SupabaseClient,
   user: User | null | undefined,
   demande: Demande | null,
   maintenant: number = Date.now(),
-): Promise<void> {
-  if (!user) return;
+): Promise<{ mdpDesactive: boolean }> {
+  if (!user) return { mdpDesactive: false };
   let abonne = user.app_metadata?.newsletter === true;
+  let mdpDesactive = false;
   try {
     const controle = controleMdpAFaire(user, maintenant);
     if (controle) {
@@ -82,6 +87,7 @@ export async function controlerArrivee(
         if (error) throw error;
         await supabase.auth.signOut({ scope: "others" });
         await journaliser("mot_de_passe_neutralise", { userId: user.id, ...(controle === "changement" ? { payload: { raison: "changement_adresse" } } : {}) });
+        mdpDesactive = mdpDesactiveAAnnoncer(controle, user);
       }
       const marque = controle === "noter" && user.app_metadata?.[MARQUE_MDP] ? {} : { [MARQUE_MDP]: new Date(maintenant).toISOString() };
       // Au changement d'adresse, le consentement donné pour l'ancienne ne vaut pas pour la nouvelle (`null` retire la clé).
@@ -106,4 +112,5 @@ export async function controlerArrivee(
   } catch {
     /* consentement non enregistré : la case reste à cocher plus tard */
   }
+  return { mdpDesactive };
 }
