@@ -8,6 +8,7 @@ import { dictRapport } from "@/lib/i18n/rapport";
 import { dict } from "@/lib/i18n/dictionaries";
 import { libelleTypeBien } from "@/lib/i18n/neuf-commun";
 import { euros, nombre, pourcent, nfDe } from "@/lib/i18n/nombres";
+import { accord } from "@/lib/i18n/pluriel";
 import { normaliserCles } from "@/lib/estimateur/identite";
 import { catT, catLigne } from "@/lib/estimateur/catalog-i18n";
 import { getLocale } from "@/lib/i18n/server";
@@ -180,7 +181,8 @@ export async function RapportPDF({
   const reg = regionCoef(ctx.codePostal);
   const moPct = Math.round((reg.mo - 1) * 100);
   const appart = ctx.type !== "Maison";
-  const dateStr = new Date().toLocaleDateString(nfDe(locale), { day: "numeric", month: "long", year: "numeric" });
+  // Heure de Paris : le rendu se fait sur le serveur (UTC), qui datait de la veille entre minuit et 1-2 h.
+  const dateStr = new Date().toLocaleDateString(nfDe(locale), { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Paris" });
   const zone = rapide.zones[reg.zone] ?? reg.zone;
   const finition = (ctx.finition && rapide.finitions[ctx.finition]?.label) || ctx.finition || "";
   const aleas = pourcent(locale, ctx.aleas || 0);
@@ -246,7 +248,7 @@ export async function RapportPDF({
             <span><b>{n.maisonNeuve}</b></span><span>·</span>
             <span><b className="num">{surf(maison.surface)}</b> {n.pdf.habitables}</span><span>·</span>
             <span>{n.niveauxCourt[maison.niveaux] ?? n.niveauxCourt.pp}</span><span>·</span>
-            <span><b className="num">{piecesNeuf(maison).chambres}</b> {piecesNeuf(maison).chambres > 1 ? n.chambres : n.chambre}</span><span>·</span>
+            <span><b className="num">{piecesNeuf(maison).chambres}</b> {accord(locale, piecesNeuf(maison).chambres, n.chambre, n.chambres)}</span><span>·</span>
             <span>{n.pdf.murs[maison.murs] ?? maison.murs}</span>
             {ctx.codePostal ? <><span>·</span><span className="num">{ctx.codePostal}</span></> : null}
           </div>

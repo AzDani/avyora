@@ -15,6 +15,7 @@ const TR = {
     descAvant: "Supprime définitivement ton compte ",
     descApres: " et toutes tes données (projets, estimations, dépenses, plans). ",
     irreversible: "Cette action est irréversible.",
+    abonnement: "Si tu as un abonnement Pro, il est résilié en même temps : plus aucun prélèvement.",
     bouton: "Supprimer mon compte",
     consigneAvant: "Tape ",
     consigneApres: " pour confirmer",
@@ -30,6 +31,7 @@ const TR = {
     descAvant: "Permanently delete your account ",
     descApres: " and all your data (projects, estimates, expenses, floor plans). ",
     irreversible: "This action is irreversible.",
+    abonnement: "If you have a Pro subscription, it's canceled at the same time: no further charges.",
     bouton: "Delete my account",
     consigneAvant: "Type ",
     consigneApres: " to confirm",
@@ -62,6 +64,7 @@ export default function CompteActions({ email }: { email: string }) {
         <p className="mt-1 text-sm text-muted">
           {s.descAvant}<span className="font-medium text-ink">{email}</span>{s.descApres}<strong>{s.irreversible}</strong>
         </p>
+        <p className="mt-1 text-sm text-muted">{s.abonnement}</p>
         {!ouvert ? (
           <button onClick={() => setOuvert(true)} className="btn btn-danger mt-3 py-2">
             {s.bouton}

@@ -24,3 +24,77 @@ export function priceIdForPlan(plan: PlanKey): string | undefined {
   };
   return map[plan];
 }
+
+/* ── Résiliation à la suppression du compte (RGPD) ─────────────────────────────────────────────── */
+
+/** Statuts d'un abonnement qui peut encore prélever : on le résilie. `canceled` et `incomplete_expired` : rien à faire. */
+const STATUTS_A_RESILIER = new Set(["active", "trialing", "past_due", "unpaid", "incomplete", "paused"]);
+
+/** Erreur Stripe « ressource inconnue » (abonnement ou client qui n'existe pas, ou plus, pour cette clé). */
+function ressourceAbsente(e: unknown): boolean {
+  return !!e && typeof e === "object" && (e as { code?: unknown }).code === "resource_missing";
+}
+
+/** Ce que la résiliation utilise de Stripe (le client réel, ou un faux dans les tests). */
+export type StripeResiliation = {
+  subscriptions: {
+    retrieve(id: string): Promise<{ id: string; status: string }>;
+    list(p: { customer: string; status: "all"; limit: number }): Promise<{ data: { id: string; status: string }[] }>;
+    search(p: { query: string; limit: number }): Promise<{ data: { id: string; status: string }[] }>;
+    cancel(id: string): Promise<{ id: string; status: string }>;
+  };
+};
+
+/**
+ * Résilie TOUS les abonnements Stripe encore actifs d'un utilisateur, avant la suppression de son compte :
+ * sans cela, un abonné Pro qui supprimait son compte continuait d'être prélevé (l'abonnement et ses
+ * identifiants Stripe disparaissaient avec l'utilisateur). Les abonnements sont retrouvés par
+ * `app_metadata` (posé par le webhook : stripe_subscription_id, stripe_customer_id) et par la métadonnée
+ * `supabase_user_id` des abonnements (au cas où le webhook n'aurait rien écrit). Résiliation immédiate :
+ * le compte n'existera plus.
+ *
+ * Renvoie les abonnements résiliés. JETTE si un abonnement connu n'a pas pu être résilié, ou si l'on ne
+ * peut pas vérifier alors que l'utilisateur a des traces Stripe : la suppression doit alors s'arrêter.
+ * Sans clé Stripe (`stripe` null) et sans aucune trace Stripe : rien à résilier.
+ */
+export async function resilierAbonnementsUtilisateur(
+  stripe: StripeResiliation | null,
+  user: { id: string; app_metadata?: Record<string, unknown> | null },
+): Promise<string[]> {
+  const meta = user.app_metadata ?? {};
+  const subId = typeof meta.stripe_subscription_id === "string" && meta.stripe_subscription_id ? meta.stripe_subscription_id : null;
+  const custId = typeof meta.stripe_customer_id === "string" && meta.stripe_customer_id ? meta.stripe_customer_id : null;
+  const traces = !!(subId || custId);
+  if (!stripe) {
+    if (traces) throw new Error("Stripe non configuré : impossible de résilier l'abonnement");
+    return [];
+  }
+
+  const aResilier = new Set<string>();
+  const garder = (s: { id: string; status: string }) => { if (STATUTS_A_RESILIER.has(s.status)) aResilier.add(s.id); };
+  // Un identifiant que Stripe ne connaît plus (client supprimé dans le tableau de bord, identifiant posé
+  // en mode test puis clé live…) : il n'y a rien à résilier. Sans ce cas, la suppression RGPD du compte
+  // restait bloquée pour toujours. Toute autre erreur (réseau, clé invalide) arrête la suppression.
+  const sauvAbsent = async (f: () => Promise<void>) => {
+    try { await f(); } catch (e) { if (!ressourceAbsente(e)) throw e; }
+  };
+  if (subId) await sauvAbsent(async () => garder(await stripe.subscriptions.retrieve(subId)));
+  if (custId) await sauvAbsent(async () => (await stripe.subscriptions.list({ customer: custId, status: "all", limit: 100 })).data.forEach(garder));
+  // Recherche par métadonnée : un filet. L'identifiant est un UUID (aucun guillemet possible dans la requête).
+  if (/^[0-9a-f-]{36}$/i.test(user.id)) {
+    try {
+      (await stripe.subscriptions.search({ query: `metadata['supabase_user_id']:'${user.id}'`, limit: 100 })).data.forEach(garder);
+    } catch (e) {
+      // Recherche indisponible : sans trace Stripe, l'utilisateur n'a jamais rien acheté ; avec des
+      // traces, la liste par client ci-dessus les couvre déjà.
+      console.warn("Recherche d'abonnements Stripe indisponible :", e);
+    }
+  }
+
+  const resilies: string[] = [];
+  for (const id of aResilier) {
+    await stripe.subscriptions.cancel(id); // une erreur ici arrête tout : le compte n'est pas supprimé
+    resilies.push(id);
+  }
+  return resilies;
+}

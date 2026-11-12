@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale } from "@/components/i18n/LangProvider";
@@ -9,6 +9,7 @@ import PastillesProjet from "@/components/PastillesProjet";
 import { euros as eurosLocale, nombre, pourcent } from "@/lib/i18n/nombres";
 import type { Locale } from "@/lib/i18n/config";
 import { clicPlan } from "@/lib/plans/mesure";
+import { casErreurApi, messageCasApi } from "@/lib/i18n/erreurs-api";
 
 const TR = {
   fr: {
@@ -25,12 +26,18 @@ const TR = {
     archiver: "Archiver",
     suppression: "Suppression…",
     confirmerSuppr: (n: number) => `Confirmer la suppression (${n}) ?`,
+    confirmerSupprCourt: (n: number) => `Confirmer (${n}) ?`,
+    echecSuppr: (k: number, n: number) => (n === 1 ? "Le projet n'a pas pu être supprimé." : `${k} projet${k > 1 ? "s" : ""} sur ${n} n'${k > 1 ? "ont" : "a"} pas pu être supprimé${k > 1 ? "s" : ""}.`),
+    echecArchive: (k: number, n: number) => (n === 1 ? "Le projet n'a pas pu être modifié." : `${k} projet${k > 1 ? "s" : ""} sur ${n} n'${k > 1 ? "ont" : "a"} pas pu être modifié${k > 1 ? "s" : ""}.`),
+    reessaie: "Réessaie.",
     supprimer: (n: number) => `Supprimer (${n})`,
     annuler: "Annuler",
     selectionner: "Sélectionner",
     nouveauProjet: "Nouveau projet",
     aucunProjet: "Aucun projet pour l'instant",
     aucunProjetSub: "Crée ton premier projet et obtiens une estimation en 2 minutes.",
+    aucunActif: "Aucun projet actif",
+    aucunActifSub: "Tes projets archivés sont plus bas. Tu peux en désarchiver un ou démarrer un nouveau projet.",
     estimerPremier: "Estimer mon premier projet",
     projetsArchives: "Projets archivés",
   },
@@ -48,12 +55,18 @@ const TR = {
     archiver: "Archive",
     suppression: "Deleting…",
     confirmerSuppr: (n: number) => `Confirm deletion (${n})?`,
+    confirmerSupprCourt: (n: number) => `Confirm (${n})?`,
+    echecSuppr: (k: number, n: number) => (n === 1 ? "The project couldn't be deleted." : `${k} of ${n} projects couldn't be deleted.`),
+    echecArchive: (k: number, n: number) => (n === 1 ? "The project couldn't be updated." : `${k} of ${n} projects couldn't be updated.`),
+    reessaie: "Try again.",
     supprimer: (n: number) => `Delete (${n})`,
     annuler: "Cancel",
     selectionner: "Select",
     nouveauProjet: "New project",
     aucunProjet: "No projects yet",
     aucunProjetSub: "Create your first project and get an estimate in 2 minutes.",
+    aucunActif: "No active projects",
+    aucunActifSub: "Your archived projects are below. You can unarchive one or start a new project.",
     estimerPremier: "Estimate my first project",
     projetsArchives: "Archived projects",
   },
@@ -158,13 +171,26 @@ export default function ListeProjets({
   const n = dictNeufCommun(locale);
   const [selection, setSelection] = useState<Set<number | string>>(new Set());
   const [modeSelection, setModeSelection] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState<"" | "suppr" | "archive">("");
   const [confirmSuppr, setConfirmSuppr] = useState(false);
+  const [erreur, setErreur] = useState<string | null>(null);
 
   const archiveIds = new Set(archives.map((a) => a.id));
   const toutArchive = selection.size > 0 && [...selection].every((id) => archiveIds.has(id));
+  const aDesProjets = projets.length + archives.length > 0;
+
+  // La confirmation de suppression vaut pour CETTE sélection, quelques secondes : elle repart de zéro
+  // quand la sélection change, à l'annulation et au bout de 5 s (sinon, après une annulation, la
+  // suppression suivante partait en un seul clic).
+  useEffect(() => {
+    if (!confirmSuppr) return;
+    const h = setTimeout(() => setConfirmSuppr(false), 5000);
+    return () => clearTimeout(h);
+  }, [confirmSuppr]);
 
   function toggle(id: number | string) {
+    setConfirmSuppr(false);
+    setErreur(null);
     setSelection((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -173,33 +199,46 @@ export default function ListeProjets({
     });
   }
 
+  /**
+   * Une action sur chaque projet sélectionné. Chaque échec (réseau, 403, 500…) est compté : les projets
+   * en échec restent sélectionnés et un message dit combien ; les boutons sont toujours réactivés.
+   */
+  async function surSelection(action: "suppr" | "archive", requete: (id: number | string) => Promise<Response>, echec: (k: number, n: number) => string) {
+    const ids = [...selection];
+    setBusy(action);
+    setErreur(null);
+    try {
+      const res = await Promise.allSettled(ids.map((id) => requete(id)));
+      const rates = ids.filter((_, i) => { const r = res[i]; return r.status === "rejected" || !r.value.ok; });
+      if (rates.length) {
+        const premier = res.find((r) => r.status === "rejected" || !r.value.ok);
+        const cas = casErreurApi(premier?.status === "fulfilled" ? premier.value.status : 0);
+        setErreur(`${echec(rates.length, ids.length)} ${cas ? messageCasApi(locale, cas) : s.reessaie}`);
+        setSelection(new Set(rates));
+      } else {
+        setSelection(new Set());
+        setModeSelection(false);
+      }
+      if (rates.length < ids.length) router.refresh();
+    } finally {
+      setConfirmSuppr(false);
+      setBusy("");
+    }
+  }
+
   // Suppression groupée : confirmation EN LIGNE (2 clics), pas de window.confirm (bloqué en iframe sandbox).
   async function supprimerSelection() {
     if (!confirmSuppr) { setConfirmSuppr(true); return; }
-    setBusy(true);
-    await Promise.all([...selection].map((id) => fetch(`/api/projects/${id}`, { method: "DELETE" })));
-    setSelection(new Set());
-    setModeSelection(false);
-    setConfirmSuppr(false);
-    setBusy(false);
-    router.refresh();
+    await surSelection("suppr", (id) => fetch(`/api/projects/${id}`, { method: "DELETE" }), s.echecSuppr);
   }
 
   async function archiverSelection(archived: boolean) {
-    setBusy(true);
-    await Promise.all(
-      [...selection].map((id) =>
-        fetch(`/api/projects/${id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ archived }),
-        })
-      )
-    );
-    setSelection(new Set());
-    setModeSelection(false);
-    setBusy(false);
-    router.refresh();
+    await surSelection("archive", (id) =>
+      fetch(`/api/projects/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ archived }),
+      }), s.echecArchive);
   }
 
   function Carte({ p }: { p: ProjetCarte }) {
@@ -328,34 +367,45 @@ export default function ListeProjets({
         </Link>
       )}
 
-      <div className="mb-4 flex items-center justify-between gap-3">
+      {/* flex-wrap : sur mobile, les boutons passent à la ligne au lieu de faire défiler la page. */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold text-ink">
           {s.mesProjets} <span className="ml-1 text-sm font-normal text-faint">{projets.length}</span>
         </h2>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
           {modeSelection && selection.size > 0 && (
             <>
               <button
                 onClick={() => archiverSelection(!toutArchive)}
-                disabled={busy}
+                disabled={!!busy}
                 className="btn btn-outline py-1.5 text-[13px]"
               >
-                {toutArchive ? s.desarchiver : s.archiver} ({selection.size})
+                {busy === "archive" ? "…" : <>{toutArchive ? s.desarchiver : s.archiver} ({selection.size})</>}
               </button>
-              <button onClick={supprimerSelection} disabled={busy} className="btn btn-danger py-1.5 text-[13px]">
-                {busy ? s.suppression : confirmSuppr ? s.confirmerSuppr(selection.size) : s.supprimer(selection.size)}
+              <button onClick={supprimerSelection} disabled={!!busy} className="btn btn-danger py-1.5 text-[13px]">
+                {busy === "suppr" ? s.suppression : confirmSuppr ? (
+                  <>
+                    <span className="sm:hidden">{s.confirmerSupprCourt(selection.size)}</span>
+                    <span className="hidden sm:inline">{s.confirmerSuppr(selection.size)}</span>
+                  </>
+                ) : s.supprimer(selection.size)}
               </button>
             </>
           )}
-          <button
-            onClick={() => {
-              setModeSelection(!modeSelection);
-              setSelection(new Set());
-            }}
-            className="btn btn-ghost py-1.5 text-[13px]"
-          >
-            {modeSelection ? s.annuler : s.selectionner}
-          </button>
+          {aDesProjets && (
+            <button
+              onClick={() => {
+                setModeSelection(!modeSelection);
+                setSelection(new Set());
+                setConfirmSuppr(false);
+                setErreur(null);
+              }}
+              disabled={!!busy}
+              className="btn btn-ghost py-1.5 text-[13px]"
+            >
+              {modeSelection ? s.annuler : s.selectionner}
+            </button>
+          )}
           {!modeSelection && (
             <Link href="/projets/nouveau" className="btn btn-primary py-1.5 text-[13px]">
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -367,17 +417,24 @@ export default function ListeProjets({
         </div>
       </div>
 
+      {erreur && (
+        <p role="alert" className="mb-4 rounded-field border border-danger/25 bg-danger-soft px-3.5 py-2.5 text-sm text-danger">
+          {erreur}
+        </p>
+      )}
+
       {projets.length === 0 ? (
         <div className="card flex flex-col items-center gap-3 px-6 py-12 text-center">
           <span className="grid h-12 w-12 place-items-center rounded-2xl bg-brand-50 text-brand-600">
             <IconBien type="maison" />
           </span>
+          {/* Des projets archivés existent : ce n'est pas un « premier projet ». */}
           <div>
-            <p className="font-semibold text-ink">{s.aucunProjet}</p>
-            <p className="mt-1 text-sm text-muted">{s.aucunProjetSub}</p>
+            <p className="font-semibold text-ink">{archives.length > 0 ? s.aucunActif : s.aucunProjet}</p>
+            <p className="mt-1 text-sm text-muted">{archives.length > 0 ? s.aucunActifSub : s.aucunProjetSub}</p>
           </div>
           <Link href="/projets/nouveau" className="btn btn-primary mt-1 py-2.5">
-            {s.estimerPremier}
+            {archives.length > 0 ? s.nouveauProjet : s.estimerPremier}
           </Link>
           {plans && plans.total === 0 && (
             <Link href="/logiciel-plan-maison" className="text-sm font-medium text-brand-700 hover:underline" data-dessiner-plan="" {...clicPlan("projets")}>
@@ -396,7 +453,7 @@ export default function ListeProjets({
       )}
 
       {archives.length > 0 && (
-        <details className="group mt-6">
+        <details className="group mt-6" open={projets.length === 0 || undefined}>
           <summary className="inline-flex cursor-pointer select-none items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-ink">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="transition-transform group-open:rotate-90" aria-hidden="true">
               <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />

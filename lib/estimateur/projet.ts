@@ -19,7 +19,17 @@ export type ProjetEstim = {
   nature: "reno" | "neuf";
 };
 
-type Rep = { v?: string; ctx?: Ctx; sel?: Selection; statuts?: Record<string, number>; custom?: unknown };
+type Rep = { v?: string; ctx?: Ctx; sel?: Selection; statuts?: Record<string, number>; custom?: unknown; codePostal?: string };
+
+/**
+ * Le contexte du moteur d'un projet enregistré : celui des réponses, avec le code postal rangé HORS de
+ * `ctx` par les anciens projets (le coefficient régional en dépend). La fiche, le budget réel et le PDF
+ * le reconstruisent ainsi : la liste et le portefeuille aussi, pour afficher UN SEUL total (D8).
+ */
+export function ctxProjet(r: Rep): Ctx {
+  const ctx = r.ctx as Ctx;
+  return { ...ctx, codePostal: ctx.codePostal ?? r.codePostal };
+}
 
 /** Lignes personnalisées qui comptent : des objets, cochées et validées (pas en cours d'édition). */
 export function persoValidees(custom: unknown): CustomLine[] {
@@ -50,7 +60,8 @@ export function avancementProjet(reponses: unknown): Avancement {
   const vide: Avancement = { total: 0, done: 0, prog: 0, pct: 0, statut: "estimation" };
   const r = reponses as Rep;
   if (!estFormatEstimateur(r)) return vide;
-  const dv = buildDevis(catalogueDe(r.ctx), r.ctx as Ctx, normaliserCles(r.sel));
+  const ctx = ctxProjet(r);
+  const dv = buildDevis(catalogueDe(ctx), ctx, normaliserCles(r.sel));
   const statuts = normaliserCles(r.statuts);
   const total = dv.lignes.length;
   let done = 0, prog = 0;
@@ -73,8 +84,8 @@ export function estFormatEstimateur(reponses: unknown): boolean {
 export function estimationProjet(reponses: unknown): ProjetEstim | null {
   const r = reponses as Rep;
   if (!estFormatEstimateur(r)) return null;
-  const ctx = r.ctx as Ctx;
-  const dv = buildDevis(catalogueDe(ctx), ctx, r.sel || {});
+  const ctx = ctxProjet(r);
+  const dv = buildDevis(catalogueDe(ctx), ctx, normaliserCles(r.sel || {}));
   const surface = ctx.surface || 0;
   // Lignes personnalisées comprises, rénovation comme neuf : le même total que la fiche et le PDF.
   const t = totauxAvecPerso(dv.totaux, r.custom, ctx.aleas);

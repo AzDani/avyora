@@ -133,6 +133,7 @@ const fr = {
   erreurs: {
     cp: "Renseigne un code postal (5 chiffres) dans « Ton projet ».",
     surface: "Renseigne la surface habitable.",
+    postes: "Coche au moins un poste (ou ajoute une ligne perso) avant d'enregistrer.",
     save: "Enregistrement impossible.",
     reseau: "Réseau indisponible. Réessaie.",
   },
@@ -338,6 +339,7 @@ const en: typeof fr = {
   erreurs: {
     cp: "Enter a ZIP code (5 digits) in “Your project”.",
     surface: "Enter the living area.",
+    postes: "Check at least one line item (or add a custom line) before saving.",
     save: "Couldn't save.",
     reseau: "Network unavailable. Try again.",
   },

@@ -92,19 +92,23 @@ export default function RenameTitre({ id, nom }: { id: string; nom: string }) {
     );
   }
 
+  // Le titre reste un vrai h1 (hors du bouton : un bouton rend ses enfants « présentationnels »), et le
+  // crayon est un bouton à part, nommé. Visible en permanence sur tactile (pas de survol), au survol ou
+  // au focus clavier à partir de `sm`.
   return (
-    <button
-      type="button"
-      onClick={() => setEdit(true)}
-      className="group mt-2 flex items-center gap-2 text-left"
-      title={s.renommerProjet}
-    >
+    <div className="group mt-2 flex items-center gap-2">
       <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">{nom}</h1>
-      <span className="shrink-0 text-faint opacity-0 transition-opacity group-hover:opacity-100" aria-hidden="true">
-        <svg width="17" height="17" viewBox="0 0 16 16" fill="none">
+      <button
+        type="button"
+        onClick={() => setEdit(true)}
+        className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-faint opacity-70 transition-opacity hover:bg-surface-2 hover:text-ink sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+        title={s.renommerProjet}
+        aria-label={s.renommerProjet}
+      >
+        <svg width="17" height="17" viewBox="0 0 16 16" fill="none" aria-hidden="true">
           <path d="M11.5 2.5a1.4 1.4 0 0 1 2 2L6 12l-2.7.7L4 10l7.5-7.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
         </svg>
-      </span>
-    </button>
+      </button>
+    </div>
   );
 }

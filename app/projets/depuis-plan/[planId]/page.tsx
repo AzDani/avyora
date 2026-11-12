@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { FEATURES } from "@/lib/features";
 import { getUser, estPro } from "@/lib/auth";
@@ -17,6 +18,12 @@ type Props = {
   params: Promise<{ planId: string }>;
   searchParams: Promise<{ [k: string]: string | string[] | undefined }>;
 };
+
+/** Titre d'onglet « Estimation détaillée · AVYORA » (gabarit du layout). Page privée : jamais indexée. */
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  return { title: dictPlans(locale).estimation.eyebrow, robots: { index: false, follow: false } };
+}
 
 const un = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 

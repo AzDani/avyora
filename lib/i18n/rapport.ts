@@ -65,9 +65,10 @@ const en: typeof fr = {
   ref: "Ref.",
   bien: "The property",
   habitables: "m² of living area",
-  niveaux: (n: number) => (n > 1 ? "stories" : "story"),
-  pieces: (n: number) => (n > 1 ? "rooms" : "room"),
-  sdb: (n: number) => (n > 1 ? "bathrooms" : "bathroom"),
+  // Anglais : singulier pour 1 seulement (« 0 rooms »).
+  niveaux: (n: number) => (n === 1 ? "story" : "stories"),
+  pieces: (n: number) => (n === 1 ? "room" : "rooms"),
+  sdb: (n: number) => (n === 1 ? "bathroom" : "bathrooms"),
   mainOeuvre: "labor",
   heroK: "Estimate incl. tax · ±15% margin",
   ttc: "incl. tax",

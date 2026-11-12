@@ -166,12 +166,24 @@ describe("Enregistrement", () => {
     expect(manqueReno(base(), "45000")).toBeNull();
   });
 
+  it("avec la sélection : au moins un poste chiffré ou une ligne perso validée, sinon « postes » (la fiche affichait « 0 – 0 € »)", () => {
+    expect(manqueReno(base(), "45000", { sel: {} })).toBe("postes");
+    const perso = { id: "p1", lot: CATALOG[0].c, nom: "Reprise", prix: 300, unite: "u", qte: 1, tva: 10, on: true };
+    expect(manqueReno(base(), "45000", { sel: {}, custom: [perso] })).toBeNull();
+    expect(manqueReno(base(), "45000", { sel: {}, custom: [{ ...perso, draft: true }] })).toBe("postes");
+    expect(manqueReno(base(), "45000", { sel: {}, custom: [{ ...perso, on: false }] })).toBe("postes");
+    // Un poste coché suffit ; le code postal et la surface passent avant.
+    const sel = cocherReno(base(), {}, lot("Maçonnerie"), tache("Maçonnerie", "Chape traditionnelle"));
+    expect(manqueReno(base(), "45000", { sel })).toBeNull();
+    expect(manqueReno(base(), "", { sel: {} })).toBe("cp");
+  });
+
   it("nom du projet : type et surface, ou les pièces ciblées ; 110 caractères au plus ; mots de la langue", () => {
     expect(nomProjetReno({ ...base(), type: "T3", surface: 65 })).toBe("Rénovation — T3 65 m²");
     const p = surfaceExemplaire(ajouterExemplaire(basculerEspace(choisirPerimetre(base(), "piece"), "sdb"), "chambre"), "chambre", 1, 10);
-    expect(nomProjetReno(p)).toBe("Rénovation — 2 Chambre + Salle de bain · 28 m²");
+    expect(nomProjetReno(p)).toBe("Rénovation — Chambre ×2 + Salle de bain · 28 m²");
     const en = { projet: "Renovation", type: (t: string) => (t === "Maison" ? "House" : t), espace: (n: string) => ({ Chambre: "Bedroom", "Salle de bain": "Bathroom" } as Record<string, string>)[n] ?? n };
-    expect(nomProjetReno(p, en)).toBe("Renovation — 2 Bedroom + Bathroom · 28 m²");
+    expect(nomProjetReno(p, en)).toBe("Renovation — Bedroom ×2 + Bathroom · 28 m²");
     expect(nomProjetReno({ ...base(), surface: 80 }, en)).toBe("Renovation — House 80 m²");
     const long = { ...base(), perimetre: "piece" as const, espaces: { chambre: Array(40).fill(12), sdb: [6, 6], cuisine: [12], sejour: [30], combles: [40], autre: [20], suite: [20] } };
     expect(nomProjetReno(long).length).toBe(110);
@@ -214,6 +226,6 @@ describe("Textes du détaillé (`dictDetail`)", () => {
     const B = dictDetail("en").bien;
     const mots = { projet: dictDetail("en").projet, type: (t: string) => B.types[t] ?? t, espace: (n: string) => B.espaces[n] ?? n };
     expect(nomProjetReno({ ...base(), type: "T3", surface: 65 }, mots)).toBe("Renovation — 2-bedroom 65 m²");
-    expect(nomProjetReno(ajouterExemplaire(choisirPerimetre(base(), "piece"), "chambre"), mots)).toBe("Renovation — 2 Bedroom · 24 m²");
+    expect(nomProjetReno(ajouterExemplaire(choisirPerimetre(base(), "piece"), "chambre"), mots)).toBe("Renovation — Bedroom ×2 · 24 m²");
   });
 });
