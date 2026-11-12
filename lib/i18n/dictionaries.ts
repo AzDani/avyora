@@ -330,7 +330,6 @@ const fr = {
     seConnecter: "Se connecter",
     prenom: "Prénom",
     prenomPlaceholder: "Camille",
-    mdpMin: "12 caractères minimum",
     /* Les règles COMPLÈTES du mot de passe (lib/password.ts), sous le champ : le navigateur les fait respecter avant l'envoi. */
     mdpRegles: "12 caractères minimum, dont au moins une lettre et un chiffre.",
     accepteAvant: "J'accepte les ",
@@ -420,14 +419,14 @@ const fr = {
       pasMoi: "Ce n'est pas moi : me déconnecter",
       pasMoiAide: "Cette adresse n'est pas la tienne ? Déconnecte-toi : rien de ce que tu as fait ici n'y sera rangé.",
       /* ?mdp=desactive : le mot de passe vient d'être remplacé par sécurité (lib/auth-arrivee.ts). */
-      mdpDesactive: "Par sécurité, comme tu as confirmé ton adresse sur un autre appareil, ton mot de passe a été désactivé. Tu es bien connecté ici ; pour en choisir un nouveau, utilise « Mot de passe oublié ».",
+      mdpDesactive: "Par sécurité, ton mot de passe a été désactivé : ton adresse a été confirmée dans un autre navigateur que celui où il avait été choisi (ou l'adresse du compte vient de changer). Tu es bien connecté ici ; pour en choisir un nouveau, utilise « Oublié ? » sur la page de connexion.",
     },
     /* /auth/mot-de-passe-desactive : la même annonce, quand aucune vérification n'est demandée. */
     mdpDesactive: {
       metaTitre: "Mot de passe désactivé",
       eyebrow: "Sécurité",
       titre: "Ton mot de passe a été désactivé",
-      texte: "Par sécurité, comme ton adresse a été confirmée sur un autre appareil que celui où tu as choisi ton mot de passe, nous l'avons désactivé. Tu es bien connecté.",
+      texte: "Par sécurité, nous l'avons désactivé : ton adresse a été confirmée dans un autre navigateur (ou sur un autre appareil) que celui où tu l'avais choisi, ou l'adresse du compte vient de changer. Tu es bien connecté.",
       aide: "Pour te reconnecter plus tard : un lien de connexion par e-mail, ou un nouveau mot de passe, à choisir maintenant.",
       choisir: "Choisir un nouveau mot de passe",
       continuer: "Continuer",
@@ -754,7 +753,6 @@ const en: Dict = {
     seConnecter: "Sign in",
     prenom: "First name",
     prenomPlaceholder: "Alex",
-    mdpMin: "12 characters minimum",
     mdpRegles: "At least 12 characters, including at least one letter and one number.",
     accepteAvant: "I accept the ",
     cguLien: "terms of use",
@@ -836,13 +834,13 @@ const en: Dict = {
       continuer: "Yes, it's my account",
       pasMoi: "Not me: sign me out",
       pasMoiAide: "Not your address? Sign out: nothing you did here will be saved to it.",
-      mdpDesactive: "For security, since you confirmed your address on another device, your password has been disabled. You're signed in here; to choose a new one, use “Forgot password”.",
+      mdpDesactive: "For security, your password has been disabled: your address was confirmed in a different browser from the one where it was chosen (or the account's address just changed). You're signed in here; to choose a new one, use “Forgot?” on the sign-in page.",
     },
     mdpDesactive: {
       metaTitre: "Password disabled",
       eyebrow: "Security",
       titre: "Your password has been disabled",
-      texte: "For security, since your address was confirmed on a different device from the one where you chose your password, we disabled it. You're signed in.",
+      texte: "For security, we disabled it: your address was confirmed in a different browser (or on another device) from the one where you chose it, or the account's address just changed. You're signed in.",
       aide: "To sign in again later: a sign-in link by email, or a new password you can choose now.",
       choisir: "Choose a new password",
       continuer: "Continue",

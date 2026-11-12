@@ -84,7 +84,8 @@ export function LoginForm({ next, defaultEmail }: { next?: string; defaultEmail?
           <Link href="/reset" className="-my-3.5 py-3.5 text-xs text-brand-600 hover:underline">{t.oublie}</Link>
         </div>
         {/* Pas de « •••••••• » en indication : il faisait croire à un mot de passe déjà enregistré. */}
-        <input id="password" name="password" type="password" autoComplete="current-password" required className="input" />
+        {/* `relative` : le champ passe au-dessus de la zone tactile de « Oublié ? », qui déborde de quelques pixels sur lui. */}
+        <input id="password" name="password" type="password" autoComplete="current-password" required className="input relative" />
       </div>
       <label htmlFor="remember" className="flex min-h-11 cursor-pointer items-center gap-2 text-sm text-muted">
         <input
