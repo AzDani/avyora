@@ -60,7 +60,15 @@ export type EvenementAvyora =
    * plan…). Émis à l'ARRIVÉE sur /inscription, une fois par session et par source : un seul point de mesure
    * pour les liens des pages et les redirections serveur. Props : `source`, liste fermée `SOURCES_BETA`.
    */
-  | "vers_inscription";
+  | "vers_inscription"
+  /**
+   * Visite guidée d'un estimateur (`lib/visite.ts`). Props fermées : `estimateur` (rapideReno | rapideNeuf |
+   * detailleReno | detailleNeuf), `etape` (atteinte ; 0 = « Non merci » à l'invitation), `etapes`, `origine`
+   * (invitation | bouton). Jamais une réponse du formulaire.
+   */
+  | "visite_debut"
+  | "visite_fin"
+  | "visite_passee";
 
 type Props = Record<string, string | number | boolean | null>;
 

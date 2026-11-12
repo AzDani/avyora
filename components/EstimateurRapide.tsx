@@ -37,6 +37,8 @@ import { useChampEnFaute } from "@/components/estimateur/champ-en-faute";
 import type { SourceSeo } from "@/lib/seo-source";
 import { lienInscriptionBeta } from "@/lib/beta";
 import { euroApres, euroAvant, signePct } from "@/lib/i18n/nombres";
+import VisiteGuidee, { type EtapeVisite } from "@/components/visite/VisiteGuidee";
+import { dictVisite } from "@/lib/i18n/visite";
 
 type Mode = "bien" | "pieces";
 // Pièces disponibles (mode « une ou plusieurs pièces ») : emoji, libellé, surface par défaut.
@@ -267,6 +269,26 @@ export default function EstimateurRapide({
     return () => window.clearTimeout(id);
   }, [estimationReelle, mode, type, ampleur]);
   const ampName = ampCard(ampleur).label.toLowerCase();
+
+  /**
+   * Visite guidée (bulles ancrées aux `data-visite` ci-dessous). La barre de prix, cachée au téléphone tant qu'il n'y
+   * a pas de prix, est sautée ; « Enregistre ou affine » entoure ses boutons et, au téléphone, le bouton « Détail »
+   * posé sous le formulaire (seul, tant que la barre est cachée). Formulaire
+   * arrivé rempli (page de prix, projet rouvert, réponses rendues au retour) : pas d'invitation, le bouton seulement.
+   */
+  const etapesVisite = useMemo<EtapeVisite[]>(() => {
+    const tv = dictVisite(locale).rapideReno;
+    return [
+      { id: "quoi", cible: ["rapide-bien-titre", "rapide-bien", "rapide-pieces"], ...tv.quoi },
+      { id: "champs", cible: "rapide-champs", ...tv.champs },
+      { id: "ampleur", cible: "rapide-ampleur", ...tv.ampleur },
+      { id: "finition", cible: "rapide-finition", ...tv.finition },
+      { id: "qui", cible: "rapide-qui", ...tv.qui },
+      { id: "budget", cible: "rapide-budget", place: ["haut"], ...tv.budget },
+      { id: "suite", cible: ["rapide-actions", "rapide-affiner-m"], place: ["haut"], ...tv.suite },
+    ];
+  }, [locale]);
+  const prerempli = !!edit || retour || !!initial?.piece || !!initial?.cp || initial?.surface != null;
   /** Aperçu d'une carte : le €/m² d'un réglage, sur la surface chiffrée (0 sans saisie). */
   function prixM2De(p: ReturnType<typeof buildSel>): number {
     const s = totalSurface > 0 ? surfaceChiffree(p.ctx) : 0;
@@ -419,6 +441,7 @@ export default function EstimateurRapide({
     <>
       <style dangerouslySetInnerHTML={{ __html: RAPIDE_CSS + (edit?.detaille || edit?.piecesPerdues ? AVERT_CSS : "") }} />
       <div className="av-rapide">
+        <VisiteGuidee id="rapideReno" etapes={etapesVisite} prerempli={prerempli} />
         {(edit?.detaille || edit?.piecesPerdues) && (
           <div className="avert" role="note">
             <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8 15 14H1L8 1.8Z" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" /><path d="M8 6.2v3.6M8 11.6v.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
@@ -428,8 +451,8 @@ export default function EstimateurRapide({
         <div className="q">
           <h2 className="qlbl"><span className="n" aria-hidden="true">1</span>{t.step1q}</h2>
 
-          <div className="glbl">{t.bienEntier}</div>
-          <div className="seg" role="group" aria-label={t.bienEntier} style={{ marginBottom: 14 }}>
+          <div className="glbl" data-visite="rapide-bien-titre">{t.bienEntier}</div>
+          <div className="seg" role="group" aria-label={t.bienEntier} data-visite="rapide-bien" style={{ marginBottom: 14 }}>
             {(["Maison", "Appartement"] as TypeBien[]).map((tb) => {
               const on = affiche && mode === "bien" && type === tb;
               return <button type="button" key={tb} className={on ? "on" : ""} aria-pressed={on} onClick={() => { setDemarre(true); setBienChoisi(true); setMode("bien"); setType(tb); }}>{tb === "Maison" ? t.maison : t.appart}</button>;
@@ -437,7 +460,7 @@ export default function EstimateurRapide({
           </div>
 
           <div className="glbl">{t.uneOuPlusieurs}</div>
-          <div className="rgrid" role="group" aria-label={t.uneOuPlusieurs}>
+          <div className="rgrid" role="group" aria-label={t.uneOuPlusieurs} data-visite="rapide-pieces">
             {ROOMS.map((r) => {
               const n = countByRoom(r.key);
               return (
@@ -478,7 +501,7 @@ export default function EstimateurRapide({
             );
           })()}
 
-          <div className="fields">
+          <div className="fields" data-visite="rapide-champs">
             {mode === "bien" && (
               <div className="fld">
                 <label htmlFor={ID_CHAMP.surface}>{t.surfaceLabel}</label>
@@ -507,7 +530,7 @@ export default function EstimateurRapide({
 
         <div className="q">
           <h2 className="qlbl"><span className="n" aria-hidden="true">2</span>{t.step2}</h2>
-          <div className="cards" role="group" aria-label={t.step2}>
+          <div className="cards" role="group" aria-label={t.step2} data-visite="rapide-ampleur">
             {AMPLEURS.map((a, i) => {
               const al = ampCard(a.v);
               return (
@@ -527,7 +550,7 @@ export default function EstimateurRapide({
 
         <div className="q">
           <h2 className="qlbl"><span className="n" aria-hidden="true">3</span>{t.step3}</h2>
-          <div className="fins" role="group" aria-label={t.step3}>
+          <div className="fins" role="group" aria-label={t.step3} data-visite="rapide-finition">
             {FINITIONS.map((f) => {
               const fi = t.finitions[f.v];
               return (
@@ -548,7 +571,7 @@ export default function EstimateurRapide({
 
         <div className="q">
           <h2 className="qlbl"><span className="n" aria-hidden="true">4</span>{t.step4}</h2>
-          <div className="quis" role="group" aria-label={t.step4}>
+          <div className="quis" role="group" aria-label={t.step4} data-visite="rapide-qui">
             {QUIS.map((q) => {
               const qi = t.quis[q.v];
               const price = m2ByQui[q.v] || 0;
@@ -579,10 +602,10 @@ export default function EstimateurRapide({
         <p className="intro">{isPro ? t.intro : t.introGratuit}</p>
         {/* Téléphone : « Détail poste par poste » vit ici, sous le formulaire ; la barre collante ne garde
             que le prix et « Enregistrer », sur deux lignes au plus (elle couvrait un quart de l'écran). */}
-        {!locked && <div className="affiner-m"><button type="button" className="ghost-m" onClick={affiner}>{libAffiner}</button></div>}
+        {!locked && <div className="affiner-m" data-visite="rapide-affiner-m"><button type="button" className="ghost-m" onClick={affiner}>{libAffiner}</button></div>}
       </div>
 
-      <div className={"av-rapide-live av-reno-live" + (locked ? " lk" : "") + (!locked && !valid && !erreur ? " vide" : "")}>
+      <div className={"av-rapide-live av-reno-live" + (locked ? " lk" : "") + (!locked && !valid && !erreur ? " vide" : "")} data-visite="rapide-budget">
         <div className="in">
           {locked ? (
             <>
@@ -591,7 +614,7 @@ export default function EstimateurRapide({
                 <div className="big">{t.lockedBig1}{nbPieces}{nbPieces > 1 ? t.lockedBig2Plur : t.lockedBig2Sing}</div>
                 <div className="sub">{t.lockedSub}</div>
               </div>
-              <div className="btns">
+              <div className="btns" data-visite="rapide-actions">
                 {versInscription
                   ? <button type="button" className="cta" onClick={versInscriptionMultiPieces}>{t.lockedCta}</button>
                   : <Link className="cta" href="/tarifs?source=affiner-reno">{t.lockedCta}</Link>}
@@ -605,7 +628,7 @@ export default function EstimateurRapide({
                 <div className="big">{valid ? <>{euroAvant(locale)}<CountUp value={lo} nf={nf} />{euroApres(locale)}<span style={{ opacity: .55 }}> – </span>{euroAvant(locale)}<CountUp value={hi} nf={nf} />{euroApres(locale)}</> : "—"}</div>
                 <div className="sub">{valid ? <>≈ {euroAvant(locale)}<CountUp value={m2} nf={nf} />{`${euroApres(locale)}/m² · `}{ampName} · {locale === "en" ? "±15%" : "±15\u00a0%"}{regLabel ? <> · {regLabel}</> : ""}</> : !affiche ? t.step1q : (mode === "pieces" ? t.ajoutePiece : t.renseigneSurface)}</div>
               </div>
-              <div className="btns">
+              <div className="btns" data-visite="rapide-actions">
                 <button type="button" className="ghost" onClick={affiner}>{libAffiner}</button>
                 <button type="button" className="cta" onClick={enregistrer} disabled={saving}>{saving ? t.enregistrement : libEnregistrer}</button>
               </div>
