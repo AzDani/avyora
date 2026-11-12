@@ -25,7 +25,7 @@ import { POSTE_NEUF } from "@/lib/estimateur/catalogue-neuf";
 import { etatParDefaut, choisirNeuf } from "@/lib/estimateur/detaille-neuf";
 import { postesAffichesReno, cochesDuLotReno, toutOuvertReno, basculerToutReno } from "@/lib/estimateur/detaille-reno";
 import { catLigne, catLigneCourte, catT } from "@/lib/estimateur/catalog-i18n";
-import { nombre, pourcent, signePct } from "@/lib/i18n/nombres";
+import { euros, nombre, pourcent, signePct } from "@/lib/i18n/nombres";
 import { dict } from "@/lib/i18n/dictionaries";
 import { dictNeuf } from "@/lib/i18n/neuf";
 import { dictDetail } from "@/lib/i18n/detail";
@@ -183,7 +183,7 @@ describe("F1 (2) · fiche d'un rapide neuf : « Tes postes les plus lourds »", 
       LOCALE.v = l;
       const { default: ResultatRapideNeuf } = await import("@/components/neuf/ResultatRapideNeuf");
       const h = await serveur(ResultatRapideNeuf({ reponses: reponses as never, projectId: "p9", isPro: true }));
-      const eur = (v: number) => Math.round(v).toLocaleString(l === "en" ? "en-US" : "fr-FR") + " €";
+      const eur = (v: number) => euros(l, v); // « 92 000 € » / « €92,000 »
       for (const li of tri.slice(0, 5)) {
         const tk = taches.get(li.cle);
         const court = catLigneCourte(l, li.nom, li.cle, tk);
@@ -341,7 +341,7 @@ describe("F1 (8) · anglais : mêmes formulations des deux côtés", () => {
     expect(dict("en").rapide.liveLabel).toBe("Quick estimate · incl. VAT");
     expect(dictNeuf("en").saisie.liveLabel).toBe("New build · incl. VAT");
     expect(dictNeuf("en").detail.ttc).toBe(dictDetail("en").live.ttc);
-    expect(dictDetail("en").live.ttc).toBe("€ incl. VAT");
+    expect(dictDetail("en").live.ttc).toBe("incl. VAT"); // l'euro devant le total (« €92,000 incl. VAT »)
     expect(dict("en").rapide.pageBack).toBe("← Choose the type of estimate");
     expect(dictNeuf("en").saisie.pageBack).toBe(dict("en").rapide.pageBack);
     expect(dictNeuf("en").rapide.marge).toBe("±15% margin");
@@ -360,7 +360,8 @@ describe("F1 (9) · « Poste le plus lourd » : le montant en chiffres à chasse
       const sel: Selection = { [key("Maçonnerie", "Chape traditionnelle")]: { on: true }, [key("Plomberie", "WC")]: { on: true } };
       const h = renderToStaticMarkup(createElement(LangProvider, { locale: l, children: createElement(EstimationResultat, { reponses: { ctx, sel } }) }));
       const carte = h.slice(h.indexOf(l === "fr" ? "Poste le plus lourd" : "Biggest line item"));
-      expect(carte).toMatch(/<p class="sub"><span class="num">[0-9\u202f,]+ €<\/span> · \d+(\u00a0%|%) /);
+      // L'euro selon la langue : « 1 234 € » en français, « €1,234 » en anglais (lib/i18n/nombres.ts).
+      expect(carte).toMatch(l === "fr" ? /<p class="sub"><span class="num">[0-9\u202f]+ €<\/span> · \d+\u00a0% / : /<p class="sub"><span class="num">€[0-9,]+<\/span> · \d+% /);
     });
   }
 });

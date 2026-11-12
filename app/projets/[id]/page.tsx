@@ -10,6 +10,7 @@ import { regionLabel, estNeuf, type Ctx, type Selection, type Ampleur, type QuiR
 import RenameTitre from "@/components/RenameTitre";
 import TelechargerRapport from "@/components/TelechargerRapport";
 import { getLocale } from "@/lib/i18n/server";
+import { META_EN, metaSelonLangue } from "@/lib/i18n/meta";
 import { libelleTypeBien } from "@/lib/i18n/neuf-commun";
 import PastillesProjet from "@/components/PastillesProjet";
 import { dict } from "@/lib/i18n/dictionaries";
@@ -19,6 +20,10 @@ import PlanRelie from "@/components/plans/PlanRelie";
 import { listDepenses } from "@/lib/data/depenses";
 import { lireSaisie } from "@/lib/investissement/saisie";
 
+/** Sans titre propre : celui du layout en français ; traduit pour un visiteur qui a choisi EN (lib/i18n/meta.ts). */
+export async function generateMetadata() {
+  return metaSelonLangue(await getLocale(), {}, META_EN.defaut);
+}
 export const dynamic = "force-dynamic";
 
 /** Le plan dont ce projet est né (C8). Interrupteur éteint : aucune requête. Une panne ne casse jamais la fiche. */

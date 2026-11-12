@@ -1,18 +1,25 @@
 import Link from "next/link";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { ResetRequestForm } from "@/components/auth/forms";
+import { getT } from "@/lib/i18n/server";
+import { metaSelonLangue } from "@/lib/i18n/meta";
 
-export const metadata = { title: "Mot de passe oublié", robots: { index: false, follow: true } };
+/** Dans la langue de la page, comme /connexion (revue anglais, constats 86 et 121). */
+export async function generateMetadata() {
+  const { locale, t } = await getT();
+  return metaSelonLangue(locale, { title: t.auth.reset.metaTitre, robots: { index: false, follow: true } }, { title: t.auth.reset.metaTitre });
+}
 
-export default function ResetPage() {
+export default async function ResetPage() {
+  const t = (await getT()).t.auth.reset;
   return (
     <AuthShell
-      eyebrow="Réinitialisation"
-      titre="Mot de passe oublié"
-      sousTitre="Entre ton email : on t'envoie un lien pour définir un nouveau mot de passe."
+      eyebrow={t.eyebrow}
+      titre={t.titre}
+      sousTitre={t.sous}
       bas={
         <Link href="/connexion" className="font-medium text-brand-600 hover:underline">
-          ← Retour à la connexion
+          {t.retour}
         </Link>
       }
     >

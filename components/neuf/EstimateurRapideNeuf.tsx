@@ -60,7 +60,7 @@ import BilanRapideNeuf from "./BilanRapideNeuf";
 import { NEUF_CSS } from "./neuf-styles";
 import { mesurerPlan, mesureEstimationNeuf } from "@/lib/plans/mesure";
 import { lienInscriptionBeta } from "@/lib/beta";
-import { signePct } from "@/lib/i18n/nombres";
+import { euroApres, euroAvant, signePct } from "@/lib/i18n/nombres";
 
 const FINITIONS: { v: Finition; lvl: number }[] = [
   { v: "eco", lvl: 1 },
@@ -134,6 +134,8 @@ export default function EstimateurRapideNeuf({
   const carteQui = (v: QuiRealise) => ({ ...T.rapide.quis[v], desc: s.quis[v]?.desc ?? T.rapide.quis[v].desc });
   const versInscription = beta && !isPro;
   const nf = locale === "en" ? "en-US" : "fr-FR";
+  /** Après le prix au m² d'une carte : « … € / m² » en français, « €…/m² » en anglais (lib/i18n/nombres.ts). */
+  const parM2 = locale === "en" ? "/m²" : " / m²";
 
   const [R, setR] = useState<ReponsesRapideNeuf>(() => ({
     surface: initialR?.surface ?? (!edit ? initial?.surface : undefined) ?? 100,
@@ -470,7 +472,7 @@ export default function EstimateurRapideNeuf({
                   <span className="eye">{fi.eye}</span>
                   <span className="t">{fi.label}</span>
                   <span className="d">{fi.desc}</span>
-                  <span className="amt">≈ <b>{(m2ByFin[f.v] || 0).toLocaleString(nf)} €</b> / m²</span>
+                  <span className="amt">≈ <b>{euroAvant(locale) + (m2ByFin[f.v] || 0).toLocaleString(nf) + euroApres(locale)}</b>{parM2}</span>
                 </button>
               );
             })}
@@ -495,7 +497,7 @@ export default function EstimateurRapideNeuf({
                   <span className="t">{qi.label}</span>
                   <span className="d">{qi.desc}</span>
                   <span className="amt">
-                    <span className="p">≈ <b>{price.toLocaleString(nf)} €</b> / m²</span>
+                    <span className="p">≈ <b>{euroAvant(locale) + price.toLocaleString(nf) + euroApres(locale)}</b>{parM2}</span>
                     {pct > 0 && <span className="save">−{pct}{signePct(locale)}</span>}
                   </span>
                 </button>
@@ -552,8 +554,8 @@ export default function EstimateurRapideNeuf({
         <div className="in">
           <div>
             <div className="lbl">{s.liveLabel}</div>
-            <div className="big">{valid ? <><CountUp value={lo} nf={nf} /> €<span style={{ opacity: .55 }}> – </span><CountUp value={hi} nf={nf} /> €</> : "—"}</div>
-            <div className="sub">{valid ? <>≈ <CountUp value={m2} nf={nf} /> {s.parM2} · {locale === "en" ? "±15%" : "±15\u00a0%"}{regLabel ? <> · {regLabel}</> : ""}</> : !affiche ? s.attente : s.errSurface}</div>
+            <div className="big">{valid ? <>{euroAvant(locale)}<CountUp value={lo} nf={nf} />{euroApres(locale)}<span style={{ opacity: .55 }}> – </span>{euroAvant(locale)}<CountUp value={hi} nf={nf} />{euroApres(locale)}</> : "—"}</div>
+            <div className="sub">{valid ? <>≈ {euroAvant(locale)}<CountUp value={m2} nf={nf} />{locale === "en" ? "" : " "}{s.parM2} · {locale === "en" ? "±15%" : "±15\u00a0%"}{regLabel ? <> · {regLabel}</> : ""}</> : !affiche ? s.attente : s.errSurface}</div>
           </div>
           <div className="btns">
             <button type="button" className="ghost" onClick={affiner}>{isPro ? s.affiner : s.affinerPro}</button>

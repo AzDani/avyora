@@ -10,7 +10,7 @@ import type { ReactNode } from "react";
 import { CountUp } from "./CountUp";
 import { fmt } from "./partage";
 import { useLocale } from "@/components/i18n/LangProvider";
-import { nfDe } from "@/lib/i18n/nombres";
+import { euroAvant, nfDe } from "@/lib/i18n/nombres";
 
 export interface TextesBarreLive {
   totalK: string; ttc: string; budget: (b: string) => string; depasse: (x: string) => string; reste: (x: string) => string;
@@ -35,7 +35,7 @@ export function BarreLive({ total, budget, m2, vue, onVue, onEnregistrer, saving
       <div className="live-in">
         <div className="totb">
           <div className="lbl">{t.totalK}</div>
-          <div className="big"><CountUp value={total} nf={nfDe(locale)} /><small>{t.ttc}</small></div>
+          <div className="big">{euroAvant(locale)}<CountUp value={total} nf={nfDe(locale)} /><small>{t.ttc}</small></div>
           {m2}
         </div>
         <div className="jauge">

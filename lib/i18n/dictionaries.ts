@@ -20,6 +20,8 @@ const fr = {
     /* Éditeur de plan (FEATURES.plans) : l'onglet et sa pastille. */
     plan: "Plan 3D",
     planPastille: "Gratuit",
+    /* Le nom de la navigation de l'en-tête, pour les lecteurs d'écran (aria-label). */
+    navPrincipale: "Navigation principale",
   },
   footer: {
     /* Le lien d'évitement (premier lien de la page) et le libellé de la navigation du pied de page. */
@@ -41,7 +43,26 @@ const fr = {
     tagline:
       "Estimations indicatives basées sur le référentiel de prix AVYORA (France 2026). À confirmer par des devis d'artisans.",
   },
-  langue: { label: "Langue", fr: "Français", en: "English" },
+  langue: {
+    label: "Langue", fr: "Français", en: "English",
+    /* Le bouton EN d'une page qui n'existe qu'en français (légales, guides, prix : pré-rendues, components/i18n/LangSwitch.tsx). */
+    francaisSeulement: "Page disponible en français uniquement",
+  },
+  /* La page 404 (app/not-found.tsx) */
+  introuvable: {
+    titre: "Page introuvable",
+    texte: "La page que tu cherches n'existe pas ou a été déplacée.",
+    accueil: "Retour à l'accueil",
+    estimer: "Estimer un projet",
+  },
+  /* L'écran d'erreur (app/error.tsx) */
+  erreur: {
+    titre: "Une erreur est survenue",
+    texte: "Quelque chose s'est mal passé de notre côté. Tu peux réessayer — tes données sont en sécurité.",
+    reessayer: "Réessayer",
+    accueil: "Retour à l'accueil",
+    ref: "Réf.",
+  },
   choix: {
     eyebrow: "Nouvelle estimation",
     titre: "Comment veux-tu estimer ?",
@@ -417,6 +438,25 @@ const fr = {
     },
     metaInscription: "Créer un compte",
     metaConnexion: "Connexion",
+    /* Mot de passe oublié : /reset (la demande), /reset/definir (le nouveau mot de passe) et leurs messages
+       (lib/actions/auth.ts, `requestReset` et `updatePassword`). */
+    reset: {
+      metaTitre: "Mot de passe oublié",
+      eyebrow: "Réinitialisation",
+      titre: "Mot de passe oublié",
+      sous: "Entre ton email : on t'envoie un lien pour définir un nouveau mot de passe.",
+      retour: "← Retour à la connexion",
+      definirMetaTitre: "Nouveau mot de passe",
+      definirEyebrow: "Presque fini",
+      definirTitre: "Définis ton mot de passe",
+      definirSous: "Choisis un nouveau mot de passe pour sécuriser ton compte.",
+      emailVide: "Renseigne ton email.",
+      emailInvalide: "Cette adresse e-mail n'est pas valide. Vérifie-la.",
+      trop: "Trop de tentatives. Patiente une minute avant de réessayer.",
+      envoye: "Si un compte existe pour cet email, tu recevras un lien pour définir ton mot de passe.",
+      differents: "Les deux mots de passe ne correspondent pas.",
+      lienExpire: "Lien expiré ou invalide. Redemande un email de réinitialisation.",
+    },
   },
 };
 
@@ -433,6 +473,7 @@ const en: Dict = {
     menu: "Menu",
     plan: "3D plan",
     planPastille: "Free",
+    navPrincipale: "Main navigation",
   },
   footer: {
     allerAuContenu: "Skip to content",
@@ -453,7 +494,23 @@ const en: Dict = {
     tagline:
       "Indicative estimates based on the AVYORA price reference (France 2026). Confirm with contractor quotes.",
   },
-  langue: { label: "Language", fr: "Français", en: "English" },
+  langue: {
+    label: "Language", fr: "Français", en: "English",
+    francaisSeulement: "Page available in French only",
+  },
+  introuvable: {
+    titre: "Page not found",
+    texte: "The page you're looking for doesn't exist or has been moved.",
+    accueil: "Back to home",
+    estimer: "Estimate a project",
+  },
+  erreur: {
+    titre: "Something went wrong",
+    texte: "Something went wrong on our end. You can try again — your data is safe.",
+    reessayer: "Try again",
+    accueil: "Back to home",
+    ref: "Ref.",
+  },
   choix: {
     eyebrow: "New estimate",
     titre: "How do you want to estimate?",
@@ -798,6 +855,23 @@ const en: Dict = {
     },
     metaInscription: "Create an account",
     metaConnexion: "Sign in",
+    reset: {
+      metaTitre: "Forgot password",
+      eyebrow: "Reset",
+      titre: "Forgot your password?",
+      sous: "Enter your email: we'll send you a link to set a new password.",
+      retour: "← Back to sign in",
+      definirMetaTitre: "New password",
+      definirEyebrow: "Almost done",
+      definirTitre: "Set your password",
+      definirSous: "Choose a new password to secure your account.",
+      emailVide: "Enter your email.",
+      emailInvalide: "This email address isn't valid. Please check it.",
+      trop: "Too many attempts. Wait a minute before trying again.",
+      envoye: "If an account exists for this email, you'll receive a link to set your password.",
+      differents: "The two passwords don't match.",
+      lienExpire: "Link expired or invalid. Request a new reset email.",
+    },
   },
 };
 

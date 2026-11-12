@@ -1,6 +1,7 @@
 import Link from "next/link";
 import EstimateurRapide from "@/components/EstimateurRapide";
-import { getT } from "@/lib/i18n/server";
+import { getLocale, getT } from "@/lib/i18n/server";
+import { META_EN, metaSelonLangue } from "@/lib/i18n/meta";
 import { getUser, estPro } from "@/lib/auth";
 import { betaActive } from "@/lib/beta";
 import { FEATURES } from "@/lib/features";
@@ -12,12 +13,16 @@ const siteUrl =
 import type { PieceKey } from "@/lib/estimateur";
 import { sourceSeoValide } from "@/lib/seo-source";
 
-export const metadata = {
+const META = {
   title: "Estimation travaux gratuite — budget rénovation en 2 minutes",
   description:
     "Calcule gratuitement le budget de tes travaux de rénovation : 4 questions, une fourchette chiffrée ajustée à ton code postal. Sans inscription.",
   alternates: { canonical: "/estimation-travaux" },
 };
+/** En français pour les robots (sans cookie av-lang) ; en anglais pour un visiteur qui a choisi EN (lib/i18n/meta.ts). */
+export async function generateMetadata() {
+  return metaSelonLangue(await getLocale(), META, META_EN.estimationTravaux);
+}
 export const dynamic = "force-dynamic";
 
 // Estimation rapide (< 2 min), gratuite. « Affiner » ouvre le détaillé (/detaille).

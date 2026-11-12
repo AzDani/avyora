@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
-import { getT } from "@/lib/i18n/server";
+import { getLocale, getT } from "@/lib/i18n/server";
+import { META_EN, metaSelonLangue } from "@/lib/i18n/meta";
 import { FEATURES } from "@/lib/features";
 import { betaActive } from "@/lib/beta";
 import { accueilBeta } from "@/lib/accueil-beta";
 
-// Le canonical de l'accueil vit ici (retiré du layout racine où il contaminait toutes les pages).
-export const metadata: Metadata = { alternates: { canonical: "/" } };
+// Le canonical de l'accueil vit ici (retiré du layout racine où il contaminait toutes les pages). En anglais (cookie
+// av-lang, jamais chez un robot), le titre et l'aperçu de partage suivent la page (lib/i18n/meta.ts).
+const META: Metadata = { alternates: { canonical: "/" } };
+export async function generateMetadata(): Promise<Metadata> {
+  return metaSelonLangue(await getLocale(), META, META_EN.accueil);
+}
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??

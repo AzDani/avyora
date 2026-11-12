@@ -10,7 +10,7 @@ import { catT } from "@/lib/estimateur/catalog-i18n";
 import { getLocale } from "@/lib/i18n/server";
 import { dict } from "@/lib/i18n/dictionaries";
 import { betaActive } from "@/lib/beta";
-import { pourcent } from "@/lib/i18n/nombres";
+import { euroApres, euroAvant, euros, eurosM2, pourcent } from "@/lib/i18n/nombres";
 
 /**
  * Page résultat de l'ESTIMATION RAPIDE : récap des réponses + fourchette, mais PAS le détail
@@ -25,7 +25,6 @@ import { pourcent } from "@/lib/i18n/nombres";
  */
 type Reponses = { ctx?: Ctx; sel?: Selection; codePostal?: string; ampleur?: Ampleur; qui?: QuiRealise };
 
-const euro = (n: number, nf: string) => Math.round(n).toLocaleString(nf) + " €";
 const r100 = (n: number) => Math.round(n / 100) * 100;
 const SEG_COLORS = ["#4f46e5", "#7c3aed", "#a78bfa", "#c4b5fd", "#dcdeec"];
 
@@ -78,7 +77,6 @@ export default async function ResultatRapide({
   const ctx = (reponses.ctx ?? {}) as Ctx;
   const sel = normaliserCles((reponses.sel ?? {}) as Selection);
   const cp = reponses.codePostal ?? ctx.codePostal ?? "";
-  const nf = locale === "en" ? "en-US" : "fr-FR";
 
   const dv = buildDevis(CATALOG, ctx, sel);
   const ttc = dv.totaux.ttc;
@@ -105,8 +103,8 @@ export default async function ResultatRapide({
   const totalLots = isPro ? lots.reduce((s, l) => s + l.ttc, 0) || 1 : 100;
   const segs = isPro ? [...top.map((l) => l.ttc), autresTtc].filter((v) => v > 0) : [35, 24, 16, 12, 13];
   const legende: { k: string; nom: ReactNode; v: string }[] = isPro
-    ? top.map((l) => ({ k: l.corps, nom: catT(locale, "corps", l.corps), v: euro(l.ttc, nf) }))
-    : [62, 48, 55, 40].map((w, i) => ({ k: "f" + i, nom: <span className="fake" style={{ width: w + "%" }} />, v: "••• €" }));
+    ? top.map((l) => ({ k: l.corps, nom: catT(locale, "corps", l.corps), v: euros(locale, l.ttc) }))
+    : [62, 48, 55, 40].map((w, i) => ({ k: "f" + i, nom: <span className="fake" style={{ width: w + "%" }} />, v: euroAvant(locale) + "•••" + euroApres(locale) }));
   let off = 25;
   const circles = segs.map((v, i) => {
     const len = (v / totalLots) * 100;
@@ -142,7 +140,7 @@ export default async function ResultatRapide({
         {legende.map((l, i) => (
           <div className="lrow" key={l.k}><span className="dot" style={{ background: SEG_COLORS[i] }} /><span className="nm">{l.nom}</span> <span className="lv">{l.v}</span></div>
         ))}
-        <div className="lrow"><span className="dot" style={{ background: "#dcdeec" }} /><span className="nm">{L.others}</span> <span className="lv">{isPro && autresTtc > 0 ? euro(autresTtc, nf) : "…"}</span></div>
+        <div className="lrow"><span className="dot" style={{ background: "#dcdeec" }} /><span className="nm">{L.others}</span> <span className="lv">{isPro && autresTtc > 0 ? euros(locale, autresTtc) : "…"}</span></div>
       </div>
     </div>
   );
@@ -159,10 +157,10 @@ export default async function ResultatRapide({
 
       <div className="hero">
         <div className="lbl">{L.budget}</div>
-        <div className="big">{euro(lo, nf)} <small>–</small> {euro(hi, nf)}</div>
+        <div className="big">{euros(locale, lo)} <small>–</small> {euros(locale, hi)}</div>
         <div className="meta">
           {/* « marge ±15 % » / « ±15% margin » : l'ordre de chaque langue, le même partout (F1). */}
-          ≈ <b className="mono">{m2.toLocaleString(nf)} €/m²</b> · {ampLabel?.toLowerCase()} · {locale === "en" ? <><b>±15%</b> {L.marge}</> : <>{L.marge} <b>±15&nbsp;%</b></>}
+          ≈ <b className="mono">{eurosM2(locale, m2)}</b> · {ampLabel?.toLowerCase()} · {locale === "en" ? <><b>±15%</b> {L.marge}</> : <>{L.marge} <b>±15&nbsp;%</b></>}
           {cp.length >= 2 && reg.zone ? <> · <b>{zone}</b>{moPct ? ` (${moPct > 0 ? "+" : ""}${pourcent(locale, moPct, 0)} ${L.labor})` : ""}</> : null}
         </div>
       </div>

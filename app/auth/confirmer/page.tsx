@@ -5,8 +5,13 @@ import { BoutonConfirmer } from "@/components/auth/ConfirmerLien";
 import { confirmerLien } from "@/lib/actions/auth";
 import { COOKIE_LIEN, lireLienEnAttente } from "@/lib/auth-lien";
 import { getT } from "@/lib/i18n/server";
+import { metaSelonLangue } from "@/lib/i18n/meta";
 
-export const metadata = { title: "Lien d'accès", robots: { index: false, follow: false } };
+/** Le titre d'onglet suit la langue, comme la page (revue anglais, constat 86). */
+export async function generateMetadata() {
+  const { locale, t } = await getT();
+  return metaSelonLangue(locale, { title: t.auth.confirmer.eyebrow, robots: { index: false, follow: false } }, { title: t.auth.confirmer.eyebrow });
+}
 
 /**
  * Le lien d'accès au format token_hash, juste avant d'entrer (B2). /auth/confirm a rangé le lien dans un cookie et

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { dictNeufCommun, libelleTypeBien } from "@/lib/i18n/neuf-commun";
 import PastillesProjet from "@/components/PastillesProjet";
-import { euros as eurosLocale, nombre, pourcent } from "@/lib/i18n/nombres";
+import { euros as eurosLocale, euroApres, euroAvant, nombre, pourcent } from "@/lib/i18n/nombres";
 import type { Locale } from "@/lib/i18n/config";
 import { clicPlan } from "@/lib/plans/mesure";
 
@@ -92,7 +92,7 @@ export type PlansListe = {
   textes: { pastille: string; bande: string; bandeSous: string; dessiner: string };
 };
 
-/** Français : le format monétaire d'avant, au caractère près. Anglais : « 92,000 € », comme le rapide (N14). */
+/** Français : le format monétaire d'avant, au caractère près. Anglais : « €92,000 », comme tout le produit (lib/i18n/nombres.ts). */
 function euros(n: number, locale: Locale): string {
   if (locale === "en") return eurosLocale(locale, n);
   return new Intl.NumberFormat("fr-FR", {
@@ -270,7 +270,7 @@ export default function ListeProjets({
             </p>
             {p.surface > 0 && (
               <p className="mt-0.5 text-[11.5px] text-muted">
-                ≈ <b className="data font-semibold text-ink">{nombre(locale, p.eurM2)}</b> €/m²
+                ≈ {euroAvant(locale)}<b className="data font-semibold text-ink">{nombre(locale, p.eurM2)}</b>{`${euroApres(locale)}/m²`}
               </p>
             )}
           </div>

@@ -4,9 +4,10 @@ import type { User } from "@supabase/supabase-js";
 import BoutonAbo from "@/components/BoutonAbo";
 import BoutonCheckout from "@/components/BoutonCheckout";
 import { getUser, estPro, estAbonne } from "@/lib/auth";
-import { getT } from "@/lib/i18n/server";
+import { getLocale, getT } from "@/lib/i18n/server";
 import { dict, type Dict } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
+import { META_EN, metaSelonLangue } from "@/lib/i18n/meta";
 import { SuiviVue } from "@/components/SuiviVue";
 import { FEATURES } from "@/lib/features";
 import { lireNature, lireSourceNature, natureDeSource, lienDetaillePro, type NatureProjet } from "@/lib/nature-projet";
@@ -19,11 +20,19 @@ const META: Metadata = {
   alternates: { canonical: "/tarifs" },
 };
 
-/** Hors bêta, la metadata d'avant ; pendant la bêta gratuite (lib/beta.ts), elle dit la bêta (en français, règle SEO du site). */
+/**
+ * Hors bêta, la metadata d'avant ; pendant la bêta gratuite (lib/beta.ts), elle dit la bêta. En français pour les
+ * robots (règle SEO du site : ils n'envoient pas le cookie av-lang) ; en anglais pour un visiteur qui a choisi EN,
+ * comme la page (lib/i18n/meta.ts).
+ */
 export async function generateMetadata(): Promise<Metadata> {
-  if (!betaActive()) return META;
-  const b = dict("fr").beta;
-  return { ...META, title: b.tarifsMetaTitre, description: b.tarifsMetaDescription(libellesBeta("fr").fin) };
+  const locale = await getLocale();
+  const metaBeta = (l: Locale) => {
+    const b = dict(l).beta;
+    return { title: b.tarifsMetaTitre, description: b.tarifsMetaDescription(libellesBeta(l).fin) };
+  };
+  if (!betaActive()) return metaSelonLangue(locale, META, META_EN.tarifs);
+  return metaSelonLangue(locale, { ...META, ...metaBeta("fr") }, { ...metaBeta("en"), path: META_EN.tarifs.path });
 }
 export const dynamic = "force-dynamic";
 

@@ -393,7 +393,8 @@ const en: typeof fr = {
     introGratuit: "Indicative estimate, ±15% margin. The trade-by-trade, line-by-line detail is part of Pro.",
     liveLabel: "New build · incl. VAT",
     attente: "Single-story or two-story? Answer to see your budget",
-    parM2: "€/m²",
+    /* L'euro se met devant le montant en anglais (« €…/m² », lib/i18n/nombres.ts) : ici, seulement l'unité. */
+    parM2: "/m²",
     affiner: "Refine my house",
     affinerPro: "Trade-by-trade detail — Pro",
     enregistrer: "Save",
@@ -496,7 +497,7 @@ const en: typeof fr = {
     guideTva: "New build: 20% VAT on all works, no reduced rate. A tax or an insurance premium carries no VAT.",
     reset: "Reset everything",
     totalK: "Estimated total",
-    ttc: "€ incl. VAT",
+    ttc: "incl. VAT",
     parM2: "/ m² of living area",
     parM2Court: "/m²",
     dontFrais: "incl. fees without VAT",

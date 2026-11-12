@@ -35,7 +35,7 @@ import { RAPIDE_CSS } from "@/components/estimateur/rapide-styles";
 import { useChampEnFaute } from "@/components/estimateur/champ-en-faute";
 import type { SourceSeo } from "@/lib/seo-source";
 import { lienInscriptionBeta } from "@/lib/beta";
-import { signePct } from "@/lib/i18n/nombres";
+import { euroApres, euroAvant, signePct } from "@/lib/i18n/nombres";
 
 type Mode = "bien" | "pieces";
 // Pièces disponibles (mode « une ou plusieurs pièces ») : emoji, libellé, surface par défaut.
@@ -167,6 +167,8 @@ export default function EstimateurRapide({
   const libEnregistrer = isPro || edit ? t.enregistrerCompte : t.enregistrer;
   const locale = useLocale();
   const nf = locale === "en" ? "en-US" : "fr-FR";
+  /** Après le prix au m² d'une carte : « … € / m² » en français, « €…/m² » en anglais (lib/i18n/nombres.ts). */
+  const parM2 = locale === "en" ? "/m²" : " / m²";
   // Libellé d'ampleur traduit ("Réno totale" pour la lourde en appartement).
   const ampL = (v: Ampleur) => (v === "lourde" && type !== "Maison" ? t.ampleurs.lourdeAppart : t.ampleurs[v]);
   const ampCard = (v: Ampleur) => (mode === "pieces" ? t.piecesAmp[v] : ampL(v));
@@ -450,7 +452,7 @@ export default function EstimateurRapide({
                   </span>
                   <span className="t">{al.label}</span>
                   <span className="d">{al.desc}</span>
-                  <span className="amt">{locked ? <span className="lock">{t.proLock}</span> : <>≈ <b>{(m2ByAmp[a.v] || 0).toLocaleString(nf)} €</b> / m²</>}</span>
+                  <span className="amt">{locked ? <span className="lock">{t.proLock}</span> : <>≈ <b>{euroAvant(locale) + (m2ByAmp[a.v] || 0).toLocaleString(nf) + euroApres(locale)}</b>{parM2}</>}</span>
                 </button>
               );
             })}
@@ -471,7 +473,7 @@ export default function EstimateurRapide({
                 <span className="eye">{fi.eye}</span>
                 <span className="t">{fi.label}</span>
                 <span className="d">{fi.desc}</span>
-                <span className="amt">{locked ? <span className="lock">{t.proLock}</span> : <>≈ <b>{(m2ByFin[f.v] || 0).toLocaleString(nf)} €</b> / m²</>}</span>
+                <span className="amt">{locked ? <span className="lock">{t.proLock}</span> : <>≈ <b>{euroAvant(locale) + (m2ByFin[f.v] || 0).toLocaleString(nf) + euroApres(locale)}</b>{parM2}</>}</span>
               </button>
               );
             })}
@@ -496,7 +498,7 @@ export default function EstimateurRapide({
                   <span className="t">{qi.label}</span>
                   <span className="d">{qi.desc}</span>
                   <span className="amt">
-                    {locked ? <span className="lock">{t.proLock}</span> : <span className="p">≈ <b>{price.toLocaleString(nf)} €</b> / m²</span>}
+                    {locked ? <span className="lock">{t.proLock}</span> : <span className="p">≈ <b>{euroAvant(locale) + price.toLocaleString(nf) + euroApres(locale)}</b>{parM2}</span>}
                     {!locked && pct > 0 && <span className="save">−{pct}{signePct(locale)}</span>}
                   </span>
                 </button>
@@ -528,8 +530,8 @@ export default function EstimateurRapide({
             <>
               <div>
                 <div className="lbl">{t.liveLabel}</div>
-                <div className="big">{valid ? <><CountUp value={lo} nf={nf} /> €<span style={{ opacity: .55 }}> – </span><CountUp value={hi} nf={nf} /> €</> : "—"}</div>
-                <div className="sub">{valid ? <>≈ <CountUp value={m2} nf={nf} /> €/m² · {ampName} · {locale === "en" ? "±15%" : "±15\u00a0%"}{regLabel ? <> · {regLabel}</> : ""}</> : !affiche ? t.step1q : (mode === "pieces" ? t.ajoutePiece : t.renseigneSurface)}</div>
+                <div className="big">{valid ? <>{euroAvant(locale)}<CountUp value={lo} nf={nf} />{euroApres(locale)}<span style={{ opacity: .55 }}> – </span>{euroAvant(locale)}<CountUp value={hi} nf={nf} />{euroApres(locale)}</> : "—"}</div>
+                <div className="sub">{valid ? <>≈ {euroAvant(locale)}<CountUp value={m2} nf={nf} />{`${euroApres(locale)}/m² · `}{ampName} · {locale === "en" ? "±15%" : "±15\u00a0%"}{regLabel ? <> · {regLabel}</> : ""}</> : !affiche ? t.step1q : (mode === "pieces" ? t.ajoutePiece : t.renseigneSurface)}</div>
               </div>
               <div className="btns">
                 <button type="button" className="ghost" onClick={affiner}>{libAffiner}</button>
