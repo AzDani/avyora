@@ -282,7 +282,7 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
         piece={pieceEstimateur}
         surface={pieceEstimateur ? p.surface : undefined}
         libelle={`Estimer ${p.nom} à ${v.nom}`}
-        sousTitre={`Gratuit, sans inscription — l'estimation part déjà ajustée à la main-d'œuvre de ${v.nom}.`}
+        sousTitre={`Gratuit, sans compte pour une pièce ou tout le bien — l'estimation part déjà ajustée à la main-d'œuvre de ${v.nom}.`}
       />
 
       <h2>Ce qui est compris</h2>

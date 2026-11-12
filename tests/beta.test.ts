@@ -122,7 +122,7 @@ describe("lib/beta : la date de fin", () => {
     expect(libellesBeta("en")).toEqual({ fin: "December 31, 2026", reprise: "January 1, 2027" });
     bêta("allumée", "2027-03-31");
     expect(libellesBeta("fr")).toMatchObject({ fin: "31 mars 2027", reprise: "1er avril 2027" });
-    // Plus de constante du tarif fondateur : la promesse est sans chiffre.
+    // Plus de constante du tarif fondateur : il n'y a plus de tarif fondateur du tout (décision de Dani du 12/11/2026).
     expect(Object.keys(libellesBeta("fr"))).not.toContain("tarif");
     expect(dateInsecable("31 décembre 2026")).toBe("31\u00a0décembre\u00a02026");
     expect(dateInsecable("December 31, 2026")).toBe("December\u00a031,\u00a02026");
@@ -479,8 +479,10 @@ describe("Pendant la bêta, un anonyme qui touche une fonction Pro va créer son
       const Inscription = (await import("@/app/inscription/page")).default;
       const h = await r.rendre(await Inscription({ searchParams: Promise.resolve({ source: "choix-neuf", next: "/projets/nouveau/construction?new=1" }) }));
       expect(h).toContain('name="next" value="/projets/nouveau/construction?new=1"');
-      // La promesse fondateur, sans chiffre (décision de Dani du 16/10/2026) : un tarif préférentiel annoncé avant la fin.
-      expect(b.benefices[2]).toMatch(locale === "fr" ? /tarif préférentiel garanti à vie, annoncé avant la fin de la bêta/ : /preferred rate guaranteed for life, announced before the beta ends/);
+      // Plus aucune promesse tarifaire aux membres fondateurs (décision de Dani du 12/11/2026) : le 3e bénéfice dit
+      // seulement qu'après la bêta rien n'est prélevé.
+      expect(b.benefices[2]).toMatch(locale === "fr" ? /Après la bêta, rien n'est prélevé/ : /After the beta, nothing is charged/);
+      expect(h).not.toMatch(locale === "fr" ? /préférentiel|à vie/ : /preferred rate|for life/);
       expect(h).not.toContain("€");
     }
   });
@@ -654,11 +656,13 @@ describe("Pendant la bêta, un anonyme qui touche une fonction Pro va créer son
 
 /* ─── Membres fondateurs : aucun chiffre pendant la bêta ───────────────────────── */
 
-describe("Membres fondateurs : aucun prix d'après la bêta, nulle part (décision de Dani du 16/10/2026)", () => {
+describe("Membres fondateurs : aucun prix d'après la bêta, nulle part (16/10/2026), et aucun avantage tarifaire (12/11/2026)", () => {
   /** Un prix d'abonnement : 18,85 €, €18.85, 169 €, 14,08, 16,15, 29 €, 199 €… (le « 0 € » de la bêta n'en est pas un). */
   const PRIX = /18[,.]85|16[,.]15|14[,.]08|\b169\b|€ ?\d|\d[\u00a0 ]?€|\/ ?mois|\/ ?month|\/ ?an\b|\/ ?year/;
+  /** L'ancienne promesse des membres fondateurs, retirée le 12/11/2026 (FR et EN). */
+  const SANS_PROMESSE = /préférentiel|à vie|preferred rate|for life/i;
 
-  it("Tarifs, inscription, Mon compte, pastille, CGU, CGV : la promesse sans chiffre, en FR et en EN", async () => {
+  it("Tarifs, inscription, Mon compte, pastille, CGU, CGV : sans chiffre et sans promesse tarifaire, en FR et en EN", async () => {
     a(PENDANT);
     for (const locale of LOCALES) {
       const b = dict(locale).beta;
@@ -668,12 +672,14 @@ describe("Membres fondateurs : aucun prix d'après la bêta, nulle part (décisi
         const h = await r.rendre(await Tarifs({ searchParams: Promise.resolve({ source: "editeur-plan" }) }));
         expect(h, `tarifs ${locale} ${user}`).not.toMatch(PRIX);
         expect(h).toContain(esc(user === "anonyme" ? b.tarifsFondateurTitre : b.membreFondateurTitre));
+        expect(h, `tarifs ${locale} ${user}`).not.toMatch(SANS_PROMESSE);
       }
       let r = await charger({ locale });
       const Inscription = (await import("@/app/inscription/page")).default;
       const ins = await r.rendre(await Inscription({ searchParams: Promise.resolve({}) }));
       expect(ins, `inscription ${locale}`).not.toMatch(PRIX);
       expect(ins).toContain(esc(b.benefices[2]));
+      expect(ins, `inscription ${locale}`).not.toMatch(SANS_PROMESSE);
       r = await charger({ locale, user: "fondateur" });
       const { PastilleFondateur } = await import("@/components/BandeauBeta");
       const AbonnementSection = (await import("@/components/AbonnementSection")).default;
@@ -682,6 +688,7 @@ describe("Membres fondateurs : aucun prix d'après la bêta, nulle part (décisi
         createElement(AbonnementSection, { isPro: false, beta: { fin: libellesBeta(locale).fin }, fondateur: true })));
       expect(compte, `compte ${locale}`).not.toMatch(PRIX);
       expect(compte).toContain(esc(b.membreFondateurTitre));
+      expect(compte, `compte ${locale}`).not.toMatch(SANS_PROMESSE);
     }
     for (const page of ["cgu", "cgv"] as const) {
       const r = await charger({ locale: "fr" });
@@ -689,8 +696,9 @@ describe("Membres fondateurs : aucun prix d'après la bêta, nulle part (décisi
       const h = await r.rendre(Page());
       expect(h, page).not.toMatch(PRIX);
       expect(h).not.toContain("tarif de lancement");
-      expect(h).toContain("tarif préférentiel");
-      expect(h).toContain("annoncé aux membres avant la fin de la bêta");
+      expect(h).not.toMatch(SANS_PROMESSE);
+      expect(h).toContain("membre fondateur");
+      expect(h).toContain(page === "cgu" ? "aucun avantage tarifaire" : "aucun tarif particulier");
     }
   });
 
@@ -726,11 +734,12 @@ describe("Accueil pendant la bêta (lib/accueil-beta.ts)", () => {
         expect(pendant).not.toContain(x);
         expect(pendant).toContain(y);
       }
-      // Plus d'appel à payer, et aucun prix d'après la bêta, pas même dans la promesse des membres fondateurs (décision
-      // de Dani du 16/10/2026 : « un tarif préférentiel garanti à vie, annoncé avant la fin de la bêta »).
+      // Plus d'appel à payer, aucun prix d'après la bêta (décision de Dani du 16/10/2026), et plus aucune promesse
+      // tarifaire aux membres fondateurs (décision de Dani du 12/11/2026).
       expect(pendant).not.toMatch(/AVYORA Pro|Passer Pro|Go Pro|Voir les tarifs|See pricing|dès 18,85|from €18\.85|href="\/tarifs" class="promo"/);
       expect(pendant).not.toMatch(/18[,.]85|€ ?169|169 ?€|14[,.]08|16[,.]15/);
-      expect(pendant).toContain(locale === "fr" ? "tarif préférentiel garanti à vie</b>, annoncé avant la fin de la bêta" : "preferred rate guaranteed for life</b>, announced before the beta ends");
+      expect(pendant).not.toMatch(/préférentiel|garanti à vie|preferred rate|guaranteed for life/);
+      expect(pendant).toContain(locale === "fr" ? "rien n'est prélevé</b> : tu t'abonnes seulement si tu le veux" : "nothing is charged</b>: you subscribe only if you want to");
     }
   });
 });
@@ -821,8 +830,9 @@ describe("Témoins · pendant la bêta (12/10/2026)", () => {
       const l = libellesBeta(locale);
       const beta = await r.rendre(createElement(AbonnementSection, { isPro: false, beta: { fin: l.fin }, fondateur: true }));
       expect(beta).toContain(l.fin);
-      // Membre fondateur, sans chiffre (décision de Dani du 16/10/2026).
-      expect(beta).toContain(locale === "fr" ? "tarif préférentiel garanti à vie, annoncé avant la fin de la bêta" : "preferred rate guaranteed for life, announced before the beta ends");
+      // Membre fondateur : une reconnaissance, sans avantage tarifaire (décision de Dani du 12/11/2026).
+      expect(beta).toContain(locale === "fr" ? "Membre fondateur : ton compte date de la bêta" : "Founding member: your account dates from the AVYORA beta");
+      expect(beta).not.toMatch(/préférentiel|à vie|preferred rate|for life/);
       expect(beta).not.toContain("€");
       expect(beta).not.toContain(locale === "fr" ? "résilier" : "cancel my");
       expect(beta).not.toContain('href="/tarifs"');

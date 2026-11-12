@@ -41,7 +41,7 @@ export default async function ComptePage() {
   const username = (user.user_metadata?.username ?? "") as string;
   const locale = await getLocale();
   const s = TR[locale];
-  // Bêta gratuite (lib/beta.ts) : la pastille et la promesse des membres fondateurs, la date de fin de la bêta.
+  // Bêta gratuite (lib/beta.ts) : la pastille de membre fondateur (sans avantage tarifaire), la date de fin de la bêta.
   const fondateur = estMembreFondateur(user);
   const libelles = libellesBeta(locale);
 

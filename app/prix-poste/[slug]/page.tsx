@@ -137,7 +137,7 @@ export default async function PrixPostePage({ params }: { params: Promise<{ slug
         </section>
       ))}
 
-      <CtaEstimation src="poste" titre="Besoin du chiffre pour ton projet ?" sousTitre="L&apos;estimation rapide est gratuite et sans inscription : quatre questions, une fourchette ajustée à ton code postal." />
+      <CtaEstimation src="poste" titre="Besoin du chiffre pour ton projet ?" sousTitre="L&apos;estimation rapide est gratuite, sans compte pour une pièce ou tout le bien : quatre questions, une fourchette ajustée à ton code postal." />
 
       <h2>Questions fréquentes</h2>
       <div className="faq">

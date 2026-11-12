@@ -233,7 +233,7 @@ export default async function MethodologiePage() {
       </p>
 
       <div className="cta">
-        <p><strong>Tu veux un chiffre pour ton projet ?</strong> L&apos;estimation rapide est gratuite et sans inscription : quatre questions, une fourchette ajustée à ton code postal.</p>
+        <p><strong>Tu veux un chiffre pour ton projet ?</strong> L&apos;estimation rapide est gratuite, sans compte pour une pièce ou tout le bien : quatre questions, une fourchette ajustée à ton code postal.</p>
         <Link href="/estimation-travaux" className="btn">Estimer mes travaux →</Link>
       </div>
 

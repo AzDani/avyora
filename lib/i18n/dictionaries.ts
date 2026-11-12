@@ -85,7 +85,7 @@ const fr = {
     rapideLead: "4 questions, une fourchette chiffrée immédiate. Idéal pour un premier ordre de grandeur.",
     rapideF1: "Type de bien, surface, ampleur — en 2 min",
     rapideF2: "Fourchette ±15\u00a0% adaptée à ton code postal",
-    rapideF3: "Sans inscription, résultat instantané",
+    rapideF3: "Sans compte pour une pièce ou tout le bien, résultat instantané",
     rapideCta: "Commencer gratuitement →",
     rapideFoot: "Aucune carte requise",
     detailTitre: "Estimation détaillée",
@@ -257,10 +257,13 @@ const fr = {
       lourde: { label: "Réno lourde", desc: "Gros œuvre + charpente, toiture, façade." },
       lourdeAppart: { label: "Réno totale", desc: "Mise à nu : curage + redistribution, tout à neuf." },
     },
+    /* Cartes de finition : seule la part MATÉRIAUX change avec le niveau, la main-d'œuvre est la même
+       (lib/estimateur/core.ts, `finCoefTask`) ; en rénovation, l'écart Éco → Premium n'est donc que de +10 à +19 %
+       sur le total. Les descriptions le disent, sans promettre de meilleure pose (revue du 12/11/2026). */
     finitions: {
-      eco: { eye: "Locatif · budget maîtrisé", label: "Éco", desc: "Entrée de gamme robuste : sol stratifié, carrelage standard, cuisine en kit, robinetterie basique." },
-      standard: { eye: "Le plus courant", label: "Standard", desc: "Bon rapport qualité-prix : marques milieu de gamme, finitions soignées. Idéal résidence principale." },
-      premium: { eye: "Haut de gamme", label: "Premium", desc: "Matériaux nobles : parquet, carrelage grand format, cuisine équipée haut de gamme, prestations soignées." },
+      eco: { eye: "Locatif · budget maîtrisé", label: "Éco", desc: "Matériaux d'entrée de gamme robustes : sol stratifié, carrelage standard, cuisine en kit, robinetterie basique." },
+      standard: { eye: "Le plus courant", label: "Standard", desc: "Matériaux milieu de gamme, marques reconnues : le bon rapport qualité-prix pour une résidence principale. La pose est la même qu'en Éco." },
+      premium: { eye: "Haut de gamme", label: "Premium", desc: "Matériaux haut de gamme : parquet, carrelage grand format, cuisine équipée haut de gamme. La pose reste la même : seuls les matériaux montent en gamme." },
     },
     quis: {
       pros: { eye: "Clé en main", label: "Tout par des pros", desc: "Des artisans font tout : devis, garanties décennales, zéro effort de ta part." },
@@ -279,8 +282,10 @@ const fr = {
   /*
    * Bêta gratuite (lib/beta.ts, chantier B1) : ce qui remplace les « Pro », « Débloquer avec Pro » et prix
    * tant que la bêta court. Les dates arrivent en paramètres (`libellesBeta`, NEXT_PUBLIC_BETA_FIN), le plafond
-   * des plans aussi (`PLANS_MAX_BETA`) : jamais écrits en dur ici. Membres fondateurs : AUCUN CHIFFRE pendant la
-   * bêta (décision de Dani du 16/10/2026), « un tarif préférentiel garanti à vie, annoncé avant la fin de la bêta ».
+   * des plans aussi (`PLANS_MAX_BETA`) : jamais écrits en dur ici. Membres fondateurs : une simple reconnaissance
+   * (« inscrit pendant la bêta »), SANS AUCUN AVANTAGE TARIFAIRE (décision de Dani du 12/11/2026, qui retire la promesse
+   * du 16/10/2026 d'un « tarif préférentiel garanti à vie ») : quand AVYORA passera payant, les inscrits de la bêta
+   * paieront le prix normal. Ne rien promettre d'autre à la place.
    */
   beta: {
     pastille: "Bêta",
@@ -289,6 +294,8 @@ const fr = {
     creerCompteFleche: "Créer mon compte gratuit →",
     /* L'écran de choix (`ChoixEstimation`) */
     choixFootAnonyme: "Gratuit pendant la bêta, il suffit d'un compte.",
+    /* La 3e puce de l'estimation rapide (rénovation) pendant la bêta : plusieurs pièces demandent un compte (gratuit). */
+    choixRapideF3: "Sans compte pour une pièce ou tout le bien ; plusieurs pièces : compte gratuit",
     choixFootConnecte: (fin: string) => `Inclus pendant la bêta, jusqu'au ${fin}`,
     /* L'estimation rapide de la rénovation (`EstimateurRapide`) */
     affiner: "Détail poste par poste — gratuit en bêta",
@@ -311,13 +318,11 @@ const fr = {
     benefices: [
       "Estimation détaillée, PDF et plans inclus, sans carte bancaire",
       "Tes projets sauvegardés sur tous tes appareils",
-      "Un tarif préférentiel garanti à vie, annoncé avant la fin de la bêta",
+      "Après la bêta, rien n'est prélevé : tu t'abonnes seulement si tu le veux",
     ],
-    /* Membre fondateur (/projets, Mon compte) */
+    /* Membre fondateur (/projets, Mon compte, /tarifs) : une reconnaissance, aucun avantage tarifaire. */
     membreFondateur: "Membre fondateur",
-    membreFondateurTitre: "Ton tarif préférentiel est garanti à vie : il sera annoncé avant la fin de la bêta.",
-    /* Après la bêta : le statut reste, la promesse est tenue (plus de futur). */
-    membreFondateurTitreApres: "Ton tarif préférentiel de membre fondateur t'est garanti à vie.",
+    membreFondateurTitre: "Ton compte date de la bêta d'AVYORA : merci d'être là depuis le début.",
     /* Les plans d'un inscrit pendant la bêta (`PLANS_MAX_BETA`) : à la place de « des plans enregistrés sans limite ». */
     plansEnregistres: (n: number) => `jusqu'à ${n} plans enregistrés`,
     /* La page Tarifs */
@@ -330,8 +335,8 @@ const fr = {
     tarifsSous: "Il suffit d'un compte. Aucun moyen de paiement n'est demandé, et rien ne sera prélevé automatiquement : ni pendant la bêta, ni après.",
     tarifsFondateurTag: "Membres fondateurs",
     tarifsFondateurTagConnecte: "Membre fondateur",
-    tarifsFondateurTitre: "Un tarif préférentiel garanti à vie, annoncé avant la fin de la bêta",
-    tarifsFondateurSous: "Crée ton compte pendant la bêta : tu deviens membre fondateur.",
+    tarifsFondateurTitre: "Crée ton compte pendant la bêta : tu deviens membre fondateur",
+    tarifsFondateurSous: "Une pastille sur ton compte, réservée aux inscrits de la bêta.",
     tarifsFondateurNote: "Rien ne sera prélevé : quand AVYORA passera payant, tu t'abonnes seulement si tu le veux.",
     tarifsConnecte: (fin: string) => `Tout est inclus pour toi jusqu'au ${fin}`,
     tarifsConnecteLien: "Ouvrir l'estimateur détaillé",
@@ -353,8 +358,8 @@ const fr = {
         r: "Non. Aucun moyen de paiement n'est demandé pendant la bêta, et rien ne sera prélevé automatiquement : quand AVYORA passera payant, tu t'abonnes seulement si tu le veux.",
       },
       {
-        q: "Quand connaîtrai-je le tarif des membres fondateurs ?",
-        r: "Il sera annoncé avant la fin de la bêta. Il est garanti à vie aux membres fondateurs, c'est-à-dire aux comptes dont l'adresse a été confirmée pendant la bêta.",
+        q: "Qu'est-ce qu'un membre fondateur ?",
+        r: "C'est le statut des comptes dont l'adresse e-mail a été confirmée pendant la bêta : une pastille sur ton compte, qui reste après la bêta. Il ne donne aucun avantage tarifaire : quand AVYORA passera payant, tu t'abonnes au tarif en vigueur, seulement si tu le veux.",
       },
       {
         q: "Puis-je supprimer mon compte ?",
@@ -364,7 +369,7 @@ const fr = {
     tarifsBasLienConnecte: "faire une estimation rapide",
     /* Le bas de page pour un visiteur sans compte (« continuer » ne voulait rien dire pour qui n'a rien commencé). */
     tarifsBasAnonyme: "Pas encore prêt à créer un compte ? ",
-    tarifsBasLienAnonyme: "Fais une estimation rapide, sans inscription",
+    tarifsBasLienAnonyme: "Fais une estimation rapide d'une pièce ou de tout le bien, sans compte",
     /* La puce « Éditeur de plan » de « Inclus pendant la bêta », en trois puces courtes (une énumération à points-virgules
        était illisible). Le plafond des plans d'un inscrit arrive en paramètre (`PLANS_MAX_BETA`). */
     pucesPlan: (n: number) => [
@@ -602,7 +607,7 @@ const en: Dict = {
     rapideLead: "4 questions, an instant price range. Perfect for a first ballpark figure.",
     rapideF1: "Property type, area, scope — in 2 min",
     rapideF2: "±15% range tailored to your ZIP code",
-    rapideF3: "No sign-up, instant result",
+    rapideF3: "No account for one room or the whole home, instant result",
     rapideCta: "Start for free →",
     rapideFoot: "No card required",
     detailTitre: "Detailed estimate",
@@ -762,9 +767,9 @@ const en: Dict = {
       lourdeAppart: { label: "Total reno", desc: "Stripped back: gut + reconfigure, all new." },
     },
     finitions: {
-      eco: { eye: "Rental · budget-conscious", label: "Economy", desc: "Sturdy entry level: laminate floor, standard tile, ready-to-assemble kitchen, basic fixtures." },
-      standard: { eye: "Most common", label: "Standard", desc: "Great value: mid-range brands, clean finishes. Ideal for a primary home." },
-      premium: { eye: "High-end", label: "Premium", desc: "Fine materials: hardwood, large-format tile, high-end custom kitchen, careful workmanship." },
+      eco: { eye: "Rental · budget-conscious", label: "Economy", desc: "Sturdy entry-level materials: laminate floor, standard tile, ready-to-assemble kitchen, basic fixtures." },
+      standard: { eye: "Most common", label: "Standard", desc: "Mid-range materials from known brands: the right value for a primary home. Same installation work as Economy." },
+      premium: { eye: "High-end", label: "Premium", desc: "High-end materials: hardwood, large-format tile, high-end kitchen. Installation stays the same: only the materials move up." },
     },
     quis: {
       pros: { eye: "Turnkey", label: "All by pros", desc: "Contractors do everything: quotes, warranties, zero effort on your side." },
@@ -786,6 +791,7 @@ const en: Dict = {
     creerCompte: "Create my free account",
     creerCompteFleche: "Create my free account →",
     choixFootAnonyme: "Free during the beta, all you need is an account.",
+    choixRapideF3: "No account for one room or the whole home; several rooms: free account",
     choixFootConnecte: (fin: string) => `Included during the beta, through ${fin}`,
     affiner: "Line-by-line detail — free in beta",
     proLock: "🔒 Account",
@@ -803,11 +809,10 @@ const en: Dict = {
     benefices: [
       "Detailed estimate, PDF and floor plans included, no credit card",
       "Your projects saved across all your devices",
-      "A preferred rate guaranteed for life, announced before the beta ends",
+      "After the beta, nothing is charged: you subscribe only if you want to",
     ],
     membreFondateur: "Founding member",
-    membreFondateurTitre: "Your preferred rate is guaranteed for life: it will be announced before the beta ends.",
-    membreFondateurTitreApres: "Your founding member preferred rate is guaranteed for life.",
+    membreFondateurTitre: "Your account dates from the AVYORA beta: thanks for being here from the start.",
     plansEnregistres: (n: number) => `up to ${n} saved plans`,
     tarifsMetaTitre: "Free beta: everything included with an account",
     tarifsMetaDescription: (fin: string) =>
@@ -817,8 +822,8 @@ const en: Dict = {
     tarifsSous: "All you need is an account. No payment method is required, and nothing will ever be charged automatically: not during the beta, not after.",
     tarifsFondateurTag: "Founding members",
     tarifsFondateurTagConnecte: "Founding member",
-    tarifsFondateurTitre: "A preferred rate guaranteed for life, announced before the beta ends",
-    tarifsFondateurSous: "Create your account during the beta: you become a founding member.",
+    tarifsFondateurTitre: "Create your account during the beta: you become a founding member",
+    tarifsFondateurSous: "A badge on your account, reserved for beta sign-ups.",
     tarifsFondateurNote: "Nothing will be charged: once AVYORA becomes paid, you subscribe only if you want to.",
     tarifsConnecte: (fin: string) => `Everything is included for you through ${fin}`,
     tarifsConnecteLien: "Open the detailed estimator",
@@ -838,8 +843,8 @@ const en: Dict = {
         r: "No. No payment method is requested during the beta, and nothing will be charged automatically: once AVYORA becomes paid, you subscribe only if you want to.",
       },
       {
-        q: "When will I know the founding member rate?",
-        r: "It will be announced before the beta ends. It's guaranteed for life to founding members, meaning accounts whose email address was confirmed during the beta.",
+        q: "What is a founding member?",
+        r: "It's the status of accounts whose email address was confirmed during the beta: a badge on your account, which stays after the beta. It comes with no pricing advantage: once AVYORA becomes paid, you subscribe at the current rate, only if you want to.",
       },
       {
         q: "Can I delete my account?",
@@ -848,7 +853,7 @@ const en: Dict = {
     ],
     tarifsBasLienConnecte: "run a quick estimate",
     tarifsBasAnonyme: "Not ready to create an account? ",
-    tarifsBasLienAnonyme: "Run a quick estimate, no sign-up needed",
+    tarifsBasLienAnonyme: "Run a quick estimate of one room or your whole home, no account needed",
     pucesPlan: (n: number) => [
       `Floor plan editor (2D/3D): up to ${n} saved plans`,
       "The renovation project: start from your home as it is and price what changes",

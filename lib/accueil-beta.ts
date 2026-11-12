@@ -6,9 +6,9 @@
  * celui d'avant au caractère près. Chaque `avant` doit figurer exactement une fois dans le gabarit : le test
  * tests/beta.test.ts le vérifie (un gabarit qui bouge sans ses remplacements ferait réapparaître un prix).
  *
- * Aucune promotion, aucun prix barré : seulement la bêta (gratuite, jusqu'à sa date de fin) et la promesse des
- * membres fondateurs, SANS CHIFFRE (décision de Dani du 16/10/2026) : un tarif préférentiel garanti à vie, annoncé
- * avant la fin de la bêta. Aucun prix d'après la bêta n'est affiché.
+ * Aucune promotion, aucun prix barré : seulement la bêta (gratuite, jusqu'à sa date de fin) et le statut de membre
+ * fondateur, une simple reconnaissance SANS AUCUN AVANTAGE TARIFAIRE (décision de Dani du 12/11/2026, qui retire le
+ * « tarif préférentiel garanti à vie » du 16/10/2026). Aucun prix d'après la bêta n'est affiché.
  */
 import type { Locale } from "@/lib/i18n/config";
 import { dateInsecable, libellesBeta, lienInscriptionBeta } from "@/lib/beta";
@@ -48,7 +48,7 @@ export function remplacementsAccueilBeta(locale: Locale): [string, string][] {
       ],
       [
         '<div class="pct">That\'s <b class="num">0.02%</b> of the budget to control all of it.</div>',
-        '<div class="pct">Then, for founding members, a <b>preferred rate guaranteed for life</b>, announced before the beta ends.</div>',
+        '<div class="pct">After the beta, <b>nothing is charged</b>: you subscribe only if you want to.</div>',
       ],
       // Sans prix affiché, « plus cher qu'une année d'AVYORA » ne compare plus rien (2e contre-examen).
       [
@@ -59,7 +59,7 @@ export function remplacementsAccueilBeta(locale: Locale): [string, string][] {
       ["<h2>Free to estimate. Pro to unlock everything.</h2>", "<h2>Everything is free during the beta.</h2>"],
       [
         '<div class="p"><span class="big">€18.85</span> / month — itemized estimate (200 items), PDF report, saving and project tracking.</div>',
-        `<div class="p"><span class="big">€0</span> — itemized estimate (200 items), PDF report, saving and project tracking, free for everyone who signs up. Sign up during the beta: you become a founding member, with a preferred rate guaranteed for life, announced before the beta ends.</div>`,
+        `<div class="p"><span class="big">€0</span> — itemized estimate (200 items), PDF report, saving and project tracking, free for everyone who signs up. Sign up during the beta: you become a founding member.</div>`,
       ],
       [
         '<a href="/tarifs" class="btn btn-o">Go Pro</a>\n      <a href="/tarifs" class="btn btn-w">See all plans</a>',
@@ -95,7 +95,7 @@ export function remplacementsAccueilBeta(locale: Locale): [string, string][] {
     ],
     [
       '<div class="pct">Soit <b class="num">0,02&nbsp;%</b> du budget pour le maîtriser entièrement.</div>',
-      '<div class="pct">Puis, pour les membres fondateurs, un <b>tarif préférentiel garanti à vie</b>, annoncé avant la fin de la bêta.</div>',
+      '<div class="pct">Après la bêta, <b>rien n\'est prélevé</b> : tu t\'abonnes seulement si tu le veux.</div>',
     ],
     // Sans prix affiché, « plus cher qu'une année d'AVYORA » ne compare plus rien (2e contre-examen).
     [
@@ -106,7 +106,7 @@ export function remplacementsAccueilBeta(locale: Locale): [string, string][] {
     ["<h2>Gratuit pour estimer. Pro pour piloter.</h2>", "<h2>Tout est gratuit pendant la bêta.</h2>"],
     [
       '<div class="p"><span class="big">18,85 €</span> / mois — estimation détaillée (200 postes), rapport PDF, carnet matériaux, suivi de chantier et multi-projets.</div>',
-      `<div class="p"><span class="big">0 €</span> — estimation détaillée (200 postes), rapport PDF, carnet matériaux, suivi de chantier et multi-projets, offerts à tous les inscrits. Inscris-toi pendant la bêta : tu deviens membre fondateur, avec un tarif préférentiel garanti à vie, annoncé avant la fin de la bêta.</div>`,
+      `<div class="p"><span class="big">0 €</span> — estimation détaillée (200 postes), rapport PDF, carnet matériaux, suivi de chantier et multi-projets, offerts à tous les inscrits. Inscris-toi pendant la bêta : tu deviens membre fondateur.</div>`,
     ],
     [
       '<a href="/tarifs" class="btn btn-o">Passer Pro</a>\n      <a href="/tarifs" class="btn btn-w">Voir tous les plans</a>',

@@ -19,7 +19,7 @@ type SP = { nature?: string | string[] };
 const ROBOTS = { index: false, follow: true } as const;
 
 const META_RENO: Metadata = {
-  title: "Estimer ses travaux de rénovation — gratuit, sans inscription",
+  title: "Estimer ses travaux de rénovation gratuitement",
   description:
     "Choisis ton mode d'estimation : rapide et gratuite en 4 questions, ou détaillée poste par poste. Prix du marché français ajustés à ta région.",
   alternates: { canonical: "/projets/nouveau" },

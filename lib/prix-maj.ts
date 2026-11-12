@@ -40,7 +40,7 @@ export const SITE_MAJ = "2026-11-12";
  */
 export const LEGAL_MAJ: Record<"mentions-legales" | "cgu" | "cgv" | "confidentialite" | "cookies", string> = {
   "mentions-legales": "2026-11-12",
-  cgu: "2026-10-16",
+  cgu: "2026-11-12",
   cgv: "2026-11-12",
   confidentialite: "2026-11-12",
   cookies: "2026-11-12",

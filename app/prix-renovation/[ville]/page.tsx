@@ -225,7 +225,7 @@ export default async function PrixVille({ params }: { params: Promise<{ ville: s
         titre={`Estime ton projet à ${v.nom} en 2 minutes`}
         cp={v.cp}
         libelle={`Estimer mes travaux à ${v.nom}`}
-        sousTitre={`Gratuit, sans inscription — l'estimation part déjà ajustée à la main-d'œuvre de ${v.nom}.`}
+        sousTitre={`Gratuit, sans compte pour une pièce ou tout le bien — l'estimation part déjà ajustée à la main-d'œuvre de ${v.nom}.`}
       />
 
       <h2>Questions fréquentes</h2>

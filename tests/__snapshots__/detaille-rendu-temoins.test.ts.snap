@@ -1194,7 +1194,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 </span>
 <span class="fe">Budget-conscious</span>
 <span class="ft">Economy</span>
-<span class="fd">Sturdy entry level: laminate, standard tile, ready-to-assemble kitchen.</span>
+<span class="fd">Entry-level materials: laminate, standard tile, ready-to-assemble kitchen.</span>
 </button>
 <button type="button" class="fc on" aria-pressed="true">
 <span class="fh">
@@ -1211,7 +1211,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 </span>
 <span class="fe">Most common</span>
 <span class="ft">Standard</span>
-<span class="fd">Great value, mid-range brands, clean finishes.</span>
+<span class="fd">Mid-range materials, good value. Same installation work as Economy.</span>
 </button>
 <button type="button" class="fc" aria-pressed="false">
 <span class="fh">
@@ -1228,7 +1228,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 </span>
 <span class="fe">High-end</span>
 <span class="ft">Premium</span>
-<span class="fd">Fine materials: hardwood, large-format tile, high-end custom kitchen.</span>
+<span class="fd">High-end materials: hardwood, large-format tile, high-end kitchen. Same installation: only the materials move up.</span>
 </button>
 </div>
 <div class="gl">Who manages the build</div>
@@ -2745,7 +2745,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 </span>
 <span class="fe">Budget maîtrisé</span>
 <span class="ft">Éco</span>
-<span class="fd">Entrée de gamme robuste : stratifié, carrelage standard, cuisine en kit.</span>
+<span class="fd">Matériaux d&#x27;entrée de gamme : stratifié, carrelage standard, cuisine en kit.</span>
 </button>
 <button type="button" class="fc on" aria-pressed="true">
 <span class="fh">
@@ -2762,7 +2762,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 </span>
 <span class="fe">Le plus courant</span>
 <span class="ft">Standard</span>
-<span class="fd">Bon rapport qualité-prix, marques milieu de gamme, finitions soignées.</span>
+<span class="fd">Matériaux milieu de gamme, bon rapport qualité-prix. Même pose qu&#x27;en Éco.</span>
 </button>
 <button type="button" class="fc" aria-pressed="false">
 <span class="fh">
@@ -2779,7 +2779,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 </span>
 <span class="fe">Haut de gamme</span>
 <span class="ft">Premium</span>
-<span class="fd">Matériaux nobles : parquet, grand format, cuisine équipée haut de gamme.</span>
+<span class="fd">Matériaux haut de gamme : parquet, grand format, cuisine haut de gamme. Même pose : seuls les matériaux montent.</span>
 </button>
 </div>
 <div class="gl">Qui pilote le chantier</div>
@@ -3517,7 +3517,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · appartement 1`] = `
 </span>
 <span class="fe">Rental · budget-conscious</span>
 <span class="ft">Economy</span>
-<span class="fd">Sturdy entry level: laminate, standard tile, ready-to-assemble kitchen.</span>
+<span class="fd">Entry-level materials: laminate, standard tile, ready-to-assemble kitchen.</span>
 </button>
 <button type="button" class="fc on" aria-pressed="true">
 <span class="fh">
@@ -3534,7 +3534,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · appartement 1`] = `
 </span>
 <span class="fe">Most common</span>
 <span class="ft">Standard</span>
-<span class="fd">Great value, mid-range brands, clean finishes.</span>
+<span class="fd">Mid-range materials, good value. Same installation work as Economy.</span>
 </button>
 <button type="button" class="fc" aria-pressed="false">
 <span class="fh">
@@ -3551,7 +3551,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · appartement 1`] = `
 </span>
 <span class="fe">High-end</span>
 <span class="ft">Premium</span>
-<span class="fd">Fine materials: hardwood, large-format tile, high-end custom kitchen.</span>
+<span class="fd">High-end materials: hardwood, large-format tile, high-end kitchen. Same installation: only the materials move up.</span>
 </button>
 </div>
 <div class="gl">VAT rate</div>
@@ -4046,7 +4046,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </span>
 <span class="fe">Rental · budget-conscious</span>
 <span class="ft">Economy</span>
-<span class="fd">Sturdy entry level: laminate, standard tile, ready-to-assemble kitchen.</span>
+<span class="fd">Entry-level materials: laminate, standard tile, ready-to-assemble kitchen.</span>
 </button>
 <button type="button" class="fc" aria-pressed="false">
 <span class="fh">
@@ -4063,7 +4063,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </span>
 <span class="fe">Most common</span>
 <span class="ft">Standard</span>
-<span class="fd">Great value, mid-range brands, clean finishes.</span>
+<span class="fd">Mid-range materials, good value. Same installation work as Economy.</span>
 </button>
 <button type="button" class="fc on" aria-pressed="true">
 <span class="fh">
@@ -4080,7 +4080,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </span>
 <span class="fe">High-end</span>
 <span class="ft">Premium</span>
-<span class="fd">Fine materials: hardwood, large-format tile, high-end custom kitchen.</span>
+<span class="fd">High-end materials: hardwood, large-format tile, high-end kitchen. Same installation: only the materials move up.</span>
 </button>
 </div>
 <div class="gl">VAT rate</div>
@@ -5751,7 +5751,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · page vierge 1`] = `
 </span>
 <span class="fe">Rental · budget-conscious</span>
 <span class="ft">Economy</span>
-<span class="fd">Sturdy entry level: laminate, standard tile, ready-to-assemble kitchen.</span>
+<span class="fd">Entry-level materials: laminate, standard tile, ready-to-assemble kitchen.</span>
 </button>
 <button type="button" class="fc on" aria-pressed="true">
 <span class="fh">
@@ -5768,7 +5768,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · page vierge 1`] = `
 </span>
 <span class="fe">Most common</span>
 <span class="ft">Standard</span>
-<span class="fd">Great value, mid-range brands, clean finishes.</span>
+<span class="fd">Mid-range materials, good value. Same installation work as Economy.</span>
 </button>
 <button type="button" class="fc" aria-pressed="false">
 <span class="fh">
@@ -5785,7 +5785,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · page vierge 1`] = `
 </span>
 <span class="fe">High-end</span>
 <span class="ft">Premium</span>
-<span class="fd">Fine materials: hardwood, large-format tile, high-end custom kitchen.</span>
+<span class="fd">High-end materials: hardwood, large-format tile, high-end kitchen. Same installation: only the materials move up.</span>
 </button>
 </div>
 <div class="gl">VAT rate</div>
@@ -6160,7 +6160,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · pieces 1`] = `
 </span>
 <span class="fe">Rental · budget-conscious</span>
 <span class="ft">Economy</span>
-<span class="fd">Sturdy entry level: laminate, standard tile, ready-to-assemble kitchen.</span>
+<span class="fd">Entry-level materials: laminate, standard tile, ready-to-assemble kitchen.</span>
 </button>
 <button type="button" class="fc on" aria-pressed="true">
 <span class="fh">
@@ -6177,7 +6177,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · pieces 1`] = `
 </span>
 <span class="fe">Most common</span>
 <span class="ft">Standard</span>
-<span class="fd">Great value, mid-range brands, clean finishes.</span>
+<span class="fd">Mid-range materials, good value. Same installation work as Economy.</span>
 </button>
 <button type="button" class="fc" aria-pressed="false">
 <span class="fh">
@@ -6194,7 +6194,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · pieces 1`] = `
 </span>
 <span class="fe">High-end</span>
 <span class="ft">Premium</span>
-<span class="fd">Fine materials: hardwood, large-format tile, high-end custom kitchen.</span>
+<span class="fd">High-end materials: hardwood, large-format tile, high-end kitchen. Same installation: only the materials move up.</span>
 </button>
 </div>
 <div class="gl">VAT rate</div>
@@ -6456,7 +6456,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · suite 1`] = `
 </span>
 <span class="fe">Rental · budget-conscious</span>
 <span class="ft">Economy</span>
-<span class="fd">Sturdy entry level: laminate, standard tile, ready-to-assemble kitchen.</span>
+<span class="fd">Entry-level materials: laminate, standard tile, ready-to-assemble kitchen.</span>
 </button>
 <button type="button" class="fc on" aria-pressed="true">
 <span class="fh">
@@ -6473,7 +6473,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · suite 1`] = `
 </span>
 <span class="fe">Most common</span>
 <span class="ft">Standard</span>
-<span class="fd">Great value, mid-range brands, clean finishes.</span>
+<span class="fd">Mid-range materials, good value. Same installation work as Economy.</span>
 </button>
 <button type="button" class="fc" aria-pressed="false">
 <span class="fh">
@@ -6490,7 +6490,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · suite 1`] = `
 </span>
 <span class="fe">High-end</span>
 <span class="ft">Premium</span>
-<span class="fd">Fine materials: hardwood, large-format tile, high-end custom kitchen.</span>
+<span class="fd">High-end materials: hardwood, large-format tile, high-end kitchen. Same installation: only the materials move up.</span>
 </button>
 </div>
 <div class="gl">VAT rate</div>
@@ -7368,7 +7368,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · appartement 1`] = `
 </span>
 <span class="fe">Locatif · budget maîtrisé</span>
 <span class="ft">Éco</span>
-<span class="fd">Entrée de gamme robuste : stratifié, carrelage standard, cuisine en kit.</span>
+<span class="fd">Matériaux d&#x27;entrée de gamme : stratifié, carrelage standard, cuisine en kit.</span>
 </button>
 <button type="button" class="fc on" aria-pressed="true">
 <span class="fh">
@@ -7385,7 +7385,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · appartement 1`] = `
 </span>
 <span class="fe">Le plus courant</span>
 <span class="ft">Standard</span>
-<span class="fd">Bon rapport qualité-prix, marques milieu de gamme, finitions soignées.</span>
+<span class="fd">Matériaux milieu de gamme, bon rapport qualité-prix. Même pose qu&#x27;en Éco.</span>
 </button>
 <button type="button" class="fc" aria-pressed="false">
 <span class="fh">
@@ -7402,7 +7402,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · appartement 1`] = `
 </span>
 <span class="fe">Haut de gamme</span>
 <span class="ft">Premium</span>
-<span class="fd">Matériaux nobles : parquet, grand format, cuisine équipée haut de gamme.</span>
+<span class="fd">Matériaux haut de gamme : parquet, grand format, cuisine haut de gamme. Même pose : seuls les matériaux montent.</span>
 </button>
 </div>
 <div class="gl">Régime de TVA</div>
@@ -7898,7 +7898,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </span>
 <span class="fe">Locatif · budget maîtrisé</span>
 <span class="ft">Éco</span>
-<span class="fd">Entrée de gamme robuste : stratifié, carrelage standard, cuisine en kit.</span>
+<span class="fd">Matériaux d&#x27;entrée de gamme : stratifié, carrelage standard, cuisine en kit.</span>
 </button>
 <button type="button" class="fc" aria-pressed="false">
 <span class="fh">
@@ -7915,7 +7915,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </span>
 <span class="fe">Le plus courant</span>
 <span class="ft">Standard</span>
-<span class="fd">Bon rapport qualité-prix, marques milieu de gamme, finitions soignées.</span>
+<span class="fd">Matériaux milieu de gamme, bon rapport qualité-prix. Même pose qu&#x27;en Éco.</span>
 </button>
 <button type="button" class="fc on" aria-pressed="true">
 <span class="fh">
@@ -7932,7 +7932,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </span>
 <span class="fe">Haut de gamme</span>
 <span class="ft">Premium</span>
-<span class="fd">Matériaux nobles : parquet, grand format, cuisine équipée haut de gamme.</span>
+<span class="fd">Matériaux haut de gamme : parquet, grand format, cuisine haut de gamme. Même pose : seuls les matériaux montent.</span>
 </button>
 </div>
 <div class="gl">Régime de TVA</div>
@@ -9604,7 +9604,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · page vierge 1`] = `
 </span>
 <span class="fe">Locatif · budget maîtrisé</span>
 <span class="ft">Éco</span>
-<span class="fd">Entrée de gamme robuste : stratifié, carrelage standard, cuisine en kit.</span>
+<span class="fd">Matériaux d&#x27;entrée de gamme : stratifié, carrelage standard, cuisine en kit.</span>
 </button>
 <button type="button" class="fc on" aria-pressed="true">
 <span class="fh">
@@ -9621,7 +9621,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · page vierge 1`] = `
 </span>
 <span class="fe">Le plus courant</span>
 <span class="ft">Standard</span>
-<span class="fd">Bon rapport qualité-prix, marques milieu de gamme, finitions soignées.</span>
+<span class="fd">Matériaux milieu de gamme, bon rapport qualité-prix. Même pose qu&#x27;en Éco.</span>
 </button>
 <button type="button" class="fc" aria-pressed="false">
 <span class="fh">
@@ -9638,7 +9638,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · page vierge 1`] = `
 </span>
 <span class="fe">Haut de gamme</span>
 <span class="ft">Premium</span>
-<span class="fd">Matériaux nobles : parquet, grand format, cuisine équipée haut de gamme.</span>
+<span class="fd">Matériaux haut de gamme : parquet, grand format, cuisine haut de gamme. Même pose : seuls les matériaux montent.</span>
 </button>
 </div>
 <div class="gl">Régime de TVA</div>
@@ -10014,7 +10014,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · pieces 1`] = `
 </span>
 <span class="fe">Locatif · budget maîtrisé</span>
 <span class="ft">Éco</span>
-<span class="fd">Entrée de gamme robuste : stratifié, carrelage standard, cuisine en kit.</span>
+<span class="fd">Matériaux d&#x27;entrée de gamme : stratifié, carrelage standard, cuisine en kit.</span>
 </button>
 <button type="button" class="fc on" aria-pressed="true">
 <span class="fh">
@@ -10031,7 +10031,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · pieces 1`] = `
 </span>
 <span class="fe">Le plus courant</span>
 <span class="ft">Standard</span>
-<span class="fd">Bon rapport qualité-prix, marques milieu de gamme, finitions soignées.</span>
+<span class="fd">Matériaux milieu de gamme, bon rapport qualité-prix. Même pose qu&#x27;en Éco.</span>
 </button>
 <button type="button" class="fc" aria-pressed="false">
 <span class="fh">
@@ -10048,7 +10048,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · pieces 1`] = `
 </span>
 <span class="fe">Haut de gamme</span>
 <span class="ft">Premium</span>
-<span class="fd">Matériaux nobles : parquet, grand format, cuisine équipée haut de gamme.</span>
+<span class="fd">Matériaux haut de gamme : parquet, grand format, cuisine haut de gamme. Même pose : seuls les matériaux montent.</span>
 </button>
 </div>
 <div class="gl">Régime de TVA</div>
@@ -10311,7 +10311,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · suite 1`] = `
 </span>
 <span class="fe">Locatif · budget maîtrisé</span>
 <span class="ft">Éco</span>
-<span class="fd">Entrée de gamme robuste : stratifié, carrelage standard, cuisine en kit.</span>
+<span class="fd">Matériaux d&#x27;entrée de gamme : stratifié, carrelage standard, cuisine en kit.</span>
 </button>
 <button type="button" class="fc on" aria-pressed="true">
 <span class="fh">
@@ -10328,7 +10328,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · suite 1`] = `
 </span>
 <span class="fe">Le plus courant</span>
 <span class="ft">Standard</span>
-<span class="fd">Bon rapport qualité-prix, marques milieu de gamme, finitions soignées.</span>
+<span class="fd">Matériaux milieu de gamme, bon rapport qualité-prix. Même pose qu&#x27;en Éco.</span>
 </button>
 <button type="button" class="fc" aria-pressed="false">
 <span class="fh">
@@ -10345,7 +10345,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · suite 1`] = `
 </span>
 <span class="fe">Haut de gamme</span>
 <span class="ft">Premium</span>
-<span class="fd">Matériaux nobles : parquet, grand format, cuisine équipée haut de gamme.</span>
+<span class="fd">Matériaux haut de gamme : parquet, grand format, cuisine haut de gamme. Même pose : seuls les matériaux montent.</span>
 </button>
 </div>
 <div class="gl">Régime de TVA</div>

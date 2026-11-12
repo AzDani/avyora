@@ -7,8 +7,9 @@
  * fermée des « sources » qui envoient un visiteur vers l'inscription. Le reste du site lit ce module ; `estPro`
  * (lib/auth.ts) en tire les droits.
  *
- * Membres fondateurs (décision de Dani du 16/10/2026) : AUCUN CHIFFRE pendant la bêta. La promesse est « un tarif
- * préférentiel garanti à vie, annoncé avant la fin de la bêta » ; aucun prix d'après la bêta n'est affiché.
+ * Membres fondateurs (décision de Dani du 12/11/2026) : une simple reconnaissance (« inscrit pendant la bêta »), SANS
+ * AUCUN AVANTAGE TARIFAIRE. La promesse du 16/10/2026 (« un tarif préférentiel garanti à vie ») est retirée : quand
+ * AVYORA passera payant, les inscrits de la bêta paieront le prix normal. Aucun prix d'après la bêta n'est affiché.
  *
  * Réglages, dans les variables de Vercel (lues AU BUILD : elles commencent par NEXT_PUBLIC_, un
  * redéploiement est nécessaire pour qu'un changement s'applique) :
@@ -101,8 +102,8 @@ export function betaActive(maintenant: Date = new Date()): boolean {
 /**
  * Membre fondateur : un compte dont l'adresse a été CONFIRMÉE avant la fin de la bêta (`user.email_confirmed_at` de
  * Supabase). Pas la date de création : n'importe qui peut créer un compte (non confirmé) à l'adresse d'un autre avant
- * la fin, confirmé en 2027 il ne doit pas devenir fondateur. Le statut reste après la bêta (c'est lui qui garde le
- * tarif préférentiel) ; seule la coupure manuelle le masque.
+ * la fin, confirmé en 2027 il ne doit pas devenir fondateur. Le statut reste après la bêta (une pastille, sans aucun
+ * avantage tarifaire) ; seule la coupure manuelle le masque.
  */
 export function estMembreFondateur(user: { email_confirmed_at?: string | null } | null | undefined): boolean {
   if (!user?.email_confirmed_at || betaCoupee()) return false;

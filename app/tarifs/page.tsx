@@ -260,9 +260,9 @@ export default async function TarifsPage({
 
 /**
  * /tarifs pendant la bêta gratuite (lib/beta.ts). En tête, la bêta : tout est offert jusqu'à la fin, il suffit
- * d'un compte ; aucun moyen de paiement demandé, rien ne sera prélevé. Puis la promesse des membres fondateurs, SANS
- * CHIFFRE (décision de Dani du 16/10/2026 : « un tarif préférentiel garanti à vie, annoncé avant la fin de la bêta »),
- * ce qui est inclus, et AUCUNE grille d'offres ni aucun prix d'après la bêta. Un seul bouton, « Créer mon compte
+ * d'un compte ; aucun moyen de paiement demandé, rien ne sera prélevé. Puis le statut de membre fondateur, une simple
+ * reconnaissance SANS AUCUN AVANTAGE TARIFAIRE (décision de Dani du 12/11/2026, qui retire le « tarif préférentiel
+ * garanti à vie » du 16/10/2026), ce qui est inclus, et AUCUNE grille d'offres ni aucun prix d'après la bêta. Un seul bouton, « Créer mon compte
  * gratuit » ; aucun bouton de paiement (aucune vente pendant la bêta, CGV) :
  *  - anonyme → « Créer mon compte gratuit », qui emporte son intention (`next`) : l'éditeur de plan, ou le
  *    détaillé de sa nature ; sinon l'inscription mène aux questions de profil puis à ses projets ;
@@ -322,8 +322,8 @@ function TarifsBeta({ user, t: tr, locale, source, nature }: {
         )}
       </div>
 
-      {/* La promesse des membres fondateurs : à un anonyme, ce qu'il gagne à s'inscrire maintenant ; à un inscrit de la
-          bêta (il l'est déjà), ce qu'il garde. */}
+      {/* Le statut de membre fondateur (une reconnaissance, aucun avantage tarifaire) : à un anonyme, comment le devenir ;
+          à un inscrit de la bêta (il l'est déjà), le rappel de son statut. Dans les deux cas : rien ne sera prélevé. */}
       {(!user || fondateur) && (
         <div className="mt-6 overflow-hidden rounded-panel bg-gradient-to-r from-[#4F46E5] via-[#6d5cf0] to-[#7C3AED] px-6 py-5 text-center text-white shadow-card" data-tarifs-fondateur="">
           <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-indigo-100/90">{user ? b.tarifsFondateurTagConnecte : b.tarifsFondateurTag}</div>

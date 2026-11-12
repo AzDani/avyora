@@ -55,7 +55,7 @@ export function CtaEstimation({
     <div className="card mt-6 border-brand-100 bg-brand-50/40 p-5">
       <p className="font-semibold text-ink">{titre}</p>
       <p className="mt-1 text-sm text-muted">
-        {sousTitre ?? "Gratuit, sans inscription — une fourchette chiffrée adaptée à ton bien et ton code postal."}
+        {sousTitre ?? "Gratuit, sans compte pour une pièce ou tout le bien — une fourchette chiffrée adaptée à ton bien et ton code postal."}
       </p>
       {/* `.btn` interdit le retour à la ligne (white-space: nowrap, line-height 1) : avec un libellé
           généré (« Estimer un remplacement de baignoire par une douche à Marseille → », 493 px), le

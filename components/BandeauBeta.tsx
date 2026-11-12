@@ -1,12 +1,12 @@
 import { dict } from "@/lib/i18n/dictionaries";
-import { betaActive, dateInsecable, libellesBeta } from "@/lib/beta";
+import { dateInsecable, libellesBeta } from "@/lib/beta";
 import type { Locale } from "@/lib/i18n/config";
 
 /**
  * Bêta gratuite (lib/beta.ts) : l'en-tête de l'inscription (B2). La bêta en une ligne (« Gratuit jusqu'au 31 décembre
- * 2026 · deviens membre fondateur »), puis trois bénéfices courts : ce que le compte donne, ce qu'il ne coûte pas
- * (aucune carte), ce qu'il promet (un tarif préférentiel à vie, SANS CHIFFRE pendant la bêta : il sera annoncé avant
- * sa fin). La date ne se coupe pas en fin de ligne (`dateInsecable`). Court exprès : sur un téléphone, le champ e-mail
+ * 2026 · deviens membre fondateur »), puis trois bénéfices courts : ce que le compte donne, ce qu'il garde (les
+ * projets sur tous les appareils), ce qu'il ne coûtera pas après la bêta (aucun prélèvement automatique). Membre
+ * fondateur = une reconnaissance, AUCUN avantage tarifaire (décision de Dani du 12/11/2026). La date ne se coupe pas en fin de ligne (`dateInsecable`). Court exprès : sur un téléphone, le champ e-mail
  * doit rester visible sans défiler. Rendu seulement pendant la bêta : la page décide, ce composant ne lit pas l'heure.
  * Masqué sur l'écran « C'est envoyé » (`AuthShell`, groupe `auth`).
  */
@@ -76,9 +76,8 @@ function IconeCoche() {
 }
 
 /**
- * La pastille « Membre fondateur » (/projets, Mon compte) ; son infobulle dit ce qu'elle garantit (un tarif
- * préférentiel à vie, sans chiffre) : annoncé avant la fin pendant la bêta, au présent après. Composant serveur : il
- * lit l'heure à la requête.
+ * La pastille « Membre fondateur » (/projets, Mon compte) ; son infobulle dit ce qu'elle reconnaît (un compte de la
+ * bêta), sans aucun avantage tarifaire (décision de Dani du 12/11/2026), pendant comme après la bêta.
  */
 export function PastilleFondateur({ locale, sombre = false }: { locale: Locale; sombre?: boolean }) {
   const b = dict(locale).beta;
@@ -88,7 +87,7 @@ export function PastilleFondateur({ locale, sombre = false }: { locale: Locale; 
         "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold " +
         (sombre ? "border border-white/15 bg-white/10 text-[#e9e5ff]" : "bg-brand-50 text-brand-700")
       }
-      title={betaActive() ? b.membreFondateurTitre : b.membreFondateurTitreApres}
+      title={b.membreFondateurTitre}
       data-membre-fondateur=""
     >
       <IconeFondateur className="shrink-0" />

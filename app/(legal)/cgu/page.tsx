@@ -12,7 +12,7 @@ export const metadata = seoMeta({
 
 /**
  * Bêta gratuite (lib/beta.ts) : l'article 2 bis. Page statique : ses dates suivent NEXT_PUBLIC_BETA_FIN au build,
- * et l'article reste après la fin de la bêta (il fonde le statut de membre fondateur). Coupée à la main
+ * et l'article reste après la fin de la bêta (il définit le statut de membre fondateur, sans avantage tarifaire). Coupée à la main
  * (NEXT_PUBLIC_BETA=0), la page redevient celle d'avant.
  */
 export default function CGU() {
@@ -22,7 +22,7 @@ export default function CGU() {
     <article>
       <h1>Conditions Générales d&apos;Utilisation</h1>
       {/* L'article 3 (compte par lien e-mail, mot de passe facultatif) vaut avec ou sans la bêta : la date aussi. */}
-      <p className="maj">Dernière mise à jour : 16 octobre 2026</p>
+      <p className="maj">Dernière mise à jour : 12 novembre 2026</p>
 
       <h2>1. Objet</h2>
       <p>
@@ -55,8 +55,9 @@ export default function CGU() {
             <li>Aucun moyen de paiement n&apos;est demandé pendant la bêta, et <strong>aucun prélèvement automatique</strong> n&apos;aura lieu, ni pendant la bêta ni à sa fin. Les abonnements payants souscrits avant la bêta, eux, se poursuivent dans les conditions des <a href="/cgv">CGV</a> et restent résiliables à tout moment.</li>
             <li>À la fin de la bêta, le compte repasse simplement sur la version gratuite, sans engagement&nbsp;; l&apos;accès aux fonctionnalités payantes ne reprend que par une souscription volontaire, régie par les <a href="/cgv">CGV</a>. Les données de l&apos;utilisateur (projets, plans) sont conservées.</li>
             <li>Les membres sont <strong>informés par e-mail avant la fin de la bêta</strong>.</li>
-            {/* Aucun montant promis pendant la bêta (décision de Dani du 16/10/2026) : le tarif sera annoncé avant la fin. */}
-            <li>Tout compte dont l&apos;adresse e-mail a été confirmée au plus tard le {l.fin} (heure de Paris) porte le statut de <strong>membre fondateur</strong>&nbsp;: il bénéficie, à vie, d&apos;un <strong>tarif préférentiel</strong> pour toute souscription faite depuis ce compte. Ce tarif est annoncé aux membres avant la fin de la bêta&nbsp;; aucune souscription n&apos;est automatique.</li>
+            {/* Membre fondateur = une reconnaissance, sans avantage tarifaire (décision de Dani du 12/11/2026, qui retire le
+                « tarif préférentiel garanti à vie » de la version du 16/10/2026). */}
+            <li>Tout compte dont l&apos;adresse e-mail a été confirmée au plus tard le {l.fin} (heure de Paris) porte le statut de <strong>membre fondateur</strong>, une simple mention affichée sur le compte. Ce statut ne donne droit à <strong>aucun avantage tarifaire</strong>&nbsp;: toute souscription se fait au prix en vigueur, dans les conditions des <a href="/cgv">CGV</a>, et aucune souscription n&apos;est automatique.</li>
           </ul>
         </>
       )}

@@ -19,7 +19,7 @@ import { codePostalValide } from "@/lib/estimateur/rapide-reno";
 const META = seoMeta({
   title: "Estimation travaux gratuite : budget rénovation",
   description:
-    "Calcule gratuitement le budget de tes travaux de rénovation : 4 questions, une fourchette chiffrée ajustée à ton code postal. Sans inscription.",
+    "Budget de tes travaux de rénovation en 4 questions, une fourchette ajustée à ton code postal. Gratuit, sans compte pour une pièce ou tout le bien.",
   path: "/estimation-travaux",
   type: "website",
 });
@@ -71,8 +71,9 @@ export default async function NouveauProjetRapide({
    * tout le maillage SEO — elle n'avait pourtant AUCUN JSON-LD.
    *
    * ⚠️ Pas d'`aggregateRating` : AVYORA n'a pas d'avis réels, et en inventer serait un faux avis.
-   * `offers` à 0 € est exact — l'estimation rapide est gratuite et sans inscription ; c'est
-   * l'estimation DÉTAILLÉE qui est payante, et elle vit sur une autre URL.
+   * `offers` à 0 € est exact — l'estimation rapide est gratuite, sans compte pour une pièce ou le bien entier
+   * (plusieurs pièces demandent un compte : gratuit pendant la bêta, Pro après) ; c'est l'estimation DÉTAILLÉE qui
+   * est payante, et elle vit sur une autre URL.
    */
   const jsonLd = {
     "@context": "https://schema.org",
@@ -86,7 +87,7 @@ export default async function NouveauProjetRapide({
         inLanguage: "fr-FR",
         isAccessibleForFree: true,
         description:
-          "Estime gratuitement le budget de tes travaux de rénovation : quatre questions, une fourchette chiffrée ajustée à ton code postal, sans inscription.",
+          "Estime gratuitement le budget de tes travaux de rénovation : quatre questions, une fourchette chiffrée ajustée à ton code postal, sans compte pour une pièce ou tout le bien.",
         offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
         publisher: { "@id": `${siteUrl}/#organization` },
       },

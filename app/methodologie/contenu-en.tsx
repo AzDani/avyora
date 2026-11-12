@@ -168,7 +168,7 @@ export default function MethodologieEN() {
       </p>
 
       <div className="cta">
-        <p><strong>Want a figure for your project?</strong>{" "}{"The quick estimate is free with no sign-up: four questions, a range adjusted to your postcode."}</p>
+        <p><strong>Want a figure for your project?</strong>{" "}{"The quick estimate is free, with no account needed for one room or the whole home: four questions, a range adjusted to your postcode."}</p>
         <Link href="/estimation-travaux" className="btn">Estimate my works →</Link>
       </div>
 

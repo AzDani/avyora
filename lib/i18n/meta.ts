@@ -56,11 +56,11 @@ export const META_EN = {
   estimationTravaux: {
     title: "Free renovation estimate — your budget in 2 minutes",
     description:
-      "Work out your renovation budget for free: 4 questions, a price range adjusted to your ZIP code. No sign-up.",
+      "Your renovation budget in 4 questions, a price range adjusted to your ZIP code. Free, no account needed for one room or the whole home.",
     path: "/estimation-travaux",
   },
   nouveauReno: {
-    title: "Estimate your renovation — free, no sign-up",
+    title: "Estimate your renovation for free",
     description:
       "Choose how to estimate: quick and free in 4 questions, or detailed item by item. French market prices adjusted to your region.",
     path: "/projets/nouveau",
