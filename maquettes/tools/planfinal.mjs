@@ -431,7 +431,7 @@ await p.evaluate(() => closeModal());
 await parcours("gratuit, au téléphone", async () => {
 p = await onglet({ largeur: 390, hauteur: 844, pro: false });
 Object.assign(t, await p.evaluate((EX) => { const vis = (el) => !!el && el.getClientRects().length > 0, e = document.getElementById("emptyStage");
-  return { "téléphone gratuit · arrivée : aucune fenêtre, un Plan final, « Mes plans » seul sur la carte (pas d'exemple)": !modaleOuverte() && estPlanFinal() && vis(e) && [...e.querySelectorAll("button")].filter(vis).map((x) => x.textContent).join("|") === "Mes plans" && !new RegExp(EX).test(document.body.innerText) }; }, EXEMPLE_PROPOSE.source));
+  return { "téléphone gratuit · arrivée : aucune fenêtre, un Plan final, « Voir un plan type » et « Mes plans » sur la carte (pas d'exemple ; revue : un plan à regarder)": !modaleOuverte() && estPlanFinal() && vis(e) && [...e.querySelectorAll("button")].filter(vis).map((x) => x.textContent).join("|") === "Voir un plan type|Mes plans" && !new RegExp(EX).test(document.body.innerText) }; }, EXEMPLE_PROPOSE.source));
 await regarder(p, "téléphone gratuit · arrivée");
 });
 
@@ -816,7 +816,7 @@ await parcours("D70, téléphone, gratuit : une rénovation vide", async () => {
 p = await onglet({ largeur: 390, hauteur: 844, pro: false });
 Object.assign(t, await p.evaluate(() => { closeModal(); const vis = (el) => !!el && el.getClientRects().length > 0, e = document.getElementById("emptyStage"), bt = () => [...e.querySelectorAll("button")].filter(vis).map((x) => x.textContent).join("|");
   const pf = bt(); state = blankState(); state.workflow = WORKFLOW_RENO; sel = null; afterChange(); fitView(); render(); const reno = bt();
-  return { "téléphone, gratuit (D70) : la carte d'un Plan final vide n'offre pas l'exemple ; celle d'une rénovation vide le garde (D66)": pf === "Mes plans" && reno === "Voir l'exemple|Mes plans" }; }));
+  return { "téléphone, gratuit (D70) : la carte d'un Plan final vide n'offre pas l'exemple ; celle d'une rénovation vide le garde (D66) ; les deux, un plan type à regarder (revue)": pf === "Voir un plan type|Mes plans" && reno === "Voir l'exemple|Voir un plan type|Mes plans" }; }));
 });
 
 /* ═════════ 18. D75 · « Chiffrer cette maison » : le Plan final ouvre l'estimation de la construction du site ═════════ */

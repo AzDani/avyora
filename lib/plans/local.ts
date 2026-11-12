@@ -5,8 +5,9 @@
  * Même origine que l'éditeur hébergé sur `/plan` : on lit ses clés `localStorage` telles quelles.
  *  - `avyora-plans` : la bibliothèque locale (« Mes plans » d'un anonyme), `{ [id]: {id, name, savedAt,
  *    state, view, resume} }` ;
- *  - `avyora-plan-v2` : le tampon du plan ouvert, `{ state, view, onglet }`, plus `resume` quand l'éditeur part
- *    vers l'inscription (`siteCreerCompte`) : le rappel de /inscription dit alors la surface et les pièces ;
+ *  - `avyora-plan-v2` : le tampon du plan ouvert, `{ state, view, onglet }`, plus `resume` (surface, pièces) que
+ *    l'éditeur du site y écrit au calme et en partant vers l'inscription (`siteCreerCompte`) : le rappel de
+ *    /inscription et la carte « Sur cet appareil » de la vitrine disent alors la surface et les pièces ;
  *  - `avyora-plan-claim` : le drapeau posé par l'invitation de l'éditeur (ou par « Garde-le dans ton
  *    compte » du hub) : l'id local du plan à reprendre après l'inscription.
  *
@@ -135,8 +136,9 @@ export function lirePlansLocaux(s: Stockage): PlanLocal[] {
     if (!planPorteTravail(e.state)) continue;
     const dejaOuvert = sortie.find((p) => p.id && p.id === e.id);
     if (dejaOuvert) {
-      /* le plan ouvert est aussi rangé : on garde l'état du tampon (plus récent) et le résumé de l'entrée */
-      dejaOuvert.resume = estObj(e.resume) ? e.resume : null;
+      /* le plan ouvert est aussi rangé : on garde l'état du tampon (plus récent), et son résumé s'il en a un
+         (l'éditeur du site l'y écrit) ; sinon celui de l'entrée rangée */
+      dejaOuvert.resume = dejaOuvert.resume ?? (estObj(e.resume) ? e.resume : null);
       continue;
     }
     biblio.push({

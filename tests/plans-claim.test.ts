@@ -227,6 +227,19 @@ describe("C5 · reprise d'un plan local (ClaimPlan)", () => {
     expect(JSON.parse(s.getItem(CLE_TAMPON_PLAN)!).state.id).toBe("ccc3333");
   });
 
+  it("revue · le résumé du tampon (écrit par l'éditeur du site) : la carte « Sur cet appareil » a ses m² et ses pièces", () => {
+    /* un plan jamais rangé : seul le tampon, avec son résumé */
+    const seul = { state: dessine("eee5555", "Mon plan"), view: {}, onglet: "x", resume: { pf: true, m2: 12, pieces: 1 } };
+    const [p] = lirePlansLocaux(stockage({ [CLE_TAMPON_PLAN]: seul }));
+    expect(p).toMatchObject({ id: "eee5555", ouvert: true, resume: { m2: 12, pieces: 1 } });
+    /* rangé aussi : le résumé du tampon (plus récent) l'emporte sur celui de l'entrée */
+    const lib = { eee5555: entree("eee5555", "Mon plan", 3) };
+    const [q] = lirePlansLocaux(stockage({ [CLE_PLANS_LOCAUX]: lib, [CLE_TAMPON_PLAN]: seul }));
+    expect(q.resume).toMatchObject({ m2: 12, pieces: 1 });
+    expect(dictPlans("fr").hub.ouvert).toBe("en cours");
+    expect(dictPlans("en").hub.ouvert).toBe("in progress");
+  });
+
   it("ce qui n'est pas un plan à reprendre : plan vide, modèle intact, plan du compte resté dans le tampon", () => {
     const vide = { ...dessine("v1", "Vide"), levels: [{ walls: [], openings: [] }] };
     expect(planPorteTravail(vide)).toBe(false);

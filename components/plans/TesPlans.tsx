@@ -208,7 +208,8 @@ export default function TesPlans() {
  */
 function Appel({ t, telephone, erreur }: { t: DictPlans; telephone: boolean; erreur: boolean }) {
   return (
-    <div className="card grid items-center gap-6 overflow-hidden p-6 sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] sm:p-8">
+    /* data-vitrine-appel : la vitrine ne répète pas la capture 3D dans sa grille tant que l'appel est affiché */
+    <div data-vitrine-appel="" className="card grid items-center gap-6 overflow-hidden p-6 sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] sm:p-8">
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-3">
           {telephone ? (

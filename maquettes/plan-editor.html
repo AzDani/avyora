@@ -1420,7 +1420,7 @@ body.v3plein .v3{position:fixed;inset:0;z-index:19}
       <button type="button" class="obdef g" id="obGauche" tabindex="-1" aria-hidden="true" onclick="defilerOptbar(-1)" data-tip="Options précédentes"><svg class="ico" data-ico="chevronGauche"></svg></button>
       <button type="button" class="obdef d" id="obDroite" tabindex="-1" aria-hidden="true" onclick="defilerOptbar(1)" data-tip="Plus d'options : fais défiler"><svg class="ico" data-ico="chevronDroite"></svg></button>
     </div>
-    <div class="emptyStage" id="emptyStage" hidden><div class="emptyCard" role="region" aria-label="Plan vide"><span class="ei"><svg class="ico i24" data-ico="outilMur"></svg></span><h4>Dessine ton logement</h4><p class="edesk">Trace tes pièces telles qu'elles sont aujourd'hui : chaque pièce fermée affiche sa surface, et ton budget suivra tes décisions.</p><p class="ephone">Ce plan est vide. Pour dessiner ton logement, ouvre AVYORA sur ordinateur ou tablette.</p><div class="eact edesk"><button type="button" class="ib primary" onclick="tracerLesMurs()">Tracer les murs<kbd>M</kbd></button><button type="button" class="ib" onclick="poserPieceRapide(event)">Poser une pièce de 4 × 3 m</button></div><div class="eact ephone"><button type="button" class="ib primary proSeul" onclick="closeWelcome('sample')">Voir l'exemple</button><button type="button" class="ib" onclick="openPlansModal()">Mes plans</button></div><button type="button" class="elink edesk" onclick="openTemplates()">ou pars d'un plan type</button></div></div>
+    <div class="emptyStage" id="emptyStage" hidden><div class="emptyCard" role="region" aria-label="Plan vide"><span class="ei"><svg class="ico i24" data-ico="outilMur"></svg></span><h4>Dessine ton logement</h4><p class="edesk">Trace tes pièces telles qu'elles sont aujourd'hui : chaque pièce fermée affiche sa surface, et ton budget suivra tes décisions.</p><p class="ephone">Ce plan est vide. Pour dessiner ton logement, ouvre AVYORA sur ordinateur ou tablette.</p><div class="eact edesk"><button type="button" class="ib primary" onclick="tracerLesMurs()">Tracer les murs<kbd>M</kbd></button><button type="button" class="ib" onclick="poserPieceRapide(event)">Poser une pièce de 4 × 3 m</button></div><div class="eact ephone"><button type="button" class="ib primary proSeul" onclick="closeWelcome('sample')">Voir l'exemple</button><button type="button" class="ib" onclick="openTemplates()">Voir un plan type</button><button type="button" class="ib" onclick="openPlansModal()">Mes plans</button></div><button type="button" class="elink edesk" onclick="openTemplates()">ou pars d'un plan type</button></div></div>
     <!-- D69 · l'aide de la première fois d'un Plan final (remplie par majAidePF : les noms des outils viennent de TOOLS) -->
     <div class="aidePF" id="aidePF" role="note" hidden></div>
     <div class="phoneBanner" id="phoneBanner" role="note"><span><svg class="ico" data-ico="telephone"></svg> <b>Mode chantier</b> : consulte le plan, tape un élément pour ses détails, coche l'avancement dans le tiroir en bas. Pour <b>dessiner</b>, passe sur ordinateur ou tablette.</span><button type="button" onclick="fermerBandeau()">OK</button></div>
@@ -4780,13 +4780,27 @@ function siteInviter(){
   try{localStorage.setItem('avyora-plan-invite',JSON.stringify(vus.slice(-50)));}catch{}
   const c=document.createElement('div');c.id='siteInvite';c.setAttribute('role','region');c.setAttribute('aria-label','Garder ce plan');
   c.setAttribute('aria-live','polite');
-  c.style.cssText='position:fixed;left:16px;bottom:56px;z-index:18;max-width:340px;padding:12px 16px;'
+  /* dans la zone du plan, en bas à droite (au-dessus de la barre d'état) : ni sur la colonne d'outils, ni sur la
+     pastille « Premiers pas » (en bas à gauche) ; le message remonte au-dessus d'elle, et la 3D la cache */
+  c.style.cssText='position:absolute;right:var(--sp-3);bottom:calc(var(--etat-h) + var(--sp-3));z-index:4;'
+    +'width:340px;max-width:calc(100% - 24px);box-sizing:border-box;padding:12px 16px;'
     +'background:var(--white);border:1px solid var(--line);border-radius:var(--r-l);'
     +'box-shadow:var(--sh-pop);font-size:var(--fs-m)';
+  siteStyleInvite();
+  const zone=document.getElementById('stage')||document.body;
   /* la région est posée vide, puis remplie : un lecteur d'écran l'annonce (aria-live), le focus ne bouge pas */
-  document.body.appendChild(c);
-  requestAnimationFrame(()=>{c.innerHTML='<p style="margin:0 0 8px"><b>Garde ce plan dans ton compte</b> : tu le retrouves sur tous tes appareils.</p><div class="btnrow" style="margin:0"><button type="button" class="ib primary" onclick="siteCreerCompte()">Créer mon compte gratuit</button><button type="button" class="ib" onclick="siteFermerInvite()">Plus tard</button></div>';});}
-function siteFermerInvite(){const c=document.getElementById('siteInvite');if(c)c.remove();}
+  zone.appendChild(c);document.body.classList.add('siteinvite');
+  requestAnimationFrame(()=>{c.innerHTML='<p style="margin:0 0 8px"><b>Garde ce plan dans ton compte</b> : tu le retrouves sur tous tes appareils.</p><div class="btnrow" style="margin:0"><button type="button" class="ib primary" onclick="siteCreerCompte()">Créer mon compte gratuit</button><button type="button" class="ib" onclick="siteFermerInvite()">Plus tard</button></div>';
+    zone.style.setProperty('--invite-h',c.offsetHeight+'px');});}
+/* une fois : la carte disparaît pendant la 3D, et le message du bas passe au-dessus d'elle tant qu'elle est là */
+function siteStyleInvite(){
+  if(document.getElementById('siteInviteCss'))return;
+  const st=document.createElement('style');st.id='siteInviteCss';
+  st.textContent='body.v3on #siteInvite{display:none}@media (max-width:600px){#siteInvite{display:none}}'
+    +'@media (min-width:601px){body.siteinvite:not(.v3on) #toast:not(.over)'
+    +'{bottom:calc(var(--etat-h) + var(--sp-3) + var(--invite-h,110px) + 8px)}}';
+  document.head.appendChild(st);}
+function siteFermerInvite(){const c=document.getElementById('siteInvite');if(c)c.remove();document.body.classList.remove('siteinvite');}
 function siteCreerCompte(){
   if(!state.id)state.id=uid();
   try{localStorage.setItem('avyora-plan-claim',state.id);}catch{}
@@ -4862,18 +4876,22 @@ function siteAdresseSuivre(){
     const q=new URLSearchParams(location.search);if(!q.has('id'))return;
     q.delete('id');const r=q.toString();window.history.replaceState(window.history.state,'',location.pathname+(r?'?'+r:''));
   }catch{}}
-/* téléphone (on y consulte, on ne dessine pas) : sur un plan vide, un titre qui le dit, le lien à s'envoyer, le retour au site */
+/* téléphone (on y consulte, on ne dessine pas) : sur un plan vide, un titre qui le dit, le lien à s'envoyer, un plan type
+   à regarder (la carte de base), le retour au site ; l'anonyme a aussi le lien vers un compte gratuit */
 function siteTelephone(){
   const c=document.querySelector('#emptyStage .emptyCard');if(!c||c.querySelector('.sitetel'))return;
   const st=document.createElement('style');
-  st.textContent='@media (max-width:600px){.emptyCard h4.sitetel{display:block}.emptyCard h4:not(.sitetel){display:none}}';
+  st.textContent='@media (max-width:600px){.emptyCard h4.sitetel{display:block}.emptyCard h4:not(.sitetel){display:none}'
+    +'.emptyCard .elink.sitecompte{display:inline-block;text-decoration:none}}';
   document.head.appendChild(st);
   const h=c.querySelector('h4');
   if(h)h.insertAdjacentHTML('afterend','<h4 class="ephone sitetel">Ton plan se dessine sur ordinateur ou tablette</h4>');
   const a=c.querySelector('.eact.ephone'),acc=typeof SITE_URLS.accueil==='string'?SITE_URLS.accueil:'/logiciel-plan-maison';
   if(a){
     a.insertAdjacentHTML('afterbegin','<button type="button" class="ib primary" onclick="siteEnvoyerLien()">M\'envoyer le lien</button>');
-    a.insertAdjacentHTML('beforeend','<a class="ib" href="'+esc(acc)+'">Retour au site</a>');}}
+    a.insertAdjacentHTML('beforeend','<a class="ib" href="'+esc(acc)+'">Retour au site</a>');
+    const ins=typeof SITE_URLS.inscription==='string'?SITE_URLS.inscription:'/inscription?next=%2Fplan';
+    if(!NUAGE)a.insertAdjacentHTML('afterend','<a class="elink ephone sitecompte" href="'+esc(ins)+'">Créer mon compte gratuit</a>');}}
 async function siteEnvoyerLien(){
   const url=location.origin+(typeof SITE_URLS.editeur==='string'?SITE_URLS.editeur:'/plan');
   if(navigator.share){
@@ -4926,6 +4944,18 @@ if(NUAGE){
 if(SITE&&!NUAGE){
   const _sv=suivre;
   suivre=function(n,d){_sv(n,d);if(n==='premiere_piece')setTimeout(siteInviter,800);};
+}
+/* le tampon porte aussi le résumé (surface, pièces) : la vitrine le lit pour la carte « Sur cet appareil ».
+   Écrit au calme (1,5 s après le dernier geste) et en quittant la page, jamais à chaque geste. */
+if(SITE){
+  const _sa=save;let resumeT=0;
+  const tamponResume=()=>{
+    clearTimeout(resumeT);resumeT=0;
+    if(conflitOnglet||!planPorteTravail(state))return;
+    const resume=resumePlan();if(!resume)return;
+    try{localStorage.setItem('avyora-plan-v2',JSON.stringify({state,view,onglet:ONGLET,resume}));}catch{}};
+  save=function(){const r=_sa.apply(this,arguments);clearTimeout(resumeT);resumeT=setTimeout(tamponResume,1500);return r;};
+  window.addEventListener('pagehide',()=>{if(resumeT)tamponResume();});
 }
 /* ===== fin du MODE SITE (D76) ===== */
 function planPaywall(){if(NUAGE)suivre('plan_limite_gratuit',{moment:'nouveau'}); /* C10 : un plan de plus refusé au compte gratuit */renderPlans();openModal('plans');toast('Version gratuite : '+DROITS.plans.gratuit+'. '+avecPro('plans'),false);}
@@ -5369,7 +5399,10 @@ function clickAction(raw){
   if(tool==='mur'){
     if(rectMode){ // pièce rectangulaire rapide : le clic pose le coin haut-gauche
       const {p}=snapPoint(raw,null);const {L:Lr,l}=rectMode;const c=[p,v(p.x+Lr,p.y),v(p.x+Lr,p.y+l),v(p.x,p.y+l)];
-      chain=[];chainWallIds=[];for(let i=0;i<4;i++)addWall(c[i],c[(i+1)%4]);chain=c.slice();endChain(true);rectMode=null;toast('Pièce de '+uLL(Lr,l)+' posée',true);return;
+      chain=[];chainWallIds=[];for(let i=0;i<4;i++)addWall(c[i],c[(i+1)%4]);chain=c.slice();endChain(true);rectMode=null;
+      /* revue : la pièce posée, on revient à la Sélection avec la pièce choisie (le clic suivant ne lance plus un mur, la consigne du panneau ne traîne plus) — comme au clavier */
+      syncRooms(L());{const m=v(p.x+Lr/2,p.y+l/2),f=(facesCache[L().id]||[]).filter(x=>x.room).find(x=>pointIn(m,x.poly));setTool('select');if(f)sel={kind:'room',id:f.room.id};render();}
+      toast('Pièce de '+uLL(Lr,l)+' posée : nomme-la dans sa fiche, ou M pour tracer d\'autres murs',true);return;
     }
     const ref=chain.length?chain[chain.length-1]:null; const {p}=snapPoint(raw,ref);
     if(chain.length&&dist(p,chain[0])<1e-6&&chain.length>=3){addWall(chain[chain.length-1],p);endChain(true);return;}
@@ -7769,9 +7802,8 @@ function renderSelection(lv){
     ${mode()==='projet'&&wst(findWall(o.wallId))!=='demolir'?`<div class="ph">Décision</div>${segEtat(OPENINGS[o.type].kind==='gap'?'passage':'opening',ost(o),k=>`setOpeningProp('st','${k}')`,{creer:wst(findWall(o.wallId))==='creer'?'dans un mur neuf':'percement'})}<div class="ph mt"></div>`:''}
     ${plie('op-modele','Modèle',`${OPENINGS[o.type].label} · <span class="mono">${uLL(OPENINGS[o.type].w,OPENINGS[o.type].h)}</span>`,bibOuvertures(o.type,k=>`setOpeningProp('type','${k}')`))}
     <!-- La menuiserie telle qu'elle est se remplit d'abord : c'est de là que part la décision. -->
-    <div class="ph mt">Menuiserie${estPlanFinal()?'':' '+(ost(o)==='creer'||ost(o)==='remplacer'?'(neuve)':'actuelle')}</div>
-    ${matsFor(o).length?(matsFor(o).length===1?`<div class="row"><label>Matériau</label><span class="chip">${MENUIS_MAT[matsFor(o)[0]]}</span></div><div class="tip" style="margin-top:4px">Une baie vitrée se réalise <b>en aluminium</b> (seul profil qui tient les grandes dimensions).</div>`:`<div class="row"><label>Matériau</label><select class="fin" style="width:auto" onchange="setOpeningProp('mat',this.value)"><option value="" ${!o.mat?'selected':''}>À préciser</option>${matsFor(o).map(k=>`<option value="${k}" ${o.mat===k?'selected':''}>${MENUIS_MAT[k]}</option>`).join('')}</select></div>`):''}
-    ${ost(o)!=='creer'&&ost(o)!=='remplacer'&&!estPlanFinal()?`<div class="row"><label>État</label><span class="seg" style="display:inline-flex">${Object.entries(MENUIS_ETAT).map(([k,l])=>`<button class="${o.etat===k?'on':''}${k==='vetuste'?' st-demolir':''}" onclick="setOpeningProp('etat','${k}')">${l}</button>`).join('')}</span></div>${o.etat==='vetuste'&&ost(o)!=='remplacer'?`<div class="tip q" style="margin-top:6px">Menuiserie vétuste : passe-la <b>« ${LEX.etat.remplacer} »</b> pour la chiffrer en neuve.</div>`:''}`:''}
+    <!-- revue : l'intertitre « Menuiserie » ne s'affiche que s'il a quelque chose dessous (une porte simple en Plan final n'a ni matériau ni état) -->
+    ${(menu=>menu.trim()?`<div class="ph mt">Menuiserie${estPlanFinal()?'':' '+(ost(o)==='creer'||ost(o)==='remplacer'?'(neuve)':'actuelle')}</div>${menu}`:'')(`${matsFor(o).length?(matsFor(o).length===1?`<div class="row"><label>Matériau</label><span class="chip">${MENUIS_MAT[matsFor(o)[0]]}</span></div><div class="tip" style="margin-top:4px">Une baie vitrée se réalise <b>en aluminium</b> (seul profil qui tient les grandes dimensions).</div>`:`<div class="row"><label>Matériau</label><select class="fin" style="width:auto" onchange="setOpeningProp('mat',this.value)"><option value="" ${!o.mat?'selected':''}>À préciser</option>${matsFor(o).map(k=>`<option value="${k}" ${o.mat===k?'selected':''}>${MENUIS_MAT[k]}</option>`).join('')}</select></div>`):''}${ost(o)!=='creer'&&ost(o)!=='remplacer'&&!estPlanFinal()?`<div class="row"><label>État</label><span class="seg" style="display:inline-flex">${Object.entries(MENUIS_ETAT).map(([k,l])=>`<button class="${o.etat===k?'on':''}${k==='vetuste'?' st-demolir':''}" onclick="setOpeningProp('etat','${k}')">${l}</button>`).join('')}</span></div>${o.etat==='vetuste'&&ost(o)!=='remplacer'?`<div class="tip q" style="margin-top:6px">Menuiserie vétuste : passe-la <b>« ${LEX.etat.remplacer} »</b> pour la chiffrer en neuve.</div>`:''}`:''}`)}
     ${ost(o)!=='creer'&&ost(o)!=='boucher'?blocDecisionExistant(OPENINGS[o.type].kind==='gap'?'passage':'opening',k=>`setOpeningProp('st','${k}')`,ost(o),OPENINGS[o.type].kind==='gap'?`Ce que tu décides de ce passage.`:`Ce que tu décides de cette menuiserie.`):''}
     ${ost(o)==='boucher'?`<div class="tip" style="margin-top:10px">Cette ouverture est <b>bouchée</b> : il n'y a plus de menuiserie à décrire, seulement un trou à refermer. Ses dimensions donnent la surface à reboucher.</div>`:''}
     <!-- D41 : les dimensions viennent APRÈS la décision — elles se règlent surtout en glissant sur le plan, et la décision doit se voir sans défiler. -->
@@ -9056,7 +9088,7 @@ function exportPlan(){
     pages.push({title:'Les mots de ce budget',sub:'Les mots du bâtiment de ce dossier, en une phrase',body:`<div class="xrecap xmots"><div class="glist">${ks.map(k=>`<div><b>${esc(GLOSSAIRE[k][0])}</b><span>${esc(GLOSSAIRE[k][1])}</span></div>`).join('')}</div></div>`,foot:'Les mots de ce budget'});}}
   const N=pages.length;
   let h=pro?'':`<div class="xfree noprint"><span><b>Version gratuite</b> : ${pf?DROITS.export.planFinal.gratuit+'. Avec Pro : '+DROITS.export.planFinal.pro+'.':DROITS.export.gratuit+'. '+avecPro('export')} ${prixPro()}</span>${lienPro('Passer Pro','ib propill')}</div>`;
-  pages.forEach((pg,i)=>{h+=`<div class="xpage${pro?' pro':''}">${pro?'':'<div class="wm">'+WM+'</div>'}<div class="xhead"><span class="xbrand"><svg viewBox="0 0 64 64" width="18" height="18" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><rect width="64" height="64" rx="16" fill="#4F46E5"/><path d="M15 47 L32 13 L49 47" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="40" r="4.8" fill="#C4B5FD"/></svg>AVY<i>ORA</i></span><span class="xpn">${pro?'Dossier Pro':'Dossier de plan'} · ${esc(state.name||'Mon plan')}</span></div><h4>${pg.title}</h4>${pg.sub?`<div class="xsub">${pg.sub}</div>`:''}${pg.body}<div class="xfoot"><span>Page ${i+1}/${N} · ${pg.foot}</span><span>${pro?'Dossier <b>AVYORA Pro</b> · getavyora.fr':'Généré gratuitement avec <b>AVYORA</b> · getavyora.fr'}</span></div></div>`;});
+  pages.forEach((pg,i)=>{h+=`<div class="xpage${pro?' pro':''}">${pro?'':'<div class="wm" aria-hidden="true">'+WM+'</div>'}<div class="xhead"><span class="xbrand"><svg viewBox="0 0 64 64" width="18" height="18" aria-hidden="true" style="vertical-align:-3px;margin-right:6px"><rect width="64" height="64" rx="16" fill="#4F46E5"/><path d="M15 47 L32 13 L49 47" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="40" r="4.8" fill="#C4B5FD"/></svg>AVY<i>ORA</i></span><span class="xpn">${pro?'Dossier Pro':'Dossier de plan'} · ${esc(state.name||'Mon plan')}</span></div><h4>${pg.title}</h4>${pg.sub?`<div class="xsub">${pg.sub}</div>`:''}${pg.body}<div class="xfoot"><span>Page ${i+1}/${N} · ${pg.foot}</span><span>${pro?'Dossier <b>AVYORA Pro</b> · getavyora.fr':'Généré gratuitement avec <b>AVYORA</b> · getavyora.fr'}</span></div></div>`;});
   document.getElementById('exportGallery').innerHTML=h;openModal('export');draw();
 }
 // cotes extérieures cumulées le long des quatre façades (nœuds de murs alignés sur le bord du plan)
@@ -9259,11 +9291,14 @@ let toastT;function toast(msg,ok,opt){const t=document.getElementById('toast');t
 /* D48 (cj-design05, cj-integration06) : le message disait « clique pour poser le 1er coin » mais
    l'outil restait sur Sélection — le clic ne faisait rien. Sur ordinateur, un nouveau plan ouvre
    réellement l'outil Murs (même parcours que « Feuille blanche ») ; au téléphone, pas de dessin. */
+/* retire le message affiché (et ses boutons), sans attendre sa fin : un plan neuf ne garde pas le message du plan d'avant */
+function effacerToast(){const t=document.getElementById('toast');if(!t)return;clearTimeout(toastT);t.classList.remove('show','act');t._vue=false;t._sansModele=false;}
 function newPlan(apres,wf0){if(isMobile()){toast(estPlanFinal()?'Le dessin se fait sur ordinateur ou tablette : ici, tu consultes tes plans.':'Le dessin se fait sur ordinateur ou tablette : ici, tu consultes tes plans et tu coches l\'avancement.');return;}
   avantDeRemplacer((garde,pq)=>annoncerLimite(pq,()=>{
   if(!garde&&!pq)history=[];else history.push(snapshot());future=[];
   const wf=wf0||typeNouveau(); /* D68 : le type choisi à la création ; sans choix, en gratuit un Plan final, en Pro le type du plan ouvert (D67) */
   _tachesOuverture=null;state=blankState();state.workflow=wf;state.name=nomUnique(state.name);sel=null;resetGestes();panelTab='details';wallType='auto';customT=null; /* D42 : le premier contour d'un nouveau plan est en murs (arbitrage I) ; D48 : ensuite, le type se lit au tracé */afterChange();fitView();
+  effacerToast(); /* revue : le message du plan d'avant (« Maison · 94 m² chargé — … Voir en 3D ») ne reste pas sur la feuille blanche */
   baseDecisions();if(apres)apres();else tracerLesMurs();
   /* D64 : la consigne (« clique pour poser le 1er coin ») est déjà dite au centre du plan et dans la barre d'état ; le
      message ne dit plus que ce qui est arrivé au plan d'avant */
@@ -9418,7 +9453,8 @@ function chargerModele(T,garde,pq,wf0){const apres=()=>{if(garde)toast(T.name+' 
   afterChange();
   (facesCache[lv.id]||[]).forEach(f=>{const c=f.label;const r=f.room;const m=spec.find(z=>c.x>=z[0]&&c.x<=z[2]&&c.y>=z[1]&&c.y<=z[3]);if(m&&r){r.type=m[4];if(m[5])r.floor=m[5];}});
   sel=null;afterChange();fitView();marquerOrigine('modele');baseDecisions();
-  toast(T.name+' chargé — adapte les cotes en glissant les murs'+(estPlanFinal()?'':', puis passe en vue '+nomVue('projet')),true,v3Proposer());apres();
+  /* revue : au téléphone, on consulte — le message ne pousse pas à glisser des murs */
+  toast(T.name+' chargé'+(isMobile()?' : touche une pièce pour voir ses détails':' — adapte les cotes en glissant les murs'+(estPlanFinal()?'':', puis passe en vue '+nomVue('projet'))),true,v3Proposer());apres();
 }
 // aperçu SVG d'un modèle (murs seuls), pour la galerie
 function templateSVG(T){
@@ -9964,7 +10000,9 @@ function v3Message(k){const el=document.getElementById('v3Msg');if(!el)return;co
     reseau:`<div role="alert"><h4>La 3D n'a pas pu se charger</h4><p>La première ouverture de la vue 3D a besoin d'une connexion internet. Ton plan n'a pas bougé.</p><div class="btnrow"><button type="button" class="ib primary" onclick="v3Reessayer()">Réessayer</button>${retour}</div></div>`,
     webgl:`<div role="alert"><h4>Pas de 3D sur ce navigateur</h4><p>Ce navigateur n'affiche pas la 3D (WebGL est désactivé ou indisponible). Ton plan n'a pas bougé.</p><div class="btnrow">${retour}</div></div>`,
     /* D74 : le plan vide propose ce qu'on peut y faire — tracer ses murs, ou partir d'un plan type */
-    vide:`<div role="status"><h4>Rien à montrer en 3D</h4><p>Dessine d'abord tes murs : la 3D se construit à partir du plan.</p><div class="btnrow"><button type="button" class="ib primary" onclick="v3Fermer();tracerLesMurs()">Tracer les murs</button><button type="button" class="ib" onclick="v3Fermer();openTemplates(estPlanFinal()?WORKFLOW_FINAL:WORKFLOW_RENO)">Partir d'un plan type</button></div></div>`,
+    /* revue : au téléphone on ne dessine pas — ni « Tracer les murs » ni « Dessine d'abord », un plan type à regarder */
+    vide:isMobile()?`<div role="status"><h4>Rien à montrer en 3D</h4><p>Ce plan est vide. Regarde un plan type en 3D ; le dessin se fait sur ordinateur ou tablette.</p><div class="btnrow"><button type="button" class="ib primary" onclick="v3Fermer();openTemplates(estPlanFinal()?WORKFLOW_FINAL:WORKFLOW_RENO)">Voir un plan type</button>${retour}</div></div>`
+      :`<div role="status"><h4>Rien à montrer en 3D</h4><p>Dessine d'abord tes murs : la 3D se construit à partir du plan.</p><div class="btnrow"><button type="button" class="ib primary" onclick="v3Fermer();tracerLesMurs()">Tracer les murs</button><button type="button" class="ib" onclick="v3Fermer();openTemplates(estPlanFinal()?WORKFLOW_FINAL:WORKFLOW_RENO)">Partir d'un plan type</button></div></div>`,
     erreur:`<div role="alert"><h4>La 3D n'a pas pu se construire</h4><p>Un élément du plan n'a pas pu être mis en volume. Ton plan n'a pas bougé : tu peux continuer à le dessiner.</p><div class="btnrow">${retour}</div></div>`};
   el.innerHTML=k?M[k]:'';el.hidden=!k;
   if((avant||'')!==(k||'')){v3Barre();v3MajAide();}}

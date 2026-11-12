@@ -86,7 +86,10 @@ try {
     <div class="m">AVY<span>ORA</span></div>
     <div class="a"><img src="${d2d}"></div><div class="b"><img src="${d3d}"></div></body></html>`, { waitUntil: "load" });
   if (!(await p2.evaluate(() => [...document.images].every((i) => i.complete && i.naturalWidth > 0)))) throw new Error("image de partage : une capture ne s'est pas chargée");
-  await p2.screenshot({ type: "png", path: path.join(SORTIE, "og-plan.png") });
+  /* PNG en palette (libimagequant de sharp, qualité 90) : ~120 Ko au lieu de ~470 Ko, rendu identique à l'œil
+     (PSNR ≈ 45 dB). Au-delà de ~300 Ko, WhatsApp ignore souvent l'aperçu. */
+  const og = await p2.screenshot({ type: "png" });
+  await sharp(og).png({ palette: true, quality: 90, compressionLevel: 9, effort: 10 }).toFile(path.join(SORTIE, "og-plan.png"));
 
   console.log(`  ✓ ${resume.nom} · ${resume.pieces} pièces · gratuit, sans ?dev · 3D : ${etat}`);
   for (const f of fs.readdirSync(SORTIE).sort()) console.log(`    ${f}  ${(fs.statSync(path.join(SORTIE, f)).size / 1024).toFixed(0)} Ko`);

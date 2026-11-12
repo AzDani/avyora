@@ -71,7 +71,7 @@ const fr = {
     tousDansEditeur: "Ils s'ouvrent depuis « Mes plans », dans l'éditeur.",
     garder: "Garde-le dans ton compte",
     garderSous: "Crée ton compte gratuit : tu le retrouves sur tous tes appareils.",
-    ouvert: "ouvert",
+    ouvert: "en cours",
   },
   /* La vitrine `/logiciel-plan-maison`, sous l'îlot « Tes plans » (C9). Seulement ce que l'éditeur sait faire.
      coherence.mjs § 9 lit le bloc « Plan final » ci-dessous avec les mots interdits d'un Plan final (D75, `MOTS`). */
@@ -336,7 +336,7 @@ const en: DictPlans = {
     tousDansEditeur: "Open them from “Mes plans” in the editor.",
     garder: "Keep it in your account",
     garderSous: "Create your free account: you'll find it on all your devices.",
-    ouvert: "open",
+    ouvert: "in progress",
   },
   vitrine: {
     comment: "How it works",

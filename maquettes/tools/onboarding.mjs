@@ -256,7 +256,7 @@ await p.evaluate(() => { state = blankState(); sel = null; afterChange(); fitVie
 Object.assign(t, await p.evaluate(() => {
   const c = document.getElementById("emptyStage"), vis = (el) => !!el && el.getClientRects().length > 0, txt = c.innerText;
   return {
-    "téléphone · plan vide : une carte propre au mode chantier (exemple, Mes plans)": !c.hidden && /ordinateur ou tablette/.test(txt) && [...c.querySelectorAll("button")].filter(vis).map((x) => x.textContent).join("|") === "Voir l'exemple|Mes plans",
+    "téléphone · plan vide : une carte propre au mode chantier (exemple, plan type à regarder, Mes plans)": !c.hidden && /ordinateur ou tablette/.test(txt) && [...c.querySelectorAll("button")].filter(vis).map((x) => x.textContent).join("|") === "Voir l'exemple|Voir un plan type|Mes plans",
     "téléphone · plan vide : aucune invitation à tracer": !/Tracer les murs|Poser une pièce/.test(txt),
   };
 }));
