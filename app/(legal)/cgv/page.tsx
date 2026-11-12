@@ -9,7 +9,7 @@ export default function CGV() {
   return (
     <article>
       <h1>Conditions Générales de Vente</h1>
-      <p className="maj">Dernière mise à jour : {beta ? "16 octobre 2026" : "6 septembre 2026"}</p>
+      <p className="maj">Dernière mise à jour : 12 novembre 2026</p>
 
 
       <h2>1. Objet et champ d&apos;application</h2>
@@ -45,8 +45,7 @@ export default function CGV() {
 
       <h2>3. Prix</h2>
       <ul>
-        <li>Les prix sont indiqués en euros, <strong>toutes taxes comprises (TTC)</strong>, sur la page <a href="/tarifs">Tarifs</a>.</li>
-        <li>L&apos;éditeur relève de la franchise en base de TVA&nbsp;: <strong>TVA non applicable, art. 293 B du CGI</strong>. Les prix affichés sont donc nets de TVA.</li>
+        <li>Les prix sont indiqués en euros, sur la page <a href="/tarifs">Tarifs</a> et sur la page de paiement. L&apos;éditeur relève de la franchise en base de TVA&nbsp;: <strong>TVA non applicable, art. 293 B du CGI</strong>. Le prix affiché est le prix total payé par le Client.</li>
         <li>Les éventuelles remises sont indiquées avec leurs conditions et leur durée&nbsp;; le prix affiché est le prix pratiqué, sans prix de référence barré.</li>
         <li>L&apos;éditeur peut modifier ses prix à tout moment&nbsp;; le prix applicable est celui en vigueur lors de la souscription. Toute évolution tarifaire d&apos;un abonnement en cours est notifiée au Client avant reconduction.</li>
       </ul>
@@ -122,12 +121,6 @@ export default function CGV() {
       </p>
       <div className="box">
         <p>Médiateur&nbsp;: <strong>le médiateur de la consommation compétent sera prochainement désigné et ses coordonnées publiées ici.</strong> Dans l&apos;attente, toute demande de résolution amiable peut être adressée à contact@getavyora.fr.</p>
-        <p>
-          Plateforme européenne de règlement en ligne des litiges (RLL)&nbsp;:{" "}
-          <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer">
-            ec.europa.eu/consumers/odr
-          </a>
-        </p>
       </div>
 
       <h2>11. Données personnelles</h2>

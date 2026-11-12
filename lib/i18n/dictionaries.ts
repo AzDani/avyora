@@ -35,6 +35,9 @@ const fr = {
     cgv: "CGV",
     confidentialite: "Confidentialité",
     cookies: "Cookies",
+    /* Rouvre le bandeau de consentement (components/ConsentementCookies.tsx). */
+    gererCookies: "Gérer mes cookies",
+    contact: "Contact",
     tarifs: "Tarifs",
     construction: "Construction neuve",
     plan: "Plan de maison 3D",
@@ -42,6 +45,15 @@ const fr = {
       "Estimations indicatives basées sur le référentiel de prix AVYORA (France 2026). À confirmer par des devis d'artisans.",
   },
   langue: { label: "Langue", fr: "Français", en: "English" },
+  /* Bandeau de consentement aux cookies publicitaires (components/ConsentementCookies.tsx, lib/consentement.ts). */
+  cookies: {
+    titre: "Cookies publicitaires",
+    texte:
+      "Avec ton accord, Google Ads dépose des cookies pour mesurer l'efficacité de nos annonces et te reproposer AVYORA sur d'autres sites. Refuser ne change rien à ton usage d'AVYORA.",
+    enSavoirPlus: "En savoir plus",
+    accepter: "Tout accepter",
+    refuser: "Tout refuser",
+  },
   choix: {
     eyebrow: "Nouvelle estimation",
     titre: "Comment veux-tu estimer ?",
@@ -308,10 +320,6 @@ const fr = {
     prenom: "Prénom",
     prenomPlaceholder: "Camille",
     mdpMin: "12 caractères minimum",
-    accepteAvant: "J'accepte les ",
-    cguLien: "conditions d'utilisation",
-    et: " et la ",
-    confidLien: "politique de confidentialité",
     creerCompte: "Créer mon compte",
     envoyerLien: "Envoyer le lien",
     nouveauMdp: "Nouveau mot de passe",
@@ -337,7 +345,10 @@ const fr = {
       boutonConnexion: "Recevoir un lien de connexion",
       envoiEnCours: "Envoi…",
       newsletter: "Je veux recevoir les nouveautés d'AVYORA (1 e-mail par mois au plus)",
+      /* L'acceptation des CGU, la même partout (lien, mot de passe, Google) : une mention sous le bouton, datée à la
+         création du compte (cgu_acceptees_le). « En créant ton compte » sur /inscription, « En continuant » sur /connexion. */
       mentionAvant: "En continuant, tu acceptes les ",
+      mentionAvantCreation: "En créant ton compte, tu acceptes les ",
       mentionCgu: "CGU",
       mentionEt: " et la ",
       mentionConfid: "politique de confidentialité",
@@ -447,6 +458,8 @@ const en: Dict = {
     cgv: "Terms of sale",
     confidentialite: "Privacy",
     cookies: "Cookies",
+    gererCookies: "Manage cookies",
+    contact: "Contact",
     tarifs: "Pricing",
     construction: "New build",
     plan: "3D house plan",
@@ -454,6 +467,14 @@ const en: Dict = {
       "Indicative estimates based on the AVYORA price reference (France 2026). Confirm with contractor quotes.",
   },
   langue: { label: "Language", fr: "Français", en: "English" },
+  cookies: {
+    titre: "Advertising cookies",
+    texte:
+      "With your consent, Google Ads sets cookies to measure how well our ads work and to show you AVYORA on other sites. Declining doesn't change how you use AVYORA.",
+    enSavoirPlus: "Learn more (in French)",
+    accepter: "Accept all",
+    refuser: "Decline all",
+  },
   choix: {
     eyebrow: "New estimate",
     titre: "How do you want to estimate?",
@@ -696,10 +717,6 @@ const en: Dict = {
     prenom: "First name",
     prenomPlaceholder: "Alex",
     mdpMin: "12 characters minimum",
-    accepteAvant: "I accept the ",
-    cguLien: "terms of use",
-    et: " and the ",
-    confidLien: "privacy policy",
     creerCompte: "Create my account",
     envoyerLien: "Send the link",
     nouveauMdp: "New password",
@@ -725,9 +742,11 @@ const en: Dict = {
       envoiEnCours: "Sending…",
       newsletter: "Send me AVYORA news (1 email a month at most)",
       mentionAvant: "By continuing, you agree to the ",
-      mentionCgu: "Terms of Use",
+      mentionAvantCreation: "By creating your account, you agree to the ",
+      /* Les textes juridiques n'existent qu'en français : on le dit avant qu'on les accepte. */
+      mentionCgu: "Terms of Use (in French)",
       mentionEt: " and the ",
-      mentionConfid: "Privacy Policy",
+      mentionConfid: "Privacy Policy (in French)",
       ou: "or",
       google: "Continue with Google",
       googleIndispo: "Google sign-in isn't available right now. Use your email address instead.",

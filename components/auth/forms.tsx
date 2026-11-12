@@ -93,13 +93,6 @@ export function SignupForm({ next }: { next?: string }) {
         <label htmlFor="password" className="field-label">{t.motDePasse}</label>
         <input id="password" name="password" type="password" autoComplete="new-password" required minLength={12} className="input" placeholder={t.mdpMin} />
       </div>
-      <label htmlFor="accept" className="flex cursor-pointer items-start gap-2 text-[13px] leading-snug text-muted">
-        <input id="accept" name="accept" type="checkbox" required className="mt-0.5 h-4 w-4 shrink-0 rounded border-line-strong text-brand-600 accent-brand-600" />
-        <span>
-          {t.accepteAvant}<Link href="/cgu" className="text-brand-600 hover:underline">{t.cguLien}</Link>
-          {t.et}<Link href="/confidentialite" className="text-brand-600 hover:underline">{t.confidLien}</Link>.
-        </span>
-      </label>
       {/* Facultative et NON cochée (CNIL) : l'action date le consentement s'il est donné (B2). */}
       <label htmlFor="mdp-newsletter" className="flex cursor-pointer items-start gap-2 text-[13px] leading-snug text-muted">
         <input id="mdp-newsletter" name="newsletter" type="checkbox" className="mt-0.5 h-4 w-4 shrink-0 rounded border-line-strong text-brand-600 accent-brand-600" />
@@ -107,6 +100,14 @@ export function SignupForm({ next }: { next?: string }) {
       </label>
       <Captcha key={cleCaptcha} />
       <Submit pending={pending}>{t.creerCompte}</Submit>
+      {/* L'acceptation des CGU : la même mention que l'inscription par lien (components/auth/AccesLien.tsx), sous le
+          bouton, datée par l'action (cgu_acceptees_le). Plus de case ici : un seul mode d'acceptation sur tout le site. */}
+      <p className="text-center text-[12px] leading-snug text-faint">
+        {t.lien.mentionAvantCreation}
+        <Link href="/cgu" className="text-brand-600 hover:underline">{t.lien.mentionCgu}</Link>
+        {t.lien.mentionEt}
+        <Link href="/confidentialite" className="text-brand-600 hover:underline">{t.lien.mentionConfid}</Link>.
+      </p>
     </form>
   );
 }
