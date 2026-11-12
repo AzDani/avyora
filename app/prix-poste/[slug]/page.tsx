@@ -182,9 +182,9 @@ const CSS = `
 .av-poste th{text-align:left;background:var(--color-surface-2);color:var(--color-ink);font-weight:600;font-size:12.5px;padding:10px 12px}
 .av-poste td{padding:10px 12px;border-top:1px solid var(--color-line);color:var(--color-muted)}
 .av-poste td.num{font-family:var(--font-geist-mono),monospace;text-align:right;color:var(--color-ink);font-weight:600;white-space:nowrap}
-.av-poste .faq details{border:1px solid var(--color-line);border-radius:12px;padding:12px 16px;margin-bottom:10px;background:var(--color-surface)}
-.av-poste .faq summary{font-weight:600;color:var(--color-ink);cursor:pointer;font-size:14.5px}
-.av-poste .faq p{margin:8px 0 0}
+.av-poste .faq details{border:1px solid var(--color-line);border-radius:12px;margin-bottom:10px;background:var(--color-surface)}
+.av-poste .faq summary{font-weight:600;color:var(--color-ink);cursor:pointer;font-size:14.5px;padding:12px 16px}
+.av-poste .faq p{margin:-4px 0 0;padding:0 16px 12px}
 .av-poste .cta{margin:32px 0 10px;padding:20px;border:1px solid var(--color-line);border-radius:16px;background:var(--color-surface-2)}
 .av-poste .cta p{margin:0 0 12px}
 .av-poste .cta .btn{display:inline-flex;align-items:center;background:var(--color-brand-600);color:#fff;font-weight:600;font-size:14px;border-radius:999px;padding:11px 20px;text-decoration:none}

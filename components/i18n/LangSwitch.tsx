@@ -61,6 +61,7 @@ export function actionClic(l: Locale, rendu: Locale, choisie: Locale | null, fig
  * Elles se reconnaissent au navigateur : la langue choisie (cookie) n'est pas celle du rendu, une fois le
  * rafraîchissement fini. Le bouton EN y est alors désactivé, avec l'info-bulle « Page disponible en français
  * uniquement » ; FR reste actif (la page EST en français) et le reprendre remet le cookie à « fr ».
+ * Chaque bouton fait au moins 44 × 44 px (cible tactile ; ils mesuraient 31 × 32 px au téléphone).
  */
 export default function LangSwitch({ tone = "light" }: { tone?: "light" | "dark" }) {
   const router = useRouter();
@@ -101,7 +102,7 @@ export default function LangSwitch({ tone = "light" }: { tone?: "light" | "dark"
               aria-pressed={locale === l}
               aria-disabled={indisponible || undefined}
               title={indisponible ? FRANCAIS_SEULEMENT : undefined}
-              className={`px-2 py-2 transition-colors ${classe(l)}`}
+              className={`inline-flex min-h-11 min-w-11 items-center justify-center px-2 transition-colors ${classe(l)}`}
             >
               {l.toUpperCase()}
               {indisponible && <span className="sr-only"> ({FRANCAIS_SEULEMENT})</span>}

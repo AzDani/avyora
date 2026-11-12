@@ -63,11 +63,11 @@ const CSS = `
 .av-seo th{background:var(--color-surface-2);color:var(--color-ink);font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.05em}
 .av-seo td.num{font-family:var(--font-geist-mono),monospace;text-align:right;color:var(--color-ink)}
 .av-seo .faq{margin-top:10px}
-.av-seo .faq details{border:1px solid var(--color-line);border-radius:12px;padding:12px 16px;margin-bottom:10px;background:var(--color-surface)}
-.av-seo .faq summary{font-weight:600;color:var(--color-ink);cursor:pointer;font-size:14.5px}
-.av-seo .faq p{margin:8px 0 0}
+.av-seo .faq details{border:1px solid var(--color-line);border-radius:12px;margin-bottom:10px;background:var(--color-surface)}
+.av-seo .faq summary{font-weight:600;color:var(--color-ink);cursor:pointer;font-size:14.5px;padding:12px 16px}
+.av-seo .faq p{margin:-4px 0 0;padding:0 16px 12px}
 .av-seo .villes{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.av-seo .villes a{font-size:13px;color:var(--color-brand-600);background:var(--color-brand-50);border-radius:999px;padding:5px 12px;text-decoration:none}
+.av-seo .villes a{font-size:13px;color:var(--color-brand-600);background:var(--color-brand-50);border-radius:999px;padding:10px 14px;text-decoration:none}
 .av-seo .villes a:hover{background:var(--color-brand-100)}
 /* Mobile : le corps de texte passe a 16px (defaut navigateur) — ces pages sont faites pour etre
    lues longuement sur un telephone, et 14,5px y est inutilement fatigant. */

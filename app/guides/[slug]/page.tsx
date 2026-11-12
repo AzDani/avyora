@@ -62,13 +62,13 @@ const CSS = `
 .av-guide .tw.matrice table{min-width:580px}
 .av-guide .tw.matrice th,.av-guide .tw.matrice td{padding:9px 10px}
 .av-guide .tw.matrice td.num{white-space:nowrap}
-.av-guide .faq details{border:1px solid var(--color-line);border-radius:12px;padding:12px 16px;margin-bottom:10px;background:var(--color-surface)}
-.av-guide .faq summary{font-weight:600;color:var(--color-ink);cursor:pointer;font-size:14.5px}
-.av-guide .faq p{margin:8px 0 0}
+.av-guide .faq details{border:1px solid var(--color-line);border-radius:12px;margin-bottom:10px;background:var(--color-surface)}
+.av-guide .faq summary{font-weight:600;color:var(--color-ink);cursor:pointer;font-size:14.5px;padding:12px 16px}
+.av-guide .faq p{margin:-4px 0 0;padding:0 16px 12px}
 .av-guide .phase{border-left:2px solid var(--color-brand-100,#e0e7ff);padding-left:14px;margin:16px 0}
 .av-guide .phase h3{margin-top:0}
 .av-guide .villes{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.av-guide .villes a{font-size:13px;color:var(--color-brand-600);background:var(--color-brand-50);border-radius:999px;padding:5px 12px;text-decoration:none}
+.av-guide .villes a{font-size:13px;color:var(--color-brand-600);background:var(--color-brand-50);border-radius:999px;padding:10px 14px;text-decoration:none}
 .av-guide .villes a:hover{background:var(--color-brand-100)}
 /* Mobile : le corps de texte passe a 16px (defaut navigateur) — ces pages sont faites pour etre
    lues longuement sur un telephone, et 14,5px y est inutilement fatigant. */

@@ -176,7 +176,7 @@ export function AccesParLien({ page, next, source, google }: {
       {google && <SocialAuth next={destinationLien(suite, page)} />}
 
       <details
-        className="group mt-6 rounded-field border border-line px-4 py-3"
+        className="group mt-6 rounded-field border border-line"
         open={mdpOuvert}
         onToggle={(e) => {
           const ouvert = e.currentTarget.open;
@@ -187,8 +187,8 @@ export function AccesParLien({ page, next, source, google }: {
           } catch { /* noop */ }
         }}
       >
-        {/* Le résumé couvre le rembourrage du cadre (-my-3 py-3) : 44 px de zone tactile, sans changer la hauteur. */}
-        <summary className="-my-3 flex cursor-pointer list-none items-center justify-between gap-3 py-3 text-sm font-medium text-ink [&::-webkit-details-marker]:hidden">
+        {/* Toute la carte cliquable : la marge intérieure est sur <summary> (qui ouvre), pas sur <details> (inerte). */}
+        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-ink [&::-webkit-details-marker]:hidden">
           {inscription ? t.plieInscription : t.plieConnexion}
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="shrink-0 text-faint transition-transform group-open:rotate-180">
             <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -196,7 +196,7 @@ export function AccesParLien({ page, next, source, google }: {
         </summary>
         {/* Rendu dès le HTML (le dépliant marche avant l'hydratation), puis remonté à l'ouverture (`key`) : il reprend
             l'adresse déjà tapée dans le champ du lien, une seule saisie. */}
-        <div className="mt-7 pb-1">
+        <div className="px-4 pb-4 pt-4">
           {inscription
             ? <SignupForm key={mdpOuvert ? "ouvert" : "ferme"} next={suite || undefined} defaultEmail={email.trim() || undefined} />
             : <LoginForm key={mdpOuvert ? "ouvert" : "ferme"} next={suite || undefined} defaultEmail={email.trim() || undefined} />}

@@ -164,11 +164,12 @@ const fr = {
       "annuel-mois": { nom: "Annuel, payé au mois", prix: "16,15 €", unite: "/ mois", note: "Engagement 12 mois", tag: "" },
       annuel: { nom: "Annuel, payé d'un coup", prix: "169 €", unite: "/ an", note: "≈ 14,08 € / mois", tag: "Meilleur prix" },
     },
-    paiementBientot: "Tu préfères tester d'abord ? ",
+    paiementBientot: "Tu préfères tester d'abord ? Alors, ",
     dejaCompteAvant: "Déjà un compte ? ",
     seConnecter: "Se connecter",
     ou: ". Ou ",
-    continuerGratuit: "continuer avec l'estimation rapide gratuite",
+    /* « continuer » supposait un parcours déjà commencé : un nouveau visiteur n'a rien commencé. */
+    continuerGratuit: "fais une estimation rapide gratuite",
   },
   boutons: {
     creerCompte: "Créer mon compte",
@@ -359,6 +360,17 @@ const fr = {
         q: "Puis-je supprimer mon compte ?",
         r: "Oui, à tout moment, depuis Mon compte : ton compte et tout ce qu'il contient (projets, estimations, plans) sont alors effacés définitivement.",
       },
+    ],
+    tarifsBasLienConnecte: "faire une estimation rapide",
+    /* Le bas de page pour un visiteur sans compte (« continuer » ne voulait rien dire pour qui n'a rien commencé). */
+    tarifsBasAnonyme: "Pas encore prêt à créer un compte ? ",
+    tarifsBasLienAnonyme: "Fais une estimation rapide, sans inscription",
+    /* La puce « Éditeur de plan » de « Inclus pendant la bêta », en trois puces courtes (une énumération à points-virgules
+       était illisible). Le plafond des plans d'un inscrit arrive en paramètre (`PLANS_MAX_BETA`). */
+    pucesPlan: (n: number) => [
+      `Éditeur de plan 2D/3D : jusqu'à ${n} plans enregistrés`,
+      "Le projet rénovation : pars de ton logement tel qu'il est et chiffre ce qui change",
+      "Le dossier PDF de tes plans, sans filigrane",
     ],
     /* /connexion : « Pas encore de compte ? » */
     cxBasLien: "Crée ton compte, gratuit pendant la bêta",
@@ -666,11 +678,11 @@ const en: Dict = {
       "annuel-mois": { nom: "Annual, billed monthly", prix: "€16.15", unite: "/ month", note: "12-month commitment", tag: "" },
       annuel: { nom: "Annual, billed once", prix: "€169", unite: "/ year", note: "≈ €14.08 / month", tag: "Best price" },
     },
-    paiementBientot: "Prefer to try first? ",
+    paiementBientot: "Prefer to try first? Just ",
     dejaCompteAvant: "Already have an account? ",
     seConnecter: "Sign in",
     ou: ". Or ",
-    continuerGratuit: "continue with the free quick estimate",
+    continuerGratuit: "run a free quick estimate",
   },
   boutons: {
     creerCompte: "Create my account",
@@ -833,6 +845,14 @@ const en: Dict = {
         q: "Can I delete my account?",
         r: "Yes, at any time, from My account: your account and everything in it (projects, estimates, floor plans) are then permanently deleted.",
       },
+    ],
+    tarifsBasLienConnecte: "run a quick estimate",
+    tarifsBasAnonyme: "Not ready to create an account? ",
+    tarifsBasLienAnonyme: "Run a quick estimate, no sign-up needed",
+    pucesPlan: (n: number) => [
+      `Floor plan editor (2D/3D): up to ${n} saved plans`,
+      "The renovation project: start from your home as it is and price what changes",
+      "The PDF file of your plans, without watermark",
     ],
     cxBasLien: "Create your account, free during the beta",
   },

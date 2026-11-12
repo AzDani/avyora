@@ -216,7 +216,7 @@ describe("C9 · accueil", () => {
     return r.rendre(await Accueil({ searchParams: Promise.resolve({}) }));
   }
   const BAND = /\n<style>\.av-home \.planb[\s\S]*?<\/section>/;
-  const TRUST = { fr: "<span>plan <b>3D</b></span>", en: "<span><b>3D</b> floor plan</span>" };
+  const TRUST = { fr: '<span>plan <b class="num">3D</b></span>', en: '<span><b class="num">3D</b> floor plan</span>' };
 
   it("éteint : aucune section, aucune puce, aucune image de l'éditeur", async () => {
     for (const locale of LOCALES) {

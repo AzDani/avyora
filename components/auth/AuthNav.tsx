@@ -3,19 +3,33 @@ import { getUser, estAdmin, estPro } from "@/lib/auth";
 import { logout } from "@/lib/actions/auth";
 import { getT } from "@/lib/i18n/server";
 import { FEATURES } from "@/lib/features";
+import { betaActive, lienInscriptionBeta } from "@/lib/beta";
 
 /** Bloc de navigation lié à l'auth : Connexion (déconnecté) ou prénom + déconnexion (connecté). */
 export async function AuthNav() {
   const [user, { t }] = await Promise.all([getUser(), getT()]);
 
   if (!user) {
+    /* Un visiteur sans compte voyait seulement « Connexion » : l'offre du moment (pendant la bêta, tout AVYORA offert
+       avec un compte, lib/beta.ts) passe par l'inscription, d'où ce bouton secondaire (contour : « Nouveau projet » reste
+       le seul bouton plein). Il n'apparaît qu'à partir de lg : entre md et lg, l'en-tête avec l'onglet « Plan 3D » est
+       déjà plein, et le menu (sous md) porte la même ligne. */
+    const beta = betaActive();
     return (
-      <Link
-        href="/connexion"
-        className="rounded-lg px-3 py-1.5 text-indigo-200/90 transition-colors hover:bg-white/10 hover:text-white"
-      >
-        {t.nav.connexion}
-      </Link>
+      <>
+        <Link
+          href={beta ? lienInscriptionBeta(undefined, "entete") : "/inscription"}
+          className="hidden whitespace-nowrap rounded-lg border border-white/25 px-3 py-1.5 font-medium text-white transition-colors hover:bg-white/10 lg:inline-flex"
+        >
+          {beta ? t.beta.creerCompte : t.boutons.creerCompte}
+        </Link>
+        <Link
+          href="/connexion"
+          className="rounded-lg px-3 py-1.5 text-indigo-200/90 transition-colors hover:bg-white/10 hover:text-white"
+        >
+          {t.nav.connexion}
+        </Link>
+      </>
     );
   }
 
