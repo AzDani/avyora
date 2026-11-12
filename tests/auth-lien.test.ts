@@ -680,7 +680,8 @@ describe("envoyerLienAcces : le lien d'accès (aucun e-mail réel)", () => {
     S.locale = "en";
     m = await actions();
     expect(await m.login(undefined, fd({ email: "zoe@exemple.fr", password: MDP_REFUSE }))).toEqual({ error: MESSAGES_AUTH.en.identifiants });
-    expect(await m.signup(undefined, fd({ email: "camille@exemple.fr", password: "chantierdemaison" }))).toEqual({ error: MESSAGES_AUTH.en.motDePasseFaible });
+    // Le refus précis de lib/password.ts, dans la langue du visiteur (plus le message générique).
+    expect(await m.signup(undefined, fd({ email: "camille@exemple.fr", password: "chantierdemaison" }))).toEqual({ error: "Add at least one number." });
     expect(await m.login(undefined, fd({ email: "", password: "" }))).toEqual({ error: MESSAGES_AUTH.en.champsManquants });
   });
 
