@@ -102,7 +102,11 @@ export default async function BienvenueProPage({
   const user = await getUser();
   if (!user) {
     // L'identifiant de session suit la connexion (seulement s'il a la forme attendue), sinon le retour ne prouverait rien.
-    const retour = idSessionValide(session_id) ? `/bienvenue-pro?session_id=${session_id}` : "/bienvenue-pro";
+    // La nature (liste fermée) suit aussi : le bouton principal reprend le bon parcours après connexion.
+    const n = lireNature(nature);
+    const retour = idSessionValide(session_id)
+      ? `/bienvenue-pro?session_id=${session_id}${n ? `&nature=${n}` : ""}`
+      : "/bienvenue-pro";
     redirect(`/connexion?next=${encodeURIComponent(retour)}`);
   }
   const paiement = await lirePaiement(session_id, user.id);

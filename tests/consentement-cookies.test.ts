@@ -51,6 +51,7 @@ type Fenetre = {
   dataLayer?: unknown[];
   gtag?: (...a: unknown[]) => void;
   __avGtag?: boolean;
+  __avGtagAccorde?: boolean;
   localStorage: Storage;
   location: { hostname: string };
   dispatchEvent: (e: Event) => boolean;
@@ -146,6 +147,21 @@ describe("lib/gtag · Google Ads seulement avec consentement", () => {
     expect(file()[4]).toEqual(["consent", "update", { ad_storage: "denied", ad_user_data: "denied", ad_personalization: "denied", analytics_storage: "denied" }]);
     g.adConversion(g.CONV.estimation);
     expect(file()).toHaveLength(5);
+  });
+
+  it("refus puis nouvel accord dans la même page : les signaux repassent à « granted », une seule fois, sans second script", async () => {
+    navigateur("accepte");
+    const g = await import("@/lib/gtag");
+    const c = await import("@/lib/consentement");
+    g.chargerGtag();
+    c.enregistrerChoix("refuse");
+    g.retirerConsentementGtag();
+    c.enregistrerChoix("accepte");
+    expect(g.chargerGtag()).toBe(true);
+    expect(file()[5]).toEqual(["consent", "update", { ad_storage: "granted", ad_user_data: "granted", ad_personalization: "granted", analytics_storage: "granted" }]);
+    g.adConversion(g.CONV.estimation);
+    expect(file().map((a) => a[0])).toEqual(["consent", "consent", "js", "config", "consent", "consent", "event"]);
+    expect(scripts).toHaveLength(1);
   });
 
   it("effacerTraceursGoogle : les cookies _gcl_* et la clé _gcl_ls disparaissent, les cookies du site restent", async () => {

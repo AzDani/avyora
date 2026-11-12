@@ -24,6 +24,8 @@ declare global {
     dataLayer?: unknown[];
     /** Posé par chargerGtag() : la balise est initialisée (une seule fois par page). */
     __avGtag?: boolean;
+    /** Dernier état poussé dans le Consent Mode : vrai = « granted ». */
+    __avGtagAccorde?: boolean;
   }
 }
 
@@ -52,9 +54,18 @@ function fileGtag(): GtagFn {
 export function chargerGtag(): boolean {
   if (typeof window === "undefined") return false;
   if (!consentementPublicitaire()) return false;
-  if (window.__avGtag) return true;
+  if (window.__avGtag) {
+    // Déjà chargée : refus puis nouvel accord dans la même page (« Gérer mes cookies ») → les signaux repassent à
+    // « granted », sinon la balise resterait muette jusqu'au rechargement.
+    if (window.__avGtagAccorde === false && typeof window.gtag === "function") {
+      window.gtag("consent", "update", tous("granted"));
+      window.__avGtagAccorde = true;
+    }
+    return true;
+  }
   if (typeof document === "undefined") return false;
   window.__avGtag = true;
+  window.__avGtagAccorde = true;
   const gtag = fileGtag();
   gtag("consent", "default", { ...tous("denied"), wait_for_update: 500 });
   gtag("consent", "update", tous("granted"));
@@ -74,6 +85,7 @@ export function chargerGtag(): boolean {
 export function retirerConsentementGtag(): void {
   if (typeof window === "undefined" || !window.__avGtag || typeof window.gtag !== "function") return;
   window.gtag("consent", "update", tous("denied"));
+  window.__avGtagAccorde = false;
 }
 
 /**

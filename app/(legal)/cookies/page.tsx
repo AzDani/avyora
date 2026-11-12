@@ -38,7 +38,7 @@ export default function Cookies() {
           <tr><td>av-lang</td><td>Mémoriser la langue choisie (français / anglais)</td><td>1 an</td></tr>
           <tr><td>av-demande</td><td>Sécuriser la connexion par lien e-mail&nbsp;: reconnaître le navigateur qui a demandé le lien (empreinte de l&apos;adresse, jamais l&apos;adresse elle-même)</td><td>24 heures</td></tr>
           <tr><td>av-lien</td><td>Conserver le lien de connexion le temps de cliquer sur « Entrer dans AVYORA »</td><td>1 heure au plus, effacé à l&apos;usage</td></tr>
-          <tr><td>av-verifier</td><td>Sécuriser une connexion ouverte depuis un lien relayé (« Est-ce bien votre compte&nbsp;? »)</td><td>Durée de la session, effacé dès la réponse</td></tr>
+          <tr><td>av-verifier</td><td>Sécuriser une connexion ouverte depuis un lien relayé (« Est-ce bien votre compte&nbsp;? »)</td><td>Autant que la session connectée (400 jours au plus), effacé dès la réponse</td></tr>
           <tr><td>av-consentement (stockage local)</td><td>Mémoriser votre choix sur les cookies publicitaires</td><td>6 mois</td></tr>
         </tbody>
       </table>
