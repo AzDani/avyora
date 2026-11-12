@@ -23,9 +23,11 @@ vi.mock("@/components/visite/VisiteGuidee", async (orig) => {
 
 import {
   ESTIMATEURS_VISITE, VERSION_VISITE, cleVisite, lireVisite, memoriserVisite, doitInviter, resoudreEtapes, selecteurCible,
-  naviguer, actionClavier, placerBulle, defilement, chevauche, unionRects, mesurerVisite, type EtapeVisite, type Rect,
+  naviguer, actionClavier, placerBulle, defilement, chevauche, unionRects, mesurerVisite, premiersEnfants, type EtapeVisite, type Rect,
 } from "@/lib/visite";
 import { dictVisite } from "@/lib/i18n/visite";
+import { dictDetail } from "@/lib/i18n/detail";
+import { dictNeuf } from "@/lib/i18n/neuf";
 import { LangProvider } from "@/components/i18n/LangProvider";
 import VisiteGuidee from "@/components/visite/VisiteGuidee";
 import EstimateurRapide from "@/components/EstimateurRapide";
@@ -543,5 +545,56 @@ describe("rapide neuf, détaillé rénovation, détaillé neuf : chacun sa visit
       for (const E of ESTIMATEURS) for (const l of LOCALES) rendre(E.el, E.props, l);
       expect(espion).not.toHaveBeenCalled();
     } finally { globalThis.fetch = fetchOrig; }
+  });
+});
+
+/* ─── Relecture : les bulles disent vrai ───────────────────────────────────────────────────────── */
+
+/** Toutes les chaînes d'un dictionnaire (les fonctions sont ignorées), sans la flèche finale d'un bouton. */
+function libelles(d: unknown, out = new Set<string>()): Set<string> {
+  if (typeof d === "string") out.add(d.replace(/\s*→\s*$/, "").trim());
+  else if (d && typeof d === "object") for (const v of Object.values(d)) libelles(v, out);
+  return out;
+}
+
+describe("relecture : chaque bouton cité dans une bulle existe sous ce nom, aucune promesse fausse", () => {
+  for (const locale of LOCALES) {
+    it(`${locale} : un libellé entre guillemets dans une bulle est un vrai libellé de l'estimateur`, () => {
+      const tv = dictVisite(locale);
+      const connus = libelles([dictDetail(locale), dictNeuf(locale)]);
+      const guillemets = locale === "fr" ? /«[\s  ]*([^»]+?)[\s  ]*»/g : /“([^”]+)”/g;
+      let vus = 0;
+      for (const section of ["rapideReno", "rapideNeuf", "detailleReno", "detailleNeuf"] as const) {
+        for (const e of Object.values(tv[section])) {
+          for (const m of e.texte.matchAll(guillemets)) { vus++; expect(connus, `${section} : ${m[1]}`).toContain(m[1]); }
+        }
+      }
+      expect(vus).toBeGreaterThan(4);
+    });
+  }
+
+  it("rapide réno : la 1re bulle ne promet pas le multi-pièces sans compte (une pièce sans compte, plusieurs : un compte)", () => {
+    expect(dictVisite("fr").rapideReno.quoi.texte).toMatch(/sans compte/);
+    expect(dictVisite("fr").rapideReno.quoi.texte).toMatch(/il te faut un compte/);
+    expect(dictVisite("en").rapideReno.quoi.texte).toMatch(/need an account/);
+    expect(dictVisite("fr").rapideReno.quoi.texte).not.toMatch(/Tu peux en ajouter plusieurs/);
+  });
+
+  it("détaillé réno, « Un pro ou toi ? » : « Je le fais » n'est promis que là où c'est faisable soi-même", () => {
+    expect(dictVisite("fr").detailleReno.soi.texte).toMatch(/Quand tu peux le faire toi-même/);
+    expect(dictVisite("en").detailleReno.soi.texte).toMatch(/When you can do it yourself/);
+  });
+
+  it("premiersEnfants : les n premières cases d'une grille data-visite", () => {
+    expect(premiersEnfants("detail-pieces")).toEqual([1, 2, 3, 4].map((k) => `[data-visite="detail-pieces"] > :nth-child(${k})`));
+    expect(premiersEnfants("x", 2)).toHaveLength(2);
+  });
+
+  it("pendant la visite, les raccourcis du navigateur (Cmd / Ctrl / Alt) ne sont jamais bloqués", () => {
+    const src = lire("components/visite/VisiteGuidee.tsx");
+    const garde = src.indexOf("if (ev.metaKey || ev.ctrlKey || ev.altKey) return;");
+    expect(garde).toBeGreaterThan(0);
+    // Avant l'arrêt des touches qui viseraient la page.
+    expect(garde).toBeLessThan(src.indexOf("if (!(ev.target instanceof Node && b.contains(ev.target)))"));
   });
 });

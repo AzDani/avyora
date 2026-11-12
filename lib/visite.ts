@@ -118,6 +118,14 @@ export function resoudreEtapes(etapes: EtapeVisite[], present: (nom: string) => 
   return out;
 }
 
+/**
+ * Les `n` premiers enfants d'une cible `data-visite` (sélecteurs CSS ; le halo les entoure tous) : au téléphone, le
+ * haut d'une grille de compteurs passée sur une colonne, plus haute que l'écran au-dessus de la feuille.
+ */
+export function premiersEnfants(nom: string, n = 4): string[] {
+  return Array.from({ length: n }, (_, k) => `${selecteurCible(nom)} > :nth-child(${k + 1})`);
+}
+
 /** Suivant / Retour : l'index d'arrivée, ou `fin` après la dernière étape. Retour ne sort jamais de la 1ʳᵉ. */
 export function naviguer(i: number, n: number, action: "suivant" | "retour"): number | "fin" {
   if (action === "retour") return Math.max(0, Math.min(n - 1, i - 1));

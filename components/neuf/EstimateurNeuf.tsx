@@ -81,6 +81,7 @@ import DevisNeuf from "./DevisNeuf";
 import { mesurerPlan, mesureEstimationNeuf } from "@/lib/plans/mesure";
 import { suivre } from "@/lib/track";
 import VisiteGuidee, { type EtapeVisite } from "@/components/visite/VisiteGuidee";
+import { premiersEnfants } from "@/lib/visite";
 import { dictVisite } from "@/lib/i18n/visite";
 
 const CP = /^\d{5}$/;
@@ -94,8 +95,6 @@ const ID_ERREUR = "av-neuf-err";
  * Cibles de la visite guidée DANS la liste des lots (briques partagées : sélecteurs CSS, `querySelector` prend le
  * premier) : les outils de la liste et l'en-tête du premier lot (pas la carte des démarches, rangée après les phases).
  */
-/** Les quatre premières cases d'une grille de compteurs (`data-visite`) : le halo les entoure toutes. */
-const PREMIERS_COMPTEURS = (nom: string) => [1, 2, 3, 4].map((k) => `[data-visite="${nom}"] > :nth-child(${k})`);
 const CIBLES_LISTE_VISITE = {
   outils: ".av-neuf-d .tools",
   premierLot: ".av-neuf-d .tools ~ div:not(.dem-c) .acc-h",
@@ -355,7 +354,7 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
       { id: "maison", cible: ["neuf-d-titre", "neuf-d-type"], ...tv.maison },
       { id: "surfaces", cible: "neuf-d-surfaces", ...tv.surfaces },
       // Téléphone : la grille passe sur une colonne, plus haute que l'écran ; ses quatre premières cases.
-      { id: "pieces", cible: "neuf-d-pieces", cibleMobile: PREMIERS_COMPTEURS("neuf-d-pieces"), ...tv.pieces },
+      { id: "pieces", cible: "neuf-d-pieces", cibleMobile: premiersEnfants("neuf-d-pieces"), ...tv.pieces },
       { id: "technique", cible: "neuf-d-technique", ...tv.technique },
       { id: "finition", cible: ["neuf-d-finition", "neuf-d-pilotage"], ...tv.finition },
       { id: "postes", cible: [CIBLES_LISTE_VISITE.outils, CIBLES_LISTE_VISITE.premierLot], ...tv.postes },

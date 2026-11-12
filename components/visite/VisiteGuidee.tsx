@@ -301,7 +301,9 @@ function Bulle({ id, etapes, t, origine, onFin }: {
         return;
       }
       // Entrée / Espace sur un bouton de la bulle : son clic. Le reste (défilement au clavier compris) reste
-      // permis tant qu'il vise la bulle ; tout ce qui viserait la page est arrêté.
+      // permis tant qu'il vise la bulle ; tout ce qui viserait la page est arrêté. Les raccourcis du navigateur
+      // (Cmd / Ctrl / Alt : recharger, rechercher, zoomer…) passent toujours.
+      if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
       if (!(ev.target instanceof Node && b.contains(ev.target))) { ev.preventDefault(); ev.stopPropagation(); }
     };
     // Le focus qui s'échapperait (lecteur d'écran, clic programmé) revient dans la bulle.

@@ -44,6 +44,7 @@ import { CLE_BROUILLON_RENO, CLE_BROUILLON_DETAIL_RENO, CLE_RECLAMATION_RENO, br
 import { suivre } from "@/lib/track";
 import { messageErreurApi } from "@/lib/i18n/erreurs-api";
 import VisiteGuidee, { type EtapeVisite } from "@/components/visite/VisiteGuidee";
+import { premiersEnfants } from "@/lib/visite";
 import { dictVisite } from "@/lib/i18n/visite";
 import {
   etatDepuis, etatVierge, projetReno, ouvertureDetailReno, majNombre, majSol, majType, pasCtx, compteurPiece, pasPiece,
@@ -65,8 +66,6 @@ const NIVEAUX_FINITION: Record<Finition, number> = { eco: 1, standard: 2, premiu
  * premier) : les outils de la liste, l'en-tête du premier lot, la première ligne d'un lot ouvert, et « Fait faire » /
  * « Je le fais » d'une ligne cochée (ils n'apparaissent qu'une fois la ligne cochée).
  */
-/** Les quatre premières cases d'une grille de compteurs (`data-visite`) : le halo les entoure toutes. */
-const PREMIERS_COMPTEURS = (nom: string) => [1, 2, 3, 4].map((k) => `[data-visite="${nom}"] > :nth-child(${k})`);
 const CIBLES_LISTE_VISITE = {
   outils: ".av-estim .tools",
   premierLot: ".av-estim .tools ~ div .acc-h",
@@ -244,7 +243,7 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
       { id: "surfaces", cible: "detail-surfaces", ...tv.surfaces },
       // Logement entier : la grille de compteurs ; pièces ciblées : les pastilles des pièces.
       // Téléphone : la grille passe sur une colonne, plus haute que l'écran ; ses quatre premières cases.
-      { id: "pieces", cible: "detail-pieces", cibleMobile: PREMIERS_COMPTEURS("detail-pieces"), repli: "detail-pieces-choix", ...tv.pieces },
+      { id: "pieces", cible: "detail-pieces", cibleMobile: premiersEnfants("detail-pieces"), repli: "detail-pieces-choix", ...tv.pieces },
       { id: "finition", cible: "detail-finition", ...tv.finition },
       { id: "postes", cible: [CIBLES_LISTE_VISITE.outils, CIBLES_LISTE_VISITE.premierLot], ...tv.postes },
       { id: "soi", cible: CIBLES_LISTE_VISITE.choixLigne, repli: lotOuvert ? CIBLES_LISTE_VISITE.ligneOuverte : CIBLES_LISTE_VISITE.premierLot, ...tv.soi },
