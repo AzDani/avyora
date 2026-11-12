@@ -38,6 +38,15 @@ describe("éditeur de plan · revue", () => {
     expect(SOURCE).toContain("${(menu=>menu.trim()?`<div class=\"ph mt\">Menuiserie");
   });
 
+  it("le résumé du tampon ne recrée jamais un tampon retiré ni n'écrase celui d'un autre onglet", () => {
+    const debut = SOURCE.indexOf("const tamponResume=()=>{");
+    const bloc = SOURCE.slice(debut, SOURCE.indexOf("save=function(){", debut));
+    expect(bloc.length).toBeGreaterThan(0);
+    expect(bloc).toContain("if(!t||t.onglet!==ONGLET||!t.state||t.state.id!==state.id)return;");
+    /* la garde passe AVANT l'écriture */
+    expect(bloc.indexOf("t.onglet!==ONGLET")).toBeLessThan(bloc.indexOf("localStorage.setItem('avyora-plan-v2'"));
+  });
+
   it("/vendor (versionné) en cache immuable, /fonts une semaine ; l'en-tête de sécurité reste en tête", async () => {
     vi.resetModules();
     const { default: config } = await import("../next.config");

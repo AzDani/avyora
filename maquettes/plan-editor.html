@@ -4952,6 +4952,10 @@ if(SITE){
   const tamponResume=()=>{
     clearTimeout(resumeT);resumeT=0;
     if(conflitOnglet||!planPorteTravail(state))return;
+    /* seulement par-dessus le tampon de CET onglet et de CE plan : jamais recréé après son retrait (« Ouvrir la
+       version enregistrée » le retire puis quitte la page : pagehide), ni écrit par-dessus un autre onglet */
+    let t=null;try{t=JSON.parse(localStorage.getItem('avyora-plan-v2'));}catch{}
+    if(!t||t.onglet!==ONGLET||!t.state||t.state.id!==state.id)return;
     const resume=resumePlan();if(!resume)return;
     try{localStorage.setItem('avyora-plan-v2',JSON.stringify({state,view,onglet:ONGLET,resume}));}catch{}};
   save=function(){const r=_sa.apply(this,arguments);clearTimeout(resumeT);resumeT=setTimeout(tamponResume,1500);return r;};
