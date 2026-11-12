@@ -145,9 +145,9 @@ export async function signup(_prev: AuthState, formData: FormData): Promise<Auth
   const locale = await getLocale();
   if (!email || !password) return { error: MESSAGES_AUTH[locale].champsManquants };
   // Le mot de passe d'abord : un refus (« Ajoute au moins un chiffre ») ne consomme pas les envois de l'adresse, que la
-  // demande d'un lien d'accès partage (3 / h). Le détail de lib/password.ts est en français : en anglais, les règles.
-  const faible = validerMotDePasse(password);
-  if (faible) return { error: locale === "en" ? MESSAGES_AUTH.en.motDePasseFaible : faible };
+  // demande d'un lien d'accès partage (3 / h). Le détail précis du refus, dans la langue du visiteur (lib/password.ts).
+  const faible = validerMotDePasse(password, locale);
+  if (faible) return { error: faible };
   if (!(await limitesEnvoiOk(email))) return { error: MESSAGES_AUTH[locale].tropDeTentatives };
 
   const supabase = await supabaseServer();
