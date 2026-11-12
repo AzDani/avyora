@@ -104,7 +104,10 @@ export function libelleBrouillonReno(
     const nb = new Map<PieceKey, number>();
     for (const r of d.pieces) nb.set(r.room, (nb.get(r.room) ?? 0) + 1);
     const total = d.pieces.reduce((s, r) => s + r.surface, 0);
-    return `${[...nb].map(([k, n]) => `${noms.piece(k)}${n > 1 ? ` ×${n}` : ""}`).join(" + ")} ${m2(total)}`;
+    // Plusieurs pièces : la surface est leur TOTAL, séparée par « · » comme le nom du projet (`nomProjetReno`) :
+    // « Chambre ×2 + Cuisine 30 m² » se lisait comme une cuisine de 30 m².
+    const sep = d.pieces.length > 1 ? " · " : " ";
+    return `${[...nb].map(([k, n]) => `${noms.piece(k)}${n > 1 ? ` ×${n}` : ""}`).join(" + ")}${sep}${m2(total)}`;
   }
   return `${noms.type(d.ctx.type)} ${m2(Number(d.ctx.surface) || 0)}`;
 }

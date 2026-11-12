@@ -209,7 +209,7 @@ describe("rappel de /inscription : le bon libellé, et rien sans estimation", ()
     const d = brouillonRapideReno({ ampleur: "complete", qui: "pros", ctx: p.ctx, sel: p.sel, codePostal: "69003", pieces: [{ room: "sdb", surface: 5 }] });
     expect(libelleBrouillonReno(d, noms, "fr-FR")).toBe("Salle de bain 5 m²");
     const deux = [{ room: "chambre" as const, surface: 12 }, { room: "chambre" as const, surface: 10 }, { room: "cuisine" as const, surface: 8 }];
-    expect(libelleBrouillonReno({ ctx: p.ctx, pieces: deux }, noms, "fr-FR")).toBe("Chambre ×2 + Cuisine 30 m²");
+    expect(libelleBrouillonReno({ ctx: p.ctx, pieces: deux }, noms, "fr-FR")).toBe("Chambre ×2 + Cuisine · 30 m²");
     expect(libelleBrouillonReno({ ctx: { type: "Maison", surface: 100 } }, noms, "fr-FR")).toBe("Maison 100 m²");
   });
 

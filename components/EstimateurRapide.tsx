@@ -161,8 +161,13 @@ export default function EstimateurRapide({
     if (champ) faute.signaler(champ, ID_CHAMP[champ]); else faute.effacer();
   };
 
+  // Une seule lecture, même quand React rejoue les effets du montage (mode strict, en développement) :
+  // sinon la 2ᵉ lecture relisait les valeurs d'arrivée que l'enregistrement venait de ranger, et
+  // écrasait les réponses rendues (une pièce venue d'une page de prix revenait à son état d'arrivée).
+  const retourLu = useRef(false);
   useEffect(() => {
-    if (edit) return;
+    if (edit || retourLu.current) return;
+    retourLu.current = true;
     try {
       const brut = sessionStorage.getItem(CLE_RETOUR_RENO);
       if (!brut) return;
