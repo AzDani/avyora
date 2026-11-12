@@ -17,6 +17,20 @@ export type Projet = {
   created_at: string;
 };
 
+/**
+ * Plafond de projets par compte, archivés compris : bien au-delà d'un vrai usage, il borne la table pendant la bêta.
+ * La base le tient aussi (trigger `projects_plafond`, migration 0005), y compris pour un appel direct à PostgREST.
+ */
+export const MAX_PROJETS = 200;
+
+/** Le compte a atteint MAX_PROJETS : la route répond 409 avec un message clair (jamais le texte de Postgres). */
+export class PlafondProjets extends Error {
+  constructor() {
+    super("plafond_projets");
+    this.name = "PlafondProjets";
+  }
+}
+
 export async function listProjets(archived: boolean): Promise<Projet[]> {
   const sb = await supabaseServer();
   const { data, error } = await sb
@@ -48,6 +62,9 @@ export async function createProjet(input: {
   const user = await getUser();
   if (!user) return null; // funnel anonyme = rattachement à l'inscription
   const sb = await supabaseServer();
+  /* Projets DONT le compte est propriétaire (la RLS montre aussi ceux où il est membre). */
+  const { count } = await sb.from("projects").select("id", { count: "exact", head: true }).eq("owner_id", user.id);
+  if ((count ?? 0) >= MAX_PROJETS) throw new PlafondProjets();
   const { data, error } = await sb
     .from("projects")
     .insert({
@@ -60,7 +77,11 @@ export async function createProjet(input: {
     })
     .select("id")
     .single();
-  if (error) throw new Error(error.message);
+  if (error) {
+    /* Deux créations simultanées passées toutes deux sous le comptage : le trigger tranche. */
+    if (String(error.message ?? "").includes("plafond_projets")) throw new PlafondProjets();
+    throw new Error(error.message);
+  }
   return data.id as string;
 }
 

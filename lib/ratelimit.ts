@@ -40,10 +40,14 @@ const LIMITERS: Record<LimitKind, Ratelimit | null> = {
   // Une estimation née d'un plan crée un projet à chaque validation : sa propre catégorie, serrée.
   planEstimation: make(Ratelimit.slidingWindow(10, "3600 s"), "avyora:plan-estimation"), // 10 / h
   marche: make(Ratelimit.slidingWindow(30, "60 s"), "avyora:marche"), // 30 demandes de prix du marché / min / compte
+  // Suivi de chantier : un clic = une écriture (deux quand une ancienne clé est purgée). Une liste de tâches cochée
+  // d'affilée ne doit pas tomber sur la limite de `api` (l'écran n'affiche pas l'échec).
+  statut: make(Ratelimit.slidingWindow(120, "60 s"), "avyora:statut"), // 120 statuts / min / compte
 };
 
 export type LimitKind =
-  | "auth" | "api" | "ia" | "pdf" | "pdfHeure" | "pdfIp" | "lienAdresse" | "lienIp" | "plan" | "planCreation" | "planEstimation" | "marche";
+  | "auth" | "api" | "ia" | "pdf" | "pdfHeure" | "pdfIp" | "lienAdresse" | "lienIp" | "plan" | "planCreation" | "planEstimation" | "marche"
+  | "statut";
 
 /**
  * Les catégories qui CRÉENT des lignes en base (« Mes plans ») ou qui coûtent cher (le plafond horaire des PDF) se
@@ -60,10 +64,10 @@ export async function clientIp(): Promise<string> {
 }
 
 /**
- * En PRODUCTION sans Upstash, « Mes plans », l'authentification et les PDF gardent leurs limites EN MÉMOIRE, par
- * instance : moins strictes qu'un store partagé (chaque instance compte de son côté), mais un compte ne peut plus
- * enchaîner les écritures ni les PDF sans fin, ni un robot les demandes de lien d'accès (B2 : chaque demande envoie un
- * e-mail). Les autres catégories (api, ia) gardent le no-op d'avant.
+ * En PRODUCTION sans Upstash, « Mes plans », l'authentification, les PDF et les écritures de l'API (projets,
+ * dépenses, statuts) gardent leurs limites EN MÉMOIRE, par instance : moins strictes qu'un store partagé (chaque
+ * instance compte de son côté), mais un compte ne peut plus enchaîner les écritures ni les PDF sans fin, ni un robot
+ * les demandes de lien d'accès (B2 : chaque demande envoie un e-mail). Seule la catégorie ia garde le no-op d'avant.
  */
 const MEMOIRE: Partial<Record<LimitKind, { max: number; fenetreMs: number }>> = {
   /* Connexion, inscription, lien d'accès, mot de passe oublié : comme Upstash, par IP et (lien) par adresse et IP. */
@@ -79,6 +83,9 @@ const MEMOIRE: Partial<Record<LimitKind, { max: number; fenetreMs: number }>> = 
   planEstimation: { max: 10, fenetreMs: 3_600_000 },
   /* Prix du marché (M3) : chaque demande peut télécharger plusieurs Mo de ventes DVF. */
   marche: { max: 30, fenetreMs: 60_000 },
+  /* Écritures de l'API (création de projet, dépenses, investissement) : comme Upstash. */
+  api: { max: 40, fenetreMs: 60_000 },
+  statut: { max: 120, fenetreMs: 60_000 },
 };
 const traces = new Map<string, number[]>();
 let memoireSignalee = false;
@@ -88,7 +95,7 @@ function limiteMemoire(kind: LimitKind, identifiant: string): boolean {
   if (!regle || process.env.VERCEL_ENV !== "production") return true;
   if (!memoireSignalee) {
     memoireSignalee = true;
-    console.warn("[ratelimit] Upstash absent en production : limites de « Mes plans », de l'authentification et des PDF tenues en mémoire, par instance.");
+    console.warn("[ratelimit] Upstash absent en production : limites de « Mes plans », de l'authentification, des PDF et de l'API tenues en mémoire, par instance.");
   }
   const maintenant = Date.now();
   if (traces.size > 5000) {
@@ -102,7 +109,7 @@ function limiteMemoire(kind: LimitKind, identifiant: string): boolean {
   return ok;
 }
 
-/** true = autorisé, false = limite dépassée. Sans Upstash : no-op, sauf « Mes plans », l'auth et les PDF en production (en mémoire). */
+/** true = autorisé, false = limite dépassée. Sans Upstash : no-op, sauf les catégories de MEMOIRE en production (en mémoire). */
 export async function verifierLimite(kind: LimitKind, identifiant: string): Promise<boolean> {
   const rl = LIMITERS[kind];
   if (!rl) return limiteMemoire(kind, identifiant);

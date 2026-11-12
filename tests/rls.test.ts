@@ -84,19 +84,29 @@ describe.skipIf(!dispo)("RLS — étanchéité multi-tenant", () => {
     expect((data ?? []).length).toBe(0);
   });
 
-  it("le référentiel de prix (kb_postes) est lisible publiquement mais non modifiable par un anonyme", async () => {
-    // Lecture publique OK + on capture le vrai prix via admin
+  it("le référentiel hérité (kb_postes) n'est plus lisible ni modifiable par un anonyme (migration 0005)", async () => {
+    const avant = await admin.from("kb_postes").select("id, prix_moy").limit(1);
+    const poste = (avant.data ?? [])[0] as { id: string; prix_moy: number } | undefined;
+
     const lecture = await anon.from("kb_postes").select("id").limit(1);
-    const posteId = (lecture.data ?? [])[0]?.id as string | undefined;
-    expect(posteId, "au moins un poste lisible publiquement").toBeTruthy();
-    const avant = await admin.from("kb_postes").select("prix_moy").eq("id", posteId!).single();
+    expect(lecture.data ?? []).toEqual([]);
+    expect(lecture.error, "lecture refusée (permission denied)").toBeTruthy();
 
-    // Tentative d'écriture anonyme
-    await anon.from("kb_postes").update({ prix_moy: -999 }).eq("id", posteId!);
+    if (poste) {
+      await anon.from("kb_postes").update({ prix_moy: -999 }).eq("id", poste.id);
+      const apres = await admin.from("kb_postes").select("prix_moy").eq("id", poste.id).single();
+      expect(apres.data!.prix_moy).toBe(poste.prix_moy);
+    }
+  });
 
-    // Vérif via admin : le prix N'A PAS changé (RLS a bloqué l'écriture)
-    const apres = await admin.from("kb_postes").select("prix_moy").eq("id", posteId!).single();
-    expect(apres.data!.prix_moy).toBe(avant.data!.prix_moy);
+  it("un appel direct à PostgREST ne contourne pas les bornes de la base (migration 0005)", async () => {
+    // B écrit en direct (clé anon + jeton), sans passer par les routes Next : une ligne de plus de 400 000 octets
+    // est refusée par le CHECK projects_reponses_taille.
+    const gros = await clientB.from("projects").insert({
+      owner_id: idB, nom: "Trop gros", type_bien: "maison", surface: 50, code_postal: "33000",
+      reponses: { x: "x".repeat(450_000) },
+    }).select("id");
+    expect(gros.error, "insertion refusée").toBeTruthy();
   });
 });
 

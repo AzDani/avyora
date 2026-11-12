@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 /* Production sans Upstash : « Mes plans », l'authentification (B2) et les PDF gardent des limites en mémoire
-   (lib/ratelimit.ts), le reste (api, ia) est no-op. */
+   (lib/ratelimit.ts), comme l'API (api, statut) ; seule ia reste no-op. */
 const CLES = ["VERCEL_ENV", "UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"] as const;
 const env = Object.fromEntries(CLES.map((k) => [k, process.env[k]]));
 
@@ -94,11 +94,20 @@ describe("limites en mémoire sans Upstash", () => {
     }
   });
 
-  it("les catégories api et ia restent sans limite", async () => {
+  it("production : api 40 / min (projets, dépenses, investissement), chacun son seau", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
     const { verifierLimite } = await module("production");
-    for (const k of ["api", "ia"] as const) {
-      for (let i = 0; i < 50; i++) expect(await verifierLimite(k, "1.2.3.4")).toBe(true);
-    }
+    for (let i = 0; i < 40; i++) expect(await verifierLimite("api", "u1")).toBe(true);
+    expect(await verifierLimite("api", "u1")).toBe(false);
+    expect(await verifierLimite("api", "u2")).toBe(true);
+    /* le suivi de chantier a son propre seau, plus large */
+    for (let i = 0; i < 120; i++) expect(await verifierLimite("statut", "u1")).toBe(true);
+    expect(await verifierLimite("statut", "u1")).toBe(false);
+  });
+
+  it("la catégorie ia reste sans limite", async () => {
+    const { verifierLimite } = await module("production");
+    for (let i = 0; i < 50; i++) expect(await verifierLimite("ia", "1.2.3.4")).toBe(true);
   });
 
   it("préversion et local : sans limite (comme avant)", async () => {
@@ -132,9 +141,9 @@ describe("avec Upstash", () => {
       vi.doUnmock("@upstash/redis");
       vi.doUnmock("@upstash/ratelimit");
     }
-    expect(prefixes).toHaveLength(12);
-    expect(new Set(prefixes).size).toBe(12);
-    for (const p of ["avyora:auth", "avyora:api", "avyora:pdf", "avyora:pdf-heure", "avyora:pdf-ip", "avyora:lien-adresse", "avyora:lien-ip", "avyora:marche"]) expect(prefixes).toContain(p);
+    expect(prefixes).toHaveLength(13);
+    expect(new Set(prefixes).size).toBe(13);
+    for (const p of ["avyora:auth", "avyora:api", "avyora:statut", "avyora:pdf", "avyora:pdf-heure", "avyora:pdf-ip", "avyora:lien-adresse", "avyora:lien-ip", "avyora:marche"]) expect(prefixes).toContain(p);
   });
 
   it("store en panne : le plafond horaire des PDF se ferme (fail-closed), le lien d'accès reste ouvert", async () => {

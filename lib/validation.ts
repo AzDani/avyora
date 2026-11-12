@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { NextResponse } from "next/server";
 import { FEATURES } from "@/lib/features";
+import { octetsJsonb, texteIrrecevable } from "@/lib/plans/jsonb";
 
 /**
  * Schémas de validation des entrées API (défense contre injections/malformations/débordements).
@@ -12,7 +13,18 @@ const reponses = z
   // Une construction neuve porte la description complète de la maison et ~90 postes : jusqu'à
   // 80 000 caractères, seulement quand le neuf est ouvert (FEATURES.neuf) : flag éteint, le serveur
   // se comporte comme avant le neuf. La rénovation garde sa borne de 40 000.
-  .refine((r) => JSON.stringify(r).length <= (FEATURES.neuf && reponsesNeuf(r) ? 80_000 : 40_000), "réponses trop volumineuses");
+  .refine((r) => JSON.stringify(r).length <= (FEATURES.neuf && reponsesNeuf(r) ? 80_000 : 40_000), "réponses trop volumineuses")
+  // Ce que Postgres refuse de ranger en jsonb (caractère nul, moitié de paire UTF-16) : un 400 ici plutôt qu'une
+  // erreur de la base au moment d'écrire.
+  .refine((r) => Number.isFinite(octetsJsonb(r)), "réponses irrecevables");
+
+/** Les `reponses` d'un projet tiennent dans la borne des routes (taille, caractères acceptés par jsonb). */
+export function reponsesDansLaBorne(r: unknown): boolean {
+  return reponses.safeParse(r).success;
+}
+
+/** Un nom de projet : borné, et sans caractère que Postgres refuse (text n'accepte pas le caractère nul). */
+const nomProjet = z.string().trim().min(1).max(120).refine((s) => !texteIrrecevable(s), "nom irrecevable");
 
 /** Un projet neuf : `ctx.nature === "neuf"` ET la description de la maison (`ctx.neuf`, un objet). */
 function reponsesNeuf(r: unknown): boolean {
@@ -23,7 +35,7 @@ function reponsesNeuf(r: unknown): boolean {
 }
 
 export const projetCreateSchema = z.object({
-  nom: z.string().trim().min(1).max(120),
+  nom: nomProjet,
   typeBien: z.string().max(40).optional(),
   surface: z.coerce.number().positive().max(1_000_000),
   codePostal: z.string().regex(/^\d{5}$/),
@@ -33,14 +45,14 @@ export const projetCreateSchema = z.object({
 export const projetPatchSchema = z.union([
   z.object({ archived: z.boolean() }),
   z.object({
-    nom: z.string().trim().min(1).max(120),
+    nom: nomProjet,
     typeBien: z.string().max(40).optional(),
     surface: z.coerce.number().positive().max(1_000_000),
     codePostal: z.string().regex(/^\d{5}$/),
     reponses,
   }),
   // Renommage seul (le nom auto « Rénovation — … » peut être remplacé par un libellé libre).
-  z.object({ nom: z.string().trim().min(1).max(120) }).strict(),
+  z.object({ nom: nomProjet }).strict(),
 ]);
 
 export const pieceSchema = z.object({
@@ -62,6 +74,14 @@ export const depenseSchema = z.object({
   // 5 M€ au plus : la colonne `montant` est un real (float4), exact au centime jusqu'à ~130 000 €, à l'euro au-delà.
   montant: z.coerce.number().positive().max(5_000_000),
 });
+
+/** Suivi de chantier (POST /api/projects/[id]/statut) : clé « corps|nom » bornée, 0 à démarrer, 1 en cours, 2 terminé. */
+export const statutTacheSchema = z.object({
+  key: z.string().min(1).max(200),
+  state: z.union([z.literal(0), z.literal(1), z.literal(2)]),
+});
+/** Au plus autant de statuts qu'un projet peut porter de tâches, avec une large marge. */
+export const MAX_STATUTS = 2000;
 
 export const chantierStatutSchema = z.object({
   taskId: z.union([z.string(), z.number()]).transform(String),

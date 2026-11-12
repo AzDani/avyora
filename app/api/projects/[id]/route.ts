@@ -23,23 +23,29 @@ export async function PATCH(
   if (!v.ok) return v.res;
   const data = v.data;
 
-  if ("archived" in data) {
-    await setArchived(id, data.archived);
+  // Une écriture refusée par la base répond un 500 en JSON (le client lit `error`), sans le texte de Postgres.
+  try {
+    if ("archived" in data) {
+      await setArchived(id, data.archived);
+      return NextResponse.json({ ok: true });
+    }
+    // Renommage seul : le body ne contient que `nom` (pas de `reponses`).
+    if (!("reponses" in data)) {
+      await renameProjet(id, data.nom);
+      return NextResponse.json({ ok: true });
+    }
+    await updateProjet(id, {
+      nom: data.nom,
+      typeBien: data.typeBien,
+      surface: data.surface,
+      codePostal: data.codePostal,
+      reponses: data.reponses,
+    });
     return NextResponse.json({ ok: true });
+  } catch (e) {
+    console.error("[projects] modification impossible :", e);
+    return NextResponse.json({ error: "Enregistrement impossible" }, { status: 500 });
   }
-  // Renommage seul : le body ne contient que `nom` (pas de `reponses`).
-  if (!("reponses" in data)) {
-    await renameProjet(id, data.nom);
-    return NextResponse.json({ ok: true });
-  }
-  await updateProjet(id, {
-    nom: data.nom,
-    typeBien: data.typeBien,
-    surface: data.surface,
-    codePostal: data.codePostal,
-    reponses: data.reponses,
-  });
-  return NextResponse.json({ ok: true });
 }
 
 export async function DELETE(
@@ -60,7 +66,10 @@ export async function DELETE(
     return NextResponse.json({ error: "Vous n'êtes pas le propriétaire de ce projet." }, { status: 403 });
   }
   const { data: supprime, error } = await admin.from("projects").delete().eq("id", id).select("id");
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("[projects] suppression impossible :", error);
+    return NextResponse.json({ error: "Suppression impossible" }, { status: 500 });
+  }
   if (!supprime || supprime.length === 0) {
     return NextResponse.json({ error: "Aucune ligne supprimée." }, { status: 500 });
   }

@@ -25,7 +25,10 @@ export async function POST(req: Request) {
   if (!data.user) return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 });
   const current = (data.user.app_metadata ?? {}) as Record<string, unknown>;
   const { error } = await admin.auth.admin.updateUserById(String(userId), { app_metadata: { ...current, plan } });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("[admin/plan] mise à jour impossible :", error);
+    return NextResponse.json({ error: "Mise à jour impossible" }, { status: 500 });
+  }
 
   await journaliser("action_admin", { payload: { action: "set_plan", userId, plan } });
   return NextResponse.json({ ok: true, plan });

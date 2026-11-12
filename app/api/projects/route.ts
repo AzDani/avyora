@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createProjet } from "@/lib/data/projects";
+import { createProjet, PlafondProjets, MAX_PROJETS } from "@/lib/data/projects";
 import { FEATURES } from "@/lib/features";
 import { origineDuPlan } from "@/lib/plans/origine";
 import { getUser } from "@/lib/auth";
@@ -15,7 +15,20 @@ export async function POST(req: Request) {
   const v = valider(projetCreateSchema, await jsonBody(req));
   if (!v.ok) return v.res;
   const { nom, typeBien, surface, codePostal, reponses } = v.data;
-  const id = await createProjet({ nom, typeBien, surface, codePostal, reponses });
+  let id: string | null;
+  try {
+    id = await createProjet({ nom, typeBien, surface, codePostal, reponses });
+  } catch (e) {
+    if (e instanceof PlafondProjets) {
+      return NextResponse.json(
+        { error: `Tu as atteint la limite de ${MAX_PROJETS} projets. Supprime un ancien projet pour en créer un nouveau.` },
+        { status: 409 }
+      );
+    }
+    // Le détail (message Postgres) reste dans les journaux du serveur, jamais dans la réponse.
+    console.error("[projects] création impossible :", e);
+    return NextResponse.json({ error: "Enregistrement impossible" }, { status: 500 });
+  }
   if (!id) {
     // Pas de session : le funnel anonyme sera rattaché à l'inscription (étape 7).
     return NextResponse.json({ error: "Connexion requise pour enregistrer le projet" }, { status: 401 });

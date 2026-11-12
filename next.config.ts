@@ -90,6 +90,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Pas d'en-tête « X-Powered-By: Next.js » : il ne sert qu'à signaler le framework aux scanners.
+  poweredByHeader: false,
   serverExternalPackages: ["pdf-parse", "puppeteer-core", "@sparticuz/chromium"],
   // @sparticuz/chromium charge son binaire Chromium (bin/*.br) via un chemin dynamique : le tracer
   // de Next ne le détecte pas et l'exclut de la fonction serverless (→ « bin does not exist » sur Vercel).

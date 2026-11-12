@@ -12,9 +12,11 @@ export const maxDuration = 60;
  * qu'ils peuvent ne pas renouveler. Déclenché quotidiennement par Vercel Cron (voir vercel.json).
  */
 export async function GET(req: Request) {
-  // Sécurité : Vercel Cron envoie « Authorization: Bearer <CRON_SECRET> » si la variable est définie.
+  // Sécurité : Vercel Cron envoie « Authorization: Bearer <CRON_SECRET> ». Refus par défaut : sans la variable
+  // (supprimée ou mal nommée lors d'une migration), personne ne déclenche la boucle Stripe ni les e-mails.
   const secret = process.env.CRON_SECRET;
-  if (secret && req.headers.get("authorization") !== `Bearer ${secret}`) {
+  if (!secret) console.error("[cron chatel] CRON_SECRET absent : appel refusé.");
+  if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
   if (!process.env.STRIPE_SECRET_KEY) {
