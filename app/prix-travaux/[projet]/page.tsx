@@ -104,7 +104,7 @@ const CSS = `
 .av-seo .faq summary{font-weight:600;color:var(--color-ink);cursor:pointer;font-size:14.5px;padding:12px 16px}
 .av-seo .faq p{margin:-4px 0 0;padding:0 16px 12px}
 .av-seo .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.av-seo .chips a{font-size:13px;color:var(--color-brand-600);background:var(--color-brand-50);border-radius:999px;padding:5px 12px;text-decoration:none}
+.av-seo .chips a{font-size:13px;color:var(--color-brand-600);background:var(--color-brand-50);border-radius:999px;padding:10px 14px;text-decoration:none}
 .av-seo .chips a:hover{background:var(--color-brand-100)}
 /* Mobile : le corps de texte passe a 16px (defaut navigateur) — ces pages sont faites pour etre
    lues longuement sur un telephone, et 14,5px y est inutilement fatigant. */

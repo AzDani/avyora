@@ -170,4 +170,16 @@ describe("cibles tactiles d'au moins 44 px", () => {
     const langue = lire("components/i18n/LangSwitch.tsx");
     expect(langue.split("min-h-11 min-w-11").length - 1).toBe(2);
   });
+
+  it("puces de villes et de projets des pages de prix et des guides : padding 10px 14px partout", () => {
+    for (const [f, sel] of [
+      ["app/prix-renovation/[ville]/page.tsx", ".av-seo .villes a"],
+      ["app/guides/[slug]/page.tsx", ".av-guide .villes a"],
+      ["app/prix-travaux/page.tsx", ".av-seo .chips a"],
+      ["app/prix-travaux/[projet]/page.tsx", ".av-seo .chips a"],
+      ["app/prix-travaux/[projet]/[ville]/page.tsx", ".av-seo .chips a"],
+    ] as const) {
+      expect(regle(lire(f), sel), f).toContain("padding:10px 14px");
+    }
+  });
 });

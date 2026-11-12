@@ -73,7 +73,7 @@ const CSS = `
 .av-guide .phase{border-left:2px solid var(--color-brand-100,#e0e7ff);padding-left:14px;margin:16px 0}
 .av-guide .phase h3{margin-top:0}
 .av-guide .villes{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.av-guide .villes a{font-size:13px;color:var(--color-brand-600);background:var(--color-brand-50);border-radius:999px;padding:5px 12px;text-decoration:none}
+.av-guide .villes a{font-size:13px;color:var(--color-brand-600);background:var(--color-brand-50);border-radius:999px;padding:10px 14px;text-decoration:none}
 .av-guide .villes a:hover{background:var(--color-brand-100)}
 /* Mobile : le corps de texte passe a 16px (defaut navigateur) — ces pages sont faites pour etre
    lues longuement sur un telephone, et 14,5px y est inutilement fatigant. */
