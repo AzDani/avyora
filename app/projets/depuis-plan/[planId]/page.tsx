@@ -4,7 +4,6 @@ import { notFound, redirect } from "next/navigation";
 import { FEATURES } from "@/lib/features";
 import { getUser, estPro } from "@/lib/auth";
 import { getLocale } from "@/lib/i18n/server";
-import { META_EN, metaSelonLangue } from "@/lib/i18n/meta";
 import { dictPlans } from "@/lib/i18n/plans";
 import { supabaseServer } from "@/lib/supabase/server";
 import { planIdSchema } from "@/lib/plans/schema";
@@ -13,10 +12,6 @@ import { piecesEff, sdbEff } from "@/lib/estimateur/core";
 import DepuisPlan, { type ResumeBien } from "@/components/plans/DepuisPlan";
 import type { Ctx } from "@/lib/estimateur/core";
 
-/** Sans titre propre : celui du layout en français ; traduit pour un visiteur qui a choisi EN (lib/i18n/meta.ts). */
-export async function generateMetadata() {
-  return metaSelonLangue(await getLocale(), {}, META_EN.defaut);
-}
 export const dynamic = "force-dynamic";
 
 type Props = {

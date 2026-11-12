@@ -268,24 +268,24 @@ export default function EstimateurRapide({
   }, [estimationReelle, mode, type, ampleur]);
   const ampName = ampCard(ampleur).label.toLowerCase();
   /** Aperçu d'une carte : le €/m² d'un réglage, sur la surface chiffrée (0 sans saisie). */
-  function parM2(p: ReturnType<typeof buildSel>): number {
+  function prixM2De(p: ReturnType<typeof buildSel>): number {
     const s = totalSurface > 0 ? surfaceChiffree(p.ctx) : 0;
     return s > 0 ? Math.round(buildDevis(CATALOG, p.ctx, p.sel).totaux.ttc / s) : 0;
   }
 
   const m2ByAmp = useMemo(() => {
     const out: Record<string, number> = {};
-    for (const a of AMPLEURS) { const p = buildSel({ ampleur: a.v }); out[a.v] = parM2(p); }
+    for (const a of AMPLEURS) { const p = buildSel({ ampleur: a.v }); out[a.v] = prixM2De(p); }
     return out;
   }, [mode, type, surface, cp, finition, qui, pieces]);
   const m2ByFin = useMemo(() => {
     const out: Record<string, number> = {};
-    for (const f of ["eco", "standard", "premium"] as Finition[]) { const p = buildSel({ finition: f }); out[f] = parM2(p); }
+    for (const f of ["eco", "standard", "premium"] as Finition[]) { const p = buildSel({ finition: f }); out[f] = prixM2De(p); }
     return out;
   }, [mode, type, surface, cp, ampleur, qui, pieces]);
   const m2ByQui = useMemo(() => {
     const out: Record<string, number> = {};
-    for (const q of ["pros", "partie", "max"] as QuiRealise[]) { const p = buildSel({ qui: q }); out[q] = parM2(p); }
+    for (const q of ["pros", "partie", "max"] as QuiRealise[]) { const p = buildSel({ qui: q }); out[q] = prixM2De(p); }
     return out;
   }, [mode, type, surface, cp, ampleur, finition, pieces]);
 

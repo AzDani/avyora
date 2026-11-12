@@ -8,7 +8,6 @@ import ClaimPlan from "@/components/plans/ClaimPlan";
 import ProUpsell from "@/components/ProUpsell";
 import { getUser, estPro } from "@/lib/auth";
 import { getLocale } from "@/lib/i18n/server";
-import { META_EN, metaSelonLangue } from "@/lib/i18n/meta";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
 import { FEATURES } from "@/lib/features";
 import { compterPlans, plansDesProjets, type LienPlan } from "@/lib/plans/data";
@@ -18,10 +17,6 @@ import { euros as eurosLocale, nombre } from "@/lib/i18n/nombres";
 import { estMembreFondateur } from "@/lib/beta";
 import { PastilleFondateur } from "@/components/BandeauBeta";
 
-/** Sans titre propre : celui du layout en français ; traduit pour un visiteur qui a choisi EN (lib/i18n/meta.ts). */
-export async function generateMetadata() {
-  return metaSelonLangue(await getLocale(), {}, META_EN.defaut);
-}
 export const dynamic = "force-dynamic";
 
 /** Titre d'onglet « Mes projets · AVYORA » (gabarit du layout) : sans lui, toutes les pages privées
