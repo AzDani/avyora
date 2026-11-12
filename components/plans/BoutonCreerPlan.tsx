@@ -30,7 +30,7 @@ export default function BoutonCreerPlan({ connecte }: { connecte: boolean }) {
   }, []);
   if (telephone) return <EnvoyerLien t={t} />;
   return (
-    <a href={lienEditeurPlan("/plan", connecte, "vitrine-plan")} className="btn btn-primary px-5 py-3 text-[15px]" {...clicPlan("vitrine_bas")}>
+    <a href={lienEditeurPlan("/plan", connecte, "vitrine-plan")} className="btn btn-primary max-w-full whitespace-normal px-5 py-3 text-center text-[15px] leading-snug" {...clicPlan("vitrine_bas")}>
       {connecte ? t.hub.ouvrirEditeur : t.hub.creer}
     </a>
   );

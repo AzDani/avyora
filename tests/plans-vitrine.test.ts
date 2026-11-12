@@ -105,8 +105,8 @@ describe("C5 · /logiciel-plan-maison", () => {
     for (const locale of ["fr", "en"] as const) {
       const { html } = await page(true, locale, CAMILLE);
       const t = dictPlans(locale);
-      expect(html, locale).toContain(`href="/plan" class="btn btn-primary px-5 py-3 text-[15px]" data-clic-plan="vitrine_haut">${echap(t.hub.ouvrirEditeur)}</a>`);
-      expect(html, locale).toContain(`href="/plan" class="btn btn-primary px-5 py-3 text-[15px]" data-clic-plan="vitrine_bas">${echap(t.hub.ouvrirEditeur)}</a>`);
+      expect(html, locale).toContain(`href="/plan" class="btn btn-primary max-w-full whitespace-normal px-5 py-3 text-center text-[15px] leading-snug" data-clic-plan="vitrine_haut">${echap(t.hub.ouvrirEditeur)}</a>`);
+      expect(html, locale).toContain(`href="/plan" class="btn btn-primary max-w-full whitespace-normal px-5 py-3 text-center text-[15px] leading-snug" data-clic-plan="vitrine_bas">${echap(t.hub.ouvrirEditeur)}</a>`);
       expect(html, locale).toContain(`href="/plan?type=final"`);
       expect(html, locale).toContain(`${echap(t.vitrine.construireLien)} →`);
       expect(html, locale).not.toContain("/inscription?");
@@ -124,13 +124,13 @@ describe("C5 · /logiciel-plan-maison", () => {
       const t = dictPlans(locale);
       const pro = (h: string) => h.slice(h.indexOf('data-colonne="pro"'), h.indexOf("</section>", h.indexOf('data-colonne="pro"')));
       const anonyme = (await page(true, locale)).html;
-      expect(pro(anonyme), locale).toContain(`${INSCRIPTION} class="btn btn-outline mt-5 py-2.5">${echap(t.vitrineBeta.offresVoir)}</a>`);
+      expect(pro(anonyme), locale).toContain(`${INSCRIPTION} class="btn btn-outline mt-5 max-w-full whitespace-normal py-2.5 text-center leading-snug">${echap(t.vitrineBeta.offresVoir)}</a>`);
       expect(anonyme.match(SANS_COMPTE)?.[0] ?? null, locale).toBeNull();
       const faq = t.vitrineBeta.faqGratuit("31 décembre 2026", 30).r;
       expect(faq).not.toMatch(SANS_COMPTE);
       expect(faq).toMatch(locale === "fr" ? /Il te faut seulement un compte/ : /All you need is an account/);
       const connecte = (await page(true, locale, CAMILLE)).html;
-      expect(pro(connecte), locale).toContain(`href="/plan" class="btn btn-outline mt-5 py-2.5">${echap(t.hub.ouvrirEditeur)}</a>`);
+      expect(pro(connecte), locale).toContain(`href="/plan" class="btn btn-outline mt-5 max-w-full whitespace-normal py-2.5 text-center leading-snug">${echap(t.hub.ouvrirEditeur)}</a>`);
     }
   });
 
