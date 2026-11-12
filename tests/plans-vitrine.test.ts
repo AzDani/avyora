@@ -52,6 +52,9 @@ describe("C5 · /logiciel-plan-maison", () => {
     expect(html).toContain("min-h-[19rem]");
     /* jury : au-dessus de la ligne de flottaison, la vraie capture 3D (chargée tout de suite), plus l'illustration */
     expect(html).toMatch(/<img src="\/plans\/maison-3d\.png"[^>]*loading="eager"[^>]*fetchPriority="high"|<img src="\/plans\/maison-3d\.png"[^>]*loading="eager"[^>]*fetchpriority="high"/);
+    /* revue : l'appel porte déjà la 3D ; la grille ne la répète pas tant qu'il est affiché (une seule 3D visible) */
+    expect(html).toContain("data-vitrine-appel");
+    expect(html).toMatch(/<figure class="min-w-0 \[body:has\(\[data-vitrine-appel\]\)_&amp;\]:hidden">\s*<picture><source type="image\/webp" srcSet="\/plans\/maison-3d-760/);
     expect(html).not.toContain("The editor is in French");
     expect(html).not.toMatch(/\d+[,.]\d{2}\s?€|€\s?\d/);
     expect(metadata.title.length).toBeLessThanOrEqual(51);

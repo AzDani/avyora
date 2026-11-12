@@ -119,6 +119,18 @@ const nextConfig: NextConfig = {
           { key: "X-Robots-Tag", value: "noindex" },
         ],
       },
+      /* Les fichiers servis à l'éditeur depuis public/ (lib/editeur/heberger.ts) : sans règle, Vercel répond
+         max-age=0 et le navigateur revérifie Three.js (600 Ko) à chaque visite. Le dossier /vendor porte la
+         version dans son chemin (three@0.147.0) : immuable. Les polices gardent leur nom d'une version à
+         l'autre : une semaine, puis revérifiées en arrière-plan. */
+      {
+        source: "/vendor/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
+        source: "/fonts/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" }],
+      },
     ];
   },
   // L'URL technique Vercel (*.vercel.app) sert le même contenu que getavyora.fr → on la redirige

@@ -10,7 +10,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { createElement, type ReactNode } from "react";
 import { prerender } from "react-dom/static";
-import { readFileSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { dict } from "@/lib/i18n/dictionaries";
 import { dictPlans } from "@/lib/i18n/plans";
@@ -532,6 +532,10 @@ describe("C9 · captures de l'éditeur", () => {
       expect(taille(path.join(dossier, `${nom}-760.webp`))).toEqual([760, 475]);
     }
     expect(taille(path.join(dossier, "og-plan.png"))).toEqual([1200, 630]);
+  });
+
+  it("l'image de partage reste légère (< 150 Ko) : au-delà de ~300 Ko, WhatsApp ignore souvent l'aperçu", () => {
+    expect(statSync(path.join(dossier, "og-plan.png")).size).toBeLessThan(150 * 1024);
   });
 });
 

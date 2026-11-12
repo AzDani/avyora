@@ -37,9 +37,9 @@ export async function generateMetadata() {
 const maj = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /** Une vraie capture de l'éditeur : webp 760 / 1040, PNG de repli, largeur et hauteur posées (convention du dépôt). */
-function Capture({ nom, alt, legende }: { nom: string; alt: string; legende: string }) {
+function Capture({ nom, alt, legende, className = "" }: { nom: string; alt: string; legende: string; className?: string }) {
   return (
-    <figure className="min-w-0">
+    <figure className={"min-w-0 " + className}>
       <picture>
         <source
           type="image/webp"
@@ -153,9 +153,12 @@ export default async function LogicielPlanMaison() {
         <TesPlans />
       </div>
 
+      {/* Sans plan, l'appel de « Tes plans » (data-vitrine-appel) montre déjà la capture 3D : la grille ne la répète pas,
+          le plan 2D prend la largeur (centré). Avec des plans, l'appel n'est pas là : les deux captures, côte à côte. */}
       <div className="grid gap-6 sm:grid-cols-2">
-        <Capture nom="maison-2d" alt={v.alt2d} legende={v.legende2d} />
-        <Capture nom="maison-3d" alt={v.alt3d} legende={v.legende3d} />
+        <Capture nom="maison-2d" alt={v.alt2d} legende={v.legende2d}
+          className="[body:has([data-vitrine-appel])_&]:col-span-full [body:has([data-vitrine-appel])_&]:mx-auto [body:has([data-vitrine-appel])_&]:max-w-2xl" />
+        <Capture nom="maison-3d" alt={v.alt3d} legende={v.legende3d} className="[body:has([data-vitrine-appel])_&]:hidden" />
       </div>
 
       <section id="comment" aria-labelledby="gestes-titre" className="scroll-mt-24">
