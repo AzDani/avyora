@@ -224,7 +224,7 @@ function Appel({ t, telephone, erreur, connecte }: { t: DictPlans; telephone: bo
           {telephone ? (
             <EnvoyerLien t={t} />
           ) : (
-            <a href={connecte ? "/plan" : INSCRIPTION_EDITEUR} className="btn btn-primary px-5 py-3 text-[15px]" {...clicPlan("vitrine_haut")}>
+            <a href={connecte ? "/plan" : INSCRIPTION_EDITEUR} className="btn btn-primary max-w-full whitespace-normal px-5 py-3 text-center text-[15px] leading-snug" {...clicPlan("vitrine_haut")}>
               {connecte ? t.hub.ouvrirEditeur : t.hub.creer}
             </a>
           )}

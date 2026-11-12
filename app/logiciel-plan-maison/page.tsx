@@ -253,7 +253,7 @@ export default async function LogicielPlanMaison() {
             {/* Bêta : un compte suffit, puis l'éditeur (une balise <a>, comme tout lien qui mène à l'éditeur) ; connecté,
                 tout est déjà inclus : l'éditeur directement. */}
             {beta ? (
-              <a href={lienEditeurPlan("/plan", connecte, "vitrine-plan")} className="btn btn-outline mt-5 py-2.5">
+              <a href={lienEditeurPlan("/plan", connecte, "vitrine-plan")} className="btn btn-outline mt-5 max-w-full whitespace-normal py-2.5 text-center leading-snug">
                 {connecte ? d.hub.ouvrirEditeur : vb.offresVoir}
               </a>
             ) : (
