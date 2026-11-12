@@ -162,7 +162,7 @@ const fr = {
     liveLabel: "Estimation rapide · TTC",
     renseigneSurface: "Renseigne la surface",
     /** Après « +10 % » (le signe vient de `signePct`, insécable en français). */
-    moSuffix: "MO",
+    moSuffix: "main-d’œuvre",   // en toutes lettres : « MO » ne parlait à personne (revue du 12/11/2026, n° 143)
     affiner: "Détail poste par poste — Pro",
     affinerInclus: "Détail poste par poste",
     enregistrer: "Enregistrer — gratuit",
@@ -226,7 +226,7 @@ const fr = {
     zones: {
       "Moyenne nationale": "Moyenne nationale",
       "Paris & petite couronne": "Paris & petite couronne",
-      "Zone tendue": "Zone tendue",
+      "Zone tendue": "Secteur très demandé",   // « zone tendue » est un terme juridique (loyers) : n° 143
       "Grande agglomération": "Grande agglomération",
       "Zone rurale": "Zone rurale",
       "Corse": "Corse",

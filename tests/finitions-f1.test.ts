@@ -248,7 +248,7 @@ describe("F1 (3, 8) · « % » ne passe jamais seul à la ligne en français ; �
   });
 
   for (const l of LOCALES) {
-    it(`${l} : la barre des deux rapides (« ±15 % », « +4 % MO »), le bilan du neuf (« 7 % des travaux »)`, () => {
+    it(`${l} : la barre des deux rapides (« ±15 % », « +4 % MO »), le bilan du neuf (« 7 % des travaux HT… »)`, () => {
       const pct = signePct(l);
       const reno = rendre(EstimateurRapide, { edit: { projectId: "p1", type: "Maison", surface: 100, cp: "33000", ampleur: "complete", finition: "standard", qui: "pros" } }, l);
       const neuf = rendre(EstimateurRapideNeuf, { edit: { projectId: "p2" }, initialR: { surface: 100, niveaux: "pp", codePostal: "33000", finition: "standard", qui: "pros" } }, l);
@@ -257,8 +257,9 @@ describe("F1 (3, 8) · « % » ne passe jamais seul à la ligne en français ; �
         expect(h).toContain(`+4${pct} ${dict(l).rapide.moSuffix}`);   // Bordeaux, « Grande agglomération »
         expect(h).not.toMatch(/\d %/);
       }
-      expect(neuf).toContain(`(${pourcent(l, 7)} ${dictNeuf(l).pctTravaux})`);
-      expect(neuf).toContain(l === "fr" ? "(7\u00a0% des travaux)" : "(7% of the works)");
+      // La base des aléas dite telle quelle (revue du 12/11/2026, n° 69) : le HT des travaux, sans études ni frais.
+      expect(neuf).toContain(`(${pourcent(l, 7)} ${dictNeuf(l).pctAleas})`);
+      expect(neuf).toContain(l === "fr" ? "(7\u00a0% des travaux HT, hors études, taxes et assurance)" : "(7% of the works excl. VAT, studies, taxes and insurance)");
     });
   }
 });

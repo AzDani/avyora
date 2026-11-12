@@ -208,9 +208,17 @@ export function variantLabel(t: Tache, s?: LigneSel, ctx?: Ctx): string {
   if (t.taille) p.push(((s && s.tai) || DEFAULT_TAILLE) === "petit" ? "petit" : "grand");
   if (t.vars) for (const g of t.vars) {
     const chosen = (s && s.vsel && s.vsel[g.k]) || g.opts[0].k;
-    p.push((g.opts.find((o) => o.k === chosen) || g.opts[0]).label.toLowerCase());
+    p.push(minusculeInitiale((g.opts.find((o) => o.k === chosen) || g.opts[0]).label));
   }
   return p.length ? " (" + p.join(", ") + ")" : "";
+}
+/** Un libellé de variante dans la parenthèse d'une ligne : sa majuscule initiale tombe (« Suspendu » →
+ *  « suspendu », « À galandage » → « à galandage »), pas celle d'un sigle (« LED », « PVC », « MDF ») ni
+ *  d'un nom propre (« Île-de-France », « Paris ») ; le reste du libellé est gardé tel quel (« hors
+ *  Île-de-France », « sans LED »). Revue du 12/11/2026, n° 73. */
+export function minusculeInitiale(label: string): string {
+  if (!/^\p{Lu}(?!\p{Lu})/u.test(label) || /^(Île-de-France|Paris)/u.test(label)) return label;
+  return label[0].toLowerCase() + label.slice(1);
 }
 
 export interface Totaux { ht: number; tva: number; aleas: number; ttc: number; }
@@ -270,9 +278,22 @@ const TASK_FIN: Record<string, Record<Finition, number>> = {
   ...Object.fromEntries(TOITURE_TASKS.map((n) => [n, G2])),
   "Dépose complète de toiture (couverture + charpente)": G0, // démolition : pas de scaling finition
 };
+/**
+ * Construction neuve, finition ÉCO : l'écart avec le standard y est DOUBLÉ (revue du 12/11/2026, n° 66).
+ * En neuf, le total porte aussi les études, les taxes, les branchements et le gros œuvre, que la
+ * finition ne touche pas : avec l'écart de la rénovation, l'éco ne coûtait que 2 % de moins que le
+ * standard. Écart doublé : 0,78 (au lieu de 0,83) pour le groupe faible, 0,67 (0,75) pour le moyen,
+ * 0,56 (0,67) pour le fort ; le standard et le premium ne bougent pas, la rénovation non plus. Le
+ * réglage tient dans `ECART_ECO_NEUF` (1 = l'écart de la rénovation).
+ */
+export const ECART_ECO_NEUF = 2;
+const ecoNeuf = (g: Record<Finition, number>): number => Math.round((g.standard - ECART_ECO_NEUF * (g.standard - g.eco)) * 100) / 100;
+/** Le coefficient d'un barème pour le contexte (finition, et nature pour l'éco du neuf). */
+const coefBareme = (ctx: Ctx, g: Record<Finition, number>): number =>
+  ctx.finition === "eco" && ctx.nature === "neuf" ? ecoNeuf(g) : g[ctx.finition];
 /** Coefficient de finition pour un lot donné (selon le niveau choisi dans ctx). */
 export function finCoef(ctx: Ctx, corps: string): number {
-  return (LOT_FIN[corps] ?? FINCO)[ctx.finition];
+  return coefBareme(ctx, LOT_FIN[corps] ?? FINCO);
 }
 /* Un groupe de variantes ne « pilote le prix » que s'il le déplace vraiment : soit par un
    coefficient différent de 1, soit par une grille de prix exacts (le sèche-serviette). Une
@@ -285,7 +306,7 @@ const varsPilotentLePrix = (t: Tache): boolean =>
 export function finCoefTask(ctx: Ctx, l: Lot, t: Tache): number {
   if (t.fixe || t.mat || t.vitrage || t.moto || t.taille || varsPilotentLePrix(t)) return 1; // fixe ou piloté par variante
   const g = TASK_FIN[t.n];
-  return g ? g[ctx.finition] : finCoef(ctx, l.c);
+  return g ? coefBareme(ctx, g) : finCoef(ctx, l.c);
 }
 // ── Coefficient régional (main-d'œuvre) ───────────────────────────────────────
 // La MO varie fortement selon la région ; les matériaux sont ~nationaux (sauf outre-mer,

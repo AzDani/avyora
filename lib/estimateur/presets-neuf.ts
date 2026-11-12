@@ -142,6 +142,87 @@ function decocherExclusifs(sel: Selection, id: string): Selection {
   return out;
 }
 
+/**
+ * Ce que la FINITION choisit en neuf, au-delà du coefficient des matériaux (revue du 12/11/2026, n° 14).
+ * Le coefficient ne touche pas les postes dont une variante fait le prix (un WC suspendu, un parquet,
+ * une colonne encastrée) : sans ce choix, la carte « Premium » promettait du parquet et des sanitaires
+ * haut de gamme que le chiffrage ne comptait pas (stratifié, WC classique, bac de douche). Le premium
+ * pose donc ce que sa carte dit ; l'éco et le standard gardent l'entrée de gamme (les décisions de
+ * `decisionsNeuf`). Les menuiseries extérieures passent déjà en alu en premium (matériau par défaut du
+ * moteur), le carrelage et la cuisine prennent le coefficient plein.
+ */
+const FINITION_STANDARD_NEUF: Record<string, DecisionNeuf> = {
+  "rev-sol-stratifie-imitation-bois": { on: true }, "rev-parquet-bois": { on: false },
+  "plo-wc": { on: true, vsel: { type: "classique" } },
+  "plo-bac-de-douche": { on: true }, "plo-douche-a-l-italienne": { on: false },
+  "plo-colonne-de-douche": { on: true, vsel: { pose: "applique" } },
+};
+const FINITION_PREMIUM_NEUF: Record<string, DecisionNeuf> = {
+  "rev-sol-stratifie-imitation-bois": { on: false }, "rev-parquet-bois": { on: true, vsel: { type: "contrecolle" } },
+  "plo-wc": { on: true, vsel: { type: "suspendu" } },
+  "plo-bac-de-douche": { on: false }, "plo-douche-a-l-italienne": { on: true },
+  "plo-colonne-de-douche": { on: true, vsel: { pose: "encastre" } },
+};
+export function decisionsFinitionNeuf(f: Finition): Record<string, DecisionNeuf> {
+  return f === "premium" ? FINITION_PREMIUM_NEUF : FINITION_STANDARD_NEUF;
+}
+
+const cleDe = (id: string): string => { const p = POSTE_NEUF.get(id); return p ? key(p.c, p.n) : ""; };
+
+/** La ligne est-elle encore celle que la décision pose ? (cochée ou non comme elle, mêmes variantes,
+ *  une variante absente valant la première option du poste) */
+function ligneConforme(sel: Selection, id: string, d: DecisionNeuf): boolean {
+  const p = POSTE_NEUF.get(id);
+  if (!p) return false;
+  const s = sel[key(p.c, p.n)];
+  if (!!s?.on !== d.on) return false;
+  for (const [k, v] of Object.entries(d.vsel ?? {})) {
+    const defaut = p.t.vars?.find((g) => g.k === k)?.opts[0]?.k;
+    if ((s?.vsel?.[k] ?? defaut) !== v) return false;
+  }
+  return true;
+}
+
+/**
+ * Passe la sélection de la finition `avant` à la finition `apres` : seuls les postes que les deux
+ * finitions décident différemment bougent, et seulement s'ils sont encore tels que `avant` les avait
+ * posés. Un choix fait à la main (un parquet massif en standard, un bac de douche gardé en premium)
+ * survit donc au changement de finition, comme `appliquerMaison` garde ce qu'aucune réponse ne gouverne.
+ * Un poste nouvellement coché prend le « Je le fais » que `qui` lui donne.
+ */
+export function appliquerFinitionNeuf(sel: Selection, apres: Finition, avant: Finition, qui?: QuiRealise): Selection {
+  const A = decisionsFinitionNeuf(avant), B = decisionsFinitionNeuf(apres);
+  if (A === B) return sel;
+  const conformes = new Set(Object.keys(A).filter((id) => ligneConforme(sel, id, A[id])));
+  // Un poste à cocher ne chasse pas un autre poste de son groupe que `avant` n'avait pas posé (un parquet
+  // massif ou un sol souple choisi à la main garde sa place).
+  const libre = (id: string) => exclusifsDe(id).every((x) => !sel[cleDe(x)]?.on || (conformes.has(x) && A[x]?.on));
+  const aChanger = Object.keys(B).filter((id) => JSON.stringify(A[id]) !== JSON.stringify(B[id]) && conformes.has(id) && (!B[id].on || libre(id)));
+  let out: Selection = { ...sel };
+  // Les décochages d'abord : cocher la douche à l'italienne ne doit pas dépendre de l'ordre de la table.
+  for (const id of aChanger) {
+    if (B[id].on) continue;
+    const p = POSTE_NEUF.get(id)!;
+    const k = key(p.c, p.n);
+    if (out[k]?.on) out[k] = { ...out[k], on: false };
+  }
+  for (const id of aChanger) {
+    const d = B[id];
+    if (!d.on) continue;
+    const p = POSTE_NEUF.get(id)!;
+    const k = key(p.c, p.n);
+    const ancien = out[k];
+    const nouveau = !ancien?.on;
+    out = decocherExclusifs(out, id);
+    out[k] = {
+      ...(ancien ?? {}), on: true,
+      ...(nouveau && qui ? { self: soiMemeNeuf(p.c, qui, p.t) } : {}),
+      ...(d.vsel ? { vsel: { ...(ancien?.vsel ?? {}), ...d.vsel } } : {}),
+    };
+  }
+  return out;
+}
+
 /** Coche (ou décoche) un poste du neuf à la main ; le cocher décoche les autres postes de son groupe exclusif. */
 export function cocherPosteNeuf(sel: Selection, id: string, on: boolean, qui?: QuiRealise): Selection {
   const p = POSTE_NEUF.get(id);
@@ -182,6 +263,8 @@ export function presetNeuf(input: RapideNeufInput, base?: Partial<MaisonNeuve>):
 /** Mode détaillé : une description complète de la maison → ctx + sel (quantités automatiques). */
 export function presetMaison(maison: Partial<MaisonNeuve>, opts: { finition?: Finition; qui?: QuiRealise; codePostal?: string; aleas?: number } = {}): { ctx: Ctx; sel: Selection } {
   const ctx = ctxNeuf(maison, opts);
-  const sel = appliquerMaison(ctx.neuf as MaisonNeuve, {}, opts.qui ?? "pros");
+  const qui = opts.qui ?? "pros";
+  // La description pose l'entrée de gamme (celle du standard) ; la finition choisie part de là.
+  const sel = appliquerFinitionNeuf(appliquerMaison(ctx.neuf as MaisonNeuve, {}, qui), ctx.finition, "standard", qui);
   return { ctx, sel };
 }

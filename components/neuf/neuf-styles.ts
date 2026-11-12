@@ -30,4 +30,18 @@ export const NEUF_CSS = `
 .av-neuf .pli[open] .chev{transform:rotate(180deg)}
 .av-neuf .pli .bilan{padding:0 8px 8px}
 @media(max-width:560px){.av-neuf .fields{grid-template-columns:1fr}}
+/* Surface ramenée aux bornes du rapide (n° 72), note sous les cartes de finition (n° 14, 66). */
+.av-neuf .hors{font-size:12.5px;color:#7a4b00;line-height:1.45;margin:6px 0 0}
+.av-neuf .hors:empty{display:none}
+.av-neuf .fin-note{margin:12px 0 0}
+/* Un champ qui prend le focus ne passe pas sous la barre collante (n° 71). */
+.av-neuf input{scroll-margin-bottom:180px}
+/* Barre live au téléphone (n° 71) : compacte, les deux boutons côte à côte ; sans chiffre, elle ne colle pas. */
+@media(max-width:560px){
+  .av-neuf-live.attente{position:static}
+  .av-neuf-live .in{padding:10px 14px;gap:8px}
+  .av-neuf-live .big{font-size:20px}
+  .av-neuf-live .btns{width:100%;margin-left:0;flex-wrap:nowrap;gap:6px}
+  .av-neuf-live .btns .ghost,.av-neuf-live .btns .cta{flex:1 1 0;min-width:0;padding:8px 10px;font-size:12.5px;line-height:1.25;white-space:normal;text-align:center}
+}
 `;

@@ -27,6 +27,13 @@ export function valeurSortie(texte: string, { min, max, step = 1 }: { min?: numb
   return Number(n.toFixed(step < 1 ? 2 : 0));
 }
 
+/** La valeur tapée sort-elle des bornes ? `"max"` au-dessus, `"min"` en dessous, `null` dedans (ou rien de lisible). */
+export function horsBornes(texte: string, { min, max }: { min?: number; max?: number }): "min" | "max" | null {
+  const v = parseFloat(texte);
+  if (Number.isNaN(v)) return null;
+  return max != null && v > max ? "max" : min != null && v < min ? "min" : null;
+}
+
 /**
  * Contrôle numérique unifié (surface / quantité). Gros boutons ±step, champ tapable, flèches natives
  * masquées. Styles globaux `.av-step` (globals.css) → même rendu partout. Variantes :
@@ -41,7 +48,7 @@ export function valeurSortie(texte: string, { min, max, step = 1 }: { min?: numb
  * seule la sortie du champ (ou Entrée) la transmet, une fois. Les boutons −/+ la transmettent toujours.
  */
 export default function Stepper({
-  value, onChange, min, max, step = 1, unit, field, compact, block, className = "", id, aLaSortie, invalide,
+  value, onChange, min, max, step = 1, unit, field, compact, block, className = "", id, aLaSortie, invalide, onHorsBornes, describedBy,
 }: {
   value: number;
   onChange: (n: number) => void;
@@ -60,6 +67,12 @@ export default function Stepper({
   aLaSortie?: boolean;
   /** Le champ est en faute (« Enregistrer » sans surface) : `aria-invalid` sur le champ. Absent : rendu inchangé. */
   invalide?: boolean;
+  /** Prévenu quand la valeur tapée sort des bornes (et sera ramenée à la borne) : `"max"` dès la frappe,
+   *  `"min"` à la sortie du champ seulement (taper « 120 » passe par « 1 »), `null` quand elle y revient.
+   *  Absent : rien ne change. */
+  onHorsBornes?: (cote: "min" | "max" | null) => void;
+  /** `aria-describedby` du champ (un message lié, comme celui des bornes). Absent : rendu inchangé. */
+  describedBy?: string;
 }) {
   const aria = ARIA[useLocale()] ?? ARIA.fr;
   const dp = step < 1 ? 2 : 0;
@@ -74,22 +87,24 @@ export default function Stepper({
   const editing = useRef(false);
   useEffect(() => { if (!editing.current) setRaw(String(value)); }, [value]);
 
-  const bump = (d: number) => { const n = clamp(value + d); setRaw(String(n)); onChange(n); };
+  const bump = (d: number) => { const n = clamp(value + d); setRaw(String(n)); onChange(n); onHorsBornes?.(null); };
   const onInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setRaw(val);                             // autorise le champ vide pendant la saisie
+    if (onHorsBornes) { const h = horsBornes(val, { min, max }); onHorsBornes(h === "max" ? "max" : null); }
     const v = valeurFrappe(val, aLaSortie);
     if (v != null) onChange(v);              // propage sans clamp tant qu'on tape (sauf `aLaSortie`)
   };
   const onBlur = () => {
     editing.current = false;
+    onHorsBornes?.(horsBornes(raw, { min, max }));
     const n = valeurSortie(raw, { min, max, step });
     setRaw(String(n));
     if (!aLaSortie || n !== value) onChange(n);
   };
   const input = (
     <input id={id} type="number" inputMode="decimal" value={raw} min={min} max={max} step={step} aria-invalid={invalide || undefined}
-      onFocus={() => { editing.current = true; }} onChange={onInput} onBlur={onBlur}
+      aria-describedby={describedBy} onFocus={() => { editing.current = true; }} onChange={onInput} onBlur={onBlur}
       onKeyDown={aLaSortie ? (e) => { if (e.key === "Enter") e.currentTarget.blur(); } : undefined} />
   );
   const minus = <button type="button" onClick={() => bump(-step)} disabled={min != null && value <= min} aria-label={aria.moins}>−</button>;

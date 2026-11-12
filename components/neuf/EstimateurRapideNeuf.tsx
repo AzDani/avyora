@@ -91,6 +91,7 @@ function rechercheNettoyee(): string {
 export default function EstimateurRapideNeuf({
   isPro = false,
   beta = false,
+  connecte = true,
   initial,
   edit,
   base,
@@ -105,6 +106,12 @@ export default function EstimateurRapideNeuf({
    * « Affiner ma maison » et « Enregistrer » l'envoient créer son compte gratuit, pas payer.
    */
   beta?: boolean;
+  /**
+   * Le visiteur a-t-il une session (décidé par la page, côté serveur) ? Un anonyme qui enregistre va droit
+   * à l'inscription, son brouillon rangé, sans requête vouée au 401 (revue du 12/11/2026, n° 70). Absent :
+   * connecté (l'édition d'un projet), la réponse 401 de l'API restant le filet d'une session expirée.
+   */
+  connecte?: boolean;
   /** Contexte venu de l'URL de la page publique (déjà validé côté serveur). */
   initial?: InitialNeuf;
   /** Édition d'un projet EXISTANT (PATCH). Ne se mélange pas avec `initial`. */
@@ -155,11 +162,17 @@ export default function EstimateurRapideNeuf({
   /** Retour de /tarifs (gratuit qui a cliqué le détail Pro) : ses réponses reviennent, et le chiffre
    *  s'affiche, mais ce n'est pas une nouvelle action (aucune mesure, aucune conversion). */
   const [retour, setRetour] = useState<{ base?: Partial<MaisonNeuve> } | null>(null);
-  const affiche = agi || !!edit || !!retour;
+  /** Lien prérempli (`?surface=` ou `?niveaux=`, une page de prix, une campagne) : la maison y est décrite,
+   *  son chiffre s'affiche d'emblée (revue du 12/11/2026, n° 74). Ce n'est pas une action pour autant :
+   *  ni mesure ni conversion avant une vraie réponse (`agi`). Un code postal seul ne décrit pas la maison. */
+  const prerempli = !edit && (initial?.surface != null || initial?.niveaux != null);
+  const affiche = agi || !!edit || !!retour || prerempli;
   const [saving, setSaving] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   /** Le champ en faute (« Enregistrer » sans code postal ou surface) : marqué et focalisé. */
   const [champErr, setChampErr] = useState<"cp" | "surface" | null>(null);
+  /** Surface tapée hors des bornes du rapide : ramenée à la borne, avec un message sous le champ (n° 72). */
+  const [surfaceHors, setSurfaceHors] = useState<"min" | "max" | null>(null);
   const signaler = (champ: "cp" | "surface", msg: string) => {
     setErreur(msg); setChampErr(champ);
     const el = document.getElementById(champ === "cp" ? "neuf-cp" : "neuf-surface");
@@ -372,22 +385,25 @@ export default function EstimateurRapideNeuf({
     setAgi(true);
     suivre("estimation_terminee", { action: "enregistrer", type: "neuf", nature: "neuf", src });
     conversionEstimation("neuf");
-    setSaving(true);
     const d = brouillon();
+    /** Anonyme (ou session expirée) : le brouillon D'ABORD, le drapeau ensuite (un drapeau sans brouillon ne
+     *  réclame rien), puis l'inscription. */
+    const versCompte = () => {
+      try { localStorage.setItem(CLE_BROUILLON_NEUF, JSON.stringify(d)); localStorage.setItem(CLE_RECLAMATION_NEUF, "1"); } catch { /* noop */ }
+      // Née d'un plan de cet appareil : le plan est repris d'abord (ClaimPlan), l'estimation s'y relie ensuite.
+      try { marquerReprisePlan(d.origine, localStorage); } catch { /* noop */ }
+      router.push(beta ? lienInscriptionBeta(undefined, "enregistrer-neuf") : "/inscription");
+    };
+    // Anonyme connu de la page : pas de requête vouée au 401 (n° 70).
+    if (!connecte && !edit) { versCompte(); return; }
+    setSaving(true);
     try {
       const res = await fetch(edit ? `/api/projects/${edit.projectId}` : "/api/projects", {
         method: edit ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(corpsProjetNeuf(d, locale)),
       });
-      if (res.status === 401) {
-        // Le brouillon D'ABORD, le drapeau ensuite : un drapeau sans brouillon ne réclame rien.
-        try { localStorage.setItem(CLE_BROUILLON_NEUF, JSON.stringify(d)); localStorage.setItem(CLE_RECLAMATION_NEUF, "1"); } catch { /* noop */ }
-        // Née d'un plan de cet appareil : le plan est repris d'abord (ClaimPlan), l'estimation s'y relie ensuite.
-        try { marquerReprisePlan(d.origine, localStorage); } catch { /* noop */ }
-        router.push(beta ? lienInscriptionBeta(undefined, "enregistrer-neuf") : "/inscription");
-        return;
-      }
+      if (res.status === 401) { versCompte(); return; }   // session expirée : le filet
       const data = await res.json().catch(() => ({}));
       if (!res.ok) { setErreur(data?.error || s.errSave); setSaving(false); return; }
       try { localStorage.removeItem(CLE_BROUILLON_NEUF); } catch { /* noop */ }
@@ -445,7 +461,11 @@ export default function EstimateurRapideNeuf({
           <div className="fields">
             <div className="fld">
               <label htmlFor="neuf-surface">{s.surfaceLabel}{badge("surface")}</label>
-              <Stepper block id="neuf-surface" invalide={champErr === "surface"} value={R.surface} min={BORNES_NEUF.surface.min} max={BORNES_NEUF.surface.max} step={5} unit="m²" onChange={(n) => maj({ surface: n })} />
+              <Stepper block id="neuf-surface" invalide={champErr === "surface"} value={R.surface} min={BORNES_NEUF.surface.min} max={BORNES_NEUF.surface.max} step={5} unit="m²"
+                onChange={(n) => maj({ surface: n })} onHorsBornes={setSurfaceHors} describedBy={surfaceHors ? "neuf-surface-hors" : undefined} />
+              <p className="hors" id="neuf-surface-hors" aria-live="polite">
+                {surfaceHors ? s.surfaceHors[surfaceHors](BORNES_NEUF.surface[surfaceHors].toLocaleString(nf)) : null}
+              </p>
             </div>
             <div className="fld">
               <label htmlFor="neuf-cp">{s.cpLabel}{badge("codePostal")}</label>
@@ -470,11 +490,12 @@ export default function EstimateurRapideNeuf({
                   <span className="eye">{fi.eye}</span>
                   <span className="t">{fi.label}</span>
                   <span className="d">{fi.desc}</span>
-                  <span className="amt">≈ <b>{(m2ByFin[f.v] || 0).toLocaleString(nf)} €</b> / m²</span>
+                  <span className="amt">{valid ? <>≈ <b>{(m2ByFin[f.v] || 0).toLocaleString(nf)} €</b> / m²</> : <>— € / m²</>}</span>
                 </button>
               );
             })}
           </div>
+          <p className="sub-q fin-note">{s.finitionNote}</p>
         </div>
 
         <div className="q">
@@ -495,8 +516,9 @@ export default function EstimateurRapideNeuf({
                   <span className="t">{qi.label}</span>
                   <span className="d">{qi.desc}</span>
                   <span className="amt">
-                    <span className="p">≈ <b>{price.toLocaleString(nf)} €</b> / m²</span>
-                    {pct > 0 && <span className="save">−{pct}{signePct(locale)}</span>}
+                    {/* Pas de prix avant que la maison soit décrite : la barre dit « Réponds pour voir ton budget » (n° 74). */}
+                    <span className="p">{valid ? <>≈ <b>{price.toLocaleString(nf)} €</b> / m²</> : <>— € / m²</>}</span>
+                    {valid && pct > 0 && <span className="save">−{pct}{signePct(locale)}</span>}
                   </span>
                 </button>
               );
@@ -548,7 +570,8 @@ export default function EstimateurRapideNeuf({
         <p className="intro">{isPro ? s.intro : s.introGratuit}</p>
       </div>
 
-      <div className="av-rapide-live av-neuf-live">
+      {/* Sans chiffre, la barre ne colle pas au bas d'un téléphone : elle y cachait le code postal (n° 71). */}
+      <div className={"av-rapide-live av-neuf-live" + (affiche ? "" : " attente")}>
         <div className="in">
           <div>
             <div className="lbl">{s.liveLabel}</div>

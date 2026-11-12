@@ -125,7 +125,7 @@ export default function BilanRapideNeuf({
         <div className="kpi"><div className="v data">{eur(cut.annexes)}</div><div className="l">{n.annexes}</div></div>
       </div>
       <div className="small">
-        + {t.aleas} <span className="data">{eur(cut.aleas)}</span> ({pourcent(locale, ctx.aleas)} {n.pctTravaux}) · {chambres} {chambres > 1 ? n.chambres : n.chambre} · ≈ {mois} {n.moisChantier}
+        + {t.aleas} <span className="data">{eur(cut.aleas)}</span> ({pourcent(locale, ctx.aleas)} {n.pctAleas}) · {chambres} {chambres > 1 ? n.chambres : n.chambre} · ≈ {mois} {n.moisChantier}
       </div>
       <div className="hr" />
       <div className="k" style={{ marginBottom: 6 }}>{t.phasesK}{!ph && <span className="chip">{beta ? dict(locale).beta.pastille : "Pro"}</span>}</div>

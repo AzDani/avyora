@@ -792,7 +792,8 @@ export function catLigne(locale: string, nom: string, cle?: string): string {
   const base = cle ? cle.slice(cle.indexOf("|") + 1) : "";
   const m = locale === "en" && base && nom !== base && nom.startsWith(base) ? /^ \((.+)\)$/.exec(nom.slice(base.length)) : null;
   if (!m) return catT(locale, "postes", nom);
-  const parts = m[1].split(", ").map((p) => SUFFIXES_EN[p] ?? (VOPTS_MIN.has(p) ? enMinuscule(VOPTS_MIN.get(p)!) : p));
+  // `variantLabel` garde les sigles et les noms propres (« sans LED », « hors Île-de-France ») : la table se lit en minuscules.
+  const parts = m[1].split(", ").map((p) => SUFFIXES_EN[p] ?? (VOPTS_MIN.has(p.toLowerCase()) ? enMinuscule(VOPTS_MIN.get(p.toLowerCase())!) : p));
   return `${catT(locale, "postes", base)} (${parts.join(", ")})`;
 }
 
