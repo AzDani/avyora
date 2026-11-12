@@ -41,6 +41,14 @@ describe("lib/auth-messages : les erreurs de Supabase traduites", () => {
     expect(MESSAGES_AUTH.fr.motDePasseFaible).toContain(dict("fr").auth.mdpRegles.replace(/\.$/, "").toLowerCase());
   });
 
+  it("sans e-mail à envoyer (connexion, nouveau mot de passe), une limite globale ne parle pas du service d'e-mails", () => {
+    expect(cleErreurAuth({ code: "over_request_rate_limit", status: 429 }, false)).toBe("surcharge");
+    expect(cleErreurAuth({ status: 429 }, false)).toBe("surcharge");
+    expect(cleErreurAuth({ code: "invalid_credentials", status: 400 }, false)).toBe("identifiants");
+    expect(messageAuth({ code: "over_request_rate_limit", status: 429 }, "fr", false)).not.toMatch(/e-mail/i);
+    expect(messageAuth({ code: "over_request_rate_limit", status: 429 }, "en", false)).not.toMatch(/email/i);
+  });
+
   it("l'intervalle par adresse se reconnaît à son texte (même code que la limite globale)", () => {
     expect(intervalleParAdresse({ message: "For security purposes, you can only request this after 52 seconds." })).toBe(true);
     expect(intervalleParAdresse({ message: "Email rate limit exceeded" })).toBe(false);

@@ -117,7 +117,7 @@ export async function login(_prev: AuthState, formData: FormData): Promise<AuthS
     // L'adresse tapée peut être celle de n'importe qui : le journal n'en garde que l'empreinte.
     // Le code de Supabase est gardé (jamais son texte, qui part sinon tel quel à l'écran, en anglais).
     await journaliser("connexion_echouee", { payload: { empreinte: empreinteAdresse(email), ...(error.code ? { code: error.code } : {}) } });
-    return { error: messageAuth(error, locale) };
+    return { error: messageAuth(error, locale, false) };
   }
   // Mémorise la préférence pour que le middleware garde la même politique de cookies au refresh.
   const cookieStore = await cookies();
@@ -372,7 +372,7 @@ export async function updatePassword(_prev: AuthState, formData: FormData): Prom
   const { data, error } = await supabase.auth.updateUser({ password });
   if (error) {
     // Traduit (même mot de passe que l'ancien, trop faible, session expirée…) : jamais le texte brut de Supabase.
-    return { error: messageAuth(error, await getLocale()) };
+    return { error: messageAuth(error, await getLocale(), false) };
   }
   await journaliser("mot_de_passe_change", { userId: data.user?.id, email: data.user?.email });
   redirect("/projets");

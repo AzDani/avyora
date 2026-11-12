@@ -4,6 +4,7 @@ import type { User } from "@supabase/supabase-js";
 import BoutonAbo from "@/components/BoutonAbo";
 import BoutonCheckout from "@/components/BoutonCheckout";
 import { getUser, estPro, estAbonne } from "@/lib/auth";
+import { PAGE_GESTION_ABONNEMENT } from "@/lib/abonnement";
 import { getT } from "@/lib/i18n/server";
 import { dict, type Dict } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/config";
@@ -168,7 +169,7 @@ export default async function TarifsPage({
               <div className="mt-2 text-xs text-faint">{p.note}</div>
               <div className="mt-5">
                 {abonne ? (
-                  <Link href="/mon-espace/compte" className="btn btn-outline w-full justify-center py-2.5">{t.gererAbo}</Link>
+                  <Link href={PAGE_GESTION_ABONNEMENT} className="btn btn-outline w-full justify-center py-2.5">{t.gererAbo}</Link>
                 ) : user ? (
                   <BoutonCheckout plan={key} nature={nature} />
                 ) : (

@@ -7,7 +7,7 @@
  * (stable), puis par son statut, et le message est une phrase claire, tutoyée. Ce qui n'est pas reconnu devient
  * « Une erreur est survenue » : jamais le texte de Supabase (l'action journalise le code).
  *
- * Module pur (aucune session, aucun cookie) : testé dans tests/auth-erreurs.test.ts. Le parcours principal, le lien
+ * Module pur (aucune session, aucun cookie) : testé dans tests/auth-messages.test.ts. Le parcours principal, le lien
  * d'accès, a ses propres codes (`issueEnvoi`, lib/auth-lien.ts) traduits par le dictionnaire (`auth.lien.erreurs`).
  */
 import type { Locale } from "@/lib/i18n/config";
@@ -18,6 +18,7 @@ export type CleMessageAuth =
   | "nonConfirme"
   | "tropDeTentatives"
   | "saturation"
+  | "surcharge"
   | "captcha"
   | "memeMotDePasse"
   | "motDePasseFaible"
@@ -35,6 +36,8 @@ export const MESSAGES_AUTH: Record<Locale, Record<CleMessageAuth, string>> = {
     nonConfirme: "Ton adresse n'est pas encore confirmée : ouvre l'e-mail qu'on t'a envoyé, ou demande un lien de connexion avec le champ du haut.",
     tropDeTentatives: "Trop de tentatives. Patiente une minute avant de réessayer.",
     saturation: "Notre service d'e-mails est très sollicité en ce moment : réessaie dans quelques minutes.",
+    // La même limite (par IP, celle de nos serveurs) quand aucun e-mail ne part : connexion, nouveau mot de passe.
+    surcharge: "Le service est très sollicité en ce moment : réessaie dans quelques minutes.",
     captcha: "La vérification anti-robot a échoué. Recharge la page et réessaie.",
     memeMotDePasse: "Choisis un mot de passe différent de l'ancien.",
     motDePasseFaible: "Mot de passe trop faible : 12 caractères minimum, dont au moins une lettre et un chiffre.",
@@ -49,6 +52,7 @@ export const MESSAGES_AUTH: Record<Locale, Record<CleMessageAuth, string>> = {
     nonConfirme: "Your email address isn't confirmed yet: open the email we sent you, or request a sign-in link with the field above.",
     tropDeTentatives: "Too many attempts. Wait a minute before trying again.",
     saturation: "Our email service is very busy right now: try again in a few minutes.",
+    surcharge: "The service is very busy right now: try again in a few minutes.",
     captcha: "The anti-bot check failed. Reload the page and try again.",
     memeMotDePasse: "Choose a password different from your old one.",
     motDePasseFaible: "Password too weak: at least 12 characters, including at least one letter and one number.",
@@ -86,8 +90,15 @@ export function intervalleParAdresse(error: ErreurAuth): boolean {
 /**
  * La clé du message pour une erreur de Supabase. Par le code d'abord, puis le statut, puis, en dernier recours, le
  * texte des deux erreurs historiques qui n'ont pas toujours de code (« Invalid login credentials », session absente).
+ * `envoiEmail` : l'appel devait envoyer un e-mail (inscription). Sinon (connexion, nouveau mot de passe), une limite
+ * atteinte par tout le monde ne parle pas du « service d'e-mails » : `surcharge`.
  */
-export function cleErreurAuth(error: ErreurAuth): CleMessageAuth {
+export function cleErreurAuth(error: ErreurAuth, envoiEmail = true): CleMessageAuth {
+  const cle = cleBrute(error);
+  return cle === "saturation" && !envoiEmail ? "surcharge" : cle;
+}
+
+function cleBrute(error: ErreurAuth): CleMessageAuth {
   if (!error) return "inconnue";
   const code = error.code ?? "";
   const texte = error.message ?? "";
@@ -127,7 +138,7 @@ export function cleErreurAuth(error: ErreurAuth): CleMessageAuth {
   return "inconnue";
 }
 
-/** Le message à afficher pour une erreur de Supabase, dans la langue de la personne. */
-export function messageAuth(error: ErreurAuth, locale: Locale): string {
-  return MESSAGES_AUTH[locale][cleErreurAuth(error)];
+/** Le message à afficher pour une erreur de Supabase, dans la langue de la personne (`envoiEmail` : `cleErreurAuth`). */
+export function messageAuth(error: ErreurAuth, locale: Locale, envoiEmail = true): string {
+  return MESSAGES_AUTH[locale][cleErreurAuth(error, envoiEmail)];
 }
