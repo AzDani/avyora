@@ -15,7 +15,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { createElement, type ReactElement, type ReactNode } from "react";
 import { prerender } from "react-dom/static";
 import { dict } from "@/lib/i18n/dictionaries";
-import { dateInsecable, libellesBeta } from "@/lib/beta";
+import { dateInsecable, libellesBeta, lireSourceBeta } from "@/lib/beta";
 import {
   COOKIE_DEMANDE, COOKIE_LIEN, COOKIE_VERIFIER, DELAI_RENVOI_S, DUREE_DEMANDE_S, DUREE_VERIFIER_S, FENETRE_CONTROLE_MDP_MS,
   FENETRE_NOUVEAU_COMPTE_MS, MARQUE_MDP, MARQUE_MDP_EMAIL, METADONNEES_D_UN_TIERS, ajouterDemande, consentementNouveautes, controleMdpAFaire,
@@ -1378,11 +1378,80 @@ describe("proxy : une arrivée « à vérifier » ramène toute page à /auth/ve
 
   it("sans la marque, sans session, ou avec la marque d'un AUTRE compte : rien ne change", async () => {
     expect(await ou("https://getavyora.fr/projets", { user: CAMILLE })).toBeNull();
-    expect(await ou("https://getavyora.fr/plan", { cookie: MARQUE })).toBeNull();
+    expect(await ou("https://getavyora.fr/logiciel-plan-maison", { cookie: MARQUE })).toBeNull();
     expect(await ou("https://getavyora.fr/projets", { user: CAMILLE, cookie: `${COOKIE_VERIFIER}=u-tiers` })).toBeNull();
     expect((await passer("https://getavyora.fr/api/projects", { user: CAMILLE, cookie: `${COOKIE_VERIFIER}=u-tiers`, methode: "POST" })).status).toBe(200);
     expect(verificationEnAttente("u1", "u1")).toBe(true);
     for (const [m, u] of [["", "u1"], ["u1", ""], [undefined, "u1"], ["u1", null], ["1", "u1"]] as const) expect(verificationEnAttente(m, u), `${m} ${u}`).toBe(false);
+  });
+});
+
+describe("proxy : l'éditeur de plan demande un compte (décision du 12/11/2026)", () => {
+  afterEach(() => {
+    vi.doUnmock("@supabase/ssr");
+    vi.doUnmock("@/lib/features");
+  });
+  async function passer(url: string, o: { user?: unknown; plans?: boolean; methode?: string } = {}) {
+    vi.resetModules();
+    vi.doMock("@supabase/ssr", () => ({
+      createServerClient: () => ({ auth: { getUser: async () => ({ data: { user: o.user ?? null } }) } }),
+    }));
+    vi.doMock("@/lib/features", async (orig) => {
+      const m = await orig<typeof import("@/lib/features")>();
+      return { ...m, FEATURES: { ...m.FEATURES, plans: o.plans ?? true } };
+    });
+    const { NextRequest } = await import("next/server");
+    const { proxy } = await import("@/proxy");
+    return proxy(new NextRequest(url, { method: o.methode ?? "GET" }));
+  }
+  const ou = async (url: string, o: { user?: unknown; plans?: boolean; methode?: string } = {}) => (await passer(url, o)).headers.get("location");
+  const CAMILLE = { id: "u1", email: "camille@exemple.fr" };
+
+  it("sans session : /plan mène à l'inscription, l'adresse voulue EN ENTIER dans `next`, source « plan »", async () => {
+    expect(await ou("https://getavyora.fr/plan")).toBe("https://getavyora.fr/inscription?next=%2Fplan&source=plan");
+    expect(await ou("https://getavyora.fr/plan?type=final")).toBe("https://getavyora.fr/inscription?next=%2Fplan%3Ftype%3Dfinal&source=plan");
+    expect(await ou("https://getavyora.fr/plan?id=1f0e&projet=p2"))
+      .toBe("https://getavyora.fr/inscription?next=%2Fplan%3Fid%3D1f0e%26projet%3Dp2&source=plan");
+    expect(await ou("https://getavyora.fr/plan", { methode: "HEAD" })).toBe("https://getavyora.fr/inscription?next=%2Fplan&source=plan");
+    const r = await passer("https://getavyora.fr/plan?type=renovation");
+    expect(r.status).toBe(307);
+    // Le retour : /inscription revérifie `next` (un chemin relatif seulement) et le rend tel quel à l'éditeur.
+    const next = new URL(r.headers.get("location")!).searchParams.get("next") ?? undefined;
+    expect(cheminInterne(next)).toBe("/plan?type=renovation");
+    expect(lireSourceBeta(new URL(r.headers.get("location")!).searchParams.get("source"))).toBe("plan");
+  });
+
+  it("un `next` glissé dans l'adresse de l'éditeur fait partie de l'intention, il ne la remplace pas", async () => {
+    const loc = await ou("https://getavyora.fr/plan?next=%2F%2Fevil.com");
+    const next = new URL(loc!).searchParams.get("next") ?? undefined;
+    expect(next).toBe("/plan?next=%2F%2Fevil.com");
+    expect(cheminInterne(next)).toBe("/plan?next=%2F%2Fevil.com");
+  });
+
+  it("connecté : /plan est servi, rien ne change", async () => {
+    for (const u of ["https://getavyora.fr/plan", "https://getavyora.fr/plan?type=final", "https://getavyora.fr/plan?id=1f0e"]) {
+      const r = await passer(u, { user: CAMILLE });
+      expect(r.headers.get("location"), u).toBeNull();
+      expect(r.status, u).toBe(200);
+    }
+  });
+
+  it("seulement /plan : la vitrine, les vignettes, l'API des plans et les pages voisines restent publiques", async () => {
+    for (const u of [
+      "https://getavyora.fr/logiciel-plan-maison",
+      "https://getavyora.fr/planning",
+      "https://getavyora.fr/plans/og-plan.png",
+      "https://getavyora.fr/api/plans/session",
+      "https://getavyora.fr/inscription?next=%2Fplan&source=plan",
+    ]) {
+      const r = await passer(u);
+      expect(r.headers.get("location"), u).toBeNull();
+      expect(r.status, u).toBe(200);
+    }
+  });
+
+  it("interrupteur des plans éteint : pas de détour (la route répond 404 d'elle-même)", async () => {
+    expect(await ou("https://getavyora.fr/plan", { plans: false })).toBeNull();
   });
 });
 

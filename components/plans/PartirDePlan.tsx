@@ -5,6 +5,7 @@ import { useLocale } from "@/components/i18n/LangProvider";
 import { dictPlans } from "@/lib/i18n/plans";
 import { lirePlansLocaux, stockageNavigateur } from "@/lib/plans/local";
 import { clicPlan } from "@/lib/plans/mesure";
+import { lienInscriptionBeta } from "@/lib/beta";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -16,7 +17,9 @@ type Trouve = { nom: string; href: string };
  * récent du bon type (Plan final pour le neuf, Projet rénovation pour la rénovation en Pro).
  *  - la session d'abord (`GET /api/plans/session`, 200 même sans compte) : aucun 401 en console pour un visiteur ;
  *  - connecté : `GET /api/plans` (la liste du compte, la plus récente d'abord) → `/plan?id=` ;
- *  - sans compte : le plan ouvert dans ce navigateur (`avyora-plan-v2`), que `/plan` rouvre tel quel.
+ *  - sans compte : le plan ouvert dans ce navigateur (`avyora-plan-v2`, un brouillon d'avant le compte obligatoire) ;
+ *    l'éditeur demande un compte (décision de Dani du 12/11/2026), le lien passe donc par l'inscription, qui ramène à
+ *    `/plan`, où il se rouvre tel quel.
  * Rendu vide au serveur, dans une ligne de hauteur réservée : le lien qui arrive ne décale rien.
  */
 export default function PartirDePlan({ workflow }: { workflow: Workflow }) {
@@ -49,7 +52,7 @@ export default function PartirDePlan({ workflow }: { workflow: Workflow }) {
       if (!r || r.status === 401) {
         const s = stockageNavigateur();
         const p = (s ? lirePlansLocaux(s) : []).find((x) => x.ouvert && x.workflow === workflow);
-        if (p) res = { nom: p.nom, href: "/plan" };
+        if (p) res = { nom: p.nom, href: lienInscriptionBeta("/plan", "choix-plan") };
       } else if (r.ok) {
         try {
           const j = (await r.json()) as { plans?: unknown };

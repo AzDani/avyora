@@ -36,7 +36,12 @@ const fr = {
   },
   /* L'îlot « Tes plans », en tête de la vitrine. */
   hub: {
-    creer: "Créer mon plan, gratuit",
+    /* L'éditeur demande un compte (décision de Dani du 12/11/2026) : l'appel d'un visiteur sans compte le dit, celui
+       d'une personne connectée ouvre l'éditeur. */
+    creer: "Crée ton compte gratuit pour dessiner",
+    ouvrirEditeur: "Ouvrir l'éditeur",
+    dejaCompte: "Déjà un compte ? ",
+    seConnecter: "Me connecter",
     dessinNote: "Le dessin se fait sur ordinateur ou tablette.",
     envoyerLien: "M'envoyer le lien",
     copierLien: "Copier le lien",
@@ -65,12 +70,10 @@ const fr = {
     surAppareil: "Sur cet appareil",
     surAppareilNote: "Ce plan est dans ce navigateur, pas dans un compte.",
     surAppareilNotePl: "Ces plans sont dans ce navigateur, pas dans un compte.",
-    reprendre: (nom: string) => `Reprendre « ${nom} »`,
-    autresDansEditeur: "Les autres s'ouvrent depuis « Mes plans », dans l'éditeur.",
-    unDansEditeur: "Il s'ouvre depuis « Mes plans », dans l'éditeur.",
-    tousDansEditeur: "Ils s'ouvrent depuis « Mes plans », dans l'éditeur.",
-    garder: "Garde-le dans ton compte",
-    garderSous: "Crée ton compte gratuit : tu le retrouves sur tous tes appareils.",
+    /* Un ancien brouillon sans compte (d'avant la décision du 12/11/2026) : on le retrouve en créant son compte. */
+    autresEnsuite: "Les autres restent sur cet appareil : tu pourras les ajouter à ton compte ensuite.",
+    garder: "Crée ton compte pour le retrouver",
+    garderSous: "Le dessin se fait avec un compte, gratuit : ce plan y est rangé dès ton inscription, et tu le retrouves sur tous tes appareils.",
     ouvert: "en cours",
   },
   /* La vitrine `/logiciel-plan-maison`, sous l'îlot « Tes plans » (C9). Seulement ce que l'éditeur sait faire.
@@ -115,15 +118,15 @@ const fr = {
       },
       {
         q: "C'est vraiment gratuit ?",
-        r: "Oui pour dessiner ton plan, le voir en 3D, lire ses surfaces et garder un plan enregistré. Pro ajoute les plans enregistrés sans limite, le projet rénovation chiffré et le dossier PDF sans filigrane.",
+        r: "Oui, avec un compte gratuit : tu dessines ton plan, le vois en 3D, lis ses surfaces et gardes un plan enregistré. Pro ajoute les plans enregistrés sans limite, le projet rénovation chiffré et le dossier PDF sans filigrane.",
       },
       {
         q: "Ça marche sur téléphone ?",
         r: "Tu y consultes tes plans. Le dessin, lui, se fait sur ordinateur ou tablette : depuis ton téléphone, envoie-toi le lien.",
       },
       {
-        q: "Où sont enregistrés mes plans ?",
-        r: "Sur ton appareil tant que tu n'as pas de compte. Avec un compte, dans ton compte : tu les retrouves sur tous tes appareils. Les calques image restent sur l'appareil où tu les as importés.",
+        q: "Faut-il créer un compte ?",
+        r: "Oui, un compte gratuit : tes plans y sont enregistrés, et tu les retrouves sur tous tes appareils. Les calques image restent sur l'appareil où tu les as importés.",
       },
       {
         q: "Puis-je partir d'un plan que j'ai déjà ?",
@@ -136,14 +139,13 @@ const fr = {
     ],
     basTitre: "Dessine ta maison, gratuitement.",
     basSous: "Murs, pièces, surfaces et 3D, dans ton navigateur.",
-    basCta: "Créer mon plan",
     /* § 9 · Plan final : fin */
     renoverTitre: "Tu rénoves",
     renoverTexte: "Pars de ton logement tel qu'il est, décide tes travaux : le budget suit chaque décision, corps d'état par corps d'état, jusqu'au suivi du chantier.",
     renoverLien: "Voir ce que Pro ajoute",
     pro: "Pro",
     offresTitre: "Gratuit ou Pro",
-    offresGratuitSous: "Avec ou sans compte.",
+    offresGratuitSous: "Avec un compte gratuit.",
     offresProSous: "Tout ce qui est gratuit, et :",
     offresVoir: "Voir les offres Pro",
     /* Les mots de l'éditeur (DROITS), au caractère près : lib/plans/droits.ts. */
@@ -163,7 +165,7 @@ const fr = {
     renoverLien: "Inclus pendant la bêta",
     faqGratuit: (fin: string, plans: number) => ({
       q: "C'est vraiment gratuit ?",
-      r: `Oui. Pendant la bêta, jusqu'au ${fin}, tout est gratuit avec un compte : jusqu'à ${plans} plans enregistrés, le projet rénovation chiffré et le dossier PDF sans filigrane. Sans compte, tu dessines ton plan, le vois en 3D, lis ses surfaces et gardes un plan sur ton appareil.`,
+      r: `Oui. Il te faut seulement un compte : pendant la bêta, jusqu'au ${fin}, tout y est gratuit, jusqu'à ${plans} plans enregistrés, le projet rénovation chiffré et le dossier PDF sans filigrane. Aucun moyen de paiement n'est demandé.`,
     }),
   },
   /* L'écran de choix (`/projets/nouveau`) : le bandeau « Partir de mon plan », sous les deux cartes (C9). */
@@ -182,6 +184,8 @@ const fr = {
     avant: "Pas encore de plan ? ",
     lien: "Dessine ta maison",
     apres: " : l'estimation reprend ses pièces et sa surface.",
+    /* Sans compte : l'éditeur en demande un (gratuit), le lien mène à l'inscription. */
+    apresAnonyme: " avec un compte gratuit : l'estimation reprend ses pièces et sa surface.",
   },
   /* La reprise d'un plan local dans le compte (`ClaimPlan`). */
   reprise: {
@@ -301,7 +305,10 @@ const en: DictPlans = {
     enFrancais: "The editor is in French for now.",
   },
   hub: {
-    creer: "Create my plan, free",
+    creer: "Create your free account to start drawing",
+    ouvrirEditeur: "Open the editor",
+    dejaCompte: "Already have an account? ",
+    seConnecter: "Sign in",
     dessinNote: "Drawing works on a computer or a tablet.",
     envoyerLien: "Send me the link",
     copierLien: "Copy the link",
@@ -330,12 +337,9 @@ const en: DictPlans = {
     surAppareil: "On this device",
     surAppareilNote: "This plan is in this browser, not in an account.",
     surAppareilNotePl: "These plans are in this browser, not in an account.",
-    reprendre: (nom: string) => `Resume “${nom}”`,
-    autresDansEditeur: "Open the others from “Mes plans” in the editor.",
-    unDansEditeur: "Open it from “Mes plans” in the editor.",
-    tousDansEditeur: "Open them from “Mes plans” in the editor.",
-    garder: "Keep it in your account",
-    garderSous: "Create your free account: you'll find it on all your devices.",
+    autresEnsuite: "The others stay on this device: you can add them to your account afterwards.",
+    garder: "Create your account to get it back",
+    garderSous: "Drawing needs a free account: this plan is saved to it as soon as you sign up, and you'll find it on all your devices.",
     ouvert: "in progress",
   },
   vitrine: {
@@ -377,15 +381,15 @@ const en: DictPlans = {
       },
       {
         q: "Is it really free?",
-        r: "Yes to draw your plan, view it in 3D, read its floor areas and keep one saved plan. Pro adds unlimited saved plans, the priced renovation project and the PDF file without watermark.",
+        r: "Yes, with a free account: you draw your plan, view it in 3D, read its floor areas and keep one saved plan. Pro adds unlimited saved plans, the priced renovation project and the PDF file without watermark.",
       },
       {
         q: "Does it work on a phone?",
         r: "You can view your plans there. Drawing works on a computer or a tablet: from your phone, send yourself the link.",
       },
       {
-        q: "Where are the plans I draw saved?",
-        r: "On your device as long as you have no account. With an account, in your account: you'll find them on all your devices. Image layers stay on the device where you imported them.",
+        q: "Do I need an account?",
+        r: "Yes, a free account: your plans are saved to it, and you'll find them on all your devices. Image layers stay on the device where you imported them.",
       },
       {
         q: "Can I start from a plan I already have?",
@@ -398,13 +402,12 @@ const en: DictPlans = {
     ],
     basTitre: "Draw your house, for free.",
     basSous: "Walls, rooms, floor areas and 3D, in your browser.",
-    basCta: "Create my plan",
     renoverTitre: "Renovating",
     renoverTexte: "Start from your home as it is, decide your work: the budget follows every decision, trade by trade, all the way to site tracking.",
     renoverLien: "See what Pro adds",
     pro: "Pro",
     offresTitre: "Free or Pro",
-    offresGratuitSous: "With or without an account.",
+    offresGratuitSous: "With a free account.",
     offresProSous: "Everything that is free, plus:",
     offresVoir: "See Pro plans",
     gratuitListe: [
@@ -431,7 +434,7 @@ const en: DictPlans = {
     renoverLien: "Included during the beta",
     faqGratuit: (fin: string, plans: number) => ({
       q: "Is it really free?",
-      r: `Yes. During the beta, through ${fin}, everything is free with an account: up to ${plans} saved plans, the priced renovation project and the PDF file without watermark. Without an account, you draw your plan, view it in 3D, read its floor areas and keep one plan on your device.`,
+      r: `Yes. All you need is an account: during the beta, through ${fin}, everything in it is free, up to ${plans} saved plans, the priced renovation project and the PDF file without watermark. No payment method is required.`,
     }),
   },
   choix: {
@@ -448,6 +451,7 @@ const en: DictPlans = {
     avant: "No plan yet? ",
     lien: "Draw your house",
     apres: ": the estimate picks up its rooms and floor area.",
+    apresAnonyme: " with a free account: the estimate picks up its rooms and floor area.",
   },
   reprise: {
     enCours: "Saving your plan to your account…",

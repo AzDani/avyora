@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { COOKIE_VERIFIER, optionsMarque, verificationEnAttente } from "@/lib/auth-verifier";
+import { lienInscriptionBeta } from "@/lib/beta";
+import { FEATURES } from "@/lib/features";
 
 /**
  * Proxy Next.js 16 (ex-"middleware") — rafraîchit la session Supabase à chaque requête
@@ -75,6 +77,16 @@ export async function proxy(request: NextRequest) {
     url.search = "";
     url.searchParams.set("next", pathname + request.nextUrl.search);
     return NextResponse.redirect(url);
+  }
+
+  // ── L'éditeur de plan demande un compte (décision de Dani du 12/11/2026) ──
+  // /plan est une route statique (app/plan/route.ts, rendue au build) : seul le proxy peut la garder. Un visiteur sans
+  // session part à l'INSCRIPTION (pas à /connexion : c'est le plus souvent un nouveau venu ; /inscription propose
+  // « Déjà un compte ? » avec la même intention), l'adresse voulue EN ENTIER dans `next` (`?type=final`, `?id=…`), la
+  // source `plan` pour la mesure. `next` est revérifié au retour (`cheminInterne`). /admin/plans/editeur, la vue
+  // admin, est déjà gardée plus bas. Interrupteur éteint : /plan répond 404, sans détour.
+  if (pathname === "/plan" && !user && FEATURES.plans) {
+    return NextResponse.redirect(new URL(lienInscriptionBeta(pathname + request.nextUrl.search, "plan"), request.url));
   }
 
   // ── Arrivée à vérifier (lib/auth-verifier.ts) ──

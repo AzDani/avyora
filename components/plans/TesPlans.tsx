@@ -17,12 +17,20 @@ import {
   type PlanLocal,
 } from "@/lib/plans/local";
 import { clicPlan, mesurerPlan, mesureVitrine } from "@/lib/plans/mesure";
+import { lienInscriptionBeta } from "@/lib/beta";
+
+/** L'éditeur demande un compte (décision de Dani du 12/11/2026) : un visiteur sans compte passe par l'inscription,
+    qui le ramène à l'éditeur ; « Déjà un compte ? » passe par la connexion, avec la même intention. */
+const INSCRIPTION_EDITEUR = lienInscriptionBeta("/plan", "vitrine-plan");
+const CONNEXION_EDITEUR = "/connexion?next=%2Fplan";
 
 /**
  * « Tes plans », l'îlot client en tête de la vitrine `/logiciel-plan-maison` (C5).
  *
- * La page serveur ne lit pas la session : son HTML (celui que Google indexe) est celui d'un visiteur
- * sans compte, c'est-à-dire l'appel « Créer mon plan ». Une fois chargé, l'îlot devient :
+ * L'éditeur demande un compte (décision de Dani du 12/11/2026). La page serveur dit seulement si une session est là
+ * (`connecte`) : son HTML est l'appel, « Crée ton compte gratuit pour dessiner » (vers l'inscription, retour à
+ * l'éditeur) pour un visiteur sans compte, celui que Google indexe, ou « Ouvrir l'éditeur » pour une personne connectée.
+ * Une fois chargé, l'îlot devient :
  *  - la session d'abord (`GET /api/plans/session`, 200 même sans compte) : un visiteur sans compte ne déclenche
  *    aucune erreur 401 en console ;
  *  - connecté (`GET /api/plans` → 200) : les cartes du compte (vignette dessinée par React depuis
@@ -30,8 +38,8 @@ import { clicPlan, mesurerPlan, mesureVitrine } from "@/lib/plans/mesure";
  *    plan » ou, en gratuit à la limite, « Avec Pro : des plans enregistrés sans limite ». Un plan local
  *    en attente de reprise (drapeau) part d'abord (`ClaimPlan`). Les plans de CE navigateur restent
  *    visibles (« Sur cet appareil », « Ajouter à mon compte ») : on ne cache jamais un plan local ;
- *  - sans compte avec des plans dans ce navigateur : « Reprendre « {nom} » » et « Garde-le dans
- *    ton compte » (drapeau, puis inscription : la reprise se fait au retour) ;
+ *  - sans compte avec des plans dans ce navigateur (des brouillons d'avant le compte obligatoire) : « Crée ton
+ *    compte pour le retrouver » (drapeau, puis inscription : l'éditeur, au retour, le range dans le compte) ;
  *  - au téléphone (on n'y dessine pas) : le bouton principal devient « M'envoyer le lien » (partage du
  *    système, à défaut copie), « Ouvrir » reste possible pour consulter.
  * La hauteur est réservée (`min-h`) : le passage d'un état à l'autre ne décale pas la page.
@@ -81,7 +89,7 @@ function lireListe(j: unknown): Liste | null {
   return { plans, limite, utilises: Number(o.utilises) || plans.length };
 }
 
-export default function TesPlans() {
+export default function TesPlans({ connecte: connecteServeur = false }: { connecte?: boolean }) {
   const locale = useLocale();
   const t = dictPlans(locale);
   const [vue, setVue] = useState<Vue>({ v: "chargement" });
@@ -194,7 +202,8 @@ export default function TesPlans() {
       ) : vue.v === "local" ? (
         <Locaux t={t} plans={vue.plans} telephone={telephone} />
       ) : (
-        <Appel t={t} telephone={telephone} erreur={vue.v === "erreur"} />
+        /* « invite » : la session est lue, personne ; avant (chargement) ou sans réponse (erreur), ce que la page a vu */
+        <Appel t={t} telephone={telephone} erreur={vue.v === "erreur"} connecte={vue.v !== "invite" && connecteServeur} />
       )}
     </section>
   );
@@ -206,7 +215,7 @@ export default function TesPlans() {
  * L'appel, au-dessus de la ligne de flottaison : le bouton, et la vraie capture 3D de l'éditeur (la Maison 94 m²),
  * chargée tout de suite (élément LCP de la vitrine). Le sous-titre de la page n'est pas répété.
  */
-function Appel({ t, telephone, erreur }: { t: DictPlans; telephone: boolean; erreur: boolean }) {
+function Appel({ t, telephone, erreur, connecte }: { t: DictPlans; telephone: boolean; erreur: boolean; connecte: boolean }) {
   return (
     /* data-vitrine-appel : la vitrine ne répète pas la capture 3D dans sa grille tant que l'appel est affiché */
     <div data-vitrine-appel="" className="card grid items-center gap-6 overflow-hidden p-6 sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] sm:p-8">
@@ -215,12 +224,20 @@ function Appel({ t, telephone, erreur }: { t: DictPlans; telephone: boolean; err
           {telephone ? (
             <EnvoyerLien t={t} />
           ) : (
-            <a href="/plan" className="btn btn-primary px-5 py-3 text-[15px]" {...clicPlan("vitrine_haut")}>
-              {t.hub.creer}
+            <a href={connecte ? "/plan" : INSCRIPTION_EDITEUR} className="btn btn-primary px-5 py-3 text-[15px]" {...clicPlan("vitrine_haut")}>
+              {connecte ? t.hub.ouvrirEditeur : t.hub.creer}
             </a>
           )}
         </div>
         <p className="text-[13px] text-faint">{t.hub.dessinNote}</p>
+        {!connecte && (
+          <p className="text-[13px] text-muted" data-deja-compte="">
+            {t.hub.dejaCompte}
+            <a href={CONNEXION_EDITEUR} className="font-medium text-brand-700 hover:underline">
+              {t.hub.seConnecter}
+            </a>
+          </p>
+        )}
         {erreur && <p className="text-[13px] text-muted">{t.hub.erreurListe}</p>}
       </div>
       <picture className="block min-w-0">
@@ -533,7 +550,8 @@ function Locaux({ t, plans, telephone }: { t: DictPlans; plans: PlanLocal[]; tel
   const [tous, setTous] = useState(false);
   const principal = plans[0];
   const visibles = tous ? plans : plans.slice(0, VISIBLES);
-  const garder = () => {
+  /* le drapeau de reprise : l'éditeur, à l'arrivée connecté, range ce plan dans le compte (inscription ou connexion) */
+  const marquer = () => {
     const s = stockageNavigateur();
     if (!s) return;
     let id = principal.id;
@@ -545,15 +563,11 @@ function Locaux({ t, plans, telephone }: { t: DictPlans; plans: PlanLocal[]; tel
         /* sans stockage, la reprise se fera depuis l'éditeur (« Sur cet appareil ») */
       }
     }
-    window.location.assign("/inscription?next=%2Fplan");
   };
-  const note = principal.ouvert
-    ? plans.length > 1
-      ? t.hub.autresDansEditeur
-      : null
-    : plans.length > 1
-      ? t.hub.tousDansEditeur
-      : t.hub.unDansEditeur;
+  const garder = () => {
+    marquer();
+    window.location.assign(INSCRIPTION_EDITEUR);
+  };
   return (
     <div className="space-y-4">
       <div>
@@ -580,17 +594,21 @@ function Locaux({ t, plans, telephone }: { t: DictPlans; plans: PlanLocal[]; tel
           {tous ? t.hub.voirMoins : t.hub.voirTous(plans.length)}
         </button>
       )}
+      {/* L'éditeur demande un compte : le brouillon se retrouve en le créant (drapeau, inscription, reprise au retour). */}
       <div className="flex flex-wrap items-center gap-3">
-        {telephone && <EnvoyerLien t={t} />}
-        <a href="/plan" className={telephone ? "btn btn-outline py-2.5" : "btn btn-primary py-2.5"} {...clicPlan("vitrine_haut")}>
-          {principal.ouvert ? t.hub.reprendre(principal.nom) : t.reprise.ouvrirEditeur}
-        </a>
-        <button type="button" className="btn btn-outline py-2.5" onClick={garder}>
+        <button type="button" className="btn btn-primary py-2.5" onClick={garder} {...clicPlan("vitrine_haut")}>
           {t.hub.garder}
         </button>
+        {telephone && <EnvoyerLien t={t} secondaire />}
       </div>
       <p className="text-[13px] text-muted">{t.hub.garderSous}</p>
-      {note && <p className="text-[13px] text-faint">{note}</p>}
+      {plans.length > 1 && <p className="text-[13px] text-faint">{t.hub.autresEnsuite}</p>}
+      <p className="text-[13px] text-muted" data-deja-compte="">
+        {t.hub.dejaCompte}
+        <a href={CONNEXION_EDITEUR} onClick={marquer} className="font-medium text-brand-700 hover:underline">
+          {t.hub.seConnecter}
+        </a>
+      </p>
     </div>
   );
 }

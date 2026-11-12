@@ -68,9 +68,27 @@ describe("C5 · lib/i18n/plans.ts", () => {
   it("l'anglais cite « Mes plans » sous le nom que l'éditeur affiche (il reste en français), jamais “My plans”", () => {
     const tous = textes(en);
     expect(tous.filter((s) => /my plans/i.test(s))).toEqual([]);
+    /* Depuis le compte obligatoire (12/11/2026), les notes « ouvre-le depuis “Mes plans” » d'un visiteur sans compte
+       sont parties : reste le rappel de l'inscription. */
     const cites = tous.filter((s) => s.includes("“Mes plans”"));
-    expect(cites.length).toBeGreaterThanOrEqual(4);
+    expect(cites.length).toBeGreaterThanOrEqual(1);
     expect(cites).toContain(en.rappel.texte);
+  });
+
+  it("l'éditeur demande un compte (12/11/2026) : aucun texte des plans ne promet de dessiner sans compte (FR, EN)", () => {
+    const SANS_COMPTE = /sans compte|sans inscription|sans t[’']inscrire|avec ou sans compte|no account|no sign-?up|without an account|with or without an account/i;
+    for (const d of [fr, en]) {
+      const tous = [...textes(d), ...Object.values(d.vitrineBeta.faqGratuit("31 décembre 2026", 30))];
+      expect(tous.filter((s) => SANS_COMPTE.test(s))).toEqual([]);
+    }
+    /* l'appel d'un visiteur sans compte dit le compte ; celui d'une personne connectée ouvre l'éditeur */
+    expect(fr.hub.creer).toBe("Crée ton compte gratuit pour dessiner");
+    expect(en.hub.creer).toBe("Create your free account to start drawing");
+    expect(fr.hub.ouvrirEditeur).toBe("Ouvrir l'éditeur");
+    expect(en.hub.ouvrirEditeur).toBe("Open the editor");
+    /* un ancien brouillon sans compte : on le retrouve en créant son compte */
+    expect(fr.hub.garder).toBe("Crée ton compte pour le retrouver");
+    expect(en.hub.garder).toBe("Create your account to get it back");
   });
 
   it("la mention « éditeur en français » n'existe qu'en anglais", () => {

@@ -7,6 +7,28 @@ n'est relié à une estimation que si elle naît de lui.
 
 Le travail avance par chantiers (C0 à C11). Chacun est livrable seul, interrupteur éteint.
 
+## Un compte pour dessiner (décision de Dani du 12/11/2026)
+
+L'éditeur demande un compte (gratuit). Avant, un visiteur sans compte dessinait et gardait son plan sur l'appareil.
+
+- **`/plan` sans session** : `proxy.ts` renvoie vers `/inscription?next=<l'adresse voulue, paramètres compris>&source=plan`
+  (307). `/plan` est une route statique : seul le proxy peut la garder. `next` est revérifié au retour
+  (`cheminInterne`) ; « Déjà un compte ? » de l'inscription garde la même intention. Connecté : rien ne change.
+  Interrupteur éteint : pas de détour (404). `/admin/plans/editeur` ne change pas.
+- **Les liens vers l'éditeur** (`lienEditeurPlan`, `lib/beta.ts`) : tels quels pour une personne connectée,
+  l'inscription avec retour à l'éditeur sinon (sources `accueil`, `vitrine-plan`, `choix-plan`, `construction`). Les
+  libellés d'un visiteur sans compte le disent : « Crée ton compte gratuit pour dessiner », « Dessine ta maison avec
+  un compte gratuit ». L'onglet « Plan 3D » et le pied de page mènent à la vitrine, qui reste publique.
+- **La vitrine** `/logiciel-plan-maison` lit la présence d'une session (déjà lue par l'en-tête) : sans compte, ses
+  appels mènent à l'inscription ; connecté, « Ouvrir l'éditeur ». La FAQ, la colonne Gratuit (« Avec un compte
+  gratuit. ») et le JSON-LD (« Gratuit, avec un compte ») ne promettent plus de dessiner sans compte.
+- **Un ancien brouillon sans compte** (« Sur cet appareil ») : « Crée ton compte pour le retrouver » pose le drapeau de
+  reprise puis mène à l'inscription (ou « Déjà un compte ? Me connecter », drapeau posé aussi) ; au retour, l'éditeur
+  connecté range le plan dans le compte (`siteDemarrerCompte`), comme `ClaimPlan` sur `/projets` et la vitrine.
+- **L'éditeur** (`maquettes/plan-editor.html`) n'a pas changé : ses éléments pour un visiteur sans compte (invitation
+  « Garde ce plan dans ton compte », « Compte gratuit ») ne s'affichent plus en pratique, sauf si la session tombe en
+  cours de route.
+
 ## Interrupteur
 
 `FEATURES.plans` (`lib/features.ts`), **allumé depuis le lancement (C11, 12/10/2026)** :
@@ -263,8 +285,8 @@ La source n'est pas modifiée (la batterie continue de tester le fichier tel que
 
 | Fichier | Rôle |
 |---|---|
-| `app/logiciel-plan-maison/page.tsx` | La vitrine (indexée, cible de l'onglet en C9). `notFound()` interrupteur éteint. Page serveur **sans lecture de session** : son HTML est celui d'un visiteur sans compte. Haut de page (titre, sous-titre ; en EN, « The editor is in French for now. »), puis l'îlot `TesPlans`. Le reste du contenu (étapes, Gratuit / Pro, FAQ, JSON-LD) arrive en C9. |
-| `components/plans/TesPlans.tsx` | L'îlot client, hauteur réservée (`min-h`, CLS mesuré à 0). Connecté (`GET /api/plans`) : cartes (vignette React depuis l'aperçu du serveur, « Plan final » / « Projet rénovation », surface et pièces, date, « Ouvrir » → `/plan?id=`, « n estimations » dépliables, chargées par `GET /api/plans/:id`), puis « Nouveau plan » (Pro : aussi « Nouveau projet rénovation »), ou à la limite gratuite « Avec Pro : des plans enregistrés sans limite » → `/tarifs?source=editeur-plan`. Sans compte, avec des plans dans ce navigateur : « Sur cet appareil », « Reprendre « {nom} » » → `/plan`, « Garde-le dans ton compte » (drapeau, puis `/inscription?next=%2Fplan`). Téléphone (`max-width: 600px`) : « M'envoyer le lien » (partage du système), à défaut « Copier le lien » ; « Ouvrir » reste possible. |
+| `app/logiciel-plan-maison/page.tsx` | La vitrine (indexée, cible de l'onglet en C9). `notFound()` interrupteur éteint. Page publique qui ne lit que la **présence d'une session** (depuis le 12/11/2026, pour ses appels à l'action : l'inscription sans compte, l'éditeur connecté) ; son HTML indexé est celui d'un visiteur sans compte. Haut de page (titre, sous-titre ; en EN, « The editor is in French for now. »), puis l'îlot `TesPlans`. Le reste du contenu (étapes, Gratuit / Pro, FAQ, JSON-LD) arrive en C9. |
+| `components/plans/TesPlans.tsx` | L'îlot client, hauteur réservée (`min-h`, CLS mesuré à 0). Connecté (`GET /api/plans`) : cartes (vignette React depuis l'aperçu du serveur, « Plan final » / « Projet rénovation », surface et pièces, date, « Ouvrir » → `/plan?id=`, « n estimations » dépliables, chargées par `GET /api/plans/:id`), puis « Nouveau plan » (Pro : aussi « Nouveau projet rénovation »), ou à la limite gratuite « Avec Pro : des plans enregistrés sans limite » → `/tarifs?source=editeur-plan`. Sans compte, avec des plans dans ce navigateur : « Sur cet appareil », « Crée ton compte pour le retrouver » (drapeau, puis `/inscription?next=%2Fplan&source=vitrine-plan` ; depuis le 12/11/2026, plus de « Reprendre » direct : l'éditeur demande un compte). Sans compte et sans plan : « Crée ton compte gratuit pour dessiner » et « Déjà un compte ? Me connecter ». Téléphone (`max-width: 600px`) : « M'envoyer le lien » (partage du système), à défaut « Copier le lien » ; « Ouvrir » reste possible. |
 | `components/plans/ClaimPlan.tsx` | Jumeau de `ClaimDraft`. Ne fait rien sans le drapeau `avyora-plan-claim`. Avec : un `POST /api/plans` avec `editeurId` (une seconde reprise rend le même plan, `deja`). Monté sur `/projets` **avant** `ClaimDraft` (interrupteur allumé seulement) et dans `TesPlans` pour un connecté. |
 | `components/plans/PlanRappel.tsx` | Sur `/inscription`, si `next=/plan` ou si le drapeau est posé : « Ton plan est prêt » · « « {nom} » · {surface} m² · {n} pièces » (surface et pièces quand le résumé est connu). |
 | `components/plans/ApercuPlan.tsx` | La vignette (`[[ax,ay,bx,by,type,st]]` → `<svg>` par React, donc échappée ; trait en pixels). |

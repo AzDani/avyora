@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { META_EN, metaSelonLangue } from "@/lib/i18n/meta";
 import { FEATURES } from "@/lib/features";
-import { betaActive, libellesBeta } from "@/lib/beta";
+import { betaActive, libellesBeta, lienInscriptionBeta } from "@/lib/beta";
+import { getUser } from "@/lib/auth";
 import { og, DESCRIPTION_SITE } from "@/lib/seo-og";
 import { ANNEE_PRIX } from "@/lib/prix-maj";
 import { accueilBeta } from "@/lib/accueil-beta";
@@ -201,7 +202,7 @@ ${PLAN_CSS}<section class="planb" aria-labelledby="planb-titre"><div class="in">
   <p class="eyebrow">Éditeur de plan · Gratuit</p>
   <h2 id="planb-titre">Dessine ton plan. Vois-le en 3D.</h2>
   <p class="d">Trace tes murs à la souris : chaque pièce se ferme toute seule et affiche sa surface. Ajoute portes, fenêtres et équipements, puis passe en 3D d'un clic.</p>
-  <ul><li>Gratuit, sans installation</li><li>Les surfaces calculées pièce par pièce</li>${FEATURES.neuf ? "<li>Ta future maison chiffrée depuis ton plan</li>" : ""}</ul>
+  <ul><li>Gratuit avec un compte, sans installation</li><li>Les surfaces calculées pièce par pièce</li>${FEATURES.neuf ? "<li>Ta future maison chiffrée depuis ton plan</li>" : ""}</ul>
   <div class="cta"><a href="/plan" class="btn btn-p bureau" data-clic-plan="accueil">Créer mon plan →</a><a href="/logiciel-plan-maison" class="btn btn-p tel" data-clic-plan="accueil">Créer mon plan →</a><a href="/logiciel-plan-maison" class="lien bureau" data-clic-plan="accueil">Découvrir l'éditeur</a></div>
   <p class="note">Le dessin se fait sur ordinateur ou tablette.</p>
 </div>${planVisuels("Plan 2D d'une maison de plain-pied de 94 m² dans l'éditeur AVYORA : pièces nommées, surfaces, cotes et mobilier", "La même maison de 94 m² en 3D dans l'éditeur AVYORA")}</div></section>`;
@@ -210,10 +211,26 @@ ${PLAN_CSS}<section class="planb" aria-labelledby="planb-titre"><div class="in">
   <p class="eyebrow">Floor plan editor · Free</p>
   <h2 id="planb-titre">Draw your floor plan. See it in 3D.</h2>
   <p class="d">Trace your walls with the mouse: each room closes on its own and shows its floor area. Add doors, windows and fixtures, then switch to 3D in one click.</p>
-  <ul><li>Free, nothing to install</li><li>Floor areas worked out room by room</li>${FEATURES.neuf ? "<li>Your future house priced from your plan</li>" : ""}</ul>
+  <ul><li>Free with an account, nothing to install</li><li>Floor areas worked out room by room</li>${FEATURES.neuf ? "<li>Your future house priced from your plan</li>" : ""}</ul>
   <div class="cta"><a href="/plan" class="btn btn-p bureau" data-clic-plan="accueil">Create my plan →</a><a href="/logiciel-plan-maison" class="btn btn-p tel" data-clic-plan="accueil">Create my plan →</a><a href="/logiciel-plan-maison" class="lien bureau" data-clic-plan="accueil">Discover the editor</a></div>
   <p class="note">Drawing works on a computer or tablet. The editor is in French for now.</p>
 </div>${planVisuels("2D plan of a 94 m² single-story house in the AVYORA editor: named rooms, floor areas, dimensions and furniture", "The same 94 m² house in 3D in the AVYORA editor")}</div></section>`;
+/* L'éditeur demande un compte (décision de Dani du 12/11/2026) : au bureau, le bouton de la section mène à l'éditeur pour
+   une personne connectée ; sans compte (et pour Google), à l'inscription, qui ramène à l'éditeur, et il le dit. Au
+   téléphone, il mène à la vitrine (on n'y dessine pas), qui fait de même. */
+const CTA_PLAN = {
+  fr: '<a href="/plan" class="btn btn-p bureau" data-clic-plan="accueil">Créer mon plan →</a>',
+  en: '<a href="/plan" class="btn btn-p bureau" data-clic-plan="accueil">Create my plan →</a>',
+};
+const HREF_INSCRIPTION_PLAN = lienInscriptionBeta("/plan", "accueil").replace(/&/g, "&amp;");
+const CTA_PLAN_ANONYME = {
+  fr: `<a href="${HREF_INSCRIPTION_PLAN}" class="btn btn-p bureau" data-clic-plan="accueil">Crée ton compte gratuit pour dessiner →</a>`,
+  en: `<a href="${HREF_INSCRIPTION_PLAN}" class="btn btn-p bureau" data-clic-plan="accueil">Create your free account to start drawing →</a>`,
+};
+/** Le bouton « bureau » de la section de l'éditeur, selon la session. */
+function ctaPlanAccueil(html: string, locale: "fr" | "en", connecte: boolean): string {
+  return connecte ? html : html.split(CTA_PLAN[locale]).join(CTA_PLAN_ANONYME[locale]);
+}
 /* La 5ᵉ puce de la rangée de confiance du hero (aucun chiffre). */
 const PLAN_TRUST = "<span>plan <b class=\"num\">3D</b></span>";
 const PLAN_TRUST_EN = "<span><b class=\"num\">3D</b> floor plan</span>";
@@ -473,8 +490,9 @@ const HOME_HTML_EN = `
 `;
 
 export default async function Accueil({ searchParams }: { searchParams: Promise<{ compte?: string }> }) {
-  const [{ compte }, { locale }] = await Promise.all([searchParams, getT()]);
+  const [{ compte }, { locale }, user] = await Promise.all([searchParams, getT(), FEATURES.plans ? getUser() : null]);
   const en = locale === "en";
+  const html = betaActive() ? accueilBeta(en ? HOME_HTML_EN : HOME_HTML, locale) : en ? HOME_HTML_EN : HOME_HTML;
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdAccueil()) }} />
@@ -488,7 +506,7 @@ export default async function Accueil({ searchParams }: { searchParams: Promise<
       )}
       <style dangerouslySetInnerHTML={{ __html: HOME_CSS }} />
       {/* Bêta gratuite (lib/beta.ts) : les prix et les « Pro » laissent place à la bêta (lib/accueil-beta.ts). */}
-      <div className="av-home" dangerouslySetInnerHTML={{ __html: betaActive() ? accueilBeta(en ? HOME_HTML_EN : HOME_HTML, locale) : en ? HOME_HTML_EN : HOME_HTML }} />
+      <div className="av-home" dangerouslySetInnerHTML={{ __html: ctaPlanAccueil(html, en ? "en" : "fr", !!user) }} />
     </>
   );
 }

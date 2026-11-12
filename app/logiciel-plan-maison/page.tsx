@@ -8,7 +8,8 @@ import { dictPlans } from "@/lib/i18n/plans";
 import { clicPlan } from "@/lib/plans/mesure";
 import { og } from "@/lib/seo-og";
 import { META_EN, metaSelonLangue } from "@/lib/i18n/meta";
-import { PLANS_MAX_BETA, betaActive, libellesBeta, lienInscriptionBeta } from "@/lib/beta";
+import { getUser } from "@/lib/auth";
+import { PLANS_MAX_BETA, betaActive, libellesBeta, lienEditeurPlan } from "@/lib/beta";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ??
@@ -75,15 +76,19 @@ function Coche({ pro = false }: { pro?: boolean }) {
  * La vitrine de l'éditeur de plan, et le hub « Mes plans » (C5, contenu C9). Derrière `FEATURES.plans` :
  * interrupteur éteint → 404.
  *
- * Page serveur SANS lecture de session : le contenu indexé est celui d'un visiteur sans compte. Ce qui
- * dépend de la personne (ses plans du compte, ou ceux de ce navigateur) vit dans l'îlot client
- * `TesPlans`, en tête, à hauteur réservée. Le reste ne dit que ce que l'éditeur sait faire ; les colonnes
- * Gratuit / Pro reprennent les mots de l'éditeur (`DROITS`, coherence.mjs § 9). Aucun avis, aucune note,
- * aucun compteur, aucun prix.
+ * La page reste PUBLIQUE (référencement, publicité) ; l'éditeur, lui, demande un compte (décision de Dani du
+ * 12/11/2026 : le proxy renvoie un visiteur sans session de /plan vers l'inscription). La page ne lit que la PRÉSENCE
+ * d'une session (`getUser`, déjà lu par l'en-tête dans la même requête) pour ses appels à l'action : sans compte (et donc
+ * pour Google), « Crée ton compte gratuit pour dessiner » vers l'inscription, qui ramène à l'éditeur ; connecté,
+ * « Ouvrir l'éditeur » vers /plan. Le reste du contenu est le même pour tous. Ce qui dépend de la personne (ses plans
+ * du compte, ou ceux de ce navigateur) vit dans l'îlot client `TesPlans`, en tête, à hauteur réservée. Le reste ne dit
+ * que ce que l'éditeur sait faire ; les colonnes Gratuit / Pro reprennent les mots de l'éditeur (`DROITS`,
+ * coherence.mjs § 9). Aucun avis, aucune note, aucun compteur, aucun prix.
  */
 export default async function LogicielPlanMaison() {
   if (!FEATURES.plans) notFound();
-  const locale = await getLocale();
+  const [locale, user] = await Promise.all([getLocale(), getUser()]);
+  const connecte = !!user;
   const d = dictPlans(locale);
   const t = d.page;
   const v = d.vitrine;
@@ -95,7 +100,7 @@ export default async function LogicielPlanMaison() {
   const faqBeta = beta ? vb.faqGratuit(finBeta, PLANS_MAX_BETA) : null;
   const faq = faqBeta ? v.faq.map((f) => (f.q === faqBeta.q ? faqBeta : f)) : v.faq;
 
-  /* JSON-LD : l'application (gratuite, sans note ni avis : AVYORA n'a pas d'avis réels), le fil d'Ariane, et la
+  /* JSON-LD : l'application (gratuite avec un compte, sans note ni avis : AVYORA n'a pas d'avis réels), le fil d'Ariane, et la
      FAQ telle qu'elle est affichée (mêmes questions, mêmes réponses). */
   const jsonLd = {
     "@context": "https://schema.org",
@@ -110,7 +115,8 @@ export default async function LogicielPlanMaison() {
         isAccessibleForFree: true,
         description: DESCRIPTION,
         screenshot: `${siteUrl}/plans/maison-2d.png`,
-        offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+        /* gratuit, avec un compte (l'éditeur en demande un depuis le 12/11/2026) */
+        offers: { "@type": "Offer", price: "0", priceCurrency: "EUR", description: "Gratuit, avec un compte" },
         publisher: { "@id": `${siteUrl}/#organization` },
       },
       {
@@ -150,7 +156,7 @@ export default async function LogicielPlanMaison() {
             </a>
           </p>
         </header>
-        <TesPlans />
+        <TesPlans connecte={connecte} />
       </div>
 
       {/* Sans plan, l'appel de « Tes plans » (data-vitrine-appel) montre déjà la capture 3D : la grille ne la répète pas,
@@ -199,8 +205,8 @@ export default async function LogicielPlanMaison() {
                 <span className="rounded-full bg-positive-soft px-2.5 py-1 text-[11px] font-semibold text-[#0b7a53]">{v.gratuit}</span>
               </p>
               <p className="mt-2 flex-1 text-[14px] leading-relaxed text-muted">{v.construireTexte}</p>
-              <a href="/plan?type=final" className="mt-4 text-[14px] font-medium text-brand-700 hover:underline" {...clicPlan("vitrine_bas")}>
-                {v.construireLien} →
+              <a href={lienEditeurPlan("/plan?type=final", connecte, "vitrine-plan")} className="mt-4 text-[14px] font-medium text-brand-700 hover:underline" {...clicPlan("vitrine_bas")}>
+                {`${connecte ? v.construireLien : d.hub.creer} →`}
               </a>
             </div>
           )}
@@ -244,11 +250,11 @@ export default async function LogicielPlanMaison() {
                 </li>
               ))}
             </ul>
-            {/* Bêta : un compte suffit, puis l'éditeur (une balise <a>, comme tout lien qui mène à l'éditeur). La page ne
-                lit pas la session : un connecté qui clique repart directement vers l'éditeur. */}
+            {/* Bêta : un compte suffit, puis l'éditeur (une balise <a>, comme tout lien qui mène à l'éditeur) ; connecté,
+                tout est déjà inclus : l'éditeur directement. */}
             {beta ? (
-              <a href={lienInscriptionBeta("/plan", "vitrine-plan")} className="btn btn-outline mt-5 py-2.5">
-                {vb.offresVoir}
+              <a href={lienEditeurPlan("/plan", connecte, "vitrine-plan")} className="btn btn-outline mt-5 py-2.5">
+                {connecte ? d.hub.ouvrirEditeur : vb.offresVoir}
               </a>
             ) : (
               <Link href="/tarifs?source=editeur-plan" className="btn btn-outline mt-5 py-2.5">
@@ -282,7 +288,7 @@ export default async function LogicielPlanMaison() {
           <h2 className="text-xl font-semibold tracking-tight text-ink">{v.basTitre}</h2>
           <p className="mt-1 text-[14px] text-muted">{v.basSous}</p>
         </div>
-        <BoutonCreerPlan label={v.basCta} />
+        <BoutonCreerPlan connecte={connecte} />
       </section>
     </div>
   );

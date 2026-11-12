@@ -6,6 +6,11 @@ import { editeurHeberge } from "@/lib/editeur/heberger";
  * ne contient aucune donnée utilisateur (la session et le plan arrivent par fetch, voir l'amorçage dans
  * lib/editeur/heberger.ts). Sa CSP propre et son `X-Robots-Tag` sont posés par next.config.ts : une CSP
  * renvoyée ici serait ignorée (la config l'emporte).
+ *
+ * L'éditeur demande un compte (décision de Dani du 12/11/2026) : la route étant statique, c'est le proxy (proxy.ts) qui
+ * renvoie un visiteur sans session vers l'inscription, l'adresse voulue dans `next`. Les éléments de l'éditeur pour un
+ * visiteur sans compte (invitation « Garde ce plan dans ton compte », « Compte gratuit ») restent dans la source, mais
+ * ne s'affichent plus en pratique (seulement si la session tombe en cours de route).
  */
 export const dynamic = "force-static";
 
