@@ -359,9 +359,10 @@ export default function EstimateurNeuf({ initialState, projectId }: { initialSta
       { id: "finition", cible: ["neuf-d-finition", "neuf-d-pilotage"], ...tv.finition },
       { id: "postes", cible: [CIBLES_LISTE_VISITE.outils, CIBLES_LISTE_VISITE.premierLot], ...tv.postes },
       { id: "soi", cible: "neuf-d-nouveaux", ...tv.soi },
-      { id: "barre", cible: ["neuf-d-total", "neuf-d-jauge", "neuf-d-devis", "neuf-d-enregistrer"], place: ["haut"], ...tv.barre },
+      // Dans la vue « Mon devis », le bouton de la barre devient « ← Modifier » : la bulle le nomme ainsi.
+      { id: "barre", cible: ["neuf-d-total", "neuf-d-jauge", "neuf-d-devis", "neuf-d-enregistrer"], place: ["haut"], ...(view === "devis" ? tv.barreDevis : tv.barre) },
     ];
-  }, [locale]);
+  }, [locale, view]);
 
   return (
     <>

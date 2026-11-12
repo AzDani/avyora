@@ -248,9 +248,10 @@ export default function Estimateur({ initialState, projectId }: { initialState?:
       { id: "postes", cible: [CIBLES_LISTE_VISITE.outils, CIBLES_LISTE_VISITE.premierLot], ...tv.postes },
       { id: "soi", cible: CIBLES_LISTE_VISITE.choixLigne, repli: lotOuvert ? CIBLES_LISTE_VISITE.ligneOuverte : CIBLES_LISTE_VISITE.premierLot, ...tv.soi },
       { id: "total", cible: ["detail-total", "detail-jauge"], place: ["haut"], ...tv.total },
-      { id: "suite", cible: ["detail-devis", "detail-enregistrer"], place: ["haut"], ...tv.suite },
+      // Dans la vue « Mon devis », le bouton de la barre devient « ← Modifier » : la bulle le nomme ainsi.
+      { id: "suite", cible: ["detail-devis", "detail-enregistrer"], place: ["haut"], ...(view === "devis" ? tv.suiteDevis : tv.suite) },
     ];
-  }, [locale, lotOuvert]);
+  }, [locale, lotOuvert, view]);
 
   // ── Un lot : en-tête, lignes du catalogue, lignes perso ────────────────────
   function bloc(l: Lot) {

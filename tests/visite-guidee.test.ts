@@ -419,7 +419,8 @@ describe("rapide neuf, détaillé rénovation, détaillé neuf : chacun sa visit
         expect(etapes.length).toBeLessThanOrEqual(8);
         const tv = dictVisite(l)[E.id] as Record<string, { titre: string; texte: string }>;
         // Toutes les entrées du dictionnaire servent, et rien que celles-là.
-        expect(Object.keys(tv).sort()).toEqual([...E.ordre].sort());
+        // Les variantes « …Devis » (la même étape lancée depuis la vue « Mon devis ») ne sont pas des étapes de plus.
+        expect(Object.keys(tv).filter((k) => !k.endsWith("Devis")).sort()).toEqual([...E.ordre].sort());
         for (const e of etapes) {
           expect({ titre: e.titre, texte: e.texte }).toEqual(tv[e.id]);
           expect(e.cible).not.toBeNull(); // jamais une bulle sans cible au milieu de l'écran
@@ -596,5 +597,23 @@ describe("relecture : chaque bouton cité dans une bulle existe sous ce nom, auc
     expect(garde).toBeGreaterThan(0);
     // Avant l'arrêt des touches qui viseraient la page.
     expect(garde).toBeLessThan(src.indexOf("if (!(ev.target instanceof Node && b.contains(ev.target)))"));
+  });
+});
+
+describe("dernière étape des détaillés lancée depuis la vue « Mon devis »", () => {
+  it("nomme le bouton tel qu'il s'affiche dans cette vue (« Modifier » / « Edit »), jamais « Voir mon devis »", () => {
+    for (const [l, modifier, voir] of [["fr", "Modifier", "Voir mon devis"], ["en", "Edit", "See my estimate"]] as const) {
+      const d = dictVisite(l);
+      for (const t of [d.detailleReno.suiteDevis.texte, d.detailleNeuf.barreDevis.texte]) {
+        expect(t).toContain(modifier);
+        expect(t).not.toContain(voir);
+      }
+    }
+  });
+  it("les deux estimateurs choisissent le texte selon la vue", () => {
+    const reno = lire("components/Estimateur.tsx");
+    const neuf = lire("components/neuf/EstimateurNeuf.tsx");
+    expect(reno).toContain('view === "devis" ? tv.suiteDevis : tv.suite');
+    expect(neuf).toContain('view === "devis" ? tv.barreDevis : tv.barre');
   });
 });

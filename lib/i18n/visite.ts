@@ -55,6 +55,8 @@ const fr = {
     soi: { titre: "Un pro ou toi ?", texte: "Sur une ligne cochée, « Fait faire » compte un pro, pose comprise. Quand tu peux le faire toi-même, « Je le fais » ne garde que les matériaux." },
     total: { titre: "Ton total, en direct", texte: "Le total TTC suit chaque case cochée. La jauge le compare à ton budget max, si tu en as indiqué un." },
     suite: { titre: "Ton devis et ton rapport", texte: "« Voir mon devis » montre la répartition par lot. Enregistre le projet : tu retrouves son rapport PDF sur sa fiche." },
+    /* La même étape, lancée depuis la vue « Mon devis » : le bouton y devient « ← Modifier ». */
+    suiteDevis: { titre: "Ton devis et ton rapport", texte: "Tu es sur ton devis : la répartition par lot. « Modifier » te ramène à ta saisie. Enregistre le projet : tu retrouves son rapport PDF sur sa fiche." },
   },
   detailleNeuf: {
     maison: { titre: "Parle-nous de ta maison", texte: "Plain-pied ou à étage, et sa forme : on part de là pour cocher et mesurer chaque poste, des fondations à la toiture." },
@@ -65,6 +67,8 @@ const fr = {
     postes: { titre: "Du gros œuvre aux finitions", texte: "Les lots suivent le chantier, des fondations à la remise des clés. Ouvre un lot et coche un poste : sa quantité est pré-calculée." },
     soi: { titre: "Un pro ou toi ?", texte: "Choisis comment arrivent les postes que tu coches : « Fait faire » ou « Je le fais ». Chaque ligne se règle aussi une à une." },
     barre: { titre: "Ton total et ton devis", texte: "Le total TTC et le prix au m² suivent chaque réponse. « Voir mon devis » le détaille ; enregistre pour retrouver ton rapport PDF." },
+    /* La même étape, lancée depuis la vue « Mon devis » : le bouton y devient « ← Modifier ». */
+    barreDevis: { titre: "Ton total et ton devis", texte: "Le total TTC et le prix au m² suivent chaque réponse. Tu es sur ton devis : « Modifier » te ramène à ta saisie ; enregistre pour retrouver ton rapport PDF." },
   },
 };
 
@@ -111,6 +115,7 @@ const en: DictVisite = {
     soi: { titre: "A pro or you?", texte: "On a checked line, \u201cHire out\u201d counts a pro, installation included. When you can do it yourself, \u201cDIY\u201d keeps only the materials." },
     total: { titre: "Your total, live", texte: "The total, tax included, follows every checked box. The gauge compares it with your max budget, if you set one." },
     suite: { titre: "Your estimate and report", texte: "\u201cSee my estimate\u201d shows the breakdown by trade. Save the project: its PDF report is waiting on its page." },
+    suiteDevis: { titre: "Your estimate and report", texte: "You're on your estimate: the breakdown by trade. \u201cEdit\u201d takes you back to your entries. Save the project: its PDF report is waiting on its page." },
   },
   detailleNeuf: {
     maison: { titre: "Tell us about your house", texte: "Single-story or two-story, and its shape: we start from there to check and measure every item, from foundations to roof." },
@@ -121,6 +126,7 @@ const en: DictVisite = {
     postes: { titre: "From structure to finishes", texte: "Trades follow the build, from foundations to handover. Open a trade and check an item: its quantity is precalculated." },
     soi: { titre: "A pro or you?", texte: "Choose how newly checked items arrive: \u201cHire out\u201d or \u201cDIY\u201d. Each line can also be set one by one." },
     barre: { titre: "Your total and estimate", texte: "The total, tax included, and the price per m² follow every answer. \u201cSee my estimate\u201d breaks it down; save it to get your PDF report." },
+    barreDevis: { titre: "Your total and estimate", texte: "The total, tax included, and the price per m² follow every answer. You're on your estimate: \u201cEdit\u201d takes you back to your entries; save it to get your PDF report." },
   },
 };
 
