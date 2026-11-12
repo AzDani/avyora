@@ -83,8 +83,10 @@ describe("D2 · construction neuve : la pompe à chaleur n'est plus « réservé
     expect(fr.detail.intro).toContain("(branchements au réseau, études, contrôles) l'indiquent");
     expect(en.detail.intro).toContain("masonry, framing and heat pump included");
     expect(en.detail.intro).toContain("(utility connections, studies, inspections) say so");
-    expect(fr.saisie.quis.max.desc).toContain("tu peux les prendre toi-même poste par poste, sauf les raccordements faits par le gestionnaire du réseau");
-    expect(en.saisie.quis.max.desc).toContain("you can take them on yourself item by item, except the connections made by the utility company");
+    // La carte du rapide est courte depuis la revue du 12/11/2026 (n° 144) : la liste détaillée vit dans le détaillé.
+    expect(fr.saisie.quis.max.desc).toBe("Tu fais tout ce qui se fait soi-même ; la structure, le toit et les branchements restent aux pros.");
+    expect(en.saisie.quis.max.desc).toBe("You do everything that can be DIY; the structure, roof and utility connections stay with the pros.");
+    expect(fr.saisie.quis.max.desc).not.toContain("pompe à chaleur");
     expect(fr.detail.nouveauxAide.max).toContain("la pompe à chaleur, la climatisation et la borne de recharge, à prendre toi-même ligne par ligne");
     expect(en.detail.nouveauxAide.max).toContain("heat pump, air conditioning and EV charger, which you can take on yourself line by line");
   });

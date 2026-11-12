@@ -61,7 +61,7 @@ describe("Détaillé neuf · une réponse ne touche que ce qu'elle gouverne", ()
 
   /* N3 : « Qui réalise » n'est plus une question qui réécrit toutes les lignes. Le réglage
      « Nouveaux postes cochés » ne vaut que pour la suite ; seul « Tout passer en… » réécrit. */
-  it("une ligne basculée à la main survit au changement du réglage « nouveaux postes » ; $finition ne touche pas la sélection", () => {
+  it("une ligne basculée à la main survit au changement du réglage « nouveaux postes » ; $finition ne touche que ses postes", () => {
     const e0 = etatDepuisPreset(presetNeuf(R100), "pros");
     const peinture = poste("pei-peinture-murs-plaques-neuves");
     const kP = cle(peinture.t.id);
@@ -90,8 +90,10 @@ describe("Détaillé neuf · une réponse ne touche que ce qu'elle gouverne", ()
       expect(!!e3.sel[k].self, k).toBe(soiMemeNeuf(l.c, "max", t));
     }
     expect(nouveaux.some((k) => e3.sel[k].self)).toBe(true);
+    // La finition ne règle que les postes que sa carte promet (revue du 12/11/2026, n° 14) : la peinture reste.
     const e4 = changerReponseNeuf(e0, "$finition", "premium");
-    expect(e4.sel).toBe(e0.sel);
+    expect(e4.sel[kP]).toBe(e0.sel[kP]);
+    expect(e4.sel[cle("rev-parquet-bois")]?.on).toBe(true);
     expect(ttcDe(e4)).toBeGreaterThan(ttcDe(e0));
   });
 

@@ -73,7 +73,7 @@ const fr = {
     exclAides: "Les aides (PTZ, primes) et les frais de prêt",
     argileA: "Sans étude de sol : si ton terrain est argileux (aléa moyen), compte environ ",
     argileB: ".",
-    noteFinition: "La finition ne joue que sur les matériaux : elle bouge peu le total. Les vrais leviers sont le sol, le sous-sol, la forme, le toit et le chauffage.",
+    noteFinition: "La finition joue sur les matériaux et les équipements, pas sur le gros œuvre ni les démarches : elle bouge peu le total. Les vrais leviers sont le sol, le sous-sol, la forme, le toit et le chauffage.",
     resume: "Ta maison en résumé",
     maisonK: "La maison",
     locK: "Localisation",
@@ -111,12 +111,15 @@ const fr = {
     finitions: {
       eco: { eye: "Budget maîtrisé", desc: "Entrée de gamme robuste : sol stratifié, carrelage standard, sanitaires et cuisine simples." },
       standard: { desc: "Bon rapport qualité-prix, marques milieu de gamme. Le bon équilibre pour une résidence principale." },
-      premium: { desc: "Parquet, carrelage grand format, sanitaires et cuisine haut de gamme." },
+      premium: { desc: "Parquet, carrelage grand format, douche à l'italienne, WC suspendu, fenêtres alu, cuisine haut de gamme." },
     } as Record<string, { eye?: string; desc: string }>,
+    /* Sous les cartes de finition (revue du 12/11/2026, n° 14 et 66) : ce que la finition change, et ce qu'elle ne change pas. */
+    finitionNote: "La finition change les matériaux et les équipements ; les études, les taxes, les branchements et le gros œuvre restent les mêmes.",
     quis: {
       pros: { desc: "Un artisan pour chaque lot, avec sa garantie décennale. Tu coordonnes, ils construisent." },
       partie: { desc: "Tu prends la peinture, les sols, la plâtrerie ou l'isolation ; les artisans font le reste." },
-      max: { desc: "Tout ce qui se fait soi-même. La structure, le toit, les menuiseries extérieures, les branchements, la pompe à chaleur, la climatisation et la borne de recharge restent aux pros dans cette estimation ; dans le détaillé, tu peux les prendre toi-même poste par poste, sauf les raccordements faits par le gestionnaire du réseau." },
+      /* Court (revue du 12/11/2026, n° 144) : la liste complète des postes laissés aux pros est dans le détaillé. */
+      max: { desc: "Tu fais tout ce qui se fait soi-même ; la structure, le toit et les branchements restent aux pros." },
     } as Record<string, { desc: string }>,
     q4: "Pour finir",
     facultatif: "facultatif",
@@ -140,6 +143,11 @@ const fr = {
     enregistrement: "Enregistrement…",
     errCp: "Renseigne le code postal du terrain (5 chiffres).",
     errSurface: "Renseigne la surface habitable.",
+    /* Surface tapée hors des bornes du rapide (revue du 12/11/2026, n° 72) : ramenée à la borne, et on le dit. */
+    surfaceHors: {
+      max: (m2: string) => `L'estimation rapide va jusqu'à ${m2} m² : ta maison est chiffrée pour ${m2} m².`,
+      min: (m2: string) => `L'estimation rapide part de ${m2} m² : ta maison est chiffrée pour ${m2} m².`,
+    },
     errSave: "Enregistrement impossible.",
     errReseau: "Réseau indisponible. Réessaie.",
     /* Lien d'un Plan final (éditeur de plan → ?source=editeur-plan#plan=…), chantier C7. */
@@ -340,7 +348,7 @@ const en: typeof fr = {
     exclAides: "Subsidies (PTZ, grants) and loan fees",
     argileA: "Without a soil study: if your plot is clay (medium risk), allow about ",
     argileB: ".",
-    noteFinition: "The finish level only affects materials: it barely moves the total. The real levers are the soil, the basement, the shape, the roof and the heating.",
+    noteFinition: "The finish level affects materials and fixtures, not the structural work or the paperwork: it barely moves the total. The real levers are the soil, the basement, the shape, the roof and the heating.",
     resume: "Your house in brief",
     maisonK: "The house",
     locK: "Location",
@@ -372,12 +380,13 @@ const en: typeof fr = {
     finitions: {
       eco: { eye: "Budget-conscious", desc: "Sturdy entry level: laminate floors, standard tiles, simple bathroom fittings and kitchen." },
       standard: { desc: "Good value, mid-range brands. The right balance for a main home." },
-      premium: { desc: "Hardwood floors, large-format tiles, high-end bathroom fittings and kitchen." },
+      premium: { desc: "Engineered hardwood, large-format tiles, walk-in shower, wall-hung toilet, aluminum windows, high-end kitchen." },
     } as Record<string, { eye?: string; desc: string }>,
+    finitionNote: "The finish level changes materials and fixtures; studies, taxes, utility connections and the structural work stay the same.",
     quis: {
       pros: { desc: "A tradesperson for each trade, with their 10-year warranty. You coordinate, they build." },
       partie: { desc: "You take on painting, floors, plastering or insulation; the trades do the rest." },
-      max: { desc: "Everything you can do yourself. Structure, roof, exterior doors and windows, utility connections, the heat pump, air conditioning and the EV charger stay with the pros in this estimate; in the detailed estimate, you can take them on yourself item by item, except the connections made by the utility company." },
+      max: { desc: "You do everything that can be DIY; the structure, roof and utility connections stay with the pros." },
     } as Record<string, { desc: string }>,
     q4: "To finish",
     facultatif: "optional",
@@ -401,6 +410,10 @@ const en: typeof fr = {
     enregistrement: "Saving…",
     errCp: "Enter the plot's ZIP code (5 digits).",
     errSurface: "Enter the living area.",
+    surfaceHors: {
+      max: (m2: string) => `The quick estimate goes up to ${m2} m²: your house is priced at ${m2} m².`,
+      min: (m2: string) => `The quick estimate starts at ${m2} m²: your house is priced at ${m2} m².`,
+    },
     errSave: "Could not save.",
     errReseau: "Network unavailable. Try again.",
     reprisPlan: "from your plan",

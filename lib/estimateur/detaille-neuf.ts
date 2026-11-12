@@ -22,7 +22,7 @@ import {
   type MaisonNeuve,
 } from "./neuf";
 import { BORNES_NEUF, minSdbNeuf } from "./bornes-neuf";
-import { ctxNeuf, appliquerMaison, cocherPosteNeuf, soiMemeNeuf, peutFaireNeuf, LOTS_DECENNALE_NEUF, presetMaison, presetNeuf, type RapideNeufInput } from "./presets-neuf";
+import { ctxNeuf, appliquerMaison, appliquerFinitionNeuf, cocherPosteNeuf, soiMemeNeuf, peutFaireNeuf, LOTS_DECENNALE_NEUF, presetMaison, presetNeuf, type RapideNeufInput } from "./presets-neuf";
 import type { QuiRealise } from "./presets";
 import type { CleQuestionNeuf, ValeurQuestionNeuf } from "./questions-neuf";
 import { estJalon } from "./projet";
@@ -113,7 +113,9 @@ export function postesQuiChangent(sel: Selection, qui: QuiRealise): number {
  * à la main, quantités, prix, notes) est gardé.
  */
 export function changerReponseNeuf(e: EtatNeuf, k: CleQuestionNeuf, v: ValeurQuestionNeuf): EtatNeuf {
-  if (k === "$finition") return { ...e, finition: v as Finition };
+  // La finition règle aussi les postes que sa carte promet (parquet, sanitaires du premium) : seuls ceux
+  // qui sont encore tels que l'ancienne finition les avait posés bougent (`appliquerFinitionNeuf`).
+  if (k === "$finition") return { ...e, finition: v as Finition, sel: appliquerFinitionNeuf(e.sel, v as Finition, e.finition, e.qui) };
   const ancienne = ctxDetailNeuf(e).neuf as MaisonNeuve;
   const brute = { ...e.maison, [k]: v } as MaisonNeuve;
   // Une emprise mesurée sur un plan ne vaut que pour la maison mesurée : une autre surface ou d'autres

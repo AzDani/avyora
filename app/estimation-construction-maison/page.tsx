@@ -38,8 +38,8 @@ export const dynamic = "force-dynamic";
  * canonical et son JSON-LD. Derrière `FEATURES.neuf` : interrupteur éteint → 404.
  *
  * `?cp=&surface=&niveaux=&src=` amorcent le formulaire, validés par `contexteNeuf` (tout ce qui
- * n'est pas reconnu est ignoré). Ils n'amorcent pas le chiffre : cliquer un lien n'est pas
- * décrire sa maison.
+ * n'est pas reconnu est ignoré). Une surface ou des niveaux dans le lien affichent le chiffre d'emblée
+ * (revue du 12/11/2026, n° 74), mais cliquer un lien n'est pas une action : ni mesure ni conversion.
  */
 export default async function EstimationConstructionMaison({
   searchParams,
@@ -95,7 +95,7 @@ export default async function EstimationConstructionMaison({
             (`?source=editeur-plan` → src « plan ») : « Pas encore de plan ? » contredirait « Ta maison est reprise de ton plan ». */}
         {FEATURES.plans && initial.src !== "plan" && <LignePlan locale={locale} />}
       </header>
-      <EstimateurRapideNeuf isPro={isPro} beta={betaActive()} initial={initial} />
+      <EstimateurRapideNeuf isPro={isPro} beta={betaActive()} connecte={!!user} initial={initial} />
       {/* N13 : vers le rapide de la rénovation (la page entière est derrière l'interrupteur). */}
       <PasserelleRapide vers="reno" locale={locale} />
     </div>

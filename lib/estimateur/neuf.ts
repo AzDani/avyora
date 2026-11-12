@@ -72,6 +72,17 @@ export interface MaisonNeuve {
   codePostal?: string;
 }
 
+/** Chambres par défaut selon la surface (revue du 12/11/2026, n° 67) : une seule sous 45 m² (un T2), puis
+ *  une pour 30 m² jusqu'à 150 m² (comme avant), puis une de plus par 100 m² au-delà de 150 m² (6 à 250 m²,
+ *  7 à 350 m²) au lieu d'un plafond à 5. */
+export function chambresParDefaut(s: number): number {
+  if (s < 45) return 1;
+  if (s <= 150) return Math.min(5, Math.max(2, Math.round(s / 30)));
+  return 5 + Math.floor((s - 150) / 100);
+}
+/** Salles de bain (et WC) par défaut : une jusqu'à 110 m², deux jusqu'à 220 m², trois au-delà. */
+export const sanitairesParDefaut = (s: number): number => (s <= 110 ? 1 : s <= 220 ? 2 : 3);
+
 /** Description par défaut : la maison la plus courante (plain-pied, parpaing, dalle, tuiles, PAC).
  *  Chambres, salles de bain et WC suivent la surface ; un séjour, une cuisine, un couloir, ni suite ni
  *  buanderie : 3 + chambres pièces, comme `defaultCtx()` en rénovation. */
@@ -79,7 +90,7 @@ export function maisonParDefaut(surface = 100): MaisonNeuve {
   const s = Math.max(BORNES_NEUF.surface.min, surface || 100);
   return {
     surface: s, niveaux: s > 110 ? "etage" : "pp", forme: "rect", garage: 0,
-    chambres: Math.min(5, Math.max(2, Math.round(s / 30))), sdb: s > 110 ? 2 : 1, wc: s > 110 ? 2 : 1,
+    chambres: chambresParDefaut(s), sdb: sanitairesParDefaut(s), wc: sanitairesParDefaut(s),
     sejour: 1, cuisines: 1, couloir: 1, buanderie: 0, suites: 0,
     plancherBas: "terre-plein", murs: "parpaing", toiture: "2pans", penteFaible: false, couverture: "terre-cuite", gouttiere: "zinc",
     facade: "enduit", chauffage: "pac-eau", vmc: "simple", escalier: "bois", assainissement: "collectif", eauxPluviales: "infiltration",
@@ -184,6 +195,17 @@ export interface GeometrieNeuf {
   piecesEff: number; nPortesInt: number; decapage: number; plancherEtage: number; dalleInt: number; moisChantier: number;
 }
 
+/**
+ * Durée du chantier (mois), selon les murs, les niveaux ET la surface (revue du 12/11/2026, n° 68) :
+ * la base d'une maison courante (ossature bois 7, plain-pied 9, à étage ou combles 10), un mois de moins
+ * sous 60 m², un mois de plus par tranche de 80 m² au-delà de 150 m² (400 m² de plain-pied : 13 mois).
+ * Elle chiffre aussi la location du WC de chantier.
+ */
+export function dureeChantier(surface: number, niv: Niveaux, murs: MaisonNeuve["murs"]): number {
+  const base = murs === "ossature" ? 7 : niv === "pp" ? 9 : 10;
+  return base + (surface > 150 ? Math.ceil((surface - 150) / 80) : 0) - (surface < 60 ? 1 : 0);
+}
+
 /** Géométrie de la maison (voir le modèle géométrique du dossier de conception). */
 export function geometrieNeuf(h: MaisonNeuve): GeometrieNeuf {
   const SH = Math.max(1, h.surface);
@@ -259,7 +281,7 @@ export function geometrieNeuf(h: MaisonNeuve): GeometrieNeuf {
   const decapage = Etot + 2 * Ptot + 16;                      // la maison + 2 m autour
   const plancherEtage = niv === "pp" ? 0 : niv === "etage" ? shHaut / 0.9 : shRdc / 0.9;
   const dalleInt = E - 0.2 * P;
-  const moisChantier = h.murs === "ossature" ? 7 : niv === "pp" ? 9 : 10;
+  const moisChantier = dureeChantier(SH, niv, h.murs);
   return { SH, SP, shRdc, shHaut, E, L, l, P, angles, G, gw, gd, Lg3, Etot, Ptot, toiture, pente, proj, pignons, rampantsPignons, raccords,
     egout, hEgout, nDesc, mlDesc, nBaie, nPF, nFen, nVR, aOuv, mursExtNet, refends, Lref, mursGarage, Lsem, nNivMac, Pint, doublage, plafonds,
     rampants, shSousComblesPerdus, hydro, cloisons, faience, facadeBrute, facadeNette, piecesEff, nPortesInt, decapage, plancherEtage, dalleInt, moisChantier };

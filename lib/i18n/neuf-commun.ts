@@ -20,6 +20,9 @@ const fr = {
   /* Après un pourcentage écrit par `pourcent` (« 7 % », espace insécable ; « 7% » en anglais, F1). */
   pctTravaux: "des travaux",
   pctProjet: "du projet",
+  /* La provision pour aléas du bilan rapide (revue du 12/11/2026, n° 69) : sa base est le HT des travaux, sans
+     les études ni les frais (taxes, assurance), pas la construction TTC affichée à côté (`totals`, core). */
+  pctAleas: "des travaux HT, hors études, taxes et assurance",
   /* Ligne de l'estimateur (rénovation comme neuf) : un poste réservé aux pros, l'avertissement d'un
      poste de structure ou de clos-couvert passé en « Je le fais » (D4), et ce qu'un pro doit encore
      faire sur une PAC, une climatisation ou une borne prise soi-même (D2). */
@@ -69,6 +72,7 @@ const en: typeof fr = {
   sansTva: "no VAT",
   pctTravaux: "of the works",
   pctProjet: "of the project",
+  pctAleas: "of the works excl. VAT, studies, taxes and insurance",
   proOblig: "Pro required",
   raisonsPro: {
     concessionnaire: "utility company", etude: "expert service", controle: "inspection or certificate",

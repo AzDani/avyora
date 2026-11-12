@@ -199,8 +199,9 @@ export function effPrices(t: Tache, s?: LigneSel, ctx?: Ctx): { fp: number | nul
   const arr = t.frais ? (v: number) => Math.round(v * 100) / 100 : Math.round;
   return rendre(t.fp != null ? arr(t.fp * f) : null, t.sm != null ? arr(t.sm * f) : null);
 }
-/** Suffixe d'étiquette variante (matériau / vitrage) pour l'affichage. */
-export function variantLabel(t: Tache, s?: LigneSel, ctx?: Ctx): string {
+/** Suffixe d'étiquette variante (matériau / vitrage) pour l'affichage. `ancien` : l'écriture d'avant le
+ *  12/11/2026 (libellés de variante tout en minuscules), pour relire les anciennes clés de statut. */
+export function variantLabel(t: Tache, s?: LigneSel, ctx?: Ctx, ancien = false): string {
   const p: string[] = [];
   if (t.mat) { const m = (s && s.mat) || t.matDef || defMat(ctx); p.push(m === "alu" ? "alu" : m === "bois" ? "bois" : "PVC"); }
   if (t.vitrage) p.push(((s && s.vit) || DEFAULT_VIT) === "triple" ? "triple vitrage" : "double vitrage");
@@ -208,9 +209,18 @@ export function variantLabel(t: Tache, s?: LigneSel, ctx?: Ctx): string {
   if (t.taille) p.push(((s && s.tai) || DEFAULT_TAILLE) === "petit" ? "petit" : "grand");
   if (t.vars) for (const g of t.vars) {
     const chosen = (s && s.vsel && s.vsel[g.k]) || g.opts[0].k;
-    p.push((g.opts.find((o) => o.k === chosen) || g.opts[0]).label.toLowerCase());
+    const label = (g.opts.find((o) => o.k === chosen) || g.opts[0]).label;
+    p.push(ancien ? label.toLowerCase() : minusculeInitiale(label));
   }
   return p.length ? " (" + p.join(", ") + ")" : "";
+}
+/** Un libellé de variante dans la parenthèse d'une ligne : sa majuscule initiale tombe (« Suspendu » →
+ *  « suspendu », « À galandage » → « à galandage »), pas celle d'un sigle (« LED », « PVC », « MDF ») ni
+ *  d'un nom propre (« Île-de-France », « Paris ») ; le reste du libellé est gardé tel quel (« hors
+ *  Île-de-France », « sans LED »). Revue du 12/11/2026, n° 73. */
+export function minusculeInitiale(label: string): string {
+  if (!/^\p{Lu}(?!\p{Lu})/u.test(label) || /^(Île-de-France|Paris)/u.test(label)) return label;
+  return label[0].toLowerCase() + label.slice(1);
 }
 
 export interface Totaux { ht: number; tva: number; aleas: number; ttc: number; }
@@ -225,6 +235,9 @@ export interface DevisLigne {
   cle: string;
   corps: string; phase: string; nom: string; unite: string;
   qty: number; mode: Mode; ht: number; tva: number; ttc: number;
+  /** `nom` tel que le moteur l'écrivait avant le 12/11/2026 (variantes tout en minuscules : « (mdf) »,
+   *  « (sans led) »), seulement quand il diffère : l'ancienne clé de statut (`cleLegacy`) le lit encore. */
+  nomAvant?: string;
 }
 export interface DevisLot { corps: string; phase: string; ttc: number; }
 export interface Devis { totaux: Totaux; bilan: Bilan; lots: DevisLot[]; lignes: DevisLigne[]; }
@@ -270,9 +283,22 @@ const TASK_FIN: Record<string, Record<Finition, number>> = {
   ...Object.fromEntries(TOITURE_TASKS.map((n) => [n, G2])),
   "Dépose complète de toiture (couverture + charpente)": G0, // démolition : pas de scaling finition
 };
+/**
+ * Construction neuve, finition ÉCO : l'écart avec le standard y est DOUBLÉ (revue du 12/11/2026, n° 66).
+ * En neuf, le total porte aussi les études, les taxes, les branchements et le gros œuvre, que la
+ * finition ne touche pas : avec l'écart de la rénovation, l'éco ne coûtait que 2 % de moins que le
+ * standard. Écart doublé : 0,78 (au lieu de 0,83) pour le groupe faible, 0,67 (0,75) pour le moyen,
+ * 0,56 (0,67) pour le fort ; le standard et le premium ne bougent pas, la rénovation non plus. Le
+ * réglage tient dans `ECART_ECO_NEUF` (1 = l'écart de la rénovation).
+ */
+export const ECART_ECO_NEUF = 2;
+const ecoNeuf = (g: Record<Finition, number>): number => Math.round((g.standard - ECART_ECO_NEUF * (g.standard - g.eco)) * 100) / 100;
+/** Le coefficient d'un barème pour le contexte (finition, et nature pour l'éco du neuf). */
+const coefBareme = (ctx: Ctx, g: Record<Finition, number>): number =>
+  ctx.finition === "eco" && ctx.nature === "neuf" ? ecoNeuf(g) : g[ctx.finition];
 /** Coefficient de finition pour un lot donné (selon le niveau choisi dans ctx). */
 export function finCoef(ctx: Ctx, corps: string): number {
-  return (LOT_FIN[corps] ?? FINCO)[ctx.finition];
+  return coefBareme(ctx, LOT_FIN[corps] ?? FINCO);
 }
 /* Un groupe de variantes ne « pilote le prix » que s'il le déplace vraiment : soit par un
    coefficient différent de 1, soit par une grille de prix exacts (le sèche-serviette). Une
@@ -285,7 +311,7 @@ const varsPilotentLePrix = (t: Tache): boolean =>
 export function finCoefTask(ctx: Ctx, l: Lot, t: Tache): number {
   if (t.fixe || t.mat || t.vitrage || t.moto || t.taille || varsPilotentLePrix(t)) return 1; // fixe ou piloté par variante
   const g = TASK_FIN[t.n];
-  return g ? g[ctx.finition] : finCoef(ctx, l.c);
+  return g ? coefBareme(ctx, g) : finCoef(ctx, l.c);
 }
 // ── Coefficient régional (main-d'œuvre) ───────────────────────────────────────
 // La MO varie fortement selon la région ; les matériaux sont ~nationaux (sauf outre-mer,
@@ -808,7 +834,7 @@ export function bilan(catalog: Lot[], ctx: Ctx, sel: Selection): Bilan {
 /** Ancienne clé d'une ligne (nom + libellé de variante) si elle diffère de la clé stable.
  *  Sert à relire les projets enregistrés avant l'unification, et à les nettoyer au premier clic. */
 export function cleLegacy(li: DevisLigne): string | null {
-  const k = key(li.corps, li.nom);
+  const k = key(li.corps, li.nomAvant ?? li.nom);   // l'écriture d'alors (« Plinthes (mdf) »), pas celle d'aujourd'hui
   return k === li.cle ? null : k;
 }
 
@@ -835,10 +861,12 @@ export function buildDevis(catalog: Lot[], ctx: Ctx, sel: Selection): Devis {
       const ht = lineHT(ctx, sel, l, t);
       const r = effRate(l, t, sel, ctx);
       const mode: Mode = isLoc(l.c) ? "location" : s.self ? "je-fais" : "fait-faire";
+      const nom = t.n + variantLabel(t, s, ctx), nomAvant = t.n + variantLabel(t, s, ctx, true);
       lignes.push({
         cle: key(l.c, t.n),
-        corps: l.c, phase: l.p, nom: t.n + variantLabel(t, s, ctx), unite: t.u,
+        corps: l.c, phase: l.p, nom, unite: t.u,
         qty: qtyOf(ctx, sel, l.c, t), mode, ht, tva: (ht * r) / 100, ttc: ht * (1 + r / 100),
+        ...(nomAvant !== nom ? { nomAvant } : {}),
       });
     });
   });

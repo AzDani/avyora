@@ -2420,7 +2420,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · Mon devis 1`] = `
 <span class="m">988 €</span>
 </div>
 <div class="dtl">
-<span>Plinthes (mdf)</span>
+<span>Plinthes (MDF)</span>
 <span class="q">116 ml</span>
 <span class="mode mS">je fais</span>
 <span class="m">556 €</span>
@@ -2524,19 +2524,19 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · Mon devis 1`] = `
 <span class="m">1 740 €</span>
 </div>
 <div class="dtl">
-<span>Taxe d&#x27;aménagement + redevance d&#x27;archéologie — 100 premiers m² (résidence principale) (hors île-de-france)</span>
+<span>Taxe d&#x27;aménagement + redevance d&#x27;archéologie — 100 premiers m² (résidence principale) (hors Île-de-France)</span>
 <span class="q">100 m²</span>
 <span class="mode mA">fait faire</span>
 <span class="m">2 631 €</span>
 </div>
 <div class="dtl">
-<span>Taxe d&#x27;aménagement + redevance d&#x27;archéologie — m² au-delà de 100 (hors île-de-france)</span>
+<span>Taxe d&#x27;aménagement + redevance d&#x27;archéologie — m² au-delà de 100 (hors Île-de-France)</span>
 <span class="q">42 m²</span>
 <span class="mode mA">fait faire</span>
 <span class="m">2 215 €</span>
 </div>
 <div class="dtl">
-<span>Taxe d&#x27;aménagement + redevance d&#x27;archéologie — places de stationnement extérieures (hors île-de-france)</span>
+<span>Taxe d&#x27;aménagement + redevance d&#x27;archéologie — places de stationnement extérieures (hors Île-de-France)</span>
 <span class="q">1 u</span>
 <span class="mode mA">fait faire</span>
 <span class="m">173 €</span>
@@ -10392,7 +10392,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · suite 1`] = `
 </div>
 </div>
 <div class="recap">🎯 <b>Pièces ciblées</b> · 25 m² · plafond 2,5 m<div style="margin-top:6px">→ 1 Suite parentale</div>
-<div style="margin-top:6px">📍 <b>Zone tendue</b> · main-d’œuvre +10 %</div>
+<div style="margin-top:6px">📍 <b>Secteur très demandé</b> · main-d’œuvre +10 %</div>
 </div>
 </div>
 <div class="intro">Ouvre les lots concernés, coche les travaux, ajuste les quantités. Prix affichés <b>HT</b>. Sur chaque travail faisable soi-même, électricité, mur porteur et charpente compris, choisis <b>« Fait faire »</b> (artisan) ou <b>« Je le fais »</b> — les 2 prix s’affichent. Pris soi-même, un poste de maçonnerie, de charpente, de couverture ou de menuiseries extérieures sort de la garantie décennale ; pour un mur porteur ou une charpente, une étude est conseillée.</div>
