@@ -63,6 +63,9 @@ describe("schémas de validation d'entrée (zod)", () => {
   it("dépense : montant positif", () => {
     expect(depenseSchema.safeParse({ corpsEtat: "peinture", libelle: "Pots", montant: 250 }).success).toBe(true);
     expect(depenseSchema.safeParse({ corpsEtat: "peinture", libelle: "Pots", montant: 0 }).success).toBe(false);
+    /* arrondi au centime, 0,004 € deviendrait 0 : la base le refuserait (500), la route répond 400 */
+    expect(depenseSchema.safeParse({ corpsEtat: "peinture", libelle: "Pots", montant: 0.004 }).success).toBe(false);
+    expect(depenseSchema.safeParse({ corpsEtat: "peinture", libelle: "Pots", montant: 0.01 }).success).toBe(true);
   });
   it("statut de tâche : valeur dans l'énumération", () => {
     expect(chantierStatutSchema.safeParse({ taskId: "abc", statut: "fait" }).success).toBe(true);

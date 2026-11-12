@@ -115,16 +115,19 @@ begin
 end $$;
 
 -- ── 4. Webhook Stripe : événements déjà traités ───────────────────────────
--- Le webhook (app/api/stripe/webhook/route.ts, service role) y inscrit event.id AVANT de traiter :
--- une relivraison de Stripe tombe sur la clé primaire et repart en 200 sans rien refaire (ni Pro
--- réattribué, ni e-mail renvoyé). Un traitement en échec retire sa ligne pour que Stripe puisse réessayer.
+-- Le webhook (app/api/stripe/webhook/route.ts, service role) y inscrit event.id AVANT de traiter et
+-- pose traite_le APRÈS : une relivraison d'un événement traité repart en 200 sans rien refaire (ni Pro
+-- réattribué, ni e-mail renvoyé) ; d'un événement en cours, en 409 (Stripe relivrera). Un traitement en
+-- échec retire sa ligne ; un traitement coupé net (traite_le vide depuis 10 min) est repris.
 create table if not exists public.stripe_events (
-  id       text primary key,
-  type     text not null,
-  recu_le  timestamptz not null default now(),
+  id         text primary key,
+  type       text not null,
+  recu_le    timestamptz not null default now(),
+  traite_le  timestamptz,
   constraint stripe_events_id   check (char_length(id) between 1 and 255),
   constraint stripe_events_type check (char_length(type) <= 255)
 );
+alter table public.stripe_events add column if not exists traite_le timestamptz;
 alter table public.stripe_events enable row level security;
 revoke all on public.stripe_events from anon, authenticated;
-grant select, insert, delete on public.stripe_events to service_role;
+grant select, insert, update, delete on public.stripe_events to service_role;

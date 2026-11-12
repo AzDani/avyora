@@ -205,7 +205,8 @@ describe("création et modification de projet", () => {
 describe("POST /api/stripe/webhook", () => {
   type Ev = { id: string; type: string; data: { object: Record<string, unknown> } };
   const S = {
-    registre: new Set<string>(),
+    /* event.id → reçu le (ms) et traité le (ms ou null) : le registre `stripe_events` de la migration 0005. */
+    registre: new Map<string, { recu: number; traite: number | null }>(),
     registreAbsent: false,
     abonnements: {} as Record<string, { id: string; status: string; customer: string; metadata: Record<string, string> }>,
     plans: [] as { userId: string; plan: string }[],
@@ -213,7 +214,7 @@ describe("POST /api/stripe/webhook", () => {
     echecMaj: false,
   };
   beforeEach(() => {
-    S.registre = new Set();
+    S.registre = new Map();
     S.registreAbsent = false;
     S.abonnements = { sub_1: { id: "sub_1", status: "active", customer: "cus_1", metadata: { supabase_user_id: "u1" } } };
     S.plans = [];
@@ -240,10 +241,37 @@ describe("POST /api/stripe/webhook", () => {
           insert: async ({ id }: { id: string }) => {
             if (S.registreAbsent) return { error: { code: "42P01" } };
             if (S.registre.has(id)) return { error: { code: "23505" } };
-            S.registre.add(id);
+            S.registre.set(id, { recu: Date.now(), traite: null });
             return { error: null };
           },
           delete: () => ({ eq: async (_c: string, id: string) => { S.registre.delete(id); return { error: null }; } }),
+          /* update(...).eq(id)[.is(traite_le, null).lt(recu_le, limite)][.select()] : seuls les filtres utilisés. */
+          update: (patch: { recu_le?: string; traite_le?: string }) => {
+            const f: { id?: string; nonTraite?: boolean; avant?: number } = {};
+            const run = async () => {
+              const l = f.id ? S.registre.get(f.id) : undefined;
+              if (!l || (f.nonTraite && l.traite != null) || (f.avant != null && !(l.recu < f.avant))) return { data: [], error: null };
+              if (patch.recu_le) l.recu = Date.parse(patch.recu_le);
+              if (patch.traite_le) l.traite = Date.parse(patch.traite_le);
+              return { data: [{ id: f.id }], error: null };
+            };
+            const q = {
+              eq: (_c: string, id: string) => { f.id = id; return q; },
+              is: () => { f.nonTraite = true; return q; },
+              lt: (_c: string, iso: string) => { f.avant = Date.parse(iso); return q; },
+              select: run,
+              then: (ok: (v: unknown) => unknown, ko?: (e: unknown) => unknown) => run().then(ok, ko),
+            };
+            return q;
+          },
+          select: () => ({
+            eq: (_c: string, id: string) => ({
+              maybeSingle: async () => {
+                const l = S.registre.get(id);
+                return { data: l ? { traite_le: l.traite == null ? null : new Date(l.traite).toISOString() } : null, error: null };
+              },
+            }),
+          }),
         }),
         auth: {
           admin: {
@@ -332,6 +360,22 @@ describe("POST /api/stripe/webhook", () => {
     S.echecMaj = false;
     expect((await envoyer(evSub("evt_8", "active"))).status).toBe(200);
     expect(S.plans).toEqual([{ userId: "u1", plan: "pro" }]);
+  });
+
+  it("relivraison pendant que le premier passage tourne encore : 409 (Stripe relivrera), rien n'est fait deux fois", async () => {
+    S.registre.set("evt_10", { recu: Date.now(), traite: null }); /* premier passage en cours */
+    const r = await envoyer(evSub("evt_10", "active"));
+    expect(r.status).toBe(409);
+    expect(S.plans).toEqual([]);
+  });
+
+  it("traitement coupé net (jamais marqué, plus de 10 min) : la relivraison le reprend et le marque", async () => {
+    S.registre.set("evt_11", { recu: Date.now() - 11 * 60_000, traite: null });
+    expect((await envoyer(evSub("evt_11", "active"))).status).toBe(200);
+    expect(S.plans).toEqual([{ userId: "u1", plan: "pro" }]);
+    expect(S.registre.get("evt_11")?.traite).not.toBeNull();
+    expect((await envoyer(evSub("evt_11", "active"))).json).toMatchObject({ deja: true });
+    expect(S.plans).toHaveLength(1);
   });
 
   it("registre absent (migration 0005 pas encore appliquée) : l'événement est traité quand même", async () => {

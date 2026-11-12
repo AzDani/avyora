@@ -24,20 +24,54 @@ async function majPlan(admin: Admin, userId: string, plan: "pro" | "free", extra
   if (error) throw error; // 500 : Stripe relivrera l'événement
 }
 
+/** Au-delà, un id inscrit mais jamais marqué traité est repris : son traitement a été coupé net (délai dépassé,
+ * instance arrêtée) sans passer par le `catch` qui l'aurait retiré du registre. */
+const REPRISE_MS = 10 * 60_000;
+
 /**
  * Idempotence : Stripe peut livrer plusieurs fois le même événement (timeout, 5xx). Son id est inscrit dans
- * `stripe_events` (migration 0005) AVANT le traitement ; une relivraison tombe sur la clé primaire.
- *   « pris »          : premier passage, on traite ;
- *   « deja »          : déjà traité (ou en cours de traitement), on répond 200 sans rien refaire ;
+ * `stripe_events` (migration 0005) AVANT le traitement, et marqué `traite_le` APRÈS. Une relivraison tombe sur
+ * la clé primaire :
+ *   « pris »          : premier passage (ou reprise d'un traitement coupé net depuis REPRISE_MS) : on traite ;
+ *   « deja »          : déjà traité : on répond 200 sans rien refaire (ni Pro réattribué, ni e-mail renvoyé) ;
+ *   « en-cours »      : inscrit mais pas encore marqué traité : on répond 409 pour que Stripe relivre plus tard
+ *                       (un 200 ici perdrait l'événement si le premier passage échoue ensuite) ;
  *   « sans-registre » : table absente (migration pas encore appliquée) ou panne : on traite quand même,
  *                       comme avant la migration, plutôt que de perdre un paiement.
  */
-async function prendreEvenement(admin: Admin, event: Stripe.Event): Promise<"pris" | "deja" | "sans-registre"> {
+async function prendreEvenement(
+  admin: Admin,
+  event: Stripe.Event,
+): Promise<"pris" | "deja" | "en-cours" | "sans-registre"> {
   const { error } = await admin.from("stripe_events").insert({ id: event.id, type: event.type });
   if (!error) return "pris";
-  if (error.code === "23505") return "deja";
-  console.warn("[stripe webhook] registre des événements indisponible, traitement sans idempotence :", error.code);
-  return "sans-registre";
+  if (error.code !== "23505") {
+    console.warn("[stripe webhook] registre des événements indisponible, traitement sans idempotence :", error.code);
+    return "sans-registre";
+  }
+  /* Reprise atomique d'un traitement coupé net : une seule relivraison concurrente obtient la ligne. */
+  const limite = new Date(Date.now() - REPRISE_MS).toISOString();
+  const { data: repris } = await admin
+    .from("stripe_events")
+    .update({ recu_le: new Date().toISOString() })
+    .eq("id", event.id)
+    .is("traite_le", null)
+    .lt("recu_le", limite)
+    .select("id");
+  if ((repris ?? []).length === 1) return "pris";
+  const { data: ligne, error: lecture } = await admin
+    .from("stripe_events")
+    .select("traite_le")
+    .eq("id", event.id)
+    .maybeSingle();
+  if (!lecture && ligne?.traite_le) return "deja";
+  return "en-cours";
+}
+
+/** Traitement réussi : l'id est marqué, toute relivraison répondra 200 sans rien refaire. */
+async function marquerEvenement(admin: Admin, id: string) {
+  const { error } = await admin.from("stripe_events").update({ traite_le: new Date().toISOString() }).eq("id", id);
+  if (error) console.error("[stripe webhook] id non marqué traité :", id, error.code);
 }
 
 /** Traitement en échec : l'id repart du registre pour que la relivraison de Stripe soit traitée. */
@@ -96,6 +130,7 @@ export async function POST(req: Request) {
   const admin = supabaseAdmin();
   const prise = await prendreEvenement(admin, event);
   if (prise === "deja") return NextResponse.json({ received: true, deja: true });
+  if (prise === "en-cours") return NextResponse.json({ error: "Traitement en cours" }, { status: 409 });
 
   try {
     switch (event.type) {
@@ -128,5 +163,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Erreur de traitement" }, { status: 500 });
   }
 
+  if (prise === "pris") await marquerEvenement(admin, event.id);
   return NextResponse.json({ received: true });
 }

@@ -72,7 +72,8 @@ export const depenseSchema = z.object({
   corpsEtat: z.string().trim().min(1).max(60),
   libelle: z.string().trim().min(1).max(200),
   // 5 M€ au plus : la colonne `montant` est un real (float4), exact au centime jusqu'à ~130 000 €, à l'euro au-delà.
-  montant: z.coerce.number().positive().max(5_000_000),
+  // Au moins 1 centime : le montant est arrondi au centime avant l'écriture, et la base refuse 0 (CHECK de 0005).
+  montant: z.coerce.number().min(0.01).max(5_000_000),
 });
 
 /** Suivi de chantier (POST /api/projects/[id]/statut) : clé « corps|nom » bornée, 0 à démarrer, 1 en cours, 2 terminé. */
