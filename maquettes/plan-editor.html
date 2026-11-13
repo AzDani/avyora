@@ -7358,39 +7358,116 @@ function drawItem(it,isSel,apercu){ /* D62 : apercu = 'apercu' (l'aperçu de pos
     ctx.scale(k,k);ctx.lineWidth=1.25*kU/(z*k);drawElec(it,isSel);
     {const pk=q=>q*kU/(z*k),R0=[{x:-w/2,y:-h/2,w,h}];if(isSel)cadreSel(R0,pk(5),pk,true);if(apercu)cadreApercu(R0,pk(5),pk,false);} /* D62 */
     ctx.restore();return;}
-  if(!['escalier','poutre','poteau','velux','cumulus','wc'].includes(T)){rr(-w/2,-h/2,w,h,0.03);ctx.fill();ctx.stroke();}
+  /* D80 · les symboles d'équipements, au niveau d'un plan d'architecte : chaque objet dit ce qu'il est par sa forme (tête
+     de lit et couette rabattue, dossier et accoudoirs, chaises à dossier, fauteuil à roulettes, portes et cintres, feux,
+     cuve et égouttoir, robinets et bondes, ailettes, hélices). Toujours UNE encre : le corps en blanc translucide, les
+     parties « dures » (tête de lit, dossier, accoudoirs, plaque, écran) en voile d'encre à 7 %, les détails en trait LÉGER
+     (0,75 px à 50 %). Un détail ne se dessine que s'il fait au moins ~2 px à l'écran (vu()), comme code() pour le texte :
+     au petit zoom et dans la vignette, il reste la silhouette, jamais un pâté. Repère : −y = le mur, +y = la face avant. */
+  const TEINTE='rgba(30,27,75,.07)',CL='rgba(30,27,75,.5)',BLANC='rgba(255,255,255,.85)';
+  const vu=(m,p=2.2)=>m*z>=p*kU,leger=()=>{ctx.lineWidth=px(0.75);ctx.strokeStyle=CL;};
+  const plein=f=>{ctx.fillStyle=f||BLANC;ctx.fill();ctx.stroke();ctx.fillStyle=BLANC;};
+  /* une chaise (assise + dossier), centrée en (x,y), dossier vers +y du repère tourné de a */
+  const chaise=(x,y,a,cw,cd)=>{ctx.save();ctx.translate(x,y);ctx.rotate(a);rr(-cw/2,-cd/2,cw,cd,Math.min(cw,cd)*0.2);plein();
+    rr(-cw/2+0.015,cd/2-0.075,cw-0.03,0.06,0.03);plein(TEINTE);ctx.restore();};
+  /* une plaque de cuisson c × c : 4 feux de tailles différentes, la couronne intérieure seulement de près */
+  const plaque=(cx,cy,c)=>{fin();rr(cx-c/2,cy-c/2,c,c,0.02);plein(TEINTE);
+    [[-1,-1,0.17],[1,-1,0.12],[-1,1,0.12],[1,1,0.145]].forEach(([i,j,r])=>{const x=cx+i*c*0.24,y=cy+j*c*0.24;fin();rond(x,y,c*r);plein();if(vu(c*r*0.5,3)){leger();rond(x,y,c*r*0.5);ctx.stroke();}});fin();};
+  /* un robinet : le pied (rond) et le bec, de (x,y0) vers (x,y1) */
+  const robinet=(x,y0,y1)=>{moy();ctx.lineCap='round';trait(x,y0,x,y1);ctx.lineCap='butt';rond(x,y0,Math.min(0.022,w*0.05));plein();};
+  const bonde=(x,y,r=0.018)=>{if(!vu(r*2))return;leger();rond(x,y,r);ctx.stroke();};
+  if(!['escalier','poutre','poteau','velux','cumulus','wc','canape','table','bureau','lavabo'].includes(T)){rr(-w/2,-h/2,w,h,0.03);ctx.fill();ctx.stroke();}
   if(T==='poutre'){ /* en hauteur : deux rives en tirets, l'axe en trait mixte (plus d'orange, celui des démolitions) */
     ctx.save();ctx.setLineDash([px(4),px(3)]);ctx.lineWidth=px(1.25);ctx.strokeStyle=C;ctx.strokeRect(-w/2,-h/2,w,h);
     ctx.setLineDash([px(10),px(3),px(2),px(3)]);ctx.lineWidth=px(1);ctx.strokeStyle='rgba(30,27,75,.5)';trait(-w/2-0.08,0,w/2+0.08,0);ctx.restore();}
   if(T==='poteau'){ctx.fillStyle=(mode()==='projet'&&it.st==='creer')?CREER:ENCRE;ctx.fillRect(-w/2,-h/2,w,h);}
   if(T==='velux'){ctx.save();ctx.setLineDash([px(4),px(3)]);ctx.lineWidth=px(1.25);ctx.strokeStyle=C;ctx.strokeRect(-w/2,-h/2,w,h);ctx.lineWidth=px(1);ctx.strokeStyle=CF;trait(-w/2,h/2,w/2,-h/2);ctx.restore();}
-  if(T==='baignoire'){fin();rr(-w/2+0.07,-h/2+0.07,w-0.14,h-0.14,0.16);ctx.stroke();rond(w/2-0.22,0,0.025);ctx.stroke();ctx.fillStyle=C;[-0.06,0.06].forEach(dy=>{rond(w/2-0.035,dy,0.013);ctx.fill();});}
-  if(T==='douche'){fin();trait(-w/2,-h/2,w/2,h/2);trait(w/2,-h/2,-w/2,h/2);moy();ctx.fillStyle='#fff';rond(0,0,0.03);ctx.fill();ctx.stroke();ctx.lineWidth=px(2.5);trait(-w/2,h/2,w*0.12,h/2);}
-  if(T==='lavabo'){fin();ctx.beginPath();ctx.ellipse(0,0.03,w*0.36,h*0.3,0,0,7);ctx.stroke();moy();trait(0,-h/2+0.03,0,-h/2+0.1);}
-  if(T==='vasque2'){fin();[-w*0.25,w*0.25].forEach(x=>{ctx.beginPath();ctx.ellipse(x,0.03,w*0.17,h*0.3,0,0,7);ctx.stroke();});moy();[-w*0.25,w*0.25].forEach(x=>trait(x,-h/2+0.03,x,-h/2+0.09));}
-  if(T==='wc'){ /* réservoir contre le mur, cuvette en « D », plus étroite devant */
-    rr(-w/2+0.02,-h/2,w-0.04,0.17,0.02);ctx.fill();ctx.stroke();
-    const a=w*0.42,y0=-h/2+0.19,y2=h/2,y1=y0+(y2-y0)*0.55;ctx.beginPath();ctx.moveTo(-a,y0);ctx.bezierCurveTo(-a,y1,-a*0.6,y2,0,y2);ctx.bezierCurveTo(a*0.6,y2,a,y1,a,y0);ctx.closePath();ctx.fill();ctx.stroke();
-    fin();ctx.beginPath();ctx.ellipse(0,(y0+y2)/2+0.02,a*0.62,(y2-y0)*0.3,0,0,7);ctx.stroke();}
-  if(T==='plan'){fin();trait(-w/2+0.02,h/2-0.03,w/2-0.02,h/2-0.03);const hx=-w/4,c2=Math.min(0.56,h*0.8);rr(hx-c2/2,-c2/2,c2,c2,0.02);ctx.stroke();[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([i,j])=>{rond(hx+i*c2*0.24,j*c2*0.24,c2*0.15);ctx.stroke();});}
-  if(T==='ilot'){fin();ctx.save();ctx.setLineDash([px(4),px(3)]);trait(-w/2,h/2-0.25,w/2,h/2-0.25);ctx.restore();const c2=0.5,cy=-0.1;rr(-c2/2,cy-c2/2,c2,c2,0.02);ctx.stroke();[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([i,j])=>{rond(i*c2*0.24,cy+j*c2*0.24,c2*0.15);ctx.stroke();});}
-  if(T==='evier'){fin();rr(-w/2+0.05,-h/2+0.1,0.32,h-0.18,0.04);ctx.stroke();rr(-w/2+0.41,-h/2+0.1,0.16,h-0.18,0.04);ctx.stroke();for(let i=0;i<5;i++){const x=-w/2+0.62+i*0.033;trait(x,-h/2+0.12,x,h/2-0.1);}moy();ctx.beginPath();ctx.arc(-w/2+0.21,-h/2+0.1,0.035,Math.PI,0);ctx.stroke();}
-  if(T==='frigo'){fin();trait(-w/2+0.03,h/2-0.06,w/2-0.03,h/2-0.06);code('FR');}
-  if(T==='lave_vaisselle'){fin();trait(-w/2+0.03,h/2-0.06,w/2-0.03,h/2-0.06);code('LV');}
-  if(T==='lave_linge'){fin();rond(0,0.01,w*0.32);ctx.stroke();code('LL',0,0.01,w*0.2);}
-  if(T==='cumulus'){rond(0,0,Math.min(w,h)/2-0.005);ctx.fill();ctx.stroke();code('CE');}
-  if(T==='chaudiere'){code('CH');moy();ctx.fillStyle='#fff';rond(w*0.3,-h/2+0.06,0.04);ctx.fill();ctx.stroke();}
-  if(T==='poele'){ctx.fillStyle=C;rond(0,-h/2+0.13,0.075);ctx.fill();fin();ctx.beginPath();ctx.arc(0,h/2-0.04,Math.min(0.2,w*0.34),Math.PI,0);ctx.stroke();}
-  if(T==='vmc'){fin();const r=Math.min(w,h)*0.28,cy=-h*0.1;rond(0,cy,r);ctx.stroke();for(let a=0;a<3;a++){const t2=a*2.094;trait(0,cy,Math.cos(t2)*r,cy+Math.sin(t2)*r);}code('VMC',0,h/2-0.06,Math.min(0.07,h*0.2));}
-  if(T==='radiateur'){fin();for(let x=-w/2+0.1;x<w/2-0.11;x+=0.1)trait(x,-h/2,x,h/2);moy();ctx.fillStyle='#fff';rond(w/2-0.05,0,Math.min(0.03,h*0.32));ctx.fill();ctx.stroke();}
-  if(T==='seche_serviette'){fin();[-h*0.2,h*0.2].forEach(y=>trait(-w/2+0.04,y,w/2-0.04,y));ctx.fillStyle=C;[-1,1].forEach(j=>ctx.fillRect(j>0?w/2-0.04:-w/2+0.01,-h/2+0.012,0.03,h-0.024));}
-  if(T==='clim'){fin();trait(-w/2+0.05,h/2-h*0.3,w/2-0.05,h/2-h*0.3);[-w*0.25,0,w*0.25].forEach(x=>{trait(x,h/2+0.04,x,h/2+0.15);ctx.beginPath();ctx.moveTo(x-0.03,h/2+0.11);ctx.lineTo(x,h/2+0.15);ctx.lineTo(x+0.03,h/2+0.11);ctx.stroke();});}
-  if(T==='pac_ext'){rond(-w*0.18,0,h*0.36);ctx.stroke();fin();for(let k2=0;k2<3;k2++){const a=k2*Math.PI*2/3;trait(-w*0.18,0,-w*0.18+Math.cos(a)*h*0.3,Math.sin(a)*h*0.3);}moy();ctx.beginPath();ctx.rect(w*0.18,-h*0.3,w*0.24,h*0.6);ctx.stroke();}
-  if(T==='lit'||T==='lit1'){const pw=T==='lit'?w*0.42:w*0.8;const xs=T==='lit'?[-w*0.24,w*0.24]:[0];xs.forEach(x=>{rr(x-pw/2,-h/2+0.08,pw,0.32,0.05);ctx.stroke();});trait(-w/2,-h/2+0.55,w/2,-h/2+0.55);}
-  if(T==='armoire'){trait(-w/2+0.06,0,w/2-0.06,0);for(let i=0;i<5;i++){const x=-w*0.32+i*w*0.16;trait(x-0.035,-0.12,x+0.035,0.12);}}
-  if(T==='canape'){rr(-w/2+0.04,-h/2+0.04,w-0.08,0.22,0.04);ctx.stroke();trait(-w/2+0.2,-h/2+0.26,-w/2+0.2,h/2);trait(w/2-0.2,-h/2+0.26,w/2-0.2,h/2);}
-  if(T==='table'){for(const x of [-w*0.28,0,w*0.28])for(const y of [-h/2-0.28,h/2+0.05]){rr(x-0.2,y,0.4,0.23,0.05);ctx.stroke();}}
-  if(T==='bureau'){rr(-0.25,h/2+0.06,0.5,0.45,0.1);ctx.stroke();}
+  if(T==='baignoire'){ /* la cuve, plus ronde côté tête (à gauche), la bonde et le mitigeur au pied */
+    fin();const m=Math.min(0.07,h*0.1),R=Math.min(0.26,(h-2*m)/2);rr(-w/2+m,-h/2+m,w-2*m,h-2*m,[R,R*0.45,R*0.45,R]);plein();
+    if(vu(0.04)){fin();rond(w/2-m-0.13,0,0.025);ctx.stroke();bonde(w/2-m-0.13,0,0.01);}
+    moy();ctx.lineCap='round';trait(w/2-m*0.5,0,w/2-m-0.06,0);ctx.lineCap='butt';rond(w/2-m*0.5,0,Math.min(0.022,m*0.35));plein();}
+  if(T==='douche'){ /* le receveur et son rebord, les pentes vers la bonde, la paroi vitrée devant */
+    fin();const m=Math.min(0.05,w*0.06),rb=Math.min(0.045,w*0.06);rr(-w/2+m,-h/2+m,w-2*m,h-2*m,0.03);ctx.stroke();
+    leger();[[-1,-1],[1,-1],[1,1],[-1,1]].forEach(([i,j])=>{const cx=i*(w/2-m),cy=j*(h/2-m),d=Math.hypot(cx,cy);trait(cx,cy,cx*rb/d*1.6,cy*rb/d*1.6);});
+    moy();rond(0,0,rb);plein();if(vu(0.02)){leger();trait(-rb*0.55,0,rb*0.55,0);trait(0,-rb*0.55,0,rb*0.55);}
+    ctx.strokeStyle=C;ctx.lineWidth=px(2.5);trait(-w/2,h/2,w*0.12,h/2);}
+  if(T==='lavabo'){ /* le plan arrondi devant, la vasque, la bonde et le robinet au mur */
+    const R=Math.min(0.16,h*0.4,w*0.3);rr(-w/2,-h/2,w,h,[0.02,0.02,R,R]);plein();
+    fin();ctx.beginPath();ctx.ellipse(0,0.035,w*0.35,h*0.3,0,0,7);ctx.stroke();bonde(0,0.06);robinet(0,-h/2+0.055,-h/2+0.13);}
+  if(T==='vasque2'){ /* deux vasques, chacune sa bonde et son robinet */
+    [-w*0.25,w*0.25].forEach(x=>{fin();ctx.beginPath();ctx.ellipse(x,0.035,Math.min(w*0.19,0.24),h*0.3,0,0,7);ctx.stroke();bonde(x,0.06);robinet(x,-h/2+0.055,-h/2+0.12);});}
+  if(T==='wc'){ /* réservoir contre le mur et son bouton, cuvette en « D » plus étroite devant, l'abattant et la lunette */
+    rr(-w/2+0.02,-h/2,w-0.04,0.17,0.03);ctx.fill();ctx.stroke();if(vu(0.03)){leger();rond(0,-h/2+0.085,0.025);ctx.stroke();}
+    const a=w*0.42,y0=-h/2+0.19,y2=h/2,y1=y0+(y2-y0)*0.55;moy();ctx.beginPath();ctx.moveTo(-a,y0);ctx.bezierCurveTo(-a,y1,-a*0.6,y2,0,y2);ctx.bezierCurveTo(a*0.6,y2,a,y1,a,y0);ctx.closePath();ctx.fill();ctx.stroke();
+    fin();ctx.beginPath();ctx.ellipse(0,(y0+y2)/2+0.025,a*0.6,(y2-y0)*0.32,0,0,7);ctx.stroke();if(vu(0.02)){leger();trait(-a*0.7,y0+0.012,a*0.7,y0+0.012);}}
+  if(T==='plan'){ /* le chant devant les façades, les joints des caissons tous les 60 cm, la plaque 4 feux sur un caisson */
+    fin();const fy=h/2-Math.min(0.04,h*0.07);trait(-w/2,fy,w/2,fy);const nm=Math.max(1,Math.round(w/0.6));
+    if(vu(0.04)){leger();for(let i=1;i<nm;i++){const x=-w/2+w*i/nm;trait(x,fy,x,h/2);}}
+    const c2=Math.min(0.52,(fy+h/2)*0.88,w*0.9);if(w>=0.45)plaque(-w/2+w/nm*(Math.floor((nm-1)/2)+0.5),(fy-h/2)/2,c2);}
+  if(T==='ilot'){ /* le débord du bar (en tirets) côté salle, la plaque côté cuisine */
+    fin();ctx.save();ctx.setLineDash([px(4),px(3)]);trait(-w/2,h/2-0.25,w/2,h/2-0.25);ctx.restore();
+    const c2=Math.min(0.52,h-0.35,w*0.8);plaque(0,(-h/2+h/2-0.25)/2,c2);}
+  if(T==='evier'){ /* la cuve (et une demi-cuve si la place le permet), sa bonde, l'égouttoir rainuré, le robinet au mur */
+    fin();const m=0.04,y0=-h/2+0.12,ch=h-0.12-0.06,cw=Math.min(0.42,w*0.52),xa=-w/2+m;
+    rr(xa,y0,cw,ch,0.05);plein();bonde(xa+cw/2,y0+ch*0.62,0.022);let xe=xa+cw+0.03;
+    if(w-2*m-cw>=0.5){const c3=Math.min(0.2,(w-2*m-cw)*0.4);fin();rr(xe,y0,c3,ch,0.04);plein();bonde(xe+c3/2,y0+ch*0.62,0.016);xe+=c3+0.03;}
+    const ew=w/2-m-xe;if(ew>0.06){leger();rr(xe,y0,ew,ch,0.03);ctx.stroke();if(vu(0.03,3)){for(let x=xe+0.035;x<xe+ew-0.02;x+=0.035)trait(x,y0+0.04,x,y0+ch-0.04);}}
+    robinet(xa+cw/2,-h/2+0.05,y0+0.1);}
+  if(T==='frigo'){fin();const fy=h/2-0.05;trait(-w/2+0.02,fy,w/2-0.02,fy);if(vu(0.03)){leger();trait(w/2-0.2,fy+0.025,w/2-0.06,fy+0.025);}code('FR');}
+  if(T==='lave_vaisselle'){fin();const fy=h/2-0.05;trait(-w/2+0.02,fy,w/2-0.02,fy);if(vu(0.03)){leger();trait(-w*0.25,fy+0.025,w*0.25,fy+0.025);}code('LV');}
+  if(T==='lave_linge'){fin();if(vu(0.03)){leger();trait(-w/2+0.02,-h/2+0.1,w/2-0.02,-h/2+0.1);}fin();rond(0,0.03,w*0.3);ctx.stroke();if(vu(0.03)){leger();rond(0,0.03,w*0.24);ctx.stroke();}code('LL',0,0.03,w*0.17);}
+  if(T==='cumulus'){const R=Math.min(w,h)/2-0.005;rond(0,0,R);ctx.fill();ctx.stroke();if(vu(0.03)){leger();rond(0,0,R*0.8);ctx.stroke();}code('CE');}
+  if(T==='chaudiere'){fin();trait(-w/2+0.03,h/2-0.08,w/2-0.03,h/2-0.08);if(vu(0.03)){leger();rond(-w*0.28,h/2-0.04,0.015);ctx.stroke();rond(-w*0.18,h/2-0.04,0.015);ctx.stroke();}code('CH',0,-0.03);moy();rond(w*0.3,-h/2+0.07,0.045);plein();if(vu(0.02)){leger();rond(w*0.3,-h/2+0.07,0.025);ctx.stroke();}}
+  if(T==='poele'){ /* le conduit au fond (anneau et âme pleine), le foyer vitré devant */
+    const r=Math.min(0.08,w*0.14),cy=-h/2+0.15;moy();rond(0,cy,r);plein();ctx.fillStyle=C;rond(0,cy,r*0.55);ctx.fill();ctx.fillStyle=BLANC;
+    fin();const fw=w*0.66,fh=Math.min(0.24,h*0.4),fy=h/2-0.05-fh;rr(-fw/2,fy,fw,fh,0.03);ctx.stroke();if(vu(0.03)){leger();ctx.beginPath();ctx.moveTo(-fw/2+0.04,fy+fh-0.03);ctx.lineTo(-fw/2+0.04,fy+fh*0.5);ctx.arc(0,fy+fh*0.5,fw/2-0.04,Math.PI,0);ctx.lineTo(fw/2-0.04,fy+fh-0.03);ctx.closePath();ctx.stroke();}}
+  if(T==='vmc'){ /* le caisson, l'hélice à pales courbes, les piquages */
+    fin();const r=Math.min(w,h)*0.3,cy=-h*0.1;rond(0,cy,r);ctx.stroke();
+    if(vu(0.04)){for(let a=0;a<4;a++){const t2=a*Math.PI/2,t3=t2+0.9;ctx.beginPath();ctx.moveTo(Math.cos(t2)*r*0.2,cy+Math.sin(t2)*r*0.2);ctx.quadraticCurveTo(Math.cos(t2+0.5)*r*0.75,cy+Math.sin(t2+0.5)*r*0.75,Math.cos(t3)*r*0.92,cy+Math.sin(t3)*r*0.92);ctx.stroke();}rond(0,cy,r*0.2);plein();}
+    code('VMC',0,h/2-0.06,Math.min(0.07,h*0.2));}
+  if(T==='radiateur'){ /* les éléments (ailettes) et le robinet thermostatique */
+    if(vu(0.06,3)){leger();for(let x=-w/2+0.06;x<w/2-0.09;x+=0.06)trait(x,-h/2+0.012,x,h/2-0.012);}
+    moy();rond(w/2-0.045,0,Math.min(0.03,h*0.32));plein();}
+  if(T==='seche_serviette'){ /* deux collecteurs ronds, les barreaux entre eux */
+    fin();const rc=Math.min(0.028,h*0.36);[-h*0.18,h*0.18].forEach(y=>trait(-w/2+0.03,y,w/2-0.03,y));
+    ctx.fillStyle=C;[-1,1].forEach(j=>{rond(j*(w/2-0.035),0,rc);ctx.fill();});ctx.fillStyle=BLANC;}
+  if(T==='clim'){ /* le volet de soufflage et l'air qui part en éventail */
+    fin();const fy=h/2-Math.min(0.08,h*0.32);rr(-w/2+0.04,fy,w-0.08,Math.min(0.05,h*0.2),0.02);plein(TEINTE);
+    [-1,0,1].forEach(i=>{const a=i*0.35,x0=i*w*0.25,l=0.12,x1=x0+Math.sin(a)*l,y1=h/2+0.04+Math.cos(a)*l;trait(x0,h/2+0.04,x1,y1);
+      ctx.beginPath();ctx.moveTo(x1-Math.cos(a)*0.03-Math.sin(a)*0.035,y1+Math.sin(a)*0.03-Math.cos(a)*0.035);ctx.lineTo(x1,y1);ctx.lineTo(x1+Math.cos(a)*0.03-Math.sin(a)*0.035,y1-Math.sin(a)*0.03-Math.cos(a)*0.035);ctx.stroke();});}
+  if(T==='pac_ext'){ /* le ventilateur (grille et pales) à gauche, la batterie à ailettes à droite */
+    const cx=-w*0.18,R=h*0.38;moy();rond(cx,0,R);ctx.stroke();
+    if(vu(0.04)){leger();rond(cx,0,R*0.68);ctx.stroke();fin();for(let k2=0;k2<3;k2++){const a=k2*Math.PI*2/3;ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*R*0.18,Math.sin(a)*R*0.18);ctx.quadraticCurveTo(cx+Math.cos(a+0.6)*R*0.7,Math.sin(a+0.6)*R*0.7,cx+Math.cos(a+1.1)*R*0.86,Math.sin(a+1.1)*R*0.86);ctx.stroke();}}
+    fin();rond(cx,0,R*0.16);plein();const bx=w*0.14,bw=w/2-0.04-bx;rr(bx,-h*0.32,bw,h*0.64,0.02);ctx.stroke();
+    if(vu(0.035,3)){leger();for(let x=bx+0.035;x<bx+bw-0.01;x+=0.035)trait(x,-h*0.32,x,h*0.32);}}
+  if(T==='lit'||T==='lit1'){ /* la tête de lit, le matelas, 1 ou 2 oreillers arrondis, la couette au coin rabattu */
+    const dbl=T==='lit',tl=Math.min(0.07,h*0.05);rr(-w/2,-h/2,w,tl,0.02);plein(TEINTE);
+    if(vu(0.03)){leger();rr(-w/2+0.03,-h/2+tl+0.015,w-0.06,h-tl-0.045,0.05);ctx.stroke();}
+    fin();const n=dbl?2:1,g=0.06,mx=0.09,oy=-h/2+tl+0.06,oh=Math.min(0.3,h*0.15),ow=(w-2*mx-(n-1)*g)/n;
+    for(let i=0;i<n;i++){rr(-w/2+mx+i*(ow+g),oy,ow,oh,Math.min(0.09,oh*0.4));plein();}
+    const y0=oy+oh+0.1,a=Math.min(0.42,w*0.3,(h/2-y0)*0.6);fin();trait(-w/2,y0,w/2-a,y0);
+    ctx.beginPath();ctx.moveTo(w/2-a,y0);ctx.lineTo(w/2,y0+a);ctx.lineTo(w/2-a,y0+a);ctx.closePath();plein();
+    if(vu(0.03)){leger();trait(-w/2,y0+0.1,w/2-a,y0+0.1);}}
+  if(T==='armoire'){ /* la façade et ses portes, la tringle en tirets et les cintres */
+    const ep=Math.min(0.035,h*0.07),nP=w>=1.5?3:w>=0.7?2:1;trait(-w/2,h/2-ep,w/2,h/2-ep);for(let i=1;i<nP;i++){const x=-w/2+w*i/nP;trait(x,h/2-ep,x,h/2);}
+    const yt=-ep/2,lc=Math.min(0.42,(h-ep)*0.75);
+    if(vu(0.05)){leger();ctx.save();ctx.setLineDash([px(4),px(3)]);trait(-w/2+0.05,yt,w/2-0.05,yt);ctx.restore();}
+    if(vu(0.13,3)){fin();const nb=Math.max(2,Math.round((w-0.24)/0.13)+1);for(let i=0;i<nb;i++){const x=-w/2+0.12+i*(w-0.24)/(nb-1);trait(x,yt-lc/2,x,yt+lc/2);}}}
+  if(T==='canape'){ /* le dossier et les deux accoudoirs arrondis (voile d'encre), 1 à 3 coussins d'assise */
+    const ac=Math.min(0.2,w*0.12),dd=Math.min(0.22,h*0.28),r=Math.min(0.08,ac*0.45);rr(-w/2,-h/2,w,h,r);plein();
+    ctx.beginPath();ctx.rect(-w/2+ac,-h/2,w-2*ac,dd);plein(TEINTE);rr(-w/2,-h/2,ac,h,r);plein(TEINTE);rr(w/2-ac,-h/2,ac,h,r);plein(TEINTE);
+    const n=w>=1.7?3:w>=1.1?2:1,gp=0.015,x0=-w/2+ac+gp,sw=(w-2*ac-2*gp-(n-1)*gp)/n,sy=-h/2+dd+gp,sh=h/2-0.03-sy;
+    for(let i=0;i<n;i++){rr(x0+i*(sw+gp),sy,sw,sh,Math.min(0.05,sw*0.15));plein();}}
+  if(T==='table'){ /* les chaises à dossier, rentrées de 10 cm sous le plateau, réparties sur les deux longueurs */
+    const n=Math.max(1,Math.round((w-0.1)/0.6)),pas=w/n,cw=Math.min(0.42,pas*0.8),cd=0.4;
+    [-1,1].forEach(sd=>{for(let i=0;i<n;i++)chaise(-w/2+pas*(i+0.5),sd*(h/2+cd/2-0.1),sd>0?0:Math.PI,cw,cd);});
+    rr(-w/2,-h/2,w,h,0.03);plein();}
+  if(T==='bureau'){ /* le fauteuil à roulettes (piètement en étoile, assise, accoudoirs, dossier) rentré sous le plateau ; l'écran et le clavier */
+    const fy=h/2+0.12;if(vu(0.04)){leger();for(let k2=0;k2<5;k2++){const a=-Math.PI/2+k2*Math.PI*2/5,ex=Math.cos(a)*0.29,ey=fy+Math.sin(a)*0.29;trait(0,fy,ex,ey);rond(ex,ey,0.022);ctx.stroke();}}
+    fin();rr(-0.23,fy-0.2,0.46,0.42,0.13);plein();[-1,1].forEach(j=>{rr(j*0.255-0.025,fy-0.1,0.05,0.24,0.025);plein(TEINTE);});
+    ctx.beginPath();ctx.moveTo(-0.22,fy+0.17);ctx.quadraticCurveTo(0,fy+0.3,0.22,fy+0.17);ctx.lineTo(0.22,fy+0.24);ctx.quadraticCurveTo(0,fy+0.37,-0.22,fy+0.24);ctx.closePath();plein(TEINTE);
+    rr(-w/2,-h/2,w,h,0.03);plein();
+    if(vu(0.03)){const sw=Math.min(0.56,w*0.42);rr(-sw/2,-h/2+0.09,sw,0.045,0.015);plein(TEINTE);const kw=Math.min(0.42,w*0.4);leger();rr(-kw/2,-h/2+0.24,kw,0.13,0.015);ctx.stroke();}}
   if(T==='escalier'){ctx.lineWidth=px(1.25);ctx.strokeStyle=C;const G=stairGeom(it,L());ctx.fillStyle='rgba(255,255,255,.85)';
     const HC=G.rects.find(r=>r.circle);if(HC){const R=HC.w/2;ctx.beginPath();ctx.arc(0,0,R,0,7);ctx.fill();ctx.stroke();ctx.beginPath();ctx.arc(0,0,0.08,0,7);ctx.stroke();const a0=Math.PI/2,st=HC.tour/HC.n;for(let i=0;i<=HC.n;i++){const a=a0+st*i;ctx.beginPath();ctx.moveTo(Math.cos(a)*0.08,Math.sin(a)*0.08);ctx.lineTo(Math.cos(a)*R,Math.sin(a)*R);ctx.stroke();}
       const rf=R*0.67;ctx.beginPath();ctx.arc(0,0,rf,a0,a0+HC.tour*0.97);ctx.stroke();const ae=a0+HC.tour*0.97,e={x:Math.cos(ae)*rf,y:Math.sin(ae)*rf},tg=ae+Math.PI/2;ctx.beginPath();ctx.moveTo(e.x-Math.cos(tg-0.5)*0.16,e.y-Math.sin(tg-0.5)*0.16);ctx.lineTo(e.x,e.y);ctx.lineTo(e.x-Math.cos(tg+0.5)*0.16,e.y-Math.sin(tg+0.5)*0.16);ctx.stroke();ctx.beginPath();ctx.arc(Math.cos(a0)*rf,Math.sin(a0)*rf,0.05,0,7);ctx.fillStyle=C;ctx.fill();ctx.restore();return;}
