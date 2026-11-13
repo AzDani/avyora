@@ -7359,7 +7359,7 @@ function drawItem(it,isSel,apercu){ /* D62 : apercu = 'apercu' (l'aperçu de pos
     {const pk=q=>q*kU/(z*k),R0=[{x:-w/2,y:-h/2,w,h}];if(isSel)cadreSel(R0,pk(5),pk,true);if(apercu)cadreApercu(R0,pk(5),pk,false);} /* D62 */
     ctx.restore();return;}
   /* D80 · les symboles d'équipements, au niveau d'un plan d'architecte : chaque objet dit ce qu'il est par sa forme (tête
-     de lit et couette rabattue, dossier et accoudoirs, chaises à dossier, fauteuil à roulettes, portes et cintres, feux,
+     de lit et couette rabattue, dossier et accoudoirs, chaises à dossier, fauteuil de bureau, portes et cintres inclinés, feux,
      cuve et égouttoir, robinets et bondes, ailettes, hélices). Toujours UNE encre : le corps en blanc translucide, les
      parties « dures » (tête de lit, dossier, accoudoirs, plaque, écran) en voile d'encre à 7 %, les détails en trait LÉGER
      (0,75 px à 50 %). Un détail ne se dessine que s'il fait au moins ~2 px à l'écran (vu()), comme code() pour le texte :
@@ -7376,6 +7376,8 @@ function drawItem(it,isSel,apercu){ /* D62 : apercu = 'apercu' (l'aperçu de pos
   /* un robinet : le pied (rond) et le bec, de (x,y0) vers (x,y1) */
   const robinet=(x,y0,y1)=>{moy();ctx.lineCap='round';trait(x,y0,x,y1);ctx.lineCap='butt';rond(x,y0,Math.min(0.022,w*0.05));plein();};
   const bonde=(x,y,r=0.018)=>{if(!vu(r*2))return;leger();rond(x,y,r);ctx.stroke();};
+  /* hors du plateau : ce qui est rentré dessous (chaises, fauteuil) ne transparaît pas à travers le blanc translucide */
+  const horsPlateau=f=>{ctx.save();ctx.beginPath();ctx.rect(-w/2-2,-h/2-2,w+4,h+4);ctx.rect(-w/2,-h/2,w,h);ctx.clip('evenodd');f();ctx.restore();};
   if(!['escalier','poutre','poteau','velux','cumulus','wc','canape','table','bureau','lavabo'].includes(T)){rr(-w/2,-h/2,w,h,0.03);ctx.fill();ctx.stroke();}
   if(T==='poutre'){ /* en hauteur : deux rives en tirets, l'axe en trait mixte (plus d'orange, celui des démolitions) */
     ctx.save();ctx.setLineDash([px(4),px(3)]);ctx.lineWidth=px(1.25);ctx.strokeStyle=C;ctx.strokeRect(-w/2,-h/2,w,h);
@@ -7450,9 +7452,9 @@ function drawItem(it,isSel,apercu){ /* D62 : apercu = 'apercu' (l'aperçu de pos
     if(vu(0.03)){leger();trait(-w/2,y0+0.1,w/2-a,y0+0.1);}}
   if(T==='armoire'){ /* la façade et ses portes, la tringle en tirets et les cintres */
     const ep=Math.min(0.035,h*0.07),nP=w>=1.5?3:w>=0.7?2:1;trait(-w/2,h/2-ep,w/2,h/2-ep);for(let i=1;i<nP;i++){const x=-w/2+w*i/nP;trait(x,h/2-ep,x,h/2);}
-    const yt=-ep/2,lc=Math.min(0.42,(h-ep)*0.75);
+    const yt=-ep/2,lc=Math.min(0.36,(h-ep)*0.6);
     if(vu(0.05)){leger();ctx.save();ctx.setLineDash([px(4),px(3)]);trait(-w/2+0.05,yt,w/2-0.05,yt);ctx.restore();}
-    if(vu(0.13,3)){fin();const nb=Math.max(2,Math.round((w-0.24)/0.13)+1);for(let i=0;i<nb;i++){const x=-w/2+0.12+i*(w-0.24)/(nb-1);trait(x,yt-lc/2,x,yt+lc/2);}}}
+    if(vu(0.13,3)){fin();const nb=Math.max(2,Math.round((w-0.24)/0.16)+1);for(let i=0;i<nb;i++){const x=-w/2+0.12+i*(w-0.24)/(nb-1);const dx=lc*0.2;trait(x-dx,yt-lc/2,x+dx,yt+lc/2);}}}
   if(T==='canape'){ /* le dossier et les deux accoudoirs arrondis (voile d'encre), 1 à 3 coussins d'assise */
     const ac=Math.min(0.2,w*0.12),dd=Math.min(0.22,h*0.28),r=Math.min(0.08,ac*0.45);rr(-w/2,-h/2,w,h,r);plein();
     ctx.beginPath();ctx.rect(-w/2+ac,-h/2,w-2*ac,dd);plein(TEINTE);rr(-w/2,-h/2,ac,h,r);plein(TEINTE);rr(w/2-ac,-h/2,ac,h,r);plein(TEINTE);
@@ -7460,12 +7462,11 @@ function drawItem(it,isSel,apercu){ /* D62 : apercu = 'apercu' (l'aperçu de pos
     for(let i=0;i<n;i++){rr(x0+i*(sw+gp),sy,sw,sh,Math.min(0.05,sw*0.15));plein();}}
   if(T==='table'){ /* les chaises à dossier, rentrées de 10 cm sous le plateau, réparties sur les deux longueurs */
     const n=Math.max(1,Math.round((w-0.1)/0.6)),pas=w/n,cw=Math.min(0.42,pas*0.8),cd=0.4;
-    [-1,1].forEach(sd=>{for(let i=0;i<n;i++)chaise(-w/2+pas*(i+0.5),sd*(h/2+cd/2-0.1),sd>0?0:Math.PI,cw,cd);});
+    horsPlateau(()=>[-1,1].forEach(sd=>{for(let i=0;i<n;i++)chaise(-w/2+pas*(i+0.5),sd*(h/2+cd/2-0.1),sd>0?0:Math.PI,cw,cd);}));
     rr(-w/2,-h/2,w,h,0.03);plein();}
-  if(T==='bureau'){ /* le fauteuil à roulettes (piètement en étoile, assise, accoudoirs, dossier) rentré sous le plateau ; l'écran et le clavier */
-    const fy=h/2+0.12;if(vu(0.04)){leger();for(let k2=0;k2<5;k2++){const a=-Math.PI/2+k2*Math.PI*2/5,ex=Math.cos(a)*0.29,ey=fy+Math.sin(a)*0.29;trait(0,fy,ex,ey);rond(ex,ey,0.022);ctx.stroke();}}
-    fin();rr(-0.23,fy-0.2,0.46,0.42,0.13);plein();[-1,1].forEach(j=>{rr(j*0.255-0.025,fy-0.1,0.05,0.24,0.025);plein(TEINTE);});
-    ctx.beginPath();ctx.moveTo(-0.22,fy+0.17);ctx.quadraticCurveTo(0,fy+0.3,0.22,fy+0.17);ctx.lineTo(0.22,fy+0.24);ctx.quadraticCurveTo(0,fy+0.37,-0.22,fy+0.24);ctx.closePath();plein(TEINTE);
+  if(T==='bureau'){ /* le fauteuil (assise, accoudoirs, dossier courbe) rentré sous le plateau ; l'écran et le clavier */
+    const fy=h/2+0.12;horsPlateau(()=>{fin();rr(-0.23,fy-0.2,0.46,0.42,0.13);plein();[-1,1].forEach(j=>{rr(j*0.255-0.025,fy-0.1,0.05,0.24,0.025);plein(TEINTE);});
+    ctx.beginPath();ctx.moveTo(-0.22,fy+0.17);ctx.quadraticCurveTo(0,fy+0.3,0.22,fy+0.17);ctx.lineTo(0.22,fy+0.24);ctx.quadraticCurveTo(0,fy+0.37,-0.22,fy+0.24);ctx.closePath();plein(TEINTE);});
     rr(-w/2,-h/2,w,h,0.03);plein();
     if(vu(0.03)){const sw=Math.min(0.56,w*0.42);rr(-sw/2,-h/2+0.09,sw,0.045,0.015);plein(TEINTE);const kw=Math.min(0.42,w*0.4);leger();rr(-kw/2,-h/2+0.24,kw,0.13,0.015);ctx.stroke();}}
   if(T==='escalier'){ctx.lineWidth=px(1.25);ctx.strokeStyle=C;const G=stairGeom(it,L());ctx.fillStyle='rgba(255,255,255,.85)';
