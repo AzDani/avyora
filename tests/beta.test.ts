@@ -161,7 +161,7 @@ describe("lib/beta : la date de fin", () => {
 /* ─── 2. Les droits ──────────────────────────────────────────────────────────── */
 
 const GRATUIT = { id: "u-gratuit", email: "camille@exemple.fr", user_metadata: { nom: "Camille" }, app_metadata: {}, created_at: "2026-10-01T09:00:00.000Z", email_confirmed_at: "2026-10-01T09:01:00.000Z" };
-const ABONNE = { id: "u-pro", email: "alex@exemple.fr", user_metadata: { nom: "Alex" }, app_metadata: { plan: "pro" }, created_at: "2026-09-01T09:00:00.000Z", email_confirmed_at: "2026-09-01T09:01:00.000Z" };
+const ABONNE = { id: "u-pro", email: "alex@exemple.fr", user_metadata: { nom: "Alex" }, app_metadata: { plan: "pro", stripe_customer_id: "cus_TEMOIN" }, created_at: "2026-09-01T09:00:00.000Z", email_confirmed_at: "2026-09-01T09:01:00.000Z" };
 
 describe("lib/auth : estPro pendant et après la bêta", () => {
   async function auth() {
@@ -244,7 +244,7 @@ const UTILISATEURS: Record<Utilisateur, unknown> = {
   anonyme: null,
   /* adresse confirmée (sans quoi la bêta ne donne rien), mais APRÈS la fin : pas membre fondateur, comme avant */
   gratuit: { id: "u-gratuit", email: "camille@exemple.fr", user_metadata: { nom: "Camille" }, app_metadata: {}, email_confirmed_at: "2027-01-15T09:00:00.000Z" },
-  pro: { id: "u-pro", email: "alex@exemple.fr", user_metadata: { nom: "Alex" }, app_metadata: { plan: "pro" }, email_confirmed_at: "2027-01-15T09:00:00.000Z" },
+  pro: { id: "u-pro", email: "alex@exemple.fr", user_metadata: { nom: "Alex" }, app_metadata: { plan: "pro", stripe_customer_id: "cus_TEMOIN" }, email_confirmed_at: "2027-01-15T09:00:00.000Z" },
   admin: { id: "u-admin", email: "admin@exemple.fr", user_metadata: {}, app_metadata: {}, email_confirmed_at: "2027-01-15T09:00:00.000Z" },
   /* un inscrit de la bêta : adresse confirmée avant la fin, donc membre fondateur */
   fondateur: { id: "u-fondateur", email: "sam@exemple.fr", user_metadata: { nom: "Sam" }, app_metadata: {}, created_at: "2026-10-12T08:00:00.000Z", email_confirmed_at: "2026-10-12T08:01:00.000Z" },
@@ -499,7 +499,7 @@ describe("Pendant la bêta, un anonyme qui touche une fonction Pro va créer son
     const creer = vi.fn(async () => ({ url: "https://checkout.stripe.test/s" }));
     const route = async () => {
       vi.resetModules();
-      vi.doMock("@/lib/auth", () => ({ getUser: async () => UTILISATEURS.gratuit, estAbonne: () => false }));
+      vi.doMock("@/lib/auth", () => ({ getUser: async () => UTILISATEURS.gratuit, estAbonne: () => false, aUnAbonnementStripe: () => false }));
       vi.doMock("@/lib/stripe", () => ({ getStripe: () => ({ checkout: { sessions: { create: creer } } }), priceIdForPlan: () => "price_test" }));
       const { POST } = await import("@/app/api/stripe/checkout/route");
       return POST(new Request("https://getavyora.fr/api/stripe/checkout", { method: "POST", body: JSON.stringify({ plan: "mensuel" }) }));

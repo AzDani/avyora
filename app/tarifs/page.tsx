@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import type { User } from "@supabase/supabase-js";
 import BoutonAbo from "@/components/BoutonAbo";
 import BoutonCheckout from "@/components/BoutonCheckout";
-import { getUser, estPro, estAbonne } from "@/lib/auth";
+import { getUser, estPro, estAbonne, aUnAbonnementStripe } from "@/lib/auth";
 import { PAGE_GESTION_ABONNEMENT } from "@/lib/abonnement";
 import { getLocale, getT } from "@/lib/i18n/server";
 import { dict, type Dict } from "@/lib/i18n/dictionaries";
@@ -84,6 +84,8 @@ export default async function TarifsPage({
   // Un abonnement en cours (plan Stripe, accès manuel) : plus de bouton « S'abonner », qui créait un 2e abonnement
   // sur le même client Stripe ; la route le refuse aussi (app/api/stripe/checkout).
   const abonne = estAbonne(user);
+  // « Gérer mon abonnement » seulement pour un vrai abonnement Stripe ; un admin ou un accès manuel n'a rien à gérer.
+  const abonnementStripe = aUnAbonnementStripe(user);
   // Un visiteur qui revient d'une inscription arrive avec le plan qu'il avait choisi AVANT de
   // créer son compte (components/BoutonAbo.tsx pose ce paramètre). On met SON plan en avant
   // plutôt que celui de la maison : il retrouve son choix au lieu de devoir le refaire.
@@ -182,8 +184,10 @@ export default async function TarifsPage({
                   remise sur un prix fictif. Ne pas réintroduire d'ancrage sans prix réel à l'appui. */}
               <div className="mt-2 text-xs text-faint">{p.note}</div>
               <div className="mt-5">
-                {abonne ? (
+                {abonnementStripe ? (
                   <Link href={PAGE_GESTION_ABONNEMENT} className="btn btn-outline w-full justify-center py-2.5">{t.gererAbo}</Link>
+                ) : abonne ? (
+                  <p className="text-center text-sm font-medium text-positive">{t.accesProActif}</p>
                 ) : user ? (
                   <BoutonCheckout plan={key} nature={nature} />
                 ) : (
@@ -280,6 +284,8 @@ function TarifsBeta({ user, t: tr, locale, source, nature }: {
   const b = tr.beta;
   const l = libellesBeta(locale);
   const abonne = !!user && estAbonne(user);
+  // Le message « Tu as un abonnement en cours » : seulement pour un vrai abonnement Stripe (pas un admin).
+  const abonnementStripe = aUnAbonnementStripe(user);
   const fondateur = estMembreFondateur(user);
   const intention =
     source === "editeur-plan" ? "/plan" : source === "choix-plan" ? "/plan?type=renovation" : nature ? lienDetaillePro(nature) : undefined;
@@ -312,7 +318,7 @@ function TarifsBeta({ user, t: tr, locale, source, nature }: {
         ) : (
           <p className="rounded-field border border-positive/25 bg-positive-soft px-4 py-3 text-sm text-positive">
             {/* Un abonné payant garde son abonnement (et sa gestion, portail Stripe) : on ne lui dit pas « jusqu'au 31 décembre ». */}
-            {abonne ? (
+            {abonnementStripe ? (
               <>{b.tarifsAbonneAvant}<Link href="/mon-espace/compte" className="font-semibold underline">{b.tarifsAbonneLien}</Link></>
             ) : (
               b.tarifsConnecte(l.fin)

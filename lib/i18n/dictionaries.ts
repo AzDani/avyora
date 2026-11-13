@@ -137,6 +137,8 @@ const fr = {
     aboAnnule: "Paiement annulé — rien n'a été débité. Tu peux reprendre quand tu veux.",
     /* Un abonné en cours ne voit plus « S'abonner » : il gère son abonnement (portail Stripe, Mon compte). */
     gererAbo: "Gérer mon abonnement",
+    /* Admin ou accès manuel (PRO_EMAILS) : les droits Pro, sans abonnement Stripe à gérer. */
+    accesProActif: "Ton accès Pro est déjà actif",
     inclus: "Inclus dans Pro",
     features: [
       "Estimateur détaillé — les 200 postes, au poste près",
@@ -658,6 +660,7 @@ const en: Dict = {
     apercuAlt: "Example of a detailed AVYORA estimate report",
     aboAnnule: "Payment canceled — nothing was charged. You can pick up where you left off.",
     gererAbo: "Manage my subscription",
+    accesProActif: "Your Pro access is already active",
     inclus: "Included in Pro",
     features: [
       "Detailed estimator — all 200 items, line by line",

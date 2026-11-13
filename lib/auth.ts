@@ -47,6 +47,18 @@ export async function getAdmin() {
  * (accès manuel) → admins Pro d'office. Sans rien → free (fail-safe). Sert aussi à reconnaître, pendant
  * la bêta, celui qui a un abonnement à gérer (Mon compte, Tarifs).
  */
+/**
+ * Un abonnement Stripe à GÉRER (portail de résiliation) : plan payant posé par le webhook ET client Stripe connu.
+ * Différent d'`estAbonne`, qui compte aussi les admins et l'accès manuel (PRO_EMAILS) : eux ont les droits Pro sans
+ * rien à résilier. Revue du 12/11/2026 : le compte admin voyait « AVYORA Pro · Gérer / résilier mon abonnement » avec
+ * un vieil identifiant client des tests Stripe, et le portail répondait une erreur.
+ */
+export function aUnAbonnementStripe(user: User | null): boolean {
+  if (!user) return false;
+  const m = (user.app_metadata ?? {}) as { plan?: string; stripe_customer_id?: unknown };
+  return m.plan === "pro" && typeof m.stripe_customer_id === "string" && m.stripe_customer_id.startsWith("cus_");
+}
+
 export function estAbonne(user: User | null): boolean {
   if (!user) return false;
   if (estAdmin(user)) return true;

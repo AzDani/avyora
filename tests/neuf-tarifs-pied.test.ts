@@ -22,7 +22,7 @@ async function charger(neuf: boolean, locale: Locale) {
     getLocale: async () => locale,
     getT: async () => ({ locale, t: dict(locale) }),
   }));
-  vi.doMock("@/lib/auth", () => ({ getUser: async () => null, estPro: () => false, estAbonne: () => false }));
+  vi.doMock("@/lib/auth", () => ({ getUser: async () => null, estPro: () => false, estAbonne: () => false, aUnAbonnementStripe: () => false }));
   // Le layout : polices, scripts tiers et navigation connectée hors sujet ici.
   vi.doMock("next/font/google", () => ({ Geist: () => ({ variable: "" }), Geist_Mono: () => ({ variable: "" }) }));
   vi.doMock("next/script", () => ({ default: vide }));

@@ -30,7 +30,7 @@ const MAINTENANT = new Date("2026-10-12T10:00:00.000Z");
 const UTILISATEURS: Record<Utilisateur, unknown> = {
   anonyme: null,
   gratuit: { id: "u-gratuit", email: "camille@exemple.fr", user_metadata: { nom: "Camille" }, app_metadata: {} },
-  pro: { id: "u-pro", email: "alex@exemple.fr", user_metadata: { nom: "Alex" }, app_metadata: { plan: "pro" } },
+  pro: { id: "u-pro", email: "alex@exemple.fr", user_metadata: { nom: "Alex" }, app_metadata: { plan: "pro", stripe_customer_id: "cus_TEMOIN" } },
   admin: { id: "u-admin", email: "admin@exemple.fr", user_metadata: {}, app_metadata: {} },
 };
 const estAdmin = (u: unknown) => (u as { email?: string } | null)?.email === "admin@exemple.fr";
@@ -81,7 +81,7 @@ async function charger({ plans, locale, user = "anonyme", projets = [], menuOuve
     getLocale: async () => locale,
     getT: async () => ({ locale, t: dict(locale) }),
   }));
-  vi.doMock("@/lib/auth", () => ({ getUser: async () => UTILISATEURS[user], estPro, estAbonne: estPro, estAdmin }));
+  vi.doMock("@/lib/auth", () => ({ getUser: async () => UTILISATEURS[user], estPro, estAbonne: estPro, aUnAbonnementStripe: estPro, estAdmin }));
   const lignes = projets.map((k) => PROJETS[k]);
   vi.doMock("@/lib/data/projects", () => ({
     listProjets: async (archived: boolean) => lignes.filter((p) => p.archived === archived),

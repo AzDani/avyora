@@ -80,7 +80,7 @@ describe("Stripe : l'adresse de retour porte la nature (liste fermée)", () => {
   async function checkout(corps: unknown) {
     vi.resetModules();
     const appels: Record<string, unknown>[] = [];
-    vi.doMock("@/lib/auth", () => ({ getUser: async () => ({ id: "u-1", email: "camille@exemple.fr", app_metadata: {} }), estAbonne: () => false }));
+    vi.doMock("@/lib/auth", () => ({ getUser: async () => ({ id: "u-1", email: "camille@exemple.fr", app_metadata: {} }), estAbonne: () => false, aUnAbonnementStripe: () => false }));
     vi.doMock("@/lib/stripe", () => ({
       priceIdForPlan: (p: string) => (p === "annuel" ? "price_annuel" : null),
       getStripe: () => ({ checkout: { sessions: { create: async (p: Record<string, unknown>) => { appels.push(p); return { url: "https://checkout.stripe.test/s" }; } } } }),
@@ -123,7 +123,7 @@ describe("/tarifs : la nature lue de la source (ou de ?nature=)", () => {
     await avecNeuf(neuf);
     vi.doMock("@/lib/i18n/server", () => ({ getLocale: async () => "fr", getT: async () => ({ locale: "fr", t: dict("fr") }) }));
     const pro = (u: { app_metadata?: { plan?: string } } | null) => u?.app_metadata?.plan === "pro";
-    vi.doMock("@/lib/auth", () => ({ getUser: async () => user, estPro: pro, estAbonne: pro }));
+    vi.doMock("@/lib/auth", () => ({ getUser: async () => user, estPro: pro, estAbonne: pro, aUnAbonnementStripe: pro }));
     const Tarifs = (await import("@/app/tarifs/page")).default;
     return renderToStaticMarkup((await Tarifs({ searchParams: Promise.resolve(sp) })) as ReactElement);
   }

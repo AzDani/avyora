@@ -46,7 +46,7 @@ async function charger({ plans, locale, user = "anonyme", neuf = true, menuOuver
     return { ...m, FEATURES: { ...m.FEATURES, neuf, plans } };
   });
   vi.doMock("@/lib/i18n/server", () => ({ getLocale: async () => locale, getT: async () => ({ locale, t: dict(locale) }) }));
-  vi.doMock("@/lib/auth", () => ({ getUser: async () => UTILISATEURS[user], estPro, estAbonne: estPro, estAdmin }));
+  vi.doMock("@/lib/auth", () => ({ getUser: async () => UTILISATEURS[user], estPro, estAbonne: estPro, aUnAbonnementStripe: estPro, estAdmin }));
   vi.doMock("next/navigation", async (orig) => {
     const m = await orig<typeof import("next/navigation")>();
     const routeur = { push: vide, replace: vide, refresh: vide, back: vide, forward: vide, prefetch: vide };

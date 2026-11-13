@@ -29,6 +29,7 @@ describe("/api/stripe/checkout : pas de deuxième abonnement", () => {
     vi.doMock("@/lib/auth", () => ({
       getUser: async () => ({ id: "u-1", email: "camille@exemple.fr", app_metadata: o.client ? { stripe_customer_id: o.client } : {} }),
       estAbonne: () => !!o.abonne,
+      aUnAbonnementStripe: () => !!o.abonne,
     }));
     vi.doMock("@/lib/stripe", () => ({
       priceIdForPlan: () => "price_test",

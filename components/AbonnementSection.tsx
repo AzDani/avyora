@@ -70,7 +70,7 @@ export default function AbonnementSection({ isPro, beta, fondateur = false }: { 
         window.location.href = data.url as string; // portail Stripe (une fois branché)
         return;
       }
-      setMessage(data?.message || s.indispo);
+      setMessage(data?.message || data?.error || s.indispo);
     } catch {
       setMessage(s.reseau);
     } finally {

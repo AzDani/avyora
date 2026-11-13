@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getUser, estAbonne } from "@/lib/auth";
+import { getUser, aUnAbonnementStripe } from "@/lib/auth";
 import { betaActive, estMembreFondateur, libellesBeta } from "@/lib/beta";
 import { PastilleFondateur } from "@/components/BandeauBeta";
 import CompteActions from "@/components/CompteActions";
@@ -62,7 +62,7 @@ export default async function ComptePage() {
 
       {/* L'abonnement, pas les droits : pendant la bêta, un inscrit est Pro sans rien avoir à gérer ni résilier. */}
       <AbonnementSection
-        isPro={estAbonne(user)}
+        isPro={aUnAbonnementStripe(user)}
         {...(betaActive() ? { beta: { fin: libelles.fin } } : {})}
         fondateur={fondateur}
       />
