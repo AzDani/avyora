@@ -1,4 +1,5 @@
 import { listInscrits, typePrincipal, labelTues } from "@/lib/data/admin";
+import { afficherPortable } from "@/lib/telephone";
 import InscritsTable, { type InscritRow } from "@/components/admin/InscritsTable";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +18,7 @@ export default async function AdminInscrits() {
       age: i.profil?.age ?? "",
       region: i.profil?.region ?? "",
       canal: i.profil?.canal ?? "",
+      telephone: i.profil?.telephone ? afficherPortable(i.profil.telephone) : "",
       plan: i.plan,
       nbProjets: i.projets.length,
     };

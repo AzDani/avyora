@@ -807,11 +807,12 @@ describe("Témoins · pendant la bêta (12/10/2026)", () => {
         const page = await r.rendre(await Layout({ children: createElement("p", null, "contenu") }));
         const tete = entre(page, "<header", "</header>");
         expect(tete).not.toContain(dict(locale).nav.passerPro);
-        // Un visiteur sans compte : « Créer mon compte gratuit » dans l'en-tête, vers l'inscription de la bêta (source `entete`).
+        // Un visiteur sans compte : « Créer mon compte » dans l'en-tête (« gratuit » retiré faute de place depuis l'onglet
+        // « Accompagnement », 16/11/2026 ; il reste au menu et au bandeau), vers l'inscription de la bêta (source `entete`).
         const appel = `href="${lienInscriptionBeta(undefined, "entete")}"`;
         if (user === "anonyme") {
           expect(tete).toContain(appel);
-          expect(tete).toContain(`>${esc(dict(locale).beta.creerCompte)}</a>`);
+          expect(tete).toContain(`>${esc(dict(locale).boutons.creerCompte)}</a>`);
         } else expect(tete).not.toContain(appel);
         expect(tete).toMatchSnapshot(`en-tête bêta ${locale} ${user}`);
       }

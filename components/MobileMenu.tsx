@@ -9,6 +9,7 @@ import { I18N_ENABLED } from "@/lib/i18n/config";
 import { FEATURES } from "@/lib/features";
 import { IconePlan, VITRINE_PLAN } from "@/components/plans/OngletPlan";
 import { clicPlan } from "@/lib/plans/mesure";
+import { IconeAccompagnement, PAGE_ACCOMPAGNEMENT } from "@/components/accompagnement/OngletAccompagnement";
 import { betaActive, lienInscriptionBeta } from "@/lib/beta";
 
 /**
@@ -91,12 +92,23 @@ export default function MobileMenu({ isLoggedIn, prenom, isAdmin, isPro }: { isL
                 <span className="rounded-full bg-brand-700 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-white">{t.nav.planPastille}</span>
               </Link>
             )}
+            {/* Le conseil de Daniel (16/11/2026) : remonté juste sous le plan, une ligne contrastée avec sa mention, pas un
+                deuxième bouton plein. */}
+            <Link
+              href={PAGE_ACCOMPAGNEMENT}
+              onClick={close}
+              data-onglet-accompagnement=""
+              className="mb-1 flex items-center gap-2 rounded-lg bg-brand-50 px-3 py-2.5 text-sm font-semibold text-brand-700 transition-colors hover:bg-brand-100"
+            >
+              <IconeAccompagnement className="shrink-0" />
+              {/* La mention sur une 2ᵉ ligne : en pastille, elle se tassait sur trois lignes dans le panneau (mesuré). */}
+              <span className="flex-1 leading-tight">
+                {t.nav.accompagnement}
+                <span className="mt-0.5 block text-[11.5px] font-medium text-brand-700/80">{t.nav.accompagnementPastille}</span>
+              </span>
+            </Link>
             <Link href="/projets" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-surface-2">
               {t.nav.projets}
-            </Link>
-            {/* Le conseil de Daniel : une ligne simple, pas un deuxième bouton plein. */}
-            <Link href="/accompagnement-travaux" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-surface-2">
-              {t.nav.accompagnement}
             </Link>
             <div className="my-1.5 border-t border-line" />
             {isLoggedIn ? (

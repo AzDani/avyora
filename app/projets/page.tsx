@@ -6,6 +6,9 @@ import ListeProjets, { type ProjetCarte, type PlansListe } from "@/components/Li
 import ClaimDraft from "@/components/ClaimDraft";
 import ClaimPlan from "@/components/plans/ClaimPlan";
 import ProUpsell from "@/components/ProUpsell";
+import RappelPortable from "@/components/RappelPortable";
+import { COOKIE_RAPPEL_PORTABLE } from "@/lib/telephone";
+import { cookies } from "next/headers";
 import { getUser, estPro } from "@/lib/auth";
 import { getLocale } from "@/lib/i18n/server";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
@@ -107,12 +110,25 @@ function euros(n: number, locale: Locale): string {
   return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
 }
 
+/** Un cookie de préférence ; hors requête (rendu de test), aucun. */
+async function lireCookie(nom: string): Promise<string | undefined> {
+  try {
+    return (await cookies()).get(nom)?.value;
+  } catch {
+    return undefined;
+  }
+}
+
 export default async function ProjetsPage() {
   const [user, actifs, archivesRows, locale] = await Promise.all([getUser(), listProjets(false), listProjets(true), getLocale()]);
   const s = TR[locale];
   const isPro = !!user && estPro(user);
   // Bêta gratuite (lib/beta.ts) : un compte créé avant la fin de la bêta porte la pastille « Membre fondateur ».
   const fondateur = estMembreFondateur(user);
+  const sansPortable =
+    !!user &&
+    !(user.user_metadata?.profil as { telephone?: string } | undefined)?.telephone &&
+    !(await lireCookie(COOKIE_RAPPEL_PORTABLE));
   const plans = await plansDeLaListe([...actifs, ...archivesRows].map((p) => String(p.id)), locale);
   const projets = actifs.map((p) => versCarte(p, plans?.liens));
   const archives = archivesRows.map((p) => versCarte(p, plans?.liens));
@@ -160,6 +176,9 @@ export default async function ProjetsPage() {
           </p>
         </header>
       )}
+
+      {/* Inscrit sans portable (compte d'avant le champ, ou « Passer » au questionnaire) : le rappel, saisie sur place. */}
+      {sansPortable && <RappelPortable locale={locale} />}
 
       {!isPro && <ProUpsell />}
 

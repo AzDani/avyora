@@ -13,6 +13,8 @@ export type InscritRow = {
   age: string;
   region: string;
   canal: string;
+  /** Portable du questionnaire de bienvenue, déjà mis en forme (+33 6 12 34 56 78), ou "". */
+  telephone: string;
   plan: "admin" | "pro" | "free";
   nbProjets: number;
 };
@@ -24,6 +26,17 @@ const FILTRES: [string, string][] = [
   ["pro", "Pros"],
   ["mois", "Ce mois"],
 ];
+
+/** La recherche par portable : une saisie faite surtout de chiffres (au moins 3, ni lettre ni @), écrite à la française
+ *  (06…, 0033…) ou à l'internationale (+33 6…), comparée aux chiffres du numéro affiché (+33 6 12 34 56 78). */
+export function telCorrespond(tel: string, q: string): boolean {
+  if (!tel || /[a-z@]/i.test(q)) return false;
+  let d = q.replace(/\D/g, "");
+  if (d.length < 3) return false;
+  if (d.startsWith("00")) d = d.slice(2);
+  else if (/^0[1-9]/.test(d)) d = "33" + d.slice(1);
+  return tel.replace(/\D/g, "").includes(d);
+}
 
 const fdate = (s: string) => new Date(s).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "2-digit" });
 
@@ -73,7 +86,7 @@ export default function InscritsTable({ rows }: { rows: InscritRow[] }) {
     return rowsState.filter((r) => {
       if (f === "mois" && +new Date(r.createdAt) < j30) return false;
       if (["investisseur", "particulier", "pro"].includes(f) && r.type !== f) return false;
-      if (ql && !(`${r.email} ${r.username} ${r.region} ${r.canal}`.toLowerCase().includes(ql))) return false;
+      if (ql && !(`${r.email} ${r.username} ${r.region} ${r.canal}`.toLowerCase().includes(ql) || telCorrespond(r.telephone, ql))) return false;
       return true;
     });
   }, [rowsState, q, f]);
@@ -84,7 +97,7 @@ export default function InscritsTable({ rows }: { rows: InscritRow[] }) {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Rechercher (email, pseudo, région, canal…)"
+          placeholder="Rechercher (email, pseudo, portable, région, canal…)"
           className="min-w-[180px] flex-1 rounded-lg border border-line-strong bg-surface-2 px-3 py-2 text-[13px] outline-none focus:border-brand-600"
         />
         {FILTRES.map(([k, l]) => (
@@ -102,14 +115,14 @@ export default function InscritsTable({ rows }: { rows: InscritRow[] }) {
         <table className="w-full border-collapse text-[13px]">
           <thead>
             <tr className="text-[11px] uppercase tracking-[0.05em] text-faint">
-              {["Inscrit", "Pseudo", "Type", "Âge", "Région", "Canal", "Abo", "Projets", "Inscrit le"].map((h) => (
+              {["Inscrit", "Pseudo", "Portable", "Type", "Âge", "Région", "Canal", "Abo", "Projets", "Inscrit le"].map((h) => (
                 <th key={h} className="whitespace-nowrap border-b border-line px-4 py-3 text-left font-semibold">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
-              <tr><td colSpan={9} className="px-4 py-10 text-center text-muted">Aucun inscrit ne correspond.</td></tr>
+              <tr><td colSpan={10} className="px-4 py-10 text-center text-muted">Aucun inscrit ne correspond.</td></tr>
             ) : filtered.map((r) => (
               <tr
                 key={r.id}
@@ -118,6 +131,11 @@ export default function InscritsTable({ rows }: { rows: InscritRow[] }) {
               >
                 <td className="px-4 py-3"><div className="font-semibold text-ink">{r.email}</div></td>
                 <td className="whitespace-nowrap px-4 py-3">{r.username ? <span className="font-medium text-ink">@{r.username}</span> : <span className="text-faint">—</span>}</td>
+                <td className="num whitespace-nowrap px-4 py-3" onClick={(e) => r.telephone && e.stopPropagation()}>
+                  {r.telephone ? (
+                    <a href={`tel:${r.telephone.replace(/\s/g, "")}`} className="font-medium text-ink underline-offset-2 hover:text-brand-700 hover:underline" title="Appeler">{r.telephone}</a>
+                  ) : <span className="text-faint">—</span>}
+                </td>
                 <td className="px-4 py-3"><Pill tone={r.type}>{r.typeLabel}</Pill></td>
                 <td className="num whitespace-nowrap px-4 py-3">{r.age || "—"}</td>
                 <td className="whitespace-nowrap px-4 py-3">{r.region || "—"}</td>

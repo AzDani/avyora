@@ -12,8 +12,7 @@ export async function AuthNav() {
   if (!user) {
     /* Un visiteur sans compte voyait seulement « Connexion » : l'offre du moment (pendant la bêta, tout AVYORA offert
        avec un compte, lib/beta.ts) passe par l'inscription, d'où ce bouton secondaire (contour : « Nouveau projet » reste
-       le seul bouton plein). Il n'apparaît qu'à partir de lg : entre md et lg, l'en-tête avec l'onglet « Plan 3D » est
-       déjà plein, et le menu (sous md) porte la même ligne. */
+       le seul bouton plein). Il n'apparaît qu'à partir de lg (le menu, en dessous, porte la même ligne). */
     const beta = betaActive();
     return (
       <>
@@ -21,7 +20,9 @@ export async function AuthNav() {
           href={beta ? lienInscriptionBeta(undefined, "entete") : "/inscription"}
           className="hidden whitespace-nowrap rounded-lg border border-white/25 px-3 py-1.5 font-medium text-white transition-colors hover:bg-white/10 lg:inline-flex"
         >
-          {beta ? t.beta.creerCompte : t.boutons.creerCompte}
+          {/* Le mot « gratuit » reste dans le menu, le bandeau bêta et la pastille du plan : dans l'en-tête, la place
+              manquait depuis l'onglet « Accompagnement » (16/11/2026). */}
+          {t.boutons.creerCompte}
         </Link>
         <Link
           href="/connexion"
@@ -66,7 +67,7 @@ export async function AuthNav() {
       )}
       <Link
         href="/mon-espace/compte"
-        className="hidden max-w-[10rem] items-center gap-1.5 truncate rounded-lg px-3 py-1.5 text-sm text-indigo-200/90 transition-colors hover:bg-white/10 hover:text-white sm:inline-flex"
+        className={"hidden " + (compact ? "max-w-[8.5rem]" : "max-w-[10rem]") + " items-center gap-1.5 truncate rounded-lg px-3 py-1.5 text-sm text-indigo-200/90 transition-colors hover:bg-white/10 hover:text-white sm:inline-flex"}
         title={t.nav.monCompte}
         aria-label={compact ? `${t.nav.monCompte} · ${prenom}` : undefined}
       >
@@ -89,10 +90,11 @@ export async function AuthNav() {
         >
           {compact ? (
             <>
-              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="shrink-0 lg:hidden">
+              {/* Icône seule à toutes les largeurs depuis l'onglet « Accompagnement » (16/11/2026) : le nom reste dans
+                  aria-label et title. */}
+              <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true" className="shrink-0">
                 <path d="M6.5 2.5H4a1.5 1.5 0 0 0-1.5 1.5v8A1.5 1.5 0 0 0 4 13.5h2.5M10.5 11 13.5 8l-3-3M13.5 8H6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <span className="hidden lg:inline">{t.nav.deconnexion}</span>
             </>
           ) : (
             t.nav.deconnexion

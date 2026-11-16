@@ -136,26 +136,36 @@ describe("C9 · onglet « Plan 3D » de l'en-tête desktop, et pied de page", ()
         const nav = apres.header.slice(apres.header.indexOf(`<nav aria-label="${t.navPrincipale}"`));
         expect(nav.indexOf("data-onglet-plan")).toBeLessThan(nav.indexOf('href="/projets"'));
         expect(nav.indexOf("<a")).toBe(nav.indexOf("<a data-onglet-plan"));
-        /* le reste de l'en-tête dit les mêmes mots, dans le même ordre (seule la mise en page compacte change) */
-        expect(texte(retirerUne(apres.header, ONGLET))).toBe(texte(avant.header));
+        /* le reste de l'en-tête dit les mêmes mots, dans le même ordre (seule la mise en page compacte change) ; depuis
+           l'onglet « Accompagnement » (16/11/2026), FR · EN et le mot « Déconnexion » (icône seule) en sont sortis :
+           ce qui reste (sans les deux onglets, l'interrupteur éteint n'a ni l'un ni l'autre) est une sous-suite de l'en-tête
+           interrupteur éteint. */
+        const mots = (h: string) => texte(h).split("|").map((m) => m.trim()).filter(Boolean);
+        const reste = mots(retirerUne(retirerUne(apres.header, ONGLET), /<a data-onglet-accompagnement=""[\s\S]*?<\/a>/));
+        const ref = mots(avant.header);
+        let k = 0;
+        for (const m of ref) if (m === reste[k]) k++;
+        expect(k, reste.join(" | ")).toBe(reste.length);
+        expect(ref.filter((m) => !reste.includes(m)).every((m) => ["FR", "EN", "·", t.deconnexion].includes(m))).toBe(true);
       }
     }
   });
 
-  it("allumé : la largeur (mesurée à 640, 768 et 1 024 px) — nav inline dès md, menu en dessous ; prénom en icône sous xl, Admin et Déconnexion sous lg, langue au pied entre md et lg", async () => {
+  it("allumé : la largeur (mesurée à 1 024 et 1 280 px avec l'onglet « Accompagnement ») — nav inline dès lg, menu en dessous ; prénom en icône sous xl, Déconnexion en icône, langue au pied", async () => {
     for (const locale of LOCALES) {
       const t = dict(locale).nav;
       for (const user of ["anonyme", "gratuit", "admin"] as const) {
         const { header } = await layout({ plans: true, locale, user });
-        expect(header).toContain(`<nav aria-label="${t.navPrincipale}" class="hidden items-center gap-1 text-sm md:flex">`); // traduit (revue anglais, constat 128)
-        expect(header).toContain('<div class="md:hidden">');
-        expect(header).toMatch(/<span class="hidden items-center lg:inline-flex"><span class="mx-1 h-4 w-px bg-white\/15" aria-hidden="true"><\/span><div class="inline-flex/);
+        expect(header).toContain(`<nav aria-label="${t.navPrincipale}" class="hidden items-center gap-1 text-sm lg:flex">`); // traduit (revue anglais, constat 128)
+        expect(header).toContain('<div class="lg:hidden">');
+        expect(header).not.toContain('role="group" aria-label="Language"'); // FR · EN : au pied de page et dans le menu
+        expect(header).toContain(`data-onglet-accompagnement="" class="inline-flex shrink-0`);
         if (user === "anonyme") continue;
         const prenom = user === "gratuit" ? "Camille" : "admin";
         expect(header).toContain(`aria-label="${t.monCompte} · ${prenom}"`);
         expect(header).toContain(`<span class="hidden truncate xl:inline">${prenom}</span>`);
         expect(header).toContain(`aria-label="${t.deconnexion}"`);
-        expect(header).toContain(`<span class="hidden lg:inline">${t.deconnexion}</span>`);
+        expect(header).not.toContain(`>${t.deconnexion}</span>`);
         if (user === "admin") expect(header).toContain('<span class="hidden lg:inline">Admin</span>');
       }
     }

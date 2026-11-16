@@ -24,6 +24,9 @@ const fr = {
     navPrincipale: "Navigation principale",
     /* Menu mobile : la ligne vers /accompagnement-travaux. */
     accompagnement: "Accompagnement travaux",
+    /* L'onglet de l'en-tête (desktop, place comptée) et la mention sous la ligne du menu. */
+    accompagnementCourt: "Accompagnement",
+    accompagnementPastille: "Premier appel offert",
   },
   /**
    * Accompagnement travaux : les lignes discrètes posées là où le visiteur a un budget en main
@@ -569,6 +572,8 @@ const en: Dict = {
     planPastille: "Free",
     navPrincipale: "Main navigation",
     accompagnement: "Renovation advice",
+    accompagnementCourt: "Advice",
+    accompagnementPastille: "Free first call",
   },
   accompagnement: {
     rapideTexte: "Want a professional opinion on this budget?",

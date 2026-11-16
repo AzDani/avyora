@@ -189,16 +189,48 @@ const NEUF_BAND = `
 const NEUF_BAND_EN = `
   <style>.av-home a.strip-neuf{display:block;margin-top:34px;text-decoration:none;color:inherit;background:var(--surface);border:1.5px solid var(--brand);box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s}.av-home a.strip-neuf:hover{transform:translateY(-2px);box-shadow:0 14px 30px -14px rgba(79,70,229,.45)}.av-home a.strip-neuf:focus-visible{outline:3px solid var(--brand-200);outline-offset:3px}.av-home a.strip-neuf .go{display:inline-block;margin-top:14px;padding:10px 18px;border-radius:999px;background:var(--brand);color:#fff;font-weight:600;font-size:14px}@media (prefers-reduced-motion:reduce){.av-home a.strip-neuf{transition:none}.av-home a.strip-neuf:hover{transform:none}}</style><a href="/estimation-construction-maison" class="strip strip-neuf"><div class="t">Building a new home?</div><div class="d">Estimate your new house, from building permit to handover: studies, taxes, construction and utility hookups. Free, in 4 questions.</div><span class="go">Estimate my build →</span></a>`;
 
-/* Accompagnement travaux (décision du 16/11/2026) : une bande juste avant la section finale, vers la page de conseil
-   de Daniel. Lien vers l'URL canonique (page indexable : pas de `?src=`). Ni prix ni emoji. Son style voyage avec elle
-   (HOME_CSS ne bouge pas), et aucune des chaînes que lib/accueil-beta.ts remplace n'est touchée. */
-const ACCOMP_STYLE = `<style>.av-home a.strip-accomp{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 24px;text-align:left;text-decoration:none;color:inherit;background:var(--surface);border:1px solid var(--line-strong);box-shadow:var(--shadow);margin-top:0;transition:transform .15s,box-shadow .15s,border-color .15s}.av-home a.strip-accomp:hover{transform:translateY(-2px);border-color:var(--brand-200);box-shadow:0 14px 30px -14px rgba(79,70,229,.35)}.av-home a.strip-accomp:focus-visible{outline:3px solid var(--brand-200);outline-offset:3px}.av-home a.strip-accomp .d{margin-inline:0}.av-home a.strip-accomp .go{display:inline-flex;align-items:center;min-height:44px;padding:10px 18px;border-radius:999px;background:var(--brand-weak);color:var(--brand-700);font-weight:600;font-size:14px}@media (prefers-reduced-motion:reduce){.av-home a.strip-accomp{transition:none}.av-home a.strip-accomp:hover{transform:none}}</style>`;
+/* Accompagnement travaux : d'abord une bande en bas de page (16/11/2026), puis, Dani ayant « galéré à la trouver », une
+   vraie section juste sous le hero (et la section de l'éditeur de plan quand elle est en ligne). Liens vers l'URL
+   canonique (page indexable : pas de `?src=`) ; le bouton principal va droit au formulaire de rappel (#demande). Ni prix
+   ni emoji, le parcours sans nommer le groupe. Son style voyage avec elle (HOME_CSS ne bouge pas), et aucune des
+   chaînes que lib/accueil-beta.ts remplace n'est touchée. */
+const ACCOMP_STYLE = `<style>.av-home .accb{margin-top:22px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:34px;align-items:center;background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:40px}.av-home .accb .badge{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:#0b6e4b;background:var(--good-bg);border-radius:999px;padding:6px 12px;margin-top:14px}.av-home .accb .badge i{width:7px;height:7px;border-radius:50%;background:var(--good);display:inline-block}.av-home .accb h2{font-size:clamp(24px,3.2vw,32px);font-weight:700;line-height:1.14;margin-top:10px;color:var(--nuit);text-wrap:balance}.av-home .accb p.d{color:var(--muted);font-size:15.5px;line-height:1.6;margin-top:12px;max-width:56ch}.av-home .accb p.qui{font-size:13.5px;color:var(--ink);margin-top:14px;line-height:1.5}.av-home .accb p.qui b{font-weight:600}.av-home .accb .cta{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin-top:22px}.av-home .accb .lien{color:var(--brand-700);font-weight:600;font-size:14.5px;text-decoration:underline;text-underline-offset:3px;min-height:44px;display:inline-flex;align-items:center}.av-home .accb ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}.av-home .accb li a{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface-2);text-decoration:none;color:inherit;transition:border-color .15s,transform .15s}.av-home .accb li a:hover{border-color:var(--brand-200);transform:translateX(3px)}.av-home .accb li a:focus-visible{outline:3px solid var(--brand-200);outline-offset:2px}.av-home .accb li .ic{flex:none;width:36px;height:36px;border-radius:10px;background:var(--brand-weak);color:var(--brand-700);display:inline-flex;align-items:center;justify-content:center}.av-home .accb li .t{font-weight:600;font-size:14.5px;color:var(--ink)}.av-home .accb li .s{font-size:13px;color:var(--muted);margin-top:2px;line-height:1.45}.av-home .accb li .fl{margin-left:auto;color:var(--brand-700);font-weight:600}@media(max-width:820px){.av-home .accb{grid-template-columns:1fr;padding:28px 22px;gap:24px}}@media (prefers-reduced-motion:reduce){.av-home .accb li a{transition:none}.av-home .accb li a:hover{transform:none}}</style>`;
+const ACC_IC = {
+  devis: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 2.5h7l3 3v12H5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 9.5h4.5M8 12.5h4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  plan: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 15.5 7.5 11l3 3 6.5-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 7h4v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  suivi: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 8h14M7 2.5v3M13 2.5v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="m7.5 12.3 1.7 1.7 3.3-3.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  visio: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="2.5" y="5" width="10.5" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="m13 9 4.5-2.5v7L13 11" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
+};
+const accItem = (ic: string, t: string, s: string) =>
+  `<li><a href="/accompagnement-travaux#aide"><span class="ic">${ic}</span><span><span class="t" style="display:block">${t}</span><span class="s" style="display:block">${s}</span></span><span class="fl" aria-hidden="true">→</span></a></li>`;
 const ACCOMP_BAND = `
-<section class="blk" style="padding-top:0"><div class="wrap">${ACCOMP_STYLE}<a href="/accompagnement-travaux" class="strip strip-accomp"><div><div class="t">Besoin d'un avis de pro sur ton projet ?</div><div class="d">Relecture de tes devis, plan d'attaque du chantier, suivi chaque semaine : un ancien chef de chantier te conseille à distance. Le premier appel est gratuit.</div></div><span class="go">Être accompagné par un ancien chef de chantier →</span></a></div></section>
-`;
+<div class="wrap">${ACCOMP_STYLE}<section class="accb" aria-labelledby="accb-titre"><div>
+  <p class="eyebrow">Accompagnement travaux</p>
+  <h2 id="accb-titre">Un ancien chef de chantier à tes côtés.</h2>
+  <p class="d">Tu as un projet de rénovation, de construction ou d'achat ? Je relis tes devis, je t'aide à organiser le chantier et je te suis chaque semaine, à distance, pour que tu gardes la main sur le budget.</p>
+  <span class="badge"><i></i>Premier appel gratuit, sans engagement</span>
+  <p class="qui"><b>Daniel, fondateur d'AVYORA</b> · 8 ans sur les chantiers, de chef de chantier à chef d'entreprise.</p>
+  <div class="cta"><a href="/accompagnement-travaux#demande" class="btn btn-p">Demander à être rappelé →</a><a href="/accompagnement-travaux" class="lien">Découvrir l'accompagnement</a></div>
+</div><ul aria-label="Ce que je peux faire pour toi">
+  ${accItem(ACC_IC.devis, "Relecture de tes devis", "Prix, oublis, clauses : ce qu'il faut renégocier avant de signer.")}
+  ${accItem(ACC_IC.plan, "Plan d'attaque du chantier", "Qui intervient, dans quel ordre, et les pièges à éviter.")}
+  ${accItem(ACC_IC.suivi, "Suivi chaque semaine", "Les tâches de la semaine et ton budget, point par point.")}
+  ${accItem(ACC_IC.visio, "Visite en visio avant achat", "Un regard de pro sur le bien avant de faire ton offre.")}
+</ul></section></div>`;
 const ACCOMP_BAND_EN = `
-<section class="blk" style="padding-top:0"><div class="wrap">${ACCOMP_STYLE}<a href="/accompagnement-travaux" class="strip strip-accomp"><div><div class="t">Want a professional opinion on your project?</div><div class="d">Quote review, a site game plan, weekly check-ins: a former site manager advises you remotely. The first call is free.</div></div><span class="go">Get advice from a former site manager →</span></a></div></section>
-`;
+<div class="wrap">${ACCOMP_STYLE}<section class="accb" aria-labelledby="accb-titre"><div>
+  <p class="eyebrow">Renovation advice</p>
+  <h2 id="accb-titre">A former site manager by your side.</h2>
+  <p class="d">Planning a renovation, a new build or a purchase? I review your quotes, help you organize the work and check in with you every week, remotely, so you stay in control of the budget.</p>
+  <span class="badge"><i></i>First call free, no commitment</span>
+  <p class="qui"><b>Daniel, founder of AVYORA</b> · 8 years on building sites, from site manager to business owner.</p>
+  <div class="cta"><a href="/accompagnement-travaux#demande" class="btn btn-p">Request a call-back →</a><a href="/accompagnement-travaux" class="lien">Discover the service</a></div>
+</div><ul aria-label="What I can do for you">
+  ${accItem(ACC_IC.devis, "Review of your quotes", "Prices, omissions, terms: what to renegotiate before you sign.")}
+  ${accItem(ACC_IC.plan, "Site game plan", "Who comes in, in what order, and the traps to avoid.")}
+  ${accItem(ACC_IC.suivi, "Weekly follow-up", "This week's tasks and your budget, point by point.")}
+  ${accItem(ACC_IC.visio, "Video walkthrough before you buy", "A professional's eye on the property before you make an offer.")}
+</ul></section></div>`;
 
 /* Éditeur de plan (C9) : section sombre juste après le hero, insérée seulement quand FEATURES.plans est allumé (éteint :
    HTML d'origine au caractère près, comme NEUF_BAND). Deux vraies captures de l'éditeur (la Maison 94 m², en gratuit,
@@ -262,7 +294,7 @@ const HOME_HTML = `
   <div class="trust">
     <span><b class="num">200</b> postes de prix</span><span>suivi de <b>chantier</b></span><span>carnet <b>matériaux</b></span><span><b>multi</b>-projets</span>${FEATURES.plans ? PLAN_TRUST : ""}
   </div>
-</div></header></div>${FEATURES.plans ? PLAN_BAND : ""}
+</div></header></div>${FEATURES.plans ? PLAN_BAND : ""}${ACCOMP_BAND}
 
 <section class="blk"><div class="wrap">
   <div class="center">
@@ -366,7 +398,6 @@ const HOME_HTML = `
     <a href="/prix-travaux" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand);color:#fff;border-radius:999px;padding:9px 18px;font-size:14px;font-weight:600">Tous les travaux →</a>
   </div>
 </div></section>
-${ACCOMP_BAND}
 <section class="blk" style="padding-top:0"><div class="wrap">
   <div class="final">
     <h2>Ta rénovation mérite mieux qu'un devis au feeling.</h2>
@@ -389,7 +420,7 @@ const HOME_HTML_EN = `
   <div class="trust">
     <span><b class="num">200</b> price items</span><span>site <b>tracking</b></span><span>materials <b>notebook</b></span><span><b>multi</b>-projects</span>${FEATURES.plans ? PLAN_TRUST_EN : ""}
   </div>
-</div></header></div>${FEATURES.plans ? PLAN_BAND_EN : ""}
+</div></header></div>${FEATURES.plans ? PLAN_BAND_EN : ""}${ACCOMP_BAND_EN}
 
 <section class="blk"><div class="wrap">
   <div class="center">
@@ -490,7 +521,6 @@ const HOME_HTML_EN = `
     <a href="/prix-travaux" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand);color:#fff;border-radius:999px;padding:9px 18px;font-size:14px;font-weight:600">All projects →</a>
   </div>
 </div></section>
-${ACCOMP_BAND_EN}
 <section class="blk" style="padding-top:0"><div class="wrap">
   <div class="final">
     <h2>Your renovation deserves better than a gut-feel quote.</h2>

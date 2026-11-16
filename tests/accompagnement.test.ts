@@ -452,8 +452,17 @@ describe("sitemap, maillage interne et confidentialité", () => {
   it("liens posés : pied de page, menu mobile, accueil, guides, fiche projet prix, et pages privées avec leur source", () => {
     const canon = 'href="/accompagnement-travaux"';
     expect(lire("app/layout.tsx")).toContain(canon);
-    expect(lire("components/MobileMenu.tsx")).toContain(canon);
-    expect(lire("app/page.tsx").match(/href="\/accompagnement-travaux" class="strip strip-accomp"/g)).toHaveLength(2);
+    // L'onglet de l'en-tête (desktop) et la ligne contrastée du menu mobile, juste après le plan (16/11/2026).
+    expect(lire("components/accompagnement/OngletAccompagnement.tsx")).toContain('PAGE_ACCOMPAGNEMENT = "/accompagnement-travaux"');
+    expect(lire("app/layout.tsx")).toMatch(/<OngletPlan [^\n]*\n(?:[^\n]*\n){2}\s*\{FEATURES\.plans && <OngletAccompagnement label=\{t\.nav\.accompagnementCourt\} \/>\}/);
+    const menu = lire("components/MobileMenu.tsx");
+    expect(menu.indexOf("href={PAGE_ACCOMPAGNEMENT}")).toBeGreaterThan(menu.indexOf("href={VITRINE_PLAN}"));
+    expect(menu.indexOf("href={PAGE_ACCOMPAGNEMENT}")).toBeLessThan(menu.indexOf('href="/projets"'));
+    // L'accueil : la section juste sous le hero (et la section du plan), bouton vers le formulaire de rappel, FR et EN.
+    const accueil = lire("app/page.tsx");
+    expect(accueil.match(/href="\/accompagnement-travaux#demande" class="btn btn-p"/g)).toHaveLength(2);
+    expect(accueil.match(/<\/div><\/header><\/div>\$\{FEATURES\.plans \? PLAN_BAND(_EN)? : ""\}\$\{ACCOMP_BAND(_EN)?\}/g)).toHaveLength(2);
+    expect(accueil).not.toContain("strip-accomp");
     const guides = lire("app/guides/[slug]/page.tsx");
     expect(guides.match(/<Link href="\/accompagnement-travaux">/g)).toHaveLength(2);
     expect(lire("app/guides/page.tsx")).toContain(canon);

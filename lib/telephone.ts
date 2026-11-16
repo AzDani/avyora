@@ -26,3 +26,8 @@ export function afficherPortable(tel: string): string {
   const m = /^\+33(\d)(\d{2})(\d{2})(\d{2})(\d{2})$/.exec(tel);
   return m ? `+33 ${m[1]} ${m[2]} ${m[3]} ${m[4]} ${m[5]}` : tel;
 }
+
+/** « Plus tard » sur le rappel « Ajoute ton portable » (components/RappelPortable.tsx) : cookie de préférence de 14 jours,
+ *  lu par « Mes projets » côté serveur. Ici et pas dans le composant client : une constante exportée d'un module
+ *  "use client" n'arrive pas telle quelle dans un composant serveur. */
+export const COOKIE_RAPPEL_PORTABLE = "avyora_rappel_portable";
