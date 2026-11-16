@@ -94,6 +94,20 @@ const orgJsonLd = {
       description,
       email: "contact@getavyora.fr",
       areaServed: "FR",
+      founder: { "@id": `${siteUrl}/#fondateur` },
+    },
+    /**
+     * Le fondateur, déclaré une fois ici (la page /accompagnement-travaux s'y réfère). Des faits seulement : son nom
+     * (déjà dans les mentions légales), son rôle, son ancien métier. Pas de `sameAs` sans vrai profil public (TODO
+     * Dani : son LinkedIn), pas d'`alumniOf` (réservé aux établissements d'enseignement).
+     */
+    {
+      "@type": "Person",
+      "@id": `${siteUrl}/#fondateur`,
+      name: "Daniel Leal",
+      jobTitle: "Fondateur d'AVYORA",
+      description: "Ancien chef de chantier chez Vinci",
+      worksFor: { "@id": `${siteUrl}/#organization` },
     },
     {
       "@type": "WebSite",
@@ -211,6 +225,8 @@ export default async function RootLayout({
                 {/* Seul hub éditorial qui manquait au pied de page : il n'avait que 5 liens entrants
                     contre ~500 pour les trois autres. Une ligne, et le cluster corps d'état existe. */}
                 <Link href="/prix-poste" className="transition-colors hover:text-brand-700">{t.footer.prixPoste}</Link>
+                {/* Le conseil de Daniel (demande de rappel) : URL canonique, sans `?src=` (page indexable). */}
+                <Link href="/accompagnement-travaux" className="transition-colors hover:text-brand-700">{t.footer.accompagnement}</Link>
                 {/* Construction neuve : lien de maillage vers la page publique, seulement flag allumé
                     (éteint : le lien « Prix par ville » seul, arbre rendu d'origine). */}
                 {FEATURES.neuf ? (

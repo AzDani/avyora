@@ -559,6 +559,10 @@ function BodyOrdre() {
         <li><strong>Hors d&apos;air</strong> — les menuiseries sont posées (phase 4). Le bâtiment devient chauffable, les enduits peuvent sécher.</li>
         <li><strong>Avant fermeture</strong> — le dernier moment pour faire passer un câble ou un tuyau (phase 6). Après, chaque oubli se paie en démolition.</li>
       </ol>
+      <p>
+        Tu veux un <Link href="/accompagnement-travaux">plan d&apos;attaque de ton chantier</Link>{" "}adapté à ton
+        projet ? Un ancien chef de chantier peut le construire avec toi, le premier appel est gratuit.
+      </p>
 
       <Cta label="Chiffrer ta rénovation, lot par lot" />
 
@@ -688,6 +692,11 @@ function BodyDevis() {
         <li><strong>Demande les postes absents par écrit.</strong> « La dépose de l&apos;ancien carrelage est-elle comprise ? » Une réponse écrite vaut engagement.</li>
         <li><strong>Méfie-toi du devis nettement le moins cher.</strong> Neuf fois sur dix, il ne contient pas la même chose — le reste arrive en avenant.</li>
       </ul>
+      <p>
+        Un doute sur un devis précis ?{" "}
+        <Link href="/accompagnement-travaux">Fais-le relire par un ancien chef de chantier</Link>{" "}: le premier appel est
+        gratuit.
+      </p>
 
       <Faq items={faqDevis()} />
       <GuidesPratiques sauf="verifier-devis-travaux" />

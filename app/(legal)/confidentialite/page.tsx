@@ -12,7 +12,7 @@ export default function Confidentialite() {
   return (
     <article>
       <h1>Politique de confidentialité</h1>
-      <p className="maj">Dernière mise à jour : 12 novembre 2026</p>
+      <p className="maj">Dernière mise à jour : 16 novembre 2026</p>
 
       <p>
         La présente politique décrit la manière dont AVYORA collecte et traite les données personnelles,
@@ -34,6 +34,7 @@ export default function Confidentialite() {
           <tr><td>Compte</td><td>e-mail, prénom, mot de passe (haché), plan d&apos;abonnement</td></tr>
           <tr><td>Projets &amp; estimations</td><td>type de bien, surface, code postal, choix de travaux, statuts de suivi, dépenses de chantier saisies</td></tr>
           <tr><td>Plans</td><td>plans de maison dessinés dans l&apos;éditeur et enregistrés dans le compte</td></tr>
+          <tr><td>Demande d&apos;accompagnement</td><td>prénom, e-mail, téléphone (facultatif), type de projet, besoins cochés, message libre — formulaire de la page « Accompagnement travaux », sans compte</td></tr>
           <tr><td>Paiement</td><td>gérées par Stripe&nbsp;; AVYORA ne stocke pas les numéros de carte</td></tr>
           <tr><td>Sécurité &amp; journaux</td><td>adresse IP (limitation d&apos;abus), horodatage d&apos;évènements d&apos;authentification</td></tr>
           <tr><td>Techniques</td><td>cookies strictement nécessaires (session, langue, sécurité de la connexion) — voir <a href="/cookies">politique cookies</a></td></tr>
@@ -49,6 +50,7 @@ export default function Confidentialite() {
         <tbody>
           <tr><td>Fournir le Service (compte, estimations, projets)</td><td>Exécution du contrat (art. 6.1.b)</td></tr>
           <tr><td>Gérer l&apos;abonnement et le paiement</td><td>Exécution du contrat (art. 6.1.b)</td></tr>
+          <tr><td>Répondre à ta demande d&apos;accompagnement et te recontacter (e-mail, téléphone, visio ou WhatsApp, selon ce que tu indiques)</td><td>Mesures précontractuelles prises à ta demande (art. 6.1.b)</td></tr>
           <tr><td>Sécurité, prévention de la fraude et des abus</td><td>Intérêt légitime (art. 6.1.f)</td></tr>
           <tr><td>Obligations comptables et légales (facturation)</td><td>Obligation légale (art. 6.1.c)</td></tr>
           <tr><td>Lettre d&apos;information « nouveautés » (case facultative, non cochée, à l&apos;inscription)</td><td>Consentement (art. 6.1.a)</td></tr>
@@ -62,7 +64,8 @@ export default function Confidentialite() {
         <li><strong>Vercel Inc.</strong> — hébergement du site&nbsp;;</li>
         <li><strong>Supabase</strong> — base de données et authentification&nbsp;;</li>
         <li><strong>Stripe</strong> — traitement des paiements&nbsp;;</li>
-        <li><strong>Resend</strong> — envoi des e-mails transactionnels (confirmation de compte, réinitialisation de mot de passe, confirmation de commande)&nbsp;;</li>
+        <li><strong>Resend</strong> — envoi des e-mails transactionnels (confirmation de compte, réinitialisation de mot de passe, confirmation de commande, demande d&apos;accompagnement et son accusé de réception)&nbsp;;</li>
+        <li><strong>WhatsApp (Meta)</strong> — seulement si tu choisis d&apos;être rappelé par WhatsApp après une demande d&apos;accompagnement&nbsp;: l&apos;échange passe alors par ce service, selon ses propres conditions&nbsp;;</li>
         <li><strong>Vercel Analytics</strong> — mesure d&apos;audience agrégée, sans cookie&nbsp;;</li>
         <li><strong>Google Ireland Limited</strong> (Gordon House, Barrow Street, Dublin 4, Irlande) — Google Ads&nbsp;: mesure des conversions et remarketing, <strong>uniquement si vous avez accepté les cookies publicitaires</strong>. Règles de Google pour ces traitements&nbsp;: <a href="https://business.safety.google/privacy/" target="_blank" rel="noopener noreferrer">business.safety.google/privacy</a>.</li>
       </ul>
@@ -81,6 +84,7 @@ export default function Confidentialite() {
         <li>Données de compte et projets&nbsp;: pendant la durée d&apos;utilisation du compte, puis supprimées à la clôture (ou après une période d&apos;inactivité prolongée).</li>
         <li>Documents de facturation&nbsp;: conservés 10 ans (obligation légale comptable).</li>
         <li>Journaux de sécurité&nbsp;: durée limitée, proportionnée à la finalité de sécurité.</li>
+        <li>Demandes d&apos;accompagnement (l&apos;e-mail reçu par l&apos;éditeur et sa trace dans le journal)&nbsp;: <strong>1 an au plus</strong> après le dernier échange si la demande n&apos;a pas de suite&nbsp;; si elle débouche sur une prestation, les données nécessaires sont conservées pour la durée de la relation, puis selon les obligations comptables.</li>
         <li>Cookies publicitaires Google Ads&nbsp;: <strong>13 mois au plus</strong> à compter de leur dépôt&nbsp;; votre choix (acceptation ou refus) est conservé 6 mois, puis vous est redemandé.</li>
       </ul>
 

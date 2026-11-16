@@ -83,7 +83,7 @@ describe("métadonnées propres à chaque page (plus l'URL ni le titre de l'accu
       "app/guides/page.tsx", "app/guides/[slug]/page.tsx", "app/prix-travaux/page.tsx", "app/prix-travaux/[projet]/page.tsx",
       "app/prix-travaux/[projet]/[ville]/page.tsx", "app/prix-renovation/page.tsx", "app/prix-renovation/[ville]/page.tsx",
       "app/prix-poste/page.tsx", "app/prix-poste/[slug]/page.tsx", "app/estimation-construction-maison/page.tsx",
-      "app/logiciel-plan-maison/page.tsx",
+      "app/logiciel-plan-maison/page.tsx", "app/accompagnement-travaux/page.tsx",
       ...["cgu", "cgv", "mentions-legales", "confidentialite", "cookies"].map((s) => `app/(legal)/${s}/page.tsx`),
     ];
     const sans = pages.filter((p) => {
@@ -149,6 +149,9 @@ describe("titles : 60 caractères au plus, « · AVYORA » compris", () => {
       voir(f, (await import(f)).metadata?.title ?? titreSource(f));
     const { dict } = await import("@/lib/i18n/dictionaries");
     voir("/tarifs (bêta)", dict("fr").beta.tarifsMetaTitre);
+    const { titreCourt } = await import("@/lib/seo-og");
+    const { META_ACCOMPAGNEMENT } = await import("@/lib/accompagnement/contenu");
+    voir("/accompagnement-travaux", titreCourt(...META_ACCOMPAGNEMENT.fr.titres));
     expect(trop).toEqual([]);
   }, 60_000);
 });
@@ -371,6 +374,7 @@ describe("tutoiement, CTA mobile, image de partage", () => {
       "app/prix-travaux/[projet]/page.tsx", "app/prix-travaux/[projet]/[ville]/page.tsx", "app/guides/page.tsx",
       "app/guides/[slug]/page.tsx", "app/prix-poste/page.tsx", "app/prix-poste/[slug]/page.tsx",
       "lib/seo-postes.ts", "lib/seo-projets.ts", "lib/guides.ts",
+      "app/accompagnement-travaux/page.tsx", "lib/accompagnement/contenu.ts", "components/accompagnement/FormulaireAccompagnement.tsx",
     ];
     const vus: string[] = [];
     for (const f of fichiers)

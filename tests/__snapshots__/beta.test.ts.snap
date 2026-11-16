@@ -259,6 +259,8 @@ exports[`Témoins · pendant la bêta (12/10/2026) > accueil (FR, EN) > accueil 
   </div>
 </div></section>
 
+<section class="blk" style="padding-top:0"><div class="wrap"><style>.av-home a.strip-accomp{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 24px;text-align:left;text-decoration:none;color:inherit;background:var(--surface);border:1px solid var(--line-strong);box-shadow:var(--shadow);margin-top:0;transition:transform .15s,box-shadow .15s,border-color .15s}.av-home a.strip-accomp:hover{transform:translateY(-2px);border-color:var(--brand-200);box-shadow:0 14px 30px -14px rgba(79,70,229,.35)}.av-home a.strip-accomp:focus-visible{outline:3px solid var(--brand-200);outline-offset:3px}.av-home a.strip-accomp .d{margin-inline:0}.av-home a.strip-accomp .go{display:inline-flex;align-items:center;min-height:44px;padding:10px 18px;border-radius:999px;background:var(--brand-weak);color:var(--brand-700);font-weight:600;font-size:14px}@media (prefers-reduced-motion:reduce){.av-home a.strip-accomp{transition:none}.av-home a.strip-accomp:hover{transform:none}}</style><a href="/accompagnement-travaux" class="strip strip-accomp"><div><div class="t">Want a professional opinion on your project?</div><div class="d">Quote review, a site game plan, weekly check-ins: a former site manager advises you remotely. The first call is free.</div></div><span class="go">Get advice from a former site manager →</span></a></div></section>
+
 <section class="blk" style="padding-top:0"><div class="wrap">
   <div class="final">
     <h2>Your renovation deserves better than a gut-feel quote.</h2>
@@ -506,6 +508,8 @@ exports[`Témoins · pendant la bêta (12/10/2026) > accueil (FR, EN) > accueil 
     <a href="/prix-travaux" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand);color:#fff;border-radius:999px;padding:9px 18px;font-size:14px;font-weight:600">Tous les travaux →</a>
   </div>
 </div></section>
+
+<section class="blk" style="padding-top:0"><div class="wrap"><style>.av-home a.strip-accomp{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 24px;text-align:left;text-decoration:none;color:inherit;background:var(--surface);border:1px solid var(--line-strong);box-shadow:var(--shadow);margin-top:0;transition:transform .15s,box-shadow .15s,border-color .15s}.av-home a.strip-accomp:hover{transform:translateY(-2px);border-color:var(--brand-200);box-shadow:0 14px 30px -14px rgba(79,70,229,.35)}.av-home a.strip-accomp:focus-visible{outline:3px solid var(--brand-200);outline-offset:3px}.av-home a.strip-accomp .d{margin-inline:0}.av-home a.strip-accomp .go{display:inline-flex;align-items:center;min-height:44px;padding:10px 18px;border-radius:999px;background:var(--brand-weak);color:var(--brand-700);font-weight:600;font-size:14px}@media (prefers-reduced-motion:reduce){.av-home a.strip-accomp{transition:none}.av-home a.strip-accomp:hover{transform:none}}</style><a href="/accompagnement-travaux" class="strip strip-accomp"><div><div class="t">Besoin d'un avis de pro sur ton projet ?</div><div class="d">Relecture de tes devis, plan d'attaque du chantier, suivi chaque semaine : un ancien chef de chantier te conseille à distance. Le premier appel est gratuit.</div></div><span class="go">Être accompagné par un ancien chef de chantier →</span></a></div></section>
 
 <section class="blk" style="padding-top:0"><div class="wrap">
   <div class="final">

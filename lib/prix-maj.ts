@@ -32,7 +32,7 @@ export const ANNEE_PRIX = PRIX_MAJ.slice(0, 4);
  * estimateurs, /tarifs, hubs éditoriaux) — pour le `lastModified` du sitemap.
  * Même règle que PRIX_MAJ : à la main, quand le contenu de ces pages change vraiment.
  */
-export const SITE_MAJ = "2026-11-12";
+export const SITE_MAJ = "2026-11-16";
 
 /**
  * Date de la version en vigueur de chaque page légale (celle affichée sous son titre,
@@ -42,6 +42,6 @@ export const LEGAL_MAJ: Record<"mentions-legales" | "cgu" | "cgv" | "confidentia
   "mentions-legales": "2026-11-12",
   cgu: "2026-11-12",
   cgv: "2026-11-12",
-  confidentialite: "2026-11-12",
+  confidentialite: "2026-11-16",
   cookies: "2026-11-12",
 };

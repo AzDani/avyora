@@ -66,6 +66,12 @@ export type EvenementAvyora =
    * detailleReno | detailleNeuf), `etape` (atteinte ; 0 = « Non merci » à l'invitation), `etapes`, `origine`
    * (invitation | bouton). Jamais une réponse du formulaire.
    */
+  /**
+   * Accompagnement travaux : une demande de rappel envoyée (réponse positive de l'action). Props fermées : `type`
+   * (type de projet), `besoins` (leur nombre), `src` (lib/accompagnement/constantes.ts, sinon `direct`). Jamais le
+   * prénom, l'adresse, le téléphone ni le message.
+   */
+  | "demande_accompagnement"
   | "visite_debut"
   | "visite_fin"
   | "visite_passee";

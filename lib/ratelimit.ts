@@ -43,11 +43,14 @@ const LIMITERS: Record<LimitKind, Ratelimit | null> = {
   // Suivi de chantier : un clic = une écriture (deux quand une ancienne clé est purgée). Une liste de tâches cochée
   // d'affilée ne doit pas tomber sur la limite de `api` (l'écran n'affiche pas l'échec).
   statut: make(Ratelimit.slidingWindow(120, "60 s"), "avyora:statut"), // 120 statuts / min / compte
+  // Demande d'accompagnement (/accompagnement-travaux) : chaque demande envoie DEUX e-mails (Daniel, accusé de
+  // réception). Indexée sur l'IP, puis sur l'adresse saisie (en empreinte) : 5 par heure chacune.
+  contact: make(Ratelimit.slidingWindow(5, "3600 s"), "avyora:contact"), // 5 demandes / h / IP et / adresse
 };
 
 export type LimitKind =
   | "auth" | "api" | "ia" | "pdf" | "pdfHeure" | "pdfIp" | "lienAdresse" | "lienIp" | "plan" | "planCreation" | "planEstimation" | "marche"
-  | "statut";
+  | "statut" | "contact";
 
 /**
  * Les catégories qui CRÉENT des lignes en base (« Mes plans ») ou qui coûtent cher (le plafond horaire des PDF) se
@@ -86,14 +89,23 @@ const MEMOIRE: Partial<Record<LimitKind, { max: number; fenetreMs: number }>> = 
   /* Écritures de l'API (création de projet, dépenses, investissement) : comme Upstash. */
   api: { max: 40, fenetreMs: 60_000 },
   statut: { max: 120, fenetreMs: 60_000 },
+  /* Demande d'accompagnement : comme Upstash. */
+  contact: { max: 5, fenetreMs: 3_600_000 },
 };
+
+/**
+ * Les catégories dont la limite en mémoire s'applique PARTOUT, pas seulement en production : le formulaire
+ * d'accompagnement est public, sans compte ni CAPTCHA, et chaque demande envoie des e-mails ; une préversion Vercel
+ * est publique elle aussi. Sans Upstash, ou quand le store tombe, la limite tient donc toujours (par instance).
+ */
+const MEMOIRE_PARTOUT = new Set<LimitKind>(["contact"]);
 const traces = new Map<string, number[]>();
 let memoireSignalee = false;
 
 function limiteMemoire(kind: LimitKind, identifiant: string): boolean {
   const regle = MEMOIRE[kind];
-  if (!regle || process.env.VERCEL_ENV !== "production") return true;
-  if (!memoireSignalee) {
+  if (!regle || (process.env.VERCEL_ENV !== "production" && !MEMOIRE_PARTOUT.has(kind))) return true;
+  if (!memoireSignalee && process.env.VERCEL_ENV === "production") {
     memoireSignalee = true;
     console.warn("[ratelimit] Upstash absent en production : limites de « Mes plans », de l'authentification, des PDF et de l'API tenues en mémoire, par instance.");
   }
@@ -118,7 +130,9 @@ export async function verifierLimite(kind: LimitKind, identifiant: string): Prom
     return success;
   } catch {
     // Panne du store : on ne bloque pas l'utilisateur légitime (fail-open contrôlé), sauf pour les créations
-    // de « Mes plans » (fail-closed : sans limite, un compte pourrait créer des lignes sans fin).
+    // de « Mes plans » (fail-closed : sans limite, un compte pourrait créer des lignes sans fin). La demande
+    // d'accompagnement repasse sur sa limite en mémoire (MEMOIRE_PARTOUT) : ni fermée, ni sans limite.
+    if (MEMOIRE_PARTOUT.has(kind)) return limiteMemoire(kind, identifiant);
     return !FERMEES_EN_PANNE.has(kind);
   }
 }

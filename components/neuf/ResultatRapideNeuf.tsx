@@ -12,6 +12,7 @@ import { dictNeuf } from "@/lib/i18n/neuf";
 import { euroApres, euroAvant, euros } from "@/lib/i18n/nombres";
 import BilanRapideNeuf from "./BilanRapideNeuf";
 import { betaActive } from "@/lib/beta";
+import LienAccompagnement from "@/components/accompagnement/LienAccompagnement";
 
 /**
  * Fiche d'un projet neuf enregistré en mode RAPIDE. Pendant de `ResultatRapide` (rénovation) : le
@@ -155,6 +156,8 @@ export default async function ResultatRapideNeuf({
           <Link href="/projets/nouveau?nature=neuf" className="btn btn-outline py-2.5">{t.refaire}</Link>
         </div>
       )}
+      {/* Accompagnement travaux : une ligne discrète, le visiteur a son budget en main (pas en vue admin). */}
+      {!readOnly && <LienAccompagnement texte={d.accompagnement.rapideTexte} lien={d.accompagnement.rapideLien} src="rapide-neuf" className="mt-4" />}
 
       <p className="note">{t.margeInfo}</p>
     </div>

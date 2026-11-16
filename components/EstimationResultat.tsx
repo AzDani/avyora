@@ -7,6 +7,7 @@
  */
 import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
+import LienAccompagnement from "@/components/accompagnement/LienAccompagnement";
 import { EST_CSS } from "./estimateur-styles";
 import { useLocale, useT } from "@/components/i18n/LangProvider";
 import { catT, catLigne } from "@/lib/estimateur/catalog-i18n";
@@ -330,7 +331,8 @@ const ANCRES_INV: Record<string, Espace> = Object.fromEntries(Object.entries(ANC
 export default function EstimationResultat({ reponses, projectId, readOnly, depenses, invest }: { reponses: { ctx?: Ctx; sel?: Selection; statuts?: Record<string, number>; codePostal?: string; custom?: unknown }; projectId?: string; readOnly?: boolean; /** Dépenses réelles (M5) : la fiche du propriétaire les passe, l'admin et la lecture seule non. */ depenses?: Depense[]; /** Section « Investissement » (M3) : même règle que les dépenses. */ invest?: SaisieInvest }) {
   const locale = useLocale();
   const s = TR[locale];
-  const rapide = useT().rapide; // zones et niveaux de finition : les libellés des deux rapides
+  const dictT = useT();
+  const rapide = dictT.rapide; // zones et niveaux de finition : les libellés des deux rapides
   const fmt = (v: number): string => euros(locale, v);
   const nb = (v: number, dec = 0): string => nombre(locale, v, dec);
   // Sécurité rétro-compat : le code postal (coef régional) était stocké hors ctx dans d'anciens projets.
@@ -677,6 +679,10 @@ export default function EstimationResultat({ reponses, projectId, readOnly, depe
       <div className="card" id="espace-chantier" hidden={masque("chantier")}>
         <h2>{projectId ? s.siteTracking : s.theDetails}</h2>
         <div className="sub">{projectId ? s.siteTrackingSub : s.detailsSub}</div>
+        {/* Accompagnement travaux : être suivi chaque semaine, seulement sur un projet enregistré (pas en lecture seule). */}
+        {projectId && !readOnly && (
+          <LienAccompagnement texte={dictT.accompagnement.suiviTexte} lien={dictT.accompagnement.suiviLien} src="suivi" className="mb-2" />
+        )}
         {projectId && (() => {
           const total = lignes.length;
           const done = lignes.filter((li) => statutLigne(statuts, li) === 2).length;

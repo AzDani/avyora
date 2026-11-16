@@ -189,6 +189,17 @@ const NEUF_BAND = `
 const NEUF_BAND_EN = `
   <style>.av-home a.strip-neuf{display:block;margin-top:34px;text-decoration:none;color:inherit;background:var(--surface);border:1.5px solid var(--brand);box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s}.av-home a.strip-neuf:hover{transform:translateY(-2px);box-shadow:0 14px 30px -14px rgba(79,70,229,.45)}.av-home a.strip-neuf:focus-visible{outline:3px solid var(--brand-200);outline-offset:3px}.av-home a.strip-neuf .go{display:inline-block;margin-top:14px;padding:10px 18px;border-radius:999px;background:var(--brand);color:#fff;font-weight:600;font-size:14px}@media (prefers-reduced-motion:reduce){.av-home a.strip-neuf{transition:none}.av-home a.strip-neuf:hover{transform:none}}</style><a href="/estimation-construction-maison" class="strip strip-neuf"><div class="t">Building a new home?</div><div class="d">Estimate your new house, from building permit to handover: studies, taxes, construction and utility hookups. Free, in 4 questions.</div><span class="go">Estimate my build →</span></a>`;
 
+/* Accompagnement travaux (décision du 16/11/2026) : une bande juste avant la section finale, vers la page de conseil
+   de Daniel. Lien vers l'URL canonique (page indexable : pas de `?src=`). Ni prix ni emoji. Son style voyage avec elle
+   (HOME_CSS ne bouge pas), et aucune des chaînes que lib/accueil-beta.ts remplace n'est touchée. */
+const ACCOMP_STYLE = `<style>.av-home a.strip-accomp{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 24px;text-align:left;text-decoration:none;color:inherit;background:var(--surface);border:1px solid var(--line-strong);box-shadow:var(--shadow);margin-top:0;transition:transform .15s,box-shadow .15s,border-color .15s}.av-home a.strip-accomp:hover{transform:translateY(-2px);border-color:var(--brand-200);box-shadow:0 14px 30px -14px rgba(79,70,229,.35)}.av-home a.strip-accomp:focus-visible{outline:3px solid var(--brand-200);outline-offset:3px}.av-home a.strip-accomp .d{margin-inline:0}.av-home a.strip-accomp .go{display:inline-flex;align-items:center;min-height:44px;padding:10px 18px;border-radius:999px;background:var(--brand-weak);color:var(--brand-700);font-weight:600;font-size:14px}@media (prefers-reduced-motion:reduce){.av-home a.strip-accomp{transition:none}.av-home a.strip-accomp:hover{transform:none}}</style>`;
+const ACCOMP_BAND = `
+<section class="blk" style="padding-top:0"><div class="wrap">${ACCOMP_STYLE}<a href="/accompagnement-travaux" class="strip strip-accomp"><div><div class="t">Besoin d'un avis de pro sur ton projet ?</div><div class="d">Relecture de tes devis, plan d'attaque du chantier, suivi chaque semaine : un ancien chef de chantier te conseille à distance. Le premier appel est gratuit.</div></div><span class="go">Être accompagné par un ancien chef de chantier →</span></a></div></section>
+`;
+const ACCOMP_BAND_EN = `
+<section class="blk" style="padding-top:0"><div class="wrap">${ACCOMP_STYLE}<a href="/accompagnement-travaux" class="strip strip-accomp"><div><div class="t">Want a professional opinion on your project?</div><div class="d">Quote review, a site game plan, weekly check-ins: a former site manager advises you remotely. The first call is free.</div></div><span class="go">Get advice from a former site manager →</span></a></div></section>
+`;
+
 /* Éditeur de plan (C9) : section sombre juste après le hero, insérée seulement quand FEATURES.plans est allumé (éteint :
    HTML d'origine au caractère près, comme NEUF_BAND). Deux vraies captures de l'éditeur (la Maison 94 m², en gratuit,
    2D puis 3D), webp 760 / 1040 et PNG de repli, largeur et hauteur posées. Le hero et ses boutons ne bougent pas : la
@@ -355,7 +366,7 @@ const HOME_HTML = `
     <a href="/prix-travaux" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand);color:#fff;border-radius:999px;padding:9px 18px;font-size:14px;font-weight:600">Tous les travaux →</a>
   </div>
 </div></section>
-
+${ACCOMP_BAND}
 <section class="blk" style="padding-top:0"><div class="wrap">
   <div class="final">
     <h2>Ta rénovation mérite mieux qu'un devis au feeling.</h2>
@@ -479,7 +490,7 @@ const HOME_HTML_EN = `
     <a href="/prix-travaux" style="display:inline-flex;align-items:center;gap:6px;background:var(--brand);color:#fff;border-radius:999px;padding:9px 18px;font-size:14px;font-weight:600">All projects →</a>
   </div>
 </div></section>
-
+${ACCOMP_BAND_EN}
 <section class="blk" style="padding-top:0"><div class="wrap">
   <div class="final">
     <h2>Your renovation deserves better than a gut-feel quote.</h2>

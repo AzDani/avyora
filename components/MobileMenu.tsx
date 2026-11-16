@@ -94,6 +94,10 @@ export default function MobileMenu({ isLoggedIn, prenom, isAdmin, isPro }: { isL
             <Link href="/projets" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-surface-2">
               {t.nav.projets}
             </Link>
+            {/* Le conseil de Daniel : une ligne simple, pas un deuxième bouton plein. */}
+            <Link href="/accompagnement-travaux" onClick={close} className="block rounded-lg px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-surface-2">
+              {t.nav.accompagnement}
+            </Link>
             <div className="my-1.5 border-t border-line" />
             {isLoggedIn ? (
               <>

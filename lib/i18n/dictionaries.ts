@@ -22,6 +22,20 @@ const fr = {
     planPastille: "Gratuit",
     /* Le nom de la navigation de l'en-tête, pour les lecteurs d'écran (aria-label). */
     navPrincipale: "Navigation principale",
+    /* Menu mobile : la ligne vers /accompagnement-travaux. */
+    accompagnement: "Accompagnement travaux",
+  },
+  /**
+   * Accompagnement travaux : les lignes discrètes posées là où le visiteur a un budget en main
+   * (components/accompagnement/LienAccompagnement.tsx). Ni prix ni emoji.
+   */
+  accompagnement: {
+    rapideTexte: "Tu veux un avis de pro sur ce budget ?",
+    rapideLien: "Demande à être rappelé, c'est gratuit",
+    suiviTexte: "Besoin d'un regard extérieur pendant le chantier ?",
+    suiviLien: "Être suivi chaque semaine par un ancien chef de chantier",
+    investTexte: "Tu hésites avant de faire une offre ?",
+    investLien: "Visite en visio avant achat, avec un ancien chef de chantier",
   },
   footer: {
     /* Le lien d'évitement (premier lien de la page) et le libellé de la navigation du pied de page. */
@@ -29,6 +43,8 @@ const fr = {
     navPied: "Liens de bas de page",
     methodologie: "Méthodologie",
     prixPoste: "Prix par corps d'état",
+    /* La page /accompagnement-travaux (conseil de Daniel, demande de rappel). */
+    accompagnement: "Accompagnement travaux",
     guides: "Guides des prix",
     prixTravaux: "Prix des travaux",
     prixVille: "Prix par ville",
@@ -552,12 +568,22 @@ const en: Dict = {
     plan: "3D plan",
     planPastille: "Free",
     navPrincipale: "Main navigation",
+    accompagnement: "Renovation advice",
+  },
+  accompagnement: {
+    rapideTexte: "Want a professional opinion on this budget?",
+    rapideLien: "Request a free call-back",
+    suiviTexte: "Need an outside eye during the work?",
+    suiviLien: "Weekly follow-up by a former site manager",
+    investTexte: "Not sure before making an offer?",
+    investLien: "Video walkthrough before you buy, with a former site manager",
   },
   footer: {
     allerAuContenu: "Skip to content",
     navPied: "Footer links",
     methodologie: "Methodology",
     prixPoste: "Prices by trade",
+    accompagnement: "Renovation advice",
     guides: "Price guides",
     prixTravaux: "Renovation costs",
     prixVille: "Prices by city",

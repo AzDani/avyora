@@ -31,7 +31,14 @@ export type EvenementSecurite =
   | "action_admin"
   | "acces_refuse"
   /** Une estimation née d'un plan n'a pas pu être reliée (« Mes plans », C6) : le projet reste créé. */
-  | "plan_lien_echoue";
+  | "plan_lien_echoue"
+  /**
+   * Une demande d'accompagnement (/accompagnement-travaux), gardée ici pour ne pas la perdre si l'e-mail échoue.
+   * `email` : l'adresse saisie (il faut pouvoir rappeler la personne). Payload : `prenom`, `telephone` (s'il est donné),
+   * `type_projet`, `besoins`, `src`, `langue`, l'issue des deux envois ; le `message` seulement si l'e-mail à Daniel
+   * n'est pas parti (sinon il est déjà dans sa boîte : pas de copie inutile). Conservation : 1 an au plus (/confidentialite).
+   */
+  | "demande_accompagnement";
 
 export async function journaliser(
   type: EvenementSecurite,

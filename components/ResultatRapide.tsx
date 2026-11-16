@@ -10,6 +10,7 @@ import { catT } from "@/lib/estimateur/catalog-i18n";
 import { getLocale } from "@/lib/i18n/server";
 import { dict } from "@/lib/i18n/dictionaries";
 import { betaActive } from "@/lib/beta";
+import LienAccompagnement from "@/components/accompagnement/LienAccompagnement";
 import { euroApres, euroAvant, euros, eurosM2, pourcent } from "@/lib/i18n/nombres";
 
 /**
@@ -197,6 +198,8 @@ export default async function ResultatRapide({
           <Link href="/projets/nouveau?nature=reno" className="btn btn-outline py-2.5">{L.refaire}</Link>
         </div>
       )}
+      {/* Accompagnement travaux : une ligne discrète, le visiteur a son budget en main (pas en vue admin). */}
+      {!readOnly && <LienAccompagnement texte={dict(locale).accompagnement.rapideTexte} lien={dict(locale).accompagnement.rapideLien} src="rapide" className="mt-4" />}
 
       <p className="note">{L.margeInfo}</p>
     </div>

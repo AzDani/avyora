@@ -110,6 +110,28 @@ describe("limites en mémoire sans Upstash", () => {
     for (let i = 0; i < 50; i++) expect(await verifierLimite("ia", "1.2.3.4")).toBe(true);
   });
 
+  it("demande d'accompagnement (contact) : 5 / h par identifiant, PARTOUT (préversion et local compris), chacun son seau", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      vi.setSystemTime(new Date("2026-11-16T10:00:00Z"));
+      for (const env of ["preview", "development", "production"]) {
+        vi.spyOn(console, "warn").mockImplementation(() => {});
+        const { verifierLimite } = await module(env);
+        for (let i = 0; i < 5; i++) expect(await verifierLimite("contact", "ip:1.2.3.4"), env).toBe(true);
+        expect(await verifierLimite("contact", "ip:1.2.3.4"), env).toBe(false);
+        expect(await verifierLimite("contact", "ip:5.6.7.8"), env).toBe(true);
+      }
+      // Une heure plus tard, la fenêtre glisse : la même IP repasse.
+      const { verifierLimite } = await module("preview");
+      for (let i = 0; i < 5; i++) await verifierLimite("contact", "ip:9.9.9.9");
+      expect(await verifierLimite("contact", "ip:9.9.9.9")).toBe(false);
+      vi.setSystemTime(new Date("2026-11-16T11:00:01Z"));
+      expect(await verifierLimite("contact", "ip:9.9.9.9")).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("préversion et local : sans limite (comme avant)", async () => {
     const { verifierLimite } = await module("preview");
     for (let i = 0; i < 30; i++) expect(await verifierLimite("planCreation", "u1")).toBe(true);
@@ -141,9 +163,9 @@ describe("avec Upstash", () => {
       vi.doUnmock("@upstash/redis");
       vi.doUnmock("@upstash/ratelimit");
     }
-    expect(prefixes).toHaveLength(13);
-    expect(new Set(prefixes).size).toBe(13);
-    for (const p of ["avyora:auth", "avyora:api", "avyora:statut", "avyora:pdf", "avyora:pdf-heure", "avyora:pdf-ip", "avyora:lien-adresse", "avyora:lien-ip", "avyora:marche"]) expect(prefixes).toContain(p);
+    expect(prefixes).toHaveLength(14);
+    expect(new Set(prefixes).size).toBe(14);
+    for (const p of ["avyora:auth", "avyora:api", "avyora:statut", "avyora:contact", "avyora:pdf", "avyora:pdf-heure", "avyora:pdf-ip", "avyora:lien-adresse", "avyora:lien-ip", "avyora:marche"]) expect(prefixes).toContain(p);
   });
 
   it("store en panne : le plafond horaire des PDF se ferme (fail-closed), le lien d'accès reste ouvert", async () => {
@@ -169,6 +191,9 @@ describe("avec Upstash", () => {
       expect(await verifierLimite("planCreation", "u1")).toBe(false);
       expect(await verifierLimite("lienAdresse", "a".repeat(32))).toBe(true);
       expect(await verifierLimite("pdf", "u1")).toBe(true);
+      // La demande d'accompagnement repasse sur sa limite en mémoire : ni fermée d'emblée, ni sans limite.
+      for (let i = 0; i < 5; i++) expect(await verifierLimite("contact", "ip:7.7.7.7")).toBe(true);
+      expect(await verifierLimite("contact", "ip:7.7.7.7")).toBe(false);
     } finally {
       vi.doUnmock("@upstash/redis");
       vi.doUnmock("@upstash/ratelimit");

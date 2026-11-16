@@ -590,6 +590,10 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
         ·{" "}
         <Link href="/guides/faire-soi-meme-ou-artisan" className="font-medium text-brand-600 hover:underline">faire soi-même ou faire faire</Link>.
       </p>
+      <p>
+        Besoin d&apos;un avis sur tes devis ou d&apos;aide pour organiser le chantier ?{" "}
+        <Link href="/accompagnement-travaux" className="font-medium text-brand-600 hover:underline">Découvre l&apos;accompagnement travaux</Link>.
+      </p>
     </div>
   );
 }

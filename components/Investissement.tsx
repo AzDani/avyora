@@ -8,7 +8,8 @@
  * (.card, .sub, .prog, .phase-t d'EstimationResultat) ; le reste est scopé .av-inv.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useLocale } from "@/components/i18n/LangProvider";
+import { useLocale, useT } from "@/components/i18n/LangProvider";
+import LienAccompagnement from "@/components/accompagnement/LienAccompagnement";
 import { euros, eurosM2, pourcent, nombre, lireMontant } from "@/lib/i18n/nombres";
 import { simulerLocation, REGIMES, type Regime, type ResultatRegime, type Alerte } from "@/lib/investissement/location";
 import { entreeDepuisSaisie, completer, travauxRetenus, entreeRevente, completerRevente, type ChampNum, type ChampRevente, type ContexteProjet, type SaisieInvest, type SaisieLocation, type SaisieRevente } from "@/lib/investissement/saisie";
@@ -466,6 +467,7 @@ type Props = { projectId: string; saisie: SaisieInvest; contexte: ContexteProjet
 export default function Investissement({ projectId, saisie: initiale, contexte, onResume }: Props) {
   const locale = useLocale();
   const t = TR[locale];
+  const accomp = useT().accompagnement;
   const fmt = (v: number): string => euros(locale, v);
   const signe = (v: number): string => (Math.round(v) > 0 ? "+" : Math.round(v) < 0 ? "−" : "") + euros(locale, Math.abs(v));
   const pc = (v: number, d = 1): string => pourcent(locale, v * 100, d);
@@ -897,6 +899,8 @@ export default function Investissement({ projectId, saisie: initiale, contexte, 
         </span>
       </div>
       <div className="sub">{revente ? tr.sub : t.sub}</div>
+      {/* Accompagnement travaux : la visite en visio avant achat, pour l'investisseur qui n'a pas encore fait son offre. */}
+      <LienAccompagnement texte={accomp.investTexte} lien={accomp.investLien} src="invest" className="mb-2" />
 
       <div className="seg" role="group">
         <button type="button" aria-pressed={!revente} onClick={() => setS((x) => ({ ...x, strategie: "location" }))}>{t.location}</button>
