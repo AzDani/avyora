@@ -12,7 +12,7 @@ import { META_ACCOMPAGNEMENT, PHOTO_FONDATEUR, VIDEO_PRESENTATION, contenuAccomp
 
 /**
  * Accompagnement travaux (décisions du fondateur du 16/11/2026) : le conseil de Daniel Leal, ancien chef de chantier
- * chez Vinci, pour attirer du trafic sur « accompagnement / conseil travaux » et recueillir des demandes de rappel.
+ * (8 ans de chantier, de chef de chantier à chef d'entreprise), pour attirer du trafic sur « accompagnement / conseil travaux » et recueillir des demandes de rappel.
  * AUCUN prix (les tarifs se discutent pendant l'appel), aucun chiffre inventé, pas de maîtrise d'œuvre (dit sur la
  * page). Textes : lib/accompagnement/contenu.ts. Envoi : lib/actions/accompagnement.ts.
  *
@@ -161,6 +161,16 @@ export default async function AccompagnementTravaux({
             {t.qui.paragraphes.map((p) => (
               <p key={p} className="mt-3 text-[16px] leading-relaxed text-muted">{p}</p>
             ))}
+            <h3 className="mt-6 text-[15px] font-semibold text-ink">{t.qui.parcoursTitre}</h3>
+            <ol className="mt-3 grid gap-3 sm:grid-cols-2">
+              {t.qui.parcours.map((e) => (
+                <li key={e.titre} className="rounded-field border border-line bg-surface p-4">
+                  <p className="font-mono text-[12.5px] font-semibold uppercase tracking-wide text-brand-700">{e.duree}</p>
+                  <p className="mt-1 text-[15px] font-semibold leading-snug text-ink">{e.titre}</p>
+                  <p className="mt-1 text-[14px] leading-snug text-muted">{e.texte}</p>
+                </li>
+              ))}
+            </ol>
           </div>
           {VIDEO_PRESENTATION && (
             <figure className="overflow-hidden rounded-card border border-line bg-surface shadow-card">

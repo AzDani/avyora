@@ -106,7 +106,7 @@ const orgJsonLd = {
       "@id": `${siteUrl}/#fondateur`,
       name: "Daniel Leal",
       jobTitle: "Fondateur d'AVYORA",
-      description: "Ancien chef de chantier chez Vinci",
+      description: "Ancien chef de chantier, entrepreneur en rénovation : 8 ans sur les chantiers",
       worksFor: { "@id": `${siteUrl}/#organization` },
     },
     {

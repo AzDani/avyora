@@ -383,7 +383,8 @@ describe("page /accompagnement-travaux", () => {
         expect(txt).toContain("Demande à être rappelé, c'est gratuit");
         expect(txt).toContain("Ce n'est pas une mission de maîtrise d'œuvre");
         expect(txt).toContain("Daniel Leal");
-        expect(txt).toContain("ancien chef de chantier chez Vinci");
+        expect(txt).toContain("chef de chantier");
+        expect(txt).not.toMatch(/vinci/i);
         expect(txt).toContain("France Rénov'");
         expect(txt).not.toMatch(/\b(vous|votre|vos)\b/i);
         // 900 à 1 300 mots visibles environ (rapport SEO) : du contenu, pas du remplissage.

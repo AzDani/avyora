@@ -60,9 +60,9 @@ const fr = {
   },
   carte: {
     nom: "Daniel Leal",
-    role: "Fondateur d'AVYORA · ancien chef de chantier chez Vinci",
+    role: "Fondateur d'AVYORA · 8 ans sur les chantiers, de chef de chantier à chef d'entreprise",
     points: [
-      "Je connais les chantiers de l'intérieur : planning, artisans, imprévus.",
+      "J'ai vu un chantier de tous les côtés : l'entreprise, le chef de chantier et le propriétaire.",
       "Je m'appuie sur ton projet chiffré dans AVYORA, si tu en as un.",
       "Je ne vends pas de travaux : mon avis ne dépend d'aucun artisan.",
     ],
@@ -70,13 +70,21 @@ const fr = {
   qui: {
     h2: "Qui je suis",
     paragraphes: [
-      "Je m'appelle Daniel Leal. J'ai été chef de chantier chez Vinci : j'ai organisé des chantiers, coordonné des corps d'état, suivi des budgets et géré les imprévus. J'y ai vu ce qui fait déraper un projet : un poste oublié dans un devis, des artisans qui s'enchaînent mal, une décision prise trop tard.",
-      // TODO Dani : ajouter le nombre d'années chez Vinci ou le type de chantiers, seulement s'il veut l'afficher.
+      "Je m'appelle Daniel Leal. J'ai commencé par un BTS Bâtiment en alternance dans un grand groupe du BTP, puis j'ai été chef de chantier pendant 3 ans : organiser les chantiers, coordonner les corps d'état, tenir les budgets, gérer les imprévus. Ensuite, j'ai monté ma propre entreprise de travaux, que j'ai dirigée 3 ans : rénovation, aménagements extérieurs, construction de garages.",
+      "En parallèle, j'ai rénové entièrement deux maisons girondines et fait construire une maison neuve de A à Z, pour mon compte. Je suis jeune, mais j'ai vu un chantier sous tous ses angles : celui de l'entreprise qui exécute, du chef de chantier qui coordonne et du propriétaire qui paie. C'est ce regard complet que je t'apporte, avec ce qui fait déraper un projet : un poste oublié dans un devis, des artisans qui s'enchaînent mal, une décision prise trop tard.",
       "J'ai créé AVYORA pour que chacun puisse chiffrer ses travaux avant de signer. L'accompagnement, c'est la suite logique : un regard de professionnel sur ton projet, au moment où tu en as besoin.",
       // TODO Dani : décider s'il dit « je travaille depuis les États-Unis » (conseil du rapport SEO : la transparence).
       "Je travaille à distance, en visio ou sur WhatsApp, l'après-midi heure de Paris. Tu me montres, je regarde avec toi, et tu repars avec des réponses claires.",
     ],
     videoTitre: "Présentation de Daniel Leal, en vidéo",
+    /* Le parcours, en frise (faits donnés par Dani le 16/11/2026 ; il ne veut pas nommer son ancien groupe). */
+    parcoursTitre: "Mon parcours",
+    parcours: [
+      { duree: "2 ans", titre: "BTS Bâtiment en alternance", texte: "Dans un grand groupe du BTP : la méthode, les normes, la vie d'un gros chantier." },
+      { duree: "3 ans", titre: "Chef de chantier", texte: "Planning, coordination des corps d'état, budgets, réception des travaux." },
+      { duree: "3 ans", titre: "Ma propre entreprise de travaux", texte: "Rénovation, aménagements extérieurs, construction de garages : du devis à la livraison." },
+      { duree: "En parallèle", titre: "Mes propres projets", texte: "Deux maisons girondines rénovées entièrement et une maison neuve construite de A à Z." },
+    ],
   },
   aide: {
     h2: "Comment je peux t'aider sur ton projet",
@@ -327,9 +335,9 @@ const en: ContenuAccompagnement = {
   },
   carte: {
     nom: "Daniel Leal",
-    role: "Founder of AVYORA · former site manager at Vinci",
+    role: "Founder of AVYORA · 8 years on building sites, from site manager to business owner",
     points: [
-      "I know building sites from the inside: schedules, contractors, surprises.",
+      "I've seen building sites from every side: the contractor, the site manager and the owner.",
       "I work from your project as priced in AVYORA, if you have one.",
       "I don't sell building work: my advice doesn't depend on any contractor.",
     ],
@@ -337,11 +345,19 @@ const en: ContenuAccompagnement = {
   qui: {
     h2: "Who I am",
     paragraphes: [
-      "I'm Daniel Leal. I was a site manager at Vinci: I organized building sites, coordinated trades, tracked budgets and handled the unexpected. I saw what derails a project: an item missing from a quote, trades that don't follow each other properly, a decision made too late.",
+      "I'm Daniel Leal. I started with a two-year building degree (BTS Bâtiment) as a work-study student in a major construction group, then worked as a site manager for 3 years: organizing sites, coordinating trades, keeping to budgets, handling the unexpected. Then I ran my own building company for 3 years: renovations, outdoor landscaping, garage construction.",
+      "Alongside that, I fully renovated two traditional Gironde houses and had a new house built from start to finish, as the owner. I'm young, but I've seen a building site from every angle: the company doing the work, the site manager coordinating it and the owner paying for it. That complete view is what I bring you, along with what derails a project: an item missing from a quote, trades that don't follow each other properly, a decision made too late.",
       "I created AVYORA so anyone can price their work before signing. Advice is the natural next step: a professional's eye on your project, when you need it.",
       "I work remotely, by video call or WhatsApp, in the afternoon, Paris time. You show me, we look at it together, and you leave with clear answers.",
     ],
     videoTitre: "Daniel Leal's introduction video",
+    parcoursTitre: "My background",
+    parcours: [
+      { duree: "2 years", titre: "Building degree, work-study", texte: "In a major construction group: method, standards, life on a large site." },
+      { duree: "3 years", titre: "Site manager", texte: "Scheduling, coordinating trades, budgets, handover of the works." },
+      { duree: "3 years", titre: "My own building company", texte: "Renovations, outdoor landscaping, garage construction: from quote to handover." },
+      { duree: "Alongside", titre: "My own projects", texte: "Two Gironde houses fully renovated and a new house built from start to finish." },
+    ],
   },
   aide: {
     h2: "How I can help with your project",
