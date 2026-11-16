@@ -125,7 +125,7 @@ const fr = {
         eyebrow: "À la fin",
         titre: "Préparer la réception des travaux",
         texte:
-          "Une liste de contrôle et un appel vidéo pendant la visite de fin de chantier, pour noter les réserves au procès-verbal avant de signer. Un défaut visible non signalé ce jour-là est réputé accepté.",
+          "Une liste de contrôle et un appel vidéo pendant la visite de fin de chantier, pour noter les réserves au procès-verbal avant de signer. Un défaut visible non signalé ce jour-là est, en principe, réputé accepté.",
       },
       {
         id: "visite",
@@ -228,7 +228,8 @@ const fr = {
     piege: "Ne pas remplir ce champ",
     envoyer: "Demande à être rappelé, c'est gratuit",
     envoi: "Envoi en cours…",
-    rgpd: "Tes informations servent seulement à te recontacter au sujet de ta demande. Aucune prospection, aucune revente.",
+    rgpd:
+      "AVYORA (Daniel Leal) utilise ces informations seulement pour te recontacter au sujet de ta demande, et les garde 1 an au plus si elle n'a pas de suite. Aucune prospection, aucune revente. Pour y accéder ou les faire effacer : contact@getavyora.fr.",
     rgpdLien: "Politique de confidentialité",
     erreurs: {
       prenom: { requis: "Indique ton prénom.", invalide: "Ton prénom ne doit contenir que des lettres.", trop_long: "Ton prénom est trop long." },
@@ -387,7 +388,7 @@ const en: ContenuAccompagnement = {
         eyebrow: "At the end",
         titre: "Preparing the final handover",
         texte:
-          "A checklist and a video call during the final walkthrough, so you record the defects on the handover report before signing. A visible defect not reported that day is deemed accepted.",
+          "A checklist and a video call during the final walkthrough, so you record the defects on the handover report before signing. A visible defect not reported that day is, as a rule, deemed accepted.",
       },
       {
         id: "visite",
@@ -485,7 +486,8 @@ const en: ContenuAccompagnement = {
     piege: "Leave this field empty",
     envoyer: "Request a free call-back",
     envoi: "Sending…",
-    rgpd: "Your details are only used to get back to you about your request. No marketing, never sold.",
+    rgpd:
+      "AVYORA (Daniel Leal) uses these details only to get back to you about your request, and keeps them for 1 year at most if nothing comes of it. No marketing, never sold. To access or delete them: contact@getavyora.fr.",
     rgpdLien: "Privacy policy (in French)",
     erreurs: {
       prenom: { requis: "Enter your first name.", invalide: "Your first name should only contain letters.", trop_long: "Your first name is too long." },

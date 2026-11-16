@@ -19,6 +19,12 @@ import {
  * L'envoi part d'une transition (comme components/auth/forms.tsx) : avec `<form action>` seul, React 19 vide le
  * formulaire à chaque envoi, même refusé. `action` reste sur le formulaire pour un envoi avant l'hydratation.
  */
+/**
+ * Le rouge des messages d'erreur : `text-danger` (#e0434b) n'a que 4,1:1 sur blanc et 3,6:1 sur `bg-danger-soft`, sous
+ * le seuil AA pour du texte de 13-14 px. Ce rouge plus sombre tient 6,5:1 et 5,8:1.
+ */
+const ROUGE_TEXTE = "text-[#b42318]";
+
 export default function FormulaireAccompagnement({ t, jeton, src }: { t: TextesFormulaire; jeton: string; src?: SourceAccompagnement }) {
   const [etat, action, envoi] = useActionState<EtatDemande, FormData>(demanderAccompagnement, undefined);
   const formRef = useRef<HTMLFormElement>(null);
@@ -90,7 +96,7 @@ export default function FormulaireAccompagnement({ t, jeton, src }: { t: TextesF
     const code = erreur(c);
     if (!code) return null;
     return (
-      <p id={idErr(c)} className="mt-1.5 text-[13px] font-medium text-danger">
+      <p id={idErr(c)} className={"mt-1.5 text-[13px] font-medium " + ROUGE_TEXTE}>
         {t.erreurs[c][code]}
       </p>
     );
@@ -102,7 +108,7 @@ export default function FormulaireAccompagnement({ t, jeton, src }: { t: TextesF
   return (
     <form ref={formRef} action={action} onSubmit={envoyer} noValidate className="space-y-5" aria-describedby="acc-rgpd">
       {(global || premier) && (
-        <p ref={resumeRef} tabIndex={-1} role="alert" className="rounded-field border border-danger/25 bg-danger-soft px-3.5 py-2.5 text-sm text-danger outline-none">
+        <p ref={resumeRef} tabIndex={-1} role="alert" className={"rounded-field border border-danger/25 bg-danger-soft px-3.5 py-2.5 text-sm outline-none " + ROUGE_TEXTE}>
           {global ? t.globales[global] : t.resumeErreurs}
           {(global === "envoi" || global === "limite") && (
             <>

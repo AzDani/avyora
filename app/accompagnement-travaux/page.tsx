@@ -185,7 +185,7 @@ export default async function AccompagnementTravaux({
               <h3 className="mt-1.5 text-[17px] font-semibold leading-snug text-ink">{s.titre}</h3>
               <p className="mt-2 flex-1 text-[15px] leading-relaxed text-muted">{s.texte}</p>
               {s.lien && (
-                <Link href={s.lien.href} className={"mt-3 self-start py-2 text-[14px] " + lienProse}>
+                <Link href={s.lien.href} className={"mt-2 inline-flex min-h-11 items-center self-start text-[14px] " + lienProse}>
                   {s.lien.label}
                 </Link>
               )}

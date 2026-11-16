@@ -46,11 +46,15 @@ const LIMITERS: Record<LimitKind, Ratelimit | null> = {
   // Demande d'accompagnement (/accompagnement-travaux) : chaque demande envoie DEUX e-mails (Daniel, accusé de
   // réception). Indexée sur l'IP, puis sur l'adresse saisie (en empreinte) : 5 par heure chacune.
   contact: make(Ratelimit.slidingWindow(5, "3600 s"), "avyora:contact"), // 5 demandes / h / IP et / adresse
+  // Plafond GLOBAL des accusés de réception (toutes IP confondues) : un robot qui ferait défiler IP et adresses ne
+  // transforme pas le formulaire en canon à e-mails vers des tiers (ni ne grille la réputation du domaine d'envoi).
+  // Au-delà, la demande part quand même chez Daniel ; seul l'accusé est sauté.
+  contactAccuse: make(Ratelimit.slidingWindow(30, "3600 s"), "avyora:contact-accuse"), // 30 accusés / h, au total
 };
 
 export type LimitKind =
   | "auth" | "api" | "ia" | "pdf" | "pdfHeure" | "pdfIp" | "lienAdresse" | "lienIp" | "plan" | "planCreation" | "planEstimation" | "marche"
-  | "statut" | "contact";
+  | "statut" | "contact" | "contactAccuse";
 
 /**
  * Les catégories qui CRÉENT des lignes en base (« Mes plans ») ou qui coûtent cher (le plafond horaire des PDF) se
@@ -91,6 +95,7 @@ const MEMOIRE: Partial<Record<LimitKind, { max: number; fenetreMs: number }>> = 
   statut: { max: 120, fenetreMs: 60_000 },
   /* Demande d'accompagnement : comme Upstash. */
   contact: { max: 5, fenetreMs: 3_600_000 },
+  contactAccuse: { max: 30, fenetreMs: 3_600_000 },
 };
 
 /**
@@ -98,7 +103,7 @@ const MEMOIRE: Partial<Record<LimitKind, { max: number; fenetreMs: number }>> = 
  * d'accompagnement est public, sans compte ni CAPTCHA, et chaque demande envoie des e-mails ; une préversion Vercel
  * est publique elle aussi. Sans Upstash, ou quand le store tombe, la limite tient donc toujours (par instance).
  */
-const MEMOIRE_PARTOUT = new Set<LimitKind>(["contact"]);
+const MEMOIRE_PARTOUT = new Set<LimitKind>(["contact", "contactAccuse"]);
 const traces = new Map<string, number[]>();
 let memoireSignalee = false;
 

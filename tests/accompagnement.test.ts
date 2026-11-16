@@ -109,6 +109,11 @@ describe("validation de la demande (zod, serveur)", () => {
     for (const t of ["12345", "+33 6 12 34 56 78 90 12 34 56 78", "06 12 34 56 7a", "++33612345678"]) expect(telephoneValide(t), t).toBe(false);
     expect(validerDemande(fd({ prenom: "Jean-François d'Arc", email: "a@b.fr", typeProjet: "neuf" })).ok).toBe(true);
     expect(validerDemande(fd({ prenom: "Zoë", email: "a@b.fr", typeProjet: "neuf" })).ok).toBe(true);
+    // Initiales acceptées ; un nom de domaine (rendu cliquable par les messageries dans l'accusé) refusé.
+    for (const p of ["J.-P.", "J. Paul", "Anne-Marie"]) expect(validerDemande(fd({ prenom: p, email: "a@b.fr", typeProjet: "neuf" })).ok, p).toBe(true);
+    for (const p of ["Promo casino.com", "visite monsite.fr", "Bonjour.Achetez"]) {
+      expect(validerDemande(fd({ prenom: p, email: "a@b.fr", typeProjet: "neuf" })), p).toMatchObject({ ok: false, champs: { prenom: "invalide" } });
+    }
   });
 
   it("bornes : prénom 40, e-mail 254, téléphone 30, message 1000 (retours à la ligne gardés, caractères de contrôle refusés)", async () => {
@@ -138,17 +143,17 @@ describe("validation de la demande (zod, serveur)", () => {
 /* ─── Jeton : délai minimal, signé ───────────────────────────────────────────── */
 
 describe("jeton du formulaire (délai minimal sans clé externe)", () => {
-  it("ok après 3 s, trop rapide avant, expiré après 48 h, falsifié refusé", async () => {
+  it("ok après 3 s, trop rapide avant, expiré après 48 h, falsifié refusé (mal formé ≠ signé d'un autre secret)", async () => {
     const { creerJeton, verifierJeton } = await import("@/lib/accompagnement/jeton");
     const t0 = Date.parse("2026-11-16T10:00:00Z");
     const j = creerJeton(t0);
     expect(verifierJeton(j, t0 + 3_000)).toBe("ok");
     expect(verifierJeton(j, t0 + 1_000)).toBe("trop_rapide");
     expect(verifierJeton(j, t0 + 49 * 3_600_000)).toBe("expire");
-    // Une heure ancienne fabriquée sans le secret : refusée.
+    // Une heure ancienne fabriquée sans le secret : refusée (« signature » : l'action demande de recharger).
     const [, sig] = j.split(".");
-    expect(verifierJeton(`${t0 - 60_000}.${sig}`, t0 + 5_000)).toBe("invalide");
-    for (const x of [undefined, "", "abc", "123.456", `${t0}.`, "x".repeat(200)]) expect(verifierJeton(x, t0)).toBe("invalide");
+    expect(verifierJeton(`${t0 - 60_000}.${sig}`, t0 + 5_000)).toBe("signature");
+    for (const x of [undefined, "", "abc", "123.456", `${t0}.`, `${t0}.${"z".repeat(32)}`, "x".repeat(200)]) expect(verifierJeton(x, t0)).toBe("invalide");
   });
 });
 
@@ -224,10 +229,14 @@ describe("demanderAccompagnement (Resend simulé)", () => {
     expect(h.journal).not.toHaveBeenCalled();
   });
 
-  it("envoyé trop vite (moins de 3 s) : refusé, aucun envoi ; jeton falsifié : faux succès ; jeton expiré : « recharge »", async () => {
+  it("envoyé trop vite (moins de 3 s) : refusé, aucun envoi ; jeton mal formé : faux succès ; signé d'un autre secret ou expiré : « recharge »", async () => {
     const run = await action();
     expect(await run(undefined, await formulaire(valide(neuf()), { ageMs: 500 }))).toEqual({ statut: "erreur", global: "trop_rapide" });
-    expect(await run(undefined, await formulaire(valide(neuf()), { jeton: `${Date.now() - 60_000}.${"0".repeat(32)}` }))).toMatchObject({ statut: "ok" });
+    // Mal formé (robot qui poste sans la page) : faux succès silencieux.
+    expect(await run(undefined, await formulaire(valide(neuf()), { jeton: `${Date.now() - 60_000}.pas-un-jeton` }))).toMatchObject({ statut: "ok" });
+    // Bien formé mais signé d'un autre secret (rotation de clé pendant que la page était ouverte) : « recharge », pas
+    // de faux succès qui perdrait la demande d'un humain.
+    expect(await run(undefined, await formulaire(valide(neuf()), { jeton: `${Date.now() - 60_000}.${"0".repeat(32)}` }))).toEqual({ statut: "erreur", global: "expire" });
     expect(await run(undefined, await formulaire(valide(neuf()), { ageMs: 72 * 3_600_000 }))).toEqual({ statut: "erreur", global: "expire" });
     expect(h.envoi).not.toHaveBeenCalled();
     expect(h.journal).not.toHaveBeenCalled();
@@ -258,6 +267,27 @@ describe("demanderAccompagnement (Resend simulé)", () => {
     }
     h.ip = `10.200.${compteur}.99`;
     expect(await run(undefined, await formulaire(valide(email)))).toEqual({ statut: "erreur", global: "limite" });
+  });
+
+  it("plafond global des accusés (30 / h, toutes IP) : au-delà, la demande part chez Daniel, l'accusé est sauté", async () => {
+    vi.resetModules(); // un compteur global neuf (les autres tests en ont consommé)
+    try {
+      const run = await action();
+      for (let i = 0; i < 30; i++) {
+        const email = neuf();
+        expect(await run(undefined, await formulaire(valide(email)))).toMatchObject({ statut: "ok" });
+      }
+      h.envoi.mockClear();
+      h.journal.mockClear();
+      const email = neuf();
+      expect(await run(undefined, await formulaire(valide(email)))).toMatchObject({ statut: "ok" });
+      expect(h.envoi).toHaveBeenCalledTimes(1);
+      expect((h.envoi.mock.calls[0][0] as { to: string }).to).toBe("contact@getavyora.fr");
+      const [, opts] = h.journal.mock.calls[0] as [string, { payload: Record<string, unknown> }];
+      expect(opts.payload).toMatchObject({ envoi_interne: "envoye", envoi_accuse: "plafond" });
+    } finally {
+      vi.resetModules(); // les tests suivants repartent d'un compteur vide
+    }
   });
 
   it("e-mail à Daniel refusé par Resend : erreur visible, pas d'accusé, demande gardée au journal AVEC son message", async () => {

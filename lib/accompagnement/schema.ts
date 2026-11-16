@@ -16,6 +16,17 @@ const CONTROLE = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F\u2028\u2029]/;
 export const PRENOM_RE = /^\p{L}[\p{L}\p{M} '’.-]*$/u;
 
 /**
+ * Un point suivi d'au moins deux lettres ressemble à un nom de domaine (« casino.com », « promo.fr ») : les messageries
+ * le rendent cliquable, et le prénom part dans l'accusé de réception envoyé à l'adresse saisie. Refusé ; les initiales
+ * restent possibles (« J.-P. », « J. Paul »).
+ */
+const DOMAINE_RE = /\.\p{L}{2,}/u;
+
+export function prenomValide(s: string): boolean {
+  return PRENOM_RE.test(s) && !DOMAINE_RE.test(s);
+}
+
+/**
  * Un téléphone au format souple : chiffres, espaces, points, tirets, parenthèses, un « + » en tête ; 6 à 20 chiffres
  * (un numéro français à 10 chiffres, ou international avec indicatif, pour WhatsApp).
  */
@@ -28,7 +39,7 @@ export function telephoneValide(v: string): boolean {
 const texte = (max: number) => z.string().trim().max(max, "trop_long").refine((s) => !CONTROLE.test(s) && !/[\r\n\t]/.test(s), "invalide");
 
 export const demandeSchema = z.object({
-  prenom: texte(BORNES.prenom).min(1, "requis").refine((s) => s === "" || PRENOM_RE.test(s), "invalide"),
+  prenom: texte(BORNES.prenom).min(1, "requis").refine((s) => s === "" || prenomValide(s), "invalide"),
   email: z
     .string()
     .trim()

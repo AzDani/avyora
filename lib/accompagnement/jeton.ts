@@ -17,7 +17,12 @@ export function creerJeton(maintenant = Date.now()): string {
   return `${ts}.${signer(ts)}`;
 }
 
-export type VerifJeton = "ok" | "invalide" | "trop_rapide" | "expire";
+/**
+ * `invalide` : absent ou mal formé (un robot qui poste sans charger la page). `signature` : bien formé mais signé par un
+ * autre secret, ce qui arrive aussi à un HUMAIN (secret changé entre l'affichage et l'envoi, page restée ouverte pendant
+ * une rotation de clé) : l'action lui demande alors de recharger, plutôt qu'un faux succès qui perdrait sa demande.
+ */
+export type VerifJeton = "ok" | "invalide" | "signature" | "trop_rapide" | "expire";
 
 export function verifierJeton(jeton: unknown, maintenant = Date.now()): VerifJeton {
   if (typeof jeton !== "string" || jeton.length > 80) return "invalide";
@@ -25,7 +30,8 @@ export function verifierJeton(jeton: unknown, maintenant = Date.now()): VerifJet
   if (!ts || !sig || !/^\d{10,16}$/.test(ts)) return "invalide";
   const attendu = Buffer.from(signer(ts));
   const recu = Buffer.from(sig);
-  if (attendu.length !== recu.length || !timingSafeEqual(attendu, recu)) return "invalide";
+  if (!/^[0-9a-f]{32}$/.test(sig)) return "invalide";
+  if (attendu.length !== recu.length || !timingSafeEqual(attendu, recu)) return "signature";
   const age = maintenant - Number(ts);
   if (age < DELAI_MIN_MS) return "trop_rapide";
   if (age > JETON_MAX_MS) return "expire";

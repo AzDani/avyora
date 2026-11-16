@@ -15,13 +15,14 @@ import { CHAMP_JETON, CHAMP_PIEGE, CHEMIN_ACCOMPAGNEMENT, DESTINATAIRE_DEFAUT, t
  *
  * Dans l'ordre, sans clé externe :
  * 1. champ piège rempli → faux succès, RIEN n'est envoyé (un robot ne doit pas apprendre qu'il est repéré) ;
- * 2. jeton signé du formulaire (lib/accompagnement/jeton.ts) : falsifié → faux succès ; envoyé moins de 3 s après
- *    l'affichage → refus visible (un humain renvoie, un robot non) ; page ouverte depuis plus de 48 h → « recharge » ;
+ * 2. jeton signé du formulaire (lib/accompagnement/jeton.ts) : absent ou mal formé → faux succès ; envoyé moins de
+ *    3 s après l'affichage → refus visible (un humain renvoie, un robot non) ; page ouverte depuis plus de 48 h, ou
+ *    signée d'un autre secret (rotation de clé) → « recharge » ;
  * 3. validation zod (lib/accompagnement/schema.ts) : erreurs PAR CHAMP, des codes que le client traduit ;
  * 4. limite de débit `contact` (lib/ratelimit.ts) par IP puis par adresse (en empreinte) : seules les demandes valides
  *    la consomment ;
  * 5. e-mail à Daniel (destinataire = constante, ou ACCOMPAGNEMENT_TO), reply-to = l'adresse VALIDÉE ; puis, s'il est
- *    parti, l'accusé de réception à la personne (reply-to = Daniel). Aucun autre en-tête ne vient du formulaire, et tout
+ *    parti et sous le plafond global des accusés, l'accusé de réception à la personne (reply-to = Daniel). Aucun autre en-tête ne vient du formulaire, et tout
  *    ce que la personne a tapé est échappé dans le HTML (lib/email.ts) ;
  * 6. trace dans le journal (lib/audit.ts), dans tous les cas, pour ne rien perdre si l'e-mail échoue.
  */
@@ -58,7 +59,9 @@ export async function demanderAccompagnement(_prec: EtatDemande, fd: FormData): 
   const jeton = verifierJeton(fd.get(CHAMP_JETON));
   if (jeton === "invalide") return reponseSilencieuse(fd);
   if (jeton === "trop_rapide") return { statut: "erreur", global: "trop_rapide" };
-  if (jeton === "expire") return { statut: "erreur", global: "expire" };
+  // Signature d'un autre secret (clé changée pendant que la page était ouverte) : un humain peut être concerné, on
+  // lui demande de recharger au lieu de perdre sa demande en silence. Un robot n'en apprend rien d'utile.
+  if (jeton === "expire" || jeton === "signature") return { statut: "erreur", global: "expire" };
 
   // 3. La validation.
   const v = validerDemande(fd);
@@ -88,8 +91,11 @@ export async function demanderAccompagnement(_prec: EtatDemande, fd: FormData): 
   const issueInterne = await envoyerEmailSuivi({ to: destinataire(), subject: interne.subject, html: interne.html, replyTo: d.email });
   const ok = envoiReussi(issueInterne);
 
-  let issueAccuse: IssueEnvoi | "non_tente" = "non_tente";
-  if (ok) {
+  // L'accusé : seulement si la demande est partie chez Daniel, et sous le plafond global (lib/ratelimit.ts,
+  // `contactAccuse`) : au-delà, la demande reste reçue, seul l'accusé est sauté.
+  let issueAccuse: IssueEnvoi | "non_tente" | "plafond" = "non_tente";
+  if (ok && !(await verifierLimite("contactAccuse", "global"))) issueAccuse = "plafond";
+  else if (ok) {
     const accuse = emailAccuseAccompagnement({ prenom: d.prenom, locale, pageUrl: `${urlSite()}${CHEMIN_ACCOMPAGNEMENT}` });
     issueAccuse = await envoyerEmailSuivi({ to: d.email, subject: accuse.subject, html: accuse.html, replyTo: destinataire() });
   }
