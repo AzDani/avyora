@@ -17,6 +17,8 @@ export type Profil = {
   region: string;
   age: string;
   canal: string;
+  /** Portable normalisé (+33612345678), demandé au questionnaire de bienvenue depuis le 16/11/2026. */
+  telephone?: string;
 };
 
 export type AdminProjet = {

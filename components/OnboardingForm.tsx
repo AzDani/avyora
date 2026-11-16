@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useLocale } from "@/components/i18n/LangProvider";
 import { enregistrerProfil, sauterOnboarding, type ProfilData } from "@/lib/actions/profil";
 import { FEATURES } from "@/lib/features";
+import { normaliserPortable, afficherPortable } from "@/lib/telephone";
 
 // Régions françaises : noms propres conservés tels quels (identiques FR/EN) et utilisés
 // aussi comme valeur enregistrée. Seul « Outre-mer », qui n'est pas un nom propre, a un libellé anglais (la valeur
@@ -56,7 +57,11 @@ const TR = {
     compteSub: "Ces infos nous aident à adapter le service. Complète ou modifie-les quand tu veux.",
     onbEyebrow: "● Bienvenue · 30 secondes",
     onbTitle: "Fais-nous mieux te connaître 👋",
-    onbSub: "Pour adapter AVYORA à ton projet. Tout est optionnel, un simple tap suffit.",
+    onbSub: "Ton portable, puis quelques questions en un tap pour adapter AVYORA à ton projet.",
+    qTel: "Ton numéro de portable",
+    telAide: "Pour te rappeler au sujet de ton projet, en appel ou sur WhatsApp. Jamais revendu, pas de démarchage.",
+    telErr: { vide: "Indique ton numéro de portable pour continuer (ou clique sur « Passer »).", format: "Ce numéro n'est pas lisible : écris-le comme 06 12 34 56 78, ou +33 6 12 34 56 78.", pasPortable: "Il faut un numéro de portable (06 ou 07), pas un fixe." },
+    telErrServeur: "Ce numéro n'a pas été accepté : vérifie-le.",
     multi: "plusieurs choix possibles",
     qTuEs: "Tu es…",
     qObjectif: "Ton objectif avec ce projet",
@@ -108,7 +113,7 @@ const TR = {
     compteSub: "This info helps us tailor the service. Complete or edit it whenever you want.",
     onbEyebrow: "● Welcome · 30 seconds",
     onbTitle: "Help us get to know you 👋",
-    onbSub: "To tailor AVYORA to your project. Everything is optional — a single tap is enough.",
+    onbSub: "Your mobile number, then a few one-tap questions to tailor AVYORA to your project.",
     multi: "multiple choices allowed",
     qTuEs: "You are…",
     qObjectif: "Your goal with this project",
@@ -121,6 +126,10 @@ const TR = {
     save: "Save",
     continue: "Continue →",
     note: "🔒 This info is used to improve the service — never sold.",
+    qTel: "Your mobile number",
+    telAide: "So I can call you back about your project, by phone or WhatsApp. Never sold, no cold calling.",
+    telErr: { vide: "Enter your mobile number to continue (or click “Skip”).", format: "This number can't be read: write it like +33 6 12 34 56 78, or with your country code.", pasPortable: "Please enter a mobile number (French mobiles start with 06 or 07), not a landline." },
+    telErrServeur: "This number wasn't accepted: please check it.",
   },
 } as const;
 
@@ -182,6 +191,8 @@ export default function OnboardingForm({ initial, contexte = "onboarding" }: { i
   const [region, setRegion] = useState(initial?.region ?? "");
   const [age, setAge] = useState(initial?.age ?? "");
   const [canal, setCanal] = useState(initial?.canal ?? "");
+  const [telephone, setTelephone] = useState(initial?.telephone ? afficherPortable(initial.telephone) : "");
+  const [errTel, setErrTel] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [ok, setOk] = useState(false);
   // Reset la confirmation dès qu'on modifie une réponse (mode compte).
@@ -189,9 +200,21 @@ export default function OnboardingForm({ initial, contexte = "onboarding" }: { i
 
   async function continuer() {
     if (busy) return;
+    // Le portable : exigé pour « Continuer » au questionnaire de bienvenue (« Passer » reste possible), facultatif
+    // dans Mon compte ; s'il est saisi, il doit être lisible. Le serveur revérifie (lib/actions/profil.ts).
+    const r = normaliserPortable(telephone);
+    if (!r.ok && (r.erreur !== "vide" || !compte)) {
+      setErrTel(s.telErr[r.erreur]);
+      document.getElementById(q("tel"))?.focus();
+      return;
+    }
+    setErrTel(null);
     setBusy(true); setOk(false);
-    const data: ProfilData = { tuEs, objectif, maturite, region, age, canal };
-    try { await enregistrerProfil(data); } catch { /* best-effort */ }
+    const data: ProfilData = { tuEs, objectif, maturite, region, age, canal, telephone: r.ok ? r.tel : "" };
+    try {
+      const res = await enregistrerProfil(data);
+      if (!res.ok && res.erreur === "telephone") { setErrTel(s.telErrServeur); setBusy(false); return; }
+    } catch { /* best-effort */ }
     if (compte) { setBusy(false); setOk(true); return; } // reste sur Mon compte
     router.push("/projets");
   }
@@ -219,6 +242,24 @@ export default function OnboardingForm({ initial, contexte = "onboarding" }: { i
         </>
       )}
 
+      <div className="q">
+        <label className="lab" htmlFor={q("tel")}>{s.qTel}</label>
+        <input
+          id={q("tel")}
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel"
+          maxLength={40}
+          placeholder="06 12 34 56 78"
+          className="input mt-2"
+          value={telephone}
+          onChange={(e) => { setTelephone(e.target.value); if (errTel) setErrTel(null); if (ok) setOk(false); }}
+          aria-invalid={errTel ? true : undefined}
+          aria-describedby={`${q("tel-aide")}${errTel ? " " + q("tel-err") : ""}`}
+        />
+        <p id={q("tel-aide")} className="mt-1.5 text-[12.5px] leading-snug text-muted">{s.telAide}</p>
+        {errTel && <p id={q("tel-err")} role="alert" className="mt-1 text-[13px] font-medium" style={{ color: "#b42318" }}>{errTel}</p>}
+      </div>
       <div className="q"><div className="lab" id={q("tues")}>{s.qTuEs} <span className="multi">{s.multi}</span></div><Multi labelId={q("tues")} opts={s.tues} sel={tuEs} set={wrap(setTuEs)} /></div>
       <div className="q"><div className="lab" id={q("objectif")}>{s.qObjectif}</div><Single labelId={q("objectif")} opts={s.objectif.map((o) => o.l)} sel={s.objectif.find((o) => o.v === objectif)?.l ?? ""} set={(l) => wrap(setObjectif)(s.objectif.find((o) => o.l === l)?.v ?? "")} /></div>
       <div className="q"><div className="lab" id={q("maturite")}>{s.qMaturite} <span className="multi">{s.multi}</span></div><Multi labelId={q("maturite")} opts={s.maturite.filter((o) => FEATURES.neuf || !("neuf" in o) || maturite.includes(o.v))} sel={maturite} set={wrap(setMaturite)} /></div>

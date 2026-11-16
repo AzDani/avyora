@@ -32,6 +32,7 @@ export default function Confidentialite() {
         </thead>
         <tbody>
           <tr><td>Compte</td><td>e-mail, prénom, mot de passe (haché), plan d&apos;abonnement</td></tr>
+          <tr><td>Profil (questionnaire de bienvenue)</td><td>numéro de portable, type de profil, objectif, avancement du projet, région, tranche d&apos;âge, comment tu as connu AVYORA — modifiables ou effaçables depuis « Mon compte »</td></tr>
           <tr><td>Projets &amp; estimations</td><td>type de bien, surface, code postal, choix de travaux, statuts de suivi, dépenses de chantier saisies</td></tr>
           <tr><td>Plans</td><td>plans de maison dessinés dans l&apos;éditeur et enregistrés dans le compte</td></tr>
           <tr><td>Demande d&apos;accompagnement</td><td>prénom, e-mail, téléphone (facultatif), type de projet, besoins cochés, message libre — formulaire de la page « Accompagnement travaux », sans compte</td></tr>
@@ -49,6 +50,7 @@ export default function Confidentialite() {
         </thead>
         <tbody>
           <tr><td>Fournir le Service (compte, estimations, projets)</td><td>Exécution du contrat (art. 6.1.b)</td></tr>
+          <tr><td>Te recontacter par téléphone ou WhatsApp au sujet de ton projet et de ton compte (numéro de portable du questionnaire de bienvenue) — jamais revendu ni cédé, pas de démarchage pour des tiers</td><td>Intérêt légitime (art. 6.1.f) — tu peux t&apos;y opposer à tout moment et effacer ton numéro depuis « Mon compte »</td></tr>
           <tr><td>Gérer l&apos;abonnement et le paiement</td><td>Exécution du contrat (art. 6.1.b)</td></tr>
           <tr><td>Répondre à ta demande d&apos;accompagnement et te recontacter (e-mail, téléphone, visio ou WhatsApp, selon ce que tu indiques)</td><td>Mesures précontractuelles prises à ta demande (art. 6.1.b)</td></tr>
           <tr><td>Sécurité, prévention de la fraude et des abus</td><td>Intérêt légitime (art. 6.1.f)</td></tr>

@@ -1,3 +1,4 @@
+import { afficherPortable } from "@/lib/telephone";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getInscrit, labelTues, labelObjectif, labelMaturite } from "@/lib/data/admin";
@@ -58,6 +59,7 @@ export default async function FicheInscrit({ params }: { params: Promise<{ id: s
             <KV lab="Région" val={p.region} />
             <KV lab="Âge" val={p.age} />
             <KV lab="Canal d'acquisition" val={p.canal} />
+            <KV lab="Portable" val={p.telephone ? afficherPortable(p.telephone) : ""} />
           </div>
         ) : (
           <p className="rounded-2xl border border-line bg-surface p-5 text-[13px] text-muted">Onboarding non complété.</p>
