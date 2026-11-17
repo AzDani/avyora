@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getAdmin } from "@/lib/auth";
 import { listDemandesAccompagnement } from "@/lib/data/admin";
+import { listArtisansAdmin } from "@/lib/data/reseau";
 import AdminNav from "@/components/admin/AdminNav";
 
 export const dynamic = "force-dynamic";
@@ -10,6 +11,14 @@ export const metadata = { title: "Admin", robots: { index: false, follow: false 
 async function aTraiter(): Promise<number | null> {
   try {
     return (await listDemandesAccompagnement()).filter((d) => !d.traiteeLe).length;
+  } catch {
+    return null;
+  }
+}
+/** Les candidatures d'artisans à examiner (null tant que la migration 0007 n'est pas appliquée, ou en cas de panne). */
+async function candidatures(): Promise<number | null> {
+  try {
+    return (await listArtisansAdmin()).filter((a) => a.statut === "en_attente").length;
   } catch {
     return null;
   }
@@ -26,12 +35,12 @@ async function aTraiter(): Promise<number | null> {
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const admin = await getAdmin();
   if (!admin) redirect("/");
-  const accompagnement = await aTraiter();
+  const [accompagnement, artisans] = await Promise.all([aTraiter(), candidatures()]);
 
   return (
     <div data-admin-cadre="" style={{ marginInline: "calc(50% - min(50vw - 1rem, 40rem))" }}>
       <div className="lg:grid lg:grid-cols-[232px_minmax(0,1fr)] lg:gap-8">
-        <AdminNav email={admin.email ?? ""} badges={{ accompagnement }} />
+        <AdminNav email={admin.email ?? ""} badges={{ accompagnement, artisans }} />
         <div className="min-w-0 pt-6 lg:pt-0">{children}</div>
       </div>
     </div>

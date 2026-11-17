@@ -11,7 +11,7 @@ import { IconeAccompagnement } from "@/components/accompagnement/OngletAccompagn
  * mobile et tablette : la recherche puis une rangée d'onglets qui défile. Les pastilles comptent ce qui attend Daniel.
  * Une rubrique s'ajoute ici (le Réseau AVYORA arrivera ainsi), sans toucher aux pages.
  */
-export type BadgesAdmin = { accompagnement?: number | null };
+export type BadgesAdmin = { accompagnement?: number | null; artisans?: number | null };
 
 type Item = { href: string; label: string; icone: React.ReactNode; badge?: keyof BadgesAdmin };
 type Groupe = { titre?: string; items: Item[] };
@@ -39,6 +39,12 @@ const GROUPES: Groupe[] = [
   {
     titre: "Demandes",
     items: [{ href: "/admin/accompagnement", label: "Accompagnement", icone: <IconeAccompagnement className="h-4 w-4" />, badge: "accompagnement" }],
+  },
+  {
+    titre: "Réseau AVYORA",
+    items: [
+      { href: "/admin/artisans", label: "Artisans", badge: "artisans", icone: ic(<><path d="M3 13.5h10" /><path d="M4.5 13.5V9.8a3.5 3.5 0 0 1 7 0v3.7" /><path d="M3.5 9.8h9" /><path d="M8 6.3V4.8" /></>) },
+    ],
   },
 ];
 

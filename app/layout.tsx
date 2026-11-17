@@ -230,6 +230,8 @@ export default async function RootLayout({
                 <Link href="/prix-poste" className="transition-colors hover:text-brand-700">{t.footer.prixPoste}</Link>
                 {/* Le conseil de Daniel (demande de rappel) : URL canonique, sans `?src=` (page indexable). */}
                 <Link href="/accompagnement-travaux" className="transition-colors hover:text-brand-700">{t.footer.accompagnement}</Link>
+                {/* Le Réseau AVYORA (17/11/2026) : là où les artisans postulent. */}
+                <Link href="/reseau-artisans" className="transition-colors hover:text-brand-700">{t.footer.reseau}</Link>
                 {/* Construction neuve : lien de maillage vers la page publique, seulement flag allumé
                     (éteint : le lien « Prix par ville » seul, arbre rendu d'origine). */}
                 {FEATURES.neuf ? (

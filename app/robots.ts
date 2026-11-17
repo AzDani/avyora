@@ -29,7 +29,8 @@ export default function robots(): MetadataRoute.Robots {
       // « /projets$ » ferme la route EXACTE sans toucher au sous-arbre : le lien « Projets » de
       // l'en-tête reste utile aux humains connectés, mais Googlebot cesse de dépenser une requête
       // par page explorée pour une 307 vers une page noindex (507 pages le portaient).
-      disallow: ["/mon-espace", "/artisans", "/admin", "/api/", "/auth/", "/projets$", "/projets/"],
+      // /espace-artisan renvoie un visiteur sans compte vers l'inscription (307) : rien à explorer.
+      disallow: ["/mon-espace", "/artisans", "/espace-artisan", "/admin", "/api/", "/auth/", "/projets$", "/projets/"],
     },
     sitemap: `${siteUrl}/sitemap.xml`,
     host: siteUrl,

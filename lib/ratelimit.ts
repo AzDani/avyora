@@ -50,11 +50,17 @@ const LIMITERS: Record<LimitKind, Ratelimit | null> = {
   // transforme pas le formulaire en canon à e-mails vers des tiers (ni ne grille la réputation du domaine d'envoi).
   // Au-delà, la demande part quand même chez Daniel ; seul l'accusé est sauté.
   contactAccuse: make(Ratelimit.slidingWindow(30, "3600 s"), "avyora:contact-accuse"), // 30 accusés / h, au total
+  // Réseau AVYORA (candidature d'un artisan), indexées sur le compte : la vérification du SIRET interroge une API de
+  // l'État (7 appels / s au total pour tout le site), chaque fichier ouvre une URL d'envoi, chaque envoi de candidature
+  // part en e-mail chez Daniel et chez l'artisan.
+  artisanSiret: make(Ratelimit.slidingWindow(20, "3600 s"), "avyora:artisan-siret"), // 20 vérifications / h / compte
+  artisanFichier: make(Ratelimit.slidingWindow(40, "3600 s"), "avyora:artisan-fichier"), // 40 fichiers / h / compte
+  artisanEnvoi: make(Ratelimit.slidingWindow(5, "3600 s"), "avyora:artisan-envoi"), // 5 envois de candidature / h / compte
 };
 
 export type LimitKind =
   | "auth" | "api" | "ia" | "pdf" | "pdfHeure" | "pdfIp" | "lienAdresse" | "lienIp" | "plan" | "planCreation" | "planEstimation" | "marche"
-  | "statut" | "contact" | "contactAccuse";
+  | "statut" | "contact" | "contactAccuse" | "artisanSiret" | "artisanFichier" | "artisanEnvoi";
 
 /**
  * Les catégories qui CRÉENT des lignes en base (« Mes plans ») ou qui coûtent cher (le plafond horaire des PDF) se
@@ -96,6 +102,10 @@ const MEMOIRE: Partial<Record<LimitKind, { max: number; fenetreMs: number }>> = 
   /* Demande d'accompagnement : comme Upstash. */
   contact: { max: 5, fenetreMs: 3_600_000 },
   contactAccuse: { max: 30, fenetreMs: 3_600_000 },
+  /* Réseau AVYORA : comme Upstash. */
+  artisanSiret: { max: 20, fenetreMs: 3_600_000 },
+  artisanFichier: { max: 40, fenetreMs: 3_600_000 },
+  artisanEnvoi: { max: 5, fenetreMs: 3_600_000 },
 };
 
 /**

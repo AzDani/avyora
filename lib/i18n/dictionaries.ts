@@ -48,6 +48,8 @@ const fr = {
     prixPoste: "Prix par corps d'état",
     /* La page /accompagnement-travaux (conseil de Daniel, demande de rappel). */
     accompagnement: "Accompagnement travaux",
+    /* La page /reseau-artisans (Réseau AVYORA : les artisans postulent). */
+    reseau: "Artisans : rejoindre le réseau",
     guides: "Guides des prix",
     prixTravaux: "Prix des travaux",
     prixVille: "Prix par ville",
@@ -589,6 +591,7 @@ const en: Dict = {
     methodologie: "Methodology",
     prixPoste: "Prices by trade",
     accompagnement: "Renovation advice",
+    reseau: "Contractors (France)",
     guides: "Price guides",
     prixTravaux: "Renovation costs",
     prixVille: "Prices by city",

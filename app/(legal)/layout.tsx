@@ -8,6 +8,7 @@ const LIENS = [
   { href: "/cgv", label: "Conditions de vente" },
   { href: "/confidentialite", label: "Confidentialité (RGPD)" },
   { href: "/cookies", label: "Cookies" },
+  { href: "/conditions-reseau", label: "Conditions du Réseau AVYORA" },
 ];
 
 const LEGAL_CSS = `

@@ -33,6 +33,12 @@ export type DonneesTableau = {
   demandes: DemandeAccompagnement[];
   /** La lecture des demandes a échoué : le panneau le dit au lieu d'annoncer « rien à traiter ». */
   demandesIndisponibles?: boolean;
+  /** Réseau AVYORA : les candidatures à examiner (3 au plus) et les décennales à renouveler. null : pas lisible (migration 0007). */
+  artisans?: {
+    aExaminer: { id: string; nom: string; detail: string; appelFait: boolean; soumiseLe: string }[];
+    nbAExaminer: number;
+    decennalesARenouveler: number;
+  } | null;
   /** Les inscrits des 7 derniers jours (8 au plus). */
   nouveaux: NouvelInscrit[];
   /** Combien d'inscrits en plus, au-delà des 8 affichés. */
@@ -142,6 +148,36 @@ export default function TableauDeBord({ d }: { d: DonneesTableau }) {
 
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
         <Panneau titre="À traiter" compte={d.demandesIndisponibles ? undefined : c.aTraiter} lien={{ href: "/admin/accompagnement", label: "Toutes les demandes" }}>
+          {d.artisans && (d.artisans.nbAExaminer > 0 || d.artisans.decennalesARenouveler > 0) && (
+            <div className="mb-3 rounded-2xl border border-line bg-surface-2/60 p-3" data-a-traiter-artisans="">
+              <div className="flex items-baseline justify-between gap-3">
+                <h3 className="text-[13.5px] font-semibold text-ink">
+                  Candidatures d&apos;artisans<span className="num ml-1.5 text-faint">{d.artisans.nbAExaminer}</span>
+                </h3>
+                <Link href="/admin/artisans" className="shrink-0 text-[12.5px] font-semibold text-brand-700 hover:underline">Réseau AVYORA →</Link>
+              </div>
+              {d.artisans.aExaminer.length > 0 && (
+                <ul className="mt-2 space-y-1.5">
+                  {d.artisans.aExaminer.map((x) => (
+                    <li key={x.id}>
+                      <Link href={`/admin/artisans/${x.id}`} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5 rounded-xl border border-line bg-surface px-3 py-2 hover:border-brand-600">
+                        <span className="min-w-0">
+                          <span className="block truncate text-[13.5px] font-semibold text-ink">{x.nom}</span>
+                          <span className="block truncate text-[12px] text-muted">{x.detail}</span>
+                        </span>
+                        <span className={"shrink-0 text-[12px] font-semibold " + (x.appelFait ? "text-[#0b5e40]" : "text-brand-700")}>{x.appelFait ? "Appel fait : à décider" : "Appel à faire"}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {d.artisans.decennalesARenouveler > 0 && (
+                <p className="mt-2 text-[12.5px] font-medium text-[#8a5300]">
+                  {d.artisans.decennalesARenouveler} décennale{d.artisans.decennalesARenouveler > 1 ? "s" : ""}{" "}d&apos;artisans validés à renouveler (expirée ou dans moins de 30 jours).
+                </p>
+              )}
+            </div>
+          )}
           {d.demandesIndisponibles ? (
             <p role="alert" className="rounded-2xl bg-[#fdf0ef] px-4 py-6 text-center text-[13.5px] font-medium text-[#b42318]">Les demandes n'ont pas pu être lues. Recharge la page dans un instant.</p>
           ) : d.demandes.length === 0 ? (

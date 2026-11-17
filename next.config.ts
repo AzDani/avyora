@@ -46,7 +46,8 @@ const csp = [
   `script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com ${gtagScript}${captcha ? ` ${captcha}` : ""}${isDev ? " 'unsafe-eval'" : ""}`,
   ...(captcha ? [`frame-src 'self' ${captcha}`] : []),
   `style-src 'self' 'unsafe-inline'`,
-  `img-src 'self' data: blob: ${gtagBeacons}`,
+  // Supabase : les photos de chantiers du Réseau AVYORA, affichées par des URL signées de son stockage privé.
+  `img-src 'self' data: blob: ${gtagBeacons} ${supabaseHttp}`.trim(),
   `font-src 'self'`,
   `connect-src 'self' https://va.vercel-scripts.com ${gtagBeacons} ${supabaseHttp} ${supabaseWs}${isDev ? " ws: http://localhost:*" : ""}`.trim(),
   `frame-ancestors 'none'`,

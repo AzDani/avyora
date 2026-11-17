@@ -155,6 +155,7 @@ export const SOURCES_BETA = [
   "editeur-plan", "vitrine-plan", "plan",
   "tarifs", "accueil",
   "entete", "menu-mobile",
+  "artisan",
 ] as const;
 export type SourceBeta = (typeof SOURCES_BETA)[number];
 

@@ -205,3 +205,93 @@ export function emailAccuseAccompagnement(d: { prenom: string; locale: "fr" | "e
     html: layout({ preheader: "Daniel te recontacte sous 48 h ouvrées.", eyebrow: "Accompagnement travaux", titre: "Demande bien reçue", corps }),
   };
 }
+
+/* ─── Réseau AVYORA (candidatures des artisans, 17/11/2026) ─────────────────── */
+
+/**
+ * L'e-mail interne (vers Daniel) : une nouvelle candidature (ou une candidature complétée) à examiner. Tout ce que
+ * l'artisan a tapé est échappé ; le bouton mène à sa fiche dans l'admin.
+ */
+export function emailCandidatureArtisan(d: {
+  raisonSociale: string;
+  contactNom: string;
+  telephone: string;
+  email: string;
+  metiers: string[];
+  zone: string;
+  siret: string;
+  siretStatut: string;
+  completee: boolean;
+  ficheUrl: string;
+}): { subject: string; html: string } {
+  const e = echapperHtml;
+  const corps = `
+    ${P(d.completee ? `<b style="color:#15172b">${e(d.raisonSociale)}</b> a complété sa candidature : elle est de nouveau à examiner.` : `<b style="color:#15172b">${e(d.raisonSociale)}</b> veut rejoindre le Réseau AVYORA. Vérifie son dossier, puis appelle-le avant de le valider.`)}
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 8px;border-top:1px solid #eef0f6">
+      ${ligne("Contact", e(d.contactNom))}
+      ${ligne("Portable", `<a href="tel:${e(d.telephone.replace(/[^0-9+]/g, ""))}" style="color:#4f46e5">${e(d.telephone)}</a>`)}
+      ${ligne("E-mail", `<a href="mailto:${e(d.email)}" style="color:#4f46e5">${e(d.email)}</a>`)}
+      ${ligne("SIRET", `${e(d.siret)} · ${e(d.siretStatut)}`)}
+      ${ligne("Métiers", d.metiers.map(e).join("<br>"))}
+      ${ligne("Zone", e(d.zone))}
+    </table>
+    ${bouton("Ouvrir sa candidature", d.ficheUrl)}
+  `;
+  return {
+    subject: `${d.completee ? "Candidature complétée" : "Nouvelle candidature artisan"} : ${d.raisonSociale}`,
+    html: layout({ preheader: `${e(d.raisonSociale)} · ${e(d.zone)}`, eyebrow: "Réseau AVYORA", titre: d.completee ? "Candidature complétée" : "Nouvelle candidature", corps }),
+  };
+}
+
+export type EvenementArtisan = "recue" | "completer" | "validee" | "refusee" | "suspendue" | "reactivee";
+
+/**
+ * Les e-mails envoyés à l'artisan au fil de sa candidature. `message` : ce que Daniel a écrit (complément demandé,
+ * motif), échappé, retours à la ligne gardés. Le bouton mène à son espace artisan.
+ */
+export function emailArtisan(evt: EvenementArtisan, d: { nom: string; message?: string | null; espaceUrl: string }): { subject: string; html: string } {
+  const e = echapperHtml;
+  const mot = d.message ? `<div style="margin:0 0 14px;padding:12px 14px;background:#f6f5ff;border-radius:10px;font-size:15px;color:#15172b;line-height:1.6">${e(d.message).replace(/\n/g, "<br>")}</div>` : "";
+  const bonjour = P(`Bonjour ${e(d.nom)},`);
+  const textes: Record<EvenementArtisan, { sujet: string; titre: string; corps: string; bouton?: string }> = {
+    recue: {
+      sujet: "Ta candidature au Réseau AVYORA est bien reçue",
+      titre: "Candidature bien reçue",
+      corps: `${bonjour}${P("Merci pour ta candidature au Réseau AVYORA. Daniel examine ton dossier (SIRET, assurance décennale, photos de chantiers) puis <b style=\"color:#15172b\">t'appelle pour faire connaissance</b> : c'est la dernière étape avant d'entrer dans le réseau.")}${P("Tu peux suivre où en est ta candidature depuis ton espace artisan.")}`,
+      bouton: "Voir ma candidature",
+    },
+    completer: {
+      sujet: "Ta candidature au Réseau AVYORA : un complément est demandé",
+      titre: "Un complément est demandé",
+      corps: `${bonjour}${P("Daniel a examiné ta candidature et a besoin d'un complément avant de continuer :")}${mot}${P("Complète ta candidature depuis ton espace artisan, puis renvoie-la.")}`,
+      bouton: "Compléter ma candidature",
+    },
+    validee: {
+      sujet: "Bienvenue dans le Réseau AVYORA",
+      titre: "Tu fais partie du Réseau AVYORA",
+      corps: `${bonjour}${P("Ta candidature est validée : <b style=\"color:#15172b\">bienvenue dans le Réseau AVYORA</b>.")}${mot}${P("Les clients d'AVYORA de ta zone pourront bientôt te choisir pour leurs demandes de devis. Tu recevras chaque demande par e-mail, avec l'estimation détaillée du projet quand elle existe.")}`,
+      bouton: "Mon espace artisan",
+    },
+    refusee: {
+      sujet: "Ta candidature au Réseau AVYORA",
+      titre: "Candidature non retenue",
+      corps: `${bonjour}${P("Merci pour ta candidature. Elle n'est pas retenue pour le moment.")}${mot}${P("Si ta situation évolue, réponds simplement à cet e-mail.")}`,
+    },
+    suspendue: {
+      sujet: "Ta place dans le Réseau AVYORA est suspendue",
+      titre: "Participation suspendue",
+      corps: `${bonjour}${P("Ta participation au Réseau AVYORA est suspendue : tu ne reçois plus de demandes de devis pour le moment.")}${mot}${P("Pour en parler, réponds simplement à cet e-mail.")}`,
+    },
+    reactivee: {
+      sujet: "Ta place dans le Réseau AVYORA est réactivée",
+      titre: "Participation réactivée",
+      corps: `${bonjour}${P("Ta participation au Réseau AVYORA est réactivée : les clients de ta zone peuvent de nouveau te choisir.")}${mot}`,
+      bouton: "Mon espace artisan",
+    },
+  };
+  const t = textes[evt];
+  return {
+    subject: t.sujet,
+    html: layout({ preheader: t.titre, eyebrow: "Réseau AVYORA", titre: t.titre, corps: t.corps + (t.bouton ? bouton(t.bouton, d.espaceUrl) : "") }),
+  };
+}

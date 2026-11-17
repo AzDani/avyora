@@ -159,7 +159,7 @@ describe("le menu de l'admin", () => {
   it("le layout garde l'accès admin en première ligne et n'utilise plus les anciens onglets", () => {
     const src = lire("app/admin/layout.tsx");
     expect(src.indexOf("const admin = await getAdmin()")).toBeGreaterThan(0);
-    expect(src.indexOf("const admin = await getAdmin()")).toBeLessThan(src.indexOf("await aTraiter()"));
+    expect(src.indexOf("const admin = await getAdmin()")).toBeLessThan(src.indexOf("Promise.all([aTraiter()"));
     expect(src).toContain('if (!admin) redirect("/")');
     expect(src).not.toContain("AdminTabs");
     expect(fs.existsSync(path.join(process.cwd(), "components/admin/AdminTabs.tsx"))).toBe(false);

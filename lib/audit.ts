@@ -38,7 +38,9 @@ export type EvenementSecurite =
    * `type_projet`, `besoins`, `src`, `langue`, l'issue des deux envois ; le `message` seulement si l'e-mail à Daniel
    * n'est pas parti (sinon il est déjà dans sa boîte : pas de copie inutile). Conservation : 1 an au plus (/confidentialite).
    */
-  | "demande_accompagnement";
+  | "demande_accompagnement"
+  /** Une candidature au Réseau AVYORA envoyée (ou renvoyée après un complément). Payload : `artisan` (id), `completee`. */
+  | "candidature_artisan";
 
 export async function journaliser(
   type: EvenementSecurite,

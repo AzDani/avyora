@@ -1,5 +1,10 @@
 import { listInscrits, statsGlobales, compterPlans, listDemandesAccompagnement, typePrincipal, labelTues } from "@/lib/data/admin";
 import { depuis, parSemaine } from "@/lib/admin/outils";
+import { listArtisansAdmin } from "@/lib/data/reseau";
+import { aujourdhuiParis } from "@/lib/reseau/candidature";
+import { joursAvantFinDecennale } from "@/lib/reseau/artisan";
+import { labelMetier } from "@/lib/reseau/metiers";
+import { resumeDepartements } from "@/lib/reseau/departements";
 import { afficherPortable } from "@/lib/telephone";
 import EnTeteAdmin from "@/components/admin/EnTeteAdmin";
 import TableauDeBord, { type DonneesTableau } from "@/components/admin/TableauDeBord";
@@ -10,11 +15,14 @@ export const dynamic = "force-dynamic";
 export default async function AdminTableauDeBord() {
   // Les inscrits sont le cœur du tableau ; les plans et les demandes, s'ils ne se lisent pas, sont signalés à part
   // au lieu de faire tomber toute la page.
-  const [inscrits, plans, demandesLues] = await Promise.all([
+  const [inscrits, plans, demandesLues, artisans] = await Promise.all([
     listInscrits(),
     compterPlans().catch(() => null),
     listDemandesAccompagnement().catch(() => null),
+    listArtisansAdmin().catch(() => null),
   ]);
+  const jour = aujourdhuiParis();
+  const aExaminer = (artisans ?? []).filter((a) => a.statut === "en_attente").sort((x, y) => +new Date(x.soumiseLe) - +new Date(y.soumiseLe));
   const demandes = demandesLues ?? [];
   const maintenant = new Date();
   const s = statsGlobales(inscrits);
@@ -35,6 +43,18 @@ export default async function AdminTableauDeBord() {
     },
     demandes: aTraiter.slice(0, 5),
     demandesIndisponibles: demandesLues === null,
+    // Les plus anciennes d'abord : elles attendent depuis le plus longtemps.
+    artisans: artisans && {
+      aExaminer: aExaminer.slice(0, 3).map((a) => ({
+        id: a.id,
+        nom: a.raisonSociale,
+        detail: `${a.metiers.slice(0, 2).map(labelMetier).join(", ")} · ${resumeDepartements(a.departements, 2)}`,
+        appelFait: !!a.appelLe,
+        soumiseLe: a.soumiseLe,
+      })),
+      nbAExaminer: aExaminer.length,
+      decennalesARenouveler: artisans.filter((a) => a.statut === "valide" && joursAvantFinDecennale(a.decennaleFin, jour) <= 30).length,
+    },
     nouveaux: recents.slice(0, 8).map((i) => {
       const type = typePrincipal(i.profil);
       return {

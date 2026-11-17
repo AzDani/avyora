@@ -488,6 +488,7 @@ describe("sitemap, maillage interne et confidentialité", () => {
     expect(src).toContain("Mesures précontractuelles prises à ta demande (art. 6.1.b)");
     expect(src).toContain("<strong>1 an au plus</strong>");
     const { LEGAL_MAJ } = await import("@/lib/prix-maj");
-    expect(LEGAL_MAJ.confidentialite).toBe("2026-11-16");
+    // Au moins la mise à jour de l'accompagnement (16/11) ; la date exacte suit la page (tests/seo-contenu.test.ts).
+    expect(LEGAL_MAJ.confidentialite >= "2026-11-16").toBe(true);
   });
 });

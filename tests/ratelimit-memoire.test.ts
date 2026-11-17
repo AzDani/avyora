@@ -163,8 +163,8 @@ describe("avec Upstash", () => {
       vi.doUnmock("@upstash/redis");
       vi.doUnmock("@upstash/ratelimit");
     }
-    expect(prefixes).toHaveLength(15);
-    expect(new Set(prefixes).size).toBe(15);
+    expect(prefixes).toHaveLength(18);
+    expect(new Set(prefixes).size).toBe(18);
     for (const p of ["avyora:auth", "avyora:api", "avyora:statut", "avyora:contact", "avyora:contact-accuse", "avyora:pdf", "avyora:pdf-heure", "avyora:pdf-ip", "avyora:lien-adresse", "avyora:lien-ip", "avyora:marche"]) expect(prefixes).toContain(p);
   });
 
