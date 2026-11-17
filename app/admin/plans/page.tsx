@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { listPlansAdmin } from "@/lib/data/admin";
 import ApercuPlan from "@/components/plans/ApercuPlan";
+import EnTeteAdmin from "@/components/admin/EnTeteAdmin";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,8 @@ export default async function AdminPlans() {
   const plans = await listPlansAdmin();
 
   return (
+    <>
+    <EnTeteAdmin titre="Plans" texte="Les plans dessinés dans l'éditeur, le dernier modifié d'abord. Clique pour l'ouvrir en lecture seule." />
     <div className="overflow-hidden rounded-3xl border border-line bg-surface shadow-[0_1px_3px_rgba(30,27,75,.04)]">
       <div className="border-b border-line px-4 py-3 text-[13px] text-muted">
         <span className="num font-semibold text-ink">{plans.length}</span> plans enregistrés, tous comptes confondus
@@ -53,5 +56,6 @@ export default async function AdminPlans() {
         </table>
       </div>
     </div>
+    </>
   );
 }

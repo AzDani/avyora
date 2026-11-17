@@ -1,8 +1,10 @@
 import "server-only";
+import { cache } from "react";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { estAdmin } from "@/lib/auth";
 import { estimationProjet, avancementProjet, natureProjet, modeProjet, type StatutChantier } from "@/lib/estimateur/projet";
 import type { ApercuMur } from "@/lib/plans/apercu";
+import { lireDemande, type DemandeAccompagnement } from "@/lib/admin/outils";
 
 /**
  * Couche de données ADMIN — lecture cross-tenant via le client service-role (bypass RLS).
@@ -99,8 +101,8 @@ async function projetsParOwner(): Promise<Map<string, AdminProjet[]>> {
   return map;
 }
 
-/** Liste des inscrits (Auth) enrichie de leur profil d'onboarding, plan et projets. */
-export async function listInscrits(): Promise<AdminInscrit[]> {
+/** Liste des inscrits (Auth) enrichie de leur profil d'onboarding, plan et projets. Mémorisée le temps d'une requête. */
+export const listInscrits = cache(async function listInscrits(): Promise<AdminInscrit[]> {
   const sb = supabaseAdmin();
   const { data, error } = await sb.auth.admin.listUsers({ page: 1, perPage: 1000 });
   if (error) throw new Error(error.message);
@@ -124,7 +126,7 @@ export async function listInscrits(): Promise<AdminInscrit[]> {
       } as AdminInscrit;
     })
     .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
-}
+});
 
 /** Un inscrit précis (par id Auth) avec ses projets. */
 export async function getInscrit(id: string): Promise<AdminInscrit | null> {
@@ -275,3 +277,29 @@ export async function getPlanAdmin(id: string): Promise<{
     vue: r.vue ?? null, updatedAt: r.updated_at,
   };
 }
+
+/** Nombre de plans enregistrés (sans les lire). */
+export async function compterPlans(): Promise<number> {
+  const { count, error } = await supabaseAdmin().from("floor_plans").select("id", { count: "exact", head: true });
+  if (error) throw new Error(error.message);
+  return count ?? 0;
+}
+
+/** Type des demandes de rappel dans le journal (lib/audit.ts préfixe les évènements par « secu: »). */
+export const TYPE_DEMANDE_ACCOMPAGNEMENT = "secu:demande_accompagnement";
+
+/**
+ * Les demandes d'accompagnement (page /accompagnement-travaux), les plus récentes d'abord. Elles ne vivent que dans le
+ * journal : l'e-mail à Daniel en est une copie, qui peut manquer. Mémorisées le temps d'une requête (le layout compte
+ * celles à traiter, la page les affiche).
+ */
+export const listDemandesAccompagnement = cache(async (): Promise<DemandeAccompagnement[]> => {
+  const { data, error } = await supabaseAdmin()
+    .from("activity_log")
+    .select("id, created_at, payload")
+    .eq("type", TYPE_DEMANDE_ACCOMPAGNEMENT)
+    .order("created_at", { ascending: false })
+    .limit(500);
+  if (error) throw new Error(error.message);
+  return ((data ?? []) as { id: string; created_at: string; payload: unknown }[]).map(lireDemande);
+});

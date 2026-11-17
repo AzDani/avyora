@@ -1,70 +1,67 @@
-import { listInscrits, statsGlobales, type Repartition } from "@/lib/data/admin";
-import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
+import { listInscrits, statsGlobales, compterPlans, listDemandesAccompagnement, typePrincipal, labelTues } from "@/lib/data/admin";
+import { depuis, parSemaine } from "@/lib/admin/outils";
+import { afficherPortable } from "@/lib/telephone";
+import EnTeteAdmin from "@/components/admin/EnTeteAdmin";
+import TableauDeBord, { type DonneesTableau } from "@/components/admin/TableauDeBord";
 
 export const dynamic = "force-dynamic";
 
-const euros = (n: number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
-
-/** « budget moyen X » (rénovation), suivi de « construction neuve Y » s'il y a des projets neufs. */
-function budgetsMoyens(reno: number | null, neuf: number | null): string | undefined {
-  const parts = [reno != null ? `budget moyen ${euros(reno)}` : "", neuf != null ? `${dictNeufCommun("fr").badge.toLowerCase()} ${euros(neuf)}` : ""].filter(Boolean);
-  return parts.length ? parts.join(" · ") : undefined;
-}
-
-function Kpi({ k, v, d, good }: { k: string; v: string; d?: string; good?: boolean }) {
-  return (
-    <div className="rounded-2xl border border-line bg-surface p-5 shadow-[0_1px_3px_rgba(30,27,75,.04)]">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.06em] text-faint">{k}</div>
-      <div className="num mt-2 text-[30px] font-bold tracking-tight text-ink">{v}</div>
-      {d && <div className={"mt-1.5 text-[12.5px] font-semibold " + (good ? "text-[#0f9d6b]" : "text-faint")}>{d}</div>}
-    </div>
-  );
-}
-
-function Bars({ titre, hint, data, color }: { titre: string; hint: string; data: Repartition; color: string }) {
-  const max = Math.max(1, ...data.map((d) => d.n));
-  return (
-    <div className="rounded-3xl border border-line bg-surface p-5 shadow-[0_1px_3px_rgba(30,27,75,.04)]">
-      <h3 className="text-[15px] font-semibold text-ink">{titre}</h3>
-      <p className="mb-4 mt-0.5 text-[12.5px] text-faint">{hint}</p>
-      {data.length === 0 ? (
-        <p className="text-[13px] text-faint">Aucune donnée pour l'instant.</p>
-      ) : (
-        <div className="flex flex-col gap-2.5">
-          {data.map((d) => (
-            <div key={d.label} className="grid grid-cols-[130px_1fr_36px] items-center gap-2.5 text-[13px]">
-              <span className="truncate text-muted">{d.label}</span>
-              <span className="h-2.5 overflow-hidden rounded-md bg-surface-2">
-                <span className="block h-full rounded-md" style={{ width: `${(d.n / max) * 100}%`, background: color }} />
-              </span>
-              <span className="num text-right font-semibold text-ink">{d.n}</span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-export default async function AdminOverview() {
-  const inscrits = await listInscrits();
+/** Tableau de bord de l'admin : ce qui attend Daniel, puis l'acquisition. L'affichage est dans components/admin/TableauDeBord.tsx. */
+export default async function AdminTableauDeBord() {
+  // Les inscrits sont le cœur du tableau ; les plans et les demandes, s'ils ne se lisent pas, sont signalés à part
+  // au lieu de faire tomber toute la page.
+  const [inscrits, plans, demandesLues] = await Promise.all([
+    listInscrits(),
+    compterPlans().catch(() => null),
+    listDemandesAccompagnement().catch(() => null),
+  ]);
+  const demandes = demandesLues ?? [];
+  const maintenant = new Date();
   const s = statsGlobales(inscrits);
+  const projets = inscrits.flatMap((i) => i.projets);
+  const aTraiter = demandes.filter((x) => !x.traiteeLe);
+  const recents = inscrits.filter((i) => depuis([i.createdAt], 7, maintenant) === 1);
+
+  const d: DonneesTableau = {
+    chiffres: {
+      inscrits: inscrits.length,
+      inscrits7j: recents.length,
+      inscrits30j: s.nouveaux30j,
+      projets: projets.length,
+      projets7j: depuis(projets.map((p) => p.createdAt), 7, maintenant),
+      plans,
+      demandes30j: depuis(demandes.map((x) => x.recueLe), 30, maintenant),
+      aTraiter: aTraiter.length,
+    },
+    demandes: aTraiter.slice(0, 5),
+    demandesIndisponibles: demandesLues === null,
+    nouveaux: recents.slice(0, 8).map((i) => {
+      const type = typePrincipal(i.profil);
+      return {
+        id: i.id,
+        email: i.email,
+        username: i.username ?? "",
+        typeLabel: type === "—" ? "—" : labelTues(type),
+        region: i.profil?.region ?? "",
+        telephone: i.profil?.telephone ? afficherPortable(i.profil.telephone) : "",
+        nbProjets: i.projets.length,
+        createdAt: i.createdAt,
+      };
+    }),
+    nouveauxEnPlus: Math.max(0, recents.length - 8),
+    semaines: parSemaine(inscrits.map((i) => i.createdAt), 12, maintenant),
+    repartitions: [
+      { titre: "Canal d'acquisition", aide: "D'où ils viennent : là où pousser le marketing", data: s.parCanal, couleur: "#e05299" },
+      { titre: "Type d'inscrit", aide: "« Tu es… » rempli à l'inscription", data: s.parType, couleur: "#7c3aed" },
+      { titre: "Top régions", aide: "Répartition géographique", data: s.parRegion, couleur: "#0ea5a4" },
+      { titre: "Tranche d'âge", aide: "Profil démographique", data: s.parAge, couleur: "#4f46e5" },
+    ],
+  };
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
-        <Kpi k="Inscrits" v={String(s.totalInscrits)} d={`+${s.nouveaux30j} sur 30 j`} good={s.nouveaux30j > 0} />
-        <Kpi k="Projets créés" v={String(s.totalProjets)} d={budgetsMoyens(s.budgetMoyen, s.budgetMoyenNeuf)} />
-        <Kpi k="Comptes Pro" v={String(s.totalPro)} d="mode test Stripe" />
-        <Kpi k="Onboarding complété" v={`${s.onboardingPct}\u00a0%`} d={`${inscrits.filter((i) => i.onboardingFait).length} / ${s.totalInscrits}`} />
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Bars titre="Type d'inscrit" hint="« Tu es… » rempli à l'inscription" data={s.parType} color="#7c3aed" />
-        <Bars titre="Canal d'acquisition" hint="D'où ils viennent → où pousser le marketing" data={s.parCanal} color="#e05299" />
-        <Bars titre="Tranche d'âge" hint="Profil démographique" data={s.parAge} color="#4f46e5" />
-        <Bars titre="Top régions" hint="Répartition géographique" data={s.parRegion} color="#0ea5a4" />
-      </div>
-    </div>
+    <>
+      <EnTeteAdmin titre="Tableau de bord" texte="Ce qui attend une action en premier, puis les chiffres d'acquisition." />
+      <TableauDeBord d={d} />
+    </>
   );
 }

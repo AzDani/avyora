@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { listInscrits } from "@/lib/data/admin";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
+import EnTeteAdmin from "@/components/admin/EnTeteAdmin";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,8 @@ export default async function AdminProjets() {
     .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
 
   return (
+    <>
+    <EnTeteAdmin titre="Projets" texte="Toutes les estimations enregistrées, la plus récente d'abord. Clique sur un projet pour l'ouvrir." />
     <div className="overflow-hidden rounded-3xl border border-line bg-surface shadow-[0_1px_3px_rgba(30,27,75,.04)]">
       <div className="border-b border-line px-4 py-3 text-[13px] text-muted">
         <span className="num font-semibold text-ink">{projets.length}</span> projets enregistrés, tous comptes confondus
@@ -59,5 +62,6 @@ export default async function AdminProjets() {
         </table>
       </div>
     </div>
+    </>
   );
 }

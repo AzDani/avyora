@@ -53,9 +53,11 @@ function Pill({ tone, children }: { tone: string; children: React.ReactNode }) {
   return <span className={"inline-flex items-center rounded-full px-2.5 py-0.5 text-[11.5px] font-semibold " + (styles[tone] ?? styles["—"])}>{children}</span>;
 }
 
-export default function InscritsTable({ rows }: { rows: InscritRow[] }) {
+export default function InscritsTable({ rows, rechercheInitiale = "" }: { rows: InscritRow[]; rechercheInitiale?: string }) {
   const router = useRouter();
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(rechercheInitiale);
+  // La recherche du menu de l'admin (?q=) arrive ici, y compris quand la page est déjà ouverte.
+  useEffect(() => setQ(rechercheInitiale), [rechercheInitiale]);
   const [f, setF] = useState("tous");
   const [rowsState, setRowsState] = useState(rows);
   const [confirmId, setConfirmId] = useState<string | null>(null); // inscrit dont on confirme le changement de plan

@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getInscrit, labelTues, labelObjectif, labelMaturite } from "@/lib/data/admin";
 import { dictNeufCommun } from "@/lib/i18n/neuf-commun";
+import ContactRapide from "@/components/admin/ContactRapide";
+import { messageWhatsApp } from "@/lib/admin/outils";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +43,9 @@ export default async function FicheInscrit({ params }: { params: Promise<{ id: s
           <div>
             <h2 className="num text-[19px] font-semibold text-ink">{i.email}</h2>
             <p className="mt-1 text-[13px] text-muted">Inscrit le {fdate(i.createdAt)}{i.lastSignIn ? ` · dernière connexion ${fdate(i.lastSignIn)}` : ""}</p>
+            <div className="mt-3">
+              <ContactRapide tel={p?.telephone} email={i.email} whatsapp={messageWhatsApp.inscrit()} sujet="Ton compte AVYORA" />
+            </div>
           </div>
           <span className={"inline-flex items-center rounded-full px-3 py-1 text-[12px] font-semibold " + (i.plan === "admin" ? "bg-[#1E1B4B] text-white" : i.plan === "pro" ? "bg-brand-600 text-white" : "border border-line bg-surface-2 text-muted")}>
             {i.plan === "admin" ? "Admin · accès Pro" : i.plan === "pro" ? "Pro" : "Free"}
