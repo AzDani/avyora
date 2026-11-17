@@ -138,6 +138,7 @@ export default function ReseauArtisans() {
             <ul className="mt-2 list-disc space-y-1.5 pl-5 text-[14.5px] leading-relaxed text-muted">
               <li>Le client voit les artisans du réseau qui interviennent dans son département et exercent le métier demandé.</li>
               <li>C&apos;est le client qui choisit, jusqu&apos;à trois artisans par demande.</li>
+              <li>Ils lui sont affichés en commençant par ceux qui ont reçu le moins de demandes, pour répartir équitablement ; à égalité, dans un ordre propre à chaque client.</li>
               <li>Aucun artisan ne paie pour être mieux placé ou plus souvent proposé.</li>
             </ul>
             <h3 className="mt-5 text-[15px] font-semibold text-ink">Rémunération et rôle d&apos;AVYORA</h3>

@@ -199,3 +199,14 @@ export function conseilsProjet(reponses: unknown): string[] {
   conseils.push("Estimation au métré, prix moyens du marché 2026 — demandez 2-3 devis pour confirmer avant de vous engager.");
   return conseils;
 }
+
+/**
+ * Les lots chiffrés d'un projet (corps d'état et montant TTC), dans l'ordre du catalogue : la demande de devis du
+ * Réseau AVYORA en tire les métiers à proposer et, si le client le veut, l'estimation jointe pour les artisans.
+ */
+export function lotsProjet(reponses: unknown): DevisLot[] {
+  const r = reponses as Rep;
+  if (!estFormatEstimateur(r)) return [];
+  const ctx = ctxProjet(r);
+  return buildDevis(catalogueDe(ctx), ctx, normaliserCles(r.sel || {})).lots;
+}

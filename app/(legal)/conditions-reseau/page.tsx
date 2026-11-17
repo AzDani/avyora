@@ -45,6 +45,7 @@ export default function ConditionsReseau() {
         <li>Le Client voit les artisans du réseau qui interviennent dans <strong>son département</strong> et exercent le métier demandé. C&apos;est <strong>le Client qui choisit</strong>, jusqu&apos;à trois artisans par demande.</li>
         <li>L&apos;Artisan choisi reçoit la demande (nature des travaux et, quand le Client les a donnés, description, quantités, photos, estimation AVYORA). Il est libre de l&apos;accepter ou de la refuser.</li>
         <li>Les coordonnées du Client ne sont communiquées qu&apos;à l&apos;Artisan qui <strong>accepte</strong> la demande.</li>
+        <li>Les artisans sont affichés au Client en commençant par ceux qui ont reçu le moins de demandes, pour répartir les demandes équitablement&nbsp;; à égalité, dans un ordre propre à chaque Client.</li>
         <li>Aucun artisan ne paie pour être mieux placé ou plus souvent proposé.</li>
       </ul>
 

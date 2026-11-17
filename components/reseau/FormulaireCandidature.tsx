@@ -4,6 +4,7 @@ import { useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabaseBrowser } from "@/lib/supabase/browser";
+import { nettoyerImage } from "@/lib/reseau/image";
 import { enregistrerDocument, preparerEnvoiDocument, soumettreCandidature, supprimerDocument, verifierMonSiret } from "@/lib/actions/reseau";
 import { BUCKET_ARTISANS, DOCS, MESSAGES_ERREURS, TAILLE_MAX, TYPES_DOCUMENTS, documentsManquants, mimeAccepte, validerCandidature, type ErreursCandidature, type TypeDocument } from "@/lib/reseau/candidature";
 import { METIERS } from "@/lib/reseau/metiers";
@@ -83,11 +84,14 @@ function Fichiers({
     setErreur("");
     const liste = Array.from(fichiers).slice(0, Math.max(0, regle.max - miens.length));
     if (liste.length < fichiers.length) setErreur(ERREURS_FICHIER.trop);
-    for (const f of liste) {
-      if (!mimeAccepte(type, f.type)) { setErreur(`${f.name} : ${ERREURS_FICHIER.type} ${type === "photo" ? "Photos en JPEG, PNG ou WebP." : "PDF, JPEG, PNG ou WebP."}`); continue; }
-      if (f.size > TAILLE_MAX) { setErreur(`${f.name} : ${ERREURS_FICHIER.taille}`); continue; }
+    for (const brut of liste) {
+      if (!mimeAccepte(type, brut.type)) { setErreur(`${brut.name} : ${ERREURS_FICHIER.type} ${type === "photo" ? "Photos en JPEG, PNG ou WebP." : "PDF, JPEG, PNG ou WebP."}`); continue; }
       setEnvois((n) => n + 1);
       try {
+        // Une image est réencodée sans métadonnées (position GPS des chantiers comprise) ; un PDF part tel quel.
+        const f = brut.type.startsWith("image/") ? await nettoyerImage(brut).catch(() => null) : brut;
+        if (!f) { setErreur(`${brut.name} : ce fichier n'a pas pu être préparé, essaie avec un autre.`); continue; }
+        if (f.size > TAILLE_MAX) { setErreur(`${brut.name} : ${ERREURS_FICHIER.taille}`); continue; }
         const p = await preparerEnvoiDocument({ type, taille: f.size, mime: f.type });
         if (!p.ok) { setErreur(ERREURS_FICHIER[p.erreur] ?? ERREURS_FICHIER.serveur); continue; }
         const { error } = await supabaseBrowser().storage.from(BUCKET_ARTISANS).uploadToSignedUrl(p.chemin, p.jeton, f, { contentType: f.type });

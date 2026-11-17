@@ -7,6 +7,7 @@ import ClaimDraft from "@/components/ClaimDraft";
 import ClaimPlan from "@/components/plans/ClaimPlan";
 import ProUpsell from "@/components/ProUpsell";
 import RappelPortable from "@/components/RappelPortable";
+import BandeauDevis from "@/components/reseau/BandeauDevis";
 import { COOKIE_RAPPEL_PORTABLE } from "@/lib/telephone";
 import { cookies } from "next/headers";
 import { getUser, estPro } from "@/lib/auth";
@@ -181,6 +182,9 @@ export default async function ProjetsPage() {
       {sansPortable && <RappelPortable locale={locale} />}
 
       {!isPro && <ProUpsell />}
+
+      {/* Réseau AVYORA (phase 2) : retrouver ses demandes de devis. En France seulement. */}
+      {locale === "fr" && <BandeauDevis compact />}
 
       <ListeProjets projets={projets} archives={archives} {...(plans ? { plans: plans.liste } : {})} />
 

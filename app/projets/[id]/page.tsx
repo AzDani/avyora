@@ -6,6 +6,7 @@ import { getProjet } from "@/lib/data/projects";
 import { getUser, estPro } from "@/lib/auth";
 import ProjetActions from "@/components/ProjetActions";
 import EstimationResultat from "@/components/EstimationResultat";
+import BandeauDevis from "@/components/reseau/BandeauDevis";
 import ResultatRapide from "@/components/ResultatRapide";
 import ResultatRapideNeuf from "@/components/neuf/ResultatRapideNeuf";
 import { regionLabel, estNeuf, type Ctx, type Selection, type Ampleur, type QuiRealise } from "@/lib/estimateur";
@@ -108,6 +109,9 @@ export default async function ProjetPage({ params }: { params: Promise<{ id: str
           ? <ResultatRapideNeuf reponses={reponses} projectId={projet.id} isPro={estPro(user)} />
           : <ResultatRapide reponses={reponses} projectId={projet.id} isPro={estPro(user)} />)
         : <EstimationResultat reponses={reponses} projectId={projet.id} depenses={depenses} invest={invest} />}
+
+      {/* Réseau AVYORA (phase 2) : demander des devis à partir de ce projet, une fois l'estimation lue. En France seulement. */}
+      {locale === "fr" && <BandeauDevis projetId={String(projet.id)} />}
     </div>
   );
 }

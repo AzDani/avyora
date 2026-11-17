@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getArtisanAdmin } from "@/lib/data/reseau";
+import { getArtisanAdmin, statsMisesEnRelation } from "@/lib/data/reseau";
 import { aujourdhuiParis, DOCS } from "@/lib/reseau/candidature";
 import { bloquantsValidation } from "@/lib/reseau/artisan";
 import { labelMetier } from "@/lib/reseau/metiers";
@@ -52,6 +52,7 @@ export default async function FicheArtisan({ params }: { params: Promise<{ id: s
   const photos = documents.filter((d) => d.type === "photo");
   const attestations = documents.filter((d) => d.type !== "photo");
   const v = a.siretVerif;
+  const stats = await statsMisesEnRelation(a.id).catch(() => null);
   const toute = a.departements.length >= DEPARTEMENTS.length;
 
   return (
@@ -69,6 +70,9 @@ export default async function FicheArtisan({ params }: { params: Promise<{ id: s
               {a.nomCommercial ? `${a.nomCommercial} · ` : ""}{a.contactNom} · {afficherPortable(a.telephone)} · {a.email}
             </p>
             <p className="num mt-0.5 text-[12.5px] text-faint">Envoyée le {dateCourte(a.soumiseLe)}{a.valideLe ? ` · validée le ${dateCourte(a.valideLe)}` : ""}</p>
+            {stats && stats.recues > 0 && (
+              <p className="num mt-0.5 text-[12.5px] text-muted">Demandes de devis : {stats.recues} reçue{stats.recues > 1 ? "s" : ""} · {stats.acceptees} acceptée{stats.acceptees > 1 ? "s" : ""} · {stats.refusees} refusée{stats.refusees > 1 ? "s" : ""}</p>
+            )}
           </div>
           <PastilleStatut statut={a.statut} />
         </div>

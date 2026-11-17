@@ -1,6 +1,6 @@
 import { listInscrits, statsGlobales, compterPlans, listDemandesAccompagnement, typePrincipal, labelTues } from "@/lib/data/admin";
 import { depuis, parSemaine } from "@/lib/admin/outils";
-import { listArtisansAdmin } from "@/lib/data/reseau";
+import { listArtisansAdmin, listDemandesDevisAdmin } from "@/lib/data/reseau";
 import { aujourdhuiParis } from "@/lib/reseau/candidature";
 import { joursAvantFinDecennale } from "@/lib/reseau/artisan";
 import { labelMetier } from "@/lib/reseau/metiers";
@@ -21,6 +21,7 @@ export default async function AdminTableauDeBord() {
     listDemandesAccompagnement().catch(() => null),
     listArtisansAdmin().catch(() => null),
   ]);
+  const devis = await listDemandesDevisAdmin().catch(() => null);
   const jour = aujourdhuiParis();
   const aExaminer = (artisans ?? []).filter((a) => a.statut === "en_attente").sort((x, y) => +new Date(x.soumiseLe) - +new Date(y.soumiseLe));
   const demandes = demandesLues ?? [];
@@ -54,6 +55,7 @@ export default async function AdminTableauDeBord() {
       })),
       nbAExaminer: aExaminer.length,
       decennalesARenouveler: artisans.filter((a) => a.statut === "valide" && joursAvantFinDecennale(a.decennaleFin, jour) <= 30).length,
+      devisSansArtisan: (devis ?? []).filter((x) => x.reponses.length === 0).length,
     },
     nouveaux: recents.slice(0, 8).map((i) => {
       const type = typePrincipal(i.profil);

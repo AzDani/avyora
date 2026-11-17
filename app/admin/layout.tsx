@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getAdmin } from "@/lib/auth";
 import { listDemandesAccompagnement } from "@/lib/data/admin";
-import { listArtisansAdmin } from "@/lib/data/reseau";
+import { listArtisansAdmin, listDemandesDevisAdmin } from "@/lib/data/reseau";
 import AdminNav from "@/components/admin/AdminNav";
 
 export const dynamic = "force-dynamic";
@@ -23,6 +23,14 @@ async function candidatures(): Promise<number | null> {
     return null;
   }
 }
+/** Les demandes de devis restées sans artisan (zones où recruter). null avant la migration 0008, ou en cas de panne. */
+async function devisSansArtisan(): Promise<number | null> {
+  try {
+    return (await listDemandesDevisAdmin()).filter((d) => d.reponses.length === 0).length;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Layout de l'espace admin. Garde d'accès dès la première ligne : sans email dans ADMIN_EMAILS,
@@ -35,12 +43,12 @@ async function candidatures(): Promise<number | null> {
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const admin = await getAdmin();
   if (!admin) redirect("/");
-  const [accompagnement, artisans] = await Promise.all([aTraiter(), candidatures()]);
+  const [accompagnement, artisans, devis] = await Promise.all([aTraiter(), candidatures(), devisSansArtisan()]);
 
   return (
     <div data-admin-cadre="" style={{ marginInline: "calc(50% - min(50vw - 1rem, 40rem))" }}>
       <div className="lg:grid lg:grid-cols-[232px_minmax(0,1fr)] lg:gap-8">
-        <AdminNav email={admin.email ?? ""} badges={{ accompagnement, artisans }} />
+        <AdminNav email={admin.email ?? ""} badges={{ accompagnement, artisans, devis }} />
         <div className="min-w-0 pt-6 lg:pt-0">{children}</div>
       </div>
     </div>

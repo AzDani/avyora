@@ -38,6 +38,8 @@ export type DonneesTableau = {
     aExaminer: { id: string; nom: string; detail: string; appelFait: boolean; soumiseLe: string }[];
     nbAExaminer: number;
     decennalesARenouveler: number;
+    /** Demandes de devis restées sans artisan dans leur zone (là où recruter). */
+    devisSansArtisan?: number;
   } | null;
   /** Les inscrits des 7 derniers jours (8 au plus). */
   nouveaux: NouvelInscrit[];
@@ -148,7 +150,7 @@ export default function TableauDeBord({ d }: { d: DonneesTableau }) {
 
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
         <Panneau titre="À traiter" compte={d.demandesIndisponibles ? undefined : c.aTraiter} lien={{ href: "/admin/accompagnement", label: "Toutes les demandes" }}>
-          {d.artisans && (d.artisans.nbAExaminer > 0 || d.artisans.decennalesARenouveler > 0) && (
+          {d.artisans && (d.artisans.nbAExaminer > 0 || d.artisans.decennalesARenouveler > 0 || !!d.artisans.devisSansArtisan) && (
             <div className="mb-3 rounded-2xl border border-line bg-surface-2/60 p-3" data-a-traiter-artisans="">
               <div className="flex items-baseline justify-between gap-3">
                 <h3 className="text-[13.5px] font-semibold text-ink">
@@ -170,6 +172,11 @@ export default function TableauDeBord({ d }: { d: DonneesTableau }) {
                     </li>
                   ))}
                 </ul>
+              )}
+              {!!d.artisans.devisSansArtisan && (
+                <p className="mt-2 text-[12.5px] font-medium text-[#8a5300]">
+                  <Link href="/admin/devis?vue=sans-artisan" className="underline">{d.artisans.devisSansArtisan} demande{d.artisans.devisSansArtisan > 1 ? "s" : ""} de devis sans artisan dans la zone</Link> : des départements où recruter.
+                </p>
               )}
               {d.artisans.decennalesARenouveler > 0 && (
                 <p className="mt-2 text-[12.5px] font-medium text-[#8a5300]">

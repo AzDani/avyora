@@ -269,7 +269,7 @@ export function emailArtisan(evt: EvenementArtisan, d: { nom: string; message?: 
     validee: {
       sujet: "Bienvenue dans le Réseau AVYORA",
       titre: "Tu fais partie du Réseau AVYORA",
-      corps: `${bonjour}${P("Ta candidature est validée : <b style=\"color:#15172b\">bienvenue dans le Réseau AVYORA</b>.")}${mot}${P("Les clients d'AVYORA de ta zone pourront bientôt te choisir pour leurs demandes de devis. Tu recevras chaque demande par e-mail, avec l'estimation détaillée du projet quand elle existe.")}`,
+      corps: `${bonjour}${P("Ta candidature est validée : <b style=\"color:#15172b\">bienvenue dans le Réseau AVYORA</b>.")}${mot}${P("Les clients d'AVYORA de ta zone peuvent désormais te choisir pour leurs demandes de devis. Tu reçois chaque demande par e-mail, avec l'estimation détaillée du projet quand le client la joint : accepte-la depuis ton espace pour recevoir ses coordonnées.")}`,
       bouton: "Mon espace artisan",
     },
     refusee: {
@@ -293,5 +293,79 @@ export function emailArtisan(evt: EvenementArtisan, d: { nom: string; message?: 
   return {
     subject: t.sujet,
     html: layout({ preheader: t.titre, eyebrow: "Réseau AVYORA", titre: t.titre, corps: t.corps + (t.bouton ? bouton(t.bouton, d.espaceUrl) : "") }),
+  };
+}
+
+/* ─── Réseau AVYORA, phase 2 : les demandes de devis ─────────────────────────── */
+
+/** À l'artisan choisi : une nouvelle demande, SANS les coordonnées du client (elles s'affichent s'il accepte). */
+export function emailNouvelleDemandeArtisan(d: { nomArtisan: string; travaux: string[]; lieu: string; delai: string; avecEstimation: boolean; espaceUrl: string }): { subject: string; html: string } {
+  const e = echapperHtml;
+  const corps = `
+    ${P(`Bonjour ${e(d.nomArtisan)},`)}
+    ${P("Un client d'AVYORA t'a choisi pour lui faire un devis.")}
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 8px;border-top:1px solid #eef0f6">
+      ${ligne("Travaux", d.travaux.map(e).join("<br>"))}
+      ${ligne("Lieu", e(d.lieu))}
+      ${ligne("Délai", e(d.delai))}
+      ${d.avecEstimation ? ligne("Estimation", "jointe (postes et montants)") : ""}
+    </table>
+    ${P("Ouvre ton espace artisan pour voir la demande et <b style=\"color:#15172b\">l'accepter ou la refuser</b>. Les coordonnées du client s'affichent dès que tu acceptes.")}
+    ${bouton("Voir la demande", d.espaceUrl)}
+  `;
+  return {
+    subject: `Nouvelle demande de devis : ${d.travaux.slice(0, 2).join(", ")} · ${d.lieu}`,
+    html: layout({ preheader: `${e(d.lieu)} · ${e(d.travaux.join(", "))}`, eyebrow: "Réseau AVYORA", titre: "Nouvelle demande de devis", corps }),
+  };
+}
+
+/** Au client : sa demande est partie (ou gardée, si aucun artisan n'est encore disponible dans sa zone). */
+export function emailDemandeEnvoyee(d: { prenom: string; artisans: string[]; suiviUrl: string }): { subject: string; html: string } {
+  const e = echapperHtml;
+  const corps = d.artisans.length
+    ? `${P(`Bonjour ${e(d.prenom)},`)}${P(`Ta demande de devis est envoyée à ${d.artisans.length > 1 ? "ces artisans" : "cet artisan"} du Réseau AVYORA :`)}
+       <ul style="margin:0 0 14px;padding-left:20px;font-size:15px;color:#15172b;line-height:1.7">${d.artisans.map((a) => `<li>${e(a)}</li>`).join("")}</ul>
+       ${P("Chacun te répond depuis son espace. Dès qu'un artisan accepte, tu reçois ses coordonnées par e-mail, et il reçoit les tiennes pour te contacter.")}`
+    : `${P(`Bonjour ${e(d.prenom)},`)}${P("Ta demande de devis est bien enregistrée. Il n'y a pas encore d'artisan du Réseau AVYORA disponible dans ton département pour ces travaux : Daniel cherche, et on te prévient dès qu'un artisan vérifié peut te répondre.")}`;
+  return {
+    subject: d.artisans.length ? "Ta demande de devis est envoyée" : "Ta demande de devis est enregistrée",
+    html: layout({ preheader: d.artisans.length ? `Envoyée à ${d.artisans.length} artisan${d.artisans.length > 1 ? "s" : ""} vérifié${d.artisans.length > 1 ? "s" : ""}` : "On te prévient dès qu'un artisan est disponible", eyebrow: "Réseau AVYORA", titre: "Demande de devis", corps: corps + bouton("Suivre ma demande", d.suiviUrl) }),
+  };
+}
+
+/** Au client : la réponse d'un artisan. Acceptée : ses coordonnées. Refusée : une ligne, sans motif. */
+export function emailReponseArtisan(d: {
+  prenom: string; nomArtisan: string; acceptee: boolean; contact?: { nom: string; telephone: string; email: string }; suiviUrl: string;
+}): { subject: string; html: string } {
+  const e = echapperHtml;
+  const corps = d.acceptee && d.contact
+    ? `${P(`Bonjour ${e(d.prenom)},`)}${P(`<b style="color:#15172b">${e(d.nomArtisan)}</b> accepte ta demande de devis et va te contacter. Tu peux aussi le joindre directement :`)}
+       <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 8px;border-top:1px solid #eef0f6">
+         ${ligne("Contact", e(d.contact.nom))}
+         ${ligne("Téléphone", `<a href="tel:${e(d.contact.telephone.replace(/[^0-9+]/g, ""))}" style="color:#4f46e5">${e(d.contact.telephone)}</a>`)}
+         ${ligne("E-mail", `<a href="mailto:${e(d.contact.email)}" style="color:#4f46e5">${e(d.contact.email)}</a>`)}
+       </table>
+       ${P("Avant de signer, compare les devis reçus avec ton estimation AVYORA.")}`
+    : `${P(`Bonjour ${e(d.prenom)},`)}${P(`${e(d.nomArtisan)} n'est pas disponible pour ta demande. Les autres artisans choisis peuvent encore te répondre ; tu peux aussi faire une nouvelle demande.`)}`;
+  return {
+    subject: d.acceptee ? `${d.nomArtisan} accepte ta demande de devis` : `${d.nomArtisan} n'est pas disponible`,
+    html: layout({ preheader: d.acceptee ? "Ses coordonnées sont dans cet e-mail" : "Les autres artisans peuvent encore répondre", eyebrow: "Réseau AVYORA", titre: d.acceptee ? "Un artisan accepte ta demande" : "Réponse d'un artisan", corps: corps + bouton("Suivre ma demande", d.suiviUrl) }),
+  };
+}
+
+/** À Daniel : une demande sans artisan dans la zone (là où recruter). */
+export function emailDemandeSansArtisan(d: { travaux: string[]; lieu: string; adminUrl: string }): { subject: string; html: string } {
+  const e = echapperHtml;
+  const corps = `
+    ${P("Un client a fait une demande de devis, mais aucun artisan validé du réseau ne couvre sa zone pour ces travaux : c'est un endroit où recruter.")}
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 8px;border-top:1px solid #eef0f6">
+      ${ligne("Travaux", d.travaux.map(e).join("<br>"))}
+      ${ligne("Lieu", e(d.lieu))}
+    </table>
+    ${bouton("Voir les demandes", d.adminUrl)}
+  `;
+  return {
+    subject: `Demande de devis sans artisan : ${d.lieu}`,
+    html: layout({ preheader: `${e(d.lieu)} · ${e(d.travaux.join(", "))}`, eyebrow: "Réseau AVYORA", titre: "Demande sans artisan", corps }),
   };
 }

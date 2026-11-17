@@ -40,7 +40,11 @@ export type EvenementSecurite =
    */
   | "demande_accompagnement"
   /** Une candidature au Réseau AVYORA envoyée (ou renvoyée après un complément). Payload : `artisan` (id), `completee`. */
-  | "candidature_artisan";
+  | "candidature_artisan"
+  /** Une demande de devis envoyée au Réseau AVYORA. Payload : `demande` (id), `artisans` (combien de choisis). */
+  | "demande_devis"
+  /** La réponse d'un artisan à une demande. Payload : `mise` (id de la mise en relation), `statut`. */
+  | "reponse_devis";
 
 export async function journaliser(
   type: EvenementSecurite,

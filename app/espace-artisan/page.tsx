@@ -4,7 +4,8 @@ import type { Metadata } from "next";
 import { getUser } from "@/lib/auth";
 import { lienInscriptionBeta } from "@/lib/beta";
 import { afficherPortable } from "@/lib/telephone";
-import { candidatureDe, documentsDe, urlsSignees } from "@/lib/data/reseau";
+import { candidatureDe, demandesRecues, documentsDe, urlsSignees, type DemandeRecue } from "@/lib/data/reseau";
+import DemandesRecues from "@/components/reseau/DemandesRecues";
 import { candidatureModifiable, LIBELLES_STATUT, type Artisan } from "@/lib/reseau/artisan";
 import { labelMetier } from "@/lib/reseau/metiers";
 import { resumeDepartements } from "@/lib/reseau/departements";
@@ -144,6 +145,9 @@ export default async function EspaceArtisan() {
     suspendu: "Ta participation est suspendue",
   };
   const st = cand.statut as Exclude<Artisan["statut"], "a_completer">;
+  // Les demandes de devis reçues (phase 2) : seulement pour un artisan validé.
+  let demandes: DemandeRecue[] | null = [];
+  if (st === "valide") demandes = await demandesRecues(cand.id).catch(() => null);
   return (
     <div className="mx-auto max-w-3xl space-y-5 py-2" lang="fr">
       <div>
@@ -151,7 +155,7 @@ export default async function EspaceArtisan() {
         <h1 className="mt-1 text-[28px] font-semibold tracking-tight text-ink sm:text-[32px]">{titre[st]}</h1>
         <p className="mt-2 max-w-[62ch] text-[15px] leading-relaxed text-muted">
           {st === "en_attente" && "Daniel examine ton dossier, puis t'appelle pour faire connaissance. Tu reçois un e-mail dès qu'il y a du nouveau."}
-          {st === "valide" && "Les clients d'AVYORA de ta zone pourront bientôt te choisir pour leurs demandes de devis. Chaque demande t'arrivera par e-mail, et ici."}
+          {st === "valide" && "Les clients d'AVYORA de ta zone peuvent te choisir pour leurs demandes de devis. Chaque demande t'arrive par e-mail, et ici : accepte-la pour recevoir les coordonnées du client."}
           {st === "refuse" && "Merci pour ta candidature. Si ta situation évolue, écris-nous à contact@getavyora.fr."}
           {st === "suspendu" && "Tu ne reçois plus de demandes pour le moment. Pour en parler, écris-nous à contact@getavyora.fr."}
         </p>
@@ -162,18 +166,15 @@ export default async function EspaceArtisan() {
           <p className="mt-1 whitespace-pre-line text-[14.5px] leading-relaxed text-ink">{cand.messageAdmin}</p>
         </div>
       )}
-      {(st === "en_attente" || st === "valide") && (
+      {st === "en_attente" && (
         <section className="rounded-3xl border border-line bg-surface p-5 sm:p-6" aria-labelledby="etapes">
           <h2 id="etapes" className="mb-4 text-[16px] font-semibold text-ink">Où en est ta candidature</h2>
           <Etapes a={cand} />
         </section>
       )}
-      {st === "valide" && (
-        <section className="rounded-3xl border border-dashed border-line-strong bg-surface-2 p-5 text-[14px] text-muted sm:p-6">
-          <h2 className="text-[16px] font-semibold text-ink">Tes demandes de devis</h2>
-          <p className="mt-1">Elles apparaîtront ici dès que les clients pourront choisir leurs artisans. Tu seras prévenu par e-mail.</p>
-        </section>
-      )}
+      {st === "valide" && (demandes ? <DemandesRecues demandes={demandes} /> : (
+        <p role="alert" className="rounded-2xl bg-[#fdf0ef] p-4 text-[14px] text-[#8a1f15]">Tes demandes ne s&apos;affichent pas pour l&apos;instant. Recharge la page dans un instant.</p>
+      ))}
       <section className="rounded-3xl border border-line bg-surface p-5 sm:p-6" aria-labelledby="recap">
         <h2 id="recap" className="mb-4 text-[16px] font-semibold text-ink">Ton dossier</h2>
         <Recap a={cand} />

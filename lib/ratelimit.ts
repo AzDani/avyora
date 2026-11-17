@@ -56,11 +56,15 @@ const LIMITERS: Record<LimitKind, Ratelimit | null> = {
   artisanSiret: make(Ratelimit.slidingWindow(20, "3600 s"), "avyora:artisan-siret"), // 20 vérifications / h / compte
   artisanFichier: make(Ratelimit.slidingWindow(40, "3600 s"), "avyora:artisan-fichier"), // 40 fichiers / h / compte
   artisanEnvoi: make(Ratelimit.slidingWindow(5, "3600 s"), "avyora:artisan-envoi"), // 5 envois de candidature / h / compte
+  // Demandes de devis (phase 2), indexées sur le compte : chaque demande envoie un e-mail à chaque artisan choisi.
+  devisRecherche: make(Ratelimit.slidingWindow(60, "3600 s"), "avyora:devis-recherche"), // 60 recherches d'artisans / h / compte
+  devisDemande: make(Ratelimit.slidingWindow(5, "86400 s"), "avyora:devis-demande"), // 5 demandes / jour / compte
 };
 
 export type LimitKind =
   | "auth" | "api" | "ia" | "pdf" | "pdfHeure" | "pdfIp" | "lienAdresse" | "lienIp" | "plan" | "planCreation" | "planEstimation" | "marche"
-  | "statut" | "contact" | "contactAccuse" | "artisanSiret" | "artisanFichier" | "artisanEnvoi";
+  | "statut" | "contact" | "contactAccuse" | "artisanSiret" | "artisanFichier" | "artisanEnvoi"
+  | "devisRecherche" | "devisDemande";
 
 /**
  * Les catégories qui CRÉENT des lignes en base (« Mes plans ») ou qui coûtent cher (le plafond horaire des PDF) se
@@ -106,6 +110,8 @@ const MEMOIRE: Partial<Record<LimitKind, { max: number; fenetreMs: number }>> = 
   artisanSiret: { max: 20, fenetreMs: 3_600_000 },
   artisanFichier: { max: 40, fenetreMs: 3_600_000 },
   artisanEnvoi: { max: 5, fenetreMs: 3_600_000 },
+  devisRecherche: { max: 60, fenetreMs: 3_600_000 },
+  devisDemande: { max: 5, fenetreMs: 86_400_000 },
 };
 
 /**
