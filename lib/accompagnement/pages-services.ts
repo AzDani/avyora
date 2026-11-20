@@ -22,6 +22,15 @@ export type PageService = {
   aSavoir: string[];
   liens: { href: string; label: string }[];
   faq: { q: string; a: string }[];
+  /** Variantes du gabarit (page « trouver un artisan ») ; absentes = page d'accompagnement de Daniel. */
+  eyebrow?: string;
+  cta?: { href: string; label: string; note: string };
+  /** Le fil d'Ariane passe par cette page (sinon par /accompagnement-travaux). */
+  parent?: { href: string; nom: string } | null;
+  /** Pas de bloc « Qui je suis » (la page ne parle pas de l'accompagnement de Daniel). */
+  sansBio?: boolean;
+  titreFinal?: string;
+  texteFinal?: string;
 };
 
 export const PARCOURS_COURT =
@@ -67,7 +76,7 @@ export const RELECTURE_DEVIS: PageService = {
   ],
   liens: [
     { href: "/guides/verifier-devis-travaux", label: "La méthode pour vérifier un devis toi-même" },
-    { href: "/estimation-travaux", label: "Estimer tes travaux gratuitement" },
+    { href: "/trouver-un-artisan", label: "Demander des devis à des artisans vérifiés" },
     { href: "/suivi-de-chantier", label: "Le suivi de chantier à distance" },
   ],
   faq: [
@@ -168,3 +177,86 @@ export const SUIVI_CHANTIER: PageService = {
     },
   ],
 };
+
+/**
+ * La page des CLIENTS du Réseau AVYORA (référencement du 20/11/2026 : « trouver un artisan », « artisan de confiance »,
+ * « vérifier décennale / SIRET »). /reseau-artisans parle aux artisans ; celle-ci parle à ceux qui cherchent un artisan.
+ * L'accès dépend de la bêta : la page le reçoit (`acces`). Honnête sur le démarrage du réseau (zones encore vides).
+ * Chemin hors du préfixe /artisans (privé dans le proxy et fermé dans robots.txt).
+ */
+export function trouverArtisan(acces: string): PageService {
+  return {
+    chemin: "/trouver-un-artisan",
+    titre: "Trouver un artisan vérifié pour tes travaux",
+    description:
+      "Jusqu'à 3 artisans de ton département, vérifiés un par un : SIRET actif, assurance décennale, chantiers, entretien. Tu choisis, ils te répondent sous 5 jours.",
+    nomService: "Trouver un artisan vérifié",
+    serviceType: "Mise en relation avec des artisans du bâtiment vérifiés",
+    eyebrow: "Réseau AVYORA · artisans vérifiés",
+    h1: "Trouve un artisan vérifié pour tes travaux.",
+    intro:
+      "Le Réseau AVYORA réunit des artisans vérifiés un par un par Daniel, ancien chef de chantier. Tu choisis jusqu'à 3 artisans de ton département ; ceux qui acceptent ta demande te contactent pour établir leur devis.",
+    liste: {
+      titre: "Ce que nous vérifions",
+      items: [
+        { t: "Un SIRET actif", s: "L'entreprise existe et n'est pas fermée, d'après le répertoire officiel des entreprises." },
+        { t: "L'assurance décennale", s: "Obligatoire pour entrer : l'attestation est contrôlée, et sa date de fin suivie." },
+        { t: "Des chantiers réalisés", s: "Des photos de travaux faits par l'artisan ou son équipe." },
+        { t: "Un entretien avec Daniel", s: "Chaque artisan est appelé avant d'entrer dans le réseau : sa façon de travailler, ses délais, sa zone." },
+        { t: "Des réponses rapides", s: "L'artisan répond à chaque demande sous 5 jours ; sinon, tu peux en choisir un autre." },
+        { t: "L'avis des clients", s: "Après chaque mise en relation, ton avis est lu par Daniel : un artisan mal noté peut être suspendu." },
+      ],
+    },
+    etapes: [
+      "Tu décris tes travaux : seul le type de travaux est obligatoire, ton estimation AVYORA peut être jointe.",
+      "Tu choisis jusqu'à 3 artisans vérifiés de ton département.",
+      "Ils acceptent ou refusent sous 5 jours. Tes coordonnées ne vont qu'à ceux qui acceptent.",
+      "Tu reçois leurs devis, établis sur la même base : ils se comparent enfin.",
+    ],
+    obtiens: {
+      titre: "Pourquoi c'est différent",
+      items: [
+        "Ta demande n'est jamais envoyée à dix entreprises : c'est toi qui choisis, 3 au plus.",
+        "Aucun artisan ne paie pour être mieux placé : le premier affiché est celui qui a reçu le moins de demandes.",
+        "Ton estimation sert de base commune : les devis parlent des mêmes postes.",
+      ],
+    },
+    aSavoir: [
+      acces,
+      "Le réseau démarre : dans certains départements, il n'y a pas encore d'artisan pour tous les travaux. Ta demande est alors gardée, et on te prévient dès qu'un artisan vérifié peut te répondre.",
+      "AVYORA met en relation : il n'est pas partie au contrat entre toi et l'artisan, et ne garantit pas les travaux. Tu restes libre de signer ou non.",
+    ],
+    liens: [
+      { href: "/reseau-artisans#criteres", label: "Nos critères de référencement" },
+      { href: "/relecture-devis-travaux", label: "Faire vérifier un devis reçu" },
+      { href: "/reseau-artisans", label: "Tu es artisan ? Rejoins le réseau" },
+    ],
+    faq: [
+      {
+        q: "Comment trouver un artisan de confiance pour ses travaux ?",
+        a: "Vérifie trois choses avant tout : que l'entreprise est active (son SIRET), qu'elle est assurée en décennale pour les travaux demandés, et qu'elle a déjà réalisé des chantiers comparables. Dans le Réseau AVYORA, ces vérifications sont faites avant qu'un artisan puisse recevoir des demandes.",
+      },
+      {
+        q: "Comment vérifier l'assurance décennale d'un artisan ?",
+        a: "Demande son attestation avant de signer. Vérifie le nom de l'assureur, les dates de validité et surtout la liste des activités couvertes : un carreleur assuré pour la pose de carrelage ne l'est pas forcément pour la plomberie.",
+      },
+      {
+        q: "Comment vérifier le SIRET d'une entreprise ?",
+        a: "Sur l'annuaire officiel des entreprises de l'État (annuaire-entreprises.data.gouv.fr), gratuit : tu vois si l'établissement est actif, son activité et sa date de création.",
+      },
+      {
+        q: "Pourquoi 3 artisans au plus par demande ?",
+        a: "Pour que chaque artisan sache qu'il a une vraie chance, et prenne le temps de bien répondre. Une demande envoyée à dix entreprises reçoit des réponses rapides et peu travaillées.",
+      },
+      {
+        q: "Et s'il n'y a pas d'artisan dans mon département ?",
+        a: "Ta demande est gardée. Daniel cherche des artisans dans ta zone, et tu es prévenu par e-mail dès qu'un artisan vérifié peut te répondre.",
+      },
+    ],
+    cta: { href: "/demandes-devis/nouvelle", label: "Demander des devis →", note: acces },
+    parent: null,
+    sansBio: true,
+    titreFinal: "Des devis d'artisans vérifiés, pour ton projet.",
+    texteFinal: "Décris tes travaux en quelques minutes et choisis jusqu'à 3 artisans de ton département.",
+  };
+}

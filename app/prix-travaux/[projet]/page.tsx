@@ -7,6 +7,7 @@ import { PRIX_MAJ, PRIX_MAJ_FR, ANNEE_PRIX } from "@/lib/prix-maj";
 import { VILLES_SEO } from "@/lib/villes";
 import { seoMeta, titreCourt } from "@/lib/seo-og";
 import { CtaEstimation } from "@/components/CtaEstimation";
+import BlocDevis from "@/components/accompagnement/BlocDevis";
 import { PIECES_ESTIMATEUR } from "@/lib/seo-projets";
 import type { PieceKey } from "@/lib/estimateur";
 import { catT } from "@/lib/estimateur/catalog-i18n";
@@ -362,6 +363,9 @@ export default async function PrixTravaux({ params }: { params: Promise<{ projet
         surface={pieceEstimateur ? p.surface : undefined}
         libelle={pieceEstimateur ? `Estimer ${p.nom}` : "Estimer mes travaux"}
       />
+
+      {/* Référencement : celui qui lit un prix a souvent un devis en main, ou va en demander (components/accompagnement/BlocDevis.tsx). */}
+      <BlocDevis nom={p.nom} />
 
       {variantes.length > 1 && (
         <>

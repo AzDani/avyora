@@ -25,6 +25,8 @@ function Coche() {
 
 export default function PageService({ c }: { c: Contenu }) {
   const url = `${siteUrl}${c.chemin}`;
+  const cta = c.cta ?? { href: CTA, label: "Demander à être rappelé →", note: "Premier appel gratuit, sans engagement · visio ou WhatsApp" };
+  const parent = c.parent === undefined ? { href: CHEMIN_ACCOMPAGNEMENT, nom: "Accompagnement travaux" } : c.parent;
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
@@ -38,7 +40,7 @@ export default function PageService({ c }: { c: Contenu }) {
         inLanguage: "fr-FR",
         provider: { "@id": `${siteUrl}/#organization` },
         areaServed: { "@type": "Country", name: "France" },
-        availableChannel: { "@type": "ServiceChannel", serviceUrl: `${siteUrl}${CTA}`, availableLanguage: "fr" },
+        availableChannel: { "@type": "ServiceChannel", serviceUrl: `${siteUrl}${cta.href}`, availableLanguage: "fr" },
       },
       {
         "@type": "FAQPage",
@@ -48,8 +50,8 @@ export default function PageService({ c }: { c: Contenu }) {
         "@type": "BreadcrumbList",
         itemListElement: [
           { "@type": "ListItem", position: 1, name: "Accueil", item: `${siteUrl}/` },
-          { "@type": "ListItem", position: 2, name: "Accompagnement travaux", item: `${siteUrl}${CHEMIN_ACCOMPAGNEMENT}` },
-          { "@type": "ListItem", position: 3, name: c.nomService, item: url },
+          ...(parent ? [{ "@type": "ListItem", position: 2, name: parent.nom, item: `${siteUrl}${parent.href}` }] : []),
+          { "@type": "ListItem", position: parent ? 3 : 2, name: c.nomService, item: url },
         ],
       },
     ],
@@ -63,16 +65,20 @@ export default function PageService({ c }: { c: Contenu }) {
         <nav aria-label="Fil d'Ariane" className="text-[13px] text-muted">
           <Link href="/" className="hover:text-brand-700">Accueil</Link>
           <span aria-hidden="true"> › </span>
-          <Link href={CHEMIN_ACCOMPAGNEMENT} className="hover:text-brand-700">Accompagnement travaux</Link>
-          <span aria-hidden="true"> › </span>
+          {parent && (
+            <>
+              <Link href={parent.href} className="hover:text-brand-700">{parent.nom}</Link>
+              <span aria-hidden="true"> › </span>
+            </>
+          )}
           <span aria-current="page">{c.nomService}</span>
         </nav>
-        <p className="eyebrow mt-5">Accompagnement travaux · à distance</p>
+        <p className="eyebrow mt-5">{c.eyebrow ?? "Accompagnement travaux · à distance"}</p>
         <h1 className="mt-2 text-[30px] font-semibold leading-[1.12] tracking-tight text-ink [text-wrap:balance] sm:text-[40px]">{c.h1}</h1>
         <p className="mt-4 max-w-[62ch] text-[16.5px] leading-relaxed text-muted">{c.intro}</p>
         <div className="mt-6 flex flex-wrap items-center gap-3">
-          <Link href={CTA} className="btn btn-primary min-h-12 px-6 text-[15px]">Demander à être rappelé →</Link>
-          <span className="text-[13.5px] text-muted">Premier appel gratuit, sans engagement · visio ou WhatsApp</span>
+          <Link href={cta.href} className="btn btn-primary min-h-12 px-6 text-[15px]">{cta.label}</Link>
+          <span className="text-[13.5px] text-muted">{cta.note}</span>
         </div>
       </header>
 
@@ -111,9 +117,10 @@ export default function PageService({ c }: { c: Contenu }) {
         <ul className="mt-3 space-y-2">
           {c.obtiens.items.map((x) => <li key={x} className="flex gap-3 text-[15.5px] leading-relaxed text-ink"><Coche />{x}</li>)}
         </ul>
-        <Link href={CTA} className="btn btn-primary mt-7 min-h-12 px-6 text-[15px]">Demander à être rappelé →</Link>
+        <Link href={cta.href} className="btn btn-primary mt-7 min-h-12 px-6 text-[15px]">{cta.label}</Link>
       </section>
 
+      {!c.sansBio && (
       <section aria-labelledby="qui">
         <h2 id="qui" className={h2}>Qui je suis</h2>
         <p className="mt-3 max-w-[64ch] text-[16px] leading-relaxed text-ink">
@@ -121,6 +128,7 @@ export default function PageService({ c }: { c: Contenu }) {
           <Link href={CHEMIN_ACCOMPAGNEMENT} className={lienProse}>Tout l&apos;accompagnement</Link>
         </p>
       </section>
+      )}
 
       <section aria-labelledby="a-savoir" className="rounded-3xl bg-surface-2 p-6 sm:p-8">
         <h2 id="a-savoir" className={h2}>Bon à savoir</h2>
@@ -148,9 +156,9 @@ export default function PageService({ c }: { c: Contenu }) {
       </section>
 
       <section className="rounded-3xl bg-[#1E1B4B] px-6 py-10 text-center sm:px-10">
-        <h2 className="text-[24px] font-semibold tracking-tight text-white [text-wrap:balance] sm:text-[28px]">Parle-moi de ton projet.</h2>
-        <p className="mx-auto mt-2 max-w-[50ch] text-[15px] leading-relaxed text-[#c7c3f4]">Le premier appel est gratuit et sans engagement. Je te rappelle sous 48 h ouvrées, en visio ou sur WhatsApp.</p>
-        <Link href={CTA} className="btn mt-6 min-h-12 bg-white px-6 text-[15px] text-[#1E1B4B] hover:bg-brand-50">Demander à être rappelé →</Link>
+        <h2 className="text-[24px] font-semibold tracking-tight text-white [text-wrap:balance] sm:text-[28px]">{c.titreFinal ?? "Parle-moi de ton projet."}</h2>
+        <p className="mx-auto mt-2 max-w-[50ch] text-[15px] leading-relaxed text-[#c7c3f4]">{c.texteFinal ?? "Le premier appel est gratuit et sans engagement. Je te rappelle sous 48 h ouvrées, en visio ou sur WhatsApp."}</p>
+        <Link href={cta.href} className="btn mt-6 min-h-12 bg-white px-6 text-[15px] text-[#1E1B4B] hover:bg-brand-50">{cta.label}</Link>
       </section>
     </article>
   );

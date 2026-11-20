@@ -411,7 +411,7 @@ function accueilFr(b: Beta): string {
     carte("/estimation-travaux", IC.reno, ["Gratuit", "g"], "Estimer ta rénovation", "Une fourchette en 2 minutes, puis le détail poste par poste : 200 postes, aux prix de ta région.", "Estimer"),
     FEATURES.neuf ? carte("/estimation-construction-maison", IC.neuf, ["Gratuit", "g"], "Estimer ta maison neuve", "Du permis à la remise des clés : études, taxes, construction et branchements. Gratuit, en 4 questions.", "Estimer") : "",
     FEATURES.plans ? carte("/logiciel-plan-maison", IC.plan, ["Gratuit avec un compte", "g"], "Dessiner ton plan en 3D", "Trace tes pièces à la souris : les surfaces se calculent seules et partent dans ton estimation.", "Découvrir l'éditeur", ' data-clic-plan="accueil"') : "",
-    carte("/demandes-devis/nouvelle", IC.devis, pro, "Recevoir des devis d'artisans vérifiés", "Jusqu'à 3 artisans de ton département : SIRET, assurance décennale et chantiers vérifiés.", "Demander des devis"),
+    carte("/trouver-un-artisan", IC.devis, pro, "Recevoir des devis d'artisans vérifiés", "Jusqu'à 3 artisans de ton département : SIRET, assurance décennale et chantiers vérifiés.", "Demander des devis"),
     carte(b.active ? b.inscription : "/tarifs", IC.suivi, pro, "Suivre ton chantier et ton budget", "L'avancement des travaux, tes dépenses réelles face au prévu, et ta rentabilité si tu investis.", b.active ? "Créer mon compte" : "Voir ce que Pro inclut"),
     carte("/accompagnement-travaux", IC.conseil, ["Premier appel offert", "o"], "Te faire accompagner", "Un ancien chef de chantier relit tes devis, organise ton chantier avec toi et te suit chaque semaine.", "Être rappelé"),
   ].filter(Boolean);
@@ -453,7 +453,7 @@ ${ACCUEIL_CSS}<div class="wrap"><header class="hero"><div class="in h2c"><div>
     <p class="eyebrow">Réseau AVYORA · nouveau</p>
     <h2>Des devis d'artisans vérifiés. Pas un annuaire.</h2>
     <p class="d">Envoie ton projet à 3 artisans de ton département au plus. C'est toi qui choisis, ton estimation leur sert de base, et tes coordonnées ne vont qu'à ceux qui acceptent.</p>
-    <div class="cta"><a href="/demandes-devis/nouvelle" class="btn btn-p">Demander des devis →</a><a href="/reseau-artisans" class="lien">Tu es artisan ? Rejoins le réseau</a></div>
+    <div class="cta"><a href="/demandes-devis/nouvelle" class="btn btn-p">Demander des devis →</a><a href="/trouver-un-artisan" class="lien">Comment ça marche</a><a href="/reseau-artisans" class="lien">Tu es artisan ? Rejoins le réseau</a></div>
     <p class="acces">${b.active ? `Gratuit pendant la bêta, jusqu'au ${b.fin}.` : "Inclus dans l'abonnement Pro."}</p>
   </div>
   <ul aria-label="Comment les artisans sont vérifiés">

@@ -50,6 +50,8 @@ const fr = {
     accompagnement: "Accompagnement travaux",
     /* La page /reseau-artisans (Réseau AVYORA : les artisans postulent). */
     reseau: "Artisans : rejoindre le réseau",
+    /* La page /trouver-un-artisan (Réseau AVYORA côté clients). */
+    trouverArtisan: "Trouver un artisan vérifié",
     guides: "Guides des prix",
     prixTravaux: "Prix des travaux",
     prixVille: "Prix par ville",
@@ -592,6 +594,7 @@ const en: Dict = {
     prixPoste: "Prices by trade",
     accompagnement: "Renovation advice",
     reseau: "Contractors (France)",
+    trouverArtisan: "Find a vetted contractor (France)",
     guides: "Price guides",
     prixTravaux: "Renovation costs",
     prixVille: "Prices by city",

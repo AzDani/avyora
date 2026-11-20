@@ -50,6 +50,7 @@ export default function ReseauArtisans() {
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <Link href="/espace-artisan" className="btn btn-primary min-h-12 px-6 text-[15px]">Rejoindre le réseau</Link>
             <a href="#criteres" className="btn btn-outline min-h-12 px-5 text-[15px]">Nos critères</a>
+            <Link href="/trouver-un-artisan" className="inline-flex min-h-12 items-center text-[14px] font-semibold text-brand-700 underline underline-offset-2">Côté clients : comment ça marche</Link>
           </div>
           <p className="mt-3 text-[13px] text-muted">Gratuit pendant le lancement · réseau sur sélection</p>
         </div>
