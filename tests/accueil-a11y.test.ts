@@ -33,14 +33,14 @@ describe("accueil : les puces du héros et la police à chasse fixe", () => {
     const span = regle(page, ".av-home .hero .trust span");
     expect(span).not.toMatch(/gap|inline-flex/);
     expect(regle(page, ".av-home .hero .trust span::before")).toContain("margin:0 8px 2px 0");
-    expect(page).toContain("<span><b>Gratuit</b> pour commencer</span>");
-    expect(page).toContain("<span><b>Free</b> to start</span>");
+    expect(page).toContain("<span><b>Premier appel</b> gratuit</span>");
+    expect(page).toContain("<span><b>First call</b> free</span>");
   });
 
   it("la police à chasse fixe n'est pas posée sur des mots en gras ; les chiffres passent par .num", () => {
     expect(regle(page, ".av-home .hero .trust b")).not.toContain("mono");
     expect(page).not.toContain(".av-home .promo b{");
-    expect(page).toContain('<b class="num">200</b>');
+    expect(page).toContain('<b class="num">8</b> ans de chantier');
   });
 
   it("le jeton --faint de l'accueil est celui du site (contraste AA), plus #898ea8", () => {

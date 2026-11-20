@@ -195,7 +195,7 @@ describe("Accueil · bandeau construction neuve", () => {
     }
   });
 
-  it("flag allumé (refonte du 20/11/2026) : la carte « maison neuve » parmi les services et le bouton du héros, sans prix ni emoji", async () => {
+  it("flag allumé (refonte du 20/11/2026) : la carte « maison neuve » parmi les services, sans prix ni emoji", async () => {
     for (const locale of ["fr", "en"] as const) {
       const on = await (await charger(true, locale)).accueil();
       const carte = on.match(/<a href="\/estimation-construction-maison"><span class="tete">[^]*?<\/a>/g) ?? [];
@@ -204,7 +204,6 @@ describe("Accueil · bandeau construction neuve", () => {
       expect(texte).not.toMatch(/€|\d{3}/);
       expect(texte).not.toMatch(/\p{Extended_Pictographic}/u);
       expect(texte).toContain(locale === "fr" ? "Gratuit, en 4 questions." : "Free, in 4 questions.");
-      expect(on).toContain(locale === "fr" ? '<a href="/estimation-construction-maison" class="btn btn-w">Je fais construire</a>' : '<a href="/estimation-construction-maison" class="btn btn-w">I\'m building a home</a>');
     }
   });
 });

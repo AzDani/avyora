@@ -184,7 +184,7 @@ const HOME_CSS = `
    canonique (page indexable : pas de `?src=`) ; le bouton principal va droit au formulaire de rappel (#demande). Ni prix
    ni emoji, le parcours sans nommer le groupe. Son style voyage avec elle (HOME_CSS ne bouge pas), et aucune des
    chaînes que lib/accueil-beta.ts remplace n'est touchée. */
-const ACCOMP_STYLE = `<style>.av-home .accb{margin-top:22px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:34px;align-items:center;background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:40px}.av-home .accb .badge{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:#0b6e4b;background:var(--good-bg);border-radius:999px;padding:6px 12px;margin-top:14px}.av-home .accb .badge i{width:7px;height:7px;border-radius:50%;background:var(--good);display:inline-block}.av-home .accb h2{font-size:clamp(24px,3.2vw,32px);font-weight:700;line-height:1.14;margin-top:10px;color:var(--nuit);text-wrap:balance}.av-home .accb p.d{color:var(--muted);font-size:15.5px;line-height:1.6;margin-top:12px;max-width:56ch}.av-home .accb p.qui{font-size:13.5px;color:var(--ink);margin-top:14px;line-height:1.5}.av-home .accb p.qui b{font-weight:600}.av-home .accb .cta{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin-top:22px}.av-home .accb .lien{color:var(--brand-700);font-weight:600;font-size:14.5px;text-decoration:underline;text-underline-offset:3px;min-height:44px;display:inline-flex;align-items:center}.av-home .accb ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}.av-home .accb li a{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface-2);text-decoration:none;color:inherit;transition:border-color .15s,transform .15s}.av-home .accb li a:hover{border-color:var(--brand-200);transform:translateX(3px)}.av-home .accb li a:focus-visible{outline:3px solid var(--brand-200);outline-offset:2px}.av-home .accb li .ic{flex:none;width:36px;height:36px;border-radius:10px;background:var(--brand-weak);color:var(--brand-700);display:inline-flex;align-items:center;justify-content:center}.av-home .accb li .t{font-weight:600;font-size:14.5px;color:var(--ink)}.av-home .accb li .s{font-size:13px;color:var(--muted);margin-top:2px;line-height:1.45}.av-home .accb li .fl{margin-left:auto;color:var(--brand-700);font-weight:600}@media(max-width:820px){.av-home .accb{grid-template-columns:1fr;padding:28px 22px;gap:24px}}@media (prefers-reduced-motion:reduce){.av-home .accb li a{transition:none}.av-home .accb li a:hover{transform:none}}</style>`;
+const ACCOMP_STYLE = `<style>.av-home .accb{margin-top:22px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:34px;align-items:center;background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:40px}.av-home .accb .badge{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:#0b6e4b;background:var(--good-bg);border-radius:999px;padding:6px 12px;margin-top:14px}.av-home .accb .badge i{width:7px;height:7px;border-radius:50%;background:var(--good);display:inline-block}.av-home .accb h2{font-size:clamp(24px,3.2vw,32px);font-weight:700;line-height:1.14;margin-top:10px;color:var(--nuit);text-wrap:balance}.av-home .accb p.d{color:var(--muted);font-size:15.5px;line-height:1.6;margin-top:12px;max-width:56ch}.av-home .accb p.qui{font-size:13.5px;color:var(--ink);margin-top:14px;line-height:1.5}.av-home .accb p.qui b{font-weight:600}.av-home .accb p.et{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-top:20px}.av-home .accb ol.etapes{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}.av-home .accb ol.etapes li{display:flex;gap:12px;align-items:flex-start;font-size:14.5px;color:var(--ink);line-height:1.45}.av-home .accb ol.etapes .n{flex:none;width:24px;height:24px;border-radius:7px;background:var(--brand);color:#fff;font-size:12.5px;font-weight:700;display:grid;place-items:center;font-family:var(--font-geist-mono),monospace}.av-home .accb .cta{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin-top:22px}.av-home .accb .lien{color:var(--brand-700);font-weight:600;font-size:14.5px;text-decoration:underline;text-underline-offset:3px;min-height:44px;display:inline-flex;align-items:center}.av-home .accb ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}.av-home .accb li a{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface-2);text-decoration:none;color:inherit;transition:border-color .15s,transform .15s}.av-home .accb li a:hover{border-color:var(--brand-200);transform:translateX(3px)}.av-home .accb li a:focus-visible{outline:3px solid var(--brand-200);outline-offset:2px}.av-home .accb li .ic{flex:none;width:36px;height:36px;border-radius:10px;background:var(--brand-weak);color:var(--brand-700);display:inline-flex;align-items:center;justify-content:center}.av-home .accb li .t{font-weight:600;font-size:14.5px;color:var(--ink)}.av-home .accb li .s{font-size:13px;color:var(--muted);margin-top:2px;line-height:1.45}.av-home .accb li .fl{margin-left:auto;color:var(--brand-700);font-weight:600}@media(max-width:820px){.av-home .accb{grid-template-columns:1fr;padding:28px 22px;gap:24px}}@media (prefers-reduced-motion:reduce){.av-home .accb li a{transition:none}.av-home .accb li a:hover{transform:none}}</style>`;
 const ACC_IC = {
   devis: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 2.5h7l3 3v12H5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 9.5h4.5M8 12.5h4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
   plan: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 15.5 7.5 11l3 3 6.5-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 7h4v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -193,13 +193,14 @@ const ACC_IC = {
 };
 const accItem = (ic: string, t: string, s: string) =>
   `<li><a href="/accompagnement-travaux#aide"><span class="ic">${ic}</span><span><span class="t" style="display:block">${t}</span><span class="s" style="display:block">${s}</span></span><span class="fl" aria-hidden="true">→</span></a></li>`;
+const etapesAcc = (t: string, liste: string[]) =>
+  `<p class="et">${t}</p><ol class="etapes">${liste.map((x, i) => `<li><span class="n">${i + 1}</span><span>${x}</span></li>`).join("")}</ol>`;
 const ACCOMP_BAND = `
 <div class="wrap">${ACCOMP_STYLE}<section class="accb" aria-labelledby="accb-titre"><div>
   <p class="eyebrow">Accompagnement travaux</p>
-  <h2 id="accb-titre">Un ancien chef de chantier à tes côtés.</h2>
-  <p class="d">Tu as un projet de rénovation, de construction ou d'achat ? Je relis tes devis, je t'aide à organiser le chantier et je te suis chaque semaine, à distance, pour que tu gardes la main sur le budget.</p>
-  <span class="badge"><i></i>Premier appel gratuit, sans engagement</span>
-  <p class="qui"><b>Daniel, fondateur d'AVYORA</b> · 8 ans sur les chantiers, de chef de chantier à chef d'entreprise.</p>
+  <h2 id="accb-titre">Ce que je fais pour toi.</h2>
+  <p class="d">Tu gardes tes artisans et tes décisions : je t'apporte un regard de pro sur ton projet, à distance, en visio ou sur WhatsApp. C'est du conseil, pas de la maîtrise d'œuvre, et je ne touche rien sur les travaux.</p>
+  ${etapesAcc("Comment ça se passe", ["Tu demandes à être rappelé, en une minute.", "Premier appel gratuit : on regarde ton projet ensemble.", "Je te propose l'accompagnement qui te sert, sans engagement."])}
   <div class="cta"><a href="/accompagnement-travaux#demande" class="btn btn-p">Demander à être rappelé →</a><a href="/accompagnement-travaux" class="lien">Découvrir l'accompagnement</a></div>
 </div><ul aria-label="Ce que je peux faire pour toi">
   ${accItem(ACC_IC.devis, "Relecture de tes devis", "Prix, oublis, clauses : ce qu'il faut renégocier avant de signer.")}
@@ -210,10 +211,9 @@ const ACCOMP_BAND = `
 const ACCOMP_BAND_EN = `
 <div class="wrap">${ACCOMP_STYLE}<section class="accb" aria-labelledby="accb-titre"><div>
   <p class="eyebrow">Renovation advice</p>
-  <h2 id="accb-titre">A former site manager by your side.</h2>
-  <p class="d">Planning a renovation, a new build or a purchase? I review your quotes, help you organize the work and check in with you every week, remotely, so you stay in control of the budget.</p>
-  <span class="badge"><i></i>First call free, no commitment</span>
-  <p class="qui"><b>Daniel, founder of AVYORA</b> · 8 years on building sites, from site manager to business owner.</p>
+  <h2 id="accb-titre">What I do for you.</h2>
+  <p class="d">You keep your contractors and your decisions: I bring a professional's eye to your project, remotely, by video call or WhatsApp. It's advice, not project management, and I take nothing on the works.</p>
+  ${etapesAcc("How it works", ["You request a call-back, in one minute.", "First call free: we look at your project together.", "I suggest the support that helps you, no commitment."])}
   <div class="cta"><a href="/accompagnement-travaux#demande" class="btn btn-p">Request a call-back →</a><a href="/accompagnement-travaux" class="lien">Discover the service</a></div>
 </div><ul aria-label="What I can do for you">
   ${accItem(ACC_IC.devis, "Review of your quotes", "Prices, omissions, terms: what to renegotiate before you sign.")}
@@ -266,10 +266,10 @@ function ctaPlanAccueil(html: string, locale: "fr" | "en", connecte: boolean): s
 }
 /* ─── L'accueil (refonte du 20/11/2026 : « que les gens comprennent en 1 min ce qu'on propose ») ───────────────────
    Dans l'ordre de la lecture :
-   1. le héros : trois verbes, trois services (estimer, trouver ses artisans, piloter son chantier), et à côté un
-      exemple de projet qui avance ;
-   2. les services en cartes, chacun avec son accès (gratuit, avec Pro, offert) ;
-   3. le Réseau AVYORA (France), l'éditeur de plan, l'accompagnement ;
+   1. le héros : l'ACCOMPAGNEMENT de Daniel (décision de Dani du 20/11/2026 : « la demande sera plus élevée que pour
+      l'estimation »), avec son parcours en frise (faits donnés par Dani, sans nommer son ancien groupe) ;
+   2. ce qu'il fait (4 prestations) et comment ça se passe (3 étapes) ;
+   3. l'outil AVYORA en cartes, chacune avec son accès (gratuit, avec Pro, offert), le Réseau AVYORA (France), le plan ;
    4. gratuit ou Pro, en deux colonnes ;
    5. les prix des travaux (maillage SEO) et l'appel final.
    La bêta (lib/beta.ts) est connue ICI : pendant qu'elle court, aucun prix ni « AVYORA Pro » n'est écrit, les
@@ -294,20 +294,21 @@ const ACCUEIL_CSS = `<style>
 .av-home .hero .h2c .trust{justify-content:flex-start;margin-top:28px}
 .av-home .hero .h2c p.sub{margin-left:0;max-width:56ch}
 .av-home .hero .h2c h1{font-size:clamp(30px,3.8vw,44px);line-height:1.08}
-.av-home .parc{background:#fff;color:var(--ink);text-align:left;border-radius:20px;padding:22px 22px 18px;box-shadow:0 30px 60px -28px rgba(0,0,0,.55)}
-.av-home .parc .ent{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:12px;color:var(--faint)}
-.av-home .parc .ent b{font-size:13.5px;color:var(--ink);font-weight:600}
-.av-home .parc ol{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:10px}
-.av-home .parc li{display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:start;padding:11px 12px;border:1px solid var(--line);border-radius:14px}
-.av-home .parc li.fait .n{background:var(--good);color:#fff}
-.av-home .parc li.cours{border-color:var(--brand-200);background:var(--brand-weak)}
-.av-home .parc .n{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:13px;font-weight:700;background:var(--brand);color:#fff;font-family:var(--font-geist-mono),monospace}
-.av-home .parc .n svg{width:15px;height:15px}
-.av-home .parc .k{font-size:13.5px;font-weight:600;color:var(--ink)}
-.av-home .parc .v{font-size:12.5px;color:var(--muted);margin-top:1px}
-.av-home .parc .v b{font-family:var(--font-geist-mono),monospace;color:var(--ink);font-weight:600}
-.av-home .parc .barre{height:7px;border-radius:5px;background:#fff;border:1px solid var(--brand-200);overflow:hidden;margin-top:7px}
-.av-home .parc .barre i{display:block;height:100%;background:var(--brand);border-radius:5px}
+.av-home .expert{background:#fff;color:var(--ink);text-align:left;border-radius:20px;padding:22px;box-shadow:0 30px 60px -28px rgba(0,0,0,.55)}
+.av-home .expert .qui{display:flex;align-items:center;gap:12px}
+.av-home .expert .av{flex:none;width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--violet));color:#fff;font-weight:700;font-size:16px;display:grid;place-items:center;letter-spacing:.02em}
+.av-home .expert .qui b{display:block;font-size:15.5px;color:var(--nuit)}
+.av-home .expert .qui span span{display:block;font-size:12.5px;color:var(--muted)}
+.av-home .expert .ans{margin-left:auto;font-size:12px;font-weight:600;color:#0b6e4b;background:var(--good-bg);border-radius:999px;padding:5px 10px;white-space:nowrap}
+.av-home .expert .ans b{color:#0b6e4b}
+.av-home .expert ol{list-style:none;margin:16px 0 0;padding:0 0 0 14px;border-left:2px solid var(--brand-200);display:grid;gap:12px}
+.av-home .expert li{display:grid;grid-template-columns:62px 1fr;gap:10px;position:relative}
+.av-home .expert li::before{content:"";position:absolute;left:-20px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 3px #fff}
+.av-home .expert li .d{font-size:11.5px;font-weight:700;color:var(--brand-700);letter-spacing:.02em;padding-top:2px}
+.av-home .expert li b{display:block;font-size:14px;color:var(--ink)}
+.av-home .expert li b+span{display:block;font-size:12.5px;color:var(--muted);line-height:1.45;margin-top:1px}
+.av-home .expert .cit{margin-top:16px;font-size:13.5px;line-height:1.55;color:var(--ink);background:var(--surface-2);border-radius:12px;padding:12px 14px;font-style:italic}
+.av-home .expert .lien{display:inline-flex;align-items:center;min-height:44px;margin-top:4px;font-size:14px;font-weight:600;color:var(--brand-700);text-decoration:underline;text-underline-offset:3px}
 .av-home .svc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 .av-home .svc.n4{grid-template-columns:repeat(2,minmax(0,1fr))}
 .av-home .svc a{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px;box-shadow:var(--shadow);transition:transform .16s var(--ease),border-color .16s}
@@ -394,28 +395,30 @@ function accueilFr(b: Beta): string {
   return `
 <a href="/tarifs" class="promo"><span class="dot"></span>Estimer est <b>gratuit</b> — AVYORA Pro dès 18,85 €/mois <span class="arr">· sans engagement →</span></a>
 ${ACCUEIL_CSS}<div class="wrap"><header class="hero"><div class="in h2c"><div>
-  <div class="eyebrow">Rénovation · construction neuve · France</div>
-  <h1>Estime tes travaux.<br><span class="hl">Trouve tes artisans.</span><br>Pilote ton chantier.</h1>
-  <p class="sub">AVYORA chiffre ta rénovation ou ta maison neuve poste par poste, aux prix de ta région. Ensuite, tu reçois des devis d'artisans vérifiés et tu suis ton chantier et ton budget, <b style="color:#fff">au même endroit</b>.</p>
+  <div class="eyebrow">Accompagnement travaux · partout en France</div>
+  <h1>Un ancien chef de chantier <span class="hl">à tes côtés</span> pour tes travaux.</h1>
+  <p class="sub">Je relis tes devis, j'organise ton chantier avec toi et je te suis chaque semaine, à distance. Et l'outil AVYORA chiffre tes travaux poste par poste, <b style="color:#fff">gratuitement</b>.</p>
   <div class="cta">
-    <a href="/projets/nouveau" class="btn btn-p">Estimer mes travaux gratuitement →</a>
-    ${FEATURES.neuf ? '<a href="/estimation-construction-maison" class="btn btn-w">Je fais construire</a>' : ""}
+    <a href="/accompagnement-travaux#demande" class="btn btn-p">Demander à être rappelé →</a>
+    <a href="/projets/nouveau" class="btn btn-w">Estimer mes travaux gratuitement</a>
   </div>
-  <div class="trust"><span><b>Gratuit</b> pour commencer</span><span><b class="num">200</b> postes de prix</span><span>artisans <b>vérifiés</b></span><span><b>sans</b> engagement</span></div>
-</div><div class="parc" role="img" aria-label="Exemple d'un projet suivi dans AVYORA : estimation faite, plan dessiné, trois artisans contactés dont deux ont accepté, chantier avancé à 62&nbsp;%">
-  <div class="ent"><b>Rénovation · maison 90 m², Bordeaux</b><span>Exemple</span></div>
-  <ol>
-    <li class="fait"><span class="n">${IC.ok}</span><span><span class="k">Estimation</span><span class="v" style="display:block"><b>38 500 – 44 200 €</b> · en 2 minutes</span></span></li>
-    ${FEATURES.plans ? `<li class="fait"><span class="n">${IC.ok}</span><span><span class="k">Plan 3D</span><span class="v" style="display:block">6 pièces · <b>90 m²</b> mesurés</span></span></li>` : ""}
-    <li class="fait"><span class="n">${IC.ok}</span><span><span class="k">Devis d'artisans vérifiés</span><span class="v" style="display:block"><b>3</b> contactés · <b>2</b> ont accepté</span></span></li>
-    <li class="cours"><span class="n">${FEATURES.plans ? 4 : 3}</span><span><span class="k">Chantier en cours</span><span class="v" style="display:block">Avancement <b>62&nbsp;%</b> · budget tenu</span><span class="barre" style="display:block"><i style="width:62%"></i></span></span></li>
+  <div class="trust"><span><b>Premier appel</b> gratuit</span><span><b>à distance</b> : visio ou WhatsApp</span><span><b>sans</b> engagement</span></div>
+</div><div class="expert">
+  <div class="qui"><span class="av" aria-hidden="true">DL</span><span><b>Daniel Leal</b><span>Fondateur d'AVYORA</span></span><span class="ans"><b class="num">8</b> ans de chantier</span></div>
+  <ol aria-label="Mon parcours">
+    <li><span class="d">2 ans</span><span><b>BTS Bâtiment en alternance</b><span>Dans un grand groupe du BTP : la méthode, les normes, les gros chantiers.</span></span></li>
+    <li><span class="d">3 ans</span><span><b>Chef de chantier</b><span>Coordonner les corps d'état, tenir les plannings et les budgets.</span></span></li>
+    <li><span class="d">3 ans</span><span><b>Ma propre entreprise de travaux</b><span>Rénovation, aménagements extérieurs, garages : du devis à la réception.</span></span></li>
+    <li><span class="d">Pour moi</span><span><b>Mes propres chantiers</b><span>Deux maisons rénovées entièrement, une maison neuve construite de A à Z.</span></span></li>
   </ol>
-</div></div></header></div>
+  <p class="cit">« J'ai vu un chantier sous tous ses angles : l'entreprise qui exécute, le chef de chantier qui coordonne et le propriétaire qui paie. »</p>
+  <a href="/accompagnement-travaux" class="lien">Mon parcours en détail →</a>
+</div></div></header></div>${ACCOMP_BAND}
 
 <section class="blk"><div class="wrap">
   <div class="center">
-    <p class="eyebrow">Ce que tu peux faire avec AVYORA</p>
-    <h2>De la première idée à la fin du chantier.</h2>
+    <p class="eyebrow">Et l'outil AVYORA</p>
+    <h2>Chiffre, compare et suis tes travaux toi-même.</h2>
     <p>Commence gratuitement par l'estimation. Le reste s'ajoute quand tu en as besoin.</p>
   </div>
   <div class="svc">${cartes.join("")}</div>
@@ -435,7 +438,7 @@ ${ACCUEIL_CSS}<div class="wrap"><header class="hero"><div class="in h2c"><div>
     ${preuve("Un entretien avec Daniel", "Chaque artisan est appelé par le fondateur avant d'entrer dans le réseau.")}
   </ul>
 </div></div></section>
-${FEATURES.plans ? PLAN_BAND : ""}${ACCOMP_BAND}
+${FEATURES.plans ? PLAN_BAND : ""}
 
 <section class="blk"><div class="wrap">
   <div class="center">
@@ -497,32 +500,35 @@ function accueilEn(b: Beta): string {
   return `
 <a href="/tarifs" class="promo"><span class="dot"></span>Estimating is <b>free</b> — AVYORA Pro from €18.85/month <span class="arr">· no commitment →</span></a>
 ${ACCUEIL_CSS}<div class="wrap"><header class="hero"><div class="in h2c"><div>
-  <div class="eyebrow">Renovation · new build · France</div>
-  <h1>Estimate your project.<br><span class="hl">Plan it in 3D.</span><br>Track every euro.</h1>
-  <p class="sub">AVYORA prices your renovation or new home line by line, at your region's prices. Then you follow progress and your budget, <b style="color:#fff">all in one place</b>.</p>
+  <div class="eyebrow">Renovation advice · anywhere in France</div>
+  <h1>A former site manager <span class="hl">by your side</span> for your project.</h1>
+  <p class="sub">I review your quotes, plan your build with you and check in every week, remotely. And the AVYORA tool prices your project line by line, <b style="color:#fff">for free</b>.</p>
   <div class="cta">
-    <a href="/projets/nouveau" class="btn btn-p">Estimate for free →</a>
-    ${FEATURES.neuf ? '<a href="/estimation-construction-maison" class="btn btn-w">I\'m building a home</a>' : ""}
+    <a href="/accompagnement-travaux#demande" class="btn btn-p">Request a call-back →</a>
+    <a href="/projets/nouveau" class="btn btn-w">Estimate for free</a>
   </div>
-  <div class="trust"><span><b>Free</b> to start</span><span><b class="num">200</b> price items</span><span><b>no</b> commitment</span></div>
-</div><div class="parc" role="img" aria-label="Example of a project in AVYORA: estimate done, floor plan drawn, work in progress at 62%">
-  <div class="ent"><b>Renovation · 90 m² house, Bordeaux</b><span>Example</span></div>
-  <ol>
-    <li class="fait"><span class="n">${IC.ok}</span><span><span class="k">Estimate</span><span class="v" style="display:block"><b>€38,500 – €44,200</b> · in 2 minutes</span></span></li>
-    ${FEATURES.plans ? `<li class="fait"><span class="n">${IC.ok}</span><span><span class="k">3D floor plan</span><span class="v" style="display:block">6 rooms · <b>90 m²</b> measured</span></span></li>` : ""}
-    <li class="cours"><span class="n">${FEATURES.plans ? 3 : 2}</span><span><span class="k">Work in progress</span><span class="v" style="display:block">Progress <b>62%</b> · on budget</span><span class="barre" style="display:block"><i style="width:62%"></i></span></span></li>
+  <div class="trust"><span><b>First call</b> free</span><span><b>remote</b>: video or WhatsApp</span><span><b>no</b> commitment</span></div>
+</div><div class="expert">
+  <div class="qui"><span class="av" aria-hidden="true">DL</span><span><b>Daniel Leal</b><span>Founder of AVYORA</span></span><span class="ans"><b class="num">8</b> years on site</span></div>
+  <ol aria-label="My background">
+    <li><span class="d">2 years</span><span><b>Building degree, work-study</b><span>In a major construction group: method, standards, large sites.</span></span></li>
+    <li><span class="d">3 years</span><span><b>Site manager</b><span>Coordinating trades, keeping schedules and budgets.</span></span></li>
+    <li><span class="d">3 years</span><span><b>My own building company</b><span>Renovations, outdoor work, garages: from quote to handover.</span></span></li>
+    <li><span class="d">Own homes</span><span><b>My own projects</b><span>Two houses fully renovated, a new house built from start to finish.</span></span></li>
   </ol>
-</div></div></header></div>
+  <p class="cit">“I've seen a building site from every angle: the contractor who builds, the site manager who coordinates and the owner who pays.”</p>
+  <a href="/accompagnement-travaux" class="lien">My full background →</a>
+</div></div></header></div>${ACCOMP_BAND_EN}
 
 <section class="blk"><div class="wrap">
   <div class="center">
-    <p class="eyebrow">What you can do with AVYORA</p>
-    <h2>From first idea to finished project.</h2>
+    <p class="eyebrow">And the AVYORA tool</p>
+    <h2>Price, plan and track your project yourself.</h2>
     <p>Start for free with the estimate. Add the rest when you need it.</p>
   </div>
   <div class="svc${cartes.length === 4 ? " n4" : ""}">${cartes.join("")}</div>
 </div></section>
-${FEATURES.plans ? PLAN_BAND_EN : ""}${ACCOMP_BAND_EN}
+${FEATURES.plans ? PLAN_BAND_EN : ""}
 
 <section class="blk"><div class="wrap">
   <div class="center">

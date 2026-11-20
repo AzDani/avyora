@@ -236,15 +236,14 @@ describe("C9 · accueil", () => {
     }
   });
 
-  it("allumé (refonte du 20/11/2026) : la section une seule fois, après les services ; la carte de l'éditeur et l'étape « plan » de l'exemple", async () => {
+  it("allumé (refonte du 20/11/2026) : la section une seule fois, après les services ; la carte de l'éditeur", async () => {
     for (const locale of LOCALES) {
       const apres = await accueil(true, locale);
       expect(apres.split('class="planb"').length - 1).toBe(1);
       expect(apres.indexOf('class="planb"')).toBeGreaterThan(apres.indexOf('class="svc'));
       expect(apres).toContain(locale === "fr" ? "<h3>Dessiner ton plan en 3D</h3>" : "<h3>Draw your floor plan in 3D</h3>");
-      expect(apres).toContain(locale === "fr" ? '<span class="k">Plan 3D</span>' : '<span class="k">3D floor plan</span>');
-      /* l'exemple du héros garde ses boutons */
-      expect(entre(apres, '<header class="hero">', "</header>")).toContain('href="/projets/nouveau" class="btn btn-p"');
+      /* le héros garde son bouton d'estimation */
+      expect(entre(apres, '<header class="hero">', "</header>")).toContain('href="/projets/nouveau" class="btn btn-w"');
     }
   });
 
