@@ -130,6 +130,8 @@ export default function ReseauArtisans() {
             <h3 className="mt-5 text-[15px] font-semibold text-ink">Pour y rester</h3>
             <ul className="mt-2 list-disc space-y-1.5 pl-5 text-[14.5px] leading-relaxed text-muted">
               <li>Une assurance à jour : une attestation expirée suspend la participation jusqu&apos;à son renouvellement.</li>
+              <li>Une réponse à chaque demande reçue sous 5 jours (accepter ou refuser).</li>
+              <li>Des clients satisfaits : leurs avis sont lus par le fondateur, et des avis négatifs répétés peuvent suspendre la participation.</li>
               <li>Des informations exactes, et le respect des clients et de leurs données.</li>
             </ul>
           </div>

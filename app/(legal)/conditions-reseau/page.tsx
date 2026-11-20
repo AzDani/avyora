@@ -16,7 +16,7 @@ export default function ConditionsReseau() {
   return (
     <article>
       <h1>Conditions du Réseau AVYORA</h1>
-      <p className="maj">Version du 17 novembre 2026</p>
+      <p className="maj">Version du 20 novembre 2026</p>
 
       <h2>1. Objet</h2>
       <p>
@@ -52,11 +52,21 @@ export default function ConditionsReseau() {
       <h2>4. Engagements de l&apos;Artisan</h2>
       <ul>
         <li>Fournir des informations et des documents exacts, et signaler sans délai tout changement (assurance renouvelée ou résiliée, cessation d&apos;activité, nouveau numéro).</li>
-        <li>Répondre dans un délai raisonnable aux demandes qu&apos;il accepte, et prévenir le Client s&apos;il renonce.</li>
+        <li>Répondre à chaque demande reçue, en l&apos;acceptant ou en la refusant, <strong>dans les 5 jours</strong>&nbsp;: un rappel lui est envoyé après 2 jours&nbsp;; sans réponse au bout de 5 jours, la demande expire pour lui et le Client peut choisir un autre artisan.</li>
+        <li>Après avoir accepté, contacter le Client et lui adresser son devis dans un délai raisonnable, ou le prévenir s&apos;il renonce.</li>
         <li>Utiliser les coordonnées d&apos;un Client <strong>uniquement</strong> pour répondre à sa demande&nbsp;: ni revente, ni cession, ni prospection pour d&apos;autres prestations sans son accord. L&apos;Artisan est responsable du traitement de ces données pour son propre compte, dans le respect du RGPD.</li>
         <li>Établir ses devis et réaliser ses travaux sous sa seule responsabilité, conformément aux règles de l&apos;art, à la réglementation et à ses assurances.</li>
         <li>Ne pas se présenter comme salarié, mandataire ou partenaire exclusif d&apos;AVYORA.</li>
       </ul>
+
+      <h2>4 bis. Suivi et avis des Clients</h2>
+      <p>
+        Le Client peut indiquer s&apos;il a reçu le devis de l&apos;Artisan et s&apos;il l&apos;a retenu, et donner un avis (une note de
+        1 à 5 et un commentaire). Ces avis <strong>ne sont pas publiés</strong>{" "}à ce jour&nbsp;: ils sont lus par l&apos;éditeur pour
+        veiller à la qualité du réseau. Des avis négatifs répétés, ou un taux de réponse trop faible, peuvent conduire à une
+        suspension (section 7). Si les avis devaient un jour être affichés aux Clients, l&apos;Artisan en serait informé à
+        l&apos;avance, avec la manière dont ils sont contrôlés.
+      </p>
 
       <h2>5. Rôle d&apos;AVYORA</h2>
       <p>
@@ -78,8 +88,8 @@ export default function ConditionsReseau() {
       <h2>7. Suspension et sortie</h2>
       <p>
         L&apos;éditeur peut suspendre ou exclure un Artisan, en lui indiquant la raison par e-mail, notamment en cas
-        d&apos;assurance expirée ou résiliée, d&apos;établissement fermé, d&apos;informations inexactes, de plaintes répétées de
-        Clients ou de manquement aux présentes conditions. L&apos;Artisan peut quitter le réseau à tout moment en écrivant à{" "}
+        d&apos;assurance expirée ou résiliée, d&apos;établissement fermé, d&apos;informations inexactes, de plaintes ou d&apos;avis
+        négatifs répétés de Clients, de demandes laissées trop souvent sans réponse, ou de manquement aux présentes conditions. L&apos;Artisan peut quitter le réseau à tout moment en écrivant à{" "}
         <strong>contact@getavyora.fr</strong>.
       </p>
 

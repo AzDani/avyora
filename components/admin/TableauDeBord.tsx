@@ -40,6 +40,8 @@ export type DonneesTableau = {
     decennalesARenouveler: number;
     /** Demandes de devis restées sans artisan dans leur zone (là où recruter). */
     devisSansArtisan?: number;
+    /** Avis de clients à 2/5 ou moins (phase 3) : à lire, l'artisan est peut-être à recadrer ou à suspendre. */
+    avisFaibles?: number;
   } | null;
   /** Les inscrits des 7 derniers jours (8 au plus). */
   nouveaux: NouvelInscrit[];
@@ -150,7 +152,7 @@ export default function TableauDeBord({ d }: { d: DonneesTableau }) {
 
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
         <Panneau titre="À traiter" compte={d.demandesIndisponibles ? undefined : c.aTraiter} lien={{ href: "/admin/accompagnement", label: "Toutes les demandes" }}>
-          {d.artisans && (d.artisans.nbAExaminer > 0 || d.artisans.decennalesARenouveler > 0 || !!d.artisans.devisSansArtisan) && (
+          {d.artisans && (d.artisans.nbAExaminer > 0 || d.artisans.decennalesARenouveler > 0 || !!d.artisans.devisSansArtisan || !!d.artisans.avisFaibles) && (
             <div className="mb-3 rounded-2xl border border-line bg-surface-2/60 p-3" data-a-traiter-artisans="">
               <div className="flex items-baseline justify-between gap-3">
                 <h3 className="text-[13.5px] font-semibold text-ink">
@@ -176,6 +178,11 @@ export default function TableauDeBord({ d }: { d: DonneesTableau }) {
               {!!d.artisans.devisSansArtisan && (
                 <p className="mt-2 text-[12.5px] font-medium text-[#8a5300]">
                   <Link href="/admin/devis?vue=sans-artisan" className="underline">{d.artisans.devisSansArtisan} demande{d.artisans.devisSansArtisan > 1 ? "s" : ""} de devis sans artisan dans la zone</Link> : des départements où recruter.
+                </p>
+              )}
+              {!!d.artisans.avisFaibles && (
+                <p className="mt-2 text-[12.5px] font-medium text-[#8a1f15]">
+                  <Link href="/admin/devis?vue=avis" className="underline">{d.artisans.avisFaibles} avis de client{d.artisans.avisFaibles > 1 ? "s" : ""} à 2/5 ou moins</Link> : à lire.
                 </p>
               )}
               {d.artisans.decennalesARenouveler > 0 && (

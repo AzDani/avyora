@@ -6,6 +6,7 @@ import { nomDepartement } from "@/lib/reseau/departements";
 import { lienAppel, lienWhatsApp } from "@/lib/admin/outils";
 import type { DemandeRecue } from "@/lib/data/reseau";
 import BoutonsReponse from "@/components/reseau/BoutonsReponse";
+import BoutonDevisEnvoye from "@/components/reseau/BoutonDevisEnvoye";
 
 /**
  * Les demandes de devis reçues par un artisan validé (son espace). Avant sa réponse : la demande sans les coordonnées
@@ -13,7 +14,7 @@ import BoutonsReponse from "@/components/reseau/BoutonsReponse";
  */
 const euros = (n: number) => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
 const dateCourte = (iso: string) => new Date(iso).toLocaleDateString("fr-FR", { timeZone: "Europe/Paris", day: "numeric", month: "long" });
-const TON = { envoyee: "bg-brand-600 text-white", acceptee: "bg-[#e3f5ed] text-[#0b5e40]", refusee: "bg-surface-2 text-muted border border-line" } as const;
+const TON = { envoyee: "bg-brand-600 text-white", acceptee: "bg-[#e3f5ed] text-[#0b5e40]", refusee: "bg-surface-2 text-muted border border-line", expiree: "bg-surface-2 text-muted border border-line" } as const;
 
 function Carte({ r }: { r: DemandeRecue }) {
   const d = r.demande;
@@ -25,8 +26,8 @@ function Carte({ r }: { r: DemandeRecue }) {
           <h3 className="text-[16.5px] font-semibold text-ink">{d.metiers.map(labelMetier).join(", ")}</h3>
           <p className="text-[13px] text-muted">{lieu} · {labelDelai(d.delai)}</p>
         </div>
-        <span className="flex flex-col items-end gap-1">
-          <span className={"rounded-full px-2.5 py-0.5 text-[12px] font-semibold " + TON[r.statut]}>{r.statut === "envoyee" ? "À répondre" : LIBELLES_MER[r.statut]}</span>
+        <span className="flex flex-wrap items-center gap-x-2 gap-y-1 sm:flex-col sm:items-end">
+          <span className={"rounded-full px-2.5 py-0.5 text-[12px] font-semibold " + TON[r.statut]}>{r.statut === "envoyee" ? "À répondre" : r.statut === "expiree" ? "Expirée" : LIBELLES_MER[r.statut]}</span>
           <span className="num text-[12px] text-faint">Reçue le {dateCourte(r.envoyeeLe)}</span>
         </span>
       </div>
@@ -37,7 +38,7 @@ function Carte({ r }: { r: DemandeRecue }) {
           {d.quantites && <div><dt className="text-[12px] text-faint">Surfaces et quantités</dt><dd className="whitespace-pre-line text-ink">{d.quantites}</dd></div>}
         </dl>
       )}
-      {!d.description && !d.quantites && (
+      {!d.description && !d.quantites && (r.statut === "envoyee" || r.statut === "acceptee") && (
         <p className="mt-3 text-[13.5px] text-muted">
           {r.statut === "acceptee" ? "Le client n'a pas donné de détails : appelle-le pour préciser son besoin." : "Le client n'a pas donné de détails : si tu acceptes, appelle-le pour préciser son besoin."}
         </p>
@@ -82,8 +83,13 @@ function Carte({ r }: { r: DemandeRecue }) {
             <a href={`mailto:${r.client.email}?subject=${encodeURIComponent("Ta demande de devis sur AVYORA")}`} className="btn btn-outline min-h-10 px-4 text-[13.5px]">E-mail</a>
           </div>
           <p className="num mt-2 text-[12.5px] text-[#0b5e40]">{afficherPortable(r.client.telephone)} · {r.client.email}</p>
+          {r.client.adresse && <p className="mt-1 text-[13px] text-[#0b5e40]">Adresse du chantier : {r.client.adresse}</p>}
         </div>
       )}
+      {r.statut === "acceptee" && (r.devisEnvoyeLe
+        ? <p className="mt-3 text-[13px] font-semibold text-muted">Devis envoyé le {dateCourte(r.devisEnvoyeLe)}{r.signe ? " · le client a signé avec toi" : ""}</p>
+        : <BoutonDevisEnvoye miseId={r.miseId} />)}
+      {r.statut === "expiree" && <p className="mt-3 text-[13px] text-muted">Pas de réponse dans les 5 jours : la demande a été proposée à un autre artisan.</p>}
     </article>
   );
 }

@@ -14,6 +14,12 @@ import { normaliserPortable } from "@/lib/telephone";
  */
 
 export const MAX_ARTISANS = 3;
+/** Artisans contactés au plus par demande, remplacements compris (phase 3) : 3 en cours, 6 au total. */
+export const MAX_CONTACTES = 6;
+/** Phase 3 : rappel à l'artisan après 2 jours sans réponse, expiration après 5, avis demandé 14 jours après l'acceptation. */
+export const RELANCE_JOURS = 2;
+export const EXPIRATION_JOURS = 5;
+export const SONDAGE_JOURS = 14;
 export const MAX_PHOTOS_DEMANDE = 6;
 
 export const DELAIS = [
@@ -36,6 +42,8 @@ export const demandeDevisSchema = z.object({
   metiers: z.array(z.enum(CLES_METIERS as [string, ...string[]], "invalide")).min(1, "requis").max(CLES_METIERS.length, "invalide"),
   codePostal: z.string().trim().refine((s) => s !== "", "requis").refine((s) => departementDuCodePostal(s) !== null, "invalide"),
   ville: ligne(120),
+  /** L'adresse du chantier (phase 3), facultative : montrée seulement à l'artisan qui accepte. */
+  adresse: ligne(200),
   description: bloc(3000),
   quantites: bloc(1500),
   delai: z.union([z.literal(""), z.enum(DELAIS.map(([k]) => k) as [Delai, ...Delai[]])], "invalide"),
@@ -60,7 +68,7 @@ export function validerDemandeDevis(brut: unknown): { ok: true; d: DemandeDevis 
   const liste = (v: unknown) => (Array.isArray(v) ? [...new Set(v.filter((x): x is string => typeof x === "string"))] : []);
   const chaine = (v: unknown) => (typeof v === "string" ? v : "");
   const r = demandeDevisSchema.safeParse({
-    metiers: liste(b.metiers), codePostal: chaine(b.codePostal), ville: chaine(b.ville),
+    metiers: liste(b.metiers), codePostal: chaine(b.codePostal), ville: chaine(b.ville), adresse: chaine(b.adresse),
     description: chaine(b.description).replace(/\r\n?/g, "\n"), quantites: chaine(b.quantites).replace(/\r\n?/g, "\n"),
     delai: chaine(b.delai), artisans: liste(b.artisans), prenom: chaine(b.prenom), telephone: chaine(b.telephone),
     joindreEstimation: b.joindreEstimation === true, projetId: chaine(b.projetId), consentement: b.consentement === true,
@@ -120,5 +128,29 @@ export function ordreEquitable<T extends { id: string }>(artisans: T[], recues: 
   return [...artisans].sort((a, b) => (recues.get(a.id) ?? 0) - (recues.get(b.id) ?? 0) || h(graine + a.id) - h(graine + b.id));
 }
 
-export type StatutMiseEnRelation = "envoyee" | "acceptee" | "refusee";
-export const LIBELLES_MER: Record<StatutMiseEnRelation, string> = { envoyee: "En attente de réponse", acceptee: "Accepté", refusee: "Pas disponible" };
+export type StatutMiseEnRelation = "envoyee" | "acceptee" | "refusee" | "expiree";
+export const LIBELLES_MER: Record<StatutMiseEnRelation, string> = { envoyee: "En attente de réponse", acceptee: "Accepté", refusee: "Pas disponible", expiree: "Sans réponse" };
+
+/** Ce que le client indique après l'acceptation (phase 3). */
+export const ISSUES = [
+  ["devis_recu", "Devis reçu"],
+  ["signe", "Signé avec lui"],
+  ["non_retenu", "Pas retenu"],
+] as const;
+export type Issue = (typeof ISSUES)[number][0];
+export const estIssue = (v: unknown): v is Issue => ISSUES.some(([k]) => k === v);
+export const labelIssue = (v: string | null) => (v ? ISSUES.find(([k]) => k === v)?.[1] ?? v : null);
+
+/** Un avis du client : une note de 1 à 5 et un commentaire facultatif (1 000 caractères). null si invalide. */
+export function lireAvis(note: unknown, commentaire: unknown): { note: number; commentaire: string | null } | null {
+  const n = typeof note === "number" ? note : Number(note);
+  if (!Number.isInteger(n) || n < 1 || n > 5) return null;
+  const c = String(commentaire ?? "").replace(/\r\n?/g, "\n").replace(/[\u0000-\u0009\u000B-\u001F\u007F\u2028\u2029]/g, "").trim().slice(0, 1000);
+  return { note: n, commentaire: c || null };
+}
+
+/** Combien d'artisans le client peut encore ajouter à une demande : 3 en cours au plus, 6 contactés au total. */
+export function placesRestantes(statuts: StatutMiseEnRelation[]): number {
+  const enCours = statuts.filter((s) => s === "envoyee" || s === "acceptee").length;
+  return Math.max(0, Math.min(MAX_ARTISANS - enCours, MAX_CONTACTES - statuts.length));
+}

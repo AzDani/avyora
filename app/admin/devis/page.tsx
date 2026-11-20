@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { listDemandesDevisAdmin, type DemandeAdmin } from "@/lib/data/reseau";
-import { LIBELLES_MER, labelDelai } from "@/lib/reseau/demande";
+import { LIBELLES_MER, labelDelai, labelIssue } from "@/lib/reseau/demande";
 import { labelMetier } from "@/lib/reseau/metiers";
 import { nomDepartement } from "@/lib/reseau/departements";
 import { dateCourte, messageWhatsApp } from "@/lib/admin/outils";
@@ -12,6 +12,7 @@ export const dynamic = "force-dynamic";
 const VUES = [
   ["sans-artisan", "Sans artisan"],
   ["en-attente", "En attente de réponse"],
+  ["avis", "Avis des clients"],
   ["toutes", "Toutes"],
 ] as const;
 type Vue = (typeof VUES)[number][0];
@@ -19,9 +20,10 @@ type Vue = (typeof VUES)[number][0];
 const FILTRE: Record<Vue, (d: DemandeAdmin) => boolean> = {
   "sans-artisan": (d) => d.reponses.length === 0,
   "en-attente": (d) => d.reponses.length > 0 && d.reponses.every((r) => r.statut !== "acceptee"),
+  avis: (d) => d.reponses.some((r) => r.avisNote != null),
   toutes: () => true,
 };
-const TON = { envoyee: "bg-surface-2 text-muted border border-line", acceptee: "bg-[#e3f5ed] text-[#0b5e40]", refusee: "bg-[#fdf0ef] text-[#8a1f15]" } as const;
+const TON = { envoyee: "bg-surface-2 text-muted border border-line", acceptee: "bg-[#e3f5ed] text-[#0b5e40]", refusee: "bg-[#fdf0ef] text-[#8a1f15]", expiree: "bg-[#fff4dc] text-[#8a5300]" } as const;
 
 /**
  * Les demandes de devis des clients (phase 2). « Sans artisan » : aucune entreprise validée ne couvrait la zone, c'est
@@ -84,7 +86,11 @@ export default async function AdminDevis({ searchParams }: { searchParams: Promi
               <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                 <div className="flex flex-wrap gap-1.5">
                   {d.reponses.length === 0 ? <span className="rounded-full bg-[#fff4dc] px-2.5 py-0.5 text-[12px] font-semibold text-[#8a5300]">Aucun artisan dans la zone</span>
-                    : d.reponses.map((r) => <span key={r.artisanId} className={"rounded-full px-2.5 py-0.5 text-[12px] font-semibold " + TON[r.statut]}>{r.nom} · {LIBELLES_MER[r.statut]}</span>)}
+                    : d.reponses.map((r) => (
+                      <Link key={r.artisanId} href={`/admin/artisans/${r.artisanId}`} className={"rounded-full px-2.5 py-0.5 text-[12px] font-semibold hover:underline " + TON[r.statut]}>
+                        {r.nom} · {LIBELLES_MER[r.statut]}{r.issue ? ` · ${labelIssue(r.issue)?.toLowerCase()}` : ""}{r.avisNote != null ? ` · ${r.avisNote}/5` : ""}
+                      </Link>
+                    ))}
                 </div>
                 {d.reponses.length === 0 && <ContactRapide tel={d.telephone} email={d.email} whatsapp={messageWhatsApp.demande(d.prenom)} sujet="Ta demande de devis sur AVYORA" />}
               </div>

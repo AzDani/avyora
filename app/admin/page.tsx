@@ -56,6 +56,7 @@ export default async function AdminTableauDeBord() {
       nbAExaminer: aExaminer.length,
       decennalesARenouveler: artisans.filter((a) => a.statut === "valide" && joursAvantFinDecennale(a.decennaleFin, jour) <= 30).length,
       devisSansArtisan: (devis ?? []).filter((x) => x.reponses.length === 0).length,
+      avisFaibles: (devis ?? []).flatMap((x) => x.reponses).filter((r) => r.avisNote != null && r.avisNote <= 2).length,
     },
     nouveaux: recents.slice(0, 8).map((i) => {
       const type = typePrincipal(i.profil);

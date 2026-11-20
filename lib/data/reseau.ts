@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { BUCKET_ARTISANS, aujourdhuiParis } from "@/lib/reseau/candidature";
-import { ordreEquitable, type ArtisanPropose, type EstimationJointe, type StatutMiseEnRelation } from "@/lib/reseau/demande";
+import { ordreEquitable, type ArtisanPropose, type EstimationJointe, type Issue, type StatutMiseEnRelation } from "@/lib/reseau/demande";
 import { COLONNES_ARTISAN, lireArtisan, lireDocument, type Artisan, type DocumentArtisan } from "@/lib/reseau/artisan";
 
 /**
@@ -154,12 +154,20 @@ type LigneDemande = {
   id: string; client_id: string; projet_id: string | null; metiers: string[]; code_postal: string; departement: string; ville: string | null;
   description: string | null; quantites: string | null; delai: string | null; photos: string[]; estimation: EstimationJointe | null;
   prenom: string; telephone: string; email: string; created_at: string;
+  /** Phase 3 (migration 0009) : l'adresse du chantier, montrée seulement à l'artisan qui accepte. */
+  adresse: string | null;
 };
-const COLONNES_DEMANDE = "id, client_id, projet_id, metiers, code_postal, departement, ville, description, quantites, delai, photos, estimation, prenom, telephone, email, created_at";
-type LigneMer = { id: string; demande_id: string; artisan_id: string; statut: StatutMiseEnRelation; envoyee_le: string; repondu_le: string | null };
+const COLONNES_DEMANDE = "id, client_id, projet_id, metiers, code_postal, departement, ville, adresse, description, quantites, delai, photos, estimation, prenom, telephone, email, created_at";
+type LigneMer = {
+  id: string; demande_id: string; artisan_id: string; statut: StatutMiseEnRelation; envoyee_le: string; repondu_le: string | null;
+  devis_envoye_le: string | null; issue: Issue | null; avis_note: number | null; avis_commentaire: string | null; avis_le: string | null;
+};
+const COLONNES_MER = "id, demande_id, artisan_id, statut, envoyee_le, repondu_le, devis_envoye_le, issue, avis_note, avis_commentaire, avis_le";
 
 export type ReponseArtisan = {
   miseId: string; statut: StatutMiseEnRelation; reponduLe: string | null;
+  /** Phase 3 : le devis annoncé par l'artisan, l'issue et l'avis donnés par le client. */
+  devisEnvoyeLe: string | null; issue: Issue | null; avis: { note: number; commentaire: string | null } | null;
   artisan: { id: string; nom: string; metiers: string[] };
   /** Seulement si l'artisan a ACCEPTÉ. */
   contact: { nom: string; telephone: string; email: string } | null;
@@ -173,7 +181,7 @@ export async function demandesDuClient(clientId: string): Promise<DemandeClient[
   if (error) throw new Error(error.message);
   const demandes = (data ?? []) as LigneDemande[];
   if (!demandes.length) return [];
-  const { data: merData } = await sb.from(TABLE_MER).select("id, demande_id, artisan_id, statut, envoyee_le, repondu_le").in("demande_id", demandes.map((d) => d.id));
+  const { data: merData } = await sb.from(TABLE_MER).select(COLONNES_MER).in("demande_id", demandes.map((d) => d.id));
   const mer = (merData ?? []) as LigneMer[];
   const ids = [...new Set(mer.map((m) => m.artisan_id))];
   const { data: arts } = ids.length
@@ -188,6 +196,7 @@ export async function demandesDuClient(clientId: string): Promise<DemandeClient[
       const a = parId.get(m.artisan_id);
       return {
         miseId: m.id, statut: m.statut, reponduLe: m.repondu_le,
+        devisEnvoyeLe: m.devis_envoye_le, issue: m.issue, avis: m.avis_note ? { note: m.avis_note, commentaire: m.avis_commentaire } : null,
         artisan: { id: m.artisan_id, nom: a ? a.nom_commercial || a.raison_sociale : "Artisan", metiers: a?.metiers ?? [] },
         contact: m.statut === "acceptee" && a ? { nom: a.contact_nom, telephone: a.telephone, email: a.email } : null,
       };
@@ -197,16 +206,19 @@ export async function demandesDuClient(clientId: string): Promise<DemandeClient[
 
 export type DemandeRecue = {
   miseId: string; statut: StatutMiseEnRelation; envoyeeLe: string; reponduLe: string | null;
-  demande: Omit<LigneDemande, "client_id" | "prenom" | "telephone" | "email" | "photos" | "projet_id"> & { photos: string[] };
-  /** Les coordonnées du client : seulement si l'artisan a ACCEPTÉ. */
-  client: { prenom: string; telephone: string; email: string } | null;
+  devisEnvoyeLe: string | null;
+  /** Le client a signé avec lui (le reste de l'issue et l'avis ne lui sont pas montrés). */
+  signe: boolean;
+  demande: Omit<LigneDemande, "client_id" | "prenom" | "telephone" | "email" | "photos" | "projet_id" | "adresse"> & { photos: string[] };
+  /** Les coordonnées du client et l'adresse du chantier : seulement si l'artisan a ACCEPTÉ. */
+  client: { prenom: string; telephone: string; email: string; adresse: string | null } | null;
 };
 
 /** Les demandes reçues par un artisan (son id vient de SA candidature, lue par la session), les plus récentes d'abord. */
 export async function demandesRecues(artisanId: string): Promise<DemandeRecue[]> {
   if (!UUID_RE.test(artisanId)) return [];
   const sb = supabaseAdmin();
-  const { data, error } = await sb.from(TABLE_MER).select("id, demande_id, artisan_id, statut, envoyee_le, repondu_le").eq("artisan_id", artisanId).order("envoyee_le", { ascending: false }).limit(200);
+  const { data, error } = await sb.from(TABLE_MER).select(COLONNES_MER).eq("artisan_id", artisanId).order("envoyee_le", { ascending: false }).limit(200);
   if (error) throw new Error(error.message);
   const mer = (data ?? []) as LigneMer[];
   if (!mer.length) return [];
@@ -216,16 +228,17 @@ export async function demandesRecues(artisanId: string): Promise<DemandeRecue[]>
   return mer.flatMap((m) => {
     const d = parId.get(m.demande_id);
     if (!d) return [];
-    const { client_id: _c, prenom, telephone, email, photos, projet_id: _p, ...reste } = d;
+    const { client_id: _c, prenom, telephone, email, photos, projet_id: _p, adresse, ...reste } = d;
     return [{
       miseId: m.id, statut: m.statut, envoyeeLe: m.envoyee_le, reponduLe: m.repondu_le,
+      devisEnvoyeLe: m.devis_envoye_le, signe: m.statut === "acceptee" && m.issue === "signe",
       demande: { ...reste, photos: (photos ?? []).map((c) => urls.get(c)).filter((u): u is string => !!u) },
-      client: m.statut === "acceptee" ? { prenom, telephone, email } : null,
+      client: m.statut === "acceptee" ? { prenom, telephone, email, adresse: adresse ?? null } : null,
     }];
   });
 }
 
-export type DemandeAdmin = LigneDemande & { reponses: { artisanId: string; nom: string; statut: StatutMiseEnRelation }[] };
+export type DemandeAdmin = LigneDemande & { reponses: { artisanId: string; nom: string; statut: StatutMiseEnRelation; issue: Issue | null; avisNote: number | null }[] };
 
 /** Toutes les demandes (admin), les plus récentes d'abord. Mémorisée le temps d'une requête. */
 export const listDemandesDevisAdmin = cache(async (): Promise<DemandeAdmin[]> => {
@@ -234,26 +247,40 @@ export const listDemandesDevisAdmin = cache(async (): Promise<DemandeAdmin[]> =>
   if (error) throw new Error(error.message);
   const demandes = (data ?? []) as LigneDemande[];
   if (!demandes.length) return [];
-  const { data: merData } = await sb.from(TABLE_MER).select("id, demande_id, artisan_id, statut, envoyee_le, repondu_le").in("demande_id", demandes.map((d) => d.id));
+  const { data: merData } = await sb.from(TABLE_MER).select(COLONNES_MER).in("demande_id", demandes.map((d) => d.id));
   const mer = (merData ?? []) as LigneMer[];
   const ids = [...new Set(mer.map((m) => m.artisan_id))];
   const { data: arts } = ids.length ? await sb.from(TABLE_ARTISANS).select("id, raison_sociale, nom_commercial").in("id", ids) : { data: [] };
   const noms = new Map(((arts ?? []) as { id: string; raison_sociale: string; nom_commercial: string | null }[]).map((a) => [a.id, a.nom_commercial || a.raison_sociale]));
   return demandes.map((d) => ({
     ...d,
-    reponses: mer.filter((m) => m.demande_id === d.id).map((m) => ({ artisanId: m.artisan_id, nom: noms.get(m.artisan_id) ?? "Artisan", statut: m.statut })),
+    reponses: mer.filter((m) => m.demande_id === d.id).map((m) => ({ artisanId: m.artisan_id, nom: noms.get(m.artisan_id) ?? "Artisan", statut: m.statut, issue: m.issue, avisNote: m.avis_note })),
   }));
 });
 
-/** Les demandes reçues par chaque artisan et combien il en a acceptées (fiche admin). */
-export async function statsMisesEnRelation(artisanId: string): Promise<{ recues: number; acceptees: number; refusees: number }> {
-  if (!UUID_RE.test(artisanId)) return { recues: 0, acceptees: 0, refusees: 0 };
+export type StatsArtisan = {
+  recues: number; acceptees: number; refusees: number; expirees: number; devisEnvoyes: number; signees: number;
+  noteMoyenne: number | null; avis: { note: number; commentaire: string | null; le: string; prenom: string }[];
+};
+
+/** Le bilan d'un artisan (fiche admin) : réponses, devis, signatures, avis des clients. Comptes exacts (pas de lecture tronquée). */
+export async function statsMisesEnRelation(artisanId: string): Promise<StatsArtisan> {
+  const vide: StatsArtisan = { recues: 0, acceptees: 0, refusees: 0, expirees: 0, devisEnvoyes: 0, signees: 0, noteMoyenne: null, avis: [] };
+  if (!UUID_RE.test(artisanId)) return vide;
   const sb = supabaseAdmin();
-  const compte = (statut?: string) => {
-    let q = sb.from(TABLE_MER).select("id", { count: "exact", head: true }).eq("artisan_id", artisanId);
-    if (statut) q = q.eq("statut", statut);
-    return q.then((r) => r.count ?? 0);
+  const compte = (f: (q: ReturnType<typeof base>) => ReturnType<typeof base>) => f(base()).then((r) => r.count ?? 0);
+  function base() { return sb.from(TABLE_MER).select("id", { count: "exact", head: true }).eq("artisan_id", artisanId); }
+  const [recues, acceptees, refusees, expirees, devisEnvoyes, signees, { data: avisData }] = await Promise.all([
+    compte((q) => q), compte((q) => q.eq("statut", "acceptee")), compte((q) => q.eq("statut", "refusee")), compte((q) => q.eq("statut", "expiree")),
+    compte((q) => q.not("devis_envoye_le", "is", null)), compte((q) => q.eq("issue", "signe")),
+    sb.from(TABLE_MER).select("demande_id, avis_note, avis_commentaire, avis_le").eq("artisan_id", artisanId).not("avis_note", "is", null).order("avis_le", { ascending: false }).limit(200),
+  ]);
+  const lignes = (avisData ?? []) as { demande_id: string; avis_note: number; avis_commentaire: string | null; avis_le: string }[];
+  const { data: dem } = lignes.length ? await sb.from(TABLE_DEMANDES).select("id, prenom").in("id", lignes.map((l) => l.demande_id)) : { data: [] };
+  const prenoms = new Map(((dem ?? []) as { id: string; prenom: string }[]).map((d) => [d.id, d.prenom]));
+  return {
+    recues, acceptees, refusees, expirees, devisEnvoyes, signees,
+    noteMoyenne: lignes.length ? Math.round((lignes.reduce((a, l) => a + l.avis_note, 0) / lignes.length) * 10) / 10 : null,
+    avis: lignes.map((l) => ({ note: l.avis_note, commentaire: l.avis_commentaire, le: l.avis_le, prenom: prenoms.get(l.demande_id) ?? "Client" })),
   };
-  const [recues, acceptees, refusees] = await Promise.all([compte(), compte("acceptee"), compte("refusee")]);
-  return { recues, acceptees, refusees };
 }

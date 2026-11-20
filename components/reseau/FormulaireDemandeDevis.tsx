@@ -81,6 +81,7 @@ export default function FormulaireDemandeDevis({ initial }: { initial: InitialDe
   const [metiers, setMetiers] = useState<string[]>(initial.metiers);
   const [codePostal, setCodePostal] = useState(initial.codePostal);
   const [ville, setVille] = useState(initial.ville);
+  const [adresse, setAdresse] = useState("");
   const [description, setDescription] = useState("");
   const [quantites, setQuantites] = useState("");
   const [delai, setDelai] = useState("");
@@ -151,7 +152,7 @@ export default function FormulaireDemandeDevis({ initial }: { initial: InitialDe
     e.preventDefault();
     setGlobal("");
     const valeurs = {
-      metiers, codePostal, ville, description, quantites, delai, artisans: choix, prenom, telephone,
+      metiers, codePostal, ville, adresse, description, quantites, delai, artisans: choix, prenom, telephone,
       joindreEstimation: joindre, projetId: initial.projetId, consentement, photos: photos.map((p) => p.chemin),
     };
     const local = validerDemandeDevis(valeurs);
@@ -327,11 +328,16 @@ export default function FormulaireDemandeDevis({ initial }: { initial: InitialDe
             <Erreur id="dv-telephone-err" code={erreurs.telephone} />
           </div>
         </div>
+        <div>
+          <label htmlFor="dv-adresse" className="block text-[14px] font-semibold text-ink">Adresse du chantier (facultatif)</label>
+          <p id="dv-adresse-aide" className="text-[12.5px] text-muted">Transmise seulement aux artisans qui acceptent ta demande, pour venir voir le chantier.</p>
+          <input id="dv-adresse" autoComplete="street-address" maxLength={200} value={adresse} onChange={(e) => setAdresse(e.target.value)} aria-describedby="dv-adresse-aide" className={champ + " mt-1.5"} />
+        </div>
         <label className="flex cursor-pointer items-start gap-3 text-[14px] leading-snug text-ink">
           <input id="dv-consentement" type="checkbox" checked={consentement} onChange={(e) => { setConsentement(e.target.checked); effacer("consentement"); }}
             aria-invalid={erreurs.consentement ? true : undefined} aria-describedby={erreurs.consentement ? "dv-consentement-err" : undefined} className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--color-brand-600)]" />
           <span>
-            J&apos;accepte que ma demande soit envoyée aux artisans choisis, et que mon prénom, mon portable et mon e-mail soient transmis à ceux qui l&apos;acceptent, pour me contacter à son sujet. <Link href="/confidentialite" className="font-semibold text-brand-700 underline">Confidentialité</Link>
+            J&apos;accepte que ma demande soit envoyée aux artisans choisis, et que mon prénom, mon portable, mon e-mail et l&apos;adresse du chantier (si je la donne) soient transmis à ceux qui l&apos;acceptent, pour me contacter à son sujet. <Link href="/confidentialite" className="font-semibold text-brand-700 underline">Confidentialité</Link>
           </span>
         </label>
         <Erreur id="dv-consentement-err" code={erreurs.consentement} />

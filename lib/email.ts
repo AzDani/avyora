@@ -369,3 +369,50 @@ export function emailDemandeSansArtisan(d: { travaux: string[]; lieu: string; ad
     html: layout({ preheader: `${e(d.lieu)} · ${e(d.travaux.join(", "))}`, eyebrow: "Réseau AVYORA", titre: "Demande sans artisan", corps }),
   };
 }
+
+/* ─── Réseau AVYORA, phase 3 : relances et avis ──────────────────────────────── */
+
+/** À l'artisan : une demande attend sa réponse depuis 2 jours (une seule relance ; elle expire à 5 jours). */
+export function emailRelanceArtisan(d: { nomArtisan: string; travaux: string[]; lieu: string; joursRestants: number; espaceUrl: string }): { subject: string; html: string } {
+  const e = echapperHtml;
+  const corps = `
+    ${P(`Bonjour ${e(d.nomArtisan)},`)}
+    ${P(`Un client attend ta réponse pour sa demande de devis (${e(d.travaux.join(", "))}, ${e(d.lieu)}).`)}
+    ${P(`Sans réponse d'ici <b style="color:#15172b">${d.joursRestants} jour${d.joursRestants > 1 ? "s" : ""}</b>, la demande expire et le client choisira un autre artisan. Un refus est aussi une réponse : il lui permet d'avancer.`)}
+    ${bouton("Répondre à la demande", d.espaceUrl)}
+  `;
+  return { subject: "Un client attend ta réponse", html: layout({ preheader: `${e(d.lieu)} · ${e(d.travaux.join(", "))}`, eyebrow: "Réseau AVYORA", titre: "Une demande attend ta réponse", corps }) };
+}
+
+/**
+ * Au client : un ou plusieurs artisans n'ont pas répondu à temps (UN e-mail par demande et par jour). S'il reste de la
+ * place sur la demande, il peut en choisir d'autres ; sinon, on le lui dit au lieu de le promettre.
+ */
+export function emailSansReponse(d: { prenom: string; artisans: string[]; peutRemplacer: boolean; suiviUrl: string }): { subject: string; html: string } {
+  const e = echapperHtml;
+  const plusieurs = d.artisans.length > 1;
+  const qui = plusieurs ? `${d.artisans.slice(0, -1).map(e).join(", ")} et ${e(d.artisans[d.artisans.length - 1])} n'ont` : `${e(d.artisans[0])} n'a`;
+  const corps = `
+    ${P(`Bonjour ${e(d.prenom)},`)}
+    ${P(`${qui} pas répondu à ta demande de devis dans les 5 jours.`)}
+    ${d.peutRemplacer
+      ? `${P(`Tu peux choisir ${plusieurs ? "d'autres artisans" : "un autre artisan"} du réseau à sa place, depuis le suivi de ta demande.`)}${bouton("Choisir un autre artisan", d.suiviUrl)}`
+      : `${P("Ta demande a déjà été proposée au nombre maximum d'artisans. Les autres peuvent encore te répondre ; sinon, tu peux faire une nouvelle demande.")}${bouton("Suivre ma demande", d.suiviUrl)}`}
+  `;
+  return {
+    subject: plusieurs ? "Des artisans n'ont pas répondu à ta demande" : `${d.artisans[0]} n'a pas répondu à ta demande`,
+    html: layout({ preheader: d.peutRemplacer ? "Tu peux choisir un autre artisan" : "Le point sur ta demande", eyebrow: "Réseau AVYORA", titre: "Pas de réponse", corps }),
+  };
+}
+
+/** Au client, 14 jours après l'acceptation : où en est-il avec l'artisan, et son avis. */
+export function emailDemandeAvis(d: { prenom: string; nomArtisan: string; suiviUrl: string }): { subject: string; html: string } {
+  const e = echapperHtml;
+  const corps = `
+    ${P(`Bonjour ${e(d.prenom)},`)}
+    ${P(`Il y a deux semaines, <b style="color:#15172b">${e(d.nomArtisan)}</b> a accepté ta demande de devis. As-tu reçu son devis ? L'as-tu retenu ?`)}
+    ${P("Ton avis prend une minute et sert à garder dans le réseau des artisans sérieux. Il n'est pas publié : seul Daniel le lit.")}
+    ${bouton("Donner mon avis", d.suiviUrl)}
+  `;
+  return { subject: `Comment ça s'est passé avec ${d.nomArtisan} ?`, html: layout({ preheader: "Une minute pour ton avis", eyebrow: "Réseau AVYORA", titre: "Ton avis compte", corps }) };
+}

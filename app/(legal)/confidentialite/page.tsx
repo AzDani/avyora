@@ -12,7 +12,7 @@ export default function Confidentialite() {
   return (
     <article>
       <h1>Politique de confidentialité</h1>
-      <p className="maj">Dernière mise à jour : 17 novembre 2026</p>
+      <p className="maj">Dernière mise à jour : 20 novembre 2026</p>
 
       <p>
         La présente politique décrit la manière dont AVYORA collecte et traite les données personnelles,
@@ -37,7 +37,7 @@ export default function Confidentialite() {
           <tr><td>Plans</td><td>plans de maison dessinés dans l&apos;éditeur et enregistrés dans le compte</td></tr>
           <tr><td>Demande d&apos;accompagnement</td><td>prénom, e-mail, téléphone (facultatif), type de projet, besoins cochés, message libre — formulaire de la page « Accompagnement travaux », sans compte</td></tr>
           <tr><td>Candidature au Réseau AVYORA (artisans)</td><td>SIRET et informations publiques de l&apos;entreprise issues du répertoire des entreprises (nom, état, activité, adresse, label RGE), nom et prénom du contact, portable, e-mail du compte, métiers, départements d&apos;intervention, présentation, site web, lien vers les avis, assureur, numéro de contrat et date de fin de l&apos;assurance décennale, attestations d&apos;assurance et photos de chantiers déposées, notes de l&apos;éditeur sur la candidature</td></tr>
-          <tr><td>Demande de devis au Réseau AVYORA</td><td>travaux souhaités, code postal et ville du chantier, description, surfaces et quantités, délai, photos, estimation AVYORA jointe (si tu le choisis), artisans choisis et leurs réponses, prénom, portable et e-mail du compte</td></tr>
+          <tr><td>Demande de devis au Réseau AVYORA</td><td>travaux souhaités, code postal, ville et adresse du chantier (facultative), description, surfaces et quantités, délai, photos, estimation AVYORA jointe (si tu le choisis), artisans choisis et leurs réponses, suivi (devis reçu, signé, pas retenu) et avis sur les artisans (note et commentaire, lus par l&apos;éditeur seul, non publiés), prénom, portable et e-mail du compte</td></tr>
           <tr><td>Paiement</td><td>gérées par Stripe&nbsp;; AVYORA ne stocke pas les numéros de carte</td></tr>
           <tr><td>Sécurité &amp; journaux</td><td>adresse IP (limitation d&apos;abus), horodatage d&apos;évènements d&apos;authentification</td></tr>
           <tr><td>Techniques</td><td>cookies strictement nécessaires (session, langue, sécurité de la connexion) — voir <a href="/cookies">politique cookies</a></td></tr>
@@ -72,7 +72,7 @@ export default function Confidentialite() {
         <li><strong>Stripe</strong> — traitement des paiements&nbsp;;</li>
         <li><strong>Resend</strong> — envoi des e-mails transactionnels (confirmation de compte, réinitialisation de mot de passe, confirmation de commande, demande d&apos;accompagnement et son accusé de réception)&nbsp;;</li>
         <li><strong>WhatsApp (Meta)</strong> — seulement si tu choisis d&apos;être rappelé par WhatsApp après une demande d&apos;accompagnement&nbsp;: l&apos;échange passe alors par ce service, selon ses propres conditions&nbsp;;</li>
-        <li><strong>Les artisans du Réseau AVYORA que tu choisis</strong> — ils reçoivent ta demande de devis (sans tes coordonnées)&nbsp;; ceux qui l&apos;acceptent reçoivent ton prénom, ton portable et ton e-mail pour te contacter, et en sont alors responsables pour leur propre compte&nbsp;;</li>
+        <li><strong>Les artisans du Réseau AVYORA que tu choisis</strong> — ils reçoivent ta demande de devis (sans tes coordonnées)&nbsp;; ceux qui l&apos;acceptent reçoivent ton prénom, ton portable, ton e-mail et l&apos;adresse du chantier si tu l&apos;as donnée, pour te contacter, et en sont alors responsables pour leur propre compte&nbsp;;</li>
         <li><strong>Répertoire des entreprises de l&apos;État</strong> (recherche-entreprises.api.gouv.fr) — interrogé avec le SIRET d&apos;un artisan qui postule au Réseau AVYORA, pour vérifier que son établissement est actif&nbsp;;</li>
         <li><strong>Vercel Analytics</strong> — mesure d&apos;audience agrégée, sans cookie&nbsp;;</li>
         <li><strong>Google Ireland Limited</strong> (Gordon House, Barrow Street, Dublin 4, Irlande) — Google Ads&nbsp;: mesure des conversions et remarketing, <strong>uniquement si vous avez accepté les cookies publicitaires</strong>. Règles de Google pour ces traitements&nbsp;: <a href="https://business.safety.google/privacy/" target="_blank" rel="noopener noreferrer">business.safety.google/privacy</a>.</li>

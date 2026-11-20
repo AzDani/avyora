@@ -202,7 +202,7 @@ describe("les coordonnées du client ne vont qu'à l'artisan qui accepte", () =>
     const r = await demandesRecues(A1);
     expect(r[0].client).toBeNull();
     expect(JSON.stringify(r[0])).not.toContain("lea@x.fr");
-    expect(r[1].client).toEqual({ prenom: "Léa", telephone: "+33612345678", email: "lea@x.fr" });
+    expect(r[1].client).toEqual({ prenom: "Léa", telephone: "+33612345678", email: "lea@x.fr", adresse: null });
   });
 });
 

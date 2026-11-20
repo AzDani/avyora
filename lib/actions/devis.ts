@@ -10,7 +10,7 @@ import { emailDemandeEnvoyee, emailDemandeSansArtisan, emailNouvelleDemandeArtis
 import { DESTINATAIRE_DEFAUT } from "@/lib/accompagnement/constantes";
 import { BUCKET_ARTISANS, TABLE_ARTISANS, TABLE_DEMANDES, TABLE_MER, artisansDisponibles, candidatureDe } from "@/lib/data/reseau";
 import { MIMES_ACCEPTES, TAILLE_MAX, aujourdhuiParis } from "@/lib/reseau/candidature";
-import { MAX_PHOTOS_DEMANDE, labelDelai, validerDemandeDevis, type ArtisanPropose, type ErreursDemande, type EstimationJointe } from "@/lib/reseau/demande";
+import { MAX_PHOTOS_DEMANDE, estIssue, labelDelai, lireAvis, placesRestantes, validerDemandeDevis, type ArtisanPropose, type ErreursDemande, type EstimationJointe, type StatutMiseEnRelation } from "@/lib/reseau/demande";
 import { departementDuCodePostal, nomDepartement } from "@/lib/reseau/departements";
 import { labelMetier } from "@/lib/reseau/metiers";
 import { afficherPortable } from "@/lib/telephone";
@@ -149,7 +149,7 @@ export async function envoyerDemandeDevis(brut: unknown): Promise<{ ok: true; id
   const { data: ins, error: errIns } = await sb
     .from(TABLE_DEMANDES)
     .insert({
-      client_id: user.id, projet_id: projetId, metiers: d.metiers, code_postal: d.codePostal, departement: dep, ville: d.ville || null,
+      client_id: user.id, projet_id: projetId, metiers: d.metiers, code_postal: d.codePostal, departement: dep, ville: d.ville || null, adresse: d.adresse || null,
       description: d.description || null, quantites: d.quantites || null, delai: d.delai || null, photos, estimation,
       prenom: d.prenom, telephone: d.telephone, email: user.email, consentement_le: new Date().toISOString(),
     })
@@ -225,5 +225,125 @@ export async function repondreDemande(miseId: string, reponse: "accepter" | "ref
   }
   await journaliser("reponse_devis", { userId: user.id, payload: { mise: miseId, statut } });
   revalidatePath("/espace-artisan");
+  return { ok: true };
+}
+
+/* ─── Phase 3 : suivi, avis, remplacement d'un artisan ───────────────────────── */
+
+/** L'artisan annonce qu'il a envoyé son devis (seulement sur SA mise en relation acceptée, une fois). */
+export async function marquerDevisEnvoye(miseId: string): Promise<{ ok: boolean; erreur?: string }> {
+  const user = await getUser();
+  if (!user) return { ok: false, erreur: "Ta session a expiré : reconnecte-toi." };
+  if (typeof miseId !== "string" || !UUID.test(miseId)) return { ok: false, erreur: "Demande invalide." };
+  let artisan;
+  try {
+    artisan = await candidatureDe(user.id);
+  } catch {
+    return { ok: false, erreur: "Réessaie dans un instant." };
+  }
+  if (!artisan || artisan.statut !== "valide") return { ok: false, erreur: "Ta participation au réseau n'est pas active." };
+  const { data, error } = await supabaseAdmin()
+    .from(TABLE_MER)
+    .update({ devis_envoye_le: new Date().toISOString() })
+    .eq("id", miseId)
+    .eq("artisan_id", artisan.id)
+    .eq("statut", "acceptee")
+    .is("devis_envoye_le", null)
+    .select("id");
+  if (error) return { ok: false, erreur: "Réessaie dans un instant." };
+  if (!data?.length) return { ok: false, erreur: "C'est déjà noté." };
+  revalidatePath("/espace-artisan");
+  return { ok: true };
+}
+
+/** La mise en relation d'une demande DU CLIENT connecté, acceptée par l'artisan ; null sinon. */
+async function miseAccepteeDuClient(miseId: string, clientId: string): Promise<{ id: string } | null> {
+  if (typeof miseId !== "string" || !UUID.test(miseId)) return null;
+  const sb = supabaseAdmin();
+  const { data: m } = await sb.from(TABLE_MER).select("id, demande_id, statut").eq("id", miseId).eq("statut", "acceptee").maybeSingle();
+  if (!m) return null;
+  const { data: d } = await sb.from(TABLE_DEMANDES).select("id").eq("id", String(m.demande_id)).eq("client_id", clientId).maybeSingle();
+  return d ? { id: String(m.id) } : null;
+}
+
+/** Le client indique où il en est avec un artisan qui a accepté : devis reçu, signé, pas retenu (ou rien). */
+export async function suivreArtisan(miseId: string, issue: string | null): Promise<{ ok: boolean }> {
+  const user = await getUser();
+  if (!user || (issue !== null && !estIssue(issue))) return { ok: false };
+  const m = await miseAccepteeDuClient(miseId, user.id);
+  if (!m) return { ok: false };
+  const { error } = await supabaseAdmin().from(TABLE_MER).update({ issue, issue_le: issue ? new Date().toISOString() : null }).eq("id", m.id).eq("statut", "acceptee");
+  if (error) return { ok: false };
+  revalidatePath("/demandes-devis");
+  revalidatePath("/admin", "layout");
+  return { ok: true };
+}
+
+/** L'avis du client sur un artisan qui a accepté sa demande (modifiable). Visible par Daniel seul pour l'instant. */
+export async function laisserAvis(miseId: string, note: number, commentaire: string): Promise<{ ok: boolean }> {
+  const user = await getUser();
+  const avis = lireAvis(note, commentaire);
+  if (!user || !avis) return { ok: false };
+  const m = await miseAccepteeDuClient(miseId, user.id);
+  if (!m) return { ok: false };
+  const { error } = await supabaseAdmin()
+    .from(TABLE_MER)
+    .update({ avis_note: avis.note, avis_commentaire: avis.commentaire, avis_le: new Date().toISOString() })
+    .eq("id", m.id)
+    .eq("statut", "acceptee");
+  if (error) return { ok: false };
+  await journaliser("reponse_devis", { userId: user.id, payload: { mise: m.id, avis: avis.note } });
+  revalidatePath("/demandes-devis");
+  revalidatePath("/admin", "layout");
+  return { ok: true };
+}
+
+/**
+ * Le client ajoute un ou plusieurs artisans à sa demande, à la place de ceux qui ont refusé ou n'ont pas répondu :
+ * 3 en cours au plus, 6 contactés au total (`placesRestantes`, tenu aussi par la base). Mêmes règles qu'à l'envoi :
+ * validés, de la zone, du métier, décennale en cours, ni déjà contactés ni le client lui-même.
+ */
+export async function ajouterArtisans(demandeId: string, ids: string[]): Promise<{ ok: true } | { ok: false; erreur: string }> {
+  const c = await clientPro();
+  if (!c.ok) return { ok: false, erreur: c.erreur === "pro" ? "Réservé à AVYORA Pro." : "Ta session a expiré : reconnecte-toi." };
+  const user = c.user;
+  const choix = Array.isArray(ids) ? [...new Set(ids.filter((x): x is string => typeof x === "string" && UUID.test(x)))] : [];
+  if (typeof demandeId !== "string" || !UUID.test(demandeId) || !choix.length) return { ok: false, erreur: "Choisis au moins un artisan." };
+
+  const sb = supabaseAdmin();
+  const { data: d } = await sb.from(TABLE_DEMANDES).select("id, metiers, departement, code_postal, ville, delai, estimation, prenom").eq("id", demandeId).eq("client_id", user.id).maybeSingle();
+  if (!d) return { ok: false, erreur: "Demande introuvable." };
+  const { data: merData, error: errMer } = await sb.from(TABLE_MER).select("artisan_id, statut").eq("demande_id", demandeId);
+  if (errMer) return { ok: false, erreur: "Réessaie dans un instant." };
+  const existants = (merData ?? []) as { artisan_id: string; statut: StatutMiseEnRelation }[];
+  if (choix.length > placesRestantes(existants.map((m) => m.statut))) return { ok: false, erreur: "Tu ne peux plus ajouter autant d'artisans à cette demande." };
+  if (choix.some((x) => existants.some((m) => m.artisan_id === x))) return { ok: false, erreur: "Un de ces artisans a déjà reçu ta demande." };
+
+  const metiers = (d.metiers as string[]) ?? [];
+  const { data: arts, error } = await sb
+    .from(TABLE_ARTISANS)
+    .select("id, user_id, raison_sociale, nom_commercial, contact_nom, email")
+    .in("id", choix)
+    .eq("statut", "valide")
+    .neq("user_id", user.id)
+    .contains("departements", [String(d.departement)])
+    .overlaps("metiers", [...new Set([...metiers, "tce"])])
+    .gte("decennale_fin", aujourdhuiParis());
+  if (error) return { ok: false, erreur: "Réessaie dans un instant." };
+  const lignes = (arts ?? []) as { id: string; contact_nom: string; email: string }[];
+  if (lignes.length !== choix.length) return { ok: false, erreur: "Un artisan choisi n'est plus disponible : recharge la page." };
+  if (!(await verifierLimite("devisRecherche", user.id))) return { ok: false, erreur: "Trop d'essais : réessaie plus tard." };
+
+  const { error: errIns } = await sb.from(TABLE_MER).insert(lignes.map((a) => ({ demande_id: demandeId, artisan_id: a.id })));
+  if (errIns) return { ok: false, erreur: "Ajout impossible : recharge la page et réessaie." };
+
+  const lieu = `${d.ville ? `${d.ville}, ` : ""}${nomDepartement(String(d.departement))} (${d.code_postal})`;
+  for (const a of lignes) {
+    const m = emailNouvelleDemandeArtisan({ nomArtisan: a.contact_nom, travaux: metiers.map(labelMetier), lieu, delai: labelDelai((d.delai as string | null) ?? null), avecEstimation: !!d.estimation, espaceUrl: `${urlSite()}/espace-artisan#demandes` });
+    await envoyerEmailSuivi({ to: a.email, subject: m.subject, html: m.html, replyTo: destinataireInterne() });
+  }
+  await journaliser("demande_devis", { userId: user.id, payload: { demande: demandeId, ajoutes: lignes.length } });
+  revalidatePath("/demandes-devis");
+  revalidatePath("/admin", "layout");
   return { ok: true };
 }

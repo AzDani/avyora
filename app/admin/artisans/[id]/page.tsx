@@ -70,9 +70,7 @@ export default async function FicheArtisan({ params }: { params: Promise<{ id: s
               {a.nomCommercial ? `${a.nomCommercial} · ` : ""}{a.contactNom} · {afficherPortable(a.telephone)} · {a.email}
             </p>
             <p className="num mt-0.5 text-[12.5px] text-faint">Envoyée le {dateCourte(a.soumiseLe)}{a.valideLe ? ` · validée le ${dateCourte(a.valideLe)}` : ""}</p>
-            {stats && stats.recues > 0 && (
-              <p className="num mt-0.5 text-[12.5px] text-muted">Demandes de devis : {stats.recues} reçue{stats.recues > 1 ? "s" : ""} · {stats.acceptees} acceptée{stats.acceptees > 1 ? "s" : ""} · {stats.refusees} refusée{stats.refusees > 1 ? "s" : ""}</p>
-            )}
+
           </div>
           <PastilleStatut statut={a.statut} />
         </div>
@@ -87,6 +85,36 @@ export default async function FicheArtisan({ params }: { params: Promise<{ id: s
 
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-5">
+          {stats && stats.recues > 0 && (
+            <Bloc titre="Dans le réseau">
+              <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
+                <KV k="Demandes reçues"><span className="num">{stats.recues}</span></KV>
+                {/* Sur les demandes TRANCHÉES (acceptées, refusées ou expirées) : une demande encore en attente n'est ni une réponse ni un silence. */}
+                <KV k="Taux de réponse">
+                  {stats.acceptees + stats.refusees + stats.expirees > 0
+                    ? <span className="num">{Math.round(((stats.acceptees + stats.refusees) / (stats.acceptees + stats.refusees + stats.expirees)) * 100)} %</span>
+                    : <span className="text-muted">en attente</span>}
+                  {stats.expirees > 0 && <span className="text-[12px] text-[#8a5300]"> · {stats.expirees} sans réponse</span>}
+                </KV>
+                <KV k="Acceptées · refusées"><span className="num">{stats.acceptees} · {stats.refusees}</span></KV>
+                <KV k="Devis envoyés · signés"><span className="num">{stats.devisEnvoyes} · {stats.signees}</span></KV>
+              </dl>
+              {stats.avis.length > 0 && (
+                <div className="mt-4">
+                  <p className="text-[13px] font-semibold text-ink">Avis des clients : <span className="num">{String(stats.noteMoyenne).replace(".", ",")}/5</span> sur {stats.avis.length}</p>
+                  <ul className="mt-2 space-y-2">
+                    {stats.avis.map((x, i) => (
+                      <li key={i} className={"rounded-xl border px-3 py-2 text-[13.5px] " + (x.note <= 2 ? "border-[#f1b8b2] bg-[#fdf0ef]" : "border-line bg-surface-2")}>
+                        <span className="num font-semibold text-ink">{x.note}/5</span> · {x.prenom} · <span className="num text-faint">{dateCourte(x.le)}</span>
+                        {x.commentaire && <p className="mt-1 whitespace-pre-line text-ink">{x.commentaire}</p>}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </Bloc>
+          )}
+
           <Bloc titre="Entreprise" action={<BoutonReverifierSiret id={a.id} />}>
             <div className="mb-3 flex flex-wrap gap-1.5"><PastilleSiret v={v} />{a.rge && <span className="inline-flex rounded-full bg-[#e3f5ed] px-2.5 py-0.5 text-[12px] font-semibold text-[#0b5e40]">RGE</span>}</div>
             <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
