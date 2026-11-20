@@ -77,6 +77,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // Accompagnement travaux (conseil de Daniel, demande de rappel) : page éditoriale, date SITE_MAJ.
     { url: `${siteUrl}/accompagnement-travaux`, lastModified: SITE_MAJ, changeFrequency: "monthly", priority: 0.8 },
     { url: `${siteUrl}/reseau-artisans`, lastModified: SITE_MAJ, changeFrequency: "monthly", priority: 0.6 },
+    // Les pages de service de l'accompagnement (référencement du 20/11/2026).
+    { url: `${siteUrl}/relecture-devis-travaux`, lastModified: SITE_MAJ, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${siteUrl}/suivi-de-chantier`, lastModified: SITE_MAJ, changeFrequency: "monthly", priority: 0.7 },
     // Pages légales : signal de confiance attendu par Google sur un site qui encaisse un abonnement
     // (E-E-A-T). Elles sont indexables et canoniques depuis le lot 1 — elles ont leur place ici.
     ...(Object.keys(LEGAL_MAJ) as (keyof typeof LEGAL_MAJ)[]).map((slug) => ({

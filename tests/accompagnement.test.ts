@@ -467,7 +467,9 @@ describe("sitemap, maillage interne et confidentialité", () => {
     expect(accueil).toContain('carte("/accompagnement-travaux", IC.conseil, ["Premier appel offert", "o"], "Te faire accompagner"');
     expect(accueil).not.toContain("strip-accomp");
     const guides = lire("app/guides/[slug]/page.tsx");
-    expect(guides.match(/<Link href="\/accompagnement-travaux">/g)).toHaveLength(2);
+    expect(guides.match(/<Link href="\/accompagnement-travaux">/g)).toHaveLength(1);
+    // Le guide « vérifier un devis » mène à la page de service dédiée (référencement du 20/11/2026).
+    expect(guides).toContain('<Link href="/relecture-devis-travaux">Fais-le relire par un ancien chef de chantier</Link>');
     expect(lire("app/guides/page.tsx")).toContain(canon);
     expect(lire("app/prix-travaux/[projet]/page.tsx")).toContain(canon);
     // Pas sur la matrice [projet]/[ville] ni sur les pages villes (pages programmatiques).

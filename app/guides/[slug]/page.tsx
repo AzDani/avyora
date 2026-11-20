@@ -694,7 +694,7 @@ function BodyDevis() {
       </ul>
       <p>
         Un doute sur un devis précis ?{" "}
-        <Link href="/accompagnement-travaux">Fais-le relire par un ancien chef de chantier</Link>{" "}: le premier appel est
+        <Link href="/relecture-devis-travaux">Fais-le relire par un ancien chef de chantier</Link>{" "}: le premier appel est
         gratuit.
       </p>
 

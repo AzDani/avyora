@@ -111,7 +111,7 @@ const fr = {
         titre: "Relecture et analyse de tes devis",
         texte:
           "Je relis tes devis poste par poste : les oublis, les postes flous, les prix hors marché comparés au référentiel AVYORA, et les questions à poser à l'artisan avant de signer.",
-        lien: { href: "/guides/verifier-devis-travaux", label: "La méthode pour vérifier un devis" },
+        lien: { href: "/relecture-devis-travaux", label: "La relecture de devis en détail" },
       },
       {
         id: "plan",
@@ -127,6 +127,7 @@ const fr = {
         titre: "Suivi de chantier chaque semaine : tâches et budget",
         texte:
           "Un point régulier en visio : les tâches de la semaine dans ton suivi AVYORA, tes dépenses face au budget, un avis sur les devis et avenants qui arrivent en cours de route.",
+        lien: { href: "/suivi-de-chantier", label: "Le suivi de chantier à distance en détail" },
       },
       {
         id: "reception",

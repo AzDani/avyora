@@ -4,16 +4,23 @@ import { META_EN, metaSelonLangue } from "@/lib/i18n/meta";
 import { FEATURES } from "@/lib/features";
 import { betaActive, dateInsecable, libellesBeta, lienInscriptionBeta } from "@/lib/beta";
 import { getUser } from "@/lib/auth";
-import { og, DESCRIPTION_SITE } from "@/lib/seo-og";
+import { og } from "@/lib/seo-og";
 import { accueilBeta } from "@/lib/accueil-beta";
 
 // Le canonical de l'accueil vit ici (retiré du layout racine où il contaminait toutes les pages).
 // Son aperçu de partage aussi : le layout racine ne porte plus que les valeurs de marque (cf. seoMeta). En anglais
 // (cookie av-lang, jamais chez un robot), le titre et l'aperçu de partage suivent la page (lib/i18n/meta.ts).
+/* Référencement du 20/11/2026 : l'accueil mène par l'accompagnement (les recherches « accompagnement travaux », « suivi
+   de chantier ») ET garde l'estimation (« estimation travaux », le plus gros volume). */
+const TITRE_ACCUEIL = "AVYORA — accompagnement et estimation de travaux";
+const DESCRIPTION_ACCUEIL =
+  "Un ancien chef de chantier relit tes devis et suit ton chantier à distance. Et AVYORA estime tes travaux poste par poste, gratuitement.";
 const META: Metadata = {
+  title: { absolute: TITRE_ACCUEIL },
+  description: DESCRIPTION_ACCUEIL,
   alternates: { canonical: "/" },
-  openGraph: og({ title: "AVYORA — sache ce que ça coûte. Avant de signer.", description: DESCRIPTION_SITE, path: "/", type: "website" }),
-  twitter: { card: "summary_large_image", title: "AVYORA — estime tes travaux avant de signer", description: DESCRIPTION_SITE },
+  openGraph: og({ title: "AVYORA — un ancien chef de chantier à tes côtés pour tes travaux", description: DESCRIPTION_ACCUEIL, path: "/", type: "website" }),
+  twitter: { card: "summary_large_image", title: TITRE_ACCUEIL, description: DESCRIPTION_ACCUEIL },
 };
 export async function generateMetadata(): Promise<Metadata> {
   return metaSelonLangue(await getLocale(), META, META_EN.accueil);
@@ -36,6 +43,23 @@ function jsonLdAccueil() {
   const beta = betaActive();
   return {
     "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Service",
+        name: "Accompagnement travaux",
+        serviceType: "Conseil en travaux de rénovation et de construction",
+        description: "Relecture de devis, plan du chantier et suivi chaque semaine, à distance, par un ancien chef de chantier. Premier appel gratuit.",
+        url: `${siteUrl}/accompagnement-travaux`,
+        provider: { "@id": `${siteUrl}/#organization` },
+        areaServed: { "@type": "Country", name: "France" },
+      },
+      jsonLdApplication(beta),
+    ],
+  };
+}
+
+function jsonLdApplication(beta: boolean) {
+  return {
     "@type": "WebApplication",
     name: "AVYORA",
     url: siteUrl,
@@ -191,8 +215,8 @@ const ACC_IC = {
   suivi: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 8h14M7 2.5v3M13 2.5v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="m7.5 12.3 1.7 1.7 3.3-3.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   visio: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="2.5" y="5" width="10.5" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="m13 9 4.5-2.5v7L13 11" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
 };
-const accItem = (ic: string, t: string, s: string) =>
-  `<li><a href="/accompagnement-travaux#aide"><span class="ic">${ic}</span><span><span class="t" style="display:block">${t}</span><span class="s" style="display:block">${s}</span></span><span class="fl" aria-hidden="true">→</span></a></li>`;
+const accItem = (ic: string, t: string, s: string, href = "/accompagnement-travaux#aide") =>
+  `<li><a href="${href}"><span class="ic">${ic}</span><span><span class="t" style="display:block">${t}</span><span class="s" style="display:block">${s}</span></span><span class="fl" aria-hidden="true">→</span></a></li>`;
 const etapesAcc = (t: string, liste: string[]) =>
   `<p class="et">${t}</p><ol class="etapes">${liste.map((x, i) => `<li><span class="n">${i + 1}</span><span>${x}</span></li>`).join("")}</ol>`;
 const ACCOMP_BAND = `
@@ -203,9 +227,9 @@ const ACCOMP_BAND = `
   ${etapesAcc("Comment ça se passe", ["Tu demandes à être rappelé, en une minute.", "Premier appel gratuit : on regarde ton projet ensemble.", "Je te propose l'accompagnement qui te sert, sans engagement."])}
   <div class="cta"><a href="/accompagnement-travaux#demande" class="btn btn-p">Demander à être rappelé →</a><a href="/accompagnement-travaux" class="lien">Découvrir l'accompagnement</a></div>
 </div><ul aria-label="Ce que je peux faire pour toi">
-  ${accItem(ACC_IC.devis, "Relecture de tes devis", "Prix, oublis, clauses : ce qu'il faut renégocier avant de signer.")}
+  ${accItem(ACC_IC.devis, "Relecture de tes devis", "Prix, oublis, clauses : ce qu'il faut renégocier avant de signer.", "/relecture-devis-travaux")}
   ${accItem(ACC_IC.plan, "Plan d'attaque du chantier", "Qui intervient, dans quel ordre, et les pièges à éviter.")}
-  ${accItem(ACC_IC.suivi, "Suivi chaque semaine", "Les tâches de la semaine et ton budget, point par point.")}
+  ${accItem(ACC_IC.suivi, "Suivi chaque semaine", "Les tâches de la semaine et ton budget, point par point.", "/suivi-de-chantier")}
   ${accItem(ACC_IC.visio, "Visite en visio avant achat", "Un regard de pro sur le bien avant de faire ton offre.")}
 </ul></section></div>`;
 const ACCOMP_BAND_EN = `

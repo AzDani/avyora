@@ -41,10 +41,10 @@ export function metaSelonLangue(locale: Locale, fr: Metadata, en: MetaAnglaise):
  */
 export const META_EN = {
   accueil: {
-    title: "AVYORA — estimate your renovation before you sign",
+    title: "AVYORA — renovation advice and cost estimates",
     absolu: true,
     description:
-      "Estimate your renovation costs at French market prices: 200 priced items, 18 trades, prices adjusted to your region — before you sign.",
+      "A former site manager reviews your quotes and follows your project remotely. And AVYORA estimates your renovation line by line, for free.",
     path: "/",
   },
   tarifs: {
