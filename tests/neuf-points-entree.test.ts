@@ -195,19 +195,16 @@ describe("Accueil · bandeau construction neuve", () => {
     }
   });
 
-  it("flag allumé : un seul bandeau vers la page publique, sans prix ni emoji, juste après les étapes", async () => {
+  it("flag allumé (refonte du 20/11/2026) : la carte « maison neuve » parmi les services et le bouton du héros, sans prix ni emoji", async () => {
     for (const locale of ["fr", "en"] as const) {
-      const off = await (await charger(false, locale)).accueil();
       const on = await (await charger(true, locale)).accueil();
-      // Le bandeau = son <style> (variante « lien » de .strip) + le lien lui-même.
-      const liens = on.match(/<style>\.av-home a\.strip-neuf[^]*?<\/style><a href="\/estimation-construction-maison" class="strip strip-neuf"[^]*?<\/a>/g) ?? [];
-      expect(liens).toHaveLength(1);
-      const bandeau = liens[0] ?? "";
-      const texte = bandeau.replace(/<style>[^]*?<\/style>/, "").replace(/<[^>]*>/g, " ");
+      const carte = on.match(/<a href="\/estimation-construction-maison"><span class="tete">[^]*?<\/a>/g) ?? [];
+      expect(carte).toHaveLength(1);
+      const texte = (carte[0] ?? "").replace(/<svg[^]*?<\/svg>/g, "").replace(/<[^>]*>/g, " ");
       expect(texte).not.toMatch(/€|\d{3}/);
       expect(texte).not.toMatch(/\p{Extended_Pictographic}/u);
-      // Retirer le bandeau redonne l'accueil d'origine au caractère près.
-      expect(on.replace("\n  " + bandeau, "")).toBe(off);
+      expect(texte).toContain(locale === "fr" ? "Gratuit, en 4 questions." : "Free, in 4 questions.");
+      expect(on).toContain(locale === "fr" ? '<a href="/estimation-construction-maison" class="btn btn-w">Je fais construire</a>' : '<a href="/estimation-construction-maison" class="btn btn-w">I\'m building a home</a>');
     }
   });
 });

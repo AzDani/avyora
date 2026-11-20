@@ -458,10 +458,12 @@ describe("sitemap, maillage interne et confidentialité", () => {
     const menu = lire("components/MobileMenu.tsx");
     expect(menu.indexOf("href={PAGE_ACCOMPAGNEMENT}")).toBeGreaterThan(menu.indexOf("href={VITRINE_PLAN}"));
     expect(menu.indexOf("href={PAGE_ACCOMPAGNEMENT}")).toBeLessThan(menu.indexOf('href="/projets"'));
-    // L'accueil : la section juste sous le hero (et la section du plan), bouton vers le formulaire de rappel, FR et EN.
+    // L'accueil (refonte du 20/11/2026) : une carte « Te faire accompagner » parmi les services (FR) et la section, juste
+    // après celle du plan, avant « Gratuit ou Pro », bouton vers le formulaire de rappel, FR et EN.
     const accueil = lire("app/page.tsx");
     expect(accueil.match(/href="\/accompagnement-travaux#demande" class="btn btn-p"/g)).toHaveLength(2);
-    expect(accueil.match(/<\/div><\/header><\/div>\$\{FEATURES\.plans \? PLAN_BAND(_EN)? : ""\}\$\{ACCOMP_BAND(_EN)?\}/g)).toHaveLength(2);
+    expect(accueil.match(/\$\{FEATURES\.plans \? PLAN_BAND(_EN)? : ""\}\$\{ACCOMP_BAND(_EN)?\}/g)).toHaveLength(2);
+    expect(accueil).toContain('carte("/accompagnement-travaux", IC.conseil, ["Premier appel offert", "o"], "Te faire accompagner"');
     expect(accueil).not.toContain("strip-accomp");
     const guides = lire("app/guides/[slug]/page.tsx");
     expect(guides.match(/<Link href="\/accompagnement-travaux">/g)).toHaveLength(2);

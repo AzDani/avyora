@@ -29,20 +29,18 @@ const regle = (css: string, selecteur: string) => {
 describe("accueil : les puces du héros et la police à chasse fixe", () => {
   const page = lire("app/page.tsx");
 
-  it("les puces ne sont plus en inline-flex avec un gap (« multi -projets »), la pastille garde son écart", () => {
+  it("les puces ne sont pas en inline-flex avec un gap (le gap collait les mots), la pastille garde son écart", () => {
     const span = regle(page, ".av-home .hero .trust span");
     expect(span).not.toMatch(/gap|inline-flex/);
     expect(regle(page, ".av-home .hero .trust span::before")).toContain("margin:0 8px 2px 0");
-    expect(page).toContain("<span><b>multi</b>-projets</span>");
-    expect(page).toContain("<span><b>multi</b>-projects</span>");
+    expect(page).toContain("<span><b>Gratuit</b> pour commencer</span>");
+    expect(page).toContain("<span><b>Free</b> to start</span>");
   });
 
-  it("la police à chasse fixe n'est plus posée sur des mots en gras ; les chiffres passent par .num", () => {
+  it("la police à chasse fixe n'est pas posée sur des mots en gras ; les chiffres passent par .num", () => {
     expect(regle(page, ".av-home .hero .trust b")).not.toContain("mono");
-    expect(regle(page, ".av-home .roi .pct b")).not.toContain("mono");
     expect(page).not.toContain(".av-home .promo b{");
     expect(page).toContain('<b class="num">200</b>');
-    expect(page).toContain('<b class="num">0,02&nbsp;%</b>');
   });
 
   it("le jeton --faint de l'accueil est celui du site (contraste AA), plus #898ea8", () => {
@@ -50,29 +48,19 @@ describe("accueil : les puces du héros et la police à chasse fixe", () => {
   });
 });
 
-describe("accueil : les textes de vente", () => {
-  it("plus d'adjectif orphelin « détaillé 200 postes », ni de comparaison de devis importé (FEATURES.devis éteint)", () => {
-    const page = lire("app/page.tsx");
-    for (const x of ["détaillé 200 postes", "detailed 200 items", "Compare chaque poste au prix de marché", "Compare each item to the market price"]) {
+describe("accueil : les textes de vente (refonte du 20/11/2026)", () => {
+  const page = lire("app/page.tsx");
+  it("ni adjectif orphelin « détaillé 200 postes », ni analyse de devis importé (FEATURES.devis éteint)", () => {
+    for (const x of ["détaillé 200 postes", "detailed 200 items", "Compare ton devis", "Compare your quote", "analyse de devis", "quote analysis"]) {
       expect(page, x).not.toContain(x);
     }
-    expect(page).toContain("Compare ton devis, ligne par ligne, à ton estimation détaillée au prix du marché.");
-    for (const l of LOCALES) {
-      const apres = remplacementsAccueilBeta(l).map(([, b]) => b).join("\n");
-      expect(apres).not.toMatch(/détaillé 200 postes|detailed 200 items/);
-      expect(apres).toMatch(/estimation détaillée \(200 postes\)|itemized estimate \(200 items\)/);
-    }
+    expect(page).toContain("L'estimation détaillée : 200 postes et le rapport PDF");
   });
 
-  it("pendant la bêta, la section « retour sur investissement » ne parle plus de ce qu'AVYORA coûte", () => {
-    for (const l of LOCALES) {
-      const paires = remplacementsAccueilBeta(l);
-      const avant = paires.map(([a]) => a).join("\n");
-      const apres = paires.map(([, b]) => b).join("\n");
-      // Remplacée (le gabarit la contient une seule fois : tests/beta.test.ts le vérifie pour chaque `avant`).
-      expect(avant).toMatch(l === "fr" ? /bien plus qu'il ne coûte/ : /far more than it costs/);
-      expect(apres).not.toMatch(/plus qu'il ne coûte|se rembourse|more than it costs|pays for itself/);
-    }
+  it("pendant la bêta, il ne reste qu'un remplacement (le bandeau du haut) : le gabarit écrit lui-même ses prix selon la bêta", () => {
+    for (const l of LOCALES) expect(remplacementsAccueilBeta(l)).toHaveLength(1);
+    expect(page).toContain("const beta = betaActive();");
+    expect(page).toContain("rien n'est prélevé</b> : tu t'abonnes seulement si tu le veux");
   });
 });
 

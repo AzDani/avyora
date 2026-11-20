@@ -226,28 +226,25 @@ describe("C9 · accueil", () => {
     return r.rendre(await Accueil({ searchParams: Promise.resolve({}) }));
   }
   const BAND = /\n<style>\.av-home \.planb[\s\S]*?<\/section>/;
-  const TRUST = { fr: '<span>plan <b class="num">3D</b></span>', en: '<span><b class="num">3D</b> floor plan</span>' };
 
   it("éteint : aucune section, aucune puce, aucune image de l'éditeur", async () => {
     for (const locale of LOCALES) {
       const h = await accueil(false, locale);
       expect(h).not.toContain("planb");
       expect(h).not.toContain("/plans/");
-      expect(h).not.toContain(TRUST[locale]);
+      expect(h).not.toContain(locale === "fr" ? "Dessiner ton plan en 3D" : "Draw your floor plan in 3D");
     }
   });
 
-  it("allumé : la section une seule fois, JUSTE après le hero, la 5ᵉ puce de confiance ; le reste au caractère près", async () => {
+  it("allumé (refonte du 20/11/2026) : la section une seule fois, après les services ; la carte de l'éditeur et l'étape « plan » de l'exemple", async () => {
     for (const locale of LOCALES) {
-      const avant = await accueil(false, locale);
       const apres = await accueil(true, locale);
       expect(apres.split('class="planb"').length - 1).toBe(1);
-      const finHero = apres.indexOf("</div></header></div>") + "</div></header></div>".length;
-      expect(apres.slice(finHero)).toMatch(/^\n<style>\.av-home \.planb/);
-      expect(apres).toContain(TRUST[locale] + "\n  </div>");
-      expect(retirerUne(retirerUne(apres, BAND), new RegExp(TRUST[locale].replace(/[/<>]/g, (c) => "\\" + c)))).toBe(avant);
-      /* le hero et ses deux boutons ne bougent pas */
-      expect(entre(apres, '<header class="hero">', "</header>").replace(TRUST[locale], "")).toBe(entre(avant, '<header class="hero">', "</header>"));
+      expect(apres.indexOf('class="planb"')).toBeGreaterThan(apres.indexOf('class="svc'));
+      expect(apres).toContain(locale === "fr" ? "<h3>Dessiner ton plan en 3D</h3>" : "<h3>Draw your floor plan in 3D</h3>");
+      expect(apres).toContain(locale === "fr" ? '<span class="k">Plan 3D</span>' : '<span class="k">3D floor plan</span>');
+      /* l'exemple du héros garde ses boutons */
+      expect(entre(apres, '<header class="hero">', "</header>")).toContain('href="/projets/nouveau" class="btn btn-p"');
     }
   });
 
