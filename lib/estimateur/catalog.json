@@ -772,7 +772,8 @@
         "fp": 950,
         "sm": 700,
         "mat": true,
-        "vitrage": true
+        "vitrage": true,
+        "tva": 5.5
       },
       {
         "id": "mex-portes-fenetres",
@@ -781,7 +782,8 @@
         "fp": 1250,
         "sm": 900,
         "mat": true,
-        "vitrage": true
+        "vitrage": true,
+        "tva": 5.5
       },
       {
         "id": "mex-baie-vitree",
@@ -1563,7 +1565,8 @@
         "u": "u",
         "fp": 4500,
         "sm": 2800,
-        "note": "source de chaleur au gaz : chauffage central + eau chaude · TVA 10 %"
+        "note": "source de chaleur au gaz : chauffage central + eau chaude · TVA 20 %",
+        "tva": 20
       },
       {
         "id": "cha-poele-a-bois-granules",
@@ -1744,7 +1747,8 @@
               {
                 "k": "double",
                 "label": "Double flux",
-                "coef": 5
+                "coef": 5,
+                "tva": 5.5
               }
             ]
           }

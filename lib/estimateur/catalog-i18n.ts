@@ -572,7 +572,7 @@ const EN: Record<CatKind, Record<string, string>> = {
     "Petit point d'eau / Grand douche · multi-points": "Small single point / Large shower · multi-point",
     "PAC · Petit ~200 L / Grand ~270 L": "heat pump · Small ~200 L / Large ~270 L",
     "source de chaleur : chauffage central + eau chaude (radiateurs/plancher)": "heat source: central heating + hot water (radiators/floor)",
-    "source de chaleur au gaz : chauffage central + eau chaude · TVA 10 %": "gas heat source: central heating + hot water · 10% VAT",
+    "source de chaleur au gaz : chauffage central + eau chaude · TVA 20 %": "gas heat source: central heating + hot water · 20% VAT",
     "chauffe une pièce/zone (appoint ou principal)": "heats one room/zone (backup or main)",
     "chauffe + rafraîchit (chaud/froid) · prix par unité intérieure": "heats + cools (hot/cold) · price per indoor unit",
     "chauffe + rafraîchit (chaud/froid) · soufflage par gaines, maison entière": "heats + cools (hot/cold) · ducted, whole house",

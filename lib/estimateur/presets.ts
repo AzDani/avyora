@@ -84,14 +84,21 @@ const CURAGE: Tache[] = [
   ["Démolition", "Abattre une cloison"], ["Démolition", "Casser une dalle / vieux sol"],
 ];
 
-// ── Enveloppe MAISON uniquement (l'appartement ne les porte pas), cumulatif ──
-const MAISON_COMPLETE: Tache[] = [
+// ── Enveloppe MAISON uniquement (l'appartement ne les porte pas) ──
+// L'isolation des combles vaut pour la réno complète ET la lourde. L'ENTRETIEN de l'enveloppe (toiture
+// démoussée, façade repeinte) ne vaut que pour la réno complète : la réno lourde REFAIT la couverture et
+// l'enduit, elle ne les entretient pas en plus. Avant, les deux se cumulaient : une maison de 100 m² en
+// réno lourde payait le démoussage d'une toiture déposée, la peinture d'un enduit monocouche neuf (teinté
+// dans la masse) et le traitement d'une charpente remplacée, soit ≈ 7 000 € de trop (audit du 21/11/2026).
+const MAISON_ISOLATION: Tache[] = [
   ["Isolation", "Isolation des combles perdus (soufflage)"],
+];
+const MAISON_ENTRETIEN: Tache[] = [
   ["Charpente, couverture & structure bois", "Nettoyer / démousser la toiture"],
   ["Façade", "Peindre la façade"],
 ];
 const MAISON_LOURDE: Tache[] = [
-  ["Charpente, couverture & structure bois", "Charpente traditionnelle (hors couverture)"], ["Charpente, couverture & structure bois", "Traiter la charpente"],
+  ["Charpente, couverture & structure bois", "Charpente traditionnelle (hors couverture)"],
   ["Charpente, couverture & structure bois", "Réfection couverture tuiles (dépose + écran + liteaux)"], ["Charpente, couverture & structure bois", "Gouttières & descentes"],
   ["Façade", "Enduit monocouche (machine)"],
 ];
@@ -119,7 +126,7 @@ export function presetRapide(input: RapideInput): { ctx: Ctx; sel: Selection } {
   else tasks = tasks.concat(PARTIELLE_ADD);
   if (input.ampleur === "complete" || input.ampleur === "lourde") {
     tasks = tasks.concat(COMPLETE_ADD);
-    if (maison) tasks = tasks.concat(MAISON_COMPLETE);
+    if (maison) tasks = tasks.concat(MAISON_ISOLATION, input.ampleur === "complete" ? MAISON_ENTRETIEN : []);
   }
   if (input.ampleur === "lourde") {
     // Niveau 4 = mise à nu (curage) + reprises. Maison : + enveloppe (charpente/toiture/façade).

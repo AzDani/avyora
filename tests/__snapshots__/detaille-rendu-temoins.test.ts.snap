@@ -3124,7 +3124,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · Mon devis (maison, li
 <div class="pill">
 <span class="k">VAT 10 / 5.5%</span>
 <br/>
-<span class="v num">€2,567</span>
+<span class="v num">€2,243</span>
 </div>
 <div class="pill">
 <span class="k">Contingency 10%</span>
@@ -3167,7 +3167,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · Mon devis (maison, li
 <div class="devlot">
 <span>🛠️ Equipment rental</span>
 <span class="track">
-<span class="fill" style="width:0.9840674789128397%">
+<span class="fill" style="width:1.0096153846153846%">
 </span>
 </span>
 <span class="v">€126</span>
@@ -3181,12 +3181,12 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · Mon devis (maison, li
 <span class="fill" style="width:100%">
 </span>
 </span>
-<span class="v">€12,804</span>
+<span class="v">€12,480</span>
 </div>
 <div class="devlot">
 <span>🧱 Masonry</span>
 <span class="track">
-<span class="fill" style="width:52.92408622305529%">
+<span class="fill" style="width:54.29807692307692%">
 </span>
 </span>
 <span class="v">€6,776</span>
@@ -3197,7 +3197,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · Mon devis (maison, li
 <div class="devlot">
 <span>🖌️ Painting</span>
 <span class="track">
-<span class="fill" style="width:14.058106841611998%">
+<span class="fill" style="width:14.423076923076922%">
 </span>
 </span>
 <span class="v">€1,800</span>
@@ -3205,7 +3205,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · Mon devis (maison, li
 <div class="devlot">
 <span>🚿 Plumbing</span>
 <span class="track">
-<span class="fill" style="width:11.427678850359262%">
+<span class="fill" style="width:11.724358974358974%">
 </span>
 </span>
 <span class="v">€1,463</span>
@@ -3214,7 +3214,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · Mon devis (maison, li
 <div class="devlot">
 <span>Custom lines</span>
 <span class="track">
-<span class="fill" style="width:18.72852233676976%">
+<span class="fill" style="width:19.21474358974359%">
 </span>
 </span>
 <span class="v">€2,398</span>
@@ -3251,7 +3251,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · Mon devis (maison, li
 <span>Windows (aluminum, triple-pane)</span>
 <span class="q">6 units</span>
 <span class="mode mA">hired out</span>
-<span class="m">€7,920</span>
+<span class="m">€7,596</span>
 </div>
 <div class="dtl">
 <span>Sliding patio door (double-pane, sliding)</span>
@@ -5564,9 +5564,9 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </div>
 </div>
 <div class="jauge">
-<div class="jtext">Max budget €150,000 · €122,352 left</div>
+<div class="jtext">Max budget €150,000 · €122,676 left</div>
 <div class="jbar">
-<div class="jfill" style="width:18.4318%">
+<div class="jfill" style="width:18.215799999999998%">
 </div>
 </div>
 </div>
@@ -6974,7 +6974,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · Mon devis (maison, li
 <div class="pill">
 <span class="k">TVA 10 / 5,5 %</span>
 <br/>
-<span class="v num">2 567 €</span>
+<span class="v num">2 243 €</span>
 </div>
 <div class="pill">
 <span class="k">Aléas 10 %</span>
@@ -7017,7 +7017,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · Mon devis (maison, li
 <div class="devlot">
 <span>🛠️ Location de matériel</span>
 <span class="track">
-<span class="fill" style="width:0.9840674789128397%">
+<span class="fill" style="width:1.0096153846153846%">
 </span>
 </span>
 <span class="v">126 €</span>
@@ -7031,12 +7031,12 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · Mon devis (maison, li
 <span class="fill" style="width:100%">
 </span>
 </span>
-<span class="v">12 804 €</span>
+<span class="v">12 480 €</span>
 </div>
 <div class="devlot">
 <span>🧱 Maçonnerie</span>
 <span class="track">
-<span class="fill" style="width:52.92408622305529%">
+<span class="fill" style="width:54.29807692307692%">
 </span>
 </span>
 <span class="v">6 776 €</span>
@@ -7047,7 +7047,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · Mon devis (maison, li
 <div class="devlot">
 <span>🖌️ Peinture</span>
 <span class="track">
-<span class="fill" style="width:14.058106841611998%">
+<span class="fill" style="width:14.423076923076922%">
 </span>
 </span>
 <span class="v">1 800 €</span>
@@ -7055,7 +7055,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · Mon devis (maison, li
 <div class="devlot">
 <span>🚿 Plomberie</span>
 <span class="track">
-<span class="fill" style="width:11.427678850359262%">
+<span class="fill" style="width:11.724358974358974%">
 </span>
 </span>
 <span class="v">1 463 €</span>
@@ -7064,7 +7064,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · Mon devis (maison, li
 <div class="devlot">
 <span>Lignes personnalisées</span>
 <span class="track">
-<span class="fill" style="width:18.72852233676976%">
+<span class="fill" style="width:19.21474358974359%">
 </span>
 </span>
 <span class="v">2 398 €</span>
@@ -7101,7 +7101,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · Mon devis (maison, li
 <span>Fenêtres (alu, triple vitrage)</span>
 <span class="q">6 u</span>
 <span class="mode mA">fait faire</span>
-<span class="m">7 920 €</span>
+<span class="m">7 596 €</span>
 </div>
 <div class="dtl">
 <span>Baie vitrée (double vitrage, coulissante)</span>
@@ -9417,9 +9417,9 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </div>
 </div>
 <div class="jauge">
-<div class="jtext">Budget max 150 000 € · reste 122 352 €</div>
+<div class="jtext">Budget max 150 000 € · reste 122 676 €</div>
 <div class="jbar">
-<div class="jfill" style="width:18.4318%">
+<div class="jfill" style="width:18.215799999999998%">
 </div>
 </div>
 </div>
