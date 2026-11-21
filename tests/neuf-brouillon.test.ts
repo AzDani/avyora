@@ -23,8 +23,8 @@ describe("Neuf · brouillon du rapide", () => {
   const d = brouillonRapideNeuf({ R, ctx: p.ctx, sel: p.sel });
   const json = JSON.stringify(d);
 
-  it("le cas de référence vaut 253 172 € (246 762 € de la maquette + les bandes de plâtre à part, D5)", () => {
-    expect(Math.round(ttcDe(p))).toBe(253_172);
+  it("le cas de référence vaut 254 857 € (246 762 € de la maquette + les bandes de plâtre à part, D5, + les corrections de prix du 21/11/2026)", () => {
+    expect(Math.round(ttcDe(p))).toBe(254_857);
   });
 
   it("le brouillon est un projet neuf, avec ses réponses", () => {

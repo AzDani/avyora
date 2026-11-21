@@ -6,7 +6,7 @@
  * 561ac25) : les réponses telles que `POST /api/projects` les a reçues (sans `sejour`, `cuisines`,
  * `couloir`, `suites`, `buanderie`, `menuiseries` ni `emprise` dans la maison), le TTC et chaque ligne
  * [quantité, HT] chiffrés par ce même code. Sept projets :
- * - `rapide-reference` : la maison de référence du rapide (246 762 €) ;
+ * - `rapide-reference` : la maison de référence du rapide (246 762 € à l'origine, 248 446 € depuis les corrections de prix du 21/11/2026) ;
  * - `rapide-plan-etage` : un rapide venu du plan à étage, dont la suite était fondue dans les chambres
  *   et les salles de bain ;
  * - `detaille-options` : un détaillé sans cuisine équipée, avec les options devenues automatiques en
@@ -59,8 +59,8 @@ describe("N8 · un projet neuf enregistré avant N8 se relit à l'identique", ()
     });
   }
 
-  it("le cas de référence vaut toujours 246 762 € ; la maison relue prend les compteurs par défaut", () => {
-    expect(Math.round(REF["rapide-reference"].ttc)).toBe(246_762);
+  it("le cas de référence vaut 248 446 € (246 762 € avant les corrections de prix du 21/11/2026) ; la maison relue prend les compteurs par défaut", () => {
+    expect(Math.round(REF["rapide-reference"].ttc)).toBe(248_446);
     const neuf = REF["rapide-reference"].reponses.ctx.neuf!;
     expect(neuf).not.toHaveProperty("sejour");
     expect(maisonComplete(neuf)).toMatchObject({ sejour: 1, cuisines: 1, couloir: 1, suites: 0, buanderie: 0 });

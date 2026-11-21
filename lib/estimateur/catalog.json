@@ -230,7 +230,7 @@
         "id": "rac-mise-en-service-provisoire-enedis",
         "n": "Mise en service provisoire (Enedis)",
         "u": "forfait",
-        "fp": 250,
+        "fp": 447,
         "sm": null
       },
       {
@@ -616,8 +616,8 @@
         "id": "toi-raccords-faitage-noues-solins",
         "n": "Raccords (faîtage, noues, solins)",
         "u": "ml",
-        "fp": 40,
-        "sm": 15
+        "fp": 59,
+        "sm": 22
       },
       {
         "id": "toi-fenetre-de-toit-velux",
@@ -644,8 +644,8 @@
         "id": "toi-creer-un-plancher-bois",
         "n": "Créer un plancher bois",
         "u": "m2",
-        "fp": 90,
-        "sm": 45
+        "fp": 106,
+        "sm": 51
       },
       {
         "id": "toi-escalier-en-bois",
@@ -817,16 +817,16 @@
         "id": "mex-porte-d-entree",
         "n": "Porte d'entrée",
         "u": "u",
-        "fp": 1600,
-        "sm": 1150,
+        "fp": 2150,
+        "sm": 1550,
         "mat": true
       },
       {
         "id": "mex-porte-de-garage",
         "n": "Porte de garage",
         "u": "u",
-        "fp": 1200,
-        "sm": 800,
+        "fp": 1966,
+        "sm": 1566,
         "note": "sectionnelle motorisée — basculante ~700 €, modèle haut de gamme jusqu'à ~2 500 €"
       },
       {
@@ -1085,7 +1085,7 @@
         "id": "ele-consuel-attestation-de-conformite",
         "n": "Consuel (attestation de conformité)",
         "u": "forfait",
-        "fp": 180,
+        "fp": 123,
         "sm": null,
         "fixe": true,
         "note": "obligatoire après une rénovation électrique complète"
@@ -1789,8 +1789,8 @@
         "id": "rev-carrelage-au-sol",
         "n": "Carrelage au sol",
         "u": "m2",
-        "fp": 70,
-        "sm": 30
+        "fp": 85,
+        "sm": 36
       },
       {
         "id": "rev-sol-stratifie-imitation-bois",

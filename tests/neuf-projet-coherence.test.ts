@@ -24,8 +24,8 @@ const rendre = (el: ReturnType<typeof createElement>, locale: "fr" | "en" = "fr"
 const texte = (html: string) => html.replace(/<style[\s\S]*?<\/style>/g, "").replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/&#x27;|&#39;/g, "'").replace(/[\s\u00a0\u202f]+/g, " ");
 
 describe("Neuf · un même projet, un même chiffre", () => {
-  it("le cas de référence vaut 253 172 € TTC, chiffré sur le catalogue neuf", () => {
-    expect(Math.round(dv.totaux.ttc)).toBe(253172);   // 246 762 € + les bandes de plâtre, une ligne à part (D5)
+  it("le cas de référence vaut 254 857 € TTC, chiffré sur le catalogue neuf", () => {
+    expect(Math.round(dv.totaux.ttc)).toBe(254857);   // 246 762 € + les bandes de plâtre, une ligne à part (D5), + les corrections de prix du 21/11/2026
     expect(dv.lignes.length).toBe(93);
   });
 

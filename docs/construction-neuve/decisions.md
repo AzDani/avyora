@@ -10,6 +10,12 @@ Tous les chiffres viennent de `calibre.mjs` (maison A = plain-pied 100 m², B = 
 
 Ces postes sont partagés entre la rénovation et le neuf. On ne les a pas modifiés. Chaque ligne se décide à part.
 
+**Tranché par Dani le 21/11/2026 (QCM), appliqué le même jour dans `catalog.json` :**
+- **Appliquées (7)** : n° 2 carrelage au sol (85 / 36), n° 3 porte d'entrée (2 150 / 1 550), n° 4 porte de garage (1 966 / 1 566), n° 5 raccords de toiture (59 / 22), n° 8 Consuel (123), n° 9 compteur de chantier Enedis (447), n° 14 plancher bois (106 / 51).
+- **Refusées (7), prix inchangés** : n° 1 enduit monocouche, n° 6 chape liquide, n° 7 cloison, n° 10 raccordement Enedis, n° 11 micro-station, n° 12 raccordement égout, n° 13 escalier béton.
+- Effet mesuré sur les témoins : rénovation +0,9 % en médiane (les scénarios avec carrelage), neuf +0,6 % en médiane (+0,3 à +1,2 %). Maison A du neuf : 253 172 → 254 857 € ; en « le maximum » : 190 990 → 191 970 €. Les totaux cités plus bas dans ce fichier sont ceux d'avant cette décision.
+- Le même jour, hors de cette liste : TVA de la chaudière gaz à 20 %, fenêtres, portes-fenêtres et VMC double flux à 5,5 % en rénovation ; le rapide « réno lourde » d'une maison ne cumule plus l'entretien de l'enveloppe et sa réfection.
+
 | # | Poste | Aujourd'hui → proposé (fourni-posé / fourniture, € HT) | Prix standard affiché | Effet en rénovation | Effet en neuf (€ HT) | Fiabilité |
 |---|---|---|---|---|---|---|
 | 1 | Enduit monocouche | 28 / 10 → **43 / 19** | 26 → 40 €/m² | +14 €/m² (ravalement de 120 m² : +1 640 €) ; utilisé par le mode rapide | A +2 080 · B +3 300 · C 0 | haute (coût CYPE 42 € sans marge) |

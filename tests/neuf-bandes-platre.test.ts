@@ -132,11 +132,11 @@ describe("D5 · la quantité suit la sélection, comme en rénovation", () => {
 });
 
 describe("D5 · seule cette ligne change le devis", () => {
-  it("maison A : 246 762 € sans la ligne (le devis d'avant D5), 253 172 € avec ; l'écart = la ligne + dommages-ouvrage + aléas + TVA", () => {
+  it("maison A : 248 446 € sans la ligne (le devis d'avant D5, aux prix du 21/11/2026), 254 857 € avec ; l'écart = la ligne + dommages-ouvrage + aléas + TVA", () => {
     const p = presetMaison(A, { codePostal: "45000" });
     const avec = devis(p), avant = devis({ ctx: p.ctx, sel: sans(p.sel, ID_BANDES_PLATRE) });
-    expect(Math.round(avant.totaux.ttc)).toBe(246762);
-    expect(Math.round(avec.totaux.ttc)).toBe(253172);
+    expect(Math.round(avant.totaux.ttc)).toBe(248446);
+    expect(Math.round(avec.totaux.ttc)).toBe(254857);
     // toutes les autres lignes, hors pourcentages, sont identiques
     const autres = (d: typeof avec) => d.lignes.filter((x) => x.cle !== BANDES && x.unite !== "pct").map((x) => [x.cle, x.qty, x.ht, x.tva, x.mode]);
     expect(autres(avec)).toEqual(autres(avant));
@@ -153,7 +153,7 @@ describe("D5 · seule cette ligne change le devis", () => {
     const p = presetMaison(A, { codePostal: "45000" });
     const ancien: Selection = Object.fromEntries(Object.entries(p.sel).filter(([k]) => k !== BANDES));
     expect(ligne({ ctx: p.ctx, sel: ancien })).toBeUndefined();
-    expect(Math.round(devis({ ctx: p.ctx, sel: ancien }).totaux.ttc)).toBe(246762);
+    expect(Math.round(devis({ ctx: p.ctx, sel: ancien }).totaux.ttc)).toBe(248446);
   });
 });
 

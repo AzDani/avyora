@@ -190,20 +190,22 @@ describe("Neuf · « Je fais le maximum » : ce qui est pris par défaut", () =>
   });
 
   /* D2 n'a changé aucun de ces totaux (189 110 €, 195 743 €, 200 441 €). D5 les relève tous de 1 880 € : les
-     bandes de plâtre, une ligne à part comme en rénovation, prises en « Je le fais » (fournitures seules). */
-  it("totaux par défaut : 100 m² plain-pied en « le maximum » à 190 990 €, 197 623 € avec une fosse, 202 321 € avec une micro-station", () => {
+     bandes de plâtre, une ligne à part comme en rénovation, prises en « Je le fais » (fournitures seules).
+     Les corrections de prix du 21/11/2026 (carrelage, porte d'entrée, compteur de chantier, Consuel…) les
+     relèvent encore de 980 €. */
+  it("totaux par défaut : 100 m² plain-pied en « le maximum » à 191 970 €, 198 603 € avec une fosse, 203 301 € avec une micro-station", () => {
     const ttc = (p: ReturnType<typeof presetNeuf>) => Math.round(buildDevis(catalogueDe(p.ctx), p.ctx, p.sel).totaux.ttc);
     const R = { surface: 100, niveaux: "pp" as const, codePostal: "45000", finition: "standard" as const, qui: "max" as QuiRealise };
-    expect(ttc(presetNeuf({ ...R, assainissement: "collectif" }))).toBe(190990);
-    expect(ttc(presetNeuf({ ...R, assainissement: "fosse" }))).toBe(197623);
-    expect(ttc(presetNeuf(R, { assainissement: "micro" }))).toBe(202321);
+    expect(ttc(presetNeuf({ ...R, assainissement: "collectif" }))).toBe(191970);
+    expect(ttc(presetNeuf({ ...R, assainissement: "fosse" }))).toBe(198603);
+    expect(ttc(presetNeuf(R, { assainissement: "micro" }))).toBe(203301);
     // La maison de calage A (decisions.md) : la même.
     const A: Partial<MaisonNeuve> = {
       surface: 100, niveaux: "pp", chambres: 3, sdb: 1, wc: 1, garage: 0, forme: "rect", murs: "parpaing", plancherBas: "terre-plein", toiture: "2pans",
       couverture: "terre-cuite", chauffage: "pac-eau", vmc: "simple", assainissement: "collectif", eauxPluviales: "infiltration", distanceReseaux: 15,
       terrain: "plat", argile: "non", sismique: 1, codePostal: "45000", escalier: "bois", lotissement: false, borne: true, pilotage: "moi", gouttiere: "zinc",
     };
-    expect(ttc(presetMaison(A, { finition: "standard", qui: "max", codePostal: "45000" }))).toBe(190990);
+    expect(ttc(presetMaison(A, { finition: "standard", qui: "max", codePostal: "45000" }))).toBe(191970);
   });
 
   it("passer tout en « le maximum » ne prend ni la PAC, ni la borne, ni la fosse, ni les murs ; garde ce qui était pris", () => {

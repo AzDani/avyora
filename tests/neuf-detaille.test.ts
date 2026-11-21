@@ -225,7 +225,7 @@ describe("Détaillé neuf · reprises", () => {
     const e = repriseDepuisAffiner(raw)!;
     const p = presetNeuf(R100);
     expect(ttcDe(e)).toBeCloseTo(buildDevis(catalogueDe(p.ctx), p.ctx, p.sel).totaux.ttc, 6);
-    expect(Math.round(ttcDe(e))).toBe(253172); // le total de la maquette pour ces réponses (246 762 €) + les bandes de plâtre (D5)
+    expect(Math.round(ttcDe(e))).toBe(254857); // le total de la maquette pour ces réponses (246 762 €) + les bandes de plâtre (D5) + les corrections de prix du 21/11/2026
     expect(repriseDepuisAffiner("{")).toBeNull();
     expect(repriseDepuisAffiner(JSON.stringify({ R: { surface: 100 } }))).toBeNull();
   });
