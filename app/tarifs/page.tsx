@@ -112,12 +112,8 @@ export default async function TarifsPage({
         </p>
       </header>
 
-      <div className="mt-6 overflow-hidden rounded-panel bg-gradient-to-r from-[#4F46E5] via-[#6d5cf0] to-[#7C3AED] px-6 py-5 text-center text-white shadow-card">
-        <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-indigo-100/90">{t.lancTag}</div>
-        <h2 className="mt-1 text-[20px] font-semibold tracking-tight">{t.lancTitre}</h2>
-        <div className="mt-1 text-[13.5px] text-indigo-100/85">{t.lancSous}</div>
-      </div>
-
+      {/* Le bandeau « Tarif de lancement : le prix des premiers abonnés ne bougera pas » est retiré (décision de Dani du
+          22/11/2026) : les prix ne sont pas garantis (CGV art. 3, évolution notifiée avant reconduction). */}
       {dejaPro && (
         <p className="mx-auto mt-6 max-w-md rounded-field border border-positive/25 bg-positive-soft px-4 py-3 text-center text-sm text-positive">
           {t.dejaProAvant}<Link href={lienDetaillePro(nature)} className="font-semibold underline">{t.dejaProLien}</Link>.
