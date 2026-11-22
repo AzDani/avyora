@@ -22,8 +22,11 @@ await new Promise((r) => setTimeout(r, 400));
 const res = await p.evaluate(() => {
   closeWelcome("blank");
   const t = {};
-  /* Ces contrôles vérifient les prix du CATALOGUE : en Premium, la finition laisse le prix catalogue
-     (décision de Dani du 26/09/2026 : le compteur applique la finition ; Standard est plus bas, voir budget.mjs). */
+  /* Ces contrôles vérifient le CHIFFRAGE (au mètre de portée, à l'unité, sans double compte) à partir des prix du
+     catalogue. Depuis le barème du 22/11/2026, aucune finition ne laisse le prix catalogue (fourniture et pose y
+     varient) : le prix unitaire attendu est celui du compteur dans la finition du projet, et ce prix part du catalogue
+     (PRIX_CATALOGUE). Le barème lui-même est vérifié par finition.mts, et le total par couverture.mts. */
+  const pu = (tbl, cle, cat) => { const k = tbl + "." + cle; return (k in PRIX_CATALOGUE ? PRIX_CATALOGUE[k] === cat : true) ? ({ PRIX_POUTRE, PRIX_POTEAU })[tbl][cle] : NaN; };
   const boite = () => { state = blankState(); state.chantier.finition = "premium"; setMode("projet"); const lv = L(); lv.height = 2.5;
     const P = [[0,0],[6,0],[6,4],[0,4]];
     for (let i = 0; i < P.length; i++) lv.walls.push({ id: uid(), a: v(...P[i]), b: v(...P[(i+1)%P.length]), type: "mur" });
@@ -36,18 +39,18 @@ const res = await p.evaluate(() => {
 
   /* ── la poutre se chiffre au mètre de portée, selon son matériau ────────── */
   { const lv = boite(); const it = pose(lv, "poutre", 3, 2, 4, 0);
-    t["poutre acier 4 m → 1 920 € (4 × 480)"] = prix("i:" + it.id + ":poutre") === 1920;
+    t["poutre acier 4 m → 4 × le prix au mètre (catalogue 480 €)"] = prix("i:" + it.id + ":poutre") === Math.round(4 * pu("PRIX_POUTRE", "acier", 480));
     t["la poutre va au lot Maçonnerie"] = ligne("i:" + it.id + ":poutre").lot === "Maçonnerie";
     setItemChoix; sel = { kind: "item", id: it.id }; multi = [it.id]; it.materiau = "bois"; afterChange();
-    t["poutre lamellé-collé 4 m → 760 € (4 × 190)"] = prix("i:" + it.id + ":poutre") === 760;
+    t["poutre lamellé-collé 4 m → 4 × le prix au mètre (catalogue 190 €)"] = prix("i:" + it.id + ":poutre") === Math.round(4 * pu("PRIX_POUTRE", "bois", 190));
     it.materiau = "beton"; afterChange();
-    t["poutre béton 4 m → 1 040 € (4 × 260)"] = prix("i:" + it.id + ":poutre") === 1040; }
+    t["poutre béton 4 m → 4 × le prix au mètre (catalogue 260 €)"] = prix("i:" + it.id + ":poutre") === Math.round(4 * pu("PRIX_POUTRE", "beton", 260)); }
 
   /* ── le poteau se chiffre à l'unité, quelle que soit sa hauteur ─────────── */
   { const lv = boite(); const it = pose(lv, "poteau", 3, 2);
-    t["poteau acier → 550 € l'unité"] = prix("i:" + it.id + ":poteau") === 550;
+    t["poteau acier → le prix à l'unité (catalogue 550 €)"] = prix("i:" + it.id + ":poteau") === Math.round(pu("PRIX_POTEAU", "acier", 550));
     it.materiau = "bois"; afterChange();
-    t["poteau bois → 350 € l'unité"] = prix("i:" + it.id + ":poteau") === 350; }
+    t["poteau bois → le prix à l'unité (catalogue 350 €)"] = prix("i:" + it.id + ":poteau") === Math.round(pu("PRIX_POTEAU", "bois", 350)); }
 
   /* ── le cœur : pas deux fois la même poutre ─────────────────────────────── */
   { const lv = boite();
@@ -59,12 +62,12 @@ const res = await p.evaluate(() => {
     /* on dessine la poutre pile sur ce mur : même ouvrage */
     const it = pose(lv, "poutre", 3, 2, 4, Math.PI / 2);
     t["poutre dessinée dessus → la ligne induite disparaît"] = prix(induite) === null;
-    t["seule la poutre dessinée est chiffrée"] = prix("i:" + it.id + ":poutre") === 1920;
+    t["seule la poutre dessinée est chiffrée"] = prix("i:" + it.id + ":poutre") === Math.round(4 * pu("PRIX_POUTRE", "acier", 480));
     t["l'étude de structure reste exigée"] = !!ligne("etude:structure");
     /* déplacée à l'écart, elle ne reprend plus rien : les deux lignes coexistent */
     it.x = 1; it.rot = 0; afterChange();
     t["poutre éloignée → la ligne induite revient"] = prix(induite) === Math.round(4 * PRIX.poutreReprise);
-    t["et la poutre dessinée reste chiffrée à part"] = prix("i:" + it.id + ":poutre") === 1920; }
+    t["et la poutre dessinée reste chiffrée à part"] = prix("i:" + it.id + ":poutre") === Math.round(4 * pu("PRIX_POUTRE", "acier", 480)); }
 
   /* ── ce qui sort dans le contrat ────────────────────────────────────────── */
   { const lv = boite();
@@ -93,9 +96,9 @@ const res = await p.evaluate(() => {
     pose(lv, "poutre", 3, 2, 4, 0);
     const apres = chantierPrix().total;
     /* D37 (pro24) : une poutre créée se dimensionne — l'étude de structure vient avec elle, une fois. */
-    t["une poutre ajoute sa ligne et l'étude de structure"] = apres - avant === 1920 + PRIX.etudeStructure;
+    t["une poutre ajoute sa ligne et l'étude de structure"] = Math.abs(apres - avant - (4 * pu("PRIX_POUTRE", "acier", 480) + PRIX.etudeStructure)) < 1;
     pose(lv, "poteau", 5, 3);
-    t["un poteau de plus : l'étude ne se compte qu'une fois"] = chantierTasks().filter((x) => x.id === "etude:structure").length === 1 && chantierPrix().total - apres === 550;
+    t["un poteau de plus : l'étude ne se compte qu'une fois"] = chantierTasks().filter((x) => x.id === "etude:structure").length === 1 && Math.abs(chantierPrix().total - apres - pu("PRIX_POTEAU", "acier", 550)) < 1;
     t["le contrat coche l'étude et dit pourquoi"] = contratPlan().etudes.structure === 1 && contratPlan().etudes.ossatureCreee === 2 && contratPlan().etudes.mlPorteurDemoli === 0; }
   return t;
 });

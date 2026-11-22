@@ -188,6 +188,13 @@ node maquettes/tools/coherence.mjs
 À lancer après toute modification du catalogue, et avant chaque publication qui touche aux prix.
 Sort en code 1 si une divergence est trouvée — voir la règle 2 ci-dessus pour ce qu'il couvre.
 
+**Depuis le 22/11/2026, il tourne aussi avec la suite de tests** (`tests/editeur-plan-prix.test.ts`), avec le
+contrôle de la finition (`tools/finition-table.ts`, le calcul de `tools/finition.mts`) : le 21 et le 22/11, sept prix
+corrigés et le nouveau barème de finition (fourniture ET pose) étaient partis en ligne sans être reportés ici.
+Après un changement de prix au catalogue : reporter le prix dans la maquette. Après un changement de barème :
+`npx tsx maquettes/tools/finition.mts "$PWD/maquettes" --ecrire`. Puis `couverture.mts` (navigateur), qui
+rapproche le compteur et le devis du moteur sur deux plans entiers, **dans les trois finitions**.
+
 ---
 
 ## `tools/review.mjs` — parcours de revue headless

@@ -19,7 +19,7 @@
 import { readFileSync } from "node:fs";
 import { ouvrirMaquette, scene, sceneVariantes } from "./scene-reference.mjs";
 import { contributionsDuPlan, type PlanPourCorrespondance } from "../../lib/estimateur/plan-correspondance";
-import { effPrices, defaultCtx, finCoefTask } from "../../lib/estimateur/core";
+import { effPrices, defaultCtx, finCoefTask, finCoefMO, type Finition } from "../../lib/estimateur/core";
 
 type Tache = { label: string; lot: string; prix: number; inclus: boolean; pid: string };
 type Poste = { n: string; u: string; fp: number; vars?: Array<{ k: string; opts: Array<{ k: string; coef: number }> }> };
@@ -45,16 +45,17 @@ for (const l of lots as Array<{ t: Array<Poste & { id: string }> }>) for (const 
    variantes et s'arrêtait là, donc elle ignorait le matériau, le vitrage, la motorisation et la
    taille — et validait « 0 % d'écart » en comparant à un prix que personne ne facture.
    Le contexte est celui par défaut, le même que celui d'un projet neuf. */
-const CTX = defaultCtx();
+let CTX = defaultCtx();
 const valoriser = (c: { poste: string; quantite: number; variante?: Record<string, string>; mat?: string; vit?: string }) => {
   const t = postes[c.poste];
   if (!t) return null;
   const { fp, sm } = effPrices(t as never, { on: true, vsel: c.variante, mat: c.mat, vit: c.vit } as never, CTX);
   /* Décision de Dani (26/09/2026) : le compteur applique la finition. Le devis aussi — comme lineHT, en
-     moyenne nationale : part matériaux × coefficient de finition + main-d'œuvre. La scène est en
-     Standard, la finition par défaut d'un projet ; comparer au prix brut validerait un compteur faux. */
-  const fc = finCoefTask(CTX, lotDe[c.poste] as never, t as never);
-  return (fp == null ? 0 : sm != null ? sm * fc + (fp - sm) : fp) * c.quantite;
+     moyenne nationale. Barème « marqué » du 22/11/2026 : fourniture × coefficient de fourniture + pose ×
+     coefficient de pose. Chaque scène est comparée dans les TROIS finitions : la seule Standard ne voyait
+     pas un compteur resté sur l'ancien barème (le Standard n'a pas bougé). */
+  const fc = finCoefTask(CTX, lotDe[c.poste] as never, t as never), fm = finCoefMO(CTX, lotDe[c.poste] as never, t as never);
+  return (fp == null ? 0 : sm != null ? sm * fc + (fp - sm) * fm : fp) * c.quantite;
 };
 
 const LECTURE = `(() => {
@@ -79,14 +80,22 @@ const LECTURE = `(() => {
   };
 })()`;
 
+type Jeu = { contrat: unknown; taches: Tache[] };
+const FINITIONS: Finition[] = ["standard", "eco", "premium"];
+const lire = async (f: Finition): Promise<Jeu> => {
+  await p.evaluate((x) => (globalThis as unknown as { setChantier: (k: string, v: string) => void }).setChantier("finition", x), f);
+  return (await p.evaluate(LECTURE)) as Jeu;
+};
 const { b, p, errs } = await ouvrirMaquette(SP);
 await p.evaluate(scene);
-const base = (await p.evaluate(LECTURE)) as { contrat: unknown; taches: Tache[] };
+const base: Record<string, Jeu> = {};
+for (const f of FINITIONS) base[f] = await lire(f);
 /* La seconde scène existe parce que la première ne parcourt pas tous les chemins : elle n'a ni
    bois, ni triple vitrage, ni galandage, ni trémie, ni doublage existant. Le bug de la chape est
    passé exactement par ce trou-là — un chemin jamais emprunté par le témoin. */
 await p.evaluate(sceneVariantes);
-const variantes = (await p.evaluate(LECTURE)) as { contrat: unknown; taches: Tache[] };
+const variantes: Record<string, Jeu> = {};
+for (const f of FINITIONS) variantes[f] = await lire(f);
 await b.close();
 if (errs.length) { console.error("erreurs de page :", errs); process.exit(1); }
 
@@ -125,7 +134,7 @@ const ecartPc = Math.round((totalDevis / totalPlan - 1) * 1000) / 10;
 
 console.log(`\n━━ ${nom}\n\n1. Le compteur du plan et le devis`);
 console.log(`  compteur maquette  ${Math.round(totalPlan).toLocaleString("fr-FR")} €`);
-console.log(`  devis estimateur   ${Math.round(totalDevis).toLocaleString("fr-FR")} €   (fourni-posé, finition Standard, hors région / TVA)`);
+console.log(`  devis estimateur   ${Math.round(totalDevis).toLocaleString("fr-FR")} €   (fourni-posé, finition ${CTX.finition}, hors région / TVA)`);
 console.log(`  écart              ${ecartPc > 0 ? "+" : ""}${ecartPc} %`);
 if (Math.abs(ecartPc) > SEUIL_ECART_PC) KO(`écart de ${ecartPc} % · toléré : ${SEUIL_ECART_PC} %`, "le compteur du plan ne dit plus ce que le devis facturera");
 
@@ -154,7 +163,10 @@ for (const i of ignores) console.log(`  · ${i.quoi} → ${i.pourquoi}`);
 
 }
 
-comparer("scène de référence", base);
-comparer("scène variantes — bois, triple vitrage, galandage, trémie, doublage existant", variantes);
-console.log(`\n${dur ? `✗ ${dur} rupture(s) de couverture` : "✓ couverture cohérente sur les deux scènes"}`);
+for (const f of FINITIONS) {
+  CTX = { ...defaultCtx(), finition: f };
+  comparer(`scène de référence · ${f}`, base[f]);
+  comparer(`scène variantes — bois, triple vitrage, galandage, trémie, doublage existant · ${f}`, variantes[f]);
+}
+console.log(`\n${dur ? `✗ ${dur} rupture(s) de couverture` : "✓ couverture cohérente sur les deux scènes, dans les trois finitions"}`);
 process.exit(dur ? 1 : 0);

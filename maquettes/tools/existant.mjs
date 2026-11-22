@@ -90,20 +90,24 @@ const res = await p.evaluate(() => {
   const ligne = (re) => chantierTasks().find((x) => re.test(x.id));
   const pieces = (lv) => facesFor(lv, "projet").map((f) => f.room).filter(Boolean);
 
-  { rdc(); addLevel("plancher"); chantier().finition = "premium"; const haut = L(); /* prix catalogue = Premium : depuis le 26/09/2026 le compteur applique la finition */
+  /* Le prix unitaire est celui du compteur dans la finition du projet (PRIX_PLANCHER, après appliquerFinition), et ce
+     prix part du catalogue (PRIX_CATALOGUE). Avant le barème du 22/11/2026, le Premium laissait le prix catalogue ;
+     aucune finition ne le laisse plus (fourniture et pose y varient) : finition.mts vérifie le barème. */
+  const puCompteur = (tbl, cle, cat) => { const k = tbl + "." + cle; return (k in PRIX_CATALOGUE ? PRIX_CATALOGUE[k] === cat : true) ? ({ PRIX_PLANCHER })[tbl][cle] : NaN; };
+  { rdc(); addLevel("plancher"); chantier().finition = "premium"; const haut = L();
     t["plancher dans un volume · l'étage est marqué créé"] = haut.neuf === true;
     t["plancher dans un volume · les murs restent EXISTANTS"] = haut.walls.every((w) => !w.st);
     t["plancher dans un volume · les pièces naissent SANS plancher"] = pieces(haut).every((r) => r.floor === SANS_PLANCHER && r.plancherNeuf === "bois");
     const l = ligne(/sol-plancher/);
     /* surface nette de la pièce, pas l'emprise : c'est ce qu'on plancher réellement */
-    t["plancher bois chiffré à 90 €/m² sur la pièce"] = !!l && Math.abs(l.prix / 90 - areaNet(haut, facesFor(haut, "projet")[0])) < 0.1 && l.lot === "Charpente et couverture"; } /* D39 : le lot « Toiture » devient « Charpente et couverture » */
+    t["plancher bois chiffré au m² de la pièce (catalogue 106 €/m², finition appliquée)"] = !!l && Math.abs(l.prix / puCompteur("PRIX_PLANCHER", "bois", 106) - areaNet(haut, facesFor(haut, "projet")[0])) < 0.1 && l.lot === "Charpente et couverture"; } /* D39 : le lot « Toiture » devient « Charpente et couverture » */
   { rdc(); addLevel("surelevation"); const haut = L();
     t["surélévation · les murs sont À CRÉER"] = haut.walls.every((w) => w.st === "creer");
     t["surélévation · les murs sont chiffrés en plus du plancher"] = !!ligne(/sol-plancher/) && chantierTasks().some((x) => /^w:.*:creer$/.test(x.id) && (x.lot === "Maçonnerie" || x.lot === "Plâtrerie et cloisons")); } /* D39 : un mur épais créé va en Maçonnerie */
-  { rdc(); addLevel("plancher"); chantier().finition = "premium"; const haut = L(); /* prix catalogue = Premium : depuis le 26/09/2026 le compteur applique la finition */ const r = pieces(haut)[0];
+  { rdc(); addLevel("plancher"); chantier().finition = "premium"; const haut = L(); const r = pieces(haut)[0];
     r.plancherNeuf = "beton"; afterChange();
     const l = ligne(/sol-plancher/);
-    t["plancher béton chiffré à 120 €/m², au lot Maçonnerie"] = !!l && Math.abs(l.prix / 120 - areaNet(haut, facesFor(haut, "projet")[0])) < 0.1 && l.lot === "Maçonnerie"; }
+    t["plancher béton chiffré au m² (catalogue 120 €/m², finition appliquée), au lot Maçonnerie"] = !!l && Math.abs(l.prix / puCompteur("PRIX_PLANCHER", "beton", 120) - areaNet(haut, facesFor(haut, "projet")[0])) < 0.1 && l.lot === "Maçonnerie"; }
   { rdc(); addLevel("plancher"); const haut = L(); const r = pieces(haut)[0];
     r.floor = "Dalle béton brute"; delete r.plancherNeuf; afterChange();
     t["une pièce qu'on ne plancher pas ne coûte rien (mezzanine partielle)"] = !ligne(/sol-plancher/); }
