@@ -3,7 +3,7 @@ import type Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { envoyerEmail, emailConfirmation } from "@/lib/email";
-import { planDuStatut, sessionPayee } from "@/lib/stripe-abonnement";
+import { finPrevue, planDuStatut, sessionPayee } from "@/lib/stripe-abonnement";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -96,6 +96,7 @@ async function finCheckout(admin: Admin, s: Stripe.Checkout.Session, origine: st
     await majPlan(admin, userId, "pro", {
       stripe_customer_id: typeof s.customer === "string" ? s.customer : undefined,
       stripe_subscription_id: subId,
+      stripe_fin_le: null, // nouvel abonnement : aucune résiliation en cours
     });
   }
   // E-mail de confirmation de commande (obligation d'information + réassurance).
@@ -150,6 +151,8 @@ export async function POST(req: Request) {
           await majPlan(admin, userId, planDuStatut(courant.status), {
             stripe_customer_id: typeof courant.customer === "string" ? courant.customer : undefined,
             stripe_subscription_id: courant.id,
+            // Résilié en fin de période : la date à laquelle le Pro s'arrête, pour Mon compte (null sinon).
+            stripe_fin_le: finPrevue(courant),
           });
         }
         break;

@@ -48,3 +48,19 @@ describe("POST /api/abonnement/portail", () => {
     expect(r.corps.message).toMatch(/won't open right now/);
   });
 });
+
+describe("Mon compte · abonnement résilié qui court encore (22/11/2026)", () => {
+  it("dit « résilié » et la date de fin, propose de réactiver ; sans date, rien ne change", async () => {
+    const { createElement } = await import("react");
+    const { renderToStaticMarkup } = await import("react-dom/server");
+    const { default: AbonnementSection } = await import("@/components/AbonnementSection");
+    const resilie = renderToStaticMarkup(createElement(AbonnementSection, { isPro: true, finLe: "22 décembre 2026" }));
+    expect(resilie).toContain("Abonnement résilié : tu gardes toutes les fonctionnalités Pro jusqu&#x27;au 22 décembre 2026");
+    expect(resilie).toContain("Résilié");
+    expect(resilie).toContain("Gérer / réactiver mon abonnement");
+    expect(resilie).not.toContain("Tu profites de toutes les fonctionnalités Pro.");
+    const actif = renderToStaticMarkup(createElement(AbonnementSection, { isPro: true }));
+    expect(actif).toContain("Tu profites de toutes les fonctionnalités Pro.");
+    expect(actif).not.toContain("résilié");
+  });
+});

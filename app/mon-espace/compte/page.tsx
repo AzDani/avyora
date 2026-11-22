@@ -44,6 +44,17 @@ export default async function ComptePage() {
   // Bêta gratuite (lib/beta.ts) : la pastille de membre fondateur (sans avantage tarifaire), la date de fin de la bêta.
   const fondateur = estMembreFondateur(user);
   const libelles = libellesBeta(locale);
+  // Abonnement résilié qui court encore : le webhook a noté la date de fin (lib/stripe-abonnement.ts › finPrevue).
+  const finBrute = (user.app_metadata as { stripe_fin_le?: unknown } | undefined)?.stripe_fin_le;
+  const finLe =
+    typeof finBrute === "string" && !Number.isNaN(Date.parse(finBrute))
+      ? new Date(finBrute).toLocaleDateString(locale === "en" ? "en-US" : "fr-FR", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+          timeZone: "Europe/Paris",
+        })
+      : undefined;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -65,6 +76,7 @@ export default async function ComptePage() {
         isPro={aUnAbonnementStripe(user)}
         {...(betaActive() ? { beta: { fin: libelles.fin } } : {})}
         fondateur={fondateur}
+        finLe={finLe}
       />
 
       <UsernameForm initial={username} />

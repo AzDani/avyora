@@ -8,6 +8,10 @@ const TR = {
   fr: {
     titre: "Abonnement",
     proDesc: "Tu profites de toutes les fonctionnalités Pro.",
+    resilieDesc: (fin: string) => `Abonnement résilié : tu gardes toutes les fonctionnalités Pro jusqu'au ${fin}. Aucun autre prélèvement.`,
+    badgeResilie: "Résilié",
+    gererResilie: "Gérer / réactiver mon abonnement",
+    reactiver: "Tu as changé d'avis ? Tu peux le réactiver depuis la même page jusqu'à cette date.",
     gratuitDesc: "Tu es sur l'offre gratuite.",
     badgePro: "AVYORA Pro",
     badgeGratuit: "Gratuit",
@@ -25,6 +29,10 @@ const TR = {
   en: {
     titre: "Subscription",
     proDesc: "You have access to all Pro features.",
+    resilieDesc: (fin: string) => `Subscription canceled: you keep every Pro feature until ${fin}. No further charges.`,
+    badgeResilie: "Canceled",
+    gererResilie: "Manage / renew my subscription",
+    reactiver: "Changed your mind? You can renew it from the same page until that date.",
     gratuitDesc: "You're on the free plan.",
     badgePro: "AVYORA Pro",
     badgeGratuit: "Free",
@@ -49,15 +57,27 @@ const TR = {
  * `isPro` veut dire ABONNÉ (`estAbonne`), pas « droits Pro » : pendant la bêta gratuite (lib/beta.ts), un
  * inscrit a les droits Pro sans abonnement, et ne doit pas se voir proposer de « résilier » quoi que ce soit.
  * `beta` (la date de fin, en toutes lettres) n'est passé que pendant la bêta ; `fondateur` seulement à un membre
- * fondateur (pendant ET après la bêta : le statut reste). Membre fondateur = une reconnaissance, AUCUN avantage
+ * fondateur (pendant ET après la bêta : le statut reste). `finLe` (date en toutes lettres) : abonnement résilié qui court
+ * encore jusqu'à cette date (noté par le webhook, `stripe_fin_le`). Membre fondateur = une reconnaissance, AUCUN avantage
  * tarifaire (décision de Dani du 12/11/2026, qui retire le « tarif préférentiel garanti à vie » du 16/10/2026).
  */
-export default function AbonnementSection({ isPro, beta, fondateur = false }: { isPro: boolean; beta?: { fin: string }; fondateur?: boolean }) {
+export default function AbonnementSection({
+  isPro,
+  beta,
+  fondateur = false,
+  finLe,
+}: {
+  isPro: boolean;
+  beta?: { fin: string };
+  fondateur?: boolean;
+  finLe?: string;
+}) {
   const locale = useLocale();
   const s = TR[locale];
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const enBeta = !isPro && !!beta;
+  const resilie = isPro && !!finLe;
 
   async function gerer() {
     if (busy) return;
@@ -84,7 +104,7 @@ export default function AbonnementSection({ isPro, beta, fondateur = false }: { 
         <div>
           <h2 className="font-semibold text-ink">{s.titre}</h2>
           <p className="mt-1 text-sm text-muted">
-            {isPro ? s.proDesc : beta ? s.betaDesc(beta.fin) : s.gratuitDesc}
+            {resilie ? s.resilieDesc(finLe!) : isPro ? s.proDesc : beta ? s.betaDesc(beta.fin) : s.gratuitDesc}
           </p>
         </div>
         <span
@@ -92,7 +112,7 @@ export default function AbonnementSection({ isPro, beta, fondateur = false }: { 
             isPro || enBeta ? "bg-brand-50 text-brand-600" : "bg-surface-2 text-muted"
           }`}
         >
-          {isPro ? s.badgePro : enBeta ? s.badgeBeta : s.badgeGratuit}
+          {resilie ? s.badgeResilie : isPro ? s.badgePro : enBeta ? s.badgeBeta : s.badgeGratuit}
         </span>
       </div>
 
@@ -100,10 +120,10 @@ export default function AbonnementSection({ isPro, beta, fondateur = false }: { 
         {isPro ? (
           <>
             <button onClick={gerer} disabled={busy} className="btn btn-outline py-2 text-[13px] disabled:opacity-60">
-              {busy ? s.instant : s.gerer}
+              {busy ? s.instant : resilie ? s.gererResilie : s.gerer}
             </button>
             <p className="mt-2 text-xs text-faint">
-              {s.resiliation}
+              {resilie ? s.reactiver : s.resiliation}
             </p>
           </>
         ) : enBeta ? (

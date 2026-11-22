@@ -213,8 +213,12 @@ describe("POST /api/stripe/webhook", () => {
     /* event.id → reçu le (ms) et traité le (ms ou null) : le registre `stripe_events` de la migration 0005. */
     registre: new Map<string, { recu: number; traite: number | null }>(),
     registreAbsent: false,
-    abonnements: {} as Record<string, { id: string; status: string; customer: string; metadata: Record<string, string> }>,
+    abonnements: {} as Record<string, {
+      id: string; status: string; customer: string; metadata: Record<string, string>;
+      cancel_at?: number | null; cancel_at_period_end?: boolean; items?: { data: { current_period_end: number }[] };
+    }>,
     plans: [] as { userId: string; plan: string }[],
+    fins: [] as unknown[],
     emails: [] as string[],
     echecMaj: false,
   };
@@ -223,6 +227,7 @@ describe("POST /api/stripe/webhook", () => {
     S.registreAbsent = false;
     S.abonnements = { sub_1: { id: "sub_1", status: "active", customer: "cus_1", metadata: { supabase_user_id: "u1" } } };
     S.plans = [];
+    S.fins = [];
     S.emails = [];
     S.echecMaj = false;
     vi.stubEnv("STRIPE_WEBHOOK_SECRET", "whsec_test");
@@ -281,9 +286,10 @@ describe("POST /api/stripe/webhook", () => {
         auth: {
           admin: {
             getUserById: async (id: string) => ({ data: { user: { id, app_metadata: { role: "x" } } }, error: null }),
-            updateUserById: async (id: string, { app_metadata }: { app_metadata: { plan: string } }) => {
+            updateUserById: async (id: string, { app_metadata }: { app_metadata: { plan: string; stripe_fin_le?: unknown } }) => {
               if (S.echecMaj) return { error: new Error("panne") };
               S.plans.push({ userId: id, plan: app_metadata.plan });
+              S.fins.push(app_metadata.stripe_fin_le);
               return { error: null };
             },
           },
@@ -383,6 +389,21 @@ describe("POST /api/stripe/webhook", () => {
     expect(S.plans).toHaveLength(1);
   });
 
+  it("résiliation en fin de période : Pro gardé et date de fin notée ; réactivation : date effacée (22/11/2026)", async () => {
+    const fin = Date.UTC(2026, 11, 22, 16, 0) / 1000;
+    Object.assign(S.abonnements.sub_1, { cancel_at: null, cancel_at_period_end: true, items: { data: [{ current_period_end: fin }] } });
+    await envoyer(evSub("evt_12", "active"));
+    S.abonnements.sub_1.cancel_at_period_end = false;
+    await envoyer(evSub("evt_13", "active"));
+    expect(S.plans.map((p) => p.plan)).toEqual(["pro", "pro"]);
+    expect(S.fins).toEqual(["2026-12-22T16:00:00.000Z", null]);
+  });
+
+  it("nouvel abonnement (checkout payé) : aucune date de fin héritée d'une résiliation passée", async () => {
+    await envoyer(evCheckout("evt_14", "paid"));
+    expect(S.fins).toEqual([null]);
+  });
+
   it("registre absent (migration 0005 pas encore appliquée) : l'événement est traité quand même", async () => {
     S.registreAbsent = true;
     vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -461,6 +482,19 @@ describe("plan selon le statut Stripe", () => {
     expect(sessionPayee("paid")).toBe(true);
     expect(sessionPayee("no_payment_required")).toBe(true);
     expect(sessionPayee("unpaid")).toBe(false);
+  });
+
+  it("finPrevue : la date de fin d'un abonnement résilié qui court encore, sinon null", async () => {
+    const { finPrevue } = await import("@/lib/stripe-abonnement");
+    const fin = Date.UTC(2026, 11, 22) / 1000;
+    const items = { data: [{ current_period_end: fin }] };
+    const iso = "2026-12-22T00:00:00.000Z";
+    expect(finPrevue({ status: "active", cancel_at: null, cancel_at_period_end: true, items })).toBe(iso);
+    expect(finPrevue({ status: "active", cancel_at: fin, cancel_at_period_end: false })).toBe(iso);
+    expect(finPrevue({ status: "past_due", cancel_at: fin, cancel_at_period_end: false })).toBe(iso);
+    expect(finPrevue({ status: "active", cancel_at: null, cancel_at_period_end: false, items })).toBeNull();
+    expect(finPrevue({ status: "canceled", cancel_at: fin, cancel_at_period_end: true, items })).toBeNull();
+    expect(finPrevue({ status: "active", cancel_at: null, cancel_at_period_end: true })).toBeNull();
   });
 });
 
