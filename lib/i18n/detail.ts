@@ -60,13 +60,13 @@ const fr = {
       couloir: "Couloir / dégagement", buanderie: "Buanderie / cellier", fenetres: "Menuiseries ext.", fenetresAide: "fenêtres, baies",
     },
     finitionT: "Niveau de finition",
-    /* Cartes de finition (les mêmes que le mode rapide) : objectif et description. Seule la part matériaux change avec
-       le niveau, la pose est la même (`finCoefTask`) : les descriptions le disent (revue du 12/11/2026). Le détaillé du
+    /* Cartes de finition (les mêmes que le mode rapide) : objectif et description. Le niveau change la gamme des
+       matériaux et le soin de la pose sur les lots de finition (`baremeDe`, barème du 22/11/2026). Le détaillé du
        neuf reprend ces descriptions (sauf l'accroche Éco) : elles ne parlent donc pas que de rénovation. */
     finitions: {
       eco: { eye: "Locatif · budget maîtrisé", label: "Éco", desc: "Matériaux d'entrée de gamme : stratifié, carrelage standard, cuisine en kit." },
-      standard: { eye: "Le plus courant", label: "Standard", desc: "Matériaux milieu de gamme, bon rapport qualité-prix. Même pose qu'en Éco." },
-      premium: { eye: "Haut de gamme", label: "Premium", desc: "Matériaux haut de gamme : parquet, grand format, cuisine haut de gamme. Même pose : seuls les matériaux montent." },
+      standard: { eye: "Le plus courant", label: "Standard", desc: "Matériaux milieu de gamme, bon rapport qualité-prix." },
+      premium: { eye: "Haut de gamme", label: "Premium", desc: "Matériaux haut de gamme : parquet, grand format, cuisine haut de gamme. Pose plus soignée, comptée plus cher." },
     } as Record<string, { eye: string; label: string; desc: string }>,
     tvaT: "Régime de TVA",
     /* Régime de TVA d'une rénovation (N14) : l'âge du logement, plus « Neuf », qui se lisait comme une
@@ -282,8 +282,8 @@ const en: typeof fr = {
     finitionT: "Finish level",
     finitions: {
       eco: { eye: "Rental · budget-conscious", label: "Economy", desc: "Entry-level materials: laminate, standard tile, ready-to-assemble kitchen." },
-      standard: { eye: "Most common", label: "Standard", desc: "Mid-range materials, good value. Same installation work as Economy." },
-      premium: { eye: "High-end", label: "Premium", desc: "High-end materials: hardwood, large-format tile, high-end kitchen. Same installation: only the materials move up." },
+      standard: { eye: "Most common", label: "Standard", desc: "Mid-range materials, good value." },
+      premium: { eye: "High-end", label: "Premium", desc: "High-end materials: hardwood, large-format tile, high-end kitchen. More careful installation, priced higher." },
     },
     tvaT: "VAT rate",
     tvaHabitation: "Home over 2\u00a0years\u00a0old",

@@ -142,7 +142,7 @@ describe("D5 · seule cette ligne change le devis", () => {
     expect(autres(avec)).toEqual(autres(avant));
     const b = avec.lignes.find((x) => x.cle === BANDES)!;
     expect(b.qty).toBe(347.16);
-    expect(b.ht).toBeCloseTo(347.16 * (5 * LOT_FIN[LOT].standard + 10), 6); // fourniture × finition standard + main-d'œuvre, moyenne nationale
+    expect(b.ht).toBeCloseTo(347.16 * (5 * LOT_FIN[LOT].four.standard + 10), 6); // fourniture × finition standard + main-d'œuvre, moyenne nationale
     const taux = POSTE_NEUF.get("ass-assurance-dommages-ouvrage")!.t.fp! / 100;
     expect(avec.totaux.ht - avant.totaux.ht).toBeCloseTo(b.ht * (1 + taux), 6);     // la DO (3,5 % du projet) suit
     expect(avec.totaux.tva - avant.totaux.tva).toBeCloseTo(b.ht * 0.2, 6);            // la DO est un frais : pas de TVA

@@ -25,8 +25,8 @@
  */
 import { describe, it, expect } from "vitest";
 import {
-  CATALOG, LOT_FIN, MAT_COEF, VIT_COEF, MOT_COEF, buildDevis, defaultCtx, key, isLoc, presetRapide, presetPieces,
-  type Ctx, type Selection, type LigneSel, type Tache, type TypeBien, type Ampleur, type QuiRealise, type Finition, type PieceKey,
+  CATALOG, LOT_FIN, FIN_EQUIPEMENT, FIN_TECHNIQUE, FIN_MATERIAU, MAT_COEF, VIT_COEF, MOT_COEF, buildDevis, defaultCtx, key, isLoc, presetRapide, presetPieces,
+  type Ctx, type Selection, type LigneSel, type Tache, type TypeBien, type Ampleur, type QuiRealise, type Finition, type PieceKey, type Bareme,
 } from "@/lib/estimateur";
 import { MAJ, comparer, ecartsDevis, lireReference, photoDevis, r2, resume, verifier, type Photo, type Reference } from "./photo";
 
@@ -194,9 +194,14 @@ describe("T1 · le témoin voit chaque montant de la rénovation", () => {
     const invisibles: string[] = [];
     for (const [nom, table] of [["MAT_COEF", MAT_COEF], ["VIT_COEF", VIT_COEF], ["MOT_COEF", MOT_COEF]] as const)
       for (const k of Object.keys(table)) if (!muter(table, k, 0.1, variantes)) invisibles.push(`${nom}.${k}`);
-    // Les barèmes de finition sont partagés entre lots (même objet) : on mute chaque barème une fois.
-    for (const bareme of new Set(Object.values(LOT_FIN))) for (const f of ["eco", "standard", "premium"] as Finition[])
-      if (!muter(bareme, f, 0.05, tout)) invisibles.push(`LOT_FIN (${Object.keys(LOT_FIN).filter((c) => LOT_FIN[c] === bareme).join(", ")}).${f}`);
+    // Les barèmes de finition sont partagés entre lots (même objet) : on mute chaque barème une fois, sur la
+    // fourniture puis sur la pose (barème du 22/11/2026). Le barème sans écart (tout à 1) est muté comme les autres.
+    const baremes: [string, Bareme][] = [
+      ...[...new Set(Object.values(LOT_FIN))].map((b): [string, Bareme] => [`LOT_FIN (${Object.keys(LOT_FIN).filter((c) => LOT_FIN[c] === b).join(", ")})`, b]),
+      ["FIN_EQUIPEMENT", FIN_EQUIPEMENT], ["FIN_TECHNIQUE", FIN_TECHNIQUE], ["FIN_MATERIAU", FIN_MATERIAU],
+    ];
+    for (const [nom, bareme] of baremes) for (const part of ["four", "mo"] as const) for (const f of ["eco", "standard", "premium"] as Finition[])
+      if (!muter(bareme[part], f, 0.05, tout)) invisibles.push(`${nom}.${part}.${f}`);
     expect(invisibles).toEqual([]);
   }, 120_000);
 });

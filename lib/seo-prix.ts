@@ -63,10 +63,12 @@ export const ttc = (ht: number, taux: number): number => Math.round(ht * (1 + ta
 
 /**
  * Prix de référence d'un poste du catalogue, pour les guides éditoriaux.
- * Les prix bruts du catalogue sont HT et calés sur la finition PREMIUM (coefficient 1) : les citer
- * tels quels surestimerait le cas courant. On applique donc le coefficient de finition demandé
- * (standard par défaut), exactement comme le fait le moteur — le guide ne peut pas diverger du
- * catalogue, puisqu'il le lit.
+ * Les prix bruts du catalogue sont HT et calés sur un haut de gamme d'origine : les citer tels quels
+ * surestimerait le cas courant. On applique donc le coefficient de fourniture du niveau demandé
+ * (standard par défaut), lu dans le barème du moteur (`finCoefTask`) — le guide lit le catalogue.
+ * À savoir : ce coefficient est appliqué ici à tout le prix posé, alors que le moteur ne l'applique
+ * qu'à la fourniture ; le prix au poste d'un guide est donc un peu plus bas que celui de l'estimateur
+ * (écart signalé à Dani le 22/11/2026, laissé tel quel sans sa décision).
  */
 export function posteRef(nom: string, finition: Finition = "standard"): PosteRef | null {
   for (const l of CATALOG) {

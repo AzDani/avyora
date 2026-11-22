@@ -566,6 +566,7 @@ const EN: Record<CatKind, Record<string, string>> = {
     "enduit complet 2 passes + ponçage, mur abîmé / finition soignée": "full 2-pass skim + sanding, damaged wall / fine finish",
     "tableau télécom : box, RJ45, TV": "telecom panel: router, RJ45, TV",
     "obligatoire après une rénovation électrique complète": "mandatory after a full rewire",
+    "tableau électrique compris : ne coche pas en plus « Changer / mettre aux normes le tableau »": "electrical panel included: do not also check “Replace / upgrade the panel”",
     "≈ 1 spot / 2 m² · LED encastré posé": "≈ 1 spot / 2 m² · recessed LED installed",
     "requis pour une vasque à poser": "required for a sit-on basin",
     "cumulus à accumulation · Petit ~150 L / Grand ~250 L": "storage tank · Small ~150 L / Large ~250 L",

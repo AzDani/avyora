@@ -282,13 +282,13 @@ const fr = {
       lourde: { label: "Réno lourde", desc: "Gros œuvre + charpente, toiture, façade." },
       lourdeAppart: { label: "Réno totale", desc: "Mise à nu : curage + redistribution, tout à neuf." },
     },
-    /* Cartes de finition : seule la part MATÉRIAUX change avec le niveau, la main-d'œuvre est la même
-       (lib/estimateur/core.ts, `finCoefTask`) ; en rénovation, l'écart Éco → Premium n'est donc que de +10 à +19 %
-       sur le total. Les descriptions le disent, sans promettre de meilleure pose (revue du 12/11/2026). */
+    /* Cartes de finition : le niveau change la gamme des matériaux et des équipements, ET le soin de la pose
+       sur les lots de finition (lib/estimateur/core.ts, `baremeDe` — barème du 22/11/2026). Le standard est le
+       point fixe ; en rénovation complète, l'éco coûte ≈ 13 % de moins et le premium ≈ 32 % de plus. */
     finitions: {
       eco: { eye: "Locatif · budget maîtrisé", label: "Éco", desc: "Matériaux d'entrée de gamme robustes : sol stratifié, carrelage standard, cuisine en kit, robinetterie basique." },
-      standard: { eye: "Le plus courant", label: "Standard", desc: "Matériaux milieu de gamme, marques reconnues : le bon rapport qualité-prix pour une résidence principale. La pose est la même qu'en Éco." },
-      premium: { eye: "Haut de gamme", label: "Premium", desc: "Matériaux haut de gamme : parquet, carrelage grand format, cuisine équipée haut de gamme. La pose reste la même : seuls les matériaux montent en gamme." },
+      standard: { eye: "Le plus courant", label: "Standard", desc: "Matériaux milieu de gamme, marques reconnues : le bon rapport qualité-prix pour une résidence principale." },
+      premium: { eye: "Haut de gamme", label: "Premium", desc: "Matériaux et équipements haut de gamme : parquet, carrelage grand format, cuisine équipée haut de gamme. La pose est plus soignée, donc comptée plus cher." },
     },
     quis: {
       pros: { eye: "Clé en main", label: "Tout par des pros", desc: "Des artisans font tout : devis, garanties décennales, zéro effort de ta part." },
@@ -808,8 +808,8 @@ const en: Dict = {
     },
     finitions: {
       eco: { eye: "Rental · budget-conscious", label: "Economy", desc: "Sturdy entry-level materials: laminate floor, standard tile, ready-to-assemble kitchen, basic fixtures." },
-      standard: { eye: "Most common", label: "Standard", desc: "Mid-range materials from known brands: the right value for a primary home. Same installation work as Economy." },
-      premium: { eye: "High-end", label: "Premium", desc: "High-end materials: hardwood, large-format tile, high-end kitchen. Installation stays the same: only the materials move up." },
+      standard: { eye: "Most common", label: "Standard", desc: "Mid-range materials from known brands: the right value for a primary home." },
+      premium: { eye: "High-end", label: "Premium", desc: "High-end materials and fixtures: hardwood, large-format tile, high-end kitchen. Installation is more careful, so it is priced higher." },
     },
     quis: {
       pros: { eye: "Turnkey", label: "All by pros", desc: "Contractors do everything: quotes, warranties, zero effort on your side." },

@@ -61,9 +61,14 @@ const RAFRAICH: Tache[] = [
 const PARTIELLE_ADD: Tache[] = [
   ["Carrelage / Revetements", "Carrelage au sol"], ["Carrelage / Revetements", "Faïence / carrelage mural"],
   ["Plomberie", "WC"], ["Plomberie", "Bac de douche"], ["Plomberie", "Colonne de douche"], ["Plomberie", "Paroi de douche"], ["Plomberie", "Meuble-vasque"], ["Plomberie", "Robinetterie lavabo"], ["Plomberie", "Miroir"],
-  ["Electricite", "Changer / mettre aux normes le tableau"],
   ["Menuiseries exterieures", "Fenêtres"],
   ["Cuisine", "Cuisine complète neuve — tout compris"],
+];
+// Le tableau seul ne vaut que pour la réno partielle : dès la réno complète, « Rénovation électrique
+// complète » le comprend (prix au m² de Dani, tableau compris — décision du 22/11/2026). Avant, les deux
+// se cumulaient : ≈ 1 190 € TTC de trop sur une réno complète ou lourde.
+const PARTIELLE_SEULE: Tache[] = [
+  ["Electricite", "Changer / mettre aux normes le tableau"],
 ];
 const COMPLETE_ADD: Tache[] = [
   ["Electricite", "Rénovation électrique complète"], ["Plomberie", "Refaire toute la plomberie (réseau, hors appareils)"],
@@ -123,7 +128,7 @@ export function presetRapide(input: RapideInput): { ctx: Ctx; sel: Selection } {
   let tasks = [...RAFRAICH];
   // Rafraîchissement : sol souple sur la zone carrelable ; au-delà, le carrelage la couvre à sa place.
   if (input.ampleur === "rafraich") tasks.push(SOL_SOUPLE);
-  else tasks = tasks.concat(PARTIELLE_ADD);
+  else tasks = tasks.concat(PARTIELLE_ADD, input.ampleur === "partielle" ? PARTIELLE_SEULE : []);
   if (input.ampleur === "complete" || input.ampleur === "lourde") {
     tasks = tasks.concat(COMPLETE_ADD);
     if (maison) tasks = tasks.concat(MAISON_ISOLATION, input.ampleur === "complete" ? MAISON_ENTRETIEN : []);

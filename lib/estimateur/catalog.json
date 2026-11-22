@@ -1057,7 +1057,8 @@
         "n": "Rénovation électrique complète",
         "u": "m2",
         "fp": 115,
-        "sm": 40
+        "sm": 40,
+        "note": "tableau électrique compris : ne coche pas en plus « Changer / mettre aux normes le tableau »"
       },
       {
         "id": "ele-changer-mettre-aux-normes-le-tableau",

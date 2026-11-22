@@ -141,3 +141,47 @@ Le calage le permet : A est à +2 % et B sans garage à 0 % du repère EPTB. C (
 ## 12. Doublage intérieur avec une ITE ou des murs en béton cellulaire 30 cm
 
 **Tranché le 18/10/2026.** Dani : « non, pas automatique, comme ça les gens choisissent ». Cocher l'isolation par l'extérieur (ITE) ou choisir des murs en béton cellulaire 30 cm (mur isolant) ne décoche **pas** le doublage intérieur (collé ou isolation des murs par l'intérieur) : c'est à l'utilisateur de le décocher s'il n'en veut pas. Le comportement en ligne depuis N10 ne change pas, aucun prix ne bouge. La table des conflits de `conception.md` (§ g) le dit.
+
+## 13. Barème de finition « marqué » (décision de Dani du 22/11/2026)
+
+**Constat (audit du 21/11/2026).** Entre l'éco et le premium, une rénovation complète ne variait que de −3 % / +10 %, une salle de bain de −2 % / +4 %. Deux causes : la finition ne touchait que la fourniture, et pas du tout les équipements à options (WC, douche, fenêtres, parquet).
+
+**Décision.** Dani : « une meilleure qualité exige une meilleure main-d'œuvre ». Il a choisi le barème « marqué » sur simulation (deux barèmes comparés sur huit cas types). Cette décision remplace celle du 09/09/2026 (« la pose est la même quel que soit le niveau »).
+
+**Règles (`lib/estimateur/core.ts`, `baremeDe`).**
+
+- Le **standard est le point fixe** : aucun prix standard ne bouge. L'éco descend, le premium monte.
+- Deux coefficients par poste : fourniture et pose. Écarts par rapport au standard (éco / premium) :
+
+| Groupe | Fourniture | Pose |
+|---|---|---|
+| Aucun écart : études, démolition, location, raccordements, terrassement, fondations, VRD, taxes | — | — |
+| Faible : maçonnerie, charpente, isolation, électricité, chauffage | −10 % / +20 % | −3 % / +8 % |
+| Moyen : façade, couverture, cloisons, plomberie, menuiseries | −20 % / +45 % | −8 % / +15 % |
+| Fort : carrelage et sols, peinture, cuisine | −35 % / +80 % | −12 % / +30 % |
+| Équipement visible à options (sanitaires, baie vitrée, parquet, plan de travail) | −25 % / +70 % | — / +15 % |
+| Équipement technique à options (chauffe-eau, VMC, climatisation, plancher chauffant) | −10 % / +20 % | −3 % / +8 % |
+| Menuiserie à matériau (fenêtres, porte d'entrée, volets, portails) | −25 % / — | — / — |
+
+- Menuiserie à matériau : le premium passe déjà du PVC à l'alu (+67 % sur tout le poste) ; il ne prend rien de plus.
+- Un poste `fixe` et une prestation sans fourniture ne bougent pas.
+- **La construction neuve lit le même barème.** L'écart doublé de son éco (revue du 12/11/2026, n° 66) est supprimé : il n'a plus lieu d'être.
+
+**Effets mesurés (TTC, tout fait faire, moyenne nationale ; éco / premium par rapport au standard).**
+
+| Cas | Avant | Après |
+|---|---|---|
+| Rafraîchissement T3 65 m² | −3 % / +6 % | −17 % / +41 % |
+| Réno partielle T3 65 m² | −4 % / +14 % | −19 % / +48 % |
+| Réno complète T3 65 m² | −3 % / +10 % | −13 % / +32 % |
+| Réno complète maison 100 m² | −3 % / +10 % | −13 % / +31 % |
+| Réno lourde maison 100 m² | −3 % / +8 % | −11 % / +25 % |
+| Salle de bain 6 m² | −2 % / +4 % | −13 % / +34 % |
+| Cuisine 12 m² | −8 % / +16 % | −23 % / +54 % |
+| Maison neuve 100 m² plain-pied | −4 % / +9 % | −8 % / +22 % |
+
+**Non fait, volontairement.** En rénovation, le premium ne change pas les options à la place de l'utilisateur (WC suspendu, douche à l'italienne), contrairement au neuf : les chiffres validés par Dani sont ceux du seul coefficient.
+
+**Même jour : le tableau électrique.** Le prix au m² de « Rénovation électrique complète » comprend le tableau (confirmé par Dani). Le rapide ne coche plus « Changer / mettre aux normes le tableau » en réno complète et lourde (≈ 1 190 € TTC de trop) ; il reste coché en réno partielle. La ligne porte la note « tableau électrique compris ».
+
+Tests : `tests/finition-bareme.test.ts` ; témoins `moteur-reno.json` et `moteur-neuf.json` régénérés (aucun scénario standard n'a bougé hors le lot Électricité des rénos complètes et lourdes).

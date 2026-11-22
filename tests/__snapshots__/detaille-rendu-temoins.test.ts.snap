@@ -1211,7 +1211,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 </span>
 <span class="fe">Most common</span>
 <span class="ft">Standard</span>
-<span class="fd">Mid-range materials, good value. Same installation work as Economy.</span>
+<span class="fd">Mid-range materials, good value.</span>
 </button>
 <button type="button" class="fc" aria-pressed="false">
 <span class="fh">
@@ -1228,7 +1228,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > en · ouverture 1`] = `
 </span>
 <span class="fe">High-end</span>
 <span class="ft">Premium</span>
-<span class="fd">High-end materials: hardwood, large-format tile, high-end kitchen. Same installation: only the materials move up.</span>
+<span class="fd">High-end materials: hardwood, large-format tile, high-end kitchen. More careful installation, priced higher.</span>
 </button>
 </div>
 <div class="gl">Who manages the build</div>
@@ -2762,7 +2762,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 </span>
 <span class="fe">Le plus courant</span>
 <span class="ft">Standard</span>
-<span class="fd">Matériaux milieu de gamme, bon rapport qualité-prix. Même pose qu&#x27;en Éco.</span>
+<span class="fd">Matériaux milieu de gamme, bon rapport qualité-prix.</span>
 </button>
 <button type="button" class="fc" aria-pressed="false">
 <span class="fh">
@@ -2779,7 +2779,7 @@ exports[`Détaillé neuf : rendu de fond figé (N6) > fr · ouverture 1`] = `
 </span>
 <span class="fe">Haut de gamme</span>
 <span class="ft">Premium</span>
-<span class="fd">Matériaux haut de gamme : parquet, grand format, cuisine haut de gamme. Même pose : seuls les matériaux montent.</span>
+<span class="fd">Matériaux haut de gamme : parquet, grand format, cuisine haut de gamme. Pose plus soignée, comptée plus cher.</span>
 </button>
 </div>
 <div class="gl">Qui pilote le chantier</div>
@@ -3119,17 +3119,17 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · Mon devis (maison, li
 <div class="pill">
 <span class="k">Works excl. VAT</span>
 <br/>
-<span class="v num">€22,801</span>
+<span class="v num">€25,453</span>
 </div>
 <div class="pill">
 <span class="k">VAT 10 / 5.5%</span>
 <br/>
-<span class="v num">€2,243</span>
+<span class="v num">€2,573</span>
 </div>
 <div class="pill">
 <span class="k">Contingency 10%</span>
 <br/>
-<span class="v num">€2,280</span>
+<span class="v num">€2,545</span>
 </div>
 <div class="pill">
 <span class="k">Max budget</span>
@@ -3146,16 +3146,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · Mon devis (maison, li
 <div class="bilan">
 <div class="btile pre">
 <div class="k">👷 Paid to contractors (supply and fit)</div>
-<div class="v num">€17,756</div>
-<div class="sub2">incl. materials €9,812 · labor €7,944</div>
+<div class="v num">€19,755</div>
+<div class="sub2">incl. materials €11,379 · labor €8,376</div>
 </div>
 <div class="btile mat">
 <div class="k">🛒 Bought / rented by you</div>
-<div class="v num">€2,865</div>
+<div class="v num">€3,518</div>
 </div>
 <div class="btile eco">
 <div class="k">💪 Saved by doing it yourself</div>
-<div class="v num">+ €8,760</div>
+<div class="v num">+ €11,083</div>
 </div>
 </div>
 </div>
@@ -3167,7 +3167,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · Mon devis (maison, li
 <div class="devlot">
 <span>🛠️ Equipment rental</span>
 <span class="track">
-<span class="fill" style="width:1.0096153846153846%">
+<span class="fill" style="width:0.9110102090985337%">
 </span>
 </span>
 <span class="v">€126</span>
@@ -3181,15 +3181,15 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · Mon devis (maison, li
 <span class="fill" style="width:100%">
 </span>
 </span>
-<span class="v">€12,480</span>
+<span class="v">€13,831</span>
 </div>
 <div class="devlot">
 <span>🧱 Masonry</span>
 <span class="track">
-<span class="fill" style="width:54.29807692307692%">
+<span class="fill" style="width:52.04488532839749%">
 </span>
 </span>
-<span class="v">€6,776</span>
+<span class="v">€7,198</span>
 </div>
 </div>
 <div>
@@ -3197,24 +3197,24 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · Mon devis (maison, li
 <div class="devlot">
 <span>🖌️ Painting</span>
 <span class="track">
-<span class="fill" style="width:14.423076923076922%">
+<span class="fill" style="width:18.272261908204875%">
 </span>
 </span>
-<span class="v">€1,800</span>
+<span class="v">€2,527</span>
 </div>
 <div class="devlot">
 <span>🚿 Plumbing</span>
 <span class="track">
-<span class="fill" style="width:11.724358974358974%">
+<span class="fill" style="width:14.069178933973452%">
 </span>
 </span>
-<span class="v">€1,463</span>
+<span class="v">€1,946</span>
 </div>
 </div>
 <div class="devlot">
 <span>Custom lines</span>
 <span class="track">
-<span class="fill" style="width:19.21474358974359%">
+<span class="fill" style="width:17.338114931891145%">
 </span>
 </span>
 <span class="v">€2,398</span>
@@ -3233,13 +3233,13 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · Mon devis (maison, li
 <span>Traditional screed</span>
 <span class="q">120 m²</span>
 <span class="mode mA">hired out</span>
-<span class="m">€4,963</span>
+<span class="m">€5,329</span>
 </div>
 <div class="dtl">
 <span>Liquid screed</span>
 <span class="q">42 m²</span>
 <span class="mode mS">DIY</span>
-<span class="m">€1,008</span>
+<span class="m">€1,064</span>
 </div>
 <div class="dtl">
 <span>Build a concrete block wall</span>
@@ -3257,7 +3257,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · Mon devis (maison, li
 <span>Sliding patio door (double-pane, sliding)</span>
 <span class="q">1 unit</span>
 <span class="mode mA">hired out</span>
-<span class="m">€2,552</span>
+<span class="m">€3,903</span>
 </div>
 <div class="dtl">
 <span>Swing gate (4 m) (aluminum, manual)</span>
@@ -3269,7 +3269,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · Mon devis (maison, li
 <span>Toilet (standard)</span>
 <span class="q">2 units</span>
 <span class="mode mA">hired out</span>
-<span class="m">€959</span>
+<span class="m">€1,442</span>
 </div>
 <div class="dtl">
 <span>Shower pan (120×80)</span>
@@ -3281,7 +3281,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · Mon devis (maison, li
 <span>Wall painting</span>
 <span class="q">300 m²</span>
 <span class="mode mS">DIY</span>
-<span class="m">€1,800</span>
+<span class="m">€2,527</span>
 </div>
 </div>
 <div class="foot">Indicative AVYORA estimate — average 2026 market prices, premium finish. Actual VAT per item (energy efficiency 5.5%, supply-and-fit work 10%, studies &amp; “DIY” purchases 20%). Excludes subsidies. Get 2-3 quotes to refine.</div>
@@ -3534,7 +3534,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · appartement 1`] = `
 </span>
 <span class="fe">Most common</span>
 <span class="ft">Standard</span>
-<span class="fd">Mid-range materials, good value. Same installation work as Economy.</span>
+<span class="fd">Mid-range materials, good value.</span>
 </button>
 <button type="button" class="fc" aria-pressed="false">
 <span class="fh">
@@ -3551,7 +3551,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · appartement 1`] = `
 </span>
 <span class="fe">High-end</span>
 <span class="ft">Premium</span>
-<span class="fd">High-end materials: hardwood, large-format tile, high-end kitchen. Same installation: only the materials move up.</span>
+<span class="fd">High-end materials: hardwood, large-format tile, high-end kitchen. More careful installation, priced higher.</span>
 </button>
 </div>
 <div class="gl">VAT rate</div>
@@ -4063,7 +4063,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </span>
 <span class="fe">Most common</span>
 <span class="ft">Standard</span>
-<span class="fd">Mid-range materials, good value. Same installation work as Economy.</span>
+<span class="fd">Mid-range materials, good value.</span>
 </button>
 <button type="button" class="fc on" aria-pressed="true">
 <span class="fh">
@@ -4080,7 +4080,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </span>
 <span class="fe">High-end</span>
 <span class="ft">Premium</span>
-<span class="fd">High-end materials: hardwood, large-format tile, high-end kitchen. Same installation: only the materials move up.</span>
+<span class="fd">High-end materials: hardwood, large-format tile, high-end kitchen. More careful installation, priced higher.</span>
 </button>
 </div>
 <div class="gl">VAT rate</div>
@@ -4339,7 +4339,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <span class="ic" aria-hidden="true">🧱</span>
 <span class="nm">Masonry</span>
 <span class="cnt">4</span>
-<span class="amt num">€7,332 excl. VAT</span>
+<span class="amt num">€7,667 excl. VAT</span>
 <span class="car">›</span>
 </div>
 <div class="acc-b">
@@ -4347,7 +4347,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Open a load-bearing wall — small (door/window)<span class="pu">
-<span class="puval" title="Double-click to set your own price">€2,840 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€3,048 excl. VAT</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -4368,7 +4368,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Open a load-bearing wall — large (2.5 m, bay)<span class="pu">
-<span class="puval" title="Double-click to set your own price">€5,120 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€5,496 excl. VAT</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -4389,7 +4389,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Load-transfer beam (steel I-beam)<span class="pu">
-<span class="puval" title="Double-click to set your own price">€540 excl. VAT/lin. m</span>
+<span class="puval" title="Double-click to set your own price">€579 excl. VAT/lin. m</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -4410,7 +4410,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Load-transfer beam (glulam timber)<span class="pu">
-<span class="puval" title="Double-click to set your own price">€210 excl. VAT/lin. m</span>
+<span class="puval" title="Double-click to set your own price">€225 excl. VAT/lin. m</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -4431,7 +4431,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Load-transfer beam (reinforced concrete)<span class="pu">
-<span class="puval" title="Double-click to set your own price">€298 excl. VAT/lin. m</span>
+<span class="puval" title="Double-click to set your own price">€320 excl. VAT/lin. m</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -4452,7 +4452,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Load-bearing post (steel H-column)<span class="pu">
-<span class="puval" title="Double-click to set your own price">€622 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€667 excl. VAT</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -4473,7 +4473,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Load-bearing post (glulam timber)<span class="pu">
-<span class="puval" title="Double-click to set your own price">€396 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€425 excl. VAT</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -4494,7 +4494,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Load-bearing post (reinforced concrete)<span class="pu">
-<span class="puval" title="Double-click to set your own price">€518 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€557 excl. VAT</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -4515,7 +4515,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Create a window sill<span class="pu">
-<span class="puval" title="Double-click to set your own price">€288 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€310 excl. VAT</span>
 </span>
 </span>
 <span class="tctl">
@@ -4526,7 +4526,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Create a door threshold<span class="pu">
-<span class="puval" title="Double-click to set your own price">€288 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€310 excl. VAT</span>
 </span>
 </span>
 <span class="tctl">
@@ -4537,7 +4537,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Pour a concrete slab<span class="pu">
-<span class="puval" title="Double-click to set your own price">€76 excl. VAT/m²</span>
+<span class="puval" title="Double-click to set your own price">€81 excl. VAT/m²</span>
 </span>
 </span>
 <span class="tctl">
@@ -4548,7 +4548,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx on" aria-label="Uncheck">
 </button>
 <span class="tn">Traditional screed<span class="pu">
-<span class="puval" title="Double-click to set your own price">€38 excl. VAT/m²</span>
+<span class="puval" title="Double-click to set your own price">€40 excl. VAT/m²</span>
 </span>
 </span>
 <span class="tctl">
@@ -4562,20 +4562,20 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <span class="swilbl on">auto</span>
 </span>
 <span class="choice">
-<span class="ch onA" role="button" tabindex="0">Hire out<b title="Double-click to enter your price">€38</b>
+<span class="ch onA" role="button" tabindex="0">Hire out<b title="Double-click to enter your price">€40</b>
 </span>
-<span class="ch" role="button" tabindex="0">DIY<b title="Double-click to enter your price">€10</b>
+<span class="ch" role="button" tabindex="0">DIY<b title="Double-click to enter your price">€11</b>
 </span>
 </span>
 <button type="button" class="notebtn" title="Add a note / a link">📝</button>
-<span class="lineamt num">€4,512</span>
+<span class="lineamt num">€4,844</span>
 </span>
 </div>
 <div class="trow">
 <button class="cbx on" aria-label="Uncheck">
 </button>
 <span class="tn">Liquid screed<span class="pu">
-<span class="puval" title="Double-click to set your own price">€44 excl. VAT/m²</span>
+<span class="puval" title="Double-click to set your own price">€47 excl. VAT/m²</span>
 </span>
 </span>
 <span class="tctl">
@@ -4593,14 +4593,14 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <span class="swilbl">manual</span>
 </span>
 <span class="choice">
-<span class="ch" role="button" tabindex="0">Hire out<b title="Double-click to enter your price">€44</b>
+<span class="ch" role="button" tabindex="0">Hire out<b title="Double-click to enter your price">€47</b>
 </span>
-<span class="ch onS" role="button" tabindex="0">DIY<b title="Double-click to enter your price">€20</b>
+<span class="ch onS" role="button" tabindex="0">DIY<b title="Double-click to enter your price">€21</b>
 </span>
 </span>
 <a class="notechip" href="https://exemple.fr/chape" target="_blank" rel="noopener noreferrer" title="https://exemple.fr/chape">🔗</a>
 <button type="button" class="notebtn has" title="View / edit the note">📝</button>
-<span class="lineamt num">€840</span>
+<span class="lineamt num">€887</span>
 </span>
 <div class="decennale" role="note">DIY: not covered by the 10-year structural warranty. Check with your insurer; for a load-bearing wall or roof framing, an engineering study is recommended.</div>
 </div>
@@ -4608,7 +4608,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Foundation footing (50 × 25-30 cm)<span class="pu">
-<span class="puval" title="Double-click to set your own price">€155 excl. VAT/lin. m</span>
+<span class="puval" title="Double-click to set your own price">€166 excl. VAT/lin. m</span>
 </span>
 </span>
 <span class="tctl">
@@ -4619,7 +4619,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Reinforce foundations / underpinning<span class="pu">
-<span class="puval" title="Double-click to set your own price">€310 excl. VAT/lin. m</span>
+<span class="puval" title="Double-click to set your own price">€332 excl. VAT/lin. m</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -4656,7 +4656,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <span class="ch onA edited" role="button" tabindex="0">Hire out<b title="Double-click to enter your price">€61</b>
 <span class="chreset" role="button" title="Default AVYORA price">↺</span>
 </span>
-<span class="ch" role="button" tabindex="0">DIY<b title="Double-click to enter your price">€25</b>
+<span class="ch" role="button" tabindex="0">DIY<b title="Double-click to enter your price">€26</b>
 </span>
 </span>
 <button type="button" class="notebtn" title="Add a note / a link">📝</button>
@@ -4667,7 +4667,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Build a brick wall<span class="pu">
-<span class="puval" title="Double-click to set your own price">€101 excl. VAT/m²</span>
+<span class="puval" title="Double-click to set your own price">€108 excl. VAT/m²</span>
 </span>
 </span>
 <span class="tctl">
@@ -4678,7 +4678,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Build a stone wall<span class="pu">
-<span class="puval" title="Double-click to set your own price">€280 excl. VAT/m²</span>
+<span class="puval" title="Double-click to set your own price">€300 excl. VAT/m²</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -4699,7 +4699,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Create / remove a masonry chimney<span class="pu">
-<span class="puval" title="Double-click to set your own price">€1,680 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€1,800 excl. VAT</span>
 </span>
 </span>
 <span class="tctl">
@@ -4721,7 +4721,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Concrete floor (new story)<span class="pu">
-<span class="puval" title="Double-click to set your own price">€134 excl. VAT/m²</span>
+<span class="puval" title="Double-click to set your own price">€144 excl. VAT/m²</span>
 </span>
 </span>
 <span class="tctl">
@@ -4830,7 +4830,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <span class="ic" aria-hidden="true">🪟</span>
 <span class="nm">Exterior doors &amp; windows</span>
 <span class="cnt">3</span>
-<span class="amt num">€11,040 excl. VAT</span>
+<span class="amt num">€12,250 excl. VAT</span>
 <span class="car">›</span>
 </div>
 <div class="acc-b">
@@ -4890,7 +4890,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx on" aria-label="Uncheck">
 </button>
 <span class="tn">Sliding patio door<span class="pu">
-<span class="puval" title="Double-click to set your own price">€2,320 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€3,548 excl. VAT</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -4911,13 +4911,13 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </span>
 <span class="unit">unit</span>
 <span class="choice">
-<span class="ch onA" role="button" tabindex="0">Hire out<b title="Double-click to enter your price">€2,320</b>
+<span class="ch onA" role="button" tabindex="0">Hire out<b title="Double-click to enter your price">€3,548</b>
 </span>
-<span class="ch" role="button" tabindex="0">DIY<b title="Double-click to enter your price">€1,600</b>
+<span class="ch" role="button" tabindex="0">DIY<b title="Double-click to enter your price">€2,720</b>
 </span>
 </span>
 <button type="button" class="notebtn" title="Add a note / a link">📝</button>
-<span class="lineamt num">€2,320</span>
+<span class="lineamt num">€3,548</span>
 </span>
 <div class="tvariants">
 <span class="vg">
@@ -4951,7 +4951,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Garage door<span class="pu">
-<span class="puval" title="Double-click to set your own price">€2,046 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€2,437 excl. VAT</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -5004,7 +5004,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Exterior blinds / sun shades<span class="pu">
-<span class="puval" title="Double-click to set your own price">€1,060 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€1,256 excl. VAT</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -5046,7 +5046,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Security grilles<span class="pu">
-<span class="puval" title="Double-click to set your own price">€440 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€517 excl. VAT</span>
 </span>
 </span>
 <span class="tctl">
@@ -5165,7 +5165,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <span class="ic" aria-hidden="true">🚿</span>
 <span class="nm">Plumbing</span>
 <span class="cnt">3</span>
-<span class="amt num">€1,620 excl. VAT</span>
+<span class="amt num">€2,051 excl. VAT</span>
 <span class="car">›</span>
 </div>
 <div class="acc-b">
@@ -5173,7 +5173,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Redo all plumbing (pipework, excl. fixtures)<span class="pu">
-<span class="puval" title="Double-click to set your own price">€68 excl. VAT/m²</span>
+<span class="puval" title="Double-click to set your own price">€79 excl. VAT/m²</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -5194,7 +5194,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Create / move a water point<span class="pu">
-<span class="puval" title="Double-click to set your own price">€217 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€252 excl. VAT</span>
 </span>
 </span>
 <span class="tctl">
@@ -5205,7 +5205,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx on" aria-label="Uncheck">
 </button>
 <span class="tn">Toilet<span class="pu">
-<span class="puval" title="Double-click to set your own price">€436 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€655 excl. VAT</span>
 </span>
 </span>
 <span class="tctl">
@@ -5219,13 +5219,13 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <span class="swilbl on">auto</span>
 </span>
 <span class="choice">
-<span class="ch onA" role="button" tabindex="0">Hire out<b title="Double-click to enter your price">€436</b>
+<span class="ch onA" role="button" tabindex="0">Hire out<b title="Double-click to enter your price">€655</b>
 </span>
-<span class="ch" role="button" tabindex="0">DIY<b title="Double-click to enter your price">€280</b>
+<span class="ch" role="button" tabindex="0">DIY<b title="Double-click to enter your price">€476</b>
 </span>
 </span>
 <button type="button" class="notebtn" title="Add a note / a link">📝</button>
-<span class="lineamt num">€872</span>
+<span class="lineamt num">€1,311</span>
 </span>
 <div class="tvariants">
 <span class="vg">
@@ -5241,7 +5241,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Vanity<span class="pu">
-<span class="puval" title="Double-click to set your own price">€465 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€685 excl. VAT</span>
 </span>
 </span>
 <span class="tctl">
@@ -5252,7 +5252,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Basin<span class="pu">
-<span class="puval" title="Double-click to set your own price">€162 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€236 excl. VAT</span>
 </span>
 </span>
 <span class="tctl">
@@ -5263,7 +5263,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Countertop<span class="pu">
-<span class="puval" title="Double-click to set your own price">€95 excl. VAT/lin. m</span>
+<span class="puval" title="Double-click to set your own price">€129 excl. VAT/lin. m</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -5284,7 +5284,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Bathroom sink faucet<span class="pu">
-<span class="puval" title="Double-click to set your own price">€174 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€250 excl. VAT</span>
 </span>
 </span>
 <span class="tctl">
@@ -5295,7 +5295,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Mirror<span class="pu">
-<span class="puval" title="Double-click to set your own price">€184 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€286 excl. VAT</span>
 </span>
 </span>
 <span class="tctl">
@@ -5306,7 +5306,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx on" aria-label="Uncheck">
 </button>
 <span class="tn">Shower pan<span class="pu">
-<span class="puval" title="Double-click to set your own price">€486 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€527 excl. VAT</span>
 </span>
 </span>
 <span class="tctl">
@@ -5320,7 +5320,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <span class="swilbl on">auto</span>
 </span>
 <span class="choice">
-<span class="ch" role="button" tabindex="0">Hire out<b title="Double-click to enter your price">€486</b>
+<span class="ch" role="button" tabindex="0">Hire out<b title="Double-click to enter your price">€527</b>
 </span>
 <span class="ch onS edited" role="button" tabindex="0">DIY<b title="Double-click to enter your price">€210</b>
 <span class="chreset" role="button" title="Default AVYORA price">↺</span>
@@ -5343,7 +5343,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Shower column<span class="pu">
-<span class="puval" title="Double-click to set your own price">€324 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€472 excl. VAT</span>
 </span>
 </span>
 <span class="tctl">
@@ -5354,7 +5354,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Walk-in shower<span class="pu">
-<span class="puval" title="Double-click to set your own price">€1,220 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€1,645 excl. VAT</span>
 </span>
 </span>
 <span class="tctl">
@@ -5365,7 +5365,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Shower screen<span class="pu">
-<span class="puval" title="Double-click to set your own price">€406 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€604 excl. VAT</span>
 </span>
 </span>
 <span class="tctl">
@@ -5387,7 +5387,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Install a bathtub<span class="pu">
-<span class="puval" title="Double-click to set your own price">€1,022 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€1,210 excl. VAT</span>
 </span>
 </span>
 <span class="tctl">
@@ -5398,7 +5398,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Tub faucet<span class="pu">
-<span class="puval" title="Double-click to set your own price">€280 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€410 excl. VAT</span>
 </span>
 </span>
 <span class="tctl">
@@ -5409,7 +5409,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Electric water heater (tank)<span class="pu">
-<span class="puval" title="Double-click to set your own price">€1,060 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€1,193 excl. VAT</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -5430,7 +5430,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Instant electric water heater<span class="pu">
-<span class="puval" title="Double-click to set your own price">€610 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€689 excl. VAT</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -5451,7 +5451,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Heat-pump water heater<span class="pu">
-<span class="puval" title="Double-click to set your own price">€3,400 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€3,936 excl. VAT</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="See item details" title="See item details">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -5472,7 +5472,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <button class="cbx" aria-label="Check">
 </button>
 <span class="tn">Install a water softener<span class="pu">
-<span class="puval" title="Double-click to set your own price">€1,600 excl. VAT</span>
+<span class="puval" title="Double-click to set your own price">€1,894 excl. VAT</span>
 </span>
 </span>
 <span class="tctl">
@@ -5524,7 +5524,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 <span class="ic" aria-hidden="true">🖌️</span>
 <span class="nm">Painting</span>
 <span class="cnt">1</span>
-<span class="amt num">€1,500 excl. VAT</span>
+<span class="amt num">€2,106 excl. VAT</span>
 <span class="car">›</span>
 </div>
 </div>
@@ -5564,9 +5564,9 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · maison 1`] = `
 </div>
 </div>
 <div class="jauge">
-<div class="jtext">Max budget €150,000 · €122,676 left</div>
+<div class="jtext">Max budget €150,000 · €119,429 left</div>
 <div class="jbar">
-<div class="jfill" style="width:18.215799999999998%">
+<div class="jfill" style="width:20.380936%">
 </div>
 </div>
 </div>
@@ -5768,7 +5768,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · page vierge 1`] = `
 </span>
 <span class="fe">Most common</span>
 <span class="ft">Standard</span>
-<span class="fd">Mid-range materials, good value. Same installation work as Economy.</span>
+<span class="fd">Mid-range materials, good value.</span>
 </button>
 <button type="button" class="fc" aria-pressed="false">
 <span class="fh">
@@ -5785,7 +5785,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · page vierge 1`] = `
 </span>
 <span class="fe">High-end</span>
 <span class="ft">Premium</span>
-<span class="fd">High-end materials: hardwood, large-format tile, high-end kitchen. Same installation: only the materials move up.</span>
+<span class="fd">High-end materials: hardwood, large-format tile, high-end kitchen. More careful installation, priced higher.</span>
 </button>
 </div>
 <div class="gl">VAT rate</div>
@@ -6177,7 +6177,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · pieces 1`] = `
 </span>
 <span class="fe">Most common</span>
 <span class="ft">Standard</span>
-<span class="fd">Mid-range materials, good value. Same installation work as Economy.</span>
+<span class="fd">Mid-range materials, good value.</span>
 </button>
 <button type="button" class="fc" aria-pressed="false">
 <span class="fh">
@@ -6194,7 +6194,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · pieces 1`] = `
 </span>
 <span class="fe">High-end</span>
 <span class="ft">Premium</span>
-<span class="fd">High-end materials: hardwood, large-format tile, high-end kitchen. Same installation: only the materials move up.</span>
+<span class="fd">High-end materials: hardwood, large-format tile, high-end kitchen. More careful installation, priced higher.</span>
 </button>
 </div>
 <div class="gl">VAT rate</div>
@@ -6473,7 +6473,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · suite 1`] = `
 </span>
 <span class="fe">Most common</span>
 <span class="ft">Standard</span>
-<span class="fd">Mid-range materials, good value. Same installation work as Economy.</span>
+<span class="fd">Mid-range materials, good value.</span>
 </button>
 <button type="button" class="fc" aria-pressed="false">
 <span class="fh">
@@ -6490,7 +6490,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > en · suite 1`] = `
 </span>
 <span class="fe">High-end</span>
 <span class="ft">Premium</span>
-<span class="fd">High-end materials: hardwood, large-format tile, high-end kitchen. Same installation: only the materials move up.</span>
+<span class="fd">High-end materials: hardwood, large-format tile, high-end kitchen. More careful installation, priced higher.</span>
 </button>
 </div>
 <div class="gl">VAT rate</div>
@@ -6969,17 +6969,17 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · Mon devis (maison, li
 <div class="pill">
 <span class="k">Travaux HT</span>
 <br/>
-<span class="v num">22 801 €</span>
+<span class="v num">25 453 €</span>
 </div>
 <div class="pill">
 <span class="k">TVA 10 / 5,5 %</span>
 <br/>
-<span class="v num">2 243 €</span>
+<span class="v num">2 573 €</span>
 </div>
 <div class="pill">
 <span class="k">Aléas 10 %</span>
 <br/>
-<span class="v num">2 280 €</span>
+<span class="v num">2 545 €</span>
 </div>
 <div class="pill">
 <span class="k">Budget max</span>
@@ -6996,16 +6996,16 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · Mon devis (maison, li
 <div class="bilan">
 <div class="btile pre">
 <div class="k">👷 Payé aux artisans (fourni-posé)</div>
-<div class="v num">17 756 €</div>
-<div class="sub2">dont matériaux 9 812 € · pose 7 944 €</div>
+<div class="v num">19 755 €</div>
+<div class="sub2">dont matériaux 11 379 € · pose 8 376 €</div>
 </div>
 <div class="btile mat">
 <div class="k">🛒 Acheté / loué par toi</div>
-<div class="v num">2 865 €</div>
+<div class="v num">3 518 €</div>
 </div>
 <div class="btile eco">
 <div class="k">💪 Économie en faisant toi-même</div>
-<div class="v num">+ 8 760 €</div>
+<div class="v num">+ 11 083 €</div>
 </div>
 </div>
 </div>
@@ -7017,7 +7017,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · Mon devis (maison, li
 <div class="devlot">
 <span>🛠️ Location de matériel</span>
 <span class="track">
-<span class="fill" style="width:1.0096153846153846%">
+<span class="fill" style="width:0.9110102090985337%">
 </span>
 </span>
 <span class="v">126 €</span>
@@ -7031,15 +7031,15 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · Mon devis (maison, li
 <span class="fill" style="width:100%">
 </span>
 </span>
-<span class="v">12 480 €</span>
+<span class="v">13 831 €</span>
 </div>
 <div class="devlot">
 <span>🧱 Maçonnerie</span>
 <span class="track">
-<span class="fill" style="width:54.29807692307692%">
+<span class="fill" style="width:52.04488532839749%">
 </span>
 </span>
-<span class="v">6 776 €</span>
+<span class="v">7 198 €</span>
 </div>
 </div>
 <div>
@@ -7047,24 +7047,24 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · Mon devis (maison, li
 <div class="devlot">
 <span>🖌️ Peinture</span>
 <span class="track">
-<span class="fill" style="width:14.423076923076922%">
+<span class="fill" style="width:18.272261908204875%">
 </span>
 </span>
-<span class="v">1 800 €</span>
+<span class="v">2 527 €</span>
 </div>
 <div class="devlot">
 <span>🚿 Plomberie</span>
 <span class="track">
-<span class="fill" style="width:11.724358974358974%">
+<span class="fill" style="width:14.069178933973452%">
 </span>
 </span>
-<span class="v">1 463 €</span>
+<span class="v">1 946 €</span>
 </div>
 </div>
 <div class="devlot">
 <span>Lignes personnalisées</span>
 <span class="track">
-<span class="fill" style="width:19.21474358974359%">
+<span class="fill" style="width:17.338114931891145%">
 </span>
 </span>
 <span class="v">2 398 €</span>
@@ -7083,13 +7083,13 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · Mon devis (maison, li
 <span>Chape traditionnelle</span>
 <span class="q">120 m²</span>
 <span class="mode mA">fait faire</span>
-<span class="m">4 963 €</span>
+<span class="m">5 329 €</span>
 </div>
 <div class="dtl">
 <span>Chape liquide</span>
 <span class="q">42 m²</span>
 <span class="mode mS">je fais</span>
-<span class="m">1 008 €</span>
+<span class="m">1 064 €</span>
 </div>
 <div class="dtl">
 <span>Monter un mur en parpaings</span>
@@ -7107,7 +7107,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · Mon devis (maison, li
 <span>Baie vitrée (double vitrage, coulissante)</span>
 <span class="q">1 u</span>
 <span class="mode mA">fait faire</span>
-<span class="m">2 552 €</span>
+<span class="m">3 903 €</span>
 </div>
 <div class="dtl">
 <span>Portail battant (4 m) (alu, manuel)</span>
@@ -7119,7 +7119,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · Mon devis (maison, li
 <span>WC (classique)</span>
 <span class="q">2 u</span>
 <span class="mode mA">fait faire</span>
-<span class="m">959 €</span>
+<span class="m">1 442 €</span>
 </div>
 <div class="dtl">
 <span>Bac de douche (120×80)</span>
@@ -7131,7 +7131,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · Mon devis (maison, li
 <span>Peinture des murs</span>
 <span class="q">300 m²</span>
 <span class="mode mS">je fais</span>
-<span class="m">1 800 €</span>
+<span class="m">2 527 €</span>
 </div>
 </div>
 <div class="foot">Estimation indicative AVYORA — prix moyens marché 2026, finition premium. TVA réelle par poste (énergie 5,5 %, travaux fourni-posé 10 %, études &amp; achats « Je le fais » 20 %). Hors aides. Demande 2-3 devis pour affiner.</div>
@@ -7385,7 +7385,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · appartement 1`] = `
 </span>
 <span class="fe">Le plus courant</span>
 <span class="ft">Standard</span>
-<span class="fd">Matériaux milieu de gamme, bon rapport qualité-prix. Même pose qu&#x27;en Éco.</span>
+<span class="fd">Matériaux milieu de gamme, bon rapport qualité-prix.</span>
 </button>
 <button type="button" class="fc" aria-pressed="false">
 <span class="fh">
@@ -7402,7 +7402,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · appartement 1`] = `
 </span>
 <span class="fe">Haut de gamme</span>
 <span class="ft">Premium</span>
-<span class="fd">Matériaux haut de gamme : parquet, grand format, cuisine haut de gamme. Même pose : seuls les matériaux montent.</span>
+<span class="fd">Matériaux haut de gamme : parquet, grand format, cuisine haut de gamme. Pose plus soignée, comptée plus cher.</span>
 </button>
 </div>
 <div class="gl">Régime de TVA</div>
@@ -7915,7 +7915,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </span>
 <span class="fe">Le plus courant</span>
 <span class="ft">Standard</span>
-<span class="fd">Matériaux milieu de gamme, bon rapport qualité-prix. Même pose qu&#x27;en Éco.</span>
+<span class="fd">Matériaux milieu de gamme, bon rapport qualité-prix.</span>
 </button>
 <button type="button" class="fc on" aria-pressed="true">
 <span class="fh">
@@ -7932,7 +7932,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </span>
 <span class="fe">Haut de gamme</span>
 <span class="ft">Premium</span>
-<span class="fd">Matériaux haut de gamme : parquet, grand format, cuisine haut de gamme. Même pose : seuls les matériaux montent.</span>
+<span class="fd">Matériaux haut de gamme : parquet, grand format, cuisine haut de gamme. Pose plus soignée, comptée plus cher.</span>
 </button>
 </div>
 <div class="gl">Régime de TVA</div>
@@ -8191,7 +8191,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <span class="ic" aria-hidden="true">🧱</span>
 <span class="nm">Maçonnerie</span>
 <span class="cnt">4</span>
-<span class="amt num">7 332 € HT</span>
+<span class="amt num">7 667 € HT</span>
 <span class="car">›</span>
 </div>
 <div class="acc-b">
@@ -8199,7 +8199,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Ouvrir un mur porteur — petite (porte/fenêtre)<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">2 840 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">3 048 € HT</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -8220,7 +8220,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Ouvrir un mur porteur — grande (2,5 m, baie)<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">5 120 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">5 496 € HT</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -8241,7 +8241,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Poutre de reprise de charge (IPN / HEA)<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">540 € HT/ml</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">579 € HT/ml</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -8262,7 +8262,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Poutre de reprise de charge (lamellé-collé)<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">210 € HT/ml</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">225 € HT/ml</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -8283,7 +8283,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Poutre de reprise de charge (béton armé)<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">298 € HT/ml</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">320 € HT/ml</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -8304,7 +8304,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Poteau de reprise (acier HEA / HEB)<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">622 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">667 € HT</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -8325,7 +8325,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Poteau de reprise (lamellé-collé)<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">396 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">425 € HT</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -8346,7 +8346,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Poteau de reprise (béton armé)<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">518 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">557 € HT</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -8367,7 +8367,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Créer un appui de fenêtre<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">288 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">310 € HT</span>
 </span>
 </span>
 <span class="tctl">
@@ -8378,7 +8378,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Créer un seuil de porte<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">288 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">310 € HT</span>
 </span>
 </span>
 <span class="tctl">
@@ -8389,7 +8389,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Couler une dalle béton<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">76 € HT/m²</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">81 € HT/m²</span>
 </span>
 </span>
 <span class="tctl">
@@ -8400,7 +8400,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx on" aria-label="Décocher">
 </button>
 <span class="tn">Chape traditionnelle<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">38 € HT/m²</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">40 € HT/m²</span>
 </span>
 </span>
 <span class="tctl">
@@ -8414,20 +8414,20 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <span class="swilbl on">auto</span>
 </span>
 <span class="choice">
-<span class="ch onA" role="button" tabindex="0">Fait faire<b title="Double-clique pour mettre ton prix">38 €</b>
+<span class="ch onA" role="button" tabindex="0">Fait faire<b title="Double-clique pour mettre ton prix">40 €</b>
 </span>
-<span class="ch" role="button" tabindex="0">Je le fais<b title="Double-clique pour mettre ton prix">10 €</b>
+<span class="ch" role="button" tabindex="0">Je le fais<b title="Double-clique pour mettre ton prix">11 €</b>
 </span>
 </span>
 <button type="button" class="notebtn" title="Ajouter une note / un lien">📝</button>
-<span class="lineamt num">4 512 €</span>
+<span class="lineamt num">4 844 €</span>
 </span>
 </div>
 <div class="trow">
 <button class="cbx on" aria-label="Décocher">
 </button>
 <span class="tn">Chape liquide<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">44 € HT/m²</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">47 € HT/m²</span>
 </span>
 </span>
 <span class="tctl">
@@ -8445,14 +8445,14 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <span class="swilbl">manuel</span>
 </span>
 <span class="choice">
-<span class="ch" role="button" tabindex="0">Fait faire<b title="Double-clique pour mettre ton prix">44 €</b>
+<span class="ch" role="button" tabindex="0">Fait faire<b title="Double-clique pour mettre ton prix">47 €</b>
 </span>
-<span class="ch onS" role="button" tabindex="0">Je le fais<b title="Double-clique pour mettre ton prix">20 €</b>
+<span class="ch onS" role="button" tabindex="0">Je le fais<b title="Double-clique pour mettre ton prix">21 €</b>
 </span>
 </span>
 <a class="notechip" href="https://exemple.fr/chape" target="_blank" rel="noopener noreferrer" title="https://exemple.fr/chape">🔗</a>
 <button type="button" class="notebtn has" title="Voir / modifier la note">📝</button>
-<span class="lineamt num">840 €</span>
+<span class="lineamt num">887 €</span>
 </span>
 <div class="decennale" role="note">Fait soi-même : hors garantie décennale. Vérifie avec ton assureur ; pour un mur porteur ou une charpente, une étude est conseillée.</div>
 </div>
@@ -8460,7 +8460,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Semelle de fondation (50 × 25-30 cm)<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">155 € HT/ml</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">166 € HT/ml</span>
 </span>
 </span>
 <span class="tctl">
@@ -8471,7 +8471,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Consolider fondations / reprise en sous-œuvre<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">310 € HT/ml</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">332 € HT/ml</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -8508,7 +8508,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <span class="ch onA edited" role="button" tabindex="0">Fait faire<b title="Double-clique pour mettre ton prix">61 €</b>
 <span class="chreset" role="button" title="Prix AVYORA par défaut">↺</span>
 </span>
-<span class="ch" role="button" tabindex="0">Je le fais<b title="Double-clique pour mettre ton prix">25 €</b>
+<span class="ch" role="button" tabindex="0">Je le fais<b title="Double-clique pour mettre ton prix">26 €</b>
 </span>
 </span>
 <button type="button" class="notebtn" title="Ajouter une note / un lien">📝</button>
@@ -8519,7 +8519,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Monter un mur en brique<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">101 € HT/m²</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">108 € HT/m²</span>
 </span>
 </span>
 <span class="tctl">
@@ -8530,7 +8530,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Monter un mur en pierre<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">280 € HT/m²</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">300 € HT/m²</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -8551,7 +8551,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Créer / enlever une cheminée en dur<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">1 680 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">1 800 € HT</span>
 </span>
 </span>
 <span class="tctl">
@@ -8573,7 +8573,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Plancher béton (étage créé)<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">134 € HT/m²</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">144 € HT/m²</span>
 </span>
 </span>
 <span class="tctl">
@@ -8682,7 +8682,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <span class="ic" aria-hidden="true">🪟</span>
 <span class="nm">Menuiseries extérieures</span>
 <span class="cnt">3</span>
-<span class="amt num">11 040 € HT</span>
+<span class="amt num">12 250 € HT</span>
 <span class="car">›</span>
 </div>
 <div class="acc-b">
@@ -8742,7 +8742,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx on" aria-label="Décocher">
 </button>
 <span class="tn">Baie vitrée<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">2 320 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">3 548 € HT</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -8763,13 +8763,13 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </span>
 <span class="unit">u</span>
 <span class="choice">
-<span class="ch onA" role="button" tabindex="0">Fait faire<b title="Double-clique pour mettre ton prix">2 320 €</b>
+<span class="ch onA" role="button" tabindex="0">Fait faire<b title="Double-clique pour mettre ton prix">3 548 €</b>
 </span>
-<span class="ch" role="button" tabindex="0">Je le fais<b title="Double-clique pour mettre ton prix">1 600 €</b>
+<span class="ch" role="button" tabindex="0">Je le fais<b title="Double-clique pour mettre ton prix">2 720 €</b>
 </span>
 </span>
 <button type="button" class="notebtn" title="Ajouter une note / un lien">📝</button>
-<span class="lineamt num">2 320 €</span>
+<span class="lineamt num">3 548 €</span>
 </span>
 <div class="tvariants">
 <span class="vg">
@@ -8803,7 +8803,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Porte de garage<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">2 046 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">2 437 € HT</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -8856,7 +8856,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Stores extérieurs / brise-soleil<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">1 060 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">1 256 € HT</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -8898,7 +8898,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Grilles de sécurité<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">440 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">517 € HT</span>
 </span>
 </span>
 <span class="tctl">
@@ -9017,7 +9017,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <span class="ic" aria-hidden="true">🚿</span>
 <span class="nm">Plomberie</span>
 <span class="cnt">3</span>
-<span class="amt num">1 620 € HT</span>
+<span class="amt num">2 051 € HT</span>
 <span class="car">›</span>
 </div>
 <div class="acc-b">
@@ -9025,7 +9025,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Refaire toute la plomberie (réseau, hors appareils)<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">68 € HT/m²</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">79 € HT/m²</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -9046,7 +9046,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Créer / déplacer un point d&#x27;eau<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">217 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">252 € HT</span>
 </span>
 </span>
 <span class="tctl">
@@ -9057,7 +9057,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx on" aria-label="Décocher">
 </button>
 <span class="tn">WC<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">436 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">655 € HT</span>
 </span>
 </span>
 <span class="tctl">
@@ -9071,13 +9071,13 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <span class="swilbl on">auto</span>
 </span>
 <span class="choice">
-<span class="ch onA" role="button" tabindex="0">Fait faire<b title="Double-clique pour mettre ton prix">436 €</b>
+<span class="ch onA" role="button" tabindex="0">Fait faire<b title="Double-clique pour mettre ton prix">655 €</b>
 </span>
-<span class="ch" role="button" tabindex="0">Je le fais<b title="Double-clique pour mettre ton prix">280 €</b>
+<span class="ch" role="button" tabindex="0">Je le fais<b title="Double-clique pour mettre ton prix">476 €</b>
 </span>
 </span>
 <button type="button" class="notebtn" title="Ajouter une note / un lien">📝</button>
-<span class="lineamt num">872 €</span>
+<span class="lineamt num">1 311 €</span>
 </span>
 <div class="tvariants">
 <span class="vg">
@@ -9093,7 +9093,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Meuble-vasque<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">465 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">685 € HT</span>
 </span>
 </span>
 <span class="tctl">
@@ -9104,7 +9104,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Vasque<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">162 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">236 € HT</span>
 </span>
 </span>
 <span class="tctl">
@@ -9115,7 +9115,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Plan de travail<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">95 € HT/ml</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">129 € HT/ml</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -9136,7 +9136,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Robinetterie lavabo<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">174 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">250 € HT</span>
 </span>
 </span>
 <span class="tctl">
@@ -9147,7 +9147,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Miroir<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">184 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">286 € HT</span>
 </span>
 </span>
 <span class="tctl">
@@ -9158,7 +9158,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx on" aria-label="Décocher">
 </button>
 <span class="tn">Bac de douche<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">486 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">527 € HT</span>
 </span>
 </span>
 <span class="tctl">
@@ -9172,7 +9172,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <span class="swilbl on">auto</span>
 </span>
 <span class="choice">
-<span class="ch" role="button" tabindex="0">Fait faire<b title="Double-clique pour mettre ton prix">486 €</b>
+<span class="ch" role="button" tabindex="0">Fait faire<b title="Double-clique pour mettre ton prix">527 €</b>
 </span>
 <span class="ch onS edited" role="button" tabindex="0">Je le fais<b title="Double-clique pour mettre ton prix">210 €</b>
 <span class="chreset" role="button" title="Prix AVYORA par défaut">↺</span>
@@ -9195,7 +9195,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Colonne de douche<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">324 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">472 € HT</span>
 </span>
 </span>
 <span class="tctl">
@@ -9206,7 +9206,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Douche à l&#x27;italienne<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">1 220 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">1 645 € HT</span>
 </span>
 </span>
 <span class="tctl">
@@ -9217,7 +9217,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Paroi de douche<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">406 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">604 € HT</span>
 </span>
 </span>
 <span class="tctl">
@@ -9239,7 +9239,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Installer une baignoire<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">1 022 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">1 210 € HT</span>
 </span>
 </span>
 <span class="tctl">
@@ -9250,7 +9250,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Robinetterie baignoire<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">280 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">410 € HT</span>
 </span>
 </span>
 <span class="tctl">
@@ -9261,7 +9261,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Chauffe-eau électrique (cumulus)<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">1 060 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">1 193 € HT</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -9282,7 +9282,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Chauffe-eau électrique instantané<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">610 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">689 € HT</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -9303,7 +9303,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Chauffe-eau thermodynamique<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">3 400 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">3 936 € HT</span>
 <button type="button" class="ibtn" aria-expanded="false" aria-label="Voir le détail du poste" title="Voir le détail du poste">
 <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
 <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4">
@@ -9324,7 +9324,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <button class="cbx" aria-label="Cocher">
 </button>
 <span class="tn">Installer un adoucisseur d&#x27;eau<span class="pu">
-<span class="puval" title="Double-clique pour ajuster à ton prix">1 600 € HT</span>
+<span class="puval" title="Double-clique pour ajuster à ton prix">1 894 € HT</span>
 </span>
 </span>
 <span class="tctl">
@@ -9376,7 +9376,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 <span class="ic" aria-hidden="true">🖌️</span>
 <span class="nm">Peinture</span>
 <span class="cnt">1</span>
-<span class="amt num">1 500 € HT</span>
+<span class="amt num">2 106 € HT</span>
 <span class="car">›</span>
 </div>
 </div>
@@ -9417,9 +9417,9 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · maison 1`] = `
 </div>
 </div>
 <div class="jauge">
-<div class="jtext">Budget max 150 000 € · reste 122 676 €</div>
+<div class="jtext">Budget max 150 000 € · reste 119 429 €</div>
 <div class="jbar">
-<div class="jfill" style="width:18.215799999999998%">
+<div class="jfill" style="width:20.380936%">
 </div>
 </div>
 </div>
@@ -9621,7 +9621,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · page vierge 1`] = `
 </span>
 <span class="fe">Le plus courant</span>
 <span class="ft">Standard</span>
-<span class="fd">Matériaux milieu de gamme, bon rapport qualité-prix. Même pose qu&#x27;en Éco.</span>
+<span class="fd">Matériaux milieu de gamme, bon rapport qualité-prix.</span>
 </button>
 <button type="button" class="fc" aria-pressed="false">
 <span class="fh">
@@ -9638,7 +9638,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · page vierge 1`] = `
 </span>
 <span class="fe">Haut de gamme</span>
 <span class="ft">Premium</span>
-<span class="fd">Matériaux haut de gamme : parquet, grand format, cuisine haut de gamme. Même pose : seuls les matériaux montent.</span>
+<span class="fd">Matériaux haut de gamme : parquet, grand format, cuisine haut de gamme. Pose plus soignée, comptée plus cher.</span>
 </button>
 </div>
 <div class="gl">Régime de TVA</div>
@@ -10031,7 +10031,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · pieces 1`] = `
 </span>
 <span class="fe">Le plus courant</span>
 <span class="ft">Standard</span>
-<span class="fd">Matériaux milieu de gamme, bon rapport qualité-prix. Même pose qu&#x27;en Éco.</span>
+<span class="fd">Matériaux milieu de gamme, bon rapport qualité-prix.</span>
 </button>
 <button type="button" class="fc" aria-pressed="false">
 <span class="fh">
@@ -10048,7 +10048,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · pieces 1`] = `
 </span>
 <span class="fe">Haut de gamme</span>
 <span class="ft">Premium</span>
-<span class="fd">Matériaux haut de gamme : parquet, grand format, cuisine haut de gamme. Même pose : seuls les matériaux montent.</span>
+<span class="fd">Matériaux haut de gamme : parquet, grand format, cuisine haut de gamme. Pose plus soignée, comptée plus cher.</span>
 </button>
 </div>
 <div class="gl">Régime de TVA</div>
@@ -10328,7 +10328,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · suite 1`] = `
 </span>
 <span class="fe">Le plus courant</span>
 <span class="ft">Standard</span>
-<span class="fd">Matériaux milieu de gamme, bon rapport qualité-prix. Même pose qu&#x27;en Éco.</span>
+<span class="fd">Matériaux milieu de gamme, bon rapport qualité-prix.</span>
 </button>
 <button type="button" class="fc" aria-pressed="false">
 <span class="fh">
@@ -10345,7 +10345,7 @@ exports[`Détaillé rénovation : rendu figé (N6) > fr · suite 1`] = `
 </span>
 <span class="fe">Haut de gamme</span>
 <span class="ft">Premium</span>
-<span class="fd">Matériaux haut de gamme : parquet, grand format, cuisine haut de gamme. Même pose : seuls les matériaux montent.</span>
+<span class="fd">Matériaux haut de gamme : parquet, grand format, cuisine haut de gamme. Pose plus soignée, comptée plus cher.</span>
 </button>
 </div>
 <div class="gl">Régime de TVA</div>

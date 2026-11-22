@@ -36,10 +36,12 @@ export function metaEN(): Metadata {
 }
 
 const FINITIONS_EN = [
-  { libelle: "Studies, demolition, equipment hire, utility connections", eco: "—", std: "—", prem: "—", note: "no difference: a skip costs the same whatever the finish" },
-  { libelle: "Masonry, roof framing, insulation, electrical, heating", eco: "−17 %", std: "−12 %", prem: "baseline", note: "small gap: technical work varies little" },
-  { libelle: "Facade, partitions, plumbing, doors and windows", eco: "−25 %", std: "−17 %", prem: "baseline", note: "medium gap" },
-  { libelle: "Tiling, painting, kitchen", eco: "−33 %", std: "−22 %", prem: "baseline", note: "large gap: this is where the choice of materials matters most" },
+  { libelle: "Studies, demolition, equipment hire, utility connections, earthworks, foundations", eco: "—", ecoPose: "", prem: "—", premPose: "", note: "no difference: a skip costs the same whatever the finish" },
+  { libelle: "Masonry, roof framing, insulation, electrical, heating, ventilation, hot water", eco: "−10 %", ecoPose: "labour −3 %", prem: "+20 %", premPose: "labour +8 %", note: "small gap: technical work varies little" },
+  { libelle: "Facade, roofing, partitions, plumbing, interior doors", eco: "−20 %", ecoPose: "labour −8 %", prem: "+45 %", premPose: "labour +15 %", note: "medium gap" },
+  { libelle: "Tiling, flooring, painting, kitchen", eco: "−35 %", ecoPose: "labour −12 %", prem: "+80 %", premPose: "labour +30 %", note: "large gap: this is where the range and the care of the installation matter most" },
+  { libelle: "Bathroom fixtures, patio door, hardwood floor, worktop", eco: "−25 %", ecoPose: "same labour", prem: "+70 %", premPose: "labour +15 %", note: "items with options: the range comes on top of the option chosen (floor-standing or wall-hung toilet, shower tray or walk-in shower…)" },
+  { libelle: "Windows, front doors, shutters", eco: "−25 %", ecoPose: "same labour", prem: "aluminium", premPose: "instead of PVC", note: "premium moves from PVC to aluminium (≈ +67 % on a window); you can choose the material item by item" },
 ];
 
 const REGIONS_EN: { zone: string; dep: string; mo: string; mat?: string }[] = [
@@ -101,8 +103,10 @@ export default function MethodologieEN() {
 
       <h3>1. The finish level</h3>
       <p>
-        {"The catalogue is set at the "}<strong>premium</strong>
-        {" finish, which serves as the baseline. The budget and standard levels apply a discount, larger or smaller depending on the trade — because the choice of materials does not weigh the same in every trade."}
+        {"The "}<strong>standard</strong>
+        {" level is the baseline: it is the most common one. Budget goes down, premium goes up, by more or less depending on the trade. The level changes the range of materials and fixtures, and also the "}
+        <strong>labour</strong>
+        {": large-format tiles or a careful paint finish take more time, whereas a blockwork wall is built the same way whatever the finish."}
       </p>
       <div className="tw">
         <table>
@@ -111,12 +115,15 @@ export default function MethodologieEN() {
             {FINITIONS_EN.map((f) => (
               <tr key={f.libelle}>
                 <td>{f.libelle}<small>{f.note}</small></td>
-                <td className="n">{f.eco}</td><td className="n">{f.std}</td><td className="n">{f.prem}</td>
+                <td className="n">{f.eco}{f.ecoPose && <small>{f.ecoPose}</small>}</td><td className="n">{f.eco === "—" ? "—" : "baseline"}</td><td className="n">{f.prem}{f.premPose && <small>{f.premPose}</small>}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      <p>
+        {"The first figure applies to the supply, the second to the labour. On the total of a full renovation, budget costs about 13 % less than standard and premium about 32 % more. For a new build the same scale applies, but the gap on the total is smaller (about −8 % and +22 %): a house also carries studies, taxes, utility connections and foundations, which the finish level does not touch."}
+      </p>
 
       <h3>2. The region</h3>
       <p>

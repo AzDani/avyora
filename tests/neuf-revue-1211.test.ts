@@ -3,7 +3,7 @@
  *
  * - n° 14 : la carte « Premium » dit vrai (parquet, WC suspendu, douche à l'italienne, colonne encastrée) ;
  *   changer la finition dans le détaillé ne touche que ces postes, et garde un choix fait à la main ;
- * - n° 66 : l'éco du neuf s'écarte vraiment du standard (écart doublé), la rénovation ne bouge pas ;
+ * - n° 66 : l'éco du neuf s'écarte vraiment du standard (depuis le 22/11/2026 par le barème commun aux deux natures) ;
  * - n° 67 et 68 : pièces par défaut et durée de chantier selon la surface ;
  * - n° 69 : la base de la provision pour aléas est dite ;
  * - n° 70 : « Enregistrer » d'un anonyme ne part pas vers l'API ;
@@ -16,7 +16,7 @@ import fs from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
-  buildDevis, catalogueDe, presetNeuf, presetMaison, key, finCoefTask, LOT_FIN, variantLabel, minusculeInitiale, ECART_ECO_NEUF,
+  buildDevis, catalogueDe, presetNeuf, presetMaison, key, finCoefTask, finCoefMO, LOT_FIN, variantLabel, minusculeInitiale,
   maisonParDefaut, dureeChantier, geometrieNeuf, maisonComplete, appliquerFinitionNeuf, defaultCtx, CATALOG, cleLegacy, statutLigne,
   type Finition, type Selection,
 } from "@/lib/estimateur";
@@ -97,27 +97,30 @@ describe("n° 14 · la carte Premium dit vrai", () => {
   });
 });
 
-describe("n° 66 · l'éco du neuf, à l'écart doublé ; la rénovation inchangée", () => {
+describe("n° 66 · l'éco du neuf s'écarte vraiment du standard (barème commun du 22/11/2026)", () => {
   it("90 m² à Bordeaux : l'éco coûte au moins 4 % de moins que le standard, le premium au moins 8 % de plus", () => {
     const eco = ttc(presetNeuf(R("eco"))), std = ttc(presetNeuf(R("standard"))), prem = ttc(presetNeuf(R("premium")));
     expect(eco / std).toBeLessThan(0.96);
     expect(prem / std).toBeGreaterThan(1.08);
   });
 
-  it("coefficients : neuf éco = standard − 2 × (standard − éco) ; rénovation et standard du neuf inchangés", () => {
-    expect(ECART_ECO_NEUF).toBe(2);
+  it("coefficients : le neuf lit le barème de la rénovation (plus d'écart doublé), fourniture et pose", () => {
     const lot = CATALOG_NEUF.find((l) => l.c === "Carrelage / Revetements")!;
     const t = lot.t.find((x) => x.id === "rev-carrelage-au-sol")!;
     const G = LOT_FIN["Carrelage / Revetements"];
-    const neuf = (finition: Finition) => finCoefTask({ ...defaultCtx(), nature: "neuf", finition }, lot, t);
-    expect(neuf("eco")).toBeCloseTo(0.56, 6);
-    expect(neuf("standard")).toBe(G.standard);
-    expect(neuf("premium")).toBe(G.premium);
-    expect(finCoefTask({ ...defaultCtx(), finition: "eco" }, lot, t)).toBe(G.eco);
-    // Un lot sans écart (G0) reste à 1 en éco du neuf.
+    for (const finition of ["eco", "standard", "premium"] as Finition[]) {
+      const neuf = { ...defaultCtx(), nature: "neuf" as const, finition }, reno = { ...defaultCtx(), finition };
+      expect(finCoefTask(neuf, lot, t)).toBe(G.four[finition]);
+      expect(finCoefMO(neuf, lot, t)).toBe(G.mo[finition]);
+      expect(finCoefTask(reno, lot, t)).toBe(G.four[finition]);
+    }
+    // L'éco du neuf descend plus bas qu'avec l'écart doublé d'avant (0,56 sur la fourniture, pose inchangée).
+    expect(G.four.eco).toBeLessThan(0.56);
+    expect(G.mo.eco).toBeLessThan(1);
+    // Un lot sans écart (G0) reste à 1 en éco du neuf, sur la fourniture comme sur la pose.
     const etu = CATALOG_NEUF.find((l) => l.c === "Etudes / Conception")!;
     expect(finCoefTask({ ...defaultCtx(), nature: "neuf", finition: "eco" }, etu, etu.t[0])).toBe(1);
-    // La rénovation chiffre comme avant : son éco garde les coefficients de LOT_FIN.
+    expect(finCoefMO({ ...defaultCtx(), nature: "neuf", finition: "premium" }, etu, etu.t[0])).toBe(1);
     const r = presetRapide({ type: "Maison", surface: 80, codePostal: "33000", ampleur: "complete", finition: "eco", qui: "pros" });
     expect(r.ctx.nature).not.toBe("neuf");
     expect(CATALOG.length).toBeGreaterThan(0);

@@ -45,11 +45,15 @@ function phraseUnites(): string {
    catalogue au lieu d'en être une copie. */
 const LOTS = CATALOG.map((l) => catT("fr", "corps", l.c));
 
+/* Le barème de finition (lib/estimateur/core.ts, `baremeDe` — barème du 22/11/2026) : écarts par rapport au
+   standard, sur la fourniture puis sur la pose. Le test `tests/finition-bareme.test.ts` relit ces chiffres. */
 const FINITIONS = [
-  { lot: "Études, démolition, location, raccordements", eco: "—", std: "—", prem: "—", note: "aucun écart : une benne coûte le même prix quelle que soit la finition" },
-  { lot: "Maçonnerie, charpente, isolation, électricité, chauffage", eco: "−17\u00a0%", std: "−12\u00a0%", prem: "référence", note: "écart faible : le technique varie peu" },
-  { lot: "Façade, cloisons, plomberie, menuiseries", eco: "−25\u00a0%", std: "−17\u00a0%", prem: "référence", note: "écart moyen" },
-  { lot: "Carrelage, peinture, cuisine", eco: "−33\u00a0%", std: "−22\u00a0%", prem: "référence", note: "écart fort : c'est là que le choix des matériaux pèse le plus" },
+  { lot: "Études, démolition, location, raccordements, terrassement, fondations", eco: "—", ecoPose: "", prem: "—", premPose: "", note: "aucun écart : une benne coûte le même prix quelle que soit la finition" },
+  { lot: "Maçonnerie, charpente, isolation, électricité, chauffage, ventilation, eau chaude", eco: "−10\u00a0%", ecoPose: "pose −3\u00a0%", prem: "+20\u00a0%", premPose: "pose +8\u00a0%", note: "écart faible : le technique varie peu" },
+  { lot: "Façade, couverture, cloisons, plomberie, portes intérieures", eco: "−20\u00a0%", ecoPose: "pose −8\u00a0%", prem: "+45\u00a0%", premPose: "pose +15\u00a0%", note: "écart moyen" },
+  { lot: "Carrelage, sols, peinture, cuisine", eco: "−35\u00a0%", ecoPose: "pose −12\u00a0%", prem: "+80\u00a0%", premPose: "pose +30\u00a0%", note: "écart fort : c'est là que la gamme et le soin de la pose pèsent le plus" },
+  { lot: "Sanitaires, baie vitrée, parquet, plan de travail", eco: "−25\u00a0%", ecoPose: "même pose", prem: "+70\u00a0%", premPose: "pose +15\u00a0%", note: "équipements à options : la gamme s'ajoute à l'option choisie (WC posé ou suspendu, bac ou douche à l'italienne…)" },
+  { lot: "Fenêtres, portes d'entrée, volets", eco: "−25\u00a0%", ecoPose: "même pose", prem: "alu", premPose: "à la place du PVC", note: "le premium passe du PVC à l'alu (≈ +67\u00a0% sur une fenêtre) ; tu peux choisir le matériau poste par poste" },
 ];
 
 const REGIONS = [
@@ -147,9 +151,11 @@ export default async function MethodologiePage() {
 
       <h3>1. Le niveau de finition</h3>
       <p>
-        Le catalogue est calé sur la finition <strong>premium</strong>, qui sert de référence. Les niveaux
-        éco et standard appliquent une décote, plus ou moins forte selon le corps d&apos;état — parce que le
-        choix des matériaux ne pèse pas du tout de la même façon selon le lot.
+        Le <strong>standard</strong>{" "}sert de référence : c&apos;est le niveau le plus courant. L&apos;éco
+        descend, le premium monte, plus ou moins fort selon le corps d&apos;état. Le niveau change la gamme des
+        matériaux et des équipements, et aussi la <strong>pose</strong>{" "}: un carrelage grand format ou une peinture
+        en finition soignée demandent plus de temps, alors qu&apos;un mur en parpaing se monte de la même façon
+        quel que soit le standing.
       </p>
       <div className="tw">
         <table>
@@ -158,16 +164,18 @@ export default async function MethodologiePage() {
             {FINITIONS.map((f) => (
               <tr key={f.lot}>
                 <td>{f.lot}<small>{f.note}</small></td>
-                <td className="n">{f.eco}</td><td className="n">{f.std}</td><td className="n">{f.prem}</td>
+                <td className="n">{f.eco}{f.ecoPose && <small>{f.ecoPose}</small>}</td><td className="n">{f.eco === "—" ? "—" : "référence"}</td><td className="n">{f.prem}{f.premPose && <small>{f.premPose}</small>}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
       <p>
-        En <strong>construction neuve</strong>, la finition éco s&apos;écarte deux fois plus du standard
-        (−22&nbsp;%, −33&nbsp;% et −44&nbsp;% au lieu de −17&nbsp;%, −25&nbsp;% et −33&nbsp;%) : le total d&apos;une
-        maison porte aussi les études, les taxes, les branchements et le gros œuvre, que la finition ne touche pas.
+        Le premier chiffre s&apos;applique à la fourniture, le second à la pose. Sur le total d&apos;une rénovation
+        complète, l&apos;éco coûte environ 13&nbsp;% de moins que le standard et le premium environ 32&nbsp;% de
+        plus. En <strong>construction neuve</strong>, le même barème s&apos;applique, mais l&apos;écart sur le total
+        est plus faible (environ −8&nbsp;% et +22&nbsp;%) : une maison porte aussi les études, les taxes, les
+        branchements et les fondations, que la finition ne touche pas.
       </p>
 
       <h3>2. La région</h3>

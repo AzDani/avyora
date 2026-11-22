@@ -114,7 +114,7 @@ const fr = {
       premium: { desc: "Parquet, carrelage grand format, douche à l'italienne, WC suspendu, fenêtres alu, cuisine haut de gamme." },
     } as Record<string, { eye?: string; desc: string }>,
     /* Sous les cartes de finition (revue du 12/11/2026, n° 14 et 66) : ce que la finition change, et ce qu'elle ne change pas. */
-    finitionNote: "La finition change les matériaux et les équipements ; les études, les taxes, les branchements et le gros œuvre restent les mêmes.",
+    finitionNote: "La finition change les matériaux, les équipements et le soin de la pose ; les études, les taxes, les branchements, le terrassement et les fondations restent les mêmes.",
     quis: {
       pros: { desc: "Un artisan pour chaque lot, avec sa garantie décennale. Tu coordonnes, ils construisent." },
       partie: { desc: "Tu prends la peinture, les sols, la plâtrerie ou l'isolation ; les artisans font le reste." },
@@ -382,7 +382,7 @@ const en: typeof fr = {
       standard: { desc: "Good value, mid-range brands. The right balance for a main home." },
       premium: { desc: "Engineered hardwood, large-format tiles, walk-in shower, wall-hung toilet, aluminum windows, high-end kitchen." },
     } as Record<string, { eye?: string; desc: string }>,
-    finitionNote: "The finish level changes materials and fixtures; studies, taxes, utility connections and the structural work stay the same.",
+    finitionNote: "The finish level changes materials, fixtures and how careful the installation is; studies, taxes, utility connections, excavation and foundations stay the same.",
     quis: {
       pros: { desc: "A tradesperson for each trade, with their 10-year warranty. You coordinate, they build." },
       partie: { desc: "You take on painting, floors, plastering or insulation; the trades do the rest." },

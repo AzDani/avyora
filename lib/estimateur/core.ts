@@ -245,14 +245,38 @@ export interface Devis { totaux: Totaux; bilan: Bilan; lots: DevisLot[]; lignes:
 // ── Constantes ────────────────────────────────────────────────────────────────
 export const PHASES = ["Préparation", "Gros œuvre & clos-couvert", "Second œuvre", "Équipements"] as const;
 
-// Niveau de finition = coefficient PAR LOT (premium = prix de base = 1,00 partout).
-// Barème par défaut (= groupe « écart fort ») pour tout lot non listé dans LOT_FIN.
-export const FINCO: Record<Finition, number> = { eco: 0.67, standard: 0.78, premium: 1 };
-const G0: Record<Finition, number> = { eco: 1, standard: 1, premium: 1 };        // aucun écart
-const G1: Record<Finition, number> = { eco: 0.83, standard: 0.88, premium: 1 };  // faible (écart +7 pts)
-const G2: Record<Finition, number> = { eco: 0.75, standard: 0.83, premium: 1 };  // moyen (écart +7 pts)
-const G3: Record<Finition, number> = { eco: 0.67, standard: 0.78, premium: 1 };  // fort (écart +7 pts)
-export const LOT_FIN: Record<string, Record<Finition, number>> = {
+// ── Niveau de finition ────────────────────────────────────────────────────────
+// Deux coefficients par poste : un sur la FOURNITURE (`sm`), un sur la MAIN-D'ŒUVRE (`fp − sm`).
+// Barème « marqué » (décision de Dani du 22/11/2026). Le STANDARD est le point fixe : l'éco descend,
+// le premium monte. Une meilleure finition demande aussi une meilleure pose : nettement sur les lots
+// de finition (carrelage, peinture, cuisine), à peine sur les lots techniques, pas du tout sur le gros
+// œuvre ni les démarches. Avant cette date, seule la fourniture variait et le premium était le prix
+// du catalogue : une salle de bain ne bougeait que de 5 % entre l'éco et le premium.
+// Les prix du catalogue ne changent pas. `std` est la part de la fourniture du catalogue que paie le
+// standard (0,88 / 0,83 / 0,78, les coefficients d'avant) : aucun prix standard ne bouge.
+export interface Bareme { four: Record<Finition, number>; mo: Record<Finition, number>; }
+const c4 = (v: number): number => Math.round(v * 1e4) / 1e4;
+/** Un barème : `std` = coefficient du standard sur la fourniture ; `four` et `mo` = [éco, premium] RELATIFS au standard. */
+const bareme = (std: number, four: [number, number], mo: [number, number]): Bareme => ({
+  four: { eco: c4(std * four[0]), standard: std, premium: c4(std * four[1]) },
+  mo: { eco: mo[0], standard: 1, premium: mo[1] },
+});
+const G0 = bareme(1, [1, 1], [1, 1]);                 // aucun écart
+const G1 = bareme(0.88, [0.90, 1.20], [0.97, 1.08]);  // faible : lots techniques
+const G2 = bareme(0.83, [0.80, 1.45], [0.92, 1.15]);  // moyen
+const G3 = bareme(0.78, [0.65, 1.80], [0.88, 1.30]);  // fort : lots de finition
+/** Barème par défaut (= groupe « écart fort ») pour tout lot non listé dans LOT_FIN. */
+export const FINCO: Bareme = G3;
+/* Postes dont une variante fait le prix (matériau, vitrage, taille, option) : le coefficient du lot ne
+   les touchait pas, leur prix du catalogue EST donc le standard (`std` = 1). Trois cas :
+   - l'équipement que l'on voit (sanitaires, baie vitrée, parquet, plan de travail) : écart fort ;
+   - l'équipement technique (chauffe-eau, VMC, climatisation, plancher chauffant) : écart faible ;
+   - la menuiserie à matériau : le premium passe déjà du PVC à l'alu (+67 % sur tout le poste), il ne
+     prend rien de plus ; seul l'éco descend. */
+export const FIN_EQUIPEMENT: Bareme = bareme(1, [0.75, 1.70], [1, 1.15]);
+export const FIN_TECHNIQUE: Bareme = bareme(1, [0.90, 1.20], [0.97, 1.08]);
+export const FIN_MATERIAU: Bareme = bareme(1, [0.75, 1], [1, 1]);
+export const LOT_FIN: Record<string, Bareme> = {
   "Etudes / Conception": G0, "Annexes de chantier": G0, "Location de matériel": G0, "Raccordements aux réseaux": G0, "Démolition": G0,
   "Maçonnerie": G1, "Charpente, couverture & structure bois": G1, "Isolation": G1, "Electricite": G1, "Chauffage / VMC": G1,
   "Façade": G2, "Cloisons / Platrerie": G2, "Plomberie": G2, "Menuiseries exterieures": G2, "Menuiseries interieures": G2,
@@ -279,39 +303,42 @@ const TOITURE_TASKS = [
   "Nettoyer / démousser la toiture",
   "Toit plat (étanchéité)",
 ];
-const TASK_FIN: Record<string, Record<Finition, number>> = {
+const TASK_FIN: Record<string, Bareme> = {
   ...Object.fromEntries(TOITURE_TASKS.map((n) => [n, G2])),
   "Dépose complète de toiture (couverture + charpente)": G0, // démolition : pas de scaling finition
 };
-/**
- * Construction neuve, finition ÉCO : l'écart avec le standard y est DOUBLÉ (revue du 12/11/2026, n° 66).
- * En neuf, le total porte aussi les études, les taxes, les branchements et le gros œuvre, que la
- * finition ne touche pas : avec l'écart de la rénovation, l'éco ne coûtait que 2 % de moins que le
- * standard. Écart doublé : 0,78 (au lieu de 0,83) pour le groupe faible, 0,67 (0,75) pour le moyen,
- * 0,56 (0,67) pour le fort ; le standard et le premium ne bougent pas, la rénovation non plus. Le
- * réglage tient dans `ECART_ECO_NEUF` (1 = l'écart de la rénovation).
- */
-export const ECART_ECO_NEUF = 2;
-const ecoNeuf = (g: Record<Finition, number>): number => Math.round((g.standard - ECART_ECO_NEUF * (g.standard - g.eco)) * 100) / 100;
-/** Le coefficient d'un barème pour le contexte (finition, et nature pour l'éco du neuf). */
-const coefBareme = (ctx: Ctx, g: Record<Finition, number>): number =>
-  ctx.finition === "eco" && ctx.nature === "neuf" ? ecoNeuf(g) : g[ctx.finition];
-/** Coefficient de finition pour un lot donné (selon le niveau choisi dans ctx). */
-export function finCoef(ctx: Ctx, corps: string): number {
-  return coefBareme(ctx, LOT_FIN[corps] ?? FINCO);
-}
 /* Un groupe de variantes ne « pilote le prix » que s'il le déplace vraiment : soit par un
    coefficient différent de 1, soit par une grille de prix exacts (le sèche-serviette). Une
    variante NEUTRE — « baie classique ou à galandage », qui ne change pas le prix de la baie mais
-   déclenche un autre poste — ne doit pas, elle, désactiver le coefficient de finition : ce serait
-   changer le prix d'un poste en lui ajoutant un simple choix. */
+   déclenche un autre poste — garde, elle, le barème de son lot : ce serait changer le prix d'un
+   poste en lui ajoutant un simple choix. */
 const varsPilotentLePrix = (t: Tache): boolean =>
   !!t.grid || !!t.vars?.some((g) => g.opts.some((o) => o.coef !== 1));
-/** Coef finition par tâche : 1 (fixe) pour les équipements à prix fixe, sinon le coef du lot. */
+/**
+ * Le barème de finition d'un poste. Un prix `fixe` et un lot sans écart ne bougent jamais ; un poste
+ * piloté par une variante prend un des trois barèmes d'équipement ; les autres prennent le barème de
+ * leur lot (ou le leur : les postes de couverture, rangés dans le lot charpente). La construction
+ * neuve lit le même barème que la rénovation : l'écart doublé de son éco (revue du 12/11/2026, n° 66)
+ * n'a plus lieu d'être, le barème du 22/11/2026 s'écarte davantage sur tous les lots.
+ */
+export function baremeDe(l: Lot, t: Tache): Bareme {
+  const lot = TASK_FIN[t.n] ?? LOT_FIN[l.c] ?? FINCO;
+  if (t.fixe || lot === G0) return G0;
+  if (t.mat) return FIN_MATERIAU;
+  if (t.vitrage || t.moto || t.taille || varsPilotentLePrix(t)) return t.taille || lot === G1 ? FIN_TECHNIQUE : FIN_EQUIPEMENT;
+  return lot;
+}
+/** Coefficient de finition d'un lot sur la FOURNITURE (selon le niveau choisi dans ctx). */
+export function finCoef(ctx: Ctx, corps: string): number {
+  return (LOT_FIN[corps] ?? FINCO).four[ctx.finition];
+}
+/** Coefficient de finition d'un poste sur la FOURNITURE. */
 export function finCoefTask(ctx: Ctx, l: Lot, t: Tache): number {
-  if (t.fixe || t.mat || t.vitrage || t.moto || t.taille || varsPilotentLePrix(t)) return 1; // fixe ou piloté par variante
-  const g = TASK_FIN[t.n];
-  return g ? coefBareme(ctx, g) : finCoef(ctx, l.c);
+  return baremeDe(l, t).four[ctx.finition];
+}
+/** Coefficient de finition d'un poste sur la MAIN-D'ŒUVRE. */
+export function finCoefMO(ctx: Ctx, l: Lot, t: Tache): number {
+  return baremeDe(l, t).mo[ctx.finition];
 }
 // ── Coefficient régional (main-d'œuvre) ───────────────────────────────────────
 // La MO varie fortement selon la région ; les matériaux sont ~nationaux (sauf outre-mer,
@@ -693,7 +720,7 @@ export function lineHT(ctx: Ctx, sel: Selection, l: Lot, t: Tache): number {
   if (!visibleTask(ctx, t)) return 0;
   const R = regCoef(ctx);
   const q = qtyOf(ctx, sel, l.c, t);
-  const fc = finCoefTask(ctx, l, t); // finition = qualité des MATÉRIAUX uniquement (la MO ne varie pas)
+  const fc = finCoefTask(ctx, l, t), fm = finCoefMO(ctx, l, t); // finition : un coefficient sur la fourniture, un sur la pose
   const { fp, sm } = effPrices(t, s, ctx);
   // Pourcentage (maîtrise d'œuvre, dommages-ouvrage) : un taux appliqué au reste du projet, qui
   // porte déjà la région et la finition — on ne les applique pas une seconde fois.
@@ -710,10 +737,11 @@ export function lineHT(ctx: Ctx, sel: Selection, l: Lot, t: Tache): number {
   }
   // Fait-faire : total perso figé (s.pu) > matériaux perso + MO d'origine (s.pm) > calcul normal.
   if (s.pu != null) return s.pu * q;
-  if (s.pm != null && fp != null && sm != null) return (s.pm + (fp - sm) * R.mo) * q;
-  // Sinon : matériaux (×mat × finition) + main-d'œuvre (×mo régional, FIXE). sm null = prestation pure → MO.
+  if (s.pm != null && fp != null && sm != null) return (s.pm + (fp - sm) * fm * R.mo) * q;
+  // Sinon : matériaux (×mat × finition) + main-d'œuvre (×mo régional × finition). sm null = prestation
+  // pure → MO seule, que la finition ne touche pas (une étude, un diagnostic, une dépose).
   if (fp == null) return 0;
-  if (sm != null) return (sm * fc * R.mat + (fp - sm) * R.mo) * q;
+  if (sm != null) return (sm * fc * R.mat + (fp - sm) * fm * R.mo) * q;
   return fp * R.mo * q;
 }
 /**
@@ -810,8 +838,8 @@ export function bilan(catalog: Lot[], ctx: Ctx, sel: Selection): Bilan {
       const { fp: fpU, sm: smU } = effPrices(t, s, ctx);
       if (fpU == null) return;
       const q = qtyOf(ctx, sel, l.c, t);
-      const fc = finCoefTask(ctx, l, t); // finition = matériaux uniquement (MO fixe)
-      const moU = smU != null ? (fpU - smU) * R.mo : fpU * R.mo; // MO unitaire (régionale)
+      const fc = finCoefTask(ctx, l, t), fm = finCoefMO(ctx, l, t); // finition : fourniture et pose
+      const moU = smU != null ? (fpU - smU) * fm * R.mo : fpU * R.mo; // MO unitaire (régionale, au niveau de finition)
       if (t.u === "pct") { const m = lineHT(ctx, sel, l, t); if (t.frais) frais += m; else { paye += m; moA += m; } return; }
       if (t.frais) { frais += (s.pu != null ? s.pu : fpU) * q; return; }
       if (isLoc(l.c)) { achat += (s.pu != null ? s.pu : fpU) * q; return; }
