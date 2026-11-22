@@ -1868,7 +1868,7 @@ const TXT_LIEU=NUAGE?{
 /* Décision de Dani (QCM du 26/09/2026) : le prix de Pro se lit à côté de « Passer Pro ». Le même que la page
    Tarifs du site (lib/i18n/dictionaries.ts, plan mensuel) — coherence.mjs l'exige ; le site peut injecter le
    sien (window.AVYORA_PRIX_PRO). Aucun prix barré, aucune promotion : seulement le prix pratiqué. */
-const PRIX_PRO=(typeof window!=='undefined'&&typeof window.AVYORA_PRIX_PRO==='string'&&window.AVYORA_PRIX_PRO)||'dès 18,85 € par mois, sans engagement';
+const PRIX_PRO=(typeof window!=='undefined'&&typeof window.AVYORA_PRIX_PRO==='string'&&window.AVYORA_PRIX_PRO)||'dès 14,99 € par mois, sans engagement';
 const prixPro=()=>`<span class="prixpro">Pro ${esc(PRIX_PRO)}</span>`;
 /* Les lignes que Pro ajoute ou change, dans l'ordre de la table ; et ce qui reste gratuit. */
 const droitsPro=()=>Object.values(DROITS).filter(d=>d.pro!==d.gratuit).map(d=>d.pro);

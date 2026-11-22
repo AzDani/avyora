@@ -50,7 +50,7 @@ export const META_EN = {
   tarifs: {
     title: "Go Pro — detailed item-by-item estimate",
     description:
-      "Unlock AVYORA's detailed estimator: 200 priced items, adjustable quantities, PDF report and saved projects. From €18.85/month, no commitment.",
+      "Unlock AVYORA's detailed estimator: 200 priced items, adjustable quantities, PDF report and saved projects. From €14.99/month, no commitment.",
     path: "/tarifs",
   },
   estimationTravaux: {

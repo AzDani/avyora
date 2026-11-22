@@ -142,7 +142,7 @@ const fr = {
     f5: "Tous tes projets au même endroit",
     f6: "Budget piloté de A à Z",
     cta: "Voir les offres Pro →",
-    rassure: "Dès 18,85 €/mois · sans engagement · résiliable en 3 clics",
+    rassure: "Dès 14,99 €/mois · sans engagement · résiliable en 3 clics",
   },
   tarifs: {
     eyebrow: "AVYORA Pro",
@@ -185,9 +185,11 @@ const fr = {
       "le suivi de chantier avec le prix de chaque tâche, et ce qui est déjà réalisé",
     ],
     plans: {
-      mensuel: { nom: "Mensuel", prix: "18,85 €", unite: "/ mois", note: "Sans engagement", tag: "" },
-      "annuel-mois": { nom: "Annuel, payé au mois", prix: "16,15 €", unite: "/ mois", note: "Engagement 12 mois", tag: "" },
-      annuel: { nom: "Annuel, payé d'un coup", prix: "169 €", unite: "/ an", note: "≈ 14,08 € / mois", tag: "Meilleur prix" },
+      /* Tarifs de lancement (décision de Dani du 22/11/2026), sans engagement de durée sur le prix : 14,99 €/mois ou
+         149 €/an (10 mois payés sur 12). L'offre « annuel payé au mois » (16,15 €) est retirée : elle n'a jamais été
+         vendue (Stripe n'a pas de durée minimale native sur un abonnement mensuel). */
+      mensuel: { nom: "Mensuel", prix: "14,99 €", unite: "/ mois", note: "Sans engagement", tag: "" },
+      annuel: { nom: "Annuel, payé d'un coup", prix: "149 €", unite: "/ an", note: "≈ 12,42 € / mois · 2 mois offerts", tag: "Meilleur prix" },
     },
     paiementBientot: "Tu préfères tester d'abord ? Alors, ",
     dejaCompteAvant: "Déjà un compte ? ",
@@ -680,7 +682,7 @@ const en: Dict = {
     f5: "All your projects in one place",
     f6: "Budget steered end to end",
     cta: "See Pro plans →",
-    rassure: "From €18.85/mo · no commitment · cancel in 3 clicks",
+    rassure: "From €14.99/mo · no commitment · cancel in 3 clicks",
   },
   tarifs: {
     eyebrow: "AVYORA Pro",
@@ -719,9 +721,8 @@ const en: Dict = {
       "site tracking with the price of each task, and what is already done",
     ],
     plans: {
-      mensuel: { nom: "Monthly", prix: "€18.85", unite: "/ month", note: "No commitment", tag: "" },
-      "annuel-mois": { nom: "Annual, billed monthly", prix: "€16.15", unite: "/ month", note: "12-month commitment", tag: "" },
-      annuel: { nom: "Annual, billed once", prix: "€169", unite: "/ year", note: "≈ €14.08 / month", tag: "Best price" },
+      mensuel: { nom: "Monthly", prix: "€14.99", unite: "/ month", note: "No commitment", tag: "" },
+      annuel: { nom: "Annual, billed once", prix: "€149", unite: "/ year", note: "≈ €12.42 / month · 2 months free", tag: "Best price" },
     },
     paiementBientot: "Prefer to try first? Just ",
     dejaCompteAvant: "Already have an account? ",

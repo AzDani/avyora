@@ -13,16 +13,17 @@ export function getStripe(): Stripe {
   return _stripe;
 }
 
-export type PlanKey = "mensuel" | "annuel-mois" | "annuel";
+/** Les offres vendues (tarifs du 22/11/2026). L'« annuel payé au mois » est retiré : il n'a jamais été vendu. */
+export type PlanKey = "mensuel" | "annuel";
 
 /** ID de tarif Stripe (price_…) pour un plan, depuis les variables d'environnement. */
 export function priceIdForPlan(plan: PlanKey): string | undefined {
   const map: Record<PlanKey, string | undefined> = {
     mensuel: process.env.STRIPE_PRICE_MENSUEL,
-    "annuel-mois": process.env.STRIPE_PRICE_ANNUEL_MENSUALISE,
     annuel: process.env.STRIPE_PRICE_ANNUEL,
   };
-  return map[plan];
+  // Une offre inconnue (retirée, ou « __proto__ » venu du client) ne trouve aucun tarif.
+  return Object.hasOwn(map, plan) ? map[plan] : undefined;
 }
 
 /* ── Résiliation à la suppression du compte (RGPD) ─────────────────────────────────────────────── */

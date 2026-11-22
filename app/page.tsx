@@ -417,7 +417,7 @@ function accueilFr(b: Beta): string {
   ].filter(Boolean);
 
   return `
-<a href="/tarifs" class="promo"><span class="dot"></span>Estimer est <b>gratuit</b> — AVYORA Pro dès 18,85 €/mois <span class="arr">· sans engagement →</span></a>
+<a href="/tarifs" class="promo"><span class="dot"></span>Estimer est <b>gratuit</b> — AVYORA Pro dès 14,99 €/mois <span class="arr">· sans engagement →</span></a>
 ${ACCUEIL_CSS}<div class="wrap"><header class="hero"><div class="in h2c"><div>
   <div class="eyebrow">Accompagnement travaux · partout en France</div>
   <h1>Un ancien chef de chantier <span class="hl">à tes côtés</span> pour tes travaux.</h1>
@@ -483,7 +483,7 @@ ${FEATURES.plans ? PLAN_BAND : ""}
     </div>
     <div class="col pro">
       <p class="nom">${b.active ? "Inclus pendant la bêta" : "Pro"}</p>
-      <p class="px">${b.active ? "0 €" : "18,85 € <small>/ mois, sans engagement</small>"}</p>
+      <p class="px">${b.active ? "0 €" : "14,99 € <small>/ mois, sans engagement</small>"}</p>
       <ul>
         ${coche("L'estimation détaillée : 200 postes et le rapport PDF")}
         ${coche("Les devis d'artisans vérifiés du Réseau AVYORA")}
@@ -522,7 +522,7 @@ function accueilEn(b: Beta): string {
   ].filter(Boolean);
 
   return `
-<a href="/tarifs" class="promo"><span class="dot"></span>Estimating is <b>free</b> — AVYORA Pro from €18.85/month <span class="arr">· no commitment →</span></a>
+<a href="/tarifs" class="promo"><span class="dot"></span>Estimating is <b>free</b> — AVYORA Pro from €14.99/month <span class="arr">· no commitment →</span></a>
 ${ACCUEIL_CSS}<div class="wrap"><header class="hero"><div class="in h2c"><div>
   <div class="eyebrow">Renovation advice · anywhere in France</div>
   <h1>A former site manager <span class="hl">by your side</span> for your project.</h1>
@@ -573,7 +573,7 @@ ${FEATURES.plans ? PLAN_BAND_EN : ""}
     </div>
     <div class="col pro">
       <p class="nom">${b.active ? "Included during the beta" : "Pro"}</p>
-      <p class="px">${b.active ? "€0" : "€18.85 <small>/ month, no commitment</small>"}</p>
+      <p class="px">${b.active ? "€0" : "€14.99 <small>/ month, no commitment</small>"}</p>
       <ul>
         ${coche("The detailed estimate: 200 line items and the PDF report")}
         ${coche("Project tracking: progress, real spending, alerts")}

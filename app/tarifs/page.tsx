@@ -18,7 +18,7 @@ import { PLANS_MAX_BETA, betaActive, dateInsecable, estMembreFondateur, libelles
 const META: Metadata = {
   title: "Passer Pro — estimation détaillée poste par poste",
   description:
-    "Débloque l'estimateur détaillé AVYORA : plus de 200 postes chiffrés, quantités ajustables, rapport PDF, projets sauvegardés. Dès 18,85 €/mois, sans engagement.",
+    "Débloque l'estimateur détaillé AVYORA : plus de 200 postes chiffrés, quantités ajustables, rapport PDF, projets sauvegardés. Dès 14,99 €/mois, sans engagement.",
   alternates: { canonical: "/tarifs" },
 };
 
@@ -45,9 +45,9 @@ export const dynamic = "force-dynamic";
 /**
  * Plans réellement en vente, dans l'ordre d'affichage.
  *
- * `annuel-mois` (engagement 12 mois facturé au mois) existe dans le dictionnaire et dans
- * lib/stripe.ts mais n'est délibérément PAS vendu : Stripe n'a pas de verrou natif « durée
- * minimale » sur un abonnement mensuel. L'entrée est conservée inutilisée, pas oubliée.
+ * L'offre `annuel-mois` (engagement 12 mois facturé au mois) n'a jamais été vendue : Stripe n'a pas de
+ * verrou natif « durée minimale » sur un abonnement mensuel. Elle est retirée le 22/11/2026, avec les
+ * tarifs de lancement (14,99 €/mois, 149 €/an).
  */
 const PLANS_AFFICHES = ["mensuel", "annuel"] as const;
 /** Plan mis en avant quand le visiteur n'en a choisi aucun. */

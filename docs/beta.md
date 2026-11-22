@@ -4,7 +4,9 @@ Décision de Dani, le 13/10/2026 : **tout AVYORA est gratuit jusqu'au 31 décemb
 
 Décision de Dani, le 12/11/2026 : **plus aucune promesse tarifaire aux membres fondateurs.** La promesse du 16/10/2026 (« un tarif préférentiel garanti à vie, annoncé avant la fin de la bêta ») est **retirée** partout (site FR et EN, CGU art. 2 bis, CGV art. 1 bis) : quand AVYORA passera payant, les inscrits de la bêta paieront le prix normal. Le statut et la pastille « Membre fondateur » restent, comme simple reconnaissance (« inscrit pendant la bêta »), **sans aucun avantage tarifaire** ; rien d'autre n'est promis à la place.
 
-Décision de Dani, le 16/10/2026 (toujours en vigueur) : **aucun chiffre pendant la bêta.** Aucun prix d'après la bêta (ni 18,85 €, ni 169 €) n'est affiché pendant la bêta : ni sur `/tarifs`, ni sur l'accueil, l'inscription, Mon compte, les CGU/CGV ou l'éditeur de plan.
+Décision de Dani, le 16/10/2026 (toujours en vigueur) : **aucun chiffre pendant la bêta.** Aucun prix d'après la bêta (ni 14,99 €, ni 149 €) n'est affiché pendant la bêta : ni sur `/tarifs`, ni sur l'accueil, l'inscription, Mon compte, les CGU/CGV ou l'éditeur de plan.
+
+Tarifs d'après la bêta (décision de Dani du 22/11/2026) : **14,99 €/mois ou 149 €/an**, sans engagement de durée sur le prix (pas « bloqué à vie »). Tarifs Stripe : mensuel `price_1UeaU1RobD71OWfDBLt9wFMJ`, annuel `price_1UeaVDRobD71OWfDq4IwqvQa` (variables `STRIPE_PRICE_MENSUEL` et `STRIPE_PRICE_ANNUEL`). L'offre « annuel payé au mois » est retirée.
 
 Source de vérité : `lib/beta.ts`. Tests : `tests/beta.test.ts`.
 
@@ -55,7 +57,7 @@ Ce que vit un inscrit non abonné ce jour-là : il redevient « gratuit ». Rien
 ### Ce qu'il faut faire ce jour-là (5 minutes)
 
 1. Ouvrir `/tarifs` sans être connecté : les offres et les boutons de paiement sont revenus, plus aucune mention de la bêta.
-2. Ouvrir `/` : le bandeau « AVYORA Pro dès 18,85 €/mois » est revenu.
+2. Ouvrir `/` : le bandeau « AVYORA Pro dès 14,99 €/mois » est revenu.
 3. Avec un compte non abonné : `/projets/nouveau/detaille` mène à `/tarifs` ; Mon compte affiche « Gratuit » et la pastille « Membre fondateur ».
 4. **Redéployer** (sans changement) : l'éditeur de plan retrouve la phrase du prix de Pro (lue au build ; une page construite pendant la bêta n'en porte aucune). Si quelque chose dit encore la bêta, ce redéploiement suffit aussi.
 5. **Supabase → Authentication → Emails → Templates**, modèles « Confirm signup » et « Magic Link » : retirer la phrase de la bêta (« Gratuit jusqu'au 31 décembre 2026 : tu deviens membre fondateur. », §6 point 1). Ces textes vivent dans Supabase : ils ne suivent pas `betaActive()` et aucun redéploiement ne les change.

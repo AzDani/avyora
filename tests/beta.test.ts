@@ -443,7 +443,7 @@ describe("Pendant la bêta, un anonyme qui touche une fonction Pro va créer son
       expect(h).not.toContain(dict("fr").boutons.redirection);
       // Pas de grille des offres de 2027 et aucun prix d'après la bêta (décision de Dani du 16/10/2026) : la promesse
       // fondateur sans chiffre, et un seul bouton « Créer mon compte gratuit ».
-      for (const prix of ["18,85", "169", "14,08", "16,15", "/ an", "/ mois", "€"]) expect(h, prix).not.toContain(prix);
+      for (const prix of ["18,85", "169", "14,08", "16,15", "14,99", "149", "12,42", "/ an", "/ mois", "€"]) expect(h, prix).not.toContain(prix);
       expect(h.split(`>${dict("fr").beta.creerCompte}</a>`).length - 1).toBe(1);
       expect(h.split('class="btn ').length - 1, "un seul bouton").toBe(1);
       expect(h).toContain(esc(dict("fr").beta.tarifsFondateurTitre));
@@ -665,8 +665,8 @@ describe("Pendant la bêta, un anonyme qui touche une fonction Pro va créer son
 /* ─── Membres fondateurs : aucun chiffre pendant la bêta ───────────────────────── */
 
 describe("Membres fondateurs : aucun prix d'après la bêta, nulle part (16/10/2026), et aucun avantage tarifaire (12/11/2026)", () => {
-  /** Un prix d'abonnement : 18,85 €, €18.85, 169 €, 14,08, 16,15, 29 €, 199 €… (le « 0 € » de la bêta n'en est pas un). */
-  const PRIX = /18[,.]85|16[,.]15|14[,.]08|\b169\b|€ ?\d|\d[\u00a0 ]?€|\/ ?mois|\/ ?month|\/ ?an\b|\/ ?year/;
+  /** Un prix d'abonnement : 14,99 €, €14.99, 149 €, 12,42 (tarifs du 22/11/2026), les anciens 18,85 €, 169 €, 14,08, 16,15, 29 €… (le « 0 € » de la bêta n'en est pas un). */
+  const PRIX = /14[,.]99|12[,.]42|\b149\b|18[,.]85|16[,.]15|14[,.]08|\b169\b|€ ?\d|\d[\u00a0 ]?€|\/ ?mois|\/ ?month|\/ ?an\b|\/ ?year/;
   /** L'ancienne promesse des membres fondateurs, retirée le 12/11/2026 (FR et EN). */
   const SANS_PROMESSE = /préférentiel|à vie|preferred rate|for life/i;
 
@@ -744,8 +744,8 @@ describe("Accueil pendant la bêta (lib/accueil-beta.ts)", () => {
       }
       // Plus d'appel à payer, aucun prix d'après la bêta (décision de Dani du 16/10/2026), et plus aucune promesse
       // tarifaire aux membres fondateurs (décision de Dani du 12/11/2026).
-      expect(pendant).not.toMatch(/AVYORA Pro|Passer Pro|Go Pro|Voir les tarifs|See pricing|dès 18,85|from €18\.85|href="\/tarifs" class="promo"/);
-      expect(pendant).not.toMatch(/18[,.]85|€ ?169|169 ?€|14[,.]08|16[,.]15/);
+      expect(pendant).not.toMatch(/AVYORA Pro|Passer Pro|Go Pro|Voir les tarifs|See pricing|dès 18,85|from €18\.85|dès 14,99|from €14\.99|href="\/tarifs" class="promo"/);
+      expect(pendant).not.toMatch(/14[,.]99|€ ?149|149 ?€|12[,.]42|18[,.]85|€ ?169|169 ?€|14[,.]08|16[,.]15/);
       expect(pendant).not.toMatch(/préférentiel|garanti à vie|preferred rate|guaranteed for life/);
       expect(pendant).toContain(locale === "fr" ? "rien n'est prélevé</b> : tu t'abonnes seulement si tu le veux" : "nothing is charged</b>: you subscribe only if you want to");
     }

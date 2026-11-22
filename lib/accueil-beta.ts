@@ -24,14 +24,14 @@ export function remplacementsAccueilBeta(locale: Locale): [string, string][] {
   if (locale === "en") {
     return [
       [
-        '<a href="/tarifs" class="promo"><span class="dot"></span>Estimating is <b>free</b> — AVYORA Pro from €18.85/month <span class="arr">· no commitment →</span></a>',
+        '<a href="/tarifs" class="promo"><span class="dot"></span>Estimating is <b>free</b> — AVYORA Pro from €14.99/month <span class="arr">· no commitment →</span></a>',
         `<a href="${inscription}" class="promo"><span style="text-align:center"><span class="dot" style="display:inline-block;vertical-align:middle;margin:0 8px 2px 0"></span><b>Free beta</b>\u00a0— all of AVYORA is free through ${fin} <span class="arr">·\u00a0create your account\u00a0→</span></span></a>`,
       ],
     ];
   }
   return [
     [
-      '<a href="/tarifs" class="promo"><span class="dot"></span>Estimer est <b>gratuit</b> — AVYORA Pro dès 18,85 €/mois <span class="arr">· sans engagement →</span></a>',
+      '<a href="/tarifs" class="promo"><span class="dot"></span>Estimer est <b>gratuit</b> — AVYORA Pro dès 14,99 €/mois <span class="arr">· sans engagement →</span></a>',
       `<a href="${inscription}" class="promo"><span style="text-align:center"><span class="dot" style="display:inline-block;vertical-align:middle;margin:0 8px 2px 0"></span><b>Bêta gratuite</b>\u00a0— tout AVYORA est offert jusqu'au ${fin} <span class="arr">·\u00a0crée ton compte\u00a0→</span></span></a>`,
     ],
   ];
