@@ -1,6 +1,7 @@
 import Link from "next/link";
 import DemandeCarte from "@/components/admin/DemandeCarte";
 import ContactRapide from "@/components/admin/ContactRapide";
+import EnLigne from "@/components/admin/EnLigne";
 import { dateCourte, messageWhatsApp, type DemandeAccompagnement, type Semaine } from "@/lib/admin/outils";
 import type { Repartition } from "@/lib/data/admin";
 
@@ -138,6 +139,7 @@ export default function TableauDeBord({ d }: { d: DonneesTableau }) {
   const c = d.chiffres;
   return (
     <div className="space-y-5" data-tableau-de-bord="">
+      <EnLigne />
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <Chiffre titre="Inscrits" valeur={c.inscrits} detail={`+${nb(c.inscrits7j)} en 7 j · +${nb(c.inscrits30j)} en 30 j`} href="/admin/inscrits" />
         <Chiffre titre="Projets estimés" valeur={c.projets} detail={`+${nb(c.projets7j)} en 7 j`} href="/admin/projets" />

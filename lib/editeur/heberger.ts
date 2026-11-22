@@ -304,7 +304,10 @@ lire(U.api+'/session').then(function(r){
 
 /** Vercel Analytics : seulement sur un déploiement Vercel (production et préversion), jamais en local. */
 function scriptAnalytics(): string {
-  return process.env.VERCEL === "1" ? '<script defer src="/_vercel/insights/script.js"></script>\n' : "";
+  // + le compteur « en ligne » de l'admin (public/presence.js, sans cookie) : l'éditeur ne passe pas par le layout du site.
+  return process.env.VERCEL === "1"
+    ? '<script defer src="/_vercel/insights/script.js"></script>\n<script defer src="/presence.js"></script>\n'
+    : "";
 }
 
 type Motif = { quoi: string; motif: string; nombre: number; par: string };

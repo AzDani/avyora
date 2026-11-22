@@ -232,7 +232,9 @@ describe("Éditeur hébergé · transformation au build", () => {
     vi.resetModules();
     vi.stubEnv("VERCEL", "1");
     out = await (await module()).editeurHeberge();
-    expect(out).toContain('<script defer src="/_vercel/insights/script.js"></script>\n<script type="text/plain" id="avyora-editeur">');
+    expect(out).toContain(
+      '<script defer src="/_vercel/insights/script.js"></script>\n<script defer src="/presence.js"></script>\n<script type="text/plain" id="avyora-editeur">',
+    );
   });
 });
 

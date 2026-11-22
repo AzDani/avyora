@@ -14,6 +14,7 @@ import SuiviClicsPlan from "@/components/plans/SuiviClicsPlan";
 import { clicPlan } from "@/lib/plans/mesure";
 import ConsentementCookies from "@/components/ConsentementCookies";
 import GererCookies from "@/components/GererCookies";
+import SignalPresence from "@/components/SignalPresence";
 import { DESCRIPTION_SITE } from "@/lib/seo-og";
 import "./globals.css";
 
@@ -262,6 +263,8 @@ export default async function RootLayout({
         </footer>
         {/* Vercel Analytics : mesure agrégée SANS cookie, exemptée de consentement (voir /cookies). */}
         <Analytics />
+        {/* Compteur « en ligne » de l'admin : un signal toutes les 30 s, sans cookie (lib/presence.ts). */}
+        <SignalPresence />
         <ConsentementCookies />
         {/* Mesure des clics vers l'éditeur de plan (C10) : une écoute, aucun rendu. */}
         {FEATURES.plans && <SuiviClicsPlan />}
