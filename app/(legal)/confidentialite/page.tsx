@@ -12,7 +12,7 @@ export default function Confidentialite() {
   return (
     <article>
       <h1>Politique de confidentialité</h1>
-      <p className="maj">Dernière mise à jour : 20 novembre 2026</p>
+      <p className="maj">Dernière mise à jour : 22 novembre 2026</p>
 
       <p>
         La présente politique décrit la manière dont AVYORA collecte et traite les données personnelles,
@@ -75,12 +75,13 @@ export default function Confidentialite() {
         <li><strong>Les artisans du Réseau AVYORA que tu choisis</strong> — ils reçoivent ta demande de devis (sans tes coordonnées)&nbsp;; ceux qui l&apos;acceptent reçoivent ton prénom, ton portable, ton e-mail et l&apos;adresse du chantier si tu l&apos;as donnée, pour te contacter, et en sont alors responsables pour leur propre compte&nbsp;;</li>
         <li><strong>Répertoire des entreprises de l&apos;État</strong> (recherche-entreprises.api.gouv.fr) — interrogé avec le SIRET d&apos;un artisan qui postule au Réseau AVYORA, pour vérifier que son établissement est actif&nbsp;;</li>
         <li><strong>Vercel Analytics</strong> — mesure d&apos;audience agrégée, sans cookie&nbsp;;</li>
+        <li><strong>Upstash</strong> — protection contre les abus (nombre de demandes par adresse IP ou par compte, sur de courtes périodes) et compteur des visiteurs en ligne, sans cookie&nbsp;: pour ce compteur, seule une empreinte non réversible, renouvelée chaque jour, est gardée, 90 secondes au plus après ta dernière page vue&nbsp;;</li>
         <li><strong>Google Ireland Limited</strong> (Gordon House, Barrow Street, Dublin 4, Irlande) — Google Ads&nbsp;: mesure des conversions et remarketing, <strong>uniquement si vous avez accepté les cookies publicitaires</strong>. Règles de Google pour ces traitements&nbsp;: <a href="https://business.safety.google/privacy/" target="_blank" rel="noopener noreferrer">business.safety.google/privacy</a>.</li>
       </ul>
 
       <h2>5. Transferts hors Union européenne</h2>
       <p>
-        Certains prestataires (notamment Vercel, Stripe et, si vous avez accepté les cookies publicitaires, Google)
+        Certains prestataires (notamment Vercel, Stripe, Upstash et, si vous avez accepté les cookies publicitaires, Google)
         peuvent traiter des données hors de l&apos;Union européenne, en particulier aux États-Unis. Ces transferts sont
         encadrés par des garanties appropriées&nbsp;: la décision d&apos;adéquation de la Commission européenne relative
         au cadre de protection des données UE–États-Unis (Data Privacy Framework) lorsque le destinataire y est
