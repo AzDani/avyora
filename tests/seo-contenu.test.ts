@@ -318,6 +318,23 @@ describe("/prix-poste : prix TTC, plus de « pour l'instant »", () => {
     if (iso) expect(iso.tva).toBe(5.5);
   });
 
+  it("posteRef donne le prix de l'estimateur, poste par poste (guides et /prix-poste alignés, 22/11/2026)", async () => {
+    const { posteRef } = await import("@/lib/seo-prix");
+    const { CATALOG, defaultCtx, key, lineHT } = await import("@/lib/estimateur");
+    let n = 0;
+    for (const l of CATALOG) for (const t of l.t) {
+      if (t.fp == null) continue;
+      const p = posteRef(t.n)!;
+      const un = (self: boolean) => lineHT(defaultCtx(), { [key(l.c, t.n)]: { on: true, manual: true, qty: 1, self } }, l, t);
+      expect(p.fp, t.n).toBe(Math.round(un(false)));
+      if (t.sm != null) expect(p.sm, t.n).toBe(Math.round(un(true)));
+      n++;
+    }
+    expect(n).toBeGreaterThan(150);
+    // Le cas qui a fait voir l'écart : 66 €/m² dans les guides, 77 €/m² dans l'estimateur.
+    expect(posteRef("Carrelage au sol")!.fp).toBe(77);
+  });
+
   it("la page corps d'état annonce du TTC, le hub ne montre plus de chantier en cours", async () => {
     const src = lire("app/prix-poste/[slug]/page.tsx");
     expect(src).not.toContain("Prix HT, fourni-posé");

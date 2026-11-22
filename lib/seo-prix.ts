@@ -1,5 +1,5 @@
 import "server-only";
-import { CATALOG, buildDevis, presetRapide, AMPLEURS, ampleurLabel, regionCoef, effPrices, effRate, finCoefTask, defaultCtx, type Ampleur, type TypeBien, type Finition } from "@/lib/estimateur";
+import { CATALOG, buildDevis, presetRapide, AMPLEURS, ampleurLabel, regionCoef, effRate, puReel, defaultCtx, type Ampleur, type TypeBien, type Finition } from "@/lib/estimateur";
 
 /**
  * `label` est le libellé NEUTRE, à garder sur les grilles qui affichent côte à côte une colonne
@@ -63,24 +63,23 @@ export const ttc = (ht: number, taux: number): number => Math.round(ht * (1 + ta
 
 /**
  * Prix de référence d'un poste du catalogue, pour les guides éditoriaux.
- * Les prix bruts du catalogue sont HT et calés sur un haut de gamme d'origine : les citer tels quels
- * surestimerait le cas courant. On applique donc le coefficient de fourniture du niveau demandé
- * (standard par défaut), lu dans le barème du moteur (`finCoefTask`) — le guide lit le catalogue.
- * À savoir : ce coefficient est appliqué ici à tout le prix posé, alors que le moteur ne l'applique
- * qu'à la fourniture ; le prix au poste d'un guide est donc un peu plus bas que celui de l'estimateur
- * (écart signalé à Dani le 22/11/2026, laissé tel quel sans sa décision).
+ * Le prix est celui que l'ESTIMATEUR compte pour une unité (`puReel`, au niveau demandé, standard par
+ * défaut, moyenne nationale) : la finition y agit sur la fourniture et sur la pose, chacune avec son
+ * coefficient. Avant le 22/11/2026, le coefficient de fourniture s'appliquait ici à tout le prix
+ * posé : un guide affichait 66 €/m² pour un carrelage que l'estimateur comptait 77 €/m².
+ * `sm` = la fourniture seule, au même niveau (le prix « Je le fais », HT).
  */
 export function posteRef(nom: string, finition: Finition = "standard"): PosteRef | null {
   for (const l of CATALOG) {
     const t = l.t.find((x) => x.n === nom);
     if (!t) continue;
     const ctx = { ...defaultCtx(), finition };
-    const { fp, sm } = effPrices(t, undefined, ctx);
-    if (fp == null) return null;
-    const c = finCoefTask(ctx, l, t);
+    if (t.fp == null) return null;
+    const fp = Math.round(puReel(ctx, {}, l, t, false));
+    const sm = t.sm == null ? null : Math.round(puReel(ctx, {}, l, t, true));
     // Même taux que l'estimateur pour ce poste confié à un artisan (sélection par défaut, logement +2 ans).
     const tva = effRate(l, t, {}, ctx);
-    return { lot: l.c, nom: t.n, unite: t.u, fp: Math.round(fp * c), sm: sm == null ? null : Math.round(sm * c), tva };
+    return { lot: l.c, nom: t.n, unite: t.u, fp, sm, tva };
   }
   return null;
 }
