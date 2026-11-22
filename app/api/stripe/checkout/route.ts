@@ -49,13 +49,20 @@ export async function POST(req: Request) {
   }
 
   const origin = new URL(req.url).origin;
-  const customerId = (user.app_metadata as { stripe_customer_id?: string } | undefined)?.stripe_customer_id;
+  let customerId = (user.app_metadata as { stripe_customer_id?: string } | undefined)?.stripe_customer_id;
 
   try {
     const stripe = getStripe();
     if (customerId) {
-      const abonnements = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 20 });
-      if (abonnements.data.some((a) => abonnementEnCours(a.status))) return dejaAbonne(req);
+      try {
+        const abonnements = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 20 });
+        if (abonnements.data.some((a) => abonnementEnCours(a.status))) return dejaAbonne(req);
+      } catch (e) {
+        // Fiche client supprimée côté Stripe (ou créée sur l'autre compte, réel ↔ bac à sable) : sans ce repli,
+        // le membre ne pourrait plus jamais payer. On repart de son e-mail ; le webhook enregistrera le nouveau client.
+        if ((e as { code?: string }).code !== "resource_missing") throw e;
+        customerId = undefined;
+      }
     }
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",

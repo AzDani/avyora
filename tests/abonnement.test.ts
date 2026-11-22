@@ -21,11 +21,14 @@ describe("/api/stripe/checkout : pas de deuxième abonnement", () => {
     vi.unstubAllEnvs();
   });
 
-  async function payer(o: { abonne?: boolean; client?: string; statuts?: string[]; locale?: string }) {
+  async function payer(o: { abonne?: boolean; client?: string; statuts?: string[]; locale?: string; erreurListe?: string }) {
     vi.resetModules();
     vi.stubEnv("NEXT_PUBLIC_BETA", "0"); // après la bêta : la route vend
     const creer = vi.fn(async () => ({ url: "https://checkout.stripe.test/s" }));
-    const lister = vi.fn(async () => ({ data: (o.statuts ?? []).map((status) => ({ status })) }));
+    const lister = vi.fn(async () => {
+      if (o.erreurListe) throw Object.assign(new Error(o.erreurListe), { code: o.erreurListe });
+      return { data: (o.statuts ?? []).map((status) => ({ status })) };
+    });
     vi.doMock("@/lib/auth", () => ({
       getUser: async () => ({ id: "u-1", email: "camille@exemple.fr", app_metadata: o.client ? { stripe_customer_id: o.client } : {} }),
       estAbonne: () => !!o.abonne,
@@ -65,5 +68,17 @@ describe("/api/stripe/checkout : pas de deuxième abonnement", () => {
     r = await payer({});
     expect(r.statut).toBe(200);
     expect(r.lister).not.toHaveBeenCalled();
+  });
+
+  it("fiche client inconnue de Stripe (supprimée, ou créée sur l'autre compte) : le paiement repart de l'e-mail (22/11/2026)", async () => {
+    let r = await payer({ client: "cus_disparu", erreurListe: "resource_missing" });
+    expect(r.statut).toBe(200);
+    const args = (r.creer.mock.calls[0] as unknown[])[0] as Record<string, unknown>;
+    expect(args.customer).toBeUndefined();
+    expect(args.customer_email).toBe("camille@exemple.fr");
+    // Une autre panne Stripe ne passe pas en silence.
+    r = await payer({ client: "cus_1", erreurListe: "api_error" });
+    expect(r.statut).toBe(500);
+    expect(r.creer).not.toHaveBeenCalled();
   });
 });
