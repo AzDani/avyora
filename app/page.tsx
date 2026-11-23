@@ -14,7 +14,7 @@ import { accueilBeta } from "@/lib/accueil-beta";
    de chantier ») ET garde l'estimation (« estimation travaux », le plus gros volume). */
 const TITRE_ACCUEIL = "AVYORA — accompagnement et estimation de travaux";
 const DESCRIPTION_ACCUEIL =
-  "Un ancien chef de chantier relit tes devis et suit ton chantier à distance. Et AVYORA estime tes travaux poste par poste, gratuitement.";
+  "Un ancien chef de chantier relit tes devis et suit ton chantier à distance. Et AVYORA chiffre tes travaux poste par poste.";
 const META: Metadata = {
   title: { absolute: TITRE_ACCUEIL },
   description: DESCRIPTION_ACCUEIL,
@@ -425,7 +425,7 @@ function accueilFr(b: Beta): string {
 ${ACCUEIL_CSS}<div class="wrap"><header class="hero"><div class="in h2c"><div>
   <div class="eyebrow">Accompagnement travaux · partout en France</div>
   <h1>Un ancien chef de chantier <span class="hl">à tes côtés</span> pour tes travaux.</h1>
-  <p class="sub">Puis chef d'entreprise, et des maisons rénovées et construites de mes mains. Je relis tes devis, je t'aide à organiser ton chantier étape par étape et je te suis chaque semaine, à distance. Et l'outil AVYORA chiffre tes travaux poste par poste, <b style="color:#fff">gratuitement</b>.</p>
+  <p class="sub">Puis chef d'entreprise, et des maisons rénovées et construites de mes mains. Je relis tes devis, je t'aide à organiser ton chantier étape par étape et je te suis chaque semaine, à distance. ${b.active ? `Et l'outil AVYORA chiffre tes travaux poste par poste, <b style="color:#fff">gratuit pendant la bêta</b>.` : `Et l'outil <b style="color:#fff">AVYORA Pro</b> chiffre tes travaux poste par poste.`}</p>
   <div class="cta">
     <a href="/accompagnement-travaux#demande" class="btn btn-p">Demander à être rappelé →</a>
     <a href="/projets/nouveau" class="btn btn-w">Estimer mes travaux gratuitement</a>
@@ -534,7 +534,7 @@ function accueilEn(b: Beta): string {
 ${ACCUEIL_CSS}<div class="wrap"><header class="hero"><div class="in h2c"><div>
   <div class="eyebrow">Renovation advice · anywhere in France</div>
   <h1>A former site manager <span class="hl">by your side</span> for your project.</h1>
-  <p class="sub">Then a business owner, with houses renovated and built with my own hands. I review your quotes, help you organise your build step by step and check in every week, remotely. And the AVYORA tool prices your project line by line, <b style="color:#fff">for free</b>.</p>
+  <p class="sub">Then a business owner, with houses renovated and built with my own hands. I review your quotes, help you organise your build step by step and check in every week, remotely. ${b.active ? `And the AVYORA tool prices your project line by line, <b style="color:#fff">free during the beta</b>.` : `And the <b style="color:#fff">AVYORA Pro</b> tool prices your project line by line.`}</p>
   <div class="cta">
     <a href="/accompagnement-travaux#demande" class="btn btn-p">Request a call-back →</a>
     <a href="/projets/nouveau" class="btn btn-w">Estimate for free</a>
