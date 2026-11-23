@@ -24,10 +24,10 @@ export const VIDEO_PRESENTATION: { src: string; poster?: string; sousTitres?: st
 
 /**
  * Photo de Daniel (fournie par Dani le 23/11/2026, « PHOTO_PRO_AVYORA_4K.jpg », métadonnées retirées) : la vignette
- * ronde (accueil, carte de la page Accompagnement, pages de services) et le portrait de « Qui je suis » (tant qu'il
+ * carrée de 80 px, cadrée large (accueil, carte de la page Accompagnement, pages de services) et le portrait de « Qui je suis » (tant qu'il
  * n'y a pas de vidéo). Jamais de photo de banque d'images.
  */
-export const PHOTO_FONDATEUR: string | null = "/accompagnement/daniel-leal-256.webp";
+export const PHOTO_FONDATEUR: string | null = "/accompagnement/daniel-leal-carre-v2-320.webp";
 export const PORTRAIT_FONDATEUR: { src: string; srcSet: string; largeur: number; hauteur: number } | null = {
   src: "/accompagnement/daniel-leal-portrait-720.webp",
   srcSet: "/accompagnement/daniel-leal-portrait-720.webp 720w, /accompagnement/daniel-leal-portrait-1080.webp 1080w",

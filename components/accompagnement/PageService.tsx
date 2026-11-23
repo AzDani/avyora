@@ -126,7 +126,7 @@ export default function PageService({ c }: { c: Contenu }) {
         <h2 id="qui" className={h2}>Qui je suis</h2>
         <div className="mt-3 flex items-start gap-4">
         {PHOTO_FONDATEUR && (
-          <img src={PHOTO_FONDATEUR} alt="" width={72} height={72} loading="lazy" className="h-[72px] w-[72px] shrink-0 rounded-full object-cover" />
+          <img src={PHOTO_FONDATEUR} alt="" width={80} height={80} loading="lazy" className="h-20 w-20 shrink-0 rounded-2xl object-cover" />
         )}
         <p className="max-w-[64ch] text-[16px] leading-relaxed text-ink">
           {`Je m'appelle Daniel Leal, fondateur d'AVYORA. ${PARCOURS_COURT} J'ai vu un chantier sous tous ses angles : l'entreprise qui exécute, le chef de chantier qui coordonne et le propriétaire qui paie.`}{" "}

@@ -130,7 +130,7 @@ export default async function AccompagnementTravaux({
           <div className="rounded-card border border-white/15 bg-white/[0.07] p-5">
             <div className="flex items-center gap-4">
               {PHOTO_FONDATEUR ? (
-                <img src={PHOTO_FONDATEUR} alt="" width={64} height={64} className="h-16 w-16 shrink-0 rounded-full object-cover ring-2 ring-white/25" />
+                <img src={PHOTO_FONDATEUR} alt="" width={80} height={80} className="h-20 w-20 shrink-0 rounded-2xl object-cover ring-2 ring-white/20" />
               ) : (
                 <span aria-hidden="true" className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-accent-300 text-xl font-semibold text-brand-900">
                   DL
