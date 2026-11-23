@@ -77,11 +77,11 @@ const fr = {
   qui: {
     h2: "Qui je suis",
     paragraphes: [
-      "Je m'appelle Daniel Leal. J'ai commencé par un BTS Bâtiment en alternance dans un grand groupe du BTP, où je suis ensuite resté 3 ans comme chef de chantier : gestion des équipes, planification des travaux, gestion des aléas. Ensuite, avec mon frère, on a monté notre propre entreprise de travaux, qu'on a dirigée 3 ans de bout en bout : le besoin du client, le devis, la planification, puis les travaux, qu'on réalisait nous-mêmes. Des projets personnels nous ont amenés à fermer la société, et c'est pour ça que je me lance aujourd'hui dans ce projet : accompagner les gens dans leurs projets immobiliers.",
-      "En parallèle, toujours avec mon frère, on a acheté deux maisons girondines, on les a rénovées entièrement de nos mains, puis revendues avec une plus-value. On a fini par un projet de construction neuve, mené de A à Z : quelques tâches sous-traitées, mais le reste aussi fait de nos mains. Huit ans à travailler presque tous les jours, avec de longues journées, sur des chantiers très différents : j'ai vu un chantier sous tous ses angles, celui de l'entreprise qui exécute, du chef de chantier qui coordonne, du propriétaire qui paie, et surtout de celui qui fait les travaux lui-même, qui les organise et les planifie. C'est ce regard complet que je t'apporte, avec ce qui fait déraper un projet : un poste oublié dans un devis, des artisans qui s'enchaînent mal, une décision prise trop tard.",
-      "J'ai créé AVYORA pour que chacun puisse chiffrer ses travaux avant de signer. L'accompagnement, c'est la suite logique : un regard de professionnel sur ton projet, au moment où tu en as besoin.",
-      // TODO Dani : décider s'il dit « je travaille depuis les États-Unis » (conseil du rapport SEO : la transparence).
-      "Je travaille à distance, en visio ou sur WhatsApp. Tu me montres, je regarde avec toi, et tu repars avec des réponses claires.",
+      "Je m'appelle Daniel Leal. J'ai commencé par un BTS Bâtiment en alternance dans un grand groupe du BTP, où je suis ensuite resté 3 ans comme chef de chantier : gestion des équipes, planification des travaux, gestion des aléas. Ensuite, avec mon frère, on a monté notre propre entreprise de travaux, qu'on a dirigée 3 ans de bout en bout : le besoin du client, le devis, la planification, puis les travaux, qu'on réalisait nous-mêmes.",
+      "À côté, toujours avec mon frère, on menait nos propres chantiers. Pendant mes années de chef de chantier, on a acheté deux maisons girondines et on a commencé à les rénover entièrement, de nos mains. On les a terminées du temps de notre société, puis revendues avec une plus-value. Toujours pendant la société, on a construit une maison neuve de A à Z, jusqu'à la dernière finition : quelques tâches sous-traitées, mais la quasi-totalité faite de nos mains.",
+      "Huit ans à travailler presque tous les jours, avec de longues journées, sur des chantiers très différents : j'ai vu un chantier sous tous ses angles, celui de l'entreprise qui exécute, du chef de chantier qui coordonne, du propriétaire qui paie, et surtout de celui qui fait les travaux lui-même, qui les organise et les planifie. Des projets personnels nous ont amenés à fermer la société, et c'est pour ça que je me lance aujourd'hui : accompagner les gens dans leurs projets immobiliers.",
+      "Ce que je t'apporte, c'est du concret. La technique : le bon choix de matériau ou de méthode, ce qu'il faut vérifier avant qu'un mur soit refermé. L'organisation : quel artisan passe avant l'autre, ce qui doit être prêt à chaque étape, et toujours ta prochaine tâche. Les erreurs qui coûtent cher sur un chantier sont presque toujours les mêmes : un poste oublié dans un devis, des artisans qui s'enchaînent mal, une décision prise trop tard. Je les connais pour les avoir vues, et corrigées, de l'autre côté. Repérée avant de signer, une erreur ne coûte rien ; découverte en plein chantier, elle se paie en reprises, en retard et en avenants.",
+      "J'ai créé AVYORA pour que chacun puisse chiffrer ses travaux avant de signer ; l'accompagnement en est la suite logique. Je travaille à distance, en visio ou sur WhatsApp : tu me montres, je regarde avec toi, et tu repars avec des réponses claires.",
     ],
     videoTitre: "Présentation de Daniel Leal, en vidéo",
     /* Le parcours, en frise (faits donnés par Dani le 16/11/2026 ; il ne veut pas nommer son ancien groupe). */
@@ -90,8 +90,17 @@ const fr = {
       { duree: "2 ans", titre: "BTS Bâtiment en alternance", texte: "Dans un grand groupe du BTP : la méthode, les normes, la vie d'un gros chantier." },
       { duree: "3 ans", titre: "Chef de chantier", texte: "Dans le même groupe : gestion des équipes, planification des travaux, gestion des aléas." },
       { duree: "3 ans", titre: "Notre entreprise de travaux", texte: "Avec mon frère : le besoin du client, le devis, la planification, puis les travaux, réalisés par nous-mêmes." },
-      { duree: "En parallèle", titre: "Mes propres projets", texte: "Toujours avec mon frère : deux maisons girondines achetées, rénovées entièrement de nos mains et revendues avec une plus-value, puis une maison neuve construite de A à Z, en grande partie de nos mains." },
+      { duree: "En parallèle", titre: "Nos propres chantiers", texte: "Avec mon frère, pendant mes années de chef de chantier puis de notre société : deux maisons girondines rénovées entièrement et revendues avec une plus-value, puis une maison neuve construite de A à Z, presque entièrement de nos mains." },
     ],
+    pourquoiTitre: "Pourquoi m'appeler avant de te lancer",
+    pourquoi: [
+      { t: "Tu évites les erreurs qui coûtent cher", s: "Celles que je vois revenir sur chaque chantier, repérées avant de signer plutôt qu'en plein chantier." },
+      { t: "Tu gagnes du temps", s: "Tu sais toujours quelle est ta prochaine étape, et quoi demander à qui." },
+      { t: "Tu négocies avec des arguments", s: "Tes devis lus poste par poste : ce qui manque, ce qui est cher, ce qui se discute." },
+      { t: "Un avis qui ne dépend que de ton intérêt", s: "Je ne vends pas de travaux et je ne touche rien des artisans." },
+    ],
+    pourquoiCta: "Demande à être rappelé, c'est gratuit",
+    pourquoiNote: "Premier appel gratuit et sans engagement : je te dis honnêtement si je peux t'être utile.",
   },
   aide: {
     h2: "Comment je peux t'aider sur ton projet",
@@ -346,10 +355,11 @@ const en: ContenuAccompagnement = {
   qui: {
     h2: "Who I am",
     paragraphes: [
-      "I'm Daniel Leal. I started with a two-year building degree (BTS Bâtiment) as a work-study student in a major construction group, where I then stayed 3 years as a site manager: managing crews, scheduling the works, handling the unexpected. Then, with my brother, we set up our own building company and ran it for 3 years, end to end: the client's needs, the quote, the schedule, then the works, which we carried out ourselves. Personal projects led us to close the company, and that's why I'm now launching this project: helping people with their property projects.",
-      "Alongside that, still with my brother, we bought two traditional Gironde houses, fully renovated them with our own hands, then sold them at a profit. We finished with a new-build project, run from start to finish: a few tasks subcontracted, but the rest also done with our own hands. Eight years of working almost every day, long days, on very different sites: I've seen a building site from every angle, that of the company doing the work, the site manager coordinating it, the owner paying for it, and above all the person doing the work themselves, organising and planning it. That complete view is what I bring you, along with what derails a project: an item missing from a quote, trades that don't follow each other properly, a decision made too late.",
-      "I created AVYORA so anyone can price their work before signing. Advice is the natural next step: a professional's eye on your project, when you need it.",
-      "I work remotely, by video call or WhatsApp. You show me, we look at it together, and you leave with clear answers.",
+      "I'm Daniel Leal. I started with a two-year building degree (BTS Bâtiment) as a work-study student in a major construction group, where I then stayed 3 years as a site manager: managing crews, scheduling the works, handling the unexpected. Then, with my brother, we set up our own building company and ran it for 3 years, end to end: the client's needs, the quote, the schedule, then the works, which we carried out ourselves.",
+      "Alongside that, still with my brother, we ran our own projects. During my years as a site manager, we bought two traditional Gironde houses and started renovating them completely, with our own hands. We finished them while we had our company, then sold them at a profit. Also during the company years, we built a new house from start to finish, down to the last detail: a few tasks subcontracted, but almost all of it done with our own hands.",
+      "Eight years of working almost every day, long days, on very different sites: I've seen a building site from every angle, that of the company doing the work, the site manager coordinating it, the owner paying for it, and above all the person doing the work themselves, organising and planning it. Personal projects led us to close the company, and that's why I'm now launching this: helping people with their property projects.",
+      "What I bring you is practical. The technical side: the right material or method, what to check before a wall is closed up. The organisation: which trade comes before which, what must be ready at each stage, and always your next task. The mistakes that cost money on a building site are almost always the same: an item missing from a quote, trades that don't follow each other properly, a decision made too late. I know them because I've seen them, and fixed them, from the other side. Spotted before you sign, a mistake costs nothing; found halfway through the works, you pay for it in rework, delays and extra charges.",
+      "I created AVYORA so anyone can price their work before signing; advice is the natural next step. I work remotely, by video call or WhatsApp: you show me, we look at it together, and you leave with clear answers.",
     ],
     videoTitre: "Daniel Leal's introduction video",
     parcoursTitre: "My background",
@@ -357,8 +367,17 @@ const en: ContenuAccompagnement = {
       { duree: "2 years", titre: "Building degree, work-study", texte: "In a major construction group: method, standards, life on a large site." },
       { duree: "3 years", titre: "Site manager", texte: "In the same group: managing crews, scheduling the works, handling the unexpected." },
       { duree: "3 years", titre: "Our building company", texte: "With my brother: the client's needs, the quote, the schedule, then the works, carried out ourselves." },
-      { duree: "Alongside", titre: "My own projects", texte: "Still with my brother: two Gironde houses bought, fully renovated with our own hands and sold at a profit, then a new house built from start to finish, mostly with our own hands." },
+      { duree: "Alongside", titre: "Our own projects", texte: "With my brother, during my site-manager years and then our company years: two Gironde houses fully renovated and sold at a profit, then a new house built from start to finish, almost entirely with our own hands." },
     ],
+    pourquoiTitre: "Why call me before you start",
+    pourquoi: [
+      { t: "You avoid costly mistakes", s: "The ones I see on every site, spotted before you sign rather than halfway through the works." },
+      { t: "You save time", s: "You always know your next step, and what to ask of whom." },
+      { t: "You negotiate with arguments", s: "Your quotes read item by item: what's missing, what's expensive, what's negotiable." },
+      { t: "Advice that only serves your interest", s: "I don't sell building work and I take nothing from contractors." },
+    ],
+    pourquoiCta: "Request a call-back, it's free",
+    pourquoiNote: "First call free, no commitment: I'll tell you honestly whether I can help.",
   },
   aide: {
     h2: "How I can help with your project",

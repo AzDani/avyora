@@ -179,6 +179,27 @@ export default async function AccompagnementTravaux({
                 </li>
               ))}
             </ol>
+            <h3 className="mt-8 text-[17px] font-semibold text-ink">{t.qui.pourquoiTitre}</h3>
+            <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+              {t.qui.pourquoi.map((x) => (
+                <li key={x.t} className="flex gap-3">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" className="mt-0.5 flex-none text-brand-700">
+                    <circle cx="10" cy="10" r="8.5" stroke="currentColor" strokeWidth="1.5" />
+                    <path d="m6.5 10.2 2.4 2.4 4.6-4.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span>
+                    <span className="block text-[15px] font-semibold leading-snug text-ink">{x.t}</span>
+                    <span className="mt-0.5 block text-[14px] leading-snug text-muted">{x.s}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2">
+              <a href="#demande" className="inline-flex min-h-11 items-center rounded-field bg-brand-600 px-5 text-[15px] font-semibold text-white no-underline transition-colors hover:bg-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600">
+                {t.qui.pourquoiCta} →
+              </a>
+              <p className="text-[13px] text-faint">{t.qui.pourquoiNote}</p>
+            </div>
           </div>
           {VIDEO_PRESENTATION && (
             <figure className="overflow-hidden rounded-card border border-line bg-surface shadow-card">
