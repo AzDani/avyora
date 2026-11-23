@@ -43,6 +43,12 @@ const siteUrl =
  */
 const descCourte = (longue: string, courte: string) => (longue.length <= 160 ? longue : courte);
 
+/**
+ * Pages ville qui affichent leur fourchette de prix dans le titre Google (23/11/2026). Search Console du 05/09 au
+ * 21/11 : l'électricité à Marseille était en position 4 avec 0 clic. Essai ciblé, à mesurer avant d'étendre.
+ */
+const TITRE_AVEC_PRIX = new Set(["renovation-electrique/marseille"]);
+
 export async function generateMetadata({ params }: { params: Promise<{ projet: string; ville: string }> }): Promise<Metadata> {
   const { projet, ville } = await params;
   const p = projetBySlug(projet);
@@ -53,10 +59,13 @@ export async function generateMetadata({ params }: { params: Promise<{ projet: s
   // `titreSeo` d'abord : dérivé de `h1`, le sujet est parfois un GROUPE VERBAL, et « Prix refaire une
   // toiture à Strasbourg » est agrammatical. Constaté sur 120 des 400 pages ville.
   const sujet = p.titreSeo ?? titreSansPrefixe(p.h1);
+  const fourchette = `${f.lo.toLocaleString("fr-FR")} à ${euro(f.hi)}`;
   return {
     ...seoMeta({
       // ≤ 60 caractères avec « · AVYORA » (sinon Google coupe) : on retire d'abord l'année, puis la marque.
-      title: titreCourt(`Prix ${sujet} à ${v.nom} (${ANNEE_PRIX})`, `Prix ${sujet} à ${v.nom}`, `Prix ${sujet} ${v.nom}`),
+      title: TITRE_AVEC_PRIX.has(`${p.slug}/${v.slug}`)
+        ? titreCourt(`Prix ${sujet} à ${v.nom} : ${fourchette}`, `Prix ${sujet} ${v.nom} : ${fourchette}`)
+        : titreCourt(`Prix ${sujet} à ${v.nom} (${ANNEE_PRIX})`, `Prix ${sujet} à ${v.nom}`, `Prix ${sujet} ${v.nom}`),
       description: descCourte(
         `Combien coûte ${p.nomQuestion ?? p.nom} à ${v.nom} ? Budget ${euro(f.lo)} à ${euro(f.hi)}, ajusté à la main-d'œuvre locale et détaillé poste par poste.`,
         `Combien coûte ${p.nomQuestion ?? p.nom} à ${v.nom} ? Budget ${euro(f.lo)} à ${euro(f.hi)}, ajusté à la main-d'œuvre locale.`,
@@ -329,6 +338,10 @@ export default async function PrixTravauxVille({ params }: { params: Promise<{ p
         })}
         <Link href={`/prix-renovation/${v.slug}`}>Prix rénovation à {v.nom} →</Link>
       </div>
+      <p className="note">
+        Faire une partie des travaux toi-même ?{" "}
+        <Link href="/guides/faire-soi-meme-ou-artisan">Ce que ça fait vraiment économiser, lot par lot</Link>.
+      </p>
     </div>
   );
 }

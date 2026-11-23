@@ -23,6 +23,12 @@ export function generateStaticParams() {
 
 const euro = (n: number) => n.toLocaleString("fr-FR") + " €";
 
+/**
+ * Villes qui affichent leur fourchette au m² dans le titre Google (23/11/2026). Search Console du 05/09 au 21/11 :
+ * Clermont-Ferrand était en position 3 avec 0 clic. Essai ciblé, à mesurer avant d'étendre.
+ */
+const TITRE_AVEC_PRIX = new Set(["clermont-ferrand"]);
+
 export async function generateMetadata({ params }: { params: Promise<{ ville: string }> }): Promise<Metadata> {
   const { ville } = await params;
   const v = villeBySlug(ville);
@@ -30,9 +36,14 @@ export async function generateMetadata({ params }: { params: Promise<{ ville: st
   const grille = prixVille(v.cp);
   const complete = grille.find((g) => g.v === "complete")?.appartM2 ?? 0;
   const zone = regionParenthese(deptInfo(v.cp));
+  // Du rafraîchissement d'appartement à la réno lourde de maison : la fourchette réelle de la grille affichée.
+  const mini = Math.min(...grille.map((g) => Math.min(g.appartM2, g.maisonM2))).toLocaleString("fr-FR");
+  const maxi = Math.max(...grille.map((g) => Math.max(g.appartM2, g.maisonM2))).toLocaleString("fr-FR");
   return seoMeta({
     // ≤ 60 caractères avec « · AVYORA » : les noms longs (Boulogne-Billancourt) perdent « — coût au m² ».
-    title: titreCourt(
+    title: TITRE_AVEC_PRIX.has(v.slug)
+      ? titreCourt(`Prix rénovation à ${v.nom} : ${mini} à ${maxi} €/m²`, `Prix rénovation ${v.nom} : ${mini} à ${maxi} €/m²`)
+      : titreCourt(
       `Prix rénovation à ${v.nom} (${ANNEE_PRIX}) — coût au m²`,
       `Prix rénovation à ${v.nom} (${ANNEE_PRIX})`,
       `Prix rénovation ${v.nom} ${ANNEE_PRIX}`,

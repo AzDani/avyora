@@ -40,6 +40,13 @@ const REGIONS = [
   { nom: "Lille", cp: "59000" },
 ];
 
+/**
+ * Pages qui affichent leur fourchette de prix dans le titre Google (23/11/2026). Search Console du 05/09 au 21/11 :
+ * la chambre était en page 1 (position 7, 170 impressions) avec un seul clic, sous un titre sans prix. Essai ciblé,
+ * pour mesurer avant d'étendre : comparer les clics de ces pages dans 3 à 4 semaines.
+ */
+const TITRE_AVEC_PRIX = new Set(["renovation-chambre"]);
+
 export async function generateMetadata({ params }: { params: Promise<{ projet: string }> }): Promise<Metadata> {
   const { projet } = await params;
   const p = projetBySlug(projet);
@@ -58,8 +65,11 @@ export async function generateMetadata({ params }: { params: Promise<{ projet: s
   const parSurf = s && s.length > 1 ? ` Barème de ${s[0]} à ${s[s.length - 1]} m².` : "";
   const sujet = p.titreSeo ?? titreSansPrefixe(p.h1);
   const A = ANNEE_PRIX;
+  const fourchette = `${f.lo.toLocaleString("fr-FR")} à ${euro(f.hi)}`;
   return seoMeta({
-    title: liste
+    title: TITRE_AVEC_PRIX.has(p.slug)
+      ? titreCourt(`Prix ${sujet} : ${fourchette} (${A})`, `Prix ${sujet} : ${fourchette}`)
+      : liste
       ? titreCourt(`Prix ${sujet} ${A} — ${liste} m²`, `Prix ${sujet} ${A} : coût moyen`, `Prix ${sujet} ${A}`)
       : titreCourt(`${p.h1.replace(` en ${A}`, "")} — coût moyen ${A}`, `Prix ${sujet} : coût moyen ${A}`, `Prix ${sujet} ${A}`),
     description: `Combien coûte ${p.nomQuestion ?? p.nom} ? Budget moyen ${euro(f.lo)} à ${euro(f.hi)}, poste par poste.${parSurf} Estimation gratuite en 2 minutes.`,
