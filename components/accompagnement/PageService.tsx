@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CHEMIN_ACCOMPAGNEMENT } from "@/lib/accompagnement/constantes";
+import { PHOTO_FONDATEUR } from "@/lib/accompagnement/contenu";
 import { PARCOURS_COURT, type PageService as Contenu } from "@/lib/accompagnement/pages-services";
 
 /**
@@ -123,10 +124,15 @@ export default function PageService({ c }: { c: Contenu }) {
       {!c.sansBio && (
       <section aria-labelledby="qui">
         <h2 id="qui" className={h2}>Qui je suis</h2>
-        <p className="mt-3 max-w-[64ch] text-[16px] leading-relaxed text-ink">
+        <div className="mt-3 flex items-start gap-4">
+        {PHOTO_FONDATEUR && (
+          <img src={PHOTO_FONDATEUR} alt="" width={72} height={72} loading="lazy" className="h-[72px] w-[72px] shrink-0 rounded-full object-cover" />
+        )}
+        <p className="max-w-[64ch] text-[16px] leading-relaxed text-ink">
           {`Je m'appelle Daniel Leal, fondateur d'AVYORA. ${PARCOURS_COURT} J'ai vu un chantier sous tous ses angles : l'entreprise qui exécute, le chef de chantier qui coordonne et le propriétaire qui paie.`}{" "}
           <Link href={CHEMIN_ACCOMPAGNEMENT} className={lienProse}>Tout l&apos;accompagnement</Link>
         </p>
+        </div>
       </section>
       )}
 

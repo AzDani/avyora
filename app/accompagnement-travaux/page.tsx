@@ -8,7 +8,7 @@ import { PRIX_MAJ, PRIX_MAJ_FR } from "@/lib/prix-maj";
 import FormulaireAccompagnement from "@/components/accompagnement/FormulaireAccompagnement";
 import { creerJeton } from "@/lib/accompagnement/jeton";
 import { CHEMIN_ACCOMPAGNEMENT, DESTINATAIRE_DEFAUT, sourceAccompagnementValide } from "@/lib/accompagnement/constantes";
-import { META_ACCOMPAGNEMENT, PHOTO_FONDATEUR, VIDEO_PRESENTATION, contenuAccompagnement } from "@/lib/accompagnement/contenu";
+import { META_ACCOMPAGNEMENT, PHOTO_FONDATEUR, PORTRAIT_FONDATEUR, VIDEO_PRESENTATION, contenuAccompagnement } from "@/lib/accompagnement/contenu";
 
 /**
  * Accompagnement travaux (décisions du fondateur du 16/11/2026) : le conseil de Daniel Leal, ancien chef de chantier
@@ -130,7 +130,7 @@ export default async function AccompagnementTravaux({
           <div className="rounded-card border border-white/15 bg-white/[0.07] p-5">
             <div className="flex items-center gap-4">
               {PHOTO_FONDATEUR ? (
-                <img src={PHOTO_FONDATEUR} alt="" width={64} height={64} className="h-16 w-16 shrink-0 rounded-full object-cover" />
+                <img src={PHOTO_FONDATEUR} alt="" width={64} height={64} className="h-16 w-16 shrink-0 rounded-full object-cover ring-2 ring-white/25" />
               ) : (
                 <span aria-hidden="true" className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-accent-300 text-xl font-semibold text-brand-900">
                   DL
@@ -155,7 +155,15 @@ export default async function AccompagnementTravaux({
 
       {/* ── Qui je suis (+ la vidéo de présentation, quand elle existera) ── */}
       <section id="qui" aria-labelledby="qui-titre" className={section}>
-        <div className={VIDEO_PRESENTATION ? "grid gap-8 lg:grid-cols-2 lg:items-center" : "max-w-3xl"}>
+        <div
+          className={
+            VIDEO_PRESENTATION
+              ? "grid gap-8 lg:grid-cols-2 lg:items-center"
+              : PORTRAIT_FONDATEUR
+                ? "grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,320px)] md:items-start lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)]"
+                : "max-w-3xl"
+          }
+        >
           <div>
             <h2 id="qui-titre" className={h2}>{t.qui.h2}</h2>
             {t.qui.paragraphes.map((p) => (
@@ -179,6 +187,24 @@ export default async function AccompagnementTravaux({
                 {VIDEO_PRESENTATION.sousTitres && <track kind="captions" src={VIDEO_PRESENTATION.sousTitres} srcLang="fr" label="Français" default />}
               </video>
               <figcaption className="px-4 py-3 text-[13px] text-faint">{t.qui.videoTitre}</figcaption>
+            </figure>
+          )}
+          {/* Le portrait, tant qu'il n'y a pas de vidéo : un visage avant le premier appel. */}
+          {!VIDEO_PRESENTATION && PORTRAIT_FONDATEUR && (
+            <figure className="order-first mx-auto w-full max-w-[320px] md:order-none md:max-w-none md:sticky md:top-24">
+              <img
+                src={PORTRAIT_FONDATEUR.src}
+                srcSet={PORTRAIT_FONDATEUR.srcSet}
+                sizes="(min-width: 1024px) 380px, (min-width: 768px) 320px, 320px"
+                width={PORTRAIT_FONDATEUR.largeur}
+                height={PORTRAIT_FONDATEUR.hauteur}
+                alt={t.carte.nom}
+                loading="lazy"
+                className="aspect-[4/5] w-full rounded-card border border-line object-cover shadow-card"
+              />
+              <figcaption className="mt-2.5 text-[13px] leading-snug text-faint">
+                <span className="font-semibold text-ink">{t.carte.nom}</span> · {t.carte.role}
+              </figcaption>
             </figure>
           )}
         </div>

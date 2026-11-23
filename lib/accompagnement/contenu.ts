@@ -23,10 +23,17 @@ import type { Besoin, TypeProjet } from "./constantes";
 export const VIDEO_PRESENTATION: { src: string; poster?: string; sousTitres?: string } | null = null;
 
 /**
- * Photo de Daniel : rien tant qu'il n'en a pas fourni une vraie (jamais de photo de banque d'images).
- * TODO Dani : déposer la photo (carrée, 400 px au moins) dans public/accompagnement/ et renseigner le chemin ici.
+ * Photo de Daniel (fournie par Dani le 23/11/2026, « PHOTO_PRO_AVYORA_4K.jpg », métadonnées retirées) : la vignette
+ * ronde (accueil, carte de la page Accompagnement, pages de services) et le portrait de « Qui je suis » (tant qu'il
+ * n'y a pas de vidéo). Jamais de photo de banque d'images.
  */
-export const PHOTO_FONDATEUR: string | null = null;
+export const PHOTO_FONDATEUR: string | null = "/accompagnement/daniel-leal-256.webp";
+export const PORTRAIT_FONDATEUR: { src: string; srcSet: string; largeur: number; hauteur: number } | null = {
+  src: "/accompagnement/daniel-leal-portrait-720.webp",
+  srcSet: "/accompagnement/daniel-leal-portrait-720.webp 720w, /accompagnement/daniel-leal-portrait-1080.webp 1080w",
+  largeur: 720,
+  hauteur: 900,
+};
 
 /** Le titre, la description et l'aperçu de partage (FR : robots ; EN : visiteur qui a choisi l'anglais). */
 export const META_ACCOMPAGNEMENT = {
@@ -71,7 +78,7 @@ const fr = {
     h2: "Qui je suis",
     paragraphes: [
       "Je m'appelle Daniel Leal. J'ai commencé par un BTS Bâtiment en alternance dans un grand groupe du BTP, puis j'ai été chef de chantier pendant 3 ans : organiser les chantiers, coordonner les corps d'état, tenir les budgets, gérer les imprévus. Ensuite, j'ai monté ma propre entreprise de travaux, que j'ai dirigée 3 ans : rénovation, aménagements extérieurs, construction de garages.",
-      "En parallèle, j'ai rénové entièrement deux maisons girondines et fait construire une maison neuve de A à Z, pour mon compte. Je suis jeune, mais j'ai vu un chantier sous tous ses angles : celui de l'entreprise qui exécute, du chef de chantier qui coordonne et du propriétaire qui paie. C'est ce regard complet que je t'apporte, avec ce qui fait déraper un projet : un poste oublié dans un devis, des artisans qui s'enchaînent mal, une décision prise trop tard.",
+      "En parallèle, j'ai rénové entièrement deux maisons girondines et fait construire une maison neuve de A à Z, pour mon compte. Huit ans à travailler presque tous les jours, avec de longues journées, sur des chantiers très différents : j'ai vu un chantier sous tous ses angles, celui de l'entreprise qui exécute, du chef de chantier qui coordonne et du propriétaire qui paie. C'est ce regard complet que je t'apporte, avec ce qui fait déraper un projet : un poste oublié dans un devis, des artisans qui s'enchaînent mal, une décision prise trop tard.",
       "J'ai créé AVYORA pour que chacun puisse chiffrer ses travaux avant de signer. L'accompagnement, c'est la suite logique : un regard de professionnel sur ton projet, au moment où tu en as besoin.",
       // TODO Dani : décider s'il dit « je travaille depuis les États-Unis » (conseil du rapport SEO : la transparence).
       "Je travaille à distance, en visio ou sur WhatsApp, l'après-midi heure de Paris. Tu me montres, je regarde avec toi, et tu repars avec des réponses claires.",
@@ -347,7 +354,7 @@ const en: ContenuAccompagnement = {
     h2: "Who I am",
     paragraphes: [
       "I'm Daniel Leal. I started with a two-year building degree (BTS Bâtiment) as a work-study student in a major construction group, then worked as a site manager for 3 years: organizing sites, coordinating trades, keeping to budgets, handling the unexpected. Then I ran my own building company for 3 years: renovations, outdoor landscaping, garage construction.",
-      "Alongside that, I fully renovated two traditional Gironde houses and had a new house built from start to finish, as the owner. I'm young, but I've seen a building site from every angle: the company doing the work, the site manager coordinating it and the owner paying for it. That complete view is what I bring you, along with what derails a project: an item missing from a quote, trades that don't follow each other properly, a decision made too late.",
+      "Alongside that, I fully renovated two traditional Gironde houses and had a new house built from start to finish, as the owner. Eight years of working almost every day, long days, on very different sites: I've seen a building site from every angle, that of the company doing the work, the site manager coordinating it and the owner paying for it. That complete view is what I bring you, along with what derails a project: an item missing from a quote, trades that don't follow each other properly, a decision made too late.",
       "I created AVYORA so anyone can price their work before signing. Advice is the natural next step: a professional's eye on your project, when you need it.",
       "I work remotely, by video call or WhatsApp, in the afternoon, Paris time. You show me, we look at it together, and you leave with clear answers.",
     ],
