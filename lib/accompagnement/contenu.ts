@@ -161,7 +161,7 @@ const fr = {
       {
         nom: "Conseiller France Rénov'",
         paie: "Personne : c'est un service public gratuit.",
-        perimetre: "La rénovation énergétique et les aides (MaPrimeRénov').",
+        perimetre: "La rénovation énergétique et les aides publiques.",
         suivi: "Information et avis, sans suivi semaine après semaine.",
         responsabilite: "Un conseil neutre, sans engagement sur ton chantier.",
       },
@@ -296,10 +296,6 @@ const fr = {
         a: "Oui, pour du conseil : on échange en visio ou sur WhatsApp, tu m'envoies photos et vidéos du chantier, et ton budget comme tes tâches sont partagés dans AVYORA.",
       },
       {
-        q: "Mon projet peut-il bénéficier de MaPrimeRénov' avec toi ?",
-        a: "Je ne suis pas Accompagnateur Rénov' agréé. Pour une rénovation d'ampleur aidée, il en faut un, et France Rénov' t'oriente gratuitement. Je peux t'aider sur tout le reste du projet.",
-      },
-      {
         q: "Faut-il un compte AVYORA pour être rappelé ?",
         a: "Non. Le formulaire suffit. Un compte sert ensuite si tu veux un suivi : c'est là qu'on partage ton budget et tes tâches.",
       },
@@ -428,7 +424,7 @@ const en: ContenuAccompagnement = {
       {
         nom: "France Rénov' advisor",
         paie: "Nobody: it's a free public service.",
-        perimetre: "Energy renovation and grants (MaPrimeRénov').",
+        perimetre: "Energy renovation and public grants.",
         suivi: "Information and advice, no week-by-week follow-up.",
         responsabilite: "Neutral advice, with no commitment on your project.",
       },
@@ -557,10 +553,6 @@ const en: ContenuAccompagnement = {
       {
         q: "Does remote advice really work?",
         a: "Yes, for advice: we talk by video or WhatsApp, you send me photos and videos of the site, and your budget and tasks are shared in AVYORA.",
-      },
-      {
-        q: "Can my project get MaPrimeRénov' with you?",
-        a: "I'm not an approved Accompagnateur Rénov'. A major subsidized renovation requires one, and France Rénov' will guide you for free. I can help you with the rest of the project.",
       },
       {
         q: "Do I need an AVYORA account to be called back?",
