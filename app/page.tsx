@@ -425,7 +425,7 @@ function accueilFr(b: Beta): string {
 ${ACCUEIL_CSS}<div class="wrap"><header class="hero"><div class="in h2c"><div>
   <div class="eyebrow">Accompagnement travaux · partout en France</div>
   <h1>Un ancien chef de chantier <span class="hl">à tes côtés</span> pour tes travaux.</h1>
-  <p class="sub">Je relis tes devis, j'organise ton chantier avec toi et je te suis chaque semaine, à distance. Et l'outil AVYORA chiffre tes travaux poste par poste, <b style="color:#fff">gratuitement</b>.</p>
+  <p class="sub">Puis chef d'entreprise, et des maisons rénovées et construites de mes mains. Je relis tes devis, je t'aide à organiser ton chantier étape par étape et je te suis chaque semaine, à distance. Et l'outil AVYORA chiffre tes travaux poste par poste, <b style="color:#fff">gratuitement</b>.</p>
   <div class="cta">
     <a href="/accompagnement-travaux#demande" class="btn btn-p">Demander à être rappelé →</a>
     <a href="/projets/nouveau" class="btn btn-w">Estimer mes travaux gratuitement</a>
@@ -534,7 +534,7 @@ function accueilEn(b: Beta): string {
 ${ACCUEIL_CSS}<div class="wrap"><header class="hero"><div class="in h2c"><div>
   <div class="eyebrow">Renovation advice · anywhere in France</div>
   <h1>A former site manager <span class="hl">by your side</span> for your project.</h1>
-  <p class="sub">I review your quotes, plan your build with you and check in every week, remotely. And the AVYORA tool prices your project line by line, <b style="color:#fff">for free</b>.</p>
+  <p class="sub">Then a business owner, with houses renovated and built with my own hands. I review your quotes, help you organise your build step by step and check in every week, remotely. And the AVYORA tool prices your project line by line, <b style="color:#fff">for free</b>.</p>
   <div class="cta">
     <a href="/accompagnement-travaux#demande" class="btn btn-p">Request a call-back →</a>
     <a href="/projets/nouveau" class="btn btn-w">Estimate for free</a>
