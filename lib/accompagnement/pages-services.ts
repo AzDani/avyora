@@ -117,7 +117,7 @@ export const SUIVI_CHANTIER: PageService = {
   pourQui: {
     titre: "Pour qui",
     items: [
-      "Les investisseurs qui rénovent un bien loin de chez eux.",
+      "Les investisseurs qui rénovent un bien pour le louer ou le revendre.",
       "Les particuliers qui coordonnent eux-mêmes plusieurs artisans, sans maître d'œuvre.",
       "Ceux qui travaillent pendant les heures du chantier et ne peuvent pas passer le voir.",
     ],
@@ -200,7 +200,7 @@ export const ACHAT_REVENTE: PageService = {
     items: [
       "Les particuliers qui achètent un bien à rénover pour le revendre.",
       "Ceux qui se lancent dans un premier achat-revente et veulent éviter les erreurs classiques.",
-      "Les investisseurs qui achètent loin de chez eux et ne peuvent pas suivre le chantier sur place.",
+      "Ceux qui gèrent eux-mêmes leurs artisans sur le chantier et veulent un regard de pro à leurs côtés.",
     ],
   },
   liste: {
@@ -230,7 +230,8 @@ export const ACHAT_REVENTE: PageService = {
   aSavoir: [
     "C'est du conseil, pas de la maîtrise d'œuvre : je ne dirige pas les artisans et je ne signe rien à ta place. Tu décides, tu signes.",
     "Je ne promets aucune plus-value : elle dépend du prix d'achat, du marché et du prix de revente. Mon rôle, c'est que les travaux ne la mangent pas.",
-    "Je ne suis pas sur place : je vois ce que montrent tes photos et tes vidéos. Si le bien demande un diagnostic sur site, je te le dis.",
+    "Je ne m'engage sur aucun délai : ce n'est pas moi qui fais les travaux. Je te préviens en revanche des risques de retard, pour que tu en tiennes compte avant d'acheter.",
+    "C'est toi qui es sur le chantier : je vois ce que montrent tes photos et tes vidéos. Si le bien demande un diagnostic sur place, je te le dis.",
   ],
   liens: [
     { href: "/estimation-travaux", label: "Estimer les travaux d'un bien gratuitement" },
@@ -247,8 +248,8 @@ export const ACHAT_REVENTE: PageService = {
       a: "D'abord ce qui rassure l'acheteur : un bien sain, sans humidité, avec une électricité et une plomberie en bon état. Ensuite ce qu'il voit en premier : la cuisine, la salle de bain, des pièces claires. Les finitions très haut de gamme coûtent souvent plus qu'elles ne rapportent.",
     },
     {
-      q: "Peut-on faire un achat-revente à distance ?",
-      a: "Oui, si le suivi est organisé : des photos des étapes clés, un point régulier, et une prochaine étape toujours claire. C'est ce que je fais avec toi, en visio et sur WhatsApp.",
+      q: "Combien de temps durent les travaux d'un achat-revente ?",
+      a: "Personne ne peut te le garantir, et je ne le fais pas : ce n'est pas moi qui réalise les travaux. Les retards viennent souvent des mêmes causes : un artisan qui n'est pas disponible, une livraison qui tarde, une mauvaise surprise à l'ouverture des murs, une décision prise trop tard. Je te préviens de ces risques pour que tu en tiennes compte avant d'acheter et dans ton projet de revente.",
     },
     {
       q: "Faut-il être marchand de biens pour faire de l'achat-revente ?",

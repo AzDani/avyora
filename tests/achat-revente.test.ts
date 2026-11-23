@@ -20,8 +20,17 @@ describe("accompagnement achat-revente", () => {
   });
 
   it("aucune promesse de gain : la page dit au contraire qu'elle n'en promet pas", () => {
-    expect(texte).not.toMatch(/garanti|assur[ée]e? de gagner|rentabilit[ée] assur/i);
+    expect(texte).not.toMatch(/(gains?|plus-values?|rentabilit[ée]|b[ée]n[ée]fices?) (garanti|assur)|assur[ée]e? de gagner/i);
     expect(ACHAT_REVENTE.aSavoir.join(" ")).toContain("Je ne promets aucune plus-value");
+  });
+
+  it("aucun délai promis (Daniel ne fait pas les travaux), et les risques de retard sont dits", () => {
+    expect(ACHAT_REVENTE.aSavoir.join(" ")).toContain("Je ne m'engage sur aucun délai : ce n'est pas moi qui fais les travaux.");
+    expect(texte).toContain("risques de retard");
+  });
+
+  it("ne vise pas les investisseurs à distance : c'est le client qui gère sur place", () => {
+    expect(texte).not.toMatch(/loin de chez eux|achat-revente à distance/i);
   });
 
   it("pas de planning dans le temps : un carnet de tâches, la prochaine étape", () => {

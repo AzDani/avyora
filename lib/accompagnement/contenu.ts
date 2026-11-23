@@ -125,7 +125,7 @@ const fr = {
         eyebrow: "Partir du bon pied",
         titre: "Plan d'attaque du chantier",
         texte:
-          "Ton chantier mis dans l'ordre : qui intervient quand, ce qui doit être prêt avant chaque étape, les points de contrôle et les risques de retard.",
+          "Ton chantier mis dans l'ordre : quel artisan passe avant l'autre, ce qui doit être prêt avant chaque étape, les points de contrôle. Je ne m'engage sur aucun délai, ce n'est pas moi qui fais les travaux, mais je te préviens de ce qui fait prendre du retard.",
         lien: { href: "/guides/ordre-travaux-renovation", label: "Dans quel ordre faire ses travaux" },
       },
       {
@@ -390,7 +390,7 @@ const en: ContenuAccompagnement = {
         id: "plan",
         eyebrow: "Start right",
         titre: "Site game plan",
-        texte: "Your project put in order: who comes in when, what must be ready before each step, the checkpoints and the risks of delay.",
+        texte: "Your project put in order: which trade goes before which, what must be ready before each step, the checkpoints. I don't commit to any timeline, since I'm not the one doing the work, but I warn you about what causes delays.",
         lien: { href: "/guides/ordre-travaux-renovation", label: "In what order to do the work (in French)" },
       },
       {
