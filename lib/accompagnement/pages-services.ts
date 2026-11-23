@@ -79,6 +79,7 @@ export const RELECTURE_DEVIS: PageService = {
     { href: "/guides/verifier-devis-travaux", label: "La méthode pour vérifier un devis toi-même" },
     { href: "/trouver-un-artisan", label: "Demander des devis à des artisans vérifiés" },
     { href: "/suivi-de-chantier", label: "Le suivi de chantier à distance" },
+    { href: "/accompagnement-achat-revente", label: "Acheter, rénover et revendre un bien" },
   ],
   faq: [
     {
@@ -154,6 +155,7 @@ export const SUIVI_CHANTIER: PageService = {
     { href: "/guides/ordre-travaux-renovation", label: "Dans quel ordre faire ses travaux" },
     { href: "/relecture-devis-travaux", label: "Faire vérifier un devis avant de signer" },
     { href: "/estimation-travaux", label: "Estimer tes travaux gratuitement" },
+    { href: "/accompagnement-achat-revente", label: "Acheter, rénover et revendre un bien" },
   ],
   faq: [
     {

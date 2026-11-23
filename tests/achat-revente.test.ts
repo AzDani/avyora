@@ -46,4 +46,13 @@ describe("accompagnement achat-revente", () => {
     expect(readFileSync(path.join(racine, "app/sitemap.ts"), "utf8")).toContain("/accompagnement-achat-revente");
     expect(ACHAT_REVENTE.chemin).toBe("/accompagnement-achat-revente");
   });
+
+  it("maillage interne : l'accueil (FR et EN), les pages voisines, deux guides, le catalogue de services", () => {
+    const racine = path.join(__dirname, "..");
+    const lire = (f: string) => readFileSync(path.join(racine, f), "utf8");
+    expect(lire("app/page.tsx").match(/accItem\(ACC_IC\.revente,[^\n]*"\/accompagnement-achat-revente"\)/g) ?? []).toHaveLength(2);
+    expect(lire("lib/accompagnement/pages-services.ts").match(/href: "\/accompagnement-achat-revente"/g) ?? []).toHaveLength(2);
+    expect(lire("app/guides/[slug]/page.tsx").match(/href="\/accompagnement-achat-revente"/g) ?? []).toHaveLength(2);
+    expect(lire("app/accompagnement-travaux/page.tsx")).toMatch(/url: `\$\{siteUrl\}\$\{s\.lien\.href\}`/);
+  });
 });

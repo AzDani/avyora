@@ -479,6 +479,14 @@ function BodyMaison() {
         </Link>.
       </p>
 
+      <h2>Une maison à rénover pour la revendre ?</h2>
+      <p>
+        Tout se joue avant l&apos;offre : chiffrer les travaux poste par poste, avec une marge pour les imprévus.{" "}
+        <Link href="/accompagnement-achat-revente" className="font-medium text-brand-600 hover:underline">
+          Fais-toi accompagner par un ancien chef de chantier qui l&apos;a fait lui-même
+        </Link>{" "}: le premier appel est gratuit.
+      </p>
+
       <Faq items={faq} />
     </>
   );
@@ -1033,7 +1041,8 @@ function BodyBudget() {
         <Link href="/methodologie">D&apos;où viennent les prix</Link> — le pendant de cette page côté
         prix unitaires, coefficients et TVA ·{" "}
         <Link href="/guides/verifier-devis-travaux">vérifier un devis de travaux</Link> ·{" "}
-        <Link href="/prix-poste">le prix de chaque corps d&apos;état</Link>
+        <Link href="/prix-poste">le prix de chaque corps d&apos;état</Link> ·{" "}
+        <Link href="/accompagnement-achat-revente">chiffrer les travaux avant d&apos;acheter pour revendre</Link>
       </p>
 
       <GuidesPratiques sauf="calculer-budget-travaux" />

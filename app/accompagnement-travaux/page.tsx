@@ -78,7 +78,7 @@ export default async function AccompagnementTravaux({
         hasOfferCatalog: {
           "@type": "OfferCatalog",
           name: t.aide.h2,
-          itemListElement: t.aide.services.slice(1).map((s) => ({ "@type": "Offer", itemOffered: { "@type": "Service", name: s.titre } })),
+          itemListElement: t.aide.services.slice(1).map((s) => ({ "@type": "Offer", itemOffered: { "@type": "Service", name: s.titre, ...(s.lien && !s.lien.href.startsWith("/guides/") ? { url: `${siteUrl}${s.lien.href}` } : {}) } })),
         },
       },
       {

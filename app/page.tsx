@@ -213,6 +213,7 @@ const ACC_IC = {
   devis: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 2.5h7l3 3v12H5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 9.5h4.5M8 12.5h4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
   plan: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 15.5 7.5 11l3 3 6.5-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 7h4v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   suivi: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 8h14M7 2.5v3M13 2.5v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="m7.5 12.3 1.7 1.7 3.3-3.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  revente: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 9.5 10 3.8l7 5.7V17H3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M10 15.5v-5M7.8 12.6 10 10.4l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   visio: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="2.5" y="5" width="10.5" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="m13 9 4.5-2.5v7L13 11" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
 };
 const accItem = (ic: string, t: string, s: string, href = "/accompagnement-travaux#aide") =>
@@ -231,6 +232,7 @@ const ACCOMP_BAND = `
   ${accItem(ACC_IC.plan, "Plan d'attaque du chantier", "Qui intervient, dans quel ordre, et les pièges à éviter.")}
   ${accItem(ACC_IC.suivi, "Suivi chaque semaine", "Les tâches de la semaine et ton budget, point par point.", "/suivi-de-chantier")}
   ${accItem(ACC_IC.visio, "Visite en visio avant achat", "Un regard de pro sur le bien avant de faire ton offre.")}
+  ${accItem(ACC_IC.revente, "Achat-revente", "Acheter, rénover, revendre : un regard de pro à chaque étape.", "/accompagnement-achat-revente")}
 </ul></section></div>`;
 const ACCOMP_BAND_EN = `
 <div class="wrap">${ACCOMP_STYLE}<section class="accb" aria-labelledby="accb-titre"><div>
@@ -244,6 +246,7 @@ const ACCOMP_BAND_EN = `
   ${accItem(ACC_IC.plan, "Site game plan", "Who comes in, in what order, and the traps to avoid.")}
   ${accItem(ACC_IC.suivi, "Weekly follow-up", "This week's tasks and your budget, point by point.")}
   ${accItem(ACC_IC.visio, "Video walkthrough before you buy", "A professional's eye on the property before you make an offer.")}
+  ${accItem(ACC_IC.revente, "Buy, renovate, resell", "A professional's eye at every step (page in French).", "/accompagnement-achat-revente")}
 </ul></section></div>`;
 
 /* Éditeur de plan (C9) : section sombre juste après le hero, insérée seulement quand FEATURES.plans est allumé (éteint :
