@@ -254,12 +254,6 @@ export default async function AccompagnementTravaux({
             </div>
           ))}
         </div>
-        <p className="mt-5 max-w-3xl rounded-card border border-line bg-surface p-4 text-[15px] leading-relaxed text-muted">
-          {t.difference.mar}{" "}
-          <a href="https://france-renov.gouv.fr" target="_blank" rel="noopener noreferrer" className={"py-2 " + lienProse}>
-            {t.difference.lienFranceRenov}
-          </a>
-        </p>
       </section>
 
       {/* ── Comment ça se passe : 3 étapes ── */}

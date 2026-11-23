@@ -47,7 +47,7 @@ export const demandeSchema = z.object({
     .min(1, "requis")
     .max(BORNES.email, "trop_long")
     .pipe(z.email("invalide")),
-  telephone: texte(BORNES.telephone).refine((s) => s === "" || telephoneValide(s), "invalide"),
+  telephone: texte(BORNES.telephone).min(1, "requis").refine((s) => s === "" || telephoneValide(s), "invalide"), // obligatoire : c'est là que Daniel rappelle (23/11/2026)
   typeProjet: z.enum(TYPES_PROJET, { error: (iss) => (iss.input === undefined ? "requis" : "invalide") }),
   besoins: z.array(z.enum(BESOINS, "invalide")).max(BESOINS.length, "invalide"),
   message: z

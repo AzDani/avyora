@@ -52,7 +52,7 @@ async function formulaire(champs: Record<string, string | string[]>, opts: { age
 const valide = (email: string, extra: Record<string, string | string[]> = {}) => ({
   prenom: "Camille",
   email,
-  telephone: "",
+  telephone: "06 12 34 56 78",
   typeProjet: "renovation",
   besoins: ["devis", "suivi"],
   message: "Cuisine à refaire, deux devis reçus.",
@@ -83,20 +83,20 @@ describe("validation de la demande (zod, serveur)", () => {
     return f;
   };
 
-  it("une demande complète passe ; téléphone, besoins et message sont facultatifs (aucun besoin = « je ne sais pas encore »)", async () => {
+  it("une demande complète passe ; besoins et message sont facultatifs (aucun besoin = « je ne sais pas encore »)", async () => {
     const { validerDemande } = await import("@/lib/accompagnement/schema");
-    const r = validerDemande(fd({ prenom: " Camille ", email: " Camille@Exemple.FR ", typeProjet: "achat" }));
+    const r = validerDemande(fd({ prenom: " Camille ", email: " Camille@Exemple.FR ", telephone: " 06 12 34 56 78 ", typeProjet: "achat" }));
     expect(r.ok).toBe(true);
     if (r.ok) {
-      expect(r.demande).toMatchObject({ prenom: "Camille", email: "camille@exemple.fr", telephone: "", typeProjet: "achat", besoins: ["nsp"], message: "" });
+      expect(r.demande).toMatchObject({ prenom: "Camille", email: "camille@exemple.fr", telephone: "06 12 34 56 78", typeProjet: "achat", besoins: ["nsp"], message: "" });
       expect(r.demande.src).toBeUndefined();
     }
   });
 
-  it("champs requis : prénom, e-mail, type de projet", async () => {
+  it("champs requis : prénom, e-mail, téléphone (c'est là que Daniel rappelle, 23/11/2026), type de projet", async () => {
     const { validerDemande } = await import("@/lib/accompagnement/schema");
     const r = validerDemande(fd({}));
-    expect(r).toEqual({ ok: false, champs: { prenom: "requis", email: "requis", typeProjet: "requis" } });
+    expect(r).toEqual({ ok: false, champs: { prenom: "requis", email: "requis", telephone: "requis", typeProjet: "requis" } });
   });
 
   it("formats et listes fermées : e-mail, prénom (lettres seulement), téléphone souple, type et besoins", async () => {
@@ -107,18 +107,18 @@ describe("validation de la demande (zod, serveur)", () => {
     expect(r).toEqual({ ok: false, champs: { prenom: "invalide", email: "invalide", telephone: "invalide", typeProjet: "invalide", besoins: "invalide" } });
     for (const t of ["06 12 34 56 78", "+33 6 12 34 56 78", "+1 (305) 555-0123", "06.12.34.56.78"]) expect(telephoneValide(t), t).toBe(true);
     for (const t of ["12345", "+33 6 12 34 56 78 90 12 34 56 78", "06 12 34 56 7a", "++33612345678"]) expect(telephoneValide(t), t).toBe(false);
-    expect(validerDemande(fd({ prenom: "Jean-François d'Arc", email: "a@b.fr", typeProjet: "neuf" })).ok).toBe(true);
-    expect(validerDemande(fd({ prenom: "Zoë", email: "a@b.fr", typeProjet: "neuf" })).ok).toBe(true);
+    expect(validerDemande(fd({ prenom: "Jean-François d'Arc", email: "a@b.fr", telephone: "0612345678", typeProjet: "neuf" })).ok).toBe(true);
+    expect(validerDemande(fd({ prenom: "Zoë", email: "a@b.fr", telephone: "0612345678", typeProjet: "neuf" })).ok).toBe(true);
     // Initiales acceptées ; un nom de domaine (rendu cliquable par les messageries dans l'accusé) refusé.
-    for (const p of ["J.-P.", "J. Paul", "Anne-Marie"]) expect(validerDemande(fd({ prenom: p, email: "a@b.fr", typeProjet: "neuf" })).ok, p).toBe(true);
+    for (const p of ["J.-P.", "J. Paul", "Anne-Marie"]) expect(validerDemande(fd({ prenom: p, email: "a@b.fr", telephone: "0612345678", typeProjet: "neuf" })).ok, p).toBe(true);
     for (const p of ["Promo casino.com", "visite monsite.fr", "Bonjour.Achetez"]) {
-      expect(validerDemande(fd({ prenom: p, email: "a@b.fr", typeProjet: "neuf" })), p).toMatchObject({ ok: false, champs: { prenom: "invalide" } });
+      expect(validerDemande(fd({ prenom: p, email: "a@b.fr", telephone: "0612345678", typeProjet: "neuf" })), p).toMatchObject({ ok: false, champs: { prenom: "invalide" } });
     }
   });
 
   it("bornes : prénom 40, e-mail 254, téléphone 30, message 1000 (retours à la ligne gardés, caractères de contrôle refusés)", async () => {
     const { validerDemande } = await import("@/lib/accompagnement/schema");
-    const base = { prenom: "Camille", email: "a@b.fr", typeProjet: "devis" };
+    const base = { prenom: "Camille", email: "a@b.fr", telephone: "0612345678", typeProjet: "devis" };
     expect(validerDemande(fd({ ...base, prenom: "A".repeat(41) }))).toMatchObject({ ok: false, champs: { prenom: "trop_long" } });
     expect(validerDemande(fd({ ...base, email: "a".repeat(250) + "@b.fr" }))).toMatchObject({ ok: false, champs: { email: "trop_long" } });
     expect(validerDemande(fd({ ...base, telephone: "0".repeat(31) }))).toMatchObject({ ok: false, champs: { telephone: "trop_long" } });
@@ -132,7 +132,7 @@ describe("validation de la demande (zod, serveur)", () => {
 
   it("la source (`src`) : liste fermée, une valeur bricolée est ignorée", async () => {
     const { validerDemande } = await import("@/lib/accompagnement/schema");
-    const base = { prenom: "Camille", email: "a@b.fr", typeProjet: "devis" };
+    const base = { prenom: "Camille", email: "a@b.fr", telephone: "0612345678", typeProjet: "devis" };
     const ok = validerDemande(fd({ ...base, src: "invest" }));
     expect(ok.ok && ok.demande.src).toBe("invest");
     const bricole = validerDemande(fd({ ...base, src: "<script>" }));
@@ -245,7 +245,7 @@ describe("demanderAccompagnement (Resend simulé)", () => {
   it("demande invalide : erreurs par champ, aucun envoi", async () => {
     neuf();
     const r = await (await action())(undefined, await formulaire({ prenom: "", email: "x", typeProjet: "renovation" }));
-    expect(r).toEqual({ statut: "erreur", champs: { prenom: "requis", email: "invalide" } });
+    expect(r).toEqual({ statut: "erreur", champs: { prenom: "requis", email: "invalide", telephone: "requis" } });
     expect(h.envoi).not.toHaveBeenCalled();
   });
 

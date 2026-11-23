@@ -165,7 +165,7 @@ export function emailDemandeAccompagnement(d: {
       ${d.source ? ligne("Arrivé par", e(d.source)) : ""}
       ${ligne("Reçue le", e(d.recueLe))}
     </table>
-    <p style="font-size:12px;color:#8a8fa8;line-height:1.6;margin:16px 0 0">Promesse faite à la personne : un rappel sous 48 h ouvrées, en visio ou WhatsApp, l'après-midi heure de Paris.</p>
+    <p style="font-size:12px;color:#8a8fa8;line-height:1.6;margin:16px 0 0">Promesse faite à la personne : un rappel sous 48 h ouvrées, au téléphone, en visio ou sur WhatsApp.</p>
   `;
   return {
     subject: `Demande d'accompagnement : ${d.prenom} · ${d.typeProjet}`,
@@ -183,7 +183,7 @@ export function emailAccuseAccompagnement(d: { prenom: string; locale: "fr" | "e
   if (d.locale === "en") {
     const corps = `
       ${P(`Hi ${e(d.prenom)}, thank you for your request.`)}
-      ${P(`<b style="color:#15172b">Daniel gets back to you within 2 business days</b>, by video call or WhatsApp, in the afternoon, Paris time. The first call is free and comes with no commitment.`)}
+      ${P(`<b style="color:#15172b">Daniel gets back to you within 2 business days</b>, by phone, video call or WhatsApp. The first call is free and comes with no commitment.`)}
       ${P("Want to add something before the call (a quote, photos, your budget)? Just reply to this email.")}
       ${bouton("See how the advice works", e(d.pageUrl))}
       <p style="font-size:12px;color:#8a8fa8;line-height:1.6;margin:16px 0 0">Advice only, with no project management assignment. Didn't make this request? You can ignore this email: nothing more will be sent.</p>
@@ -195,7 +195,7 @@ export function emailAccuseAccompagnement(d: { prenom: string; locale: "fr" | "e
   }
   const corps = `
     ${P(`Bonjour ${e(d.prenom)}, merci pour ta demande.`)}
-    ${P(`<b style="color:#15172b">Daniel te recontacte sous 48 h ouvrées</b>, en visio ou WhatsApp, l'après-midi heure de Paris. Le premier appel est gratuit et sans engagement.`)}
+    ${P(`<b style="color:#15172b">Daniel te recontacte sous 48 h ouvrées</b>, au téléphone, en visio ou sur WhatsApp. Le premier appel est gratuit et sans engagement.`)}
     ${P("Tu veux ajouter quelque chose avant l'appel (un devis, des photos, ton budget) ? Réponds simplement à cet e-mail.")}
     ${bouton("Voir comment se passe l'accompagnement", e(d.pageUrl))}
     <p style="font-size:12px;color:#8a8fa8;line-height:1.6;margin:16px 0 0">Conseil seulement, sans mission de maîtrise d'œuvre. Tu n'as pas fait cette demande ? Ignore cet e-mail : rien d'autre ne te sera envoyé.</p>

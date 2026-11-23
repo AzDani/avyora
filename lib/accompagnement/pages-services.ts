@@ -34,7 +34,7 @@ export type PageService = {
 };
 
 export const PARCOURS_COURT =
-  "BTS Bâtiment en alternance dans un grand groupe du BTP, 3 ans chef de chantier, 3 ans à la tête de ma propre entreprise de travaux, et mes propres chantiers : deux maisons rénovées entièrement et une maison neuve construite de A à Z.";
+  "BTS Bâtiment en alternance dans un grand groupe du BTP, puis 3 ans chef de chantier dans ce même groupe (équipes, planification, aléas), 3 ans à la tête de ma propre entreprise de travaux, du devis aux travaux réalisés moi-même, et mes propres chantiers : deux maisons rénovées entièrement et une maison neuve construite de A à Z.";
 
 export const RELECTURE_DEVIS: PageService = {
   chemin: "/relecture-devis-travaux",
@@ -124,7 +124,7 @@ export const SUIVI_CHANTIER: PageService = {
   liste: {
     titre: "Chaque semaine",
     items: [
-      { t: "Un point en visio ou sur WhatsApp", s: "L'après-midi, heure de Paris : on passe en revue la semaine écoulée et la suivante." },
+      { t: "Un point en visio ou sur WhatsApp", s: "On passe en revue la semaine écoulée et la suivante." },
       { t: "Les photos et vidéos du chantier", s: "Celles que toi ou l'artisan m'envoyez, surtout aux étapes qui seront ensuite cachées." },
       { t: "Les tâches et le budget à jour", s: "Dans ton suivi AVYORA : l'avancement, et tes dépenses réelles face au prévu." },
       { t: "Les décisions à prendre", s: "Les choix qui ne peuvent pas attendre, et les questions à poser aux artisans." },

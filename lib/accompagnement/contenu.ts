@@ -63,7 +63,7 @@ const fr = {
     chapo:
       "Rénovation, construction ou achat d'un bien : je t'aide à mener ton projet, à choisir les bons devis et à tenir ton budget. En visio ou sur WhatsApp. Le premier appel est gratuit.",
     cta: "Demande à être rappelé, c'est gratuit",
-    rassurance: "Rappel sous 48 h ouvrées · visio ou WhatsApp · l'après-midi, heure de Paris",
+    rassurance: "Rappel sous 48 h ouvrées · visio ou WhatsApp · sans engagement",
   },
   carte: {
     nom: "Daniel Leal",
@@ -77,19 +77,19 @@ const fr = {
   qui: {
     h2: "Qui je suis",
     paragraphes: [
-      "Je m'appelle Daniel Leal. J'ai commencé par un BTS Bâtiment en alternance dans un grand groupe du BTP, puis j'ai été chef de chantier pendant 3 ans : organiser les chantiers, coordonner les corps d'état, tenir les budgets, gérer les imprévus. Ensuite, j'ai monté ma propre entreprise de travaux, que j'ai dirigée 3 ans : rénovation, aménagements extérieurs, construction de garages.",
+      "Je m'appelle Daniel Leal. J'ai commencé par un BTS Bâtiment en alternance dans un grand groupe du BTP, où je suis ensuite resté 3 ans comme chef de chantier : gestion des équipes, planification des travaux, gestion des aléas. Ensuite, j'ai monté ma propre entreprise de travaux, que j'ai dirigée 3 ans de bout en bout : le besoin du client, le devis, la planification, puis les travaux, que je réalisais moi-même.",
       "En parallèle, j'ai rénové entièrement deux maisons girondines et fait construire une maison neuve de A à Z, pour mon compte. Huit ans à travailler presque tous les jours, avec de longues journées, sur des chantiers très différents : j'ai vu un chantier sous tous ses angles, celui de l'entreprise qui exécute, du chef de chantier qui coordonne et du propriétaire qui paie. C'est ce regard complet que je t'apporte, avec ce qui fait déraper un projet : un poste oublié dans un devis, des artisans qui s'enchaînent mal, une décision prise trop tard.",
       "J'ai créé AVYORA pour que chacun puisse chiffrer ses travaux avant de signer. L'accompagnement, c'est la suite logique : un regard de professionnel sur ton projet, au moment où tu en as besoin.",
       // TODO Dani : décider s'il dit « je travaille depuis les États-Unis » (conseil du rapport SEO : la transparence).
-      "Je travaille à distance, en visio ou sur WhatsApp, l'après-midi heure de Paris. Tu me montres, je regarde avec toi, et tu repars avec des réponses claires.",
+      "Je travaille à distance, en visio ou sur WhatsApp. Tu me montres, je regarde avec toi, et tu repars avec des réponses claires.",
     ],
     videoTitre: "Présentation de Daniel Leal, en vidéo",
     /* Le parcours, en frise (faits donnés par Dani le 16/11/2026 ; il ne veut pas nommer son ancien groupe). */
     parcoursTitre: "Mon parcours",
     parcours: [
       { duree: "2 ans", titre: "BTS Bâtiment en alternance", texte: "Dans un grand groupe du BTP : la méthode, les normes, la vie d'un gros chantier." },
-      { duree: "3 ans", titre: "Chef de chantier", texte: "Planning, coordination des corps d'état, budgets, réception des travaux." },
-      { duree: "3 ans", titre: "Ma propre entreprise de travaux", texte: "Rénovation, aménagements extérieurs, construction de garages : du devis à la livraison." },
+      { duree: "3 ans", titre: "Chef de chantier", texte: "Dans le même groupe : gestion des équipes, planification des travaux, gestion des aléas." },
+      { duree: "3 ans", titre: "Ma propre entreprise de travaux", texte: "Le besoin du client, le devis, la planification, puis les travaux, réalisés par moi-même." },
       { duree: "En parallèle", titre: "Mes propres projets", texte: "Deux maisons girondines rénovées entièrement et une maison neuve construite de A à Z." },
     ],
   },
@@ -181,15 +181,12 @@ const fr = {
         responsabilite: "Conseil seulement : tu décides, tu signes, les artisans restent responsables de leurs travaux.",
       },
     ] satisfies Acteur[],
-    mar:
-      "Ta rénovation est énergétique et tu vises MaPrimeRénov' ? Commence par France Rénov', c'est gratuit. Pour une rénovation d'ampleur aidée, il faut un Accompagnateur Rénov' agréé (MAR), et je n'en suis pas un. Pour tout le reste, ou pour être suivi pendant le chantier, je suis là.",
-    lienFranceRenov: "Le site de France Rénov'",
   },
   etapes: {
     h2: "Comment ça se passe",
     liste: [
-      { titre: "Tu remplis le formulaire", texte: "Une minute : ton prénom, ton e-mail et ton projet en quelques mots." },
-      { titre: "Je te rappelle sous 48 h ouvrées", texte: "En visio ou sur WhatsApp, l'après-midi heure de Paris. Si ton projet est déjà chiffré dans AVYORA, je le regarde avant." },
+      { titre: "Tu remplis le formulaire", texte: "Une minute : ton prénom, ton e-mail, ton téléphone et ton projet en quelques mots." },
+      { titre: "Je te rappelle sous 48 h ouvrées", texte: "Au téléphone, en visio ou sur WhatsApp. Si ton projet est déjà chiffré dans AVYORA, je le regarde avant." },
       { titre: "On voit ensemble ce qui t'est utile", texte: "Un avis ponctuel ou un suivi : le prix se discute pendant l'appel, avant tout engagement. Tu ne paies que ce qui te sert." },
     ],
   },
@@ -214,12 +211,12 @@ const fr = {
   },
   formulaire: {
     h2: "Comment puis-je t'aider ?",
-    intro: "Demande à être rappelé, c'est gratuit. Je te recontacte sous 48 h ouvrées, en visio ou sur WhatsApp, l'après-midi heure de Paris.",
+    intro: "Demande à être rappelé, c'est gratuit. Je te recontacte sous 48 h ouvrées, au téléphone, en visio ou sur WhatsApp.",
     prenom: "Prénom",
     email: "E-mail",
     telephone: "Téléphone",
     facultatif: "facultatif",
-    telephoneAide: "Pour un rappel sur WhatsApp. Hors de France, ajoute l'indicatif (+33…).",
+    telephoneAide: "Pour te rappeler, au téléphone ou sur WhatsApp. Hors de France, ajoute l'indicatif (+33…).",
     typeProjet: "Ton projet",
     types: {
       renovation: "Rénovation",
@@ -250,7 +247,7 @@ const fr = {
     erreurs: {
       prenom: { requis: "Indique ton prénom.", invalide: "Ton prénom ne doit contenir que des lettres.", trop_long: "Ton prénom est trop long." },
       email: { requis: "Indique ton e-mail.", invalide: "Cette adresse e-mail n'est pas valide. Vérifie-la.", trop_long: "Cette adresse e-mail est trop longue." },
-      telephone: { requis: "", invalide: "Ce numéro n'est pas valide : des chiffres, avec l'indicatif si besoin.", trop_long: "Ce numéro est trop long." },
+      telephone: { requis: "Indique ton numéro : c'est là que je te rappelle.", invalide: "Ce numéro n'est pas valide : des chiffres, avec l'indicatif si besoin.", trop_long: "Ce numéro est trop long." },
       typeProjet: { requis: "Choisis le type de ton projet.", invalide: "Choisis le type de ton projet.", trop_long: "" },
       besoins: { requis: "", invalide: "Choisis parmi les besoins proposés.", trop_long: "" },
       message: { requis: "", invalide: "Ton message contient des caractères non acceptés.", trop_long: "Ton message est trop long." },
@@ -265,7 +262,7 @@ const fr = {
     succesTitre: "C'est envoyé, merci {prenom} !",
     succesTitreSansPrenom: "C'est envoyé, merci !",
     succesTexte:
-      "Je te recontacte sous 48 h ouvrées, en visio ou sur WhatsApp, l'après-midi heure de Paris. Un e-mail de confirmation est en route : pense à regarder dans tes indésirables.",
+      "Je te recontacte sous 48 h ouvrées, au téléphone, en visio ou sur WhatsApp. Un e-mail de confirmation est en route : pense à regarder dans tes indésirables.",
   },
   faq: {
     h2: "Questions fréquentes",
@@ -296,7 +293,7 @@ const fr = {
       },
       {
         q: "Un accompagnement à distance, ça marche vraiment ?",
-        a: "Oui, pour du conseil : on échange en visio ou sur WhatsApp, tu m'envoies photos et vidéos du chantier, et ton budget comme tes tâches sont partagés dans AVYORA. Les appels ont lieu l'après-midi, heure de Paris.",
+        a: "Oui, pour du conseil : on échange en visio ou sur WhatsApp, tu m'envoies photos et vidéos du chantier, et ton budget comme tes tâches sont partagés dans AVYORA.",
       },
       {
         q: "Mon projet peut-il bénéficier de MaPrimeRénov' avec toi ?",
@@ -339,7 +336,7 @@ const en: ContenuAccompagnement = {
     chapo:
       "Renovating, building or buying a property: I help you run your project, pick the right quotes and keep to your budget. By video call or WhatsApp. The first call is free.",
     cta: "Request a free call-back",
-    rassurance: "Call-back within 2 business days · video or WhatsApp · afternoons, Paris time",
+    rassurance: "Call-back within 2 business days · video or WhatsApp · no commitment",
   },
   carte: {
     nom: "Daniel Leal",
@@ -353,17 +350,17 @@ const en: ContenuAccompagnement = {
   qui: {
     h2: "Who I am",
     paragraphes: [
-      "I'm Daniel Leal. I started with a two-year building degree (BTS Bâtiment) as a work-study student in a major construction group, then worked as a site manager for 3 years: organizing sites, coordinating trades, keeping to budgets, handling the unexpected. Then I ran my own building company for 3 years: renovations, outdoor landscaping, garage construction.",
+      "I'm Daniel Leal. I started with a two-year building degree (BTS Bâtiment) as a work-study student in a major construction group, where I then stayed 3 years as a site manager: managing crews, scheduling the works, handling the unexpected. Then I ran my own building company for 3 years, end to end: the client's needs, the quote, the schedule, then the works, which I carried out myself.",
       "Alongside that, I fully renovated two traditional Gironde houses and had a new house built from start to finish, as the owner. Eight years of working almost every day, long days, on very different sites: I've seen a building site from every angle, that of the company doing the work, the site manager coordinating it and the owner paying for it. That complete view is what I bring you, along with what derails a project: an item missing from a quote, trades that don't follow each other properly, a decision made too late.",
       "I created AVYORA so anyone can price their work before signing. Advice is the natural next step: a professional's eye on your project, when you need it.",
-      "I work remotely, by video call or WhatsApp, in the afternoon, Paris time. You show me, we look at it together, and you leave with clear answers.",
+      "I work remotely, by video call or WhatsApp. You show me, we look at it together, and you leave with clear answers.",
     ],
     videoTitre: "Daniel Leal's introduction video",
     parcoursTitre: "My background",
     parcours: [
       { duree: "2 years", titre: "Building degree, work-study", texte: "In a major construction group: method, standards, life on a large site." },
-      { duree: "3 years", titre: "Site manager", texte: "Scheduling, coordinating trades, budgets, handover of the works." },
-      { duree: "3 years", titre: "My own building company", texte: "Renovations, outdoor landscaping, garage construction: from quote to handover." },
+      { duree: "3 years", titre: "Site manager", texte: "In the same group: managing crews, scheduling the works, handling the unexpected." },
+      { duree: "3 years", titre: "My own building company", texte: "The client's needs, the quote, the schedule, then the works, carried out myself." },
       { duree: "Alongside", titre: "My own projects", texte: "Two Gironde houses fully renovated and a new house built from start to finish." },
     ],
   },
@@ -451,15 +448,12 @@ const en: ContenuAccompagnement = {
         responsabilite: "Advice only: you decide, you sign, contractors remain liable for their work.",
       },
     ],
-    mar:
-      "Is your renovation about energy and you're aiming for MaPrimeRénov'? Start with France Rénov', it's free. A major subsidized renovation requires an approved Accompagnateur Rénov' (MAR), and I'm not one. For everything else, or to be followed during the work, I'm here.",
-    lienFranceRenov: "The France Rénov' website",
   },
   etapes: {
     h2: "How it works",
     liste: [
       { titre: "You fill in the form", texte: "One minute: your first name, your email and your project in a few words." },
-      { titre: "I call you back within 2 business days", texte: "By video or WhatsApp, in the afternoon, Paris time. If your project is already priced in AVYORA, I look at it first." },
+      { titre: "I call you back within 2 business days", texte: "By phone, video or WhatsApp. If your project is already priced in AVYORA, I look at it first." },
       { titre: "We see together what will help you", texte: "A one-off opinion or ongoing follow-up: the price is discussed during the call, before any commitment. You only pay for what you need." },
     ],
   },
@@ -480,12 +474,12 @@ const en: ContenuAccompagnement = {
   },
   formulaire: {
     h2: "How can I help you?",
-    intro: "Request a call-back, it's free. I get back to you within 2 business days, by video or WhatsApp, in the afternoon, Paris time.",
+    intro: "Request a call-back, it's free. I get back to you within 2 business days, by phone, video or WhatsApp.",
     prenom: "First name",
     email: "Email",
     telephone: "Phone",
     facultatif: "optional",
-    telephoneAide: "For a WhatsApp call-back. Include your country code (+1…).",
+    telephoneAide: "So I can call you back, by phone or WhatsApp. Include your country code (+1…).",
     typeProjet: "Your project",
     types: {
       renovation: "Renovation",
@@ -516,7 +510,7 @@ const en: ContenuAccompagnement = {
     erreurs: {
       prenom: { requis: "Enter your first name.", invalide: "Your first name should only contain letters.", trop_long: "Your first name is too long." },
       email: { requis: "Enter your email.", invalide: "This email address isn't valid. Please check it.", trop_long: "This email address is too long." },
-      telephone: { requis: "", invalide: "This number isn't valid: digits, with the country code if needed.", trop_long: "This number is too long." },
+      telephone: { requis: "Enter your phone number: that's where I call you back.", invalide: "This number isn't valid: digits, with the country code if needed.", trop_long: "This number is too long." },
       typeProjet: { requis: "Choose your type of project.", invalide: "Choose your type of project.", trop_long: "" },
       besoins: { requis: "", invalide: "Choose among the needs offered.", trop_long: "" },
       message: { requis: "", invalide: "Your message contains characters that aren't accepted.", trop_long: "Your message is too long." },
@@ -531,7 +525,7 @@ const en: ContenuAccompagnement = {
     succesTitre: "Sent, thank you {prenom}!",
     succesTitreSansPrenom: "Sent, thank you!",
     succesTexte:
-      "I'll get back to you within 2 business days, by video or WhatsApp, in the afternoon, Paris time. A confirmation email is on its way: check your spam folder.",
+      "I'll get back to you within 2 business days, by phone, video or WhatsApp. A confirmation email is on its way: check your spam folder.",
   },
   faq: {
     h2: "Frequently asked questions",
@@ -562,7 +556,7 @@ const en: ContenuAccompagnement = {
       },
       {
         q: "Does remote advice really work?",
-        a: "Yes, for advice: we talk by video or WhatsApp, you send me photos and videos of the site, and your budget and tasks are shared in AVYORA. Calls take place in the afternoon, Paris time.",
+        a: "Yes, for advice: we talk by video or WhatsApp, you send me photos and videos of the site, and your budget and tasks are shared in AVYORA.",
       },
       {
         q: "Can my project get MaPrimeRénov' with you?",

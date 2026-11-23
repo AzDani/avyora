@@ -149,9 +149,9 @@ export default function FormulaireAccompagnement({ t, jeton, src }: { t: TextesF
       </div>
 
       <div>
-        <label htmlFor="acc-telephone" className="field-label">{t.telephone}{facultatif}</label>
+        <label htmlFor="acc-telephone" className="field-label">{t.telephone}</label>
         <input
-          id="acc-telephone" name="telephone" type="tel" inputMode="tel" autoComplete="tel" maxLength={BORNES.telephone}
+          id="acc-telephone" name="telephone" type="tel" inputMode="tel" autoComplete="tel" required maxLength={BORNES.telephone}
           data-champ="telephone" className="input min-h-11 sm:max-w-xs" onInput={surSaisie("telephone")}
           aria-invalid={erreur("telephone") ? true : undefined} aria-describedby={decrit("acc-tel-aide", erreur("telephone") && idErr("telephone"))}
         />
