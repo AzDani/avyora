@@ -149,7 +149,7 @@ const fr = {
         titre: "Visite en visio avant achat",
         texte:
           "Tu filmes le bien pendant la visite, je repère les travaux à prévoir et on chiffre une enveloppe avant que tu fasses ton offre. J'ai moi-même acheté, rénové et revendu des maisons avec une plus-value : je regarde ton bien avec l'œil de celui qui doit le revendre.",
-        lien: { href: "/estimation-travaux", label: "Estimer les travaux gratuitement" },
+        lien: { href: "/accompagnement-achat-revente", label: "L'accompagnement achat-revente en détail" },
       },
     ] satisfies Service[],
   },
@@ -412,7 +412,7 @@ const en: ContenuAccompagnement = {
         eyebrow: "For investors",
         titre: "Video walkthrough before you buy",
         texte: "You film the property during the visit, I spot the work to plan and we price a budget before you make your offer. I've bought, renovated and sold houses at a profit myself: I look at your property through the eyes of someone who has to sell it on.",
-        lien: { href: "/estimation-travaux", label: "Estimate the work for free" },
+        lien: { href: "/accompagnement-achat-revente", label: "Buy, renovate, resell support (in French)" },
       },
     ],
   },

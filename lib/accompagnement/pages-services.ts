@@ -1,6 +1,7 @@
 /**
- * Les deux pages de service de l'accompagnement (référencement du 20/11/2026), chacune taillée pour une recherche à
- * forte intention : « faire vérifier un devis de travaux » et « suivi de chantier à distance ». Mêmes règles que la
+ * Les pages de service de l'accompagnement (référencement du 20/11/2026), chacune taillée pour une recherche à
+ * forte intention : « faire vérifier un devis de travaux », « suivi de chantier à distance », et depuis le 23/11/2026
+ * « achat-revente ». Mêmes règles que la
  * page /accompagnement-travaux (lib/accompagnement/contenu.ts) : tutoiement, première personne (Daniel), AUCUN prix
  * (le tarif s'annonce pendant l'appel), aucun chiffre inventé, du conseil et non de la maîtrise d'œuvre, dit clairement.
  * Les questions de la FAQ sont formulées autrement que celles de /accompagnement-travaux (pas de doublon d'une page à
@@ -174,6 +175,88 @@ export const SUIVI_CHANTIER: PageService = {
     {
       q: "Combien coûte un suivi de chantier à distance ?",
       a: "Le premier appel est gratuit. Le tarif dépend de la durée du chantier et du rythme du suivi : je te l'annonce pendant l'appel, avant tout engagement.",
+    },
+  ],
+};
+
+/**
+ * Achat-revente (décision de Dani du 23/11/2026) : la page de service pour ceux qui achètent pour rénover et revendre.
+ * Daniel l'a fait lui-même (deux maisons achetées, rénovées, revendues avec une plus-value) : AUCUN chiffre (ni montant,
+ * ni pourcentage, ni promesse de gain). PAS DE PLANNING dans le temps (un particulier ne le tient pas) : un carnet de
+ * tâches, « ta prochaine étape ». Pas de conseil fiscal : le statut de marchand de biens renvoie au notaire / comptable.
+ */
+export const ACHAT_REVENTE: PageService = {
+  chemin: "/accompagnement-achat-revente",
+  titre: "Achat-revente : se faire accompagner pour rénover et revendre",
+  description:
+    "Tu achètes un bien pour le rénover et le revendre ? Un ancien chef de chantier qui l'a fait lui-même t'aide avant l'offre, sur les devis et pendant les travaux. Rappel gratuit.",
+  nomService: "Accompagnement achat-revente",
+  serviceType: "Conseil travaux pour l'achat-revente immobilier",
+  h1: "Acheter, rénover, revendre : je t'accompagne à chaque étape.",
+  intro:
+    "Dans un achat-revente, tout se joue sur deux choses : ne pas se tromper sur les travaux avant d'acheter, et ne pas laisser le chantier déraper ensuite. J'ai moi-même acheté, rénové et revendu des maisons avec une plus-value : je regarde ton projet avec l'œil de celui qui doit revendre.",
+  pourQui: {
+    titre: "Pour qui",
+    items: [
+      "Les particuliers qui achètent un bien à rénover pour le revendre.",
+      "Ceux qui se lancent dans un premier achat-revente et veulent éviter les erreurs classiques.",
+      "Les investisseurs qui achètent loin de chez eux et ne peuvent pas suivre le chantier sur place.",
+    ],
+  },
+  liste: {
+    titre: "Ce que je fais, étape par étape",
+    items: [
+      { t: "Avant l'offre : la visite en visio", s: "Tu filmes le bien pendant la visite, je repère les travaux à prévoir et ce qui peut cacher une mauvaise surprise : structure, humidité, toiture, réseaux." },
+      { t: "Le chiffrage des travaux", s: "On chiffre une enveloppe poste par poste avec AVYORA, pour savoir si l'opération tient avant de faire ton offre." },
+      { t: "Les travaux qui comptent pour la revente", s: "Ce qui aide vraiment à vendre, et ce qui coûte sans rien rapporter : on met le budget au bon endroit." },
+      { t: "La relecture des devis", s: "Les oublis, les postes flous, les prix hors marché, et les questions à poser aux artisans avant de signer." },
+      { t: "Un carnet de tâches, pas un planning", s: "Pas de calendrier impossible à tenir : à chaque point, ta prochaine étape, ce que tu dois faire, commander ou décider, dans le bon ordre." },
+      { t: "Le suivi jusqu'à la réception", s: "Un point régulier en visio ou sur WhatsApp : l'avancement, ton budget face au prévu, puis la visite de fin de chantier pour noter les réserves." },
+    ],
+  },
+  etapes: [
+    "Tu demandes à être rappelé : c'est gratuit et ça prend une minute.",
+    "Premier appel : tu me présentes le bien (ou ta recherche), ton budget et ton projet de revente.",
+    "On choisit ensemble ce qui t'est utile, et je te dis le tarif avant tout engagement.",
+  ],
+  obtiens: {
+    titre: "Ce que tu y gagnes",
+    items: [
+      "Une offre d'achat faite en connaissant les travaux, pas en les découvrant après.",
+      "Un budget travaux chiffré et suivi, les dérapages repérés tôt.",
+      "Toujours ta prochaine étape claire, sans avoir à être du métier.",
+    ],
+  },
+  aSavoir: [
+    "C'est du conseil, pas de la maîtrise d'œuvre : je ne dirige pas les artisans et je ne signe rien à ta place. Tu décides, tu signes.",
+    "Je ne promets aucune plus-value : elle dépend du prix d'achat, du marché et du prix de revente. Mon rôle, c'est que les travaux ne la mangent pas.",
+    "Je ne suis pas sur place : je vois ce que montrent tes photos et tes vidéos. Si le bien demande un diagnostic sur site, je te le dis.",
+  ],
+  liens: [
+    { href: "/estimation-travaux", label: "Estimer les travaux d'un bien gratuitement" },
+    { href: "/relecture-devis-travaux", label: "Faire vérifier un devis avant de signer" },
+    { href: "/suivi-de-chantier", label: "Le suivi de chantier à distance" },
+  ],
+  faq: [
+    {
+      q: "Comment estimer les travaux avant d'acheter un bien à rénover ?",
+      a: "En visitant avec une liste précise : structure, toiture, humidité, électricité, plomberie, chauffage, menuiseries. Puis en chiffrant poste par poste plutôt qu'au mètre carré, et en gardant une marge pour les imprévus : dans l'ancien, il y en a presque toujours.",
+    },
+    {
+      q: "Quels travaux privilégier pour revendre un bien rénové ?",
+      a: "D'abord ce qui rassure l'acheteur : un bien sain, sans humidité, avec une électricité et une plomberie en bon état. Ensuite ce qu'il voit en premier : la cuisine, la salle de bain, des pièces claires. Les finitions très haut de gamme coûtent souvent plus qu'elles ne rapportent.",
+    },
+    {
+      q: "Peut-on faire un achat-revente à distance ?",
+      a: "Oui, si le suivi est organisé : des photos des étapes clés, un point régulier, et une prochaine étape toujours claire. C'est ce que je fais avec toi, en visio et sur WhatsApp.",
+    },
+    {
+      q: "Faut-il être marchand de biens pour faire de l'achat-revente ?",
+      a: "Pas pour une opération ponctuelle. Mais si tu enchaînes les achats-reventes, l'administration peut considérer que c'est une activité professionnelle, avec une fiscalité différente : vois-le avec un notaire ou un expert-comptable avant de te lancer. Moi, je t'accompagne sur les travaux.",
+    },
+    {
+      q: "Combien coûte l'accompagnement achat-revente ?",
+      a: "Le premier appel est gratuit. Le tarif dépend de ce dont tu as besoin, d'un avis avant l'offre à un suivi complet : je te l'annonce pendant l'appel, avant tout engagement.",
     },
   ],
 };

@@ -4,7 +4,8 @@ import { PHOTO_FONDATEUR } from "@/lib/accompagnement/contenu";
 import { PARCOURS_COURT, type PageService as Contenu } from "@/lib/accompagnement/pages-services";
 
 /**
- * Le gabarit des pages de service de l'accompagnement (/relecture-devis-travaux, /suivi-de-chantier). Un seul appel à
+ * Le gabarit des pages de service de l'accompagnement (/relecture-devis-travaux, /suivi-de-chantier,
+ * /accompagnement-achat-revente). Un seul appel à
  * l'action, partout : « Demander à être rappelé », vers le formulaire de /accompagnement-travaux (URL canonique, sans
  * paramètre : ce sont des pages indexables). JSON-LD : le service (fourni par l'Organization du layout), la FAQ (le MÊME
  * tableau que la FAQ visible) et le fil d'Ariane. Ni prix, ni avis, ni note.

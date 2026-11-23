@@ -80,6 +80,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // Les pages de service de l'accompagnement (référencement du 20/11/2026).
     { url: `${siteUrl}/relecture-devis-travaux`, lastModified: SITE_MAJ, changeFrequency: "monthly", priority: 0.7 },
     { url: `${siteUrl}/suivi-de-chantier`, lastModified: SITE_MAJ, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${siteUrl}/accompagnement-achat-revente`, lastModified: "2026-11-23", changeFrequency: "monthly", priority: 0.7 },
     { url: `${siteUrl}/trouver-un-artisan`, lastModified: SITE_MAJ, changeFrequency: "monthly", priority: 0.7 },
     // Pages légales : signal de confiance attendu par Google sur un site qui encaisse un abonnement
     // (E-E-A-T). Elles sont indexables et canoniques depuis le lot 1 — elles ont leur place ici.
