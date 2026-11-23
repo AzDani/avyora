@@ -444,7 +444,6 @@ ${ACCUEIL_CSS}<div class="wrap"><header class="hero"><div class="in h2c"><div>
     <li><svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="m6.5 10.2 2.4 2.4 4.6-4.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Tu gagnes du temps : toujours ta prochaine étape.</span></li>
     <li><svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="m6.5 10.2 2.4 2.4 4.6-4.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Un avis qui ne dépend que de ton intérêt.</span></li>
   </ul>
-  <p class="cit">« Repérée avant de signer, une erreur ne coûte rien. Découverte en plein chantier, elle se paie en reprises, en retard et en avenants. »</p>
   <a href="/accompagnement-travaux#qui" class="lien">Pourquoi m'appeler →</a>
 </div></div></header></div>${ACCOMP_BAND}
 
@@ -554,7 +553,6 @@ ${ACCUEIL_CSS}<div class="wrap"><header class="hero"><div class="in h2c"><div>
     <li><svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="m6.5 10.2 2.4 2.4 4.6-4.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>You save time: always your next step.</span></li>
     <li><svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="m6.5 10.2 2.4 2.4 4.6-4.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Advice that only serves your interest.</span></li>
   </ul>
-  <p class="cit">“Spotted before you sign, a mistake costs nothing. Found halfway through the works, you pay for it in rework, delays and extra charges.”</p>
   <a href="/accompagnement-travaux#qui" class="lien">Why call me →</a>
 </div></div></header></div>${ACCOMP_BAND_EN}
 
