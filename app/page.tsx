@@ -334,6 +334,7 @@ const ACCUEIL_CSS = `<style>
 .av-home .expert li .d{font-size:11.5px;font-weight:700;color:var(--brand-700);letter-spacing:.02em;padding-top:2px}
 .av-home .expert li b{display:block;font-size:14px;color:var(--ink)}
 .av-home .expert li b+span{display:block;font-size:12.5px;color:var(--muted);line-height:1.45;margin-top:1px}
+.av-home .expert ul.pq{list-style:none;margin:16px 0 0;padding:14px 0 0;border-top:1px solid var(--line);display:grid;gap:7px}.av-home .expert ul.pq li{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.4}.av-home .expert ul.pq li::before{content:none}.av-home .expert ul.pq svg{flex:none;margin-top:1px;color:var(--brand-700)}
 .av-home .expert .cit{margin-top:16px;font-size:13.5px;line-height:1.55;color:var(--ink);background:var(--surface-2);border-radius:12px;padding:12px 14px;font-style:italic}
 .av-home .expert .lien{display:inline-flex;align-items:center;min-height:44px;margin-top:4px;font-size:14px;font-weight:600;color:var(--brand-700);text-decoration:underline;text-underline-offset:3px}
 .av-home .svc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
@@ -438,8 +439,13 @@ ${ACCUEIL_CSS}<div class="wrap"><header class="hero"><div class="in h2c"><div>
     <li><span class="d">3 ans</span><span><b>Notre entreprise de travaux</b><span>Avec mon frère : le besoin du client, le devis, la planification, puis les travaux, réalisés nous-mêmes.</span></span></li>
     <li><span class="d">En parallèle</span><span><b>Nos propres chantiers</b><span>Toujours avec mon frère : deux maisons rénovées et revendues avec une plus-value, puis une maison neuve construite presque entièrement de nos mains.</span></span></li>
   </ol>
-  <p class="cit">« J'ai vu un chantier sous tous ses angles : l'entreprise qui exécute, le chef de chantier qui coordonne, le propriétaire qui paie, et surtout celui qui fait les travaux lui-même. »</p>
-  <a href="/accompagnement-travaux" class="lien">Mon parcours en détail →</a>
+  <ul class="pq" aria-label="Pourquoi m'appeler">
+    <li><svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="m6.5 10.2 2.4 2.4 4.6-4.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Tu évites les erreurs qui coûtent cher.</span></li>
+    <li><svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="m6.5 10.2 2.4 2.4 4.6-4.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Tu gagnes du temps : toujours ta prochaine étape.</span></li>
+    <li><svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="m6.5 10.2 2.4 2.4 4.6-4.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Un avis qui ne dépend que de ton intérêt.</span></li>
+  </ul>
+  <p class="cit">« Repérée avant de signer, une erreur ne coûte rien. Découverte en plein chantier, elle se paie en reprises, en retard et en avenants. »</p>
+  <a href="/accompagnement-travaux#qui" class="lien">Pourquoi m'appeler →</a>
 </div></div></header></div>${ACCOMP_BAND}
 
 <section class="blk"><div class="wrap">
@@ -543,8 +549,13 @@ ${ACCUEIL_CSS}<div class="wrap"><header class="hero"><div class="in h2c"><div>
     <li><span class="d">3 years</span><span><b>Our building company</b><span>With my brother: the client's needs, the quote, the schedule, then the works, carried out ourselves.</span></span></li>
     <li><span class="d">Alongside</span><span><b>Our own projects</b><span>Still with my brother: two houses renovated and sold at a profit, then a new house built almost entirely with our own hands.</span></span></li>
   </ol>
-  <p class="cit">“I've seen a building site from every angle: the contractor who builds, the site manager who coordinates, the owner who pays, and above all the person who does the work themselves.”</p>
-  <a href="/accompagnement-travaux" class="lien">My full background →</a>
+  <ul class="pq" aria-label="Why call me">
+    <li><svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="m6.5 10.2 2.4 2.4 4.6-4.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>You avoid costly mistakes.</span></li>
+    <li><svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="m6.5 10.2 2.4 2.4 4.6-4.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>You save time: always your next step.</span></li>
+    <li><svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="m6.5 10.2 2.4 2.4 4.6-4.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Advice that only serves your interest.</span></li>
+  </ul>
+  <p class="cit">“Spotted before you sign, a mistake costs nothing. Found halfway through the works, you pay for it in rework, delays and extra charges.”</p>
+  <a href="/accompagnement-travaux#qui" class="lien">Why call me →</a>
 </div></div></header></div>${ACCOMP_BAND_EN}
 
 <section class="blk"><div class="wrap">
