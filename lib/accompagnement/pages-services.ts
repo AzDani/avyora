@@ -34,7 +34,7 @@ export type PageService = {
 };
 
 export const PARCOURS_COURT =
-  "BTS Bâtiment en alternance dans un grand groupe du BTP, puis 3 ans chef de chantier dans ce même groupe (équipes, planification, aléas), 3 ans à la tête de ma propre entreprise de travaux, du devis aux travaux réalisés moi-même, et mes propres chantiers : deux maisons rénovées entièrement et une maison neuve construite de A à Z.";
+  "BTS Bâtiment en alternance dans un grand groupe du BTP, puis 3 ans chef de chantier dans ce même groupe (équipes, planification, aléas), 3 ans à la tête de ma propre entreprise de travaux, du devis aux travaux réalisés moi-même, et mes propres projets : deux maisons achetées, rénovées entièrement et revendues avec une plus-value, et une maison neuve construite de A à Z.";
 
 export const RELECTURE_DEVIS: PageService = {
   chemin: "/relecture-devis-travaux",

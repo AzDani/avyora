@@ -78,7 +78,7 @@ const fr = {
     h2: "Qui je suis",
     paragraphes: [
       "Je m'appelle Daniel Leal. J'ai commencé par un BTS Bâtiment en alternance dans un grand groupe du BTP, où je suis ensuite resté 3 ans comme chef de chantier : gestion des équipes, planification des travaux, gestion des aléas. Ensuite, j'ai monté ma propre entreprise de travaux, que j'ai dirigée 3 ans de bout en bout : le besoin du client, le devis, la planification, puis les travaux, que je réalisais moi-même.",
-      "En parallèle, j'ai rénové entièrement deux maisons girondines et fait construire une maison neuve de A à Z, pour mon compte. Huit ans à travailler presque tous les jours, avec de longues journées, sur des chantiers très différents : j'ai vu un chantier sous tous ses angles, celui de l'entreprise qui exécute, du chef de chantier qui coordonne et du propriétaire qui paie. C'est ce regard complet que je t'apporte, avec ce qui fait déraper un projet : un poste oublié dans un devis, des artisans qui s'enchaînent mal, une décision prise trop tard.",
+      "En parallèle, pour mon compte, j'ai acheté deux maisons girondines, je les ai rénovées entièrement puis revendues avec une plus-value, et j'ai fait construire une maison neuve de A à Z. Huit ans à travailler presque tous les jours, avec de longues journées, sur des chantiers très différents : j'ai vu un chantier sous tous ses angles, celui de l'entreprise qui exécute, du chef de chantier qui coordonne et du propriétaire qui paie. C'est ce regard complet que je t'apporte, avec ce qui fait déraper un projet : un poste oublié dans un devis, des artisans qui s'enchaînent mal, une décision prise trop tard.",
       "J'ai créé AVYORA pour que chacun puisse chiffrer ses travaux avant de signer. L'accompagnement, c'est la suite logique : un regard de professionnel sur ton projet, au moment où tu en as besoin.",
       // TODO Dani : décider s'il dit « je travaille depuis les États-Unis » (conseil du rapport SEO : la transparence).
       "Je travaille à distance, en visio ou sur WhatsApp. Tu me montres, je regarde avec toi, et tu repars avec des réponses claires.",
@@ -90,7 +90,7 @@ const fr = {
       { duree: "2 ans", titre: "BTS Bâtiment en alternance", texte: "Dans un grand groupe du BTP : la méthode, les normes, la vie d'un gros chantier." },
       { duree: "3 ans", titre: "Chef de chantier", texte: "Dans le même groupe : gestion des équipes, planification des travaux, gestion des aléas." },
       { duree: "3 ans", titre: "Ma propre entreprise de travaux", texte: "Le besoin du client, le devis, la planification, puis les travaux, réalisés par moi-même." },
-      { duree: "En parallèle", titre: "Mes propres projets", texte: "Deux maisons girondines rénovées entièrement et une maison neuve construite de A à Z." },
+      { duree: "En parallèle", titre: "Mes propres projets", texte: "Deux maisons girondines achetées, rénovées entièrement et revendues avec une plus-value, et une maison neuve construite de A à Z." },
     ],
   },
   aide: {
@@ -148,7 +148,7 @@ const fr = {
         eyebrow: "Pour les investisseurs",
         titre: "Visite en visio avant achat",
         texte:
-          "Tu filmes le bien pendant la visite, je repère les travaux à prévoir et on chiffre une enveloppe avant que tu fasses ton offre.",
+          "Tu filmes le bien pendant la visite, je repère les travaux à prévoir et on chiffre une enveloppe avant que tu fasses ton offre. J'ai moi-même acheté, rénové et revendu des maisons avec une plus-value : je regarde ton bien avec l'œil de celui qui doit le revendre.",
         lien: { href: "/estimation-travaux", label: "Estimer les travaux gratuitement" },
       },
     ] satisfies Service[],
@@ -347,7 +347,7 @@ const en: ContenuAccompagnement = {
     h2: "Who I am",
     paragraphes: [
       "I'm Daniel Leal. I started with a two-year building degree (BTS Bâtiment) as a work-study student in a major construction group, where I then stayed 3 years as a site manager: managing crews, scheduling the works, handling the unexpected. Then I ran my own building company for 3 years, end to end: the client's needs, the quote, the schedule, then the works, which I carried out myself.",
-      "Alongside that, I fully renovated two traditional Gironde houses and had a new house built from start to finish, as the owner. Eight years of working almost every day, long days, on very different sites: I've seen a building site from every angle, that of the company doing the work, the site manager coordinating it and the owner paying for it. That complete view is what I bring you, along with what derails a project: an item missing from a quote, trades that don't follow each other properly, a decision made too late.",
+      "Alongside that, for myself, I bought two traditional Gironde houses, fully renovated them and sold them at a profit, and I had a new house built from start to finish. Eight years of working almost every day, long days, on very different sites: I've seen a building site from every angle, that of the company doing the work, the site manager coordinating it and the owner paying for it. That complete view is what I bring you, along with what derails a project: an item missing from a quote, trades that don't follow each other properly, a decision made too late.",
       "I created AVYORA so anyone can price their work before signing. Advice is the natural next step: a professional's eye on your project, when you need it.",
       "I work remotely, by video call or WhatsApp. You show me, we look at it together, and you leave with clear answers.",
     ],
@@ -357,7 +357,7 @@ const en: ContenuAccompagnement = {
       { duree: "2 years", titre: "Building degree, work-study", texte: "In a major construction group: method, standards, life on a large site." },
       { duree: "3 years", titre: "Site manager", texte: "In the same group: managing crews, scheduling the works, handling the unexpected." },
       { duree: "3 years", titre: "My own building company", texte: "The client's needs, the quote, the schedule, then the works, carried out myself." },
-      { duree: "Alongside", titre: "My own projects", texte: "Two Gironde houses fully renovated and a new house built from start to finish." },
+      { duree: "Alongside", titre: "My own projects", texte: "Two Gironde houses bought, fully renovated and sold at a profit, and a new house built from start to finish." },
     ],
   },
   aide: {
@@ -411,7 +411,7 @@ const en: ContenuAccompagnement = {
         id: "visite",
         eyebrow: "For investors",
         titre: "Video walkthrough before you buy",
-        texte: "You film the property during the visit, I spot the work to plan and we price a budget before you make your offer.",
+        texte: "You film the property during the visit, I spot the work to plan and we price a budget before you make your offer. I've bought, renovated and sold houses at a profit myself: I look at your property through the eyes of someone who has to sell it on.",
         lien: { href: "/estimation-travaux", label: "Estimate the work for free" },
       },
     ],
