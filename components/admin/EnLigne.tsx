@@ -1,16 +1,48 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 /**
  * Visiteurs en ligne en ce moment (22/11/2026), comme le compteur de Vercel : lu toutes les 15 s
  * (`/api/admin/en-ligne`), seulement quand l'onglet de l'admin est visible. « En ligne » = un onglet ouvert et
  * visible sur le site dans les 90 dernières secondes (lib/presence.ts) ; l'admin lui-même n'est pas compté.
+ * Un clic sur le compteur ouvre la liste : ville et pays approximatifs, page vue et, pour un membre connecté, son
+ * pseudo et son e-mail, avec un lien vers sa fiche (décision de Dani du 23/11/2026).
  */
+type Visiteur = {
+  cle: string;
+  chemin: string;
+  pays?: string;
+  ville?: string;
+  userId?: string;
+  compte?: { email: string; username: string } | null;
+  vuLe: number;
+};
 type Etat =
   | { phase: "chargement" }
   | { phase: "indisponible" }
-  | { phase: "ok"; total: number; pages: { chemin: string; n: number }[]; le: number };
+  | { phase: "ok"; total: number; pages: { chemin: string; n: number }[]; visiteurs: Visiteur[]; le: number };
+
+let nomsPays: Intl.DisplayNames | null = null;
+function nomPays(code?: string): string {
+  if (!code) return "";
+  try {
+    nomsPays ??= new Intl.DisplayNames(["fr"], { type: "region" });
+    return nomsPays.of(code) ?? code;
+  } catch {
+    return code;
+  }
+}
+
+export function lieu(v: { ville?: string; pays?: string }): string {
+  return [v.ville, nomPays(v.pays)].filter(Boolean).join(", ") || "Lieu inconnu";
+}
+
+function depuis(ms: number, maintenant: number): string {
+  const s = Math.max(0, Math.round((maintenant - ms) / 1000));
+  return s < 5 ? "à l'instant" : `il y a ${s} s`;
+}
 
 const NOMS: Record<string, string> = {
   "/": "Accueil",
@@ -35,6 +67,7 @@ export function nomPage(chemin: string): string {
 
 export default function EnLigne() {
   const [etat, setEtat] = useState<Etat>({ phase: "chargement" });
+  const [ouvert, setOuvert] = useState(false);
 
   useEffect(() => {
     let actif = true;
@@ -44,7 +77,11 @@ export default function EnLigne() {
         const r = await fetch("/api/admin/en-ligne", { cache: "no-store" });
         const d = await r.json();
         if (!actif) return;
-        setEtat(d?.disponible ? { phase: "ok", total: d.total, pages: d.pages ?? [], le: Date.now() } : { phase: "indisponible" });
+        setEtat(
+          d?.disponible
+            ? { phase: "ok", total: d.total, pages: d.pages ?? [], visiteurs: d.visiteurs ?? [], le: Date.now() }
+            : { phase: "indisponible" },
+        );
       } catch {
         if (actif) setEtat({ phase: "indisponible" });
       }
@@ -61,14 +98,19 @@ export default function EnLigne() {
 
   const total = etat.phase === "ok" ? etat.total : null;
   const vivant = total != null && total > 0;
+  const membres = etat.phase === "ok" ? etat.visiteurs.filter((v) => v.userId).length : 0;
 
   return (
-    <section
-      aria-live="polite"
-      className="flex flex-wrap items-center gap-x-5 gap-y-3 rounded-2xl border border-line bg-surface px-4 py-3.5 sm:px-5"
-      data-en-ligne=""
-    >
-      <div className="flex items-center gap-3">
+    <section className="rounded-2xl border border-line bg-surface" data-en-ligne="">
+    <div aria-live="polite" className="flex flex-wrap items-center gap-x-5 gap-y-3 px-4 py-3.5 sm:px-5">
+      <button
+        type="button"
+        onClick={() => setOuvert((o) => !o)}
+        disabled={!vivant}
+        aria-expanded={ouvert && vivant}
+        aria-controls="en-ligne-liste"
+        className="-m-1.5 flex items-center gap-3 rounded-xl p-1.5 text-left transition-colors enabled:hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-brand-600 disabled:cursor-default"
+      >
         <span className="relative flex h-2.5 w-2.5" aria-hidden="true">
           {vivant && <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-60 motion-safe:animate-ping" />}
           <span className={`relative inline-flex h-2.5 w-2.5 rounded-full ${vivant ? "bg-emerald-500" : "bg-line"}`} />
@@ -80,8 +122,14 @@ export default function EnLigne() {
             : total === 1
               ? "visiteur en ligne"
               : "visiteurs en ligne"}
+          {membres > 0 && <span className="text-faint"> · dont {membres} connecté{membres > 1 ? "s" : ""}</span>}
         </span>
-      </div>
+        {vivant && (
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" className={`text-faint transition-transform ${ouvert ? "rotate-180" : ""}`}>
+            <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
+      </button>
 
       {etat.phase === "ok" && etat.pages.length > 0 && (
         <ul className="flex min-w-0 flex-wrap gap-1.5">
@@ -97,6 +145,29 @@ export default function EnLigne() {
       )}
 
       <span className="ml-auto text-[11.5px] text-faint">Actifs dans les 90 dernières secondes · mis à jour toutes les 15 s</span>
+    </div>
+
+    {ouvert && etat.phase === "ok" && etat.visiteurs.length > 0 && (
+      <ul id="en-ligne-liste" className="divide-y divide-line border-t border-line" data-en-ligne-liste="">
+        {etat.visiteurs.map((v) => (
+          <li key={v.cle} className="grid gap-x-4 gap-y-0.5 px-4 py-2.5 text-[13px] sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-center sm:px-5">
+            <span className="min-w-0 truncate">
+              {v.userId ? (
+                <Link href={`/admin/inscrits/${v.userId}`} className="font-semibold text-ink hover:text-brand-700 hover:underline">
+                  {v.compte?.username || v.compte?.email || "Membre connecté"}
+                  {v.compte?.username && v.compte.email && <span className="ml-1.5 font-normal text-muted">{v.compte.email}</span>}
+                </Link>
+              ) : (
+                <span className="text-muted">Visiteur sans compte</span>
+              )}
+            </span>
+            <span className="min-w-0 truncate text-muted">{lieu(v)}</span>
+            <span className="min-w-0 truncate font-medium text-ink" title={v.chemin}>{nomPage(v.chemin)}</span>
+            <span className="num text-[12px] text-faint">{depuis(v.vuLe, etat.le)}</span>
+          </li>
+        ))}
+      </ul>
+    )}
     </section>
   );
 }

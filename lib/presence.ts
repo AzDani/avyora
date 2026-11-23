@@ -2,10 +2,12 @@ import { createHash } from "node:crypto";
 import { Redis } from "@upstash/redis";
 
 /**
- * Visiteurs en ligne (compteur de l'admin, 22/11/2026), sur le modèle de Vercel Analytics : AUCUN cookie, rien
- * d'écrit sur l'appareil. Chaque onglet visible se signale toutes les 30 s (`public/presence.js`) ; le serveur
- * en tire une empreinte (IP + navigateur + jour, salée, tronquée : ni l'IP ni l'identité ne sont gardées) et la
- * note dans un ensemble trié Upstash, avec la page vue. « En ligne » = signalé dans les FENETRE_MS dernières.
+ * Visiteurs en ligne (compteur de l'admin, 22/11/2026), sur le modèle de Vercel Analytics : aucun cookie ajouté,
+ * rien d'écrit sur l'appareil. Chaque onglet visible se signale toutes les 30 s (`public/presence.js`) ; le serveur
+ * note dans un ensemble trié Upstash la page vue, la ville et le pays approximatifs (en-têtes de Vercel, l'IP n'est
+ * pas gardée) et, pour un membre connecté, son compte (décision de Dani du 23/11/2026, page Confidentialité à jour).
+ * Un visiteur sans compte n'est qu'une empreinte du jour (IP + navigateur + jour, salée, tronquée). « En ligne » =
+ * signalé dans les FENETRE_MS dernières ; au-delà, la trace est effacée.
  *
  * Coût : UNE commande Upstash par signal (`ZADD`), plus un ménage de temps en temps. Sans Upstash (dev local),
  * tout est inerte et l'admin affiche « indisponible ».
@@ -44,31 +46,61 @@ export function empreinte(ip: string, ua: string, jour: string, sel: string): st
   return createHash("sha256").update(`${sel}|${jour}|${ip}|${ua}`).digest("hex").slice(0, 16);
 }
 
-export type EnLigne = { total: number; pages: { chemin: string; n: number }[] };
+/** Un signal : qui (empreinte, ou `u:<id>` pour un membre connecté), où sur le site, d'où (approximatif). */
+export type Signal = { id: string; chemin: string; pays?: string; ville?: string; userId?: string };
+export type Visiteur = Omit<Signal, "id"> & { cle: string; vuLe: number };
+export type EnLigne = { total: number; pages: { chemin: string; n: number }[]; visiteurs: Visiteur[] };
 
-/**
- * Les membres de l'ensemble sont « empreinte|chemin » : un visiteur qui change de page laisse un ancien membre, qui
- * sort de la fenêtre tout seul ; on garde, par empreinte, le signal le plus récent.
- */
-export function compter(membres: { membre: string; score: number }[], maintenant: number): EnLigne {
-  const dernier = new Map<string, { chemin: string; score: number }>();
-  for (const { membre, score } of membres) {
-    if (score < maintenant - FENETRE_MS) continue;
-    const i = membre.indexOf("|");
-    if (i <= 0) continue;
-    const id = membre.slice(0, i);
-    const prec = dernier.get(id);
-    if (!prec || score > prec.score) dernier.set(id, { chemin: membre.slice(i + 1), score });
-  }
-  const parPage = new Map<string, number>();
-  for (const { chemin } of dernier.values()) parPage.set(chemin, (parPage.get(chemin) ?? 0) + 1);
-  const pages = [...parPage].map(([chemin, n]) => ({ chemin, n })).sort((a, b) => b.n - a.n || a.chemin.localeCompare(b.chemin));
-  return { total: dernier.size, pages };
+/** Le membre de l'ensemble trié : les champs encodés, séparés par « | » (une ville peut contenir n'importe quoi). */
+export function encoder(s: Signal): string {
+  return [s.id, s.chemin, s.pays ?? "", s.ville ?? "", s.userId ?? ""].map(encodeURIComponent).join("|");
 }
 
-export async function signaler(id: string, chemin: string, maintenant = Date.now()): Promise<void> {
+export function decoder(membre: string): Signal | null {
+  const [id, chemin, pays, ville, userId] = membre.split("|").map((x) => {
+    try { return decodeURIComponent(x); } catch { return ""; }
+  });
+  if (!id || !chemin) return null;
+  return { id, chemin, ...(pays ? { pays } : {}), ...(ville ? { ville } : {}), ...(userId ? { userId } : {}) };
+}
+
+/** Ville et pays approximatifs, depuis les en-têtes de géolocalisation de Vercel (absents en local). */
+export function geo(h: Headers): { pays?: string; ville?: string } {
+  const pays = (h.get("x-vercel-ip-country") ?? "").toUpperCase();
+  let ville = h.get("x-vercel-ip-city") ?? "";
+  try { ville = decodeURIComponent(ville); } catch { ville = ""; }
+  return {
+    ...(/^[A-Z]{2}$/.test(pays) ? { pays } : {}),
+    ...(ville && ville.length <= 80 && !/[<>|]/.test(ville) ? { ville } : {}),
+  };
+}
+
+/**
+ * Un visiteur qui change de page laisse un ancien membre, qui sort de la fenêtre tout seul : on garde, par visiteur,
+ * le signal le plus récent. Les visiteurs, du plus récent au plus ancien.
+ */
+export function compter(membres: { membre: string; score: number }[], maintenant: number): EnLigne {
+  const dernier = new Map<string, Visiteur>();
+  for (const { membre, score } of membres) {
+    if (score < maintenant - FENETRE_MS) continue;
+    const sig = decoder(membre);
+    if (!sig) continue;
+    const prec = dernier.get(sig.id);
+    if (!prec || score > prec.vuLe) {
+      const { id, ...reste } = sig;
+      dernier.set(id, { ...reste, cle: id.startsWith("u:") ? id : id.slice(0, 8), vuLe: score });
+    }
+  }
+  const visiteurs = [...dernier.values()].sort((a, b) => b.vuLe - a.vuLe);
+  const parPage = new Map<string, number>();
+  for (const { chemin } of visiteurs) parPage.set(chemin, (parPage.get(chemin) ?? 0) + 1);
+  const pages = [...parPage].map(([chemin, n]) => ({ chemin, n })).sort((a, b) => b.n - a.n || a.chemin.localeCompare(b.chemin));
+  return { total: visiteurs.length, pages, visiteurs };
+}
+
+export async function signaler(signal: Signal, maintenant = Date.now()): Promise<void> {
   if (!redis) return;
-  await redis.zadd(CLE, { score: maintenant, member: `${id}|${chemin}` });
+  await redis.zadd(CLE, { score: maintenant, member: encoder(signal) });
   // Ménage de temps en temps (≈ 1 signal sur 20) : sans lui, l'ensemble grossirait tant que l'admin n'est pas ouvert.
   if (Math.random() < 0.05) await redis.zremrangebyscore(CLE, 0, maintenant - FENETRE_MS);
 }

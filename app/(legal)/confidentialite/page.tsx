@@ -12,7 +12,7 @@ export default function Confidentialite() {
   return (
     <article>
       <h1>Politique de confidentialité</h1>
-      <p className="maj">Dernière mise à jour : 22 novembre 2026</p>
+      <p className="maj">Dernière mise à jour : 23 novembre 2026</p>
 
       <p>
         La présente politique décrit la manière dont AVYORA collecte et traite les données personnelles,
@@ -40,6 +40,7 @@ export default function Confidentialite() {
           <tr><td>Demande de devis au Réseau AVYORA</td><td>travaux souhaités, code postal, ville et adresse du chantier (facultative), description, surfaces et quantités, délai, photos, estimation AVYORA jointe (si tu le choisis), artisans choisis et leurs réponses, suivi (devis reçu, signé, pas retenu) et avis sur les artisans (note et commentaire, lus par l&apos;éditeur seul, non publiés), prénom, portable et e-mail du compte</td></tr>
           <tr><td>Paiement</td><td>gérées par Stripe&nbsp;; AVYORA ne stocke pas les numéros de carte</td></tr>
           <tr><td>Sécurité &amp; journaux</td><td>adresse IP (limitation d&apos;abus), horodatage d&apos;évènements d&apos;authentification</td></tr>
+          <tr><td>Présence sur le Site (en direct)</td><td>page en cours de consultation, ville et pays approximatifs (déduits de l&apos;adresse IP, qui n&apos;est pas gardée), compte si tu es connecté — effacés 90 secondes au plus après ta dernière page vue</td></tr>
           <tr><td>Techniques</td><td>cookies strictement nécessaires (session, langue, sécurité de la connexion) — voir <a href="/cookies">politique cookies</a></td></tr>
           <tr><td>Publicité (uniquement avec votre consentement)</td><td>identifiants des cookies Google Ads, pages visitées sur le Site, actions de conversion (estimation terminée, abonnement)</td></tr>
         </tbody>
@@ -58,6 +59,7 @@ export default function Confidentialite() {
           <tr><td>Examiner la candidature d&apos;un artisan au Réseau AVYORA (vérification du SIRET, de l&apos;assurance, entretien téléphonique), puis gérer sa participation au réseau</td><td>Mesures précontractuelles prises à sa demande, puis exécution des <a href="/conditions-reseau">conditions du Réseau AVYORA</a> (art. 6.1.b)</td></tr>
           <tr><td>Transmettre ta demande de devis aux artisans que tu choisis, puis tes coordonnées à ceux qui l&apos;acceptent (mise en relation)</td><td>Mesures précontractuelles prises à ta demande (art. 6.1.b), avec ton accord explicite au moment de l&apos;envoi</td></tr>
           <tr><td>Sécurité, prévention de la fraude et des abus</td><td>Intérêt légitime (art. 6.1.f)</td></tr>
+          <tr><td>Voir en direct la fréquentation du Site (combien de visiteurs, sur quelles pages, d&apos;où approximativement, et quels membres connectés), pour l&apos;éditeur seul</td><td>Intérêt légitime (art. 6.1.f) — rien n&apos;est conservé au-delà de 90 secondes, aucun cookie n&apos;est ajouté</td></tr>
           <tr><td>Obligations comptables et légales (facturation)</td><td>Obligation légale (art. 6.1.c)</td></tr>
           <tr><td>Lettre d&apos;information « nouveautés » (case facultative, non cochée, à l&apos;inscription)</td><td>Consentement (art. 6.1.a)</td></tr>
           <tr><td>Mesure des conversions publicitaires et remarketing (Google Ads)</td><td>Consentement (art. 6.1.a, et art. 82 de la loi « Informatique et Libertés »), recueilli par le bandeau cookies</td></tr>
@@ -75,7 +77,7 @@ export default function Confidentialite() {
         <li><strong>Les artisans du Réseau AVYORA que tu choisis</strong> — ils reçoivent ta demande de devis (sans tes coordonnées)&nbsp;; ceux qui l&apos;acceptent reçoivent ton prénom, ton portable, ton e-mail et l&apos;adresse du chantier si tu l&apos;as donnée, pour te contacter, et en sont alors responsables pour leur propre compte&nbsp;;</li>
         <li><strong>Répertoire des entreprises de l&apos;État</strong> (recherche-entreprises.api.gouv.fr) — interrogé avec le SIRET d&apos;un artisan qui postule au Réseau AVYORA, pour vérifier que son établissement est actif&nbsp;;</li>
         <li><strong>Vercel Analytics</strong> — mesure d&apos;audience agrégée, sans cookie&nbsp;;</li>
-        <li><strong>Upstash</strong> — protection contre les abus (nombre de demandes par adresse IP ou par compte, sur de courtes périodes) et compteur des visiteurs en ligne, sans cookie&nbsp;: pour ce compteur, seule une empreinte non réversible, renouvelée chaque jour, est gardée, 90 secondes au plus après ta dernière page vue&nbsp;;</li>
+        <li><strong>Upstash</strong> — protection contre les abus (nombre de demandes par adresse IP ou par compte, sur de courtes périodes) et compteur des visiteurs en ligne, sans cookie&nbsp;: la page vue, la ville et le pays approximatifs et, si tu es connecté, ton compte (sinon une empreinte non réversible, renouvelée chaque jour), gardés 90 secondes au plus après ta dernière page vue&nbsp;;</li>
         <li><strong>Google Ireland Limited</strong> (Gordon House, Barrow Street, Dublin 4, Irlande) — Google Ads&nbsp;: mesure des conversions et remarketing, <strong>uniquement si vous avez accepté les cookies publicitaires</strong>. Règles de Google pour ces traitements&nbsp;: <a href="https://business.safety.google/privacy/" target="_blank" rel="noopener noreferrer">business.safety.google/privacy</a>.</li>
       </ul>
 

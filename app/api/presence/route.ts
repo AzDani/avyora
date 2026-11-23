@@ -1,16 +1,26 @@
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { aujourdhuiParis } from "@/lib/reseau/candidature";
-import { cheminPropre, empreinte, estRobot, signaler } from "@/lib/presence";
+import { cheminPropre, empreinte, estRobot, geo, signaler } from "@/lib/presence";
+import { supabaseServer } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Signal de présence d'un onglet ouvert (public/presence.js), pour le compteur « en ligne » de l'admin. Sans
- * cookie ni session : la route est hors du proxy (aucun `auth.getUser()` toutes les 30 s par visiteur). Le corps est
- * le chemin de la page, en texte. Répond toujours 204 : un échec ne doit rien montrer au visiteur.
+ * Signal de présence d'un onglet ouvert (public/presence.js), pour le compteur « en ligne » de l'admin. La route est
+ * hors du proxy : un visiteur sans session ne coûte aucun appel à Supabase. Un membre connecté (cookie de session
+ * présent) est reconnu par `getClaims()` (jeton vérifié) et compté sous son compte. Le corps est le chemin de la
+ * page, en texte. Répond toujours 204 : un échec ne doit rien montrer au visiteur.
  */
+async function membreConnecte(): Promise<string | undefined> {
+  const store = await cookies();
+  if (!store.getAll().some((c) => c.name.startsWith("sb-") && c.name.includes("auth-token"))) return undefined;
+  const { data } = await (await supabaseServer()).auth.getClaims();
+  const sub = data?.claims?.sub;
+  return typeof sub === "string" && sub ? sub : undefined;
+}
+
 export async function POST(req: Request) {
   try {
     const h = await headers();
@@ -19,7 +29,8 @@ export async function POST(req: Request) {
     if (chemin && !estRobot(ua)) {
       const ip = h.get("x-forwarded-for")?.split(",")[0].trim() || h.get("x-real-ip") || "inconnue";
       const sel = process.env.PRESENCE_SEL || process.env.SUPABASE_SERVICE_ROLE_KEY || "avyora";
-      await signaler(empreinte(ip, ua ?? "", aujourdhuiParis(), sel), chemin);
+      const userId = await membreConnecte().catch(() => undefined);
+      await signaler({ id: userId ? `u:${userId}` : empreinte(ip, ua ?? "", aujourdhuiParis(), sel), chemin, ...geo(h), ...(userId ? { userId } : {}) });
     }
   } catch (e) {
     console.warn("[presence] signal perdu :", (e as Error).message);
