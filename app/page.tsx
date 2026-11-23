@@ -436,9 +436,9 @@ ${ACCUEIL_CSS}<div class="wrap"><header class="hero"><div class="in h2c"><div>
     <li><span class="d">2 ans</span><span><b>BTS Bâtiment en alternance</b><span>Dans un grand groupe du BTP : la méthode, les normes, les gros chantiers.</span></span></li>
     <li><span class="d">3 ans</span><span><b>Chef de chantier</b><span>Dans le même groupe : gestion des équipes, planification des travaux, gestion des aléas.</span></span></li>
     <li><span class="d">3 ans</span><span><b>Ma propre entreprise de travaux</b><span>Le besoin du client, le devis, la planification, puis les travaux, réalisés moi-même.</span></span></li>
-    <li><span class="d">Pour moi</span><span><b>Mes propres chantiers</b><span>Deux maisons achetées, rénovées et revendues avec une plus-value, une maison neuve construite de A à Z.</span></span></li>
+    <li><span class="d">Pour moi</span><span><b>Mes propres chantiers</b><span>Avec mon frère : deux maisons rénovées de nos mains et revendues avec une plus-value, puis une maison neuve construite de A à Z.</span></span></li>
   </ol>
-  <p class="cit">« J'ai vu un chantier sous tous ses angles : l'entreprise qui exécute, le chef de chantier qui coordonne et le propriétaire qui paie. »</p>
+  <p class="cit">« J'ai vu un chantier sous tous ses angles : l'entreprise qui exécute, le chef de chantier qui coordonne, le propriétaire qui paie, et surtout celui qui fait les travaux lui-même. »</p>
   <a href="/accompagnement-travaux" class="lien">Mon parcours en détail →</a>
 </div></div></header></div>${ACCOMP_BAND}
 
@@ -541,9 +541,9 @@ ${ACCUEIL_CSS}<div class="wrap"><header class="hero"><div class="in h2c"><div>
     <li><span class="d">2 years</span><span><b>Building degree, work-study</b><span>In a major construction group: method, standards, large sites.</span></span></li>
     <li><span class="d">3 years</span><span><b>Site manager</b><span>In the same group: managing crews, scheduling the works, handling the unexpected.</span></span></li>
     <li><span class="d">3 years</span><span><b>My own building company</b><span>The client's needs, the quote, the schedule, then the works, carried out myself.</span></span></li>
-    <li><span class="d">Own homes</span><span><b>My own projects</b><span>Two houses bought, renovated and sold at a profit, a new house built from start to finish.</span></span></li>
+    <li><span class="d">Own homes</span><span><b>My own projects</b><span>With my brother: two houses renovated with our own hands and sold at a profit, then a new house built from start to finish.</span></span></li>
   </ol>
-  <p class="cit">“I've seen a building site from every angle: the contractor who builds, the site manager who coordinates and the owner who pays.”</p>
+  <p class="cit">“I've seen a building site from every angle: the contractor who builds, the site manager who coordinates, the owner who pays, and above all the person who does the work themselves.”</p>
   <a href="/accompagnement-travaux" class="lien">My full background →</a>
 </div></div></header></div>${ACCOMP_BAND_EN}
 

@@ -77,8 +77,8 @@ const fr = {
   qui: {
     h2: "Qui je suis",
     paragraphes: [
-      "Je m'appelle Daniel Leal. J'ai commencé par un BTS Bâtiment en alternance dans un grand groupe du BTP, où je suis ensuite resté 3 ans comme chef de chantier : gestion des équipes, planification des travaux, gestion des aléas. Ensuite, j'ai monté ma propre entreprise de travaux, que j'ai dirigée 3 ans de bout en bout : le besoin du client, le devis, la planification, puis les travaux, que je réalisais moi-même.",
-      "En parallèle, pour mon compte, j'ai acheté deux maisons girondines, je les ai rénovées entièrement puis revendues avec une plus-value, et j'ai fait construire une maison neuve de A à Z. Huit ans à travailler presque tous les jours, avec de longues journées, sur des chantiers très différents : j'ai vu un chantier sous tous ses angles, celui de l'entreprise qui exécute, du chef de chantier qui coordonne et du propriétaire qui paie. C'est ce regard complet que je t'apporte, avec ce qui fait déraper un projet : un poste oublié dans un devis, des artisans qui s'enchaînent mal, une décision prise trop tard.",
+      "Je m'appelle Daniel Leal. J'ai commencé par un BTS Bâtiment en alternance dans un grand groupe du BTP, où je suis ensuite resté 3 ans comme chef de chantier : gestion des équipes, planification des travaux, gestion des aléas. Ensuite, j'ai monté ma propre entreprise de travaux, que j'ai dirigée 3 ans de bout en bout : le besoin du client, le devis, la planification, puis les travaux, que je réalisais moi-même. Des projets personnels m'ont amené à fermer ma société, et c'est pour ça que je me lance aujourd'hui dans ce projet : accompagner les gens dans leurs projets immobiliers.",
+      "En parallèle, avec mon frère, on a acheté deux maisons girondines, on les a rénovées entièrement de nos mains, puis revendues avec une plus-value. On a fini par un projet de construction neuve, mené de A à Z : quelques tâches sous-traitées, mais le reste aussi fait de nos mains. Huit ans à travailler presque tous les jours, avec de longues journées, sur des chantiers très différents : j'ai vu un chantier sous tous ses angles, celui de l'entreprise qui exécute, du chef de chantier qui coordonne, du propriétaire qui paie, et surtout de celui qui fait les travaux lui-même, qui les organise et les planifie. C'est ce regard complet que je t'apporte, avec ce qui fait déraper un projet : un poste oublié dans un devis, des artisans qui s'enchaînent mal, une décision prise trop tard.",
       "J'ai créé AVYORA pour que chacun puisse chiffrer ses travaux avant de signer. L'accompagnement, c'est la suite logique : un regard de professionnel sur ton projet, au moment où tu en as besoin.",
       // TODO Dani : décider s'il dit « je travaille depuis les États-Unis » (conseil du rapport SEO : la transparence).
       "Je travaille à distance, en visio ou sur WhatsApp. Tu me montres, je regarde avec toi, et tu repars avec des réponses claires.",
@@ -90,7 +90,7 @@ const fr = {
       { duree: "2 ans", titre: "BTS Bâtiment en alternance", texte: "Dans un grand groupe du BTP : la méthode, les normes, la vie d'un gros chantier." },
       { duree: "3 ans", titre: "Chef de chantier", texte: "Dans le même groupe : gestion des équipes, planification des travaux, gestion des aléas." },
       { duree: "3 ans", titre: "Ma propre entreprise de travaux", texte: "Le besoin du client, le devis, la planification, puis les travaux, réalisés par moi-même." },
-      { duree: "En parallèle", titre: "Mes propres projets", texte: "Deux maisons girondines achetées, rénovées entièrement et revendues avec une plus-value, et une maison neuve construite de A à Z." },
+      { duree: "En parallèle", titre: "Mes propres projets", texte: "Avec mon frère : deux maisons girondines achetées, rénovées entièrement de nos mains et revendues avec une plus-value, puis une maison neuve construite de A à Z, en grande partie de nos mains." },
     ],
   },
   aide: {
@@ -346,8 +346,8 @@ const en: ContenuAccompagnement = {
   qui: {
     h2: "Who I am",
     paragraphes: [
-      "I'm Daniel Leal. I started with a two-year building degree (BTS Bâtiment) as a work-study student in a major construction group, where I then stayed 3 years as a site manager: managing crews, scheduling the works, handling the unexpected. Then I ran my own building company for 3 years, end to end: the client's needs, the quote, the schedule, then the works, which I carried out myself.",
-      "Alongside that, for myself, I bought two traditional Gironde houses, fully renovated them and sold them at a profit, and I had a new house built from start to finish. Eight years of working almost every day, long days, on very different sites: I've seen a building site from every angle, that of the company doing the work, the site manager coordinating it and the owner paying for it. That complete view is what I bring you, along with what derails a project: an item missing from a quote, trades that don't follow each other properly, a decision made too late.",
+      "I'm Daniel Leal. I started with a two-year building degree (BTS Bâtiment) as a work-study student in a major construction group, where I then stayed 3 years as a site manager: managing crews, scheduling the works, handling the unexpected. Then I ran my own building company for 3 years, end to end: the client's needs, the quote, the schedule, then the works, which I carried out myself. Personal projects led me to close my company, and that's why I'm now launching this project: helping people with their property projects.",
+      "Alongside that, with my brother, we bought two traditional Gironde houses, fully renovated them with our own hands, then sold them at a profit. We finished with a new-build project, run from start to finish: a few tasks subcontracted, but the rest also done with our own hands. Eight years of working almost every day, long days, on very different sites: I've seen a building site from every angle, that of the company doing the work, the site manager coordinating it, the owner paying for it, and above all the person doing the work themselves, organising and planning it. That complete view is what I bring you, along with what derails a project: an item missing from a quote, trades that don't follow each other properly, a decision made too late.",
       "I created AVYORA so anyone can price their work before signing. Advice is the natural next step: a professional's eye on your project, when you need it.",
       "I work remotely, by video call or WhatsApp. You show me, we look at it together, and you leave with clear answers.",
     ],
@@ -357,7 +357,7 @@ const en: ContenuAccompagnement = {
       { duree: "2 years", titre: "Building degree, work-study", texte: "In a major construction group: method, standards, life on a large site." },
       { duree: "3 years", titre: "Site manager", texte: "In the same group: managing crews, scheduling the works, handling the unexpected." },
       { duree: "3 years", titre: "My own building company", texte: "The client's needs, the quote, the schedule, then the works, carried out myself." },
-      { duree: "Alongside", titre: "My own projects", texte: "Two Gironde houses bought, fully renovated and sold at a profit, and a new house built from start to finish." },
+      { duree: "Alongside", titre: "My own projects", texte: "With my brother: two Gironde houses bought, fully renovated with our own hands and sold at a profit, then a new house built from start to finish, mostly with our own hands." },
     ],
   },
   aide: {
