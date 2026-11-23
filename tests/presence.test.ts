@@ -153,3 +153,34 @@ describe("branchements", () => {
     expect(js).toContain('chemin.indexOf("/admin/") === 0');
   });
 });
+
+describe("presence · historique de la journée", () => {
+  it("regroupe par visiteur : arrivée (premier score), dernière activité, pages dans l'ordre, lieu le plus récent", async () => {
+    const { regrouperJournee } = await import("@/lib/presence");
+    const t0 = 1_000_000;
+    const j = regrouperJournee(
+      [
+        { membre: encoder({ id: "u:abc", chemin: "/", pays: "FR", ville: "Lyon", userId: "abc" }), score: t0 + 10 },
+        { membre: encoder({ id: "u:abc", chemin: "/plan", pays: "FR", ville: "Lyon", userId: "abc" }), score: t0 + 50 },
+        { membre: encoder({ id: "u:abc", chemin: "/tarifs", pays: "FR", ville: "Lyon", userId: "abc" }), score: t0 + 30 },
+        { membre: encoder({ id: "0123456789abcdef", chemin: "/estimation-travaux", pays: "BE" }), score: t0 + 20 },
+      ],
+      [{ membre: "u:abc", score: t0 }, { membre: "0123456789abcdef", score: t0 + 20 }],
+    );
+    expect(j.total).toBe(2);
+    expect(j.membres).toBe(1);
+    expect(j.visiteurs[0]).toEqual({ cle: "u:abc", userId: "abc", pays: "FR", ville: "Lyon", arrivee: t0, dernier: t0 + 50, pages: ["/", "/tarifs", "/plan"] });
+    expect(j.visiteurs[1]).toMatchObject({ cle: "01234567", pays: "BE", arrivee: t0 + 20, dernier: t0 + 20, pages: ["/estimation-travaux"] });
+    expect(j.visiteurs[1]).not.toHaveProperty("userId");
+  });
+
+  it("le navigateur ne demande la trace du jour qu'à l'arrivée sur une page puis un signal sur cinq ; route admin protégée", () => {
+    const js = readFileSync(path.join(RACINE, "public/presence.js"), "utf8");
+    expect(js).toContain('"/api/presence?j=1"');
+    expect(js).toMatch(/force \|\| n % 5 === 0/);
+    const route = readFileSync(path.join(RACINE, "app/api/admin/journee/route.ts"), "utf8");
+    expect(route).toMatch(/const refus = await gardeAdmin\(\);\s*if \(refus\) return refus;/);
+    const conf = readFileSync(path.join(RACINE, "app/(legal)/confidentialite/page.tsx"), "utf8");
+    expect(conf).toContain("48 heures au plus pour l&apos;historique de la journée");
+  });
+});

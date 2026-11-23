@@ -8,7 +8,9 @@ import { useEffect, useState } from "react";
  * (`/api/admin/en-ligne`), seulement quand l'onglet de l'admin est visible. « En ligne » = un onglet ouvert et
  * visible sur le site dans les 90 dernières secondes (lib/presence.ts) ; l'admin lui-même n'est pas compté.
  * Un clic sur le compteur ouvre la liste : ville et pays approximatifs, page vue et, pour un membre connecté, son
- * pseudo et son e-mail, avec un lien vers sa fiche (décision de Dani du 23/11/2026).
+ * pseudo et son e-mail, avec un lien vers sa fiche (décision de Dani du 23/11/2026). Sous la liste, l'historique de la
+ * journée (`/api/admin/journee`, heure de Paris) : qui est passé aujourd'hui, arrivée, dernière activité, pages vues ;
+ * lu à l'ouverture puis toutes les 60 s tant que la liste est ouverte.
  */
 type Visiteur = {
   cle: string;
@@ -19,6 +21,24 @@ type Visiteur = {
   compte?: { email: string; username: string } | null;
   vuLe: number;
 };
+type VisiteJour = {
+  cle: string;
+  userId?: string;
+  pays?: string;
+  ville?: string;
+  compte?: { email: string; username: string } | null;
+  arrivee: number;
+  dernier: number;
+  pages: string[];
+};
+type EtatJour =
+  | { phase: "chargement" }
+  | { phase: "indisponible" }
+  | { phase: "ok"; total: number; membres: number; visiteurs: VisiteJour[]; tronque: boolean };
+
+const heureParis = (ms: number) =>
+  new Intl.DateTimeFormat("fr-FR", { timeZone: "Europe/Paris", hour: "2-digit", minute: "2-digit" }).format(ms);
+
 type Etat =
   | { phase: "chargement" }
   | { phase: "indisponible" }
@@ -68,6 +88,33 @@ export function nomPage(chemin: string): string {
 export default function EnLigne() {
   const [etat, setEtat] = useState<Etat>({ phase: "chargement" });
   const [ouvert, setOuvert] = useState(false);
+  const [jour, setJour] = useState<EtatJour>({ phase: "chargement" });
+
+  useEffect(() => {
+    if (!ouvert) return;
+    let actif = true;
+    async function lire() {
+      if (document.visibilityState !== "visible") return;
+      try {
+        const r = await fetch("/api/admin/journee", { cache: "no-store" });
+        const d = await r.json();
+        if (!actif) return;
+        setJour(
+          d?.disponible
+            ? { phase: "ok", total: d.total, membres: d.membres, visiteurs: d.visiteurs ?? [], tronque: !!d.tronque }
+            : { phase: "indisponible" },
+        );
+      } catch {
+        if (actif) setJour({ phase: "indisponible" });
+      }
+    }
+    lire();
+    const minuterie = setInterval(lire, 60_000);
+    return () => {
+      actif = false;
+      clearInterval(minuterie);
+    };
+  }, [ouvert]);
 
   useEffect(() => {
     let actif = true;
@@ -106,8 +153,9 @@ export default function EnLigne() {
       <button
         type="button"
         onClick={() => setOuvert((o) => !o)}
-        disabled={!vivant}
-        aria-expanded={ouvert && vivant}
+        disabled={etat.phase !== "ok"}
+        aria-expanded={ouvert}
+        title={ouvert ? "Masquer la liste" : "Voir qui est en ligne et l'historique de la journée"}
         aria-controls="en-ligne-liste"
         className="-m-1.5 flex items-center gap-3 rounded-xl p-1.5 text-left transition-colors enabled:hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-brand-600 disabled:cursor-default"
       >
@@ -124,7 +172,7 @@ export default function EnLigne() {
               : "visiteurs en ligne"}
           {membres > 0 && <span className="text-faint"> · dont {membres} connecté{membres > 1 ? "s" : ""}</span>}
         </span>
-        {vivant && (
+        {etat.phase === "ok" && (
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true" className={`text-faint transition-transform ${ouvert ? "rotate-180" : ""}`}>
             <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
@@ -147,8 +195,10 @@ export default function EnLigne() {
       <span className="ml-auto text-[11.5px] text-faint">Actifs dans les 90 dernières secondes · mis à jour toutes les 15 s</span>
     </div>
 
-    {ouvert && etat.phase === "ok" && etat.visiteurs.length > 0 && (
-      <ul id="en-ligne-liste" className="divide-y divide-line border-t border-line" data-en-ligne-liste="">
+    {ouvert && (
+    <div id="en-ligne-liste">
+    {etat.phase === "ok" && etat.visiteurs.length > 0 && (
+      <ul className="divide-y divide-line border-t border-line" data-en-ligne-liste="">
         {etat.visiteurs.map((v) => (
           <li key={v.cle} className="grid gap-x-4 gap-y-0.5 px-4 py-2.5 text-[13px] sm:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-center sm:px-5">
             <span className="min-w-0 truncate">
@@ -168,6 +218,56 @@ export default function EnLigne() {
         ))}
       </ul>
     )}
+    <Journee etat={jour} />
+    </div>
+    )}
     </section>
+  );
+}
+
+function Journee({ etat }: { etat: EtatJour }) {
+  return (
+    <div className="border-t border-line bg-surface-2/60" data-journee="">
+      <p className="flex flex-wrap items-baseline gap-x-2 px-4 pb-2 pt-3.5 text-[13px] sm:px-5">
+        <span className="font-semibold text-ink">Aujourd&apos;hui</span>
+        <span className="text-muted">
+          {etat.phase === "chargement"
+            ? "chargement…"
+            : etat.phase === "indisponible"
+              ? "historique indisponible pour l'instant"
+              : `${etat.total} visiteur${etat.total > 1 ? "s" : ""}${etat.membres > 0 ? ` · dont ${etat.membres} connecté${etat.membres > 1 ? "s" : ""}` : ""}`}
+        </span>
+        <span className="ml-auto text-[11.5px] text-faint">Depuis minuit (heure de Paris) · mis à jour toutes les 60 s</span>
+      </p>
+      {etat.phase === "ok" && etat.visiteurs.length > 0 && (
+        <ul className="divide-y divide-line border-t border-line" data-journee-liste="">
+          {etat.visiteurs.map((v) => (
+            <li key={v.cle} className="grid gap-x-4 gap-y-0.5 px-4 py-2.5 text-[13px] sm:grid-cols-[minmax(0,1.2fr)_minmax(0,0.9fr)_auto_minmax(0,1.4fr)] sm:items-center sm:px-5">
+              <span className="min-w-0 truncate">
+                {v.userId ? (
+                  <Link href={`/admin/inscrits/${v.userId}`} className="font-semibold text-ink hover:text-brand-700 hover:underline">
+                    {v.compte?.username || v.compte?.email || "Membre connecté"}
+                    {v.compte?.username && v.compte.email && <span className="ml-1.5 font-normal text-muted">{v.compte.email}</span>}
+                  </Link>
+                ) : (
+                  <span className="text-muted">Visiteur sans compte</span>
+                )}
+              </span>
+              <span className="min-w-0 truncate text-muted">{lieu(v)}</span>
+              <span className="num whitespace-nowrap text-[12px] text-faint">
+                {heureParis(v.arrivee) === heureParis(v.dernier) ? heureParis(v.arrivee) : `${heureParis(v.arrivee)} → ${heureParis(v.dernier)}`}
+              </span>
+              <span className="min-w-0 truncate text-ink" title={v.pages.map(nomPage).join(" → ")}>
+                {v.pages.slice(-3).map(nomPage).join(" → ")}
+                {v.pages.length > 3 && <span className="text-faint"> (+{v.pages.length - 3})</span>}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {etat.phase === "ok" && etat.tronque && (
+        <p className="px-4 pb-3 text-[12px] text-faint sm:px-5">Seuls les 300 derniers visiteurs sont listés.</p>
+      )}
+    </div>
   );
 }

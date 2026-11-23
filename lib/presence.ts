@@ -114,3 +114,86 @@ export async function lireEnLigne(maintenant = Date.now()): Promise<EnLigne | nu
   for (let i = 0; i + 1 < brut.length; i += 2) membres.push({ membre: String(brut[i]), score: Number(brut[i + 1]) });
   return compter(membres, maintenant);
 }
+
+/* ── Historique de la journée (23/11/2026, demande de Dani) ─────────────────────────────────────────────────────
+   Qui est passé aujourd'hui : chaque visiteur (membre sous son compte, sinon l'empreinte du jour), son heure
+   d'arrivée, sa dernière activité, les pages vues, ville et pays approximatifs. Deux ensembles triés par jour (heure
+   de Paris) : la dernière vue de chaque page (`ZADD`, le score avance) et l'arrivée de chaque visiteur (`ZADD NX`,
+   le premier score reste). Effacés JOUR_TTL_S après la dernière écriture. Pour ne pas tripler les commandes Upstash,
+   le navigateur ne demande cette écriture (`?j=1`) qu'à l'arrivée sur une page puis environ toutes les 2 min 30. */
+export const JOUR_TTL_S = 48 * 3600;
+const cleJour = (jour: string) => `avyora:presence:jour:${jour}`;
+const cleArrivee = (jour: string) => `avyora:presence:jour:${jour}:arrivee`;
+
+export type VisiteJour = {
+  cle: string;
+  userId?: string;
+  pays?: string;
+  ville?: string;
+  arrivee: number;
+  dernier: number;
+  /** Les pages vues, de la plus ancienne à la plus récente (heure de leur dernière vue). */
+  pages: string[];
+};
+export type Journee = { total: number; membres: number; visiteurs: VisiteJour[] };
+
+export function regrouperJournee(vues: { membre: string; score: number }[], arrivees: { membre: string; score: number }[]): Journee {
+  const arr = new Map(arrivees.map((a) => [a.membre, a.score]));
+  const parId = new Map<string, { sig: Signal; score: number }[]>();
+  for (const { membre, score } of vues) {
+    const sig = decoder(membre);
+    if (!sig) continue;
+    const liste = parId.get(sig.id) ?? [];
+    liste.push({ sig, score });
+    parId.set(sig.id, liste);
+  }
+  const visiteurs: VisiteJour[] = [];
+  for (const [id, liste] of parId) {
+    liste.sort((a, b) => a.score - b.score);
+    const dernier = liste[liste.length - 1];
+    const pages: string[] = [];
+    for (const { sig } of liste) {
+      const i = pages.indexOf(sig.chemin);
+      if (i >= 0) pages.splice(i, 1);
+      pages.push(sig.chemin);
+    }
+    visiteurs.push({
+      cle: id.startsWith("u:") ? id : id.slice(0, 8),
+      ...(dernier.sig.userId ? { userId: dernier.sig.userId } : {}),
+      ...(dernier.sig.pays ? { pays: dernier.sig.pays } : {}),
+      ...(dernier.sig.ville ? { ville: dernier.sig.ville } : {}),
+      arrivee: Math.min(arr.get(id) ?? Infinity, liste[0].score),
+      dernier: dernier.score,
+      pages,
+    });
+  }
+  visiteurs.sort((a, b) => b.dernier - a.dernier);
+  return { total: visiteurs.length, membres: visiteurs.filter((v) => v.userId).length, visiteurs };
+}
+
+export async function noterJournee(signal: Signal, jour: string, maintenant = Date.now()): Promise<void> {
+  if (!redis) return;
+  const p = redis.pipeline();
+  p.zadd(cleJour(jour), { score: maintenant, member: encoder(signal) });
+  p.zadd(cleArrivee(jour), { nx: true }, { score: maintenant, member: signal.id });
+  p.expire(cleJour(jour), JOUR_TTL_S);
+  p.expire(cleArrivee(jour), JOUR_TTL_S);
+  await p.exec();
+}
+
+const paires = (brut: unknown): { membre: string; score: number }[] => {
+  const t = Array.isArray(brut) ? brut : [];
+  const out: { membre: string; score: number }[] = [];
+  for (let i = 0; i + 1 < t.length; i += 2) out.push({ membre: String(t[i]), score: Number(t[i + 1]) });
+  return out;
+};
+
+/** `null` : pas d'Upstash (dev local) ou lecture impossible. */
+export async function lireJournee(jour: string): Promise<Journee | null> {
+  if (!redis) return null;
+  const p = redis.pipeline();
+  p.zrange(cleJour(jour), 0, -1, { withScores: true });
+  p.zrange(cleArrivee(jour), 0, -1, { withScores: true });
+  const [vues, arrivees] = await p.exec();
+  return regrouperJournee(paires(vues), paires(arrivees));
+}

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { gardeAdmin } from "@/lib/auth";
 import { lireEnLigne } from "@/lib/presence";
-import { supabaseAdmin } from "@/lib/supabase/admin";
+import { comptesMembres } from "@/lib/admin/comptes-presence";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,17 +19,7 @@ export async function GET() {
   try {
     const enLigne = await lireEnLigne();
     if (!enLigne) return NextResponse.json({ disponible: false }, { headers: { "Cache-Control": "no-store" } });
-
-    const ids = [...new Set(enLigne.visiteurs.map((v) => v.userId).filter((x): x is string => !!x))].slice(0, MEMBRES_MAX);
-    const admin = ids.length ? supabaseAdmin() : null;
-    const comptes = new Map<string, { email: string; username: string }>();
-    await Promise.all(
-      ids.map(async (id) => {
-        const { data } = await admin!.auth.admin.getUserById(id);
-        const u = data?.user;
-        if (u) comptes.set(id, { email: u.email ?? "", username: String(u.user_metadata?.username ?? "") });
-      }),
-    );
+    const comptes = await comptesMembres(enLigne.visiteurs.map((v) => v.userId).filter((x): x is string => !!x), MEMBRES_MAX);
     const visiteurs = enLigne.visiteurs.map((v) => ({ ...v, ...(v.userId ? { compte: comptes.get(v.userId) ?? null } : {}) }));
     return NextResponse.json({ disponible: true, ...enLigne, visiteurs }, { headers: { "Cache-Control": "no-store" } });
   } catch (e) {
