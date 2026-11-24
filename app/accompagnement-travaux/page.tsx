@@ -120,7 +120,7 @@ export default async function AccompagnementTravaux({
             <p className="mt-4 text-[16px] leading-relaxed text-[#d7d4f2]">{t.hero.chapo}</p>
             <a
               href="#demande"
-              className="btn mt-6 min-h-12 w-full whitespace-normal bg-white px-6 py-3 text-[15px] leading-snug text-brand-800 shadow-sm hover:bg-brand-50 sm:w-auto"
+              className="btn brille mt-6 min-h-12 w-full whitespace-normal bg-white px-6 py-3 text-[15px] leading-snug text-brand-800 shadow-sm hover:bg-brand-50 sm:w-auto"
             >
               {t.hero.cta}
             </a>

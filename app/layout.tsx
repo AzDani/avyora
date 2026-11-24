@@ -15,6 +15,7 @@ import { clicPlan } from "@/lib/plans/mesure";
 import ConsentementCookies from "@/components/ConsentementCookies";
 import GererCookies from "@/components/GererCookies";
 import SignalPresence from "@/components/SignalPresence";
+import EffetsSite from "@/components/EffetsSite";
 import { DESCRIPTION_SITE } from "@/lib/seo-og";
 import "./globals.css";
 
@@ -138,7 +139,7 @@ function Wordmark() {
       >
         <rect x="2" y="2" width="60" height="60" rx="14" fill="#4F46E5" />
         <path d="M17 45 L32 15 L47 45" fill="none" stroke="#FFFFFF" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" />
-        <circle cx="32" cy="39" r="4.5" fill="#C4B5FD" />
+        <circle className="logo-pt" cx="32" cy="39" r="4.5" fill="#C4B5FD" />
       </svg>
       <span className="text-white">
         AVY<span className="text-[#A78BFA]">ORA</span>
@@ -168,7 +169,7 @@ export default async function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
         />
         <LangProvider locale={locale}>
-        <header className="sticky top-0 z-40 bg-canvas px-3 pb-2 pt-3 sm:px-4 sm:pt-4">
+        <header data-entete className="sticky top-0 z-40 bg-canvas px-3 pb-2 pt-3 sm:px-4 sm:pt-4">
           <div className="mx-auto flex h-16 max-w-5xl items-center justify-between rounded-2xl border border-white/10 bg-[#1E1B4B] px-4 shadow-[0_10px_30px_-12px_rgba(30,27,75,0.55)] sm:px-6">
             <Wordmark />
             {/* Desktop : navigation inline. Éditeur de plan allumé (C9), avec les onglets « Plan 3D » puis « Accompagnement »
@@ -265,6 +266,7 @@ export default async function RootLayout({
         <Analytics />
         {/* Compteur « en ligne » de l'admin : un signal toutes les 30 s, sans cookie (lib/presence.ts). */}
         <SignalPresence />
+        <EffetsSite />
         <ConsentementCookies />
         {/* Mesure des clics vers l'éditeur de plan (C10) : une écoute, aucun rendu. */}
         {FEATURES.plans && <SuiviClicsPlan />}

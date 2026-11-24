@@ -432,15 +432,15 @@ ${V2_CSS}<div class="wrap"><header class="hero"><div class="in v2"><div class="i
   <div class="tags"><span>Rénovation</span><span>Construction neuve</span><span>Achat-revente</span></div>
   <h1>Tes travaux, <span class="hl">sans les erreurs</span> qui coûtent des milliers d'euros.</h1>
   <p class="sub">Je m'appelle Daniel. J'ai dirigé ma société de travaux, rénové et construit mes propres maisons. Je relis tes devis et j'organise ton chantier avec toi, à distance.</p>
-  <div class="cta"><a href="/accompagnement-travaux#demande" class="btn btn-o">Demander mon appel gratuit →</a><a href="/projets/nouveau" class="btn btn-w">Estimer mes travaux</a></div>
+  <div class="cta"><a href="/accompagnement-travaux#demande" class="btn btn-o brille">Demander mon appel gratuit →</a><a href="/projets/nouveau" class="btn btn-w">Estimer mes travaux</a></div>
   <div class="trust"><span><b>Premier appel</b> gratuit</span><span><b>Prix écrit</b> avant de commencer</span><span><b>sans</b> engagement</span></div>
 </div><aside class="fond monte d1" aria-label="Qui t'accompagne">
   <div class="qui"><img src="${PHOTO}" alt="Daniel Leal, fondateur d'AVYORA" width="124" height="124" decoding="async"><div><p class="nom">Daniel Leal</p><p class="role">Ex-gérant d'une société de travaux<span class="tel"> · 8 ans de chantier</span><span class="pc">, fondateur d'AVYORA</span></p></div></div>
   <ul>
-    <li><span class="k"><b class="num">3</b> ans</span><span>à la tête de notre société de travaux, avec mon frère</span></li>
-    <li><span class="k"><b class="num">2</b></span><span>maisons rénovées de nos mains, puis revendues</span></li>
-    <li><span class="k"><b class="num">1</b></span><span>maison neuve construite presque entièrement de nos mains</span></li>
-    <li><span class="k"><b class="num">8</b> ans</span><span>de chantier au total</span></li>
+    <li><span class="k"><b class="num" data-compte="3">3</b> ans</span><span>à la tête de notre société de travaux, avec mon frère</span></li>
+    <li><span class="k"><b class="num" data-compte="2">2</b></span><span>maisons rénovées de nos mains, puis revendues</span></li>
+    <li><span class="k"><b class="num" data-compte="1">1</b></span><span>maison neuve construite presque entièrement de nos mains</span></li>
+    <li><span class="k"><b class="num" data-compte="8">8</b> ans</span><span>de chantier au total</span></li>
   </ul>
   <a href="/accompagnement-travaux#qui" class="lien">Mon parcours →</a>
 </aside></div></header></div>
@@ -480,10 +480,10 @@ ${V2_CSS}<div class="wrap"><header class="hero"><div class="in v2"><div class="i
   <h2 id="calc-titre" class="titre-s">Quelques centaines d'euros pour en éviter des milliers.</h2>
   <p class="sous-t">Sur un chantier, une petite erreur se compte vite en milliers d'euros.</p>
   <div class="tuiles">
-    ${tuile("≈ 29 €", "Relecture de devis", "/relecture-devis-travaux", "t'évite un poste oublié qui revient en avenant.")}
-    ${tuile("99 €", "Avis avant achat", "/avis-travaux-avant-achat", "t'évite une toiture ou une électricité à refaire, découverte trop tard.")}
-    ${tuile("≈ 149 €", "Estimation du budget", "/estimation-budget-travaux", "t'évite un chantier bloqué à mi-parcours, faute de budget.")}
-    ${tuile("≈ 199 €<small>/mois</small>", "Organisation du chantier", "/suivi-de-chantier", "t'évite les reprises, les attentes et les retards.")}
+    ${tuile('≈ <span data-compte="29">29</span> €', "Relecture de devis", "/relecture-devis-travaux", "t'évite un poste oublié qui revient en avenant.")}
+    ${tuile('<span data-compte="99">99</span> €', "Avis avant achat", "/avis-travaux-avant-achat", "t'évite une toiture ou une électricité à refaire, découverte trop tard.")}
+    ${tuile('≈ <span data-compte="149">149</span> €', "Estimation du budget", "/estimation-budget-travaux", "t'évite un chantier bloqué à mi-parcours, faute de budget.")}
+    ${tuile('≈ <span data-compte="199">199</span> €<small>/mois</small>', "Organisation du chantier", "/suivi-de-chantier", "t'évite les reprises, les attentes et les retards.")}
   </div>
   <p class="note-px">Prix moyens : ils varient selon la taille de ton projet. Le prix ferme t'est annoncé par écrit avant de commencer.</p>
 </div></section>
@@ -491,7 +491,7 @@ ${V2_CSS}<div class="wrap"><header class="hero"><div class="in v2"><div class="i
 <section class="blk" style="padding:56px 0 0"><div class="wrap"><div class="fin3">
   <img src="${PHOTO}" alt="" width="76" height="76" loading="lazy" decoding="async">
   <div class="tx"><h2>Un doute sur ton projet ? Parlons-en 20 minutes.</h2><p>Gratuit, sans engagement. Je te dis ce dont tu as besoin, ou rien si tu n'as besoin de rien.</p></div>
-  <a href="/accompagnement-travaux#demande" class="btn btn-o">Demander mon appel gratuit →</a>
+  <a href="/accompagnement-travaux#demande" class="btn btn-o brille">Demander mon appel gratuit →</a>
 </div></div></section>
 
 <section class="blk" style="padding:44px 0 8px" aria-label="Aller plus loin"><div class="wrap"><div class="liens">
@@ -572,15 +572,15 @@ ${V2_CSS}<div class="wrap"><header class="hero"><div class="in v2"><div class="i
   <div class="tags"><span>Renovation</span><span>New builds</span><span>Buy-to-resell</span></div>
   <h1>Your project, <span class="hl">without the mistakes</span> that cost thousands of euros.</h1>
   <p class="sub">My name is Daniel. I ran my own building company, and renovated and built my own houses. I review your quotes and organise your build with you, remotely.</p>
-  <div class="cta"><a href="/accompagnement-travaux#demande" class="btn btn-o">Request my free call →</a><a href="/projets/nouveau" class="btn btn-w">Estimate my project</a></div>
+  <div class="cta"><a href="/accompagnement-travaux#demande" class="btn btn-o brille">Request my free call →</a><a href="/projets/nouveau" class="btn btn-w">Estimate my project</a></div>
   <div class="trust"><span><b>First call</b> free</span><span><b>Written price</b> before we start</span><span><b>no</b> commitment</span></div>
 </div><aside class="fond monte d1" aria-label="Who's helping you">
   <div class="qui"><img src="${PHOTO}" alt="Daniel Leal, founder of AVYORA" width="124" height="124" decoding="async"><div><p class="nom">Daniel Leal</p><p class="role">Former head of a building company<span class="tel"> · 8 years on site</span><span class="pc">, founder of AVYORA</span></p></div></div>
   <ul>
-    <li><span class="k"><b class="num">3</b> yrs</span><span>running our building company, with my brother</span></li>
-    <li><span class="k"><b class="num">2</b></span><span>houses renovated with our own hands, then sold</span></li>
-    <li><span class="k"><b class="num">1</b></span><span>new house built almost entirely with our own hands</span></li>
-    <li><span class="k"><b class="num">8</b> yrs</span><span>on site in total</span></li>
+    <li><span class="k"><b class="num" data-compte="3">3</b> yrs</span><span>running our building company, with my brother</span></li>
+    <li><span class="k"><b class="num" data-compte="2">2</b></span><span>houses renovated with our own hands, then sold</span></li>
+    <li><span class="k"><b class="num" data-compte="1">1</b></span><span>new house built almost entirely with our own hands</span></li>
+    <li><span class="k"><b class="num" data-compte="8">8</b> yrs</span><span>on site in total</span></li>
   </ul>
   <a href="/accompagnement-travaux#qui" class="lien">My background →</a>
 </aside></div></header></div>
@@ -620,10 +620,10 @@ ${V2_CSS}<div class="wrap"><header class="hero"><div class="in v2"><div class="i
   <h2 id="calc-titre" class="titre-s">A few hundred euros to avoid losing thousands.</h2>
   <p class="sous-t">On a building site, a small mistake quickly costs thousands of euros.</p>
   <div class="tuiles">
-    ${tuile("≈ €29", "Quote review", acc, "saves you a missing item that comes back as a change order.")}
-    ${tuile("€99", "Opinion before you buy", acc, "saves you a roof or wiring to redo, found too late.")}
-    ${tuile("≈ €149", "Budget estimate", acc, "saves you works stalled halfway for lack of budget.")}
-    ${tuile("≈ €199<small>/month</small>", "Site organisation", acc, "saves you rework, waiting and delays.")}
+    ${tuile('≈ €<span data-compte="29">29</span>', "Quote review", acc, "saves you a missing item that comes back as a change order.")}
+    ${tuile('€<span data-compte="99">99</span>', "Opinion before you buy", acc, "saves you a roof or wiring to redo, found too late.")}
+    ${tuile('≈ €<span data-compte="149">149</span>', "Budget estimate", acc, "saves you works stalled halfway for lack of budget.")}
+    ${tuile('≈ €<span data-compte="199">199</span><small>/month</small>', "Site organisation", acc, "saves you rework, waiting and delays.")}
   </div>
   <p class="note-px">Average prices: they vary with the size of your project. The firm price is sent to you in writing before we start.</p>
 </div></section>
@@ -631,7 +631,7 @@ ${V2_CSS}<div class="wrap"><header class="hero"><div class="in v2"><div class="i
 <section class="blk" style="padding:56px 0 0"><div class="wrap"><div class="fin3">
   <img src="${PHOTO}" alt="" width="76" height="76" loading="lazy" decoding="async">
   <div class="tx"><h2>Unsure about your project? Let's talk for 20 minutes.</h2><p>Free, no commitment. I'll tell you what you need, or nothing if you need nothing.</p></div>
-  <a href="/accompagnement-travaux#demande" class="btn btn-o">Request my free call →</a>
+  <a href="/accompagnement-travaux#demande" class="btn btn-o brille">Request my free call →</a>
 </div></div></section>
 
 <section class="blk" style="padding:44px 0 8px" aria-label="Go further"><div class="wrap"><div class="liens">

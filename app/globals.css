@@ -303,3 +303,41 @@
 .av-guide ol.etapes > li { margin: 18px 0; padding-left: 4px; }
 .av-guide ol.etapes > li::marker { font-weight: 700; font-size: 15.5px; }
 .av-guide ol.etapes > li > h3 { margin-top: 0; }
+
+/* ── Les effets du site (24/11/2026, maquette validée par Dani) — components/EffetsSite.tsx ────────────────────
+   Hors des couches (@layer) : ils l'emportent sur les utilitaires Tailwind de l'en-tête et sur .card-interactive. */
+
+/* Zoom léger au survol : boutons et cartes cliquables, partout. */
+.btn:hover:not(:disabled) { transform: translateY(-1px) scale(1.03); }
+.btn:active:not(:disabled) { transform: translateY(0.5px) scale(1); }
+.card-interactive:hover { transform: translateY(-3px) scale(1.01); }
+
+/* La barre du haut se resserre dès qu'on descend. */
+[data-entete] { transition: padding 0.3s var(--ease-out-soft); }
+[data-entete] > div { transition: height 0.3s var(--ease-out-soft), box-shadow 0.3s var(--ease-out-soft); }
+[data-entete].compact { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+[data-entete].compact > div { height: 3.5rem; box-shadow: 0 14px 34px -14px rgba(30, 27, 75, 0.7); }
+
+/* Le point du logo : il arrive avec un petit rebond, puis pulse au survol. */
+.logo-pt { transform-box: fill-box; transform-origin: center; animation: avy-pop 0.7s cubic-bezier(0.3, 1.7, 0.5, 1) 0.35s backwards; }
+.group:hover .logo-pt { animation: avy-pouls 1.3s ease-in-out infinite; }
+@keyframes avy-pop { from { transform: scale(0); } }
+@keyframes avy-pouls { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.45); } }
+
+/* Le reflet violet qui traverse le bouton principal, toutes les 5 à 6 secondes. */
+.brille { position: relative; overflow: hidden; isolation: isolate; }
+.brille::after { content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 42%; pointer-events: none; z-index: -1;
+  background: linear-gradient(100deg, transparent, rgba(196, 181, 253, 0.6), transparent); transform: skewX(-20deg);
+  animation: avy-reflet 5.5s ease-in-out 1.8s infinite; }
+@keyframes avy-reflet { 0%, 72% { left: -60%; } 92%, 100% { left: 130%; } }
+
+/* Au défilement : le bloc part un peu plus bas et un peu transparent (jamais invisible), puis glisse en place. */
+.rv-pret { transform: translateY(28px) scale(0.985); opacity: 0.35; }
+.rv-pret.rv-vu { transform: none; opacity: 1; transition: transform 0.8s var(--ease-out-soft), opacity 0.8s var(--ease-out-soft); }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn:hover:not(:disabled), .card-interactive:hover { transform: none; }
+  .logo-pt, .group:hover .logo-pt, .brille::after { animation: none; }
+  .rv-pret { transform: none; opacity: 1; }
+  [data-entete], [data-entete] > div { transition: none; }
+}

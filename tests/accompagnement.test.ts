@@ -464,7 +464,7 @@ describe("sitemap, maillage interne et confidentialité", () => {
     // L'accueil V2 (24/11/2026) : le bouton de rappel ouvre le héros et revient dans l'appel final, l'accompagnement est
     // la première offre (mise en avant) de « Ce que je te propose », FR et EN.
     const accueil = lire("app/page.tsx");
-    expect(accueil.match(/href="\/accompagnement-travaux#demande" class="btn btn-o"/g)).toHaveLength(4);
+    expect(accueil.match(/href="\/accompagnement-travaux#demande" class="btn btn-o brille"/g)).toHaveLength(4);
     expect(accueil.match(/vedette: true, ic: IC\.conseil, titre:/g)).toHaveLength(2);
     expect(accueil).toContain(`<h1>Tes travaux, <span class="hl">sans les erreurs</span> qui coûtent des milliers d'euros.</h1>`);
     expect(accueil).toContain('<li><a href="/relecture-devis-travaux">Relecture de devis</a></li>');

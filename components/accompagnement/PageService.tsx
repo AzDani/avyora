@@ -95,7 +95,7 @@ export default function PageService({ c }: { c: Contenu }) {
         <h1 className="mt-2 text-[30px] font-semibold leading-[1.12] tracking-tight text-ink [text-wrap:balance] sm:text-[40px]">{c.h1}</h1>
         <p className="mt-4 max-w-[62ch] text-[16.5px] leading-relaxed text-muted">{c.intro}</p>
         <div className="mt-6 flex flex-wrap items-center gap-3">
-          <Link href={cta.href} className="btn btn-primary min-h-12 px-6 text-[15px]">{cta.label}</Link>
+          <Link href={cta.href} className="btn btn-primary brille min-h-12 px-6 text-[15px]">{cta.label}</Link>
           <span className="text-[13.5px] text-muted">{cta.note}</span>
         </div>
         {c.tarif && <Tarif t={c.tarif} />}
