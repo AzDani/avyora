@@ -44,7 +44,7 @@ export const META_EN = {
     title: "AVYORA — renovation advice and cost estimates",
     absolu: true,
     description:
-      "A former site manager reviews your quotes and follows your project remotely. And AVYORA prices your renovation line by line.",
+      "Quote reviews, pre-purchase opinions and site organisation by a former building-company owner. And AVYORA prices your renovation line by line.",
     path: "/",
   },
   tarifs: {

@@ -745,7 +745,9 @@ describe("Accueil pendant la bêta (lib/accueil-beta.ts)", () => {
       // Plus d'appel à payer, aucun prix d'après la bêta (décision de Dani du 16/10/2026), et plus aucune promesse
       // tarifaire aux membres fondateurs (décision de Dani du 12/11/2026).
       expect(pendant).not.toMatch(/AVYORA Pro|Passer Pro|Go Pro|Voir les tarifs|See pricing|dès 18,85|from €18\.85|dès 14,99|from €14\.99|href="\/tarifs" class="promo"/);
-      expect(pendant).not.toMatch(/14[,.]99|€ ?149|149 ?€|12[,.]42|18[,.]85|€ ?169|169 ?€|14[,.]08|16[,.]15/);
+      // 149 € seul est permis : c'est le prix moyen de l'estimation du budget (prestation d'accompagnement, payante
+      // pendant la bêta) ; l'abonnement annuel (149 €/an) reste interdit.
+      expect(pendant).not.toMatch(/14[,.]99|€ ?149 ?(\/|a year|per year)|149 ?€ ?(\/|par an|l'an)|12[,.]42|18[,.]85|€ ?169|169 ?€|14[,.]08|16[,.]15/);
       expect(pendant).not.toMatch(/préférentiel|garanti à vie|preferred rate|guaranteed for life/);
       expect(pendant).toContain(locale === "fr" ? "rien n'est prélevé</b> : tu t'abonnes seulement si tu le veux" : "nothing is charged</b>: you subscribe only if you want to");
     }

@@ -56,7 +56,8 @@ describe("accompagnement achat-revente", () => {
   it("maillage interne : l'accueil (FR et EN), les pages voisines, deux guides, le catalogue de services", () => {
     const racine = path.join(__dirname, "..");
     const lire = (f: string) => readFileSync(path.join(racine, f), "utf8");
-    expect(lire("app/page.tsx").match(/accItem\(ACC_IC\.revente,[^\n]*"\/accompagnement-achat-revente"\)/g) ?? []).toHaveLength(2);
+    // L'accueil « trois portes » : la porte « Être accompagné » et la situation « J'hésite à acheter », FR et EN.
+    expect(lire("app/page.tsx").match(/href="\/accompagnement-achat-revente"/g) ?? []).toHaveLength(4);
     expect(lire("lib/accompagnement/pages-services.ts").match(/href: "\/accompagnement-achat-revente"/g) ?? []).toHaveLength(3);
     expect(lire("app/guides/[slug]/page.tsx").match(/href="\/accompagnement-achat-revente"/g) ?? []).toHaveLength(2);
     expect(lire("app/accompagnement-travaux/page.tsx")).toMatch(/url: `\$\{siteUrl\}\$\{s\.lien\.href\}`/);

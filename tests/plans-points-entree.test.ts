@@ -243,7 +243,7 @@ describe("C9 · accueil", () => {
       expect(apres.indexOf('class="planb"')).toBeGreaterThan(apres.indexOf('class="svc'));
       expect(apres).toContain(locale === "fr" ? "<h3>Dessiner ton plan en 3D</h3>" : "<h3>Draw your floor plan in 3D</h3>");
       /* le héros garde son bouton d'estimation */
-      expect(entre(apres, '<header class="hero">', "</header>")).toContain('href="/projets/nouveau" class="btn btn-w"');
+      expect(entre(apres, '<header class="hero">', "</header>")).toContain('href="/projets/nouveau" class="btn btn-n"');
     }
   });
 

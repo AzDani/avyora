@@ -14,12 +14,12 @@ import { accueilBeta } from "@/lib/accueil-beta";
    de chantier ») ET garde l'estimation (« estimation travaux », le plus gros volume). */
 const TITRE_ACCUEIL = "AVYORA — accompagnement et estimation de travaux";
 const DESCRIPTION_ACCUEIL =
-  "Un ancien chef de chantier relit tes devis et suit ton chantier à distance. Et AVYORA chiffre tes travaux poste par poste.";
+  "Relecture de devis, avis avant achat, organisation de chantier : un ex-gérant de société de travaux t'accompagne. Et AVYORA chiffre tes travaux.";
 const META: Metadata = {
   title: { absolute: TITRE_ACCUEIL },
   description: DESCRIPTION_ACCUEIL,
   alternates: { canonical: "/" },
-  openGraph: og({ title: "AVYORA — un ancien chef de chantier à tes côtés pour tes travaux", description: DESCRIPTION_ACCUEIL, path: "/", type: "website" }),
+  openGraph: og({ title: "AVYORA — accompagnement, estimation et plans pour tes travaux", description: DESCRIPTION_ACCUEIL, path: "/", type: "website" }),
   twitter: { card: "summary_large_image", title: TITRE_ACCUEIL, description: DESCRIPTION_ACCUEIL },
 };
 export async function generateMetadata(): Promise<Metadata> {
@@ -48,7 +48,7 @@ function jsonLdAccueil() {
         "@type": "Service",
         name: "Accompagnement travaux",
         serviceType: "Conseil en travaux de rénovation et de construction",
-        description: "Relecture de devis, plan du chantier et suivi chaque semaine, à distance, par un ancien chef de chantier. Premier appel gratuit.",
+        description: "Relecture de devis, avis avant achat, estimation du budget et organisation du chantier, à distance, par un ancien gérant de société de travaux. Premier appel gratuit.",
         url: `${siteUrl}/accompagnement-travaux`,
         provider: { "@id": `${siteUrl}/#organization` },
         areaServed: { "@type": "Country", name: "France" },
@@ -203,54 +203,6 @@ const HOME_CSS = `
 @media(max-width:440px){.av-home .steps4,.av-home .pains,.av-home .cred{grid-template-columns:1fr}}
 `;
 
-/* Accompagnement travaux : d'abord une bande en bas de page (16/11/2026), puis, Dani ayant « galéré à la trouver », une
-   vraie section juste sous le hero (et la section de l'éditeur de plan quand elle est en ligne). Liens vers l'URL
-   canonique (page indexable : pas de `?src=`) ; le bouton principal va droit au formulaire de rappel (#demande). Ni prix
-   ni emoji, le parcours sans nommer le groupe. Son style voyage avec elle (HOME_CSS ne bouge pas), et aucune des
-   chaînes que lib/accueil-beta.ts remplace n'est touchée. */
-const ACCOMP_STYLE = `<style>.av-home .accb{margin-top:22px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:34px;align-items:center;background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:40px}.av-home .accb .badge{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:#0b6e4b;background:var(--good-bg);border-radius:999px;padding:6px 12px;margin-top:14px}.av-home .accb .badge i{width:7px;height:7px;border-radius:50%;background:var(--good);display:inline-block}.av-home .accb h2{font-size:clamp(24px,3.2vw,32px);font-weight:700;line-height:1.14;margin-top:10px;color:var(--nuit);text-wrap:balance}.av-home .accb p.d{color:var(--muted);font-size:15.5px;line-height:1.6;margin-top:12px;max-width:56ch}.av-home .accb p.qui{font-size:13.5px;color:var(--ink);margin-top:14px;line-height:1.5}.av-home .accb p.qui b{font-weight:600}.av-home .accb p.et{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-top:20px}.av-home .accb ol.etapes{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px}.av-home .accb ol.etapes li{display:flex;gap:12px;align-items:flex-start;font-size:14.5px;color:var(--ink);line-height:1.45}.av-home .accb ol.etapes .n{flex:none;width:24px;height:24px;border-radius:7px;background:var(--brand);color:#fff;font-size:12.5px;font-weight:700;display:grid;place-items:center;font-family:var(--font-geist-mono),monospace}.av-home .accb .cta{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin-top:22px}.av-home .accb .lien{color:var(--brand-700);font-weight:600;font-size:14.5px;text-decoration:underline;text-underline-offset:3px;min-height:44px;display:inline-flex;align-items:center}.av-home .accb ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}.av-home .accb li a{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface-2);text-decoration:none;color:inherit;transition:border-color .15s,transform .15s}.av-home .accb li a:hover{border-color:var(--brand-200);transform:translateX(3px)}.av-home .accb li a:focus-visible{outline:3px solid var(--brand-200);outline-offset:2px}.av-home .accb li .ic{flex:none;width:36px;height:36px;border-radius:10px;background:var(--brand-weak);color:var(--brand-700);display:inline-flex;align-items:center;justify-content:center}.av-home .accb li .t{font-weight:600;font-size:14.5px;color:var(--ink)}.av-home .accb li .s{font-size:13px;color:var(--muted);margin-top:2px;line-height:1.45}.av-home .accb li .fl{margin-left:auto;color:var(--brand-700);font-weight:600}@media(max-width:820px){.av-home .accb{grid-template-columns:1fr;padding:28px 22px;gap:24px}}@media (prefers-reduced-motion:reduce){.av-home .accb li a{transition:none}.av-home .accb li a:hover{transform:none}}</style>`;
-const ACC_IC = {
-  devis: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 2.5h7l3 3v12H5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 9.5h4.5M8 12.5h4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
-  plan: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 15.5 7.5 11l3 3 6.5-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 7h4v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  suivi: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 8h14M7 2.5v3M13 2.5v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="m7.5 12.3 1.7 1.7 3.3-3.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  revente: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 9.5 10 3.8l7 5.7V17H3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M10 15.5v-5M7.8 12.6 10 10.4l2.2 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-  visio: '<svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="2.5" y="5" width="10.5" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="m13 9 4.5-2.5v7L13 11" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
-};
-const accItem = (ic: string, t: string, s: string, href = "/accompagnement-travaux#aide") =>
-  `<li><a href="${href}"><span class="ic">${ic}</span><span><span class="t" style="display:block">${t}</span><span class="s" style="display:block">${s}</span></span><span class="fl" aria-hidden="true">→</span></a></li>`;
-const etapesAcc = (t: string, liste: string[]) =>
-  `<p class="et">${t}</p><ol class="etapes">${liste.map((x, i) => `<li><span class="n">${i + 1}</span><span>${x}</span></li>`).join("")}</ol>`;
-const ACCOMP_BAND = `
-<div class="wrap">${ACCOMP_STYLE}<section class="accb" aria-labelledby="accb-titre"><div>
-  <p class="eyebrow">Accompagnement travaux</p>
-  <h2 id="accb-titre">Ce que je fais pour toi.</h2>
-  <p class="d">Tu gardes tes artisans et tes décisions : je t'apporte un regard de pro sur ton projet, à distance, en visio ou sur WhatsApp. C'est du conseil, pas de la maîtrise d'œuvre, et je ne touche rien sur les travaux.</p>
-  ${etapesAcc("Comment ça se passe", ["Tu demandes à être rappelé, en une minute.", "Premier appel gratuit : on regarde ton projet ensemble.", "Je te propose l'accompagnement qui te sert, sans engagement."])}
-  <div class="cta"><a href="/accompagnement-travaux#demande" class="btn btn-p">Demander à être rappelé →</a><a href="/accompagnement-travaux" class="lien">Découvrir l'accompagnement</a></div>
-</div><ul aria-label="Ce que je peux faire pour toi">
-  ${accItem(ACC_IC.devis, "Relecture de tes devis", "Tout ce que tu as demandé est-il compté ? Appel de 20 min, ≈ 29 €.", "/relecture-devis-travaux")}
-  ${accItem(ACC_IC.plan, "Estimation de ton budget", "Rénovation ou neuf : ton budget vérifié poste par poste.", "/estimation-budget-travaux")}
-  ${accItem(ACC_IC.visio, "Avis avant achat", "Les travaux à prévoir et de quoi négocier. 99 €, prix fixe.", "/avis-travaux-avant-achat")}
-  ${accItem(ACC_IC.suivi, "Organisation du chantier", "Ton carnet de tâches et un point chaque semaine.", "/suivi-de-chantier")}
-  ${accItem(ACC_IC.revente, "Achat-revente", "Acheter, rénover, revendre : un regard de pro à chaque étape.", "/accompagnement-achat-revente")}
-  ${accItem(ACC_IC.devis, "Et aussi", "Choix techniques, plans 2D, suivi de ton budget : toutes les prestations et leurs prix.")}
-</ul></section></div>`;
-const ACCOMP_BAND_EN = `
-<div class="wrap">${ACCOMP_STYLE}<section class="accb" aria-labelledby="accb-titre"><div>
-  <p class="eyebrow">Renovation advice</p>
-  <h2 id="accb-titre">What I do for you.</h2>
-  <p class="d">You keep your contractors and your decisions: I bring a professional's eye to your project, remotely, by video call or WhatsApp. It's advice, not project management, and I take nothing on the works.</p>
-  ${etapesAcc("How it works", ["You request a call-back, in one minute.", "First call free: we look at your project together.", "I suggest the support that helps you, no commitment."])}
-  <div class="cta"><a href="/accompagnement-travaux#demande" class="btn btn-p">Request a call-back →</a><a href="/accompagnement-travaux" class="lien">Discover the service</a></div>
-</div><ul aria-label="What I can do for you">
-  ${accItem(ACC_IC.devis, "Review of your quotes", "Is everything you asked for included? 20-min call, ≈ €29.")}
-  ${accItem(ACC_IC.plan, "Budget estimate", "Renovation or new build: your budget checked line by line.")}
-  ${accItem(ACC_IC.visio, "Opinion before you buy", "The work to plan and what to negotiate. €99, fixed price.")}
-  ${accItem(ACC_IC.suivi, "Organising your site", "Your task book and a check-in every week.")}
-  ${accItem(ACC_IC.revente, "Buy, renovate, resell", "A professional's eye at every step (page in French).", "/accompagnement-achat-revente")}
-  ${accItem(ACC_IC.devis, "And also", "Technical choices, 2D plans, budget tracking: every service and its price.")}
-</ul></section></div>`;
-
 /* Éditeur de plan (C9) : section sombre juste après le hero, insérée seulement quand FEATURES.plans est allumé (éteint :
    HTML d'origine au caractère près, comme NEUF_BAND). Deux vraies captures de l'éditeur (la Maison 94 m², en gratuit,
    2D puis 3D), webp 760 / 1040 et PNG de repli, largeur et hauteur posées. Le hero et ses boutons ne bougent pas : la
@@ -293,17 +245,6 @@ const CTA_PLAN_ANONYME = {
 function ctaPlanAccueil(html: string, locale: "fr" | "en", connecte: boolean): string {
   return connecte ? html : html.split(CTA_PLAN[locale]).join(CTA_PLAN_ANONYME[locale]);
 }
-/* ─── L'accueil (refonte du 20/11/2026 : « que les gens comprennent en 1 min ce qu'on propose ») ───────────────────
-   Dans l'ordre de la lecture :
-   1. le héros : l'ACCOMPAGNEMENT de Daniel (décision de Dani du 20/11/2026 : « la demande sera plus élevée que pour
-      l'estimation »), avec son parcours en frise (faits donnés par Dani, sans nommer son ancien groupe) ;
-   2. ce qu'il fait (4 prestations) et comment ça se passe (3 étapes) ;
-   3. l'outil AVYORA en cartes, chacune avec son accès (gratuit, avec Pro, offert), le Réseau AVYORA (France), le plan ;
-   4. gratuit ou Pro, en deux colonnes ;
-   5. les prix des travaux (maillage SEO) et l'appel final.
-   La bêta (lib/beta.ts) est connue ICI : pendant qu'elle court, aucun prix ni « AVYORA Pro » n'est écrit, les
-   fonctions « Pro » disent « gratuit pendant la bêta ». Seul le bandeau du haut passe encore par lib/accueil-beta.ts.
-   Ni emoji ni chiffre inventé : l'exemple du héros est marqué comme tel. */
 
 type Beta = { active: boolean; fin: string; inscription: string };
 
@@ -411,6 +352,161 @@ const CHIPS_EN = [
 const chips = (liste: string[][], tous: string) =>
   `<div class="chips">${liste.map(([s, l]) => `<a href="/prix-travaux/${s}">${l}</a>`).join("")}<a href="/prix-travaux" class="tous">${tous}</a></div>`;
 
+/* ─── L'accueil « trois portes » (24/11/2026, maquette validée par Dani) ─────────────────────────────────────────────
+   Celui qui arrive voit tout de suite les TROIS choses proposées et sait pourquoi il est là. Dans l'ordre de la lecture :
+   1. le héros : la promesse (« sans les erreurs qui coûtent des milliers d'euros ») et les trois portes, chacune avec
+      pour qui elle est, ses prix, ce qu'elle évite et UN bouton : être accompagné par Daniel (mis en avant à sa
+      demande : sa société de travaux, ses maisons rénovées et construites, plus « ancien chef de chantier »), le
+      logiciel AVYORA, les plans ;
+   2. « Où en es-tu ? » : six situations, chacune son parcours conseillé avec les prix, le risque à ce stade et un bouton.
+      Onglets en CSS seul (boutons radio + :has, aucun script) ; sans :has, tous les parcours s'affichent ;
+   3. « Le calcul est vite fait » : le prix de chaque prestation en face de ce qu'elle évite. Aucun montant d'erreur
+      inventé : « souvent des milliers d'euros », les mots de Dani ;
+   4. qui t'accompagne, puis comment ça se passe (appel gratuit, proposition écrite au prix ferme, la prochaine étape) ;
+   5. l'outil en cartes, le Réseau AVYORA, l'éditeur de plan, gratuit ou Pro, les prix des travaux, l'appel final.
+   La bêta (lib/beta.ts) est connue ICI : pendant qu'elle court, ni « AVYORA Pro » ni prix de l'abonnement (le logiciel
+   dit « gratuit pendant la bêta ») ; les prestations d'accompagnement restent payantes et affichent leur prix moyen.
+   Seul le bandeau du haut passe encore par lib/accueil-beta.ts. Ni emoji ni chiffre inventé. Les pages de prestation
+   n'existent qu'en français : en anglais, les lignes mènent à la page d'accompagnement (#aide). */
+
+const PORTES_CSS = `<style>
+.av-home .hero .in.h3p{max-width:none;text-align:left;padding:52px 44px 44px}
+.av-home .hero .h3p .intro{max-width:800px}
+.av-home .hero .h3p h1{font-size:clamp(32px,4.4vw,52px);line-height:1.06}
+.av-home .hero .h3p p.sub{margin-left:0;max-width:62ch}
+.av-home .hero .h3p p.mot{margin-top:14px;font-size:15.5px;color:#b7b3e0}
+.av-home .hero .h3p p.mot b{color:#fff}
+.av-home .hero .h3p .trust{justify-content:flex-start;margin-top:22px}
+.av-home .portes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:36px}
+.av-home .porte{background:#fff;color:var(--ink);border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:14px;box-shadow:0 30px 60px -28px rgba(0,0,0,.55);border:2px solid transparent}
+.av-home .porte.vedette{border-color:var(--accent)}
+.av-home .porte .tete{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.av-home .porte .ic{flex:none;width:44px;height:44px;border-radius:12px;background:var(--brand-weak);color:var(--brand-700);display:grid;place-items:center}
+.av-home .porte .ic svg{width:22px;height:22px}
+.av-home .porte .badge{font-size:12px;font-weight:600;line-height:1.3;border-radius:999px;padding:5px 10px;background:var(--brand-weak);color:var(--brand-700);text-align:right}
+.av-home .porte .badge.g{background:var(--good-bg);color:#0b6e4b}
+.av-home .hero .porte .eyebrow{color:var(--brand)}
+.av-home .porte h2{font-size:21px;line-height:1.2;font-weight:700;color:var(--nuit);margin-top:6px}
+.av-home .porte .pour{font-size:14.5px;color:var(--muted);margin-top:6px;line-height:1.5}
+.av-home .porte ul{list-style:none;margin:0;padding:0}
+.av-home .porte .lignes li{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.av-home .porte .lignes li:last-child{border-bottom:0}
+.av-home .porte .lignes a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:3px}
+.av-home .porte .lignes a:hover{text-decoration-color:var(--brand)}
+.av-home .porte .lignes .num{font-weight:600;white-space:nowrap}
+.av-home .porte .coches{display:grid;gap:8px}
+.av-home .porte .coches li{display:grid;grid-template-columns:18px 1fr;gap:10px;font-size:14.5px;line-height:1.45}
+.av-home .porte .coches svg{width:16px;height:16px;margin-top:2px;color:var(--brand)}
+.av-home .porte .aussi{font-size:13px;color:var(--muted);line-height:1.55}
+.av-home .porte .aussi a{color:var(--brand-700);text-decoration:underline;text-underline-offset:2px}
+.av-home .porte .evite{background:#fdf1e1;color:#5c3a08;border-radius:12px;padding:11px 13px;font-size:13.5px;line-height:1.45}
+.av-home .porte .bas{margin-top:auto;display:grid;gap:8px}
+.av-home .porte .btn{width:100%;border-radius:12px}
+.av-home .btn-n{background:var(--nuit);color:#fff}
+.av-home .btn-n:hover{background:var(--nuit-2)}
+.av-home .porte .sous{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--muted)}
+.av-home .porte .sous a{color:var(--brand-700);font-weight:600}
+.av-home .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;padding:0;margin:-1px}
+.av-home .titre-g{margin-bottom:22px}
+.av-home .titre-g h2{font-size:clamp(25px,3.4vw,34px);font-weight:700;margin-top:10px;color:var(--nuit)}
+.av-home .titre-g p{color:var(--muted);font-size:16px;margin-top:10px;max-width:62ch;line-height:1.6}
+.av-home .situ{position:relative}
+.av-home .situ fieldset{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:10px}
+.av-home .situ label{display:inline-flex;align-items:center;min-height:46px;padding:0 18px;border-radius:999px;border:1px solid var(--line-strong);background:#fff;font-size:15px;font-weight:500;cursor:pointer;transition:border-color .15s}
+.av-home .situ label:hover{border-color:var(--brand-200)}
+.av-home .situ input:checked+label{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+.av-home .situ input:focus-visible+label{outline:3px solid var(--accent);outline-offset:2px}
+.av-home .situ .pan{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;margin-top:18px}
+.av-home .situ .parc{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:24px 26px;box-shadow:var(--shadow)}
+.av-home .situ .k{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.av-home .situ ol{list-style:none;margin:8px 0 0;padding:0}
+.av-home .situ ol li{display:flex;gap:14px;padding:14px 0;border-top:1px solid var(--line)}
+.av-home .situ ol li:first-child{border-top:0}
+.av-home .situ .n{flex:none;width:30px;height:30px;border-radius:50%;background:var(--brand-weak);color:var(--brand-700);font-weight:700;font-size:13.5px;display:grid;place-items:center}
+.av-home .situ .c{flex:1;min-width:0}
+.av-home .situ .l{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 14px;align-items:baseline}
+.av-home .situ .l a{font-weight:600;font-size:16px;color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:3px}
+.av-home .situ .l .p{font-weight:600;color:var(--brand-700);font-size:14.5px}
+.av-home .situ .t{display:block;color:var(--muted);font-size:14.5px;margin-top:3px;line-height:1.5}
+.av-home .situ .plus{margin-top:6px;padding-top:12px;border-top:1px solid var(--line);font-size:14.5px;color:var(--muted)}
+.av-home .situ .plus a{color:var(--brand-700);font-weight:600}
+.av-home .situ .risk{background:linear-gradient(150deg,var(--nuit),var(--nuit-2));color:#fff;border-radius:var(--r-lg);padding:24px 26px;display:flex;flex-direction:column;gap:12px}
+.av-home .situ .risk .k{color:#fbbf6a}
+.av-home .situ .risk .r{font-size:18px;font-weight:600;line-height:1.4}
+.av-home .situ .risk .m{font-size:14.5px;color:#d7d4f2;line-height:1.5}
+.av-home .situ .risk .btn{margin-top:auto;border-radius:12px}
+.av-home .situ .risk .note{font-size:12.5px;color:#b7b3e0;text-align:center}
+.av-home .calc{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:40px}
+.av-home .calc h2{font-size:clamp(25px,3.4vw,34px);font-weight:700;line-height:1.14;margin-top:10px;color:var(--nuit);max-width:26ch}
+.av-home .calc p.d{color:var(--muted);font-size:16.5px;margin-top:12px;line-height:1.6;max-width:62ch}
+.av-home .calc .en{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.4fr);gap:8px 32px;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);padding-bottom:10px;border-bottom:1px solid var(--line-strong);margin-top:28px}
+.av-home .calc .ln{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.4fr);gap:6px 32px;padding:16px 0;border-bottom:1px solid var(--line);align-items:center}
+.av-home .calc .px{display:flex;align-items:baseline;gap:14px}
+.av-home .calc .px .num{font-size:24px;font-weight:700;color:var(--brand);min-width:110px}
+.av-home .calc .px a{font-weight:600;color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:3px}
+.av-home .calc .ev{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:15px;line-height:1.45}
+.av-home .calc .mil{font-size:12px;font-weight:600;color:#8a4f06;background:#fdf1e1;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.av-home .qui2{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:44px;align-items:center}
+.av-home .qui2 .ph{width:100%;height:auto;object-fit:cover;border-radius:var(--r-lg);box-shadow:var(--shadow-hero);display:block}
+.av-home .qui2 h2{font-size:clamp(25px,3.2vw,34px);font-weight:700;line-height:1.14;margin-top:10px;color:var(--nuit)}
+.av-home .qui2 h2 .num{color:var(--brand)}
+.av-home .qui2 ul{list-style:none;margin:20px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 24px}
+.av-home .qui2 li{display:grid;grid-template-columns:18px 1fr;gap:10px;font-size:15px;line-height:1.5}
+.av-home .qui2 li svg{width:16px;height:16px;margin-top:4px;color:var(--good)}
+.av-home .qui2 p.d{color:var(--muted);font-size:16px;margin-top:18px;line-height:1.6;max-width:62ch}
+.av-home .qui2 .lien{display:inline-flex;align-items:center;min-height:44px;margin-top:6px;font-weight:600;color:var(--brand-700);text-decoration:underline;text-underline-offset:3px}
+.av-home .stepc .q{font-size:12.5px;font-weight:600;color:var(--brand-700);margin-top:14px;letter-spacing:.02em}
+.av-home .stepc .q+h3{margin-top:4px}
+.av-home .cta-c{text-align:center;margin-top:26px}
+.av-home .fin2{background:linear-gradient(150deg,var(--nuit),var(--nuit-2));color:#fff;border-radius:var(--r-lg);padding:44px 40px;display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:space-between;box-shadow:var(--shadow-hero)}
+.av-home .fin2>div:first-child{flex:1 1 420px;min-width:0}
+.av-home .fin2 h2{font-size:clamp(24px,3.2vw,34px);font-weight:700;line-height:1.14;max-width:30ch}
+.av-home .fin2 p{color:#d7d4f2;margin-top:10px;font-size:15.5px;line-height:1.55}
+.av-home .fin2 .cta{display:flex;flex-wrap:wrap;gap:12px}
+@media(max-width:980px){.av-home .portes{grid-template-columns:1fr;max-width:560px}}
+@media(max-width:820px){.av-home .hero .in.h3p{padding:40px 20px 24px}.av-home .situ .pan{grid-template-columns:1fr}.av-home .qui2{grid-template-columns:1fr;gap:24px}.av-home .qui2 .ph{max-width:260px}.av-home .qui2 ul{grid-template-columns:1fr}.av-home .fin2{padding:32px 22px}}
+@media(max-width:700px){.av-home .calc{padding:26px 20px}.av-home .calc .en{display:none}.av-home .calc .ln{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.av-home .situ label{transition:none}}
+</style>`;
+
+/** Lignes « prestation — prix » d'une porte : [libellé, prix, lien]. */
+type Ligne = [string, string, string];
+const lignesPrix = (l: Ligne[]) =>
+  `<ul class="lignes">${l.map(([t, p, h]) => `<li><a href="${h}">${t}</a><span class="num">${p}</span></li>`).join("")}</ul>`;
+const coches = (l: string[]) => `<ul class="coches">${l.map((t) => `<li>${IC.ok}<span>${t}</span></li>`).join("")}</ul>`;
+
+type Porte = { vedette?: boolean; ic: string; badge: string; vert?: boolean; eyebrow: string; id: string; titre: string; pour: string; contenu: string; evite: string; cta: string; sous: string };
+const porte = (p: Porte) =>
+  `<article class="porte${p.vedette ? " vedette" : ""}" aria-labelledby="${p.id}"><div class="tete"><span class="ic">${p.ic}</span><span class="badge${p.vert ? " g" : ""}">${p.badge}</span></div><div><p class="eyebrow">${p.eyebrow}</p><h2 id="${p.id}">${p.titre}</h2><p class="pour">${p.pour}</p></div>${p.contenu}<p class="evite">${p.evite}</p><div class="bas">${p.cta}<p class="sous">${p.sous}</p></div></article>`;
+
+/** Une étape d'un parcours : [titre, prix, texte, lien]. */
+type Etape = [string, string, string, string];
+type Situation = { id: string; label: string; etapes: Etape[]; plus?: string; risque: string; cta: [string, string]; note?: string };
+type MotsSituations = { legende: string; parcours: string; risque: string; mille: string };
+/** « Où en es-tu ? » : des boutons radio et leurs parcours, montrés par :has (la situation « devis » ouverte d'abord). */
+function situations(liste: Situation[], m: MotsSituations, defaut = "devis"): string {
+  const montrer = liste.map((s) => `.av-home .situ:has(#situ-${s.id}:checked) .pan-${s.id}`).join(",");
+  const choix = liste
+    .map((s) => `<input type="radio" name="situ" id="situ-${s.id}" class="vh"${s.id === defaut ? " checked" : ""}><label for="situ-${s.id}">${s.label}</label>`)
+    .join("");
+  const pans = liste
+    .map((s) => {
+      const etapes = s.etapes
+        .map(([t, p, x, h], i) => `<li><span class="n num">${i + 1}</span><span class="c"><span class="l"><a href="${h}">${t}</a><span class="num p">${p}</span></span><span class="t">${x}</span></span></li>`)
+        .join("");
+      return `<div class="pan pan-${s.id}"><div class="parc"><p class="k">${m.parcours}</p><ol>${etapes}</ol>${s.plus ? `<p class="plus">${s.plus}</p>` : ""}</div><div class="risk"><p class="k">${m.risque}</p><p class="r">${s.risque}</p><p class="m">${m.mille}</p><a href="${s.cta[1]}" class="btn btn-o">${s.cta[0]} →</a>${s.note ? `<p class="note">${s.note}</p>` : ""}</div></div>`;
+    })
+    .join("");
+  return `<style>@supports selector(:has(*)){.av-home .situ .pan{display:none}${montrer}{display:grid}}</style><div class="situ"><fieldset><legend class="vh">${m.legende}</legend>${choix}</fieldset>${pans}</div>`;
+}
+
+/** Une ligne du calcul : [prix, prestation, lien, ce qu'elle évite]. */
+type LigneCalcul = [string, string, string, string];
+const calcul = (l: LigneCalcul[], enTete: [string, string], mille: string) =>
+  `<div class="en"><span>${enTete[0]}</span><span>${enTete[1]}</span></div>${l
+    .map(([p, n, h, e]) => `<div class="ln"><div class="px"><span class="num">${p}</span><a href="${h}">${n}</a></div><div class="ev"><span>${e}</span><span class="mil">${mille}</span></div></div>`)
+    .join("")}`;
+
 function accueilFr(b: Beta): string {
   const pro: [string, "g" | "p" | "o"] = b.active ? ["Gratuit pendant la bêta", "g"] : ["Avec Pro", "p"];
   const cartes = [
@@ -419,37 +515,148 @@ function accueilFr(b: Beta): string {
     FEATURES.plans ? carte("/logiciel-plan-maison", IC.plan, ["Gratuit avec un compte", "g"], "Dessiner ton plan en 3D", "Trace tes pièces à la souris : les surfaces se calculent seules et partent dans ton estimation.", "Découvrir l'éditeur", ' data-clic-plan="accueil"') : "",
     carte("/trouver-un-artisan", IC.devis, pro, "Recevoir des devis d'artisans vérifiés", "Jusqu'à 3 artisans de ton département : SIRET, assurance décennale et chantiers vérifiés.", "Demander des devis"),
     carte(b.active ? b.inscription : "/tarifs", IC.suivi, pro, "Suivre ton chantier et ton budget", "L'avancement des travaux, tes dépenses réelles face au prévu, et ta rentabilité si tu investis.", b.active ? "Créer mon compte" : "Voir ce que Pro inclut"),
-    carte("/accompagnement-travaux", IC.conseil, ["Premier appel offert", "o"], "Te faire accompagner", "Un ancien chef de chantier relit tes devis, organise ton chantier avec toi et te suit chaque semaine.", "Être rappelé"),
+    carte("/accompagnement-travaux", IC.conseil, ["Premier appel offert", "o"], "Te faire accompagner", "Relecture de devis, avis avant achat, organisation du chantier : avec quelqu'un qui a dirigé sa société de travaux.", "Être rappelé"),
   ].filter(Boolean);
+  const logiciel = b.active ? "Le logiciel AVYORA" : "AVYORA Pro";
+  const detail = b.active ? "Gratuit pendant la bêta" : "Avec Pro";
+  const note = "Le prix ferme t'est annoncé par écrit avant de commencer.";
+  const sits: Situation[] = [
+    {
+      id: "achat", label: "J'hésite à acheter un bien",
+      etapes: [
+        ["Avis avant achat", "99 €", "Tu m'envoies l'annonce et les photos. On en parle 1 h : ce qui est grave, ce qui ne l'est pas, ce qu'il faut vérifier à la visite.", "/avis-travaux-avant-achat"],
+        ["Estimation du budget", "≈ 149 €", "Ton budget travaux écrit, poste par poste, pour négocier le prix avec des arguments.", "/estimation-budget-travaux"],
+      ],
+      plus: `Tu achètes pour revendre ? <a href="/accompagnement-achat-revente">L'accompagnement achat-revente →</a>`,
+      risque: "Acheter un bien dont les travaux mangent ta marge, ou tout ton budget.",
+      cta: ["Demander mon avis avant achat", "/avis-travaux-avant-achat"], note,
+    },
+    {
+      id: "devis", label: "J'ai reçu des devis",
+      etapes: [
+        ["Relecture de devis", "≈ 29 €", "Postes oubliés, prix hors marché, acomptes, assurances : je te dis ce qui cloche et quoi demander à l'artisan.", "/relecture-devis-travaux"],
+        [logiciel, detail, "Ton estimation poste par poste, aux prix de ta région : tu vois tout de suite si une ligne du devis sort du marché.", "/projets/nouveau"],
+      ],
+      risque: "Signer un devis incomplet, et payer les oublis en avenants pendant le chantier.",
+      cta: ["Faire relire mon devis", "/relecture-devis-travaux"], note,
+    },
+    {
+      id: "budget", label: "Je prépare mon budget",
+      etapes: [
+        ["L'estimation AVYORA", b.active ? "Gratuit pendant la bêta" : "Gratuit, le détail avec Pro", "Une première fourchette en 2 minutes, puis le détail poste par poste.", "/projets/nouveau"],
+        ["Estimation du budget avec moi", "≈ 149 € · ≈ 249 € en neuf", "On reprend ton projet ensemble : tu repars avec un budget écrit, sans oubli.", "/estimation-budget-travaux"],
+      ],
+      risque: "Lancer les travaux avec un budget sous-estimé, et devoir tout arrêter en cours de route.",
+      cta: ["Estimer mes travaux", "/projets/nouveau"],
+    },
+    {
+      id: "technique", label: "J'hésite sur une solution",
+      etapes: [
+        ["Aide au choix technique", "≈ 99 €", "Isolation, chauffage, structure, matériaux : on compare les options pour ton cas, avec un résumé écrit.", "/conseil-technique-travaux"],
+        ["Estimation du budget", "≈ 149 €", "Pour chiffrer la solution retenue avant de demander les devis.", "/estimation-budget-travaux"],
+      ],
+      risque: "Choisir une solution inadaptée, et devoir la refaire quelques années plus tard.",
+      cta: ["Demander mon conseil technique", "/conseil-technique-travaux"], note,
+    },
+    {
+      id: "chantier", label: "Mes travaux commencent",
+      etapes: [
+        ["Organisation du chantier", "≈ 199 €/mois", "Un lancement (≈ 149 €) et ton carnet de tâches, puis 30 min par semaine et WhatsApp entre deux. Sans engagement.", "/suivi-de-chantier"],
+        ["Suivi du budget", "≈ 200 €/mois", "Factures, acomptes et avenants vérifiés au fil du chantier. Sans engagement.", "/suivi-budget-travaux"],
+      ],
+      risque: "Des artisans mal enchaînés : reprises, attentes, retards, et des factures qui dérapent.",
+      cta: ["Organiser mon chantier", "/suivi-de-chantier"], note,
+    },
+    {
+      id: "plan", label: "Je veux un plan",
+      etapes: [
+        ...(FEATURES.plans ? [["Éditeur de plan en ligne", "Gratuit", "Dessine ton plan : les pièces se ferment toutes seules et affichent leur surface.", "/logiciel-plan-maison"] as Etape] : []),
+        ["Ton plan dessiné par moi", "dès ≈ 89 €", "Plan de l'existant et plan du projet, en 2D, prêts à montrer aux artisans.", "/faire-dessiner-plan-maison"],
+      ],
+      risque: "Découvrir trop tard qu'une cloison, une cuisine ou un meuble ne passe pas.",
+      cta: FEATURES.plans ? ["Dessiner mon plan", "/logiciel-plan-maison"] : ["Me faire dessiner mon plan", "/faire-dessiner-plan-maison"],
+    },
+  ];
 
   return `
 <a href="/tarifs" class="promo"><span class="dot"></span>Estimer est <b>gratuit</b> — AVYORA Pro dès 14,99 €/mois <span class="arr">· sans engagement →</span></a>
-${ACCUEIL_CSS}<div class="wrap"><header class="hero"><div class="in h2c"><div>
-  <div class="eyebrow">Accompagnement travaux · partout en France</div>
-  <h1>Un ancien chef de chantier <span class="hl">à tes côtés</span> pour tes travaux.</h1>
-  <p class="sub">Puis chef d'entreprise, et des maisons rénovées et construites de mes mains. Je relis tes devis, je t'aide à organiser ton chantier étape par étape et je te suis chaque semaine, à distance. ${b.active ? `Et l'outil AVYORA chiffre tes travaux poste par poste, <b style="color:#fff">gratuit pendant la bêta</b>.` : `Et l'outil <b style="color:#fff">AVYORA Pro</b> chiffre tes travaux poste par poste.`}</p>
-  <div class="cta">
-    <a href="/accompagnement-travaux#demande" class="btn btn-p">Demander à être rappelé →</a>
-    <a href="/projets/nouveau" class="btn btn-w">Estimer mes travaux gratuitement</a>
-  </div>
+${ACCUEIL_CSS}${PORTES_CSS}<div class="wrap"><header class="hero"><div class="in h3p"><div class="intro">
+  <div class="eyebrow">Rénovation · Construction neuve · Achat-revente</div>
+  <h1>Tes travaux, <span class="hl">sans les erreurs</span> qui coûtent des milliers d'euros.</h1>
+  <p class="sub">J'ai dirigé ma société de travaux, rénové et construit mes propres maisons. Aujourd'hui, je t'accompagne sur ton projet, avec AVYORA pour chiffrer et des plans pour te projeter. Choisis ta porte d'entrée.</p>
+  <p class="mot"><b>Quelques centaines d'euros</b> pour en éviter des milliers.</p>
   <div class="trust"><span><b>Premier appel</b> gratuit</span><span><b>à distance</b> : visio ou WhatsApp</span><span><b>sans</b> engagement</span></div>
-</div><div class="expert">
-  <div class="qui"><img class="av" src="/accompagnement/daniel-leal-carre-v2-320.webp" alt="" width="80" height="80"><span><b>Daniel Leal</b><span>Fondateur d'AVYORA</span></span><span class="ans"><b class="num">8</b> ans de chantier</span></div>
-  <ol aria-label="Mon parcours">
-    <li><span class="d">2 ans</span><span><b>BTS Bâtiment en alternance</b><span>Dans un grand groupe du BTP : la méthode, les normes, les gros chantiers.</span></span></li>
-    <li><span class="d">3 ans</span><span><b>Chef de chantier</b><span>Dans le même groupe : gestion des équipes, planification des travaux, gestion des aléas.</span></span></li>
-    <li><span class="d">3 ans</span><span><b>Notre entreprise de travaux</b><span>Avec mon frère : le besoin du client, le devis, la planification, puis les travaux, réalisés nous-mêmes.</span></span></li>
-    <li><span class="d">En parallèle</span><span><b>Nos propres chantiers</b><span>Toujours avec mon frère : deux maisons rénovées et revendues avec une plus-value, puis une maison neuve construite presque entièrement de nos mains.</span></span></li>
-  </ol>
-  <ul class="pq" aria-label="Pourquoi m'appeler">
-    <li><svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="m6.5 10.2 2.4 2.4 4.6-4.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Tu évites les erreurs qui coûtent cher.</span></li>
-    <li><svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="m6.5 10.2 2.4 2.4 4.6-4.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Tu gagnes du temps : toujours ta prochaine étape.</span></li>
-    <li><svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="m6.5 10.2 2.4 2.4 4.6-4.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Un avis qui ne dépend que de ton intérêt.</span></li>
-  </ul>
-  <a href="/accompagnement-travaux#qui" class="lien">Pourquoi m'appeler →</a>
-</div></div></header></div>${ACCOMP_BAND}
+</div><div class="portes">
+  ${porte({
+    vedette: true, ic: IC.conseil, badge: "Avec Daniel, ex-gérant d'une société de travaux", eyebrow: "Être accompagné", id: "porte-acc",
+    titre: "Quelqu'un qui a rénové et construit, à tes côtés", pour: "Tu achètes, tu as reçu des devis ou ton chantier démarre.",
+    contenu: `${lignesPrix([["Relecture de devis", "≈ 29 €", "/relecture-devis-travaux"], ["Avis avant achat", "99 €", "/avis-travaux-avant-achat"], ["Organisation du chantier", "≈ 199 €/mois", "/suivi-de-chantier"]])}<p class="aussi">Et aussi : <a href="/estimation-budget-travaux">estimation du budget</a>, <a href="/accompagnement-achat-revente">achat-revente</a>, <a href="/conseil-technique-travaux">choix techniques</a>, <a href="/suivi-budget-travaux">suivi du budget</a>.</p>`,
+    evite: "<b>Ce que ça t'évite :</b> un poste oublié dans un devis, un acompte trop élevé, un artisan mal choisi.",
+    cta: '<a href="/accompagnement-travaux#demande" class="btn btn-p">Demander mon appel gratuit →</a>',
+    sous: '<span>20 min, gratuit, sans engagement</span><a href="/accompagnement-travaux#aide">Toutes les prestations →</a>',
+  })}
+  ${porte({
+    ic: IC.reno, badge: b.active ? "Gratuit pendant la bêta" : "Estimation rapide gratuite", vert: true, eyebrow: "Chiffrer soi-même", id: "porte-logiciel",
+    titre: `${logiciel} chiffre tes travaux poste par poste`, pour: "Tu veux un budget fiable avant d'appeler les artisans.",
+    contenu: coches(["Rénovation : 200 postes, aux prix de ta région", FEATURES.neuf ? "Construction neuve : du permis à la remise des clés" : "Le rapport PDF détaillé, à montrer aux artisans", "Le suivi de ton chantier et de tes dépenses"]),
+    evite: "<b>Ce que ça t'évite :</b> un budget sous-estimé qui bloque le chantier en cours de route.",
+    cta: '<a href="/projets/nouveau" class="btn btn-n">Estimer mes travaux →</a>',
+    sous: `<span>${b.active ? `Gratuit pendant la bêta, jusqu'au ${b.fin}` : "Estimation rapide gratuite · Pro dès 14,99 €/mois"}</span><a href="/estimation-travaux">Comment ça marche →</a>`,
+  })}
+  ${porte({
+    ic: IC.plan, badge: FEATURES.plans ? "Éditeur gratuit" : "Plans en 2D", vert: FEATURES.plans, eyebrow: "Voir son projet", id: "porte-plans",
+    titre: "Ton plan, dessiné par toi ou par moi", pour: "Tu veux voir si ça rentre avant de casser une cloison.",
+    contenu: lignesPrix([...(FEATURES.plans ? [["Éditeur de plan en ligne", "Gratuit", "/logiciel-plan-maison"] as Ligne] : []), ["Plan dessiné · une pièce", "≈ 89 €", "/faire-dessiner-plan-maison"], ["Plan dessiné · jusqu'à 100 m²", "≈ 199 €", "/faire-dessiner-plan-maison"]]),
+    evite: "<b>Ce que ça t'évite :</b> une cloison au mauvais endroit, une cuisine ou un meuble qui ne passe pas.",
+    cta: FEATURES.plans ? '<a href="/logiciel-plan-maison" class="btn btn-n" data-clic-plan="accueil">Dessiner mon plan →</a>' : '<a href="/faire-dessiner-plan-maison" class="btn btn-n">Me faire dessiner mon plan →</a>',
+    sous: FEATURES.plans ? '<span>Gratuit avec un compte</span><a href="/faire-dessiner-plan-maison">Me le faire dessiner →</a>' : "<span>Plan de l'existant + plan du projet</span>",
+  })}
+</div></div></header></div>
 
-<section class="blk"><div class="wrap">
+<section class="blk" aria-labelledby="ou-titre"><div class="wrap">
+  <div class="titre-g"><p class="eyebrow">Pas sûr de la bonne porte ?</p><h2 id="ou-titre">Où en es-tu dans ton projet ?</h2><p>Choisis ta situation : je te montre par où commencer, ce que ça coûte et le risque à éviter.</p></div>
+  ${situations(sits, { legende: "Ta situation", parcours: "Ton parcours conseillé", risque: "Le risque à ce stade", mille: "Une erreur à ce moment-là se compte vite en milliers d'euros." })}
+</div></section>
+
+<section class="blk" style="padding-top:0" aria-labelledby="calc-titre"><div class="wrap"><div class="calc">
+  <p class="eyebrow">Le calcul est vite fait</p>
+  <h2 id="calc-titre">Sur un chantier, une petite erreur se compte vite en milliers d'euros.</h2>
+  <p class="d">Quelques centaines d'euros pour l'éviter, ce n'est rien à côté. Souvent, la première erreur évitée rembourse tout le reste.</p>
+  ${calcul([
+    ["≈ 29 €", "Relecture de devis", "/relecture-devis-travaux", "Un poste oublié qui revient en avenant pendant le chantier"],
+    ["99 €", "Avis avant achat", "/avis-travaux-avant-achat", "Une toiture, une charpente ou une électricité à refaire, découverte après la signature"],
+    ["≈ 149 €", "Estimation du budget", "/estimation-budget-travaux", "Un budget sous-estimé qui bloque le chantier à mi-parcours"],
+    ["≈ 199 €", "Un mois d'organisation", "/suivi-de-chantier", "Des artisans mal enchaînés : reprises, attentes et retards"],
+  ], ["Tu investis", "Ce que ça t'évite"], "souvent des milliers d'euros")}
+</div></div></section>
+
+<section class="blk" style="padding-top:0" aria-labelledby="qui-titre"><div class="wrap"><div class="qui2">
+  <img class="ph" src="/accompagnement/daniel-leal-portrait-720.webp" alt="Daniel Leal, fondateur d'AVYORA" width="720" height="900" loading="lazy" decoding="async">
+  <div>
+    <p class="eyebrow">Qui t'accompagne</p>
+    <h2 id="qui-titre">Daniel, <b class="num">8</b> ans de chantier. Et surtout celui qui fait les travaux lui-même.</h2>
+    <ul>
+      ${coche("3 ans à la tête de notre société de travaux, avec mon frère : du devis jusqu'aux travaux, réalisés nous-mêmes")}
+      ${coche("Deux maisons girondines rénovées de nos mains, puis revendues avec une plus-value")}
+      ${coche("Une maison neuve construite presque entièrement de nos mains")}
+      ${coche("Avant ça : BTS en alternance dans un grand groupe du BTP, puis 3 ans chef de chantier")}
+    </ul>
+    <p class="d">Gérant d'entreprise, propriétaire, et celui qui tient les outils : j'ai été de chaque côté du chantier. Je sais où ça dérape, et je te le dis avant que ça arrive.</p>
+    <a href="/accompagnement-travaux#qui" class="lien">Pourquoi m'appeler →</a>
+  </div>
+</div></div></section>
+
+<section class="blk" style="padding-top:0" aria-labelledby="comment-titre"><div class="wrap">
+  <div class="titre-g"><p class="eyebrow">Comment ça se passe</p><h2 id="comment-titre">Trois étapes, aucune surprise.</h2></div>
+  <div class="steps">
+    <div class="stepc"><span class="n">1</span><p class="q">Gratuit · 20 min</p><h3>Appel découverte</h3><p>Tu m'expliques ton projet. Je te dis ce dont tu as vraiment besoin, ou rien si tu n'as besoin de rien.</p></div>
+    <div class="stepc"><span class="n">2</span><p class="q">Par e-mail</p><h3>Proposition écrite</h3><p>La prestation et son prix ferme, noir sur blanc. Tu décides tranquillement.</p></div>
+    <div class="stepc"><span class="n">3</span><p class="q">Ta prochaine étape</p><h3>On avance</h3><p>Je te donne la prochaine tâche à faire, et je te préviens des risques de retard avant qu'ils arrivent.</p></div>
+  </div>
+  <div class="cta-c"><a href="/accompagnement-travaux#demande" class="btn btn-p">Demander mon appel gratuit →</a></div>
+</div></section>
+
+<section class="blk" style="padding-top:0"><div class="wrap">
   <div class="center">
     <p class="eyebrow">Et l'outil AVYORA</p>
     <h2>Chiffre, compare et suis tes travaux toi-même.</h2>
@@ -512,13 +719,10 @@ ${FEATURES.plans ? PLAN_BAND : ""}
   <div class="center"><p class="eyebrow">Combien ça coûte ?</p><h2>Le prix des travaux, poste par poste.</h2><p>Le budget moyen de chaque chantier, détaillé et ajusté à ta région, avant même de te lancer.</p></div>
   ${chips(CHIPS_FR, "Tous les travaux →")}
 </div></section>
-<section class="blk" style="padding-top:0"><div class="wrap">
-  <div class="final">
-    <h2>Ta rénovation mérite mieux qu'un devis au feeling.</h2>
-    <p>Lance ta première estimation gratuite. En 2 minutes, tu sauras où tu vas.</p>
-    <div style="margin-top:26px"><a href="/projets/nouveau?nature=reno" class="btn btn-p" style="font-size:16px;padding:16px 32px">Estimer gratuitement →</a></div>
-  </div>
-</div></section>
+<section class="blk" style="padding-top:0"><div class="wrap"><div class="fin2">
+  <div><h2>Un doute sur ton projet ? 20 minutes pour savoir par où commencer.</h2><p>Gratuit et sans engagement. Si une prestation te sert, tu reçois son prix par écrit avant de commencer.</p></div>
+  <div class="cta"><a href="/accompagnement-travaux#demande" class="btn btn-o">Demander mon appel gratuit →</a><a href="/projets/nouveau?nature=reno" class="btn btn-w">Estimer mes travaux</a></div>
+</div></div></section>
 `;
 }
 
@@ -530,35 +734,148 @@ function accueilEn(b: Beta): string {
     FEATURES.plans ? carte("/logiciel-plan-maison", IC.plan, ["Free with an account", "g"], "Draw your floor plan in 3D", "Trace your rooms with the mouse: floor areas are worked out for you and flow into your estimate.", "Discover the editor", ' data-clic-plan="accueil"') : "",
     carte(b.active ? b.inscription : "/tarifs", IC.suivi, pro, "Track your project and budget", "Progress on site, your real spending against the plan, and your return if you invest.", b.active ? "Create my account" : "See what Pro includes"),
   ].filter(Boolean);
+  const logiciel = b.active ? "The AVYORA tool" : "AVYORA Pro";
+  const detail = b.active ? "Free during the beta" : "With Pro";
+  const acc = "/accompagnement-travaux#aide";
+  const demande = "/accompagnement-travaux#demande";
+  const note = "The firm price is sent to you in writing before we start.";
+  const sits: Situation[] = [
+    {
+      id: "achat", label: "I'm thinking of buying",
+      etapes: [
+        ["Opinion before you buy", "€99", "Send me the listing and the photos. We talk for 1 hour: what's serious, what isn't, what to check at the viewing.", acc],
+        ["Budget estimate", "≈ €149", "Your written works budget, line by line, to negotiate the price with real arguments.", acc],
+      ],
+      plus: `Buying to resell? <a href="/accompagnement-achat-revente">Buy, renovate, resell (page in French) →</a>`,
+      risque: "Buying a property whose works eat up your margin, or your whole budget.",
+      cta: ["Request my opinion before buying", demande], note,
+    },
+    {
+      id: "devis", label: "I've received quotes",
+      etapes: [
+        ["Quote review", "≈ €29", "Missing items, off-market prices, deposits, insurance: I tell you what's wrong and what to ask the contractor.", acc],
+        [logiciel, detail, "Your line-by-line estimate at your region's prices: you see at once if a quote line is off the market.", "/projets/nouveau"],
+      ],
+      risque: "Signing an incomplete quote, and paying for what's missing in change orders during the works.",
+      cta: ["Get my quote reviewed", demande], note,
+    },
+    {
+      id: "budget", label: "I'm preparing my budget",
+      etapes: [
+        ["The AVYORA estimate", b.active ? "Free during the beta" : "Free, details with Pro", "A first price range in 2 minutes, then the line-by-line breakdown.", "/projets/nouveau"],
+        ["Budget estimate with me", "≈ €149 · ≈ €249 new build", "We go through your project together: you leave with a written budget, nothing forgotten.", acc],
+      ],
+      risque: "Starting the works on an underestimated budget, and having to stop halfway.",
+      cta: ["Estimate my project", "/projets/nouveau"],
+    },
+    {
+      id: "technique", label: "I'm unsure about a solution",
+      etapes: [
+        ["Help with technical choices", "≈ €99", "Insulation, heating, structure, materials: we compare the options for your case, with a written summary.", acc],
+        ["Budget estimate", "≈ €149", "To price the chosen solution before asking for quotes.", acc],
+      ],
+      risque: "Choosing an unsuitable solution, and having to redo it a few years later.",
+      cta: ["Request my technical advice", demande], note,
+    },
+    {
+      id: "chantier", label: "My works are starting",
+      etapes: [
+        ["Organising your site", "≈ €199/month", "A kick-off (≈ €149) and your task book, then 30 min a week and WhatsApp in between. No commitment.", acc],
+        ["Budget tracking", "≈ €200/month", "Invoices, deposits and change orders checked as the works go. No commitment.", acc],
+      ],
+      risque: "Poorly sequenced contractors: rework, waiting, delays, and invoices that drift.",
+      cta: ["Organise my site", demande], note,
+    },
+    {
+      id: "plan", label: "I want a floor plan",
+      etapes: [
+        ...(FEATURES.plans ? [["Online floor plan editor", "Free", "Draw your plan: rooms close on their own and show their floor area.", "/logiciel-plan-maison"] as Etape] : []),
+        ["Your plan drawn by me", "from ≈ €89", "Existing layout and project plan, in 2D, ready to show contractors.", acc],
+      ],
+      risque: "Finding out too late that a wall, a kitchen or a piece of furniture doesn't fit.",
+      cta: FEATURES.plans ? ["Draw my plan", "/logiciel-plan-maison"] : ["Have my plan drawn", demande],
+    },
+  ];
 
   return `
 <a href="/tarifs" class="promo"><span class="dot"></span>Estimating is <b>free</b> — AVYORA Pro from €14.99/month <span class="arr">· no commitment →</span></a>
-${ACCUEIL_CSS}<div class="wrap"><header class="hero"><div class="in h2c"><div>
-  <div class="eyebrow">Renovation advice · anywhere in France</div>
-  <h1>A former site manager <span class="hl">by your side</span> for your project.</h1>
-  <p class="sub">Then a business owner, with houses renovated and built with my own hands. I review your quotes, help you organise your build step by step and check in every week, remotely. ${b.active ? `And the AVYORA tool prices your project line by line, <b style="color:#fff">free during the beta</b>.` : `And the <b style="color:#fff">AVYORA Pro</b> tool prices your project line by line.`}</p>
-  <div class="cta">
-    <a href="/accompagnement-travaux#demande" class="btn btn-p">Request a call-back →</a>
-    <a href="/projets/nouveau" class="btn btn-w">Estimate for free</a>
-  </div>
+${ACCUEIL_CSS}${PORTES_CSS}<div class="wrap"><header class="hero"><div class="in h3p"><div class="intro">
+  <div class="eyebrow">Renovation · New builds · Buy-to-resell</div>
+  <h1>Your project, <span class="hl">without the mistakes</span> that cost thousands of euros.</h1>
+  <p class="sub">I ran my own building company, and renovated and built my own houses. Today I help you with your project, with AVYORA to price it and floor plans to picture it. Pick your way in.</p>
+  <p class="mot"><b>A few hundred euros</b> to avoid losing thousands.</p>
   <div class="trust"><span><b>First call</b> free</span><span><b>remote</b>: video or WhatsApp</span><span><b>no</b> commitment</span></div>
-</div><div class="expert">
-  <div class="qui"><img class="av" src="/accompagnement/daniel-leal-carre-v2-320.webp" alt="" width="80" height="80"><span><b>Daniel Leal</b><span>Founder of AVYORA</span></span><span class="ans"><b class="num">8</b> years on site</span></div>
-  <ol aria-label="My background">
-    <li><span class="d">2 years</span><span><b>Building degree, work-study</b><span>In a major construction group: method, standards, large sites.</span></span></li>
-    <li><span class="d">3 years</span><span><b>Site manager</b><span>In the same group: managing crews, scheduling the works, handling the unexpected.</span></span></li>
-    <li><span class="d">3 years</span><span><b>Our building company</b><span>With my brother: the client's needs, the quote, the schedule, then the works, carried out ourselves.</span></span></li>
-    <li><span class="d">Alongside</span><span><b>Our own projects</b><span>Still with my brother: two houses renovated and sold at a profit, then a new house built almost entirely with our own hands.</span></span></li>
-  </ol>
-  <ul class="pq" aria-label="Why call me">
-    <li><svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="m6.5 10.2 2.4 2.4 4.6-4.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>You avoid costly mistakes.</span></li>
-    <li><svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="m6.5 10.2 2.4 2.4 4.6-4.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>You save time: always your next step.</span></li>
-    <li><svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="m6.5 10.2 2.4 2.4 4.6-4.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Advice that only serves your interest.</span></li>
-  </ul>
-  <a href="/accompagnement-travaux#qui" class="lien">Why call me →</a>
-</div></div></header></div>${ACCOMP_BAND_EN}
+</div><div class="portes">
+  ${porte({
+    vedette: true, ic: IC.conseil, badge: "With Daniel, former head of a building company", eyebrow: "Get support", id: "porte-acc",
+    titre: "Someone who has renovated and built, by your side", pour: "You're buying, you've received quotes, or your works are starting.",
+    contenu: `${lignesPrix([["Quote review", "≈ €29", acc], ["Opinion before you buy", "€99", acc], ["Organising your site", "≈ €199/month", acc]])}<p class="aussi">And also: <a href="${acc}">budget estimate</a>, <a href="/accompagnement-achat-revente">buy-to-resell (in French)</a>, <a href="${acc}">technical choices</a>, <a href="${acc}">budget tracking</a>.</p>`,
+    evite: "<b>What it saves you:</b> a missing item in a quote, an oversized deposit, the wrong contractor.",
+    cta: '<a href="/accompagnement-travaux#demande" class="btn btn-p">Request my free call →</a>',
+    sous: `<span>20 min, free, no commitment</span><a href="${acc}">All services →</a>`,
+  })}
+  ${porte({
+    ic: IC.reno, badge: b.active ? "Free during the beta" : "Quick estimate free", vert: true, eyebrow: "Price it yourself", id: "porte-logiciel",
+    titre: `${logiciel} prices your project line by line`, pour: "You want a reliable budget before calling contractors.",
+    contenu: coches(["Renovation: 200 line items, at your region's prices", FEATURES.neuf ? "New builds: from building permit to handover" : "The detailed PDF report, to show contractors", "Tracking your works and your spending"]),
+    evite: "<b>What it saves you:</b> an underestimated budget that stalls the works halfway.",
+    cta: '<a href="/projets/nouveau" class="btn btn-n">Estimate my project →</a>',
+    sous: `<span>${b.active ? `Free during the beta, through ${b.fin}` : "Quick estimate free · Pro from €14.99/month"}</span><a href="/estimation-travaux">How it works →</a>`,
+  })}
+  ${porte({
+    ic: IC.plan, badge: FEATURES.plans ? "Free editor" : "2D plans", vert: FEATURES.plans, eyebrow: "See your project", id: "porte-plans",
+    titre: "Your floor plan, drawn by you or by me", pour: "You want to check it fits before knocking down a wall.",
+    contenu: lignesPrix([...(FEATURES.plans ? [["Online floor plan editor", "Free", "/logiciel-plan-maison"] as Ligne] : []), ["Plan drawn for you · one room", "≈ €89", acc], ["Plan drawn for you · up to 100 m²", "≈ €199", acc]]),
+    evite: "<b>What it saves you:</b> a wall in the wrong place, a kitchen or a piece of furniture that doesn't fit.",
+    cta: FEATURES.plans ? '<a href="/logiciel-plan-maison" class="btn btn-n" data-clic-plan="accueil">Draw my plan →</a>' : '<a href="/accompagnement-travaux#demande" class="btn btn-n">Have my plan drawn →</a>',
+    sous: FEATURES.plans ? `<span>Free with an account</span><a href="${acc}">Have it drawn for me →</a>` : "<span>Existing layout + project plan</span>",
+  })}
+</div></div></header></div>
 
-<section class="blk"><div class="wrap">
+<section class="blk" aria-labelledby="ou-titre"><div class="wrap">
+  <div class="titre-g"><p class="eyebrow">Not sure which way in?</p><h2 id="ou-titre">Where are you in your project?</h2><p>Pick your situation: I'll show you where to start, what it costs and the risk to avoid.</p></div>
+  ${situations(sits, { legende: "Your situation", parcours: "Suggested path", risque: "The risk at this stage", mille: "A mistake at this point quickly costs thousands of euros." })}
+</div></section>
+
+<section class="blk" style="padding-top:0" aria-labelledby="calc-titre"><div class="wrap"><div class="calc">
+  <p class="eyebrow">The maths is quick</p>
+  <h2 id="calc-titre">On a building site, a small mistake quickly costs thousands of euros.</h2>
+  <p class="d">A few hundred euros to avoid it is nothing in comparison. Often, the first mistake avoided pays for everything else.</p>
+  ${calcul([
+    ["≈ €29", "Quote review", acc, "A missing item that comes back as a change order during the works"],
+    ["€99", "Opinion before you buy", acc, "A roof, a frame or wiring to redo, found after signing"],
+    ["≈ €149", "Budget estimate", acc, "An underestimated budget that stalls the works halfway"],
+    ["≈ €199", "A month of site organisation", acc, "Poorly sequenced contractors: rework, waiting and delays"],
+  ], ["You invest", "What it saves you"], "often thousands of euros")}
+</div></div></section>
+
+<section class="blk" style="padding-top:0" aria-labelledby="qui-titre"><div class="wrap"><div class="qui2">
+  <img class="ph" src="/accompagnement/daniel-leal-portrait-720.webp" alt="Daniel Leal, founder of AVYORA" width="720" height="900" loading="lazy" decoding="async">
+  <div>
+    <p class="eyebrow">Who's helping you</p>
+    <h2 id="qui-titre">Daniel, <b class="num">8</b> years on site. And above all, hands-on: I do the work myself.</h2>
+    <ul>
+      ${coche("3 years running our building company with my brother: from the quote to the works, carried out ourselves")}
+      ${coche("Two Gironde houses renovated with our own hands, then sold at a profit")}
+      ${coche("A new house built almost entirely with our own hands")}
+      ${coche("Before that: a work-study building degree in a major construction group, then 3 years as a site manager")}
+    </ul>
+    <p class="d">Business owner, homeowner, and the one holding the tools: I've been on every side of a build. I know where it goes wrong, and I tell you before it happens.</p>
+    <a href="/accompagnement-travaux#qui" class="lien">Why call me →</a>
+  </div>
+</div></div></section>
+
+<section class="blk" style="padding-top:0" aria-labelledby="comment-titre"><div class="wrap">
+  <div class="titre-g"><p class="eyebrow">How it works</p><h2 id="comment-titre">Three steps, no surprises.</h2></div>
+  <div class="steps">
+    <div class="stepc"><span class="n">1</span><p class="q">Free · 20 min</p><h3>Discovery call</h3><p>You tell me about your project. I tell you what you really need, or nothing if you need nothing.</p></div>
+    <div class="stepc"><span class="n">2</span><p class="q">By email</p><h3>Written proposal</h3><p>The service and its firm price, in black and white. You decide calmly.</p></div>
+    <div class="stepc"><span class="n">3</span><p class="q">Your next step</p><h3>We move forward</h3><p>I give you the next task to do, and warn you about delay risks before they happen.</p></div>
+  </div>
+  <div class="cta-c"><a href="/accompagnement-travaux#demande" class="btn btn-p">Request my free call →</a></div>
+</div></section>
+
+<section class="blk" style="padding-top:0"><div class="wrap">
   <div class="center">
     <p class="eyebrow">And the AVYORA tool</p>
     <h2>Price, plan and track your project yourself.</h2>
@@ -605,13 +922,10 @@ ${FEATURES.plans ? PLAN_BAND_EN : ""}
   <div class="center"><p class="eyebrow">How much does it cost?</p><h2>Renovation prices, line by line.</h2><p>The average budget for each project, itemized and adjusted to your region, before you even start.</p></div>
   ${chips(CHIPS_EN, "All projects →")}
 </div></section>
-<section class="blk" style="padding-top:0"><div class="wrap">
-  <div class="final">
-    <h2>Your renovation deserves better than a gut-feel quote.</h2>
-    <p>Start your first free estimate. In 2 minutes, you'll know where you're headed.</p>
-    <div style="margin-top:26px"><a href="/projets/nouveau?nature=reno" class="btn btn-p" style="font-size:16px;padding:16px 32px">Estimate for free →</a></div>
-  </div>
-</div></section>
+<section class="blk" style="padding-top:0"><div class="wrap"><div class="fin2">
+  <div><h2>Unsure about your project? 20 minutes to know where to start.</h2><p>Free, no commitment. If a service helps you, you get its price in writing before we start.</p></div>
+  <div class="cta"><a href="/accompagnement-travaux#demande" class="btn btn-o">Request my free call →</a><a href="/projets/nouveau?nature=reno" class="btn btn-w">Estimate my project</a></div>
+</div></div></section>
 `;
 }
 
