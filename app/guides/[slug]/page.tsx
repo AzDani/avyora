@@ -880,6 +880,11 @@ function BodyDIY() {
         menuiseries extérieures pris soi-même, la ligne rappelle qu&apos;il sort de la garantie
         décennale.
       </p>
+      <p>
+        Tu fais une partie toi-même et tu veux la faire juste du premier coup ?{" "}
+        <Link href="/conseil-technique-travaux">Un conseil technique d&apos;un ancien chef de chantier</Link>{" "}: le bon
+        matériau, la bonne méthode et ce qu&apos;il faut vérifier avant de refermer.
+      </p>
 
       <Cta label="Comparer les deux scénarios sur ton projet" />
 
@@ -1042,7 +1047,8 @@ function BodyBudget() {
         prix unitaires, coefficients et TVA ·{" "}
         <Link href="/guides/verifier-devis-travaux">vérifier un devis de travaux</Link> ·{" "}
         <Link href="/prix-poste">le prix de chaque corps d&apos;état</Link> ·{" "}
-        <Link href="/accompagnement-achat-revente">chiffrer les travaux avant d&apos;acheter pour revendre</Link>
+        <Link href="/accompagnement-achat-revente">chiffrer les travaux avant d&apos;acheter pour revendre</Link> ·{" "}
+        <Link href="/estimation-budget-travaux">faire vérifier ton budget par un pro</Link>
       </p>
 
       <GuidesPratiques sauf="calculer-budget-travaux" />

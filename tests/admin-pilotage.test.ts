@@ -61,7 +61,7 @@ describe("lireDemande (journal → carte)", () => {
       id: "x", created_at: "2026-11-17T10:00:00Z",
       payload: { email: "lea@exemple.fr", prenom: "Léa", telephone: "06 12 34 56 78", type_projet: "renovation", besoins: ["devis", "suivi"], src: "accueil", langue: "fr", envoi_interne: "envoye" },
     });
-    expect(d).toMatchObject({ prenom: "Léa", email: "lea@exemple.fr", typeProjet: "Rénovation", besoins: ["Relecture de mes devis", "Suivi de chantier chaque semaine"], emailRecu: true, traiteeLe: null, message: null });
+    expect(d).toMatchObject({ prenom: "Léa", email: "lea@exemple.fr", typeProjet: "Rénovation", besoins: ["Relecture de mes devis", "Organisation du chantier chaque semaine"], emailRecu: true, traiteeLe: null, message: null });
     const e = lireDemande({ id: "y", created_at: "2026-11-17T10:00:00Z", payload: { prenom: "Tom", type_projet: "inconnu", envoi_interne: "erreur", message: "Aidez-moi", traitee_le: "2026-11-18T08:00:00Z" } });
     expect(e).toMatchObject({ emailRecu: false, message: "Aidez-moi", typeProjet: "inconnu", traiteeLe: "2026-11-18T08:00:00Z", telephone: null });
   });

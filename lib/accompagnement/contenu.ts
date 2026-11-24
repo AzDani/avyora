@@ -51,7 +51,9 @@ export const META_ACCOMPAGNEMENT = {
   },
 } as const;
 
-export type Service = { id: string; eyebrow: string; titre: string; texte: string; lien?: { href: string; label: string } };
+/** `prix` : prix MOYEN affiché (décision de Dani du 24/11/2026 : il varie selon la taille du projet, sauf l'avis avant
+ * achat, à prix fixe) ; `detail` : la durée de l'appel et ce qui est remis. */
+export type Service = { id: string; eyebrow: string; titre: string; texte: string; prix?: string; detail?: string; gain?: string; lien?: { href: string; label: string } };
 export type Acteur = { nom: string; paie: string; perimetre: string; suivi: string; responsabilite: string; moi?: boolean };
 
 const fr = {
@@ -113,54 +115,97 @@ const fr = {
         titre: "Appel découverte gratuit",
         texte:
           "Tu m'expliques ton projet, ton budget et tes doutes. Je te dis comment je peux t'aider et on choisit ensemble la bonne suite. Sans engagement.",
-      },
-      {
-        id: "conseil",
-        eyebrow: "Y voir clair",
-        titre: "Conseil travaux : comment mener ton projet",
-        texte:
-          "L'ordre des travaux, les artisans à consulter, les pièges à éviter, les économies possibles sans risque. Utile aussi si tu veux organiser tes travaux sans maître d'œuvre.",
+        prix: "Gratuit",
+        detail: "Appel de 20 min",
       },
       {
         id: "devis",
         eyebrow: "Avant de signer",
-        titre: "Relecture et analyse de tes devis",
+        titre: "Relecture de tes devis",
         texte:
-          "Je relis tes devis poste par poste : les oublis, les postes flous, les prix hors marché comparés au référentiel AVYORA, et les questions à poser à l'artisan avant de signer.",
+          "On vérifie ensemble que tout ce que tu as demandé est bien compté : les postes oubliés, les lignes floues, les quantités, et les questions à poser à l'artisan avant de signer.",
+        prix: "≈ 29 €",
+        detail: "Appel de 20 min · selon la taille du devis",
         lien: { href: "/relecture-devis-travaux", label: "La relecture de devis en détail" },
+        gain: "Un oubli repéré avant de signer ne te coûte rien.",
       },
       {
-        id: "plan",
-        eyebrow: "Partir du bon pied",
-        titre: "Plan d'attaque du chantier",
+        id: "estimation",
+        eyebrow: "Avant de te lancer",
+        titre: "Estimation de ton budget travaux",
         texte:
-          "Ton chantier mis dans l'ordre : quel artisan passe avant l'autre, ce qui doit être prêt avant chaque étape, les points de contrôle. Je ne m'engage sur aucun délai, ce n'est pas moi qui fais les travaux, mais je te préviens de ce qui fait prendre du retard.",
-        lien: { href: "/guides/ordre-travaux-renovation", label: "Dans quel ordre faire ses travaux" },
+          "Rénovation ou construction neuve : je pars de ton estimation AVYORA, de tes photos et de tes plans, et je corrige poste par poste. En neuf, j'ajoute ce qu'on oublie : raccordements, étude de sol, taxe d'aménagement, assurance dommages-ouvrage.",
+        prix: "≈ 149 € en rénovation · ≈ 249 € en neuf",
+        detail: "Appel de 1 h (1 h 30 en neuf) + budget écrit",
+        gain: "Pas de chantier arrêté faute d'argent.",
+        lien: { href: "/estimation-budget-travaux", label: "L'estimation de budget en détail" },
+      },
+      {
+        id: "visite",
+        eyebrow: "Avant d'acheter",
+        titre: "Avis avant achat",
+        texte:
+          "Tu m'envoies avant l'appel les photos, l'annonce et la localisation du bien. Je regarde tout, puis on en parle : les travaux à prévoir, une enveloppe, les risques, et les arguments pour négocier le prix. J'ai moi-même acheté, rénové et revendu des maisons avec une plus-value.",
+        prix: "99 € · prix fixe",
+        detail: "Appel de 1 h, ton dossier regardé avant",
+        lien: { href: "/avis-travaux-avant-achat", label: "L'avis avant achat en détail" },
+        gain: "Tu ne paies pas un bien à rénover au prix d'un bien rénové.",
+      },
+      {
+        id: "technique",
+        eyebrow: "Pour bien faire",
+        titre: "Choix techniques",
+        texte:
+          "Quel matériau, quelle méthode, dans quel ordre, et quoi vérifier avant de refermer : pour tes travaux, que tu les confies à des artisans ou que tu les fasses toi-même.",
+        prix: "≈ 99 €",
+        detail: "Appel de 1 h + résumé écrit",
+        gain: "Tu ne fais pas les choses deux fois.",
+        lien: { href: "/conseil-technique-travaux", label: "Le conseil technique en détail" },
+      },
+      {
+        id: "plans",
+        eyebrow: "Pour te projeter",
+        titre: "Plans 2D de ton projet",
+        texte:
+          "Le plan de l'existant et celui de ton projet, dessinés avec l'éditeur AVYORA : cloisons, aménagement, cuisine, salle de bain. Pas de plans de structure (c'est le rôle d'un bureau d'études) ; au-delà de 150 m² de surface de plancher, un architecte est obligatoire pour le permis de construire.",
+        prix: "≈ 89 € une pièce · ≈ 199 € jusqu'à 100 m² · ≈ 299 € au-delà",
+        detail: "Plan de l'existant + plan du projet",
+        gain: "Des devis enfin comparables, faits sur le même plan.",
+        lien: { href: "/faire-dessiner-plan-maison", label: "Les plans 2D en détail" },
       },
       {
         id: "suivi",
         eyebrow: "Pendant le chantier",
-        titre: "Suivi de chantier chaque semaine : tâches et budget",
+        titre: "Organisation du chantier, chaque semaine",
         texte:
-          "Un point régulier en visio : les tâches de la semaine dans ton suivi AVYORA, tes dépenses face au budget, un avis sur les devis et avenants qui arrivent en cours de route.",
-        lien: { href: "/suivi-de-chantier", label: "Le suivi de chantier à distance en détail" },
+          "On démarre par ton carnet de tâches : quel artisan passe avant l'autre, ce qui doit être prêt à chaque étape, les points de contrôle. Puis un point chaque semaine, ta prochaine étape, et WhatsApp entre deux. Je ne m'engage sur aucun délai, ce n'est pas moi qui fais les travaux, mais je te préviens de ce qui fait prendre du retard.",
+        prix: "≈ 149 € le lancement, puis ≈ 199 €/mois",
+        detail: "Lancement 1 h 30 · puis 30 min par semaine · sans engagement",
+        lien: { href: "/suivi-de-chantier", label: "Le suivi de chantier en détail" },
+        gain: "Moins de temps perdu entre deux artisans.",
       },
       {
-        id: "reception",
-        eyebrow: "À la fin",
-        titre: "Préparer la réception des travaux",
+        id: "budget",
+        eyebrow: "Pour tenir ton budget",
+        titre: "Suivi de ton budget",
         texte:
-          "Une liste de contrôle et un appel vidéo pendant la visite de fin de chantier, pour noter les réserves au procès-verbal avant de signer. Un défaut visible non signalé ce jour-là est, en principe, réputé accepté.",
+          "Je suis tes dépenses face à ton budget, au fil des factures et des avenants : je te préviens dès qu'un poste dérape, et on voit ensemble comment rattraper.",
+        prix: "≈ 200 €/mois",
+        detail: "Sans engagement",
+        gain: "Une dérive repérée tôt se rattrape.",
+        lien: { href: "/suivi-budget-travaux", label: "Le suivi de budget en détail" },
       },
       {
-        id: "visite",
-        eyebrow: "Pour les investisseurs",
-        titre: "Visite en visio avant achat",
+        id: "sur_mesure",
+        eyebrow: "Un autre besoin",
+        titre: "Sur mesure",
         texte:
-          "Tu filmes le bien pendant la visite, je repère les travaux à prévoir et on chiffre une enveloppe avant que tu fasses ton offre. J'ai moi-même acheté, rénové et revendu des maisons avec une plus-value : je regarde ton bien avec l'œil de celui qui doit le revendre.",
-        lien: { href: "/accompagnement-achat-revente", label: "L'accompagnement achat-revente en détail" },
+          "Un problème précis (une fissure, de l'humidité, un artisan qui dérape) ou un besoin qui n'est pas dans la liste : on en parle pendant l'appel gratuit.",
+        prix: "Prix annoncé après l'appel",
       },
     ] satisfies Service[],
+    notePrix:
+      "Prix moyens : ils varient selon la taille de ton projet, sauf l'avis avant achat, à prix fixe. Je t'annonce toujours le prix exact avant tout engagement. TVA non applicable (franchise en base).",
   },
   difference: {
     h2: "France Rénov', maître d'œuvre ou conseil : quelle différence ?",
@@ -184,7 +229,7 @@ const fr = {
       {
         nom: "Mon accompagnement",
         moi: true,
-        paie: "Toi : le prix est annoncé pendant l'appel gratuit, avant tout engagement.",
+        paie: "Toi : des prix moyens affichés plus haut, et le prix exact annoncé avant tout engagement.",
         perimetre: "Conseil tous corps d'état : rénovation, construction neuve, achat, relecture de devis.",
         suivi: "Si tu le veux, un point chaque semaine, tâches et budget dans AVYORA.",
         responsabilite: "Conseil seulement : tu décides, tu signes, les artisans restent responsables de leurs travaux.",
@@ -196,7 +241,7 @@ const fr = {
     liste: [
       { titre: "Tu remplis le formulaire", texte: "Une minute : ton prénom, ton e-mail, ton téléphone et ton projet en quelques mots." },
       { titre: "Je te rappelle sous 48 h ouvrées", texte: "Au téléphone, en visio ou sur WhatsApp. Si ton projet est déjà chiffré dans AVYORA, je le regarde avant." },
-      { titre: "On voit ensemble ce qui t'est utile", texte: "Un avis ponctuel ou un suivi : le prix se discute pendant l'appel, avant tout engagement. Tu ne paies que ce qui te sert." },
+      { titre: "On voit ensemble ce qui t'est utile", texte: "Un avis ponctuel ou un suivi : je t'annonce le prix exact avant tout engagement. Tu ne paies que ce qui te sert." },
     ],
   },
   perimetre: {
@@ -206,7 +251,7 @@ const fr = {
       liste: [
         "Je te conseille et je réponds à tes questions.",
         "Je relis tes devis et je t'aide à les comparer.",
-        "Je t'aide à décider, à tenir ton planning et ton budget.",
+        "Je t'aide à décider, à t'organiser et à tenir ton budget.",
       ],
     },
     faisPas: {
@@ -237,12 +282,14 @@ const fr = {
     besoins: "Ce dont tu as besoin",
     besoinsAide: "Plusieurs choix possibles.",
     listeBesoins: {
-      conseil: "Conseil pour mener mon projet",
       devis: "Relecture de mes devis",
-      plan: "Plan d'attaque du chantier",
-      suivi: "Suivi de chantier chaque semaine",
-      reception: "Préparer la réception des travaux",
-      visite: "Visite en visio avant achat",
+      estimation: "Estimation de mon budget travaux",
+      visite: "Avis avant achat",
+      technique: "Choix techniques",
+      plans: "Plans 2D",
+      suivi: "Organisation du chantier chaque semaine",
+      budget: "Suivi de mon budget",
+      sur_mesure: "Un autre besoin",
       nsp: "Je ne sais pas encore",
     } satisfies Record<Besoin, string>,
     message: "Ton projet en quelques mots",
@@ -282,7 +329,7 @@ const fr = {
       },
       {
         q: "Combien coûte un accompagnement travaux ?",
-        a: "Le premier appel est gratuit. Ensuite, le tarif dépend de ce dont tu as besoin, un avis ponctuel ou un suivi chaque semaine : je te l'annonce pendant l'appel, avant tout engagement.",
+        a: "Le premier appel est gratuit. Ensuite, chaque prestation a son prix moyen, affiché plus haut : la relecture d'un devis autour de 29 €, l'avis avant achat à 99 € (prix fixe), l'organisation du chantier autour de 199 € par mois. Le prix varie selon la taille du projet, et je te l'annonce toujours avant tout engagement.",
       },
       {
         q: "Qui peut vérifier un devis de travaux avant de signer ?",
@@ -290,7 +337,7 @@ const fr = {
       },
       {
         q: "Quelle différence avec un conseiller France Rénov' gratuit ?",
-        a: "Le conseiller France Rénov' est un service public gratuit, centré sur la rénovation énergétique et les aides. Il informe et oriente, il ne suit pas ton chantier semaine après semaine. Je fais du conseil privé tous corps d'état : relecture de devis, plan d'attaque, suivi du chantier, réception.",
+        a: "Le conseiller France Rénov' est un service public gratuit, centré sur la rénovation énergétique et les aides. Il informe et oriente, il ne suit pas ton chantier semaine après semaine. Je fais du conseil privé tous corps d'état : relecture de devis, estimation du budget, avis avant achat, choix techniques, plans 2D, organisation du chantier et suivi du budget.",
       },
       {
         q: "Est-ce que tu diriges mon chantier ?",
@@ -298,7 +345,7 @@ const fr = {
       },
       {
         q: "Peut-on se faire accompagner pour la réception des travaux ?",
-        a: "Oui. Je te prépare une liste de contrôle et je suis avec toi en appel vidéo pendant la visite de fin de chantier, pour noter les réserves au procès-verbal avant de signer.",
+        a: "Oui, dans le cadre de l'organisation du chantier : on la prépare ensemble pendant nos points, avec une liste de contrôle, pour que tu notes les réserves au procès-verbal avant de signer.",
       },
       {
         q: "Un accompagnement à distance, ça marche vraiment ?",
@@ -389,51 +436,97 @@ const en: ContenuAccompagnement = {
         eyebrow: "To start",
         titre: "Free discovery call",
         texte: "You tell me about your project, your budget and your doubts. I tell you how I can help and we choose the right next step together. No commitment.",
-      },
-      {
-        id: "conseil",
-        eyebrow: "Get clarity",
-        titre: "Renovation advice: how to run your project",
-        texte:
-          "The order of the work, which contractors to consult, the traps to avoid, the savings you can make safely. Also useful if you want to organize your work without a project manager.",
+        prix: "Free",
+        detail: "20-min call",
       },
       {
         id: "devis",
         eyebrow: "Before you sign",
-        titre: "Review and analysis of your quotes",
+        titre: "Review of your quotes",
         texte:
-          "I read your quotes line by line: what's missing, what's vague, prices out of line with the AVYORA reference, and the questions to ask the contractor before signing.",
-        lien: { href: "/guides/verifier-devis-travaux", label: "How to check a quote (in French)" },
+          "We check together that everything you asked for is actually included: missing items, vague lines, quantities, and the questions to ask the contractor before signing.",
+        prix: "≈ €29",
+        detail: "20-min call · depends on the size of the quote",
+        lien: { href: "/relecture-devis-travaux", label: "Quote review in detail (in French)" },
+        gain: "A gap spotted before you sign costs you nothing.",
       },
       {
-        id: "plan",
-        eyebrow: "Start right",
-        titre: "Site game plan",
-        texte: "Your project put in order: which trade goes before which, what must be ready before each step, the checkpoints. I don't commit to any timeline, since I'm not the one doing the work, but I warn you about what causes delays.",
-        lien: { href: "/guides/ordre-travaux-renovation", label: "In what order to do the work (in French)" },
-      },
-      {
-        id: "suivi",
-        eyebrow: "During the work",
-        titre: "Weekly site follow-up: tasks and budget",
+        id: "estimation",
+        eyebrow: "Before you start",
+        titre: "Estimate of your works budget",
         texte:
-          "A regular video check-in: the week's tasks in your AVYORA tracker, your spending against the budget, an opinion on the quotes and change orders that come up along the way.",
-      },
-      {
-        id: "reception",
-        eyebrow: "At the end",
-        titre: "Preparing the final handover",
-        texte:
-          "A checklist and a video call during the final walkthrough, so you record the defects on the handover report before signing. A visible defect not reported that day is, as a rule, deemed accepted.",
+          "Renovation or new build: I start from your AVYORA estimate, your photos and your plans, and correct it line by line. For a new build, I add what people forget: utility connections, soil survey, development tax, builder's warranty insurance.",
+        prix: "≈ €149 for a renovation · ≈ €249 for a new build",
+        detail: "1-hour call (1 h 30 for a new build) + written budget",
+        gain: "No site halted for lack of money.",
+        lien: { href: "/estimation-budget-travaux", label: "Budget estimate in detail (in French)" },
       },
       {
         id: "visite",
-        eyebrow: "For investors",
-        titre: "Video walkthrough before you buy",
-        texte: "You film the property during the visit, I spot the work to plan and we price a budget before you make your offer. I've bought, renovated and sold houses at a profit myself: I look at your property through the eyes of someone who has to sell it on.",
-        lien: { href: "/accompagnement-achat-revente", label: "Buy, renovate, resell support (in French)" },
+        eyebrow: "Before you buy",
+        titre: "Opinion before you buy",
+        texte:
+          "Before the call, you send me the photos, the listing and the location of the property. I look at everything, then we talk: the work to plan, a budget, the risks, and the arguments to negotiate the price. I've bought, renovated and sold houses at a profit myself.",
+        prix: "€99 · fixed price",
+        detail: "1-hour call, your file reviewed beforehand",
+        lien: { href: "/avis-travaux-avant-achat", label: "Opinion before you buy in detail (in French)" },
+        gain: "You don't pay renovated prices for a property that needs work.",
+      },
+      {
+        id: "technique",
+        eyebrow: "To do it right",
+        titre: "Technical choices",
+        texte:
+          "Which material, which method, in what order, and what to check before closing up: for your works, whether you hire contractors or do it yourself.",
+        prix: "≈ €99",
+        detail: "1-hour call + written summary",
+        gain: "You don't do things twice.",
+        lien: { href: "/conseil-technique-travaux", label: "Technical advice in detail (in French)" },
+      },
+      {
+        id: "plans",
+        eyebrow: "To picture it",
+        titre: "2D plans of your project",
+        texte:
+          "The plan of the existing space and of your project, drawn with the AVYORA editor: partitions, layout, kitchen, bathroom. No structural plans (that's a structural engineer's job); above 150 m² of floor area, an architect is mandatory for the building permit.",
+        prix: "≈ €89 one room · ≈ €199 up to 100 m² · ≈ €299 above",
+        detail: "Existing plan + project plan",
+        gain: "Quotes you can finally compare, all on the same plan.",
+        lien: { href: "/faire-dessiner-plan-maison", label: "2D plans in detail (in French)" },
+      },
+      {
+        id: "suivi",
+        eyebrow: "During the works",
+        titre: "Organising your site, every week",
+        texte:
+          "We start with your task book: which trade comes before which, what must be ready at each stage, the checkpoints. Then a check-in every week, your next step, and WhatsApp in between. I don't commit to any timeline, since I'm not the one doing the work, but I warn you about what causes delays.",
+        prix: "≈ €149 to start, then ≈ €199/month",
+        detail: "1 h 30 kick-off · then 30 min a week · no commitment",
+        gain: "Less time lost between two contractors.",
+        lien: { href: "/suivi-de-chantier", label: "Site follow-up in detail (in French)" },
+      },
+      {
+        id: "budget",
+        eyebrow: "To stay on budget",
+        titre: "Budget tracking",
+        texte:
+          "I track your spending against your budget, invoice by invoice and change order by change order: I warn you as soon as an item drifts, and we see together how to catch up.",
+        prix: "≈ €200/month",
+        detail: "No commitment",
+        gain: "A drift spotted early can be fixed.",
+        lien: { href: "/suivi-budget-travaux", label: "Budget tracking in detail (in French)" },
+      },
+      {
+        id: "sur_mesure",
+        eyebrow: "Something else",
+        titre: "Tailored help",
+        texte:
+          "A specific problem (a crack, damp, a contractor going off track) or a need that isn't on the list: we talk about it during the free call.",
+        prix: "Price given after the call",
       },
     ],
+    notePrix:
+      "Average prices: they vary with the size of your project, except the opinion before you buy, which is a fixed price. I always give you the exact price before any commitment. VAT not applicable (French small-business exemption).",
   },
   difference: {
     h2: "France Rénov', project manager or advice: what's the difference?",
@@ -457,7 +550,7 @@ const en: ContenuAccompagnement = {
       {
         nom: "My advice",
         moi: true,
-        paie: "You: the price is given during the free call, before any commitment.",
+        paie: "You: average prices shown above, and the exact price given before any commitment.",
         perimetre: "Advice across all trades: renovation, new build, purchase, quote review.",
         suivi: "If you want, a weekly check-in, tasks and budget in AVYORA.",
         responsabilite: "Advice only: you decide, you sign, contractors remain liable for their work.",
@@ -469,14 +562,14 @@ const en: ContenuAccompagnement = {
     liste: [
       { titre: "You fill in the form", texte: "One minute: your first name, your email and your project in a few words." },
       { titre: "I call you back within 2 business days", texte: "By phone, video or WhatsApp. If your project is already priced in AVYORA, I look at it first." },
-      { titre: "We see together what will help you", texte: "A one-off opinion or ongoing follow-up: the price is discussed during the call, before any commitment. You only pay for what you need." },
+      { titre: "We see together what will help you", texte: "A one-off opinion or ongoing follow-up: I give you the exact price before any commitment. You only pay for what you need." },
     ],
   },
   perimetre: {
     h2: "What I do, what I don't",
     fais: {
       titre: "What I do",
-      liste: ["I advise you and answer your questions.", "I review your quotes and help you compare them.", "I help you decide and stick to your schedule and budget."],
+      liste: ["I advise you and answer your questions.", "I review your quotes and help you compare them.", "I help you decide, get organised and stay on budget."],
     },
     faisPas: {
       titre: "What I don't do",
@@ -506,12 +599,14 @@ const en: ContenuAccompagnement = {
     besoins: "What you need",
     besoinsAide: "Select all that apply.",
     listeBesoins: {
-      conseil: "Advice on running my project",
       devis: "A review of my quotes",
-      plan: "A site game plan",
-      suivi: "Weekly site follow-up",
-      reception: "Preparing the final handover",
-      visite: "Video walkthrough before buying",
+      estimation: "An estimate of my works budget",
+      visite: "An opinion before buying",
+      technique: "Technical choices",
+      plans: "2D plans",
+      suivi: "Organising my site every week",
+      budget: "Tracking my budget",
+      sur_mesure: "Something else",
       nsp: "I don't know yet",
     },
     message: "Your project in a few words",
@@ -551,7 +646,7 @@ const en: ContenuAccompagnement = {
       },
       {
         q: "How much does renovation advice cost?",
-        a: "The first call is free. After that, the price depends on what you need, a one-off opinion or a weekly follow-up: I give it to you during the call, before any commitment.",
+        a: "The first call is free. After that, each service has its average price, shown above: around €29 to review a quote, €99 for the opinion before you buy (fixed price), around €199 a month for organising your site. The price varies with the size of the project, and I always give it to you before any commitment.",
       },
       {
         q: "Who can check a building quote before I sign?",
@@ -559,7 +654,7 @@ const en: ContenuAccompagnement = {
       },
       {
         q: "How is this different from a free France Rénov' advisor?",
-        a: "A France Rénov' advisor is a free public service focused on energy renovation and grants. They inform and guide you, they don't follow your site week after week. I give private advice across all trades: quote review, game plan, site follow-up, handover.",
+        a: "A France Rénov' advisor is a free public service focused on energy renovation and grants. They inform and guide you, they don't follow your site week after week. I give private advice across all trades: quote review, budget estimate, opinion before you buy, technical choices, 2D plans, site organisation and budget tracking.",
       },
       {
         q: "Do you run my building site?",
@@ -567,7 +662,7 @@ const en: ContenuAccompagnement = {
       },
       {
         q: "Can I get help for the final handover?",
-        a: "Yes. I prepare a checklist for you and join you on a video call during the final walkthrough, so you record the defects on the handover report before signing.",
+        a: "Yes, as part of organising your site: we prepare it together during our check-ins, with a checklist, so you record the defects on the handover report before signing.",
       },
       {
         q: "Does remote advice really work?",
@@ -602,4 +697,6 @@ export function contenuAccompagnement(locale: Locale): ContenuAccompagnement {
 }
 
 /** Les libellés FRANÇAIS du type de projet et des besoins, pour l'e-mail interne (Daniel lit en français). */
-export const LIBELLES_INTERNES = { types: fr.formulaire.types, besoins: fr.formulaire.listeBesoins };
+/** Les besoins d'avant le 24/11/2026, pour relire les anciennes demandes dans l'admin. */
+const ANCIENS_BESOINS = { conseil: "Conseil pour mener mon projet", plan: "Plan d'attaque du chantier", reception: "Préparer la réception des travaux" };
+export const LIBELLES_INTERNES = { types: fr.formulaire.types, besoins: { ...ANCIENS_BESOINS, ...fr.formulaire.listeBesoins } };

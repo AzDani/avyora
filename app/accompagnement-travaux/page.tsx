@@ -231,7 +231,7 @@ export default async function AccompagnementTravaux({
         </div>
       </section>
 
-      {/* ── Comment je peux t'aider : les accompagnements, sans prix ── */}
+      {/* ── Comment je peux t'aider : les prestations, leur prix MOYEN et ce que le client y gagne (24/11/2026) ── */}
       <section id="aide" aria-labelledby="aide-titre" className={section}>
         <h2 id="aide-titre" className={h2}>{t.aide.h2}</h2>
         <p className="mt-3 max-w-3xl text-[16px] leading-relaxed text-muted">{t.aide.intro}</p>
@@ -241,6 +241,20 @@ export default async function AccompagnementTravaux({
               <p className="eyebrow">{s.eyebrow}</p>
               <h3 className="mt-1.5 text-[17px] font-semibold leading-snug text-ink">{s.titre}</h3>
               <p className="mt-2 flex-1 text-[15px] leading-relaxed text-muted">{s.texte}</p>
+              {s.gain && (
+                <p className="mt-3 flex gap-2 text-[14.5px] font-semibold leading-snug text-ink">
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden="true" className="mt-0.5 flex-none text-[#0b7a53]">
+                    <path d="m5 10.5 3.2 3.2L15 7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  {s.gain}
+                </p>
+              )}
+              {s.prix && (
+                <div className="mt-3 border-t border-line pt-3" data-prix="">
+                  <p className="num text-[15.5px] font-bold text-ink">{s.prix}</p>
+                  {s.detail && <p className="mt-0.5 text-[13px] text-muted">{s.detail}</p>}
+                </div>
+              )}
               {s.lien && (
                 <Link href={s.lien.href} className={"mt-2 inline-flex min-h-11 items-center self-start text-[14px] " + lienProse}>
                   {s.lien.label}
@@ -249,7 +263,8 @@ export default async function AccompagnementTravaux({
             </li>
           ))}
         </ul>
-        <p className="mt-4 text-[13px] text-faint">
+        <p className="mt-4 max-w-3xl text-[13.5px] leading-relaxed text-muted">{t.aide.notePrix}</p>
+        <p className="mt-2 text-[13px] text-faint">
           {t.referentiel.replace("{date}", en ? PRIX_MAJ_EN : PRIX_MAJ_FR)}
           {" · "}
           <Link href="/methodologie" className={lienProse}>{t.methodologie}</Link>

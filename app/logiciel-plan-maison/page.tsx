@@ -265,6 +265,15 @@ export default async function LogicielPlanMaison() {
         </div>
       </section>
 
+      {/* Prestation « plans 2D » de Daniel (24/11/2026) : pour qui n'a pas le temps de dessiner. */}
+      <p className="text-[15px] leading-relaxed text-muted" data-lien-plans-2d="">
+        {locale === "en" ? "No time to draw it yourself? " : "Pas le temps de le dessiner toi-même ? "}
+        <Link href="/faire-dessiner-plan-maison" className="font-medium text-brand-700 underline decoration-brand-300 underline-offset-2 hover:decoration-brand-700">
+          {locale === "en" ? "I can draw your 2D plan for you (in French)" : "Je dessine ton plan 2D pour toi"}
+        </Link>
+        .
+      </p>
+
       <section aria-labelledby="faq-titre">
         <h2 id="faq-titre" className="text-2xl font-semibold tracking-tight text-ink">{v.faqTitre}</h2>
         <div className="mt-5 divide-y divide-line rounded-panel border border-line bg-surface">

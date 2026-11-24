@@ -228,11 +228,12 @@ const ACCOMP_BAND = `
   ${etapesAcc("Comment ça se passe", ["Tu demandes à être rappelé, en une minute.", "Premier appel gratuit : on regarde ton projet ensemble.", "Je te propose l'accompagnement qui te sert, sans engagement."])}
   <div class="cta"><a href="/accompagnement-travaux#demande" class="btn btn-p">Demander à être rappelé →</a><a href="/accompagnement-travaux" class="lien">Découvrir l'accompagnement</a></div>
 </div><ul aria-label="Ce que je peux faire pour toi">
-  ${accItem(ACC_IC.devis, "Relecture de tes devis", "Prix, oublis, clauses : ce qu'il faut renégocier avant de signer.", "/relecture-devis-travaux")}
-  ${accItem(ACC_IC.plan, "Plan d'attaque du chantier", "Qui intervient, dans quel ordre, et les pièges à éviter.")}
-  ${accItem(ACC_IC.suivi, "Suivi chaque semaine", "Les tâches de la semaine et ton budget, point par point.", "/suivi-de-chantier")}
-  ${accItem(ACC_IC.visio, "Visite en visio avant achat", "Un regard de pro sur le bien avant de faire ton offre.")}
+  ${accItem(ACC_IC.devis, "Relecture de tes devis", "Tout ce que tu as demandé est-il compté ? Appel de 20 min, ≈ 29 €.", "/relecture-devis-travaux")}
+  ${accItem(ACC_IC.plan, "Estimation de ton budget", "Rénovation ou neuf : ton budget vérifié poste par poste.", "/estimation-budget-travaux")}
+  ${accItem(ACC_IC.visio, "Avis avant achat", "Les travaux à prévoir et de quoi négocier. 99 €, prix fixe.", "/avis-travaux-avant-achat")}
+  ${accItem(ACC_IC.suivi, "Organisation du chantier", "Ton carnet de tâches et un point chaque semaine.", "/suivi-de-chantier")}
   ${accItem(ACC_IC.revente, "Achat-revente", "Acheter, rénover, revendre : un regard de pro à chaque étape.", "/accompagnement-achat-revente")}
+  ${accItem(ACC_IC.devis, "Et aussi", "Choix techniques, plans 2D, suivi de ton budget : toutes les prestations et leurs prix.")}
 </ul></section></div>`;
 const ACCOMP_BAND_EN = `
 <div class="wrap">${ACCOMP_STYLE}<section class="accb" aria-labelledby="accb-titre"><div>
@@ -242,11 +243,12 @@ const ACCOMP_BAND_EN = `
   ${etapesAcc("How it works", ["You request a call-back, in one minute.", "First call free: we look at your project together.", "I suggest the support that helps you, no commitment."])}
   <div class="cta"><a href="/accompagnement-travaux#demande" class="btn btn-p">Request a call-back →</a><a href="/accompagnement-travaux" class="lien">Discover the service</a></div>
 </div><ul aria-label="What I can do for you">
-  ${accItem(ACC_IC.devis, "Review of your quotes", "Prices, omissions, terms: what to renegotiate before you sign.")}
-  ${accItem(ACC_IC.plan, "Site game plan", "Who comes in, in what order, and the traps to avoid.")}
-  ${accItem(ACC_IC.suivi, "Weekly follow-up", "This week's tasks and your budget, point by point.")}
-  ${accItem(ACC_IC.visio, "Video walkthrough before you buy", "A professional's eye on the property before you make an offer.")}
+  ${accItem(ACC_IC.devis, "Review of your quotes", "Is everything you asked for included? 20-min call, ≈ €29.")}
+  ${accItem(ACC_IC.plan, "Budget estimate", "Renovation or new build: your budget checked line by line.")}
+  ${accItem(ACC_IC.visio, "Opinion before you buy", "The work to plan and what to negotiate. €99, fixed price.")}
+  ${accItem(ACC_IC.suivi, "Organising your site", "Your task book and a check-in every week.")}
   ${accItem(ACC_IC.revente, "Buy, renovate, resell", "A professional's eye at every step (page in French).", "/accompagnement-achat-revente")}
+  ${accItem(ACC_IC.devis, "And also", "Technical choices, 2D plans, budget tracking: every service and its price.")}
 </ul></section></div>`;
 
 /* Éditeur de plan (C9) : section sombre juste après le hero, insérée seulement quand FEATURES.plans est allumé (éteint :

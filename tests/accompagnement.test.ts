@@ -171,7 +171,7 @@ describe("demanderAccompagnement (Resend simulé)", () => {
     expect(interne.to).toBe("contact@getavyora.fr");
     expect(interne.replyTo).toBe(email);
     expect(interne.subject).toBe("Demande d'accompagnement : Camille · Rénovation");
-    for (const x of ["Camille", email, "06 12 34 56 78", "Relecture de mes devis", "Suivi de chantier chaque semaine", "Cuisine à refaire"]) expect(interne.html).toContain(x);
+    for (const x of ["Camille", email, "06 12 34 56 78", "Relecture de mes devis", "Organisation du chantier chaque semaine", "Cuisine à refaire"]) expect(interne.html).toContain(x);
     expect(accuse.to).toBe(email);
     expect(accuse.replyTo).toBe("contact@getavyora.fr");
     expect(accuse.subject).toBe("Ta demande de rappel est bien reçue");
@@ -351,7 +351,7 @@ describe("page /accompagnement-travaux", () => {
   };
 
   for (const locale of ["fr", "en"] as const) {
-    it(`${locale} : title ≤ 60 caractères (suffixe compris), description 120–160, canonical, aucun prix`, async () => {
+    it(`${locale} : title ≤ 60 caractères (suffixe compris), description 120–160, canonical, prix moyens annoncés comme tels`, async () => {
       const { default: Page, generateMetadata } = await charger(locale);
       const m = await generateMetadata();
       const titre = typeof m.title === "string" ? m.title + " · AVYORA" : (m.title as { absolute: string }).absolute;
@@ -364,8 +364,11 @@ describe("page /accompagnement-travaux", () => {
 
       const html = await rendre(await Page({ searchParams: Promise.resolve({ src: "rapide" }) }));
       const txt = texteVisible(html);
-      // Aucun prix, aucune réduction : ni symbole, ni montant, ni pourcentage.
-      expect(txt).not.toMatch(/€|\bEUR\b|\d+\s?%|\b\d+\s?euros?\b/i);
+      // Prix MOYENS affichés depuis le 24/11/2026 (décision de Dani), avec leur mention ; aucune réduction, aucun pourcentage.
+      expect(txt).toMatch(/≈ 29 €|≈ €29/);
+      expect(txt).toContain(locale === "fr" ? "Prix moyens : ils varient selon la taille de ton projet" : "Average prices: they vary with the size of your project");
+      expect(txt).toContain(locale === "fr" ? "TVA non applicable (franchise en base)" : "VAT not applicable");
+      expect(txt).not.toMatch(/\d+\s?%/);
       expect(txt).not.toMatch(/\bPro\b.*−|-20|réduction|discount/i);
       // Un seul formulaire, ancré, avec le jeton, le piège et la source.
       expect(html).toContain('id="demande"');
@@ -410,7 +413,7 @@ describe("page /accompagnement-travaux", () => {
     expect(service.provider).toEqual({ "@id": "https://getavyora.fr/#organization" });
     expect(service.offers).toMatchObject({ price: "0", priceCurrency: "EUR" });
     expect(JSON.stringify(service.hasOfferCatalog)).not.toMatch(/price/);
-    expect(service.hasOfferCatalog.itemListElement).toHaveLength(6);
+    expect(service.hasOfferCatalog.itemListElement).toHaveLength(8);
     const brut = JSON.stringify(scripts);
     expect(brut).not.toMatch(/aggregateRating|Review|LocalBusiness|ProfessionalService/);
     const { contenuAccompagnement } = await import("@/lib/accompagnement/contenu");

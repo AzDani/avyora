@@ -12,11 +12,17 @@ import { ACHAT_REVENTE } from "@/lib/accompagnement/pages-services";
 const textes = (v: unknown): string[] =>
   typeof v === "string" ? [v] : Array.isArray(v) ? v.flatMap(textes) : v && typeof v === "object" ? Object.values(v).flatMap(textes) : [];
 const texte = textes(ACHAT_REVENTE).join(" \n ");
+/** Tout sauf le prix (`tarif`) et la réponse « Combien coûte… » : là, aucun chiffre (la plus-value n'en a jamais). */
+const FAQ_PRIX = ACHAT_REVENTE.faq.find((f) => f.q.startsWith("Combien coûte"))!;
+const texteSansPrix = textes({ ...ACHAT_REVENTE, tarif: undefined, faq: ACHAT_REVENTE.faq.filter((f) => f !== FAQ_PRIX) }).join(" \n ");
 
 describe("accompagnement achat-revente", () => {
-  it("aucun chiffre, aucun prix, aucun pourcentage", () => {
-    expect(texte).not.toMatch(/\d/);
-    expect(texte).not.toMatch(/€|%|euros?\b/i);
+  it("aucun chiffre hors des prix (prix affichés depuis le 24/11/2026), aucun pourcentage nulle part", () => {
+    expect(texteSansPrix).not.toMatch(/\d/);
+    expect(texteSansPrix).not.toMatch(/€|euros?\b/i);
+    expect(texte).not.toMatch(/%/);
+    expect(ACHAT_REVENTE.tarif?.prix).toBe("Dès 99 €");
+    expect(FAQ_PRIX.a).toContain("99 €, prix fixe");
   });
 
   it("aucune promesse de gain : la page dit au contraire qu'elle n'en promet pas", () => {
@@ -42,7 +48,7 @@ describe("accompagnement achat-revente", () => {
 
   it("reliée depuis la page Accompagnement (service « visite ») et présente dans le plan du site", () => {
     const racine = path.join(__dirname, "..");
-    expect(readFileSync(path.join(racine, "lib/accompagnement/contenu.ts"), "utf8")).toContain('href: "/accompagnement-achat-revente"');
+    expect(readFileSync(path.join(racine, "lib/accompagnement/contenu.ts"), "utf8")).toContain('href: "/avis-travaux-avant-achat"');
     expect(readFileSync(path.join(racine, "app/sitemap.ts"), "utf8")).toContain("/accompagnement-achat-revente");
     expect(ACHAT_REVENTE.chemin).toBe("/accompagnement-achat-revente");
   });
@@ -51,7 +57,7 @@ describe("accompagnement achat-revente", () => {
     const racine = path.join(__dirname, "..");
     const lire = (f: string) => readFileSync(path.join(racine, f), "utf8");
     expect(lire("app/page.tsx").match(/accItem\(ACC_IC\.revente,[^\n]*"\/accompagnement-achat-revente"\)/g) ?? []).toHaveLength(2);
-    expect(lire("lib/accompagnement/pages-services.ts").match(/href: "\/accompagnement-achat-revente"/g) ?? []).toHaveLength(2);
+    expect(lire("lib/accompagnement/pages-services.ts").match(/href: "\/accompagnement-achat-revente"/g) ?? []).toHaveLength(3);
     expect(lire("app/guides/[slug]/page.tsx").match(/href="\/accompagnement-achat-revente"/g) ?? []).toHaveLength(2);
     expect(lire("app/accompagnement-travaux/page.tsx")).toMatch(/url: `\$\{siteUrl\}\$\{s\.lien\.href\}`/);
   });

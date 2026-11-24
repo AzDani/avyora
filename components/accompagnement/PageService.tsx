@@ -1,14 +1,16 @@
 import Link from "next/link";
 import { CHEMIN_ACCOMPAGNEMENT } from "@/lib/accompagnement/constantes";
 import { PHOTO_FONDATEUR } from "@/lib/accompagnement/contenu";
-import { PARCOURS_COURT, type PageService as Contenu } from "@/lib/accompagnement/pages-services";
+import { NOTE_PRIX_FIXE, NOTE_PRIX_MOYEN, PARCOURS_COURT, type PageService as Contenu } from "@/lib/accompagnement/pages-services";
 
 /**
  * Le gabarit des pages de service de l'accompagnement (/relecture-devis-travaux, /suivi-de-chantier,
  * /accompagnement-achat-revente). Un seul appel à
  * l'action, partout : « Demander à être rappelé », vers le formulaire de /accompagnement-travaux (URL canonique, sans
  * paramètre : ce sont des pages indexables). JSON-LD : le service (fourni par l'Organization du layout), la FAQ (le MÊME
- * tableau que la FAQ visible) et le fil d'Ariane. Ni prix, ni avis, ni note.
+ * tableau que la FAQ visible) et le fil d'Ariane ; une offre chiffrée seulement pour un prix FIXE (un prix moyen n'est
+ * pas un prix d'offre). Ni avis, ni note. Parcours de vente (24/11/2026) : le prix dès le haut de page, puis « Ce que tu
+ * y gagnes », ce que je fais, comment ça se passe, et le bouton de rappel à chaque étape.
  */
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
@@ -22,6 +24,17 @@ function Coche() {
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="mt-1 shrink-0 text-[#0b7a53]">
       <path d="M20 6 9 17l-5-5" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
+  );
+}
+
+function Tarif({ t }: { t: NonNullable<Contenu["tarif"]> }) {
+  return (
+    <div className="mt-6 rounded-2xl border border-line bg-surface p-4 sm:p-5" data-tarif="">
+      <p className="text-[13px] font-semibold uppercase tracking-wide text-faint">{t.fixe ? "Prix" : "Prix moyen"}</p>
+      <p className="num mt-1 text-[22px] font-bold leading-tight text-ink">{t.prix}</p>
+      <p className="mt-1 text-[14.5px] text-ink">{t.detail}</p>
+      <p className="mt-2 text-[13px] leading-relaxed text-faint">{t.fixe ? NOTE_PRIX_FIXE : NOTE_PRIX_MOYEN}</p>
+    </div>
   );
 }
 
@@ -43,6 +56,9 @@ export default function PageService({ c }: { c: Contenu }) {
         provider: { "@id": `${siteUrl}/#organization` },
         areaServed: { "@type": "Country", name: "France" },
         availableChannel: { "@type": "ServiceChannel", serviceUrl: `${siteUrl}${cta.href}`, availableLanguage: "fr" },
+        ...(c.tarif?.fixe && c.tarif.montantFixe
+          ? { offers: { "@type": "Offer", price: String(c.tarif.montantFixe), priceCurrency: "EUR", url } }
+          : {}),
       },
       {
         "@type": "FAQPage",
@@ -82,6 +98,7 @@ export default function PageService({ c }: { c: Contenu }) {
           <Link href={cta.href} className="btn btn-primary min-h-12 px-6 text-[15px]">{cta.label}</Link>
           <span className="text-[13.5px] text-muted">{cta.note}</span>
         </div>
+        {c.tarif && <Tarif t={c.tarif} />}
       </header>
 
       {c.pourQui && (
@@ -90,6 +107,27 @@ export default function PageService({ c }: { c: Contenu }) {
           <ul className="mt-4 space-y-2.5">
             {c.pourQui.items.map((x) => <li key={x} className="flex gap-3 text-[16px] leading-relaxed text-ink"><Coche />{x}</li>)}
           </ul>
+        </section>
+      )}
+
+      {c.gains && (
+        <section aria-labelledby="gains" className="rounded-3xl border border-brand-200 bg-brand-50/60 p-6 sm:p-8">
+          <h2 id="gains" className={h2}>{c.gains.titre}</h2>
+          <ul className="mt-5 grid gap-4 sm:grid-cols-2">
+            {c.gains.items.map((x) => (
+              <li key={x.t} className="flex gap-3">
+                <Coche />
+                <span>
+                  <span className="block text-[16px] font-semibold leading-snug text-ink">{x.t}</span>
+                  <span className="mt-1 block text-[15px] leading-relaxed text-muted">{x.s}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <Link href={cta.href} className="btn btn-primary min-h-12 px-6 text-[15px]">{cta.label}</Link>
+            <span className="text-[13.5px] text-muted">{cta.note}</span>
+          </div>
         </section>
       )}
 
@@ -119,6 +157,7 @@ export default function PageService({ c }: { c: Contenu }) {
         <ul className="mt-3 space-y-2">
           {c.obtiens.items.map((x) => <li key={x} className="flex gap-3 text-[15.5px] leading-relaxed text-ink"><Coche />{x}</li>)}
         </ul>
+        {c.tarif && <Tarif t={c.tarif} />}
         <Link href={cta.href} className="btn btn-primary mt-7 min-h-12 px-6 text-[15px]">{cta.label}</Link>
       </section>
 
@@ -130,7 +169,7 @@ export default function PageService({ c }: { c: Contenu }) {
           <img src={PHOTO_FONDATEUR} alt="" width={80} height={80} loading="lazy" className="h-20 w-20 shrink-0 rounded-2xl object-cover" />
         )}
         <p className="max-w-[64ch] text-[16px] leading-relaxed text-ink">
-          {`Je m'appelle Daniel Leal, fondateur d'AVYORA. ${PARCOURS_COURT} J'ai vu un chantier sous tous ses angles : l'entreprise qui exécute, le chef de chantier qui coordonne et le propriétaire qui paie.`}{" "}
+          {`Je m'appelle Daniel Leal, fondateur d'AVYORA. ${PARCOURS_COURT} J'ai vu un chantier sous tous ses angles : l'entreprise qui exécute, le chef de chantier qui coordonne, le propriétaire qui paie, et surtout celui qui fait les travaux lui-même.`}{" "}
           <Link href={CHEMIN_ACCOMPAGNEMENT} className={lienProse}>Tout l&apos;accompagnement</Link>
         </p>
         </div>

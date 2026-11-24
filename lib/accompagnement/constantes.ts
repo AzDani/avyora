@@ -21,7 +21,7 @@ export type TypeProjet = (typeof TYPES_PROJET)[number];
  * Les besoins : plusieurs cases possibles, parmi les accompagnements de la page (l'appel découverte n'y est pas :
  * c'est ce que la demande déclenche), plus « je ne sais pas encore ». Aucune case cochée = « je ne sais pas encore ».
  */
-export const BESOINS = ["conseil", "devis", "plan", "suivi", "reception", "visite", "nsp"] as const;
+export const BESOINS = ["devis", "estimation", "visite", "technique", "plans", "suivi", "budget", "sur_mesure", "nsp"] as const;
 export type Besoin = (typeof BESOINS)[number];
 
 /**
