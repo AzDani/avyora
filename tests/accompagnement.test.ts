@@ -461,13 +461,13 @@ describe("sitemap, maillage interne et confidentialité", () => {
     const menu = lire("components/MobileMenu.tsx");
     expect(menu.indexOf("href={PAGE_ACCOMPAGNEMENT}")).toBeGreaterThan(menu.indexOf("href={VITRINE_PLAN}"));
     expect(menu.indexOf("href={PAGE_ACCOMPAGNEMENT}")).toBeLessThan(menu.indexOf('href="/projets"'));
-    // L'accueil « trois portes » (24/11/2026) : l'accompagnement est la première porte du héros (bouton de rappel), le
-    // bouton revient sous « Comment ça se passe », une carte parmi les services (FR), FR et EN.
+    // L'accueil V2 (24/11/2026) : le bouton de rappel ouvre le héros et revient dans l'appel final, l'accompagnement est
+    // la première offre (mise en avant) de « Ce que je te propose », FR et EN.
     const accueil = lire("app/page.tsx");
-    expect(accueil.match(/href="\/accompagnement-travaux#demande" class="btn btn-p"/g)).toHaveLength(4);
-    expect(accueil.match(/vedette: true, ic: IC\.conseil,[^\n]*id: "porte-acc"/g)).toHaveLength(2);
+    expect(accueil.match(/href="\/accompagnement-travaux#demande" class="btn btn-o"/g)).toHaveLength(4);
+    expect(accueil.match(/vedette: true, ic: IC\.conseil, titre:/g)).toHaveLength(2);
     expect(accueil).toContain(`<h1>Tes travaux, <span class="hl">sans les erreurs</span> qui coûtent des milliers d'euros.</h1>`);
-    expect(accueil).toContain('carte("/accompagnement-travaux", IC.conseil, ["Premier appel offert", "o"], "Te faire accompagner"');
+    expect(accueil).toContain('<li><a href="/relecture-devis-travaux">Relecture de devis</a></li>');
     expect(accueil).not.toContain("strip-accomp");
     const guides = lire("app/guides/[slug]/page.tsx");
     expect(guides.match(/<Link href="\/accompagnement-travaux">/g)).toHaveLength(1);

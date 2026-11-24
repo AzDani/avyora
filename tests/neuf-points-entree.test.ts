@@ -195,15 +195,15 @@ describe("Accueil · bandeau construction neuve", () => {
     }
   });
 
-  it("flag allumé (refonte du 20/11/2026) : la carte « maison neuve » parmi les services, sans prix ni emoji", async () => {
+  it("flag allumé (accueil V2 du 24/11/2026) : le lien « maison neuve » dans la ligne du logiciel, sans prix ni emoji", async () => {
     for (const locale of ["fr", "en"] as const) {
       const on = await (await charger(true, locale)).accueil();
-      const carte = on.match(/<a href="\/estimation-construction-maison"><span class="tete">[^]*?<\/a>/g) ?? [];
-      expect(carte).toHaveLength(1);
-      const texte = (carte[0] ?? "").replace(/<svg[^]*?<\/svg>/g, "").replace(/<[^>]*>/g, " ");
+      const lien = on.match(/<li><a href="\/estimation-construction-maison">[^<]*<\/a>[^<]*<\/li>/g) ?? [];
+      expect(lien).toHaveLength(1);
+      const texte = (lien[0] ?? "").replace(/<[^>]*>/g, " ");
       expect(texte).not.toMatch(/€|\d{3}/);
       expect(texte).not.toMatch(/\p{Extended_Pictographic}/u);
-      expect(texte).toContain(locale === "fr" ? "Gratuit, en 4 questions." : "Free, in 4 questions.");
+      expect(texte).toContain(locale === "fr" ? "gratuit, en 4 questions" : "free, in 4 questions");
     }
   });
 });

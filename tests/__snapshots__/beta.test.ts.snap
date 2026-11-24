@@ -146,275 +146,146 @@ exports[`Témoins · pendant la bêta (12/10/2026) > accueil (FR, EN) > accueil 
 </style><div class="av-home">
 <a href="/inscription?source=accueil" class="promo"><span style="text-align:center"><span class="dot" style="display:inline-block;vertical-align:middle;margin:0 8px 2px 0"></span><b>Free beta</b> — all of AVYORA is free through December 31, 2026 <span class="arr">· create your account →</span></span></a>
 <style>
-.av-home .hero .in.h2c{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);gap:44px;align-items:center;text-align:left;max-width:none;padding:56px 48px 60px}
-.av-home .hero .h2c .cta{justify-content:flex-start}
-.av-home .hero .h2c .trust{justify-content:flex-start;margin-top:28px}
-.av-home .hero .h2c p.sub{margin-left:0;max-width:56ch}
-.av-home .hero .h2c h1{font-size:clamp(30px,3.8vw,44px);line-height:1.08}
-.av-home .expert{background:#fff;color:var(--ink);text-align:left;border-radius:20px;padding:22px;box-shadow:0 30px 60px -28px rgba(0,0,0,.55)}
-.av-home .expert .qui{display:flex;align-items:center;gap:14px}
-.av-home .expert .av{flex:none;width:80px;height:80px;border-radius:16px;object-fit:cover;background:var(--brand-weak);box-shadow:0 1px 3px rgba(30,27,75,.12)}
-.av-home .expert .qui b{display:block;font-size:15.5px;color:var(--nuit)}
-.av-home .expert .qui span span{display:block;font-size:12.5px;color:var(--muted)}
-.av-home .expert .ans{margin-left:auto;font-size:12px;font-weight:600;color:#0b6e4b;background:var(--good-bg);border-radius:999px;padding:5px 10px;white-space:nowrap}
-.av-home .expert .ans b{color:#0b6e4b}
-.av-home .expert ol{list-style:none;margin:16px 0 0;padding:0 0 0 14px;border-left:2px solid var(--brand-200);display:grid;gap:12px}
-.av-home .expert li{display:grid;grid-template-columns:62px 1fr;gap:10px;position:relative}
-.av-home .expert li::before{content:"";position:absolute;left:-20px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 3px #fff}
-.av-home .expert li .d{font-size:11.5px;font-weight:700;color:var(--brand-700);letter-spacing:.02em;padding-top:2px}
-.av-home .expert li b{display:block;font-size:14px;color:var(--ink)}
-.av-home .expert li b+span{display:block;font-size:12.5px;color:var(--muted);line-height:1.45;margin-top:1px}
-.av-home .expert ul.pq{list-style:none;margin:16px 0 0;padding:14px 0 0;border-top:1px solid var(--line);display:grid;gap:7px}.av-home .expert ul.pq li{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.4}.av-home .expert ul.pq li::before{content:none}.av-home .expert ul.pq svg{flex:none;margin-top:1px;color:var(--brand-700)}
-.av-home .expert .cit{margin-top:16px;font-size:13.5px;line-height:1.55;color:var(--ink);background:var(--surface-2);border-radius:12px;padding:12px 14px;font-style:italic}
-.av-home .expert .lien{display:inline-flex;align-items:center;min-height:44px;margin-top:4px;font-size:14px;font-weight:600;color:var(--brand-700);text-decoration:underline;text-underline-offset:3px}
-.av-home .svc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.av-home .svc.n4{grid-template-columns:repeat(2,minmax(0,1fr))}
-.av-home .svc a{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px;box-shadow:var(--shadow);transition:transform .16s var(--ease),border-color .16s}
-.av-home .svc a:hover{transform:translateY(-3px);border-color:var(--brand-200)}
-.av-home .svc a:focus-visible{outline:3px solid var(--brand-200);outline-offset:3px}
-.av-home .svc .tete{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.av-home .svc .ic{width:42px;height:42px;border-radius:12px;background:var(--brand-weak);color:var(--brand-700);display:grid;place-items:center}
-.av-home .svc .ic svg{width:21px;height:21px}
-.av-home .svc .acc{font-size:11.5px;font-weight:600;border-radius:999px;padding:4px 10px;white-space:nowrap}
-.av-home .svc .acc.g{background:var(--good-bg);color:#0b6e4b}
-.av-home .svc .acc.p{background:var(--nuit);color:#fff}
-.av-home .svc .acc.o{background:#fff4dc;color:#8a5300}
-.av-home .svc h3{font-size:17px;font-weight:650;margin-top:16px;color:var(--nuit)}
-.av-home .svc p{font-size:14px;color:var(--muted);margin-top:6px;line-height:1.55;flex:1}
-.av-home .svc .go{margin-top:14px;font-size:14px;font-weight:600;color:var(--brand-700)}
-.av-home .rsx{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:36px;align-items:center;background:var(--surface);border:1.5px solid var(--brand-200);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:40px}
-.av-home .rsx h2{font-size:clamp(24px,3.2vw,32px);font-weight:700;line-height:1.14;margin-top:10px;color:var(--nuit)}
-.av-home .rsx p.d{color:var(--muted);font-size:15.5px;line-height:1.6;margin-top:12px;max-width:54ch}
-.av-home .rsx .cta{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin-top:22px}
-.av-home .rsx .lien{color:var(--brand-700);font-weight:600;font-size:14px;text-decoration:underline;text-underline-offset:3px;min-height:44px;display:inline-flex;align-items:center}
-.av-home .rsx .acces{font-size:13px;color:var(--faint);margin-top:12px}
-.av-home .rsx ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
-.av-home .rsx li{display:grid;grid-template-columns:36px 1fr;gap:14px;align-items:start;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface-2)}
-.av-home .rsx li .c{width:36px;height:36px;border-radius:10px;background:var(--good-bg);color:var(--good);display:grid;place-items:center}
-.av-home .rsx li .c svg{width:17px;height:17px}
-.av-home .rsx li .t{font-weight:600;font-size:14.5px;color:var(--ink);display:block}
-.av-home .rsx li .s{font-size:13px;color:var(--muted);margin-top:2px;line-height:1.45;display:block}
-.av-home .frm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:stretch}
-.av-home .frm .col{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:28px;box-shadow:var(--shadow);display:flex;flex-direction:column}
-.av-home .frm .col.pro{background:linear-gradient(150deg,var(--nuit),var(--nuit-2));color:#fff;border-color:transparent;box-shadow:var(--shadow-hero)}
-.av-home .frm .nom{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--brand)}
-.av-home .frm .pro .nom{color:var(--accent-300)}
-.av-home .frm .px{font-size:26px;font-weight:700;margin-top:8px;color:var(--nuit)}
-.av-home .frm .pro .px{color:#fff}
-.av-home .frm .px small{font-size:14px;font-weight:500;color:var(--muted)}
-.av-home .frm .pro .px small{color:#c9c5ee}
-.av-home .frm ul{list-style:none;margin:18px 0 0;padding:0;display:grid;gap:10px;flex:1}
-.av-home .frm li{display:grid;grid-template-columns:18px 1fr;gap:10px;font-size:14.5px;line-height:1.45}
-.av-home .frm li svg{width:16px;height:16px;margin-top:2px;color:var(--good)}
-.av-home .frm .pro li svg{color:var(--accent)}
-.av-home .frm .bas{margin-top:22px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
-.av-home .frm .note{font-size:13px;color:#d7d4f2;margin-top:14px;line-height:1.5}
-.av-home .frm .lien{color:var(--brand-700);font-weight:600;font-size:14px;text-decoration:underline;text-underline-offset:3px;min-height:44px;display:inline-flex;align-items:center}
-.av-home .chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:22px}
-.av-home .chips a{display:inline-flex;align-items:center;min-height:42px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:0 16px;font-size:14px;font-weight:600}
-.av-home .chips a.tous{background:var(--brand);color:#fff}
-.av-home .chips a:hover{filter:brightness(.97)}
-.av-home .gap{margin-top:22px}
-@media(max-width:900px){.av-home .svc{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:820px){.av-home .hero .in.h2c{grid-template-columns:1fr;padding:40px 22px 44px;gap:30px}.av-home .rsx{grid-template-columns:1fr;padding:28px 22px;gap:24px}}
-@media(max-width:620px){.av-home .svc,.av-home .svc.n4,.av-home .frm{grid-template-columns:1fr}.av-home .frm .col{padding:24px 20px}}
-@media (prefers-reduced-motion:reduce){.av-home .svc a{transition:none}.av-home .svc a:hover{transform:none}}
-</style><style>
-.av-home .hero .in.h3p{max-width:none;text-align:left;padding:52px 44px 44px}
-.av-home .hero .h3p .intro{max-width:800px}
-.av-home .hero .h3p h1{font-size:clamp(32px,4.4vw,52px);line-height:1.06}
-.av-home .hero .h3p p.sub{margin-left:0;max-width:62ch}
-.av-home .hero .h3p p.mot{margin-top:14px;font-size:15.5px;color:#b7b3e0}
-.av-home .hero .h3p p.mot b{color:#fff}
-.av-home .hero .h3p .trust{justify-content:flex-start;margin-top:22px}
-.av-home .portes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:36px}
-.av-home .porte{background:#fff;color:var(--ink);border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:14px;box-shadow:0 30px 60px -28px rgba(0,0,0,.55);border:2px solid transparent}
-.av-home .porte.vedette{border-color:var(--accent)}
-.av-home .porte .tete{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.av-home .porte .ic{flex:none;width:44px;height:44px;border-radius:12px;background:var(--brand-weak);color:var(--brand-700);display:grid;place-items:center}
-.av-home .porte .ic svg{width:22px;height:22px}
-.av-home .porte .badge{font-size:12px;font-weight:600;line-height:1.3;border-radius:999px;padding:5px 10px;background:var(--brand-weak);color:var(--brand-700);text-align:right}
-.av-home .porte .badge.g{background:var(--good-bg);color:#0b6e4b}
-.av-home .hero .porte .eyebrow{color:var(--brand)}
-.av-home .porte h2{font-size:21px;line-height:1.2;font-weight:700;color:var(--nuit);margin-top:6px}
-.av-home .porte .pour{font-size:14.5px;color:var(--muted);margin-top:6px;line-height:1.5}
-.av-home .porte ul{list-style:none;margin:0;padding:0}
-.av-home .porte .lignes li{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14.5px}
-.av-home .porte .lignes li:last-child{border-bottom:0}
-.av-home .porte .lignes a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:3px}
-.av-home .porte .lignes a:hover{text-decoration-color:var(--brand)}
-.av-home .porte .lignes .num{font-weight:600;white-space:nowrap}
-.av-home .porte .coches{display:grid;gap:8px}
-.av-home .porte .coches li{display:grid;grid-template-columns:18px 1fr;gap:10px;font-size:14.5px;line-height:1.45}
-.av-home .porte .coches svg{width:16px;height:16px;margin-top:2px;color:var(--brand)}
-.av-home .porte .aussi{font-size:13px;color:var(--muted);line-height:1.55}
-.av-home .porte .aussi a{color:var(--brand-700);text-decoration:underline;text-underline-offset:2px}
-.av-home .porte .evite{background:#fdf1e1;color:#5c3a08;border-radius:12px;padding:11px 13px;font-size:13.5px;line-height:1.45}
-.av-home .porte .bas{margin-top:auto;display:grid;gap:8px}
-.av-home .porte .btn{width:100%;border-radius:12px}
+.av-home .hero .in{z-index:1}
+.av-home .hero .in.v2{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.85fr);gap:44px;align-items:center;text-align:left;max-width:none;padding:52px 48px 56px}
+.av-home .hero .v2 .tags{display:flex;flex-wrap:wrap;gap:8px}
+.av-home .hero .v2 .tags span{font-size:12.5px;font-weight:600;color:#c7ccfe;border:1px solid rgba(199,204,254,.3);border-radius:999px;padding:5px 12px}
+.av-home .hero .v2 h1{font-size:clamp(32px,4.4vw,52px);line-height:1.05;margin-top:18px}
+.av-home .hero .v2 p.sub{margin:18px 0 0;max-width:56ch}
+.av-home .hero .v2 .cta{justify-content:flex-start;margin-top:28px}
+.av-home .hero .v2 .trust{justify-content:flex-start;margin-top:22px}
+.av-home .fond{background:#fff;color:var(--ink);border-radius:20px;padding:22px;box-shadow:0 30px 60px -28px rgba(0,0,0,.55)}
+.av-home .fond .qui{display:flex;align-items:center;gap:16px}
+.av-home .fond img{flex:none;width:124px;height:124px;border-radius:18px;object-fit:cover;transition:transform .35s var(--ease)}
+.av-home .fond:hover img{transform:scale(1.06)}
+.av-home .fond .nom{font-weight:700;font-size:17px;color:var(--nuit)}
+.av-home .fond .role{font-size:13.5px;color:var(--muted);line-height:1.35;margin-top:2px}
+.av-home .fond .role .tel{display:none}
+.av-home .fond ul{list-style:none;margin:16px 0 0;padding:14px 0 0;border-top:1px solid var(--line);display:grid;gap:10px}
+.av-home .fond li{display:grid;grid-template-columns:56px 1fr;gap:10px;align-items:baseline;font-size:14.5px;line-height:1.4}
+.av-home .fond li .k{font-size:17px;font-weight:700;color:var(--brand);white-space:nowrap}
+.av-home .fond .lien{display:inline-flex;align-items:center;min-height:44px;margin-top:4px;font-weight:600;font-size:14.5px;color:var(--brand-700)}
+.av-home .fond .lien:hover{text-decoration:underline;text-underline-offset:3px}
+.av-home .titre-s{font-size:clamp(24px,3vw,30px);font-weight:700;color:var(--nuit)}
+.av-home .sous-t{color:var(--muted);font-size:16px;margin-top:6px}
+.av-home .offres{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:18px}
+.av-home .offre{background:#fff;border:1px solid var(--line-strong);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow);transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
+.av-home .offre.vedette{border:2px solid var(--brand)}
+.av-home .offre:hover,.av-home .tuile:hover{transform:translateY(-5px) scale(1.02);box-shadow:0 26px 50px -22px rgba(30,27,75,.38)}
+.av-home .offre .t{display:flex;align-items:center;gap:12px}
+.av-home .offre .ic{flex:none;width:40px;height:40px;border-radius:11px;background:var(--brand-weak);color:var(--brand-700);display:grid;place-items:center}
+.av-home .offre .ic svg{width:21px;height:21px}
+.av-home .offre h3{font-size:19px;font-weight:700;color:var(--nuit)}
+.av-home .offre p{font-size:15px;color:var(--muted);line-height:1.5}
+.av-home .offre p.px{font-size:14.5px}
+.av-home .offre .px b{font-size:21px;font-weight:700;color:var(--brand);font-variant-numeric:tabular-nums}
+.av-home .offre .px b.g{color:var(--good)}
+.av-home .offre .btn{margin-top:auto;width:100%;border-radius:12px}
+.av-home .offre .mini{font-size:12.5px;color:var(--faint);line-height:1.45;text-align:center}
+.av-home .offre .mini a{color:var(--brand-700);font-weight:600}
+.av-home .btn{transition:transform .2s var(--ease),box-shadow .2s var(--ease),background-color .2s}
+.av-home .btn:hover{transform:translateY(-2px) scale(1.03)}
 .av-home .btn-n{background:var(--nuit);color:#fff}
 .av-home .btn-n:hover{background:var(--nuit-2)}
-.av-home .porte .sous{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--muted)}
-.av-home .porte .sous a{color:var(--brand-700);font-weight:600}
 .av-home .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;padding:0;margin:-1px}
-.av-home .titre-g{margin-bottom:22px}
-.av-home .titre-g h2{font-size:clamp(25px,3.4vw,34px);font-weight:700;margin-top:10px;color:var(--nuit)}
-.av-home .titre-g p{color:var(--muted);font-size:16px;margin-top:10px;max-width:62ch;line-height:1.6}
-.av-home .situ{position:relative}
-.av-home .situ fieldset{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:10px}
-.av-home .situ label{display:inline-flex;align-items:center;min-height:46px;padding:0 18px;border-radius:999px;border:1px solid var(--line-strong);background:#fff;font-size:15px;font-weight:500;cursor:pointer;transition:border-color .15s}
-.av-home .situ label:hover{border-color:var(--brand-200)}
+.av-home .situ{position:relative;margin-top:16px}
+.av-home .situ fieldset{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.av-home .situ label{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--line-strong);background:#fff;font-size:15px;font-weight:500;cursor:pointer;transition:transform .15s var(--ease),border-color .15s}
+.av-home .situ label:hover{transform:scale(1.04);border-color:var(--brand-200)}
 .av-home .situ input:checked+label{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
 .av-home .situ input:focus-visible+label{outline:3px solid var(--accent);outline-offset:2px}
-.av-home .situ .pan{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;margin-top:18px}
-.av-home .situ .parc{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:24px 26px;box-shadow:var(--shadow)}
-.av-home .situ .k{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
-.av-home .situ ol{list-style:none;margin:8px 0 0;padding:0}
-.av-home .situ ol li{display:flex;gap:14px;padding:14px 0;border-top:1px solid var(--line)}
-.av-home .situ ol li:first-child{border-top:0}
-.av-home .situ .n{flex:none;width:30px;height:30px;border-radius:50%;background:var(--brand-weak);color:var(--brand-700);font-weight:700;font-size:13.5px;display:grid;place-items:center}
-.av-home .situ .c{flex:1;min-width:0}
-.av-home .situ .l{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 14px;align-items:baseline}
-.av-home .situ .l a{font-weight:600;font-size:16px;color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:3px}
-.av-home .situ .l .p{font-weight:600;color:var(--brand-700);font-size:14.5px}
-.av-home .situ .t{display:block;color:var(--muted);font-size:14.5px;margin-top:3px;line-height:1.5}
-.av-home .situ .plus{margin-top:6px;padding-top:12px;border-top:1px solid var(--line);font-size:14.5px;color:var(--muted)}
+.av-home .situ .pan{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,260px);gap:18px 32px;align-items:center;margin-top:14px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px 24px;box-shadow:var(--shadow)}
+.av-home .situ ol{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.av-home .situ li{display:flex;gap:14px;align-items:baseline}
+.av-home .situ .n{flex:none;width:26px;height:26px;border-radius:50%;background:var(--brand-weak);color:var(--brand-700);font-weight:700;font-size:13px;display:inline-grid;place-items:center}
+.av-home .situ li a{font-weight:600;font-size:16px;color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:3px}
+.av-home .situ li a:hover{text-decoration-color:var(--brand)}
+.av-home .situ li .p{font-weight:700;color:var(--brand-700)}
+.av-home .situ li .x{display:block;color:var(--muted);font-size:14.5px;margin-top:2px;line-height:1.45}
+.av-home .situ .plus{margin-top:12px;font-size:14.5px;color:var(--muted)}
 .av-home .situ .plus a{color:var(--brand-700);font-weight:600}
-.av-home .situ .risk{background:linear-gradient(150deg,var(--nuit),var(--nuit-2));color:#fff;border-radius:var(--r-lg);padding:24px 26px;display:flex;flex-direction:column;gap:12px}
-.av-home .situ .risk .k{color:#fbbf6a}
-.av-home .situ .risk .r{font-size:18px;font-weight:600;line-height:1.4}
-.av-home .situ .risk .m{font-size:14.5px;color:#d7d4f2;line-height:1.5}
-.av-home .situ .risk .btn{margin-top:auto;border-radius:12px}
-.av-home .situ .risk .note{font-size:12.5px;color:#b7b3e0;text-align:center}
-.av-home .calc{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:40px}
-.av-home .calc h2{font-size:clamp(25px,3.4vw,34px);font-weight:700;line-height:1.14;margin-top:10px;color:var(--nuit);max-width:26ch}
-.av-home .calc p.d{color:var(--muted);font-size:16.5px;margin-top:12px;line-height:1.6;max-width:62ch}
-.av-home .calc .en{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.4fr);gap:8px 32px;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);padding-bottom:10px;border-bottom:1px solid var(--line-strong);margin-top:28px}
-.av-home .calc .ln{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.4fr);gap:6px 32px;padding:16px 0;border-bottom:1px solid var(--line);align-items:center}
-.av-home .calc .px{display:flex;align-items:baseline;gap:14px}
-.av-home .calc .px .num{font-size:24px;font-weight:700;color:var(--brand);min-width:110px}
-.av-home .calc .px a{font-weight:600;color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:3px}
-.av-home .calc .ev{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:15px;line-height:1.45}
-.av-home .calc .mil{font-size:12px;font-weight:600;color:#8a4f06;background:#fdf1e1;padding:4px 10px;border-radius:999px;white-space:nowrap}
-.av-home .qui2{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:44px;align-items:center}
-.av-home .qui2 .ph{width:100%;height:auto;object-fit:cover;border-radius:var(--r-lg);box-shadow:var(--shadow-hero);display:block}
-.av-home .qui2 h2{font-size:clamp(25px,3.2vw,34px);font-weight:700;line-height:1.14;margin-top:10px;color:var(--nuit)}
-.av-home .qui2 h2 .num{color:var(--brand)}
-.av-home .qui2 ul{list-style:none;margin:20px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 24px}
-.av-home .qui2 li{display:grid;grid-template-columns:18px 1fr;gap:10px;font-size:15px;line-height:1.5}
-.av-home .qui2 li svg{width:16px;height:16px;margin-top:4px;color:var(--good)}
-.av-home .qui2 p.d{color:var(--muted);font-size:16px;margin-top:18px;line-height:1.6;max-width:62ch}
-.av-home .qui2 .lien{display:inline-flex;align-items:center;min-height:44px;margin-top:6px;font-weight:600;color:var(--brand-700);text-decoration:underline;text-underline-offset:3px}
-.av-home .stepc .q{font-size:12.5px;font-weight:600;color:var(--brand-700);margin-top:14px;letter-spacing:.02em}
-.av-home .stepc .q+h3{margin-top:4px}
-.av-home .cta-c{text-align:center;margin-top:26px}
-.av-home .fin2{background:linear-gradient(150deg,var(--nuit),var(--nuit-2));color:#fff;border-radius:var(--r-lg);padding:44px 40px;display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:space-between;box-shadow:var(--shadow-hero)}
-.av-home .fin2>div:first-child{flex:1 1 420px;min-width:0}
-.av-home .fin2 h2{font-size:clamp(24px,3.2vw,34px);font-weight:700;line-height:1.14;max-width:30ch}
-.av-home .fin2 p{color:#d7d4f2;margin-top:10px;font-size:15.5px;line-height:1.55}
-.av-home .fin2 .cta{display:flex;flex-wrap:wrap;gap:12px}
-@media(max-width:980px){.av-home .portes{grid-template-columns:1fr;max-width:560px}}
-@media(max-width:820px){.av-home .hero .in.h3p{padding:40px 20px 24px}.av-home .situ .pan{grid-template-columns:1fr}.av-home .qui2{grid-template-columns:1fr;gap:24px}.av-home .qui2 .ph{max-width:260px}.av-home .qui2 ul{grid-template-columns:1fr}.av-home .fin2{padding:32px 22px}}
-@media(max-width:700px){.av-home .calc{padding:26px 20px}.av-home .calc .en{display:none}.av-home .calc .ln{grid-template-columns:1fr}}
-@media (prefers-reduced-motion:reduce){.av-home .situ label{transition:none}}
-</style><div class="wrap"><header class="hero"><div class="in h3p"><div class="intro">
-  <div class="eyebrow">Renovation · New builds · Buy-to-resell</div>
+.av-home .situ .risque{margin-top:12px;font-size:14.5px;line-height:1.45;color:#6b3c05;background:#fdf1e1;border-radius:10px;padding:9px 12px}
+.av-home .situ .act{display:grid;gap:8px}
+.av-home .situ .act .btn{border-radius:12px}
+.av-home .situ .act .note{font-size:12.5px;color:var(--faint);text-align:center;line-height:1.45}
+.av-home .tuiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:18px}
+.av-home .tuile{display:block;background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--shadow);transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
+.av-home .tuile .v{font-size:26px;font-weight:700;color:var(--brand);font-variant-numeric:tabular-nums}
+.av-home .tuile .v small{font-size:15px;font-weight:500;color:var(--muted)}
+.av-home .tuile .nm{font-weight:600;color:var(--ink);margin-top:2px}
+.av-home .tuile .e{color:var(--muted);font-size:14.5px;margin-top:6px;line-height:1.45}
+.av-home .note-px{font-size:13px;color:var(--faint);margin-top:10px}
+.av-home .fin3{background:linear-gradient(150deg,var(--nuit),var(--nuit-2));color:#fff;border-radius:var(--r-lg);padding:32px;display:flex;flex-wrap:wrap;gap:22px;align-items:center;box-shadow:var(--shadow-hero)}
+.av-home .fin3 img{width:76px;height:76px;border-radius:50%;object-fit:cover;border:3px solid #fff;transition:transform .3s var(--ease)}
+.av-home .fin3:hover img{transform:scale(1.08)}
+.av-home .fin3 .tx{flex:1 1 380px;min-width:0}
+.av-home .fin3 h2{font-size:clamp(22px,2.8vw,28px);font-weight:700;line-height:1.15}
+.av-home .fin3 p{color:#c7ccfe;margin-top:6px;line-height:1.5}
+.av-home .liens{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:22px;border-top:1px solid var(--line-strong);padding-top:24px;font-size:14.5px}
+.av-home .liens h2{font-size:14.5px;font-weight:700;color:var(--nuit);margin-bottom:8px;letter-spacing:0}
+.av-home .liens ul{list-style:none;margin:0;padding:0;display:grid;gap:7px;color:var(--muted)}
+.av-home .liens a{color:var(--brand-700)}
+.av-home .liens a:hover{text-decoration:underline;text-underline-offset:3px}
+@keyframes avmonte{from{transform:translateY(12px)}to{transform:none}}
+.av-home .monte{animation:avmonte .6s var(--ease) backwards}
+.av-home .monte.d1{animation-delay:.1s}.av-home .monte.d2{animation-delay:.18s}.av-home .monte.d3{animation-delay:.26s}
+@media(max-width:900px){.av-home .offres{grid-template-columns:1fr}.av-home .tuiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:820px){.av-home .hero .in.v2{grid-template-columns:1fr;padding:26px 20px 30px;gap:0}.av-home .fond{order:-1;background:none;box-shadow:none;padding:0 0 16px;color:#fff}.av-home .fond img{width:84px;height:84px;border-radius:50%;border:2px solid #fff}.av-home .fond .nom{color:#fff}.av-home .fond .role{color:#c7ccfe}.av-home .fond .role .tel{display:inline}.av-home .fond .role .pc,.av-home .fond ul,.av-home .fond .lien,.av-home .hero .v2 .tags{display:none}.av-home .hero .v2 h1{margin-top:6px}.av-home .hero .v2 .cta .btn{width:100%}.av-home .situ .pan{grid-template-columns:1fr;padding:18px}}
+@media(max-width:480px){.av-home .tuiles{grid-template-columns:1fr}.av-home .fin3{padding:24px 20px}}
+@media (prefers-reduced-motion:reduce){.av-home .monte{animation:none}.av-home .btn,.av-home .offre,.av-home .tuile,.av-home .situ label,.av-home .fond img,.av-home .fin3 img{transition:none}.av-home .btn:hover,.av-home .offre:hover,.av-home .tuile:hover,.av-home .situ label:hover,.av-home .fond:hover img,.av-home .fin3:hover img{transform:none}}
+</style><div class="wrap"><header class="hero"><div class="in v2"><div class="intro monte">
+  <div class="tags"><span>Renovation</span><span>New builds</span><span>Buy-to-resell</span></div>
   <h1>Your project, <span class="hl">without the mistakes</span> that cost thousands of euros.</h1>
-  <p class="sub">I ran my own building company, and renovated and built my own houses. Today I help you with your project, with AVYORA to price it and floor plans to picture it. Pick your way in.</p>
-  <p class="mot"><b>A few hundred euros</b> to avoid losing thousands.</p>
-  <div class="trust"><span><b>First call</b> free</span><span><b>remote</b>: video or WhatsApp</span><span><b>no</b> commitment</span></div>
-</div><div class="portes">
-  <article class="porte vedette" aria-labelledby="porte-acc"><div class="tete"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13.5v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="13" width="4" height="6" rx="1.5"/><rect x="17" y="13" width="4" height="6" rx="1.5"/></svg></span><span class="badge">With Daniel, former head of a building company</span></div><div><p class="eyebrow">Get support</p><h2 id="porte-acc">Someone who has renovated and built, by your side</h2><p class="pour">You're buying, you've received quotes, or your works are starting.</p></div><ul class="lignes"><li><a href="/accompagnement-travaux#aide">Quote review</a><span class="num">≈ €29</span></li><li><a href="/accompagnement-travaux#aide">Opinion before you buy</a><span class="num">€99</span></li><li><a href="/accompagnement-travaux#aide">Organising your site</a><span class="num">≈ €199/month</span></li></ul><p class="aussi">And also: <a href="/accompagnement-travaux#aide">budget estimate</a>, <a href="/accompagnement-achat-revente">buy-to-resell (in French)</a>, <a href="/accompagnement-travaux#aide">technical choices</a>, <a href="/accompagnement-travaux#aide">budget tracking</a>.</p><p class="evite"><b>What it saves you:</b> a missing item in a quote, an oversized deposit, the wrong contractor.</p><div class="bas"><a href="/accompagnement-travaux#demande" class="btn btn-p">Request my free call →</a><p class="sous"><span>20 min, free, no commitment</span><a href="/accompagnement-travaux#aide">All services →</a></p></div></article>
-  <article class="porte" aria-labelledby="porte-logiciel"><div class="tete"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2.5" width="16" height="19" rx="2.5"/><path d="M8 7h8M8 11.5h2M12 11.5h2M16 11.5h0M8 15.5h2M12 15.5h2M16 15.5v2"/></svg></span><span class="badge g">Free during the beta</span></div><div><p class="eyebrow">Price it yourself</p><h2 id="porte-logiciel">The AVYORA tool prices your project line by line</h2><p class="pour">You want a reliable budget before calling contractors.</p></div><ul class="coches"><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Renovation: 200 line items, at your region's prices</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>New builds: from building permit to handover</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Tracking your works and your spending</span></li></ul><p class="evite"><b>What it saves you:</b> an underestimated budget that stalls the works halfway.</p><div class="bas"><a href="/projets/nouveau" class="btn btn-n">Estimate my project →</a><p class="sous"><span>Free during the beta, through December 31, 2026</span><a href="/estimation-travaux">How it works →</a></p></div></article>
-  <article class="porte" aria-labelledby="porte-plans"><div class="tete"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h8V3M11 16.5v4.5M15 12h6"/></svg></span><span class="badge">2D plans</span></div><div><p class="eyebrow">See your project</p><h2 id="porte-plans">Your floor plan, drawn by you or by me</h2><p class="pour">You want to check it fits before knocking down a wall.</p></div><ul class="lignes"><li><a href="/accompagnement-travaux#aide">Plan drawn for you · one room</a><span class="num">≈ €89</span></li><li><a href="/accompagnement-travaux#aide">Plan drawn for you · up to 100 m²</a><span class="num">≈ €199</span></li></ul><p class="evite"><b>What it saves you:</b> a wall in the wrong place, a kitchen or a piece of furniture that doesn't fit.</p><div class="bas"><a href="/accompagnement-travaux#demande" class="btn btn-n">Have my plan drawn →</a><p class="sous"><span>Existing layout + project plan</span></p></div></article>
-</div></div></header></div>
+  <p class="sub">My name is Daniel. I ran my own building company, and renovated and built my own houses. I review your quotes and organise your build with you, remotely.</p>
+  <div class="cta"><a href="/accompagnement-travaux#demande" class="btn btn-o">Request my free call →</a><a href="/projets/nouveau" class="btn btn-w">Estimate my project</a></div>
+  <div class="trust"><span><b>First call</b> free</span><span><b>Written price</b> before we start</span><span><b>no</b> commitment</span></div>
+</div><aside class="fond monte d1" aria-label="Who's helping you">
+  <div class="qui"><img src="/accompagnement/daniel-leal-carre-v2-320.webp" alt="Daniel Leal, founder of AVYORA" width="124" height="124" decoding="async"><div><p class="nom">Daniel Leal</p><p class="role">Former head of a building company<span class="tel"> · 8 years on site</span><span class="pc">, founder of AVYORA</span></p></div></div>
+  <ul>
+    <li><span class="k"><b class="num">3</b> yrs</span><span>running our building company, with my brother</span></li>
+    <li><span class="k"><b class="num">2</b></span><span>houses renovated with our own hands, then sold</span></li>
+    <li><span class="k"><b class="num">1</b></span><span>new house built almost entirely with our own hands</span></li>
+    <li><span class="k"><b class="num">8</b> yrs</span><span>on site in total</span></li>
+  </ul>
+  <a href="/accompagnement-travaux#qui" class="lien">My background →</a>
+</aside></div></header></div>
 
-<section class="blk" aria-labelledby="ou-titre"><div class="wrap">
-  <div class="titre-g"><p class="eyebrow">Not sure which way in?</p><h2 id="ou-titre">Where are you in your project?</h2><p>Pick your situation: I'll show you where to start, what it costs and the risk to avoid.</p></div>
-  <style>@supports selector(:has(*)){.av-home .situ .pan{display:none}.av-home .situ:has(#situ-achat:checked) .pan-achat,.av-home .situ:has(#situ-devis:checked) .pan-devis,.av-home .situ:has(#situ-budget:checked) .pan-budget,.av-home .situ:has(#situ-technique:checked) .pan-technique,.av-home .situ:has(#situ-chantier:checked) .pan-chantier,.av-home .situ:has(#situ-plan:checked) .pan-plan{display:grid}}</style><div class="situ"><fieldset><legend class="vh">Your situation</legend><input type="radio" name="situ" id="situ-achat" class="vh"><label for="situ-achat">I'm thinking of buying</label><input type="radio" name="situ" id="situ-devis" class="vh" checked><label for="situ-devis">I've received quotes</label><input type="radio" name="situ" id="situ-budget" class="vh"><label for="situ-budget">I'm preparing my budget</label><input type="radio" name="situ" id="situ-technique" class="vh"><label for="situ-technique">I'm unsure about a solution</label><input type="radio" name="situ" id="situ-chantier" class="vh"><label for="situ-chantier">My works are starting</label><input type="radio" name="situ" id="situ-plan" class="vh"><label for="situ-plan">I want a floor plan</label></fieldset><div class="pan pan-achat"><div class="parc"><p class="k">Suggested path</p><ol><li><span class="n num">1</span><span class="c"><span class="l"><a href="/accompagnement-travaux#aide">Opinion before you buy</a><span class="num p">€99</span></span><span class="t">Send me the listing and the photos. We talk for 1 hour: what's serious, what isn't, what to check at the viewing.</span></span></li><li><span class="n num">2</span><span class="c"><span class="l"><a href="/accompagnement-travaux#aide">Budget estimate</a><span class="num p">≈ €149</span></span><span class="t">Your written works budget, line by line, to negotiate the price with real arguments.</span></span></li></ol><p class="plus">Buying to resell? <a href="/accompagnement-achat-revente">Buy, renovate, resell (page in French) →</a></p></div><div class="risk"><p class="k">The risk at this stage</p><p class="r">Buying a property whose works eat up your margin, or your whole budget.</p><p class="m">A mistake at this point quickly costs thousands of euros.</p><a href="/accompagnement-travaux#demande" class="btn btn-o">Request my opinion before buying →</a><p class="note">The firm price is sent to you in writing before we start.</p></div></div><div class="pan pan-devis"><div class="parc"><p class="k">Suggested path</p><ol><li><span class="n num">1</span><span class="c"><span class="l"><a href="/accompagnement-travaux#aide">Quote review</a><span class="num p">≈ €29</span></span><span class="t">Missing items, off-market prices, deposits, insurance: I tell you what's wrong and what to ask the contractor.</span></span></li><li><span class="n num">2</span><span class="c"><span class="l"><a href="/projets/nouveau">The AVYORA tool</a><span class="num p">Free during the beta</span></span><span class="t">Your line-by-line estimate at your region's prices: you see at once if a quote line is off the market.</span></span></li></ol></div><div class="risk"><p class="k">The risk at this stage</p><p class="r">Signing an incomplete quote, and paying for what's missing in change orders during the works.</p><p class="m">A mistake at this point quickly costs thousands of euros.</p><a href="/accompagnement-travaux#demande" class="btn btn-o">Get my quote reviewed →</a><p class="note">The firm price is sent to you in writing before we start.</p></div></div><div class="pan pan-budget"><div class="parc"><p class="k">Suggested path</p><ol><li><span class="n num">1</span><span class="c"><span class="l"><a href="/projets/nouveau">The AVYORA estimate</a><span class="num p">Free during the beta</span></span><span class="t">A first price range in 2 minutes, then the line-by-line breakdown.</span></span></li><li><span class="n num">2</span><span class="c"><span class="l"><a href="/accompagnement-travaux#aide">Budget estimate with me</a><span class="num p">≈ €149 · ≈ €249 new build</span></span><span class="t">We go through your project together: you leave with a written budget, nothing forgotten.</span></span></li></ol></div><div class="risk"><p class="k">The risk at this stage</p><p class="r">Starting the works on an underestimated budget, and having to stop halfway.</p><p class="m">A mistake at this point quickly costs thousands of euros.</p><a href="/projets/nouveau" class="btn btn-o">Estimate my project →</a></div></div><div class="pan pan-technique"><div class="parc"><p class="k">Suggested path</p><ol><li><span class="n num">1</span><span class="c"><span class="l"><a href="/accompagnement-travaux#aide">Help with technical choices</a><span class="num p">≈ €99</span></span><span class="t">Insulation, heating, structure, materials: we compare the options for your case, with a written summary.</span></span></li><li><span class="n num">2</span><span class="c"><span class="l"><a href="/accompagnement-travaux#aide">Budget estimate</a><span class="num p">≈ €149</span></span><span class="t">To price the chosen solution before asking for quotes.</span></span></li></ol></div><div class="risk"><p class="k">The risk at this stage</p><p class="r">Choosing an unsuitable solution, and having to redo it a few years later.</p><p class="m">A mistake at this point quickly costs thousands of euros.</p><a href="/accompagnement-travaux#demande" class="btn btn-o">Request my technical advice →</a><p class="note">The firm price is sent to you in writing before we start.</p></div></div><div class="pan pan-chantier"><div class="parc"><p class="k">Suggested path</p><ol><li><span class="n num">1</span><span class="c"><span class="l"><a href="/accompagnement-travaux#aide">Organising your site</a><span class="num p">≈ €199/month</span></span><span class="t">A kick-off (≈ €149) and your task book, then 30 min a week and WhatsApp in between. No commitment.</span></span></li><li><span class="n num">2</span><span class="c"><span class="l"><a href="/accompagnement-travaux#aide">Budget tracking</a><span class="num p">≈ €200/month</span></span><span class="t">Invoices, deposits and change orders checked as the works go. No commitment.</span></span></li></ol></div><div class="risk"><p class="k">The risk at this stage</p><p class="r">Poorly sequenced contractors: rework, waiting, delays, and invoices that drift.</p><p class="m">A mistake at this point quickly costs thousands of euros.</p><a href="/accompagnement-travaux#demande" class="btn btn-o">Organise my site →</a><p class="note">The firm price is sent to you in writing before we start.</p></div></div><div class="pan pan-plan"><div class="parc"><p class="k">Suggested path</p><ol><li><span class="n num">1</span><span class="c"><span class="l"><a href="/accompagnement-travaux#aide">Your plan drawn by me</a><span class="num p">from ≈ €89</span></span><span class="t">Existing layout and project plan, in 2D, ready to show contractors.</span></span></li></ol></div><div class="risk"><p class="k">The risk at this stage</p><p class="r">Finding out too late that a wall, a kitchen or a piece of furniture doesn't fit.</p><p class="m">A mistake at this point quickly costs thousands of euros.</p><a href="/accompagnement-travaux#demande" class="btn btn-o">Have my plan drawn →</a></div></div></div>
+<section class="blk" style="padding:44px 0 0" aria-labelledby="offres-titre"><div class="wrap">
+  <h2 id="offres-titre" class="titre-s">What I offer</h2>
+  <div class="offres">
+    <article class="offre monte d1 vedette"><div class="t"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13.5v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="13" width="4" height="6" rx="1.5"/><rect x="17" y="13" width="4" height="6" rx="1.5"/></svg></span><h3>Get support</h3></div><p>Quote reviews, opinions before buying, site organisation. With me, by phone or video call.</p><p class="px"><b>≈ €29</b> a quote review · first call free</p><a href="/accompagnement-travaux#aide" class="btn btn-p">See the services →</a></article>
+    <article class="offre monte d2"><div class="t"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2.5" width="16" height="19" rx="2.5"/><path d="M8 7h8M8 11.5h2M12 11.5h2M16 11.5h0M8 15.5h2M12 15.5h2M16 15.5v2"/></svg></span><h3>Price my project</h3></div><p>The AVYORA tool: your budget line by line, at your region's prices. Renovation or new build.</p><p class="px"><b class="g">Free</b> during the beta</p><a href="/projets/nouveau" class="btn btn-n">Estimate my project →</a><p class="mini">After the beta, <b>nothing is charged</b>: you subscribe only if you want to.</p></article>
+    <article class="offre monte d3"><div class="t"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h8V3M11 16.5v4.5M15 12h6"/></svg></span><h3>Get my floor plan</h3></div><p>I draw your plan in 2D: existing layout and project, ready for contractors.</p><p class="px"><b>≈ €89</b> one room · ≈ €199 up to 100 m²</p><a href="/accompagnement-travaux#demande" class="btn btn-n">Have my plan drawn →</a></article>
+  </div>
 </div></section>
 
-<section class="blk" style="padding-top:0" aria-labelledby="calc-titre"><div class="wrap"><div class="calc">
-  <p class="eyebrow">The maths is quick</p>
-  <h2 id="calc-titre">On a building site, a small mistake quickly costs thousands of euros.</h2>
-  <p class="d">A few hundred euros to avoid it is nothing in comparison. Often, the first mistake avoided pays for everything else.</p>
-  <div class="en"><span>You invest</span><span>What it saves you</span></div><div class="ln"><div class="px"><span class="num">≈ €29</span><a href="/accompagnement-travaux#aide">Quote review</a></div><div class="ev"><span>A missing item that comes back as a change order during the works</span><span class="mil">often thousands of euros</span></div></div><div class="ln"><div class="px"><span class="num">€99</span><a href="/accompagnement-travaux#aide">Opinion before you buy</a></div><div class="ev"><span>A roof, a frame or wiring to redo, found after signing</span><span class="mil">often thousands of euros</span></div></div><div class="ln"><div class="px"><span class="num">≈ €149</span><a href="/accompagnement-travaux#aide">Budget estimate</a></div><div class="ev"><span>An underestimated budget that stalls the works halfway</span><span class="mil">often thousands of euros</span></div></div><div class="ln"><div class="px"><span class="num">≈ €199</span><a href="/accompagnement-travaux#aide">A month of site organisation</a></div><div class="ev"><span>Poorly sequenced contractors: rework, waiting and delays</span><span class="mil">often thousands of euros</span></div></div>
+<section class="blk" style="padding:56px 0 0" aria-labelledby="ou-titre"><div class="wrap">
+  <h2 id="ou-titre" class="titre-s">Where are you? I'll tell you where to start.</h2>
+  <style>@supports selector(:has(*)){.av-home .situ .pan{display:none}.av-home .situ:has(#situ-achat:checked) .pan-achat,.av-home .situ:has(#situ-devis:checked) .pan-devis,.av-home .situ:has(#situ-budget:checked) .pan-budget,.av-home .situ:has(#situ-technique:checked) .pan-technique,.av-home .situ:has(#situ-chantier:checked) .pan-chantier,.av-home .situ:has(#situ-plan:checked) .pan-plan{display:grid}}</style><div class="situ"><fieldset><legend class="vh">Your situation</legend><input type="radio" name="situ" id="situ-achat" class="vh"><label for="situ-achat">I'm thinking of buying</label><input type="radio" name="situ" id="situ-devis" class="vh" checked><label for="situ-devis">I've received quotes</label><input type="radio" name="situ" id="situ-budget" class="vh"><label for="situ-budget">I'm preparing my budget</label><input type="radio" name="situ" id="situ-technique" class="vh"><label for="situ-technique">I'm unsure about a solution</label><input type="radio" name="situ" id="situ-chantier" class="vh"><label for="situ-chantier">My works are starting</label><input type="radio" name="situ" id="situ-plan" class="vh"><label for="situ-plan">I want a floor plan</label></fieldset><div class="pan pan-achat"><div><ol><li><span class="n num">1</span><span><a href="/accompagnement-travaux#aide">Opinion before you buy</a> <span class="p">· €99</span><span class="x">Send me the listing and the photos, we talk for 1 hour: what's serious, what isn't.</span></span></li><li><span class="n num">2</span><span><a href="/accompagnement-travaux#aide">Budget estimate</a> <span class="p">· ≈ €149</span><span class="x">Your written works budget, line by line, to negotiate the price.</span></span></li></ol><p class="plus">Buying to resell? <a href="/accompagnement-achat-revente">Buy, renovate, resell (page in French) →</a></p><p class="risque"><b>The risk at this stage:</b> buying a property whose works eat up your margin, or your whole budget.</p></div><div class="act"><a href="/accompagnement-travaux#demande" class="btn btn-p">Request my opinion before buying →</a><p class="note">The firm price is sent to you in writing before we start.</p></div></div><div class="pan pan-devis"><div><ol><li><span class="n num">1</span><span><a href="/accompagnement-travaux#aide">Quote review</a> <span class="p">· ≈ €29</span><span class="x">Missing items, off-market prices, deposits, insurance: I tell you what's wrong.</span></span></li><li><span class="n num">2</span><span><a href="/projets/nouveau">The AVYORA tool</a> <span class="p">· free during the beta</span><span class="x">Your line-by-line estimate, at your region's prices.</span></span></li></ol><p class="risque"><b>The risk at this stage:</b> signing an incomplete quote, and paying for what's missing in change orders during the works.</p></div><div class="act"><a href="/accompagnement-travaux#demande" class="btn btn-p">Get my quote reviewed →</a><p class="note">The firm price is sent to you in writing before we start.</p></div></div><div class="pan pan-budget"><div><ol><li><span class="n num">1</span><span><a href="/projets/nouveau">The AVYORA estimate</a> <span class="p">· free during the beta</span><span class="x">A price range in 2 minutes, then the line-by-line breakdown.</span></span></li><li><span class="n num">2</span><span><a href="/accompagnement-travaux#aide">Budget estimate with me</a> <span class="p">· ≈ €149</span><span class="x">A written budget, nothing forgotten (≈ €249 for a new build).</span></span></li></ol><p class="risque"><b>The risk at this stage:</b> starting the works on an underestimated budget, and having to stop halfway.</p></div><div class="act"><a href="/projets/nouveau" class="btn btn-p">Estimate my project →</a></div></div><div class="pan pan-technique"><div><ol><li><span class="n num">1</span><span><a href="/accompagnement-travaux#aide">Help with technical choices</a> <span class="p">· ≈ €99</span><span class="x">Insulation, heating, structure, materials: we compare the options for your case.</span></span></li><li><span class="n num">2</span><span><a href="/accompagnement-travaux#aide">Budget estimate</a> <span class="p">· ≈ €149</span><span class="x">To price the chosen solution before asking for quotes.</span></span></li></ol><p class="risque"><b>The risk at this stage:</b> choosing an unsuitable solution, and having to redo it a few years later.</p></div><div class="act"><a href="/accompagnement-travaux#demande" class="btn btn-p">Request my technical advice →</a><p class="note">The firm price is sent to you in writing before we start.</p></div></div><div class="pan pan-chantier"><div><ol><li><span class="n num">1</span><span><a href="/accompagnement-travaux#aide">Organising your site</a> <span class="p">· ≈ €199/month</span><span class="x">A kick-off (≈ €149) and your task book, then 30 min a week. No commitment.</span></span></li><li><span class="n num">2</span><span><a href="/accompagnement-travaux#aide">Budget tracking</a> <span class="p">· ≈ €200/month</span><span class="x">Invoices, deposits and change orders checked as the works go.</span></span></li></ol><p class="risque"><b>The risk at this stage:</b> poorly sequenced contractors: rework, waiting, delays, and invoices that drift.</p></div><div class="act"><a href="/accompagnement-travaux#demande" class="btn btn-p">Organise my site →</a><p class="note">The firm price is sent to you in writing before we start.</p></div></div><div class="pan pan-plan"><div><ol><li><span class="n num">1</span><span><a href="/accompagnement-travaux#aide">Your plan drawn by me</a> <span class="p">· from ≈ €89</span><span class="x">Existing layout and project, in 2D, ready to show contractors.</span></span></li></ol><p class="risque"><b>The risk at this stage:</b> finding out too late that a wall, a kitchen or a piece of furniture doesn't fit.</p></div><div class="act"><a href="/accompagnement-travaux#demande" class="btn btn-p">Have my plan drawn →</a></div></div></div>
+</div></section>
+
+<section class="blk" style="padding:56px 0 0" aria-labelledby="calc-titre"><div class="wrap">
+  <h2 id="calc-titre" class="titre-s">A few hundred euros to avoid losing thousands.</h2>
+  <p class="sous-t">On a building site, a small mistake quickly costs thousands of euros.</p>
+  <div class="tuiles">
+    <a class="tuile" href="/accompagnement-travaux#aide"><span class="v" style="display:block">≈ €29</span><span class="nm" style="display:block">Quote review</span><span class="e" style="display:block">saves you a missing item that comes back as a change order.</span></a>
+    <a class="tuile" href="/accompagnement-travaux#aide"><span class="v" style="display:block">€99</span><span class="nm" style="display:block">Opinion before you buy</span><span class="e" style="display:block">saves you a roof or wiring to redo, found too late.</span></a>
+    <a class="tuile" href="/accompagnement-travaux#aide"><span class="v" style="display:block">≈ €149</span><span class="nm" style="display:block">Budget estimate</span><span class="e" style="display:block">saves you works stalled halfway for lack of budget.</span></a>
+    <a class="tuile" href="/accompagnement-travaux#aide"><span class="v" style="display:block">≈ €199<small>/month</small></span><span class="nm" style="display:block">Site organisation</span><span class="e" style="display:block">saves you rework, waiting and delays.</span></a>
+  </div>
+  <p class="note-px">Average prices: they vary with the size of your project. The firm price is sent to you in writing before we start.</p>
+</div></section>
+
+<section class="blk" style="padding:56px 0 0"><div class="wrap"><div class="fin3">
+  <img src="/accompagnement/daniel-leal-carre-v2-320.webp" alt="" width="76" height="76" loading="lazy" decoding="async">
+  <div class="tx"><h2>Unsure about your project? Let's talk for 20 minutes.</h2><p>Free, no commitment. I'll tell you what you need, or nothing if you need nothing.</p></div>
+  <a href="/accompagnement-travaux#demande" class="btn btn-o">Request my free call →</a>
 </div></div></section>
 
-<section class="blk" style="padding-top:0" aria-labelledby="qui-titre"><div class="wrap"><div class="qui2">
-  <img class="ph" src="/accompagnement/daniel-leal-portrait-720.webp" alt="Daniel Leal, founder of AVYORA" width="720" height="900" loading="lazy" decoding="async">
-  <div>
-    <p class="eyebrow">Who's helping you</p>
-    <h2 id="qui-titre">Daniel, <b class="num">8</b> years on site. And above all, hands-on: I do the work myself.</h2>
-    <ul>
-      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>3 years running our building company with my brother: from the quote to the works, carried out ourselves</span></li>
-      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Two Gironde houses renovated with our own hands, then sold at a profit</span></li>
-      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>A new house built almost entirely with our own hands</span></li>
-      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Before that: a work-study building degree in a major construction group, then 3 years as a site manager</span></li>
-    </ul>
-    <p class="d">Business owner, homeowner, and the one holding the tools: I've been on every side of a build. I know where it goes wrong, and I tell you before it happens.</p>
-    <a href="/accompagnement-travaux#qui" class="lien">Why call me →</a>
-  </div>
-</div></div></section>
-
-<section class="blk" style="padding-top:0" aria-labelledby="comment-titre"><div class="wrap">
-  <div class="titre-g"><p class="eyebrow">How it works</p><h2 id="comment-titre">Three steps, no surprises.</h2></div>
-  <div class="steps">
-    <div class="stepc"><span class="n">1</span><p class="q">Free · 20 min</p><h3>Discovery call</h3><p>You tell me about your project. I tell you what you really need, or nothing if you need nothing.</p></div>
-    <div class="stepc"><span class="n">2</span><p class="q">By email</p><h3>Written proposal</h3><p>The service and its firm price, in black and white. You decide calmly.</p></div>
-    <div class="stepc"><span class="n">3</span><p class="q">Your next step</p><h3>We move forward</h3><p>I give you the next task to do, and warn you about delay risks before they happen.</p></div>
-  </div>
-  <div class="cta-c"><a href="/accompagnement-travaux#demande" class="btn btn-p">Request my free call →</a></div>
-</div></section>
-
-<section class="blk" style="padding-top:0"><div class="wrap">
-  <div class="center">
-    <p class="eyebrow">And the AVYORA tool</p>
-    <h2>Price, plan and track your project yourself.</h2>
-    <p>Start for free with the estimate. Add the rest when you need it.</p>
-  </div>
-  <div class="svc"><a href="/estimation-travaux"><span class="tete"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2.5" width="16" height="19" rx="2.5"/><path d="M8 7h8M8 11.5h2M12 11.5h2M16 11.5h0M8 15.5h2M12 15.5h2M16 15.5v2"/></svg></span><span class="acc g">Free</span></span><h3>Estimate your renovation</h3><p>A price range in 2 minutes, then the full breakdown: 200 line items, at your region's prices.</p><span class="go">Estimate <span aria-hidden="true">→</span></span></a><a href="/estimation-construction-maison"><span class="tete"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 3.5 21 11"/><path d="M5.5 9.5V20.5h13V9.5"/><path d="M10 20.5v-6h4v6"/></svg></span><span class="acc g">Free</span></span><h3>Estimate a new home</h3><p>From building permit to handover: studies, taxes, construction and utility hookups. Free, in 4 questions.</p><span class="go">Estimate <span aria-hidden="true">→</span></span></a><a href="/inscription?source=accueil"><span class="tete"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5h17"/><path d="M6.5 16.5v-5M11 16.5V7M15.5 16.5v-3.5M20 16.5V9.5"/></svg></span><span class="acc g">Free during the beta</span></span><h3>Track your project and budget</h3><p>Progress on site, your real spending against the plan, and your return if you invest.</p><span class="go">Create my account <span aria-hidden="true">→</span></span></a></div>
-</div></section>
-
-
-<section class="blk"><div class="wrap">
-  <div class="center">
-    <p class="eyebrow">Free beta · through December 31, 2026</p>
-    <h2>Everything is free during the beta.</h2>
-  </div>
-  <div class="frm">
-    <div class="col">
-      <p class="nom">Free</p>
-      <p class="px">€0 <small>forever</small></p>
-      <ul>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>The quick estimate for your renovation or new home</span></li>
-        
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Renovation prices, line by line and by city</span></li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Your first advice call, free</span></li>
-      </ul>
-      <div class="bas"><a href="/projets/nouveau" class="btn btn-p">Estimate for free →</a></div>
-    </div>
-    <div class="col pro">
-      <p class="nom">Included during the beta</p>
-      <p class="px">€0</p>
-      <ul>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>The detailed estimate: 200 line items and the PDF report</span></li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Project tracking: progress, real spending, alerts</span></li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>The return on your rental investment</span></li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>All your projects and plans, no limit</span></li>
-      </ul>
-      <p class="note">After the beta, <b>nothing is charged</b>: you subscribe only if you want to.</p><div class="bas"><a href="/inscription?source=accueil" class="btn btn-o">Create my free account</a></div>
-    </div>
-  </div>
-</div></section>
-
-<section class="blk" style="padding-top:0"><div class="wrap">
-  <div class="center"><p class="eyebrow">How much does it cost?</p><h2>Renovation prices, line by line.</h2><p>The average budget for each project, itemized and adjusted to your region, before you even start.</p></div>
-  <div class="chips"><a href="/prix-travaux/renovation-salle-de-bain">Bathroom</a><a href="/prix-travaux/renovation-cuisine">Kitchen</a><a href="/prix-travaux/refaire-toiture">Roof</a><a href="/prix-travaux/peinture-interieure">Painting</a><a href="/prix-travaux/renovation-electrique">Electrical</a><a href="/prix-travaux/remplacement-fenetres">Windows</a><a href="/prix-travaux/isolation-combles">Attic insulation</a><a href="/prix-travaux/remplacer-baignoire-par-douche">Bath → shower</a><a href="/prix-travaux" class="tous">All projects →</a></div>
-</div></section>
-<section class="blk" style="padding-top:0"><div class="wrap"><div class="fin2">
-  <div><h2>Unsure about your project? 20 minutes to know where to start.</h2><p>Free, no commitment. If a service helps you, you get its price in writing before we start.</p></div>
-  <div class="cta"><a href="/accompagnement-travaux#demande" class="btn btn-o">Request my free call →</a><a href="/projets/nouveau?nature=reno" class="btn btn-w">Estimate my project</a></div>
+<section class="blk" style="padding:44px 0 8px" aria-label="Go further"><div class="wrap"><div class="liens">
+  <div><h2>Renovation advice</h2><ul><li><a href="/accompagnement-travaux#aide">Quote review</a></li><li><a href="/accompagnement-travaux#aide">Opinion before you buy</a></li><li><a href="/accompagnement-travaux#aide">Budget estimate</a></li><li><a href="/accompagnement-travaux#aide">Site organisation</a></li><li><a href="/accompagnement-achat-revente">Buy, renovate, resell (in French)</a></li></ul></div>
+  <div><h2>Renovation prices</h2><ul><li><a href="/prix-travaux/renovation-salle-de-bain">Bathroom</a></li><li><a href="/prix-travaux/renovation-cuisine">Kitchen</a></li><li><a href="/prix-travaux/refaire-toiture">Roof</a></li><li><a href="/prix-travaux/peinture-interieure">Painting</a></li><li><a href="/prix-travaux/renovation-electrique">Electrical</a></li><li><a href="/prix-travaux/remplacement-fenetres">Windows</a></li><li><a href="/prix-travaux">All projects →</a></li></ul></div>
+  <div><h2>The tool</h2><ul><li><a href="/estimation-travaux">Estimate a renovation</a></li><li><a href="/estimation-construction-maison">Estimate a new home</a> · free, in 4 questions</li><li><a href="/inscription?source=accueil">Create my free account</a></li></ul></div>
 </div></div></section>
 </div>"
 `;
@@ -541,291 +412,147 @@ exports[`Témoins · pendant la bêta (12/10/2026) > accueil (FR, EN) > accueil 
 </style><div class="av-home">
 <a href="/inscription?source=accueil" class="promo"><span style="text-align:center"><span class="dot" style="display:inline-block;vertical-align:middle;margin:0 8px 2px 0"></span><b>Bêta gratuite</b> — tout AVYORA est offert jusqu'au 31 décembre 2026 <span class="arr">· crée ton compte →</span></span></a>
 <style>
-.av-home .hero .in.h2c{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);gap:44px;align-items:center;text-align:left;max-width:none;padding:56px 48px 60px}
-.av-home .hero .h2c .cta{justify-content:flex-start}
-.av-home .hero .h2c .trust{justify-content:flex-start;margin-top:28px}
-.av-home .hero .h2c p.sub{margin-left:0;max-width:56ch}
-.av-home .hero .h2c h1{font-size:clamp(30px,3.8vw,44px);line-height:1.08}
-.av-home .expert{background:#fff;color:var(--ink);text-align:left;border-radius:20px;padding:22px;box-shadow:0 30px 60px -28px rgba(0,0,0,.55)}
-.av-home .expert .qui{display:flex;align-items:center;gap:14px}
-.av-home .expert .av{flex:none;width:80px;height:80px;border-radius:16px;object-fit:cover;background:var(--brand-weak);box-shadow:0 1px 3px rgba(30,27,75,.12)}
-.av-home .expert .qui b{display:block;font-size:15.5px;color:var(--nuit)}
-.av-home .expert .qui span span{display:block;font-size:12.5px;color:var(--muted)}
-.av-home .expert .ans{margin-left:auto;font-size:12px;font-weight:600;color:#0b6e4b;background:var(--good-bg);border-radius:999px;padding:5px 10px;white-space:nowrap}
-.av-home .expert .ans b{color:#0b6e4b}
-.av-home .expert ol{list-style:none;margin:16px 0 0;padding:0 0 0 14px;border-left:2px solid var(--brand-200);display:grid;gap:12px}
-.av-home .expert li{display:grid;grid-template-columns:62px 1fr;gap:10px;position:relative}
-.av-home .expert li::before{content:"";position:absolute;left:-20px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--brand);box-shadow:0 0 0 3px #fff}
-.av-home .expert li .d{font-size:11.5px;font-weight:700;color:var(--brand-700);letter-spacing:.02em;padding-top:2px}
-.av-home .expert li b{display:block;font-size:14px;color:var(--ink)}
-.av-home .expert li b+span{display:block;font-size:12.5px;color:var(--muted);line-height:1.45;margin-top:1px}
-.av-home .expert ul.pq{list-style:none;margin:16px 0 0;padding:14px 0 0;border-top:1px solid var(--line);display:grid;gap:7px}.av-home .expert ul.pq li{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.4}.av-home .expert ul.pq li::before{content:none}.av-home .expert ul.pq svg{flex:none;margin-top:1px;color:var(--brand-700)}
-.av-home .expert .cit{margin-top:16px;font-size:13.5px;line-height:1.55;color:var(--ink);background:var(--surface-2);border-radius:12px;padding:12px 14px;font-style:italic}
-.av-home .expert .lien{display:inline-flex;align-items:center;min-height:44px;margin-top:4px;font-size:14px;font-weight:600;color:var(--brand-700);text-decoration:underline;text-underline-offset:3px}
-.av-home .svc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.av-home .svc.n4{grid-template-columns:repeat(2,minmax(0,1fr))}
-.av-home .svc a{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px;box-shadow:var(--shadow);transition:transform .16s var(--ease),border-color .16s}
-.av-home .svc a:hover{transform:translateY(-3px);border-color:var(--brand-200)}
-.av-home .svc a:focus-visible{outline:3px solid var(--brand-200);outline-offset:3px}
-.av-home .svc .tete{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.av-home .svc .ic{width:42px;height:42px;border-radius:12px;background:var(--brand-weak);color:var(--brand-700);display:grid;place-items:center}
-.av-home .svc .ic svg{width:21px;height:21px}
-.av-home .svc .acc{font-size:11.5px;font-weight:600;border-radius:999px;padding:4px 10px;white-space:nowrap}
-.av-home .svc .acc.g{background:var(--good-bg);color:#0b6e4b}
-.av-home .svc .acc.p{background:var(--nuit);color:#fff}
-.av-home .svc .acc.o{background:#fff4dc;color:#8a5300}
-.av-home .svc h3{font-size:17px;font-weight:650;margin-top:16px;color:var(--nuit)}
-.av-home .svc p{font-size:14px;color:var(--muted);margin-top:6px;line-height:1.55;flex:1}
-.av-home .svc .go{margin-top:14px;font-size:14px;font-weight:600;color:var(--brand-700)}
-.av-home .rsx{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:36px;align-items:center;background:var(--surface);border:1.5px solid var(--brand-200);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:40px}
-.av-home .rsx h2{font-size:clamp(24px,3.2vw,32px);font-weight:700;line-height:1.14;margin-top:10px;color:var(--nuit)}
-.av-home .rsx p.d{color:var(--muted);font-size:15.5px;line-height:1.6;margin-top:12px;max-width:54ch}
-.av-home .rsx .cta{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin-top:22px}
-.av-home .rsx .lien{color:var(--brand-700);font-weight:600;font-size:14px;text-decoration:underline;text-underline-offset:3px;min-height:44px;display:inline-flex;align-items:center}
-.av-home .rsx .acces{font-size:13px;color:var(--faint);margin-top:12px}
-.av-home .rsx ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
-.av-home .rsx li{display:grid;grid-template-columns:36px 1fr;gap:14px;align-items:start;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface-2)}
-.av-home .rsx li .c{width:36px;height:36px;border-radius:10px;background:var(--good-bg);color:var(--good);display:grid;place-items:center}
-.av-home .rsx li .c svg{width:17px;height:17px}
-.av-home .rsx li .t{font-weight:600;font-size:14.5px;color:var(--ink);display:block}
-.av-home .rsx li .s{font-size:13px;color:var(--muted);margin-top:2px;line-height:1.45;display:block}
-.av-home .frm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:stretch}
-.av-home .frm .col{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:28px;box-shadow:var(--shadow);display:flex;flex-direction:column}
-.av-home .frm .col.pro{background:linear-gradient(150deg,var(--nuit),var(--nuit-2));color:#fff;border-color:transparent;box-shadow:var(--shadow-hero)}
-.av-home .frm .nom{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--brand)}
-.av-home .frm .pro .nom{color:var(--accent-300)}
-.av-home .frm .px{font-size:26px;font-weight:700;margin-top:8px;color:var(--nuit)}
-.av-home .frm .pro .px{color:#fff}
-.av-home .frm .px small{font-size:14px;font-weight:500;color:var(--muted)}
-.av-home .frm .pro .px small{color:#c9c5ee}
-.av-home .frm ul{list-style:none;margin:18px 0 0;padding:0;display:grid;gap:10px;flex:1}
-.av-home .frm li{display:grid;grid-template-columns:18px 1fr;gap:10px;font-size:14.5px;line-height:1.45}
-.av-home .frm li svg{width:16px;height:16px;margin-top:2px;color:var(--good)}
-.av-home .frm .pro li svg{color:var(--accent)}
-.av-home .frm .bas{margin-top:22px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
-.av-home .frm .note{font-size:13px;color:#d7d4f2;margin-top:14px;line-height:1.5}
-.av-home .frm .lien{color:var(--brand-700);font-weight:600;font-size:14px;text-decoration:underline;text-underline-offset:3px;min-height:44px;display:inline-flex;align-items:center}
-.av-home .chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:22px}
-.av-home .chips a{display:inline-flex;align-items:center;min-height:42px;background:var(--brand-weak);color:var(--brand-700);border-radius:999px;padding:0 16px;font-size:14px;font-weight:600}
-.av-home .chips a.tous{background:var(--brand);color:#fff}
-.av-home .chips a:hover{filter:brightness(.97)}
-.av-home .gap{margin-top:22px}
-@media(max-width:900px){.av-home .svc{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:820px){.av-home .hero .in.h2c{grid-template-columns:1fr;padding:40px 22px 44px;gap:30px}.av-home .rsx{grid-template-columns:1fr;padding:28px 22px;gap:24px}}
-@media(max-width:620px){.av-home .svc,.av-home .svc.n4,.av-home .frm{grid-template-columns:1fr}.av-home .frm .col{padding:24px 20px}}
-@media (prefers-reduced-motion:reduce){.av-home .svc a{transition:none}.av-home .svc a:hover{transform:none}}
-</style><style>
-.av-home .hero .in.h3p{max-width:none;text-align:left;padding:52px 44px 44px}
-.av-home .hero .h3p .intro{max-width:800px}
-.av-home .hero .h3p h1{font-size:clamp(32px,4.4vw,52px);line-height:1.06}
-.av-home .hero .h3p p.sub{margin-left:0;max-width:62ch}
-.av-home .hero .h3p p.mot{margin-top:14px;font-size:15.5px;color:#b7b3e0}
-.av-home .hero .h3p p.mot b{color:#fff}
-.av-home .hero .h3p .trust{justify-content:flex-start;margin-top:22px}
-.av-home .portes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:36px}
-.av-home .porte{background:#fff;color:var(--ink);border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:14px;box-shadow:0 30px 60px -28px rgba(0,0,0,.55);border:2px solid transparent}
-.av-home .porte.vedette{border-color:var(--accent)}
-.av-home .porte .tete{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.av-home .porte .ic{flex:none;width:44px;height:44px;border-radius:12px;background:var(--brand-weak);color:var(--brand-700);display:grid;place-items:center}
-.av-home .porte .ic svg{width:22px;height:22px}
-.av-home .porte .badge{font-size:12px;font-weight:600;line-height:1.3;border-radius:999px;padding:5px 10px;background:var(--brand-weak);color:var(--brand-700);text-align:right}
-.av-home .porte .badge.g{background:var(--good-bg);color:#0b6e4b}
-.av-home .hero .porte .eyebrow{color:var(--brand)}
-.av-home .porte h2{font-size:21px;line-height:1.2;font-weight:700;color:var(--nuit);margin-top:6px}
-.av-home .porte .pour{font-size:14.5px;color:var(--muted);margin-top:6px;line-height:1.5}
-.av-home .porte ul{list-style:none;margin:0;padding:0}
-.av-home .porte .lignes li{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14.5px}
-.av-home .porte .lignes li:last-child{border-bottom:0}
-.av-home .porte .lignes a{color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:3px}
-.av-home .porte .lignes a:hover{text-decoration-color:var(--brand)}
-.av-home .porte .lignes .num{font-weight:600;white-space:nowrap}
-.av-home .porte .coches{display:grid;gap:8px}
-.av-home .porte .coches li{display:grid;grid-template-columns:18px 1fr;gap:10px;font-size:14.5px;line-height:1.45}
-.av-home .porte .coches svg{width:16px;height:16px;margin-top:2px;color:var(--brand)}
-.av-home .porte .aussi{font-size:13px;color:var(--muted);line-height:1.55}
-.av-home .porte .aussi a{color:var(--brand-700);text-decoration:underline;text-underline-offset:2px}
-.av-home .porte .evite{background:#fdf1e1;color:#5c3a08;border-radius:12px;padding:11px 13px;font-size:13.5px;line-height:1.45}
-.av-home .porte .bas{margin-top:auto;display:grid;gap:8px}
-.av-home .porte .btn{width:100%;border-radius:12px}
+.av-home .hero .in{z-index:1}
+.av-home .hero .in.v2{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.85fr);gap:44px;align-items:center;text-align:left;max-width:none;padding:52px 48px 56px}
+.av-home .hero .v2 .tags{display:flex;flex-wrap:wrap;gap:8px}
+.av-home .hero .v2 .tags span{font-size:12.5px;font-weight:600;color:#c7ccfe;border:1px solid rgba(199,204,254,.3);border-radius:999px;padding:5px 12px}
+.av-home .hero .v2 h1{font-size:clamp(32px,4.4vw,52px);line-height:1.05;margin-top:18px}
+.av-home .hero .v2 p.sub{margin:18px 0 0;max-width:56ch}
+.av-home .hero .v2 .cta{justify-content:flex-start;margin-top:28px}
+.av-home .hero .v2 .trust{justify-content:flex-start;margin-top:22px}
+.av-home .fond{background:#fff;color:var(--ink);border-radius:20px;padding:22px;box-shadow:0 30px 60px -28px rgba(0,0,0,.55)}
+.av-home .fond .qui{display:flex;align-items:center;gap:16px}
+.av-home .fond img{flex:none;width:124px;height:124px;border-radius:18px;object-fit:cover;transition:transform .35s var(--ease)}
+.av-home .fond:hover img{transform:scale(1.06)}
+.av-home .fond .nom{font-weight:700;font-size:17px;color:var(--nuit)}
+.av-home .fond .role{font-size:13.5px;color:var(--muted);line-height:1.35;margin-top:2px}
+.av-home .fond .role .tel{display:none}
+.av-home .fond ul{list-style:none;margin:16px 0 0;padding:14px 0 0;border-top:1px solid var(--line);display:grid;gap:10px}
+.av-home .fond li{display:grid;grid-template-columns:56px 1fr;gap:10px;align-items:baseline;font-size:14.5px;line-height:1.4}
+.av-home .fond li .k{font-size:17px;font-weight:700;color:var(--brand);white-space:nowrap}
+.av-home .fond .lien{display:inline-flex;align-items:center;min-height:44px;margin-top:4px;font-weight:600;font-size:14.5px;color:var(--brand-700)}
+.av-home .fond .lien:hover{text-decoration:underline;text-underline-offset:3px}
+.av-home .titre-s{font-size:clamp(24px,3vw,30px);font-weight:700;color:var(--nuit)}
+.av-home .sous-t{color:var(--muted);font-size:16px;margin-top:6px}
+.av-home .offres{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:18px}
+.av-home .offre{background:#fff;border:1px solid var(--line-strong);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow);transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
+.av-home .offre.vedette{border:2px solid var(--brand)}
+.av-home .offre:hover,.av-home .tuile:hover{transform:translateY(-5px) scale(1.02);box-shadow:0 26px 50px -22px rgba(30,27,75,.38)}
+.av-home .offre .t{display:flex;align-items:center;gap:12px}
+.av-home .offre .ic{flex:none;width:40px;height:40px;border-radius:11px;background:var(--brand-weak);color:var(--brand-700);display:grid;place-items:center}
+.av-home .offre .ic svg{width:21px;height:21px}
+.av-home .offre h3{font-size:19px;font-weight:700;color:var(--nuit)}
+.av-home .offre p{font-size:15px;color:var(--muted);line-height:1.5}
+.av-home .offre p.px{font-size:14.5px}
+.av-home .offre .px b{font-size:21px;font-weight:700;color:var(--brand);font-variant-numeric:tabular-nums}
+.av-home .offre .px b.g{color:var(--good)}
+.av-home .offre .btn{margin-top:auto;width:100%;border-radius:12px}
+.av-home .offre .mini{font-size:12.5px;color:var(--faint);line-height:1.45;text-align:center}
+.av-home .offre .mini a{color:var(--brand-700);font-weight:600}
+.av-home .btn{transition:transform .2s var(--ease),box-shadow .2s var(--ease),background-color .2s}
+.av-home .btn:hover{transform:translateY(-2px) scale(1.03)}
 .av-home .btn-n{background:var(--nuit);color:#fff}
 .av-home .btn-n:hover{background:var(--nuit-2)}
-.av-home .porte .sous{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--muted)}
-.av-home .porte .sous a{color:var(--brand-700);font-weight:600}
 .av-home .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0;padding:0;margin:-1px}
-.av-home .titre-g{margin-bottom:22px}
-.av-home .titre-g h2{font-size:clamp(25px,3.4vw,34px);font-weight:700;margin-top:10px;color:var(--nuit)}
-.av-home .titre-g p{color:var(--muted);font-size:16px;margin-top:10px;max-width:62ch;line-height:1.6}
-.av-home .situ{position:relative}
-.av-home .situ fieldset{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:10px}
-.av-home .situ label{display:inline-flex;align-items:center;min-height:46px;padding:0 18px;border-radius:999px;border:1px solid var(--line-strong);background:#fff;font-size:15px;font-weight:500;cursor:pointer;transition:border-color .15s}
-.av-home .situ label:hover{border-color:var(--brand-200)}
+.av-home .situ{position:relative;margin-top:16px}
+.av-home .situ fieldset{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.av-home .situ label{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--line-strong);background:#fff;font-size:15px;font-weight:500;cursor:pointer;transition:transform .15s var(--ease),border-color .15s}
+.av-home .situ label:hover{transform:scale(1.04);border-color:var(--brand-200)}
 .av-home .situ input:checked+label{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
 .av-home .situ input:focus-visible+label{outline:3px solid var(--accent);outline-offset:2px}
-.av-home .situ .pan{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;margin-top:18px}
-.av-home .situ .parc{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);padding:24px 26px;box-shadow:var(--shadow)}
-.av-home .situ .k{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
-.av-home .situ ol{list-style:none;margin:8px 0 0;padding:0}
-.av-home .situ ol li{display:flex;gap:14px;padding:14px 0;border-top:1px solid var(--line)}
-.av-home .situ ol li:first-child{border-top:0}
-.av-home .situ .n{flex:none;width:30px;height:30px;border-radius:50%;background:var(--brand-weak);color:var(--brand-700);font-weight:700;font-size:13.5px;display:grid;place-items:center}
-.av-home .situ .c{flex:1;min-width:0}
-.av-home .situ .l{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 14px;align-items:baseline}
-.av-home .situ .l a{font-weight:600;font-size:16px;color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:3px}
-.av-home .situ .l .p{font-weight:600;color:var(--brand-700);font-size:14.5px}
-.av-home .situ .t{display:block;color:var(--muted);font-size:14.5px;margin-top:3px;line-height:1.5}
-.av-home .situ .plus{margin-top:6px;padding-top:12px;border-top:1px solid var(--line);font-size:14.5px;color:var(--muted)}
+.av-home .situ .pan{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,260px);gap:18px 32px;align-items:center;margin-top:14px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px 24px;box-shadow:var(--shadow)}
+.av-home .situ ol{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.av-home .situ li{display:flex;gap:14px;align-items:baseline}
+.av-home .situ .n{flex:none;width:26px;height:26px;border-radius:50%;background:var(--brand-weak);color:var(--brand-700);font-weight:700;font-size:13px;display:inline-grid;place-items:center}
+.av-home .situ li a{font-weight:600;font-size:16px;color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:3px}
+.av-home .situ li a:hover{text-decoration-color:var(--brand)}
+.av-home .situ li .p{font-weight:700;color:var(--brand-700)}
+.av-home .situ li .x{display:block;color:var(--muted);font-size:14.5px;margin-top:2px;line-height:1.45}
+.av-home .situ .plus{margin-top:12px;font-size:14.5px;color:var(--muted)}
 .av-home .situ .plus a{color:var(--brand-700);font-weight:600}
-.av-home .situ .risk{background:linear-gradient(150deg,var(--nuit),var(--nuit-2));color:#fff;border-radius:var(--r-lg);padding:24px 26px;display:flex;flex-direction:column;gap:12px}
-.av-home .situ .risk .k{color:#fbbf6a}
-.av-home .situ .risk .r{font-size:18px;font-weight:600;line-height:1.4}
-.av-home .situ .risk .m{font-size:14.5px;color:#d7d4f2;line-height:1.5}
-.av-home .situ .risk .btn{margin-top:auto;border-radius:12px}
-.av-home .situ .risk .note{font-size:12.5px;color:#b7b3e0;text-align:center}
-.av-home .calc{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:40px}
-.av-home .calc h2{font-size:clamp(25px,3.4vw,34px);font-weight:700;line-height:1.14;margin-top:10px;color:var(--nuit);max-width:26ch}
-.av-home .calc p.d{color:var(--muted);font-size:16.5px;margin-top:12px;line-height:1.6;max-width:62ch}
-.av-home .calc .en{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.4fr);gap:8px 32px;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);padding-bottom:10px;border-bottom:1px solid var(--line-strong);margin-top:28px}
-.av-home .calc .ln{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.4fr);gap:6px 32px;padding:16px 0;border-bottom:1px solid var(--line);align-items:center}
-.av-home .calc .px{display:flex;align-items:baseline;gap:14px}
-.av-home .calc .px .num{font-size:24px;font-weight:700;color:var(--brand);min-width:110px}
-.av-home .calc .px a{font-weight:600;color:var(--ink);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:3px}
-.av-home .calc .ev{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:15px;line-height:1.45}
-.av-home .calc .mil{font-size:12px;font-weight:600;color:#8a4f06;background:#fdf1e1;padding:4px 10px;border-radius:999px;white-space:nowrap}
-.av-home .qui2{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:44px;align-items:center}
-.av-home .qui2 .ph{width:100%;height:auto;object-fit:cover;border-radius:var(--r-lg);box-shadow:var(--shadow-hero);display:block}
-.av-home .qui2 h2{font-size:clamp(25px,3.2vw,34px);font-weight:700;line-height:1.14;margin-top:10px;color:var(--nuit)}
-.av-home .qui2 h2 .num{color:var(--brand)}
-.av-home .qui2 ul{list-style:none;margin:20px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 24px}
-.av-home .qui2 li{display:grid;grid-template-columns:18px 1fr;gap:10px;font-size:15px;line-height:1.5}
-.av-home .qui2 li svg{width:16px;height:16px;margin-top:4px;color:var(--good)}
-.av-home .qui2 p.d{color:var(--muted);font-size:16px;margin-top:18px;line-height:1.6;max-width:62ch}
-.av-home .qui2 .lien{display:inline-flex;align-items:center;min-height:44px;margin-top:6px;font-weight:600;color:var(--brand-700);text-decoration:underline;text-underline-offset:3px}
-.av-home .stepc .q{font-size:12.5px;font-weight:600;color:var(--brand-700);margin-top:14px;letter-spacing:.02em}
-.av-home .stepc .q+h3{margin-top:4px}
-.av-home .cta-c{text-align:center;margin-top:26px}
-.av-home .fin2{background:linear-gradient(150deg,var(--nuit),var(--nuit-2));color:#fff;border-radius:var(--r-lg);padding:44px 40px;display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:space-between;box-shadow:var(--shadow-hero)}
-.av-home .fin2>div:first-child{flex:1 1 420px;min-width:0}
-.av-home .fin2 h2{font-size:clamp(24px,3.2vw,34px);font-weight:700;line-height:1.14;max-width:30ch}
-.av-home .fin2 p{color:#d7d4f2;margin-top:10px;font-size:15.5px;line-height:1.55}
-.av-home .fin2 .cta{display:flex;flex-wrap:wrap;gap:12px}
-@media(max-width:980px){.av-home .portes{grid-template-columns:1fr;max-width:560px}}
-@media(max-width:820px){.av-home .hero .in.h3p{padding:40px 20px 24px}.av-home .situ .pan{grid-template-columns:1fr}.av-home .qui2{grid-template-columns:1fr;gap:24px}.av-home .qui2 .ph{max-width:260px}.av-home .qui2 ul{grid-template-columns:1fr}.av-home .fin2{padding:32px 22px}}
-@media(max-width:700px){.av-home .calc{padding:26px 20px}.av-home .calc .en{display:none}.av-home .calc .ln{grid-template-columns:1fr}}
-@media (prefers-reduced-motion:reduce){.av-home .situ label{transition:none}}
-</style><div class="wrap"><header class="hero"><div class="in h3p"><div class="intro">
-  <div class="eyebrow">Rénovation · Construction neuve · Achat-revente</div>
+.av-home .situ .risque{margin-top:12px;font-size:14.5px;line-height:1.45;color:#6b3c05;background:#fdf1e1;border-radius:10px;padding:9px 12px}
+.av-home .situ .act{display:grid;gap:8px}
+.av-home .situ .act .btn{border-radius:12px}
+.av-home .situ .act .note{font-size:12.5px;color:var(--faint);text-align:center;line-height:1.45}
+.av-home .tuiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:18px}
+.av-home .tuile{display:block;background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--shadow);transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
+.av-home .tuile .v{font-size:26px;font-weight:700;color:var(--brand);font-variant-numeric:tabular-nums}
+.av-home .tuile .v small{font-size:15px;font-weight:500;color:var(--muted)}
+.av-home .tuile .nm{font-weight:600;color:var(--ink);margin-top:2px}
+.av-home .tuile .e{color:var(--muted);font-size:14.5px;margin-top:6px;line-height:1.45}
+.av-home .note-px{font-size:13px;color:var(--faint);margin-top:10px}
+.av-home .fin3{background:linear-gradient(150deg,var(--nuit),var(--nuit-2));color:#fff;border-radius:var(--r-lg);padding:32px;display:flex;flex-wrap:wrap;gap:22px;align-items:center;box-shadow:var(--shadow-hero)}
+.av-home .fin3 img{width:76px;height:76px;border-radius:50%;object-fit:cover;border:3px solid #fff;transition:transform .3s var(--ease)}
+.av-home .fin3:hover img{transform:scale(1.08)}
+.av-home .fin3 .tx{flex:1 1 380px;min-width:0}
+.av-home .fin3 h2{font-size:clamp(22px,2.8vw,28px);font-weight:700;line-height:1.15}
+.av-home .fin3 p{color:#c7ccfe;margin-top:6px;line-height:1.5}
+.av-home .liens{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:22px;border-top:1px solid var(--line-strong);padding-top:24px;font-size:14.5px}
+.av-home .liens h2{font-size:14.5px;font-weight:700;color:var(--nuit);margin-bottom:8px;letter-spacing:0}
+.av-home .liens ul{list-style:none;margin:0;padding:0;display:grid;gap:7px;color:var(--muted)}
+.av-home .liens a{color:var(--brand-700)}
+.av-home .liens a:hover{text-decoration:underline;text-underline-offset:3px}
+@keyframes avmonte{from{transform:translateY(12px)}to{transform:none}}
+.av-home .monte{animation:avmonte .6s var(--ease) backwards}
+.av-home .monte.d1{animation-delay:.1s}.av-home .monte.d2{animation-delay:.18s}.av-home .monte.d3{animation-delay:.26s}
+@media(max-width:900px){.av-home .offres{grid-template-columns:1fr}.av-home .tuiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:820px){.av-home .hero .in.v2{grid-template-columns:1fr;padding:26px 20px 30px;gap:0}.av-home .fond{order:-1;background:none;box-shadow:none;padding:0 0 16px;color:#fff}.av-home .fond img{width:84px;height:84px;border-radius:50%;border:2px solid #fff}.av-home .fond .nom{color:#fff}.av-home .fond .role{color:#c7ccfe}.av-home .fond .role .tel{display:inline}.av-home .fond .role .pc,.av-home .fond ul,.av-home .fond .lien,.av-home .hero .v2 .tags{display:none}.av-home .hero .v2 h1{margin-top:6px}.av-home .hero .v2 .cta .btn{width:100%}.av-home .situ .pan{grid-template-columns:1fr;padding:18px}}
+@media(max-width:480px){.av-home .tuiles{grid-template-columns:1fr}.av-home .fin3{padding:24px 20px}}
+@media (prefers-reduced-motion:reduce){.av-home .monte{animation:none}.av-home .btn,.av-home .offre,.av-home .tuile,.av-home .situ label,.av-home .fond img,.av-home .fin3 img{transition:none}.av-home .btn:hover,.av-home .offre:hover,.av-home .tuile:hover,.av-home .situ label:hover,.av-home .fond:hover img,.av-home .fin3:hover img{transform:none}}
+</style><div class="wrap"><header class="hero"><div class="in v2"><div class="intro monte">
+  <div class="tags"><span>Rénovation</span><span>Construction neuve</span><span>Achat-revente</span></div>
   <h1>Tes travaux, <span class="hl">sans les erreurs</span> qui coûtent des milliers d'euros.</h1>
-  <p class="sub">J'ai dirigé ma société de travaux, rénové et construit mes propres maisons. Aujourd'hui, je t'accompagne sur ton projet, avec AVYORA pour chiffrer et des plans pour te projeter. Choisis ta porte d'entrée.</p>
-  <p class="mot"><b>Quelques centaines d'euros</b> pour en éviter des milliers.</p>
-  <div class="trust"><span><b>Premier appel</b> gratuit</span><span><b>à distance</b> : visio ou WhatsApp</span><span><b>sans</b> engagement</span></div>
-</div><div class="portes">
-  <article class="porte vedette" aria-labelledby="porte-acc"><div class="tete"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13.5v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="13" width="4" height="6" rx="1.5"/><rect x="17" y="13" width="4" height="6" rx="1.5"/></svg></span><span class="badge">Avec Daniel, ex-gérant d'une société de travaux</span></div><div><p class="eyebrow">Être accompagné</p><h2 id="porte-acc">Quelqu'un qui a rénové et construit, à tes côtés</h2><p class="pour">Tu achètes, tu as reçu des devis ou ton chantier démarre.</p></div><ul class="lignes"><li><a href="/relecture-devis-travaux">Relecture de devis</a><span class="num">≈ 29 €</span></li><li><a href="/avis-travaux-avant-achat">Avis avant achat</a><span class="num">99 €</span></li><li><a href="/suivi-de-chantier">Organisation du chantier</a><span class="num">≈ 199 €/mois</span></li></ul><p class="aussi">Et aussi : <a href="/estimation-budget-travaux">estimation du budget</a>, <a href="/accompagnement-achat-revente">achat-revente</a>, <a href="/conseil-technique-travaux">choix techniques</a>, <a href="/suivi-budget-travaux">suivi du budget</a>.</p><p class="evite"><b>Ce que ça t'évite :</b> un poste oublié dans un devis, un acompte trop élevé, un artisan mal choisi.</p><div class="bas"><a href="/accompagnement-travaux#demande" class="btn btn-p">Demander mon appel gratuit →</a><p class="sous"><span>20 min, gratuit, sans engagement</span><a href="/accompagnement-travaux#aide">Toutes les prestations →</a></p></div></article>
-  <article class="porte" aria-labelledby="porte-logiciel"><div class="tete"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2.5" width="16" height="19" rx="2.5"/><path d="M8 7h8M8 11.5h2M12 11.5h2M16 11.5h0M8 15.5h2M12 15.5h2M16 15.5v2"/></svg></span><span class="badge g">Gratuit pendant la bêta</span></div><div><p class="eyebrow">Chiffrer soi-même</p><h2 id="porte-logiciel">Le logiciel AVYORA chiffre tes travaux poste par poste</h2><p class="pour">Tu veux un budget fiable avant d'appeler les artisans.</p></div><ul class="coches"><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Rénovation : 200 postes, aux prix de ta région</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Construction neuve : du permis à la remise des clés</span></li><li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Le suivi de ton chantier et de tes dépenses</span></li></ul><p class="evite"><b>Ce que ça t'évite :</b> un budget sous-estimé qui bloque le chantier en cours de route.</p><div class="bas"><a href="/projets/nouveau" class="btn btn-n">Estimer mes travaux →</a><p class="sous"><span>Gratuit pendant la bêta, jusqu'au 31 décembre 2026</span><a href="/estimation-travaux">Comment ça marche →</a></p></div></article>
-  <article class="porte" aria-labelledby="porte-plans"><div class="tete"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h8V3M11 16.5v4.5M15 12h6"/></svg></span><span class="badge">Plans en 2D</span></div><div><p class="eyebrow">Voir son projet</p><h2 id="porte-plans">Ton plan, dessiné par toi ou par moi</h2><p class="pour">Tu veux voir si ça rentre avant de casser une cloison.</p></div><ul class="lignes"><li><a href="/faire-dessiner-plan-maison">Plan dessiné · une pièce</a><span class="num">≈ 89 €</span></li><li><a href="/faire-dessiner-plan-maison">Plan dessiné · jusqu'à 100 m²</a><span class="num">≈ 199 €</span></li></ul><p class="evite"><b>Ce que ça t'évite :</b> une cloison au mauvais endroit, une cuisine ou un meuble qui ne passe pas.</p><div class="bas"><a href="/faire-dessiner-plan-maison" class="btn btn-n">Me faire dessiner mon plan →</a><p class="sous"><span>Plan de l'existant + plan du projet</span></p></div></article>
-</div></div></header></div>
-
-<section class="blk" aria-labelledby="ou-titre"><div class="wrap">
-  <div class="titre-g"><p class="eyebrow">Pas sûr de la bonne porte ?</p><h2 id="ou-titre">Où en es-tu dans ton projet ?</h2><p>Choisis ta situation : je te montre par où commencer, ce que ça coûte et le risque à éviter.</p></div>
-  <style>@supports selector(:has(*)){.av-home .situ .pan{display:none}.av-home .situ:has(#situ-achat:checked) .pan-achat,.av-home .situ:has(#situ-devis:checked) .pan-devis,.av-home .situ:has(#situ-budget:checked) .pan-budget,.av-home .situ:has(#situ-technique:checked) .pan-technique,.av-home .situ:has(#situ-chantier:checked) .pan-chantier,.av-home .situ:has(#situ-plan:checked) .pan-plan{display:grid}}</style><div class="situ"><fieldset><legend class="vh">Ta situation</legend><input type="radio" name="situ" id="situ-achat" class="vh"><label for="situ-achat">J'hésite à acheter un bien</label><input type="radio" name="situ" id="situ-devis" class="vh" checked><label for="situ-devis">J'ai reçu des devis</label><input type="radio" name="situ" id="situ-budget" class="vh"><label for="situ-budget">Je prépare mon budget</label><input type="radio" name="situ" id="situ-technique" class="vh"><label for="situ-technique">J'hésite sur une solution</label><input type="radio" name="situ" id="situ-chantier" class="vh"><label for="situ-chantier">Mes travaux commencent</label><input type="radio" name="situ" id="situ-plan" class="vh"><label for="situ-plan">Je veux un plan</label></fieldset><div class="pan pan-achat"><div class="parc"><p class="k">Ton parcours conseillé</p><ol><li><span class="n num">1</span><span class="c"><span class="l"><a href="/avis-travaux-avant-achat">Avis avant achat</a><span class="num p">99 €</span></span><span class="t">Tu m'envoies l'annonce et les photos. On en parle 1 h : ce qui est grave, ce qui ne l'est pas, ce qu'il faut vérifier à la visite.</span></span></li><li><span class="n num">2</span><span class="c"><span class="l"><a href="/estimation-budget-travaux">Estimation du budget</a><span class="num p">≈ 149 €</span></span><span class="t">Ton budget travaux écrit, poste par poste, pour négocier le prix avec des arguments.</span></span></li></ol><p class="plus">Tu achètes pour revendre ? <a href="/accompagnement-achat-revente">L'accompagnement achat-revente →</a></p></div><div class="risk"><p class="k">Le risque à ce stade</p><p class="r">Acheter un bien dont les travaux mangent ta marge, ou tout ton budget.</p><p class="m">Une erreur à ce moment-là se compte vite en milliers d'euros.</p><a href="/avis-travaux-avant-achat" class="btn btn-o">Demander mon avis avant achat →</a><p class="note">Le prix ferme t'est annoncé par écrit avant de commencer.</p></div></div><div class="pan pan-devis"><div class="parc"><p class="k">Ton parcours conseillé</p><ol><li><span class="n num">1</span><span class="c"><span class="l"><a href="/relecture-devis-travaux">Relecture de devis</a><span class="num p">≈ 29 €</span></span><span class="t">Postes oubliés, prix hors marché, acomptes, assurances : je te dis ce qui cloche et quoi demander à l'artisan.</span></span></li><li><span class="n num">2</span><span class="c"><span class="l"><a href="/projets/nouveau">Le logiciel AVYORA</a><span class="num p">Gratuit pendant la bêta</span></span><span class="t">Ton estimation poste par poste, aux prix de ta région : tu vois tout de suite si une ligne du devis sort du marché.</span></span></li></ol></div><div class="risk"><p class="k">Le risque à ce stade</p><p class="r">Signer un devis incomplet, et payer les oublis en avenants pendant le chantier.</p><p class="m">Une erreur à ce moment-là se compte vite en milliers d'euros.</p><a href="/relecture-devis-travaux" class="btn btn-o">Faire relire mon devis →</a><p class="note">Le prix ferme t'est annoncé par écrit avant de commencer.</p></div></div><div class="pan pan-budget"><div class="parc"><p class="k">Ton parcours conseillé</p><ol><li><span class="n num">1</span><span class="c"><span class="l"><a href="/projets/nouveau">L'estimation AVYORA</a><span class="num p">Gratuit pendant la bêta</span></span><span class="t">Une première fourchette en 2 minutes, puis le détail poste par poste.</span></span></li><li><span class="n num">2</span><span class="c"><span class="l"><a href="/estimation-budget-travaux">Estimation du budget avec moi</a><span class="num p">≈ 149 € · ≈ 249 € en neuf</span></span><span class="t">On reprend ton projet ensemble : tu repars avec un budget écrit, sans oubli.</span></span></li></ol></div><div class="risk"><p class="k">Le risque à ce stade</p><p class="r">Lancer les travaux avec un budget sous-estimé, et devoir tout arrêter en cours de route.</p><p class="m">Une erreur à ce moment-là se compte vite en milliers d'euros.</p><a href="/projets/nouveau" class="btn btn-o">Estimer mes travaux →</a></div></div><div class="pan pan-technique"><div class="parc"><p class="k">Ton parcours conseillé</p><ol><li><span class="n num">1</span><span class="c"><span class="l"><a href="/conseil-technique-travaux">Aide au choix technique</a><span class="num p">≈ 99 €</span></span><span class="t">Isolation, chauffage, structure, matériaux : on compare les options pour ton cas, avec un résumé écrit.</span></span></li><li><span class="n num">2</span><span class="c"><span class="l"><a href="/estimation-budget-travaux">Estimation du budget</a><span class="num p">≈ 149 €</span></span><span class="t">Pour chiffrer la solution retenue avant de demander les devis.</span></span></li></ol></div><div class="risk"><p class="k">Le risque à ce stade</p><p class="r">Choisir une solution inadaptée, et devoir la refaire quelques années plus tard.</p><p class="m">Une erreur à ce moment-là se compte vite en milliers d'euros.</p><a href="/conseil-technique-travaux" class="btn btn-o">Demander mon conseil technique →</a><p class="note">Le prix ferme t'est annoncé par écrit avant de commencer.</p></div></div><div class="pan pan-chantier"><div class="parc"><p class="k">Ton parcours conseillé</p><ol><li><span class="n num">1</span><span class="c"><span class="l"><a href="/suivi-de-chantier">Organisation du chantier</a><span class="num p">≈ 199 €/mois</span></span><span class="t">Un lancement (≈ 149 €) et ton carnet de tâches, puis 30 min par semaine et WhatsApp entre deux. Sans engagement.</span></span></li><li><span class="n num">2</span><span class="c"><span class="l"><a href="/suivi-budget-travaux">Suivi du budget</a><span class="num p">≈ 200 €/mois</span></span><span class="t">Factures, acomptes et avenants vérifiés au fil du chantier. Sans engagement.</span></span></li></ol></div><div class="risk"><p class="k">Le risque à ce stade</p><p class="r">Des artisans mal enchaînés : reprises, attentes, retards, et des factures qui dérapent.</p><p class="m">Une erreur à ce moment-là se compte vite en milliers d'euros.</p><a href="/suivi-de-chantier" class="btn btn-o">Organiser mon chantier →</a><p class="note">Le prix ferme t'est annoncé par écrit avant de commencer.</p></div></div><div class="pan pan-plan"><div class="parc"><p class="k">Ton parcours conseillé</p><ol><li><span class="n num">1</span><span class="c"><span class="l"><a href="/faire-dessiner-plan-maison">Ton plan dessiné par moi</a><span class="num p">dès ≈ 89 €</span></span><span class="t">Plan de l'existant et plan du projet, en 2D, prêts à montrer aux artisans.</span></span></li></ol></div><div class="risk"><p class="k">Le risque à ce stade</p><p class="r">Découvrir trop tard qu'une cloison, une cuisine ou un meuble ne passe pas.</p><p class="m">Une erreur à ce moment-là se compte vite en milliers d'euros.</p><a href="/faire-dessiner-plan-maison" class="btn btn-o">Me faire dessiner mon plan →</a></div></div></div>
-</div></section>
-
-<section class="blk" style="padding-top:0" aria-labelledby="calc-titre"><div class="wrap"><div class="calc">
-  <p class="eyebrow">Le calcul est vite fait</p>
-  <h2 id="calc-titre">Sur un chantier, une petite erreur se compte vite en milliers d'euros.</h2>
-  <p class="d">Quelques centaines d'euros pour l'éviter, ce n'est rien à côté. Souvent, la première erreur évitée rembourse tout le reste.</p>
-  <div class="en"><span>Tu investis</span><span>Ce que ça t'évite</span></div><div class="ln"><div class="px"><span class="num">≈ 29 €</span><a href="/relecture-devis-travaux">Relecture de devis</a></div><div class="ev"><span>Un poste oublié qui revient en avenant pendant le chantier</span><span class="mil">souvent des milliers d'euros</span></div></div><div class="ln"><div class="px"><span class="num">99 €</span><a href="/avis-travaux-avant-achat">Avis avant achat</a></div><div class="ev"><span>Une toiture, une charpente ou une électricité à refaire, découverte après la signature</span><span class="mil">souvent des milliers d'euros</span></div></div><div class="ln"><div class="px"><span class="num">≈ 149 €</span><a href="/estimation-budget-travaux">Estimation du budget</a></div><div class="ev"><span>Un budget sous-estimé qui bloque le chantier à mi-parcours</span><span class="mil">souvent des milliers d'euros</span></div></div><div class="ln"><div class="px"><span class="num">≈ 199 €</span><a href="/suivi-de-chantier">Un mois d'organisation</a></div><div class="ev"><span>Des artisans mal enchaînés : reprises, attentes et retards</span><span class="mil">souvent des milliers d'euros</span></div></div>
-</div></div></section>
-
-<section class="blk" style="padding-top:0" aria-labelledby="qui-titre"><div class="wrap"><div class="qui2">
-  <img class="ph" src="/accompagnement/daniel-leal-portrait-720.webp" alt="Daniel Leal, fondateur d'AVYORA" width="720" height="900" loading="lazy" decoding="async">
-  <div>
-    <p class="eyebrow">Qui t'accompagne</p>
-    <h2 id="qui-titre">Daniel, <b class="num">8</b> ans de chantier. Et surtout celui qui fait les travaux lui-même.</h2>
-    <ul>
-      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>3 ans à la tête de notre société de travaux, avec mon frère : du devis jusqu'aux travaux, réalisés nous-mêmes</span></li>
-      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Deux maisons girondines rénovées de nos mains, puis revendues avec une plus-value</span></li>
-      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Une maison neuve construite presque entièrement de nos mains</span></li>
-      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Avant ça : BTS en alternance dans un grand groupe du BTP, puis 3 ans chef de chantier</span></li>
-    </ul>
-    <p class="d">Gérant d'entreprise, propriétaire, et celui qui tient les outils : j'ai été de chaque côté du chantier. Je sais où ça dérape, et je te le dis avant que ça arrive.</p>
-    <a href="/accompagnement-travaux#qui" class="lien">Pourquoi m'appeler →</a>
-  </div>
-</div></div></section>
-
-<section class="blk" style="padding-top:0" aria-labelledby="comment-titre"><div class="wrap">
-  <div class="titre-g"><p class="eyebrow">Comment ça se passe</p><h2 id="comment-titre">Trois étapes, aucune surprise.</h2></div>
-  <div class="steps">
-    <div class="stepc"><span class="n">1</span><p class="q">Gratuit · 20 min</p><h3>Appel découverte</h3><p>Tu m'expliques ton projet. Je te dis ce dont tu as vraiment besoin, ou rien si tu n'as besoin de rien.</p></div>
-    <div class="stepc"><span class="n">2</span><p class="q">Par e-mail</p><h3>Proposition écrite</h3><p>La prestation et son prix ferme, noir sur blanc. Tu décides tranquillement.</p></div>
-    <div class="stepc"><span class="n">3</span><p class="q">Ta prochaine étape</p><h3>On avance</h3><p>Je te donne la prochaine tâche à faire, et je te préviens des risques de retard avant qu'ils arrivent.</p></div>
-  </div>
-  <div class="cta-c"><a href="/accompagnement-travaux#demande" class="btn btn-p">Demander mon appel gratuit →</a></div>
-</div></section>
-
-<section class="blk" style="padding-top:0"><div class="wrap">
-  <div class="center">
-    <p class="eyebrow">Et l'outil AVYORA</p>
-    <h2>Chiffre, compare et suis tes travaux toi-même.</h2>
-    <p>Commence gratuitement par l'estimation. Le reste s'ajoute quand tu en as besoin.</p>
-  </div>
-  <div class="svc"><a href="/estimation-travaux"><span class="tete"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2.5" width="16" height="19" rx="2.5"/><path d="M8 7h8M8 11.5h2M12 11.5h2M16 11.5h0M8 15.5h2M12 15.5h2M16 15.5v2"/></svg></span><span class="acc g">Gratuit</span></span><h3>Estimer ta rénovation</h3><p>Une fourchette en 2 minutes, puis le détail poste par poste : 200 postes, aux prix de ta région.</p><span class="go">Estimer <span aria-hidden="true">→</span></span></a><a href="/estimation-construction-maison"><span class="tete"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 3.5 21 11"/><path d="M5.5 9.5V20.5h13V9.5"/><path d="M10 20.5v-6h4v6"/></svg></span><span class="acc g">Gratuit</span></span><h3>Estimer ta maison neuve</h3><p>Du permis à la remise des clés : études, taxes, construction et branchements. Gratuit, en 4 questions.</p><span class="go">Estimer <span aria-hidden="true">→</span></span></a><a href="/trouver-un-artisan"><span class="tete"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5 19.5 5.5v6c0 4.6-3.2 8.3-7.5 10-4.3-1.7-7.5-5.4-7.5-10v-6z"/><path d="m8.5 12 2.4 2.4 4.6-4.8"/></svg></span><span class="acc g">Gratuit pendant la bêta</span></span><h3>Recevoir des devis d'artisans vérifiés</h3><p>Jusqu'à 3 artisans de ton département : SIRET, assurance décennale et chantiers vérifiés.</p><span class="go">Demander des devis <span aria-hidden="true">→</span></span></a><a href="/inscription?source=accueil"><span class="tete"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5h17"/><path d="M6.5 16.5v-5M11 16.5V7M15.5 16.5v-3.5M20 16.5V9.5"/></svg></span><span class="acc g">Gratuit pendant la bêta</span></span><h3>Suivre ton chantier et ton budget</h3><p>L'avancement des travaux, tes dépenses réelles face au prévu, et ta rentabilité si tu investis.</p><span class="go">Créer mon compte <span aria-hidden="true">→</span></span></a><a href="/accompagnement-travaux"><span class="tete"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13.5v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="13" width="4" height="6" rx="1.5"/><rect x="17" y="13" width="4" height="6" rx="1.5"/></svg></span><span class="acc o">Premier appel offert</span></span><h3>Te faire accompagner</h3><p>Relecture de devis, avis avant achat, organisation du chantier : avec quelqu'un qui a dirigé sa société de travaux.</p><span class="go">Être rappelé <span aria-hidden="true">→</span></span></a></div>
-</div></section>
-
-<section class="blk" style="padding-top:0"><div class="wrap"><div class="rsx">
-  <div>
-    <p class="eyebrow">Réseau AVYORA · nouveau</p>
-    <h2>Des devis d'artisans vérifiés. Pas un annuaire.</h2>
-    <p class="d">Envoie ton projet à 3 artisans de ton département au plus. C'est toi qui choisis, ton estimation leur sert de base, et tes coordonnées ne vont qu'à ceux qui acceptent.</p>
-    <div class="cta"><a href="/demandes-devis/nouvelle" class="btn btn-p">Demander des devis →</a><a href="/trouver-un-artisan" class="lien">Comment ça marche</a><a href="/reseau-artisans" class="lien">Tu es artisan ? Rejoins le réseau</a></div>
-    <p class="acces">Gratuit pendant la bêta, jusqu'au 31 décembre 2026.</p>
-  </div>
-  <ul aria-label="Comment les artisans sont vérifiés">
-    <li><span class="c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><span><span class="t">SIRET vérifié</span><span class="s">L'entreprise est active, d'après le répertoire officiel des entreprises.</span></span></li>
-    <li><span class="c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><span><span class="t">Assurance décennale obligatoire</span><span class="s">L'attestation est contrôlée, et sa date de fin suivie.</span></span></li>
-    <li><span class="c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><span><span class="t">Un entretien avec Daniel</span><span class="s">Chaque artisan est appelé par le fondateur avant d'entrer dans le réseau.</span></span></li>
+  <p class="sub">Je m'appelle Daniel. J'ai dirigé ma société de travaux, rénové et construit mes propres maisons. Je relis tes devis et j'organise ton chantier avec toi, à distance.</p>
+  <div class="cta"><a href="/accompagnement-travaux#demande" class="btn btn-o">Demander mon appel gratuit →</a><a href="/projets/nouveau" class="btn btn-w">Estimer mes travaux</a></div>
+  <div class="trust"><span><b>Premier appel</b> gratuit</span><span><b>Prix écrit</b> avant de commencer</span><span><b>sans</b> engagement</span></div>
+</div><aside class="fond monte d1" aria-label="Qui t'accompagne">
+  <div class="qui"><img src="/accompagnement/daniel-leal-carre-v2-320.webp" alt="Daniel Leal, fondateur d'AVYORA" width="124" height="124" decoding="async"><div><p class="nom">Daniel Leal</p><p class="role">Ex-gérant d'une société de travaux<span class="tel"> · 8 ans de chantier</span><span class="pc">, fondateur d'AVYORA</span></p></div></div>
+  <ul>
+    <li><span class="k"><b class="num">3</b> ans</span><span>à la tête de notre société de travaux, avec mon frère</span></li>
+    <li><span class="k"><b class="num">2</b></span><span>maisons rénovées de nos mains, puis revendues</span></li>
+    <li><span class="k"><b class="num">1</b></span><span>maison neuve construite presque entièrement de nos mains</span></li>
+    <li><span class="k"><b class="num">8</b> ans</span><span>de chantier au total</span></li>
   </ul>
+  <a href="/accompagnement-travaux#qui" class="lien">Mon parcours →</a>
+</aside></div></header></div>
+
+<section class="blk" style="padding:44px 0 0" aria-labelledby="offres-titre"><div class="wrap">
+  <h2 id="offres-titre" class="titre-s">Ce que je te propose</h2>
+  <div class="offres">
+    <article class="offre monte d1 vedette"><div class="t"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13.5v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="13" width="4" height="6" rx="1.5"/><rect x="17" y="13" width="4" height="6" rx="1.5"/></svg></span><h3>Être accompagné</h3></div><p>Relecture de devis, avis avant achat, organisation du chantier. Avec moi, au téléphone ou en visio.</p><p class="px"><b>≈ 29 €</b> la relecture · premier appel gratuit</p><a href="/accompagnement-travaux#aide" class="btn btn-p">Voir les prestations →</a></article>
+    <article class="offre monte d2"><div class="t"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2.5" width="16" height="19" rx="2.5"/><path d="M8 7h8M8 11.5h2M12 11.5h2M16 11.5h0M8 15.5h2M12 15.5h2M16 15.5v2"/></svg></span><h3>Chiffrer mes travaux</h3></div><p>Le logiciel AVYORA : ton budget poste par poste, aux prix de ta région. Rénovation ou construction neuve.</p><p class="px"><b class="g">Gratuit</b> pendant la bêta</p><a href="/projets/nouveau" class="btn btn-n">Estimer mes travaux →</a><p class="mini">Après la bêta, <b>rien n'est prélevé</b> : tu t'abonnes seulement si tu le veux.</p></article>
+    <article class="offre monte d3"><div class="t"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h8V3M11 16.5v4.5M15 12h6"/></svg></span><h3>Faire mon plan</h3></div><p>Je te dessine ton plan en 2D : l'existant et le projet, prêts pour les artisans.</p><p class="px"><b>≈ 89 €</b> une pièce · ≈ 199 € jusqu'à 100 m²</p><a href="/faire-dessiner-plan-maison" class="btn btn-n">Me faire dessiner mon plan →</a></article>
+  </div>
+</div></section>
+
+<section class="blk" style="padding:56px 0 0" aria-labelledby="ou-titre"><div class="wrap">
+  <h2 id="ou-titre" class="titre-s">Où en es-tu ? Je te dis par où commencer.</h2>
+  <style>@supports selector(:has(*)){.av-home .situ .pan{display:none}.av-home .situ:has(#situ-achat:checked) .pan-achat,.av-home .situ:has(#situ-devis:checked) .pan-devis,.av-home .situ:has(#situ-budget:checked) .pan-budget,.av-home .situ:has(#situ-technique:checked) .pan-technique,.av-home .situ:has(#situ-chantier:checked) .pan-chantier,.av-home .situ:has(#situ-plan:checked) .pan-plan{display:grid}}</style><div class="situ"><fieldset><legend class="vh">Ta situation</legend><input type="radio" name="situ" id="situ-achat" class="vh"><label for="situ-achat">J'hésite à acheter</label><input type="radio" name="situ" id="situ-devis" class="vh" checked><label for="situ-devis">J'ai reçu des devis</label><input type="radio" name="situ" id="situ-budget" class="vh"><label for="situ-budget">Je prépare mon budget</label><input type="radio" name="situ" id="situ-technique" class="vh"><label for="situ-technique">J'hésite sur une solution</label><input type="radio" name="situ" id="situ-chantier" class="vh"><label for="situ-chantier">Mes travaux commencent</label><input type="radio" name="situ" id="situ-plan" class="vh"><label for="situ-plan">Je veux un plan</label></fieldset><div class="pan pan-achat"><div><ol><li><span class="n num">1</span><span><a href="/avis-travaux-avant-achat">Avis avant achat</a> <span class="p">· 99 €</span><span class="x">Tu m'envoies l'annonce et les photos, on en parle 1 h : ce qui est grave, ce qui ne l'est pas.</span></span></li><li><span class="n num">2</span><span><a href="/estimation-budget-travaux">Estimation du budget</a> <span class="p">· ≈ 149 €</span><span class="x">Ton budget travaux écrit, poste par poste, pour négocier le prix.</span></span></li></ol><p class="plus">Tu achètes pour revendre ? <a href="/accompagnement-achat-revente">L'accompagnement achat-revente →</a></p><p class="risque"><b>Le risque à ce stade :</b> acheter un bien dont les travaux mangent ta marge, ou tout ton budget.</p></div><div class="act"><a href="/avis-travaux-avant-achat" class="btn btn-p">Demander mon avis avant achat →</a><p class="note">Le prix ferme t'est annoncé par écrit avant de commencer.</p></div></div><div class="pan pan-devis"><div><ol><li><span class="n num">1</span><span><a href="/relecture-devis-travaux">Relecture de devis</a> <span class="p">· ≈ 29 €</span><span class="x">Postes oubliés, prix hors marché, acomptes, assurances : je te dis ce qui cloche.</span></span></li><li><span class="n num">2</span><span><a href="/projets/nouveau">Le logiciel AVYORA</a> <span class="p">· gratuit pendant la bêta</span><span class="x">Ton estimation poste par poste, aux prix de ta région.</span></span></li></ol><p class="risque"><b>Le risque à ce stade :</b> signer un devis incomplet, et payer les oublis en avenants pendant le chantier.</p></div><div class="act"><a href="/relecture-devis-travaux" class="btn btn-p">Faire relire mon devis →</a><p class="note">Le prix ferme t'est annoncé par écrit avant de commencer.</p></div></div><div class="pan pan-budget"><div><ol><li><span class="n num">1</span><span><a href="/projets/nouveau">L'estimation AVYORA</a> <span class="p">· gratuit pendant la bêta</span><span class="x">Une fourchette en 2 minutes, puis le détail poste par poste.</span></span></li><li><span class="n num">2</span><span><a href="/estimation-budget-travaux">Estimation du budget avec moi</a> <span class="p">· ≈ 149 €</span><span class="x">Un budget écrit, sans oubli (≈ 249 € en construction neuve).</span></span></li></ol><p class="risque"><b>Le risque à ce stade :</b> lancer les travaux avec un budget sous-estimé, et devoir tout arrêter en cours de route.</p></div><div class="act"><a href="/projets/nouveau" class="btn btn-p">Estimer mes travaux →</a></div></div><div class="pan pan-technique"><div><ol><li><span class="n num">1</span><span><a href="/conseil-technique-travaux">Aide au choix technique</a> <span class="p">· ≈ 99 €</span><span class="x">Isolation, chauffage, structure, matériaux : on compare les options pour ton cas.</span></span></li><li><span class="n num">2</span><span><a href="/estimation-budget-travaux">Estimation du budget</a> <span class="p">· ≈ 149 €</span><span class="x">Pour chiffrer la solution retenue avant de demander les devis.</span></span></li></ol><p class="risque"><b>Le risque à ce stade :</b> choisir une solution inadaptée, et devoir la refaire quelques années plus tard.</p></div><div class="act"><a href="/conseil-technique-travaux" class="btn btn-p">Demander mon conseil technique →</a><p class="note">Le prix ferme t'est annoncé par écrit avant de commencer.</p></div></div><div class="pan pan-chantier"><div><ol><li><span class="n num">1</span><span><a href="/suivi-de-chantier">Organisation du chantier</a> <span class="p">· ≈ 199 €/mois</span><span class="x">Un lancement (≈ 149 €) et ton carnet de tâches, puis 30 min par semaine. Sans engagement.</span></span></li><li><span class="n num">2</span><span><a href="/suivi-budget-travaux">Suivi du budget</a> <span class="p">· ≈ 200 €/mois</span><span class="x">Factures, acomptes et avenants vérifiés au fil du chantier.</span></span></li></ol><p class="risque"><b>Le risque à ce stade :</b> des artisans mal enchaînés : reprises, attentes, retards, et des factures qui dérapent.</p></div><div class="act"><a href="/suivi-de-chantier" class="btn btn-p">Organiser mon chantier →</a><p class="note">Le prix ferme t'est annoncé par écrit avant de commencer.</p></div></div><div class="pan pan-plan"><div><ol><li><span class="n num">1</span><span><a href="/faire-dessiner-plan-maison">Ton plan dessiné par moi</a> <span class="p">· dès ≈ 89 €</span><span class="x">L'existant et le projet, en 2D, prêts à montrer aux artisans.</span></span></li></ol><p class="risque"><b>Le risque à ce stade :</b> découvrir trop tard qu'une cloison, une cuisine ou un meuble ne passe pas.</p></div><div class="act"><a href="/faire-dessiner-plan-maison" class="btn btn-p">Me faire dessiner mon plan →</a></div></div></div>
+</div></section>
+
+<section class="blk" style="padding:56px 0 0" aria-labelledby="calc-titre"><div class="wrap">
+  <h2 id="calc-titre" class="titre-s">Quelques centaines d'euros pour en éviter des milliers.</h2>
+  <p class="sous-t">Sur un chantier, une petite erreur se compte vite en milliers d'euros.</p>
+  <div class="tuiles">
+    <a class="tuile" href="/relecture-devis-travaux"><span class="v" style="display:block">≈ 29 €</span><span class="nm" style="display:block">Relecture de devis</span><span class="e" style="display:block">t'évite un poste oublié qui revient en avenant.</span></a>
+    <a class="tuile" href="/avis-travaux-avant-achat"><span class="v" style="display:block">99 €</span><span class="nm" style="display:block">Avis avant achat</span><span class="e" style="display:block">t'évite une toiture ou une électricité à refaire, découverte trop tard.</span></a>
+    <a class="tuile" href="/estimation-budget-travaux"><span class="v" style="display:block">≈ 149 €</span><span class="nm" style="display:block">Estimation du budget</span><span class="e" style="display:block">t'évite un chantier bloqué à mi-parcours, faute de budget.</span></a>
+    <a class="tuile" href="/suivi-de-chantier"><span class="v" style="display:block">≈ 199 €<small>/mois</small></span><span class="nm" style="display:block">Organisation du chantier</span><span class="e" style="display:block">t'évite les reprises, les attentes et les retards.</span></a>
+  </div>
+  <p class="note-px">Prix moyens : ils varient selon la taille de ton projet. Le prix ferme t'est annoncé par écrit avant de commencer.</p>
+</div></section>
+
+<section class="blk" style="padding:56px 0 0"><div class="wrap"><div class="fin3">
+  <img src="/accompagnement/daniel-leal-carre-v2-320.webp" alt="" width="76" height="76" loading="lazy" decoding="async">
+  <div class="tx"><h2>Un doute sur ton projet ? Parlons-en 20 minutes.</h2><p>Gratuit, sans engagement. Je te dis ce dont tu as besoin, ou rien si tu n'as besoin de rien.</p></div>
+  <a href="/accompagnement-travaux#demande" class="btn btn-o">Demander mon appel gratuit →</a>
 </div></div></section>
 
-
-<section class="blk"><div class="wrap">
-  <div class="center">
-    <p class="eyebrow">Bêta gratuite · jusqu'au 31 décembre 2026</p>
-    <h2>Tout est gratuit pendant la bêta.</h2>
-  </div>
-  <div class="frm">
-    <div class="col">
-      <p class="nom">Gratuit</p>
-      <p class="px">0 € <small>pour toujours</small></p>
-      <ul>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>L'estimation rapide de ta rénovation ou de ta maison neuve</span></li>
-        
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Les prix des travaux, poste par poste et par ville</span></li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Le premier appel d'accompagnement, offert</span></li>
-      </ul>
-      <div class="bas"><a href="/projets/nouveau" class="btn btn-p">Estimer gratuitement →</a></div>
-    </div>
-    <div class="col pro">
-      <p class="nom">Inclus pendant la bêta</p>
-      <p class="px">0 €</p>
-      <ul>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>L'estimation détaillée : 200 postes et le rapport PDF</span></li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Les devis d'artisans vérifiés du Réseau AVYORA</span></li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Le suivi du chantier : avancement, dépenses réelles, alertes</span></li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>La rentabilité de ton investissement locatif</span></li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span>Tous tes projets et tes plans, sans limite</span></li>
-      </ul>
-      <p class="note">Après la bêta, <b>rien n'est prélevé</b> : tu t'abonnes seulement si tu le veux.</p><div class="bas"><a href="/inscription?source=accueil" class="btn btn-o">Créer mon compte gratuit</a></div>
-    </div>
-  </div>
-</div></section>
-
-<section class="blk" style="padding-top:0"><div class="wrap">
-  <div class="center"><p class="eyebrow">Combien ça coûte ?</p><h2>Le prix des travaux, poste par poste.</h2><p>Le budget moyen de chaque chantier, détaillé et ajusté à ta région, avant même de te lancer.</p></div>
-  <div class="chips"><a href="/prix-travaux/renovation-salle-de-bain">Salle de bain</a><a href="/prix-travaux/renovation-cuisine">Cuisine</a><a href="/prix-travaux/refaire-toiture">Toiture</a><a href="/prix-travaux/peinture-interieure">Peinture</a><a href="/prix-travaux/renovation-electrique">Électricité</a><a href="/prix-travaux/remplacement-fenetres">Fenêtres</a><a href="/prix-travaux/isolation-combles">Combles</a><a href="/prix-travaux/remplacer-baignoire-par-douche">Baignoire → douche</a><a href="/prix-travaux" class="tous">Tous les travaux →</a></div>
-</div></section>
-<section class="blk" style="padding-top:0"><div class="wrap"><div class="fin2">
-  <div><h2>Un doute sur ton projet ? 20 minutes pour savoir par où commencer.</h2><p>Gratuit et sans engagement. Si une prestation te sert, tu reçois son prix par écrit avant de commencer.</p></div>
-  <div class="cta"><a href="/accompagnement-travaux#demande" class="btn btn-o">Demander mon appel gratuit →</a><a href="/projets/nouveau?nature=reno" class="btn btn-w">Estimer mes travaux</a></div>
+<section class="blk" style="padding:44px 0 8px" aria-label="Aller plus loin"><div class="wrap"><div class="liens">
+  <div><h2>Accompagnement</h2><ul><li><a href="/relecture-devis-travaux">Relecture de devis</a></li><li><a href="/avis-travaux-avant-achat">Avis avant achat</a></li><li><a href="/estimation-budget-travaux">Estimation du budget</a></li><li><a href="/suivi-de-chantier">Organisation du chantier</a></li><li><a href="/accompagnement-achat-revente">Achat-revente</a></li><li><a href="/faire-dessiner-plan-maison">Plans 2D dessinés pour toi</a></li></ul></div>
+  <div><h2>Prix des travaux</h2><ul><li><a href="/prix-travaux/renovation-salle-de-bain">Salle de bain</a></li><li><a href="/prix-travaux/renovation-cuisine">Cuisine</a></li><li><a href="/prix-travaux/refaire-toiture">Toiture</a></li><li><a href="/prix-travaux/peinture-interieure">Peinture</a></li><li><a href="/prix-travaux/renovation-electrique">Électricité</a></li><li><a href="/prix-travaux/remplacement-fenetres">Fenêtres</a></li><li><a href="/prix-travaux">Tous les travaux →</a></li></ul></div>
+  <div><h2>Le logiciel</h2><ul><li><a href="/estimation-travaux">Estimer une rénovation</a></li><li><a href="/estimation-construction-maison">Estimer une maison neuve</a> · gratuit, en 4 questions</li><li><a href="/inscription?source=accueil">Créer mon compte gratuit</a></li></ul></div>
+  <div><h2>Artisans</h2><ul><li><a href="/demandes-devis/nouvelle">Recevoir des devis d'artisans vérifiés</a></li><li><a href="/trouver-un-artisan">Comment ça marche</a></li><li><a href="/reseau-artisans">Tu es artisan ? Rejoins le réseau</a></li></ul></div>
 </div></div></section>
 </div>"
 `;

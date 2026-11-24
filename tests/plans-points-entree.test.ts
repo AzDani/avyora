@@ -225,65 +225,24 @@ describe("C9 · accueil", () => {
     const Accueil = (await import("@/app/page")).default;
     return r.rendre(await Accueil({ searchParams: Promise.resolve({}) }));
   }
-  const BAND = /\n<style>\.av-home \.planb[\s\S]*?<\/section>/;
-
-  it("éteint : aucune section, aucune puce, aucune image de l'éditeur", async () => {
+  it("éteint : ni section, ni image, ni lien de l'éditeur ; l'offre « plan » mène au plan dessiné", async () => {
     for (const locale of LOCALES) {
       const h = await accueil(false, locale);
       expect(h).not.toContain("planb");
       expect(h).not.toContain("/plans/");
-      expect(h).not.toContain(locale === "fr" ? "Dessiner ton plan en 3D" : "Draw your floor plan in 3D");
+      expect(h).not.toContain('data-clic-plan="accueil"');
+      expect(h).not.toContain('href="/logiciel-plan-maison"');
     }
   });
 
-  it("allumé (refonte du 20/11/2026) : la section une seule fois, après les services ; la carte de l'éditeur", async () => {
+  it("allumé (accueil V2 du 24/11/2026) : l'offre « plan » mène à la vitrine de l'éditeur (comptée), le lien dans la ligne du logiciel ; le héros garde son bouton d'estimation", async () => {
     for (const locale of LOCALES) {
-      const apres = await accueil(true, locale);
-      expect(apres.split('class="planb"').length - 1).toBe(1);
-      expect(apres.indexOf('class="planb"')).toBeGreaterThan(apres.indexOf('class="svc'));
-      expect(apres).toContain(locale === "fr" ? "<h3>Dessiner ton plan en 3D</h3>" : "<h3>Draw your floor plan in 3D</h3>");
-      /* le héros garde son bouton d'estimation */
-      expect(entre(apres, '<header class="hero">', "</header>")).toContain('href="/projets/nouveau" class="btn btn-n"');
+      const h = await accueil(true, locale);
+      expect(h).toContain(`<a href="/logiciel-plan-maison" class="btn btn-n" data-clic-plan="accueil">${locale === "fr" ? "Dessiner mon plan" : "Draw my plan"} →</a>`);
+      expect(h).toContain(`<li><a href="/logiciel-plan-maison" data-clic-plan="accueil">${locale === "fr" ? "Éditeur de plan 2D et 3D" : "2D and 3D floor plan editor"}</a></li>`);
+      expect(h).not.toContain("planb");
+      expect(entre(h, '<header class="hero">', "</header>")).toContain('href="/projets/nouveau" class="btn btn-w"');
     }
-  });
-
-  it("allumé : deux vraies captures (webp 760 / 1040 + PNG, largeur et hauteur), le bouton vers l'éditeur (par l'inscription sans compte), la vitrine, la note", async () => {
-    for (const locale of LOCALES) {
-      const band = (await accueil(true, locale)).match(BAND)?.[0] ?? "";
-      for (const nom of ["maison-2d", "maison-3d"]) {
-        expect(band).toContain(`srcset="/plans/${nom}-760.webp 760w, /plans/${nom}-1040.webp 1040w"`);
-        /* la 2D est l'élément LCP au bureau : chargée tout de suite ; la 3D reste différée (jury) */
-        expect(band).toContain(`src="/plans/${nom}.png" width="1040" height="650" loading="${nom === "maison-2d" ? "eager" : "lazy"}"`);
-      }
-      /* au bureau, sans compte (l'éditeur en demande un, 12/11/2026) : l'inscription, qui ramène à l'éditeur, et le
-         bouton le dit ; au téléphone (on n'y dessine pas) → la vitrine (jury) */
-      expect(band).toContain(`<a href="/inscription?next=%2Fplan&amp;source=accueil" class="btn btn-p bureau" data-clic-plan="accueil">${locale === "fr" ? "Crée ton compte gratuit pour dessiner" : "Create your free account to start drawing"} →</a>`);
-      expect(band).not.toContain('href="/plan"');
-      expect(band).toContain(locale === "fr" ? "<li>Gratuit avec un compte, sans installation</li>" : "<li>Free with an account, nothing to install</li>");
-      expect(band).toMatch(/<a href="\/logiciel-plan-maison" class="btn btn-p tel" data-clic-plan="accueil">(Créer mon plan|Create my plan) →<\/a>/);
-      expect(band).toContain("@media(max-width:600px){.av-home .planb .bureau{display:none}.av-home .planb .tel{display:inline-flex}}");
-      expect(band).toContain('href="/logiciel-plan-maison" class="lien bureau" data-clic-plan="accueil"');
-      expect(band).toContain('href="/logiciel-plan-maison"');
-      expect(band).toContain(locale === "fr" ? "Le dessin se fait sur ordinateur ou tablette." : "The editor is in French for now.");
-      expect(band).not.toMatch(PRIX);
-      expect(band).not.toMatch(EMOJI);
-      expect(band).not.toMatch(/\b(estimer|budget|neuf|travaux)\b/i);
-    }
-  });
-
-  it("connecté : « Créer mon plan » → /plan, directement", async () => {
-    for (const locale of LOCALES) {
-      const band = (await accueil(true, locale, true, "gratuit")).match(BAND)?.[0] ?? "";
-      expect(band).toMatch(/<a href="\/plan" class="btn btn-p bureau" data-clic-plan="accueil">(Créer mon plan|Create my plan) →<\/a>/);
-      expect(band).not.toContain("/inscription?");
-    }
-  });
-
-  it("la 3ᵉ puce (chiffrer depuis le plan) seulement si le neuf est en ligne", async () => {
-    expect(await accueil(true, "fr", true)).toContain("<li>Ta future maison chiffrée depuis ton plan</li>");
-    expect(await accueil(true, "fr", false)).not.toContain("Ta future maison chiffrée");
-    expect(await accueil(true, "en", true)).toContain("<li>Your future house priced from your plan</li>");
-    expect(await accueil(true, "en", false)).not.toContain("Your future house priced");
   });
 });
 

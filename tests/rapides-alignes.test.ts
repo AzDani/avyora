@@ -92,8 +92,8 @@ describe("N13 · « 4 questions » des deux côtés", () => {
     expect(dictNeuf("en").saisie.pageSous.startsWith("4 questions")).toBe(true);
     expect(dictNeuf("fr").choix.rapideLead.startsWith("4 questions")).toBe(true);
     expect(dictNeuf("en").choix.rapideLead.startsWith("4 questions")).toBe(true);
-    expect(lire("app/page.tsx")).toContain("Gratuit, en 4 questions.");
-    expect(lire("app/page.tsx")).toContain("Free, in 4 questions.");
+    expect(lire("app/page.tsx")).toContain("Estimer une maison neuve</a> · gratuit, en 4 questions");
+    expect(lire("app/page.tsx")).toContain("Estimate a new home</a> · free, in 4 questions");
     expect(lire("app/estimation-construction-maison/page.tsx")).toContain("quatre questions, un budget complet");
   });
 });

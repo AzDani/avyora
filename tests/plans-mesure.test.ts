@@ -180,7 +180,9 @@ describe("C10 · chaque lien vers la vitrine ou l'éditeur porte une origine de 
       }
     }
     expect(manques).toEqual([]);
-    expect(n).toBeGreaterThanOrEqual(17);
+    // 14 depuis l'accueil V2 (24/11/2026) : le bandeau de l'éditeur et sa carte ont quitté l'accueil (l'offre « plan » et la
+    // ligne de liens restent, comptées).
+    expect(n).toBeGreaterThanOrEqual(14);
   });
 
   it("le layout monte l'écoute derrière l'interrupteur, une seule fois", () => {
