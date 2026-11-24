@@ -7,7 +7,7 @@
  * - AUCUN chiffre inventé (années d'expérience, nombre de chantiers, avis, notes) : s'il en faut un un jour, il vient
  *   de Daniel (voir les TODO) ;
  * - conseil seulement : pas de maîtrise d'œuvre, dit clairement ;
- * - honnêteté sur France Rénov' et Mon Accompagnateur Rénov' (signal de confiance, et c'est vrai) ;
+ * - plus de comparaison avec France Rénov' ni de comparatif des métiers (retirés le 24/11/2026, demande de Dani) ;
  * - pas d'année écrite en dur (la date de fin de bêta passe par libellesBeta, si un jour elle est citée).
  *
  * La FAQ est UNE source : la page la rend ET en tire le FAQPage du JSON-LD (les questions doivent être visibles).
@@ -295,7 +295,7 @@ const fr = {
     items: [
       {
         q: "Qui peut m'aider à gérer mes travaux de rénovation ?",
-        a: "Trois options : un conseiller France Rénov' (gratuit, centré sur la rénovation énergétique et les aides), un maître d'œuvre (il dirige le chantier, payé en général en pourcentage des travaux), ou un conseil comme le mien : tu gardes la main sur ton chantier, j'éclaire tes décisions.",
+        a: "Un maître d'œuvre dirige le chantier à ta place, payé en général en pourcentage des travaux. Mon accompagnement, c'est du conseil : tu gardes la main sur ton chantier, j'éclaire tes décisions, du devis à la fin des travaux.",
       },
       {
         q: "Combien coûte un accompagnement travaux ?",
@@ -304,10 +304,6 @@ const fr = {
       {
         q: "Qui peut vérifier un devis de travaux avant de signer ?",
         a: "Je relis ton devis poste par poste : ce qui manque, ce qui est flou, les prix éloignés du référentiel AVYORA, et les questions à poser à l'artisan avant de signer. Le guide « vérifier un devis de travaux » donne aussi la méthode pour le faire toi-même.",
-      },
-      {
-        q: "Quelle différence avec un conseiller France Rénov' gratuit ?",
-        a: "Le conseiller France Rénov' est un service public gratuit, centré sur la rénovation énergétique et les aides. Il informe et oriente, il ne suit pas ton chantier semaine après semaine. Je fais du conseil privé tous corps d'état : relecture de devis, estimation du budget, avis avant achat, choix techniques, plans 2D, organisation du chantier et suivi du budget.",
       },
       {
         q: "Est-ce que tu diriges mon chantier ?",
@@ -583,7 +579,7 @@ const en: ContenuAccompagnement = {
     items: [
       {
         q: "Who can help me manage my renovation?",
-        a: "Three options: a France Rénov' advisor (free, focused on energy renovation and grants), a project manager (runs the site, usually paid a percentage of the work), or advice like mine: you stay in charge of your project, I help you make the right calls.",
+        a: "A project manager runs the site for you, usually paid a percentage of the work. My service is advice: you stay in charge of your project, I help you make the right calls, from the quote to the end of the works.",
       },
       {
         q: "How much does renovation advice cost?",
@@ -592,10 +588,6 @@ const en: ContenuAccompagnement = {
       {
         q: "Who can check a building quote before I sign?",
         a: "I read your quote line by line: what's missing, what's vague, prices far from the AVYORA reference, and the questions to ask the contractor before signing. The guide on checking a quote also shows you how to do it yourself.",
-      },
-      {
-        q: "How is this different from a free France Rénov' advisor?",
-        a: "A France Rénov' advisor is a free public service focused on energy renovation and grants. They inform and guide you, they don't follow your site week after week. I give private advice across all trades: quote review, budget estimate, opinion before you buy, technical choices, 2D plans, site organisation and budget tracking.",
       },
       {
         q: "Do you run my building site?",

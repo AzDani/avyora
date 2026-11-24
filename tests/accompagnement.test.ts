@@ -388,7 +388,7 @@ describe("page /accompagnement-travaux", () => {
         expect(txt).toContain("Daniel Leal");
         expect(txt).toContain("chef de chantier");
         expect(txt).not.toMatch(/vinci/i);
-        expect(txt).toContain("France Rénov'");
+        expect(txt).not.toContain("France Rénov'"); // retiré de la page le 24/11/2026 (comparatif puis FAQ)
         expect(txt).not.toMatch(/\b(vous|votre|vos)\b/i);
         // 900 à 1 300 mots visibles environ (rapport SEO) : du contenu, pas du remplissage.
         const mots = txt.split(" ").filter((w) => /\p{L}/u.test(w)).length;
