@@ -19,9 +19,18 @@ const SANS_DEFILEMENT = [
   "/projets", "/plan", "/admin", "/mon-espace", "/espace-artisan", "/onboarding", "/connexion", "/inscription",
   "/reset", "/auth", "/bienvenue-pro", "/demandes-devis",
 ];
-/* Les pages de prix (prix des travaux, par ville, par poste) n'ont pas de sections : leurs titres, tableaux et listes
-   glissent un par un (24/11/2026, demande de Dani). */
-const CIBLES = "section, article, .card, .offre, .tuile, .av-seo > *, .av-poste > *, .av-hub > *";
+const CIBLES = "section, article, .card, .offre, .tuile";
+/* Les pages de lecture (prix, guides, méthodologie, pages légales…) n'ont souvent pas de sections : leurs titres,
+   tableaux et listes glissent un par un. On les trouve partout de la même façon : tout bloc qui contient au moins deux
+   intertitres (h2) directs est un « fil de lecture », et chacun de ses enfants glisse (24/11/2026, « partout sur le site
+   on garde cette logique »). */
+function filsDeLecture(main: HTMLElement): HTMLElement[] {
+  const parents = new Map<HTMLElement, number>();
+  main.querySelectorAll<HTMLElement>("h2").forEach((h) => { if (h.parentElement) parents.set(h.parentElement, (parents.get(h.parentElement) ?? 0) + 1); });
+  const out: HTMLElement[] = [];
+  for (const [p, n] of parents) if (n >= 2) out.push(...(Array.from(p.children) as HTMLElement[]));
+  return out;
+}
 
 export default function EffetsSite() {
   const chemin = usePathname();
@@ -67,7 +76,8 @@ export default function EffetsSite() {
     const exclu = SANS_DEFILEMENT.some((p) => chemin === p || chemin.startsWith(`${p}/`));
     const blocs: HTMLElement[] = [];
     if (!exclu) {
-      const tous = Array.from(main.querySelectorAll<HTMLElement>(CIBLES)).filter((el) => !el.closest("form, [data-rv-non]") && !/^(STYLE|SCRIPT)$/.test(el.tagName));
+      const tous = Array.from(new Set([...main.querySelectorAll<HTMLElement>(CIBLES), ...filsDeLecture(main)]))
+        .filter((el) => !el.closest("form, [data-rv-non]") && !/^(STYLE|SCRIPT|LINK|META)$/.test(el.tagName));
       const hauteur = window.innerHeight;
       for (const el of tous) {
         if (tous.some((autre) => autre !== el && el.contains(autre))) continue; // le plus intérieur seulement
@@ -75,25 +85,39 @@ export default function EffetsSite() {
         blocs.push(el);
       }
     }
+    const montrer = (el: HTMLElement, rang: number) => {
+      if (el.classList.contains("rv-vu") || !el.classList.contains("rv-pret")) return;
+      revele.unobserve(el);
+      if (rang > 0) el.style.transitionDelay = `${Math.min(rang, 5) * 80}ms`;
+      el.classList.add("rv-vu");
+      // Une fois arrivé, le bloc rend la main à ses propres effets (zoom au survol).
+      minuteurs.push(window.setTimeout(() => { el.classList.remove("rv-pret", "rv-vu"); el.style.removeProperty("transition-delay"); }, 1100));
+    };
     const revele = new IntersectionObserver((entrees) => {
       let rang = 0;
-      for (const e of entrees) {
-        if (!e.isIntersecting) continue;
-        revele.unobserve(e.target);
-        const el = e.target as HTMLElement;
-        if (rang > 0) el.style.transitionDelay = `${Math.min(rang, 5) * 80}ms`;
-        rang++;
-        el.classList.add("rv-vu");
-        // Une fois arrivé, le bloc rend la main à ses propres effets (zoom au survol).
-        minuteurs.push(window.setTimeout(() => { el.classList.remove("rv-pret", "rv-vu"); el.style.removeProperty("transition-delay"); }, 1100));
-      }
-    }, { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
+      for (const e of entrees) if (e.isIntersecting) montrer(e.target as HTMLElement, rang++);
+    }, { threshold: 0, rootMargin: "0px 0px -8% 0px" });
     for (const el of blocs) {
       el.classList.add("rv-pret");
       revele.observe(el);
     }
+    // Filet : un saut (lien vers #demande, retour en arrière) peut passer par-dessus des blocs sans qu'ils « entrent » à
+    // l'écran. Après chaque défilement, tout bloc déjà dépassé ou à l'écran est montré.
+    let image = 0;
+    const filet = () => {
+      if (image) return;
+      image = requestAnimationFrame(() => {
+        image = 0;
+        const bas = window.innerHeight * 0.92;
+        let rang = 0;
+        for (const el of blocs) if (el.getBoundingClientRect().top < bas) montrer(el, rang++);
+      });
+    };
+    window.addEventListener("scroll", filet, { passive: true });
 
     return () => {
+      window.removeEventListener("scroll", filet);
+      if (image) cancelAnimationFrame(image);
       compteurs.disconnect();
       revele.disconnect();
       minuteurs.forEach((m) => window.clearTimeout(m));
