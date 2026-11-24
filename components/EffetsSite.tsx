@@ -18,6 +18,8 @@ import { usePathname } from "next/navigation";
 const SANS_DEFILEMENT = [
   "/projets", "/plan", "/admin", "/mon-espace", "/espace-artisan", "/onboarding", "/connexion", "/inscription",
   "/reset", "/auth", "/bienvenue-pro", "/demandes-devis",
+  // Les estimateurs (le formulaire est le haut de ces pages) : on y travaille aussi.
+  "/estimation-travaux", "/estimation-construction-maison",
 ];
 const CIBLES = "section, article, .card, .offre, .tuile";
 /* Les pages de lecture (prix, guides, méthodologie, pages légales…) n'ont souvent pas de sections : leurs titres,

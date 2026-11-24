@@ -6,7 +6,8 @@
  * la logique pure (mémoire, étapes, clavier, géométrie, mesure) vit dans `lib/visite.ts`.
  *
  * Ce que rend le composant, À L'ENDROIT où on le pose (en haut de l'estimateur) :
- *  - une rangée de 44 px avec le bouton discret « ? Visite guidée » ;
+ *  - une rangée avec le bouton « ? Visite guidée en 1 minute », mis en avant (violet, 24/11/2026 : « il faut que les
+ *    gens le voient rapidement ») ; un halo pulse autour tant que la visite n'a pas été faite (`data-attire`) ;
  *  - à la première visite seulement, à sa place, l'invitation « Te guider en 1 minute ? » (C'est parti / Non merci),
  *    dans la page : elle ne bloque rien, ne chevauche ni la barre de prix collante ni le bandeau cookies, et
  *    n'apparaît qu'une fois ce bandeau fermé. Jamais sur un formulaire prérempli (`prerempli`).
@@ -137,7 +138,7 @@ export default function VisiteGuidee({ id, etapes, prerempli = false }: {
             <button type="button" className="av-visite-non" onClick={nonMerci}>{t.nonMerci}</button>
           </div>
         ) : (
-          <button type="button" ref={aideRef} className="av-visite-aide" aria-haspopup="dialog" aria-label={t.boutonAria} onClick={() => lancer("bouton")}>
+          <button type="button" ref={aideRef} className="av-visite-aide" data-attire={etat === "fait" ? undefined : ""} aria-haspopup="dialog" aria-label={t.boutonAria} onClick={() => lancer("bouton")}>
             <span className="av-visite-q" aria-hidden="true">?</span>{t.bouton}
           </button>
         )}
@@ -365,10 +366,12 @@ function Bulle({ id, etapes, t, origine, onFin }: {
  * marque (`app/globals.css`), avec leur valeur en secours.
  */
 export const VISITE_CSS = `
-.av-visite-barre{display:flex;justify-content:flex-end;align-items:center;min-height:44px;margin:-4px 0 10px}
-.av-visite-aide{box-sizing:border-box;display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:0 12px 0 8px;border-radius:999px;border:1px solid var(--color-line-strong,#dcdeec);background:var(--color-surface,#fff);color:var(--color-muted,#565a75);font:600 13px/1 var(--font-geist-sans),system-ui,sans-serif;cursor:pointer;transition:border-color .15s,color .15s}
-.av-visite-aide:hover{border-color:var(--color-brand-200,#c7ccfe);color:var(--color-brand-700,#4338ca)}
-.av-visite-q{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--color-brand-50,#eef1ff);color:var(--color-brand-600,#4f46e5);font:700 12px/1 var(--font-geist-mono),ui-monospace,monospace}
+.av-visite-barre{display:flex;justify-content:flex-start;align-items:center;min-height:48px;margin:-4px 0 14px}
+.av-visite-aide{box-sizing:border-box;display:inline-flex;align-items:center;gap:10px;min-height:48px;padding:0 20px 0 8px;border-radius:999px;border:0;background:linear-gradient(120deg,var(--color-brand-600,#4f46e5),#7c5cf0);color:#fff;font:600 15px/1 var(--font-geist-sans),system-ui,sans-serif;cursor:pointer;box-shadow:0 12px 26px -12px rgba(79,70,229,.65);transition:transform .2s cubic-bezier(.22,.72,.2,1),box-shadow .2s}
+.av-visite-aide:hover{transform:translateY(-1px) scale(1.03);box-shadow:0 16px 32px -12px rgba(79,70,229,.75)}
+.av-visite-aide[data-attire]{animation:avVisitePouls 2.6s ease-in-out 1.2s infinite}
+@keyframes avVisitePouls{0%,100%{box-shadow:0 12px 26px -12px rgba(79,70,229,.65),0 0 0 0 rgba(167,139,250,.6)}55%{box-shadow:0 12px 26px -12px rgba(79,70,229,.65),0 0 0 9px rgba(167,139,250,0)}}
+.av-visite-q{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:#fff;color:var(--color-brand-600,#4f46e5);font:700 15px/1 var(--font-geist-sans),system-ui,sans-serif}
 .av-visite-invit{box-sizing:border-box;display:flex;align-items:center;gap:6px;min-height:44px;padding:3px 3px 3px 14px;border-radius:999px;background:var(--color-brand-50,#eef1ff);border:1px solid var(--color-brand-200,#c7ccfe);max-width:100%;animation:avVisiteIn .3s cubic-bezier(.22,.72,.2,1)}
 .av-visite-invit-t{flex:1 1 auto;min-width:0;font:600 13.5px/1.25 var(--font-geist-sans),system-ui,sans-serif;color:var(--color-ink,#15172b);margin-right:4px}
 .av-visite-go,.av-visite-non{flex:0 0 auto;min-height:36px;padding:0 14px;border-radius:999px;font:600 13px/1 var(--font-geist-sans),system-ui,sans-serif;cursor:pointer;white-space:nowrap}
@@ -400,12 +403,12 @@ export const VISITE_CSS = `
 .av-visite.mobile .av-visite-bulle{width:calc(100vw - 16px);max-width:none;border-radius:18px;padding:16px 16px 12px}
 .av-visite.mobile .av-visite-lien,.av-visite.mobile .av-visite-suiv{min-height:44px}
 @media (max-width:560px){
-.av-visite-barre{margin:-6px 0 10px;min-height:48px}
-.av-visite-aide{min-height:44px}
+.av-visite-barre{margin:-6px 0 12px;min-height:48px}
+.av-visite-aide{min-height:48px;width:100%;justify-content:center}
 .av-visite-invit{width:100%;min-height:48px;padding:1px 1px 1px 12px;gap:2px}
 .av-visite-invit-t{font-size:13px}
 .av-visite-go,.av-visite-non{min-height:44px;padding:0 12px}
 }
-@media (prefers-reduced-motion:reduce){.av-visite-invit,.av-visite-bulle.secoue{animation:none}.av-visite-pts i,.av-visite-aide{transition:none}}
+@media (prefers-reduced-motion:reduce){.av-visite-invit,.av-visite-bulle.secoue,.av-visite-aide[data-attire]{animation:none}.av-visite-pts i,.av-visite-aide{transition:none}.av-visite-aide:hover{transform:none}}
 @media print{.av-visite-barre,.av-visite{display:none!important}}
 `;

@@ -18,8 +18,9 @@ const fr = {
     invitation: "Te guider en 1 minute ?",
     cestParti: "C'est parti",
     nonMerci: "Non merci",
-    /** Le bouton discret en haut de chaque estimateur (le « ? » est dessiné à part). */
-    bouton: "Visite guidée",
+    /** Le bouton mis en avant en haut de chaque estimateur (le « ? » est dessiné à part ; 24/11/2026, demande de Dani :
+        « il faut que les gens le voient rapidement »). */
+    bouton: "Visite guidée en 1 minute",
     boutonAria: "Lancer la visite guidée de l'estimateur",
     etape: (i: number, n: number) => `Étape ${i} sur ${n}`,
     suivant: "Suivant",
@@ -79,7 +80,7 @@ const en: DictVisite = {
     invitation: "Want a 1-minute tour?",
     cestParti: "Let's go",
     nonMerci: "No thanks",
-    bouton: "Guided tour",
+    bouton: "1-minute guided tour",
     boutonAria: "Start the estimator's guided tour",
     etape: (i: number, n: number) => `Step ${i} of ${n}`,
     suivant: "Next",
