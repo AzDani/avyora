@@ -16,6 +16,7 @@ const LEGAL_CSS = `
 .av-legal h1{font-size:28px;font-weight:600;letter-spacing:-.01em;color:var(--color-ink)}
 .av-legal .maj{font-size:12.5px;color:var(--color-faint);margin-top:6px}
 .av-legal h2{font-size:17px;font-weight:600;color:var(--color-ink);margin:30px 0 8px;scroll-margin-top:90px}
+.av-legal h2.partie{font-size:20px;font-weight:700;margin-top:44px;padding-top:18px;border-top:1px solid var(--color-line)}
 .av-legal h3{font-size:14px;font-weight:600;color:var(--color-ink);margin:18px 0 6px}
 .av-legal p,.av-legal li{font-size:14px;line-height:1.7;color:var(--color-muted)}
 .av-legal p{margin:8px 0}
